@@ -98,6 +98,17 @@ class ErrorHandler extends \CErrorHandler
 				$errorLine = $trace['line'];
 			}
 
+			// Check for Twig exceptions that wrapped another exception
+			if ($exception instanceof \Twig_Error_Runtime)
+			{
+				$previousException = $exception->getPrevious();
+
+				if ($previousException)
+				{
+					$exception = $previousException;
+				}
+			}
+
 			// If this is a Twig exception, show the template instead
 			if ($exception instanceof \Twig_Error)
 			{
