@@ -247,6 +247,7 @@ if (in_array('Users', $packages))
 {
 	$components['users']['class']             = 'Blocks\UsersService';
 	$components['userGroups']['class']        = 'Blocks\UserGroupsService';
+	$components['userPermissions']['class']   = 'Blocks\UserPermissionsService';
 }
 
 if (in_array('Rebrand', $packages))
