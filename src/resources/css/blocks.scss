@@ -520,6 +520,7 @@ textarea.text,
 #main .redactor_toolbar li a:hover { border-radius: 2px; border: 1px solid #d4d4d4; background-color: #e8e8e8; }
 #main .redactor_toolbar li.redactor_separator { margin: 7px 2px 0 3px !important; height: 19px; border-left: 1px dotted #ccc; border-right: none; }
 
+body .redactor_box_fullscreen { z-index: 10000 !important; }
 /* select */
 @media screen and (-webkit-min-device-pixel-ratio: 0)
 {
