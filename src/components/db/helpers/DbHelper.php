@@ -17,7 +17,6 @@ class DbHelper
 		ColumnType::MediumInt    => array('maxLength' => 9),
 		ColumnType::Int          => array('maxLength' => 11),
 		ColumnType::BigInt       => array('maxLength' => 20),
-		ColumnType::TinyInt      => array('maxLength' => 4),
 		ColumnType::Decimal      => array('maxLength' => 10, 'decimals' => 2),
 		ColumnType::Enum         => array('values' => array()),
 	);
