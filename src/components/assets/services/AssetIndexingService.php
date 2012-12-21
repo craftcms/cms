@@ -184,10 +184,11 @@ class AssetIndexingService extends BaseApplicationComponent
 
 			case 'statistics':
 			{
+				// Load the record IDs of the files that were indexed.
 				$processedFiles = blx()->db->createCommand()
 					->select('recordId')
 					->from('assetindexdata')
-					->where('sessionId = :sessionId', array(':sessionId' => $sessionId))
+					->where('sessionId = :sessionId AND recordId IS NOT NULL', array(':sessionId' => $sessionId))
 					->queryColumn();
 
 				$processedFiles = array_flip($processedFiles);

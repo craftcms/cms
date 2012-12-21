@@ -127,7 +127,6 @@ var b;
             // ---------------------------------------
 
             this.$sources.find('a').click($.proxy(function (event) {
-                this.storeState('current_source', $(event.target).attr('data-source'));
                 this.selectSource($(event.target));
             }, this));
 
@@ -142,13 +141,15 @@ var b;
                 this.markActiveViewButton();
             }, this));
 
-            // Load up the folder
+            // Figure out if we need to store the source state for the first time.
             if (this.currentState.current_source == null) {
                 this.storeState('current_source', this.$sources.find('a[data-source]').attr('data-source'));
             }
 
-            this.selectSource(this.$sources.find('a[data-source=' + this.currentState.current_source + ']'));
+            this.markActiveSource(this.currentState.current_source);
             this.markActiveViewButton();
+
+            this.reloadFolderView();
         },
 
         /**
@@ -175,21 +176,27 @@ var b;
         },
 
         /**
+         * Mark a source as active.
+         *
+         * @param sourceId
+         */
+        markActiveSource: function (sourceId) {
+            this.$sources.find('a').removeClass('sel');
+            this.$sources.find('a[data-source=' + sourceId + ']').addClass('sel');
+        },
+
+        /**
          * Select the source.
          *
          * @param sourceElement jQuery object with the link element
          */
         selectSource: function (sourceElement) {
-
-            this.$sources.find('a').removeClass('sel');
-            sourceElement.addClass('sel');
+            this.markActiveSource(sourceElement.attr('data-source'));
+            this.storeState('current_source', sourceElement.attr('data-source'));
             this.storeState('current_folder', sourceElement.attr('data-folder'));
 
             this.reloadFolderView();
-
-            this.uploader.setParams({
-                folderId: this.getCurrentFolderId()
-            });
+            this._setUploadFolder(this.getCurrentFolderId());
         },
 
         reloadFolderView: function () {
@@ -210,6 +217,9 @@ var b;
             };
 
             Blocks.postActionRequest('assets/viewFolder', params, $.proxy(function(data, textStatus) {
+
+                this.storeState('current_folder', folderId);
+
                 if (data.requestId != this.requestId) {
                     return;
                 }
@@ -220,15 +230,17 @@ var b;
 
                 this.$spinner.hide();
 
-                this.applyBindings();
+                this.applyFolderBindings();
 
             }, this));
         },
 
-        applyBindings: function () {
+        applyFolderBindings: function () {
 
             // Make ourselves available
             var _this = this;
+
+            // File blocks editing
             this.$folderContainer.find('.open-file').dblclick(function () {
                 _this.$spinner.show();
                 var params = {
@@ -278,6 +290,12 @@ var b;
 
                 }, _this));
             });
+
+            this.$folderContainer.find('.open-folder').dblclick(function () {
+                _this.$spinner.show();
+                _this.loadFolderView($(this).attr('data-folder'));
+            });
+
         },
 
         /**
@@ -290,7 +308,7 @@ var b;
             if (this.currentState.current_folder == null || typeof this.currentState.current_folder == "udefined") {
                 this.storeState('current_folder', this.$folderContainer.attr('data-folder'));
             }
-            if (this.currentState.current_folder == 0) {
+            if (this.currentState.current_folder == 0 || this.currentState.current_folder == null) {
                 this.storeState('current_folder', this.$sources.find('a[data-source=' + this.currentState.current_source + ']').attr('data-folder'));
             }
 

@@ -54,7 +54,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		$indexedFolderIds[blx()->assetIndexing->ensureTopFolder($this->model)] = true;
 
-		$localPath = $this->getSettings()->path;
+		$localPath = $this->_getSourceFileSystemPath();
 		$fileList = IOHelper::getFolderContents($localPath, true);
 		$fileList = array_filter($fileList, function ($value) use ($localPath) {
 			$path = substr($value, strlen($localPath));
@@ -78,7 +78,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			{
 				if (is_dir($file))
 				{
-					$fullPath = rtrim(str_replace($this->getSettings()->path, '', $file), '/') . '/';
+					$fullPath = rtrim(str_replace($this->_getSourceFileSystemPath(), '', $file), '/') . '/';
 					$folderId = $this->_ensureFolderByFulPath($fullPath);
 					$indexedFolderIds[$folderId] = true;
 				}
@@ -104,6 +104,16 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
+	 * Get the file system path for upload source.
+	 *
+	 * @return string
+	 */
+	private function _getSourceFileSystemPath()
+	{
+		return rtrim($this->getSettings()->path, '/').'/';
+	}
+
+	/**
 	 * Process an indexing session.
 	 *
 	 * @param $sessionId
@@ -119,7 +129,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			return false;
 		}
 
-		$uploadPath = $this->getSettings()->path;
+		// Make sure we have a trailing slash. Some people love to skip those.
+		$uploadPath = $this->_getSourceFileSystemPath();
 
 		$file = $indexEntryModel->uri;
 
@@ -162,7 +173,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
 
-		$targetFolder = $this->getSettings()->path . $folder->fullPath;
+		$targetFolder = $this->_getSourceFileSystemPath() . $folder->fullPath;
 
 		// Make sure the folder is writable
 		if (! IOHelper::isWritable($targetFolder))
@@ -218,7 +229,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
-		$fileList = IOHelper::getFolderContents($this->getSettings()->path . $folder->fullPath, false);
+		$fileList = IOHelper::getFolderContents($this->_getSourceFileSystemPath() . $folder->fullPath, false);
 		$existingFiles = array();
 
 		foreach ($fileList as $file)
@@ -292,7 +303,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	private function _getImageServerPath(AssetFileModel $fileModel, $handle = '')
 	{
-		$targetFolder = $this->getSettings()->path.$fileModel->getFolder()->fullPath;
+		$targetFolder = $this->_getSourceFileSystemPath().$fileModel->getFolder()->fullPath;
 		$targetFolder .= !empty($handle) ? '_'.$handle.'/': '';
 		return $targetFolder.$fileModel->filename;
 	}

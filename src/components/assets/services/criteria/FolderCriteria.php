@@ -7,7 +7,7 @@ namespace Blocks;
 class FolderCriteria extends BaseCriteria
 {
 	public $id;
-	public $parentId;
+	public $parentId = false;
 	public $sourceId;
 	public $name;
 	public $fullPath;

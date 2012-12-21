@@ -130,7 +130,7 @@ class AssetsVariable
 			new FolderCriteria(
 				array(
 					'sourceId' => $id,
-					'fullPath' => ""
+					'parentId' => null
 				)
 			)
 		);
