@@ -108,7 +108,8 @@ class RebrandController extends BaseController
 
 				IOHelper::deleteFile($imagePath);
 
-				$this->returnJson(array('success' => true));
+				$html = blx()->templates->render('settings/general/_logo');
+				$this->returnJson(array('html' => $html));
 			}
 			IOHelper::deleteFile($imagePath);
 		}
@@ -127,6 +128,9 @@ class RebrandController extends BaseController
 	{
 		$this->requireAdmin();
 		IOHelper::clearFolder(blx()->path->getStoragePath().'logo/');
-		$this->returnJson(array('success' => true));
+
+		$html = blx()->templates->render('settings/general/_logo');
+		$this->returnJson(array('html' => $html));
+
 	}
 }

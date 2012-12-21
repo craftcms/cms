@@ -1,11 +1,12 @@
 (function($) {
 
+    var ImageUpload = null;
+
     var settings = {
         modalClass: "logo-modal",
-        uploadButton: $('.logo-controls .upload-logo'),
+
         uploadAction: 'rebrand/uploadLogo',
 
-        deleteButton: $('.logo-controls .delete-logo'),
         deleteMessage: Blocks.t('Are you sure you want to delete the logo?'),
         deleteAction: 'rebrand/deleteLogo',
 
@@ -17,8 +18,34 @@
             initialRectangle: {
                 mode: "auto"
             }
+        },
+
+        onImageSave: function (response) {
+            refreshImage(response);
+        },
+
+        onImageDelete: function (response) {
+            refreshImage(response);
         }
+
     };
 
-    new Blocks.ui.ImageUpload(settings);
+    function refreshImage(response) {
+        if (typeof response.html != "undefined") {
+            $('.cp-logo').replaceWith(response.html);
+            initImageUpload();
+        }
+
+    }
+
+    function initImageUpload()
+    {
+        // These change dynamically after each HTML overwrite, so we can't have them in the initial settings array.
+        settings.uploadButton = $('.logo-controls .upload-logo');
+        settings.deleteButton = $('.logo-controls .delete-logo');
+        ImageUpload = new Blocks.ui.ImageUpload(settings);
+    }
+
+    initImageUpload();
+
 })(jQuery);

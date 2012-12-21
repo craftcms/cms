@@ -1,0 +1,13 @@
+<div class="cp-logo">
+    <div class="current-logo" {% if blx.rebrand.isLogoUploaded -%}
+        style="background-image: url({{ blx.rebrand.logo.url }}); width: {{ blx.rebrand.logo.width }}px; height: {{ blx.rebrand.logo.height }}px;"
+            {%- endif %}></div>
+    <div class="logo-controls"{% if blx.rebrand.isLogoUploaded %} style="margin-left: {{ blx.rebrand.logo.width + 15 }}px;"{%- endif %}>
+        {% if blx.rebrand.isLogoUploaded %}
+            <div class="btn upload-logo">{{ "Change logo"|t }}</div>
+            <div class="btn delete-logo">{{ "Delete logo"|t }}</div>
+        {% else %}
+            <div class="btn upload-logo">{{ "Upload a logo"|t }}</div>
+        {% endif %}
+    </div>
+</div>

@@ -26,7 +26,8 @@
          *     y1            - top left y coordinate of th rectangle, if the mode is not set to auto
          *     y2            - bottom right y coordinate of th rectangle, if the mode is not set to auto
          *
-         * onImageDelete     - callback to call when image is deleted
+         * onImageDelete     - callback to call when image is deleted. First parameter will containt respone data.
+         * onImageSave       - callback to call when an cropped image is saved. First parameter will contain response data.
          */
         _defaultSettings: {
             postParameters: {},
