@@ -334,6 +334,9 @@ class HttpRequestService extends \CHttpRequest
 	{
 		$fileName = IOHelper::getFileName($path, true);
 
+		// Clear the output buffer to prevent corrupt downloads.
+		ob_clean();
+
 		// Default to disposition to 'download'
 		if (!isset($options['forceDownload']) || $options['forceDownload'])
 		{
