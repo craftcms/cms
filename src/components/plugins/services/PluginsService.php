@@ -527,7 +527,7 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function getPluginComponentClassesByType($pluginHandle, $componentType)
 	{
-		$plugin = $this->getPlugin($pluginHandle);
+		$plugin = $this->getPlugin($pluginHandle, false);
 
 		if (!$plugin)
 		{
