@@ -12,7 +12,7 @@ class Zip
 	 * @param $destZip
 	 * @return bool 'true' if the zip was successfully create, 'false' if not.
 	 */
-	public static function zip($source, $destZip)
+	public static function compress($source, $destZip)
 	{
 		$source = IOHelper::normalizePathSeparators($source);
 		$destZip = IOHelper::normalizePathSeparators($destZip);
