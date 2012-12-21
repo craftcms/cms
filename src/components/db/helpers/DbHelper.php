@@ -184,6 +184,30 @@ class DbHelper
 	}
 
 	/**
+	 * Prepares a table name for Yii to add its table prefix
+	 *
+	 * @static
+	 * @param mixed $table The table name or an array of table names
+	 * @return mixed The modified table name(s)
+	 */
+	public static function addTablePrefix($table)
+	{
+		if (is_array($table))
+		{
+			foreach ($table as $key => $t)
+			{
+				$table[$key] = static::addTablePrefix($t);
+			}
+		}
+		else
+		{
+			$table = preg_replace('/^\w+/', blx()->db->tablePrefix.'\0', $table);
+		}
+
+		return $table;
+	}
+
+	/**
 	 * @static
 	 * @return array
 	 */
