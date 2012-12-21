@@ -25,6 +25,8 @@
          *     x2            - bottom right x coordinate of th rectangle, if the mode is not set to auto
          *     y1            - top left y coordinate of th rectangle, if the mode is not set to auto
          *     y2            - bottom right y coordinate of th rectangle, if the mode is not set to auto
+         *
+         * onImageDelete     - callback to call when image is deleted
          */
         _defaultSettings: {
             postParameters: {},
@@ -49,7 +51,10 @@
                     y1: 0,
                     y2: 0
                 }
-            }
+            },
+
+            onImageDelete: function (response) { location.reload(); },
+            onImageSave: function (response) { location.reload(); }
         },
 
         _imageHandler: null,
@@ -58,7 +63,7 @@
             settings = $.extend(this._defaultSettings, settings);
             this._imageHandler = new ImageHandler(settings);
         }
-    }),
+    });
 
     ImageHandler = Blocks.Base.extend({
 
@@ -66,7 +71,10 @@
         _settings: null,
 
         init: function(settings) {
+
             this._settings = settings;
+
+            var _this = this;
 
             var element = settings.uploadButton;
             var options = {
@@ -85,6 +93,7 @@
                         if (!this.modal) {
                             this.modal = new ImageModal({postParameters: settings.postParameters, cropAction: settings.cropAction});
                             this.modal.setContainer($modalContainerDiv);
+                            this.modal.imageHandler = _this;
                         }
 
                         var modal = this.modal;
@@ -119,13 +128,21 @@
                 if (confirm(settings.deleteMessage)) {
                     $(this).parent().append('<div class="blocking-modal"></div>');
                     Blocks.postActionRequest(settings.deleteAction, settings.postParameters, $.proxy(function (response){
-                        location.reload();
+                        _this.onImageDelete.apply(_this, [response]);
                     }, this));
 
                 }
             });
+        },
+
+        onImageSave: function (data) {
+            this._settings.onImageSave.apply(this, [data]);
+        },
+
+        onImageDelete: function (data) {
+            this._settings.onImageDelete.apply(this, [data]);
         }
-    }),
+    });
 
     ImageModal = Blocks.ui.Modal.extend({
 
@@ -138,6 +155,7 @@
         source: null,
         _postParameters: null,
         _cropAction: "",
+        imageHandler: null,
 
 
         init: function(settings) {
@@ -178,7 +196,7 @@
                 }
                 else
                 {
-                    location.reload();
+                    this.imageHandler.onImageSave.apply(this.imageHandler, [response]);
                 }
 
                 this.hide();
@@ -195,7 +213,7 @@
             this.$container.find('.crop-image').fadeTo(50, 0.5);
         }
 
-    }),
+    });
 
     ImageAreaTool = Blocks.Base.extend({
 

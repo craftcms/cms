@@ -26,17 +26,7 @@
     {% includeCssResource "css/profile.css" %}
 
 	{% set photoInput %}
-		<div class="user-photo" data-user="{{ account.id }}">
-			<div class="current-photo" style="background-image: url({{ account.photo ? account.photoUrl : resourceUrl('images/user.gif') }});"></div>
-			<div class="user-photo-controls">
-				{% if account.photo %}
-					<div class="btn upload-photo">{{ "Change photo"|t }}</div>
-					<div class="btn delete-photo">{{ "Delete photo"|t }}</div>
-				{% else %}
-					<div class="btn upload-photo">{{ "Upload a photo"|t }}</div>
-				{% endif %}
-			</div>
-		</div>
+		{% include 'users/_edit/_userphoto' with {account: account} only %}
 	{% endset %}
 
 	{{ forms.field({

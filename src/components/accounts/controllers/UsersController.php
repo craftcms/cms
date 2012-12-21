@@ -172,7 +172,13 @@ class UsersController extends BaseEntityController
 				if (blx()->users->cropAndSaveUserPhoto($imagePath, $x1, $x2, $y1, $y2, $user))
 				{
 					IOHelper::clearFolder(blx()->path->getTempUploadsPath().'userphotos/'.$user->username);
-					$this->returnJson(array('success' => true));
+
+					$html = blx()->templates->render('users/_edit/_userphoto',
+						array(
+							'account' => $user
+						)
+					);
+					$this->returnJson(array('html' => $html));
 				}
 			}
 			IOHelper::clearFolder(blx()->path->getTempUploadsPath().'userphotos/'.$user->username);
@@ -206,7 +212,15 @@ class UsersController extends BaseEntityController
 		$record->photo = null;
 		$record->save();
 
-		$this->returnJson(array('success' => true));
+		// Since Model still believes it has an image, we make sure that it does not so anymore when it reaches the template.
+		$user->photo = null;
+		$html = blx()->templates->render('users/_edit/_userphoto',
+			array(
+				'account' => $user
+			)
+		);
+
+		$this->returnJson(array('html' => $html));
 	}
 
 	/**
