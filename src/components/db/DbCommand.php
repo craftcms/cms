@@ -207,19 +207,21 @@ class DbCommand extends \CDbCommand
 	 * packages up the column definitions into strings,
 	 * and then passes it back to CDbCommand->createTable()
 	 *
-	 * @param      $table
-	 * @param      $columns
-	 * @param null $options
+	 * @param string $table
+	 * @param array $columns
+	 * @param null  $options
+	 * @param bool  $addIdColumn
+	 * @param bool  $addAuditColumns
 	 * @return int
 	 */
-	public function createTable($table, $columns, $options=null)
+	public function createTable($table, $columns, $options=null, $addIdColumn = true, $addAuditColumns = true)
 	{
 		$table = DbHelper::addTablePrefix($table);
 
 		$columns = array_merge(
-			array('id' => ColumnType::PK),
+			($addIdColumn ? array('id' => ColumnType::PK) : array()),
 			$columns,
-			($table !== 'activity' ? DbHelper::getAuditColumnConfig() : array())
+			($addAuditColumns ? DbHelper::getAuditColumnConfig() : array())
 		);
 
 		foreach ($columns as $col => $settings)
@@ -228,9 +230,7 @@ class DbCommand extends \CDbCommand
 		}
 
 		// Create the table
-		$return = parent::createTable($table, $columns, $options);
-
-		return $return;
+		return parent::createTable($table, $columns, $options);
 	}
 
 	/**
