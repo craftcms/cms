@@ -124,7 +124,7 @@ class EntryModel extends BaseEntityModel
 	 */
 	public function getAuthor()
 	{
-		return blx()->accounts->getUserById($this->authorId);
+		return blx()->users->getUserById($this->authorId);
 	}
 
 	/**

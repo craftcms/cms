@@ -22,7 +22,7 @@ class UserIdentity extends \CUserIdentity
 	 */
 	public function authenticate()
 	{
-		$user = blx()->accounts->getUserByUsernameOrEmail($this->username);
+		$user = blx()->users->getUserByUsernameOrEmail($this->username);
 
 		if ($user)
 		{
@@ -75,7 +75,7 @@ class UserIdentity extends \CUserIdentity
 					{
 						$this->_id = $user->id;
 						$this->errorCode = static::ERROR_PASSWORD_RESET_REQUIRED;
-						blx()->accounts->sendForgotPasswordEmail($user);
+						blx()->users->sendForgotPasswordEmail($user);
 					}
 					else if (blx()->request->isCpRequest() && !$user->can('accessCp'))
 					{
@@ -89,13 +89,13 @@ class UserIdentity extends \CUserIdentity
 						$this->errorCode = static::ERROR_NONE;
 
 						$authSessionToken = StringHelper::UUID();
-						blx()->accounts->handleSuccessfulLogin($user, $authSessionToken);
+						blx()->users->handleSuccessfulLogin($user, $authSessionToken);
 						$this->setState('authSessionToken', $authSessionToken);
 					}
 				}
 				else
 				{
-					blx()->accounts->handleInvalidLogin($user);
+					blx()->users->handleInvalidLogin($user);
 
 					// Was that one bad password too many?
 					if ($user->status == UserStatus::Locked)

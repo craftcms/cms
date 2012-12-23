@@ -27,7 +27,7 @@
 
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8">
-		<input type="hidden" name="action" value="accounts/saveUser">
+		<input type="hidden" name="action" value="users/saveUser">
 		{% if isNewAccount %}
 			<input type="hidden" name="redirect" value="users/{userId}">
 		{% else %}

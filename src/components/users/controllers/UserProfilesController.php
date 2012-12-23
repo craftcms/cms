@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Handles user management related tasks.
  */
-class UsersController extends BaseEntityController
+class UserProfilesController extends BaseEntityController
 {
 	/**
 	 * Returns the block service instance.
@@ -13,7 +13,7 @@ class UsersController extends BaseEntityController
 	 */
 	protected function getService()
 	{
-		return blx()->users;
+		return blx()->userProfiles;
 	}
 
 	/**
@@ -30,7 +30,7 @@ class UsersController extends BaseEntityController
 			blx()->user->requirePermission('editUsers');
 		}
 
-		$user = blx()->accounts->getUserById($userId);
+		$user = blx()->users->getUserById($userId);
 
 		if (!$user)
 		{
@@ -42,8 +42,8 @@ class UsersController extends BaseEntityController
 
 		$user->setContent(blx()->request->getPost('blocks'));
 
-		$userSaved = blx()->accounts->saveUser($user);
-		$profileSaved = blx()->users->saveProfile($user);
+		$userSaved = blx()->users->saveUser($user);
+		$profileSaved = blx()->userProfiles->saveProfile($user);
 
 		if ($userSaved && $profileSaved)
 		{
@@ -82,7 +82,7 @@ class UsersController extends BaseEntityController
 			// Make sure a file was uploaded
 			if ($uploader->file && $uploader->file->getSize())
 			{
-				$user = blx()->accounts->getUserById($userId);
+				$user = blx()->users->getUserById($userId);
 
 				$folderPath = blx()->path->getTempUploadsPath().'userphotos/'.$user->username.'/';
 
@@ -161,15 +161,15 @@ class UsersController extends BaseEntityController
 				$source = substr($source, 0, strpos($source, '?'));
 			}
 
-			$user = blx()->accounts->getUserById($userId);
+			$user = blx()->users->getUserById($userId);
 
 			// make sure that this is this user's file
 			$imagePath = blx()->path->getTempUploadsPath().'userphotos/'.$user->username.'/'.$source;
 
 			if (IOHelper::fileExists($imagePath) && blx()->images->setMemoryForImage($imagePath))
 			{
-				blx()->users->deleteUserPhoto($user);
-				if (blx()->users->cropAndSaveUserPhoto($imagePath, $x1, $x2, $y1, $y2, $user))
+				blx()->userProfiles->deleteUserPhoto($user);
+				if (blx()->userProfiles->cropAndSaveUserPhoto($imagePath, $x1, $x2, $y1, $y2, $user))
 				{
 					IOHelper::clearFolder(blx()->path->getTempUploadsPath().'userphotos/'.$user->username);
 
@@ -205,8 +205,8 @@ class UsersController extends BaseEntityController
 			blx()->user->requirePermission('editUsers');
 		}
 
-		$user = blx()->accounts->getUserById($userId);
-		blx()->users->deleteUserPhoto($user);
+		$user = blx()->users->getUserById($userId);
+		blx()->userProfiles->deleteUserPhoto($user);
 
 		$record = UserRecord::model()->findById($user->id);
 		$record->photo = null;
@@ -249,15 +249,20 @@ class UsersController extends BaseEntityController
 		blx()->user->requirePermission('administrateUsers');
 
 		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->accounts->getUserById($userId);
+		$user = blx()->users->getUserById($userId);
 
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
 		}
 
-		$user->admin = (bool)blx()->request->getPost('admin');
-		blx()->accounts->saveUser($user);
+		// Only admins can toggle admin settings
+		if (blx()->user->isAdmin())
+		{
+			$user->admin = (bool)blx()->request->getPost('admin');
+		}
+
+		blx()->users->saveUser($user);
 
 		// Update the user permissions
 		if ($user->admin)
@@ -273,174 +278,5 @@ class UsersController extends BaseEntityController
 
 		blx()->user->setNotice(Blocks::t('Permissions saved.'));
 		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Sends a new verification email to a user.
-	 */
-	public function actionSendVerificationEmail()
-	{
-		$this->requirePostRequest();
-		blx()->user->requirePermission('administrateUsers');
-
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->accounts->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		blx()->accounts->sendVerificationEmail($user);
-
-		blx()->user->setNotice(Blocks::t('Verification email sent.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Activates a user, bypassing email verification.
-	 */
-	public function actionActivateUser()
-	{
-		$this->requirePostRequest();
-		blx()->user->requirePermission('administrateUsers');
-
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->accounts->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		blx()->accounts->activateUser($user);
-
-		blx()->user->setNotice(Blocks::t('User activated.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Unlocks a user, bypassing the cooldown phase.
-	 */
-	public function actionUnlockUser()
-	{
-		$this->requirePostRequest();
-		blx()->user->requirePermission('administrateUsers');
-
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->accounts->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		blx()->accounts->unlockUser($user);
-
-		blx()->user->setNotice(Blocks::t('User activated.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Suspends a user.
-	 */
-	public function actionSuspendUser()
-	{
-		$this->requirePostRequest();
-		blx()->user->requirePermission('administrateUsers');
-
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->accounts->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		blx()->accounts->suspendUser($user);
-
-		blx()->user->setNotice(Blocks::t('User suspended.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Unsuspends a user.
-	 */
-	public function actionUnsuspendUser()
-	{
-		$this->requirePostRequest();
-		blx()->user->requirePermission('administrateUsers');
-
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->accounts->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		blx()->accounts->unsuspendUser($user);
-
-		blx()->user->setNotice(Blocks::t('User unsuspended.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Archives a user.
-	 */
-	public function actionArchiveUser()
-	{
-		$this->requirePostRequest();
-		blx()->user->requirePermission('administrateUsers');
-
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->accounts->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		blx()->accounts->archiveUser($user);
-
-		blx()->user->setNotice(Blocks::t('User deleted.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Saves the system user settings.
-	 */
-	public function actionSaveUserSettings()
-	{
-		$this->requirePostRequest();
-		$this->requireAdmin();
-
-		$settings['allowPublicRegistration'] = (bool) blx()->request->getPost('allowPublicRegistration');
-
-		if (blx()->systemSettings->saveSettings('users', $settings))
-		{
-			blx()->user->setNotice(Blocks::t('User settings saved.'));
-			$this->redirectToPostedUrl();
-		}
-		else
-		{
-			blx()->user->setError(Blocks::t('Couldn’t save user settings.'));
-
-			$this->renderRequestedTemplate(array(
-				'settings' => $settings
-			));
-		}
-	}
-
-	/**
-	 * Throws a "no user exists" exception
-	 *
-	 * @access private
-	 * @param int $userId
-	 * @throws Exception
-	 */
-	private function _noUserExists($userId)
-	{
-		throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
 	}
 }

@@ -520,15 +520,15 @@ class HttpRequestService extends \CHttpRequest
 
 			if ($this->_path == $loginPath)
 			{
-				$this->_actionSegments = array('accounts', 'login');
+				$this->_actionSegments = array('users', 'login');
 			}
 			else if ($this->_path == $resetPasswordPath)
 			{
-				$this->_actionSegments = array('accounts', 'resetPassword');
+				$this->_actionSegments = array('users', 'resetPassword');
 			}
 			else if ($this->_path == $logoutPath)
 			{
-				$this->_actionSegments = array('accounts', 'logout');
+				$this->_actionSegments = array('users', 'logout');
 			}
 			else
 			{

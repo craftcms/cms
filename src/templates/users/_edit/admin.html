@@ -16,16 +16,16 @@
 
 
 {% set content %}
-	<form method="post" action="" accept-charset="UTF-8">
-		<input type="hidden" name="action" value="users/saveUserGroups">
-		<input type="hidden" name="userId" value="{{ account.id }}">
+	<h2>{{ "User Groups"|t }}</h2>
 
-		<h2>{{ "User Groups"|t }}</h2>
+	{% set allGroups = blx.userGroups.getAllGroups %}
+	{% set userGroups = account.getGroups('id') %}
 
-		{% set allGroups = blx.userGroups.getAllGroups %}
-		{% set userGroups = account.getGroups('id') %}
+	{% if allGroups %}
+		<form method="post" action="" accept-charset="UTF-8">
+			<input type="hidden" name="action" value="userProfiles/saveUserGroups">
+			<input type="hidden" name="userId" value="{{ account.id }}">
 
-		{% if allGroups %}
 			<ul>
 				{% for group in allGroups %}
 					<li>
@@ -38,19 +38,19 @@
 					</li>
 				{% endfor %}
 			</ul>
-		{% else %}
-			<p>{{ "No user groups exist yet."|t }}</p>
-		{% endif %}
 
-		<div class="buttons">
-			<input type="submit" class="btn small submit" value="{{ 'Save'|t }}">
-		</div>
-	</form>
+			<div class="buttons">
+				<input type="submit" class="btn small submit" value="{{ 'Save'|t }}">
+			</div>
+		</form>
+	{% else %}
+		<p>{{ "No user groups exist yet."|t }}</p>
+	{% endif %}
 
 	<hr>
 
 	<form method="post" action="" accept-charset="UTF-8">
-		<input type="hidden" name="action" value="users/saveUserPermissions">
+		<input type="hidden" name="action" value="userProfiles/saveUserPermissions">
 		<input type="hidden" name="userId" value="{{ account.id }}">
 
 		<h2>{{ "Permissions"|t }}</h2>

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Handles user account related tasks.
  */
-class AccountsController extends BaseController
+class UsersController extends BaseController
 {
 	protected $allowAnonymous = array('actionLogin', 'actionForgotPassword', 'actionVerify', 'actionResetPassword', 'actionSaveUser');
 
@@ -60,7 +60,7 @@ class AccountsController extends BaseController
 					}
 					case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
 					{
-						$user = blx()->accounts->getUserByUsernameOrEmail($loginName);
+						$user = blx()->users->getUserByUsernameOrEmail($loginName);
 						$timeRemaining = $user->getRemainingCooldownTime();
 
 						if ($timeRemaining)
@@ -139,11 +139,11 @@ class AccountsController extends BaseController
 
 		$loginName = blx()->request->getRequiredPost('loginName');
 
-		$user = blx()->accounts->getUserByUsernameOrEmail($loginName);
+		$user = blx()->users->getUserByUsernameOrEmail($loginName);
 
 		if ($user)
 		{
-			if (blx()->accounts->sendForgotPasswordEmail($user))
+			if (blx()->users->sendForgotPasswordEmail($user))
 			{
 				if (blx()->request->isAjaxRequest())
 				{
@@ -191,7 +191,7 @@ class AccountsController extends BaseController
 			$this->requirePostRequest();
 
 			$code = blx()->request->getRequiredPost('code');
-			$user = blx()->accounts->getUserByVerificationCode($code);
+			$user = blx()->users->getUserByVerificationCode($code);
 
 			if (!$user)
 			{
@@ -201,7 +201,7 @@ class AccountsController extends BaseController
 			$newPassword = blx()->request->getRequiredPost('newPassword');
 			$user->newPassword = $newPassword;
 
-			if (blx()->accounts->changePassword($user))
+			if (blx()->users->changePassword($user))
 			{
 				// Log them in
 				blx()->user->login($user->username, $newPassword);
@@ -221,7 +221,7 @@ class AccountsController extends BaseController
 		else
 		{
 			$code = blx()->request->getQuery('code');
-			$user = blx()->accounts->getUserByVerificationCode($code);
+			$user = blx()->users->getUserByVerificationCode($code);
 
 			if (!$user)
 			{
@@ -272,7 +272,7 @@ class AccountsController extends BaseController
 				blx()->user->requirePermission('editUsers');
 			}
 
-			$user = blx()->accounts->getUserById($userId);
+			$user = blx()->users->getUserById($userId);
 
 			if (!$user)
 			{
@@ -319,7 +319,7 @@ class AccountsController extends BaseController
 			$user->passwordResetRequired = (bool)blx()->request->getPost('passwordResetRequired');
 		}
 
-		if (blx()->accounts->saveUser($user))
+		if (blx()->users->saveUser($user))
 		{
 			blx()->user->setNotice(Blocks::t('User saved.'));
 			$this->redirectToPostedUrl(array(
@@ -333,5 +333,149 @@ class AccountsController extends BaseController
 				'account' => $user
 			));
 		}
+	}
+
+	/**
+	 * Sends a new verification email to a user.
+	 */
+	public function actionSendVerificationEmail()
+	{
+		$this->requirePostRequest();
+		blx()->user->requirePermission('administrateUsers');
+
+		$userId = blx()->request->getRequiredPost('userId');
+		$user = blx()->users->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		blx()->users->sendVerificationEmail($user);
+
+		blx()->user->setNotice(Blocks::t('Verification email sent.'));
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Activates a user, bypassing email verification.
+	 */
+	public function actionActivateUser()
+	{
+		$this->requirePostRequest();
+		blx()->user->requirePermission('administrateUsers');
+
+		$userId = blx()->request->getRequiredPost('userId');
+		$user = blx()->users->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		blx()->users->activateUser($user);
+
+		blx()->user->setNotice(Blocks::t('User activated.'));
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Unlocks a user, bypassing the cooldown phase.
+	 */
+	public function actionUnlockUser()
+	{
+		$this->requirePostRequest();
+		blx()->user->requirePermission('administrateUsers');
+
+		$userId = blx()->request->getRequiredPost('userId');
+		$user = blx()->users->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		blx()->users->unlockUser($user);
+
+		blx()->user->setNotice(Blocks::t('User activated.'));
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Suspends a user.
+	 */
+	public function actionSuspendUser()
+	{
+		$this->requirePostRequest();
+		blx()->user->requirePermission('administrateUsers');
+
+		$userId = blx()->request->getRequiredPost('userId');
+		$user = blx()->users->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		blx()->users->suspendUser($user);
+
+		blx()->user->setNotice(Blocks::t('User suspended.'));
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Unsuspends a user.
+	 */
+	public function actionUnsuspendUser()
+	{
+		$this->requirePostRequest();
+		blx()->user->requirePermission('administrateUsers');
+
+		$userId = blx()->request->getRequiredPost('userId');
+		$user = blx()->users->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		blx()->users->unsuspendUser($user);
+
+		blx()->user->setNotice(Blocks::t('User unsuspended.'));
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Archives a user.
+	 */
+	public function actionArchiveUser()
+	{
+		$this->requirePostRequest();
+		blx()->user->requirePermission('administrateUsers');
+
+		$userId = blx()->request->getRequiredPost('userId');
+		$user = blx()->users->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		blx()->users->archiveUser($user);
+
+		blx()->user->setNotice(Blocks::t('User deleted.'));
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Throws a "no user exists" exception
+	 *
+	 * @access private
+	 * @param int $userId
+	 * @throws Exception
+	 */
+	private function _noUserExists($userId)
+	{
+		throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
 	}
 }

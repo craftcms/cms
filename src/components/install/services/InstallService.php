@@ -186,7 +186,7 @@ class InstallService extends BaseApplicationComponent
 		$user->language = blx()->language;
 		$user->admin = true;
 
-		if (blx()->accounts->saveUser($user))
+		if (blx()->users->saveUser($user))
 		{
 			Blocks::log('User created successfully.', \CLogger::LEVEL_INFO);
 		}

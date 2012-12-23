@@ -10,7 +10,7 @@ namespace Blocks;
  * @property AssetSourcesService    $assetSources   The assets sources service
  * @property PathService            $path			The path service
  * @property UsersService           $users			The users service
- * @property AccountsService         $account		The account service
+ * @property UserProfilesService    $userProfiles	The user profiles service
  * @property ImagesService          $images			The images service
  * @property ResourcesService		$resources		The resources service
  * @property HttpRequestService 	$request 		The request service

@@ -208,7 +208,7 @@ if (in_array('Users', $packages))
 //  Component config
 // -------------------------------------------
 
-$components['accounts']['class']          = 'Blocks\AccountsService';
+$components['users']['class']             = 'Blocks\UsersService';
 $components['assets']['class']            = 'Blocks\AssetsService';
 $components['assetSizes']['class']        = 'Blocks\AssetSizesService';
 $components['assetIndexing']['class']     = 'Blocks\AssetIndexingService';
@@ -245,7 +245,7 @@ if (in_array('PublishPro', $packages))
 
 if (in_array('Users', $packages))
 {
-	$components['users']['class']             = 'Blocks\UsersService';
+	$components['userProfiles']['class']      = 'Blocks\UserProfilesService';
 	$components['userGroups']['class']        = 'Blocks\UserGroupsService';
 	$components['userPermissions']['class']   = 'Blocks\UserPermissionsService';
 }

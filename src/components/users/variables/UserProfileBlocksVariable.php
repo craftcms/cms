@@ -13,7 +13,7 @@ class UserProfileBlocksVariable
 	 */
 	public function getAllBlocks()
 	{
-		return blx()->users->getAllBlocks();
+		return blx()->userProfiles->getAllBlocks();
 	}
 
 	/**
@@ -24,6 +24,6 @@ class UserProfileBlocksVariable
 	 */
 	public function getBlockById($id)
 	{
-		return blx()->users->getBlockById($id);
+		return blx()->userProfiles->getBlockById($id);
 	}
 }

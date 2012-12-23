@@ -64,7 +64,7 @@ class UserModel extends BaseEntityModel
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			return blx()->users->getAllBlocks();
+			return blx()->userProfiles->getAllBlocks();
 		}
 		else
 		{
@@ -82,7 +82,7 @@ class UserModel extends BaseEntityModel
 	{
 		if ($this->id && Blocks::hasPackage(BlocksPackage::Users))
 		{
-			return blx()->users->getProfileRecordByUserId($this->id);
+			return blx()->userProfiles->getProfileRecordByUserId($this->id);
 		}
 	}
 
@@ -248,7 +248,7 @@ class UserModel extends BaseEntityModel
 			{
 				if (!$user->getRemainingCooldownTime())
 				{
-					blx()->accounts->activateUser($user);
+					blx()->users->activateUser($user);
 				}
 			}
 		}

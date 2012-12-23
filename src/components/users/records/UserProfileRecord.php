@@ -22,7 +22,7 @@ class UserProfileRecord extends BaseEntityRecord
 	 */
 	protected function getBlocks()
 	{
-		return blx()->users->getAllBlocks();
+		return blx()->userProfiles->getAllBlocks();
 	}
 
 	/**

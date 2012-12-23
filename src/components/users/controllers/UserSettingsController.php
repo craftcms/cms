@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Handles user group tasks
  */
-class UserGroupsController extends BaseController
+class UserSettingsController extends BaseController
 {
 	/**
 	 * Saves a user group.
@@ -52,5 +52,30 @@ class UserGroupsController extends BaseController
 		blx()->userGroups->deleteGroupById($groupId);
 
 		$this->returnJson(array('success' => true));
+	}
+
+	/**
+	 * Saves the system user settings.
+	 */
+	public function actionSaveUserSettings()
+	{
+		$this->requirePostRequest();
+		$this->requireAdmin();
+
+		$settings['allowPublicRegistration'] = (bool) blx()->request->getPost('allowPublicRegistration');
+
+		if (blx()->systemSettings->saveSettings('users', $settings))
+		{
+			blx()->user->setNotice(Blocks::t('User settings saved.'));
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			blx()->user->setError(Blocks::t('Couldn’t save user settings.'));
+
+			$this->renderRequestedTemplate(array(
+				'settings' => $settings
+			));
+		}
 	}
 }
