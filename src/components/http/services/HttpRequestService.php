@@ -335,7 +335,12 @@ class HttpRequestService extends \CHttpRequest
 		$fileName = IOHelper::getFileName($path, true);
 
 		// Clear the output buffer to prevent corrupt downloads.
-		ob_clean();
+		// Need to check the OB status first, or else some PHP versions will throw an E_NOTICE since we have a custom error handler
+		// (http://pear.php.net/bugs/bug.php?id=9670)
+		if (ob_get_length() !== false)
+		{
+			ob_clean();
+		}
 
 		// Default to disposition to 'download'
 		if (!isset($options['forceDownload']) || $options['forceDownload'])
