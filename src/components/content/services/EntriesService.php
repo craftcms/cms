@@ -263,7 +263,7 @@ class EntriesService extends BaseEntityService
 			}
 		}
 
-		/*$whereConditions[] = 't.language = :language';
+		$whereConditions[] = 't.language = :language';
 
 		if ($criteria->language)
 		{
@@ -271,8 +271,8 @@ class EntriesService extends BaseEntityService
 		}
 		else
 		{
-			$whereParams[':language'] = blx()->language;
-		}*/
+			$whereParams[':language'] = Blocks::getLanguage();
+		}
 
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{

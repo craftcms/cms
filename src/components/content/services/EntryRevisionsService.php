@@ -37,7 +37,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	{
 		$draftRecord = EntryDraftRecord::model()->find(array(
 			'condition' => 'entryId = :entryId AND language = :language',
-			'params' => array(':entryId' => $entryId, ':language' => blx()->language),
+			'params' => array(':entryId' => $entryId, ':language' => Blocks::getLanguage()),
 			'offset' => $offset
 		));
 
@@ -57,7 +57,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	{
 		$draftRecords = EntryDraftRecord::model()->findAllByAttributes(array(
 			'entryId' => $entryId,
-			'language' => blx()->language,
+			'language' => Blocks::getLanguage(),
 		));
 
 		return EntryDraftModel::populateModels($draftRecords);
@@ -195,7 +195,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	{
 		$versionRecord = EntryVersionRecord::model()->findByAttributes(array(
 			'entryId' => $entryId,
-			'language' => blx()->language,
+			'language' => Blocks::getLanguage(),
 		));
 
 		if ($versionRecord)
@@ -214,7 +214,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	{
 		$versionRecords = EntryVersionRecord::model()->findAllByAttributes(array(
 			'entryId' => $entryId,
-			'language' => blx()->language,
+			'language' => Blocks::getLanguage(),
 		));
 
 		return EntryVersionModel::populateModels($versionRecords, 'versionId');

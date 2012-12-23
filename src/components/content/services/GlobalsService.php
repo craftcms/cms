@@ -91,13 +91,13 @@ class GlobalsService extends BaseEntityService
 	public function getGlobalContentRecord()
 	{
 		$record = GlobalContentRecord::model()->findByAttributes(array(
-			'language' => blx()->language
+			'language' => Blocks::getLanguage()
 		));
 
 		if (!$record)
 		{
 			$record = new GlobalContentRecord();
-			$record->language = blx()->language;
+			$record->language = Blocks::getLanguage();
 		}
 
 		return $record;
