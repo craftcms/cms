@@ -116,7 +116,7 @@ class PagesService extends BaseEntityService
 
 		foreach ($allPages as $page)
 		{
-			if (blx()->user->can('editPage'.$page->id))
+			if (blx()->userSession->checkPermission('editPage'.$page->id))
 			{
 				if ($indexBy === null)
 				{

@@ -350,7 +350,7 @@ class Blocks extends \Yii
 	{
 		$encodedData = JsonHelper::encode($data);
 
-		$currentUser = blx()->user->getUser();
+		$currentUser = blx()->userSession->getUser();
 		if ($currentUser)
 		{
 			$userId = $currentUser->id;

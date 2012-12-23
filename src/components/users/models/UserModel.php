@@ -153,7 +153,7 @@ class UserModel extends BaseEntityModel
 	{
 		if ($this->id)
 		{
-			$currentUser = blx()->user->getUser();
+			$currentUser = blx()->userSession->getUser();
 
 			if ($currentUser)
 			{

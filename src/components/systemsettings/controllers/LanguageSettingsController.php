@@ -18,12 +18,12 @@ class LanguageSettingsController extends BaseController
 
 		if (blx()->systemSettings->saveSettings('languages', $languages))
 		{
-			blx()->user->setNotice(Blocks::t('Language settings saved.'));
+			blx()->userSession->setNotice(Blocks::t('Language settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError(Blocks::t('Couldn’t save language settings.'));
+			blx()->userSession->setError(Blocks::t('Couldn’t save language settings.'));
 		}
 
 		$this->renderRequestedTemplate(array(

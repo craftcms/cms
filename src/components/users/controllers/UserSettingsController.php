@@ -25,12 +25,12 @@ class UserSettingsController extends BaseController
 			$permissions = blx()->request->getPost('permissions', array());
 			blx()->userPermissions->saveGroupPermissions($group->id, $permissions);
 
-			blx()->user->setNotice(Blocks::t('Group saved.'));
+			blx()->userSession->setNotice(Blocks::t('Group saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError(Blocks::t('Couldn’t save group.'));
+			blx()->userSession->setError(Blocks::t('Couldn’t save group.'));
 		}
 
 		// Reload the original template
@@ -66,12 +66,12 @@ class UserSettingsController extends BaseController
 
 		if (blx()->systemSettings->saveSettings('users', $settings))
 		{
-			blx()->user->setNotice(Blocks::t('User settings saved.'));
+			blx()->userSession->setNotice(Blocks::t('User settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError(Blocks::t('Couldn’t save user settings.'));
+			blx()->userSession->setError(Blocks::t('Couldn’t save user settings.'));
 
 			$this->renderRequestedTemplate(array(
 				'settings' => $settings

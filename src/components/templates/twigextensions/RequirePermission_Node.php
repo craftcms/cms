@@ -13,7 +13,7 @@ class RequirePermission_Node extends \Twig_Node
 	{
 		$compiler
 		    ->addDebugInfo($this)
-		    ->write('\Blocks\blx()->user->requirePermission(')
+		    ->write('\Blocks\blx()->userSession->requirePermission(')
 		    ->subcompile($this->getNode('permissionName'))
 		    ->raw(");\n");
 	}

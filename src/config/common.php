@@ -289,15 +289,15 @@ $components['log']['routes'] = array(
 	),
 );
 
-$components['session']['autoStart']   = true;
-$components['session']['cookieMode']  = 'only';
-$components['session']['class']       = 'Blocks\HttpSessionService';
-$components['session']['sessionName'] = 'BlocksSessionId';
+$components['httpSession']['autoStart']   = true;
+$components['httpSession']['cookieMode']  = 'only';
+$components['httpSession']['class']       = 'Blocks\HttpSessionService';
+$components['httpSession']['sessionName'] = 'BlocksSessionId';
 
-$components['user']['class'] = 'Blocks\UserSessionService';
-$components['user']['allowAutoLogin']  = true;
-$components['user']['loginUrl']        = $blocksConfig['loginPath'];
-$components['user']['autoRenewCookie'] = true;
+$components['userSession']['class'] = 'Blocks\UserSessionService';
+$components['userSession']['allowAutoLogin']  = true;
+$components['userSession']['loginUrl']        = $blocksConfig['loginPath'];
+$components['userSession']['autoRenewCookie'] = true;
 
 $configArray['components'] = array_merge($configArray['components'], $components);
 

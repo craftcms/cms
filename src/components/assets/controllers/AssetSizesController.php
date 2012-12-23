@@ -23,12 +23,12 @@ class AssetSizesController extends BaseController
 		// Did it save?
 		if (blx()->assetSizes->saveSize($size))
 		{
-			blx()->user->setNotice(Blocks::t('Size saved.'));
+			blx()->userSession->setNotice(Blocks::t('Size saved.'));
 			$this->redirectToPostedUrl(array('handle' => $size->handle));
 		}
 		else
 		{
-			blx()->user->setError(Blocks::t('Couldn’t save source.'));
+			blx()->userSession->setError(Blocks::t('Couldn’t save source.'));
 		}
 
 		// Reload the original template

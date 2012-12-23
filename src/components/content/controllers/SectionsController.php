@@ -49,7 +49,7 @@ class SectionsController extends BaseEntityController
 
 		if (blx()->sections->saveSection($section))
 		{
-			blx()->user->setNotice(Blocks::t('Section saved.'));
+			blx()->userSession->setNotice(Blocks::t('Section saved.'));
 
 			$this->redirectToPostedUrl(array(
 				'sectionId' => $section->id
@@ -57,7 +57,7 @@ class SectionsController extends BaseEntityController
 		}
 		else
 		{
-			blx()->user->setError(Blocks::t('Couldn’t save section.'));
+			blx()->userSession->setError(Blocks::t('Couldn’t save section.'));
 		}
 
 		// Reload the original template

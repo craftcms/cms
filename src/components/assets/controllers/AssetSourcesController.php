@@ -31,12 +31,12 @@ class AssetSourcesController extends BaseController
 		// Did it save?
 		if (blx()->assetSources->saveSource($source))
 		{
-			blx()->user->setNotice(Blocks::t('Source saved.'));
+			blx()->userSession->setNotice(Blocks::t('Source saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError(Blocks::t('Couldn’t save source.'));
+			blx()->userSession->setError(Blocks::t('Couldn’t save source.'));
 		}
 
 		// Reload the original template

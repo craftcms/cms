@@ -187,7 +187,7 @@ class UserSessionService extends \CWebUser
 	 * @param string $permissionName
 	 * @return bool
 	 */
-	public function can($permissionName)
+	public function checkPermission($permissionName)
 	{
 		$user = $this->getUser();
 		return ($user && $user->can($permissionName));
@@ -201,7 +201,7 @@ class UserSessionService extends \CWebUser
 	 */
 	public function requirePermission($permissionName)
 	{
-		if (!$this->can($permissionName))
+		if (!$this->checkPermission($permissionName))
 		{
 			throw new HttpException(403);
 		}

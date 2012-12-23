@@ -17,7 +17,7 @@ class UpdateController extends BaseController
 	 */
 	public function actionGetAvailableUpdates()
 	{
-		blx()->user->requirePermission('autoUpdateBlocks');
+		blx()->userSession->requirePermission('autoUpdateBlocks');
 
 		$updates = blx()->updates->getUpdates(true);
 		$this->returnJson($updates);
@@ -28,7 +28,7 @@ class UpdateController extends BaseController
 	 */
 	public function actionDownloadBlocksUpdate()
 	{
-		blx()->user->requirePermission('autoUpdateBlocks');
+		blx()->userSession->requirePermission('autoUpdateBlocks');
 
 		$url = ElliottEndPoints::DownloadBlocks.'?licenseKey='.Blocks::getLicenseKey();
 		blx()->request->redirect($url);
@@ -39,7 +39,7 @@ class UpdateController extends BaseController
 	 */
 	public function actionGetUpdates()
 	{
-		blx()->user->requirePermission('autoUpdateBlocks');
+		blx()->userSession->requirePermission('autoUpdateBlocks');
 
 		$this->requireAjaxRequest();
 
@@ -118,7 +118,7 @@ class UpdateController extends BaseController
 	 */
 	public function actionRunAutoUpdate()
 	{
-		blx()->user->requirePermission('autoUpdateBlocks');
+		blx()->userSession->requirePermission('autoUpdateBlocks');
 
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -183,7 +183,7 @@ class UpdateController extends BaseController
 				{
 					// flush update cache.
 					blx()->updates->flushUpdateInfoFromCache();
-					blx()->user->setNotice(Blocks::t('Database successfully updated.'));
+					blx()->userSession->setNotice(Blocks::t('Database successfully updated.'));
 
 					// Bring the system back online.
 					blx()->updates->turnSystemOnAfterUpdate();

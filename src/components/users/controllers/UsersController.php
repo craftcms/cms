@@ -13,7 +13,7 @@ class UsersController extends BaseController
 	 */
 	public function actionLogin()
 	{
-		if (blx()->user->isLoggedIn())
+		if (blx()->userSession->isLoggedIn())
 		{
 			$this->redirect('');
 		}
@@ -26,9 +26,9 @@ class UsersController extends BaseController
 			$password = blx()->request->getPost('password');
 			$rememberMe = (bool) blx()->request->getPost('rememberMe');
 
-			if (blx()->user->login($loginName, $password, $rememberMe))
+			if (blx()->userSession->login($loginName, $password, $rememberMe))
 			{
-				$redirectUrl = blx()->user->getReturnUrl();
+				$redirectUrl = blx()->userSession->getReturnUrl();
 
 				if (blx()->request->isAjaxRequest())
 				{
@@ -38,13 +38,13 @@ class UsersController extends BaseController
 				}
 				else
 				{
-					blx()->user->setNotice(Blocks::t('Logged in.'));
+					blx()->userSession->setNotice(Blocks::t('Logged in.'));
 					$this->redirectToPostedUrl();
 				}
 			}
 			else
 			{
-				$errorCode = blx()->user->getLoginErrorCode();
+				$errorCode = blx()->userSession->getLoginErrorCode();
 
 				switch ($errorCode)
 				{
@@ -99,7 +99,7 @@ class UsersController extends BaseController
 				}
 				else
 				{
-					blx()->user->setError($error);
+					blx()->userSession->setError($error);
 
 					$vars = array(
 						'loginName' => $loginName,
@@ -126,7 +126,7 @@ class UsersController extends BaseController
 	 */
 	public function actionLogout()
 	{
-		blx()->user->logout();
+		blx()->userSession->logout();
 		$this->redirect('');
 	}
 
@@ -151,7 +151,7 @@ class UsersController extends BaseController
 				}
 				else
 				{
-					blx()->user->setNotice(Blocks::t('Check your email for instructions to reset your password.'));
+					blx()->userSession->setNotice(Blocks::t('Check your email for instructions to reset your password.'));
 					$this->redirectToPostedUrl();
 				}
 			}
@@ -171,7 +171,7 @@ class UsersController extends BaseController
 		}
 		else
 		{
-			blx()->user->setError($error);
+			blx()->userSession->setError($error);
 			$this->renderRequestedTemplate();
 		}
 	}
@@ -181,7 +181,7 @@ class UsersController extends BaseController
 	 */
 	public function actionResetPassword()
 	{
-		if (blx()->user->isLoggedIn())
+		if (blx()->userSession->isLoggedIn())
 		{
 			$this->redirect('');
 		}
@@ -204,14 +204,14 @@ class UsersController extends BaseController
 			if (blx()->users->changePassword($user))
 			{
 				// Log them in
-				blx()->user->login($user->username, $newPassword);
+				blx()->userSession->login($user->username, $newPassword);
 
-				blx()->user->setNotice(Blocks::t('Password updated.'));
+				blx()->userSession->setNotice(Blocks::t('Password updated.'));
 				$this->redirectToPostedUrl();
 			}
 			else
 			{
-				blx()->user->setNotice(Blocks::t('Couldn’t update password.'));
+				blx()->userSession->setNotice(Blocks::t('Couldn’t update password.'));
 
 				$this->renderRequestedTemplate(array(
 					'errors' => $user->getErrors('newPassword')
@@ -256,20 +256,20 @@ class UsersController extends BaseController
 
 			if ($userId)
 			{
-				blx()->user->requireLogin();
+				blx()->userSession->requireLogin();
 			}
 		}
 		else
 		{
-			blx()->user->requireLogin();
-			$userId = blx()->user->getUser()->id;
+			blx()->userSession->requireLogin();
+			$userId = blx()->userSession->getUser()->id;
 		}
 
 		if ($userId)
 		{
-			if ($userId != blx()->user->getUser()->id)
+			if ($userId != blx()->userSession->getUser()->id)
 			{
-				blx()->user->requirePermission('editUsers');
+				blx()->userSession->requirePermission('editUsers');
 			}
 
 			$user = blx()->users->getUserById($userId);
@@ -283,7 +283,7 @@ class UsersController extends BaseController
 		{
 			if (!blx()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
 			{
-				blx()->user->requirePermission('registerUsers');
+				blx()->userSession->requirePermission('registerUsers');
 			}
 
 			$user = new UserModel();
@@ -297,7 +297,7 @@ class UsersController extends BaseController
 		// Only admins can opt out of requiring email verification
 		if (!$user->id)
 		{
-			if (blx()->user->isAdmin())
+			if (blx()->userSession->isAdmin())
 			{
 				$user->verificationRequired = (bool) blx()->request->getPost('verificationRequired');
 			}
@@ -308,27 +308,27 @@ class UsersController extends BaseController
 		}
 
 		// Only admins can change other users' passwords
-		if (!$user->id || $user->isCurrent() || blx()->user->isAdmin())
+		if (!$user->id || $user->isCurrent() || blx()->userSession->isAdmin())
 		{
 			$user->newPassword = blx()->request->getPost('newPassword');
 		}
 
 		// Only admins can require users to reset their passwords
-		if (blx()->user->isAdmin())
+		if (blx()->userSession->isAdmin())
 		{
 			$user->passwordResetRequired = (bool)blx()->request->getPost('passwordResetRequired');
 		}
 
 		if (blx()->users->saveUser($user))
 		{
-			blx()->user->setNotice(Blocks::t('User saved.'));
+			blx()->userSession->setNotice(Blocks::t('User saved.'));
 			$this->redirectToPostedUrl(array(
 				'userId' => $user->id
 			));
 		}
 		else
 		{
-			blx()->user->setError(Blocks::t('Couldn’t save user.'));
+			blx()->userSession->setError(Blocks::t('Couldn’t save user.'));
 			$this->renderRequestedTemplate(array(
 				'account' => $user
 			));
@@ -341,7 +341,7 @@ class UsersController extends BaseController
 	public function actionSendVerificationEmail()
 	{
 		$this->requirePostRequest();
-		blx()->user->requirePermission('administrateUsers');
+		blx()->userSession->requirePermission('administrateUsers');
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->users->getUserById($userId);
@@ -353,7 +353,7 @@ class UsersController extends BaseController
 
 		blx()->users->sendVerificationEmail($user);
 
-		blx()->user->setNotice(Blocks::t('Verification email sent.'));
+		blx()->userSession->setNotice(Blocks::t('Verification email sent.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -363,7 +363,7 @@ class UsersController extends BaseController
 	public function actionActivateUser()
 	{
 		$this->requirePostRequest();
-		blx()->user->requirePermission('administrateUsers');
+		blx()->userSession->requirePermission('administrateUsers');
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->users->getUserById($userId);
@@ -375,7 +375,7 @@ class UsersController extends BaseController
 
 		blx()->users->activateUser($user);
 
-		blx()->user->setNotice(Blocks::t('User activated.'));
+		blx()->userSession->setNotice(Blocks::t('User activated.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -385,7 +385,7 @@ class UsersController extends BaseController
 	public function actionUnlockUser()
 	{
 		$this->requirePostRequest();
-		blx()->user->requirePermission('administrateUsers');
+		blx()->userSession->requirePermission('administrateUsers');
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->users->getUserById($userId);
@@ -397,7 +397,7 @@ class UsersController extends BaseController
 
 		blx()->users->unlockUser($user);
 
-		blx()->user->setNotice(Blocks::t('User activated.'));
+		blx()->userSession->setNotice(Blocks::t('User activated.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -407,7 +407,7 @@ class UsersController extends BaseController
 	public function actionSuspendUser()
 	{
 		$this->requirePostRequest();
-		blx()->user->requirePermission('administrateUsers');
+		blx()->userSession->requirePermission('administrateUsers');
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->users->getUserById($userId);
@@ -419,7 +419,7 @@ class UsersController extends BaseController
 
 		blx()->users->suspendUser($user);
 
-		blx()->user->setNotice(Blocks::t('User suspended.'));
+		blx()->userSession->setNotice(Blocks::t('User suspended.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -429,7 +429,7 @@ class UsersController extends BaseController
 	public function actionUnsuspendUser()
 	{
 		$this->requirePostRequest();
-		blx()->user->requirePermission('administrateUsers');
+		blx()->userSession->requirePermission('administrateUsers');
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->users->getUserById($userId);
@@ -441,7 +441,7 @@ class UsersController extends BaseController
 
 		blx()->users->unsuspendUser($user);
 
-		blx()->user->setNotice(Blocks::t('User unsuspended.'));
+		blx()->userSession->setNotice(Blocks::t('User unsuspended.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -451,7 +451,7 @@ class UsersController extends BaseController
 	public function actionArchiveUser()
 	{
 		$this->requirePostRequest();
-		blx()->user->requirePermission('administrateUsers');
+		blx()->userSession->requirePermission('administrateUsers');
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->users->getUserById($userId);
@@ -463,7 +463,7 @@ class UsersController extends BaseController
 
 		blx()->users->archiveUser($user);
 
-		blx()->user->setNotice(Blocks::t('User deleted.'));
+		blx()->userSession->setNotice(Blocks::t('User deleted.'));
 		$this->redirectToPostedUrl();
 	}
 

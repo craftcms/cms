@@ -17,7 +17,7 @@ class CpVariable
 		$nav['content'] = array('name' => Blocks::t('Content'));
 		$nav['assets'] = array('name' => Blocks::t('Assets'));
 
-		if (Blocks::hasPackage(BlocksPackage::Users) && blx()->user->can('editUsers'))
+		if (Blocks::hasPackage(BlocksPackage::Users) && blx()->userSession->checkPermission('editUsers'))
 		{
 			$nav['users'] = array('name' => Blocks::t('Users'));
 		}
@@ -52,7 +52,7 @@ class CpVariable
 			}
 		}
 
-		if (blx()->user->can('autoUpdateBlocks'))
+		if (blx()->userSession->checkPermission('autoUpdateBlocks'))
 		{
 			$numberOfUpdates = blx()->updates->getTotalNumberOfAvailableUpdates();
 
@@ -66,7 +66,7 @@ class CpVariable
 			}
 		}
 
-		if (blx()->user->isAdmin())
+		if (blx()->userSession->isAdmin())
 		{
 			$nav['settings'] = array('name' => Blocks::t('Settings'));
 		}

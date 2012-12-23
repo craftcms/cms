@@ -207,7 +207,7 @@ class EntriesService extends BaseEntityService
 
 		if ($criteria->editable)
 		{
-			$user = blx()->user->getUser();
+			$user = blx()->userSession->getUser();
 
 			if (!$user)
 			{

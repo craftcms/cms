@@ -37,12 +37,12 @@ class GlobalsController extends BaseEntityController
 
 		if (blx()->globals->saveGlobalContent($content))
 		{
-			blx()->user->setNotice(blocks::t('Global blocks saved.'));
+			blx()->userSession->setNotice(Blocks::t('Global blocks saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError(Blocks::t('Couldn’t save global blocks.'));
+			blx()->userSession->setError(Blocks::t('Couldn’t save global blocks.'));
 			$this->renderRequestedTemplate(array(
 				'globals' => $content,
 			));

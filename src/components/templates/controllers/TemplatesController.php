@@ -16,8 +16,8 @@ class TemplatesController extends BaseController
 		if (blx()->request->isCpRequest())
 		{
 			// Make sure the user has access to the CP
-			blx()->user->requireLogin();
-			blx()->user->requirePermission('accessCp');
+			blx()->userSession->requireLogin();
+			blx()->userSession->requirePermission('accessCp');
 		}
 
 		$this->renderRequestedTemplate();

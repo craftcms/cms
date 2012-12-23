@@ -36,12 +36,12 @@ class DashboardController extends BaseController
 		// Did it save?
 		if (blx()->dashboard->saveUserWidget($widget))
 		{
-			blx()->user->setNotice(Blocks::t('Widget saved.'));
+			blx()->userSession->setNotice(Blocks::t('Widget saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError(Blocks::t('Couldn’t save widget.'));
+			blx()->userSession->setError(Blocks::t('Couldn’t save widget.'));
 		}
 
 		// Reload the original template
@@ -105,7 +105,7 @@ class DashboardController extends BaseController
 		require_once blx()->path->getLibPath().'HelpSpotAPI.php';
 		$hsapi = new \HelpSpotAPI(array('helpSpotApiURL' => "https://support.blockscms.com/api/index.php"));
 
-		$user = blx()->user->getUser();
+		$user = blx()->userSession->getUser();
 
 		$result = $hsapi->requestCreate(array(
 			'sFirstName' => $user->getFriendlyName(),

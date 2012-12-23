@@ -13,7 +13,7 @@ class UserSessionVariable
 	 */
 	public function isLoggedIn()
 	{
-		return blx()->user->isLoggedIn();
+		return blx()->userSession->isLoggedIn();
 	}
 
 	/**
@@ -23,7 +23,7 @@ class UserSessionVariable
 	 */
 	public function getRememberedUsername()
 	{
-		return blx()->user->getRememberedUsername();
+		return blx()->userSession->getRememberedUsername();
 	}
 
 	/**
@@ -34,7 +34,7 @@ class UserSessionVariable
 	 */
 	public function getReturnUrl($defaultUrl = '')
 	{
-		return blx()->user->getReturnUrl($defaultUrl);
+		return blx()->userSession->getReturnUrl($defaultUrl);
 	}
 
 	/**
@@ -44,7 +44,7 @@ class UserSessionVariable
 	 */
 	public function getFlashes()
 	{
-		return blx()->user->getFlashes();
+		return blx()->userSession->getFlashes();
 	}
 
 	/**
@@ -55,7 +55,7 @@ class UserSessionVariable
 	 */
 	public function getFlash($key, $defaultValue = null)
 	{
-		return blx()->user->getFlash($key, $defaultValue);
+		return blx()->userSession->getFlash($key, $defaultValue);
 	}
 
 	/**
@@ -66,6 +66,6 @@ class UserSessionVariable
 	 */
 	public function hasFlash($key)
 	{
-		return blx()->user->hasFlash($key);
+		return blx()->userSession->hasFlash($key);
 	}
 }

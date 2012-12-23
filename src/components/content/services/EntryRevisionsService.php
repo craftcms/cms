@@ -72,7 +72,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	public function getEditableDraftsByEntryId($entryId)
 	{
 		$editableDrafts = array();
-		$user = blx()->user->getUser();
+		$user = blx()->userSession->getUser();
 
 		if ($user)
 		{
@@ -231,7 +231,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 		$versionRecord = new EntryVersionRecord();
 		$versionRecord->entryId = $entry->id;
 		$versionRecord->sectionId = $entry->sectionId;
-		$versionRecord->creatorId = blx()->user->getUser()->id;
+		$versionRecord->creatorId = blx()->userSession->getUser()->id;
 		$versionRecord->language = $entry->language;
 		$versionRecord->data = $this->_getRevisionData($entry);
 		return $versionRecord->save();

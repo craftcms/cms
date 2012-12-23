@@ -57,7 +57,7 @@ abstract class BaseEntityController extends BaseController
 
 		if ($this->getService()->saveBlock($block))
 		{
-			blx()->user->setNotice(Blocks::t('Block saved.'));
+			blx()->userSession->setNotice(Blocks::t('Block saved.'));
 
 			$this->redirectToPostedUrl(array(
 				'blockId' => $block->id
@@ -65,7 +65,7 @@ abstract class BaseEntityController extends BaseController
 		}
 		else
 		{
-			blx()->user->setError(Blocks::t('Couldn’t save block.'));
+			blx()->userSession->setError(Blocks::t('Couldn’t save block.'));
 		}
 
 		// Reload the original template

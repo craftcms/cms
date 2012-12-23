@@ -25,9 +25,9 @@ class UserProfilesController extends BaseEntityController
 
 		$userId = blx()->request->getRequiredPost('userId');
 
-		if ($userId != blx()->user->getUser()->id)
+		if ($userId != blx()->userSession->getUser()->id)
 		{
-			blx()->user->requirePermission('editUsers');
+			blx()->userSession->requirePermission('editUsers');
 		}
 
 		$user = blx()->users->getUserById($userId);
@@ -47,12 +47,12 @@ class UserProfilesController extends BaseEntityController
 
 		if ($userSaved && $profileSaved)
 		{
-			blx()->user->setNotice(blocks::t('Profile saved.'));
+			blx()->userSession->setNotice(Blocks::t('Profile saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError(Blocks::t('Couldn’t save profile.'));
+			blx()->userSession->setError(Blocks::t('Couldn’t save profile.'));
 		}
 
 		$this->renderRequestedTemplate(array(
@@ -66,12 +66,12 @@ class UserProfilesController extends BaseEntityController
 	public function actionUploadUserPhoto()
 	{
 		$this->requireAjaxRequest();
-		blx()->user->requireLogin();
+		blx()->userSession->requireLogin();
 		$userId = blx()->request->getRequiredQuery('userId');
 
-		if ($userId != blx()->user->getUser()->id)
+		if ($userId != blx()->userSession->getUser()->id)
 		{
-			blx()->user->requirePermission('editUsers');
+			blx()->userSession->requirePermission('editUsers');
 		}
 
 		// Upload the file and drop it in the temporary folder
@@ -138,13 +138,13 @@ class UserProfilesController extends BaseEntityController
 	public function actionCropUserPhoto()
 	{
 		$this->requireAjaxRequest();
-		blx()->user->requireLogin();
+		blx()->userSession->requireLogin();
 
 		$userId = blx()->request->getRequiredPost('userId');
 
-		if ($userId != blx()->user->getUser()->id)
+		if ($userId != blx()->userSession->getUser()->id)
 		{
-			blx()->user->requirePermission('editUsers');
+			blx()->userSession->requirePermission('editUsers');
 		}
 
 		try
@@ -197,12 +197,12 @@ class UserProfilesController extends BaseEntityController
 	public function actionDeleteUserPhoto()
 	{
 		$this->requireAjaxRequest();
-		blx()->user->requireLogin();
+		blx()->userSession->requireLogin();
 		$userId = blx()->request->getRequiredPost('userId');
 
-		if ($userId != blx()->user->getUser()->id)
+		if ($userId != blx()->userSession->getUser()->id)
 		{
-			blx()->user->requirePermission('editUsers');
+			blx()->userSession->requirePermission('editUsers');
 		}
 
 		$user = blx()->users->getUserById($userId);
@@ -229,14 +229,14 @@ class UserProfilesController extends BaseEntityController
 	public function actionSaveUserGroups()
 	{
 		$this->requirePostRequest();
-		blx()->user->requirePermission('administrateUsers');
+		blx()->userSession->requirePermission('administrateUsers');
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$groupIds = blx()->request->getPost('groups');
 
 		blx()->userGroups->assignUserToGroups($userId, $groupIds);
 
-		blx()->user->setNotice(Blocks::t('User groups saved.'));
+		blx()->userSession->setNotice(Blocks::t('User groups saved.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -246,7 +246,7 @@ class UserProfilesController extends BaseEntityController
 	public function actionSaveUserPermissions()
 	{
 		$this->requirePostRequest();
-		blx()->user->requirePermission('administrateUsers');
+		blx()->userSession->requirePermission('administrateUsers');
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->users->getUserById($userId);
@@ -257,7 +257,7 @@ class UserProfilesController extends BaseEntityController
 		}
 
 		// Only admins can toggle admin settings
-		if (blx()->user->isAdmin())
+		if (blx()->userSession->isAdmin())
 		{
 			$user->admin = (bool)blx()->request->getPost('admin');
 		}
@@ -276,7 +276,7 @@ class UserProfilesController extends BaseEntityController
 
 		blx()->userPermissions->saveUserPermissions($userId, $permissions);
 
-		blx()->user->setNotice(Blocks::t('Permissions saved.'));
+		blx()->userSession->setNotice(Blocks::t('Permissions saved.'));
 		$this->redirectToPostedUrl();
 	}
 }

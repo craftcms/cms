@@ -185,9 +185,9 @@ class App extends \CWebApplication
 	private function _processUserPreferredLanguage()
 	{
 		// See if the user is logged in.
-		if (blx()->user->isLoggedIn())
+		if (blx()->userSession->isLoggedIn())
 		{
-			$user = blx()->user->getUser();
+			$user = blx()->userSession->getUser();
 			$userLanguage = Locale::getCanonicalID($user->language);
 
 			// If the user has a preferred language saved and we have translation data for it, set the target language.
@@ -616,5 +616,23 @@ class App extends \CWebApplication
 		JsonHelper::sendJsonHeaders();
 		echo JsonHelper::encode($errorArr);
 		$this->end();
+	}
+
+	// Remap blx()->getSession() to blx()->httpSession and blx()->getUser() to blx->userSession
+
+	/**
+	 * @return HttpSessionService
+	 */
+	public function getSession()
+	{
+		return $this->getComponent('httpSession');
+	}
+
+	/**
+	 * @return UserSessionService
+	 */
+	public function getUser()
+	{
+		return $this->getComponent('userSession');
 	}
 }
