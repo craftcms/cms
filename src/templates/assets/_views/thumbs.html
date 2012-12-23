@@ -1,9 +1,15 @@
 <div class="files thumbs">
 	<ul>
+        {# for folder in folders %}
+            <li class="open-folder" data-folder="{{ folder.id }}">
+                <div class="thumb folder"></div>
+                <div class="filename">{{ folder.name }}</div>
+            </li>
+        {%  endfor #}
 		{% for file in files %}
-			<li>
-				<div class="thumb thumb-{{ file.id }} open-file" data-file="{{ file.id }}"></div>
-				<div class="filename open-file" data-file="{{ file.id }}">{{ file.filename }}</div>
+			<li class="open-file" data-file="{{ file.id }}">
+				<div class="thumb thumb-{{ file.id }}"></div>
+				<div class="filename">{{ file.filename }}</div>
 			</li>
 		{% endfor %}
 	</ul>

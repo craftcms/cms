@@ -46,9 +46,18 @@ class AssetsController extends BaseEntityController
 		$files = blx()->assets->getFilesByFolderId($folderId);
 
 
+		$subfolders = blx()->assets->getFolders(
+			new FolderCriteria(
+				array(
+					'parentId' => $folderId
+				)
+			)
+		);
+
 		$html = blx()->templates->render('assets/_views/folder_contents',
 			array(
 				'folder' => $folder,
+				'subfolders' => $subfolders,
 				'view' => $viewType,
 				'files' => $files
 			)

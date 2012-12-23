@@ -280,10 +280,19 @@ abstract class BaseAssetSourceType extends BaseComponent
 
 			$searchFullPath = join('/', $parts) . (empty($parts) ? '' : '/');
 
+			if (empty($searchFullPath))
+			{
+				$parentId = null;
+			}
+			else
+			{
+				$parentId = false;
+			}
 			$folderParameters = new FolderCriteria(
 				array(
 					'sourceId' => $this->model->id,
-					'fullPath' => $searchFullPath
+					'fullPath' => $searchFullPath,
+					'parentId' => $parentId
 				)
 			);
 

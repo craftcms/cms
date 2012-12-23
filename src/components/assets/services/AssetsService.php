@@ -537,6 +537,11 @@ class AssetsService extends BaseEntityService
 			$whereConditions[] = DbHelper::parseParam('f.sourceId', $params->sourceId, $whereParams);
 		}
 
+ 		if ($params->parentId || is_null($params->parentId))
+		{
+			$whereConditions[] = DbHelper::parseParam('f.parentId', array($params->parentId), $whereParams);
+		}
+
 		if ($params->name)
 		{
 			$whereConditions[] = DbHelper::parseParam('f.name', $params->name, $whereParams);
