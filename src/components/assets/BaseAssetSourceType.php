@@ -312,7 +312,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 				)
 			);
 
-			$fileModel = blx()->assets->getFile($fileParameters);
+			$fileModel = blx()->assets->findFile($fileParameters);
 
 			if (is_null($fileModel))
 			{

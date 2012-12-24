@@ -69,7 +69,7 @@ class AssetOperationsController extends BaseController
 			if (empty($fileId))
 			{
 				// Okay, let's get the file from the file list, then.
-				$file = blx()->assets->getFile( new FileCriteria(array('sourceId' => $sourceId , 'offset' => $offset)));
+				$file = blx()->assets->findFile(new FileCriteria(array('sourceId' => $sourceId , 'offset' => $offset)));
 			}
 			else
 			{

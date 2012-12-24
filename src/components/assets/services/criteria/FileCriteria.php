@@ -23,7 +23,7 @@ class FileCriteria extends BaseCriteria
 	 */
 	protected function findEntities()
 	{
-		return blx()->assets->getFiles($this);
+		return blx()->assets->findFiles($this);
 	}
 
 	/**
@@ -34,7 +34,7 @@ class FileCriteria extends BaseCriteria
 	 */
 	protected function findFirstEntity()
 	{
-		return blx()->assets->getFiles($this);
+		return blx()->assets->findFile($this);
 	}
 
 	/**

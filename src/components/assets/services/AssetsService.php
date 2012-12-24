@@ -98,13 +98,14 @@ class AssetsService extends BaseEntityService
 	}
 
 	/**
-	 * Get files by folder id
+	 * Get files by a folder id.
+	 *
 	 * @param $folderId
 	 * @return array
 	 */
 	public function getFilesByFolderId($folderId)
 	{
-		return $this->getFiles(new FileCriteria(array('folderId' => $folderId)));
+		return $this->findFiles(new FileCriteria(array('folderId' => $folderId)));
 	}
 
 	/**
@@ -117,42 +118,41 @@ class AssetsService extends BaseEntityService
 	{
 		$parameters = new FileCriteria(array('id' => $fileId));
 
-		return $this->getFile($parameters);
+		return $this->findFile($parameters);
 	}
 
-
 	/**
-	 * Gets files by parameters.
+	 * Finds files that match a given criteria.
 	 *
-	 * @param FileCriteria|null $params
+	 * @param FileCriteria|null $criteria
 	 * @return array
 	 */
-	public function getFiles(FileCriteria $params = null)
+	public function findFiles(FileCriteria $criteria = null)
 	{
-		if (!$params)
+		if (!$criteria)
 		{
-			$params = new FileCriteria();
+			$criteria = new FileCriteria();
 		}
 
 		$query = blx()->db->createCommand()
 			->select('f.*')
 			->from('assetfiles AS f');
 
-		$this->_applyFileConditions($query, $params);
+		$this->_applyFileConditions($query, $criteria);
 
-		if ($params->order)
+		if ($criteria->order)
 		{
-			$query->order($params->order);
+			$query->order($criteria->order);
 		}
 
-		if ($params->offset)
+		if ($criteria->offset)
 		{
-			$query->offset($params->offset);
+			$query->offset($criteria->offset);
 		}
 
-		if ($params->limit)
+		if ($criteria->limit)
 		{
-			$query->limit($params->limit);
+			$query->limit($criteria->limit);
 		}
 
 		$result = $query->queryAll();
@@ -161,21 +161,20 @@ class AssetsService extends BaseEntityService
 	}
 
 	/**
-	 * Get a single folder by params
-	 * @param FileCriteria $params
+	 * Finds the first file that matches the given criteria.
+	 *
+	 * @param FileCriteria $criteria
 	 * @return AssetFileModel|null
 	 */
-	public function getFile(FileCriteria $params = null)
+	public function findFile(FileCriteria $criteria = null)
 	{
-		$params->limit = 1;
-		$file = $this->getFiles($params);
+		$criteria->limit = 1;
+		$file = $this->findFiles($criteria);
 
 		if (is_array($file) && !empty($file))
 		{
 			return array_pop($file);
 		}
-
-		return null;
 	}
 
 	/**
@@ -200,7 +199,7 @@ class AssetsService extends BaseEntityService
 	}
 
 	/**
-	 * Gets the total number of files.
+	 * Gets the total number of files that match a given criteria.
 	 *
 	 * @param FileCriteria|null $criteria
 	 * @return int
@@ -226,33 +225,32 @@ class AssetsService extends BaseEntityService
 	 *
 	 * @access private
 	 * @param DbCommand $query
-	 * @param           $params
-	 * @param array     $params
+	 * @param FileCriteria $criteria
 	 */
-	private function _applyFileConditions($query, $params)
+	private function _applyFileConditions($query, $criteria)
 	{
 		$whereConditions = array();
 		$whereParams = array();
 
-		if ($params->id)
+		if ($criteria->id)
 		{
-			$whereConditions[] = DbHelper::parseParam('f.id', $params->id, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('f.id', $criteria->id, $whereParams);
 		}
-		if ($params->sourceId)
+		if ($criteria->sourceId)
 		{
-			$whereConditions[] = DbHelper::parseParam('f.sourceId', $params->sourceId, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('f.sourceId', $criteria->sourceId, $whereParams);
 		}
-		if ($params->folderId)
+		if ($criteria->folderId)
 		{
-			$whereConditions[] = DbHelper::parseParam('f.folderId', $params->folderId, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('f.folderId', $criteria->folderId, $whereParams);
 		}
-		if ($params->filename)
+		if ($criteria->filename)
 		{
-			$whereConditions[] = DbHelper::parseParam('f.filename', $params->filename, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('f.filename', $criteria->filename, $whereParams);
 		}
-		if ($params->kind)
+		if ($criteria->kind)
 		{
-			$whereConditions[] = DbHelper::parseParam('f.kind', $params->kind, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('f.kind', $criteria->kind, $whereParams);
 		}
 
 		if (count($whereConditions) == 1)
@@ -436,37 +434,37 @@ class AssetsService extends BaseEntityService
 	}
 
 	/**
-	 * Gets folders.
+	 * Finds folders that match a given criteria.
 	 *
-	 * @param FolderCriteria|null $params
+	 * @param FolderCriteria|null $criteria
 	 * @return array
 	 */
-	public function getFolders(FolderCriteria $params = null)
+	public function findFolders(FolderCriteria $criteria = null)
 	{
-		if (!$params)
+		if (!$criteria)
 		{
-			$params = new FolderCriteria();
+			$criteria = new FolderCriteria();
 		}
 
 		$query = blx()->db->createCommand()
 			->select('f.*')
 			->from('assetfolders AS f');
 
-		$this->_applyFolderConditions($query, $params);
+		$this->_applyFolderConditions($query, $criteria);
 
-		if ($params->order)
+		if ($criteria->order)
 		{
-			$query->order($params->order);
+			$query->order($criteria->order);
 		}
 
-		if ($params->offset)
+		if ($criteria->offset)
 		{
-			$query->offset($params->offset);
+			$query->offset($criteria->offset);
 		}
 
-		if ($params->limit)
+		if ($criteria->limit)
 		{
-			$query->limit($params->limit);
+			$query->limit($criteria->limit);
 		}
 
 		$result = $query->queryAll();
@@ -475,25 +473,24 @@ class AssetsService extends BaseEntityService
 	}
 
 	/**
-	 * Get a single folder by params
-	 * @param FolderCriteria $params
+	 * Finds the first folder that matches a given criteria.
+	 *
+	 * @param FolderCriteria $criteria
 	 * @return AssetFolderModel|null
 	 */
-	public function getFolder(FolderCriteria $params = null)
+	public function findFolder(FolderCriteria $criteria = null)
 	{
-		$params->limit = 1;
-		$folder = $this->getFolders($params);
+		$criteria->limit = 1;
+		$folder = $this->findFolders($criteria);
 
 		if (is_array($folder) && !empty($folder))
 		{
 			return array_pop($folder);
 		}
-
-		return null;
 	}
 
 	/**
-	 * Gets the total number of folders.
+	 * Gets the total number of folders that match a given criteria.
 	 *
 	 * @param FolderCriteria|null $criteria
 	 * @return int
@@ -519,37 +516,36 @@ class AssetsService extends BaseEntityService
 	 *
 	 * @access private
 	 * @param DbCommand $query
-	 * @param           $params
-	 * @param array     $params
+	 * @param FolderCriteria $criteria
 	 */
-	private function _applyFolderConditions($query, $params)
+	private function _applyFolderConditions($query, $criteria)
 	{
 		$whereConditions = array();
 		$whereParams = array();
 
-		if ($params->id)
+		if ($criteria->id)
 		{
-			$whereConditions[] = DbHelper::parseParam('f.id', $params->id, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('f.id', $criteria->id, $whereParams);
 		}
 
-		if ($params->sourceId)
+		if ($criteria->sourceId)
 		{
-			$whereConditions[] = DbHelper::parseParam('f.sourceId', $params->sourceId, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('f.sourceId', $criteria->sourceId, $whereParams);
 		}
 
- 		if ($params->parentId || is_null($params->parentId))
+ 		if ($criteria->parentId || is_null($criteria->parentId))
 		{
-			$whereConditions[] = DbHelper::parseParam('f.parentId', array($params->parentId), $whereParams);
+			$whereConditions[] = DbHelper::parseParam('f.parentId', array($criteria->parentId), $whereParams);
 		}
 
-		if ($params->name)
+		if ($criteria->name)
 		{
-			$whereConditions[] = DbHelper::parseParam('f.name', $params->name, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('f.name', $criteria->name, $whereParams);
 		}
 
-		if (!is_null($params->fullPath))
+		if (!is_null($criteria->fullPath))
 		{
-			$whereConditions[] = DbHelper::parseParam('f.fullPath', $params->fullPath, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('f.fullPath', $criteria->fullPath, $whereParams);
 		}
 
 		if (count($whereConditions) == 1)
