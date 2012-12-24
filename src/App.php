@@ -91,8 +91,8 @@ class App extends \CWebApplication
 
         // If the system is on OR it's a CP request, let's continue processing.
         if (Blocks::isSystemOn() || (
-            ($this->request->isSiteRequest() && $this->user->can('accessSiteWhenSystemIsOff')) ||
-            ($this->request->isCpRequest()) && $this->user->can('accessCpWhenSystemIsOff')
+            ($this->request->isSiteRequest() && $this->userSession->checkPermission('accessSiteWhenSystemIsOff')) ||
+            ($this->request->isCpRequest()) && $this->userSession->checkPermission('accessCpWhenSystemIsOff')
         ))
         {
             // Attempt to set the target language from user preferences.
