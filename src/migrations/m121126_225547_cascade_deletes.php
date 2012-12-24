@@ -29,6 +29,14 @@ class m121126_225547_cascade_deletes extends \CDbMigration
 			}
 		}
 
+		foreach ($records as $key => $record)
+		{
+			if (!$record->tableExists())
+			{
+				unset($records[$key]);
+			}
+		}
+
 		// Drop the foreign keys
 		foreach ($records as $record)
 		{
