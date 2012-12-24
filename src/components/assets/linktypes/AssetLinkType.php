@@ -71,8 +71,7 @@ class AssetLinkType extends BaseLinkType
 	 */
 	public function getLinkableEntities($settings)
 	{
-		return blx()->assets->getFilesBySourceId(1);
-		//$criteria = new AssetCriteria($settings);
-		//return blx()->assets->getAssets($criteria);
+		$criteria = new FileCriteria($settings);
+		return blx()->assets->findFiles($criteria);
 	}
 }
