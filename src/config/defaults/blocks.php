@@ -173,7 +173,7 @@ return array(
 'useCompressedJs' => true,
 
 /**
- * Controls whether to add the @ symbol around translated strings to help during dubugging.
+ * Controls whether to add the @ symbol around translated strings to help during debugging.
  */
 'translationDebugOutput' => false,
 
@@ -183,14 +183,20 @@ return array(
 'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,mid,mov,mp3,mp4,mpc,mpeg,mpg,ods,odt,pdf,png,pt,pptx,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vsd,wav,wma,wmv,xls,xlsx,zip',
 
 /**
+ * If set to 'auto', Blocks will attempt to detect if PHP is set to save sessions to a distributed cache location (i.e. memcache)
+ * Set to true if you want Blocks to save PHP session data under it’s storage folder, or false to use the server’s default PHP session data path.
+ */
+'overridePhpSessionLocation' => 'auto',
+
+/**
  * Error Path Keys
  * 'errorPath'      => blocks.app.templates.errors.error
- * 'error400Path'   => blocks.app.templates.errors.error400
- * 'error403Path'   => blocks.app.templates.errors.error403
- * 'error404Path'   => blocks.app.templates.errors.error404
- * 'error500Path'   => blocks.app.templates.errors.error500
- * 'error503Path'   => blocks.app.templates.errors.error503
- * 'exceptionPath'  => blocks.app.templates.errors.errorPath
+ * 'error400Path'   => blocks.app.templates.errors.400
+ * 'error403Path'   => blocks.app.templates.errors.403
+ * 'error404Path'   => blocks.app.templates.errors.404
+ * 'error500Path'   => blocks.app.templates.errors.500
+ * 'error503Path'   => blocks.app.templates.errors.503
+ * 'exceptionPath'  => blocks.app.templates.errors.exception
  */
 
 /**
