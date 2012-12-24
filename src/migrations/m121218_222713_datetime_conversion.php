@@ -47,6 +47,14 @@ class m121218_222713_datetime_conversion extends \CDbMigration
 			}
 		}
 
+		foreach ($records as $key => $record)
+		{
+			if (!$record->tableExists())
+			{
+				unset($records[$key]);
+			}
+		}
+
 		// Flatten the records out
 		$flattenedRecords = array();
 		foreach ($records as $record)

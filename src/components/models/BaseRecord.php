@@ -500,4 +500,19 @@ abstract class BaseRecord extends \CActiveRecord
 
 		return true;
 	}
+
+	/**
+	 * Returns whether the table for this record exists in the database or not.
+	 *
+	 * @return bool
+	 */
+	public function tableExists()
+	{
+		if (blx()->db->schema->getTable('{{'.$this->getTableName().'}}', true) !== null)
+		{
+			return true;
+		}
+
+		return false;
+	}
 }
