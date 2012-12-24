@@ -8,7 +8,7 @@
 		<tbody>
             {% for file in files %}
                 <tr class="assets-list-row">
-                    <td><img src="{{ file.getThumbnailUrl(24) }}" alt="{{ file.filename }}" class="open-file" data-file="{{ file.id }}"/> <span class="open-file" data-file="{{ file.id }}">{{ file.filename }}</span></td>
+                    <td><img src="{{ file.getThumbUrl(24) }}" alt="{{ file.filename }}" class="open-file" data-file="{{ file.id }}"/> <span class="open-file" data-file="{{ file.id }}">{{ file.filename }}</span></td>
                     <td>{{ file.dateModified.format("Y-m-d H:i:s")|datetime }}</td>
                     <td>{{ file.size|filesize }}</td>
                 </tr>

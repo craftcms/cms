@@ -17,6 +17,6 @@
 
 <style type="text/css">
     {% for file in files %}
-        .thumb-{{ file.id }} { background-image: url({{ file.getThumbnailUrl }}); }
+        .thumb-{{ file.id }} { background-image: url({{ file.getThumbUrl }}); }
     {% endfor %}
 </style>

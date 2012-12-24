@@ -87,7 +87,7 @@ class ResourcesService extends BaseApplicationComponent
 					return blx()->path->getTempUploadsPath().implode('/', $segs);
 				}
 
-				case 'assets':
+				case 'assetthumbs':
 				{
 					if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !is_numeric($segs[2]))
 					{
