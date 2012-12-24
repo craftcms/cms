@@ -6,7 +6,6 @@ namespace Blocks;
  */
 class AssetFileModel extends BaseEntityModel
 {
-
 	/**
 	 * User the filename as the string representation.
 	 *
@@ -48,11 +47,15 @@ class AssetFileModel extends BaseEntityModel
 	/**
 	 * Returns the URL to the file.
 	 *
+	 * @param string|null $sizeHandle
 	 * @return string|null
 	 */
-	public function getUrl()
+	public function getUrl($sizeHandle = null)
 	{
-		return blx()->assetSources->getSourceTypeById($this->sourceId)->getSettings()->url . $this->getFolder()->fullPath . $this->filename;
+		return blx()->assetSources->getSourceTypeById($this->sourceId)->getSettings()->url .
+			$this->getFolder()->fullPath .
+			($sizeHandle ? '_'.$sizeHandle.'/' : '') .
+			$this->filename;
 	}
 
 	/**
