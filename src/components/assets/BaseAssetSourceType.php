@@ -195,7 +195,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 			)
 		);
 
-		$folderModel = blx()->assets->getFolder($parameters);
+		$folderModel = blx()->assets->findFolder($parameters);
 
 		// If we don't have a folder matching these, create a new one
 		if (is_null($folderModel))
@@ -213,7 +213,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 			}
 
 			// Look up the parent folder
-			$parentFolder = blx()->assets->getFolder($parameters);
+			$parentFolder = blx()->assets->findFolder($parameters);
 			if (is_null($parentFolder))
 			{
 				$parentId = null;
@@ -251,7 +251,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 			'sourceId' => $this->model->id
 		));
 
-		$allFolders = blx()->assets->getFolders($parameters);
+		$allFolders = blx()->assets->findFolders($parameters);
 
 		foreach ($allFolders as $folderModel)
 		{
@@ -296,7 +296,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 				)
 			);
 
-			$parentFolder = blx()->assets->getFolder($folderParameters);
+			$parentFolder = blx()->assets->findFolder($folderParameters);
 
 			if (empty($parentFolder))
 			{

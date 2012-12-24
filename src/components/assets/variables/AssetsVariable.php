@@ -126,7 +126,7 @@ class AssetsVariable
 	 */
 	public function getFolderBySourceId($id)
 	{
-		return blx()->assets->getFolder(
+		return blx()->assets->findFolder(
 			new FolderCriteria(
 				array(
 					'sourceId' => $id,

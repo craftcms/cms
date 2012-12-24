@@ -158,7 +158,7 @@ class AssetIndexingService extends BaseApplicationComponent
 
 				if ( ! empty($command['folderIds']))
 				{
-					$folders = blx()->assets->getFolders(new FolderCriteria(array('id' => $command['folderIds'])));
+					$folders = blx()->assets->findFolders(new FolderCriteria(array('id' => $command['folderIds'])));
 
 					foreach ($folders as $folder)
 					{
