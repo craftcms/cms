@@ -15,18 +15,6 @@ function normalizeDbHostname($dbHostname)
 	return $dbHostname;
 }
 
-// Table prefixes cannot be longer than 5 characters
-$tablePrefix = rtrim($dbConfig['tablePrefix'], '_');
-if ($tablePrefix)
-{
-	if (strlen($tablePrefix) > 5)
-	{
-		$tablePrefix = substr($tablePrefix, 0, 5);
-	}
-
-	$tablePrefix .= '_';
-}
-
 $packages = explode(',', BLOCKS_PACKAGES);
 $common = require(BLOCKS_APP_PATH.'config/common.php');
 
