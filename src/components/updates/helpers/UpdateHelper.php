@@ -62,13 +62,7 @@ class UpdateHelper
 					continue;
 				}
 
-				if (static::isManifestMigrationLine($row))
-				{
-					continue;
-				}
-
 				$rowData = explode(';', $row);
-
 				$destFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators(blx()->path->getAppPath().$rowData[0]));
 
 				if (!$destFile)
