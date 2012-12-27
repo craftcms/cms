@@ -44,4 +44,16 @@ class LoggingHelper
 			echo "\tconsole.groupEnd();\n";
 		}
 	}
+
+	/**
+	 * Will attempt to remove passwords from the log file.
+	 *
+	 * @param $log
+	 * @return mixed
+	 */
+	public static function redact($log)
+	{
+		// Will match 'password => 'secretPassword', which gets logged in the POST params during debug mode.
+		return preg_replace("/'password' => (')(.*)('),/uim", "'password' => REDACTED,", $log);
+	}
 }

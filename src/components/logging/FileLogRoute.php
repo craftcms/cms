@@ -39,6 +39,7 @@ class FileLogRoute extends \CFileLogRoute
 
 		foreach ($logs as $log)
 		{
+			$log[0] = LoggingHelper::redact($log[0]);
 			@fwrite($fp, $this->formatLogMessage($log[0], $log[1], $log[2], $log[3]));
 		}
 
