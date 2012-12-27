@@ -109,9 +109,13 @@ class Blocks extends \Yii
 
 		if ($storedBlocksInfo)
 		{
-			$storedBlocksInfo = array_filter(ArrayHelper::stringToArray($storedBlocksInfo->packages));
-			sort($storedBlocksInfo);
-			return $storedBlocksInfo;
+			// Must do this check so the maintenance page will display before the `add_packages_to_info` migration is ran.
+			if (isset($storedBlocksInfo->packages))
+			{
+				$storedBlocksInfo = array_filter(ArrayHelper::stringToArray($storedBlocksInfo->packages));
+				sort($storedBlocksInfo);
+				return $storedBlocksInfo;
+			}
 		}
 
 		return null;

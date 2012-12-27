@@ -31,6 +31,10 @@ class m121224_225101_add_packages_to_info extends \CDbMigration
 					if (isset($result['id']))
 					{
 						blx()->db->createCommand()->update('info', array('packages' => BLOCKS_PACKAGES), array('id' => $result['id']));
+
+						// Refresh the schema metadata so the rest of the request sees the schema changes.
+						blx()->db->getSchema()->refresh();
+						InfoRecord::model()->refreshMetaData();
 					}
 					else
 					{
