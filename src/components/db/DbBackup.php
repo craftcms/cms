@@ -40,28 +40,17 @@ class DbBackup
 	 */
 	public function restore($filePath)
 	{
+		// TODO: Delete all tables in database first to remove any that might have been added in a migration.
 		/*if (!IOHelper::fileExists($filePath))
 		{
 			throw new Exception(Blocks::t('Could not find the SQL file to restore: {filePath}', array('filePath' => $filePath)));
 		}
 
 		$sql = IOHelper::getFileContents($filePath);
-		$sql = explode(';', $sql);
 
-		foreach ($sql as $statement)
-		{
-			$statement = trim($statement);
-
-			if (empty($statement) || strpos($statement, '-- ') !== false)
-			{
-				continue;
-			}
-
-			$statement .= ';';
-
-			Blocks::log('Executing SQL statement: '.$statement, \CLogger::LEVEL_INFO);
-			$result = blx()->db->createCommand($statement)->query();
-		}*/
+		Blocks::log('Executing SQL statement: '.$sql, \CLogger::LEVEL_INFO);
+		$command = blx()->db->createCommand($sql);
+		$command->execute();*/
 	}
 
 	/**
