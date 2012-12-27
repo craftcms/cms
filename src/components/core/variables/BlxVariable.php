@@ -58,13 +58,13 @@ class BlxVariable
 	}
 
 	/**
-	 * Returns the packages in this Blocks install, as defined by the BLOCKS_PACKAGES constant.
+	 * Returns the packages in this Blocks install, as defined by the blx_info table.
 	 *
 	 * @return array
 	 */
 	public function getPackages()
 	{
-		return Blocks::getPackages();
+		return Blocks::getStoredPackages();
 	}
 
 	/**

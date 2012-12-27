@@ -84,7 +84,7 @@ class Blocks extends \Yii
 	 * Returns the packages in this Blocks install, as defined by the BLOCKS_PACKAGES constant.
 	 *
 	 * @static
-	 * @return string
+	 * @return array|null
 	 */
 	public static function getPackages()
 	{
@@ -97,6 +97,18 @@ class Blocks extends \Yii
 	}
 
 	/**
+	 * Returns the packages in this Blocks install, as defined in the blx_info table.
+	 *
+	 * @static
+	 * @return array|null
+	 */
+	public static function getStoredPackages()
+	{
+		$storedBlocksInfo = static::_getStoredInfo();
+		return $storedBlocksInfo ? array_filter(ArrayHelper::stringToArray($storedBlocksInfo->packages)) : null;
+	}
+
+	/**
 	 * Returns whether a package is included in this Blocks build.
 	 *
 	 * @param $packageName
@@ -104,7 +116,7 @@ class Blocks extends \Yii
 	 */
 	public static function hasPackage($packageName)
 	{
-		if (in_array($packageName, static::getPackages()))
+		if (in_array($packageName, static::getStoredPackages()))
 		{
 			return true;
 		}

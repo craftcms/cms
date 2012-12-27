@@ -44,7 +44,7 @@ class GetHelpWidget extends BaseWidget
 		$message = "Enter your message here.\n\n" .
 			"------------------------------\n\n" .
 			'Blocks version: '.Blocks::getVersion().' build '.Blocks::getBuild()."\n" .
-			'Packages: '.implode(', ', Blocks::getPackages());
+			'Packages: '.implode(', ', Blocks::getStoredPackages());
 
 		$plugins = blx()->plugins->getPlugins();
 

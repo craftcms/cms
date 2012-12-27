@@ -79,7 +79,7 @@ class Et
 		$this->_model->requestIp = blx()->request->getUserHostAddress();
 		$this->_model->requestTime = DateTimeHelper::currentTimeStamp();
 		$this->_model->requestPort = blx()->request->getPort();
-		$this->_model->installedPackages = ArrayHelper::stringToArray(Blocks::getPackages());
+		$this->_model->installedPackages = ArrayHelper::stringToArray(Blocks::getStoredPackages());
 		$this->_model->localBuild = Blocks::getBuild();
 		$this->_model->localVersion= Blocks::getVersion();
 
