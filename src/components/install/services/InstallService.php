@@ -149,6 +149,7 @@ class InstallService extends BaseApplicationComponent
 		$info->version = Blocks::getVersion();
 		$info->build = Blocks::getBuild();
 		$info->releaseDate = Blocks::getReleaseDate();
+		$info->packages = implode(',', Blocks::getPackages());
 		$info->siteName = $inputs['siteName'];
 		$info->siteUrl = $inputs['siteUrl'];
 		$info->language = $inputs['language'];

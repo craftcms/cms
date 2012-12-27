@@ -91,6 +91,7 @@ class Blocks extends \Yii
 		if (!isset(static::$_packages))
 		{
 			static::$_packages = array_filter(ArrayHelper::stringToArray(BLOCKS_PACKAGES));
+			sort(static::$_packages);
 		}
 
 		return static::$_packages;
@@ -105,7 +106,15 @@ class Blocks extends \Yii
 	public static function getStoredPackages()
 	{
 		$storedBlocksInfo = static::_getStoredInfo();
-		return $storedBlocksInfo ? array_filter(ArrayHelper::stringToArray($storedBlocksInfo->packages)) : null;
+
+		if ($storedBlocksInfo)
+		{
+			$storedBlocksInfo = array_filter(ArrayHelper::stringToArray($storedBlocksInfo->packages));
+			sort($storedBlocksInfo);
+			return $storedBlocksInfo;
+		}
+
+		return null;
 	}
 
 	/**
@@ -116,7 +125,14 @@ class Blocks extends \Yii
 	 */
 	public static function hasPackage($packageName)
 	{
-		if (in_array($packageName, static::getStoredPackages()))
+		// Check the database first.
+		$storedPackages = static::getStoredPackages() == null ? array() : static::getStoredPackages();
+		if (in_array($packageName, $storedPackages))
+		{
+			return true;
+		}
+		// Check the filesystem next.
+		else if (in_array($packageName, static::getPackages()))
 		{
 			return true;
 		}
