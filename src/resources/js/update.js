@@ -36,7 +36,11 @@ Blocks.Updater = Blocks.Base.extend({
 
 	postActionRequest: function(action)
 	{
-		Blocks.postActionRequest(action, this.data, $.proxy(this, 'onSuccessResponse'), $.proxy(this, 'onErrorResponse'));
+		var data = {
+			data: this.data
+		};
+
+		Blocks.postActionRequest(action, data, $.proxy(this, 'onSuccessResponse'), $.proxy(this, 'onErrorResponse'));
 	},
 
 	onSuccessResponse: function(response)
