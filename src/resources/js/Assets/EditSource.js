@@ -36,6 +36,9 @@
                     _select.append('<option value="' + response[i].bucket + '" data-url-prefix="' + response[i].url_prefix + '" data-location="' + response[i].location + '">' + response[i].bucket + '</option>');
                 }
 
+                $('.url-prefix').val($('.bucket-select select option:selected').attr('data-url-prefix'));
+                $('.bucket-location').val($('.bucket-select select option:selected').attr('data-location'));
+
                 _select.val(currentBucket);
             }
         }, this));
