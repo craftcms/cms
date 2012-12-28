@@ -62,7 +62,7 @@ class QuerygenCommand extends \CConsoleCommand
 		}
 
 		// Create the table
-		echo "\n// Create the {$table} table\n";
+		echo "\n// Create the blx_{$table} table\n";
 
 		echo "blx()->db->createCommand()->createTable('{$table}', array(\n";
 
@@ -86,6 +86,51 @@ class QuerygenCommand extends \CConsoleCommand
 				$name = "{$table}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
 
 				echo "blx()->db->createCommand()->createIndex('{$name}', '{$table}', '".implode("','", $columns)."', ".($unique ? 'true' : 'false').");\n";
+			}
+		}
+
+		echo "\n";
+
+		return 1;
+	}
+
+	/**
+	 * Returns the PHP code to add foreign keys to a table for a given record.
+	 */
+	public function actionAddForeignKeysForRecord($args)
+	{
+		$record = $this->_getRecord($args[0]);
+		$belongsToRelations = $record->getBelongsToRelations();
+
+		if ($belongsToRelations)
+		{
+			$table = $record->getTableName();
+
+			echo "\n// Add foreign keys to blx_{$table}\n";
+
+			foreach ($belongsToRelations as $name => $config)
+			{
+				$otherModel = new $config[1];
+				$otherTable = $otherModel->getTableName();
+				$fkName = "{$table}_{$name}_fk";
+
+				if (isset($config['onDelete']))
+				{
+					$onDelete = $config['onDelete'];
+				}
+				else
+				{
+					if (empty($config['required']))
+					{
+						$onDelete = static::SET_NULL;
+					}
+					else
+					{
+						$onDelete = null;
+					}
+				}
+
+				echo "blx()->db->createCommand()->addForeignKey('{$fkName}', '{$table}', '{$config[2]}', '{$otherTable}', 'id', ".($onDelete ? 'true' : 'false').");\n";
 			}
 		}
 
