@@ -179,6 +179,11 @@ class DbHelper
 			}
 		}
 
+		if (!empty($config['primaryKey']))
+		{
+			$def .= ' PRIMARY KEY';
+		}
+
 		return $def;
 	}
 
