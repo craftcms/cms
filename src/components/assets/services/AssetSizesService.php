@@ -179,7 +179,7 @@ class AssetSizesService extends BaseApplicationComponent
 			if (!$timeModified || $timeModified < $fileModel->dateModified || $timeModified < $size->dimensionChangeTime)
 			{
 				$targetFile = AssetsHelper::getTempFilePath(pathinfo($fileModel->filename, PATHINFO_EXTENSION));
-				blx()->images->loadImage($imageSource)->resizeTo($size->width, $size->height)->saveAs($targetFile);
+				blx()->images->loadImage($imageSource)->scale($size->width, $size->height)->saveAs($targetFile);
 				clearstatcache(true, $targetFile);
 				$sourceType->putImageSize($fileModel, $handle, $targetFile);
 				IOHelper::deleteFile($targetFile);
