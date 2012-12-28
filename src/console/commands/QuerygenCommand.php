@@ -32,6 +32,8 @@ class QuerygenCommand extends \CConsoleCommand
 		}
 
 		// Add all other columns
+		$dbConfigSettings = array('column', 'maxLength', 'length', 'decimals', 'values', 'unsigned', 'zerofill', 'required', 'null', 'default', 'primaryKey');
+
 		foreach ($record->defineAttributes() as $name => $config)
 		{
 			$config = ModelHelper::normalizeAttributeConfig($config);
@@ -45,17 +47,30 @@ class QuerygenCommand extends \CConsoleCommand
 				$indexes[] = array('columns' => array($name), 'unique' => $unique);
 			}
 
+			// Filter out any settings that don't influence the table SQL
+			$settings = array_keys($config);
+
+			foreach ($settings as $setting)
+			{
+				if (!in_array($setting, $dbConfigSettings))
+				{
+					unset($config[$setting]);
+				}
+			}
+
 			$columns[$name] = $config;
 		}
 
 		// Create the table
 		echo "\n// Create the {$table} table\n";
 
-		echo "blx()->db->createCommand()->createTable('{$table}', array(\n"; //.var_export($columns, true).");\n";
+		echo "blx()->db->createCommand()->createTable('{$table}', array(\n";
+
+		$colNameLength = max(array_map('strlen', array_keys($columns))) + 2;
 
 		foreach ($columns as $name => $config)
 		{
-			echo "\t'{$name}' => ".implode(' ', array_map('trim', explode("\n", var_export($config, true)))).",\n";
+			echo "\t".str_pad("'{$name}'", $colNameLength).' => '.$this->_varExport($config).",\n";
 		}
 
 		echo "));\n";
@@ -97,5 +112,53 @@ class QuerygenCommand extends \CConsoleCommand
 		}
 
 		return new $nsClass('install');
+	}
+
+	/**
+	 * A nicer version of var_export().
+	 *
+	 * @access private
+	 * @param mixed $var
+	 * @return string
+	 */
+	private function _varExport($var)
+	{
+		if (is_array($var))
+		{
+			$return = 'array(';
+
+			$count = 0;
+			$showingKeys = false;
+
+			foreach ($var as $key => $value)
+			{
+				if ($count != 0)
+				{
+					$return .= ', ';
+				}
+
+				if (!$showingKeys && $key !== $count)
+				{
+					$showingKeys = true;
+				}
+
+				if ($showingKeys)
+				{
+					$return .= $this->_varExport($key) . ' => ';
+				}
+
+				$return .= $this->_varExport($value);
+
+				$count++;
+			}
+
+			$return .= ')';
+		}
+		else
+		{
+			$return = var_export($var, true);
+		}
+
+		return $return;
 	}
 }
