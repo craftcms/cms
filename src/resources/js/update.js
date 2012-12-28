@@ -13,6 +13,7 @@ Blocks.Updater = Blocks.Base.extend({
 		if (!handle)
 		{
 			this.showError(Blocks.t('Unable to determine what to update.'));
+			return;
 		}
 
 		this.data = {
