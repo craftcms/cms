@@ -85,7 +85,7 @@ class QuerygenCommand extends \CConsoleCommand
 				$unique = !empty($index['unique']);
 				$name = "{$table}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
 
-				echo "blx()->db->createCommand()->createIndex('{$name}', '{$table}', '".implode("','", $columns)."', ".($unique ? 'true' : 'false').");\n";
+				echo "blx()->db->createCommand()->createIndex('{$name}', '{$table}', '".implode(',', $columns)."', ".($unique ? 'true' : 'false').");\n";
 			}
 		}
 
