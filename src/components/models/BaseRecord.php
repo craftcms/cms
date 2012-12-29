@@ -86,8 +86,8 @@ abstract class BaseRecord extends \CActiveRecord
 	public function prepAttributesForSave()
 	{
 		$attributes = $this->defineAttributes();
-		$attributes['dateUpdated'] = array('0' => AttributeType::DateTime, 'required' => true);
-		$attributes['dateCreated'] = array('0' => AttributeType::DateTime, 'required' => true);
+		$attributes['dateUpdated'] = array(AttributeType::DateTime, 'required' => true);
+		$attributes['dateCreated'] = array(AttributeType::DateTime, 'required' => true);
 
 		foreach ($attributes as $name => $config)
 		{
@@ -116,8 +116,8 @@ abstract class BaseRecord extends \CActiveRecord
 	public function prepAttributesForUse()
 	{
 		$attributes = $this->defineAttributes();
-		$attributes['dateUpdated'] = array('0' => AttributeType::DateTime, 'required' => true);
-		$attributes['dateCreated'] = array('0' => AttributeType::DateTime, 'required' => true);
+		$attributes['dateUpdated'] = array(AttributeType::DateTime, 'required' => true);
+		$attributes['dateCreated'] = array(AttributeType::DateTime, 'required' => true);
 
 		foreach ($attributes as $name => $config)
 		{
