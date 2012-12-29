@@ -64,7 +64,8 @@ class QuerygenCommand extends \CConsoleCommand
 		// Create the table
 		echo "\n// Create the blx_{$table} table\n";
 
-		echo "blx()->db->createCommand()->createTable('{$table}', array(\n";
+		echo 'blx()->db->createCommand()->createTable(' .
+			$this->_varExport($table).", array(\n";
 
 		$colNameLength = max(array_map('strlen', array_keys($columns))) + 2;
 
@@ -85,7 +86,11 @@ class QuerygenCommand extends \CConsoleCommand
 				$unique = !empty($index['unique']);
 				$name = "{$table}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
 
-				echo "blx()->db->createCommand()->createIndex('{$name}', '{$table}', '".implode(',', $columns)."', ".($unique ? 'true' : 'false').");\n";
+				echo 'blx()->db->createCommand()->createIndex(' .
+					$this->_varExport($name).', ' .
+					$this->_varExport($table).', ' .
+					"'".implode(',', $columns)."', " .
+					$this->_varExport($unique).");\n";
 			}
 		}
 
@@ -130,7 +135,12 @@ class QuerygenCommand extends \CConsoleCommand
 					}
 				}
 
-				echo "blx()->db->createCommand()->addForeignKey('{$fkName}', '{$table}', '{$config[2]}', '{$otherTable}', 'id', ".($onDelete ? 'true' : 'false').");\n";
+				echo 'blx()->db->createCommand()->addForeignKey(' .
+					$this->_varExport($fkName).', ' .
+					$this->_varExport($table).', ' .
+					$this->_varExport($config[2]).', ' .
+					$this->_varExport($otherTable).', \'id\', ' .
+					$this->_varExport($onDelete).");\n";
 			}
 		}
 
