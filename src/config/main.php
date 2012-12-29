@@ -2,9 +2,6 @@
 
 $common = require_once(BLOCKS_APP_PATH.'config/common.php');
 
-Yii::setPathOfAlias('app', BLOCKS_APP_PATH);
-Yii::setPathOfAlias('plugins', BLOCKS_PLUGINS_PATH);
-
 return CMap::mergeArray(
 	$common,
 

@@ -85,38 +85,6 @@ class MigrationsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @return mixed|null
-	 */
-	public function getHistory()
-	{
-		$migrations = $this->getMigrationHistory();
-
-		if ($migrations === array())
-		{
-			Blocks::log('No migrations have been performed before.', \CLogger::LEVEL_INFO);
-			return null;
-		}
-
-		return $migrations;
-	}
-
-	/**
-	 * @return array|null
-	 */
-	public function getNew()
-	{
-		$migrations = $this->getNewMigrations();
-
-		if ($migrations === array())
-		{
-			Blocks::log('No new migrations found. Your system is up-to-date.', \CLogger::LEVEL_INFO);
-			return null;
-		}
-
-		return $migrations;
-	}
-
-	/**
 	 * @param $migrationName
 	 * @return bool
 	 */
@@ -214,28 +182,30 @@ class MigrationsService extends BaseApplicationComponent
 	/**
 	 * @return mixed
 	 */
-	protected function getMigrationHistory()
+	public function getMigrationHistory($limit = null)
 	{
 		$db = $this->getDbConnection();
-		$historyArr = array();
 
 		if ($db->schema->getTable(blx()->config->getDbItem('tablePrefix').'_'.$this->migrationTable) === null)
 		{
 			$this->createMigrationHistoryTable();
 		}
 
-		$migrationHistory = $db->createCommand()
-					->select('version, apply_time')
-					->from($this->migrationTable)
-					->order('version DESC')
-					->queryAll();
+		$migrations = $db->createCommand()
+			->select('version, apply_time')
+			->from($this->migrationTable)
+			->order('version DESC')
+			->limit($limit)
+			->queryAll();
 
-		foreach ($migrationHistory as $migration)
+		// Convert the dates to DateTime objects
+		foreach ($migrations as &$migration)
 		{
-			$historyArr[$migration['version']] = $migration['apply_time'];
+			// TODO: MySQL specific.
+			$migration['apply_time'] = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $migration['apply_time']);
 		}
 
-		return $historyArr;
+		return $migrations;
 	}
 
 	/**
@@ -266,13 +236,13 @@ class MigrationsService extends BaseApplicationComponent
 	 *
 	 * @return array
 	 */
-	protected function getNewMigrations()
+	public function getNewMigrations()
 	{
 		$applied = array();
 
-		foreach ($this->getMigrationHistory() as $version => $time)
+		foreach ($this->getMigrationHistory() as $migration)
 		{
-			$applied[substr($version, 1, 13)] = true;
+			$applied[substr($migration['version'], 1, 13)] = true;
 		}
 
 		$migrations = array();

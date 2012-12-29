@@ -1,5 +1,8 @@
 <?php
 
+Yii::setPathOfAlias('app', BLOCKS_APP_PATH);
+Yii::setPathOfAlias('plugins', BLOCKS_PLUGINS_PATH);
+
 // Load the configs
 $blocksConfig = require_once(BLOCKS_APP_PATH.'config/defaults/blocks.php');
 $dbConfig = require_once(BLOCKS_APP_PATH.'config/defaults/db.php');
