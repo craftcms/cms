@@ -209,6 +209,14 @@ class QuerygenCommand extends \CConsoleCommand
 
 			$return .= ')';
 		}
+		else if (is_bool($var))
+		{
+			$return = $var ? 'true' : 'false';
+		}
+		else if (is_null($var))
+		{
+			$return = 'null';
+		}
 		else
 		{
 			$return = var_export($var, true);
