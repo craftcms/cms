@@ -89,11 +89,12 @@ class App extends \CWebApplication
 			}
 		}
 
-		// If the system is on OR it's a CP request, let's continue processing.
-		if (Blocks::isSystemOn() || (
+		// Make sure that the system is on, or that the user has permission to acces the site/CP while the system is off
+		if (Blocks::isSystemOn() ||
+			($this->request->isActionRequest() && $this->request->getActionSegments() == array('users', 'login')) ||
 			($this->request->isSiteRequest() && $this->userSession->checkPermission('accessSiteWhenSystemIsOff')) ||
 			($this->request->isCpRequest()) && $this->userSession->checkPermission('accessCpWhenSystemIsOff')
-		))
+		)
 		{
 			// Attempt to set the target language from user preferences.
 			$this->_processUserPreferredLanguage();
@@ -109,6 +110,12 @@ class App extends \CWebApplication
 		}
 		else
 		{
+			// Log out the user
+			if ($this->userSession->isLoggedIn())
+			{
+				$this->userSession->logout();
+			}
+
 			// Display the offline template for the front-end.
 			throw new HttpException(503);
 		}

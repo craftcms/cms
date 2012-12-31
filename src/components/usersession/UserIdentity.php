@@ -14,6 +14,7 @@ class UserIdentity extends \CUserIdentity
 	const ERROR_PASSWORD_RESET_REQUIRED = 52;
 	const ERROR_ACCOUNT_SUSPENDED       = 53;
 	const ERROR_NO_CP_ACCESS            = 54;
+	const ERROR_NO_CP_OFFLINE_ACCESS    = 55;
 
 	/**
 	 * Authenticates a user against the database.
@@ -80,6 +81,10 @@ class UserIdentity extends \CUserIdentity
 					else if (blx()->request->isCpRequest() && !$user->can('accessCp'))
 					{
 						$this->errorCode = static::ERROR_NO_CP_ACCESS;
+					}
+					else if (blx()->request->isCpRequest() && !Blocks::isSystemOn() && !$user->can('accessCpWhenSystemIsOff'))
+					{
+						$this->errorCode = static::ERROR_NO_CP_OFFLINE_ACCESS;
 					}
 					else
 					{

@@ -84,6 +84,11 @@ class UsersController extends BaseController
 						$error = Blocks::t('You cannot access the CP with that account.');
 						break;
 					}
+					case UserIdentity::ERROR_NO_CP_OFFLINE_ACCESS:
+					{
+						$error = Blocks::t('You cannot access the CP while the system is offline with that account.');
+						break;
+					}
 					default:
 					{
 						$error = Blocks::t('Invalid username or password.');
