@@ -109,7 +109,7 @@ class MigrationsService extends BaseApplicationComponent
 	 * @param $class
 	 * @return bool|null
 	 */
-	protected function migrateUp($class)
+	public function migrateUp($class)
 	{
 		if($class === static::BASE_MIGRATION)
 			return null;

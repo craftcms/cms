@@ -105,6 +105,11 @@ class MigrateCommand extends \MigrateCommand
 		}
 	}
 
+	protected function migrateUp($class)
+	{
+		return blx()->migrations->migrateUp($class);
+	}
+
 	/**
 	 * @param $class
 	 * @return mixed
