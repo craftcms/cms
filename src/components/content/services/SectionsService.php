@@ -441,7 +441,17 @@ class SectionsService extends BaseEntityService
 
 					if ($newContentTable != $oldContentTable)
 					{
+						// Drop the old FKs/indexes
+						blx()->db->createCommand()->dropForeignKey($oldContentTable.'_entryId_fk', $oldContentTable);
+						blx()->db->createCommand()->dropIndex($oldContentTable.'_entryId_fk', $oldContentTable);
+						blx()->db->createCommand()->dropIndex($oldContentTable.'_language_entryId_unq_idx', $oldContentTable);
+
+						// Rename the table
 						blx()->db->createCommand()->renameTable($oldContentTable, $newContentTable);
+
+						// Bring back the FKs/indexes
+						blx()->db->createCommand()->createIndex($newContentTable.'_language_entryId_unq_idx', $newContentTable, 'language,entryId', true);
+						blx()->db->createCommand()->addForeignKey($newContentTable.'_entryId_fk', $newContentTable, 'entryId', 'entries', 'id', 'CASCADE');
 					}
 
 					// Update the entry URIs if the URL format changed
