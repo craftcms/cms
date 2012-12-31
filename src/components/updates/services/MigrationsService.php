@@ -191,12 +191,17 @@ class MigrationsService extends BaseApplicationComponent
 			$this->createMigrationHistoryTable();
 		}
 
-		$migrations = $db->createCommand()
-			->select('version, apply_time')
+		$query = $db->createCommand()
+			->select('version,apply_time')
 			->from($this->migrationTable)
-			->order('version DESC')
-			->limit($limit)
-			->queryAll();
+			->order('version DESC');
+
+		if ($limit !== null)
+		{
+			$query->limit($limit);
+		}
+
+		$migrations = $query->queryAll();
 
 		// Convert the dates to DateTime objects
 		foreach ($migrations as &$migration)
