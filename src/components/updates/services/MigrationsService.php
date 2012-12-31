@@ -276,10 +276,10 @@ class MigrationsService extends BaseApplicationComponent
 				// Check the migration timestamp against the Blocks release date
 				$time = strtotime('20'.$matches[1].'-'.$matches[2].'-'.$matches[3].' '.$matches[4].':'.$matches[5].':'.$matches[6]);
 
-				//if ($time > $storedReleaseDate)
-				//{
+				if ($time > $storedReleaseDate)
+				{
 					$migrations[] = $class;
-				//}
+				}
 			}
 		}
 
