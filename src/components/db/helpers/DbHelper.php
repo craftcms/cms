@@ -8,6 +8,9 @@ class DbHelper
 {
 	/**
 	 * Default column configs
+	 *
+	 * @static
+	 * @var array
 	 */
 	public static $columnTypeDefaults = array(
 		ColumnType::Char         => array('maxLength' => 255),
@@ -21,6 +24,23 @@ class DbHelper
 		ColumnType::Enum         => array('values' => array()),
 	);
 
+	/**
+	 * Numeric column types
+	 *
+	 * @access private
+	 * @static
+	 * @var array
+	 */
+	private static $_numericColumnTypes = array(ColumnType::TinyInt, ColumnType::SmallInt, ColumnType::MediumInt, ColumnType::Int, ColumnType::BigInt, ColumnType::Decimal);
+
+	/**
+	 * Textual column types
+	 *
+	 * @access private
+	 * @static
+	 * @var array
+	 */
+	private static $_textualColumnTypes = array(ColumnType::Char, ColumnType::Varchar, ColumnType::TinyText, ColumnType::Text, ColumnType::MediumText, ColumnType::LongText);
 	/**
 	 * Normalizes a column's config.
 	 *
@@ -148,14 +168,29 @@ class DbHelper
 			}
 		}
 
-		if (!empty($config['unsigned']))
+		if (in_array($config['column'], static::$_numericColumnTypes))
 		{
-			$def .= ' UNSIGNED';
-		}
+			if (!empty($config['unsigned']))
+			{
+				$def .= ' UNSIGNED';
+			}
 
-		if (!empty($config['zerofill']))
+			if (!empty($config['zerofill']))
+			{
+				$def .= ' ZEROFILL';
+			}
+		}
+		else if (in_array($config['column'], static::$_textualColumnTypes))
 		{
-			$def .= ' ZEROFILL';
+			if (!empty($config['charset']))
+			{
+				$def .= ' CHARACTER SET '.$config['charset'];
+			}
+
+			if (!empty($config['collation']))
+			{
+				$def .= ' COLLATE '.$config['collation'];
+			}
 		}
 
 		if (!empty($config['required']) || (isset($config['null']) && $config['null'] === false))
