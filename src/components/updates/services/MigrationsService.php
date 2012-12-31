@@ -247,11 +247,12 @@ class MigrationsService extends BaseApplicationComponent
 
 		foreach ($this->getMigrationHistory() as $migration)
 		{
-			$applied[substr($migration['version'], 1, 13)] = true;
+			$applied[] = $migration['version'];
 		}
 
 		$migrations = array();
 		$handle = opendir($this->migrationPath);
+		$storedReleaseDate = Blocks::getStoredReleaseDate()->getTimestamp();
 
 		while (($file = readdir($handle)) !== false)
 		{
@@ -261,18 +262,24 @@ class MigrationsService extends BaseApplicationComponent
 			}
 
 			$path = IOHelper::normalizePathSeparators($this->migrationPath.'/'.$file);
+			$class = IOHelper::getFileName($path, false);
 
-			if (preg_match('/^(m(\d{6}_\d{6})_.*?)\.php$/', $file, $matches) && IOHelper::fileExists($path) && !isset($applied[$matches[2]]))
+			// Have we already run this migration?
+			if (in_array($class, $applied))
 			{
-				$time = strtotime('20'.substr($matches[2], 0, 2).'-'.substr($matches[2], 2, 2).'-'.substr($matches[2], 4, 2).' '.substr($matches[2], 7, 2).':'.substr($matches[2], 9, 2).':'.substr($matches[2], 11, 2));
+				continue;
+			}
 
+
+			if (preg_match('/^m(\d\d)(\d\d)(\d\d)_(\d\d)(\d\d)(\d\d)_\w+\.php$/', $file, $matches))
+			{
 				// Check the migration timestamp against the Blocks release date
-				$storedReleaseDate = Blocks::getStoredReleaseDate()->getTimestamp();
+				$time = strtotime('20'.$matches[1].'-'.$matches[2].'-'.$matches[3].' '.$matches[4].':'.$matches[5].':'.$matches[6]);
 
-				if ($time > $storedReleaseDate)
-				{
-					$migrations[] = $matches[1];
-				}
+				//if ($time > $storedReleaseDate)
+				//{
+					$migrations[] = $class;
+				//}
 			}
 		}
 
