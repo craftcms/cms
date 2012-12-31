@@ -212,6 +212,52 @@ class DbHelper
 	}
 
 	/**
+	 * Ensures that an index name is within the schema's limit.
+	 *
+	 * @static
+	 * @param string $name
+	 * @return string
+	 */
+	public static function normalizeIndexName($name)
+	{
+		// TODO: MySQL specific
+		// MySQL indexes can't be more than 64 characters
+		$maxLength = 64;
+
+		$name = trim($name, '_');
+		$nameLength = strlen($name);
+
+		if ($nameLength > $maxLength)
+		{
+			$totalExtract = $nameLength - $maxLength;
+			$parts = array_filter(explode('_', $name));
+			$totalParts = count($parts);
+			$totalLetters = $nameLength - ($totalParts-1);
+			$maxLetters = $maxLength - ($totalParts-1);
+
+			// Consecutive underscores could have put this name over the top
+			if ($totalLetters > $maxLetters)
+			{
+				foreach ($parts as $i => $part)
+				{
+					$newLength = round($maxLetters * strlen($part) / $totalLetters);
+					$parts[$i] = substr($part, 0, $newLength);
+				}
+			}
+
+			$name = implode('_', $parts);
+
+			// Just to be safe
+			if (strlen($name) > $maxLength)
+			{
+				$name = substr($name, 0, $maxLength);
+			}
+		}
+
+		return $name;
+	}
+
+	/**
 	 * @static
 	 * @return array
 	 */

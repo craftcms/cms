@@ -46,7 +46,7 @@ class DbLogRoute extends \CDbLogRoute
 
 		$db->createCommand()->createIndex('category_idx', $tableName, 'category', false);
 		$db->createCommand()->createIndex('logtime_idx', $tableName, 'logtime', false);
-		$db->createCommand()->addForeignKey('activity_users_fk', $tableName, 'userId', 'users', 'id');
+		$db->createCommand()->addForeignKey('activity_userId_fk', $tableName, 'userId', 'users', 'id');
 	}
 
 	/**

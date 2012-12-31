@@ -221,7 +221,7 @@ class MigrationsService extends BaseApplicationComponent
 			'apply_time' => array(AttributeType::DateTime, 'required' => true),
 		));
 
-		$db->createCommand()->createIndex("migration_version_unique_idx", $this->migrationTable, "version", true);
+		$db->createCommand()->createIndex("migrations_version_unq_idx", $this->migrationTable, 'version', true);
 
 		$db->createCommand()->insert($this->migrationTable, array(
 			'version' => static::BASE_MIGRATION,

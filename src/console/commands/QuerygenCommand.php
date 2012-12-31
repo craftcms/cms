@@ -84,7 +84,7 @@ class QuerygenCommand extends \CConsoleCommand
 			{
 				$columns = ArrayHelper::stringToArray($index['columns']);
 				$unique = !empty($index['unique']);
-				$name = "{$table}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
+				$name = "{$table}_".implode('_', $columns).($unique ? '_unq' : '').'_idx';
 
 				echo 'blx()->db->createCommand()->createIndex(' .
 					$this->_varExport($name).', ' .
@@ -117,7 +117,7 @@ class QuerygenCommand extends \CConsoleCommand
 			{
 				$otherModel = new $config[1];
 				$otherTable = $otherModel->getTableName();
-				$fkName = "{$table}_{$name}_fk";
+				$fkName = "{$table}_{$config[2]}_fk";
 
 				if (isset($config['onDelete']))
 				{

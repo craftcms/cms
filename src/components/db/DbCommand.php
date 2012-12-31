@@ -368,7 +368,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete=null, $update=null)
 	{
-		$name = md5(DbHelper::addTablePrefix($name));
+		$name = DbHelper::normalizeIndexName(DbHelper::addTablePrefix($name));
 		$table = DbHelper::addTablePrefix($table);
 		$refTable = DbHelper::addTablePrefix($refTable);
 		return parent::addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update);
@@ -381,7 +381,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function dropForeignKey($name, $table)
 	{
-		$name = md5(DbHelper::addTablePrefix($name));
+		$name = DbHelper::normalizeIndexName(DbHelper::addTablePrefix($name));
 		$table = DbHelper::addTablePrefix($table);
 		return parent::dropForeignKey($name, $table);
 	}
@@ -395,7 +395,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function createIndex($name, $table, $column, $unique=false)
 	{
-		$name = md5(DbHelper::addTablePrefix($name));
+		$name = DbHelper::normalizeIndexName(DbHelper::addTablePrefix($name));
 		$table = DbHelper::addTablePrefix($table);
 		return parent::createIndex($name, $table, $column, $unique);
 	}
@@ -407,7 +407,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function dropIndex($name, $table)
 	{
-		$name = md5(DbHelper::addTablePrefix($name));
+		$name = DbHelper::normalizeIndexName(DbHelper::addTablePrefix($name));
 		$table = DbHelper::addTablePrefix($table);
 		return parent::dropIndex($name, $table);
 	}

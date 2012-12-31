@@ -227,7 +227,7 @@ abstract class BaseRecord extends \CActiveRecord
 		{
 			$columns = ArrayHelper::stringToArray($index['columns']);
 			$unique = !empty($index['unique']);
-			$name = "{$table}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
+			$name = "{$table}_".implode('_', $columns).($unique ? '_unq' : '').'_idx';
 			blx()->db->createCommand()->createIndex($name, $table, implode(',', $columns), $unique);
 		}
 	}
@@ -277,7 +277,7 @@ abstract class BaseRecord extends \CActiveRecord
 		{
 			$otherModel = new $config[1];
 			$otherTable = $otherModel->getTableName();
-			$fkName = "{$table}_{$name}_fk";
+			$fkName = "{$table}_{$config[2]}_fk";
 
 			if (isset($config['onDelete']))
 			{
@@ -317,7 +317,7 @@ abstract class BaseRecord extends \CActiveRecord
 				// Does the other table exist?
 				if (blx()->db->getSchema()->getTable('{{'.$otherTable.'}}'))
 				{
-					$fkName = "{$table}_{$name}_fk";
+					$fkName = "{$table}_{$config[2]}_fk";
 					blx()->db->createCommand()->dropForeignKey($fkName, $table);
 				}
 			}
