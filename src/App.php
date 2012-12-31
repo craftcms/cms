@@ -116,8 +116,16 @@ class App extends \CWebApplication
 				$this->userSession->logout();
 			}
 
-			// Display the offline template for the front-end.
-			throw new HttpException(503);
+			if ($this->request->isCpRequest())
+			{
+				// Redirect them to the login screen
+				$this->userSession->requireLogin();
+			}
+			else
+			{
+				// Display the offline template
+				$this->runController('templates/offline');
+			}
 		}
 	}
 

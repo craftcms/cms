@@ -22,4 +22,23 @@ class TemplatesController extends BaseController
 
 		$this->renderRequestedTemplate();
 	}
+
+	/**
+	 * Shows the 'offline' template.
+	 */
+	public function actionOffline()
+	{
+		// If this is a site request, make sure the offline template exists
+		if (blx()->request->isSiteRequest())
+		{
+			if (!IOHelper::fileExists(blx()->path->getSiteTemplatesPath().'offline.html'))
+			{
+				// Set PathService to use the CP templates path instead
+				blx()->path->setTemplatesPath(blx()->path->getCpTemplatesPath());
+			}
+		}
+
+		// Output the offline template
+		$this->renderTemplate('offline');
+	}
 }
