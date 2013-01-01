@@ -6,7 +6,7 @@ Blocks.Updater = Blocks.Base.extend({
 	$status: null,
 	data: null,
 
-	init: function(handle)
+	init: function(handle, manualUpdate)
 	{
 		this.$status = $('#status');
 
@@ -17,7 +17,8 @@ Blocks.Updater = Blocks.Base.extend({
 		}
 
 		this.data = {
-			handle: handle
+			handle: handle,
+			manualUpdate: manualUpdate
 		};
 
 		this.postActionRequest('update/prepare');

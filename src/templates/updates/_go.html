@@ -15,6 +15,6 @@
 
 
 {% set js %}
-	new Blocks.Updater('{{ handle }}');
+	new Blocks.Updater('{{ handle }}', {{ blx.request.getQuery('manual') ? 'true' : 'false' }});
 {% endset %}
 {% includeJs js %}

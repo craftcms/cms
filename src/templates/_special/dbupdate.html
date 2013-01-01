@@ -5,40 +5,6 @@
 {% set content %}
 	<p>{{ "To complete the Blocks update, some changes must be made to your database."|t }}</p>
 	<div class="buttons">
-		<div id="finishup" class="btn submit">{{ "Finish up"|t }}</div>
-		<div id="spinner" class="spinner hidden"></div>
+		<a class="btn submit" href="{{ url('updates/go/blocks', 'manual=1') }}">{{ "Finish up"|t }}</a>
 	</div>
 {% endset %}
-
-
-{% set js %}
-	var $btn = $('#finishup'),
-		$spinner = $('#spinner');
-
-	$btn.click(function()
-	{
-		if ($btn.hasClass('active'))
-		{
-			return;
-		}
-
-		$btn.addClass('active');
-		$spinner.removeClass('hidden');
-
-		Blocks.postActionRequest('update/runManualUpdate', function(response)
-		{
-			if (response.success)
-			{
-				window.location.reload();
-			}
-			else
-			{
-				$btn.removeClass('active');
-				$spinner.addClass('hidden');
-
-				alert(response.error || '{{ "An unknown error occurred."|t }}');
-			}
-		});
-	});
-{% endset %}
-{% includeJs js %}
