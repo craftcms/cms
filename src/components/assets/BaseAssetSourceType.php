@@ -95,6 +95,15 @@ abstract class BaseAssetSourceType extends BaseComponent
 	}
 
 	/**
+	 * Returns true if this is a valid source. Used for type-specific validations
+	 * @return array
+	 */
+	public function getSourceErrors()
+	{
+		return array();
+	}
+
+	/**
 	 * Upload a file.
 	 *
 	 * @param AssetFolderModel $folder

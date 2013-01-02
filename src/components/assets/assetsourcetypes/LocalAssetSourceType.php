@@ -43,6 +43,21 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
+	 * Check if the FileSystem path is a writable folder
+	 * @return array
+	 */
+	public function getSourceErrors()
+	{
+		$errors = array();
+		if (!(IOHelper::folderExists($this->_getSourceFileSystemPath()) && IOHelper::isWritable($this->_getSourceFileSystemPath()))) {
+			$errors['path'] = Blocks::t("The destination folder doesn't exist or is not writable.");
+		}
+
+		return $errors;
+	}
+
+
+	/**
 	 * Starts an indexing session.
 	 *
 	 * @param $sessionId
@@ -110,7 +125,17 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	private function _getSourceFileSystemPath()
 	{
-		return rtrim($this->getSettings()->path, '/').'/';
+		$path = $this->getSettings()->path;
+
+		// Handle relative paths.
+		if (substr($path, 0, 1) != '/')
+		{
+			$path = dirname(blx()->request->getScriptFile()).'/'.$path;
+		}
+
+		$path = rtrim($path, '/').'/';
+
+		return $path;
 	}
 
 	/**

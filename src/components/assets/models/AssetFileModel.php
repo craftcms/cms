@@ -95,4 +95,5 @@ class AssetFileModel extends BaseEntityModel
 	{
 		return blx()->assets->getFileContentRecordByFileId($this->id);
 	}
+
 }

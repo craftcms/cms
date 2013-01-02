@@ -104,8 +104,10 @@ class AssetSourcesService extends BaseApplicationComponent
 
 		$recordValidates = $sourceRecord->validate();
 		$settingsValidate = $sourceType->getSettings()->validate();
+		$sourceErrors = $sourceType->getSourceErrors();
 
-		if ($recordValidates && $settingsValidate)
+
+		if ($recordValidates && $settingsValidate && empty($sourceErrors))
 		{
 			$isNewSource = $sourceRecord->isNewRecord();
 
@@ -134,6 +136,7 @@ class AssetSourcesService extends BaseApplicationComponent
 		{
 			$source->addErrors($sourceRecord->getErrors());
 			$source->addSettingErrors($sourceType->getSettings()->getErrors());
+			$source->addSettingErrors($sourceErrors);
 
 			return false;
 		}
