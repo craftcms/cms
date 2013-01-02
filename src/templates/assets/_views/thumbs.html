@@ -1,3 +1,5 @@
+{% set thumbSize = 125 %}
+{% set thumbSize2X = 250 %}
 
 <div class="files thumbs">
 	<ul>
@@ -16,19 +18,24 @@
 	</ul>
 </div>
 
-{% set assetCss %}
-    {% for file in files %}
-    .thumb-{{ file.id }} { background-image: url({{ file.getThumbUrl(125) }}); }
-    {% endfor %}
-{% endset %}
+{% set thumbCss = '' %}
+{% set hiResThumbCss = '' %}
+{% for file in files %}
+    {% if file.kind == 'image' %}
+        {% if file.width > file.height %}
+            {% set thumbWidth = thumbSize %}
+            {% set thumbHeight = (thumbSize / file.width) * file.height %}
+        {% else %}
+            {% set thumbHeight = thumbSize %}
+            {% set thumbWidth = (thumbSize / file.height) * file.width %}
+        {% endif %}
 
-{% set assetHiresCss %}
-    {% for file in files %}
-        .thumb-{{ file.id }} { background-image: url({{ file.getThumbUrl(250) }}); background-size: 125px 125px;}
-    {% endfor %}
-{% endset %}
+        {% set thumbCss      = thumbCss      ~ '.thumb-'~file.id~' { background-image: url('~file.getThumbUrl(thumbSize)~"); }\n" %}
+        {% set hiResThumbCss = hiResThumbCss ~ '.thumb-'~file.id~' { background-image: url('~file.getThumbUrl(thumbSize2X)~'); background-size: '~thumbWidth~'px '~thumbHeight~"px; }\n" %}
+    {% endif %}
+{% endfor %}
 
-{% includeCss assetCss %}
-{% includeHiResCss assetHiresCss %}
+{% includeCss thumbCss %}
+{% includeHiResCss hiResThumbCss %}
 
 {{ getHeadNodes()|raw }}
