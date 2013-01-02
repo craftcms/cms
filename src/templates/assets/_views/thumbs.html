@@ -1,3 +1,4 @@
+
 <div class="files thumbs">
 	<ul>
         {# for folder in folders %}
@@ -15,8 +16,19 @@
 	</ul>
 </div>
 
-<style type="text/css">
+{% set assetCss %}
     {% for file in files %}
-        .thumb-{{ file.id }} { background-image: url({{ file.getThumbUrl }}); }
+    .thumb-{{ file.id }} { background-image: url({{ file.getThumbUrl(125) }}); }
     {% endfor %}
-</style>
+{% endset %}
+
+{% set assetHiresCss %}
+    {% for file in files %}
+        .thumb-{{ file.id }} { background-image: url({{ file.getThumbUrl(250) }}); background-size: 125px 125px;}
+    {% endfor %}
+{% endset %}
+
+{% includeCss assetCss %}
+{% includeHiResCss assetHiresCss %}
+
+{{ getHeadNodes()|raw }}
