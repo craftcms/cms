@@ -32,11 +32,11 @@ abstract class BaseCriteria
 		{
 			if (count($arguments) == 1)
 			{
-				$this->$name = $arguments[0];
+				$this->setValue($name, $arguments[0]);
 			}
 			else
 			{
-				$this->$name = $arguments;
+				$this->setValue($name, $arguments);
 			}
 		}
 
@@ -56,10 +56,26 @@ abstract class BaseCriteria
 			{
 				if (property_exists($this, $name))
 				{
-					$this->$name = $value;
+					$this->setValue($name, $value);
 				}
 			}
 		}
+	}
+
+	/**
+	 * Sets a criteria value.
+	 *
+	 * @param string $name
+	 * @param string $value
+	 */
+	public function setValue($name, $value)
+	{
+		if ($value == '*')
+		{
+			$value = null;
+		}
+
+		$this->{$name} = $value;
 	}
 
 	/**

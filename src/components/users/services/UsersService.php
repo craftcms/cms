@@ -634,7 +634,7 @@ class UsersService extends BaseApplicationComponent
 			$whereConditions[] = DbHelper::parseParam('u.admin', 1, $whereParams);
 		}
 
-		if ($criteria->status && $criteria->status != '*')
+		if ($criteria->status)
 		{
 			$whereConditions[] = DbHelper::parseParam('u.status', $criteria->status, $whereParams);
 		}

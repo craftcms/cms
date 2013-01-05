@@ -194,7 +194,7 @@ class EntriesService extends BaseEntityService
 		{
 			$whereConditions[] = 'e.archived = 0';
 
-			if ($criteria->status && $criteria->status != '*')
+			if ($criteria->status)
 			{
 				$statusCondition = $this->_getEntryStatusCondition($criteria->status);
 
@@ -251,7 +251,7 @@ class EntriesService extends BaseEntityService
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			if ($criteria->sectionId && $criteria->sectionId != '*')
+			if ($criteria->sectionId)
 			{
 				$whereConditions[] = DbHelper::parseParam('e.sectionId', $criteria->sectionId, $whereParams);
 			}
@@ -276,21 +276,21 @@ class EntriesService extends BaseEntityService
 
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			if ($criteria->authorId && $criteria->authorId != '*')
+			if ($criteria->authorId)
 			{
 				$whereConditions[] = DbHelper::parseParam('e.authorId', $criteria->authorId, $whereParams);
 			}
 
-			if (($criteria->authorGroupId && $criteria->authorGroupId != '*') || ($criteria->authorGroup && $criteria->authorGroup != '*'))
+			if ($criteria->authorGroupId || $criteria->authorGroup)
 			{
 				$query->join('usergroups_users ugu', 'ugu.userId = e.authorId');
 
-				if ($criteria->authorGroupId && $criteria->authorGroupId != '*')
+				if ($criteria->authorGroupId)
 				{
 					$whereConditions[] = DbHelper::parseParam('ugu.groupId', $criteria->authorGroupId, $whereParams);
 				}
 
-				if ($criteria->authorGroup && $criteria->authorGroup != '*')
+				if ($criteria->authorGroup)
 				{
 					$query->join('usergroups ug', 'ug.id = ugu.groupId');
 					$whereConditions[] = DbHelper::parseParam('ug.handle', $criteria->authorGroup, $whereParams);
