@@ -31,6 +31,8 @@ class EntryModel extends BaseEntityModel
 		$attributes['postDate'] = AttributeType::DateTime;
 		$attributes['expiryDate'] = AttributeType::DateTime;
 		$attributes['enabled'] = AttributeType::Bool;
+		$attributes['dateCreated'] = AttributeType::DateTime;
+		$attributes['dateUpdated'] = AttributeType::DateTime;
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
