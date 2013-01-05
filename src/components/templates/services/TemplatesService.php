@@ -130,12 +130,6 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function includeCssFile($url, $first = false)
 	{
-		// Append .css if there's no file extension
-		if (!IOHelper::getExtension($url))
-		{
-			$url .= '.css';
-		}
-
 		if (!in_array($url, $this->_cssFiles))
 		{
 			ArrayHelper::prependOrAppend($this->_cssFiles, $url, $first);
@@ -150,12 +144,6 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function includeJsFile($url, $first = false)
 	{
-		// Append .js if there's no file extension
-		if (!IOHelper::getExtension($url))
-		{
-			$url .= '.js';
-		}
-
 		if (!in_array($url, $this->_jsFiles))
 		{
 			ArrayHelper::prependOrAppend($this->_jsFiles, $url, $first);
