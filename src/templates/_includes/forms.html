@@ -137,14 +137,16 @@
 
 
 {% macro checkboxSelect(config) %}
-	{% set config = { id: null, allLabel: "All"|t, name: null, options: [], values: [], autofocus: false, class: ""}|merge(config) %}
+	{% set config = { id: null, allLabel: "All"|t, allValue: '*', name: null, options: [], values: [], autofocus: false, class: ""}|merge(config) %}
 	<div class="checkbox-select {{ config.class }}">
 		<div>
 			{{ _self.checkbox({
 				id: config.id,
 				class: 'all',
 				label: '<b>' ~ config.allLabel ~ '</b>',
-				checked: (config.values is empty),
+				name: config.name,
+				value: config.allValue,
+				checked: (config.values is empty or config.values == config.allValue),
 				autofocus: config.autofocus
 			}) }}
 		</div>
