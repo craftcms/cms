@@ -216,7 +216,7 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @return string
 	 */
-	public function getHeadNodes()
+	public function getHeadHtml()
 	{
 		// Are there any CSS files to include?
 		foreach($this->_cssFiles as $url)
@@ -259,7 +259,7 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @return string
 	 */
-	public function getFootNodes()
+	public function getFootHtml()
 	{
 		// Are there any JS files to include?
 		foreach($this->_jsFiles as $url)

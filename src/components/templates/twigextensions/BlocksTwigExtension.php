@@ -97,8 +97,8 @@ class BlocksTwigExtension extends \Twig_Extension
 			'siteUrl'         => new \Twig_Function_Function('\Blocks\UrlHelper::getSiteUrl'),
 			'resourceUrl'     => new \Twig_Function_Function('\Blocks\UrlHelper::getResourceUrl'),
 			'actionUrl'       => new \Twig_Function_Function('\Blocks\UrlHelper::getActionUrl'),
-			'getHeadNodes'    => new \Twig_Function_Method($this, 'getHeadNodesFunction'),
-			'getFootNodes'    => new \Twig_Function_Method($this, 'getFootNodesFunction'),
+			'getHeadHtml'    => new \Twig_Function_Method($this, 'getHeadHtmlFunction'),
+			'getFootHtml'    => new \Twig_Function_Method($this, 'getFootHtmlFunction'),
 			'getTranslations' => new \Twig_Function_Function('\Blocks\blx()->templates->getTranslations'),
 			'round'           => new \Twig_Function_Function('round'),
 			'ceil'            => new \Twig_Function_Function('ceil'),
@@ -109,24 +109,24 @@ class BlocksTwigExtension extends \Twig_Extension
 	}
 
 	/**
-	 * Returns getHeadNodes() wrapped in a Twig_Markup object.
+	 * Returns getHeadHtml() wrapped in a Twig_Markup object.
 	 *
 	 * @return \Twig_Markup
 	 */
-	public function getHeadNodesFunction()
+	public function getHeadHtmlFunction()
 	{
-		$html = blx()->templates->getHeadNodes();
+		$html = blx()->templates->getHeadHtml();
 		return $this->getTwigMarkup($html);
 	}
 
 	/**
-	 * Returns getFootNodes() wrapped in a Twig_Markup object.
+	 * Returns getFootHtml() wrapped in a Twig_Markup object.
 	 *
 	 * @return \Twig_Markup
 	 */
-	public function getFootNodesFunction()
+	public function getFootHtmlFunction()
 	{
-		$html = blx()->templates->getFootNodes();
+		$html = blx()->templates->getFootHtml();
 		return $this->getTwigMarkup($html);
 	}
 
