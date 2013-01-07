@@ -69,6 +69,8 @@ class Et
 	 */
 	function __construct($endPoint, $timeout = 6)
 	{
+		$endPoint .= blx()->config->get('endPointSuffix');
+
 		$this->_endpoint = $endPoint;
 		$this->_timeout = $timeout;
 
