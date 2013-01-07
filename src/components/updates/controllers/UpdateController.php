@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class UpdateController extends BaseController
 {
-	protected $allowAnonymous = array('actionManualUpdate', 'actionRunManualUpdate');
+	protected $allowAnonymous = array('actionManualUpdate', 'actionPrepare', 'actionBackupDatabase', 'actionUpdateDatabase', 'actionCleanUp');
 
 	// -------------------------------------------
 	//  Auto Updates
@@ -199,5 +199,262 @@ class UpdateController extends BaseController
 			Blocks::log($e->getMessage(), \CLogger::LEVEL_ERROR);
 			$this->returnJson(array('error' => Blocks::t('There was a problem updating the database.')));
 		}
+	}
+
+	/**
+	 *
+	 */
+	public function actionPrepare()
+	{
+		// Only check for this permission if they are logged in, so we can let a logged out user trigger a manual update.
+		if (blx()->userSession->isLoggedIn())
+		{
+			blx()->userSession->requirePermission('autoUpdateBlocks');
+		}
+
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$manual = false;
+		$data = blx()->request->getRequiredPost('data');
+
+		if (isset($data['manualUpdate']) && $data['manualUpdate'] == 1)
+		{
+			$manual = true;
+		}
+
+		$return = blx()->updates->prepareUpdate($manual);
+
+		if (!$return['success'])
+		{
+			$this->returnJson(array('error' => $return['message']));
+		}
+
+		if ($manual)
+		{
+			$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Backing Up Database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
+		}
+		else
+		{
+			$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Downloading Update…'), 'nextAction' => 'update/processDownload'));
+		}
+
+	}
+
+	/**
+	 *
+	 */
+	public function actionProcessDownload()
+	{
+		blx()->userSession->requirePermission('autoUpdateBlocks');
+
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$return = blx()->updates->processUpdateDownload();
+		if (!$return['success'])
+		{
+			$this->returnJson(array('error' => $return['message']));
+		}
+
+		unset($return['success']);
+
+		$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Backing Up Files…'), 'nextAction' => 'update/backupFiles', 'data' => $return));
+	}
+
+	/**
+	 *
+	 */
+	public function actionBackupFiles()
+	{
+		blx()->userSession->requirePermission('autoUpdateBlocks');
+
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$data = blx()->request->getRequiredPost('data');
+
+		$return = blx()->updates->backupFiles($data['uid']);
+		if (!$return['success'])
+		{
+			$this->returnJson(array('error' => $return['message']));
+		}
+
+		$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Updating Files…'), 'nextAction' => 'update/updateFiles', 'data' => $data));
+	}
+
+	/**
+	 *
+	 */
+	public function actionUpdateFiles()
+	{
+		blx()->userSession->requirePermission('autoUpdateBlocks');
+
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$data = blx()->request->getRequiredPost('data');
+
+		$return = blx()->updates->updateFiles($data['uid']);
+		if (!$return['success'])
+		{
+			$this->returnJson(array('error' => $return));
+		}
+
+		$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Backing Up Database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
+	}
+
+	/**
+	 *
+	 */
+	public function actionBackupDatabase()
+	{
+		// Only check for this permission if they are logged in, so we can let a logged out user trigger a manual update.
+		if (blx()->userSession->isLoggedIn())
+		{
+			blx()->userSession->requirePermission('autoUpdateBlocks');
+		}
+
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$data = blx()->request->getRequiredPost('data');
+
+		if (isset($data['manualUpdate']) && $data['manualUpdate'] == 1)
+		{
+			$uid = false;
+		}
+		else
+		{
+			$uid = $data['uid'];
+		}
+
+		if (blx()->config->get('backupDbOnUpdate'))
+		{
+			$return = blx()->updates->backupDatabase($uid);
+			if (!$return['success'])
+			{
+				$this->returnJson(array('error' => $return));
+			}
+
+			if (isset($return['dbBackupPath']))
+			{
+				$data['dbBackupPath'] = $return['dbBackupPath'];
+			}
+		}
+
+		$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Updating Database…'), 'nextAction' => 'update/updateDatabase', 'data' => $data));
+	}
+
+	/**
+	 *
+	 */
+	public function actionUpdateDatabase()
+	{
+		// Only check for this permission if they are logged in, so we can let a logged out user trigger a manual update.
+		if (blx()->userSession->isLoggedIn())
+		{
+			blx()->userSession->requirePermission('autoUpdateBlocks');
+		}
+
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$data = blx()->request->getRequiredPost('data');
+
+		if (isset($data['manualUpdate']) && $data['manualUpdate'] == 1)
+		{
+			$uid = false;
+		}
+		else
+		{
+			$uid = $data['uid'];
+		}
+
+		if (isset($data['dbBackupPath']))
+		{
+			$return = blx()->updates->updateDatabase($uid, $data['dbBackupPath']);
+		}
+		else
+		{
+			$return = blx()->updates->updateDatabase($uid);
+		}
+
+		if (!$return['success'])
+		{
+			$this->returnJson(array('error' => $return));
+		}
+
+		$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Cleaning Up…'), 'nextAction' => 'update/cleanUp', 'data' => $data));
+	}
+
+	/**
+	 *
+	 */
+	public function actionCleanUp()
+	{
+		// Only check for this permission if they are logged in, so we can let a logged out user trigger a manual update.
+		if (blx()->userSession->isLoggedIn())
+		{
+			blx()->userSession->requirePermission('autoUpdateBlocks');
+		}
+
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$data = blx()->request->getRequiredPost('data');
+
+		if (isset($data['manualUpdate']) && $data['manualUpdate'] == 1)
+		{
+			$uid = false;
+		}
+		else
+		{
+			$uid = $data['uid'];
+		}
+
+		$return = blx()->updates->updateCleanUp($uid);
+		if (!$return['success'])
+		{
+			$this->returnJson(array('error' => $return));
+		}
+
+		$this->returnJson(array('success' => true, 'finished' => true));
+	}
+
+	/**
+	 *
+	 */
+	public function actionRollback()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$data = blx()->request->getRequiredPost('data');
+
+		if (isset($data['manualUpdate']) && $data['manualUpdate'] == 1)
+		{
+			$uid = false;
+		}
+		else
+		{
+			$uid = $data['uid'];
+		}
+
+		if (isset($data['dbBackupPath']))
+		{
+			$return = blx()->updates->rollbackUpdate($uid, $data['dbBackupPath']);
+		}
+		else
+		{
+			$return = blx()->updates->rollbackUpdate($uid);
+		}
+
+		if (!$return['success'])
+		{
+			$this->returnJson(array('error' => $return));
+		}
+
+		$this->returnJson(array('success' => true, 'finished' => true));
 	}
 }

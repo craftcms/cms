@@ -222,7 +222,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function doDatabaseUpdate()
 	{
-		$appUpdater = new AppUpdater(false);
+		$appUpdater = new AppUpdater();
 
 		if ($appUpdater->doDatabaseUpdate())
 		{
@@ -344,5 +344,197 @@ class UpdatesService extends BaseApplicationComponent
 		}
 
 		return $errorPath;
+	}
+
+	/**
+	 * @param $manual
+	 * @return array
+	 */
+	public function prepareUpdate($manual)
+	{
+		Blocks::log('Preparing to update Blocks.', \CLogger::LEVEL_INFO);
+
+		try
+		{
+			$updater = new AppUpdater();
+
+			// No need to get the latest update info if this is a manual update.
+			if (!$manual)
+			{
+				$updater->getLatestUpdateInfo();
+			}
+
+			$updater->checkRequirements();
+
+			Blocks::log('Finished preparing to update Blocks.', \CLogger::LEVEL_INFO);
+			return array('success' => true);
+		}
+		catch (\Exception $e)
+		{
+			return array('success' => false, 'message' => $e->getMessage());
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function processUpdateDownload()
+	{
+		Blocks::log('Starting to process the update download.', \CLogger::LEVEL_INFO);
+
+		try
+		{
+			$updater = new AppUpdater();
+			$result = $updater->processDownload();
+			$result['success'] = true;
+
+			Blocks::log('Finished processing the update download.', \CLogger::LEVEL_INFO);
+			return $result;
+		}
+		catch (\Exception $e)
+		{
+			return array('success' => false, 'message' => $e->getMessage());
+		}
+	}
+
+	/**
+	 * @param $uid
+	 * @return array
+	 */
+	public function backupFiles($uid)
+	{
+		Blocks::log('Starting to backup files that need to be updated.', \CLogger::LEVEL_INFO);
+
+		try
+		{
+			$updater = new AppUpdater();
+			$updater->backupFiles($uid);
+
+			Blocks::log('Finished backing up files.', \CLogger::LEVEL_INFO);
+			return array('success' => true);
+		}
+		catch (\Exception $e)
+		{
+			return array('success' => false, 'message' => $e->getMessage());
+		}
+	}
+
+	/**
+	 * @param $uid
+	 * @return array
+	 */
+	public function updateFiles($uid)
+	{
+		Blocks::log('Starting to update files.', \CLogger::LEVEL_INFO);
+
+		try
+		{
+			$updater = new AppUpdater();
+			$updater->updateFiles($uid);
+
+			Blocks::log('Finished updating files.', \CLogger::LEVEL_INFO);
+			return array('success' => true);
+		}
+		catch (\Exception $e)
+		{
+			return array('success' => false, 'message' => $e->getMessage());
+		}
+	}
+
+	/**
+	 * @param $uid
+	 * @return array
+	 */
+	public function backupDatabase($uid)
+	{
+		Blocks::log('Starting to backup database.', \CLogger::LEVEL_INFO);
+
+		try
+		{
+			$updater = new AppUpdater();
+			$result = $updater->backupDatabase($uid);
+
+			if (!$result)
+			{
+				Blocks::log('Did not backup database because there were no migrations to run.', \CLogger::LEVEL_INFO);
+				return array('success' => true);
+			}
+			else
+			{
+				Blocks::log('Finished backing up database.', \CLogger::LEVEL_INFO);
+				return array('success' => true, 'dbBackupPath' => $result);
+			}
+		}
+		catch (\Exception $e)
+		{
+			return array('success' => false, 'message' => $e->getMessage());
+		}
+	}
+
+	/**
+	 * @param      $uid
+	 * @param bool $dbBackupPath
+	 * @return array
+	 */
+	public function updateDatabase($uid, $dbBackupPath = false)
+	{
+		Blocks::log('Starting to update the database.', \CLogger::LEVEL_INFO);
+
+		try
+		{
+			$updater = new AppUpdater();
+			$updater->updateDatabase($uid, $dbBackupPath);
+
+			Blocks::log('Finished updating the database.', \CLogger::LEVEL_INFO);
+			return array('success' => true);
+		}
+		catch (\Exception $e)
+		{
+			return array('success' => false, 'message' => $e->getMessage());
+		}
+	}
+
+	/**
+	 * @param $uid
+	 * @return array
+	 */
+	public function updateCleanUp($uid)
+	{
+		Blocks::log('Starting to clean up after the update.', \CLogger::LEVEL_INFO);
+
+		try
+		{
+			$updater = new AppUpdater();
+			$updater->cleanUp($uid);
+
+			Blocks::log('Finished cleaning up after the update.', \CLogger::LEVEL_INFO);
+			return array('success' => true);
+		}
+		catch (\Exception $e)
+		{
+			return array('success' => false, 'message' => $e->getMessage());
+		}
+	}
+
+	/**
+	 * @param      $uid
+	 * @param bool $dbBackupPath
+	 */
+	public function rollbackUpdate($uid, $dbBackupPath = false)
+	{
+		if ($dbBackupPath && blx()->config->get('backupDbOnUpdate') && blx()->config->get('restoreDbOnUpdateFailure'))
+		{
+			Blocks::log('Rolling back any database changes.', \CLogger::LEVEL_INFO);
+			UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
+			Blocks::log('Done rolling back any database changes.', \CLogger::LEVEL_INFO);
+		}
+
+		// If uid !== false, it's an auto-update.
+		if ($uid !== false)
+		{
+			Blocks::log('Rolling back any file changes.', \CLogger::LEVEL_INFO);
+			UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
+			Blocks::log('Done rolling back any file changes.', \CLogger::LEVEL_INFO);
+		}
 	}
 }

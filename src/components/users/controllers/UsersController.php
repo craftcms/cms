@@ -28,8 +28,6 @@ class UsersController extends BaseController
 
 			if (blx()->userSession->login($loginName, $password, $rememberMe))
 			{
-				$redirectUrl = blx()->userSession->getReturnUrl();
-
 				if (blx()->request->isAjaxRequest())
 				{
 					$this->returnJson(array(

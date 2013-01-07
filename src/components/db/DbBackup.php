@@ -27,7 +27,8 @@ class DbBackup
 		$result .= $this->_processConstraints();
 		$result .= $this->_processFooter();
 
-		$filePath = blx()->path->getDbBackupPath().strtolower(blx()->config->getDbItem('database')).'_'.DateTimeHelper::currentTimeStamp().'_'.$this->_currentVersion.'_backup.sql';
+		$fileName = gmdate('ymd_His').'_'.$this->_currentVersion.'.sql';
+		$filePath = blx()->path->getDbBackupPath().strtolower($fileName);
 		IOHelper::writeToFile($filePath, $result);
 
 		return $filePath;
@@ -40,18 +41,48 @@ class DbBackup
 	 */
 	public function restore($filePath)
 	{
-		// TODO: Delete all tables in database first to remove any that might have been added in a migration.
-		/*if (!IOHelper::fileExists($filePath))
+		if (!IOHelper::fileExists($filePath))
 		{
 			throw new Exception(Blocks::t('Could not find the SQL file to restore: {filePath}', array('filePath' => $filePath)));
 		}
+
+		$this->_nukeDb();
 
 		$sql = IOHelper::getFileContents($filePath);
 
 		Blocks::log('Executing SQL statement: '.$sql, \CLogger::LEVEL_INFO);
 		$command = blx()->db->createCommand($sql);
-		$command->execute();*/
+		$command->execute();
 	}
+
+	/**
+	 *
+	 */
+	private function _nukeDb()
+	{
+		Blocks::log('Nuking DB', \CLogger::LEVEL_INFO);
+
+		$databaseName = blx()->config->getDbItem('database');
+
+		$sql = 'SET FOREIGN_KEY_CHECKS = 0;'.PHP_EOL.PHP_EOL;
+
+		$tables = blx()->db->createCommand()
+		          ->setText('SHOW TABLES FROM '.$databaseName.';')
+		          ->queryColumn();
+
+		foreach ($tables as $table)
+		{
+			$sql .= 'DROP TABLE IF EXISTS '.$databaseName.'.'.$table.';'.PHP_EOL;
+		}
+
+		$sql .= PHP_EOL.'SET FOREIGN_KEY_CHECKS = 1;'.PHP_EOL;
+
+		$command = blx()->db->createCommand($sql);
+		$command->execute();
+
+		Blocks::log('Database nuked.', \CLogger::LEVEL_INFO);
+	}
+
 
 	/**
 	 * Generate the foreign key constraints for all tables

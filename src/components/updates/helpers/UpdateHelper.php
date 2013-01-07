@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class UpdateHelper
 {
+	private static $_manifestData;
+
 	/**
 	 * @static
 	 * @param $manifestData
@@ -40,7 +42,8 @@ class UpdateHelper
 	public static function rollBackDatabaseChanges($backupPath)
 	{
 		$dbBackup = new DbBackup();
-		$dbBackup->restore($backupPath);
+		$fullBackupPath= blx()->path->getDbBackupPath().$backupPath.'.sql';
+		$dbBackup->restore($fullBackupPath);
 	}
 
 	/**
@@ -144,24 +147,42 @@ class UpdateHelper
 	}
 
 	/**
+	 * Returns the relevant lines from the update manifest file starting with the current local version/build.
+	 *
 	 * @static
 	 * @param $manifestDataPath
 	 * @return array
 	 */
 	public static function getManifestData($manifestDataPath)
 	{
-		// get manifest file
-		$manifestFileData = IOHelper::getFileContents($manifestDataPath.'/blocks_manifest', true);
-
-		// Remove any trailing empty newlines
-		if ($manifestFileData[count($manifestFileData) - 1] == '')
+		if (static::$_manifestData == null)
 		{
-			array_pop($manifestFileData);
+			// get manifest file
+			$manifestFileData = IOHelper::getFileContents($manifestDataPath.'/blocks_manifest', true);
+
+			// Remove any trailing empty newlines
+			if ($manifestFileData[count($manifestFileData) - 1] == '')
+			{
+				array_pop($manifestFileData);
+			}
+
+			$manifestData = array_map('trim', $manifestFileData);
+			$updateModel = blx()->updates->getUpdates();
+
+			// Only use the manifest data starting from the local version
+			for ($counter = 0; $counter < count($manifestData); $counter++)
+			{
+				if (strpos($manifestData[$counter], '##'.$updateModel->blocks->localVersion.'.'.$updateModel->blocks->localBuild) !== false)
+				{
+					break;
+				}
+			}
+
+			$manifestData = array_slice($manifestData, $counter);
+			static::$_manifestData = $manifestData;
 		}
 
-		$manifestFileData = array_map('trim', $manifestFileData);
-
-		return $manifestFileData;
+		return static::$_manifestData;
 	}
 
 	/**
@@ -176,5 +197,23 @@ class UpdateHelper
 		$migrationFile->copy($destinationFile);
 
 		return $destinationFile;
+	}
+
+	/**
+	 * @param $uid
+	 * @return string
+	 */
+	public static function getUnzipFolderFromUID($uid)
+	{
+		return blx()->path->getTempPath().$uid.'/';
+	}
+
+	/**
+	 * @param $uid
+	 * @return string
+	 */
+	public static function getZipFileFromUID($uid)
+	{
+		return blx()->path->getTempPath().$uid.'.zip';
 	}
 }
