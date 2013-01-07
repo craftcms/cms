@@ -66,8 +66,15 @@ class App extends \CWebApplication
 		// Process install requests
 		$this->_processInstallRequest();
 
-		// Are we in the middle of a manual update?
-		if ($this->isDbUpdateNeeded())
+		// If the system in is maintenance mode and it's a site request, throw a 503.
+		if (Blocks::isInMaintenanceMode() && $this->request->isSiteRequest())
+		{
+			throw new HttpException(503);
+		}
+
+		// isDbUpdateNeeded will return true if we're in the middle of a manual or auto-update.
+		// If we're in maintenance mode and it's not a site request, show the manual update template.
+		if ($this->isDbUpdateNeeded() || (Blocks::isInMaintenanceMode() && !$this->request->isSiteRequest()))
 		{
 			// Let all non-action CP requests through.
 			if ($this->request->isCpRequest() && !$this->request->isActionRequest())
