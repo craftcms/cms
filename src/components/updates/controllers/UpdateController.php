@@ -113,43 +113,6 @@ class UpdateController extends BaseController
 		}
 	}
 
-	/**
-	 * Runs an update.
-	 */
-	public function actionRunAutoUpdate()
-	{
-		blx()->userSession->requirePermission('autoUpdateBlocks');
-
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
-
-		$handle = blx()->request->getRequiredPost('handle');
-
-		try
-		{
-			switch ($handle)
-			{
-				case 'Blocks':
-				{
-					blx()->updates->doAppUpdate();
-					break;
-				}
-
-				// Plugin handle
-				default:
-				{
-					blx()->updates->doPluginUpdate($handle);
-				}
-			}
-
-			$this->returnJson(array('success' => true));
-		}
-		catch (\Exception $e)
-		{
-			$this->returnErrorJson($e->getMessage());
-		}
-	}
-
 	// -------------------------------------------
 	//  Manual Updates
 	// -------------------------------------------
@@ -160,45 +123,6 @@ class UpdateController extends BaseController
 	public function actionManualUpdate()
 	{
 		$this->renderTemplate('_special/dbupdate');
-	}
-
-	/**
-	 *
-	 */
-	public function actionRunManualUpdate()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
-
-		try
-		{
-			// Take the system offline.
-			blx()->updates->turnSystemOffBeforeUpdate();
-
-			// run migrations to top
-			if (blx()->updates->doDatabaseUpdate())
-			{
-				// update db with version info.
-				if (blx()->updates->setNewBlocksInfo(Blocks::getVersion(), Blocks::getBuild(), Blocks::getReleaseDate()))
-				{
-					// flush update cache.
-					blx()->updates->flushUpdateInfoFromCache();
-					blx()->userSession->setNotice(Blocks::t('Database successfully updated.'));
-
-					// Bring the system back online.
-					blx()->updates->turnSystemOnAfterUpdate();
-
-					$this->returnJson(array('success' => true));
-				}
-			}
-
-			$this->returnJson(array('error' => Blocks::t('There was a problem updating the database.')));
-		}
-		catch (\Exception $e)
-		{
-			Blocks::log($e->getMessage(), \CLogger::LEVEL_ERROR);
-			$this->returnJson(array('error' => Blocks::t('There was a problem updating the database.')));
-		}
 	}
 
 	/**
@@ -298,7 +222,7 @@ class UpdateController extends BaseController
 		$return = blx()->updates->updateFiles($data['uid']);
 		if (!$return['success'])
 		{
-			$this->returnJson(array('error' => $return));
+			$this->returnJson(array('error' => $return['message']));
 		}
 
 		$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Backing Up Database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
@@ -334,7 +258,7 @@ class UpdateController extends BaseController
 			$return = blx()->updates->backupDatabase($uid);
 			if (!$return['success'])
 			{
-				$this->returnJson(array('error' => $return));
+				$this->returnJson(array('error' => $return['message']));
 			}
 
 			if (isset($return['dbBackupPath']))
@@ -382,7 +306,7 @@ class UpdateController extends BaseController
 
 		if (!$return['success'])
 		{
-			$this->returnJson(array('error' => $return));
+			$this->returnJson(array('error' => $return['message']));
 		}
 
 		$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Cleaning Up…'), 'nextAction' => 'update/cleanUp', 'data' => $data));
@@ -416,7 +340,7 @@ class UpdateController extends BaseController
 		$return = blx()->updates->updateCleanUp($uid);
 		if (!$return['success'])
 		{
-			$this->returnJson(array('error' => $return));
+			$this->returnJson(array('error' => $return['message']));
 		}
 
 		$this->returnJson(array('success' => true, 'finished' => true));
@@ -452,7 +376,7 @@ class UpdateController extends BaseController
 
 		if (!$return['success'])
 		{
-			$this->returnJson(array('error' => $return));
+			$this->returnJson(array('error' => $return['message']));
 		}
 
 		$this->returnJson(array('success' => true, 'finished' => true));
