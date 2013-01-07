@@ -7,7 +7,6 @@ namespace Blocks;
 class UpdatesService extends BaseApplicationComponent
 {
 	private $_updateModel;
-	private $_isSystemOn;
 
 	/**
 	 * @param $blocksReleases
@@ -203,36 +202,6 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function doAppUpdate()
-	{
-		$appUpdater = new AppUpdater();
-
-		if ($appUpdater->start())
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function doDatabaseUpdate()
-	{
-		$appUpdater = new AppUpdater();
-
-		if ($appUpdater->doDatabaseUpdate())
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
 	 * @param $pluginHandle
 	 * @return bool
 	 */
@@ -282,16 +251,12 @@ class UpdatesService extends BaseApplicationComponent
 	/**
 	 * @return bool
 	 */
-	public function turnSystemOnAfterUpdate()
+	public function enableMaintenanceMode()
 	{
-		// if the system wasn't on before, we're leave it in an off state
-		if (!$this->_isSystemOn)
+		// Not using Active Record here to prevent issues with turning the site on/off during a migration
+		if (blx()->db->schema->getTable('{{info}}')->getColumn('maintenance'))
 		{
-			return true;
-		}
-		else
-		{
-			if (Blocks::turnSystemOn())
+			if (blx()->db->createCommand()->update('info', array('maintenance' => 1)) > 0)
 			{
 				return true;
 			}
@@ -304,15 +269,12 @@ class UpdatesService extends BaseApplicationComponent
 	 * @static
 	 * @return bool
 	 */
-	public function turnSystemOffBeforeUpdate()
+	public function disableMaintenanceMode()
 	{
-		// save the current state of the system for possible use later in the request.
-		$this->_isSystemOn = Blocks::isSystemOn();
-
-		// if it's not on, don't even bother.
-		if ($this->_isSystemOn)
+		// Not using Active Record here to prevent issues with turning the site on/off during a migration
+		if (blx()->db->schema->getTable('{{info}}')->getColumn('maintenance'))
 		{
-			if (Blocks::turnSystemOff())
+			if (blx()->db->createCommand()->update('info', array('maintenance' => 0)) > 0)
 			{
 				return true;
 			}

@@ -228,6 +228,18 @@ class Blocks extends \Yii
 	}
 
 	/**
+	 * Returns whether the system is in maintenance mode.
+	 *
+	 * @static
+	 * @return bool
+	 */
+	public static function isInMaintenanceMode()
+	{
+		$storedBlocksInfo = static::_getStoredInfo();
+		return $storedBlocksInfo ? $storedBlocksInfo->maintenance == 1 : false;
+	}
+
+	/**
 	 * Turns the system on.
 	 *
 	 * @static

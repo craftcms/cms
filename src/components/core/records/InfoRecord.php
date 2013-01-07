@@ -29,6 +29,7 @@ class InfoRecord extends BaseRecord
 			'language'    => array(AttributeType::Language, 'required' => true),
 			'licenseKey'  => array(AttributeType::LicenseKey, 'required' => true),
 			'on'          => AttributeType::Bool,
+			'maintenance' => AttributeType::Bool,
 		);
 	}
 }

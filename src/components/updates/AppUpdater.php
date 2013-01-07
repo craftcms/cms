@@ -136,9 +136,9 @@ class AppUpdater
 	{
 		$unzipFolder = UpdateHelper::getUnzipFolderFromUID($uid);
 
-		// Take the site offline.
-		Blocks::log('Taking the site offline for update.', \CLogger::LEVEL_INFO);
-		blx()->updates->turnSystemOffBeforeUpdate();
+		// Put the site into maintenance mode.
+		Blocks::log('Putting the site into maintenance mode..', \CLogger::LEVEL_INFO);
+		blx()->updates->enableMaintenanceMode();
 
 		// Update the files.
 		Blocks::log('Performing file update.', \CLogger::LEVEL_INFO);
@@ -228,9 +228,9 @@ class AppUpdater
 			$this->_cleanTempFiles($zipFile, $unzipFolder);
 		}
 
-		// Bring the system back online.
-		Blocks::log('Turning system back on after update.', \CLogger::LEVEL_INFO);
-		blx()->updates->turnSystemOnAfterUpdate();
+		// Take the site out of maintenance mode.
+		Blocks::log('Taking the site out of maintenance mode..', \CLogger::LEVEL_INFO);
+		blx()->updates->disableMaintenanceMode();
 
 		// Clear the updates cache.
 		Blocks::log('Clearing the update cache.', \CLogger::LEVEL_INFO);
