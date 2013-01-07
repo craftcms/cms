@@ -189,6 +189,16 @@ return array(
 'overridePhpSessionLocation' => 'auto',
 
 /**
+ * If set to true, Blocks will backup your database before making any schema changes when doing an update.
+ */
+'backupDbOnUpdate' => true,
+
+/**
+ * If set to true and 'backupDbOnUpdate' is true, Blocks will restore the last database backup in the event that an update with a migration failed.
+ */
+'restoreDbOnUpdateFailure' => true,
+
+/**
  * Error Path Keys
  * 'errorPath'      => blocks.app.templates.errors.error
  * 'error400Path'   => blocks.app.templates.errors.400
