@@ -13,7 +13,7 @@ class TemplatesController extends BaseController
 	 */
 	public function actionIndex()
 	{
-		if (blx()->request->isCpRequest())
+		if (blx()->request->isCpRequest() && (blx()->request->getPath() !== 'updates/go/blocks' && blx()->request->getParam('manual', null) !== 1))
 		{
 			// Make sure the user has access to the CP
 			blx()->userSession->requireLogin();

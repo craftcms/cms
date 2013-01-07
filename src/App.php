@@ -69,11 +69,20 @@ class App extends \CWebApplication
 		// Are we in the middle of a manual update?
 		if ($this->isDbUpdateNeeded())
 		{
-			// Let's let all CP requests through.
+			// Let all non-action CP requests through.
 			if ($this->request->isCpRequest() && !$this->request->isActionRequest())
 			{
-				$this->runController('update/manualUpdate');
-				$this->end();
+				// If there is a 'manual=1' in the query string, run the templates controller.
+				if ($this->request->getParam('manual', null) == 1)
+				{
+					$this->runController('templates');
+					$this->end();
+				}
+				else
+				{
+					$this->runController('update/manualUpdate');
+					$this->end();
+				}
 			}
 			// We'll also let action requests to UpdateController through as well.
 			else if ($this->request->isActionRequest() && (($actionSegs = $this->request->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] == 'update')
