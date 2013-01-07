@@ -235,8 +235,22 @@ class Blocks extends \Yii
 	 */
 	public static function isInMaintenanceMode()
 	{
-		$storedBlocksInfo = static::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->maintenance == 1 : false;
+		// Don't use the the static property $_storedBlocksInfo.  We want the latest info possible.
+		// Not using Active Record here to prevent issues with determining maintenance mode status during a migration
+		if (blx()->db->schema->getTable('{{info}}')->getColumn('maintenance'))
+		{
+			$result = blx()->db->createCommand()->
+			              select('maintenance')->
+			              from('info')->
+			              queryRow();
+
+			if ($result['maintenance'] == 1)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
