@@ -33,7 +33,7 @@ class DbConnection extends \CDbConnection
 	/**
 	 * @return bool|string
 	 */
-	public function fullBackup()
+	public function backup()
 	{
 		$backup = new DbBackup();
 		if (($backupFile = $backup->run()) !== false)
