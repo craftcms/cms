@@ -20,12 +20,19 @@ class m121130_144727_core_entry_uris extends \CDbMigration
 			blx()->db->createCommand()->addColumnAfter('entries', 'uri', $config, 'slug');
 
 			// Add the unique constraint
-			blx()->db->createCommand()->createIndex('entries_uri_unique_idx', 'entries', 'uri', true);
+			$this->_createIndex('entries_uri_unique_idx', 'entries', 'uri', true);
 
 			// Fill 'er up
 			blx()->db->createCommand()->setText('UPDATE '.blx()->db->tablePrefix.'entries SET uri = CONCAT("blog/", slug)')->execute();
 		}
 
 		return true;
+	}
+
+	private function _createIndex($name, $table, $columns, $unique = false)
+	{
+		$name = md5(blx()->db->tablePrefix.$name);
+		$table = DbHelper::addTablePrefix($table);
+		return blx()->db->createCommand()->setText(blx()->db->getSchema()->createIndex($name, $table, $columns, $unique))->execute();
 	}
 }

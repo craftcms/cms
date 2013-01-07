@@ -357,7 +357,6 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
-	 * @param $name
 	 * @param $table
 	 * @param $columns
 	 * @param $refTable
@@ -366,48 +365,47 @@ class DbCommand extends \CDbCommand
 	 * @param null $update
 	 * @return int
 	 */
-	public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete=null, $update=null)
+	public function addForeignKey($table, $columns, $refTable, $refColumns, $delete=null, $update=null)
 	{
-		$name = DbHelper::normalizeIndexName(DbHelper::addTablePrefix($name));
+		$name = DbHelper::getForeignKeyName($table, $columns);
 		$table = DbHelper::addTablePrefix($table);
 		$refTable = DbHelper::addTablePrefix($refTable);
 		return parent::addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update);
 	}
 
 	/**
-	 * @param $name
 	 * @param $table
 	 * @return int
 	 */
-	public function dropForeignKey($name, $table)
+	public function dropForeignKey($table, $columns)
 	{
-		$name = DbHelper::normalizeIndexName(DbHelper::addTablePrefix($name));
+		$name = DbHelper::getForeignKeyName($table, $columns);
 		$table = DbHelper::addTablePrefix($table);
 		return parent::dropForeignKey($name, $table);
 	}
 
 	/**
-	 * @param $name
 	 * @param $table
-	 * @param $column
+	 * @param $columns
 	 * @param bool $unique
 	 * @return int
 	 */
-	public function createIndex($name, $table, $column, $unique=false)
+	public function createIndex($table, $columns, $unique = false)
 	{
-		$name = DbHelper::normalizeIndexName(DbHelper::addTablePrefix($name));
+		$name = DbHelper::getIndexName($table, $columns, $unique);
 		$table = DbHelper::addTablePrefix($table);
-		return parent::createIndex($name, $table, $column, $unique);
+		return parent::createIndex($name, $table, $columns, $unique);
 	}
 
 	/**
-	 * @param $name
 	 * @param $table
+	 * @param $columns
+	 * $param $unique
 	 * @return int
 	 */
-	public function dropIndex($name, $table)
+	public function dropIndex($table, $columns, $unique = false)
 	{
-		$name = DbHelper::normalizeIndexName(DbHelper::addTablePrefix($name));
+		$name = DbHelper::getIndexName($table, $columns, $unique);
 		$table = DbHelper::addTablePrefix($table);
 		return parent::dropIndex($name, $table);
 	}

@@ -84,10 +84,8 @@ class QuerygenCommand extends \CConsoleCommand
 			{
 				$columns = ArrayHelper::stringToArray($index['columns']);
 				$unique = !empty($index['unique']);
-				$name = "{$table}_".implode('_', $columns).($unique ? '_unq' : '').'_idx';
 
 				echo 'blx()->db->createCommand()->createIndex(' .
-					$this->_varExport($name).', ' .
 					$this->_varExport($table).', ' .
 					"'".implode(',', $columns)."', " .
 					$this->_varExport($unique).");\n";
@@ -117,7 +115,6 @@ class QuerygenCommand extends \CConsoleCommand
 			{
 				$otherModel = new $config[1];
 				$otherTable = $otherModel->getTableName();
-				$fkName = "{$table}_{$config[2]}_fk";
 
 				if (isset($config['onDelete']))
 				{
@@ -136,7 +133,6 @@ class QuerygenCommand extends \CConsoleCommand
 				}
 
 				echo 'blx()->db->createCommand()->addForeignKey(' .
-					$this->_varExport($fkName).', ' .
 					$this->_varExport($table).', ' .
 					$this->_varExport($config[2]).', ' .
 					$this->_varExport($otherTable).', \'id\', ' .

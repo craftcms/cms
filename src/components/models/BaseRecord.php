@@ -227,8 +227,7 @@ abstract class BaseRecord extends \CActiveRecord
 		{
 			$columns = ArrayHelper::stringToArray($index['columns']);
 			$unique = !empty($index['unique']);
-			$name = "{$table}_".implode('_', $columns).($unique ? '_unq' : '').'_idx';
-			blx()->db->createCommand()->createIndex($name, $table, implode(',', $columns), $unique);
+			blx()->db->createCommand()->createIndex($table, implode(',', $columns), $unique);
 		}
 	}
 
@@ -275,9 +274,8 @@ abstract class BaseRecord extends \CActiveRecord
 
 		foreach ($this->getBelongsToRelations() as $name => $config)
 		{
-			$otherModel = new $config[1];
-			$otherTable = $otherModel->getTableName();
-			$fkName = "{$table}_{$config[2]}_fk";
+			$otherRecord = new $config[1];
+			$otherTable = $otherRecord->getTableName();
 
 			if (isset($config['onDelete']))
 			{
@@ -295,7 +293,7 @@ abstract class BaseRecord extends \CActiveRecord
 				}
 			}
 
-			blx()->db->createCommand()->addForeignKey($fkName, $table, $config[2], $otherTable, 'id', $onDelete);
+			blx()->db->createCommand()->addForeignKey($table, $config[2], $otherTable, 'id', $onDelete);
 		}
 	}
 
@@ -311,14 +309,11 @@ abstract class BaseRecord extends \CActiveRecord
 		{
 			foreach ($this->getBelongsToRelations() as $name => $config)
 			{
-				$otherModel = new $config[1];
-				$otherTable = $otherModel->getTableName();
+				$otherRecord = new $config[1];
 
-				// Does the other table exist?
-				if (blx()->db->getSchema()->getTable('{{'.$otherTable.'}}'))
+				if ($otherRecord->tableExists())
 				{
-					$fkName = "{$table}_{$config[2]}_fk";
-					blx()->db->createCommand()->dropForeignKey($fkName, $table);
+					blx()->db->createCommand()->dropForeignKey($table, $config[2]);
 				}
 			}
 		}

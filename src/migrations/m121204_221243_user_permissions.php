@@ -31,9 +31,16 @@ class m121204_221243_user_permissions extends \CDbMigration
 			}
 
 			// While we're here, might as well add that new unique constraint on usergroups_users
-			blx()->db->createCommand()->createIndex('usergroups_users_groupId_userId_unique_idx', 'usergroups_users', 'groupId,userId', true);
+			$this->_createIndex('usergroups_users_groupId_userId_unique_idx', 'usergroups_users', 'groupId,userId', true);
 		}
 
 		return true;
+	}
+
+	private function _createIndex($name, $table, $columns, $unique = false)
+	{
+		$name = md5(blx()->db->tablePrefix.$name);
+		$table = DbHelper::addTablePrefix($table);
+		return blx()->db->createCommand()->setText(blx()->db->getSchema()->createIndex($name, $table, $columns, $unique))->execute();
 	}
 }

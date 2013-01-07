@@ -53,7 +53,7 @@ class m121230_230206_new_index_names extends \CDbMigration
 					$this->_dropForeignKey($oldName, $prefixedTable);
 
 					// Queue up the new one
-					$newName = $table.'_'.implode('_', $columns).'_fk';
+					$newName = DbHelper::getForeignKeyName($table, $columns);
 
 					if (!in_array($newName, $newForeignKeyNames))
 					{
@@ -91,11 +91,11 @@ class m121230_230206_new_index_names extends \CDbMigration
 					// Add the new one, unless it was created for a FK
 					if (!isset($foreignKeys[$oldName]))
 					{
-						$newName = $table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
+						$newName = DbHelper::getIndexName($table, $columns, $unique);
 
 						if (!in_array($newName, $newIndexNames))
 						{
-							blx()->db->createCommand()->createIndex($newName, $table, implode(',', $columns), $unique);
+							blx()->db->createCommand()->createIndex($table, implode(',', $columns), $unique);
 
 							$newIndexNames[] = $newName;
 						}
@@ -108,7 +108,7 @@ class m121230_230206_new_index_names extends \CDbMigration
 
 			foreach ($foreignKeys as $fk)
 			{
-				blx()->db->createCommand()->addForeignKey($fk->name, $fk->table, $fk->columns, $fk->refTable, $fk->refColumns, $fk->onDelete, $fk->onUpdate);
+				blx()->db->createCommand()->addForeignKey($fk->table, $fk->columns, $fk->refTable, $fk->refColumns, $fk->onDelete, $fk->onUpdate);
 			}
 		}
 

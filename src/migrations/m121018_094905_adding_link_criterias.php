@@ -89,8 +89,8 @@ class m121018_094905_adding_link_criterias extends \CDbMigration
 		}
 
 		// Update the links table indexes
-		blx()->db->createCommand()->dropIndex('links_blockId_parentType_parentId_childType_childId_unique_idx', 'links');
-		blx()->db->createCommand()->createIndex('links_criteriaId_leftEntityId_rightEntityId_unique_idx', 'links', 'criteriaId,leftEntityId,rightEntityId', true);
+		$this->_dropIndex('links_blockId_parentType_parentId_childType_childId_unique_idx', 'links');
+		$this->_createIndex('links_criteriaId_leftEntityId_rightEntityId_unique_idx', 'links', 'criteriaId,leftEntityId,rightEntityId', true);
 
 		$linkModel = new LinkRecord();
 		$linkModel->addForeignKeys();
@@ -101,5 +101,19 @@ class m121018_094905_adding_link_criterias extends \CDbMigration
 		blx()->db->createCommand()->dropColumn('links', 'childType');
 
 		return true;
+	}
+
+	private function _createIndex($name, $table, $columns, $unique = false)
+	{
+		$name = md5(blx()->db->tablePrefix.$name);
+		$table = DbHelper::addTablePrefix($table);
+		return blx()->db->createCommand()->setText(blx()->db->getSchema()->createIndex($name, $table, $columns, $unique))->execute();
+	}
+
+	private function _dropIndex($name, $table)
+	{
+		$name = md5(blx()->db->tablePrefix.$name);
+		$table = DbHelper::addTablePrefix($table);
+		return blx()->db->createCommand()->setText(blx()->db->getSchema()->dropIndex($name, $table))->execute();
 	}
 }

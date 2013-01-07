@@ -247,6 +247,35 @@ class DbHelper
 	}
 
 	/**
+	 * Returns a foreign key name based on the table and column names.
+	 *
+	 * @param string $table
+	 * @param string|array $columns
+	 * @return string
+	 */
+	public static function getForeignKeyName($table, $columns)
+	{
+		$columns = ArrayHelper::stringToArray($columns);
+		$name = blx()->db->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
+		return static::normalizeIndexName($name);
+	}
+
+	/**
+	 * Returns an index name based on the table, column names, and whether it should be unique.
+	 *
+	 * @param string $table
+	 * @param string|array $columns
+	 * @param bool $unique
+	 * @return string
+	 */
+	public static function getIndexName($table, $columns, $unique = false)
+	{
+		$columns = ArrayHelper::stringToArray($columns);
+		$name = blx()->db->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
+		return static::normalizeIndexName($name);
+	}
+
+	/**
 	 * Ensures that an index name is within the schema's limit.
 	 *
 	 * @static
