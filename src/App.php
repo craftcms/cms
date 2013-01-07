@@ -98,7 +98,7 @@ class App extends \CWebApplication
 			}
 		}
 
-		// Make sure that the system is on, or that the user has permission to acces the site/CP while the system is off
+		// Make sure that the system is on, or that the user has permission to access the site/CP while the system is off
 		if (Blocks::isSystemOn() ||
 			($this->request->isActionRequest() && $this->request->getActionSegments() == array('users', 'login')) ||
 			($this->request->isSiteRequest() && $this->userSession->checkPermission('accessSiteWhenSystemIsOff')) ||
