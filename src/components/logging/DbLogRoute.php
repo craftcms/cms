@@ -58,8 +58,10 @@ class DbLogRoute extends \CDbLogRoute
 	{
 		if (blx()->isInstalled() && ($activityTable = $this->getDbConnection()->getSchema()->getTable('{{activity}}')))
 		{
+			$prefix = blx()->config->getDbItem('tablePrefix');
+
 			$sql="
-				INSERT INTO blx_{$this->logTableName}
+				INSERT INTO {$prefix}_{$this->logTableName}
 				(userId, category, key, data, logtime) VALUES
 				(:userId, :category, :activityKey, :activityData, :logtime)
 			";

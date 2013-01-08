@@ -45,20 +45,29 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
-	 * Adds an additional where condition.
+	 * Adds an additional "and where" condition.
 	 *
 	 * @param mixed $conditions
 	 * @param array|null $params
 	 * @return DbCommand
 	 */
-	public function addWhere($conditions, $params = array())
+	public function andWhere($conditions, $params = array())
 	{
-		$oldWhere = $this->getWhere();
-		if ($oldWhere)
-		{
-			$conditions = array('and', $oldWhere, $conditions);
-		}
-		return $this->where($conditions, $params);
+		$conditions = $this->_normalizeConditions($conditions, $params);
+		return parent::andWhere($conditions, $params);
+	}
+
+	/**
+	 * Adds an additional "or where" condition.
+	 *
+	 * @param mixed $conditions
+	 * @param array|null $params
+	 * @return DbCommand
+	 */
+	public function orWhere($conditions, $params = array())
+	{
+		$conditions = $this->_normalizeConditions($conditions, $params);
+		return parent::orWhere($conditions, $params);
 	}
 
 	/**

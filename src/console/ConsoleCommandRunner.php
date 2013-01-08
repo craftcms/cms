@@ -13,35 +13,52 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 	public function createCommand($name)
 	{
 		$name = strtolower($name);
+
+		$command = null;
+
 		if (isset($this->commands[$name]))
 		{
-			if (is_string($this->commands[$name]))  // class file path or alias
+			$command = $this->commands[$name];
+		}
+		else
+		{
+			$commands = array_change_key_case($this->commands);
+
+			if (isset($commands[$name]))
 			{
-				if (strpos($this->commands[$name], '/') !== false || strpos($this->commands[$name], '\\') !== false)
+				$command = $commands[$name];
+			}
+		}
+
+		if ($command !== null)
+		{
+			if (is_string($command))  // class file path or alias
+			{
+				if (strpos($command, '/') !== false || strpos($command, '\\') !== false)
 				{
-					$className = IOHelper::getFileName($this->commands[$name], false);
+					$className = IOHelper::getFileName($command, false);
 
 					// If it's a default framework command, don't namespace it.
-					if (strpos($this->commands[$name], 'framework') === false)
+					if (strpos($command, 'framework') === false)
 					{
 						$className = __NAMESPACE__.'\\'.$className;
 					}
 
 					if (!class_exists($className, false))
 					{
-						require_once($this->commands[$name]);
+						require_once($command);
 					}
 				}
 				else // an alias
 				{
-					$className = Blocks::import($this->commands[$name]);
+					$className = Blocks::import($command);
 				}
 
 				return new $className($name, $this);
 			}
 			else // an array configuration
 			{
-				return Blocks::createComponent($this->commands[$name], $name, $this);
+				return Blocks::createComponent($command, $name, $this);
 			}
 		}
 		else if ($name === 'help')
