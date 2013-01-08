@@ -1,10 +1,17 @@
-{% from "_includes/forms" import textarea %}
+{% from "_includes/forms" import textarea, checkbox %}
 
 
 {{ textarea({
 	class: 'message nicetext',
 	rows: 10,
 	value: message
+}) }}
+
+{{ checkbox({
+	id: 'attachDebugFiles',
+	name: 'attachDebugFiles',
+	checked: true,
+	label: 'Include log files and backup files for debugging?',
 }) }}
 
 <div class="buttons">

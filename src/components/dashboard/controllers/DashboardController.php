@@ -102,20 +102,91 @@ class DashboardController extends BaseController
 
 		$message = blx()->request->getRequiredPost('message');
 
-		require_once blx()->path->getLibPath().'HelpSpotAPI.php';
-		$hsapi = new \HelpSpotAPI(array('helpSpotApiURL' => "https://support.blockscms.com/api/index.php"));
-
 		$user = blx()->userSession->getUser();
 
-		$result = $hsapi->requestCreate(array(
+		$requestParamDefaults = array(
 			'sFirstName' => $user->getFriendlyName(),
 			'sLastName' => ($user->lastName ? $user->lastName : 'Doe'),
 			'sEmail' => $user->email,
-			'tNote' => $message
-		));
+			'tNote' => $message,
+		);
+
+		$requestParams = $requestParamDefaults;
+
+		$hsParams = array(
+			'helpSpotApiURL' => 'https://support.blockscms.com/api/index.php'
+		);
+
+		$attachment = (bool)blx()->request->getPort('attachDebugFiles');
+
+		try
+		{
+			if ($attachment)
+			{
+				$tempZipFile = blx()->path->getTempPath().StringHelper::UUID().'.zip';
+				IOHelper::createFile($tempZipFile);
+
+				if (IOHelper::folderExists(blx()->path->getLogPath()))
+				{
+					// Grab the latest log file.
+					Zip::add($tempZipFile, blx()->path->getLogPath().'blocks.log', blx()->path->getStoragePath());
+
+					// Grab the most recent rolled-over log file, if one exists.
+					if (IOHelper::fileExists(blx()->path->getLogPath().'blocks.log.1'))
+					{
+						Zip::add($tempZipFile, blx()->path->getLogPath().'blocks1.log.1', blx()->path->getStoragePath());
+					}
+
+					// Grab the phperrors log file, if it exists.
+					if (IOHelper::fileExists(blx()->path->getLogPath().'phperrors.log'))
+					{
+						Zip::add($tempZipFile, blx()->path->getLogPath().'phperrors.log', blx()->path->getStoragePath());
+					}
+				}
+
+				if (IOHelper::folderExists(blx()->path->getDbBackupPath()))
+				{
+					$contents = IOHelper::getFolderContents(blx()->path->getDbBackupPath());
+					rsort($contents);
+
+					// Only grab the most recent 5 sorted by timestamp.
+					for ($counter = 0; $counter <= 4; $counter++)
+					{
+						Zip::add($tempZipFile, $contents[$counter], blx()->path->getStoragePath());
+					}
+				}
+
+				$requestParams['File1_sFilename'] = 'SupportAttachment.zip';
+				$requestParams['File1_sFileMimeType'] = 'application/zip';
+				$requestParams['File1_bFileBody'] = base64_encode(IOHelper::getFileContents($tempZipFile));
+
+				// Bump the default timeout because of the attachment.
+				$hsParams['callTimeout'] = 60;
+			}
+		}
+		catch(\Exception $e)
+		{
+			Blocks::log('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), \CLogger::LEVEL_WARNING);
+
+			// There was a problem zipping, so reset the params and just send the email without the attachment.
+			$requestParams = $requestParamDefaults;
+		}
+
+		require_once blx()->path->getLibPath().'HelpSpotAPI.php';
+		$hsapi = new \HelpSpotAPI($hsParams);
+
+		$result = $hsapi->requestCreate($requestParams);
 
 		if ($result)
 		{
+			if ($attachment)
+			{
+				if (IOHelper::fileExists($tempZipFile))
+				{
+					IOHelper::deleteFile($tempZipFile);
+				}
+			}
+
 			$this->returnJson(array('success' => true));
 		}
 		else
