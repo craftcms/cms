@@ -9,7 +9,7 @@ class PagesController extends BaseEntityController
 	/**
 	 * Returns the block service instance.
 	 *
-	 * @return PageBlocksService
+	 * @return PagesService
 	 */
 	protected function getService()
 	{
@@ -87,7 +87,7 @@ class PagesController extends BaseEntityController
 			blx()->userSession->setError(Blocks::t('Couldn’t save page.'));
 
 			$this->renderRequestedTemplate(array(
-				'content' => $content
+				'page' => $page
 			));
 		}
 	}
