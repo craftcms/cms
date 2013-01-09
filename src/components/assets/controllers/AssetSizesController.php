@@ -19,6 +19,7 @@ class AssetSizesController extends BaseController
 		$size->handle = blx()->request->getPost('handle');
 		$size->width = blx()->request->getPost('width');
 		$size->height = blx()->request->getPost('height');
+		$size->scaleMode = blx()->request->getPost('scaleMode');
 
 		// Did it save?
 		if (blx()->assetSizes->saveSize($size))

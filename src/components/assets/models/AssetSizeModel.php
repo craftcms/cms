@@ -27,7 +27,8 @@ class AssetSizeModel extends BaseModel
 			'handle'              => AttributeType::Handle,
 			'width'               => AttributeType::Number,
 			'height'              => AttributeType::Number,
-			'dimensionChangeTime' => AttributeType::DateTime
+			'dimensionChangeTime' => AttributeType::DateTime,
+			'scaleMode'           => AttributeType::String
 		);
 	}
 }

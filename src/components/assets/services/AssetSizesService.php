@@ -70,8 +70,9 @@ class AssetSizesService extends BaseApplicationComponent
 
 		$sizeRecord->name = $size->name;
 		$sizeRecord->handle = $size->handle;
+		$sizeRecord->scaleMode = $size->scaleMode;
 
-		if ($sizeRecord->width != $size->width || $sizeRecord->height != $size->height)
+		if ($sizeRecord->width != $size->width || $sizeRecord->height != $size->height || $sizeRecord->scaleMode != $size->scaleMode)
 		{
 			$sizeRecord->dimensionChangeTime = new DateTime('@'.time());
 		}
@@ -180,7 +181,20 @@ class AssetSizesService extends BaseApplicationComponent
 			if (!$timeModified || $timeModified < $fileModel->dateModified || $timeModified < $size->dimensionChangeTime)
 			{
 				$targetFile = AssetsHelper::getTempFilePath(pathinfo($fileModel->filename, PATHINFO_EXTENSION));
-				blx()->images->loadImage($imageSource)->scale($size->width, $size->height)->saveAs($targetFile);
+				switch ($size->scaleMode)
+				{
+					case 'scale':
+					{
+						blx()->images->loadImage($imageSource)->scale($size->width, $size->height)->saveAs($targetFile);
+						break;
+					}
+
+					case 'scaleAndCrop':
+					{
+						blx()->images->loadImage($imageSource)->scaleAndCrop($size->width, $size->height)->saveAs($targetFile);
+						break;
+					}
+				}
 				clearstatcache(true, $targetFile);
 				$sourceType->putImageSize($fileModel, $handle, $targetFile);
 				IOHelper::deleteFile($targetFile);

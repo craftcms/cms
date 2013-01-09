@@ -90,7 +90,7 @@ var b;
 				action:       Blocks.actionUrl + '/assets/uploadFile',
 				template:     '<div class="assets-qq-uploader">'
 					+   '<div class="assets-qq-upload-drop-area"></div>'
-					+   '<a href="" class="btn submit assets-qq-upload-button" data-icon="↑" style="position: relative; overflow: hidden; direction: ltr; ">' + Blocks.t('Upload files') + '</a>'
+					+   '<a href="javascript:;" class="btn submit assets-qq-upload-button" data-icon="↑" style="position: relative; overflow: hidden; direction: ltr; ">' + Blocks.t('Upload files') + '</a>'
 					+   '<ul class="assets-qq-upload-list"></ul>'
 					+ '</div>',
 
