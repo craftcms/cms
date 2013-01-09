@@ -19,7 +19,7 @@ class LinksController extends BaseController
 		$linkType = blx()->links->getLinkType($type);
 		if (!$linkType)
 		{
-			throw new Exception(Blocks::t('No link type exists with the class “{class}”', array('class' => $class)));
+			throw new Exception(Blocks::t('No link type exists with the type “{type}”', array('type' => $type)));
 		}
 
 		$entities = $linkType->getLinkableEntities($settings);
