@@ -47,10 +47,12 @@ class PathService extends BaseApplicationComponent
 	{
 		$path = $this->getStoragePath().'runtime/';
 		IOHelper::ensureFolderExists($path);
+
 		if (!IOHelper::fileExists($path.'.gitignore'))
 		{
-			file_put_contents($path.'.gitignore', "*\n!.gitignore\n\n");
+			IOHelper::writeToFile($path.'.gitignore', "*\n!.gitignore\n\n", true);
 		}
+
 		return $path;
 	}
 
