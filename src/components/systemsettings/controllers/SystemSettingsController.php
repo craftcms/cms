@@ -63,7 +63,7 @@ class SystemSettingsController extends BaseController
 		blx()->userSession->setError(Blocks::t('Couldn’t save email settings.'));
 
 		$this->renderRequestedTemplate(array(
-			'settings' => $emailSettings
+			'settings' => $settings
 		));
 	}
 
