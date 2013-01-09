@@ -92,15 +92,16 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 		$s3 = new \S3($keyId, $secret);
 		$buckets = @$s3->listBuckets();
+
 		if (empty($buckets))
 		{
 			throw new Exception(Blocks::t("Credentials rejected by target host."));
 		}
 
 		$bucketList = array();
+
 		foreach ($buckets as $bucket)
 		{
-
 			$location = $s3->getBucketLocation($bucket);
 
 			$bucketList[] = array(
@@ -110,6 +111,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 			);
 
 		}
+
 		return $bucketList;
 	}
 
@@ -125,6 +127,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		{
 			return static::$_predefinedEndpoints[$location];
 		}
+
 		return 's3-'.$location.'.amazonaws.com';
 	}
 
@@ -136,7 +139,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	public function startIndex($sessionId)
 	{
-
 		$settings = $this->getSettings();
 		$this->_prepareForRequests();
 
@@ -148,6 +150,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$fileList = array_filter($fileList, function ($value) {
 			$path = $value['name'];
 			$segments = explode('/', $path);
+
 			foreach ($segments as $segment)
 			{
 				if (isset($segment[0]) && $segment[0] == '_')
@@ -155,6 +158,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 					return false;
 				}
 			}
+
 			return true;
 		});
 
@@ -172,6 +176,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 				{
 					$folders = explode('/', rtrim($matches[1], '/'));
 					$basePath = '';
+
 					foreach ($folders as $folder)
 					{
 						$basePath .= $folder .'/';
@@ -197,6 +202,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 						'uri' => $file['name'],
 						'size' => $file['size']
 					);
+
 					blx()->assetIndexing->storeIndexEntry($indexEntry);
 					$total++;
 				}
@@ -235,10 +241,9 @@ class S3AssetSourceType extends BaseAssetSourceType
 		}
 
 		$uriPath = $indexEntryModel->uri;
-
 		$fileModel = $this->_indexFile($uriPath);
-
 		$this->_prepareForRequests();
+
 		if ($fileModel)
 		{
 			$settings = $this->getSettings();
@@ -281,9 +286,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
-
 		$fileName = IOHelper::cleanFilename($fileName);
-
 		$extension = IOHelper::getExtension($fileName);
 
 		if (! IOHelper::isExtensionAllowed($extension))
@@ -317,6 +320,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		clearstatcache();
 		$this->_prepareForRequests();
+
 		if (!$this->_s3->putObject(array('file' => $filePath), $this->getSettings()->bucket, $uriPath))
 		{
 			throw new Exception(Blocks::t('Could not copy file to target destination'));
@@ -353,10 +357,12 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$path = $folder->fullPath.'_'.$sizeHandle.'/'.$fileModel->filename;
 		$this->_prepareForRequests();
 		$info = $this->_s3->getObjectInfo($this->getSettings()->bucket, $path);
+
 		if (empty($info))
 		{
 			return false;
 		}
+
 		return new DateTime('@'.$info['time']);
 	}
 
@@ -372,6 +378,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 		$this->_prepareForRequests();
 		$targetFile = rtrim($fileModel->getFolder()->fullPath, '/').'/_'.$handle.'/'.$fileModel->filename;
+
 		return $this->_s3->putObject(array('file' => $sourceImage), $this->getSettings()->bucket, $targetFile);
 	}
 
@@ -388,7 +395,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$fileList = $this->_s3->getBucket($this->getSettings()->bucket, $folder->fullPath);
 
 		$fileNameParts = explode(".", $fileName);
-
 		$extension = array_pop($fileNameParts);
 
 		$fileNameStart = join(".", $fileNameParts) . '_';
@@ -401,5 +407,4 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		return $fileNameStart . $index . '.' . $extension;
 	}
-
 }

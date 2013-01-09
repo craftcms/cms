@@ -169,6 +169,7 @@ class UserProfilesController extends BaseEntityController
 			if (IOHelper::fileExists($imagePath) && blx()->images->setMemoryForImage($imagePath))
 			{
 				blx()->userProfiles->deleteUserPhoto($user);
+
 				if (blx()->userProfiles->cropAndSaveUserPhoto($imagePath, $x1, $x2, $y1, $y2, $user))
 				{
 					IOHelper::clearFolder(blx()->path->getTempUploadsPath().'userphotos/'.$user->username);
@@ -178,6 +179,7 @@ class UserProfilesController extends BaseEntityController
 							'account' => $user
 						)
 					);
+
 					$this->returnJson(array('html' => $html));
 				}
 			}
@@ -214,6 +216,7 @@ class UserProfilesController extends BaseEntityController
 
 		// Since Model still believes it has an image, we make sure that it does not so anymore when it reaches the template.
 		$user->photo = null;
+
 		$html = blx()->templates->render('users/_edit/_userphoto',
 			array(
 				'account' => $user
@@ -250,11 +253,6 @@ class UserProfilesController extends BaseEntityController
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->users->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
 
 		// Only admins can toggle admin settings
 		if (blx()->userSession->isAdmin())

@@ -36,6 +36,8 @@ class LogRouter extends \CLogRouter
 		}
 
 		if ($match)
+		{
 			array_splice($this->_routes, $match, 1);
+		}
 	}
 }

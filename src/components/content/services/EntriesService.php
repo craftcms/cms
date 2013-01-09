@@ -564,8 +564,7 @@ class EntriesService extends BaseEntityService
 		// First delete any links
 		blx()->links->deleteLinksForEntity('Entry', $entryId);
 
-		// Then delete the entry rows
-		// (everything else should cascade-delete from there)
+		// Then delete the entry rows (everything else should cascade-delete from there)
 		if (is_array($entryId))
 		{
 			$condition = array('in', 'id', $entryId);
@@ -722,7 +721,6 @@ class EntriesService extends BaseEntityService
 	private function _getTagsForEntry(EntryRecord $entryRecord)
 	{
 		$currentEntryTagRecords = array();
-
 		$entryTagEntries = $entryRecord->entryTagEntries;
 
 		foreach ($entryTagEntries as $entryTagEntry)
@@ -956,6 +954,7 @@ class EntriesService extends BaseEntityService
 			for ($i = 0; true; $i++)
 			{
 				$testSlug = $slug;
+
 				if ($i != 0)
 				{
 					$testSlug .= '-'.$i;

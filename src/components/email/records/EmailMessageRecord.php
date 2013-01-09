@@ -6,11 +6,17 @@ namespace Blocks;
  */
 class EmailMessageRecord extends BaseRecord
 {
+	/**
+	 * @return string
+	 */
 	public function getTableName()
 	{
 		return 'emailmessages';
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineAttributes()
 	{
 		return array(
@@ -22,6 +28,9 @@ class EmailMessageRecord extends BaseRecord
 		);
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineIndexes()
 	{
 		return array(

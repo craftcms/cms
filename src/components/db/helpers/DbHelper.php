@@ -293,7 +293,6 @@ class DbHelper
 
 		if ($nameLength > $maxLength)
 		{
-			$totalExtract = $nameLength - $maxLength;
 			$parts = array_filter(explode('_', $name));
 			$totalParts = count($parts);
 			$totalLetters = $nameLength - ($totalParts-1);

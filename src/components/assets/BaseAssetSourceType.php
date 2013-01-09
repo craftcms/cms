@@ -124,7 +124,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 		$size = $uploader->file->getSize();
 
 		// Make sure the file isn't empty
-		if (! $size)
+		if (!$size)
 		{
 			throw new Exception(Blocks::t('Uploaded file was empty'));
 		}
@@ -133,7 +133,8 @@ abstract class BaseAssetSourceType extends BaseComponent
 		$filePath = AssetsHelper::getTempFilePath();
 		$uploader->file->save($filePath);
 
-		if ($filename = $this->_insertFileInFolder($folder, $filePath, $uploader->file->getName())) {
+		if ($filename = $this->_insertFileInFolder($folder, $filePath, $uploader->file->getName()))
+		{
 
 		//}
 
@@ -256,6 +257,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 	{
 		// Figure out the obsolete records for folders
 		$missingFolders = array();
+
 		$parameters = new FolderCriteria(array(
 			'sourceId' => $this->model->id
 		));
@@ -279,7 +281,6 @@ abstract class BaseAssetSourceType extends BaseComponent
 	 */
 	protected function _indexFile($uriPath)
 	{
-		$fileIndexed = false;
 		$extension = IOHelper::getExtension($uriPath);
 
 		if (IOHelper::isExtensionAllowed($extension))
@@ -297,6 +298,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 			{
 				$parentId = false;
 			}
+
 			$folderParameters = new FolderCriteria(
 				array(
 					'sourceId' => $this->model->id,

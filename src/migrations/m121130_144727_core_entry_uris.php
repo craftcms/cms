@@ -29,6 +29,13 @@ class m121130_144727_core_entry_uris extends \CDbMigration
 		return true;
 	}
 
+	/**
+	 * @param      $name
+	 * @param      $table
+	 * @param      $columns
+	 * @param bool $unique
+	 * @return int
+	 */
 	private function _createIndex($name, $table, $columns, $unique = false)
 	{
 		$name = md5(blx()->db->tablePrefix.$name);

@@ -71,9 +71,11 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		$localPath = $this->_getSourceFileSystemPath();
 		$fileList = IOHelper::getFolderContents($localPath, true);
+
 		$fileList = array_filter($fileList, function ($value) use ($localPath) {
 			$path = substr($value, strlen($localPath));
 			$segments = explode('/', $path);
+
 			foreach ($segments as $segment)
 			{
 				if (isset($segment[0]) && $segment[0] == '_')
@@ -81,6 +83,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 					return false;
 				}
 			}
+
 			return true;
 		});
 
@@ -89,7 +92,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		foreach ($fileList as $file)
 		{
-			if ( !preg_match(AssetsHelper::IndexSkipItemsPattern, $file))
+			if (!preg_match(AssetsHelper::IndexSkipItemsPattern, $file))
 			{
 				if (is_dir($file))
 				{
@@ -197,7 +200,6 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
-
 		$targetFolder = $this->_getSourceFileSystemPath() . $folder->fullPath;
 
 		// Make sure the folder is writable
@@ -211,7 +213,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		$targetPath = $targetFolder . $fileName;
 		$extension = IOHelper::getExtension($fileName);
 
-		if (! IOHelper::isExtensionAllowed($extension))
+		if (!IOHelper::isExtensionAllowed($extension))
 		{
 			throw new Exception(Blocks::t('This file type is not allowed'));
 		}
@@ -222,6 +224,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			$response->setResponse(AssetOperationResponseModel::StatusConflict);
 			$response->setResponseDataItem('prompt', $this->_getUserPromptOptions($fileName));
 			return $response;*/
+
 			// TODO handle the conflict instead of just saving as new
 			$targetPath = $targetFolder . $this->_getNameReplacement($folder, $fileName);
 			if (!$targetPath)
@@ -268,9 +271,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		for ($i = 1; $i <= 50; $i++)
 		{
-			if (!isset($existingFiles[$fileName . '_' . $i . '.' . $extension]))
+			if (!isset($existingFiles[$fileName.'_'.$i.'.'.$extension]))
 			{
-				return $fileName . '_' . $i . '.' . $extension;
+				return $fileName.'_'.$i.'.'.$extension;
 			}
 		}
 
@@ -287,10 +290,12 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	public function getTimeSizeModified(AssetFileModel $fileModel, $sizeHandle)
 	{
 		$path = $this->_getImageServerPath($fileModel, $sizeHandle);
+
 		if (!IOHelper::fileExists($path))
 		{
 			return false;
 		}
+
 		return IOHelper::getLastTimeModified($path);
 	}
 
@@ -320,7 +325,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get the local path for an image, opt	ionally with a size handle.
+	 * Get the local path for an image, optionally with a size handle.
 	 *
 	 * @param AssetFileModel $fileModel
 	 * @param string $handle
@@ -330,6 +335,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		$targetFolder = $this->_getSourceFileSystemPath().$fileModel->getFolder()->fullPath;
 		$targetFolder .= !empty($handle) ? '_'.$handle.'/': '';
+
 		return $targetFolder.$fileModel->filename;
 	}
 }

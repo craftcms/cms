@@ -23,7 +23,7 @@ class RebrandVariable
 	/**
 	 * Returns the logo variable, or false if a logo hasn't been uploaded.
 	 *
-	 * @return LogoVariable|false
+	 * @return LogoVariable
 	 */
 	public function getLogo()
 	{
@@ -48,7 +48,7 @@ class RebrandVariable
 	 * Returns the path to the logo, or false if a logo hasn't been uploaded.
 	 *
 	 * @access private
-	 * @return string|false
+	 * @return string
 	 */
 	private function _getLogoPath()
 	{

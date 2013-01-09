@@ -9,7 +9,7 @@ class GlobalsController extends BaseEntityController
 	/**
 	 * Returns the block service instance.
 	 *
-	 * @return GlobalBlocksService
+	 * @return GlobalsService
 	 */
 	protected function getService()
 	{
@@ -38,11 +38,13 @@ class GlobalsController extends BaseEntityController
 		if (blx()->globals->saveGlobalContent($content))
 		{
 			blx()->userSession->setNotice(Blocks::t('Global blocks saved.'));
+
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
 			blx()->userSession->setError(Blocks::t('Couldn’t save global blocks.'));
+
 			$this->renderRequestedTemplate(array(
 				'globals' => $content,
 			));

@@ -17,6 +17,7 @@ class m121204_221243_user_permissions extends \CDbMigration
 		{
 			$newRecordClasses = array('UserPermissionRecord', 'UserPermission_UserGroupRecord', 'UserPermission_UserRecord');
 
+			$records = array();
 			foreach ($newRecordClasses as $class)
 			{
 				$class = __NAMESPACE__.'\\'.$class;
@@ -37,6 +38,13 @@ class m121204_221243_user_permissions extends \CDbMigration
 		return true;
 	}
 
+	/**
+	 * @param      $name
+	 * @param      $table
+	 * @param      $columns
+	 * @param bool $unique
+	 * @return int
+	 */
 	private function _createIndex($name, $table, $columns, $unique = false)
 	{
 		$name = md5(blx()->db->tablePrefix.$name);

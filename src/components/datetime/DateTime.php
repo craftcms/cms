@@ -162,7 +162,7 @@ class DateTime extends \DateTime
 	/**
 	 * @param \DateTime $datetime2
 	 * @param bool      $absolute
-	 * @return DateInterval|false
+	 * @return DateInterval
 	 */
 	public function diff($datetime2, $absolute = false)
 	{

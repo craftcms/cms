@@ -287,7 +287,7 @@ abstract class BaseEntityService extends BaseApplicationComponent
 	 *
 	 * @param BaseBlockModel $block
 	 * @access protected
-	 * @return string|false
+	 * @return string
 	 */
 	protected function getContentTable(BaseBlockModel $block)
 	{

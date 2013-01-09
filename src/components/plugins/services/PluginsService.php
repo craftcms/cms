@@ -385,7 +385,7 @@ class PluginsService extends BaseApplicationComponent
 	 *
 	 * @param BasePlugin $plugin
 	 * @param mixed $settings
-	 * @return true
+	 * @return bool
 	 */
 	public function savePluginSettings($plugin, $settings)
 	{

@@ -94,6 +94,7 @@ class EntryLinkType extends BaseLinkType
 	{
 		$criteria = new EntryCriteria($settings);
 		$criteria->order = 'title';
+
 		return blx()->entries->findEntries($criteria);
 	}
 }

@@ -9,7 +9,7 @@ class UserGroupsVariable
 	/**
 	 * Returns all user groups.
 	 *
-	 * @param stirng|null $indexBy
+	 * @param string|null $indexBy
 	 * @return array
 	 */
 	public function getAllGroups($indexBy = null)

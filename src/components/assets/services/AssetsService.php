@@ -117,7 +117,6 @@ class AssetsService extends BaseEntityService
 	public function getFileById($fileId)
 	{
 		$parameters = new FileCriteria(array('id' => $fileId));
-
 		return $this->findFile($parameters);
 	}
 
@@ -217,7 +216,7 @@ class AssetsService extends BaseEntityService
 
 		$this->_applyFileConditions($query, $criteria);
 
-		return (int) $query->queryScalar();
+		return (int)$query->queryScalar();
 	}
 
 	/**
@@ -386,7 +385,6 @@ class AssetsService extends BaseEntityService
 	 */
 	public function storeFolder(AssetFolderModel $folderModel)
 	{
-
 		if (empty($folderModel->id))
 		{
 			$record = new AssetFolderRecord();
@@ -508,7 +506,7 @@ class AssetsService extends BaseEntityService
 
 		$this->_applyFolderConditions($query, $criteria);
 
-		return (int) $query->queryScalar();
+		return (int)$query->queryScalar();
 	}
 
 	/**

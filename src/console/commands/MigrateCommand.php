@@ -105,6 +105,10 @@ class MigrateCommand extends \MigrateCommand
 		}
 	}
 
+	/**
+	 * @param $class
+	 * @return bool
+	 */
 	protected function migrateUp($class)
 	{
 		return blx()->migrations->migrateUp($class);
@@ -164,6 +168,9 @@ class MigrateCommand extends \MigrateCommand
 		echo "done.\n";
 	}
 
+	/**
+	 * @return array
+	 */
 	protected function getNewMigrations()
 	{
 		return blx()->migrations->getNewMigrations();

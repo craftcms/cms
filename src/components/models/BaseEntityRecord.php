@@ -29,6 +29,7 @@ abstract class BaseEntityRecord extends BaseRecord
 			if (!empty($blockType))
 			{
 				$attribute = $blockType->defineContentAttribute();
+
 				if ($attribute !== false)
 				{
 					$attribute = ModelHelper::normalizeAttributeConfig($attribute);

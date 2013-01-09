@@ -303,12 +303,9 @@ class DateTimeHelper
 		// If more than a week, then take into account the length of months
 		if ($diff >= 604800)
 		{
-			$current = array();
-			$date = array();
-
 			list($future['H'], $future['i'], $future['s'], $future['d'], $future['m'], $future['Y']) = explode('/', date('H/i/s/d/m/Y', $futureTime));
-
 			list($past['H'], $past['i'], $past['s'], $past['d'], $past['m'], $past['Y']) = explode('/', date('H/i/s/d/m/Y', $pastTime));
+
 			$years = $months = $weeks = $days = $hours = $minutes = $seconds = 0;
 
 			if ($future['Y'] == $past['Y'] && $future['m'] == $past['m'])

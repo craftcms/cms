@@ -7,6 +7,7 @@ namespace Blocks;
 class DashboardController extends BaseController
 {
 	/**
+	 *
 	 */
 	public function actionGetAlerts()
 	{

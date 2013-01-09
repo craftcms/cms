@@ -21,14 +21,14 @@ class UserSessionService extends \CWebUser
 	 * Stores the current user model.
 	 *
 	 * @access private
-	 * @var UserModel|false
+	 * @var UserModel
 	 */
 	private $_user;
 
 	/**
 	 * Gets the currently logged-in user.
 	 *
-	 * @return UserModel|false
+	 * @return UserModel
 	 */
 	public function getUser()
 	{
@@ -56,7 +56,7 @@ class UserSessionService extends \CWebUser
 	/**
 	 * Returns the URL the user was trying to access before getting sent to the login page.
 	 *
-	 * @param null $defaultUrl
+	 * @param string $defaultUrl
 	 * @return mixed
 	 */
 	public function getReturnUrl($defaultUrl = '')

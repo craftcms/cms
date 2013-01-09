@@ -50,6 +50,8 @@ class GetHelpWidget extends BaseWidget
 
 		if ($plugins)
 		{
+			$pluginNames = array();
+
 			foreach ($plugins as $plugin)
 			{
 				$pluginNames[] = $plugin->getName().' ('.$plugin->getDeveloper().')';

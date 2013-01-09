@@ -252,7 +252,7 @@ class EmailService extends BaseApplicationComponent
 
 	/**
 	 * @param $settings
-	 * @return void
+	 * @return bool
 	 */
 	public function sendTestEmail($settings)
 	{

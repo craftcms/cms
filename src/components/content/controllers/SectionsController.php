@@ -9,7 +9,7 @@ class SectionsController extends BaseEntityController
 	/**
 	 * Returns the block service instance.
 	 *
-	 * @return SectionBlocksService
+	 * @return SectionsService
 	 */
 	protected function getService()
 	{
@@ -43,7 +43,7 @@ class SectionsController extends BaseEntityController
 		$section->name       = blx()->request->getPost('name');
 		$section->handle     = blx()->request->getPost('handle');
 		$section->titleLabel = blx()->request->getPost('titleLabel');
-		$section->hasUrls    = (bool) blx()->request->getPost('hasUrls');
+		$section->hasUrls    = (bool)blx()->request->getPost('hasUrls');
 		$section->urlFormat  = blx()->request->getPost('urlFormat');
 		$section->template   = blx()->request->getPost('template');
 

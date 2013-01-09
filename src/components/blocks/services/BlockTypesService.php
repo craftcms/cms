@@ -37,6 +37,7 @@ class BlockTypesService extends BaseApplicationComponent
 	public function populateBlockType(BaseBlockModel $block, $entity = null)
 	{
 		$blockType = blx()->components->populateComponentByTypeAndModel(ComponentType::Block, $block);
+
 		if ($blockType)
 		{
 			$blockType->entity = $entity;

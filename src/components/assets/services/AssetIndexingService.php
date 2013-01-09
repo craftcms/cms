@@ -152,6 +152,7 @@ class AssetIndexingService extends BaseApplicationComponent
 						{
 							IOHelper::deleteFile($file);
 						}
+
 						IOHelper::deleteFolder(blx()->path->getAssetsThumbSizesPath().$fileId);
 					}
 				}
@@ -171,6 +172,7 @@ class AssetIndexingService extends BaseApplicationComponent
 									':sourceId' => $folder->sourceId
 								))
 							->queryColumn();
+
 						blx()->links->deleteLinksForEntity('Asset', $fileIds);
 
 					}
@@ -201,10 +203,11 @@ class AssetIndexingService extends BaseApplicationComponent
 						->where(array('in', 'fi.sourceId', $sources))
 						->queryAll();
 
-				foreach ($fileEntries as $fileEntry) {
-					if ( !isset($processedFiles[$fileEntry['fileId']]) )
+				foreach ($fileEntries as $fileEntry)
+				{
+					if (!isset($processedFiles[$fileEntry['fileId']]))
 					{
-						$output['files'][$fileEntry['fileId']] = $fileEntry['sourceName']. '/' . $fileEntry['fullPath'] . $fileEntry['filename'];
+						$output['files'][$fileEntry['fileId']] = $fileEntry['sourceName'].'/'.$fileEntry['fullPath'].$fileEntry['filename'];
 					}
 				}
 
@@ -214,7 +217,9 @@ class AssetIndexingService extends BaseApplicationComponent
 			}
 
 			default:
+			{
 				throw new Exception(Blocks::t('Unkown indexing command!'));
+			}
 		}
 
 		return $output;

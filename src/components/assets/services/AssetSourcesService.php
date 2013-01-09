@@ -49,6 +49,7 @@ class AssetSourcesService extends BaseApplicationComponent
 		$sourceRecords = AssetSourceRecord::model()->ordered()->findAll();
 		$sources =  AssetSourceModel::populateModels($sourceRecords, $indexBy);
 		$output = array();
+
 		foreach ($sources as $source)
 		{
 			$output[$source->id] = $source;

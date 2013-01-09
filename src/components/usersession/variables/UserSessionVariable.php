@@ -29,7 +29,7 @@ class UserSessionVariable
 	/**
 	 * Returns the URL the user was trying to access before getting sent to the login page.
 	 *
-	 * @param null $defaultUrl
+	 * @param string $defaultUrl
 	 * @return mixed
 	 */
 	public function getReturnUrl($defaultUrl = '')

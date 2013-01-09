@@ -188,7 +188,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 * Returns a version by its offset.
 	 *
 	 * @param int $entryId
-	 * @param int $versionNum
+	 * @param int $offset
 	 * @return EntryVersionModel|null
 	 */
 	public function getVersionByOffset($entryId, $offset = 0)

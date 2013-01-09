@@ -12,7 +12,7 @@ class ResourcesService extends BaseApplicationComponent
 	 * Resolves a resource path to the actual file system path, or returns false if the resource cannot be found.
 	 *
 	 * @param string $path
-	 * @return string|false
+	 * @return string
 	 */
 	public function getResourcePath($path)
 	{

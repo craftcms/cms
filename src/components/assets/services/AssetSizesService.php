@@ -50,6 +50,7 @@ class AssetSizesService extends BaseApplicationComponent
 		{
 			$this->_assetSizes = array();
 			$models = AssetSizeModel::populateModels(AssetSizeRecord::model()->findAll());
+
 			foreach ($models as $model)
 			{
 				$this->_assetSizes[$model->handle] = $model;

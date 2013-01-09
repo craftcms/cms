@@ -98,7 +98,7 @@ class LinksService extends BaseApplicationComponent
 	 * @param string $type
 	 * @param string $rtlHandle
 	 * @param int $rightEntityId
-	* @return array|false
+	* @return array
 	*/
 	public function getReverseLinkedEntities($type, $rtlHandle, $rightEntityId)
 	{
@@ -188,9 +188,6 @@ class LinksService extends BaseApplicationComponent
 	 */
 	public function setLinks($criteriaId, $leftEntityId, $rightEntityIds)
 	{
-		$criteria = $this->getCriteriaRecordById($criteriaId);
-		$linkType = $this->_getLinkType($criteria->rightEntityType);
-
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
@@ -203,6 +200,8 @@ class LinksService extends BaseApplicationComponent
 			if ($rightEntityIds)
 			{
 				$totalEntities = count($rightEntityIds);
+				$values = array();
+
 				foreach ($rightEntityIds as $index => $entityId)
 				{
 					$sortOrder = ($index - $totalEntities);

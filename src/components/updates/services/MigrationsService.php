@@ -180,6 +180,7 @@ class MigrationsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * @param null $limit
 	 * @return mixed
 	 */
 	public function getMigrationHistory($limit = null)

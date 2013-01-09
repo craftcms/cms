@@ -45,6 +45,7 @@ class PagesService extends BaseEntityService
 	{
 		$blockRecord = parent::populateBlockRecord($block);
 		$blockRecord->pageId = $block->pageId;
+
 		return $blockRecord;
 	}
 
@@ -53,7 +54,7 @@ class PagesService extends BaseEntityService
 	 *
 	 * @param BaseBlockModel $block
 	 * @access protected
-	 * @return string|false
+	 * @return string
 	 */
 	protected function getContentTable(BaseBlockModel $block)
 	{
@@ -71,6 +72,7 @@ class PagesService extends BaseEntityService
 		$blockRecords = PageBlockRecord::model()->ordered()->findAllByAttributes(array(
 			'pageId' => $pageId
 		));
+
 		return $this->populateBlocks($blockRecords);
 	}
 
@@ -151,6 +153,7 @@ class PagesService extends BaseEntityService
 	public function getPageById($pageId)
 	{
 		$pageRecord = PageRecord::model()->findById($pageId);
+
 		if ($pageRecord)
 		{
 			return PageModel::populateModel($pageRecord);
@@ -229,7 +232,6 @@ class PagesService extends BaseEntityService
 
 			if ($blockType->defineContentAttribute() !== false)
 			{
-				$handle = $block->handle;
 				$content[$block->id] = $blockType->getPostData();
 			}
 

@@ -26,6 +26,7 @@ class PluginsVariable
 	/**
 	 * Returns all plugins.
 	 *
+	 * @param bool $enabledOnly
 	 * @return array
 	 */
 	public function getPlugins($enabledOnly = true)

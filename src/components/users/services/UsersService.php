@@ -152,7 +152,7 @@ class UsersService extends BaseApplicationComponent
 
 		$this->_applyUserConditions($query, $criteria);
 
-		return (int) $query->queryScalar();
+		return (int)$query->queryScalar();
 	}
 
 	/**

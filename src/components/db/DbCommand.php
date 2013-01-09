@@ -383,7 +383,8 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
-	 * @param $table
+	 * @param string $table
+	 * @param string $columns
 	 * @return int
 	 */
 	public function dropForeignKey($table, $columns)
@@ -407,9 +408,10 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
-	 * @param $table
-	 * @param $columns
+	 * @param string $table
+	 * @param string $columns
 	 * $param $unique
+	 * @param bool   $unique
 	 * @return int
 	 */
 	public function dropIndex($table, $columns, $unique = false)

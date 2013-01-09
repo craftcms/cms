@@ -54,6 +54,7 @@ class PageRecord extends BaseRecord
 	{
 		$scopes = parent::scopes();
 		$scopes['ordered'] = array('order' => 'uri');
+
 		return $scopes;
 	}
 }

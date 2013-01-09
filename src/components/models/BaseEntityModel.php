@@ -44,6 +44,7 @@ abstract class BaseEntityModel extends BaseModel
 	 * Getter
 	 *
 	 * @param string $name
+	 * @throws \Exception
 	 * @return mixed
 	 */
 	function __get($name)

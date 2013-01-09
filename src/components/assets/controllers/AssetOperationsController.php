@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- * Handles asset indeizng and sizing tasks
+ * Handles asset indexing and sizing tasks
  */
 class AssetOperationsController extends BaseController
 {
@@ -85,7 +85,8 @@ class AssetOperationsController extends BaseController
 			}
 		}
 
-		if (empty($return)){
+		if (empty($return))
+		{
 			$this->returnErrorJson(Blocks::t("Blocks couldn't find the requested file."));
 		}
 		else

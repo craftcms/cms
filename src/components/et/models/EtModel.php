@@ -12,13 +12,13 @@ class EtModel extends BaseModel
 	public function defineAttributes()
 	{
 		// The site URL as defined in blx_info->siteUrl.
-		$attributes['url']      = AttributeType::String;
+		$attributes['url'] = AttributeType::String;
 
 		// The client license key.
-		$attributes['licenseKey']  = AttributeType::String;
+		$attributes['licenseKey'] = AttributeType::String;
 
 		// The license key status.  Set by the server response.
-		$attributes['licenseKeyStatus']     = AttributeType::String;
+		$attributes['licenseKeyStatus']  = AttributeType::String;
 
 		// Extra arbitrary data to send to the server.
 		$attributes['data'] = AttributeType::Mixed;

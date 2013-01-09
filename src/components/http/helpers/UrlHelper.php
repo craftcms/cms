@@ -52,6 +52,7 @@ class UrlHelper
 	{
 		$path = trim($path, '/');
 		$path = blx()->config->get('cpTrigger').'/'.$path;
+
 		return static::_getUrl($path, $params, $protocol, true, false);
 	}
 
@@ -121,11 +122,13 @@ class UrlHelper
 	/**
 	 * Returns a URL.
 	 *
-	 * @static
 	 * @access private
-	 * @param string $path
+	 * @param string       $path
 	 * @param array|string $params
-	 * @param string protocol
+	 * @param              $protocol
+	 * @param              $dynamicBaseUrl
+	 * @param              $mustShowScriptName
+	 * @return string
 	 */
 	private function _getUrl($path, $params, $protocol, $dynamicBaseUrl, $mustShowScriptName)
 	{

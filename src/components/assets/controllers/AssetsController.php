@@ -76,11 +76,13 @@ class AssetsController extends BaseEntityController
 	{
 		$requestId = blx()->request->getPost('requestId', 0);
 		$fileId = blx()->request->getRequiredPost('fileId');
+
 		$html = blx()->templates->render('assets/_views/file',
 			array(
 				'file' => blx()->assets->getFileById($fileId)
 			)
 		);
+
 		$this->returnJson(array(
 			'requestId' => $requestId,
 			'headHtml' => blx()->templates->getHeadHtml(),
@@ -98,7 +100,8 @@ class AssetsController extends BaseEntityController
 		$this->requireAjaxRequest();
 		$file = blx()->assets->getFileById(blx()->request->getRequiredPost('fileId'));
 
-		if ($file) {
+		if ($file)
+		{
 			$file->setContent(blx()->request->getPost('blocks'));
 			blx()->assets->storeFileBlocks($file);
 			$this->returnJson(array('success' => true));

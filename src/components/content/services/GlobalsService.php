@@ -44,6 +44,7 @@ class GlobalsService extends BaseEntityService
 	 * Saves the global content.
 	 *
 	 * @param GlobalContentModel $content
+	 * @return bool
 	 */
 	public function saveGlobalContent(GlobalContentModel $content)
 	{
