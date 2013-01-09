@@ -139,9 +139,9 @@ class DashboardController extends BaseController
 					}
 
 					// Grab the phperrors log file, if it exists.
-					if (IOHelper::fileExists(blx()->path->getRuntimePath().'phperrors.log'))
+					if (IOHelper::fileExists(blx()->path->getLogPath().'phperrors.log'))
 					{
-						Zip::add($tempZipFile, blx()->path->getRuntimePath().'phperrors.log', blx()->path->getRuntimePath());
+						Zip::add($tempZipFile, blx()->path->getLogPath().'phperrors.log', blx()->path->getRuntimePath());
 					}
 				}
 
