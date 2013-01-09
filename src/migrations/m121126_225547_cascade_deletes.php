@@ -72,7 +72,7 @@ class m121126_225547_cascade_deletes extends \CDbMigration
 				{
 					if (empty($config['required']))
 					{
-						$onDelete = static::SET_NULL;
+						$onDelete = BaseRecord::SET_NULL;
 					}
 					else
 					{
@@ -100,6 +100,16 @@ class m121126_225547_cascade_deletes extends \CDbMigration
 		return true;
 	}
 
+	/**
+	 * @param      $name
+	 * @param      $table
+	 * @param      $columns
+	 * @param      $refTable
+	 * @param      $refColumns
+	 * @param null $delete
+	 * @param null $update
+	 * @return int
+	 */
 	private function _addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null)
 	{
 		$name = md5(blx()->db->tablePrefix.$name);
@@ -108,6 +118,11 @@ class m121126_225547_cascade_deletes extends \CDbMigration
 		return blx()->db->createCommand()->setText(blx()->db->getSchema()->addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update))->execute();
 	}
 
+	/**
+	 * @param $name
+	 * @param $table
+	 * @return int
+	 */
 	private function _dropForeignKey($name, $table)
 	{
 		$name = md5(blx()->db->tablePrefix.$name);

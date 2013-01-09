@@ -124,7 +124,7 @@ class QuerygenCommand extends \CConsoleCommand
 				{
 					if (empty($config['required']))
 					{
-						$onDelete = static::SET_NULL;
+						$onDelete = BaseRecord::SET_NULL;
 					}
 					else
 					{

@@ -103,6 +103,13 @@ class m121018_094905_adding_link_criterias extends \CDbMigration
 		return true;
 	}
 
+	/**
+	 * @param      $name
+	 * @param      $table
+	 * @param      $columns
+	 * @param bool $unique
+	 * @return int
+	 */
 	private function _createIndex($name, $table, $columns, $unique = false)
 	{
 		$name = md5(blx()->db->tablePrefix.$name);
@@ -110,6 +117,11 @@ class m121018_094905_adding_link_criterias extends \CDbMigration
 		return blx()->db->createCommand()->setText(blx()->db->getSchema()->createIndex($name, $table, $columns, $unique))->execute();
 	}
 
+	/**
+	 * @param $name
+	 * @param $table
+	 * @return int
+	 */
 	private function _dropIndex($name, $table)
 	{
 		$name = md5(blx()->db->tablePrefix.$name);
