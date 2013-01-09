@@ -47,6 +47,10 @@ class PathService extends BaseApplicationComponent
 	{
 		$path = $this->getStoragePath().'runtime/';
 		IOHelper::ensureFolderExists($path);
+		if (!IOHelper::fileExists($path.'.gitignore'))
+		{
+			file_put_contents($path.'.gitignore', "*\n!.gitignore\n\n");
+		}
 		return $path;
 	}
 
@@ -95,7 +99,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getAssetsPath()
 	{
-		$path = $this->getStoragePath().'assets/';
+		$path = $this->getRuntimePath().'assets/';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -113,9 +117,9 @@ class PathService extends BaseApplicationComponent
 	/**
 	 * @return string
 	 */
-	public function getAssetsThumbSizesPath()
+	public function getAssetsThumbsPath()
 	{
-		$path = $this->getAssetsPath() . 'thumbsizes/';
+		$path = $this->getAssetsPath() . 'thumbs/';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -125,7 +129,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getLogPath()
 	{
-		$path = $this->getStoragePath().'logs/';
+		$path = $this->getRuntimePath().'logs/';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}

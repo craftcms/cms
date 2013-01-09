@@ -99,12 +99,39 @@ class Image
 		if (imagesx($this->_image) > $width || imagesy($this->_image) > $height || $scaleIfSmaller)
 		{
 			$factor = max(imagesx($this->_image) / $width, imagesy($this->_image) / $height);
-			$this->_doResize(round(imagesx($this->_image)) / $factor, round(imagesy($this->_image) / $factor));
+			$this->_doResize(round(imagesx($this->_image) / $factor), round(imagesy($this->_image) / $factor));
 		}
 
 		return $this;
 	}
 
+	/**
+	 * Scale and crop image to exactly fit the specified size.
+	 *
+	 * @param $width
+	 * @param $height
+	 * @param bool $scaleIfSmaller
+	 * @return Image
+	 */
+	public function scaleAndCrop($width, $height, $scaleIfSmaller = false)
+	{
+		if (imagesx($this->_image) > $width || imagesy($this->_image) > $height || $scaleIfSmaller)
+		{
+			$factor = min(imagesx($this->_image) / $width, imagesy($this->_image) / $height);
+			$newHeight = round(imagesy($this->_image) / $factor);
+			$newWidth = round(imagesx($this->_image) / $factor);
+			$this->_doResize($newWidth, $newHeight);
+
+			$x1 = round($newWidth - $width) / 2;
+			$x2 = $x1 + $width;
+			$y1 = round($newHeight - $height) / 2;
+			$y2 = $y1 + $height;
+
+			$this->crop($x1, $x2, $y1, $y2);
+		}
+
+		return $this;
+	}
 
 	/**
 	 * Resizes the image. If $height is not specified, it will default to $width, creating a square.

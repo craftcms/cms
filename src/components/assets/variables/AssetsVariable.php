@@ -160,4 +160,16 @@ class AssetsVariable
 	{
 		return blx()->assetSizes->getAssetSize($handle);
 	}
+
+	/**
+	 * Return a list of possible size scale modes
+	 * @return array
+	 */
+	public function getSizeScaleModes()
+	{
+		return array(
+			'scale' => Blocks::t("Scale to fit"),
+			'scaleAndCrop' => Blocks::t("Scale and crop")
+		);
+	}
 }

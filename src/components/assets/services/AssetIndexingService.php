@@ -153,7 +153,7 @@ class AssetIndexingService extends BaseApplicationComponent
 							IOHelper::deleteFile($file);
 						}
 
-						IOHelper::deleteFolder(blx()->path->getAssetsThumbSizesPath().$fileId);
+						IOHelper::deleteFolder(blx()->path->getAssetsThumbsPath().$fileId);
 					}
 				}
 
