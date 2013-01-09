@@ -155,6 +155,7 @@ class InstallService extends BaseApplicationComponent
 		$info->language = $inputs['language'];
 		$info->licenseKey = $inputs['licenseKey'];
 		$info->on = true;
+		$info->maintenance = false;
 
 		if ($info->save())
 		{
