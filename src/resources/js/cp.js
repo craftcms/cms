@@ -45,7 +45,7 @@ var CP = Blocks.Base.extend({
 					}
 				}
 			});
-		};
+		}
 
 		// Secondary form submit buttons
 		$('.formsubmit').click(function() {

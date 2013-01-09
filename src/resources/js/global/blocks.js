@@ -99,7 +99,7 @@ Blocks.getUrl = function(path, params)
 
 	path = Blocks.trim(path, '/');
 
-	anchor = '';
+	var anchor = '';
 
 	// Normalize the params
 	if (Blocks.isObject(params))
@@ -307,7 +307,7 @@ Blocks.escapeChars = function(chars)
 	}
 
 	return escaped;
-}
+};
 
 /**
  * Trim characters off of the beginning of a string.
@@ -322,7 +322,7 @@ Blocks.ltrim = function(str, chars)
 	if (chars === undefined) chars = ' ';
 	var re = new RegExp('^['+Blocks.escapeChars(chars)+']+');
 	return str.replace(re, '');
-}
+};
 
 /**
  * Trim characters off of the end of a string.
@@ -337,7 +337,7 @@ Blocks.rtrim = function(str, chars)
 	if (chars === undefined) chars = ' ';
 	var re = new RegExp('['+Blocks.escapeChars(chars)+']+$');
 	return str.replace(re, '');
-}
+};
 
 /**
  * Trim characters off of the beginning and end of a string.
@@ -351,7 +351,7 @@ Blocks.trim = function(str, chars)
 	str = Blocks.ltrim(str, chars);
 	str = Blocks.rtrim(str, chars);
 	return str;
-}
+};
 
 /**
  * Filters an array.
