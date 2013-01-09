@@ -153,27 +153,6 @@ class ComponentsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Compares two components for usort().
-	 *
-	 * @access private
-	 * @param BaseComponent $a
-	 * @param BaseComponent $b
-	 * @return int
-	 */
-	private function _compareComponents(BaseComponent $a, BaseComponent $b)
-	{
-		$aName = $a->getName();
-		$bName = $b->getName();
-
-		if ($a == $b)
-		{
-            return 0;
-        }
-
-        return ($a > $b) ? +1 : -1;
-	}
-
-	/**
 	 * Throws a "no component type exists" exception.
 	 *
 	 * @access private
