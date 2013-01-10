@@ -106,9 +106,10 @@ class UpdateHelper
 							Blocks::log('Updating folder: '.$destFile, \CLogger::LEVEL_INFO);
 
 							$tempFolder = rtrim($destFile, '/').StringHelper::UUID();
-							IOHelper::rename($destFile, $tempFolder);
-							IOHelper::copyFolder($sourceFile, $destFile);
-							IOHelper::deleteFolder($tempFolder);
+							IOHelper::copyFolder($sourceFile, $tempFolder);
+							IOHelper::rename($destFile, rtrim($destFile, '/').'-tmp');
+							IOHelper::rename($tempFolder, $destFile);
+							IOHelper::deleteFolder(rtrim($destFile, '/').'-tmp');
 						}
 						else
 						{
