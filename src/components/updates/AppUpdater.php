@@ -117,7 +117,7 @@ class AppUpdater
 		$writableErrors = $this->_validateManifestPathsWritable($unzipFolder);
 		if (count($writableErrors) > 0)
 		{
-			throw new Exception(Blocks::t('Blocks needs to be able to write to the follow files, but can’t: {files}', array('files' => implode('<br />',  $writableErrors))));
+			throw new Exception(Blocks::t('Blocks needs to be able to write to the follow paths, but can’t: {files}', array('files' => implode('<br />',  $writableErrors))));
 		}
 
 		// Backup any files about to be updated.
@@ -266,13 +266,35 @@ class AppUpdater
 
 			$rowData = explode(';', $row);
 
-			// Delete any files we backed up.
-			$backupFilePath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$rowData[0].'.bak');
-
-			if (($file = IOHelper::getFile($backupFilePath)) !== false)
+			$folder = false;
+			if (UpdateHelper::isManifestLineAFolder($rowData[0]))
 			{
-				Blocks::log('Deleting backup file: '.$file->getRealPath(), \CLogger::LEVEL_INFO);
-				$file->delete();
+				$folder = true;
+				$tempFilePath = UpdateHelper::cleanManifestFolderLine($rowData[0]);
+			}
+			else
+			{
+				$tempFilePath = $rowData[0];
+			}
+
+			// Delete any files/folders we backed up.
+			$backupPath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$tempFilePath.'.bak');
+
+			if ($folder)
+			{
+				if (($folder = IOHelper::getFolder($backupPath)) !== false)
+				{
+					Blocks::log('Deleting backup folder: '.$folder->getRealPath(), \CLogger::LEVEL_INFO);
+					$folder->delete();
+				}
+			}
+			else
+			{
+				if (($file = IOHelper::getFile($backupPath)) !== false)
+				{
+					Blocks::log('Deleting backup file: '.$file->getRealPath(), \CLogger::LEVEL_INFO);
+					$file->delete();
+				}
 			}
 		}
 
@@ -348,8 +370,13 @@ class AppUpdater
 			$rowData = explode(';', $row);
 			$filePath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$rowData[0]);
 
-			// Check to see if the file we need to update is writable.
-			if (IOHelper::fileExists($filePath))
+			if (UpdateHelper::isManifestLineAFolder($filePath))
+			{
+				$filePath = UpdateHelper::cleanManifestFolderLine($filePath);
+			}
+
+			// Check to see if the file/folder we need to update is writable.
+			if (IOHelper::fileExists($filePath) || IOHelper::folderExists($filePath))
 			{
 				if (!IOHelper::isWritable($filePath))
 				{
@@ -400,11 +427,26 @@ class AppUpdater
 				$rowData = explode(';', $row);
 				$filePath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$rowData[0]);
 
-				// If the file doesn't exist, it's a new file.
-				if (IOHelper::fileExists($filePath))
+				// It's a folder
+				if (UpdateHelper::isManifestLineAFolder($filePath))
 				{
-					Blocks::log('Backing up file '.$filePath, \CLogger::LEVEL_INFO);
-					IOHelper::copyFile($filePath, $filePath.'.bak');
+					$folderPath = UpdateHelper::cleanManifestFolderLine($filePath);
+					if (IOHelper::folderExists($folderPath))
+					{
+						Blocks::log('Backing up folder '.$folderPath, \CLogger::LEVEL_INFO);
+						IOHelper::createFolder($folderPath.'.bak');
+						IOHelper::copyFolder($folderPath.'/', $folderPath.'.bak/');
+					}
+				}
+				// It's a file.
+				else
+				{
+					// If the file doesn't exist, it's probably a new file.
+					if (IOHelper::fileExists($filePath))
+					{
+						Blocks::log('Backing up file '.$filePath, \CLogger::LEVEL_INFO);
+						IOHelper::copyFile($filePath, $filePath.'.bak');
+					}
 				}
 			}
 		}

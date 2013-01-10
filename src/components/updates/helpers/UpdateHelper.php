@@ -29,9 +29,24 @@ class UpdateHelper
 			$rowData = explode(';', $row);
 			$file = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$rowData[0]);
 
-			if (IOHelper::fileExists($file.'.bak'))
+			// It's a folder
+			if (static::isManifestLineAFolder($file))
 			{
-				IOHelper::rename($file.'.bak', $file);
+				$folderPath = static::cleanManifestFolderLine($file);
+
+				if (IOHelper::folderExists($folderPath.'.bak'))
+				{
+					IOHelper::clearFolder($folderPath);
+					IOHelper::copyFolder($folderPath.'.bak/', $folderPath.'/');
+				}
+			}
+			// It's a file.
+			else
+			{
+				if (IOHelper::fileExists($file.'.bak'))
+				{
+					IOHelper::rename($file.'.bak', $file);
+				}
 			}
 		}
 	}
@@ -65,23 +80,39 @@ class UpdateHelper
 					continue;
 				}
 
+				$folder = false;
 				$rowData = explode(';', $row);
-				$destFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators(blx()->path->getAppPath().$rowData[0]));
 
-				if (!$destFile)
-				{
-					$destFile = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$rowData[0]);
-				}
-
+				$destFile = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$rowData[0]);
 				$sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.'/app/'.$rowData[0]));
+
+				if (static::isManifestLineAFolder($destFile))
+				{
+					$folder = true;
+					$destFile = static::cleanManifestFolderLine($destFile);
+					$sourceFile = static::cleanManifestFolderLine($sourceFile);
+				}
 
 				switch (trim($rowData[1]))
 				{
 					// update the file
 					case PatchManifestFileAction::Add:
 					{
-						Blocks::log('Updating file: '.$destFile, \CLogger::LEVEL_INFO);
-						IOHelper::copyFile($sourceFile, $destFile);
+						if ($folder)
+						{
+							Blocks::log('Updating folder: '.$destFile, \CLogger::LEVEL_INFO);
+
+							$tempFolder = $destFile.StringHelper::UUID();
+							IOHelper::rename($destFile, $tempFolder);
+							IOHelper::copyFolder($sourceFile.'/', $destFile.'/');
+							IOHelper::deleteFolder($tempFolder);
+						}
+						else
+						{
+							Blocks::log('Updating file: '.$destFile, \CLogger::LEVEL_INFO);
+							IOHelper::copyFile($sourceFile, $destFile);
+						}
+
 						break;
 					}
 
@@ -215,5 +246,29 @@ class UpdateHelper
 	public static function getZipFileFromUID($uid)
 	{
 		return blx()->path->getTempPath().$uid.'.zip';
+	}
+
+	/**
+	 * @param $line
+	 * @return bool
+	 */
+	public static function isManifestLineAFolder($line)
+	{
+		if (substr($line, -1) == '*')
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param $line
+	 * @return string
+	 */
+	public static function cleanManifestFolderLine($line)
+	{
+		$line = rtrim($line, '*');
+		return rtrim($line, '/');
 	}
 }
