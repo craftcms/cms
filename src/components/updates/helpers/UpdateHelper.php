@@ -105,9 +105,9 @@ class UpdateHelper
 						{
 							Blocks::log('Updating folder: '.$destFile, \CLogger::LEVEL_INFO);
 
-							$tempFolder = $destFile.StringHelper::UUID();
+							$tempFolder = rtrim($destFile, '/').StringHelper::UUID();
 							IOHelper::rename($destFile, $tempFolder);
-							IOHelper::copyFolder($sourceFile.'/', $destFile.'/');
+							IOHelper::copyFolder($sourceFile, $destFile);
 							IOHelper::deleteFolder($tempFolder);
 						}
 						else
