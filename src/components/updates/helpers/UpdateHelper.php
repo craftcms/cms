@@ -105,11 +105,15 @@ class UpdateHelper
 						{
 							Blocks::log('Updating folder: '.$destFile, \CLogger::LEVEL_INFO);
 
-							$tempFolder = rtrim($destFile, '/').StringHelper::UUID();
+							$tempFolder = rtrim($destFile, '/').StringHelper::UUID().'/';
+							$tempTempFolder = rtrim($destFile, '/').'-tmp/';
+
+							IOHelper::createFolder($tempFolder);
 							IOHelper::copyFolder($sourceFile, $tempFolder);
-							IOHelper::rename($destFile, rtrim($destFile, '/').'-tmp');
+							IOHelper::rename($destFile, $tempTempFolder);
 							IOHelper::rename($tempFolder, $destFile);
-							IOHelper::deleteFolder(rtrim($destFile, '/').'-tmp');
+							IOHelper::clearFolder($tempTempFolder);
+							IOHelper::deleteFolder($tempTempFolder);
 						}
 						else
 						{
