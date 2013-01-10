@@ -1162,24 +1162,26 @@ class IOHelper
 				$fullItem = $path.$item;
 				$contents[$key] = $fullItem;
 
-				if ($item[0] !== '.')
+				if ($item == '.' || $item == '..')
 				{
-					if (static::_filterPassed($contents[$key], $filter))
-					{
-						if (static::fileExists($contents[$key]))
-						{
-							$descendants[] = static::normalizePathSeparators($contents[$key]);
-						}
-						elseif (static::folderExists($contents[$key]))
-						{
-							$descendants[] = static::normalizePathSeparators($contents[$key]);
-						}
-					}
+					continue;
+				}
 
-					if (static::folderExists($contents[$key]) && $recursive)
+				if (static::_filterPassed($contents[$key], $filter))
+				{
+					if (static::fileExists($contents[$key]))
 					{
-						$descendants = array_merge($descendants, static::_folderContents($contents[$key], $recursive, $filter));
+						$descendants[] = static::normalizePathSeparators($contents[$key]);
 					}
+					elseif (static::folderExists($contents[$key]))
+					{
+						$descendants[] = static::normalizePathSeparators($contents[$key]);
+					}
+				}
+
+				if (static::folderExists($contents[$key]) && $recursive)
+				{
+					$descendants = array_merge($descendants, static::_folderContents($contents[$key], $recursive, $filter));
 				}
 			}
 		}
