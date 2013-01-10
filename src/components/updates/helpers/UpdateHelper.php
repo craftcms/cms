@@ -83,15 +83,18 @@ class UpdateHelper
 				$folder = false;
 				$rowData = explode(';', $row);
 
-				$destFile = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$rowData[0]);
-				$sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.'/app/'.$rowData[0]));
-
-				if (static::isManifestLineAFolder($destFile))
+				if (static::isManifestLineAFolder($rowData[0]))
 				{
 					$folder = true;
-					$destFile = static::cleanManifestFolderLine($destFile);
-					$sourceFile = static::cleanManifestFolderLine($sourceFile);
+					$tempPath = static::cleanManifestFolderLine($rowData[0]);
 				}
+				else
+				{
+					$tempPath = $rowData[0];
+				}
+
+				$destFile = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$tempPath);
+				$sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.'/app/'.$tempPath));
 
 				switch (trim($rowData[1]))
 				{
