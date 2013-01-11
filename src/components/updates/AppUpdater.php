@@ -144,6 +144,9 @@ class AppUpdater
 		Blocks::log('Performing file update.', \CLogger::LEVEL_INFO);
 		if (!UpdateHelper::doFileUpdate(UpdateHelper::getManifestData($unzipFolder), $unzipFolder))
 		{
+			Blocks::log('Taking the site out of maintenance mode..', \CLogger::LEVEL_INFO);
+			blx()->updates->disableMaintenanceMode();
+
 			throw new Exception(Blocks::t('There was a problem updating your files.'));
 		}
 	}
@@ -160,11 +163,14 @@ class AppUpdater
 			Blocks::log('Starting to backup database.', \CLogger::LEVEL_INFO);
 			if (($dbBackupPath = blx()->db->backup()) === false)
 			{
-				// If uid !== false, then it's an auto update;
+				// If uid !== false, then it's an auto update.
 				if ($uid !== false)
 				{
 					UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
 				}
+
+				Blocks::log('Taking the site out of maintenance mode..', \CLogger::LEVEL_INFO);
+				blx()->updates->disableMaintenanceMode();
 
 				throw new Exception(Blocks::t('There was a problem backing up your database.'));
 			}
@@ -175,11 +181,14 @@ class AppUpdater
 		}
 		catch (\Exception $e)
 		{
-			// If uid !== false, then it's an auto update;
+			// If uid !== false, then it's an auto update.
 			if ($uid !== false)
 			{
 				UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
 			}
+
+			Blocks::log('Taking the site out of maintenance mode..', \CLogger::LEVEL_INFO);
+			blx()->updates->disableMaintenanceMode();
 
 			throw new Exception(Blocks::t('There was a problem backing up your database.'));
 		}
@@ -200,12 +209,19 @@ class AppUpdater
 				Blocks::log('Something went wrong running a migration. :-(', \CLogger::LEVEL_ERROR);
 				blx()->updates->rollbackUpdate($uid, $dbBackupPath);
 
+				Blocks::log('Taking the site out of maintenance mode..', \CLogger::LEVEL_INFO);
+				blx()->updates->disableMaintenanceMode();
+
 				throw new Exception(Blocks::t('There was a problem updating your database.'));
 			}
 		}
 		catch (\Exception $e)
 		{
 			blx()->updates->rollbackUpdate($uid, $dbBackupPath);
+
+			Blocks::log('Taking the site out of maintenance mode..', \CLogger::LEVEL_INFO);
+			blx()->updates->disableMaintenanceMode();
+
 			throw new Exception(Blocks::t('There was a problem updating your database.'));
 		}
 	}
