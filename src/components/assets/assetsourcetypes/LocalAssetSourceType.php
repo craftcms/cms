@@ -281,15 +281,15 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get the timestamp of when a file size was last modified.
+	 * Get the timestamp of when a file transformation was last modified.
 	 *
 	 * @param AssetFileModel $fileModel
-	 * @param string $sizeHandle
+	 * @param string $transformationHandle
 	 * @return mixed
 	 */
-	public function getTimeSizeModified(AssetFileModel $fileModel, $sizeHandle)
+	public function getTimeTransformationModified(AssetFileModel $fileModel, $transformationHandle)
 	{
-		$path = $this->_getImageServerPath($fileModel, $sizeHandle);
+		$path = $this->_getImageServerPath($fileModel, $transformationHandle);
 
 		if (!IOHelper::fileExists($path))
 		{
@@ -300,14 +300,14 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Put an image size for the File and handle using the provided path to the source image.
+	 * Put an image transformation for the File and handle using the provided path to the source image.
 	 *
 	 * @param AssetFileModel $fileModel
 	 * @param $handle
 	 * @param $sourceImage
 	 * @return mixed
 	 */
-	public function putImageSize(AssetFileModel $fileModel, $handle, $sourceImage)
+	public function putImageTransformation(AssetFileModel $fileModel, $handle, $sourceImage)
 	{
 		return IOHelper::copyFile($sourceImage, $this->_getImageServerPath($fileModel, $handle));
 	}

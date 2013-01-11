@@ -38,13 +38,13 @@ abstract class BaseAssetSourceType extends BaseComponent
 	public abstract function getImageSourcePath(AssetFileModel $fileModel);
 
 	/**
-	 * Get the timestamp of when a file size was last modified.
+	 * Get the timestamp of when a file transformation was last modified.
 	 *
 	 * @param AssetFileModel $fileModel
-	 * @param string $sizeHandle
+	 * @param string $transformationHandle
 	 * @return mixed
 	 */
-	public abstract function getTimeSizeModified(AssetFileModel $fileModel, $sizeHandle);
+	public abstract function getTimeTransformationModified(AssetFileModel $fileModel, $transformationHandle);
 
 	/**
 	 * Insert a file from path in folder.
@@ -67,14 +67,14 @@ abstract class BaseAssetSourceType extends BaseComponent
 	abstract protected function _getNameReplacement(AssetFolderModel $folder, $fileName);
 
 	/**
-	 * Put an image size for the File and handle using the provided path to the source image.
+	 * Put an image transformation for the File and handle using the provided path to the source image.
 	 *
 	 * @param AssetFileModel $fileModel
 	 * @param $handle
 	 * @param $sourceImage
 	 * @return mixed
 	 */
-	abstract public function putImageSize(AssetFileModel $fileModel, $handle, $sourceImage);
+	abstract public function putImageTransformation(AssetFileModel $fileModel, $handle, $sourceImage);
 
 	/**
 	 * Return a result object for prompting the user about filename conflicts.

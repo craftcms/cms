@@ -35,7 +35,7 @@ class AssetOperationsController extends BaseController
 		}
 		else
 		{
-			// Just the sizes, so get the indexed file list.
+			// Just the transformations, so get the indexed file list.
 			$this->returnJson(array(
 				'sourceId' => 	$sourceId,
 				'total' => blx()->assets->getTotalFiles(new FileCriteria(array('sourceId' => $sourceId)))
@@ -61,9 +61,9 @@ class AssetOperationsController extends BaseController
 			$return = array('success' => (bool) $fileId);
 		}
 
-		// Do the size update
-		$sizesToUpdate = blx()->request->getPost('doSizes');
-		if ($sizesToUpdate)
+		// Do the transformation update
+		$transformationsToUpdate = blx()->request->getPost('doTransformations');
+		if ($transformationsToUpdate)
 		{
 			// Did indexing already fill this one for us?
 			if (empty($fileId))
@@ -78,7 +78,7 @@ class AssetOperationsController extends BaseController
 
 			if ($file instanceof AssetFileModel)
 			{
-				if (blx()->assetSizes->updateSizes($file, $sizesToUpdate))
+				if (blx()->assetTransformations->updateTransformations($file, $transformationsToUpdate))
 				{
 					$return = array('success' => true);
 				}

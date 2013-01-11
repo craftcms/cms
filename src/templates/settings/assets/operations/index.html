@@ -19,10 +19,10 @@
 
 	{% if sources|length %}
 
-        {% if sizeHandle is defined %}
-            {% set sizeValue = sizeHandle %}
+        {% if transformationHandle is defined %}
+            {% set transformationValue = transformationHandle %}
         {% else %}
-            {% set sizeValue = 0 %}
+            {% set transformationValue = 0 %}
         {% endif %}
 
         {{ forms.checkboxSelectField({
@@ -46,34 +46,34 @@
                     }) }}
                 </li>
 
-                {% set sizes = blx.assets.getAllAssetSizes() %}
-                {% if sizes|length %}
-                    {% set sizesChecked = (blx.request.getQuery('size') is not empty) %}
+                {% set transformations = blx.assets.getAllAssetTransformations() %}
+                {% if transformations|length %}
+                    {% set transformationsChecked = (blx.request.getQuery('transformation') is not empty) %}
                     <li>
                         {{ forms.checkbox({
-                            label: "Update sizes"|t,
-                            id: 'do-sizes',
-                            name: 'do-sizes',
-                            class: 'assets-sizes',
-                            checked: sizesChecked,
-                            toggle: 'sizes'
+                            label: "Update transformations"|t,
+                            id: 'do-transformations',
+                            name: 'do-transformations',
+                            class: 'assets-transformations',
+                            checked: transformationsChecked,
+                            toggle: 'transformations'
                         }) }}
-                        <ul id="sizes" class="indent{% if not sizesChecked %} hidden{% endif %} checkbox-select">
+                        <ul id="transformations" class="indent{% if not transformationsChecked %} hidden{% endif %} checkbox-select">
                             <li>
                                 {{ forms.checkbox({
                                     class: 'all',
                                     label: '<b>' ~ "All"|t ~ '</b>',
-                                    checked: (not sizesChecked)
+                                    checked: (not transformationsChecked)
                                 }) }}
                             </li>
-                            {% for size in sizes %}
+                            {% for transformation in transformations %}
                                 <li>
                                     {{ forms.checkbox({
-                                        label: size.name,
-                                        name: size ~ '[]',
-                                        value: size.handle,
-                                        checked: (not sizesChecked or (sizesChecked and blx.request.getQuery('size') == size.handle)),
-                                        disabled: (not sizesChecked)
+                                        label: transformation.name,
+                                        name: transformation ~ '[]',
+                                        value: transformation.handle,
+                                        checked: (not transformationsChecked or (transformationsChecked and blx.request.getQuery('transformation') == transformation.handle)),
+                                        disabled: (not transformationsChecked)
                                     }) }}
                                 </li>
                             {% endfor %}

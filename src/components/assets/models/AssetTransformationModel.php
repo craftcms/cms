@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class AssetSizeModel extends BaseModel
+class AssetTransformationModel extends BaseModel
 {
 	/**
 	 * Use the folder name as the string representation.
@@ -28,7 +28,7 @@ class AssetSizeModel extends BaseModel
 			'width'               => AttributeType::Number,
 			'height'              => AttributeType::Number,
 			'dimensionChangeTime' => AttributeType::DateTime,
-			'scaleMode'           => AttributeType::String
+			'mode'                => AttributeType::String
 		);
 	}
 }

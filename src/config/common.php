@@ -154,8 +154,8 @@ $cpRoutes['updates\/go\/(?P<handle>[^\/]*)']                                  = 
 $cpRoutes['settings\/assets']                                                 = 'settings/assets/sources';
 $cpRoutes['settings\/assets\/sources\/new']                                   = 'settings/assets/sources/_settings';
 $cpRoutes['settings\/assets\/sources\/(?P<sourceId>\d+)']                     = 'settings/assets/sources/_settings';
-$cpRoutes['settings\/assets\/sizes\/new']                                     = 'settings/assets/sizes/_settings';
-$cpRoutes['settings\/assets\/sizes\/(?P<sizeHandle>{handle})']                = 'settings/assets/sizes/_settings';
+$cpRoutes['settings\/assets\/transformations\/new']                           = 'settings/assets/transformations/_settings';
+$cpRoutes['settings\/assets\/transformations\/(?P<handle>{handle})']          = 'settings/assets/transformations/_settings';
 $cpRoutes['settings\/assets\/blocks\/new']                                    = 'settings/assets/blocks/_settings';
 $cpRoutes['settings\/assets\/blocks\/(?P<blockId>\d+)']                       = 'settings/assets/blocks/_settings';
 $cpRoutes['settings\/globals\/new']                                           = 'settings/globals/_settings';
@@ -211,34 +211,34 @@ if (in_array('Users', $packages))
 //  Component config
 // -------------------------------------------
 
-$components['users']['class']             = 'Blocks\UsersService';
-$components['assets']['class']            = 'Blocks\AssetsService';
-$components['assetSizes']['class']        = 'Blocks\AssetSizesService';
-$components['assetIndexing']['class']     = 'Blocks\AssetIndexingService';
-$components['assetSources']['class']      = 'Blocks\AssetSourcesService';
-$components['blockTypes']['class']        = 'Blocks\BlockTypesService';
-$components['components']['class']        = 'Blocks\ComponentsService';
-$components['dashboard']['class']         = 'Blocks\DashboardService';
-$components['email']['class']             = 'Blocks\EmailService';
-$components['entries']['class']           = 'Blocks\EntriesService';
-$components['et']['class']                = 'Blocks\EtService';
-$components['globals']['class']           = 'Blocks\GlobalsService';
-$components['install']['class']           = 'Blocks\InstallService';
-$components['images']['class']            = 'Blocks\ImagesService';
-$components['links']['class']             = 'Blocks\LinksService';
-$components['migrations']['class']        = 'Blocks\MigrationsService';
-$components['pages']['class']             = 'Blocks\PagesService';
-$components['path']['class']              = 'Blocks\PathService';
-$components['plugins']['class']           = 'Blocks\PluginsService';
+$components['users']['class']                = 'Blocks\UsersService';
+$components['assets']['class']               = 'Blocks\AssetsService';
+$components['assetTransformations']['class'] = 'Blocks\AssetTransformationsService';
+$components['assetIndexing']['class']        = 'Blocks\AssetIndexingService';
+$components['assetSources']['class']         = 'Blocks\AssetSourcesService';
+$components['blockTypes']['class']           = 'Blocks\BlockTypesService';
+$components['components']['class']           = 'Blocks\ComponentsService';
+$components['dashboard']['class']            = 'Blocks\DashboardService';
+$components['email']['class']                = 'Blocks\EmailService';
+$components['entries']['class']              = 'Blocks\EntriesService';
+$components['et']['class']                   = 'Blocks\EtService';
+$components['globals']['class']              = 'Blocks\GlobalsService';
+$components['install']['class']              = 'Blocks\InstallService';
+$components['images']['class']               = 'Blocks\ImagesService';
+$components['links']['class']                = 'Blocks\LinksService';
+$components['migrations']['class']           = 'Blocks\MigrationsService';
+$components['pages']['class']                = 'Blocks\PagesService';
+$components['path']['class']                 = 'Blocks\PathService';
+$components['plugins']['class']              = 'Blocks\PluginsService';
 
-$components['resources']['class']         = 'Blocks\ResourcesService';
-$components['resources']['dateParam']     = 'd';
+$components['resources']['class']            = 'Blocks\ResourcesService';
+$components['resources']['dateParam']        = 'd';
 
-$components['routes']['class']            = 'Blocks\RoutesService';
-$components['security']['class']          = 'Blocks\SecurityService';
-$components['systemSettings']['class']    = 'Blocks\SystemSettingsService';
-$components['templates']['class']         = 'Blocks\TemplatesService';
-$components['updates']['class']           = 'Blocks\UpdatesService';
+$components['routes']['class']               = 'Blocks\RoutesService';
+$components['security']['class']             = 'Blocks\SecurityService';
+$components['systemSettings']['class']       = 'Blocks\SystemSettingsService';
+$components['templates']['class']            = 'Blocks\TemplatesService';
+$components['updates']['class']              = 'Blocks\UpdatesService';
 
 if (in_array('PublishPro', $packages))
 {

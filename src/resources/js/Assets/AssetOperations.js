@@ -8,9 +8,9 @@
 		$sourceMasterCheckbox: null,
 		$sourceCheckboxes: null,
 		$indexCheckbox: null,
-		$sizesCheckbox: null,
-		$sizeMasterCheckbox: null,
-		$sizeCheckboxes: null,
+		$transformationsCheckbox: null,
+		$transformationMasterCheckbox: null,
+		$transformationCheckboxes: null,
 		$progressBarContainer: null,
 
 
@@ -29,10 +29,10 @@
 			this.$sourceCheckboxes = $('.assets-sources input[type=checkbox]').not('.all');
 
 			this.$indexCheckbox = $('#do-index');
-			this.$sizesCheckbox = $('#do-sizes');
+			this.$transformationsCheckbox = $('#do-transformations');
 
-			this.$sizeMasterCheckbox = $('#sizes input[type=checkbox].all');
-			this.$sizeCheckboxes = $('#sizes input[type=checkbox]').not('.all');
+			this.$transformationMasterCheckbox = $('#transformations input[type=checkbox].all');
+			this.$transformationCheckboxes = $('#transformations input[type=checkbox]').not('.all');
 
 			this.$progressBarContainer = $('.operation-progress');
 
@@ -47,12 +47,12 @@
 				return;
 			}
 
-			var checkedSizes = [];
+			var checkedTransformations = [];
 
-			if (this.$sizesCheckbox.prop('checked'))
+			if (this.$transformationsCheckbox.prop('checked'))
 			{
-				this.$sizeCheckboxes.filter(':checked').each(function () {
-					checkedSizes.push($(this).val());
+				this.$transformationCheckboxes.filter(':checked').each(function () {
+					checkedTransformations.push($(this).val());
 				});
 			}
 
@@ -61,20 +61,20 @@
 			var checkedSources = this.$sourceCheckboxes.filter(':checked');
 
 
-			if (checkedSources.length == 0 || !(doIndex || checkedSizes.length))
+			if (checkedSources.length == 0 || !(doIndex || checkedTransformations.length))
 			{
 				this.$startOperationsButton.removeClass('disabled');
 				return;
 			}
 
-			var checkedOperations = {doIndexes: Number(doIndex), sizes: checkedSizes};
+			var checkedOperations = {doIndexes: Number(doIndex), transformations: checkedTransformations};
 
 			this.$startOperationsButton.addClass('disabled');
 
 			this.$sourceMasterCheckbox.prop('disabled', true);
 			this.$sourceCheckboxes.prop('disabled', true);
-			this.$sizeMasterCheckbox.prop('disabled', true);
-			this.$sizeCheckboxes.prop('disabled', true);
+			this.$transformationMasterCheckbox.prop('disabled', true);
+			this.$transformationCheckboxes.prop('disabled', true);
 			this.$indexCheckbox.prop('disabled',  true);
 
 			Blocks.postActionRequest('assetOperations/getSessionId', $.proxy(function(data){
@@ -91,7 +91,7 @@
 						sourceId: $(this).val(),
 						session: _t.sessionId,
 						doIndexes: checkedOperations.doIndexes,
-						doSizes: checkedOperations.sizes
+						doTransformations: checkedOperations.transformations
 					};
 
 					_t.queue.addItem(Blocks.getActionUrl('assetOperations/startIndex'), params, $.proxy(function (data) {
@@ -103,7 +103,7 @@
 								sourceId: data.sourceId,
 								offset: i,
 								doIndexes: checkedOperations.doIndexes,
-								doSizes: checkedOperations.sizes
+								doTransformations: checkedOperations.transformations
 							};
 
 							this.queue.addItem(Blocks.getActionUrl('assetOperations/performIndex'), params, function () {
@@ -244,11 +244,11 @@
 			} else {
 				this.$sourceCheckboxes.prop('disabled', false);
 			}
-			this.$sizeMasterCheckbox.prop('disabled', false);
-			if (this.$sizeMasterCheckbox.prop('checked')) {
-				this.$sizeMasterCheckbox.prop('disabled', false);
+			this.$transformationMasterCheckbox.prop('disabled', false);
+			if (this.$transformationMasterCheckbox.prop('checked')) {
+				this.$transformationMasterCheckbox.prop('disabled', false);
 			} else {
-				this.$sizeCheckboxes.prop('disabled', false);
+				this.$transformationCheckboxes.prop('disabled', false);
 			}
 
 			this.$indexCheckbox.prop('disabled', false);

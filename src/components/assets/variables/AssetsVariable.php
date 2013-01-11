@@ -137,39 +137,40 @@ class AssetsVariable
 	}
 
 	// -------------------------------------------
-	// Sizes
+	// Transformations
 	// -------------------------------------------
 
 	/**
-	 * Get all asset sizes.
+	 * Get all asset transformations.
 	 *
 	 * @return array|null
 	 */
-	public function getAllAssetSizes()
+	public function getAllAssetTransformations()
 	{
-		return blx()->assetSizes->getAssetSizes();
+		return blx()->assetTransformations->getAssetTransformations();
 	}
 
 	/**
-	 * Get asset size by it's handle.
+	 * Get asset transformation by it's handle.
 	 *
 	 * @param $handle
 	 * @return null
 	 */
-	public function getSizeByHandle($handle)
+	public function getTransformationByHandle($handle)
 	{
-		return blx()->assetSizes->getAssetSize($handle);
+		return blx()->assetTransformations->getAssetTransformation($handle);
 	}
 
 	/**
-	 * Return a list of possible size scale modes
+	 * Return a list of possible transformation scale modes
 	 * @return array
 	 */
-	public function getSizeScaleModes()
+	public function getTransformationModes()
 	{
 		return array(
-			'scale' => Blocks::t("Scale to fit"),
-			'scaleAndCrop' => Blocks::t("Scale and crop")
+			'scaleToFit' => Blocks::t("Scale to fit"),
+			'scaleAndCrop' => Blocks::t("Scale and crop"),
+			'stretchToFit' => Blocks::t("Stretch to fit"),
 		);
 	}
 }

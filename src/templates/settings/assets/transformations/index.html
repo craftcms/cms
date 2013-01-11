@@ -1,0 +1,41 @@
+{% extends "settings/assets/_layout" %}
+{% set page = "transformations" %}
+{% set title = "Asset Transformations"|t %}
+{% set transformations = blx.assets.getAllAssetTransformations %}
+{% set transformationModes = blx.assets.getTransformationModes() %}
+
+
+{% set content %}
+<p id="notransformations"{% if transformations|length %} class="hidden"{% endif %}>
+    {{ "No Asset transformations exist yet."|t }}
+</p>
+
+{% if transformations|length %}
+    <table id="transformations" class="data">
+        <thead>
+        <th scope="col">{{ "Name"|t }}</th>
+        <th scope="col">{{ "Mode"|t }}</th>
+        <th scope="col">{{ "Dimensions"|t }}</th>
+        <td class="thin"></td>
+        </thead>
+        <tbody>
+        {% for transformation in transformations %}
+            <tr data-id="{{ transformation.id }}" data-name="{{ transformation.name|t }}">
+                <th scope="row"><a href="{{ url('settings/assets/transformations/' ~ transformation.handle) }}">{{ transformation.name|t }}</a></th>
+                <td>
+                    {% if transformation.mode %}
+                        {{ transformationModes[transformation.mode] }}
+                    {%  endif %}
+                </td>
+                <td>{{ transformation.width }} x {{ transformation.height }}</td>
+                <td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+<div class="buttons">
+    <a class="btn add icon" href="{{ url('settings/assets/transformations/new') }}">{{ "New Transformation"|t }}</a>
+</div>
+{% endset %}
