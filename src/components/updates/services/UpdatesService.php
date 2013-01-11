@@ -481,22 +481,33 @@ class UpdatesService extends BaseApplicationComponent
 	/**
 	 * @param      $uid
 	 * @param bool $dbBackupPath
+	 * @return array
 	 */
 	public function rollbackUpdate($uid, $dbBackupPath = false)
 	{
-		if ($dbBackupPath && blx()->config->get('backupDbOnUpdate') && blx()->config->get('restoreDbOnUpdateFailure'))
+		try
 		{
-			Blocks::log('Rolling back any database changes.', \CLogger::LEVEL_INFO);
-			UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
-			Blocks::log('Done rolling back any database changes.', \CLogger::LEVEL_INFO);
-		}
+			if ($dbBackupPath && blx()->config->get('backupDbOnUpdate') && blx()->config->get('restoreDbOnUpdateFailure'))
+			{
+				Blocks::log('Rolling back any database changes.', \CLogger::LEVEL_INFO);
+				UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
+				Blocks::log('Done rolling back any database changes.', \CLogger::LEVEL_INFO);
+			}
 
-		// If uid !== false, it's an auto-update.
-		if ($uid !== false)
+			// If uid !== false, it's an auto-update.
+			if ($uid !== false)
+			{
+				Blocks::log('Rolling back any file changes.', \CLogger::LEVEL_INFO);
+				UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
+				Blocks::log('Done rolling back any file changes.', \CLogger::LEVEL_INFO);
+			}
+
+			Blocks::log('Finished rolling back changes.', \CLogger::LEVEL_INFO);
+			return array('success' => true);
+		}
+		catch (\Exception $e)
 		{
-			Blocks::log('Rolling back any file changes.', \CLogger::LEVEL_INFO);
-			UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
-			Blocks::log('Done rolling back any file changes.', \CLogger::LEVEL_INFO);
+			return array('success' => false, 'message' => $e->getMessage());
 		}
 	}
 }
