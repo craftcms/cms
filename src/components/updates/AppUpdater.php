@@ -278,7 +278,7 @@ class AppUpdater
 			}
 
 			// Delete any files/folders we backed up.
-			$backupPath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$tempFilePath.'.bak');
+			$backupPath = IOHelper::normalizePathSeparators(rtrim(blx()->path->getAppPath(), '/').$tempFilePath.'.bak');
 
 			if ($folder)
 			{
