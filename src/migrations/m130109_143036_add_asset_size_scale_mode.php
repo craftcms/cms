@@ -24,8 +24,22 @@ class m130109_143036_add_asset_size_scale_mode extends \CDbMigration
 			Blocks::log('Tried to add `mode` column to the `assetsizes`, but it already exists.', \CLogger::LEVEL_WARNING);
 		}
 
-		// renameTable doesn't support table name like {{this}}, so we have to add the prefix ourselves
-		$command = blx()->db->createCommand(blx()->db->schema->renameTable(blx()->db->tablePrefix.'assetsizes', blx()->db->tablePrefix.'assettransformations'));
-		$command->execute();
+		if ($assetSizesTable && !blx()->db->schema->getTable('{{assettransformations}}'))
+		{
+			// Drop the old indexes.
+			blx()->db->createCommand()->dropIndex('assetsizes', 'name', true);
+			blx()->db->createCommand()->dropIndex('assetsizes', 'handle', true);
+
+			// Rename the table.
+			blx()->db->createCommand()->renameTable('assetsizes', 'assettransformations');
+
+			// Add the indexes back.  They'll have proper names now.
+			blx()->db->createCommand()->createIndex('assettransformations', 'name', true);
+			blx()->db->createCommand()->createIndex('assettransformations', 'handle', true);
+		}
+		else
+		{
+			Blocks::log('Tried to rename `assetsizes` to `assettransformations`, but `assettransformations`  already exists.', \CLogger::LEVEL_WARNING);
+		}
 	}
 }
