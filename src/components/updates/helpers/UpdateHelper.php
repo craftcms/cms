@@ -36,8 +36,10 @@ class UpdateHelper
 
 				if (IOHelper::folderExists($folderPath.'.bak'))
 				{
-					IOHelper::clearFolder($folderPath);
-					IOHelper::copyFolder($folderPath.'.bak/', $folderPath.'/');
+					IOHelper::rename($folderPath, $folderPath.'-tmp');
+					IOHelper::rename($folderPath.'.bak', $folderPath);
+					IOHelper::clearFolder($folderPath.'-tmp');
+					IOHelper::deleteFolder($folderPath.'-tmp');
 				}
 			}
 			// It's a file.
@@ -222,20 +224,6 @@ class UpdateHelper
 		}
 
 		return static::$_manifestData;
-	}
-
-	/**
-	 * @static
-	 * @param $filePath
-	 * @return string
-	 */
-	public static function copyMigrationFile($filePath)
-	{
-		$migrationFile = IOHelper::getFile($filePath);
-		$destinationFile = blx()->path->getMigrationsPath().$migrationFile->getFileName();
-		$migrationFile->copy($destinationFile);
-
-		return $destinationFile;
 	}
 
 	/**
