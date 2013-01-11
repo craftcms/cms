@@ -64,7 +64,7 @@ Blocks.Updater = Blocks.Base.extend({
 		if (response.error)
 		{
 			this.$status.addClass('error');
-			this.updateStatus(response.error.message);
+			this.updateStatus(response.error);
 		}
 		else if (response.finished)
 		{
