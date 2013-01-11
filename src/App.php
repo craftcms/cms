@@ -101,7 +101,7 @@ class App extends \CWebApplication
 			}
 			else
 			{
-				throw new HttpException(404);
+				throw new HttpException(503);
 			}
 		}
 
