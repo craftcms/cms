@@ -42,7 +42,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function downloadUpdate($downloadPath)
 	{
-		$et = new Et(ElliottEndPoints::DownloadUpdate, 60);
+		$et = new Et(ElliottEndPoints::DownloadUpdate, 240);
 
 		if (IOHelper::folderExists($downloadPath))
 		{
