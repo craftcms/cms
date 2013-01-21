@@ -66,10 +66,7 @@ class DbBackup
 
 		$sql = 'SET FOREIGN_KEY_CHECKS = 0;'.PHP_EOL.PHP_EOL;
 
-		$tables = blx()->db->createCommand()
-		          ->setText('SHOW TABLES FROM '.$databaseName.';')
-		          ->queryColumn();
-
+		$tables = DbHelper::getTableNames();
 		foreach ($tables as $table)
 		{
 			$sql .= 'DROP TABLE IF EXISTS '.$databaseName.'.'.$table.';'.PHP_EOL;
