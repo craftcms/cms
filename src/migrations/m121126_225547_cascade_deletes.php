@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m121126_225547_cascade_deletes extends \CDbMigration
+class m121126_225547_cascade_deletes extends DbMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.

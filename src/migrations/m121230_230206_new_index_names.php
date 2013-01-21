@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m121230_230206_new_index_names extends \CDbMigration
+class m121230_230206_new_index_names extends DbMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
@@ -14,10 +14,7 @@ class m121230_230206_new_index_names extends \CDbMigration
 	public function safeUp()
 	{
 		$tablePrefixLength = strlen(blx()->db->tablePrefix);
-
-		$tables = blx()->db->createCommand()
-			->setText('SHOW TABLES')
-			->queryColumn();
+		$tables = DbHelper::getTableNames();
 
 		foreach ($tables as $prefixedTable)
 		{

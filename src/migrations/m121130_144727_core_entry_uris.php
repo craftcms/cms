@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m121130_144727_core_entry_uris extends \CDbMigration
+class m121130_144727_core_entry_uris extends DbMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.

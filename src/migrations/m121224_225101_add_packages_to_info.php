@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m121224_225101_add_packages_to_info extends \CDbMigration
+class m121224_225101_add_packages_to_info extends DbMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.

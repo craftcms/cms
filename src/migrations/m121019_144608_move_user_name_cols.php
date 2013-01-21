@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m121019_144608_move_user_name_cols extends \CDbMigration
+class m121019_144608_move_user_name_cols extends DbMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.

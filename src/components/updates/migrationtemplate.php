@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class {ClassName} extends \CDbMigration
+class {ClassName} extends DbMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
