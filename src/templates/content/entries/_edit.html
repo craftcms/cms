@@ -240,6 +240,6 @@
 
 
 {% if entry is not defined or not entry.slug %}
-	{% includeJs "new Blocks.ui.SlugGenerator('#title', '#slug');" %}
+	{% includeJs "new Blocks.SlugGenerator('#title', '#slug');" %}
 {% endif %}
 

@@ -1,7 +1,7 @@
 (function($) {
 
 
-var CP = Blocks.Base.extend({
+var CP = Garnish.Base.extend({
 
 	$notificationContainer: null,
 	$notifications: null,

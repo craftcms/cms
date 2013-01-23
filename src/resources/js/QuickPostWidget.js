@@ -1,7 +1,7 @@
 (function($) {
 
 
-Blocks.QuickPostWidget = Blocks.Base.extend({
+Blocks.QuickPostWidget = Garnish.Base.extend({
 
 	params: null,
 	initBlocks: null,
@@ -39,7 +39,7 @@ Blocks.QuickPostWidget = Blocks.Base.extend({
 		this.loading = true;
 		this.$spinner.removeClass('hidden');
 
-		var formData = Blocks.getPostData(this.$form),
+		var formData = Garnish.getPostData(this.$form),
 			data = $.extend({ enabled: 1 }, formData, this.params);
 
 		Blocks.postActionRequest('entries/saveEntry', data, $.proxy(function(response) {

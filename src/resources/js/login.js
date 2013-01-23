@@ -1,6 +1,6 @@
 (function($) {
 
-var LoginForm = Blocks.Base.extend({
+var LoginForm = Garnish.Base.extend({
 
 	$form: null,
 	$loginNameInput: null,
@@ -105,7 +105,7 @@ var LoginForm = Blocks.Base.extend({
 			}
 			else
 			{
-				Blocks.shake(this.$form);
+				Garnish.shake(this.$form);
 				this.onSubmitResponse();
 
 				// Add the error message
@@ -163,12 +163,12 @@ var LoginForm = Blocks.Base.extend({
 });
 
 
-var MessageSentModal = Blocks.ui.Modal.extend({
+var MessageSentModal = Garnish.Modal.extend({
 
 	init: function()
 	{
 		var $container = $('<div class="pane email-sent">'+Blocks.t('Check your email for instructions to reset your password.')+'</div>')
-			.appendTo(Blocks.$body);
+			.appendTo(Garnish.$bod);
 
 		this.base($container);
 	},

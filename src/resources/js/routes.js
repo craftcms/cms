@@ -1,7 +1,7 @@
 (function($) {
 
 
-var Routes = Blocks.Base.extend({
+var Routes = Garnish.Base.extend({
 
 	routes: null,
 	$container: null,
@@ -20,8 +20,8 @@ var Routes = Blocks.Base.extend({
 			this.routes.push(route);
 		}
 
-		this.sorter = new Blocks.ui.DragSort($routes, {
-			axis: 'y',
+		this.sorter = new Garnish.DragSort($routes, {
+			axis:         Garnish.Y_AXIS,
 			onSortChange: $.proxy(this, 'updateRouteOrder')
 		});
 
@@ -61,7 +61,7 @@ var Routes = Blocks.Base.extend({
 });
 
 
-var Route = Blocks.Base.extend({
+var Route = Garnish.Base.extend({
 
 	$container: null,
 	id: null,
@@ -108,7 +108,7 @@ var Route = Blocks.Base.extend({
 });
 
 
-var RouteSettingsModal = Blocks.ui.Modal.extend({
+var RouteSettingsModal = Garnish.Modal.extend({
 
 	route: null,
 	$heading: null,
@@ -155,7 +155,7 @@ var RouteSettingsModal = Blocks.ui.Modal.extend({
 			'</div>' +
 		'</form>');
 
-		$container.appendTo(Blocks.$body);
+		$container.appendTo(Garnish.$bod);
 
 		// Find the other elements
 		this.$heading = $container.find('h1:first');
@@ -171,7 +171,7 @@ var RouteSettingsModal = Blocks.ui.Modal.extend({
 			this.$deleteBtn.hide();
 
 		// Initialize the URL input
-		this.urlInput = new Blocks.ui.MixedInput(this.$urlInput);
+		this.urlInput = new Garnish.MixedInput(this.$urlInput);
 
 		// Set the heading
 		if (this.route)
@@ -186,7 +186,7 @@ var RouteSettingsModal = Blocks.ui.Modal.extend({
 			for (var i = 0; i < urlNodes.length; i++)
 			{
 				var node = urlNodes[i];
-				if (Blocks.isTextNode(node))
+				if (Garnish.isTextNode(node))
 				{
 					var text = this.urlInput.addTextElement();
 					text.setVal(node.nodeValue);
@@ -238,7 +238,7 @@ var RouteSettingsModal = Blocks.ui.Modal.extend({
 		this.addListener($urlVar, 'keydown', function(event) {
 			switch (event.keyCode)
 			{
-				case Blocks.LEFT_KEY:
+				case Garnish.LEFT_KEY:
 				{
 					// Select the previous element
 					setTimeout($.proxy(function() {
@@ -247,7 +247,7 @@ var RouteSettingsModal = Blocks.ui.Modal.extend({
 
 					break;
 				}
-				case Blocks.RIGHT_KEY:
+				case Garnish.RIGHT_KEY:
 				{
 					// Select the next element
 					setTimeout($.proxy(function() {
@@ -256,7 +256,7 @@ var RouteSettingsModal = Blocks.ui.Modal.extend({
 
 					break;
 				}
-				case Blocks.DELETE_KEY:
+				case Garnish.DELETE_KEY:
 				{
 					// Delete this element
 					setTimeout($.proxy(function() {

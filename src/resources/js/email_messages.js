@@ -1,7 +1,7 @@
 (function($) {
 
 
-var EmailMessages = Blocks.Base.extend({
+var EmailMessages = Garnish.Base.extend({
 
 	messages: null,
 
@@ -22,7 +22,7 @@ var EmailMessages = Blocks.Base.extend({
 });
 
 
-var Message = Blocks.Base.extend({
+var Message = Garnish.Base.extend({
 
 	$container: null,
 	key: null,
@@ -60,7 +60,7 @@ var Message = Blocks.Base.extend({
 });
 
 
-var MessageSettingsModal = Blocks.ui.Modal.extend({
+var MessageSettingsModal = Garnish.Modal.extend({
 
 	message: null,
 
@@ -92,7 +92,7 @@ var MessageSettingsModal = Blocks.ui.Modal.extend({
 
 			if (!this.$container)
 			{
-				var $container = $('<form class="modal message-settings" accept-charset="UTF-8">'+response+'</form>').appendTo(Blocks.$body);
+				var $container = $('<form class="modal message-settings" accept-charset="UTF-8">'+response+'</form>').appendTo(Garnish.$bod);
 				this.setContainer($container);
 				this.show();
 			}
@@ -150,7 +150,7 @@ var MessageSettingsModal = Blocks.ui.Modal.extend({
 			if (!data.body)
 				this.$bodyInput.addClass('error');
 
-			Blocks.shake(this.$container);
+			Garnish.shake(this.$container);
 			return;
 		}
 

@@ -1,7 +1,7 @@
 (function($) {
 
 
-Blocks.GetHelpWidget = Blocks.Base.extend({
+Blocks.GetHelpWidget = Garnish.Base.extend({
 
 	$widget: null,
 	$message: null,

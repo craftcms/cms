@@ -1,6 +1,7 @@
 (function($) {
 
-Blocks.Dashboard = Blocks.Base.extend({
+
+Blocks.Dashboard = Garnish.Base.extend({
 
 	$alerts: null,
 	$container: null,
@@ -30,7 +31,7 @@ Blocks.Dashboard = Blocks.Base.extend({
 		this.stretchColHeights();
 
 		// setup events
-		this.addListener(Blocks.$window, 'resize', 'onWindowResize');
+		this.addListener(Garnish.$win, 'resize', 'onWindowResize');
 
 		// do the version check
 		if (typeof window.getAlerts != 'undefined' && window.getAlerts)
@@ -138,7 +139,7 @@ Blocks.Dashboard = Blocks.Base.extend({
 
 	stretchColHeights: function()
 	{
-		var minHeight = Blocks.$window.height() - 101,
+		var minHeight = Garnish.$win.height() - 101,
 			tallestCol = this.getTallestCol(),
 			height = Math.max(minHeight, tallestCol.getHeight());
 
@@ -219,7 +220,7 @@ Blocks.Dashboard = Blocks.Base.extend({
 				var $alert = $('<div class="alert"><p>'+data.alerts[i]+'</p></div>');
 				this.$alerts.append($alert);
 				$alert.css({opacity: 0});
-				$alert.delay((i+1)*Blocks.fx.delay).animate({opacity: 1});
+				$alert.delay((i+1)*100).animate({opacity: 1});
 			}
 
 			// make room for them
@@ -236,7 +237,7 @@ Blocks.Dashboard = Blocks.Base.extend({
 	sidebarWidth: 240
 });
 
-var Col = Blocks.Base.extend({
+var Col = Garnish.Base.extend({
 
 	dashboard: null,
 	index: null,

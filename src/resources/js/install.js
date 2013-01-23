@@ -1,6 +1,6 @@
 (function($) {
 
-Blocks.Installer = Blocks.Base.extend({
+Blocks.Installer = Garnish.Base.extend({
 
 	$screens: null,
 	$currentScreen: null,
@@ -15,7 +15,7 @@ Blocks.Installer = Blocks.Base.extend({
 	*/
 	init: function()
 	{
-		this.$screens = Blocks.$body.children('.modal');
+		this.$screens = Garnish.$bod.children('.modal');
 
 		setTimeout($.proxy(this, 'showWelcomeScreen'), 500);
 	},
@@ -92,7 +92,7 @@ Blocks.Installer = Blocks.Base.extend({
 				var input = inputs[i],
 					$input = $('#'+input);
 
-				data[input] = Blocks.getInputPostVal($input);
+				data[input] = Garnish.getInputPostVal($input);
 			}
 
 			Blocks.postActionRequest('install/install', data, $.proxy(function() {
@@ -107,7 +107,7 @@ Blocks.Installer = Blocks.Base.extend({
 	showScreen: function(i, callback)
 	{
 		// Slide out the old screen
-		var windowWidth = Blocks.$window.width(),
+		var windowWidth = Garnish.$win.width(),
 			centeredLeftPos = Math.floor(windowWidth / 2);
 
 		this.$currentScreen
@@ -156,7 +156,7 @@ Blocks.Installer = Blocks.Base.extend({
 		{
 			var input = inputs[i],
 				$input = $('#'+input);
-			data[input] = Blocks.getInputPostVal($input);
+			data[input] = Garnish.getInputPostVal($input);
 		}
 
 		Blocks.postActionRequest(action, data, $.proxy(function(response) {
@@ -189,7 +189,7 @@ Blocks.Installer = Blocks.Base.extend({
 					}
 				}
 
-				Blocks.shake(this.$currentScreen);
+				Garnish.shake(this.$currentScreen);
 			}
 
 			this.loading = false;
@@ -206,7 +206,7 @@ Blocks.Installer = Blocks.Base.extend({
 
 });
 
-Blocks.$window.on('load', function() {
+Garnish.$win.on('load', function() {
 	Blocks.installer = new Blocks.Installer();
 });
 

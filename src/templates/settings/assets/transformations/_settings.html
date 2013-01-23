@@ -92,6 +92,6 @@
 
 
 {% set js %}
-    {% if transformation is not defined or not transformation.handle %}new Blocks.ui.HandleGenerator('#name', '#handle');{% endif %}
+    {% if transformation is not defined or not transformation.handle %}new Blocks.HandleGenerator('#name', '#handle');{% endif %}
 {% endset %}
 {% includeJs js %}

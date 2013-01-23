@@ -46,7 +46,7 @@
         // These change dynamically after each HTML overwrite, so we can't have them in the initial settings array.
         settings.uploadButton = $('.user-photo-controls .upload-photo');
         settings.deleteButton = $('.user-photo-controls .delete-photo');
-        ImageUpload = new Blocks.ui.ImageUpload(settings);
+        ImageUpload = new Blocks.ImageUpload(settings);
     }
 
     initImageUpload();

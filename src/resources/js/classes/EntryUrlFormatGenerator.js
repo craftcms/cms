@@ -1,9 +1,7 @@
-(function($) {
-
 /**
- * Slug Generator
+ * Handle Generator
  */
-Blocks.ui.SlugGenerator = Blocks.ui.InputGenerator.extend({
+Blocks.EntryUrlFormatGenerator = Blocks.BaseInputGenerator.extend({
 
 	generateTargetValue: function(sourceVal)
 	{
@@ -16,22 +14,16 @@ Blocks.ui.SlugGenerator = Blocks.ui.InputGenerator.extend({
 		// Convert extended ASCII characters to basic ASCII
 		sourceVal = Blocks.asciiString(sourceVal);
 
-		// Slug must start and end with alphanumeric characters
-		sourceVal = sourceVal.replace(/^[^a-z0-9]+/, '');
+		// Handle must start with a letter and end with a letter/number
+		sourceVal = sourceVal.replace(/^[^a-z]+/, '');
 		sourceVal = sourceVal.replace(/[^a-z0-9]+$/, '');
 
 		// Get the "words"
 		var words = Blocks.filterArray(sourceVal.split(/[^a-z0-9]+/));
 
 		if (words.length)
-		{
-			return words.join('-');
-		}
-		else
-		{
-			return '';
-		}
+			return words.join('-') + '/{slug}';
+
+		return '';
 	}
 });
-
-})(jQuery);

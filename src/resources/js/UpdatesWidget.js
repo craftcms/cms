@@ -1,7 +1,7 @@
 (function($) {
 
 
-Blocks.UpdatesWidget = Blocks.Base.extend({
+Blocks.UpdatesWidget = Garnish.Base.extend({
 
 	$widget: null,
 

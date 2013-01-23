@@ -1,7 +1,7 @@
 (function($) {
 
 
-Blocks.Updater = Blocks.Base.extend({
+Blocks.Updater = Garnish.Base.extend({
 
 	$status: null,
 	data: null,

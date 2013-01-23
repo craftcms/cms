@@ -190,7 +190,7 @@ class LinksBlockType extends BaseBlockType
 		}
 		$entityIds = JsonHelper::encode($entityIds);
 
-		blx()->templates->includeJs('new Blocks.ui.LinksBlock("'.$name.'", '.$jsonSettings.', '.$entityIds.');');
+		blx()->templates->includeJs('new Blocks.LinksBlock("'.$name.'", '.$jsonSettings.', '.$entityIds.');');
 
 		return blx()->templates->render('_components/blocktypes/Links/input', array(
 			'name'     => $name,

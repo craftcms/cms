@@ -1,9 +1,7 @@
-(function($) {
-
 /**
  * Handle Generator
  */
-Blocks.ui.HandleGenerator = Blocks.ui.InputGenerator.extend({
+Blocks.HandleGenerator = Blocks.BaseInputGenerator.extend({
 
 	generateTargetValue: function(sourceVal)
 	{
@@ -39,5 +37,3 @@ Blocks.ui.HandleGenerator = Blocks.ui.InputGenerator.extend({
 		return handle;
 	}
 });
-
-})(jQuery);

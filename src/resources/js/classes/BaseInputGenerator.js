@@ -1,9 +1,7 @@
-(function($) {
-
 /**
- * Handle Generator
+ * Input Generator
  */
-Blocks.ui.InputGenerator = Blocks.Base.extend({
+Blocks.BaseInputGenerator = Garnish.Base.extend({
 
 	$source: null,
 	$target: null,
@@ -53,5 +51,3 @@ Blocks.ui.InputGenerator = Blocks.Base.extend({
 		return sourceVal;
 	}
 });
-
-})(jQuery);

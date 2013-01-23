@@ -1,10 +1,7 @@
-(function($) {
-
-
 /**
  * Section admin table class
  */
-Blocks.ui.SectionAdminTable = Blocks.ui.AdminTable.extend({
+Blocks.SectionAdminTable = Blocks.AdminTable.extend({
 
 	init: function()
 	{
@@ -33,6 +30,3 @@ Blocks.ui.SectionAdminTable = Blocks.ui.AdminTable.extend({
 		return confirm(msg);
 	}
 });
-
-
-})(jQuery);

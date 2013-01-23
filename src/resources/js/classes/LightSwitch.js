@@ -1,9 +1,7 @@
-(function($) {
-
 /**
  * Light Switch
  */
-Blocks.ui.LightSwitch = Blocks.Base.extend({
+Blocks.LightSwitch = Garnish.Base.extend({
 
 	settings: null,
 	$outerContainer: null,
@@ -22,13 +20,13 @@ Blocks.ui.LightSwitch = Blocks.Base.extend({
 		// Is this already a switch?
 		if (this.$outerContainer.data('lightswitch'))
 		{
-			Blocks.log('Double-instantiating a switch on an element');
+			Garnish.log('Double-instantiating a switch on an element');
 			this.$outerContainer.data('lightswitch').destroy();
 		}
 
 		this.$outerContainer.data('lightswitch', this);
 
-		this.setSettings(settings, Blocks.ui.LightSwitch.defaults);
+		this.setSettings(settings, Blocks.LightSwitch.defaults);
 
 		this.$innerContainer = this.$outerContainer.find('.container:first');
 		this.$input = this.$outerContainer.find('input:first');
@@ -39,12 +37,12 @@ Blocks.ui.LightSwitch = Blocks.Base.extend({
 		this.addListener(this.$outerContainer, 'mousedown', '_onMouseDown');
 		this.addListener(this.$outerContainer, 'keydown', '_onKeyDown');
 
-		this.dragger = new Blocks.ui.BaseDrag(this.$outerContainer, {
-			axis: 'x',
+		this.dragger = new Garnish.BaseDrag(this.$outerContainer, {
+			axis:          Garnish.X_AXIS,
 			ignoreButtons: false,
-			onDragStart: $.proxy(this, '_onDragStart'),
-			onDrag:      $.proxy(this, '_onDrag'),
-			onDragStop:  $.proxy(this, '_onDragStop')
+			onDragStart:   $.proxy(this, '_onDragStart'),
+			onDrag:        $.proxy(this, '_onDrag'),
+			onDragStop:    $.proxy(this, '_onDragStop')
 		});
 	},
 
@@ -66,7 +64,7 @@ Blocks.ui.LightSwitch = Blocks.Base.extend({
 
 	turnOff: function()
 	{
-		this.$innerContainer.stop().animate({marginLeft: Blocks.ui.LightSwitch.offMargin}, 'fast');
+		this.$innerContainer.stop().animate({marginLeft: Blocks.LightSwitch.offMargin}, 'fast');
 		this.$input.val('');
 		this.on = false;
 		this.settings.onChange();
@@ -84,12 +82,12 @@ Blocks.ui.LightSwitch = Blocks.Base.extend({
 
 	_onMouseDown: function()
 	{
-		this.addListener(Blocks.$document, 'mouseup', '_onMouseUp')
+		this.addListener(Garnish.$doc, 'mouseup', '_onMouseUp')
 	},
 
 	_onMouseUp: function()
 	{
-		this.removeListener(Blocks.$document, 'mouseup');
+		this.removeListener(Garnish.$doc, 'mouseup');
 
 		// Was this a click?
 		if (!this.dragger.dragging)
@@ -100,15 +98,15 @@ Blocks.ui.LightSwitch = Blocks.Base.extend({
 	{
 		switch (event.keyCode)
 		{
-			case Blocks.SPACE_KEY:
+			case Garnish.SPACE_KEY:
 				this.toggle();
 				event.preventDefault();
 				break;
-			case Blocks.RIGHT_KEY:
+			case Garnish.RIGHT_KEY:
 				this.turnOn();
 				event.preventDefault();
 				break;
-			case Blocks.LEFT_KEY:
+			case Garnish.LEFT_KEY:
 				this.turnOff();
 				event.preventDefault();
 				break;
@@ -129,8 +127,8 @@ Blocks.ui.LightSwitch = Blocks.Base.extend({
 	{
 		var margin = this.dragStartMargin + this.dragger.mouseDistX;
 
-		if (margin < Blocks.ui.LightSwitch.offMargin)
-			margin = Blocks.ui.LightSwitch.offMargin;
+		if (margin < Blocks.LightSwitch.offMargin)
+			margin = Blocks.LightSwitch.offMargin;
 		else if (margin > 0)
 			margin = 0;
 
@@ -159,37 +157,3 @@ Blocks.ui.LightSwitch = Blocks.Base.extend({
 		onChange: function(){}
 	}
 });
-
-$.fn.lightswitch = function(settings, settingName, settingValue)
-{
-	if (settings == 'settings')
-	{
-		if (typeof settingName == 'string')
-		{
-			settings = {};
-			settings[settingName] = settingValue;
-		}
-		else
-			settings = settingName;
-
-		return this.each(function()
-		{
-			var obj = $.data(this, 'lightswitch');
-			if (obj)
-				obj.setSettings(settings);
-		});
-	}
-
-	return this.each(function()
-	{
-		if (!$.data(this, 'lightswitch'))
-			new Blocks.ui.LightSwitch(this, settings);
-	});
-};
-
-Blocks.$document.ready(function()
-{
-	$('.lightswitch').lightswitch();
-});
-
-})(jQuery);

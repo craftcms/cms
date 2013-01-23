@@ -26,8 +26,6 @@
 
  */
 
-var qqUploader;
-
 (function(){
 
 //
@@ -1434,5 +1432,5 @@ var qqUploader;
         }
     });
 
-    qqUploader = QqUploader;
+    window.qqUploader = QqUploader;
 })();

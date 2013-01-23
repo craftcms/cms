@@ -1,7 +1,4 @@
-(function($) {
-
-
-Blocks.FeedWidget = Blocks.Base.extend({
+Blocks.FeedWidget = Garnish.Base.extend({
 
 	$widget: null,
 
@@ -31,6 +28,3 @@ Blocks.FeedWidget = Blocks.Base.extend({
 		}, this));
 	}
 });
-
-
-})(jQuery);

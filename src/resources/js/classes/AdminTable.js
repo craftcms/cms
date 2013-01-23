@@ -1,10 +1,7 @@
-(function($) {
-
-
 /**
  * Admin table class
  */
-Blocks.ui.AdminTable = Blocks.Base.extend({
+Blocks.AdminTable = Garnish.Base.extend({
 
 	settings: null,
 	$table: null,
@@ -13,14 +10,14 @@ Blocks.ui.AdminTable = Blocks.Base.extend({
 
 	init: function(settings)
 	{
-		this.setSettings(settings, Blocks.ui.AdminTable.defaults);
+		this.setSettings(settings, Blocks.AdminTable.defaults);
 
 		this.$table = $(this.settings.tableSelector);
 		this.totalObjects = this.$table.children('tbody').children().length;
 
 		if (this.settings.sortable)
 		{
-			this.sorter = new Blocks.ui.DataTableSorter(this.$table, {
+			this.sorter = new Blocks.DataTableSorter(this.$table, {
 				onSortChange: $.proxy(this, 'reorderObjects')
 			});
 		}
@@ -96,7 +93,8 @@ Blocks.ui.AdminTable = Blocks.Base.extend({
 		var name = $row.attr(this.settings.nameAttribute);
 		return confirm(Blocks.t(this.settings.confirmDeleteMessage, { name: name }));
 	}
-}, {
+},
+{
 	defaults: {
 		tableSelector: null,
 		noObjectsSelector: null,
@@ -112,6 +110,3 @@ Blocks.ui.AdminTable = Blocks.Base.extend({
 		deleteFailMessage: 'Couldn’t delete “{name}”.'
 	}
 });
-
-
-})(jQuery);

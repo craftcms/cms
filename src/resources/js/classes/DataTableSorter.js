@@ -1,10 +1,7 @@
-(function($) {
-
-
 /**
  * DataTableSorter
  */
-Blocks.ui.DataTableSorter = Blocks.ui.DragSort.extend({
+Blocks.DataTableSorter = Garnish.DragSort.extend({
 
 	$table: null,
 
@@ -13,7 +10,7 @@ Blocks.ui.DataTableSorter = Blocks.ui.DragSort.extend({
 		this.$table = $(table);
 		var $rows = this.$table.children('tbody').children(':not(.filler)');
 
-		settings = $.extend({}, Blocks.ui.DataTableSorter.defaults, settings);
+		settings = $.extend({}, Blocks.DataTableSorter.defaults, settings);
 
 		settings.helper = $.proxy(this, 'getHelper');
 		settings.axis = 'y';
@@ -23,7 +20,7 @@ Blocks.ui.DataTableSorter = Blocks.ui.DragSort.extend({
 
 	getHelper: function($helperRow)
 	{
-		var $helper = $('<div class="'+this.settings.helperClass+'"/>').appendTo(Blocks.$body),
+		var $helper = $('<div class="'+this.settings.helperClass+'"/>').appendTo(Garnish.$bod),
 			$table = $('<table/>').appendTo($helper),
 			$tbody = $('<tbody/>').appendTo($table);
 
@@ -46,12 +43,10 @@ Blocks.ui.DataTableSorter = Blocks.ui.DragSort.extend({
 		return $helper;
 	}
 
-}, {
+},
+{
 	defaults: {
 		handle: '.move',
 		helperClass: 'datatablesorthelper'
 	}
 });
-
-
-})(jQuery);

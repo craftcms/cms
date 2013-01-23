@@ -1,9 +1,7 @@
-(function($) {
-
 /**
  * Links Block
  */
-Blocks.ui.LinksBlock = Blocks.Base.extend({
+Blocks.LinksBlock = Garnish.Base.extend({
 
 	_$inputContainer: null,
 	_$inputTbody: null,
@@ -44,7 +42,7 @@ Blocks.ui.LinksBlock = Blocks.Base.extend({
 		var $rows = this._$inputTbody.children(':not(.filler)');
 		var $entities = $rows.find('div.entity');
 
-		this._inputSelect = new Blocks.ui.Select(this._$inputContainer, $entities, {
+		this._inputSelect = new Garnish.Select(this._$inputContainer, $entities, {
 			multi: true,
 			onSelectionChange: $.proxy(function() {
 				if (this._inputSelect.totalSelected)
@@ -58,7 +56,7 @@ Blocks.ui.LinksBlock = Blocks.Base.extend({
 			}, this)
 		});
 
-		this._inputSort = new Blocks.ui.DataTableSorter($table, {
+		this._inputSort = new Blocks.DataTableSorter($table, {
 			handle: '.entity',
 			filter: $.proxy(function() {
 				return this._inputSelect.getSelectedItems().closest('tr');
@@ -81,7 +79,7 @@ Blocks.ui.LinksBlock = Blocks.Base.extend({
 
 	_buildModal: function()
 	{
-		var $modal = $('<div class="addlinksmodal modal"/>').appendTo(Blocks.$body),
+		var $modal = $('<div class="addlinksmodal modal"/>').appendTo(Garnish.$bod),
 			$header = $('<header class="header"><h1>'+this._settings.addLabel+'</h1></header>').appendTo($modal);
 
 		this._$modalBody = $('<div class="body"/>').appendTo($modal);
@@ -94,7 +92,7 @@ Blocks.ui.LinksBlock = Blocks.Base.extend({
 		this._$cancelBtn = $('<div class="btn">'+Blocks.t('Cancel')+'</div>').appendTo($cancelBtnContainer);
 		this._$selectBtn = $('<div class="btn submit disabled">'+this._settings.addLabel+'</div>').appendTo($selectBtnContainer);
 
-		this._modal = new Blocks.ui.Modal($modal);
+		this._modal = new Garnish.Modal($modal);
 
 		this._updateModal();
 
@@ -141,7 +139,7 @@ Blocks.ui.LinksBlock = Blocks.Base.extend({
 			this._$modalTbody = this._$modalBody.find('tbody:first');
 			var $entities = this._$modalTbody.children(':not(.hidden)').find('.entity');
 
-			this._modalSelect = new Blocks.ui.Select(this._$modalBody, $entities, {
+			this._modalSelect = new Garnish.Select(this._$modalBody, $entities, {
 				multi: true,
 				waitForDblClick: true,
 				onSelectionChange: $.proxy(function() {
@@ -249,7 +247,4 @@ Blocks.ui.LinksBlock = Blocks.Base.extend({
 
 		this._$inputContainer.focus();
 	}
-
 });
-
-})(jQuery);

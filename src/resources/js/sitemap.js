@@ -1,7 +1,7 @@
 (function($) {
 
 
-var SiteMap = Blocks.Base.extend({
+var SiteMap = Garnish.Base.extend({
 
 	tiers: null,
 	windowWidth: null,
@@ -12,12 +12,12 @@ var SiteMap = Blocks.Base.extend({
 	{
 		this.tiers = [];
 		this.onWindowResize();
-		this.addListener(Blocks.$window, 'resize', 'onWindowResize');
+		this.addListener(Garnish.$win, 'resize', 'onWindowResize');
 	},
 
 	getMaxVisibleNodes: function()
 	{
-		var maxVisibleNodes = Math.floor((Blocks.$window.width()-SiteMap.minElementMargin) / (SiteMap.elementWidth+SiteMap.minElementMargin));
+		var maxVisibleNodes = Math.floor((Garnish.$win.width()-SiteMap.minElementMargin) / (SiteMap.elementWidth+SiteMap.minElementMargin));
 		if (maxVisibleNodes < 1)
 			maxVisibleNodes = 1;
 		return maxVisibleNodes;
@@ -25,7 +25,7 @@ var SiteMap = Blocks.Base.extend({
 
 	onWindowResize: function()
 	{
-		if (this.windowWidth !== (this.windowWidth = Blocks.$window.width()))
+		if (this.windowWidth !== (this.windowWidth = Garnish.$win.width()))
 		{
 			// Update the trail curve width based on the new window width
 			this.trailCurveWidth = 100 * SiteMap.trailCurveRadius / this.windowWidth;
@@ -54,7 +54,7 @@ var siteMap = new SiteMap();
 
 
 
-Blocks.Tier = Blocks.Base.extend({
+Blocks.Tier = Garnish.Base.extend({
 
 	$container: null,
 	$trailContainer: null,
@@ -115,7 +115,7 @@ Blocks.Tier = Blocks.Base.extend({
 });
 
 
-Blocks.Node = Blocks.Base.extend({
+Blocks.Node = Garnish.Base.extend({
 
 	tier: null,
 	$elem: null,
@@ -160,14 +160,14 @@ Blocks.Node = Blocks.Base.extend({
 		this.$elem.addClass('sel');
 
 		// Scroll the new tier into the middle of the screen
-		var heightDiff = Blocks.$window.height() - Blocks.$body.outerHeight(),
+		var heightDiff = Garnish.$win.height() - Garnish.$bod.outerHeight(),
 			padding = heightDiff,// + SiteMap.tierHeight,
-			scrollTop = Blocks.$body.scrollTop();
-		Blocks.$body.css('padding-bottom', padding);
-		Blocks.$body.animate({
+			scrollTop = Garnish.$bod.scrollTop();
+		Garnish.$bod.css('padding-bottom', padding);
+		Garnish.$bod.animate({
 			scrollTop: (scrollTop + SiteMap.tierHeight)
 		}, $.proxy(function() {
-			Blocks.$body.css('padding-bottom', heightDiff)
+			Garnish.$bod.css('padding-bottom', heightDiff)
 		}, this));
 
 		// Animate the element to the center

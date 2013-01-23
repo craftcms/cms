@@ -96,7 +96,7 @@
 
 
 {% set js %}
-	{% if section is not defined or not section.handle %}new Blocks.ui.HandleGenerator('#name', '#handle');{% endif %}
-	{% if section is not defined or not section.urlFormat %}new Blocks.ui.EntryUrlFormatGenerator('#name', '#urlFormat');{% endif %}
+	{% if section is not defined or not section.handle %}new Blocks.HandleGenerator('#name', '#handle');{% endif %}
+	{% if section is not defined or not section.urlFormat %}new Blocks.EntryUrlFormatGenerator('#name', '#urlFormat');{% endif %}
 {% endset %}
 {% includeJs js %}

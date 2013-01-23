@@ -1,7 +1,7 @@
 (function($) {
 
 
-var ReleaseNotes = Blocks.Base.extend({
+var ReleaseNotes = Garnish.Base.extend({
 
 	$table: null,
 	$tbody: null,
@@ -105,7 +105,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 					{
 						$btn.on('click', function() {
 							var src = Blocks.getActionUrl('update/downloadBlocksUpdate');
-							$('<iframe/>', { src: src }).appendTo(Blocks.$body).hide();
+							$('<iframe/>', { src: src }).appendTo(Garnish.$bod).hide();
 						});
 					};
 
@@ -124,7 +124,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 							$downloadLi = $('<li/>').appendTo($menuUl),
 							$downloadBtn = $('<a>'+Blocks.t('Download')+'</a>').appendTo($downloadLi);
 
-						new Blocks.ui.MenuBtn($menuBtn);
+						new Garnish.MenuBtn($menuBtn);
 						handleDownloadClick($downloadBtn);
 					}
 

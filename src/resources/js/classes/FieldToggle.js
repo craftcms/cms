@@ -1,10 +1,7 @@
-(function($) {
-
-
 /**
  * FieldToggle
  */
-Blocks.ui.FieldToggle = Blocks.Base.extend({
+Blocks.FieldToggle = Garnish.Base.extend({
 
 	$toggle: null,
 	reverse: null,
@@ -20,7 +17,7 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 		// Is this already a field toggle?
 		if (this.$toggle.data('fieldtoggle'))
 		{
-			Blocks.log('Double-instantiating a field toggle on an element');
+			Garnish.log('Double-instantiating a field toggle on an element');
 			this.$toggle.data('fieldtoggle').destroy();
 		}
 
@@ -85,7 +82,7 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 
 	getToggleVal: function()
 	{
-		return Blocks.getInputPostVal(this.$toggle);
+		return Garnish.getInputPostVal(this.$toggle);
 	},
 
 	onToggleChange: function()
@@ -171,24 +168,3 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 		}
 	}
 });
-
-
-$.fn.fieldtoggle = function()
-{
-	return this.each(function()
-	{
-		if (!$.data(this, 'fieldtoggle'))
-		{
-			new Blocks.ui.FieldToggle(this);
-		}
-	});
-};
-
-
-Blocks.$document.ready(function()
-{
-	$('.fieldtoggle').fieldtoggle();
-});
-
-
-})(jQuery);

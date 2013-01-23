@@ -1,6 +1,7 @@
 (function($) {
 
-var EmailSettingsForm = Blocks.Base.extend({
+
+var EmailSettingsForm = Garnish.Base.extend({
 
 	$form: null,
 	$protocolField: null,
@@ -65,7 +66,7 @@ var EmailSettingsForm = Blocks.Base.extend({
 		this.$testBtn.addClass('active');
 		this.$testSpinner.removeClass('hidden');
 
-		var data = Blocks.getPostData(this.$form);
+		var data = Garnish.getPostData(this.$form);
 		delete data.action;
 
 		Blocks.postActionRequest('systemSettings/testEmailSettings', data, $.proxy(function(response) {
@@ -93,5 +94,6 @@ var EmailSettingsForm = Blocks.Base.extend({
 });
 
 Blocks.emailSettingsForm = new EmailSettingsForm();
+
 
 })(jQuery);
