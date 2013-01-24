@@ -99,7 +99,7 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .nowrap { white-space: nowrap; }
 .light { color: #999; font-weight: normal; }
 
-.required:after { content: '*'; margin: -1px 0 -1px 1px; font-size: 8px; color: $errorcolor; }
+.required:after { content: '*'; margin-top: -2px; font-size: 8px; color: $errorcolor; }
 
 .scrollpane { overflow: auto; }
 
@@ -211,6 +211,9 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 /* ----------------------------------------*/
 
 .toolbar { margin: 30px 0; height: 31px; }
+.toolbar .btngroup .btn { background-color: #e0978c; }
+.toolbar .btngroup .btn:not(.disabled):hover,
+.toolbar .btngroup .btn.sel { background-color: $submitcolor; }
 
 .buttons { margin: 30px 0; }
 .buttons .btn + .btn { margin-left: 4px; }
@@ -246,8 +249,6 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btngroup .btn { font-size: 13px; }
 .btngroup .btn:not(:first-child) { margin-left: 1px; border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; }
 .btngroup .btn:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-.btngroup .btn.active { position: relative; }
-.btngroup .btn:active { position: relative; z-index: 2; }
 .btngroup .btn[data-icon]:before { margin-right: -2px; }
 
 /* back buttons */
@@ -425,8 +426,8 @@ ul.tree,
 .menulist h2 { margin: 10px 0 3px; }
 .menulist ul li + li { margin-top: 0; }
 .menulist ul li a { margin-left: -30px; padding: 3px 15px 3px 30px; }
-.menulist ul li a:hover,
-.menulist ul li a:hover .light { color: #fff }
+.menulist ul li a:not(.sel):hover,
+.menulist ul li a:not(.sel):hover .light { color: #fff }
 .menulist ul li a.sel { color: #999; cursor: default; }
 .menulist ul li a.sel:before { content: "√"; float: left; margin: -1px 0 0 -18px; font-size: 15px; }
 
