@@ -27,11 +27,11 @@
 #page-header { display: block; margin: 30px; }
 #page-header:after { @include clearafter; }
 #page-header h1 { float: left; margin: 0; line-height: 31px; }
-#page-header nav { float: right; }
-#page-header nav li { float: left; }
-#page-header nav li a { display: block; padding: 0 10px; color: #555; line-height: 31px; }
-#page-header nav li a:hover { text-decoration: none; color: $linkcolor; }
-#page-header nav li a.sel { color: #fff; background: $selcolor; cursor: default; }
+#page-header #tabs { float: right; }
+#page-header #tabs li { float: left; }
+#page-header #tabs li a { display: block; padding: 0 10px; color: #555; line-height: 31px; }
+#page-header #tabs li a:hover { text-decoration: none; color: $linkcolor; }
+#page-header #tabs li a.sel { color: #fff; background: $selcolor; cursor: default; }
 
 /* main */
 #main { margin: 30px; }
