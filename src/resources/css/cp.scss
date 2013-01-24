@@ -31,10 +31,7 @@
 #page-header #tabs li { float: left; }
 #page-header #tabs li a { display: block; padding: 0 10px; color: #555; line-height: 31px; }
 #page-header #tabs li a:hover { text-decoration: none; color: $linkcolor; }
-#page-header #tabs li a.sel { color: #fff; background: $selcolor; cursor: default;
-	-webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.25);
-	   -moz-box-shadow: inset 0 1px 2px rgba(0,0,0,0.25);
-}
+#page-header #tabs li a.sel { color: #fff; background: $selcolor; cursor: default; }
 
 /* main */
 #main { margin: 0 30px 30px; }
@@ -44,7 +41,4 @@
 #main #sidebar { float: left; margin-left: -200px; width: 170px; }
 #main #sidebar nav li a { display: block; padding: 4px 0; color: #555; }
 #main #sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
-#main #sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $selcolor; cursor: default;
-	-webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.25);
-	   -moz-box-shadow: inset 0 1px 2px rgba(0,0,0,0.25);
-}
+#main #sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $selcolor; cursor: default; }
