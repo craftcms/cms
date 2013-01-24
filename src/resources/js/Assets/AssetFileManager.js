@@ -21,20 +21,17 @@ Assets.FileManager = Garnish.Base.extend({
 		this.$viewAsThumbsBtn = $('a.thumbs', this.$toolbar);
 		this.$viewAsListBtn   = $('a.list', this.$toolbar);
 
-		this.$upload = $('.buttons .assets-upload', this.$manager);
+		this.$upload = $('.buttons .assets-upload');
 
 		this.$search = $('> .search input.text', this.$toolbar);
 
 		this.$spinner = $('.temp-spinner', this.$manager);
 
-		this.$left = $('> .nav', this.$manager);
-		this.$right = $('> .asset-content', this.$manager);
+		this.$status = $('.asset-status');
 
-		this.$status = $('> .asset-status', this.$right);
+		this.$sources = $('.assets-sources');
 
-		this.$sources = $('> .assets-sources', this.$left);
-
-		this.$folderContainer = $('> .folder-container', this.$right);
+		this.$folderContainer = $('.folder-container');
 
 		this.$uploadProgress = $('> .assets-fm-uploadprogress', this.$manager);
 		this.$uploadProgressBar = $('.assets-fm-pb-bar', this.$uploadProgress);
@@ -159,16 +156,16 @@ Assets.FileManager = Garnish.Base.extend({
 	 */
 	markActiveViewButton: function () {
 		if (this.currentState.view == 'thumbs') {
-			this.$viewAsThumbsBtn.addClass('active');
-			this.$viewAsListBtn.removeClass('active');
+			this.$viewAsThumbsBtn.addClass('sel');
+			this.$viewAsListBtn.removeClass('sel');
 		} else {
-			this.$viewAsThumbsBtn.removeClass('active');
-			this.$viewAsListBtn.addClass('active');
+			this.$viewAsThumbsBtn.removeClass('sel');
+			this.$viewAsListBtn.addClass('sel');
 		}
 	},
 
 	/**
-	 * Mark a source as active.
+	 * Mark a source as selected.
 	 *
 	 * @param sourceId
 	 */

@@ -22,22 +22,23 @@
 	{% endif %}
 </header>
 
+<div class="body">
+	{{ forms.textField({
+		label: "Subject"|t,
+		id: 'subject',
+		class: 'subject',
+		value: message.subject,
+		required: true
+	}) }}
 
-{{ forms.textField({
-	label: "Subject"|t,
-	id: 'subject',
-	class: 'subject',
-	value: message.subject,
-	required: true
-}) }}
-
-{{ forms.textareaField({
-	label: "Body"|t,
-	id: 'body',
-	class: 'body',
-	value: message.body,
-	rows: 15
-}) }}
+	{{ forms.textareaField({
+		label: "Body"|t,
+		id: 'body',
+		class: 'body',
+		value: message.body,
+		rows: 15
+	}) }}
+</div>
 
 <footer class="footer">
 	<ul class="right">

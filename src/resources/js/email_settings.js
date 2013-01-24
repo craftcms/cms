@@ -61,16 +61,16 @@ var EmailSettingsForm = Garnish.Base.extend({
 
 	sendTestEmail: function()
 	{
-		if (this.$testBtn.hasClass('active')) return;
+		if (this.$testBtn.hasClass('sel')) return;
 
-		this.$testBtn.addClass('active');
+		this.$testBtn.addClass('sel');
 		this.$testSpinner.removeClass('hidden');
 
 		var data = Garnish.getPostData(this.$form);
 		delete data.action;
 
 		Blocks.postActionRequest('systemSettings/testEmailSettings', data, $.proxy(function(response) {
-			this.$testBtn.removeClass('active');
+			this.$testBtn.removeClass('sel');
 			this.$testSpinner.addClass('hidden');
 
 			if (response.success)

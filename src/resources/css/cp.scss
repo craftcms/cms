@@ -2,94 +2,43 @@
 
 @import "shared";
 
-html, body, #sidebar, #main { height: 100%; }
-#sidebar, #main { overflow: auto; }
-
 /* dev mode */
-#devmode { position: fixed; z-index: 2; left: 0; top: 0; width: 100%; height: 3px; background: url(../images/devmode.png) repeat-x; cursor: help; }
+#devmode { width: 100%; height: 3px; background: url(../images/devmode.png) repeat-x; cursor: help; }
 
-/* sidebar */
-#sidebar { position: fixed; z-index: 1; left: 0; top: 0; width: 200px; background: #1a1a1a; }
-#sidebar a { color: #b3b3b3; }
-#sidebar a:hover { color: #fff; }
+/* header */
+#header { background: #333; }
+#header:after { @include clearafter; }
+#header a { color: #aaa; -webkit-transition: color linear 50ms; }
+#header a:hover { color: #fff; text-decoration: none; }
 
-#sidebar #header { position: relative; margin-bottom: 10px; border-bottom: 1px solid #333; height: 50px; }
-#sidebar #header #sitename { position: absolute; top: 0; left: 15px; width: 140px; line-height: 50px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#header #account { float: right; margin-right: 5px; height: 28px; }
+#header #account > a { display: block; padding: 10px 10px 8px; }
 
-#sidebar #header #account { position: absolute; top: 0; right: 0; padding: 17px 0 13px 1px; width: 35px; }
-#sidebar #header #account:hover { text-decoration: none; }
-#sidebar #header #account:after { margin-right: -5px; }
+#header h2 { float: left; margin: 0; padding: 10px 15px 10px 30px; color: #fff; }
 
-#account-menu { padding: 0; }
-#account-menu .userinfo { padding: 40px 15px 5px 110px; height: 55px; background: rgba(0,0,0,0.9); }
-#account-menu .userinfo img { display: block; float: left; margin: -40px 0 0 -110px; }
-#account-menu .userinfo .fullname { margin-top: -8px; color: #fff; font-weight: bold; }
-#account-menu .userinfo .username { color: #d5d5d5; }
-#account-menu ul { position: relative; padding: 10px 15px;
-	-webkit-box-shadow: 0 -1px 0 rgba(0,0,0,0.15);
-	   -moz-box-shadow: 0 -1px 0 rgba(0,0,0,0.15);
-}
+#header nav { display: block; float: left; }
+#header nav li { float: left; }
+#header nav li a { display: block; padding: 6px 10px 4px; line-height: 28px; }
+#header nav li a.sel { color: #333; background: #fff; }
+#header nav li a .badge { display: inline-block; position: relative; top: -6px; border-radius: 6px; padding: 0 3px; font-size: 10px; line-height: 12px; color: #333; background: $submitcolor; }
+#header nav li a.sel .badge { color: #fff; }
 
-#sidebar .nav ul { margin-top: 7px; }
-#sidebar .nav ul li { margin-top: 3px; }
-#sidebar .nav ul li a { border-right: 1px solid transparent; padding: 4px 9px 4px 36px; font-size: 12px; }
-#sidebar .nav ul li a .badge { color: #262626; background: #b3b3b3; }
-#sidebar .nav ul li a.sel { border-right-color: #0c4466; color: #fff; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background: hsl(203, 79%, 45%); }
-#sidebar .nav ul li a.sel .badge { color: #fff; background: #1a1a1a; }
-
-#sidebar .nav ul li a:not(.hasicon):before { @include icon; content: 'P'; float: left; margin-left: -26px; width: 22px; font-size: 18px; }
-#sidebar .nav ul li a.hasicon { background-repeat: no-repeat; background-position: 13px 5px; background-size: 16px 16px; }
-
-#sidebar .nav ul li a#nav-dashboard:before { content: 'D'; }
-#sidebar .nav ul li a#nav-content:before { content: 'C'; }
-#sidebar .nav ul li a#nav-assets:before { content: 'A'; }
-#sidebar .nav ul li a#nav-users:before { content: 'U'; }
-#sidebar .nav ul li a#nav-updates:before { content: 'V'; }
-#sidebar .nav ul li a#nav-settings:before { content: 'S'; }
-
-#sidebar #version { position: absolute; bottom: 0; left: 0; width: 100%; text-align: center; font-size: 11px; color: #666; }
+/* page header */
+#page-header { display: block; margin: 30px; }
+#page-header:after { @include clearafter; }
+#page-header h1 { float: left; margin: 0; line-height: 31px; }
+#page-header nav { float: right; }
+#page-header nav li { float: left; }
+#page-header nav li a { display: block; padding: 0 10px; color: #555; line-height: 31px; }
+#page-header nav li a:hover { text-decoration: none; color: $linkcolor; }
+#page-header nav li a.sel { color: #fff; background: $selcolor; cursor: default; }
 
 /* main */
-#main { position: relative; margin-left: 200px; }
+#main { margin: 30px; }
+#main.has-sidebar { margin-left: 230px; }
+#main.has-sidebar:after { @include clearafter; }
 
-/* notifications */
-#notifications-wrapper { position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; }
-#notifications { margin-left: 200px; text-align: center; }
-#notifications .notification { display: inline-block; padding: 3px 10px 2px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; border-style: solid; color: #fff !important;
-	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.35);
-	   -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.35);
-}
-#notifications .notification.notice { border-color: #1F6794; background: #2782bb; }
-#notifications .notification.error { border-color: #992f2f; background: #e14545; }
-
-#tabs { margin: -25px auto 25px; border-bottom: 1px solid #dbdbdb; text-align: center; font-size: 0; }
-#tabs ul li { display: inline-block; margin: 0 10px; }
-#tabs ul li a { display: block; margin-bottom: -1px; padding: 16px 1px; font-size: 13px; color: #808080; }
-#tabs ul li a:before { margin: -2px 4px 0 0; font-size: 18px; }
-#tabs ul li a:hover { color: $linkcolor; text-decoration: none; }
-#tabs ul li a.active { padding-bottom: 14px; border-bottom: 2px solid #555; color: #555; cursor: default; }
-
-/* content */
-#content { margin: 25px auto; padding: 0 25px; }
-#content.centered { max-width: 500px; }
-
-/* nav */
-#main .nav { float: left; width: 150px; }
-#main .nav .btn.submit { display: block; }
-#main .nav ul li a:after { @include icon; display: none; margin: -2px 0 0 8px; font-size: 13px; content: '>'; color: $linkcolor; }
-#main .nav ul li a:hover:after { display: inline-block; }
-#main .nav ul li a.sel:after { display: inline-block; color: #2c2c2c; }
-#main .nav + div { margin-left: 175px; }
-
-/* image cropping modal */
-div.crop-image div.image-chooser { position: relative; }
-div.crop-image div.image-chooser img { display: block; }
-
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-	   only screen and (   -moz-min-device-pixel-ratio: 1.5),
-	   only screen and (     -o-min-device-pixel-ratio: 3/2),
-	   only screen and (        min-device-pixel-ratio: 1.5),
-	   only screen and (        min-resolution: 1.5dppx)
-{
-	#devmode { background-image: url(../images/devmode_2x.png); background-size: 53px 3px; }
-}
+#main #sidebar { float: left; margin-left: -200px; width: 170px; }
+#main #sidebar nav li a { display: block; padding: 4px 0; color: #555; }
+#main #sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
+#main #sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $selcolor; cursor: default; }

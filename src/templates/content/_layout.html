@@ -1,14 +1,9 @@
 {% extends "_layouts/cp" %}
+{% set title = "Content"|t %}
 {% set totalGlobals = (user.can('editGlobals') ? blx.globals.getTotalBlocks : 0) %}
 
-
-{% set header %}
-	<h1>{{ "Content"|t }}</h1>
-{% endset %}
-
-
 {% set tabs %}
-	<li><a{% if tab == 'entries' %} class="active"{% endif %} href="{{ url('content') }}" data-icon="C">{{ "Entries"|t }}</a></li>
-	<li><a{% if tab == 'pages' %} class="active"{% endif %} href="{{ url('content/pages') }}" data-icon="c">{{ "Pages"|t }}</a></li>
-	{% if totalGlobals %}<li><a{% if tab == 'globals' %} class="active"{% endif %} href="{{ url('content/globals') }}" data-icon="G">{{ "Globals"|t }}</a></li>{% endif %}
+	<li><a{% if tab == 'entries' %} class="sel"{% endif %} href="{{ url('content') }}">{{ "Entries"|t }}</a></li>
+	<li><a{% if tab == 'pages' %} class="sel"{% endif %} href="{{ url('content/pages') }}">{{ "Pages"|t }}</a></li>
+	{% if totalGlobals %}<li><a{% if tab == 'globals' %} class="sel"{% endif %} href="{{ url('content/globals') }}">{{ "Globals"|t }}</a></li>{% endif %}
 {% endset %}

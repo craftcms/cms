@@ -18,20 +18,20 @@ var CP = Garnish.Base.extend({
 		if ($tabContainer.length)
 		{
 			var $tabs = $tabContainer.find('a');
-				var $activeTab = $tabs.filter('.active:first');
+				var $selTab = $tabs.filter('.sel:first');
 
 			$tabs.click(function() {
 				var $tab = $(this);
-				if (this != $activeTab[0])
+				if (this != $selTab[0])
 				{
 					var newTarget = $tab.attr('data-target');
 					if (newTarget)
 					{
-						$activeTab.removeClass('active');
-						var oldTarget = $activeTab.attr('data-target');
+						$selTab.removeClass('sel');
+						var oldTarget = $selTab.attr('data-target');
 
-						$activeTab = $tab;
-						$activeTab.addClass('active');
+						$selTab = $tab;
+						$selTab.addClass('sel');
 
 						if (newTarget)
 						{

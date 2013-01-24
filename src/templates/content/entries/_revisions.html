@@ -5,7 +5,7 @@
 
 <div class="menu menulist" data-align="right">
 	<ul>
-		<li><a{% if entry.classHandle == 'Entry' %} class="active"{% endif %} href="{{ entry.cpEditUrl }}">{{ "Current"|t }}</a></li>
+		<li><a{% if entry.classHandle == 'Entry' %} class="sel"{% endif %} href="{{ entry.cpEditUrl }}">{{ "Current"|t }}</a></li>
 	</ul>
 
 	<h2>{{ "Drafts"|t }}</h2>
@@ -14,7 +14,7 @@
 	{% else %}
 		<ul>
 			{% for draft in drafts %}
-				<li><a{% if entry.classHandle == 'EntryDraft' and draft.draftId == draftId %} class="active"{% endif %} href="{{ entry.cpEditUrl }}/drafts/{{ draft.draftId }}">
+				<li><a{% if entry.classHandle == 'EntryDraft' and draft.draftId == draftId %} class="sel"{% endif %} href="{{ entry.cpEditUrl }}/drafts/{{ draft.draftId }}">
 					{{ "Draft {id}"|t({ id: draft.draftId }) }}
 					{% if blx.hasPackage('Users') %}
 						<span class="light">{{ draft.creator }}</span>
@@ -31,7 +31,7 @@
 	{% else %}
 		<ul>
 			{% for version in versions %}
-				<li><a{% if entry.classHandle == 'EntryVersion' and version.versionId == versionId %} class="active"{% endif %} href="{{ entry.cpEditUrl }}/versions/{{ version.versionId }}">
+				<li><a{% if entry.classHandle == 'EntryVersion' and version.versionId == versionId %} class="sel"{% endif %} href="{{ entry.cpEditUrl }}/versions/{{ version.versionId }}">
 					{{ "Version {id}"|t({ id: version.versionId }) }}
 					{% if blx.hasPackage('Users') %}
 						<span class="light">{{ version.creator }}</span>

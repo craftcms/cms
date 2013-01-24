@@ -92,8 +92,8 @@
 
 
 {% set tabs %}
-	<li><a class="edit icon active" data-target="entry-content">{{ "Content"|t }}</a></li>
-	<li><a class="settings icon{% if hasSettingsErrors %} error{% endif %}" data-target="entry-settings">{{ "Settings"|t }}</a></li>
+	<li><a class="edit sel" data-target="entry-content">{{ "Content"|t }}</a></li>
+	<li><a class="settings{% if hasSettingsErrors %} error{% endif %}" data-target="entry-settings">{{ "Settings"|t }}</a></li>
 {% endset %}
 
 

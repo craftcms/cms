@@ -11,8 +11,8 @@
 
 
 {% set tabs %}
-	<li><a{% if page == 'sources' %} class="active"{% endif %} href="{{ url('settings/assets') }}">{{ "Sources"|t }}</a></li>
-    <li><a{% if page == 'operations' %} class="active"{% endif %} href="{{ url('settings/assets/operations') }}">{{ "Operations"|t }}</a></li>
-    <li><a{% if page == 'transformations' %} class="active"{% endif %} href="{{ url('settings/assets/transformations') }}">{{ "Transformations"|t }}</a></li>
-	<li><a{% if page == 'blocks' %} class="active"{% endif %} href="{{ url('settings/assets/blocks') }}">{{ "Asset Blocks"|t }}</a></li>
+	<li><a{% if page == 'sources' %} class="sel"{% endif %} href="{{ url('settings/assets') }}">{{ "Sources"|t }}</a></li>
+    <li><a{% if page == 'operations' %} class="sel"{% endif %} href="{{ url('settings/assets/operations') }}">{{ "Operations"|t }}</a></li>
+    <li><a{% if page == 'transformations' %} class="sel"{% endif %} href="{{ url('settings/assets/transformations') }}">{{ "Transformations"|t }}</a></li>
+	<li><a{% if page == 'blocks' %} class="sel"{% endif %} href="{{ url('settings/assets/blocks') }}">{{ "Asset Blocks"|t }}</a></li>
 {% endset %}

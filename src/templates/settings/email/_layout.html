@@ -11,6 +11,6 @@
 
 
 {% set tabs %}
-	<li><a class="settings icon{% if blx.request.segment(3) == '' %} active{% endif %}" href="{{ url('settings/email') }}">{{ "Settings"|t }}</a></li>
-	<li><a{% if blx.request.segment(3) == 'messages' %} class="active"{% endif %} href="{{ url('settings/email/messages') }}" data-icon="E">{{ "Messages"|t }}</a></li>
+	<li><a class="settings{% if blx.request.segment(3) == '' %} sel{% endif %}" href="{{ url('settings/email') }}">{{ "Settings"|t }}</a></li>
+	<li><a{% if blx.request.segment(3) == 'messages' %} class="sel"{% endif %} href="{{ url('settings/email/messages') }}">{{ "Messages"|t }}</a></li>
 {% endset %}

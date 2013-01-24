@@ -126,32 +126,38 @@ var RouteSettingsModal = Garnish.Modal.extend({
 		this.route = route;
 
 		var $container = $('<form class="modal route-settings" accept-charset="UTF-8">' +
-			'<h1></h1>' +
-			'<div class="field">' +
-				'<div class="heading">' +
-					'<label for="url">'+Blocks.t("If the URI looks like this")+':</label>' +
+			'<div class="header">' +
+				'<h1></h1>' +
+			'</div>' +
+			'<div class="body">' +
+				'<div class="field">' +
+					'<div class="heading">' +
+						'<label for="url">'+Blocks.t("If the URI looks like this")+':</label>' +
+					'</div>' +
+					'<div id="url" class="text url"></div>' +
+					'<div class="url-tokens">' +
+						'<h4>'+Blocks.t("Add a token")+'</h4>' +
+						'<div class="token" data-name="year" data-value="\\d{4}">'+Blocks.t("year")+'</div>' +
+						'<div class="token" data-name="month" data-value="1?\\d">'+Blocks.t("month")+'</div>' +
+						'<div class="token" data-name="day" data-value="[1-3]?\\d">'+Blocks.t("day")+'</div>' +
+						'<div class="token" data-name="number" data-value="\\d+">'+Blocks.t("number")+'</div>' +
+						'<div class="token" data-name="page" data-value="\\d+">'+Blocks.t("page")+'</div>' +
+					'</div>' +
 				'</div>' +
-				'<div id="url" class="text url"></div>' +
-				'<div class="url-tokens">' +
-					'<h4>'+Blocks.t("Add a token")+'</h4>' +
-					'<div class="token" data-name="year" data-value="\\d{4}">'+Blocks.t("year")+'</div>' +
-					'<div class="token" data-name="month" data-value="1?\\d">'+Blocks.t("month")+'</div>' +
-					'<div class="token" data-name="day" data-value="[1-3]?\\d">'+Blocks.t("day")+'</div>' +
-					'<div class="token" data-name="number" data-value="\\d+">'+Blocks.t("number")+'</div>' +
-					'<div class="token" data-name="page" data-value="\\d+">'+Blocks.t("page")+'</div>' +
+				'<div class="field">' +
+					'<div class="heading">' +
+						'<label for="template">'+Blocks.t("Load this template")+':</label>' +
+					'</div>' +
+					'<input id="template" type="text" class="text fullwidth template">' +
 				'</div>' +
 			'</div>' +
-			'<div class="field">' +
-				'<div class="heading">' +
-					'<label for="template">'+Blocks.t("Load this template")+':</label>' +
+			'<div class="footer">' +
+				'<div class="buttons">' +
+					'<input type="submit" class="btn submit" value="'+Blocks.t("Save")+'"> ' +
+					'<input type="button" class="btn cancel" value="'+Blocks.t("Cancel")+'">' +
+					'<div class="spinner" style="display: none;"></div>' +
+					'<a class="delete">'+Blocks.t("Delete")+'</a>' +
 				'</div>' +
-				'<input id="template" type="text" class="text fullwidth template">' +
-			'</div>' +
-			'<div class="buttons">' +
-				'<input type="submit" class="btn submit" value="'+Blocks.t("Save")+'"> ' +
-				'<input type="button" class="btn cancel" value="'+Blocks.t("Cancel")+'">' +
-				'<div class="spinner" style="display: none;"></div>' +
-				'<a class="delete">'+Blocks.t("Delete")+'</a>' +
 			'</div>' +
 		'</form>');
 

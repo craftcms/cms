@@ -1,6 +1,5 @@
 {% extends "content/_layout" %}
 {% set tab = 'entries' %}
-{% set title = "Entries"|t %}
 
 
 {% if blx.hasPackage('PublishPro') %}
@@ -48,34 +47,35 @@
 {% endif %}
 
 
-{% set content %}
-	{% if not blx.hasPackage('PublishPro') or sections|length %}
-		<nav class="nav">
-			{% if blx.hasPackage('PublishPro') %}
-				{% if newEntrySections|length %}
-					<div class="buttons">
-						{% if newEntrySections|length > 1 %}
-							<div class="btn submit menubtn add icon">{{ "New Entry"|t }}</div>
-							<div class="menu">
-								<ul>
-									{% for section in newEntrySections %}
-										<li><a href="{{ url('content/' ~ section.handle ~ '/new') }}">{{ section.name|t }}</a></li>
-									{% endfor %}
-								</ul>
-							</div>
-						{% else %}
-							<a class="btn submit add icon" href="{{ url('content/'~sections[sections|keys[0]].handle~'/new') }}">{{ "New Entry"|t }}</a>
-						{% endif %}
-					</div>
-				{% endif %}
-			{% else %}
-				{% if user.can('createEntries') %}
-					<div class="buttons">
-						<a class="btn submit add icon" href="{{ url('content/blog/new') }}">{{ "New Entry"|t }}</a>
-					</div>
-				{% endif %}
-			{% endif %}
+{% if not blx.hasPackage('PublishPro') or sections|length %}
 
+	{% set sidebar %}
+		{% if blx.hasPackage('PublishPro') %}
+			{% if newEntrySections|length %}
+				<div class="buttons">
+					{% if newEntrySections|length > 1 %}
+						<div class="btn submit menubtn add icon">{{ "New Entry"|t }}</div>
+						<div class="menu">
+							<ul>
+								{% for section in newEntrySections %}
+									<li><a href="{{ url('content/' ~ section.handle ~ '/new') }}">{{ section.name|t }}</a></li>
+								{% endfor %}
+							</ul>
+						</div>
+					{% else %}
+						<a class="btn submit add icon" href="{{ url('content/'~sections[sections|keys[0]].handle~'/new') }}">{{ "New Entry"|t }}</a>
+					{% endif %}
+				</div>
+			{% endif %}
+		{% else %}
+			{% if user.can('createEntries') %}
+				<div class="buttons">
+					<a class="btn submit add icon" href="{{ url('content/blog/new') }}">{{ "New Entry"|t }}</a>
+				</div>
+			{% endif %}
+		{% endif %}
+
+		<nav>
 			<ul>
 				<li><a href="{{ url('content') }}" {% if not filter %}class="sel"{% endif %}>{{ "All Entries"|t }}</a></li>
 
@@ -85,7 +85,7 @@
 					{% endfor %}
 				{% endif %}
 
-				{% for status, class in statuses %}
+				{# for status, class in statuses %}
 					{% if blx.entries.status(status).editable(true).total %}
 						<li><a href="{{ url('content/' ~ status) }}" {% if filter == status %}class="sel"{% endif %}><div class="status {{ class }}"></div> {{ status|ucfirst|t }}</a></li>
 					{% endif %}
@@ -97,67 +97,69 @@
 				{% endif %}
 				{% if blx.entries.archived(true).editable(true).total %}
 					<li><a href="{{ url('content/archive') }}" {% if filter == 'archive' %}class="sel"{% endif %} data-icon="d">{{ "Archived"|t }}</a></li>
-				{% endif %}
+				{% endif #}
 			</ul>
 		</nav>
+	{% endset %}
 
-		<div>
-			<div class="toolbar">
-				<div class="search"><input type="text" class="text nicetext fullwidth" data-hint="{{ 'Search entries'|t }}"></div>
-			</div>
-
-			{% paginate blx.entries(params).editable(true).limit(50) as entries %}
-
-				<p id="noentries"{% if entries|length %} class="hidden"{% endif %}>
-					{{ "No entries exist yet."|t }}
-				</p>
-
-				{% if entries|length %}
-
-					{% include "_includes/paginatelinks" with { type: "entries"|t } %}
-
-					{% set totalCols = 2 + (showStatus ? 1 : 0) + (showSection ? 1 : 0) %}
-					{% set colWidth = round(100 / totalCols) %}
-					<table id="entries" class="data">
-						<thead>
-							<th scope="col" width="{{ colWidth }}%">{{ "Title"|t }}</th>
-							<th scope="col" width="{{ colWidth }}%">{{ "Slug"|t }}</th>
-							{% if showSection %}<th scope="col" width="{{ colWidth }}%">{{ "Section"|t }}</th>{% endif %}
-							{% if showStatus %}<th scope="col" width="{{ colWidth }}%">{{ "Status"|t }}</th>{% endif %}
-							<td class="thin"></td>
-						</thead>
-						<tbody>
-							{% for entry in entries %}
-								{% if blx.hasPackage('PublishPro') %}
-									{% set entrySection = sections[entry.sectionId] %}
-								{% endif %}
-								<tr data-id="{{ entry.id }}" data-name="{{ entry.title|t }}">
-									<th scope="row"><a href="{{ entry.cpEditUrl }}">{{ entry.title }}</a></th>
-									<td><a href="{{ entry.url }}">{{ entry.slug }}</a></td>
-									{% if showSection %}<td>{{ entrySection.name }}</th>{% endif %}
-									{% if showStatus %}<td><div class="status {{ statuses[entry.status] }}"></div> {{ entry.status|ucfirst|t }}</td>{% endif %}
-									<td class="thin">
-										{% if entry.authorId == user.id or user.can('deletePeerEntries'~(blx.hasPackage('PublishPro') ? 'InSection'~entry.sectionId : '')) %}
-											<a class="delete icon" title="{{ 'Delete'|t }}"></a>
-										{% endif %}
-									</td>
-								</tr>
-							{% endfor %}
-						</tbody>
-					</table>
-				{% endif %}
-
-			{% endpaginate %}
+	{% set content %}
+		<div class="toolbar">
+			<div class="search"><input type="text" class="text nicetext fullwidth" data-hint="{{ 'Search entries'|t }}"></div>
 		</div>
-	{% else %}
+
+		{% paginate blx.entries(params).editable(true).limit(50) as entries %}
+
+			<p id="noentries"{% if entries|length %} class="hidden"{% endif %}>
+				{{ "No entries exist yet."|t }}
+			</p>
+
+			{% if entries|length %}
+
+				{% include "_includes/paginatelinks" with { type: "entries"|t } %}
+
+				{% set totalCols = 2 + (showStatus ? 1 : 0) + (showSection ? 1 : 0) %}
+				{% set colWidth = round(100 / totalCols) %}
+				<table id="entries" class="data">
+					<thead>
+						<th scope="col" width="{{ colWidth }}%">{{ "Title"|t }}</th>
+						<th scope="col" width="{{ colWidth }}%">{{ "Slug"|t }}</th>
+						{% if showSection %}<th scope="col" width="{{ colWidth }}%">{{ "Section"|t }}</th>{% endif %}
+						{% if showStatus %}<th scope="col" width="{{ colWidth }}%">{{ "Status"|t }}</th>{% endif %}
+						<td class="thin"></td>
+					</thead>
+					<tbody>
+						{% for entry in entries %}
+							{% if blx.hasPackage('PublishPro') %}
+								{% set entrySection = sections[entry.sectionId] %}
+							{% endif %}
+							<tr data-id="{{ entry.id }}" data-name="{{ entry.title|t }}">
+								<th scope="row"><a href="{{ entry.cpEditUrl }}">{{ entry.title }}</a></th>
+								<td><a href="{{ entry.url }}">{{ entry.slug }}</a></td>
+								{% if showSection %}<td>{{ entrySection.name }}</th>{% endif %}
+								{% if showStatus %}<td><div class="status {{ statuses[entry.status] }}"></div> {{ entry.status|ucfirst|t }}</td>{% endif %}
+								<td class="thin">
+									{% if entry.authorId == user.id or user.can('deletePeerEntries'~(blx.hasPackage('PublishPro') ? 'InSection'~entry.sectionId : '')) %}
+										<a class="delete icon" title="{{ 'Delete'|t }}"></a>
+									{% endif %}
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			{% endif %}
+
+		{% endpaginate %}
+	{% endset %}
+{% else %}
+	{% set content %}
 		<p class="centeralign">
 			{{ "No sections exist yet."|t }}
 			{% if user.admin %}
 				<a class="go" href="{{ url('settings/sections/new') }}">{{ "Create the first one"|t }}</a>
 			{% endif %}
 		</p>
-	{% endif %}
-{% endset %}
+	{% endset %}
+{% endif %}
 
 
 {% set js %}

@@ -22,6 +22,6 @@
 
 /*-- uploader --*/
 
-#main .assets-upload { height: 31px;}
+#main .assets-upload { height: 31px; }
 #main .assets-qq-upload-list { display: none;}
 #main .assets .temp-spinner{ text-align: center; margin-top: -18px; display: none; }
