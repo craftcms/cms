@@ -3,18 +3,28 @@
 
 var CP = Garnish.Base.extend({
 
+	$header: null,
+	$notificationWrapper: null,
 	$notificationContainer: null,
 	$notifications: null,
+
+	fixedNotifications: false,
 
 	tabs: null,
 	selectedTab: null,
 
 	init: function()
 	{
+		this.$header = $('#header');
+
 		// Fade the notification out in two seconds
+		this.$notificationWrapper = $('#notifications-wrapper');
 		this.$notificationContainer = $('#notifications');
 		this.$notifications = this.$notificationContainer.children();
 		this.$notifications.delay(CP.notificationDuration).fadeOut();
+
+		this.addListener(Garnish.$win, 'scroll', 'onWindowScroll');
+		this.onWindowScroll();
 
 		// Tabs
 		this.tabs = {};
@@ -59,6 +69,33 @@ var CP = Garnish.Base.extend({
 
 			$form.submit();
 		});
+	},
+
+	/**
+	 * Handle stuff that should happen when the window scrolls
+	 */
+	onWindowScroll: function()
+	{
+		this.onWindowScroll._scrollTop = Garnish.$win.scrollTop();
+		this.onWindowScroll._headerHeight = this.$header.height();
+
+		if (this.onWindowScroll._scrollTop > this.onWindowScroll._headerHeight)
+		{
+			if (!this.fixedNotifications)
+			{
+				this.$notificationWrapper.addClass('fixed');
+				this.fixedNotifications = true;
+			}
+
+		}
+		else
+		{
+			if (this.fixedNotifications)
+			{
+				this.$notificationWrapper.removeClass('fixed');
+				this.fixedNotifications = false;
+			}
+		}
 	},
 
 	/**
