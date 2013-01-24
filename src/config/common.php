@@ -86,7 +86,7 @@ $configArray = array(
 	),
 
 	'params' => array(
-		'adminEmail'            => 'brad@pixelandtonic.com',
+		'adminEmail'            => 'admin@website.com',
 		'dbConfig'              => $dbConfig,
 		'blocksConfig'          => $blocksConfig,
 	)
