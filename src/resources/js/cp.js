@@ -26,7 +26,7 @@ var CP = Garnish.Base.extend({
 			var $tab = $($tabs[i]),
 				href = $tab.attr('href');
 
-			if (href && href.charAt(0))
+			if (href && href.charAt(0) == '#')
 			{
 				this.tabs[href] = {
 					$tab: $tab,

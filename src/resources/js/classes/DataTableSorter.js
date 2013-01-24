@@ -12,8 +12,10 @@ Blocks.DataTableSorter = Garnish.DragSort.extend({
 
 		settings = $.extend({}, Blocks.DataTableSorter.defaults, settings);
 
+		settings.container = this.$table.children('tbody');
 		settings.helper = $.proxy(this, 'getHelper');
-		settings.axis = 'y';
+		settings.caboose = '<tr/>';
+		settings.axis = Garnish.Y_AXIS;
 
 		this.base($rows, settings);
 	},
