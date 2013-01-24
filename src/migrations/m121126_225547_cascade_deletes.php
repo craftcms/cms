@@ -41,14 +41,17 @@ class m121126_225547_cascade_deletes extends DbMigration
 		{
 			$table = $record->getTableName();
 
-			foreach ($record->getBelongsToRelations() as $name => $config)
+			if ($table !== 'migrations')
 			{
-				$otherRecord = new $config[1];
-
-				if ($otherRecord->tableExists())
+				foreach ($record->getBelongsToRelations() as $name => $config)
 				{
-					$fkName = "{$table}_{$name}_fk";
-					$this->_dropForeignKey($fkName, $table);
+					$otherRecord = new $config[1];
+
+					if ($otherRecord->tableExists())
+					{
+						$fkName = "{$table}_{$name}_fk";
+						$this->_dropForeignKey($fkName, $table);
+					}
 				}
 			}
 		}
@@ -58,29 +61,32 @@ class m121126_225547_cascade_deletes extends DbMigration
 		{
 			$table = $record->getTableName();
 
-			foreach ($record->getBelongsToRelations() as $name => $config)
+			if ($table !== 'migrations')
 			{
-				$otherRecord = new $config[1];
-				$otherTable = $otherRecord->getTableName();
-				$fkName = "{$table}_{$name}_fk";
+				foreach ($record->getBelongsToRelations() as $name => $config)
+				{
+					$otherRecord = new $config[1];
+					$otherTable = $otherRecord->getTableName();
+					$fkName = "{$table}_{$name}_fk";
 
-				if (isset($config['onDelete']))
-				{
-					$onDelete = $config['onDelete'];
-				}
-				else
-				{
-					if (empty($config['required']))
+					if (isset($config['onDelete']))
 					{
-						$onDelete = BaseRecord::SET_NULL;
+						$onDelete = $config['onDelete'];
 					}
 					else
 					{
-						$onDelete = null;
+						if (empty($config['required']))
+						{
+							$onDelete = BaseRecord::SET_NULL;
+						}
+						else
+						{
+							$onDelete = null;
+						}
 					}
-				}
 
-				$this->_addForeignKey($fkName, $table, $config[2], $otherTable, 'id', $onDelete);
+					$this->_addForeignKey($fkName, $table, $config[2], $otherTable, 'id', $onDelete);
+				}
 			}
 		}
 

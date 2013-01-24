@@ -69,7 +69,8 @@ class m121218_222713_datetime_conversion extends DbMigration
 		}
 
 		// Manually add migrations table if it exists
-		if (blx()->db->schema->getTable(blx()->config->getDbItem('tablePrefix').'_'.blx()->migrations->migrationTable) !== null)
+		$table = blx()->migrations->migrationTable;
+		if (blx()->db->schema->getTable("{{{$table}}}") !== null)
 		{
 			$flattenedRecords['migrations'] = array(
 				'apply_time' => array(
