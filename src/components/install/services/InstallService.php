@@ -47,6 +47,7 @@ class InstallService extends BaseApplicationComponent
 
 		// Fill 'er up
 		$this->_populateInfoTable($inputs);
+		$this->_populateMigrationTable();
 		$this->_addUser($inputs);
 		$this->_logUserIn($inputs);
 		$this->_saveDefaultMailSettings($inputs['email'], $inputs['siteName']);
@@ -108,6 +109,7 @@ class InstallService extends BaseApplicationComponent
 	 *
 	 * @access private
 	 * @param $records
+	 * @return void
 	 */
 	private function _createTablesFromRecords($records)
 	{
@@ -165,6 +167,28 @@ class InstallService extends BaseApplicationComponent
 		{
 			Blocks::log('Could not populate the info table.', \CLogger::LEVEL_ERROR);
 			throw new Exception(Blocks::t('There was a problem saving to the info table:').$this->_getFlattenedErrors($info->getErrors()));
+		}
+	}
+
+	/**
+	 * Populates the migrations table with the base migration.
+	 *
+	 * @throws Exception
+	 */
+	private function _populateMigrationTable()
+	{
+		$migration = new MigrationRecord();
+		$migration->version = blx()->migrations->getBaseMigration();
+		$migration->applyTime = DateTimeHelper::currentUTCDateTime();
+
+		if ($migration->save())
+		{
+			Blocks::log('Migration table populated successfully.', \CLogger::LEVEL_INFO);
+		}
+		else
+		{
+			Blocks::log('Could not populate the migration table.', \CLogger::LEVEL_ERROR);
+			throw new Exception(Blocks::t('There was a problem saving to the migrations table:').$this->_getFlattenedErrors($migration->getErrors()));
 		}
 	}
 

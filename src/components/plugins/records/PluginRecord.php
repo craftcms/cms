@@ -26,4 +26,14 @@ class PluginRecord extends BaseRecord
 			'settings' => AttributeType::Mixed,
 		);
 	}
+
+	/**
+	 * @return array
+	 */
+	public function defineRelations()
+	{
+		return array(
+			'migrations' => array(static::HAS_MANY, 'MigrationRecord', 'pluginId'),
+		);
+	}
 }
