@@ -35,7 +35,7 @@ class MigrateCommand extends \MigrateCommand
 	{
 		if ($action == 'create')
 		{
-			$path = IOHelper::getFolderName($params[0][0]);
+			$path = $params[0][0];
 		}
 		else
 		{
@@ -44,14 +44,28 @@ class MigrateCommand extends \MigrateCommand
 
 		if ($path === false || !IOHelper::folderExists($path))
 		{
-			echo 'Error: The migration directory does not exist: '.$this->_rootMigrationPath."\n";
-			exit(1);
+			echo 'The migration folder does not exist: '.$path."\n";
+
+			if ($action == 'create')
+			{
+				echo 'Creating '.$path."\n";
+
+				if (!IOHelper::createFolder($path))
+				{
+					echo 'Sorry... I tried to create the folder, but could not.';
+					exit(1);
+				}
+			}
+			else
+			{
+				exit(1);
+			}
 		}
 
 		$this->_rootMigrationPath = $path;
 
 		$yiiVersion = Blocks::getYiiVersion();
-		echo "\nBlocks Migration Tool v1.0 (based on Yii v{$yiiVersion})\n\n";
+		echo "\nBlocks Migration Tool (based on Yii v{$yiiVersion})\n\n";
 
 		if ($action == 'create')
 		{
@@ -78,25 +92,41 @@ class MigrateCommand extends \MigrateCommand
 	 */
 	public function actionCreate($args)
 	{
-		if (isset($args[0]))
+		if (isset($args[1]))
 		{
-			$name = IOHelper::getFileName($args[0], false);
+			$name = $args[1];
+
+			if (!preg_match('/^\w+$/', $name))
+			{
+				echo "Error: The name of the migration must contain letters, digits and/or underscore characters only.\n";
+				return 1;
+			}
+
+			$fullName = 'm'.gmdate('ymd_His').'_'.$name;
+			$migrationNameDesc = 'mYYMMDD_HHMMSS_migrationName';
 		}
 		else
 		{
-			$this->usageError('Please provide the name of the new migration.');
+			$this->usageError('Please provide a name for the new migration.');
 			return 1;
 		}
 
-		if (!preg_match('/^\w+$/', $name))
+		if (isset($args[2]))
 		{
-			echo "Error: The name of the migration must contain letters, digits and/or underscore characters only.\n";
-			return 1;
+			$pluginHandle = $args[2];
+
+			if (!preg_match('/^\w+$/', $pluginHandle))
+			{
+				echo "Error: The name of the plugin must contain letters, digits and/or underscore characters only.\n";
+				return 1;
+			}
+
+			$fullName = 'm'.gmdate('ymd_His').'_'.strtolower($pluginHandle).'_'.$name;
+			$migrationNameDesc = 'mYYMMDD_HHMMSS_pluginHandle_migrationName';
 		}
 
-		$name = 'm'.gmdate('ymd_His').'_'.$name;
-		$content = strtr($this->getTemplate(), array('{ClassName}' => $name));
-		$file = $this->_rootMigrationPath.DIRECTORY_SEPARATOR.$name.'.php';
+		$content = strtr($this->getTemplate(), array('{ClassName}' => $fullName, '{MigrationNameDesc}' => $migrationNameDesc));
+		$file = $this->_rootMigrationPath.DIRECTORY_SEPARATOR.$fullName.'.php';
 
 		if ($this->confirm("Create new migration '$file'?"))
 		{
@@ -139,33 +169,23 @@ class MigrateCommand extends \MigrateCommand
 	{
 		$migrations = blx()->migrations->getMigrationHistory($limit);
 
+		$column = 'applyTime';
+
+		if (isset($migrations[0]))
+		{
+			if (isset($migrations[0]['apply_time']))
+			{
+				$column = 'apply_time';
+			}
+		}
+
 		// Convert the dates to Unix timestamps
 		foreach ($migrations as &$migration)
 		{
-			$migration['apply_time'] = $migration['apply_time']->getTimestamp();
+			$migration[$column] = $migration[$column]->getTimestamp();
 		}
 
-		return HtmlHelper::listData($migrations, 'version', 'apply_time');
-	}
-
-	/**
-	 *
-	 */
-	protected function createMigrationHistoryTable()
-	{
-		$db = $this->getDbConnection();
-		echo 'Creating migration history table "'.$this->migrationTable.'"...';
-		$db->createCommand()->createTable($this->migrationTable, array(
-			'version' => 'string NOT NULL',
-			'apply_time' => 'integer',
-		));
-
-		$db->createCommand()->insert($this->migrationTable, array(
-			'version' => static::BASE_MIGRATION,
-			'apply_time' => time(),
-		));
-
-		echo "done.\n";
+		return HtmlHelper::listData($migrations, 'version', $column);
 	}
 
 	/**
