@@ -1,7 +1,5 @@
 {% extends "content/_layout" %}
-{% set title = "Pages"|t %}
-{% set tab = 'pages' %}
-{% set centered = true %}
+{% set selectedTab = 'pages' %}
 {% set pages = blx.pages.getEditablePages %}
 {% includeCssResource 'css/pages.css' %}
 

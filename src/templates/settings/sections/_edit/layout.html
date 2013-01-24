@@ -1,5 +1,4 @@
 {% extends "_layouts/cp" %}
-{% set centered = true %}
 
 
 {% if section is not defined or not section.id %}
@@ -7,10 +6,10 @@
 {% else %}
 	{% set title = section.name|t %}
 
-	{% set tabs %}
-		<li><a class="settings{% if tab == 'settings' %} sel{% endif %}" href="{{ url('settings/sections/'~section.id) }}">{{ "Settings"|t }}</a></li>
-		<li><a{% if tab == 'blocks' %} class="sel"{% endif %} href="{{ url('settings/sections/'~section.id~'/blocks') }}">{{ "Blocks"|t }}</a></li>
-	{% endset %}
+	{% set tabs = {
+		settings: { label: "Settings"|t, url: url('settings/sections/'~section.id) },
+		blocks: { label: "Blocks"|t, url: url('settings/sections/'~section.id~'/blocks') }
+	} %}
 {% endif %}
 
 

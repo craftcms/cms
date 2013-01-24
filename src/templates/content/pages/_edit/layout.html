@@ -1,5 +1,4 @@
 {% extends "_layouts/cp" %}
-{% set centered = true %}
 {% set title = page.title|t %}
 
 
@@ -11,8 +10,8 @@
 {% endset %}
 
 
-{% set tabs %}
-	<li><a class="edit{% if tab == 'content' %} sel{% endif %}" href="{{ url('content/pages/'~page.id) }}">{{ "Content"|t }}</a></li>
-	<li><a class="settings{% if tab == 'settings' %} sel{% endif %}" href="{{ url('content/pages/'~page.id~'/settings') }}">{{ "Settings"|t }}</a></li>
-	<li><a{% if tab == 'blocks' %} class="sel"{% endif %} href="{{ url('content/pages/'~page.id~'/blocks') }}">{{ "Blocks"|t }}</a></li>
-{% endset %}
+{% set tabs = {
+	content: { label: "Content"|t, url: url('content/pages/'~page.id) },
+	settings: { label: "Settings"|t, url('content/pages/'~page.id~'/settings') },
+	blocks: { label: "Blocks"|t, url('content/pages/'~page.id~'/blocks') }
+} %}

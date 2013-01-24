@@ -1,5 +1,5 @@
 {% extends "settings/sections/_edit/layout" %}
-{% set tab = 'blocks' %}
+{% set selectedTab = 'blocks' %}
 {% set section = blx.sections.id(sectionId).first %}
 {% if not section %}{% exit 404 %}{% endif %}
 

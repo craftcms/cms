@@ -1,7 +1,12 @@
 {% extends (blx.hasPackage('Rebrand') ? "settings/email/_layout" : "_layouts/cp") %}
+
+{% if blx.hasPackage('Rebrand') %}
+	{% set selectedTab = 'settings' %}
+{% else %}
+	{% set title = "Email Settings"|t %}
+{% endif %}
+
 {% import "_includes/forms" as forms %}
-{% set title = "Email"|t %}
-{% set centered = true %}
 {% includeJsResource "js/email_settings.js" %}
 {% includeTranslations
 	"Email sent successfully! Check your inbox.",

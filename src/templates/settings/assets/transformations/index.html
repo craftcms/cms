@@ -1,6 +1,5 @@
 {% extends "settings/assets/_layout" %}
-{% set page = "transformations" %}
-{% set title = "Asset Transformations"|t %}
+{% set selectedTab = 'transformations' %}
 {% set transformations = blx.assets.getAllAssetTransformations %}
 {% set transformationModes = blx.assets.getTransformationModes() %}
 

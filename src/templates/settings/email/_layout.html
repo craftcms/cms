@@ -1,4 +1,5 @@
 {% extends "_layouts/cp" %}
+{% set title = "Email Settings"|t %}
 
 
 {% set header %}
@@ -10,7 +11,7 @@
 {% endset %}
 
 
-{% set tabs %}
-	<li><a class="settings{% if blx.request.segment(3) == '' %} sel{% endif %}" href="{{ url('settings/email') }}">{{ "Settings"|t }}</a></li>
-	<li><a{% if blx.request.segment(3) == 'messages' %} class="sel"{% endif %} href="{{ url('settings/email/messages') }}">{{ "Messages"|t }}</a></li>
-{% endset %}
+{% set tabs = {
+	settings: { label: "Settings"|t, url: url('settings/email') },
+	messages: { label: "Messages"|t, url: url('settings/email/messages') }
+} %}

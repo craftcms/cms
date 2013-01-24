@@ -59,7 +59,17 @@
 		{% if tabs is defined and tabs %}
 			<nav id="tabs">
 				<ul>
-					{{ tabs }}
+					{% for tabId, tab in tabs %}
+						{% if tab %}
+							{% set tabIsSelected = ((selectedTab is not defined and loop.first) or (selectedTab is defined and selectedTab == tabId)) -%}
+
+							{% if tabIsSelected %}
+								{% set title = title~' - '~tab.label %}
+							{%endif -%}
+
+							<li><a id="tab-{{ tabId }}"{% if tabIsSelected %} class="sel"{% endif %} href="{{ tab.url }}">{{ tab.label }}</a></li>
+						{% endif %}
+					{% endfor %}
 				</ul>
 			</nav>
 		{% endif %}

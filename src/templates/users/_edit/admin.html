@@ -1,8 +1,8 @@
 {% requirePermission 'administrateUsers' %}
 
 {% extends "users/_edit/layout" %}
+{% set selectedTab = 'admin' %}
 {% import "_includes/forms" as forms %}
-{% set pageTitle = "Administration"|t %}
 
 
 {% if account is not defined %}

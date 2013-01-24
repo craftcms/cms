@@ -1,5 +1,4 @@
 {% extends "_layouts/cp" %}
-{% set centered = true %}
 {% includeCssResource "css/account.css" %}
 
 
@@ -31,12 +30,9 @@
 
 
 {% if account is defined and account.id %}
-	{% set tabs %}
-		<li><a class="settings{% if blx.request.lastSegment not in ['profile', 'info', 'admin'] %} sel{% endif %}" href="{{ url(baseUrl) }}">{{ "Account"|t }}</a></li>
-		<li><a href="{{ url(baseUrl ~ '/profile') }}" {% if blx.request.lastSegment == 'profile' %}class="sel"{% endif %}>{{ "Profile"|t }}</a></li>
-
-		{% if user.can('administrateUsers') %}
-			<li><a href="{{ url(baseUrl ~ '/admin') }}" {% if blx.request.lastSegment == 'admin' %}class="sel"{% endif %}>{{ "Admin"|t }}</a></li>
-		{% endif %}
-	{% endset %}
+	{% set tabs = {
+		account: { label: "Account"|t, url: url(baseUrl) },
+		profile: { label: "Profile"|t, url: url(baseUrl~'/profile') },
+		admin: (user.can('administrateUsers') ? { label: "Admin"|t, url: url(baseUrl~'/admin') } : null)
+	} %}
 {% endif %}

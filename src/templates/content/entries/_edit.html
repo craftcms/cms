@@ -1,5 +1,4 @@
 {% extends "_layouts/cp" %}
-{% set centered = true %}
 {% includeCssResource "css/entry.css" %}
 {% includeJsResource "lib/jquery-ui-1.8.23.custom.min.js" %}
 {% import "_includes/forms" as forms %}
@@ -92,10 +91,10 @@
 {% endset %}
 
 
-{% set tabs %}
-	<li><a class="edit sel" data-target="entry-content">{{ "Content"|t }}</a></li>
-	<li><a class="settings{% if hasSettingsErrors %} error{% endif %}" data-target="entry-settings">{{ "Settings"|t }}</a></li>
-{% endset %}
+{% set tabs = {
+	content: { label: "Content"|t, url: '#entry-content' },
+	settings: { label: "Settings"|t, url: '#entry-settings' }
+} %}
 
 
 {% set content %}

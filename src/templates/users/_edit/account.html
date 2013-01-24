@@ -1,5 +1,11 @@
 {% extends (blx.hasPackage('Users') ? "users/_edit/layout" : "_layouts/cp") %}
-{% set centered = true %}
+
+{% if blx.hasPackage('Users') %}
+	{% set selectedTab = 'account' %}
+{% else %}
+	{% set title = "My Account"|t %}
+{% endif %}
+
 {% import "_includes/forms" as forms %}
 
 
@@ -13,8 +19,6 @@
 		{% set account = blx.users.status('*').id(userId).first %}
 		{% if not account %}{% exit 404 %}{% endif %}
 	{% endif %}
-
-	{% set pageTitle = "Account Settings"|t %}
 {% else %}
 	{% set header %}
 		<h1>{{ "My Account"|t }}</h1>

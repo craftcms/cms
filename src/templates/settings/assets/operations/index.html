@@ -1,7 +1,6 @@
 {% extends "settings/assets/_layout" %}
+{% set selectedTab = 'operations' %}
 {% import "_includes/forms" as forms %}
-{% set page = "operations" %}
-{% set title = "Asset operations"|t %}
 {% set sources = blx.assets.getAllSources %}
 
 {% includeTranslations

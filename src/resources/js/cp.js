@@ -6,6 +6,9 @@ var CP = Garnish.Base.extend({
 	$notificationContainer: null,
 	$notifications: null,
 
+	tabs: null,
+	selectedTab: null,
+
 	init: function()
 	{
 		// Fade the notification out in two seconds
@@ -14,37 +17,29 @@ var CP = Garnish.Base.extend({
 		this.$notifications.delay(CP.notificationDuration).fadeOut();
 
 		// Tabs
-		var $tabContainer = $('#tabs');
-		if ($tabContainer.length)
+		this.tabs = {};
+		var $tabs = $('#tabs a');
+
+		// Find the tabs that link to a div on the page
+		for (var i = 0; i < $tabs.length; i++)
 		{
-			var $tabs = $tabContainer.find('a');
-				var $selTab = $tabs.filter('.sel:first');
+			var $tab = $($tabs[i]),
+				href = $tab.attr('href');
 
-			$tabs.click(function() {
-				var $tab = $(this);
-				if (this != $selTab[0])
-				{
-					var newTarget = $tab.attr('data-target');
-					if (newTarget)
-					{
-						$selTab.removeClass('sel');
-						var oldTarget = $selTab.attr('data-target');
+			if (href && href.charAt(0))
+			{
+				this.tabs[href] = {
+					$tab: $tab,
+					$target: $(href)
+				};
 
-						$selTab = $tab;
-						$selTab.addClass('sel');
+				this.addListener($tab, 'activate', 'selectTab');
+			}
 
-						if (newTarget)
-						{
-							$('#'+newTarget).removeClass('hidden');
-						}
-
-						if (oldTarget)
-						{
-							$('#'+oldTarget).addClass('hidden');
-						}
-					}
-				}
-			});
+			if (!this.selectedTab && $tab.hasClass('sel'))
+			{
+				this.selectedTab = href;
+			}
 		}
 
 		// Secondary form submit buttons
@@ -99,9 +94,30 @@ var CP = Garnish.Base.extend({
 	displayError: function(message)
 	{
 		this.displayNotification('error', message);
+	},
+
+	/**
+	 * Select a tab
+	 */
+	selectTab: function(ev)
+	{
+		if (!this.selectedTab || ev.currentTarget != this.tabs[this.selectedTab].$tab[0])
+		{
+			// Hide the selected tab
+			if (this.selectedTab)
+			{
+				this.tabs[this.selectedTab].$tab.removeClass('sel');
+				this.tabs[this.selectedTab].$target.addClass('hidden');
+			}
+
+			var $tab = $(ev.currentTarget).addClass('sel');
+			this.selectedTab = $tab.attr('href');
+			this.tabs[this.selectedTab].$target.removeClass('hidden');
+		}
 	}
 
-}, {
+},
+{
 	notificationDuration: 2000
 });
 

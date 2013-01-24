@@ -2,8 +2,8 @@
 {% set title = "Content"|t %}
 {% set totalGlobals = (user.can('editGlobals') ? blx.globals.getTotalBlocks : 0) %}
 
-{% set tabs %}
-	<li><a{% if tab == 'entries' %} class="sel"{% endif %} href="{{ url('content') }}">{{ "Entries"|t }}</a></li>
-	<li><a{% if tab == 'pages' %} class="sel"{% endif %} href="{{ url('content/pages') }}">{{ "Pages"|t }}</a></li>
-	{% if totalGlobals %}<li><a{% if tab == 'globals' %} class="sel"{% endif %} href="{{ url('content/globals') }}">{{ "Globals"|t }}</a></li>{% endif %}
-{% endset %}
+{% set tabs = {
+	entries: { label: "Entries"|t, url: url('content') },
+	pages: { label: "Pages"|t, url: url('content/pages') },
+	globals: (totalGlobals ? { label: "Globals"|t, url: url('content/globals') } : null)
+} %}

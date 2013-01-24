@@ -10,7 +10,6 @@
 
 
 {% if isNewPage %}
-	{% set centered = true %}
 	{% set title = "Create a new page"|t %}
 	{% set header %}
 		<h1>{{ title }}</h1>
@@ -19,7 +18,7 @@
 		</ul>
 	{% endset %}
 {% else %}
-	{% set tab = 'settings' %}
+	{% set selectedTab = 'settings' %}
 {% endif %}
 
 
