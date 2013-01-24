@@ -37,7 +37,7 @@
 }
 
 /* main */
-#main { margin: 30px; }
+#main { margin: 0 30px 30px; }
 #main.has-sidebar { margin-left: 230px; }
 #main.has-sidebar:after { @include clearafter; }
 
