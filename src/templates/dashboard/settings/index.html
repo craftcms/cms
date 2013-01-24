@@ -1,15 +1,7 @@
-{% extends "_layouts/cp" %}
-{% set title = "Dashboard Settings"|t %}
+{% extends "dashboard/_layout" %}
+{% set selectedTab = 'settings' %}
 {% set widgets = blx.dashboard.getUserWidgets %}
 {% set sortable  = (widgets|length > 1) %}
-
-
-{% set header %}
-	<h1>{{ title }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('dashboard') }}" class="backbtn">{{ "Dashboard"|t }}</a></li>
-	</ul>
-{% endset %}
 
 
 {% set content %}

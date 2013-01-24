@@ -63,7 +63,7 @@
 						{% if tab %}
 							{% set tabIsSelected = ((selectedTab is not defined and loop.first) or (selectedTab is defined and selectedTab == tabId)) -%}
 
-							{% if tabIsSelected %}
+							{% if tabIsSelected and title != tab.label %}
 								{% set title = title~' - '~tab.label %}
 							{%endif -%}
 
