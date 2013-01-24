@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
+ * The class name is the UTC timestamp in the format of {MigrationNameDesc}
  */
 class {ClassName} extends DbMigration
 {
