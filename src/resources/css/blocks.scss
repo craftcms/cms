@@ -181,10 +181,10 @@ h3 + .pane { margin-top: 15px; }
 /*  Grids
 /* ----------------------------------------*/
 
-.grid { margin: 30px 0 30px -30px; }
+.grid { margin: 30px -15px; }
 .grid:after { @include clearafter; }
 .grid .col { float: left; }
-.grid .col .col-inner { margin-left: 30px; }
+.grid .col .col-inner { margin: 0 15px; }
 
 .grid .col75 { width: 75%; }
 .grid .col66 { width: 66.66%; }

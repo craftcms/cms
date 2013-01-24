@@ -139,6 +139,7 @@ Blocks.Dashboard = Garnish.Base.extend({
 
 	stretchColHeights: function()
 	{
+		return;
 		var minHeight = Garnish.$win.height() - 101,
 			tallestCol = this.getTallestCol(),
 			height = Math.max(minHeight, tallestCol.getHeight());
@@ -233,8 +234,7 @@ Blocks.Dashboard = Garnish.Base.extend({
 	}
 },
 {
-	minColWidth: 325,
-	sidebarWidth: 240
+	minColWidth: 325
 });
 
 var Col = Garnish.Base.extend({

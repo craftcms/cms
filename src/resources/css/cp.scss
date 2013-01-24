@@ -24,7 +24,7 @@
 #header nav li a.sel .badge { color: #fff; }
 
 /* page header */
-#page-header { display: block; margin: 30px; }
+#page-header { display: block; padding: 30px; background: #fff; }
 #page-header:after { @include clearafter; }
 #page-header h1 { float: left; margin: 0 15px 0 0; line-height: 31px; }
 #page-header #tabs { float: right; }
