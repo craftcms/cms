@@ -26,7 +26,7 @@
 /* page header */
 #page-header { display: block; margin: 30px; }
 #page-header:after { @include clearafter; }
-#page-header h1 { float: left; margin: 0; line-height: 31px; }
+#page-header h1 { float: left; margin: 0 15px 0 0; line-height: 31px; }
 #page-header #tabs { float: right; }
 #page-header #tabs li { float: left; }
 #page-header #tabs li a { display: block; padding: 0 10px; color: #555; line-height: 31px; }

@@ -52,6 +52,10 @@
 			<h1>{{ title|raw }}</h1>
 		{% endif %}
 
+		{% if extraPageHeaderHtml is defined %}
+			{{ extraPageHeaderHtml }}
+		{% endif %}
+
 		{% if tabs is defined and tabs %}
 			<nav id="tabs">
 				<ul>
