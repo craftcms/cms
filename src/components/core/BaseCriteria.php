@@ -70,7 +70,7 @@ abstract class BaseCriteria
 	 */
 	public function setValue($name, $value)
 	{
-		if ($value == '*')
+		if ($value === '*')
 		{
 			$value = null;
 		}

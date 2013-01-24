@@ -42,14 +42,14 @@
 				<li><a href="{{ url('users/' ~ group.handle) }}" {% if filter == group.handle %}class="sel"{% endif %}>{{ group.name|t }}</a></li>
 			{% endfor %}
 
-			{% for status, class in statuses %}
+			{# for status, class in statuses %}
 				{% set total = blx.users.status(status).total %}
 				{% if total %}
 					<li><a href="{{ url('users/' ~ status) }}" {% if filter == status %}class="sel"{% endif %}><div class="status {{ class }}"></div> {{ status|ucfirst|t }}</a></li>
 				{% endif %}
-			{% endfor %}
+			{% endfor #}
 
-			<li><a href="{{ url('users/admins') }}" {% if filter == 'admins' %}class="sel"{% endif %} data-icon="☻">{{ "Admins"|t }}</a></li>
+			<li><a href="{{ url('users/admins') }}" {% if filter == 'admins' %}class="sel"{% endif %}>{{ "Admins"|t }}</a></li>
 		</ul>
 	</nav>
 {% endset %}
