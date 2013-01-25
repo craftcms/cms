@@ -104,7 +104,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 					var handleDownloadClick = function($btn)
 					{
 						$btn.on('click', function() {
-							var src = Blocks.getActionUrl('update/downloadBlocksUpdate');
+							var src = response.blocks.manualDownloadEndpoint;
 							$('<iframe/>', { src: src }).appendTo(Garnish.$bod).hide();
 						});
 					};

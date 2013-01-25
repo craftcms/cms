@@ -20,6 +20,7 @@ class BlocksUpdateModel extends BaseModel
 		$attributes['manualUpdateRequired']    = AttributeType::Bool;
 		$attributes['versionUpdateStatus']     = AttributeType::String;
 		$attributes['releases']                = AttributeType::Mixed;
+		$attributes['manualDownloadEndpoint']  = AttributeType::String;
 
 		return $attributes;
 	}

@@ -24,26 +24,6 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 * Redirects to the Blocks download URL.
-	 */
-	public function actionDownloadBlocksUpdate()
-	{
-		blx()->userSession->requirePermission('autoUpdateBlocks');
-
-		$suffix = blx()->config->get('endPointSuffix');
-		if (!empty($suffix))
-		{
-			$url = ElliottEndPoints::DownloadBlocks.$suffix.'&licenseKey='.Blocks::getLicenseKey();
-		}
-		else
-		{
-			$url = ElliottEndPoints::DownloadBlocks.'?licenseKey='.Blocks::getLicenseKey();
-		}
-
-		blx()->request->redirect($url);
-	}
-
-	/**
 	 * Returns the update info JSON.
 	 */
 	public function actionGetUpdates()
