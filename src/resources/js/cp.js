@@ -4,9 +4,25 @@
 var CP = Garnish.Base.extend({
 
 	$header: null,
+	$nav: null,
+
+	$overflowNavMenuItem: null,
+	$overflowNavMenuBtn: null,
+	$overflowNavMenu: null,
+	$overflowNavMenuList: null,
+
+	/* HIDE */
+	$customizeNavBtn: null,
+	/* end HIDE */
+
 	$notificationWrapper: null,
 	$notificationContainer: null,
-	$notifications: null,
+
+	navItems: null,
+	totalNavItems: null,
+	visibleNavItems: null,
+	totalNavWidth: null,
+	showingOverflowNavMenu: false,
 
 	fixedNotifications: false,
 
@@ -15,16 +31,46 @@ var CP = Garnish.Base.extend({
 
 	init: function()
 	{
+		// Find all the key elements
 		this.$header = $('#header');
-
-		// Fade the notification out in two seconds
+		this.$nav = $('#nav');
+		/* HIDE */
+		this.$customizeNavBtn = $('#customize-nav');
+		/* end HIDE */
 		this.$notificationWrapper = $('#notifications-wrapper');
 		this.$notificationContainer = $('#notifications');
-		this.$notifications = this.$notificationContainer.children();
-		this.$notifications.delay(CP.notificationDuration).fadeOut();
+
+		// Find all the nav items
+		this.navItems = [];
+		this.totalNavWidth = CP.baseNavWidth;
+
+		var $navItems = this.$nav.children();
+		this.totalNavItems = $navItems.length;
+		this.visibleNavItems = this.totalNavItems;
+
+		for (var i = 0; i < this.totalNavItems; i++)
+		{
+			var $li = $($navItems[i]),
+				width = $li.width();
+
+			this.navItems.push($li);
+			this.totalNavWidth += width;
+		}
+
+		this.addListener(Garnish.$win, 'resize', 'onWindowResize');
+		this.onWindowResize();
 
 		this.addListener(Garnish.$win, 'scroll', 'onWindowScroll');
 		this.onWindowScroll();
+
+		// Fade the notification out in two seconds
+		var $notifications = this.$notificationContainer.children();
+		$notifications.delay(CP.notificationDuration).fadeOut();
+
+		/* HIDE */
+		// Customize Nav button
+		this.addListener(this.$customizeNavBtn, 'click', 'showCustomizeNavModal');
+		/* end HIDE */
 
 		// Tabs
 		this.tabs = {};
@@ -72,7 +118,126 @@ var CP = Garnish.Base.extend({
 	},
 
 	/**
-	 * Handle stuff that should happen when the window scrolls
+	 * Handles stuff that should happen when the window is resized.
+	 */
+	onWindowResize: function()
+	{
+		// Get the new window width
+		this.onWindowResize._windowWidth = Garnish.$win.width();
+		this.onWindowResize._$lastNavItem = null;
+
+		// Is an overflow menu going to be needed?
+		if (this.onWindowResize._windowWidth < this.totalNavWidth)
+		{
+			// Show the overflow menu button
+			if (!this.showingOverflowNavMenu)
+			{
+				if (!this.$overflowNavMenuBtn)
+				{
+					// Create it
+					this.$overflowNavMenuItem = $('<li/>').appendTo(this.$nav);
+					this.$overflowNavMenuBtn = $('<a class="menubtn" title="'+Blocks.t('More')+'">…</a>').appendTo(this.$overflowNavMenuItem);
+					this.$overflowNavMenu = $('<div id="overflow-nav" class="menu" data-align="right"/>').appendTo(this.$overflowNavMenuItem);
+					this.$overflowNavMenuList = $('<ul/>').appendTo(this.$overflowNavMenu);
+					this.$overflowNavMenuBtn.menubtn();
+				}
+				else
+				{
+					this.$overflowNavMenuItem.show();
+				}
+
+				this.showingOverflowNavMenu = true;
+			}
+
+			// Is the nav too tall?
+			if (this.$nav.height() > CP.navHeight)
+			{
+				// Move items to the overflow menu until the nav is back to its normal height
+				do
+				{
+					this.addLastVisibleNavItemToOverflowMenu();
+				}
+				while ((this.$nav.height() > CP.navHeight) && (this.visibleNavItems > 0));
+			}
+			else
+			{
+				// See if we can fit any more nav items in the main menu
+				do
+				{
+					this.addFirstOverflowNavItemToMainMenu();
+				}
+				while ((this.$nav.height() == CP.navHeight) && (this.visibleNavItems < this.totalNavItems));
+
+				// Now kick the last one back.
+				this.addLastVisibleNavItemToOverflowMenu();
+			}
+		}
+		else
+		{
+			if (this.showingOverflowNavMenu)
+			{
+				// Hide the overflow menu button
+				this.$overflowNavMenuItem.hide();
+
+				// Move any nav items in the overflow menu back to the main nav menu
+				while (this.visibleNavItems < this.totalNavItems)
+				{
+					this.addFirstOverflowNavItemToMainMenu();
+				}
+
+				this.showingOverflowNavMenu = false;
+			}
+		}
+	},
+
+	/**
+	 * Adds the last visible nav item to the overflow menu.
+	 */
+	addLastVisibleNavItemToOverflowMenu: function()
+	{
+		this.navItems[this.visibleNavItems-1].prependTo(this.$overflowNavMenuList);
+		this.visibleNavItems--;
+	},
+
+	/**
+	 * Adds the first overflow nav item back to the main nav menu.
+	 */
+	addFirstOverflowNavItemToMainMenu: function()
+	{
+		this.navItems[this.visibleNavItems].insertBefore(this.$overflowNavMenuItem);
+		this.visibleNavItems++;
+	},
+
+	/* HIDE */
+	/**
+	 * Shows the "Customize your nav" modal.
+	 */
+	showCustomizeNavModal: function()
+	{
+		if (!this.customizeNavModal)
+		{
+			var $modal = $('<div id="customize-nav-modal" class="modal"/>').appendTo(document.body),
+				$header = $('<header class="header"><h1>'+Blocks.t('Customize your nav')+'</h1></header>').appendTo($modal),
+				$body = $('<div class="body"/>').appendTo($modal),
+				$ul = $('<ul/>').appendTo($body);
+
+			for (var i = 0; i < this.totalNavItems; i++)
+			{
+				var $navItem = this.navItems[i];
+				$
+			}
+
+			this.customizeNavModal = new Garnish.Modal($modal);
+		}
+		else
+		{
+			this.customizeNavModal.show();
+		}
+	},
+	/* end HIDE */
+
+	/**
+	 * Handle stuff that should happen when the window scrolls.
 	 */
 	onWindowScroll: function()
 	{
@@ -155,6 +320,8 @@ var CP = Garnish.Base.extend({
 
 },
 {
+	navHeight: 38,
+	baseNavWidth: 30,
 	notificationDuration: 2000
 });
 

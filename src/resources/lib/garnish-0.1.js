@@ -2414,6 +2414,8 @@ Garnish.MenuBtn = Garnish.Base.extend({
 		setTimeout($.proxy(function() {
 			this.addListener(Garnish.$doc, 'mousedown', 'onMouseDown');
 		}, this), 1);
+
+		this.addListener(Garnish.$win, 'resize', 'hideMenu');
 	},
 
 	hideMenu: function()
@@ -2423,6 +2425,7 @@ Garnish.MenuBtn = Garnish.Base.extend({
 		this.showingMenu = false;
 
 		this.removeListener(Garnish.$doc, 'mousedown');
+		this.removeListener(Garnish.$doc, 'resize');
 	},
 
 	onOptionSelect: function(option)
