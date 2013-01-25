@@ -478,7 +478,7 @@ class App extends \CWebApplication
 	 */
 	public function isDbUpdateNeeded()
 	{
-		if (Blocks::getBuild() !== Blocks::getStoredBuild() || Blocks::getVersion() !== Blocks::getStoredVersion())
+		if (Blocks::getBuild() > Blocks::getStoredBuild() || Blocks::getVersion() > Blocks::getStoredVersion())
 		{
 			return true;
 		}
