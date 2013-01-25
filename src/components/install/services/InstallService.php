@@ -52,7 +52,6 @@ class InstallService extends BaseApplicationComponent
 		$this->_logUserIn($inputs);
 		$this->_saveDefaultMailSettings($inputs['email'], $inputs['siteName']);
 		$this->_createDefaultContent();
-		blx()->dashboard->addDefaultUserWidgets();
 
 		Blocks::log('Finished installing Blocks.', \CLogger::LEVEL_INFO);
 	}

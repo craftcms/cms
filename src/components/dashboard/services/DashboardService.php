@@ -46,9 +46,14 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function getUserWidgets($indexBy = null)
 	{
-		$widgetRecords = WidgetRecord::model()->ordered()->findAllByAttributes(array(
-			'userId' => blx()->userSession->getUser()->id
-		));
+		$widgetRecords = $this->_getUserWidgetRecords();
+
+		if (!$widgetRecords)
+		{
+			// Add the defaults and try again
+			$this->_addDefaultUserWidgets();
+			$widgetRecords = $this->_getUserWidgetRecords();
+		}
 
 		return WidgetModel::populateModels($widgetRecords, $indexBy);
 	}
@@ -168,9 +173,9 @@ class DashboardService extends BaseApplicationComponent
 	/**
 	 * Adds the default widgets to the logged-in user.
 	 *
-	 * @return bool
+	 * @access private
 	 */
-	public function addDefaultUserWidgets()
+	private function _addDefaultUserWidgets()
 	{
 		// Quick Post widget(s)
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
@@ -294,5 +299,18 @@ class DashboardService extends BaseApplicationComponent
 		}
 
 		return $items;
+	}
+
+	/**
+	 * Returns the widget records for the current user.
+	 *
+	 * @access private
+	 * @return array
+	 */
+	private function _getUserWidgetRecords()
+	{
+		return WidgetRecord::model()->ordered()->findAllByAttributes(array(
+			'userId' => blx()->userSession->getUser()->id
+		));
 	}
 }
