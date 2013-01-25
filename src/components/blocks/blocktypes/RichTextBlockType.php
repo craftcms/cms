@@ -74,7 +74,7 @@ class RichTextBlockType extends BaseBlockType
 	public function getInputHtml($name, $value)
 	{
 		blx()->templates->includeCssResource('lib/redactor/redactor.css');
-		blx()->templates->includeJsResource('lib/redactor/redactor.min.js');
+		blx()->templates->includeJsResource('lib/redactor/redactor'.(blx()->config->get('useCompressedJs') ? '.min' : '').'.js');
 		blx()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
 
 		$config = array(

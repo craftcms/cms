@@ -29,24 +29,27 @@ class CpVariable
 		{
 			if ($plugin->hasCpSection())
 			{
-				$lcHandle = strtolower($plugin->getClassHandle());
-				$nav[$lcHandle] = array('name' => $plugin->getName());
-
-				// Does the plugin have an icon?
-				$resourcesPath = blx()->path->getPluginsPath().$lcHandle.'/resources/';
-
-				if (IOHelper::fileExists($resourcesPath.'icon-16x16.png'))
+				if (blx()->userSession->checkPermission('accessPlugin-'.$plugin->getClassHandle()))
 				{
-					$nav[$lcHandle]['hasIcon'] = true;
+					$lcHandle = strtolower($plugin->getClassHandle());
+					$nav[$lcHandle] = array('name' => $plugin->getName());
 
-					$url = UrlHelper::getResourceUrl($lcHandle.'/icon-16x16.png');
-					blx()->templates->includeCss("#sidebar #nav-{$lcHandle} { background-image: url('{$url}'); }");
+					// Does the plugin have an icon?
+					$resourcesPath = blx()->path->getPluginsPath().$lcHandle.'/resources/';
 
-					// Does it even have a hi-res version?
-					if (IOHelper::fileExists($resourcesPath.'icon-32x32.png'))
+					if (IOHelper::fileExists($resourcesPath.'icon-16x16.png'))
 					{
-						$url = UrlHelper::getResourceUrl($lcHandle.'/icon-32x32.png');
-						blx()->templates->includeHiResCss("#sidebar #nav-{$lcHandle} { background-image: url('{$url}'); }");
+						$nav[$lcHandle]['hasIcon'] = true;
+
+						$url = UrlHelper::getResourceUrl($lcHandle.'/icon-16x16.png');
+						blx()->templates->includeCss("#sidebar #nav-{$lcHandle} { background-image: url('{$url}'); }");
+
+						// Does it even have a hi-res version?
+						if (IOHelper::fileExists($resourcesPath.'icon-32x32.png'))
+						{
+							$url = UrlHelper::getResourceUrl($lcHandle.'/icon-32x32.png');
+							blx()->templates->includeHiResCss("#sidebar #nav-{$lcHandle} { background-image: url('{$url}'); }");
+						}
 					}
 				}
 			}

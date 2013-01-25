@@ -6,22 +6,35 @@
 #devmode { width: 100%; height: 3px; background: url(../images/devmode.png) repeat-x; cursor: help; }
 
 /* header */
-#header { background: #333; }
+#header { max-height: 76px; overflow: hidden; background: #333; }
 #header:after { @include clearafter; }
 #header a { color: #aaa; -webkit-transition: color linear 50ms; }
 #header a:hover { color: #fff; text-decoration: none; }
 
-#header #account { float: right; margin-right: 5px; height: 28px; }
-#header #account > a { display: block; padding: 10px 10px 8px; }
+#header #account { float: right; margin-right: 5px; height: 38px; }
+#header #account > a { display: block; padding: 0 10px; line-height: 38px; }
 
-#header h2 { float: left; margin: 0; padding: 10px 15px 10px 30px; color: #fff; }
+#header h2 { float: left; margin: 0; padding: 10px 0 10px 30px; color: #fff; }
 
-#header nav { display: block; float: left; }
-#header nav li { float: left; }
-#header nav li a { display: block; padding: 6px 10px 4px; line-height: 28px; }
-#header nav li a.sel { color: #333; background: #fff; }
-#header nav li a .badge { display: inline-block; position: relative; top: -6px; border-radius: 6px; padding: 0 3px; font-size: 10px; line-height: 12px; color: #333; background: $submitcolor; }
-#header nav li a.sel .badge { color: #fff; }
+#header #nav { float: left; margin-left: 20px; }
+#header #nav li { float: left; height: 38px; }
+#header #nav li a { display: block; padding: 6px 10px 4px; line-height: 28px; }
+#header #nav li a.active { color: #fff; }
+#header #nav li a.sel { color: #333; background: #fff; }
+#header #nav li a:not(.sel) .badge { color: #333; }
+
+/* HIDE */
+#customize-nav-btn span { display: none; }
+#overflow-nav #customize-nav-btn span { display: inline-block; }
+/* end HIDE */
+
+#header #nav li a .badge,
+#overflow-nav li a .badge { display: inline-block; position: relative; top: -6px; border-radius: 6px; padding: 0 3px; font-size: 10px; line-height: 12px; color: #fff; background: $submitcolor; }
+
+/* HIDE */
+#overflow-nav li a { padding-left: 30px; }
+#overflow-nav li#customize-nav-btn a:before { float: left; margin-left: -21px; }
+/* end HIDE */
 
 /* notifications */
 #notifications-wrapper { position: absolute; z-index: 9999; left: 0; width: 100%; }
