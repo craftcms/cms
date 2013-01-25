@@ -58,7 +58,7 @@
 #page-header #tabs li a.sel { color: #fff; background: $selcolor; cursor: default; }
 
 /* main */
-#main { margin: 0 30px 30px; }
+#main { margin: 0 30px; }
 #main.has-sidebar { margin-left: 230px; }
 #main.has-sidebar:after { @include clearafter; }
 
@@ -66,3 +66,5 @@
 #main #sidebar nav li a { display: block; padding: 4px 0; color: #555; }
 #main #sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
 #main #sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $selcolor; cursor: default; }
+
+#version { margin: 15px 0; text-align: center; color: #aaa; font-size: 11px; }

@@ -16,13 +16,14 @@ body, html { background: #e5e5e5; }
 }
 
 /* dashboard */
-.widgets { position: relative; margin: 0 -30px -30px; padding-top: 4px; }
+.widgets { position: relative; margin: 0 -30px; padding-top: 4px; }
 #widgets { margin: 0; }
 .widgets .col .col-inner { margin: 0 2px; }
 .widgets .col:first-child .col-inner { margin-left: 0; }
 .widgets .col:last-child .col-inner { margin-right: 0; }
 
-.widget { display: none; margin-bottom: 4px; padding: 30px; background: #fff; }
+.widget { display: none; padding: 30px; background: #fff; }
+.widget:not(:last-child) { margin-bottom: 4px; }
 .col .widget { display: block; }
 .widget.loading h2 { padding-right: 24px; background: url(../images/spinner.gif) no-repeat 100% 0; }
 
