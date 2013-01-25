@@ -18,7 +18,7 @@ class UserPermissionsService extends BaseApplicationComponent
 	{
 		// General
 
-		$permissions[Blocks::t('General')] = array(
+		$general = array(
 			'accessSiteWhenSystemIsOff' => array(
 				'label' => Blocks::t('Access the site when the system is off')
 			),
@@ -34,6 +34,18 @@ class UserPermissionsService extends BaseApplicationComponent
 				)
 			),
 		);
+
+		foreach (blx()->plugins->getPlugins() as $plugin)
+		{
+			if ($plugin->hasCpSection())
+			{
+				$general['accessCp']['nested']['accessPlugin-'.$plugin->getClassHandle()] = array(
+					'label' => Blocks::t('Access {plugin}', array('plugin' => $plugin->getName()))
+				);
+			}
+		}
+
+		$permissions[Blocks::t('General')] = $general;
 
 		// Users
 

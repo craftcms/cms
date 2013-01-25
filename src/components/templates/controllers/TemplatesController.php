@@ -25,6 +25,17 @@ class TemplatesController extends BaseController
 			// Make sure the user has access to the CP
 			blx()->userSession->requireLogin();
 			blx()->userSession->requirePermission('accessCp');
+
+			// If they're accessing a plugin's section, make sure that they have permission to do so
+			$firstSeg = blx()->request->getSegment(1);
+			if ($firstSeg)
+			{
+				$plugin = $plugin = blx()->plugins->getPlugin($firstSeg);
+				if ($plugin)
+				{
+					blx()->userSession->requirePermission('accessPlugin-'.$plugin->getClassHandle());
+				}
+			}
 		}
 
 		$this->renderRequestedTemplate();
