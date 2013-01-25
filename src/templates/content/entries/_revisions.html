@@ -1,7 +1,7 @@
 {% set drafts = blx.entryRevisions.getEditableDraftsByEntryId(entry.id) %}
 {% set versions = blx.entryRevisions.getVersionsByEntryId(entry.id) %}
 
-<div class="btn menubtn" data-icon="v">{{ revisionLabel }}</div>
+<div class="btn menubtn">{{ revisionLabel }}</div>
 
 <div class="menu menulist">
 	<ul>

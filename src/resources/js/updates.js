@@ -111,14 +111,14 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 
 					if (response.blocks.manualUpdateRequired)
 					{
-						var $btn = $('<div class="btn">'+Blocks.t('Download')+'</div>').appendTo($td);
+						var $btn = $('<div class="btn submit">'+Blocks.t('Download')+'</div>').appendTo($td);
 						handleDownloadClick($btn);
 					}
 					else
 					{
 						var $btnGroup = $('<div class="btngroup"/>').appendTo($td),
-							$updateBtn = $('<a class="btn" href="'+Blocks.getUrl('updates/go/blocks')+'">'+Blocks.t('Update')+'</a>').appendTo($btnGroup),
-							$menuBtn = $('<div class="btn menubtn nolabel"/>').appendTo($btnGroup),
+							$updateBtn = $('<a class="btn submit" href="'+Blocks.getUrl('updates/go/blocks')+'">'+Blocks.t('Update')+'</a>').appendTo($btnGroup),
+							$menuBtn = $('<div class="btn submit menubtn nolabel"/>').appendTo($btnGroup),
 							$menu = $('<div class="menu" data-align="right"/>').appendTo($btnGroup),
 							$menuUl = $('<ul/>').appendTo($menu),
 							$downloadLi = $('<li/>').appendTo($menuUl),

@@ -23,6 +23,17 @@
 #header nav li a .badge { display: inline-block; position: relative; top: -6px; border-radius: 6px; padding: 0 3px; font-size: 10px; line-height: 12px; color: #333; background: $submitcolor; }
 #header nav li a.sel .badge { color: #fff; }
 
+/* notifications */
+#notifications-wrapper { position: absolute; z-index: 9999; left: 0; width: 100%; }
+#notifications-wrapper.fixed { position: fixed; top: 0; }
+#notifications { text-align: center; }
+#notifications .notification { display: inline-block; padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important;
+	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+	   -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+}
+#notifications .notification.notice { background: $linkcolor; }
+#notifications .notification.error { background: $submitcolor; }
+
 /* page header */
 #page-header { display: block; padding: 30px; background: #fff; }
 #page-header:after { @include clearafter; }
