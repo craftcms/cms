@@ -29,6 +29,7 @@
 		{% if not isNewPage %}<input type="hidden" name="pageId" value="{{ page.id }}">{% endif %}
 
 		{{ forms.textField({
+			first: true,
 			label: "Title"|t,
 			id: 'title',
 			name: 'title',
