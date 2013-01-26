@@ -20,7 +20,7 @@
 
 #header #nav { float: left; margin-left: 20px; }
 #header #nav li { float: left; height: 38px; }
-#header #nav li a { display: block; padding: 6px 10px 4px; line-height: 28px; }
+#header #nav li a { display: block; margin-top: 2px; padding: 4px 10px; line-height: 28px; }
 #header #nav li a.active { color: #fff; }
 #header #nav li a.sel { color: #333; background: #fff; }
 #header #nav li a:not(.sel) .badge { color: #333; }
