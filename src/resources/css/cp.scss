@@ -5,6 +5,8 @@
 /* dev mode */
 #devmode { width: 100%; height: 3px; background: url(../images/devmode.png) repeat-x; cursor: help; }
 
+.centered { margin: 0 auto; max-width: 1000px; }
+
 /* header */
 #header { max-height: 76px; overflow: hidden; background: #333; }
 #header:after { @include clearafter; }
@@ -47,6 +49,11 @@
 #notifications .notification.notice { background: $linkcolor; }
 #notifications .notification.error { background: $submitcolor; }
 
+#main-wrapper { padding-bottom: 30px; min-height: 500px; background: #fff;
+	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+	   -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
 /* page header */
 #page-header { display: block; padding: 30px; background: #fff; }
 #page-header:after { @include clearafter; }
@@ -63,6 +70,7 @@
 #main.has-sidebar:after { @include clearafter; }
 
 #main #sidebar { float: left; margin-left: -200px; width: 170px; }
+#main #sidebar nav { margin-left: -30px; padding-left: 30px; overflow: hidden; }
 #main #sidebar nav li a { display: block; padding: 4px 0; color: #555; }
 #main #sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
 #main #sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $selcolor; cursor: default; }

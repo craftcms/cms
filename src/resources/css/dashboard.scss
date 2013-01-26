@@ -3,16 +3,17 @@
 @import "shared";
 
 html { overflow-y:scroll; }
-body, html { background: #e5e5e5; }
 
 /* alerts */
 #alerts { margin: 30px -30px 0; }
 #alerts .alert { border-top: 1px solid $light; padding: 10px 30px; color: #e14545; background: #fff5f2; }
 
+#main-wrapper { padding-bottom: 0; background: none; -webkit-box-shadow: none; -moz-box-shadow: none; }
+
 #page-header,
 .widget {
-	-webkit-box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-	   -moz-box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+	   -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 /* dashboard */
