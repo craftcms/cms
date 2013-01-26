@@ -22,7 +22,7 @@
 #header #nav li { float: left; height: 38px; }
 #header #nav li a { display: block; margin-top: 2px; padding: 4px 10px; line-height: 28px; }
 #header #nav li a.active { color: #fff; }
-#header #nav li a.sel { color: #333; background: #fff; }
+#header #nav li a.sel { border-radius: 2px 2px 0 0; color: #333; background: #fff; }
 #header #nav li a:not(.sel) .badge { color: #333; }
 
 /* HIDE */
@@ -49,24 +49,25 @@
 #notifications .notification.notice { background: $linkcolor; }
 #notifications .notification.error { background: $submitcolor; }
 
-#main-wrapper { padding-bottom: 30px; min-height: 500px; background: #fff;
+#main-wrapper { min-height: 600px; background: #fff;
 	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 	   -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 /* page header */
-#page-header { display: block; padding: 30px; background: #fff; }
-#page-header:after { @include clearafter; }
+#page-header { display: block; border-bottom: 1px solid #eaeaea; padding: 30px; background: #fff; }
 #page-header h1 { float: left; margin: 0 15px 0 0; line-height: 31px; }
-#page-header #tabs { float: right; }
-#page-header #tabs li { float: left; }
-#page-header #tabs li a { display: block; padding: 0 10px; color: #555; line-height: 31px; }
-#page-header #tabs li a:hover { text-decoration: none; color: $linkcolor; }
-#page-header #tabs li a.sel { color: #fff; background: $selcolor; cursor: default; }
+
+#tabs { margin: 15px 0 -30px; }
+#tabs:after { @include clearafter; }
+#tabs li { float: left; }
+#tabs li a { display: block; padding: 4px 10px; line-height: 28px; color: #777; }
+#tabs li a:hover { text-decoration: none; color: $linkcolor; }
+#tabs li a.sel { border-radius: 3px 3px 0 0; margin: -1px; border: 1px solid #ddd; border-bottom-color: #fff; color: #333; cursor: default; }
 
 /* main */
-#main { margin: 0 30px; }
-#main.has-sidebar { margin-left: 230px; }
+#main { padding: 30px; }
+#main.has-sidebar { padding-left: 230px; }
 #main.has-sidebar:after { @include clearafter; }
 
 #main #sidebar { float: left; margin-left: -200px; width: 170px; }
