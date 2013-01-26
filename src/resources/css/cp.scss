@@ -49,6 +49,7 @@
 #notifications .notification.notice { background: $linkcolor; }
 #notifications .notification.error { background: $submitcolor; }
 
+/* main wrapper */
 #main-wrapper { min-height: 600px; background: #fff;
 	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 	   -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
@@ -58,6 +59,7 @@
 #page-header { display: block; border-bottom: 1px solid #eaeaea; padding: 30px; background: #fff; }
 #page-header h1 { float: left; margin: 0 15px 0 0; line-height: 31px; }
 
+/* tabs */
 #tabs { margin: 15px 0 -30px; }
 #tabs:after { @include clearafter; }
 #tabs li { float: left; }
@@ -76,4 +78,10 @@
 #main #sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
 #main #sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $selcolor; cursor: default; }
 
+/* version */
 #version { margin: 15px 0; text-align: center; color: #aaa; font-size: 11px; }
+
+/* max widths for readability */
+.field .heading,
+.field .text,
+.field .redactor_box { max-width: 600px; }
