@@ -61,7 +61,7 @@
 #tabs { margin: 15px 0 -30px; }
 #tabs:after { @include clearafter; }
 #tabs li { float: left; }
-#tabs li a { display: block; padding: 4px 10px; line-height: 28px; color: #777; }
+#tabs li a { display: block; padding: 3px 10px; line-height: 28px; color: #777; }
 #tabs li a:hover { text-decoration: none; color: $linkcolor; }
 #tabs li a.sel { border-radius: 3px 3px 0 0; margin: -1px; border: 1px solid #ddd; border-bottom-color: #fff; color: #333; cursor: default; }
 

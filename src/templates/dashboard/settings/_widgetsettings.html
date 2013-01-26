@@ -46,6 +46,7 @@
 		{% set widgetTypes = blx.dashboard.getAllWidgetTypes %}
 
 		{{ forms.selectField({
+			first: true,
 			label: "Type",
 			instructions: "What type of widget is this?"|t,
 			id: 'type',
@@ -67,10 +68,8 @@
 
 			{% if settings %}
 				<div id="{{ _widgetType.classHandle }}"{% if not isCurrent %} class="hidden"{% endif %}>
-					<hr>
 					{% set namespace = 'types[' ~ _widgetType.classHandle ~ ']' %}
 					{{- settings|ns(namespace)|raw -}}
-					<hr>
 				</div>
 			{% endif %}
 		{% endfor %}

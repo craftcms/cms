@@ -33,6 +33,7 @@
 		{% if not isNewGroup %}<input type="hidden" name="groupId" value="{{ group.id }}">{% endif %}
 
 		{{ forms.textField({
+			first: true,
 			label: "Name"|t,
 			id: 'name',
 			name: 'name',

@@ -16,6 +16,7 @@
 		<input type="hidden" name="action" value="userSettings/saveUserSettings">
 
 			{{ forms.checkboxField({
+				first: true,
 				label: "Allow public registration?"|t,
 				name: 'allowPublicRegistration',
 				checked: (settings.allowPublicRegistration is defined ? settings.allowPublicRegistration : false),
