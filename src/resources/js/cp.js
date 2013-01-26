@@ -123,7 +123,7 @@ var CP = Garnish.Base.extend({
 	onWindowResize: function()
 	{
 		// Get the new window width
-		this.onWindowResize._windowWidth = Garnish.$win.width();
+		this.onWindowResize._windowWidth = Math.min(Garnish.$win.width(), CP.maxWidth);
 		this.onWindowResize._$lastNavItem = null;
 
 		// Is an overflow menu going to be needed?
@@ -320,6 +320,7 @@ var CP = Garnish.Base.extend({
 
 },
 {
+	maxWidth: 1000,
 	navHeight: 38,
 	baseNavWidth: 30,
 	notificationDuration: 2000
