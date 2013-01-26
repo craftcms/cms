@@ -1,6 +1,6 @@
 {% extends "_layouts/cp" %}
 {% includeCssResource "css/entry.css" %}
-{% includeJsResource "lib/jquery-ui-1.8.23.custom.min.js" %}
+{% includeJsResource 'lib/jquery-ui-1.10.0.custom'~(blx.config.useCompressedJs ? '.min' : '')~'.js' %}
 {% import "_includes/forms" as forms %}
 
 
