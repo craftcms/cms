@@ -12,6 +12,6 @@
 
 {% set tabs = {
 	content: { label: "Content"|t, url: url('content/pages/'~page.id) },
-	settings: { label: "Settings"|t, url('content/pages/'~page.id~'/settings') },
-	blocks: { label: "Blocks"|t, url('content/pages/'~page.id~'/blocks') }
+	settings: { label: "Settings"|t, url: url('content/pages/'~page.id~'/settings') },
+	blocks: { label: "Blocks"|t, url: url('content/pages/'~page.id~'/blocks') }
 } %}

@@ -224,8 +224,8 @@
 
 
 {% macro field(config, input) %}
-	{% set config = { id: null, label: null, instructions: null, required: false, translatable: false, errors: null }|merge(config) %}
-	<div class="field"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
+	{% set config = { id: null, first: false, label: null, instructions: null, required: false, translatable: false, errors: null }|merge(config) %}
+	<div class="field{% if config.first %} first{% endif %}"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
 		{% if config.label or config.instructions %}
 			<div class="heading">
 				{% if config.label %}
@@ -281,8 +281,8 @@
 
 
 {% macro checkboxField(config) %}
-	{% set config = { id: null }|merge(config) %}
-	<div class="field checkbox"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
+	{% set config = { id: null, first: false }|merge(config) %}
+	<div class="field checkbox{% if config.first %} first{% endif %}"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
 		{{ _self.checkbox(config) }}
 	</div>
 {% endmacro %}

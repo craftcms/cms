@@ -25,6 +25,7 @@
         {% endif %}
 
         {{ forms.checkboxSelectField({
+            first: true,
             label: "Sources"|t,
             instructions: "Which asset sources do you want to perform operations on?"|t,
             id: 'sourceId',

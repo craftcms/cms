@@ -7,88 +7,94 @@
 	{% endif %}
 
 	<header id="header">
-		<div id="account">
-			<a data-icon="☺" class="menubtn" title="{{ 'My Account'|t }}"></a>
-			<div class="menu" data-align="right">
-				<ul>
-					<li><a href="{{ url('myaccount') }}">{{ "My Account"|t }}</a></li>
-					<li><a href="{{ logoutUrl }}">{{ "Sign out"|t }}</a></li>
+		<div class="centered">
+			<div id="account">
+				<a data-icon="☺" class="menubtn" title="{{ 'My Account'|t }}"></a>
+				<div class="menu" data-align="right">
+					<ul>
+						<li><a href="{{ url('myaccount') }}">{{ "My Account"|t }}</a></li>
+						<li><a href="{{ logoutUrl }}">{{ "Sign out"|t }}</a></li>
+					</ul>
+				</div>
+			</div>
+
+			<h2>{{ siteName }}</h2>
+
+			<nav>
+				<ul id="nav">
+					{% for handle, item in blx.cp.nav %}
+						<li>
+							<a id="nav-{{ handle }}" class="{% if item.hasIcon is defined and item.hasIcon %}hasicon{% endif %} {% if blx.request.segment(1) == handle %}sel{% endif %}" href="{{ url(handle) }}">
+								{{- item.name -}}
+								{%- if item.badge is defined and item.badge -%}
+									<span class="badge">{{ item.badge }}</span>
+								{%- endif -%}
+							</a>
+						</li>
+					{% endfor %}
+					<!-- HIDE -->
+					<li id="customize-nav-btn"><a class="settings icon" title="{{ 'Customize…'|t }}"><span>{{ "Customize…"|t }}</span></a></li>
+					<!-- end HIDE -->
 				</ul>
+			</nav>
+		</div>
+	</header>
+
+	<div id="main-wrapper" class="centered">
+		<div id="notifications-wrapper">
+			<div id="notifications">
+				{% for type, message in blx.session.flashes %}
+					<div class="notification {{ type }}">{{ message }}</div>
+				{% endfor %}
 			</div>
 		</div>
 
-		<h2>{{ siteName }}</h2>
+		<header id="page-header">
+			{% if title is defined and title %}
+				<h1>{{ title|raw }}</h1>
+			{% endif %}
 
-		<nav>
-			<ul id="nav">
-				{% for handle, item in blx.cp.nav %}
-					<li>
-						<a id="nav-{{ handle }}" class="{% if item.hasIcon is defined and item.hasIcon %}hasicon{% endif %} {% if blx.request.segment(1) == handle %}sel{% endif %}" href="{{ url(handle) }}">
-							{{- item.name -}}
-							{%- if item.badge is defined and item.badge -%}
-								<span class="badge">{{ item.badge }}</span>
-							{%- endif -%}
-						</a>
-					</li>
-				{% endfor %}
-				<!-- HIDE -->
-				<li id="customize-nav-btn"><a class="settings icon" title="{{ 'Customize…'|t }}"><span>{{ "Customize…"|t }}</span></a></li>
-				<!-- end HIDE -->
-			</ul>
-		</nav>
+			{% if extraPageHeaderHtml is defined %}
+				{{ extraPageHeaderHtml }}
+			{% endif %}
 
-		<!--div id="version">
-			Blocks {{ blx.app.version }} build {{ blx.app.build }}
-		</div-->
-	</header>
+			<div class="clear"></div>
 
-	<div id="notifications-wrapper">
-		<div id="notifications">
-			{% for type, message in blx.session.flashes %}
-				<div class="notification {{ type }}">{{ message }}</div>
-			{% endfor %}
+			{% if tabs is defined and tabs %}
+				<nav id="tabs">
+					<ul>
+						{% for tabId, tab in tabs %}
+							{% if tab %}
+								{% set tabIsSelected = ((selectedTab is not defined and loop.first) or (selectedTab is defined and selectedTab == tabId)) -%}
+
+								{% if tabIsSelected and title != tab.label %}
+									{% set title = title~' - '~tab.label %}
+								{%endif -%}
+
+								<li><a id="tab-{{ tabId }}"{% if tabIsSelected %} class="sel"{% endif %} href="{{ tab.url }}">{{ tab.label }}</a></li>
+							{% endif %}
+						{% endfor %}
+					</ul>
+				</nav>
+			{% endif %}
+		</header>
+
+		{% set hasSidebar = (sidebar is defined and sidebar) %}
+
+		<div id="main"{% if hasSidebar %} class="has-sidebar"{% endif %}>
+			{% if hasSidebar %}
+				<div id="sidebar">
+					{{ sidebar }}
+				</div>
+			{% endif %}
+
+			<div id="content">
+				{{ content }}
+			</div>
 		</div>
 	</div>
 
-	<header id="page-header">
-		{% if title is defined and title %}
-			<h1>{{ title|raw }}</h1>
-		{% endif %}
-
-		{% if extraPageHeaderHtml is defined %}
-			{{ extraPageHeaderHtml }}
-		{% endif %}
-
-		{% if tabs is defined and tabs %}
-			<nav id="tabs">
-				<ul>
-					{% for tabId, tab in tabs %}
-						{% if tab %}
-							{% set tabIsSelected = ((selectedTab is not defined and loop.first) or (selectedTab is defined and selectedTab == tabId)) -%}
-
-							{% if tabIsSelected and title != tab.label %}
-								{% set title = title~' - '~tab.label %}
-							{%endif -%}
-
-							<li><a id="tab-{{ tabId }}"{% if tabIsSelected %} class="sel"{% endif %} href="{{ tab.url }}">{{ tab.label }}</a></li>
-						{% endif %}
-					{% endfor %}
-				</ul>
-			</nav>
-		{% endif %}
-	</header>
-
-	{% set hasSidebar = (sidebar is defined and sidebar) %}
-
-	<div id="main"{% if hasSidebar %} class="has-sidebar"{% endif %}>
-		{% if hasSidebar %}
-			<div id="sidebar">
-				{{ sidebar }}
-			</div>
-		{% endif %}
-
-		<div id="content">
-			{{ content }}
-		</div>
+	<div id="version">
+		Blocks {{ blx.app.version }} build {{ blx.app.build }}
 	</div>
 {% endset %}
