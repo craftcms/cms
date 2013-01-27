@@ -2,6 +2,8 @@
 
 @import "shared";
 
+html, body { background: #f2f2f2; }
+
 /* dev mode */
 #devmode { width: 100%; height: 3px; background: url(../images/devmode.png) repeat-x; cursor: help; }
 
