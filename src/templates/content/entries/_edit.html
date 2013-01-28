@@ -224,7 +224,7 @@
 					<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 
 					{% if not isNewEntry and blx.hasPackage('PublishPro') %}
-						<input type="button" class="btn formsubmit" value="{{ 'Save as Draft'|t }}" value="entryRevisions/createDraft" data-action="entryRevisions/saveDraft" data-redirect="{{ entry.cpEditUrl }}/drafts/{draftId}">
+						<input type="button" class="btn formsubmit" value="{{ 'Save as Draft'|t }}" data-action="entryRevisions/saveDraft" data-redirect="{{ entry.cpEditUrl }}/drafts/{draftId}">
 					{% endif %}
 				{% else %}
 					{% if blx.hasPackage('PublishPro') %}
