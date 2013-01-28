@@ -99,9 +99,19 @@ var CP = Garnish.Base.extend({
 		}
 
 		// Secondary form submit buttons
-		$('.formsubmit').click(function() {
-			var $btn = $(this),
-				$form = $btn.closest('form');
+		this.addListener($('.formsubmit'), 'activate', function(ev)
+		{
+			var $btn = $(ev.currentTarget);
+
+			// Is this a menu item?
+			if ($btn.data('menu'))
+			{
+				var $form = $btn.data('menu').$btn.closest('form');
+			}
+			else
+			{
+				var $form = $btn.closest('form');
+			}
 
 			if ($btn.attr('data-action'))
 			{
