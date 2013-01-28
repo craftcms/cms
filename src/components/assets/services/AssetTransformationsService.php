@@ -102,15 +102,15 @@ class AssetTransformationsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Deletes an asset transformation by it's handle..
+	 * Deletes an asset transformation by it's id.
 	 *
-	 * @param string $transformationHandle
+	 * @param int $transformationId
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function deleteTransformationByHandle($transformationHandle)
+	public function deleteTransformation($transformationId)
 	{
-		blx()->db->createCommand()->delete('assettransformations', array('handle' => $transformationHandle));
+		blx()->db->createCommand()->delete('assettransformations', array('id' => $transformationId));
 		return true;
 	}
 

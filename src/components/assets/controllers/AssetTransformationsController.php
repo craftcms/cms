@@ -46,9 +46,9 @@ class AssetTransformationsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$transformationHandle = blx()->request->getRequiredPost('handle');
+		$transformationId = blx()->request->getRequiredPost('id');
 
-		blx()->assetTransformations->deleteTransformationByHandle($transformationHandle);
+		blx()->assetTransformations->deleteTransformation($transformationId);
 
 		$this->returnJson(array('success' => true));
 	}
