@@ -10,7 +10,7 @@ html, body { background: #f2f2f2; }
 .centered { margin: 0 auto; max-width: 1000px; }
 
 /* header */
-#header { max-height: 76px; overflow: hidden; background: #333; }
+#header { position: relative; max-height: 76px; overflow: hidden; background: #333; }
 #header:after { @include clearafter; }
 #header a { color: #aaa; -webkit-transition: color linear 50ms; }
 #header a:hover { color: #fff; text-decoration: none; }
@@ -53,12 +53,12 @@ html, body { background: #f2f2f2; }
 
 /* main wrapper */
 #main-wrapper { min-height: 600px; background: #fff;
-	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-	   -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+	-webkit-box-shadow: 0 0 0 1px #ddd, 0 1px 2px rgba(0,0,0,0.1);
+	   -moz-box-shadow: 0 0 0 1px #ddd, 0 1px 2px rgba(0,0,0,0.1);
 }
 
 /* page header */
-#page-header { display: block; border-bottom: 1px solid #eaeaea; padding: 30px; background: #fff; }
+#page-header { display: block; border-bottom: 1px solid #ddd; padding: 30px; background: #fff; }
 #page-header h1 { float: left; margin: 0 15px 0 0; line-height: 31px; }
 
 /* tabs */
