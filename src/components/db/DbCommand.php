@@ -374,7 +374,7 @@ class DbCommand extends \CDbCommand
 	 * @param null $update
 	 * @return int
 	 */
-	public function addForeignKey($table, $columns, $refTable, $refColumns, $delete=null, $update=null)
+	public function addForeignKey($table, $columns, $refTable, $refColumns, $delete = null, $update = null)
 	{
 		$name = DbHelper::getForeignKeyName($table, $columns);
 		$table = DbHelper::addTablePrefix($table);

@@ -130,18 +130,12 @@ abstract class BaseRecord extends \CActiveRecord
 				{
 					if ($value)
 					{
-						if (DateTimeHelper::isValidTimeStamp($value))
-						{
-							$dateTime = new DateTime('@'.$value);
-						}
-						else
-						{
-							// TODO: MySQL specific.
-							$dateTime = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $value);
-						}
+						// TODO: MySQL specific.
+						$dateTime = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $value);
 
 						$this->setAttribute($name, $dateTime);
 					}
+
 					break;
 				}
 				case AttributeType::Mixed:
@@ -468,18 +462,6 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function setAttribute($name, $value)
 	{
-		// If value is valid timestamp and the underlying column type is datetime, convert to datetime object
-		if (DateTimeHelper::isValidTimeStamp($value))
-		{
-			$table = blx()->db->schema->getTable("{{{$this->getTableName()}}}");
-			$column = $table->getColumn($name);
-			if ($column->dbType == ColumnType::DateTime)
-			{
-				$dt = new DateTime('@'.$value);
-				$value = $dt;
-			}
-		}
-
 		if (property_exists($this, $name))
 		{
 			$this->$name = $value;

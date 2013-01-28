@@ -52,9 +52,9 @@ class AssetFileModel extends BaseEntityModel
 	 */
 	public function getUrl($sizeHandle = null)
 	{
-		return blx()->assetSources->getSourceTypeById($this->sourceId)->getSettings()->url .
-			$this->getFolder()->fullPath .
-			($sizeHandle ? '_'.$sizeHandle.'/' : '') .
+		return blx()->assetSources->getSourceTypeById($this->sourceId)->getSettings()->url.
+			$this->getFolder()->fullPath.
+			($sizeHandle ? '_'.$sizeHandle.'/' : '').
 			$this->filename;
 	}
 

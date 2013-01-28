@@ -7,11 +7,6 @@ namespace Blocks;
 class MigrateCommand extends \MigrateCommand
 {
 	/**
-	 * @var string The path of the template file for generating new migrations.
-	 */
-	public $templateFile = 'app.components.updates.migrationtemplate';
-
-	/**
 	 * @access private
 	 * @var string The real path to the migrations folder.
 	 */
@@ -169,23 +164,13 @@ class MigrateCommand extends \MigrateCommand
 	{
 		$migrations = blx()->migrations->getMigrationHistory($limit);
 
-		$column = 'applyTime';
-
-		if (isset($migrations[0]))
-		{
-			if (isset($migrations[0]['apply_time']))
-			{
-				$column = 'apply_time';
-			}
-		}
-
 		// Convert the dates to Unix timestamps
 		foreach ($migrations as &$migration)
 		{
-			$migration[$column] = $migration[$column]->getTimestamp();
+			$migration['applyTime'] = $migration['applyTime']->getTimestamp();
 		}
 
-		return HtmlHelper::listData($migrations, 'version', $column);
+		return HtmlHelper::listData($migrations, 'version', 'applyTime');
 	}
 
 	/**
@@ -194,5 +179,13 @@ class MigrateCommand extends \MigrateCommand
 	protected function getNewMigrations()
 	{
 		return blx()->migrations->getNewMigrations();
+	}
+
+	/**
+	 * @return string
+	 */
+	protected function getTemplate()
+	{
+		return blx()->migrations->getTemplate();
 	}
 }

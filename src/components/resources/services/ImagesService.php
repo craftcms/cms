@@ -35,17 +35,17 @@ class ImagesService extends BaseApplicationComponent
 		$tweakFactor = 1.7;
 		$bits = isset($imageInfo['bits']) ? $imageInfo['bits'] : 8;
 		$channels = isset($imageInfo['channels']) ? $imageInfo['channels'] : 4;
-		$memoryNeeded = round( ( $imageInfo[0] * $imageInfo[1] * $bits  * $channels / 8 + $K64) * $tweakFactor);
+		$memoryNeeded = round(($imageInfo[0] * $imageInfo[1] * $bits  * $channels / 8 + $K64) * $tweakFactor);
 
-		$memoryLimitMB = (int) ini_get('memory_limit');
+		$memoryLimitMB = (int)ini_get('memory_limit');
 		$memoryLimit = $memoryLimitMB * $MB;
 
 		if (function_exists('memory_get_usage'))
 		{
 			if (memory_get_usage() + $memoryNeeded > $memoryLimit)
 			{
-				$newLimit = $memoryLimitMB + ceil( ( memory_get_usage() + $memoryNeeded - $memoryLimit) / $MB);
-				return (bool) ini_set( 'memory_limit', $newLimit . 'M' );
+				$newLimit = $memoryLimitMB + ceil((memory_get_usage() + $memoryNeeded - $memoryLimit) / $MB);
+				return (bool)ini_set( 'memory_limit', $newLimit.'M' );
 			}
 
 			return true;

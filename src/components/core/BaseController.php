@@ -41,11 +41,11 @@ abstract class BaseController extends \CController
 	 */
 	protected function getDateFromPost($name)
 	{
-		$timestamp = blx()->request->getPost($name);
+		$date = blx()->request->getPost($name);
 
-		if ($timestamp)
+		if ($date)
 		{
-			return DateTime::createFromFormat(DateTime::W3C_DATE, $timestamp);
+			return DateTime::createFromFormat(DateTime::W3C_DATE, $date);
 		}
 	}
 

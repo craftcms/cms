@@ -222,7 +222,7 @@ class UpdateController extends BaseController
 	 */
 	public function actionBackupDatabase()
 	{
-		// Only check for this permission if they are logged in, so we can let a logged out user trigger a manual update.
+		// A bit silly, but only check for this permission if they are logged in, so we can let a logged out user trigger a manual update.
 		if (blx()->userSession->isLoggedIn())
 		{
 			blx()->userSession->requirePermission('autoUpdateBlocks');

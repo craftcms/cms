@@ -72,7 +72,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		$localPath = $this->_getSourceFileSystemPath();
 		$fileList = IOHelper::getFolderContents($localPath, true);
 
-		$fileList = array_filter($fileList, function ($value) use ($localPath) {
+		$fileList = array_filter($fileList, function ($value) use ($localPath)
+		{
 			$path = substr($value, strlen($localPath));
 			$segments = explode('/', $path);
 

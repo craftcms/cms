@@ -6,7 +6,6 @@ namespace Blocks;
  */
 class AssetFolderModel extends BaseModel
 {
-
 	/**
 	 * Breadcrumbs for this folder (array of id => folder name ordered by depth)
 	 * @var array

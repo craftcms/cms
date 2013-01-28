@@ -122,20 +122,9 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($migration->up() !== false)
 		{
-			// We do this to because of migrating from int timestamps to native db date/time datatypes.
-			$table = blx()->db->schema->getTable("{{{$this->migrationTable}}}", true);
-			$column = $table->getColumn('apply_time');
-
-			if (!$column)
-			{
-				$column = $table->getColumn('applyTime');
-			}
-
-			$time = $column->dbType == ColumnType::DateTime ? DateTimeHelper::currentTimeForDb() : DateTimeHelper::currentTimeStamp();
-
 			$this->getDbConnection()->createCommand()->insert($this->migrationTable, array(
 				'version' => $class,
-				$column->name => $time,
+				'applyTime' => DateTimeHelper::currentTimeForDb(),
 			));
 
 			$time = microtime(true) - $start;
@@ -195,24 +184,8 @@ class MigrationsService extends BaseApplicationComponent
 	{
 		$db = $this->getDbConnection();
 
-		if (($table = $db->schema->getTable("{{{$this->migrationTable}}}", true)) === null)
-		{
-			$this->createMigrationHistoryTable();
-			$table = $db->schema->getTable("{{{$this->migrationTable}}}", true);
-		}
-
-		$column = $table->getColumn('apply_time');
-		if ($column)
-		{
-			$column = 'apply_time';
-		}
-		else
-		{
-			$column = 'applyTime';
-		}
-
 		$query = $db->createCommand()
-			->select('version, '.$column)
+			->select('version, applyTime')
 			->from($this->migrationTable)
 			->order('version DESC');
 
@@ -226,15 +199,8 @@ class MigrationsService extends BaseApplicationComponent
 		// Convert the dates to DateTime objects
 		foreach ($migrations as &$migration)
 		{
-			if (DateTimeHelper::isValidTimeStamp($migration[$column]))
-			{
-				$migration[$column] = new DateTime('@'.$migration[$column]);
-			}
-			else
-			{
-				// TODO: MySQL specific.
-				$migration[$column] = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $migration[$column]);
-			}
+			// TODO: MySQL specific.
+			$migration['applyTime'] = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $migration['applyTime']);
 		}
 
 		return $migrations;
@@ -292,89 +258,6 @@ class MigrationsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Creates the migration history table.
-	 * TODO: This horrible method will be deprecated after the next breakpoint.
-	 *
-	 * @return bool
-	 */
-	public function createMigrationHistoryTable()
-	{
-		// Back when times were stored as int/timestamps.
-		if ((int)Blocks::getStoredBuild() < 2112)
-		{
-			// Create the blx_migrations table
-			blx()->db->createCommand()->setText(blx()->db->getSchema()->createTable(
-				blx()->db->tablePrefix.$this->migrationTable,
-				array(
-					'id' => 'pk',
-					'version' => 'VARCHAR(255) NOT NULL',
-					'apply_time' => 'INT(11) UNSIGNED NOT NULL',
-					'dateCreated' => 'INT(11) UNSIGNED NOT NULL',
-					'dateUpdated' => 'INT(11) UNSIGNED NOT NULL',
-					'uid' => 'CHAR(36) NOT NULL',
-				)
-			))->execute();
-
-			// Add the index the old fashioned way.
-			$name = md5(blx()->db->tablePrefix.'migrations_version_unique_idx');
-			$table = DbHelper::addTablePrefix('migrations');
-			blx()->db->createCommand()->setText(blx()->db->getSchema()->createIndex($name, $table, 'version', true))->execute();
-
-			$currentTimeStamp = DateTimeHelper::currentTimeStamp();
-			blx()->db->createCommand(
-				'INSERT INTO '.blx()->db->tablePrefix.$this->migrationTable.
-				' (`version`, `apply_time`, `dateCreated`, `dateUpdated`, `uid`) VALUES (\''.
-				$this->getBaseMigration().'\', \''.$currentTimeStamp.'\', \''.$currentTimeStamp.'\', \''.$currentTimeStamp.'\', \''.StringHelper::UUID().'\');')->execute();
-		}
-		// DateTime objects, but md5 hashed foreign keys/indexes
-		else if ((int)Blocks::getStoredBuild() >= 2112 && (int)Blocks::getStoredBuild() < 2123)
-		{
-			// Create the blx_migrations table
-			blx()->db->createCommand()->setText(blx()->db->getSchema()->createTable(
-				blx()->db->tablePrefix.$this->migrationTable,
-				array(
-					'id' => 'pk',
-					'version' => 'VARCHAR(255) NOT NULL',
-					'apply_time' => 'DATETIME NOT NULL',
-					'dateCreated' => 'DATETIME NOT NULL',
-					'dateUpdated' => 'DATETIME NOT NULL',
-					'uid' => 'CHAR(36) NOT NULL',
-				)
-			))->execute();
-
-			// Add the index the old fashioned way.
-			$name = md5(blx()->db->tablePrefix.'migrations_version_unique_idx');
-			$table = DbHelper::addTablePrefix('migrations');
-			blx()->db->createCommand()->setText(blx()->db->getSchema()->createIndex($name, $table, 'version', true))->execute();
-
-			blx()->db->createCommand()->insert($this->migrationTable, array(
-				'version' => $this->getBaseMigration(),
-				'apply_time' => DateTimeHelper::currentTimeForDb(),
-			));
-		}
-		else
-		{
-			// Create the blx_migrations table
-			blx()->db->createCommand()->createTable('migrations', array(
-				'pluginId'  => array('column' => 'integer', 'required' => false),
-				'version'   => array('maxLength' => 255, 'column' => 'varchar', 'required' => true),
-				'applyTime' => array('column' => 'datetime', 'required' => true),
-			));
-
-			// Add the indexes
-			blx()->db->createCommand()->createIndex('migrations', 'version', true);
-
-			// Add foreign keys
-			blx()->db->createCommand()->addForeignKey('migrations', 'pluginId', 'plugins', 'id', 'CASCADE');
-
-			blx()->db->createCommand()->insert($this->migrationTable, array(
-				'version' => $this->getBaseMigration(),
-				'applyTime' => DateTimeHelper::currentTimeForDb(),
-			));
-		}
-	}
-
-	/**
 	 * Returns the base migration name.
 	 *
 	 * @return string
@@ -389,25 +272,6 @@ class MigrationsService extends BaseApplicationComponent
 	 */
 	protected function getTemplate()
 	{
-			return <<<EOD
-<?php
-namespace Blocks;
-
-/**
- * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
- */
-class {ClassName} extends DbMigration
-{
-	/**
-	 * Any migration code in here is wrapped inside of a transaction.
-	 *
-	 * @return bool
-	 */
-	public function safeUp()
-	{
-		return true;
-	}
-}
-EOD;
+		return file_get_contents(Blocks::getPathOfAlias('app.components.updates.migrationtemplate').'.php');
 	}
 }

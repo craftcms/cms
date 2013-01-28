@@ -11,14 +11,13 @@ class AssetOperationResponseModel extends BaseModel
 	const StatusSuccess = 'success';
 	const StatusConflict = 'conflict';
 
-
 	/**
 	 * Returns an \StdClass object of response information only, ready to be sent over JSON
 	 * @return \StdClass
 	 */
 	public function getResponseForTransport()
 	{
-		$output = (object) array(
+		$output = (object)array(
 			'status' 		=> $this->getStatus(),
 			'errorMessage' 	=> $this->getErrorMessage(),
 			'data' 			=> JsonHelper::decode($this->getResponseData)

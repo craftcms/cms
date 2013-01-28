@@ -17,7 +17,7 @@ class EntryModel extends BaseEntityModel
 	 */
 	function __toString()
 	{
-		return (string) $this->title;
+		return (string)$this->title;
 	}
 
 	public function defineAttributes()

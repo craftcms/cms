@@ -261,6 +261,8 @@ abstract class BaseModel extends \CModel
 				$value = $attributes[$name];
 				$config = ModelHelper::normalizeAttributeConfig($config);
 
+				// Leaving this conditional in because some models might want to utilize a timestamp for transporting
+				// DateTime data. (e.g. EtModel)
 				if ($config['type'] == AttributeType::DateTime && DateTimeHelper::isValidTimeStamp($value))
 				{
 					$value = new DateTime('@'.$value);
