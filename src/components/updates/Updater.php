@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class AppUpdater
+class Updater
 {
 	/**
 	 * @throws Exception
@@ -197,9 +197,10 @@ class AppUpdater
 	/**
 	 * @param      $uid
 	 * @param bool $dbBackupPath
+	 * @param null $plugin
 	 * @throws Exception
 	 */
-	public function updateDatabase($uid, $dbBackupPath = false)
+	public function updateDatabase($uid, $dbBackupPath = false, $plugin = null)
 	{
 		try
 		{
@@ -262,7 +263,7 @@ class AppUpdater
 			throw new Exception(Blocks::t('The update was performed successfully, but there was a problem settings the new info in the blx_info table.'));
 		}
 
-		Blocks::log('Finished AppUpdater.', \CLogger::LEVEL_INFO);
+		Blocks::log('Finished Updater.', \CLogger::LEVEL_INFO);
 		return true;
 	}
 
