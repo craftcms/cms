@@ -156,11 +156,11 @@ Assets.FileManager = Garnish.Base.extend({
 	 */
 	markActiveViewButton: function () {
 		if (this.currentState.view == 'thumbs') {
-			this.$viewAsThumbsBtn.addClass('sel');
-			this.$viewAsListBtn.removeClass('sel');
+			this.$viewAsThumbsBtn.addClass('active');
+			this.$viewAsListBtn.removeClass('active');
 		} else {
-			this.$viewAsThumbsBtn.removeClass('sel');
-			this.$viewAsListBtn.addClass('sel');
+			this.$viewAsThumbsBtn.removeClass('active');
+			this.$viewAsListBtn.addClass('active');
 		}
 	},
 
