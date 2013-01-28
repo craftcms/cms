@@ -268,6 +268,17 @@ class DbCommand extends \CDbCommand
 	 * @param $table
 	 * @return int
 	 */
+	public function dropTableIfExists($table)
+	{
+		$table = DbHelper::addTablePrefix($table);
+		$sql = $this->getConnection()->getSchema()->dropTableIfExists($table);
+		return $this->setText($sql)->execute();
+	}
+
+	/**
+	 * @param $table
+	 * @return int
+	 */
 	public function truncateTable($table)
 	{
 		$table = DbHelper::addTablePrefix($table);
