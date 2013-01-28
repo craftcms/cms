@@ -247,7 +247,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .menubtn.small:after { font-size: 10px; }
 
 /* button groups */
-.btngroup { display: inline-block; font-size: 0; }
+.btngroup { display: inline-block; font-size: 0; white-space: nowrap; }
 .btngroup .btn { font-size: 13px; }
 .btngroup .btn:not(:first-child) { margin-left: 1px; border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; }
 .btngroup .btn:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
