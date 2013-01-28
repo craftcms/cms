@@ -1,3 +1,9 @@
+// define the Assets global
+if (typeof Assets == 'undefined')
+{
+    Assets = {};
+}
+
 /**
  * Asset Operation Manager
  */
@@ -35,6 +41,7 @@ Assets.OperationManager = Garnish.Base.extend({
 
 		this.$progressBarContainer = $('.operation-progress');
 
+        this.$modalContainerDiv = null;
 
 		this.addListener(this.$startOperationsButton, 'click', 'startOperations');
 	},
@@ -140,8 +147,8 @@ Assets.OperationManager = Garnish.Base.extend({
 			checkedSources.push($(this).val());
 		});
 
-		if ($modalContainerDiv == null) {
-			$modalContainerDiv = $('<div class="modal index-report"></div>').addClass().appendTo(Garnish.$bod);
+		if (this.$modalContainerDiv == null) {
+			this.$modalContainerDiv = $('<div class="modal index-report"></div>').addClass().appendTo(Garnish.$bod);
 		}
 
 		if (this.modal == null) {
@@ -160,7 +167,7 @@ Assets.OperationManager = Garnish.Base.extend({
 			var html = '';
 
 			if (typeof data.files != "undefined" || this.missingFolders.length > 0) {
-				html += '<p>' + Blocks.t('The following items were found in the database that do not have a physical match.') +  '</p>';
+				html += '<div class="body"><p>' + Blocks.t('The following items were found in the database that do not have a physical match.') +  '</p>';
 
 				if (this.missingFolders.length > 0) {
 					html += '<div class="report-part"><strong>' + Blocks.t('Folders') + '</strong>';
@@ -178,13 +185,14 @@ Assets.OperationManager = Garnish.Base.extend({
 					html += '</div>'
 				}
 
+                html += '</div>';
 				html += '<footer class="footer"><ul class="right">';
 				html += '<li><input type="button" class="btn cancel" value="' + Blocks.t('Cancel') + '"></li>';
 				html += '<li><input type="button" class="btn submit delete" value="' + Blocks.t('Delete') + '"></li>';
 				html += '</ul></footer>';
 
-				$modalContainerDiv.empty().append(html);
-				this.modal.setContainer($modalContainerDiv);
+				this.$modalContainerDiv.empty().append(html);
+				this.modal.setContainer(this.$modalContainerDiv);
 
 				this.modal.show();
 				this.modal.removeListener(Garnish.Modal.$shade, 'click');

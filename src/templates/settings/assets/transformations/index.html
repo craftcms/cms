@@ -12,10 +12,10 @@
 {% if transformations|length %}
     <table id="transformations" class="data">
         <thead>
-        <th scope="col">{{ "Name"|t }}</th>
-        <th scope="col">{{ "Mode"|t }}</th>
-        <th scope="col">{{ "Dimensions"|t }}</th>
-        <td class="thin"></td>
+            <th scope="col">{{ "Name"|t }}</th>
+            <th scope="col">{{ "Mode"|t }}</th>
+            <th scope="col">{{ "Dimensions"|t }}</th>
+            <td class="thin"></td>
         </thead>
         <tbody>
         {% for transformation in transformations %}
@@ -38,3 +38,13 @@
     <a class="btn submit add icon" href="{{ url('settings/assets/transformations/new') }}">{{ "New Transformation"|t }}</a>
 </div>
 {% endset %}
+
+{% set js %}
+    new Blocks.AdminTable({
+        tableSelector: '#transformations',
+        noObjectsSelector: '#notransformations',
+        sortable: false,
+        deleteAction: 'assetTransformations/deleteTransformation'
+    });
+{% endset %}
+{% includeJs js %}
