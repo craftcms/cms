@@ -74,7 +74,7 @@ class App extends \CWebApplication
 
 		// isDbUpdateNeeded will return true if we're in the middle of a manual or auto-update.
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
-		if ($this->isDbUpdateNeeded() || (Blocks::isInMaintenanceMode() && !$this->request->isSiteRequest()))
+		if (blx()->updates->isDbUpdateNeeded() || (Blocks::isInMaintenanceMode() && !$this->request->isSiteRequest()))
 		{
 			// Let all non-action CP requests through.
 			if ($this->request->isCpRequest() && !$this->request->isActionRequest())
@@ -469,23 +469,6 @@ class App extends \CWebApplication
 		}
 
 		return $this->_validDbConfig;
-	}
-
-	/**
-	 * Determines if we're in the middle of a manual update, and a DB update is needed.
-	 *
-	 * @return bool
-	 */
-	public function isDbUpdateNeeded()
-	{
-		if (version_compare(Blocks::getBuild(), Blocks::getStoredBuild(), '>') || version_compare(Blocks::getVersion(), Blocks::getStoredVersion(), '>'))
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
 	}
 
 	/**
