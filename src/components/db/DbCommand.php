@@ -40,6 +40,11 @@ class DbCommand extends \CDbCommand
 	 */
 	public function where($conditions, $params = array())
 	{
+		if (!$conditions)
+		{
+			return $this;
+		}
+
 		$conditions = $this->_normalizeConditions($conditions, $params);
 		return parent::where($conditions, $params);
 	}
@@ -53,6 +58,11 @@ class DbCommand extends \CDbCommand
 	 */
 	public function andWhere($conditions, $params = array())
 	{
+		if (!$conditions)
+		{
+			return $this;
+		}
+
 		$conditions = $this->_normalizeConditions($conditions, $params);
 		return parent::andWhere($conditions, $params);
 	}
@@ -66,6 +76,11 @@ class DbCommand extends \CDbCommand
 	 */
 	public function orWhere($conditions, $params = array())
 	{
+		if (!$conditions)
+		{
+			return $this;
+		}
+
 		$conditions = $this->_normalizeConditions($conditions, $params);
 		return parent::orWhere($conditions, $params);
 	}
