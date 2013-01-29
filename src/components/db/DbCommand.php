@@ -164,6 +164,11 @@ class DbCommand extends \CDbCommand
 	 */
 	public function insertAll($table, $columns, $vals)
 	{
+		if (!$vals)
+		{
+			return 0;
+		}
+
 		$table = DbHelper::addTablePrefix($table);
 
 		$columns[] = 'dateCreated';
