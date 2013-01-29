@@ -113,7 +113,8 @@ class QuerygenCommand extends \CConsoleCommand
 
 			foreach ($belongsToRelations as $name => $config)
 			{
-				$otherModel = new $config[1];
+				$otherModelClass = $config[1];
+				$otherModel = new $otherModelClass('install');
 				$otherTable = $otherModel->getTableName();
 
 				if (isset($config['onDelete']))
