@@ -36,11 +36,22 @@ Assets.FileManager = Garnish.Base.extend({
 		this.$uploadProgress = $('> .assets-fm-uploadprogress', this.$manager);
 		this.$uploadProgressBar = $('.assets-fm-pb-bar', this.$uploadProgress);
 
-		this.modal = null;
+        this.$modalContainerDiv = null;
+        this.$prompt = null;
+        this.$promptApplyToRemainingContainer = null;
+        this.$promptApplyToRemainingCheckbox = null;
+        this.$promptApplyToRemainingLabel = null;
+        this.$promptButtons = null;
+
+        this.modal = null;
 
 		this.sort = 'asc';
+        this.requestId = 0;
+        this.promptArray = [];
 
-		this.requestId = 0;
+        this.selectedFileIds = [];
+
+        this._promptCallback = function (){};
 
 		// -------------------------------------------
 		// Assets states
@@ -244,8 +255,10 @@ Assets.FileManager = Garnish.Base.extend({
 
 				this.$spinner.hide();
 
+                $modalContainerDiv = _this.$modalContainerDiv;
+
 				if ($modalContainerDiv == null) {
-					$modalContainerDiv = $('<div class="modal view-file"></div>').addClass().appendTo(Garnish.$bod);
+					$modalContainerDiv = $('<div class="modal"></div>').addClass().appendTo(Garnish.$bod);
 				}
 
 				if (this.modal == null) {
@@ -374,17 +387,35 @@ Assets.FileManager = Garnish.Base.extend({
 		this._uploadFileProgress[id] = 1;
 		this._updateProgressBar();
 
-		if (response.success) {
+		if (response.success || response.prompt) {
 			this._uploadedFiles++;
 
+            if (this.settings.multiSelect || !this.selectedFileIds.length)
+            {
+                this.selectedFileIds.push(response.fileId);
+            }
+
 			this._setUploadStatus();
+
+            if (response.prompt)
+            {
+                this.promptArray.push(response);
+            }
 
 		}
 
 		// is this the last file?
 		if (! this.uploader.getInProgress()) {
 			if (this._uploadedFiles) {
-				this.reloadFolderView();
+                this.$spinner.hide();
+                if (this.promptArray.length)
+                {
+                    this._showBatchPrompts(this.promptArray, this._uploadFollowup);
+                }
+                else
+                {
+                    this.reloadFolderView();
+                }
 			} else {
 				// just skip to hiding the progress bar
 				this._hideProgressBar();
@@ -394,6 +425,42 @@ Assets.FileManager = Garnish.Base.extend({
 
 
 	},
+
+    _uploadFollowup: function(returnData)
+    {
+        this.promptArray = [];
+
+        var finalCallback = $.proxy(function()
+        {
+            this.$spinner.hide();
+            this.reloadFolderView();
+        }, this);
+
+        var doFollowup = $.proxy(function(parameterArray, parameterIndex, callback)
+        {
+            var postData = {
+                additionalInfo: parameterArray[parameterIndex].additionalInfo,
+                fileName:       parameterArray[parameterIndex].fileName,
+                userResponse:   parameterArray[parameterIndex].choice
+            };
+
+            $.post(Blocks.actionUrl + '/assets/uploadFile', postData, $.proxy(function(data)
+            {
+                ++parameterIndex;
+
+                if (parameterIndex == parameterArray.length)
+                {
+                    callback();
+                }
+                else
+                {
+                    doFollowup(parameterArray, parameterIndex, callback);
+                }
+            }, this));
+        }, this);
+
+        doFollowup(returnData, 0, finalCallback);
+    },
 
 	/**
 	 * Update Progress Bar
@@ -416,7 +483,164 @@ Assets.FileManager = Garnish.Base.extend({
 		this.$uploadProgress.fadeOut($.proxy(function() {
 			this.$uploadProgress.hide();
 		}, this));
-	}
+	},
+
+    /**
+     * Show the user prompt with a given message and choices, plus an optional "Apply to remaining" checkbox.
+     *
+     * @param string message
+     * @param array choices
+     * @param function callback
+     * @param int itemsToGo
+     */
+    _showPrompt: function(message, choices, callback, itemsToGo)
+    {
+        this._promptCallback = callback;
+
+        if (this.modal == null) {
+            this.modal = new Garnish.Modal();
+        }
+
+        if (this.$modalContainerDiv == null) {
+            this.$modalContainerDiv = $('<div class="modal"></div>').addClass().appendTo(Garnish.$bod);
+        }
+
+        this.$prompt = $('<div class="body"></div>').appendTo(this.$modalContainerDiv.empty());
+
+        this.$promptMessage = $('<p class="assets-prompt-msg"/>').appendTo(this.$prompt);
+
+        $('<p>').html(Blocks.t('What do you want to do?')).appendTo(this.$prompt);
+
+        this.$promptApplyToRemainingContainer = $('<label class="assets-applytoremaining"/>').appendTo(this.$prompt).hide();
+        this.$promptApplyToRemainingCheckbox = $('<input type="checkbox"/>').appendTo(this.$promptApplyToRemainingContainer);
+        this.$promptApplyToRemainingLabel = $('<span/>').appendTo(this.$promptApplyToRemainingContainer);
+        this.$promptButtons = $('<div class="buttons"/>').appendTo(this.$prompt);
+
+
+        this.modal.setContainer(this.$modalContainerDiv);
+
+
+        this.$promptMessage.html(message);
+
+        for (var i = 0; i < choices.length; i++)
+        {
+            var $btn = $('<div class="assets-btn btn" data-choice="'+choices[i].value+'">' + choices[i].title + '</div>');
+
+            this.addListener($btn, 'activate', function(ev)
+            {
+                var choice = ev.currentTarget.getAttribute('data-choice'),
+                    applyToRemaining = this.$promptApplyToRemainingCheckbox.prop('checked');
+
+                this._selectPromptChoice(choice, applyToRemaining);
+            });
+
+            this.$promptButtons.append($btn).append('<br />');
+        }
+
+        if (itemsToGo)
+        {
+            this.$promptApplyToRemainingContainer.show();
+            this.$promptApplyToRemainingLabel.html(Blocks.t('Apply this to the {number} remaining conflicts', {number: itemsToGo}));
+        }
+
+        this.modal.show();
+        this.modal.removeListener(Garnish.Modal.$shade, 'click');
+        this.addListener(Garnish.Modal.$shade, 'click', '_cancelPrompt');
+
+    },
+
+    /**
+     * Handles when a user selects one of the prompt choices.
+     *
+     * @param object ev
+     */
+    _selectPromptChoice: function(choice, applyToRemaining)
+    {
+        this.$prompt.fadeOut('fast', $.proxy(function() {
+            this.modal.hide();
+            this._promptCallback(choice, applyToRemaining);
+        }, this));
+    },
+
+    /**
+     * Cancels the prompt.
+     */
+    _cancelPrompt: function()
+    {
+        this._selectPromptChoice('cancel', true);
+    },
+
+    /**
+     * Shows a batch of prompts.
+     *
+     * @param array   promts
+     * @param funtion callback
+     */
+    _showBatchPrompts: function(prompts, callback)
+    {
+        this._promptBatchData = prompts;
+        this._promptBatchCallback = callback;
+        this._promptBatchReturnData = [];
+        this._promptBatchNum = 0;
+
+        this._showNextPromptInBatch();
+    },
+
+    /**
+     * Shows the next prompt in the batch.
+     */
+    _showNextPromptInBatch: function()
+    {
+        var prompt = this._promptBatchData[this._promptBatchNum].prompt,
+            remainingInBatch = this._promptBatchData.length - (this._promptBatchNum + 1);
+
+        this._showPrompt(prompt.message, prompt.choices, $.proxy(this, '_handleBatchPromptSelection'), remainingInBatch);
+    },
+
+    /**
+     * Handles a prompt choice selection.
+     *
+     * @param string choice
+     * @param bool   applyToRemaining
+     */
+    _handleBatchPromptSelection: function(choice, applyToRemaining)
+    {
+        var prompt = this._promptBatchData[this._promptBatchNum],
+            remainingInBatch = this._promptBatchData.length - (this._promptBatchNum + 1);
+
+        // Record this choice
+        this._promptBatchReturnData.push({
+            fileName:       prompt.fileName,
+            choice:         choice,
+            additionalInfo: prompt.additionalInfo
+        });
+
+        // Are there any remaining items in the batch?
+        if (remainingInBatch)
+        {
+            // Get ready to deal with the next prompt
+            this._promptBatchNum++;
+
+            // Apply the same choice to the remaining items?
+            if (applyToRemaining)
+            {
+                this._handleBatchPromptSelection(choice, true);
+            }
+            else
+            {
+                // Show the next prompt
+                this._showNextPromptInBatch();
+            }
+        }
+        else
+        {
+            // All done! Call the callback
+            if (typeof this._promptBatchCallback == 'function')
+            {
+                this._promptBatchCallback(this._promptBatchReturnData);
+            }
+        }
+    }
 
 },
 {
