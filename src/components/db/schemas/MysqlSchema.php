@@ -101,6 +101,11 @@ class MysqlSchema extends \CMysqlSchema
 	 */
 	public function insertAll($table, $columns, $vals)
 	{
+		if (!$vals)
+		{
+			return;
+		}
+
 		$params = array();
 		$names = array();
 		$placeHolders = array();
