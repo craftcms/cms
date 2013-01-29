@@ -211,4 +211,30 @@ class DbMigration extends \CDbMigration
 		$this->getDbConnection()->createCommand()->dropIndex($table, $columns, $unique);
 		echo " done (time: ".sprintf('%.3f', microtime(true)-$time)."s)\n";
 	}
+
+	/**
+	 * @param string $table
+	 * @param string $columns
+	 * @return int
+	 */
+	public function addPrimaryKey($table, $columns)
+	{
+		echo "    > alter table $table add new primary key ($columns) ...";
+		$time=microtime(true);
+		$this->getDbConnection()->createCommand()->addPrimaryKey($table, $columns);
+		echo " done (time: ".sprintf('%.3f', microtime(true)-$time)."s)\n";
+	}
+
+	/**
+	 * @param string $table
+	 * @param string $columns
+	 * @return int
+	 */
+	public function dropPrimaryKey($table, $columns)
+	{
+		echo "    > alter table $table drop primary key ($columns) ...";
+		$time=microtime(true);
+		$this->getDbConnection()->createCommand()->dropPrimaryKey($table, $columns);
+		echo " done (time: ".sprintf('%.3f', microtime(true)-$time)."s)\n";
+	}
 }

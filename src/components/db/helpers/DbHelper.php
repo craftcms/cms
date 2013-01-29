@@ -76,7 +76,15 @@ class DbHelper
 		}
 
 		// Merge in the default config
-		if (isset(static::$columnTypeDefaults[$config['column']]))
+		if ($config['column'] == ColumnType::Locale)
+		{
+			$config['column'] = ColumnType::Char;
+			$config['maxLength'] = 12;
+			$config['charset'] = blx()->config->getDbItem('charset');
+			$config['collation'] = blx()->config->getDbItem('collation');
+			$config['null'] = false;
+		}
+		else if (isset(static::$columnTypeDefaults[$config['column']]))
 		{
 			$config = array_merge(static::$columnTypeDefaults[$config['column']], $config);
 		}
@@ -272,6 +280,21 @@ class DbHelper
 	{
 		$columns = ArrayHelper::stringToArray($columns);
 		$name = blx()->db->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
+		return static::normalizeDbObjectName($name);
+	}
+
+	/**
+	 * Returns a primary key name based on the table and column names.
+	 *
+	 * @param string $table
+	 * @param string|array $columns
+	 * @param bool $unique
+	 * @return string
+	 */
+	public static function getPrimaryKeyName($table, $columns)
+	{
+		$columns = ArrayHelper::stringToArray($columns);
+		$name = blx()->db->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
 		return static::normalizeDbObjectName($name);
 	}
 

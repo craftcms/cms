@@ -453,6 +453,30 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
+	 * @param string $table
+	 * @param string $columns
+	 * @return int
+	 */
+	public function addPrimaryKey($table, $columns)
+	{
+		$name = DbHelper::getPrimaryKeyName($table, $columns);
+		$table = DbHelper::addTablePrefix($table);
+		return parent::addPrimaryKey($name, $table, $columns);
+	}
+
+	/**
+	 * @param string $table
+	 * @param string $columns
+	 * @return int
+	 */
+	public function dropPrimaryKey($table, $columns)
+	{
+		$name = DbHelper::getPrimaryKeyName($table, $columns);
+		$table = DbHelper::addTablePrefix($table);
+		return parent::dropPrimaryKey($name, $table);
+	}
+
+	/**
 	 * Adds support for array('column' => 'value') conditional syntax.
 	 * Supports nested conditionals, e.g. array('or', array('column' => 'value'), array('column2' => 'value2'))
 	 *
