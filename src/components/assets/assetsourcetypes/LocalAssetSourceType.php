@@ -43,6 +43,21 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
+	 * Preps the settings before they're saved to the database.
+	 *
+	 * @param array $settings
+	 * @return array
+	 */
+	public function prepSettings($settings)
+	{
+		// Add a trailing slash to the Path and URL settings
+		$settings['path'] = rtrim($settings['path'], '/').'/';
+		$settings['url'] = rtrim($settings['url'], '/').'/';
+
+		return $settings;
+	}
+
+	/**
 	 * Check if the FileSystem path is a writable folder
 	 * @return array
 	 */
