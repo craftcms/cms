@@ -257,7 +257,7 @@ class DbHelper
 	{
 		$columns = ArrayHelper::stringToArray($columns);
 		$name = blx()->db->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
-		return static::normalizeIndexName($name);
+		return static::normalizeDbObjectName($name);
 	}
 
 	/**
@@ -272,20 +272,20 @@ class DbHelper
 	{
 		$columns = ArrayHelper::stringToArray($columns);
 		$name = blx()->db->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
-		return static::normalizeIndexName($name);
+		return static::normalizeDbObjectName($name);
 	}
 
 	/**
-	 * Ensures that an index name is within the schema's limit.
+	 * Ensures that an object name is within the schema's limit.
 	 *
 	 * @static
 	 * @param string $name
 	 * @return string
 	 */
-	public static function normalizeIndexName($name)
+	public static function normalizeDbObjectName($name)
 	{
 		// TODO: MySQL specific
-		// MySQL indexes can't be more than 64 characters
+		// MySQL indexes can't be more than 64 characters (see http://dev.mysql.com/doc/refman/5.0/en/identifiers.html)
 		$maxLength = 64;
 
 		$name = trim($name, '_');
