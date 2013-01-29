@@ -432,7 +432,8 @@ class DbHelper
 
 				if (preg_match('/^(\d{4})(?:-(\d{1,2})(?:-(\d{1,2})(?: (\d{1,2})\:(\d{2})(?:\:(\d{2}))?)?)?)?$/', $date, $m))
 				{
-					$format = 'Y-m-d h:i:s';
+					// TODO: MySql specific
+					$format = DateTime::MYSQL_DATETIME;
 
 					$date = $m[1] .                                                          // year
 						'-'.(!empty($m[2]) ? (strlen($m[2] == 1 ? '0' : '').$m[2]) : '01') . // month
@@ -454,7 +455,7 @@ class DbHelper
 			}
 
 			$param = ':p'.StringHelper::randomString(9);
-			$params[$param] = $date->getTimestamp();
+			$params[$param] = DateTimeHelper::formatTimeForDb($date->getTimestamp());
 			$conditions[] = $key.$operator.$param;
 		}
 
