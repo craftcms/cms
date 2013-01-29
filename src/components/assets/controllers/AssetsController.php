@@ -24,12 +24,16 @@ class AssetsController extends BaseEntityController
 	public function actionUploadFile()
 	{
 		$this->requireAjaxRequest();
-		$folderId = blx()->request->getRequiredQuery('folderId');
+		$folderId = blx()->request->getQuery('folderId');
+
+		// Conflict resolution data
 		$userResponse = blx()->request->getPost('userResponse');
+		$responseInfo = blx()->request->getPost('additionalInfo');
+		$fileName = blx()->request->getPost('fileName');
 
-		$output = blx()->assets->uploadFile($folderId, $userResponse);
+		$response = blx()->assets->uploadFile($folderId, $userResponse, $responseInfo, $fileName);
 
-		$this->returnJson(array('success' => true));
+		$this->returnJson($response->getResponseData());
 	}
 
 	/**

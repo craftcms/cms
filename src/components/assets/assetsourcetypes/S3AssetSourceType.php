@@ -302,20 +302,10 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		if ($fileInfo)
 		{
-			/*$response = new AssetOperationResponseModel();
-			$response->setResponse(AssetOperationResponseModel::StatusConflict);
-			$response->setResponseDataItem('prompt', $this->_getUserPromptOptions($fileName));
-			return $response;*/
-			// TODO handle the conflict instead of just saving as new
-			$targetPath = $folder->fullPath.$this->_getNameReplacement($folder, $fileName);
-			if (!$targetPath)
-			{
-				throw new Exception(Blocks::t('Could not find a suitable replacement name for file'));
-			}
-			else
-			{
-				$uriPath = $targetPath;
-			}
+			$response = new AssetOperationResponseModel();
+			$response->setPrompt($this->_getUserPromptOptions($fileName));
+			$response->setDataItem('fileName', $fileName);
+			return $response;
 		}
 
 		clearstatcache();
@@ -326,11 +316,10 @@ class S3AssetSourceType extends BaseAssetSourceType
 			throw new Exception(Blocks::t('Could not copy file to target destination'));
 		}
 
-		/*$response = new AssetOperationResponseModel();
-		$response->setResponse(AssetOperationResponseModel::StatusSuccess);
-		$response->setResponseDataItem('file_path', $targetPath);
-		return $response;*/
-		return $uriPath;
+		$response = new AssetOperationResponseModel();
+		$response->setSuccess();
+		$response->setDataItem('filePath', $uriPath);
+		return $response;
 	}
 
 	/**
@@ -406,5 +395,141 @@ class S3AssetSourceType extends BaseAssetSourceType
 		}
 
 		return $fileNameStart . $index . '.' . $extension;
+	}
+
+	/**
+	 * Make a local copy of the file and return the path to it.
+	 *
+	 * @param AssetFileModel $file
+	 * @return mixed
+	 */
+
+	protected function _getLocalCopy(AssetFileModel $file)
+	{
+		$location = AssetsHelper::getTempFilePath();
+
+		$this->_prepareForRequests();
+		$this->_s3->getObject($this->getSettings()->bucket, $this->_getS3Path($file), $location);
+
+		return $location;
+	}
+
+	/**
+	 * Get a file's S3 path.
+	 *
+	 * @param AssetFileModel $file
+	 * @return string
+	 */
+	private function _getS3Path(AssetFileModel $file)
+	{
+		$folder = blx()->assets->getFolderById($file->folderId);
+		return $folder->fullPath.$file->filename;
+	}
+
+	/**
+	 * Delete just the source file for an Assets File.
+	 *
+	 * @param AssetFileModel $file
+	 * @return void
+	 */
+	protected function _deleteSourceFile(AssetFileModel $file)
+	{
+		$this->_prepareForRequests();
+		$this->_s3->deleteObject($this->getSettings()->bucket, $this->_getS3Path($file));
+		IOHelper::deleteFile(blx()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename));
+	}
+
+	/**
+	 * Delete all the generated image transformations for this file.
+
+	 *
+	 * @param AssetFileModel $file
+	 */
+	protected function _deleteGeneratedImageTransformations(AssetFileModel $file)
+	{
+		$folder = blx()->assets->getFolderById($file->folderId);
+		$transformations = blx()->assetTransformations->getAssetTransformations();
+		$bucket = $this->_s3->deleteObject($this->getSettings()->bucket, $this->_getS3Path($file));;
+		foreach ($transformations as $handle => $transformation)
+		{
+			$this->_s3->deleteObject($bucket, $folder->fullPath.'/_'.$handle.'/'.$file->filename);
+		}
+	}
+
+	/**
+	 * Move a file in source.
+	 *
+	 * @param AssetFileModel $file
+	 * @param AssetFolderModel $targetFolder
+	 * @param string $fileName
+	 * @param string $userResponse Conflict resolution response
+	 * @return mixed
+	 */
+	protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $userResponse = '')
+	{
+		if (empty($fileName))
+		{
+			$fileName = $file->filename;
+		}
+
+		$newServerPath = $targetFolder->fullPath.$fileName;
+
+		$conflictingRecord = blx()->assets->findFile(
+			new FileCriteria(
+				array(
+					'folderId' => $targetFolder->id,
+					'filename' => $fileName
+				)
+			)
+		);
+
+		$this->_prepareForRequests();
+		$settings = $this->getSettings();
+		$fileInfo = $this->_s3->getObjectInfo($settings->bucket, $newServerPath);
+
+		$conflict = $fileInfo || (!blx()->assets->isMergeInProgress() && is_object($conflictingRecord));
+
+		if ($conflict)
+		{
+			$response = new AssetOperationResponseModel();
+			$response->setPrompt($this->_getUserPromptOptions($fileName));
+			$response->setDataItem('fileName', $fileName);
+			return $response;
+
+		}
+
+		$bucket = $this->getSettings()->bucket;
+
+		if (!$this->_s3->copyObject($bucket, $file->getFolder()->fullPath.$file->filename, $bucket, $newServerPath))
+		{
+			$response = new AssetOperationResponseModel();
+			$response->setError(Blocks::t("Could not save the file"));
+			return $response;
+		}
+
+		$this->_s3->deleteObject($bucket, $file->getFolder()->fullPath.$file->filename);
+
+		if ($file->kind == 'image')
+		{
+			$this->_deleteGeneratedThumbnails($file);
+
+			// Move transformations
+			$transformations = blx()->assetTransformations->getAssetTransformations();
+			$baseFromPath = $file->getFolder()->fullPath;
+			$baseToPath = $targetFolder->fullPath;
+
+			foreach ($transformations as $handle => $transformation)
+			{
+				$this->_s3->copyObject($bucket, $baseFromPath.'_'.$handle.'/'.$fileName, $bucket, $baseToPath.'_'.$handle.'/'.$fileName);
+				$this->_s3->deleteObject($bucket, $baseFromPath.'_'.$handle.'/'.$fileName);
+			}
+		}
+
+		$response = new AssetOperationResponseModel();
+		$response->setSuccess();
+		$response->setDataItem('newId', $file->id);
+		$response->setDataItem('newFileName', $fileName);
+
+		return $response;
 	}
 }

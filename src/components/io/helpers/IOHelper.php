@@ -1309,5 +1309,6 @@ class IOHelper
 		$fileName = ltrim($fileName, '.');
 		return preg_replace('/[^a-z0-9\.\-_]/i', '_', str_replace(chr(0), '', $fileName));
 	}
+
 }
 

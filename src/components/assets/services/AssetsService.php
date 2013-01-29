@@ -42,6 +42,8 @@ class AssetsService extends BaseEntityService
 	 */
 	protected $placeBlockColumnsAfter = 'fileId';
 
+	private $_mergeInProgress = false;
+
 	// -------------------------------------------
 	//  Files
 	// -------------------------------------------
@@ -563,17 +565,23 @@ class AssetsService extends BaseEntityService
 
 	/**
 	 * @param $folderId
-	 * @param $userResponse
-	 * @return AssetFileModel|bool
+	 * @param string $userResponse User response regarding filename conflict
+	 * @param string $responseInfo Additional information about the chosen action
+	 * @param string $fileName The filename that is in the conflict
+	 *
+	 * @return AssetOperationResponseModel
 	 */
-	public function uploadFile($folderId, $userResponse)
+	public function uploadFile($folderId, $userResponse = '', $responseInfo = '', $fileName = '')
 	{
 		try
 		{
 			// handle a user's conflict resolution response
-			if (empty($userResponse))
+			if ( ! empty($userResponse))
 			{
-				//$this->_mergeUploadedFiles();
+				$this->_startMergeProcess();
+				$response =  $this->_mergeUploadedFiles($userResponse, $responseInfo, $fileName);
+				$this->_finishMergeProcess();
+				return $response;
 			}
 
 			$folder = $this->getFolderById($folderId);
@@ -584,11 +592,101 @@ class AssetsService extends BaseEntityService
 		}
 		catch (Exception $exception)
 		{
-			return false;
-			//$response = new AssetOperationResponseModel();
-			//$response->setError(Blocks::t('Error uploading the file: {error}', array('error' => $exception->getMessage())));
+			$response = new AssetOperationResponseModel();
+			$response->setError(Blocks::t('Error uploading the file: {error}', array('error' => $exception->getMessage())));
+			return $response;
+		}
+	}
+
+	/**
+	 * Flag a file merge in progress.
+	 */
+	private function _startMergeProcess()
+	{
+		$this->_mergeInProgress = true;
+	}
+
+	/**
+	 * Flag a file merge no longer in progress.
+	 */
+	private function _finishMergeProcess()
+	{
+		$this->_mergeInProgress = false;
+	}
+
+	/**
+	 * Returns true, if a file is in the process os being merged.
+	 *
+	 * @return bool
+	 */
+	public function isMergeInProgress()
+	{
+		return $this->_mergeInProgress;
+	}
+
+	/**
+	 * Merge a conflicting uploaded file.
+	 *
+	 * @param string $userResponse User response to conflict
+	 * @param string $responseInfo Additional information about the chosen action
+	 * @param string $fileName The filename that is in the conflict
+	 * @return array|string
+	 */
+	private function _mergeUploadedFiles($userResponse, $responseInfo, $fileName)
+	{
+		list ($folderId, $createdFileId) = explode(":", $responseInfo);
+
+		$folder = $this->getFolderById($folderId);
+		$source = blx()->assetSources->getSourceTypeById($folder->sourceId);
+
+		switch ($userResponse)
+		{
+			case AssetsHelper::ActionReplace:
+			{
+				// Replace the actual file
+				$targetFile = blx()->assets->findFile(
+					new FileCriteria(
+						array(
+							'folderId' => $folderId,
+							'filename' => $fileName
+						)
+					)
+				);
+
+				$replaceWith = blx()->assets->getFileById($createdFileId);
+
+				$source->replaceFile($targetFile, $replaceWith);
+			}
+			// Falling through to delete the file
+			case AssetsHelper::ActionCancel:
+			{
+				$this->deleteFiles($createdFileId);
+				break;
+			}
 		}
 
-		//return $response;
+		$response = new AssetOperationResponseModel();
+		$response->setSuccess();
+
+		return $response;
+	}
+
+	/**
+	 * Delete a list of files by an array of ids (or a single id)
+	 * @param $fileIds
+	 */
+	public function deleteFiles($fileIds)
+	{
+		if (!is_array($fileIds))
+		{
+			$fileIds = array($fileIds);
+		}
+
+		foreach ($fileIds as $fileId)
+		{
+			$file = $this->getFileById($fileId);
+			$source = blx()->assetSources->getSourceTypeById($file->sourceId);
+			$source->deleteFile($file);
+		}
 	}
 }
