@@ -175,4 +175,15 @@ class MysqlSchema extends \CMysqlSchema
 
 		return $options === null ? $sql : $sql.' '.$options;
 	}
+
+	/**
+	 * Builds a SQL statement for dropping a DB table if it exists.
+	 *
+	 * @param string $table
+	 * @return string
+	 */
+	public function dropTableIfExists($table)
+	{
+		return 'DROP TABLE IF EXISTS '.$this->quoteTableName($table);
+	}
 }

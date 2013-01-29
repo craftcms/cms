@@ -43,6 +43,21 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
+	 * Preps the settings before they're saved to the database.
+	 *
+	 * @param array $settings
+	 * @return array
+	 */
+	public function prepSettings($settings)
+	{
+		// Add a trailing slash to the Path and URL settings
+		$settings['path'] = rtrim($settings['path'], '/').'/';
+		$settings['url'] = rtrim($settings['url'], '/').'/';
+
+		return $settings;
+	}
+
+	/**
 	 * Check if the FileSystem path is a writable folder
 	 * @return array
 	 */
@@ -196,7 +211,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFolderModel $folder
 	 * @param $filePath
 	 * @param $fileName
-	 * @return string
+	 * @return AssetOperationResponseModel
 	 * @throws Exception
 	 */
 	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
@@ -221,17 +236,10 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		if (IOHelper::fileExists($targetPath))
 		{
-			/*$response = new AssetOperationResponseModel();
-			$response->setResponse(AssetOperationResponseModel::StatusConflict);
-			$response->setResponseDataItem('prompt', $this->_getUserPromptOptions($fileName));
-			return $response;*/
-
-			// TODO handle the conflict instead of just saving as new
-			$targetPath = $targetFolder . $this->_getNameReplacement($folder, $fileName);
-			if (!$targetPath)
-			{
-				throw new Exception(Blocks::t('Could not find a suitable replacement name for file'));
-			}
+			$response = new AssetOperationResponseModel();
+			$response->setPrompt($this->_getUserPromptOptions($fileName));
+			$response->setDataItem('fileName', $fileName);
+			return $response;
 		}
 
 		if (! IOHelper::copyFile($filePath, $targetPath))
@@ -241,11 +249,10 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		IOHelper::changePermissions($targetPath, IOHelper::writableFilePermissions);
 
-		/*$response = new AssetOperationResponseModel();
-		$response->setResponse(AssetOperationResponseModel::StatusSuccess);
-		$response->setResponseDataItem('file_path', $targetPath);
-		return $response;*/
-		return $targetPath;
+		$response = new AssetOperationResponseModel();
+		$response->setSuccess();
+		$response->setDataItem('filePath', $targetPath);
+		return $response;
 
 	}
 
@@ -339,4 +346,125 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		return $targetFolder.$fileModel->filename;
 	}
+
+	/**
+	 * Make a local copy of the file and return the path to it.
+	 *
+	 * @param AssetFileModel $file
+	 * @return mixed
+	 */
+
+	protected function _getLocalCopy(AssetFileModel $file)
+	{
+		$location = AssetsHelper::getTempFilePath();
+		IOHelper::copyFile($this->_getFileSystemPath($file), $location);
+		clearstatcache();
+
+		return $location;
+	}
+
+	/**
+	 * Get a file's system path.
+	 *
+	 * @param AssetFileModel $file
+	 * @return string
+	 */
+	private function _getFileSystemPath(AssetFileModel $file)
+	{
+		$folder = $file->getFolder();
+		return $this->_getSourceFileSystemPath().$folder->fullPath.$file->filename;
+	}
+
+	/**
+	 * Delete just the source file for an Assets File.
+	 *
+	 * @param AssetFileModel $file
+	 * @return void
+	 */
+	protected function _deleteSourceFile(AssetFileModel $file)
+	{
+		IOHelper::deleteFile($this->_getFileSystemPath($file));
+	}
+
+	/**
+	 * Delete all the generated image transformations for this file.
+	 *
+	 * @param AssetFileModel $file
+	 */
+	protected function _deleteGeneratedImageTransformations(AssetFileModel $file)
+	{
+		$folder = $file->getFolder();
+		$transformations = blx()->assetTransformations->getAssetTransformations();
+		foreach ($transformations as $handle => $transformation)
+		{
+			IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->fullPath.'/_'.$handle.'/'.$file->filename);
+		}
+	}
+
+	/**
+	 * Move a file in source.
+	 *
+	 * @param AssetFileModel $file
+	 * @param AssetFolderModel $targetFolder
+	 * @param string $fileName
+	 * @param string $userResponse Conflict resolution response
+	 * @return mixed
+	 */
+	protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $userResponse = '')
+	{
+		if (empty($fileName))
+		{
+			$fileName = $file->filename;
+		}
+
+		$newServerPath = $this->_getSourceFileSystemPath().$targetFolder->fullPath.$fileName;
+
+		$conflictingRecord = blx()->assets->findFile(
+			new FileCriteria(
+				array(
+					'folderId' => $targetFolder->id,
+					'filename' => $fileName
+				)
+			)
+		);
+		$conflict = IOHelper::fileExists($newServerPath) || (!blx()->assets->isMergeInProgress() && is_object($conflictingRecord));
+		if ($conflict)
+		{
+			$response = new AssetOperationResponseModel();
+			$response->setPrompt($this->_getUserPromptOptions($fileName));
+			$response->setDataItem('fileName', $fileName);
+			return $response;
+		}
+
+		if (!IOHelper::move($this->_getFileSystemPath($file), $newServerPath))
+		{
+			$response = new AssetOperationResponseModel();
+			$response->setError(Blocks::t("Could not save the file"));
+			return $response;
+		}
+
+		if ($file->kind == 'image')
+		{
+			$this->_deleteGeneratedThumbnails($file);
+
+			// Move transformations
+			$transformations = blx()->assetTransformations->getAssetTransformations();
+			$baseFromPath = $this->_getSourceFileSystemPath().$file->getFolder()->fullPath;
+			$baseToPath = $this->_getSourceFileSystemPath().$targetFolder->fullPath;
+
+			foreach ($transformations as $handle => $transformation)
+			{
+				IOHelper::move($baseFromPath.'_'.$handle.'/'.$fileName, $baseToPath.'_'.$handle.'/'.$fileName);
+			}
+		}
+
+		$response = new AssetOperationResponseModel();
+		$response->setSuccess();
+		$response->setDataItem('newId', $file->id);
+		$response->setDataItem('newFileName', $fileName);
+
+		return $response;
+	}
+
+
 }

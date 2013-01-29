@@ -76,7 +76,15 @@ class DbHelper
 		}
 
 		// Merge in the default config
-		if (isset(static::$columnTypeDefaults[$config['column']]))
+		if ($config['column'] == ColumnType::Locale)
+		{
+			$config['column'] = ColumnType::Char;
+			$config['maxLength'] = 12;
+			$config['charset'] = blx()->config->getDbItem('charset');
+			$config['collation'] = blx()->config->getDbItem('collation');
+			$config['null'] = false;
+		}
+		else if (isset(static::$columnTypeDefaults[$config['column']]))
 		{
 			$config = array_merge(static::$columnTypeDefaults[$config['column']], $config);
 		}
@@ -257,7 +265,7 @@ class DbHelper
 	{
 		$columns = ArrayHelper::stringToArray($columns);
 		$name = blx()->db->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
-		return static::normalizeIndexName($name);
+		return static::normalizeDbObjectName($name);
 	}
 
 	/**
@@ -272,20 +280,35 @@ class DbHelper
 	{
 		$columns = ArrayHelper::stringToArray($columns);
 		$name = blx()->db->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
-		return static::normalizeIndexName($name);
+		return static::normalizeDbObjectName($name);
 	}
 
 	/**
-	 * Ensures that an index name is within the schema's limit.
+	 * Returns a primary key name based on the table and column names.
+	 *
+	 * @param string $table
+	 * @param string|array $columns
+	 * @param bool $unique
+	 * @return string
+	 */
+	public static function getPrimaryKeyName($table, $columns)
+	{
+		$columns = ArrayHelper::stringToArray($columns);
+		$name = blx()->db->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
+		return static::normalizeDbObjectName($name);
+	}
+
+	/**
+	 * Ensures that an object name is within the schema's limit.
 	 *
 	 * @static
 	 * @param string $name
 	 * @return string
 	 */
-	public static function normalizeIndexName($name)
+	public static function normalizeDbObjectName($name)
 	{
 		// TODO: MySQL specific
-		// MySQL indexes can't be more than 64 characters
+		// MySQL indexes can't be more than 64 characters (see http://dev.mysql.com/doc/refman/5.0/en/identifiers.html)
 		$maxLength = 64;
 
 		$name = trim($name, '_');

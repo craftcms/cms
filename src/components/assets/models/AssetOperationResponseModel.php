@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- * TODO: this file might be removed - it's here for now as a scaffolding in case we decide to go this way
+ * This model represents an Asset Operation Response.
  */
 class AssetOperationResponseModel extends BaseModel
 {
@@ -11,20 +11,7 @@ class AssetOperationResponseModel extends BaseModel
 	const StatusSuccess = 'success';
 	const StatusConflict = 'conflict';
 
-	/**
-	 * Returns an \StdClass object of response information only, ready to be sent over JSON
-	 * @return \StdClass
-	 */
-	public function getResponseForTransport()
-	{
-		$output = (object)array(
-			'status' 		=> $this->getStatus(),
-			'errorMessage' 	=> $this->getErrorMessage(),
-			'data' 			=> JsonHelper::decode($this->getResponseData)
-		);
-
-		return $output;
-	}
+	private $_data = array();
 
 	/**
 	 * @return array
@@ -33,76 +20,128 @@ class AssetOperationResponseModel extends BaseModel
 	{
 		return array(
 			'status'		=> array(AttributeType::Enum, 'values' => array(self::StatusError, self::StatusSuccess, self::StatusConflict)),
-			'errorMessage'	=> AttributeType::String,
-			'responseData'	=> AttributeType::String
+			'errorMessage'	=> AttributeType::String
 		);
 	}
 
 	/**
-	 * @return mixed
-	 */
-	public function getStatus()
-	{
-		return $this->getAttribute('status');
-	}
-
-	/**
-	 * String containing a human readable message for status
-	 *
-	 * @return mixed
-	 */
-	public function getErrorMessage()
-	{
-		return $this->getAttribute('errorMessage');
-	}
-
-	/**
-	 * Response data. An StdClass object
-	 *
-	 * @return \StdClass
-	 */
-	public function getResponseData()
-	{
-		return JsonHelper::decode($this->getAttribute('responseData'));
-	}
-
-	/**
-	 * Set an error
+	 * Set an error message.
 	 *
 	 * @param $message
 	 */
 	public function setError($message)
 	{
-		$this->setAttribute('status', self::StatusError);
 		$this->setAttribute('errorMessage', $message);
+		$this->setAttribute('status', self::StatusError);
 	}
 
 	/**
-	 * Set response data
-	 *
-	 * @param string $status
+	 * Set status to success.
 	 */
-	public function setResponse($status)
+	public function setSuccess()
 	{
-		$this->setAttribute('status', $status);
+		$this->setAttribute('status', self::StatusSuccess);
 	}
 
 	/**
-	 * Add a response data item
+	 * Set prompt data array.
 	 *
-	 * @param $item
+	 * @param $promptData
+	 */
+	public function setPrompt($promptData)
+	{
+		$this->setAttribute('status', self::StatusConflict);
+		$this->setDataItem('prompt', $promptData);
+	}
+
+	/**
+	 * Set a data item.
+	 *
+	 * @param $name
 	 * @param $value
 	 */
-	public function setResponseDataItem($item, $value)
+	public function setDataItem($name, $value)
 	{
-		$dataObject = JsonHelper::decode($this->getResponseData());
+		$this->_data[$name] = $value;
+	}
 
-		if (!is_object($dataObject))
+	/**
+	 * Get a data item.
+	 *
+	 * @param $name
+	 * @return null
+	 */
+	public function getDataItem($name)
+	{
+		if (isset($this->_data[$name]))
 		{
-			$dataObject = new \StdClass;
+			return $this->_data[$name];
 		}
 
-		$dataObject->{$item} = $value;
-		$this->setAttribute('responseData', $dataObject);
+		return null;
+	}
+
+	/**
+	 * Delete a data item.
+	 *
+	 * @param $name
+	 */
+	public function deleteDataItem($name)
+	{
+		if (isset($this->_data[$name]))
+		{
+			unset($this->_data[$name]);
+		}
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isConflict()
+	{
+		return $this->getAttribute('status') == self::StatusConflict;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isSuccess()
+	{
+		return $this->getAttribute('status') == self::StatusSuccess;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isError()
+	{
+		return $this->getAttribute('status') == self::StatusError;
+	}
+
+	/**
+	 * Return a response array ready to be transported.
+	 */
+	public function getResponseData()
+	{
+		switch ($this->getAttribute('status'))
+		{
+			case self::StatusError:
+			{
+				return array_merge($this->_data, array(self::StatusError => $this->getAttribute('errorMessage')));
+			}
+
+			case self::StatusSuccess:
+			{
+				return array_merge($this->_data, array(self::StatusSuccess => true));
+			}
+
+			case self::StatusConflict:
+			{
+				return $this->_data;
+			}
+
+		}
+
+		return array();
 	}
 }

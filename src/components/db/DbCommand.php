@@ -40,6 +40,11 @@ class DbCommand extends \CDbCommand
 	 */
 	public function where($conditions, $params = array())
 	{
+		if (!$conditions)
+		{
+			return $this;
+		}
+
 		$conditions = $this->_normalizeConditions($conditions, $params);
 		return parent::where($conditions, $params);
 	}
@@ -53,6 +58,11 @@ class DbCommand extends \CDbCommand
 	 */
 	public function andWhere($conditions, $params = array())
 	{
+		if (!$conditions)
+		{
+			return $this;
+		}
+
 		$conditions = $this->_normalizeConditions($conditions, $params);
 		return parent::andWhere($conditions, $params);
 	}
@@ -66,6 +76,11 @@ class DbCommand extends \CDbCommand
 	 */
 	public function orWhere($conditions, $params = array())
 	{
+		if (!$conditions)
+		{
+			return $this;
+		}
+
 		$conditions = $this->_normalizeConditions($conditions, $params);
 		return parent::orWhere($conditions, $params);
 	}
@@ -164,6 +179,11 @@ class DbCommand extends \CDbCommand
 	 */
 	public function insertAll($table, $columns, $vals)
 	{
+		if (!$vals)
+		{
+			return 0;
+		}
+
 		$table = DbHelper::addTablePrefix($table);
 
 		$columns[] = 'dateCreated';
@@ -262,6 +282,17 @@ class DbCommand extends \CDbCommand
 	{
 		$table = DbHelper::addTablePrefix($table);
 		return parent::dropTable($table);
+	}
+
+	/**
+	 * @param $table
+	 * @return int
+	 */
+	public function dropTableIfExists($table)
+	{
+		$table = DbHelper::addTablePrefix($table);
+		$sql = $this->getConnection()->getSchema()->dropTableIfExists($table);
+		return $this->setText($sql)->execute();
 	}
 
 	/**
@@ -419,6 +450,30 @@ class DbCommand extends \CDbCommand
 		$name = DbHelper::getIndexName($table, $columns, $unique);
 		$table = DbHelper::addTablePrefix($table);
 		return parent::dropIndex($name, $table);
+	}
+
+	/**
+	 * @param string $table
+	 * @param string $columns
+	 * @return int
+	 */
+	public function addPrimaryKey($table, $columns)
+	{
+		$name = DbHelper::getPrimaryKeyName($table, $columns);
+		$table = DbHelper::addTablePrefix($table);
+		return parent::addPrimaryKey($name, $table, $columns);
+	}
+
+	/**
+	 * @param string $table
+	 * @param string $columns
+	 * @return int
+	 */
+	public function dropPrimaryKey($table, $columns)
+	{
+		$name = DbHelper::getPrimaryKeyName($table, $columns);
+		$table = DbHelper::addTablePrefix($table);
+		return parent::dropPrimaryKey($name, $table);
 	}
 
 	/**

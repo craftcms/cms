@@ -52,7 +52,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 	 * @param AssetFolderModel $folder
 	 * @param $filePath
 	 * @param $fileName
-	 * @return AssetFileModel
+	 * @return AssetOperationResponseModel
 	 * @throws Exception
 	 */
 	abstract protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName);
@@ -77,6 +77,41 @@ abstract class BaseAssetSourceType extends BaseComponent
 	abstract public function putImageTransformation(AssetFileModel $fileModel, $handle, $sourceImage);
 
 	/**
+	 * Make a local copy of the file and return the path to it.
+	 *
+	 * @param AssetFileModel $file
+	 * @return mixed
+	 */
+	abstract protected function _getLocalCopy(AssetFileModel $file);
+
+	/**
+	 * Delete just the file inside of a source for an Assets File.
+	 *
+	 * @param AssetFileModel $file
+	 */
+	abstract protected function _deleteSourceFile(AssetFileModel $file);
+
+	/**
+	 * Move a file in source.
+	 *
+	 * @param AssetFileModel $file
+	 * @param AssetFolderModel $targetFolder
+	 * @param string $fileName
+	 * @param string $userResponse Conflict resolution response
+	 * @return mixed
+	 */
+	abstract protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $userResponse = '');
+
+	/**
+	 * Delete generated image transformations for a File.
+	 *
+	 * @param AssetFileModel $file
+	 * @return mixed
+	 */
+	abstract protected function _deleteGeneratedImageTransformations(AssetFileModel $file);
+
+
+	/**
 	 * Return a result object for prompting the user about filename conflicts.
 	 *
 	 * @param string $fileName the cause of all trouble
@@ -85,7 +120,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 	protected function _getUserPromptOptions($fileName)
 	{
 		return (object) array(
-			'message' => Blocks::t('File "{file}" already exists at target location', $fileName),
+			'message' => Blocks::t('File "{file}" already exists at target location', array('file' => $fileName)),
 			'choices' => array(
 				array('value' => AssetsHelper::ActionKeepBoth, 'title' => Blocks::t('Rename the new file and keep both')),
 				array('value' => AssetsHelper::ActionReplace, 'title' => Blocks::t('Replace the existing file')),
@@ -133,23 +168,20 @@ abstract class BaseAssetSourceType extends BaseComponent
 		$filePath = AssetsHelper::getTempFilePath();
 		$uploader->file->save($filePath);
 
-		if ($filename = $this->_insertFileInFolder($folder, $filePath, $uploader->file->getName()))
-		{
 
-		//}
+		$response = $this->_insertFileInFolder($folder, $filePath, $uploader->file->getName());
 
-		/*
-		// naming conflict. create a new file and ask the user what to do with it
-		if ($response->getStatus() == AssetOperationResponseModel::StatusConflict)
+		// Naming conflict. create a new file and ask the user what to do with it
+		if ($response->isConflict())
 		{
 			$newFileName = $this->_getNameReplacement($folder, $uploader->file->getName());
 			$conflictResponse = $response;
 			$response = $this->_insertFileInFolder($folder, $filePath, $newFileName);
 		}
 
-		if ($response->getStatus() == AssetOperationResponseModel::StatusSuccess)
-		{*/
-			//$filename = pathinfo($response->getResponseData()->fileName, PATHINFO_BASENAME);
+		if ($response->isSuccess())
+		{
+			$filename = pathinfo($response->getDataItem('filePath'), PATHINFO_BASENAME);
 
 			$fileModel = new AssetFileModel();
 			$fileModel->sourceId = $this->model->id;
@@ -170,24 +202,31 @@ abstract class BaseAssetSourceType extends BaseComponent
 
 			if ($this->model->type != 'Local')
 			{
+				// Store copy locally for all sorts of operations.
 				IOHelper::copyFile($filePath, blx()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel, PATHINFO_EXTENSION));
 			}
 
-			blx()->assetSizes->updateSizes($fileModel, array_keys(blx()->assetSizes->getAssetSizes()));
-			// Now that we have stored all this information, we have to send back the original conflict response
-			/*if (isset($conflictResponse))
+			blx()->assetTransformations->updateTransformations($fileModel, array_keys(blx()->assetTransformations->getAssetTransformations()));
+
+			// Check if we stored a conflict response originally - send that back then.
+			if (isset($conflictResponse))
 			{
 				$response = $conflictResponse;
+				$response->setDataItem('additionalInfo', $folder->id.':'.$fileModel->id);
+				$response->setDataItem('newFileId', $fileModel->id);
 			}
 
-			$response->setResponseDataItem('file_id', $fileModel->id);
+			$response->setDataItem('fileId', $fileModel->id);
 		}
 		else
-		{*/
+		{
 			IOHelper::deleteFile($filePath);
-			return true;
 		}
-		return false;//$response;
+
+		// Prevent sensitive information leak. Just in case.
+		$response->deleteDataItem('filePath');
+
+		return $response;
 	}
 
 	/**
@@ -340,5 +379,69 @@ abstract class BaseAssetSourceType extends BaseComponent
 		}
 
 		return false;
+	}
+
+	/**
+	 * Replace physical file.
+	 *
+	 * @param AssetFileModel $oldFile
+	 * @param AssetFileModel $replaceWith
+	 */
+	public function replaceFile(AssetFileModel $oldFile, AssetFileModel $replaceWith)
+	{
+		if ($oldFile->kind == 'image')
+		{
+			// we'll need this if replacing images
+			$localCopy = $this->_getLocalCopy($replaceWith);
+			$this->_deleteGeneratedThumbnails($oldFile);
+			$this->_deleteGeneratedImageTransformations($oldFile);
+		}
+
+		$this->_deleteSourceFile($oldFile);
+
+		$this->_moveSourceFile($replaceWith, blx()->assets->getFolderById($oldFile->folderId), $oldFile->filename);
+
+		$oldFile->width = $replaceWith->width;
+		$oldFile->height = $replaceWith->height;
+		$oldFile->size = $replaceWith->size;
+		$oldFile->dateModified = $replaceWith->dateModified;
+
+		blx()->assets->storeFile($oldFile);
+	}
+
+	/**
+	 * Delete all the generated images for this file.
+	 *
+	 * @param AssetFileModel $file
+	 */
+	protected function _deleteGeneratedThumbnails(AssetFileModel $file)
+	{
+		$thumbFolders = IOHelper::getFolderContents(blx()->path->getAssetsThumbsPath());
+		foreach ($thumbFolders as $folder)
+		{
+			if (is_dir($folder))
+			{
+				IOHelper::deleteFile($folder.'/'.$file->id.'.'.IOHelper::getExtension($file->filename));
+			}
+		}
+	}
+
+	/**
+	 * Delete a file.
+	 *
+	 * @param AssetFileModel $file
+	 */
+	public function deleteFile(AssetFileModel $file)
+	{
+		$this->_deleteSourceFile($file);
+		$this->_deleteGeneratedImageTransformations($file);
+		$this->_deleteGeneratedThumbnails($file);
+
+		$condition = array('id' => $file->id);
+
+		blx()->db->createCommand()->delete('assetfiles', $condition);
+
+		$response = new AssetOperationResponseModel();
+		$response->setSuccess();
 	}
 }

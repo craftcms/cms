@@ -6,6 +6,14 @@ namespace Blocks;
  */
 class QuerygenCommand extends \CConsoleCommand
 {
+	public $defaultAction = 'all';
+
+	public function actionAll($args)
+	{
+		$this->actionCreateTableForRecord($args);
+		$this->actionAddForeignKeysForRecord($args);
+	}
+
 	/**
 	 * Returns the PHP code to create a new table from a given record.
 	 */
@@ -79,7 +87,7 @@ class QuerygenCommand extends \CConsoleCommand
 		// Create the indexes
 		if ($indexes)
 		{
-			echo "\n// Add the indexes\n";
+			echo "\n// Add indexes to blx_{$table}\n";
 			foreach ($indexes as $index)
 			{
 				$columns = ArrayHelper::stringToArray($index['columns']);
@@ -91,8 +99,6 @@ class QuerygenCommand extends \CConsoleCommand
 					$this->_varExport($unique).");\n";
 			}
 		}
-
-		echo "\n";
 
 		return 1;
 	}
@@ -113,7 +119,8 @@ class QuerygenCommand extends \CConsoleCommand
 
 			foreach ($belongsToRelations as $name => $config)
 			{
-				$otherModel = new $config[1];
+				$otherModelClass = $config[1];
+				$otherModel = new $otherModelClass('install');
 				$otherTable = $otherModel->getTableName();
 
 				if (isset($config['onDelete']))
@@ -139,8 +146,6 @@ class QuerygenCommand extends \CConsoleCommand
 					$this->_varExport($onDelete).");\n";
 			}
 		}
-
-		echo "\n";
 
 		return 1;
 	}
