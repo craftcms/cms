@@ -86,17 +86,6 @@
 {% set hasSettingsErrors = (entry is defined and (entry.getErrors('slug') or entry.getErrors('postDate') or entry.getErrors('expiryDate') or entry.getErrors('tags'))) %}
 
 
-{% set header %}
-	<h1>{{ title|raw }}</h1>
-
-	<ul class="left">
-		<li><a href="{{ url('content') }}" class="backbtn">{{ "Entries"|t }}</a></li>
-	</ul>
-
-
-{% endset %}
-
-
 {% set tabs = {
 	content: { label: "Content"|t, url: '#entry-content' },
 	settings: { label: "Settings"|t, url: '#entry-settings' }

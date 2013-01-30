@@ -4,15 +4,7 @@
 
 {% if not settings %}
 	{% set settings = blx.systemSettings.advanced %}
-{% endif %}
-
-
-{% set header %}
-	<h1>{{ title }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('settings') }}" class="backbtn">{{ "Settings"|t }}</a></li>
-	</ul>
-{% endset %}
+{% endif %}{% set selectedTab =
 
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8">

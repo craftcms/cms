@@ -15,12 +15,4 @@
 		settings: { label: "Settings"|t, url: url('settings/sections/'~section.id) },
 		blocks: { label: "Blocks"|t, url: url('settings/sections/'~section.id~'/blocks') }
 	} %}
-{% endif %}
-
-
-{% set header %}
-	<h1>{{ title }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('settings/sections') }}" class="backbtn">{{ "Sections"|t }}</a></li>
-	</ul>
-{% endset %}
+{% endif %}{% set selectedTab =

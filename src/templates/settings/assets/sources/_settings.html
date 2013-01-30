@@ -28,15 +28,7 @@
 	{% set title = "Create a new asset source"|t %}
 {% else %}
 	{% set title = source.name|t %}
-{% endif %}
-
-
-{% set header %}
-	<h1>{{ title|raw }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('settings/assets') }}" class="backbtn">{{ "Asset Sources"|t }}</a></li>
-	</ul>
-{% endset %}
+{% endif %}{% set selectedTab =
 
 
 {% set content %}

@@ -11,12 +11,6 @@
 
 {% if isNewPage %}
 	{% set title = "Create a new page"|t %}
-	{% set header %}
-		<h1>{{ title }}</h1>
-		<ul class="left">
-			<li><a class="backbtn" href="{{ url('content/pages') }}">{{ "Pages"|t }}</a></li>
-		</ul>
-	{% endset %}
 {% else %}
 	{% set selectedTab = 'settings' %}
 {% endif %}

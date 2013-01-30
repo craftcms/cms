@@ -21,15 +21,7 @@
 	{% set title = "Create a new user group"|t %}
 {% else %}
 	{% set title = group.name|t %}
-{% endif %}
-
-
-{% set header %}
-	<h1>{{ title|raw }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('settings/users') }}" class="backbtn">{{ "User Groups"|t }}</a></li>
-	</ul>
-{% endset %}
+{% endif %}{% set selectedTab =
 
 
 {% set content %}

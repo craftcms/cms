@@ -20,15 +20,7 @@
 	{% set title = "Create a new asset transformation"|t %}
 {% else %}
 	{% set title = transformation.name|t %}
-{% endif %}
-
-
-{% set header %}
-	<h1>{{ title|raw }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('settings/assets') }}" class="backbtn">{{ "Asset Transformations"|t }}</a></li>
-	</ul>
-{% endset %}
+{% endif %}{% set selectedTab =
 
 
 {% set content %}

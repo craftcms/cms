@@ -20,15 +20,7 @@
 	{% set title = "Create a new profile block"|t %}
 {% else %}
 	{% set title = block.name|t %}
-{% endif %}
-
-
-{% set header %}
-	<h1>{{ title|raw }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('settings/users/blocks') }}" class="backbtn">{{ "Profile Blocks"|t }}</a></li>
-	</ul>
-{% endset %}
+{% endif %}{% set selectedTab =
 
 
 {% set content %}

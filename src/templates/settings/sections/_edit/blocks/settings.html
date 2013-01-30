@@ -34,19 +34,7 @@
 	{% set title = "Create a new entry block"|t %}
 {% else %}
 	{% set title = block.name|t %}
-{% endif %}
-
-
-{% set header %}
-	<h1>{{ title|raw }}</h1>
-	<ul class="left">
-		{% if blx.hasPackage('PublishPro') %}
-			<li><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}" class="backbtn">{{ "{section} Entry Blocks"|t({ section: '<i>'~section.name|t~'</i>' })|raw }}</a></li>
-		{% else %}
-			<li><a href="{{ url('settings/blog') }}" class="backbtn">{{ "Blog"|t }}</a></li>
-		{% endif %}
-	</ul>
-{% endset %}
+{% endif %}{% set selectedTab =
 
 
 {% set content %}

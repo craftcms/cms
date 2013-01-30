@@ -22,15 +22,7 @@
 	{% requirePermission 'registerUsers' %}
 
 	{% set title = "Register a new user"|t %}
-{% endif %}
-
-
-{% set header %}
-	<h1>{{ title }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('users') }}" class="backbtn">{{ "Users"|t }}</a></li>
-	</ul>
-{% endset %}
+{% endif %}{% set selectedTab =
 
 
 {% if account is defined and account.id %}
