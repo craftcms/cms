@@ -144,15 +144,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	private function _getSourceFileSystemPath()
 	{
 		$path = $this->getSettings()->path;
-
-		// Handle relative paths.
-		if (substr($path, 0, 1) != '/')
-		{
-			$path = dirname(blx()->request->getScriptFile()).'/'.$path;
-		}
-
-		$path = rtrim($path, '/').'/';
-
+		$path = realpath($path).'/';
 		return $path;
 	}
 
