@@ -33,6 +33,7 @@
 		{% if not isNewTransformation %}<input type="hidden" name="transformationId" value="{{ transformation.id }}">{% endif %}
 
 		{{ forms.textField({
+            first: true,
 			label: "Name"|t,
 			id: 'name',
 			name: 'name',
