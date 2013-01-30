@@ -64,6 +64,11 @@ class LinksBlockType extends BaseBlockType
 		{
 			$criteria = blx()->links->getCriteriaRecordById($this->getSettings()->criteriaId);
 			$linkType = blx()->links->getLinkType($criteria->rightEntityType);
+
+			if ($linkType)
+			{
+				$linkType->setSettings($criteria->rightSettings);
+			}
 		}
 
 		if (empty($linkType))
@@ -85,16 +90,16 @@ class LinksBlockType extends BaseBlockType
 	 */
 	public function prepSettings($settings)
 	{
-		if (isset($settings['types'][$settings['type']]))
+		$type = $settings['type'];
+
+		if (isset($settings['types'][$type]))
 		{
-			$linkTypeSettings = $settings['types'][$settings['type']];
+			$linkTypeSettings = $settings['types'][$type];
 		}
 		else
 		{
 			$linkTypeSettings = array();
 		}
-
-		$type = $settings['type'];
 
 		unset($settings['types'], $settings['type']);
 
