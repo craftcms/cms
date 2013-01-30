@@ -11,21 +11,21 @@ class BlocksUpdateModel extends BaseModel
 	 */
 	public function defineAttributes()
 	{
-		$attributes['localBuild']              = AttributeType::String;
-		$attributes['localVersion']            = AttributeType::String;
-		$attributes['latestVersion']           = AttributeType::String;
-		$attributes['latestBuild']             = AttributeType::String;
-		$attributes['latestDate']              = AttributeType::DateTime;
-		$attributes['realLatestVersion']       = AttributeType::String;
-		$attributes['realLatestBuild']         = AttributeType::String;
-		$attributes['realLatestDate']          = AttributeType::DateTime;
-		$attributes['criticalUpdateAvailable'] = AttributeType::Bool;
-		$attributes['manualUpdateRequired']    = AttributeType::Bool;
-		$attributes['breakpointRelease']       = AttributeType::Bool;
-		$attributes['versionUpdateStatus']     = AttributeType::String;
-		$attributes['releases']                = AttributeType::Mixed;
-		$attributes['manualDownloadEndpoint']  = AttributeType::String;
-
-		return $attributes;
+		return array(
+			'localBuild'              => AttributeType::String,
+			'localVersion'            => AttributeType::String,
+			'latestVersion'           => AttributeType::String,
+			'latestBuild'             => AttributeType::String,
+			'latestDate'              => AttributeType::DateTime,
+			'realLatestVersion'       => AttributeType::String,
+			'realLatestBuild'         => AttributeType::String,
+			'realLatestDate'          => AttributeType::DateTime,
+			'criticalUpdateAvailable' => AttributeType::Bool,
+			'manualUpdateRequired'    => AttributeType::Bool,
+			'breakpointRelease'       => AttributeType::Bool,
+			'versionUpdateStatus'     => AttributeType::String,
+			'releases'                => AttributeType::Mixed,
+			'manualDownloadEndpoint'  => AttributeType::String,
+		);
 	}
 }
