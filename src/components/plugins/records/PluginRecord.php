@@ -20,10 +20,11 @@ class PluginRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'class'    => array(AttributeType::ClassName, 'required' => true),
-			'version'  => array(AttributeType::Version, 'required' => true),
-			'enabled'  => AttributeType::Bool,
-			'settings' => AttributeType::Mixed,
+			'class'       => array(AttributeType::ClassName, 'required' => true),
+			'version'     => array(AttributeType::Version, 'required' => true),
+			'enabled'     => AttributeType::Bool,
+			'settings'    => AttributeType::Mixed,
+			'installDate' => array(AttributeType::DateTime, 'required' => true),
 		);
 	}
 
