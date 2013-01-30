@@ -1,6 +1,11 @@
 {% extends "_layouts/cp" %}
 {% set title = page.title|t %}
 
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('content') },
+	{ label: "Pages"|t, url: url('content/pages') }
+] %}
+
 
 {% set header %}
 	<h1>{{ title }}</h1>

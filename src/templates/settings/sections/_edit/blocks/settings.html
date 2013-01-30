@@ -5,6 +5,19 @@
 	{% if sectionId is not defined %}{% exit 404 %}{% endif %}
 	{% set section = blx.sections.id(sectionId).first %}
 	{% if not section %}{% exit 404 %}{% endif %}
+
+	{% set crumbs = [
+		{ label: "Settings"|t, url: url('settings') },
+		{ label: "Sections"|t, url: url('settings/sections') },
+		{ label: section.name|t, url: url('settings/sections/'~section.id) },
+		{ label: "Blocks"|t, url: url('settings/sections/'~section.id~'/blocks') }
+	] %}
+{% else %}
+	{% set crumbs = [
+		{ label: "Settings"|t, url: url('settings') },
+		{ label: "Blog"|t, url: url('settings/blog') },
+		{ label: "Blocks"|t, url: url('settings/blog') }
+	] %}
 {% endif %}
 
 
@@ -20,7 +33,7 @@
 {% if isNewBlock %}
 	{% set title = "Create a new entry block"|t %}
 {% else %}
-	{% set title = "{name} Settings"|t({ name: '<i>'~block.name|t~'</i>' }) %}
+	{% set title = block.name|t %}
 {% endif %}
 
 

@@ -1,6 +1,10 @@
 {% extends "_layouts/cp" %}
 {% set title = "Asset Settings"|t %}
 
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
+
 
 {% set header %}
 	<h1>{{ "Assets"|t }}</h1>

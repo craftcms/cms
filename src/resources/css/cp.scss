@@ -60,7 +60,12 @@ html, body { background: #f2f2f2; }
 
 /* page header */
 #page-header { display: block; border-bottom: 1px solid #ddd; padding: 30px; background: #fff; }
-#page-header h1 { float: left; margin: 0 15px 0 0; line-height: 31px; }
+#page-header h1 { clear: left; float: left; margin: 0 15px 0 0; line-height: 31px; }
+
+#crumbs { margin: -20px 0 10px 0; }
+#crumbs:after { @include clearafter; }
+#crumbs li { float: left; }
+#crumbs li:after { @include icon; margin: -1px 5px 0; content: '>'; font-size: 11px; color: #bbb; }
 
 /* tabs */
 #tabs { margin: 15px 0 -30px; }

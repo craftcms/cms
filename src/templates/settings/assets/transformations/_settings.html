@@ -1,6 +1,12 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
+{% set crumbs = [
+    { label: "Settings"|t, url: url('settings') },
+    { label: "Assets"|t, url: url('settings/assets') },
+    { label: "Transformations"|t, url: url('settings/assets/transformations') }
+] %}
+
 
 {% if transformation is not defined and handle is defined %}
 	{% set transformation = blx.assets.getTransformationByHandle(handle) %}
@@ -13,7 +19,7 @@
 {% if isNewTransformation %}
 	{% set title = "Create a new asset transformation"|t %}
 {% else %}
-	{% set title = "{name} Settings"|t({ name: '<i>'~transformation.name|t~'</i>' }) %}
+	{% set title = transformation.name|t %}
 {% endif %}
 
 

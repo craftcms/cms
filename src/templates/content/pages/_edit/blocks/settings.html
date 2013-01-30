@@ -6,6 +6,14 @@
 {% if not page %}{% exit 404 %}{% endif %}
 
 
+{% set crumbs = [
+	{ label: "Content"|t, url: url('content') },
+	{ label: "Pages"|t, url: url('content/pages') },
+	{ label: page.title|t, url: url('content/pages/'~page.id) },
+	{ label: "Blocks"|t, url: url('content/pages/'~page.id~'/blocks') },
+] %}
+
+
 {% if block is not defined and blockId is defined %}
 	{% set block = blx.pages.getBlockById(blockId) %}
 	{% if not block %}{% exit 404 %}{% endif %}
@@ -18,7 +26,7 @@
 {% if isNewBlock %}
 	{% set title = "Create a new page block"|t %}
 {% else %}
-	{% set title = "{name} Settings"|t({ name: '<i>'~block.name|t~'</i>' }) %}
+	{% set title = block.name|t %}
 {% endif %}
 
 

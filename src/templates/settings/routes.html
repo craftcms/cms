@@ -3,6 +3,10 @@
 {% includeCssResource "css/routes.css" %}
 {% includeJsResource "js/routes.js" %}
 
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
+
 {% includeTranslations
 	"New route order saved.",
 	"Couldn’t save new route order.",

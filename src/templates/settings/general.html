@@ -2,6 +2,10 @@
 {% import "_includes/forms" as forms %}
 {% set title = "General Settings"|t %}
 
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
+
 
 {% set header %}
 	<h1>{{ title }}</h1>

@@ -1,6 +1,12 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') },
+	{ label: "Users"|t, url: url('settings/users') },
+	{ label: "User Groups"|t, url: url('settings/users') }
+] %}
+
 
 {% if group is not defined and groupId is defined %}
 	{% set group = blx.userGroups.getGroupById(groupId) %}
@@ -14,7 +20,7 @@
 {% if isNewGroup %}
 	{% set title = "Create a new user group"|t %}
 {% else %}
-	{% set title = "{name} Settings"|t({ name: '<i>'~group.name|t~'</i>' }) %}
+	{% set title = group.name|t %}
 {% endif %}
 
 

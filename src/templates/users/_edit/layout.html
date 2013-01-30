@@ -1,6 +1,10 @@
 {% extends "_layouts/cp" %}
 {% includeCssResource "css/account.css" %}
 
+{% set crumbs = [
+	{ label: "Users"|t, url: url('users') }
+] %}
+
 
 {% if account is defined and account.id %}
 	{% if account.isCurrent %}

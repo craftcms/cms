@@ -1,5 +1,10 @@
 {% extends "_layouts/cp" %}
 
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') },
+	{ label: "Sections"|t, url: url('settings/sections') }
+] %}
+
 
 {% if section is not defined or not section.id %}
 	{% set title = "Create a new section"|t %}

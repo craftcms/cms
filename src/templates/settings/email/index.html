@@ -1,5 +1,9 @@
 {% extends (blx.hasPackage('Rebrand') ? "settings/email/_layout" : "_layouts/cp") %}
 
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
+
 {% if blx.hasPackage('Rebrand') %}
 	{% set selectedTab = 'settings' %}
 {% else %}
