@@ -21,6 +21,12 @@ class ConsoleApplication extends \CConsoleApplication
 			Blocks::import($alias);
 		}
 
+		blx()->getComponent('log');
+
+		// No need for these.
+		blx()->log->removeRoute('WebLogRoute');
+		blx()->log->removeRoute('ProfileLogRoute');
+
 		parent::init();
 	}
 
