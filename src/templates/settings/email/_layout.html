@@ -2,15 +2,6 @@
 {% set title = "Email Settings"|t %}
 
 
-{% set header %}
-	<h1>{{ "Email"|t }}</h1>
-
-	<ul class="left">
-		<li><a href="{{ url('settings') }}" class="backbtn">{{ "Settings"|t }}</a></li>
-	</ul>
-{% endset %}
-
-
 {% set tabs = {
 	settings: { label: "Settings"|t, url: url('settings/email') },
 	messages: { label: "Messages"|t, url: url('settings/email/messages') }

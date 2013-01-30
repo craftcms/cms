@@ -2,13 +2,9 @@
 {% import "_includes/forms" as forms %}
 {% set title = "Content Languages"|t %}
 
-
-{% set header %}
-	<h1>{{ title }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('settings') }}" class="backbtn">{{ "Settings"|t }}</a></li>
-	</ul>
-{% endset %}
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
 
 
 {% set content %}

@@ -1,5 +1,10 @@
 {% extends "_layouts/cp" %}
 
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') },
+	{ label: "Sections"|t, url: url('settings/sections') }
+] %}
+
 
 {% if section is not defined or not section.id %}
 	{% set title = "Create a new section"|t %}
@@ -11,11 +16,3 @@
 		blocks: { label: "Blocks"|t, url: url('settings/sections/'~section.id~'/blocks') }
 	} %}
 {% endif %}
-
-
-{% set header %}
-	<h1>{{ title }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('settings/sections') }}" class="backbtn">{{ "Sections"|t }}</a></li>
-	</ul>
-{% endset %}

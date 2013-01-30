@@ -1,14 +1,9 @@
 {% extends "_layouts/cp" %}
 {% set title = "Global Blocks"|t %}
 
-
-{% set header %}
-	<h1>{{ title }}</h1>
-
-	<ul class="left">
-		<li><a class="backbtn" href="{{ url('settings') }}">{{ "Settings"|t }}</a></li>
-	</ul>
-{% endset %}
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
 
 
 {% set content %}

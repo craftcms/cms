@@ -1,11 +1,13 @@
-<header class="header"><h1>{{ "Editing data for "|t }}{{ file.filename }}</h1></header>
+<header class="header"><h1>{{ file.filename }}</h1></header>
 <div class="body">
     <form id="file-blocks">
         <input type="hidden" name="fileId" value="{{ file.id }}" />
-        {% include "_includes/blockfields" with {
-            blocks: blx.assets.getAllBlocks,
-            entity: file
-        } only %}
+        <div>
+            {% include "_includes/blockfields" with {
+                blocks: blx.assets.getAllBlocks,
+                entity: file
+            } only %}
+        </div>
     </form>
 </div>
 <footer class="footer">

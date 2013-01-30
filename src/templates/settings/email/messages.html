@@ -3,6 +3,10 @@
 {% includeCssResource "css/email_messages.css" %}
 {% includeJsResource "js/email_messages.js" %}
 
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
+
 {% includeTranslations
 	"Couldn’t save message.",
 	"Message saved."

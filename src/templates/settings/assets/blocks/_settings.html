@@ -1,5 +1,11 @@
 {% extends "_layouts/cp" %}
 
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') },
+	{ label: "Assets"|t, url: url('settings/assets') },
+	{ label: "Blocks"|t, url: url('settings/assets/blocks') }
+] %}
+
 
 {% if block is not defined and blockId is defined %}
 	{% set block = blx.assets.getBlockById(blockId) %}
@@ -13,16 +19,8 @@
 {% if isNewBlock %}
 	{% set title = "Create a new asset block"|t %}
 {% else %}
-	{% set title = "{name} Settings"|t({ name: '<i>'~block.name|t~'</i>' }) %}
+	{% set title = block.name|t %}
 {% endif %}
-
-
-{% set header %}
-	<h1>{{ title|raw }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('settings/assets/blocks') }}" class="backbtn">{{ "Asset Blocks"|t }}</a></li>
-	</ul>
-{% endset %}
 
 
 {% set content %}

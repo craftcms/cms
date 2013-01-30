@@ -577,10 +577,7 @@ body .redactor_box_fullscreen { z-index: 10000 !important; }
 .addlinksmodal { width: 500px; }
 .addlinksmodal .body { height: 250px; overflow: auto; @include unselectable; }
 
-.entity { margin: -5px 0; padding: 4px 7px; cursor: pointer;
-	-webkit-transition: background-color linear 100ms;
-	   -moz-transition: background-color linear 100ms;
-}
+.entity { margin: -5px 0; padding: 4px 7px; cursor: pointer; }
 .entity:before { content: 'l'; margin: -2px 5px 0 0; font-size: 15px; }
 .entity:hover { color: $selcolor; }
 .entity.sel { color: #fff; background-color: $selcolor; }

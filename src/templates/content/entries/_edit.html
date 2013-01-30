@@ -3,11 +3,17 @@
 {% includeJsResource 'lib/jquery-ui-1.10.0.custom'~(blx.config.useCompressedJs ? '.min' : '')~'.js' %}
 {% import "_includes/forms" as forms %}
 
+{% set crumbs = [
+	{ label: "Content"|t, url: url('content') },
+	{ label: "Entries"|t, url: url('content') }
+] %}
+
 
 {% if blx.hasPackage('PublishPro') %}
 	{% set section = blx.sections.handle(sectionHandle).first %}
 	{% if not section %}{% exit 404 %}{% endif %}
 
+	{% set crumbs = crumbs|merge([ { label: section.name|t, url: url('content/'~section.handle) } ]) %}
 	{% set permissionSuffix = 'InSection'~section.id %}
 {% else %}
 	{% set permissionSuffix = '' %}
@@ -78,17 +84,6 @@
 
 
 {% set hasSettingsErrors = (entry is defined and (entry.getErrors('slug') or entry.getErrors('postDate') or entry.getErrors('expiryDate') or entry.getErrors('tags'))) %}
-
-
-{% set header %}
-	<h1>{{ title|raw }}</h1>
-
-	<ul class="left">
-		<li><a href="{{ url('content') }}" class="backbtn">{{ "Entries"|t }}</a></li>
-	</ul>
-
-
-{% endset %}
 
 
 {% set tabs = {

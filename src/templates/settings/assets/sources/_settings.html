@@ -1,6 +1,12 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') },
+	{ label: "Assets"|t, url: url('settings/assets') },
+	{ label: "Sources"|t, url: url('settings/assets') }
+] %}
+
 
 {% if source is not defined and sourceId is defined %}
 	{% set source = blx.assets.getSourceById(sourceId) %}
@@ -21,16 +27,8 @@
 {% if isNewSource %}
 	{% set title = "Create a new asset source"|t %}
 {% else %}
-	{% set title = "{name} Settings"|t({ name: '<i>'~source.name|t~'</i>' }) %}
+	{% set title = source.name|t %}
 {% endif %}
-
-
-{% set header %}
-	<h1>{{ title|raw }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('settings/assets') }}" class="backbtn">{{ "Asset Sources"|t }}</a></li>
-	</ul>
-{% endset %}
 
 
 {% set content %}

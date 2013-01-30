@@ -1,5 +1,10 @@
 {% extends "_layouts/cp" %}
 
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') },
+	{ label: "Globals"|t, url: url('settings/globals') }
+] %}
+
 
 {% if block is not defined and blockId is defined %}
 	{% set block = blx.globals.getBlockById(blockId) %}
@@ -13,16 +18,8 @@
 {% if isNewBlock %}
 	{% set title = "Create a new global block"|t %}
 {% else %}
-	{% set title = "{name} Settings"|t({ name: '<i>'~block.name|t~'</i>' }) %}
+	{% set title = block.name|t %}
 {% endif %}
-
-
-{% set header %}
-	<h1>{{ title|raw }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('settings/globals') }}" class="backbtn">{{ "Global Blocks"|t }}</a></li>
-	</ul>
-{% endset %}
 
 
 {% set content %}

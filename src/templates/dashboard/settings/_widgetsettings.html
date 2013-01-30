@@ -1,6 +1,12 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
+{% set crumbs = [
+	{ label: "Dashboard"|t, url: url('dashboard') },
+	{ label: "Settings"|t, url: url('dashboard/settings') },
+	{ label: "My Widgets"|t, url: url('dashboard/settings') }
+] %}
+
 {% if widget is not defined and widgetId is defined %}
 	{% set widget = blx.dashboard.getUserWidgetById(widgetId) %}
 	{% if not widget %}{% exit 404 %}{% endif %}
@@ -25,16 +31,8 @@
 {% if isNewWidget %}
 	{% set title = "Add a new widget."|t %}
 {% else %}
-	{% set title = "{name} Settings"|t({ name: '<i>'~widgetType.title~'</i>' }) %}
+	{% set title = widgetType.title %}
 {% endif %}
-
-
-{% set header %}
-	<h1>{{ title|raw }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('dashboard/settings') }}" class="backbtn">{{ "Dashboard Settings"|t }}</a></li>
-	</ul>
-{% endset %}
 
 
 {% set content %}

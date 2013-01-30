@@ -1,13 +1,9 @@
 {% extends "_layouts/cp" %}
 {% set title = "Asset Settings"|t %}
 
-
-{% set header %}
-	<h1>{{ "Assets"|t }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('settings') }}" class="backbtn">{{ "Settings"|t }}</a></li>
-	</ul>
-{% endset %}
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
 
 
 {% set tabs = {

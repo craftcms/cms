@@ -1,5 +1,9 @@
 {% extends (blx.hasPackage('Rebrand') ? "settings/email/_layout" : "_layouts/cp") %}
 
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
+
 {% if blx.hasPackage('Rebrand') %}
 	{% set selectedTab = 'settings' %}
 {% else %}
@@ -19,17 +23,6 @@
 	{% set freshSettings = true %}
 {% else %}
 	{% set freshSettings = false %}
-{% endif %}
-
-
-{% if not blx.hasPackage('Rebrand') %}
-	{% set header %}
-		<h1>{{ title }}</h1>
-
-		<ul class="left">
-			<li><a href="{{ url('settings') }}" class="backbtn">{{ "Settings"|t }}</a></li>
-		</ul>
-	{% endset %}
 {% endif %}
 
 
