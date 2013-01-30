@@ -19,16 +19,26 @@ class DbMigration extends \CDbMigration
 
 		try
 		{
-			if ($this->safeUp() === false)
+			ob_start();
+			$result = $this->safeUp();
+			$output = ob_get_clean();
+
+			Blocks::log($output, \CLogger::LEVEL_INFO);
+
+			if ($result === false)
 			{
 				$transaction->rollback();
 				return false;
 			}
 
 			$transaction->commit();
+			return true;
 		}
 		catch(\Exception $e)
 		{
+			$output = ob_get_clean();
+			Blocks::log($output, \CLogger::LEVEL_ERROR);
+
 			Blocks::log($e->getMessage().' ('.$e->getFile().':'.$e->getLine().')', \CLogger::LEVEL_ERROR);
 			Blocks::log($e->getTraceAsString(), \CLogger::LEVEL_ERROR);
 
