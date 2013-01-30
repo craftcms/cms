@@ -1,6 +1,11 @@
 {% import "_includes/forms" as forms %}
 
 
+{% if settings.criteriaId is defined %}
+	<input type="hidden" name="criteriaId" value="{{ settings.criteriaId }}">
+{% endif %}
+
+
 {{ forms.selectField({
 	label: "Link Type"|t,
 	instructions: "What do you want to link to?"|t,
