@@ -7,21 +7,6 @@ namespace Blocks;
 class MigrateCommand extends \MigrateCommand
 {
 	/**
-	 * @access private
-	 * @var string The real path to the migrations folder.
-	 */
-	private $_rootMigrationPath;
-
-	/**
-	 * Init
-	 */
-	public function init()
-	{
-		// Set migrationsTable to whatever it is in the MigrationsService
-		$this->migrationTable = blx()->migrations->migrationTable;
-	}
-
-	/**
 	 * @param string $action
 	 * @param array  $params
 	 * @return bool
@@ -30,46 +15,34 @@ class MigrateCommand extends \MigrateCommand
 	{
 		if ($action == 'create')
 		{
-			$path = $params[0][0];
-		}
-		else
-		{
-			$path = Blocks::getPathOfAlias($this->migrationPath);
-		}
-
-		if ($path === false || !IOHelper::folderExists($path))
-		{
-			echo 'The migration folder does not exist: '.$path."\n";
-
-			if ($action == 'create')
+			// If the 2nd dimension is the 2nd index, then we know it's a plugin.  No need to make them specify the path.
+			if (isset($params[0][2]))
 			{
-				echo 'Creating '.$path."\n";
+				$plugin = $params[0][2];
 
-				if (!IOHelper::createFolder($path))
+				$path = blx()->path->getMigrationsPath($plugin);
+
+				if (!IOHelper::folderExists($path))
 				{
-					echo 'Sorry... I tried to create the folder, but could not.';
-					exit(1);
+					echo 'The migration folder does not exist at '.$path.".  Creating...\n";
+
+					if (!IOHelper::createFolder($path))
+					{
+						echo 'Sorry... I tried to create the folder, but could not.';
+						return 1;
+					}
+					else
+					{
+						echo 'Successfully created.';
+					}
 				}
 			}
-			else
-			{
-				exit(1);
-			}
 		}
-
-		$this->_rootMigrationPath = $path;
 
 		$yiiVersion = Blocks::getYiiVersion();
 		echo "\nBlocks Migration Tool (based on Yii v{$yiiVersion})\n\n";
 
-		if ($action == 'create')
-		{
-			return true;
-		}
-		else
-		{
-			return parent::beforeAction($action, $params);
-		}
+		return true;
 	}
 
 	/**
@@ -78,7 +51,34 @@ class MigrateCommand extends \MigrateCommand
 	 */
 	public function actionDown($args)
 	{
-		die("Down migrations are not supported\n");
+		die("Down migrations are not supported.\n");
+	}
+
+	/**
+	 * @param $args
+	 * @return int|void
+	 */
+	public function actionRedo($args)
+	{
+		die("Redo is not supported.\n");
+	}
+
+	/**
+	 * @param $args
+	 * @return int|void
+	 */
+	public function actionTo($args)
+	{
+		die("To is not supported.\n");
+	}
+
+	/**
+	 * @param $args
+	 * @return int|void
+	 */
+	public function actionMark($args)
+	{
+		die("Mark is not supported.\n");
 	}
 
 	/**
@@ -108,6 +108,7 @@ class MigrateCommand extends \MigrateCommand
 
 		if (isset($args[2]))
 		{
+			$this->_validatePlugin($args[2]);
 			$pluginHandle = $args[2];
 
 			if (!preg_match('/^\w+$/', $pluginHandle))
@@ -118,10 +119,15 @@ class MigrateCommand extends \MigrateCommand
 
 			$fullName = 'm'.gmdate('ymd_His').'_'.strtolower($pluginHandle).'_'.$name;
 			$migrationNameDesc = 'mYYMMDD_HHMMSS_pluginHandle_migrationName';
+			$path = blx()->path->getMigrationsPath($pluginHandle);
+		}
+		else
+		{
+			$path = blx()->path->getMigrationsPath();
 		}
 
-		$content = strtr($this->getTemplate(), array('{ClassName}' => $fullName, '{MigrationNameDesc}' => $migrationNameDesc));
-		$file = $this->_rootMigrationPath.DIRECTORY_SEPARATOR.$fullName.'.php';
+		$content = strtr(blx()->migrations->getTemplate(), array('{ClassName}' => $fullName, '{MigrationNameDesc}' => $migrationNameDesc));
+		$file = $path.$fullName.'.php';
 
 		if ($this->confirm("Create new migration '$file'?"))
 		{
@@ -131,38 +137,155 @@ class MigrateCommand extends \MigrateCommand
 	}
 
 	/**
-	 * @param $class
-	 * @return bool
+	 * @param $args
+	 * @return int|void
 	 */
-	protected function migrateUp($class)
+	public function actionUp($args)
 	{
-		return blx()->migrations->migrateUp($class);
+		if (isset($args[0]))
+		{
+			$plugin = $this->_validatePlugin($args[0]);
+			return blx()->migrations->runToTop($plugin);
+		}
+
+		return blx()->migrations->runToTop();
 	}
 
 	/**
-	 * @param $class
-	 * @return mixed
+	 * @param $args
+	 * @return int|void
 	 */
-	protected function instantiateMigration($class)
+	public function actionHistory($args)
 	{
-		$file = IOHelper::normalizePathSeparators($this->_rootMigrationPath.'/'.$class.'.php');
+		$limit = isset($args[1]) ? (int)$args[1] : -1;
+		$plugin = null;
 
-		require_once($file);
+		if (isset($args[0]))
+		{
+			$plugin = $this->_validatePlugin($args[0]);
+		}
 
-		$class = __NAMESPACE__.'\\'.$class;
-		$migration = new $class;
-		$migration->setDbConnection($this->getDbConnection());
+		$migrations = $this->getMigrationHistory(null, $limit);
 
-		return $migration;
+		if ($migrations === array())
+		{
+			if ($plugin)
+			{
+				echo "No migration has been done before for ".$plugin->getClassHandle()."\n";
+			}
+			else
+			{
+				echo "No migration has been done before.\n";
+			}
+
+		}
+		else
+		{
+			$n = count($migrations);
+
+			if ($limit > 0)
+			{
+				if ($plugin)
+				{
+					echo "Showing the last $n applied ".($n === 1 ? 'migration' : 'migrations')." for ".$plugin->getClassHandle().":\n";
+				}
+				else
+				{
+					echo "Showing the last $n applied ".($n === 1 ? 'migration' : 'migrations').":\n";
+				}
+			}
+			else
+			{
+				if ($plugin)
+				{
+					echo "A total of $n ".($n === 1 ? 'migration has' : 'migrations have')." been applied before for ".$plugin->getClassHandle().":\n";
+				}
+				else
+				{
+					echo "A total of $n ".($n === 1 ? 'migration has' : 'migrations have')." been applied before:\n";
+				}
+
+			}
+
+			foreach ($migrations as $version => $time)
+			{
+				echo "    (".date('Y-m-d H:i:s',$time).') '.$version."\n";
+			}
+		}
 	}
 
 	/**
-	 * @param $limit
+	 * @param $args
+	 */
+	public function actionNew($args)
+	{
+		$limit = isset($args[1]) ? (int)$args[1] : -1;
+
+		$plugin = null;
+
+		if (isset($args[0]))
+		{
+			$plugin = $this->_validatePlugin($args[0]);
+		}
+
+		$migrations = $this->getNewMigrations($plugin, $limit);
+
+		if ($migrations === array())
+		{
+			if ($plugin)
+			{
+				echo "No new migrations found for ".$plugin->getClassHandle().". The plugin is up-to-date.\n";
+			}
+			else
+			{
+				echo "No new migrations found. Blocks is up-to-date.\n";
+			}
+
+		}
+		else
+		{
+			$n = count($migrations);
+
+			if ($limit > 0 && $n > $limit)
+			{
+				$migrations = array_slice($migrations, 0, $limit);
+
+				if ($plugin)
+				{
+					echo "Showing $limit out of $n new ".($n === 1 ? 'migration' : 'migrations')." for ".$plugin->getClassHandle().":\n";
+				}
+				else
+				{
+					echo "Showing $limit out of $n new ".($n === 1 ? 'migration' : 'migrations').":\n";
+				}
+			}
+			else
+			{
+				if ($plugin)
+				{
+					echo "Found $n new ".($n===1 ? 'migration' : 'migrations')." for ".$plugin->getClassHandle().":\n";
+				}
+				else
+				{
+					echo "Found $n new ".($n===1 ? 'migration' : 'migrations').":\n";
+				}
+			}
+
+			foreach ($migrations as $migration)
+			{
+				echo "    ".$migration."\n";
+			}
+		}
+	}
+
+	/**
+	 * @param null $plugin
+	 * @param      $limit
 	 * @return mixed
 	 */
-	protected function getMigrationHistory($limit)
+	protected function getMigrationHistory($plugin = null, $limit = null)
 	{
-		$migrations = blx()->migrations->getMigrationHistory($limit);
+		$migrations = blx()->migrations->getMigrationHistory($plugin, $limit);
 
 		// Convert the dates to Unix timestamps
 		foreach ($migrations as &$migration)
@@ -184,8 +307,25 @@ class MigrateCommand extends \MigrateCommand
 	/**
 	 * @return string
 	 */
-	protected function getTemplate()
+	public function getTemplate()
 	{
 		return blx()->migrations->getTemplate();
+	}
+
+	/**
+	 * @param $pluginHandle
+	 * @return int
+	 */
+	private function _validatePlugin($pluginHandle)
+	{
+		$plugin = blx()->plugins->getPlugin($pluginHandle);
+
+		if (!$plugin)
+		{
+			echo "Error: Could not find an enabled plugin with the handle {$pluginHandle}.\n";
+			return 1;
+		}
+
+		return $plugin;
 	}
 }
