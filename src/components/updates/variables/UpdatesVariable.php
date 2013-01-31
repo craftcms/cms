@@ -44,4 +44,24 @@ class UpdatesVariable
 	{
 		return blx()->updates->getUpdates($forceRefresh);
 	}
+
+	/**
+	 * @return null|string
+	 */
+	public function getManualUpdateHandle()
+	{
+		if (blx()->updates->isBlocksDbUpdateNeeded())
+		{
+			return 'Blocks';
+		}
+
+		$plugins = blx()->updates->getPluginsThatNeedDbUpdate();
+
+		if (!empty($plugins) && isset($plugins[0]))
+		{
+			return $plugins[0]->getClassHandle();
+		}
+
+		return null;
+	}
 }
