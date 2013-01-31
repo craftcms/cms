@@ -202,22 +202,6 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $pluginHandle
-	 * @return bool
-	 */
-	public function doPluginUpdate($pluginHandle)
-	{
-		$pluginUpdater = new PluginUpdater($pluginHandle);
-
-		if ($pluginUpdater->start())
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
 	 * @return UpdateModel
 	 */
 	public function check()
@@ -318,7 +302,7 @@ class UpdatesService extends BaseApplicationComponent
 
 		try
 		{
-			$updater = new AppUpdater();
+			$updater = new Updater();
 
 			// No need to get the latest update info if this is a manual update.
 			if (!$manual)
@@ -346,7 +330,7 @@ class UpdatesService extends BaseApplicationComponent
 
 		try
 		{
-			$updater = new AppUpdater();
+			$updater = new Updater();
 			$result = $updater->processDownload();
 			$result['success'] = true;
 
@@ -369,7 +353,7 @@ class UpdatesService extends BaseApplicationComponent
 
 		try
 		{
-			$updater = new AppUpdater();
+			$updater = new Updater();
 			$updater->backupFiles($uid);
 
 			Blocks::log('Finished backing up files.', \CLogger::LEVEL_INFO);
@@ -391,7 +375,7 @@ class UpdatesService extends BaseApplicationComponent
 
 		try
 		{
-			$updater = new AppUpdater();
+			$updater = new Updater();
 			$updater->updateFiles($uid);
 
 			Blocks::log('Finished updating files.', \CLogger::LEVEL_INFO);
@@ -413,7 +397,7 @@ class UpdatesService extends BaseApplicationComponent
 
 		try
 		{
-			$updater = new AppUpdater();
+			$updater = new Updater();
 			$result = $updater->backupDatabase($uid);
 
 			if (!$result)
@@ -435,19 +419,40 @@ class UpdatesService extends BaseApplicationComponent
 
 	/**
 	 * @param      $uid
+	 * @param      $handle
 	 * @param bool $dbBackupPath
+	 *
+	 * @throws Exception
 	 * @return array
 	 */
-	public function updateDatabase($uid, $dbBackupPath = false)
+	public function updateDatabase($uid, $handle, $dbBackupPath = false)
 	{
 		Blocks::log('Starting to update the database.', \CLogger::LEVEL_INFO);
 
 		try
 		{
-			$updater = new AppUpdater();
-			$updater->updateDatabase($uid, $dbBackupPath);
+			$updater = new Updater();
 
-			Blocks::log('Finished updating the database.', \CLogger::LEVEL_INFO);
+			if ($handle == 'blocks')
+			{
+				Blocks::log('Blocks wants to update the database.', \CLogger::LEVEL_INFO);
+				$updater->updateDatabase($uid, $dbBackupPath);
+				Blocks::log('Blocks is done updating the database.', \CLogger::LEVEL_INFO);
+			}
+
+			$plugin = blx()->plugins->getPlugin($handle);
+			if ($plugin)
+			{
+				Blocks::log('The plugin, '.$plugin->getName().' wants to update the database.', \CLogger::LEVEL_INFO);
+				$updater->updateDatabase($uid, $dbBackupPath, $plugin);
+				Blocks::log('The plugin, '.$plugin->getName().' is done updating the database.', \CLogger::LEVEL_INFO);
+			}
+			else
+			{
+				Blocks::log('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.', \CLogger::LEVEL_ERROR);
+				throw new Exception(Blocks::t('Cannot find an enabled plugin with the handle '.$handle));
+			}
+
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -466,7 +471,7 @@ class UpdatesService extends BaseApplicationComponent
 
 		try
 		{
-			$updater = new AppUpdater();
+			$updater = new Updater();
 			$updater->cleanUp($uid);
 
 			Blocks::log('Finished cleaning up after the update.', \CLogger::LEVEL_INFO);
@@ -509,5 +514,68 @@ class UpdatesService extends BaseApplicationComponent
 		{
 			return array('success' => false, 'message' => $e->getMessage());
 		}
+	}
+
+	/**
+	 * Determines if we're in the middle of a manual update either because of Blocks or a plugin, and a DB update is needed.
+	 *
+	 * @return bool
+	 */
+	public function isDbUpdateNeeded()
+	{
+		if ($this->isBlocksDbUpdateNeeded())
+		{
+			return true;
+		}
+
+		$plugins = blx()->plugins->getPlugins();
+
+		foreach ($plugins as $plugin)
+		{
+			if (blx()->plugins->doesPluginRequireDatabaseUpdate($plugin))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns if Blocks needs to run a database update or not.
+	 *
+	 * @access private
+	 * @return bool
+	 */
+	public function isBlocksDbUpdateNeeded()
+	{
+		if (version_compare(Blocks::getBuild(), Blocks::getStoredBuild(), '>') || version_compare(Blocks::getVersion(), Blocks::getStoredVersion(), '>'))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns a list of plugins that are in need of a database update.
+	 *
+	 * @return array|null
+	 */
+	public function getPluginsThatNeedDbUpdate()
+	{
+		$pluginsThatNeedDbUpdate = array();
+
+		$plugins = blx()->plugins->getPlugins();
+
+		foreach ($plugins as $plugin)
+		{
+			if (blx()->plugins->doesPluginRequireDatabaseUpdate($plugin))
+			{
+				$pluginsThatNeedDbUpdate[] = $plugin;
+			}
+		}
+
+		return $pluginsThatNeedDbUpdate;
 	}
 }
