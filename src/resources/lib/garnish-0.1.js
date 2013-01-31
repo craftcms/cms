@@ -993,11 +993,13 @@ Garnish.BaseDrag = Garnish.Base.extend({
 		{
 			var item = this.$items[i],
 				$handle = $.data(item, 'drag-handle');
-			if ($handle != null)
+
+			$.data(item, 'drag', null);
+
+			if ($handle)
 			{
-				$handle.data('drag-item', null);
-				$.data(item, 'drag', null);
 				$.data(item, 'drag-handle', null);
+				$handle.data('drag-item', null);
 				this.removeAllListeners($handle);
 			}
 		}
@@ -2010,6 +2012,11 @@ Garnish.HUD = Garnish.Base.extend({
 
 		this.addListener(Garnish.$bod, 'click', 'hide');
 
+		if (this.settings.closeBtn)
+		{
+			this.addListener(this.settings.closeBtn, 'activate', 'hide');
+		}
+
 		this.showing = true;
 		Garnish.HUD.active = this;
 
@@ -2098,7 +2105,8 @@ Garnish.HUD = Garnish.Base.extend({
 		windowSpacing: 20,
 		tipWidth: 8,
 		onShow: $.noop,
-		onHide: $.noop
+		onHide: $.noop,
+		closeBtn: null
 	}
 });
 
