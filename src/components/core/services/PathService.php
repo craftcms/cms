@@ -179,10 +179,16 @@ class PathService extends BaseApplicationComponent
 	}
 
 	/**
+	 * @param null $pluginHandle
 	 * @return string
 	 */
-	public function getMigrationsPath()
+	public function getMigrationsPath($pluginHandle = null)
 	{
+		if ($pluginHandle)
+		{
+			return $this->getPluginsPath().strtolower($pluginHandle).'/migrations/';
+		}
+
 		return $this->getAppPath().'migrations/';
 	}
 
