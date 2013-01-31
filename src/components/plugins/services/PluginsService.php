@@ -60,6 +60,14 @@ class PluginsService extends BaseApplicationComponent
 	private $_pluginComponentClasses = array();
 
 	/**
+	 * Holds a list of all of the enabled plugin active record objects indexed by the plugin class name.
+	 *
+	 * @access private
+	 * @var array
+	 */
+	private $_enabledPluginRecords = array();
+
+	/**
 	 * Init
 	 */
 	public function init()
@@ -71,9 +79,14 @@ class PluginsService extends BaseApplicationComponent
 				'enabled' => true
 			));
 
+			foreach ($records as $record)
+			{
+				$this->_enabledPluginRecords[$record->class] = $record;
+			}
+
 			$names = array();
 
-			foreach ($records as $record)
+			foreach ($this->_enabledPluginRecords as $record)
 			{
 				$plugin = $this->_getPlugin($record->class);
 
@@ -471,6 +484,81 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns all of a plugin's component class names of a certain type.
+	 *
+	 * @param string $pluginHandle
+	 * @param string $componentType
+	 * @return array
+	 */
+	public function getPluginComponentClassesByType($pluginHandle, $componentType)
+	{
+		$plugin = $this->getPlugin($pluginHandle, false);
+
+		if (!$plugin)
+		{
+			$this->_noPluginExists($pluginHandle);
+		}
+
+		$allClasses = array();
+
+		if (isset($this->_pluginComponentClasses[$componentType][$plugin->getClassHandle()]))
+		{
+			$classes = $this->_pluginComponentClasses[$componentType][$plugin->getClassHandle()];
+
+			foreach ($classes as $class)
+			{
+				$nsClass = __NAMESPACE__.'\\'.$class;
+
+				// Ignore abstract classes and interfaces
+				$ref = new \ReflectionClass($nsClass);
+
+				if ($ref->isAbstract() || $ref->isInterface())
+				{
+					continue;
+				}
+
+				$allClasses[] = $class;
+			}
+		}
+
+		return $allClasses;
+	}
+
+	/**
+	 * Returns whether the given plugin's local version number is greater than the record we have in the database.
+	 *
+	 * @param $plugin
+	 * @return bool
+	 */
+	public function doesPluginRequireDatabaseUpdate($plugin)
+	{
+		// If the plugin is not set here, it's not enabled.
+		if ($this->getPluginRecord($plugin))
+		{
+			if (version_compare($plugin->getVersion(), $this->_enabledPluginRecords[$plugin->getClassHandle()]->version, '>'))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param $plugin
+	 * @return bool
+	 */
+	public function getPluginRecord($plugin)
+	{
+		if (isset($this->_enabledPluginRecords[$plugin->getClassHandle()]))
+		{
+			return $this->_enabledPluginRecords[$plugin->getClassHandle()];
+		}
+
+		return false;
+	}
+
+	/**
 	 * Throws a "no plugin exists" exception.
 	 *
 	 * @access private
@@ -516,47 +604,6 @@ class PluginsService extends BaseApplicationComponent
 				}
 			}
 		}
-	}
-
-	/**
-	 * Returns all of a plugin's component class names of a certain type.
-	 *
-	 * @param string $pluginHandle
-	 * @param string $componentType
-	 * @return array
-	 */
-	public function getPluginComponentClassesByType($pluginHandle, $componentType)
-	{
-		$plugin = $this->getPlugin($pluginHandle, false);
-
-		if (!$plugin)
-		{
-			$this->_noPluginExists($pluginHandle);
-		}
-
-		$allClasses = array();
-
-		if (isset($this->_pluginComponentClasses[$componentType][$plugin->getClassHandle()]))
-		{
-			$classes = $this->_pluginComponentClasses[$componentType][$plugin->getClassHandle()];
-
-			foreach ($classes as $class)
-			{
-				$nsClass = __NAMESPACE__.'\\'.$class;
-
-				// Ignore abstract classes and interfaces
-				$ref = new \ReflectionClass($nsClass);
-
-				if ($ref->isAbstract() || $ref->isInterface())
-				{
-					continue;
-				}
-
-				$allClasses[] = $class;
-			}
-		}
-
-		return $allClasses;
 	}
 
 	/**
