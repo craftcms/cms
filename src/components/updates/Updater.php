@@ -205,7 +205,7 @@ class Updater
 		try
 		{
 			Blocks::log('Running migrations...', \CLogger::LEVEL_INFO);
-			if (!blx()->migrations->runToTop())
+			if (!blx()->migrations->runToTop($plugin))
 			{
 				Blocks::log('Something went wrong running a migration. :-(', \CLogger::LEVEL_ERROR);
 				blx()->updates->rollbackUpdate($uid, $dbBackupPath);
