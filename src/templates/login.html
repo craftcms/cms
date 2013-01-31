@@ -41,7 +41,9 @@
 				'</form>'
 			);
 
-			document.getElementById("{{ (blx.session.rememberedUsername ? 'password' : 'loginName') }}").focus();
+			{% if not blx.request.isMobileBrowser %}
+				document.getElementById("{{ (username ? 'password' : 'loginName') }}").focus();
+			{% endif %}
 			window.returnUrl = '{{ blx.session.returnUrl|e('js') }}';
 		}
 		else
