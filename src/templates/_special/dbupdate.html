@@ -1,10 +1,15 @@
 {% extends "_layouts/message" %}
 {% set title = "Update Blocks"|t %}
 
-
 {% set content %}
-	<p>{{ "To complete the Blocks update, some changes must be made to your database."|t }}</p>
-	<div class="buttons">
-		<a class="btn submit" href="{{ url('updates/go/blocks', 'manual=1') }}">{{ "Finish up"|t }}</a>
-	</div>
+	{% set handle = blx.updates.getManualUpdateHandle() %}
+
+	{% if handle is null %}
+		<p>{{ "No updates need to be made to your database."|t }}</p>
+	{% else %}
+		<p>{{ "To complete the " ~ handle ~ " update, some changes must be made to your database."|t }}</p>
+		<div class="buttons">
+			<a class="btn submit" href="{{ url('updates/go/' ~ handle|lower, 'manual=1') }}">{{ "Finish up"|t }}</a>
+		</div>
+	{% endif %}
 {% endset %}
