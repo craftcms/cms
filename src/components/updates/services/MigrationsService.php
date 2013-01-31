@@ -297,7 +297,7 @@ class MigrationsService extends BaseApplicationComponent
 	/**
 	 * @return string
 	 */
-	protected function getTemplate()
+	public function getTemplate()
 	{
 		return file_get_contents(Blocks::getPathOfAlias('app.components.updates.migrationtemplate').'.php');
 	}
