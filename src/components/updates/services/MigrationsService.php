@@ -6,30 +6,12 @@ namespace Blocks;
  */
 class MigrationsService extends BaseApplicationComponent
 {
-	private $_db;
-
-	/**
-	 * @var string the folder that stores the migrations. This must be specified
-	 * in terms of a path alias, and the corresponding directory must exist.
-	 * Defaults to 'application.migrations' (meaning 'protected/migrations').
-	 */
-	public $migrationPath = 'application.migrations';
-
-	/**
-	 * @var string the application component ID that specifies the database connection for
-	 * storing migration information. Defaults to 'db'.
-	 */
-	public $connectionID = 'db';
-
 	/**
 	 * @var string the default command action. It defaults to 'up'.
 	 */
 	public $defaultAction = 'up';
 
-	/**
-	 * @var
-	 */
-	public $migrationTable;
+	private $_migrationTable;
 
 	/**
 	 * @throws Exception
@@ -37,33 +19,40 @@ class MigrationsService extends BaseApplicationComponent
 	 */
 	public function init()
 	{
-		$path = Blocks::getPathOfAlias($this->migrationPath);
-
-		if ($path === false || !IOHelper::folderExists($path))
-		{
-			throw new Exception(Blocks::t('Error: The migration folder “{folder}” doesn’t exist.', array('folder' => $this->migrationPath)));
-		}
-
-		$this->migrationPath = $path;
-
 		$migration = new MigrationRecord('install');
-		$this->migrationTable = $migration->getTableName();
+		$this->_migrationTable = $migration->getTableName();
 	}
 
 	/**
+	 * @param null $plugin
 	 * @return mixed
 	 */
-	public function runToTop()
+	public function runToTop($plugin = null)
 	{
-		if (($migrations = $this->getNewMigrations()) === array())
+		if (($migrations = $this->getNewMigrations($plugin)) === array())
 		{
-			Blocks::log('No new migration(s) found. Your system is up-to-date.', \CLogger::LEVEL_INFO);
+			if ($plugin)
+			{
+				Blocks::log('No new migration(s) found for the plugin '.$plugin->getClassHandle().'. Your system is up-to-date.', \CLogger::LEVEL_INFO);
+			}
+			else
+			{
+				Blocks::log('No new migration(s) found for Blocks. Your system is up-to-date.', \CLogger::LEVEL_INFO);
+			}
+
 			return true;
 		}
 
 		$total = count($migrations);
 
-		Blocks::log("Total $total new ".($total === 1 ? 'migration':'migrations')." to be applied:".PHP_EOL, \CLogger::LEVEL_INFO);
+		if ($plugin)
+		{
+			Blocks::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for plugin ".$plugin->getClassHandle().":".PHP_EOL, \CLogger::LEVEL_INFO);
+		}
+		else
+		{
+			Blocks::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for Blocks:".PHP_EOL, \CLogger::LEVEL_INFO);
+		}
 
 		foreach ($migrations as $migration)
 		{
@@ -72,60 +61,76 @@ class MigrationsService extends BaseApplicationComponent
 
 		foreach ($migrations as $migration)
 		{
-			if ($this->migrateUp($migration) === false)
+			if ($this->migrateUp($migration, $plugin) === false)
 			{
-				Blocks::log('Migration failed. All later migrations are canceled.', \CLogger::LEVEL_ERROR);
+				if ($plugin)
+				{
+					Blocks::log('Migration failed for plugin '.$plugin->getClassHandle().'. All later '.$plugin->getClassHandle().' migrations are canceled.', \CLogger::LEVEL_ERROR);
+				}
+				else
+				{
+					Blocks::log('Migration failed for Blocks. All later Blocks migrations are canceled.', \CLogger::LEVEL_ERROR);
+				}
+
 				return false;
 			}
 		}
 
-		Blocks::log('Migrated up successfully.', \CLogger::LEVEL_INFO);
-		return true;
-	}
-
-	/**
-	 * @param $migrationName
-	 * @return bool
-	 */
-	public function create($migrationName)
-	{
-		if (!preg_match('/^\w+$/', $migrationName))
+		if ($plugin)
 		{
-			Blocks::log('The name of the migration must contain letters, digits and/or underscore characters only.', \CLogger::LEVEL_ERROR);
-			return false;
+			Blocks::log($plugin->getClassHandle().' migrated up successfully.', \CLogger::LEVEL_INFO);
+		}
+		else
+		{
+			Blocks::log('Blocks migrated up successfully.', \CLogger::LEVEL_INFO);
 		}
 
-		$name = 'm'.gmdate('ymd_His').'_'.$migrationName;
-		$content = strtr($this->getTemplate(), array('{ClassName}' => $name));
-		$file = IOHelper::normalizePathSeparators($this->migrationPath.'/'.$name.'.php');
-
-		file_put_contents($file, $content);
-		Blocks::log("New migration created successfully: ".$file, \CLogger::LEVEL_INFO);
 		return true;
 	}
 
 	/**
-	 * @param $class
+	 * @param      $class
+	 * @param null $plugin
 	 * @return bool|null
 	 */
-	public function migrateUp($class)
+	public function migrateUp($class, $plugin = null)
 	{
 		if($class === $this->getBaseMigration())
 		{
 			return null;
 		}
 
-		Blocks::log('Applying migration: '.$class, \CLogger::LEVEL_INFO);
+		if ($plugin)
+		{
+			Blocks::log('Applying migration: '.$class.' for plugin: '.$plugin->getClassHandle().'.', \CLogger::LEVEL_INFO);
+		}
+		else
+		{
+			Blocks::log('Applying migration: '.$class, \CLogger::LEVEL_INFO);
+		}
 
 		$start = microtime(true);
-		$migration = $this->instantiateMigration($class);
+		$migration = $this->instantiateMigration($class, $plugin);
 
 		if ($migration->up() !== false)
 		{
-			$this->getDbConnection()->createCommand()->insert($this->migrationTable, array(
-				'version' => $class,
-				'applyTime' => DateTimeHelper::currentTimeForDb(),
-			));
+			if ($plugin)
+			{
+				$pluginRecord = blx()->plugins->getPluginRecord($plugin);
+
+				blx()->db->createCommand()->insert($this->_migrationTable, array(
+					'version' => $class,
+					'applyTime' => DateTimeHelper::currentTimeForDb(),
+					'pluginId' => $pluginRecord->getPrimaryKey()
+				));
+			}
+			else
+			{
+				blx()->db->createCommand()->insert($this->_migrationTable, array(
+					'version' => $class,
+					'applyTime' => DateTimeHelper::currentTimeForDb()
+				));
+			}
 
 			$time = microtime(true) - $start;
 			Blocks::log('Applied migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)', \CLogger::LEVEL_INFO);
@@ -140,54 +145,47 @@ class MigrationsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $class
+	 * @param      $class
+	 * @param null $plugin
 	 * @return mixed
 	 */
-	protected function instantiateMigration($class)
+	public function instantiateMigration($class, $plugin = null)
 	{
-		$file = IOHelper::normalizePathSeparators($this->migrationPath.'/'.$class.'.php');
+		$file = IOHelper::normalizePathSeparators($this->getMigrationPath($plugin).$class.'.php');
 
 		require_once($file);
 
 		$class = __NAMESPACE__.'\\'.$class;
 		$migration = new $class;
-		$migration->setDbConnection($this->getDbConnection());
+		$migration->setDbConnection(blx()->db);
 
 		return $migration;
 	}
 
 	/**
-	 * @throws Exception
-	 * @return mixed
-	 */
-	protected function getDbConnection()
-	{
-		if ($this->_db !== null)
-		{
-			return $this->_db;
-		}
-		else if (($this->_db = Blocks::app()->getComponent($this->connectionID)) instanceof \CDbConnection)
-		{
-			return $this->_db;
-		}
-		else
-		{
-			throw new Exception(Blocks::t('MigrationCommand connectionId “{connectionId}” is invalid. Please make sure it refers to the ID of a DbConnection application component.', array('connectionId' => $this->connectionID)));
-		}
-	}
-
-	/**
+	 * @param null $plugin
 	 * @param null $limit
 	 * @return mixed
 	 */
-	public function getMigrationHistory($limit = null)
+	public function getMigrationHistory($plugin = null, $limit = null)
 	{
-		$db = $this->getDbConnection();
+		if ($plugin)
+		{
+			$pluginRecord = blx()->plugins->getPluginRecord($plugin);
 
-		$query = $db->createCommand()
-			->select('version, applyTime')
-			->from($this->migrationTable)
-			->order('version DESC');
+			$query = blx()->db->createCommand()
+				->select('version, applyTime')
+				->from($this->_migrationTable)
+				->where('pluginId = :pluginId', array(':pluginId' => $pluginRecord->getPrimaryKey()))
+				->order('version DESC');
+		}
+		else
+		{
+			$query = blx()->db->createCommand()
+				->select('version, applyTime')
+				->from($this->_migrationTable)
+				->order('version DESC');
+		}
 
 		if ($limit !== null)
 		{
@@ -209,29 +207,41 @@ class MigrationsService extends BaseApplicationComponent
 	/**
 	 * Gets migrations that have no been applied yet AND have a later timestamp than the current Blocks release.
 	 *
+	 * @param $plugin
+	 *
 	 * @return array
 	 */
-	public function getNewMigrations()
+	public function getNewMigrations($plugin = null)
 	{
 		$applied = array();
+		$migrationPath = $this->getMigrationPath($plugin);
 
-		foreach ($this->getMigrationHistory() as $migration)
+		foreach ($this->getMigrationHistory($plugin) as $migration)
 		{
 			$applied[] = $migration['version'];
 		}
 
 		$migrations = array();
-		$handle = opendir($this->migrationPath);
-		$storedReleaseDate = Blocks::getStoredReleaseDate()->getTimestamp();
+		$handle = opendir($migrationPath);
+
+		if ($plugin)
+		{
+			$pluginRecord = $plugin->getPluginRecord();
+			$storedDate = $pluginRecord->installDate->getTimestamp();
+		}
+		else
+		{
+			$storedDate = Blocks::getStoredReleaseDate()->getTimestamp();
+		}
 
 		while (($file = readdir($handle)) !== false)
 		{
-			if ($file === '.' || $file === '..')
+			if ($file[0] === '.')
 			{
 				continue;
 			}
 
-			$path = IOHelper::normalizePathSeparators($this->migrationPath.'/'.$file);
+			$path = IOHelper::normalizePathSeparators($migrationPath.$file);
 			$class = IOHelper::getFileName($path, false);
 
 			// Have we already run this migration?
@@ -245,7 +255,7 @@ class MigrationsService extends BaseApplicationComponent
 				// Check the migration timestamp against the Blocks release date
 				$time = strtotime('20'.$matches[1].'-'.$matches[2].'-'.$matches[3].' '.$matches[4].':'.$matches[5].':'.$matches[6]);
 
-				if ($time > $storedReleaseDate)
+				if ($time > $storedDate)
 				{
 					$migrations[] = $class;
 				}
@@ -265,6 +275,23 @@ class MigrationsService extends BaseApplicationComponent
 	public function getBaseMigration()
 	{
 		return 'm000000_000000_base';
+	}
+
+	/**
+	 * @param null $plugin
+	 * @return string
+	 * @throws Exception
+	 */
+	public function getMigrationPath($plugin = null)
+	{
+		$path = blx()->path->getMigrationsPath($plugin->getClassHandle());
+
+		if ($path === false || !IOHelper::folderExists($path))
+		{
+			throw new Exception(Blocks::t('Error: The migration folder “{folder}” doesn’t exist.', array('folder' => $path)));
+		}
+
+		return $path;
 	}
 
 	/**
