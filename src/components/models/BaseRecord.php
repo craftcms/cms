@@ -415,7 +415,7 @@ abstract class BaseRecord extends \CActiveRecord
 		{
 			case static::BELONGS_TO:
 			{
-				// Ad the foreign key
+				// Add the foreign key
 				if (empty($config[2]))
 				{
 					array_splice($config, 2, 0, $name.'Id');
