@@ -87,9 +87,20 @@ class MigrateCommand extends \MigrateCommand
 	 */
 	public function actionCreate($args)
 	{
+		$pluginHandle = false;
 		if (isset($args[1]))
 		{
-			$name = $args[1];
+			// See if this is a plugin
+			$plugin = blx()->plugins->getPlugin($args[1]);
+			if ($plugin)
+			{
+				$name = $args[0];
+				$pluginHandle = $args[1];
+			}
+			else
+			{
+				$name = $args[1];
+			}
 
 			if (!preg_match('/^\w+$/', $name))
 			{
@@ -106,10 +117,9 @@ class MigrateCommand extends \MigrateCommand
 			return 1;
 		}
 
-		if (isset($args[2]))
+		if ($pluginHandle)
 		{
-			$this->_validatePlugin($args[2]);
-			$pluginHandle = $args[2];
+			$this->_validatePlugin($pluginHandle);
 
 			if (!preg_match('/^\w+$/', $pluginHandle))
 			{
@@ -119,11 +129,14 @@ class MigrateCommand extends \MigrateCommand
 
 			$fullName = 'm'.gmdate('ymd_His').'_'.strtolower($pluginHandle).'_'.$name;
 			$migrationNameDesc = 'mYYMMDD_HHMMSS_pluginHandle_migrationName';
+
+			// The plugin path should always be the plugin's migration directory.
 			$path = blx()->path->getMigrationsPath($pluginHandle);
 		}
 		else
 		{
-			$path = blx()->path->getMigrationsPath();
+			// The plugin path for Blocks can vary.
+			$path = rtrim(IOHelper::normalizePathSeparators($args[0]), '/').'/';
 		}
 
 		$content = strtr(blx()->migrations->getTemplate(), array('{ClassName}' => $fullName, '{MigrationNameDesc}' => $migrationNameDesc));
@@ -145,10 +158,28 @@ class MigrateCommand extends \MigrateCommand
 		if (isset($args[0]))
 		{
 			$plugin = $this->_validatePlugin($args[0]);
-			return blx()->migrations->runToTop($plugin);
+			if (blx()->migrations->runToTop($plugin))
+			{
+				echo "Migrated ".$plugin->getClassHandle()." to top successfully.\n";
+				return 0;
+			}
+			else
+			{
+				echo "There was a problem migrating ".$plugin->getClassHandle()." to top.  Check the logs.\n";
+				return 1;
+			}
 		}
 
-		return blx()->migrations->runToTop();
+		if (blx()->migrations->runToTop())
+		{
+			echo "Migrated Blocks to top successfully.\n";
+			return 0;
+		}
+		else
+		{
+			echo "There was a problem migrating Blocks to top. Check the logs.\n";
+			return 1;
+		}
 	}
 
 	/**
@@ -157,21 +188,32 @@ class MigrateCommand extends \MigrateCommand
 	 */
 	public function actionHistory($args)
 	{
-		$limit = isset($args[1]) ? (int)$args[1] : -1;
 		$plugin = null;
 
 		if (isset($args[0]))
 		{
-			$plugin = $this->_validatePlugin($args[0]);
+			if ($args[0] !== 'all')
+			{
+				$plugin = $this->_validatePlugin($args[0]);
+			}
+			else
+			{
+				$plugin = $args[0];
+			}
+
 		}
 
-		$migrations = $this->getMigrationHistory(null, $limit);
+		$migrations = $this->getMigrationHistory($plugin);
 
 		if ($migrations === array())
 		{
-			if ($plugin)
+			if ($plugin === 'all')
 			{
-				echo "No migration has been done before for ".$plugin->getClassHandle()."\n";
+				echo "No migration has been ran for Blocks or any plugins.\n";
+			}
+			else if ($plugin)
+			{
+				echo "No migration has been ran for ".$plugin->getClassHandle()."\n";
 			}
 			else
 			{
@@ -183,28 +225,17 @@ class MigrateCommand extends \MigrateCommand
 		{
 			$n = count($migrations);
 
-			if ($limit > 0)
+			if ($plugin === 'all')
 			{
-				if ($plugin)
-				{
-					echo "Showing the last $n applied ".($n === 1 ? 'migration' : 'migrations')." for ".$plugin->getClassHandle().":\n";
-				}
-				else
-				{
-					echo "Showing the last $n applied ".($n === 1 ? 'migration' : 'migrations').":\n";
-				}
+				echo "A total of $n ".($n === 1 ? 'migration has' : 'migrations have')." been applied before for Blocks and all plugins:\n";
+			}
+			else if ($plugin)
+			{
+				echo "A total of $n ".($n === 1 ? 'migration has' : 'migrations have')." been applied before for ".$plugin->getClassHandle().":\n";
 			}
 			else
 			{
-				if ($plugin)
-				{
-					echo "A total of $n ".($n === 1 ? 'migration has' : 'migrations have')." been applied before for ".$plugin->getClassHandle().":\n";
-				}
-				else
-				{
-					echo "A total of $n ".($n === 1 ? 'migration has' : 'migrations have')." been applied before:\n";
-				}
-
+				echo "A total of $n ".($n === 1 ? 'migration has' : 'migrations have')." been applied before:\n";
 			}
 
 			foreach ($migrations as $version => $time)
@@ -219,8 +250,6 @@ class MigrateCommand extends \MigrateCommand
 	 */
 	public function actionNew($args)
 	{
-		$limit = isset($args[1]) ? (int)$args[1] : -1;
-
 		$plugin = null;
 
 		if (isset($args[0]))
@@ -228,7 +257,7 @@ class MigrateCommand extends \MigrateCommand
 			$plugin = $this->_validatePlugin($args[0]);
 		}
 
-		$migrations = $this->getNewMigrations($plugin, $limit);
+		$migrations = $this->getNewMigrations($plugin);
 
 		if ($migrations === array())
 		{
@@ -246,29 +275,13 @@ class MigrateCommand extends \MigrateCommand
 		{
 			$n = count($migrations);
 
-			if ($limit > 0 && $n > $limit)
+			if ($plugin)
 			{
-				$migrations = array_slice($migrations, 0, $limit);
-
-				if ($plugin)
-				{
-					echo "Showing $limit out of $n new ".($n === 1 ? 'migration' : 'migrations')." for ".$plugin->getClassHandle().":\n";
-				}
-				else
-				{
-					echo "Showing $limit out of $n new ".($n === 1 ? 'migration' : 'migrations').":\n";
-				}
+				echo "Found $n new ".($n === 1 ? 'migration' : 'migrations')." for ".$plugin->getClassHandle().":\n";
 			}
 			else
 			{
-				if ($plugin)
-				{
-					echo "Found $n new ".($n===1 ? 'migration' : 'migrations')." for ".$plugin->getClassHandle().":\n";
-				}
-				else
-				{
-					echo "Found $n new ".($n===1 ? 'migration' : 'migrations').":\n";
-				}
+				echo "Found $n new ".($n === 1 ? 'migration' : 'migrations').":\n";
 			}
 
 			foreach ($migrations as $migration)
@@ -280,12 +293,11 @@ class MigrateCommand extends \MigrateCommand
 
 	/**
 	 * @param null $plugin
-	 * @param      $limit
 	 * @return mixed
 	 */
-	protected function getMigrationHistory($plugin = null, $limit = null)
+	protected function getMigrationHistory($plugin = null)
 	{
-		$migrations = blx()->migrations->getMigrationHistory($plugin, $limit);
+		$migrations = blx()->migrations->getMigrationHistory($plugin);
 
 		// Convert the dates to Unix timestamps
 		foreach ($migrations as &$migration)
@@ -297,11 +309,12 @@ class MigrateCommand extends \MigrateCommand
 	}
 
 	/**
+	 * @param null $plugin
 	 * @return array
 	 */
-	protected function getNewMigrations()
+	protected function getNewMigrations($plugin = null)
 	{
-		return blx()->migrations->getNewMigrations();
+		return blx()->migrations->getNewMigrations($plugin);
 	}
 
 	/**
@@ -323,7 +336,7 @@ class MigrateCommand extends \MigrateCommand
 		if (!$plugin)
 		{
 			echo "Error: Could not find an enabled plugin with the handle {$pluginHandle}.\n";
-			return 1;
+			die(1);
 		}
 
 		return $plugin;
