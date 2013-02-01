@@ -202,6 +202,23 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * @param $plugin
+	 * @return bool
+	 */
+	public function setNewPluginInfo($plugin)
+	{
+		$pluginRecord = blx()->plugins->getPluginRecord($plugin);
+
+		$pluginRecord->version = $plugin->getVersion();
+		if ($pluginRecord->save())
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * @return UpdateModel
 	 */
 	public function check()
@@ -294,11 +311,12 @@ class UpdatesService extends BaseApplicationComponent
 
 	/**
 	 * @param $manual
+	 * @param $handle
 	 * @return array
 	 */
-	public function prepareUpdate($manual)
+	public function prepareUpdate($manual, $handle)
 	{
-		Blocks::log('Preparing to update Blocks.', \CLogger::LEVEL_INFO);
+		Blocks::log('Preparing to update '.$handle.'.', \CLogger::LEVEL_INFO);
 
 		try
 		{
@@ -312,7 +330,7 @@ class UpdatesService extends BaseApplicationComponent
 
 			$updater->checkRequirements();
 
-			Blocks::log('Finished preparing to update Blocks.', \CLogger::LEVEL_INFO);
+			Blocks::log('Finished preparing to update '.$handle.'.', \CLogger::LEVEL_INFO);
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -463,16 +481,17 @@ class UpdatesService extends BaseApplicationComponent
 
 	/**
 	 * @param $uid
+	 * @param $handle
 	 * @return array
 	 */
-	public function updateCleanUp($uid)
+	public function updateCleanUp($uid, $handle)
 	{
 		Blocks::log('Starting to clean up after the update.', \CLogger::LEVEL_INFO);
 
 		try
 		{
 			$updater = new Updater();
-			$updater->cleanUp($uid);
+			$updater->cleanUp($uid, $handle);
 
 			Blocks::log('Finished cleaning up after the update.', \CLogger::LEVEL_INFO);
 			return array('success' => true);

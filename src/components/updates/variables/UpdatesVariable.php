@@ -48,7 +48,24 @@ class UpdatesVariable
 	/**
 	 * @return null|string
 	 */
+	public function getManualUpdateDisplayName()
+	{
+		return $this->_getManualUpdateInfo('name');
+	}
+
+	/**
+	 * @return null|string
+	 */
 	public function getManualUpdateHandle()
+	{
+		return $this->_getManualUpdateInfo('handle');
+	}
+
+	/**
+	 * @param $type
+	 * @return null|string
+	 */
+	private function _getManualUpdateInfo($type)
 	{
 		if (blx()->updates->isBlocksDbUpdateNeeded())
 		{
@@ -59,7 +76,14 @@ class UpdatesVariable
 
 		if (!empty($plugins) && isset($plugins[0]))
 		{
-			return $plugins[0]->getClassHandle();
+			if ($type == 'name')
+			{
+				return $plugins[0]->getName();
+			}
+			else
+			{
+				return $plugins[0]->getClassHandle();
+			}
 		}
 
 		return null;

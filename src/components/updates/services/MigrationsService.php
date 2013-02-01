@@ -114,13 +114,15 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($migration->up() !== false)
 		{
+			$column = $this->_getCorrectApplyTimeColumn();
+
 			if ($plugin)
 			{
 				$pluginRecord = blx()->plugins->getPluginRecord($plugin);
 
 				blx()->db->createCommand()->insert($this->_migrationTable, array(
 					'version' => $class,
-					'applyTime' => DateTimeHelper::currentTimeForDb(),
+					$column => DateTimeHelper::currentTimeForDb(),
 					'pluginId' => $pluginRecord->getPrimaryKey()
 				));
 			}
@@ -128,7 +130,7 @@ class MigrationsService extends BaseApplicationComponent
 			{
 				blx()->db->createCommand()->insert($this->_migrationTable, array(
 					'version' => $class,
-					'applyTime' => DateTimeHelper::currentTimeForDb()
+					$column => DateTimeHelper::currentTimeForDb()
 				));
 			}
 
@@ -169,12 +171,21 @@ class MigrationsService extends BaseApplicationComponent
 	 */
 	public function getMigrationHistory($plugin = null, $limit = null)
 	{
-		if ($plugin)
+		$column = $this->_getCorrectApplyTimeColumn();
+
+		if ($plugin === 'all')
+		{
+			$query = blx()->db->createCommand()
+				->select('version, '.$column)
+				->from($this->_migrationTable)
+				->order('version DESC');
+		}
+		else if ($plugin)
 		{
 			$pluginRecord = blx()->plugins->getPluginRecord($plugin);
 
 			$query = blx()->db->createCommand()
-				->select('version, applyTime')
+				->select('version, '.$column)
 				->from($this->_migrationTable)
 				->where('pluginId = :pluginId', array(':pluginId' => $pluginRecord->getPrimaryKey()))
 				->order('version DESC');
@@ -182,8 +193,9 @@ class MigrationsService extends BaseApplicationComponent
 		else
 		{
 			$query = blx()->db->createCommand()
-				->select('version, applyTime')
+				->select('version, '.$column)
 				->from($this->_migrationTable)
+				->where('pluginId IS NULL')
 				->order('version DESC');
 		}
 
@@ -197,8 +209,10 @@ class MigrationsService extends BaseApplicationComponent
 		// Convert the dates to DateTime objects
 		foreach ($migrations as &$migration)
 		{
+			$column = $this->_getCorrectApplyTimeColumn();
+
 			// TODO: MySQL specific.
-			$migration['applyTime'] = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $migration['applyTime']);
+			$migration['applyTime'] = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $migration[$column]);
 		}
 
 		return $migrations;
@@ -226,7 +240,7 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($plugin)
 		{
-			$pluginRecord = $plugin->getPluginRecord();
+			$pluginRecord = blx()->plugins->getPluginRecord($plugin);
 			$storedDate = $pluginRecord->installDate->getTimestamp();
 		}
 		else
@@ -284,11 +298,21 @@ class MigrationsService extends BaseApplicationComponent
 	 */
 	public function getMigrationPath($plugin = null)
 	{
-		$path = blx()->path->getMigrationsPath($plugin->getClassHandle());
-
-		if ($path === false || !IOHelper::folderExists($path))
+		if ($plugin)
 		{
-			throw new Exception(Blocks::t('Error: The migration folder “{folder}” doesn’t exist.', array('folder' => $path)));
+			$path = blx()->path->getMigrationsPath($plugin->getClassHandle());
+		}
+		else
+		{
+			$path = blx()->path->getMigrationsPath();
+		}
+
+		if (!IOHelper::folderExists($path))
+		{
+			if (!IOHelper::createFolder($path))
+			{
+				throw new Exception(Blocks::t('Tried to create the migration folder at “{folder}”, but could not.', array('folder' => $path)));
+			}
 		}
 
 		return $path;
@@ -300,5 +324,24 @@ class MigrationsService extends BaseApplicationComponent
 	public function getTemplate()
 	{
 		return file_get_contents(Blocks::getPathOfAlias('app.components.updates.migrationtemplate').'.php');
+	}
+
+	/**
+	 * TODO: Deprecate after next breakpoint.
+	 *
+	 * @return string
+	 */
+	private function _getCorrectApplyTimeColumn()
+	{
+		$migrationsTable = blx()->db->schema->getTable('{{migrations}}');
+
+		$applyTimeColumn = 'apply_time';
+
+		if ($migrationsTable->getColumn('applyTime') !== null)
+		{
+			$applyTimeColumn = 'applyTime';
+		}
+
+		return $applyTimeColumn;
 	}
 }

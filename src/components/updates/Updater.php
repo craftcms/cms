@@ -229,10 +229,11 @@ class Updater
 
 	/**
 	 * @param $uid
-	 * @return bool
+	 * @param $handle
 	 * @throws Exception
+	 * @return bool
 	 */
-	public function cleanUp($uid)
+	public function cleanUp($uid, $handle)
 	{
 		// If uid !== false, then it's an auto-update.
 		if ($uid !== false)
@@ -256,11 +257,30 @@ class Updater
 			throw new Exception(Blocks::t('The update was performed successfully, but there was a problem invalidating the update cache.'));
 		}
 
-		// Setting new Blocks info.
-		Blocks::log('Settings new Blocks info in blx_info table.', \CLogger::LEVEL_INFO);
-		if (!blx()->updates->setNewBlocksInfo(Blocks::getVersion(), Blocks::getBuild(), Blocks::getReleaseDate()))
+		if ($handle == 'blocks')
 		{
-			throw new Exception(Blocks::t('The update was performed successfully, but there was a problem settings the new info in the blx_info table.'));
+			// Setting new Blocks info.
+			Blocks::log('Settings new Blocks info in blx_info table.', \CLogger::LEVEL_INFO);
+			if (!blx()->updates->setNewBlocksInfo(Blocks::getVersion(), Blocks::getBuild(), Blocks::getReleaseDate()))
+			{
+				throw new Exception(Blocks::t('The update was performed successfully, but there was a problem setting the new info in the database info table.'));
+			}
+		}
+		else
+		{
+			$plugin = blx()->plugins->getPlugin($handle);
+
+			if ($plugin)
+			{
+				if (!blx()->updates->setNewPluginInfo($plugin))
+				{
+					throw new Exception(Blocks::t('The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
+				}
+			}
+			else
+			{
+				throw new Exception(Blocks::t('The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
+			}
 		}
 
 		Blocks::log('Finished Updater.', \CLogger::LEVEL_INFO);
