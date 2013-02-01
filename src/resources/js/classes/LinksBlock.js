@@ -68,10 +68,7 @@ Blocks.LinksBlock = Garnish.Base.extend({
 
 		// Find any filler rows
 		this._minSlots = settings.limit ? Math.min(3, settings.limit) : 3;
-		if ($entities.length < this._minSlots)
-		{
-			this._$fillerRows = this._$inputTbody.children('.filler');
-		}
+		this._$fillerRows = this._$inputTbody.children('.filler');
 
 		this.addListener(this._$showModalBtn, 'activate', '_showModal');
 		this.addListener(this._$removeLinksBtn, 'activate', '_removeSelectedEntities');
