@@ -17,7 +17,7 @@
 		</div>
 
 		<nav>
-			<ul class="assets-sources">
+			<ul class="assets-folders">
 				{% for source in sources %}
 					{% set folder = blx.assets.getFolderBySourceId(source.id) %}
 					{% if folder %}
