@@ -9,6 +9,8 @@
 	"Check your email for instructions to reset your password."
 %}
 
+{% set username = (blx.config.rememberUsernameDuration ? blx.session.rememberedUsername : '') %}
+
 {% set body %}
     <script type="text/javascript">
 		var cookie = 'BlocksCookieTest='+Math.floor(Math.random() * 1000000);
@@ -22,7 +24,7 @@
 						{%- set padding = logo.height + 30 %}
 						style="background-image: url({{ logo.url }}); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ round((156+padding)/2) }}px"
 					{%- endif %}>' +
-					'{{ forms.textField({ id: "loginName", hint: "Username or Email"|t, value: blx.session.rememberedUsername })|e("js") }}' +
+					'{{ forms.textField({ id: "loginName", hint: "Username or Email"|t, value: username })|e("js") }}' +
 
 					'<div id="login-fields" class="nested-fields">' +
 						'{{ forms.passwordField({ id: "password", hint: "Password"|t })|e("js") }}' +
@@ -41,7 +43,9 @@
 				'</form>'
 			);
 
-			document.getElementById("{{ (blx.session.rememberedUsername ? 'password' : 'loginName') }}").focus();
+			{% if not blx.request.isMobileBrowser %}
+				document.getElementById("{{ (username ? 'password' : 'loginName') }}").focus();
+			{% endif %}
 			window.returnUrl = '{{ blx.session.returnUrl|e('js') }}';
 		}
 		else

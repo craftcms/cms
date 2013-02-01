@@ -449,7 +449,9 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 		$folder = blx()->assets->getFolderById($file->folderId);
 		$transformations = blx()->assetTransformations->getAssetTransformations();
-		$bucket = $this->_s3->deleteObject($this->getSettings()->bucket, $this->_getS3Path($file));;
+		$bucket = $this->getSettings()->bucket;
+		$this->_s3->deleteObject($bucket, $this->_getS3Path($file));
+
 		foreach ($transformations as $handle => $transformation)
 		{
 			$this->_s3->deleteObject($bucket, $folder->fullPath.'/_'.$handle.'/'.$file->filename);

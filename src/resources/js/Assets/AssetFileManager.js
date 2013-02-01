@@ -29,7 +29,7 @@ Assets.FileManager = Garnish.Base.extend({
 
 		this.$status = $('.asset-status');
 
-		this.$sources = $('.assets-sources');
+		this.$folders = $('.assets-folders');
 
 		this.$folderContainer = $('.folder-container');
 
@@ -59,8 +59,7 @@ Assets.FileManager = Garnish.Base.extend({
 
 		this.currentState = {
 			view: 'thumbs',
-			current_source: null,
-			current_folder: null
+			currentFolder: null
 		};
 
 		this.storageKey = 'Blocks_Assets_' + this.settings.namespace;
@@ -126,8 +125,8 @@ Assets.FileManager = Garnish.Base.extend({
 		// Asset events
 		// ---------------------------------------
 
-		this.$sources.find('a').click($.proxy(function (event) {
-			this.selectSource($(event.target));
+		this.$folders.find('a').click($.proxy(function (event) {
+			this.selectFolder($(event.target));
 		}, this));
 
 		// Switch between views
@@ -141,12 +140,12 @@ Assets.FileManager = Garnish.Base.extend({
 			this.markActiveViewButton();
 		}, this));
 
-		// Figure out if we need to store the source state for the first time.
-		if (this.currentState.current_source == null) {
-			this.storeState('current_source', this.$sources.find('a[data-source]').attr('data-source'));
+		// Figure out if we need to store the folder state for the first time.
+		if (typeof this.currentState.currentFolder == "undefined" || this.currentState.currentFolder == null) {
+			this.storeState('currentFolder', this.$folders.find('a[data-folder]').attr('data-folder'));
 		}
 
-		this.markActiveSource(this.currentState.current_source);
+		this.markActiveFolder(this.currentState.currentFolder);
 		this.markActiveViewButton();
 
 		this.reloadFolderView();
@@ -176,13 +175,13 @@ Assets.FileManager = Garnish.Base.extend({
 	},
 
 	/**
-	 * Mark a source as selected.
+	 * Mark a folder as selected.
 	 *
-	 * @param sourceId
+	 * @param folderId
 	 */
-	markActiveSource: function (sourceId) {
-		this.$sources.find('a').removeClass('sel');
-		this.$sources.find('a[data-source=' + sourceId + ']').addClass('sel');
+	markActiveFolder: function (folderId) {
+		this.$folders.find('a').removeClass('sel');
+		this.$folders.find('a[data-folder=' + folderId + ']').addClass('sel');
 	},
 
 	/**
@@ -190,10 +189,9 @@ Assets.FileManager = Garnish.Base.extend({
 	 *
 	 * @param sourceElement jQuery object with the link element
 	 */
-	selectSource: function (sourceElement) {
-		this.markActiveSource(sourceElement.attr('data-source'));
-		this.storeState('current_source', sourceElement.attr('data-source'));
-		this.storeState('current_folder', sourceElement.attr('data-folder'));
+	selectFolder: function (folderElement) {
+		this.markActiveFolder(folderElement.attr('data-folder'));
+		this.storeState('currentFolder', folderElement.attr('data-folder'));
 
 		this.reloadFolderView();
 		this._setUploadFolder(this.getCurrentFolderId());
@@ -302,19 +300,23 @@ Assets.FileManager = Garnish.Base.extend({
 
 	/**
 	 * Gets current folder id - if none is set in the current state, then grabs it from the $folderContainer attribute.
-	 * If that is empty, then grabs one from the selected source.
+	 * If that is empty, then grabs the first folder
 	 *
 	 * @return mixed
 	 */
-	getCurrentFolderId: function () {
-		if (this.currentState.current_folder == null || typeof this.currentState.current_folder == "udefined") {
-			this.storeState('current_folder', this.$folderContainer.attr('data-folder'));
-		}
-		if (this.currentState.current_folder == 0 || this.currentState.current_folder == null) {
-			this.storeState('current_folder', this.$sources.find('a[data-source=' + this.currentState.current_source + ']').attr('data-folder'));
+	getCurrentFolderId: function ()
+    {
+		if (this.currentState.currentFolder == null || this.currentState.currentFolder == 0 || typeof this.currentState.currentFolder == "undefined")
+        {
+            var folderId = this.$folderContainer.attr('data-folder');
+            if (folderId == null || typeof folderId == "undefined")
+            {
+                folderId = this.$folders.find('a[data-folder]').attr('data-folder');
+            }
+			this.storeState('currentFolder', folderId);
 		}
 
-		return this.currentState.current_folder;
+		return this.currentState.currentFolder;
 	},
 
 	/**

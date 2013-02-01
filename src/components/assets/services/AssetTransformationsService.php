@@ -161,6 +161,11 @@ class AssetTransformationsService extends BaseApplicationComponent
 	 */
 	public function updateTransformations(AssetFileModel $fileModel, array $transformationsToUpdate)
 	{
+		if (!in_array(IOHelper::getExtension($fileModel), Image::getAcceptedExtensions()))
+		{
+			return true;
+		}
+
 		$sourceType = blx()->assetSources->getSourceTypeById($fileModel->sourceId);
 		$imageSource = $sourceType->getImageSourcePath($fileModel);
 

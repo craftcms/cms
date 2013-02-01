@@ -145,4 +145,14 @@ class HttpRequestVariable
 			return 'querystring';
 		}
 	}
+
+	/**
+	 * Returns whether the request is coming from a mobile browser.
+	 *
+	 * @return bool
+	 */
+	public function isMobileBrowser()
+	{
+		return blx()->request->isMobileBrowser();
+	}
 }
