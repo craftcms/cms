@@ -315,6 +315,7 @@ class PluginsService extends BaseApplicationComponent
 			$record->class = $plugin->getClassHandle();
 			$record->version = $plugin->version;
 			$record->enabled = true;
+			$record->installDate = DateTimeHelper::currentTimeStamp();
 			$record->save();
 
 			$plugin->isInstalled = true;
