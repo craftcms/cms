@@ -7,7 +7,9 @@
 	{% if handle is null %}
 		<p>{{ "No updates need to be made to your database."|t }}</p>
 	{% else %}
-		<p>{{ "To complete the " ~ handle ~ " update, some changes must be made to your database."|t }}</p>
+		{% set name = blx.updates.getManualUpdateDisplayName() %}
+
+		<p>{{ "To complete the " ~ name ~ " update, some changes must be made to your database."|t }}</p>
 		<div class="buttons">
 			<a class="btn submit" href="{{ url('updates/go/' ~ handle|lower, 'manual=1') }}">{{ "Finish up"|t }}</a>
 		</div>
