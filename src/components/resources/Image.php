@@ -11,6 +11,15 @@ class Image
 	private $_extension;
 
 	/**
+	 * Return a list of accepted extensions
+	 * @return array
+	 */
+	public static function getAcceptedExtensions()
+	{
+		return array('jpg', 'jpeg', 'gif', 'png');
+	}
+
+	/**
 	 * Loads an image from a file system path.
 	 *
 	 * @param string $path
