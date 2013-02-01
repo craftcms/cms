@@ -94,6 +94,15 @@ abstract class BaseRecord extends \CActiveRecord
 			$config = ModelHelper::normalizeAttributeConfig($config);
 			$value = $this->getAttribute($name);
 
+			if ($config['type'] == AttributeType::DateTime)
+			{
+				// Leaving this in because we want to allow plugin devs to save a timestamp or DateTime object.
+				if (DateTimeHelper::isValidTimeStamp($value))
+				{
+					$value = new DateTime('@'.$value);
+				}
+			}
+
 			$this->setAttribute($name, ModelHelper::packageAttributeValue($config, $value, true));
 		}
 
