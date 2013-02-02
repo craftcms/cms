@@ -443,7 +443,6 @@ class SectionsService extends BaseEntityService
 					{
 						// Drop the old FKs/indexes
 						blx()->db->createCommand()->dropForeignKey($oldContentTable, 'entryId');
-						blx()->db->createCommand()->dropIndex($oldContentTable, 'entryId');
 						blx()->db->createCommand()->dropIndex($oldContentTable, 'language,entryId', true);
 
 						// Rename the table
