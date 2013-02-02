@@ -157,7 +157,7 @@ class LinksBlockType extends BaseBlockType
 				return blx()->links->getEntitiesById($criteria->rightEntityType, array_filter($value));
 			}
 		}
-		else if ($this->entity && $this->entity->id)
+		else if ($this->entity && ($this->entity->getClassHandle() == 'GlobalContent' || $this->entity->id))
 		{
 			return blx()->links->getLinkedEntities($criteriaId, $this->entity->id);
 		}

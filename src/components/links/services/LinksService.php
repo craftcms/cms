@@ -74,15 +74,19 @@ class LinksService extends BaseApplicationComponent
 		$criteria = $this->getCriteriaRecordById($criteriaId);
 		$linkType = $this->_getLinkType($criteria->rightEntityType);
 
+		$where = array('l.criteriaId' => $criteriaId);
+
+		if ($leftEntityId)
+		{
+			$where['l.leftEntityId'] = $leftEntityId;
+		}
+
 		$table = $linkType->getEntityTableName();
 		$query = blx()->db->createCommand()
 			->select($table.'.*')
 			->from($table.' '.$table)
 			->join('links l', 'l.rightEntityId = '.$table.'.id')
-			->where(array(
-				'l.criteriaId'   => $criteriaId,
-				'l.leftEntityId' => $leftEntityId
-			))
+			->where($where)
 			->order('l.rightSortOrder');
 
 		// Give the link type a chance to make any changes
