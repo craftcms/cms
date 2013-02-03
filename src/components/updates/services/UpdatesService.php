@@ -457,18 +457,20 @@ class UpdatesService extends BaseApplicationComponent
 				$updater->updateDatabase($uid, $dbBackupPath);
 				Blocks::log('Blocks is done updating the database.', \CLogger::LEVEL_INFO);
 			}
-
-			$plugin = blx()->plugins->getPlugin($handle);
-			if ($plugin)
-			{
-				Blocks::log('The plugin, '.$plugin->getName().' wants to update the database.', \CLogger::LEVEL_INFO);
-				$updater->updateDatabase($uid, $dbBackupPath, $plugin);
-				Blocks::log('The plugin, '.$plugin->getName().' is done updating the database.', \CLogger::LEVEL_INFO);
-			}
 			else
 			{
-				Blocks::log('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.', \CLogger::LEVEL_ERROR);
-				throw new Exception(Blocks::t('Cannot find an enabled plugin with the handle '.$handle));
+				$plugin = blx()->plugins->getPlugin($handle);
+				if ($plugin)
+				{
+					Blocks::log('The plugin, '.$plugin->getName().' wants to update the database.', \CLogger::LEVEL_INFO);
+					$updater->updateDatabase($uid, $dbBackupPath, $plugin);
+					Blocks::log('The plugin, '.$plugin->getName().' is done updating the database.', \CLogger::LEVEL_INFO);
+				}
+				else
+				{
+					Blocks::log('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.', \CLogger::LEVEL_ERROR);
+					throw new Exception(Blocks::t('Cannot find an enabled plugin with the handle '.$handle));
+				}
 			}
 
 			return array('success' => true);
