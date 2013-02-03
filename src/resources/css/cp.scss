@@ -86,6 +86,10 @@ html, body { background: #f2f2f2; }
 #main #sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
 #main #sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $selcolor; cursor: default; }
 
+#main #sidebar-alt { margin-bottom: 30px; }
+#main #sidebar-alt:after { @include clearafter; }
+#main #sidebar-alt .buttons { float: left; margin: 0 10px 0 0; }
+
 #main #content { display: block; }
 
 /* version */

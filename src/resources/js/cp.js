@@ -17,12 +17,16 @@ var CP = Garnish.Base.extend({
 
 	$notificationWrapper: null,
 	$notificationContainer: null,
+	$main: null,
+	$sidebar: null,
+	$altSidebar: null,
 
 	navItems: null,
 	totalNavItems: null,
 	visibleNavItems: null,
 	totalNavWidth: null,
 	showingOverflowNavMenu: false,
+	showingSidebar: true,
 
 	fixedNotifications: false,
 
@@ -39,6 +43,8 @@ var CP = Garnish.Base.extend({
 		/* end HIDE */
 		this.$notificationWrapper = $('#notifications-wrapper');
 		this.$notificationContainer = $('#notifications');
+		this.$main = $('#main');
+		this.$sidebar = $('#sidebar');
 
 		// Find all the nav items
 		this.navItems = [];
@@ -137,6 +143,9 @@ var CP = Garnish.Base.extend({
 
 		// Update the responsive nav
 		this.updateResponsiveNav();
+
+		// Update the responsive sidebar
+		this.updateResponsiveSidebar();
 	},
 
 	updateResponsiveNav: function()
@@ -206,6 +215,71 @@ var CP = Garnish.Base.extend({
 	},
 
 	/**
+	 * Updates the responsive sidebar
+	 */
+	updateResponsiveSidebar: function()
+	{
+		if (!this.$sidebar.length)
+		{
+			return;
+		}
+
+		if (this.onWindowResize._cpWidth < CP.minSidebarWidth)
+		{
+			if (this.showingSidebar)
+			{
+				this.$main.removeClass(CP.hasSidebarClass);
+
+				if (!this.$altSidebar)
+				{
+					this.$altSidebar = $('<div id="sidebar-alt"/>').insertAfter(this.$sidebar);
+
+					var $sidebarChildren = this.$sidebar.children();
+
+					for (var i = 0; i < $sidebarChildren.length; i++)
+					{
+						var $elem = $($sidebarChildren[i]).clone(true);
+
+						if ($elem.prop('nodeName') == 'NAV')
+						{
+							// Create a menu instead
+							var selectedText = $elem.find('.sel:first').text(),
+								$list = $elem.children(),
+								$btn = $('<div class="btn menubtn">'+selectedText+'</div>').appendTo(this.$altSidebar),
+								$menu = $('<div class="menu menulist"/>').appendTo(this.$altSidebar);
+
+							$list.appendTo($menu);
+							$btn.menubtn();
+							$elem.detach();
+						}
+						else
+						{
+							$elem.appendTo(this.$altSidebar);
+						}
+					}
+				}
+				else
+				{
+					this.$altSidebar.show();
+				}
+
+				this.$sidebar.hide();
+				this.showingSidebar = false;
+			}
+		}
+		else
+		{
+			if (!this.showingSidebar)
+			{
+				this.$main.addClass(CP.hasSidebarClass);
+				this.$altSidebar.hide();
+				this.$sidebar.show();
+				this.showingSidebar = true;
+			}
+		}
+	},
+
+	/**
 	 * Adds the last visible nav item to the overflow menu.
 	 */
 	addLastVisibleNavItemToOverflowMenu: function()
@@ -239,7 +313,6 @@ var CP = Garnish.Base.extend({
 			for (var i = 0; i < this.totalNavItems; i++)
 			{
 				var $navItem = this.navItems[i];
-				$
 			}
 
 			this.customizeNavModal = new Garnish.Modal($modal);
@@ -338,6 +411,8 @@ var CP = Garnish.Base.extend({
 	maxWidth: 1024,
 	navHeight: 38,
 	baseNavWidth: 30,
+	minSidebarWidth: 768,
+	hasSidebarClass: 'has-sidebar',
 	notificationDuration: 2000
 });
 

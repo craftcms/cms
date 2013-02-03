@@ -222,7 +222,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btn:hover { text-decoration: none; }
 .btn.disabled { opacity: 0.25; cursor: default; }
 
-.btn:not(.submit) { border: 1px solid #ddd; padding: 0 10px; line-height: 29px; color: #555; background-color: #fff; }
+.btn:not(.submit) { border: 1px solid #ddd; padding: 0 10px; height: 29px; line-height: 29px; color: #555; background-color: #fff; }
 .btn:not(.submit):hover { border-color: #ccc; }
 .btn:not(.submit):active,
 .btn:not(.submit).active { border-color: #ccc; background-color: #f5f5f5;}
