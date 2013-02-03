@@ -335,7 +335,7 @@ var CP = Garnish.Base.extend({
 
 },
 {
-	maxWidth: 1000,
+	maxWidth: 1024,
 	navHeight: 38,
 	baseNavWidth: 30,
 	notificationDuration: 2000
