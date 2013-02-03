@@ -133,11 +133,16 @@ var CP = Garnish.Base.extend({
 	onWindowResize: function()
 	{
 		// Get the new window width
-		this.onWindowResize._windowWidth = Math.min(Garnish.$win.width(), CP.maxWidth);
-		this.onWindowResize._$lastNavItem = null;
+		this.onWindowResize._cpWidth = Math.min(Garnish.$win.width(), CP.maxWidth);
 
+		// Update the responsive nav
+		this.updateResponsiveNav();
+	},
+
+	updateResponsiveNav: function()
+	{
 		// Is an overflow menu going to be needed?
-		if (this.onWindowResize._windowWidth < this.totalNavWidth)
+		if (this.onWindowResize._cpWidth < this.totalNavWidth)
 		{
 			// Show the overflow menu button
 			if (!this.showingOverflowNavMenu)
