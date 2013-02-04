@@ -10,7 +10,7 @@
 </p>
 
 {% if transformations|length %}
-    <table id="transformations" class="data">
+    <table id="transformations" class="data collapsible">
         <thead>
             <th scope="col">{{ "Name"|t }}</th>
             <th scope="col">{{ "Mode"|t }}</th>
@@ -20,14 +20,14 @@
         <tbody>
         {% for transformation in transformations %}
             <tr data-id="{{ transformation.id }}" data-name="{{ transformation.name|t }}">
-                <th scope="row"><a href="{{ url('settings/assets/transformations/' ~ transformation.handle) }}">{{ transformation.name|t }}</a></th>
-                <td>
+                <th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/assets/transformations/' ~ transformation.handle) }}">{{ transformation.name|t }}</a></th>
+                <td data-title="{{ 'Mode'|t }}">
                     {% if transformation.mode %}
                         {{ transformationModes[transformation.mode] }}
                     {%  endif %}
                 </td>
-                <td>{{ transformation.width }} x {{ transformation.height }}</td>
-                <td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+                <td data-title="{{ 'Dimensions'|t }}">{{ transformation.width }} x {{ transformation.height }}</td>
+                <td class="thin"sectionentryblocks><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
             </tr>
         {% endfor %}
         </tbody>

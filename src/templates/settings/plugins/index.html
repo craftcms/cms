@@ -11,7 +11,7 @@
 
 {% set content %}
 	{% if plugins|length %}
-		<table id="plugins" class="data">
+		<table id="plugins" class="data collapsible">
 			<thead>
 				<th scope="col">{{ "Plugin"|t }}</th>
 				<th scope="col">{{ "Developer"|t }}</th>
@@ -21,7 +21,7 @@
 			<tbody>
 				{% for plugin in plugins %}
 					<tr data-name="{{ plugin.name }}">
-						<th>
+						<th data-title="{{ 'Name'|t }}">
 							{% if plugin.isEnabled and plugin.settingsHtml %}
 								<a href="{{ url('settings/plugins/' ~ plugin.classHandle|lower) }}">{{ plugin.name }}</a>
 							{% else %}
@@ -29,8 +29,8 @@
 							{% endif %}
 							<span class="light">{{ plugin.version }}</span>
 						</th>
-						<td><a{% if plugin.developerUrl %} href="{{ plugin.developerUrl }}"{% endif %}>{{ plugin.developer }}</a></td>
-						<td>
+						<td data-title="{{ 'Developer'|t }}"><a{% if plugin.developerUrl %} href="{{ plugin.developerUrl }}"{% endif %}>{{ plugin.developer }}</a></td>
+						<td data-title="{{ 'Status'|t }}">
 							<form action="" method="post" accept-charset="UTF-8">
 								<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
 								{% if plugin.isEnabled %}
@@ -44,7 +44,7 @@
 								{% endif %}
 							</form>
 						</td>
-						<td class="thin rightalign nowrap">
+						<td class="thin rightalign nowrap"sectionentryblocks>
 							<form action="" method="post" accept-charset="UTF-8">
 								<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
 								{% if plugin.isInstalled %}

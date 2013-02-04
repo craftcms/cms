@@ -20,6 +20,8 @@ var CP = Garnish.Base.extend({
 	$main: null,
 	$sidebar: null,
 	$altSidebar: null,
+	$content: null,
+	$collapsibleTables: null,
 
 	navItems: null,
 	totalNavItems: null,
@@ -45,6 +47,8 @@ var CP = Garnish.Base.extend({
 		this.$notificationContainer = $('#notifications');
 		this.$main = $('#main');
 		this.$sidebar = $('#sidebar');
+		this.$content = $('#content');
+		this.$collapsibleTables = this.$content.find('table.collapsible');
 
 		// Find all the nav items
 		this.navItems = [];
@@ -146,6 +150,9 @@ var CP = Garnish.Base.extend({
 
 		// Update the responsive sidebar
 		this.updateResponsiveSidebar();
+
+		// Update any responsive tables
+		this.updateResponsiveTables();
 	},
 
 	updateResponsiveNav: function()
@@ -277,6 +284,53 @@ var CP = Garnish.Base.extend({
 				this.showingSidebar = true;
 			}
 		}
+	},
+
+	updateResponsiveTables: function()
+	{
+		this.updateResponsiveTables._contentWidth = this.$content.width();
+
+		for (this.updateResponsiveTables._i = 0; this.updateResponsiveTables._i < this.$collapsibleTables.length; this.updateResponsiveTables._i++)
+		{
+			this.updateResponsiveTables._$table = $(this.$collapsibleTables[this.updateResponsiveTables._i]);
+			this.updateResponsiveTables._check = false;
+
+			if (typeof this.updateResponsiveTables._lastContentWidth != 'undefined')
+			{
+				this.updateResponsiveTables._isLinear = this.updateResponsiveTables._$table.hasClass('collapsed');
+
+				// Getting wider?
+				if (this.updateResponsiveTables._contentWidth > this.updateResponsiveTables._lastContentWidth)
+				{
+					if (this.updateResponsiveTables._isLinear)
+					{
+						this.updateResponsiveTables._$table.removeClass('collapsed');
+						this.updateResponsiveTables._check = true;
+					}
+				}
+				else
+				{
+					if (!this.updateResponsiveTables._isLinear)
+					{
+						this.updateResponsiveTables._check = true;
+					}
+				}
+			}
+			else
+			{
+				this.updateResponsiveTables._check = true;
+			}
+
+			if (this.updateResponsiveTables._check)
+			{
+				if (this.updateResponsiveTables._$table.width() > this.updateResponsiveTables._contentWidth)
+				{
+					this.updateResponsiveTables._$table.addClass('collapsed');
+				}
+			}
+		}
+
+		this.updateResponsiveTables._lastContentWidth = this.updateResponsiveTables._contentWidth;
 	},
 
 	/**

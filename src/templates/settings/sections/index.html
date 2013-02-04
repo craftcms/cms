@@ -22,7 +22,7 @@
 
 			{% include "_includes/paginatelinks" with { type: "sections"|t } %}
 
-			<table id="sections" class="data">
+			<table id="sections" class="data collapsible">
 				<thead>
 					<th scope="col" width="33%">{{ "Name"|t }}</th>
 					<th scope="col" width="33%">{{ "Handle"|t }}</th>
@@ -32,10 +32,10 @@
 				<tbody>
 					{% for section in sections %}
 						<tr data-id="{{ section.id }}" data-name="{{ section.name|t }}" data-entries="{{ blx.entries.sectionId(section.id).total }}">
-							<th scope="row"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
-							<td><code>{{ section.handle }}</code></td>
-							<td><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ blx.entryBlocks.getTotalBlocksBySectionId(section.id) }}</a></td>
-							<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+							<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
+							<td data-title="{{ 'Handle'|t }}"><code>{{ section.handle }}</code></td>
+							<td data-title="{{ 'Blocks'|t }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ blx.entryBlocks.getTotalBlocksBySectionId(section.id) }}</a></td>
+							<td class="thin"sectionentryblocks><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
 						</tr>
 					{% endfor %}
 				</tbody>
