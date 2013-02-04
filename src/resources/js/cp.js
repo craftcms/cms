@@ -21,6 +21,8 @@ var CP = Garnish.Base.extend({
 	$sidebar: null,
 	$sidebarNav: null,
 	$altSidebar: null,
+	$altSidebarNavBtn: null,
+	$altSidebarNavMenu: null,
 	$sidebarNavPlaceholder: null,
 	$fixedSidebarNavOuterContainer: null,
 	$fixedSidebarNavContainer: null,
@@ -258,12 +260,13 @@ var CP = Garnish.Base.extend({
 						{
 							// Create a menu instead
 							var selectedText = $elem.find('.sel:first').text(),
-								$list = $elem.children(),
-								$btn = $('<div class="btn menubtn">'+selectedText+'</div>').appendTo(this.$altSidebar),
-								$menu = $('<div class="menu menulist"/>').appendTo(this.$altSidebar);
+								$list = $elem.children();
 
-							$list.appendTo($menu);
-							$btn.menubtn();
+							this.$altSidebarNavBtn = $('<div class="btn menubtn">'+selectedText+'</div>').appendTo(this.$altSidebar);
+							this.$altSidebarNavMenu = $('<div class="menu menulist"/>').appendTo(this.$altSidebar);
+
+							$list.appendTo(this.$altSidebarNavMenu);
+							this.$altSidebarNavBtn.menubtn();
 							$elem.detach();
 						}
 						else
