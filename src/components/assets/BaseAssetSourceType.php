@@ -165,7 +165,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 		}
 
 		// Save the file to a temp location and pass this on to the source type implementation
-		$filePath = AssetsHelper::getTempFilePath();
+		$filePath = AssetsHelper::getTempFilePath(IOHelper::getExtension($uploader->file->getName()));
 		$uploader->file->save($filePath);
 
 
