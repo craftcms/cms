@@ -89,7 +89,13 @@ class DashboardController extends BaseController
 		$url = blx()->request->getRequiredParam('url');
 		$limit = blx()->request->getParam('limit');
 
-		$items = blx()->dashboard->getFeedItems($url, $limit);
+		$items = blx()->feeds->getFeedItems($url, $limit);
+
+		foreach ($items as &$item)
+		{
+			$item['date'] = $item['date']->w3cDate();
+		}
+
 		$this->returnJson(array('items' => $items));
 	}
 

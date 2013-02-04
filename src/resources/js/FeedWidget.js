@@ -20,7 +20,7 @@ Blocks.FeedWidget = Garnish.Base.extend({
 				var item = response.items[i],
 					$td = $($tds[i]);
 
-				$td.html('<a href="'+item.url+'" target="_blank">'+item.title+'</a> ' +
+				$td.html('<a href="'+item.permalink+'" target="_blank">'+item.title+'</a> ' +
 					'<span class="light nowrap">'+item.date+'</span>');
 			}
 

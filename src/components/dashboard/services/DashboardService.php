@@ -270,38 +270,6 @@ class DashboardService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the items for the Feed widget.
-	 *
-	 * @param string $url
-	 * @param int|null $limit
-	 * @return array
-	 */
-	public function getFeedItems($url, $limit = 5)
-	{
-		$items = array();
-
-		$feed = new \SimplePie();
-		$feed->set_feed_url($url);
-		$feed->set_cache_location(blx()->path->getCachePath());
-		$feed->set_cache_duration(720);
-		$feed->init();
-		$feed->handle_content_type();
-
-		foreach ($feed->get_items(0, $limit) as $item)
-		{
-			$date = new DateTime('@'.$item->get_date('U'));
-
-			$items[] = array(
-				'url'   => $item->get_permalink(),
-				'title' => $item->get_title(),
-				'date'  => $date->w3cDate()
-			);
-		}
-
-		return $items;
-	}
-
-	/**
 	 * Returns the widget records for the current user.
 	 *
 	 * @access private
