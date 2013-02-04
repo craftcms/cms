@@ -3005,9 +3005,22 @@ Garnish.Modal = Garnish.Base.extend({
 		if (this.$container)
 		{
 			this.$container.show();
-			this.centerInViewport();
+
+			// Center it vertically
+			var modalHeight = this.getHeight();
+			this.$container.css('margin-top', -Math.round(modalHeight/2));
+
+			// Make sure it's not too wide
+			var windowWidth = Garnish.$win.width();
+			if (this.$container.width() > windowWidth)
+			{
+				this.$container.css({
+					width: windowWidth,
+					marginLeft: -Math.round(windowWidth/2)
+				});
+			}
+
 			this.$container.delay(50).fadeIn();
-			this.addListener(Garnish.$win, 'resize', 'centerInViewport');
 		}
 
 		this.visible = true;
@@ -3072,26 +3085,6 @@ Garnish.Modal = Garnish.Base.extend({
 		}
 
 		return width;
-	},
-
-	centerInViewport: function()
-	{
-		if (!this.$container)
-		{
-			throw 'Attempted to position a modal whose container has not been set.';
-		}
-
-		var viewportWidth = Garnish.$win.width(),
-			viewportHeight = Garnish.$win.height(),
-			modalWidth = this.getWidth(),
-			modalHeight = this.getHeight(),
-			left = Math.round((viewportWidth - modalWidth) / 2),
-			top = Math.round((viewportHeight - modalHeight) / 2);
-
-		this.$container.css({
-			top: top,
-			left: left
-		});
 	},
 
 	positionRelativeTo: function(elem)
