@@ -2,11 +2,11 @@
 {% includeCssResource "css/cp.css" first %}
 
 {% set body %}
-	<header id="header">
-		{% if user.admin and blx.config.devMode %}
-			<div id="devmode" title="{{ 'Blocks is running in Dev Mode.'|t }}"></div>
-		{% endif %}
+	{% if user.admin and blx.config.devMode %}
+		<div id="devmode" title="{{ 'Blocks is running in Dev Mode.'|t }}"></div>
+	{% endif %}
 
+	<header id="header">
 		<div class="centered">
 			<div id="account">
 				<a data-icon="☺" class="menubtn" title="{{ 'My Account'|t }}"></a>
