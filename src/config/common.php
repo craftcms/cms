@@ -222,6 +222,7 @@ $components['dashboard']['class']            = 'Blocks\DashboardService';
 $components['email']['class']                = 'Blocks\EmailService';
 $components['entries']['class']              = 'Blocks\EntriesService';
 $components['et']['class']                   = 'Blocks\EtService';
+$components['feeds']['class']                = 'Blocks\FeedsService';
 $components['globals']['class']              = 'Blocks\GlobalsService';
 $components['install']['class']              = 'Blocks\InstallService';
 $components['images']['class']               = 'Blocks\ImagesService';
