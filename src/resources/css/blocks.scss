@@ -379,11 +379,12 @@ table.data.collapsed tbody th,
 table.data.collapsed tbody td { padding: 2px 0; }
 table.data.collapsed thead { display: none; }
 table.data.collapsed tbody tr { padding: 6px 0; border-bottom: 1px dotted rgba(0,0,0,0.1); }
+table.data.collapsed tbody .thin { margin-right: 5px; float: left; width: auto; }
+table.data.collapsed tbody th[data-title],
+table.data.collapsed tbody td[data-title] { margin-right: 0; float: none; }
 table.data.collapsed tbody th[data-title]:before,
 table.data.collapsed tbody td[data-title]:before { content: attr(data-title) ":\00A0"; font-weight: bold; }
 table.data.collapsed tbody td:empty { display: none; }
-table.data.collapsed tbody .thin { width: auto; }
-table.data.collapsed tbody .thin[data-title=''] { margin-right: 5px; float: left; }
 table.data.collapsed tbody tr:after { @include clearafter; }
 table.data.collapsed tbody th:not(.thin),
 table.data.collapsed tbody td:not(.thin) { clear: left; }
