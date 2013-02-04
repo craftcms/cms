@@ -132,17 +132,6 @@ class Blocks extends \Yii
 	}
 
 	/**
-	 * Returns the minimum required build number, as defined in the blx_info table.
-	 *
-	 * @return mixed|null
-	 */
-	public static function getMinRequiredStoredBuild()
-	{
-		$storedBlocksInfo = static::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->minRequiredBuild : null;
-	}
-
-	/**
 	 * Returns whether a package is included in this Blocks build.
 	 *
 	 * @param $packageName

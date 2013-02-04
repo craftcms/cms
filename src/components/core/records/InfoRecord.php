@@ -30,7 +30,6 @@ class InfoRecord extends BaseRecord
 			'licenseKey'       => array(AttributeType::LicenseKey, 'required' => true),
 			'on'               => AttributeType::Bool,
 			'maintenance'      => AttributeType::Bool,
-			'minRequiredBuild' => array('column' => ColumnType::Int, 'unsigned' => true, 'required' => true),
 		);
 	}
 }
