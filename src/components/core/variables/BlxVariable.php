@@ -170,6 +170,14 @@ class BlxVariable
 	}
 
 	/**
+	 * @return FeedsVariable
+	 */
+	public function feeds()
+	{
+		return new FeedsVariable();
+	}
+
+	/**
 	 * @return GlobalsVariable
 	 */
 	public function globals()
