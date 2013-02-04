@@ -10,6 +10,8 @@ if (typeof Assets == 'undefined')
  */
 Assets.FileManager = Garnish.Base.extend({
 
+	$activeFolder: null,
+
 	init: function($manager, settings)
 	{
 		this.$manager = $manager;
@@ -29,7 +31,7 @@ Assets.FileManager = Garnish.Base.extend({
 
 		this.$status = $('.asset-status');
 
-		this.$folders = $('.assets-folders');
+		this.$folders = Blocks.cp.$sidebarNav.find('.assets-folders:first');
 
 		this.$folderContainer = $('.folder-container');
 
@@ -121,6 +123,11 @@ Assets.FileManager = Garnish.Base.extend({
 			onComplete:   $.proxy(this, '_onUploadComplete')
 		});
 
+		if (this.$upload.length == 2)
+		{
+			$(this.$upload[1]).replaceWith($(this.$upload[0]).clone(true));
+		}
+
 		// ---------------------------------------
 		// Asset events
 		// ---------------------------------------
@@ -179,9 +186,18 @@ Assets.FileManager = Garnish.Base.extend({
 	 *
 	 * @param folderId
 	 */
-	markActiveFolder: function (folderId) {
-		this.$folders.find('a').removeClass('sel');
-		this.$folders.find('a[data-folder=' + folderId + ']').addClass('sel');
+	markActiveFolder: function (folderId){
+		if (this.$acitveFolder)
+		{
+			this.$activeFolder.removeClass('sel');
+		}
+
+		this.$activeFolder = this.$folders.find('a[data-folder=' + folderId + ']:first').addClass('sel');
+
+		if (Blocks.cp.$altSidebarNavBtn)
+		{
+			Blocks.cp.$altSidebarNavBtn.text(this.$activeFolder.text());
+		}
 	},
 
 	/**
