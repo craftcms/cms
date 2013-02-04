@@ -366,7 +366,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	public function putImageTransformation(AssetFileModel $fileModel, $handle, $sourceImage)
 	{
 		$this->_prepareForRequests();
-		$targetFile = rtrim($fileModel->getFolder()->fullPath, '/').'/_'.$handle.'/'.$fileModel->filename;
+		$targetFile = $fileModel->getFolder()->fullPath.'_'.$handle.'/'.$fileModel->filename;
 
 		return $this->_s3->putObject(array('file' => $sourceImage), $this->getSettings()->bucket, $targetFile, \S3::ACL_PUBLIC_READ);
 	}
