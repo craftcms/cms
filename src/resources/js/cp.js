@@ -19,7 +19,11 @@ var CP = Garnish.Base.extend({
 	$notificationContainer: null,
 	$main: null,
 	$sidebar: null,
+	$sidebarNav: null,
 	$altSidebar: null,
+	$sidebarNavPlaceholder: null,
+	$fixedSidebarNavOuterContainer: null,
+	$fixedSidebarNavContainer: null,
 	$content: null,
 	$collapsibleTables: null,
 
@@ -31,6 +35,7 @@ var CP = Garnish.Base.extend({
 	showingSidebar: true,
 
 	fixedNotifications: false,
+	fixedSidebarNav: false,
 
 	tabs: null,
 	selectedTab: null,
@@ -47,6 +52,7 @@ var CP = Garnish.Base.extend({
 		this.$notificationContainer = $('#notifications');
 		this.$main = $('#main');
 		this.$sidebar = $('#sidebar');
+		this.$sidebarNav = this.$sidebar.children('nav');
 		this.$content = $('#content');
 		this.$collapsibleTables = this.$content.find('table.collapsible');
 
@@ -235,6 +241,7 @@ var CP = Garnish.Base.extend({
 		{
 			if (this.showingSidebar)
 			{
+				this.makeSidebarNavUnfixed();
 				this.$main.removeClass(CP.hasSidebarClass);
 
 				if (!this.$altSidebar)
@@ -282,6 +289,7 @@ var CP = Garnish.Base.extend({
 				this.$altSidebar.hide();
 				this.$sidebar.show();
 				this.showingSidebar = true;
+				this.updateFixedSidebarNav();
 			}
 		}
 	},
@@ -384,6 +392,13 @@ var CP = Garnish.Base.extend({
 	onWindowScroll: function()
 	{
 		this.onWindowScroll._scrollTop = Garnish.$win.scrollTop();
+
+		this.updateFixedNotifications();
+		this.updateFixedSidebarNav();
+	},
+
+	updateFixedNotifications: function()
+	{
 		this.onWindowScroll._headerHeight = this.$header.height();
 
 		if (this.onWindowScroll._scrollTop > this.onWindowScroll._headerHeight)
@@ -393,7 +408,6 @@ var CP = Garnish.Base.extend({
 				this.$notificationWrapper.addClass('fixed');
 				this.fixedNotifications = true;
 			}
-
 		}
 		else
 		{
@@ -402,6 +416,71 @@ var CP = Garnish.Base.extend({
 				this.$notificationWrapper.removeClass('fixed');
 				this.fixedNotifications = false;
 			}
+		}
+	},
+
+	updateFixedSidebarNav: function()
+	{
+		if (this.showingSidebar && this.$sidebarNav.length)
+		{
+			if (this.fixedSidebarNav)
+			{
+				this.onWindowScroll._$offsetTarget = this.$sidebarNavPlaceholder;
+			}
+			else
+			{
+				this.onWindowScroll._$offsetTarget = this.$sidebarNav;
+			}
+
+			if (this.onWindowScroll._scrollTop > this.onWindowScroll._$offsetTarget.offset().top)
+			{
+				this.makeSidebarNavFixed();
+
+				// Make sure that the nav doesn't bleed into the page footer
+				this.onWindowScroll._maxNavHeight = this.$main.offset().top + this.$main.outerHeight() - Garnish.$win.scrollTop();
+
+				if (this.onWindowScroll._maxNavHeight < Garnish.$win.height())
+				{
+					this.$sidebarNav.height(this.onWindowScroll._maxNavHeight);
+				}
+				else
+				{
+					this.$sidebarNav.height('100%');
+				}
+			}
+			else
+			{
+				this.makeSidebarNavUnfixed();
+			}
+		}
+	},
+
+	makeSidebarNavFixed: function()
+	{
+		if (!this.fixedSidebarNav)
+		{
+			if (typeof $fixedSidebarNavContainer == 'undefined')
+			{
+				this.$sidebarNavPlaceholder = $('<div/>');
+				this.$fixedSidebarNavOuterContainer = $('<div id="fixed-sidebar-nav"/>');
+				this.$fixedSidebarNavContainer = $('<div class="centered"/>').appendTo(this.$fixedSidebarNavOuterContainer);
+			}
+
+			this.$sidebarNavPlaceholder.insertAfter(this.$sidebarNav);
+			this.$fixedSidebarNavOuterContainer.appendTo(document.body);
+			this.$sidebarNav.appendTo(this.$fixedSidebarNavContainer);
+			this.fixedSidebarNav = true;
+		}
+	},
+
+	makeSidebarNavUnfixed: function()
+	{
+		if (this.fixedSidebarNav)
+		{
+			this.$sidebarNavPlaceholder.replaceWith(this.$sidebarNav);
+			this.$fixedSidebarNavOuterContainer.remove();
+			this.$sidebarNav.height('auto');
+			this.fixedSidebarNav = false;
 		}
 	},
 
