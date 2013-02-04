@@ -311,7 +311,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		clearstatcache();
 		$this->_prepareForRequests();
 
-		if (!$this->_s3->putObject(array('file' => $filePath), $this->getSettings()->bucket, $uriPath))
+		if (!$this->_s3->putObject(array('file' => $filePath), $this->getSettings()->bucket, $uriPath, \S3::ACL_PUBLIC_READ))
 		{
 			throw new Exception(Blocks::t('Could not copy file to target destination'));
 		}
@@ -368,7 +368,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$this->_prepareForRequests();
 		$targetFile = rtrim($fileModel->getFolder()->fullPath, '/').'/_'.$handle.'/'.$fileModel->filename;
 
-		return $this->_s3->putObject(array('file' => $sourceImage), $this->getSettings()->bucket, $targetFile);
+		return $this->_s3->putObject(array('file' => $sourceImage), $this->getSettings()->bucket, $targetFile, \S3::ACL_PUBLIC_READ);
 	}
 
 	/**
