@@ -50,6 +50,11 @@ Blocks.Dashboard = Garnish.Base.extend({
 	{
 		var totalCols = Math.floor(this.$container.width() / Blocks.Dashboard.minColWidth);
 
+		if (totalCols == 0)
+		{
+			totalCols = 1;
+		}
+
 		if (totalCols !== this.totalCols)
 		{
 			this.totalCols = totalCols;

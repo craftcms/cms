@@ -1,7 +1,6 @@
 {% extends "content/_layout" %}
 {% set selectedTab = 'pages' %}
 {% set pages = blx.pages.getEditablePages %}
-{% includeCssResource 'css/pages.css' %}
 
 
 {% set content %}
@@ -10,7 +9,7 @@
 	</p>
 
 	{% if pages|length %}
-		<table id="pages" class="data">
+		<table id="pages" class="data collapsible">
 			<thead>
 				<th scope="col" width="33%">{{ "Title"|t }}</th>
 				<th scope="col" width="33%">{{ "URL"|t }}</th>
@@ -19,9 +18,9 @@
 			<tbody>
 				{% for page in pages %}
 					<tr data-id="{{ page.id }}" data-name="{{ page.title|t }}">
-						<th><a href="{{ url('content/pages/'~page.id) }}">{{ page.title|t }}</a></th>
-						<td><a href="{{ page.getUrl }}" target="_blank">{{ page.getUrl }}</a></td>
-						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+						<th data-title="{{ 'Title'|t }}"><a href="{{ url('content/pages/'~page.id) }}">{{ page.title|t }}</a></th>
+						<td data-title="{{ 'URL'|t }}"><a href="{{ page.getUrl }}" target="_blank">{{ page.getUrl }}</a></td>
+						<td class="thin"sectionentryblocks><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
 					</tr>
 				{% endfor %}
 			</tbody>

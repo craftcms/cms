@@ -9,7 +9,7 @@
 	</p>
 
 	{% if groups|length %}
-		<table id="groups" class="data">
+		<table id="groups" class="data collapsible">
 			<thead>
 				<th scope="col">{{ "Name"|t }}</th>
 				<th scope="col">{{ "Handle"|t }}</th>
@@ -18,9 +18,9 @@
 			<tbody>
 				{% for group in groups %}
 					<tr data-id="{{ group.id }}" data-name="{{ group.name|t }}">
-						<th scope="row"><a href="{{ url('settings/users/groups/' ~ group.id) }}">{{ group.name|t }}</a></th>
-						<td><code>{{ group.handle }}</code></td>
-						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/users/groups/' ~ group.id) }}">{{ group.name|t }}</a></th>
+						<td data-title="{{ 'Handle'|t }}"><code>{{ group.handle }}</code></td>
+						<td class="thin"sectionentryblocks><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
 					</tr>
 				{% endfor %}
 			</tbody>

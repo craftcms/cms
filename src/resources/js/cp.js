@@ -17,14 +17,27 @@ var CP = Garnish.Base.extend({
 
 	$notificationWrapper: null,
 	$notificationContainer: null,
+	$main: null,
+	$sidebar: null,
+	$sidebarNav: null,
+	$altSidebar: null,
+	$altSidebarNavBtn: null,
+	$altSidebarNavMenu: null,
+	$sidebarNavPlaceholder: null,
+	$fixedSidebarNavOuterContainer: null,
+	$fixedSidebarNavContainer: null,
+	$content: null,
+	$collapsibleTables: null,
 
 	navItems: null,
 	totalNavItems: null,
 	visibleNavItems: null,
 	totalNavWidth: null,
 	showingOverflowNavMenu: false,
+	showingSidebar: true,
 
 	fixedNotifications: false,
+	fixedSidebarNav: false,
 
 	tabs: null,
 	selectedTab: null,
@@ -39,6 +52,11 @@ var CP = Garnish.Base.extend({
 		/* end HIDE */
 		this.$notificationWrapper = $('#notifications-wrapper');
 		this.$notificationContainer = $('#notifications');
+		this.$main = $('#main');
+		this.$sidebar = $('#sidebar');
+		this.$sidebarNav = this.$sidebar.children('nav');
+		this.$content = $('#content');
+		this.$collapsibleTables = this.$content.find('table.collapsible');
 
 		// Find all the nav items
 		this.navItems = [];
@@ -133,11 +151,22 @@ var CP = Garnish.Base.extend({
 	onWindowResize: function()
 	{
 		// Get the new window width
-		this.onWindowResize._windowWidth = Math.min(Garnish.$win.width(), CP.maxWidth);
-		this.onWindowResize._$lastNavItem = null;
+		this.onWindowResize._cpWidth = Math.min(Garnish.$win.width(), CP.maxWidth);
 
+		// Update the responsive nav
+		this.updateResponsiveNav();
+
+		// Update the responsive sidebar
+		this.updateResponsiveSidebar();
+
+		// Update any responsive tables
+		this.updateResponsiveTables();
+	},
+
+	updateResponsiveNav: function()
+	{
 		// Is an overflow menu going to be needed?
-		if (this.onWindowResize._windowWidth < this.totalNavWidth)
+		if (this.onWindowResize._cpWidth < this.totalNavWidth)
 		{
 			// Show the overflow menu button
 			if (!this.showingOverflowNavMenu)
@@ -201,6 +230,121 @@ var CP = Garnish.Base.extend({
 	},
 
 	/**
+	 * Updates the responsive sidebar
+	 */
+	updateResponsiveSidebar: function()
+	{
+		if (!this.$sidebar.length)
+		{
+			return;
+		}
+
+		if (this.onWindowResize._cpWidth < CP.minSidebarWidth)
+		{
+			if (this.showingSidebar)
+			{
+				this.makeSidebarNavUnfixed();
+				this.$main.removeClass(CP.hasSidebarClass);
+
+				if (!this.$altSidebar)
+				{
+					this.$altSidebar = $('<div id="sidebar-alt"/>').insertAfter(this.$sidebar);
+
+					var $sidebarChildren = this.$sidebar.children();
+
+					for (var i = 0; i < $sidebarChildren.length; i++)
+					{
+						var $elem = $($sidebarChildren[i]).clone(true);
+
+						if ($elem.prop('nodeName') == 'NAV')
+						{
+							// Create a menu instead
+							var selectedText = $elem.find('.sel:first').text(),
+								$list = $elem.children();
+
+							this.$altSidebarNavBtn = $('<div class="btn menubtn">'+selectedText+'</div>').appendTo(this.$altSidebar);
+							this.$altSidebarNavMenu = $('<div class="menu menulist"/>').appendTo(this.$altSidebar);
+
+							$list.appendTo(this.$altSidebarNavMenu);
+							this.$altSidebarNavBtn.menubtn();
+							$elem.detach();
+						}
+						else
+						{
+							$elem.appendTo(this.$altSidebar);
+						}
+					}
+				}
+				else
+				{
+					this.$altSidebar.show();
+				}
+
+				this.$sidebar.hide();
+				this.showingSidebar = false;
+			}
+		}
+		else
+		{
+			if (!this.showingSidebar)
+			{
+				this.$main.addClass(CP.hasSidebarClass);
+				this.$altSidebar.hide();
+				this.$sidebar.show();
+				this.showingSidebar = true;
+				this.updateFixedSidebarNav();
+			}
+		}
+	},
+
+	updateResponsiveTables: function()
+	{
+		this.updateResponsiveTables._contentWidth = this.$content.width();
+
+		for (this.updateResponsiveTables._i = 0; this.updateResponsiveTables._i < this.$collapsibleTables.length; this.updateResponsiveTables._i++)
+		{
+			this.updateResponsiveTables._$table = $(this.$collapsibleTables[this.updateResponsiveTables._i]);
+			this.updateResponsiveTables._check = false;
+
+			if (typeof this.updateResponsiveTables._lastContentWidth != 'undefined')
+			{
+				this.updateResponsiveTables._isLinear = this.updateResponsiveTables._$table.hasClass('collapsed');
+
+				// Getting wider?
+				if (this.updateResponsiveTables._contentWidth > this.updateResponsiveTables._lastContentWidth)
+				{
+					if (this.updateResponsiveTables._isLinear)
+					{
+						this.updateResponsiveTables._$table.removeClass('collapsed');
+						this.updateResponsiveTables._check = true;
+					}
+				}
+				else
+				{
+					if (!this.updateResponsiveTables._isLinear)
+					{
+						this.updateResponsiveTables._check = true;
+					}
+				}
+			}
+			else
+			{
+				this.updateResponsiveTables._check = true;
+			}
+
+			if (this.updateResponsiveTables._check)
+			{
+				if (this.updateResponsiveTables._$table.width() > this.updateResponsiveTables._contentWidth)
+				{
+					this.updateResponsiveTables._$table.addClass('collapsed');
+				}
+			}
+		}
+
+		this.updateResponsiveTables._lastContentWidth = this.updateResponsiveTables._contentWidth;
+	},
+
+	/**
 	 * Adds the last visible nav item to the overflow menu.
 	 */
 	addLastVisibleNavItemToOverflowMenu: function()
@@ -234,7 +378,6 @@ var CP = Garnish.Base.extend({
 			for (var i = 0; i < this.totalNavItems; i++)
 			{
 				var $navItem = this.navItems[i];
-				$
 			}
 
 			this.customizeNavModal = new Garnish.Modal($modal);
@@ -252,6 +395,13 @@ var CP = Garnish.Base.extend({
 	onWindowScroll: function()
 	{
 		this.onWindowScroll._scrollTop = Garnish.$win.scrollTop();
+
+		this.updateFixedNotifications();
+		this.updateFixedSidebarNav();
+	},
+
+	updateFixedNotifications: function()
+	{
 		this.onWindowScroll._headerHeight = this.$header.height();
 
 		if (this.onWindowScroll._scrollTop > this.onWindowScroll._headerHeight)
@@ -261,7 +411,6 @@ var CP = Garnish.Base.extend({
 				this.$notificationWrapper.addClass('fixed');
 				this.fixedNotifications = true;
 			}
-
 		}
 		else
 		{
@@ -270,6 +419,71 @@ var CP = Garnish.Base.extend({
 				this.$notificationWrapper.removeClass('fixed');
 				this.fixedNotifications = false;
 			}
+		}
+	},
+
+	updateFixedSidebarNav: function()
+	{
+		if (this.showingSidebar && this.$sidebarNav.length)
+		{
+			if (this.fixedSidebarNav)
+			{
+				this.onWindowScroll._$offsetTarget = this.$sidebarNavPlaceholder;
+			}
+			else
+			{
+				this.onWindowScroll._$offsetTarget = this.$sidebarNav;
+			}
+
+			if (this.onWindowScroll._scrollTop > this.onWindowScroll._$offsetTarget.offset().top)
+			{
+				this.makeSidebarNavFixed();
+
+				// Make sure that the nav doesn't bleed into the page footer
+				this.onWindowScroll._maxNavHeight = this.$main.offset().top + this.$main.outerHeight() - Garnish.$win.scrollTop();
+
+				if (this.onWindowScroll._maxNavHeight < Garnish.$win.height())
+				{
+					this.$sidebarNav.height(this.onWindowScroll._maxNavHeight);
+				}
+				else
+				{
+					this.$sidebarNav.height('100%');
+				}
+			}
+			else
+			{
+				this.makeSidebarNavUnfixed();
+			}
+		}
+	},
+
+	makeSidebarNavFixed: function()
+	{
+		if (!this.fixedSidebarNav)
+		{
+			if (typeof $fixedSidebarNavContainer == 'undefined')
+			{
+				this.$sidebarNavPlaceholder = $('<div/>');
+				this.$fixedSidebarNavOuterContainer = $('<div id="fixed-sidebar-nav"/>');
+				this.$fixedSidebarNavContainer = $('<div class="centered"/>').appendTo(this.$fixedSidebarNavOuterContainer);
+			}
+
+			this.$sidebarNavPlaceholder.insertAfter(this.$sidebarNav);
+			this.$fixedSidebarNavOuterContainer.appendTo(document.body);
+			this.$sidebarNav.appendTo(this.$fixedSidebarNavContainer);
+			this.fixedSidebarNav = true;
+		}
+	},
+
+	makeSidebarNavUnfixed: function()
+	{
+		if (this.fixedSidebarNav)
+		{
+			this.$sidebarNavPlaceholder.replaceWith(this.$sidebarNav);
+			this.$fixedSidebarNavOuterContainer.remove();
+			this.$sidebarNav.height('auto');
+			this.fixedSidebarNav = false;
 		}
 	},
 
@@ -330,9 +544,11 @@ var CP = Garnish.Base.extend({
 
 },
 {
-	maxWidth: 1000,
+	maxWidth: 1024,
 	navHeight: 38,
 	baseNavWidth: 30,
+	minSidebarWidth: 768,
+	hasSidebarClass: 'has-sidebar',
 	notificationDuration: 2000
 });
 

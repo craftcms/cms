@@ -60,7 +60,7 @@
 
 		{% set totalCols = 3 + (showStatus ? 1 : 0) %}
 		{% set colWidth = round(100 / totalCols) %}
-		<table class="data">
+		<table class="data collapsible">
 			<thead>
 				<th scope="col" width="{{ colWidth }}%">{{ "Username"|t }}</th>
 				<th scope="col" width="{{ colWidth }}%">{{ "Full Name"|t }}</th>
@@ -71,10 +71,10 @@
 				{% for account in accounts %}
 					<tr>
 						{% set accountUrl = url(account.isCurrent ? 'myaccount' : 'users/' ~ account.id) %}
-						<th scope="row"><a href="{{ accountUrl }}">{{ account.username }}</a></th>
-						<td>{{ account.fullName }}</td>
-						<td>{% if account.email %}<a href="mailto:{{ account.email }}">{{ account.email }}</a>{% endif %}</td>
-						{% if showStatus %}<td><div class="status {{ statuses[account.status] }}"></div> {{ account.status|ucfirst|t }}</td>{% endif %}
+						<th scope="row" data-title="{{ 'Username'|t }}"><a href="{{ accountUrl }}">{{ account.username }}</a></th>
+						<td data-title="{{ 'Full Name'|t }}">{{ account.fullName }}</td>
+						<td data-title="{{ 'Email'|t }}">{% if account.email %}<a href="mailto:{{ account.email }}">{{ account.email }}</a>{% endif %}</td>
+						{% if showStatus %}<td data-title="{{ 'Status'|t }}"><div class="status {{ statuses[account.status] }}"></div> {{ account.status|ucfirst|t }}</td>{% endif %}
 					</tr>
 				{% endfor %}
 			</tbody>

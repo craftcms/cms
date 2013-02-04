@@ -119,7 +119,7 @@
 
 				{% set totalCols = 2 + (showStatus ? 1 : 0) + (showSection ? 1 : 0) %}
 				{% set colWidth = round(100 / totalCols) %}
-				<table id="entries" class="data">
+				<table id="entries" class="data collapsible">
 					<thead>
 						<th scope="col" width="{{ colWidth }}%">{{ "Title"|t }}</th>
 						<th scope="col" width="{{ colWidth }}%">{{ "Slug"|t }}</th>
@@ -133,11 +133,11 @@
 								{% set entrySection = sections[entry.sectionId] %}
 							{% endif %}
 							<tr data-id="{{ entry.id }}" data-name="{{ entry.title|t }}">
-								<th scope="row"><a href="{{ entry.cpEditUrl }}">{{ entry.title }}</a></th>
-								<td><a href="{{ entry.url }}">{{ entry.slug }}</a></td>
-								{% if showSection %}<td>{{ entrySection.name }}</th>{% endif %}
-								{% if showStatus %}<td><div class="status {{ statuses[entry.status] }}"></div> {{ entry.status|ucfirst|t }}</td>{% endif %}
-								<td class="thin">
+								<th scope="row" data-title="{{ 'Title'|t }}"><a href="{{ entry.cpEditUrl }}">{{ entry.title }}</a></th>
+								<td data-title="{{ 'Slug'|t }}"><a href="{{ entry.url }}">{{ entry.slug }}</a></td>
+								{% if showSection %}<td data-title="{{ 'Section'|t }}">{{ entrySection.name }}</th>{% endif %}
+								{% if showStatus %}<td data-title="{{ 'Status'|t }}"><div class="status {{ statuses[entry.status] }}"></div> {{ entry.status|ucfirst|t }}</td>{% endif %}
+								<td class="thin"sectionentryblocks>
 									{% if entry.authorId == user.id or user.can('deletePeerEntries'~(blx.hasPackage('PublishPro') ? 'InSection'~entry.sectionId : '')) %}
 										<a class="delete icon" title="{{ 'Delete'|t }}"></a>
 									{% endif %}

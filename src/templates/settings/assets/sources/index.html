@@ -11,7 +11,7 @@
 	{% if sources|length %}
 		{% set sortable  = (sources|length > 1) %}
 
-		<table id="sources" class="data">
+		<table id="sources" class="data collapsible">
 			<thead>
 				<th scope="col">{{ "Name"|t }}</th>
 				{% if blx.hasPackage('Cloud') %}<th scope="col">{{ "Type"|t }}</th>{% endif %}
@@ -21,10 +21,10 @@
 			<tbody>
 				{% for source in sources %}
 					<tr data-id="{{ source.id }}" data-name="{{ source.name|t }}">
-						<th scope="row"><a href="{{ url('settings/assets/sources/' ~ source.id) }}">{{ source.name|t }}</a></th>
-						{% if blx.hasPackage('Cloud') %}<td>{{ blx.assets.populateSourceType(source).name }}</td>{% endif %}
-						{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
-						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/assets/sources/' ~ source.id) }}">{{ source.name|t }}</a></th>
+						{% if blx.hasPackage('Cloud') %}<td data-title="{{ 'Type'|t }}">{{ blx.assets.populateSourceType(source).name }}</td>{% endif %}
+						{% if sortable %}<td class="thin"sectionentryblocks><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
+						<td class="thin"sectionentryblocks><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
 					</tr>
 				{% endfor %}
 			</tbody>

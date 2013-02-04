@@ -185,7 +185,7 @@ class AssetTransformationsService extends BaseApplicationComponent
 			// or if the transformation dimensions have changed since it was last created
 			if (!$timeModified || $timeModified < $fileModel->dateModified || $timeModified < $transformation->dimensionChangeTime)
 			{
-				$targetFile = AssetsHelper::getTempFilePath(pathinfo($fileModel->filename, PATHINFO_EXTENSION));
+				$targetFile = AssetsHelper::getTempFilePath(IOHelper::getExtension($fileModel->filename));
 				switch ($transformation->mode)
 				{
 					case 'scaleToFit':

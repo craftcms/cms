@@ -67,9 +67,9 @@
 
 
 {% if isNewEntry %}
-	{% set title = "Create a new {section} entry"|t({ section: (blx.hasPackage('PublishPro') ? section.name : 'Blog'|t) }) %}
+	{% set title = "Create a new entry"|t %}
 {% else %}
-	{% set title = "Editing “{title}”"|t({ title: entry.title|t }) %}
+	{% set title = entry.title %}
 	{% if entry is defined and entry.classHandle != 'Entry' %}
 		{% set title = title ~ ' <span class="hidden">(' ~ revisionLabel ~ ')</span>' %}
 	{% endif %}

@@ -12,12 +12,12 @@
 	</p>
 
 	{% if widgets|length %}
-		<table id="widgets" class="data">
+		<table id="widgets" class="data collapsible">
 			<tbody>
 				{% for widget in widgets %}
 					{% set widgetType = blx.dashboard.populateWidgetType(widget) %}
 					<tr data-id="{{ widget.id }}" data-name="{{ widgetType ? widgetType.title : widget.type }}">
-						<th scope="row">
+						<th scope="row" data-title="{{ 'Name'|t }}">
 							<a href="{{ url('dashboard/settings/' ~ widget.id) }}">{{ widgetType ? widgetType.title : "Unknown"|t }}</a>
 							{% if widgetType %}
 								{% if widgetType.name != widgetType.title %}<span class="light">({{ widgetType.name }})</span>{% endif %}
@@ -25,8 +25,8 @@
 								<span class="light error">({{ widget.type }})</span>
 							{% endif %}
 						</th>
-						{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
-						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+						{% if sortable %}<td class="thin"sectionentryblocks><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
+						<td class="thin"sectionentryblocks><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
 					</tr>
 				{% endfor %}
 			</tbody>

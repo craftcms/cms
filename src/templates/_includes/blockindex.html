@@ -5,7 +5,7 @@
 {% if blocks|length %}
 	{% set sortable  = (blocks|length > 1) %}
 
-	<table id="blocks" class="data">
+	<table id="blocks" class="data collapsible">
 		<thead>
 			<th scope="col" width="33%">{{ "Name"|t }}</th>
 			<th scope="col" width="33%">{{ "Handle"|t }}</th>
@@ -16,11 +16,11 @@
 		<tbody>
 			{% for block in blocks %}
 				<tr data-id="{{ block.id }}" data-name="{{ block.name|t }}">
-					<th scope="row"><a href="{{ url(settingsUrlPrefix ~ block.id) }}">{{ block.name|t }}</a>
+					<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url(settingsUrlPrefix ~ block.id) }}">{{ block.name|t }}</a>
 						{%- if block.required %} <span class="required"></span>{% endif -%}
 					</th>
-					<td><code>{{ block.handle }}</code></td>
-					<td>
+					<td data-title="{{ 'Handle'|t }}"><code>{{ block.handle }}</code></td>
+					<td data-title="{{ 'Type'|t }}">
 						{% set blockType = blx.blockTypes.populateBlockType(block) %}
 						{% if blockType %}
 							{{ blockType.name }}
@@ -28,8 +28,8 @@
 							<span class="error">{{ block.type }}</span>
 						{% endif %}
 					</td>
-					{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
-					<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+					{% if sortable %}<td class="thin"sectionentryblocks><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
+					<td class="thin"sectionentryblocks><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
 				</tr>
 			{% endfor %}
 		</tbody>
