@@ -13,12 +13,16 @@ class FeedsVariable
 	{
 		$items = blx()->feeds->getFeedItems($url, $limit, $offset);
 
-		// Prevent everyone from having to use the |raw filter when outputting the title
+		// Prevent everyone from having to use the |raw filter when outputting the title and content
+		$rawProperties = array('title', 'content', 'summary');
 		$charset = blx()->templates->getTwig()->getCharset();
 
 		foreach ($items as &$item)
 		{
-			$item['title'] = new \Twig_Markup($item['title'], $charset);
+			foreach ($rawProperties as $prop)
+			{
+				$item[$prop] = new \Twig_Markup($item[$prop], $charset);
+			}
 		}
 
 		return $items;
