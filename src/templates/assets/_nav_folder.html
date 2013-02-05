@@ -1,0 +1,13 @@
+<li>
+    <a href="javascript:;" data-folder="{{ folder.id }}">{{ folder.name }}</a>
+    {% set children = folder.getChildren() %}
+    {%  if children is not empty %}
+        <ul>
+            {% for child in children %}
+                {% if child %}
+                    {% include 'assets/_nav_folder' with { folder: child } only %}
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>

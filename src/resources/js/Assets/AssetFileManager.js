@@ -189,7 +189,7 @@ Assets.FileManager = Garnish.Base.extend({
 	 * @param folderId
 	 */
 	markActiveFolder: function (folderId){
-		if (this.$acitveFolder)
+		if (this.$activeFolder)
 		{
 			this.$activeFolder.removeClass('sel');
 		}
@@ -205,7 +205,7 @@ Assets.FileManager = Garnish.Base.extend({
 	/**
 	 * Select the source.
 	 *
-	 * @param sourceElement jQuery object with the link element
+	 * @param folderElement jQuery object with the link element
 	 */
 	selectFolder: function (folderElement) {
 		this.markActiveFolder(folderElement.attr('data-folder'));

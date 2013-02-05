@@ -415,6 +415,30 @@ class AssetsService extends BaseEntityService
 		blx()->db->createCommand()->delete('assetfolders', array('id' => $folder->id));
 	}
 
+
+	public function getFolderTree()
+	{
+		$folders = $this->findFolders(new FolderCriteria(array('order' => 'fullPath')));
+		$tree = array();
+		$referenceStore = array();
+
+		foreach ($folders as $folder)
+		{
+			if ($folder->parentId)
+			{
+				$referenceStore[$folder->parentId]->addChild($folder);
+			}
+			else
+			{
+				$tree[] = $folder;
+			}
+
+			$referenceStore[$folder->id] = $folder;
+		}
+
+		return $tree;
+	}
+
 	/**
 	 * Returns a folder by its ID.
 	 *

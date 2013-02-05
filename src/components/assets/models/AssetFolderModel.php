@@ -6,11 +6,11 @@ namespace Blocks;
  */
 class AssetFolderModel extends BaseModel
 {
+
 	/**
-	 * Breadcrumbs for this folder (array of id => folder name ordered by depth)
 	 * @var array
 	 */
-	private $_breadCrumbs = null;
+	private $_children = null;
 
 	/**
 	 * Use the folder name as the string representation.
@@ -45,11 +45,31 @@ class AssetFolderModel extends BaseModel
 	}
 
 	/**
-	 * Return this folder's breadcrumbs
-	 * @return array
+	 * Get this folder's children.
+	 *
+	 * @return array|null
 	 */
-	public function getBreadCrumbs()
+	public function getChildren()
 	{
-		return array();
+		if (!is_null($this->_children))
+		{
+			$this->_children = blx()->assets->findFolders(new FolderCriteria(array('parentId' => $this->id)));
+		}
+
+		return $this->_children;
+	}
+
+	/**
+	 * Add a child folder manually.
+	 *
+	 * @param AssetFolderModel $folder
+	 */
+	public function addChild(AssetFolderModel $folder)
+	{
+		if (is_null($this->_children))
+		{
+			$this->_children = array();
+		}
+		$this->_children[] = $folder;
 	}
 }

@@ -1,11 +1,11 @@
 {% extends "_layouts/cp" %}
 {% set title = "Assets"|t %}
 {% includeCssResource "css/assets.css" %}
-{% set sources = blx.assets.getAllSources %}
+{% set folders = blx.assets.getAllFolders %}
 {% set view = 'thumbs' %}
 
 
-{% if sources %}
+{% if folders %}
 
 	{% includeJsResource "js/Assets/AssetFileManager.js" %}
 	{% includeJsResource "js/Assets/AssetPanel.js" %}
@@ -18,10 +18,9 @@
 
 		<nav>
 			<ul class="assets-folders">
-				{% for source in sources %}
-					{% set folder = blx.assets.getFolderBySourceId(source.id) %}
+				{% for folder in folders %}
 					{% if folder %}
-						<li><a href="javascript:;" data-source="{{ source.id }}" data-folder="{{ folder.id }}">{{ source.name }}</a></li>
+                        {% include 'assets/_nav_folder' with { folder: folder } only %}
 					{% endif %}
 				{% endfor %}
 			</ul>

@@ -173,4 +173,13 @@ class AssetsVariable
 			'stretchToFit' => Blocks::t("Stretch to fit"),
 		);
 	}
+
+	/**
+	 * Returns all folders in a structured way
+	 */
+	public function getAllFolders()
+	{
+		$tree = blx()->assets->getFolderTree();
+		return $tree;
+	}
 }
