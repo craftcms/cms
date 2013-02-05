@@ -44,4 +44,20 @@
 .assets-tv-file.assets-tv-bigthumb .assets-fileicon .assets-extension { bottom: 26px; font-size: 34px; }
 
 /*-- folder navigation -- */
-ul.assets-folders ul {padding-left: 15px;}
+ul.assets-folders ul {padding-left: 10px; display: none;}
+li.assets-fm-folder a span.assets-fm-toggle { display: block; float: left; margin: 0 0 0 -18px; width: 16px; height: 16px; background: url(../images/foldertoggle.png) no-repeat 0 0; }
+li.assets-fm-folder a.assets-fm-expanded span.assets-fm-toggle { background-position: 0 -32px; }
+
+
+/*-- Retina -- */
+@media only screen and (-moz-min-device-pixel-ratio: 1.5),
+only screen and (-o-min-device-pixel-ratio: 3/2),
+only screen and (-webkit-min-device-pixel-ratio: 1.5),
+only screen and (min-device-pixel-ratio: 1.5),
+only screen and (min-resolution: 1.5dppx) {
+	.assets-tv-file .assets-fileicon { background-image: url(../images/file_medium_2x.png); background-size: 69px 89px; }
+	.assets-tv-file.assets-tv-bigthumb .assets-fileicon { background-image: url(../images/file_big_2x.png); background-size: 136px 175px; }
+	.assets-listview table .assets-lv-name .assets-lv-thumb .assets-fileicon { background-image: url(../images/file_small_2x.png); background-size: 22px 28px; }
+
+	li.assets-fm-folder a span.assets-fm-toggle { background-image: url(../images/foldertoggle_2x.png); background-size: 16px 64px; }
+}

@@ -45,6 +45,7 @@ Assets.FileManager = Garnish.Base.extend({
         this.$promptApplyToRemainingLabel = null;
         this.$promptButtons = null;
 
+
         this.modal = null;
 
 		this.sort = 'asc';
@@ -52,6 +53,9 @@ Assets.FileManager = Garnish.Base.extend({
         this.promptArray = [];
 
         this.selectedFileIds = [];
+        this.folders = [];
+
+        this.folderSelect = null;
 
         this._promptCallback = function (){};
 
@@ -61,7 +65,8 @@ Assets.FileManager = Garnish.Base.extend({
 
 		this.currentState = {
 			view: 'thumbs',
-			currentFolder: null
+			currentFolder: null,
+            folders: {}
 		};
 
 		this.storageKey = 'Blocks_Assets_' + this.settings.namespace;
@@ -80,6 +85,28 @@ Assets.FileManager = Garnish.Base.extend({
 				localStorage[this.storageKey] = JSON.stringify(this.currentState);
 			}
 		};
+
+        /**
+         * Store folder state.
+         *
+         * @param folderId
+         * @param state
+         */
+        this.setFolderState = function (folderId, state)
+        {
+            if (typeof this.currentState.folders != "object")
+            {
+                var folders = {};
+            }
+            else
+            {
+                folders = this.currentState.folders;
+            }
+
+            folders[folderId] = state;
+            this.storeState('folders', folders);
+        };
+
 
 
 		// -------------------------------------------
@@ -128,6 +155,31 @@ Assets.FileManager = Garnish.Base.extend({
 			$(this.$upload[1]).replaceWith($(this.$upload[0]).clone(true));
 		}
 
+        // -------------------------------------------
+        //  Folders
+        // -------------------------------------------
+
+        // initialize the folder select
+        this.folderSelect = new Garnish.Select(this.$folders, {
+            selectedClass:     'sel',
+            multi:             false,
+            waitForDblClick:   false,
+            vertical:          true,
+            onSelectionChange: $.proxy(this, 'reloadFolderView')
+        });
+
+        // initialize top-level folders
+        this.$topFolderUl = this.$folders;
+        this.$topFolderLis = this.$topFolderUl.children().filter('li');
+
+        // stop initializing everything if there are no folders
+        if (! this.$topFolderLis.length) return;
+
+        for (var i = 0; i < this.$topFolderLis.length; i++)
+        {
+            var folder = new Assets.FileManagerFolder(this, this.$topFolderLis[i], 1);
+        }
+
 		// ---------------------------------------
 		// Asset events
 		// ---------------------------------------
@@ -152,10 +204,24 @@ Assets.FileManager = Garnish.Base.extend({
 			this.storeState('currentFolder', this.$folders.find('a[data-folder]').attr('data-folder'));
 		}
 
+
 		this.markActiveFolder(this.currentState.currentFolder);
 		this.markActiveViewButton();
 
-		this.reloadFolderView();
+        // expand folders
+        for (var folder in this.currentState.folders)
+        {
+            if (this.currentState.folders[folder] == 'expanded'
+                && typeof this.folders[folder] !== 'undefined'
+                && this.folders[folder].hasSubfolders())
+            {
+                this.folders[folder]._prepForSubfolders();
+                this.folders[folder].expand();
+            }
+        }
+
+
+        this.reloadFolderView();
 	},
 
 	/**
