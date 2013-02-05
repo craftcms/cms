@@ -69,7 +69,7 @@ class DbBackup
 		$tables = DbHelper::getTableNames();
 		foreach ($tables as $table)
 		{
-			$sql .= 'DROP TABLE IF EXISTS '.$databaseName.'.'.$table.';'.PHP_EOL;
+			$sql .= 'DROP TABLE IF EXISTS '.blx()->db->quoteValue($databaseName).'.'.blx()->db->quoteTableName($table).';'.PHP_EOL;
 		}
 
 		$sql .= PHP_EOL.'SET FOREIGN_KEY_CHECKS = 1;'.PHP_EOL;
@@ -95,8 +95,8 @@ class DbBackup
 		{
 			if ($first && count($value[0]) > 0)
 			{
-				$sql .= PHP_EOL.'--'.PHP_EOL.'-- Constraints for table `'.$tableName.'`'.PHP_EOL.'--'.PHP_EOL;
-				$sql .= 'ALTER TABLE '.$tableName.PHP_EOL;
+				$sql .= PHP_EOL.'--'.PHP_EOL.'-- Constraints for table '.blx()->db->quoteTableName($tableName).PHP_EOL.'--'.PHP_EOL;
+				$sql .= 'ALTER TABLE '.blx()->db->quoteTableName($tableName).PHP_EOL;
 			}
 
 			if (count($value[0]) > 0)
