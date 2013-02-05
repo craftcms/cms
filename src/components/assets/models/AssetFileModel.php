@@ -96,4 +96,14 @@ class AssetFileModel extends BaseEntityModel
 		return blx()->assets->getFileContentRecordByFileId($this->id);
 	}
 
+	/**
+	 * Get the file extension.
+	 *
+	 * @return mixed
+	 */
+	public function getExtension()
+	{
+		return pathinfo($this->filename, PATHINFO_EXTENSION);
+	}
+
 }

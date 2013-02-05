@@ -1,17 +1,15 @@
-{% set thumbSize = 125 %}
-{% set thumbSize2X = 250 %}
+{% set thumbSize = 100 %}
+{% set thumbSize2X = 200 %}
 
 <div class="files thumbs">
 	<ul>
-        {# for folder in folders %}
-            <li class="open-folder" data-folder="{{ folder.id }}">
-                <div class="thumb folder"></div>
-                <div class="filename">{{ folder.name }}</div>
-            </li>
-        {%  endfor #}
 		{% for file in files %}
 			<li class="open-file" data-file="{{ file.id }}">
-				<div class="thumb thumb-{{ file.id }}"></div>
+                {% if file.kind == 'image' %}
+				    <div class="thumb thumb-{{ file.id }}"></div>
+                {% else %}
+                    <div class="thumb assets-fileicon"><div class="assets-extension">{{ file.extension }}</div></div>
+                {% endif %}
 				<div class="filename">{{ file.filename }}</div>
 			</li>
 		{% endfor %}

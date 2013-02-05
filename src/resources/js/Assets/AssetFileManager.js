@@ -175,9 +175,11 @@ Assets.FileManager = Garnish.Base.extend({
 		if (this.currentState.view == 'thumbs') {
 			this.$viewAsThumbsBtn.addClass('active');
 			this.$viewAsListBtn.removeClass('active');
+            this.$folderContainer.addClass('assets-tv-file').removeClass('assets-listview').removeClass('assets-tv-bigthumb');
 		} else {
 			this.$viewAsThumbsBtn.removeClass('active');
 			this.$viewAsListBtn.addClass('active');
+            this.$folderContainer.removeClass('assets-tv-file').addClass('assets-listview').removeClass('assets-tv-bigthumb');
 		}
 	},
 
