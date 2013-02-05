@@ -139,14 +139,9 @@ class Blocks extends \Yii
 	 */
 	public static function hasPackage($packageName)
 	{
-		// Check the database first.
+		// An install has a package if it is in the database AND on the file system.
 		$storedPackages = static::getStoredPackages() == null ? array() : static::getStoredPackages();
-		if (in_array($packageName, $storedPackages))
-		{
-			return true;
-		}
-		// Check the filesystem next.
-		else if (in_array($packageName, static::getPackages()))
+		if (in_array($packageName, $storedPackages) && in_array($packageName, static::getPackages()))
 		{
 			return true;
 		}
