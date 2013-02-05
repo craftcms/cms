@@ -579,6 +579,26 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns true is the build stored in blx_info is less than the minimum required build on the file system.
+	 * This effectively makes sure that a user cannot manually update past a manual breakpoint.
+	 *
+	 * @return bool
+	 */
+	public function isBreakpointUpdateNeeded()
+	{
+		// Only Blocks has the concept of a breakpoint, not plugins.
+		if ($this->isBlocksDbUpdateNeeded())
+		{
+			if (version_compare(Blocks::getStoredBuild(), Blocks::getMinRequiredBuild(), '<'))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Returns a list of plugins that are in need of a database update.
 	 *
 	 * @return array|null

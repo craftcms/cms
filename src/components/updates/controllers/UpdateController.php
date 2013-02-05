@@ -107,11 +107,19 @@ class UpdateController extends BaseController
 	// -------------------------------------------
 
 	/**
-	 * Index
+	 *
 	 */
 	public function actionManualUpdate()
 	{
 		$this->renderTemplate('_special/dbupdate');
+	}
+
+	/**
+	 *
+	 */
+	public function actionBreakpointUpdate()
+	{
+		$this->renderTemplate('_special/breakpointupdate');
 	}
 
 	/**

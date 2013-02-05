@@ -1,0 +1,6 @@
+{% extends "_layouts/message" %}
+{% set title = "Update Blocks"|t %}
+
+{% set content %}
+		<p>{{ "Sorry.  You need to be on at least build " ~ blx.app.getMinRequiredBuild() ~ " before you can manually update to build " ~ blx.app.getBuild() ~ " of Blocks."|t }}</p>
+{% endset %}

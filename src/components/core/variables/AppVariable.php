@@ -89,6 +89,15 @@ class AppVariable
 		$uploadMb = min($maxUpload, $maxPost, $memoryLimit);
 
 		return (int) $uploadMb * 1024 * 1024;
-
 	}
+
+	/**
+		 * Gets the minimum required build numbers as stored in the BLOCKS_MIN_BUILD_REQUIRED constant.
+		 *
+		 * @return mixed
+		 */
+		public function getMinRequiredBuild()
+		{
+			return Blocks::getMinRequiredBuild();
+		}
 }

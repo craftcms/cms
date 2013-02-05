@@ -87,8 +87,16 @@ class App extends \CWebApplication
 				}
 				else
 				{
-					$this->runController('update/manualUpdate');
-					$this->end();
+					if (blx()->updates->isBreakpointUpdateNeeded())
+					{
+						$this->runController('update/breakpointUpdate');
+						$this->end();
+					}
+					else
+					{
+						$this->runController('update/manualUpdate');
+						$this->end();
+					}
 				}
 			}
 			// We'll also let action requests to UpdateController through as well.
