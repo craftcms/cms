@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m130205_110000_correct_applytime_casing_in_migration extends DbMigration
+class m130206_110000_correct_applytime_casing_in_migration extends BaseMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
@@ -13,15 +13,16 @@ class m130205_110000_correct_applytime_casing_in_migration extends DbMigration
 	 */
 	public function safeUp()
 	{
-		$migrationsTable = blx()->db->schema->getTable('{{migrations}}');
+		$migrationsTable = $this->dbConnection->schema->getTable('{{migrations}}');
 
 		if ($migrationsTable)
 		{
 			if (!$migrationsTable->getColumn('applyTime') && $migrationsTable->getColumn('apply_time'))
 			{
-				blx()->db->createCommand()->renameColumn('{{migrations}}', 'apply_time', 'applyTime');
+				$this->dbConnection->createCommand()->renameColumn('{{migrations}}', 'apply_time', 'applyTime');
+				$this->renameColumn('{{migrations}}', 'apply_time', 'applyTime');
 
-				blx()->db->getSchema()->refresh();
+				$this->refreshTableSchema('{{migrations}}');
 				MigrationRecord::model()->refreshMetaData();
 			}
 			else
