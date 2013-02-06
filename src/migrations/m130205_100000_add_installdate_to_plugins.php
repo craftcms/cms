@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m130129_002915_add_installdate_to_plugins extends DbMigration
+class m130205_100000_add_installdate_to_plugins extends DbMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
