@@ -387,9 +387,6 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 		// remove this from the old parent
 		this.parent.removeSubfolder(this);
 
-		// set the new depth
-		this.updateDepth(newParent.depth + 1);
-
 		// make sure the new parent is expanded
 		newParent.expand();
 
@@ -467,30 +464,13 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 	},
 
 	/**
-	 * Update Depth
-	 */
-	updateDepth: function(depth)
-	{
-		if (depth == this.depth) return;
-
-		this.depth = depth;
-
-		var padding = 20 + (18 * this.depth);
-		this.$a.css('padding-left', padding);
-
-		for (var i = 0; i < this.subfolders.length; i++)
-		{
-			this.subfolders[i].updateDepth(this.depth + 1);
-		}
-	},
-
-	/**
 	 * Rename
 	 */
 	_rename: function()
 	{
+        return;
 		var oldName = this.folderName,
-			newName = prompt(Blocks.t('Rename'), oldName);
+			newName = prompt(Blocks.t('Rename folder'), oldName);
 
 		if (newName && newName != oldName)
 		{
@@ -530,49 +510,42 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 	 */
 	_createSubfolder: function()
 	{
-		var subfolderName = prompt(Assets.lang.new_subfolder);
+		var subfolderName = prompt(Blocks.t('Enter the name of the folder'));
 
 		if (subfolderName)
 		{
-			var subfolderPath = this.id+'/'+subfolderName;
+			var params = {
+				parentId:  this.id,
+		        folderName: subfolderName
+			};
 
-			var data = {
-				ACT:  Assets.actions.create_folder,
-				path: subfolderPath
-			}
+			this.fm.setAssetsBusy();
 
-			this.fm.$fm.addClass('assets-loading');
+            Blocks.postActionRequest('assets/createFolder', params, $.proxy(function(data)
+            {
+				this.fm.setAssetsAvailable();
 
-			$.post(Assets.siteUrl, data, $.proxy(function(data, textStatus)
-			{
-				this.fm.$fm.removeClass('assets-loading');
+                if (data.success)
+                {
+                    subfolderName = data.folderName;
+                        var $li = $('<li class="assets-fm-folder">'
+                              +   '<a data-folder="' + data.folderId + '">'
+                              +     data.folderName
+                              +   '</a>'
+                              + '</li>'),
+                        subfolder = new Assets.FileManagerFolder(this.fm, $li[0], this.depth + 1, this);
 
-				if (textStatus == 'success')
-				{
-					if (data.success)
-					{
-                        subfolderName = data.folder_name;
-						var subfolderDepth = this.depth + 1,
-							padding = 20 + (18 * subfolderDepth),
-							$li = $('<li class="assets-fm-folder">'
-								  +   '<a data-id="' + data.folder_id + '" style="padding-left: '+padding+'px;">'
-								  +     '<span class="assets-fm-label">' + subfolderName + '</span>'
-								  +   '</a>'
-								  + '</li>'),
-							subfolder = new Assets.FileManagerFolder(this.fm, $li[0], subfolderDepth, this);
+                    this.addSubfolder(subfolder);
 
-						this.addSubfolder(subfolder);
+                    subfolder.onShow();
+                }
 
-						subfolder.onShow();
-					}
-
-					if (data.error)
-					{
-						alert(data.error);
-					}
-				}
-			}, this), 'json')
-		}
+                if (data.error)
+                {
+                    alert(data.error);
+                }
+			}, this));
+        }
 	},
 
 	/**
@@ -580,35 +553,33 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 	 */
 	_delete: function()
 	{
-		if (confirm(Assets.parseTag(Assets.lang.confirm_delete_folder, 'folder', this.folderName)))
+		if (confirm(Blocks.t('Really delete folder "{folder}"?', {folder: this.folderName})))
 		{
-			var data = {
-				ACT:  Assets.actions.delete_folder,
-                folder_id: this.$a.attr('data-id')
-			};
 
-			this.fm.$fm.addClass('assets-loading');
+            var params = {
+                folderId: this.id
+            }
 
-			$.post(Assets.siteUrl, data, $.proxy(function(data, textStatus)
-			{
-				this.fm.$fm.removeClass('assets-loading');
+			this.fm.setAssetsBusy();
 
-				if (textStatus == 'success')
-				{
-					if (data.success)
-					{
-						this.onDelete(true);
+            Blocks.postActionRequest('assets/deleteFolder', params, $.proxy(function(data)
+            {
+                this.fm.setAssetsAvailable();
 
-						// refresh the files view
-						this.fm.updateFiles();
-					}
+                if (data.success)
+                {
+                    this.onDelete(true);
 
-					if (data.error)
-					{
-						alert(data.error);
-					}
-				}
-			}, this), 'json');
+                    // refresh the files view
+                    this.fm.reloadFolderView();
+                }
+
+                if (data.error)
+                {
+                    alert(data.error);
+                }
+
+			}, this));
 		}
 	}
 },

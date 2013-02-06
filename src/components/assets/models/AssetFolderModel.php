@@ -51,7 +51,7 @@ class AssetFolderModel extends BaseModel
 	 */
 	public function getChildren()
 	{
-		if (!is_null($this->_children))
+		if (is_null($this->_children))
 		{
 			$this->_children = blx()->assets->findFolders(new FolderCriteria(array('parentId' => $this->id)));
 		}

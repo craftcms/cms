@@ -110,6 +110,31 @@ abstract class BaseAssetSourceType extends BaseComponent
 	 */
 	abstract protected function _deleteGeneratedImageTransformations(AssetFileModel $file);
 
+	/**
+	 * Return TRUE if a physical folder exists.
+	 *
+	 * @param AssetFolderModel $parentFolder
+	 * @param $folderName
+	 * @return boolean
+	 */
+	abstract protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName);
+
+	/**
+	 * Create a physical folder, return TRUE on success.
+	 *
+	 * @param AssetFolderModel $parentFolder
+	 * @param $folderName
+	 * @return boolean
+	 */
+	abstract protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName);
+
+	/**
+	 * Delete the source folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @return boolean
+	 */
+	abstract protected function _deleteSourceFolder(AssetFolderModel $folder);
 
 	/**
 	 * Return a result object for prompting the user about filename conflicts.
@@ -430,6 +455,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 	 * Delete a file.
 	 *
 	 * @param AssetFileModel $file
+	 * @return AssetOperationResponseModel
 	 */
 	public function deleteFile(AssetFileModel $file)
 	{
@@ -437,11 +463,84 @@ abstract class BaseAssetSourceType extends BaseComponent
 		$this->_deleteGeneratedImageTransformations($file);
 		$this->_deleteGeneratedThumbnails($file);
 
-		$condition = array('id' => $file->id);
-
-		blx()->db->createCommand()->delete('assetfiles', $condition);
+		blx()->assets->deleteFileRecord($file->id);
 
 		$response = new AssetOperationResponseModel();
 		$response->setSuccess();
+
+		return $response;
+	}
+
+	/**
+	 * Create a subfolder.
+	 *
+	 * @param AssetFolderModel $parentFolder
+	 * @param $folderName
+	 * @return AssetOperationResponseModel
+	 * @throws Exception
+	 */
+	public function createFolder(AssetFolderModel $parentFolder, $folderName)
+	{
+		$folderName = IOHelper::cleanFilename($folderName);
+
+		// If folder exists in DB or physically, bail out
+		if (blx()->assets->findFolder(new FolderCriteria(array('parentId' => $parentFolder->id,	'name' => $folderName)))
+			|| $this->_sourceFolderExists($parentFolder, $folderName))
+		{
+			throw new Exception(Blocks::t('A folder already exists with that name!'));
+		}
+
+		if ( !$this->_createSourceFolder($parentFolder, $folderName))
+		{
+			throw new Exception(Blocks::t('There was an error while creating the folder.'));
+		}
+
+		$newFolder = new AssetFolderModel();
+		$newFolder->sourceId = $parentFolder->sourceId;
+		$newFolder->parentId = $parentFolder->id;
+		$newFolder->name = $folderName;
+		$newFolder->fullPath = $parentFolder->fullPath.$folderName.'/';
+
+		$folderId = blx()->assets->storeFolder($newFolder);
+
+		$response = new AssetOperationResponseModel();
+		$response->setSuccess();
+		$response->setDataItem('folderId', $folderId);
+		$response->setDataItem('parentId', $parentFolder->id);
+		$response->setDataItem('folderName', $folderName);
+
+		return $response;
+	}
+
+	/**
+	 * Delete a folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @return AssetOperationResponseModel
+	 */
+	public function deleteFolder(AssetFolderModel $folder)
+	{
+
+		// Get rid of children files
+		$files = blx()->assets->findFiles(new FileCriteria(array('folderId' => $folder->id)));
+		foreach ($files as $file)
+		{
+			$this->deleteFile($file);
+		}
+
+		// Delete children folders
+		$childFolders = blx()->assets->findFolders(new FolderCriteria(array('parentId' => $folder->id)));
+		foreach ($childFolders as $childFolder)
+		{
+			$this->deleteFolder($childFolder);
+		}
+
+		$this->_deleteSourceFolder($folder);
+
+		blx()->assets->deleteFolderRecord($folder->id);
+
+		$response = new AssetOperationResponseModel();
+		$response->setSuccess();
+		return $response;
 	}
 }

@@ -458,5 +458,39 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		return $response;
 	}
 
+	/**
+	 * Return TRUE if a physical folder exists.
+	 *
+	 * @param AssetFolderModel $parentFolder
+	 * @param $folderName
+	 * @return boolean
+	 */
+	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
+	{
+		return IOHelper::folderExists($this->_getSourceFileSystemPath() . $parentFolder->fullPath . $folderName);
+	}
+
+	/**
+	 * Create a physical folder, return TRUE on success.
+	 *
+	 * @param AssetFolderModel $parentFolder
+	 * @param $folderName
+	 * @return boolean
+	 */
+	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
+	{
+		return IOHelper::createFolder($this->_getSourceFileSystemPath() . $parentFolder->fullPath . $folderName, IOHelper::writableFolderPermissions);
+	}
+
+	/**
+	 * Delete the source folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @return boolean
+	 */
+	protected function _deleteSourceFolder(AssetFolderModel $folder)
+	{
+		return IOHelper::deleteFolder($this->_getSourceFileSystemPath().$folder->fullPath);
+	}
 
 }
