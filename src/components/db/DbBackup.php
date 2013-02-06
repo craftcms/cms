@@ -50,7 +50,7 @@ class DbBackup
 
 		$sql = IOHelper::getFileContents($filePath);
 
-		Blocks::log('Executing SQL statement: '.$sql, \CLogger::LEVEL_INFO);
+		Blocks::log('Executing SQL statement: '.$sql);
 		$command = blx()->db->createCommand($sql);
 		$command->execute();
 	}
@@ -60,7 +60,7 @@ class DbBackup
 	 */
 	private function _nukeDb()
 	{
-		Blocks::log('Nuking DB', \CLogger::LEVEL_INFO);
+		Blocks::log('Nuking DB');
 
 		$databaseName = blx()->config->getDbItem('database');
 
@@ -77,7 +77,7 @@ class DbBackup
 		$command = blx()->db->createCommand($sql);
 		$command->execute();
 
-		Blocks::log('Database nuked.', \CLogger::LEVEL_INFO);
+		Blocks::log('Database nuked.');
 	}
 
 

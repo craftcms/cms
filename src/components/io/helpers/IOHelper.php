@@ -498,7 +498,7 @@ class IOHelper
 				return $contents;
 			}
 
-			Blocks::log('Tried to read the file contents at '.$path.' and could not.', \CLogger::LEVEL_INFO);
+			Blocks::log('Tried to read the file contents at '.$path.' and could not.');
 			return false;
 		}
 

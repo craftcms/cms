@@ -27,13 +27,13 @@ class InstallService extends BaseApplicationComponent
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
-			Blocks::log('Installing Blocks.', \CLogger::LEVEL_INFO);
+			Blocks::log('Installing Blocks.');
 
 			// Create the tables
 			$this->_createTablesFromRecords($records);
 			$this->_createForeignKeysFromRecords($records);
 
-			Blocks::log('Committing the transaction.', \CLogger::LEVEL_INFO);
+			Blocks::log('Committing the transaction.');
 			$transaction->commit();
 		}
 		catch (\Exception $e)
@@ -53,7 +53,7 @@ class InstallService extends BaseApplicationComponent
 		$this->_saveDefaultMailSettings($inputs['email'], $inputs['siteName']);
 		$this->_createDefaultContent();
 
-		Blocks::log('Finished installing Blocks.', \CLogger::LEVEL_INFO);
+		Blocks::log('Finished installing Blocks.');
 	}
 
 	/**
@@ -114,7 +114,7 @@ class InstallService extends BaseApplicationComponent
 	{
 		foreach ($records as $record)
 		{
-			Blocks::log('Creating table for record:'. get_class($record), \CLogger::LEVEL_INFO);
+			Blocks::log('Creating table for record:'. get_class($record));
 			$record->createTable();
 		}
 	}
@@ -129,7 +129,7 @@ class InstallService extends BaseApplicationComponent
 	{
 		foreach ($records as $record)
 		{
-			Blocks::log('Adding foreign keys for record:'. get_class($record), \CLogger::LEVEL_INFO);
+			Blocks::log('Adding foreign keys for record:'. get_class($record));
 			$record->addForeignKeys();
 		}
 	}
@@ -143,7 +143,7 @@ class InstallService extends BaseApplicationComponent
 	 */
 	private function _populateInfoTable($inputs)
 	{
-		Blocks::log('Populating the info table.', \CLogger::LEVEL_INFO);
+		Blocks::log('Populating the info table.');
 
 		$info = new InfoRecord();
 
@@ -160,7 +160,7 @@ class InstallService extends BaseApplicationComponent
 
 		if ($info->save())
 		{
-			Blocks::log('Info table populated successfully.', \CLogger::LEVEL_INFO);
+			Blocks::log('Info table populated successfully.');
 		}
 		else
 		{
@@ -182,7 +182,7 @@ class InstallService extends BaseApplicationComponent
 
 		if ($migration->save())
 		{
-			Blocks::log('Migration table populated successfully.', \CLogger::LEVEL_INFO);
+			Blocks::log('Migration table populated successfully.');
 		}
 		else
 		{
@@ -201,7 +201,7 @@ class InstallService extends BaseApplicationComponent
 	 */
 	private function _addUser($inputs)
 	{
-		Blocks::log('Creating user.', \CLogger::LEVEL_INFO);
+		Blocks::log('Creating user.');
 
 		$user = new UserModel();
 
@@ -213,7 +213,7 @@ class InstallService extends BaseApplicationComponent
 
 		if (blx()->users->saveUser($user))
 		{
-			Blocks::log('User created successfully.', \CLogger::LEVEL_INFO);
+			Blocks::log('User created successfully.');
 		}
 		else
 		{
@@ -230,11 +230,11 @@ class InstallService extends BaseApplicationComponent
 	 */
 	private function _logUserIn($inputs)
 	{
-		Blocks::log('Logging in user.', \CLogger::LEVEL_INFO);
+		Blocks::log('Logging in user.');
 
 		if (blx()->userSession->login($inputs['username'], $inputs['password']))
 		{
-			Blocks::log('User logged in successfully.', \CLogger::LEVEL_INFO);
+			Blocks::log('User logged in successfully.');
 		}
 		else
 		{
@@ -251,7 +251,7 @@ class InstallService extends BaseApplicationComponent
 	 */
 	private function _saveDefaultMailSettings($email, $siteName)
 	{
-		Blocks::log('Saving default mail settings.', \CLogger::LEVEL_INFO);
+		Blocks::log('Saving default mail settings.');
 
 		$settings = array(
 			'protocol'     => EmailerType::Php,
@@ -261,7 +261,7 @@ class InstallService extends BaseApplicationComponent
 
 		if (blx()->systemSettings->saveSettings('email', $settings))
 		{
-			Blocks::log('Default mail settings saved successfully.', \CLogger::LEVEL_INFO);
+			Blocks::log('Default mail settings saved successfully.');
 		}
 		else
 		{
@@ -279,7 +279,7 @@ class InstallService extends BaseApplicationComponent
 	{
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			Blocks::log('Creating the Blog section.', \CLogger::LEVEL_INFO);
+			Blocks::log('Creating the Blog section.');
 
 			$section = new SectionModel();
 
@@ -292,7 +292,7 @@ class InstallService extends BaseApplicationComponent
 
 			if (blx()->sections->saveSection($section))
 			{
-				Blocks::log('Blog section created successfuly."', \CLogger::LEVEL_INFO);
+				Blocks::log('Blog section created successfully.');
 			}
 			else
 			{
@@ -300,7 +300,7 @@ class InstallService extends BaseApplicationComponent
 			}
 		}
 
-		Blocks::log('Creating the Body entry block.', \CLogger::LEVEL_INFO);
+		Blocks::log('Creating the Body entry block.');
 
 		$block = new EntryBlockModel();
 
@@ -322,7 +322,7 @@ class InstallService extends BaseApplicationComponent
 
 		if ($service->saveBlock($block))
 		{
-			Blocks::log('Body entry block created successfuly."', \CLogger::LEVEL_INFO);
+			Blocks::log('Body entry block created successfully.');
 		}
 		else
 		{
