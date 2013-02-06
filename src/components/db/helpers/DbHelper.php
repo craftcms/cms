@@ -506,13 +506,13 @@ class DbHelper
 		if (StringHelper::isNullOrEmpty($prefix))
 		{
 			return blx()->db->createCommand()
-				->setText("SHOW TABLES FROM {$databaseName};")
+				->setText("SHOW TABLES FROM ".blx()->db->quoteValue($databaseName).";")
 				->queryColumn();
 		}
 		else
 		{
 			return blx()->db->createCommand()
-				->setText("SHOW TABLES FROM {$databaseName} LIKE '{$prefix}_%';")
+				->setText("SHOW TABLES FROM ".blx()->db->quoteValue($databaseName)." LIKE '{$prefix}_%';")
 				->queryColumn();
 		}
 
