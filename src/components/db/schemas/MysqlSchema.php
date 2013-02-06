@@ -7,6 +7,17 @@ namespace Blocks;
 class MysqlSchema extends \CMysqlSchema
 {
 	/**
+	 * Quotes a database name for use in a query.
+	 *
+	 * @param string $name
+	 * @return string
+	 */
+	public function quoteDatabaseName($name)
+	{
+		return '`'.$name.'`';
+	}
+
+	/**
 	 * @param $table
 	 * @param $column
 	 * @param $type
