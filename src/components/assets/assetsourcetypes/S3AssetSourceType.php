@@ -534,4 +534,33 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		return $response;
 	}
+
+	/**
+	 * Return TRUE if a physical folder exists.
+	 *
+	 * @param AssetFolderModel $parentFolder
+	 * @param $folderName
+	 * @return boolean
+	 */
+	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
+	{
+
+		$this->_prepareForRequests();
+		return (bool) $this->_s3->getObjectInfo($this->getSettings()->bucket, $parentFolder->fullPath.$folderName);
+
+	}
+
+	/**
+	 * Create a physical folder, return TRUE on success.
+	 *
+	 * @param AssetFolderModel $parentFolder
+	 * @param $folderName
+	 * @return boolean
+	 */
+	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
+	{
+		$this->_prepareForRequests();
+		return $this->_s3->putObject('', $this->getSettings()->bucket, rtrim($parentFolder->fullPath.$folderName, '/') . '/', \S3::ACL_PUBLIC_READ);
+	}
+
 }

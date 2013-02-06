@@ -290,7 +290,7 @@ Assets.FileManager = Garnish.Base.extend({
 	 */
 	loadFolderView: function (folderId) {
 
-		this.$spinner.show();
+		this.setAssetsBusy();
 
 		var params = {
 			requestId: ++this.requestId,
@@ -310,7 +310,7 @@ Assets.FileManager = Garnish.Base.extend({
 
 			this._setUploadFolder(folderId);
 
-			this.$spinner.hide();
+			this.setAssetsAvailable();
 
 			this.applyFolderBindings();
 
@@ -324,7 +324,7 @@ Assets.FileManager = Garnish.Base.extend({
 
 		// File blocks editing
 		this.$folderContainer.find('.open-file').dblclick(function () {
-			_this.$spinner.show();
+			_this.setAssetsBusy();
 			var params = {
 				requestId: ++_this.requestId,
 				fileId: $(this).attr('data-file')
@@ -335,7 +335,7 @@ Assets.FileManager = Garnish.Base.extend({
 					return;
 				}
 
-				this.$spinner.hide();
+				this.setAssetsAvailable();
 
                 $modalContainerDiv = _this.$modalContainerDiv;
 
@@ -376,7 +376,7 @@ Assets.FileManager = Garnish.Base.extend({
 		});
 
 		this.$folderContainer.find('.open-folder').dblclick(function () {
-			_this.$spinner.show();
+			_this.setAssetsBusy();
 			_this.loadFolderView($(this).attr('data-folder'));
 		});
 
@@ -438,7 +438,7 @@ Assets.FileManager = Garnish.Base.extend({
 		// is this the first file?
 		if (! this.uploader.getInProgress()) {
 
-			this.$spinner.show();
+			this.setAssetsBusy();
 
 			// prepare the progress bar
 			this.$uploadProgress.show();
@@ -493,7 +493,7 @@ Assets.FileManager = Garnish.Base.extend({
 		// is this the last file?
 		if (! this.uploader.getInProgress()) {
 			if (this._uploadedFiles) {
-                this.$spinner.hide();
+                this.setAssetsAvailable();
                 if (this.promptArray.length)
                 {
                     this._showBatchPrompts(this.promptArray, this._uploadFollowup);
@@ -505,7 +505,7 @@ Assets.FileManager = Garnish.Base.extend({
 			} else {
 				// just skip to hiding the progress bar
 				this._hideProgressBar();
-				this.$spinner.hide();
+				this.setAssetsAvailable();
 			}
 		}
 
@@ -518,7 +518,7 @@ Assets.FileManager = Garnish.Base.extend({
 
         var finalCallback = $.proxy(function()
         {
-            this.$spinner.hide();
+            this.setAssetsAvailable();
             this.reloadFolderView();
         }, this);
 
@@ -726,6 +726,21 @@ Assets.FileManager = Garnish.Base.extend({
                 this._promptBatchCallback(this._promptBatchReturnData);
             }
         }
+    },
+
+    setAssetsBusy: function ()
+    {
+        this.$spinner.show();
+    },
+
+    setAssetsAvailable: function ()
+    {
+        this.$spinner.hide();
+    },
+
+    isAssetsAvailable: function ()
+    {
+        return this.$spinner.is(':visible');
     }
 
 },

@@ -415,7 +415,11 @@ class AssetsService extends BaseEntityService
 		blx()->db->createCommand()->delete('assetfolders', array('id' => $folder->id));
 	}
 
-
+	/**
+	 * Get the folder tree for Assets.
+	 *
+	 * @return array
+	 */
 	public function getFolderTree()
 	{
 		$folders = $this->findFolders(new FolderCriteria(array('order' => 'fullPath')));
@@ -437,6 +441,36 @@ class AssetsService extends BaseEntityService
 		}
 
 		return $tree;
+	}
+
+	/**
+	 * Create a folder.
+	 *
+	 * @param $parentId
+	 * @param $folderName
+	 * @return AssetOperationResponseModel
+	 */
+	public function createFolder($parentId, $folderName)
+	{
+		try
+		{
+			$parentFolder = $this->getFolderById($parentId);
+			if (empty($parentFolder))
+			{
+				throw new Exception(Blocks::t("Can't find the parent folder!"));
+			}
+
+			$source = blx()->assetSources->getSourceTypeById($parentFolder->sourceId);
+			$response = $source->createFolder($parentFolder, $folderName);
+
+		}
+		catch (Exception $exception)
+		{
+			$response = new AssetOperationResponseModel();
+			$response->setError($exception->getMessage());
+		}
+
+		return $response;
 	}
 
 	/**

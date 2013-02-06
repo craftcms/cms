@@ -96,7 +96,7 @@ class AssetsController extends BaseEntityController
 	}
 
 	/**
-	 * Save a file's block content
+	 * Save a file's block content.
 	 */
 	public function actionSaveFile()
 	{
@@ -110,5 +110,20 @@ class AssetsController extends BaseEntityController
 			blx()->assets->storeFileBlocks($file);
 			$this->returnJson(array('success' => true));
 		}
+	}
+
+	/**
+	 * Create a folder.
+	 */
+	public function actionCreateFolder()
+	{
+		$this->requireLogin();
+		$this->requireAjaxRequest();
+		$parentId = blx()->request->getRequiredPost('parentId');
+		$folderName = blx()->request->getRequiredPost('folderName');
+
+		$response = blx()->assets->createFolder($parentId, $folderName);
+
+		$this->returnJson($response->getResponseData());
 	}
 }
