@@ -500,21 +500,11 @@ class DbHelper
 	 */
 	public static function getTableNames()
 	{
-		$prefix = blx()->config->getDbItem('tablePrefix');
-		$databaseName = blx()->config->getDbItem('database');
+		$databaseName = blx()->db->quoteDatabaseName(blx()->config->getDbItem('database'));
+		$likeSql = (blx()->db->tablePrefix ? ' LIKE \''.blx()->db->tablePrefix.'%\'' : '');
 
-		if (StringHelper::isNullOrEmpty($prefix))
-		{
-			return blx()->db->createCommand()
-				->setText("SHOW TABLES FROM ".blx()->db->quoteDatabaseName($databaseName).";")
-				->queryColumn();
-		}
-		else
-		{
-			return blx()->db->createCommand()
-				->setText("SHOW TABLES FROM ".blx()->db->quoteDatabaseName($databaseName)." LIKE '{$prefix}_%';")
-				->queryColumn();
-		}
-
+		return blx()->db->createCommand()
+			->setText("SHOW TABLES FROM {$databaseName}{$likeSql};")
+			->queryColumn();
 	}
 }
