@@ -563,4 +563,17 @@ class S3AssetSourceType extends BaseAssetSourceType
 		return $this->_s3->putObject('', $this->getSettings()->bucket, rtrim($parentFolder->fullPath.$folderName, '/') . '/', \S3::ACL_PUBLIC_READ);
 	}
 
+	/**
+	 * Delete the source folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @return boolean
+	 */
+	protected function _deleteSourceFolder(AssetFolderModel $folder)
+	{
+		$this->_prepareForRequests();
+		return $this->_s3->deleteObject($this->getSettings()->bucket, $folder->fullPath.'*');
+	}
+
+
 }

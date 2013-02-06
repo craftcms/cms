@@ -553,36 +553,33 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 	 */
 	_delete: function()
 	{
-        return;
 		if (confirm(Blocks.t('Really delete folder "{folder}"?', {folder: this.folderName})))
 		{
-			var data = {
-				ACT:  Assets.actions.delete_folder,
-                folder_id: this.$a.attr('data-id')
-			};
 
-			this.fm.$fm.addClass('assets-loading');
+            var params = {
+                folderId: this.id
+            }
 
-			$.post(Assets.siteUrl, data, $.proxy(function(data, textStatus)
-			{
-				this.fm.$fm.removeClass('assets-loading');
+			this.fm.setAssetsBusy();
 
-				if (textStatus == 'success')
-				{
-					if (data.success)
-					{
-						this.onDelete(true);
+            Blocks.postActionRequest('assets/deleteFolder', params, $.proxy(function(data)
+            {
+                this.fm.setAssetsAvailable();
 
-						// refresh the files view
-						this.fm.updateFiles();
-					}
+                if (data.success)
+                {
+                    this.onDelete(true);
 
-					if (data.error)
-					{
-						alert(data.error);
-					}
-				}
-			}, this), 'json');
+                    // refresh the files view
+                    this.fm.reloadFolderView();
+                }
+
+                if (data.error)
+                {
+                    alert(data.error);
+                }
+
+			}, this));
 		}
 	}
 },

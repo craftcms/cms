@@ -406,16 +406,6 @@ class AssetsService extends BaseEntityService
 	}
 
 	/**
-	 * Delete a folder by it's model.
-	 *
-	 * @param AssetFolderModel $folder
-	 */
-	public function deleteFolder(AssetFolderModel $folder)
-	{
-		blx()->db->createCommand()->delete('assetfolders', array('id' => $folder->id));
-	}
-
-	/**
 	 * Get the folder tree for Assets.
 	 *
 	 * @return array
@@ -444,7 +434,7 @@ class AssetsService extends BaseEntityService
 	}
 
 	/**
-	 * Create a folder.
+	 * Create a folder by it's parent id and a folder name.
 	 *
 	 * @param $parentId
 	 * @param $folderName
@@ -462,6 +452,36 @@ class AssetsService extends BaseEntityService
 
 			$source = blx()->assetSources->getSourceTypeById($parentFolder->sourceId);
 			$response = $source->createFolder($parentFolder, $folderName);
+
+		}
+		catch (Exception $exception)
+		{
+			$response = new AssetOperationResponseModel();
+			$response->setError($exception->getMessage());
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Delete a folder by it's id.
+	 *
+	 * @param $folderId
+	 * @return AssetOperationResponseModel
+	 * @throws Exception
+	 */
+	public function deleteFolder($folderId)
+	{
+		try
+		{
+			$folder = $this->getFolderById($folderId);
+			if (empty($folder))
+			{
+				throw new Exception(Blocks::t("Can't find the folder!"));
+			}
+
+			$source = blx()->assetSources->getSourceTypeById($folder->sourceId);
+			$response = $source->deleteFolder($folder);
 
 		}
 		catch (Exception $exception)
@@ -746,5 +766,28 @@ class AssetsService extends BaseEntityService
 			$source = blx()->assetSources->getSourceTypeById($file->sourceId);
 			$source->deleteFile($file);
 		}
+	}
+
+	/**
+	 * Delete a file record by id.
+	 *
+	 * @param $fileId
+	 * @return bool
+	 */
+	public function deleteFileRecord($fileId)
+	{
+		blx()->links->deleteLinksForEntity('Asset', $fileId);
+		return (bool) AssetFileRecord::model()->deleteAll('id = :fileId', array(':fileId' => $fileId));
+	}
+
+	/**
+	* Delete a folder record by id.
+	*
+	* @param $fileId
+	* @return bool
+	*/
+	public function deleteFolderRecord($folderId)
+	{
+		return (bool) AssetFolderRecord::model()->deleteAll('id = :folderId', array(':folderId' => $folderId));
 	}
 }

@@ -126,4 +126,18 @@ class AssetsController extends BaseEntityController
 
 		$this->returnJson($response->getResponseData());
 	}
+
+	/**
+	 * Delete a folder.
+	 */
+	public function actionDeleteFolder()
+	{
+		$this->requireLogin();
+		$this->requireAjaxRequest();
+		$folderId = blx()->request->getRequiredPost('folderId');
+		$response = blx()->assets->deleteFolder($folderId);
+
+		$this->returnJson($response->getResponseData());
+
+	}
 }

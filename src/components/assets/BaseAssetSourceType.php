@@ -128,7 +128,13 @@ abstract class BaseAssetSourceType extends BaseComponent
 	 */
 	abstract protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName);
 
-
+	/**
+	 * Delete the source folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @return boolean
+	 */
+	abstract protected function _deleteSourceFolder(AssetFolderModel $folder);
 
 	/**
 	 * Return a result object for prompting the user about filename conflicts.
@@ -449,6 +455,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 	 * Delete a file.
 	 *
 	 * @param AssetFileModel $file
+	 * @return AssetOperationResponseModel
 	 */
 	public function deleteFile(AssetFileModel $file)
 	{
@@ -456,13 +463,12 @@ abstract class BaseAssetSourceType extends BaseComponent
 		$this->_deleteGeneratedImageTransformations($file);
 		$this->_deleteGeneratedThumbnails($file);
 
-		$condition = array('id' => $file->id);
+		blx()->assets->deleteFileRecord($file->id);
 
-		blx()->db->createCommand()->delete('assetfiles', $condition);
-
-		$response = new AssetOperationResponseModel();
 		$response = new AssetOperationResponseModel();
 		$response->setSuccess();
+
+		return $response;
 	}
 
 	/**
@@ -503,6 +509,38 @@ abstract class BaseAssetSourceType extends BaseComponent
 		$response->setDataItem('parentId', $parentFolder->id);
 		$response->setDataItem('folderName', $folderName);
 
+		return $response;
+	}
+
+	/**
+	 * Delete a folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @return AssetOperationResponseModel
+	 */
+	public function deleteFolder(AssetFolderModel $folder)
+	{
+
+		// Get rid of children files
+		$files = blx()->assets->findFiles(new FileCriteria(array('folderId' => $folder->id)));
+		foreach ($files as $file)
+		{
+			$this->deleteFile($file);
+		}
+
+		// Delete children folders
+		$childFolders = blx()->assets->findFolders(new FolderCriteria(array('parentId' => $folder->id)));
+		foreach ($childFolders as $childFolder)
+		{
+			$this->deleteFolder($childFolder);
+		}
+
+		$this->_deleteSourceFolder($folder);
+
+		blx()->assets->deleteFolderRecord($folder->id);
+
+		$response = new AssetOperationResponseModel();
+		$response->setSuccess();
 		return $response;
 	}
 }

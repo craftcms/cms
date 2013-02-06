@@ -481,4 +481,16 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		return IOHelper::createFolder($this->_getSourceFileSystemPath() . $parentFolder->fullPath . $folderName, IOHelper::writableFolderPermissions);
 	}
+
+	/**
+	 * Delete the source folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @return boolean
+	 */
+	protected function _deleteSourceFolder(AssetFolderModel $folder)
+	{
+		return IOHelper::deleteFolder($this->_getSourceFileSystemPath().$folder->fullPath);
+	}
+
 }

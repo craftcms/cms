@@ -53,6 +53,7 @@ Assets.FileManager = Garnish.Base.extend({
         this.promptArray = [];
 
         this.selectedFileIds = [];
+
         this.folders = [];
 
         this.folderSelect = null;
