@@ -28,13 +28,16 @@ class FeedsService extends BaseApplicationComponent
 
 		foreach ($feed->get_items(0, $limit) as $item)
 		{
+			$date = $item->get_date('U');
+			$dateUpdated = $item->get_updated_date('U');
+
 			$items[] = array(
 				'authors'      => $this->_getItemAuthors($item->get_authors()),
 				'categories'   => $this->_getItemCategories($item->get_categories()),
 				'content'      => $item->get_content(true),
 				'contributors' => $this->_getItemAuthors($item->get_contributors()),
-				'date'         => new DateTime('@'.$item->get_date('U')),
-				'dateUpdated'  => new DateTime('@'.$item->get_updated_date('U')),
+				'date'         => ($date ? new DateTime('@'.$date) : null),
+				'dateUpdated'  => ($dateUpdated ? new DateTime('@'.$dateUpdated) : null),
 				'permalink'    => $item->get_permalink(),
 				'summary'      => $item->get_description(true),
 				'title'        => $item->get_title(),
