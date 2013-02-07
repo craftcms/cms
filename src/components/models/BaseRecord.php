@@ -494,7 +494,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function tableExists()
 	{
-		if (blx()->db->schema->getTable('{{'.$this->getTableName().'}}', true) !== null)
+		if (blx()->db->getSchema()->getTable('{{'.$this->getTableName().'}}', true) !== null)
 		{
 			return true;
 		}

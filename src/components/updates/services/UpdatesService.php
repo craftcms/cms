@@ -170,7 +170,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function flushUpdateInfoFromCache()
 	{
-		Blocks::log('Flushing update info from cache.', \CLogger::LEVEL_INFO);
+		Blocks::log('Flushing update info from cache.');
 
 		if (IOHelper::clearFolder(blx()->path->getCompiledTemplatesPath()) && IOHelper::clearFolder(blx()->path->getCachePath()))
 		{
@@ -255,7 +255,7 @@ class UpdatesService extends BaseApplicationComponent
 	public function enableMaintenanceMode()
 	{
 		// Not using Active Record here to prevent issues with turning the site on/off during a migration
-		if (blx()->db->schema->getTable('{{info}}')->getColumn('maintenance'))
+		if (blx()->db->getSchema()->getTable('{{info}}')->getColumn('maintenance'))
 		{
 			if (blx()->db->createCommand()->update('info', array('maintenance' => 1)) > 0)
 			{
@@ -273,7 +273,7 @@ class UpdatesService extends BaseApplicationComponent
 	public function disableMaintenanceMode()
 	{
 		// Not using Active Record here to prevent issues with turning the site on/off during a migration
-		if (blx()->db->schema->getTable('{{info}}')->getColumn('maintenance'))
+		if (blx()->db->getSchema()->getTable('{{info}}')->getColumn('maintenance'))
 		{
 			if (blx()->db->createCommand()->update('info', array('maintenance' => 0)) > 0)
 			{
@@ -316,7 +316,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function prepareUpdate($manual, $handle)
 	{
-		Blocks::log('Preparing to update '.$handle.'.', \CLogger::LEVEL_INFO);
+		Blocks::log('Preparing to update '.$handle.'.');
 
 		try
 		{
@@ -330,7 +330,7 @@ class UpdatesService extends BaseApplicationComponent
 
 			$updater->checkRequirements();
 
-			Blocks::log('Finished preparing to update '.$handle.'.', \CLogger::LEVEL_INFO);
+			Blocks::log('Finished preparing to update '.$handle.'.');
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -344,7 +344,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function processUpdateDownload()
 	{
-		Blocks::log('Starting to process the update download.', \CLogger::LEVEL_INFO);
+		Blocks::log('Starting to process the update download.');
 
 		try
 		{
@@ -352,7 +352,7 @@ class UpdatesService extends BaseApplicationComponent
 			$result = $updater->processDownload();
 			$result['success'] = true;
 
-			Blocks::log('Finished processing the update download.', \CLogger::LEVEL_INFO);
+			Blocks::log('Finished processing the update download.');
 			return $result;
 		}
 		catch (\Exception $e)
@@ -367,14 +367,14 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function backupFiles($uid)
 	{
-		Blocks::log('Starting to backup files that need to be updated.', \CLogger::LEVEL_INFO);
+		Blocks::log('Starting to backup files that need to be updated.');
 
 		try
 		{
 			$updater = new Updater();
 			$updater->backupFiles($uid);
 
-			Blocks::log('Finished backing up files.', \CLogger::LEVEL_INFO);
+			Blocks::log('Finished backing up files.');
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -389,14 +389,14 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function updateFiles($uid)
 	{
-		Blocks::log('Starting to update files.', \CLogger::LEVEL_INFO);
+		Blocks::log('Starting to update files.');
 
 		try
 		{
 			$updater = new Updater();
 			$updater->updateFiles($uid);
 
-			Blocks::log('Finished updating files.', \CLogger::LEVEL_INFO);
+			Blocks::log('Finished updating files.');
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -411,7 +411,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function backupDatabase($uid)
 	{
-		Blocks::log('Starting to backup database.', \CLogger::LEVEL_INFO);
+		Blocks::log('Starting to backup database.');
 
 		try
 		{
@@ -420,12 +420,12 @@ class UpdatesService extends BaseApplicationComponent
 
 			if (!$result)
 			{
-				Blocks::log('Did not backup database because there were no migrations to run.', \CLogger::LEVEL_INFO);
+				Blocks::log('Did not backup database because there were no migrations to run.');
 				return array('success' => true);
 			}
 			else
 			{
-				Blocks::log('Finished backing up database.', \CLogger::LEVEL_INFO);
+				Blocks::log('Finished backing up database.');
 				return array('success' => true, 'dbBackupPath' => $result);
 			}
 		}
@@ -445,7 +445,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function updateDatabase($uid, $handle, $dbBackupPath = false)
 	{
-		Blocks::log('Starting to update the database.', \CLogger::LEVEL_INFO);
+		Blocks::log('Starting to update the database.');
 
 		try
 		{
@@ -453,18 +453,18 @@ class UpdatesService extends BaseApplicationComponent
 
 			if ($handle == 'blocks')
 			{
-				Blocks::log('Blocks wants to update the database.', \CLogger::LEVEL_INFO);
+				Blocks::log('Blocks wants to update the database.');
 				$updater->updateDatabase($uid, $dbBackupPath);
-				Blocks::log('Blocks is done updating the database.', \CLogger::LEVEL_INFO);
+				Blocks::log('Blocks is done updating the database.');
 			}
 			else
 			{
 				$plugin = blx()->plugins->getPlugin($handle);
 				if ($plugin)
 				{
-					Blocks::log('The plugin, '.$plugin->getName().' wants to update the database.', \CLogger::LEVEL_INFO);
+					Blocks::log('The plugin, '.$plugin->getName().' wants to update the database.');
 					$updater->updateDatabase($uid, $dbBackupPath, $plugin);
-					Blocks::log('The plugin, '.$plugin->getName().' is done updating the database.', \CLogger::LEVEL_INFO);
+					Blocks::log('The plugin, '.$plugin->getName().' is done updating the database.');
 				}
 				else
 				{
@@ -488,14 +488,14 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function updateCleanUp($uid, $handle)
 	{
-		Blocks::log('Starting to clean up after the update.', \CLogger::LEVEL_INFO);
+		Blocks::log('Starting to clean up after the update.');
 
 		try
 		{
 			$updater = new Updater();
 			$updater->cleanUp($uid, $handle);
 
-			Blocks::log('Finished cleaning up after the update.', \CLogger::LEVEL_INFO);
+			Blocks::log('Finished cleaning up after the update.');
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -515,20 +515,20 @@ class UpdatesService extends BaseApplicationComponent
 		{
 			if ($dbBackupPath && blx()->config->get('backupDbOnUpdate') && blx()->config->get('restoreDbOnUpdateFailure'))
 			{
-				Blocks::log('Rolling back any database changes.', \CLogger::LEVEL_INFO);
+				Blocks::log('Rolling back any database changes.');
 				UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
-				Blocks::log('Done rolling back any database changes.', \CLogger::LEVEL_INFO);
+				Blocks::log('Done rolling back any database changes.');
 			}
 
 			// If uid !== false, it's an auto-update.
 			if ($uid !== false)
 			{
-				Blocks::log('Rolling back any file changes.', \CLogger::LEVEL_INFO);
+				Blocks::log('Rolling back any file changes.');
 				UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
-				Blocks::log('Done rolling back any file changes.', \CLogger::LEVEL_INFO);
+				Blocks::log('Done rolling back any file changes.');
 			}
 
-			Blocks::log('Finished rolling back changes.', \CLogger::LEVEL_INFO);
+			Blocks::log('Finished rolling back changes.');
 			return array('success' => true);
 		}
 		catch (\Exception $e)

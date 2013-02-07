@@ -642,6 +642,16 @@ class App extends \CWebApplication
 		$this->end();
 	}
 
+	/**
+	 * Returns whether we are executing in the context on a console app.
+	 *
+	 * @return bool
+	 */
+	public function isConsole()
+	{
+		return false;
+	}
+
 	// Remap blx()->getSession() to blx()->httpSession and blx()->getUser() to blx->userSession
 
 	/**

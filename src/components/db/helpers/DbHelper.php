@@ -492,29 +492,4 @@ class DbHelper
 			return $conditions;
 		}
 	}
-
-	/**
-	 * Returns an array of table names that start with the configured tablePrefix variable.
-	 *
-	 * @returns array Table names
-	 */
-	public static function getTableNames()
-	{
-		$prefix = blx()->config->getDbItem('tablePrefix');
-		$databaseName = blx()->config->getDbItem('database');
-
-		if (StringHelper::isNullOrEmpty($prefix))
-		{
-			return blx()->db->createCommand()
-				->setText("SHOW TABLES FROM ".blx()->db->quoteValue($databaseName).";")
-				->queryColumn();
-		}
-		else
-		{
-			return blx()->db->createCommand()
-				->setText("SHOW TABLES FROM ".blx()->db->quoteValue($databaseName)." LIKE '{$prefix}_%';")
-				->queryColumn();
-		}
-
-	}
 }

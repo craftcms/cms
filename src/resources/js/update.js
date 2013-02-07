@@ -46,6 +46,13 @@ Blocks.Updater = Garnish.Base.extend({
 
 	onSuccessResponse: function(response)
 	{
+		if (!response.success && !response.error)
+		{
+			// Bad request, even though it's not returning with a 500 status
+			this.onErrorResponse();
+			return;
+		}
+
 		if (response.data)
 		{
 			this.data = response.data;

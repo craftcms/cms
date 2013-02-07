@@ -186,4 +186,23 @@ class MysqlSchema extends \CMysqlSchema
 	{
 		return 'DROP TABLE IF EXISTS '.$this->quoteTableName($table);
 	}
+
+	/**
+	 * Returns all table names in the database which start with the tablePrefix.
+	 *
+	 * @param string $schema
+	 * @returns array
+	 */
+	public function findTableNames($schema = null)
+	{
+		if ($schema === null)
+		{
+			$likeSql = (blx()->db->tablePrefix ? ' LIKE \''.blx()->db->tablePrefix.'%\'' : '');
+			return blx()->db->createCommand()->setText('SHOW TABLES'.$likeSql)->queryColumn();
+		}
+		else
+		{
+			return parent::findTableNames();
+		}
+	}
 }

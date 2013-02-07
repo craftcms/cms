@@ -33,11 +33,11 @@ class MigrationsService extends BaseApplicationComponent
 		{
 			if ($plugin)
 			{
-				Blocks::log('No new migration(s) found for the plugin '.$plugin->getClassHandle().'. Your system is up-to-date.', \CLogger::LEVEL_INFO);
+				Blocks::log('No new migration(s) found for the plugin '.$plugin->getClassHandle().'. Your system is up-to-date.');
 			}
 			else
 			{
-				Blocks::log('No new migration(s) found for Blocks. Your system is up-to-date.', \CLogger::LEVEL_INFO);
+				Blocks::log('No new migration(s) found for Blocks. Your system is up-to-date.');
 			}
 
 			return true;
@@ -47,16 +47,16 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($plugin)
 		{
-			Blocks::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for plugin ".$plugin->getClassHandle().":".PHP_EOL, \CLogger::LEVEL_INFO);
+			Blocks::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for plugin ".$plugin->getClassHandle().":");
 		}
 		else
 		{
-			Blocks::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for Blocks:".PHP_EOL, \CLogger::LEVEL_INFO);
+			Blocks::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for Blocks:");
 		}
 
 		foreach ($migrations as $migration)
 		{
-			Blocks::log($migration.PHP_EOL, \CLogger::LEVEL_INFO);
+			Blocks::log($migration);
 		}
 
 		foreach ($migrations as $migration)
@@ -78,11 +78,11 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($plugin)
 		{
-			Blocks::log($plugin->getClassHandle().' migrated up successfully.', \CLogger::LEVEL_INFO);
+			Blocks::log($plugin->getClassHandle().' migrated up successfully.');
 		}
 		else
 		{
-			Blocks::log('Blocks migrated up successfully.', \CLogger::LEVEL_INFO);
+			Blocks::log('Blocks migrated up successfully.');
 		}
 
 		return true;
@@ -102,11 +102,11 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($plugin)
 		{
-			Blocks::log('Applying migration: '.$class.' for plugin: '.$plugin->getClassHandle().'.', \CLogger::LEVEL_INFO);
+			Blocks::log('Applying migration: '.$class.' for plugin: '.$plugin->getClassHandle());
 		}
 		else
 		{
-			Blocks::log('Applying migration: '.$class, \CLogger::LEVEL_INFO);
+			Blocks::log('Applying migration: '.$class);
 		}
 
 		$start = microtime(true);
@@ -135,7 +135,7 @@ class MigrationsService extends BaseApplicationComponent
 			}
 
 			$time = microtime(true) - $start;
-			Blocks::log('Applied migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)', \CLogger::LEVEL_INFO);
+			Blocks::log('Applied migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)');
 			return true;
 		}
 		else
@@ -333,7 +333,7 @@ class MigrationsService extends BaseApplicationComponent
 	 */
 	private function _getCorrectApplyTimeColumn()
 	{
-		$migrationsTable = blx()->db->schema->getTable('{{migrations}}');
+		$migrationsTable = blx()->db->getSchema()->getTable('{{migrations}}');
 
 		$applyTimeColumn = 'apply_time';
 

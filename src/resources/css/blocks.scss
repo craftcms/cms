@@ -235,12 +235,12 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btn,
 .spinner { height: 31px; }
 
-.menubtn.nolabel { padding: 0 8px; }
+.menubtn:empty { padding: 0 8px; }
 
-.btn[data-icon]:before,
-.btn.icon:before { margin-right: 5px; }
-.btn[data-icon-after]:after,
-.menubtn:not(.nolabel):after { margin-left: 5px; }
+.btn[data-icon]:not(:empty):before,
+.btn.icon:not(:empty):before { margin-right: 5px; }
+.btn[data-icon-after]:not(:empty):after,
+.menubtn:not(:empty):after { margin-left: 5px; }
 
 .btn[data-icon]:before,
 .btn[data-icon-after]:after,

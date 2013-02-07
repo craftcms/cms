@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m130205_100000_add_installdate_to_plugins extends DbMigration
+class m130206_100000_add_installdate_to_plugins extends BaseMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
@@ -13,14 +13,15 @@ class m130205_100000_add_installdate_to_plugins extends DbMigration
 	 */
 	public function safeUp()
 	{
-		$pluginsTable = blx()->db->schema->getTable('{{plugins}}');
+		$pluginsTable = $this->dbConnection->schema->getTable('{{plugins}}');
 
 		if ($pluginsTable)
 		{
 			if (!$pluginsTable->getColumn('installDate'))
 			{
-				blx()->db->createCommand()->addColumnAfter('plugins', 'installDate', array(AttributeType::DateTime, 'required' => true), 'settings');
+				$this->addColumnAfter('plugins', 'installDate', array(AttributeType::DateTime, 'required' => true), 'settings');
 				blx()->db->createCommand("UPDATE `{$pluginsTable->name}` SET `installDate` = `dateCreated`;")->execute();
+				Blocks::log('Successfully added `installDate` column and populated it.');
 			}
 			else
 			{

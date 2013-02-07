@@ -105,7 +105,7 @@ class UpdateHelper
 					{
 						if ($folder)
 						{
-							Blocks::log('Updating folder: '.$destFile, \CLogger::LEVEL_INFO);
+							Blocks::log('Updating folder: '.$destFile);
 
 							$tempFolder = rtrim($destFile, '/').StringHelper::UUID().'/';
 							$tempTempFolder = rtrim($destFile, '/').'-tmp/';
@@ -119,7 +119,7 @@ class UpdateHelper
 						}
 						else
 						{
-							Blocks::log('Updating file: '.$destFile, \CLogger::LEVEL_INFO);
+							Blocks::log('Updating file: '.$destFile);
 							IOHelper::copyFile($sourceFile, $destFile);
 						}
 
@@ -131,7 +131,7 @@ class UpdateHelper
 						// rename in case we need to rollback.  the cleanup will remove the backup files.
 						if ($destFile)
 						{
-							Blocks::log('Renaming file for delete: '.$destFile, \CLogger::LEVEL_INFO);
+							Blocks::log('Renaming file for delete: '.$destFile);
 							IOHelper::rename($destFile, $destFile.'.bak');
 						}
 

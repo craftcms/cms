@@ -69,11 +69,11 @@ class Updater
 	 */
 	public function processDownload()
 	{
-		Blocks::log ('Starting to process the update download.', \CLogger::LEVEL_INFO);
+		Blocks::log ('Starting to process the update download.');
 		$tempPath = blx()->path->getTempPath();
 
 		// Download the package from ET.
-		Blocks::log('Downloading patch file to '.$tempPath, \CLogger::LEVEL_INFO);
+		Blocks::log('Downloading patch file to '.$tempPath);
 		if (($fileName = blx()->et->downloadUpdate($tempPath)) !== false)
 		{
 			$downloadFilePath = $tempPath.$fileName;
@@ -86,14 +86,14 @@ class Updater
 		$uid = IOHelper::getFileName($fileName, false);
 
 		// Validate the downloaded update against ET.
-		Blocks::log('Validating downloaded update.', \CLogger::LEVEL_INFO);
+		Blocks::log('Validating downloaded update.');
 		if (!$this->_validateUpdate($downloadFilePath))
 		{
 			throw new Exception(Blocks::t('There was a problem validating the downloaded package.'));
 		}
 
 		// Unpack the downloaded package.
-		Blocks::log('Unpacking the downloaded package.', \CLogger::LEVEL_INFO);
+		Blocks::log('Unpacking the downloaded package.');
 		$unzipFolder = blx()->path->getTempPath().IOHelper::getFileName($downloadFilePath, false);
 
 		if (!$this->_unpackPackage($downloadFilePath, $unzipFolder))
@@ -113,7 +113,7 @@ class Updater
 		$unzipFolder = UpdateHelper::getUnzipFolderFromUID($uid);
 
 		// Validate that the paths in the update manifest file are all writable by Blocks
-		Blocks::log('Validating update manifest file paths are writable.', \CLogger::LEVEL_INFO);
+		Blocks::log('Validating update manifest file paths are writable.');
 		$writableErrors = $this->_validateManifestPathsWritable($unzipFolder);
 		if (count($writableErrors) > 0)
 		{
@@ -121,7 +121,7 @@ class Updater
 		}
 
 		// Backup any files about to be updated.
-		Blocks::log('Backing up files that are about to be updated.', \CLogger::LEVEL_INFO);
+		Blocks::log('Backing up files that are about to be updated.');
 		if (!$this->_backupFiles($unzipFolder))
 		{
 			throw new Exception(Blocks::t('There was a problem backing up your files for the update.'));
@@ -137,14 +137,14 @@ class Updater
 		$unzipFolder = UpdateHelper::getUnzipFolderFromUID($uid);
 
 		// Put the site into maintenance mode.
-		Blocks::log('Putting the site into maintenance mode..', \CLogger::LEVEL_INFO);
+		Blocks::log('Putting the site into maintenance mode.');
 		blx()->updates->enableMaintenanceMode();
 
 		// Update the files.
-		Blocks::log('Performing file update.', \CLogger::LEVEL_INFO);
+		Blocks::log('Performing file update.');
 		if (!UpdateHelper::doFileUpdate(UpdateHelper::getManifestData($unzipFolder), $unzipFolder))
 		{
-			Blocks::log('Taking the site out of maintenance mode..', \CLogger::LEVEL_INFO);
+			Blocks::log('Taking the site out of maintenance mode.');
 			blx()->updates->disableMaintenanceMode();
 
 			throw new Exception(Blocks::t('There was a problem updating your files.'));
@@ -160,7 +160,7 @@ class Updater
 	{
 		try
 		{
-			Blocks::log('Starting to backup database.', \CLogger::LEVEL_INFO);
+			Blocks::log('Starting to backup database.');
 			if (($dbBackupPath = blx()->db->backup()) === false)
 			{
 				// If uid !== false, then it's an auto update.
@@ -169,7 +169,7 @@ class Updater
 					UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
 				}
 
-				Blocks::log('Taking the site out of maintenance mode..', \CLogger::LEVEL_INFO);
+				Blocks::log('Taking the site out of maintenance mode.');
 				blx()->updates->disableMaintenanceMode();
 
 				throw new Exception(Blocks::t('There was a problem backing up your database.'));
@@ -187,7 +187,7 @@ class Updater
 				UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
 			}
 
-			Blocks::log('Taking the site out of maintenance mode..', \CLogger::LEVEL_INFO);
+			Blocks::log('Taking the site out of maintenance mode.');
 			blx()->updates->disableMaintenanceMode();
 
 			throw new Exception(Blocks::t('There was a problem backing up your database.'));
@@ -204,13 +204,13 @@ class Updater
 	{
 		try
 		{
-			Blocks::log('Running migrations...', \CLogger::LEVEL_INFO);
+			Blocks::log('Running migrations...');
 			if (!blx()->migrations->runToTop($plugin))
 			{
 				Blocks::log('Something went wrong running a migration. :-(', \CLogger::LEVEL_ERROR);
 				blx()->updates->rollbackUpdate($uid, $dbBackupPath);
 
-				Blocks::log('Taking the site out of maintenance mode..', \CLogger::LEVEL_INFO);
+				Blocks::log('Taking the site out of maintenance mode.');
 				blx()->updates->disableMaintenanceMode();
 
 				throw new Exception(Blocks::t('There was a problem updating your database.'));
@@ -220,7 +220,7 @@ class Updater
 		{
 			blx()->updates->rollbackUpdate($uid, $dbBackupPath);
 
-			Blocks::log('Taking the site out of maintenance mode..', \CLogger::LEVEL_INFO);
+			Blocks::log('Taking the site out of maintenance mode.');
 			blx()->updates->disableMaintenanceMode();
 
 			throw new Exception(Blocks::t('There was a problem updating your database.'));
@@ -242,16 +242,16 @@ class Updater
 			$unzipFolder = UpdateHelper::getUnzipFolderFromUID($uid);
 
 			// Clean-up any leftover files.
-			Blocks::log('Cleaning up temp files after update.', \CLogger::LEVEL_INFO);
+			Blocks::log('Cleaning up temp files after update.');
 			$this->_cleanTempFiles($zipFile, $unzipFolder);
 		}
 
 		// Take the site out of maintenance mode.
-		Blocks::log('Taking the site out of maintenance mode..', \CLogger::LEVEL_INFO);
+		Blocks::log('Taking the site out of maintenance mode.');
 		blx()->updates->disableMaintenanceMode();
 
 		// Clear the updates cache.
-		Blocks::log('Clearing the update cache.', \CLogger::LEVEL_INFO);
+		Blocks::log('Clearing the update cache.');
 		if (!blx()->updates->flushUpdateInfoFromCache())
 		{
 			throw new Exception(Blocks::t('The update was performed successfully, but there was a problem invalidating the update cache.'));
@@ -260,7 +260,7 @@ class Updater
 		if ($handle == 'blocks')
 		{
 			// Setting new Blocks info.
-			Blocks::log('Settings new Blocks info in blx_info table.', \CLogger::LEVEL_INFO);
+			Blocks::log('Settings new Blocks info in blx_info table.');
 			if (!blx()->updates->setNewBlocksInfo(Blocks::getVersion(), Blocks::getBuild(), Blocks::getReleaseDate()))
 			{
 				throw new Exception(Blocks::t('The update was performed successfully, but there was a problem setting the new info in the database info table.'));
@@ -283,7 +283,7 @@ class Updater
 			}
 		}
 
-		Blocks::log('Finished Updater.', \CLogger::LEVEL_INFO);
+		Blocks::log('Finished Updater.');
 		return true;
 	}
 
@@ -328,7 +328,7 @@ class Updater
 			{
 				if (($folder = IOHelper::getFolder($backupPath)) !== false)
 				{
-					Blocks::log('Deleting backup folder: '.$folder->getRealPath(), \CLogger::LEVEL_INFO);
+					Blocks::log('Deleting backup folder: '.$folder->getRealPath());
 					$folder->delete();
 				}
 			}
@@ -336,7 +336,7 @@ class Updater
 			{
 				if (($file = IOHelper::getFile($backupPath)) !== false)
 				{
-					Blocks::log('Deleting backup file: '.$file->getRealPath(), \CLogger::LEVEL_INFO);
+					Blocks::log('Deleting backup file: '.$file->getRealPath());
 					$file->delete();
 				}
 			}
@@ -358,7 +358,7 @@ class Updater
 	 */
 	private function _validateUpdate($downloadFilePath)
 	{
-		Blocks::log('Validating MD5 for '.$downloadFilePath, \CLogger::LEVEL_INFO);
+		Blocks::log('Validating MD5 for '.$downloadFilePath);
 		$sourceMD5 = IOHelper::getFileName($downloadFilePath, false);
 
 		$localMD5 = IOHelper::getFileMD5($downloadFilePath);
@@ -383,7 +383,7 @@ class Updater
 	 */
 	private function _unpackPackage($downloadFilePath, $unzipFolder)
 	{
-		Blocks::log('Unzipping package to '.$unzipFolder, \CLogger::LEVEL_INFO);
+		Blocks::log('Unzipping package to '.$unzipFolder);
 		if (Zip::unzip($downloadFilePath, $unzipFolder))
 		{
 			return true;
@@ -477,7 +477,7 @@ class Updater
 					$folderPath = UpdateHelper::cleanManifestFolderLine($filePath);
 					if (IOHelper::folderExists($folderPath))
 					{
-						Blocks::log('Backing up folder '.$folderPath, \CLogger::LEVEL_INFO);
+						Blocks::log('Backing up folder '.$folderPath);
 						IOHelper::createFolder($folderPath.'.bak');
 						IOHelper::copyFolder($folderPath.'/', $folderPath.'.bak/');
 					}
@@ -488,7 +488,7 @@ class Updater
 					// If the file doesn't exist, it's probably a new file.
 					if (IOHelper::fileExists($filePath))
 					{
-						Blocks::log('Backing up file '.$filePath, \CLogger::LEVEL_INFO);
+						Blocks::log('Backing up file '.$filePath);
 						IOHelper::copyFile($filePath, $filePath.'.bak');
 					}
 				}

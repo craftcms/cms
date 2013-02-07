@@ -50,7 +50,7 @@ class DbBackup
 
 		$sql = IOHelper::getFileContents($filePath);
 
-		Blocks::log('Executing SQL statement: '.$sql, \CLogger::LEVEL_INFO);
+		Blocks::log('Executing SQL statement: '.$sql);
 		$command = blx()->db->createCommand($sql);
 		$command->execute();
 	}
@@ -60,13 +60,13 @@ class DbBackup
 	 */
 	private function _nukeDb()
 	{
-		Blocks::log('Nuking DB', \CLogger::LEVEL_INFO);
+		Blocks::log('Nuking DB');
 
 		$databaseName = blx()->config->getDbItem('database');
 
 		$sql = 'SET FOREIGN_KEY_CHECKS = 0;'.PHP_EOL.PHP_EOL;
 
-		$tables = DbHelper::getTableNames();
+		$tables = blx()->db->getSchema()->getTableNames();
 		foreach ($tables as $table)
 		{
 			$sql .= 'DROP TABLE IF EXISTS '.blx()->db->quoteValue($databaseName).'.'.blx()->db->quoteTableName($table).';'.PHP_EOL;
@@ -77,7 +77,7 @@ class DbBackup
 		$command = blx()->db->createCommand($sql);
 		$command->execute();
 
-		Blocks::log('Database nuked.', \CLogger::LEVEL_INFO);
+		Blocks::log('Database nuked.');
 	}
 
 
