@@ -20,7 +20,7 @@ class m130206_100000_add_installdate_to_plugins extends BaseMigration
 			if (!$pluginsTable->getColumn('installDate'))
 			{
 				$this->addColumnAfter('plugins', 'installDate', array(AttributeType::DateTime, 'required' => true), 'settings');
-				$this->update($pluginsTable->name, array('installDate' => ':dateCreated'), '', array(':dateCreated' => 'dateCreated'));
+				blx()->db->createCommand("UPDATE `{$pluginsTable->name}` SET `installDate` = `dateCreated`;")->execute();
 				Blocks::log('Successfully added `installDate` column and populated it.');
 			}
 			else
