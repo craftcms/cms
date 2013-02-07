@@ -536,8 +536,9 @@ Assets.FileManagerFolder = Garnish.Base.extend({
                         subfolder = new Assets.FileManagerFolder(this.fm, $li[0], this.depth + 1, this);
 
                     this.addSubfolder(subfolder);
-
+                    this.expand();
                     subfolder.onShow();
+
                 }
 
                 if (data.error)

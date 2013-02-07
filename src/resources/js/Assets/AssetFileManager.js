@@ -166,7 +166,7 @@ Assets.FileManager = Garnish.Base.extend({
             multi:             false,
             waitForDblClick:   false,
             vertical:          true,
-            onSelectionChange: $.proxy(this, 'reloadFolderView')
+            onSelectionChange: $.proxy(this, 'loadFolderContents')
         });
 
         // initialize top-level folders
@@ -178,16 +178,12 @@ Assets.FileManager = Garnish.Base.extend({
 
         for (var i = 0; i < this.$topFolderLis.length; i++)
         {
-            var folder = new Assets.FileManagerFolder(this, this.$topFolderLis[i], 1);
+            folder = new Assets.FileManagerFolder(this, this.$topFolderLis[i], 1);
         }
 
 		// ---------------------------------------
 		// Asset events
 		// ---------------------------------------
-
-		this.$folders.find('a').click($.proxy(function (event) {
-			this.selectFolder($(event.target));
-		}, this));
 
 		// Switch between views
 		this.$viewAsThumbsBtn.click($.proxy(function () {
@@ -222,7 +218,7 @@ Assets.FileManager = Garnish.Base.extend({
         }
 
 
-        this.reloadFolderView();
+        this.loadFolderContents();
 	},
 
 	/**
@@ -269,21 +265,22 @@ Assets.FileManager = Garnish.Base.extend({
 		}
 	},
 
-	/**
-	 * Select the source.
-	 *
-	 * @param folderElement jQuery object with the link element
-	 */
-	selectFolder: function (folderElement) {
-		this.markActiveFolder(folderElement.attr('data-folder'));
-		this.storeState('currentFolder', folderElement.attr('data-folder'));
+    /**
+     * Load the folder contents by selected folder
+     */
+    loadFolderContents: function () {
+        var folderElement = this.$folders.find('a.sel');
 
-		this.reloadFolderView();
-		this._setUploadFolder(this.getCurrentFolderId());
-	},
+        if (folderElement.length == 0)
+        {
+            folderElement = this.$folders.find('li:first');
+        }
 
-	reloadFolderView: function () {
-		this.loadFolderView(this.getCurrentFolderId());
+        this.markActiveFolder(folderElement.attr('data-folder'));
+        this.storeState('currentFolder', folderElement.attr('data-folder'));
+
+        this._setUploadFolder(this.getCurrentFolderId());
+        this.loadFolderView(this.getCurrentFolderId());
 	},
 
 	/**
