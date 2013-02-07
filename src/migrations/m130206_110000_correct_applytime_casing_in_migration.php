@@ -19,7 +19,6 @@ class m130206_110000_correct_applytime_casing_in_migration extends BaseMigration
 		{
 			if (!$migrationsTable->getColumn('applyTime') && $migrationsTable->getColumn('apply_time'))
 			{
-				$this->dbConnection->createCommand()->renameColumn('{{migrations}}', 'apply_time', 'applyTime');
 				$this->renameColumn('{{migrations}}', 'apply_time', 'applyTime');
 
 				$this->refreshTableSchema('{{migrations}}');
