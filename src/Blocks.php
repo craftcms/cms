@@ -9,6 +9,7 @@ class Blocks extends \Yii
 	private static $_storedBlocksInfo;
 	private static $_packages;
 	private static $_siteUrl;
+	private static $_logger;
 
 	/**
 	 * Returns the Blocks version number, as defined by the BLOCKS_VERSION constant.
@@ -109,16 +110,20 @@ class Blocks extends \Yii
 
 		if ($storedBlocksInfo)
 		{
-			// Must do this check so the maintenance page will display before the `add_packages_to_info` migration is ran.
-			if (isset($storedBlocksInfo->packages))
-			{
-				$storedBlocksInfo = array_filter(ArrayHelper::stringToArray($storedBlocksInfo->packages));
-				sort($storedBlocksInfo);
-				return $storedBlocksInfo;
-			}
+			$storedPackages = array_filter(ArrayHelper::stringToArray($storedBlocksInfo->packages));
+			sort($storedPackages);
+			return $storedPackages;
 		}
 
 		return null;
+	}
+
+	/**
+	 * Invalidates the cached Info so it is pulled fresh the next time it is needed.
+	 */
+	public static function invalidateCachedInfo()
+	{
+		static::$_storedBlocksInfo = null;
 	}
 
 	/**
@@ -139,11 +144,22 @@ class Blocks extends \Yii
 	 */
 	public static function hasPackage($packageName)
 	{
-		// An install has a package if it is in the database AND on the file system.
-		$storedPackages = static::getStoredPackages() == null ? array() : static::getStoredPackages();
-		if (in_array($packageName, $storedPackages) && in_array($packageName, static::getPackages()))
+		// If Blocks is already installed, the check the file system AND database to determine if a package is installed or not.
+		if (blx()->isInstalled())
 		{
-			return true;
+			$storedPackages = static::getStoredPackages() == null ? array() : static::getStoredPackages();
+			if (in_array($packageName, $storedPackages) && in_array($packageName, static::getPackages()))
+			{
+				return true;
+			}
+		}
+		else
+		{
+			// Not installed, so only check the file system.
+			if (in_array($packageName, static::getPackages()))
+			{
+				return true;
+			}
 		}
 
 		return false;
@@ -456,6 +472,48 @@ class Blocks extends \Yii
 		}
 
 		return $translation;
+	}
+
+	/**
+	 * Logs a message.
+	 * Messages logged by this method may be retrieved via {@link CLogger::getLogs} and may be recorded in different media, such as file, email, database, using {@link CLogRouter}.
+	 *
+	 * @param string $msg message to be logged
+	 * @param string $level level of the message (e.g. 'trace', 'warning', 'error'). It is case-insensitive.
+	 * @param string $category category of the message (e.g. 'system.web'). It is case-insensitive.
+	 */
+	public static function log($msg, $level = \CLogger::LEVEL_INFO, $category = 'application')
+	{
+		if (self::$_logger === null)
+		{
+			self::$_logger = new \CLogger;
+		}
+
+		if (YII_DEBUG && YII_TRACE_LEVEL > 0 && $level !== \CLogger::LEVEL_PROFILE)
+		{
+			$traces = debug_backtrace();
+			$count = 0;
+
+			foreach ($traces as $trace)
+			{
+				if (isset($trace['file'], $trace['line']) && strpos($trace['file'], YII_PATH) !== 0)
+				{
+					$msg .= "\nin ".$trace['file'].' ('.$trace['line'].')';
+
+					if (++$count >= YII_TRACE_LEVEL)
+					{
+						break;
+					}
+				}
+			}
+		}
+
+		if (blx()->isConsole())
+		{
+			echo $msg."\n";
+		}
+
+		self::$_logger->log($msg, $level, $category);
 	}
 
 	/**
