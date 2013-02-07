@@ -333,7 +333,7 @@ class MigrationsService extends BaseApplicationComponent
 	 */
 	private function _getCorrectApplyTimeColumn()
 	{
-		$migrationsTable = blx()->db->schema->getTable('{{migrations}}');
+		$migrationsTable = blx()->db->getSchema()->getTable('{{migrations}}');
 
 		$applyTimeColumn = 'apply_time';
 

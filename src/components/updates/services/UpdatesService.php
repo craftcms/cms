@@ -255,7 +255,7 @@ class UpdatesService extends BaseApplicationComponent
 	public function enableMaintenanceMode()
 	{
 		// Not using Active Record here to prevent issues with turning the site on/off during a migration
-		if (blx()->db->schema->getTable('{{info}}')->getColumn('maintenance'))
+		if (blx()->db->getSchema()->getTable('{{info}}')->getColumn('maintenance'))
 		{
 			if (blx()->db->createCommand()->update('info', array('maintenance' => 1)) > 0)
 			{
@@ -273,7 +273,7 @@ class UpdatesService extends BaseApplicationComponent
 	public function disableMaintenanceMode()
 	{
 		// Not using Active Record here to prevent issues with turning the site on/off during a migration
-		if (blx()->db->schema->getTable('{{info}}')->getColumn('maintenance'))
+		if (blx()->db->getSchema()->getTable('{{info}}')->getColumn('maintenance'))
 		{
 			if (blx()->db->createCommand()->update('info', array('maintenance' => 0)) > 0)
 			{

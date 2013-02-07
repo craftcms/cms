@@ -258,7 +258,7 @@ class Blocks extends \Yii
 	{
 		// Don't use the the static property $_storedBlocksInfo.  We want the latest info possible.
 		// Not using Active Record here to prevent issues with determining maintenance mode status during a migration
-		if (blx()->db->schema->getTable('{{info}}')->getColumn('maintenance'))
+		if (blx()->db->getSchema()->getTable('{{info}}')->getColumn('maintenance'))
 		{
 			$result = blx()->db->createCommand()->
 			              select('maintenance')->
