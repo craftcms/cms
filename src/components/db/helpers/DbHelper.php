@@ -492,19 +492,4 @@ class DbHelper
 			return $conditions;
 		}
 	}
-
-	/**
-	 * Returns an array of table names that start with the configured tablePrefix variable.
-	 *
-	 * @returns array Table names
-	 */
-	public static function getTableNames()
-	{
-		$databaseName = blx()->db->quoteDatabaseName(blx()->config->getDbItem('database'));
-		$likeSql = (blx()->db->tablePrefix ? ' LIKE \''.blx()->db->tablePrefix.'%\'' : '');
-
-		return blx()->db->createCommand()
-			->setText("SHOW TABLES FROM {$databaseName}{$likeSql};")
-			->queryColumn();
-	}
 }

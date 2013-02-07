@@ -197,4 +197,19 @@ class MysqlSchema extends \CMysqlSchema
 	{
 		return 'DROP TABLE IF EXISTS '.$this->quoteTableName($table);
 	}
+
+	/**
+	 * Returns an array of table names that start with the configured tablePrefix variable.
+	 *
+	 * @returns array Table names
+	 */
+	public function getTableNames()
+	{
+		$databaseName = blx()->db->quoteDatabaseName(blx()->config->getDbItem('database'));
+		$likeSql = (blx()->db->tablePrefix ? ' LIKE \''.blx()->db->tablePrefix.'%\'' : '');
+
+		return blx()->db->createCommand()
+			->setText("SHOW TABLES FROM {$databaseName}{$likeSql};")
+			->queryColumn();
+	}
 }
