@@ -47,6 +47,10 @@ class InstallService extends BaseApplicationComponent
 
 		// Fill 'er up
 		$this->_populateInfoTable($inputs);
+
+		// Invalidate cached info after populating the info table.
+		Blocks::invalidateCachedInfo();
+
 		$this->_populateMigrationTable();
 		$this->_addUser($inputs);
 		$this->_logUserIn($inputs);
