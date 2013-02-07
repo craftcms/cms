@@ -572,7 +572,15 @@ class S3AssetSourceType extends BaseAssetSourceType
 	protected function _deleteSourceFolder(AssetFolderModel $folder)
 	{
 		$this->_prepareForRequests();
-		return $this->_s3->deleteObject($this->getSettings()->bucket, $folder->fullPath.'*');
+		$bucket = $this->getSettings()->bucket;
+		$objectsToDelete = $this->_s3->getBucket($bucket, $folder->fullPath);
+
+		foreach ($objectsToDelete as $uri)
+		{
+			$this->_s3->deleteObject($bucket, $uri['name']);
+		}
+
+		return true;
 	}
 
 
