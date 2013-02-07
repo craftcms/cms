@@ -325,13 +325,6 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 		// remove the master record of this folder
 		delete this.fm.folders[this.id];
 
-		var selIndex = this.fm.selectedFolderIds.indexOf(this.id);
-		if (selIndex != -1)
-		{
-			// remove this folder from the selected folders array
-			this.fm.selectedFolderIds.splice(selIndex, i);
-		}
-
 		if (isTopDeletedFolder)
 		{
 			// remove the parent folder's record of this folder
@@ -351,8 +344,10 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 			this.parent._unprepForSubfolders();
 		}
 
-        this.deselect();
-        this.parent.select();
+        if (this.fm.folderSelect.isSelected(this.$a)){
+            this.parent.select();
+            this.deselect();
+        }
     },
 
 	// -------------------------------------------
@@ -571,8 +566,6 @@ Assets.FileManagerFolder = Garnish.Base.extend({
                 {
                     this.onDelete(true);
 
-                    // refresh the files view
-                    this.fm.reloadFolderView();
                 }
 
                 if (data.error)

@@ -228,7 +228,7 @@ Assets.FileManager = Garnish.Base.extend({
 	 */
 	selectViewType: function (type) {
 		this.storeState('view', type);
-		this.reloadFolderView();
+		this.loadFolderContents();
 	},
 
 	/**
@@ -498,7 +498,7 @@ Assets.FileManager = Garnish.Base.extend({
                 }
                 else
                 {
-                    this.reloadFolderView();
+                    this.loadFolderContents();
                 }
 			} else {
 				// just skip to hiding the progress bar
@@ -517,7 +517,7 @@ Assets.FileManager = Garnish.Base.extend({
         var finalCallback = $.proxy(function()
         {
             this.setAssetsAvailable();
-            this.reloadFolderView();
+            this.loadFolderContents();
         }, this);
 
         var doFollowup = $.proxy(function(parameterArray, parameterIndex, callback)
