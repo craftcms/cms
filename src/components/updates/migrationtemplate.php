@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * The class name is the UTC timestamp in the format of {MigrationNameDesc}
  */
-class {ClassName} extends DbMigration
+class {ClassName} extends BaseMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
