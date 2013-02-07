@@ -7,17 +7,6 @@ namespace Blocks;
 class MysqlSchema extends \CMysqlSchema
 {
 	/**
-	 * Quotes a database name for use in a query.
-	 *
-	 * @param string $name
-	 * @return string
-	 */
-	public function quoteDatabaseName($name)
-	{
-		return '`'.$name.'`';
-	}
-
-	/**
 	 * @param $table
 	 * @param $column
 	 * @param $type
@@ -199,17 +188,21 @@ class MysqlSchema extends \CMysqlSchema
 	}
 
 	/**
-	 * Returns an array of table names that start with the configured tablePrefix variable.
+	 * Returns all table names in the database which start with the tablePrefix.
 	 *
-	 * @returns array Table names
+	 * @param string $schema
+	 * @returns array
 	 */
-	public function getTableNames()
+	public function findTableNames($schema = null)
 	{
-		$databaseName = blx()->db->quoteDatabaseName(blx()->config->getDbItem('database'));
-		$likeSql = (blx()->db->tablePrefix ? ' LIKE \''.blx()->db->tablePrefix.'%\'' : '');
-
-		return blx()->db->createCommand()
-			->setText("SHOW TABLES FROM {$databaseName}{$likeSql};")
-			->queryColumn();
+		if ($schema === null)
+		{
+			$likeSql = (blx()->db->tablePrefix ? ' LIKE \''.blx()->db->tablePrefix.'%\'' : '');
+			return blx()->db->createCommand()->setText('SHOW TABLES'.$likeSql)->queryColumn();
+		}
+		else
+		{
+			return parent::findTableNames();
+		}
 	}
 }
