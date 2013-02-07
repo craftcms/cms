@@ -118,7 +118,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 					{
 						var $btnGroup = $('<div class="btngroup"/>').appendTo($td),
 							$updateBtn = $('<a class="btn submit" href="'+Blocks.getUrl('updates/go/blocks')+'">'+Blocks.t('Update')+'</a>').appendTo($btnGroup),
-							$menuBtn = $('<div class="btn submit menubtn nolabel"/>').appendTo($btnGroup),
+							$menuBtn = $('<div class="btn submit menubtn"/>').appendTo($btnGroup),
 							$menu = $('<div class="menu" data-align="right"/>').appendTo($btnGroup),
 							$menuUl = $('<ul/>').appendTo($menu),
 							$downloadLi = $('<li/>').appendTo($menuUl),
