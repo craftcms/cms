@@ -19,11 +19,7 @@ abstract class BaseMigration extends \CDbMigration
 
 		try
 		{
-			ob_start();
 			$result = $this->safeUp();
-			$output = ob_get_clean();
-
-			Blocks::log($output);
 
 			if ($result === false)
 			{
@@ -36,9 +32,6 @@ abstract class BaseMigration extends \CDbMigration
 		}
 		catch(\Exception $e)
 		{
-			$output = ob_get_clean();
-			Blocks::log($output, \CLogger::LEVEL_ERROR);
-
 			Blocks::log($e->getMessage().' ('.$e->getFile().':'.$e->getLine().')', \CLogger::LEVEL_ERROR);
 			Blocks::log($e->getTraceAsString(), \CLogger::LEVEL_ERROR);
 
