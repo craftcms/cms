@@ -45,4 +45,14 @@ class ConsoleApplication extends \CConsoleApplication
 	{
 		return true;
 	}
+
+	/**
+	 * Returns whether we are executing in the context on a console app.
+	 *
+	 * @return bool
+	 */
+	public function isConsole()
+	{
+		return true;
+	}
 }
