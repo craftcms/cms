@@ -60,9 +60,6 @@ class App extends \CWebApplication
 		// Database config validation
 		$this->_validateDbConfig();
 
-		// We add the DbLogRoute *after* we have validated the config.
-		$this->_addDbLogRoute();
-
 		// Process install requests
 		$this->_processInstallRequest();
 
@@ -453,15 +450,6 @@ class App extends \CWebApplication
 		}
 
 		$this->_validDbConfig = true;
-	}
-
-	/**
-	 * Adds the DbLogRoute class to the log router.
-	 */
-	private function _addDbLogRoute()
-	{
-		$route = array('class' => 'Blocks\\DbLogRoute');
-		$this->log->addRoute($route);
 	}
 
 	/**
