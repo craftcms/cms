@@ -55,7 +55,7 @@ if (!is_dir($runtimePath))
 // Check early if storage/runtime is a valid folder and writable.
 if (($runtimePath = realpath(BLOCKS_STORAGE_PATH.'runtime/')) === false || !is_dir($runtimePath) || !is_writable($runtimePath))
 {
-	exit('Blocks runtime path "'.$runtimePath.'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
+	exit('Blocks runtime path "'.($runtimePath === false ? BLOCKS_STORAGE_PATH.'runtime/' : $runtimePath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
 }
 
 // In case yiic is running
