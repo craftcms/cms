@@ -421,30 +421,6 @@ class Blocks extends \Yii
 
 	/**
 	 * @static
-	 * @param string $category
-	 * @param        $msgKey
-	 * @param array  $data
-	 */
-	public static function logActivity($category, $msgKey, $data = array())
-	{
-		$encodedData = JsonHelper::encode($data);
-
-		$currentUser = blx()->userSession->getUser();
-		if ($currentUser)
-		{
-			$userId = $currentUser->id;
-		}
-		else
-		{
-			$userId = null;
-		}
-
-		$logger = static::getLogger();
-		$logger->log($userId.'///'.$msgKey.'///'.$encodedData, 'activity', $category);
-	}
-
-	/**
-	 * @static
 	 * @param string $message
 	 * @param array  $variables
 	 * @param string $source

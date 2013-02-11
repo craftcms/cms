@@ -390,13 +390,13 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 	},
 
 	/**
-	 * Update Path
+	 * Update Id
 	 */
 	updateId: function(id)
 	{
 		delete this.fm.folders[this.id];
 
-		var selIndex = this.fm.selectedFolderIds.indexOf(this.path);
+		var selIndex = this.fm.selectedFolderIds.indexOf(this.id);
 		if (selIndex != -1)
 		{
 			// update the selected folders array
@@ -432,8 +432,9 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 
         for (var i = 0; i < this.parent.subfolders.length; i++)
         {
-
-            folders.push({name: this.parent.subfolders[i].folderName, id: this.parent.subfolders[i].id});
+            if (this.parent.subfolders[i].folderName != this.folderName) {
+                folders.push({name: this.parent.subfolders[i].folderName, id: this.parent.subfolders[i].id});
+            }
         }
 
         folders.sort(Assets.FileManagerFolder.folderSort);
