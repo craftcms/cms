@@ -32,7 +32,7 @@ defined('YII_TRACE_LEVEL')          || define('YII_TRACE_LEVEL', 3);
 // Check early if storage/ is a valid folder and writable.
 if (($storagePath = realpath(BLOCKS_STORAGE_PATH)) === false || !is_dir($storagePath) || !is_writable($storagePath))
 {
-	exit('Blocks storage path "'.$storagePath.'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
+	exit('Blocks storage path "'.($storagePath === false ? BLOCKS_STORAGE_PATH : $storagePath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
 }
 
 // Create the runtime path if it doesn't exist already
