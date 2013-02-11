@@ -20,12 +20,10 @@ var CP = Garnish.Base.extend({
 	$main: null,
 	$sidebar: null,
 	$sidebarNav: null,
+	$sidebarNavPlaceholder: null,
 	$altSidebar: null,
 	$altSidebarNavBtn: null,
 	$altSidebarNavMenu: null,
-	$sidebarNavPlaceholder: null,
-	$fixedSidebarNavOuterContainer: null,
-	$fixedSidebarNavContainer: null,
 	$content: null,
 	$collapsibleTables: null,
 
@@ -441,15 +439,7 @@ var CP = Garnish.Base.extend({
 
 				// Make sure that the nav doesn't bleed into the page footer
 				this.onWindowScroll._maxNavHeight = this.$main.offset().top + this.$main.outerHeight() - Garnish.$win.scrollTop();
-
-				if (this.onWindowScroll._maxNavHeight < Garnish.$win.height())
-				{
-					this.$sidebarNav.height(this.onWindowScroll._maxNavHeight);
-				}
-				else
-				{
-					this.$sidebarNav.height('100%');
-				}
+				this.$sidebarNav.css('max-height', this.onWindowScroll._maxNavHeight);
 			}
 			else
 			{
@@ -462,16 +452,13 @@ var CP = Garnish.Base.extend({
 	{
 		if (!this.fixedSidebarNav)
 		{
-			if (typeof $fixedSidebarNavContainer == 'undefined')
+			if (typeof $sidebarNavPlaceholder == 'undefined')
 			{
 				this.$sidebarNavPlaceholder = $('<div/>');
-				this.$fixedSidebarNavOuterContainer = $('<div id="fixed-sidebar-nav"/>');
-				this.$fixedSidebarNavContainer = $('<div class="centered"/>').appendTo(this.$fixedSidebarNavOuterContainer);
 			}
 
-			this.$sidebarNavPlaceholder.insertAfter(this.$sidebarNav);
-			this.$fixedSidebarNavOuterContainer.appendTo(document.body);
-			this.$sidebarNav.appendTo(this.$fixedSidebarNavContainer);
+			this.$sidebarNavPlaceholder.insertBefore(this.$sidebarNav);
+			this.$sidebarNav.addClass('fixed');
 			this.fixedSidebarNav = true;
 		}
 	},
@@ -480,9 +467,8 @@ var CP = Garnish.Base.extend({
 	{
 		if (this.fixedSidebarNav)
 		{
-			this.$sidebarNavPlaceholder.replaceWith(this.$sidebarNav);
-			this.$fixedSidebarNavOuterContainer.remove();
-			this.$sidebarNav.height('auto');
+			this.$sidebarNavPlaceholder.remove();
+			this.$sidebarNav.removeClass('fixed');
 			this.fixedSidebarNav = false;
 		}
 	},
