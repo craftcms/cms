@@ -184,11 +184,16 @@ class PluginsService extends BaseApplicationComponent
 			if (!isset($this->_allPlugins))
 			{
 				$this->_allPlugins = array();
-				$names = array();
+				$paths = array();
 
 				// Find all of the plugins in the plugins folder
 				$pluginsPath = blx()->path->getPluginsPath();
-				$paths = IOHelper::getFolderContents($pluginsPath, true, ".*Plugin\.php");
+				$pluginFolders = IOHelper::getFolderContents($pluginsPath, false);
+
+				foreach ($pluginFolders as $pluginFolder)
+				{
+					$paths = array_merge($paths, IOHelper::getFolderContents($pluginFolder, false, ".*Plugin\.php"));
+				}
 
 				if (is_array($paths) && count($paths) > 0)
 				{
