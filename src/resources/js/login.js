@@ -95,7 +95,7 @@ var LoginForm = Garnish.Base.extend({
 		var data = {
 			loginName: this.$loginNameInput.val(),
 			password: this.$passwordInput.val(),
-			rememberMe: (this.$rememberMeCheckbox.attr('checked') ? 'y' : '')
+			rememberMe: (this.$rememberMeCheckbox.prop('checked') ? 'y' : '')
 		};
 
 		Blocks.postActionRequest('users/login', data, $.proxy(function(response) {
