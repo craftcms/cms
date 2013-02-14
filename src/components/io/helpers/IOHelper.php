@@ -1162,7 +1162,8 @@ class IOHelper
 				$fullItem = $path.$item;
 				$contents[$key] = $fullItem;
 
-				if ($item == '.' || $item == '..')
+				// If it's hidden or a path specifier, skip it.
+				if (isset($item[0]) && $item[0] == '.')
 				{
 					continue;
 				}
