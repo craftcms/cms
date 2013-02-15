@@ -208,6 +208,19 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
+	 * Requires that the current user is an admin, otherwise a 403 exception is thrown.
+	 *
+	 * @throws HttpException
+	 */
+	public function requireAdmin()
+	{
+		if (!$this->isAdmin())
+		{
+			throw new HttpException(403);
+		}
+	}
+
+	/**
 	 * Requires that the user is logged in, otherwise redirects them to the login page.
 	 */
 	public function requireLogin()
