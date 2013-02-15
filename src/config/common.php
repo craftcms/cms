@@ -4,12 +4,27 @@ Yii::setPathOfAlias('app', BLOCKS_APP_PATH);
 Yii::setPathOfAlias('plugins', BLOCKS_PLUGINS_PATH);
 
 // Load the configs
-$blocksConfig = require_once(BLOCKS_APP_PATH.'config/defaults/blocks.php');
+$generalConfig = require_once(BLOCKS_APP_PATH.'config/defaults/general.php');
 $dbConfig = require_once(BLOCKS_APP_PATH.'config/defaults/db.php');
 
-if (is_array($_blocksConfig = require_once(BLOCKS_CONFIG_PATH.'blocks.php')))
+if (file_exists(BLOCKS_CONFIG_PATH.'general.php'))
 {
-	$blocksConfig = array_merge($blocksConfig, $_blocksConfig);
+	if (is_array($_generalConfig = require_once(BLOCKS_CONFIG_PATH.'general.php')))
+	{
+		$generalConfig = array_merge($generalConfig, $_generalConfig);
+	}
+}
+else if (file_exists(BLOCKS_CONFIG_PATH.'blocks.php'))
+{
+	if (is_array($_generalConfig = require_once(BLOCKS_CONFIG_PATH.'blocks.php')))
+	{
+		$generalConfig = array_merge($generalConfig, $_generalConfig);
+	}
+	else if (isset($blocksConfig))
+	{
+		$generalConfig = array_merge($generalConfig, $blocksConfig);
+		unset($blocksConfig);
+	}
 }
 
 if (is_array($_dbConfig = require_once(BLOCKS_CONFIG_PATH.'db.php')))
@@ -17,7 +32,7 @@ if (is_array($_dbConfig = require_once(BLOCKS_CONFIG_PATH.'db.php')))
 	$dbConfig = array_merge($dbConfig, $_dbConfig);
 }
 
-if ($blocksConfig['devMode'] == true)
+if ($generalConfig['devMode'] == true)
 {
 	defined('YII_DEBUG') || define('YII_DEBUG', true);
 	error_reporting(E_ALL & ~E_STRICT);
@@ -88,7 +103,7 @@ $configArray = array(
 	'params' => array(
 		'adminEmail'            => 'admin@website.com',
 		'dbConfig'              => $dbConfig,
-		'blocksConfig'          => $blocksConfig,
+		'generalConfig'         => $generalConfig,
 	)
 );
 
@@ -300,7 +315,7 @@ $components['httpSession']['sessionName'] = 'BlocksSessionId';
 
 $components['userSession']['class'] = 'Blocks\UserSessionService';
 $components['userSession']['allowAutoLogin']  = true;
-$components['userSession']['loginUrl']        = $blocksConfig['loginPath'];
+$components['userSession']['loginUrl']        = $generalConfig['loginPath'];
 $components['userSession']['autoRenewCookie'] = true;
 
 $configArray['components'] = array_merge($configArray['components'], $components);
