@@ -6,7 +6,7 @@
  * This file is subject to be overwritten by a Blocks update at any time.
  *
  * If you want to change any of these settings, copy it into
- * blocks/config/config.php, and make your change there.
+ * blocks/config/general.php, and make your change there.
  */
 
 return array(

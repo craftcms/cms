@@ -22,7 +22,7 @@ return CMap::mergeArray(
 		),
 
 		'params' => array(
-			'blocksConfig'         => $blocksConfig,
+			'generalConfig'        => $generalConfig,
 			'requiredPhpVersion'   => '5.3.0',
 			'requiredMysqlVersion' => '5.1.0'
 		),

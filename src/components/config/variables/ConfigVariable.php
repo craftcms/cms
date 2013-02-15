@@ -14,7 +14,7 @@ class ConfigVariable
 	 */
 	function __isset($name)
 	{
-		return isset(blx()->params['blocksConfig'][$name]);
+		return isset(blx()->params['generalConfig'][$name]);
 	}
 
 	/**

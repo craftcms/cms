@@ -18,9 +18,9 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function get($item)
 	{
-		if (isset(blx()->params['blocksConfig'][$item]))
+		if (isset(blx()->params['generalConfig'][$item]))
 		{
-			return blx()->params['blocksConfig'][$item];
+			return blx()->params['generalConfig'][$item];
 		}
 	}
 
