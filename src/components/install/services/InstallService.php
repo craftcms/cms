@@ -68,8 +68,18 @@ class InstallService extends BaseApplicationComponent
 	public function findInstallableRecords()
 	{
 		$records = array();
-		$componentsDir = IOHelper::getFolder(blx()->path->getComponentsPath());
-		$recordFiles = $componentsDir->getContents(true, "\/records\/.*Record\.php");
+		$recordFiles = array();
+		$componentsPath = blx()->path->getComponentsPath();
+		$componentsFolders = IOHelper::getFolderContents($componentsPath, false);
+
+		foreach ($componentsFolders as $componentsFolder)
+		{
+			// Make sure it's a folder and it has a records subfolder.
+			if (IOHelper::folderExists($componentsFolder.'/records/'))
+			{
+				$recordFiles = array_merge($recordFiles, IOHelper::getFolderContents($componentsFolder.'/records/', false, ".*Record\.php"));
+			}
+		}
 
 		foreach ($recordFiles as $file)
 		{
