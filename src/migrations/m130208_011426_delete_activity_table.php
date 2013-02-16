@@ -19,6 +19,9 @@ class m130208_011426_delete_activity_table extends BaseMigration
 		{
 			// Because you can never be TOO careful.
 			$this->dropTableIfExists('{{activity}}');
+
+			// Remove it so the auto-updater doesn't choke at the end of this request.
+			blx()->log->removeRoute('Blocks\\DbLogRoute');
 		}
 		else
 		{
