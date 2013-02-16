@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m1302015_120000_delete_activity_table extends BaseMigration
+class m130215_120000_delete_activity_table extends BaseMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
