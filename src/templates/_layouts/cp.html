@@ -22,9 +22,11 @@
 
 			<nav>
 				<ul id="nav">
+					{% set firstSeg = blx.request.segment(1) %}
+					{% if firstSeg == 'myaccount' %}{% set firstSeg = 'users' %}{% endif %}
 					{% for handle, item in blx.cp.nav %}
 						<li>
-							<a id="nav-{{ handle }}" class="{% if item.hasIcon is defined and item.hasIcon %}hasicon{% endif %} {% if blx.request.segment(1) == handle %}sel{% endif %}" href="{{ url(handle) }}">
+							<a id="nav-{{ handle }}" class="{% if item.hasIcon is defined and item.hasIcon %}hasicon{% endif %} {% if firstSeg == handle %}sel{% endif %}" href="{{ url(handle) }}">
 								{{- item.name -}}
 								{%- if item.badge is defined and item.badge -%}
 									<span class="badge">{{ item.badge }}</span>
