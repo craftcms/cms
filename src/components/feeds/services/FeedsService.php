@@ -112,7 +112,7 @@ class FeedsService extends BaseApplicationComponent
 			Blocks::registerAutoloader(array(new \SimplePie_Autoloader, 'autoload'));
 
 			// Did it work?
-			if (!class_exists('\SimplePie'))
+			if (!class_exists('SimplePie'))
 			{
 				throw new Exception(Blocks::t('The SimplePie autoloader was not registered properly.'));
 			}
