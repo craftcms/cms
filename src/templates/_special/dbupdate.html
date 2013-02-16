@@ -5,13 +5,15 @@
 	{% set handle = blx.updates.getManualUpdateHandle() %}
 
 	{% if handle is null %}
-		<p>{{ "No updates need to be made to your database."|t }}</p>
-	{% else %}
-		{% set name = blx.updates.getManualUpdateDisplayName() %}
-
-		<p>{{ "To complete the " ~ name ~ " update, some changes must be made to your database."|t }}</p>
-		<div class="buttons">
-			<a class="btn submit" href="{{ url('updates/go/' ~ handle|lower, 'manual=1') }}">{{ "Finish up"|t }}</a>
-		</div>
+		{% set handle = 'Blocks' %}
+		{% set name = 'Blocks' %}
 	{% endif %}
+
+	{% set name = blx.updates.getManualUpdateDisplayName() %}
+
+	<p>{{ "To complete the " ~ name ~ " update, some changes must be made to your database."|t }}</p>
+	<div class="buttons">
+		<a class="btn submit" href="{{ url('updates/go/' ~ handle|lower, 'manual=1') }}">{{ "Finish up"|t }}</a>
+	</div>
+
 {% endset %}
