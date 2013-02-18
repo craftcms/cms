@@ -174,12 +174,12 @@ class DbCommand extends \CDbCommand
 	/**
 	 * @param $table
 	 * @param $columns
-	 * @param $vals
+	 * @param $rows
 	 * @return int
 	 */
-	public function insertAll($table, $columns, $vals)
+	public function insertAll($table, $columns, $rows)
 	{
-		if (!$vals)
+		if (!$rows)
 		{
 			return 0;
 		}
@@ -190,14 +190,14 @@ class DbCommand extends \CDbCommand
 		$columns[] = 'dateUpdated';
 		$columns[] = 'uid';
 
-		foreach ($vals as &$val)
+		foreach ($rows as &$row)
 		{
-			$val[] = DateTimeHelper::currentTimeForDb();
-			$val[] = DateTimeHelper::currentTimeForDb();
-			$val[] = StringHelper::UUID();
+			$row[] = DateTimeHelper::currentTimeForDb();
+			$row[] = DateTimeHelper::currentTimeForDb();
+			$row[] = StringHelper::UUID();
 		}
 
-		$queryParams = $this->getConnection()->getSchema()->insertAll($table, $columns, $vals);
+		$queryParams = $this->getConnection()->getSchema()->insertAll($table, $columns, $rows);
 		return $this->setText($queryParams['query'])->execute($queryParams['params']);
 	}
 

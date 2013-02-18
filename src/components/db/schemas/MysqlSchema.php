@@ -96,54 +96,54 @@ class MysqlSchema extends \CMysqlSchema
 	/**
 	 * @param $table
 	 * @param $columns
-	 * @param $vals
+	 * @param $rows
 	 * @return mixed
 	 */
-	public function insertAll($table, $columns, $vals)
+	public function insertAll($table, $columns, $rows)
 	{
 		$params = array();
-		$names = array();
-		$placeHolders = array();
 
-		// parameterize the parameters
-		$uniqueCounter = 0;
-
-		foreach ($vals as $val)
+		// Quote the column names
+		foreach ($columns as $colIndex => $column)
 		{
-			for ($columnCounter = 0; $columnCounter < count($columns); $columnCounter++)
-			{
-				$placeHolders[] = ':'.$columns[$columnCounter].($uniqueCounter + 1);
-				$params[':' . $columns[$columnCounter].($uniqueCounter + 1)] = $val[$columnCounter];
+			$columns[$colIndex] = $this->quoteColumnName($column);
+		}
 
+		$valuesSql = '';
+
+		foreach ($rows as $rowIndex => $row)
+		{
+			if ($rowIndex != 0)
+			{
+				$valuesSql .= ', ';
 			}
 
-			$uniqueCounter++;
-		}
+			$valuesSql .= '(';
 
-		foreach ($columns as $columnName)
-		{
-			$names[] = $this->quoteColumnName($columnName);
-		}
-
-		// generate the SQL
-		$sql='INSERT INTO '.$this->quoteTableName($table).' ('.implode(', ', $names).') VALUES (';
-
-		$columnCounter = 0;
-		foreach ($placeHolders as $placeHolder)
-		{
-			if ($columnCounter == count($names))
+			foreach ($columns as $colIndex => $column)
 			{
-				$columnCounter = 0;
-				$sql = rtrim($sql, ',');
-				$sql .= '), (';
+				if ($colIndex != 0)
+				{
+					$valuesSql .= ', ';
+				}
+
+				if (isset($row[$colIndex]) && $row[$colIndex] !== null)
+				{
+					$key = ':row'.$rowIndex.'_col'.$colIndex;
+					$params[$key] = $row[$colIndex];
+					$valuesSql .= $key;
+				}
+				else
+				{
+					$valuesSql .= 'NULL';
+				}
 			}
 
-			$sql .= $placeHolder.',';
-			$columnCounter++;
+			$valuesSql .= ')';
 		}
 
-		$sql = rtrim($sql, ',');
-		$sql .= ')';
+		// Generate the SQL
+		$sql = 'INSERT INTO '.$this->quoteTableName($table).' ('.implode(', ', $columns).') VALUES '.$valuesSql;
 
 		return array('query' => $sql, 'params' => $params);
 	}
