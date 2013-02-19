@@ -70,7 +70,7 @@ class UserIdentity extends \CUserIdentity
 			case UserStatus::Active:
 			{
 				// Validate the password
-				if (blx()->security->checkPassword($this->password, $user->password, $user->encType))
+				if (blx()->security->checkString($this->password, $user->password))
 				{
 					if ($user->passwordResetRequired)
 					{
@@ -92,10 +92,6 @@ class UserIdentity extends \CUserIdentity
 						$this->_id = $user->id;
 						$this->username = $user->username;
 						$this->errorCode = static::ERROR_NONE;
-
-						$authSessionToken = StringHelper::UUID();
-						blx()->users->handleSuccessfulLogin($user, $authSessionToken);
-						$this->setState('authSessionToken', $authSessionToken);
 					}
 				}
 				else
