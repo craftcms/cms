@@ -194,7 +194,8 @@ class UsersController extends BaseController
 			$this->requirePostRequest();
 
 			$code = blx()->request->getRequiredPost('code');
-			$user = blx()->users->getUserByVerificationCode($code);
+			$id = blx()->request->getRequiredPost('id');
+			$user = blx()->users->getUserByVerificationCodeAndUid($code, $id);
 
 			if (!$user)
 			{
@@ -217,14 +218,17 @@ class UsersController extends BaseController
 				blx()->userSession->setNotice(Blocks::t('Couldn’t update password.'));
 
 				$this->renderRequestedTemplate(array(
-					'errors' => $user->getErrors('newPassword')
+					'errors' => $user->getErrors('newPassword'),
+					'code' => $code,
+					'id' => $id
 				));
 			}
 		}
 		else
 		{
 			$code = blx()->request->getQuery('code');
-			$user = blx()->users->getUserByVerificationCode($code);
+			$id = blx()->request->getQuery('id');
+			$user = blx()->users->getUserByVerificationCodeAndUid($code, $id);
 
 			if (!$user)
 			{
@@ -241,7 +245,8 @@ class UsersController extends BaseController
 			}
 
 			$this->renderTemplate($template, array(
-				'code' => $code
+				'code' => $code,
+				'id' => $id
 			));
 		}
 	}

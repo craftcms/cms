@@ -42,29 +42,40 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets a user by a verification code.
+	 * Gets a user by a verification code and their uid.
 	 *
-	 * @param string $code
-	 * @return UserModel
+	 * @param        $code
+	 * @param        $uid
+	 * @return UserModel|null
 	 */
-	public function getUserByVerificationCode($code)
+	public function getUserByVerificationCodeAndUid($code, $uid)
 	{
-		if ($code)
+		$date = DateTimeHelper::currentUTCDateTime();
+		$duration = new DateInterval(blx()->config->get('verificationCodeDuration'));
+		$date->sub($duration);
+
+		$userRecord = UserRecord::model()->find(
+			'verificationCodeIssuedDate >:date AND uid=:uid',
+			array(':date' => DateTimeHelper::formatTimeForDb($date->getTimestamp()), ':uid' => $uid)
+		);
+
+		if ($userRecord)
 		{
-			$date = DateTimeHelper::currentUTCDateTime();
-			$duration = new DateInterval(blx()->config->get('verificationCodeDuration'));
-			$date->sub($duration);
-
-			$userRecord = UserRecord::model()->find(
-				'verificationCode = :code and verificationCodeIssuedDate > :date',
-				array(':code' => $code, ':date' => DateTimeHelper::formatTimeForDb($date->getTimestamp()))
-			);
-
-			if ($userRecord)
+			if (blx()->security->checkString($code, $userRecord->verificationCode))
 			{
 				return UserModel::populateModel($userRecord);
 			}
+			else
+			{
+				Blocks::log('Found a with UID:'.$uid.', but the verification code given: '.$code.' does not match the hash in the database.', \CLogger::LEVEL_WARNING);
+			}
 		}
+		else
+		{
+			Blocks::log('Could not find a user with UID:'.$uid.' that has a verification code that is not expired.', \CLogger::LEVEL_WARNING);
+		}
+
+		return null;
 	}
 
 	/**
@@ -209,7 +220,7 @@ class UsersService extends BaseApplicationComponent
 			if ($user->verificationRequired)
 			{
 				$userRecord->status = $user->status = UserStatus::Pending;
-				$this->_setVerificationCodeOnUserRecord($userRecord);
+				$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 			}
 
 			$userRecord->save();
@@ -218,8 +229,10 @@ class UsersService extends BaseApplicationComponent
 
 			if ($user->verificationRequired)
 			{
+				blx()->templates->registerTwigAutoloader();
+
 				blx()->email->sendEmailByKey($user, 'verify_email', array(
-					'link' => $this->_getVerifyAccountUrl($userRecord)
+					'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $user->uid), blx()->templates->getTwig()->getCharset()),
 				));
 			}
 
@@ -259,11 +272,13 @@ class UsersService extends BaseApplicationComponent
 	public function sendVerificationEmail(UserModel $user)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
-		$this->_setVerificationCodeOnUserRecord($userRecord);
+		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
+		blx()->templates->registerTwigAutoloader();
+
 		return blx()->email->sendEmailByKey($user, 'verify_email', array(
-			'link' => $this->_getVerifyAccountUrl($userRecord)
+			'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), blx()->templates->getTwig()->getCharset()),
 		));
 	}
 
@@ -276,11 +291,13 @@ class UsersService extends BaseApplicationComponent
 	public function sendForgotPasswordEmail(UserModel $user)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
-		$this->_setVerificationCodeOnUserRecord($userRecord);
+		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
+		blx()->templates->registerTwigAutoloader();
+
 		return blx()->email->sendEmailByKey($user, 'forgot_password', array(
-			'link' => $this->_getVerifyAccountUrl($userRecord)
+			'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), blx()->templates->getTwig()->getCharset()),
 		));
 	}
 
@@ -289,33 +306,38 @@ class UsersService extends BaseApplicationComponent
 	 *
 	 * @access private
 	 * @param UserRecord $userRecord
+	 * @return string
 	 */
 	private function _setVerificationCodeOnUserRecord(UserRecord $userRecord)
 	{
-		$userRecord->verificationCode = StringHelper::UUID();
+		$unhashedCode = StringHelper::UUID();
+		$hashedCode = blx()->security->hashString($unhashedCode);
+		$userRecord->verificationCode = $hashedCode['hash'];
 		$userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
+
+		return $unhashedCode;
 	}
 
 	/**
 	 * Gets the account verification URL for a user record.
 	 *
 	 * @access private
-	 * @param UserRecord $userRecord
+	 * @param $verificationCode
+	 * @param $uid
 	 * @return string
-	 * @throws Exception
 	 */
-	private function _getVerifyAccountUrl(UserRecord $userRecord)
+	private function _getVerifyAccountUrl($verificationCode, $uid)
 	{
-		if ($userRecord->verificationCode)
+		if (blx()->request->isSecureConnection)
 		{
 			return UrlHelper::getUrl(blx()->config->get('resetPasswordPath'), array(
-				'code' => $userRecord->verificationCode
-			));
+				'code' => $verificationCode, 'id' => $uid
+			), 'https');
 		}
-		else
-		{
-			throw new Exception(Blocks::t('This user doesn’t have a verification code set.'));
-		}
+
+		return UrlHelper::getUrl(blx()->config->get('resetPasswordPath'), array(
+			'code' => $verificationCode, 'id' => $uid
+		));
 	}
 
 	/**
@@ -355,7 +377,7 @@ class UsersService extends BaseApplicationComponent
 
 		if ($passwordModel->validate())
 		{
-			$hashAndType = blx()->security->hashPassword($user->newPassword);
+			$hashAndType = blx()->security->hashString($user->newPassword);
 
 			$userRecord->password = $user->password = $hashAndType['hash'];
 			$userRecord->encType = $user->encType = $hashAndType['encType'];
@@ -385,14 +407,13 @@ class UsersService extends BaseApplicationComponent
 	 * Handles a successful login for a user.
 	 *
 	 * @param UserModel $user
-	 * @param string $authSessionToken
+	 * @param           $sessionToken
 	 * @return bool
 	 */
-	public function handleSuccessfulLogin(UserModel $user, $authSessionToken)
+	public function handleSuccessfulLogin(UserModel $user, $sessionToken)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
 
-		$userRecord->authSessionToken = $authSessionToken;
 		$userRecord->lastLoginDate = $user->lastLoginDate = DateTimeHelper::currentUTCDateTime();
 		$userRecord->lastLoginAttemptIPAddress = blx()->request->getUserHostAddress();
 		$userRecord->invalidLoginWindowStart = null;
@@ -400,7 +421,14 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->verificationCode = null;
 		$userRecord->verificationCodeIssuedDate = null;
 
-		return $userRecord->save();
+		$sessionRecord = new SessionRecord();
+		$sessionRecord->userId = $user->id;
+		$sessionRecord->token = $sessionToken;
+
+		$userRecord->save();
+		$sessionRecord->save();
+
+		return $sessionRecord->uid;
 	}
 
 	/**
