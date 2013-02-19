@@ -214,6 +214,15 @@ class UserSessionService extends \CWebUser
 		$usernameModel->username = $username;
 		$passwordModel->password = $password;
 
+		// Require a userAgent string and an IP address to help prevent direct socket connections from trying to login.
+		if (!blx()->request->userAgent || !blx()->request->getIpAddress())
+		{
+			Blocks::log('Someone tried to login with loginName: '.$username.', without presenting an IP address or userAgent string.', \CLogger::LEVEL_WARNING);
+			$this->logout(true);
+			$this->requireLogin();
+		}
+
+		// Validate the model.
 		if ($usernameModel->validate() && $passwordModel->validate())
 		{
 			// Authenticate the credentials.
@@ -223,6 +232,7 @@ class UserSessionService extends \CWebUser
 			// Was the login successful?
 			if ($this->_identity->errorCode == UserIdentity::ERROR_NONE)
 			{
+				// See if the 'rememberUsernameDuration' config item is set. If so, save the name to a cookie.
 				$rememberUsernameDuration = blx()->config->get('rememberUsernameDuration');
 				if ($rememberUsernameDuration)
 				{
@@ -234,6 +244,7 @@ class UserSessionService extends \CWebUser
 					$this->saveCookie('username', $username, $expire->getTimestamp());
 				}
 
+				// Get how long this session is supposed to last.
 				$seconds = $this->_getSessionDuration($rememberMe);
 				$this->authTimeout = $seconds;
 
@@ -252,15 +263,18 @@ class UserSessionService extends \CWebUser
 
 							if ($user)
 							{
+								// Save the necessary info to the identity cookie.
 								$sessionToken = StringHelper::UUID();
 								$hashedToken = blx()->security->hashString($sessionToken);
 								$uid = blx()->users->handleSuccessfulLogin($user, $hashedToken['hash']);
+								$userAgent = blx()->request->userAgent;
 
 								$data = array(
 									$this->getName(),
 									$sessionToken,
 									$uid,
 									$seconds,
+									$userAgent,
 								);
 
 								$this->saveCookie('', $data, $seconds);
@@ -376,12 +390,24 @@ class UserSessionService extends \CWebUser
 		$cookies = blx()->request->getCookies();
 		$cookie = $cookies->itemAt($this->getStateKeyPrefix());
 
+		// Check the identity cookie and make sure the data hasn't been tampered with.
 		if ($cookie && !empty($cookie->value) && ($data = blx()->securityManager->validateData($cookie->value)) !== false)
 		{
 			$data = $this->getCookieValue('');
 
-			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3]))
+			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3], $data[4]))
 			{
+				$savedUserAgent = $data[4];
+				$currentUserAgent = blx()->request->userAgent;
+
+				// If the saved userAgent differs from the current one, bail.
+				if ($savedUserAgent !== $currentUserAgent)
+				{
+					Blocks::log('Tried to renew the identity cookie, but the saved userAgent ('.$savedUserAgent.') does not match the current userAgent ('.$currentUserAgent.').', \CLogger::LEVEL_WARNING);
+					$this->logout(true);
+				}
+
+				// Bump the expiration time.
 				$cookie->expire = time() + $data[3];
 				$cookies->add($cookie->name, $cookie);
 
@@ -406,20 +432,38 @@ class UserSessionService extends \CWebUser
 	 */
 	protected function restoreFromCookie()
 	{
+		// Require a userAgent string and an IP address to help prevent direct socket connections from trying to login.
+		if (!blx()->request->userAgent || !blx()->request->getIpAddress())
+		{
+			Blocks::log('Someone tried to restore a session from a cookie without presenting an IP address or userAgent string.', \CLogger::LEVEL_WARNING);
+			$this->logout(true);
+			$this->requireLogin();
+		}
+
 		// See if they have an existing identity cookie.
 		$cookie = blx()->request->getCookies()->itemAt($this->getStateKeyPrefix());
 
+		// Grab the identity cookie and make sure the data hasn't been tampered with.
 		if ($cookie && !empty($cookie->value) && is_string($cookie->value) && ($data = blx()->securityManager->validateData($cookie->value)) !== false)
 		{
 			// Grab the data
 			$data = $this->getCookieValue('');
 
-			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3]))
+			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3], $data[4]))
 			{
 				$loginName = $data[0];
 				$currentSessionToken = $data[1];
 				$uid = $data[2];
 				$seconds = $data[3];
+				$savedUserAgent = $data[4];
+				$currentUserAgent = blx()->request->userAgent;
+
+				// If the saved userAgent differs from the current one, bail.
+				if ($savedUserAgent !== $currentUserAgent)
+				{
+					Blocks::log('Tried to restore session from the the identity cookie, but the saved userAgent ('.$savedUserAgent.') does not match the current userAgent ('.$currentUserAgent.').', \CLogger::LEVEL_WARNING);
+					$this->logout(true);
+				}
 
 				// Get the hashed token from the db based on login name and uid.
 				if (($sessionRow = $this->_findSessionToken($loginName, $uid)) !== false)
@@ -437,6 +481,7 @@ class UserSessionService extends \CWebUser
 
 							if ($this->autoRenewCookie)
 							{
+								// Generate a new session token for the database and cookie.
 								$newSessionToken = StringHelper::UUID();
 								$hashedNewToken = blx()->security->hashString($newSessionToken);
 								$this->_updateSessionToken($loginName, $dbHashedToken, $hashedNewToken['hash']);
@@ -444,11 +489,13 @@ class UserSessionService extends \CWebUser
 								// While we're let's clean up stale sessions.
 								$this->_cleanStaleSessions();
 
+								// Save updated info back to identity cookie.
 								$data = array(
 									$this->getName(),
 									$newSessionToken,
 									$uid,
 									$seconds,
+									$currentUserAgent,
 								);
 
 								$this->saveCookie('', $data, $seconds);
@@ -497,12 +544,13 @@ class UserSessionService extends \CWebUser
 	{
 		$cookie = blx()->request->getCookies()->itemAt($this->getStateKeyPrefix());
 
+		// Grab the identity cookie information and make sure the data hasn't been tampered with.
 		if ($cookie && !empty($cookie->value) && is_string($cookie->value) && ($data = blx()->securityManager->validateData($cookie->value)) !== false)
 		{
 			// Grab the data
 			$data = $this->getCookieValue('');
 
-			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3]))
+			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3], $data[4]))
 			{
 				$loginName = $data[0];
 				$uid = $data[2];
