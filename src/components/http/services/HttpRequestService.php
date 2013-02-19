@@ -19,6 +19,7 @@ class HttpRequestService extends \CHttpRequest
 	private $_isMobileBrowser;
 	private $_mimeType;
 	private $_browserLanguages;
+	private $_ipAddress;
 
 	/**
 	 * Init
@@ -473,6 +474,42 @@ class HttpRequestService extends \CHttpRequest
 	public function isFlashRequest()
 	{
 		return $this->getIsFlashRequest();
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getUserHostAddress()
+	{
+		return $this->getIpAddress();
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getIpAddress()
+	{
+		if ($this->_ipAddress === null)
+		{
+			if (isset($_SERVER['REMOTE_ADDR']) && isset($_SERVER['HTTP_CLIENT_IP']))
+			{
+				$this->_ipAddress = $_SERVER['HTTP_CLIENT_IP'];
+			}
+			elseif (isset($_SERVER['REMOTE_ADDR']))
+			{
+				$this->_ipAddress = $_SERVER['REMOTE_ADDR'];
+			}
+			elseif(isset($_SERVER['HTTP_CLIENT_IP']))
+			{
+				$this->_ipAddress = $_SERVER['HTTP_CLIENT_IP'];
+			}
+			elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+			{
+				$this->_ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+			}
+		}
+
+		return $this->_ipAddress;
 	}
 
 	/**
