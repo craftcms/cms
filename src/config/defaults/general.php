@@ -105,7 +105,7 @@ return array(
  *
  * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-'userSessionDuration' => 'PT1H',
+'userSessionDuration' => 'PT30M',
 
 /**
  * The amount of time a user stays logged if "Remember Me" is checked.
