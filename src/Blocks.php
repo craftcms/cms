@@ -460,11 +460,6 @@ class Blocks extends \Yii
 	 */
 	public static function log($msg, $level = \CLogger::LEVEL_INFO, $category = 'application')
 	{
-		if (self::$_logger === null)
-		{
-			self::$_logger = new \CLogger;
-		}
-
 		if (YII_DEBUG && YII_TRACE_LEVEL > 0 && $level !== \CLogger::LEVEL_PROFILE)
 		{
 			$traces = debug_backtrace();
@@ -489,7 +484,7 @@ class Blocks extends \Yii
 			echo $msg."\n";
 		}
 
-		self::$_logger->log($msg, $level, $category);
+		static::getLogger()->log($msg, $level, $category);
 	}
 
 	/**
