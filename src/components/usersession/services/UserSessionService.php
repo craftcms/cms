@@ -377,7 +377,7 @@ class UserSessionService extends \CWebUser
 	/**
 	 * @return null
 	 */
-	public function getWasSessionRestoredFromCookie()
+	public function wasSessionRestoredFromCookie()
 	{
 		return $this->_sessionRestoredFromCookie;
 	}
