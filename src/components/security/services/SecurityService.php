@@ -26,33 +26,33 @@ class SecurityService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $password
+	 * @param $string
 	 * @throws Exception
 	 * @return string
 	 */
-	public function hashPassword($password)
+	public function hashString($string)
 	{
-		$passwordHasher = new \PasswordHash($this->_iterationCount, false);
-		$hashAndType = $passwordHasher->hashPassword($password);
-		$check = $passwordHasher->checkPassword($password, $hashAndType['hash']);
+		$hasher = new \PasswordHash($this->_iterationCount, false);
+		$hashAndType = $hasher->hashPassword($string);
+		$check = $hasher->checkPassword($string, $hashAndType['hash']);
 
 		if (!$check)
 		{
-			throw new Exception(Blocks::t('Could not hash the given password.'));
+			throw new Exception(Blocks::t('Could not hash the given string.'));
 		}
 
 		return $hashAndType;
 	}
 
 	/**
-	 * @param $password
+	 * @param $string
 	 * @param $storedHash
 	 * @return bool
 	 */
-	public function checkPassword($password, $storedHash)
+	public function checkString($string, $storedHash)
 	{
-		$passwordHasher = new \PasswordHash($this->_iterationCount, false);
-		$check = $passwordHasher->checkPassword($password, $storedHash);
+		$hasher = new \PasswordHash($this->_iterationCount, false);
+		$check = $hasher->checkPassword($string, $storedHash);
 
 		return $check;
 	}
