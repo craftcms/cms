@@ -44,6 +44,16 @@ class m130218_015336_session_shuffle extends BaseMigration
 
 				// Change the length of the verificationCode column.
 				$this->alterColumn('{{users}}', 'verificationCode', array(AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char));
+
+				// Create additional users indexes.
+				$this->createIndex('{{users}}', 'uid');
+				$this->createIndex('{{users}}', 'verificationCode');
+
+				// Create additional sessions indexes.
+				$this->createIndex('{{sessions}}', 'uid');
+				$this->createIndex('{{sessions}}', 'token');
+				$this->createIndex('{{sessions}}', 'dateUpdated');
+
 			}
 			else
 			{

@@ -33,4 +33,16 @@ class SessionRecord extends BaseRecord
 			'user' => array(static::BELONGS_TO, 'UserRecord', 'onDelete' => static::CASCADE, 'required' => true),
 		);
 	}
+
+	/**
+	 * @return array
+	 */
+	public function defineIndexes()
+	{
+		return array(
+			array('columns' => array('uid')),
+			array('columns' => array('token')),
+			array('columns' => array('dateUpdated')),
+		);
+	}
 }

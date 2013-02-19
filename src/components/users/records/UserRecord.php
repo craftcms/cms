@@ -63,4 +63,15 @@ class UserRecord extends BaseRecord
 
 		return $relations;
 	}
+
+	/**
+	 * @return array
+	 */
+	public function defineIndexes()
+	{
+		return array(
+			array('columns' => array('uid')),
+			array('columns' => array('verificationCode')),
+		);
+	}
 }
