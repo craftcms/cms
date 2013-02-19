@@ -13,11 +13,13 @@
 
 {% set body %}
     <script type="text/javascript">
-		var cookie = 'BlocksCookieTest='+Math.floor(Math.random() * 1000000);
-		document.cookie = cookie;
-		var cookiesEnabled = document.cookie.search(cookie) != -1;
+		var cookieTest = 'BlocksCookieTest='+Math.floor(Math.random() * 1000000);
+		document.cookie = cookieTest;
+		var cookiesEnabled = document.cookie.search(cookieTest) != -1;
 		if (cookiesEnabled)
 		{
+			document.cookie = cookieTest + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+
 			document.write(
 				'<form id="login-form" method="post" action="" accept-charset="UTF-8" {% if blx.hasPackage("Rebrand") and blx.rebrand.isLogoUploaded -%}
 						{%- set logo = blx.rebrand.logo -%}
