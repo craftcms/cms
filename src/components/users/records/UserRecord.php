@@ -31,14 +31,13 @@ class UserRecord extends BaseRecord
 			'emailFormat'                => array(AttributeType::Enum, 'values' => array('text', 'html'), 'default' => 'text', 'required' => true),
 			'admin'                      => array(AttributeType::Bool),
 			'status'                     => array(AttributeType::Enum, 'values' => array('locked', 'suspended', 'pending', 'active', 'archived'), 'default' => 'pending'),
-			'authSessionToken'           => array(AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char),
 			'lastLoginDate'              => array(AttributeType::DateTime),
 			'lastLoginAttemptIPAddress'  => array(AttributeType::String, 'maxLength' => 45),
 			'invalidLoginWindowStart'    => array(AttributeType::DateTime),
 			'invalidLoginCount'          => array(AttributeType::Number, 'column' => ColumnType::TinyInt, 'unsigned' => true),
 			'lastInvalidLoginDate'       => array(AttributeType::DateTime),
 			'lockoutDate'                => array(AttributeType::DateTime),
-			'verificationCode'           => array(AttributeType::String, 'maxLength' => 36, 'column' => ColumnType::Char),
+			'verificationCode'           => array(AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char),
 			'verificationCodeIssuedDate' => array(AttributeType::DateTime),
 			'passwordResetRequired'      => array(AttributeType::Bool),
 			'lastPasswordChangeDate'     => array(AttributeType::DateTime),
@@ -59,6 +58,8 @@ class UserRecord extends BaseRecord
 			$relations['profile'] = array(static::HAS_ONE, 'UserProfileRecord', 'userId');
 			$relations['groups']  = array(static::MANY_MANY, 'UserGroupRecord', 'usergroups_users(userId, groupId)');
 		}
+
+		$relations['sessions'] = array(static::HAS_MANY, 'SessionRecord', 'userId');
 
 		return $relations;
 	}
