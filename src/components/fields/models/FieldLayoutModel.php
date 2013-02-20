@@ -79,22 +79,30 @@ class FieldLayoutModel extends BaseModel
 	 */
 	public static function populateModel($values)
 	{
-		$class = get_called_class();
-		$model = new $class();
-
 		if (isset($values['tabs']))
 		{
-			$model->setTabs($values['tabs']);
+			$tabs = $values['tabs'];
 			unset($values['tabs']);
 		}
 
 		if (isset($values['fields']))
 		{
-			$model->setFields($values['fields']);
+			$fields = $values['fields'];
 			unset($values['fields']);
 		}
 
-		$model->setAttributes($values);
+		$model = parent::populateModel($values);
+
+		if (isset($tabs))
+		{
+			$model->setTabs($tabs);
+		}
+
+		if (isset($fields))
+		{
+			$model->setFields($fields);
+		}
+
 		return $model;
 	}
 }

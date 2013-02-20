@@ -1,6 +1,8 @@
 <?php
 namespace Blocks;
 
+Blocks::requirePackage(BlocksPackage::Rebrand);
+
 /**
  * Handles email message tasks.
  */

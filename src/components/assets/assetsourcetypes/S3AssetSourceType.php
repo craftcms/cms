@@ -1,6 +1,8 @@
 <?php
 namespace Blocks;
 
+Blocks::requirePackage(BlocksPackage::PublishPro);
+
 /**
  * S3 source type class
  */
@@ -22,9 +24,9 @@ class S3AssetSourceType extends BaseAssetSourceType
 	private $_s3;
 
 	/**
-	 * Construct the source type and set S3 instance.
+	 * Init
 	 */
-	public function __construct()
+	public function init()
 	{
 		$settings = $this->getSettings();
 		$this->_s3 = new \S3($settings->keyId, $settings->secret);

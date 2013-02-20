@@ -1,6 +1,7 @@
 <?php
 namespace Blocks;
 
+Blocks::requirePackage(BlocksPackage::Rebrand);
 
 /**
  * Rebranding functions
