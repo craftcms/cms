@@ -78,6 +78,8 @@ class ComponentsService extends BaseApplicationComponent
 						continue;
 					}
 
+					$component->init();
+
 					// Save it
 					$classHandle = $component->getClassHandle();
 					$this->_components[$type][$classHandle] = $component;
