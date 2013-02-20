@@ -153,6 +153,21 @@ class UrlManager extends \CUrlManager
 		if (blx()->request->isCpRequest())
 		{
 			// Check the Blocks predefined routes.
+
+			if (isset($this->cpRoutes['pkgRoutes']))
+			{
+				// Merge in the package routes
+				foreach ($this->cpRoutes['pkgRoutes'] as $packageName => $packageRoutes)
+				{
+					if (Blocks::hasPackage($packageName))
+					{
+						$this->cpRoutes = array_merge($this->cpRoutes, $packageRoutes);
+					}
+				}
+
+				unset($this->cpRoutes['pkgRoutes']);
+			}
+
 			if (($template = $this->_matchRoutes($this->cpRoutes)) !== false)
 			{
 				return $template;

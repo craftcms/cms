@@ -35,6 +35,21 @@ class App extends \CWebApplication
 	private $_templatePath;
 	private $_isInstalled;
 	private $_validDbConfig = null;
+	private $_packageComponents;
+
+	/**
+	 * Sets the application components.
+	 */
+	public function setComponents($components, $merge = true)
+	{
+		if (isset($components['pkgComponents']))
+		{
+			$this->_packageComponents = $components['pkgComponents'];
+			unset($components['pkgComponents']);
+		}
+
+		parent::setComponents($components, $merge);
+	}
 
 	/**
 	 * Processes resource requests before anything else has a chance to initialize.
@@ -48,6 +63,20 @@ class App extends \CWebApplication
 		foreach ($this->componentAliases as $alias)
 		{
 			Blocks::import($alias);
+		}
+
+		// Set the appropriate package components
+		if (isset($this->_packageComponents))
+		{
+			foreach ($this->_packageComponents as $packageName => $packageComponents)
+			{
+				if (Blocks::hasPackage($packageName))
+				{
+					$this->setComponents($packageComponents);
+				}
+			}
+
+			unset($this->_packageComponents);
 		}
 
 		// Initialize HttpRequestService and LogRouter right away

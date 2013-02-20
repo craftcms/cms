@@ -72,10 +72,10 @@ require_once BLOCKS_APP_PATH.'Blocks.php';
 require_once BLOCKS_APP_PATH.'App.php';
 require_once BLOCKS_APP_PATH.'Info.php';
 
-$config = require_once BLOCKS_APP_PATH.'config/main.php';
+$configPath = BLOCKS_APP_PATH.'config/main.php';
 
 // Initialize Blocks\App this way so it doesn't cause a syntax error on PHP < 5.3
 $appClass = '\Blocks\App';
-$app = new $appClass($config);
+$app = new $appClass($configPath);
 
 $app->run();
