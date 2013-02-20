@@ -166,6 +166,7 @@ class Blocks extends \Yii
 
 	/**
 	 * Requires that a given package is installed.
+	 *
 	 * @param string $packageName
 	 * @throws Exception
 	 */
@@ -173,7 +174,7 @@ class Blocks extends \Yii
 	{
 		if (!static::hasPackage($packageName))
 		{
-			throw new Exception(Blocks::t('The {package} package is required to perform this action.', array('package' => $packageName)));
+			throw new HttpException(404);
 		}
 	}
 

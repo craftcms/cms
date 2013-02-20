@@ -16,6 +16,7 @@ class BlocksTwigExtension extends \Twig_Extension
 		return array(
 			new Redirect_TokenParser(),
 			new RequireLogin_TokenParser(),
+			new RequirePackage_TokenParser(),
 			new RequirePermission_TokenParser(),
 			new IncludeResource_TokenParser('includeCssFile'),
 			new IncludeResource_TokenParser('includeJsFile'),
