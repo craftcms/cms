@@ -314,32 +314,60 @@ class Updater
 				$tempFilePath = $rowData[0];
 			}
 
-			// Delete any files/folders we backed up.
-			if ($tempFilePath == '')
+			$fullPath = '';
+
+			switch (trim($rowData[1]))
 			{
-				$backupPath = IOHelper::normalizePathSeparators(rtrim(blx()->path->getAppPath(), '/').$tempFilePath.'.bak');
-			}
-			else
-			{
-				$backupPath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$tempFilePath.'.bak');
+				// If the file/folder was "added" in the manifest file, then it will have a backup we need to remove.
+				case PatchManifestFileAction::Add:
+				{
+					if ($tempFilePath == '')
+					{
+						$fullPath = IOHelper::normalizePathSeparators(rtrim(blx()->path->getAppPath(), '/').'.bak');
+					}
+					else
+					{
+						$fullPath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$tempFilePath.'.bak');
+					}
+
+					break;
+				}
+
+				// If the file/folder was set to be deleted, there is no backup and we go ahead and remove it now.
+				case PatchManifestFileAction::Remove:
+				{
+					if ($tempFilePath == '')
+					{
+						$fullPath = IOHelper::normalizePathSeparators(blx()->path->getAppPath());
+					}
+					else
+					{
+						$fullPath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$tempFilePath.'.bak');
+					}
+
+					break;
+				}
 			}
 
+			// Delete any files/folders we backed up.
 			if ($folder)
 			{
-				if (($folder = IOHelper::getFolder($backupPath)) !== false)
+				if (($folder = IOHelper::getFolder($fullPath)) !== false)
 				{
-					Blocks::log('Deleting backup folder: '.$folder->getRealPath());
+					Blocks::log('Deleting folder: '.$folder->getRealPath());
 					$folder->delete();
 				}
 			}
 			else
 			{
-				if (($file = IOHelper::getFile($backupPath)) !== false)
+				if (($file = IOHelper::getFile($fullPath)) !== false)
 				{
-					Blocks::log('Deleting backup file: '.$file->getRealPath());
+					Blocks::log('Deleting file: '.$file->getRealPath());
 					$file->delete();
 				}
 			}
+
+			break;
 		}
 
 		// Delete the temp patch folder
