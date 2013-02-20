@@ -215,8 +215,11 @@ class PluginsService extends BaseApplicationComponent
 					}
 				}
 
-				// Sort plugins by name
-				array_multisort($names, $this->_allPlugins);
+				if (!empty($names))
+				{
+					// Sort plugins by name
+					array_multisort($names, $this->_allPlugins);
+				}
 			}
 
 			return $this->_allPlugins;

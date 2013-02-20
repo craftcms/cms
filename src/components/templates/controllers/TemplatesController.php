@@ -15,11 +15,7 @@ class TemplatesController extends BaseController
 	{
 		if (blx()->request->isCpRequest() &&
 			// The only time we'll allow anonymous access to the CP is in the middle of a manual update.
-			// (We'll allow access to updates/go/blocks?manual=1)
-			!(
-				blx()->request->getPath() == 'updates/go/blocks' &&
-				blx()->request->getParam('manual', null) == 1
-			)
+			!($this->_isValidManualUpdatePath())
 		)
 		{
 			// Make sure the user has access to the CP
@@ -58,5 +54,37 @@ class TemplatesController extends BaseController
 
 		// Output the offline template
 		$this->renderTemplate('offline');
+	}
+
+	/**
+	 * @return bool
+	 */
+	private function _isValidManualUpdatePath()
+	{
+		// Is this a manual Blocks update?
+		if (blx()->request->getPath() == 'updates/go/blocks' && blx()->request->getParam('manual', null) == 1)
+		{
+			// Extra check in case someone manually comes to the url.
+			if (blx()->updates->isBlocksDbUpdateNeeded())
+			{
+				return true;
+			}
+		}
+
+		// Is this a manual plugin update?
+		$segments = blx()->request->getSegments();
+		if (count($segments) == 3 && $segments[0] == 'updates' && $segments[1] == 'go' && blx()->request->getParam('manual', null) == 1)
+		{
+			if (($plugin = blx()->plugins->getPlugin($segments[2])) !== null)
+			{
+				// Extra check in case someone manually comes to the url.
+				if (blx()->plugins->doesPluginRequireDatabaseUpdate($plugin))
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 }
