@@ -7,6 +7,33 @@ namespace Blocks;
 class DbCommand extends \CDbCommand
 {
 	/**
+	 * Returns the total number of rows matched by the query.
+	 *
+	 * @param string $column The column to count.
+	 * @return int The total number of rows matched by the query.
+	 */
+	public function count($column)
+	{
+		if (is_object($column))
+		{
+			$column = (string) $column;
+		}
+		else if (strpos($column, '(') === false)
+		{
+			if (preg_match('/^(.*?)(?i:\s+as\s+|\s+)(.*)$/', $column, $matches))
+			{
+				$column = blx()->db->quoteColumnName($matches[1]).' AS '.blx()->db->quoteColumnName($matches[2]);
+			}
+			else
+			{
+				$column = blx()->db->quoteColumnName($column);
+			}
+		}
+
+		return (int) $this->select("count({$column})")->queryScalar();
+	}
+
+	/**
 	 * Adds additional select columns.
 	 *
 	 * @param string $columns
@@ -153,6 +180,23 @@ class DbCommand extends \CDbCommand
 	{
 		$conditions = $this->_normalizeConditions($conditions, $params);
 		return parent::having($conditions, $params);
+	}
+
+	/**
+	 * @param mixed $columns
+	 * @return DbCommand
+	 */
+	public function addOrder($columns)
+	{
+		$oldOrder = $this->getOrder();
+		if ($oldOrder)
+		{
+			return $this->order(array($oldOrder, $columns));
+		}
+		else
+		{
+			return $this->order($columns);
+		}
 	}
 
 	/**
@@ -474,6 +518,18 @@ class DbCommand extends \CDbCommand
 		$name = DbHelper::getPrimaryKeyName($table, $columns);
 		$table = DbHelper::addTablePrefix($table);
 		return parent::dropPrimaryKey($name, $table);
+	}
+
+	/**
+	 * Returns whether a table exists.
+	 *
+	 * @param string $table
+	 * @return bool
+	 */
+	public function tableExists($table)
+	{
+		$table = DbHelper::addTablePrefix($table);
+		return (blx()->db->schema->getTable($table, true) !== null);
 	}
 
 	/**

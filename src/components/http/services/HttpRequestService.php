@@ -276,7 +276,7 @@ class HttpRequestService extends \CHttpRequest
 
 	/**
 	 * Returns the user preferred languages sorted by preference.
-	 * The returned language IDs will be canonicalized using {@link Locale::getCanonicalID}.
+	 * The returned language IDs will be canonicalized using {@link LocaleData::getCanonicalID}.
 	 * This method returns false if the user does not have language preferences.
 	 *
 	 * @return array the user preferred languages.
@@ -299,7 +299,7 @@ class HttpRequestService extends \CHttpRequest
 
 				foreach ($languages as $language => $pref)
 				{
-					$this->_browserLanguages[] = Locale::getCanonicalID($language);
+					$this->_browserLanguages[] = LocaleData::getCanonicalID($language);
 				}
 			}
 

@@ -1,20 +1,18 @@
 {% import "_includes/forms" as forms %}
 {% set key = blx.request.getPost('key') %}
-{% set language = blx.request.getPost('language') %}
-{% set message = blx.emailMessages.getMessage(key, language) %}
+{% set localeId = blx.request.getPost('locale') %}
+{% set message = blx.emailMessages.getMessage(key, localeId) %}
 
 
 <header class="header">
 	<h1>{{ "Edit Message"|t }}</h1>
 
 	{% if blx.hasPackage('Language') %}
-		{% set languages = blx.systemSettings.languages %}
 		<ul class="right">
-			<li class="select language">
+			<li class="select locale">
 				<select>
-					<option value="{{ blx.language }}" {% if blx.language == message.language %}selected{% endif %}>{{ blx.i18n.getLocaleName(blx.language) }}</option>
-					{% for language in languages %}
-						<option value="{{ language }}" {% if language == message.language %}selected{% endif %}>{{ blx.i18n.getLocaleName(language) }}</option>
+					{% for locale in blx.i18n.getSiteLocales() %}
+						<option value="{{ locale.id }}" {% if locale.id == message.locale %}selected{% endif %}>{{ locale.name }}</option>
 					{% endfor %}
 				</select>
 			</li>
@@ -25,16 +23,16 @@
 <div class="body">
 	{{ forms.textField({
 		label: "Subject"|t,
-		id: 'subject',
-		class: 'subject',
+		id: 'message-subject',
+		class: 'message-subject',
 		value: message.subject,
 		required: true
 	}) }}
 
 	{{ forms.textareaField({
 		label: "Body"|t,
-		id: 'body',
-		class: 'body',
+		id: 'message-body',
+		class: 'message-body',
 		value: message.body,
 		rows: 15
 	}) }}

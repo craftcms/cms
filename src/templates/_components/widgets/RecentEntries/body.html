@@ -11,14 +11,9 @@
 	{% if entries|length %}
 		<table class="data">
 			{% for entry in entries %}
-				{% if blx.hasPackage('PublishPro') %}
-					{% set path = 'content/' ~ entry.section.handle ~ '/' ~ entry.id %}
-				{% else %}
-					{% set path = 'content/blog/' ~ entry.id %}
-				{% endif %}
 				<tr>
 					<td>
-						<a href="{{ url(path) }}">{{ entry.title }}</a>
+						<a href="{{ entry.getCpEditUrl() }}">{{ entry.title }}</a>
 						<span class="light">
 							{{ entry.postDate.w3cDate }}
 							{% if blx.hasPackage('Users') %}

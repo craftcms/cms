@@ -21,11 +21,11 @@ class EmailMessagesController extends BaseController
 
 		if (Blocks::hasPackage(BlocksPackage::Language))
 		{
-			$message->language = blx()->request->getPost('language');
+			$message->locale = blx()->request->getPost('locale');
 		}
 		else
 		{
-			$message->language = Blocks::getLanguage();
+			$message->locale = blx()->language;
 		}
 
 		if (blx()->emailMessages->saveMessage($message))

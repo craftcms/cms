@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Widget template variable
  */
-class WidgetTypeVariable extends BaseComponentVariable
+class WidgetTypeVariable extends BaseComponentTypeVariable
 {
 	/**
 	 * Returns the widget's title.

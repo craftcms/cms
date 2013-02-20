@@ -9,19 +9,19 @@ class EmailMessagesService extends BaseApplicationComponent
 	/**
 	 * Returns all of the system email messages.
 	 *
-	 * @param string|null $language
+	 * @param string|null $localeId
 	 * @return array
 	 */
-	public function getAllMessages($language = null)
+	public function getAllMessages($localeId = null)
 	{
 		// Find any custom messages
-		if (!$language)
+		if (!$localeId)
 		{
-			$language = Blocks::getLanguage();
+			$localeId = blx()->language;
 		}
 
 		$records = EmailMessageRecord::model()->findAllByAttributes(array(
-			'language' => $language
+			'locale' => $localeId
 		));
 
 		// Index the records by their keys
@@ -46,7 +46,7 @@ class EmailMessagesService extends BaseApplicationComponent
 		{
 			$message = new EmailMessageModel();
 			$message->key = $key;
-			$message->language = $language;
+			$message->locale = $localeId;
 
 			// Is there a custom message?
 			if (isset($recordsByKey[$key]))
@@ -73,21 +73,21 @@ class EmailMessagesService extends BaseApplicationComponent
 	 * Returns a system email message by its key.
 	 *
 	 * @param string $key
-	 * @param string|null $language
+	 * @param string|null $localeId
 	 * @return EmailMessageModel
 	 */
-	public function getMessage($key, $language = null)
+	public function getMessage($key, $localeId = null)
 	{
-		if (!$language)
+		if (!$localeId)
 		{
-			$language = Blocks::getLanguage();
+			$localeId = blx()->language;
 		}
 
 		$message = new EmailMessageModel();
 		$message->key = $key;
-		$message->language = $language;
+		$message->locale = $localeId;
 
-		$record = $this->_getMessageRecord($key, $language);
+		$record = $this->_getMessageRecord($key, $localeId);
 
 		$message->subject  = $record->subject;
 		$message->body     = $record->body;
@@ -104,7 +104,7 @@ class EmailMessagesService extends BaseApplicationComponent
 	 */
 	public function saveMessage(EmailMessageModel $message)
 	{
-		$record = $this->_getMessageRecord($message->key, $message->language);
+		$record = $this->_getMessageRecord($message->key, $message->locale);
 
 		$record->subject  = $message->subject;
 		$record->body     = $message->body;
@@ -126,26 +126,26 @@ class EmailMessagesService extends BaseApplicationComponent
 	 *
 	 * @access private
 	 * @param string $key
-	 * @param string|null $language
+	 * @param string|null $localeId
 	 * @return EmailMessageRecord
 	 */
-	private function _getMessageRecord($key, $language = null)
+	private function _getMessageRecord($key, $localeId = null)
 	{
-		if (!$language)
+		if (!$localeId)
 		{
-			$language = Blocks::getLanguage();
+			$localeId = blx()->language;
 		}
 
 		$record = EmailMessageRecord::model()->findByAttributes(array(
-			'key'      => $key,
-			'language' => $language,
+			'key'    => $key,
+			'locale' => $localeId,
 		));
 
 		if (!$record)
 		{
 			$record = new EmailMessageRecord();
 			$record->key = $key;
-			$record->language = $language;
+			$record->locale   = $localeId;
 			$record->subject  = Blocks::t($key.'_subject');
 			$record->body     = Blocks::t($key.'_body');
 			$record->htmlBody = Blocks::t($key.'_html_body');

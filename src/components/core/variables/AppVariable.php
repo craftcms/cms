@@ -51,8 +51,9 @@ class AppVariable
 	 *
 	 * @return string
 	 */
-	public function getLanguage()
+	public function getLocale()
 	{
+		return 'en_us';
 		return Blocks::getLanguage();
 	}
 

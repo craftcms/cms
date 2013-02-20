@@ -1,11 +1,12 @@
 <header class="header"><h1>{{ file.filename }}</h1></header>
 <div class="body">
-    <form id="file-blocks">
+    <form id="file-fields">
         <input type="hidden" name="fileId" value="{{ file.id }}" />
         <div>
-            {% include "_includes/blockfields" with {
-                blocks: blx.assets.getAllBlocks,
-                entity: file
+            {% set assetFields = blx.systemSettings.assetFields %}
+            {% include "_includes/fields" with {
+                fields: blx.fields.getLayoutByType('Asset').getFields(),
+                entry: file
             } only %}
         </div>
     </form>

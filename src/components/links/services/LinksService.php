@@ -6,31 +6,64 @@ namespace Blocks;
  */
 class LinksService extends BaseApplicationComponent
 {
-	private $_criteriaRecordsByRightTypeAndHandle;
+	private $_criteriaRecordsByTypeAndHandle;
 
 	/**
-	 * Returns all installed link types.
+	 * Returns all installed linkable entry types.
 	 *
 	 * @return array
 	 */
-	public function getAllLinkTypes()
+	public function getAllLinkableEntryTypes()
 	{
-		return blx()->components->getComponentsByType(ComponentType::Link);
+		$entryTypes = blx()->entries->getAllEntryTypes();
+		$linkableEntryTypes = array();
+
+		foreach ($entryTypes as $entryType)
+		{
+			if ($entryType->isLinkable())
+			{
+				$classHandle = $entryType->getClassHandle();
+				$linkableEntryTypes[$classHandle] = $entryType;
+			}
+		}
+
+		return $linkableEntryTypes;
 	}
 
 	/**
-	 * Gets a link type.
+	 * Returns a linkable entry type.
 	 *
 	 * @param string $class
-	 * @return BaseLinkType|null
+	 * @return BaseEntryType|null
 	 */
-	public function getLinkType($class)
+	public function getLinkableEntryType($class)
 	{
-		return blx()->components->getComponentByTypeAndClass(ComponentType::Link, $class);
+		$entryType = blx()->entries->getEntryType($class);
+
+		if ($entryType && $entryType->isLinkable())
+		{
+			return $entryType;
+		}
 	}
 
 	/**
-	 * Returns a criteria record by its ID.
+	 * Returns a link criteria model by its ID.
+	 *
+	 * @param int $criteriaId
+	 * @return LinkCriteriaModel|null
+	 */
+	public function getCriteriaById($criteriaId)
+	{
+		$criteriaRecord = $this->getCriteriaRecordById($criteriaId);
+
+		if ($criteriaRecord)
+		{
+			return LinkCriteriaModel::populateModel($criteriaRecord);
+		}
+	}
+
+	/**
+	 * Returns a link criteria record by its ID.
 	 *
 	 * @param int $criteriaId
 	 * @return LinkCriteriaRecord
@@ -41,178 +74,236 @@ class LinksService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a criteria ID by the right-hand entity type and RTL handle
+	 * Returns a link criteria model by the its entry type and a given handle.
 	 *
-	 * @param string $type
-	 * @param string $rtlHandle
-	 * @return int
+	 * @param string $entryType
+	 * @param string $handle
+	 * @param string $dir The direction we should be going ('ltr' or 'rtl')
+	 * @return LinkCriteriaModel|null
 	 */
-	public function getCriteriaRecordByRightTypeAndHandle($type, $rtlHandle)
+	public function getCriteriaByTypeAndHandle($entryType, $handle, $dir = 'ltr')
 	{
-		if (!isset($this->_criteriaRecordsByRightTypeAndHandle[$type][$rtlHandle]))
+		if (!isset($this->_criteriaRecordsByTypeAndHandle[$dir][$entryType]) || !array_key_exists($handle, $this->_criteriaRecordsByTypeAndHandle[$dir][$entryType]))
 		{
+			list($source, $target) = $this->_getDirProps($dir);
+
 			$record = LinkCriteriaRecord::model()->findByAttributes(array(
-				'rightEntityType' => $type,
-				'rtlHandle' => $rtlHandle
+				"{$source}EntryType" => $entryType,
+				"{$dir}Handle"       => $handle
 			));
 
-			$this->_criteriaRecordsByRightTypeAndHandle[$type][$rtlHandle] = $record;
-		}
-
-		return $this->_criteriaRecordsByRightTypeAndHandle[$type][$rtlHandle];
-	}
-
-	/**
-	 * Gets the linked entities.
-	 *
-	 * @param int $criteriaId
-	 * @param int $leftEntityId
-	 * @return array
-	 */
-	public function getLinkedEntities($criteriaId, $leftEntityId)
-	{
-		$criteria = $this->getCriteriaRecordById($criteriaId);
-		$linkType = $this->_getLinkType($criteria->rightEntityType);
-
-		$where = array('l.criteriaId' => $criteriaId);
-
-		if ($leftEntityId)
-		{
-			$where['l.leftEntityId'] = $leftEntityId;
-		}
-
-		$table = $linkType->getEntityTableName();
-		$query = blx()->db->createCommand()
-			->select($table.'.*')
-			->from($table.' '.$table)
-			->join('links l', 'l.rightEntityId = '.$table.'.id')
-			->where($where)
-			->order('l.rightSortOrder');
-
-		// Give the link type a chance to make any changes
-		$query = $linkType->modifyLinkedEntitiesQuery($query);
-
-		$rows = $query->queryAll();
-		return $linkType->populateEntities($rows);
-	}
-
-	/**
-	* Gets the reverse linked entities.
-	*
-	 * @param string $type
-	 * @param string $rtlHandle
-	 * @param int $rightEntityId
-	* @return array
-	*/
-	public function getReverseLinkedEntities($type, $rtlHandle, $rightEntityId)
-	{
-		$criteria = $this->getCriteriaRecordByRightTypeAndHandle($type, $rtlHandle);
-
-		if ($criteria)
-		{
-			$linkType = $this->getLinkType($criteria->leftEntityType);
-
-			if ($linkType)
+			if ($record)
 			{
-				$table = $linkType->getEntityTableName();
-				$query = blx()->db->createCommand()
-					->select($table.'.*')
-					->from($table.' '.$table)
-					->join('links l', 'l.leftEntityId = '.$table.'.id')
-					->where(array(
-						'l.criteriaId'   => $criteria->id,
-						'l.rightEntityId' => $rightEntityId
-					))
-					->order('l.leftSortOrder');
-
-				// Give the link type a chance to make any changes
-				$query = $linkType->modifyLinkedEntitiesQuery($query);
-
-				$rows = $query->queryAll();
-				return $linkType->populateEntities($rows);
+				$this->_criteriaRecordsByTypeAndHandle[$dir][$entryType][$handle] = LinkCriteriaModel::populateModel($record);
+			}
+			else
+			{
+				$this->_criteriaRecordsByTypeAndHandle[$dir][$entryType][$handle] = null;
 			}
 		}
 
-		return false;
+		return $this->_criteriaRecordsByTypeAndHandle[$dir][$entryType][$handle];
 	}
 
 	/**
-	 * Gets entities by their ID.
+	 * Saves a link criteria.
 	 *
-	 * @param string $type
-	 * @param array $entityIds
+	 * @param LinkCriteriaModel $criteria
+	 * @return bool
+	 */
+	public function saveCriteria(LinkCriteriaModel $criteria)
+	{
+		if ($criteria->id)
+		{
+			$criteriaRecord = $this->getCriteriaRecordById($criteria->id);
+
+			if (!$criteriaRecord)
+			{
+				throw new Exception(Blocks::t('No link criteria exists with the ID “{id}”.', array('id' => $criteria->id)));
+			}
+
+			$oldCriteria = LinkCriteriaModel::populateModel($criteriaRecord);
+		}
+		else
+		{
+			$criteriaRecord = new LinkCriteriaRecord();
+		}
+
+		$criteriaRecord->ltrHandle      = $criteria->ltrHandle;
+		$criteriaRecord->rtlHandle      = $criteria->rtlHandle;
+		$criteriaRecord->leftEntryType  = $criteria->leftEntryType;
+		$criteriaRecord->rightEntryType = $criteria->rightEntryType;
+		$criteriaRecord->rightSettings  = $criteria->rightSettings;
+
+		if ($criteriaRecord->save())
+		{
+			if (!$criteria->id)
+			{
+				// Update the model's ID now that we have an ID
+				$criteria->id = $criteriaRecord->id;
+			}
+			else
+			{
+				// Have either of the entry types changed?
+				if ($criteria->leftEntryType != $oldCriteria->leftEntryType || $criteria->rightEntryType != $oldCriteria->rightEntryType)
+				{
+					// Delete the links that were previously created with this criteria
+					blx()->db->createCommand()->delete('links', array('criteriaId' => $criteria->id));
+				}
+			}
+
+			return true;
+		}
+		else
+		{
+			$criteria->addErrors($criteriaRecord->getErrors());
+			return false;
+		}
+	}
+
+	/**
+	 * Returns the linked entries by a given criteria and the source entry ID.
+	 *
+	 * @param LinkCriteriaModel $criteria
+	 * @param int $sourceEntryId
+	 * @param string $dir The direction we should be going ('ltr' or 'rtl')
 	 * @return array
 	 */
-	public function getEntitiesById($type, $entityIds)
+	public function getLinkedEntries(LinkCriteriaModel $criteria, $sourceEntryId, $dir = 'ltr')
 	{
-		if (!$entityIds)
+		list($source, $target) = $this->_getDirProps($dir);
+
+		$entryTypeClassProperty = $target.'EntryType';
+		$entryTypeClass = $criteria->$entryTypeClassProperty;
+		$entryType = $this->getLinkableEntryType($entryTypeClass);
+
+		if (!$entryType)
 		{
 			return array();
 		}
 
-		$linkType = $this->_getLinkType($type);
+		$entryCriteria = blx()->entries->getEntryCriteria($entryTypeClass);
+		$query = blx()->entries->buildEntriesQuery($entryCriteria);
 
-		$table = $linkType->getEntityTableName();
-		$query = blx()->db->createCommand()
-			->select($table.'.*')
-			->from($table.' '.$table)
-			->where(array('in', $table.'.id', $entityIds));
-
-		// Give the link type a chance to make any changes
-		$query = $linkType->modifyLinkedEntitiesQuery($query);
-
-		$rows = $query->queryAll();
-
-		$rowsById = array();
-		foreach ($rows as $row)
+		if ($query)
 		{
-			$rowsById[$row['id']] = $row;
-		}
+			$query
+				->addSelect("l.{$target}SortOrder")
+				->join('links l', "l.{$target}EntryId = e.id")
+				->andWhere(array('l.criteriaId'  => $criteria->id, "l.{$source}EntryId" => $sourceEntryId));
 
-		$orderedRows = array();
-		foreach ($entityIds as $id)
+			return $this->_getEntriesFromQuery($entryType, $query, "{$target}SortOrder");
+		}
+		else
 		{
-			if (isset($rowsById[$id]))
-			{
-				$orderedRows[] = $rowsById[$id];
-			}
+			return array();
 		}
-
-		return $linkType->populateEntities($orderedRows);
 	}
 
 	/**
-	 * Sets the linked entities for a Links block.
+	 * Gets entries by their ID.
+	 *
+	 * @param string $entryTypeClass
+	 * @param array $entryIds
+	 * @return array
+	 */
+	public function getEntriesById($entryTypeClass, $entryIds)
+	{
+		if (!$entryIds)
+		{
+			return array();
+		}
+
+		$entryType = $this->getLinkableEntryType($entryTypeClass);
+
+		if (!$entryType)
+		{
+			return array();
+		}
+
+		$entryCriteria = blx()->entries->getEntryCriteria($entryTypeClass, array(
+			'id' => $entryIds
+		));
+
+		$query = blx()->entries->buildEntriesQuery($entryCriteria);
+
+		if ($query)
+		{
+			$entries = $this->_getEntriesFromQuery($entryType, $query);
+
+			// Put them into the requested order
+			$orderedEntries = array();
+			$entriesById = array();
+
+			foreach ($entries as $entry)
+			{
+				$entriesById[$entry->id] = $entry;
+			}
+
+			foreach ($entryIds as $id)
+			{
+				if (isset($entriesById[$id]))
+				{
+					$orderedEntries[] = $entriesById[$id];
+				}
+			}
+
+			return $orderedEntries;
+		}
+		else
+		{
+			return array();
+		}
+	}
+
+	/**
+	 * Returns links by their criteria ID.
 	 *
 	 * @param int $criteriaId
-	 * @param int $leftEntityId
-	 * @param array $rightEntityIds
+	 * @return array
+	 */
+	public function getLinksByCriteriaId($criteriaId)
+	{
+		$linkRecords = LinkRecord::model()->findByAttributes(array(
+			'criteriaId' => $criteriaId
+		));
+
+		return LinkModel::populateModels($linkRecords);
+	}
+
+	/**
+	 * Sets the linked entries for a Links field.
+	 *
+	 * @param int $criteriaId
+	 * @param int $sourceEntryId
+	 * @param array $linkedEntryIds
+	 * @param string $dir The direction we should be going ('ltr' or 'rtl')
 	 * @throws \Exception
 	 * @return void
 	 */
-	public function setLinks($criteriaId, $leftEntityId, $rightEntityIds)
+	public function saveLinks($criteriaId, $sourceEntryId, $linkedEntryIds, $dir = 'ltr')
 	{
+		list($source, $target) = $this->_getDirProps($dir);
+
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
 			// Delete the existing links
 			blx()->db->createCommand()->delete('links', array(
-				'criteriaId' => $criteriaId,
-				'leftEntityId' => $leftEntityId
+				'criteriaId'       => $criteriaId,
+				"{$source}EntryId" => $sourceEntryId
 			));
 
-			if ($rightEntityIds)
+			if ($linkedEntryIds)
 			{
-				$totalEntities = count($rightEntityIds);
 				$values = array();
 
-				foreach ($rightEntityIds as $index => $entityId)
+				foreach ($linkedEntryIds as $sortOrder => $entryId)
 				{
-					$sortOrder = ($index - $totalEntities);
-					$values[] = array($criteriaId, $leftEntityId, $entityId, $sortOrder);
+					$values[] = array($criteriaId, $sourceEntryId, $entryId, $sortOrder+1);
 				}
 
-				$columns = array('criteriaId', 'leftEntityId', 'rightEntityId', 'rightSortOrder');
+				$columns = array('criteriaId', "{$source}EntryId", "{$target}EntryId", "{$target}SortOrder");
 				blx()->db->createCommand()->insertAll('links', $columns, $values);
 			}
 
@@ -226,75 +317,55 @@ class LinksService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Deletes any links involving a specified entity(s) by its type and ID(s).
+	 * Returns entries based on a given query.
 	 *
-	 * @param string $type
-	 * @param int|array $entityId
-	 * @return bool
+	 * @access private
+	 * @param BaseEntryType $entryType
+	 * @param DbCommand $subquery
+	 * @param string $order
+	 * @return array
 	 */
-	public function deleteLinksForEntity($type, $entityId)
+	private function _getEntriesFromQuery(BaseEntryType $entryType, DbCommand $subquery, $order = null)
 	{
-		// Get all link criteria involving this entity type
-		$leftCriteriaIds = blx()->db->createCommand()
-			->select('id')
-			->from('linkcriteria')
-			->where(array('leftEntityType' => $type))
-			->queryColumn();
+		// Only get the unique entries (no locale duplicates)
+		$query = blx()->db->createCommand()
+			->select('*')
+			->from('('.$subquery->getText().') AS '.blx()->db->quoteTableName('r'))
+			->group('r.id');
 
-		$rightCriteriaIds = blx()->db->createCommand()
-			->select('id')
-			->from('linkcriteria')
-			->where(array('rightEntityType' => $type))
-			->queryColumn();
+		$query->params = $subquery->params;
 
-		// Delete the links
-		if ($leftCriteriaIds || $rightCriteriaIds)
+		if ($order)
 		{
-			$leftCondition = array('and',
-				array('in', 'criteriaId', $leftCriteriaIds),
-				(is_array($entityId) ? array('in', 'leftEntityId', $entityId) : 'leftEntityId = '.(int)$entityId));
-
-			$rightCondition = array('and',
-				array('in', 'criteriaId', $rightCriteriaIds),
-				(is_array($entityId) ? array('in', 'rightEntityId', $entityId) : 'rightEntityId = '.(int)$entityId));
-
-			if ($leftCriteriaIds && $rightCriteriaIds)
-			{
-				$conditions = array('or', $leftCondition, $rightCondition);
-			}
-			else if ($leftCriteriaIds)
-			{
-				$conditions = $leftCondition;
-			}
-			else
-			{
-				$conditions = $rightCondition;
-			}
-
-			blx()->db->createCommand()->delete('links', $conditions);
+			$query->order($order);
 		}
 
-		return true;
+		$result = $query->queryAll();
+		$entries = array();
+
+		foreach ($result as $row)
+		{
+			$entries[] = $entryType->populateEntryModel($row);
+		}
+
+		return $entries;
 	}
 
 	/**
-	 * Returns a link type instance.
+	 * Returns the source and target directions.
 	 *
-	 * @param string $type
-	 * @return BaseLinkType
-	 * @throws Exception
+	 * @access private
+	 * @param string $dir
 	 */
-	private function _getLinkType($type)
+	private function _getDirProps($dir)
 	{
-		$linkType = $this->getLinkType($type);
-
-		if ($linkType)
+		if ($dir == 'ltr')
 		{
-			return $linkType;
+			return array('left', 'right');
 		}
 		else
 		{
-			throw new Exception(Blocks::t('No link type exists with the class “{class}”', array('class' => $type)));
+			return array('right', 'left');
 		}
 	}
 }

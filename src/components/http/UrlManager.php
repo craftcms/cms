@@ -40,11 +40,6 @@ class UrlManager extends \CUrlManager
 		// we'll never have a db entry match on a control panel request
 		if (blx()->isInstalled() && blx()->request->isSiteRequest())
 		{
-			if (($path = $this->matchPage()) !== false)
-			{
-				return $path;
-			}
-
 			if (($path = $this->matchEntry()) !== false)
 			{
 				return $path;
@@ -70,47 +65,79 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * Attempts to match a request with a page in the database.
-	 *
-	 * @return bool The URI if a match was found, false otherwise.
-	 */
-	public function matchPage()
-	{
-		$page = blx()->pages->getPageByUri(blx()->request->getPath());
-
-		if ($page)
-		{
-			$this->_templateVariables['page'] = $page;
-			return $page->template;
-		}
-
-		return false;
-	}
-
-	/**
 	 * Attempts to match a request with an entry in the database.
 	 *
 	 * @return bool The URI if a match was found, false otherwise.
 	 */
 	public function matchEntry()
 	{
-		$path = blx()->request->getPath();
-		if ($path)
+		$query = blx()->db->createCommand()
+			->select('e.id, e.type')
+			->from('entries e')
+			->join('entries_i18n e_i18n', 'e_i18n.entryId = e.id');
+
+		$conditions = array('and',
+			'e_i18n.uri = :path',
+			'e.postDate <= :now',
+			array('or', 'e.expiryDate IS NULL', 'e.expiryDate > :now'),
+			'e.enabled = 1',
+			'e.archived = 0',
+		);
+
+		$now = new DateTime();
+
+		$params = array(
+			':path' => blx()->request->getPath(),
+			':now'  => $now->format(DateTime::MYSQL_DATETIME)
+		);
+
+		$localeIds = array_unique(array_merge(
+			array(blx()->language),
+			blx()->i18n->getSiteLocaleIds()
+		));
+
+		if (count($localeIds) == 1)
 		{
-			$criteria = new EntryCriteria();
-			$criteria->uri = blx()->request->getPath();
-			$entry = blx()->entries->findEntry($criteria);
+			$conditions[] = 'e_i18n.locale = :locale';
+			$params[':locale'] = $localeids[0];
+		}
+		else
+		{
+			$quotedLocales = array();
+			$localeOrder = array();
+
+			foreach ($localeIds as $localeId)
+			{
+				$quotedLocale = blx()->db->quoteValue($localeId);
+				$quotedLocales[] = $quotedLocale;
+				$localeOrder[] = "(e_i18n.locale = {$quotedLocale}) DESC";
+			}
+
+			$conditions[] = "e_i18n.locale IN (".implode(', ', $quotedLocales).')';
+			$query->order($localeOrder);
+		}
+
+		$query->where($conditions, $params);
+
+		$row = $query->queryRow();
+
+		if ($row)
+		{
+			$entryCriteria = blx()->entries->getEntryCriteria($row['type']);
+			$entryCriteria->id = $row['id'];
+
+			$entry = blx()->entries->findEntry($entryCriteria);
 
 			if ($entry)
 			{
-				$this->_templateVariables['entry'] = $entry;
-				if (Blocks::hasPackage(BlocksPackage::PublishPro))
+				$entryType = $entryCriteria->getEntryType();
+				$template = $entryType->getSiteTemplateForMatchedEntry($entry);
+
+				if ($template !== false)
 				{
-					return $entry->getSection()->template;
-				}
-				else
-				{
-					return 'blog/_entry';
+					$varName = $entryType->getVariableNameForMatchedEntry();
+					$this->_templateVariables[$varName] = $entry;
+					return $template;
 				}
 			}
 		}

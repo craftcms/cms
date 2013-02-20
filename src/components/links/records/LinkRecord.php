@@ -20,9 +20,7 @@ class LinkRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'leftEntityId' => array(AttributeType::Number, 'unsigned' => true),
-			'rightEntityId' => array(AttributeType::Number, 'required' => true, 'unsigned' => true),
-			'leftSortOrder' => AttributeType::SortOrder,
+			'leftSortOrder'  => AttributeType::SortOrder,
 			'rightSortOrder' => AttributeType::SortOrder,
 		);
 	}
@@ -33,7 +31,9 @@ class LinkRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'criteria' => array(static::BELONGS_TO, 'LinkCriteriaRecord', 'onDelete' => static::CASCADE),
+			'criteria'   => array(static::BELONGS_TO, 'LinkCriteriaRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'leftEntry'  => array(static::BELONGS_TO, 'EntryRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'rightEntry' => array(static::BELONGS_TO, 'EntryRecord', 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 
@@ -43,7 +43,7 @@ class LinkRecord extends BaseRecord
 	public function defineIndexes()
 	{
 		return array(
-			array('columns' => array('criteriaId', 'leftEntityId', 'rightEntityId'), 'unique' => true),
+			array('columns' => array('criteriaId', 'leftEntryId', 'rightEntryId'), 'unique' => true),
 		);
 	}
 }

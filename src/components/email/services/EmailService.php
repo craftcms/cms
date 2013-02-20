@@ -123,7 +123,7 @@ class EmailService extends BaseApplicationComponent
 	{
 		if (Blocks::hasPackage(BlocksPackage::Rebrand))
 		{
-			$message = blx()->emailMessages->getMessage($key, $user->language);
+			$message = blx()->emailMessages->getMessage($key, $user->preferredLocale);
 
 			$subject  = $message->subject;
 			$body     = $message->body;

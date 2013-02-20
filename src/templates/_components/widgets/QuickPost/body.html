@@ -1,24 +1,21 @@
 {% import "_includes/forms" as forms %}
 
 
-{% if blx.hasPackage('PublishPro') %}
-	{% set blocks = blx.entryBlocks.getBlocksBySectionId(settings.section) %}
-{% else %}
-	{% set blocks = blx.entryBlocks.getAllBlocks %}
-{% endif %}
-
-
 <form method="post" action="" accept-charset="UTF-8">
 	{{ forms.textField({
-		label: "Title"|t,
+		label: section.titleLabel|t,
 		id: 'title',
 		name: 'title',
 		required: true
 	}) }}
 
-	{% for block in blocks %}
-		{% if block.required or block.id in settings.blocks %}
-			{% include "_includes/blockfield" with { block: block } only %}
+	{% for field in section.getFieldLayout().getFields() %}
+		{% if field.required or field.fieldId in settings.fields %}
+			{% include "_includes/field" with {
+				fieldId: field.fieldId,
+				required: field.required,
+				entry: null
+			} only %}
 		{% endif %}
 	{% endfor %}
 

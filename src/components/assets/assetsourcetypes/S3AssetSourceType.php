@@ -476,14 +476,10 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		$newServerPath = $targetFolder->fullPath.$fileName;
 
-		$conflictingRecord = blx()->assets->findFile(
-			new FileCriteria(
-				array(
-					'folderId' => $targetFolder->id,
-					'filename' => $fileName
-				)
-			)
-		);
+		$conflictingRecord = blx()->assets->findFile(array(
+			'folderId' => $targetFolder->id,
+			'filename' => $fileName
+		));
 
 		$this->_prepareForRequests();
 		$settings = $this->getSettings();

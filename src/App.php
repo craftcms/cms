@@ -10,7 +10,6 @@ namespace Blocks;
  * @property AssetSourcesService         $assetSources         The assets sources service
  * @property PathService                 $path                 The path service
  * @property UsersService                $users                The users service
- * @property UserProfilesService         $userProfiles         The user profiles service
  * @property ImagesService               $images               The images service
  * @property ResourcesService            $resources            The resources service
  * @property HttpRequestService          $request              The request service
@@ -19,6 +18,18 @@ namespace Blocks;
  */
 class App extends \CWebApplication
 {
+	/**
+	 * @var string The language that the application is written in. This mainly refers to
+	 * the language that the messages and view files are in.
+	 *
+	 * Setting it here even though CApplication already defaults to 'en_us',
+	 * so it's clear and in case they change it down the road.
+	 */
+	public $sourceLanguage = 'en_us';
+
+	/**
+	 * @var array List of built-in component aliases to be imported.
+	 */
 	public $componentAliases;
 
 	private $_templatePath;
@@ -33,13 +44,15 @@ class App extends \CWebApplication
 		// Set default timezone to UTC
 		date_default_timezone_set('UTC');
 
+		// Import all the built-in components
 		foreach ($this->componentAliases as $alias)
 		{
 			Blocks::import($alias);
 		}
 
-		blx()->getComponent('request');
-		blx()->getComponent('log');
+		// Initialize HttpRequestService and LogRouter right away
+		$this->getComponent('request');
+		$this->getComponent('log');
 
 		parent::init();
 	}
@@ -51,9 +64,6 @@ class App extends \CWebApplication
 	 */
 	public function processRequest()
 	{
-		// Let's set the target language from the browser's language preferences.
-		$this->_processBrowserLanguage();
-
 		// If this is a resource request, we should respond with the resource ASAP
 		$this->_processResourceRequest();
 
@@ -117,8 +127,8 @@ class App extends \CWebApplication
 			($this->request->isCpRequest()) && $this->userSession->checkPermission('accessCpWhenSystemIsOff')
 		)
 		{
-			// Attempt to set the target language from user preferences.
-			$this->_processUserPreferredLanguage();
+			// Set the target language
+			$this->setLanguage($this->_getTargetLanguage());
 
 			// Load the plugins
 			$this->plugins;
@@ -194,44 +204,47 @@ class App extends \CWebApplication
 	}
 
 	/**
-	 * Get's the browser's preferred languages, checks to see if we have translation data for it and set the target language.
+	 * Returns the target app language.
+	 *
+	 * @access private
+	 * @return string
 	 */
-	private function _processBrowserLanguage()
+	private function _getTargetLanguage()
 	{
-		$browserLanguages = blx()->request->getBrowserLanguages();
+		$siteLocaleIds = blx()->i18n->getSiteLocaleIds();
 
-		// If browserLanguages == false, then it's not a browser request (cURL, Requests, etc.)
-		if ($browserLanguages)
+		if (blx()->request->isCpRequest())
 		{
+			// If the user is logged in *and* has a primary language set, use that
+			$user = blx()->userSession->getUser();
+
+			if ($user && $user->preferredLocale)
+			{
+				return $user->preferredLocale;
+			}
+
+			// Otherwise check if the browser's preferred language matches any of the site locales
+			$browserLanguages = blx()->request->getBrowserLanguages();
+
 			foreach ($browserLanguages as $language)
 			{
-				// Check to see if we have translation data for the language.  If it doesn't exist, it will default to en_us.
-				if (Locale::exists($language))
+				if (in_array($language, $siteLocaleIds))
 				{
-					$this->setLanguage($language);
-					break;
+					return $language;
 				}
 			}
 		}
-	}
-
-	/**
-	 * See if the user is logged in and they have a preferred language.  If so, use it.
-	 */
-	private function _processUserPreferredLanguage()
-	{
-		// See if the user is logged in.
-		if (blx()->userSession->isLoggedIn())
+		else
 		{
-			$user = blx()->userSession->getUser();
-			$userLanguage = Locale::getCanonicalID($user->language);
-
-			// If the user has a preferred language saved and we have translation data for it, set the target language.
-			if (($userLanguage !== $this->getLanguage()) && Locale::exists($userLanguage))
+			// Is BLOCKS_LOCALE set to a valid site locale?
+			if (defined('BLOCKS_LOCALE') && in_array(BLOCKS_LOCALE, $siteLocaleIds))
 			{
-				$this->setLanguage($userLanguage);
+				return BLOCKS_LOCALE;
 			}
 		}
+
+		// Just use the primary site locale
+		return blx()->i18n->getPrimarySiteLocale()->getId();
 	}
 
 	/**

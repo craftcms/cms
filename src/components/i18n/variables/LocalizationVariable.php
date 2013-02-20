@@ -11,39 +11,49 @@ class LocalizationVariable
 	 *
 	 * @return array
 	 */
-	public function getLanguages()
+	public function getAllLocales()
 	{
-		return blx()->i18n->getLanguages();
+		return blx()->i18n->getAllLocales();
 	}
 
 	/**
-	 * Gets the languages that Blocks is translated into.
+	 * Returns the locales that the application is translated for.
 	 *
 	 * @return array
 	 */
-	public function getTranslatedLanguages()
+	public function getAppLocales()
 	{
-		return blx()->i18n->getTranslatedLanguages();
+		return blx()->i18n->getAppLocales();
 	}
 
 	/**
-	 * Gets a locale's display name in the language the user is currently using.
+	 * Returns a locale by its ID.
 	 *
-	 * @param string $locale   The locale to get the display name of
-	 * @param string $language The language to translate the locale name into
-	 * @return string The locale display name
+	 * @param string $localeId
+	 * @return LocaleModel
 	 */
-	public function getLocaleName($locale, $language = null)
+	public function getLocaleById($localeId)
 	{
-		// If no language is specified, default to the user's language
-		if (!$language)
-		{
-			$language = blx()->language;
-		}
+		return blx()->i18n->getLocaleById($localeId);
+	}
 
-		$languageData = blx()->i18n->getLanguageData($language);
-		$localeName = $languageData->getLocaleDisplayName($locale);
+	/**
+	 * Returns the locales that the site is translated for.
+	 *
+	 * @return array
+	 */
+	public function getSiteLocales()
+	{
+		return blx()->i18n->getSiteLocales();
+	}
 
-		return $localeName;
+	/**
+	 * Returns the site's primary locale.
+	 *
+	 * @return string
+	 */
+	public function getPrimarySiteLocale()
+	{
+		return blx()->i18n->getPrimarySiteLocale();
 	}
 }

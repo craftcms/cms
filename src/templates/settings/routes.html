@@ -44,7 +44,7 @@
 
 {% set js %}
 	{% for message in ['year', 'month', 'day', 'number', 'page'] %}
-		Blocks.translations['{{ message|e("js") }}'] = '{{ message|t(null, null, blx.app.language)|e("js") }}';
+		Blocks.translations['{{ message|e("js") }}'] = '{{ message|t(null, null, blx.app.locale)|e("js") }}';
 	{% endfor %}
 {% endset %}
 {% includeJs js %}

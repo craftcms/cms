@@ -22,7 +22,7 @@
 
 
 {% macro text(config) %}
-	{% set config = { id: null, class: null, type: 'text', size: null, maxlength: null, name: null, value: null, autofocus: false, required: false, disabled: false, hint: null, errors: null }|merge(config) %}
+	{% set config = { id: null, class: null, type: 'text', size: null, maxlength: null, name: null, value: null, autofocus: false, autocomplete: true, required: false, disabled: false, hint: null, errors: null }|merge(config) %}
 	{% set class = _self.textClass(config) %}
 	{% if config.type == 'password' %}<div class="passwordwrapper">{% endif -%}
 	<input class="{{ class }}" type="{{ config.type }}"
@@ -32,6 +32,7 @@
 		{%- if config.value %} value="{{ config.value }}"{% endif %}
 		{%- if config.maxlength %} maxlength="{{ config.maxlength }}"{% endif %}
 		{%- if config.autofocus and not blx.request.isMobileBrowser %} autofocus{% endif %}
+		{%- if not config.autocomplete %} autocomplete="off"{% endif %}
 		{%- if config.disabled %} disabled {% endif %}
 		{%- if config.hint %} data-hint="{{ config.hint }}"{% endif %}>
 	{%- if config.type == 'password' %}</div>{% endif %}
@@ -224,17 +225,13 @@
 
 
 {% macro field(config, input) %}
-	{% set config = { id: null, first: false, label: null, instructions: null, required: false, translatable: false, errors: null }|merge(config) %}
+	{% set config = { id: null, first: false, label: null, instructions: null, required: false, errors: null }|merge(config) %}
 	<div class="field{% if config.first %} first{% endif %}"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
 		{% if config.label or config.instructions %}
 			<div class="heading">
 				{% if config.label %}
 					<label{% if config.required %} class="required"{% endif %}{% if config.id %} for="{{ config.id }}"{% endif %}>
 						{{ config.label|raw }}
-						{% if blx.hasPackage('Language') and config.translatable and blx.language != blx.app.language %}
-							{% set localeName = blx.i18n.getLocaleName(blx.app.language) %}
-							{{ "(in {language})"|t({ language: localeName }) }}
-						{% endif %}
 					</label>
 				{% endif %}
 				{% if config.instructions %}

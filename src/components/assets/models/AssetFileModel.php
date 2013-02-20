@@ -4,8 +4,10 @@ namespace Blocks;
 /**
  *
  */
-class AssetFileModel extends BaseEntityModel
+class AssetFileModel extends EntryModel
 {
+	protected $entryType = 'Asset';
+
 	/**
 	 * User the filename as the string representation.
 	 *
@@ -21,8 +23,7 @@ class AssetFileModel extends BaseEntityModel
 	 */
 	public function defineAttributes()
 	{
-		return array(
-			'id'			=> AttributeType::Number,
+		return array_merge(parent::defineAttributes(), array(
 			'sourceId'		=> AttributeType::Number,
 			'folderId'		=> AttributeType::Number,
 			'contentId'		=> AttributeType::Number,
@@ -32,8 +33,7 @@ class AssetFileModel extends BaseEntityModel
 			'width'			=> AttributeType::Number,
 			'height'		=> AttributeType::Number,
 			'size'			=> AttributeType::Number,
-			'dateModified'	=> AttributeType::DateTime
-		);
+		));
 	}
 
 	/**
@@ -72,28 +72,6 @@ class AssetFileModel extends BaseEntityModel
 		}
 
 		return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$size);
-	}
-
-	/**
-	 * Gets the blocks.
-	 *
-	 * @access protected
-	 * @return array
-	 */
-	protected function getBlocks()
-	{
-		return blx()->assets->getAllBlocks();
-	}
-
-	/**
-	 * Gets the content.
-	 *
-	 * @access protected
-	 * @return AssetContentRecord
-	 */
-	protected function getContent()
-	{
-		return blx()->assets->getFileContentRecordByFileId($this->id);
 	}
 
 	/**

@@ -4,13 +4,11 @@ namespace Blocks;
 /**
  * Asset source base class
  */
-abstract class BaseAssetSourceType extends BaseComponent
+abstract class BaseAssetSourceType extends BaseSavableComponentType
 {
 	/**
-	 * The type of component this is.
-	 *
 	 * @access protected
-	 * @var string
+	 * @var string The type of component this is
 	 */
 	protected $componentType = 'AssetSourceType';
 
@@ -223,7 +221,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 				$fileModel->height = $height;
 			}
 
-			$fileModel->id = blx()->assets->storeFile($fileModel);
+			blx()->assets->storeFile($fileModel);
 
 			if ($this->model->type != 'Local')
 			{
@@ -262,12 +260,10 @@ abstract class BaseAssetSourceType extends BaseComponent
 	 */
 	protected function _ensureFolderByFulPath($fullPath)
 	{
-		$parameters = new FolderCriteria(
-			array(
-				'fullPath' => $fullPath,
-				'sourceId' => $this->model->id
-			)
-		);
+		$parameters = new FolderCriteriaModel(array(
+			'fullPath' => $fullPath,
+			'sourceId' => $this->model->id
+		));
 
 		$folderModel = blx()->assets->findFolder($parameters);
 
@@ -322,11 +318,9 @@ abstract class BaseAssetSourceType extends BaseComponent
 		// Figure out the obsolete records for folders
 		$missingFolders = array();
 
-		$parameters = new FolderCriteria(array(
+		$allFolders = blx()->assets->findFolders(array(
 			'sourceId' => $this->model->id
 		));
-
-		$allFolders = blx()->assets->findFolders($parameters);
 
 		foreach ($allFolders as $folderModel)
 		{
@@ -363,15 +357,11 @@ abstract class BaseAssetSourceType extends BaseComponent
 				$parentId = false;
 			}
 
-			$folderParameters = new FolderCriteria(
-				array(
-					'sourceId' => $this->model->id,
-					'fullPath' => $searchFullPath,
-					'parentId' => $parentId
-				)
-			);
-
-			$parentFolder = blx()->assets->findFolder($folderParameters);
+			$parentFolder = blx()->assets->findFolder(array(
+				'sourceId' => $this->model->id,
+				'fullPath' => $searchFullPath,
+				'parentId' => $parentId
+			));
 
 			if (empty($parentFolder))
 			{
@@ -380,14 +370,10 @@ abstract class BaseAssetSourceType extends BaseComponent
 
 			$folderId = $parentFolder->id;
 
-			$fileParameters = new FileCriteria(
-				array(
-					'folderId' => $folderId,
-					'filename' => $fileName
-				)
-			);
-
-			$fileModel = blx()->assets->findFile($fileParameters);
+			$fileModel = blx()->assets->findFile(array(
+				'folderId' => $folderId,
+				'filename' => $fileName
+			));
 
 			if (is_null($fileModel))
 			{
@@ -396,8 +382,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 				$fileModel->folderId = $folderId;
 				$fileModel->filename = $fileName;
 				$fileModel->kind = IOHelper::getFileKind($extension);
-				$fileId = blx()->assets->storeFile($fileModel);
-				$fileModel->id = $fileId;
+				blx()->assets->storeFile($fileModel);
 			}
 
 			return $fileModel;
@@ -484,7 +469,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 		$folderName = IOHelper::cleanFilename($folderName);
 
 		// If folder exists in DB or physically, bail out
-		if (blx()->assets->findFolder(new FolderCriteria(array('parentId' => $parentFolder->id,	'name' => $folderName)))
+		if (blx()->assets->findFolder(array('parentId' => $parentFolder->id, 'name' => $folderName))
 			|| $this->_sourceFolderExists($parentFolder, $folderName))
 		{
 			throw new Exception(Blocks::t('A folder already exists with that name!'));
@@ -522,14 +507,17 @@ abstract class BaseAssetSourceType extends BaseComponent
 	{
 
 		// Get rid of children files
-		$files = blx()->assets->findFiles(new FileCriteria(array('folderId' => $folder->id)));
+		$files = blx()->assets->findFiles(array(
+			'folderId' => $folder->id
+		));
+
 		foreach ($files as $file)
 		{
 			$this->deleteFile($file);
 		}
 
 		// Delete children folders
-		$childFolders = blx()->assets->findFolders(new FolderCriteria(array('parentId' => $folder->id)));
+		$childFolders = blx()->assets->findFolders(array('parentId' => $folder->id));
 		foreach ($childFolders as $childFolder)
 		{
 			$this->deleteFolder($childFolder);

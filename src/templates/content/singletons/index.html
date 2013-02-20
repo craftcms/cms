@@ -1,0 +1,25 @@
+{% extends "content/_layout" %}
+{% set selectedTab = 'singletons' %}
+{% set singletons = blx.singletons.getEditableSingletons %}
+
+
+{% set content %}
+	{% if singletons|length %}
+		<table id="singletons" class="data collapsible">
+			<thead>
+				<th scope="col">{{ "Title"|t }}</th>
+				<th scope="col">{{ "URL"|t }}</th>
+			</thead>
+			<tbody>
+				{% for singleton in singletons %}
+					<tr data-id="{{ singleton.id }}" data-name="{{ singleton.title|t }}">
+						<th data-title="{{ 'Title'|t }}"><a href="{{ url('content/singletons/'~singleton.id) }}">{{ singleton.title|t }}</a></th>
+						<td data-title="{{ 'URL'|t }}"><a href="{{ singleton.getUrl }}" target="_blank">{{ singleton.getUrl }}</a></td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% else %}
+		<p>{{ "No singletons exist yet."|t }}</p>
+	{% endif %}
+{% endset %}

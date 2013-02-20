@@ -1,5 +1,0 @@
-{% if entity is not defined %}{% set entity = null %}{% endif %}
-
-{% for block in blocks %}
-	{% include "_includes/blockfield" with { block: block, entity: entity } only %}
-{% endfor %}

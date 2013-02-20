@@ -1,8 +1,3 @@
-{% includeJsResource "js/SectionAdminTable.js" %}
-{% includeTranslations
-	"Are you sure you want to delete “{name}” and its {entries} entries?"
-%}
-
 {% extends "_layouts/cp" %}
 {% set title = "Sections"|t %}
 
@@ -11,46 +6,51 @@
 ] %}
 
 
-{% set content %}
-	{% paginate blx.sections.limit(50) as sections %}
+{% set sections = blx.sections.getAllSections() %}
 
-		<p id="nosections"{% if sections|length %} class="hidden"{% endif %}>
+
+{% set content %}
+	{% if blx.hasPackage('PublishPro') %}
+		<p id="nosections"{% if sections %} class="hidden"{% endif %}>
 			{{ "No sections exist yet."|t }}
 		</p>
+	{% endif %}
 
-		{% if sections|length %}
+	{% if sections|length %}
+		<table id="sections" class="data collapsible">
+			<thead>
+				<th scope="col">{{ "Name"|t }}</th>
+				<th scope="col">{{ "Handle"|t }}</th>
+				<td class="thin"></td>
+			</thead>
+			<tbody>
+				{% for section in sections %}
+					<tr data-id="{{ section.id }}" data-name="{{ section.name|t }}">
+						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
+						<td data-title="{{ 'Handle'|t }}"><code>{{ section.handle }}</code></td>
+						{% if blx.hasPackage('PublishPro') %}<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>{% endif %}
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
 
-			{% include "_includes/paginatelinks" with { type: "sections"|t } %}
-
-			<table id="sections" class="data collapsible">
-				<thead>
-					<th scope="col" width="33%">{{ "Name"|t }}</th>
-					<th scope="col" width="33%">{{ "Handle"|t }}</th>
-					<th scope="col" width="33%">{{ "Blocks"|t }}</th>
-					<td class="thin"></td>
-				</thead>
-				<tbody>
-					{% for section in sections %}
-						<tr data-id="{{ section.id }}" data-name="{{ section.name|t }}" data-entries="{{ blx.entries.sectionId(section.id).total }}">
-							<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
-							<td data-title="{{ 'Handle'|t }}"><code>{{ section.handle }}</code></td>
-							<td data-title="{{ 'Blocks'|t }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ blx.entryBlocks.getTotalBlocksBySectionId(section.id) }}</a></td>
-							<td class="thin"sectionentryblocks><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		{% endif %}
-
-	{% endpaginate %}
-
-	<div class="buttons">
-		<a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New Section"|t }}</a>
-	</div>
+	{% if blx.hasPackage('PublishPro') or not sections|length %}
+		<div class="buttons">
+			<a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New Section"|t }}</a>
+		</div>
+	{% endif %}
 {% endset %}
 
 
-{% set js %}
-	new Blocks.SectionAdminTable();
-{% endset %}
-{% includeJs js %}
+{% if blx.hasPackage('PublishPro') %}
+	{% set js %}
+		new Blocks.AdminTable({
+			tableSelector: '#sections',
+			noObjectsSelector: '#nosections',
+			deleteAction: 'sections/deleteSection',
+			confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its entries?"|t }}',
+		});
+	{% endset %}
+	{% includeJs js %}
+{% endif %}

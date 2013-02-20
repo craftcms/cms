@@ -13,7 +13,7 @@ class EmailMessageModel extends BaseModel
 	{
 		return array(
 			'key'      => AttributeType::String,
-			'language' => AttributeType::Language,
+			'locale'   => AttributeType::Locale,
 			'subject'  => AttributeType::String,
 			'body'     => AttributeType::String,
 			'htmlBody' => AttributeType::String,

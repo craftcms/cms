@@ -13,15 +13,15 @@ class ModelHelper
 	 * @var array
 	 */
 	public static $attributeTypeDefaults = array(
-		AttributeType::Mixed      => array('column' => ColumnType::Text),
+		AttributeType::Mixed      => array('model' => null, 'column' => ColumnType::Text),
 		AttributeType::Bool       => array('maxLength' => 1, 'default' => false, 'required' => true, 'column' => ColumnType::TinyInt, 'unsigned' => true),
 		AttributeType::Build      => array('column' => ColumnType::Int, 'unsigned' => true),
 		AttributeType::ClassName  => array('maxLength' => 150, 'column' => ColumnType::Char),
 		AttributeType::DateTime   => array('column' => ColumnType::DateTime),
 		AttributeType::Email      => array('minLength' => 5, 'column' => ColumnType::Varchar),
-		AttributeType::Enum       => array('column' => ColumnType::Enum),
+		AttributeType::Enum       => array('values' => array(), 'column' => ColumnType::Enum),
 		AttributeType::Handle     => array('reservedWords' => 'id,dateCreated,dateUpdated,uid,title', 'column' => ColumnType::Char),
-		AttributeType::Language   => array('maxLength' => 12, 'column' => ColumnType::Char),
+		AttributeType::Locale     => array('column' => ColumnType::Locale),
 		AttributeType::LicenseKey => array('length' => 36, 'matchPattern' => '/[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/', 'column' => ColumnType::Char),
 		AttributeType::Name       => array('maxLength' => 100, 'column' => ColumnType::Varchar),
 		AttributeType::Number     => array('min' => null, 'max' => null, 'decimals' => 0),
@@ -195,9 +195,8 @@ class ModelHelper
 	 */
 	public static function populateAttributeDefaults(\CModel $model)
 	{
-		foreach ($model->defineAttributes() as $name => $config)
+		foreach ($model->getAttributeConfigs() as $name => $config)
 		{
-			$config = static::normalizeAttributeConfig($config);
 			if (isset($config['default']))
 			{
 				$model->setAttribute($name, $config['default']);
@@ -225,12 +224,10 @@ class ModelHelper
 		$minLengthAttributes = array();
 		$maxLengthAttributes = array();
 
-		$attributes = $model->defineAttributes();
+		$attributes = $model->getAttributeConfigs();
 
 		foreach ($attributes as $name => $config)
 		{
-			$config = static::normalizeAttributeConfig($config);
-
 			switch ($config['type'])
 			{
 				case AttributeType::DateTime:
@@ -257,9 +254,9 @@ class ModelHelper
 					break;
 				}
 
-				case AttributeType::Language:
+				case AttributeType::Locale:
 				{
-					$rules[] = array($name, 'Blocks\LanguageValidator');
+					$rules[] = array($name, 'Blocks\LocaleValidator');
 					break;
 				}
 
@@ -295,8 +292,6 @@ class ModelHelper
 
 			// Remember if it's a license key
 			$isLicenseKey = ($config['type'] == AttributeType::LicenseKey);
-
-			$config = static::normalizeAttributeConfig($config);
 
 			// Uniques
 			if (!empty($config['unique']))
@@ -471,10 +466,8 @@ class ModelHelper
 	{
 		$labels = array();
 
-		foreach ($model->defineAttributes() as $name => $config)
+		foreach ($model->getAttributeConfigs() as $name => $config)
 		{
-			$config = static::normalizeAttributeConfig($config);
-
 			if (isset($config['label']))
 			{
 				$label = $config['label'];

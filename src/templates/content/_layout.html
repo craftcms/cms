@@ -1,9 +1,11 @@
 {% extends "_layouts/cp" %}
 {% set title = "Content"|t %}
-{% set totalGlobals = (user.can('editGlobals') ? blx.globals.getTotalBlocks : 0) %}
+
+{% set showSingletons = blx.singletons.getEditableSingletons()|length %}
+{% set showGlobals = (user.can('editGlobals') and blx.fields.getLayoutByType('Globals').getFields()|length) %}
 
 {% set tabs = {
 	entries: { label: "Entries"|t, url: url('content') },
-	pages: { label: "Pages"|t, url: url('content/pages') },
-	globals: (totalGlobals ? { label: "Globals"|t, url: url('content/globals') } : null)
+	singletons: (showSingletons ? { label: "Singletons"|t, url: url('content/singletons') } : null),
+	globals: (showGlobals ? { label: "Globals"|t, url: url('content/globals') } : null)
 } %}

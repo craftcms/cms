@@ -9,18 +9,34 @@
 ] %}
 
 
-{% if blx.hasPackage('PublishPro') %}
-	{% set section = blx.sections.handle(sectionHandle).first %}
-	{% if not section %}{% exit 404 %}{% endif %}
+{% set section = blx.sections.getSectionByHandle(sectionHandle) %}
+{% if not section %}{% exit 404 %}{% endif %}
 
+{% if blx.hasPackage('PublishPro') %}
 	{% set crumbs = crumbs|merge([ { label: section.name|t, url: url('content/'~section.handle) } ]) %}
-	{% set permissionSuffix = 'InSection'~section.id %}
-{% else %}
-	{% set permissionSuffix = '' %}
 {% endif %}
 
-
+{% set permissionSuffix = 'InSection'~section.id %}
 {% requirePermission 'editEntries'~permissionSuffix %}
+
+
+{% if blx.hasPackage('Language') %}
+	{% set sectionLocaleIds = section.getLocales()|keys %}
+
+	{% if not sectionLocaleIds %}
+		{% exit 404 %}
+	{% endif %}
+
+	{% if localeId is not defined %}
+		{% set localeId = blx.locale %}
+
+		{% if localeId not in sectionLocaleIds %}
+			{% set localeId = sectionLocaleIds[0] %}
+		{% endif %}
+	{% elseif localeId not in sectionLocaleIds %}
+		{% exit 404 %}
+	{% endif %}
+{% endif %}
 
 
 {% if entry is not defined and entryId is defined %}
@@ -29,7 +45,11 @@
 	{% elseif versionId is defined %}
 		{% set entry = blx.entryRevisions.getVersionById(versionId) %}
 	{% else %}
-		{% set entry = blx.entries.id(entryId).status('*').first %}
+		{% set params = { id: entryId, status: '*' } %}
+		{% if blx.hasPackage('Language') %}
+			{% set params = params|merge({ locale: localeId }) %}
+		{% endif %}
+		{% set entry = blx.entries.first(params) %}
 	{% endif %}
 
 	{% if not entry %}{% exit 404 %}{% endif %}
@@ -59,67 +79,96 @@
 {% endif %}
 
 
-{% if blx.hasPackage('PublishPro') %}
-	{% set blocks = blx.entryBlocks.getBlocksBySectionId(section.id) %}
-{% else %}
-	{% set blocks = blx.entryBlocks.getAllBlocks %}
-{% endif %}
-
-
 {% if isNewEntry %}
 	{% set title = "Create a new entry"|t %}
 {% else %}
 	{% set title = entry.title %}
-	{% if entry is defined and entry.classHandle != 'Entry' %}
+	{% if entry is defined and entry.classHandle != 'SectionEntry' %}
 		{% set title = title ~ ' <span class="hidden">(' ~ revisionLabel ~ ')</span>' %}
 	{% endif %}
 {% endif %}
 
 
-{% if not isNewEntry and blx.hasPackage('PublishPro') %}
-	{% set extraPageHeaderHtml %}
+{% set extraPageHeaderHtml %}
+	{% if blx.hasPackage('Language') %}
+		<div class="select">
+			<select onchange="document.location.href='{{ url('content/'~section.handle~'/'~blx.request.getSegment(3)) }}/'+this.value;">
+				{% for sectionLocale in section.getLocales() %}
+					{% set locale = blx.i18n.getLocaleById(sectionLocale.locale) %}
+					<option value="{{ locale.id }}"{% if locale.id == localeId %} selected{% endif %}>{{ locale.name }}</option>
+				{% endfor %}
+			</select>
+		</div>
+	{% endif %}
+
+	{% if not isNewEntry and blx.hasPackage('PublishPro') %}
 		{% include "content/entries/_revisions" %}
-	{% endset %}
-{% endif %}
+	{% endif %}
+{% endset %}
 
 
-{% set hasSettingsErrors = (entry is defined and (entry.getErrors('slug') or entry.getErrors('postDate') or entry.getErrors('expiryDate') or entry.getErrors('tags'))) %}
+{% set tabs = [] %}
+
+{% for tab in section.getFieldLayout().getTabs() %}
+	{% set hasErrors = false %}
+	{% if entry is defined %}
+		{% for field in tab.getFields() %}
+			{% if entry.getErrors(field.getField().handle) %}
+				{% set hasErrors = true %}
+			{% endif %}
+		{% endfor %}
+	{% endif %}
+
+	{% set tabs = tabs|merge([{
+		label: tab.name,
+		url: '#tab'~loop.index,
+		class: (hasErrors ? 'error' : null)
+	}]) %}
+{% endfor %}
 
 
-{% set tabs = {
-	content: { label: "Content"|t, url: '#entry-content' },
-	settings: { label: "Settings"|t, url: '#entry-settings' }
-} %}
+{% set hasErrors = (entry is defined and (entry.getErrors('slug') or entry.getErrors('postDate') or entry.getErrors('expiryDate') or entry.getErrors('tags'))) %}
+
+{% set tabs = tabs|merge([{
+	label: "Settings"|t,
+	url: '#entry-settings',
+	class: (hasErrors ? 'error' : null)
+}]) %}
 
 
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8">
-		{% if blx.hasPackage('PublishPro') %}
-			<input type="hidden" name="sectionId" value="{{ section.id }}">
-		{% endif %}
+		<input type="hidden" name="sectionId" value="{{ section.id }}">
 
 		{% if not isNewEntry %}
 			<input type="hidden" name="entryId" value="{{ entry.id }}">
 		{% endif %}
 
-		<div id="entry-content">
-			{{ forms.textField({
-				label: (blx.hasPackage('PublishPro') ? section.titleLabel : "Title")|t,
-				id: 'title',
-				name: 'title',
-				value: (entry is defined ? entry.title : null),
-				errors: (entry is defined ? entry.getErrors('title') : null),
-				autofocus: true,
-				required: true
-			}) }}
+		{% if blx.hasPackage('Language') %}
+			<input type="hidden" name="locale" value="{{ localeId }}">
+		{% endif %}
 
-			{% include "_includes/blockfields" with {
-				blocks: blocks,
-				entity: (entry is defined ? entry : null)
-			} only %}
-		</div>
+		{{ forms.textField({
+			label: "Title"|t,
+			id: 'title',
+			name: 'title',
+			value: (entry is defined ? entry.title : null),
+			errors: (entry is defined ? entry.getErrors('title') : null),
+			first: true,
+			autofocus: true,
+			required: true
+		}) }}
 
-		<div id="entry-settings" class="hidden">
+		{% for tab in section.getFieldLayout().getTabs() %}
+			<div id="tab{{ loop.index }}"{% if not loop.first %} class="hidden"{% endif %}>
+				{% include "_includes/fields" with {
+				    fields: tab.getFields(),
+				    entry: (entry is defined ? entry : null)
+				} only %}
+			</div>
+		{% endfor %}
+
+		<div id="entry-settings"{% if section.getFieldLayout().getTabs()|length %} class="hidden"{% endif %}>
 			{{ forms.textField({
 				label: "Slug"|t,
 				id: 'slug',
@@ -219,8 +268,8 @@
 						<div class="btn submit menubtn"></div>
 						<div class="menu">
 							<ul>
-								<li><a class="formsubmit" data-redirect="{{ 'content/'~(blx.hasPackage('PublishPro') ? section.handle : 'blog')~'/{entryId}' }}">{{ "Save and continue editing"|t }}</a></li>
-								<li><a class="formsubmit" data-redirect="{{ 'content/'~(blx.hasPackage('PublishPro') ? section.handle : 'blog')~'/new' }}">{{ "Save and add another"|t }}</a></li>
+								<li><a class="formsubmit" data-redirect="{{ 'content/'~section.handle~'/{entryId}' }}">{{ "Save and continue editing"|t }}</a></li>
+								<li><a class="formsubmit" data-redirect="{{ 'content/'~section.handle~'/new' }}">{{ "Save and add another"|t }}</a></li>
 							</ul>
 						</div>
 					</div>

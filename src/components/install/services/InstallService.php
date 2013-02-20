@@ -21,6 +21,9 @@ class InstallService extends BaseApplicationComponent
 			throw new Exception(Blocks::t('Blocks is already installed.'));
 		}
 
+		// Set the language to the desired locale
+		blx()->setLanguage($inputs['locale']);
+
 		$records = $this->findInstallableRecords();
 
 		// Start the transaction
@@ -52,10 +55,11 @@ class InstallService extends BaseApplicationComponent
 		Blocks::invalidateCachedInfo();
 
 		$this->_populateMigrationTable();
+		$this->_addLocale($inputs['locale']);
 		$this->_addUser($inputs);
 		$this->_logUserIn($inputs);
 		$this->_saveDefaultMailSettings($inputs['email'], $inputs['siteName']);
-		$this->_createDefaultContent();
+		$this->_createDefaultContent($inputs);
 
 		Blocks::log('Finished installing Blocks.');
 	}
@@ -86,22 +90,13 @@ class InstallService extends BaseApplicationComponent
 			if (IOHelper::fileExists($file))
 			{
 				$fileName = IOHelper::getFileName($file, false);
-
-				if (Blocks::hasPackage(BlocksPackage::PublishPro))
-				{
-					// Skip EntryContentRecord and SectionContentRecord
-					if ($fileName == 'EntryContentRecord' || $fileName == 'SectionContentRecord')
-					{
-						continue;
-					}
-				}
-
 				$class = __NAMESPACE__.'\\'.$fileName;
 
 				// Ignore abstract classes and interfaces
 				$ref = new \ReflectionClass($class);
 				if ($ref->isAbstract() || $ref->isInterface())
 				{
+					Blocks::log("Skipping record {$file} because it’s abstract or an interface.", \CLogger::LEVEL_WARNING);
 					continue;
 				}
 
@@ -111,6 +106,14 @@ class InstallService extends BaseApplicationComponent
 				{
 					$records[] = $obj;
 				}
+				else
+				{
+					Blocks::log("Skipping record {$file} because it doesn’t have a createTable() method.", \CLogger::LEVEL_WARNING);
+				}
+			}
+			else
+			{
+				Blocks::log("Skipping record {$file} because it doesn’t exist.", \CLogger::LEVEL_WARNING);
 			}
 		}
 
@@ -167,7 +170,6 @@ class InstallService extends BaseApplicationComponent
 		$info->packages = implode(',', Blocks::getPackages());
 		$info->siteName = $inputs['siteName'];
 		$info->siteUrl = $inputs['siteUrl'];
-		$info->language = $inputs['language'];
 		$info->licenseKey = $inputs['licenseKey'];
 		$info->on = true;
 		$info->maintenance = false;
@@ -206,6 +208,19 @@ class InstallService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Adds the initial locale to the database.
+	 *
+	 * @access private
+	 * @param string $locale
+	 */
+	private function _addLocale($locale)
+	{
+		Blocks::log('Adding locale.');
+		blx()->db->createCommand()->insert('locales', array('locale' => $locale, 'sortOrder' => 1));
+		Blocks::log('Locale added successfully.');
+	}
+
+	/**
 	 * Adds the initial user to the database.
 	 *
 	 * @access private
@@ -222,7 +237,6 @@ class InstallService extends BaseApplicationComponent
 		$user->username = $inputs['username'];
 		$user->newPassword = $inputs['password'];
 		$user->email = $inputs['email'];
-		$user->language = blx()->language;
 		$user->admin = true;
 
 		if (blx()->users->saveUser($user))
@@ -289,58 +303,86 @@ class InstallService extends BaseApplicationComponent
 	 * @access private
 	 * @return null
 	 */
-	private function _createDefaultContent()
+	private function _createDefaultContent($inputs)
 	{
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		Blocks::log('Creating the Default field group.');
+
+		$group = new FieldGroupModel();
+		$group->name = Blocks::t('Default');
+
+		if (blx()->fields->saveGroup($group))
 		{
-			Blocks::log('Creating the Blog section.');
-
-			$section = new SectionModel();
-
-			$section->name = Blocks::t('Blog');
-			$section->handle = 'blog';
-			$section->hasUrls = true;
-			$section->urlFormat = 'blog/{slug}';
-			$section->template = 'blog/_entry';
-			$section->titleLabel = 'Title';
-
-			if (blx()->sections->saveSection($section))
-			{
-				Blocks::log('Blog section created successfully.');
-			}
-			else
-			{
-				Blocks::log('Could not save the Blog section.', \CLogger::LEVEL_WARNING);
-			}
-		}
-
-		Blocks::log('Creating the Body entry block.');
-
-		$block = new EntryBlockModel();
-
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
-		{
-			$block->sectionId = $section->id;
-			$service = blx()->sections;
+			Blocks::log('Default field group created successfully.');
 		}
 		else
 		{
-			$service = blx()->entries;
+			Blocks::log('Could not save the Default field group.', \CLogger::LEVEL_WARNING);
 		}
 
-		$block->name = Blocks::t('Body');
-		$block->handle = 'body';
-		$block->required = true;
-		$block->type = 'RichText';
-		$block->translatable = true;
+		Blocks::log('Creating the Body field.');
 
-		if ($service->saveBlock($block))
+		$field = new FieldModel();
+		$field->groupId      = $group->id;
+		$field->type         = 'RichText';
+		$field->name         = Blocks::t('Body');
+		$field->handle       = 'body';
+		$field->translatable = true;
+
+		if (blx()->fields->saveField($field))
 		{
-			Blocks::log('Body entry block created successfully.');
+			Blocks::log('Body field created successfully.');
 		}
 		else
 		{
-			Blocks::log('Could not create the Body entry block.', \CLogger::LEVEL_WARNING);
+			Blocks::log('Could not save the Body field.', \CLogger::LEVEL_WARNING);
+		}
+
+		Blocks::log('Creating the Blog section.');
+
+		$layoutFields = array(
+			array(
+				'fieldId'   => $field->id,
+				'required'  => true,
+				'sortOrder' => 1
+			)
+		);
+
+		$layoutTabs = array(
+			array(
+				'name'      => Blocks::t('Content'),
+				'sortOrder' => 1,
+				'fields'    => $layoutFields
+			)
+		);
+
+		$layout = new FieldLayoutModel();
+		$layout->type = 'SectionEntry';
+		$layout->setTabs($layoutTabs);
+		$layout->setFields($layoutFields);
+
+		$section = new SectionModel();
+		$section->name       = Blocks::t('Blog');
+		$section->handle     = 'blog';
+		$section->titleLabel = Blocks::t('Title');
+		$section->hasUrls    = true;
+		$section->template   = 'blog/_entry';
+
+		$section->setLocales(array(
+			$inputs['locale'] => SectionLocaleModel::populateModel(array(
+				'locale'    => $inputs['locale'],
+				'urlFormat' => 'blog/{slug}',
+			))
+		));
+
+		$section->setFieldLayout($layout);
+
+		if (blx()->sections->saveSection($section))
+		{
+			Blocks::log('Blog section created successfully.');
+		}
+		else
+		{
+			Blocks::log('Could not save the Blog section.', \CLogger::LEVEL_WARNING);
 		}
 	}
 

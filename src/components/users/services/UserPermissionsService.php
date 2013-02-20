@@ -65,30 +65,21 @@ class UserPermissionsService extends BaseApplicationComponent
 
 		// Entries
 
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
-		{
-			$criteria = new SectionCriteria();
-			$criteria->limit = null;
-			$sections = blx()->sections->findSections($criteria);
+		$sections = blx()->sections->getAllSections();
 
-			foreach ($sections as $section)
-			{
-				$label = Blocks::t('Section - {section}', array('section' => Blocks::t($section->name)));
-				$permissions[$label] = $this->_getEntryPermissions($section->id);
-			}
-		}
-		else
+		foreach ($sections as $section)
 		{
-			$permissions[Blocks::t('Blog')] = $this->_getEntryPermissions();
+			$label = Blocks::t('Section - {section}', array('section' => Blocks::t($section->name)));
+			$permissions[$label] = $this->_getEntryPermissions($section->id);
 		}
 
-		// Pages
+		// Singletons
 
-		$pages = blx()->pages->getAllPages();
+		$singletons = blx()->singletons->getAllSingletons();
 
-		if ($pages)
+		if ($singletons)
 		{
-			$permissions[Blocks::t('Pages')] = $this->_getPagePermissions($pages);
+			$permissions[Blocks::t('Singletons')] = $this->_getSingletonPermissions($singletons);
 		}
 
 		// Globals
@@ -317,20 +308,20 @@ class UserPermissionsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the page permissions.
+	 * Returns the singleton permissions.
 	 *
 	 * @access private
-	 * @param array $pages
+	 * @param array $singletons
 	 * @return array
 	 */
-	private function _getPagePermissions($pages)
+	private function _getSingletonPermissions($singletons)
 	{
 		$permissions = array();
 
-		foreach ($pages as $page)
+		foreach ($singletons as $singleton)
 		{
-			$permissions["editPage{$page->id}"] = array(
-				'label' => Blocks::t('Edit “{title}”', array('title' => $page->title))
+			$permissions["editSingleton{$singleton->id}"] = array(
+				'label' => Blocks::t('Edit “{title}”', array('title' => $singleton->title))
 			);
 		}
 

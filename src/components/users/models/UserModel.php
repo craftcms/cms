@@ -4,8 +4,10 @@ namespace Blocks;
 /**
  * User model class
  */
-class UserModel extends BaseEntityModel
+class UserModel extends EntryModel
 {
+	protected $entryType = 'User';
+
 	/**
 	 * Use the full name or username as the string representation.
 	 *
@@ -29,61 +31,27 @@ class UserModel extends BaseEntityModel
 	 */
 	public function defineAttributes()
 	{
-		return array(
-			'id'                           => AttributeType::Number,
-			'username'                     => AttributeType::String,
-			'photo'                        => AttributeType::String,
-			'firstName'                    => AttributeType::String,
-			'lastName'                     => AttributeType::String,
-			'email'                        => AttributeType::Email,
-			'password'                     => AttributeType::String,
-			'encType'                      => AttributeType::String,
-			'language'                     => AttributeType::Language,
-			'emailFormat'                  => array(AttributeType::String, 'default' => 'text'),
-			'admin'                        => AttributeType::Bool,
-			'status'                       => AttributeType::Enum,
-			'lastLoginDate'                => AttributeType::DateTime,
-			'invalidLoginCount'            => AttributeType::Number,
-			'lastInvalidLoginDate'         => AttributeType::DateTime,
-			'lockoutDate'                  => AttributeType::DateTime,
-			'passwordResetRequired'        => AttributeType::Bool,
-			'lastPasswordChangeDate'       => AttributeType::DateTime,
-			'dateCreated'                  => AttributeType::DateTime,
-			'verificationRequired'         => AttributeType::Bool,
-			'newPassword'                  => AttributeType::String,
-		);
-	}
-
-	/**
-	 * Gets the blocks.
-	 *
-	 * @access protected
-	 * @return array
-	 */
-	protected function getBlocks()
-	{
-		if (Blocks::hasPackage(BlocksPackage::Users))
-		{
-			return blx()->userProfiles->getAllBlocks();
-		}
-		else
-		{
-			return array();
-		}
-	}
-
-	/**
-	 * Gets the content.
-	 *
-	 * @access protected
-	 * @return array|\CModel
-	 */
-	protected function getContent()
-	{
-		if ($this->id && Blocks::hasPackage(BlocksPackage::Users))
-		{
-			return blx()->userProfiles->getProfileRecordByUserId($this->id);
-		}
+		return array_merge(parent::defineAttributes(), array(
+			'username'               => AttributeType::String,
+			'photo'                  => AttributeType::String,
+			'firstName'              => AttributeType::String,
+			'lastName'               => AttributeType::String,
+			'email'                  => AttributeType::Email,
+			'password'               => AttributeType::String,
+			'encType'                => AttributeType::String,
+			'preferredLocale'        => AttributeType::Locale,
+			'emailFormat'            => array(AttributeType::String, 'default' => 'text'),
+			'admin'                  => AttributeType::Bool,
+			'status'                 => AttributeType::Enum,
+			'lastLoginDate'          => AttributeType::DateTime,
+			'invalidLoginCount'      => AttributeType::Number,
+			'lastInvalidLoginDate'   => AttributeType::DateTime,
+			'lockoutDate'            => AttributeType::DateTime,
+			'passwordResetRequired'  => AttributeType::Bool,
+			'lastPasswordChangeDate' => AttributeType::DateTime,
+			'verificationRequired'   => AttributeType::Bool,
+			'newPassword'            => AttributeType::String,
+		));
 	}
 
 	/**

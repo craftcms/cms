@@ -4,91 +4,18 @@ namespace Blocks;
 /**
  *
  */
-class AssetsService extends BaseEntityService
+class AssetsService extends BaseApplicationComponent
 {
-	// -------------------------------------------
-	//  Asset Blocks
-	// -------------------------------------------
-
-	/**
-	 * The block model class name.
-	 *
-	 * @access protected
-	 * @var string
-	 */
-	protected $blockModelClass = 'AssetBlockModel';
-
-	/**
-	 * The block record class name.
-	 *
-	 * @access protected
-	 * @var string
-	 */
-	protected $blockRecordClass = 'AssetBlockRecord';
-
-	/**
-	 * The content record class name.
-	 *
-	 * @access protected
-	 * @var string
-	 */
-	protected $contentRecordClass = 'AssetContentRecord';
-
-	/**
-	 * The name of the content table column right before where the block columns should be inserted.
-	 *
-	 * @access protected
-	 * @var string
-	 */
-	protected $placeBlockColumnsAfter = 'fileId';
-
-	private $_mergeInProgress = false;
-
-	// -------------------------------------------
-	//  Files
-	// -------------------------------------------
-
-	/**
-	 * Populates a file model.
-	 *
-	 * @param array|AssetFileRecord $attributes
-	 * @return AssetFileModel
-	 */
-	public function populateFile($attributes)
-	{
-		$file = AssetFileModel::populateModel($attributes);
-		return $file;
-	}
-
-	/**
-	 * Mass-populates file models.
-	 *
-	 * @param array  $data
-	 * @param string $index
-	 * @return array
-	 */
-	public function populateFiles($data, $index = 'id')
-	{
-		$files = array();
-
-		foreach ($data as $attributes)
-		{
-			$file = $this->populateFile($attributes);
-			$files[$file->$index] = $file;
-		}
-
-		return $files;
-	}
-
 	/**
 	 * Returns all top-level files in a source.
 	 *
 	 * @param int $sourceId
+	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public function getFilesBySourceId($sourceId)
+	public function getFilesBySourceId($sourceId, $indexBy = null)
 	{
-		$query = blx()->db->createCommand()
+		$files = blx()->db->createCommand()
 			->select('fi.*')
 			->from('assetfiles fi')
 			->join('assetfolders fo', 'fo.id = fi.folderId')
@@ -96,18 +23,22 @@ class AssetsService extends BaseEntityService
 			->order('fi.filename')
 			->queryAll();
 
-		return $this->populateFiles($query);
+		return AssetFileModel::populateModels($files, $indexBy);
 	}
 
 	/**
 	 * Get files by a folder id.
 	 *
 	 * @param $folderId
+	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public function getFilesByFolderId($folderId)
+	public function getFilesByFolderId($folderId, $indexBy = null)
 	{
-		return $this->findFiles(new FileCriteria(array('folderId' => $folderId)));
+		return $this->findFiles(array(
+			'folderId' => $folderId,
+			'indexBy'  => $indexBy
+		));
 	}
 
 	/**
@@ -118,21 +49,22 @@ class AssetsService extends BaseEntityService
 	 */
 	public function getFileById($fileId)
 	{
-		$parameters = new FileCriteria(array('id' => $fileId));
-		return $this->findFile($parameters);
+		return $this->findFile(array(
+			'id' => $fileId
+		));
 	}
 
 	/**
 	 * Finds files that match a given criteria.
 	 *
-	 * @param FileCriteria|null $criteria
+	 * @param mixed $criteria
 	 * @return array
 	 */
-	public function findFiles(FileCriteria $criteria = null)
+	public function findFiles($criteria = null)
 	{
-		if (!$criteria)
+		if (!($criteria instanceof EntryCriteriaModel))
 		{
-			$criteria = new FileCriteria();
+			$criteria = blx()->entries->getEntryCriteria('Asset', $criteria);
 		}
 
 		$query = blx()->db->createCommand()
@@ -158,23 +90,29 @@ class AssetsService extends BaseEntityService
 
 		$result = $query->queryAll();
 
-		return $this->populateFiles($result);
+		return AssetFileModel::populateModels($result, $criteria->indexBy);
 	}
 
 	/**
 	 * Finds the first file that matches the given criteria.
 	 *
-	 * @param FileCriteria $criteria
+	 * @param mixed $criteria
 	 * @return AssetFileModel|null
 	 */
-	public function findFile(FileCriteria $criteria = null)
+	public function findFile($criteria = null)
 	{
-		$criteria->limit = 1;
-		$file = $this->findFiles($criteria);
-
-		if (is_array($file) && !empty($file))
+		if (!($criteria instanceof EntryCriteriaModel))
 		{
-			return array_pop($file);
+			$criteria = blx()->entries->getEntryCriteria('Asset', $criteria);
+		}
+
+		$criteria->limit = 1;
+		$criteria->indexBy = null;
+		$files = $this->findFiles($criteria);
+
+		if ($files)
+		{
+			return $files[0];
 		}
 	}
 
@@ -202,14 +140,14 @@ class AssetsService extends BaseEntityService
 	/**
 	 * Gets the total number of files that match a given criteria.
 	 *
-	 * @param FileCriteria|null $criteria
+	 * @param mixed $criteria
 	 * @return int
 	 */
-	public function getTotalFiles(FileCriteria $criteria = null)
+	public function getTotalFiles($criteria = null)
 	{
-		if (!$criteria)
+		if (!($criteria instanceof EntryCriteriaModel))
 		{
-			$criteria = new FileCriteria();
+			$criteria = blx()->entries->getEntryCriteria('Asset', $criteria);
 		}
 
 		$query = blx()->db->createCommand()
@@ -226,9 +164,9 @@ class AssetsService extends BaseEntityService
 	 *
 	 * @access private
 	 * @param DbCommand $query
-	 * @param FileCriteria $criteria
+	 * @param EntryCriteriaModel $criteria
 	 */
-	private function _applyFileConditions($query, $criteria)
+	private function _applyFileConditions($query, EntryCriteriaModel $criteria)
 	{
 		$whereConditions = array();
 		$whereParams = array();
@@ -266,82 +204,64 @@ class AssetsService extends BaseEntityService
 	}
 
 	/**
-	 * Store a file by model and return the id
-	 * @param AssetFileModel $fileModel
-	 * @return mixed
-	 */
-	public function storeFile(AssetFileModel $fileModel)
-	{
-
-		if (empty($fileModel->id))
-		{
-			$record = new AssetFileRecord();
-		}
-		else
-		{
-			$record = AssetFileRecord::model()->findById($fileModel->id);
-		}
-
-		$record->sourceId = $fileModel->sourceId;
-		$record->folderId = $fileModel->folderId;
-		$record->filename = $fileModel->filename;
-		$record->kind = $fileModel->kind;
-		$record->size = $fileModel->size;
-		$record->width = $fileModel->width;
-		$record->height = $fileModel->height;
-		$record->dateModified = $fileModel->dateModified;
-
-		$record->save();
-
-		return $record->id;
-	}
-
-	/**
-	 * Store block's contents for a file.
+	 * Stores a file.
 	 *
 	 * @param AssetFileModel $file
 	 * @return bool
 	 */
-	public function storeFileBlocks(AssetFileModel $file)
+	public function storeFile(AssetFileModel $file)
 	{
-
-		$contentRecord = $this->getFileContentRecordByFileId($file->id);
-
-		// Populate the blocks' content
-		$blocks = $this->getAllBlocks();
-		$blockTypes = array();
-
-		foreach ($blocks as $block)
+		if ($file->id)
 		{
-			$blockType = blx()->blockTypes->populateBlockType($block);
-			$blockType->entity = $file;
+			$fileRecord = AssetFileRecord::model()->findById($file->id);
 
-			if ($blockType->defineContentAttribute() !== false)
+			if (!$fileRecord)
 			{
-				$handle = $block->handle;
-				$contentRecord->$handle = $blockType->getPostData();
+				throw new Exception('No asset exists with the ID “{id}”', array('id' => $file->id));
 			}
-
-			// Keep the block type instance around for calling onAfterEntitySave()
-			$blockTypes[] = $blockType;
+		}
+		else
+		{
+			$fileRecord = new AssetFileRecord();
 		}
 
-		if ($contentRecord->save())
+		$fileRecord->sourceId     = $file->sourceId;
+		$fileRecord->folderId     = $file->folderId;
+		$fileRecord->filename     = $file->filename;
+		$fileRecord->kind         = $file->kind;
+		$fileRecord->size         = $file->size;
+		$fileRecord->width        = $file->width;
+		$fileRecord->height       = $file->height;
+		$fileRecord->dateModified = $file->dateModified;
+
+		if ($fileRecord->save())
 		{
-			// Give the block types a chance to do any post-processing
-			foreach ($blockTypes as $blockType)
+			if (!$file->id)
 			{
-				$blockType->onAfterEntitySave();
+				// Save the ID on the model now that we have it
+				$file->id = $fileRecord->id;
 			}
 
 			return true;
 		}
 		else
 		{
-			$contentRecord->addErrors($contentRecord->getErrors());
-
+			$file->addErrors($fileRecord->getErrors());
 			return false;
 		}
+	}
+
+	/**
+	 * Saves a file's content.
+	 *
+	 * @param AssetFileModel $file
+	 * @return bool
+	 */
+	public function saveFileContent(AssetFileModel $file)
+	{
+		// TODO: translation support
+		$fieldLayout = blx()->fields->getLayoutByType('Asset');
+		return blx()->entries->saveEntryContent($file, $fieldLayout);
 	}
 
 	// -------------------------------------------
@@ -412,7 +332,7 @@ class AssetsService extends BaseEntityService
 	 */
 	public function getFolderTree()
 	{
-		$folders = $this->findFolders(new FolderCriteria(array('order' => 'fullPath')));
+		$folders = $this->findFolders(array('order' => 'fullPath'));
 		$tree = array();
 		$referenceStore = array();
 
@@ -514,14 +434,14 @@ class AssetsService extends BaseEntityService
 	/**
 	 * Finds folders that match a given criteria.
 	 *
-	 * @param FolderCriteria|null $criteria
+	 * @param mixed $criteria
 	 * @return array
 	 */
-	public function findFolders(FolderCriteria $criteria = null)
+	public function findFolders($criteria = null)
 	{
-		if (!$criteria)
+		if (!($criteria instanceof FolderCriteriaModel))
 		{
-			$criteria = new FolderCriteria();
+			$criteria = new FolderCriteriaModel($criteria);
 		}
 
 		$query = blx()->db->createCommand()
@@ -553,11 +473,16 @@ class AssetsService extends BaseEntityService
 	/**
 	 * Finds the first folder that matches a given criteria.
 	 *
-	 * @param FolderCriteria $criteria
+	 * @param mixed $criteria
 	 * @return AssetFolderModel|null
 	 */
-	public function findFolder(FolderCriteria $criteria = null)
+	public function findFolder($criteria = null)
 	{
+		if (!($criteria instanceof FolderCriteriaModel))
+		{
+			$criteria = new FolderCriteriaModel($criteria);
+		}
+
 		$criteria->limit = 1;
 		$folder = $this->findFolders($criteria);
 
@@ -570,14 +495,14 @@ class AssetsService extends BaseEntityService
 	/**
 	 * Gets the total number of folders that match a given criteria.
 	 *
-	 * @param FolderCriteria|null $criteria
+	 * @param mixed $criteria
 	 * @return int
 	 */
-	public function getTotalFolders(FolderCriteria $criteria = null)
+	public function getTotalFolders($criteria)
 	{
-		if (!$criteria)
+		if (!($criteria instanceof FolderCriteriaModel))
 		{
-			$criteria = new FolderCriteria();
+			$criteria = new FolderCriteriaModel($criteria);
 		}
 
 		$query = blx()->db->createCommand()
@@ -594,9 +519,9 @@ class AssetsService extends BaseEntityService
 	 *
 	 * @access private
 	 * @param DbCommand $query
-	 * @param FolderCriteria $criteria
+	 * @param FolderCriteriaModel $criteria
 	 */
-	private function _applyFolderConditions($query, $criteria)
+	private function _applyFolderConditions($query, FolderCriteriaModel $criteria)
 	{
 		$whereConditions = array();
 		$whereParams = array();
@@ -722,14 +647,10 @@ class AssetsService extends BaseEntityService
 			case AssetsHelper::ActionReplace:
 			{
 				// Replace the actual file
-				$targetFile = blx()->assets->findFile(
-					new FileCriteria(
-						array(
-							'folderId' => $folderId,
-							'filename' => $fileName
-						)
-					)
-				);
+				$targetFile = $this->findFile(array(
+					'folderId' => $folderId,
+					'filename' => $fileName
+				));
 
 				$replaceWith = blx()->assets->getFileById($createdFileId);
 

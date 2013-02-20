@@ -4,103 +4,56 @@ namespace Blocks;
 /**
  *
  */
-class GlobalsService extends BaseEntityService
+class GlobalsService extends BaseApplicationComponent
 {
-	/**
-	 * The block model class name.
-	 *
-	 * @access protected
-	 * @var string
-	 */
-	protected $blockModelClass = 'GlobalBlockModel';
-
-	/**
-	 * The block record class name.
-	 *
-	 * @access protected
-	 * @var string
-	 */
-	protected $blockRecordClass = 'GlobalBlockRecord';
-
-	/**
-	 * The content record class name.
-	 *
-	 * @access protected
-	 * @var string
-	 */
-	protected $contentRecordClass = 'GlobalContentRecord';
+	private $_globalContent;
 
 	/**
 	 * Gets the global content.
 	 *
-	 * @return GlobalContentModel
+	 * @return EntryModel
 	 */
 	public function getGlobalContent()
 	{
-		return new GlobalContentModel();
+		if (!isset($this->_globalContent))
+		{
+			$record = EntryRecord::model()->findByAttributes(array(
+				'type' => 'Globals'
+			));
+
+			if ($record)
+			{
+				$this->_globalContent = EntryModel::populateModel($record);
+			}
+			else
+			{
+				$this->_globalContent = new EntryModel();
+			}
+		}
+
+		return $this->_globalContent;
 	}
 
 	/**
 	 * Saves the global content.
 	 *
-	 * @param GlobalContentModel $content
+	 * @param EntryModel $globals
 	 * @return bool
 	 */
-	public function saveGlobalContent(GlobalContentModel $content)
+	public function saveGlobalContent(EntryModel $globals)
 	{
-		$record = $this->getGlobalContentRecord();
-
-		$blockTypes = array();
-
-		foreach ($this->getAllBlocks() as $block)
+		if (!$globals->id)
 		{
-			$blockType = blx()->blockTypes->populateBlockType($block);
-			$blockType->entity = $content;
+			// Create the entry record
+			$entryRecord = new EntryRecord();
+			$entryRecord->type = 'Globals';
+			$entryRecord->save();
 
-			if ($blockType->defineContentAttribute() !== false)
-			{
-				$handle = $block->handle;
-				$record->$handle = $blockType->getPostData();
-			}
-
-			// Keep the block type instance around for calling onAfterEntitySave()
-			$blockTypes[] = $blockType;
+			// Now that we have the entry ID, save it on everything else
+			$globals->id = $entryRecord->id;
 		}
 
-		if ($record->save())
-		{
-			// Give the block types a chance to do any post-processing
-			foreach ($blockTypes as $blockType)
-			{
-				$blockType->onAfterEntitySave();
-			}
-
-			return true;
-		}
-		else
-		{
-			$content->addErrors($record->getErrors());
-			return false;
-		}
-	}
-
-	/**
-	 * Gets the global content record or creates a new one.
-	 *
-	 * @return GlobalContentRecord
-	 */
-	public function getGlobalContentRecord()
-	{
-		$record = GlobalContentRecord::model()->findByAttributes(array(
-			'language' => Blocks::getLanguage()
-		));
-
-		if (!$record)
-		{
-			$record = new GlobalContentRecord();
-			$record->language = Blocks::getLanguage();
-		}
-
-		return $record;
+		$fieldLayout = blx()->fields->getLayoutByType('Globals');
+		return blx()->entries->saveEntryContent($globals, $fieldLayout);
 	}
 }

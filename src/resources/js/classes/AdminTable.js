@@ -4,16 +4,22 @@
 Blocks.AdminTable = Garnish.Base.extend({
 
 	settings: null,
-	$table: null,
 	totalObjects: null,
 	sorter: null,
+
+	$noObjects: null,
+	$table: null,
+	$tbody: null,
+	$deleteBtns: null,
 
 	init: function(settings)
 	{
 		this.setSettings(settings, Blocks.AdminTable.defaults);
 
+		this.$noObjects = $(this.settings.noObjectsSelector);
 		this.$table = $(this.settings.tableSelector);
-		this.totalObjects = this.$table.children('tbody').children().length;
+		this.$tbody  = this.$table.children('tbody');
+		this.totalObjects = this.$tbody.children().length;
 
 		if (this.settings.sortable)
 		{
@@ -22,21 +28,59 @@ Blocks.AdminTable = Garnish.Base.extend({
 			});
 		}
 
-		var $deleteButtons = this.$table.find('.delete');
-		this.addListener($deleteButtons, 'click', 'deleteObject');
+		this.$deleteBtns = this.$table.find('.delete');
+		this.addListener(this.$deleteBtns, 'click', 'deleteObject');
+
+		this.onDeleteObject();
+	},
+
+	addRow: function(row)
+	{
+		var $row = $(row).appendTo(this.$tbody),
+			$deleteBtn = $row.find('.delete');
+
+		if (this.settings.sortable)
+		{
+			this.sorter.addItems($row);
+		}
+
+		this.addListener($deleteBtn, 'click', 'deleteObject');
+		this.totalObjects++;
+
+		if (this.totalObjects == 1)
+		{
+			this.$noObjects.addClass('hidden');
+			this.$table.show();
+		}
+		else if (this.totalObjects == 2)
+		{
+			if (this.settings.sortable)
+			{
+				this.$table.find('.move').removeClass('disabled');
+			}
+
+			if (!this.settings.allowDeleteAll)
+			{
+				this.$deleteBtns.removeClass('disabled');
+			}
+		}
+
+		this.$deleteBtns = this.$deleteBtns.add($deleteBtn);
 	},
 
 	reorderObjects: function()
 	{
 		if (!this.settings.sortable)
+		{
 			return false;
+		}
 
 		// Get the new block order
 		var ids = [];
 
 		for (var i = 0; i < this.sorter.$items.length; i++)
 		{
-			var id = parseInt($(this.sorter.$items[i]).attr(this.settings.idAttribute));
+			var id = $(this.sorter.$items[i]).attr(this.settings.idAttribute);
 			ids.push(id);
 		}
 
@@ -60,6 +104,11 @@ Blocks.AdminTable = Garnish.Base.extend({
 
 	deleteObject: function(event)
 	{
+		if (!this.settings.allowDeleteAll && this.totalObjects == 1)
+		{
+			return;
+		}
+
 		var $row = $(event.target).closest('tr'),
 			id = $row.attr(this.settings.idAttribute),
 			name = $row.attr(this.settings.nameAttribute);
@@ -70,13 +119,9 @@ Blocks.AdminTable = Garnish.Base.extend({
 				if (response.success)
 				{
 					$row.remove();
-
 					this.totalObjects--;
-					if (this.totalObjects == 0)
-					{
-						this.$table.remove();
-						$(this.settings.noObjectsSelector).removeClass('hidden');
-					}
+					this.onDeleteObject();
+					this.settings.onDeleteObject(id);
 
 					Blocks.cp.displayNotice(Blocks.t(this.settings.deleteSuccessMessage, { name: name }));
 				}
@@ -92,6 +137,24 @@ Blocks.AdminTable = Garnish.Base.extend({
 	{
 		var name = $row.attr(this.settings.nameAttribute);
 		return confirm(Blocks.t(this.settings.confirmDeleteMessage, { name: name }));
+	},
+
+	onDeleteObject: function()
+	{
+		if (this.totalObjects == 1)
+		{
+			this.$table.find('.move').addClass('disabled');
+
+			if (!this.settings.allowDeleteAll)
+			{
+				this.$deleteBtns.addClass('disabled');
+			}
+		}
+		else if (this.totalObjects == 0)
+		{
+			this.$table.hide();
+			$(this.settings.noObjectsSelector).removeClass('hidden');
+		}
 	}
 },
 {
@@ -101,12 +164,14 @@ Blocks.AdminTable = Garnish.Base.extend({
 		idAttribute: 'data-id',
 		nameAttribute: 'data-name',
 		sortable: false,
+		allowDeleteAll: false,
 		reorderAction: null,
 		deleteAction: null,
 		reorderSuccessMessage: 'New order saved.',
 		reorderFailMessage: 'Couldn’t save new order.',
 		confirmDeleteMessage: 'Are you sure you want to delete “{name}”?',
 		deleteSuccessMessage: '“{name}” deleted.',
-		deleteFailMessage: 'Couldn’t delete “{name}”.'
+		deleteFailMessage: 'Couldn’t delete “{name}”.',
+		onDeleteObject: $.noop
 	}
 });

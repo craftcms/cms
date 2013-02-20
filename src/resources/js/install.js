@@ -83,7 +83,7 @@ Blocks.Installer = Garnish.Base.extend({
 	{
 		this.showScreen(3, $.proxy(function() {
 
-			var inputs = ['licensekey', 'username', 'email', 'password', 'siteName', 'siteUrl', 'language'];
+			var inputs = ['licensekey', 'username', 'email', 'password', 'siteName', 'siteUrl', 'locale'];
 
 			var data = {};
 

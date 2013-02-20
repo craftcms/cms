@@ -9,17 +9,21 @@ namespace Blocks;
 abstract class BaseModel extends \CModel
 {
 	private $_classHandle;
-	private $_attributeNames = array();
-	private $_attributes = array();
+	private $_attributeConfigs;
+	private $_attributeNames;
+	private $_attributes;
 
 	protected $classSuffix = 'Model';
 
 	/**
 	 * Constructor
+	 *
+	 * @param mixed $attributes
 	 */
-	function __construct()
+	function __construct($attributes = null)
 	{
 		ModelHelper::populateAttributeDefaults($this);
+		$this->setAttributes($attributes);
 	}
 
 	/**
@@ -56,6 +60,34 @@ abstract class BaseModel extends \CModel
 		if ($this->setAttribute($name, $value) === false)
 		{
 			parent::__set($name, $value);
+		}
+	}
+
+	/**
+	 * Magic __call() method, used for chain-setting attribute values.
+	 *
+	 * @param string $name
+	 * @param array $arguments
+	 * @return BaseModel
+	 */
+	function __call($name, $arguments)
+	{
+		if (in_array($name, $this->attributeNames()))
+		{
+			if (count($arguments) == 1)
+			{
+				$this->setAttribute($name, $arguments[0]);
+			}
+			else
+			{
+				$this->setAttribute($name, $arguments);
+			}
+
+			return $this;
+		}
+		else
+		{
+			return parent::__call($name, $arguments);
 		}
 	}
 
@@ -118,15 +150,35 @@ abstract class BaseModel extends \CModel
 	abstract public function defineAttributes();
 
 	/**
+	 * Returns this model's normalized attribute configs.
+	 *
+	 * @return array
+	 */
+	public function getAttributeConfigs()
+	{
+		if (!isset($this->_attributeConfigs))
+		{
+			$this->_attributeConfigs = array();
+
+			foreach ($this->defineAttributes() as $name => $config)
+			{
+				$this->_attributeConfigs[$name] = ModelHelper::normalizeAttributeConfig($config);
+			}
+		}
+
+		return $this->_attributeConfigs;
+	}
+
+	/**
 	 * Returns the list of this model's attribute names.
 	 *
 	 * @return array
 	 */
 	public function attributeNames()
 	{
-		if (!$this->_attributeNames)
+		if (!isset($this->_attributeNames))
 		{
-			$this->_attributeNames = array_keys($this->defineAttributes());
+			$this->_attributeNames = array_keys($this->getAttributeConfigs());
 		}
 
 		return $this->_attributeNames;
@@ -144,7 +196,7 @@ abstract class BaseModel extends \CModel
 	{
 		$values = array();
 
-		foreach ($this->defineAttributes() as $name => $config)
+		foreach ($this->getAttributeConfigs() as $name => $config)
 		{
 			if (!is_array($names) || in_array($name, $names))
 			{
@@ -187,6 +239,43 @@ abstract class BaseModel extends \CModel
 	{
 		if (in_array($name, $this->attributeNames()))
 		{
+			$attributes = $this->getAttributeConfigs();
+			$config = $attributes[$name];
+
+			// Handle special case attribute types
+			switch ($config['type'])
+			{
+				case AttributeType::DateTime:
+				{
+					if ($value && !($value instanceof \DateTime))
+					{
+						// Leaving this conditional in because some models might want to utilize a timestamp for transporting
+						// DateTime data. (e.g. EtModel)
+						if (DateTimeHelper::isValidTimeStamp($value))
+						{
+							$value = new DateTime('@'.$value);
+						}
+						else if ($config['column'] == ColumnType::DateTime)
+						{
+							// TODO: MySql specific
+							$value = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $value);
+						}
+					}
+
+					break;
+				}
+				case AttributeType::Mixed:
+				{
+					if ($config['model'])
+					{
+						$class = __NAMESPACE__.'\\'.$config['model'];
+						$value = $class::populateModel($value);
+					}
+
+					break;
+				}
+			}
+
 			$this->_attributes[$name] = $value;
 			return true;
 		}
@@ -199,20 +288,19 @@ abstract class BaseModel extends \CModel
 	/**
 	 * Sets multiple attribute values at once.
 	 *
-	 * @param array $values
+	 * @param mixed $values
 	 */
 	public function setAttributes($values)
 	{
-		if (!is_array($values))
+		if (is_array($values) || is_object($values))
 		{
-			return;
-		}
-
-		foreach ($values as $name => $value)
-		{
-			if (in_array($name, $this->attributeNames()))
+			foreach ($this->attributeNames() as $name)
 			{
-				$this->_attributes[$name] = $value;
+				// Make sure they're actually setting this attribute
+				if (isset($values[$name]))
+				{
+					$this->setAttribute($name, $values[$name]);
+				}
 			}
 		}
 	}
@@ -241,45 +329,14 @@ abstract class BaseModel extends \CModel
 	 * Populates a new model instance with a given set of attributes.
 	 *
 	 * @static
-	 * @param mixed $attributes
+	 * @param mixed $values
 	 * @return BaseModel
 	 */
-	public static function populateModel($attributes)
+	public static function populateModel($values)
 	{
 		$class = get_called_class();
-		$model = new $class;
-
-		if ($attributes instanceof \CModel)
-		{
-			$attributes = $attributes->getAttributes();
-		}
-
-		foreach ($model->defineAttributes() as $name => $config)
-		{
-			if (isset($attributes[$name]))
-			{
-				$value = $attributes[$name];
-				$config = ModelHelper::normalizeAttributeConfig($config);
-
-				// Leaving this conditional in because some models might want to utilize a timestamp for transporting
-				// DateTime data. (e.g. EtModel)
-				if ($config['type'] == AttributeType::DateTime && DateTimeHelper::isValidTimeStamp($value))
-				{
-					$value = new DateTime('@'.$value);
-				}
-				else if ($config['type'] == AttributeType::DateTime && $config['column'] == ColumnType::DateTime)
-				{
-					if (!$value instanceof \DateTime)
-					{
-						// TODO: MySql specific
-						$value = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $value);
-					}
-				}
-
-				$model->setAttribute($name, $value);
-			}
-		}
-
+		$model = new $class();
+		$model->setAttributes($values);
 		return $model;
 	}
 
@@ -287,24 +344,27 @@ abstract class BaseModel extends \CModel
 	 * Mass-populates models based on an array of attribute arrays.
 	 *
 	 * @param array $data
-	 * @param string|null $index
+	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public static function populateModels($data, $index = null)
+	public static function populateModels($data, $indexBy = null)
 	{
 		$models = array();
 
-		foreach ($data as $attributes)
+		if (is_array($data))
 		{
-			$model = static::populateModel($attributes);
+			foreach ($data as $values)
+			{
+				$model = static::populateModel($values);
 
-			if ($index === null)
-			{
-				$models[] = $model;
-			}
-			else
-			{
-				$models[$model->$index] = $model;
+				if ($indexBy)
+				{
+					$models[$model->$indexBy] = $model;
+				}
+				else
+				{
+					$models[] = $model;
+				}
 			}
 		}
 

@@ -23,7 +23,7 @@
 
 	{% if allGroups %}
 		<form method="post" action="" accept-charset="UTF-8">
-			<input type="hidden" name="action" value="userProfiles/saveUserGroups">
+			<input type="hidden" name="action" value="users/saveUserGroups">
 			<input type="hidden" name="userId" value="{{ account.id }}">
 
 			<ul>
@@ -50,7 +50,7 @@
 	<hr>
 
 	<form method="post" action="" accept-charset="UTF-8">
-		<input type="hidden" name="action" value="userProfiles/saveUserPermissions">
+		<input type="hidden" name="action" value="users/saveUserPermissions">
 		<input type="hidden" name="userId" value="{{ account.id }}">
 
 		<h2>{{ "Permissions"|t }}</h2>

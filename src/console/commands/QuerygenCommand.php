@@ -23,29 +23,36 @@ class QuerygenCommand extends \CConsoleCommand
 
 		$table = $record->getTableName();
 		$indexes = $record->defineIndexes();
+		$attributes = $record->getAttributeConfigs();
 		$columns = array();
 
 		// Add any Foreign Key columns
 		foreach ($record->getBelongsToRelations() as $name => $config)
 		{
+			$columnName = $config[2];
+
+			// Is the record already defining this column?
+			if (isset($attributes[$columnName]))
+			{
+				continue;
+			}
+
 			$required = !empty($config['required']);
-			$columns[$config[2]] = array('column' => ColumnType::Int, 'required' => $required);
+			$columns[$columnName] = array('column' => ColumnType::Int, 'required' => $required);
 
 			// Add unique index for this column?
 			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
 			if (!empty($config['unique']))
 			{
-				$indexes[] = array('columns' => array($config[2]), 'unique' => true);
+				$indexes[] = array('columns' => array($columnName), 'unique' => true);
 			}
 		}
 
 		// Add all other columns
 		$dbConfigSettings = array('column', 'maxLength', 'length', 'decimals', 'values', 'unsigned', 'zerofill', 'required', 'null', 'default', 'primaryKey');
 
-		foreach ($record->defineAttributes() as $name => $config)
+		foreach ($attributes as $name => $config)
 		{
-			$config = ModelHelper::normalizeAttributeConfig($config);
-
 			// Add (unique) index for this column?
 			$indexed = !empty($config['indexed']);
 			$unique = !empty($config['unique']);
@@ -69,6 +76,18 @@ class QuerygenCommand extends \CConsoleCommand
 			$columns[$name] = $config;
 		}
 
+		$pk = $record->primaryKey();
+
+		if (isset($columns[$pk]))
+		{
+			$columns[$pk]['primaryKey'] = true;
+			$addIdColumn = false;
+		}
+		else
+		{
+			$addIdColumn = true;
+		}
+
 		// Create the table
 		echo "\n// Create the blx_{$table} table\n";
 
@@ -82,7 +101,7 @@ class QuerygenCommand extends \CConsoleCommand
 			echo "\t".str_pad("'{$name}'", $colNameLength).' => '.$this->_varExport($config).",\n";
 		}
 
-		echo "));\n";
+		echo '), null, '.$this->_varExport($addIdColumn).");\n";
 
 		// Create the indexes
 		if ($indexes)
@@ -122,6 +141,7 @@ class QuerygenCommand extends \CConsoleCommand
 				$otherModelClass = $config[1];
 				$otherModel = new $otherModelClass('install');
 				$otherTable = $otherModel->getTableName();
+				$otherPk = $otherModel->primaryKey();
 
 				if (isset($config['onDelete']))
 				{
@@ -139,11 +159,22 @@ class QuerygenCommand extends \CConsoleCommand
 					}
 				}
 
+				if (isset($config['onUpdate']))
+				{
+					$onUpdate = $config['onUpdate'];
+				}
+				else
+				{
+					$onUpdate = null;
+				}
+
 				echo 'blx()->db->createCommand()->addForeignKey(' .
 					$this->_varExport($table).', ' .
 					$this->_varExport($config[2]).', ' .
-					$this->_varExport($otherTable).', \'id\', ' .
-					$this->_varExport($onDelete).");\n";
+					$this->_varExport($otherTable).', ' .
+					$this->_varExport($otherPk).', ' .
+					$this->_varExport($onDelete).', ' .
+					$this->_varExport($onUpdate).");\n";
 			}
 		}
 

@@ -1,0 +1,56 @@
+{% if singleton is not defined %}
+	{% set singleton = blx.singletons.getSingletonById(singletonId) %}
+	{% if not singleton %}{% exit 404 %}{% endif %}
+{% endif %}
+
+
+{% extends "_layouts/cp" %}
+
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('content') },
+	{ label: "Singletons"|t, url: url('content/singletons') }
+] %}
+
+{% set title = singleton.name %}
+
+{% set tabs = [] %}
+
+{% for tab in singleton.getFieldLayout().getTabs() %}
+	{% set hasErrors = false %}
+	{% for field in tab.getFields() %}
+		{% if singleton.getErrors(field.getField().handle) %}
+			{% set hasErrors = true %}
+		{% endif %}
+	{% endfor %}
+
+	{% set tabs = tabs|merge([{
+		label: tab.name,
+		url: '#tab'~loop.index,
+		class: (hasErrors ? 'error' : null)
+	}]) %}
+{% endfor %}
+
+
+{% set content %}
+	{% if singleton.fieldLayout %}
+		<form method="post" action="" accept-charset="UTF-8">
+			<input type="hidden" name="action" value="singletons/saveContent">
+			<input type="hidden" name="singletonId" value="{{ singleton.id }}">
+
+			{% for tab in singleton.getFieldLayout().getTabs() %}
+				<div id="tab{{ loop.index }}"{% if not loop.first %} class="hidden"{% endif %}>
+					{% include "_includes/fields" with {
+					    fields: tab.getFields(),
+					    entry: singleton
+					} only %}
+				</div>
+			{% endfor %}
+
+			<div class="buttons">
+				<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			</div>
+		</form>
+	{% else %}
+		<p>{{ "This singleton doesn’t have any fields yet."|t }}</p>
+	{% endif %}
+{% endset %}

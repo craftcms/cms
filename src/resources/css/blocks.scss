@@ -30,7 +30,7 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 .menulist ul li a.sel:before,
 .search:before,
 .datewrapper:before,
-.entity:before,
+.entry:before,
 .secure:before,
 .insecure:before,
 .go:after,
@@ -67,7 +67,7 @@ section { margin: 30px 0 30px 30px; }
 section > h2 { margin-left: -30px; }
 
 /* horizontal rule */
-hr { margin: 30px -30px; border: none; border-top: 1px solid #ddd; height: 0; color: transparent; }
+hr { margin: 30px -30px; border: none; border-top: 1px solid #eee; height: 0; color: transparent; }
 
 /* paragraphs */
 p { margin: 1em 0; }
@@ -124,13 +124,13 @@ td.right { float: none; text-align: right; }
 
 .error { color: $errorcolor !important; }
 
-.move { display: inline-block; cursor: move; }
-.move:before { content: 'm'; color: #ccc; }
-.move:hover:before { color: $linkcolor; }
+.icon.move { display: inline-block; cursor: move; }
+.icon.move:before { content: 'm'; color: #ccc; }
+.icon.move:not(.disabled):hover:before { color: $linkcolor; }
 
 .icon.delete { display: inline-block; }
 .icon.delete:before { content: 'R'; color: #ccc; }
-.icon.delete:hover:before { color: $errorcolor; }
+.icon.delete:not(.disabled):hover:before { color: $errorcolor; }
 
 .hidden { display: none !important; }
 
@@ -224,7 +224,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 }
 
 .btn:hover { text-decoration: none; }
-.btn.disabled { opacity: 0.25; cursor: default; }
+.disabled { opacity: 0.25; cursor: default; }
 
 .btn:not(.submit) { border: 1px solid #ddd; padding: 0 10px; line-height: 29px; color: #555; background-color: #fff; }
 .btn:not(.submit):hover { border-color: #ccc; }
@@ -240,7 +240,8 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btn[data-icon]:not(:empty):before,
 .btn.icon:not(:empty):before { margin-right: 5px; }
 .btn[data-icon-after]:not(:empty):after,
-.menubtn:not(:empty):after { margin-left: 5px; }
+.menubtn:not(:empty):after,
+.menubtn.icon:after { margin-left: 5px; }
 
 .btn[data-icon]:before,
 .btn[data-icon-after]:after,
@@ -356,6 +357,8 @@ table.info > tbody > tr > td { padding: 0 0 2px 0; }
 table.data { width: 100%; }
 table.data th,
 table.data td { padding: 8px 10px; vertical-align: middle; border-bottom: 1px dotted rgba(0,0,0,0.1); }
+table.data tbody:first-child tr:first-child th,
+table.data tbody:first-child tr:first-child td { border-top: 1px dotted rgba(0,0,0,0.1); }
 table.data th:first-child,
 table.data td:first-child { padding-left: 0; }
 table.data th:last-child,
@@ -461,7 +464,9 @@ ul.tree,
 .menu ul li + li { margin-top: 3px; }
 .menu ul li a { display: block; margin: 0 -15px; padding: 4px 15px; font-size: 12px; color: #555; text-decoration: none; }
 .menu ul li a:not(.sel):hover,
-.menu ul li a:not(.sel):hover .light { color: #fff; background: $selcolor; }
+.menu ul li a:not(.sel):hover .light,
+.menu:not(:hover) ul li a:not(.sel).hover,
+.menu:not(:hover) ul li a:not(.sel).hover .light { color: #fff; background: $selcolor; }
 .menu ul li a.sel { color: #999; cursor: default; }
 
 
@@ -495,7 +500,7 @@ ul.tree,
 input.text,
 textarea.text,
 .text input,
-.text textarea { font-size: 13px; color: #555; box-sizing: border-box;
+.text textarea { font-size: 13px; color: #555; box-sizing: border-box; min-height: 31px;
 	-webkit-box-sizing: border-box;
 	   -moz-box-sizing: border-box;
 	-webkit-appearance: none;
@@ -602,10 +607,10 @@ body .redactor_box_fullscreen { z-index: 10000 !important; }
 
 .addlinksmodal .body { height: 250px; overflow: auto; @include unselectable; }
 
-.entity { margin: -5px 0; padding: 4px 7px; cursor: pointer; }
-.entity:before { content: 'l'; margin: -2px 5px 0 0; font-size: 15px; }
-.entity:hover { color: $selcolor; }
-.entity.sel { color: #fff; background-color: $selcolor; }
+.entry { margin: -5px 0; padding: 4px 7px; cursor: pointer; }
+.entry:before { content: 'l'; margin: -2px 5px 0 0; font-size: 15px; }
+.entry:hover { color: $selcolor; }
+.entry.sel { color: #fff; background-color: $selcolor; }
 
 /* errors */
 ul.errors { margin-top: 5px; list-style-type: square; padding-left: 20px; }

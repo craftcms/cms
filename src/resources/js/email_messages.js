@@ -43,9 +43,13 @@ var Message = Garnish.Base.extend({
 	edit: function()
 	{
 		if (!this.modal)
+		{
 			this.modal = new MessageSettingsModal(this);
+		}
 		else
+		{
 			this.modal.show();
+		}
 	},
 
 	updateHtmlFromModal: function()
@@ -64,7 +68,7 @@ var MessageSettingsModal = Garnish.Modal.extend({
 
 	message: null,
 
-	$languageSelect: null,
+	$localeSelect: null,
 	$subjectInput: null,
 	$bodyInput: null,
 	$saveBtn: null,
@@ -81,15 +85,15 @@ var MessageSettingsModal = Garnish.Modal.extend({
 		this.loadContainer();
 	},
 
-	loadContainer: function(language)
+	loadContainer: function(locale)
 	{
 		var data = {
-			key: this.message.key,
-			language: language
+			key:    this.message.key,
+			locale: locale
 		};
 
-		$.post(Blocks.getUrl('settings/email/_message_modal'), data, $.proxy(function(response, textStatus, jqXHR) {
-
+		$.post(Blocks.getUrl('settings/email/_message_modal'), data, $.proxy(function(response, textStatus, jqXHR)
+		{
 			if (!this.$container)
 			{
 				var $container = $('<form class="modal message-settings" accept-charset="UTF-8">'+response+'</form>').appendTo(Garnish.$bod);
@@ -101,14 +105,14 @@ var MessageSettingsModal = Garnish.Modal.extend({
 				this.$container.html(response);
 			}
 
-			this.$languageSelect = this.$container.find('.language:first > select');
-			this.$subjectInput = this.$container.find('.subject:first');
-			this.$bodyInput = this.$container.find('.body:first');
+			this.$localeSelect = this.$container.find('.locale:first > select');
+			this.$subjectInput = this.$container.find('.message-subject:first');
+			this.$bodyInput = this.$container.find('.message-body:first');
 			this.$saveBtn = this.$container.find('.submit:first');
 			this.$cancelBtn = this.$container.find('.cancel:first');
 			this.$spinner = this.$container.find('.spinner:first');
 
-			this.addListener(this.$languageSelect, 'change', 'switchLanguage');
+			this.addListener(this.$localeSelect, 'change', 'switchLocale');
 			this.addListener(this.$container, 'submit', 'saveMessage');
 			this.addListener(this.$cancelBtn, 'click', 'cancel');
 
@@ -119,10 +123,10 @@ var MessageSettingsModal = Garnish.Modal.extend({
 		}, this));
 	},
 
-	switchLanguage: function()
+	switchLocale: function()
 	{
-		var language = this.$languageSelect.val();
-		this.loadContainer(language);
+		var locale = this.$localeSelect.val();
+		this.loadContainer(locale);
 	},
 
 	saveMessage: function(event)
@@ -130,13 +134,15 @@ var MessageSettingsModal = Garnish.Modal.extend({
 		event.preventDefault();
 
 		if (this.loading)
+		{
 			return;
+		}
 
 		var data = {
-			key:       this.message.key,
-			language:  (this.$languageSelect.length ? this.$languageSelect.val() : Blocks.language),
-			subject:   this.$subjectInput.val(),
-			body:      this.$bodyInput.val()
+			key:     this.message.key,
+			locale:  (this.$localeSelect.length ? this.$localeSelect.val() : Blocks.language),
+			subject: this.$subjectInput.val(),
+			body:    this.$bodyInput.val()
 		};
 
 		this.$subjectInput.removeClass('error');
@@ -162,8 +168,8 @@ var MessageSettingsModal = Garnish.Modal.extend({
 
 			if (response.success)
 			{
-				// Only update the page if we're editing the user's preferred language
-				if (data.language == Blocks.language)
+				// Only update the page if we're editing the app target locale
+				if (data.locale == Blocks.language)
 					this.message.updateHtmlFromModal();
 
 				this.hide();

@@ -7,9 +7,9 @@ namespace Blocks;
 class TemplateHelper
 {
 	/**
-	 * Paginates a BaseCriteria instance.
+	 * Paginates an EntryCriteriaModel instance.
 	 */
-	public static function paginateCriteria(BaseCriteria $criteria)
+	public static function paginateCriteria(EntryCriteriaModel $criteria)
 	{
 		$currentPage = blx()->request->getPageNum();
 		$limit = $criteria->limit;

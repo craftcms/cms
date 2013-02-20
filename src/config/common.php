@@ -148,15 +148,10 @@ if (in_array('Users', $packages))
 
 $cpRoutes['content']                                                          = 'content/entries/index';
 
-$cpRoutes['content\/pages']                                                   = 'content/pages';
-$cpRoutes['content\/pages\/new']                                              = 'content/pages/_edit/settings';
-$cpRoutes['content\/pages\/(?P<pageId>\d+)']                                  = 'content/pages/_edit';
-$cpRoutes['content\/pages\/(?P<pageId>\d+)\/settings']                        = 'content/pages/_edit/settings';
-$cpRoutes['content\/pages\/(?P<pageId>\d+)\/blocks']                          = 'content/pages/_edit/blocks/index';
-$cpRoutes['content\/pages\/(?P<pageId>\d+)\/blocks\/new']                     = 'content/pages/_edit/blocks/settings';
-$cpRoutes['content\/pages\/(?P<pageId>\d+)\/blocks\/(?P<blockId>\d+)']        = 'content/pages/_edit/blocks/settings';
+$cpRoutes['content\/singletons']                                              = 'content/singletons';
+$cpRoutes['content\/singletons\/(?P<singletonId>\d+)']                        = 'content/singletons/_edit';
 
-$cpRoutes['content\/globals']                                                 = 'content/globals/index';
+$cpRoutes['content\/globals']                                                 = 'content/globals';
 $cpRoutes['content\/(?P<sectionHandle>{handle})\/new']                        = 'content/entries/_edit';
 $cpRoutes['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)']           = 'content/entries/_edit';
 $cpRoutes['content\/(?P<filter>{handle})']                                    = 'content/entries/index';
@@ -171,35 +166,27 @@ $cpRoutes['settings\/assets\/sources\/new']                                   = 
 $cpRoutes['settings\/assets\/sources\/(?P<sourceId>\d+)']                     = 'settings/assets/sources/_settings';
 $cpRoutes['settings\/assets\/transformations\/new']                           = 'settings/assets/transformations/_settings';
 $cpRoutes['settings\/assets\/transformations\/(?P<handle>{handle})']          = 'settings/assets/transformations/_settings';
-$cpRoutes['settings\/assets\/blocks\/new']                                    = 'settings/assets/blocks/_settings';
-$cpRoutes['settings\/assets\/blocks\/(?P<blockId>\d+)']                       = 'settings/assets/blocks/_settings';
-$cpRoutes['settings\/globals\/new']                                           = 'settings/globals/_settings';
-$cpRoutes['settings\/globals\/(?P<blockId>\d+)']                              = 'settings/globals/_settings';
-$cpRoutes['settings\/pages\/new']                                             = 'settings/pages/_edit/settings';
-$cpRoutes['settings\/pages\/(?P<pageId>\d+)']                                 = 'settings/pages/_edit/settings';
-$cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks']                         = 'settings/pages/_edit/blocks/index';
-$cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks\/new']                    = 'settings/pages/_edit/blocks/settings';
-$cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks\/(?P<blockId>\d+)']       = 'settings/pages/_edit/blocks/settings';
+$cpRoutes['settings\/fields\/(?P<groupId>\d+)']                               = 'settings/fields';
+$cpRoutes['settings\/fields\/new']                                            = 'settings/fields/_edit';
+$cpRoutes['settings\/fields\/edit\/(?P<fieldId>\d+)']                         = 'settings/fields/_edit';
 $cpRoutes['settings\/plugins\/(?P<pluginClass>{handle})']                     = 'settings/plugins/_settings';
+$cpRoutes['settings\/sections\/new']                                          = 'settings/sections/_edit';
+$cpRoutes['settings\/sections\/(?P<sectionId>\d+)']                           = 'settings/sections/_edit';
+$cpRoutes['settings\/singletons\/new']                                        = 'settings/singletons/_edit';
+$cpRoutes['settings\/singletons\/(?P<singletonId>\d+)']                       = 'settings/singletons/_edit';
 
 $cpRoutes['myaccount']                                                        = 'users/_edit/account';
 
+if (in_array('Language', $packages))
+{
+	$cpRoutes['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/(?P<localeId>\w+)'] = 'content/entries/_edit';
+	$cpRoutes['content\/(?P<sectionHandle>{handle})\/new\/(?P<localeId>\w+)']              = 'content/entries/_edit';
+}
+
 if (in_array('PublishPro', $packages))
 {
-	$cpRoutes['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/drafts\/(?P<draftId>\d+)']        = 'content/entries/_edit';
-	$cpRoutes['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/versions\/(?P<versionId>\d+)']    = 'content/entries/_edit';
-
-	$cpRoutes['settings\/sections\/new']                                          = 'settings/sections/_edit/settings';
-	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)']                           = 'settings/sections/_edit/settings';
-
-	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)\/blocks']                   = 'settings/sections/_edit/blocks';
-	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)\/blocks\/new']              = 'settings/sections/_edit/blocks/settings';
-	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)\/blocks\/(?P<blockId>\d+)'] = 'settings/sections/_edit/blocks/settings';
-}
-else
-{
-	$cpRoutes['settings\/blog\/blocks\/new']                                      = 'settings/sections/_edit/blocks/settings';
-	$cpRoutes['settings\/blog\/blocks\/(?P<blockId>\d+)']                         = 'settings/sections/_edit/blocks/settings';
+	$cpRoutes['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/drafts\/(?P<draftId>\d+)']     = 'content/entries/_edit';
+	$cpRoutes['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/versions\/(?P<versionId>\d+)'] = 'content/entries/_edit';
 }
 
 if (in_array('Users', $packages))
@@ -218,8 +205,6 @@ if (in_array('Users', $packages))
 	$cpRoutes['settings\/users']                                                  = 'settings/users/groups';
 	$cpRoutes['settings\/users\/groups\/new']                                     = 'settings/users/groups/_settings';
 	$cpRoutes['settings\/users\/groups\/(?P<groupId>\d+)']                        = 'settings/users/groups/_settings';
-	$cpRoutes['settings\/users\/blocks\/new']                                     = 'settings/users/blocks/_settings';
-	$cpRoutes['settings\/users\/blocks\/(?P<blockId>\d+)']                        = 'settings/users/blocks/_settings';
 }
 
 // -------------------------------------------
@@ -231,21 +216,23 @@ $components['assets']['class']               = 'Blocks\AssetsService';
 $components['assetTransformations']['class'] = 'Blocks\AssetTransformationsService';
 $components['assetIndexing']['class']        = 'Blocks\AssetIndexingService';
 $components['assetSources']['class']         = 'Blocks\AssetSourcesService';
-$components['blockTypes']['class']           = 'Blocks\BlockTypesService';
-$components['components']['class']           = 'Blocks\ComponentsService';
+
 $components['dashboard']['class']            = 'Blocks\DashboardService';
 $components['email']['class']                = 'Blocks\EmailService';
 $components['entries']['class']              = 'Blocks\EntriesService';
 $components['et']['class']                   = 'Blocks\EtService';
 $components['feeds']['class']                = 'Blocks\FeedsService';
+$components['fields']['class']               = 'Blocks\FieldsService';
+$components['fieldTypes']['class']           = 'Blocks\FieldTypesService';
 $components['globals']['class']              = 'Blocks\GlobalsService';
 $components['install']['class']              = 'Blocks\InstallService';
 $components['images']['class']               = 'Blocks\ImagesService';
 $components['links']['class']                = 'Blocks\LinksService';
 $components['migrations']['class']           = 'Blocks\MigrationsService';
-$components['pages']['class']                = 'Blocks\PagesService';
 $components['path']['class']                 = 'Blocks\PathService';
 $components['plugins']['class']              = 'Blocks\PluginsService';
+$components['sections']['class']             = 'Blocks\SectionsService';
+$components['singletons']['class']           = 'Blocks\SingletonsService';
 
 $components['resources']['class']            = 'Blocks\ResourcesService';
 $components['resources']['dateParam']        = 'd';
@@ -256,15 +243,23 @@ $components['systemSettings']['class']       = 'Blocks\SystemSettingsService';
 $components['templates']['class']            = 'Blocks\TemplatesService';
 $components['updates']['class']              = 'Blocks\UpdatesService';
 
+$components['components'] = array(
+	'class' => 'Blocks\ComponentsService',
+	'types' => array(
+		'assetSource' => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSourceType', 'baseClass' => 'BaseAssetSourceType'),
+		'entry'       => array('subfolder' => 'entrytypes', 'suffix' => 'EntryType', 'baseClass' => 'BaseEntryType'),
+		'field'       => array('subfolder' => 'fieldtypes', 'suffix' => 'FieldType', 'baseClass' => 'BaseFieldType'),
+		'widget'      => array('subfolder' => 'widgets', 'suffix' => 'Widget', 'baseClass' => 'BaseWidget'),
+	)
+);
+
 if (in_array('PublishPro', $packages))
 {
 	$components['entryRevisions']['class']    = 'Blocks\EntryRevisionsService';
-	$components['sections']['class']          = 'Blocks\SectionsService';
 }
 
 if (in_array('Users', $packages))
 {
-	$components['userProfiles']['class']      = 'Blocks\UserProfilesService';
 	$components['userGroups']['class']        = 'Blocks\UserGroupsService';
 	$components['userPermissions']['class']   = 'Blocks\UserPermissionsService';
 }

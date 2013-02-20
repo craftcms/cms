@@ -9,7 +9,6 @@ class Blocks extends \Yii
 	private static $_storedBlocksInfo;
 	private static $_packages;
 	private static $_siteUrl;
-	private static $_logger;
 
 	/**
 	 * Returns the Blocks version number, as defined by the BLOCKS_VERSION constant.
@@ -166,6 +165,19 @@ class Blocks extends \Yii
 	}
 
 	/**
+	 * Requires that a given package is installed.
+	 * @param string $packageName
+	 * @throws Exception
+	 */
+	public static function requirePackage($packageName)
+	{
+		if (!static::hasPackage($packageName))
+		{
+			throw new Exception(Blocks::t('The {package} package is required to perform this action.', array('package' => $packageName)));
+		}
+	}
+
+	/**
 	 * Returns the site name.
 	 *
 	 * @static
@@ -213,18 +225,6 @@ class Blocks extends \Yii
 	}
 
 	/**
-	 * Returns the site language.
-	 *
-	 * @static
-	 * @return string
-	 */
-	public static function getLanguage()
-	{
-		$storedBlocksInfo = static::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->language : null;
-	}
-
-	/**
 	 * Returns the license key.
 	 *
 	 * @static
@@ -258,7 +258,7 @@ class Blocks extends \Yii
 	{
 		// Don't use the the static property $_storedBlocksInfo.  We want the latest info possible.
 		// Not using Active Record here to prevent issues with determining maintenance mode status during a migration
-		if (blx()->db->getSchema()->getTable('{{info}}')->getColumn('maintenance'))
+		if (blx()->isInstalled() && blx()->db->getSchema()->getTable('{{info}}')->getColumn('maintenance'))
 		{
 			$result = blx()->db->createCommand()->
 			              select('maintenance')->

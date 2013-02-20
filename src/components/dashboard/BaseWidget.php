@@ -4,13 +4,11 @@ namespace Blocks;
 /**
  * Widget base class
  */
-abstract class BaseWidget extends BaseComponent
+abstract class BaseWidget extends BaseSavableComponentType
 {
 	/**
-	 * The type of component this is.
-	 *
 	 * @access protected
-	 * @var string
+	 * @var string The type of component this is
 	 */
 	protected $componentType = 'Widget';
 

@@ -45,6 +45,29 @@
 			errors: (account is defined ? account.getErrors('username') : null)
 		}) }}
 
+		<div class="field">
+			<div class="grid">
+				<div class="col col50"><div class="col-inner">
+					{{ forms.textField({
+						label: "First Name"|t,
+						id: 'firstName',
+						name: 'firstName',
+						value: (account is defined ? account.firstName : null),
+						errors: (account is defined ? account.getErrors('firstName') : null)
+					}) }}
+				</div></div>
+				<div class="col col50"><div class="col-inner">
+					{{ forms.textField({
+						label: "Last Name"|t,
+						id: 'lastName',
+						name: 'lastName',
+						value: (account is defined ? account.lastName : null),
+						errors: (account is defined ? account.getErrors('lastName') : null)
+					}) }}
+				</div></div>
+			</div>
+		</div>
+
 		{{ forms.textField({
 			label: "Email"|t,
 			id: 'email',
@@ -89,17 +112,21 @@
 		}) }}
 
 		{% if blx.hasPackage('Language') %}
-			{% set languageInput %}
+			{% set localeInput %}
 				<div class="select">
-					<select id="language" name="language">
-						{% set userLanguage = account is defined ? account.language : blx.app.language %}
-						{% for language in blx.i18n.getTranslatedLanguages %}
-							<option value="{{ language }}" {% if language == userLanguage %}selected{% endif %}>{{ blx.i18n.getLocaleName(language, language) }}</option>
+					<select id="preferredLocale" name="preferredLocale">
+						{% set userLocale = account is defined and account.preferredLocale ? account.preferredLocale : blx.locale %}
+						{% for locale in blx.i18n.getSiteLocales %}
+							<option value="{{ locale.id }}" {% if locale.id == userLocale %}selected{% endif %}>{{ locale.nativeName }}</option>
 						{% endfor %}
 					</select>
 				</div>
 			{% endset %}
-			{{ forms.field({ label: "Language"|t, id: 'language' }, languageInput) }}
+
+			{{ forms.field({
+				id: 'preferredLocale',
+				label: "Preferred Locale"|t
+			}, localeInput) }}
 		{% endif %}
 
 		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">

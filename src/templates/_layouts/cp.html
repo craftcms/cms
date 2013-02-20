@@ -73,7 +73,7 @@
 			<div class="clear"></div>
 
 			{% if tabs is defined and tabs %}
-				<nav id="tabs">
+				<nav id="tabs" class="tabs">
 					<ul>
 						{% for tabId, tab in tabs %}
 							{% if tab %}
@@ -83,7 +83,7 @@
 									{% set title = title~' - '~tab.label %}
 								{%endif -%}
 
-								<li><a id="tab-{{ tabId }}"{% if tabIsSelected %} class="sel"{% endif %} href="{{ tab.url }}">{{ tab.label }}</a></li>
+								<li><a id="tab-{{ tabId }}" class="tab{% if tabIsSelected %} sel{% endif %}{% if tab.class is defined %} {{ tab.class }}{% endif %}" href="{{ tab.url }}">{{ tab.label }}</a></li>
 							{% endif %}
 						{% endfor %}
 					</ul>

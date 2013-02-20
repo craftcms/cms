@@ -4,7 +4,7 @@
 Blocks.QuickPostWidget = Garnish.Base.extend({
 
 	params: null,
-	initBlocks: null,
+	initFields: null,
 	$widget: null,
 	$form: null,
 	$formClone: null,
@@ -12,10 +12,10 @@ Blocks.QuickPostWidget = Garnish.Base.extend({
 	$errorList: null,
 	loading: false,
 
-	init: function(widgetId, params, initBlocks)
+	init: function(widgetId, params, initFields)
 	{
 		this.params = params;
-		this.initBlocks = initBlocks;
+		this.initFields = initFields;
 		this.$widget = $('#widget'+widgetId);
 		this.$form = this.$widget.find('form:first');
 		this.$spinner = this.$form.find('.spinner');
@@ -28,7 +28,7 @@ Blocks.QuickPostWidget = Garnish.Base.extend({
 	initForm: function()
 	{
 		this.addListener(this.$form, 'submit', 'onSubmit');
-		this.initBlocks();
+		this.initFields();
 	},
 
 	onSubmit: function(event)

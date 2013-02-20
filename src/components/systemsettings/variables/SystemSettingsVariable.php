@@ -27,4 +27,17 @@ class SystemSettingsVariable
 	{
 		return blx()->systemSettings->getSettings($category);
 	}
+
+	/**
+	 * Returns an individual system setting.
+	 *
+	 * @param string $category
+	 * @param string $key
+	 * @param mixed $default
+	 * @return mixed
+	 */
+	public function getSetting($category, $key, $default = null)
+	{
+		return blx()->systemSettings->getSetting($category, $key, $default);
+	}
 }

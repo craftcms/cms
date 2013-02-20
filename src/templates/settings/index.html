@@ -22,15 +22,13 @@
 	<h2>Content</h2>
 
 	<ul class="icons">
-		{% if not blx.hasPackage('PublishPro') %}
-			<li><a href="{{ url('settings/blog') }}" data-icon="C">{{ "Blog"|t }}</a></li>
-		{% else %}
-			<li><a href="{{ url('settings/sections') }}" data-icon="n">{{ "Sections"|t }}</a></li>
-		{% endif %}
+		<li><a href="{{ url('settings/fields') }}" data-icon="b">{{ "Fields"|t }}</a></li>
+		<li><a href="{{ url('settings/sections') }}" data-icon="n">{{ "Sections"|t }}</a></li>
+		<li><a href="{{ url('settings/singletons') }}" data-icon="c">{{ "Singletons"|t }}</a></li>
 		<li><a href="{{ url('settings/globals') }}" data-icon="G">{{ "Globals"|t }}</a></li>
 		<li><a href="{{ url('settings/assets') }}" data-icon="A">{{ "Assets"|t }}</a></li>
 		{% if blx.hasPackage('Language') %}
-			<li><a href="{{ url('settings/languages') }}" data-icon="L">{{ "Languages"|t }}</a></li>
+			<li><a href="{{ url('settings/locales') }}" data-icon="L">{{ "Locales"|t }}</a></li>
 		{% endif %}
 	</ul>
 {% endset %}

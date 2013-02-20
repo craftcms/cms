@@ -4,46 +4,54 @@ namespace Blocks;
 /**
  * Globals controller class
  */
-class GlobalsController extends BaseEntityController
+class GlobalsController extends BaseController
 {
 	/**
-	 * Returns the block service instance.
-	 *
-	 * @return GlobalsService
+	 * Saves the global field layout.
 	 */
-	protected function getService()
+	public function actionSaveFieldLayout()
 	{
-		return blx()->globals;
+		$this->requirePostRequest();
+		blx()->userSession->requireAdmin();
+
+		// Set the field layout
+		$fieldLayout = blx()->fields->assembleLayoutFromPost(false);
+		$fieldLayout->type = 'Globals';
+		blx()->fields->deleteLayoutsByType('Globals');
+
+		if (blx()->fields->saveLayout($fieldLayout, false))
+		{
+			blx()->userSession->setNotice(Blocks::t('Global fields saved.'));
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			blx()->userSession->setError(Blocks::t('Couldn’t save global fields.'));
+		}
+
+		$this->renderRequestedTemplate();
 	}
 
 	/**
-	 * Saves the global blocks.
+	 * Saves the global fields.
 	 */
 	public function actionSaveContent()
 	{
 		$this->requirePostRequest();
+		blx()->userSession->requirePermission('editGlobals');
 
-		$content = new GlobalContentModel();
-		$content->setContent(blx()->request->getPost('blocks'));
-
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$content->language = blx()->request->getPost('language');
-		}
-		else
-		{
-			$content->language = Blocks::getLanguage();
-		}
+		$content = blx()->globals->getGlobalContent();
+		$content->setContent(blx()->request->getPost('fields'));
 
 		if (blx()->globals->saveGlobalContent($content))
 		{
-			blx()->userSession->setNotice(Blocks::t('Global blocks saved.'));
+			blx()->userSession->setNotice(Blocks::t('Global fields saved.'));
 
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save global blocks.'));
+			blx()->userSession->setError(Blocks::t('Couldn’t save global fields.'));
 
 			$this->renderRequestedTemplate(array(
 				'globals' => $content,

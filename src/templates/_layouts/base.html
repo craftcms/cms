@@ -5,7 +5,6 @@
 {%- includeJsResource 'lib/jquery-1.9.0'~(blx.config.useCompressedJs ? '.min' : '')~'.js' first %}
 {%- includeTranslations
 	"More",
-	"Are you sure you want to delete this entry block?",
 	"Attempted to get the height of a modal whose container has not been set.",
 	"Attempted to get the width of a modal whose container has not been set.",
 	"Attempted to position a modal whose container has not been set.",
@@ -59,7 +58,7 @@
 		usePathInfo: {{ blx.config.usePathInfo() ? 'true' : 'false' }},
 		resourceTrigger: '{{ blx.config.resourceTrigger }}',
 		actionTrigger: '{{ blx.config.actionTrigger }}',
-		language: '{{ blx.language }}',
+		language: '{{ blx.locale }}',
 		packages: {{ blx.getPackages|json_encode|raw }},
 		translations: {{ getTranslations()|raw }},
 		maxUploadSize: {{ blx.app.getMaxUploadSize() }}

@@ -8,6 +8,8 @@ class QuickPostWidget extends BaseWidget
 {
 	public $multipleInstances = true;
 
+	private $_section;
+
 	/**
 	 * Returns the type of widget this is.
 	 *
@@ -26,14 +28,10 @@ class QuickPostWidget extends BaseWidget
 	 */
 	protected function defineSettings()
 	{
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
-		{
-			$settings['section'] = array(AttributeType::Number, 'required' => true);
-		}
-
-		$settings['blocks'] = AttributeType::Mixed;
-
-		return $settings;
+		return array(
+			'section' => array(AttributeType::Number, 'required' => true),
+			'fields'  => AttributeType::Mixed,
+		);
 	}
 
 	/**
@@ -56,14 +54,11 @@ class QuickPostWidget extends BaseWidget
 	 */
 	public function prepSettings($settings)
 	{
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
-		{
-			$sectionId = $settings['section'];
+		$sectionId = $settings['section'];
 
-			if (isset($settings['blocks']['section'.$sectionId]))
-			{
-				$settings['blocks'] = $settings['blocks']['section'.$sectionId];
-			}
+		if (isset($settings['fields']['section'.$sectionId]))
+		{
+			$settings['fields'] = $settings['fields']['section'.$sectionId];
 		}
 
 		return $settings;
@@ -76,18 +71,11 @@ class QuickPostWidget extends BaseWidget
 	 */
 	public function getTitle()
 	{
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
-		{
-			$section = blx()->sections->getSectionById($this->getSettings()->section);
+		$section = $this->_getSection();
 
-			if ($section)
-			{
-				return Blocks::t('Post a new {section} entry', array('section' => $section->name));
-			}
-		}
-		else
+		if ($section)
 		{
-			return Blocks::t('Post a new blog entry');
+			return Blocks::t('Post a new {section} entry', array('section' => $section->name));
 		}
 	}
 
@@ -101,25 +89,45 @@ class QuickPostWidget extends BaseWidget
 		blx()->templates->includeTranslations('Entry saved.', 'Couldn’t save entry.');
 		blx()->templates->includeJsResource('js/QuickPostWidget.js');
 
-		$params = array();
+		$section = $this->_getSection();
 
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		if (!$section)
 		{
-			$sectionId = $this->getSettings()->section;
-
-			if (is_numeric($sectionId))
-			{
-				$params['sectionId'] = (int)$sectionId;
-			}
+			return '<p>'.Blocks::t('No section has been selected yet.').'</p>';
 		}
 
+		$params = array('sectionId' => $section->id);
 		blx()->templates->includeJs('new Blocks.QuickPostWidget('.$this->model->id.', '.JsonHelper::encode($params).', function() {');
+
 		$html = blx()->templates->render('_components/widgets/QuickPost/body', array(
+			'section'  => $section,
 			'settings' => $this->getSettings()
 		));
 
 		blx()->templates->includeJs('});');
 
 		return $html;
+	}
+
+	/**
+	 * Returns the widget's section.
+	 *
+	 * @return SectionModel|false
+	 */
+	private function _getSection()
+	{
+		if (!isset($this->_section))
+		{
+			$this->_section = false;
+
+			$sectionId = $this->getSettings()->section;
+
+			if ($sectionId)
+			{
+				$this->_section = blx()->sections->getSectionById($sectionId);
+			}
+		}
+
+		return $this->_section;
 	}
 }

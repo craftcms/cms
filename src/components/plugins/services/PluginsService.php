@@ -45,7 +45,7 @@ class PluginsService extends BaseApplicationComponent
 		'services'      => 'Service',
 		'variables'     => 'Variable',
 		'helpers'       => 'Helper',
-		'blocktypes'    => 'BlockType',
+		'fieldtypes'    => 'FieldType',
 		'widgets'       => 'Widget',
 		'validators'    => 'Validator',
 	);

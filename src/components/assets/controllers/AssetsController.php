@@ -5,18 +5,33 @@ namespace Blocks;
  * Handles asset tasks
  * TODO: Permissions?
  */
-class AssetsController extends BaseEntityController
+class AssetsController extends BaseController
 {
 	/**
-	 * Returns the block service instance.
-	 *
-	 * @return AssetsService
+	 * Saves the asset field layout.
 	 */
-	protected function getService()
+	public function actionSaveFieldLayout()
 	{
-		return blx()->assets;
-	}
+		$this->requirePostRequest();
+		blx()->userSession->requireAdmin();
 
+		// Set the field layout
+		$fieldLayout = blx()->fields->assembleLayoutFromPost(false);
+		$fieldLayout->type = 'Asset';
+		blx()->fields->deleteLayoutsByType('Asset');
+
+		if (blx()->fields->saveLayout($fieldLayout, false))
+		{
+			blx()->userSession->setNotice(Blocks::t('Asset fields saved.'));
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			blx()->userSession->setError(Blocks::t('Couldn’t save asset fields.'));
+		}
+
+		$this->renderRequestedTemplate();
+	}
 
 	/**
 	 * Upload a file
@@ -50,13 +65,9 @@ class AssetsController extends BaseEntityController
 		$files = blx()->assets->getFilesByFolderId($folderId);
 
 
-		$subfolders = blx()->assets->findFolders(
-			new FolderCriteria(
-				array(
-					'parentId' => $folderId
-				)
-			)
-		);
+		$subfolders = blx()->assets->findFolders(array(
+			'parentId' => $folderId
+		));
 
 		$html = blx()->templates->render('assets/_views/folder_contents',
 			array(
@@ -74,18 +85,25 @@ class AssetsController extends BaseEntityController
 	}
 
 	/**
-	 * View a file's block content.
+	 * View a file's content.
 	 */
 	public function actionViewFile()
 	{
+		$this->requireLogin();
+		$this->requireAjaxRequest();
+
 		$requestId = blx()->request->getPost('requestId', 0);
 		$fileId = blx()->request->getRequiredPost('fileId');
+		$file = blx()->assets->getFileById($fileId);
 
-		$html = blx()->templates->render('assets/_views/file',
-			array(
-				'file' => blx()->assets->getFileById($fileId)
-			)
-		);
+		if (!$file)
+		{
+			throw new Exception(Blocks::t('No asset exists with the ID “{id}”.', array('id' => $fileId)));
+		}
+
+		$html = blx()->templates->render('assets/_views/file', array(
+			'file' => $file
+		));
 
 		$this->returnJson(array(
 			'requestId' => $requestId,
@@ -96,20 +114,26 @@ class AssetsController extends BaseEntityController
 	}
 
 	/**
-	 * Save a file's block content.
+	 * Save a file's content.
 	 */
-	public function actionSaveFile()
+	public function actionSaveFileContent()
 	{
 		$this->requireLogin();
 		$this->requireAjaxRequest();
-		$file = blx()->assets->getFileById(blx()->request->getRequiredPost('fileId'));
 
-		if ($file)
+		$fileId = blx()->request->getRequiredPost('fileId');
+		$file = blx()->assets->getFileById($fileId);
+
+		if (!$file)
 		{
-			$file->setContent(blx()->request->getPost('blocks'));
-			blx()->assets->storeFileBlocks($file);
-			$this->returnJson(array('success' => true));
+			throw new Exception(Blocks::t('No asset exists with the ID “{id}”.', array('id' => $fileId)));
 		}
+
+		$fields = blx()->request->getPost('fields', array());
+		$file->setContent($fields);
+
+		$success = blx()->assets->saveFileContent($file);
+		$this->returnJson(array('success' => $success));
 	}
 
 	/**

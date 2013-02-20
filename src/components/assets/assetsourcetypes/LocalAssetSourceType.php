@@ -411,14 +411,11 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		$newServerPath = $this->_getSourceFileSystemPath().$targetFolder->fullPath.$fileName;
 
-		$conflictingRecord = blx()->assets->findFile(
-			new FileCriteria(
-				array(
-					'folderId' => $targetFolder->id,
-					'filename' => $fileName
-				)
-			)
-		);
+		$conflictingRecord = blx()->assets->findFile(array(
+			'folderId' => $targetFolder->id,
+			'filename' => $fileName
+		));
+
 		$conflict = IOHelper::fileExists($newServerPath) || (!blx()->assets->isMergeInProgress() && is_object($conflictingRecord));
 		if ($conflict)
 		{

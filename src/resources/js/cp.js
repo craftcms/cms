@@ -114,6 +114,11 @@ var CP = Garnish.Base.extend({
 			}
 		}
 
+		if (document.location.hash && typeof this.tabs[document.location.hash] != 'undefined')
+		{
+			this.tabs[document.location.hash].$tab.trigger('click');
+		}
+
 		// Secondary form submit buttons
 		this.addListener($('.formsubmit'), 'activate', function(ev)
 		{
@@ -530,7 +535,7 @@ var CP = Garnish.Base.extend({
 
 },
 {
-	maxWidth: 1024,
+	maxWidth: 1051, //1024,
 	navHeight: 38,
 	baseNavWidth: 30,
 	minSidebarWidth: 768,

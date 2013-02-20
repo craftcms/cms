@@ -17,7 +17,7 @@ class LocalizationHelper
 	public static function normalizeNumber($number)
 	{
 		$language = blx()->language;
-		$languageData = blx()->i18n->getLanguageData($language);
+		$languageData = blx()->i18n->getLocaleData($language);
 		$decimalSymbol = $languageData->getNumberSymbol('decimal');
 		$groupSymbol = $languageData->getNumberSymbol('group');
 

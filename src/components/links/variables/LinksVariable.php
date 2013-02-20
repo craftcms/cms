@@ -2,34 +2,34 @@
 namespace Blocks;
 
 /**
- * Link type functions
+ * Link functions
  */
 class LinksVariable
 {
 	/**
-	 * Returns all installed block types.
+	 * Returns all linkable entry types.
 	 *
 	 * @return array
 	 */
-	public function getAllLinkTypes()
+	public function getAllLinkableEntryTypes()
 	{
-		$linkTypes = blx()->links->getAllLinkTypes();
-		return LinkTypeVariable::populateVariables($linkTypes);
+		$entryTypes = blx()->links->getAllLinkableEntryTypes();
+		return EntryTypeVariable::populateVariables($entryTypes);
 	}
 
 	/**
-	 * Gets a block type.
+	 * Returns a linkable entry type.
 	 *
 	 * @param string $class
-	 * @return LinkTypeVariable|null
+	 * @return EntryTypeVariable|null
 	 */
-	public function getLinkType($class)
+	public function getLinkableEntryType($class)
 	{
-		$linkType = blx()->links->getLinkType($class);
+		$entryType = blx()->links->getLinkableEntryType($class);
 
-		if ($linkType)
+		if ($entryType)
 		{
-			return new LinkTypeVariable($linkType);
+			return new EntryTypeVariable($entryType);
 		}
 	}
 }

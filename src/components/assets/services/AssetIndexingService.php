@@ -146,8 +146,6 @@ class AssetIndexingService extends BaseApplicationComponent
 						$fileId = (int) $fileId;
 					}
 
-					blx()->links->deleteLinksForEntity('Asset', $command['fileIds']);
-
 					AssetFileRecord::model()->deleteAll('id IN (' . implode(",", $command['fileIds']).')');
 
 					// TODO: delete all created sizes as well
@@ -169,7 +167,7 @@ class AssetIndexingService extends BaseApplicationComponent
 					{
 						$folderId = (int) $folderId;
 					}
-					$folders = blx()->assets->findFolders(new FolderCriteria(array('id' => $command['folderIds'])));
+					$folders = blx()->assets->findFolders(array('id' => $command['folderIds']));
 
 					foreach ($folders as $folder)
 					{
@@ -182,9 +180,6 @@ class AssetIndexingService extends BaseApplicationComponent
 									':sourceId' => $folder->sourceId
 								))
 							->queryColumn();
-
-						blx()->links->deleteLinksForEntity('Asset', $fileIds);
-
 					}
 
 					AssetFolderRecord::model()->deleteAll('id IN ('.implode(",", $command['folderIds']).')');

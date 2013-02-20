@@ -52,7 +52,7 @@ class BlxVariable
 	 *
 	 * @return string
 	 */
-	public function language()
+	public function locale()
 	{
 		return blx()->language;
 	}
@@ -107,11 +107,11 @@ class BlxVariable
 	}
 
 	/**
-	 * @return BlockTypesVariable
+	 * @return FieldTypesVariable
 	 */
-	public function blockTypes()
+	public function fieldTypes()
 	{
-		return new BlockTypesVariable();
+		return new FieldTypesVariable();
 	}
 
 	/**
@@ -143,19 +143,19 @@ class BlxVariable
 
 	/**
 	 * @param array|null $criteria
-	 * @return EntryCriteria
+	 * @return EntryCriteriaModel
 	 */
 	public function entries($criteria = null)
 	{
-		return new EntryCriteria($criteria);
+		return blx()->entries->getEntryCriteria('SectionEntry', $criteria);
 	}
 
 	/**
-	 * @return EntryBlocksVariable
+	 * @return FieldsVariable
 	 */
-	public function entryBlocks()
+	public function fields()
 	{
-		return new EntryBlocksVariable();
+		return new FieldsVariable();
 	}
 
 	/**
@@ -178,14 +178,6 @@ class BlxVariable
 	}
 
 	/**
-	 * @return GlobalsVariable
-	 */
-	public function globals()
-	{
-		return new GlobalsVariable();
-	}
-
-	/**
 	 * @return LinksVariable
 	 */
 	public function links()
@@ -194,11 +186,11 @@ class BlxVariable
 	}
 
 	/**
-	 * @return PagesVariable
+	 * @return SingletonsVariable
 	 */
-	public function pages()
+	public function singletons()
 	{
-		return new PagesVariable();
+		return new SingletonsVariable();
 	}
 
 	/**
@@ -242,15 +234,11 @@ class BlxVariable
 	}
 
 	/**
-	 * @param array|null $criteria
-	 * @return SectionCriteria|null
+	 * @return SectionsVariable
 	 */
-	public function sections($criteria = null)
+	public function sections()
 	{
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
-		{
-			return new SectionCriteria($criteria);
-		}
+		return new SectionsVariable();
 	}
 
 	/**
@@ -271,24 +259,13 @@ class BlxVariable
 
 	/**
 	 * @param array|null $criteria
-	 * @return UserCriteria|null
+	 * @return EntryCriteriaModel|null
 	 */
 	public function users($criteria = null)
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			return new UserCriteria($criteria);
-		}
-	}
-
-	/**
-	 * @return UserProfileBlocksVariable|null
-	 */
-	public function userProfileBlocks()
-	{
-		if (Blocks::hasPackage(BlocksPackage::Users))
-		{
-			return new UserProfileBlocksVariable();
+			return blx()->entries->getEntryCriteria('User', $criteria);
 		}
 	}
 

@@ -1,7 +1,12 @@
-{% extends "dashboard/_layout" %}
-{% set selectedTab = 'dashboard' %}
+{% extends "_layouts/cp" %}
+{% set title = "Dashboard"|t %}
 {% includeCssResource "css/dashboard.css" %}
 {% includeJsResource "js/dashboard.js" %}
+
+
+{% set extraPageHeaderHtml %}
+	<a class="btn settings icon" href="{{ url('dashboard/settings') }}" title="{{ 'Settings'|t }}"></a>
+{% endset %}
 
 
 {% set content %}

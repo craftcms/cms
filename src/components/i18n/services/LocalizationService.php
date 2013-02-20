@@ -6,41 +6,26 @@ namespace Blocks;
  */
 class LocalizationService extends BaseApplicationComponent
 {
-	private static $_languages = array(
-		'aa',    'af',    'ak',  'am',    'ar',    'ar_001', 'as',    'az',  'bas',     'be',
-		'bem',   'bg',    'bm',  'bn',    'bo',    'br',     'bs',    'byn', 'ca',      'cch',
-		'chr',   'cs',    'cy',  'da',    'de',    'de_at',  'de_ch', 'dua', 'dv',      'dz',
-		'ee',    'el',    'en',  'en_au', 'en_ca', 'en_gb',  'en_us', 'eo',  'es',      'es_419',
-		'es_es', 'et',    'eu',  'ewo',   'fa',    'ff',     'fi',    'fil', 'fo',      'fr',
-		'fr_ca', 'fr_ch', 'fur', 'ga',    'gaa',   'gd',     'gez',   'gl',  'gsw',     'gu',
-		'gv',    'ha',    'haw', 'he',    'hi',    'hr',     'hu',    'hy',  'ia',      'id',
-		'ig',    'ii',    'is',  'it',    'iu',    'ja',     'ka',    'kab', 'kaj',     'kam',
-		'kcg',   'ki',    'kk',  'kl',    'km',    'kn',     'ko',    'kok', 'kpe',     'ku',
-		'kw',    'ky',    'lg',  'ln',    'lo',    'lt',     'lu',    'luo', 'lv',      'mas',
-		'mg',    'mi',    'mk',  'ml',    'mn',    'mo',     'mr',    'ms',  'mt',      'my',
-		'nb',    'nd',    'nds', 'ne',    'nl',    'nl_be',  'nn',    'no',  'nr',      'nso',
-		'ny',    'nyn',   'oc',  'om',    'or',    'pa',     'pl',    'ps',  'pt',      'pt_br',
-		'pt_pt', 'rm',    'rn',  'ro',    'ru',    'rw',     'sa',    'sah', 'se',      'sg',
-		'sh',    'si',    'sid', 'sk',    'sl',    'sn',     'so',    'sq',  'sr',      'ss',
-		'st',    'sv',    'sw',  'syr',   'ta',    'te',     'tg',    'th',  'ti',      'tig',
-		'tl',    'tn',    'to',  'tr',    'ts',    'tt',     'ug',    'uk',  'ur',      'uz',
-		'vai',   've',    'vi',  'wal',   'wo',    'xh',     'yo',    'zh',  'zh_hans', 'zh_hant',
-		'zu'
-	);
-
-	private $_translatedLanguages;
+	private $_appLocales;
+	private $_siteLocales;
+	private $_localeData;
 
 	/**
-	 * Gets the supported content languages.
-	 *
-	 * We're using this instead of Locale::getLocaleIds() because there's a lot of duplicate stuff in there.
-	 * This list contains all of the locale IDs with unique display names.
+	 * Returns of all known locales.
 	 *
 	 * @return array
 	 */
-	public function getLanguages()
+	public function getAllLocales()
 	{
-		return static::$_languages;
+		$locales = array();
+		$localeIds = LocaleData::getLocaleIds();
+
+		foreach ($localeIds as $localeId)
+		{
+			$locales[] = new LocaleModel($localeId);
+		}
+
+		return $locales;
 	}
 
 	/**
@@ -48,11 +33,11 @@ class LocalizationService extends BaseApplicationComponent
 	 *
 	 * @return mixed
 	 */
-	public function getTranslatedLanguages()
+	public function getAppLocales()
 	{
-		if (!$this->_translatedLanguages)
+		if (!$this->_appLocales)
 		{
-			$this->_translatedLanguages = array();
+			$this->_appLocales = array(new LocaleModel('en_us'));
 
 			$path = blx()->path->getCpTranslationsPath();
 			$folders = IOHelper::getFolderContents($path, false, ".*\.php");
@@ -61,33 +46,158 @@ class LocalizationService extends BaseApplicationComponent
 			{
 				foreach ($folders as $dir)
 				{
-					$this->_translatedLanguages[] = IOHelper::getFileName($dir, false);
+					$localeId = IOHelper::getFileName($dir, false);
+					if ($localeId != 'en_us')
+					{
+						$this->_appLocales[] = new LocaleModel($localeId);
+					}
 				}
 			}
-
-			if (!in_array('en_us', $this->_translatedLanguages))
-			{
-				$this->_translatedLanguages[] = 'en_us';
-			}
-
-			sort($this->_translatedLanguages);
 		}
 
-		return $this->_translatedLanguages;
+		return $this->_appLocales;
 	}
 
 	/**
-	 * @param $localeId
+	 * Returns the locales that the site is translated for.
 	 *
-	 * @return bool|\CLocale
+	 * @return array
 	 */
-	public function getLanguageData($localeId)
+	public function getSiteLocales()
 	{
-		if (Locale::exists($localeId))
+		if (!isset($this->_siteLocales))
 		{
-			return Locale::getInstance($localeId);
+			// TODO: Deprecate after next breakpoint release.
+			if (Blocks::getStoredBuild() > 2157)
+			{
+				$query = blx()->db->createCommand()
+					->select('locale')
+					->from('locales')
+					->order('sortOrder');
+
+				if (!Blocks::hasPackage(BlocksPackage::Language))
+				{
+					$query->limit(1);
+				}
+
+				$localeIds = $query->queryColumn();
+
+				foreach ($localeIds as $localeId)
+				{
+					$this->_siteLocales[] = new LocaleModel($localeId);
+				}
+			}
+
+			if (empty($this->_siteLocales))
+			{
+				$this->_siteLocales = array(new LocaleModel('en_us'));
+			}
 		}
 
-		return false;
+		return $this->_siteLocales;
+	}
+
+	/**
+	 * Returns the site's primary locale.
+	 *
+	 * @return string
+	 */
+	public function getPrimarySiteLocale()
+	{
+		$locales = $this->getSiteLocales();
+		return $locales[0];
+	}
+
+	/**
+	 * Returns an array of the site locale IDs.
+	 *
+	 * @return array
+	 */
+	public function getSiteLocaleIds()
+	{
+		$locales = $this->getSiteLocales();
+		$localeIds = array();
+
+		foreach ($locales as $locale)
+		{
+			$localeIds[] = $locale->id;
+		}
+
+		return $localeIds;
+	}
+
+	/**
+	 * Returns a locale by its ID.
+	 *
+	 * @param string $localeId
+	 * @return LocaleModel
+	 */
+	public function getLocaleById($localeId)
+	{
+		return new LocaleModel($localeId);
+	}
+
+	/**
+	 * Adds a new site locale.
+	 *
+	 * @param string $localeId
+	 * @return bool
+	 */
+	public function addSiteLocale($localeId)
+	{
+		$maxSortOrder = blx()->db->createCommand()->select('max(sortOrder)')->from('locales')->queryScalar();
+		$affectedRows = blx()->db->createCommand()->insert('locales', array('locale' => $localeId, 'sortOrder' => $maxSortOrder+1));
+		return (bool) $affectedRows;
+	}
+
+	/**
+	 * Reorders the site's locales.
+	 *
+	 * @param array $localeIds
+	 * @return bool
+	 */
+	public function reorderSiteLocales($localeIds)
+	{
+		foreach ($localeIds as $sortOrder => $localeId)
+		{
+			blx()->db->createCommand()->update('locales', array('sortOrder' => $sortOrder+1), array('locale' => $localeId));
+		}
+
+		return true;
+	}
+
+	/**
+	 * Deletes a site locale.
+	 *
+	 * @param string $localeId
+	 * @return bool
+	 */
+	public function deleteSiteLocale($localeId)
+	{
+		$affectedRows = blx()->db->createCommand()->delete('locales', array('locale' => $localeId));
+		return (bool) $affectedRows;
+	}
+
+	/**
+	 * Returns the localization data for a given locale.
+	 *
+	 * @param $localeId
+	 * @return \CLocale|null
+	 */
+	public function getLocaleData($localeId)
+	{
+		if (!isset($this->_localeData) || !array_key_exists($localeId, $this->_localeData))
+		{
+			if (LocaleData::exists($localeId))
+			{
+				$this->_localeData[$localeId] = LocaleData::getInstance($localeId);
+			}
+			else
+			{
+				$this->_localeData[$localeId] = null;
+			}
+		}
+
+		return $this->_localeData[$localeId];
 	}
 }

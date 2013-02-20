@@ -11,22 +11,17 @@ class LinksController extends BaseController
 	 */
 	public function actionGetModalBody()
 	{
-		$type = blx()->request->getRequiredPost('type');
-		$name = blx()->request->getRequiredPost('name');
-		$settings = blx()->request->getPost('settings', array());
-		$selectedIds = blx()->request->getPost('selectedIds', array());
+		$type        = blx()->request->getRequiredPost('type');
+		$name        = blx()->request->getRequiredPost('name');
+		$settings    = JsonHelper::decode(blx()->request->getPost('settings'));
+		$selectedIds = JsonHelper::decode(blx()->request->getPost('selectedIds'));
 
-		$linkType = blx()->links->getLinkType($type);
-		if (!$linkType)
-		{
-			throw new Exception(Blocks::t('No link type exists with the type “{type}”', array('type' => $type)));
-		}
+		$entryCriteria = blx()->entries->getEntryCriteria($type, $settings);
+		$entries = blx()->entries->findEntries($entryCriteria);
 
-		$entities = $linkType->getLinkableEntities($settings);
-
-		$this->renderTemplate('_components/blocktypes/Links/modalbody', array(
-			'name' => 'blocks['.$name.']',
-			'entities' => $entities,
+		$this->renderTemplate('_components/fieldtypes/Links/modalbody', array(
+			'name'        => $name,
+			'entries'     => $entries,
 			'selectedIds' => $selectedIds,
 		));
 	}

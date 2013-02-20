@@ -4,16 +4,14 @@ namespace Blocks;
 /**
  * Plugin base class
  */
-abstract class BasePlugin extends BaseComponent
+abstract class BasePlugin extends BaseSavableComponentType
 {
 	public $isInstalled = false;
 	public $isEnabled = false;
 
 	/**
-	 * The type of component this is.
-	 *
 	 * @access protected
-	 * @var string
+	 * @var string The type of component this is
 	 */
 	protected $componentType = 'Plugin';
 

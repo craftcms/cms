@@ -14,6 +14,8 @@ abstract class BaseRecord extends \CActiveRecord
 	const SET_DEFAULT = 'SET DEFAULT';
 	const SET_NULL = 'SET NULL';
 
+	private $_attributeConfigs;
+
 	/**
 	 * Constructor
 	 * @param string $scenario
@@ -49,6 +51,16 @@ abstract class BaseRecord extends \CActiveRecord
 	abstract public function getTableName();
 
 	/**
+	 * Returns the table's primary key.
+	 *
+	 * @return mixed
+	 */
+	public function primaryKey()
+	{
+		return 'id';
+	}
+
+	/**
 	 * Defines this model's attributes.
 	 *
 	 * @return array
@@ -56,6 +68,26 @@ abstract class BaseRecord extends \CActiveRecord
 	public function defineAttributes()
 	{
 		return array();
+	}
+
+	/**
+	 * Returns this record's normalized attribute configs.
+	 *
+	 * @return array
+	 */
+	public function getAttributeConfigs()
+	{
+		if (!isset($this->_attributeConfigs))
+		{
+			$this->_attributeConfigs = array();
+
+			foreach ($this->defineAttributes() as $name => $config)
+			{
+				$this->_attributeConfigs[$name] = ModelHelper::normalizeAttributeConfig($config);
+			}
+		}
+
+		return $this->_attributeConfigs;
 	}
 
 	/**
@@ -85,13 +117,12 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function prepAttributesForSave()
 	{
-		$attributes = $this->defineAttributes();
-		$attributes['dateUpdated'] = array(AttributeType::DateTime, 'required' => true);
-		$attributes['dateCreated'] = array(AttributeType::DateTime, 'required' => true);
+		$attributes = $this->getAttributeConfigs();
+		$attributes['dateUpdated'] = array('type' => AttributeType::DateTime, 'column' => ColumnType::DateTime, 'required' => true);
+		$attributes['dateCreated'] = array('type' => AttributeType::DateTime, 'column' => ColumnType::DateTime, 'required' => true);
 
 		foreach ($attributes as $name => $config)
 		{
-			$config = ModelHelper::normalizeAttributeConfig($config);
 			$value = $this->getAttribute($name);
 
 			if ($config['type'] == AttributeType::DateTime)
@@ -124,13 +155,12 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function prepAttributesForUse()
 	{
-		$attributes = $this->defineAttributes();
-		$attributes['dateUpdated'] = array(AttributeType::DateTime, 'required' => true);
-		$attributes['dateCreated'] = array(AttributeType::DateTime, 'required' => true);
+		$attributes = $this->getAttributeConfigs();
+		$attributes['dateUpdated'] = array('type' => AttributeType::DateTime, 'column' => ColumnType::DateTime, 'required' => true);
+		$attributes['dateCreated'] = array('type' => AttributeType::DateTime, 'column' => ColumnType::DateTime, 'required' => true);
 
 		foreach ($attributes as $name => $config)
 		{
-			$config = ModelHelper::normalizeAttributeConfig($config);
 			$value = $this->getAttribute($name);
 
 			switch ($config['type'])
@@ -172,7 +202,7 @@ abstract class BaseRecord extends \CActiveRecord
 		$scopes = array();
 
 		// Add ordered() scope if this model has a sortOrder attribute
-		$attributes = $this->defineAttributes();
+		$attributes = $this->getAttributeConfigs();
 
 		if (isset($attributes['sortOrder']))
 		{
@@ -189,27 +219,34 @@ abstract class BaseRecord extends \CActiveRecord
 	{
 		$table = $this->getTableName();
 		$indexes = $this->defineIndexes();
+		$attributes = $this->getAttributeConfigs();
 		$columns = array();
 
 		// Add any Foreign Key columns
 		foreach ($this->getBelongsToRelations() as $name => $config)
 		{
+			$columnName = $config[2];
+
+			// Is the record already defining this column?
+			if (isset($attributes[$columnName]))
+			{
+				continue;
+			}
+
 			$required = !empty($config['required']);
-			$columns[$config[2]] = array('column' => ColumnType::Int, 'required' => $required);
+			$columns[$columnName] = array('column' => ColumnType::Int, 'required' => $required);
 
 			// Add unique index for this column?
 			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
 			if (!empty($config['unique']))
 			{
-				$indexes[] = array('columns' => array($config[2]), 'unique' => true);
+				$indexes[] = array('columns' => array($columnName), 'unique' => true);
 			}
 		}
 
 		// Add all other columns
-		foreach ($this->defineAttributes() as $name => $config)
+		foreach ($attributes as $name => $config)
 		{
-			$config = ModelHelper::normalizeAttributeConfig($config);
-
 			// Add (unique) index for this column?
 			$indexed = !empty($config['indexed']);
 			$unique = !empty($config['unique']);
@@ -222,8 +259,20 @@ abstract class BaseRecord extends \CActiveRecord
 			$columns[$name] = $config;
 		}
 
+		$pk = $this->primaryKey();
+
+		if (isset($columns[$pk]))
+		{
+			$columns[$pk]['primaryKey'] = true;
+			$addIdColumn = false;
+		}
+		else
+		{
+			$addIdColumn = true;
+		}
+
 		// Create the table
-		blx()->db->createCommand()->createTable($table, $columns);
+		blx()->db->createCommand()->createTable($table, $columns, null, $addIdColumn);
 
 		// Create the indexes
 		foreach ($indexes as $index)
@@ -279,6 +328,7 @@ abstract class BaseRecord extends \CActiveRecord
 		{
 			$otherRecord = new $config[1];
 			$otherTable = $otherRecord->getTableName();
+			$otherPk = $otherRecord->primaryKey();
 
 			if (isset($config['onDelete']))
 			{
@@ -296,7 +346,16 @@ abstract class BaseRecord extends \CActiveRecord
 				}
 			}
 
-			blx()->db->createCommand()->addForeignKey($table, $config[2], $otherTable, 'id', $onDelete);
+			if (isset($config['onUpdate']))
+			{
+				$onUpdate = $config['onUpdate'];
+			}
+			else
+			{
+				$onUpdate = null;
+			}
+
+			blx()->db->createCommand()->addForeignKey($table, $config[2], $otherTable, $otherPk, $onDelete, $onUpdate);
 		}
 	}
 
@@ -400,7 +459,7 @@ abstract class BaseRecord extends \CActiveRecord
 			$this->_normalizeRelation($name, $config);
 
 			// Unset any keys that CActiveRecord isn't expecting
-			unset($config['required'], $config['unique'], $config['onDelete']);
+			unset($config['required'], $config['unique'], $config['onDelete'], $config['onUpdate']);
 		}
 
 		return $relations;
@@ -450,7 +509,7 @@ abstract class BaseRecord extends \CActiveRecord
 		// Warning: Please modify the following code to remove attributes that should not be searched.
 		$criteria = new \CDbCriteria;
 
-		foreach (array_keys($this->defineAttributes()) as $name)
+		foreach (array_keys($this->getAttributeConfigs()) as $name)
 		{
 			$criteria->compare($name, $this->$name);
 		}

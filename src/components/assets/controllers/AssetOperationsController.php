@@ -38,7 +38,7 @@ class AssetOperationsController extends BaseController
 			// Just the transformations, so get the indexed file list.
 			$this->returnJson(array(
 				'sourceId' => 	$sourceId,
-				'total' => blx()->assets->getTotalFiles(new FileCriteria(array('sourceId' => $sourceId)))
+				'total' => blx()->assets->getTotalFiles(array('sourceId' => $sourceId))
 			));
 		}
 	}
@@ -69,7 +69,7 @@ class AssetOperationsController extends BaseController
 			if (empty($fileId))
 			{
 				// Okay, let's get the file from the file list, then.
-				$file = blx()->assets->findFile(new FileCriteria(array('sourceId' => $sourceId , 'offset' => $offset)));
+				$file = blx()->assets->findFile(array('sourceId' => $sourceId , 'offset' => $offset));
 			}
 			else
 			{

@@ -196,26 +196,25 @@ class UsersService extends BaseApplicationComponent
 			$user->emailFormat = 'text';
 		}
 
-		if (!$user->language)
-		{
-			$user->language = blx()->language;
-		}
-
-		$userRecord->username = $user->username;
-		$userRecord->firstName = $user->firstName;
-		$userRecord->lastName = $user->lastName;
-		$userRecord->email = $user->email;
-		$userRecord->emailFormat = $user->emailFormat;
-		$userRecord->admin = $user->admin;
+		// Set the user record attributes
+		$userRecord->username              = $user->username;
+		$userRecord->firstName             = $user->firstName;
+		$userRecord->lastName              = $user->lastName;
+		$userRecord->email                 = $user->email;
+		$userRecord->emailFormat           = $user->emailFormat;
+		$userRecord->admin                 = $user->admin;
 		$userRecord->passwordResetRequired = $user->passwordResetRequired;
-		$userRecord->language = $user->language;
+		$userRecord->preferredLocale       = $user->preferredLocale;
+
+		$userRecord->validate();
+		$user->addErrors($userRecord->getErrors());
 
 		if ($user->newPassword)
 		{
 			$this->_setPasswordOnUserRecord($user, $userRecord);
 		}
 
-		if ($userRecord->validate() && !$user->hasErrors())
+		if (!$user->hasErrors())
 		{
 			if ($user->verificationRequired)
 			{
@@ -223,10 +222,21 @@ class UsersService extends BaseApplicationComponent
 				$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 			}
 
-			$userRecord->save();
+			if ($isNewUser)
+			{
+				// Create the entry record
+				$entryRecord = new EntryRecord();
+				$entryRecord->type = 'User';
+				$entryRecord->save();
 
-			$user->id = $userRecord->id;
+				// Now that we have the entry ID, save it on everything else
+				$user->id = $entryRecord->id;
+				$userRecord->id = $entryRecord->id;
+			}
 
+			$userRecord->save(false);
+
+			// Send a verification email?
 			if ($user->verificationRequired)
 			{
 				blx()->templates->registerTwigAutoloader();
@@ -261,9 +271,22 @@ class UsersService extends BaseApplicationComponent
 		}
 		else
 		{
-			$user->addErrors($userRecord->getErrors());
 			return false;
 		}
+	}
+
+	/**
+	 * Saves a user's profile.
+	 *
+	 * @param UserModel $user
+	 * @return bool
+	 */
+	public function saveProfile(UserModel $user)
+	{
+		Blocks::requirePackage(BlocksPackage::Users);
+
+		$fieldLayout = blx()->fields->getLayoutByType('User');
+		return blx()->entries->saveEntryContent($user, $fieldLayout);
 	}
 
 	/**
@@ -280,6 +303,65 @@ class UsersService extends BaseApplicationComponent
 		return blx()->email->sendEmailByKey($user, 'verify_email', array(
 			'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), blx()->templates->getTwig()->getCharset()),
 		));
+	}
+
+	/**
+	 * Crop and save a user's photo by coordinates for a given user model.
+	 *
+	 * @param $source
+	 * @param $x1
+	 * @param $x2
+	 * @param $y1
+	 * @param $y2
+	 * @param UserModel $user
+	 * @return bool
+	 * @throws \Exception
+	 */
+	public function cropAndSaveUserPhoto($source, $x1, $x2, $y1, $y2, UserModel $user)
+	{
+		$userPhotoFolder = blx()->path->getUserPhotosPath().$user->username.'/';
+		$targetFolder = $userPhotoFolder.'original/';
+
+		IOHelper::ensureFolderExists($userPhotoFolder);
+		IOHelper::ensureFolderExists($targetFolder);
+
+		$filename = pathinfo($source, PATHINFO_BASENAME);
+		$targetPath = $targetFolder . $filename;
+
+
+		$image = blx()->images->loadImage($source);
+		$image->crop($x1, $x2, $y1, $y2);
+		$result = $image->saveAs($targetPath);
+
+		if ($result)
+		{
+			IOHelper::changePermissions($targetPath, IOHelper::writableFilePermissions);
+			$record = UserRecord::model()->findById($user->id);
+			$record->photo = $filename;
+			$record->save();
+
+			$user->photo = $filename;
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Delete a user's photo.
+	 *
+	 * @param UserModel $user
+	 * @return void
+	 */
+	public function deleteUserPhoto(UserModel $user)
+	{
+		$folder = blx()->path->getUserPhotosPath().$user->username;
+
+		if (IOHelper::folderExists($folder))
+		{
+			IOHelper::deleteFolder($folder);
+		}
 	}
 
 	/**

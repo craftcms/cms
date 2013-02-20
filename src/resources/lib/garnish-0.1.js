@@ -950,7 +950,6 @@ Garnish.BaseDrag = Garnish.Base.extend({
 
 			// Add the item
 			$.data(item, 'drag', this);
-			this.$items = this.$items.add(item);
 
 			// Get the handle
 			if (this.settings.handle)
@@ -977,6 +976,8 @@ Garnish.BaseDrag = Garnish.Base.extend({
 			$handle.data('drag-item', item);
 			this.addListener($handle, 'mousedown', 'onMouseDown');
 		}
+
+		this.$items = $().add(this.$items.add(items));
 	},
 
 	/**
@@ -1374,7 +1375,7 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 		for (var i = 0; i < this.$draggee.length; i++)
 		{
 			var $draggee = $(this.$draggee[i]),
-				$draggeeHelper = $draggee.clone();
+				$draggeeHelper = $draggee.clone().addClass('draghelper');
 
 			$draggeeHelper.css({
 				width: $draggee.width(),
@@ -1469,7 +1470,7 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 					$helper.animate({left: draggeeOffset.left, top: draggeeOffset.top}, 'fast',
 						function()
 						{
-							$draggee.css('visibility', 'visible');
+							$draggee.css('visibility', 'inherit');
 							$helper.remove();
 						}
 					);
@@ -2352,13 +2353,22 @@ Garnish.Menu = Garnish.Base.extend({
 				minWidth: (btnWidth - 32)
 			};
 
-		if (this.$container.attr('data-align') == 'right')
+		switch (this.$container.data('align'))
 		{
-			css.right = 1 + Garnish.$win.width() - (btnOffset.left + btnWidth);
-		}
-		else
-		{
-			css.left = 1 + btnOffset.left;
+			case 'right':
+			{
+				css.right = 1 + Garnish.$win.width() - (btnOffset.left + btnWidth);
+				break;
+			}
+			case 'center':
+			{
+				css.left = Math.round((btnOffset.left + btnWidth / 2) - (this.$container.outerWidth() / 2));
+				break;
+			}
+			default:
+			{
+				css.left = 1 + btnOffset.left;
+			}
 		}
 
 		this.$container.css(css);

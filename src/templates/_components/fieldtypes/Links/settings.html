@@ -1,0 +1,71 @@
+{% import "_includes/forms" as forms %}
+
+
+{% if settings.criteriaId is defined %}
+	<input type="hidden" name="criteriaId" value="{{ settings.criteriaId }}">
+{% endif %}
+
+
+{{ forms.selectField({
+	label: "Link Type"|t,
+	instructions: "What do you want to link to?"|t,
+	id: 'type',
+	name: 'type',
+	options: blx.links.getAllLinkableEntryTypes(),
+	value: entryType.classHandle,
+	toggle: true,
+	targetPrefix: 'linktype-'
+}) }}
+
+
+{% for _entryType in blx.links.getAllLinkableEntryTypes() %}
+	{% set isCurrent = (_entryType.classHandle == entryType.classHandle) %}
+	{% if isCurrent %}
+		{% set entryTypeSettings = entryType.getLinkSettingsHtml() %}
+	{% else %}
+		{% set entryTypeSettings = _entryType.getLinkSettingsHtml() %}
+	{% endif %}
+
+	{% if entryTypeSettings %}
+		<div id="linktype-{{ _entryType.classHandle }}"{% if not isCurrent %} class="hidden"{% endif %}>
+			{% set namespace = 'types[' ~ _entryType.classHandle ~ ']' %}
+			{{- entryTypeSettings|ns(namespace)|raw -}}
+		</div>
+	{% endif %}
+{% endfor %}
+
+
+{{ forms.textField({
+	label: "“Add Links” Label"|t,
+	translatable: true,
+	instructions: "What do you want the “Add Links” button to say?"|t,
+	id: 'addLabel',
+	name: 'addLabel',
+	value: settings.addLabel
+}) }}
+
+{{ forms.textField({
+	label: "“Remove Links” Label"|t,
+	translatable: true,
+	instructions: "What do you want the “Remove Links” button to say?"|t,
+	id: 'removeLabel',
+	name: 'removeLabel',
+	value: settings.removeLabel
+}) }}
+
+{{ forms.textField({
+	label: "Limit"|t,
+	id: 'limit',
+	name: 'limit',
+	value: settings.limit,
+	size: 5
+}) }}
+
+{{ forms.textField({
+	label: "Reverse Link Handle"|t,
+	instructions: "How you’ll refer to the links in the templates, from the linked entities."|t,
+	id: 'reverseHandle',
+	name: 'reverseHandle',
+	class: 'code',
+	value: settings.reverseHandle
+}) }}

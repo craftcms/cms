@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- * Paginates entities via a BaseCriteria instance.
+ * Paginates entities via a EntryCriteriaModel instance.
  */
 class Paginate_TokenParser extends \Twig_TokenParser
 {

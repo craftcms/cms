@@ -56,10 +56,14 @@ class ErrorHandler extends \CErrorHandler
 
 		if (!blx()->isConsole() && blx()->isInstalled())
 		{
-			// Set whether the currently logged in user is an admin.
-			if (($currentUser = blx()->userSession->getUser()) !== null)
+			// TODO: Deprecate after next breakpoint release.
+			if (Blocks::getStoredBuild() > 2157)
 			{
-				$admin = $currentUser->admin == 1 ? true : false;
+				// Set whether the currently logged in user is an admin.
+				if (($currentUser = blx()->userSession->getUser()) !== null)
+				{
+					$admin = $currentUser->admin == 1 ? true : false;
+				}
 			}
 		}
 

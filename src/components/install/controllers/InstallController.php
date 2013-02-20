@@ -135,7 +135,7 @@ class InstallController extends BaseController
 		$inputs['password']   = blx()->request->getPost('password');
 		$inputs['siteName']   = blx()->request->getPost('siteName');
 		$inputs['siteUrl']    = blx()->request->getPost('siteUrl');
-		$inputs['language']   = blx()->request->getPost('language');
+		$inputs['locale'  ]   = blx()->request->getPost('locale');
 
 		blx()->install->run($inputs);
 

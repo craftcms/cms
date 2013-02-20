@@ -6,13 +6,15 @@ namespace Blocks;
  */
 class ComponentsService extends BaseApplicationComponent
 {
-	protected static $componentTypes = array(
-		'assetSource' => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSourceType', 'baseclass' => 'BaseAssetSourceType'),
-		'block'       => array('subfolder' => 'blocktypes', 'suffix' => 'BlockType', 'baseclass' => 'BaseBlockType'),
-		'link'        => array('subfolder' => 'linktypes', 'suffix' => 'LinkType', 'baseclass' => 'BaseLinkType'),
-		'widget'      => array('subfolder' => 'widgets', 'suffix' => 'Widget', 'baseclass' => 'BaseWidget'),
-	);
+	/**
+	 * @var array The types of components supported by Blocks.
+	 */
+	public $types;
 
+	/**
+	 * @access private
+	 * @var array The internal list of components
+	 */
 	private $_components;
 
 	/**
@@ -25,13 +27,13 @@ class ComponentsService extends BaseApplicationComponent
 	{
 		if (!isset($this->_components[$type]))
 		{
-			if (!isset(static::$componentTypes[$type]))
+			if (!isset($this->types[$type]))
 			{
 				$this->_noComponentTypeExists($type);
 			}
 
-			$ctype = static::$componentTypes[$type];
-			$baseClass = __NAMESPACE__.'\\'.$ctype['baseclass'];
+			$ctype = $this->types[$type];
+			$baseClass = __NAMESPACE__.'\\'.$ctype['baseClass'];
 
 			$this->_components[$type] = array();
 			$names = array();
@@ -106,16 +108,16 @@ class ComponentsService extends BaseApplicationComponent
 	 *
 	 * @param string $type
 	 * @param string $class
-	 * @return BaseComponent|null
+	 * @return BaseComponentType|null
 	 */
 	public function getComponentByTypeAndClass($type, $class)
 	{
-		if (!isset(static::$componentTypes[$type]))
+		if (!isset($this->types[$type]))
 		{
 			$this->_noComponentTypeExists($type);
 		}
 
-		$class = __NAMESPACE__.'\\'.$class.static::$componentTypes[$type]['suffix'];
+		$class = __NAMESPACE__.'\\'.$class.$this->types[$type]['suffix'];
 
 		if (class_exists($class))
 		{
@@ -128,7 +130,7 @@ class ComponentsService extends BaseApplicationComponent
 	 *
 	 * @param string $type
 	 * @param BaseComponentModel $model
-	 * @return BaseComponent|null
+	 * @return BaseComponentType|null
 	 */
 	public function populateComponentByTypeAndModel($type, BaseComponentModel $model)
 	{

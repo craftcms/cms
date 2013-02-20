@@ -20,12 +20,12 @@ class LinkCriteriaRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'ltrHandle'       => AttributeType::String,
-			'rtlHandle'       => AttributeType::String,
-			'leftEntityType'  => array(AttributeType::ClassName, 'required' => true),
-			'rightEntityType' => array(AttributeType::ClassName, 'required' => true),
-			'leftSettings'    => AttributeType::Mixed,
-			'rightSettings'   => AttributeType::Mixed,
+			'ltrHandle'      => AttributeType::String,
+			'rtlHandle'      => AttributeType::String,
+			'leftEntryType'  => array(AttributeType::ClassName, 'required' => true),
+			'rightEntryType' => array(AttributeType::ClassName, 'required' => true),
+			'leftSettings'   => AttributeType::Mixed,
+			'rightSettings'  => AttributeType::Mixed,
 		);
 	}
 

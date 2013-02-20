@@ -13,10 +13,13 @@ class LinkModel extends BaseModel
 	 */
 	public function defineAttributes()
 	{
-		$attributes = parent::defineAttributes();
-
-		$attributes['name'] = AttributeType::String;
-
-		return $attributes;
+		return array(
+			'id'             => AttributeType::Number,
+			'criteriaId'     => AttributeType::Number,
+			'leftEntryId'    => AttributeType::Number,
+			'rightEntryId'   => AttributeType::Number,
+			'leftSortOrder'  => AttributeType::Number,
+			'rightSortOrder' => AttributeType::Number,
+		);
 	}
 }

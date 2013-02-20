@@ -76,31 +76,6 @@ class AssetsVariable
 	}
 
 	// -------------------------------------------
-	//  Blocks
-	// -------------------------------------------
-
-	/**
-	 * Returns all asset blocks.
-	 *
-	 * @return array
-	 */
-	public function getAllBlocks()
-	{
-		return blx()->assets->getAllBlocks();
-	}
-
-	/**
-	 * Gets an asset block by its ID.
-	 *
-	 * @param int $id
-	 * @return AssetBlockModel|null
-	 */
-	public function getBlockById($id)
-	{
-		return blx()->assets->getBlockById($id);
-	}
-
-	// -------------------------------------------
 	//  Files
 	// -------------------------------------------
 
@@ -126,14 +101,10 @@ class AssetsVariable
 	 */
 	public function getFolderBySourceId($id)
 	{
-		return blx()->assets->findFolder(
-			new FolderCriteria(
-				array(
-					'sourceId' => $id,
-					'parentId' => null
-				)
-			)
-		);
+		return blx()->assets->findFolder(array(
+			'sourceId' => $id,
+			'parentId' => null
+		));
 	}
 
 	// -------------------------------------------

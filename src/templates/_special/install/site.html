@@ -8,16 +8,16 @@
 		{{ forms.textField({ label: "Site Name"|t, id: 'siteName', value: siteName, maxlength: 255 }) }}
 		{{ forms.textField({ label: "Site URL"|t, id: 'siteUrl', value: siteUrl, maxlength: 255 }) }}
 
-		{% set languageInput %}
+		{% set localeInput %}
 			<div class="select">
-				<select id="language">
-					{% for language in blx.i18n.getTranslatedLanguages %}
-						<option value="{{ language }}" {% if language == blx.language %}selected{% endif %}>{{ blx.i18n.getLocaleName(language) }}</option>
+				<select id="locale">
+					{% for locale in blx.i18n.getAllLocales() %}
+						<option value="{{ locale.id }}"{% if locale.id == blx.locale %} selected{% endif %}>{{ locale.id }}: {{ locale.name }}</option>
 					{% endfor %}
 				</select>
 			</div>
 		{% endset %}
-		{{ forms.field({ label: "Language"|t, id: 'language' }, languageInput) }}
+		{{ forms.field({ label: "Locale"|t, id: 'locale' }, localeInput) }}
 
 		<div class="buttons">
 			<div id="sitesubmit" class="btn big submit">{{ "Finish up"|t }}

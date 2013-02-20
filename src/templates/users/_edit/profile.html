@@ -34,29 +34,13 @@
 	<hr>
 
 	<form method="post" action="" accept-charset="UTF-8">
-		<input type="hidden" name="action" value="userProfiles/saveProfile">
+		<input type="hidden" name="action" value="users/saveProfile">
 		<input type="hidden" name="userId" value="{{ account.id }}">
 
-		{{ forms.textField({
-			label: "First Name"|t,
-			id: 'firstName',
-			name: 'firstName',
-			value: account.firstName,
-			autofocus: true,
-			errors: account.getErrors('firstName')
-		}) }}
-
-		{{ forms.textField({
-			label: "Last Name"|t,
-			id: 'lastName',
-			name: 'lastName',
-			value: account.lastName,
-			errors: account.getErrors('lastName')
-		}) }}
-
-		{% include "_includes/blockfields" with {
-			blocks: blx.userProfileBlocks.getAllBlocks,
-			entity: account
+		{% set userFields = blx.systemSettings.userFields %}
+		{% include "_includes/fields" with {
+			fields: blx.fields.getLayoutByType('User').getFields(),
+			entry: account
 		} only %}
 
 		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">

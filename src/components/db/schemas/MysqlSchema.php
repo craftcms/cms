@@ -35,10 +35,12 @@ class MysqlSchema extends \CMysqlSchema
 	{
 		$type = $this->getColumnType($type);
 
-		$sql = 'ALTER TABLE '.$this->quoteTableName($table)
-		       .' ADD '.$this->quoteColumnName($column).' '
-		       .$this->getColumnType($type).' '
-		       .'AFTER '.$this->quoteTableName($after);
+		$sql = 'ALTER TABLE '.$this->quoteTableName($table).' ADD '.$this->quoteColumnName($column).' '.$this->getColumnType($type);
+
+		if ($after)
+		{
+			$sql .= ' AFTER '.$this->quoteTableName($after);
+		}
 
 		return $sql;
 	}

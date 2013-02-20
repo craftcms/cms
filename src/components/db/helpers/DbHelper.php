@@ -82,7 +82,6 @@ class DbHelper
 			$config['maxLength'] = 12;
 			$config['charset'] = blx()->config->getDbItem('charset');
 			$config['collation'] = blx()->config->getDbItem('collation');
-			$config['null'] = false;
 		}
 		else if (isset(static::$columnTypeDefaults[$config['column']]))
 		{
@@ -210,7 +209,7 @@ class DbHelper
 			$def .= ' NULL';
 		}
 
-		if (isset($config['default']))
+		if (isset($config['default']) && (is_string($config['default']) || is_bool($config['default']) || is_numeric($config['default'])))
 		{
 			if (is_string($config['default']) && !is_numeric($config['default']))
 			{

@@ -320,7 +320,7 @@ Assets.FileManager = Garnish.Base.extend({
 		// Make ourselves available
 		var _this = this;
 
-		// File blocks editing
+		// File content editing
 		this.$folderContainer.find('.open-file').dblclick(function () {
 			_this.setAssetsBusy();
 			var params = {
@@ -363,9 +363,9 @@ Assets.FileManager = Garnish.Base.extend({
 				this.modal.addListener(this.modal.$container.find('.btn.submit'), 'click', function () {
 					this.removeListener(Garnish.Modal.$shade, 'click');
 
-					var params = $('form#file-blocks').serialize();
+					var params = $('form#file-fields').serialize();
 
-					Blocks.postActionRequest('assets/saveFile', params, $.proxy(function(data, textStatus) {
+					Blocks.postActionRequest('assets/saveFileContent', params, $.proxy(function(data, textStatus) {
 						this.hide();
 					}, this));
 				});

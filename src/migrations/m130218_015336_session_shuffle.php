@@ -56,7 +56,6 @@ class m130218_015336_session_shuffle extends BaseMigration
 				$this->createIndex('{{sessions}}', 'uid');
 				$this->createIndex('{{sessions}}', 'token');
 				$this->createIndex('{{sessions}}', 'dateUpdated');
-
 			}
 			else
 			{

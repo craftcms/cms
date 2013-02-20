@@ -146,8 +146,13 @@ class BlocksTwigExtension extends \Twig_Extension
 		{
 			$globals['siteName'] = Blocks::getSiteName();
 			$globals['siteUrl'] = Blocks::getSiteUrl();
-			$globals['globals'] = blx()->globals->getGlobalContent();
-			$globals['user'] = blx()->userSession->getUser();
+
+			// TODO: Deprecate after next breakpoint
+			if (Blocks::getStoredBuild() > 2157)
+			{
+				$globals['globals'] = blx()->globals->getGlobalContent();
+				$globals['user'] = blx()->userSession->getUser();
+			}
 		}
 
 		return $globals;

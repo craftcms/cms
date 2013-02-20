@@ -33,7 +33,7 @@ class UserSessionService extends \CWebUser
 	/**
 	 * Gets the currently logged-in user.
 	 *
-	 * @return UserModel
+	 * @return UserModel|null
 	 */
 	public function getUser()
 	{

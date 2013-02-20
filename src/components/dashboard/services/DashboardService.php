@@ -177,26 +177,16 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	private function _addDefaultUserWidgets()
 	{
-		// Quick Post widget(s)
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
-		{
-			$sections = blx()->sections->findSections();
+		$sections = blx()->sections->getAllSections();
 
-			foreach ($sections as $section)
-			{
-				$widget = new WidgetModel();
-				$widget->type = 'QuickPost';
-				$widget->settings = array(
-					'section' => $section->id
-				);
-
-				$this->saveUserWidget($widget);
-			}
-		}
-		else
+		foreach ($sections as $section)
 		{
 			$widget = new WidgetModel();
 			$widget->type = 'QuickPost';
+			$widget->settings = array(
+				'section' => $section->id
+			);
+
 			$this->saveUserWidget($widget);
 		}
 
