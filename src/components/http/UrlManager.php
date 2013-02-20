@@ -99,7 +99,7 @@ class UrlManager extends \CUrlManager
 		if (count($localeIds) == 1)
 		{
 			$conditions[] = 'e_i18n.locale = :locale';
-			$params[':locale'] = $localeids[0];
+			$params[':locale'] = $localeIds[0];
 		}
 		else
 		{
