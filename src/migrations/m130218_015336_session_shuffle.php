@@ -31,12 +31,15 @@ class m130218_015336_session_shuffle extends BaseMigration
 				// Select all users that have existing session tokens.
 				$existingRows = $this->dbConnection->createCommand('SELECT `id`, `authSessionToken` FROM `'.$usersTable->name.'` WHERE `authSessionToken` IS NOT NULL')->queryAll();
 
+				$path = blx()->path->getLibPath().'PasswordHash.php';
+				require_once $path;
+
 				// Copy them into the new table.
 				foreach ($existingRows as $existingRow)
 				{
 					$hashedToken = blx()->security->hashString($existingRow['authSessionToken']);
-					Blocks::log('Inserting userId: '.$existingRow['id'].' and token: '.$hashedToken.' into sessions table.');
-					$this->insert('{{sessions}}', array('userId' => $existingRow['id'], 'token' => $hashedToken));
+					Blocks::log('Inserting userId: '.$existingRow['id'].' and token: '.$hashedToken['hash'].' into sessions table.');
+					$this->insert('{{sessions}}', array('userId' => $existingRow['id'], 'token' => $hashedToken['hash']));
 				}
 
 				// Remove the old authSessionToken column in users table.
