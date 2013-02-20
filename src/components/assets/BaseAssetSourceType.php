@@ -286,7 +286,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			$parentFolder = blx()->assets->findFolder($parameters);
 			if (is_null($parentFolder))
 			{
-				$parentId = null;
+				$parentId = FolderCriteriaModel::AssetsNoParent;
 			}
 			else
 			{
@@ -350,7 +350,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			if (empty($searchFullPath))
 			{
-				$parentId = null;
+				$parentId = FolderCriteriaModel::AssetsNoParent;
 			}
 			else
 			{
