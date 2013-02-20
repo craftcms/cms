@@ -93,7 +93,14 @@ class DashboardController extends BaseController
 
 		foreach ($items as &$item)
 		{
-			$item['date'] = $item['date']->w3cDate();
+			if (isset($item['date']))
+			{
+				$item['date'] = $item['date']->w3cDate();
+			}
+			else
+			{
+				unset($item['date']);
+			}
 		}
 
 		$this->returnJson(array('items' => $items));
