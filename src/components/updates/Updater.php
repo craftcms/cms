@@ -138,14 +138,14 @@ class Updater
 
 		// Put the site into maintenance mode.
 		Blocks::log('Putting the site into maintenance mode.');
-		blx()->updates->enableMaintenanceMode();
+		Blocks::enableMaintenanceMode();
 
 		// Update the files.
 		Blocks::log('Performing file update.');
 		if (!UpdateHelper::doFileUpdate(UpdateHelper::getManifestData($unzipFolder), $unzipFolder))
 		{
 			Blocks::log('Taking the site out of maintenance mode.');
-			blx()->updates->disableMaintenanceMode();
+			Blocks::disableMaintenanceMode();
 
 			throw new Exception(Blocks::t('There was a problem updating your files.'));
 		}
@@ -170,7 +170,7 @@ class Updater
 				}
 
 				Blocks::log('Taking the site out of maintenance mode.');
-				blx()->updates->disableMaintenanceMode();
+				Blocks::disableMaintenanceMode();
 
 				throw new Exception(Blocks::t('There was a problem backing up your database.'));
 			}
@@ -188,7 +188,7 @@ class Updater
 			}
 
 			Blocks::log('Taking the site out of maintenance mode.');
-			blx()->updates->disableMaintenanceMode();
+			Blocks::disableMaintenanceMode();
 
 			throw new Exception(Blocks::t('There was a problem backing up your database.'));
 		}
@@ -211,7 +211,7 @@ class Updater
 				blx()->updates->rollbackUpdate($uid, $dbBackupPath);
 
 				Blocks::log('Taking the site out of maintenance mode.');
-				blx()->updates->disableMaintenanceMode();
+				Blocks::disableMaintenanceMode();
 
 				throw new Exception(Blocks::t('There was a problem updating your database.'));
 			}
@@ -221,7 +221,7 @@ class Updater
 			blx()->updates->rollbackUpdate($uid, $dbBackupPath);
 
 			Blocks::log('Taking the site out of maintenance mode.');
-			blx()->updates->disableMaintenanceMode();
+			Blocks::disableMaintenanceMode();
 
 			throw new Exception(Blocks::t('There was a problem updating your database.'));
 		}
@@ -248,7 +248,7 @@ class Updater
 
 		// Take the site out of maintenance mode.
 		Blocks::log('Taking the site out of maintenance mode.');
-		blx()->updates->disableMaintenanceMode();
+		Blocks::disableMaintenanceMode();
 
 		// Clear the updates cache.
 		Blocks::log('Clearing the update cache.');
