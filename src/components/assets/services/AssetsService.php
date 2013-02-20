@@ -6,6 +6,13 @@ namespace Blocks;
  */
 class AssetsService extends BaseApplicationComponent
 {
+
+	/**
+	 * A flag that designates that a file merge is in progress and name uniqueness should not be enforced
+	 * @var bool
+	 */
+	private $_mergeInProgress = false;
+
 	/**
 	 * Returns all top-level files in a source.
 	 *
@@ -222,7 +229,14 @@ class AssetsService extends BaseApplicationComponent
 		}
 		else
 		{
+			$entryRecord = new EntryRecord();
+			$entryRecord->type = 'Asset';
+			$entryRecord->postDate = DateTime::createFromFormat(DateTime::W3C_DATE, date("Y-m-d"));
+			$entryRecord->enabled = 1;
+			$entryRecord->save();
 			$fileRecord = new AssetFileRecord();
+			$fileRecord->id = $entryRecord->id;
+
 		}
 
 		$fileRecord->sourceId     = $file->sourceId;
