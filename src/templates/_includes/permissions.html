@@ -1,3 +1,5 @@
+{% requirePackage 'Users' %}
+
 {% macro permissionList(context, permissions, id, hidden) %}
 	{% from "_includes/forms" import checkbox %}
 	<ul{% if id %} id="{{ id }}"{% endif %} class="indent{% if hidden %} hidden{% endif %}">

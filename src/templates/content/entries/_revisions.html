@@ -1,3 +1,5 @@
+{% requirePackage 'PublishPro' %}
+
 {% set drafts = blx.entryRevisions.getEditableDraftsByEntryId(entry.id) %}
 {% set versions = blx.entryRevisions.getVersionsByEntryId(entry.id) %}
 
