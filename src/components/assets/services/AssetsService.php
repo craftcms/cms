@@ -550,8 +550,13 @@ class AssetsService extends BaseApplicationComponent
 			$whereConditions[] = DbHelper::parseParam('f.sourceId', $criteria->sourceId, $whereParams);
 		}
 
- 		if ($criteria->parentId || is_null($criteria->parentId))
+ 		if ($criteria->parentId)
 		{
+			// Set parentId to null if we're looking for folders with no parents.
+			if ($criteria->parentId == FolderCriteriaModel::AssetsNoParent)
+			{
+				$criteria->parentId = null;
+			}
 			$whereConditions[] = DbHelper::parseParam('f.parentId', array($criteria->parentId), $whereParams);
 		}
 
