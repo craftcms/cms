@@ -130,6 +130,14 @@ class App extends \CWebApplication
 					}
 					else
 					{
+						if (!blx()->request->isAjaxRequest())
+						{
+							if (blx()->request->getPathInfo() !== '')
+							{
+								blx()->userSession->setReturnUrl(blx()->request->getPath());
+							}
+						}
+
 						$this->runController('update/manualUpdate');
 						$this->end();
 					}

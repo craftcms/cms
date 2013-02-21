@@ -75,7 +75,7 @@ Blocks.Updater = Garnish.Base.extend({
 		}
 		else if (response.finished)
 		{
-			this.onFinish();
+			this.onFinish(response.returnUrl);
 		}
 	},
 
@@ -85,14 +85,19 @@ Blocks.Updater = Garnish.Base.extend({
 		this.postActionRequest('update/rollback');
 	},
 
-	onFinish: function()
+	onFinish: function(returnUrl)
 	{
 		this.updateStatus(Blocks.t('All done!'));
 		this.$status.addClass('success');
 
 		// Redirect to the Dashboard in half a second
 		setTimeout(function() {
-			window.location = Blocks.getUrl('dashboard');
+			if (returnUrl) {
+				window.location = Blocks.getUrl(returnUrl);
+			}
+			else {
+				window.location = Blocks.getUrl('dashboard');
+			}
 		}, 500);
 	}
 });
