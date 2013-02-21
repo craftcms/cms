@@ -110,10 +110,8 @@ class ComponentsService extends BaseApplicationComponent
 
 		if (class_exists($class))
 		{
-			return new $class;
+			return $this->_initializeComponent($class, $type);
 		}
-
-		return $this->_initializeComponent($class, $type);
 	}
 
 	/**
