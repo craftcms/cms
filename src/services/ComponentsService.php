@@ -152,6 +152,9 @@ class ComponentsService extends BaseApplicationComponent
 				$component->getSettings()->addErrors($model->getSettingErrors());
 			}
 
+			// Actually initialize the component
+			$component->init();
+
 			return $component;
 		}
 	}

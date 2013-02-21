@@ -35,7 +35,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function populateSourceType(AssetSourceModel $source)
 	{
-		return blx()->components->populateComponentByTypeAndModel('assetSource', $source);
+		return blx()->components->populateComponentByTypeAndModel(ComponentType::AssetSource, $source);
 	}
 
 	/**
