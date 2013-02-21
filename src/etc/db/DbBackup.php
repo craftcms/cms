@@ -69,7 +69,7 @@ class DbBackup
 		$tables = blx()->db->getSchema()->getTableNames();
 		foreach ($tables as $table)
 		{
-			$sql .= 'DROP TABLE IF EXISTS '.blx()->db->quoteValue($databaseName).'.'.blx()->db->quoteTableName($table).';'.PHP_EOL;
+			$sql .= 'DROP TABLE IF EXISTS '.blx()->db->quoteDatabaseName($databaseName).'.'.blx()->db->quoteTableName($table).';'.PHP_EOL;
 		}
 
 		$sql .= PHP_EOL.'SET FOREIGN_KEY_CHECKS = 1;'.PHP_EOL;

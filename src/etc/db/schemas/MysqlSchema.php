@@ -193,7 +193,7 @@ class MysqlSchema extends \CMysqlSchema
 	 * Returns all table names in the database which start with the tablePrefix.
 	 *
 	 * @param string $schema
-	 * @returns array
+	 * @return string
 	 */
 	public function findTableNames($schema = null)
 	{
@@ -207,4 +207,16 @@ class MysqlSchema extends \CMysqlSchema
 			return parent::findTableNames();
 		}
 	}
+
+	/**
+	 * Quotes a database name for use in a query.
+	 *
+	 * @param $name
+	 * @return string
+	 */
+	public function quoteDatabaseName($name)
+	{
+		return '`'.$name.'`';
+	}
+
 }
