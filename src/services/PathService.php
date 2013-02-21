@@ -149,14 +149,6 @@ class PathService extends BaseApplicationComponent
 	/**
 	 * @return string
 	 */
-	public function getComponentsPath()
-	{
-		return $this->getAppPath().'components/';
-	}
-
-	/**
-	 * @return string
-	 */
 	public function getLibPath()
 	{
 		return $this->getAppPath().'lib/';
