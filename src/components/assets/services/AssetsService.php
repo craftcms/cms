@@ -716,7 +716,6 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function deleteFileRecord($fileId)
 	{
-		blx()->links->deleteLinksForEntity('Asset', $fileId);
 		return (bool) AssetFileRecord::model()->deleteAll('id = :fileId', array(':fileId' => $fileId));
 	}
 
