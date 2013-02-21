@@ -557,10 +557,9 @@ Assets.FileManager = Garnish.Base.extend({
     _showProperties: function (ev) {
 
         this.setAssetsBusy();
-
         var params = {
             requestId: ++this.requestId,
-            fileId: $(this).attr('data-file')
+            fileId: $(ev.target).is('li') ? $(ev.target).attr('data-file') : $(ev.target).parents('li').attr('data-file')
         };
 
         Blocks.postActionRequest('assets/viewFile', params, $.proxy(function(data, textStatus) {
