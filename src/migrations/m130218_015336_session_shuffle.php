@@ -24,22 +24,31 @@ class m130218_015336_session_shuffle extends BaseMigration
 				    'token' => array(AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char, 'required' => true),
 				);
 
-				// Create the new sessions table.
-				$this->createTable('{{sessions}}', $columns, null, true, true);
-				$this->addForeignKey('sessions', 'userId', '{{users}}', 'id', 'CASCADE');
+				$sessionsTable = $this->dbConnection->schema->getTable('{{sessions}}');
 
-				// Select all users that have existing session tokens.
-				$existingRows = $this->dbConnection->createCommand('SELECT `id`, `authSessionToken` FROM `'.$usersTable->name.'` WHERE `authSessionToken` IS NOT NULL')->queryAll();
-
-				$path = blx()->path->getLibPath().'PasswordHash.php';
-				require_once $path;
-
-				// Copy them into the new table.
-				foreach ($existingRows as $existingRow)
+				if (!$sessionsTable)
 				{
-					$hashedToken = blx()->security->hashString($existingRow['authSessionToken']);
-					Blocks::log('Inserting userId: '.$existingRow['id'].' and token: '.$hashedToken['hash'].' into sessions table.');
-					$this->insert('{{sessions}}', array('userId' => $existingRow['id'], 'token' => $hashedToken['hash']));
+					// Create the new sessions table.
+					$this->createTable('{{sessions}}', $columns, null, true, true);
+					$this->addForeignKey('sessions', 'userId', 'users', 'id', 'CASCADE');
+
+					// Select all users that have existing session tokens.
+					$existingRows = $this->dbConnection->createCommand('SELECT `id`, `authSessionToken` FROM `'.$usersTable->name.'` WHERE `authSessionToken` IS NOT NULL')->queryAll();
+
+					$path = blx()->path->getLibPath().'PasswordHash.php';
+					require_once $path;
+
+					// Copy them into the new table.
+					foreach ($existingRows as $existingRow)
+					{
+						$hashedToken = blx()->security->hashString($existingRow['authSessionToken']);
+						Blocks::log('Inserting userId: '.$existingRow['id'].' and token: '.$hashedToken['hash'].' into sessions table.');
+						$this->insert('{{sessions}}', array('userId' => $existingRow['id'], 'token' => $hashedToken['hash']));
+					}
+				}
+				else
+				{
+					Blocks::log('The `sessions` table already exists in the database.');
 				}
 
 				// Remove the old authSessionToken column in users table.
