@@ -1,17 +1,27 @@
 @charset "UTF-8";
 
+@import "shared";
+
 #main .toolbar .btngroup { float: right; }
 #main .toolbar .search { margin-right: 86px; }
 
 #main .files .open-file{ -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;}
 #main .files .open-folder{ -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;}
 
+/*-- manager --*/
+.assets-selected { background: $selcolor; color: #fff; }
+.thumb-wrapper { border: 5px solid #fff; background: url(../images/thumb_bg.png) 0 0;
+  -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);
+  -moz-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);
+}
+
 /*-- thumbs --*/
 #main .files.thumbs ul { margin: -25px 0 0 -15px; }
 #main .files.thumbs .thumb.folder { background-image: url('../images/temp_folder.png'); }
 #main .files.thumbs ul:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
-#main .files.thumbs ul li { float: left; margin: 25px 0 0 15px; width: 125px; text-align: center; }
-#main .files.thumbs ul li .thumb { width: 100%; height: 125px; background-repeat: no-repeat; background-position: 50% 50%; }
+#main .files.thumbs ul li { float: left; margin: 25px 0 0 15px; width: 110px; height: 153px; text-align: center; padding: 9px; }
+#main .files.thumbs ul li .thumb { background-repeat: no-repeat; background-position: 50% 50%; }
 #main .files.thumbs ul li .filename {  margin-top: 7px; font-size: 11px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; }
 
 /*-- list --*/
@@ -50,10 +60,9 @@ li.assets-fm-folder a.assets-fm-expanded span.assets-fm-toggle { background-posi
 
 /*-- context menu --*/
 .assets-contextmenu { position: absolute; z-index: 99999; border-radius: 2px; padding: 4px 0; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 10px rgba(0, 0, 0, 0.1); -moz-box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 10px rgba(0, 0, 0, 0.1); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 10px rgba(0, 0, 0, 0.1); -webkit-user-select: none; -moz-user-select: none; }
-
 .assets-contextmenu li.contextmenu-break { margin: 4px 0; border-top: 1px solid #eee; height: 0; }
-
 .assets-contextmenu li a { display: block; padding: 4px 10px; text-decoration: none; cursor: default; }
+
 
 /*-- Retina -- */
 @media only screen and (-moz-min-device-pixel-ratio: 1.5),
@@ -66,4 +75,6 @@ only screen and (min-resolution: 1.5dppx) {
 	.assets-listview table .assets-lv-name .assets-lv-thumb .assets-fileicon { background-image: url(../images/file_small_2x.png); background-size: 22px 28px; }
 
 	li.assets-fm-folder a span.assets-fm-toggle { background-image: url(../images/foldertoggle_2x.png); background-size: 16px 64px; }
+
+    .thumb-wrapper { background-image: url(../images/thumb_bg_2x.png); background-size: 16px 16px; }
 }
