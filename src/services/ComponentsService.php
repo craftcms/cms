@@ -38,8 +38,8 @@ class ComponentsService extends BaseApplicationComponent
 			$this->_components[$type] = array();
 			$names = array();
 
-			$filter = '\/'.$ctype['subfolder'].'\/.*'.$ctype['suffix'].'\.php';
-			$files = IOHelper::getFolderContents(blx()->path->getAppPath().$ctype['subfolder'], true, $filter);
+			$filter = $ctype['suffix'].'\.php$';
+			$files = IOHelper::getFolderContents(blx()->path->getAppPath().$ctype['subfolder'], false, $filter);
 
 			if (is_array($files) && count($files) > 0)
 			{

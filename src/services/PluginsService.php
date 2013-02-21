@@ -595,7 +595,7 @@ class PluginsService extends BaseApplicationComponent
 			if (IOHelper::folderExists($pluginFolder.$folderName))
 			{
 				// See if it has any files in ClassName*Suffix.php format.
-				$files = IOHelper::getFolderContents($pluginFolder.$folderName, false, $plugin->getClassHandle().'_?.*'.$classSuffix.'\.php');
+				$files = IOHelper::getFolderContents($pluginFolder.$folderName, false, $plugin->getClassHandle().'(_.+)?'.$classSuffix.'\.php$');
 
 				if ($files)
 				{
