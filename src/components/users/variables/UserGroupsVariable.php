@@ -1,6 +1,8 @@
 <?php
 namespace Blocks;
 
+Blocks::requirePackage(BlocksPackage::Users);
+
 /**
  * User group functions
  */

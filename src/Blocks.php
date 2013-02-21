@@ -166,6 +166,7 @@ class Blocks extends \Yii
 
 	/**
 	 * Requires that a given package is installed.
+	 *
 	 * @param string $packageName
 	 * @throws Exception
 	 */
@@ -173,7 +174,7 @@ class Blocks extends \Yii
 	{
 		if (!static::hasPackage($packageName))
 		{
-			throw new Exception(Blocks::t('The {package} package is required to perform this action.', array('package' => $packageName)));
+			throw new HttpException(404);
 		}
 	}
 
@@ -258,17 +259,41 @@ class Blocks extends \Yii
 	{
 		// Don't use the the static property $_storedBlocksInfo.  We want the latest info possible.
 		// Not using Active Record here to prevent issues with determining maintenance mode status during a migration
-		if (blx()->isInstalled() && blx()->db->getSchema()->getTable('{{info}}')->getColumn('maintenance'))
+		if (blx()->isInstalled())
 		{
-			$result = blx()->db->createCommand()->
-			              select('maintenance')->
-			              from('info')->
-			              queryRow();
+			$storedBlocksInfo = static::_getStoredInfo();
+			return $storedBlocksInfo ? $storedBlocksInfo->maintenance == 1 : false;
+		}
 
-			if ($result['maintenance'] == 1)
-			{
-				return true;
-			}
+		return false;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public static function enableMaintenanceMode()
+	{
+		// Not using Active Record here to prevent issues with turning the site on/off during a migration
+		if (blx()->db->createCommand()->update('info', array('maintenance' => 1)) > 0)
+		{
+			static::$_storedBlocksInfo->maintenance = 1;
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * @static
+	 * @return bool
+	 */
+	public static function disableMaintenanceMode()
+	{
+		// Not using Active Record here to prevent issues with turning the site on/off during a migration
+		if (blx()->db->createCommand()->update('info', array('maintenance' => 0)) > 0)
+		{
+			static::$_storedBlocksInfo->maintenance = 0;
+			return true;
 		}
 
 		return false;
@@ -282,7 +307,6 @@ class Blocks extends \Yii
 	 */
 	public static function turnSystemOn()
 	{
-		// Don't use the the static property $_storedBlocksInfo.  We want the latest info possible.
 		// Not using Active Record here to prevent issues with turning the site on/off during a migration
 		if (blx()->db->createCommand()->update('info', array('on' => 1)) > 0)
 		{
@@ -300,7 +324,6 @@ class Blocks extends \Yii
 	 */
 	public static function turnSystemOff()
 	{
-		// Don't use the the static property $_storedBlocksInfo.  We want the latest info possible.
 		// Not using Active Record here to prevent issues with turning the site on/off during a migration
 		if (blx()->db->createCommand()->update('info', array('on' => 0)) > 0)
 		{

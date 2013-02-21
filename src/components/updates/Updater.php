@@ -138,14 +138,14 @@ class Updater
 
 		// Put the site into maintenance mode.
 		Blocks::log('Putting the site into maintenance mode.');
-		blx()->updates->enableMaintenanceMode();
+		Blocks::enableMaintenanceMode();
 
 		// Update the files.
 		Blocks::log('Performing file update.');
 		if (!UpdateHelper::doFileUpdate(UpdateHelper::getManifestData($unzipFolder), $unzipFolder))
 		{
 			Blocks::log('Taking the site out of maintenance mode.');
-			blx()->updates->disableMaintenanceMode();
+			Blocks::disableMaintenanceMode();
 
 			throw new Exception(Blocks::t('There was a problem updating your files.'));
 		}
@@ -170,7 +170,7 @@ class Updater
 				}
 
 				Blocks::log('Taking the site out of maintenance mode.');
-				blx()->updates->disableMaintenanceMode();
+				Blocks::disableMaintenanceMode();
 
 				throw new Exception(Blocks::t('There was a problem backing up your database.'));
 			}
@@ -188,7 +188,7 @@ class Updater
 			}
 
 			Blocks::log('Taking the site out of maintenance mode.');
-			blx()->updates->disableMaintenanceMode();
+			Blocks::disableMaintenanceMode();
 
 			throw new Exception(Blocks::t('There was a problem backing up your database.'));
 		}
@@ -211,7 +211,7 @@ class Updater
 				blx()->updates->rollbackUpdate($uid, $dbBackupPath);
 
 				Blocks::log('Taking the site out of maintenance mode.');
-				blx()->updates->disableMaintenanceMode();
+				Blocks::disableMaintenanceMode();
 
 				throw new Exception(Blocks::t('There was a problem updating your database.'));
 			}
@@ -221,7 +221,7 @@ class Updater
 			blx()->updates->rollbackUpdate($uid, $dbBackupPath);
 
 			Blocks::log('Taking the site out of maintenance mode.');
-			blx()->updates->disableMaintenanceMode();
+			Blocks::disableMaintenanceMode();
 
 			throw new Exception(Blocks::t('There was a problem updating your database.'));
 		}
@@ -248,7 +248,7 @@ class Updater
 
 		// Take the site out of maintenance mode.
 		Blocks::log('Taking the site out of maintenance mode.');
-		blx()->updates->disableMaintenanceMode();
+		Blocks::disableMaintenanceMode();
 
 		// Clear the updates cache.
 		Blocks::log('Clearing the update cache.');
@@ -314,32 +314,60 @@ class Updater
 				$tempFilePath = $rowData[0];
 			}
 
-			// Delete any files/folders we backed up.
-			if ($tempFilePath == '')
+			$fullPath = '';
+
+			switch (trim($rowData[1]))
 			{
-				$backupPath = IOHelper::normalizePathSeparators(rtrim(blx()->path->getAppPath(), '/').$tempFilePath.'.bak');
-			}
-			else
-			{
-				$backupPath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$tempFilePath.'.bak');
+				// If the file/folder was "added" in the manifest file, then it will have a backup we need to remove.
+				case PatchManifestFileAction::Add:
+				{
+					if ($tempFilePath == '')
+					{
+						$fullPath = IOHelper::normalizePathSeparators(rtrim(blx()->path->getAppPath(), '/').'.bak');
+					}
+					else
+					{
+						$fullPath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$tempFilePath.'.bak');
+					}
+
+					break;
+				}
+
+				// If the file/folder was set to be deleted, there is no backup and we go ahead and remove it now.
+				case PatchManifestFileAction::Remove:
+				{
+					if ($tempFilePath == '')
+					{
+						$fullPath = IOHelper::normalizePathSeparators(blx()->path->getAppPath());
+					}
+					else
+					{
+						$fullPath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$tempFilePath.'.bak');
+					}
+
+					break;
+				}
 			}
 
+			// Delete any files/folders we backed up.
 			if ($folder)
 			{
-				if (($folder = IOHelper::getFolder($backupPath)) !== false)
+				if (($folder = IOHelper::getFolder($fullPath)) !== false)
 				{
-					Blocks::log('Deleting backup folder: '.$folder->getRealPath());
+					Blocks::log('Deleting folder: '.$folder->getRealPath());
 					$folder->delete();
 				}
 			}
 			else
 			{
-				if (($file = IOHelper::getFile($backupPath)) !== false)
+				if (($file = IOHelper::getFile($fullPath)) !== false)
 				{
-					Blocks::log('Deleting backup file: '.$file->getRealPath());
+					Blocks::log('Deleting file: '.$file->getRealPath());
 					$file->delete();
 				}
 			}
+
+			break;
 		}
 
 		// Delete the temp patch folder

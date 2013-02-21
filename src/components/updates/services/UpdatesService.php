@@ -250,41 +250,6 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function enableMaintenanceMode()
-	{
-		// Not using Active Record here to prevent issues with turning the site on/off during a migration
-		if (blx()->db->getSchema()->getTable('{{info}}')->getColumn('maintenance'))
-		{
-			if (blx()->db->createCommand()->update('info', array('maintenance' => 1)) > 0)
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * @static
-	 * @return bool
-	 */
-	public function disableMaintenanceMode()
-	{
-		// Not using Active Record here to prevent issues with turning the site on/off during a migration
-		if (blx()->db->getSchema()->getTable('{{info}}')->getColumn('maintenance'))
-		{
-			if (blx()->db->createCommand()->update('info', array('maintenance' => 0)) > 0)
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
 	 * Checks to see if Blocks can write to a defined set of folders/files that are needed for auto-update to work.
 	 *
 	 * @return array|null

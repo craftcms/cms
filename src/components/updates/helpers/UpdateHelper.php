@@ -125,25 +125,6 @@ class UpdateHelper
 
 						break;
 					}
-
-					case PatchManifestFileAction::Remove:
-					{
-						// rename in case we need to rollback.  the cleanup will remove the backup files.
-						if ($destFile)
-						{
-							Blocks::log('Renaming file for delete: '.$destFile);
-							IOHelper::rename($destFile, $destFile.'.bak');
-						}
-
-						break;
-					}
-
-					default:
-					{
-						Blocks::log('Unknown PatchManifestFileAction', \CLogger::LEVEL_ERROR);
-						UpdateHelper::rollBackFileChanges($manifestData);
-						return false;
-					}
 				}
 			}
 		}

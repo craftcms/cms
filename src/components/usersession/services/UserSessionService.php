@@ -249,11 +249,12 @@ class UserSessionService extends \CWebUser
 				$this->authTimeout = $seconds;
 
 				$id = $this->_identity->getId();
+				$states = $this->_identity->getPersistentStates();
 
 				// Run any before login logic.
-				if ($this->beforeLogin($id, '', false))
+				if ($this->beforeLogin($id, $states, false))
 				{
-					$this->changeIdentity($id, $this->_identity->getName(), '');
+					$this->changeIdentity($id, $this->_identity->getName(), $states);
 
 					if ($seconds > 0)
 					{
@@ -275,6 +276,7 @@ class UserSessionService extends \CWebUser
 									$uid,
 									$seconds,
 									$userAgent,
+									$this->saveIdentityStates(),
 								);
 
 								$this->saveCookie('', $data, $seconds);
@@ -395,7 +397,7 @@ class UserSessionService extends \CWebUser
 		{
 			$data = $this->getCookieValue('');
 
-			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3], $data[4]))
+			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3], $data[4], $data[5]))
 			{
 				$savedUserAgent = $data[4];
 				$currentUserAgent = blx()->request->userAgent;
@@ -419,8 +421,11 @@ class UserSessionService extends \CWebUser
 			// If session duration is set to 0, then the session will be over when the browser is closed.
 			if ($this->_getSessionDuration(false) > 0)
 			{
-				// There is no cookie or it has expired.  Kill it all.
-				$this->logout(true);
+				// If they are not a guest, they still have a valid PHP session, but at this point their identity cookie has expired, so let's kill it all.
+				if (!$this->isGuest())
+				{
+					$this->logout(true);
+				}
 			}
 		}
 	}
@@ -449,13 +454,14 @@ class UserSessionService extends \CWebUser
 			// Grab the data
 			$data = $this->getCookieValue('');
 
-			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3], $data[4]))
+			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3], $data[4], $data[5]))
 			{
 				$loginName = $data[0];
 				$currentSessionToken = $data[1];
 				$uid = $data[2];
 				$seconds = $data[3];
 				$savedUserAgent = $data[4];
+				$states = $data[5];
 				$currentUserAgent = blx()->request->userAgent;
 
 				// If the saved userAgent differs from the current one, bail.
@@ -475,9 +481,9 @@ class UserSessionService extends \CWebUser
 					if (blx()->security->checkString($currentSessionToken, $dbHashedToken))
 					{
 						// It's all good.
-						if($this->beforeLogin($loginName, '', true))
+						if($this->beforeLogin($loginName, $states, true))
 						{
-							$this->changeIdentity($userId, $loginName, '');
+							$this->changeIdentity($userId, $loginName, $states);
 
 							if ($this->autoRenewCookie)
 							{
@@ -496,6 +502,7 @@ class UserSessionService extends \CWebUser
 									$uid,
 									$seconds,
 									$currentUserAgent,
+									$states,
 								);
 
 								$this->saveCookie('', $data, $seconds);
@@ -531,8 +538,11 @@ class UserSessionService extends \CWebUser
 			// If session duration is set to 0, then the session will be over when the browser is closed.
 			if ($this->_getSessionDuration(false) > 0)
 			{
-				// There is no cookie or it has expired.  Kill it all.
-				$this->logout(true);
+				// If they are not a guest, they still have a valid PHP session, but at this point their identity cookie has expired, so let's kill it all.
+				if (!$this->isGuest())
+				{
+					$this->logout(true);
+				}
 			}
 		}
 	}
@@ -550,7 +560,7 @@ class UserSessionService extends \CWebUser
 			// Grab the data
 			$data = $this->getCookieValue('');
 
-			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3], $data[4]))
+			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3], $data[4], $data[5]))
 			{
 				$loginName = $data[0];
 				$uid = $data[2];

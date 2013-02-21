@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class UpdateController extends BaseController
 {
-	protected $allowAnonymous = array('actionManualUpdate', 'actionPrepare', 'actionBackupDatabase', 'actionUpdateDatabase', 'actionCleanUp');
+	protected $allowAnonymous = array('actionManualUpdate', 'actionPrepare', 'actionBackupDatabase', 'actionUpdateDatabase', 'actionCleanUp', 'actionRollback');
 
 	// -------------------------------------------
 	//  Auto Updates
@@ -337,7 +337,7 @@ class UpdateController extends BaseController
 			$this->returnJson(array('error' => $return['message']));
 		}
 
-		$this->returnJson(array('success' => true, 'finished' => true));
+		$this->returnJson(array('success' => true, 'finished' => true, 'returnUrl' => blx()->userSession->getReturnUrl()));
 	}
 
 	/**

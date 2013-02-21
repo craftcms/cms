@@ -281,22 +281,28 @@ class EntryModel extends BaseModel
 	 */
 	public static function populateModel($values)
 	{
-		$class = get_called_class();
-		$model = new $class();
-
+		// Strip out the entry record attributes if this is getting called from a child class
+		// based on an Active Record result eager-loaded with the EntryRecord
 		if (isset($values['entry']))
 		{
-			if (isset($values['entry']['i18n']))
-			{
-				$model->setAttributes($values['entry']['i18n']);
-				unset($values['entry']['i18n']);
-			}
-
-			$model->setAttributes($values['entry']);
+			$entryAttributes = $values['entry'];
 			unset($values['entry']);
 		}
 
-		$model->setAttributes($values);
+		$model = parent::populateModel($values);
+
+		// Now set those EntryRecord attributes
+		if (isset($entryAttributes))
+		{
+			if (isset($entryAttributes['i18n']))
+			{
+				$model->setAttributes($entryAttributes['i18n']);
+				unset($entryAttributes['i18n']);
+			}
+
+			$model->setAttributes($entryAttributes);
+		}
+
 		return $model;
 	}
 

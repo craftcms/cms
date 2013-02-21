@@ -43,18 +43,24 @@ class TemplateLoader implements \Twig_LoaderInterface
 	}
 
 	/**
-	 * Returns true if the template is still fresh.
+	 * Returns whether the cached template is still up-to-date with the latest template.
 	 *
 	 * @param mixed $template The template name, or a StringTemplate object
-	 * @param timestamp $time The last modification time of the cached template
+	 * @param timestamp $cachedModifiedTime The last modification time of the cached template
 	 * @return bool
 	 */
-	public function isFresh($template, $time)
+	public function isFresh($template, $cachedModifiedTime)
 	{
+		// If this is a CP request and a DB update is needed, force a recompile.
+		if (blx()->request->isCpRequest() && blx()->updates->isBlocksDbUpdateNeeded())
+		{
+			return false;
+		}
+
 		if (is_string($template))
 		{
-			$modifiedTime = IOHelper::getLastTimeModified(blx()->templates->findTemplate($template));
-			return  $modifiedTime->getTimestamp() <= $time;
+			$sourceModifiedTime = IOHelper::getLastTimeModified(blx()->templates->findTemplate($template));
+			return $sourceModifiedTime->getTimestamp() <= $cachedModifiedTime;
 		}
 		else
 		{

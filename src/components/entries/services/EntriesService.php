@@ -425,16 +425,58 @@ class EntriesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Calls all fieldtypes' onAfterEntrySave() method after an entry has been saved.
+	 * Performs post-save entry operations, such as calling all fieldtypes' onAfterEntrySave() methods.
 	 *
+	 * @access private
 	 * @param EntryModel $entry
+	 * @param EntryContentRecord $entry
 	 */
-	public function callOnAfterEntrySave(EntryModel $entry)
+	private function _postSaveOperations(EntryModel $entry, EntryContentRecord $contentRecord)
 	{
-		foreach (blx()->fields->getAllFields() as $field)
+		if (Blocks::hasPackage(BlocksPackage::Language))
+		{
+			// Get the other locales' content records
+			$otherContentRecords = EntryContentRecord::model()->findAll(
+				'entryId = :entryId AND locale != :locale',
+				array(':entryId' => $entry->id, ':locale' => $contentRecord->locale)
+			);
+		}
+
+		$updateOtherContentRecords = (Blocks::hasPackage(BlocksPackage::Language) && $otherContentRecords);
+
+		$fields = blx()->fields->getAllFields();
+		$fieldTypes = array();
+
+		foreach ($fields as $field)
 		{
 			$fieldType = blx()->fields->populateFieldType($field);
 			$fieldType->entry = $entry;
+			$fieldTypes[] = $fieldType;
+
+			// If this field isn't translatable, we should set its new value on the other content records
+			if (!$field->translatable && $updateOtherContentRecords && $fieldType->defineContentAttribute())
+			{
+				$handle = $field->handle;
+
+				foreach ($otherContentRecords as $otherContentRecord)
+				{
+					$otherContentRecord->$handle = $contentRecord->$handle;
+				}
+			}
+		}
+
+		// Update each of the other content records
+		if ($updateOtherContentRecords)
+		{
+			foreach ($otherContentRecords as $otherContentRecord)
+			{
+				$otherContentRecord->save();
+			}
+		}
+
+		// Now that everything is finally saved, call fieldtypes' onAfterEntrySave();
+		foreach ($fieldTypes as $fieldType)
+		{
 			$fieldType->onAfterEntrySave();
 		}
 	}
@@ -457,7 +499,7 @@ class EntriesService extends BaseApplicationComponent
 
 		if ($contentRecord->save())
 		{
-			$this->callOnAfterEntrySave($entry);
+			$this->_postSaveOperations($entry, $contentRecord);
 			return true;
 		}
 		else
@@ -767,8 +809,8 @@ class EntriesService extends BaseApplicationComponent
 				blx()->entryRevisions->saveVersion($entry);
 			}
 
-			// Give the fieldtypes a chance to do any post-processing
-			$this->callOnAfterEntrySave($entry);
+			// Perform some post-save operations
+			$this->_postSaveOperations($entry, $contentRecord);
 
 			return true;
 		}

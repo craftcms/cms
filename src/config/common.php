@@ -71,6 +71,11 @@ $configArray = array(
 
 	'componentAliases' => array(
 /* COMPONENT ALIASES */
+/* REBRAND COMPONENT ALIASES */
+/* PUBLISHPRO COMPONENT ALIASES */
+/* CLOUD COMPONENT ALIASES */
+/* LANGUAGE COMPONENT ALIASES */
+/* USERS COMPONENT ALIASES */
 		),
 
 	'components' => array(
@@ -107,41 +112,6 @@ $configArray = array(
 	)
 );
 
-if (in_array('Rebrand', $packages))
-{
-	$configArray['componentAliases'] = array_merge($configArray['componentAliases'], array(
-/* REBRAND COMPONENT ALIASES */
-	));
-}
-
-if (in_array('PublishPro', $packages))
-{
-	$configArray['componentAliases'] = array_merge($configArray['componentAliases'], array(
-/* PUBLISHPRO COMPONENT ALIASES */
-	));
-}
-
-if (in_array('Cloud', $packages))
-{
-	$configArray['componentAliases'] = array_merge($configArray['componentAliases'], array(
-/* CLOUD COMPONENT ALIASES */
-	));
-}
-
-if (in_array('Language', $packages))
-{
-	$configArray['componentAliases'] = array_merge($configArray['componentAliases'], array(
-/* LANGUAGE COMPONENT ALIASES */
-	));
-}
-
-if (in_array('Users', $packages))
-{
-	$configArray['componentAliases'] = array_merge($configArray['componentAliases'], array(
-/* USERS COMPONENT ALIASES */
-	));
-}
-
 // -------------------------------------------
 //  CP routes
 // -------------------------------------------
@@ -177,35 +147,27 @@ $cpRoutes['settings\/singletons\/(?P<singletonId>\d+)']                       = 
 
 $cpRoutes['myaccount']                                                        = 'users/_edit/account';
 
-if (in_array('Language', $packages))
-{
-	$cpRoutes['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/(?P<localeId>\w+)'] = 'content/entries/_edit';
-	$cpRoutes['content\/(?P<sectionHandle>{handle})\/new\/(?P<localeId>\w+)']              = 'content/entries/_edit';
-}
+// Lanugage package routes
+$cpRoutes['pkgRoutes']['Language']['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/(?P<localeId>\w+)'] = 'content/entries/_edit';
+$cpRoutes['pkgRoutes']['Language']['content\/(?P<sectionHandle>{handle})\/new\/(?P<localeId>\w+)']              = 'content/entries/_edit';
 
-if (in_array('PublishPro', $packages))
-{
-	$cpRoutes['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/drafts\/(?P<draftId>\d+)']     = 'content/entries/_edit';
-	$cpRoutes['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/versions\/(?P<versionId>\d+)'] = 'content/entries/_edit';
-}
+// Publish Pro package routes
+$cpRoutes['pkgRoutes']['PublishPro']['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/drafts\/(?P<draftId>\d+)']     = 'content/entries/_edit';
+$cpRoutes['pkgRoutes']['PublishPro']['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/versions\/(?P<versionId>\d+)'] = 'content/entries/_edit';
 
-if (in_array('Users', $packages))
-{
-	$cpRoutes['myaccount\/profile']                                               = 'users/_edit/profile';
-	$cpRoutes['myaccount\/info']                                                  = 'users/_edit/info';
-	$cpRoutes['myaccount\/admin']                                                 = 'users/_edit/admin';
-
-	$cpRoutes['users\/new']                                                       = 'users/_edit/account';
-	$cpRoutes['users\/(?P<filter>{handle})']                                      = 'users';
-	$cpRoutes['users\/(?P<userId>\d+)']                                           = 'users/_edit/account';
-	$cpRoutes['users\/(?P<userId>\d+)\/profile']                                  = 'users/_edit/profile';
-	$cpRoutes['users\/(?P<userId>\d+)\/admin']                                    = 'users/_edit/admin';
-	$cpRoutes['users\/(?P<userId>\d+)\/info']                                     = 'users/_edit/info';
-
-	$cpRoutes['settings\/users']                                                  = 'settings/users/groups';
-	$cpRoutes['settings\/users\/groups\/new']                                     = 'settings/users/groups/_settings';
-	$cpRoutes['settings\/users\/groups\/(?P<groupId>\d+)']                        = 'settings/users/groups/_settings';
-}
+// Users package routes
+$cpRoutes['pkgRoutes']['Users']['myaccount\/profile']                        = 'users/_edit/profile';
+$cpRoutes['pkgRoutes']['Users']['myaccount\/info']                           = 'users/_edit/info';
+$cpRoutes['pkgRoutes']['Users']['myaccount\/admin']                          = 'users/_edit/admin';
+$cpRoutes['pkgRoutes']['Users']['users\/new']                                = 'users/_edit/account';
+$cpRoutes['pkgRoutes']['Users']['users\/(?P<filter>{handle})']               = 'users';
+$cpRoutes['pkgRoutes']['Users']['users\/(?P<userId>\d+)']                    = 'users/_edit/account';
+$cpRoutes['pkgRoutes']['Users']['users\/(?P<userId>\d+)\/profile']           = 'users/_edit/profile';
+$cpRoutes['pkgRoutes']['Users']['users\/(?P<userId>\d+)\/admin']             = 'users/_edit/admin';
+$cpRoutes['pkgRoutes']['Users']['users\/(?P<userId>\d+)\/info']              = 'users/_edit/info';
+$cpRoutes['pkgRoutes']['Users']['settings\/users']                           = 'settings/users/groups';
+$cpRoutes['pkgRoutes']['Users']['settings\/users\/groups\/new']              = 'settings/users/groups/_settings';
+$cpRoutes['pkgRoutes']['Users']['settings\/users\/groups\/(?P<groupId>\d+)'] = 'settings/users/groups/_settings';
 
 // -------------------------------------------
 //  Component config
@@ -253,21 +215,16 @@ $components['components'] = array(
 	)
 );
 
-if (in_array('PublishPro', $packages))
-{
-	$components['entryRevisions']['class']    = 'Blocks\EntryRevisionsService';
-}
+// Publish Pro package components
+$components['pkgComponents']['PublishPro']['entryRevisions']['class'] = 'Blocks\EntryRevisionsService';
 
-if (in_array('Users', $packages))
-{
-	$components['userGroups']['class']        = 'Blocks\UserGroupsService';
-	$components['userPermissions']['class']   = 'Blocks\UserPermissionsService';
-}
 
-if (in_array('Rebrand', $packages))
-{
-	$components['emailMessages']['class']     = 'Blocks\EmailMessagesService';
-}
+// Users package components
+$components['pkgComponents']['Users']['userGroups']['class']      = 'Blocks\UserGroupsService';
+$components['pkgComponents']['Users']['userPermissions']['class'] = 'Blocks\UserPermissionsService';
+
+// Rebrand package components
+$components['pkgComponents']['Rebrand']['emailMessages']['class'] = 'Blocks\EmailMessagesService';
 
 $components['file']['class'] = 'Blocks\File';
 $components['messages']['class'] = 'Blocks\PhpMessageSource';
