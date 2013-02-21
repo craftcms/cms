@@ -69,13 +69,13 @@ Yii::$enableIncludePath = false;
 
 // Load 'em up
 require_once BLOCKS_APP_PATH.'Blocks.php';
-require_once BLOCKS_APP_PATH.'App.php';
+require_once BLOCKS_APP_PATH.'etc/web/WebApp.php';
 require_once BLOCKS_APP_PATH.'Info.php';
 
-$configPath = BLOCKS_APP_PATH.'config/main.php';
+$configPath = BLOCKS_APP_PATH.'etc/config/main.php';
 
-// Initialize Blocks\App this way so it doesn't cause a syntax error on PHP < 5.3
-$appClass = '\Blocks\App';
+// Initialize Blocks\WebApp this way so it doesn't cause a syntax error on PHP < 5.3
+$appClass = '\Blocks\WebApp';
 $app = new $appClass($configPath);
 
 $app->run();

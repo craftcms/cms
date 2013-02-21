@@ -523,7 +523,7 @@ class Blocks extends \Yii
 
 /**
  * Returns the current blx() instance.  This is a wrapper function for the Blocks::app() instance.
- * @return App
+ * @return WebApp|ConsoleApp
  */
 function blx()
 {
