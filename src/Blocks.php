@@ -172,7 +172,7 @@ class Blocks extends \Yii
 	 */
 	public static function requirePackage($packageName)
 	{
-		if (!static::hasPackage($packageName))
+		if (!static::hasPackage($packageName) && blx()->isInstalled())
 		{
 			throw new HttpException(404);
 		}
