@@ -1238,17 +1238,49 @@ class m130222_000000_the_big_migration extends BaseMigration
 			$field['newId']   = blx()->db->getLastInsertID();
 
 			// Did this field have a content column?
-			if (isset($this->_tables[$oldContentTable]->columns[$field['oldHandle']]))
+			// Any third-party fieldtypes probably won't be updated already, so we just go to the source and check the old content table if possible.
+			// Pages and Globals didn't have their own dedicated content tables though, so in that case we'll just do our best.
+			$contentColumnType = null;
+
+			if ($oldContentTable)
+			{
+				if (isset($this->_tables[$oldContentTable]->columns[$field['oldHandle']]))
+				{
+					$contentColumnType = $this->_tables[$oldContentTable]->columns[$field['oldHandle']]->type;
+				}
+			}
+			else
+			{
+				// Let the fieldtype specify whether it wants a column
+				$fieldType = blx()->components->getComponentByTypeAndClass(ComponentType::Field, $field['type']);
+
+				if ($fieldType)
+				{
+					if ($field['settings'])
+					{
+						$settings = JsonHelper::decode($field['settings']);
+						$fieldType->setSettings($settings);
+					}
+
+					$contentColumnType = $fieldType->defineContentAttribute();
+				}
+				else
+				{
+					// Better safe than sorry... default to TEXT
+					$contentColumnType = array('column' => ColumnType::Text);
+				}
+			}
+
+			if ($contentColumnType)
 			{
 				// Add the new content column
-				$type = $this->_tables[$oldContentTable]->columns[$field['oldHandle']]->type;
-				$this->addColumn('content', $field['handle'], $type);
+				$this->addColumn('content', $field['handle'], $contentColumnType);
 
 				// Add a record of it to our table info array in case something else needs to check for it
 				// *cough* singletons *cough* globals *cough*
 				$this->_tables['content']->columns[$field['handle']] = (object) array(
 					'name' => $field['handle'],
-					'type' => $type
+					'type' => $contentColumnType
 				);
 
 				$oldContentColumns[] = $field['oldHandle'];
