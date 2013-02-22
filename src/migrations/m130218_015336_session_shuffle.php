@@ -29,7 +29,7 @@ class m130218_015336_session_shuffle extends BaseMigration
 				if (!$sessionsTable)
 				{
 					// Create the new sessions table.
-					$this->createTable('{{sessions}}', $columns, null, true, true);
+					$this->createTable('sessions', $columns, null, true, true);
 					$this->addForeignKey('sessions', 'userId', 'users', 'id', 'CASCADE');
 
 					// Select all users that have existing session tokens.
@@ -43,7 +43,7 @@ class m130218_015336_session_shuffle extends BaseMigration
 					{
 						$hashedToken = blx()->security->hashString($existingRow['authSessionToken']);
 						Blocks::log('Inserting userId: '.$existingRow['id'].' and token: '.$hashedToken['hash'].' into sessions table.');
-						$this->insert('{{sessions}}', array('userId' => $existingRow['id'], 'token' => $hashedToken['hash']));
+						$this->insert('sessions', array('userId' => $existingRow['id'], 'token' => $hashedToken['hash']));
 					}
 				}
 				else
@@ -52,19 +52,19 @@ class m130218_015336_session_shuffle extends BaseMigration
 				}
 
 				// Remove the old authSessionToken column in users table.
-				$this->dropColumn('{{users}}', 'authSessionToken');
+				$this->dropColumn('users', 'authSessionToken');
 
 				// Change the length of the verificationCode column.
-				$this->alterColumn('{{users}}', 'verificationCode', array(AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char));
+				$this->alterColumn('users', 'verificationCode', array(AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char));
 
 				// Create additional users indexes.
-				$this->createIndex('{{users}}', 'uid');
-				$this->createIndex('{{users}}', 'verificationCode');
+				$this->createIndex('users', 'uid');
+				$this->createIndex('users', 'verificationCode');
 
 				// Create additional sessions indexes.
-				$this->createIndex('{{sessions}}', 'uid');
-				$this->createIndex('{{sessions}}', 'token');
-				$this->createIndex('{{sessions}}', 'dateUpdated');
+				$this->createIndex('sessions', 'uid');
+				$this->createIndex('sessions', 'token');
+				$this->createIndex('sessions', 'dateUpdated');
 			}
 			else
 			{
