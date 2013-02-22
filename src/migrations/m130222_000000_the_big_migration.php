@@ -859,6 +859,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 	{
 		$this->_tables[$table] = (object) array(
 			'name'    => $table,
+			'columns' => array(),
 			'fks'     => array(),
 			'indexes' => array(),
 		);
@@ -867,14 +868,27 @@ class m130222_000000_the_big_migration extends BaseMigration
 		$query = blx()->db->createCommand()->setText('SHOW CREATE TABLE `{{'.$table.'}}`')->queryRow();
 		$createTableSql = $query['Create Table'];
 
-		if (preg_match_all("/CONSTRAINT `(\w+)` FOREIGN KEY \(`([\w`,]+)`\) REFERENCES `(\w+)` \(`([\w`,]+)`\)( ON DELETE ({$this->_fkRefActions}))?( ON UPDATE ({$this->_fkRefActions}))?/", $createTableSql, $matches, PREG_SET_ORDER))
+		// Find the columns
+		if (preg_match_all('/^\s*`(\w+)`\s+(.*),$/m', $createTableSql, $matches, PREG_SET_ORDER))
 		{
-			$newForeignKeyNames = array();
-
 			foreach ($matches as $match)
 			{
-				$this->_tables[$table]->fks[] = (object) array(
-					'name'        => $match[1],
+				$name = $match[1];
+				$this->_tables[$table]->columns[$name] = (object) array(
+					'name' => $name,
+					'type' => $match[2]
+				);
+			}
+		}
+
+		// Find the foreign keys
+		if (preg_match_all("/CONSTRAINT `(\w+)` FOREIGN KEY \(`([\w`,]+)`\) REFERENCES `(\w+)` \(`([\w`,]+)`\)( ON DELETE ({$this->_fkRefActions}))?( ON UPDATE ({$this->_fkRefActions}))?/", $createTableSql, $matches, PREG_SET_ORDER))
+		{
+			foreach ($matches as $match)
+			{
+				$name = $match[1];
+				$this->_tables[$table]->fks[$name] = (object) array(
+					'name'        => $name,
 					'columns'     => explode('`,`', $match[2]),
 					'refTable'    => substr($match[3], $this->_tablePrefixLength),
 					'refColumns'  => explode('`,`', $match[4]),
@@ -884,12 +898,14 @@ class m130222_000000_the_big_migration extends BaseMigration
 			}
 		}
 
+		// Find the indexes
 		if (preg_match_all('/(UNIQUE )?KEY `(\w+)` \(`([\w`,]+)`\)/', $createTableSql, $matches, PREG_SET_ORDER))
 		{
 			foreach ($matches as $match)
 			{
-				$this->_tables[$table]->indexes[] = (object) array(
-					'name'    => $match[2],
+				$name = $match[2];
+				$this->_tables[$table]->indexes[$name] = (object) array(
+					'name'    => $name,
 					'columns' => explode('`,`', $match[3]),
 					'unique'  => !empty($match[1]),
 				);
@@ -1221,24 +1237,12 @@ class m130222_000000_the_big_migration extends BaseMigration
 			$field['groupId'] = $groupId;
 			$field['newId']   = blx()->db->getLastInsertID();
 
-			// Get the fieldtype
-			$fieldType = blx()->components->getComponentByTypeAndClass(ComponentType::Field, $field['type']);
-
-			if ($field['settings'])
+			// Did this field have a content column?
+			if (isset($this->_tables[$oldContentTable]->columns[$field['oldHandle']]))
 			{
-				$settings = JsonHelper::decode($field['settings']);
-				$fieldType->setSettings($settings);
-			}
-
-			// Does the fieldtype want a content column?
-			$contentColumnType = $fieldType->defineContentAttribute();
-			$field['hasContentColumn'] = (bool) $contentColumnType;
-			if ($field['hasContentColumn'])
-			{
-				$contentColumnType = ModelHelper::normalizeAttributeConfig($contentColumnType);
-
-				// Add the new column to content
-				$this->addColumn('content', $field['handle'], $contentColumnType);
+				// Add the new content column
+				$type = $this->_tables[$oldContentTable]->columns[$field['oldHandle']]->type;
+				$this->addColumn('content', $field['handle'], $type);
 
 				$oldContentColumns[] = $field['oldHandle'];
 				$newContentColumns[] = $field['handle'];
