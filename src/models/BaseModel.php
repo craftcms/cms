@@ -196,18 +196,11 @@ abstract class BaseModel extends \CModel
 	{
 		$values = array();
 
-		foreach ($this->getAttributeConfigs() as $name => $config)
+		foreach ($this->attributeNames() as $name)
 		{
-			if (!is_array($names) || in_array($name, $names))
+			if ($names === null || in_array($name, $names))
 			{
-				if ($flattenValues)
-				{
-					$values[$name] = ModelHelper::packageAttributeValue($config, $this->getAttribute($name));
-				}
-				else
-				{
-					$values[$name] = $this->getAttribute($name);
-				}
+				$values[$name] = $this->getAttribute($name, $flattenValues);
 			}
 		}
 
@@ -218,13 +211,21 @@ abstract class BaseModel extends \CModel
 	 * Gets an attribute's value.
 	 *
 	 * @param string $name
+	 * @param bool $flattenValue
 	 * @return mixed
 	 */
-	public function getAttribute($name)
+	public function getAttribute($name, $flattenValue = false)
 	{
 		if (isset($this->_attributes[$name]))
 		{
-			return $this->_attributes[$name];
+			if ($flattenValue)
+			{
+				return ModelHelper::packageAttributeValue($this->_attributes[$name]);
+			}
+			else
+			{
+				return $this->_attributes[$name];
+			}
 		}
 	}
 
