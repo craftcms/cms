@@ -199,6 +199,11 @@ return array(
 'restoreDbOnUpdateFailure' => true,
 
 /**
+ * Defines the name of the app in the CP footer, etc.
+ */
+'appName' => 'Blocks',
+
+/**
  * Error Path Keys
  * 'errorPath'      => blocks.app.templates.errors.error
  * 'error400Path'   => blocks.app.templates.errors.400

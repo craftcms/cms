@@ -3,7 +3,7 @@
 
 {% set body %}
 	{% if user.admin and blx.config.devMode %}
-		<div id="devmode" title="{{ 'Blocks is running in Dev Mode.'|t }}"></div>
+		<div id="devmode" title="{{ '{app} is running in Dev Mode.'|t({ app: blx.config.appName }) }}"></div>
 	{% endif %}
 
 	<header id="header">
@@ -107,6 +107,6 @@
 	</div>
 
 	<div id="version">
-		Blocks {{ blx.app.version }} build {{ blx.app.build }}
+		{{ blx.config.appName }} {{ blx.app.version }} build {{ blx.app.build }}
 	</div>
 {% endset %}

@@ -97,7 +97,7 @@ Blocks.Installer = Garnish.Base.extend({
 
 			Blocks.postActionRequest('install/install', data, $.proxy(function() {
 				this.$currentScreen.find('h1:first').text(Blocks.t('All done!'));
-				var $buttons = $('<div class="buttons"><a href="'+Blocks.getUrl('dashboard')+'" class="btn big submit">'+Blocks.t("Go to Blocks")+'</a></div>');
+				var $buttons = $('<div class="buttons"><a href="'+Blocks.getUrl('dashboard')+'" class="btn big submit">'+Blocks.t('Go to {app}', { app: Blocks.appName })+'</a></div>');
 				$('#spinner').replaceWith($buttons);
 			}, this));
 

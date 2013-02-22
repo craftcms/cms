@@ -1,11 +1,11 @@
 {% extends "_layouts/base" %}
-{% set title = "Install Blocks"|t %}
+{% set title = "Install {app}"|t({ app: blx.config.appName }) %}
 {% includeCssResource "css/install.css" %}
 {% includeJsResource "js/install.js" %}
 
 {% includeTranslations
 	"All done!",
-	"Go to Blocks"
+	"Go to {app}"
 %}
 
 {% set body %}
