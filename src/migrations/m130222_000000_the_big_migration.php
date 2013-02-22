@@ -1238,11 +1238,30 @@ class m130222_000000_the_big_migration extends BaseMigration
 			$field['newId']   = blx()->db->getLastInsertID();
 
 			// Did this field have a content column?
-			// Any third-party fieldtypes probably won't be updated already, so we just go to the source and check the old content table if possible.
-			// Pages and Globals didn't have their own dedicated content tables though, so in that case we'll just do our best.
-			$contentColumnType = null;
+			$contentColumnType = false;
 
-			if ($oldContentTable)
+			// Let the fieldtype be the judge of that, if it exists
+			$fieldType = blx()->components->getComponentByTypeAndClass(ComponentType::Field, $field['type']);
+
+			if ($fieldType)
+			{
+				if ($field['settings'])
+				{
+					$settings = JsonHelper::decode($field['settings']);
+					$fieldType->setSettings($settings);
+				}
+
+				$contentColumnType = $fieldType->defineContentAttribute();
+
+				if ($contentColumnType)
+				{
+					// Normalize it
+					$contentColumnType = ModelHelper::normalizeAttributeConfig($contentColumnType);
+				}
+			}
+
+			// Check the old content table, if there was one
+			else if ($oldContentTable)
 			{
 				if (isset($this->_tables[$oldContentTable]->columns[$field['oldHandle']]))
 				{
@@ -1251,24 +1270,8 @@ class m130222_000000_the_big_migration extends BaseMigration
 			}
 			else
 			{
-				// Let the fieldtype specify whether it wants a column
-				$fieldType = blx()->components->getComponentByTypeAndClass(ComponentType::Field, $field['type']);
-
-				if ($fieldType)
-				{
-					if ($field['settings'])
-					{
-						$settings = JsonHelper::decode($field['settings']);
-						$fieldType->setSettings($settings);
-					}
-
-					$contentColumnType = $fieldType->defineContentAttribute();
-				}
-				else
-				{
-					// Better safe than sorry... default to TEXT
-					$contentColumnType = array('column' => ColumnType::Text);
-				}
+				// Better safe than sorry... default to TEXT
+				$contentColumnType = array('column' => ColumnType::Text);
 			}
 
 			if ($contentColumnType)
