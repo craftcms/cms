@@ -33,7 +33,7 @@ class EntryRecord extends BaseRecord
 		$relations = array(
 			'element' => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
 			'section' => array(static::BELONGS_TO, 'SectionRecord', 'required' => true, 'onDelete' => static::CASCADE),
-			'author'  => array(static::BELONGS_TO, 'UserRecord', 'required' => true, 'onDelete' => static::SET_NULL),
+			'author'  => array(static::BELONGS_TO, 'UserRecord', 'required' => true, 'onDelete' => static::CASCADE),
 			'entryTagEntries' => array(static::HAS_MANY, 'EntryTagEntryRecord', 'entryId'),
 		);
 
