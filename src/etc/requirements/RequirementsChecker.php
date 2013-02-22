@@ -97,6 +97,13 @@ class RequirementsChecker extends \CComponent
 				'<a href="http://blockscms.com">Blocks</a>',
 				Blocks::t('<a href="http://us.php.net/manual/en/function.glob.php">Glob</a> is required.')
 			),
+			new Requirement(
+				Blocks::t('MySQL InnoDB support'),
+				blx()->db->getSchema()->isInnoDbEnabled(),
+				true,
+				'<a href="http://blockscms.com">Blocks</a>',
+				Blocks::t('Blocks requires the MySQL InnoDB storage engine to run.')
+			),
 		);
 	}
 
