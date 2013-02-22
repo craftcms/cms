@@ -12,9 +12,9 @@ class GeneralSettingsModel extends BaseModel
 	public function defineAttributes()
 	{
 		return array(
-			'isSystemOn' => AttributeType::Bool,
+			'on'         => AttributeType::Bool,
 			'siteName'   => array(AttributeType::Name, 'required' => true),
-			'siteUrl'    => array(AttributeType::Url, 'required' => true),
+			'siteUrl'    => array(AttributeType::Url, 'required' => true, 'label' => 'Site URL'),
 			'licenseKey' => array(AttributeType::LicenseKey, 'required' => true),
 		);
 	}
