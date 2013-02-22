@@ -21,7 +21,7 @@ class ElementLocaleRecord extends BaseRecord
 	{
 		return array(
 			'locale' => array(AttributeType::Locale, 'required' => true),
-			'uri'    => AttributeType::String,
+			'uri'    => array(AttributeType::Uri, 'label' => 'URI'),
 		);
 	}
 

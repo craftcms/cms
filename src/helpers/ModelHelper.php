@@ -220,6 +220,7 @@ class ModelHelper
 		$requiredAttributes = array();
 		$emailAttributes = array();
 		$urlAttributes = array();
+		$uriAttributes = array();
 		$strictLengthAttributes = array();
 		$minLengthAttributes = array();
 		$maxLengthAttributes = array();
@@ -286,6 +287,12 @@ class ModelHelper
 				case AttributeType::Url:
 				{
 					$urlAttributes[] = $name;
+					break;
+				}
+
+				case AttributeType::Uri:
+				{
+					$uriAttributes[] = $name;
 					break;
 				}
 			}
@@ -424,6 +431,11 @@ class ModelHelper
 		if ($urlAttributes)
 		{
 			$rules[] = array(implode(',', $urlAttributes), 'Blocks\UrlValidator', 'defaultScheme' => 'http');
+		}
+
+		if ($uriAttributes)
+		{
+			$rules[] = array(implode(',', $uriAttributes), 'Blocks\UriValidator');
 		}
 
 		if ($strictLengthAttributes)
