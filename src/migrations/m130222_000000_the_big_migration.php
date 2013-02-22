@@ -456,7 +456,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 
 				foreach ($fields as $field)
 				{
-					if (isset($oldContent[$field['id']]) && $field['hasContentColumn'])
+					if (isset($oldContent[$field['id']]) && isset($this->_tables['content']->columns[$field['handle']]))
 					{
 						$newContent[$field['handle']] = $oldContent[$field['id']];
 					}
@@ -775,7 +775,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 
 			foreach ($fields as $field)
 			{
-				if (isset($oldContent[$field['oldHandle']]) && $field['hasContentColumn'])
+				if (isset($oldContent[$field['oldHandle']]) && isset($this->_tables['content']->columns[$field['handle']]))
 				{
 					$newContent[$field['handle']] = $oldContent[$field['oldHandle']];
 				}
@@ -1243,6 +1243,13 @@ class m130222_000000_the_big_migration extends BaseMigration
 				// Add the new content column
 				$type = $this->_tables[$oldContentTable]->columns[$field['oldHandle']]->type;
 				$this->addColumn('content', $field['handle'], $type);
+
+				// Add a record of it to our table info array in case something else needs to check for it
+				// *cough* singletons *cough* globals *cough*
+				$this->_tables['content']->columns[$field['handle']] = (object) array(
+					'name' => $field['handle'],
+					'type' => $type
+				);
 
 				$oldContentColumns[] = $field['oldHandle'];
 				$newContentColumns[] = $field['handle'];
