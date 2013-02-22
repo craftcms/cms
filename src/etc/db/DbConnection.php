@@ -43,4 +43,13 @@ class DbConnection extends \CDbConnection
 
 		return false;
 	}
+
+	/**
+	 * @param $name
+	 * @return string
+	 */
+	public function quoteDatabaseName($name)
+	{
+		return $this->getSchema()->quoteTableName($name);
+	}
 }
