@@ -150,8 +150,7 @@ class SingletonsService extends BaseApplicationComponent
 				$i18nRecord->locale    = $localeId;
 			}
 
-			$i18nRecord->title = $singleton->name;
-			$i18nRecord->uri   = $singletonLocale->getUri();
+			$i18nRecord->uri = $singletonLocale->getUri();
 
 			$i18nRecord->validate();
 			$singleton->addLocaleErrors($i18nRecord->getErrors(), $localeId);
