@@ -1029,19 +1029,23 @@ class m130222_000000_the_big_migration extends BaseMigration
 					if ($fkColumnIndex !== false)
 					{
 						// Get its column name
-						$fkColumn = $fk->columns[$fkColumnIndex];
+						$fkColumnName = $fk->columns[$fkColumnIndex];
+
+						// Get its column type
+						$fkColumnRequired = (strpos($otherTable->columns[$fkColumnName]->type, 'NOT NULL') !== false);
+						$fkColumnType = array_merge($idColumnType, array('required' => $fkColumnRequired));
 
 						// Drop all FKs and indexes on this table
 						$this->_dropAllForeignKeysOnTable($otherTable);
 						$this->_dropAllUniqueIndexesOnTable($otherTable);
 
 						// Rename the old id column and add the new one
-						$this->renameColumn($otherTable->name, $fkColumn, $fkColumn.'_old');
-						$this->addColumnAfter($otherTable->name, $fkColumn, $idColumnType, $fkColumn.'_old');
+						$this->renameColumn($otherTable->name, $fkColumnName, $fkColumnName.'_old');
+						$this->addColumnAfter($otherTable->name, $fkColumnName, $fkColumnType, $fkColumnName.'_old');
 
 						$fks[] = (object) array(
 							'table'  => $otherTable,
-							'column' => $fkColumn
+							'column' => $fkColumnName
 						);
 					}
 				}
