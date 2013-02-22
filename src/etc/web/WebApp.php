@@ -113,7 +113,10 @@ class WebApp extends \CWebApplication
 		if (blx()->updates->isDbUpdateNeeded() || (Blocks::isInMaintenanceMode() && !$this->request->isSiteRequest()))
 		{
 			// Let all non-action CP requests through.
-			if ($this->request->isCpRequest() && !$this->request->isActionRequest())
+			if (
+				$this->request->isCpRequest() &&
+				(!$this->request->isActionRequest() || $this->request->getActionSegments() == array('users', 'login'))
+			)
 			{
 				// If there is a 'manual=1' in the query string, run the templates controller.
 				if ($this->request->getParam('manual', null) == 1)
