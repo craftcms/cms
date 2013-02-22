@@ -73,23 +73,11 @@ class UrlManager extends \CUrlManager
 	{
 		$query = blx()->db->createCommand()
 			->select('elements.id, elements.type')
-			->from('elements')
-			->join('elements_i18n', 'elements_i18n.elementId = elements.id');
+			->from('elements elements')
+			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
 
-		$conditions = array('and',
-			'elements_i18n.uri = :path',
-			'elements.postDate <= :now',
-			array('or', 'elements.expiryDate IS NULL', 'elements.expiryDate > :now'),
-			'elements.enabled = 1',
-			'elements.archived = 0',
-		);
-
-		$now = new DateTime();
-
-		$params = array(
-			':path' => blx()->request->getPath(),
-			':now'  => $now->format(DateTime::MYSQL_DATETIME)
-		);
+		$conditions = array('and', 'elements_i18n.uri = :path', 'elements.enabled = 1', 'elements.archived = 0');
+		$params = array(':path' => blx()->request->getPath());
 
 		$localeIds = array_unique(array_merge(
 			array(blx()->language),

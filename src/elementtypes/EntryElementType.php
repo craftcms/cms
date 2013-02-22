@@ -35,16 +35,19 @@ class EntryElementType extends BaseElementType
 	 */
 	public function getSiteTemplateForMatchedElement(EntryModel $entry)
 	{
-		$section = $entry->getSection();
+		// Make sure that the entry is actually live
+		if ($entry->getStatus() == EntryModel::LIVE)
+		{
+			$section = $entry->getSection();
 
-		if ($section->hasUrls)
-		{
-			return $section->template;
+			// Make sure the section is set to have URLs and is enabled for this locale
+			if ($section->hasUrls && array_key_exists(blx()->language, $section->getLocales()))
+			{
+				return $section->template;
+			}
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
