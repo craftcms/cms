@@ -26,9 +26,6 @@
 
 
 {% set content %}
-	{% if singleton is defined and singleton.hasErrors() %}
-	 <pre>{{ dump(singleton.getErrors()) }}</pre>
-	{% endif %}
 	<form method="post" action="" accept-charset="UTF-8">
 		<input type="hidden" name="action" value="singletons/saveSingleton">
 		<input type="hidden" name="redirect" value="settings/singletons/{singletonId}">
