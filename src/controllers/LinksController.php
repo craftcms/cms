@@ -16,12 +16,12 @@ class LinksController extends BaseController
 		$settings    = JsonHelper::decode(blx()->request->getPost('settings'));
 		$selectedIds = JsonHelper::decode(blx()->request->getPost('selectedIds'));
 
-		$entryCriteria = blx()->entries->getEntryCriteria($type, $settings);
-		$entries = blx()->entries->findEntries($entryCriteria);
+		$elementCriteria = blx()->elements->getCriteria($type, $settings);
+		$elements = blx()->elements->findElements($elementCriteria);
 
 		$this->renderTemplate('_components/fieldtypes/Links/modalbody', array(
 			'name'        => $name,
-			'entries'     => $entries,
+			'elements'    => $elements,
 			'selectedIds' => $selectedIds,
 		));
 	}

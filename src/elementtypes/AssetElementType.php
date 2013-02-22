@@ -2,12 +2,12 @@
 namespace Blocks;
 
 /**
- * Asset entry type
+ * Asset element type
  */
-class AssetEntryType extends BaseEntryType
+class AssetElementType extends BaseElementType
 {
 	/**
-	 * Returns the entry type name.
+	 * Returns the element type name.
 	 *
 	 * @return string
 	 */
@@ -17,7 +17,7 @@ class AssetEntryType extends BaseEntryType
 	}
 
 	/**
-	 * Returns whether this entry type is linkable.
+	 * Returns whether this element type is linkable.
 	 *
 	 * @return bool
 	 */
@@ -27,7 +27,7 @@ class AssetEntryType extends BaseEntryType
 	}
 
 	/**
-	 * Defines any custom entry criteria attributes for this entry type.
+	 * Defines any custom entry criteria attributes for this element type.
 	 *
 	 * @return array
 	 */
@@ -49,7 +49,7 @@ class AssetEntryType extends BaseEntryType
 	 */
 	public function getLinkSettingsHtml()
 	{
-		return blx()->templates->render('_components/entrytypes/Asset/linksettings', array(
+		return blx()->templates->render('_components/elementtypes/Asset/linksettings', array(
 			'settings' => $this->getLinkSettings()
 		));
 	}
@@ -58,14 +58,14 @@ class AssetEntryType extends BaseEntryType
 	 * Modifies an entries query targeting entries of this type.
 	 *
 	 * @param DbCommand $query
-	 * @param EntryCriteriaModel $criteria
+	 * @param ElementCriteriaModel $criteria
 	 * @return mixed
 	 */
-	public function modifyEntriesQuery(DbCommand $query, EntryCriteriaModel $criteria)
+	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('f.sourceId, f.folderId, f.filename, f.kind, f.width, f.height, f.size, f.dateModified')
-			->join('assetfiles f', 'f.id = e.id');
+			->addSelect('assetfiles.sourceId, assetfiles.folderId, assetfiles.filename, assetfiles.kind, assetfiles.width, assetfiles.height, assetfiles.size, assetfiles.dateModified')
+			->join('assetfiles assetfiles', 'assetfiles.id = elements.id');
 	}
 
 	/**
@@ -74,7 +74,7 @@ class AssetEntryType extends BaseEntryType
 	 * @param array $row
 	 * @return array
 	 */
-	public function populateEntryModel($row)
+	public function populateElementModel($row)
 	{
 		return AssetFileModel::populateModel($row);
 	}

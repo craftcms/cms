@@ -31,7 +31,7 @@ class SingletonLocaleModel extends BaseModel
 		{
 			if ($this->id)
 			{
-				$this->_uri = blx()->entries->getEntryUriForLocale($this->singletonId, $this->locale);
+				$this->_uri = blx()->elements->getElementUriForLocale($this->singletonId, $this->locale);
 			}
 			else
 			{

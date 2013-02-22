@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Entry content record class
  */
-class EntryContentRecord extends BaseRecord
+class ContentRecord extends BaseRecord
 {
 	private $_requiredFields;
 	private $_attributeConfigs;
@@ -14,7 +14,7 @@ class EntryContentRecord extends BaseRecord
 	 */
 	public function getTableName()
 	{
-		return 'entrycontent';
+		return 'content';
 	}
 
 	/**
@@ -24,7 +24,7 @@ class EntryContentRecord extends BaseRecord
 	{
 		$attributes['locale'] = array(AttributeType::Locale, 'required' => true);
 
-		if (blx()->isInstalled())
+		if (blx()->isInstalled() && !blx()->isConsole())
 		{
 			foreach (blx()->fields->getAllFields() as $field)
 			{
@@ -74,8 +74,8 @@ class EntryContentRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'entry'  => array(static::BELONGS_TO, 'EntryRecord', 'required' => true, 'onDelete' => static::CASCADE),
-			'locale' => array(static::BELONGS_TO, 'LocaleRecord', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE),
+			'element' => array(static::BELONGS_TO, 'ElementRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'locale'  => array(static::BELONGS_TO, 'LocaleRecord', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE),
 		);
 	}
 
@@ -85,7 +85,7 @@ class EntryContentRecord extends BaseRecord
 	public function defineIndexes()
 	{
 		return array(
-			array('columns' => 'entryId,locale', 'unique' => true),
+			array('columns' => 'elementId,locale', 'unique' => true),
 		);
 	}
 

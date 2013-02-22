@@ -17,7 +17,7 @@
 .route .template { color: #999; text-shadow: 0 1px 0 #fff; }
 .route .template:before { @include icon; margin: -2px 5px 0 0; content: 'T'; }
 
-.route-settings .url { width: auto; height: 16px; cursor: text; }
+.route-settings .url { width: auto; padding-top: 0; padding-bottom: 0; cursor: text; }
 .route-settings .url .token { position: relative; top: -1px; cursor: default; }
 
 .route-settings .url-tokens { margin-top: 10px; border-radius: 5px; padding: 15px 25px; background: #fafafa;

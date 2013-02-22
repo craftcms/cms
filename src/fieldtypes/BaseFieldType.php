@@ -7,9 +7,9 @@ namespace Blocks;
 abstract class BaseFieldType extends BaseSavableComponentType
 {
 	/**
-	 * @var EntryModel The entry that the current instance is associated with
+	 * @var ElementModel The element that the current instance is associated with
 	 */
-	public $entry;
+	public $element;
 
 	/**
 	 * @access protected
@@ -45,7 +45,7 @@ abstract class BaseFieldType extends BaseSavableComponentType
 	public function getPostData()
 	{
 		$fieldHandle = $this->model->handle;
-		$value = $this->entry->getRawContent($fieldHandle);
+		$value = $this->element->getRawContent($fieldHandle);
 		return $this->prepPostData($value);
 	}
 
@@ -76,9 +76,9 @@ abstract class BaseFieldType extends BaseSavableComponentType
 	}
 
 	/**
-	 * Performs any additional actions after the entry has been saved.
+	 * Performs any additional actions after the element has been saved.
 	 */
-	public function onAfterEntrySave()
+	public function onAfterElementSave()
 	{
 	}
 

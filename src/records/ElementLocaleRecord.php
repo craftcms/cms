@@ -2,16 +2,16 @@
 namespace Blocks;
 
 /**
- * Stores section entry locale data
+ * Element locale data record class
  */
-class SectionEntryLocalizationRecord extends BaseRecord
+class ElementLocaleRecord extends BaseRecord
 {
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
-		return 'sectionentries_i18n';
+		return 'elements_i18n';
 	}
 
 	/**
@@ -21,7 +21,7 @@ class SectionEntryLocalizationRecord extends BaseRecord
 	{
 		return array(
 			'locale' => array(AttributeType::Locale, 'required' => true),
-			'slug'   => array(AttributeType::Slug, 'required' => true),
+			'uri'    => AttributeType::String,
 		);
 	}
 
@@ -31,8 +31,7 @@ class SectionEntryLocalizationRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'entry'   => array(static::BELONGS_TO, 'EntryRecord', 'required' => true, 'onDelete' => static::CASCADE),
-			'section' => array(static::BELONGS_TO, 'SectionRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'element' => array(static::BELONGS_TO, 'ElementRecord', 'required' => true, 'onDelete' => static::CASCADE),
 			'locale'  => array(static::BELONGS_TO, 'LocaleRecord', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE),
 		);
 	}
@@ -43,8 +42,8 @@ class SectionEntryLocalizationRecord extends BaseRecord
 	public function defineIndexes()
 	{
 		return array(
-			array('columns' => array('entryId', 'locale'), 'unique' => true),
-			array('columns' => array('slug','sectionId','locale'), 'unique' => true),
+			array('columns' => array('elementId', 'locale'), 'unique' => true),
+			array('columns' => array('uri', 'locale'), 'unique' => true),
 		);
 	}
 }

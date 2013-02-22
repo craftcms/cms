@@ -2,12 +2,12 @@
 namespace Blocks;
 
 /**
- * Globals entry type
+ * Globals element type
  */
-class GlobalsEntryType extends BaseEntryType
+class GlobalsElementType extends BaseElementType
 {
 	/**
-	 * Returns the entry type name.
+	 * Returns the element type name.
 	 *
 	 * @return string
 	 */
@@ -19,10 +19,10 @@ class GlobalsEntryType extends BaseEntryType
 	/**
 	 * Returns the CP edit URI for a given entry.
 	 *
-	 * @param EntryModel $entry
+	 * @param ElementModel $entry
 	 * @return string|null
 	 */
-	public function getCpEditUriForEntry(EntryModel $entry)
+	public function getCpEditUriForElement(ElementModel $entry)
 	{
 		return 'content/globals';
 	}

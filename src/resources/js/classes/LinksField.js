@@ -38,13 +38,13 @@ Blocks.LinksField = Garnish.Base.extend({
 		this._$showModalBtn = $buttons.find('.btn.add');
 		this._$removeLinksBtn = $buttons.find('.btn.remove');
 
-		// Find the preselected entries
+		// Find the preselected elements
 		var $table = this._$inputContainer.children('table');
 		this._$inputTbody = $table.children('tbody');
 		var $rows = this._$inputTbody.children(':not(.filler)');
-		var $entries = $rows.find('div.entry');
+		var $elements = $rows.find('div.element');
 
-		this._inputSelect = new Garnish.Select(this._$inputContainer, $entries, {
+		this._inputSelect = new Garnish.Select(this._$inputContainer, $elements, {
 			multi: true,
 			onSelectionChange: $.proxy(function() {
 				if (this._inputSelect.totalSelected)
@@ -59,7 +59,7 @@ Blocks.LinksField = Garnish.Base.extend({
 		});
 
 		this._inputSort = new Blocks.DataTableSorter($table, {
-			handle: '.entry',
+			handle: '.element',
 			filter: $.proxy(function() {
 				return this._inputSelect.getSelectedItems().closest('tr');
 			}, this),
@@ -73,7 +73,7 @@ Blocks.LinksField = Garnish.Base.extend({
 		this._$fillerRows = this._$inputTbody.children('.filler');
 
 		this.addListener(this._$showModalBtn, 'activate', '_showModal');
-		this.addListener(this._$removeLinksBtn, 'activate', '_removeSelectedEntities');
+		this.addListener(this._$removeLinksBtn, 'activate', '_removeSelectedElements');
 	},
 
 	_buildModal: function()
@@ -96,7 +96,7 @@ Blocks.LinksField = Garnish.Base.extend({
 		this._updateModal();
 
 		this.addListener(this._$cancelBtn, 'activate', '_hideModal');
-		this.addListener(this._$selectBtn, 'activate', '_selectEntities');
+		this.addListener(this._$selectBtn, 'activate', '_selectElements');
 	},
 
 	_showModal: function()
@@ -128,7 +128,7 @@ Blocks.LinksField = Garnish.Base.extend({
 		var data = {
 			type: this._settings.type,
 			name: this._name,
-			settings: JSON.stringify(this._settings.entryTypeSettings),
+			settings: JSON.stringify(this._settings.elementTypeSettings),
 			selectedIds: JSON.stringify(this._selectedIds)
 		};
 
@@ -136,9 +136,9 @@ Blocks.LinksField = Garnish.Base.extend({
 			this._$modalBody.html(response);
 
 			this._$modalTbody = this._$modalBody.find('tbody:first');
-			var $entries = this._$modalTbody.children(':not(.hidden)').find('.entry');
+			var $elements = this._$modalTbody.children(':not(.hidden)').find('.element');
 
-			this._modalSelect = new Garnish.Select(this._$modalBody, $entries, {
+			this._modalSelect = new Garnish.Select(this._$modalBody, $elements, {
 				multi: true,
 				waitForDblClick: true,
 				onSelectionChange: $.proxy(function() {
@@ -153,27 +153,27 @@ Blocks.LinksField = Garnish.Base.extend({
 				}, this)
 			});
 
-			this.addListener(this._$modalBody, 'dblclick', '_selectEntities');
+			this.addListener(this._$modalBody, 'dblclick', '_selectElements');
 		}, this));
 	},
 
-	_selectEntities: function()
+	_selectElements: function()
 	{
 		if (!this._modalSelect.totalSelected)
 		{
 			return;
 		}
 
-		var $entries = this._modalSelect.getSelectedItems();
-		this._modalSelect.removeItems($entries);
+		var $elements = this._modalSelect.getSelectedItems();
+		this._modalSelect.removeItems($elements);
 
 		// Delete extra filler rows
-		var count = Math.min($entries.length, this._$fillerRows.length);
+		var count = Math.min($elements.length, this._$fillerRows.length);
 		this._$fillerRows.slice(0, count).remove();
 		this._$fillerRows = this._$fillerRows.slice(count);
 
 		// Clone the rows and add them to the field
-		var $rows = $entries.closest('tr'),
+		var $rows = $elements.closest('tr'),
 			$clonedRows = $rows.clone();
 
 		if (this._$fillerRows.length)
@@ -189,8 +189,8 @@ Blocks.LinksField = Garnish.Base.extend({
 		this._modal.hide();
 		this._$removeLinksBtn.enable();
 
-		$entries = $clonedRows.find('.entry');
-		this._inputSelect.addItems($entries);
+		$elements = $clonedRows.find('.element');
+		this._inputSelect.addItems($elements);
 		this._inputSort.addItems($clonedRows);
 
 		this._$inputContainer.focus();
@@ -201,7 +201,7 @@ Blocks.LinksField = Garnish.Base.extend({
 		}, 200);
 	},
 
-	_removeSelectedEntities: function()
+	_removeSelectedElements: function()
 	{
 		if (!this._inputSelect.totalSelected)
 		{
@@ -209,17 +209,17 @@ Blocks.LinksField = Garnish.Base.extend({
 		}
 
 		// Find the selected links
-		var $entries = this._inputSelect.getSelectedItems(),
-			$rows = $entries.closest('tr');
+		var $elements = this._inputSelect.getSelectedItems(),
+			$rows = $elements.closest('tr');
 
 		// Remove them
-		this._inputSelect.removeItems($entries);
+		this._inputSelect.removeItems($elements);
 		this._inputSort.removeItems($rows);
 		$rows.remove();
 
 		// Add filler rows?
-		var totalSelectedEntities = this._inputSelect.$items.length;
-		var missingFillerRows = this._minSlots - totalSelectedEntities;
+		var totalSelectedElements = this._inputSelect.$items.length;
+		var missingFillerRows = this._minSlots - totalSelectedElements;
 		for (var i = this._$fillerRows.length; i < missingFillerRows; i++)
 		{
 			var $fillerRow = $('<tr class="filler"><td></td></tr>').appendTo(this._$inputTbody);
@@ -232,15 +232,15 @@ Blocks.LinksField = Garnish.Base.extend({
 		// Show them in the modal
 		if (this._modal)
 		{
-			var $hiddenEntities = this._$modalTbody.children('.hidden').find('.entry');
+			var $hiddenElements = this._$modalTbody.children('.hidden').find('.element');
 
-			for (var i = 0; i < $entries.length; i++)
+			for (var i = 0; i < $elements.length; i++)
 			{
-				var id = $($entries[i]).attr('data-id'),
-					$entry = $hiddenEntities.filter('[data-id='+id+']:first');
+				var id = $($elements[i]).attr('data-id'),
+					$element = $hiddenElements.filter('[data-id='+id+']:first');
 
-				$entry.closest('tr').removeClass('hidden');
-				this._modalSelect.addItems($entry);
+				$element.closest('tr').removeClass('hidden');
+				this._modalSelect.addItems($element);
 			}
 		}
 

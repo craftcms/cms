@@ -35,7 +35,7 @@ class AssetFileRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'entry'   => array(static::BELONGS_TO, 'EntryRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
+			'element' => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
 			'source'  => array(static::BELONGS_TO, 'AssetSourceRecord', 'required' => true, 'onDelete' => static::CASCADE),
 			'folder'  => array(static::BELONGS_TO, 'AssetFolderRecord', 'required' => true, 'onDelete' => static::CASCADE),
 			'content' => array(static::HAS_ONE, 'AssetContentRecord', 'fileId'),

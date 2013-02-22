@@ -83,7 +83,7 @@
 	{% set title = "Create a new entry"|t %}
 {% else %}
 	{% set title = entry.title %}
-	{% if entry is defined and entry.classHandle != 'SectionEntry' %}
+	{% if entry is defined and entry.classHandle != 'Entry' %}
 		{% set title = title ~ ' <span class="hidden">(' ~ revisionLabel ~ ')</span>' %}
 	{% endif %}
 {% endif %}

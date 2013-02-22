@@ -37,7 +37,7 @@ class UrlManager extends \CUrlManager
 	 */
 	public function processTemplateMatching()
 	{
-		// we'll never have a db entry match on a control panel request
+		// we'll never have a db element match on a control panel request
 		if (blx()->isInstalled() && blx()->request->isSiteRequest())
 		{
 			if (($path = $this->matchEntry()) !== false)
@@ -65,23 +65,23 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * Attempts to match a request with an entry in the database.
+	 * Attempts to match a request with an element in the database.
 	 *
 	 * @return bool The URI if a match was found, false otherwise.
 	 */
 	public function matchEntry()
 	{
 		$query = blx()->db->createCommand()
-			->select('e.id, e.type')
-			->from('entries e')
-			->join('entries_i18n e_i18n', 'e_i18n.entryId = e.id');
+			->select('elements.id, elements.type')
+			->from('elements')
+			->join('elements_i18n', 'elements_i18n.elementId = elements.id');
 
 		$conditions = array('and',
-			'e_i18n.uri = :path',
-			'e.postDate <= :now',
-			array('or', 'e.expiryDate IS NULL', 'e.expiryDate > :now'),
-			'e.enabled = 1',
-			'e.archived = 0',
+			'elements_i18n.uri = :path',
+			'elements.postDate <= :now',
+			array('or', 'elements.expiryDate IS NULL', 'elements.expiryDate > :now'),
+			'elements.enabled = 1',
+			'elements.archived = 0',
 		);
 
 		$now = new DateTime();
@@ -98,7 +98,7 @@ class UrlManager extends \CUrlManager
 
 		if (count($localeIds) == 1)
 		{
-			$conditions[] = 'e_i18n.locale = :locale';
+			$conditions[] = 'elements_i18n.locale = :locale';
 			$params[':locale'] = $localeIds[0];
 		}
 		else
@@ -110,10 +110,10 @@ class UrlManager extends \CUrlManager
 			{
 				$quotedLocale = blx()->db->quoteValue($localeId);
 				$quotedLocales[] = $quotedLocale;
-				$localeOrder[] = "(e_i18n.locale = {$quotedLocale}) DESC";
+				$localeOrder[] = "(elements_i18n.locale = {$quotedLocale}) DESC";
 			}
 
-			$conditions[] = "e_i18n.locale IN (".implode(', ', $quotedLocales).')';
+			$conditions[] = "elements_i18n.locale IN (".implode(', ', $quotedLocales).')';
 			$query->order($localeOrder);
 		}
 
@@ -123,20 +123,20 @@ class UrlManager extends \CUrlManager
 
 		if ($row)
 		{
-			$entryCriteria = blx()->entries->getEntryCriteria($row['type']);
-			$entryCriteria->id = $row['id'];
+			$elementCriteria = blx()->elements->getCriteria($row['type']);
+			$elementCriteria->id = $row['id'];
 
-			$entry = blx()->entries->findEntry($entryCriteria);
+			$element = blx()->elements->findElement($elementCriteria);
 
-			if ($entry)
+			if ($element)
 			{
-				$entryType = $entryCriteria->getEntryType();
-				$template = $entryType->getSiteTemplateForMatchedEntry($entry);
+				$elementType = $elementCriteria->getElementType();
+				$template = $elementType->getSiteTemplateForMatchedElement($element);
 
 				if ($template !== false)
 				{
-					$varName = $entryType->getVariableNameForMatchedEntry();
-					$this->_templateVariables[$varName] = $entry;
+					$varName = $elementType->getVariableNameForMatchedElement();
+					$this->_templateVariables[$varName] = $element;
 					return $template;
 				}
 			}

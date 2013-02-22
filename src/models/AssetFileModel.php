@@ -4,9 +4,9 @@ namespace Blocks;
 /**
  *
  */
-class AssetFileModel extends EntryModel
+class AssetFileModel extends ElementModel
 {
-	protected $entryType = 'Asset';
+	protected $elementType = ElementType::Asset;
 
 	/**
 	 * User the filename as the string representation.

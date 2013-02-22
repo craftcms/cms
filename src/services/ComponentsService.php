@@ -79,8 +79,10 @@ class ComponentsService extends BaseApplicationComponent
 
 			foreach ($pluginComponents as $component)
 			{
-				if ($component instanceof $baseClass)
+				if ($component instanceof $ctype['baseClass'])
 				{
+					$component->init();
+
 					$this->_components[$type][$component->getClassHandle()] = $component;
 					$names[] = $component->getName();
 				}

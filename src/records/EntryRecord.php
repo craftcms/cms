@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- * Entry record class
+ *
  */
 class EntryRecord extends BaseRecord
 {
@@ -20,11 +20,8 @@ class EntryRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'type'       => array(AttributeType::ClassName, 'required' => true),
 			'postDate'   => array(AttributeType::DateTime, 'required' => true, 'default' => new DateTime()),
 			'expiryDate' => AttributeType::DateTime,
-			'enabled'    => array(AttributeType::Bool, 'default' => true),
-			'archived'   => array(AttributeType::Bool, 'default' => false),
 		);
 	}
 
@@ -34,14 +31,15 @@ class EntryRecord extends BaseRecord
 	public function defineRelations()
 	{
 		$relations = array(
-			'i18n'            => array(static::HAS_ONE, 'EntryLocalizationRecord', 'entryId', 'condition' => 'i18n.locale=:locale', 'params' => array(':locale' => blx()->language)),
-			'content'         => array(static::HAS_ONE, 'EntryContentRecord', 'entryId', 'condition' => 'content.locale=:locale', 'params' => array(':locale' => blx()->language)),
+			'element' => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
+			'section' => array(static::BELONGS_TO, 'SectionRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'author'  => array(static::BELONGS_TO, 'UserRecord', 'required' => true, 'onDelete' => static::SET_NULL),
 			'entryTagEntries' => array(static::HAS_MANY, 'EntryTagEntryRecord', 'entryId'),
 		);
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			$relations['versions'] = array(static::HAS_MANY, 'EntryVersionRecord', 'entryId');
+			$relations['versions'] = array(static::HAS_MANY, 'EntryVersionRecord', 'elementId');
 		}
 
 		return $relations;
@@ -53,11 +51,9 @@ class EntryRecord extends BaseRecord
 	public function defineIndexes()
 	{
 		return array(
-			array('columns' => array('type')),
+			array('columns' => array('sectionId')),
 			array('columns' => array('postDate')),
 			array('columns' => array('expiryDate')),
-			array('columns' => array('enabled')),
-			array('columns' => array('archived')),
 		);
 	}
 }

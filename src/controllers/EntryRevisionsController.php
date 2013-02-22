@@ -29,7 +29,7 @@ class EntryRevisionsController extends BaseController
 		else
 		{
 			$draft = new EntryDraftModel();
-			$draft->id = blx()->request->getRequiredPost('entryId');
+			$draft->id        = blx()->request->getRequiredPost('entryId');
 			$draft->sectionId = blx()->request->getRequiredPost('sectionId');
 			$draft->creatorId = blx()->userSession->getUser()->id;
 			$draft->locale    = blx()->request->getPost('locale', blx()->i18n->getPrimarySiteLocale()->getId());
@@ -99,14 +99,14 @@ class EntryRevisionsController extends BaseController
 	 */
 	private function _setDraftValuesFromPost(EntryDraftModel $draft)
 	{
-		$draft->title = blx()->request->getPost('title');
-		$draft->slug = blx()->request->getPost('slug');
-		$draft->postDate = $this->getDateFromPost('postDate');
+		$draft->title      = blx()->request->getPost('title');
+		$draft->slug       = blx()->request->getPost('slug');
+		$draft->postDate   = $this->getDateFromPost('postDate');
 		$draft->expiryDate = $this->getDateFromPost('expiryDate');
-		$draft->enabled = blx()->request->getPost('enabled');
-		$draft->tags = blx()->request->getPost('tags');
+		$draft->enabled    = blx()->request->getPost('enabled');
+		$draft->tags       = blx()->request->getPost('tags');
 
-		$draft->setContent(blx()->request->getPost('blocks'));
+		$draft->setContent(blx()->request->getPost('fields'));
 
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{

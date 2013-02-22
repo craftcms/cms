@@ -2,9 +2,9 @@
 namespace Blocks;
 
 /**
- * Entry locale data record class
+ * Stores entry locale data
  */
-class EntryLocalizationRecord extends BaseRecord
+class EntryLocaleRecord extends BaseRecord
 {
 	/**
 	 * @return string
@@ -22,7 +22,7 @@ class EntryLocalizationRecord extends BaseRecord
 		return array(
 			'locale' => array(AttributeType::Locale, 'required' => true),
 			'title'  => array(AttributeType::String, 'required' => true),
-			'uri'    => AttributeType::String,
+			'slug'   => array(AttributeType::Slug, 'required' => true),
 		);
 	}
 
@@ -32,8 +32,9 @@ class EntryLocalizationRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'entry' => array(static::BELONGS_TO, 'EntryRecord', 'required' => true, 'onDelete' => static::CASCADE),
-			'locale' => array(static::BELONGS_TO, 'LocaleRecord', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE),
+			'entry'   => array(static::BELONGS_TO, 'EntryRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'section' => array(static::BELONGS_TO, 'SectionRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'locale'  => array(static::BELONGS_TO, 'LocaleRecord', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE),
 		);
 	}
 
@@ -44,7 +45,7 @@ class EntryLocalizationRecord extends BaseRecord
 	{
 		return array(
 			array('columns' => array('entryId', 'locale'), 'unique' => true),
-			array('columns' => array('uri', 'locale'), 'unique' => true),
+			array('columns' => array('slug','sectionId','locale'), 'unique' => true),
 			array('columns' => array('title')),
 		);
 	}

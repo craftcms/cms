@@ -744,8 +744,8 @@ class UsersController extends BaseController
 
 		// Set the field layout
 		$fieldLayout = blx()->fields->assembleLayoutFromPost(false);
-		$fieldLayout->type = 'User';
-		blx()->fields->deleteLayoutsByType('User');
+		$fieldLayout->type = ElementType::User;
+		blx()->fields->deleteLayoutsByType(ElementType::User);
 
 		if (blx()->fields->saveLayout($fieldLayout, false))
 		{

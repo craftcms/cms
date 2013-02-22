@@ -30,7 +30,7 @@ class DbCommand extends \CDbCommand
 			}
 		}
 
-		return (int) $this->select("count({$column})")->queryScalar();
+		return (int) $this->select("count({$column})")->getText();
 	}
 
 	/**

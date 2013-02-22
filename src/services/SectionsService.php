@@ -304,7 +304,7 @@ class SectionsService extends BaseApplicationComponent
 					$section->id = $sectionRecord->id;
 				}
 
-				// Update the sectionlocales table
+				// Update the sections_i18n table
 				$newLocaleData = array();
 
 				if (!$isNewSection)
@@ -328,7 +328,7 @@ class SectionsService extends BaseApplicationComponent
 						// Has the URL format changed?
 						if ($locale->urlFormat != $oldLocale->urlFormat)
 						{
-							blx()->db->createCommand()->update('sectionlocales',
+							blx()->db->createCommand()->update('sections_i18n',
 								array('urlFormat' => $locale->urlFormat),
 								array('id' => $oldLocale->id)
 							);
@@ -346,7 +346,7 @@ class SectionsService extends BaseApplicationComponent
 					{
 						$entries = blx()->db->createCommand()
 							->select('entryId,slug')
-							->from('sectionentries_i18n')
+							->from('entries_i18n')
 							->where(array('sectionId' => $section->id, 'locale' => $localeId))
 							->queryAll();
 
@@ -362,7 +362,7 @@ class SectionsService extends BaseApplicationComponent
 				}
 
 				// Insert the new locales
-				blx()->db->createCommand()->insertAll('sectionlocales', array('sectionId', 'locale', 'urlFormat'), $newLocaleData);
+				blx()->db->createCommand()->insertAll('sections_i18n', array('sectionId', 'locale', 'urlFormat'), $newLocaleData);
 
 				if (!$isNewSection)
 				{
@@ -370,7 +370,7 @@ class SectionsService extends BaseApplicationComponent
 					$disabledLocaleIds = array_diff(array_keys($oldSectionLocales), array_keys($section->getLocales()));
 					foreach ($disabledLocaleIds as $localeId)
 					{
-						blx()->db->createCommand()->delete('sectionlocales', array('id' => $oldSectionLocales[$localeId]->id));
+						blx()->db->createCommand()->delete('sections_i18n', array('id' => $oldSectionLocales[$localeId]->id));
 					}
 
 					// Drop the old entry URIs if the section no longer has URLs
@@ -379,7 +379,7 @@ class SectionsService extends BaseApplicationComponent
 						// Clear out all the URIs
 						$entryIds = blx()->db->createCommand()
 							->select('id')
-							->from('sectionentries')
+							->from('entries')
 							->where(array('sectionId' => $section->id))
 							->queryColumn();
 
@@ -415,29 +415,7 @@ class SectionsService extends BaseApplicationComponent
 	*/
 	public function deleteSectionById($sectionId)
 	{
-		$transaction = blx()->db->beginTransaction();
-		try
-		{
-			// First delete the entries (this will take care of associated links, etc.)
-			$entryIds = blx()->db->createCommand()
-				->select('id')
-				->from('sectionentries')
-				->where(array('sectionId' => $sectionId))
-				->queryColumn();
-
-			blx()->entries->deleteEntryById($entryIds);
-
-			// Delete the section
-			blx()->db->createCommand()->delete('sections', array('id' => $sectionId));
-
-			$transaction->commit();
-		}
-		catch (\Exception $e)
-		{
-			$transaction->rollBack();
-			throw $e;
-		}
-
+		blx()->db->createCommand()->delete('sections', array('id' => $sectionId));
 		return true;
 	}
 }

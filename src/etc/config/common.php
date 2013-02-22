@@ -176,6 +176,7 @@ $components['assetSources']['class']         = 'Blocks\AssetSourcesService';
 
 $components['dashboard']['class']            = 'Blocks\DashboardService';
 $components['email']['class']                = 'Blocks\EmailService';
+$components['elements']['class']             = 'Blocks\ElementsService';
 $components['entries']['class']              = 'Blocks\EntriesService';
 $components['et']['class']                   = 'Blocks\EtService';
 $components['feeds']['class']                = 'Blocks\FeedsService';
@@ -204,7 +205,7 @@ $components['components'] = array(
 	'class' => 'Blocks\ComponentsService',
 	'types' => array(
 		'assetSource' => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSourceType', 'baseClass' => 'BaseAssetSourceType'),
-		'entry'       => array('subfolder' => 'entrytypes', 'suffix' => 'EntryType', 'baseClass' => 'BaseEntryType'),
+		'element'     => array('subfolder' => 'elementtypes', 'suffix' => 'ElementType', 'baseClass' => 'BaseElementType'),
 		'field'       => array('subfolder' => 'fieldtypes', 'suffix' => 'FieldType', 'baseClass' => 'BaseFieldType'),
 		'widget'      => array('subfolder' => 'widgets', 'suffix' => 'Widget', 'baseClass' => 'BaseWidget'),
 	)

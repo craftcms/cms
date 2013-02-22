@@ -11,7 +11,7 @@ class SingletonLocaleRecord extends BaseRecord
 	 */
 	public function getTableName()
 	{
-		return 'singletonlocales';
+		return 'singletons_i18n';
 	}
 
 	/**

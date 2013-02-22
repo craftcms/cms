@@ -69,9 +69,9 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function findFiles($criteria = null)
 	{
-		if (!($criteria instanceof EntryCriteriaModel))
+		if (!($criteria instanceof ElementCriteriaModel))
 		{
-			$criteria = blx()->entries->getEntryCriteria('Asset', $criteria);
+			$criteria = blx()->elements->getCriteria(ElementType::Asset, $criteria);
 		}
 
 		$query = blx()->db->createCommand()
@@ -108,9 +108,9 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function findFile($criteria = null)
 	{
-		if (!($criteria instanceof EntryCriteriaModel))
+		if (!($criteria instanceof ElementCriteriaModel))
 		{
-			$criteria = blx()->entries->getEntryCriteria('Asset', $criteria);
+			$criteria = blx()->elements->getCriteria(ElementType::Asset, $criteria);
 		}
 
 		$criteria->limit = 1;
@@ -152,9 +152,9 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function getTotalFiles($criteria = null)
 	{
-		if (!($criteria instanceof EntryCriteriaModel))
+		if (!($criteria instanceof ElementCriteriaModel))
 		{
-			$criteria = blx()->entries->getEntryCriteria('Asset', $criteria);
+			$criteria = blx()->elements->getCriteria(ElementType::Asset, $criteria);
 		}
 
 		$query = blx()->db->createCommand()
@@ -171,9 +171,9 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @access private
 	 * @param DbCommand $query
-	 * @param EntryCriteriaModel $criteria
+	 * @param ElementCriteriaModel $criteria
 	 */
-	private function _applyFileConditions($query, EntryCriteriaModel $criteria)
+	private function _applyFileConditions($query, ElementCriteriaModel $criteria)
 	{
 		$whereConditions = array();
 		$whereParams = array();
@@ -229,14 +229,12 @@ class AssetsService extends BaseApplicationComponent
 		}
 		else
 		{
-			$entryRecord = new EntryRecord();
-			$entryRecord->type = 'Asset';
-			$entryRecord->postDate = DateTime::createFromFormat(DateTime::W3C_DATE, date("Y-m-d"));
-			$entryRecord->enabled = 1;
-			$entryRecord->save();
+			$elementRecord = new ElementRecord();
+			$elementRecord->type = ElementType::Asset;
+			$elementRecord->enabled = 1;
+			$elementRecord->save();
 			$fileRecord = new AssetFileRecord();
-			$fileRecord->id = $entryRecord->id;
-
+			$fileRecord->id = $elementRecord->id;
 		}
 
 		$fileRecord->sourceId     = $file->sourceId;
@@ -274,8 +272,8 @@ class AssetsService extends BaseApplicationComponent
 	public function saveFileContent(AssetFileModel $file)
 	{
 		// TODO: translation support
-		$fieldLayout = blx()->fields->getLayoutByType('Asset');
-		return blx()->entries->saveEntryContent($file, $fieldLayout);
+		$fieldLayout = blx()->fields->getLayoutByType(ElementType::Asset);
+		return blx()->elements->saveElementContent($file, $fieldLayout);
 	}
 
 	// -------------------------------------------

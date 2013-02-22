@@ -225,13 +225,13 @@ class UsersService extends BaseApplicationComponent
 			if ($isNewUser)
 			{
 				// Create the entry record
-				$entryRecord = new EntryRecord();
-				$entryRecord->type = 'User';
-				$entryRecord->save();
+				$elementRecord = new ElementRecord();
+				$elementRecord->type = ElementType::User;
+				$elementRecord->save();
 
 				// Now that we have the entry ID, save it on everything else
-				$user->id = $entryRecord->id;
-				$userRecord->id = $entryRecord->id;
+				$user->id = $elementRecord->id;
+				$userRecord->id = $elementRecord->id;
 			}
 
 			$userRecord->save(false);
@@ -285,8 +285,8 @@ class UsersService extends BaseApplicationComponent
 	{
 		Blocks::requirePackage(BlocksPackage::Users);
 
-		$fieldLayout = blx()->fields->getLayoutByType('User');
-		return blx()->entries->saveEntryContent($user, $fieldLayout);
+		$fieldLayout = blx()->fields->getLayoutByType(ElementType::User);
+		return blx()->elements->saveElementContent($user, $fieldLayout);
 	}
 
 	/**

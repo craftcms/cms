@@ -13,7 +13,7 @@ class EntriesController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$entry = new SectionEntryModel();
+		$entry = new EntryModel();
 
 		$entry->sectionId  = blx()->request->getRequiredPost('sectionId');
 		$entry->locale     = blx()->request->getPost('locale', blx()->i18n->getPrimarySiteLocale()->getId());
@@ -79,7 +79,7 @@ class EntriesController extends BaseController
 
 		$entryId = blx()->request->getRequiredPost('id');
 
-		blx()->entries->deleteEntryById($entryId);
+		blx()->elements->deleteElementsById($entryId);
 		$this->returnJson(array('success' => true));
 	}
 }

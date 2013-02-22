@@ -49,7 +49,7 @@ class SectionsController extends BaseController
 
 		// Set the field layout
 		$fieldLayout = blx()->fields->assembleLayoutFromPost();
-		$fieldLayout->type = 'SectionEntry';
+		$fieldLayout->type = ElementType::Entry;
 		$section->setFieldLayout($fieldLayout);
 
 		// Save it

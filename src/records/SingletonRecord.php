@@ -32,7 +32,7 @@ class SingletonRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'entry'       => array(static::BELONGS_TO, 'EntryRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
+			'element'     => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
 			'fieldLayout' => array(static::BELONGS_TO, 'FieldLayoutRecord', 'onDelete' => static::SET_NULL),
 			'locales'     => array(static::HAS_MANY, 'SingletonLocaleRecord', 'singletonId'),
 		);

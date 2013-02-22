@@ -7,582 +7,6 @@ namespace Blocks;
 class EntriesService extends BaseApplicationComponent
 {
 	/**
-	 * Returns an entry criteria model for a given entry type.
-	 *
-	 * @param string $entryType
-	 * @return EntryCriteriaModel
-	 * @throws Exception
-	 */
-	public function getEntryCriteria($class = 'SectionEntry', $attributes = null)
-	{
-		$entryType = $this->getEntryType($class);
-
-		if (!$entryType)
-		{
-			throw new Exception(Blocks::t('No entry type exists with the class handle “{class}”.', array('class' => $class)));
-		}
-
-		return new EntryCriteriaModel($attributes, $entryType);
-	}
-
-	/**
-	 * Finds entries.
-	 *
-	 * @param mixed $criteria
-	 * @return array
-	 */
-	public function findEntries($criteria = null)
-	{
-		$entries = array();
-		$subquery = $this->buildEntriesQuery($criteria);
-
-		if ($subquery)
-		{
-			$query = blx()->db->createCommand()
-				//->select('r.id, r.type, r.postDate, r.expiryDate, r.enabled, r.archived, r.dateCreated, r.dateUpdated, r.locale, r.title, r.uri, r.sectionId, r.slug')
-				->select('*')
-				->from('('.$subquery->getText().') AS '.blx()->db->quoteTableName('r'))
-				->group('r.id');
-
-			$query->params = $subquery->params;
-
-			if ($criteria->order)
-			{
-				$query->order($criteria->order);
-			}
-
-			if ($criteria->offset)
-			{
-				$query->offset($criteria->offset);
-			}
-
-			if ($criteria->limit)
-			{
-				$query->limit($criteria->limit);
-			}
-
-			$result = $query->queryAll();
-
-			$entryType = $criteria->getEntryType();
-			$indexBy = $criteria->indexBy;
-
-			foreach ($result as $row)
-			{
-				$entry = $entryType->populateEntryModel($row);
-
-				if ($indexBy)
-				{
-					$entries[$entry->$indexBy] = $entry;
-				}
-				else
-				{
-					$entries[] = $entry;
-				}
-			}
-		}
-
-		return $entries;
-	}
-
-	/**
-	 * Finds an entry.
-	 *
-	 * @param mixed $criteria
-	 * @return SectionEntryModel|null
-	 */
-	public function findEntry($criteria = null)
-	{
-		$query = $this->buildEntriesQuery($criteria);
-
-		if ($query)
-		{
-			$result = $query->queryRow();
-
-			if ($result)
-			{
-				return $criteria->getEntryType()->populateEntryModel($result);
-			}
-		}
-	}
-
-	/**
-	 * Gets the total number of entries.
-	 *
-	 * @param mixed $criteria
-	 * @return int
-	 */
-	public function getTotalEntries($criteria = null)
-	{
-		$subquery = $this->buildEntriesQuery($criteria);
-
-		if ($subquery)
-		{
-			$subquery->select('e.id')->group('e.id');
-
-			$query = blx()->db->createCommand()
-				->from('('.$subquery->getText().') AS '.blx()->db->quoteTableName('r'));
-
-			$query->params = $subquery->params;
-
-			return $query->count('r.id');
-		}
-		else
-		{
-			return 0;
-		}
-	}
-
-	/**
-	 * Returns a DbCommand instance ready to search for entries based on a given entry criteria.
-	 *
-	 * @param mixed &$criteria
-	 * @return DbCommand|false
-	 */
-	public function buildEntriesQuery(&$criteria = null)
-	{
-		if (!($criteria instanceof EntryCriteriaModel))
-		{
-			$criteria = $this->getEntryCriteria('SectionEntry', $criteria);
-		}
-
-		$entryType = $criteria->getEntryType();
-
-		$query = blx()->db->createCommand()
-			->select('e.id, e.type, e.postDate, e.expiryDate, e.enabled, e.archived, e.dateCreated, e.dateUpdated, e_i18n.locale, e_i18n.title, e_i18n.uri')
-			->from('entries e');
-
-		$whereConditions = array();
-
-		if ($entryType->isLocalizable())
-		{
-			$query->join('entries_i18n e_i18n', 'e_i18n.entryId = e.id');
-
-			// Locale conditions
-			if (!$criteria->locale)
-			{
-				$criteria->locale = blx()->language;
-			}
-
-			$localeIds = array_unique(array_merge(
-				array($criteria->locale),
-				blx()->i18n->getSiteLocaleIds()
-			));
-
-			$quotedLocaleColumn = blx()->db->quoteColumnName('e_i18n.locale');
-
-			if (count($localeIds) == 1)
-			{
-				$whereConditions[] = 'e_i18n.locale = :locale';
-				$query->params[':locale'] = $localeIds[0];
-			}
-			else
-			{
-				$quotedLocales = array();
-				$localeOrder = array();
-
-				foreach ($localeIds as $localeId)
-				{
-					$quotedLocale = blx()->db->quoteValue($localeId);
-					$quotedLocales[] = $quotedLocale;
-					$localeOrder[] = "({$quotedLocaleColumn} = {$quotedLocale}) DESC";
-				}
-
-				$whereConditions[] = "{$quotedLocaleColumn} IN (".implode(', ', $quotedLocales).')';
-				$query->order($localeOrder);
-			}
-		}
-		else
-		{
-			$query->leftJoin('entries_i18n e_i18n', 'e.id = e_i18n.entryId');
-		}
-
-		// The rest
-		if ($criteria->id)
-		{
-			$whereConditions[] = DbHelper::parseParam('e.id', $criteria->id, $query->params);
-		}
-
-		if ($criteria->uri)
-		{
-			$whereConditions[] = DbHelper::parseParam('e_i18n.uri', $criteria->uri, $query->params);
-		}
-
-		if ($criteria->after)
-		{
-			$whereConditions[] = DbHelper::parseDateParam('e.postDate', '>=', $criteria->after, $query->params);
-		}
-
-		if ($criteria->before)
-		{
-			$whereConditions[] = DbHelper::parseDateParam('e.postDate', '<', $criteria->before, $query->params);
-		}
-
-		if ($criteria->archived)
-		{
-			$whereConditions[] = 'e.archived = 1';
-		}
-		else
-		{
-			$whereConditions[] = 'e.archived = 0';
-
-			if ($criteria->status)
-			{
-				$statusCondition = $this->_getEntryStatusCondition($criteria->status);
-
-				if ($statusCondition)
-				{
-					$whereConditions[] = $statusCondition;
-				}
-			}
-		}
-
-		// Apply the conditions
-		if (count($whereConditions) == 1)
-		{
-			$query->where($whereConditions[0]);
-		}
-		else
-		{
-			array_unshift($whereConditions, 'and');
-			$query->where($whereConditions);
-		}
-
-		// Give the entry type a chance to make any changes
-		$entryType = $criteria->getEntryType();
-
-		if ($entryType->modifyEntriesQuery($query, $criteria) !== false)
-		{
-			return $query;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	/**
-	 * Returns the entry status conditions.
-	 *
-	 * @access private
-	 * @param $statusParam
-	 * @return array
-	 */
-	private function _getEntryStatusCondition($statusParam)
-	{
-		$statusConditions = array();
-		$statuses = ArrayHelper::stringToArray($statusParam);
-
-		foreach ($statuses as $status)
-		{
-			$status = strtolower($status);
-			$currentTimeDb = DateTimeHelper::currentTimeForDb();
-
-			switch ($status)
-			{
-				case 'live':
-				{
-					$statusConditions[] = array('and',
-						'e.enabled = 1',
-						"e.postDate <= '{$currentTimeDb}'",
-						array('or', 'e.expiryDate is null', "e.expiryDate > '{$currentTimeDb}'")
-					);
-					break;
-				}
-				case 'pending':
-				{
-					$statusConditions[] = array('and',
-						'e.enabled = 1',
-						"e.postDate > '{$currentTimeDb}'"
-					);
-					break;
-				}
-				case 'expired':
-				{
-					$statusConditions[] = array('and',
-						'e.enabled = 1',
-						'e.expiryDate is not null',
-						"e.expiryDate <= '{$currentTimeDb}'"
-					);
-					break;
-				}
-				case 'disabled':
-				{
-					$statusConditions[] = 'e.enabled != 1';
-				}
-			}
-		}
-
-		if ($statusConditions)
-		{
-			if (count($statusConditions) == 1)
-			{
-				return $statusConditions[0];
-			}
-			else
-			{
-				array_unshift($conditions, 'or');
-				return $statusConditions;
-			}
-		}
-	}
-
-	/**
-	 * Returns the content record for a given entry and locale.
-	 *
-	 * @param int $entryId
-	 * @param string|null $localeId
-	 * @return EntryContentRecord|null
-	 */
-	public function getEntryContentRecord($entryId, $localeId = null)
-	{
-		$attributes = array('entryId' => $entryId);
-
-		if ($localeId)
-		{
-			$attributes['locale'] = $localeId;
-		}
-
-		return EntryContentRecord::model()->findByAttributes($attributes);
-	}
-
-	/**
-	 * Returns the content for a given entry and locale.
-	 *
-	 * @param int $entryId
-	 * @param string|null $localeId
-	 * @return array|null
-	 */
-	public function getEntryContent($entryId, $localeId = null)
-	{
-		$record = $this->getEntryContentRecord($entryId, $localeId);
-
-		if ($record)
-		{
-			return $record->getAttributes();
-		}
-	}
-
-	/**
-	 * Preps an EntryContentRecord to be saved with an entry's data.
-	 *
-	 * @param EntryModel $entry
-	 * @param FieldLayoutModel $fieldLayout
-	 * @param stirng|null $localeId
-	 * @return EntryContentRecord
-	 */
-	public function prepEntryContent(EntryModel $entry, FieldLayoutModel $fieldLayout, $localeId = null)
-	{
-		if ($entry->id)
-		{
-			$contentRecord = $this->getEntryContentRecord($entry->id, $localeId);
-		}
-
-		if (empty($contentRecord))
-		{
-			$contentRecord = new EntryContentRecord();
-			$contentRecord->entryId = $entry->id;
-
-			if ($localeId)
-			{
-				$contentRecord->locale = $localeId;
-			}
-			else
-			{
-				$contentRecord->locale = blx()->i18n->getPrimarySiteLocale()->getId();
-			}
-		}
-
-		// Set the required fields from the layout
-		$requiredFields = array();
-
-		foreach ($fieldLayout->getFields() as $field)
-		{
-			if ($field->required)
-			{
-				$requiredFields[] = $field->fieldId;
-			}
-		}
-
-		if ($requiredFields)
-		{
-			$contentRecord->setRequiredFields($requiredFields);
-		}
-
-		// Populate the fields' content
-		foreach (blx()->fields->getAllFields() as $field)
-		{
-			$fieldType = blx()->fields->populateFieldType($field);
-			$fieldType->entry = $entry;
-
-			if ($fieldType->defineContentAttribute())
-			{
-				$handle = $field->handle;
-				$contentRecord->$handle = $fieldType->getPostData();
-			}
-		}
-
-		return $contentRecord;
-	}
-
-	/**
-	 * Performs post-save entry operations, such as calling all fieldtypes' onAfterEntrySave() methods.
-	 *
-	 * @access private
-	 * @param EntryModel $entry
-	 * @param EntryContentRecord $entry
-	 */
-	private function _postSaveOperations(EntryModel $entry, EntryContentRecord $contentRecord)
-	{
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			// Get the other locales' content records
-			$otherContentRecords = EntryContentRecord::model()->findAll(
-				'entryId = :entryId AND locale != :locale',
-				array(':entryId' => $entry->id, ':locale' => $contentRecord->locale)
-			);
-		}
-
-		$updateOtherContentRecords = (Blocks::hasPackage(BlocksPackage::Language) && $otherContentRecords);
-
-		$fields = blx()->fields->getAllFields();
-		$fieldTypes = array();
-
-		foreach ($fields as $field)
-		{
-			$fieldType = blx()->fields->populateFieldType($field);
-			$fieldType->entry = $entry;
-			$fieldTypes[] = $fieldType;
-
-			// If this field isn't translatable, we should set its new value on the other content records
-			if (!$field->translatable && $updateOtherContentRecords && $fieldType->defineContentAttribute())
-			{
-				$handle = $field->handle;
-
-				foreach ($otherContentRecords as $otherContentRecord)
-				{
-					$otherContentRecord->$handle = $contentRecord->$handle;
-				}
-			}
-		}
-
-		// Update each of the other content records
-		if ($updateOtherContentRecords)
-		{
-			foreach ($otherContentRecords as $otherContentRecord)
-			{
-				$otherContentRecord->save();
-			}
-		}
-
-		// Now that everything is finally saved, call fieldtypes' onAfterEntrySave();
-		foreach ($fieldTypes as $fieldType)
-		{
-			$fieldType->onAfterEntrySave();
-		}
-	}
-
-	/**
-	 * Saves an entry's content.
-	 *
-	 * @param EntryModel $entry
-	 * @param FieldLayoutModel $fieldLayout
-	 * @param stirng|null $localeId
-	 */
-	public function saveEntryContent(EntryModel $entry, FieldLayoutModel $fieldLayout, $localeId = null)
-	{
-		if (!$entry->id)
-		{
-			throw new Exception(Blocks::t('Cannot save the content of an unsaved entry.'));
-		}
-
-		$contentRecord = $this->prepEntryContent($entry, $fieldLayout, $localeId);
-
-		if ($contentRecord->save())
-		{
-			$this->_postSaveOperations($entry, $contentRecord);
-			return true;
-		}
-		else
-		{
-			$entry->addErrors($contentRecord->getErrors());
-			return false;
-		}
-	}
-
-	/**
-	 * Returns an entry's URI for a given locale.
-	 *
-	 * @param int $entryId
-	 * @param string $localeId
-	 * @return string
-	 */
-	public function getEntryUriForLocale($entryId, $localeId)
-	{
-		return blx()->db->createCommand()
-			->select('uri')
-			->from('entries_i18n')
-			->where(array('entryId' => $entryId, 'locale' => $localeId))
-			->queryScalar();
-	}
-
-	/**
-	 * Returns the CP edit URL for a given entry.
-	 *
-	 * @param EntryModel $entry
-	 * @return string|null
-	 */
-	public function getCpEditUrlForEntry(EntryModel $entry)
-	{
-		$entryType = $this->getEntryType($entry->type);
-
-		if ($entryType)
-		{
-			$uri = $entryType->getCpEditUriForEntry($entry);
-
-			if ($uri !== false)
-			{
-				return UrlHelper::getCpUrl($uri);
-			}
-		}
-	}
-
-	/**
-	 * Returns the localization record for a given entry and locale.
-	 *
-	 * @param int $entryId
-	 * @param string $locale
-	 */
-	public function getEntryLocalizationRecord($entryId, $localeId)
-	{
-		return EntryLocalizationRecord::model()->findByAttributes(array(
-			'entryId' => $entryId,
-			'locale'  => $localeId
-		));
-	}
-
-	/**
-	 * Deletes an entry(s) by its ID(s).
-	 *
-	 * @param int|array $entryId
-	 * @return bool
-	 */
-	public function deleteEntryById($entryId)
-	{
-		if (is_array($entryId))
-		{
-			$condition = array('in', 'id', $entryId);
-		}
-		else
-		{
-			$condition = array('id' => $entryId);
-		}
-
-		blx()->db->createCommand()->delete('entries', $condition);
-
-		return true;
-	}
-
-	/**
 	 * Returns tags by a given entry ID.
 	 *
 	 * @param $entryId
@@ -592,7 +16,7 @@ class EntriesService extends BaseApplicationComponent
 	{
 		$tags = array();
 
-		$entryRecord = EntryRecord::model()->findByPk($entryId);
+		$entryRecord = EntryRecord::model()->findById($entryId);
 		$entryTagRecords = $this->_getTagsForEntry($entryRecord);
 
 		foreach ($entryTagRecords as $record)
@@ -606,11 +30,11 @@ class EntriesService extends BaseApplicationComponent
 	/**
 	 * Saves an entry.
 	 *
-	 * @param SectionEntryModel $entry
+	 * @param EntryModel $entry
 	 * @throws Exception
 	 * @return bool
 	 */
-	public function saveEntry(SectionEntryModel $entry)
+	public function saveEntry(EntryModel $entry)
 	{
 		$section = blx()->sections->getSectionById($entry->sectionId);
 
@@ -626,75 +50,43 @@ class EntriesService extends BaseApplicationComponent
 			throw new Exception(Blocks::t('The section “{section}” is not enabled for the locale {locale}', array('section' => $section->name, 'locale' => $entry->locale)));
 		}
 
-		// Set the basic stuff
+		// Entry data
 		if ($entry->id)
 		{
-			$entryRecord = EntryRecord::model()->with('entryTagEntries')->findById($entry->id);
+			$entryRecord = EntryRecord::model()->with('element', 'entryTagEntries')->findById($entry->id);
 
 			if (!$entryRecord)
 			{
 				throw new Exception(Blocks::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
 			}
+
+			$elementRecord = $entryRecord->element;
 		}
 		else
 		{
 			$entryRecord = new EntryRecord();
-			$entryRecord->type = 'SectionEntry';
+
+			$elementRecord = new ElementRecord();
+			$elementRecord->type = ElementType::Entry;
 		}
 
+		$entryRecord->sectionId  = $entry->sectionId;
+		$entryRecord->authorId   = $entry->authorId;
 		$entryRecord->postDate   = DateTimeHelper::normalizeDate($entry->postDate, true);
 		$entryRecord->expiryDate = DateTimeHelper::normalizeDate($entry->expiryDate);
-		$entryRecord->enabled    = $entry->enabled;
+
+		$elementRecord->enabled = $entry->enabled;
 
 		$entryRecord->validate();
 		$entry->addErrors($entryRecord->getErrors());
 
-		// Section entry data
+		$elementRecord->validate();
+		$entry->addErrors($elementRecord->getErrors());
+
+		// Entry locale data
 		if ($entry->id)
 		{
-			$sectionEntryRecord = SectionEntryRecord::model()->findById($entry->id);
-		}
-
-		if (empty($sectionEntryRecord))
-		{
-			$sectionEntryRecord = new SectionEntryRecord();
-		}
-
-		$sectionEntryRecord->sectionId = $entry->sectionId;
-		$sectionEntryRecord->authorId  = $entry->authorId;
-
-		$sectionEntryRecord->validate();
-		$entry->addErrors($sectionEntryRecord->getErrors());
-
-		// Section entry localization data
-		if ($entry->id)
-		{
-			$sectionEntryLocaleRecord = SectionEntryLocalizationRecord::model()->findByAttributes(array(
-				'entryId' => $entry->id,
-				'locale'  => $entry->locale
-			));
-		}
-
-		if (empty($sectionEntryLocaleRecord))
-		{
-			$sectionEntryLocaleRecord = new SectionEntryLocalizationRecord();
-			$sectionEntryLocaleRecord->sectionId = $entry->sectionId;
-			$sectionEntryLocaleRecord->locale    = $entry->locale;
-		}
-
-		if ($sectionEntryLocaleRecord->isNewRecord() || $entry->slug != $sectionEntryLocaleRecord->slug)
-		{
-			$this->_generateEntrySlug($entry);
-			$sectionEntryLocaleRecord->slug = $entry->slug;
-		}
-
-		$sectionEntryLocaleRecord->validate();
-		$entry->addErrors($sectionEntryLocaleRecord->getErrors());
-
-		// Entry localization data
-		if ($entry->id)
-		{
-			$entryLocaleRecord = EntryLocalizationRecord::model()->findByAttributes(array(
+			$entryLocaleRecord = EntryLocaleRecord::model()->findByAttributes(array(
 				'entryId' => $entry->id,
 				'locale'  => $entry->locale
 			));
@@ -702,11 +94,36 @@ class EntriesService extends BaseApplicationComponent
 
 		if (empty($entryLocaleRecord))
 		{
-			$entryLocaleRecord = new EntryLocalizationRecord();
-			$entryLocaleRecord->locale = $entry->locale;
+			$entryLocaleRecord = new EntryLocaleRecord();
+			$entryLocaleRecord->sectionId = $entry->sectionId;
+			$entryLocaleRecord->locale    = $entry->locale;
 		}
 
 		$entryLocaleRecord->title = $entry->title;
+
+		if ($entryLocaleRecord->isNewRecord() || $entry->slug != $entryLocaleRecord->slug)
+		{
+			$this->_generateEntrySlug($entry);
+			$entryLocaleRecord->slug = $entry->slug;
+		}
+
+		$entryLocaleRecord->validate();
+		$entry->addErrors($entryLocaleRecord->getErrors());
+
+		// Element locale data
+		if ($entry->id)
+		{
+			$elementLocaleRecord = ElementLocaleRecord::model()->findByAttributes(array(
+				'elementId' => $entry->id,
+				'locale'    => $entry->locale
+			));
+		}
+
+		if (empty($elementLocaleRecord))
+		{
+			$elementLocaleRecord = new EntryLocaleRecord();
+			$elementLocaleRecord->locale = $entry->locale;
+		}
 
 		if ($section->hasUrls)
 		{
@@ -721,14 +138,14 @@ class EntriesService extends BaseApplicationComponent
 				)));
 			}
 
-			$entryLocaleRecord->uri = str_replace('{slug}', $entry->slug, $urlFormat);
+			$elementLocaleRecord->uri = str_replace('{slug}', $entry->slug, $urlFormat);
 		}
 
-		$entryLocaleRecord->validate();
-		$entry->addErrors($entryLocaleRecord->getErrors());
+		$elementLocaleRecord->validate();
+		$entry->addErrors($elementLocaleRecord->getErrors());
 
 		// Entry content
-		$contentRecord = $this->prepEntryContent($entry, $section->getFieldLayout(), $entry->locale);
+		$contentRecord = blx()->elements->prepElementContent($entry, $section->getFieldLayout(), $entry->locale);
 		$contentRecord->validate();
 		$entry->addErrors($contentRecord->getErrors());
 
@@ -739,7 +156,8 @@ class EntriesService extends BaseApplicationComponent
 
 		if (!$entry->hasErrors())
 		{
-			$entryRecord->save(false);
+			// Save the element record first
+			$elementRecord->save(false);
 
 			$entry->postDate   = $entryRecord->postDate;
 			$entry->expiryDate = $entryRecord->expiryDate;
@@ -747,19 +165,19 @@ class EntriesService extends BaseApplicationComponent
 			// Now that we have an entry ID, save it on the other stuff
 			if (!$entry->id)
 			{
-				$entry->id = $entryRecord->id;
-				$sectionEntryRecord->id = $entry->id;
+				$entry->id = $elementRecord->id;
+				$entryRecord->id = $entry->id;
 			}
 
-			$sectionEntryRecord->save(false);
+			$entryRecord->save(false);
 
-			$sectionEntryLocaleRecord->entryId = $entry->id;
 			$entryLocaleRecord->entryId = $entry->id;
-			$contentRecord->entryId = $entry->id;
+			$elementLocaleRecord->elementId = $entry->id;
+			$contentRecord->elementId = $entry->id;
 
 			// Save the other records
-			$sectionEntryLocaleRecord->save(false);
 			$entryLocaleRecord->save(false);
+			$elementLocaleRecord->save(false);
 			$contentRecord->save(false);
 
 			// If we have any tags to process
@@ -781,7 +199,7 @@ class EntriesService extends BaseApplicationComponent
 					{
 						$entryTagEntryRecord = new EntryTagEntryRecord();
 						$entryTagEntryRecord->tagId = $addEntryTagRecord->id;
-						$entryTagEntryRecord->entryId = $entryRecord->id;
+						$entryTagEntryRecord->entryId = $elementRecord->id;
 						$entryTagEntryRecord->save(false);
 
 						$this->_updateTagCount($addEntryTagRecord);
@@ -795,7 +213,7 @@ class EntriesService extends BaseApplicationComponent
 					{
 						EntryTagEntryRecord::model()->deleteAllByAttributes(array(
 							'tagId'   => $deleteEntryTagRecord->id,
-							'entryId' => $entryRecord->id
+							'entryId' => $elementRecord->id
 						));
 
 						$this->_updateTagCount($deleteEntryTagRecord);
@@ -810,7 +228,7 @@ class EntriesService extends BaseApplicationComponent
 			}
 
 			// Perform some post-save operations
-			$this->_postSaveOperations($entry, $contentRecord);
+			blx()->elements->postSaveOperations($entry, $contentRecord);
 
 			return true;
 		}
@@ -820,30 +238,6 @@ class EntriesService extends BaseApplicationComponent
 		}
 	}
 
-	// Entry types
-	// ===========
-
-	/**
-	 * Returns all installed entry types.
-	 *
-	 * @return array
-	 */
-	public function getAllEntryTypes()
-	{
-		return blx()->components->getComponentsByType(ComponentType::Entry);
-	}
-
-	/**
-	 * Gets an entry type.
-	 *
-	 * @param string $class
-	 * @return BaseEntryType|null
-	 */
-	public function getEntryType($class)
-	{
-		return blx()->components->getComponentByTypeAndClass(ComponentType::Entry, $class);
-	}
-
 	// Private methods
 	// ===============
 
@@ -851,9 +245,9 @@ class EntriesService extends BaseApplicationComponent
 	 * Generates an entry slug based on its title.
 	 *
 	 * @access private
-	 * @param SectionEntryModel $entry
+	 * @param EntryModel $entry
 	 */
-	private function _generateEntrySlug(SectionEntryModel $entry)
+	private function _generateEntrySlug(EntryModel $entry)
 	{
 		$slug = ($entry->slug ? $entry->slug : $entry->title);
 
@@ -892,7 +286,7 @@ class EntriesService extends BaseApplicationComponent
 
 				$totalEntries = blx()->db->createCommand()
 					->select('count(id)')
-					->from('sectionentries_i18n')
+					->from('entries_i18n')
 					->where($conditions, $params)
 					->queryScalar();
 
@@ -959,7 +353,7 @@ class EntriesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Processes any tags on the EntryModel for the given EntryRecord.  Will generate a list of tags that need to be
+	 * Processes any tags on the ElementModel for the given EntryRecord.  Will generate a list of tags that need to be
 	 * added, updated or deleted for an entry.
 	 *
 	 * @param EntryModel  $entry

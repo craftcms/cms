@@ -2,12 +2,12 @@
 namespace Blocks;
 
 /**
- * Entry type template variable
+ * Element type template variable
  */
-class EntryTypeVariable extends BaseComponentTypeVariable
+class ElementTypeVariable extends BaseComponentTypeVariable
 {
 	/**
-	 * Returns the entry type's link settings HTML.
+	 * Returns the element type's link settings HTML.
 	 *
 	 * @return string
 	 */

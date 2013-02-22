@@ -14,7 +14,7 @@ class SingletonsService extends BaseApplicationComponent
 	 */
 	public function getAllSingletons($indexBy = null)
 	{
-		$singletonRecords = SingletonRecord::model()->with('entry', 'entry.i18n')->ordered()->findAll();
+		$singletonRecords = SingletonRecord::model()->with('element', 'element.i18n')->ordered()->findAll();
 		return SingletonModel::populateModels($singletonRecords, $indexBy);
 	}
 
@@ -65,7 +65,7 @@ class SingletonsService extends BaseApplicationComponent
 	 */
 	public function getSingletonById($singletonId)
 	{
-		$singletonRecord = SingletonRecord::model()->with('entry')->findById($singletonId);
+		$singletonRecord = SingletonRecord::model()->with('element')->findById($singletonId);
 
 		if ($singletonRecord)
 		{
@@ -81,7 +81,7 @@ class SingletonsService extends BaseApplicationComponent
 	 */
 	public function getSingletonByUri($uri)
 	{
-		$singletonRecord = SingletonRecord::model()->with('entry')->findByAttributes(array(
+		$singletonRecord = SingletonRecord::model()->with('element')->findByAttributes(array(
 			'uri' => $uri
 		));
 
@@ -140,14 +140,14 @@ class SingletonsService extends BaseApplicationComponent
 
 			if ($singleton->id)
 			{
-				$i18nRecord = blx()->entries->getEntryLocalizationRecord($singleton->id, $localeId);
+				$i18nRecord = blx()->elements->getElementLocaleRecord($singleton->id, $localeId);
 			}
 
 			if (!$i18nRecord)
 			{
-				$i18nRecord = new EntryLocalizationRecord();
-				$i18nRecord->entryId = $singleton->id;
-				$i18nRecord->locale  = $localeId;
+				$i18nRecord = new ElementLocaleRecord();
+				$i18nRecord->elementId = $singleton->id;
+				$i18nRecord->locale    = $localeId;
 			}
 
 			$i18nRecord->title = $singleton->name;
@@ -177,18 +177,18 @@ class SingletonsService extends BaseApplicationComponent
 
 			if ($isNewSingleton)
 			{
-				// Create the entry record
-				$entryRecord = new EntryRecord();
-				$entryRecord->type = 'Singleton';
-				$entryRecord->save();
+				// Create the element record
+				$elementRecord = new ElementRecord();
+				$elementRecord->type = ElementType::Singleton;
+				$elementRecord->save();
 
-				// Now that we have the entry ID, save it on everything else
-				$singleton->id = $entryRecord->id;
-				$singletonRecord->id = $entryRecord->id;
+				// Now that we have the element ID, save it on everything else
+				$singleton->id = $elementRecord->id;
+				$singletonRecord->id = $elementRecord->id;
 
 				foreach ($i18nRecords as $i18nRecord)
 				{
-					$i18nRecord->entryId = $entryRecord->id;
+					$i18nRecord->elementId = $elementRecord->id;
 				}
 			}
 
@@ -199,7 +199,7 @@ class SingletonsService extends BaseApplicationComponent
 				$i18nRecord->save(false);
 			}
 
-			// Update the singletonlocales table
+			// Update the singletons_i18n table
 			$newLocaleData = array();
 
 			if (!$isNewSingleton)
@@ -221,7 +221,7 @@ class SingletonsService extends BaseApplicationComponent
 			}
 
 			// Insert the new locales
-			blx()->db->createCommand()->insertAll('singletonlocales', array('singletonId', 'locale'), $newLocaleData);
+			blx()->db->createCommand()->insertAll('singletons_i18n', array('singletonId', 'locale'), $newLocaleData);
 
 			if (!$isNewSingleton)
 			{
@@ -229,7 +229,7 @@ class SingletonsService extends BaseApplicationComponent
 				$disabledLocaleIds = array_diff(array_keys($oldSingletonLocales), array_keys($singleton->getLocales()));
 				foreach ($disabledLocaleIds as $localeId)
 				{
-					blx()->db->createCommand()->delete('singletonlocales', array('id' => $oldSingletonLocales[$localeId]->id));
+					blx()->db->createCommand()->delete('singletons_i18n', array('id' => $oldSingletonLocales[$localeId]->id));
 				}
 			}
 
@@ -249,7 +249,7 @@ class SingletonsService extends BaseApplicationComponent
 	 */
 	public function saveContent(SingletonModel $singleton)
 	{
-		return blx()->entries->saveEntryContent($singleton, $singleton->getFieldLayout());
+		return blx()->elements->saveElementContent($singleton, $singleton->getFieldLayout());
 	}
 
 	/**
@@ -276,7 +276,7 @@ class SingletonsService extends BaseApplicationComponent
 	{
 		if ($singletonId)
 		{
-			$singletonRecord = SingletonRecord::model()->with('entry')->findById($singletonId);
+			$singletonRecord = SingletonRecord::model()->with('element')->findById($singletonId);
 
 			if (!$singletonRecord)
 			{

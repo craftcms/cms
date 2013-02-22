@@ -47,7 +47,7 @@ class SingletonsController extends BaseController
 
 		// Set the field layout
 		$fieldLayout = blx()->fields->assembleLayoutFromPost();
-		$fieldLayout->type = 'Singleton';
+		$fieldLayout->type = ElementType::Singleton;
 		$singleton->setFieldLayout($fieldLayout);
 
 		// Save it

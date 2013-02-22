@@ -225,10 +225,10 @@ class EntryRevisionsService extends BaseApplicationComponent
 	/**
 	 * Saves a new versoin.
 	 *
-	 * @param EntryModel $entry
+	 * @param ElementModel $entry
 	 * @return bool
 	 */
-	public function saveVersion(EntryModel $entry)
+	public function saveVersion(ElementModel $entry)
 	{
 		$versionRecord = new EntryVersionRecord();
 		$versionRecord->entryId = $entry->id;

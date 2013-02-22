@@ -17,11 +17,11 @@ class LinksFieldType extends BaseFieldType
 	{
 		$name = Blocks::t('Links');
 
-		$entryType = $this->_getRightEntryType(false);
+		$elementType = $this->_getRightElementType(false);
 
-		if ($entryType)
+		if ($elementType)
 		{
-			$name .= ' ('.$entryType->getName().')';
+			$name .= ' ('.$elementType->getName().')';
 		}
 
 		return $name;
@@ -61,17 +61,17 @@ class LinksFieldType extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		$entryType = $this->_getRightEntryType();
+		$elementType = $this->_getRightElementType();
 		$criteria = $this->_getCriteria();
 
 		if ($criteria)
 		{
-			$entryType->setLinkSettings($criteria->rightSettings);
+			$elementType->setLinkSettings($criteria->rightSettings);
 		}
 
 		return blx()->templates->render('_components/fieldtypes/Links/settings', array(
-			'entryType' => new EntryTypeVariable($entryType),
-			'settings'  => $this->getSettings()
+			'elementType' => new ElementTypeVariable($elementType),
+			'settings'    => $this->getSettings()
 		));
 	}
 
@@ -83,33 +83,33 @@ class LinksFieldType extends BaseFieldType
 	 */
 	public function prepSettings($settings)
 	{
-		$entryTypeClass = $settings['type'];
+		$elementTypeClass = $settings['type'];
 
-		if (isset($settings['types'][$entryTypeClass]))
+		if (isset($settings['types'][$elementTypeClass]))
 		{
-			$entryTypeSettings = $settings['types'][$entryTypeClass];
+			$elementTypeSettings = $settings['types'][$elementTypeClass];
 		}
 		else
 		{
-			$entryTypeSettings = array();
+			$elementTypeSettings = array();
 		}
 
 		unset($settings['types'], $settings['type']);
 
-		// Give the entry type a chance to pre-process any of its settings
-		$entryType = blx()->links->getLinkableEntryType($entryTypeClass);
+		// Give the element type a chance to pre-process any of its settings
+		$elementType = blx()->links->getLinkableElementType($elementTypeClass);
 
-		if ($entryType)
+		if ($elementType)
 		{
-			$entryTypeSettings = $entryType->prepLinkSettings($entryTypeSettings);
+			$elementTypeSettings = $elementType->prepLinkSettings($elementTypeSettings);
 		}
 
 		if (isset($settings['criteriaId']))
 		{
 			$criteria = blx()->links->getCriteriaById($settings['criteriaId']);
 
-			// Has the entry type changed?
-			if ($criteria && $criteria->rightEntryType != $entryTypeClass)
+			// Has the element type changed?
+			if ($criteria && $criteria->rightElementType != $elementTypeClass)
 			{
 				// Delete the previous links
 				blx()->db->createCommand()->delete('links', array('criteriaId' => $criteria->id));
@@ -121,11 +121,11 @@ class LinksFieldType extends BaseFieldType
 			$criteria = new LinkCriteriaModel();
 		}
 
-		$criteria->ltrHandle      = $this->model->handle;
-		$criteria->rtlHandle      = ($settings['reverseHandle'] ? $settings['reverseHandle'] : null);
-		$criteria->leftEntryType  = $this->model->getClassHandle();
-		$criteria->rightEntryType = $entryTypeClass;
-		$criteria->rightSettings  = $entryTypeSettings;
+		$criteria->ltrHandle        = $this->model->handle;
+		$criteria->rtlHandle        = ($settings['reverseHandle'] ? $settings['reverseHandle'] : null);
+		$criteria->leftElementType  = $this->model->getClassHandle();
+		$criteria->rightElementType = $elementTypeClass;
+		$criteria->rightSettings    = $elementTypeSettings;
 
 		if (!blx()->links->saveCriteria($criteria))
 		{
@@ -149,15 +149,15 @@ class LinksFieldType extends BaseFieldType
 
 		if ($criteria)
 		{
-			// $value will be an array of entry IDs if there was a validation error
+			// $value will be an array of element IDs if there was a validation error
 			// or we're loading a draft/version.
 			if (is_array($value))
 			{
-				return blx()->links->getEntriesById($criteria->rightEntryType, array_filter($value));
+				return blx()->links->getElementsById($criteria->rightElementType, array_filter($value));
 			}
-			else if ($this->entry && $this->entry->id)
+			else if ($this->element && $this->element->id)
 			{
-				return blx()->links->getLinkedEntries($criteria, $this->entry->id);
+				return blx()->links->getLinkedElements($criteria, $this->element->id);
 			}
 		}
 
@@ -168,14 +168,14 @@ class LinksFieldType extends BaseFieldType
 	 * Returns the field's input HTML.
 	 *
 	 * @param string $name
-	 * @param mixed  $entries
+	 * @param mixed  $elements
 	 * @return string
 	 */
-	public function getInputHtml($name, $entries)
+	public function getInputHtml($name, $elements)
 	{
-		if (!$entries)
+		if (!$elements)
 		{
-			$entries = array();
+			$elements = array();
 		}
 
 		$criteria = $this->_getCriteria();
@@ -185,40 +185,40 @@ class LinksFieldType extends BaseFieldType
 			$criteria = new LinkCriteriaModel();
 		}
 
-		$entryType = $this->_getRightEntryType();
+		$elementType = $this->_getRightElementType();
 
 		$settings = array_merge($this->getSettings()->getAttributes(), array(
-			'type'              => $entryType->getClassHandle(),
-			'entryTypeSettings' => $criteria->rightSettings,
+			'type'                => $elementType->getClassHandle(),
+			'elementTypeSettings' => $criteria->rightSettings,
 		));
 
-		$entryIds = array();
+		$elementIds = array();
 
-		foreach ($entries as $entry)
+		foreach ($elements as $element)
 		{
-			$entryIds[] = (int) $entry->id;
+			$elementIds[] = (int) $element->id;
 		}
 
 		$id = 'links-'.$this->model->id;
 
-		blx()->templates->includeJs('new Blocks.LinksField("'.$id.'", "'.$name.'", '.JsonHelper::encode($settings).', '.JsonHelper::encode($entryIds).');');
+		blx()->templates->includeJs('new Blocks.LinksField("'.$id.'", "'.$name.'", '.JsonHelper::encode($settings).', '.JsonHelper::encode($elementIds).');');
 
 		return blx()->templates->render('_components/fieldtypes/Links/input', array(
 			'id'       => $id,
 			'name'     => $name,
-			'entries'  => $entries,
+			'elements' => $elements,
 			'settings' => $settings,
 		));
 	}
 
 	/**
-	 * Performs any additional actions after the entry has been saved.
+	 * Performs any additional actions after the element has been saved.
 	 */
-	public function onAfterEntrySave()
+	public function onAfterElementSave()
 	{
-		$rawValue = $this->entry->getRawContent($this->model->handle);
-		$entryIds = is_array($rawValue) ? array_filter($rawValue) : array();
-		blx()->links->saveLinks($this->getSettings()->criteriaId, $this->entry->id, $entryIds);
+		$rawValue = $this->element->getRawContent($this->model->handle);
+		$elementIds = is_array($rawValue) ? array_filter($rawValue) : array();
+		blx()->links->saveLinks($this->getSettings()->criteriaId, $this->element->id, $elementIds);
 	}
 
 	/**
@@ -247,32 +247,32 @@ class LinksFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the right entry type.
+	 * Returns the right element type.
 	 *
 	 * @access private
-	 * @return BaseEntryType|null
+	 * @return BaseElementType|null
 	 */
-	private function _getRightEntryType($defaultToSectionEntries = true)
+	private function _getRightElementType($defaultToEntries = true)
 	{
 		$criteria = $this->_getCriteria();
 
 		if ($criteria)
 		{
-			$entryType = blx()->entries->getEntryType($criteria->rightEntryType);
+			$elementType = blx()->elements->getElementType($criteria->rightElementType);
 		}
 
-		if (empty($entryType))
+		if (empty($elementType))
 		{
-			if ($defaultToSectionEntries)
+			if ($defaultToEntries)
 			{
-				$entryType = blx()->links->getLinkableEntryType('SectionEntry');
+				$elementType = blx()->links->getLinkableElementType(ElementType::Entry);
 			}
 			else
 			{
-				$entryType = null;
+				$elementType = null;
 			}
 		}
 
-		return $entryType;
+		return $elementType;
 	}
 }

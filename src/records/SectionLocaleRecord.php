@@ -11,7 +11,7 @@ class SectionLocaleRecord extends BaseRecord
 	 */
 	public function getTableName()
 	{
-		return 'sectionlocales';
+		return 'sections_i18n';
 	}
 
 	/**

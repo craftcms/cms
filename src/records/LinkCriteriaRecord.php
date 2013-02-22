@@ -22,8 +22,8 @@ class LinkCriteriaRecord extends BaseRecord
 		return array(
 			'ltrHandle'      => AttributeType::String,
 			'rtlHandle'      => AttributeType::String,
-			'leftEntryType'  => array(AttributeType::ClassName, 'required' => true),
-			'rightEntryType' => array(AttributeType::ClassName, 'required' => true),
+			'leftElementType'  => array(AttributeType::ClassName, 'required' => true),
+			'rightElementType' => array(AttributeType::ClassName, 'required' => true),
 			'leftSettings'   => AttributeType::Mixed,
 			'rightSettings'  => AttributeType::Mixed,
 		);

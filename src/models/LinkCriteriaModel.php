@@ -15,8 +15,8 @@ class LinkCriteriaModel extends BaseModel
 			'id'             => AttributeType::Number,
 			'ltrHandle'      => AttributeType::String,
 			'rtlHandle'      => AttributeType::String,
-			'leftEntryType'  => AttributeType::ClassName,
-			'rightEntryType' => AttributeType::ClassName,
+			'leftElementType'  => AttributeType::ClassName,
+			'rightElementType' => AttributeType::ClassName,
 			'leftSettings'   => AttributeType::Mixed,
 			'rightSettings'  => AttributeType::Mixed,
 		);

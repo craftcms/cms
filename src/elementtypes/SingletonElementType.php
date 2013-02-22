@@ -2,12 +2,12 @@
 namespace Blocks;
 
 /**
- * Singleton entry type
+ * Singleton element type
  */
-class SingletonEntryType extends BaseEntryType
+class SingletonElementType extends BaseElementType
 {
 	/**
-	 * Returns the entry type name.
+	 * Returns the element type name.
 	 *
 	 * @return string
 	 */
@@ -19,10 +19,10 @@ class SingletonEntryType extends BaseEntryType
 	/**
 	 * Returns the CP edit URI for a given entry.
 	 *
-	 * @param EntryModel $entry
+	 * @param ElementModel $entry
 	 * @return string|null
 	 */
-	public function getCpEditUriForEntry(EntryModel $entry)
+	public function getCpEditUriForElement(ElementModel $entry)
 	{
 		return 'content/singletons/'.$entry->id;
 	}
@@ -33,7 +33,7 @@ class SingletonEntryType extends BaseEntryType
 	 * @param SingletonModel
 	 * @return string|false
 	 */
-	public function getSiteTemplateForMatchedEntry(SingletonModel $entry)
+	public function getSiteTemplateForMatchedElement(SingletonModel $entry)
 	{
 		return $entry->template;
 	}
@@ -43,13 +43,13 @@ class SingletonEntryType extends BaseEntryType
 	 *
 	 * @return string
 	 */
-	public function getVariableNameForMatchedEntry()
+	public function getVariableNameForMatchedElement()
 	{
 		return 'singleton';
 	}
 
 	/**
-	 * Returns whether this entry type is linkable.
+	 * Returns whether this element type is linkable.
 	 *
 	 * @return bool
 	 */
@@ -59,7 +59,7 @@ class SingletonEntryType extends BaseEntryType
 	}
 
 	/**
-	 * Defines any custom entry criteria attributes for this entry type.
+	 * Defines any custom entry criteria attributes for this element type.
 	 *
 	 * @return array
 	 */
@@ -74,14 +74,14 @@ class SingletonEntryType extends BaseEntryType
 	 * Modifies an entries query targeting entries of this type.
 	 *
 	 * @param DbCommand $query
-	 * @param EntryCriteriaModel $criteria
+	 * @param ElementCriteriaModel $criteria
 	 * @return mixed
 	 */
-	public function modifyEntriesQuery(DbCommand $query, EntryCriteriaModel $criteria)
+	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('s.name, s.template, s.fieldLayoutId')
-			->join('singletons s', 's.id = e.id');
+			->addSelect('singletons.name, singletons.template, singletons.fieldLayoutId')
+			->join('singletons singletons', 'singletons.id = elements.id');
 	}
 
 	/**
@@ -90,7 +90,7 @@ class SingletonEntryType extends BaseEntryType
 	 * @param array $row
 	 * @return array
 	 */
-	public function populateEntryModel($row)
+	public function populateElementModel($row)
 	{
 		return SingletonModel::populateModel($row);
 	}

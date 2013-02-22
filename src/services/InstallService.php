@@ -347,7 +347,7 @@ class InstallService extends BaseApplicationComponent
 		);
 
 		$layout = new FieldLayoutModel();
-		$layout->type = 'SectionEntry';
+		$layout->type = ElementType::Entry;
 		$layout->setTabs($layoutTabs);
 		$layout->setFields($layoutFields);
 

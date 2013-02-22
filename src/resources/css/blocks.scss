@@ -30,7 +30,7 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 .menulist ul li a.sel:before,
 .search:before,
 .datewrapper:before,
-.entry:before,
+.element:before,
 .secure:before,
 .insecure:before,
 .go:after,
@@ -607,10 +607,10 @@ body .redactor_box_fullscreen { z-index: 10000 !important; }
 
 .addlinksmodal .body { height: 250px; overflow: auto; @include unselectable; }
 
-.entry { margin: -5px 0; padding: 4px 7px; cursor: pointer; }
-.entry:before { content: 'l'; margin: -2px 5px 0 0; font-size: 15px; }
-.entry:hover { color: $selcolor; }
-.entry.sel { color: #fff; background-color: $selcolor; }
+.element { margin: -5px 0; padding: 4px 7px; cursor: pointer; }
+.element:before { content: 'l'; margin: -2px 5px 0 0; font-size: 15px; }
+.element:hover { color: $selcolor; }
+.element.sel { color: #fff; background-color: $selcolor; }
 
 /* errors */
 ul.errors { margin-top: 5px; list-style-type: square; padding-left: 20px; }

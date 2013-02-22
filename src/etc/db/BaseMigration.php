@@ -242,7 +242,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function dropIndex($table, $columns, $unique = false)
 	{
-		Blocks::log('Dropping '.($unique ? ' unique' : '').' index on $table ('.$columns.') ...');
+		Blocks::log('Dropping '.($unique ? ' unique' : '').' index on '.$table.' ('.$columns.') ...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->dropIndex($table, $columns, $unique);

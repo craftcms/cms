@@ -11,25 +11,25 @@
 	instructions: "What do you want to link to?"|t,
 	id: 'type',
 	name: 'type',
-	options: blx.links.getAllLinkableEntryTypes(),
-	value: entryType.classHandle,
+	options: blx.links.getAllLinkableElementTypes(),
+	value: elementType.classHandle,
 	toggle: true,
 	targetPrefix: 'linktype-'
 }) }}
 
 
-{% for _entryType in blx.links.getAllLinkableEntryTypes() %}
-	{% set isCurrent = (_entryType.classHandle == entryType.classHandle) %}
+{% for _elementType in blx.links.getAllLinkableElementTypes() %}
+	{% set isCurrent = (_elementType.classHandle == elementType.classHandle) %}
 	{% if isCurrent %}
-		{% set entryTypeSettings = entryType.getLinkSettingsHtml() %}
+		{% set elementTypeSettings = elementType.getLinkSettingsHtml() %}
 	{% else %}
-		{% set entryTypeSettings = _entryType.getLinkSettingsHtml() %}
+		{% set elementTypeSettings = _elementType.getLinkSettingsHtml() %}
 	{% endif %}
 
-	{% if entryTypeSettings %}
-		<div id="linktype-{{ _entryType.classHandle }}"{% if not isCurrent %} class="hidden"{% endif %}>
-			{% set namespace = 'types[' ~ _entryType.classHandle ~ ']' %}
-			{{- entryTypeSettings|ns(namespace)|raw -}}
+	{% if elementTypeSettings %}
+		<div id="linktype-{{ _elementType.classHandle }}"{% if not isCurrent %} class="hidden"{% endif %}>
+			{% set namespace = 'types[' ~ _elementType.classHandle ~ ']' %}
+			{{- elementTypeSettings|ns(namespace)|raw -}}
 		</div>
 	{% endif %}
 {% endfor %}

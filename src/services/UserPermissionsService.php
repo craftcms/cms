@@ -323,7 +323,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		foreach ($singletons as $singleton)
 		{
 			$permissions["editSingleton{$singleton->id}"] = array(
-				'label' => Blocks::t('Edit “{title}”', array('title' => $singleton->title))
+				'label' => Blocks::t('Edit “{title}”', array('title' => $singleton->name))
 			);
 		}
 

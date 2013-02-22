@@ -11,23 +11,23 @@ class GlobalsService extends BaseApplicationComponent
 	/**
 	 * Gets the global content.
 	 *
-	 * @return EntryModel
+	 * @return ElementModel
 	 */
 	public function getGlobalContent()
 	{
 		if (!isset($this->_globalContent))
 		{
-			$record = EntryRecord::model()->findByAttributes(array(
-				'type' => 'Globals'
+			$record = ElementRecord::model()->findByAttributes(array(
+				'type' => ElementType::Globals
 			));
 
 			if ($record)
 			{
-				$this->_globalContent = EntryModel::populateModel($record);
+				$this->_globalContent = ElementModel::populateModel($record);
 			}
 			else
 			{
-				$this->_globalContent = new EntryModel();
+				$this->_globalContent = new ElementModel();
 			}
 		}
 
@@ -37,23 +37,23 @@ class GlobalsService extends BaseApplicationComponent
 	/**
 	 * Saves the global content.
 	 *
-	 * @param EntryModel $globals
+	 * @param ElementModel $globals
 	 * @return bool
 	 */
-	public function saveGlobalContent(EntryModel $globals)
+	public function saveGlobalContent(ElementModel $globals)
 	{
 		if (!$globals->id)
 		{
 			// Create the entry record
-			$entryRecord = new EntryRecord();
-			$entryRecord->type = 'Globals';
-			$entryRecord->save();
+			$elementRecord = new ElementRecord();
+			$elementRecord->type = ElementType::Globals;
+			$elementRecord->save();
 
 			// Now that we have the entry ID, save it on everything else
-			$globals->id = $entryRecord->id;
+			$globals->id = $elementRecord->id;
 		}
 
-		$fieldLayout = blx()->fields->getLayoutByType('Globals');
-		return blx()->entries->saveEntryContent($globals, $fieldLayout);
+		$fieldLayout = blx()->fields->getLayoutByType(ElementType::Globals);
+		return blx()->elements->saveElementContent($globals, $fieldLayout);
 	}
 }
