@@ -28,12 +28,12 @@ class UserSessionService extends \CWebUser
 	/**
 	 * @var
 	 */
-	private $_userRow = null;
+	private $_userRow;
 
 	/**
 	 * @var
 	 */
-	private $_sessionRestoredFromCookie = null;
+	private $_sessionRestoredFromCookie;
 
 	/**
 	 * Gets the currently logged-in user.
@@ -285,8 +285,6 @@ class UserSessionService extends \CWebUser
 								);
 
 								$this->saveCookie('', $data, $seconds);
-								$this->_sessionRestoredFromCookie = false;
-								$this->_userRow = null;
 							}
 							else
 							{
@@ -298,6 +296,9 @@ class UserSessionService extends \CWebUser
 							throw new Exception(Blocks::t('{class}.allowAutoLogin must be set true in order to use cookie-based authentication.', array('{class}' => get_class($this))));
 						}
 					}
+
+					$this->_sessionRestoredFromCookie = false;
+					$this->_userRow = null;
 
 					// Run any after login logic.
 					$this->afterLogin(false);
@@ -670,7 +671,7 @@ class UserSessionService extends \CWebUser
 	 */
 	private function _getUserRow($id)
 	{
-		if ($this->_userRow === null)
+		if (!isset($this->_userRow))
 		{
 			$userRow = blx()->db->createCommand()
 			    ->select('*')

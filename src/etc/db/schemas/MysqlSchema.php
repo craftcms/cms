@@ -219,4 +219,24 @@ class MysqlSchema extends \CMysqlSchema
 		return '`'.$name.'`';
 	}
 
+	/**
+	 * Checks to see if the MySQL InnoDB storage engine is installed and enabled.
+	 *
+	 * @return bool
+	 */
+	public function isInnoDbEnabled()
+	{
+		$results = blx()->db->createCommand()->setText('SHOW ENGINES')->queryAll();
+
+		foreach ($results as $result)
+		{
+			if ($result['Engine'] == 'InnoDB' && $result['Support'] != 'No')
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 }
