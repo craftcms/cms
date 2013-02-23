@@ -62,6 +62,7 @@ li.assets-fm-folder a.assets-fm-expanded span.assets-fm-toggle { background-posi
 .assets-contextmenu { position: absolute; z-index: 99999; border-radius: 2px; padding: 4px 0; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 10px rgba(0, 0, 0, 0.1); -moz-box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 10px rgba(0, 0, 0, 0.1); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 10px rgba(0, 0, 0, 0.1); -webkit-user-select: none; -moz-user-select: none; }
 .assets-contextmenu li.contextmenu-break { margin: 4px 0; border-top: 1px solid #eee; height: 0; }
 .assets-contextmenu li a { display: block; padding: 4px 10px; text-decoration: none; cursor: default; }
+.assets-contextmenu li a:hover { background-color: $selcolor !important; color: #fff !important; cursor: pointer; }
 
 
 /*-- Retina -- */
