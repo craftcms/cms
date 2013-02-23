@@ -192,12 +192,13 @@ class MysqlSchema extends \CMysqlSchema
 	/**
 	 * Returns all table names in the database which start with the tablePrefix.
 	 *
+	 * @access protected
 	 * @param string $schema
 	 * @return string
 	 */
-	public function findTableNames($schema = null)
+	protected function findTableNames($schema = null)
 	{
-		if ($schema === null)
+		if (!$schema)
 		{
 			$likeSql = (blx()->db->tablePrefix ? ' LIKE \''.blx()->db->tablePrefix.'%\'' : '');
 			return blx()->db->createCommand()->setText('SHOW TABLES'.$likeSql)->queryColumn();
