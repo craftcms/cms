@@ -81,7 +81,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 		}
 		else
 		{
-			if ((response.blocks && response.blocks.releases) || response.packages)
+			if ((response.blocks && response.blocks.releases && response.blocks.releases.length) || (response.packages && response.packages.length))
 			{
 				var $table = $('#system-updates'),
 					$tbody = $table.children('tbody');
