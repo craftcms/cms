@@ -61,12 +61,13 @@ class MigrationsService extends BaseApplicationComponent
 
 		foreach ($migrations as $migration)
 		{
-			if ($this->migrateUp($migration, $plugin) !== false)
-			{
-				// Refresh the DB cache for the next migration
-				blx()->db->getSchema()->refresh();
-			}
-			else
+			// Refresh the DB cache
+			blx()->db->getSchema()->refresh();
+
+			// Set a new 2 minute time limit
+			set_time_limit(120);
+
+			if ($this->migrateUp($migration, $plugin) === false)
 			{
 				if ($plugin)
 				{
