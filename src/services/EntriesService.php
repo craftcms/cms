@@ -121,7 +121,7 @@ class EntriesService extends BaseApplicationComponent
 
 		if (empty($elementLocaleRecord))
 		{
-			$elementLocaleRecord = new EntryLocaleRecord();
+			$elementLocaleRecord = new ElementLocaleRecord();
 			$elementLocaleRecord->locale = $entry->locale;
 		}
 
