@@ -7,6 +7,11 @@ namespace Blocks;
 class PluginsService extends BaseApplicationComponent
 {
 	/**
+	 * @var array The manifest of plugin classes to auto-import.
+	 */
+	public $classImportManifest;
+
+	/**
 	 * Stores all plugins, whether installed or not.
 	 *
 	 * @access private
@@ -29,26 +34,6 @@ class PluginsService extends BaseApplicationComponent
 	 * @var array
 	 */
 	private $_allPlugins;
-
-	/**
-	 * List of the supported plugin components that will get autoloaded for enabled plugins.
-	 *
-	 * The keys are folder names, and values are class suffixes.
-	 *
-	 * @access private
-	 * @var array
-	 */
-	private $_supportedComponents = array(
-		'controllers'   => 'Controller',
-		'models'        => 'Model',
-		'records'       => 'Record',
-		'services'      => 'Service',
-		'variables'     => 'Variable',
-		'helpers'       => 'Helper',
-		'fieldtypes'    => 'FieldType',
-		'widgets'       => 'Widget',
-		'validators'    => 'Validator',
-	);
 
 	/**
 	 * List of the known component classes for each plugin,
@@ -590,12 +575,12 @@ class PluginsService extends BaseApplicationComponent
 		$lcHandle = strtolower($plugin->getClassHandle());
 		$pluginFolder = blx()->path->getPluginsPath().$lcHandle.'/';
 
-		foreach ($this->_supportedComponents as $folderName => $classSuffix)
+		foreach ($this->classImportManifest as $type)
 		{
-			if (IOHelper::folderExists($pluginFolder.$folderName))
+			if (IOHelper::folderExists($pluginFolder.$type['subfolder']))
 			{
 				// See if it has any files in ClassName*Suffix.php format.
-				$files = IOHelper::getFolderContents($pluginFolder.$folderName, false, $plugin->getClassHandle().'(_.+)?'.$classSuffix.'\.php$');
+				$files = IOHelper::getFolderContents($pluginFolder.$type['subfolder'], false, $plugin->getClassHandle().'(_.+)?'.$type['suffix'].'\.php$');
 
 				if ($files)
 				{
@@ -605,10 +590,10 @@ class PluginsService extends BaseApplicationComponent
 						$fileName = IOHelper::getFileName($file, false);
 
 						// Import the class.
-						Blocks::import("plugins.{$lcHandle}.{$folderName}.{$fileName}");
+						Blocks::import("plugins.{$lcHandle}.{$type['subfolder']}.{$fileName}");
 
 						// Remember it
-						$this->_pluginComponentClasses[$folderName][$plugin->getClassHandle()][] = $fileName;
+						$this->_pluginComponentClasses[$type['subfolder']][$plugin->getClassHandle()][] = $fileName;
 					}
 				}
 			}

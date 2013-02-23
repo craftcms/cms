@@ -79,13 +79,18 @@ class ComponentsService extends BaseApplicationComponent
 
 			foreach ($pluginComponents as $component)
 			{
-				if ($component instanceof $ctype['baseClass'])
+				if (!empty($ctype['instanceof']))
 				{
-					$component->init();
-
-					$this->_components[$type][$component->getClassHandle()] = $component;
-					$names[] = $component->getName();
+					if (!$this->_verifyInstanceOf($component, $ctype['instanceof']))
+					{
+						continue;
+					}
 				}
+
+				$component->init();
+
+				$this->_components[$type][$component->getClassHandle()] = $component;
+				$names[] = $component->getName();
 			}
 
 			array_multisort($names, $this->_components[$type]);
@@ -163,19 +168,27 @@ class ComponentsService extends BaseApplicationComponent
 			return;
 		}
 
-		// Make sure it implements the correct abstract base class
-		$baseClass = __NAMESPACE__.'\\'.$this->types[$type]['baseClass'];
-
-		if ($class instanceof $baseClass)
-		{
-			return;
-		}
-
 		// Instantiate and return it
 		$component = new $class;
+
+		// Make sure it implements the correct base class or interface
+		if (!empty($this->types[$type]['instanceof']))
+		{
+			if (!$this->_verifyInstanceOf($component, $this->types[$type]['instanceof']))
+			{
+				return;
+			}
+		}
+
 		$component->init();
 
 		return $component;
+	}
+
+	private function _verifyInstanceOf($component, $baseClass)
+	{
+		$nsBaseClass = __NAMESPACE__.'\\'.$baseClass;
+		return ($component instanceof $nsBaseClass);
 	}
 
 	/**

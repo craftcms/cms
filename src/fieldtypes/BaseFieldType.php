@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Field type base class
  */
-abstract class BaseFieldType extends BaseSavableComponentType
+abstract class BaseFieldType extends BaseSavableComponentType implements IFieldType
 {
 	/**
 	 * @var ElementModel The element that the current instance is associated with
@@ -30,12 +30,14 @@ abstract class BaseFieldType extends BaseSavableComponentType
 	/**
 	 * Returns the field's input HTML.
 	 *
-	 * @abstract
 	 * @param string $name
 	 * @param mixed  $value
 	 * @return string
 	 */
-	abstract public function getInputHtml($name, $value);
+	public function getInputHtml($name, $value)
+	{
+		return '<textarea name="'.$name.'">'.$value.'</textarea>';
+	}
 
 	/**
 	 * Returns the input value as it should be saved to the database.
@@ -47,18 +49,6 @@ abstract class BaseFieldType extends BaseSavableComponentType
 		$fieldHandle = $this->model->handle;
 		$value = $this->element->getRawContent($fieldHandle);
 		return $this->prepPostData($value);
-	}
-
-	/**
-	 * Preps the post data before it's saved to the database.
-	 *
-	 * @access protected
-	 * @param mixed $value
-	 * @return mixed
-	 */
-	protected function prepPostData($value)
-	{
-		return $value;
 	}
 
 	/**
@@ -89,6 +79,18 @@ abstract class BaseFieldType extends BaseSavableComponentType
 	 * @return mixed
 	 */
 	public function prepValue($value)
+	{
+		return $value;
+	}
+
+	/**
+	 * Preps the post data before it's saved to the database.
+	 *
+	 * @access protected
+	 * @param mixed $value
+	 * @return mixed
+	 */
+	protected function prepPostData($value)
 	{
 		return $value;
 	}

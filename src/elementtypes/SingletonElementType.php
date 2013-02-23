@@ -17,29 +17,29 @@ class SingletonElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the CP edit URI for a given entry.
+	 * Returns the CP edit URI for a given element.
 	 *
-	 * @param ElementModel $entry
+	 * @param ElementModel $element
 	 * @return string|null
 	 */
-	public function getCpEditUriForElement(ElementModel $entry)
+	public function getCpEditUriForElement(ElementModel $element)
 	{
-		return 'content/singletons/'.$entry->id;
+		return 'content/singletons/'.$element->id;
 	}
 
 	/**
-	 * Returns the site template path for a matched entry.
+	 * Returns the site template path for a matched element.
 	 *
-	 * @param SingletonModel
+	 * @param ElementModel
 	 * @return string|false
 	 */
-	public function getSiteTemplateForMatchedElement(SingletonModel $entry)
+	public function getSiteTemplateForMatchedElement(ElementModel $element)
 	{
-		return $entry->template;
+		return $element->template;
 	}
 
 	/**
-	 * Returns the variable name the matched entry should be assigned to.
+	 * Returns the variable name the matched element should be assigned to.
 	 *
 	 * @return string
 	 */
@@ -59,7 +59,7 @@ class SingletonElementType extends BaseElementType
 	}
 
 	/**
-	 * Defines any custom entry criteria attributes for this element type.
+	 * Defines any custom element criteria attributes for this element type.
 	 *
 	 * @return array
 	 */
@@ -85,7 +85,7 @@ class SingletonElementType extends BaseElementType
 	}
 
 	/**
-	 * Populates an entry model based on a query result.
+	 * Populates an element model based on a query result.
 	 *
 	 * @param array $row
 	 * @return array
