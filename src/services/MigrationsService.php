@@ -61,7 +61,12 @@ class MigrationsService extends BaseApplicationComponent
 
 		foreach ($migrations as $migration)
 		{
-			if ($this->migrateUp($migration, $plugin) === false)
+			if ($this->migrateUp($migration, $plugin) !== false)
+			{
+				// Refresh the DB cache for the next migration
+				blx()->db->getSchema()->refresh();
+			}
+			else
 			{
 				if ($plugin)
 				{
