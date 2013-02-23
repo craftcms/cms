@@ -60,9 +60,11 @@ class AssetsController extends BaseController
 		$folderId = blx()->request->getRequiredPost('folderId');
 		$requestId = blx()->request->getPost('requestId', 0);
 		$viewType = blx()->request->getPost('viewType', 'thumbs');
+		$offset = blx()->request->getPost('offset', 0);
 
 		$folder = blx()->assets->getFolderById($folderId);
-		$files = blx()->assets->getFilesByFolderId($folderId);
+		$files = blx()->assets->getFilesByFolderId($folderId, $offset);
+
 
 
 		$subfolders = blx()->assets->findFolders(array(
@@ -80,7 +82,8 @@ class AssetsController extends BaseController
 
 		$this->returnJson(array(
 			'requestId' => $requestId,
-			'html' => $html
+			'html' => $html,
+			'total' => count($files)
 		));
 	}
 

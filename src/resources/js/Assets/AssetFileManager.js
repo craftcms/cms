@@ -511,6 +511,11 @@ Assets.FileManager = Garnish.Base.extend({
      */
     loadMoreFiles: function ()
     {
+        if (this.lastPageReached)
+        {
+            return;
+        }
+
         this.requestId++;
         this._beforeLoadFiles();
         var postData = this._prepareFileViewPostData();
@@ -543,6 +548,8 @@ Assets.FileManager = Garnish.Base.extend({
                         this.filesView.addItems($newFiles);
                         this._afterLoadFiles(data, $enabledFiles);
                     }
+
+                    this.$folderContainer.append($(data.html).find('style'));
 
                     this._initializePageLoader();
                 }

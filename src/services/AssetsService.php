@@ -37,14 +37,20 @@ class AssetsService extends BaseApplicationComponent
 	 * Get files by a folder id.
 	 *
 	 * @param $folderId
+	 * @param $offset
+	 * @param $limit
 	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public function getFilesByFolderId($folderId, $indexBy = null)
+	public function getFilesByFolderId($folderId, $offset = 0, $limit = null, $indexBy = null)
 	{
 		return $this->findFiles(array(
 			'folderId' => $folderId,
-			'indexBy'  => $indexBy
+			'limit' => $limit,
+			'offset' => $offset,
+			'indexBy'  => $indexBy,
+
+
 		));
 	}
 
