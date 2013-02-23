@@ -34,7 +34,7 @@
 		{{ forms.textField({
 			first: true,
 			label: "System Email Address"|t,
-			instructions: "The email address Blocks will use when sending email."|t,
+			instructions: "The email address {app} will use when sending email."|t({ app: blx.config.appName }),
 			id: 'emailAddress',
 			name: 'emailAddress',
 			value: (settings.emailAddress is defined ? settings.emailAddress : null),
@@ -45,7 +45,7 @@
 
 		{{ forms.textField({
 			label: "Sender Name"|t,
-			instructions: "The “From” name Blocks will use when sending email."|t,
+			instructions: "The “From” name {app} will use when sending email."|t({ app: blx.config.appName }),
 			id: 'senderName',
 			name: 'senderName',
 			value: (settings.senderName is defined ? settings.senderName : null),
@@ -56,7 +56,7 @@
 		{% if blx.hasPackage('Rebrand') %}
 			{{ forms.textField({
 				label: "HTML Email Template"|t,
-				instructions: "The template Blocks will use for users who prefer HTML email"|t,
+				instructions: "The template {app} will use for users who prefer HTML email"|t({ app: blx.config.appName }),
 				id: 'template',
 				name: 'template',
 				value: (settings.template is defined ? settings.template : null),
@@ -68,7 +68,7 @@
 
 		{{ forms.selectField({
 			label: "Protocol"|t,
-			instructions: "The protocol Blocks will use to send email."|t,
+			instructions: "The protocol {app} will use to send email."|t({ app: blx.config.appName }),
 			id: 'protocol',
 			name: 'protocol',
 			options: { php: "PHP Mail"|t, sendmail: "Sendmail"|t, smtp: "SMTP"|t, pop: "POP"|t, gmail: "Gmail"|t },

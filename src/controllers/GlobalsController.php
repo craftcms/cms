@@ -16,8 +16,8 @@ class GlobalsController extends BaseController
 
 		// Set the field layout
 		$fieldLayout = blx()->fields->assembleLayoutFromPost(false);
-		$fieldLayout->type = 'Globals';
-		blx()->fields->deleteLayoutsByType('Globals');
+		$fieldLayout->type = ElementType::Globals;
+		blx()->fields->deleteLayoutsByType(ElementType::Globals);
 
 		if (blx()->fields->saveLayout($fieldLayout, false))
 		{

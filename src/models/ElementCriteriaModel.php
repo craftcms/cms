@@ -2,21 +2,21 @@
 namespace Blocks;
 
 /**
- * Entry criteria model class
+ * Element criteria model class
  */
-class EntryCriteriaModel extends BaseModel
+class ElementCriteriaModel extends BaseModel
 {
-	private $_entryType;
+	private $_elementType;
 
 	/**
 	 * Constructor
 	 *
 	 * @param mixed $attributes
-	 * @param BaseEntryType $entryType
+	 * @param BaseElementType $elementType
 	 */
-	function __construct($attributes, BaseEntryType $entryType)
+	function __construct($attributes, BaseElementType $elementType)
 	{
-		$this->_entryType = $entryType;
+		$this->_elementType = $elementType;
 		parent::__construct($attributes);
 	}
 
@@ -28,24 +28,20 @@ class EntryCriteriaModel extends BaseModel
 		$attributes = array(
 			'id'            => AttributeType::Number,
 			'locale'        => AttributeType::Locale,
-			'after'         => AttributeType::DateTime,
-			'before'        => AttributeType::DateTime,
 			'uri'           => AttributeType::String,
-			'status'        => array(AttributeType::Enum, 'values' => array('live', 'pending', 'expired', 'disabled'), 'default' => 'live'),
+			'status'        => AttributeType::String,
 			'archived'      => AttributeType::Bool,
 			'order'         => array(AttributeType::String, 'default' => 'postDate desc'),
 			'offset'        => array(AttributeType::Number, 'default' => 0),
 			'limit'         => array(AttributeType::Number, 'default' => 100),
 			'indexBy'       => AttributeType::String,
-
-			//'title'         => AttributeType::String,
 			//'dateCreated'   => AttributeType::DateTime,
 			//'dateUpdated'   => AttributeType::DateTime,
 		);
 
-		// Mix in any custom attributes defined by the entry type
-		$entryTypeAttributes = $this->_entryType->defineCustomCriteriaAttributes();
-		$attributes = array_merge($attributes, $entryTypeAttributes);
+		// Mix in any custom attributes defined by the element type
+		$elementTypeAttributes = $this->_elementType->defineCustomCriteriaAttributes();
+		$attributes = array_merge($attributes, $elementTypeAttributes);
 
 		// Mix in the custom fields
 		$fields = blx()->fields->getAllFields();
@@ -77,13 +73,13 @@ class EntryCriteriaModel extends BaseModel
 	}
 
 	/**
-	 * Returns the entry type.
+	 * Returns the element type.
 	 *
-	 * @return BaseEntryType
+	 * @return BaseElementType
 	 */
-	public function getEntryType()
+	public function getElementType()
 	{
-		return $this->_entryType;
+		return $this->_elementType;
 	}
 
 	/**
@@ -96,7 +92,7 @@ class EntryCriteriaModel extends BaseModel
 	}
 
 	/**
-	 * Returns all entries that match the criteria.
+	 * Returns all elements that match the criteria.
 	 *
 	 * @param array|null $attributes
 	 * @return array
@@ -104,23 +100,23 @@ class EntryCriteriaModel extends BaseModel
 	public function find($attributes = null)
 	{
 		$this->setAttributes($attributes);
-		return blx()->entries->findEntries($this);
+		return blx()->elements->findElements($this);
 	}
 
 	/**
-	 * Returns the first entry that matches the criteria.
+	 * Returns the first element that matches the criteria.
 	 *
 	 * @param array|null $attributes
-	 * @return EntryModel|null
+	 * @return ElementModel|null
 	 */
 	public function first($attributes = null)
 	{
 		$this->setAttributes($attributes);
-		return blx()->entries->findEntry($this);
+		return blx()->elements->findElement($this);
 	}
 
 	/**
-	 * Returns the total entries that match the criteria.
+	 * Returns the total elements that match the criteria.
 	 *
 	 * @param array|null $attributes
 	 * @return int
@@ -128,6 +124,6 @@ class EntryCriteriaModel extends BaseModel
 	public function total($attributes = null)
 	{
 		$this->setAttributes($attributes);
-		return blx()->entries->getTotalEntries($this);
+		return blx()->elements->getTotalElements($this);
 	}
 }

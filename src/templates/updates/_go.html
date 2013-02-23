@@ -1,5 +1,5 @@
 {% extends "_layouts/base" %}
-{% set title = "Blocks Update"|t %}
+{% set title = "{app} Update"|t({ app: blx.config.appName }) %}
 {% includeCssResource "css/update.css" %}
 {% includeJsResource "js/update.js" %}
 

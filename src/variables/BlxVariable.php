@@ -143,11 +143,11 @@ class BlxVariable
 
 	/**
 	 * @param array|null $criteria
-	 * @return EntryCriteriaModel
+	 * @return ElementCriteriaModel
 	 */
 	public function entries($criteria = null)
 	{
-		return blx()->entries->getEntryCriteria('SectionEntry', $criteria);
+		return blx()->elements->getCriteria(ElementType::Entry, $criteria);
 	}
 
 	/**
@@ -259,13 +259,13 @@ class BlxVariable
 
 	/**
 	 * @param array|null $criteria
-	 * @return EntryCriteriaModel|null
+	 * @return ElementCriteriaModel|null
 	 */
 	public function users($criteria = null)
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			return blx()->entries->getEntryCriteria('User', $criteria);
+			return blx()->elements->getCriteria(ElementType::User, $criteria);
 		}
 	}
 

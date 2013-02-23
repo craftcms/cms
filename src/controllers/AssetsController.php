@@ -17,8 +17,8 @@ class AssetsController extends BaseController
 
 		// Set the field layout
 		$fieldLayout = blx()->fields->assembleLayoutFromPost(false);
-		$fieldLayout->type = 'Asset';
-		blx()->fields->deleteLayoutsByType('Asset');
+		$fieldLayout->type = ElementType::Asset;
+		blx()->fields->deleteLayoutsByType(ElementType::Asset);
 
 		if (blx()->fields->saveLayout($fieldLayout, false))
 		{

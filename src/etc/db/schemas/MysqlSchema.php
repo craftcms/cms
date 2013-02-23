@@ -192,12 +192,13 @@ class MysqlSchema extends \CMysqlSchema
 	/**
 	 * Returns all table names in the database which start with the tablePrefix.
 	 *
+	 * @access protected
 	 * @param string $schema
-	 * @returns array
+	 * @return string
 	 */
-	public function findTableNames($schema = null)
+	protected function findTableNames($schema = null)
 	{
-		if ($schema === null)
+		if (!$schema)
 		{
 			$likeSql = (blx()->db->tablePrefix ? ' LIKE \''.blx()->db->tablePrefix.'%\'' : '');
 			return blx()->db->createCommand()->setText('SHOW TABLES'.$likeSql)->queryColumn();
@@ -207,4 +208,36 @@ class MysqlSchema extends \CMysqlSchema
 			return parent::findTableNames();
 		}
 	}
+
+	/**
+	 * Quotes a database name for use in a query.
+	 *
+	 * @param $name
+	 * @return string
+	 */
+	public function quoteDatabaseName($name)
+	{
+		return '`'.$name.'`';
+	}
+
+	/**
+	 * Checks to see if the MySQL InnoDB storage engine is installed and enabled.
+	 *
+	 * @return bool
+	 */
+	public function isInnoDbEnabled()
+	{
+		$results = blx()->db->createCommand()->setText('SHOW ENGINES')->queryAll();
+
+		foreach ($results as $result)
+		{
+			if ($result['Engine'] == 'InnoDB' && $result['Support'] != 'No')
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 }

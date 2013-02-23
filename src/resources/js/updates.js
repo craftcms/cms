@@ -81,7 +81,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 		}
 		else
 		{
-			if ((response.blocks && response.blocks.releases) || response.packages)
+			if ((response.blocks && response.blocks.releases && response.blocks.releases.length) || (response.packages && response.packages.length))
 			{
 				var $table = $('#system-updates'),
 					$tbody = $table.children('tbody');
@@ -94,7 +94,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 						$th = $('<th/>').appendTo($tr),
 						$td = $('<td class="thin rightalign"/>').appendTo($tr);
 
-					$th.html('Blocks '+response.blocks.releases[0].version +
+					$th.html(Blocks.appName+' '+response.blocks.releases[0].version +
 						' <span class="light">' +
 						Blocks.t('build {build}', { build: response.blocks.releases[0].build }) +
 						'</span>' +
@@ -131,7 +131,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 					var $tr = $('<tr/>').appendTo($tbody),
 						$td = $('<td class="notes" colspan="2"/>').appendTo($tr);
 
-					new ReleaseNotes($td, response.blocks.releases, 'Blocks');
+					new ReleaseNotes($td, response.blocks.releases, Blocks.appName);
 				}
 
 				if (response.packages)
@@ -147,7 +147,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 					if (response.blocks)
 					{
 						$btn.addClass('disabled');
-						$btn.attr('title', Blocks.t('Blocks update required'));
+						$btn.attr('title', Blocks.t('{app} update required'));
 					}
 				}
 			}

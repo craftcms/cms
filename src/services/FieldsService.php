@@ -122,7 +122,7 @@ class FieldsService extends BaseApplicationComponent
 		}
 
 		// Manually delete the fields (rather than relying on cascade deletes)
-		// so we have a chance to delete the entrycontent columns
+		// so we have a chance to delete the content columns
 		foreach ($groupRecord->fields as $fieldRecord)
 		{
 			$field = FieldModel::populateModel($fieldRecord);
@@ -305,11 +305,11 @@ class FieldsService extends BaseApplicationComponent
 
 					if ($isNewField)
 					{
-						blx()->db->createCommand()->addColumn('entrycontent', $field->handle, $column);
+						blx()->db->createCommand()->addColumn('content', $field->handle, $column);
 					}
 					else
 					{
-						blx()->db->createCommand()->alterColumn('entrycontent', $fieldRecord->oldHandle, $column, $field->handle);
+						blx()->db->createCommand()->alterColumn('content', $fieldRecord->oldHandle, $column, $field->handle);
 					}
 				}
 
@@ -360,13 +360,13 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function deleteField(FieldModel $field)
 	{
-		// De we need to delete the entrycontent column?
+		// De we need to delete the content column?
 		$fieldType = $this->populateFieldType($field);
 		$column = $fieldType->defineContentAttribute();
 
 		if ($column)
 		{
-			blx()->db->createCommand()->dropColumn('entrycontent', $field->handle);
+			blx()->db->createCommand()->dropColumn('content', $field->handle);
 		}
 
 		// Delete the row in fields
@@ -576,16 +576,16 @@ class FieldsService extends BaseApplicationComponent
 	 * Populates a fieldtype by a field model.
 	 *
 	 * @param FieldModel $field
-	 * @param EntryModel|null $entry
+	 * @param ElementModel|null $element
 	 * @return BaseFieldType|null
 	 */
-	public function populateFieldType(FieldModel $field, $entry = null)
+	public function populateFieldType(FieldModel $field, $element = null)
 	{
 		$fieldType = blx()->components->populateComponentByTypeAndModel(ComponentType::Field, $field);
 
 		if ($fieldType)
 		{
-			$fieldType->entry = $entry;
+			$fieldType->element = $element;
 			return $fieldType;
 		}
 	}

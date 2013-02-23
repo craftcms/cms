@@ -6,7 +6,7 @@ Blocks::requirePackage(BlocksPackage::PublishPro);
 /**
  *
  */
-class EntryVersionModel extends SectionEntryModel
+class EntryVersionModel extends EntryModel
 {
 	/**
 	 * @return array

@@ -2,12 +2,12 @@
 namespace Blocks;
 
 /**
- * User entry type
+ * User element type
  */
-class UserEntryType extends BaseEntryType
+class UserElementType extends BaseElementType
 {
 	/**
-	 * Returns the entry type name.
+	 * Returns the element type name.
 	 *
 	 * @return string
 	 */
@@ -19,10 +19,10 @@ class UserEntryType extends BaseEntryType
 	/**
 	 * Returns the CP edit URI for a given entry.
 	 *
-	 * @param EntryModel $entry
+	 * @param ElementModel $entry
 	 * @return string|null
 	 */
-	public function getCpEditUriForEntry(EntryModel $entry)
+	public function getCpEditUriForElement(ElementModel $entry)
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
@@ -35,7 +35,7 @@ class UserEntryType extends BaseEntryType
 	}
 
 	/**
-	 * Returns whether this entry type is linkable.
+	 * Returns whether this element type is linkable.
 	 *
 	 * @return bool
 	 */
@@ -52,7 +52,7 @@ class UserEntryType extends BaseEntryType
 	}
 
 	/**
-	 * Defines any custom entry criteria attributes for this entry type.
+	 * Defines any custom entry criteria attributes for this element type.
 	 *
 	 * @return array
 	 */
@@ -79,7 +79,7 @@ class UserEntryType extends BaseEntryType
 	 */
 	public function getLinkSettingsHtml()
 	{
-		return blx()->templates->render('_components/entrytypes/User/linksettings', array(
+		return blx()->templates->render('_components/elementtypes/User/linksettings', array(
 			'settings' => $this->getLinkSettings()
 		));
 	}
@@ -88,16 +88,16 @@ class UserEntryType extends BaseEntryType
 	 * Modifies an entries query targeting entries of this type.
 	 *
 	 * @param DbCommand $query
-	 * @param EntryCriteriaModel $criteria
+	 * @param ElementCriteriaModel $criteria
 	 * @return mixed
 	 */
-	public function modifyEntriesQuery(DbCommand $query, EntryCriteriaModel $criteria)
+	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		Blocks::requirePackage(BlocksPackage::Users);
 
 		$query
-			->addSelect('u.username, u.photo, u.firstName, u.lastName, u.email, u.admin, u.status, u.lastLoginDate')
-			->join('users u', 'u.id = e.id');
+			->addSelect('users.username, users.photo, users.firstName, users.lastName, users.email, users.admin, users.status, users.lastLoginDate')
+			->join('users users', 'users.id = elements.id');
 	}
 
 	/**
@@ -106,7 +106,7 @@ class UserEntryType extends BaseEntryType
 	 * @param array $row
 	 * @return array
 	 */
-	public function populateEntryModel($row)
+	public function populateElementModel($row)
 	{
 		return UserModel::populateModel($row);
 	}

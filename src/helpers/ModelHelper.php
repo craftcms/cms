@@ -220,6 +220,7 @@ class ModelHelper
 		$requiredAttributes = array();
 		$emailAttributes = array();
 		$urlAttributes = array();
+		$uriAttributes = array();
 		$strictLengthAttributes = array();
 		$minLengthAttributes = array();
 		$maxLengthAttributes = array();
@@ -286,6 +287,12 @@ class ModelHelper
 				case AttributeType::Url:
 				{
 					$urlAttributes[] = $name;
+					break;
+				}
+
+				case AttributeType::Uri:
+				{
+					$uriAttributes[] = $name;
 					break;
 				}
 			}
@@ -426,6 +433,11 @@ class ModelHelper
 			$rules[] = array(implode(',', $urlAttributes), 'Blocks\UrlValidator', 'defaultScheme' => 'http');
 		}
 
+		if ($uriAttributes)
+		{
+			$rules[] = array(implode(',', $uriAttributes), 'Blocks\UriValidator');
+		}
+
 		if ($strictLengthAttributes)
 		{
 			foreach ($strictLengthAttributes as $strictLength => $attributeNames)
@@ -486,51 +498,46 @@ class ModelHelper
 	/**
 	 * Takes an attribute's config and value and "normalizes" them either for saving to db or sending across a web service.
 	 *
-	 * @param      $config
 	 * @param      $storedValue
 	 * @param bool $jsonEncodeArrays
 	 * @return int|mixed|null|string
 	 */
-	public static function packageAttributeValue($config, $storedValue, $jsonEncodeArrays = false)
+	public static function packageAttributeValue($value, $jsonEncodeArrays = false)
 	{
-		$config = static::normalizeAttributeConfig($config);
-		$newValue = $storedValue;
-
-		switch($config['type'])
+		if ($value instanceof \DateTime)
 		{
-			case AttributeType::Number:
-			{
-				$newValue = LocalizationHelper::normalizeNumber($storedValue);
-				break;
-			}
-			case AttributeType::DateTime:
-			{
-				if ($storedValue instanceof \DateTime)
-				{
-					$newValue = DateTimeHelper::formatTimeForDb($storedValue->getTimestamp());
-				}
-				break;
-			}
-			case AttributeType::Mixed:
-			{
-				if ($storedValue instanceof \CModel)
-				{
-					$storedValue = $storedValue->getAttributes(null, true);
-				}
+			return DateTimeHelper::formatTimeForDb($value->getTimestamp());
+		}
 
-				if (!empty($storedValue) && is_array($storedValue))
-				{
-					$newValue = ($jsonEncodeArrays ? JsonHelper::encode($storedValue) : $storedValue);
-				}
-				else
-				{
-					$newValue = null;
-				}
-				break;
+		if ($value instanceof \CModel)
+		{
+			$value = $value->getAttributes();
+		}
+
+		if (is_array($value))
+		{
+			// Flatten each of its keys
+			foreach ($value as $key => $val)
+			{
+				$value[$key] = static::packageAttributeValue($val);
+			}
+
+			if ($jsonEncodeArrays)
+			{
+				return JsonHelper::encode($value);
+			}
+			else
+			{
+				return $value;
 			}
 		}
 
-		return $newValue;
+		if (is_numeric($value))
+		{
+			return LocalizationHelper::normalizeNumber($value);
+		}
+
+		return $value;
 	}
 
 	/**

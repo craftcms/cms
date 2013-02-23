@@ -1,5 +1,5 @@
 {% set minRows = settings.limit ? min(3, settings.limit) : 3 %}
-{% set bufferRows = (minRows > entries|length ? minRows - entries|length : 0) %}
+{% set bufferRows = (minRows > elements|length ? minRows - elements|length : 0) %}
 
 <div class="links">
 	<input type="hidden" name="{{ name }}[]" value="">
@@ -7,12 +7,12 @@
 	<div id="{{ id }}" class="border-box">
 		<table class="data">
 			<tbody>
-				{% for entry in entries %}
+				{% for element in elements %}
 					<tr>
 						<td>
-							<div class="entry" data-id="{{ entry.id }}">
-								{{ entry }}
-								<input type="hidden" name="{{ name }}[]" value="{{ entry.id }}">
+							<div class="element" data-id="{{ element.id }}">
+								{{ element }}
+								<input type="hidden" name="{{ name }}[]" value="{{ element.id }}">
 							</div>
 						</td>
 					</tr>
@@ -29,7 +29,7 @@
 	</div>
 
 	<div class="buttons">
-		<div class="btn add icon small{% if settings.limit and entries|length >= settings.limit %} disabled{% endif %}">{{ settings.addLabel }}</div>
+		<div class="btn add icon small{% if settings.limit and elements|length >= settings.limit %} disabled{% endif %}">{{ settings.addLabel }}</div>
 		<div class="btn remove small disabled">{{ settings.removeLabel }}</div>
 	</div>
 </div>

@@ -52,7 +52,7 @@ class UserRecord extends BaseRecord
 	public function defineRelations()
 	{
 		$relations = array(
-			'entry'           => array(static::BELONGS_TO, 'EntryRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
+			'element'         => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
 			'preferredLocale' => array(static::BELONGS_TO, 'LocaleRecord', 'preferredLocale', 'onDelete' => static::SET_NULL, 'onUpdate' => static::CASCADE),
 		);
 

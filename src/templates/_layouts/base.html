@@ -41,7 +41,7 @@
 				<div class="pane-body">
 					<div class="pane-item notice">
 						<div class="icon"></div>
-						<p>{{ "JavaScript must be enabled to access the Blocks CP."|t }}<br>
+						<p>{{ "JavaScript must be enabled to access the {app} CP."|t({ app: blx.config.appName }) }}<br>
 							<a class="go" href="">See how</a>
 						</p>
 					</div>
@@ -61,7 +61,8 @@
 		language: '{{ blx.locale }}',
 		packages: {{ blx.getPackages|json_encode|raw }},
 		translations: {{ getTranslations()|raw }},
-		maxUploadSize: {{ blx.app.getMaxUploadSize() }}
+		maxUploadSize: {{ blx.app.getMaxUploadSize() }},
+		appName: '{{ blx.config.appName }}'
 	};
 </script>
 

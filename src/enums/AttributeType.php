@@ -23,5 +23,6 @@ class AttributeType
 	const String     = 'string';
 	const Template   = 'template';
 	const Url        = 'url';
+	const Uri        = 'uri';
 	const Version    = 'version';
 }

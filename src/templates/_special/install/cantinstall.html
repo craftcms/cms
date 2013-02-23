@@ -1,10 +1,10 @@
 {% extends "_layouts/message" %}
-{% set title = "Can’t install Blocks"|t %}
+{% set title = "Can’t install {app}"|t({ app: blx.config.appName }) %}
 
 
 {% set content %}
 	<h2>{{ title }} :(</h2>
-	<p>{{ "Your server doesn’t meet the following requirements to install Blocks:"|t }}</p>
+	<p>{{ "Your server doesn’t meet the following requirements to install {app}:"|t({ app: blx.config.appName }) }}</p>
 
 	<ul class="bullets">
 		{% for req in reqCheck.requirements %}

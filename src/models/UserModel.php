@@ -4,9 +4,9 @@ namespace Blocks;
 /**
  * User model class
  */
-class UserModel extends EntryModel
+class UserModel extends ElementModel
 {
-	protected $entryType = 'User';
+	protected $elementType = ElementType::User;
 
 	/**
 	 * Use the full name or username as the string representation.

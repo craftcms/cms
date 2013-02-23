@@ -2,15 +2,15 @@
 namespace Blocks;
 
 /**
- * Entry type base class
+ * Element type base class
  */
-abstract class BaseEntryType extends BaseComponentType
+abstract class BaseElementType extends BaseComponentType
 {
 	/**
 	 * @access protected
 	 * @var string The type of component this is
 	 */
-	protected $componentType = 'EntryType';
+	protected $componentType = 'ElementType';
 
 	/**
 	 * @access private
@@ -21,10 +21,10 @@ abstract class BaseEntryType extends BaseComponentType
 	/**
 	 * Returns the CP edit URI for a given entry.
 	 *
-	 * @param EntryModel $entry
+	 * @param ElementModel $entry
 	 * @return string|false
 	 */
-	public function getCpEditUriForEntry(EntryModel $entry)
+	public function getCpEditUriForElement(ElementModel $entry)
 	{
 		return false;
 	}
@@ -32,10 +32,10 @@ abstract class BaseEntryType extends BaseComponentType
 	/**
 	 * Returns the site template path for a matched entry.
 	 *
-	 * @param EntryModel
+	 * @param ElementModel
 	 * @return string|false
 	 */
-	public function getSiteTemplateForMatchedEntry(EntryModel $entry)
+	public function getSiteTemplateForMatchedElement(ElementModel $entry)
 	{
 		return false;
 	}
@@ -45,13 +45,13 @@ abstract class BaseEntryType extends BaseComponentType
 	 *
 	 * @return string
 	 */
-	public function getVariableNameForMatchedEntry()
+	public function getVariableNameForMatchedElement()
 	{
-		return 'entry';
+		return 'element';
 	}
 
 	/**
-	 * Returns whether this entry type is localizable.
+	 * Returns whether this element type is localizable.
 	 *
 	 * @return bool
 	 */
@@ -61,7 +61,7 @@ abstract class BaseEntryType extends BaseComponentType
 	}
 
 	/**
-	 * Returns whether this entry type is linkable.
+	 * Returns whether this element type is linkable.
 	 *
 	 * @return bool
 	 */
@@ -71,7 +71,7 @@ abstract class BaseEntryType extends BaseComponentType
 	}
 
 	/**
-	 * Defines any custom entry criteria attributes for this entry type.
+	 * Defines any custom entry criteria attributes for this element type.
 	 *
 	 * @return array
 	 */
@@ -84,10 +84,10 @@ abstract class BaseEntryType extends BaseComponentType
 	 * Modifies an entries query targeting entries of this type.
 	 *
 	 * @param DbCommand $query
-	 * @param EntryCriteriaModel $criteria
+	 * @param ElementCriteriaModel $criteria
 	 * @return mixed
 	 */
-	public function modifyEntriesQuery(DbCommand $query, EntryCriteriaModel $criteria)
+	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 	}
 
@@ -97,9 +97,9 @@ abstract class BaseEntryType extends BaseComponentType
 	 * @param array $row
 	 * @return array
 	 */
-	public function populateEntryModel($row)
+	public function populateElementModel($row)
 	{
-		return EntryModel::populateModel($row);
+		return ElementModel::populateModel($row);
 	}
 
 	/**

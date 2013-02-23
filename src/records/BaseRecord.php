@@ -134,7 +134,7 @@ abstract class BaseRecord extends \CActiveRecord
 				}
 			}
 
-			$this->setAttribute($name, ModelHelper::packageAttributeValue($config, $value, true));
+			$this->setAttribute($name, ModelHelper::packageAttributeValue($value, true));
 		}
 
 		// Populate dateCreated and uid if this is a new record

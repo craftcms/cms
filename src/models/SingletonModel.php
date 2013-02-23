@@ -6,9 +6,9 @@ namespace Blocks;
  *
  * Used for transporting page data throughout the system.
  */
-class SingletonModel extends EntryModel
+class SingletonModel extends ElementModel
 {
-	protected $entryType = 'Singleton';
+	protected $elementType = ElementType::Singleton;
 
 	private $_locales;
 	private $_fieldLayout;

@@ -2,8 +2,7 @@
 namespace Blocks;
 
 /**
- * Will validate that the given attribute is a valid language ID by calling \CLocale::getInstance, which checks
- * against the file system.
+ * Will validate that the given attribute is a valid site locale ID.
  */
 class LocaleValidator extends \CValidator
 {
@@ -13,11 +12,11 @@ class LocaleValidator extends \CValidator
 	 */
 	protected function validateAttribute($object, $attribute)
 	{
-		$value = $object->$attribute;
+		$locale = $object->$attribute;
 
-		if ($value !== null && !LocaleData::exists($value))
+		if ($locale && !in_array($locale, blx()->i18n->getSiteLocaleIds()))
 		{
-			$message = Blocks::t('Couldn’t find the locale “{value}”.', array('value' => $value));
+			$message = Blocks::t('Your site isn’t set up to save content for the locale “{locale}”.', array('locale' => $locale));
 			$this->addError($object, $attribute, $message);
 		}
 	}

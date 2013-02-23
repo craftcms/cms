@@ -33,8 +33,6 @@ class ComponentsService extends BaseApplicationComponent
 			}
 
 			$ctype = $this->types[$type];
-			$baseClass = __NAMESPACE__.'\\'.$ctype['baseClass'];
-
 			$this->_components[$type] = array();
 			$names = array();
 
@@ -62,23 +60,12 @@ class ComponentsService extends BaseApplicationComponent
 						continue;
 					}
 
-					// Ignore abstract classes and interfaces
-					$ref = new \ReflectionClass($class);
-					if ($ref->isAbstract() || $ref->isInterface())
+					$component = $this->_initializeComponent($class, $type);
+
+					if (!$component)
 					{
 						continue;
 					}
-
-					// Instantiate it
-					$component = new $class;
-
-					// Make sure it implements the correct abstract base class
-					if (!$component instanceof $baseClass)
-					{
-						continue;
-					}
-
-					$component->init();
 
 					// Save it
 					$classHandle = $component->getClassHandle();
@@ -92,8 +79,10 @@ class ComponentsService extends BaseApplicationComponent
 
 			foreach ($pluginComponents as $component)
 			{
-				if ($component instanceof $baseClass)
+				if ($component instanceof $ctype['baseClass'])
 				{
+					$component->init();
+
 					$this->_components[$type][$component->getClassHandle()] = $component;
 					$names[] = $component->getName();
 				}
@@ -123,7 +112,7 @@ class ComponentsService extends BaseApplicationComponent
 
 		if (class_exists($class))
 		{
-			return new $class;
+			return $this->_initializeComponent($class, $type);
 		}
 	}
 
@@ -152,11 +141,41 @@ class ComponentsService extends BaseApplicationComponent
 				$component->getSettings()->addErrors($model->getSettingErrors());
 			}
 
-			// Actually initialize the component
-			$component->init();
-
 			return $component;
 		}
+	}
+
+	/**
+	 * Validates a class and creates an instance of it.
+	 *
+	 * @access private
+	 * @param string $class
+	 * @param string $type
+	 * @return BaseComponentType|null
+	 */
+	private function _initializeComponent($class, $type)
+	{
+		// Ignore abstract classes and interfaces
+		$ref = new \ReflectionClass($class);
+
+		if ($ref->isAbstract() || $ref->isInterface())
+		{
+			return;
+		}
+
+		// Make sure it implements the correct abstract base class
+		$baseClass = __NAMESPACE__.'\\'.$this->types[$type]['baseClass'];
+
+		if ($class instanceof $baseClass)
+		{
+			return;
+		}
+
+		// Instantiate and return it
+		$component = new $class;
+		$component->init();
+
+		return $component;
 	}
 
 	/**

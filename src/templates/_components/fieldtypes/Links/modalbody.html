@@ -1,11 +1,11 @@
 <table class="data">
 	<tbody>
-		{% for entry in entries %}
-			<tr{% if entry.id in selectedIds %} class="hidden"{% endif %}>
+		{% for element in elements %}
+			<tr{% if element.id in selectedIds %} class="hidden"{% endif %}>
 				<td>
-					<div class="entry" data-id="{{ entry.id }}">
-						{{ entry }}
-						<input type="hidden" name="{{ name }}[]" value="{{ entry.id }}">
+					<div class="element" data-id="{{ element.id }}">
+						{{ element }}
+						<input type="hidden" name="{{ name }}[]" value="{{ element.id }}">
 					</div>
 				</td>
 			</tr>

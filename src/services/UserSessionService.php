@@ -23,12 +23,17 @@ class UserSessionService extends \CWebUser
 	 * @access private
 	 * @var UserModel
 	 */
-	private $_user;
+	private $_userModel;
 
 	/**
 	 * @var
 	 */
-	private $_sessionRestoredFromCookie = null;
+	private $_userRow;
+
+	/**
+	 * @var
+	 */
+	private $_sessionRestoredFromCookie;
 
 	/**
 	 * Gets the currently logged-in user.
@@ -42,19 +47,19 @@ class UserSessionService extends \CWebUser
 		{
 			if (!isset($this->_user))
 			{
-				$userRecord = UserRecord::model()->findById($this->getId());
+				$userRow = $this->_getUserRow($this->getId());
 
-				if ($userRecord)
+				if ($userRow)
 				{
-					$this->_user = UserModel::populateModel($userRecord);
+					$this->_userModel = UserModel::populateModel($userRow);
 				}
 				else
 				{
-					$this->_user = false;
+					$this->_userModel = false;
 				}
 			}
 
-			return $this->_user ? $this->_user : null;
+			return $this->_userModel ? $this->_userModel : null;
 		}
 	}
 
@@ -99,7 +104,7 @@ class UserSessionService extends \CWebUser
 	 */
 	public function isGuest()
 	{
-		$user = $this->getUser();
+		$user = $this->_getUserRow($this->getId());
 		return empty($user);
 	}
 
@@ -280,7 +285,6 @@ class UserSessionService extends \CWebUser
 								);
 
 								$this->saveCookie('', $data, $seconds);
-								$this->_sessionRestoredFromCookie = false;
 							}
 							else
 							{
@@ -292,6 +296,9 @@ class UserSessionService extends \CWebUser
 							throw new Exception(Blocks::t('{class}.allowAutoLogin must be set true in order to use cookie-based authentication.', array('{class}' => get_class($this))));
 						}
 					}
+
+					$this->_sessionRestoredFromCookie = false;
+					$this->_userRow = null;
 
 					// Run any after login logic.
 					$this->afterLogin(false);
@@ -508,6 +515,7 @@ class UserSessionService extends \CWebUser
 								$this->saveCookie('', $data, $seconds);
 								$this->authTimeout = $seconds;
 								$this->_sessionRestoredFromCookie = true;
+								$this->_userRow = null;
 							}
 
 							$this->afterLogin(true);
@@ -655,5 +663,32 @@ class UserSessionService extends \CWebUser
 		}
 
 		return $seconds;
+	}
+
+	/**
+	 * @param $id
+	 * @return int
+	 */
+	private function _getUserRow($id)
+	{
+		if (!isset($this->_userRow))
+		{
+			$userRow = blx()->db->createCommand()
+			    ->select('*')
+			    ->from('{{users}}')
+			    ->where('id=:id', array(':id' => $id))
+			    ->queryRow();
+
+			if ($userRow)
+			{
+				$this->_userRow = $userRow;
+			}
+			else
+			{
+				$this->_userRow = false;
+			}
+		}
+
+		return $this->_userRow;
 	}
 }

@@ -9,40 +9,40 @@ class LinksService extends BaseApplicationComponent
 	private $_criteriaRecordsByTypeAndHandle;
 
 	/**
-	 * Returns all installed linkable entry types.
+	 * Returns all installed linkable element types.
 	 *
 	 * @return array
 	 */
-	public function getAllLinkableEntryTypes()
+	public function getAllLinkableElementTypes()
 	{
-		$entryTypes = blx()->entries->getAllEntryTypes();
-		$linkableEntryTypes = array();
+		$elementTypes = blx()->elements->getAllElementTypes();
+		$linkableElementTypes = array();
 
-		foreach ($entryTypes as $entryType)
+		foreach ($elementTypes as $elementType)
 		{
-			if ($entryType->isLinkable())
+			if ($elementType->isLinkable())
 			{
-				$classHandle = $entryType->getClassHandle();
-				$linkableEntryTypes[$classHandle] = $entryType;
+				$classHandle = $elementType->getClassHandle();
+				$linkableElementTypes[$classHandle] = $elementType;
 			}
 		}
 
-		return $linkableEntryTypes;
+		return $linkableElementTypes;
 	}
 
 	/**
-	 * Returns a linkable entry type.
+	 * Returns a linkable element type.
 	 *
 	 * @param string $class
-	 * @return BaseEntryType|null
+	 * @return BaseElementType|null
 	 */
-	public function getLinkableEntryType($class)
+	public function getLinkableElementType($class)
 	{
-		$entryType = blx()->entries->getEntryType($class);
+		$elementType = blx()->elements->getElementType($class);
 
-		if ($entryType && $entryType->isLinkable())
+		if ($elementType && $elementType->isLinkable())
 		{
-			return $entryType;
+			return $elementType;
 		}
 	}
 
@@ -74,35 +74,35 @@ class LinksService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a link criteria model by the its entry type and a given handle.
+	 * Returns a link criteria model by the its element type and a given handle.
 	 *
-	 * @param string $entryType
+	 * @param string $elementType
 	 * @param string $handle
 	 * @param string $dir The direction we should be going ('ltr' or 'rtl')
 	 * @return LinkCriteriaModel|null
 	 */
-	public function getCriteriaByTypeAndHandle($entryType, $handle, $dir = 'ltr')
+	public function getCriteriaByTypeAndHandle($elementType, $handle, $dir = 'ltr')
 	{
-		if (!isset($this->_criteriaRecordsByTypeAndHandle[$dir][$entryType]) || !array_key_exists($handle, $this->_criteriaRecordsByTypeAndHandle[$dir][$entryType]))
+		if (!isset($this->_criteriaRecordsByTypeAndHandle[$dir][$elementType]) || !array_key_exists($handle, $this->_criteriaRecordsByTypeAndHandle[$dir][$elementType]))
 		{
 			list($source, $target) = $this->_getDirProps($dir);
 
 			$record = LinkCriteriaRecord::model()->findByAttributes(array(
-				"{$source}EntryType" => $entryType,
+				"{$source}ElementType" => $elementType,
 				"{$dir}Handle"       => $handle
 			));
 
 			if ($record)
 			{
-				$this->_criteriaRecordsByTypeAndHandle[$dir][$entryType][$handle] = LinkCriteriaModel::populateModel($record);
+				$this->_criteriaRecordsByTypeAndHandle[$dir][$elementType][$handle] = LinkCriteriaModel::populateModel($record);
 			}
 			else
 			{
-				$this->_criteriaRecordsByTypeAndHandle[$dir][$entryType][$handle] = null;
+				$this->_criteriaRecordsByTypeAndHandle[$dir][$elementType][$handle] = null;
 			}
 		}
 
-		return $this->_criteriaRecordsByTypeAndHandle[$dir][$entryType][$handle];
+		return $this->_criteriaRecordsByTypeAndHandle[$dir][$elementType][$handle];
 	}
 
 	/**
@@ -131,8 +131,8 @@ class LinksService extends BaseApplicationComponent
 
 		$criteriaRecord->ltrHandle      = $criteria->ltrHandle;
 		$criteriaRecord->rtlHandle      = $criteria->rtlHandle;
-		$criteriaRecord->leftEntryType  = $criteria->leftEntryType;
-		$criteriaRecord->rightEntryType = $criteria->rightEntryType;
+		$criteriaRecord->leftElementType  = $criteria->leftElementType;
+		$criteriaRecord->rightElementType = $criteria->rightElementType;
 		$criteriaRecord->rightSettings  = $criteria->rightSettings;
 
 		if ($criteriaRecord->save())
@@ -144,8 +144,8 @@ class LinksService extends BaseApplicationComponent
 			}
 			else
 			{
-				// Have either of the entry types changed?
-				if ($criteria->leftEntryType != $oldCriteria->leftEntryType || $criteria->rightEntryType != $oldCriteria->rightEntryType)
+				// Have either of the element types changed?
+				if ($criteria->leftElementType != $oldCriteria->leftElementType || $criteria->rightElementType != $oldCriteria->rightElementType)
 				{
 					// Delete the links that were previously created with this criteria
 					blx()->db->createCommand()->delete('links', array('criteriaId' => $criteria->id));
@@ -162,37 +162,37 @@ class LinksService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the linked entries by a given criteria and the source entry ID.
+	 * Returns the linked elements by a given criteria and the source element ID.
 	 *
 	 * @param LinkCriteriaModel $criteria
-	 * @param int $sourceEntryId
+	 * @param int $sourceElementId
 	 * @param string $dir The direction we should be going ('ltr' or 'rtl')
 	 * @return array
 	 */
-	public function getLinkedEntries(LinkCriteriaModel $criteria, $sourceEntryId, $dir = 'ltr')
+	public function getLinkedElements(LinkCriteriaModel $criteria, $sourceElementId, $dir = 'ltr')
 	{
 		list($source, $target) = $this->_getDirProps($dir);
 
-		$entryTypeClassProperty = $target.'EntryType';
-		$entryTypeClass = $criteria->$entryTypeClassProperty;
-		$entryType = $this->getLinkableEntryType($entryTypeClass);
+		$elementTypeClassProperty = $target.'ElementType';
+		$elementTypeClass = $criteria->$elementTypeClassProperty;
+		$elementType = $this->getLinkableElementType($elementTypeClass);
 
-		if (!$entryType)
+		if (!$elementType)
 		{
 			return array();
 		}
 
-		$entryCriteria = blx()->entries->getEntryCriteria($entryTypeClass);
-		$query = blx()->entries->buildEntriesQuery($entryCriteria);
+		$elementCriteria = blx()->elements->getCriteria($elementTypeClass);
+		$query = blx()->elements->buildElementsQuery($elementCriteria);
 
 		if ($query)
 		{
 			$query
-				->addSelect("l.{$target}SortOrder")
-				->join('links l', "l.{$target}EntryId = e.id")
-				->andWhere(array('l.criteriaId'  => $criteria->id, "l.{$source}EntryId" => $sourceEntryId));
+				->addSelect("links.{$target}SortOrder")
+				->join('links links', "links.{$target}ElementId = elements.id")
+				->andWhere(array('links.criteriaId'  => $criteria->id, "links.{$source}ElementId" => $sourceElementId));
 
-			return $this->_getEntriesFromQuery($entryType, $query, "{$target}SortOrder");
+			return $this->_getElementsFromQuery($elementType, $query, "{$target}SortOrder");
 		}
 		else
 		{
@@ -201,54 +201,54 @@ class LinksService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets entries by their ID.
+	 * Gets elements by their ID.
 	 *
-	 * @param string $entryTypeClass
-	 * @param array $entryIds
+	 * @param string $elementTypeClass
+	 * @param array $elementIds
 	 * @return array
 	 */
-	public function getEntriesById($entryTypeClass, $entryIds)
+	public function getElementsById($elementTypeClass, $elementIds)
 	{
-		if (!$entryIds)
+		if (!$elementIds)
 		{
 			return array();
 		}
 
-		$entryType = $this->getLinkableEntryType($entryTypeClass);
+		$elementType = $this->getLinkableElementType($elementTypeClass);
 
-		if (!$entryType)
+		if (!$elementType)
 		{
 			return array();
 		}
 
-		$entryCriteria = blx()->entries->getEntryCriteria($entryTypeClass, array(
-			'id' => $entryIds
+		$elementCriteria = blx()->elements->getCriteria($elementTypeClass, array(
+			'id' => $elementIds
 		));
 
-		$query = blx()->entries->buildEntriesQuery($entryCriteria);
+		$query = blx()->elements->buildElementsQuery($elementCriteria);
 
 		if ($query)
 		{
-			$entries = $this->_getEntriesFromQuery($entryType, $query);
+			$elements = $this->_getElementsFromQuery($elementType, $query);
 
 			// Put them into the requested order
-			$orderedEntries = array();
-			$entriesById = array();
+			$orderedElements = array();
+			$elementsById = array();
 
-			foreach ($entries as $entry)
+			foreach ($elements as $element)
 			{
-				$entriesById[$entry->id] = $entry;
+				$elementsById[$element->id] = $element;
 			}
 
-			foreach ($entryIds as $id)
+			foreach ($elementIds as $id)
 			{
-				if (isset($entriesById[$id]))
+				if (isset($elementsById[$id]))
 				{
-					$orderedEntries[] = $entriesById[$id];
+					$orderedElements[] = $elementsById[$id];
 				}
 			}
 
-			return $orderedEntries;
+			return $orderedElements;
 		}
 		else
 		{
@@ -272,16 +272,16 @@ class LinksService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Sets the linked entries for a Links field.
+	 * Sets the linked elements for a Links field.
 	 *
 	 * @param int $criteriaId
-	 * @param int $sourceEntryId
-	 * @param array $linkedEntryIds
+	 * @param int $sourceElementId
+	 * @param array $linkedElementIds
 	 * @param string $dir The direction we should be going ('ltr' or 'rtl')
 	 * @throws \Exception
 	 * @return void
 	 */
-	public function saveLinks($criteriaId, $sourceEntryId, $linkedEntryIds, $dir = 'ltr')
+	public function saveLinks($criteriaId, $sourceElementId, $linkedElementIds, $dir = 'ltr')
 	{
 		list($source, $target) = $this->_getDirProps($dir);
 
@@ -291,19 +291,19 @@ class LinksService extends BaseApplicationComponent
 			// Delete the existing links
 			blx()->db->createCommand()->delete('links', array(
 				'criteriaId'       => $criteriaId,
-				"{$source}EntryId" => $sourceEntryId
+				"{$source}ElementId" => $sourceElementId
 			));
 
-			if ($linkedEntryIds)
+			if ($linkedElementIds)
 			{
 				$values = array();
 
-				foreach ($linkedEntryIds as $sortOrder => $entryId)
+				foreach ($linkedElementIds as $sortOrder => $elementId)
 				{
-					$values[] = array($criteriaId, $sourceEntryId, $entryId, $sortOrder+1);
+					$values[] = array($criteriaId, $sourceElementId, $elementId, $sortOrder+1);
 				}
 
-				$columns = array('criteriaId', "{$source}EntryId", "{$target}EntryId", "{$target}SortOrder");
+				$columns = array('criteriaId', "{$source}ElementId", "{$target}ElementId", "{$target}SortOrder");
 				blx()->db->createCommand()->insertAll('links', $columns, $values);
 			}
 
@@ -317,17 +317,17 @@ class LinksService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns entries based on a given query.
+	 * Returns elements based on a given query.
 	 *
 	 * @access private
-	 * @param BaseEntryType $entryType
+	 * @param BaseElementType $elementType
 	 * @param DbCommand $subquery
 	 * @param string $order
 	 * @return array
 	 */
-	private function _getEntriesFromQuery(BaseEntryType $entryType, DbCommand $subquery, $order = null)
+	private function _getElementsFromQuery(BaseElementType $elementType, DbCommand $subquery, $order = null)
 	{
-		// Only get the unique entries (no locale duplicates)
+		// Only get the unique elements (no locale duplicates)
 		$query = blx()->db->createCommand()
 			->select('*')
 			->from('('.$subquery->getText().') AS '.blx()->db->quoteTableName('r'))
@@ -341,14 +341,14 @@ class LinksService extends BaseApplicationComponent
 		}
 
 		$result = $query->queryAll();
-		$entries = array();
+		$elements = array();
 
 		foreach ($result as $row)
 		{
-			$entries[] = $entryType->populateEntryModel($row);
+			$elements[] = $elementType->populateElementModel($row);
 		}
 
-		return $entries;
+		return $elements;
 	}
 
 	/**

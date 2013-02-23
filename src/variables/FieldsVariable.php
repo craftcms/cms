@@ -127,15 +127,15 @@ class FieldsVariable
 	 * Populates a fieldtype.
 	 *
 	 * @param FieldModel $field
-	 * @param EntryModel|null $entry
+	 * @param ElementModel|null $element
 	 * @return BaseFieldType|null
 	 */
-	public function populateFieldType(FieldModel $field, $entry = null)
+	public function populateFieldType(FieldModel $field, $element = null)
 	{
-		$fieldType = blx()->fields->populateFieldType($field);
+		$fieldType = blx()->fields->populateFieldType($field, $element);
+
 		if ($fieldType)
 		{
-			$fieldType->entry = $entry;
 			return new FieldTypeVariable($fieldType);
 		}
 	}
