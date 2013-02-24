@@ -135,12 +135,12 @@ class EntryElementType extends BaseElementType
 
 		if ($criteria->after)
 		{
-			$query->addWhere(DbHelper::parseDateParam('elements.postDate', '>=', $criteria->after, $query->params));
+			$query->andWhere(DbHelper::parseDateParam('elements.postDate', '>=', $criteria->after, $query->params));
 		}
 
 		if ($criteria->before)
 		{
-			$query->addWhere(DbHelper::parseDateParam('elements.postDate', '<', $criteria->before, $query->params));
+			$query->andWhere(DbHelper::parseDateParam('elements.postDate', '<', $criteria->before, $query->params));
 		}
 
 		if ($criteria->status)
@@ -149,7 +149,7 @@ class EntryElementType extends BaseElementType
 
 			if ($statusCondition)
 			{
-				$query->addWhere($statusCondition);
+				$query->andWhere($statusCondition);
 			}
 		}
 
