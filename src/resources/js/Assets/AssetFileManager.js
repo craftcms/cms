@@ -19,13 +19,13 @@ Assets.FileManager = Garnish.Base.extend({
 		this.setSettings(settings, Assets.FileManager.defaults);
 
 		this.$toolbar = $('.toolbar', this.$manager);
-        this.$upload = $('.buttons .assets-upload');
-        this.$search = $('> .search input.text', this.$toolbar);
-        this.$spinner = $('.temp-spinner', this.$manager);
-        this.$status = $('.asset-status');
-        this.$scrollpane = null;
-        this.$folders = Craft.cp.$sidebarNav.find('.assets-folders:first');
-        this.$folderContainer = $('.folder-container');
+		this.$upload = $('.buttons .assets-upload');
+		this.$search = $('> .search input.text', this.$toolbar);
+		this.$spinner = $('.temp-spinner', this.$manager);
+		this.$status = $('.asset-status');
+		this.$scrollpane = null;
+		this.$folders = Craft.cp.$sidebarNav.find('.assets-folders:first');
+		this.$folderContainer = $('.folder-container');
 
 		this.$viewAsThumbsBtn = $('a.thumbs', this.$toolbar);
 		this.$viewAsListBtn   = $('a.list', this.$toolbar);
@@ -43,32 +43,32 @@ Assets.FileManager = Garnish.Base.extend({
 
 		this.modal = null;
 		this.sort = 'asc';
-        this.requestId = 0;
-        this.promptArray = [];
-        this.offset = 0;
-        this.nextOffset = 0;
-        this.lastPageReached = false;
+		this.requestId = 0;
+		this.promptArray = [];
+		this.offset = 0;
+		this.nextOffset = 0;
+		this.lastPageReached = false;
 
-        this.selectedFileIds = [];
-        this.folders = [];
+		this.selectedFileIds = [];
+		this.folders = [];
 
-        this.folderSelect = null;
-        this.fileSelect = null;
-        this.filesView = null;
-        this.fileDrag = null;
-        this.folderDrag = null;
+		this.folderSelect = null;
+		this.fileSelect = null;
+		this.filesView = null;
+		this.fileDrag = null;
+		this.folderDrag = null;
 
-        this._promptCallback = function (){};
+		this._promptCallback = function (){};
 
 
-        if (this.settings.mode == 'full')
-        {
-            this.$scrollpane = Garnish.$win;
-        }
-        else
-        {
-            this.$scrollpane = this.$manager;
-        }
+		if (this.settings.mode == 'full')
+		{
+			this.$scrollpane = Garnish.$win;
+		}
+		else
+		{
+			this.$scrollpane = this.$manager;
+		}
 
 		// -------------------------------------------
 		// Assets states
@@ -275,21 +275,21 @@ Assets.FileManager = Garnish.Base.extend({
 		}
 	},
 
-    /**
-     * Load the folder contents by selected folder.
-     */
-    loadFolderContents: function () {
-        var folderElement = this.$folders.find('a.sel');
+	/**
+	 * Load the folder contents by selected folder.
+	 */
+	loadFolderContents: function () {
+		var folderElement = this.$folders.find('a.sel');
 
-        if (folderElement.length == 0)
-        {
-            folderElement = this.$folders.find('li:first');
-        }
+		if (folderElement.length == 0)
+		{
+			folderElement = this.$folders.find('li:first');
+		}
 
-        this.markActiveFolder(folderElement.attr('data-folder'));
-        this.storeState('currentFolder', folderElement.attr('data-folder'));
+		this.markActiveFolder(folderElement.attr('data-folder'));
+		this.storeState('currentFolder', folderElement.attr('data-folder'));
 
-        this.updateFiles();
+		this.updateFiles();
 	},
 
 	/**
@@ -297,364 +297,364 @@ Assets.FileManager = Garnish.Base.extend({
 	 */
 	updateFiles: function (callback) {
 
-        this._setUploadFolder(this.getCurrentFolderId());
+		this._setUploadFolder(this.getCurrentFolderId());
 
-        this.setAssetsBusy();
+		this.setAssetsBusy();
 
-        this.offset = 0;
-        this.nextOffset = 0;
+		this.offset = 0;
+		this.nextOffset = 0;
 
-        // TODO Dragging
-        //this.fileDrag.removeAllItems();
+		// TODO Dragging
+		//this.fileDrag.removeAllItems();
 
-        this._beforeLoadFiles();
+		this._beforeLoadFiles();
 
-        var postData = this._prepareFileViewPostData();
+		var postData = this._prepareFileViewPostData();
 
-        // destroy previous select & view
-        if (this.fileSelect) this.fileSelect.destroy();
-        if (this.filesView) this.filesView.destroy();
-        this.fileSelect = this.filesView = null;
+		// destroy previous select & view
+		if (this.fileSelect) this.fileSelect.destroy();
+		if (this.filesView) this.filesView.destroy();
+		this.fileSelect = this.filesView = null;
 
 
-        Craft.postActionRequest('assets/viewFolder', postData, $.proxy(function(data, textStatus) {
+		Craft.postActionRequest('assets/viewFolder', postData, $.proxy(function(data, textStatus) {
 
 			if (data.requestId != this.requestId) {
 				return;
 			}
 
-            this.$folderContainer.attr('data', this.getCurrentFolderId());
+			this.$folderContainer.attr('data', this.getCurrentFolderId());
 			this.$folderContainer.html(data.html);
 
-            // initialize the files view
-            if (this.currentState.view == 'list')
-            {
-                this.filesView = new Assets.ListView($('> .folder-contents > .listview', this.$folderContainer), {
-                    orderby: this.state.orderby,
-                    sort:    this.state.sort,
-                    onSortChange: $.proxy(function(orderby, sort)
-                    {
-                        this.setState({
-                            orderby: orderby,
-                            sort: sort
-                        });
-                        this.updateFiles();
-                    }, this)
-                });
-            }
-            else
-            {
-                this.filesView = new Assets.ThumbView($('> .folder-contents > .thumbs', this.$folderContainer));
-            }
+			// initialize the files view
+			if (this.currentState.view == 'list')
+			{
+				this.filesView = new Assets.ListView($('> .folder-contents > .listview', this.$folderContainer), {
+					orderby: this.state.orderby,
+					sort:    this.state.sort,
+					onSortChange: $.proxy(function(orderby, sort)
+					{
+						this.setState({
+							orderby: orderby,
+							sort: sort
+						});
+						this.updateFiles();
+					}, this)
+				});
+			}
+			else
+			{
+				this.filesView = new Assets.ThumbView($('> .folder-contents > .thumbs', this.$folderContainer));
+			}
 
-            // initialize the files multiselect
-            this.fileSelect = new Garnish.Select(this.$files, {
-                selectedClass:     'assets-selected',
-                multi:             this.settings.multiSelect,
-                waitForDblClick:   (this.settings.multiSelect && this.settings.mode == 'select'),
-                vertical:          (this.currentState.view == 'list'),
-                onSelectionChange: $.proxy(this, '_onFileSelectionChange'),
-                $scrollpane:       this.$scrollpane
-            });
+			// initialize the files multiselect
+			this.fileSelect = new Garnish.Select(this.$files, {
+				selectedClass:     'assets-selected',
+				multi:             this.settings.multiSelect,
+				waitForDblClick:   (this.settings.multiSelect && this.settings.mode == 'select'),
+				vertical:          (this.currentState.view == 'list'),
+				onSelectionChange: $.proxy(this, '_onFileSelectionChange'),
+				$scrollpane:       this.$scrollpane
+			});
 
-            var $files = this.filesView.getItems().not('.assets-disabled');
+			var $files = this.filesView.getItems().not('.assets-disabled');
 
-            this._afterLoadFiles(data, $files);
+			this._afterLoadFiles(data, $files);
 
-            // did this happen immediately after an upload?
-            this._onFileSelectionChange();
+			// did this happen immediately after an upload?
+			this._onFileSelectionChange();
 
-            // scroll to the first selected file
-            if (this.selectedFileIds.length)
-            {
-                var $selected = this.fileSelect.getSelectedItems();
-                Garnish.scrollContainerToElement(this.$scrollpane, $selected);
-            }
+			// scroll to the first selected file
+			if (this.selectedFileIds.length)
+			{
+				var $selected = this.fileSelect.getSelectedItems();
+				Garnish.scrollContainerToElement(this.$scrollpane, $selected);
+			}
 
-            // -------------------------------------------
-            //  callback
-            //
-            if (typeof callback == 'function')
-            {
-                callback();
-            }
-            //
-            // -------------------------------------------
+			// -------------------------------------------
+			//  callback
+			//
+			if (typeof callback == 'function')
+			{
+				callback();
+			}
+			//
+			// -------------------------------------------
 
-            // Initialize the next-page loader if necessary
+			// Initialize the next-page loader if necessary
 
-            this.setAssetsAvailable();
+			this.setAssetsAvailable();
 
-            this._initializePageLoader();
+			this._initializePageLoader();
 		}, this));
 	},
 
-    /**
-     * Perform actions before file loading.
-     * @private
-     */
-    _beforeLoadFiles: function () {
+	/**
+	 * Perform actions before file loading.
+	 * @private
+	 */
+	_beforeLoadFiles: function () {
 
-        if (typeof this.settings.onBeforeUpdateFiles == 'function')
-        {
-            this.settings.onBeforeUpdateFiles();
-        }
+		if (typeof this.settings.onBeforeUpdateFiles == 'function')
+		{
+			this.settings.onBeforeUpdateFiles();
+		}
 
-    },
+	},
 
-    /**
-     * Prepare the array for POST request for file view.
-     */
-    _prepareFileViewPostData: function (folderId) {
-        return {
-            requestId: ++this.requestId,
-            folderId: this.currentState.currentFolder,
-            viewType: this.currentState.view
-        };
-    },
+	/**
+	 * Prepare the array for POST request for file view.
+	 */
+	_prepareFileViewPostData: function (folderId) {
+		return {
+			requestId: ++this.requestId,
+			folderId: this.currentState.currentFolder,
+			viewType: this.currentState.view
+		};
+	},
 
-    /**
-     * Called right after loading files
-     */
-    _afterLoadFiles: function (data, $files)
-    {
-        // This way we will suffer an extra request upon reaching the last page, but we don't have to set the page size anywhere
-        if (data.total > 0)
-        {
-            this.nextOffset += data.total;
-            this.lastPageReached = false;
-        }
-        else
-        {
-            this.lastPageReached = true;
-        }
+	/**
+	 * Called right after loading files
+	 */
+	_afterLoadFiles: function (data, $files)
+	{
+		// This way we will suffer an extra request upon reaching the last page, but we don't have to set the page size anywhere
+		if (data.total > 0)
+		{
+			this.nextOffset += data.total;
+			this.lastPageReached = false;
+		}
+		else
+		{
+			this.lastPageReached = true;
+		}
 
-        this.fileSelect.addItems($files);
+		this.fileSelect.addItems($files);
 
-        if (this.settings.mode == 'full')
-        {
-            // TODO file dragging
-            //this.fileDrag.addItems($files);
-        }
+		if (this.settings.mode == 'full')
+		{
+			// TODO file dragging
+			//this.fileDrag.addItems($files);
+		}
 
-        // double-click handling
-        this.addListener($files, 'dblclick', function(ev)
-        {
-            switch (this.settings.mode)
-            {
-                case 'select':
-                {
-                    clearTimeout(this.fileSelect.clearMouseUpTimeout());
-                    this.settings.onSelect();
-                    break;
-                }
+		// double-click handling
+		this.addListener($files, 'dblclick', function(ev)
+		{
+			switch (this.settings.mode)
+			{
+				case 'select':
+				{
+					clearTimeout(this.fileSelect.clearMouseUpTimeout());
+					this.settings.onSelect();
+					break;
+				}
 
-                case 'full':
-                {
-                    this._showProperties(ev);
-                    break;
-                }
-            }
-        });
+				case 'full':
+				{
+					this._showProperties(ev);
+					break;
+				}
+			}
+		});
 
-        // -------------------------------------------
-        //  TODO Context Menus
-        // -------------------------------------------
-        /*
-        var menuOptions = [{ label: Assets.lang.view_file, onClick: $.proxy(this, '_viewFile') }];
+		// -------------------------------------------
+		//  TODO Context Menus
+		// -------------------------------------------
+		/*
+		var menuOptions = [{ label: Assets.lang.view_file, onClick: $.proxy(this, '_viewFile') }];
 
-        if (this.settings.mode == 'full')
-        {
-            menuOptions.push({ label: Assets.lang.edit_file, onClick: $.proxy(this, '_showProperties') });
-            menuOptions.push({ label: Assets.lang.rename, onClick: $.proxy(this, '_renameFile') });
-            menuOptions.push('-');
-            menuOptions.push({ label: Assets.lang._delete, onClick: $.proxy(this, '_deleteFile') });
-        }
+		if (this.settings.mode == 'full')
+		{
+			menuOptions.push({ label: Assets.lang.edit_file, onClick: $.proxy(this, '_showProperties') });
+			menuOptions.push({ label: Assets.lang.rename, onClick: $.proxy(this, '_renameFile') });
+			menuOptions.push('-');
+			menuOptions.push({ label: Assets.lang._delete, onClick: $.proxy(this, '_deleteFile') });
+		}
 
-        this._singleFileMenu = new Garnish.ContextMenu($files, menuOptions, {
-            menuClass: 'assets-contextmenu'
-        });
+		this._singleFileMenu = new Garnish.ContextMenu($files, menuOptions, {
+			menuClass: 'assets-contextmenu'
+		});
 
-        if (this.settings.mode == 'full')
-        {
-            this._multiFileMenu = new Garnish.ContextMenu($files, [
-                { label: Assets.lang._delete, onClick: $.proxy(this, '_deleteFiles') }
-            ], {
-                menuClass: 'assets-contextmenu'
-            });
+		if (this.settings.mode == 'full')
+		{
+			this._multiFileMenu = new Garnish.ContextMenu($files, [
+				{ label: Assets.lang._delete, onClick: $.proxy(this, '_deleteFiles') }
+			], {
+				menuClass: 'assets-contextmenu'
+			});
 
-            this._multiFileMenu.disable();
-        }*/
-    },
+			this._multiFileMenu.disable();
+		}*/
+	},
 
-    /**
-     * Initialize the page loader.
-     */
-    _initializePageLoader: function ()
-    {
-        if (!this.lastPageReached)
-        {
-            var handler = function () {
-                if(!this.$manager.hasClass('assets-page-loading') && Garnish.$win.scrollTop() + Garnish.$win.height() > Garnish.$doc.height() - 400) {
-                    this.$manager.addClass('assets-page-loading');
-                    Garnish.$win.unbind('scroll', $.proxy(handler, this));
-                    this.loadMoreFiles();
-                }
-            };
-            handler.call(this);
-            Garnish.$win.bind('scroll', $.proxy(handler, this));
-        }
+	/**
+	 * Initialize the page loader.
+	 */
+	_initializePageLoader: function ()
+	{
+		if (!this.lastPageReached)
+		{
+			var handler = function () {
+				if(!this.$manager.hasClass('assets-page-loading') && Garnish.$win.scrollTop() + Garnish.$win.height() > Garnish.$doc.height() - 400) {
+					this.$manager.addClass('assets-page-loading');
+					Garnish.$win.unbind('scroll', $.proxy(handler, this));
+					this.loadMoreFiles();
+				}
+			};
+			handler.call(this);
+			Garnish.$win.bind('scroll', $.proxy(handler, this));
+		}
 
 
-    },
+	},
 
-    /**
-     * Load more files
-     */
-    loadMoreFiles: function ()
-    {
-        if (this.lastPageReached)
-        {
-            return;
-        }
+	/**
+	 * Load more files
+	 */
+	loadMoreFiles: function ()
+	{
+		if (this.lastPageReached)
+		{
+			return;
+		}
 
-        this.requestId++;
-        this._beforeLoadFiles();
-        var postData = this._prepareFileViewPostData();
+		this.requestId++;
+		this._beforeLoadFiles();
+		var postData = this._prepareFileViewPostData();
 
-        postData.offset = this.nextOffset;
+		postData.offset = this.nextOffset;
 
-        // run the ajax post request
-        Blocks.postActionRequest('assets/viewFolder', postData, $.proxy(function(data, textStatus) {
-            this.$manager.removeClass('assets-page-loading');
+		// run the ajax post request
+		Craft.postActionRequest('assets/viewFolder', postData, $.proxy(function(data, textStatus) {
+			this.$manager.removeClass('assets-page-loading');
 
-            if (textStatus == 'success')
-            {
-                // ignore if this isn't the current request
-                if (data.requestId != this.requestId) return;
+			if (textStatus == 'success')
+			{
+				// ignore if this isn't the current request
+				if (data.requestId != this.requestId) return;
 
-                if (this.currentState.view == 'list')
-                {
-                    $newFiles = $(data.html).find('tbody>tr');
-                }
-                else
-                {
-                    $newFiles = $(data.html).find('ul li');
-                }
+				if (this.currentState.view == 'list')
+				{
+					$newFiles = $(data.html).find('tbody>tr');
+				}
+				else
+				{
+					$newFiles = $(data.html).find('ul li');
+				}
 
-                if ($newFiles.length > 0)
-                {
-                    $enabledFiles = $newFiles.not('.assets-disabled');
-                    if (this.filesView != null)
-                    {
-                        this.filesView.addItems($newFiles);
-                        this._afterLoadFiles(data, $enabledFiles);
-                    }
+				if ($newFiles.length > 0)
+				{
+					$enabledFiles = $newFiles.not('.assets-disabled');
+					if (this.filesView != null)
+					{
+						this.filesView.addItems($newFiles);
+						this._afterLoadFiles(data, $enabledFiles);
+					}
 
-                    this.$folderContainer.append($(data.html).find('style'));
+					this.$folderContainer.append($(data.html).find('style'));
 
-                    this._initializePageLoader();
-                }
+					this._initializePageLoader();
+				}
 
-            }
-        }, this));
-    },
+			}
+		}, this));
+	},
 
-    /**
-     * Display file properties window
-     */
-    _showProperties: function (ev) {
+	/**
+	 * Display file properties window
+	 */
+	_showProperties: function (ev) {
 
-        this.setAssetsBusy();
-        var params = {
-            requestId: ++this.requestId,
-            fileId: $(ev.target).is('li') ? $(ev.target).attr('data-file') : $(ev.target).parents('li').attr('data-file')
-        };
+		this.setAssetsBusy();
+		var params = {
+			requestId: ++this.requestId,
+			fileId: $(ev.target).is('li') ? $(ev.target).attr('data-file') : $(ev.target).parents('li').attr('data-file')
+		};
 
-        Blocks.postActionRequest('assets/viewFile', params, $.proxy(function(data, textStatus) {
-            if (data.requestId != this.requestId) {
-                return;
-            }
+		Craft.postActionRequest('assets/viewFile', params, $.proxy(function(data, textStatus) {
+			if (data.requestId != this.requestId) {
+				return;
+			}
 
-            this.setAssetsAvailable();
+			this.setAssetsAvailable();
 
-            $modalContainerDiv = this.$modalContainerDiv;
+			$modalContainerDiv = this.$modalContainerDiv;
 
-            if ($modalContainerDiv == null) {
-                $modalContainerDiv = $('<div class="modal"></div>').addClass().appendTo(Garnish.$bod);
-            }
+			if ($modalContainerDiv == null) {
+				$modalContainerDiv = $('<div class="modal"></div>').addClass().appendTo(Garnish.$bod);
+			}
 
-            if (this.modal == null) {
-                this.modal = new Garnish.Modal();
-            }
+			if (this.modal == null) {
+				this.modal = new Garnish.Modal();
+			}
 
-            $modalContainerDiv.empty().append(data.headHtml);
-            $modalContainerDiv.append(data.bodyHtml);
-            $modalContainerDiv.append(data.footHtml);
-            this.modal.setContainer($modalContainerDiv);
+			$modalContainerDiv.empty().append(data.headHtml);
+			$modalContainerDiv.append(data.bodyHtml);
+			$modalContainerDiv.append(data.footHtml);
+			this.modal.setContainer($modalContainerDiv);
 
-            this.modal.show();
+			this.modal.show();
 
-            this.modal.addListener(Garnish.Modal.$shade, 'click', function () {
-                this.hide();
-            });
+			this.modal.addListener(Garnish.Modal.$shade, 'click', function () {
+				this.hide();
+			});
 
-            this.modal.addListener(this.modal.$container.find('.btn.cancel'), 'click', function () {
-                this.hide();
-            });
+			this.modal.addListener(this.modal.$container.find('.btn.cancel'), 'click', function () {
+				this.hide();
+			});
 
-            this.modal.addListener(this.modal.$container.find('.btn.submit'), 'click', function () {
-                this.removeListener(Garnish.Modal.$shade, 'click');
+			this.modal.addListener(this.modal.$container.find('.btn.submit'), 'click', function () {
+				this.removeListener(Garnish.Modal.$shade, 'click');
 
-                var params = $('form#file-fields').serialize();
+				var params = $('form#file-fields').serialize();
 
-                Blocks.postActionRequest('assets/saveFileContent', params, $.proxy(function(data, textStatus) {
-                    this.hide();
-                }, this));
-            });
+				Craft.postActionRequest('assets/saveFileContent', params, $.proxy(function(data, textStatus) {
+					this.hide();
+				}, this));
+			});
 
-        }, this));
-    },
+		}, this));
+	},
 
-    /**
-     * On Selection Change
-     */
-    _onFileSelectionChange: function()
-    {
-        if (this.settings.mode == 'full')
-        {
-            // TODO COntext menu
-           /* if (this.fileSelect.getTotalSelected() == 1)
-            {
-                this._singleFileMenu.enable();
-                this._multiFileMenu.disable();
-            }
-            else
-            {
-                this._singleFileMenu.disable();
-                this._multiFileMenu.enable();
-            }*/
-        }
+	/**
+	 * On Selection Change
+	 */
+	_onFileSelectionChange: function()
+	{
+		if (this.settings.mode == 'full')
+		{
+			// TODO Context menu
+		   /* if (this.fileSelect.getTotalSelected() == 1)
+			{
+				this._singleFileMenu.enable();
+				this._multiFileMenu.disable();
+			}
+			else
+			{
+				this._singleFileMenu.disable();
+				this._multiFileMenu.enable();
+			}*/
+		}
 
-        // update our internal array of selected files
-        this.selectedFileIds = [];
-        var $selected = this.fileSelect.getSelectedItems();
+		// update our internal array of selected files
+		this.selectedFileIds = [];
+		var $selected = this.fileSelect.getSelectedItems();
 
-        for (var i = 0; i < $selected.length; i++)
-        {
-            this.selectedFileIds.push($($selected[i]).attr('data-id'));
-        }
+		for (var i = 0; i < $selected.length; i++)
+		{
+			this.selectedFileIds.push($($selected[i]).attr('data-id'));
+		}
 
-        // -------------------------------------------
-        //  onSelectionChange callback
-        //
-        if (typeof this.settings.onSelectionChange == 'function')
-        {
-            this.settings.onSelectionChange();
-        }
-        //
-        // -------------------------------------------
-    },
+		// -------------------------------------------
+		//  onSelectionChange callback
+		//
+		if (typeof this.settings.onSelectionChange == 'function')
+		{
+			this.settings.onSelectionChange();
+		}
+		//
+		// -------------------------------------------
+	},
 
 	/**
 	 * Gets current folder id - if none is set in the current state, then grabs it from the $folderContainer attribute.

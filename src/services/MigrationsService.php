@@ -62,7 +62,7 @@ class MigrationsService extends BaseApplicationComponent
 		foreach ($migrations as $migration)
 		{
 			// Refresh the DB cache
-			blx()->db->getSchema()->refresh();
+			craft()->db->getSchema()->refresh();
 
 			// Set a new 2 minute time limit
 			set_time_limit(120);

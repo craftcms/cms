@@ -513,42 +513,43 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * Rename a folder.
 	 *
 	 * @param AssetFolderModel $folder
-	 * @param $newName
+	 * @param                  $newName
+	 * @throws Exception
 	 * @return AssetOperationResponseModel
 	 */
 	public function renameFolder(AssetFolderModel $folder, $newName)
 	{
-		$parentFolder = blx()->assets->getFolderById($folder->parentId);
+		$parentFolder = craft()->assets->getFolderById($folder->parentId);
 		if (!$parentFolder)
 		{
-			throw new Exception(Blocks::t("Cannot rename folder \"{folder}\"!", array('folder' => $folder->name)));
+			throw new Exception(Craft::t("Cannot rename folder \"{folder}\"!", array('folder' => $folder->name)));
 		}
 		if ($this->_sourceFolderExists($parentFolder, $newName))
 		{
-			throw new Exception(Blocks::t("Folder \"{folder}\" already exists there.", array('folder' => $newName)));
+			throw new Exception(Craft::t("Folder \"{folder}\" already exists there.", array('folder' => $newName)));
 		}
 
 		// Try to rename the folder in the source
 		if (!$this->_renameSourceFolder($folder, $newName))
 		{
-			throw new Exception(Blocks::t("Cannot rename folder \"{folder}\"!", array('folder' => $folder->name)));
+			throw new Exception(Craft::t("Cannot rename folder \"{folder}\"!", array('folder' => $folder->name)));
 		}
 
 		$oldFullPath = $folder->fullPath;
 		$newFullPath = $this->_getParentFullPath($folder->fullPath).$newName.'/';
 
 		// Find all folders with affected fullPaths and update them.
-		$folders = blx()->assets->findChildFolders($folder);
+		$folders = craft()->assets->findChildFolders($folder);
 		foreach ($folders as $folderModel)
 		{
 			$folderModel->fullPath = preg_replace('#^'.$oldFullPath.'#', $newFullPath, $folderModel->fullPath);
-			blx()->assets->storeFolder($folderModel);
+			craft()->assets->storeFolder($folderModel);
 		}
 
 		// Now change the affected folder
 		$folder->name = $newName;
 		$folder->fullPath = $newFullPath;
-		blx()->assets->storeFolder($folder);
+		craft()->assets->storeFolder($folder);
 
 		// All set, Scotty!
 		$response = new AssetOperationResponseModel();

@@ -297,7 +297,7 @@ class PluginsService extends BaseApplicationComponent
 
 		if ($plugin->isInstalled)
 		{
-			throw new Exception(Blocks::t('“{plugin}” is already installed.', array('plugin' => $plugin->getName())));
+			throw new Exception(Craft::t('“{plugin}” is already installed.', array('plugin' => $plugin->getName())));
 		}
 
 		$transaction = craft()->db->beginTransaction();
@@ -468,7 +468,7 @@ class PluginsService extends BaseApplicationComponent
 
 			foreach ($classes as $class)
 			{
-				$component = blx()->components->initializeComponent($class, $instanceOf);
+				$component = craft()->components->initializeComponent($class, $instanceOf);
 
 				if ($component)
 				{
@@ -561,7 +561,7 @@ class PluginsService extends BaseApplicationComponent
 	{
 		$pluginHandle = $plugin->getClassHandle();
 		$lcPluginHandle = strtolower($plugin->getClassHandle());
-		$pluginFolder = blx()->path->getPluginsPath().$lcPluginHandle.'/';
+		$pluginFolder = craft()->path->getPluginsPath().$lcPluginHandle.'/';
 
 		foreach ($this->componentTypes as $type => $typeInfo)
 		{

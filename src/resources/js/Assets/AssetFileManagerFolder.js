@@ -430,21 +430,21 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 
 		var folders = [ {name: name, id: this.id} ];
 
-        for (var i = 0; i < this.parent.subfolders.length; i++)
-        {
-            if (this.parent.subfolders[i].folderName != this.folderName) {
-                folders.push({name: this.parent.subfolders[i].folderName, id: this.parent.subfolders[i].id});
-            }
-        }
+		for (var i = 0; i < this.parent.subfolders.length; i++)
+		{
+			if (this.parent.subfolders[i].folderName != this.folderName) {
+				folders.push({name: this.parent.subfolders[i].folderName, id: this.parent.subfolders[i].id});
+			}
+		}
 
 		folders.sort(Assets.FileManagerFolder.folderSort);
 
-        for (i = 0; i < folders.length; i++) {
-            if (folders[i].name == name) {
-                pos = i;
-                break;
-            }
-        }
+		for (i = 0; i < folders.length; i++) {
+			if (folders[i].name == name) {
+				pos = i;
+				break;
+			}
+		}
 
 		if (pos == 0)
 		{
@@ -474,21 +474,20 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 				newName: newName
 			};
 
-            this.fm.setAssetsBusy();
+			this.fm.setAssetsBusy();
 
-            Craft.postActionRequest('assets/renameFolder', params, $.proxy(function(data)
-            {
-                this.fm.setAssetsAvailable();
+			Craft.postActionRequest('assets/renameFolder', params, $.proxy(function(data)
+			{
+				this.fm.setAssetsAvailable();
 
-                if (data.success)
-                {
-                    this.updateName(data.newName);
-                }
+				if (data.success)
+				{
+					this.updateName(data.newName);
+				}
 
-					if (data.error)
-					{
-						alert(data.error);
-					}
+				if (data.error)
+				{
+					alert(data.error);
 				}
 			}, this), 'json');
 		}
@@ -543,7 +542,7 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 	 */
 	_delete: function()
 	{
-		if (confirm(Blocks.t('Really delete folder "{folder}"?', {folder: this.folderName})))
+		if (confirm(Craft.t('Really delete folder "{folder}"?', {folder: this.folderName})))
 		{
 
 			var params = {

@@ -406,6 +406,7 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param $folderId
 	 * @param $newName
+	 * @throws Exception
 	 * @return AssetOperationResponseModel
 	 */
 	public function renameFolder($folderId, $newName)
@@ -415,10 +416,10 @@ class AssetsService extends BaseApplicationComponent
 			$folder = $this->getFolderById($folderId);
 			if (empty($folder))
 			{
-				throw new Exception(Blocks::t("Can't find the folder to rename!"));
+				throw new Exception(Craft::t("Can't find the folder to rename!"));
 			}
 
-			$source = blx()->assetSources->getSourceTypeById($folder->sourceId);
+			$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
 			$response = $source->renameFolder($folder, IOHelper::cleanFilename($newName));
 
 		}

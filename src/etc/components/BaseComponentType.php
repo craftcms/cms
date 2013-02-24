@@ -8,7 +8,7 @@ abstract class BaseComponentType extends BaseApplicationComponent implements ICo
 {
 	/**
 	 * @access protected
-	 * @var string The type of component, e.g. "Plugin", "Widget", or "Block". Defined by the component type's base class.
+	 * @var string The type of component, e.g. "Plugin", "Widget", or "Field". Defined by the component type's base class.
 	 */
 	protected $componentType;
 
