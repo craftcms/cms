@@ -1,7 +1,7 @@
 // define the Assets global
 if (typeof Assets == 'undefined')
 {
-    Assets = {};
+	Assets = {};
 }
 
 /**
@@ -41,7 +41,7 @@ Assets.OperationManager = Garnish.Base.extend({
 
 		this.$progressBarContainer = $('.operation-progress');
 
-        this.$modalContainerDiv = null;
+		this.$modalContainerDiv = null;
 
 		this.addListener(this.$startOperationsButton, 'click', 'startOperations');
 	},
@@ -185,7 +185,7 @@ Assets.OperationManager = Garnish.Base.extend({
 					html += '</div>'
 				}
 
-                html += '</div>';
+				html += '</div>';
 				html += '<footer class="footer"><ul class="right">';
 				html += '<li><input type="button" class="btn cancel" value="' + Craft.t('Cancel') + '"></li>';
 				html += '<li><input type="button" class="btn submit delete" value="' + Craft.t('Delete') + '"></li>';
