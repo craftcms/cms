@@ -562,6 +562,34 @@ class S3AssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
+	 * Rename a source folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param $newName
+	 * @return boolean
+	 */
+	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
+	{
+
+		$newFullPath = $this->_getParentFullPath($folder->fullPath).$newName.'/';
+
+		$this->_prepareForRequests();
+		$bucket = $this->getSettings()->bucket;
+		$filesToMove = $this->_s3->getBucket($bucket, $folder->fullPath);
+
+		rsort($filesToMove);
+		foreach ($filesToMove as $file)
+		{
+			$filePath = substr($file['name'], strlen($folder->fullPath));
+
+			$this->_s3->copyObject($bucket, $file['name'], $bucket, $newFullPath . $filePath, \S3::ACL_PUBLIC_READ);
+			$this->_s3->deleteObject($bucket, $file['name']);
+		}
+
+		return TRUE;
+	}
+
+	/**
 	 * Delete the source folder.
 	 *
 	 * @param AssetFolderModel $folder

@@ -167,4 +167,18 @@ class AssetsController extends BaseController
 		$this->returnJson($response->getResponseData());
 
 	}
+
+	public function actionRenameFolder()
+	{
+		$this->requireLogin();
+		$this->requireAjaxRequest();
+
+		$folderId = blx()->request->getRequiredPost('folderId');
+		$newName = blx()->request->getRequiredPost('newName');
+
+		$response = blx()->assets->renameFolder($folderId, $newName);
+
+		$this->returnJson($response->getResponseData());
+	}
+
 }

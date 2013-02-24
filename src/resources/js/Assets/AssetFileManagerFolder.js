@@ -422,7 +422,7 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 	 */
 	updateName: function(name)
 	{
-		$('span.assets-fm-label', this.$a).html(name);
+		$('span.assets-folder-label', this.$a).html(name);
 
 		// -------------------------------------------
 		//  Re-sort this folder among its siblings
@@ -464,39 +464,31 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 	 */
 	_rename: function()
 	{
-        return;
 		var oldName = this.folderName,
 			newName = prompt(Blocks.t('Rename folder'), oldName);
 
 		if (newName && newName != oldName)
 		{
-			var data = {
-				ACT:      Assets.actions.rename_folder,
-				folder_id: this.$a.attr('data-id'),
-				new_name: newName
+			var params = {
+				folderId: this.id,
+				newName: newName
 			};
 
-			this.fm.$fm.addClass('assets-loading');
+            this.fm.setAssetsBusy();
 
-			$.post(Assets.siteUrl, data, $.proxy(function(data, textStatus)
-			{
-				this.fm.$fm.removeClass('assets-loading');
+            Blocks.postActionRequest('assets/renameFolder', params, $.proxy(function(data)
+            {
+                this.fm.setAssetsAvailable();
 
-				if (textStatus == 'success')
-				{
-					if (data.success)
-					{
-						this.updateName(data.new_name);
+                if (data.success)
+                {
+                    this.updateName(data.newName);
+                }
 
-						// refresh the files view
-						this.fm.updateFiles();
-					}
-
-					if (data.error)
-					{
-						alert(data.error);
-					}
-				}
+                if (data.error)
+                {
+                    alert(data.error);
+                }
 			}, this), 'json');
 		}
 	},
