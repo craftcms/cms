@@ -31,7 +31,7 @@ class ElementCriteriaModel extends BaseModel
 			'uri'           => AttributeType::String,
 			'status'        => AttributeType::String,
 			'archived'      => AttributeType::Bool,
-			'order'         => array(AttributeType::String, 'default' => 'postDate desc'),
+			'order'         => array(AttributeType::String, 'default' => 'dateCreated desc'),
 			'offset'        => array(AttributeType::Number, 'default' => 0),
 			'limit'         => array(AttributeType::Number, 'default' => 100),
 			'indexBy'       => AttributeType::String,
