@@ -212,16 +212,16 @@ $components['components'] = array(
 
 $components['plugins'] = array(
 	'class' => 'Blocks\PluginsService',
-	'classImportManifest' => array(
-		array('subfolder' => 'controllers', 'suffix' => 'Controller', 'instanceof' => 'BaseController'),
-		array('subfolder' => 'fieldtypes',  'suffix' => 'FieldType',  'instanceof' => 'BaseFieldType'),
-		array('subfolder' => 'helpers',     'suffix' => 'Helper'),
-		array('subfolder' => 'models',      'suffix' => 'Model',      'instanceof' => 'BaseModel'),
-		array('subfolder' => 'records',     'suffix' => 'Record',     'instanceof' => 'BaseRecord'),
-		array('subfolder' => 'services',    'suffix' => 'Service',    'instanceof' => 'BaseApplicationComponent'),
-		array('subfolder' => 'variables',   'suffix' => 'Variable'),
-		array('subfolder' => 'validators',  'suffix' => 'Validator'),
-		array('subfolder' => 'widgets',     'suffix' => 'Widget',     'instanceof' => 'BaseWidget'),
+	'componentTypes' => array(
+		'controller'  => array('subfolder' => 'controllers',      'suffix' => 'Controller',      'instanceof' => 'BaseController'),
+		'field'       => array('subfolder' => 'fieldtypes',       'suffix' => 'FieldType',       'instanceof' => 'IFieldType'),
+		'helper'      => array('subfolder' => 'helpers',          'suffix' => 'Helper'),
+		'model'       => array('subfolder' => 'models',           'suffix' => 'Model',           'instanceof' => 'BaseModel'),
+		'record'      => array('subfolder' => 'records',          'suffix' => 'Record',          'instanceof' => 'BaseRecord'),
+		'service'     => array('subfolder' => 'services',         'suffix' => 'Service',         'instanceof' => 'BaseApplicationComponent'),
+		'variable'    => array('subfolder' => 'variables',        'suffix' => 'Variable'),
+		'validator'   => array('subfolder' => 'validators',       'suffix' => 'Validator'),
+		'widget'      => array('subfolder' => 'widgets',          'suffix' => 'Widget',          'instanceof' => 'IWidget'),
 	)
 );
 

@@ -27,73 +27,7 @@ class ComponentsService extends BaseApplicationComponent
 	{
 		if (!isset($this->_components[$type]))
 		{
-			if (!isset($this->types[$type]))
-			{
-				$this->_noComponentTypeExists($type);
-			}
-
-			$ctype = $this->types[$type];
-			$this->_components[$type] = array();
-			$names = array();
-
-			$filter = $ctype['suffix'].'\.php$';
-			$files = IOHelper::getFolderContents(blx()->path->getAppPath().$ctype['subfolder'], false, $filter);
-
-			if (is_array($files) && count($files) > 0)
-			{
-				foreach ($files as $file)
-				{
-					$class = IOHelper::getFileName($file, false);
-
-					// Add the namespace
-					$class = __NAMESPACE__.'\\'.$class;
-
-					// Skip the autoloader
-					if (!class_exists($class, false))
-					{
-						require_once $file;
-					}
-
-					// Ignore if we couldn't find the class
-					if (!class_exists($class, false))
-					{
-						continue;
-					}
-
-					$component = $this->_initializeComponent($class, $type);
-
-					if (!$component)
-					{
-						continue;
-					}
-
-					// Save it
-					$classHandle = $component->getClassHandle();
-					$this->_components[$type][$classHandle] = $component;
-					$names[] = $component->getName();
-				}
-			}
-
-			// Now load any plugin-supplied components
-			$pluginComponents = blx()->plugins->getAllComponentsByType($ctype['subfolder']);
-
-			foreach ($pluginComponents as $component)
-			{
-				if (!empty($ctype['instanceof']))
-				{
-					if (!$this->_verifyInstanceOf($component, $ctype['instanceof']))
-					{
-						continue;
-					}
-				}
-
-				$component->init();
-
-				$this->_components[$type][$component->getClassHandle()] = $component;
-				$names[] = $component->getName();
-			}
-
-			array_multisort($names, $this->_components[$type]);
+			$this->_components[$type] = $this->_findComponentsByType($type);
 		}
 
 		return $this->_components[$type];
@@ -108,17 +42,16 @@ class ComponentsService extends BaseApplicationComponent
 	 */
 	public function getComponentByTypeAndClass($type, $class)
 	{
+		// Make sure this is a valid component type
 		if (!isset($this->types[$type]))
 		{
 			$this->_noComponentTypeExists($type);
 		}
 
-		$class = __NAMESPACE__.'\\'.$class.$this->types[$type]['suffix'];
-
-		if (class_exists($class))
-		{
-			return $this->_initializeComponent($class, $type);
-		}
+		// Add the class suffix, initialize, and return
+		$class = $class.$this->types[$type]['suffix'];
+		$instanceOf = $this->types[$type]['instanceof'];
+		return $this->initializeComponent($class, $instanceOf);
 	}
 
 	/**
@@ -151,44 +84,120 @@ class ComponentsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Validates a class and creates an instance of it.
+	 * Making sure a class exists and it's not abstract or an interface.
 	 *
-	 * @access private
 	 * @param string $class
-	 * @param string $type
-	 * @return BaseComponentType|null
+	 * @return bool
 	 */
-	private function _initializeComponent($class, $type)
+	public function validateClass($class)
 	{
-		// Ignore abstract classes and interfaces
+		// Add the namespace
+		$class = __NAMESPACE__.'\\'.$class;
+
+		// Make sure the class exists
+		if (!class_exists($class))
+		{
+			return false;
+		}
+
+		// Make sure this isn't an abstract class or interface
 		$ref = new \ReflectionClass($class);
 
 		if ($ref->isAbstract() || $ref->isInterface())
 		{
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Validates a class and creates an instance of it.
+	 *
+	 * @param string $class
+	 * @param string $instanceOf
+	 * @return mixed
+	 */
+	public function initializeComponent($class, $instanceOf = null)
+	{
+		// Validate the class first
+		if (!$this->validateClass($class))
+		{
 			return;
 		}
 
-		// Instantiate and return it
+		// Instantiate it
+		$class = __NAMESPACE__.'\\'.$class;
 		$component = new $class;
 
-		// Make sure it implements the correct base class or interface
-		if (!empty($this->types[$type]['instanceof']))
+		// Make sure it extends the right base class or implements the correct interface
+		if ($instanceOf)
 		{
-			if (!$this->_verifyInstanceOf($component, $this->types[$type]['instanceof']))
+			// Add the namespace
+			$instanceOf = __NAMESPACE__.'\\'.$instanceOf;
+
+			if (!($component instanceof $instanceOf))
 			{
 				return;
 			}
 		}
 
+		// All good. Call the component's init() method and return it.
 		$component->init();
-
 		return $component;
 	}
 
-	private function _verifyInstanceOf($component, $baseClass)
+	/**
+	 * Finds all of the components by a given type.
+	 *
+	 * @param string $type
+	 * @return array
+	 */
+	private function _findComponentsByType($type)
 	{
-		$nsBaseClass = __NAMESPACE__.'\\'.$baseClass;
-		return ($component instanceof $nsBaseClass);
+		if (!isset($this->types[$type]))
+		{
+			$this->_noComponentTypeExists($type);
+		}
+
+		$components = array();
+		$names = array();
+
+		// Find all of the built-in components
+		$filter = $this->types[$type]['suffix'].'\.php$';
+		$files = IOHelper::getFolderContents(blx()->path->getAppPath().$this->types[$type]['subfolder'], false, $filter);
+
+		if ($files)
+		{
+			foreach ($files as $file)
+			{
+				// Get the class name and initialize it
+				$class = IOHelper::getFileName($file, false);
+				$component = $this->initializeComponent($class, $this->types[$type]['instanceof']);
+
+				if ($component)
+				{
+					// Save it
+					$classHandle = $component->getClassHandle();
+					$components[$classHandle] = $component;
+					$names[] = $component->getName();
+				}
+			}
+		}
+
+		// Now load any plugin-supplied components
+		$pluginComponents = blx()->plugins->getAllComponentsByType($type);
+
+		foreach ($pluginComponents as $component)
+		{
+			$components[$component->getClassHandle()] = $component;
+			$names[] = $component->getName();
+		}
+
+		// Now sort all the components by their name
+		array_multisort($names, $components);
+
+		return $components;
 	}
 
 	/**

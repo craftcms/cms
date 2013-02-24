@@ -7,9 +7,9 @@ namespace Blocks;
 class PluginsService extends BaseApplicationComponent
 {
 	/**
-	 * @var array The manifest of plugin classes to auto-import.
+	 * @var array The type of components plugins can have. Defined in app/etc/config/common.php.
 	 */
-	public $classImportManifest;
+	public $componentTypes;
 
 	/**
 	 * Stores all plugins, whether installed or not.
@@ -77,9 +77,9 @@ class PluginsService extends BaseApplicationComponent
 
 				if ($plugin)
 				{
-					$lcHandle = strtolower($plugin->getClassHandle());
-					$this->_plugins[$lcHandle] = $plugin;
-					$this->_enabledPlugins[$lcHandle] = $plugin;
+					$lcPluginHandle = strtolower($plugin->getClassHandle());
+					$this->_plugins[$lcPluginHandle] = $plugin;
+					$this->_enabledPlugins[$lcPluginHandle] = $plugin;
 					$names[] = $plugin->getName();
 
 					$plugin->setSettings($record->settings);
@@ -113,13 +113,13 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function getPlugin($handle, $enabledOnly = true)
 	{
-		$lcHandle = strtolower($handle);
+		$lcPluginHandle = strtolower($handle);
 
 		if ($enabledOnly)
 		{
-			if (isset($this->_enabledPlugins[$lcHandle]))
+			if (isset($this->_enabledPlugins[$lcPluginHandle]))
 			{
-				return $this->_enabledPlugins[$lcHandle];
+				return $this->_enabledPlugins[$lcPluginHandle];
 			}
 			else
 			{
@@ -128,7 +128,7 @@ class PluginsService extends BaseApplicationComponent
 		}
 		else
 		{
-			if (!array_key_exists($lcHandle, $this->_plugins))
+			if (!array_key_exists($lcPluginHandle, $this->_plugins))
 			{
 				// Make sure $handle has the right casing
 				$handle = $this->_getPluginHandleFromFileSystem($handle);
@@ -145,10 +145,10 @@ class PluginsService extends BaseApplicationComponent
 						->queryScalar();
 				}
 
-				$this->_plugins[$lcHandle] = $plugin;
+				$this->_plugins[$lcPluginHandle] = $plugin;
 			}
 
-			return $this->_plugins[$lcHandle];
+			return $this->_plugins[$lcPluginHandle];
 		}
 	}
 
@@ -221,7 +221,7 @@ class PluginsService extends BaseApplicationComponent
 	public function enablePlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle, false);
-		$lcHandle = strtolower($plugin->getClassHandle());
+		$lcPluginHandle = strtolower($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -239,7 +239,7 @@ class PluginsService extends BaseApplicationComponent
 		);
 
 		$plugin->isEnabled = true;
-		$this->_enabledPlugins[$lcHandle] = $plugin;
+		$this->_enabledPlugins[$lcPluginHandle] = $plugin;
 
 		return true;
 	}
@@ -254,7 +254,7 @@ class PluginsService extends BaseApplicationComponent
 	public function disablePlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle);
-		$lcHandle = strtolower($plugin->getClassHandle());
+		$lcPluginHandle = strtolower($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -272,7 +272,7 @@ class PluginsService extends BaseApplicationComponent
 		);
 
 		$plugin->isEnabled = false;
-		unset($this->_enabledPlugins[$lcHandle]);
+		unset($this->_enabledPlugins[$lcPluginHandle]);
 
 		return true;
 	}
@@ -288,7 +288,7 @@ class PluginsService extends BaseApplicationComponent
 	public function installPlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle, false);
-		$lcHandle = strtolower($plugin->getClassHandle());
+		$lcPluginHandle = strtolower($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -313,7 +313,7 @@ class PluginsService extends BaseApplicationComponent
 
 			$plugin->isInstalled = true;
 			$plugin->isEnabled = true;
-			$this->_enabledPlugins[$lcHandle] = $plugin;
+			$this->_enabledPlugins[$lcPluginHandle] = $plugin;
 
 			$this->_importPluginComponents($plugin);
 			$plugin->createTables();
@@ -342,7 +342,7 @@ class PluginsService extends BaseApplicationComponent
 	public function uninstallPlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle, false);
-		$lcHandle = strtolower($plugin->getClassHandle());
+		$lcPluginHandle = strtolower($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -358,7 +358,7 @@ class PluginsService extends BaseApplicationComponent
 		{
 			// Pretend that the plugin is enabled just for this request
 			$plugin->isEnabled = true;
-			$this->_enabledPlugins[$lcHandle] = $plugin;
+			$this->_enabledPlugins[$lcPluginHandle] = $plugin;
 			$this->_importPluginComponents($plugin);
 		}
 
@@ -382,7 +382,7 @@ class PluginsService extends BaseApplicationComponent
 
 		$plugin->isEnabled = false;
 		$plugin->isInstalled = false;
-		unset($this->_enabledPlugins[$lcHandle]);
+		unset($this->_enabledPlugins[$lcPluginHandle]);
 
 		return true;
 	}
@@ -438,40 +438,42 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Returns all components of a certain type, across all plugins.
 	 *
-	 * @param string $componentType
+	 * @param string $type
 	 * @return array
 	 */
-	public function getAllComponentsByType($componentType)
+	public function getAllComponentsByType($type)
 	{
-		$allClasses = array();
-
-		foreach ($this->getPlugins() as $plugin)
+		// Make sure plugins can actually have this type of component
+		if (!isset($this->componentTypes[$type]))
 		{
-			$classes = $this->getPluginComponentsByType($plugin->getClassHandle(), $componentType);
-
-			$allClasses = array_merge($allClasses, $classes);
+			return array();
 		}
-
-		return $allClasses;
-	}
-
-	/**
-	 * Returns all of a plugin's components of a certain type.
-	 *
-	 * @param string $pluginHandle
-	 * @param string $componentType
-	 * @return array
-	 */
-	public function getPluginComponentsByType($pluginHandle, $componentType)
-	{
-		$classes = $this->getPluginComponentClassesByType($pluginHandle, $componentType);
 
 		$components = array();
 
-		foreach ($classes as $class)
+		if (isset($this->componentTypes[$type]['instanceof']))
 		{
-			$nsClass = __NAMESPACE__.'\\'.$class;
-			$components[] = new $nsClass();
+			$instanceOf = $this->componentTypes[$type]['instanceof'];
+		}
+		else
+		{
+			$instanceOf = null;
+		}
+
+		foreach ($this->getPlugins() as $plugin)
+		{
+			$pluginHandle = $plugin->getClassHandle();
+			$classes = $this->getPluginComponentClassesByType($pluginHandle, $type);
+
+			foreach ($classes as $class)
+			{
+				$component = blx()->components->initializeComponent($class, $instanceOf);
+
+				if ($component)
+				{
+					$components[] = $component;
+				}
+			}
 		}
 
 		return $components;
@@ -481,41 +483,25 @@ class PluginsService extends BaseApplicationComponent
 	 * Returns all of a plugin's component class names of a certain type.
 	 *
 	 * @param string $pluginHandle
-	 * @param string $componentType
+	 * @param string $type
 	 * @return array
 	 */
-	public function getPluginComponentClassesByType($pluginHandle, $componentType)
+	public function getPluginComponentClassesByType($pluginHandle, $type)
 	{
-		$plugin = $this->getPlugin($pluginHandle, false);
-
-		if (!$plugin)
+		// Make sure plugins can actually have this type of component
+		if (!isset($this->componentTypes[$type]))
 		{
-			$this->_noPluginExists($pluginHandle);
+			return array();
 		}
 
-		$allClasses = array();
-
-		if (isset($this->_pluginComponentClasses[$componentType][$plugin->getClassHandle()]))
+		if (isset($this->_pluginComponentClasses[$type][$pluginHandle]))
 		{
-			$classes = $this->_pluginComponentClasses[$componentType][$plugin->getClassHandle()];
-
-			foreach ($classes as $class)
-			{
-				$nsClass = __NAMESPACE__.'\\'.$class;
-
-				// Ignore abstract classes and interfaces
-				$ref = new \ReflectionClass($nsClass);
-
-				if ($ref->isAbstract() || $ref->isInterface())
-				{
-					continue;
-				}
-
-				$allClasses[] = $class;
-			}
+			return $this->_pluginComponentClasses[$type][$pluginHandle];
 		}
-
-		return $allClasses;
+		else
+		{
+			return array();
+		}
 	}
 
 	/**
@@ -572,28 +558,32 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	private function _importPluginComponents(BasePlugin $plugin)
 	{
-		$lcHandle = strtolower($plugin->getClassHandle());
-		$pluginFolder = blx()->path->getPluginsPath().$lcHandle.'/';
+		$pluginHandle = $plugin->getClassHandle();
+		$lcPluginHandle = strtolower($plugin->getClassHandle());
+		$pluginFolder = blx()->path->getPluginsPath().$lcPluginHandle.'/';
 
-		foreach ($this->classImportManifest as $type)
+		foreach ($this->componentTypes as $type => $typeInfo)
 		{
-			if (IOHelper::folderExists($pluginFolder.$type['subfolder']))
+			$folder = $pluginFolder.$typeInfo['subfolder'];
+
+			if (IOHelper::folderExists($folder))
 			{
 				// See if it has any files in ClassName*Suffix.php format.
-				$files = IOHelper::getFolderContents($pluginFolder.$type['subfolder'], false, $plugin->getClassHandle().'(_.+)?'.$type['suffix'].'\.php$');
+				$filter = $pluginHandle.'(_.+)?'.$typeInfo['suffix'].'\.php$';
+				$files = IOHelper::getFolderContents($folder, false, $filter);
 
 				if ($files)
 				{
 					foreach ($files as $file)
 					{
-						// Get the file name minus the extension.
-						$fileName = IOHelper::getFileName($file, false);
+						// Get the class name
+						$class = IOHelper::getFileName($file, false);
 
 						// Import the class.
-						Blocks::import("plugins.{$lcHandle}.{$type['subfolder']}.{$fileName}");
+						Blocks::import('plugins.'.$lcPluginHandle.'.'.$typeInfo['subfolder'].'.'.$class);
 
 						// Remember it
-						$this->_pluginComponentClasses[$type['subfolder']][$plugin->getClassHandle()][] = $fileName;
+						$this->_pluginComponentClasses[$type][$pluginHandle][] = $class;
 					}
 				}
 			}
@@ -610,7 +600,7 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	private function _registerPluginServices($handle)
 	{
-		$classes = $this->getPluginComponentClassesByType($handle, 'services');
+		$classes = $this->getPluginComponentClassesByType($handle, 'service');
 
 		$services = array();
 
@@ -624,7 +614,7 @@ class PluginsService extends BaseApplicationComponent
 			}
 
 			$serviceName = implode('_', $parts);
-			$serviceName = substr($serviceName, 0, strpos($serviceName, 'Service'));
+			$serviceName = substr($serviceName, 0, -strlen('Service'));
 
 			if (!blx()->getComponent($serviceName, false))
 			{
