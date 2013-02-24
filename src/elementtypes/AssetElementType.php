@@ -27,7 +27,7 @@ class AssetElementType extends BaseElementType
 	}
 
 	/**
-	 * Defines any custom entry criteria attributes for this element type.
+	 * Defines any custom element criteria attributes for this element type.
 	 *
 	 * @return array
 	 */
@@ -69,7 +69,7 @@ class AssetElementType extends BaseElementType
 	}
 
 	/**
-	 * Populates an entry model based on a query result.
+	 * Populates an element model based on a query result.
 	 *
 	 * @param array $row
 	 * @return array

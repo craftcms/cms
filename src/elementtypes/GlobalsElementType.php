@@ -17,12 +17,12 @@ class GlobalsElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the CP edit URI for a given entry.
+	 * Returns the CP edit URI for a given element.
 	 *
-	 * @param ElementModel $entry
+	 * @param ElementModel $element
 	 * @return string|null
 	 */
-	public function getCpEditUriForElement(ElementModel $entry)
+	public function getCpEditUriForElement(ElementModel $element)
 	{
 		return 'content/globals';
 	}

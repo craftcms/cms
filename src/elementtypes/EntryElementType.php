@@ -17,28 +17,28 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the CP edit URI for a given entry.
+	 * Returns the CP edit URI for a given element.
 	 *
-	 * @param ElementModel $entry
+	 * @param ElementModel $element
 	 * @return string|null
 	 */
-	public function getCpEditUriForElement(ElementModel $entry)
+	public function getCpEditUriForElement(ElementModel $element)
 	{
-		return 'content/'.$entry->getSection()->handle.'/'.$entry->id;
+		return 'content/'.$element->getSection()->handle.'/'.$element->id;
 	}
 
 	/**
-	 * Returns the site template path for a matched entry.
+	 * Returns the site template path for a matched element.
 	 *
-	 * @param EntryModel
+	 * @param ElementModel
 	 * @return string|false
 	 */
-	public function getSiteTemplateForMatchedElement(EntryModel $entry)
+	public function getSiteTemplateForMatchedElement(ElementModel $element)
 	{
 		// Make sure that the entry is actually live
-		if ($entry->getStatus() == EntryModel::LIVE)
+		if ($element->getStatus() == EntryModel::LIVE)
 		{
-			$section = $entry->getSection();
+			$section = $element->getSection();
 
 			// Make sure the section is set to have URLs and is enabled for this locale
 			if ($section->hasUrls && array_key_exists(blx()->language, $section->getLocales()))
@@ -51,7 +51,7 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the variable name the matched entry should be assigned to.
+	 * Returns the variable name the matched element should be assigned to.
 	 *
 	 * @return string
 	 */
@@ -81,7 +81,7 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Defines any custom entry criteria attributes for this element type.
+	 * Defines any custom element criteria attributes for this element type.
 	 *
 	 * @return array
 	 */
@@ -135,12 +135,12 @@ class EntryElementType extends BaseElementType
 
 		if ($criteria->after)
 		{
-			$query->addWhere(DbHelper::parseDateParam('elements.postDate', '>=', $criteria->after, $query->params));
+			$query->andWhere(DbHelper::parseDateParam('elements.postDate', '>=', $criteria->after, $query->params));
 		}
 
 		if ($criteria->before)
 		{
-			$query->addWhere(DbHelper::parseDateParam('elements.postDate', '<', $criteria->before, $query->params));
+			$query->andWhere(DbHelper::parseDateParam('elements.postDate', '<', $criteria->before, $query->params));
 		}
 
 		if ($criteria->status)
@@ -149,7 +149,7 @@ class EntryElementType extends BaseElementType
 
 			if ($statusCondition)
 			{
-				$query->addWhere($statusCondition);
+				$query->andWhere($statusCondition);
 			}
 		}
 
@@ -222,7 +222,7 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Populates an entry model based on a query result.
+	 * Populates an element model based on a query result.
 	 *
 	 * @param array $row
 	 * @return array

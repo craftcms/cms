@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Base component base class
  */
-abstract class BaseComponentType extends BaseApplicationComponent
+abstract class BaseComponentType extends BaseApplicationComponent implements IComponentType
 {
 	/**
 	 * @access protected
@@ -21,10 +21,12 @@ abstract class BaseComponentType extends BaseApplicationComponent
 	/**
 	 * Returns the component’s name.
 	 *
-	 * @abstract
 	 * @return string
 	 */
-	abstract public function getName();
+	public function getName()
+	{
+		return $this->getClassHandle();
+	}
 
 	/**
 	 * Get the class name, sans namespace and suffix.

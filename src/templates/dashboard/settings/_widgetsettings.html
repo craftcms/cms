@@ -41,7 +41,7 @@
 		<input type="hidden" name="redirect" value="dashboard/settings">
 		{% if not isNewWidget %}<input type="hidden" name="widgetId" value="{{ widget.id }}">{% endif %}
 
-		{% set widgetTypes = blx.dashboard.getAllWidgetTypes %}
+		{% set widgetTypes = blx.dashboard.getAllWidgetTypes() %}
 
 		{{ forms.selectField({
 			first: true,
@@ -50,14 +50,14 @@
 			id: 'type',
 			name: 'type',
 			options: widgetTypes,
-			value: widgetType.classHandle,
+			value: widgetType.getClassHandle(),
 			errors: (isWidgetTypeMissing ? ["The widget class “{class}” could not be found."|t({ class: widget.type })] : null),
 			autofocus: true,
 			toggle: true
 		}) }}
 
 		{% for _widgetType in widgetTypes %}
-			{% set isCurrent = (_widgetType.classHandle == widgetType.classHandle) %}
+			{% set isCurrent = (_widgetType.getClassHandle() == widgetType.getClassHandle()) %}
 			{% if isCurrent %}
 				{% set settings = widgetType.settingsHtml %}
 			{% else %}
@@ -65,8 +65,8 @@
 			{% endif %}
 
 			{% if settings %}
-				<div id="{{ _widgetType.classHandle }}"{% if not isCurrent %} class="hidden"{% endif %}>
-					{% set namespace = 'types[' ~ _widgetType.classHandle ~ ']' %}
+				<div id="{{ _widgetType.getClassHandle() }}"{% if not isCurrent %} class="hidden"{% endif %}>
+					{% set namespace = 'types[' ~ _widgetType.getClassHandle() ~ ']' %}
 					{{- settings|ns(namespace)|raw -}}
 				</div>
 			{% endif %}
