@@ -21,7 +21,7 @@ class m130221_000000_innodb_check extends BaseMigration
 		}
 		else
 		{
-			$tables = craft()->db->getSchema()->findTableNames();
+			$tables = craft()->db->getSchema()->getTableNames();
 
 			$badTables = array();
 			foreach ($tables as $table)

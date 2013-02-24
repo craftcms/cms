@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * Base savable component class
  */
-abstract class BaseSavableComponentType extends BaseComponentType
+abstract class BaseSavableComponentType extends BaseComponentType implements ISavableComponentType
 {
 	/**
 	 * @var BaseModel The model instance associated with the current component instance.
@@ -30,28 +30,6 @@ abstract class BaseSavableComponentType extends BaseComponentType
 		}
 
 		return $this->_settings;
-	}
-
-	/**
-	 * Gets the settings model.
-	 *
-	 * @access protected
-	 * @return BaseModel
-	 */
-	protected function getSettingsModel()
-	{
-		return new Model($this->defineSettings());
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array();
 	}
 
 	/**
@@ -86,5 +64,27 @@ abstract class BaseSavableComponentType extends BaseComponentType
 	public function getSettingsHtml()
 	{
 		return null;
+	}
+
+	/**
+	 * Gets the settings model.
+	 *
+	 * @access protected
+	 * @return BaseModel
+	 */
+	protected function getSettingsModel()
+	{
+		return new Model($this->defineSettings());
+	}
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @access protected
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array();
 	}
 }

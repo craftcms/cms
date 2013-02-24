@@ -60,9 +60,10 @@ class AssetsController extends BaseController
 		$folderId = craft()->request->getRequiredPost('folderId');
 		$requestId = craft()->request->getPost('requestId', 0);
 		$viewType = craft()->request->getPost('viewType', 'thumbs');
+		$offset = craft()->request->getPost('offset', 0);
 
 		$folder = craft()->assets->getFolderById($folderId);
-		$files = craft()->assets->getFilesByFolderId($folderId);
+		$files = craft()->assets->getFilesByFolderId($folderId, $offset);
 
 
 		$subfolders = craft()->assets->findFolders(array(
@@ -80,7 +81,8 @@ class AssetsController extends BaseController
 
 		$this->returnJson(array(
 			'requestId' => $requestId,
-			'html' => $html
+			'html' => $html,
+			'total' => count($files)
 		));
 	}
 
@@ -164,4 +166,18 @@ class AssetsController extends BaseController
 		$this->returnJson($response->getResponseData());
 
 	}
+
+	public function actionRenameFolder()
+	{
+		$this->requireLogin();
+		$this->requireAjaxRequest();
+
+		$folderId = craft()->request->getRequiredPost('folderId');
+		$newName = craft()->request->getRequiredPost('newName');
+
+		$response = craft()->assets->renameFolder($folderId, $newName);
+
+		$this->returnJson($response->getResponseData());
+	}
+
 }

@@ -135,6 +135,16 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	abstract protected function _deleteSourceFolder(AssetFolderModel $folder);
 
 	/**
+	 * Rename a source folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param $newName
+	 * @return boolean
+	 */
+	abstract protected function _renameSourceFolder(AssetFolderModel $folder, $newName);
+
+
+	/**
 	 * Return a result object for prompting the user about filename conflicts.
 	 *
 	 * @param string $fileName the cause of all trouble
@@ -275,7 +285,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			if (empty($parts))
 			{
+				// Looking for a top level folder, apparently.
 				$parameters->fullPath = "";
+				$parameters->parentId = FolderCriteriaModel::AssetsNoParent;
 			}
 			else
 			{
@@ -498,6 +510,54 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	}
 
 	/**
+	 * Rename a folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param $newName
+	 * @return AssetOperationResponseModel
+	 */
+	public function renameFolder(AssetFolderModel $folder, $newName)
+	{
+		$parentFolder = blx()->assets->getFolderById($folder->parentId);
+		if (!$parentFolder)
+		{
+			throw new Exception(Blocks::t("Cannot rename folder \"{folder}\"!", array('folder' => $folder->name)));
+		}
+		if ($this->_sourceFolderExists($parentFolder, $newName))
+		{
+			throw new Exception(Blocks::t("Folder \"{folder}\" already exists there.", array('folder' => $newName)));
+		}
+
+		// Try to rename the folder in the source
+		if (!$this->_renameSourceFolder($folder, $newName))
+		{
+			throw new Exception(Blocks::t("Cannot rename folder \"{folder}\"!", array('folder' => $folder->name)));
+		}
+
+		$oldFullPath = $folder->fullPath;
+		$newFullPath = $this->_getParentFullPath($folder->fullPath).$newName.'/';
+
+		// Find all folders with affected fullPaths and update them.
+		$folders = blx()->assets->findChildFolders($folder);
+		foreach ($folders as $folderModel)
+		{
+			$folderModel->fullPath = preg_replace('#^'.$oldFullPath.'#', $newFullPath, $folderModel->fullPath);
+			blx()->assets->storeFolder($folderModel);
+		}
+
+		// Now change the affected folder
+		$folder->name = $newName;
+		$folder->fullPath = $newFullPath;
+		blx()->assets->storeFolder($folder);
+
+		// All set, Scotty!
+		$response = new AssetOperationResponseModel();
+		$response->setSuccess();
+		$response->setDataItem('newName', $newName);
+		return $response;
+	}
+
+	/**
 	 * Delete a folder.
 	 *
 	 * @param AssetFolderModel $folder
@@ -530,5 +590,27 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$response = new AssetOperationResponseModel();
 		$response->setSuccess();
 		return $response;
+	}
+
+	/**
+	 * Return a parent folder's full path for a full path.
+	 *
+	 * @param $fullPath
+	 * @return string
+	 */
+	protected function _getParentFullPath($fullPath)
+	{
+		// Drop the trailing slash and split it by slash
+		$parts = explode("/", rtrim($fullPath, "/"));
+
+		// Drop the last part and return the part leading up to it
+		array_pop($parts);
+
+		if (empty($parts))
+		{
+			return '';
+		}
+
+		return join("/", $parts) . '/';
 	}
 }

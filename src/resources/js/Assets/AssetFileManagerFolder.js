@@ -422,7 +422,7 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 	 */
 	updateName: function(name)
 	{
-		$('span.assets-fm-label', this.$a).html(name);
+		$('span.assets-folder-label', this.$a).html(name);
 
 		// -------------------------------------------
 		//  Re-sort this folder among its siblings
@@ -430,21 +430,21 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 
 		var folders = [ {name: name, id: this.id} ];
 
-		for (var i = 0; i < this.parent.subfolders.length; i++)
-		{
-			if (this.parent.subfolders[i].folderName != this.folderName) {
-				folders.push({name: this.parent.subfolders[i].folderName, id: this.parent.subfolders[i].id});
-			}
-		}
+        for (var i = 0; i < this.parent.subfolders.length; i++)
+        {
+            if (this.parent.subfolders[i].folderName != this.folderName) {
+                folders.push({name: this.parent.subfolders[i].folderName, id: this.parent.subfolders[i].id});
+            }
+        }
 
 		folders.sort(Assets.FileManagerFolder.folderSort);
 
-		for (i = 0; i < folders.length; i++) {
-			if (folders[i].name == name) {
-				pos = i;
-				break;
-			}
-		}
+        for (i = 0; i < folders.length; i++) {
+            if (folders[i].name == name) {
+                pos = i;
+                break;
+            }
+        }
 
 		if (pos == 0)
 		{
@@ -464,33 +464,26 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 	 */
 	_rename: function()
 	{
-		return;
 		var oldName = this.folderName,
 			newName = prompt(Craft.t('Rename folder'), oldName);
 
 		if (newName && newName != oldName)
 		{
-			var data = {
-				ACT:      Assets.actions.rename_folder,
-				folder_id: this.$a.attr('data-id'),
-				new_name: newName
+			var params = {
+				folderId: this.id,
+				newName: newName
 			};
 
-			this.fm.$fm.addClass('assets-loading');
+            this.fm.setAssetsBusy();
 
-			$.post(Assets.siteUrl, data, $.proxy(function(data, textStatus)
-			{
-				this.fm.$fm.removeClass('assets-loading');
+            Craft.postActionRequest('assets/renameFolder', params, $.proxy(function(data)
+            {
+                this.fm.setAssetsAvailable();
 
-				if (textStatus == 'success')
-				{
-					if (data.success)
-					{
-						this.updateName(data.new_name);
-
-						// refresh the files view
-						this.fm.updateFiles();
-					}
+                if (data.success)
+                {
+                    this.updateName(data.newName);
+                }
 
 					if (data.error)
 					{
@@ -550,7 +543,7 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 	 */
 	_delete: function()
 	{
-		if (confirm(Craft.t('Really delete folder "{folder}"?', {folder: this.folderName})))
+		if (confirm(Blocks.t('Really delete folder "{folder}"?', {folder: this.folderName})))
 		{
 
 			var params = {

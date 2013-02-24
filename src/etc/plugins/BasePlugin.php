@@ -111,12 +111,15 @@ abstract class BasePlugin extends BaseSavableComponentType
 	public function getRecords($scenario = null)
 	{
 		$records = array();
-		$classes = craft()->plugins->getPluginComponentClassesByType($this->getClassHandle(), 'records');
+		$classes = craft()->plugins->getPluginComponentClassesByType($this->getClassHandle(), 'record');
 
 		foreach ($classes as $class)
 		{
-			$nsClass = __NAMESPACE__.'\\'.$class;
-			$records[] = new $nsClass($scenario);
+			if (craft()->components->validateClass($class))
+			{
+				$class = __NAMESPACE__.'\\'.$class;
+				$records[] = new $class($scenario);
+			}
 		}
 
 		return $records;

@@ -15,6 +15,7 @@ namespace Craft;
  * @property HttpRequestService          $request              The request service
  * @property DbConnection                $db                   Database
  * @property LinksService                $links                The links service
+ * @property ElementsService             $elements             The elements service
  */
 class WebApp extends \CWebApplication
 {

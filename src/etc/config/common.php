@@ -188,7 +188,6 @@ $components['images']['class']               = 'Craft\ImagesService';
 $components['links']['class']                = 'Craft\LinksService';
 $components['migrations']['class']           = 'Craft\MigrationsService';
 $components['path']['class']                 = 'Craft\PathService';
-$components['plugins']['class']              = 'Craft\PluginsService';
 $components['sections']['class']             = 'Craft\SectionsService';
 $components['singletons']['class']           = 'Craft\SingletonsService';
 
@@ -204,10 +203,25 @@ $components['updates']['class']              = 'Craft\UpdatesService';
 $components['components'] = array(
 	'class' => 'Craft\ComponentsService',
 	'types' => array(
-		'assetSource' => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSourceType', 'baseClass' => 'BaseAssetSourceType'),
-		'element'     => array('subfolder' => 'elementtypes', 'suffix' => 'ElementType', 'baseClass' => 'BaseElementType'),
-		'field'       => array('subfolder' => 'fieldtypes', 'suffix' => 'FieldType', 'baseClass' => 'BaseFieldType'),
-		'widget'      => array('subfolder' => 'widgets', 'suffix' => 'Widget', 'baseClass' => 'BaseWidget'),
+		'assetSource' => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSourceType', 'instanceof' => 'BaseAssetSourceType'),
+		'element'     => array('subfolder' => 'elementtypes',     'suffix' => 'ElementType',     'instanceof' => 'IElementType'),
+		'field'       => array('subfolder' => 'fieldtypes',       'suffix' => 'FieldType',       'instanceof' => 'IFieldType'),
+		'widget'      => array('subfolder' => 'widgets',          'suffix' => 'Widget',          'instanceof' => 'IWidget'),
+	)
+);
+
+$components['plugins'] = array(
+	'class' => 'Craft\PluginsService',
+	'componentTypes' => array(
+		'controller'  => array('subfolder' => 'controllers',      'suffix' => 'Controller',      'instanceof' => 'BaseController'),
+		'field'       => array('subfolder' => 'fieldtypes',       'suffix' => 'FieldType',       'instanceof' => 'IFieldType'),
+		'helper'      => array('subfolder' => 'helpers',          'suffix' => 'Helper'),
+		'model'       => array('subfolder' => 'models',           'suffix' => 'Model',           'instanceof' => 'BaseModel'),
+		'record'      => array('subfolder' => 'records',          'suffix' => 'Record',          'instanceof' => 'BaseRecord'),
+		'service'     => array('subfolder' => 'services',         'suffix' => 'Service',         'instanceof' => 'BaseApplicationComponent'),
+		'variable'    => array('subfolder' => 'variables',        'suffix' => 'Variable'),
+		'validator'   => array('subfolder' => 'validators',       'suffix' => 'Validator'),
+		'widget'      => array('subfolder' => 'widgets',          'suffix' => 'Widget',          'instanceof' => 'IWidget'),
 	)
 );
 

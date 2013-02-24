@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * Element type base class
  */
-abstract class BaseElementType extends BaseComponentType
+abstract class BaseElementType extends BaseComponentType implements IElementType
 {
 	/**
 	 * @access protected
@@ -19,29 +19,29 @@ abstract class BaseElementType extends BaseComponentType
 	private $_linkSettings;
 
 	/**
-	 * Returns the CP edit URI for a given entry.
+	 * Returns the CP edit URI for a given element.
 	 *
-	 * @param ElementModel $entry
+	 * @param ElementModel $element
 	 * @return string|false
 	 */
-	public function getCpEditUriForElement(ElementModel $entry)
+	public function getCpEditUriForElement(ElementModel $element)
 	{
 		return false;
 	}
 
 	/**
-	 * Returns the site template path for a matched entry.
+	 * Returns the site template path for a matched element.
 	 *
 	 * @param ElementModel
 	 * @return string|false
 	 */
-	public function getSiteTemplateForMatchedElement(ElementModel $entry)
+	public function getSiteTemplateForMatchedElement(ElementModel $element)
 	{
 		return false;
 	}
 
 	/**
-	 * Returns the variable name the matched entry should be assigned to.
+	 * Returns the variable name the matched element should be assigned to.
 	 *
 	 * @return string
 	 */
@@ -71,7 +71,7 @@ abstract class BaseElementType extends BaseComponentType
 	}
 
 	/**
-	 * Defines any custom entry criteria attributes for this element type.
+	 * Defines any custom element criteria attributes for this element type.
 	 *
 	 * @return array
 	 */
@@ -85,17 +85,17 @@ abstract class BaseElementType extends BaseComponentType
 	 *
 	 * @param DbCommand $query
 	 * @param ElementCriteriaModel $criteria
-	 * @return mixed
+	 * @return null|false
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 	}
 
 	/**
-	 * Populates an entry model based on a query result.
+	 * Populates an element model based on a query result.
 	 *
 	 * @param array $row
-	 * @return array
+	 * @return BaseModel
 	 */
 	public function populateElementModel($row)
 	{

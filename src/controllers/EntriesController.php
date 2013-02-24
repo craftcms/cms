@@ -79,7 +79,7 @@ class EntriesController extends BaseController
 
 		$entryId = craft()->request->getRequiredPost('id');
 
-		craft()->elements->deleteElementsById($entryId);
+		craft()->elements->deleteElementById($entryId);
 		$this->returnJson(array('success' => true));
 	}
 }

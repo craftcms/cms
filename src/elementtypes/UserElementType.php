@@ -17,16 +17,16 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the CP edit URI for a given entry.
+	 * Returns the CP edit URI for a given element.
 	 *
-	 * @param ElementModel $entry
+	 * @param ElementModel $element
 	 * @return string|null
 	 */
-	public function getCpEditUriForElement(ElementModel $entry)
+	public function getCpEditUriForElement(ElementModel $element)
 	{
 		if (Craft::hasPackage(CraftPackage::Users))
 		{
-			return 'users/'.$entry->id;
+			return 'users/'.$element->id;
 		}
 		else
 		{
@@ -52,7 +52,7 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
-	 * Defines any custom entry criteria attributes for this element type.
+	 * Defines any custom element criteria attributes for this element type.
 	 *
 	 * @return array
 	 */
@@ -101,7 +101,7 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
-	 * Populates an entry model based on a query result.
+	 * Populates an element model based on a query result.
 	 *
 	 * @param array $row
 	 * @return array

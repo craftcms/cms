@@ -37,14 +37,20 @@ class AssetsService extends BaseApplicationComponent
 	 * Get files by a folder id.
 	 *
 	 * @param $folderId
+	 * @param $offset
+	 * @param $limit
 	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public function getFilesByFolderId($folderId, $indexBy = null)
+	public function getFilesByFolderId($folderId, $offset = 0, $limit = null, $indexBy = null)
 	{
 		return $this->findFiles(array(
 			'folderId' => $folderId,
-			'indexBy'  => $indexBy
+			'limit' => $limit,
+			'offset' => $offset,
+			'indexBy'  => $indexBy,
+
+
 		));
 	}
 
@@ -396,6 +402,36 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Rename a folder by it's folder and a new name.
+	 *
+	 * @param $folderId
+	 * @param $newName
+	 * @return AssetOperationResponseModel
+	 */
+	public function renameFolder($folderId, $newName)
+	{
+		try
+		{
+			$folder = $this->getFolderById($folderId);
+			if (empty($folder))
+			{
+				throw new Exception(Blocks::t("Can't find the folder to rename!"));
+			}
+
+			$source = blx()->assetSources->getSourceTypeById($folder->sourceId);
+			$response = $source->renameFolder($folder, IOHelper::cleanFilename($newName));
+
+		}
+		catch (Exception $exception)
+		{
+			$response = new AssetOperationResponseModel();
+			$response->setError($exception->getMessage());
+		}
+
+		return $response;
+	}
+
+	/**
 	 * Delete a folder by it's id.
 	 *
 	 * @param $folderId
@@ -483,6 +519,23 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Find a folder's child folders.
+	 *
+	 * @param AssetFolderModel $folderModel
+	 * @return array
+	 */
+	public function findChildFolders(AssetFolderModel $folderModel)
+	{
+		$query = blx()->db->createCommand()
+			->select('f.*')
+			->from('assetfolders AS f')
+			->where(array('like', 'fullPath', $folderModel->fullPath.'%'))
+			->andWhere('sourceId = :sourceId', array(':sourceId' => $folderModel->sourceId));
+
+		return $this->populateFolders($query->queryAll());
+	}
+
+	/**
 	 * Finds the first folder that matches a given criteria.
 	 *
 	 * @param mixed $criteria
@@ -502,6 +555,8 @@ class AssetsService extends BaseApplicationComponent
 		{
 			return array_pop($folder);
 		}
+
+		return null;
 	}
 
 	/**
