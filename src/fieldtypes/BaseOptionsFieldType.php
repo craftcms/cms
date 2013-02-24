@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -93,7 +93,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 			}
 		}
 
-		return blx()->templates->render('_components/fieldtypes/optionsfieldsettings', array(
+		return craft()->templates->render('_components/fieldtypes/optionsfieldsettings', array(
 			'label'   => $this->getOptionsSettingsLabel(),
 			'options' => $options
 		));

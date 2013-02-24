@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -159,7 +159,7 @@ class MysqlSchema extends \CMysqlSchema
 	public function createTable($table, $columns, $options = null)
 	{
 		$cols = array();
-		$options = 'ENGINE=InnoDb DEFAULT CHARSET='.blx()->config->getDbItem('charset').' COLLATE='.blx()->config->getDbItem('collation').($options ? ' '.$options : '');
+		$options = 'ENGINE=InnoDb DEFAULT CHARSET='.craft()->config->getDbItem('charset').' COLLATE='.craft()->config->getDbItem('collation').($options ? ' '.$options : '');
 
 		foreach ($columns as $name => $type)
 		{
@@ -199,8 +199,8 @@ class MysqlSchema extends \CMysqlSchema
 	{
 		if ($schema === null)
 		{
-			$likeSql = (blx()->db->tablePrefix ? ' LIKE \''.blx()->db->tablePrefix.'%\'' : '');
-			return blx()->db->createCommand()->setText('SHOW TABLES'.$likeSql)->queryColumn();
+			$likeSql = (craft()->db->tablePrefix ? ' LIKE \''.craft()->db->tablePrefix.'%\'' : '');
+			return craft()->db->createCommand()->setText('SHOW TABLES'.$likeSql)->queryColumn();
 		}
 		else
 		{
@@ -226,7 +226,7 @@ class MysqlSchema extends \CMysqlSchema
 	 */
 	public function isInnoDbEnabled()
 	{
-		$results = blx()->db->createCommand()->setText('SHOW ENGINES')->queryAll();
+		$results = craft()->db->createCommand()->setText('SHOW ENGINES')->queryAll();
 
 		foreach ($results as $result)
 		{

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -15,7 +15,7 @@ class MultiSelectFieldType extends BaseOptionsFieldType
 	 */
 	public function getName()
 	{
-		return Blocks::t('Multi-select');
+		return Craft::t('Multi-select');
 	}
 
 	/**
@@ -26,7 +26,7 @@ class MultiSelectFieldType extends BaseOptionsFieldType
 	 */
 	protected function getOptionsSettingsLabel()
 	{
-		return Blocks::t('Multi-select Options');
+		return Craft::t('Multi-select Options');
 	}
 
 	/**
@@ -38,7 +38,7 @@ class MultiSelectFieldType extends BaseOptionsFieldType
 	 */
 	public function getInputHtml($name, $values)
 	{
-		return blx()->templates->render('_components/fieldtypes/MultiSelect/input', array(
+		return craft()->templates->render('_components/fieldtypes/MultiSelect/input', array(
 			'name'     => $name,
 			'values'   => $values,
 			'settings' => $this->getSettings()

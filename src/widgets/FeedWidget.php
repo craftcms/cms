@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -15,7 +15,7 @@ class FeedWidget extends BaseWidget
 	 */
 	public function getName()
 	{
-		return Blocks::t('Feed');
+		return Craft::t('Feed');
 	}
 
 	/**
@@ -40,7 +40,7 @@ class FeedWidget extends BaseWidget
 	 */
 	public function getSettingsHtml()
 	{
-		return blx()->templates->render('_components/widgets/Feed/settings', array(
+		return craft()->templates->render('_components/widgets/Feed/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -66,12 +66,12 @@ class FeedWidget extends BaseWidget
 		$url = JsonHelper::encode($this->getSettings()->url);
 		$limit = $this->getSettings()->limit;
 
-		$js = "new Blocks.FeedWidget({$id}, {$url}, {$limit});";
+		$js = "new Craft.FeedWidget({$id}, {$url}, {$limit});";
 
-		blx()->templates->includeJsResource('js/FeedWidget.js');
-		blx()->templates->includeJs($js);
+		craft()->templates->includeJsResource('js/FeedWidget.js');
+		craft()->templates->includeJs($js);
 
-		return blx()->templates->render('_components/widgets/Feed/body', array(
+		return craft()->templates->render('_components/widgets/Feed/body', array(
 			'limit' => $limit
 		));
 	}

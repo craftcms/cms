@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -15,7 +15,7 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 	 */
 	public function getName()
 	{
-		return Blocks::t('Checkboxes');
+		return Craft::t('Checkboxes');
 	}
 
 	/**
@@ -26,7 +26,7 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 	 */
 	protected function getOptionsSettingsLabel()
 	{
-		return Blocks::t('Checkbox Options');
+		return Craft::t('Checkbox Options');
 	}
 
 	/**
@@ -38,7 +38,7 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 	 */
 	public function getInputHtml($name, $values)
 	{
-		return blx()->templates->render('_components/fieldtypes/Checkboxes/input', array(
+		return craft()->templates->render('_components/fieldtypes/Checkboxes/input', array(
 			'name'     => $name,
 			'values'   => $values,
 			'settings' => $this->getSettings()

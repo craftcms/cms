@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Handles entry tasks
@@ -15,23 +15,23 @@ class EntriesController extends BaseController
 
 		$entry = new EntryModel();
 
-		$entry->sectionId  = blx()->request->getRequiredPost('sectionId');
-		$entry->locale     = blx()->request->getPost('locale', blx()->i18n->getPrimarySiteLocale()->getId());
-		$entry->id         = blx()->request->getPost('entryId');
-		$entry->authorId   = blx()->request->getPost('author', blx()->userSession->getUser()->id);
-		$entry->title      = blx()->request->getPost('title');
-		$entry->slug       = blx()->request->getPost('slug');
+		$entry->sectionId  = craft()->request->getRequiredPost('sectionId');
+		$entry->locale     = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocale()->getId());
+		$entry->id         = craft()->request->getPost('entryId');
+		$entry->authorId   = craft()->request->getPost('author', craft()->userSession->getUser()->id);
+		$entry->title      = craft()->request->getPost('title');
+		$entry->slug       = craft()->request->getPost('slug');
 		$entry->postDate   = $this->getDateFromPost('postDate');
 		$entry->expiryDate = $this->getDateFromPost('expiryDate');
-		$entry->enabled    = blx()->request->getPost('enabled');
-		$entry->tags       = blx()->request->getPost('tags');
+		$entry->enabled    = craft()->request->getPost('enabled');
+		$entry->tags       = craft()->request->getPost('tags');
 
-		$fields = blx()->request->getPost('fields');
+		$fields = craft()->request->getPost('fields');
 		$entry->setContent($fields);
 
-		if (blx()->entries->saveEntry($entry))
+		if (craft()->entries->saveEntry($entry))
 		{
-			if (blx()->request->isAjaxRequest())
+			if (craft()->request->isAjaxRequest())
 			{
 				$return['success']   = true;
 				$return['entry']     = $entry->getAttributes();
@@ -43,7 +43,7 @@ class EntriesController extends BaseController
 			}
 			else
 			{
-				blx()->userSession->setNotice(Blocks::t('Entry saved.'));
+				craft()->userSession->setNotice(Craft::t('Entry saved.'));
 
 				$this->redirectToPostedUrl(array(
 					'entryId' => $entry->id
@@ -52,7 +52,7 @@ class EntriesController extends BaseController
 		}
 		else
 		{
-			if (blx()->request->isAjaxRequest())
+			if (craft()->request->isAjaxRequest())
 			{
 				$this->returnJson(array(
 					'errors' => $entry->getErrors(),
@@ -60,7 +60,7 @@ class EntriesController extends BaseController
 			}
 			else
 			{
-				blx()->userSession->setError(Blocks::t('Couldn’t save entry.'));
+				craft()->userSession->setError(Craft::t('Couldn’t save entry.'));
 
 				$this->renderRequestedTemplate(array(
 					'entry' => $entry
@@ -77,9 +77,9 @@ class EntriesController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$entryId = blx()->request->getRequiredPost('id');
+		$entryId = craft()->request->getRequiredPost('id');
 
-		blx()->elements->deleteElementsById($entryId);
+		craft()->elements->deleteElementsById($entryId);
 		$this->returnJson(array('success' => true));
 	}
 }

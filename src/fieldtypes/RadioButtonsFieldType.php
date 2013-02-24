@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,7 +13,7 @@ class RadioButtonsFieldType extends BaseOptionsFieldType
 	 */
 	public function getName()
 	{
-		return Blocks::t('Radio Buttons');
+		return Craft::t('Radio Buttons');
 	}
 
 	/**
@@ -24,7 +24,7 @@ class RadioButtonsFieldType extends BaseOptionsFieldType
 	 */
 	protected function getOptionsSettingsLabel()
 	{
-		return Blocks::t('Radio Button Options');
+		return Craft::t('Radio Button Options');
 	}
 
 	/**
@@ -36,7 +36,7 @@ class RadioButtonsFieldType extends BaseOptionsFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		return blx()->templates->render('_components/fieldtypes/RadioButtons/input', array(
+		return craft()->templates->render('_components/fieldtypes/RadioButtons/input', array(
 			'name'     => $name,
 			'value'    => $value,
 			'settings' => $this->getSettings()

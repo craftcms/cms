@@ -1,7 +1,7 @@
 /**
  * Admin table class
  */
-Blocks.AdminTable = Garnish.Base.extend({
+Craft.AdminTable = Garnish.Base.extend({
 
 	settings: null,
 	totalObjects: null,
@@ -14,7 +14,7 @@ Blocks.AdminTable = Garnish.Base.extend({
 
 	init: function(settings)
 	{
-		this.setSettings(settings, Blocks.AdminTable.defaults);
+		this.setSettings(settings, Craft.AdminTable.defaults);
 
 		this.$noObjects = $(this.settings.noObjectsSelector);
 		this.$table = $(this.settings.tableSelector);
@@ -23,7 +23,7 @@ Blocks.AdminTable = Garnish.Base.extend({
 
 		if (this.settings.sortable)
 		{
-			this.sorter = new Blocks.DataTableSorter(this.$table, {
+			this.sorter = new Craft.DataTableSorter(this.$table, {
 				onSortChange: $.proxy(this, 'reorderObjects')
 			});
 		}
@@ -75,7 +75,7 @@ Blocks.AdminTable = Garnish.Base.extend({
 			return false;
 		}
 
-		// Get the new block order
+		// Get the new field order
 		var ids = [];
 
 		for (var i = 0; i < this.sorter.$items.length; i++)
@@ -89,15 +89,15 @@ Blocks.AdminTable = Garnish.Base.extend({
 			ids: JSON.stringify(ids)
 		};
 
-		Blocks.postActionRequest(this.settings.reorderAction, data, $.proxy(function(response)
+		Craft.postActionRequest(this.settings.reorderAction, data, $.proxy(function(response)
 		{
 			if (response.success)
 			{
-				Blocks.cp.displayNotice(Blocks.t(this.settings.reorderSuccessMessage));
+				Craft.cp.displayNotice(Craft.t(this.settings.reorderSuccessMessage));
 			}
 			else
 			{
-				Blocks.cp.displayError(Blocks.t(this.settings.reorderFailMessage));
+				Craft.cp.displayError(Craft.t(this.settings.reorderFailMessage));
 			}
 		}, this));
 	},
@@ -115,7 +115,7 @@ Blocks.AdminTable = Garnish.Base.extend({
 
 		if (this.confirmDeleteObject($row))
 		{
-			Blocks.postActionRequest(this.settings.deleteAction, { id: id }, $.proxy(function(response) {
+			Craft.postActionRequest(this.settings.deleteAction, { id: id }, $.proxy(function(response) {
 				if (response.success)
 				{
 					$row.remove();
@@ -123,11 +123,11 @@ Blocks.AdminTable = Garnish.Base.extend({
 					this.onDeleteObject();
 					this.settings.onDeleteObject(id);
 
-					Blocks.cp.displayNotice(Blocks.t(this.settings.deleteSuccessMessage, { name: name }));
+					Craft.cp.displayNotice(Craft.t(this.settings.deleteSuccessMessage, { name: name }));
 				}
 				else
 				{
-					Blocks.cp.displayError(Blocks.t(this.settings.deleteFailMessage, { name: name }));
+					Craft.cp.displayError(Craft.t(this.settings.deleteFailMessage, { name: name }));
 				}
 			}, this));
 		}
@@ -136,7 +136,7 @@ Blocks.AdminTable = Garnish.Base.extend({
 	confirmDeleteObject: function($row)
 	{
 		var name = $row.attr(this.settings.nameAttribute);
-		return confirm(Blocks.t(this.settings.confirmDeleteMessage, { name: name }));
+		return confirm(Craft.t(this.settings.confirmDeleteMessage, { name: name }));
 	},
 
 	onDeleteObject: function()

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -11,7 +11,7 @@ class TemplateHelper
 	 */
 	public static function paginateCriteria(ElementCriteriaModel $criteria)
 	{
-		$currentPage = blx()->request->getPageNum();
+		$currentPage = craft()->request->getPageNum();
 		$limit = $criteria->limit;
 		$total = $criteria->total();
 		$totalPages = ceil($total / $limit);
@@ -23,8 +23,8 @@ class TemplateHelper
 
 		$offset = $limit * ($currentPage - 1);
 
-		$path = blx()->request->getPath();
-		$pageUrlPrefix = ($path ? $path.'/' : '').blx()->config->get('pageTrigger');
+		$path = craft()->request->getPath();
+		$pageUrlPrefix = ($path ? $path.'/' : '').craft()->config->get('pageTrigger');
 
 		$info = array(
 			'first'       => $offset + 1,

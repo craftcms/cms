@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Asset element type
@@ -13,7 +13,7 @@ class AssetElementType extends BaseElementType
 	 */
 	public function getName()
 	{
-		return Blocks::t('Assets');
+		return Craft::t('Assets');
 	}
 
 	/**
@@ -49,7 +49,7 @@ class AssetElementType extends BaseElementType
 	 */
 	public function getLinkSettingsHtml()
 	{
-		return blx()->templates->render('_components/elementtypes/Asset/linksettings', array(
+		return craft()->templates->render('_components/elementtypes/Asset/linksettings', array(
 			'settings' => $this->getLinkSettings()
 		));
 	}

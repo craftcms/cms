@@ -1,50 +1,50 @@
 {% extends "settings/assets/_layout" %}
 {% set selectedTab = 'transformations' %}
-{% set transformations = blx.assets.getAllAssetTransformations %}
-{% set transformationModes = blx.assets.getTransformationModes() %}
+{% set transformations = craft.assets.getAllAssetTransformations %}
+{% set transformationModes = craft.assets.getTransformationModes() %}
 
 
 {% set content %}
 <p id="notransformations"{% if transformations|length %} class="hidden"{% endif %}>
-    {{ "No Asset transformations exist yet."|t }}
+	{{ "No Asset transformations exist yet."|t }}
 </p>
 
 {% if transformations|length %}
-    <table id="transformations" class="data collapsible">
-        <thead>
-            <th scope="col">{{ "Name"|t }}</th>
-            <th scope="col">{{ "Mode"|t }}</th>
-            <th scope="col">{{ "Dimensions"|t }}</th>
-            <td class="thin"></td>
-        </thead>
-        <tbody>
-        {% for transformation in transformations %}
-            <tr data-id="{{ transformation.id }}" data-name="{{ transformation.name|t }}">
-                <th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/assets/transformations/' ~ transformation.handle) }}">{{ transformation.name|t }}</a></th>
-                <td data-title="{{ 'Mode'|t }}">
-                    {% if transformation.mode %}
-                        {{ transformationModes[transformation.mode] }}
-                    {%  endif %}
-                </td>
-                <td data-title="{{ 'Dimensions'|t }}">{{ transformation.width }} x {{ transformation.height }}</td>
-                <td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+	<table id="transformations" class="data collapsible">
+		<thead>
+			<th scope="col">{{ "Name"|t }}</th>
+			<th scope="col">{{ "Mode"|t }}</th>
+			<th scope="col">{{ "Dimensions"|t }}</th>
+			<td class="thin"></td>
+		</thead>
+		<tbody>
+		{% for transformation in transformations %}
+			<tr data-id="{{ transformation.id }}" data-name="{{ transformation.name|t }}">
+				<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/assets/transformations/' ~ transformation.handle) }}">{{ transformation.name|t }}</a></th>
+				<td data-title="{{ 'Mode'|t }}">
+					{% if transformation.mode %}
+						{{ transformationModes[transformation.mode] }}
+					{%  endif %}
+				</td>
+				<td data-title="{{ 'Dimensions'|t }}">{{ transformation.width }} x {{ transformation.height }}</td>
+				<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
 {% endif %}
 
 <div class="buttons">
-    <a class="btn submit add icon" href="{{ url('settings/assets/transformations/new') }}">{{ "New Transformation"|t }}</a>
+	<a class="btn submit add icon" href="{{ url('settings/assets/transformations/new') }}">{{ "New Transformation"|t }}</a>
 </div>
 {% endset %}
 
 {% set js %}
-    new Blocks.AdminTable({
-        tableSelector: '#transformations',
-        noObjectsSelector: '#notransformations',
-        sortable: false,
-        deleteAction: 'assetTransformations/deleteTransformation'
-    });
+	new Craft.AdminTable({
+		tableSelector: '#transformations',
+		noObjectsSelector: '#notransformations',
+		sortable: false,
+		deleteAction: 'assetTransformations/deleteTransformation'
+	});
 {% endset %}
 {% includeJs js %}

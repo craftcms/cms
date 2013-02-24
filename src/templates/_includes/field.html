@@ -1,10 +1,10 @@
 {% import "_includes/forms" as forms %}
-{% set field = blx.fields.getFieldById(fieldId) %}
+{% set field = craft.fields.getFieldById(fieldId) %}
 {% if entry is not defined %}{% set entry = null %}{% endif %}
 
 {% set value = (entry ? attribute(entry, field.handle) : null) %}
 {% set errors = (entry ? entry.getErrors(field.handle) : null) %}
-{% set fieldtype = blx.fields.populateFieldType(field, entry) %}
+{% set fieldtype = craft.fields.populateFieldType(field, entry) %}
 
 {% if fieldtype %}
 	{% set input = fieldtype.getInputHtml('fields['~field.handle~']', value) %}

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -9,14 +9,14 @@ class UpdatesService extends BaseApplicationComponent
 	private $_updateModel;
 
 	/**
-	 * @param $blocksReleases
+	 * @param $craftReleases
 	 * @return bool
 	 */
-	public function criticalBlocksUpdateAvailable($blocksReleases)
+	public function criticalCraftUpdateAvailable($craftReleases)
 	{
-		foreach ($blocksReleases as $blocksRelease)
+		foreach ($craftReleases as $craftRelease)
 		{
-			if ($blocksRelease->critical)
+			if ($craftRelease->critical)
 			{
 				return true;
 			}
@@ -53,7 +53,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isUpdateInfoCached()
 	{
-		return (isset($this->_updateModel) || blx()->fileCache->get('updateinfo') !== false);
+		return (isset($this->_updateModel) || craft()->fileCache->get('updateinfo') !== false);
 	}
 
 	/**
@@ -66,9 +66,9 @@ class UpdatesService extends BaseApplicationComponent
 			$updateModel = $this->getUpdates();
 			$count = 0;
 
-			if ($updateModel->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
+			if ($updateModel->craft->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
 			{
-				if (isset($updateModel->blocks->releases) && count($updateModel->blocks->releases) > 0)
+				if (isset($updateModel->craft->releases) && count($updateModel->craft->releases) > 0)
 				{
 					$count++;
 				}
@@ -102,7 +102,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isCriticalUpdateAvailable()
 	{
-		if ((isset($this->_updateModel) && $this->_updateModel->blocks->criticalUpdateAvailable))
+		if ((isset($this->_updateModel) && $this->_updateModel->craft->criticalUpdateAvailable))
 		{
 			return true;
 		}
@@ -115,7 +115,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isManualUpdateRequired()
 	{
-		if ((isset($this->_updateModel) && $this->_updateModel->blocks->manualUpdateRequired))
+		if ((isset($this->_updateModel) && $this->_updateModel->craft->manualUpdateRequired))
 		{
 			return true;
 		}
@@ -136,7 +136,7 @@ class UpdatesService extends BaseApplicationComponent
 			if (!$forceRefresh)
 			{
 				// get the update info from the cache if it's there
-				$updateModel = blx()->fileCache->get('updateinfo');
+				$updateModel = craft()->fileCache->get('updateinfo');
 			}
 
 			// fetch it if it wasn't cached, or if we're forcing a refresh
@@ -147,7 +147,7 @@ class UpdatesService extends BaseApplicationComponent
 				if ($etModel == null)
 				{
 					$updateModel = new UpdateModel();
-					$errors[] = Blocks::t('An error occurred when trying to determine if an update is available. Please try again shortly. If the error persists, please contact <a href="mailto://support@blockscms.com">support@pixelandtonic.com</a>.');
+					$errors[] = Craft::t('An error occurred when trying to determine if an update is available. Please try again shortly. If the error persists, please contact <a href="mailto://support@buildwithcraft.com">support@buildwithcraft.com</a>.');
 					$updateModel->errors = $errors;
 				}
 				else
@@ -155,7 +155,7 @@ class UpdatesService extends BaseApplicationComponent
 					$updateModel = $etModel->data;
 
 					// cache it and set it to expire according to config
-					blx()->fileCache->set('updateinfo', $updateModel);
+					craft()->fileCache->set('updateinfo', $updateModel);
 				}
 			}
 
@@ -170,9 +170,9 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function flushUpdateInfoFromCache()
 	{
-		Blocks::log('Flushing update info from cache.');
+		Craft::log('Flushing update info from cache.');
 
-		if (IOHelper::clearFolder(blx()->path->getCompiledTemplatesPath()) && IOHelper::clearFolder(blx()->path->getCachePath()))
+		if (IOHelper::clearFolder(craft()->path->getCompiledTemplatesPath()) && IOHelper::clearFolder(craft()->path->getCachePath()))
 		{
 			return true;
 		}
@@ -186,7 +186,7 @@ class UpdatesService extends BaseApplicationComponent
 	 * @param $releaseDate
 	 * @return bool
 	 */
-	public function setNewBlocksInfo($version, $build, $releaseDate)
+	public function setNewCraftInfo($version, $build, $releaseDate)
 	{
 		$info = InfoRecord::model()->find();
 		$info->version = $version;
@@ -207,7 +207,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function setNewPluginInfo($plugin)
 	{
-		$pluginRecord = blx()->plugins->getPluginRecord($plugin);
+		$pluginRecord = craft()->plugins->getPluginRecord($plugin);
 
 		$pluginRecord->version = $plugin->getVersion();
 		if ($pluginRecord->save())
@@ -224,13 +224,13 @@ class UpdatesService extends BaseApplicationComponent
 	public function check()
 	{
 		$updateModel = new UpdateModel();
-		$updateModel->blocks = new BlocksUpdateModel();
+		$updateModel->craft = new CraftUpdateModel();
 		$updateModel->plugins = array();
 
-		$updateModel->blocks->localBuild = Blocks::getBuild();
-		$updateModel->blocks->localVersion = Blocks::getVersion();
+		$updateModel->craft->localBuild = Craft::getBuild();
+		$updateModel->craft->localVersion = Craft::getVersion();
 
-		$plugins = blx()->plugins->getPlugins();
+		$plugins = craft()->plugins->getPlugins();
 
 		$pluginUpdateModels = array();
 
@@ -245,20 +245,20 @@ class UpdatesService extends BaseApplicationComponent
 
 		$updateModel->plugins = $pluginUpdateModels;
 
-		$etModel = blx()->et->check($updateModel);
+		$etModel = craft()->et->check($updateModel);
 		return $etModel;
 	}
 
 	/**
-	 * Checks to see if Blocks can write to a defined set of folders/files that are needed for auto-update to work.
+	 * Checks to see if Craft can write to a defined set of folders/files that are needed for auto-update to work.
 	 *
 	 * @return array|null
 	 */
 	public function getUnwritableFolders()
 	{
 		$checkPaths = array(
-			blx()->path->getAppPath(),
-			blx()->path->getPluginsPath(),
+			craft()->path->getAppPath(),
+			craft()->path->getPluginsPath(),
 		);
 
 		$errorPath = null;
@@ -281,7 +281,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function prepareUpdate($manual, $handle)
 	{
-		Blocks::log('Preparing to update '.$handle.'.');
+		Craft::log('Preparing to update '.$handle.'.');
 
 		try
 		{
@@ -295,7 +295,7 @@ class UpdatesService extends BaseApplicationComponent
 
 			$updater->checkRequirements();
 
-			Blocks::log('Finished preparing to update '.$handle.'.');
+			Craft::log('Finished preparing to update '.$handle.'.');
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -309,7 +309,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function processUpdateDownload()
 	{
-		Blocks::log('Starting to process the update download.');
+		Craft::log('Starting to process the update download.');
 
 		try
 		{
@@ -317,7 +317,7 @@ class UpdatesService extends BaseApplicationComponent
 			$result = $updater->processDownload();
 			$result['success'] = true;
 
-			Blocks::log('Finished processing the update download.');
+			Craft::log('Finished processing the update download.');
 			return $result;
 		}
 		catch (\Exception $e)
@@ -332,14 +332,14 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function backupFiles($uid)
 	{
-		Blocks::log('Starting to backup files that need to be updated.');
+		Craft::log('Starting to backup files that need to be updated.');
 
 		try
 		{
 			$updater = new Updater();
 			$updater->backupFiles($uid);
 
-			Blocks::log('Finished backing up files.');
+			Craft::log('Finished backing up files.');
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -354,14 +354,14 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function updateFiles($uid)
 	{
-		Blocks::log('Starting to update files.');
+		Craft::log('Starting to update files.');
 
 		try
 		{
 			$updater = new Updater();
 			$updater->updateFiles($uid);
 
-			Blocks::log('Finished updating files.');
+			Craft::log('Finished updating files.');
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -376,7 +376,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function backupDatabase($uid)
 	{
-		Blocks::log('Starting to backup database.');
+		Craft::log('Starting to backup database.');
 
 		try
 		{
@@ -385,12 +385,12 @@ class UpdatesService extends BaseApplicationComponent
 
 			if (!$result)
 			{
-				Blocks::log('Did not backup database because there were no migrations to run.');
+				Craft::log('Did not backup database because there were no migrations to run.');
 				return array('success' => true);
 			}
 			else
 			{
-				Blocks::log('Finished backing up database.');
+				Craft::log('Finished backing up database.');
 				return array('success' => true, 'dbBackupPath' => $result);
 			}
 		}
@@ -410,31 +410,31 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function updateDatabase($uid, $handle, $dbBackupPath = false)
 	{
-		Blocks::log('Starting to update the database.');
+		Craft::log('Starting to update the database.');
 
 		try
 		{
 			$updater = new Updater();
 
-			if ($handle == 'blocks')
+			if ($handle == 'craft')
 			{
-				Blocks::log('Blocks wants to update the database.');
+				Craft::log('Craft wants to update the database.');
 				$updater->updateDatabase($uid, $dbBackupPath);
-				Blocks::log('Blocks is done updating the database.');
+				Craft::log('Craft is done updating the database.');
 			}
 			else
 			{
-				$plugin = blx()->plugins->getPlugin($handle);
+				$plugin = craft()->plugins->getPlugin($handle);
 				if ($plugin)
 				{
-					Blocks::log('The plugin, '.$plugin->getName().' wants to update the database.');
+					Craft::log('The plugin, '.$plugin->getName().' wants to update the database.');
 					$updater->updateDatabase($uid, $dbBackupPath, $plugin);
-					Blocks::log('The plugin, '.$plugin->getName().' is done updating the database.');
+					Craft::log('The plugin, '.$plugin->getName().' is done updating the database.');
 				}
 				else
 				{
-					Blocks::log('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.', \CLogger::LEVEL_ERROR);
-					throw new Exception(Blocks::t('Cannot find an enabled plugin with the handle '.$handle));
+					Craft::log('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.', \CLogger::LEVEL_ERROR);
+					throw new Exception(Craft::t('Cannot find an enabled plugin with the handle '.$handle));
 				}
 			}
 
@@ -453,14 +453,14 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function updateCleanUp($uid, $handle)
 	{
-		Blocks::log('Starting to clean up after the update.');
+		Craft::log('Starting to clean up after the update.');
 
 		try
 		{
 			$updater = new Updater();
 			$updater->cleanUp($uid, $handle);
 
-			Blocks::log('Finished cleaning up after the update.');
+			Craft::log('Finished cleaning up after the update.');
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -478,22 +478,22 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		try
 		{
-			if ($dbBackupPath && blx()->config->get('backupDbOnUpdate') && blx()->config->get('restoreDbOnUpdateFailure'))
+			if ($dbBackupPath && craft()->config->get('backupDbOnUpdate') && craft()->config->get('restoreDbOnUpdateFailure'))
 			{
-				Blocks::log('Rolling back any database changes.');
+				Craft::log('Rolling back any database changes.');
 				UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
-				Blocks::log('Done rolling back any database changes.');
+				Craft::log('Done rolling back any database changes.');
 			}
 
 			// If uid !== false, it's an auto-update.
 			if ($uid !== false)
 			{
-				Blocks::log('Rolling back any file changes.');
+				Craft::log('Rolling back any file changes.');
 				UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
-				Blocks::log('Done rolling back any file changes.');
+				Craft::log('Done rolling back any file changes.');
 			}
 
-			Blocks::log('Finished rolling back changes.');
+			Craft::log('Finished rolling back changes.');
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -503,22 +503,22 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Determines if we're in the middle of a manual update either because of Blocks or a plugin, and a DB update is needed.
+	 * Determines if we're in the middle of a manual update either because of Craft or a plugin, and a DB update is needed.
 	 *
 	 * @return bool
 	 */
 	public function isDbUpdateNeeded()
 	{
-		if ($this->isBlocksDbUpdateNeeded())
+		if ($this->isCraftDbUpdateNeeded())
 		{
 			return true;
 		}
 
-		$plugins = blx()->plugins->getPlugins();
+		$plugins = craft()->plugins->getPlugins();
 
 		foreach ($plugins as $plugin)
 		{
-			if (blx()->plugins->doesPluginRequireDatabaseUpdate($plugin))
+			if (craft()->plugins->doesPluginRequireDatabaseUpdate($plugin))
 			{
 				return true;
 			}
@@ -528,14 +528,14 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns if Blocks needs to run a database update or not.
+	 * Returns if Craft needs to run a database update or not.
 	 *
 	 * @access private
 	 * @return bool
 	 */
-	public function isBlocksDbUpdateNeeded()
+	public function isCraftDbUpdateNeeded()
 	{
-		if (version_compare(Blocks::getBuild(), Blocks::getStoredBuild(), '>') || version_compare(Blocks::getVersion(), Blocks::getStoredVersion(), '>'))
+		if (version_compare(Craft::getBuild(), Craft::getStoredBuild(), '>') || version_compare(Craft::getVersion(), Craft::getStoredVersion(), '>'))
 		{
 			return true;
 		}
@@ -544,17 +544,17 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns true is the build stored in blx_info is less than the minimum required build on the file system.
+	 * Returns true is the build stored in craft_info is less than the minimum required build on the file system.
 	 * This effectively makes sure that a user cannot manually update past a manual breakpoint.
 	 *
 	 * @return bool
 	 */
 	public function isBreakpointUpdateNeeded()
 	{
-		// Only Blocks has the concept of a breakpoint, not plugins.
-		if ($this->isBlocksDbUpdateNeeded())
+		// Only Craft has the concept of a breakpoint, not plugins.
+		if ($this->isCraftDbUpdateNeeded())
 		{
-			if (version_compare(Blocks::getStoredBuild(), Blocks::getMinRequiredBuild(), '<'))
+			if (version_compare(Craft::getStoredBuild(), Craft::getMinRequiredBuild(), '<'))
 			{
 				return true;
 			}
@@ -572,11 +572,11 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		$pluginsThatNeedDbUpdate = array();
 
-		$plugins = blx()->plugins->getPlugins();
+		$plugins = craft()->plugins->getPlugins();
 
 		foreach ($plugins as $plugin)
 		{
-			if (blx()->plugins->doesPluginRequireDatabaseUpdate($plugin))
+			if (craft()->plugins->doesPluginRequireDatabaseUpdate($plugin))
 			{
 				$pluginsThatNeedDbUpdate[] = $plugin;
 			}

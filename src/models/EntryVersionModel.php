@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::PublishPro);
+Craft::requirePackage(CraftPackage::PublishPro);
 
 /**
  *
@@ -60,6 +60,6 @@ class EntryVersionModel extends EntryModel
 	 */
 	public function getCreator()
 	{
-		return blx()->users->getUserById($this->creatorId);
+		return craft()->users->getUserById($this->creatorId);
 	}
 }

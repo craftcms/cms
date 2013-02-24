@@ -16,7 +16,7 @@
 	{% set showStatus = false %}
 {% elseif filter == 'admins' %}
 	{% set params = { admin: true } %}
-{% elseif blx.userGroups.getGroupByHandle(filter) %}
+{% elseif craft.userGroups.getGroupByHandle(filter) %}
 	{% set params = { group: filter, status: '*' } %}
 {% else %}
 	{% exit 404 %}
@@ -34,12 +34,12 @@
 		<ul>
 			<li><a href="{{ url('users') }}" {% if not filter %}class="sel"{% endif %}>{{ "All Users"|t }}</a></li>
 
-			{% for group in blx.userGroups.getAllGroups %}
+			{% for group in craft.userGroups.getAllGroups %}
 				<li><a href="{{ url('users/' ~ group.handle) }}" {% if filter == group.handle %}class="sel"{% endif %}>{{ group.name|t }}</a></li>
 			{% endfor %}
 
 			{# for status, class in statuses %}
-				{% set total = blx.users.status(status).total %}
+				{% set total = craft.users.status(status).total %}
 				{% if total %}
 					<li><a href="{{ url('users/' ~ status) }}" {% if filter == status %}class="sel"{% endif %}><div class="status {{ class }}"></div> {{ status|ucfirst|t }}</a></li>
 				{% endif %}
@@ -55,7 +55,7 @@
 		<div class="search"><input type="text" class="text nicetext fullwidth" data-hint="{{ 'Search users'|t }}"></div>
 	</div>
 
-	{% paginate blx.users(params).limit(50) as accounts %}
+	{% paginate craft.users(params).limit(50) as accounts %}
 
 		{% include "_includes/paginatelinks" with { type: "users"|t } %}
 

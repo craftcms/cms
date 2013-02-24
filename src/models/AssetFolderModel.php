@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -41,7 +41,7 @@ class AssetFolderModel extends BaseModel
 	 */
 	public function getSource()
 	{
-		return blx()->assetSources->getSourceById($this->sourceId);
+		return craft()->assetSources->getSourceById($this->sourceId);
 	}
 
 	/**
@@ -53,7 +53,7 @@ class AssetFolderModel extends BaseModel
 	{
 		if (is_null($this->_children))
 		{
-			$this->_children = blx()->assets->findFolders(array('parentId' => $this->id));
+			$this->_children = craft()->assets->findFolders(array('parentId' => $this->id));
 		}
 
 		return $this->_children;

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -19,7 +19,7 @@ class Zip
 
 		if (!IOHelper::folderExists($source) && !IOHelper::fileExists($destZip))
 		{
-			Blocks::log('Tried to zip the contents of '.$source.' to '.$destZip.', but the source path does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to zip the contents of '.$source.' to '.$destZip.', but the source path does not exist.', \CLogger::LEVEL_ERROR);
 			return false;
 		}
 
@@ -59,19 +59,19 @@ class Zip
 				}
 				else
 				{
-					Blocks::log('There was an error unzipping the file: '.$srcZip, \CLogger::LEVEL_ERROR);
+					Craft::log('There was an error unzipping the file: '.$srcZip, \CLogger::LEVEL_ERROR);
 					return false;
 				}
 			}
 			else
 			{
-				Blocks::log($srcZip.' is not a zip file and cannot be unzipped.', \CLogger::LEVEL_ERROR);
+				Craft::log($srcZip.' is not a zip file and cannot be unzipped.', \CLogger::LEVEL_ERROR);
 				return false;
 			}
 		}
 		else
 		{
-			Blocks::log('Unzipping is only available for files.', \CLogger::LEVEL_ERROR);
+			Craft::log('Unzipping is only available for files.', \CLogger::LEVEL_ERROR);
 			return false;
 		}
 	}
@@ -91,7 +91,7 @@ class Zip
 
 		if (!IOHelper::fileExists($sourceZip) || (!IOHelper::fileExists($pathToAdd) && !IOHelper::folderExists($pathToAdd)))
 		{
-			Blocks::log('Tried to add '.$pathToAdd.' to the zip file '.$sourceZip.', but one of them does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to add '.$pathToAdd.' to the zip file '.$sourceZip.', but one of them does not exist.', \CLogger::LEVEL_ERROR);
 			return false;
 		}
 

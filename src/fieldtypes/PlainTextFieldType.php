@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,7 +13,7 @@ class PlainTextFieldType extends BaseFieldType
 	 */
 	public function getName()
 	{
-		return Blocks::t('Plain Text');
+		return Craft::t('Plain Text');
 	}
 
 	/**
@@ -25,7 +25,7 @@ class PlainTextFieldType extends BaseFieldType
 	protected function defineSettings()
 	{
 		return array(
-			'hint'          => array(AttributeType::String, 'default' => Blocks::t('Enter text…', null, null, null, blx()->language)),
+			'hint'          => array(AttributeType::String, 'default' => Craft::t('Enter text…', null, null, null, craft()->language)),
 			'multiline'     => array(AttributeType::Bool),
 			'initialRows'   => array(AttributeType::Number, 'min' => 1, 'default' => 4),
 			'maxLength'     => array(AttributeType::Number, 'min' => 0),
@@ -40,7 +40,7 @@ class PlainTextFieldType extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		return blx()->templates->render('_components/fieldtypes/PlainText/settings', array(
+		return craft()->templates->render('_components/fieldtypes/PlainText/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -71,7 +71,7 @@ class PlainTextFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		return blx()->templates->render('_components/fieldtypes/PlainText/input', array(
+		return craft()->templates->render('_components/fieldtypes/PlainText/input', array(
 			'name'     => $name,
 			'value'    => $value,
 			'settings' => $this->getSettings()

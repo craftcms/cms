@@ -1,10 +1,10 @@
 {% extends "_layouts/message" %}
-{% set title = "Can’t install {app}"|t({ app: blx.config.appName }) %}
+{% set title = "Can’t install CraftCMS"|t %}
 
 
 {% set content %}
 	<h2>{{ title }} :(</h2>
-	<p>{{ "Your server doesn’t meet the following requirements to install {app}:"|t({ app: blx.config.appName }) }}</p>
+	<p>{{ "Your server doesn’t meet the following requirements to install CraftCMS:"|t }}</p>
 
 	<ul class="bullets">
 		{% for req in reqCheck.requirements %}

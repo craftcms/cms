@@ -10,7 +10,7 @@
 		<input type="hidden" name="redirect" value="settings">
 
 		{% include "_includes/fieldlayoutdesigner" with {
-			fieldLayout: blx.fields.getLayoutByType('User'),
+			fieldLayout: craft.fields.getLayoutByType('User'),
 			customizableTabs: false,
 			pretendTabName: 'Profile'
 		} only %}

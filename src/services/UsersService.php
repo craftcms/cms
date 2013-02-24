@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -51,7 +51,7 @@ class UsersService extends BaseApplicationComponent
 	public function getUserByVerificationCodeAndUid($code, $uid)
 	{
 		$date = DateTimeHelper::currentUTCDateTime();
-		$duration = new DateInterval(blx()->config->get('verificationCodeDuration'));
+		$duration = new DateInterval(craft()->config->get('verificationCodeDuration'));
 		$date->sub($duration);
 
 		$userRecord = UserRecord::model()->find(
@@ -61,18 +61,18 @@ class UsersService extends BaseApplicationComponent
 
 		if ($userRecord)
 		{
-			if (blx()->security->checkString($code, $userRecord->verificationCode))
+			if (craft()->security->checkString($code, $userRecord->verificationCode))
 			{
 				return UserModel::populateModel($userRecord);
 			}
 			else
 			{
-				Blocks::log('Found a with UID:'.$uid.', but the verification code given: '.$code.' does not match the hash in the database.', \CLogger::LEVEL_WARNING);
+				Craft::log('Found a with UID:'.$uid.', but the verification code given: '.$code.' does not match the hash in the database.', \CLogger::LEVEL_WARNING);
 			}
 		}
 		else
 		{
-			Blocks::log('Could not find a user with UID:'.$uid.' that has a verification code that is not expired.', \CLogger::LEVEL_WARNING);
+			Craft::log('Could not find a user with UID:'.$uid.' that has a verification code that is not expired.', \CLogger::LEVEL_WARNING);
 		}
 
 		return null;
@@ -91,7 +91,7 @@ class UsersService extends BaseApplicationComponent
 			$criteria = new UserCriteria();
 		}
 
-		$query = blx()->db->createCommand()
+		$query = craft()->db->createCommand()
 			->select('u.*')
 			->from('users u');
 
@@ -129,7 +129,7 @@ class UsersService extends BaseApplicationComponent
 			$criteria = new UserCriteria();
 		}
 
-		$query = blx()->db->createCommand()
+		$query = craft()->db->createCommand()
 			->select('u.*')
 			->from('users u');
 
@@ -157,7 +157,7 @@ class UsersService extends BaseApplicationComponent
 			$criteria = new UserCriteria();
 		}
 
-		$query = blx()->db->createCommand()
+		$query = craft()->db->createCommand()
 			->select('count(u.id)')
 			->from('users u');
 
@@ -181,7 +181,7 @@ class UsersService extends BaseApplicationComponent
 
 			if (!$userRecord)
 			{
-				throw new Exception(Blocks::t('No user exists with the ID “{id}”', array('id' => $user->id)));
+				throw new Exception(Craft::t('No user exists with the ID “{id}”', array('id' => $user->id)));
 			}
 
 			$oldUsername = $userRecord->username;
@@ -239,10 +239,10 @@ class UsersService extends BaseApplicationComponent
 			// Send a verification email?
 			if ($user->verificationRequired)
 			{
-				blx()->templates->registerTwigAutoloader();
+				craft()->templates->registerTwigAutoloader();
 
-				blx()->email->sendEmailByKey($user, 'verify_email', array(
-					'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $user->uid), blx()->templates->getTwig()->getCharset()),
+				craft()->email->sendEmailByKey($user, 'verify_email', array(
+					'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $user->uid), craft()->templates->getTwig()->getCharset()),
 				));
 			}
 
@@ -252,8 +252,8 @@ class UsersService extends BaseApplicationComponent
 				if ($user->username != $oldUsername)
 				{
 					// Rename the user's photo directory
-					$oldFolder = blx()->path->getUserPhotosPath().$oldUsername;
-					$newFolder = blx()->path->getUserPhotosPath().$user->username;
+					$oldFolder = craft()->path->getUserPhotosPath().$oldUsername;
+					$newFolder = craft()->path->getUserPhotosPath().$user->username;
 
 					if (IOHelper::folderExists($newFolder))
 					{
@@ -283,10 +283,10 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function saveProfile(UserModel $user)
 	{
-		Blocks::requirePackage(BlocksPackage::Users);
+		Craft::requirePackage(CraftPackage::Users);
 
-		$fieldLayout = blx()->fields->getLayoutByType(ElementType::User);
-		return blx()->elements->saveElementContent($user, $fieldLayout);
+		$fieldLayout = craft()->fields->getLayoutByType(ElementType::User);
+		return craft()->elements->saveElementContent($user, $fieldLayout);
 	}
 
 	/**
@@ -298,10 +298,10 @@ class UsersService extends BaseApplicationComponent
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
-		blx()->templates->registerTwigAutoloader();
+		craft()->templates->registerTwigAutoloader();
 
-		return blx()->email->sendEmailByKey($user, 'verify_email', array(
-			'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), blx()->templates->getTwig()->getCharset()),
+		return craft()->email->sendEmailByKey($user, 'verify_email', array(
+			'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
 		));
 	}
 
@@ -319,7 +319,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function cropAndSaveUserPhoto($source, $x1, $x2, $y1, $y2, UserModel $user)
 	{
-		$userPhotoFolder = blx()->path->getUserPhotosPath().$user->username.'/';
+		$userPhotoFolder = craft()->path->getUserPhotosPath().$user->username.'/';
 		$targetFolder = $userPhotoFolder.'original/';
 
 		IOHelper::ensureFolderExists($userPhotoFolder);
@@ -329,7 +329,7 @@ class UsersService extends BaseApplicationComponent
 		$targetPath = $targetFolder . $filename;
 
 
-		$image = blx()->images->loadImage($source);
+		$image = craft()->images->loadImage($source);
 		$image->crop($x1, $x2, $y1, $y2);
 		$result = $image->saveAs($targetPath);
 
@@ -356,7 +356,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function deleteUserPhoto(UserModel $user)
 	{
-		$folder = blx()->path->getUserPhotosPath().$user->username;
+		$folder = craft()->path->getUserPhotosPath().$user->username;
 
 		if (IOHelper::folderExists($folder))
 		{
@@ -376,10 +376,10 @@ class UsersService extends BaseApplicationComponent
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
-		blx()->templates->registerTwigAutoloader();
+		craft()->templates->registerTwigAutoloader();
 
-		return blx()->email->sendEmailByKey($user, 'forgot_password', array(
-			'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), blx()->templates->getTwig()->getCharset()),
+		return craft()->email->sendEmailByKey($user, 'forgot_password', array(
+			'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
 		));
 	}
 
@@ -393,7 +393,7 @@ class UsersService extends BaseApplicationComponent
 	private function _setVerificationCodeOnUserRecord(UserRecord $userRecord)
 	{
 		$unhashedCode = StringHelper::UUID();
-		$hashedCode = blx()->security->hashString($unhashedCode);
+		$hashedCode = craft()->security->hashString($unhashedCode);
 		$userRecord->verificationCode = $hashedCode['hash'];
 		$userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
 
@@ -410,14 +410,14 @@ class UsersService extends BaseApplicationComponent
 	 */
 	private function _getVerifyAccountUrl($verificationCode, $uid)
 	{
-		if (blx()->request->isSecureConnection)
+		if (craft()->request->isSecureConnection)
 		{
-			return UrlHelper::getUrl(blx()->config->get('resetPasswordPath'), array(
+			return UrlHelper::getUrl(craft()->config->get('resetPasswordPath'), array(
 				'code' => $verificationCode, 'id' => $uid
 			), 'https');
 		}
 
-		return UrlHelper::getUrl(blx()->config->get('resetPasswordPath'), array(
+		return UrlHelper::getUrl(craft()->config->get('resetPasswordPath'), array(
 			'code' => $verificationCode, 'id' => $uid
 		));
 	}
@@ -459,7 +459,7 @@ class UsersService extends BaseApplicationComponent
 
 		if ($passwordModel->validate())
 		{
-			$hashAndType = blx()->security->hashString($user->newPassword);
+			$hashAndType = craft()->security->hashString($user->newPassword);
 
 			$userRecord->password = $user->password = $hashAndType['hash'];
 			$userRecord->encType = $user->encType = $hashAndType['encType'];
@@ -497,7 +497,7 @@ class UsersService extends BaseApplicationComponent
 		$userRecord = $this->_getUserRecordById($user->id);
 
 		$userRecord->lastLoginDate = $user->lastLoginDate = DateTimeHelper::currentUTCDateTime();
-		$userRecord->lastLoginAttemptIPAddress = blx()->request->getUserHostAddress();
+		$userRecord->lastLoginAttemptIPAddress = craft()->request->getUserHostAddress();
 		$userRecord->invalidLoginWindowStart = null;
 		$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
 		$userRecord->verificationCode = null;
@@ -525,14 +525,14 @@ class UsersService extends BaseApplicationComponent
 		$currentTime = DateTimeHelper::currentUTCDateTime();
 
 		$userRecord->lastInvalidLoginDate = $user->lastInvalidLoginDate = $currentTime;
-		$userRecord->lastLoginAttemptIPAddress = blx()->request->getUserHostAddress();
+		$userRecord->lastLoginAttemptIPAddress = craft()->request->getUserHostAddress();
 
 		if ($this->_isUserInsideInvalidLoginWindow($userRecord))
 		{
 			$userRecord->invalidLoginCount++;
 
 			// Was that one bad password too many?
-			if ($userRecord->invalidLoginCount >= blx()->config->get('maxInvalidLogins'))
+			if ($userRecord->invalidLoginCount >= craft()->config->get('maxInvalidLogins'))
 			{
 				$userRecord->status = $user->status = UserStatus::Locked;
 				$userRecord->invalidLoginCount = null;
@@ -564,7 +564,7 @@ class UsersService extends BaseApplicationComponent
 	{
 		if ($userRecord->invalidLoginWindowStart)
 		{
-			$duration = new DateInterval(blx()->config->get('invalidLoginWindowDuration'));
+			$duration = new DateInterval(craft()->config->get('invalidLoginWindowDuration'));
 			$end = $userRecord->invalidLoginWindowStart->add($duration);
 			return ($end >= DateTimeHelper::currentUTCDateTime());
 		}
@@ -656,7 +656,7 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->email = '';
 
 		// Delete their photo folder
-		$photoFolder = blx()->path->getUserPhotosPath().$userRecord->archivedUsername;
+		$photoFolder = craft()->path->getUserPhotosPath().$userRecord->archivedUsername;
 		if (IOHelper::folderExists($photoFolder))
 		{
 			IOHelper::deleteFolder($photoFolder);
@@ -679,7 +679,7 @@ class UsersService extends BaseApplicationComponent
 
 		if (!$userRecord)
 		{
-			throw new Exception(Blocks::t('No user exists with the ID “{id}”', array('id' => $userId)));
+			throw new Exception(Craft::t('No user exists with the ID “{id}”', array('id' => $userId)));
 		}
 
 		return $userRecord;

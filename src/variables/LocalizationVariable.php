@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Localization functions
@@ -13,7 +13,7 @@ class LocalizationVariable
 	 */
 	public function getAllLocales()
 	{
-		return blx()->i18n->getAllLocales();
+		return craft()->i18n->getAllLocales();
 	}
 
 	/**
@@ -23,7 +23,7 @@ class LocalizationVariable
 	 */
 	public function getAppLocales()
 	{
-		return blx()->i18n->getAppLocales();
+		return craft()->i18n->getAppLocales();
 	}
 
 	/**
@@ -34,7 +34,7 @@ class LocalizationVariable
 	 */
 	public function getLocaleById($localeId)
 	{
-		return blx()->i18n->getLocaleById($localeId);
+		return craft()->i18n->getLocaleById($localeId);
 	}
 
 	/**
@@ -44,7 +44,7 @@ class LocalizationVariable
 	 */
 	public function getSiteLocales()
 	{
-		return blx()->i18n->getSiteLocales();
+		return craft()->i18n->getSiteLocales();
 	}
 
 	/**
@@ -54,6 +54,6 @@ class LocalizationVariable
 	 */
 	public function getPrimarySiteLocale()
 	{
-		return blx()->i18n->getPrimarySiteLocale();
+		return craft()->i18n->getPrimarySiteLocale();
 	}
 }

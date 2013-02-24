@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -18,14 +18,14 @@ class ConsoleApp extends \CConsoleApplication
 
 		foreach ($this->componentAliases as $alias)
 		{
-			Blocks::import($alias);
+			Craft::import($alias);
 		}
 
-		blx()->getComponent('log');
+		craft()->getComponent('log');
 
 		// No need for these.
-		blx()->log->removeRoute('WebLogRoute');
-		blx()->log->removeRoute('ProfileLogRoute');
+		craft()->log->removeRoute('WebLogRoute');
+		craft()->log->removeRoute('ProfileLogRoute');
 
 		parent::init();
 	}

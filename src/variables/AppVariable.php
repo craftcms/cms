@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * App functions
@@ -7,23 +7,23 @@ namespace Blocks;
 class AppVariable
 {
 	/**
-	 * Returns the current Blocks version.
+	 * Returns the current Craft version.
 	 *
 	 * @return string
 	 */
 	public function getVersion()
 	{
-		return Blocks::getVersion();
+		return Craft::getVersion();
 	}
 
 	/**
-	 * Returns the current Blocks build.
+	 * Returns the current Craft build.
 	 *
 	 * @return string
 	 */
 	public function getBuild()
 	{
-		return Blocks::getBuild();
+		return Craft::getBuild();
 	}
 
 	/**
@@ -33,7 +33,7 @@ class AppVariable
 	 */
 	public function getSiteName()
 	{
-		return Blocks::getSiteName();
+		return Craft::getSiteName();
 	}
 
 	/**
@@ -43,7 +43,7 @@ class AppVariable
 	 */
 	public function getSiteUrl()
 	{
-		return Blocks::getSiteUrl();
+		return Craft::getSiteUrl();
 	}
 
 	/**
@@ -54,7 +54,7 @@ class AppVariable
 	public function getLocale()
 	{
 		return 'en_us';
-		return Blocks::getLanguage();
+		return Craft::getLanguage();
 	}
 
 	/**
@@ -64,7 +64,7 @@ class AppVariable
 	 */
 	public function getLicenseKey()
 	{
-		return Blocks::getLicenseKey();
+		return Craft::getLicenseKey();
 	}
 
 	/**
@@ -74,7 +74,7 @@ class AppVariable
 	 */
 	public function isSystemOn()
 	{
-		return Blocks::isSystemOn();
+		return Craft::isSystemOn();
 	}
 
 	/**
@@ -93,12 +93,12 @@ class AppVariable
 	}
 
 	/**
-		 * Gets the minimum required build numbers as stored in the BLOCKS_MIN_BUILD_REQUIRED constant.
+		 * Gets the minimum required build numbers as stored in the CRAFT_MIN_BUILD_REQUIRED constant.
 		 *
 		 * @return mixed
 		 */
 		public function getMinRequiredBuild()
 		{
-			return Blocks::getMinRequiredBuild();
+			return Craft::getMinRequiredBuild();
 		}
 }

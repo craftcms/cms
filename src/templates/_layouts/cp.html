@@ -2,8 +2,8 @@
 {% includeCssResource "css/cp.css" first %}
 
 {% set body %}
-	{% if user.admin and blx.config.devMode %}
-		<div id="devmode" title="{{ '{app} is running in Dev Mode.'|t({ app: blx.config.appName }) }}"></div>
+	{% if user.admin and craft.config.devMode %}
+		<div id="devmode" title="{{ 'CraftCMS is running in Dev Mode.'|t }}"></div>
 	{% endif %}
 
 	<header id="header">
@@ -22,9 +22,9 @@
 
 			<nav>
 				<ul id="nav">
-					{% set firstSeg = blx.request.segment(1) %}
+					{% set firstSeg = craft.request.segment(1) %}
 					{% if firstSeg == 'myaccount' %}{% set firstSeg = 'users' %}{% endif %}
-					{% for handle, item in blx.cp.nav %}
+					{% for handle, item in craft.cp.nav %}
 						<li>
 							<a id="nav-{{ handle }}" class="{% if item.hasIcon is defined and item.hasIcon %}hasicon{% endif %} {% if firstSeg == handle %}sel{% endif %}" href="{{ url(handle) }}">
 								{{- item.name -}}
@@ -45,7 +45,7 @@
 	<div id="main-wrapper" class="centered">
 		<div id="notifications-wrapper">
 			<div id="notifications">
-				{% for type, message in blx.session.flashes %}
+				{% for type, message in craft.session.flashes %}
 					<div class="notification {{ type }}">{{ message }}</div>
 				{% endfor %}
 			</div>
@@ -107,6 +107,6 @@
 	</div>
 
 	<div id="version">
-		{{ blx.config.appName }} {{ blx.app.version }} build {{ blx.app.build }}
+		CraftCMS {{ craft.app.version }} build {{ craft.app.build }}
 	</div>
 {% endset %}

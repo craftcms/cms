@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -21,8 +21,8 @@ class FeedsService extends BaseApplicationComponent
 		$this->_registerSimplePieAutoloader();
 		$feed = new \SimplePie();
 		$feed->set_feed_url($url);
-		$feed->set_cache_location(blx()->path->getCachePath());
-		$feed->set_cache_duration(blx()->config->getCacheDuration());
+		$feed->set_cache_location(craft()->path->getCachePath());
+		$feed->set_cache_duration(craft()->config->getCacheDuration());
 		$feed->init();
 		//$feed->handle_content_type();
 
@@ -273,13 +273,13 @@ class FeedsService extends BaseApplicationComponent
 	{
 		if (!class_exists('\SimplePie_Autoloader', false))
 		{
-			require_once blx()->path->getLibPath().'SimplePie/autoloader.php';
-			Blocks::registerAutoloader(array(new \SimplePie_Autoloader, 'autoload'));
+			require_once craft()->path->getLibPath().'SimplePie/autoloader.php';
+			Craft::registerAutoloader(array(new \SimplePie_Autoloader, 'autoload'));
 
 			// Did it work?
 			if (!class_exists('SimplePie'))
 			{
-				throw new Exception(Blocks::t('The SimplePie autoloader was not registered properly.'));
+				throw new Exception(Craft::t('The SimplePie autoloader was not registered properly.'));
 			}
 		}
 	}

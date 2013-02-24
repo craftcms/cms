@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Field model class
@@ -13,7 +13,7 @@ class FieldModel extends BaseComponentModel
 	 */
 	function __toString()
 	{
-		return Blocks::t($this->name);
+		return Craft::t($this->name);
 	}
 
 	/**
@@ -38,6 +38,6 @@ class FieldModel extends BaseComponentModel
 	 */
 	public function getGroup()
 	{
-		return blx()->fields->getGroupById($this->groupId);
+		return craft()->fields->getGroupById($this->groupId);
 	}
 }

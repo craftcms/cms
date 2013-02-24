@@ -1,10 +1,10 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
- * Stores the info for a Blocks release.
+ * Stores the info for a Craft release.
  */
-class BlocksNewReleaseModel extends BaseModel
+class CraftNewReleaseModel extends BaseModel
 {
 	/**
 	 * @return array

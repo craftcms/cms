@@ -1,7 +1,7 @@
 (function($) {
 
 
-Blocks.Dashboard = Garnish.Base.extend({
+Craft.Dashboard = Garnish.Base.extend({
 
 	$alerts: null,
 	$container: null,
@@ -48,7 +48,7 @@ Blocks.Dashboard = Garnish.Base.extend({
 
 	setCols: function()
 	{
-		var totalCols = Math.floor(this.$container.width() / Blocks.Dashboard.minColWidth);
+		var totalCols = Math.floor(this.$container.width() / Craft.Dashboard.minColWidth);
 
 		if (totalCols == 0)
 		{
@@ -283,7 +283,7 @@ var Col = Garnish.Base.extend({
 });
 
 
-Blocks.dashboard = new Blocks.Dashboard();
+Craft.dashboard = new Craft.Dashboard();
 
 
 })(jQuery);

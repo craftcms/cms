@@ -1,7 +1,7 @@
 /**
  * FieldToggle
  */
-Blocks.FieldToggle = Garnish.Base.extend({
+Craft.FieldToggle = Garnish.Base.extend({
 
 	$toggle: null,
 	reverse: null,

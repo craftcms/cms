@@ -24,14 +24,14 @@
 /**
  * Image Upload tool.
  */
-Blocks.ImageUpload = Garnish.Base.extend({
+Craft.ImageUpload = Garnish.Base.extend({
 
 	_imageHandler: null,
 
 	init: function(settings)
 	{
-		this.setSettings(settings, Blocks.ImageUpload.defaults);
-		this._imageHandler = new Blocks.ImageHandler(settings);
+		this.setSettings(settings, Craft.ImageUpload.defaults);
+		this._imageHandler = new Craft.ImageHandler(settings);
 	}
 },
 {
@@ -74,7 +74,7 @@ Blocks.ImageUpload = Garnish.Base.extend({
 });
 
 
-Blocks.ImageHandler = Garnish.Base.extend({
+Craft.ImageHandler = Garnish.Base.extend({
 
 	modal: null,
 
@@ -87,24 +87,24 @@ Blocks.ImageHandler = Garnish.Base.extend({
 		var element = settings.uploadButton;
 		var options = {
 			element:    this.settings.uploadButton[0],
-			action:     Blocks.actionUrl + '/' + this.settings.uploadAction,
+			action:     Craft.actionUrl + '/' + this.settings.uploadAction,
 			params:     this.settings.postParameters,
 			multiple:   false,
 			onComplete: function(fileId, fileName, response)
 			{
 
-				if (Blocks.ImageUpload.$modalContainerDiv == null)
+				if (Craft.ImageUpload.$modalContainerDiv == null)
 				{
-					Blocks.ImageUpload.$modalContainerDiv = $('<div class="modal"></div>').addClass(settings.modalClass).appendTo(Garnish.$bod);
+					Craft.ImageUpload.$modalContainerDiv = $('<div class="modal"></div>').addClass(settings.modalClass).appendTo(Garnish.$bod);
 				}
 
 				if (response.html)
 				{
-					Blocks.ImageUpload.$modalContainerDiv.empty().append(response.html);
+					Craft.ImageUpload.$modalContainerDiv.empty().append(response.html);
 					if (!this.modal)
 					{
-						this.modal = new Blocks.ImageModal({postParameters: settings.postParameters, cropAction: settings.cropAction});
-						this.modal.setContainer(Blocks.ImageUpload.$modalContainerDiv);
+						this.modal = new Craft.ImageModal({postParameters: settings.postParameters, cropAction: settings.cropAction});
+						this.modal.setContainer(Craft.ImageUpload.$modalContainerDiv);
 						this.modal.imageHandler = _this;
 					}
 
@@ -119,9 +119,9 @@ Blocks.ImageHandler = Garnish.Base.extend({
 
 					setTimeout(function()
 					{
-						Blocks.ImageUpload.$modalContainerDiv.find('img').load(function()
+						Craft.ImageUpload.$modalContainerDiv.find('img').load(function()
 						{
-							var profileTool = new Blocks.ImageAreaTool(settings.areaToolOptions);
+							var profileTool = new Craft.ImageAreaTool(settings.areaToolOptions);
 							profileTool.showArea(modal);
 						});
 					}, 1);
@@ -134,7 +134,7 @@ Blocks.ImageHandler = Garnish.Base.extend({
 
 		};
 
-		options.sizeLimit = Blocks.maxUploadSize;
+		options.sizeLimit = Craft.maxUploadSize;
 
 		this.uploader = new qqUploader.FileUploader(options);
 
@@ -143,7 +143,7 @@ Blocks.ImageHandler = Garnish.Base.extend({
 			if (confirm(settings.deleteMessage))
 			{
 				$(this).parent().append('<div class="blocking-modal"></div>');
-				Blocks.postActionRequest(settings.deleteAction, settings.postParameters, $.proxy(function(response){
+				Craft.postActionRequest(settings.deleteAction, settings.postParameters, $.proxy(function(response){
 					_this.onImageDelete.apply(_this, [response]);
 				}, this));
 
@@ -163,7 +163,7 @@ Blocks.ImageHandler = Garnish.Base.extend({
 });
 
 
-Blocks.ImageModal = Garnish.Modal.extend({
+Craft.ImageModal = Garnish.Modal.extend({
 
 	$container: null,
 	$saveBtn: null,
@@ -211,7 +211,7 @@ Blocks.ImageModal = Garnish.Modal.extend({
 
 		params = $.extend(this._postParameters, params);
 
-		Blocks.postActionRequest(this._cropAction, params, $.proxy(function(response)
+		Craft.postActionRequest(this._cropAction, params, $.proxy(function(response)
 		{
 
 			if (response.error)
@@ -240,13 +240,13 @@ Blocks.ImageModal = Garnish.Modal.extend({
 });
 
 
-Blocks.ImageAreaTool = Garnish.Base.extend({
+Craft.ImageAreaTool = Garnish.Base.extend({
 
 	$container: null,
 
 	init: function(settings)
 	{
-		this.$container = Blocks.ImageUpload.$modalContainerDiv;
+		this.$container = Craft.ImageUpload.$modalContainerDiv;
 		this.setSettings(settings);
 	},
 

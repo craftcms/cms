@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::Users);
+Craft::requirePackage(CraftPackage::Users);
 
 /**
  * Handles user group tasks
@@ -16,23 +16,23 @@ class UserSettingsController extends BaseController
 		$this->requirePostRequest();
 
 		$group = new UserGroupModel();
-		$group->id = blx()->request->getPost('groupId');
-		$group->name = blx()->request->getPost('name');
-		$group->handle = blx()->request->getPost('handle');
+		$group->id = craft()->request->getPost('groupId');
+		$group->name = craft()->request->getPost('name');
+		$group->handle = craft()->request->getPost('handle');
 
 		// Did it save?
-		if (blx()->userGroups->saveGroup($group))
+		if (craft()->userGroups->saveGroup($group))
 		{
 			// Save the new permissions
-			$permissions = blx()->request->getPost('permissions', array());
-			blx()->userPermissions->saveGroupPermissions($group->id, $permissions);
+			$permissions = craft()->request->getPost('permissions', array());
+			craft()->userPermissions->saveGroupPermissions($group->id, $permissions);
 
-			blx()->userSession->setNotice(Blocks::t('Group saved.'));
+			craft()->userSession->setNotice(Craft::t('Group saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save group.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save group.'));
 		}
 
 		// Reload the original template
@@ -49,9 +49,9 @@ class UserSettingsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$groupId = blx()->request->getRequiredPost('id');
+		$groupId = craft()->request->getRequiredPost('id');
 
-		blx()->userGroups->deleteGroupById($groupId);
+		craft()->userGroups->deleteGroupById($groupId);
 
 		$this->returnJson(array('success' => true));
 	}
@@ -64,16 +64,16 @@ class UserSettingsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAdmin();
 
-		$settings['allowPublicRegistration'] = (bool) blx()->request->getPost('allowPublicRegistration');
+		$settings['allowPublicRegistration'] = (bool) craft()->request->getPost('allowPublicRegistration');
 
-		if (blx()->systemSettings->saveSettings('users', $settings))
+		if (craft()->systemSettings->saveSettings('users', $settings))
 		{
-			blx()->userSession->setNotice(Blocks::t('User settings saved.'));
+			craft()->userSession->setNotice(Craft::t('User settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save user settings.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save user settings.'));
 
 			$this->renderRequestedTemplate(array(
 				'settings' => $settings

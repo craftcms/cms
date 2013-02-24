@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * The class name is the UTC timestamp in the format of {MigrationNameDesc}

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -21,11 +21,11 @@ class m130215_120000_delete_activity_table extends BaseMigration
 			$this->dropTableIfExists('{{activity}}');
 
 			// Remove it so the auto-updater doesn't choke at the end of this request.
-			blx()->log->removeRoute('Blocks\\DbLogRoute');
+			craft()->log->removeRoute('Craft\\DbLogRoute');
 		}
 		else
 		{
-			Blocks::log('There is no `activity` table.');
+			Craft::log('There is no `activity` table.');
 		}
 	}
 }

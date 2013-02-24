@@ -76,7 +76,7 @@ var LoginForm = Garnish.Base.extend({
 			loginName: this.$loginNameInput.val()
 		};
 
-		Blocks.postActionRequest('users/forgotPassword', data, $.proxy(function(response) {
+		Craft.postActionRequest('users/forgotPassword', data, $.proxy(function(response) {
 			if (response.success)
 			{
 				new MessageSentModal();
@@ -98,7 +98,7 @@ var LoginForm = Garnish.Base.extend({
 			rememberMe: (this.$rememberMeCheckbox.prop('checked') ? 'y' : '')
 		};
 
-		Blocks.postActionRequest('users/login', data, $.proxy(function(response) {
+		Craft.postActionRequest('users/login', data, $.proxy(function(response) {
 			if (response.success)
 			{
 				window.location = window.returnUrl;
@@ -114,7 +114,7 @@ var LoginForm = Garnish.Base.extend({
 				if (response.errorCode == 2)
 				{
 					$('<br/>').appendTo(this.$error);
-					var $forgotPasswordLink = $('<a>'+Blocks.t('Forget your password?')+'</a>').appendTo(this.$error);
+					var $forgotPasswordLink = $('<a>'+Craft.t('Forget your password?')+'</a>').appendTo(this.$error);
 					this.addListener($forgotPasswordLink, 'mousedown', 'onForgetPassword');
 				}
 			}
@@ -133,7 +133,7 @@ var LoginForm = Garnish.Base.extend({
 	showError: function(error)
 	{
 		if (!error)
-			error = Blocks.t('An unknown error occurred.');
+			error = Craft.t('An unknown error occurred.');
 
 		this.$error = $('<p class="error" style="display:none">'+error+'</p>').appendTo(this.$form);
 		this.$error.fadeIn();
@@ -153,7 +153,7 @@ var LoginForm = Garnish.Base.extend({
 		this.$form.animate({marginTop: newFormTopMargin}, 'fast');
 		this.$loginFields.animate({height: 0}, 'fast');
 
-		this.$submitBtn.find('span').html(Blocks.t('Reset Password'));
+		this.$submitBtn.find('span').html(Craft.t('Reset Password'));
 		this.$submitBtn.enable();
 		this.$submitBtn.removeAttr('data-icon');
 
@@ -167,7 +167,7 @@ var MessageSentModal = Garnish.Modal.extend({
 
 	init: function()
 	{
-		var $container = $('<div class="pane email-sent">'+Blocks.t('Check your email for instructions to reset your password.')+'</div>')
+		var $container = $('<div class="pane email-sent">'+Craft.t('Check your email for instructions to reset your password.')+'</div>')
 			.appendTo(Garnish.$bod);
 
 		this.base($container);

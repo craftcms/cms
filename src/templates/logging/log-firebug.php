@@ -23,18 +23,18 @@ if (typeof(console) == 'object')
 
 	$serverInfo = substr($environmentData[0], $serverPos);
 
-	Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $getInfo, Blocks\Blocks::t('GET Info'));
-	Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $cookieInfo, Blocks\Blocks::t('COOKIE Info'));
+	Craft\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $getInfo, Craft\Craft::t('GET Info'));
+	Craft\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $cookieInfo, Craft\Craft::t('COOKIE Info'));
 	if ($sessionInfo)
 	{
-		Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $sessionInfo, Blocks\Blocks::t('SESSION Info'));
+		Craft\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $sessionInfo, Craft\Craft::t('SESSION Info'));
 	}
-	Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $serverInfo, Blocks\Blocks::t('SERVER Info'));
+	Craft\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $serverInfo, Craft\Craft::t('SERVER Info'));
 
 	echo "\tconsole.groupCollapsed(\"Logs\");\n";
 	foreach ($data as $index => $log)
 	{
-		Blocks\LoggingHelper::processFireBugLogEntry($log[1], $log[3], $log[2], $log[0]);
+		Craft\LoggingHelper::processFireBugLogEntry($log[1], $log[3], $log[2], $log[0]);
 	}
 	echo "\tconsole.groupEnd();\n";
 

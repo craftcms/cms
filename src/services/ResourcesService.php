@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -26,7 +26,7 @@ class ResourcesService extends BaseApplicationComponent
 				case 'js':
 				{
 					// Route to js/compressed/ if useCompressedJs is enabled
-					if (blx()->config->get('useCompressedJs'))
+					if (craft()->config->get('useCompressedJs'))
 					{
 						array_splice($segs, 1, 0, 'compressed');
 						$path = implode('/', $segs);
@@ -43,7 +43,7 @@ class ResourcesService extends BaseApplicationComponent
 							return false;
 						}
 
-						return blx()->path->getTempUploadsPath().'userphotos/'.$segs[2].'/'.$segs[3];
+						return craft()->path->getTempUploadsPath().'userphotos/'.$segs[2].'/'.$segs[3];
 					}
 					else
 					{
@@ -56,7 +56,7 @@ class ResourcesService extends BaseApplicationComponent
 						$size     = IOHelper::cleanFilename($segs[2]);
 						$filename = IOHelper::cleanFilename($segs[3]);
 
-						$userPhotosPath = blx()->path->getUserPhotosPath().$username.'/';
+						$userPhotosPath = craft()->path->getUserPhotosPath().$username.'/';
 						$sizedPhotoFolder = $userPhotosPath.$size.'/';
 						$sizedPhotoPath = $sizedPhotoFolder.$filename;
 
@@ -72,7 +72,7 @@ class ResourcesService extends BaseApplicationComponent
 
 							IOHelper::ensureFolderExists($sizedPhotoFolder);
 
-							blx()->images->loadImage($originalPhotoPath)
+							craft()->images->loadImage($originalPhotoPath)
 								->resizeTo($size)
 								->saveAs($sizedPhotoPath);
 						}
@@ -84,7 +84,7 @@ class ResourcesService extends BaseApplicationComponent
 				case 'tempuploads':
 				{
 					array_shift($segs);
-					return blx()->path->getTempUploadsPath().implode('/', $segs);
+					return craft()->path->getTempUploadsPath().implode('/', $segs);
 				}
 
 				case 'assetthumbs':
@@ -94,16 +94,16 @@ class ResourcesService extends BaseApplicationComponent
 						return false;
 					}
 
-					$fileModel = blx()->assets->getFileById($segs[1]);
+					$fileModel = craft()->assets->getFileById($segs[1]);
 					if (empty($fileModel))
 					{
 						return false;
 					}
 
-					$sourceType = blx()->assetSources->getSourceTypeById($fileModel->sourceId);
+					$sourceType = craft()->assetSources->getSourceTypeById($fileModel->sourceId);
 
 					$size = IOHelper::cleanFilename($segs[2]);
-					$thumbFolder = blx()->path->getAssetsThumbsPath().$size.'/';
+					$thumbFolder = craft()->path->getAssetsThumbsPath().$size.'/';
 					IOHelper::ensureFolderExists($thumbFolder);
 
 					$thumbPath = $thumbFolder.$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
@@ -115,7 +115,7 @@ class ResourcesService extends BaseApplicationComponent
 						{
 							return false;
 						}
-						blx()->images->loadImage($sourcePath)
+						craft()->images->loadImage($sourcePath)
 							->scale($size, $size)
 							->saveAs($thumbPath);
 					}
@@ -125,13 +125,13 @@ class ResourcesService extends BaseApplicationComponent
 
 				case 'logo':
 				{
-					return blx()->path->getStoragePath().implode('/', $segs);
+					return craft()->path->getStoragePath().implode('/', $segs);
 				}
 			}
 		}
 
 		// Check app/resources folder first.
-		$appResourcePath = blx()->path->getResourcesPath().$path;
+		$appResourcePath = craft()->path->getResourcesPath().$path;
 
 		if (IOHelper::fileExists($appResourcePath))
 		{
@@ -141,7 +141,7 @@ class ResourcesService extends BaseApplicationComponent
 		// See if the first segment is a plugin handle.
 		if (isset($segs[0]))
 		{
-			$pluginResourcePath = blx()->path->getPluginsPath().$segs[0].'/'.'resources/'.implode('/', array_splice($segs, 1));
+			$pluginResourcePath = craft()->path->getPluginsPath().$segs[0].'/'.'resources/'.implode('/', array_splice($segs, 1));
 
 			if (IOHelper::fileExists($pluginResourcePath))
 			{
@@ -150,7 +150,7 @@ class ResourcesService extends BaseApplicationComponent
 		}
 
 		// Maybe a plugin wants to do something custom with this URL
-		$pluginPaths = blx()->plugins->callHook('getResourcePath', array($path));
+		$pluginPaths = craft()->plugins->callHook('getResourcePath', array($path));
 		foreach ($pluginPaths as $path)
 		{
 			if ($path && IOHelper::fileExists($path))
@@ -197,20 +197,20 @@ class ResourcesService extends BaseApplicationComponent
 			$content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', array(&$this, '_normalizeCssUrl'), $content);
 		}
 
-		if (!blx()->config->get('useXSendFile'))
+		if (!craft()->config->get('useXSendFile'))
 		{
 			$options['forceDownload'] = false;
 
-			if (blx()->request->getQuery($this->dateParam))
+			if (craft()->request->getQuery($this->dateParam))
 			{
 				$options['cache'] = true;
 			}
 
-			blx()->request->sendFile($path, $content, $options);
+			craft()->request->sendFile($path, $content, $options);
 		}
 		else
 		{
-			blx()->request->xSendFile($path);
+			craft()->request->xSendFile($path);
 		}
 
 		exit(1);
@@ -229,10 +229,10 @@ class ResourcesService extends BaseApplicationComponent
 			return $match[0];
 		}
 
-		$url = IOHelper::getFolderName(blx()->request->getPath()).$match[3];
+		$url = IOHelper::getFolderName(craft()->request->getPath()).$match[3];
 
 		// Make sure this is a resource URL
-		$resourceTrigger = blx()->config->get('resourceTrigger');
+		$resourceTrigger = craft()->config->get('resourceTrigger');
 		$resourceTriggerPos = strpos($url, $resourceTrigger);
 		if ($resourceTriggerPos !== false)
 		{

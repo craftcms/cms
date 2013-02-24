@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -20,7 +20,7 @@ class MigrateCommand extends \MigrateCommand
 			{
 				$plugin = $params[0][2];
 
-				$path = blx()->path->getMigrationsPath($plugin);
+				$path = craft()->path->getMigrationsPath($plugin);
 
 				if (!IOHelper::folderExists($path))
 				{
@@ -39,8 +39,8 @@ class MigrateCommand extends \MigrateCommand
 			}
 		}
 
-		$yiiVersion = Blocks::getYiiVersion();
-		echo "\nBlocks Migration Tool (based on Yii v{$yiiVersion})\n\n";
+		$yiiVersion = Craft::getYiiVersion();
+		echo "\nCraftCMS Migration Tool (based on Yii v{$yiiVersion})\n\n";
 
 		return true;
 	}
@@ -91,7 +91,7 @@ class MigrateCommand extends \MigrateCommand
 		if (isset($args[1]))
 		{
 			// See if this is a plugin
-			$plugin = blx()->plugins->getPlugin($args[1]);
+			$plugin = craft()->plugins->getPlugin($args[1]);
 			if ($plugin)
 			{
 				$name = $args[0];
@@ -131,15 +131,15 @@ class MigrateCommand extends \MigrateCommand
 			$migrationNameDesc = 'mYYMMDD_HHMMSS_pluginHandle_migrationName';
 
 			// The plugin path should always be the plugin's migration directory.
-			$path = blx()->path->getMigrationsPath($pluginHandle);
+			$path = craft()->path->getMigrationsPath($pluginHandle);
 		}
 		else
 		{
-			// The plugin path for Blocks can vary.
+			// The plugin path for Craft can vary.
 			$path = rtrim(IOHelper::normalizePathSeparators($args[0]), '/').'/';
 		}
 
-		$content = strtr(blx()->migrations->getTemplate(), array('{ClassName}' => $fullName, '{MigrationNameDesc}' => $migrationNameDesc));
+		$content = strtr(craft()->migrations->getTemplate(), array('{ClassName}' => $fullName, '{MigrationNameDesc}' => $migrationNameDesc));
 		$file = $path.$fullName.'.php';
 
 		if ($this->confirm("Create new migration '$file'?"))
@@ -158,7 +158,7 @@ class MigrateCommand extends \MigrateCommand
 		if (isset($args[0]))
 		{
 			$plugin = $this->_validatePlugin($args[0]);
-			if (blx()->migrations->runToTop($plugin))
+			if (craft()->migrations->runToTop($plugin))
 			{
 				echo "Migrated ".$plugin->getClassHandle()." to top successfully.\n";
 				return 0;
@@ -170,14 +170,14 @@ class MigrateCommand extends \MigrateCommand
 			}
 		}
 
-		if (blx()->migrations->runToTop())
+		if (craft()->migrations->runToTop())
 		{
-			echo "Migrated Blocks to top successfully.\n";
+			echo "Migrated CraftCMS to top successfully.\n";
 			return 0;
 		}
 		else
 		{
-			echo "There was a problem migrating Blocks to top. Check the logs.\n";
+			echo "There was a problem migrating CraftCMS to top. Check the logs.\n";
 			return 1;
 		}
 	}
@@ -209,7 +209,7 @@ class MigrateCommand extends \MigrateCommand
 		{
 			if ($plugin === 'all')
 			{
-				echo "No migration has been ran for Blocks or any plugins.\n";
+				echo "No migration has been ran for CraftCMS or any plugins.\n";
 			}
 			else if ($plugin)
 			{
@@ -227,7 +227,7 @@ class MigrateCommand extends \MigrateCommand
 
 			if ($plugin === 'all')
 			{
-				echo "A total of $n ".($n === 1 ? 'migration has' : 'migrations have')." been applied before for Blocks and all plugins:\n";
+				echo "A total of $n ".($n === 1 ? 'migration has' : 'migrations have')." been applied before for CraftCMS and all plugins:\n";
 			}
 			else if ($plugin)
 			{
@@ -267,7 +267,7 @@ class MigrateCommand extends \MigrateCommand
 			}
 			else
 			{
-				echo "No new migrations found. Blocks is up-to-date.\n";
+				echo "No new migrations found. CraftCMS is up-to-date.\n";
 			}
 
 		}
@@ -297,7 +297,7 @@ class MigrateCommand extends \MigrateCommand
 	 */
 	protected function getMigrationHistory($plugin = null)
 	{
-		$migrations = blx()->migrations->getMigrationHistory($plugin);
+		$migrations = craft()->migrations->getMigrationHistory($plugin);
 
 		// Convert the dates to Unix timestamps
 		foreach ($migrations as &$migration)
@@ -314,7 +314,7 @@ class MigrateCommand extends \MigrateCommand
 	 */
 	protected function getNewMigrations($plugin = null)
 	{
-		return blx()->migrations->getNewMigrations($plugin);
+		return craft()->migrations->getNewMigrations($plugin);
 	}
 
 	/**
@@ -322,7 +322,7 @@ class MigrateCommand extends \MigrateCommand
 	 */
 	public function getTemplate()
 	{
-		return blx()->migrations->getTemplate();
+		return craft()->migrations->getTemplate();
 	}
 
 	/**
@@ -331,7 +331,7 @@ class MigrateCommand extends \MigrateCommand
 	 */
 	private function _validatePlugin($pluginHandle)
 	{
-		$plugin = blx()->plugins->getPlugin($pluginHandle);
+		$plugin = craft()->plugins->getPlugin($pluginHandle);
 
 		if (!$plugin)
 		{

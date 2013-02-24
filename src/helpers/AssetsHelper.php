@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -22,7 +22,7 @@ class AssetsHelper
 		$extension = preg_replace('/[^a-z]/i', '', $extension);
 		$fileName = uniqid('assets', true) . '.' . $extension;
 
-		return IOHelper::createFile(blx()->path->getTempPath() . $fileName)->getRealPath();
+		return IOHelper::createFile(craft()->path->getTempPath() . $fileName)->getRealPath();
 	}
 }
 

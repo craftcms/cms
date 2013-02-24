@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::Users);
+Craft::requirePackage(CraftPackage::Users);
 
 /**
  * User permission functions
@@ -15,7 +15,7 @@ class UserPermissionsVariable
 	 */
 	public function getAllPermissions()
 	{
-		return blx()->userPermissions->getAllPermissions();
+		return craft()->userPermissions->getAllPermissions();
 	}
 
 	/**
@@ -26,6 +26,6 @@ class UserPermissionsVariable
 	 */
 	public function getGroupPermissionsByUserId($userId)
 	{
-		return blx()->userPermissions->getGroupPermissionsByUserId($userId);
+		return craft()->userPermissions->getGroupPermissionsByUserId($userId);
 	}
 }

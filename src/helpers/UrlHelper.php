@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -26,9 +26,9 @@ class UrlHelper
 
 		$path = trim($path, '/');
 
-		if (blx()->request->isCpRequest())
+		if (craft()->request->isCpRequest())
 		{
-			$path = blx()->config->get('cpTrigger').($path ? '/'.$path : '');
+			$path = craft()->config->get('cpTrigger').($path ? '/'.$path : '');
 			$dynamicBaseUrl = true;
 		}
 		else
@@ -51,7 +51,7 @@ class UrlHelper
 	public static function getCpUrl($path = '', $params = null, $protocol = '')
 	{
 		$path = trim($path, '/');
-		$path = blx()->config->get('cpTrigger').'/'.$path;
+		$path = craft()->config->get('cpTrigger').'/'.$path;
 
 		return static::_getUrl($path, $params, $protocol, true, false);
 	}
@@ -83,12 +83,12 @@ class UrlHelper
 	public static function getResourceUrl($path = '', $params = null, $protocol = '')
 	{
 		$path = $origPath = trim($path, '/');
-		$path = blx()->config->get('resourceTrigger').'/'.$path;
+		$path = craft()->config->get('resourceTrigger').'/'.$path;
 
-		// Add timestamp to the resource URL for caching, if Blocks is not operating in dev mode
-		if ($origPath && !blx()->config->get('devMode'))
+		// Add timestamp to the resource URL for caching, if Craft is not operating in dev mode
+		if ($origPath && !craft()->config->get('devMode'))
 		{
-			$realPath = blx()->resources->getResourcePath($origPath);
+			$realPath = craft()->resources->getResourcePath($origPath);
 
 			if ($realPath)
 			{
@@ -97,7 +97,7 @@ class UrlHelper
 					$params = array($params);
 				}
 
-				$dateParam = blx()->resources->dateParam;
+				$dateParam = craft()->resources->dateParam;
 				$timeModified = IOHelper::getLastTimeModified($realPath);
 				$params[$dateParam] = $timeModified->getTimestamp();
 			}
@@ -115,7 +115,7 @@ class UrlHelper
 	 */
 	public static function getActionUrl($path = '', $params = null, $protocol = '')
 	{
-		$path = blx()->config->get('actionTrigger').'/'.trim($path, '/');
+		$path = craft()->config->get('actionTrigger').'/'.trim($path, '/');
 		return static::getUrl($path, $params, $protocol, true);
 	}
 
@@ -163,31 +163,31 @@ class UrlHelper
 
 		if ($dynamicBaseUrl)
 		{
-			$baseUrl = blx()->request->getHostInfo($protocol).blx()->urlManager->getBaseUrl();
+			$baseUrl = craft()->request->getHostInfo($protocol).craft()->urlManager->getBaseUrl();
 
-			if (!$mustShowScriptName && blx()->config->omitScriptNameInUrls())
+			if (!$mustShowScriptName && craft()->config->omitScriptNameInUrls())
 			{
 				$baseUrl = substr($baseUrl, 0, strrpos($baseUrl, '/'));
 			}
 		}
 		else
 		{
-			$baseUrl = Blocks::getSiteUrl();
+			$baseUrl = Craft::getSiteUrl();
 
-			if ($mustShowScriptName || !blx()->config->omitScriptNameInUrls())
+			if ($mustShowScriptName || !craft()->config->omitScriptNameInUrls())
 			{
-				$baseUrl .= strrchr(blx()->urlManager->getBaseUrl(), '/');
+				$baseUrl .= strrchr(craft()->urlManager->getBaseUrl(), '/');
 			}
 		}
 
 		// Put it all together
-		if (blx()->config->usePathInfo())
+		if (craft()->config->usePathInfo())
 		{
 			return $baseUrl.($path ? '/'.$path : '').($params ? '?'.$params : '').$anchor;
 		}
 		else
 		{
-			$pathParam = blx()->urlManager->pathParam;
+			$pathParam = craft()->urlManager->pathParam;
 			return $baseUrl.($path || $params ? '?'.($path ? $pathParam.'='.$path : '').($path && $params ? '&' : '').$params : '').$anchor;
 		}
 	}

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Handles asset source tasks
@@ -14,29 +14,29 @@ class AssetSourcesController extends BaseController
 		$this->requirePostRequest();
 
 		$source = new AssetSourceModel();
-		$source->id = blx()->request->getPost('sourceId');
-		$source->name = blx()->request->getPost('name');
+		$source->id = craft()->request->getPost('sourceId');
+		$source->name = craft()->request->getPost('name');
 
-		if (Blocks::hasPackage(BlocksPackage::Cloud))
+		if (Craft::hasPackage(CraftPackage::Cloud))
 		{
-			$source->type = blx()->request->getPost('type');
+			$source->type = craft()->request->getPost('type');
 		}
 
-		$typeSettings = blx()->request->getPost('types');
+		$typeSettings = craft()->request->getPost('types');
 		if (isset($typeSettings[$source->type]))
 		{
 			$source->settings = $typeSettings[$source->type];
 		}
 
 		// Did it save?
-		if (blx()->assetSources->saveSource($source))
+		if (craft()->assetSources->saveSource($source))
 		{
-			blx()->userSession->setNotice(Blocks::t('Source saved.'));
+			craft()->userSession->setNotice(Craft::t('Source saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save source.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save source.'));
 		}
 
 		// Reload the original template
@@ -53,8 +53,8 @@ class AssetSourcesController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$sourceIds = JsonHelper::decode(blx()->request->getRequiredPost('ids'));
-		blx()->assetSources->reorderSources($sourceIds);
+		$sourceIds = JsonHelper::decode(craft()->request->getRequiredPost('ids'));
+		craft()->assetSources->reorderSources($sourceIds);
 
 		$this->returnJson(array('success' => true));
 	}
@@ -67,9 +67,9 @@ class AssetSourcesController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$sourceId = blx()->request->getRequiredPost('id');
+		$sourceId = craft()->request->getRequiredPost('id');
 
-		blx()->assetSources->deleteSourceById($sourceId);
+		craft()->assetSources->deleteSourceById($sourceId);
 
 		$this->returnJson(array('success' => true));
 	}
@@ -79,10 +79,10 @@ class AssetSourcesController extends BaseController
 	 */
 	public function actionGetS3Buckets()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Cloud))
+		if (Craft::hasPackage(CraftPackage::Cloud))
 		{
-			$keyId = blx()->request->getRequiredPost('keyId');
-			$secret = blx()->request->getRequiredPost('secret');
+			$keyId = craft()->request->getRequiredPost('keyId');
+			$secret = craft()->request->getRequiredPost('secret');
 
 			try
 			{

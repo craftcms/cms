@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -16,7 +16,7 @@ class IncludeResource_Node extends \Twig_Node
 
 		$compiler
 			->addDebugInfo($this)
-			->write('\Blocks\blx()->templates->'.$function.'(')
+			->write('\Craft\craft()->templates->'.$function.'(')
 			->subcompile($path);
 
 		if ($this->getAttribute('first'))

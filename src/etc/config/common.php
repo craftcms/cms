@@ -1,33 +1,33 @@
 <?php
 
-Yii::setPathOfAlias('app', BLOCKS_APP_PATH);
-Yii::setPathOfAlias('plugins', BLOCKS_PLUGINS_PATH);
+Yii::setPathOfAlias('app', CRAFT_APP_PATH);
+Yii::setPathOfAlias('plugins', CRAFT_PLUGINS_PATH);
 
 // Load the configs
-$generalConfig = require_once(BLOCKS_APP_PATH.'etc/config/defaults/general.php');
-$dbConfig = require_once(BLOCKS_APP_PATH.'etc/config/defaults/db.php');
+$generalConfig = require_once(CRAFT_APP_PATH.'etc/config/defaults/general.php');
+$dbConfig = require_once(CRAFT_APP_PATH.'etc/config/defaults/db.php');
 
-if (file_exists(BLOCKS_CONFIG_PATH.'general.php'))
+if (file_exists(CRAFT_CONFIG_PATH.'general.php'))
 {
-	if (is_array($_generalConfig = require_once(BLOCKS_CONFIG_PATH.'general.php')))
+	if (is_array($_generalConfig = require_once(CRAFT_CONFIG_PATH.'general.php')))
 	{
 		$generalConfig = array_merge($generalConfig, $_generalConfig);
 	}
 }
-else if (file_exists(BLOCKS_CONFIG_PATH.'blocks.php'))
+else if (file_exists(CRAFT_CONFIG_PATH.'craft.php'))
 {
-	if (is_array($_generalConfig = require_once(BLOCKS_CONFIG_PATH.'blocks.php')))
+	if (is_array($_generalConfig = require_once(CRAFT_CONFIG_PATH.'craft.php')))
 	{
 		$generalConfig = array_merge($generalConfig, $_generalConfig);
 	}
-	else if (isset($blocksConfig))
+	else if (isset($craftConfig))
 	{
-		$generalConfig = array_merge($generalConfig, $blocksConfig);
-		unset($blocksConfig);
+		$generalConfig = array_merge($generalConfig, $craftConfig);
+		unset($craftConfig);
 	}
 }
 
-if (is_array($_dbConfig = require_once(BLOCKS_CONFIG_PATH.'db.php')))
+if (is_array($_dbConfig = require_once(CRAFT_CONFIG_PATH.'db.php')))
 {
 	$dbConfig = array_merge($dbConfig, $_dbConfig);
 }
@@ -38,7 +38,7 @@ if ($generalConfig['devMode'] == true)
 	error_reporting(E_ALL & ~E_STRICT);
 	ini_set('display_errors', 1);
 	ini_set('log_errors', 1);
-	ini_set('error_log', BLOCKS_STORAGE_PATH.'runtime/logs/phperrors.log');
+	ini_set('error_log', CRAFT_STORAGE_PATH.'runtime/logs/phperrors.log');
 }
 else
 {
@@ -58,7 +58,7 @@ if ($tablePrefix)
 	$tablePrefix .= '_';
 }
 
-$packages = explode(',', BLOCKS_PACKAGES);
+$packages = explode(',', CRAFT_PACKAGES);
 
 $configArray = array(
 
@@ -82,17 +82,17 @@ $configArray = array(
 			'password'          => $dbConfig['password'],
 			'charset'           => $dbConfig['charset'],
 			'tablePrefix'       => $tablePrefix,
-			'driverMap'         => array('mysql' => 'Blocks\MysqlSchema'),
-			'class'             => 'Blocks\DbConnection',
-			'pdoClass'          => 'Blocks\PDO',
+			'driverMap'         => array('mysql' => 'Craft\MysqlSchema'),
+			'class'             => 'Craft\DbConnection',
+			'pdoClass'          => 'Craft\PDO',
 		),
 
 		'config' => array(
-			'class' => 'Blocks\ConfigService',
+			'class' => 'Craft\ConfigService',
 		),
 
 		'i18n' => array(
-			'class' => 'Blocks\LocalizationService',
+			'class' => 'Craft\LocalizationService',
 		),
 
 		'formatter' => array(
@@ -168,41 +168,41 @@ $cpRoutes['pkgRoutes']['Users']['settings\/users\/groups\/(?P<groupId>\d+)'] = '
 //  Component config
 // -------------------------------------------
 
-$components['users']['class']                = 'Blocks\UsersService';
-$components['assets']['class']               = 'Blocks\AssetsService';
-$components['assetTransformations']['class'] = 'Blocks\AssetTransformationsService';
-$components['assetIndexing']['class']        = 'Blocks\AssetIndexingService';
-$components['assetSources']['class']         = 'Blocks\AssetSourcesService';
+$components['users']['class']                = 'Craft\UsersService';
+$components['assets']['class']               = 'Craft\AssetsService';
+$components['assetTransformations']['class'] = 'Craft\AssetTransformationsService';
+$components['assetIndexing']['class']        = 'Craft\AssetIndexingService';
+$components['assetSources']['class']         = 'Craft\AssetSourcesService';
 
-$components['dashboard']['class']            = 'Blocks\DashboardService';
-$components['email']['class']                = 'Blocks\EmailService';
-$components['elements']['class']             = 'Blocks\ElementsService';
-$components['entries']['class']              = 'Blocks\EntriesService';
-$components['et']['class']                   = 'Blocks\EtService';
-$components['feeds']['class']                = 'Blocks\FeedsService';
-$components['fields']['class']               = 'Blocks\FieldsService';
-$components['fieldTypes']['class']           = 'Blocks\FieldTypesService';
-$components['globals']['class']              = 'Blocks\GlobalsService';
-$components['install']['class']              = 'Blocks\InstallService';
-$components['images']['class']               = 'Blocks\ImagesService';
-$components['links']['class']                = 'Blocks\LinksService';
-$components['migrations']['class']           = 'Blocks\MigrationsService';
-$components['path']['class']                 = 'Blocks\PathService';
-$components['plugins']['class']              = 'Blocks\PluginsService';
-$components['sections']['class']             = 'Blocks\SectionsService';
-$components['singletons']['class']           = 'Blocks\SingletonsService';
+$components['dashboard']['class']            = 'Craft\DashboardService';
+$components['email']['class']                = 'Craft\EmailService';
+$components['elements']['class']             = 'Craft\ElementsService';
+$components['entries']['class']              = 'Craft\EntriesService';
+$components['et']['class']                   = 'Craft\EtService';
+$components['feeds']['class']                = 'Craft\FeedsService';
+$components['fields']['class']               = 'Craft\FieldsService';
+$components['fieldTypes']['class']           = 'Craft\FieldTypesService';
+$components['globals']['class']              = 'Craft\GlobalsService';
+$components['install']['class']              = 'Craft\InstallService';
+$components['images']['class']               = 'Craft\ImagesService';
+$components['links']['class']                = 'Craft\LinksService';
+$components['migrations']['class']           = 'Craft\MigrationsService';
+$components['path']['class']                 = 'Craft\PathService';
+$components['plugins']['class']              = 'Craft\PluginsService';
+$components['sections']['class']             = 'Craft\SectionsService';
+$components['singletons']['class']           = 'Craft\SingletonsService';
 
-$components['resources']['class']            = 'Blocks\ResourcesService';
+$components['resources']['class']            = 'Craft\ResourcesService';
 $components['resources']['dateParam']        = 'd';
 
-$components['routes']['class']               = 'Blocks\RoutesService';
-$components['security']['class']             = 'Blocks\SecurityService';
-$components['systemSettings']['class']       = 'Blocks\SystemSettingsService';
-$components['templates']['class']            = 'Blocks\TemplatesService';
-$components['updates']['class']              = 'Blocks\UpdatesService';
+$components['routes']['class']               = 'Craft\RoutesService';
+$components['security']['class']             = 'Craft\SecurityService';
+$components['systemSettings']['class']       = 'Craft\SystemSettingsService';
+$components['templates']['class']            = 'Craft\TemplatesService';
+$components['updates']['class']              = 'Craft\UpdatesService';
 
 $components['components'] = array(
-	'class' => 'Blocks\ComponentsService',
+	'class' => 'Craft\ComponentsService',
 	'types' => array(
 		'assetSource' => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSourceType', 'baseClass' => 'BaseAssetSourceType'),
 		'element'     => array('subfolder' => 'elementtypes', 'suffix' => 'ElementType', 'baseClass' => 'BaseElementType'),
@@ -212,53 +212,53 @@ $components['components'] = array(
 );
 
 // Publish Pro package components
-$components['pkgComponents']['PublishPro']['entryRevisions']['class'] = 'Blocks\EntryRevisionsService';
+$components['pkgComponents']['PublishPro']['entryRevisions']['class'] = 'Craft\EntryRevisionsService';
 
 
 // Users package components
-$components['pkgComponents']['Users']['userGroups']['class']      = 'Blocks\UserGroupsService';
-$components['pkgComponents']['Users']['userPermissions']['class'] = 'Blocks\UserPermissionsService';
+$components['pkgComponents']['Users']['userGroups']['class']      = 'Craft\UserGroupsService';
+$components['pkgComponents']['Users']['userPermissions']['class'] = 'Craft\UserPermissionsService';
 
 // Rebrand package components
-$components['pkgComponents']['Rebrand']['emailMessages']['class'] = 'Blocks\EmailMessagesService';
+$components['pkgComponents']['Rebrand']['emailMessages']['class'] = 'Craft\EmailMessagesService';
 
-$components['file']['class'] = 'Blocks\File';
-$components['messages']['class'] = 'Blocks\PhpMessageSource';
-$components['request']['class'] = 'Blocks\HttpRequestService';
+$components['file']['class'] = 'Craft\File';
+$components['messages']['class'] = 'Craft\PhpMessageSource';
+$components['request']['class'] = 'Craft\HttpRequestService';
 $components['request']['enableCookieValidation'] = true;
-$components['viewRenderer']['class'] = 'Blocks\TemplateProcessor';
-$components['statePersister']['class'] = 'Blocks\StatePersister';
+$components['viewRenderer']['class'] = 'Craft\TemplateProcessor';
+$components['statePersister']['class'] = 'Craft\StatePersister';
 
-$components['urlManager']['class'] = 'Blocks\UrlManager';
+$components['urlManager']['class'] = 'Craft\UrlManager';
 $components['urlManager']['cpRoutes'] = $cpRoutes;
 $components['urlManager']['pathParam'] = 'p';
 
-$components['errorHandler']['class'] = 'Blocks\ErrorHandler';
+$components['errorHandler']['class'] = 'Craft\ErrorHandler';
 
 $components['fileCache']['class'] = 'CFileCache';
 
-$components['log']['class'] = 'Blocks\LogRouter';
+$components['log']['class'] = 'Craft\LogRouter';
 $components['log']['routes'] = array(
 	array(
-		'class'  => 'Blocks\FileLogRoute',
+		'class'  => 'Craft\FileLogRoute',
 	),
 	array(
-		'class'         => 'Blocks\WebLogRoute',
+		'class'         => 'Craft\WebLogRoute',
 		'filter'        => 'CLogFilter',
 		'showInFireBug' => true,
 	),
 	array(
-		'class'         => 'Blocks\ProfileLogRoute',
+		'class'         => 'Craft\ProfileLogRoute',
 		'showInFireBug' => true,
 	),
 );
 
 $components['httpSession']['autoStart']   = true;
 $components['httpSession']['cookieMode']  = 'only';
-$components['httpSession']['class']       = 'Blocks\HttpSessionService';
-$components['httpSession']['sessionName'] = 'BlocksSessionId';
+$components['httpSession']['class']       = 'Craft\HttpSessionService';
+$components['httpSession']['sessionName'] = 'CraftSessionId';
 
-$components['userSession']['class'] = 'Blocks\UserSessionService';
+$components['userSession']['class'] = 'Craft\UserSessionService';
 $components['userSession']['allowAutoLogin']  = true;
 $components['userSession']['loginUrl']        = $generalConfig['loginPath'];
 $components['userSession']['autoRenewCookie'] = true;

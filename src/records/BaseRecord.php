@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Active Record base class
@@ -22,7 +22,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	function __construct($scenario = 'insert')
 	{
-		// If Blocks isn't installed, this model's table won't exist yet,
+		// If Craft isn't installed, this model's table won't exist yet,
 		// so just create an instance of the class, for use by the installer
 		if ($scenario !== 'install')
 		{
@@ -272,14 +272,14 @@ abstract class BaseRecord extends \CActiveRecord
 		}
 
 		// Create the table
-		blx()->db->createCommand()->createTable($table, $columns, null, $addIdColumn);
+		craft()->db->createCommand()->createTable($table, $columns, null, $addIdColumn);
 
 		// Create the indexes
 		foreach ($indexes as $index)
 		{
 			$columns = ArrayHelper::stringToArray($index['columns']);
 			$unique = !empty($index['unique']);
-			blx()->db->createCommand()->createIndex($table, implode(',', $columns), $unique);
+			craft()->db->createCommand()->createIndex($table, implode(',', $columns), $unique);
 		}
 	}
 
@@ -311,9 +311,9 @@ abstract class BaseRecord extends \CActiveRecord
 		$table = $this->getTableName();
 
 		// Does the table exist?
-		if (blx()->db->getSchema()->getTable('{{'.$table.'}}'))
+		if (craft()->db->getSchema()->getTable('{{'.$table.'}}'))
 		{
-			blx()->db->createCommand()->dropTable($table);
+			craft()->db->createCommand()->dropTable($table);
 		}
 	}
 
@@ -355,7 +355,7 @@ abstract class BaseRecord extends \CActiveRecord
 				$onUpdate = null;
 			}
 
-			blx()->db->createCommand()->addForeignKey($table, $config[2], $otherTable, $otherPk, $onDelete, $onUpdate);
+			craft()->db->createCommand()->addForeignKey($table, $config[2], $otherTable, $otherPk, $onDelete, $onUpdate);
 		}
 	}
 
@@ -367,7 +367,7 @@ abstract class BaseRecord extends \CActiveRecord
 		$table = $this->getTableName();
 
 		// Does the table exist?
-		if (blx()->db->getSchema()->getTable('{{'.$table.'}}'))
+		if (craft()->db->getSchema()->getTable('{{'.$table.'}}'))
 		{
 			foreach ($this->getBelongsToRelations() as $name => $config)
 			{
@@ -375,7 +375,7 @@ abstract class BaseRecord extends \CActiveRecord
 
 				if ($otherRecord->tableExists())
 				{
-					blx()->db->createCommand()->dropForeignKey($table, $config[2]);
+					craft()->db->createCommand()->dropForeignKey($table, $config[2]);
 				}
 			}
 		}
@@ -493,7 +493,7 @@ abstract class BaseRecord extends \CActiveRecord
 
 			case static::MANY_MANY:
 			{
-				$config[2] = blx()->db->tablePrefix.$config[2];
+				$config[2] = craft()->db->tablePrefix.$config[2];
 				break;
 			}
 		}
@@ -553,7 +553,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function tableExists()
 	{
-		if (blx()->db->getSchema()->getTable('{{'.$this->getTableName().'}}', true) !== null)
+		if (craft()->db->getSchema()->getTable('{{'.$this->getTableName().'}}', true) !== null)
 		{
 			return true;
 		}

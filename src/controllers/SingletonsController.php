@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Handles singleton management tasks
@@ -16,21 +16,21 @@ class SingletonsController extends BaseController
 		$singleton = new SingletonModel();
 
 		// Set the simple stuff
-		$singleton->id       = blx()->request->getPost('singletonId');
-		$singleton->name     = blx()->request->getPost('name');
-		$singleton->template = blx()->request->getPost('template');
+		$singleton->id       = craft()->request->getPost('singletonId');
+		$singleton->name     = craft()->request->getPost('name');
+		$singleton->template = craft()->request->getPost('template');
 
 		// Set the locales and URL formats
 		$locales = array();
-		$uris = blx()->request->getPost('uri');
+		$uris = craft()->request->getPost('uri');
 
-		if (Blocks::hasPackage(BlocksPackage::Language))
+		if (Craft::hasPackage(CraftPackage::Language))
 		{
-			$localeIds = blx()->request->getPost('locales');
+			$localeIds = craft()->request->getPost('locales');
 		}
 		else
 		{
-			$primaryLocaleId = blx()->i18n->getPrimarySiteLocale()->getId();
+			$primaryLocaleId = craft()->i18n->getPrimarySiteLocale()->getId();
 			$localeIds = array($primaryLocaleId);
 		}
 
@@ -46,14 +46,14 @@ class SingletonsController extends BaseController
 		$singleton->setLocales($locales);
 
 		// Set the field layout
-		$fieldLayout = blx()->fields->assembleLayoutFromPost();
+		$fieldLayout = craft()->fields->assembleLayoutFromPost();
 		$fieldLayout->type = ElementType::Singleton;
 		$singleton->setFieldLayout($fieldLayout);
 
 		// Save it
-		if (blx()->singletons->saveSingleton($singleton))
+		if (craft()->singletons->saveSingleton($singleton))
 		{
-			blx()->userSession->setNotice(Blocks::t('Singleton saved.'));
+			craft()->userSession->setNotice(Craft::t('Singleton saved.'));
 
 			$this->redirectToPostedUrl(array(
 				'singletonId' => $singleton->id
@@ -61,7 +61,7 @@ class SingletonsController extends BaseController
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save singleton.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save singleton.'));
 		}
 
 		// Reload the original template
@@ -78,9 +78,9 @@ class SingletonsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$singletonId = blx()->request->getRequiredPost('id');
+		$singletonId = craft()->request->getRequiredPost('id');
 
-		blx()->singletons->deleteSingletonById($singletonId);
+		craft()->singletons->deleteSingletonById($singletonId);
 		$this->returnJson(array('success' => true));
 	}
 
@@ -91,25 +91,25 @@ class SingletonsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$singletonId = blx()->request->getRequiredPost('singletonId');
-		$singleton = blx()->singletons->getSingletonById($singletonId);
+		$singletonId = craft()->request->getRequiredPost('singletonId');
+		$singleton = craft()->singletons->getSingletonById($singletonId);
 
 		if (!$singleton)
 		{
-			throw new Exception(Blocks::t('No singleton exists with the ID “{id}”.', array('id' => $singletonId)));
+			throw new Exception(Craft::t('No singleton exists with the ID “{id}”.', array('id' => $singletonId)));
 		}
 
-		$fields = blx()->request->getPost('fields', array());
+		$fields = craft()->request->getPost('fields', array());
 		$singleton->setContent($fields);
 
-		if (blx()->singletons->saveContent($singleton))
+		if (craft()->singletons->saveContent($singleton))
 		{
-			blx()->userSession->setNotice(Blocks::t('Singleton saved.'));
+			craft()->userSession->setNotice(Craft::t('Singleton saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save singleton.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save singleton.'));
 		}
 
 		$this->renderRequestedTemplate(array(

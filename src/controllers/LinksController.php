@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -11,13 +11,13 @@ class LinksController extends BaseController
 	 */
 	public function actionGetModalBody()
 	{
-		$type        = blx()->request->getRequiredPost('type');
-		$name        = blx()->request->getRequiredPost('name');
-		$settings    = JsonHelper::decode(blx()->request->getPost('settings'));
-		$selectedIds = JsonHelper::decode(blx()->request->getPost('selectedIds'));
+		$type        = craft()->request->getRequiredPost('type');
+		$name        = craft()->request->getRequiredPost('name');
+		$settings    = JsonHelper::decode(craft()->request->getPost('settings'));
+		$selectedIds = JsonHelper::decode(craft()->request->getPost('selectedIds'));
 
-		$elementCriteria = blx()->elements->getCriteria($type, $settings);
-		$elements = blx()->elements->findElements($elementCriteria);
+		$elementCriteria = craft()->elements->getCriteria($type, $settings);
+		$elements = craft()->elements->findElements($elementCriteria);
 
 		$this->renderTemplate('_components/fieldtypes/Links/modalbody', array(
 			'name'        => $name,

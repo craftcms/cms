@@ -1,7 +1,7 @@
 /**
  * Handle Generator
  */
-Blocks.HandleGenerator = Blocks.BaseInputGenerator.extend({
+Craft.HandleGenerator = Craft.BaseInputGenerator.extend({
 
 	generateTargetValue: function(sourceVal)
 	{
@@ -12,13 +12,13 @@ Blocks.HandleGenerator = Blocks.BaseInputGenerator.extend({
 		handle = handle.toLowerCase();
 
 		// Convert extended ASCII characters to basic ASCII
-		handle = Blocks.asciiString(handle);
+		handle = Craft.asciiString(handle);
 
 		// Handle must start with a letter
 		handle = handle.replace(/^[^a-z]+/, '');
 
 		// Get the "words"
-		var words = Blocks.filterArray(handle.split(/[^a-z0-9]+/)),
+		var words = Craft.filterArray(handle.split(/[^a-z0-9]+/)),
 			handle = '';
 
 		// Make it camelCase

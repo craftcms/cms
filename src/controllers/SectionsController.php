@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Handles section management tasks
@@ -16,24 +16,24 @@ class SectionsController extends BaseController
 		$section = new SectionModel();
 
 		// Set the simple stuff
-		$section->id         = blx()->request->getPost('sectionId');
-		$section->name       = blx()->request->getPost('name');
-		$section->handle     = blx()->request->getPost('handle');
-		$section->titleLabel = blx()->request->getPost('titleLabel');
-		$section->hasUrls    = (bool)blx()->request->getPost('hasUrls');
-		$section->template   = blx()->request->getPost('template');
+		$section->id         = craft()->request->getPost('sectionId');
+		$section->name       = craft()->request->getPost('name');
+		$section->handle     = craft()->request->getPost('handle');
+		$section->titleLabel = craft()->request->getPost('titleLabel');
+		$section->hasUrls    = (bool)craft()->request->getPost('hasUrls');
+		$section->template   = craft()->request->getPost('template');
 
 		// Set the locales and URL formats
 		$locales = array();
-		$urlFormats = blx()->request->getPost('urlFormat');
+		$urlFormats = craft()->request->getPost('urlFormat');
 
-		if (Blocks::hasPackage(BlocksPackage::Language))
+		if (Craft::hasPackage(CraftPackage::Language))
 		{
-			$localeIds = blx()->request->getPost('locales');
+			$localeIds = craft()->request->getPost('locales');
 		}
 		else
 		{
-			$primaryLocaleId = blx()->i18n->getPrimarySiteLocale()->getId();
+			$primaryLocaleId = craft()->i18n->getPrimarySiteLocale()->getId();
 			$localeIds = array($primaryLocaleId);
 		}
 
@@ -48,14 +48,14 @@ class SectionsController extends BaseController
 		$section->setLocales($locales);
 
 		// Set the field layout
-		$fieldLayout = blx()->fields->assembleLayoutFromPost();
+		$fieldLayout = craft()->fields->assembleLayoutFromPost();
 		$fieldLayout->type = ElementType::Entry;
 		$section->setFieldLayout($fieldLayout);
 
 		// Save it
-		if (blx()->sections->saveSection($section))
+		if (craft()->sections->saveSection($section))
 		{
-			blx()->userSession->setNotice(Blocks::t('Section saved.'));
+			craft()->userSession->setNotice(Craft::t('Section saved.'));
 
 			$this->redirectToPostedUrl(array(
 				'sectionId' => $section->id
@@ -63,7 +63,7 @@ class SectionsController extends BaseController
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save section.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save section.'));
 		}
 
 		// Reload the original template
@@ -80,9 +80,9 @@ class SectionsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$sectionId = blx()->request->getRequiredPost('id');
+		$sectionId = craft()->request->getRequiredPost('id');
 
-		blx()->sections->deleteSectionById($sectionId);
+		craft()->sections->deleteSectionById($sectionId);
 		$this->returnJson(array('success' => true));
 	}
 }

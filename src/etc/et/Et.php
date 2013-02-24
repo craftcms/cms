@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 	/**
 	 * The `$options` parameter takes an associative array with the following
@@ -69,23 +69,23 @@ class Et
 	 */
 	function __construct($endPoint, $timeout = 6)
 	{
-		$endPoint .= blx()->config->get('endPointSuffix');
+		$endPoint .= craft()->config->get('endPointSuffix');
 
 		$this->_endpoint = $endPoint;
 		$this->_timeout = $timeout;
 
 		$this->_model = new EtModel();
-		$this->_model->url = Blocks::getSiteUrl();
-		$this->_model->licenseKey = Blocks::getLicenseKey();
-		$this->_model->requestDomain = blx()->request->getServerName();
-		$this->_model->requestIp = blx()->request->getUserHostAddress();
+		$this->_model->url = Craft::getSiteUrl();
+		$this->_model->licenseKey = Craft::getLicenseKey();
+		$this->_model->requestDomain = craft()->request->getServerName();
+		$this->_model->requestIp = craft()->request->getUserHostAddress();
 		$this->_model->requestTime = DateTimeHelper::currentTimeStamp();
-		$this->_model->requestPort = blx()->request->getPort();
-		$this->_model->installedPackages = ArrayHelper::stringToArray(Blocks::getStoredPackages());
-		$this->_model->localBuild = Blocks::getBuild();
-		$this->_model->localVersion= Blocks::getVersion();
+		$this->_model->requestPort = craft()->request->getPort();
+		$this->_model->installedPackages = ArrayHelper::stringToArray(Craft::getStoredPackages());
+		$this->_model->localBuild = Craft::getBuild();
+		$this->_model->localVersion= Craft::getVersion();
 
-		$this->_options['useragent'] = 'blocks-requests/'.\Requests::VERSION;
+		$this->_options['useragent'] = 'craftcms-requests/'.\Requests::VERSION;
 		$this->_options['timeout'] = $this->_timeout;
 	}
 
@@ -126,21 +126,21 @@ class Et
 					return $fileName;
 				}
 
-				$etModel = blx()->et->decodeEtValues($response->body);
+				$etModel = craft()->et->decodeEtValues($response->body);
 
 				// we set the license key status on every request
-				blx()->et->setLicenseKeyStatus($etModel->licenseKeyStatus);
+				craft()->et->setLicenseKeyStatus($etModel->licenseKeyStatus);
 
 				return $etModel;
 			}
 			else
 			{
-				Blocks::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, \CLogger::LEVEL_WARNING);
+				Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, \CLogger::LEVEL_WARNING);
 			}
 		}
 		catch (\Exception $e)
 		{
-			Blocks::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
+			Craft::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
 		}
 
 		return null;

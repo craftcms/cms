@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -21,7 +21,7 @@ class StringHelper
 
 		if (!is_string($value))
 		{
-			throw new Exception(Blocks::t('IsNullOrEmpty requires a string.'));
+			throw new Exception(Craft::t('IsNullOrEmpty requires a string.'));
 		}
 
 		return false;

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -27,14 +27,14 @@ class HandleValidator extends \CValidator
 
 			if (in_array($lcHandle, $reservedWords))
 			{
-				$message = Blocks::t('“{handle}” is a reserved word.', array('handle' => $handle));
+				$message = Craft::t('“{handle}” is a reserved word.', array('handle' => $handle));
 				$this->addError($object, $attribute, $message);
 			}
 			else
 			{
 				if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $handle))
 				{
-					$altMessage = Blocks::t('“{handle}” isn’t a valid handle.', array('handle' => $handle));
+					$altMessage = Craft::t('“{handle}” isn’t a valid handle.', array('handle' => $handle));
 					$message = $this->message !== null ? $this->message : $altMessage;
 					$this->addError($object, $attribute, $message);
 				}

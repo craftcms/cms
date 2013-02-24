@@ -45,16 +45,16 @@ var FieldsAdmin = Garnish.Base.extend({
 				name: name
 			};
 
-			Blocks.postActionRequest('fields/saveGroup', data, $.proxy(function(response)
+			Craft.postActionRequest('fields/saveGroup', data, $.proxy(function(response)
 			{
 				if (response.success)
 				{
-					location.href = Blocks.getUrl('settings/fields/'+response.group.id);
+					location.href = Craft.getUrl('settings/fields/'+response.group.id);
 				}
 				else
 				{
 					var errors = this.flattenErrors(response.errors);
-					alert(Blocks.t('Could not create the group:')+"\n\n"+errors.join("\n"));
+					alert(Craft.t('Could not create the group:')+"\n\n"+errors.join("\n"));
 				}
 
 			}, this));
@@ -73,17 +73,17 @@ var FieldsAdmin = Garnish.Base.extend({
 				name: newName
 			};
 
-			Blocks.postActionRequest('fields/saveGroup', data, $.proxy(function(response)
+			Craft.postActionRequest('fields/saveGroup', data, $.proxy(function(response)
 			{
 				if (response.success)
 				{
 					this.$selectedGroup.text(response.group.name);
-					Blocks.cp.displayNotice(Blocks.t('Group renamed.'));
+					Craft.cp.displayNotice(Craft.t('Group renamed.'));
 				}
 				else
 				{
 					var errors = this.flattenErrors(response.errors);
-					alert(Blocks.t('Could not rename the group:')+"\n\n"+errors.join("\n"));
+					alert(Craft.t('Could not rename the group:')+"\n\n"+errors.join("\n"));
 				}
 
 			}, this));
@@ -92,26 +92,26 @@ var FieldsAdmin = Garnish.Base.extend({
 
 	promptForGroupName: function(oldName)
 	{
-		return prompt(Blocks.t('What do you want to name your group?'), oldName);
+		return prompt(Craft.t('What do you want to name your group?'), oldName);
 	},
 
 	deleteSelectedGroup: function()
 	{
-		if (confirm(Blocks.t('Are you sure you want to delete this group and all its fields?')))
+		if (confirm(Craft.t('Are you sure you want to delete this group and all its fields?')))
 		{
 			var data = {
 				id: this.$selectedGroup.data('id')
 			};
 
-			Blocks.postActionRequest('fields/deleteGroup', data, $.proxy(function(response)
+			Craft.postActionRequest('fields/deleteGroup', data, $.proxy(function(response)
 			{
 				if (response.success)
 				{
-					location.href = Blocks.getUrl('settings/fields');
+					location.href = Craft.getUrl('settings/fields');
 				}
 				else
 				{
-					alert(Blocks.t('Could not delete the group.'));
+					alert(Craft.t('Could not delete the group.'));
 				}
 			}, this));
 		}
@@ -133,7 +133,7 @@ var FieldsAdmin = Garnish.Base.extend({
 
 Garnish.$doc.ready(function()
 {
-	Blocks.FieldsAdmin = new FieldsAdmin();
+	Craft.FieldsAdmin = new FieldsAdmin();
 });
 
 

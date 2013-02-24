@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -11,7 +11,7 @@ class EtModel extends BaseModel
 	 */
 	public function defineAttributes()
 	{
-		// The site URL as defined in blx_info->siteUrl.
+		// The site URL as defined in craft_info->siteUrl.
 		$attributes['url'] = AttributeType::String;
 
 		// The client license key.

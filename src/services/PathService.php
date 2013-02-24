@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,7 +13,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getAppPath()
 	{
-		return BLOCKS_APP_PATH;
+		return CRAFT_APP_PATH;
 	}
 
 	/**
@@ -21,7 +21,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getConfigPath()
 	{
-		return BLOCKS_CONFIG_PATH;
+		return CRAFT_CONFIG_PATH;
 	}
 
 	/**
@@ -29,7 +29,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getPluginsPath()
 	{
-		return BLOCKS_PLUGINS_PATH;
+		return CRAFT_PLUGINS_PATH;
 	}
 
 	/**
@@ -37,7 +37,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getStoragePath()
 	{
-		return BLOCKS_STORAGE_PATH;
+		return CRAFT_STORAGE_PATH;
 	}
 
 	/**
@@ -197,7 +197,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getSiteTranslationsPath()
 	{
-		return BLOCKS_TRANSLATIONS_PATH;
+		return CRAFT_TRANSLATIONS_PATH;
 	}
 
 	/**
@@ -225,7 +225,7 @@ class PathService extends BaseApplicationComponent
 	{
 		if (!isset($this->_templatesPath))
 		{
-			if (blx()->request->isCpRequest())
+			if (craft()->request->isCpRequest())
 			{
 				$this->_templatesPath = $this->getCpTemplatesPath();
 			}
@@ -249,7 +249,7 @@ class PathService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the Blocks CP templates path.
+	 * Returns the Craft CP templates path.
 	 *
 	 * @return string
 	 */
@@ -265,7 +265,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getSiteTemplatesPath()
 	{
-		return BLOCKS_TEMPLATES_PATH;
+		return CRAFT_TEMPLATES_PATH;
 	}
 
 	/**
@@ -277,7 +277,7 @@ class PathService extends BaseApplicationComponent
 	public function getOfflineTemplatePath()
 	{
 		// If the user has set offlinePath config item, let's use it.
-		if (($path = blx()->config->get('offlinePath')) !== null)
+		if (($path = craft()->config->get('offlinePath')) !== null)
 		{
 			return substr($path, 0, strlen($path) - strlen(IOHelper::getFileName($path)));
 		}

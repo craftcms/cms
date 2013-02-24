@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -7,7 +7,7 @@ namespace Blocks;
 class InstallService extends BaseApplicationComponent
 {
 	/**
-	 * Installs Blocks!
+	 * Installs Craft!
 	 *
 	 * @param array $inputs
 	 * @throws Exception
@@ -16,27 +16,27 @@ class InstallService extends BaseApplicationComponent
 	 */
 	public function run($inputs)
 	{
-		if (blx()->isInstalled())
+		if (craft()->isInstalled())
 		{
-			throw new Exception(Blocks::t('Blocks is already installed.'));
+			throw new Exception(Craft::t('CraftCMS is already installed.'));
 		}
 
 		// Set the language to the desired locale
-		blx()->setLanguage($inputs['locale']);
+		craft()->setLanguage($inputs['locale']);
 
 		$records = $this->findInstallableRecords();
 
 		// Start the transaction
-		$transaction = blx()->db->beginTransaction();
+		$transaction = craft()->db->beginTransaction();
 		try
 		{
-			Blocks::log('Installing Blocks.');
+			Craft::log('Installing Craft.');
 
 			// Create the tables
 			$this->_createTablesFromRecords($records);
 			$this->_createForeignKeysFromRecords($records);
 
-			Blocks::log('Committing the transaction.');
+			Craft::log('Committing the transaction.');
 			$transaction->commit();
 		}
 		catch (\Exception $e)
@@ -45,14 +45,14 @@ class InstallService extends BaseApplicationComponent
 			throw $e;
 		}
 
-		// Blocks, you are installed now.
-		blx()->setInstalledStatus(true);
+		// Craft, you are installed now.
+		craft()->setInstalledStatus(true);
 
 		// Fill 'er up
 		$this->_populateInfoTable($inputs);
 
 		// Invalidate cached info after populating the info table.
-		Blocks::invalidateCachedInfo();
+		Craft::invalidateCachedInfo();
 
 		$this->_populateMigrationTable();
 		$this->_addLocale($inputs['locale']);
@@ -61,7 +61,7 @@ class InstallService extends BaseApplicationComponent
 		$this->_saveDefaultMailSettings($inputs['email'], $inputs['siteName']);
 		$this->_createDefaultContent($inputs);
 
-		Blocks::log('Finished installing Blocks.');
+		Craft::log('Finished installing Craft.');
 	}
 
 	/**
@@ -73,7 +73,7 @@ class InstallService extends BaseApplicationComponent
 	{
 		$records = array();
 
-		$recordsFolder = blx()->path->getAppPath().'records/';
+		$recordsFolder = craft()->path->getAppPath().'records/';
 		$recordFiles = IOHelper::getFolderContents($recordsFolder, false, ".*Record\.php");
 
 		foreach ($recordFiles as $file)
@@ -87,7 +87,7 @@ class InstallService extends BaseApplicationComponent
 				$ref = new \ReflectionClass($class);
 				if ($ref->isAbstract() || $ref->isInterface())
 				{
-					Blocks::log("Skipping record {$file} because it’s abstract or an interface.", \CLogger::LEVEL_WARNING);
+					Craft::log("Skipping record {$file} because it’s abstract or an interface.", \CLogger::LEVEL_WARNING);
 					continue;
 				}
 
@@ -99,12 +99,12 @@ class InstallService extends BaseApplicationComponent
 				}
 				else
 				{
-					Blocks::log("Skipping record {$file} because it doesn’t have a createTable() method.", \CLogger::LEVEL_WARNING);
+					Craft::log("Skipping record {$file} because it doesn’t have a createTable() method.", \CLogger::LEVEL_WARNING);
 				}
 			}
 			else
 			{
-				Blocks::log("Skipping record {$file} because it doesn’t exist.", \CLogger::LEVEL_WARNING);
+				Craft::log("Skipping record {$file} because it doesn’t exist.", \CLogger::LEVEL_WARNING);
 			}
 		}
 
@@ -122,7 +122,7 @@ class InstallService extends BaseApplicationComponent
 	{
 		foreach ($records as $record)
 		{
-			Blocks::log('Creating table for record:'. get_class($record));
+			Craft::log('Creating table for record:'. get_class($record));
 			$record->createTable();
 		}
 	}
@@ -137,7 +137,7 @@ class InstallService extends BaseApplicationComponent
 	{
 		foreach ($records as $record)
 		{
-			Blocks::log('Adding foreign keys for record:'. get_class($record));
+			Craft::log('Adding foreign keys for record:'. get_class($record));
 			$record->addForeignKeys();
 		}
 	}
@@ -151,14 +151,14 @@ class InstallService extends BaseApplicationComponent
 	 */
 	private function _populateInfoTable($inputs)
 	{
-		Blocks::log('Populating the info table.');
+		Craft::log('Populating the info table.');
 
 		$info = new InfoRecord();
 
-		$info->version = Blocks::getVersion();
-		$info->build = Blocks::getBuild();
-		$info->releaseDate = Blocks::getReleaseDate();
-		$info->packages = implode(',', Blocks::getPackages());
+		$info->version = Craft::getVersion();
+		$info->build = Craft::getBuild();
+		$info->releaseDate = Craft::getReleaseDate();
+		$info->packages = implode(',', Craft::getPackages());
 		$info->siteName = $inputs['siteName'];
 		$info->siteUrl = $inputs['siteUrl'];
 		$info->licenseKey = $inputs['licenseKey'];
@@ -167,12 +167,12 @@ class InstallService extends BaseApplicationComponent
 
 		if ($info->save())
 		{
-			Blocks::log('Info table populated successfully.');
+			Craft::log('Info table populated successfully.');
 		}
 		else
 		{
-			Blocks::log('Could not populate the info table.', \CLogger::LEVEL_ERROR);
-			throw new Exception(Blocks::t('There was a problem saving to the info table:').$this->_getFlattenedErrors($info->getErrors()));
+			Craft::log('Could not populate the info table.', \CLogger::LEVEL_ERROR);
+			throw new Exception(Craft::t('There was a problem saving to the info table:').$this->_getFlattenedErrors($info->getErrors()));
 		}
 	}
 
@@ -184,17 +184,17 @@ class InstallService extends BaseApplicationComponent
 	private function _populateMigrationTable()
 	{
 		$migration = new MigrationRecord();
-		$migration->version = blx()->migrations->getBaseMigration();
+		$migration->version = craft()->migrations->getBaseMigration();
 		$migration->applyTime = DateTimeHelper::currentUTCDateTime();
 
 		if ($migration->save())
 		{
-			Blocks::log('Migration table populated successfully.');
+			Craft::log('Migration table populated successfully.');
 		}
 		else
 		{
-			Blocks::log('Could not populate the migration table.', \CLogger::LEVEL_ERROR);
-			throw new Exception(Blocks::t('There was a problem saving to the migrations table:').$this->_getFlattenedErrors($migration->getErrors()));
+			Craft::log('Could not populate the migration table.', \CLogger::LEVEL_ERROR);
+			throw new Exception(Craft::t('There was a problem saving to the migrations table:').$this->_getFlattenedErrors($migration->getErrors()));
 		}
 	}
 
@@ -206,9 +206,9 @@ class InstallService extends BaseApplicationComponent
 	 */
 	private function _addLocale($locale)
 	{
-		Blocks::log('Adding locale.');
-		blx()->db->createCommand()->insert('locales', array('locale' => $locale, 'sortOrder' => 1));
-		Blocks::log('Locale added successfully.');
+		Craft::log('Adding locale.');
+		craft()->db->createCommand()->insert('locales', array('locale' => $locale, 'sortOrder' => 1));
+		Craft::log('Locale added successfully.');
 	}
 
 	/**
@@ -221,7 +221,7 @@ class InstallService extends BaseApplicationComponent
 	 */
 	private function _addUser($inputs)
 	{
-		Blocks::log('Creating user.');
+		Craft::log('Creating user.');
 
 		$user = new UserModel();
 
@@ -230,14 +230,14 @@ class InstallService extends BaseApplicationComponent
 		$user->email = $inputs['email'];
 		$user->admin = true;
 
-		if (blx()->users->saveUser($user))
+		if (craft()->users->saveUser($user))
 		{
-			Blocks::log('User created successfully.');
+			Craft::log('User created successfully.');
 		}
 		else
 		{
-			Blocks::log('Could not create the user.', \CLogger::LEVEL_ERROR);
-			throw new Exception(Blocks::t('There was a problem creating the user:').$this->_getFlattenedErrors($user->getErrors()));
+			Craft::log('Could not create the user.', \CLogger::LEVEL_ERROR);
+			throw new Exception(Craft::t('There was a problem creating the user:').$this->_getFlattenedErrors($user->getErrors()));
 		}
 	}
 
@@ -249,15 +249,15 @@ class InstallService extends BaseApplicationComponent
 	 */
 	private function _logUserIn($inputs)
 	{
-		Blocks::log('Logging in user.');
+		Craft::log('Logging in user.');
 
-		if (blx()->userSession->login($inputs['username'], $inputs['password']))
+		if (craft()->userSession->login($inputs['username'], $inputs['password']))
 		{
-			Blocks::log('User logged in successfully.');
+			Craft::log('User logged in successfully.');
 		}
 		else
 		{
-			Blocks::log('Could not log the user in.', \CLogger::LEVEL_WARNING);
+			Craft::log('Could not log the user in.', \CLogger::LEVEL_WARNING);
 		}
 	}
 
@@ -270,7 +270,7 @@ class InstallService extends BaseApplicationComponent
 	 */
 	private function _saveDefaultMailSettings($email, $siteName)
 	{
-		Blocks::log('Saving default mail settings.');
+		Craft::log('Saving default mail settings.');
 
 		$settings = array(
 			'protocol'     => EmailerType::Php,
@@ -278,13 +278,13 @@ class InstallService extends BaseApplicationComponent
 			'senderName'   => $siteName
 		);
 
-		if (blx()->systemSettings->saveSettings('email', $settings))
+		if (craft()->systemSettings->saveSettings('email', $settings))
 		{
-			Blocks::log('Default mail settings saved successfully.');
+			Craft::log('Default mail settings saved successfully.');
 		}
 		else
 		{
-			Blocks::log('Could not save default email settings.', \CLogger::LEVEL_WARNING);
+			Craft::log('Could not save default email settings.', \CLogger::LEVEL_WARNING);
 		}
 	}
 
@@ -296,39 +296,39 @@ class InstallService extends BaseApplicationComponent
 	 */
 	private function _createDefaultContent($inputs)
 	{
-		Blocks::log('Creating the Default field group.');
+		Craft::log('Creating the Default field group.');
 
 		$group = new FieldGroupModel();
-		$group->name = Blocks::t('Default');
+		$group->name = Craft::t('Default');
 
-		if (blx()->fields->saveGroup($group))
+		if (craft()->fields->saveGroup($group))
 		{
-			Blocks::log('Default field group created successfully.');
+			Craft::log('Default field group created successfully.');
 		}
 		else
 		{
-			Blocks::log('Could not save the Default field group.', \CLogger::LEVEL_WARNING);
+			Craft::log('Could not save the Default field group.', \CLogger::LEVEL_WARNING);
 		}
 
-		Blocks::log('Creating the Body field.');
+		Craft::log('Creating the Body field.');
 
 		$field = new FieldModel();
 		$field->groupId      = $group->id;
 		$field->type         = 'RichText';
-		$field->name         = Blocks::t('Body');
+		$field->name         = Craft::t('Body');
 		$field->handle       = 'body';
 		$field->translatable = true;
 
-		if (blx()->fields->saveField($field))
+		if (craft()->fields->saveField($field))
 		{
-			Blocks::log('Body field created successfully.');
+			Craft::log('Body field created successfully.');
 		}
 		else
 		{
-			Blocks::log('Could not save the Body field.', \CLogger::LEVEL_WARNING);
+			Craft::log('Could not save the Body field.', \CLogger::LEVEL_WARNING);
 		}
 
-		Blocks::log('Creating the Blog section.');
+		Craft::log('Creating the Blog section.');
 
 		$layoutFields = array(
 			array(
@@ -340,7 +340,7 @@ class InstallService extends BaseApplicationComponent
 
 		$layoutTabs = array(
 			array(
-				'name'      => Blocks::t('Content'),
+				'name'      => Craft::t('Content'),
 				'sortOrder' => 1,
 				'fields'    => $layoutFields
 			)
@@ -352,9 +352,9 @@ class InstallService extends BaseApplicationComponent
 		$layout->setFields($layoutFields);
 
 		$section = new SectionModel();
-		$section->name       = Blocks::t('Blog');
+		$section->name       = Craft::t('Blog');
 		$section->handle     = 'blog';
-		$section->titleLabel = Blocks::t('Title');
+		$section->titleLabel = Craft::t('Title');
 		$section->hasUrls    = true;
 		$section->template   = 'blog/_entry';
 
@@ -367,13 +367,13 @@ class InstallService extends BaseApplicationComponent
 
 		$section->setFieldLayout($layout);
 
-		if (blx()->sections->saveSection($section))
+		if (craft()->sections->saveSection($section))
 		{
-			Blocks::log('Blog section created successfully.');
+			Craft::log('Blog section created successfully.');
 		}
 		else
 		{
-			Blocks::log('Could not save the Blog section.', \CLogger::LEVEL_WARNING);
+			Craft::log('Could not save the Blog section.', \CLogger::LEVEL_WARNING);
 		}
 	}
 

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Entry content record class
@@ -24,11 +24,11 @@ class ContentRecord extends BaseRecord
 	{
 		$attributes['locale'] = array(AttributeType::Locale, 'required' => true);
 
-		if (blx()->isInstalled() && !blx()->isConsole())
+		if (craft()->isInstalled() && !craft()->isConsole())
 		{
-			foreach (blx()->fields->getAllFields() as $field)
+			foreach (craft()->fields->getAllFields() as $field)
 			{
-				$fieldType = blx()->fields->populateFieldType($field);
+				$fieldType = craft()->fields->populateFieldType($field);
 
 				if (!empty($fieldType))
 				{
@@ -100,7 +100,7 @@ class ContentRecord extends BaseRecord
 
 		if (isset($this->_attributeConfigs))
 		{
-			foreach (blx()->fields->getAllFields() as $field)
+			foreach (craft()->fields->getAllFields() as $field)
 			{
 				if (in_array($field->id, $this->_requiredFields) && isset($this->_attributeConfigs[$field->handle]))
 				{

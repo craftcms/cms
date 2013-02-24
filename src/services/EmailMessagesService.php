@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::Rebrand);
+Craft::requirePackage(CraftPackage::Rebrand);
 
 /**
  *
@@ -19,7 +19,7 @@ class EmailMessagesService extends BaseApplicationComponent
 		// Find any custom messages
 		if (!$localeId)
 		{
-			$localeId = blx()->language;
+			$localeId = craft()->language;
 		}
 
 		$records = EmailMessageRecord::model()->findAllByAttributes(array(
@@ -39,7 +39,7 @@ class EmailMessagesService extends BaseApplicationComponent
 		$keys = array('verify_email', 'verify_new_email', 'forgot_password');
 
 		// Give plugins a chance to add additional messages
-		foreach (blx()->plugins->callHook('registerEmailMessages') as $pluginKeys)
+		foreach (craft()->plugins->callHook('registerEmailMessages') as $pluginKeys)
 		{
 			$keys = array_merge($keys, $pluginKeys);
 		}
@@ -60,9 +60,9 @@ class EmailMessagesService extends BaseApplicationComponent
 			else
 			{
 				// Default to whatever's in the translation file
-				$message->subject  = Blocks::t($key.'_subject');
-				$message->body     = Blocks::t($key.'_body');
-				$message->htmlBody = Blocks::t($key.'_html_body');
+				$message->subject  = Craft::t($key.'_subject');
+				$message->body     = Craft::t($key.'_body');
+				$message->htmlBody = Craft::t($key.'_html_body');
 			}
 
 			$messages[] = $message;
@@ -82,7 +82,7 @@ class EmailMessagesService extends BaseApplicationComponent
 	{
 		if (!$localeId)
 		{
-			$localeId = blx()->language;
+			$localeId = craft()->language;
 		}
 
 		$message = new EmailMessageModel();
@@ -135,7 +135,7 @@ class EmailMessagesService extends BaseApplicationComponent
 	{
 		if (!$localeId)
 		{
-			$localeId = blx()->language;
+			$localeId = craft()->language;
 		}
 
 		$record = EmailMessageRecord::model()->findByAttributes(array(
@@ -148,9 +148,9 @@ class EmailMessagesService extends BaseApplicationComponent
 			$record = new EmailMessageRecord();
 			$record->key = $key;
 			$record->locale   = $localeId;
-			$record->subject  = Blocks::t($key.'_subject');
-			$record->body     = Blocks::t($key.'_body');
-			$record->htmlBody = Blocks::t($key.'_html_body');
+			$record->subject  = Craft::t($key.'_subject');
+			$record->body     = Craft::t($key.'_body');
+			$record->htmlBody = Craft::t($key.'_html_body');
 		}
 
 		return $record;

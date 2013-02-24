@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -16,13 +16,13 @@ class Exit_Node extends \Twig_Node
 		if ($status = $this->getNode('status'))
 		{
 			$compiler
-				->write('throw new \Blocks\HttpException(')
+				->write('throw new \Craft\HttpException(')
 				->subcompile($status)
 				->raw(");\n");
 		}
 		else
 		{
-			$compiler->write("\Blocks\blx()->end();\n");
+			$compiler->write("\Craft\craft()->end();\n");
 		}
 	}
 }

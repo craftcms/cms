@@ -3,8 +3,8 @@
 	{% set pretendTabName = 'Content' %}
 {% endif %}
 
-{% set groups = blx.fields.getAllGroups('id') %}
-{% set fields = blx.fields.getAllFields('id') %}
+{% set groups = craft.fields.getAllGroups('id') %}
+{% set fields = craft.fields.getAllFields('id') %}
 
 {% includeTranslations
 	"Rename…",
@@ -94,7 +94,7 @@
 
 {% set js %}
 	var initFLD = function() {
-		new Blocks.FieldLayoutDesigner('#fieldlayoutform', {
+		new Craft.FieldLayoutDesigner('#fieldlayoutform', {
 			customizableTabs: {{ customizableTabs ? 'true' : 'false' }}
 		});
 	};

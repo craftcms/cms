@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -35,20 +35,20 @@ class m130220_000000_session_shuffle extends BaseMigration
 					// Select all users that have existing session tokens.
 					$existingRows = $this->dbConnection->createCommand('SELECT `id`, `authSessionToken` FROM `'.$usersTable->name.'` WHERE `authSessionToken` IS NOT NULL')->queryAll();
 
-					$path = blx()->path->getLibPath().'PasswordHash.php';
+					$path = craft()->path->getLibPath().'PasswordHash.php';
 					require_once $path;
 
 					// Copy them into the new table.
 					foreach ($existingRows as $existingRow)
 					{
-						$hashedToken = blx()->security->hashString($existingRow['authSessionToken']);
-						Blocks::log('Inserting userId: '.$existingRow['id'].' and token: '.$hashedToken['hash'].' into sessions table.');
+						$hashedToken = craft()->security->hashString($existingRow['authSessionToken']);
+						Craft::log('Inserting userId: '.$existingRow['id'].' and token: '.$hashedToken['hash'].' into sessions table.');
 						$this->insert('sessions', array('userId' => $existingRow['id'], 'token' => $hashedToken['hash']));
 					}
 				}
 				else
 				{
-					Blocks::log('The `sessions` table already exists in the database.');
+					Craft::log('The `sessions` table already exists in the database.');
 				}
 
 				// Remove the old authSessionToken column in users table.
@@ -68,12 +68,12 @@ class m130220_000000_session_shuffle extends BaseMigration
 			}
 			else
 			{
-				Blocks::log('The `authSessionToken` column does not exist in the `users` table.', \CLogger::LEVEL_WARNING);
+				Craft::log('The `authSessionToken` column does not exist in the `users` table.', \CLogger::LEVEL_WARNING);
 			}
 		}
 		else
 		{
-			Blocks::log('The `users` table is missing. No idea what is going on here.', \CLogger::LEVEL_ERROR);
+			Craft::log('The `users` table is missing. No idea what is going on here.', \CLogger::LEVEL_ERROR);
 		}
 	}
 }

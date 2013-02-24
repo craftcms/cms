@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -20,9 +20,9 @@ class RoutesService extends BaseApplicationComponent
 			$this->_routes = array();
 
 			// Where should we look for routes?
-			if (blx()->config->get('siteRoutesSource') == 'file')
+			if (craft()->config->get('siteRoutesSource') == 'file')
 			{
-				$path = blx()->path->getConfigPath().'routes.php';
+				$path = craft()->path->getConfigPath().'routes.php';
 
 				if (IOHelper::fileExists($path))
 				{
@@ -63,7 +63,7 @@ class RoutesService extends BaseApplicationComponent
 
 			if (!$route)
 			{
-				throw new Exception(Blocks::t('No route exists with the ID “{id}”', array('id' => $routeId)));
+				throw new Exception(Craft::t('No route exists with the ID “{id}”', array('id' => $routeId)));
 			}
 		}
 		else
@@ -71,7 +71,7 @@ class RoutesService extends BaseApplicationComponent
 			$route = new RouteRecord();
 
 			// Get the next biggest sort order
-			$maxSortOrder = blx()->db->createCommand()
+			$maxSortOrder = craft()->db->createCommand()
 				->select('max(sortOrder)')
 				->from('routes')
 				->queryScalar();
@@ -113,7 +113,7 @@ class RoutesService extends BaseApplicationComponent
 	 */
 	public function deleteRouteById($routeId)
 	{
-		blx()->db->createCommand()->delete('routes', array('id' => $routeId));
+		craft()->db->createCommand()->delete('routes', array('id' => $routeId));
 		return true;
 	}
 
@@ -128,7 +128,7 @@ class RoutesService extends BaseApplicationComponent
 		{
 			$data = array('sortOrder' => $order + 1);
 			$condition = array('id' => $routeId);
-			blx()->db->createCommand()->update('routes', $data, $condition);
+			craft()->db->createCommand()->update('routes', $data, $condition);
 		}
 	}
 

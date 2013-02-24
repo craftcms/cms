@@ -1,4 +1,4 @@
-Blocks.Grid = Garnish.Base.extend({
+Craft.Grid = Garnish.Base.extend({
 
 	$container: null,
 
@@ -12,7 +12,7 @@ Blocks.Grid = Garnish.Base.extend({
 	{
 		this.$container = $(container);
 
-		this.setSettings(settings, Blocks.Grid.defaults);
+		this.setSettings(settings, Craft.Grid.defaults);
 
 		this.$items = this.$container.children(this.settings.itemSelector);
 
@@ -129,7 +129,7 @@ Blocks.Grid = Garnish.Base.extend({
 			var actualTotalCols = Math.min(this.totalCols, this.$items.length);
 			for (var i = 0; i < actualTotalCols; i++)
 			{
-				this.cols[i] = new Blocks.Grid.Col(this, i);
+				this.cols[i] = new Craft.Grid.Col(this, i);
 			}
 
 			// Place the items
@@ -184,7 +184,7 @@ Blocks.Grid = Garnish.Base.extend({
 
 						// Get all the possible scenarios
 						this.ltrScenarios.push(
-							new Blocks.Grid.LtrScenario(this, 0, 0, [[]], 0)
+							new Craft.Grid.LtrScenario(this, 0, 0, [[]], 0)
 						);
 
 						// Find the scenario with the shortest tallest column
@@ -276,7 +276,7 @@ Blocks.Grid = Garnish.Base.extend({
 });
 
 
-Blocks.Grid.Col = Garnish.Base.extend({
+Craft.Grid.Col = Garnish.Base.extend({
 
 	grid: null,
 	index: null,
@@ -319,7 +319,7 @@ Blocks.Grid.Col = Garnish.Base.extend({
 });
 
 
-Blocks.Grid.LtrScenario = Garnish.Base.extend({
+Craft.Grid.LtrScenario = Garnish.Base.extend({
 
 	placements: null,
 	tallestColHeight: null,
@@ -351,7 +351,7 @@ Blocks.Grid.LtrScenario = Garnish.Base.extend({
 				altPlacements[colIndex].push(itemIndex);
 				var altTallestColHeight = Math.max(this.tallestColHeight, hypotheticalColHeight);
 				grid.ltrScenarios.push(
-					new Blocks.Grid.LtrScenario(grid, itemIndex+1, colIndex+1, altPlacements, altTallestColHeight)
+					new Craft.Grid.LtrScenario(grid, itemIndex+1, colIndex+1, altPlacements, altTallestColHeight)
 				);
 
 				// As for this scenario, move it to the next column

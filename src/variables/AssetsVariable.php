@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Assets functions
@@ -17,7 +17,7 @@ class AssetsVariable
 	 */
 	public function getAllSourceTypes()
 	{
-		$sourceTypes = blx()->assetSources->getAllSourceTypes();
+		$sourceTypes = craft()->assetSources->getAllSourceTypes();
 		return AssetSourceTypeVariable::populateVariables($sourceTypes);
 	}
 
@@ -29,7 +29,7 @@ class AssetsVariable
 	 */
 	public function getSourceType($class)
 	{
-		$sourceType = blx()->assetSources->getSourceType($class);
+		$sourceType = craft()->assetSources->getSourceType($class);
 
 		if ($sourceType)
 		{
@@ -45,7 +45,7 @@ class AssetsVariable
 	 */
 	public function populateSourceType(AssetSourceModel $source)
 	{
-		$sourceType = blx()->assetSources->populateSourceType($source);
+		$sourceType = craft()->assetSources->populateSourceType($source);
 
 		if ($sourceType)
 		{
@@ -61,7 +61,7 @@ class AssetsVariable
 	 */
 	public function getAllSources($indexBy = null)
 	{
-		return blx()->assetSources->getAllSources($indexBy);
+		return craft()->assetSources->getAllSources($indexBy);
 	}
 
 	/**
@@ -72,7 +72,7 @@ class AssetsVariable
 	 */
 	public function getSourceById($id)
 	{
-		return blx()->assetSources->getSourceById($id);
+		return craft()->assetSources->getSourceById($id);
 	}
 
 	// -------------------------------------------
@@ -87,7 +87,7 @@ class AssetsVariable
 	 */
 	public function getFilesBySourceId($id)
 	{
-		return blx()->assets->getFilesBySourceId($id);
+		return craft()->assets->getFilesBySourceId($id);
 	}
 
 	// -------------------------------------------
@@ -101,7 +101,7 @@ class AssetsVariable
 	 */
 	public function getFolderBySourceId($id)
 	{
-		return blx()->assets->findFolder(array(
+		return craft()->assets->findFolder(array(
 			'sourceId' => $id,
 			'parentId' => null
 		));
@@ -118,7 +118,7 @@ class AssetsVariable
 	 */
 	public function getAllAssetTransformations()
 	{
-		return blx()->assetTransformations->getAssetTransformations();
+		return craft()->assetTransformations->getAssetTransformations();
 	}
 
 	/**
@@ -129,7 +129,7 @@ class AssetsVariable
 	 */
 	public function getTransformationByHandle($handle)
 	{
-		return blx()->assetTransformations->getAssetTransformation($handle);
+		return craft()->assetTransformations->getAssetTransformation($handle);
 	}
 
 	/**
@@ -139,9 +139,9 @@ class AssetsVariable
 	public function getTransformationModes()
 	{
 		return array(
-			'scaleToFit' => Blocks::t("Scale to fit"),
-			'scaleAndCrop' => Blocks::t("Scale and crop"),
-			'stretchToFit' => Blocks::t("Stretch to fit"),
+			'scaleToFit' => Craft::t("Scale to fit"),
+			'scaleAndCrop' => Craft::t("Scale and crop"),
+			'stretchToFit' => Craft::t("Stretch to fit"),
 		);
 	}
 
@@ -150,7 +150,7 @@ class AssetsVariable
 	 */
 	public function getAllFolders()
 	{
-		$tree = blx()->assets->getFolderTree();
+		$tree = craft()->assets->getFolderTree();
 		return $tree;
 	}
 }

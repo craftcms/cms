@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Used for representing an abstract column type that will eventually be changed into a physical column type.

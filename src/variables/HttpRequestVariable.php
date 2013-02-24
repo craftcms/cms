@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Request functions
@@ -13,7 +13,7 @@ class HttpRequestVariable
 	 */
 	public function isSecure()
 	{
-		return blx()->request->isSecureConnection();
+		return craft()->request->isSecureConnection();
 	}
 
 	/**
@@ -23,7 +23,7 @@ class HttpRequestVariable
 	 */
 	public function getPath()
 	{
-		return blx()->request->getPath();
+		return craft()->request->getPath();
 	}
 
 	/**
@@ -33,7 +33,7 @@ class HttpRequestVariable
 	 */
 	public function getUrl()
 	{
-		$uri = blx()->request->getPath();
+		$uri = craft()->request->getPath();
 		return UrlHelper::getUrl($uri);
 	}
 
@@ -44,7 +44,7 @@ class HttpRequestVariable
 	 */
 	public function getSegments()
 	{
-		return blx()->request->getSegments();
+		return craft()->request->getSegments();
 	}
 
 	/**
@@ -55,7 +55,7 @@ class HttpRequestVariable
 	 */
 	public function getSegment($num)
 	{
-		return blx()->request->getSegment($num);
+		return craft()->request->getSegment($num);
 	}
 
 	/**
@@ -65,7 +65,7 @@ class HttpRequestVariable
 	 */
 	public function getFirstSegment()
 	{
-		return blx()->request->getSegment(1);
+		return craft()->request->getSegment(1);
 	}
 
 	/**
@@ -75,7 +75,7 @@ class HttpRequestVariable
 	 */
 	public function getLastSegment()
 	{
-		$segments = blx()->request->getSegments();
+		$segments = craft()->request->getSegments();
 
 		if ($segments)
 		{
@@ -92,7 +92,7 @@ class HttpRequestVariable
 	 */
 	public function getParam($name, $default = null)
 	{
-		return blx()->request->getParam($name, $default);
+		return craft()->request->getParam($name, $default);
 	}
 
 	/**
@@ -104,7 +104,7 @@ class HttpRequestVariable
 	 */
 	public function getQuery($name, $default = null)
 	{
-		return blx()->request->getQuery($name, $default);
+		return craft()->request->getQuery($name, $default);
 	}
 
 	/**
@@ -116,7 +116,7 @@ class HttpRequestVariable
 	 */
 	public function getPost($name, $default = null)
 	{
-		return blx()->request->getPost($name, $default);
+		return craft()->request->getPost($name, $default);
 	}
 
 	/**
@@ -126,7 +126,7 @@ class HttpRequestVariable
 	 */
 	public function getServerName()
 	{
-		return blx()->request->getServerName();
+		return craft()->request->getServerName();
 	}
 
 	/**
@@ -136,7 +136,7 @@ class HttpRequestVariable
 	 */
 	public function getUrlFormat()
 	{
-		if (blx()->config->usePathInfo())
+		if (craft()->config->usePathInfo())
 		{
 			return 'pathinfo';
 		}
@@ -153,6 +153,6 @@ class HttpRequestVariable
 	 */
 	public function isMobileBrowser()
 	{
-		return blx()->request->isMobileBrowser();
+		return craft()->request->isMobileBrowser();
 	}
 }

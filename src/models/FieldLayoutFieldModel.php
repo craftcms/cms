@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Field layout field model class
@@ -28,7 +28,7 @@ class FieldLayoutFieldModel extends BaseModel
 	{
 		if ($this->fieldId)
 		{
-			return blx()->fields->getFieldById($this->fieldId);
+			return craft()->fields->getFieldById($this->fieldId);
 		}
 	}
 }

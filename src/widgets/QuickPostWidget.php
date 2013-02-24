@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -17,7 +17,7 @@ class QuickPostWidget extends BaseWidget
 	 */
 	public function getName()
 	{
-		return Blocks::t('Quick Post');
+		return Craft::t('Quick Post');
 	}
 
 	/**
@@ -41,7 +41,7 @@ class QuickPostWidget extends BaseWidget
 	 */
 	public function getSettingsHtml()
 	{
-		return blx()->templates->render('_components/widgets/QuickPost/settings', array(
+		return craft()->templates->render('_components/widgets/QuickPost/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -75,7 +75,7 @@ class QuickPostWidget extends BaseWidget
 
 		if ($section)
 		{
-			return Blocks::t('Post a new {section} entry', array('section' => $section->name));
+			return Craft::t('Post a new {section} entry', array('section' => $section->name));
 		}
 	}
 
@@ -86,25 +86,25 @@ class QuickPostWidget extends BaseWidget
 	 */
 	public function getBodyHtml()
 	{
-		blx()->templates->includeTranslations('Entry saved.', 'Couldn’t save entry.');
-		blx()->templates->includeJsResource('js/QuickPostWidget.js');
+		craft()->templates->includeTranslations('Entry saved.', 'Couldn’t save entry.');
+		craft()->templates->includeJsResource('js/QuickPostWidget.js');
 
 		$section = $this->_getSection();
 
 		if (!$section)
 		{
-			return '<p>'.Blocks::t('No section has been selected yet.').'</p>';
+			return '<p>'.Craft::t('No section has been selected yet.').'</p>';
 		}
 
 		$params = array('sectionId' => $section->id);
-		blx()->templates->includeJs('new Blocks.QuickPostWidget('.$this->model->id.', '.JsonHelper::encode($params).', function() {');
+		craft()->templates->includeJs('new Craft.QuickPostWidget('.$this->model->id.', '.JsonHelper::encode($params).', function() {');
 
-		$html = blx()->templates->render('_components/widgets/QuickPost/body', array(
+		$html = craft()->templates->render('_components/widgets/QuickPost/body', array(
 			'section'  => $section,
 			'settings' => $this->getSettings()
 		));
 
-		blx()->templates->includeJs('});');
+		craft()->templates->includeJs('});');
 
 		return $html;
 	}
@@ -124,7 +124,7 @@ class QuickPostWidget extends BaseWidget
 
 			if ($sectionId)
 			{
-				$this->_section = blx()->sections->getSectionById($sectionId);
+				$this->_section = craft()->sections->getSectionById($sectionId);
 			}
 		}
 

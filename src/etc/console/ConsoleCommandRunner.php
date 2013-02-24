@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -51,14 +51,14 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 				}
 				else // an alias
 				{
-					$className = Blocks::import($command);
+					$className = Craft::import($command);
 				}
 
 				return new $className($name, $this);
 			}
 			else // an array configuration
 			{
-				return Blocks::createComponent($command, $name, $this);
+				return Craft::createComponent($command, $name, $this);
 			}
 		}
 		else if ($name === 'help')

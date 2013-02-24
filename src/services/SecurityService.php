@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -14,7 +14,7 @@ class SecurityService extends BaseApplicationComponent
 	function __construct()
 	{
 		parent::init();
-		$this->_iterationCount = blx()->config->get('phpPass-iterationCount');
+		$this->_iterationCount = craft()->config->get('phpPass-iterationCount');
 	}
 
 	/**
@@ -38,7 +38,7 @@ class SecurityService extends BaseApplicationComponent
 
 		if (!$check)
 		{
-			throw new Exception(Blocks::t('Could not hash the given string.'));
+			throw new Exception(Craft::t('Could not hash the given string.'));
 		}
 
 		return $hashAndType;

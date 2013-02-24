@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -15,8 +15,8 @@ class InstallController extends BaseController
 	 */
 	public function init()
 	{
-		// Return a 404 if Blocks is already installed
-		if (!blx()->config->get('devMode') && blx()->isInstalled())
+		// Return a 404 if Craft is already installed
+		if (!craft()->config->get('devMode') && craft()->isInstalled())
 		{
 			throw new HttpException(404);
 		}
@@ -38,7 +38,7 @@ class InstallController extends BaseController
 		else
 		{
 			// Guess the site name based on the server name
-			$server = blx()->request->getServerName();
+			$server = craft()->request->getServerName();
 			$words = preg_split('/[\-_\.]+/', $server);
 			array_pop($words);
 			$vars['siteName'] = implode(' ', array_map('ucfirst', $words));
@@ -57,7 +57,7 @@ class InstallController extends BaseController
 		$this->requireAjaxRequest();
 
 		$licenseKey = new LicenseKeyModel();
-		$licenseKey->licensekey = blx()->request->getPost('licensekey');
+		$licenseKey->licensekey = craft()->request->getPost('licensekey');
 
 		if ($licenseKey->validate())
 		{
@@ -80,9 +80,9 @@ class InstallController extends BaseController
 		$this->requireAjaxRequest();
 
 		$accountSettings = new AccountSettingsModel();
-		$accountSettings->username = blx()->request->getPost('username');
-		$accountSettings->email = blx()->request->getPost('email');
-		$accountSettings->password = blx()->request->getPost('password');
+		$accountSettings->username = craft()->request->getPost('username');
+		$accountSettings->email = craft()->request->getPost('email');
+		$accountSettings->password = craft()->request->getPost('password');
 
 		if ($accountSettings->validate())
 		{
@@ -105,8 +105,8 @@ class InstallController extends BaseController
 		$this->requireAjaxRequest();
 
 		$siteSettings = new SiteSettingsModel();
-		$siteSettings->siteName = blx()->request->getPost('siteName');
-		$siteSettings->siteUrl = blx()->request->getPost('siteUrl');
+		$siteSettings->siteName = craft()->request->getPost('siteName');
+		$siteSettings->siteUrl = craft()->request->getPost('siteUrl');
 
 		if ($siteSettings->validate())
 		{
@@ -129,15 +129,15 @@ class InstallController extends BaseController
 		$this->requireAjaxRequest();
 
 		// Run the installer
-		$inputs['licenseKey'] = blx()->request->getPost('licensekey');
-		$inputs['username']   = blx()->request->getPost('username');
-		$inputs['email']      = blx()->request->getPost('email');
-		$inputs['password']   = blx()->request->getPost('password');
-		$inputs['siteName']   = blx()->request->getPost('siteName');
-		$inputs['siteUrl']    = blx()->request->getPost('siteUrl');
-		$inputs['locale'  ]   = blx()->request->getPost('locale');
+		$inputs['licenseKey'] = craft()->request->getPost('licensekey');
+		$inputs['username']   = craft()->request->getPost('username');
+		$inputs['email']      = craft()->request->getPost('email');
+		$inputs['password']   = craft()->request->getPost('password');
+		$inputs['siteName']   = craft()->request->getPost('siteName');
+		$inputs['siteUrl']    = craft()->request->getPost('siteUrl');
+		$inputs['locale'  ]   = craft()->request->getPost('locale');
 
-		blx()->install->run($inputs);
+		craft()->install->run($inputs);
 
 		$return = array('success' => true);
 		$this->returnJson($return);

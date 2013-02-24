@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Singleton functions
@@ -14,7 +14,7 @@ class SingletonsVariable
 	 */
 	public function getAllSingletons($indexBy = null)
 	{
-		return blx()->singletons->getAllSingletons($indexBy);
+		return craft()->singletons->getAllSingletons($indexBy);
 	}
 
 	/**
@@ -25,7 +25,7 @@ class SingletonsVariable
 	 */
 	public function getEditableSingletons($indexBy = null)
 	{
-		return blx()->singletons->getEditableSingletons($indexBy);
+		return craft()->singletons->getEditableSingletons($indexBy);
 	}
 
 	/**
@@ -35,7 +35,7 @@ class SingletonsVariable
 	 */
 	public function getTotalSingletons()
 	{
-		return blx()->singletons->getTotalSingletons();
+		return craft()->singletons->getTotalSingletons();
 	}
 
 	/**
@@ -46,7 +46,7 @@ class SingletonsVariable
 	 */
 	public function getSingletonById($id)
 	{
-		return blx()->singletons->getSingletonById($id);
+		return craft()->singletons->getSingletonById($id);
 	}
 
 	/**
@@ -57,6 +57,6 @@ class SingletonsVariable
 	 */
 	public function getSingletonByUri($uri)
 	{
-		return blx()->singletons->getSingletonByUri($uri);
+		return craft()->singletons->getSingletonByUri($uri);
 	}
 }

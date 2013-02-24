@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -110,7 +110,7 @@ class AssetTransformationsService extends BaseApplicationComponent
 	 */
 	public function deleteTransformation($transformationId)
 	{
-		blx()->db->createCommand()->delete('assettransformations', array('id' => $transformationId));
+		craft()->db->createCommand()->delete('assettransformations', array('id' => $transformationId));
 		return true;
 	}
 
@@ -149,7 +149,7 @@ class AssetTransformationsService extends BaseApplicationComponent
 	 */
 	private function _noTransformationExists($handle)
 	{
-		throw new Exception(Blocks::t("Can't find the transformation with handle “{handle}”", array('handle' => $handle)));
+		throw new Exception(Craft::t("Can't find the transformation with handle “{handle}”", array('handle' => $handle)));
 	}
 
 	/**
@@ -166,7 +166,7 @@ class AssetTransformationsService extends BaseApplicationComponent
 			return true;
 		}
 
-		$sourceType = blx()->assetSources->getSourceTypeById($fileModel->sourceId);
+		$sourceType = craft()->assetSources->getSourceTypeById($fileModel->sourceId);
 		$imageSource = $sourceType->getImageSourcePath($fileModel);
 
 		if (!IOHelper::fileExists($imageSource))
@@ -190,19 +190,19 @@ class AssetTransformationsService extends BaseApplicationComponent
 				{
 					case 'scaleToFit':
 					{
-						blx()->images->loadImage($imageSource)->scale($transformation->width, $transformation->height)->saveAs($targetFile);
+						craft()->images->loadImage($imageSource)->scale($transformation->width, $transformation->height)->saveAs($targetFile);
 						break;
 					}
 
 					case 'scaleAndCrop':
 					{
-						blx()->images->loadImage($imageSource)->scaleAndCrop($transformation->width, $transformation->height)->saveAs($targetFile);
+						craft()->images->loadImage($imageSource)->scaleAndCrop($transformation->width, $transformation->height)->saveAs($targetFile);
 						break;
 
 					}
 					case 'stretchToFit':
 					{
-						blx()->images->loadImage($imageSource)->resizeTo($transformation->width, $transformation->height)->saveAs($targetFile);
+						craft()->images->loadImage($imageSource)->resizeTo($transformation->width, $transformation->height)->saveAs($targetFile);
 						break;
 					}
 

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -17,9 +17,9 @@ class UpdateController extends BaseController
 	 */
 	public function actionGetAvailableUpdates()
 	{
-		blx()->userSession->requirePermission('autoUpdateBlocks');
+		craft()->userSession->requirePermission('autoUpdateCraft');
 
-		$updates = blx()->updates->getUpdates(true);
+		$updates = craft()->updates->getUpdates(true);
 		$this->returnJson($updates);
 	}
 
@@ -28,18 +28,18 @@ class UpdateController extends BaseController
 	 */
 	public function actionGetUpdates()
 	{
-		blx()->userSession->requirePermission('autoUpdateBlocks');
+		craft()->userSession->requirePermission('autoUpdateCraft');
 
 		$this->requireAjaxRequest();
 
-		$handle = blx()->request->getRequiredPost('handle');
+		$handle = craft()->request->getRequiredPost('handle');
 
 		$return = array();
-		$updateInfo = blx()->updates->getUpdates();
+		$updateInfo = craft()->updates->getUpdates();
 
 		if (!$updateInfo)
 		{
-			$this->returnErrorJson(Blocks::t('There was a problem getting the latest update information.'));
+			$this->returnErrorJson(Craft::t('There was a problem getting the latest update information.'));
 		}
 
 		try
@@ -48,8 +48,8 @@ class UpdateController extends BaseController
 			{
 				case 'all':
 				{
-					// Blocks first.
-					$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->blocks->latestVersion.'.'.$updateInfo->blocks->latestBuild, 'critical' => $updateInfo->blocks->criticalUpdateAvailable, 'releaseDate' => $updateInfo->blocks->latestDate->getTimestamp());
+					// Craft first.
+					$return[] = array('handle' => 'Craft', 'name' => 'Craft', 'version' => $updateInfo->craft->latestVersion.'.'.$updateInfo->craft->latestBuild, 'critical' => $updateInfo->craft->criticalUpdateAvailable, 'releaseDate' => $updateInfo->craft->latestDate->getTimestamp());
 
 					// Plugins
 					if ($updateInfo->plugins !== null)
@@ -66,9 +66,9 @@ class UpdateController extends BaseController
 					break;
 				}
 
-				case 'blocks':
+				case 'craft':
 				{
-					$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->blocks->latestVersion.'.'.$updateInfo->blocks->latestBuild, 'critical' => $updateInfo->blocks->criticalUpdateAvailable, 'releaseDate' => $updateInfo->blocks->latestDate->getTimestamp());
+					$return[] = array('handle' => 'Craft', 'name' => 'Craft', 'version' => $updateInfo->craft->latestVersion.'.'.$updateInfo->craft->latestBuild, 'critical' => $updateInfo->craft->criticalUpdateAvailable, 'releaseDate' => $updateInfo->craft->latestDate->getTimestamp());
 					break;
 				}
 
@@ -83,12 +83,12 @@ class UpdateController extends BaseController
 						}
 						else
 						{
-							$this->returnErrorJson(Blocks::t("Could not find any update information for the plugin with handle “{handle}”.", array('handle' => $handle)));
+							$this->returnErrorJson(Craft::t("Could not find any update information for the plugin with handle “{handle}”.", array('handle' => $handle)));
 						}
 					}
 					else
 					{
-						$this->returnErrorJson(Blocks::t("Could not find any update information for the plugin with handle “{handle}”.", array('handle' => $handle)));
+						$this->returnErrorJson(Craft::t("Could not find any update information for the plugin with handle “{handle}”.", array('handle' => $handle)));
 					}
 				}
 			}
@@ -130,20 +130,20 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = blx()->request->getRequiredPost('data');
+		$data = craft()->request->getRequiredPost('data');
 
 		$manual = false;
 		if (!$this->_isManualUpdate($data))
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
-			blx()->userSession->requirePermission('autoUpdateBlocks');
+			craft()->userSession->requirePermission('autoUpdateCraft');
 		}
 		else
 		{
 			$manual = true;
 		}
 
-		$return = blx()->updates->prepareUpdate($manual, $data['handle']);
+		$return = craft()->updates->prepareUpdate($manual, $data['handle']);
 
 		if (!$return['success'])
 		{
@@ -152,11 +152,11 @@ class UpdateController extends BaseController
 
 		if ($manual)
 		{
-			$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Backing Up Database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
+			$this->returnJson(array('success' => true, 'nextStatus' => Craft::t('Backing Up Database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
 		}
 		else
 		{
-			$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Downloading Update…'), 'nextAction' => 'update/processDownload'));
+			$this->returnJson(array('success' => true, 'nextStatus' => Craft::t('Downloading Update…'), 'nextAction' => 'update/processDownload'));
 		}
 
 	}
@@ -167,12 +167,12 @@ class UpdateController extends BaseController
 	public function actionProcessDownload()
 	{
 		// This method should never be called in a manual update.
-		blx()->userSession->requirePermission('autoUpdateBlocks');
+		craft()->userSession->requirePermission('autoUpdateCraft');
 
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$return = blx()->updates->processUpdateDownload();
+		$return = craft()->updates->processUpdateDownload();
 		if (!$return['success'])
 		{
 			$this->returnJson(array('error' => $return['message']));
@@ -180,7 +180,7 @@ class UpdateController extends BaseController
 
 		unset($return['success']);
 
-		$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Backing Up Files…'), 'nextAction' => 'update/backupFiles', 'data' => $return));
+		$this->returnJson(array('success' => true, 'nextStatus' => Craft::t('Backing Up Files…'), 'nextAction' => 'update/backupFiles', 'data' => $return));
 	}
 
 	/**
@@ -189,20 +189,20 @@ class UpdateController extends BaseController
 	public function actionBackupFiles()
 	{
 		// This method should never be called in a manual update.
-		blx()->userSession->requirePermission('autoUpdateBlocks');
+		craft()->userSession->requirePermission('autoUpdateCraft');
 
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = blx()->request->getRequiredPost('data');
+		$data = craft()->request->getRequiredPost('data');
 
-		$return = blx()->updates->backupFiles($data['uid']);
+		$return = craft()->updates->backupFiles($data['uid']);
 		if (!$return['success'])
 		{
 			$this->returnJson(array('error' => $return['message']));
 		}
 
-		$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Updating Files…'), 'nextAction' => 'update/updateFiles', 'data' => $data));
+		$this->returnJson(array('success' => true, 'nextStatus' => Craft::t('Updating Files…'), 'nextAction' => 'update/updateFiles', 'data' => $data));
 	}
 
 	/**
@@ -211,20 +211,20 @@ class UpdateController extends BaseController
 	public function actionUpdateFiles()
 	{
 		// This method should never be called in a manual update.
-		blx()->userSession->requirePermission('autoUpdateBlocks');
+		craft()->userSession->requirePermission('autoUpdateCraft');
 
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = blx()->request->getRequiredPost('data');
+		$data = craft()->request->getRequiredPost('data');
 
-		$return = blx()->updates->updateFiles($data['uid']);
+		$return = craft()->updates->updateFiles($data['uid']);
 		if (!$return['success'])
 		{
 			$this->returnJson(array('error' => $return['message']));
 		}
 
-		$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Backing Up Database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
+		$this->returnJson(array('success' => true, 'nextStatus' => Craft::t('Backing Up Database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
 	}
 
 	/**
@@ -235,7 +235,7 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = blx()->request->getRequiredPost('data');
+		$data = craft()->request->getRequiredPost('data');
 
 		if ($this->_isManualUpdate($data))
 		{
@@ -244,14 +244,14 @@ class UpdateController extends BaseController
 		else
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
-			blx()->userSession->requirePermission('autoUpdateBlocks');
+			craft()->userSession->requirePermission('autoUpdateCraft');
 
 			$uid = $data['uid'];
 		}
 
-		if (blx()->config->get('backupDbOnUpdate'))
+		if (craft()->config->get('backupDbOnUpdate'))
 		{
-			$return = blx()->updates->backupDatabase($uid);
+			$return = craft()->updates->backupDatabase($uid);
 			if (!$return['success'])
 			{
 				$this->returnJson(array('error' => $return['message']));
@@ -263,7 +263,7 @@ class UpdateController extends BaseController
 			}
 		}
 
-		$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Updating Database…'), 'nextAction' => 'update/updateDatabase', 'data' => $data));
+		$this->returnJson(array('success' => true, 'nextStatus' => Craft::t('Updating Database…'), 'nextAction' => 'update/updateDatabase', 'data' => $data));
 	}
 
 	/**
@@ -274,7 +274,7 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = blx()->request->getRequiredPost('data');
+		$data = craft()->request->getRequiredPost('data');
 
 		if ($this->_isManualUpdate($data))
 		{
@@ -283,7 +283,7 @@ class UpdateController extends BaseController
 		else
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
-			blx()->userSession->requirePermission('autoUpdateBlocks');
+			craft()->userSession->requirePermission('autoUpdateCraft');
 
 			$uid = $data['uid'];
 		}
@@ -292,11 +292,11 @@ class UpdateController extends BaseController
 
 		if (isset($data['dbBackupPath']))
 		{
-			$return = blx()->updates->updateDatabase($uid, $handle, $data['dbBackupPath']);
+			$return = craft()->updates->updateDatabase($uid, $handle, $data['dbBackupPath']);
 		}
 		else
 		{
-			$return = blx()->updates->updateDatabase($uid, $handle);
+			$return = craft()->updates->updateDatabase($uid, $handle);
 		}
 
 		if (!$return['success'])
@@ -304,7 +304,7 @@ class UpdateController extends BaseController
 			$this->returnJson(array('error' => $return['message']));
 		}
 
-		$this->returnJson(array('success' => true, 'nextStatus' => Blocks::t('Cleaning Up…'), 'nextAction' => 'update/cleanUp', 'data' => $data));
+		$this->returnJson(array('success' => true, 'nextStatus' => Craft::t('Cleaning Up…'), 'nextAction' => 'update/cleanUp', 'data' => $data));
 	}
 
 	/**
@@ -315,7 +315,7 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = blx()->request->getRequiredPost('data');
+		$data = craft()->request->getRequiredPost('data');
 
 		if ($this->_isManualUpdate($data))
 		{
@@ -324,20 +324,20 @@ class UpdateController extends BaseController
 		else
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
-			blx()->userSession->requirePermission('autoUpdateBlocks');
+			craft()->userSession->requirePermission('autoUpdateCraft');
 
 			$uid = $data['uid'];
 		}
 
 		$handle = $this->_getFixedHandle($data);
 
-		$return = blx()->updates->updateCleanUp($uid, $handle);
+		$return = craft()->updates->updateCleanUp($uid, $handle);
 		if (!$return['success'])
 		{
 			$this->returnJson(array('error' => $return['message']));
 		}
 
-		$this->returnJson(array('success' => true, 'finished' => true, 'returnUrl' => blx()->userSession->getReturnUrl()));
+		$this->returnJson(array('success' => true, 'finished' => true, 'returnUrl' => craft()->userSession->getReturnUrl()));
 	}
 
 	/**
@@ -348,7 +348,7 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = blx()->request->getRequiredPost('data');
+		$data = craft()->request->getRequiredPost('data');
 
 		if ($this->_isManualUpdate($data))
 		{
@@ -357,18 +357,18 @@ class UpdateController extends BaseController
 		else
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
-			blx()->userSession->requirePermission('autoUpdateBlocks');
+			craft()->userSession->requirePermission('autoUpdateCraft');
 
 			$uid = $data['uid'];
 		}
 
 		if (isset($data['dbBackupPath']))
 		{
-			$return = blx()->updates->rollbackUpdate($uid, $data['dbBackupPath']);
+			$return = craft()->updates->rollbackUpdate($uid, $data['dbBackupPath']);
 		}
 		else
 		{
-			$return = blx()->updates->rollbackUpdate($uid);
+			$return = craft()->updates->rollbackUpdate($uid);
 		}
 
 		if (!$return['success'])
@@ -404,7 +404,7 @@ class UpdateController extends BaseController
 
 		if (!isset($data['handle']))
 		{
-			return 'blocks';
+			return 'craft';
 		}
 		else
 		{

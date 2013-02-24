@@ -16,7 +16,7 @@
 
 {% set content %}
 	<div id="messages">
-		{% for message in blx.emailMessages.getAllMessages %}
+		{% for message in craft.emailMessages.getAllMessages %}
 			<h2>{{ (message.key~'_heading')|t }}</h2>
 			<div class="pane message" data-key="{{ message.key }}">
 				<div class="subject">{{ message.subject }}</div>

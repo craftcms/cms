@@ -15,8 +15,8 @@ function normalizeDbHostname($dbHostname)
 	return $dbHostname;
 }
 
-$packages = explode(',', BLOCKS_PACKAGES);
-$common = require(BLOCKS_APP_PATH.'etc/config/common.php');
+$packages = explode(',', CRAFT_PACKAGES);
+$common = require(CRAFT_APP_PATH.'etc/config/common.php');
 
 return CMap::mergeArray($common, array(
 
@@ -54,13 +54,13 @@ return CMap::mergeArray($common, array(
 			'password'          => $dbConfig['password'],
 			'charset'           => $dbConfig['charset'],
 			'tablePrefix'       => $tablePrefix,
-			'driverMap'         => array('mysql' => 'Blocks\MysqlSchema'),
-			'class'             => 'Blocks\DbConnection',
+			'driverMap'         => array('mysql' => 'Craft\MysqlSchema'),
+			'class'             => 'Craft\DbConnection',
 		),
 		'migrations' => array(
-			'class'             => 'Blocks\MigrationsService',
+			'class'             => 'Craft\MigrationsService',
 		),
 	),
 
-	'commandPath' => Blocks\Blocks::getPathOfAlias('system.cli.commands.*'),
+	'commandPath' => Craft\Craft::getPathOfAlias('system.cli.commands.*'),
 ));

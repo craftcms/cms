@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::Rebrand);
+Craft::requirePackage(CraftPackage::Rebrand);
 
 /**
  * Rebranding functions
@@ -55,7 +55,7 @@ class RebrandVariable
 	{
 		if (!isset($this->_logoPath))
 		{
-			$files = IOHelper::getFolderContents(blx()->path->getStoragePath().'logo/', false);
+			$files = IOHelper::getFolderContents(craft()->path->getStoragePath().'logo/', false);
 			if (!empty($files))
 			{
 				$this->_logoPath = $files[0];

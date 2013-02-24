@@ -2,19 +2,19 @@
 {% import "_includes/forms" as forms %}
 
 {% if fieldId is defined %}
-	{% set field = blx.fields.getFieldById(fieldId) %}
+	{% set field = craft.fields.getFieldById(fieldId) %}
 	{% if not field %}
 		{% exit 404 %}
 	{% endif %}
 {% endif %}
 
 
-{% set groups = blx.fields.getAllGroups('id') %}
+{% set groups = craft.fields.getAllGroups('id') %}
 {% if not groups %}
 	{% exit 404 %}
 {% endif %}
 
-{% set groupId = blx.request.getQuery('groupId') %}
+{% set groupId = craft.request.getQuery('groupId') %}
 
 {% if not groupId %}
 	{% if field is defined %}
@@ -42,17 +42,17 @@
 {% endif %}
 
 
-{% set fieldTypes = blx.fields.getAllFieldTypes %}
+{% set fieldTypes = craft.fields.getAllFieldTypes %}
 
 {% if field is defined %}
-	{% set fieldType = blx.fields.populateFieldType(field) %}
+	{% set fieldType = craft.fields.populateFieldType(field) %}
 	{% set isFieldTypeMissing = not fieldType %}
 {% else %}
 	{% set isFieldTypeMissing = false %}
 {% endif %}
 
 {% if fieldType is not defined or isFieldTypeMissing %}
-	{% set fieldType = blx.fields.getFieldType('PlainText') %}
+	{% set fieldType = craft.fields.getFieldType('PlainText') %}
 {% endif %}
 
 
@@ -106,7 +106,7 @@
 			translatable: true
 		}) }}
 
-		{% if blx.hasPackage('Language') %}
+		{% if craft.hasPackage('Language') %}
 			{{ forms.checkboxField({
 				label: "This field is translatable"|t,
 				name: 'translatable',
@@ -153,5 +153,5 @@
 
 
 {% if field is not defined or not field.handle %}
-	{% includeJs "new Blocks.HandleGenerator('#name', '#handle');" %}
+	{% includeJs "new Craft.HandleGenerator('#name', '#handle');" %}
 {% endif %}

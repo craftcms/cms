@@ -1,7 +1,7 @@
 {% requirePackage 'PublishPro' %}
 
-{% set drafts = blx.entryRevisions.getEditableDraftsByEntryId(entry.id) %}
-{% set versions = blx.entryRevisions.getVersionsByEntryId(entry.id) %}
+{% set drafts = craft.entryRevisions.getEditableDraftsByEntryId(entry.id) %}
+{% set versions = craft.entryRevisions.getVersionsByEntryId(entry.id) %}
 
 <div class="btn menubtn">{{ revisionLabel }}</div>
 
@@ -18,7 +18,7 @@
 			{% for draft in drafts %}
 				<li><a{% if entry.classHandle == 'EntryDraft' and draft.draftId == draftId %} class="sel"{% endif %} href="{{ entry.cpEditUrl }}/drafts/{{ draft.draftId }}">
 					{{ "Draft {id}"|t({ id: draft.draftId }) }}
-					{% if blx.hasPackage('Users') %}
+					{% if craft.hasPackage('Users') %}
 						<span class="light">{{ draft.creator }}</span>
 					{% endif %}
 				</a></li>
@@ -35,7 +35,7 @@
 			{% for version in versions %}
 				<li><a{% if entry.classHandle == 'EntryVersion' and version.versionId == versionId %} class="sel"{% endif %} href="{{ entry.cpEditUrl }}/versions/{{ version.versionId }}">
 					{{ "Version {id}"|t({ id: version.versionId }) }}
-					{% if blx.hasPackage('Users') %}
+					{% if craft.hasPackage('Users') %}
 						<span class="light">{{ version.creator }}</span>
 					{% endif %}
 				</a></li>

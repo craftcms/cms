@@ -1,7 +1,7 @@
 (function($) {
 
 
-Blocks.Locales = Garnish.Base.extend({
+Craft.Locales = Garnish.Base.extend({
 
 	$addLocaleField: null,
 	$addLocaleInput: null,
@@ -22,7 +22,7 @@ Blocks.Locales = Garnish.Base.extend({
 		{
 			this.locales[id] = {
 				name: locales[id],
-				words: Blocks.asciiString(id+' '+locales[id]).match(Blocks.Locales.wordRegex)
+				words: Craft.asciiString(id+' '+locales[id]).match(Craft.Locales.wordRegex)
 			};
 		}
 
@@ -31,7 +31,7 @@ Blocks.Locales = Garnish.Base.extend({
 		this.$addLocaleField = $('#addlocale');
 		this.$addLocaleInput = $('#addlocaleinput');
 
-		this.adminTable = new Blocks.AdminTable({
+		this.adminTable = new Craft.AdminTable({
 			tableSelector: '#locales',
 			sortable: true,
 			allowDeleteAll: false,
@@ -149,7 +149,7 @@ Blocks.Locales = Garnish.Base.extend({
 	findMatchingLocales: function()
 	{
 		var matchingLocales = [],
-			inputValWords = Blocks.asciiString(this.inputVal).match(Blocks.Locales.wordRegex);
+			inputValWords = Craft.asciiString(this.inputVal).match(Craft.Locales.wordRegex);
 
 		if (inputValWords)
 		{
@@ -161,7 +161,7 @@ Blocks.Locales = Garnish.Base.extend({
 
 			for (var id in this.locales)
 			{
-				if (Blocks.inArray(id, this.selectedLocales))
+				if (Craft.inArray(id, this.selectedLocales))
 				{
 					continue;
 				}
@@ -245,15 +245,15 @@ Blocks.Locales = Garnish.Base.extend({
 
 		var id = $activeLocale.attr('data-id');
 
-		Blocks.postActionRequest('localization/addLocale', { id: id }, $.proxy(function(response) {
+		Craft.postActionRequest('localization/addLocale', { id: id }, $.proxy(function(response) {
 
 			if (response.success)
 			{
 				var $tr = $('<tr data-id="'+id+'" data-name="'+this.locales[id].name+'">' +
-								'<th scope="row" data-title="'+Blocks.t('Name')+'" width="40%">'+this.locales[id].name+'</th>' +
-								'<td data-title="'+Blocks.t('Locale ID')+'">'+id+'</td>' +
-								'<td class="thin"><a class="move icon" title="'+Blocks.t('Reorder')+'"></a></td>' +
-								'<td class="thin"><a class="delete icon" title="'+Blocks.t('Delete')+'"></a></td>' +
+								'<th scope="row" data-title="'+Craft.t('Name')+'" width="40%">'+this.locales[id].name+'</th>' +
+								'<td data-title="'+Craft.t('Locale ID')+'">'+id+'</td>' +
+								'<td class="thin"><a class="move icon" title="'+Craft.t('Reorder')+'"></a></td>' +
+								'<td class="thin"><a class="delete icon" title="'+Craft.t('Delete')+'"></a></td>' +
 							'</tr>');
 
 				this.adminTable.addRow($tr);
@@ -262,11 +262,11 @@ Blocks.Locales = Garnish.Base.extend({
 				this.$addLocaleInput.val('').trigger('keydown');
 				this.checkInputVal();
 
-				Blocks.cp.displayNotice(Blocks.t('New locale added.'));
+				Craft.cp.displayNotice(Craft.t('New locale added.'));
 			}
 			else
 			{
-				Blocks.cp.displayError(Blocks.t('Unable to add the new locale.'));
+				Craft.cp.displayError(Craft.t('Unable to add the new locale.'));
 			}
 
 		}, this))

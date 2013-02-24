@@ -2,14 +2,14 @@
 {% import "_includes/forms" as forms %}
 
 {% set crumbs = [
-    { label: "Settings"|t, url: url('settings') },
-    { label: "Assets"|t, url: url('settings/assets') },
-    { label: "Transformations"|t, url: url('settings/assets/transformations') }
+	{ label: "Settings"|t, url: url('settings') },
+	{ label: "Assets"|t, url: url('settings/assets') },
+	{ label: "Transformations"|t, url: url('settings/assets/transformations') }
 ] %}
 
 
 {% if transformation is not defined and handle is defined %}
-	{% set transformation = blx.assets.getTransformationByHandle(handle) %}
+	{% set transformation = craft.assets.getTransformationByHandle(handle) %}
 	{% if not transformation %}{% exit 404 %}{% endif %}
 {% endif %}
 
@@ -31,7 +31,7 @@
 		{% if not isNewTransformation %}<input type="hidden" name="transformationId" value="{{ transformation.id }}">{% endif %}
 
 		{{ forms.textField({
-            first: true,
+			first: true,
 			label: "Name"|t,
 			id: 'name',
 			name: 'name',
@@ -42,47 +42,47 @@
 			translatable: true
 		}) }}
 
-        {{ forms.selectField({
-        label: "Mode"|t,
-        id: "mode",
-        name: "mode",
-        options: blx.assets.transformationModes,
-        value: (transformation is defined ? transformation.mode : null),
-        required: true,
-        translatable: true
-        }) }}
+		{{ forms.selectField({
+		label: "Mode"|t,
+		id: "mode",
+		name: "mode",
+		options: craft.assets.transformationModes,
+		value: (transformation is defined ? transformation.mode : null),
+		required: true,
+		translatable: true
+		}) }}
 
 		{{ forms.textField({
-            label: "Handle"|t,
-            id: "handle",
-            name: "handle",
-            value: (transformation is defined ? transformation.handle : null),
-            errors: (transformation is defined ? transformation.getErrors('handle') : null),
-            required: true,
-            translatable: true
-        }) }}
+			label: "Handle"|t,
+			id: "handle",
+			name: "handle",
+			value: (transformation is defined ? transformation.handle : null),
+			errors: (transformation is defined ? transformation.getErrors('handle') : null),
+			required: true,
+			translatable: true
+		}) }}
 
-        {{ forms.textField({
-        label: "Width"|t,
-        id: "width",
-        name: "width",
-        value: (transformation is defined ? transformation.width : null),
-        errors: (transformation is defined ? transformation.getErrors('width') : null),
-        required: true,
-        translatable: true
-        }) }}
+		{{ forms.textField({
+		label: "Width"|t,
+		id: "width",
+		name: "width",
+		value: (transformation is defined ? transformation.width : null),
+		errors: (transformation is defined ? transformation.getErrors('width') : null),
+		required: true,
+		translatable: true
+		}) }}
 
-        {{ forms.textField({
-        label: "Height"|t,
-        id: "height",
-        name: "height",
-        value: (transformation is defined ? transformation.height : null),
-        errors: (transformation is defined ? transformation.getErrors('height') : null),
-        required: true,
-        translatable: true
-        }) }}
+		{{ forms.textField({
+		label: "Height"|t,
+		id: "height",
+		name: "height",
+		value: (transformation is defined ? transformation.height : null),
+		errors: (transformation is defined ? transformation.getErrors('height') : null),
+		required: true,
+		translatable: true
+		}) }}
 
-        <div class="buttons">
+		<div class="buttons">
 			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 		</div>
 	</form>
@@ -90,6 +90,6 @@
 
 
 {% set js %}
-    {% if transformation is not defined or not transformation.handle %}new Blocks.HandleGenerator('#name', '#handle');{% endif %}
+	{% if transformation is not defined or not transformation.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
 {% endset %}
 {% includeJs js %}

@@ -1,7 +1,7 @@
 (function($) {
 
 
-Blocks.GetHelpWidget = Garnish.Base.extend({
+Craft.GetHelpWidget = Garnish.Base.extend({
 
 	$widget: null,
 	$message: null,
@@ -36,7 +36,7 @@ Blocks.GetHelpWidget = Garnish.Base.extend({
 			message: this.$message.val()
 		};
 
-		Blocks.postActionRequest('dashboard/sendSupportRequest', data, $.proxy(function(response) {
+		Craft.postActionRequest('dashboard/sendSupportRequest', data, $.proxy(function(response) {
 			this.loading = false;
 			this.$sendBtn.removeClass('active');
 			this.$spinner.addClass('hidden');
@@ -44,7 +44,7 @@ Blocks.GetHelpWidget = Garnish.Base.extend({
 			if (response.success)
 			{
 				this.$message.val(this.originalBodyVal);
-				Blocks.cp.displayNotice(Blocks.t('Message sent successfully.'));
+				Craft.cp.displayNotice(Craft.t('Message sent successfully.'));
 			}
 			else
 			{

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -23,7 +23,7 @@ class LocaleData extends \CLocale
 	public static function exists($id)
 	{
 		$id = static::getCanonicalID($id);
-		$dataPath = static::$dataPath === null ? blx()->path->getFrameworkPath().'i18n/data' : static::$dataPath;
+		$dataPath = static::$dataPath === null ? craft()->path->getFrameworkPath().'i18n/data' : static::$dataPath;
 		$dataFile = $dataPath.'/'.$id.'.php';
 
 		return IOHelper::fileExists($dataFile);

@@ -6,7 +6,7 @@
 ] %}
 
 
-{% set singletons = blx.singletons.getAllSingletons() %}
+{% set singletons = craft.singletons.getAllSingletons() %}
 
 
 {% set content %}
@@ -40,7 +40,7 @@
 
 
 {% set js %}
-	new Blocks.AdminTable({
+	new Craft.AdminTable({
 		tableSelector: '#singletons',
 		noObjectsSelector: '#nosingletons',
 		deleteAction: 'singletons/deleteSingleton',

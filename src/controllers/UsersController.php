@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Handles user account related tasks.
@@ -13,22 +13,22 @@ class UsersController extends BaseController
 	 */
 	public function actionLogin()
 	{
-		if (blx()->userSession->isLoggedIn())
+		if (craft()->userSession->isLoggedIn())
 		{
 			$this->redirect('');
 		}
 
 		$vars = array();
 
-		if (blx()->request->isPostRequest())
+		if (craft()->request->isPostRequest())
 		{
-			$loginName = blx()->request->getPost('loginName');
-			$password = blx()->request->getPost('password');
-			$rememberMe = (bool) blx()->request->getPost('rememberMe');
+			$loginName = craft()->request->getPost('loginName');
+			$password = craft()->request->getPost('password');
+			$rememberMe = (bool) craft()->request->getPost('rememberMe');
 
-			if (blx()->userSession->login($loginName, $password, $rememberMe))
+			if (craft()->userSession->login($loginName, $password, $rememberMe))
 			{
-				if (blx()->request->isAjaxRequest())
+				if (craft()->request->isAjaxRequest())
 				{
 					$this->returnJson(array(
 						'success' => true
@@ -36,64 +36,64 @@ class UsersController extends BaseController
 				}
 				else
 				{
-					blx()->userSession->setNotice(Blocks::t('Logged in.'));
+					craft()->userSession->setNotice(Craft::t('Logged in.'));
 					$this->redirectToPostedUrl();
 				}
 			}
 			else
 			{
-				$errorCode = blx()->userSession->getLoginErrorCode();
+				$errorCode = craft()->userSession->getLoginErrorCode();
 
 				switch ($errorCode)
 				{
 					case UserIdentity::ERROR_PASSWORD_RESET_REQUIRED:
 					{
-						$error = Blocks::t('You need to reset your password. Check your email for instructions.');
+						$error = Craft::t('You need to reset your password. Check your email for instructions.');
 						break;
 					}
 					case UserIdentity::ERROR_ACCOUNT_LOCKED:
 					{
-						$error = Blocks::t('Account locked.');
+						$error = Craft::t('Account locked.');
 						break;
 					}
 					case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
 					{
-						$user = blx()->users->getUserByUsernameOrEmail($loginName);
+						$user = craft()->users->getUserByUsernameOrEmail($loginName);
 						$timeRemaining = $user->getRemainingCooldownTime();
 
 						if ($timeRemaining)
 						{
 							$humanTimeRemaining = $timeRemaining->humanDuration(false);
-							$error = Blocks::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining));
+							$error = Craft::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining));
 						}
 						else
 						{
-							$error = Blocks::t('Account locked.');
+							$error = Craft::t('Account locked.');
 						}
 						break;
 					}
 					case UserIdentity::ERROR_ACCOUNT_SUSPENDED:
 					{
-						$error = Blocks::t('Account suspended.');
+						$error = Craft::t('Account suspended.');
 						break;
 					}
 					case UserIdentity::ERROR_NO_CP_ACCESS:
 					{
-						$error = Blocks::t('You cannot access the CP with that account.');
+						$error = Craft::t('You cannot access the CP with that account.');
 						break;
 					}
 					case UserIdentity::ERROR_NO_CP_OFFLINE_ACCESS:
 					{
-						$error = Blocks::t('You cannot access the CP while the system is offline with that account.');
+						$error = Craft::t('You cannot access the CP while the system is offline with that account.');
 						break;
 					}
 					default:
 					{
-						$error = Blocks::t('Invalid username or password.');
+						$error = Craft::t('Invalid username or password.');
 					}
 				}
 
-				if (blx()->request->isAjaxRequest())
+				if (craft()->request->isAjaxRequest())
 				{
 					$this->returnJson(array(
 						'errorCode' => $errorCode,
@@ -102,7 +102,7 @@ class UsersController extends BaseController
 				}
 				else
 				{
-					blx()->userSession->setError($error);
+					craft()->userSession->setError($error);
 
 					$vars = array(
 						'loginName' => $loginName,
@@ -112,13 +112,13 @@ class UsersController extends BaseController
 			}
 		}
 
-		if (blx()->request->isCpRequest())
+		if (craft()->request->isCpRequest())
 		{
 			$template = 'login';
 		}
 		else
 		{
-			$template = blx()->config->get('loginPath');
+			$template = craft()->config->get('loginPath');
 		}
 
 		$this->renderTemplate($template, $vars);
@@ -129,7 +129,7 @@ class UsersController extends BaseController
 	 */
 	public function actionLogout()
 	{
-		blx()->userSession->logout();
+		craft()->userSession->logout();
 		$this->redirect('');
 	}
 
@@ -140,41 +140,41 @@ class UsersController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$loginName = blx()->request->getRequiredPost('loginName');
+		$loginName = craft()->request->getRequiredPost('loginName');
 
-		$user = blx()->users->getUserByUsernameOrEmail($loginName);
+		$user = craft()->users->getUserByUsernameOrEmail($loginName);
 
 		if ($user)
 		{
-			if (blx()->users->sendForgotPasswordEmail($user))
+			if (craft()->users->sendForgotPasswordEmail($user))
 			{
-				if (blx()->request->isAjaxRequest())
+				if (craft()->request->isAjaxRequest())
 				{
 					$this->returnJson(array('success' => true));
 				}
 				else
 				{
-					blx()->userSession->setNotice(Blocks::t('Check your email for instructions to reset your password.'));
+					craft()->userSession->setNotice(Craft::t('Check your email for instructions to reset your password.'));
 					$this->redirectToPostedUrl();
 				}
 			}
 			else
 			{
-				$error = Blocks::t('There was a problem sending the forgot password email.');
+				$error = Craft::t('There was a problem sending the forgot password email.');
 			}
 		}
 		else
 		{
-			$error = Blocks::t('Invalid username or email.');
+			$error = Craft::t('Invalid username or email.');
 		}
 
-		if (blx()->request->isAjaxRequest())
+		if (craft()->request->isAjaxRequest())
 		{
 			$this->returnErrorJson($error);
 		}
 		else
 		{
-			blx()->userSession->setError($error);
+			craft()->userSession->setError($error);
 			$this->renderRequestedTemplate();
 		}
 	}
@@ -184,38 +184,38 @@ class UsersController extends BaseController
 	 */
 	public function actionResetPassword()
 	{
-		if (blx()->userSession->isLoggedIn())
+		if (craft()->userSession->isLoggedIn())
 		{
 			$this->redirect('');
 		}
 
-		if (blx()->request->isPostRequest())
+		if (craft()->request->isPostRequest())
 		{
 			$this->requirePostRequest();
 
-			$code = blx()->request->getRequiredPost('code');
-			$id = blx()->request->getRequiredPost('id');
-			$user = blx()->users->getUserByVerificationCodeAndUid($code, $id);
+			$code = craft()->request->getRequiredPost('code');
+			$id = craft()->request->getRequiredPost('id');
+			$user = craft()->users->getUserByVerificationCodeAndUid($code, $id);
 
 			if (!$user)
 			{
-				throw new Exception(Blocks::t('Invalid verification code.'));
+				throw new Exception(Craft::t('Invalid verification code.'));
 			}
 
-			$newPassword = blx()->request->getRequiredPost('newPassword');
+			$newPassword = craft()->request->getRequiredPost('newPassword');
 			$user->newPassword = $newPassword;
 
-			if (blx()->users->changePassword($user))
+			if (craft()->users->changePassword($user))
 			{
 				// Log them in
-				blx()->userSession->login($user->username, $newPassword);
+				craft()->userSession->login($user->username, $newPassword);
 
-				blx()->userSession->setNotice(Blocks::t('Password updated.'));
+				craft()->userSession->setNotice(Craft::t('Password updated.'));
 				$this->redirectToPostedUrl();
 			}
 			else
 			{
-				blx()->userSession->setNotice(Blocks::t('Couldn’t update password.'));
+				craft()->userSession->setNotice(Craft::t('Couldn’t update password.'));
 
 				$this->renderRequestedTemplate(array(
 					'errors' => $user->getErrors('newPassword'),
@@ -226,22 +226,22 @@ class UsersController extends BaseController
 		}
 		else
 		{
-			$code = blx()->request->getQuery('code');
-			$id = blx()->request->getQuery('id');
-			$user = blx()->users->getUserByVerificationCodeAndUid($code, $id);
+			$code = craft()->request->getQuery('code');
+			$id = craft()->request->getQuery('id');
+			$user = craft()->users->getUserByVerificationCodeAndUid($code, $id);
 
 			if (!$user)
 			{
 				throw new HttpException(404);
 			}
 
-			if (blx()->request->isCpRequest())
+			if (craft()->request->isCpRequest())
 			{
 				$template = 'resetpassword';
 			}
 			else
 			{
-				$template = blx()->config->get('resetPasswordPath');
+				$template = craft()->config->get('resetPasswordPath');
 			}
 
 			$this->renderTemplate($template, array(
@@ -258,58 +258,58 @@ class UsersController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		if (Blocks::hasPackage(BlocksPackage::Users))
+		if (Craft::hasPackage(CraftPackage::Users))
 		{
-			$userId = blx()->request->getPost('userId');
+			$userId = craft()->request->getPost('userId');
 
 			if ($userId)
 			{
-				blx()->userSession->requireLogin();
+				craft()->userSession->requireLogin();
 			}
 		}
 		else
 		{
-			blx()->userSession->requireLogin();
-			$userId = blx()->userSession->getUser()->id;
+			craft()->userSession->requireLogin();
+			$userId = craft()->userSession->getUser()->id;
 		}
 
 		if ($userId)
 		{
-			if ($userId != blx()->userSession->getUser()->id)
+			if ($userId != craft()->userSession->getUser()->id)
 			{
-				blx()->userSession->requirePermission('editUsers');
+				craft()->userSession->requirePermission('editUsers');
 			}
 
-			$user = blx()->users->getUserById($userId);
+			$user = craft()->users->getUserById($userId);
 
 			if (!$user)
 			{
-				throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+				throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
 			}
 		}
 		else
 		{
-			if (!blx()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
+			if (!craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
 			{
-				blx()->userSession->requirePermission('registerUsers');
+				craft()->userSession->requirePermission('registerUsers');
 			}
 
 			$user = new UserModel();
 		}
 
-		$user->username        = blx()->request->getPost('username');
-		$user->firstName       = blx()->request->getPost('firstName');
-		$user->lastName        = blx()->request->getPost('lastName');
-		$user->email           = blx()->request->getPost('email');
-		$user->emailFormat     = blx()->request->getPost('emailFormat');
-		$user->preferredLocale = blx()->request->getPost('preferredLocale');
+		$user->username        = craft()->request->getPost('username');
+		$user->firstName       = craft()->request->getPost('firstName');
+		$user->lastName        = craft()->request->getPost('lastName');
+		$user->email           = craft()->request->getPost('email');
+		$user->emailFormat     = craft()->request->getPost('emailFormat');
+		$user->preferredLocale = craft()->request->getPost('preferredLocale');
 
 		// Only admins can opt out of requiring email verification
 		if (!$user->id)
 		{
-			if (blx()->userSession->isAdmin())
+			if (craft()->userSession->isAdmin())
 			{
-				$user->verificationRequired = (bool) blx()->request->getPost('verificationRequired');
+				$user->verificationRequired = (bool) craft()->request->getPost('verificationRequired');
 			}
 			else
 			{
@@ -318,27 +318,27 @@ class UsersController extends BaseController
 		}
 
 		// Only admins can change other users' passwords
-		if (!$user->id || $user->isCurrent() || blx()->userSession->isAdmin())
+		if (!$user->id || $user->isCurrent() || craft()->userSession->isAdmin())
 		{
-			$user->newPassword = blx()->request->getPost('newPassword');
+			$user->newPassword = craft()->request->getPost('newPassword');
 		}
 
 		// Only admins can require users to reset their passwords
-		if (blx()->userSession->isAdmin())
+		if (craft()->userSession->isAdmin())
 		{
-			$user->passwordResetRequired = (bool)blx()->request->getPost('passwordResetRequired');
+			$user->passwordResetRequired = (bool)craft()->request->getPost('passwordResetRequired');
 		}
 
-		if (blx()->users->saveUser($user))
+		if (craft()->users->saveUser($user))
 		{
-			blx()->userSession->setNotice(Blocks::t('User saved.'));
+			craft()->userSession->setNotice(Craft::t('User saved.'));
 			$this->redirectToPostedUrl(array(
 				'userId' => $user->id
 			));
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save user.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save user.'));
 			$this->renderRequestedTemplate(array(
 				'account' => $user
 			));
@@ -352,31 +352,31 @@ class UsersController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$userId = blx()->request->getRequiredPost('userId');
+		$userId = craft()->request->getRequiredPost('userId');
 
-		if ($userId != blx()->userSession->getUser()->id)
+		if ($userId != craft()->userSession->getUser()->id)
 		{
-			blx()->userSession->requirePermission('editUsers');
+			craft()->userSession->requirePermission('editUsers');
 		}
 
-		$user = blx()->users->getUserById($userId);
+		$user = craft()->users->getUserById($userId);
 
 		if (!$user)
 		{
-			throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+			throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
 		}
 
-		$fields = blx()->request->getPost('fields', array());
+		$fields = craft()->request->getPost('fields', array());
 		$user->setContent($fields);
 
-		if (blx()->users->saveProfile($user))
+		if (craft()->users->saveProfile($user))
 		{
-			blx()->userSession->setNotice(Blocks::t('Profile saved.'));
+			craft()->userSession->setNotice(Craft::t('Profile saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save profile.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save profile.'));
 		}
 
 		$this->renderRequestedTemplate(array(
@@ -390,12 +390,12 @@ class UsersController extends BaseController
 	public function actionUploadUserPhoto()
 	{
 		$this->requireAjaxRequest();
-		blx()->userSession->requireLogin();
-		$userId = blx()->request->getRequiredQuery('userId');
+		craft()->userSession->requireLogin();
+		$userId = craft()->request->getRequiredQuery('userId');
 
-		if ($userId != blx()->userSession->getUser()->id)
+		if ($userId != craft()->userSession->getUser()->id)
 		{
-			blx()->userSession->requirePermission('editUsers');
+			craft()->userSession->requirePermission('editUsers');
 		}
 
 		// Upload the file and drop it in the temporary folder
@@ -406,9 +406,9 @@ class UsersController extends BaseController
 			// Make sure a file was uploaded
 			if ($uploader->file && $uploader->file->getSize())
 			{
-				$user = blx()->users->getUserById($userId);
+				$user = craft()->users->getUserById($userId);
 
-				$folderPath = blx()->path->getTempUploadsPath().'userphotos/'.$user->username.'/';
+				$folderPath = craft()->path->getTempUploadsPath().'userphotos/'.$user->username.'/';
 
 				IOHelper::clearFolder($folderPath);
 
@@ -418,13 +418,13 @@ class UsersController extends BaseController
 				$uploader->file->save($folderPath.$fileName);
 
 				// Test if we will be able to perform image actions on this image
-				if (!blx()->images->setMemoryForImage($folderPath.$fileName))
+				if (!craft()->images->setMemoryForImage($folderPath.$fileName))
 				{
 					IOHelper::deleteFile($folderPath.$fileName);
-					$this->returnErrorJson(Blocks::t('The uploaded image is too large'));
+					$this->returnErrorJson(Craft::t('The uploaded image is too large'));
 				}
 
-				blx()->images->cleanImage($folderPath.$fileName);
+				craft()->images->cleanImage($folderPath.$fileName);
 
 				$constraint = 500;
 				list ($width, $height) = getimagesize($folderPath.$fileName);
@@ -435,7 +435,7 @@ class UsersController extends BaseController
 					// Never scale up the images, so make the scaling factor always <= 1
 					$factor = min($constraint / $width, $constraint / $height, 1);
 
-					$html = blx()->templates->render('_components/tools/cropper_modal',
+					$html = craft()->templates->render('_components/tools/cropper_modal',
 						array(
 							'imageUrl' => UrlHelper::getResourceUrl('userphotos/temp/'.$user->username.'/'.$fileName),
 							'width' => round($width * $factor),
@@ -453,7 +453,7 @@ class UsersController extends BaseController
 			$this->returnErrorJson($exception->getMessage());
 		}
 
-		$this->returnErrorJson(Blocks::t('There was an error uploading your photo'));
+		$this->returnErrorJson(Craft::t('There was an error uploading your photo'));
 	}
 
 	/**
@@ -462,22 +462,22 @@ class UsersController extends BaseController
 	public function actionCropUserPhoto()
 	{
 		$this->requireAjaxRequest();
-		blx()->userSession->requireLogin();
+		craft()->userSession->requireLogin();
 
-		$userId = blx()->request->getRequiredPost('userId');
+		$userId = craft()->request->getRequiredPost('userId');
 
-		if ($userId != blx()->userSession->getUser()->id)
+		if ($userId != craft()->userSession->getUser()->id)
 		{
-			blx()->userSession->requirePermission('editUsers');
+			craft()->userSession->requirePermission('editUsers');
 		}
 
 		try
 		{
-			$x1 = blx()->request->getRequiredPost('x1');
-			$x2 = blx()->request->getRequiredPost('x2');
-			$y1 = blx()->request->getRequiredPost('y1');
-			$y2 = blx()->request->getRequiredPost('y2');
-			$source = blx()->request->getRequiredPost('source');
+			$x1 = craft()->request->getRequiredPost('x1');
+			$x2 = craft()->request->getRequiredPost('x2');
+			$y1 = craft()->request->getRequiredPost('y1');
+			$y2 = craft()->request->getRequiredPost('y2');
+			$source = craft()->request->getRequiredPost('source');
 
 			// Strip off any querystring info, if any.
 			if (($qIndex = strpos($source, '?')) !== false)
@@ -485,20 +485,20 @@ class UsersController extends BaseController
 				$source = substr($source, 0, strpos($source, '?'));
 			}
 
-			$user = blx()->users->getUserById($userId);
+			$user = craft()->users->getUserById($userId);
 
 			// make sure that this is this user's file
-			$imagePath = blx()->path->getTempUploadsPath().'userphotos/'.$user->username.'/'.$source;
+			$imagePath = craft()->path->getTempUploadsPath().'userphotos/'.$user->username.'/'.$source;
 
-			if (IOHelper::fileExists($imagePath) && blx()->images->setMemoryForImage($imagePath))
+			if (IOHelper::fileExists($imagePath) && craft()->images->setMemoryForImage($imagePath))
 			{
-				blx()->users->deleteUserPhoto($user);
+				craft()->users->deleteUserPhoto($user);
 
-				if (blx()->users->cropAndSaveUserPhoto($imagePath, $x1, $x2, $y1, $y2, $user))
+				if (craft()->users->cropAndSaveUserPhoto($imagePath, $x1, $x2, $y1, $y2, $user))
 				{
-					IOHelper::clearFolder(blx()->path->getTempUploadsPath().'userphotos/'.$user->username);
+					IOHelper::clearFolder(craft()->path->getTempUploadsPath().'userphotos/'.$user->username);
 
-					$html = blx()->templates->render('users/_edit/_userphoto',
+					$html = craft()->templates->render('users/_edit/_userphoto',
 						array(
 							'account' => $user
 						)
@@ -507,14 +507,14 @@ class UsersController extends BaseController
 					$this->returnJson(array('html' => $html));
 				}
 			}
-			IOHelper::clearFolder(blx()->path->getTempUploadsPath().'userphotos/'.$user->username);
+			IOHelper::clearFolder(craft()->path->getTempUploadsPath().'userphotos/'.$user->username);
 		}
 		catch (Exception $exception)
 		{
 			$this->returnErrorJson($exception->getMessage());
 		}
 
-		$this->returnErrorJson(Blocks::t('Something went wrong when processing the photo.'));
+		$this->returnErrorJson(Craft::t('Something went wrong when processing the photo.'));
 	}
 
 	/**
@@ -523,16 +523,16 @@ class UsersController extends BaseController
 	public function actionDeleteUserPhoto()
 	{
 		$this->requireAjaxRequest();
-		blx()->userSession->requireLogin();
-		$userId = blx()->request->getRequiredPost('userId');
+		craft()->userSession->requireLogin();
+		$userId = craft()->request->getRequiredPost('userId');
 
-		if ($userId != blx()->userSession->getUser()->id)
+		if ($userId != craft()->userSession->getUser()->id)
 		{
-			blx()->userSession->requirePermission('editUsers');
+			craft()->userSession->requirePermission('editUsers');
 		}
 
-		$user = blx()->users->getUserById($userId);
-		blx()->users->deleteUserPhoto($user);
+		$user = craft()->users->getUserById($userId);
+		craft()->users->deleteUserPhoto($user);
 
 		$record = UserRecord::model()->findById($user->id);
 		$record->photo = null;
@@ -541,7 +541,7 @@ class UsersController extends BaseController
 		// Since Model still believes it has an image, we make sure that it does not so anymore when it reaches the template.
 		$user->photo = null;
 
-		$html = blx()->templates->render('users/_edit/_userphoto',
+		$html = craft()->templates->render('users/_edit/_userphoto',
 			array(
 				'account' => $user
 			)
@@ -556,14 +556,14 @@ class UsersController extends BaseController
 	public function actionSaveUserGroups()
 	{
 		$this->requirePostRequest();
-		blx()->userSession->requirePermission('administrateUsers');
+		craft()->userSession->requirePermission('administrateUsers');
 
-		$userId = blx()->request->getRequiredPost('userId');
-		$groupIds = blx()->request->getPost('groups');
+		$userId = craft()->request->getRequiredPost('userId');
+		$groupIds = craft()->request->getPost('groups');
 
-		blx()->userGroups->assignUserToGroups($userId, $groupIds);
+		craft()->userGroups->assignUserToGroups($userId, $groupIds);
 
-		blx()->userSession->setNotice(Blocks::t('User groups saved.'));
+		craft()->userSession->setNotice(Craft::t('User groups saved.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -573,18 +573,18 @@ class UsersController extends BaseController
 	public function actionSaveUserPermissions()
 	{
 		$this->requirePostRequest();
-		blx()->userSession->requirePermission('administrateUsers');
+		craft()->userSession->requirePermission('administrateUsers');
 
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->users->getUserById($userId);
+		$userId = craft()->request->getRequiredPost('userId');
+		$user = craft()->users->getUserById($userId);
 
 		// Only admins can toggle admin settings
-		if (blx()->userSession->isAdmin())
+		if (craft()->userSession->isAdmin())
 		{
-			$user->admin = (bool)blx()->request->getPost('admin');
+			$user->admin = (bool)craft()->request->getPost('admin');
 		}
 
-		blx()->users->saveUser($user);
+		craft()->users->saveUser($user);
 
 		// Update the user permissions
 		if ($user->admin)
@@ -593,12 +593,12 @@ class UsersController extends BaseController
 		}
 		else
 		{
-			$permissions = blx()->request->getPost('permissions');
+			$permissions = craft()->request->getPost('permissions');
 		}
 
-		blx()->userPermissions->saveUserPermissions($userId, $permissions);
+		craft()->userPermissions->saveUserPermissions($userId, $permissions);
 
-		blx()->userSession->setNotice(Blocks::t('Permissions saved.'));
+		craft()->userSession->setNotice(Craft::t('Permissions saved.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -608,19 +608,19 @@ class UsersController extends BaseController
 	public function actionSendVerificationEmail()
 	{
 		$this->requirePostRequest();
-		blx()->userSession->requirePermission('administrateUsers');
+		craft()->userSession->requirePermission('administrateUsers');
 
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->users->getUserById($userId);
+		$userId = craft()->request->getRequiredPost('userId');
+		$user = craft()->users->getUserById($userId);
 
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
 		}
 
-		blx()->users->sendVerificationEmail($user);
+		craft()->users->sendVerificationEmail($user);
 
-		blx()->userSession->setNotice(Blocks::t('Verification email sent.'));
+		craft()->userSession->setNotice(Craft::t('Verification email sent.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -630,19 +630,19 @@ class UsersController extends BaseController
 	public function actionActivateUser()
 	{
 		$this->requirePostRequest();
-		blx()->userSession->requirePermission('administrateUsers');
+		craft()->userSession->requirePermission('administrateUsers');
 
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->users->getUserById($userId);
+		$userId = craft()->request->getRequiredPost('userId');
+		$user = craft()->users->getUserById($userId);
 
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
 		}
 
-		blx()->users->activateUser($user);
+		craft()->users->activateUser($user);
 
-		blx()->userSession->setNotice(Blocks::t('User activated.'));
+		craft()->userSession->setNotice(Craft::t('User activated.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -652,19 +652,19 @@ class UsersController extends BaseController
 	public function actionUnlockUser()
 	{
 		$this->requirePostRequest();
-		blx()->userSession->requirePermission('administrateUsers');
+		craft()->userSession->requirePermission('administrateUsers');
 
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->users->getUserById($userId);
+		$userId = craft()->request->getRequiredPost('userId');
+		$user = craft()->users->getUserById($userId);
 
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
 		}
 
-		blx()->users->unlockUser($user);
+		craft()->users->unlockUser($user);
 
-		blx()->userSession->setNotice(Blocks::t('User activated.'));
+		craft()->userSession->setNotice(Craft::t('User activated.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -674,19 +674,19 @@ class UsersController extends BaseController
 	public function actionSuspendUser()
 	{
 		$this->requirePostRequest();
-		blx()->userSession->requirePermission('administrateUsers');
+		craft()->userSession->requirePermission('administrateUsers');
 
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->users->getUserById($userId);
+		$userId = craft()->request->getRequiredPost('userId');
+		$user = craft()->users->getUserById($userId);
 
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
 		}
 
-		blx()->users->suspendUser($user);
+		craft()->users->suspendUser($user);
 
-		blx()->userSession->setNotice(Blocks::t('User suspended.'));
+		craft()->userSession->setNotice(Craft::t('User suspended.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -696,19 +696,19 @@ class UsersController extends BaseController
 	public function actionUnsuspendUser()
 	{
 		$this->requirePostRequest();
-		blx()->userSession->requirePermission('administrateUsers');
+		craft()->userSession->requirePermission('administrateUsers');
 
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->users->getUserById($userId);
+		$userId = craft()->request->getRequiredPost('userId');
+		$user = craft()->users->getUserById($userId);
 
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
 		}
 
-		blx()->users->unsuspendUser($user);
+		craft()->users->unsuspendUser($user);
 
-		blx()->userSession->setNotice(Blocks::t('User unsuspended.'));
+		craft()->userSession->setNotice(Craft::t('User unsuspended.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -718,19 +718,19 @@ class UsersController extends BaseController
 	public function actionArchiveUser()
 	{
 		$this->requirePostRequest();
-		blx()->userSession->requirePermission('administrateUsers');
+		craft()->userSession->requirePermission('administrateUsers');
 
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->users->getUserById($userId);
+		$userId = craft()->request->getRequiredPost('userId');
+		$user = craft()->users->getUserById($userId);
 
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
 		}
 
-		blx()->users->archiveUser($user);
+		craft()->users->archiveUser($user);
 
-		blx()->userSession->setNotice(Blocks::t('User deleted.'));
+		craft()->userSession->setNotice(Craft::t('User deleted.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -740,21 +740,21 @@ class UsersController extends BaseController
 	public function actionSaveFieldLayout()
 	{
 		$this->requirePostRequest();
-		blx()->userSession->requireAdmin();
+		craft()->userSession->requireAdmin();
 
 		// Set the field layout
-		$fieldLayout = blx()->fields->assembleLayoutFromPost(false);
+		$fieldLayout = craft()->fields->assembleLayoutFromPost(false);
 		$fieldLayout->type = ElementType::User;
-		blx()->fields->deleteLayoutsByType(ElementType::User);
+		craft()->fields->deleteLayoutsByType(ElementType::User);
 
-		if (blx()->fields->saveLayout($fieldLayout, false))
+		if (craft()->fields->saveLayout($fieldLayout, false))
 		{
-			blx()->userSession->setNotice(Blocks::t('User fields saved.'));
+			craft()->userSession->setNotice(Craft::t('User fields saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save user fields.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save user fields.'));
 		}
 
 		$this->renderRequestedTemplate();
@@ -769,6 +769,6 @@ class UsersController extends BaseController
 	 */
 	private function _noUserExists($userId)
 	{
-		throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+		throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
 	}
 }

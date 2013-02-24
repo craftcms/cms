@@ -1,7 +1,7 @@
 (function($) {
 
 
-Blocks.Updater = Garnish.Base.extend({
+Craft.Updater = Garnish.Base.extend({
 
 	$status: null,
 	data: null,
@@ -12,7 +12,7 @@ Blocks.Updater = Garnish.Base.extend({
 
 		if (!handle)
 		{
-			this.showError(Blocks.t('Unable to determine what to update.'));
+			this.showError(Craft.t('Unable to determine what to update.'));
 			return;
 		}
 
@@ -41,7 +41,7 @@ Blocks.Updater = Garnish.Base.extend({
 			data: this.data
 		};
 
-		Blocks.postActionRequest(action, data, $.proxy(this, 'onSuccessResponse'), $.proxy(this, 'onErrorResponse'));
+		Craft.postActionRequest(action, data, $.proxy(this, 'onSuccessResponse'), $.proxy(this, 'onErrorResponse'));
 	},
 
 	onSuccessResponse: function(response)
@@ -81,22 +81,22 @@ Blocks.Updater = Garnish.Base.extend({
 
 	onErrorResponse: function()
 	{
-		this.showError(Blocks.t('An unknown error occurred. Rolling back…'));
+		this.showError(Craft.t('An unknown error occurred. Rolling back…'));
 		this.postActionRequest('update/rollback');
 	},
 
 	onFinish: function(returnUrl)
 	{
-		this.updateStatus(Blocks.t('All done!'));
+		this.updateStatus(Craft.t('All done!'));
 		this.$status.addClass('success');
 
 		// Redirect to the Dashboard in half a second
 		setTimeout(function() {
 			if (returnUrl) {
-				window.location = Blocks.getUrl(returnUrl);
+				window.location = Craft.getUrl(returnUrl);
 			}
 			else {
-				window.location = Blocks.getUrl('dashboard');
+				window.location = Craft.getUrl('dashboard');
 			}
 		}, 500);
 	}

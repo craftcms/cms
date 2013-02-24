@@ -1,6 +1,6 @@
 (function($) {
 
-Blocks.Installer = Garnish.Base.extend({
+Craft.Installer = Garnish.Base.extend({
 
 	$screens: null,
 	$currentScreen: null,
@@ -95,9 +95,9 @@ Blocks.Installer = Garnish.Base.extend({
 				data[input] = Garnish.getInputPostVal($input);
 			}
 
-			Blocks.postActionRequest('install/install', data, $.proxy(function() {
-				this.$currentScreen.find('h1:first').text(Blocks.t('All done!'));
-				var $buttons = $('<div class="buttons"><a href="'+Blocks.getUrl('dashboard')+'" class="btn big submit">'+Blocks.t('Go to {app}', { app: Blocks.appName })+'</a></div>');
+			Craft.postActionRequest('install/install', data, $.proxy(function() {
+				this.$currentScreen.find('h1:first').text(Craft.t('All done!'));
+				var $buttons = $('<div class="buttons"><a href="'+Craft.getUrl('dashboard')+'" class="btn big submit">'+Craft.t('Go to CraftCMS')+'</a></div>');
 				$('#spinner').replaceWith($buttons);
 			}, this));
 
@@ -149,7 +149,7 @@ Blocks.Installer = Garnish.Base.extend({
 		var $submitBtn = this['$'+what+'SubmitBtn'];
 		$submitBtn.addClass('sel loading');
 
-		var action = 'install/validate'+Blocks.uppercaseFirst(what);
+		var action = 'install/validate'+Craft.uppercaseFirst(what);
 
 		var data = {};
 		for (var i = 0; i < inputs.length; i++)
@@ -159,7 +159,7 @@ Blocks.Installer = Garnish.Base.extend({
 			data[input] = Garnish.getInputPostVal($input);
 		}
 
-		Blocks.postActionRequest(action, data, $.proxy(function(response) {
+		Craft.postActionRequest(action, data, $.proxy(function(response) {
 			if (response.validates)
 				callback();
 			else
@@ -207,7 +207,7 @@ Blocks.Installer = Garnish.Base.extend({
 });
 
 Garnish.$win.on('load', function() {
-	Blocks.installer = new Blocks.Installer();
+	Craft.installer = new Craft.Installer();
 });
 
 })(jQuery);

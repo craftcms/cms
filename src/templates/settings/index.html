@@ -7,10 +7,10 @@
 
 	<ul class="icons">
 		<li><a href="{{ url('settings/general') }}" data-icon="g">{{ "General"|t }}</a></li>
-		{% if blx.config.siteRoutesSource != 'file' %}
+		{% if craft.config.siteRoutesSource != 'file' %}
 			<li><a href="{{ url('settings/routes') }}" data-icon="⇈">{{ "Routes"|t }}</a></li>
 		{% endif %}
-		{% if blx.hasPackage('Users') %}
+		{% if craft.hasPackage('Users') %}
 			<li><a href="{{ url('settings/users') }}" data-icon="U">{{ "Users"|t }}</a></li>
 		{% endif %}
 		<li><a href="{{ url('settings/email') }}" data-icon="E">{{ "Email"|t }}</a></li>
@@ -27,7 +27,7 @@
 		<li><a href="{{ url('settings/singletons') }}" data-icon="c">{{ "Singletons"|t }}</a></li>
 		<li><a href="{{ url('settings/globals') }}" data-icon="G">{{ "Globals"|t }}</a></li>
 		<li><a href="{{ url('settings/assets') }}" data-icon="A">{{ "Assets"|t }}</a></li>
-		{% if blx.hasPackage('Language') %}
+		{% if craft.hasPackage('Language') %}
 			<li><a href="{{ url('settings/locales') }}" data-icon="L">{{ "Locales"|t }}</a></li>
 		{% endif %}
 	</ul>

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -31,7 +31,7 @@ class LinkCriteriaModel extends BaseModel
 	{
 		if ($this->id)
 		{
-			return blx()->links->getLinksByCriteriaId($this->id);
+			return craft()->links->getLinksByCriteriaId($this->id);
 		}
 		else
 		{

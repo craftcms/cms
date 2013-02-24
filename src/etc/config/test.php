@@ -1,6 +1,6 @@
 <?php
 
-$main = require_once(BLOCKS_APP_PATH.'etc/config/main.php');
+$main = require_once(CRAFT_APP_PATH.'etc/config/main.php');
 
 $dbConfig['database'] = $dbConfig['database'].'_test';
 

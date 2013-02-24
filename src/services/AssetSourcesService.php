@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,7 +13,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function getAllSourceTypes()
 	{
-		return blx()->components->getComponentsByType(ComponentType::AssetSource);
+		return craft()->components->getComponentsByType(ComponentType::AssetSource);
 	}
 
 	/**
@@ -24,7 +24,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function getSourceType($class)
 	{
-		return blx()->components->getComponentByTypeAndClass(ComponentType::AssetSource, $class);
+		return craft()->components->getComponentByTypeAndClass(ComponentType::AssetSource, $class);
 	}
 
 	/**
@@ -35,7 +35,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function populateSourceType(AssetSourceModel $source)
 	{
-		return blx()->components->populateComponentByTypeAndModel(ComponentType::AssetSource, $source);
+		return craft()->components->populateComponentByTypeAndModel(ComponentType::AssetSource, $source);
 	}
 
 	/**
@@ -114,7 +114,7 @@ class AssetSourcesService extends BaseApplicationComponent
 
 			if ($isNewSource)
 			{
-				$maxSortOrder = blx()->db->createCommand()
+				$maxSortOrder = craft()->db->createCommand()
 					->select('max(sortOrder)')
 					->from('assetsources')
 					->queryScalar();
@@ -130,7 +130,7 @@ class AssetSourcesService extends BaseApplicationComponent
 				$source->id = $sourceRecord->id;
 			}
 
-			blx()->assetIndexing->ensureTopFolder($source);
+			craft()->assetIndexing->ensureTopFolder($source);
 			return true;
 		}
 		else
@@ -152,7 +152,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function reorderSources($sourceIds)
 	{
-		$transaction = blx()->db->beginTransaction();
+		$transaction = craft()->db->beginTransaction();
 
 		try
 		{
@@ -183,7 +183,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function deleteSourceById($sourceId)
 	{
-		blx()->db->createCommand()->delete('assetsources', array('id' => $sourceId));
+		craft()->db->createCommand()->delete('assetsources', array('id' => $sourceId));
 		return true;
 	}
 
@@ -222,6 +222,6 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	private function _noSourceExists($sourceId)
 	{
-		throw new Exception(Blocks::t('No source exists with the ID “{id}”', array('id' => $sourceId)));
+		throw new Exception(Craft::t('No source exists with the ID “{id}”', array('id' => $sourceId)));
 	}
 }

@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::Rebrand);
+Craft::requirePackage(CraftPackage::Rebrand);
 
 /**
  *

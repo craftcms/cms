@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Dashboard functions
@@ -23,7 +23,7 @@ class DashboardVariable
 	 */
 	public function getAllWidgetTypes()
 	{
-		$widgetTypes = blx()->dashboard->getAllWidgetTypes();
+		$widgetTypes = craft()->dashboard->getAllWidgetTypes();
 		return WidgetTypeVariable::populateVariables($widgetTypes);
 	}
 
@@ -35,7 +35,7 @@ class DashboardVariable
 	 */
 	public function getWidgetType($class)
 	{
-		$widgetType = blx()->dashboard->getWidgetType($class);
+		$widgetType = craft()->dashboard->getWidgetType($class);
 
 		if ($widgetType)
 		{
@@ -51,7 +51,7 @@ class DashboardVariable
 	 */
 	public function populateWidgetType(WidgetModel $widget)
 	{
-		$widgetType = blx()->dashboard->populateWidgetType($widget);
+		$widgetType = craft()->dashboard->populateWidgetType($widget);
 		if ($widgetType)
 		{
 			return new WidgetTypeVariable($widgetType);
@@ -65,7 +65,7 @@ class DashboardVariable
 	 */
 	public function getUserWidgets()
 	{
-		return blx()->dashboard->getUserWidgets();
+		return craft()->dashboard->getUserWidgets();
 	}
 
 	/**
@@ -76,7 +76,7 @@ class DashboardVariable
 	 */
 	public function getUserWidgetById($id)
 	{
-		return blx()->dashboard->getUserWidgetById($id);
+		return craft()->dashboard->getUserWidgetById($id);
 	}
 
 	/**
@@ -87,7 +87,7 @@ class DashboardVariable
 	public function userWidgetIds()
 	{
 		$widgetIds = array();
-		$widgets = blx()->dashboard->getUserWidgets();
+		$widgets = craft()->dashboard->getUserWidgets();
 
 		foreach ($widgets as $widget)
 		{

@@ -1,5 +1,5 @@
 {% extends "_layouts/base" %}
-{% set title = "{app} Update"|t({ app: blx.config.appName }) %}
+{% set title = "CraftCMS Update"|t %}
 {% includeCssResource "css/update.css" %}
 {% includeJsResource "js/update.js" %}
 
@@ -15,6 +15,6 @@
 
 
 {% set js %}
-	new Blocks.Updater('{{ handle }}', {{ blx.request.getQuery('manual') ? 1 : 0 }});
+	new Craft.Updater('{{ handle }}', {{ craft.request.getQuery('manual') ? 1 : 0 }});
 {% endset %}
 {% includeJs js %}

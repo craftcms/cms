@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -129,7 +129,7 @@ class FieldsService extends BaseApplicationComponent
 			$this->deleteField($field);
 		}
 
-		$affectedRows = blx()->db->createCommand()->delete('fieldgroups', array('id' => $groupId));
+		$affectedRows = craft()->db->createCommand()->delete('fieldgroups', array('id' => $groupId));
 		return (bool) $affectedRows;
 	}
 
@@ -284,7 +284,7 @@ class FieldsService extends BaseApplicationComponent
 
 		if ($recordValidates && $settingsValidate)
 		{
-			$transaction = blx()->db->beginTransaction();
+			$transaction = craft()->db->beginTransaction();
 			try
 			{
 				$fieldType->onBeforeSave();
@@ -305,11 +305,11 @@ class FieldsService extends BaseApplicationComponent
 
 					if ($isNewField)
 					{
-						blx()->db->createCommand()->addColumn('content', $field->handle, $column);
+						craft()->db->createCommand()->addColumn('content', $field->handle, $column);
 					}
 					else
 					{
-						blx()->db->createCommand()->alterColumn('content', $fieldRecord->oldHandle, $column, $field->handle);
+						craft()->db->createCommand()->alterColumn('content', $fieldRecord->oldHandle, $column, $field->handle);
 					}
 				}
 
@@ -366,11 +366,11 @@ class FieldsService extends BaseApplicationComponent
 
 		if ($column)
 		{
-			blx()->db->createCommand()->dropColumn('content', $field->handle);
+			craft()->db->createCommand()->dropColumn('content', $field->handle);
 		}
 
 		// Delete the row in fields
-		$affectedRows = blx()->db->createCommand()->delete('fields', array('id' => $field->id));
+		$affectedRows = craft()->db->createCommand()->delete('fields', array('id' => $field->id));
 
 		return (bool) $affectedRows;
 	}
@@ -424,8 +424,8 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function assembleLayoutFromPost($createTabs = true)
 	{
-		$postedFieldLayout = blx()->request->getPost('fieldLayout', array());
-		$requiredFields = blx()->request->getPost('requiredFields', array());
+		$postedFieldLayout = craft()->request->getPost('fieldLayout', array());
+		$requiredFields = craft()->request->getPost('requiredFields', array());
 
 		$tabs = array();
 		$fields = array();
@@ -532,7 +532,7 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function deleteLayoutById($layoutId)
 	{
-		$affectedRows = blx()->db->createCommand()->delete('fieldlayouts', array('id' => $layoutId));
+		$affectedRows = craft()->db->createCommand()->delete('fieldlayouts', array('id' => $layoutId));
 		return (bool) $affectedRows;
 	}
 
@@ -544,7 +544,7 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function deleteLayoutsByType($type)
 	{
-		$affectedRows = blx()->db->createCommand()->delete('fieldlayouts', array('type' => $type));
+		$affectedRows = craft()->db->createCommand()->delete('fieldlayouts', array('type' => $type));
 		return (bool) $affectedRows;
 	}
 
@@ -558,7 +558,7 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function getAllFieldTypes()
 	{
-		return blx()->components->getComponentsByType(ComponentType::Field);
+		return craft()->components->getComponentsByType(ComponentType::Field);
 	}
 
 	/**
@@ -569,7 +569,7 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function getFieldType($class)
 	{
-		return blx()->components->getComponentByTypeAndClass(ComponentType::Field, $class);
+		return craft()->components->getComponentByTypeAndClass(ComponentType::Field, $class);
 	}
 
 	/**
@@ -581,7 +581,7 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function populateFieldType(FieldModel $field, $element = null)
 	{
-		$fieldType = blx()->components->populateComponentByTypeAndModel(ComponentType::Field, $field);
+		$fieldType = craft()->components->populateComponentByTypeAndModel(ComponentType::Field, $field);
 
 		if ($fieldType)
 		{
@@ -609,7 +609,7 @@ class FieldsService extends BaseApplicationComponent
 
 			if (!$groupRecord)
 			{
-				throw new Exception(Blocks::t('No field group exists with the ID “{id}”', array('id' => $group->id)));
+				throw new Exception(Craft::t('No field group exists with the ID “{id}”', array('id' => $group->id)));
 			}
 		}
 		else
@@ -635,7 +635,7 @@ class FieldsService extends BaseApplicationComponent
 
 			if (!$fieldRecord)
 			{
-				throw new Exception(Blocks::t('No field exists with the ID “{id}”', array('id' => $fieldId)));
+				throw new Exception(Craft::t('No field exists with the ID “{id}”', array('id' => $fieldId)));
 			}
 		}
 		else

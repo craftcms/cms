@@ -1,7 +1,7 @@
 /**
  * Handle Generator
  */
-Blocks.EntryUrlFormatGenerator = Blocks.BaseInputGenerator.extend({
+Craft.EntryUrlFormatGenerator = Craft.BaseInputGenerator.extend({
 
 	generateTargetValue: function(sourceVal)
 	{
@@ -12,14 +12,14 @@ Blocks.EntryUrlFormatGenerator = Blocks.BaseInputGenerator.extend({
 		sourceVal = sourceVal.toLowerCase();
 
 		// Convert extended ASCII characters to basic ASCII
-		sourceVal = Blocks.asciiString(sourceVal);
+		sourceVal = Craft.asciiString(sourceVal);
 
 		// Handle must start with a letter and end with a letter/number
 		sourceVal = sourceVal.replace(/^[^a-z]+/, '');
 		sourceVal = sourceVal.replace(/[^a-z0-9]+$/, '');
 
 		// Get the "words"
-		var words = Blocks.filterArray(sourceVal.split(/[^a-z0-9]+/));
+		var words = Craft.filterArray(sourceVal.split(/[^a-z0-9]+/));
 
 		if (words.length)
 			return words.join('-') + '/{slug}';

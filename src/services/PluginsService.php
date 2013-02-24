@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -72,7 +72,7 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function init()
 	{
-		if (blx()->isInstalled())
+		if (craft()->isInstalled())
 		{
 			// Find all of the enabled plugins
 			$records = PluginRecord::model()->findAllByAttributes(array(
@@ -153,7 +153,7 @@ class PluginsService extends BaseApplicationComponent
 				if ($plugin)
 				{
 					// Is it installed (but disabled)?
-					$plugin->isInstalled = (bool) blx()->db->createCommand()
+					$plugin->isInstalled = (bool) craft()->db->createCommand()
 						->select('count(id)')
 						->from('plugins')
 						->where(array('class' => $plugin->getClassHandle()))
@@ -187,7 +187,7 @@ class PluginsService extends BaseApplicationComponent
 				$paths = array();
 
 				// Find all of the plugins in the plugins folder
-				$pluginsPath = blx()->path->getPluginsPath();
+				$pluginsPath = craft()->path->getPluginsPath();
 				$pluginFolders = IOHelper::getFolderContents($pluginsPath, false);
 
 				foreach ($pluginFolders as $pluginFolder)
@@ -245,10 +245,10 @@ class PluginsService extends BaseApplicationComponent
 
 		if (!$plugin->isInstalled)
 		{
-			throw new Exception(Blocks::t('“{plugin}” can’t be enabled because it isn’t installed yet.', array('plugin' => $plugin->getName())));
+			throw new Exception(Craft::t('“{plugin}” can’t be enabled because it isn’t installed yet.', array('plugin' => $plugin->getName())));
 		}
 
-		blx()->db->createCommand()->update('plugins',
+		craft()->db->createCommand()->update('plugins',
 			array('enabled' => 1),
 			array('class' => $plugin->getClassHandle())
 		);
@@ -278,10 +278,10 @@ class PluginsService extends BaseApplicationComponent
 
 		if (!$plugin->isInstalled)
 		{
-			throw new Exception(Blocks::t('“{plugin}” can’t be disabled because it isn’t installed yet.', array('plugin' => $plugin->getName())));
+			throw new Exception(Craft::t('“{plugin}” can’t be disabled because it isn’t installed yet.', array('plugin' => $plugin->getName())));
 		}
 
-		blx()->db->createCommand()->update('plugins',
+		craft()->db->createCommand()->update('plugins',
 			array('enabled' => 0),
 			array('class' => $plugin->getClassHandle())
 		);
@@ -312,10 +312,10 @@ class PluginsService extends BaseApplicationComponent
 
 		if ($plugin->isInstalled)
 		{
-			throw new Exception(Blocks::t('“{plugin}” is already installed.', array('plugin' => $plugin->getName())));
+			throw new Exception(Craft::t('“{plugin}” is already installed.', array('plugin' => $plugin->getName())));
 		}
 
-		$transaction = blx()->db->beginTransaction();
+		$transaction = craft()->db->beginTransaction();
 		try
 		{
 			// Add the plugins as a record to the database.
@@ -366,7 +366,7 @@ class PluginsService extends BaseApplicationComponent
 
 		if (!$plugin->isInstalled)
 		{
-			throw new Exception(Blocks::t('“{plugin}” is already uninstalled.', array('plugin' => $plugin->getName())));
+			throw new Exception(Craft::t('“{plugin}” is already uninstalled.', array('plugin' => $plugin->getName())));
 		}
 
 		if (!$plugin->isEnabled)
@@ -379,13 +379,13 @@ class PluginsService extends BaseApplicationComponent
 
 		$plugin->onBeforeUninstall();
 
-		$transaction = blx()->db->beginTransaction();
+		$transaction = craft()->db->beginTransaction();
 		try
 		{
 			$plugin->dropTables();
 
 			// Remove the row from the database.
-			blx()->db->createCommand()->delete('plugins', array('class' => $plugin->getClassHandle()));
+			craft()->db->createCommand()->delete('plugins', array('class' => $plugin->getClassHandle()));
 
 			$transaction->commit();
 		}
@@ -576,7 +576,7 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	private function _noPluginExists($handle)
 	{
-		throw new Exception(Blocks::t('No plugin exists with the class “{class}”', array('class' => $handle)));
+		throw new Exception(Craft::t('No plugin exists with the class “{class}”', array('class' => $handle)));
 	}
 
 	/**
@@ -588,7 +588,7 @@ class PluginsService extends BaseApplicationComponent
 	private function _importPluginComponents(BasePlugin $plugin)
 	{
 		$lcHandle = strtolower($plugin->getClassHandle());
-		$pluginFolder = blx()->path->getPluginsPath().$lcHandle.'/';
+		$pluginFolder = craft()->path->getPluginsPath().$lcHandle.'/';
 
 		foreach ($this->_supportedComponents as $folderName => $classSuffix)
 		{
@@ -605,7 +605,7 @@ class PluginsService extends BaseApplicationComponent
 						$fileName = IOHelper::getFileName($file, false);
 
 						// Import the class.
-						Blocks::import("plugins.{$lcHandle}.{$folderName}.{$fileName}");
+						Craft::import("plugins.{$lcHandle}.{$folderName}.{$fileName}");
 
 						// Remember it
 						$this->_pluginComponentClasses[$folderName][$plugin->getClassHandle()][] = $fileName;
@@ -641,7 +641,7 @@ class PluginsService extends BaseApplicationComponent
 			$serviceName = implode('_', $parts);
 			$serviceName = substr($serviceName, 0, strpos($serviceName, 'Service'));
 
-			if (!blx()->getComponent($serviceName, false))
+			if (!craft()->getComponent($serviceName, false))
 			{
 				// Register the component with the handle as (className or className_*) minus the "Service" suffix
 				$nsClass = __NAMESPACE__.'\\'.$class;
@@ -649,11 +649,11 @@ class PluginsService extends BaseApplicationComponent
 			}
 			else
 			{
-				throw new Exception(Blocks::t('The plugin “{handle}” tried to register a service “{service}” that conflicts with a core service name.', array('handle' => $handle, 'service' => $serviceName)));
+				throw new Exception(Craft::t('The plugin “{handle}” tried to register a service “{service}” that conflicts with a core service name.', array('handle' => $handle, 'service' => $serviceName)));
 			}
 		}
 
-		blx()->setComponents($services, false);
+		craft()->setComponents($services, false);
 	}
 
 	/**
@@ -671,7 +671,7 @@ class PluginsService extends BaseApplicationComponent
 		// Skip the autoloader
 		if (!class_exists($nsClass, false))
 		{
-			$path = blx()->path->getPluginsPath().strtolower($handle).'/'.$class.'.php';
+			$path = craft()->path->getPluginsPath().strtolower($handle).'/'.$class.'.php';
 
 			if (($path = IOHelper::fileExists($path, false)) !== false)
 			{
@@ -707,7 +707,7 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	private function _getPluginHandleFromFileSystem($iHandle)
 	{
-		$pluginsPath = blx()->path->getPluginsPath();
+		$pluginsPath = craft()->path->getPluginsPath();
 		$fullPath = $pluginsPath.strtolower($iHandle).'/'.$iHandle.'Plugin.php';
 
 		if (($file = IOHelper::fileExists($fullPath, true)) !== false)

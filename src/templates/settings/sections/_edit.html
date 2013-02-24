@@ -7,7 +7,7 @@
 ] %}
 
 {% if section is not defined and sectionId is defined %}
-	{% set section = blx.sections.getSectionById(sectionId) %}
+	{% set section = craft.sections.getSectionById(sectionId) %}
 	{% if not section %}{% exit 404 %}{% endif %}
 {% endif %}
 
@@ -67,9 +67,9 @@
 				translatable: true
 			}) }}
 
-			{% if blx.hasPackage('Language') %}
+			{% if craft.hasPackage('Language') %}
 				{% set localesInput %}
-					{% for locale in blx.i18n.getSiteLocales() %}
+					{% for locale in craft.i18n.getSiteLocales() %}
 						<div>
 							{{ forms.checkbox({
 								label: locale.name~' ('~locale.id~')',
@@ -119,9 +119,9 @@
 				{% from _self import urlFormatInput %}
 
 				{% set urlFormatField %}
-					{% if blx.hasPackage('Language') %}
+					{% if craft.hasPackage('Language') %}
 						<table class="data">
-							{% for locale in blx.i18n.getSiteLocales() %}
+							{% for locale in craft.i18n.getSiteLocales() %}
 								<tr id="urlFormatRow-{{ locale.id }}"{% if section is defined and section.locales[locale.id] is not defined %} class="hidden"{% endif %}>
 									<th class="thin nowrap">{{ locale.id }}</th>
 									<td>
@@ -131,7 +131,7 @@
 							{% endfor %}
 						</table>
 					{% else %}
-						{{ urlFormatInput(blx.i18n.getPrimarySiteLocale(), (section is defined ? section : null)) }}
+						{{ urlFormatInput(craft.i18n.getPrimarySiteLocale(), (section is defined ? section : null)) }}
 					{% endif %}
 				{% endset %}
 
@@ -172,11 +172,11 @@
 
 
 {% set js %}
-	{% if section is not defined or not section.handle %}new Blocks.HandleGenerator('#name', '#handle');{% endif %}
+	{% if section is not defined or not section.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
 
-	{% for locale in blx.i18n.getSiteLocales() %}
+	{% for locale in craft.i18n.getSiteLocales() %}
 		{% if section is not defined or section.locales[locale.id] is not defined or not section.locales[locale.id].urlFormat %}
-			new Blocks.EntryUrlFormatGenerator('#name', '#urlFormat-{{ locale.id }}');
+			new Craft.EntryUrlFormatGenerator('#name', '#urlFormat-{{ locale.id }}');
 		{% endif %}
 	{% endfor %}
 {% endset %}

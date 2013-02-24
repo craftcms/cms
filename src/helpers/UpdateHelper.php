@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -27,7 +27,7 @@ class UpdateHelper
 			}
 
 			$rowData = explode(';', $row);
-			$file = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$rowData[0]);
+			$file = IOHelper::normalizePathSeparators(craft()->path->getAppPath().$rowData[0]);
 
 			// It's a folder
 			if (static::isManifestLineAFolder($file))
@@ -59,7 +59,7 @@ class UpdateHelper
 	public static function rollBackDatabaseChanges($backupPath)
 	{
 		$dbBackup = new DbBackup();
-		$fullBackupPath= blx()->path->getDbBackupPath().$backupPath.'.sql';
+		$fullBackupPath= craft()->path->getDbBackupPath().$backupPath.'.sql';
 		$dbBackup->restore($fullBackupPath);
 	}
 
@@ -95,7 +95,7 @@ class UpdateHelper
 					$tempPath = $rowData[0];
 				}
 
-				$destFile = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$tempPath);
+				$destFile = IOHelper::normalizePathSeparators(craft()->path->getAppPath().$tempPath);
 				$sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.'/app/'.$tempPath));
 
 				switch (trim($rowData[1]))
@@ -105,7 +105,7 @@ class UpdateHelper
 					{
 						if ($folder)
 						{
-							Blocks::log('Updating folder: '.$destFile);
+							Craft::log('Updating folder: '.$destFile);
 
 							$tempFolder = rtrim($destFile, '/').StringHelper::UUID().'/';
 							$tempTempFolder = rtrim($destFile, '/').'-tmp/';
@@ -119,7 +119,7 @@ class UpdateHelper
 						}
 						else
 						{
-							Blocks::log('Updating file: '.$destFile);
+							Craft::log('Updating file: '.$destFile);
 							IOHelper::copyFile($sourceFile, $destFile);
 						}
 
@@ -130,7 +130,7 @@ class UpdateHelper
 		}
 		catch (\Exception $e)
 		{
-			Blocks::log('Error updating files: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
+			Craft::log('Error updating files: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
 			UpdateHelper::rollBackFileChanges($manifestData);
 			return false;
 		}
@@ -180,7 +180,7 @@ class UpdateHelper
 		if (static::$_manifestData == null)
 		{
 			// get manifest file
-			$manifestFileData = IOHelper::getFileContents($manifestDataPath.'/blocks_manifest', true);
+			$manifestFileData = IOHelper::getFileContents($manifestDataPath.'/craft_manifest', true);
 
 			// Remove any trailing empty newlines
 			if ($manifestFileData[count($manifestFileData) - 1] == '')
@@ -189,12 +189,12 @@ class UpdateHelper
 			}
 
 			$manifestData = array_map('trim', $manifestFileData);
-			$updateModel = blx()->updates->getUpdates();
+			$updateModel = craft()->updates->getUpdates();
 
 			// Only use the manifest data starting from the local version
 			for ($counter = 0; $counter < count($manifestData); $counter++)
 			{
-				if (strpos($manifestData[$counter], '##'.$updateModel->blocks->localVersion.'.'.$updateModel->blocks->localBuild) !== false)
+				if (strpos($manifestData[$counter], '##'.$updateModel->craft->localVersion.'.'.$updateModel->craft->localBuild) !== false)
 				{
 					break;
 				}
@@ -213,7 +213,7 @@ class UpdateHelper
 	 */
 	public static function getUnzipFolderFromUID($uid)
 	{
-		return blx()->path->getTempPath().$uid.'/';
+		return craft()->path->getTempPath().$uid.'/';
 	}
 
 	/**
@@ -222,7 +222,7 @@ class UpdateHelper
 	 */
 	public static function getZipFileFromUID($uid)
 	{
-		return blx()->path->getTempPath().$uid.'.zip';
+		return craft()->path->getTempPath().$uid.'.zip';
 	}
 
 	/**

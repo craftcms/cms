@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -36,18 +36,18 @@ class EntriesService extends BaseApplicationComponent
 	 */
 	public function saveEntry(EntryModel $entry)
 	{
-		$section = blx()->sections->getSectionById($entry->sectionId);
+		$section = craft()->sections->getSectionById($entry->sectionId);
 
 		if (!$section)
 		{
-			throw new Exception(Blocks::t('No section exists with the ID “{id}”', array('id' => $entry->sectionId)));
+			throw new Exception(Craft::t('No section exists with the ID “{id}”', array('id' => $entry->sectionId)));
 		}
 
 		$sectionLocales = $section->getLocales();
 
 		if (!isset($sectionLocales[$entry->locale]))
 		{
-			throw new Exception(Blocks::t('The section “{section}” is not enabled for the locale {locale}', array('section' => $section->name, 'locale' => $entry->locale)));
+			throw new Exception(Craft::t('The section “{section}” is not enabled for the locale {locale}', array('section' => $section->name, 'locale' => $entry->locale)));
 		}
 
 		// Entry data
@@ -57,7 +57,7 @@ class EntriesService extends BaseApplicationComponent
 
 			if (!$entryRecord)
 			{
-				throw new Exception(Blocks::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
+				throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
 			}
 
 			$elementRecord = $entryRecord->element;
@@ -133,8 +133,8 @@ class EntriesService extends BaseApplicationComponent
 
 			if (!$urlFormat || strpos($urlFormat, '{slug}') === false)
 			{
-				throw new Exception(Blocks::t('The section “{section}” doesn’t have a valid URL Format.', array(
-					'section' => Blocks::t($section->name)
+				throw new Exception(Craft::t('The section “{section}” doesn’t have a valid URL Format.', array(
+					'section' => Craft::t($section->name)
 				)));
 			}
 
@@ -145,7 +145,7 @@ class EntriesService extends BaseApplicationComponent
 		$entry->addErrors($elementLocaleRecord->getErrors());
 
 		// Entry content
-		$contentRecord = blx()->elements->prepElementContent($entry, $section->getFieldLayout(), $entry->locale);
+		$contentRecord = craft()->elements->prepElementContent($entry, $section->getFieldLayout(), $entry->locale);
 		$contentRecord->validate();
 		$entry->addErrors($contentRecord->getErrors());
 
@@ -222,13 +222,13 @@ class EntriesService extends BaseApplicationComponent
 			}
 
 			// Save a new version
-			if (Blocks::hasPackage(BlocksPackage::PublishPro))
+			if (Craft::hasPackage(CraftPackage::PublishPro))
 			{
-				blx()->entryRevisions->saveVersion($entry);
+				craft()->entryRevisions->saveVersion($entry);
 			}
 
 			// Perform some post-save operations
-			blx()->elements->postSaveOperations($entry, $contentRecord);
+			craft()->elements->postSaveOperations($entry, $contentRecord);
 
 			return true;
 		}
@@ -284,7 +284,7 @@ class EntriesService extends BaseApplicationComponent
 				$testSlug = $slug.($i != 0 ? "-{$i}" : '');
 				$params[':slug'] = $testSlug;
 
-				$totalEntries = blx()->db->createCommand()
+				$totalEntries = craft()->db->createCommand()
 					->select('count(id)')
 					->from('entries_i18n')
 					->where($conditions, $params)

@@ -11,14 +11,14 @@
 	instructions: "What do you want to link to?"|t,
 	id: 'type',
 	name: 'type',
-	options: blx.links.getAllLinkableElementTypes(),
+	options: craft.links.getAllLinkableElementTypes(),
 	value: elementType.classHandle,
 	toggle: true,
 	targetPrefix: 'linktype-'
 }) }}
 
 
-{% for _elementType in blx.links.getAllLinkableElementTypes() %}
+{% for _elementType in craft.links.getAllLinkableElementTypes() %}
 	{% set isCurrent = (_elementType.classHandle == elementType.classHandle) %}
 	{% if isCurrent %}
 		{% set elementTypeSettings = elementType.getLinkSettingsHtml() %}

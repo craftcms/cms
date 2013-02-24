@@ -1,5 +1,5 @@
 {% if singleton is not defined %}
-	{% set singleton = blx.singletons.getSingletonById(singletonId) %}
+	{% set singleton = craft.singletons.getSingletonById(singletonId) %}
 	{% if not singleton %}{% exit 404 %}{% endif %}
 {% endif %}
 

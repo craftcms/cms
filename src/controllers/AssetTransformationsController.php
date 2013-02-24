@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Handles asset transformation tasks
@@ -14,22 +14,22 @@ class AssetTransformationsController extends BaseController
 		$this->requirePostRequest();
 
 		$transformation = new AssetTransformationModel();
-		$transformation->id = blx()->request->getPost('transformationId');
-		$transformation->name = blx()->request->getPost('name');
-		$transformation->handle = blx()->request->getPost('handle');
-		$transformation->width = blx()->request->getPost('width');
-		$transformation->height = blx()->request->getPost('height');
-		$transformation->mode = blx()->request->getPost('mode');
+		$transformation->id = craft()->request->getPost('transformationId');
+		$transformation->name = craft()->request->getPost('name');
+		$transformation->handle = craft()->request->getPost('handle');
+		$transformation->width = craft()->request->getPost('width');
+		$transformation->height = craft()->request->getPost('height');
+		$transformation->mode = craft()->request->getPost('mode');
 
 		// Did it save?
-		if (blx()->assetTransformations->saveTransformation($transformation))
+		if (craft()->assetTransformations->saveTransformation($transformation))
 		{
-			blx()->userSession->setNotice(Blocks::t('Transformation saved.'));
+			craft()->userSession->setNotice(Craft::t('Transformation saved.'));
 			$this->redirectToPostedUrl(array('handle' => $transformation->handle));
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save source.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save source.'));
 		}
 
 		// Reload the original template
@@ -46,9 +46,9 @@ class AssetTransformationsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$transformationId = blx()->request->getRequiredPost('id');
+		$transformationId = craft()->request->getRequiredPost('id');
 
-		blx()->assetTransformations->deleteTransformation($transformationId);
+		craft()->assetTransformations->deleteTransformation($transformationId);
 
 		$this->returnJson(array('success' => true));
 	}

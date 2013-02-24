@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -53,7 +53,7 @@ class GlobalsService extends BaseApplicationComponent
 			$globals->id = $elementRecord->id;
 		}
 
-		$fieldLayout = blx()->fields->getLayoutByType(ElementType::Globals);
-		return blx()->elements->saveElementContent($globals, $fieldLayout);
+		$fieldLayout = craft()->fields->getLayoutByType(ElementType::Globals);
+		return craft()->elements->saveElementContent($globals, $fieldLayout);
 	}
 }

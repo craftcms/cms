@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -20,17 +20,17 @@ class m130206_100000_add_installdate_to_plugins extends BaseMigration
 			if (!$pluginsTable->getColumn('installDate'))
 			{
 				$this->addColumnAfter('plugins', 'installDate', array(AttributeType::DateTime, 'required' => true), 'settings');
-				blx()->db->createCommand("UPDATE `{$pluginsTable->name}` SET `installDate` = `dateCreated`;")->execute();
-				Blocks::log('Successfully added `installDate` column and populated it.');
+				craft()->db->createCommand("UPDATE `{$pluginsTable->name}` SET `installDate` = `dateCreated`;")->execute();
+				Craft::log('Successfully added `installDate` column and populated it.');
 			}
 			else
 			{
-				Blocks::log('The `installDate` column already exists in the `plugins` table.', \CLogger::LEVEL_WARNING);
+				Craft::log('The `installDate` column already exists in the `plugins` table.', \CLogger::LEVEL_WARNING);
 			}
 		}
 		else
 		{
-			Blocks::log('The `plugins` table is missing. No idea what is going on here.', \CLogger::LEVEL_WARNING);
+			Craft::log('The `plugins` table is missing. No idea what is going on here.', \CLogger::LEVEL_WARNING);
 		}
 	}
 }

@@ -1,10 +1,9 @@
 {% extends "_layouts/message" %}
-{% set title = "Update {app}"|t({ app: blx.config.appName }) %}
+{% set title = "Update CraftCMS"|t %}
 
 {% set content %}
-	<p>{{ "You need to be on at least build {minBuild} before you can manually update to build {targetBuild} of {app}."|t({
-			minBuild:    blx.app.getMinRequiredBuild(),
-			targetBuild: blx.app.getBuild(),
-			app:         blx.config.appName
+	<p>{{ "You need to be on at least build {minBuild} before you can manually update to build {targetBuild} of CraftCMS."|t({
+			minBuild:    craft.app.getMinRequiredBuild(),
+			targetBuild: craft.app.getBuild()
 		}) }}</p>
 {% endset %}

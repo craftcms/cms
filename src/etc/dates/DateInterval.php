@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -28,22 +28,22 @@ class DateInterval extends \DateInterval
 
 		if ($this->y)
 		{
-			$timeComponents[] = $this->y.' '.($this->y > 1 ? Blocks::t('years') : Blocks::t('year'));
+			$timeComponents[] = $this->y.' '.($this->y > 1 ? Craft::t('years') : Craft::t('year'));
 		}
 
 		if ($this->m)
 		{
-			$timeComponents[] = $this->m.' '.($this->m > 1 ? Blocks::t('months') : Blocks::t('month'));
+			$timeComponents[] = $this->m.' '.($this->m > 1 ? Craft::t('months') : Craft::t('month'));
 		}
 
 		if ($this->d)
 		{
-			$timeComponents[] = $this->d.' '.($this->d > 1 ? Blocks::t('days') : Blocks::t('day'));
+			$timeComponents[] = $this->d.' '.($this->d > 1 ? Craft::t('days') : Craft::t('day'));
 		}
 
 		if ($this->h)
 		{
-			$timeComponents[] = $this->h.' '.($this->h > 1 ? Blocks::t('hours') : Blocks::t('hour'));
+			$timeComponents[] = $this->h.' '.($this->h > 1 ? Craft::t('hours') : Craft::t('hour'));
 		}
 
 		$minutes = $this->i;
@@ -56,18 +56,18 @@ class DateInterval extends \DateInterval
 			}
 			else if (!$this->y && !$this->m && !$this->d && !$this->h && !$minutes)
 			{
-				return Blocks::t('less than a minute');
+				return Craft::t('less than a minute');
 			}
 		}
 
 		if ($minutes)
 		{
-			$timeComponents[] = $minutes.' '.($minutes > 1 ? Blocks::t('minutes') : Blocks::t('minute'));
+			$timeComponents[] = $minutes.' '.($minutes > 1 ? Craft::t('minutes') : Craft::t('minute'));
 		}
 
 		if ($showSeconds && $this->s)
 		{
-			$timeComponents[] = $this->s.' '.($this->s > 1 ? Blocks::t('seconds') : Blocks::t('second'));
+			$timeComponents[] = $this->s.' '.($this->s > 1 ? Craft::t('seconds') : Craft::t('second'));
 		}
 
 		return implode(', ', $timeComponents);

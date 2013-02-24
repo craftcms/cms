@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Settings functions
@@ -25,7 +25,7 @@ class SystemSettingsVariable
 	 */
 	public function __get($category)
 	{
-		return blx()->systemSettings->getSettings($category);
+		return craft()->systemSettings->getSettings($category);
 	}
 
 	/**
@@ -38,6 +38,6 @@ class SystemSettingsVariable
 	 */
 	public function getSetting($category, $key, $default = null)
 	{
-		return blx()->systemSettings->getSetting($category, $key, $default);
+		return craft()->systemSettings->getSetting($category, $key, $default);
 	}
 }

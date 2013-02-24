@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::PublishPro);
+Craft::requirePackage(CraftPackage::PublishPro);
 
 /**
  *
@@ -20,7 +20,7 @@ class EntryRevisionsVariable
 	 */
 	public function getDraftsByEntryId($entryId)
 	{
-		return blx()->entryRevisions->getDraftsByEntryId($entryId);
+		return craft()->entryRevisions->getDraftsByEntryId($entryId);
 	}
 
 	/**
@@ -31,7 +31,7 @@ class EntryRevisionsVariable
 	 */
 	public function getEditableDraftsByEntryId($entryId)
 	{
-		return blx()->entryRevisions->getEditableDraftsByEntryId($entryId);
+		return craft()->entryRevisions->getEditableDraftsByEntryId($entryId);
 	}
 
 	/**
@@ -42,7 +42,7 @@ class EntryRevisionsVariable
 	 */
 	public function getDraftById($draftId)
 	{
-		return blx()->entryRevisions->getDraftById($draftId);
+		return craft()->entryRevisions->getDraftById($draftId);
 	}
 
 	/**
@@ -54,7 +54,7 @@ class EntryRevisionsVariable
 	 */
 	public function getDraftByOffset($entryId, $offset = 0)
 	{
-		return blx()->entryRevisions->getDraftByOffset($entryId, $offset);
+		return craft()->entryRevisions->getDraftByOffset($entryId, $offset);
 	}
 
 	// -------------------------------------------
@@ -69,7 +69,7 @@ class EntryRevisionsVariable
 	 */
 	public function getVersionsByEntryId($entryId)
 	{
-		return blx()->entryRevisions->getVersionsByEntryId($entryId);
+		return craft()->entryRevisions->getVersionsByEntryId($entryId);
 	}
 
 	/**
@@ -80,7 +80,7 @@ class EntryRevisionsVariable
 	 */
 	public function getVersionById($versionId)
 	{
-		return blx()->entryRevisions->getVersionById($versionId);
+		return craft()->entryRevisions->getVersionById($versionId);
 	}
 
 	/**
@@ -92,6 +92,6 @@ class EntryRevisionsVariable
 	 */
 	public function getVersionByOffset($entryId, $offset = 0)
 	{
-		return blx()->entryRevisions->getVersionByOffset($entryId, $offset);
+		return craft()->entryRevisions->getVersionByOffset($entryId, $offset);
 	}
 }

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Get Help widget
@@ -13,7 +13,7 @@ class GetHelpWidget extends BaseWidget
 	 */
 	public function getName()
 	{
-		return Blocks::t('Get Help');
+		return Craft::t('Get Help');
 	}
 
 	/**
@@ -23,7 +23,7 @@ class GetHelpWidget extends BaseWidget
 	 */
 	public function getTitle()
 	{
-		return Blocks::t('Send a message to Blocks Support');
+		return Craft::t('Send a message to CraftCMS Support');
 	}
 
 	/**
@@ -34,19 +34,19 @@ class GetHelpWidget extends BaseWidget
 	public function getBodyHtml()
 	{
 		$id = $this->model->id;
-		$js = "new Blocks.GetHelpWidget({$id});";
-		blx()->templates->includeJs($js);
+		$js = "new Craft.GetHelpWidget({$id});";
+		craft()->templates->includeJs($js);
 
-		blx()->templates->includeJsResource('js/GetHelpWidget.js');
-		blx()->templates->includeTranslations('Message sent successfully.');
+		craft()->templates->includeJsResource('js/GetHelpWidget.js');
+		craft()->templates->includeTranslations('Message sent successfully.');
 
 
 		$message = "Enter your message here.\n\n" .
 			"------------------------------\n\n" .
-			'Blocks version: '.Blocks::getVersion().' build '.Blocks::getBuild()."\n" .
-			'Packages: '.implode(', ', Blocks::getStoredPackages());
+			'CraftCMS version: '.Craft::getVersion().' build '.Craft::getBuild()."\n" .
+			'Packages: '.implode(', ', Craft::getStoredPackages());
 
-		$plugins = blx()->plugins->getPlugins();
+		$plugins = craft()->plugins->getPlugins();
 
 		if ($plugins)
 		{
@@ -60,7 +60,7 @@ class GetHelpWidget extends BaseWidget
 			$message .= "\nPlugins: ".implode(', ', $pluginNames);
 		}
 
-		return blx()->templates->render('_components/widgets/GetHelp/body', array(
+		return craft()->templates->render('_components/widgets/GetHelp/body', array(
 			'message' => $message
 		));
 	}

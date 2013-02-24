@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::Users);
+Craft::requirePackage(CraftPackage::Users);
 
 /**
  *
@@ -63,7 +63,7 @@ class UserGroupsService extends BaseApplicationComponent
 	 */
 	public function getGroupsByUserId($userId, $indexBy = null)
 	{
-		$query = blx()->db->createCommand()
+		$query = craft()->db->createCommand()
 			->select('g.*')
 			->from('usergroups g')
 			->join('usergroups_users gu', 'gu.groupId = g.id')
@@ -112,7 +112,7 @@ class UserGroupsService extends BaseApplicationComponent
 	 */
 	public function assignUserToGroups($userId, $groupIds = null)
 	{
-		blx()->db->createCommand()
+		craft()->db->createCommand()
 			->delete('usergroups_users', array('userId' => $userId));
 
 		if ($groupIds)
@@ -127,7 +127,7 @@ class UserGroupsService extends BaseApplicationComponent
 				$values[] = array($groupId, $userId);
 			}
 
-			blx()->db->createCommand()->insertAll('usergroups_users', array('groupId', 'userId'), $values);
+			craft()->db->createCommand()->insertAll('usergroups_users', array('groupId', 'userId'), $values);
 		}
 
 		return true;
@@ -141,7 +141,7 @@ class UserGroupsService extends BaseApplicationComponent
 	 */
 	public function deleteGroupById($groupId)
 	{
-		blx()->db->createCommand()->delete('usergroups', array('id' => $groupId));
+		craft()->db->createCommand()->delete('usergroups', array('id' => $groupId));
 		return true;
 	}
 
@@ -180,6 +180,6 @@ class UserGroupsService extends BaseApplicationComponent
 	 */
 	private function _noGroupExists($groupId)
 	{
-		throw new Exception(Blocks::t('No group exists with the ID “{id}”', array('id' => $groupId)));
+		throw new Exception(Craft::t('No group exists with the ID “{id}”', array('id' => $groupId)));
 	}
 }

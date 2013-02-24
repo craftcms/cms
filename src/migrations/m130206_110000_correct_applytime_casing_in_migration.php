@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -26,12 +26,12 @@ class m130206_110000_correct_applytime_casing_in_migration extends BaseMigration
 			}
 			else
 			{
-				Blocks::log('The `applyTime` column already exists in the `migrations` table.', \CLogger::LEVEL_WARNING);
+				Craft::log('The `applyTime` column already exists in the `migrations` table.', \CLogger::LEVEL_WARNING);
 			}
 		}
 		else
 		{
-			Blocks::log('The `migrations` table is missing. No idea what is going on here.', \CLogger::LEVEL_ERROR);
+			Craft::log('The `migrations` table is missing. No idea what is going on here.', \CLogger::LEVEL_ERROR);
 		}
 	}
 }

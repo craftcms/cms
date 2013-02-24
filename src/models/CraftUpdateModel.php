@@ -1,10 +1,10 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
- * Stores the available Blocks update info.
+ * Stores the available Craft update info.
  */
-class BlocksUpdateModel extends BaseModel
+class CraftUpdateModel extends BaseModel
 {
 	/**
 	 * @return array|void

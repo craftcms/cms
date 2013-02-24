@@ -1,10 +1,10 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
  */
-class BlocksTwigExtension extends \Twig_Extension
+class CraftTwigExtension extends \Twig_Extension
 {
 	/**
 	 * Returns the token parser instances to add to the existing list.
@@ -38,23 +38,23 @@ class BlocksTwigExtension extends \Twig_Extension
 	 */
 	public function getFilters()
 	{
-		$translateFilter = new \Twig_Filter_Function('\Blocks\Blocks::t');
-		$namespaceFilter = new \Twig_Filter_Function('\Blocks\blx()->templates->namespaceInputs');
+		$translateFilter = new \Twig_Filter_Function('\Craft\Craft::t');
+		$namespaceFilter = new \Twig_Filter_Function('\Craft\craft()->templates->namespaceInputs');
 
 		return array(
 			'translate'  => $translateFilter,
 			't'          => $translateFilter,
 			'namespace'  => $namespaceFilter,
 			'ns'         => $namespaceFilter,
-			'number'     => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatDecimal'),
-			'currency'   => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatCurrency'),
-			'percentage' => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatPercentage'),
-			'datetime'   => new \Twig_Filter_Function('\Blocks\blx()->dateFormatter->formatDateTime'),
+			'number'     => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatDecimal'),
+			'currency'   => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatCurrency'),
+			'percentage' => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatPercentage'),
+			'datetime'   => new \Twig_Filter_Function('\Craft\craft()->dateFormatter->formatDateTime'),
 			'without'    => new \Twig_Filter_Method($this, 'withoutFilter'),
 			'filter'     => new \Twig_Filter_Function('array_filter'),
 			'ucfirst'    => new \Twig_Filter_Function('ucfirst'),
 			'lcfirst'    => new \Twig_Filter_Function('lcfirst'),
-			'filesize'	 => new \Twig_Filter_Function('\Blocks\blx()->formatter->formatSize'),
+			'filesize'	 => new \Twig_Filter_Function('\Craft\craft()->formatter->formatSize'),
 		);
 	}
 
@@ -93,14 +93,14 @@ class BlocksTwigExtension extends \Twig_Extension
 	public function getFunctions()
 	{
 		return array(
-			'url'             => new \Twig_Function_Function('\Blocks\UrlHelper::getUrl'),
-			'cpUrl'           => new \Twig_Function_Function('\Blocks\UrlHelper::getCpUrl'),
-			'siteUrl'         => new \Twig_Function_Function('\Blocks\UrlHelper::getSiteUrl'),
-			'resourceUrl'     => new \Twig_Function_Function('\Blocks\UrlHelper::getResourceUrl'),
-			'actionUrl'       => new \Twig_Function_Function('\Blocks\UrlHelper::getActionUrl'),
-			'getHeadHtml'    => new \Twig_Function_Method($this, 'getHeadHtmlFunction'),
-			'getFootHtml'    => new \Twig_Function_Method($this, 'getFootHtmlFunction'),
-			'getTranslations' => new \Twig_Function_Function('\Blocks\blx()->templates->getTranslations'),
+			'url'             => new \Twig_Function_Function('\Craft\UrlHelper::getUrl'),
+			'cpUrl'           => new \Twig_Function_Function('\Craft\UrlHelper::getCpUrl'),
+			'siteUrl'         => new \Twig_Function_Function('\Craft\UrlHelper::getSiteUrl'),
+			'resourceUrl'     => new \Twig_Function_Function('\Craft\UrlHelper::getResourceUrl'),
+			'actionUrl'       => new \Twig_Function_Function('\Craft\UrlHelper::getActionUrl'),
+			'getHeadHtml'     => new \Twig_Function_Method($this, 'getHeadHtmlFunction'),
+			'getFootHtml'     => new \Twig_Function_Method($this, 'getFootHtmlFunction'),
+			'getTranslations' => new \Twig_Function_Function('\Craft\craft()->templates->getTranslations'),
 			'round'           => new \Twig_Function_Function('round'),
 			'ceil'            => new \Twig_Function_Function('ceil'),
 			'floor'           => new \Twig_Function_Function('floor'),
@@ -116,7 +116,7 @@ class BlocksTwigExtension extends \Twig_Extension
 	 */
 	public function getHeadHtmlFunction()
 	{
-		$html = blx()->templates->getHeadHtml();
+		$html = craft()->templates->getHeadHtml();
 		return $this->getTwigMarkup($html);
 	}
 
@@ -127,7 +127,7 @@ class BlocksTwigExtension extends \Twig_Extension
 	 */
 	public function getFootHtmlFunction()
 	{
-		$html = blx()->templates->getFootHtml();
+		$html = craft()->templates->getFootHtml();
 		return $this->getTwigMarkup($html);
 	}
 
@@ -138,21 +138,21 @@ class BlocksTwigExtension extends \Twig_Extension
 	 */
 	public function getGlobals()
 	{
-		$globals['blx'] = new BlxVariable();
+		$globals['craft'] = new CraftVariable();
 		$globals['now'] = DateTimeHelper::currentUTCDateTime();
-		$globals['loginUrl'] = UrlHelper::getUrl(blx()->config->get('loginPath'));
-		$globals['logoutUrl'] = UrlHelper::getUrl(blx()->config->get('logoutPath'));
+		$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->get('loginPath'));
+		$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->get('logoutPath'));
 
-		if (blx()->isInstalled())
+		if (craft()->isInstalled())
 		{
-			$globals['siteName'] = Blocks::getSiteName();
-			$globals['siteUrl'] = Blocks::getSiteUrl();
+			$globals['siteName'] = Craft::getSiteName();
+			$globals['siteUrl'] = Craft::getSiteUrl();
 
 			// TODO: Deprecate after next breakpoint
-			if (Blocks::getStoredBuild() > 2157)
+			if (Craft::getStoredBuild() > 2157)
 			{
-				$globals['globals'] = blx()->globals->getGlobalContent();
-				$globals['user'] = blx()->userSession->getUser();
+				$globals['globals'] = craft()->globals->getGlobalContent();
+				$globals['user'] = craft()->userSession->getUser();
 			}
 		}
 
@@ -166,7 +166,7 @@ class BlocksTwigExtension extends \Twig_Extension
 	 */
 	public function getName()
 	{
-		return 'blocks';
+		return 'craft';
 	}
 
 	/**
@@ -178,7 +178,7 @@ class BlocksTwigExtension extends \Twig_Extension
 	 */
 	private function getTwigMarkup($str)
 	{
-		$charset = blx()->templates->getTwig()->getCharset();
+		$charset = craft()->templates->getTwig()->getCharset();
 		return new \Twig_Markup($str, $charset);
 	}
 }

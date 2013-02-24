@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Links fieldtype class
@@ -15,7 +15,7 @@ class LinksFieldType extends BaseFieldType
 	 */
 	public function getName()
 	{
-		$name = Blocks::t('Links');
+		$name = Craft::t('Links');
 
 		$elementType = $this->_getRightElementType(false);
 
@@ -69,7 +69,7 @@ class LinksFieldType extends BaseFieldType
 			$elementType->setLinkSettings($criteria->rightSettings);
 		}
 
-		return blx()->templates->render('_components/fieldtypes/Links/settings', array(
+		return craft()->templates->render('_components/fieldtypes/Links/settings', array(
 			'elementType' => new ElementTypeVariable($elementType),
 			'settings'    => $this->getSettings()
 		));
@@ -97,7 +97,7 @@ class LinksFieldType extends BaseFieldType
 		unset($settings['types'], $settings['type']);
 
 		// Give the element type a chance to pre-process any of its settings
-		$elementType = blx()->links->getLinkableElementType($elementTypeClass);
+		$elementType = craft()->links->getLinkableElementType($elementTypeClass);
 
 		if ($elementType)
 		{
@@ -106,13 +106,13 @@ class LinksFieldType extends BaseFieldType
 
 		if (isset($settings['criteriaId']))
 		{
-			$criteria = blx()->links->getCriteriaById($settings['criteriaId']);
+			$criteria = craft()->links->getCriteriaById($settings['criteriaId']);
 
 			// Has the element type changed?
 			if ($criteria && $criteria->rightElementType != $elementTypeClass)
 			{
 				// Delete the previous links
-				blx()->db->createCommand()->delete('links', array('criteriaId' => $criteria->id));
+				craft()->db->createCommand()->delete('links', array('criteriaId' => $criteria->id));
 			}
 		}
 
@@ -127,9 +127,9 @@ class LinksFieldType extends BaseFieldType
 		$criteria->rightElementType = $elementTypeClass;
 		$criteria->rightSettings    = $elementTypeSettings;
 
-		if (!blx()->links->saveCriteria($criteria))
+		if (!craft()->links->saveCriteria($criteria))
 		{
-			throw new Exception(Blocks::t('Could not save the link criteria'));
+			throw new Exception(Craft::t('Could not save the link criteria'));
 		}
 
 		$settings['criteriaId'] = $criteria->id;
@@ -153,11 +153,11 @@ class LinksFieldType extends BaseFieldType
 			// or we're loading a draft/version.
 			if (is_array($value))
 			{
-				return blx()->links->getElementsById($criteria->rightElementType, array_filter($value));
+				return craft()->links->getElementsById($criteria->rightElementType, array_filter($value));
 			}
 			else if ($this->element && $this->element->id)
 			{
-				return blx()->links->getLinkedElements($criteria, $this->element->id);
+				return craft()->links->getLinkedElements($criteria, $this->element->id);
 			}
 		}
 
@@ -201,9 +201,9 @@ class LinksFieldType extends BaseFieldType
 
 		$id = 'links-'.$this->model->id;
 
-		blx()->templates->includeJs('new Blocks.LinksField("'.$id.'", "'.$name.'", '.JsonHelper::encode($settings).', '.JsonHelper::encode($elementIds).');');
+		craft()->templates->includeJs('new Craft.LinksField("'.$id.'", "'.$name.'", '.JsonHelper::encode($settings).', '.JsonHelper::encode($elementIds).');');
 
-		return blx()->templates->render('_components/fieldtypes/Links/input', array(
+		return craft()->templates->render('_components/fieldtypes/Links/input', array(
 			'id'       => $id,
 			'name'     => $name,
 			'elements' => $elements,
@@ -218,7 +218,7 @@ class LinksFieldType extends BaseFieldType
 	{
 		$rawValue = $this->element->getRawContent($this->model->handle);
 		$elementIds = is_array($rawValue) ? array_filter($rawValue) : array();
-		blx()->links->saveLinks($this->getSettings()->criteriaId, $this->element->id, $elementIds);
+		craft()->links->saveLinks($this->getSettings()->criteriaId, $this->element->id, $elementIds);
 	}
 
 	/**
@@ -235,7 +235,7 @@ class LinksFieldType extends BaseFieldType
 
 			if ($criteriaId)
 			{
-				$this->_criteria = blx()->links->getCriteriaById($criteriaId);
+				$this->_criteria = craft()->links->getCriteriaById($criteriaId);
 			}
 			else
 			{
@@ -258,14 +258,14 @@ class LinksFieldType extends BaseFieldType
 
 		if ($criteria)
 		{
-			$elementType = blx()->elements->getElementType($criteria->rightElementType);
+			$elementType = craft()->elements->getElementType($criteria->rightElementType);
 		}
 
 		if (empty($elementType))
 		{
 			if ($defaultToEntries)
 			{
-				$elementType = blx()->links->getLinkableElementType(ElementType::Entry);
+				$elementType = craft()->links->getLinkableElementType(ElementType::Entry);
 			}
 			else
 			{

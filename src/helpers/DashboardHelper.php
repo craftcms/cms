@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -15,20 +15,20 @@ class DashboardHelper
 	{
 		$alerts = array();
 
-		if (blx()->updates->isUpdateInfoCached() || $fetch)
+		if (craft()->updates->isUpdateInfoCached() || $fetch)
 		{
-			$updateModel = blx()->updates->getUpdates();
+			$updateModel = craft()->updates->getUpdates();
 
-			if (blx()->et->getLicenseKeyStatus() == LicenseKeyStatus::InvalidKey)
+			if (craft()->et->getLicenseKeyStatus() == LicenseKeyStatus::InvalidKey)
 			{
-				$alerts[] = Blocks::t('The license key you’re using isn’t authorized to run Blocks on “{domain}”.', array('domain', blx()->request->serverName).' <a href="">'.Blocks::t('Manage my licenses').'</a>');
+				$alerts[] = Craft::t('The license key you’re using isn’t authorized to run CraftCMS on “{domain}”.', array('domain', craft()->request->serverName).' <a href="">'.Craft::t('Manage my licenses').'</a>');
 			}
 
-			if ($updateModel->blocks->releases !== null && count($updateModel->blocks->releases) > 0)
+			if ($updateModel->craft->releases !== null && count($updateModel->craft->releases) > 0)
 			{
-				if (blx()->updates->criticalBlocksUpdateAvailable($updateModel->blocks->releases))
+				if (craft()->updates->criticalCraftUpdateAvailable($updateModel->craft->releases))
 				{
-					$alerts[] = Blocks::t('There is a critical update for Blocks available.').' <a class="go" href="'.UrlHelper::getUrl('updates').'">'.Blocks::t('Go to Updates').'</a>';
+					$alerts[] = Craft::t('There is a critical update for CraftCMS available.').' <a class="go" href="'.UrlHelper::getUrl('updates').'">'.Craft::t('Go to Updates').'</a>';
 				}
 			}
 

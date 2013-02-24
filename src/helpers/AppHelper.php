@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -9,7 +9,7 @@ class AppHelper
 	private static $_isPhpDevServer;
 
 	/**
-	 * Returns whether Blocks is running on the dev server bundled with PHP 5.4+
+	 * Returns whether Craft is running on the dev server bundled with PHP 5.4+
 	 *
 	 * @static
 	 * @return bool

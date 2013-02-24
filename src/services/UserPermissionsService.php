@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::Users);
+Craft::requirePackage(CraftPackage::Users);
 
 /**
  *
@@ -22,44 +22,44 @@ class UserPermissionsService extends BaseApplicationComponent
 
 		$general = array(
 			'accessSiteWhenSystemIsOff' => array(
-				'label' => Blocks::t('Access the site when the system is off')
+				'label' => Craft::t('Access the site when the system is off')
 			),
 			'accessCp' => array(
 				'label' => 'Access the CP',
 				'nested' => array(
 					'accessCpWhenSystemIsOff' => array(
-						'label' => Blocks::t('Access the CP when the system is off')
+						'label' => Craft::t('Access the CP when the system is off')
 					),
-					'autoUpdateBlocks' => array(
-						'label' => Blocks::t('Auto-update Blocks')
+					'autoUpdateCraft' => array(
+						'label' => Craft::t('Auto-update CraftCMS')
 					),
 				)
 			),
 		);
 
-		foreach (blx()->plugins->getPlugins() as $plugin)
+		foreach (craft()->plugins->getPlugins() as $plugin)
 		{
 			if ($plugin->hasCpSection())
 			{
 				$general['accessCp']['nested']['accessPlugin-'.$plugin->getClassHandle()] = array(
-					'label' => Blocks::t('Access {plugin}', array('plugin' => $plugin->getName()))
+					'label' => Craft::t('Access {plugin}', array('plugin' => $plugin->getName()))
 				);
 			}
 		}
 
-		$permissions[Blocks::t('General')] = $general;
+		$permissions[Craft::t('General')] = $general;
 
 		// Users
 
-		$permissions[Blocks::t('Users')] = array(
+		$permissions[Craft::t('Users')] = array(
 			'editUsers' => array(
-				'label' => Blocks::t('Edit users'),
+				'label' => Craft::t('Edit users'),
 				'nested' => array(
 					'registerUsers' => array(
-						'label' => Blocks::t('Register users')
+						'label' => Craft::t('Register users')
 					),
 					'administrateUsers' => array(
-						'label' => Blocks::t('Administrate users')
+						'label' => Craft::t('Administrate users')
 					)
 				),
 			),
@@ -67,36 +67,36 @@ class UserPermissionsService extends BaseApplicationComponent
 
 		// Entries
 
-		$sections = blx()->sections->getAllSections();
+		$sections = craft()->sections->getAllSections();
 
 		foreach ($sections as $section)
 		{
-			$label = Blocks::t('Section - {section}', array('section' => Blocks::t($section->name)));
+			$label = Craft::t('Section - {section}', array('section' => Craft::t($section->name)));
 			$permissions[$label] = $this->_getEntryPermissions($section->id);
 		}
 
 		// Singletons
 
-		$singletons = blx()->singletons->getAllSingletons();
+		$singletons = craft()->singletons->getAllSingletons();
 
 		if ($singletons)
 		{
-			$permissions[Blocks::t('Singletons')] = $this->_getSingletonPermissions($singletons);
+			$permissions[Craft::t('Singletons')] = $this->_getSingletonPermissions($singletons);
 		}
 
 		// Globals
 
-		$permissions[Blocks::t('Globals')] = array(
+		$permissions[Craft::t('Globals')] = array(
 			'editGlobals' => array(
-				'label' => Blocks::t('Edit globals')
+				'label' => Craft::t('Edit globals')
 			)
 		);
 
 		// Plugins
 
-		foreach (blx()->plugins->callHook('registerUserPermissions') as $pluginHandle => $pluginPermissions)
+		foreach (craft()->plugins->callHook('registerUserPermissions') as $pluginHandle => $pluginPermissions)
 		{
-			$plugin = blx()->plugins->getPlugin($pluginHandle);
+			$plugin = craft()->plugins->getPlugin($pluginHandle);
 			$permissions[$plugin->getName()] = $pluginPermissions;
 		}
 
@@ -113,7 +113,7 @@ class UserPermissionsService extends BaseApplicationComponent
 	{
 		if (!isset($this->_permissionsByUserId[$groupId]))
 		{
-			$groupPermissions = blx()->db->createCommand()
+			$groupPermissions = craft()->db->createCommand()
 				->select('p.name')
 				->from('userpermissions p')
 				->join('userpermissions_usergroups p_g', 'p_g.permissionId = p.id')
@@ -134,7 +134,7 @@ class UserPermissionsService extends BaseApplicationComponent
 	 */
 	public function getGroupPermissionsByUserId($userId)
 	{
-		return blx()->db->createCommand()
+		return craft()->db->createCommand()
 			->select('p.name')
 			->from('userpermissions p')
 			->join('userpermissions_usergroups p_g', 'p_g.permissionId = p.id')
@@ -168,7 +168,7 @@ class UserPermissionsService extends BaseApplicationComponent
 	public function saveGroupPermissions($groupId, $permissions)
 	{
 		// Delete any existing group permissions
-		blx()->db->createCommand()
+		craft()->db->createCommand()
 			->delete('userpermissions_usergroups', array('groupId' => $groupId));
 
 		$permissions = $this->_filterOrphanedPermissions($permissions);
@@ -184,7 +184,7 @@ class UserPermissionsService extends BaseApplicationComponent
 			}
 
 			// Add the new group permissions
-			blx()->db->createCommand()
+			craft()->db->createCommand()
 				->insertAll('userpermissions_usergroups', array('permissionId', 'groupId'), $groupPermissionVals);
 		}
 
@@ -203,7 +203,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		{
 			$groupPermissions = $this->getGroupPermissionsByUserId($userId);
 
-			$userPermissions = blx()->db->createCommand()
+			$userPermissions = craft()->db->createCommand()
 				->select('p.name')
 				->from('userpermissions p')
 				->join('userpermissions_users p_u', 'p_u.permissionId = p.id')
@@ -241,7 +241,7 @@ class UserPermissionsService extends BaseApplicationComponent
 	public function saveUserPermissions($userId, $permissions)
 	{
 		// Delete any existing user permissions
-		blx()->db->createCommand()
+		craft()->db->createCommand()
 			->delete('userpermissions_users', array('userId' => $userId));
 
 		// Filter out any orphaned permissions
@@ -258,7 +258,7 @@ class UserPermissionsService extends BaseApplicationComponent
 			}
 
 			// Add the new user permissions
-			blx()->db->createCommand()
+			craft()->db->createCommand()
 				->insertAll('userpermissions_users', array('permissionId', 'userId'), $userPermissionVals);
 		}
 
@@ -278,31 +278,31 @@ class UserPermissionsService extends BaseApplicationComponent
 
 		return array(
 			"editEntries{$suffix}" => array(
-				'label' => Blocks::t('Edit entries'),
+				'label' => Craft::t('Edit entries'),
 				'nested' => array(
 					"createEntries{$suffix}" => array(
-						'label' => Blocks::t('Create entries'),
+						'label' => Craft::t('Create entries'),
 					),
 					"editPeerEntries{$suffix}" => array(
-						'label' => Blocks::t('Edit other authors’ entries'),
-						'nested' => (Blocks::hasPackage(BlocksPackage::PublishPro)
+						'label' => Craft::t('Edit other authors’ entries'),
+						'nested' => (Craft::hasPackage(CraftPackage::PublishPro)
 							? array(
 								"editPeerEntryDrafts{$suffix}" => array(
-									'label' => Blocks::t('Edit other authors’ drafts'),
+									'label' => Craft::t('Edit other authors’ drafts'),
 									'nested' => array(
 										"publishPeerEntryDrafts{$suffix}" => array(
-											'label' => Blocks::t('Publish other authors’ drafts')
+											'label' => Craft::t('Publish other authors’ drafts')
 										),
 									)
 								),
 								"deletePeerEntries{$suffix}" => array(
-									'label' => Blocks::t('Delete other authors’ entries')
+									'label' => Craft::t('Delete other authors’ entries')
 								),
 							) : array()
 						)
 					),
 					"publishEntries{$suffix}" => array(
-						'label' => Blocks::t('Publish entries live')
+						'label' => Craft::t('Publish entries live')
 					),
 				)
 			)
@@ -323,7 +323,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		foreach ($singletons as $singleton)
 		{
 			$permissions["editSingleton{$singleton->id}"] = array(
-				'label' => Blocks::t('Edit “{title}”', array('title' => $singleton->name))
+				'label' => Craft::t('Edit “{title}”', array('title' => $singleton->name))
 			);
 		}
 
@@ -344,7 +344,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		foreach ($globals as $global)
 		{
 			$permissions["editGlobal{$global->id}"] = array(
-				'label' => Blocks::t('Edit “{name}”', array('name' => Blocks::t($global->name)))
+				'label' => Craft::t('Edit “{name}”', array('name' => Craft::t($global->name)))
 			);
 		}
 

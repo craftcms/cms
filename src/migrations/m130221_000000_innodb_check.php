@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -7,7 +7,7 @@ namespace Blocks;
 class m130221_000000_innodb_check extends BaseMigration
 {
 	/**
-	 * Check to see if MySQL has InnoDB support enabled.  If it does, check all of the Blocks tables for this installation
+	 * Check to see if MySQL has InnoDB support enabled.  If it does, check all of the Craft tables for this installation
 	 * to make sure they are using InnoDB.  If not in both cases, throw and exception.
 	 *
 	 * @throws Exception
@@ -15,18 +15,18 @@ class m130221_000000_innodb_check extends BaseMigration
 	 */
 	public function safeUp()
 	{
-		if (!blx()->db->getSchema()->isInnoDbEnabled())
+		if (!craft()->db->getSchema()->isInnoDbEnabled())
 		{
-			throw new Exception('Blocks requires the MySQL InnoDB storage engine and it is not enabled for this MySQL installation.');
+			throw new Exception('CraftCMS requires the MySQL InnoDB storage engine and it is not enabled for this MySQL installation.');
 		}
 		else
 		{
-			$tables = blx()->db->getSchema()->findTableNames();
+			$tables = craft()->db->getSchema()->findTableNames();
 
 			$badTables = array();
 			foreach ($tables as $table)
 			{
-				$sql = blx()->db->createCommand()->setText('SHOW CREATE TABLE `'.$table.'`')->queryRow();
+				$sql = craft()->db->createCommand()->setText('SHOW CREATE TABLE `'.$table.'`')->queryRow();
 
 				if (isset($sql['Create Table']))
 				{
@@ -43,7 +43,7 @@ class m130221_000000_innodb_check extends BaseMigration
 
 			if (!empty($badTables))
 			{
-				Blocks::log('The following tables are not using InnoDB for storage when they should be: '.implode(', ', $badTables), \CLogger::LEVEL_ERROR);
+				Craft::log('The following tables are not using InnoDB for storage when they should be: '.implode(', ', $badTables), \CLogger::LEVEL_ERROR);
 				throw new Exception('One or more of the database tables are not using InnoDB for storage.');
 			}
 		}

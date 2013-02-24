@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * User session functions
@@ -13,7 +13,7 @@ class UserSessionVariable
 	 */
 	public function isLoggedIn()
 	{
-		return blx()->userSession->isLoggedIn();
+		return craft()->userSession->isLoggedIn();
 	}
 
 	/**
@@ -23,7 +23,7 @@ class UserSessionVariable
 	 */
 	public function getRememberedUsername()
 	{
-		return blx()->userSession->getRememberedUsername();
+		return craft()->userSession->getRememberedUsername();
 	}
 
 	/**
@@ -34,7 +34,7 @@ class UserSessionVariable
 	 */
 	public function getReturnUrl($defaultUrl = '')
 	{
-		return blx()->userSession->getReturnUrl($defaultUrl);
+		return craft()->userSession->getReturnUrl($defaultUrl);
 	}
 
 	/**
@@ -44,7 +44,7 @@ class UserSessionVariable
 	 */
 	public function getFlashes()
 	{
-		return blx()->userSession->getFlashes();
+		return craft()->userSession->getFlashes();
 	}
 
 	/**
@@ -55,7 +55,7 @@ class UserSessionVariable
 	 */
 	public function getFlash($key, $defaultValue = null)
 	{
-		return blx()->userSession->getFlash($key, $defaultValue);
+		return craft()->userSession->getFlash($key, $defaultValue);
 	}
 
 	/**
@@ -66,6 +66,6 @@ class UserSessionVariable
 	 */
 	public function hasFlash($key)
 	{
-		return blx()->userSession->hasFlash($key);
+		return craft()->userSession->hasFlash($key);
 	}
 }

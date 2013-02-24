@@ -9,11 +9,11 @@
 	"Check your email for instructions to reset your password."
 %}
 
-{% set username = (blx.config.rememberUsernameDuration ? blx.session.rememberedUsername : '') %}
+{% set username = (craft.config.rememberUsernameDuration ? craft.session.rememberedUsername : '') %}
 
 {% set body %}
     <script type="text/javascript">
-		var cookieTest = 'BlocksCookieTest='+Math.floor(Math.random() * 1000000);
+		var cookieTest = 'CraftCookieTest='+Math.floor(Math.random() * 1000000);
 		document.cookie = cookieTest;
 		var cookiesEnabled = document.cookie.search(cookieTest) != -1;
 		if (cookiesEnabled)
@@ -21,8 +21,8 @@
 			document.cookie = cookieTest + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 
 			document.write(
-				'<form id="login-form" method="post" action="" accept-charset="UTF-8" {% if blx.hasPackage("Rebrand") and blx.rebrand.isLogoUploaded -%}
-						{%- set logo = blx.rebrand.logo -%}
+				'<form id="login-form" method="post" action="" accept-charset="UTF-8" {% if craft.hasPackage("Rebrand") and craft.rebrand.isLogoUploaded -%}
+						{%- set logo = craft.rebrand.logo -%}
 						{%- set padding = logo.height + 30 %}
 						style="background-image: url({{ logo.url }}); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ round((156+padding)/2) }}px"
 					{%- endif %}>' +
@@ -30,13 +30,13 @@
 
 					'<div id="login-fields" class="nested-fields">' +
 						'{{ forms.passwordField({ id: "password", hint: "Password"|t })|e("js") }}' +
-						{% if blx.config.rememberedUserSessionDuration %}
+						{% if craft.config.rememberedUserSessionDuration %}
 							'{{ forms.checkboxField({ id: "rememberMe", label: "Keep me logged in"|t })|e("js") }}' +
 						{% endif %}
 					'</div>' +
 
 					'<div class="buttons">' +
-						'<div id="submit" class="btn submit disabled {% if not blx.request.isSecure %}in{% endif %}secure icon">' +
+						'<div id="submit" class="btn submit disabled {% if not craft.request.isSecure %}in{% endif %}secure icon">' +
 							'<span class="label">{{ "Login"|t }}</span>' +
 							'<input type="submit">' +
 						'</div>' +
@@ -45,10 +45,10 @@
 				'</form>'
 			);
 
-			{% if not blx.request.isMobileBrowser %}
+			{% if not craft.request.isMobileBrowser %}
 				document.getElementById("{{ (username ? 'password' : 'loginName') }}").focus();
 			{% endif %}
-			window.returnUrl = '{{ blx.session.returnUrl|e('js') }}';
+			window.returnUrl = '{{ craft.session.returnUrl|e('js') }}';
 		}
 		else
 		{
@@ -58,7 +58,7 @@
 						'<div class="pane-body">' +
 							'<div class="notice">' +
 								'<div class="icon"></div>' +
-								'<p>{{ "Cookies must be enabled to access the {app} CP."|t({ app: blx.config.appName }) }}<br>' +
+								'<p>{{ "Cookies must be enabled to access the CraftCMS control panel."|t }}<br>' +
 									'<a class="go" href="">{{ "See how"|t }}</a>' +
 								'</p>' +
 							'</div>' +

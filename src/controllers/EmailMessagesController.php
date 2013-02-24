@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::Rebrand);
+Craft::requirePackage(CraftPackage::Rebrand);
 
 /**
  * Handles email message tasks.
@@ -17,26 +17,26 @@ class EmailMessagesController extends BaseController
 		$this->requireAjaxRequest();
 
 		$message = new EmailMessageModel();
-		$message->key = blx()->request->getRequiredPost('key');
-		$message->subject = blx()->request->getRequiredPost('subject');
-		$message->body = blx()->request->getRequiredPost('body');
+		$message->key = craft()->request->getRequiredPost('key');
+		$message->subject = craft()->request->getRequiredPost('subject');
+		$message->body = craft()->request->getRequiredPost('body');
 
-		if (Blocks::hasPackage(BlocksPackage::Language))
+		if (Craft::hasPackage(CraftPackage::Language))
 		{
-			$message->locale = blx()->request->getPost('locale');
+			$message->locale = craft()->request->getPost('locale');
 		}
 		else
 		{
-			$message->locale = blx()->language;
+			$message->locale = craft()->language;
 		}
 
-		if (blx()->emailMessages->saveMessage($message))
+		if (craft()->emailMessages->saveMessage($message))
 		{
 			$this->returnJson(array('success' => true));
 		}
 		else
 		{
-			$this->returnErrorJson(Blocks::t('There was a problem saving your message.'));
+			$this->returnErrorJson(Craft::t('There was a problem saving your message.'));
 		}
 	}
 }

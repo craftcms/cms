@@ -1,7 +1,7 @@
 /**
  * DataTableSorter
  */
-Blocks.DataTableSorter = Garnish.DragSort.extend({
+Craft.DataTableSorter = Garnish.DragSort.extend({
 
 	$table: null,
 
@@ -10,7 +10,7 @@ Blocks.DataTableSorter = Garnish.DragSort.extend({
 		this.$table = $(table);
 		var $rows = this.$table.children('tbody').children(':not(.filler)');
 
-		settings = $.extend({}, Blocks.DataTableSorter.defaults, settings);
+		settings = $.extend({}, Craft.DataTableSorter.defaults, settings);
 
 		settings.container = this.$table.children('tbody');
 		settings.helper = $.proxy(this, 'getHelper');

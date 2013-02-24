@@ -1,12 +1,12 @@
 {% import "_includes/forms" as forms %}
 
 
-{% if blx.hasPackage('PublishPro') %}
+{% if craft.hasPackage('PublishPro') %}
 	{% set sectionInput %}
 		<div class="select">
 			<select id="section" name="section">
 				<option value="*">{{ "All"|t }}</option>
-				{% for section in blx.sections.getAllSections() %}
+				{% for section in craft.sections.getAllSections() %}
 					<option value="{{ section.id }}"{% if section.id == settings.section %} selected{% endif %}>{{ section.name|t }}</option>
 				{% endfor %}
 			</select>

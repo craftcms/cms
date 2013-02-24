@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -32,8 +32,8 @@ abstract class BaseMigration extends \CDbMigration
 		}
 		catch(\Exception $e)
 		{
-			Blocks::log($e->getMessage().' ('.$e->getFile().':'.$e->getLine().')', \CLogger::LEVEL_ERROR);
-			Blocks::log($e->getTraceAsString(), \CLogger::LEVEL_ERROR);
+			Craft::log($e->getMessage().' ('.$e->getFile().':'.$e->getLine().')', \CLogger::LEVEL_ERROR);
+			Craft::log($e->getTraceAsString(), \CLogger::LEVEL_ERROR);
 
 			$transaction->rollback();
 			return false;
@@ -60,7 +60,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function createTable($table, $columns, $options = null, $addIdColumn = true, $addAuditColumns = true)
 	{
-		Blocks::log('Create table '.$table.'...');
+		Craft::log('Create table '.$table.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->createTable($table, $columns, $options, $addIdColumn, $addAuditColumns);
@@ -76,7 +76,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function insertAll($table, $columns, $vals)
 	{
-		Blocks::log('Batch inserting into '.$table.'...');
+		Craft::log('Batch inserting into '.$table.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->insertAll($table, $columns, $vals);
@@ -90,7 +90,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function dropTableIfExists($table)
 	{
-		Blocks::log('Dropping table if exists '.$table.'...');
+		Craft::log('Dropping table if exists '.$table.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->dropTableIfExists($table);
@@ -108,7 +108,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function addColumn($table, $column, $type)
 	{
-		Blocks::log('Adding column '.$column.' to table '.$table.'...');
+		Craft::log('Adding column '.$column.' to table '.$table.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->addColumn($table, $column, $type);
@@ -124,7 +124,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function addColumnFirst($table, $column, $type)
 	{
-		Blocks::log('Adding column '.$column.' first to table '.$table.'...');
+		Craft::log('Adding column '.$column.' first to table '.$table.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->addColumnFirst($table, $column, $type);
@@ -141,7 +141,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function addColumnBefore($table, $column, $type, $before)
 	{
-		Blocks::log('Adding column '.$column.' before '.$before.' to table '.$table.'...');
+		Craft::log('Adding column '.$column.' before '.$before.' to table '.$table.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->addColumnBefore($table, $column, $type, $before);
@@ -158,7 +158,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function addColumnAfter($table, $column, $type, $after)
 	{
-		Blocks::log('Adding column '.$column.' after '.$after.' to table '.$table.'...');
+		Craft::log('Adding column '.$column.' after '.$after.' to table '.$table.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->addColumnAfter($table, $column, $type, $after);
@@ -176,7 +176,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function alterColumn($table, $column, $type, $newName = null, $after = null)
 	{
-		Blocks::log('Altering column '.$column.' in table '.$table.'...');
+		Craft::log('Altering column '.$column.' in table '.$table.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->alterColumn($table, $column, $type, $newName, $after);
@@ -195,7 +195,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function addForeignKey($table, $columns, $refTable, $refColumns, $delete = null, $update = null)
 	{
-		Blocks::log('Adding foreign key to '.$table.' ('.$columns.') references '.$refTable.' ('.$refColumns.') ...');
+		Craft::log('Adding foreign key to '.$table.' ('.$columns.') references '.$refTable.' ('.$refColumns.') ...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->addForeignKey($table, $columns, $refTable, $refColumns, $delete, $update);
@@ -210,7 +210,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function dropForeignKey($table, $columns)
 	{
-		Blocks::log('Dropping foreign key from table '.$table.' ('.$columns.') ...');
+		Craft::log('Dropping foreign key from table '.$table.' ('.$columns.') ...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->dropForeignKey($table, $columns);
@@ -226,7 +226,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function createIndex($table, $columns, $unique = false)
 	{
-		Blocks::log('Creating '.($unique ? ' unique' : '').' index on '.$table.' ('.$columns.') ...');
+		Craft::log('Creating '.($unique ? ' unique' : '').' index on '.$table.' ('.$columns.') ...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->createIndex($table, $columns, $unique);
@@ -242,7 +242,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function dropIndex($table, $columns, $unique = false)
 	{
-		Blocks::log('Dropping '.($unique ? ' unique' : '').' index on '.$table.' ('.$columns.') ...');
+		Craft::log('Dropping '.($unique ? ' unique' : '').' index on '.$table.' ('.$columns.') ...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->dropIndex($table, $columns, $unique);
@@ -257,7 +257,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function addPrimaryKey($table, $columns)
 	{
-		Blocks::log('Altering table '.$table.' add new primary key ('.$columns.') ...');
+		Craft::log('Altering table '.$table.' add new primary key ('.$columns.') ...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->addPrimaryKey($table, $columns);
@@ -272,7 +272,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function dropPrimaryKey($table, $columns)
 	{
-		Blocks::log('Altering table '.$table.' drop primary key ('.$columns.') ...');
+		Craft::log('Altering table '.$table.' drop primary key ('.$columns.') ...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->dropPrimaryKey($table, $columns);
@@ -285,7 +285,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function down()
 	{
-		Blocks::log('Down migrations are not supported.', \CLogger::LEVEL_WARNING);
+		Craft::log('Down migrations are not supported.', \CLogger::LEVEL_WARNING);
 	}
 
 	/**
@@ -293,7 +293,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function safeDown()
 	{
-		Blocks::log('Down migrations are not supported.', \CLogger::LEVEL_WARNING);
+		Craft::log('Down migrations are not supported.', \CLogger::LEVEL_WARNING);
 	}
 
 	/**
@@ -305,7 +305,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function execute($sql, $params=array())
 	{
-		Blocks::log('Executing SQL: '.$sql.'...');
+		Craft::log('Executing SQL: '.$sql.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand($sql)->execute($params);
@@ -322,7 +322,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function insert($table, $columns)
 	{
-		Blocks::log('Inserting into '.$table.'...');
+		Craft::log('Inserting into '.$table.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->insert($table, $columns);
@@ -342,7 +342,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function update($table, $columns, $conditions = '', $params = array())
 	{
-		Blocks::log('Updating '.$table.'...');
+		Craft::log('Updating '.$table.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->update($table, $columns, $conditions, $params);
@@ -360,7 +360,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function delete($table, $conditions = '', $params = array())
 	{
-		Blocks::log('Deleting from '.$table.'...');
+		Craft::log('Deleting from '.$table.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->delete($table, $conditions, $params);
@@ -376,7 +376,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function renameTable($table, $newName)
 	{
-		Blocks::log('Renaming table '.$table.' to '.$newName.'...');
+		Craft::log('Renaming table '.$table.' to '.$newName.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->renameTable($table, $newName);
@@ -391,7 +391,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function dropTable($table)
 	{
-		Blocks::log('Dropping table '.$table.'...');
+		Craft::log('Dropping table '.$table.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->dropTable($table);
@@ -406,7 +406,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function truncateTable($table)
 	{
-		Blocks::log('Truncating table '.$table.'...');
+		Craft::log('Truncating table '.$table.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->truncateTable($table);
@@ -422,7 +422,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function dropColumn($table, $column)
 	{
-		Blocks::log('Drop column '.$column.' from table '.$table.'...');
+		Craft::log('Drop column '.$column.' from table '.$table.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->dropColumn($table, $column);
@@ -439,7 +439,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function renameColumn($table, $name, $newName)
 	{
-		Blocks::log('Rename column '.$name.' in table '.$table.' to '.$newName.'...');
+		Craft::log('Rename column '.$name.' in table '.$table.' to '.$newName.'...');
 
 		$time = microtime(true);
 		$this->dbConnection->createCommand()->renameColumn($table, $name, $newName);
@@ -454,7 +454,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function refreshTableSchema($table)
 	{
-		Blocks::log('Refresh table '.$table.' schema cache...');
+		Craft::log('Refresh table '.$table.' schema cache...');
 
 		$time = microtime(true);
 		$this->dbConnection->getSchema()->getTable($table,true);
@@ -467,6 +467,6 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	private function _processDoneTime($time)
 	{
-		Blocks::log("Done (time: ".sprintf('%.3f', microtime(true) - $time)."s)");
+		Craft::log("Done (time: ".sprintf('%.3f', microtime(true) - $time)."s)");
 	}
 }

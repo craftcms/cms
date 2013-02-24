@@ -11,7 +11,7 @@
 
 
 {% if group is not defined and groupId is defined %}
-	{% set group = blx.userGroups.getGroupById(groupId) %}
+	{% set group = craft.userGroups.getGroupById(groupId) %}
 	{% if not group %}{% exit 404 %}{% endif %}
 {% endif %}
 
@@ -67,5 +67,5 @@
 
 
 {% if group is not defined or not group.handle %}
-	{% includeJs "new Blocks.HandleGenerator('#name', '#handle');" %}
+	{% includeJs "new Craft.HandleGenerator('#name', '#handle');" %}
 {% endif %}

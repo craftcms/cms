@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Section model class
@@ -18,7 +18,7 @@ class SectionModel extends BaseModel
 	 */
 	function __toString()
 	{
-		return Blocks::t($this->name);
+		return Craft::t($this->name);
 	}
 
 	/**
@@ -48,7 +48,7 @@ class SectionModel extends BaseModel
 		{
 			if ($this->id)
 			{
-				$this->_locales = blx()->sections->getSectionLocales($this->id, 'locale');
+				$this->_locales = craft()->sections->getSectionLocales($this->id, 'locale');
 			}
 			else
 			{
@@ -98,7 +98,7 @@ class SectionModel extends BaseModel
 		{
 			if ($this->fieldLayoutId)
 			{
-				$this->_fieldLayout = blx()->fields->getLayoutById($this->fieldLayoutId);
+				$this->_fieldLayout = craft()->fields->getLayoutById($this->fieldLayoutId);
 			}
 
 			if (empty($this->_fieldLayout))

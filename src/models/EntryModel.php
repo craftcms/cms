@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Entry model class
@@ -48,7 +48,7 @@ class EntryModel extends ElementModel
 	{
 		if ($this->sectionId)
 		{
-			return blx()->sections->getSectionById($this->sectionId);
+			return craft()->sections->getSectionById($this->sectionId);
 		}
 	}
 
@@ -61,7 +61,7 @@ class EntryModel extends ElementModel
 	{
 		if ($this->authorId)
 		{
-			return blx()->users->getUserById($this->authorId);
+			return craft()->users->getUserById($this->authorId);
 		}
 	}
 
@@ -108,7 +108,7 @@ class EntryModel extends ElementModel
 		{
 			if ($this->id)
 			{
-				$this->_tags = blx()->entries->getTagsByEntryId($this->id);
+				$this->_tags = craft()->entries->getTagsByEntryId($this->id);
 			}
 			else
 			{

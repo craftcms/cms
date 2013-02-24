@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Plugin functions
@@ -15,7 +15,7 @@ class PluginsVariable
 	 */
 	public function getPlugin($class, $enabledOnly = true)
 	{
-		$plugin = blx()->plugins->getPlugin($class, $enabledOnly);
+		$plugin = craft()->plugins->getPlugin($class, $enabledOnly);
 
 		if ($plugin)
 		{
@@ -31,7 +31,7 @@ class PluginsVariable
 	 */
 	public function getPlugins($enabledOnly = true)
 	{
-		$plugins = blx()->plugins->getPlugins($enabledOnly);
+		$plugins = craft()->plugins->getPlugins($enabledOnly);
 		return PluginVariable::populateVariables($plugins);
 	}
 }

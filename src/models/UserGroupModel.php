@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::Users);
+Craft::requirePackage(CraftPackage::Users);
 
 /**
  * User group model class
@@ -17,7 +17,7 @@ class UserGroupModel extends BaseModel
 	 */
 	function __toString()
 	{
-		return Blocks::t($this->name);
+		return Craft::t($this->name);
 	}
 
 	/**
@@ -42,7 +42,7 @@ class UserGroupModel extends BaseModel
 	{
 		if ($this->id)
 		{
-			return blx()->userPermissions->doesGroupHavePermission($this->id, $permission);
+			return craft()->userPermissions->doesGroupHavePermission($this->id, $permission);
 		}
 		else
 		{

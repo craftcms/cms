@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Element model class
@@ -55,7 +55,7 @@ class ElementModel extends BaseModel
 	{
 		if ($this->id)
 		{
-			return blx()->elements->getCpEditUrlForElement($this);
+			return craft()->elements->getCpEditUrlForElement($this);
 		}
 	}
 
@@ -94,14 +94,14 @@ class ElementModel extends BaseModel
 		}
 
 		// Is $name a field handle?
-		$field = blx()->fields->getFieldByHandle($name);
+		$field = craft()->fields->getFieldByHandle($name);
 		if ($field)
 		{
 			return true;
 		}
 
 		// Is $name a RTL link handle?
-		$linkCriteria = blx()->links->getCriteriaByTypeAndHandle($this->getAttribute('type'), $name, 'rtl');
+		$linkCriteria = craft()->links->getCriteriaByTypeAndHandle($this->getAttribute('type'), $name, 'rtl');
 		if ($linkCriteria)
 		{
 			return true;
@@ -127,7 +127,7 @@ class ElementModel extends BaseModel
 		catch (\Exception $e)
 		{
 			// Is $name a field handle?
-			$field = blx()->fields->getFieldByHandle($name);
+			$field = craft()->fields->getFieldByHandle($name);
 			if ($field)
 			{
 				return $this->_getPreppedContentForField($field);
@@ -135,11 +135,11 @@ class ElementModel extends BaseModel
 			else if ($this->getAttribute('id'))
 			{
 				// Is $name a RTL link handle?
-				$linkCriteria = blx()->links->getCriteriaByTypeAndHandle($this->getAttribute('type'), $name, 'rtl');
+				$linkCriteria = craft()->links->getCriteriaByTypeAndHandle($this->getAttribute('type'), $name, 'rtl');
 
 				if ($linkCriteria)
 				{
-					return blx()->links->getLinkedElements($linkCriteria, $this->getAttribute('id'), 'rtl');
+					return craft()->links->getLinkedElements($linkCriteria, $this->getAttribute('id'), 'rtl');
 				}
 			}
 
@@ -186,7 +186,7 @@ class ElementModel extends BaseModel
 
 		foreach ($content as $fieldId => $value)
 		{
-			$field = blx()->fields->getFieldById($fieldId);
+			$field = craft()->fields->getFieldById($fieldId);
 			if ($field)
 			{
 				$this->_content[$field->handle] = $value;
@@ -250,7 +250,7 @@ class ElementModel extends BaseModel
 		{
 			if ($this->id)
 			{
-				$this->_content = blx()->elements->getElementContent($this->id, $this->locale);
+				$this->_content = craft()->elements->getElementContent($this->id, $this->locale);
 			}
 			else
 			{
@@ -282,7 +282,7 @@ class ElementModel extends BaseModel
 				$value = null;
 			}
 
-			$fieldType = blx()->fields->populateFieldType($field, $this);
+			$fieldType = craft()->fields->populateFieldType($field, $this);
 
 			if ($fieldType)
 			{

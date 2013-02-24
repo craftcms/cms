@@ -1,11 +1,10 @@
 {% set params = { status: '*', limit: settings.limit } %}
 
-{% if blx.hasPackage('PublishPro') %}
+{% if craft.hasPackage('PublishPro') %}
 	{% set params = params|merge({ sectionId: settings.section }) %}
 {% endif %}
 
-{% set entries = blx.entries.find(params) %}
-
+{% set entries = craft.entries.find(params) %}
 
 <div class="container">
 	{% if entries|length %}
@@ -16,7 +15,7 @@
 						<a href="{{ entry.getCpEditUrl() }}">{{ entry.title }}</a>
 						<span class="light">
 							{{ entry.postDate.w3cDate }}
-							{% if blx.hasPackage('Users') %}
+							{% if craft.hasPackage('Users') %}
 								{{ "by {author}"|t({ author: entry.author.username }) }}
 							{% endif %}
 						</span>

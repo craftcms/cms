@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Link functions
@@ -13,7 +13,7 @@ class LinksVariable
 	 */
 	public function getAllLinkableElementTypes()
 	{
-		$elementTypes = blx()->links->getAllLinkableElementTypes();
+		$elementTypes = craft()->links->getAllLinkableElementTypes();
 		return ElementTypeVariable::populateVariables($elementTypes);
 	}
 
@@ -25,7 +25,7 @@ class LinksVariable
 	 */
 	public function getLinkableElementType($class)
 	{
-		$elementType = blx()->links->getLinkableElementType($class);
+		$elementType = craft()->links->getLinkableElementType($class);
 
 		if ($elementType)
 		{

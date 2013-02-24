@@ -12,7 +12,7 @@
 		<input type="hidden" name="redirect" value="settings">
 
 		{% include "_includes/fieldlayoutdesigner" with {
-			fieldLayout: blx.fields.getLayoutByType('Globals'),
+			fieldLayout: craft.fields.getLayoutByType('Globals'),
 			customizableTabs: false,
 			pretendTabName: 'Globals'
 		} only %}

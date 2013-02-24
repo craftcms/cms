@@ -21,7 +21,7 @@ var ReleaseNotes = Garnish.Base.extend({
 			if (release.build)
 			{
 				heading += ' <span class="light">' +
-					Blocks.t('build {build}', { build: release.build }) +
+					Craft.t('build {build}', { build: release.build }) +
 					'</span>';
 			}
 
@@ -43,7 +43,7 @@ var ReleaseNotes = Garnish.Base.extend({
 
 			if (match)
 			{
-				$('<td class="thin"><span class="category '+match[1].toLowerCase()+'">'+Blocks.t(match[1])+'</span></td>').appendTo($tr);
+				$('<td class="thin"><span class="category '+match[1].toLowerCase()+'">'+Craft.t(match[1])+'</span></td>').appendTo($tr);
 				$('<td>'+match[2]+'</td>').appendTo($tr);
 			}
 			else
@@ -69,7 +69,7 @@ var atLeastOnePluginHasARelease = function(plugins)
 	return false;
 };
 
-Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
+Craft.postActionRequest('update/getAvailableUpdates', function(response) {
 
 	$('#loading').fadeOut('fast', function() {
 		if (response.errors && response.errors.length > 0)
@@ -81,48 +81,48 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 		}
 		else
 		{
-			if ((response.blocks && response.blocks.releases && response.blocks.releases.length) || (response.packages && response.packages.length))
+			if ((response.craft && response.craft.releases && response.craft.releases.length) || (response.packages && response.packages.length))
 			{
 				var $table = $('#system-updates'),
 					$tbody = $table.children('tbody');
 
 				$table.show();
 
-				if (response.blocks.releases)
+				if (response.craft.releases)
 				{
 					var $tr = $('<tr/>').appendTo($tbody),
 						$th = $('<th/>').appendTo($tr),
 						$td = $('<td class="thin rightalign"/>').appendTo($tr);
 
-					$th.html(Blocks.appName+' '+response.blocks.releases[0].version +
+					$th.html('CraftCMS '+response.craft.releases[0].version +
 						' <span class="light">' +
-						Blocks.t('build {build}', { build: response.blocks.releases[0].build }) +
+						Craft.t('build {build}', { build: response.craft.releases[0].build }) +
 						'</span>' +
-						(response.blocks.criticalUpdateAvailable ? '<span class="critical">'+Blocks.t('Critical')+'</span>' : '')
+						(response.craft.criticalUpdateAvailable ? '<span class="critical">'+Craft.t('Critical')+'</span>' : '')
 					);
 
 					var handleDownloadClick = function($btn)
 					{
 						$btn.on('click', function() {
-							var src = response.blocks.manualDownloadEndpoint;
+							var src = response.craft.manualDownloadEndpoint;
 							$('<iframe/>', { src: src }).appendTo(Garnish.$bod).hide();
 						});
 					};
 
-					if (response.blocks.manualUpdateRequired)
+					if (response.craft.manualUpdateRequired)
 					{
-						var $btn = $('<div class="btn submit">'+Blocks.t('Download')+'</div>').appendTo($td);
+						var $btn = $('<div class="btn submit">'+Craft.t('Download')+'</div>').appendTo($td);
 						handleDownloadClick($btn);
 					}
 					else
 					{
 						var $btnGroup = $('<div class="btngroup"/>').appendTo($td),
-							$updateBtn = $('<a class="btn submit" href="'+Blocks.getUrl('updates/go/blocks')+'">'+Blocks.t('Update')+'</a>').appendTo($btnGroup),
+							$updateBtn = $('<a class="btn submit" href="'+Craft.getUrl('updates/go/craft')+'">'+Craft.t('Update')+'</a>').appendTo($btnGroup),
 							$menuBtn = $('<div class="btn submit menubtn"/>').appendTo($btnGroup),
 							$menu = $('<div class="menu" data-align="right"/>').appendTo($btnGroup),
 							$menuUl = $('<ul/>').appendTo($menu),
 							$downloadLi = $('<li/>').appendTo($menuUl),
-							$downloadBtn = $('<a>'+Blocks.t('Download')+'</a>').appendTo($downloadLi);
+							$downloadBtn = $('<a>'+Craft.t('Download')+'</a>').appendTo($downloadLi);
 
 						new Garnish.MenuBtn($menuBtn);
 						handleDownloadClick($downloadBtn);
@@ -131,7 +131,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 					var $tr = $('<tr/>').appendTo($tbody),
 						$td = $('<td class="notes" colspan="2"/>').appendTo($tr);
 
-					new ReleaseNotes($td, response.blocks.releases, Blocks.appName);
+					new ReleaseNotes($td, response.craft.releases, 'CraftCMS');
 				}
 
 				if (response.packages)
@@ -139,15 +139,15 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 					var $tr = $('<tr/>').appendTo($tbody),
 						$th = $('<th/>').appendTo($tr),
 						$td = $('<td class="thin rightalign"/>').appendTo($tr),
-						$btn = $('<a class="btn" href="'+Blocks.getUrl('updates/go/blocks')+'">'+Blocks.t('Install')+'</a>').appendTo($td);
+						$btn = $('<a class="btn" href="'+Craft.getUrl('updates/go/craft')+'">'+Craft.t('Install')+'</a>').appendTo($td);
 
 					var packageValues = { packages: response.packages.join(', ') };
-					$th.html(response.packages.length > 1 ? Blocks.t('{packages} upgrades', packageValues) : Blocks.t('{packages} upgrade', packageValues));
+					$th.html(response.packages.length > 1 ? Craft.t('{packages} upgrades', packageValues) : Craft.t('{packages} upgrade', packageValues));
 
-					if (response.blocks)
+					if (response.craft)
 					{
 						$btn.addClass('disabled');
-						$btn.attr('title', Blocks.t('{app} update required'));
+						$btn.attr('title', Craft.t('{app} update required'));
 					}
 				}
 			}
@@ -175,7 +175,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 
 						$th.html(plugin.displayName+' '+plugin.releases[0].version);
 
-						$td.html('<a class="btn" href="'+Blocks.getUrl('updates/'+plugin['class'].toLowerCase())+'">'+Blocks.t('Update')+'</a>');
+						$td.html('<a class="btn" href="'+Craft.getUrl('updates/'+plugin['class'].toLowerCase())+'">'+Craft.t('Update')+'</a>');
 
 						var $tr = $('<tr/>').appendTo($tbody),
 							$td = $('<td class="notes" colspan="2"/>').appendTo($tr);
@@ -192,7 +192,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 			$('#updates').fadeIn('fast');
 
 			var count = 0;
-			if (response.blocks && response.blocks.releases)
+			if (response.craft && response.craft.releases)
 			{
 				count++;
 			}

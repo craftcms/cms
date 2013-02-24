@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -15,7 +15,7 @@ class LinksService extends BaseApplicationComponent
 	 */
 	public function getAllLinkableElementTypes()
 	{
-		$elementTypes = blx()->elements->getAllElementTypes();
+		$elementTypes = craft()->elements->getAllElementTypes();
 		$linkableElementTypes = array();
 
 		foreach ($elementTypes as $elementType)
@@ -38,7 +38,7 @@ class LinksService extends BaseApplicationComponent
 	 */
 	public function getLinkableElementType($class)
 	{
-		$elementType = blx()->elements->getElementType($class);
+		$elementType = craft()->elements->getElementType($class);
 
 		if ($elementType && $elementType->isLinkable())
 		{
@@ -119,7 +119,7 @@ class LinksService extends BaseApplicationComponent
 
 			if (!$criteriaRecord)
 			{
-				throw new Exception(Blocks::t('No link criteria exists with the ID “{id}”.', array('id' => $criteria->id)));
+				throw new Exception(Craft::t('No link criteria exists with the ID “{id}”.', array('id' => $criteria->id)));
 			}
 
 			$oldCriteria = LinkCriteriaModel::populateModel($criteriaRecord);
@@ -148,7 +148,7 @@ class LinksService extends BaseApplicationComponent
 				if ($criteria->leftElementType != $oldCriteria->leftElementType || $criteria->rightElementType != $oldCriteria->rightElementType)
 				{
 					// Delete the links that were previously created with this criteria
-					blx()->db->createCommand()->delete('links', array('criteriaId' => $criteria->id));
+					craft()->db->createCommand()->delete('links', array('criteriaId' => $criteria->id));
 				}
 			}
 
@@ -182,8 +182,8 @@ class LinksService extends BaseApplicationComponent
 			return array();
 		}
 
-		$elementCriteria = blx()->elements->getCriteria($elementTypeClass);
-		$query = blx()->elements->buildElementsQuery($elementCriteria);
+		$elementCriteria = craft()->elements->getCriteria($elementTypeClass);
+		$query = craft()->elements->buildElementsQuery($elementCriteria);
 
 		if ($query)
 		{
@@ -221,11 +221,11 @@ class LinksService extends BaseApplicationComponent
 			return array();
 		}
 
-		$elementCriteria = blx()->elements->getCriteria($elementTypeClass, array(
+		$elementCriteria = craft()->elements->getCriteria($elementTypeClass, array(
 			'id' => $elementIds
 		));
 
-		$query = blx()->elements->buildElementsQuery($elementCriteria);
+		$query = craft()->elements->buildElementsQuery($elementCriteria);
 
 		if ($query)
 		{
@@ -285,11 +285,11 @@ class LinksService extends BaseApplicationComponent
 	{
 		list($source, $target) = $this->_getDirProps($dir);
 
-		$transaction = blx()->db->beginTransaction();
+		$transaction = craft()->db->beginTransaction();
 		try
 		{
 			// Delete the existing links
-			blx()->db->createCommand()->delete('links', array(
+			craft()->db->createCommand()->delete('links', array(
 				'criteriaId'       => $criteriaId,
 				"{$source}ElementId" => $sourceElementId
 			));
@@ -304,7 +304,7 @@ class LinksService extends BaseApplicationComponent
 				}
 
 				$columns = array('criteriaId', "{$source}ElementId", "{$target}ElementId", "{$target}SortOrder");
-				blx()->db->createCommand()->insertAll('links', $columns, $values);
+				craft()->db->createCommand()->insertAll('links', $columns, $values);
 			}
 
 			$transaction->commit();
@@ -328,9 +328,9 @@ class LinksService extends BaseApplicationComponent
 	private function _getElementsFromQuery(BaseElementType $elementType, DbCommand $subquery, $order = null)
 	{
 		// Only get the unique elements (no locale duplicates)
-		$query = blx()->db->createCommand()
+		$query = craft()->db->createCommand()
 			->select('*')
-			->from('('.$subquery->getText().') AS '.blx()->db->quoteTableName('r'))
+			->from('('.$subquery->getText().') AS '.craft()->db->quoteTableName('r'))
 			->group('r.id');
 
 		$query->params = $subquery->params;

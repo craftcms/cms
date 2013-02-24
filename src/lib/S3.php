@@ -1628,7 +1628,7 @@ class S3
 		if ($type !== false && strlen($type) > 0) return $type;
 
 		// Otherwise do it the old fashioned way
-		return \Blocks\IOHelper::getMimeType($file);
+		return \Craft\IOHelper::getMimeType($file);
 	}
 
 

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,7 +13,7 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function getName()
 	{
-		return Blocks::t('Rich Text');
+		return Craft::t('Rich Text');
 	}
 
 	/**
@@ -36,7 +36,7 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		return blx()->templates->render('_components/fieldtypes/RichText/settings', array(
+		return craft()->templates->render('_components/fieldtypes/RichText/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -60,7 +60,7 @@ class RichTextFieldType extends BaseFieldType
 	public function prepValue($value)
 	{
 		// Prevent everyone from having to use the |raw filter when outputting RTE content
-		$charset = blx()->templates->getTwig()->getCharset();
+		$charset = craft()->templates->getTwig()->getCharset();
 		return new \Twig_Markup($value, $charset);
 	}
 
@@ -73,9 +73,9 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		blx()->templates->includeCssResource('lib/redactor/redactor.css');
-		blx()->templates->includeJsResource('lib/redactor/redactor'.(blx()->config->get('useCompressedJs') ? '.min' : '').'.js');
-		blx()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
+		craft()->templates->includeCssResource('lib/redactor/redactor.css');
+		craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
+		craft()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
 
 		$config = array(
 			'buttons' => array('html','|','formatting','|','bold','italic','|','unorderedlist','orderedlist','|','link','image','video','table'),
@@ -89,7 +89,7 @@ class RichTextFieldType extends BaseFieldType
 
 		$configJson = JsonHelper::encode($config);
 
-		blx()->templates->includeJs('$(".redactor-'.$this->model->handle.'").redactor('.$configJson.');');
+		craft()->templates->includeJs('$(".redactor-'.$this->model->handle.'").redactor('.$configJson.');');
 
 		return '<textarea name="'.$name.'" class="redactor-'.$this->model->handle.'" style="display: none">'.$value.'</textarea>';
 	}

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Represents a paginate node.
@@ -19,7 +19,7 @@ class Paginate_Node extends \Twig_Node
 			//->write("\$context['_parent'] = (array) \$context;\n")
 			->write("list(\$context['paginate'], ")
 			->subcompile($this->getNode('entitiesTarget'))
-			->raw(') = \Blocks\TemplateHelper::paginateCriteria(')
+			->raw(') = \Craft\TemplateHelper::paginateCriteria(')
 			->subcompile($this->getNode('criteria'))
 			->raw(");\n")
 			->subcompile($this->getNode('body'))

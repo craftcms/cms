@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -26,7 +26,7 @@ class AssetIndexingService extends BaseApplicationComponent
 	 */
 	public function getIndexListForSource($sessionId, $sourceId)
 	{
-		return blx()->assetSources->getSourceTypeById($sourceId)->startIndex($sessionId);
+		return craft()->assetSources->getSourceTypeById($sourceId)->startIndex($sessionId);
 	}
 
 	/**
@@ -39,7 +39,7 @@ class AssetIndexingService extends BaseApplicationComponent
 	 */
 	public function processIndexForSource($sessionId, $offset, $sourceId)
 	{
-		return array('result' => blx()->assetSources->getSourceTypeById($sourceId)->processIndex($sessionId, $offset));
+		return array('result' => craft()->assetSources->getSourceTypeById($sourceId)->processIndex($sessionId, $offset));
 	}
 
 	/**
@@ -118,7 +118,7 @@ class AssetIndexingService extends BaseApplicationComponent
 	 */
 	public function updateIndexEntryRecordId($entryId, $recordId)
 	{
-		blx()->db->createCommand()->update('assetindexdata', array('recordId' => $recordId), array('id' => $entryId));
+		craft()->db->createCommand()->update('assetindexdata', array('recordId' => $recordId), array('id' => $entryId));
 	}
 
 	/**
@@ -151,13 +151,13 @@ class AssetIndexingService extends BaseApplicationComponent
 					// TODO: delete all created sizes as well
 					foreach ($command['fileIds'] as $fileId)
 					{
-						$files = glob(blx()->path->getAssetsImageSourcePath().$fileId.'.*');
+						$files = glob(craft()->path->getAssetsImageSourcePath().$fileId.'.*');
 						foreach ($files as $file)
 						{
 							IOHelper::deleteFile($file);
 						}
 
-						IOHelper::deleteFolder(blx()->path->getAssetsThumbsPath().$fileId);
+						IOHelper::deleteFolder(craft()->path->getAssetsThumbsPath().$fileId);
 					}
 				}
 
@@ -167,11 +167,11 @@ class AssetIndexingService extends BaseApplicationComponent
 					{
 						$folderId = (int) $folderId;
 					}
-					$folders = blx()->assets->findFolders(array('id' => $command['folderIds']));
+					$folders = craft()->assets->findFolders(array('id' => $command['folderIds']));
 
 					foreach ($folders as $folder)
 					{
-						$fileIds = blx()->db->createCommand()
+						$fileIds = craft()->db->createCommand()
 							->select('fi.id')
 							->from('assetfiles AS fi')
 							->join('assetfolders AS fo', 'fi.folderId = fo.id AND fo.fullPath LIKE :fullPath AND fo.sourceId = :sourceId',
@@ -192,7 +192,7 @@ class AssetIndexingService extends BaseApplicationComponent
 			case 'statistics':
 			{
 				// Load the record IDs of the files that were indexed.
-				$processedFiles = blx()->db->createCommand()
+				$processedFiles = craft()->db->createCommand()
 					->select('recordId')
 					->from('assetindexdata')
 					->where('sessionId = :sessionId AND recordId IS NOT NULL', array(':sessionId' => $sessionId))
@@ -200,7 +200,7 @@ class AssetIndexingService extends BaseApplicationComponent
 
 				$processedFiles = array_flip($processedFiles);
 
-				$fileEntries = blx()->db->createCommand()
+				$fileEntries = craft()->db->createCommand()
 						->select('fi.sourceId, fi.id AS fileId, fi.filename, fo.fullPath, s.name AS sourceName')
 						->from('assetfiles AS fi')
 						->join('assetfolders AS fo', 'fi.folderId = fo.id')
@@ -216,14 +216,14 @@ class AssetIndexingService extends BaseApplicationComponent
 					}
 				}
 
-				blx()->db->createCommand()->delete('assetindexdata', array('sessionId' => $sessionId));
+				craft()->db->createCommand()->delete('assetindexdata', array('sessionId' => $sessionId));
 
 				break;
 			}
 
 			default:
 			{
-				throw new Exception(Blocks::t('Unkown indexing command!'));
+				throw new Exception(Craft::t('Unkown indexing command!'));
 			}
 		}
 

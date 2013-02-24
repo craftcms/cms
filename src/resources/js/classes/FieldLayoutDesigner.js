@@ -1,4 +1,4 @@
-Blocks.FieldLayoutDesigner = Garnish.Base.extend({
+Craft.FieldLayoutDesigner = Garnish.Base.extend({
 
 	$container: null,
 	$tabContainer: null,
@@ -15,7 +15,7 @@ Blocks.FieldLayoutDesigner = Garnish.Base.extend({
 	init: function(container, settings)
 	{
 		this.$container = $(container);
-		this.setSettings(settings, Blocks.FieldLayoutDesigner.defaults);
+		this.setSettings(settings, Craft.FieldLayoutDesigner.defaults);
 
 		this.$tabContainer = this.$container.children('.fld-tabs');
 		this.$unusedFieldContainer = this.$container.children('.unusedfields');
@@ -23,8 +23,8 @@ Blocks.FieldLayoutDesigner = Garnish.Base.extend({
 		this.$allFields = this.$unusedFieldContainer.find('.fld-field');
 
 		// Set up the layout grids
-		this.tabGrid = new Blocks.Grid(this.$tabContainer, Blocks.FieldLayoutDesigner.gridSettings);
-		this.unusedFieldGrid = new Blocks.Grid(this.$unusedFieldContainer, Blocks.FieldLayoutDesigner.gridSettings);
+		this.tabGrid = new Craft.Grid(this.$tabContainer, Craft.FieldLayoutDesigner.gridSettings);
+		this.unusedFieldGrid = new Craft.Grid(this.$unusedFieldContainer, Craft.FieldLayoutDesigner.gridSettings);
 
 		var $tabs = this.$tabContainer.children();
 		for (var i = 0; i < $tabs.length; i++)
@@ -32,11 +32,11 @@ Blocks.FieldLayoutDesigner = Garnish.Base.extend({
 			this.initTab($($tabs[i]));
 		}
 
-		this.fieldDrag = new Blocks.FieldLayoutDesigner.FieldDrag(this);
+		this.fieldDrag = new Craft.FieldLayoutDesigner.FieldDrag(this);
 
 		if (this.settings.customizableTabs)
 		{
-			this.tabDrag = new Blocks.FieldLayoutDesigner.TabDrag(this);
+			this.tabDrag = new Craft.FieldLayoutDesigner.TabDrag(this);
 
 			this.addListener(this.$newTabBtn, 'activate', 'addTab');
 		}
@@ -50,8 +50,8 @@ Blocks.FieldLayoutDesigner = Garnish.Base.extend({
 				$menu = $('<div class="menu" data-align="center"/>').insertAfter($editBtn),
 				$ul = $('<ul/>').appendTo($menu);
 
-			$('<li><a data-action="rename">'+Blocks.t('Rename…')+'</a></li>').appendTo($ul);
-			$('<li><a data-action="delete">'+Blocks.t('Delete')+'</a></li>').appendTo($ul);
+			$('<li><a data-action="rename">'+Craft.t('Rename…')+'</a></li>').appendTo($ul);
+			$('<li><a data-action="delete">'+Craft.t('Delete')+'</a></li>').appendTo($ul);
 
 			new Garnish.MenuBtn($editBtn, {
 				onOptionSelect: $.proxy(this, 'onTabOptionSelect')
@@ -75,14 +75,14 @@ Blocks.FieldLayoutDesigner = Garnish.Base.extend({
 
 		if ($field.hasClass('fld-required'))
 		{
-			$('<li><a data-action="toggle-required">'+Blocks.t('Make not required')+'</a></li>').appendTo($ul);
+			$('<li><a data-action="toggle-required">'+Craft.t('Make not required')+'</a></li>').appendTo($ul);
 		}
 		else
 		{
-			$('<li><a data-action="toggle-required">'+Blocks.t('Make required')+'</a></li>').appendTo($ul);
+			$('<li><a data-action="toggle-required">'+Craft.t('Make required')+'</a></li>').appendTo($ul);
 		}
 
-		$('<li><a data-action="remove">'+Blocks.t('Remove')+'</a></li>').appendTo($ul);
+		$('<li><a data-action="remove">'+Craft.t('Remove')+'</a></li>').appendTo($ul);
 
 		new Garnish.MenuBtn($editBtn, {
 			onOptionSelect: $.proxy(this, 'onFieldOptionSelect')
@@ -145,7 +145,7 @@ Blocks.FieldLayoutDesigner = Garnish.Base.extend({
 
 		var $labelSpan = $tab.find('.tabs .tab span'),
 			oldName = $labelSpan.text(),
-			newName = prompt(Blocks.t('Give your tab a name.'), oldName);
+			newName = prompt(Craft.t('Give your tab a name.'), oldName);
 
 		if (newName && newName != oldName)
 		{
@@ -184,7 +184,7 @@ Blocks.FieldLayoutDesigner = Garnish.Base.extend({
 			$field.find('.required-input').remove();
 
 			setTimeout(function() {
-				$option.text(Blocks.t('Make required'));
+				$option.text(Craft.t('Make required'));
 			}, 500);
 		}
 		else
@@ -193,7 +193,7 @@ Blocks.FieldLayoutDesigner = Garnish.Base.extend({
 			$('<input class="required-input" type="hidden" name="requiredFields[]" value="'+$field.data('id')+'">').appendTo($field);
 
 			setTimeout(function() {
-				$option.text(Blocks.t('Make not required'));
+				$option.text(Craft.t('Make not required'));
 			}, 500);
 		}
 	},
@@ -242,7 +242,7 @@ Blocks.FieldLayoutDesigner = Garnish.Base.extend({
 						'<div class="tabs">' +
 							'<div class="tab sel draggable">' +
 								'<span>Tab '+(this.tabGrid.$items.length+1)+'</span>' +
-								'<a class="edit icon" title="'+Blocks.t('Rename')+'"></a>' +
+								'<a class="edit icon" title="'+Craft.t('Rename')+'"></a>' +
 							'</div>' +
 						'</div>' +
 						'<div class="fld-tabcontent"></div>' +
@@ -267,7 +267,7 @@ Blocks.FieldLayoutDesigner = Garnish.Base.extend({
 });
 
 
-Blocks.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
+Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
 
 	designer: null,
 	$insertion: null,
@@ -515,7 +515,7 @@ Blocks.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
 });
 
 
-Blocks.FieldLayoutDesigner.TabDrag = Blocks.FieldLayoutDesigner.BaseDrag.extend({
+Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
 
 	itemSelector: '> div.fld-tab',
 	addToTabGrid: true,
@@ -575,14 +575,14 @@ Blocks.FieldLayoutDesigner.TabDrag = Blocks.FieldLayoutDesigner.BaseDrag.extend(
 			$tab.find('.fld-field').removeClass('unused');
 
 			// Add the edit button
-			$tab.find('.tabs .tab').append('<a class="edit icon" title="'+Blocks.t('Edit')+'"></a>');
+			$tab.find('.tabs .tab').append('<a class="edit icon" title="'+Craft.t('Edit')+'"></a>');
 
 			// Remove any hidden fields
 			var $fields = $tab.find('.fld-field'),
 				$hiddenFields = $fields.filter('.hidden').remove();
 
 			$fields = $fields.not($hiddenFields);
-			$fields.append('<a class="edit icon" title="'+Blocks.t('Edit')+'"></a>');
+			$fields.append('<a class="edit icon" title="'+Craft.t('Edit')+'"></a>');
 
 			for (var i = 0; i < $fields.length; i++)
 			{
@@ -614,7 +614,7 @@ Blocks.FieldLayoutDesigner.TabDrag = Blocks.FieldLayoutDesigner.BaseDrag.extend(
 });
 
 
-Blocks.FieldLayoutDesigner.FieldDrag = Blocks.FieldLayoutDesigner.BaseDrag.extend({
+Craft.FieldLayoutDesigner.FieldDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
 
 	itemSelector: '> div.fld-tab .fld-field',
 
@@ -659,7 +659,7 @@ Blocks.FieldLayoutDesigner.FieldDrag = Blocks.FieldLayoutDesigner.BaseDrag.exten
 		{
 			// Create a new field based on that one
 			var $field = this.$draggee.clone().removeClass('unused');
-			$field.append('<a class="edit icon" title="'+Blocks.t('Edit')+'"></a>');
+			$field.append('<a class="edit icon" title="'+Craft.t('Edit')+'"></a>');
 			this.designer.initField($field);
 
 			// Hide the unused field

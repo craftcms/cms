@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Handles settings from the control panel.
@@ -15,10 +15,10 @@ class SystemSettingsController extends BaseController
 		$this->requirePostRequest();
 
 		$generalSettingsModel = new GeneralSettingsModel();
-		$generalSettingsModel->on         = (bool) blx()->request->getPost('isSystemOn');
-		$generalSettingsModel->siteName   = blx()->request->getPost('siteName');
-		$generalSettingsModel->siteUrl    = blx()->request->getPost('siteUrl');
-		$generalSettingsModel->licenseKey = blx()->request->getPost('licenseKey');
+		$generalSettingsModel->on         = (bool) craft()->request->getPost('isSystemOn');
+		$generalSettingsModel->siteName   = craft()->request->getPost('siteName');
+		$generalSettingsModel->siteUrl    = craft()->request->getPost('siteUrl');
+		$generalSettingsModel->licenseKey = craft()->request->getPost('licenseKey');
 
 		if ($generalSettingsModel->validate())
 		{
@@ -29,12 +29,12 @@ class SystemSettingsController extends BaseController
 			$info->licenseKey = $generalSettingsModel->licenseKey;
 			$info->save();
 
-			blx()->userSession->setNotice(Blocks::t('General settings saved.'));
+			craft()->userSession->setNotice(Craft::t('General settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save general settings.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save general settings.'));
 
 			$this->renderRequestedTemplate(array(
 				'post' => $generalSettingsModel
@@ -53,14 +53,14 @@ class SystemSettingsController extends BaseController
 
 		if ($settings !== false)
 		{
-			if (blx()->systemSettings->saveSettings('email', $settings))
+			if (craft()->systemSettings->saveSettings('email', $settings))
 			{
-				blx()->userSession->setNotice(Blocks::t('Email settings saved.'));
+				craft()->userSession->setNotice(Craft::t('Email settings saved.'));
 				$this->redirectToPostedUrl();
 			}
 		}
 
-		blx()->userSession->setError(Blocks::t('Couldn’t save email settings.'));
+		craft()->userSession->setError(Craft::t('Couldn’t save email settings.'));
 
 		$this->renderRequestedTemplate(array(
 			'settings' => $settings
@@ -81,18 +81,18 @@ class SystemSettingsController extends BaseController
 		{
 			try
 			{
-				if (blx()->email->sendTestEmail($settings))
+				if (craft()->email->sendTestEmail($settings))
 				{
 					$this->returnJson(array('success' => true));
 				}
 			}
 			catch (\Exception $e)
 			{
-				Blocks::log($e->getMessage(), \CLogger::LEVEL_ERROR);
+				Craft::log($e->getMessage(), \CLogger::LEVEL_ERROR);
 			}
 		}
 
-		$this->returnErrorJson(Blocks::t('There was an error testing your email settings.'));
+		$this->returnErrorJson(Craft::t('There was an error testing your email settings.'));
 	}
 
 	/**
@@ -106,27 +106,27 @@ class SystemSettingsController extends BaseController
 		$emailSettings = new EmailSettingsModel();
 		$gMailSmtp = 'smtp.gmail.com';
 
-		$emailSettings->protocol                    = blx()->request->getPost('protocol');
-		$emailSettings->host                        = blx()->request->getPost('host');
-		$emailSettings->port                        = blx()->request->getPost('port');
-		$emailSettings->smtpAuth                    = (bool)blx()->request->getPost('smtpAuth');
+		$emailSettings->protocol                    = craft()->request->getPost('protocol');
+		$emailSettings->host                        = craft()->request->getPost('host');
+		$emailSettings->port                        = craft()->request->getPost('port');
+		$emailSettings->smtpAuth                    = (bool)craft()->request->getPost('smtpAuth');
 
 		if ($emailSettings->smtpAuth && $emailSettings->protocol !== EmailerType::Gmail)
 		{
-			$emailSettings->username                = blx()->request->getPost('smtpUsername');
-			$emailSettings->password                = blx()->request->getPost('smtpPassword');
+			$emailSettings->username                = craft()->request->getPost('smtpUsername');
+			$emailSettings->password                = craft()->request->getPost('smtpPassword');
 		}
 		else
 		{
-			$emailSettings->username                = blx()->request->getPost('username');
-			$emailSettings->password                = blx()->request->getPost('password');
+			$emailSettings->username                = craft()->request->getPost('username');
+			$emailSettings->password                = craft()->request->getPost('password');
 		}
 
-		$emailSettings->smtpKeepAlive               = (bool)blx()->request->getPost('smtpKeepAlive');
-		$emailSettings->smtpSecureTransportType     = blx()->request->getPost('smtpSecureTransportType');
-		$emailSettings->timeout                     = blx()->request->getPost('timeout');
-		$emailSettings->emailAddress                = blx()->request->getPost('emailAddress');
-		$emailSettings->senderName                  = blx()->request->getPost('senderName');
+		$emailSettings->smtpKeepAlive               = (bool)craft()->request->getPost('smtpKeepAlive');
+		$emailSettings->smtpSecureTransportType     = craft()->request->getPost('smtpSecureTransportType');
+		$emailSettings->timeout                     = craft()->request->getPost('timeout');
+		$emailSettings->emailAddress                = craft()->request->getPost('emailAddress');
+		$emailSettings->senderName                  = craft()->request->getPost('senderName');
 
 		// Validate user input
 		if (!$emailSettings->validate())
@@ -138,9 +138,9 @@ class SystemSettingsController extends BaseController
 		$settings['emailAddress'] = $emailSettings->emailAddress;
 		$settings['senderName']   = $emailSettings->senderName;
 
-		if (Blocks::hasPackage(BlocksPackage::Rebrand))
+		if (Craft::hasPackage(CraftPackage::Rebrand))
 		{
-			$settings['template'] = blx()->request->getPost('template');
+			$settings['template'] = craft()->request->getPost('template');
 		}
 
 		switch ($emailSettings->protocol)

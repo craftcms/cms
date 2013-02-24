@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -62,7 +62,7 @@ class WebApp extends \CWebApplication
 		// Import all the built-in components
 		foreach ($this->componentAliases as $alias)
 		{
-			Blocks::import($alias);
+			Craft::import($alias);
 		}
 
 		// Set the appropriate package components
@@ -70,7 +70,7 @@ class WebApp extends \CWebApplication
 		{
 			foreach ($this->_packageComponents as $packageName => $packageComponents)
 			{
-				if (Blocks::hasPackage($packageName))
+				if (Craft::hasPackage($packageName))
 				{
 					$this->setComponents($packageComponents);
 				}
@@ -103,14 +103,14 @@ class WebApp extends \CWebApplication
 		$this->_processInstallRequest();
 
 		// If the system in is maintenance mode and it's a site request, throw a 503.
-		if (Blocks::isInMaintenanceMode() && $this->request->isSiteRequest())
+		if (Craft::isInMaintenanceMode() && $this->request->isSiteRequest())
 		{
 			throw new HttpException(503);
 		}
 
 		// isDbUpdateNeeded will return true if we're in the middle of a manual or auto-update.
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
-		if (blx()->updates->isDbUpdateNeeded() || (Blocks::isInMaintenanceMode() && !$this->request->isSiteRequest()))
+		if (craft()->updates->isDbUpdateNeeded() || (Craft::isInMaintenanceMode() && !$this->request->isSiteRequest()))
 		{
 			// Let all non-action CP requests through.
 			if (
@@ -126,18 +126,18 @@ class WebApp extends \CWebApplication
 				}
 				else
 				{
-					if (blx()->updates->isBreakpointUpdateNeeded())
+					if (craft()->updates->isBreakpointUpdateNeeded())
 					{
 						$this->runController('update/breakpointUpdate');
 						$this->end();
 					}
 					else
 					{
-						if (!blx()->request->isAjaxRequest())
+						if (!craft()->request->isAjaxRequest())
 						{
-							if (blx()->request->getPathInfo() !== '')
+							if (craft()->request->getPathInfo() !== '')
 							{
-								blx()->userSession->setReturnUrl(blx()->request->getPath());
+								craft()->userSession->setReturnUrl(craft()->request->getPath());
 							}
 						}
 
@@ -161,7 +161,7 @@ class WebApp extends \CWebApplication
 		}
 
 		// Make sure that the system is on, or that the user has permission to access the site/CP while the system is off
-		if (Blocks::isSystemOn() ||
+		if (Craft::isSystemOn() ||
 			($this->request->isActionRequest() && $this->request->getActionSegments() == array('users', 'login')) ||
 			($this->request->isSiteRequest() && $this->userSession->checkPermission('accessSiteWhenSystemIsOff')) ||
 			($this->request->isCpRequest()) && $this->userSession->checkPermission('accessCpWhenSystemIsOff')
@@ -251,12 +251,12 @@ class WebApp extends \CWebApplication
 	 */
 	private function _getTargetLanguage()
 	{
-		$siteLocaleIds = blx()->i18n->getSiteLocaleIds();
+		$siteLocaleIds = craft()->i18n->getSiteLocaleIds();
 
-		if (blx()->request->isCpRequest())
+		if (craft()->request->isCpRequest())
 		{
 			// If the user is logged in *and* has a primary language set, use that
-			$user = blx()->userSession->getUser();
+			$user = craft()->userSession->getUser();
 
 			if ($user && $user->preferredLocale)
 			{
@@ -264,7 +264,7 @@ class WebApp extends \CWebApplication
 			}
 
 			// Otherwise check if the browser's preferred language matches any of the site locales
-			$browserLanguages = blx()->request->getBrowserLanguages();
+			$browserLanguages = craft()->request->getBrowserLanguages();
 
 			foreach ($browserLanguages as $language)
 			{
@@ -276,15 +276,15 @@ class WebApp extends \CWebApplication
 		}
 		else
 		{
-			// Is BLOCKS_LOCALE set to a valid site locale?
-			if (defined('BLOCKS_LOCALE') && in_array(BLOCKS_LOCALE, $siteLocaleIds))
+			// Is CRAFT_LOCALE set to a valid site locale?
+			if (defined('CRAFT_LOCALE') && in_array(CRAFT_LOCALE, $siteLocaleIds))
 			{
-				return BLOCKS_LOCALE;
+				return CRAFT_LOCALE;
 			}
 		}
 
 		// Just use the primary site locale
-		return blx()->i18n->getPrimarySiteLocale()->getId();
+		return craft()->i18n->getPrimarySiteLocale()->getId();
 	}
 
 	/**
@@ -318,7 +318,7 @@ class WebApp extends \CWebApplication
 					// Mayhaps this is a plugin action request.
 					$plugin = strtolower($actionSegs[0]);
 
-					if (($plugin = blx()->plugins->getPlugin($plugin)) !== null)
+					if (($plugin = craft()->plugins->getPlugin($plugin)) !== null)
 					{
 						$pluginHandle = $plugin->getClassHandle();
 
@@ -379,7 +379,7 @@ class WebApp extends \CWebApplication
 		if (class_exists($class))
 		{
 			return array(
-				Blocks::createComponent($class, $controllerId),
+				Craft::createComponent($class, $controllerId),
 				$this->parseActionParams($action),
 			);
 		}
@@ -399,7 +399,7 @@ class WebApp extends \CWebApplication
 			$segs = array_slice(array_merge($this->request->getSegments()), 1);
 			$path = implode('/', $segs);
 
-			blx()->resources->sendResource($path);
+			craft()->resources->sendResource($path);
 		}
 	}
 
@@ -423,38 +423,38 @@ class WebApp extends \CWebApplication
 
 		if (StringHelper::isNullOrEmpty($databaseServerName))
 		{
-			$messages[] = Blocks::t('The database server name isn’t set in your db config file.');
+			$messages[] = Craft::t('The database server name isn’t set in your db config file.');
 		}
 
 		if (StringHelper::isNullOrEmpty($databaseAuthName))
 		{
-			$messages[] = Blocks::t('The database user name isn’t set in your db config file.');
+			$messages[] = Craft::t('The database user name isn’t set in your db config file.');
 		}
 
 		if (StringHelper::isNullOrEmpty($databaseName))
 		{
-			$messages[] = Blocks::t('The database name isn’t set in your db config file.');
+			$messages[] = Craft::t('The database name isn’t set in your db config file.');
 		}
 
 		if (StringHelper::isNullOrEmpty($databasePort))
 		{
-			$messages[] = Blocks::t('The database port isn’t set in your db config file.');
+			$messages[] = Craft::t('The database port isn’t set in your db config file.');
 		}
 
 		if (StringHelper::isNullOrEmpty($databaseCharset))
 		{
-			$messages[] = Blocks::t('The database charset isn’t set in your db config file.');
+			$messages[] = Craft::t('The database charset isn’t set in your db config file.');
 		}
 
 		if (StringHelper::isNullOrEmpty($databaseCollation))
 		{
-			$messages[] = Blocks::t('The database collation isn’t set in your db config file.');
+			$messages[] = Craft::t('The database collation isn’t set in your db config file.');
 		}
 
 		if (!empty($messages))
 		{
 			$this->_validDbConfig = false;
-			throw new Exception(Blocks::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
+			throw new Exception(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
 		}
 
 		try
@@ -462,44 +462,44 @@ class WebApp extends \CWebApplication
 			$connection = $this->db;
 			if (!$connection)
 			{
-				$messages[] = Blocks::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
+				$messages[] = Craft::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
 			}
 		}
 		// Most likely missing PDO in general or the specific database PDO driver.
 		catch(\CDbException $e)
 		{
-			Blocks::log($e->getMessage(), \CLogger::LEVEL_ERROR);
+			Craft::log($e->getMessage(), \CLogger::LEVEL_ERROR);
 			$missingPdo = false;
 
 			// TODO: Multi-db driver check.
 			if (!extension_loaded('pdo'))
 			{
 				$missingPdo = true;
-				$messages[] = Blocks::t('Blocks requires the PDO extension to operate.');
+				$messages[] = Craft::t('CraftCMS requires the PDO extension to operate.');
 			}
 
 			if (!extension_loaded('pdo_mysql'))
 			{
 				$missingPdo = true;
-				$messages[] = Blocks::t('Blocks requires the PDO_MYSQL driver to operate.');
+				$messages[] = Craft::t('CraftCMS requires the PDO_MYSQL driver to operate.');
 			}
 
 			if (!$missingPdo)
 			{
-				Blocks::log($e->getMessage(), \CLogger::LEVEL_ERROR);
-				$messages[] = Blocks::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
+				Craft::log($e->getMessage(), \CLogger::LEVEL_ERROR);
+				$messages[] = Craft::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
 			}
 		}
 		catch (\Exception $e)
 		{
-			Blocks::log($e->getMessage(), \CLogger::LEVEL_ERROR);
-			$messages[] = Blocks::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
+			Craft::log($e->getMessage(), \CLogger::LEVEL_ERROR);
+			$messages[] = Craft::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
 		}
 
 		if (!empty($messages))
 		{
 			$this->_validDbConfig = false;
-			throw new Exception(Blocks::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
+			throw new Exception(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
 		}
 
 		$this->_validDbConfig = true;
@@ -521,7 +521,7 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Determines if Blocks is installed by checking if the info table exists.
+	 * Determines if Craft is installed by checking if the info table exists.
 	 *
 	 * @return bool
 	 */
@@ -570,7 +570,7 @@ class WebApp extends \CWebApplication
 			else
 			{
 				// in the case of an exception, our custom classes are not loaded.
-				$this->_templatePath = BLOCKS_TEMPLATES_PATH;
+				$this->_templatePath = CRAFT_TEMPLATES_PATH;
 			}
 		}
 
@@ -606,7 +606,7 @@ class WebApp extends \CWebApplication
 	{
 		$exceptionArr['error'] = $data['message'];
 
-		if (blx()->config->get('devMode'))
+		if (craft()->config->get('devMode'))
 		{
 			$exceptionArr['trace']  = $data['trace'];
 			$exceptionArr['traces'] = $data['traces'];
@@ -630,7 +630,7 @@ class WebApp extends \CWebApplication
 	 */
 	public function returnAjaxError($code, $message, $file, $line)
 	{
-		if(blx()->config->get('devMode'))
+		if(craft()->config->get('devMode'))
 		{
 			$outputTrace = '';
 			$trace = debug_backtrace();
@@ -693,7 +693,7 @@ class WebApp extends \CWebApplication
 		return false;
 	}
 
-	// Remap blx()->getSession() to blx()->httpSession and blx()->getUser() to blx->userSession
+	// Remap craft()->getSession() to craft()->httpSession and craft()->getUser() to craft->userSession
 
 	/**
 	 * @return HttpSessionService

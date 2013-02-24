@@ -12,8 +12,8 @@
 {% set content %}
 	<div class="widgets">
 		<div id="widgets" class="grid">
-			{% for widget in blx.dashboard.getUserWidgets %}
-				{% set widgetType = blx.dashboard.populateWidgetType(widget) %}
+			{% for widget in craft.dashboard.getUserWidgets %}
+				{% set widgetType = craft.dashboard.populateWidgetType(widget) %}
 				{% if widgetType %}
 					<div id="widget{{ widget.id }}" class="widget {{ widgetType.classHandle|lower }}" data-id="{{ widget.id }}">
 						<h2>{{ widgetType.title }}</h2>

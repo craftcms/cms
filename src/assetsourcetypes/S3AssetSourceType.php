@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::PublishPro);
+Craft::requirePackage(CraftPackage::PublishPro);
 
 /**
  * S3 source type class
@@ -66,7 +66,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	public function getSettingsHtml()
 	{
-		return blx()->templates->render('_components/assetsourcetypes/S3/settings', array(
+		return craft()->templates->render('_components/assetsourcetypes/S3/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -97,7 +97,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		if (empty($buckets))
 		{
-			throw new Exception(Blocks::t("Credentials rejected by target host."));
+			throw new Exception(Craft::t("Credentials rejected by target host."));
 		}
 
 		$bucketList = array();
@@ -205,14 +205,14 @@ class S3AssetSourceType extends BaseAssetSourceType
 						'size' => $file['size']
 					);
 
-					blx()->assetIndexing->storeIndexEntry($indexEntry);
+					craft()->assetIndexing->storeIndexEntry($indexEntry);
 					$total++;
 				}
 			}
 		}
 
 		$indexedFolderIds = array();
-		$indexedFolderIds[blx()->assetIndexing->ensureTopFolder($this->model)] = true;
+		$indexedFolderIds[craft()->assetIndexing->ensureTopFolder($this->model)] = true;
 
 		// Ensure folders are in the DB
 		foreach ($bucketFolders as $fullPath => $nothing)
@@ -235,7 +235,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	public function processIndex($sessionId, $offset)
 	{
-		$indexEntryModel = blx()->assetIndexing->getIndexEntry($this->model->id, $sessionId, $offset);
+		$indexEntryModel = craft()->assetIndexing->getIndexEntry($this->model->id, $sessionId, $offset);
 
 		if (empty($indexEntryModel))
 		{
@@ -250,13 +250,13 @@ class S3AssetSourceType extends BaseAssetSourceType
 		{
 			$settings = $this->getSettings();
 
-			blx()->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
+			craft()->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
 
 			$fileModel->size = $indexEntryModel->size;
 
 			$fileInfo = $this->_s3->getObjectInfo($settings->bucket, $uriPath);
 
-			$targetPath = blx()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
+			$targetPath = craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
 
 			$timeModified = new DateTime('@'.$fileInfo['time']);
 
@@ -269,7 +269,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 			$fileModel->dateModified = new DateTime('@'.$fileInfo['time']);
 
-			blx()->assets->storeFile($fileModel);
+			craft()->assets->storeFile($fileModel);
 
 			return $fileModel->id;
 		}
@@ -293,7 +293,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		if (! IOHelper::isExtensionAllowed($extension))
 		{
-			throw new Exception(Blocks::t('This file type is not allowed'));
+			throw new Exception(Craft::t('This file type is not allowed'));
 		}
 
 		$uriPath = $folder->fullPath.$fileName;
@@ -315,7 +315,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		if (!$this->_s3->putObject(array('file' => $filePath), $this->getSettings()->bucket, $uriPath, \S3::ACL_PUBLIC_READ))
 		{
-			throw new Exception(Blocks::t('Could not copy file to target destination'));
+			throw new Exception(Craft::t('Could not copy file to target destination'));
 		}
 
 		$response = new AssetOperationResponseModel();
@@ -332,7 +332,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	public function getImageSourcePath(AssetFileModel $fileModel)
 	{
-		return blx()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
+		return craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
 	}
 
 	/**
@@ -424,7 +424,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	private function _getS3Path(AssetFileModel $file)
 	{
-		$folder = blx()->assets->getFolderById($file->folderId);
+		$folder = craft()->assets->getFolderById($file->folderId);
 		return $folder->fullPath.$file->filename;
 	}
 
@@ -438,7 +438,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 		$this->_prepareForRequests();
 		$this->_s3->deleteObject($this->getSettings()->bucket, $this->_getS3Path($file));
-		IOHelper::deleteFile(blx()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename));
+		IOHelper::deleteFile(craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename));
 	}
 
 	/**
@@ -449,8 +449,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _deleteGeneratedImageTransformations(AssetFileModel $file)
 	{
-		$folder = blx()->assets->getFolderById($file->folderId);
-		$transformations = blx()->assetTransformations->getAssetTransformations();
+		$folder = craft()->assets->getFolderById($file->folderId);
+		$transformations = craft()->assetTransformations->getAssetTransformations();
 		$bucket = $this->getSettings()->bucket;
 		$this->_s3->deleteObject($bucket, $this->_getS3Path($file));
 
@@ -478,7 +478,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		$newServerPath = $targetFolder->fullPath.$fileName;
 
-		$conflictingRecord = blx()->assets->findFile(array(
+		$conflictingRecord = craft()->assets->findFile(array(
 			'folderId' => $targetFolder->id,
 			'filename' => $fileName
 		));
@@ -487,7 +487,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$settings = $this->getSettings();
 		$fileInfo = $this->_s3->getObjectInfo($settings->bucket, $newServerPath);
 
-		$conflict = $fileInfo || (!blx()->assets->isMergeInProgress() && is_object($conflictingRecord));
+		$conflict = $fileInfo || (!craft()->assets->isMergeInProgress() && is_object($conflictingRecord));
 
 		if ($conflict)
 		{
@@ -503,7 +503,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		if (!$this->_s3->copyObject($bucket, $file->getFolder()->fullPath.$file->filename, $bucket, $newServerPath))
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setError(Blocks::t("Could not save the file"));
+			$response->setError(Craft::t("Could not save the file"));
 			return $response;
 		}
 
@@ -514,7 +514,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 			$this->_deleteGeneratedThumbnails($file);
 
 			// Move transformations
-			$transformations = blx()->assetTransformations->getAssetTransformations();
+			$transformations = craft()->assetTransformations->getAssetTransformations();
 			$baseFromPath = $file->getFolder()->fullPath;
 			$baseToPath = $targetFolder->fullPath;
 

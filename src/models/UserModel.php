@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * User model class
@@ -62,9 +62,9 @@ class UserModel extends ElementModel
 	 */
 	public function getGroups($indexBy = null)
 	{
-		if (Blocks::hasPackage(BlocksPackage::Users))
+		if (Craft::hasPackage(CraftPackage::Users))
 		{
-			return blx()->userGroups->getGroupsByUserId($this->id, $indexBy);
+			return craft()->userGroups->getGroupsByUserId($this->id, $indexBy);
 		}
 	}
 
@@ -75,7 +75,7 @@ class UserModel extends ElementModel
 	 */
 	public function getFullName()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Users))
+		if (Craft::hasPackage(CraftPackage::Users))
 		{
 			return $this->firstName . ($this->firstName && $this->lastName ? ' ' : '') . $this->lastName;
 		}
@@ -121,7 +121,7 @@ class UserModel extends ElementModel
 	{
 		if ($this->id)
 		{
-			$currentUser = blx()->userSession->getUser();
+			$currentUser = craft()->userSession->getUser();
 
 			if ($currentUser)
 			{
@@ -140,7 +140,7 @@ class UserModel extends ElementModel
 	 */
 	public function can($permission)
 	{
-		if (Blocks::hasPackage(BlocksPackage::Users))
+		if (Craft::hasPackage(CraftPackage::Users))
 		{
 			if ($this->admin)
 			{
@@ -148,7 +148,7 @@ class UserModel extends ElementModel
 			}
 			else if ($this->id)
 			{
-				return blx()->userPermissions->doesUserHavePermission($this->id, $permission);
+				return craft()->userPermissions->doesUserHavePermission($this->id, $permission);
 			}
 			else
 			{
@@ -171,7 +171,7 @@ class UserModel extends ElementModel
 		if ($this->status == UserStatus::Locked)
 		{
 			$cooldownEnd = clone $this->lockoutDate;
-			$cooldownEnd->add(new DateInterval(blx()->config->get('cooldownDuration')));
+			$cooldownEnd->add(new DateInterval(craft()->config->get('cooldownDuration')));
 
 			return $cooldownEnd;
 		}
@@ -210,13 +210,13 @@ class UserModel extends ElementModel
 		// Is the user in cooldown mode, and are they past their window?
 		if ($user->status == UserStatus::Locked)
 		{
-			$cooldownDuration = blx()->config->get('cooldownDuration');
+			$cooldownDuration = craft()->config->get('cooldownDuration');
 
 			if ($cooldownDuration)
 			{
 				if (!$user->getRemainingCooldownTime())
 				{
-					blx()->users->activateUser($user);
+					craft()->users->activateUser($user);
 				}
 			}
 		}

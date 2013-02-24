@@ -1,14 +1,14 @@
 <?php
 
-$common = require_once(BLOCKS_APP_PATH.'etc/config/common.php');
+$common = require_once(CRAFT_APP_PATH.'etc/config/common.php');
 
 return CMap::mergeArray(
 	$common,
 
 	array(
-		'basePath'    => BLOCKS_APP_PATH,
-		'runtimePath' => BLOCKS_STORAGE_PATH.'runtime/',
-		'name'        => 'Blocks',
+		'basePath'    => CRAFT_APP_PATH,
+		'runtimePath' => CRAFT_STORAGE_PATH.'runtime/',
+		'name'        => 'Craft',
 
 		// autoloading model and component classes
 		'import' => array(

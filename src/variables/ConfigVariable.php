@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Config functions
@@ -14,7 +14,7 @@ class ConfigVariable
 	 */
 	function __isset($name)
 	{
-		return isset(blx()->params['generalConfig'][$name]);
+		return isset(craft()->params['generalConfig'][$name]);
 	}
 
 	/**
@@ -25,7 +25,7 @@ class ConfigVariable
 	 */
 	function __get($name)
 	{
-		return (string)blx()->config->get($name);
+		return (string)craft()->config->get($name);
 	}
 
 	/**
@@ -35,6 +35,6 @@ class ConfigVariable
 	 */
 	public function usePathInfo()
 	{
-		return blx()->config->usePathInfo();
+		return craft()->config->usePathInfo();
 	}
 }

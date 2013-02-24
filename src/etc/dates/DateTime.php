@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -10,7 +10,7 @@ class DateTime extends \DateTime
 	const MYSQL_DATETIME = 'Y-m-d H:i:s';
 
 	/**
-	 * Creates a new \Blocks\DateTime object (rather than \DateTime)
+	 * Creates a new \Craft\DateTime object (rather than \DateTime)
 	 *
 	 * @param string $format
 	 * @param string $time

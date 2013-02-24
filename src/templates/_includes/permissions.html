@@ -9,7 +9,7 @@
 				? true
 				: (context.userOrGroup is not empty
 					? (context.userOrGroup.hasErrors
-						? (permissionName in blx.request.getPost('permissions', []))
+						? (permissionName in craft.request.getPost('permissions', []))
 						: context.userOrGroup.can(permissionName))
 					: false)) %}
 			{% set hasNestedPermissions = props.nested is defined and props.nested is not empty %}
@@ -30,7 +30,7 @@
 	</ul>
 {% endmacro %}
 
-{% for category, catPermissions in blx.userPermissions.getAllPermissions() %}
+{% for category, catPermissions in craft.userPermissions.getAllPermissions() %}
 	<h3>{{ category }}</h3>
 
 	{{ _self.permissionList(_context, catPermissions) }}

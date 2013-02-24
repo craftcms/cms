@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -15,15 +15,15 @@ class NumberHelper
 	public static function word($num)
 	{
 		$numberWordMap = array(
-				1 => Blocks::t('one'),
-				2 => Blocks::t('two'),
-				3 => Blocks::t('three'),
-				4 => Blocks::t('four'),
-				5 => Blocks::t('five'),
-				6 => Blocks::t('six'),
-				7 => Blocks::t('seven'),
-				8 => Blocks::t('eight'),
-				9 => Blocks::t('nine')
+				1 => Craft::t('one'),
+				2 => Craft::t('two'),
+				3 => Craft::t('three'),
+				4 => Craft::t('four'),
+				5 => Craft::t('five'),
+				6 => Craft::t('six'),
+				7 => Craft::t('seven'),
+				8 => Craft::t('eight'),
+				9 => Craft::t('nine')
 			);
 
 		if (isset($numberWordMap[$num]))

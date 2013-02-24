@@ -21,7 +21,7 @@
 					</th>
 					<td data-title="{{ 'Handle'|t }}"><code>{{ field.handle }}</code></td>
 					<td data-title="{{ 'Type'|t }}">
-						{% set fieldtype = blx.fields.populateFieldType(field) %}
+						{% set fieldtype = craft.fields.populateFieldType(field) %}
 						{% if fieldtype %}
 							{{ fieldtype.name }}
 						{% else %}
@@ -42,7 +42,7 @@
 
 
 {% set js %}
-	new Blocks.AdminTable({
+	new Craft.AdminTable({
 		tableSelector: '#fields',
 		noObjectsSelector: '#nofields',
 		sortable: true,

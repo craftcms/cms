@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::PublishPro);
+Craft::requirePackage(CraftPackage::PublishPro);
 
 /**
  *
@@ -15,31 +15,31 @@ class EntryRevisionsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$draftId = blx()->request->getPost('draftId');
+		$draftId = craft()->request->getPost('draftId');
 
 		if ($draftId)
 		{
-			$draft = blx()->entryRevisions->getDraftById($draftId);
+			$draft = craft()->entryRevisions->getDraftById($draftId);
 
 			if (!$draft)
 			{
-				throw new Exception(Blocks::t('No draft exists with the ID “{id}”', array('id' => $draftId)));
+				throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draftId)));
 			}
 		}
 		else
 		{
 			$draft = new EntryDraftModel();
-			$draft->id        = blx()->request->getRequiredPost('entryId');
-			$draft->sectionId = blx()->request->getRequiredPost('sectionId');
-			$draft->creatorId = blx()->userSession->getUser()->id;
-			$draft->locale    = blx()->request->getPost('locale', blx()->i18n->getPrimarySiteLocale()->getId());
+			$draft->id        = craft()->request->getRequiredPost('entryId');
+			$draft->sectionId = craft()->request->getRequiredPost('sectionId');
+			$draft->creatorId = craft()->userSession->getUser()->id;
+			$draft->locale    = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocale()->getId());
 		}
 
 		$this->_setDraftValuesFromPost($draft);
 
-		if (blx()->entryRevisions->saveDraft($draft))
+		if (craft()->entryRevisions->saveDraft($draft))
 		{
-			blx()->userSession->setNotice(Blocks::t('Draft saved.'));
+			craft()->userSession->setNotice(Craft::t('Draft saved.'));
 
 			$this->redirectToPostedUrl(array(
 				'entryId' => $draft->id,
@@ -48,7 +48,7 @@ class EntryRevisionsController extends BaseController
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save draft.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save draft.'));
 
 			$this->renderRequestedTemplate(array(
 				'entry' => $draft
@@ -63,19 +63,19 @@ class EntryRevisionsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$draftId = blx()->request->getPost('draftId');
-		$draft = blx()->entryRevisions->getDraftById($draftId);
+		$draftId = craft()->request->getPost('draftId');
+		$draft = craft()->entryRevisions->getDraftById($draftId);
 
 		if (!$draft)
 		{
-			throw new Exception(Blocks::t('No draft exists with the ID “{id}”', array('id' => $draftId)));
+			throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draftId)));
 		}
 
 		$this->_setDraftValuesFromPost($draft);
 
-		if (blx()->entryRevisions->publishDraft($draft))
+		if (craft()->entryRevisions->publishDraft($draft))
 		{
-			blx()->userSession->setNotice(Blocks::t('Draft published.'));
+			craft()->userSession->setNotice(Craft::t('Draft published.'));
 
 			$this->redirectToPostedUrl(array(
 				'entryId' => $draft->id
@@ -83,7 +83,7 @@ class EntryRevisionsController extends BaseController
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t publish draft.'));
+			craft()->userSession->setError(Craft::t('Couldn’t publish draft.'));
 
 			$this->renderRequestedTemplate(array(
 				'entry' => $draft
@@ -99,22 +99,22 @@ class EntryRevisionsController extends BaseController
 	 */
 	private function _setDraftValuesFromPost(EntryDraftModel $draft)
 	{
-		$draft->title      = blx()->request->getPost('title');
-		$draft->slug       = blx()->request->getPost('slug');
+		$draft->title      = craft()->request->getPost('title');
+		$draft->slug       = craft()->request->getPost('slug');
 		$draft->postDate   = $this->getDateFromPost('postDate');
 		$draft->expiryDate = $this->getDateFromPost('expiryDate');
-		$draft->enabled    = blx()->request->getPost('enabled');
-		$draft->tags       = blx()->request->getPost('tags');
+		$draft->enabled    = craft()->request->getPost('enabled');
+		$draft->tags       = craft()->request->getPost('tags');
 
-		$draft->setContent(blx()->request->getPost('fields'));
+		$draft->setContent(craft()->request->getPost('fields'));
 
-		if (Blocks::hasPackage(BlocksPackage::Users))
+		if (Craft::hasPackage(CraftPackage::Users))
 		{
-			$draft->authorId = blx()->request->getPost('author');
+			$draft->authorId = craft()->request->getPost('author');
 		}
 		else
 		{
-			$draft->authorId = blx()->userSession->getUser()->id;
+			$draft->authorId = craft()->userSession->getUser()->id;
 		}
 	}
 }

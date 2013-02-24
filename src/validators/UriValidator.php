@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Will validate that the given attribute is a valid URI.
@@ -18,7 +18,7 @@ class UriValidator extends \CValidator
 
 		if ($uri && !preg_match($this->pattern, $uri))
 		{
-			$message = Blocks::t('{attribute} is not a valid URI');
+			$message = Craft::t('{attribute} is not a valid URI');
 			$this->addError($object, $attribute, $message);
 		}
 	}

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Extends \PDO, adding support for savepoints, via beginTransaction() and commitTransaction()

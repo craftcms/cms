@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -14,8 +14,8 @@ class TemplateLoaderException extends Exception
 	function __construct($template)
 	{
 		$this->template = $template;
-		$message = Blocks::t('Unable to find the template “{template}”.', array('template' => $this->template));
-		Blocks::log($message, \CLogger::LEVEL_ERROR);
+		$message = Craft::t('Unable to find the template “{template}”.', array('template' => $this->template));
+		Craft::log($message, \CLogger::LEVEL_ERROR);
 
 		parent::__construct($message, null, null);
 	}

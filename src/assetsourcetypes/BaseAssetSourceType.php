@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Asset source base class
@@ -143,11 +143,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	protected function _getUserPromptOptions($fileName)
 	{
 		return (object) array(
-			'message' => Blocks::t('File "{file}" already exists at target location', array('file' => $fileName)),
+			'message' => Craft::t('File "{file}" already exists at target location', array('file' => $fileName)),
 			'choices' => array(
-				array('value' => AssetsHelper::ActionKeepBoth, 'title' => Blocks::t('Rename the new file and keep both')),
-				array('value' => AssetsHelper::ActionReplace, 'title' => Blocks::t('Replace the existing file')),
-				array('value' => AssetsHelper::ActionCancel, 'title' => Blocks::t('Keep the original file'))
+				array('value' => AssetsHelper::ActionKeepBoth, 'title' => Craft::t('Rename the new file and keep both')),
+				array('value' => AssetsHelper::ActionReplace, 'title' => Craft::t('Replace the existing file')),
+				array('value' => AssetsHelper::ActionCancel, 'title' => Craft::t('Keep the original file'))
 			)
 		);
 	}
@@ -176,7 +176,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		// Make sure a file was uploaded
 		if (! $uploader->file)
 		{
-			throw new Exception(Blocks::t('No file was uploaded'));
+			throw new Exception(Craft::t('No file was uploaded'));
 		}
 
 		$size = $uploader->file->getSize();
@@ -184,7 +184,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		// Make sure the file isn't empty
 		if (!$size)
 		{
-			throw new Exception(Blocks::t('Uploaded file was empty'));
+			throw new Exception(Craft::t('Uploaded file was empty'));
 		}
 
 		// Save the file to a temp location and pass this on to the source type implementation
@@ -221,15 +221,15 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				$fileModel->height = $height;
 			}
 
-			blx()->assets->storeFile($fileModel);
+			craft()->assets->storeFile($fileModel);
 
 			if ($this->model->type != 'Local')
 			{
 				// Store copy locally for all sorts of operations.
-				IOHelper::copyFile($filePath, blx()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel, PATHINFO_EXTENSION));
+				IOHelper::copyFile($filePath, craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel, PATHINFO_EXTENSION));
 			}
 
-			blx()->assetTransformations->updateTransformations($fileModel, array_keys(blx()->assetTransformations->getAssetTransformations()));
+			craft()->assetTransformations->updateTransformations($fileModel, array_keys(craft()->assetTransformations->getAssetTransformations()));
 
 			// Check if we stored a conflict response originally - send that back then.
 			if (isset($conflictResponse))
@@ -265,7 +265,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			'sourceId' => $this->model->id
 		));
 
-		$folderModel = blx()->assets->findFolder($parameters);
+		$folderModel = craft()->assets->findFolder($parameters);
 
 		// If we don't have a folder matching these, create a new one
 		if (is_null($folderModel))
@@ -283,7 +283,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			}
 
 			// Look up the parent folder
-			$parentFolder = blx()->assets->findFolder($parameters);
+			$parentFolder = craft()->assets->findFolder($parameters);
 			if (is_null($parentFolder))
 			{
 				$parentId = FolderCriteriaModel::AssetsNoParent;
@@ -299,7 +299,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			$folderModel->name = $folderName;
 			$folderModel->fullPath = $fullPath;
 
-			return blx()->assets->storeFolder($folderModel);
+			return craft()->assets->storeFolder($folderModel);
 		}
 		else
 		{
@@ -318,7 +318,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		// Figure out the obsolete records for folders
 		$missingFolders = array();
 
-		$allFolders = blx()->assets->findFolders(array(
+		$allFolders = craft()->assets->findFolders(array(
 			'sourceId' => $this->model->id
 		));
 
@@ -357,7 +357,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				$parentId = false;
 			}
 
-			$parentFolder = blx()->assets->findFolder(array(
+			$parentFolder = craft()->assets->findFolder(array(
 				'sourceId' => $this->model->id,
 				'fullPath' => $searchFullPath,
 				'parentId' => $parentId
@@ -370,7 +370,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			$folderId = $parentFolder->id;
 
-			$fileModel = blx()->assets->findFile(array(
+			$fileModel = craft()->assets->findFile(array(
 				'folderId' => $folderId,
 				'filename' => $fileName
 			));
@@ -382,7 +382,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				$fileModel->folderId = $folderId;
 				$fileModel->filename = $fileName;
 				$fileModel->kind = IOHelper::getFileKind($extension);
-				blx()->assets->storeFile($fileModel);
+				craft()->assets->storeFile($fileModel);
 			}
 
 			return $fileModel;
@@ -409,14 +409,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		$this->_deleteSourceFile($oldFile);
 
-		$this->_moveSourceFile($replaceWith, blx()->assets->getFolderById($oldFile->folderId), $oldFile->filename);
+		$this->_moveSourceFile($replaceWith, craft()->assets->getFolderById($oldFile->folderId), $oldFile->filename);
 
 		$oldFile->width = $replaceWith->width;
 		$oldFile->height = $replaceWith->height;
 		$oldFile->size = $replaceWith->size;
 		$oldFile->dateModified = $replaceWith->dateModified;
 
-		blx()->assets->storeFile($oldFile);
+		craft()->assets->storeFile($oldFile);
 	}
 
 	/**
@@ -426,7 +426,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	protected function _deleteGeneratedThumbnails(AssetFileModel $file)
 	{
-		$thumbFolders = IOHelper::getFolderContents(blx()->path->getAssetsThumbsPath());
+		$thumbFolders = IOHelper::getFolderContents(craft()->path->getAssetsThumbsPath());
 		foreach ($thumbFolders as $folder)
 		{
 			if (is_dir($folder))
@@ -448,7 +448,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$this->_deleteGeneratedImageTransformations($file);
 		$this->_deleteGeneratedThumbnails($file);
 
-		blx()->assets->deleteFileRecord($file->id);
+		craft()->assets->deleteFileRecord($file->id);
 
 		$response = new AssetOperationResponseModel();
 		$response->setSuccess();
@@ -469,15 +469,15 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$folderName = IOHelper::cleanFilename($folderName);
 
 		// If folder exists in DB or physically, bail out
-		if (blx()->assets->findFolder(array('parentId' => $parentFolder->id, 'name' => $folderName))
+		if (craft()->assets->findFolder(array('parentId' => $parentFolder->id, 'name' => $folderName))
 			|| $this->_sourceFolderExists($parentFolder, $folderName))
 		{
-			throw new Exception(Blocks::t('A folder already exists with that name!'));
+			throw new Exception(Craft::t('A folder already exists with that name!'));
 		}
 
 		if ( !$this->_createSourceFolder($parentFolder, $folderName))
 		{
-			throw new Exception(Blocks::t('There was an error while creating the folder.'));
+			throw new Exception(Craft::t('There was an error while creating the folder.'));
 		}
 
 		$newFolder = new AssetFolderModel();
@@ -486,7 +486,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$newFolder->name = $folderName;
 		$newFolder->fullPath = $parentFolder->fullPath.$folderName.'/';
 
-		$folderId = blx()->assets->storeFolder($newFolder);
+		$folderId = craft()->assets->storeFolder($newFolder);
 
 		$response = new AssetOperationResponseModel();
 		$response->setSuccess();
@@ -507,7 +507,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 
 		// Get rid of children files
-		$files = blx()->assets->findFiles(array(
+		$files = craft()->assets->findFiles(array(
 			'folderId' => $folder->id
 		));
 
@@ -517,7 +517,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		}
 
 		// Delete children folders
-		$childFolders = blx()->assets->findFolders(array('parentId' => $folder->id));
+		$childFolders = craft()->assets->findFolders(array('parentId' => $folder->id));
 		foreach ($childFolders as $childFolder)
 		{
 			$this->deleteFolder($childFolder);
@@ -525,7 +525,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		$this->_deleteSourceFolder($folder);
 
-		blx()->assets->deleteFolderRecord($folder->id);
+		craft()->assets->deleteFolderRecord($folder->id);
 
 		$response = new AssetOperationResponseModel();
 		$response->setSuccess();

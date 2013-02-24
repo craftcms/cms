@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Handles route actions.
@@ -14,11 +14,11 @@ class RoutesController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$urlParts = blx()->request->getRequiredPost('url');
-		$template = blx()->request->getRequiredPost('template');
-		$routeId = blx()->request->getPost('routeId');
+		$urlParts = craft()->request->getRequiredPost('url');
+		$template = craft()->request->getRequiredPost('template');
+		$routeId = craft()->request->getPost('routeId');
 
-		$route = blx()->routes->saveRoute($urlParts, $template, $routeId);
+		$route = craft()->routes->saveRoute($urlParts, $template, $routeId);
 
 		if ($route->hasErrors())
 		{
@@ -40,8 +40,8 @@ class RoutesController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$routeId = blx()->request->getRequiredPost('routeId');
-		blx()->routes->deleteRouteById($routeId);
+		$routeId = craft()->request->getRequiredPost('routeId');
+		craft()->routes->deleteRouteById($routeId);
 
 		$this->returnJson(array('success' => true));
 	}
@@ -54,8 +54,8 @@ class RoutesController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$routeIds = blx()->request->getRequiredPost('routeIds');
-		blx()->routes->updateRouteOrder($routeIds);
+		$routeIds = craft()->request->getRequiredPost('routeIds');
+		craft()->routes->updateRouteOrder($routeIds);
 
 		$this->returnJson(array('success' => true));
 	}

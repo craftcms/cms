@@ -31,34 +31,34 @@ Assets.FileManager = Garnish.Base.extend({
 
 		this.$status = $('.asset-status');
 
-		this.$folders = Blocks.cp.$sidebarNav.find('.assets-folders:first');
+		this.$folders = Craft.cp.$sidebarNav.find('.assets-folders:first');
 
 		this.$folderContainer = $('.folder-container');
 
 		this.$uploadProgress = $('> .assets-fm-uploadprogress', this.$manager);
 		this.$uploadProgressBar = $('.assets-fm-pb-bar', this.$uploadProgress);
 
-        this.$modalContainerDiv = null;
-        this.$prompt = null;
-        this.$promptApplyToRemainingContainer = null;
-        this.$promptApplyToRemainingCheckbox = null;
-        this.$promptApplyToRemainingLabel = null;
-        this.$promptButtons = null;
+		this.$modalContainerDiv = null;
+		this.$prompt = null;
+		this.$promptApplyToRemainingContainer = null;
+		this.$promptApplyToRemainingCheckbox = null;
+		this.$promptApplyToRemainingLabel = null;
+		this.$promptButtons = null;
 
 
-        this.modal = null;
+		this.modal = null;
 
 		this.sort = 'asc';
-        this.requestId = 0;
-        this.promptArray = [];
+		this.requestId = 0;
+		this.promptArray = [];
 
-        this.selectedFileIds = [];
+		this.selectedFileIds = [];
 
-        this.folders = [];
+		this.folders = [];
 
-        this.folderSelect = null;
+		this.folderSelect = null;
 
-        this._promptCallback = function (){};
+		this._promptCallback = function (){};
 
 		// -------------------------------------------
 		// Assets states
@@ -67,10 +67,10 @@ Assets.FileManager = Garnish.Base.extend({
 		this.currentState = {
 			view: 'thumbs',
 			currentFolder: null,
-            folders: {}
+			folders: {}
 		};
 
-		this.storageKey = 'Blocks_Assets_' + this.settings.namespace;
+		this.storageKey = 'Craft_Assets_' + this.settings.namespace;
 
 		if (typeof(localStorage) !== "undefined") {
 			if (typeof(localStorage[this.storageKey]) == "undefined") {
@@ -87,26 +87,26 @@ Assets.FileManager = Garnish.Base.extend({
 			}
 		};
 
-        /**
-         * Store folder state.
-         *
-         * @param folderId
-         * @param state
-         */
-        this.setFolderState = function (folderId, state)
-        {
-            if (typeof this.currentState.folders != "object")
-            {
-                var folders = {};
-            }
-            else
-            {
-                folders = this.currentState.folders;
-            }
+		/**
+		 * Store folder state.
+		 *
+		 * @param folderId
+		 * @param state
+		 */
+		this.setFolderState = function (folderId, state)
+		{
+			if (typeof this.currentState.folders != "object")
+			{
+				var folders = {};
+			}
+			else
+			{
+				folders = this.currentState.folders;
+			}
 
-            folders[folderId] = state;
-            this.storeState('folders', folders);
-        };
+			folders[folderId] = state;
+			this.storeState('folders', folders);
+		};
 
 
 
@@ -116,10 +116,10 @@ Assets.FileManager = Garnish.Base.extend({
 
 		this.uploader = new qqUploader.FileUploader({
 			element:      this.$upload[0],
-			action:       Blocks.actionUrl + '/assets/uploadFile',
+			action:       Craft.actionUrl + '/assets/uploadFile',
 			template:     '<div class="assets-qq-uploader">'
 				+   '<div class="assets-qq-upload-drop-area"></div>'
-				+   '<a href="javascript:;" class="btn submit assets-qq-upload-button" data-icon="↑" style="position: relative; overflow: hidden; direction: ltr; ">' + Blocks.t('Upload files') + '</a>'
+				+   '<a href="javascript:;" class="btn submit assets-qq-upload-button" data-icon="↑" style="position: relative; overflow: hidden; direction: ltr; ">' + Craft.t('Upload files') + '</a>'
 				+   '<ul class="assets-qq-upload-list"></ul>'
 				+ '</div>',
 
@@ -156,30 +156,30 @@ Assets.FileManager = Garnish.Base.extend({
 			$(this.$upload[1]).replaceWith($(this.$upload[0]).clone(true));
 		}
 
-        // -------------------------------------------
-        //  Folders
-        // -------------------------------------------
+		// -------------------------------------------
+		//  Folders
+		// -------------------------------------------
 
-        // initialize the folder select
-        this.folderSelect = new Garnish.Select(this.$folders, {
-            selectedClass:     'sel',
-            multi:             false,
-            waitForDblClick:   false,
-            vertical:          true,
-            onSelectionChange: $.proxy(this, 'loadFolderContents')
-        });
+		// initialize the folder select
+		this.folderSelect = new Garnish.Select(this.$folders, {
+			selectedClass:     'sel',
+			multi:             false,
+			waitForDblClick:   false,
+			vertical:          true,
+			onSelectionChange: $.proxy(this, 'loadFolderContents')
+		});
 
-        // initialize top-level folders
-        this.$topFolderUl = this.$folders;
-        this.$topFolderLis = this.$topFolderUl.children().filter('li');
+		// initialize top-level folders
+		this.$topFolderUl = this.$folders;
+		this.$topFolderLis = this.$topFolderUl.children().filter('li');
 
-        // stop initializing everything if there are no folders
-        if (! this.$topFolderLis.length) return;
+		// stop initializing everything if there are no folders
+		if (! this.$topFolderLis.length) return;
 
-        for (var i = 0; i < this.$topFolderLis.length; i++)
-        {
-            folder = new Assets.FileManagerFolder(this, this.$topFolderLis[i], 1);
-        }
+		for (var i = 0; i < this.$topFolderLis.length; i++)
+		{
+			folder = new Assets.FileManagerFolder(this, this.$topFolderLis[i], 1);
+		}
 
 		// ---------------------------------------
 		// Asset events
@@ -205,20 +205,20 @@ Assets.FileManager = Garnish.Base.extend({
 		this.markActiveFolder(this.currentState.currentFolder);
 		this.markActiveViewButton();
 
-        // expand folders
-        for (var folder in this.currentState.folders)
-        {
-            if (this.currentState.folders[folder] == 'expanded'
-                && typeof this.folders[folder] !== 'undefined'
-                && this.folders[folder].hasSubfolders())
-            {
-                this.folders[folder]._prepForSubfolders();
-                this.folders[folder].expand();
-            }
-        }
+		// expand folders
+		for (var folder in this.currentState.folders)
+		{
+			if (this.currentState.folders[folder] == 'expanded'
+				&& typeof this.folders[folder] !== 'undefined'
+				&& this.folders[folder].hasSubfolders())
+			{
+				this.folders[folder]._prepForSubfolders();
+				this.folders[folder].expand();
+			}
+		}
 
 
-        this.loadFolderContents();
+		this.loadFolderContents();
 	},
 
 	/**
@@ -238,11 +238,11 @@ Assets.FileManager = Garnish.Base.extend({
 		if (this.currentState.view == 'thumbs') {
 			this.$viewAsThumbsBtn.addClass('active');
 			this.$viewAsListBtn.removeClass('active');
-            this.$folderContainer.addClass('assets-tv-file').removeClass('assets-listview').removeClass('assets-tv-bigthumb');
+			this.$folderContainer.addClass('assets-tv-file').removeClass('assets-listview').removeClass('assets-tv-bigthumb');
 		} else {
 			this.$viewAsThumbsBtn.removeClass('active');
 			this.$viewAsListBtn.addClass('active');
-            this.$folderContainer.removeClass('assets-tv-file').addClass('assets-listview').removeClass('assets-tv-bigthumb');
+			this.$folderContainer.removeClass('assets-tv-file').addClass('assets-listview').removeClass('assets-tv-bigthumb');
 		}
 	},
 
@@ -259,28 +259,28 @@ Assets.FileManager = Garnish.Base.extend({
 
 		this.$activeFolder = this.$folders.find('a[data-folder=' + folderId + ']:first').addClass('sel');
 
-		if (Blocks.cp.$altSidebarNavBtn)
+		if (Craft.cp.$altSidebarNavBtn)
 		{
-			Blocks.cp.$altSidebarNavBtn.text(this.$activeFolder.text());
+			Craft.cp.$altSidebarNavBtn.text(this.$activeFolder.text());
 		}
 	},
 
-    /**
-     * Load the folder contents by selected folder
-     */
-    loadFolderContents: function () {
-        var folderElement = this.$folders.find('a.sel');
+	/**
+	 * Load the folder contents by selected folder
+	 */
+	loadFolderContents: function () {
+		var folderElement = this.$folders.find('a.sel');
 
-        if (folderElement.length == 0)
-        {
-            folderElement = this.$folders.find('li:first');
-        }
+		if (folderElement.length == 0)
+		{
+			folderElement = this.$folders.find('li:first');
+		}
 
-        this.markActiveFolder(folderElement.attr('data-folder'));
-        this.storeState('currentFolder', folderElement.attr('data-folder'));
+		this.markActiveFolder(folderElement.attr('data-folder'));
+		this.storeState('currentFolder', folderElement.attr('data-folder'));
 
-        this._setUploadFolder(this.getCurrentFolderId());
-        this.loadFolderView(this.getCurrentFolderId());
+		this._setUploadFolder(this.getCurrentFolderId());
+		this.loadFolderView(this.getCurrentFolderId());
 	},
 
 	/**
@@ -296,7 +296,7 @@ Assets.FileManager = Garnish.Base.extend({
 			viewType: this.currentState.view
 		};
 
-		Blocks.postActionRequest('assets/viewFolder', params, $.proxy(function(data, textStatus) {
+		Craft.postActionRequest('assets/viewFolder', params, $.proxy(function(data, textStatus) {
 
 			this.storeState('current_folder', folderId);
 
@@ -328,14 +328,14 @@ Assets.FileManager = Garnish.Base.extend({
 				fileId: $(this).attr('data-file')
 			};
 
-			Blocks.postActionRequest('assets/viewFile', params, $.proxy(function(data, textStatus) {
+			Craft.postActionRequest('assets/viewFile', params, $.proxy(function(data, textStatus) {
 				if (data.requestId != this.requestId) {
 					return;
 				}
 
 				this.setAssetsAvailable();
 
-                $modalContainerDiv = _this.$modalContainerDiv;
+				$modalContainerDiv = _this.$modalContainerDiv;
 
 				if ($modalContainerDiv == null) {
 					$modalContainerDiv = $('<div class="modal"></div>').addClass().appendTo(Garnish.$bod);
@@ -365,7 +365,7 @@ Assets.FileManager = Garnish.Base.extend({
 
 					var params = $('form#file-fields').serialize();
 
-					Blocks.postActionRequest('assets/saveFileContent', params, $.proxy(function(data, textStatus) {
+					Craft.postActionRequest('assets/saveFileContent', params, $.proxy(function(data, textStatus) {
 						this.hide();
 					}, this));
 				});
@@ -387,14 +387,14 @@ Assets.FileManager = Garnish.Base.extend({
 	 * @return mixed
 	 */
 	getCurrentFolderId: function ()
-    {
+	{
 		if (this.currentState.currentFolder == null || this.currentState.currentFolder == 0 || typeof this.currentState.currentFolder == "undefined")
-        {
-            var folderId = this.$folderContainer.attr('data-folder');
-            if (folderId == null || typeof folderId == "undefined")
-            {
-                folderId = this.$folders.find('a[data-folder]').attr('data-folder');
-            }
+		{
+			var folderId = this.$folderContainer.attr('data-folder');
+			if (folderId == null || typeof folderId == "undefined")
+			{
+				folderId = this.$folders.find('a[data-folder]').attr('data-folder');
+			}
 			this.storeState('currentFolder', folderId);
 		}
 
@@ -474,32 +474,32 @@ Assets.FileManager = Garnish.Base.extend({
 		if (response.success || response.prompt) {
 			this._uploadedFiles++;
 
-            if (this.settings.multiSelect || !this.selectedFileIds.length)
-            {
-                this.selectedFileIds.push(response.fileId);
-            }
+			if (this.settings.multiSelect || !this.selectedFileIds.length)
+			{
+				this.selectedFileIds.push(response.fileId);
+			}
 
 			this._setUploadStatus();
 
-            if (response.prompt)
-            {
-                this.promptArray.push(response);
-            }
+			if (response.prompt)
+			{
+				this.promptArray.push(response);
+			}
 
 		}
 
 		// is this the last file?
 		if (! this.uploader.getInProgress()) {
 			if (this._uploadedFiles) {
-                this.setAssetsAvailable();
-                if (this.promptArray.length)
-                {
-                    this._showBatchPrompts(this.promptArray, this._uploadFollowup);
-                }
-                else
-                {
-                    this.loadFolderContents();
-                }
+				this.setAssetsAvailable();
+				if (this.promptArray.length)
+				{
+					this._showBatchPrompts(this.promptArray, this._uploadFollowup);
+				}
+				else
+				{
+					this.loadFolderContents();
+				}
 			} else {
 				// just skip to hiding the progress bar
 				this._hideProgressBar();
@@ -510,41 +510,41 @@ Assets.FileManager = Garnish.Base.extend({
 
 	},
 
-    _uploadFollowup: function(returnData)
-    {
-        this.promptArray = [];
+	_uploadFollowup: function(returnData)
+	{
+		this.promptArray = [];
 
-        var finalCallback = $.proxy(function()
-        {
-            this.setAssetsAvailable();
-            this.loadFolderContents();
-        }, this);
+		var finalCallback = $.proxy(function()
+		{
+			this.setAssetsAvailable();
+			this.loadFolderContents();
+		}, this);
 
-        var doFollowup = $.proxy(function(parameterArray, parameterIndex, callback)
-        {
-            var postData = {
-                additionalInfo: parameterArray[parameterIndex].additionalInfo,
-                fileName:       parameterArray[parameterIndex].fileName,
-                userResponse:   parameterArray[parameterIndex].choice
-            };
+		var doFollowup = $.proxy(function(parameterArray, parameterIndex, callback)
+		{
+			var postData = {
+				additionalInfo: parameterArray[parameterIndex].additionalInfo,
+				fileName:       parameterArray[parameterIndex].fileName,
+				userResponse:   parameterArray[parameterIndex].choice
+			};
 
-            $.post(Blocks.actionUrl + '/assets/uploadFile', postData, $.proxy(function(data)
-            {
-                ++parameterIndex;
+			$.post(Craft.actionUrl + '/assets/uploadFile', postData, $.proxy(function(data)
+			{
+				++parameterIndex;
 
-                if (parameterIndex == parameterArray.length)
-                {
-                    callback();
-                }
-                else
-                {
-                    doFollowup(parameterArray, parameterIndex, callback);
-                }
-            }, this));
-        }, this);
+				if (parameterIndex == parameterArray.length)
+				{
+					callback();
+				}
+				else
+				{
+					doFollowup(parameterArray, parameterIndex, callback);
+				}
+			}, this));
+		}, this);
 
-        doFollowup(returnData, 0, finalCallback);
-    },
+		doFollowup(returnData, 0, finalCallback);
+	},
 
 	/**
 	 * Update Progress Bar
@@ -569,177 +569,177 @@ Assets.FileManager = Garnish.Base.extend({
 		}, this));
 	},
 
-    /**
-     * Show the user prompt with a given message and choices, plus an optional "Apply to remaining" checkbox.
-     *
-     * @param string message
-     * @param array choices
-     * @param function callback
-     * @param int itemsToGo
-     */
-    _showPrompt: function(message, choices, callback, itemsToGo)
-    {
-        this._promptCallback = callback;
+	/**
+	 * Show the user prompt with a given message and choices, plus an optional "Apply to remaining" checkbox.
+	 *
+	 * @param string message
+	 * @param array choices
+	 * @param function callback
+	 * @param int itemsToGo
+	 */
+	_showPrompt: function(message, choices, callback, itemsToGo)
+	{
+		this._promptCallback = callback;
 
-        if (this.modal == null) {
-            this.modal = new Garnish.Modal();
-        }
+		if (this.modal == null) {
+			this.modal = new Garnish.Modal();
+		}
 
-        if (this.$modalContainerDiv == null) {
-            this.$modalContainerDiv = $('<div class="modal"></div>').addClass().appendTo(Garnish.$bod);
-        }
+		if (this.$modalContainerDiv == null) {
+			this.$modalContainerDiv = $('<div class="modal"></div>').addClass().appendTo(Garnish.$bod);
+		}
 
-        this.$prompt = $('<div class="body"></div>').appendTo(this.$modalContainerDiv.empty());
+		this.$prompt = $('<div class="body"></div>').appendTo(this.$modalContainerDiv.empty());
 
-        this.$promptMessage = $('<p class="assets-prompt-msg"/>').appendTo(this.$prompt);
+		this.$promptMessage = $('<p class="assets-prompt-msg"/>').appendTo(this.$prompt);
 
-        $('<p>').html(Blocks.t('What do you want to do?')).appendTo(this.$prompt);
+		$('<p>').html(Craft.t('What do you want to do?')).appendTo(this.$prompt);
 
-        this.$promptApplyToRemainingContainer = $('<label class="assets-applytoremaining"/>').appendTo(this.$prompt).hide();
-        this.$promptApplyToRemainingCheckbox = $('<input type="checkbox"/>').appendTo(this.$promptApplyToRemainingContainer);
-        this.$promptApplyToRemainingLabel = $('<span/>').appendTo(this.$promptApplyToRemainingContainer);
-        this.$promptButtons = $('<div class="buttons"/>').appendTo(this.$prompt);
-
-
-        this.modal.setContainer(this.$modalContainerDiv);
+		this.$promptApplyToRemainingContainer = $('<label class="assets-applytoremaining"/>').appendTo(this.$prompt).hide();
+		this.$promptApplyToRemainingCheckbox = $('<input type="checkbox"/>').appendTo(this.$promptApplyToRemainingContainer);
+		this.$promptApplyToRemainingLabel = $('<span/>').appendTo(this.$promptApplyToRemainingContainer);
+		this.$promptButtons = $('<div class="buttons"/>').appendTo(this.$prompt);
 
 
-        this.$promptMessage.html(message);
+		this.modal.setContainer(this.$modalContainerDiv);
 
-        for (var i = 0; i < choices.length; i++)
-        {
-            var $btn = $('<div class="assets-btn btn" data-choice="'+choices[i].value+'">' + choices[i].title + '</div>');
 
-            this.addListener($btn, 'activate', function(ev)
-            {
-                var choice = ev.currentTarget.getAttribute('data-choice'),
-                    applyToRemaining = this.$promptApplyToRemainingCheckbox.prop('checked');
+		this.$promptMessage.html(message);
 
-                this._selectPromptChoice(choice, applyToRemaining);
-            });
+		for (var i = 0; i < choices.length; i++)
+		{
+			var $btn = $('<div class="assets-btn btn" data-choice="'+choices[i].value+'">' + choices[i].title + '</div>');
 
-            this.$promptButtons.append($btn).append('<br />');
-        }
+			this.addListener($btn, 'activate', function(ev)
+			{
+				var choice = ev.currentTarget.getAttribute('data-choice'),
+					applyToRemaining = this.$promptApplyToRemainingCheckbox.prop('checked');
 
-        if (itemsToGo)
-        {
-            this.$promptApplyToRemainingContainer.show();
-            this.$promptApplyToRemainingLabel.html(Blocks.t('Apply this to the {number} remaining conflicts', {number: itemsToGo}));
-        }
+				this._selectPromptChoice(choice, applyToRemaining);
+			});
 
-        this.modal.show();
-        this.modal.removeListener(Garnish.Modal.$shade, 'click');
-        this.addListener(Garnish.Modal.$shade, 'click', '_cancelPrompt');
+			this.$promptButtons.append($btn).append('<br />');
+		}
 
-    },
+		if (itemsToGo)
+		{
+			this.$promptApplyToRemainingContainer.show();
+			this.$promptApplyToRemainingLabel.html(Craft.t('Apply this to the {number} remaining conflicts', {number: itemsToGo}));
+		}
 
-    /**
-     * Handles when a user selects one of the prompt choices.
-     *
-     * @param object ev
-     */
-    _selectPromptChoice: function(choice, applyToRemaining)
-    {
-        this.$prompt.fadeOut('fast', $.proxy(function() {
-            this.modal.hide();
-            this._promptCallback(choice, applyToRemaining);
-        }, this));
-    },
+		this.modal.show();
+		this.modal.removeListener(Garnish.Modal.$shade, 'click');
+		this.addListener(Garnish.Modal.$shade, 'click', '_cancelPrompt');
 
-    /**
-     * Cancels the prompt.
-     */
-    _cancelPrompt: function()
-    {
-        this._selectPromptChoice('cancel', true);
-    },
+	},
 
-    /**
-     * Shows a batch of prompts.
-     *
-     * @param array   promts
-     * @param funtion callback
-     */
-    _showBatchPrompts: function(prompts, callback)
-    {
-        this._promptBatchData = prompts;
-        this._promptBatchCallback = callback;
-        this._promptBatchReturnData = [];
-        this._promptBatchNum = 0;
+	/**
+	 * Handles when a user selects one of the prompt choices.
+	 *
+	 * @param object ev
+	 */
+	_selectPromptChoice: function(choice, applyToRemaining)
+	{
+		this.$prompt.fadeOut('fast', $.proxy(function() {
+			this.modal.hide();
+			this._promptCallback(choice, applyToRemaining);
+		}, this));
+	},
 
-        this._showNextPromptInBatch();
-    },
+	/**
+	 * Cancels the prompt.
+	 */
+	_cancelPrompt: function()
+	{
+		this._selectPromptChoice('cancel', true);
+	},
 
-    /**
-     * Shows the next prompt in the batch.
-     */
-    _showNextPromptInBatch: function()
-    {
-        var prompt = this._promptBatchData[this._promptBatchNum].prompt,
-            remainingInBatch = this._promptBatchData.length - (this._promptBatchNum + 1);
+	/**
+	 * Shows a batch of prompts.
+	 *
+	 * @param array   promts
+	 * @param funtion callback
+	 */
+	_showBatchPrompts: function(prompts, callback)
+	{
+		this._promptBatchData = prompts;
+		this._promptBatchCallback = callback;
+		this._promptBatchReturnData = [];
+		this._promptBatchNum = 0;
 
-        this._showPrompt(prompt.message, prompt.choices, $.proxy(this, '_handleBatchPromptSelection'), remainingInBatch);
-    },
+		this._showNextPromptInBatch();
+	},
 
-    /**
-     * Handles a prompt choice selection.
-     *
-     * @param string choice
-     * @param bool   applyToRemaining
-     */
-    _handleBatchPromptSelection: function(choice, applyToRemaining)
-    {
-        var prompt = this._promptBatchData[this._promptBatchNum],
-            remainingInBatch = this._promptBatchData.length - (this._promptBatchNum + 1);
+	/**
+	 * Shows the next prompt in the batch.
+	 */
+	_showNextPromptInBatch: function()
+	{
+		var prompt = this._promptBatchData[this._promptBatchNum].prompt,
+			remainingInBatch = this._promptBatchData.length - (this._promptBatchNum + 1);
 
-        // Record this choice
-        this._promptBatchReturnData.push({
-            fileName:       prompt.fileName,
-            choice:         choice,
-            additionalInfo: prompt.additionalInfo
-        });
+		this._showPrompt(prompt.message, prompt.choices, $.proxy(this, '_handleBatchPromptSelection'), remainingInBatch);
+	},
 
-        // Are there any remaining items in the batch?
-        if (remainingInBatch)
-        {
-            // Get ready to deal with the next prompt
-            this._promptBatchNum++;
+	/**
+	 * Handles a prompt choice selection.
+	 *
+	 * @param string choice
+	 * @param bool   applyToRemaining
+	 */
+	_handleBatchPromptSelection: function(choice, applyToRemaining)
+	{
+		var prompt = this._promptBatchData[this._promptBatchNum],
+			remainingInBatch = this._promptBatchData.length - (this._promptBatchNum + 1);
 
-            // Apply the same choice to the remaining items?
-            if (applyToRemaining)
-            {
-                this._handleBatchPromptSelection(choice, true);
-            }
-            else
-            {
-                // Show the next prompt
-                this._showNextPromptInBatch();
-            }
-        }
-        else
-        {
-            // All done! Call the callback
-            if (typeof this._promptBatchCallback == 'function')
-            {
-                this._promptBatchCallback(this._promptBatchReturnData);
-            }
-        }
-    },
+		// Record this choice
+		this._promptBatchReturnData.push({
+			fileName:       prompt.fileName,
+			choice:         choice,
+			additionalInfo: prompt.additionalInfo
+		});
 
-    setAssetsBusy: function ()
-    {
-        this.$spinner.show();
-    },
+		// Are there any remaining items in the batch?
+		if (remainingInBatch)
+		{
+			// Get ready to deal with the next prompt
+			this._promptBatchNum++;
 
-    setAssetsAvailable: function ()
-    {
-        this.$spinner.hide();
-    },
+			// Apply the same choice to the remaining items?
+			if (applyToRemaining)
+			{
+				this._handleBatchPromptSelection(choice, true);
+			}
+			else
+			{
+				// Show the next prompt
+				this._showNextPromptInBatch();
+			}
+		}
+		else
+		{
+			// All done! Call the callback
+			if (typeof this._promptBatchCallback == 'function')
+			{
+				this._promptBatchCallback(this._promptBatchReturnData);
+			}
+		}
+	},
 
-    isAssetsAvailable: function ()
-    {
-        return this.$spinner.is(':visible');
-    }
+	setAssetsBusy: function ()
+	{
+		this.$spinner.show();
+	},
+
+	setAssetsAvailable: function ()
+	{
+		this.$spinner.hide();
+	},
+
+	isAssetsAvailable: function ()
+	{
+		return this.$spinner.is(':visible');
+	}
 
 },
 {

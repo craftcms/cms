@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -56,7 +56,7 @@ class UserRecord extends BaseRecord
 			'preferredLocale' => array(static::BELONGS_TO, 'LocaleRecord', 'preferredLocale', 'onDelete' => static::SET_NULL, 'onUpdate' => static::CASCADE),
 		);
 
-		if (Blocks::hasPackage(BlocksPackage::Users))
+		if (Craft::hasPackage(CraftPackage::Users))
 		{
 			$relations['profile'] = array(static::HAS_ONE, 'UserProfileRecord', 'userId');
 			$relations['groups']  = array(static::MANY_MANY, 'UserGroupRecord', 'usergroups_users(userId, groupId)');

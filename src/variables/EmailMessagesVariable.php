@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::Rebrand);
+Craft::requirePackage(CraftPackage::Rebrand);
 
 /**
  * Email functions
@@ -15,7 +15,7 @@ class EmailMessagesVariable
 	 */
 	public function getAllMessages()
 	{
-		return blx()->emailMessages->getAllMessages();
+		return craft()->emailMessages->getAllMessages();
 	}
 
 	/**
@@ -27,6 +27,6 @@ class EmailMessagesVariable
 	 */
 	public function getMessage($key, $language = null)
 	{
-		return blx()->emailMessages->getMessage($key, $language);
+		return craft()->emailMessages->getMessage($key, $language);
 	}
 }

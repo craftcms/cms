@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -15,7 +15,7 @@ class RecentEntriesWidget extends BaseWidget
 	 */
 	public function getName()
 	{
-		return Blocks::t('Recent Entries');
+		return Craft::t('Recent Entries');
 	}
 
 	/**
@@ -26,7 +26,7 @@ class RecentEntriesWidget extends BaseWidget
 	 */
 	protected function defineSettings()
 	{
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
 			$settings['section'] = array(AttributeType::Mixed, 'default' => '*');
 		}
@@ -43,7 +43,7 @@ class RecentEntriesWidget extends BaseWidget
 	 */
 	public function getSettingsHtml()
 	{
-		return blx()->templates->render('_components/widgets/RecentEntries/settings', array(
+		return craft()->templates->render('_components/widgets/RecentEntries/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -55,22 +55,22 @@ class RecentEntriesWidget extends BaseWidget
 	 */
 	public function getTitle()
 	{
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
 			$sectionId = $this->getSettings()->section;
 
 			if (is_numeric($sectionId))
 			{
-				$section = blx()->sections->getSectionById($sectionId);
+				$section = craft()->sections->getSectionById($sectionId);
 
 				if ($section)
 				{
-					return Blocks::t('Recently in {section}', array('section' => $section->name));
+					return Craft::t('Recently in {section}', array('section' => $section->name));
 				}
 			}
 		}
 
-		return Blocks::t('Recent Entries');
+		return Craft::t('Recent Entries');
 	}
 
 	/**
@@ -82,7 +82,7 @@ class RecentEntriesWidget extends BaseWidget
 	{
 		$params = array();
 
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
 			$sectionId = $this->getSettings()->section;
 
@@ -92,13 +92,13 @@ class RecentEntriesWidget extends BaseWidget
 			}
 		}
 
-		$js = 'new Blocks.RecentEntriesWidget('.$this->model->id.', '.JsonHelper::encode($params).');';
+		$js = 'new Craft.RecentEntriesWidget('.$this->model->id.', '.JsonHelper::encode($params).');';
 
-		blx()->templates->includeJsResource('js/RecentEntriesWidget.js');
-		blx()->templates->includeJs($js);
-		blx()->templates->includeTranslations('by {author}');
+		craft()->templates->includeJsResource('js/RecentEntriesWidget.js');
+		craft()->templates->includeJs($js);
+		craft()->templates->includeTranslations('by {author}');
 
-		return blx()->templates->render('_components/widgets/RecentEntries/body', array(
+		return craft()->templates->render('_components/widgets/RecentEntries/body', array(
 			'settings' => $this->getSettings()
 		));
 	}

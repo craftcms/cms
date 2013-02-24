@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Globals element type
@@ -13,7 +13,7 @@ class GlobalsElementType extends BaseElementType
 	 */
 	public function getName()
 	{
-		return Blocks::t('Globals');
+		return Craft::t('Globals');
 	}
 
 	/**

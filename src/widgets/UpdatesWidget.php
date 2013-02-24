@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,7 +13,7 @@ class UpdatesWidget extends BaseWidget
 	 */
 	public function getName()
 	{
-		return Blocks::t('Updates');
+		return Craft::t('Updates');
 	}
 
 	/**
@@ -23,18 +23,18 @@ class UpdatesWidget extends BaseWidget
 	 */
 	public function getBodyHtml()
 	{
-		if (blx()->updates->isUpdateInfoCached())
+		if (craft()->updates->isUpdateInfoCached())
 		{
-			return blx()->templates->render('_components/widgets/Updates/body', array(
-				'total' => blx()->updates->getTotalNumberOfAvailableUpdates()
+			return craft()->templates->render('_components/widgets/Updates/body', array(
+				'total' => craft()->updates->getTotalNumberOfAvailableUpdates()
 			));
 		}
 		else
 		{
-			blx()->templates->includeJsResource('js/UpdatesWidget.js');
-			blx()->templates->includeJs('new Blocks.UpdatesWidget('.$this->model->id.');');
+			craft()->templates->includeJsResource('js/UpdatesWidget.js');
+			craft()->templates->includeJs('new Craft.UpdatesWidget('.$this->model->id.');');
 
-			return '<p class="centeralign">'.Blocks::t('Checking for updates…').'</p>';
+			return '<p class="centeralign">'.Craft::t('Checking for updates…').'</p>';
 		}
 	}
 }

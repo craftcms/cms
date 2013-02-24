@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::Users);
+Craft::requirePackage(CraftPackage::Users);
 
 /**
  * User group functions
@@ -16,7 +16,7 @@ class UserGroupsVariable
 	 */
 	public function getAllGroups($indexBy = null)
 	{
-		return blx()->userGroups->getAllGroups($indexBy);
+		return craft()->userGroups->getAllGroups($indexBy);
 	}
 
 	/**
@@ -27,7 +27,7 @@ class UserGroupsVariable
 	 */
 	public function getGroupById($groupId)
 	{
-		return blx()->userGroups->getGroupById($groupId);
+		return craft()->userGroups->getGroupById($groupId);
 	}
 
 	/**
@@ -38,6 +38,6 @@ class UserGroupsVariable
 	 */
 	public function getGroupByHandle($groupHandle)
 	{
-		return blx()->userGroups->getGroupByHandle($groupHandle);
+		return craft()->userGroups->getGroupByHandle($groupHandle);
 	}
 }

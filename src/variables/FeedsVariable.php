@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -11,11 +11,11 @@ class FeedsVariable
 	 */
 	public function getFeedItems($url, $limit = 0, $offset = 0)
 	{
-		$items = blx()->feeds->getFeedItems($url, $limit, $offset);
+		$items = craft()->feeds->getFeedItems($url, $limit, $offset);
 
 		// Prevent everyone from having to use the |raw filter when outputting the title and content
 		$rawProperties = array('title', 'content', 'summary');
-		$charset = blx()->templates->getTwig()->getCharset();
+		$charset = craft()->templates->getTwig()->getCharset();
 
 		foreach ($items as &$item)
 		{

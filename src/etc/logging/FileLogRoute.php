@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -11,11 +11,11 @@ class FileLogRoute extends \CFileLogRoute
 	 */
 	public function init()
 	{
-		$this->setLogPath(blx()->path->getLogPath());
-		$this->setLogFile('blocks.log');
+		$this->setLogPath(craft()->path->getLogPath());
+		$this->setLogFile('craft.log');
 
-		$this->levels = blx()->config->get('devMode') ? '' : 'error, warning';
-		$this->filter = blx()->config->get('devMode') ? 'CLogFilter' : null;
+		$this->levels = craft()->config->get('devMode') ? '' : 'error, warning';
+		$this->filter = craft()->config->get('devMode') ? 'CLogFilter' : null;
 
 		parent::init();
 	}

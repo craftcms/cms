@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,7 +13,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function getAllWidgetTypes()
 	{
-		return blx()->components->getComponentsByType(ComponentType::Widget);
+		return craft()->components->getComponentsByType(ComponentType::Widget);
 	}
 
 	/**
@@ -24,7 +24,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function getWidgetType($class)
 	{
-		return blx()->components->getComponentByTypeAndClass(ComponentType::Widget, $class);
+		return craft()->components->getComponentByTypeAndClass(ComponentType::Widget, $class);
 	}
 
 	/**
@@ -35,7 +35,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function populateWidgetType(WidgetModel $widget)
 	{
-		return blx()->components->populateComponentByTypeAndModel(ComponentType::Widget, $widget);
+		return craft()->components->populateComponentByTypeAndModel(ComponentType::Widget, $widget);
 	}
 
 	/**
@@ -68,7 +68,7 @@ class DashboardService extends BaseApplicationComponent
 	{
 		$widgetRecord = WidgetRecord::model()->findByAttributes(array(
 			'id' => $id,
-			'userId' => blx()->userSession->getUser()->id
+			'userId' => craft()->userSession->getUser()->id
 		));
 
 		if ($widgetRecord)
@@ -100,7 +100,7 @@ class DashboardService extends BaseApplicationComponent
 		{
 			if ($widgetRecord->isNewRecord())
 			{
-				$maxSortOrder = blx()->db->createCommand()
+				$maxSortOrder = craft()->db->createCommand()
 					->select('max(sortOrder)')
 					->from('widgets')
 					->queryScalar();
@@ -135,7 +135,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function deleteUserWidgetById($widgetId)
 	{
-		blx()->db->createCommand()->delete('widgets', array('id' => $widgetId));
+		craft()->db->createCommand()->delete('widgets', array('id' => $widgetId));
 		return true;
 	}
 
@@ -148,7 +148,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function reorderUserWidgets($widgetIds)
 	{
-		$transaction = blx()->db->beginTransaction();
+		$transaction = craft()->db->beginTransaction();
 
 		try
 		{
@@ -177,7 +177,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	private function _addDefaultUserWidgets()
 	{
-		$sections = blx()->sections->getAllSections();
+		$sections = craft()->sections->getAllSections();
 
 		foreach ($sections as $section)
 		{
@@ -224,7 +224,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	private function _getUserWidgetRecordById($widgetId = null)
 	{
-		$userId = blx()->userSession->getUser()->id;
+		$userId = craft()->userSession->getUser()->id;
 
 		if ($widgetId)
 		{
@@ -256,7 +256,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	private function _noWidgetExists($widgetId)
 	{
-		throw new Exception(Blocks::t('No widget exists with the ID “{id}”', array('id' => $widgetId)));
+		throw new Exception(Craft::t('No widget exists with the ID “{id}”', array('id' => $widgetId)));
 	}
 
 	/**
@@ -268,7 +268,7 @@ class DashboardService extends BaseApplicationComponent
 	private function _getUserWidgetRecords()
 	{
 		return WidgetRecord::model()->ordered()->findAllByAttributes(array(
-			'userId' => blx()->userSession->getUser()->id
+			'userId' => craft()->userSession->getUser()->id
 		));
 	}
 }

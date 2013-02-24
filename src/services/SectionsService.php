@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -21,11 +21,11 @@ class SectionsService extends BaseApplicationComponent
 	{
 		if (!isset($this->_allSectionIds))
 		{
-			$query = blx()->db->createCommand()
+			$query = craft()->db->createCommand()
 				->select('id')
 				->from('sections');
 
-			if (!Blocks::hasPackage(BlocksPackage::PublishPro))
+			if (!Craft::hasPackage(CraftPackage::PublishPro))
 			{
 				$query->limit(1);
 			}
@@ -50,7 +50,7 @@ class SectionsService extends BaseApplicationComponent
 
 			foreach ($allSectionIds as $sectionId)
 			{
-				if (blx()->userSession->checkPermission('editEntriesInSection'.$sectionId))
+				if (craft()->userSession->checkPermission('editEntriesInSection'.$sectionId))
 				{
 					$this->_editableSectionIds[] = $sectionId;
 				}
@@ -72,7 +72,7 @@ class SectionsService extends BaseApplicationComponent
 		{
 			$criteria = new \CDbCriteria();
 
-			if (!Blocks::hasPackage(BlocksPackage::PublishPro))
+			if (!Craft::hasPackage(CraftPackage::PublishPro))
 			{
 				$criteria->limit = 1;
 			}
@@ -209,7 +209,7 @@ class SectionsService extends BaseApplicationComponent
 
 			if (!$sectionRecord)
 			{
-				throw new Exception(Blocks::t('No section exists with the ID “{id}”', array('id' => $sectionId)));
+				throw new Exception(Craft::t('No section exists with the ID “{id}”', array('id' => $sectionId)));
 			}
 		}
 		else
@@ -264,11 +264,11 @@ class SectionsService extends BaseApplicationComponent
 
 				if (empty($sectionLocale->urlFormat))
 				{
-					$section->addError($errorKey, Blocks::t('{attribute} cannot be blank.', array('attribute' => 'URL Format')));
+					$section->addError($errorKey, Craft::t('{attribute} cannot be blank.', array('attribute' => 'URL Format')));
 				}
 				else if (strpos($sectionLocale->urlFormat, '{slug}') === false)
 				{
-					$section->addError($errorKey, Blocks::t('URL Format must contain “{slug}”'));
+					$section->addError($errorKey, Craft::t('URL Format must contain “{slug}”'));
 				}
 			}
 			else
@@ -279,18 +279,18 @@ class SectionsService extends BaseApplicationComponent
 
 		if (!$section->hasErrors())
 		{
-			$transaction = blx()->db->beginTransaction();
+			$transaction = craft()->db->beginTransaction();
 			try
 			{
 				if (!$isNewSection && $oldSection->fieldLayoutId)
 				{
 					// Drop the old field layout
-					blx()->fields->deleteLayoutById($oldSection->fieldLayoutId);
+					craft()->fields->deleteLayoutById($oldSection->fieldLayoutId);
 				}
 
 				// Save the new one
 				$fieldLayout = $section->getFieldLayout();
-				blx()->fields->saveLayout($fieldLayout);
+				craft()->fields->saveLayout($fieldLayout);
 
 				// Update the section record/model with the new layout ID
 				$section->fieldLayoutId = $fieldLayout->id;
@@ -328,7 +328,7 @@ class SectionsService extends BaseApplicationComponent
 						// Has the URL format changed?
 						if ($locale->urlFormat != $oldLocale->urlFormat)
 						{
-							blx()->db->createCommand()->update('sections_i18n',
+							craft()->db->createCommand()->update('sections_i18n',
 								array('urlFormat' => $locale->urlFormat),
 								array('id' => $oldLocale->id)
 							);
@@ -344,7 +344,7 @@ class SectionsService extends BaseApplicationComponent
 
 					if ($updateEntries && $section->hasUrls)
 					{
-						$entries = blx()->db->createCommand()
+						$entries = craft()->db->createCommand()
 							->select('entryId,slug')
 							->from('entries_i18n')
 							->where(array('sectionId' => $section->id, 'locale' => $localeId))
@@ -353,7 +353,7 @@ class SectionsService extends BaseApplicationComponent
 						foreach ($entries as $entry)
 						{
 							$uri = str_replace('{slug}', $entry['slug'], $locale->urlFormat);
-							blx()->db->createCommand()->update('elements_i18n',
+							craft()->db->createCommand()->update('elements_i18n',
 								array('uri' => $uri),
 								array('entryId' => $entry['entryId'], 'locale' => $localeId)
 							);
@@ -362,7 +362,7 @@ class SectionsService extends BaseApplicationComponent
 				}
 
 				// Insert the new locales
-				blx()->db->createCommand()->insertAll('sections_i18n', array('sectionId', 'locale', 'urlFormat'), $newLocaleData);
+				craft()->db->createCommand()->insertAll('sections_i18n', array('sectionId', 'locale', 'urlFormat'), $newLocaleData);
 
 				if (!$isNewSection)
 				{
@@ -370,20 +370,20 @@ class SectionsService extends BaseApplicationComponent
 					$disabledLocaleIds = array_diff(array_keys($oldSectionLocales), array_keys($section->getLocales()));
 					foreach ($disabledLocaleIds as $localeId)
 					{
-						blx()->db->createCommand()->delete('sections_i18n', array('id' => $oldSectionLocales[$localeId]->id));
+						craft()->db->createCommand()->delete('sections_i18n', array('id' => $oldSectionLocales[$localeId]->id));
 					}
 
 					// Drop the old entry URIs if the section no longer has URLs
 					if (!$section->hasUrls && $oldSection->hasUrls)
 					{
 						// Clear out all the URIs
-						$entryIds = blx()->db->createCommand()
+						$entryIds = craft()->db->createCommand()
 							->select('id')
 							->from('entries')
 							->where(array('sectionId' => $section->id))
 							->queryColumn();
 
-						blx()->db->createCommand()->update('entries_i18n',
+						craft()->db->createCommand()->update('entries_i18n',
 							array('uri' => null),
 							array('in', 'entryId', $entryIds)
 						);
@@ -415,7 +415,7 @@ class SectionsService extends BaseApplicationComponent
 	*/
 	public function deleteSectionById($sectionId)
 	{
-		blx()->db->createCommand()->delete('sections', array('id' => $sectionId));
+		craft()->db->createCommand()->delete('sections', array('id' => $sectionId));
 		return true;
 	}
 }

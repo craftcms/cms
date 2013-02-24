@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Singleton model class
@@ -36,7 +36,7 @@ class SingletonModel extends ElementModel
 		{
 			if ($this->id)
 			{
-				$this->_locales = blx()->singletons->getSingletonLocales($this->id, 'locale');
+				$this->_locales = craft()->singletons->getSingletonLocales($this->id, 'locale');
 			}
 			else
 			{
@@ -86,7 +86,7 @@ class SingletonModel extends ElementModel
 		{
 			if ($this->fieldLayoutId)
 			{
-				$this->_fieldLayout = blx()->fields->getLayoutById($this->fieldLayoutId);
+				$this->_fieldLayout = craft()->fields->getLayoutById($this->fieldLayoutId);
 			}
 
 			if (empty($this->_fieldLayout))

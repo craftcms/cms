@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -31,7 +31,7 @@ class SingletonsService extends BaseApplicationComponent
 
 		foreach ($allSingletons as $singleton)
 		{
-			if (blx()->userSession->checkPermission('editSingleton'.$singleton->id))
+			if (craft()->userSession->checkPermission('editSingleton'.$singleton->id))
 			{
 				if ($indexBy)
 				{
@@ -140,7 +140,7 @@ class SingletonsService extends BaseApplicationComponent
 
 			if ($singleton->id)
 			{
-				$i18nRecord = blx()->elements->getElementLocaleRecord($singleton->id, $localeId);
+				$i18nRecord = craft()->elements->getElementLocaleRecord($singleton->id, $localeId);
 			}
 
 			if (!$i18nRecord)
@@ -163,12 +163,12 @@ class SingletonsService extends BaseApplicationComponent
 			if (!$isNewSingleton && $oldSingleton->fieldLayoutId)
 			{
 				// Drop the old field layout
-				blx()->fields->deleteLayoutById($oldSingleton->fieldLayoutId);
+				craft()->fields->deleteLayoutById($oldSingleton->fieldLayoutId);
 			}
 
 			// Save the new one
 			$fieldLayout = $singleton->getFieldLayout();
-			blx()->fields->saveLayout($fieldLayout);
+			craft()->fields->saveLayout($fieldLayout);
 
 			// Update the singleton record/model with the new layout ID
 			$singleton->fieldLayoutId = $fieldLayout->id;
@@ -220,7 +220,7 @@ class SingletonsService extends BaseApplicationComponent
 			}
 
 			// Insert the new locales
-			blx()->db->createCommand()->insertAll('singletons_i18n', array('singletonId', 'locale'), $newLocaleData);
+			craft()->db->createCommand()->insertAll('singletons_i18n', array('singletonId', 'locale'), $newLocaleData);
 
 			if (!$isNewSingleton)
 			{
@@ -228,7 +228,7 @@ class SingletonsService extends BaseApplicationComponent
 				$disabledLocaleIds = array_diff(array_keys($oldSingletonLocales), array_keys($singleton->getLocales()));
 				foreach ($disabledLocaleIds as $localeId)
 				{
-					blx()->db->createCommand()->delete('singletons_i18n', array('id' => $oldSingletonLocales[$localeId]->id));
+					craft()->db->createCommand()->delete('singletons_i18n', array('id' => $oldSingletonLocales[$localeId]->id));
 				}
 			}
 
@@ -248,7 +248,7 @@ class SingletonsService extends BaseApplicationComponent
 	 */
 	public function saveContent(SingletonModel $singleton)
 	{
-		return blx()->elements->saveElementContent($singleton, $singleton->getFieldLayout());
+		return craft()->elements->saveElementContent($singleton, $singleton->getFieldLayout());
 	}
 
 	/**
@@ -259,7 +259,7 @@ class SingletonsService extends BaseApplicationComponent
 	*/
 	public function deleteSingletonById($singletonId)
 	{
-		blx()->db->createCommand()->delete('singletons', array('id' => $singletonId));
+		craft()->db->createCommand()->delete('singletons', array('id' => $singletonId));
 		return true;
 	}
 
@@ -279,7 +279,7 @@ class SingletonsService extends BaseApplicationComponent
 
 			if (!$singletonRecord)
 			{
-				throw new Exception(Blocks::t('No singleton exists with the ID “{id}”', array('id' => $singletonId)));
+				throw new Exception(Craft::t('No singleton exists with the ID “{id}”', array('id' => $singletonId)));
 			}
 		}
 		else
@@ -300,14 +300,14 @@ class SingletonsService extends BaseApplicationComponent
 	{
 		$record = SingletonContentRecord::model()->findByAttributes(array(
 			'singletonId'   => $singletonId,
-			'language' => Blocks::getLanguage(),
+			'language' => Craft::getLanguage(),
 		));
 
 		if (empty($record))
 		{
 			$record = new SingletonContentRecord();
 			$record->singletonId = $singletonId;
-			$record->language = Blocks::getLanguage();
+			$record->language = Craft::getLanguage();
 		}
 
 		return $record;

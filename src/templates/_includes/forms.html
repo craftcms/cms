@@ -31,7 +31,7 @@
 		{%- if config.name %} name="{{ config.name }}"{% endif %}
 		{%- if config.value %} value="{{ config.value }}"{% endif %}
 		{%- if config.maxlength %} maxlength="{{ config.maxlength }}"{% endif %}
-		{%- if config.autofocus and not blx.request.isMobileBrowser %} autofocus{% endif %}
+		{%- if config.autofocus and not craft.request.isMobileBrowser %} autofocus{% endif %}
 		{%- if not config.autocomplete %} autocomplete="off"{% endif %}
 		{%- if config.disabled %} disabled {% endif %}
 		{%- if config.hint %} data-hint="{{ config.hint }}"{% endif %}>
@@ -62,7 +62,7 @@
 	{% set class = _self.textClass(config) %}
 	<textarea class="{{ class }}" rows="{{ config.rows }}" cols="{{ config.cols }}" name="{{ config.name }}"
 		{%- if config.id %} id="{{ config.id }}"{% endif %}
-		{%- if config.autofocus and not blx.request.isMobileBrowser %} autofocus{% endif %}
+		{%- if config.autofocus and not craft.request.isMobileBrowser %} autofocus{% endif %}
 		{%- if config.disabled %} disabled{% endif %}
 		{%- if config.hint %} data-hint="{{ config.hint }}"{% endif %}>{{ config.value }}</textarea>
 {% endmacro %}
@@ -76,7 +76,7 @@
 			{%- if config.id %} id="{{ config.id }}"{% endif %}
 			{%- if config.toggle %} class="fieldtoggle"{% endif %}
 			{%- if config.name %} name="{{ config.name }}"{% endif %}
-			{%- if config.autofocus and not blx.request.isMobileBrowser %} autofocus{% endif %}
+			{%- if config.autofocus and not craft.request.isMobileBrowser %} autofocus{% endif %}
 			{%- if config.disabled %} disabled{% endif %}
 			{%- if config.targetPrefix %} data-target-prefix="{{ config.targetPrefix }}"{% endif %}>
 			{% for value, label in config.options %}
@@ -92,7 +92,7 @@
 	<select multiple
 		{%- if config.id %} id="{{ config.id }}"{% endif %}
 		{%- if config.name %} name="{{ config.name }}[]"{% endif %}
-		{%- if config.autofocus and not blx.request.isMobileBrowser %} autofocus{% endif %}
+		{%- if config.autofocus and not craft.request.isMobileBrowser %} autofocus{% endif %}
 		{%- if config.disabled %} disabled{% endif %}
 		{%- if config.size %} size="{{ config.size }}"{% endif %}>
 		{% for value, label in config.options %}
@@ -111,7 +111,7 @@
 			{%- if class %} class="{{ class }}"{% endif %}
 			{%- if config.name %} name="{{ config.name }}"{% endif %}
 			{%- if config.checked %} checked{% endif %}
-			{%- if config.autofocus and not blx.request.isMobileBrowser %} autofocus{% endif %}
+			{%- if config.autofocus and not craft.request.isMobileBrowser %} autofocus{% endif %}
 			{%- if config.disabled %} disabled{% endif %}
 			{%- if config.toggle %} data-target="{{ config.toggle }}"{% endif %}
 			{%- if config.reverseToggle %} data-reverse-toggle="y"{% endif %}>
@@ -130,7 +130,7 @@
 				name: config.name ~ '[]',
 				value: value,
 				checked: (value in config.values),
-				autofocus: (config.autofocus and loop.first and not blx.request.isMobileBrowser)
+				autofocus: (config.autofocus and loop.first and not craft.request.isMobileBrowser)
 			}) }}
 		</div>
 	{% endfor %}
@@ -148,7 +148,7 @@
 				name: config.name,
 				value: config.allValue,
 				checked: (config.values is empty or config.values == config.allValue),
-				autofocus: (config.autofocus and not blx.request.isMobileBrowser)
+				autofocus: (config.autofocus and not craft.request.isMobileBrowser)
 			}) }}
 		</div>
 		{% for value, label in config.options %}
@@ -174,7 +174,7 @@
 			{%- if config.class %} class="{{ config.class }}"{% endif %}
 			{%- if config.name %} name="{{ config.name }}"{% endif %}
 			{%- if config.checked %} checked{% endif %}
-			{%- if config.autofocus and not blx.request.isMobileBrowser %} autofocus{% endif %}
+			{%- if config.autofocus and not craft.request.isMobileBrowser %} autofocus{% endif %}
 			{%- if config.disabled %} disabled{% endif %}>
 		{{ config.label|raw }}
 	</label>
@@ -191,7 +191,7 @@
 				name: config.name,
 				value: value,
 				checked: (value == config.value),
-				autofocus: (config.autofocus and loop.first and not blx.request.isMobileBrowser)
+				autofocus: (config.autofocus and loop.first and not craft.request.isMobileBrowser)
 			}) }}
 		</div>
 	{% endfor %}
@@ -203,7 +203,7 @@
 	<input type="file"
 		{%- if config.id %} id="{{ config.id }}"{% endif %}
 		{%- if config.name %} name="{{ config.name }}"{% endif %}
-		{%- if config.autofocus and not blx.request.isMobileBrowser %} autofocus{% endif %}
+		{%- if config.autofocus and not craft.request.isMobileBrowser %} autofocus{% endif %}
 		{%- if config.disabled %} disabled{% endif %}>
 {% endmacro %}
 

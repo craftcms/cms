@@ -1,7 +1,7 @@
 (function($) {
 
 
-Blocks.QuickPostWidget = Garnish.Base.extend({
+Craft.QuickPostWidget = Garnish.Base.extend({
 
 	params: null,
 	initFields: null,
@@ -42,7 +42,7 @@ Blocks.QuickPostWidget = Garnish.Base.extend({
 		var formData = Garnish.getPostData(this.$form),
 			data = $.extend({ enabled: 1 }, formData, this.params);
 
-		Blocks.postActionRequest('entries/saveEntry', data, $.proxy(function(response) {
+		Craft.postActionRequest('entries/saveEntry', data, $.proxy(function(response) {
 			if (this.$errorList)
 			{
 				this.$errorList.children().remove();
@@ -50,7 +50,7 @@ Blocks.QuickPostWidget = Garnish.Base.extend({
 
 			if (response.success)
 			{
-				Blocks.cp.displayNotice(Blocks.t('Entry saved.'));
+				Craft.cp.displayNotice(Craft.t('Entry saved.'));
 
 				// Reset the widget
 				var $newForm = this.$formClone.clone();
@@ -59,11 +59,11 @@ Blocks.QuickPostWidget = Garnish.Base.extend({
 				this.initForm();
 
 				// Are there any Recent Entries widgets to notify?
-				if (typeof Blocks.RecentEntriesWidget != 'undefined')
+				if (typeof Craft.RecentEntriesWidget != 'undefined')
 				{
-					for (var i = 0; i < Blocks.RecentEntriesWidget.instances.length; i++)
+					for (var i = 0; i < Craft.RecentEntriesWidget.instances.length; i++)
 					{
-						var widget = Blocks.RecentEntriesWidget.instances[i];
+						var widget = Craft.RecentEntriesWidget.instances[i];
 						if (!widget.params.sectionId || widget.params.sectionId == this.params.sectionId)
 						{
 							widget.addEntry({
@@ -78,7 +78,7 @@ Blocks.QuickPostWidget = Garnish.Base.extend({
 			}
 			else
 			{
-				Blocks.cp.displayError(Blocks.t('Couldn’t save entry.'));
+				Craft.cp.displayError(Craft.t('Couldn’t save entry.'));
 
 				if (response.errors)
 				{

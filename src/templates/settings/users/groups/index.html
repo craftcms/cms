@@ -2,7 +2,7 @@
 
 {% extends "settings/users/_layout" %}
 {% set selectedTab = 'groups' %}
-{% set groups = blx.userGroups.getAllGroups %}
+{% set groups = craft.userGroups.getAllGroups %}
 
 
 {% set content %}
@@ -36,7 +36,7 @@
 
 
 {% set js %}
-	new Blocks.AdminTable({
+	new Craft.AdminTable({
 		tableSelector: '#groups',
 		noObjectsSelector: '#nogroups',
 		deleteAction: 'userSettings/deleteGroup'

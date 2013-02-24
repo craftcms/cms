@@ -46,16 +46,16 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 
 		if (this.fm.settings.mode == 'full' && this.depth > 1)
 		{
-			menuOptions.push({ label: Blocks.t('Rename'), onClick: $.proxy(this, '_rename') });
+			menuOptions.push({ label: Craft.t('Rename'), onClick: $.proxy(this, '_rename') });
 			menuOptions.push('-');
 		}
 
-		menuOptions.push({ label: Blocks.t('New subfolder'), onClick: $.proxy(this, '_createSubfolder') });
+		menuOptions.push({ label: Craft.t('New subfolder'), onClick: $.proxy(this, '_createSubfolder') });
 
 		if (this.fm.settings.mode == 'full' && this.depth > 1)
 		{
 			menuOptions.push('-');
-			menuOptions.push({ label: Blocks.t('Delete'), onClick: $.proxy(this, '_delete') });
+			menuOptions.push({ label: Craft.t('Delete'), onClick: $.proxy(this, '_delete') });
 		}
 
 		new Garnish.ContextMenu(this.$a, menuOptions, {
@@ -140,19 +140,19 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 			for (var i = 0; i < this.subfolders.length; i++)
 			{
 
-                folders.push({name: this.subfolders[i].folderName, id: this.subfolders[i].id});
+				folders.push({name: this.subfolders[i].folderName, id: this.subfolders[i].id});
 			}
 
-            folders.sort(Assets.FileManagerFolder.folderSort);
+			folders.sort(Assets.FileManagerFolder.folderSort);
 
-            for (i = 0; i < folders.length; i++)
-            {
-                if (folders[i].name == subfolder.folderName)
-                {
-                    pos = i;
-                    break;
-                }
-            }
+			for (i = 0; i < folders.length; i++)
+			{
+				if (folders[i].name == subfolder.folderName)
+				{
+					pos = i;
+					break;
+				}
+			}
 		}
 
 		if (pos == 0)
@@ -250,7 +250,7 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 		{
 			if (this.fm.settings.mode == 'full')
 			{
-                // TODO dragging
+				// TODO dragging
 				//this.fm.folderDrag.addItems(this.$li);
 			}
 		}
@@ -344,25 +344,25 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 			this.parent._unprepForSubfolders();
 		}
 
-        if (this.fm.folderSelect.isSelected(this.$a)){
-            this.parent.select();
-            this.deselect();
-        }
-    },
+		if (this.fm.folderSelect.isSelected(this.$a)){
+			this.parent.select();
+			this.deselect();
+		}
+	},
 
 	// -------------------------------------------
 	//  Operations
 	// -------------------------------------------
 
-    deselect: function ()
-    {
-        this.fm.folderSelect.deselectItem(this.$a);
-    },
+	deselect: function ()
+	{
+		this.fm.folderSelect.deselectItem(this.$a);
+	},
 
-    select: function ()
-    {
-        this.fm.folderSelect.selectItem(this.$a);
-    },
+	select: function ()
+	{
+		this.fm.folderSelect.selectItem(this.$a);
+	},
 
 
 	/**
@@ -428,23 +428,23 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 		//  Re-sort this folder among its siblings
 		// -------------------------------------------
 
-        var folders = [ {name: name, id: this.id} ];
+		var folders = [ {name: name, id: this.id} ];
 
-        for (var i = 0; i < this.parent.subfolders.length; i++)
-        {
-            if (this.parent.subfolders[i].folderName != this.folderName) {
-                folders.push({name: this.parent.subfolders[i].folderName, id: this.parent.subfolders[i].id});
-            }
-        }
+		for (var i = 0; i < this.parent.subfolders.length; i++)
+		{
+			if (this.parent.subfolders[i].folderName != this.folderName) {
+				folders.push({name: this.parent.subfolders[i].folderName, id: this.parent.subfolders[i].id});
+			}
+		}
 
-        folders.sort(Assets.FileManagerFolder.folderSort);
+		folders.sort(Assets.FileManagerFolder.folderSort);
 
-        for (i = 0; i < folders.length; i++) {
-            if (folders[i].name == name) {
-                pos = i;
-                break;
-            }
-        }
+		for (i = 0; i < folders.length; i++) {
+			if (folders[i].name == name) {
+				pos = i;
+				break;
+			}
+		}
 
 		if (pos == 0)
 		{
@@ -464,9 +464,9 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 	 */
 	_rename: function()
 	{
-        return;
+		return;
 		var oldName = this.folderName,
-			newName = prompt(Blocks.t('Rename folder'), oldName);
+			newName = prompt(Craft.t('Rename folder'), oldName);
 
 		if (newName && newName != oldName)
 		{
@@ -506,43 +506,43 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 	 */
 	_createSubfolder: function()
 	{
-		var subfolderName = prompt(Blocks.t('Enter the name of the folder'));
+		var subfolderName = prompt(Craft.t('Enter the name of the folder'));
 
 		if (subfolderName)
 		{
 			var params = {
 				parentId:  this.id,
-		        folderName: subfolderName
+				folderName: subfolderName
 			};
 
 			this.fm.setAssetsBusy();
 
-            Blocks.postActionRequest('assets/createFolder', params, $.proxy(function(data)
-            {
+			Craft.postActionRequest('assets/createFolder', params, $.proxy(function(data)
+			{
 				this.fm.setAssetsAvailable();
 
-                if (data.success)
-                {
-                    subfolderName = data.folderName;
-                        var $li = $('<li class="assets-fm-folder">'
-                              +   '<a data-folder="' + data.folderId + '">'
-                              +     data.folderName
-                              +   '</a>'
-                              + '</li>'),
-                        subfolder = new Assets.FileManagerFolder(this.fm, $li[0], this.depth + 1, this);
+				if (data.success)
+				{
+					subfolderName = data.folderName;
+						var $li = $('<li class="assets-fm-folder">'
+							  +   '<a data-folder="' + data.folderId + '">'
+							  +     data.folderName
+							  +   '</a>'
+							  + '</li>'),
+						subfolder = new Assets.FileManagerFolder(this.fm, $li[0], this.depth + 1, this);
 
-                    this.addSubfolder(subfolder);
-                    this.expand();
-                    subfolder.onShow();
+					this.addSubfolder(subfolder);
+					this.expand();
+					subfolder.onShow();
 
-                }
+				}
 
-                if (data.error)
-                {
-                    alert(data.error);
-                }
+				if (data.error)
+				{
+					alert(data.error);
+				}
 			}, this));
-        }
+		}
 	},
 
 	/**
@@ -550,29 +550,29 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 	 */
 	_delete: function()
 	{
-		if (confirm(Blocks.t('Really delete folder "{folder}"?', {folder: this.folderName})))
+		if (confirm(Craft.t('Really delete folder "{folder}"?', {folder: this.folderName})))
 		{
 
-            var params = {
-                folderId: this.id
-            }
+			var params = {
+				folderId: this.id
+			}
 
 			this.fm.setAssetsBusy();
 
-            Blocks.postActionRequest('assets/deleteFolder', params, $.proxy(function(data)
-            {
-                this.fm.setAssetsAvailable();
+			Craft.postActionRequest('assets/deleteFolder', params, $.proxy(function(data)
+			{
+				this.fm.setAssetsAvailable();
 
-                if (data.success)
-                {
-                    this.onDelete(true);
+				if (data.success)
+				{
+					this.onDelete(true);
 
-                }
+				}
 
-                if (data.error)
-                {
-                    alert(data.error);
-                }
+				if (data.error)
+				{
+					alert(data.error);
+				}
 
 			}, this));
 		}
@@ -580,8 +580,8 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 },
 {
 	folderSort: function (a, b) {
-        a = a.name.toLowerCase();
-        b = b.name.toLowerCase();
-        return a < b ? -1 : (a > b ? 1 : 0);
-    }
+		a = a.name.toLowerCase();
+		b = b.name.toLowerCase();
+		return a < b ? -1 : (a > b ? 1 : 0);
+	}
 });

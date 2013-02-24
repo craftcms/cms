@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -24,10 +24,10 @@ class DashboardController extends BaseController
 		$this->requirePostRequest();
 
 		$widget = new WidgetModel();
-		$widget->id = blx()->request->getPost('widgetId');
-		$widget->type = blx()->request->getRequiredPost('type');
+		$widget->id = craft()->request->getPost('widgetId');
+		$widget->type = craft()->request->getRequiredPost('type');
 
-		$typeSettings = blx()->request->getPost('types');
+		$typeSettings = craft()->request->getPost('types');
 
 		if (isset($typeSettings[$widget->type]))
 		{
@@ -35,14 +35,14 @@ class DashboardController extends BaseController
 		}
 
 		// Did it save?
-		if (blx()->dashboard->saveUserWidget($widget))
+		if (craft()->dashboard->saveUserWidget($widget))
 		{
-			blx()->userSession->setNotice(Blocks::t('Widget saved.'));
+			craft()->userSession->setNotice(Craft::t('Widget saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save widget.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save widget.'));
 		}
 
 		// Reload the original template
@@ -59,8 +59,8 @@ class DashboardController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$widgetId = JsonHelper::decode(blx()->request->getRequiredPost('id'));
-		blx()->dashboard->deleteUserWidgetById($widgetId);
+		$widgetId = JsonHelper::decode(craft()->request->getRequiredPost('id'));
+		craft()->dashboard->deleteUserWidgetById($widgetId);
 
 		$this->returnJson(array('success' => true));
 	}
@@ -73,8 +73,8 @@ class DashboardController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$widgetIds = JsonHelper::decode(blx()->request->getRequiredPost('ids'));
-		blx()->dashboard->reorderUserWidgets($widgetIds);
+		$widgetIds = JsonHelper::decode(craft()->request->getRequiredPost('ids'));
+		craft()->dashboard->reorderUserWidgets($widgetIds);
 
 		$this->returnJson(array('success' => true));
 	}
@@ -86,10 +86,10 @@ class DashboardController extends BaseController
 	{
 		$this->requireAjaxRequest();
 
-		$url = blx()->request->getRequiredParam('url');
-		$limit = blx()->request->getParam('limit');
+		$url = craft()->request->getRequiredParam('url');
+		$limit = craft()->request->getParam('limit');
 
-		$items = blx()->feeds->getFeedItems($url, $limit);
+		$items = craft()->feeds->getFeedItems($url, $limit);
 
 		foreach ($items as &$item)
 		{
@@ -114,9 +114,9 @@ class DashboardController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$message = blx()->request->getRequiredPost('message');
+		$message = craft()->request->getRequiredPost('message');
 
-		$user = blx()->userSession->getUser();
+		$user = craft()->userSession->getUser();
 
 		$requestParamDefaults = array(
 			'sFirstName' => $user->getFriendlyName(),
@@ -128,45 +128,45 @@ class DashboardController extends BaseController
 		$requestParams = $requestParamDefaults;
 
 		$hsParams = array(
-			'helpSpotApiURL' => 'https://support.blockscms.com/api/index.php'
+			'helpSpotApiURL' => 'https://support.craftkscms.com/api/index.php'
 		);
 
-		$attachment = (bool)blx()->request->getPort('attachDebugFiles');
+		$attachment = (bool)craft()->request->getPort('attachDebugFiles');
 
 		try
 		{
 			if ($attachment)
 			{
-				$tempZipFile = blx()->path->getTempPath().StringHelper::UUID().'.zip';
+				$tempZipFile = craft()->path->getTempPath().StringHelper::UUID().'.zip';
 				IOHelper::createFile($tempZipFile);
 
-				if (IOHelper::folderExists(blx()->path->getLogPath()))
+				if (IOHelper::folderExists(craft()->path->getLogPath()))
 				{
 					// Grab the latest log file.
-					Zip::add($tempZipFile, blx()->path->getLogPath().'blocks.log', blx()->path->getStoragePath());
+					Zip::add($tempZipFile, craft()->path->getLogPath().'craft.log', craft()->path->getStoragePath());
 
 					// Grab the most recent rolled-over log file, if one exists.
-					if (IOHelper::fileExists(blx()->path->getLogPath().'blocks.log.1'))
+					if (IOHelper::fileExists(craft()->path->getLogPath().'craft.log.1'))
 					{
-						Zip::add($tempZipFile, blx()->path->getLogPath().'blocks1.log.1', blx()->path->getStoragePath());
+						Zip::add($tempZipFile, craft()->path->getLogPath().'craft.log.1', craft()->path->getStoragePath());
 					}
 
 					// Grab the phperrors log file, if it exists.
-					if (IOHelper::fileExists(blx()->path->getLogPath().'phperrors.log'))
+					if (IOHelper::fileExists(craft()->path->getLogPath().'phperrors.log'))
 					{
-						Zip::add($tempZipFile, blx()->path->getLogPath().'phperrors.log', blx()->path->getRuntimePath());
+						Zip::add($tempZipFile, craft()->path->getLogPath().'phperrors.log', craft()->path->getRuntimePath());
 					}
 				}
 
-				if (IOHelper::folderExists(blx()->path->getDbBackupPath()))
+				if (IOHelper::folderExists(craft()->path->getDbBackupPath()))
 				{
-					$contents = IOHelper::getFolderContents(blx()->path->getDbBackupPath());
+					$contents = IOHelper::getFolderContents(craft()->path->getDbBackupPath());
 					rsort($contents);
 
 					// Only grab the most recent 5 sorted by timestamp.
 					for ($counter = 0; $counter <= 4; $counter++)
 					{
-						Zip::add($tempZipFile, $contents[$counter], blx()->path->getStoragePath());
+						Zip::add($tempZipFile, $contents[$counter], craft()->path->getStoragePath());
 					}
 				}
 
@@ -180,13 +180,13 @@ class DashboardController extends BaseController
 		}
 		catch(\Exception $e)
 		{
-			Blocks::log('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), \CLogger::LEVEL_WARNING);
+			Craft::log('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), \CLogger::LEVEL_WARNING);
 
 			// There was a problem zipping, so reset the params and just send the email without the attachment.
 			$requestParams = $requestParamDefaults;
 		}
 
-		require_once blx()->path->getLibPath().'HelpSpotAPI.php';
+		require_once craft()->path->getLibPath().'HelpSpotAPI.php';
 		$hsapi = new \HelpSpotAPI($hsParams);
 
 		$result = $hsapi->requestCreate($requestParams);
@@ -214,10 +214,10 @@ class DashboardController extends BaseController
 	 */
 	public function actionCheckForUpdates()
 	{
-		blx()->updates->getUpdates();
+		craft()->updates->getUpdates();
 
 		$this->renderTemplate('_components/widgets/Updates/body', array(
-			'total' => blx()->updates->getTotalNumberOfAvailableUpdates()
+			'total' => craft()->updates->getTotalNumberOfAvailableUpdates()
 		));
 	}
 }

@@ -1,6 +1,6 @@
-{% extends (blx.hasPackage('Users') ? "users/_edit/layout" : "_layouts/cp") %}
+{% extends (craft.hasPackage('Users') ? "users/_edit/layout" : "_layouts/cp") %}
 
-{% if blx.hasPackage('Users') %}
+{% if craft.hasPackage('Users') %}
 	{% set selectedTab = 'account' %}
 {% else %}
 	{% set title = "My Account"|t %}
@@ -9,14 +9,14 @@
 {% import "_includes/forms" as forms %}
 
 
-{% if account is not defined and blx.request.segment(1) == 'myaccount' %}
+{% if account is not defined and craft.request.segment(1) == 'myaccount' %}
 	{% set account = user %}
 {% endif %}
 
 
-{% if blx.hasPackage('Users') %}
+{% if craft.hasPackage('Users') %}
 	{% if account is not defined and userId is defined %}
-		{% set account = blx.users.status('*').id(userId).first %}
+		{% set account = craft.users.status('*').id(userId).first %}
 		{% if not account %}{% exit 404 %}{% endif %}
 	{% endif %}
 {% endif %}
@@ -111,12 +111,12 @@
 			value: (account is defined ? account.emailFormat : 'text')
 		}) }}
 
-		{% if blx.hasPackage('Language') %}
+		{% if craft.hasPackage('Language') %}
 			{% set localeInput %}
 				<div class="select">
 					<select id="preferredLocale" name="preferredLocale">
-						{% set userLocale = account is defined and account.preferredLocale ? account.preferredLocale : blx.locale %}
-						{% for locale in blx.i18n.getSiteLocales %}
+						{% set userLocale = account is defined and account.preferredLocale ? account.preferredLocale : craft.locale %}
+						{% for locale in craft.i18n.getSiteLocales %}
 							<option value="{{ locale.id }}" {% if locale.id == userLocale %}selected{% endif %}>{{ locale.nativeName }}</option>
 						{% endfor %}
 					</select>

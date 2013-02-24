@@ -29,7 +29,7 @@
 		<div class="field">
 			<table id="locales" class="data collapsible">
 				<tbody>
-					{% for locale in blx.i18n.getSiteLocales() %}
+					{% for locale in craft.i18n.getSiteLocales() %}
 						<tr data-id="{{ locale.id }}" data-name="{{ locale.name }}">
 							<th scope="row" data-title="{{ 'Name'|t }}" width="40%">{{ locale.name }}</th>
 							<td data-title="{{ 'Locale ID' }}">{{ locale.id }}</td>
@@ -52,16 +52,16 @@
 {% endset %}
 
 {% set js %}
-	new Blocks.Locales({
+	new Craft.Locales({
 
-		{%- for locale in blx.i18n.getAllLocales() %}
+		{%- for locale in craft.i18n.getAllLocales() %}
 			{%- if not loop.first %},{% endif -%}
 			'{{ locale.id }}': '{{ locale.name }}'
 		{%- endfor -%}
 
 	}, [
 
-		{%- for locale in blx.i18n.getSiteLocales() %}
+		{%- for locale in craft.i18n.getSiteLocales() %}
 			{%- if not loop.first %},{% endif -%}
 			'{{ locale.id }}'
 		{%- endfor -%}

@@ -1,15 +1,15 @@
 {% extends "_layouts/message" %}
-{% set title = "Update {app}"|t({ app: blx.config.appName }) %}
+{% set title = "Update CraftCMS"|t %}
 
 {% set content %}
-	{% set handle = blx.updates.getManualUpdateHandle() %}
+	{% set handle = craft.updates.getManualUpdateHandle() %}
 
 	{% if handle is null %}
-		{% set handle = 'Blocks' %}
-		{% set name = 'Blocks' %}
+		{% set handle = 'Craft' %}
+		{% set name = 'CraftCMS' %}
 	{% endif %}
 
-	{% set name = blx.updates.getManualUpdateDisplayName() %}
+	{% set name = craft.updates.getManualUpdateDisplayName() %}
 
 	<p>{{ "To complete the {name} update, some changes must be made to your database."|t({ name: name }) }}</p>
 	<div class="buttons">

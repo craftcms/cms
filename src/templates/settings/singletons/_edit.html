@@ -7,7 +7,7 @@
 ] %}
 
 {% if singleton is not defined and singletonId is defined %}
-	{% set singleton = blx.singletons.getSingletonById(singletonId) %}
+	{% set singleton = craft.singletons.getSingletonById(singletonId) %}
 	{% if not singleton %}{% exit 404 %}{% endif %}
 {% endif %}
 
@@ -45,9 +45,9 @@
 				translatable: true
 			}) }}
 
-			{% if blx.hasPackage('Language') %}
+			{% if craft.hasPackage('Language') %}
 				{% set localesInput %}
-					{% for locale in blx.i18n.getSiteLocales() %}
+					{% for locale in craft.i18n.getSiteLocales() %}
 						<div>
 							{{ forms.checkbox({
 								label: locale.name~' ('~locale.id~')',
@@ -86,9 +86,9 @@
 			{% from _self import uriInput %}
 
 			{% set uriField %}
-				{% if blx.hasPackage('Language') %}
+				{% if craft.hasPackage('Language') %}
 					<table class="data">
-						{% for locale in blx.i18n.getSiteLocales() %}
+						{% for locale in craft.i18n.getSiteLocales() %}
 							<tr id="uriRow-{{ locale.id }}"{% if singleton is defined and singleton.locales[locale.id] is not defined %} class="hidden"{% endif %}>
 								<th class="thin nowrap">{{ locale.id }}</th>
 								<td>
@@ -98,7 +98,7 @@
 						{% endfor %}
 					</table>
 				{% else %}
-					{{ uriInput(blx.i18n.getPrimarySiteLocale(), (singleton is defined ? singleton : null)) }}
+					{{ uriInput(craft.i18n.getPrimarySiteLocale(), (singleton is defined ? singleton : null)) }}
 				{% endif %}
 			{% endset %}
 

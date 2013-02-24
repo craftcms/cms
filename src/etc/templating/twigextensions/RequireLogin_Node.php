@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,6 +13,6 @@ class RequireLogin_Node extends \Twig_Node
 	{
 		$compiler
 		    ->addDebugInfo($this)
-		    ->write("\Blocks\blx()->userSession->requireLogin();\n");
+		    ->write("\Craft\craft()->userSession->requireLogin();\n");
 	}
 }

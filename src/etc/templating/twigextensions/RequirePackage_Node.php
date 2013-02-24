@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,7 +13,7 @@ class RequirePackage_Node extends \Twig_Node
 	{
 		$compiler
 		    ->addDebugInfo($this)
-		    ->write('\Blocks\Blocks::requirePackage(')
+		    ->write('\Craft\Craft::requirePackage(')
 		    ->subcompile($this->getNode('packageName'))
 		    ->raw(");\n");
 	}

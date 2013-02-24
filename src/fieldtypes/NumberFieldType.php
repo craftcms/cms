@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,7 +13,7 @@ class NumberFieldType extends BaseFieldType
 	 */
 	public function getName()
 	{
-		return Blocks::t('Number');
+		return Craft::t('Number');
 	}
 
 	/**
@@ -38,7 +38,7 @@ class NumberFieldType extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		return blx()->templates->render('_components/fieldtypes/Number/settings', array(
+		return craft()->templates->render('_components/fieldtypes/Number/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -62,7 +62,7 @@ class NumberFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		return blx()->templates->render('_components/fieldtypes/Number/input', array(
+		return craft()->templates->render('_components/fieldtypes/Number/input', array(
 			'name'     => $name,
 			'value'    => $value,
 			'settings' => $this->getSettings()

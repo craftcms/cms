@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -26,7 +26,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 	 */
 	public function safeUp()
 	{
-		$this->_tablePrefixLength = strlen(blx()->db->tablePrefix);
+		$this->_tablePrefixLength = strlen(craft()->db->tablePrefix);
 
 		// Create all the new tables
 		$this->_createAndPopulateLocalesTable();
@@ -69,13 +69,13 @@ class m130222_000000_the_big_migration extends BaseMigration
 		//-----------------
 
 		// Get the primary locale
-		$this->_primaryLocale = blx()->db->createCommand()->select('language')->from('info')->queryScalar();
+		$this->_primaryLocale = craft()->db->createCommand()->select('language')->from('info')->queryScalar();
 
 		$locales = array($this->_primaryLocale);
 
-		if (Blocks::hasPackage(BlocksPackage::Language))
+		if (Craft::hasPackage(CraftPackage::Language))
 		{
-			$storedLanguages = blx()->systemSettings->getSettings('languages');
+			$storedLanguages = craft()->systemSettings->getSettings('languages');
 
 			if ($storedLanguages)
 			{
@@ -102,7 +102,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 		$this->dropColumn('info', 'language');
 
 		// Delete the Languages settings
-		blx()->systemSettings->saveSettings('languages', null);
+		craft()->systemSettings->saveSettings('languages', null);
 	}
 
 	/**
@@ -206,7 +206,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 	 */
 	private function _createUserPermissionTablesIfNecessary()
 	{
-		if (!Blocks::hasPackage(BlocksPackage::Users))
+		if (!Craft::hasPackage(CraftPackage::Users))
 		{
 			// Create the usergroups table
 			$this->createTable('usergroups', array(
@@ -238,7 +238,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 			$this->addForeignKey('userpermissions_users', 'permissionId', 'userpermissions', 'id', 'CASCADE', null);
 			$this->addForeignKey('userpermissions_users', 'userId', 'users', 'id', 'CASCADE', null);
 
-			// Create the blx_userpermissions_usergroups table
+			// Create the craft_userpermissions_usergroups table
 			$this->createTable('userpermissions_usergroups', array(
 				'permissionId' => array('column' => ColumnType::Int, 'required' => true),
 				'groupId'      => array('column' => ColumnType::Int, 'required' => true),
@@ -259,7 +259,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 		// Update the section tables
 		//--------------------------
 
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
 			// Add the fieldLayout column to sections
 			$this->addColumn('sections', 'fieldLayoutId', array('maxLength' => 11, 'decimals' => 0, 'unsigned' => false, 'length' => 10, 'column' => ColumnType::Int));
@@ -286,11 +286,11 @@ class m130222_000000_the_big_migration extends BaseMigration
 			));
 
 			// Get its ID
-			$this->_blogSectionId = blx()->db->getLastInsertID();
+			$this->_blogSectionId = craft()->db->getLastInsertID();
 
 			// Update permissions
 			$entryPermissions = array('editentries', 'createentries', 'editpeerentries', 'editpeerentrydrafts', 'publishpeerentrydrafts', 'deletepeerentrydrafts', 'publishentries');
-			$blogPermissions = blx()->db->createCommand()
+			$blogPermissions = craft()->db->createCommand()
 				->select('id,name')
 				->from('userpermissions')
 				->where(array('in', 'name', $entryPermissions))
@@ -299,7 +299,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 			foreach ($blogPermissions as $permission)
 			{
 				$newName = $permission['name'].'insection'.$this->_blogSectionId;
-				blx()->db->createCommand()->update('userpermissions', array('name' => $newName), array('id' => $permission['id']));
+				craft()->db->createCommand()->update('userpermissions', array('name' => $newName), array('id' => $permission['id']));
 			}
 
 			// Add the sectionId column to the entries table
@@ -328,9 +328,9 @@ class m130222_000000_the_big_migration extends BaseMigration
 
 		$sectionLocaleData = array();
 
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
-			$this->_sections = blx()->db->createCommand()->select('id,name,handle,hasUrls,urlFormat')->from('sections')->queryAll();
+			$this->_sections = craft()->db->createCommand()->select('id,name,handle,hasUrls,urlFormat')->from('sections')->queryAll();
 
 			foreach ($this->_sections as $section)
 			{
@@ -381,8 +381,8 @@ class m130222_000000_the_big_migration extends BaseMigration
 		// It's possible that there are duplicate links, since MySQL doesn't enforce unique constraints on NULL values
 		$this->delete('links', array('and', 'leftEntityId IS NULL', 'rightEntityId IS NULL'));
 
-		$leftNullLinks = blx()->db->createCommand()->select('id,criteriaId,rightEntityId')->from('links')->where('leftEntityId IS NULL')->queryAll();
-		$rightNullLinks = blx()->db->createCommand()->select('id,criteriaId,leftEntityId')->from('links')->where('rightEntityId IS NULL')->queryAll();
+		$leftNullLinks = craft()->db->createCommand()->select('id,criteriaId,rightEntityId')->from('links')->where('leftEntityId IS NULL')->queryAll();
+		$rightNullLinks = craft()->db->createCommand()->select('id,criteriaId,leftEntityId')->from('links')->where('rightEntityId IS NULL')->queryAll();
 
 		foreach ($leftNullLinks as $link)
 		{
@@ -430,7 +430,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 		//--------------------
 
 		// Get all the singletons
-		$singletons = blx()->db->createCommand()->select('id,name,uri')->from('pages')->queryAll();
+		$singletons = craft()->db->createCommand()->select('id,name,uri')->from('pages')->queryAll();
 
 		$i18nData = array();
 		$localesData = array();
@@ -447,7 +447,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 			$localesData[] = array($singleton['id'], $this->_primaryLocale);
 
 			// Migrate the content
-			$oldContent = blx()->db->createCommand()->select('content')->from('pagecontent')->where(array('pageId' => $singleton['id'], 'language' => $this->_primaryLocale))->queryScalar();
+			$oldContent = craft()->db->createCommand()->select('content')->from('pagecontent')->where(array('pageId' => $singleton['id'], 'language' => $this->_primaryLocale))->queryScalar();
 			$newContent = array('elementId' => $singleton['id'], 'locale' => $this->_primaryLocale);
 
 			if ($oldContent)
@@ -523,7 +523,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 		//----------------------------------------------------------------------
 
 		// Get all of the data to be migrated
-		$entries = blx()->db->createCommand()
+		$entries = craft()->db->createCommand()
 			->select('id, sectionId, slug, uri')
 			->from('entries')
 			->queryAll();
@@ -543,7 +543,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 
 				$params[':uri'] = $uri;
 
-				$totalElements = blx()->db->createCommand()
+				$totalElements = craft()->db->createCommand()
 					->select('count(id)')
 					->from('elements_i18n')
 					->where($conditions, $params)
@@ -573,7 +573,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 
 		// Drop the slug and uri columns from the entries table
 
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
 			$this->dropIndex('entries', 'slug,sectionId', true);
 		}
@@ -591,7 +591,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 
 		$this->_newEntryFieldIds = array();
 
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
 			foreach ($this->_sections as $section)
 			{
@@ -630,7 +630,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 	 */
 	private function _updateEntryRevisionTables()
 	{
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
 			$revisionTables = array('entrydrafts', 'entryversions');
 
@@ -644,7 +644,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 				$this->_addLocaleForeignKey($table);
 
 				// Rename the 'blocks' revision data keys to 'fields'
-				$revisions = blx()->db->createCommand()->select('id,data')->from($table)->queryAll();
+				$revisions = craft()->db->createCommand()->select('id,data')->from($table)->queryAll();
 
 				foreach ($revisions as $revision)
 				{
@@ -694,7 +694,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 		// Migrate the content
 		//--------------------
 
-		if (Blocks::hasPackage(BlocksPackage::Users))
+		if (Craft::hasPackage(CraftPackage::Users))
 		{
 			// Migrate the fields and content
 			$fields = $this->_migrateFields('Users', 'userprofileblocks', array(), 'userprofiles', 'userId', false);
@@ -748,7 +748,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 		$fields = $this->_migrateFields(ElementType::Globals, 'globalblocks');
 		$this->_saveFieldLayout(ElementType::Globals, $fields);
 
-		$oldContent = blx()->db->createCommand()->from('globalcontent')->where(array('language' => $this->_primaryLocale))->queryRow();
+		$oldContent = craft()->db->createCommand()->from('globalcontent')->where(array('language' => $this->_primaryLocale))->queryRow();
 
 		if ($oldContent)
 		{
@@ -759,7 +759,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 			));
 
 			// Get the new element ID
-			$elementId = blx()->db->getLastInsertID();
+			$elementId = craft()->db->getLastInsertID();
 
 			// Add a row to elements_i18n
 			$this->insert('elements_i18n', array(
@@ -786,7 +786,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 			// Update the Links table
 			//-----------------------
 
-			$linkCriteriaIds = blx()->db->createCommand()->select('id')->where(array('leftElementType' => ElementType::Globals))->from('linkcriteria')->queryColumn();
+			$linkCriteriaIds = craft()->db->createCommand()->select('id')->where(array('leftElementType' => ElementType::Globals))->from('linkcriteria')->queryColumn();
 
 			if ($linkCriteriaIds)
 			{
@@ -824,7 +824,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 	 */
 	private function _updateEmailMessageTable()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Rebrand))
+		if (Craft::hasPackage(CraftPackage::Rebrand))
 		{
 			// Rename the language column in emailmessages
 			$this->dropIndex('emailmessages', 'key,language', true);
@@ -843,7 +843,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 	{
 		$this->_tables = array();
 
-		$tables = blx()->db->getSchema()->getTableNames();
+		$tables = craft()->db->getSchema()->getTableNames();
 
 		foreach ($tables as $table)
 		{
@@ -865,7 +865,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 		);
 
 		// Get the CREATE TABLE sql
-		$query = blx()->db->createCommand()->setText('SHOW CREATE TABLE `{{'.$table.'}}`')->queryRow();
+		$query = craft()->db->createCommand()->setText('SHOW CREATE TABLE `{{'.$table.'}}`')->queryRow();
 		$createTableSql = $query['Create Table'];
 
 		// Find the columns
@@ -949,7 +949,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 		foreach ($table->fks as $fk)
 		{
 			// Don't assume that the FK name is "correct"
-			blx()->db->createCommand()->setText(blx()->db->getSchema()->dropForeignKey($fk->name, '{{'.$table->name.'}}'))->execute();
+			craft()->db->createCommand()->setText(craft()->db->getSchema()->dropForeignKey($fk->name, '{{'.$table->name.'}}'))->execute();
 		}
 	}
 
@@ -966,7 +966,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 			if ($index->unique)
 			{
 				// Don't assume that the constraint name is "correct"
-				blx()->db->createCommand()->setText(blx()->db->getSchema()->dropIndex($index->name, '{{'.$table->name.'}}'))->execute();
+				craft()->db->createCommand()->setText(craft()->db->getSchema()->dropIndex($index->name, '{{'.$table->name.'}}'))->execute();
 			}
 		}
 	}
@@ -1057,14 +1057,14 @@ class m130222_000000_the_big_migration extends BaseMigration
 		$this->addColumnAfter($table, 'id', $idColumnType, 'id_old');
 
 		// Get all of the rows
-		$oldRows = blx()->db->createCommand()
+		$oldRows = craft()->db->createCommand()
 			->select('id_old'.($elementType == ElementType::Entry ? ',enabled,archived' : ''))
 			->from($table)
 			->queryAll();
 
 		// Get all of the link criterias
-		$leftLinkCriteriaIds = blx()->db->createCommand()->select('id')->where(array('leftElementType' => $elementType))->from('linkcriteria')->queryColumn();
-		$rightLinkCriteriaIds = blx()->db->createCommand()->select('id')->where(array('rightElementType' => $elementType))->from('linkcriteria')->queryColumn();
+		$leftLinkCriteriaIds = craft()->db->createCommand()->select('id')->where(array('leftElementType' => $elementType))->from('linkcriteria')->queryColumn();
+		$rightLinkCriteriaIds = craft()->db->createCommand()->select('id')->where(array('rightElementType' => $elementType))->from('linkcriteria')->queryColumn();
 
 		foreach ($oldRows as $row)
 		{
@@ -1076,7 +1076,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 			));
 
 			// Get the new element ID
-			$elementId = blx()->db->getLastInsertID();
+			$elementId = craft()->db->getLastInsertID();
 
 			// Update this table with the new element ID
 			$this->update($table, array('id' => $elementId), array('id_old' => $row['id_old']));
@@ -1107,7 +1107,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 			if ($elementType == ElementType::Singleton)
 			{
 				// Update singleton permissions
-				blx()->db->createCommand()->update('userpermissions',
+				craft()->db->createCommand()->update('userpermissions',
 					array('name' => 'editsingleton'.$elementId),
 					array('name' => 'editpage'.$row['id_old'])
 				);
@@ -1153,13 +1153,13 @@ class m130222_000000_the_big_migration extends BaseMigration
 
 		// Create the new field layout
 		$this->insert('fieldlayouts', array('type' => $type));
-		$layoutId = blx()->db->getLastInsertID();
+		$layoutId = craft()->db->getLastInsertID();
 
 		// Do we need to create a tab?
 		if ($tabName)
 		{
 			$this->insert('fieldlayouttabs', array('layoutId' => $layoutId, 'name' => $tabName, 'sortOrder' => 1));
-			$tabId = blx()->db->getLastInsertID();
+			$tabId = craft()->db->getLastInsertID();
 		}
 		else
 		{
@@ -1195,10 +1195,10 @@ class m130222_000000_the_big_migration extends BaseMigration
 	{
 		// Create the new field group and get its ID
 		$this->insert('fieldgroups', array('name' => $groupName));
-		$groupId = blx()->db->getLastInsertID();
+		$groupId = craft()->db->getLastInsertID();
 
 		// Get the fields
-		$fields = blx()->db->createCommand()
+		$fields = craft()->db->createCommand()
 			->select('id,name,handle,instructions,required,translatable,type,settings,sortOrder')
 			->from($oldFieldsTable)
 			->where($fieldTableConditions)
@@ -1220,7 +1220,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 					$field['handle'] = $field['oldHandle'].$i;
 				}
 
-				Blocks::log("Renamed the {$groupName}/{$field['name']} field's handle from '{$field['oldHandle']}' to '{$field['handle']}'.", \CLogger::LEVEL_WARNING);
+				Craft::log("Renamed the {$groupName}/{$field['name']} field's handle from '{$field['oldHandle']}' to '{$field['handle']}'.", \CLogger::LEVEL_WARNING);
 			}
 
 			$this->_fieldHandles[] = $field['handle'];
@@ -1239,13 +1239,13 @@ class m130222_000000_the_big_migration extends BaseMigration
 
 			// Save the groupId and new global field ID on the $field array
 			$field['groupId'] = $groupId;
-			$field['newId']   = blx()->db->getLastInsertID();
+			$field['newId']   = craft()->db->getLastInsertID();
 
 			// Did this field have a content column?
 			$contentColumnType = false;
 
 			// Let the fieldtype be the judge of that, if it exists
-			$fieldType = blx()->components->getComponentByTypeAndClass(ComponentType::Field, $field['type']);
+			$fieldType = craft()->components->getComponentByTypeAndClass(ComponentType::Field, $field['type']);
 
 			if ($fieldType)
 			{
@@ -1299,7 +1299,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 		if ($oldContentTable)
 		{
 			// Fetch the content from the old content table
-			$query = blx()->db->createCommand()->select(implode(',', $oldContentColumns))->from($oldContentTable);
+			$query = craft()->db->createCommand()->select(implode(',', $oldContentColumns))->from($oldContentTable);
 
 			if ($hasLanguageColumn)
 			{

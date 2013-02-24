@@ -1,12 +1,12 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
  */
 class ElliottEndPoints
 {
-	const CheckForUpdates      = 'https://elliott.blockscms.com/actions/elliott/blocks/checkForUpdates';
-	const DownloadUpdate       = 'https://elliott.blockscms.com/actions/elliott/blocks/downloadUpdate';
-	const Ping                 = 'https://elliott.blockscms.com/actions/elliott/blocks/ping';
+	const CheckForUpdates      = 'https://elliott.buildwithcraft.com/actions/elliott/craft/checkForUpdates';
+	const DownloadUpdate       = 'https://elliott.buildwithcraft.com/actions/elliott/craft/downloadUpdate';
+	const Ping                 = 'https://elliott.buildwithcraft.com/actions/elliott/craft/ping';
 }

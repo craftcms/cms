@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -27,7 +27,7 @@ class EmailService extends BaseApplicationComponent
 
 		if (!isset($emailSettings['protocol']))
 		{
-			throw new Exception(Blocks::t('Could not determine how to send the email.  Check your email settings.'));
+			throw new Exception(Craft::t('Could not determine how to send the email.  Check your email settings.'));
 		}
 
 		$email = new \PhpMailer(true);
@@ -49,7 +49,7 @@ class EmailService extends BaseApplicationComponent
 				if (!isset($emailSettings['host']) || !isset($emailSettings['port']) || !isset($emailSettings['username']) || !isset($emailSettings['password']) ||
 				    StringHelper::isNullOrEmpty($emailSettings['host']) || StringHelper::isNullOrEmpty($emailSettings['port']) || StringHelper::isNullOrEmpty($emailSettings['username']) || StringHelper::isNullOrEmpty($emailSettings['password']))
 				{
-					throw new Exception(Blocks::t('Host, port, username and password must be configured under your email settings.'));
+					throw new Exception(Craft::t('Host, port, username and password must be configured under your email settings.'));
 				}
 
 				if (!isset($emailSettings['timeout']))
@@ -57,7 +57,7 @@ class EmailService extends BaseApplicationComponent
 					$emailSettings['timeout'] = $this->_defaultEmailTimeout;
 				}
 
-				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], blx()->config->get('devMode') ? 1 : 0);
+				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], craft()->config->get('devMode') ? 1 : 0);
 
 				$this->_setSmtpSettings($email, $emailSettings);
 				break;
@@ -88,12 +88,12 @@ class EmailService extends BaseApplicationComponent
 
 		$variables['user'] = $user;
 
-		$email->subject = blx()->templates->renderString($subject.' - subject', $subject, $variables);
-		$renderedBody = blx()->templates->renderString($subject.' - body', $body, $variables);
+		$email->subject = craft()->templates->renderString($subject.' - subject', $subject, $variables);
+		$renderedBody = craft()->templates->renderString($subject.' - body', $body, $variables);
 
 		if ($user->emailFormat == 'html' && $htmlBody)
 		{
-			$renderedHtmlBody = blx()->templates->renderString($subject.' - HTML body', $htmlBody, $variables);
+			$renderedHtmlBody = craft()->templates->renderString($subject.' - HTML body', $htmlBody, $variables);
 			$email->msgHtml($renderedHtmlBody);
 			$email->altBody = $renderedBody;
 		}
@@ -104,7 +104,7 @@ class EmailService extends BaseApplicationComponent
 
 		if (!$email->send())
 		{
-			throw new Exception(Blocks::t('Email error: {error}', array('error' => $email->errorInfo)));
+			throw new Exception(Craft::t('Email error: {error}', array('error' => $email->errorInfo)));
 		}
 
 		return true;
@@ -121,9 +121,9 @@ class EmailService extends BaseApplicationComponent
 	 */
 	public function sendEmailByKey(UserModel $user, $key, $variables = array())
 	{
-		if (Blocks::hasPackage(BlocksPackage::Rebrand))
+		if (Craft::hasPackage(CraftPackage::Rebrand))
 		{
-			$message = blx()->emailMessages->getMessage($key, $user->preferredLocale);
+			$message = craft()->emailMessages->getMessage($key, $user->preferredLocale);
 
 			$subject  = $message->subject;
 			$body     = $message->body;
@@ -131,28 +131,28 @@ class EmailService extends BaseApplicationComponent
 		}
 		else
 		{
-			$subject  = Blocks::t($key.'_subject');
-			$body     = Blocks::t($key.'_body');
-			$htmlBody = Blocks::t($key.'_html_body');
+			$subject  = Craft::t($key.'_subject');
+			$body     = Craft::t($key.'_body');
+			$htmlBody = Craft::t($key.'_html_body');
 		}
 
 		$tempTemplatesPath = '';
 
-		if (Blocks::hasPackage(BlocksPackage::Rebrand))
+		if (Craft::hasPackage(CraftPackage::Rebrand))
 		{
 			// Is there a custom HTML template set?
 			$settings = $this->getSettings();
 
 			if (!empty($settings['template']))
 			{
-				$tempTemplatesPath = blx()->path->getSiteTemplatesPath();
+				$tempTemplatesPath = craft()->path->getSiteTemplatesPath();
 				$template = $settings['template'];
 			}
 		}
 
 		if (empty($template))
 		{
-			$tempTemplatesPath = blx()->path->getCpTemplatesPath();
+			$tempTemplatesPath = craft()->path->getCpTemplatesPath();
 			$template = '_special/email';
 		}
 
@@ -161,7 +161,7 @@ class EmailService extends BaseApplicationComponent
 			// Auto-generate the HTML content
 			if (!class_exists('\Markdown_Parser', false))
 			{
-				require_once blx()->path->getFrameworkPath().'vendors/markdown/markdown.php';
+				require_once craft()->path->getFrameworkPath().'vendors/markdown/markdown.php';
 			}
 
 			$md = new \Markdown_Parser();
@@ -174,14 +174,14 @@ class EmailService extends BaseApplicationComponent
 			"{% endset %}\n";
 
 		// Temporarily swap the templates path
-		$originalTemplatesPath = blx()->path->getTemplatesPath();
-		blx()->path->setTemplatesPath($tempTemplatesPath);
+		$originalTemplatesPath = craft()->path->getTemplatesPath();
+		craft()->path->setTemplatesPath($tempTemplatesPath);
 
 		// Send the email
 		$return = $this->sendEmail($user, $subject, $body, $htmlBody, $variables);
 
 		// Return to the original templates path
-		blx()->path->setTemplatesPath($originalTemplatesPath);
+		craft()->path->setTemplatesPath($originalTemplatesPath);
 
 		return $return;
 	}
@@ -201,7 +201,7 @@ class EmailService extends BaseApplicationComponent
 
 			if ((!isset($emailSettings['username']) && StringHelper::isNullOrEmpty($emailSettings['username'])) || (!isset($emailSettings['password']) && StringHelper::isNullOrEmpty($emailSettings['password'])))
 			{
-				throw new Exception(Blocks::t('Username and password are required.  Check your email settings.'));
+				throw new Exception(Craft::t('Username and password are required.  Check your email settings.'));
 			}
 
 			$email->userName = $emailSettings['username'];
@@ -217,12 +217,12 @@ class EmailService extends BaseApplicationComponent
 
 		if (!isset($emailSettings['host']))
 		{
-			throw new Exception(Blocks::t('You must specify a host name in your email settings.'));
+			throw new Exception(Craft::t('You must specify a host name in your email settings.'));
 		}
 
 		if (!isset($emailSettings['port']))
 		{
-			throw new Exception(Blocks::t('You must specify a port in your email settings.'));
+			throw new Exception(Craft::t('You must specify a port in your email settings.'));
 		}
 
 		if (!isset($emailSettings['timeout']))
@@ -244,7 +244,7 @@ class EmailService extends BaseApplicationComponent
 	{
 		if (!isset($this->_settings))
 		{
-			$this->_settings = blx()->systemSettings->getSettings('email');
+			$this->_settings = craft()->systemSettings->getSettings('email');
 		}
 
 		return $this->_settings;
@@ -258,7 +258,7 @@ class EmailService extends BaseApplicationComponent
 	{
 		$this->_settings = $settings;
 
-		$user = blx()->userSession->getUser();
+		$user = craft()->userSession->getUser();
 		$newSettings = array();
 
 		foreach ($settings as $key => $value)

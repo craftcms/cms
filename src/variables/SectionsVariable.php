@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -14,7 +14,7 @@ class SectionsVariable
 	 */
 	public function getAllSections($indexBy = null)
 	{
-		return blx()->sections->getAllSections($indexBy);
+		return craft()->sections->getAllSections($indexBy);
 	}
 
 	/**
@@ -25,7 +25,7 @@ class SectionsVariable
 	 */
 	public function getEditableSections($indexBy = null)
 	{
-		return blx()->sections->getEditableSections($indexBy);
+		return craft()->sections->getEditableSections($indexBy);
 	}
 
 	/**
@@ -36,7 +36,7 @@ class SectionsVariable
 	 */
 	public function getSectionById($sectionId)
 	{
-		return blx()->sections->getSectionById($sectionId);
+		return craft()->sections->getSectionById($sectionId);
 	}
 
 	/**
@@ -47,6 +47,6 @@ class SectionsVariable
 	 */
 	public function getSectionByHandle($handle)
 	{
-		return blx()->sections->getSectionByHandle($handle);
+		return craft()->sections->getSectionByHandle($handle);
 	}
 }

@@ -1,7 +1,6 @@
 (function($) {
 
-
-Blocks.UpdatesWidget = Garnish.Base.extend({
+Craft.UpdatesWidget = Garnish.Base.extend({
 
 	$widget: null,
 
@@ -10,7 +9,7 @@ Blocks.UpdatesWidget = Garnish.Base.extend({
 		this.$widget = $('#widget'+widgetId);
 		this.$widget.addClass('loading');
 
-		Blocks.postActionRequest('dashboard/checkForUpdates', $.proxy(function(response) {
+		Craft.postActionRequest('dashboard/checkForUpdates', $.proxy(function(response) {
 
 			this.$widget.removeClass('loading');
 			this.$widget.find('.body').html(response);

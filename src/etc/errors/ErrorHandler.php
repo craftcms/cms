@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * ErrorHandler handles uncaught PHP errors and exceptions.
@@ -18,7 +18,7 @@ namespace Blocks;
  * whose name is the language code (e.g. zh_cn/error500.php).
  *
  * Development templates are displayed when the application is in dev mode
- * (i.e. blx()->config->get('devMode') = true). Detailed error information with source code
+ * (i.e. craft()->config->get('devMode') = true). Detailed error information with source code
  * are displayed in these templates. Production templates are meant to be shown
  * to end-users and are used when the application is in production mode.
  * For security reasons, they only display the error message without any
@@ -26,9 +26,9 @@ namespace Blocks;
  *
  * ErrorHandler looks for the templates from the following locations in order:
  * <ol>
- * <li><code>blocks/templates/{siteHandle}/errors</code>: when a theme is active.</li>
- * <li><code>blocks/app/templates/errors</code></li>
- * <li><code>blocks/app/framework/views</code></li>
+ * <li><code>craft/templates/{siteHandle}/errors</code>: when a theme is active.</li>
+ * <li><code>craft/app/templates/errors</code></li>
+ * <li><code>craft/app/framework/views</code></li>
  * </ol>
  * If the template is not found in a directory, it will be looked for in the next directory.
  *
@@ -54,20 +54,20 @@ class ErrorHandler extends \CErrorHandler
 
 		$admin = false;
 
-		if (!blx()->isConsole() && blx()->isInstalled())
+		if (!craft()->isConsole() && craft()->isInstalled())
 		{
 			// TODO: Deprecate after next breakpoint release.
-			if (Blocks::getStoredBuild() > 2157)
+			if (Craft::getStoredBuild() > 2157)
 			{
 				// Set whether the currently logged in user is an admin.
-				if (($currentUser = blx()->userSession->getUser()) !== null)
+				if (($currentUser = craft()->userSession->getUser()) !== null)
 				{
 					$admin = $currentUser->admin == 1 ? true : false;
 				}
 			}
 		}
 
-		$this->_devMode = blx()->config->get('devMode') || $admin;
+		$this->_devMode = craft()->config->get('devMode') || $admin;
 	}
 
 	/**
@@ -81,14 +81,14 @@ class ErrorHandler extends \CErrorHandler
 		// extra logic to log any mysql deadlocks.
 		if ($exception instanceof \CDbException && strpos($exception->getMessage(), 'Deadlock') !== false)
 		{
-			$data = blx()->db->createCommand('SHOW ENGINE INNODB STATUS')->query();
+			$data = craft()->db->createCommand('SHOW ENGINE INNODB STATUS')->query();
 			$info = $data->read();
 			$info = serialize($info);
 
-			Blocks::log('Deadlock error, innodb status: '.$info, \CLogger::LEVEL_ERROR, 'system.db.CDbCommand');
+			Craft::log('Deadlock error, innodb status: '.$info, \CLogger::LEVEL_ERROR, 'system.db.CDbCommand');
 		}
 
-		$app = blx();
+		$app = craft();
 		if ($app instanceof \CWebApplication)
 		{
 			if (($trace = $this->getExactTrace($exception)) === null)
@@ -117,11 +117,11 @@ class ErrorHandler extends \CErrorHandler
 			if ($exception instanceof \Twig_Error)
 			{
 				// This is the template file for the exception.
-				$templateFile = blx()->templates->findTemplate($exception->getTemplateFile());
+				$templateFile = craft()->templates->findTemplate($exception->getTemplateFile());
 
 				$this->_error = $data = array(
 					'code' => 500,
-					'type' => Blocks::t('Template Syntax Error'),
+					'type' => Craft::t('Template Syntax Error'),
 					'errorCode' => $exception->getCode(),
 					'message' => $exception->getMessage(),
 					'file' => $templateFile,
@@ -237,7 +237,7 @@ class ErrorHandler extends \CErrorHandler
 		{
 			if (isset($matches[3]))
 			{
-				return blx()->templates->findTemplate($matches[3]);
+				return craft()->templates->findTemplate($matches[3]);
 			}
 		}
 
@@ -318,7 +318,7 @@ class ErrorHandler extends \CErrorHandler
 			unset($trace[$i]['object']);
 		}
 
-		$app = blx();
+		$app = craft();
 		if ($app instanceof \CWebApplication)
 		{
 			switch ($event->code)
@@ -417,29 +417,29 @@ class ErrorHandler extends \CErrorHandler
 			$fileName = IOHelper::getFileName($viewFile, false);
 
 			// If this is a site request, make sure the error template exists
-			if (blx()->request->isSiteRequest())
+			if (craft()->request->isSiteRequest())
 			{
-				if (!IOHelper::fileExists(blx()->path->getSiteTemplatesPath().$fileName.'.html'))
+				if (!IOHelper::fileExists(craft()->path->getSiteTemplatesPath().$fileName.'.html'))
 				{
 					// Set PathService to use the CP templates path instead
-					blx()->path->setTemplatesPath(blx()->path->getCpTemplatesPath());
+					craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
 				}
 			}
 
 			try
 			{
-				if (($output = blx()->templates->render($fileName, $data)) !== false)
+				if (($output = craft()->templates->render($fileName, $data)) !== false)
 				{
 					echo $output;
 				}
 				else
 				{
-					echo '<h1>'.Blocks::t('There was a problem rendering the error template.').'</h1>';
+					echo '<h1>'.Craft::t('There was a problem rendering the error template.').'</h1>';
 				}
 			}
 			catch (\Exception $e)
 			{
-				blx()->displayException($e);
+				craft()->displayException($e);
 			}
 		}
 	}
@@ -474,7 +474,7 @@ class ErrorHandler extends \CErrorHandler
 		{
 			if (!empty($code))
 			{
-				$templateFile = blx()->findLocalizedFile(IOHelper::getRealPath($templatePath.'/'.$templateName.'.'.$extension), $srcLanguage);
+				$templateFile = craft()->findLocalizedFile(IOHelper::getRealPath($templatePath.'/'.$templateName.'.'.$extension), $srcLanguage);
 
 				if (IOHelper::fileExists($templateFile))
 				{
@@ -485,7 +485,7 @@ class ErrorHandler extends \CErrorHandler
 			}
 		}
 
-		$templateFile = blx()->findLocalizedFile(IOHelper::getRealPath($templatePath.'/'.$templateName.'.'.$extension), $srcLanguage);
+		$templateFile = craft()->findLocalizedFile(IOHelper::getRealPath($templatePath.'/'.$templateName.'.'.$extension), $srcLanguage);
 
 		if (IOHelper::fileExists($templateFile))
 		{
@@ -509,16 +509,16 @@ class ErrorHandler extends \CErrorHandler
 
 		if (($this->_devMode) && $view == 'exception')
 		{
-			$viewPaths[] = blx()->path->getFrameworkPath().'views/';
+			$viewPaths[] = craft()->path->getFrameworkPath().'views/';
 		}
 		else
 		{
-			if (blx()->request->isSiteRequest())
+			if (craft()->request->isSiteRequest())
 			{
-				$viewPaths[] = blx()->path->getSiteTemplatesPath();
+				$viewPaths[] = craft()->path->getSiteTemplatesPath();
 			}
 
-			$viewPaths[] = blx()->path->getCpTemplatesPath();
+			$viewPaths[] = craft()->path->getCpTemplatesPath();
 		}
 
 		for ($counter = 0; $counter < count($viewPaths); $counter ++)
@@ -544,7 +544,7 @@ class ErrorHandler extends \CErrorHandler
 	{
 		if ($this->_devMode)
 		{
-			$version = '<a href="http://blockscms.com/">Blocks</a> v'.Blocks::getVersion().' '.Blocks::t('build').' '.Blocks::getBuild();
+			$version = '<a href="http://buildwithcraft.com/">CraftCMS</a> v'.Craft::getVersion().' '.Craft::t('build').' '.Craft::getBuild();
 
 			if (isset($_SERVER['SERVER_SOFTWARE']))
 			{

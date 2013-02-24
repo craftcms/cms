@@ -24,7 +24,7 @@
 
 {% set content %}
 	<div id="routes">
-		{% for route in blx.routes.getAllRoutes %}
+		{% for route in craft.routes.getAllRoutes %}
 			<div class="pane route" data-id="{{ route.id }}">
 				<div class="url">
 					{%- autoescape false -%}
@@ -44,7 +44,7 @@
 
 {% set js %}
 	{% for message in ['year', 'month', 'day', 'number', 'page'] %}
-		Blocks.translations['{{ message|e("js") }}'] = '{{ message|t(null, null, blx.app.locale)|e("js") }}';
+		Craft.translations['{{ message|e("js") }}'] = '{{ message|t(null, null, craft.app.locale)|e("js") }}';
 	{% endfor %}
 {% endset %}
 {% includeJs js %}

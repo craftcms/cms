@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -10,7 +10,7 @@ abstract class BaseController extends \CController
 	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 * If set to true, anonymous access is allowed for all of the given controller's actions.
 	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
-	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use blx()->userSession->requireLogin() in the individual methods.
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use craft()->userSession->requireLogin() in the individual methods.
 	 *
 	 * @var bool
 	 */
@@ -18,7 +18,7 @@ abstract class BaseController extends \CController
 
 	/**
 	 * Returns the folder containing view files for this controller.
-	 * We're overriding this since CController's version defaults $module to blx().
+	 * We're overriding this since CController's version defaults $module to craft().
 	 *
 	 * @return string The folder containing the view files for this controller.
 	 */
@@ -26,7 +26,7 @@ abstract class BaseController extends \CController
 	{
 		if (($module = $this->getModule()) === null)
 		{
-			$module = blx();
+			$module = craft();
 		}
 
 		return $module->getViewPath().'/';
@@ -41,7 +41,7 @@ abstract class BaseController extends \CController
 	 */
 	protected function getDateFromPost($name)
 	{
-		$date = blx()->request->getPost($name);
+		$date = craft()->request->getPost($name);
 
 		if ($date)
 		{
@@ -60,9 +60,9 @@ abstract class BaseController extends \CController
 	 */
 	public function renderRequestedTemplate($variables = array())
 	{
-		if (($template = blx()->urlManager->processTemplateMatching()) !== false)
+		if (($template = craft()->urlManager->processTemplateMatching()) !== false)
 		{
-			$variables = array_merge(blx()->urlManager->getTemplateVariables(), $variables);
+			$variables = array_merge(craft()->urlManager->getTemplateVariables(), $variables);
 
 			try
 			{
@@ -81,7 +81,7 @@ abstract class BaseController extends \CController
 			}
 
 			// Set the Content-Type header
-			$mimeType = blx()->request->getMimeType();
+			$mimeType = craft()->request->getMimeType();
 			header('Content-Type: '.$mimeType.'; charset=utf-8');
 
 			// Output to the browser!
@@ -105,7 +105,7 @@ abstract class BaseController extends \CController
 	 */
 	public function renderTemplate($template, $variables = array(), $return = false, $processOutput = false)
 	{
-		if (($output = blx()->templates->render($template, $variables)) !== false)
+		if (($output = craft()->templates->render($template, $variables)) !== false)
 		{
 			if ($processOutput)
 			{
@@ -132,9 +132,9 @@ abstract class BaseController extends \CController
 	 */
 	public function requireLogin()
 	{
-		if (blx()->userSession->isGuest())
+		if (craft()->userSession->isGuest())
 		{
-			blx()->userSession->requireLogin();
+			craft()->userSession->requireLogin();
 		}
 	}
 
@@ -143,9 +143,9 @@ abstract class BaseController extends \CController
 	 */
 	public function requireAdmin()
 	{
-		if (!blx()->userSession->isAdmin())
+		if (!craft()->userSession->isAdmin())
 		{
-			throw new HttpException(403, Blocks::t('This action may only be performed by admins.'));
+			throw new HttpException(403, Craft::t('This action may only be performed by admins.'));
 		}
 	}
 
@@ -155,7 +155,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requirePostRequest()
 	{
-		if (blx()->request->getRequestType() !== 'POST')
+		if (craft()->request->getRequestType() !== 'POST')
 		{
 			throw new HttpException(400);
 		}
@@ -167,7 +167,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireAjaxRequest()
 	{
-		if (!blx()->request->isAjaxRequest())
+		if (!craft()->request->isAjaxRequest())
 		{
 			throw new HttpException(400);
 		}
@@ -200,11 +200,11 @@ abstract class BaseController extends \CController
 	 */
 	public function redirectToPostedUrl($variables = array())
 	{
-		$url = blx()->request->getPost('redirect');
+		$url = craft()->request->getPost('redirect');
 
 		if ($url === null)
 		{
-			$url = blx()->request->getPath();
+			$url = craft()->request->getPath();
 		}
 
 		foreach ($variables as $name => $value)
@@ -224,7 +224,7 @@ abstract class BaseController extends \CController
 	{
 		JsonHelper::sendJsonHeaders();
 		echo JsonHelper::encode($var);
-		blx()->end();
+		craft()->end();
 	}
 
 	/**
@@ -250,14 +250,14 @@ abstract class BaseController extends \CController
 		{
 			if (!preg_grep("/{$this->getAction()->id}/i", $this->allowAnonymous))
 			{
-				blx()->userSession->requireLogin();
+				craft()->userSession->requireLogin();
 			}
 		}
 		elseif (is_bool($this->allowAnonymous))
 		{
 			if ($this->allowAnonymous == false)
 			{
-				blx()->userSession->requireLogin();
+				craft()->userSession->requireLogin();
 			}
 		}
 

@@ -1,10 +1,10 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Contains all global variables.
  */
-class BlxVariable
+class CraftVariable
 {
 	private $_rebrandVariable;
 
@@ -14,7 +14,7 @@ class BlxVariable
 	 */
 	public function __get($name)
 	{
-		$plugin = blx()->plugins->getPlugin($name);
+		$plugin = craft()->plugins->getPlugin($name);
 
 		if ($plugin && $plugin->isEnabled)
 		{
@@ -24,7 +24,7 @@ class BlxVariable
 			// Variables should already be imported by the plugin service, but let's double check.
 			if (!class_exists($className))
 			{
-				Blocks::import('plugins.'.$pluginName.'.variables.'.$pluginName.'Variable');
+				Craft::import('plugins.'.$pluginName.'.variables.'.$pluginName.'Variable');
 			}
 
 			return new $className;
@@ -37,7 +37,7 @@ class BlxVariable
 	 */
 	public function __isset($name)
 	{
-		$plugin = blx()->plugins->getPlugin($name);
+		$plugin = craft()->plugins->getPlugin($name);
 
 		if ($plugin && $plugin->isEnabled)
 		{
@@ -54,28 +54,28 @@ class BlxVariable
 	 */
 	public function locale()
 	{
-		return blx()->language;
+		return craft()->language;
 	}
 
 	/**
-	 * Returns the packages in this Blocks install, as defined by the blx_info table.
+	 * Returns the packages in this Craft install, as defined by the craft_info table.
 	 *
 	 * @return array
 	 */
 	public function getPackages()
 	{
-		return Blocks::getStoredPackages();
+		return Craft::getStoredPackages();
 	}
 
 	/**
-	 * Returns whether a package is included in the Blocks build.
+	 * Returns whether a package is included in the Craft build.
 	 *
 	 * @param $packageName;
 	 * @return bool
 	 */
 	public function hasPackage($packageName)
 	{
-		return Blocks::hasPackage($packageName);
+		return Craft::hasPackage($packageName);
 	}
 
 	// -------------------------------------------
@@ -135,7 +135,7 @@ class BlxVariable
 	 */
 	public function emailMessages()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Rebrand))
+		if (Craft::hasPackage(CraftPackage::Rebrand))
 		{
 			return new EmailMessagesVariable();
 		}
@@ -147,7 +147,7 @@ class BlxVariable
 	 */
 	public function entries($criteria = null)
 	{
-		return blx()->elements->getCriteria(ElementType::Entry, $criteria);
+		return craft()->elements->getCriteria(ElementType::Entry, $criteria);
 	}
 
 	/**
@@ -163,7 +163,7 @@ class BlxVariable
 	 */
 	public function entryRevisions()
 	{
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
 			return new EntryRevisionsVariable();
 		}
@@ -206,7 +206,7 @@ class BlxVariable
 	 */
 	public function rebrand()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Rebrand))
+		if (Craft::hasPackage(CraftPackage::Rebrand))
 		{
 			if (!isset($this->_rebrandVariable))
 			{
@@ -263,9 +263,9 @@ class BlxVariable
 	 */
 	public function users($criteria = null)
 	{
-		if (Blocks::hasPackage(BlocksPackage::Users))
+		if (Craft::hasPackage(CraftPackage::Users))
 		{
-			return blx()->elements->getCriteria(ElementType::User, $criteria);
+			return craft()->elements->getCriteria(ElementType::User, $criteria);
 		}
 	}
 
@@ -274,7 +274,7 @@ class BlxVariable
 	 */
 	public function userGroups()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Users))
+		if (Craft::hasPackage(CraftPackage::Users))
 		{
 			return new UserGroupsVariable();
 		}
@@ -285,7 +285,7 @@ class BlxVariable
 	 */
 	public function userPermissions()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Users))
+		if (Craft::hasPackage(CraftPackage::Users))
 		{
 			return new UserPermissionsVariable();
 		}

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Extends CDbCommand
@@ -22,11 +22,11 @@ class DbCommand extends \CDbCommand
 		{
 			if (preg_match('/^(.*?)(?i:\s+as\s+|\s+)(.*)$/', $column, $matches))
 			{
-				$column = blx()->db->quoteColumnName($matches[1]).' AS '.blx()->db->quoteColumnName($matches[2]);
+				$column = craft()->db->quoteColumnName($matches[1]).' AS '.craft()->db->quoteColumnName($matches[2]);
 			}
 			else
 			{
-				$column = blx()->db->quoteColumnName($column);
+				$column = craft()->db->quoteColumnName($column);
 			}
 		}
 
@@ -529,7 +529,7 @@ class DbCommand extends \CDbCommand
 	public function tableExists($table)
 	{
 		$table = DbHelper::addTablePrefix($table);
-		return (blx()->db->schema->getTable($table, true) !== null);
+		return (craft()->db->schema->getTable($table, true) !== null);
 	}
 
 	/**

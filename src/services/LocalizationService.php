@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -29,7 +29,7 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a list of language ids from the languages directory that Blocks is translated into.
+	 * Returns a list of language ids from the languages directory that Craft is translated into.
 	 *
 	 * @return mixed
 	 */
@@ -39,7 +39,7 @@ class LocalizationService extends BaseApplicationComponent
 		{
 			$this->_appLocales = array(new LocaleModel('en_us'));
 
-			$path = blx()->path->getCpTranslationsPath();
+			$path = craft()->path->getCpTranslationsPath();
 			$folders = IOHelper::getFolderContents($path, false, ".*\.php");
 
 			if (is_array($folders) && count($folders) > 0)
@@ -68,14 +68,14 @@ class LocalizationService extends BaseApplicationComponent
 		if (!isset($this->_siteLocales))
 		{
 			// TODO: Deprecate after next breakpoint release.
-			if (Blocks::getStoredBuild() > 2157)
+			if (Craft::getStoredBuild() > 2157)
 			{
-				$query = blx()->db->createCommand()
+				$query = craft()->db->createCommand()
 					->select('locale')
 					->from('locales')
 					->order('sortOrder');
 
-				if (!Blocks::hasPackage(BlocksPackage::Language))
+				if (!Craft::hasPackage(CraftPackage::Language))
 				{
 					$query->limit(1);
 				}
@@ -145,8 +145,8 @@ class LocalizationService extends BaseApplicationComponent
 	 */
 	public function addSiteLocale($localeId)
 	{
-		$maxSortOrder = blx()->db->createCommand()->select('max(sortOrder)')->from('locales')->queryScalar();
-		$affectedRows = blx()->db->createCommand()->insert('locales', array('locale' => $localeId, 'sortOrder' => $maxSortOrder+1));
+		$maxSortOrder = craft()->db->createCommand()->select('max(sortOrder)')->from('locales')->queryScalar();
+		$affectedRows = craft()->db->createCommand()->insert('locales', array('locale' => $localeId, 'sortOrder' => $maxSortOrder+1));
 		return (bool) $affectedRows;
 	}
 
@@ -160,7 +160,7 @@ class LocalizationService extends BaseApplicationComponent
 	{
 		foreach ($localeIds as $sortOrder => $localeId)
 		{
-			blx()->db->createCommand()->update('locales', array('sortOrder' => $sortOrder+1), array('locale' => $localeId));
+			craft()->db->createCommand()->update('locales', array('sortOrder' => $sortOrder+1), array('locale' => $localeId));
 		}
 
 		return true;
@@ -174,7 +174,7 @@ class LocalizationService extends BaseApplicationComponent
 	 */
 	public function deleteSiteLocale($localeId)
 	{
-		$affectedRows = blx()->db->createCommand()->delete('locales', array('locale' => $localeId));
+		$affectedRows = craft()->db->createCommand()->delete('locales', array('locale' => $localeId));
 		return (bool) $affectedRows;
 	}
 

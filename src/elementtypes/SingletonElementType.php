@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Singleton element type
@@ -13,7 +13,7 @@ class SingletonElementType extends BaseElementType
 	 */
 	public function getName()
 	{
-		return Blocks::t('Singletons');
+		return Craft::t('Singletons');
 	}
 
 	/**

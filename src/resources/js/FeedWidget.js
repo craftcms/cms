@@ -1,4 +1,4 @@
-Blocks.FeedWidget = Garnish.Base.extend({
+Craft.FeedWidget = Garnish.Base.extend({
 
 	$widget: null,
 
@@ -12,7 +12,7 @@ Blocks.FeedWidget = Garnish.Base.extend({
 			limit: limit
 		};
 
-		Blocks.postActionRequest('dashboard/getFeedItems', data, $.proxy(function(response) {
+		Craft.postActionRequest('dashboard/getFeedItems', data, $.proxy(function(response) {
 			var $tds = this.$widget.find('td');
 
 			for (var i = 0; i < response.items.length; i++)

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Config service
@@ -18,9 +18,9 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function get($item)
 	{
-		if (isset(blx()->params['generalConfig'][$item]))
+		if (isset(craft()->params['generalConfig'][$item]))
 		{
-			return blx()->params['generalConfig'][$item];
+			return craft()->params['generalConfig'][$item];
 		}
 	}
 
@@ -33,9 +33,9 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function getDbItem($item, $default = null)
 	{
-		if (isset(blx()->params['dbConfig'][$item]))
+		if (isset(craft()->params['dbConfig'][$item]))
 		{
-			return blx()->params['dbConfig'][$item];
+			return craft()->params['dbConfig'][$item];
 		}
 
 		return $default;
@@ -86,7 +86,7 @@ class ConfigService extends BaseApplicationComponent
 			else
 			{
 				// Check if it's cached
-				$cachedVal = blx()->fileCache->get('omitScriptNameInUrls');
+				$cachedVal = craft()->fileCache->get('omitScriptNameInUrls');
 
 				if ($cachedVal !== false)
 				{
@@ -97,7 +97,7 @@ class ConfigService extends BaseApplicationComponent
 					// Test the server for it
 					try
 					{
-						$baseUrl = blx()->request->getHostInfo().blx()->request->getScriptUrl();
+						$baseUrl = craft()->request->getHostInfo().craft()->request->getScriptUrl();
 						$url = substr($baseUrl, 0, strrpos($baseUrl, '/')).'/testScriptNameRedirect';
 						$response = \Requests::get($url);
 
@@ -108,11 +108,11 @@ class ConfigService extends BaseApplicationComponent
 					}
 					catch (\Exception $e)
 					{
-						Blocks::log('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
+						Craft::log('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
 					}
 
 					// Cache it
-					blx()->fileCache->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls, $this->getCacheDuration());
+					craft()->fileCache->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls, $this->getCacheDuration());
 				}
 			}
 		}
@@ -141,7 +141,7 @@ class ConfigService extends BaseApplicationComponent
 			else
 			{
 				// Check if it's cached
-				$cachedVal = blx()->fileCache->get('usePathInfo');
+				$cachedVal = craft()->fileCache->get('usePathInfo');
 
 				if ($cachedVal !== false)
 				{
@@ -160,7 +160,7 @@ class ConfigService extends BaseApplicationComponent
 						// Test the server for it
 						try
 						{
-							$url = blx()->request->getHostInfo().blx()->request->getScriptUrl().'/testPathInfo';
+							$url = craft()->request->getHostInfo().craft()->request->getScriptUrl().'/testPathInfo';
 							$response = \Requests::get($url);
 
 							if ($response->success && $response->body === 'success')
@@ -170,12 +170,12 @@ class ConfigService extends BaseApplicationComponent
 						}
 						catch (\Exception $e)
 						{
-							Blocks::log('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
+							Craft::log('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
 						}
 					}
 
 					// Cache it
-					blx()->fileCache->set('usePathInfo', $this->_usePathInfo, $this->getCacheDuration());
+					craft()->fileCache->set('usePathInfo', $this->_usePathInfo, $this->getCacheDuration());
 				}
 			}
 		}

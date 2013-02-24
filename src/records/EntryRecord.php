@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -37,7 +37,7 @@ class EntryRecord extends BaseRecord
 			'entryTagEntries' => array(static::HAS_MANY, 'EntryTagEntryRecord', 'entryId'),
 		);
 
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
 			$relations['versions'] = array(static::HAS_MANY, 'EntryVersionRecord', 'elementId');
 		}

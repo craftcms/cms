@@ -54,7 +54,7 @@ var siteMap = new SiteMap();
 
 
 
-Blocks.Tier = Garnish.Base.extend({
+Craft.Tier = Garnish.Base.extend({
 
 	$container: null,
 	$trailContainer: null,
@@ -86,7 +86,7 @@ Blocks.Tier = Garnish.Base.extend({
 		this.nodes = [];
 		for (var i = 0; i < this.totalNodes; i++)
 		{
-			var node = new Blocks.Node(this, $nodes[i], i);
+			var node = new Craft.Node(this, $nodes[i], i);
 			this.nodes.push(node);
 		}
 
@@ -115,7 +115,7 @@ Blocks.Tier = Garnish.Base.extend({
 });
 
 
-Blocks.Node = Garnish.Base.extend({
+Craft.Node = Garnish.Base.extend({
 
 	tier: null,
 	$elem: null,
@@ -223,11 +223,11 @@ Blocks.Node = Garnish.Base.extend({
 		for (var i = 0; i < newPages.length; i++)
 		{
 			var $newNode = $('<div class="node page"/>').appendTo($newNodes);
-			$('<img src="'+Blocks.resourceUrl+'images/screenshots/UI/'+newPages[i].image+'"/>').appendTo($newNode);
+			$('<img src="'+Craft.resourceUrl+'images/screenshots/UI/'+newPages[i].image+'"/>').appendTo($newNode);
 			$('<div class="title">'+newPages[i].title+'</div>').appendTo($newNode);
 		}
 
-		new Blocks.Tier($newTier, true);
+		new Craft.Tier($newTier, true);
 
 	},
 

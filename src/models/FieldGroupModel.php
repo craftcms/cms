@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Field group model class
@@ -34,6 +34,6 @@ class FieldGroupModel extends BaseModel
 	 */
 	public function getFields()
 	{
-		return blx()->fields->getFieldsByGroupId($this->id);
+		return craft()->fields->getFieldsByGroupId($this->id);
 	}
 }

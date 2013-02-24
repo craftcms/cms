@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::Rebrand);
+Craft::requirePackage(CraftPackage::Rebrand);
 
 /**
  * Handles rebranding tasks
@@ -24,7 +24,7 @@ class RebrandController extends BaseController
 			// Make sure a file was uploaded
 			if ($uploader->file && $uploader->file->getSize())
 			{
-				$folderPath = blx()->path->getTempUploadsPath();
+				$folderPath = craft()->path->getTempUploadsPath();
 				IOHelper::ensureFolderExists($folderPath);
 				IOHelper::clearFolder($folderPath);
 
@@ -33,13 +33,13 @@ class RebrandController extends BaseController
 				$uploader->file->save($folderPath.$fileName);
 
 				// Test if we will be able to perform image actions on this image
-				if (!blx()->images->setMemoryForImage($folderPath.$fileName))
+				if (!craft()->images->setMemoryForImage($folderPath.$fileName))
 				{
 					IOHelper::deleteFile($folderPath.$fileName);
-					$this->returnErrorJson(Blocks::t('The uploaded image is too large'));
+					$this->returnErrorJson(Craft::t('The uploaded image is too large'));
 				}
 
-				blx()->images->cleanImage($folderPath.$fileName);
+				craft()->images->cleanImage($folderPath.$fileName);
 
 				$constraint = 500;
 				list ($width, $height) = getimagesize($folderPath.$fileName);
@@ -50,7 +50,7 @@ class RebrandController extends BaseController
 					// Never scale up the images, so make the scaling factor always <= 1
 					$factor = min($constraint / $width, $constraint / $height, 1);
 
-					$html = blx()->templates->render('_components/tools/cropper_modal',
+					$html = craft()->templates->render('_components/tools/cropper_modal',
 						array(
 							'imageUrl' => UrlHelper::getResourceUrl('tempuploads/'.$fileName),
 							'width' => round($width * $factor),
@@ -68,7 +68,7 @@ class RebrandController extends BaseController
 			$this->returnErrorJson($exception->getMessage());
 		}
 
-		$this->returnErrorJson(Blocks::t('There was an error uploading your photo'));
+		$this->returnErrorJson(Craft::t('There was an error uploading your photo'));
 	}
 
 	/**
@@ -81,11 +81,11 @@ class RebrandController extends BaseController
 
 		try
 		{
-			$x1 = blx()->request->getRequiredPost('x1');
-			$x2 = blx()->request->getRequiredPost('x2');
-			$y1 = blx()->request->getRequiredPost('y1');
-			$y2 = blx()->request->getRequiredPost('y2');
-			$source = blx()->request->getRequiredPost('source');
+			$x1 = craft()->request->getRequiredPost('x1');
+			$x2 = craft()->request->getRequiredPost('x2');
+			$y1 = craft()->request->getRequiredPost('y1');
+			$y2 = craft()->request->getRequiredPost('y2');
+			$source = craft()->request->getRequiredPost('source');
 
 			// Strip off any querystring info, if any.
 			if (($qIndex = strpos($source, '?')) !== false)
@@ -93,16 +93,16 @@ class RebrandController extends BaseController
 				$source = substr($source, 0, strpos($source, '?'));
 			}
 
-			$imagePath = blx()->path->getTempUploadsPath().$source;
+			$imagePath = craft()->path->getTempUploadsPath().$source;
 
-			if (IOHelper::fileExists($imagePath) && blx()->images->setMemoryForImage($imagePath))
+			if (IOHelper::fileExists($imagePath) && craft()->images->setMemoryForImage($imagePath))
 			{
-				$targetPath = blx()->path->getStoragePath().'logo/';
+				$targetPath = craft()->path->getStoragePath().'logo/';
 
 				IOHelper::ensureFolderExists($targetPath);
 
 					IOHelper::clearFolder($targetPath);
-					blx()->images
+					craft()->images
 						->loadImage($imagePath)
 						->crop($x1, $x2, $y1, $y2)
 						->scale(300, 300)
@@ -110,7 +110,7 @@ class RebrandController extends BaseController
 
 				IOHelper::deleteFile($imagePath);
 
-				$html = blx()->templates->render('settings/general/_logo');
+				$html = craft()->templates->render('settings/general/_logo');
 				$this->returnJson(array('html' => $html));
 			}
 			IOHelper::deleteFile($imagePath);
@@ -120,7 +120,7 @@ class RebrandController extends BaseController
 			$this->returnErrorJson($exception->getMessage());
 		}
 
-		$this->returnErrorJson(Blocks::t('Something went wrong when processing the logo.'));
+		$this->returnErrorJson(Craft::t('Something went wrong when processing the logo.'));
 	}
 
 	/**
@@ -129,9 +129,9 @@ class RebrandController extends BaseController
 	public function actionDeleteLogo()
 	{
 		$this->requireAdmin();
-		IOHelper::clearFolder(blx()->path->getStoragePath().'logo/');
+		IOHelper::clearFolder(craft()->path->getStoragePath().'logo/');
 
-		$html = blx()->templates->render('settings/general/_logo');
+		$html = craft()->templates->render('settings/general/_logo');
 		$this->returnJson(array('html' => $html));
 
 	}

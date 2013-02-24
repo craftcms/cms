@@ -6,11 +6,11 @@
 ] %}
 
 
-{% set sections = blx.sections.getAllSections() %}
+{% set sections = craft.sections.getAllSections() %}
 
 
 {% set content %}
-	{% if blx.hasPackage('PublishPro') %}
+	{% if craft.hasPackage('PublishPro') %}
 		<p id="nosections"{% if sections %} class="hidden"{% endif %}>
 			{{ "No sections exist yet."|t }}
 		</p>
@@ -28,14 +28,14 @@
 					<tr data-id="{{ section.id }}" data-name="{{ section.name|t }}">
 						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
 						<td data-title="{{ 'Handle'|t }}"><code>{{ section.handle }}</code></td>
-						{% if blx.hasPackage('PublishPro') %}<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>{% endif %}
+						{% if craft.hasPackage('PublishPro') %}<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>{% endif %}
 					</tr>
 				{% endfor %}
 			</tbody>
 		</table>
 	{% endif %}
 
-	{% if blx.hasPackage('PublishPro') or not sections|length %}
+	{% if craft.hasPackage('PublishPro') or not sections|length %}
 		<div class="buttons">
 			<a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New Section"|t }}</a>
 		</div>
@@ -43,9 +43,9 @@
 {% endset %}
 
 
-{% if blx.hasPackage('PublishPro') %}
+{% if craft.hasPackage('PublishPro') %}
 	{% set js %}
-		new Blocks.AdminTable({
+		new Craft.AdminTable({
 			tableSelector: '#sections',
 			noObjectsSelector: '#nosections',
 			deleteAction: 'sections/deleteSection',

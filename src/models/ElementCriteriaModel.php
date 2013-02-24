@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Element criteria model class
@@ -44,7 +44,7 @@ class ElementCriteriaModel extends BaseModel
 		$attributes = array_merge($attributes, $elementTypeAttributes);
 
 		// Mix in the custom fields
-		$fields = blx()->fields->getAllFields();
+		$fields = craft()->fields->getAllFields();
 
 		foreach ($fields as $field)
 		{
@@ -100,7 +100,7 @@ class ElementCriteriaModel extends BaseModel
 	public function find($attributes = null)
 	{
 		$this->setAttributes($attributes);
-		return blx()->elements->findElements($this);
+		return craft()->elements->findElements($this);
 	}
 
 	/**
@@ -112,7 +112,7 @@ class ElementCriteriaModel extends BaseModel
 	public function first($attributes = null)
 	{
 		$this->setAttributes($attributes);
-		return blx()->elements->findElement($this);
+		return craft()->elements->findElement($this);
 	}
 
 	/**
@@ -124,6 +124,6 @@ class ElementCriteriaModel extends BaseModel
 	public function total($attributes = null)
 	{
 		$this->setAttributes($attributes);
-		return blx()->elements->getTotalElements($this);
+		return craft()->elements->getTotalElements($this);
 	}
 }

@@ -1,6 +1,6 @@
 {% extends "_layouts/cp" %}
 {% includeCssResource "css/entry.css" %}
-{% includeJsResource 'lib/jquery-ui-1.10.0.custom'~(blx.config.useCompressedJs ? '.min' : '')~'.js' %}
+{% includeJsResource 'lib/jquery-ui-1.10.0.custom'~(craft.config.useCompressedJs ? '.min' : '')~'.js' %}
 {% import "_includes/forms" as forms %}
 
 {% set crumbs = [
@@ -9,10 +9,10 @@
 ] %}
 
 
-{% set section = blx.sections.getSectionByHandle(sectionHandle) %}
+{% set section = craft.sections.getSectionByHandle(sectionHandle) %}
 {% if not section %}{% exit 404 %}{% endif %}
 
-{% if blx.hasPackage('PublishPro') %}
+{% if craft.hasPackage('PublishPro') %}
 	{% set crumbs = crumbs|merge([ { label: section.name|t, url: url('content/'~section.handle) } ]) %}
 {% endif %}
 
@@ -20,7 +20,7 @@
 {% requirePermission 'editEntries'~permissionSuffix %}
 
 
-{% if blx.hasPackage('Language') %}
+{% if craft.hasPackage('Language') %}
 	{% set sectionLocaleIds = section.getLocales()|keys %}
 
 	{% if not sectionLocaleIds %}
@@ -28,7 +28,7 @@
 	{% endif %}
 
 	{% if localeId is not defined %}
-		{% set localeId = blx.locale %}
+		{% set localeId = craft.locale %}
 
 		{% if localeId not in sectionLocaleIds %}
 			{% set localeId = sectionLocaleIds[0] %}
@@ -41,15 +41,15 @@
 
 {% if entry is not defined and entryId is defined %}
 	{% if draftId is defined %}
-		{% set entry = blx.entryRevisions.getDraftById(draftId) %}
+		{% set entry = craft.entryRevisions.getDraftById(draftId) %}
 	{% elseif versionId is defined %}
-		{% set entry = blx.entryRevisions.getVersionById(versionId) %}
+		{% set entry = craft.entryRevisions.getVersionById(versionId) %}
 	{% else %}
 		{% set params = { id: entryId, status: '*' } %}
-		{% if blx.hasPackage('Language') %}
+		{% if craft.hasPackage('Language') %}
 			{% set params = params|merge({ locale: localeId }) %}
 		{% endif %}
-		{% set entry = blx.entries.first(params) %}
+		{% set entry = craft.entries.first(params) %}
 	{% endif %}
 
 	{% if not entry %}{% exit 404 %}{% endif %}
@@ -90,18 +90,18 @@
 
 
 {% set extraPageHeaderHtml %}
-	{% if blx.hasPackage('Language') %}
+	{% if craft.hasPackage('Language') %}
 		<div class="select">
-			<select onchange="document.location.href='{{ url('content/'~section.handle~'/'~blx.request.getSegment(3)) }}/'+this.value;">
+			<select onchange="document.location.href='{{ url('content/'~section.handle~'/'~craft.request.getSegment(3)) }}/'+this.value;">
 				{% for sectionLocale in section.getLocales() %}
-					{% set locale = blx.i18n.getLocaleById(sectionLocale.locale) %}
+					{% set locale = craft.i18n.getLocaleById(sectionLocale.locale) %}
 					<option value="{{ locale.id }}"{% if locale.id == localeId %} selected{% endif %}>{{ locale.name }}</option>
 				{% endfor %}
 			</select>
 		</div>
 	{% endif %}
 
-	{% if not isNewEntry and blx.hasPackage('PublishPro') %}
+	{% if not isNewEntry and craft.hasPackage('PublishPro') %}
 		{% include "content/entries/_revisions" %}
 	{% endif %}
 {% endset %}
@@ -144,7 +144,7 @@
 			<input type="hidden" name="entryId" value="{{ entry.id }}">
 		{% endif %}
 
-		{% if blx.hasPackage('Language') %}
+		{% if craft.hasPackage('Language') %}
 			<input type="hidden" name="locale" value="{{ localeId }}">
 		{% endif %}
 
@@ -178,12 +178,12 @@
 				required: true
 			}) }}
 
-			{% if blx.hasPackage('Users') %}
+			{% if craft.hasPackage('Users') %}
 				{{ forms.selectField({
 					label: "Author"|t,
 					id: 'author',
 					name: 'author',
-					options: blx.users.indexBy('id').find,
+					options: craft.users.indexBy('id').find,
 					value: (entry is defined ? entry.authorId : user.id)
 				}) }}
 			{% endif %}
@@ -274,11 +274,11 @@
 						</div>
 					</div>
 
-					{% if not isNewEntry and blx.hasPackage('PublishPro') %}
+					{% if not isNewEntry and craft.hasPackage('PublishPro') %}
 						<input type="button" class="btn formsubmit" value="{{ 'Save as Draft'|t }}" data-action="entryRevisions/saveDraft" data-redirect="{{ entry.cpEditUrl }}/drafts/{draftId}">
 					{% endif %}
 				{% else %}
-					{% if blx.hasPackage('PublishPro') %}
+					{% if craft.hasPackage('PublishPro') %}
 						<input type="hidden" name="action" value="entryRevisions/createDraft">
 						<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{draftId}">
 						<input type="submit" class="btn submit" value="{{ 'Save as Draft'|t }}">
@@ -291,6 +291,6 @@
 
 
 {% if entry is not defined or not entry.slug %}
-	{% includeJs "new Blocks.SlugGenerator('#title', '#slug');" %}
+	{% includeJs "new Craft.SlugGenerator('#title', '#slug');" %}
 {% endif %}
 

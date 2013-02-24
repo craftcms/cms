@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * TODO: create save function which calls parent::save and then updates the meta data table (keywords, author, etc)

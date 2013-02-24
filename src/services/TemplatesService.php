@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -25,8 +25,8 @@ class TemplatesService extends BaseApplicationComponent
 	{
 		if (!class_exists('\Twig_Autoloader', false))
 		{
-			require_once blx()->path->getLibPath().'Twig/Autoloader.php';
-			Blocks::registerAutoloader(array(new \Twig_Autoloader, 'autoload'));
+			require_once craft()->path->getLibPath().'Twig/Autoloader.php';
+			Craft::registerAutoloader(array(new \Twig_Autoloader, 'autoload'));
 		}
 	}
 
@@ -43,25 +43,25 @@ class TemplatesService extends BaseApplicationComponent
 
 			$loader = new TemplateLoader();
 
-			$options['cache'] = blx()->path->getCompiledTemplatesPath();
+			$options['cache'] = craft()->path->getCompiledTemplatesPath();
 			$options['auto_reload'] = true;
 
-			if (blx()->config->get('devMode'))
+			if (craft()->config->get('devMode'))
 			{
 				$options['debug'] = true;
 				$options['strict_variables'] = true;
 			}
 
 			$twig = new \Twig_Environment($loader, $options);
-			$twig->addExtension(new BlocksTwigExtension());
+			$twig->addExtension(new CraftTwigExtension());
 
-			if (blx()->config->get('devMode'))
+			if (craft()->config->get('devMode'))
 			{
 				$twig->addExtension(new \Twig_Extension_Debug());
 			}
 
 			// Give plugins a chance to add their own Twig extensions
-			$pluginExtensions = blx()->plugins->callHook('addTwigExtension');
+			$pluginExtensions = craft()->plugins->callHook('addTwigExtension');
 			foreach ($pluginExtensions as $extension)
 			{
 				$twig->addExtension($extension);
@@ -297,7 +297,7 @@ class TemplatesService extends BaseApplicationComponent
 		{
 			if (!array_key_exists($message, $this->_translations))
 			{
-				$translation = Blocks::t($message);
+				$translation = Craft::t($message);
 
 				if ($translation != $message)
 				{
@@ -349,7 +349,7 @@ class TemplatesService extends BaseApplicationComponent
 
 		// Set the view path
 		//  - We need to set this for each template request, in case it was changed to a plugin's template path
-		$basePath = blx()->path->getTemplatesPath();
+		$basePath = craft()->path->getTemplatesPath();
 
 		if (($path = $this->_findTemplate($basePath.$name)) !== null)
 		{
@@ -359,15 +359,15 @@ class TemplatesService extends BaseApplicationComponent
 		// Otherwise maybe it's a plugin template?
 
 		// Only attempt to match against a plugin's templates if this is a CP or action request.
-		if (blx()->request->isCpRequest() || blx()->request->isActionRequest())
+		if (craft()->request->isCpRequest() || craft()->request->isActionRequest())
 		{
 			$parts = array_filter(explode('/', $name));
 			$pluginHandle = strtolower(array_shift($parts));
 
-			if ($pluginHandle && ($plugin = blx()->plugins->getPlugin($pluginHandle)) !== null)
+			if ($pluginHandle && ($plugin = craft()->plugins->getPlugin($pluginHandle)) !== null)
 			{
 				// Get the template path for the plugin.
-				$basePath = blx()->path->getPluginsPath().strtolower($plugin->getClassHandle()).'/templates/';
+				$basePath = craft()->path->getPluginsPath().strtolower($plugin->getClassHandle()).'/templates/';
 
 				// Chop off the plugin segment, since that's already covered by $basePath
 				$tempName = implode('/', $parts);
@@ -394,12 +394,12 @@ class TemplatesService extends BaseApplicationComponent
 	{
 		if (strpos($name, "\0") !== false)
 		{
-			throw new \Twig_Error_Loader(Blocks::t('A template name cannot contain NUL bytes.'));
+			throw new \Twig_Error_Loader(Craft::t('A template name cannot contain NUL bytes.'));
 		}
 
 		if (PathHelper::ensurePathIsContained($name) === false)
 		{
-			throw new \Twig_Error_Loader(Blocks::t('Looks like you try to load a template outside the template folder: {template}.', array('template' => $name)));
+			throw new \Twig_Error_Loader(Craft::t('Looks like you try to load a template outside the template folder: {template}.', array('template' => $name)));
 		}
 	}
 
@@ -428,7 +428,7 @@ class TemplatesService extends BaseApplicationComponent
 
 		foreach ($testPaths as $path)
 		{
-			if (IOHelper::fileExists(blx()->findLocalizedFile($path)))
+			if (IOHelper::fileExists(craft()->findLocalizedFile($path)))
 			{
 				return $path;
 			}

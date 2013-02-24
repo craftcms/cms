@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -22,7 +22,7 @@ class UrlManager extends \CUrlManager
 		$this->appendParams = false;
 
 		// makes more sense to set in HttpRequest
-		if (blx()->config->usePathInfo())
+		if (craft()->config->usePathInfo())
 		{
 			$this->setUrlFormat(static::PATH_FORMAT);
 		}
@@ -38,7 +38,7 @@ class UrlManager extends \CUrlManager
 	public function processTemplateMatching()
 	{
 		// we'll never have a db element match on a control panel request
-		if (blx()->isInstalled() && blx()->request->isSiteRequest())
+		if (craft()->isInstalled() && craft()->request->isSiteRequest())
 		{
 			if (($path = $this->matchEntry()) !== false)
 			{
@@ -71,17 +71,17 @@ class UrlManager extends \CUrlManager
 	 */
 	public function matchEntry()
 	{
-		$query = blx()->db->createCommand()
+		$query = craft()->db->createCommand()
 			->select('elements.id, elements.type')
 			->from('elements elements')
 			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
 
 		$conditions = array('and', 'elements_i18n.uri = :path', 'elements.enabled = 1', 'elements.archived = 0');
-		$params = array(':path' => blx()->request->getPath());
+		$params = array(':path' => craft()->request->getPath());
 
 		$localeIds = array_unique(array_merge(
-			array(blx()->language),
-			blx()->i18n->getSiteLocaleIds()
+			array(craft()->language),
+			craft()->i18n->getSiteLocaleIds()
 		));
 
 		if (count($localeIds) == 1)
@@ -96,7 +96,7 @@ class UrlManager extends \CUrlManager
 
 			foreach ($localeIds as $localeId)
 			{
-				$quotedLocale = blx()->db->quoteValue($localeId);
+				$quotedLocale = craft()->db->quoteValue($localeId);
 				$quotedLocales[] = $quotedLocale;
 				$localeOrder[] = "(elements_i18n.locale = {$quotedLocale}) DESC";
 			}
@@ -111,10 +111,10 @@ class UrlManager extends \CUrlManager
 
 		if ($row)
 		{
-			$elementCriteria = blx()->elements->getCriteria($row['type']);
+			$elementCriteria = craft()->elements->getCriteria($row['type']);
 			$elementCriteria->id = $row['id'];
 
-			$element = blx()->elements->findElement($elementCriteria);
+			$element = craft()->elements->findElement($elementCriteria);
 
 			if ($element)
 			{
@@ -138,16 +138,16 @@ class UrlManager extends \CUrlManager
 	 */
 	public function matchRoute()
 	{
-		if (blx()->request->isCpRequest())
+		if (craft()->request->isCpRequest())
 		{
-			// Check the Blocks predefined routes.
+			// Check the Craft predefined routes.
 
 			if (isset($this->cpRoutes['pkgRoutes']))
 			{
 				// Merge in the package routes
 				foreach ($this->cpRoutes['pkgRoutes'] as $packageName => $packageRoutes)
 				{
-					if (Blocks::hasPackage($packageName))
+					if (Craft::hasPackage($packageName))
 					{
 						$this->cpRoutes = array_merge($this->cpRoutes, $packageRoutes);
 					}
@@ -162,7 +162,7 @@ class UrlManager extends \CUrlManager
 			}
 
 			// As a last ditch to match routes, check to see if any plugins have routes registered that will match.
-			$pluginCpRoutes = blx()->plugins->callHook('registerCpRoutes');
+			$pluginCpRoutes = craft()->plugins->callHook('registerCpRoutes');
 			foreach ($pluginCpRoutes as $pluginRoutes)
 			{
 				if (($template = $this->_matchRoutes($pluginRoutes)) !== false)
@@ -174,7 +174,7 @@ class UrlManager extends \CUrlManager
 		else
 		{
 			// Check the user-defined routes
-			$siteRoutes = blx()->routes->getAllRoutes();
+			$siteRoutes = craft()->routes->getAllRoutes();
 
 			if (($template = $this->_matchRoutes($siteRoutes)) !== false)
 			{
@@ -200,7 +200,7 @@ class UrlManager extends \CUrlManager
 			$pattern = str_replace('{handle}', '[a-zA-Z][a-zA-Z0-9_]*', $pattern);
 
 			// Does it match?
-			if (preg_match('/^'.$pattern.'$/', blx()->request->getPath(), $match))
+			if (preg_match('/^'.$pattern.'$/', craft()->request->getPath(), $match))
 			{
 				// Set any capture variables
 				foreach ($match as $key => $value)
@@ -224,9 +224,9 @@ class UrlManager extends \CUrlManager
 	public function matchTemplatePath()
 	{
 		// Make sure they're not trying to access a private template
-		if (!blx()->request->isAjaxRequest())
+		if (!craft()->request->isAjaxRequest())
 		{
-			foreach (blx()->request->getSegments() as $requestPathSeg)
+			foreach (craft()->request->getSegments() as $requestPathSeg)
 			{
 				if (isset($requestPathSeg[0]) && $requestPathSeg[0] == '_')
 				{
@@ -235,6 +235,6 @@ class UrlManager extends \CUrlManager
 			}
 		}
 
-		return blx()->request->getPath();
+		return craft()->request->getPath();
 	}
 }

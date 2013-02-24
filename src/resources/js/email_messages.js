@@ -92,7 +92,7 @@ var MessageSettingsModal = Garnish.Modal.extend({
 			locale: locale
 		};
 
-		$.post(Blocks.getUrl('settings/email/_message_modal'), data, $.proxy(function(response, textStatus, jqXHR)
+		$.post(Craft.getUrl('settings/email/_message_modal'), data, $.proxy(function(response, textStatus, jqXHR)
 		{
 			if (!this.$container)
 			{
@@ -140,7 +140,7 @@ var MessageSettingsModal = Garnish.Modal.extend({
 
 		var data = {
 			key:     this.message.key,
-			locale:  (this.$localeSelect.length ? this.$localeSelect.val() : Blocks.language),
+			locale:  (this.$localeSelect.length ? this.$localeSelect.val() : Craft.language),
 			subject: this.$subjectInput.val(),
 			body:    this.$bodyInput.val()
 		};
@@ -164,19 +164,19 @@ var MessageSettingsModal = Garnish.Modal.extend({
 		this.$saveBtn.addClass('active');
 		this.$spinner.show();
 
-		Blocks.postActionRequest('emailMessages/saveMessage', data, $.proxy(function(response, textStatus, jqXHR) {
+		Craft.postActionRequest('emailMessages/saveMessage', data, $.proxy(function(response, textStatus, jqXHR) {
 
 			if (response.success)
 			{
 				// Only update the page if we're editing the app target locale
-				if (data.locale == Blocks.language)
+				if (data.locale == Craft.language)
 					this.message.updateHtmlFromModal();
 
 				this.hide();
-				Blocks.cp.displayNotice(Blocks.t('Message saved.'));
+				Craft.cp.displayNotice(Craft.t('Message saved.'));
 			}
 			else
-				Blocks.cp.displayError(Blocks.t('Couldn’t save message.'));
+				Craft.cp.displayError(Craft.t('Couldn’t save message.'));
 
 			this.$saveBtn.removeClass('active');
 			this.$spinner.hide();

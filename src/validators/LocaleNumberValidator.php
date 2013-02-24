@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * By default Yii doesn't take into account countries that use a comma for their decimal separator.  This fixes that.
@@ -25,7 +25,7 @@ class LocaleNumberValidator extends \CNumberValidator
 		{
 			if (!preg_match($this->integerPattern, "$value"))
 			{
-				$message = $this->message !== null ? $this->message : Blocks::t('“{attribute}” must be an integer.');
+				$message = $this->message !== null ? $this->message : Craft::t('“{attribute}” must be an integer.');
 				$this->addError($object, $attribute, $message);
 			}
 		}
@@ -35,7 +35,7 @@ class LocaleNumberValidator extends \CNumberValidator
 			$value = LocalizationHelper::normalizeNumber($value);
 			if (!preg_match($this->numberPattern, "$value"))
 			{
-				$message = $this->message !== null ? $this->message : Blocks::t('“{attribute}” must be a number.');
+				$message = $this->message !== null ? $this->message : Craft::t('“{attribute}” must be a number.');
 				$this->addError($object, $attribute, $message);
 			}
 		}
@@ -44,13 +44,13 @@ class LocaleNumberValidator extends \CNumberValidator
 		{
 			if ($this->min !== null && $value < $this->min)
 			{
-				$message = $this->tooSmall !== null ? $this->tooSmall : Blocks::t('“{attribute}” is too small (minimum is {min}).');
+				$message = $this->tooSmall !== null ? $this->tooSmall : Craft::t('“{attribute}” is too small (minimum is {min}).');
 				$this->addError($object, $attribute, $message, array('{min}' => $this->min));
 			}
 
 			if ($this->max !== null && $value > $this->max)
 			{
-				$message = $this->tooBig !== null ? $this->tooBig : Blocks::t('“{attribute}” is too big (maximum is {max}).');
+				$message = $this->tooBig !== null ? $this->tooBig : Craft::t('“{attribute}” is too big (maximum is {max}).');
 				$this->addError($object, $attribute, $message, array('{max}' => $this->max));
 			}
 		}

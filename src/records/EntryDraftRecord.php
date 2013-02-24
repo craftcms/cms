@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::PublishPro);
+Craft::requirePackage(CraftPackage::PublishPro);
 
 /**
  * Stores entry drafts

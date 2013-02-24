@@ -1,87 +1,87 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
  */
-class Blocks extends \Yii
+class Craft extends \Yii
 {
-	private static $_storedBlocksInfo;
+	private static $_storedCraftInfo;
 	private static $_packages;
 	private static $_siteUrl;
 
 	/**
-	 * Returns the Blocks version number, as defined by the BLOCKS_VERSION constant.
+	 * Returns the Craft version number, as defined by the CRAFT_VERSION constant.
 	 *
 	 * @static
 	 * @return string
 	 */
 	public static function getVersion()
 	{
-		return BLOCKS_VERSION;
+		return CRAFT_VERSION;
 	}
 
 	/**
-	 * Returns the Blocks version number, as defined in the blx_info table.
+	 * Returns the Craft version number, as defined in the craft_info table.
 	 *
 	 * @static
 	 * @return string
 	 */
 	public static function getStoredVersion()
 	{
-		$storedBlocksInfo = static::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->version : null;
+		$storedCraftInfo = static::_getStoredInfo();
+		return $storedCraftInfo ? $storedCraftInfo->version : null;
 	}
 
 	/**
-	 * Returns the Blocks build number, as defined by the BLOCKS_BUILD constant.
+	 * Returns the Craft build number, as defined by the CRAFT_BUILD constant.
 	 *
 	 * @static
 	 * @return string
 	 */
 	public static function getBuild()
 	{
-		return BLOCKS_BUILD;
+		return CRAFT_BUILD;
 	}
 
 	/**
 	 *
-	 * Returns the Blocks build number, as defined in the blx_info table.
+	 * Returns the Craft build number, as defined in the craft_info table.
 	 *
 	 * @static
 	 * @return string
 	 */
 	public static function getStoredBuild()
 	{
-		$storedBlocksInfo = static::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->build : null;
+		$storedCraftInfo = static::_getStoredInfo();
+		return $storedCraftInfo ? $storedCraftInfo->build : null;
 	}
 
 	/**
-	 * Returns the Blocks release date, as defined by the BLOCKS_RELEASE_DATE constant.
+	 * Returns the Craft release date, as defined by the CRAFT_RELEASE_DATE constant.
 	 *
 	 * @static
 	 * @return string
 	 */
 	public static function getReleaseDate()
 	{
-		return BLOCKS_RELEASE_DATE;
+		return CRAFT_RELEASE_DATE;
 	}
 
 	/**
-	 * Returns the Blocks release date, as defined in the blx_info table.
+	 * Returns the Craft release date, as defined in the craft_info table.
 	 *
 	 * @static
 	 * @return string
 	 */
 	public static function getStoredReleaseDate()
 	{
-		$storedBlocksInfo = static::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->releaseDate : null;
+		$storedCraftInfo = static::_getStoredInfo();
+		return $storedCraftInfo ? $storedCraftInfo->releaseDate : null;
 	}
 
 	/**
-	 * Returns the packages in this Blocks install, as defined by the BLOCKS_PACKAGES constant.
+	 * Returns the packages in this Craft install, as defined by the CRAFT_PACKAGES constant.
 	 *
 	 * @static
 	 * @return array|null
@@ -90,7 +90,7 @@ class Blocks extends \Yii
 	{
 		if (!isset(static::$_packages))
 		{
-			static::$_packages = array_filter(ArrayHelper::stringToArray(BLOCKS_PACKAGES));
+			static::$_packages = array_filter(ArrayHelper::stringToArray(CRAFT_PACKAGES));
 			sort(static::$_packages);
 		}
 
@@ -98,18 +98,18 @@ class Blocks extends \Yii
 	}
 
 	/**
-	 * Returns the packages in this Blocks install, as defined in the blx_info table.
+	 * Returns the packages in this Craft install, as defined in the craft_info table.
 	 *
 	 * @static
 	 * @return array|null
 	 */
 	public static function getStoredPackages()
 	{
-		$storedBlocksInfo = static::_getStoredInfo();
+		$storedCraftInfo = static::_getStoredInfo();
 
-		if ($storedBlocksInfo)
+		if ($storedCraftInfo)
 		{
-			$storedPackages = array_filter(ArrayHelper::stringToArray($storedBlocksInfo->packages));
+			$storedPackages = array_filter(ArrayHelper::stringToArray($storedCraftInfo->packages));
 			sort($storedPackages);
 			return $storedPackages;
 		}
@@ -122,29 +122,29 @@ class Blocks extends \Yii
 	 */
 	public static function invalidateCachedInfo()
 	{
-		static::$_storedBlocksInfo = null;
+		static::$_storedCraftInfo = null;
 	}
 
 	/**
-	 * Returns the minimum required build number, as defined in the BLOCKS_MIN_BUILD_REQUIRED constant.
+	 * Returns the minimum required build number, as defined in the CRAFT_MIN_BUILD_REQUIRED constant.
 	 *
 	 * @return mixed
 	 */
 	public static function getMinRequiredBuild()
 	{
-		return BLOCKS_MIN_BUILD_REQUIRED;
+		return CRAFT_MIN_BUILD_REQUIRED;
 	}
 
 	/**
-	 * Returns whether a package is included in this Blocks build.
+	 * Returns whether a package is included in this Craft build.
 	 *
 	 * @param $packageName
 	 * @return bool
 	 */
 	public static function hasPackage($packageName)
 	{
-		// If Blocks is already installed, the check the file system AND database to determine if a package is installed or not.
-		if (blx()->isInstalled())
+		// If Craft is already installed, the check the file system AND database to determine if a package is installed or not.
+		if (craft()->isInstalled())
 		{
 			$storedPackages = static::getStoredPackages() == null ? array() : static::getStoredPackages();
 			if (in_array($packageName, $storedPackages) && in_array($packageName, static::getPackages()))
@@ -172,7 +172,7 @@ class Blocks extends \Yii
 	 */
 	public static function requirePackage($packageName)
 	{
-		if (!static::hasPackage($packageName) && blx()->isInstalled())
+		if (!static::hasPackage($packageName) && craft()->isInstalled())
 		{
 			throw new HttpException(404);
 		}
@@ -186,8 +186,8 @@ class Blocks extends \Yii
 	 */
 	public static function getSiteName()
 	{
-		$storedBlocksInfo = static::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->siteName : null;
+		$storedCraftInfo = static::_getStoredInfo();
+		return $storedCraftInfo ? $storedCraftInfo->siteName : null;
 	}
 
 	/**
@@ -200,10 +200,10 @@ class Blocks extends \Yii
 	{
 		if (!isset(static::$_siteUrl))
 		{
-			$storedBlocksInfo = static::_getStoredInfo();
-			if ($storedBlocksInfo)
+			$storedCraftInfo = static::_getStoredInfo();
+			if ($storedCraftInfo)
 			{
-				$port = blx()->request->getPort();
+				$port = craft()->request->getPort();
 
 				if ($port == 80)
 				{
@@ -214,7 +214,7 @@ class Blocks extends \Yii
 					$port = ':'.$port;
 				}
 
-				static::$_siteUrl = rtrim($storedBlocksInfo->siteUrl, '/').$port;
+				static::$_siteUrl = rtrim($storedCraftInfo->siteUrl, '/').$port;
 			}
 			else
 			{
@@ -233,8 +233,8 @@ class Blocks extends \Yii
 	 */
 	public static function getLicenseKey()
 	{
-		$storedBlocksInfo = static::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->licenseKey : null;
+		$storedCraftInfo = static::_getStoredInfo();
+		return $storedCraftInfo ? $storedCraftInfo->licenseKey : null;
 	}
 
 	/**
@@ -245,8 +245,8 @@ class Blocks extends \Yii
 	 */
 	public static function isSystemOn()
 	{
-		$storedBlocksInfo = static::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->on == 1 : false;
+		$storedCraftInfo = static::_getStoredInfo();
+		return $storedCraftInfo ? $storedCraftInfo->on == 1 : false;
 	}
 
 	/**
@@ -257,12 +257,12 @@ class Blocks extends \Yii
 	 */
 	public static function isInMaintenanceMode()
 	{
-		// Don't use the the static property $_storedBlocksInfo.  We want the latest info possible.
+		// Don't use the the static property $_storedCraftInfo.  We want the latest info possible.
 		// Not using Active Record here to prevent issues with determining maintenance mode status during a migration
-		if (blx()->isInstalled())
+		if (craft()->isInstalled())
 		{
-			$storedBlocksInfo = static::_getStoredInfo();
-			return $storedBlocksInfo ? $storedBlocksInfo->maintenance == 1 : false;
+			$storedCraftInfo = static::_getStoredInfo();
+			return $storedCraftInfo ? $storedCraftInfo->maintenance == 1 : false;
 		}
 
 		return false;
@@ -274,9 +274,9 @@ class Blocks extends \Yii
 	public static function enableMaintenanceMode()
 	{
 		// Not using Active Record here to prevent issues with turning the site on/off during a migration
-		if (blx()->db->createCommand()->update('info', array('maintenance' => 1)) > 0)
+		if (craft()->db->createCommand()->update('info', array('maintenance' => 1)) > 0)
 		{
-			static::$_storedBlocksInfo->maintenance = 1;
+			static::$_storedCraftInfo->maintenance = 1;
 			return true;
 		}
 
@@ -290,9 +290,9 @@ class Blocks extends \Yii
 	public static function disableMaintenanceMode()
 	{
 		// Not using Active Record here to prevent issues with turning the site on/off during a migration
-		if (blx()->db->createCommand()->update('info', array('maintenance' => 0)) > 0)
+		if (craft()->db->createCommand()->update('info', array('maintenance' => 0)) > 0)
 		{
-			static::$_storedBlocksInfo->maintenance = 0;
+			static::$_storedCraftInfo->maintenance = 0;
 			return true;
 		}
 
@@ -308,7 +308,7 @@ class Blocks extends \Yii
 	public static function turnSystemOn()
 	{
 		// Not using Active Record here to prevent issues with turning the site on/off during a migration
-		if (blx()->db->createCommand()->update('info', array('on' => 1)) > 0)
+		if (craft()->db->createCommand()->update('info', array('on' => 1)) > 0)
 		{
 			return true;
 		}
@@ -325,7 +325,7 @@ class Blocks extends \Yii
 	public static function turnSystemOff()
 	{
 		// Not using Active Record here to prevent issues with turning the site on/off during a migration
-		if (blx()->db->createCommand()->update('info', array('on' => 0)) > 0)
+		if (craft()->db->createCommand()->update('info', array('on' => 0)) > 0)
 		{
 			return true;
 		}
@@ -334,26 +334,26 @@ class Blocks extends \Yii
 	}
 
 	/**
-	 * Return the saved stored blocks info.  If it's not set, get it from the database and return it.
+	 * Return the saved stored Craft info.  If it's not set, get it from the database and return it.
 	 *
 	 * @static
 	 * @return InfoRecord
 	 */
 	private static function _getStoredInfo()
 	{
-		if (!isset(static::$_storedBlocksInfo))
+		if (!isset(static::$_storedCraftInfo))
 		{
-			if (blx()->isInstalled())
+			if (craft()->isInstalled())
 			{
-				static::$_storedBlocksInfo = InfoRecord::model()->find();
+				static::$_storedCraftInfo = InfoRecord::model()->find();
 			}
 			else
 			{
-				static::$_storedBlocksInfo = false;
+				static::$_storedCraftInfo = false;
 			}
 		}
 
-		return static::$_storedBlocksInfo;
+		return static::$_storedCraftInfo;
 	}
 
 	/**
@@ -396,12 +396,12 @@ class Blocks extends \Yii
 			{
 				case 'app':
 				{
-					$rootPath = BLOCKS_APP_PATH;
+					$rootPath = CRAFT_APP_PATH;
 					break;
 				}
 				case 'plugins':
 				{
-					$rootPath = BLOCKS_PLUGINS_PATH;
+					$rootPath = CRAFT_PLUGINS_PATH;
 					break;
 				}
 				default:
@@ -412,7 +412,7 @@ class Blocks extends \Yii
 		}
 		else
 		{
-			$rootPath = BLOCKS_APP_PATH;
+			$rootPath = CRAFT_APP_PATH;
 		}
 
 		$path = $rootPath.implode('/', $segs);
@@ -451,7 +451,7 @@ class Blocks extends \Yii
 	 * @param string $category
 	 * @return string|null
 	 */
-	public static function t($message, $variables = array(), $source = null, $language = null, $category = 'blocks')
+	public static function t($message, $variables = array(), $source = null, $language = null, $category = 'craft')
 	{
 		// Normalize the param keys
 		$normalizedVariables = array();
@@ -465,7 +465,7 @@ class Blocks extends \Yii
 		}
 
 		$translation = parent::t($category, $message, $normalizedVariables, $source, $language);
-		if (blx()->config->get('translationDebugOutput'))
+		if (craft()->config->get('translationDebugOutput'))
 		{
 			$translation = '@'.$translation.'@';
 		}
@@ -502,7 +502,7 @@ class Blocks extends \Yii
 			}
 		}
 
-		if (blx()->isConsole())
+		if (craft()->isConsole())
 		{
 			echo $msg."\n";
 		}
@@ -522,10 +522,10 @@ class Blocks extends \Yii
 }
 
 /**
- * Returns the current blx() instance.  This is a wrapper function for the Blocks::app() instance.
+ * Returns the current craft() instance.  This is a wrapper function for the Craft::app() instance.
  * @return WebApp|ConsoleApp
  */
-function blx()
+function craft()
 {
-	return Blocks::app();
+	return Craft::app();
 }

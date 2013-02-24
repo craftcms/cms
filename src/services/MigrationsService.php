@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -33,11 +33,11 @@ class MigrationsService extends BaseApplicationComponent
 		{
 			if ($plugin)
 			{
-				Blocks::log('No new migration(s) found for the plugin '.$plugin->getClassHandle().'. Your system is up-to-date.');
+				Craft::log('No new migration(s) found for the plugin '.$plugin->getClassHandle().'. Your system is up-to-date.');
 			}
 			else
 			{
-				Blocks::log('No new migration(s) found for Blocks. Your system is up-to-date.');
+				Craft::log('No new migration(s) found for Craft. Your system is up-to-date.');
 			}
 
 			return true;
@@ -47,16 +47,16 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($plugin)
 		{
-			Blocks::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for plugin ".$plugin->getClassHandle().":");
+			Craft::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for plugin ".$plugin->getClassHandle().":");
 		}
 		else
 		{
-			Blocks::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for Blocks:");
+			Craft::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for Craft:");
 		}
 
 		foreach ($migrations as $migration)
 		{
-			Blocks::log($migration);
+			Craft::log($migration);
 		}
 
 		foreach ($migrations as $migration)
@@ -65,11 +65,11 @@ class MigrationsService extends BaseApplicationComponent
 			{
 				if ($plugin)
 				{
-					Blocks::log('Migration failed for plugin '.$plugin->getClassHandle().'. All later '.$plugin->getClassHandle().' migrations are canceled.', \CLogger::LEVEL_ERROR);
+					Craft::log('Migration failed for plugin '.$plugin->getClassHandle().'. All later '.$plugin->getClassHandle().' migrations are canceled.', \CLogger::LEVEL_ERROR);
 				}
 				else
 				{
-					Blocks::log('Migration failed for Blocks. All later Blocks migrations are canceled.', \CLogger::LEVEL_ERROR);
+					Craft::log('Migration failed for Craft. All later Craft migrations are canceled.', \CLogger::LEVEL_ERROR);
 				}
 
 				return false;
@@ -78,11 +78,11 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($plugin)
 		{
-			Blocks::log($plugin->getClassHandle().' migrated up successfully.');
+			Craft::log($plugin->getClassHandle().' migrated up successfully.');
 		}
 		else
 		{
-			Blocks::log('Blocks migrated up successfully.');
+			Craft::log('Craft migrated up successfully.');
 		}
 
 		return true;
@@ -102,11 +102,11 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($plugin)
 		{
-			Blocks::log('Applying migration: '.$class.' for plugin: '.$plugin->getClassHandle());
+			Craft::log('Applying migration: '.$class.' for plugin: '.$plugin->getClassHandle());
 		}
 		else
 		{
-			Blocks::log('Applying migration: '.$class);
+			Craft::log('Applying migration: '.$class);
 		}
 
 		$start = microtime(true);
@@ -118,9 +118,9 @@ class MigrationsService extends BaseApplicationComponent
 
 			if ($plugin)
 			{
-				$pluginRecord = blx()->plugins->getPluginRecord($plugin);
+				$pluginRecord = craft()->plugins->getPluginRecord($plugin);
 
-				blx()->db->createCommand()->insert($this->_migrationTable, array(
+				craft()->db->createCommand()->insert($this->_migrationTable, array(
 					'version' => $class,
 					$column => DateTimeHelper::currentTimeForDb(),
 					'pluginId' => $pluginRecord->getPrimaryKey()
@@ -128,20 +128,20 @@ class MigrationsService extends BaseApplicationComponent
 			}
 			else
 			{
-				blx()->db->createCommand()->insert($this->_migrationTable, array(
+				craft()->db->createCommand()->insert($this->_migrationTable, array(
 					'version' => $class,
 					$column => DateTimeHelper::currentTimeForDb()
 				));
 			}
 
 			$time = microtime(true) - $start;
-			Blocks::log('Applied migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)');
+			Craft::log('Applied migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)');
 			return true;
 		}
 		else
 		{
 			$time = microtime(true) - $start;
-			Blocks::log('Failed to apply migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)', \CLogger::LEVEL_ERROR);
+			Craft::log('Failed to apply migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)', \CLogger::LEVEL_ERROR);
 			return false;
 		}
 	}
@@ -159,7 +159,7 @@ class MigrationsService extends BaseApplicationComponent
 
 		$class = __NAMESPACE__.'\\'.$class;
 		$migration = new $class;
-		$migration->setDbConnection(blx()->db);
+		$migration->setDbConnection(craft()->db);
 
 		return $migration;
 	}
@@ -175,16 +175,16 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($plugin === 'all')
 		{
-			$query = blx()->db->createCommand()
+			$query = craft()->db->createCommand()
 				->select('version, '.$column)
 				->from($this->_migrationTable)
 				->order('version DESC');
 		}
 		else if ($plugin)
 		{
-			$pluginRecord = blx()->plugins->getPluginRecord($plugin);
+			$pluginRecord = craft()->plugins->getPluginRecord($plugin);
 
-			$query = blx()->db->createCommand()
+			$query = craft()->db->createCommand()
 				->select('version, '.$column)
 				->from($this->_migrationTable)
 				->where('pluginId = :pluginId', array(':pluginId' => $pluginRecord->getPrimaryKey()))
@@ -192,7 +192,7 @@ class MigrationsService extends BaseApplicationComponent
 		}
 		else
 		{
-			$query = blx()->db->createCommand()
+			$query = craft()->db->createCommand()
 				->select('version, '.$column)
 				->from($this->_migrationTable)
 				->where('pluginId IS NULL')
@@ -219,7 +219,7 @@ class MigrationsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets migrations that have no been applied yet AND have a later timestamp than the current Blocks release.
+	 * Gets migrations that have no been applied yet AND have a later timestamp than the current Craft release.
 	 *
 	 * @param $plugin
 	 *
@@ -240,12 +240,12 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($plugin)
 		{
-			$pluginRecord = blx()->plugins->getPluginRecord($plugin);
+			$pluginRecord = craft()->plugins->getPluginRecord($plugin);
 			$storedDate = $pluginRecord->installDate->getTimestamp();
 		}
 		else
 		{
-			$storedDate = Blocks::getStoredReleaseDate()->getTimestamp();
+			$storedDate = Craft::getStoredReleaseDate()->getTimestamp();
 		}
 
 		while (($file = readdir($handle)) !== false)
@@ -266,7 +266,7 @@ class MigrationsService extends BaseApplicationComponent
 
 			if (preg_match('/^m(\d\d)(\d\d)(\d\d)_(\d\d)(\d\d)(\d\d)_\w+\.php$/', $file, $matches))
 			{
-				// Check the migration timestamp against the Blocks release date
+				// Check the migration timestamp against the Craft release date
 				$time = strtotime('20'.$matches[1].'-'.$matches[2].'-'.$matches[3].' '.$matches[4].':'.$matches[5].':'.$matches[6]);
 
 				if ($time > $storedDate)
@@ -300,18 +300,18 @@ class MigrationsService extends BaseApplicationComponent
 	{
 		if ($plugin)
 		{
-			$path = blx()->path->getMigrationsPath($plugin->getClassHandle());
+			$path = craft()->path->getMigrationsPath($plugin->getClassHandle());
 		}
 		else
 		{
-			$path = blx()->path->getMigrationsPath();
+			$path = craft()->path->getMigrationsPath();
 		}
 
 		if (!IOHelper::folderExists($path))
 		{
 			if (!IOHelper::createFolder($path))
 			{
-				throw new Exception(Blocks::t('Tried to create the migration folder at “{folder}”, but could not.', array('folder' => $path)));
+				throw new Exception(Craft::t('Tried to create the migration folder at “{folder}”, but could not.', array('folder' => $path)));
 			}
 		}
 
@@ -323,7 +323,7 @@ class MigrationsService extends BaseApplicationComponent
 	 */
 	public function getTemplate()
 	{
-		return file_get_contents(Blocks::getPathOfAlias('app.etc.updates.migrationtemplate').'.php');
+		return file_get_contents(Craft::getPathOfAlias('app.etc.updates.migrationtemplate').'.php');
 	}
 
 	/**
@@ -333,7 +333,7 @@ class MigrationsService extends BaseApplicationComponent
 	 */
 	private function _getCorrectApplyTimeColumn()
 	{
-		$migrationsTable = blx()->db->getSchema()->getTable('{{migrations}}');
+		$migrationsTable = craft()->db->getSchema()->getTable('{{migrations}}');
 
 		$applyTimeColumn = 'apply_time';
 

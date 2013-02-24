@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -498,7 +498,7 @@ class IOHelper
 				return $contents;
 			}
 
-			Blocks::log('Tried to read the file contents at '.$path.' and could not.');
+			Craft::log('Tried to read the file contents at '.$path.' and could not.');
 			return false;
 		}
 
@@ -534,7 +534,7 @@ class IOHelper
 				}
 			}
 
-			Blocks::log('Tried to read the file contents at '.$path.' and could not.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to read the file contents at '.$path.' and could not.', \CLogger::LEVEL_ERROR);
 			return false;
 		}
 
@@ -556,7 +556,7 @@ class IOHelper
 		{
 			if (($handle = fopen($path, 'w')) === false)
 			{
-				Blocks::log('Tried to create a file at '.$path.', but could not.', \CLogger::LEVEL_ERROR);
+				Craft::log('Tried to create a file at '.$path.', but could not.', \CLogger::LEVEL_ERROR);
 				return false;
 			}
 
@@ -590,7 +590,7 @@ class IOHelper
 
 			if (!mkdir($path, $permissions, true))
 			{
-				Blocks::log('Tried to create a folder at '.$path.', but could not.', \CLogger::LEVEL_ERROR);
+				Craft::log('Tried to create a folder at '.$path.', but could not.', \CLogger::LEVEL_ERROR);
 				return false;
 			}
 
@@ -600,7 +600,7 @@ class IOHelper
 			return new Folder($path);
 		}
 
-		Blocks::log('Tried to create a folder at '.$path.', but the folder already exists.', \CLogger::LEVEL_ERROR);
+		Craft::log('Tried to create a folder at '.$path.', but the folder already exists.', \CLogger::LEVEL_ERROR);
 		return false;
 	}
 
@@ -643,11 +643,11 @@ class IOHelper
 				return true;
 			}
 
-			Blocks::log('Tried to write to file at '.$path.', could not.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to write to file at '.$path.', could not.', \CLogger::LEVEL_ERROR);
 		}
 		else
 		{
-			Blocks::log('Tried to write to file at '.$path.', but the file is not writable.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to write to file at '.$path.', but the file is not writable.', \CLogger::LEVEL_ERROR);
 		}
 
 		return false;
@@ -668,7 +668,7 @@ class IOHelper
 
 		if (posix_getpwnam($owner) == false xor (is_numeric($owner) && posix_getpwuid($owner)== false))
 		{
-			Blocks::log('Tried to change the owner of '.$path.', but the owner name "'.$owner.'" does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to change the owner of '.$path.', but the owner name "'.$owner.'" does not exist.', \CLogger::LEVEL_ERROR);
 			return false;
 		}
 
@@ -693,7 +693,7 @@ class IOHelper
 
 			if (!$success)
 			{
-				Blocks::log('Tried to change the own of '.$path.', but could not.', \CLogger::LEVEL_ERROR);
+				Craft::log('Tried to change the own of '.$path.', but could not.', \CLogger::LEVEL_ERROR);
 				return false;
 			}
 
@@ -701,7 +701,7 @@ class IOHelper
 		}
 		else
 		{
-			Blocks::log('Tried to change owner of '.$path.', but that path does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to change owner of '.$path.', but that path does not exist.', \CLogger::LEVEL_ERROR);
 		}
 
 		return false;
@@ -722,7 +722,7 @@ class IOHelper
 
 		if (posix_getgrnam($group) == false xor (is_numeric($group) && posix_getgrgid($group) == false))
 		{
-			Blocks::log('Tried to change the group of '.$path.', but the group name "'.$group.'" does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to change the group of '.$path.', but the group name "'.$group.'" does not exist.', \CLogger::LEVEL_ERROR);
 			return false;
 		}
 
@@ -747,7 +747,7 @@ class IOHelper
 
 			if (!$success)
 			{
-				Blocks::log('Tried to change the group of '.$path.', but could not.', \CLogger::LEVEL_ERROR);
+				Craft::log('Tried to change the group of '.$path.', but could not.', \CLogger::LEVEL_ERROR);
 				return false;
 			}
 
@@ -755,7 +755,7 @@ class IOHelper
 		}
 		else
 		{
-			Blocks::log('Tried to change group of '.$path.', but that path does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to change group of '.$path.', but that path does not exist.', \CLogger::LEVEL_ERROR);
 		}
 
 		return false;
@@ -780,11 +780,11 @@ class IOHelper
 				return true;
 			}
 
-			Blocks::log('Tried to change the permissions of '.$path.', but could not.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to change the permissions of '.$path.', but could not.', \CLogger::LEVEL_ERROR);
 		}
 		else
 		{
-			Blocks::log('Tried to change permissions of '.$path.', but that path does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to change permissions of '.$path.', but that path does not exist.', \CLogger::LEVEL_ERROR);
 		}
 
 		return false;
@@ -818,16 +818,16 @@ class IOHelper
 					return true;
 				}
 
-				Blocks::log('Tried to copy '.$path.' to '.$destination.', but could not.', \CLogger::LEVEL_ERROR);
+				Craft::log('Tried to copy '.$path.' to '.$destination.', but could not.', \CLogger::LEVEL_ERROR);
 			}
 			else
 			{
-				Blocks::log('Tried to copy '.$path.' to '.$destination.', but could not read the source file.', \CLogger::LEVEL_ERROR);
+				Craft::log('Tried to copy '.$path.' to '.$destination.', but could not read the source file.', \CLogger::LEVEL_ERROR);
 			}
 		}
 		else
 		{
-			Blocks::log('Tried to copy '.$path.' to '.$destination.', but the source file does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to copy '.$path.' to '.$destination.', but the source file does not exist.', \CLogger::LEVEL_ERROR);
 		}
 
 		return false;
@@ -859,14 +859,14 @@ class IOHelper
 				{
 					if (!copy($item, $itemDest))
 					{
-						Blocks::log('Could not copy file from '.$item.' to '.$itemDest.'.', \CLogger::LEVEL_ERROR);
+						Craft::log('Could not copy file from '.$item.' to '.$itemDest.'.', \CLogger::LEVEL_ERROR);
 					}
 				}
 				elseif (static::folderExists($item))
 				{
 					if (!static::createFolder($itemDest))
 					{
-						Blocks::log('Could not create destination folder '.$itemDest, \CLogger::LEVEL_ERROR);
+						Craft::log('Could not create destination folder '.$itemDest, \CLogger::LEVEL_ERROR);
 					}
 				}
 			}
@@ -882,7 +882,7 @@ class IOHelper
 		}
 		else
 		{
-			Blocks::log('Cannot copy folder '.$path.' to '.$destination.' because the source path does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Cannot copy folder '.$path.' to '.$destination.' because the source path does not exist.', \CLogger::LEVEL_ERROR);
 		}
 
 		return false;
@@ -910,17 +910,17 @@ class IOHelper
 				}
 				else
 				{
-					Blocks::log('Could not rename '.$path.' to '.$newName.'.', \CLogger::LEVEL_ERROR);
+					Craft::log('Could not rename '.$path.' to '.$newName.'.', \CLogger::LEVEL_ERROR);
 				}
 			}
 			else
 			{
-				Blocks::log('Could not rename '.$path.' to '.$newName.' because the source file or folder is not writable.', \CLogger::LEVEL_ERROR);
+				Craft::log('Could not rename '.$path.' to '.$newName.' because the source file or folder is not writable.', \CLogger::LEVEL_ERROR);
 			}
 		}
 		else
 		{
-			Blocks::log('Could not rename '.$path.' to '.$newName.' because the source file or folder does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Could not rename '.$path.' to '.$newName.' because the source file or folder does not exist.', \CLogger::LEVEL_ERROR);
 		}
 
 		return false;
@@ -956,12 +956,12 @@ class IOHelper
 			}
 			else
 			{
-				Blocks::log('Could not clear the contents of '.$path.' because the source file is not writable.', \CLogger::LEVEL_ERROR);
+				Craft::log('Could not clear the contents of '.$path.' because the source file is not writable.', \CLogger::LEVEL_ERROR);
 			}
 		}
 		else
 		{
-			Blocks::log('Could not clear the contents of '.$path.' because the source file does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Could not clear the contents of '.$path.' because the source file does not exist.', \CLogger::LEVEL_ERROR);
 		}
 
 		return false;
@@ -1000,7 +1000,7 @@ class IOHelper
 		}
 		else
 		{
-			Blocks::log('Could not clear the contents of '.$path.' because the source folder does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Could not clear the contents of '.$path.' because the source folder does not exist.', \CLogger::LEVEL_ERROR);
 		}
 
 		return false;
@@ -1027,17 +1027,17 @@ class IOHelper
 				}
 				else
 				{
-					Blocks::log('Could not delete the file '.$path.'.', \CLogger::LEVEL_ERROR);
+					Craft::log('Could not delete the file '.$path.'.', \CLogger::LEVEL_ERROR);
 				}
 			}
 			else
 			{
-				Blocks::log('Could not delete the file '.$path.' because it is not writable.', \CLogger::LEVEL_ERROR);
+				Craft::log('Could not delete the file '.$path.' because it is not writable.', \CLogger::LEVEL_ERROR);
 			}
 		}
 		else
 		{
-			Blocks::log('Could not delete the file '.$path.' because the file does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Could not delete the file '.$path.' because the file does not exist.', \CLogger::LEVEL_ERROR);
 		}
 
 		return false;
@@ -1068,17 +1068,17 @@ class IOHelper
 				}
 				else
 				{
-					Blocks::log('Could not delete the folder '.$path.'.', \CLogger::LEVEL_ERROR);
+					Craft::log('Could not delete the folder '.$path.'.', \CLogger::LEVEL_ERROR);
 				}
 			}
 			else
 			{
-				Blocks::log('Could not delete the folder '.$path.' because it is not writable.', \CLogger::LEVEL_ERROR);
+				Craft::log('Could not delete the folder '.$path.' because it is not writable.', \CLogger::LEVEL_ERROR);
 			}
 		}
 		else
 		{
-			Blocks::log('Could not delete the folder '.$path.' because the folder does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Could not delete the folder '.$path.' because the folder does not exist.', \CLogger::LEVEL_ERROR);
 		}
 
 		return false;
@@ -1101,7 +1101,7 @@ class IOHelper
 		}
 		else
 		{
-			Blocks::log('Could not calculate the MD5 for the file '.$path.' because the file does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Could not calculate the MD5 for the file '.$path.' because the file does not exist.', \CLogger::LEVEL_ERROR);
 		}
 
 		return false;
@@ -1188,7 +1188,7 @@ class IOHelper
 		}
 		else
 		{
-			Blocks::log(Blocks::t('Unable to get folder contents for “{path}”.', array('path' => $path), \CLogger::LEVEL_ERROR));
+			Craft::log(Craft::t('Unable to get folder contents for “{path}”.', array('path' => $path), \CLogger::LEVEL_ERROR));
 		}
 
 		return $descendants;
@@ -1233,7 +1233,7 @@ class IOHelper
 	 */
 	public static function getAllowedFileExtensions()
 	{
-		return  ArrayHelper::stringToArray(blx()->config->get('allowedFileExtensions'));
+		return  ArrayHelper::stringToArray(craft()->config->get('allowedFileExtensions'));
 	}
 
 	/**

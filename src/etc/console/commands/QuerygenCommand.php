@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Query generator console command
@@ -89,9 +89,9 @@ class QuerygenCommand extends \CConsoleCommand
 		}
 
 		// Create the table
-		echo "\n// Create the blx_{$table} table\n";
+		echo "\n// Create the craft_{$table} table\n";
 
-		echo 'blx()->db->createCommand()->createTable(' .
+		echo 'craft()->db->createCommand()->createTable(' .
 			$this->_varExport($table).", array(\n";
 
 		$colNameLength = max(array_map('strlen', array_keys($columns))) + 2;
@@ -106,13 +106,13 @@ class QuerygenCommand extends \CConsoleCommand
 		// Create the indexes
 		if ($indexes)
 		{
-			echo "\n// Add indexes to blx_{$table}\n";
+			echo "\n// Add indexes to craft_{$table}\n";
 			foreach ($indexes as $index)
 			{
 				$columns = ArrayHelper::stringToArray($index['columns']);
 				$unique = !empty($index['unique']);
 
-				echo 'blx()->db->createCommand()->createIndex(' .
+				echo 'craft()->db->createCommand()->createIndex(' .
 					$this->_varExport($table).', ' .
 					"'".implode(',', $columns)."', " .
 					$this->_varExport($unique).");\n";
@@ -134,7 +134,7 @@ class QuerygenCommand extends \CConsoleCommand
 		{
 			$table = $record->getTableName();
 
-			echo "\n// Add foreign keys to blx_{$table}\n";
+			echo "\n// Add foreign keys to craft_{$table}\n";
 
 			foreach ($belongsToRelations as $name => $config)
 			{
@@ -168,7 +168,7 @@ class QuerygenCommand extends \CConsoleCommand
 					$onUpdate = null;
 				}
 
-				echo 'blx()->db->createCommand()->addForeignKey(' .
+				echo 'craft()->db->createCommand()->addForeignKey(' .
 					$this->_varExport($table).', ' .
 					$this->_varExport($config[2]).', ' .
 					$this->_varExport($otherTable).', ' .

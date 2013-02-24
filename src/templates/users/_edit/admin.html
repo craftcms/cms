@@ -7,10 +7,10 @@
 
 
 {% if account is not defined %}
-	{% if blx.request.segment(1) == 'myaccount' %}
+	{% if craft.request.segment(1) == 'myaccount' %}
 		{% set account = user %}
 	{% elseif userId %}
-		{% set account = blx.users.status('*').id(userId).first %}
+		{% set account = craft.users.status('*').id(userId).first %}
 	{% endif %}
 	{% if not account %}{% exit 404 %}{% endif %}
 {% endif %}
@@ -19,7 +19,7 @@
 {% set content %}
 	<h2>{{ "User Groups"|t }}</h2>
 
-	{% set allGroups = blx.userGroups.getAllGroups %}
+	{% set allGroups = craft.userGroups.getAllGroups %}
 	{% set userGroups = account.getGroups('id') %}
 
 	{% if allGroups %}
@@ -69,7 +69,7 @@
 		<div id="permissions" class="field{% if account.admin %} hidden{% endif %}">
 			{% include "_includes/permissions" with {
 				userOrGroup: (account.admin ? null : account),
-				groupPermissions: blx.userPermissions.getGroupPermissionsByUserId(account.id)
+				groupPermissions: craft.userPermissions.getGroupPermissionsByUserId(account.id)
 			} only %}
 		</div>
 
@@ -105,7 +105,7 @@
 						{% endif %}
 					</td>
 				</tr>
-				{% if account.status == 'locked' and blx.config.cooldownDuration %}
+				{% if account.status == 'locked' and craft.config.cooldownDuration %}
 					<tr>
 						<th class="nowrap">{{ "Cooldown Time Remaining"|t }}</th>
 						<td>{{ account.remainingCooldownTime.humanDuration }}</td>

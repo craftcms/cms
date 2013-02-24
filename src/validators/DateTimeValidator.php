@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -20,7 +20,7 @@ class DateTimeValidator extends \CValidator
 			{
 				if (!DateTimeHelper::isValidTimeStamp((string)$value))
 				{
-					$message = Blocks::t('“{object}->{attribute}” must be a DateTime object or a valid Unix timestamp.', array('object' => get_class($object), 'attribute' => $attribute));
+					$message = Craft::t('“{object}->{attribute}” must be a DateTime object or a valid Unix timestamp.', array('object' => get_class($object), 'attribute' => $attribute));
 					$this->addError($object, $attribute, $message);
 				}
 			}

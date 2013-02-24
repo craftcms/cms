@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -19,7 +19,7 @@ class PhpMessageSource extends \CPhpMessageSource
 	 */
 	protected function loadMessages($category, $language)
 	{
-		if ($category != 'blocks')
+		if ($category != 'craft')
 		{
 			return parent::loadMessages($category, $language);
 		}
@@ -28,8 +28,8 @@ class PhpMessageSource extends \CPhpMessageSource
 		{
 			$this->_translations[$language] = array();
 
-			$paths[] = blx()->path->getCpTranslationsPath();
-			$paths[] = blx()->path->getSiteTranslationsPath();
+			$paths[] = craft()->path->getCpTranslationsPath();
+			$paths[] = craft()->path->getSiteTranslationsPath();
 
 			foreach ($paths as $path)
 			{

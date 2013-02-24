@@ -1,5 +1,5 @@
 {% if plugin is not defined %}
-	{% set plugin = blx.plugins.getPlugin(pluginClass) %}
+	{% set plugin = craft.plugins.getPlugin(pluginClass) %}
 	{% if not plugin %}{% exit 404 %}{% endif %}
 {% endif %}
 

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Local source type class
@@ -13,7 +13,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	public function getName()
 	{
-		return Blocks::t('Local Folder');
+		return Craft::t('Local Folder');
 	}
 
 	/**
@@ -37,7 +37,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	public function getSettingsHtml()
 	{
-		return blx()->templates->render('_components/assetsourcetypes/Local/settings', array(
+		return craft()->templates->render('_components/assetsourcetypes/Local/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -65,7 +65,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		$errors = array();
 		if (!(IOHelper::folderExists($this->_getSourceFileSystemPath()) && IOHelper::isWritable($this->_getSourceFileSystemPath()))) {
-			$errors['path'] = Blocks::t("The destination folder doesn't exist or is not writable.");
+			$errors['path'] = Craft::t("The destination folder doesn't exist or is not writable.");
 		}
 
 		return $errors;
@@ -82,7 +82,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		$indexedFolderIds = array();
 
-		$indexedFolderIds[blx()->assetIndexing->ensureTopFolder($this->model)] = true;
+		$indexedFolderIds[craft()->assetIndexing->ensureTopFolder($this->model)] = true;
 
 		$localPath = $this->_getSourceFileSystemPath();
 		$fileList = IOHelper::getFolderContents($localPath, true);
@@ -126,7 +126,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 						'size' => is_dir($file) ? 0 : filesize($file)
 					);
 
-					blx()->assetIndexing->storeIndexEntry($indexEntry);
+					craft()->assetIndexing->storeIndexEntry($indexEntry);
 					$total++;
 				}
 			}
@@ -158,7 +158,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	public function processIndex($sessionId, $offset)
 	{
-		$indexEntryModel = blx()->assetIndexing->getIndexEntry($this->model->id, $sessionId, $offset);
+		$indexEntryModel = craft()->assetIndexing->getIndexEntry($this->model->id, $sessionId, $offset);
 
 		if (empty($indexEntryModel))
 		{
@@ -177,7 +177,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		if ($fileModel)
 		{
-			blx()->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
+			craft()->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
 
 			$fileModel->size = $indexEntryModel->size;
 			$fileModel->dateModified = IOHelper::getLastTimeModified($indexEntryModel->uri);
@@ -189,7 +189,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 				$fileModel->height = $height;
 			}
 
-			blx()->assets->storeFile($fileModel);
+			craft()->assets->storeFile($fileModel);
 
 			return $fileModel->id;
 		}
@@ -213,7 +213,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		// Make sure the folder is writable
 		if (! IOHelper::isWritable($targetFolder))
 		{
-			throw new Exception(Blocks::t('Target destination is not writable'));
+			throw new Exception(Craft::t('Target destination is not writable'));
 		}
 
 		$fileName = IOHelper::cleanFilename($fileName);
@@ -223,7 +223,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		if (!IOHelper::isExtensionAllowed($extension))
 		{
-			throw new Exception(Blocks::t('This file type is not allowed'));
+			throw new Exception(Craft::t('This file type is not allowed'));
 		}
 
 		if (IOHelper::fileExists($targetPath))
@@ -236,7 +236,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		if (! IOHelper::copyFile($filePath, $targetPath))
 		{
-			throw new Exception(Blocks::t('Could not copy file to target destination'));
+			throw new Exception(Craft::t('Could not copy file to target destination'));
 		}
 
 		IOHelper::changePermissions($targetPath, IOHelper::writableFilePermissions);
@@ -386,7 +386,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	protected function _deleteGeneratedImageTransformations(AssetFileModel $file)
 	{
 		$folder = $file->getFolder();
-		$transformations = blx()->assetTransformations->getAssetTransformations();
+		$transformations = craft()->assetTransformations->getAssetTransformations();
 		foreach ($transformations as $handle => $transformation)
 		{
 			IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->fullPath.'/_'.$handle.'/'.$file->filename);
@@ -411,12 +411,12 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		$newServerPath = $this->_getSourceFileSystemPath().$targetFolder->fullPath.$fileName;
 
-		$conflictingRecord = blx()->assets->findFile(array(
+		$conflictingRecord = craft()->assets->findFile(array(
 			'folderId' => $targetFolder->id,
 			'filename' => $fileName
 		));
 
-		$conflict = IOHelper::fileExists($newServerPath) || (!blx()->assets->isMergeInProgress() && is_object($conflictingRecord));
+		$conflict = IOHelper::fileExists($newServerPath) || (!craft()->assets->isMergeInProgress() && is_object($conflictingRecord));
 		if ($conflict)
 		{
 			$response = new AssetOperationResponseModel();
@@ -428,7 +428,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		if (!IOHelper::move($this->_getFileSystemPath($file), $newServerPath))
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setError(Blocks::t("Could not save the file"));
+			$response->setError(Craft::t("Could not save the file"));
 			return $response;
 		}
 
@@ -437,7 +437,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			$this->_deleteGeneratedThumbnails($file);
 
 			// Move transformations
-			$transformations = blx()->assetTransformations->getAssetTransformations();
+			$transformations = craft()->assetTransformations->getAssetTransformations();
 			$baseFromPath = $this->_getSourceFileSystemPath().$file->getFolder()->fullPath;
 			$baseToPath = $this->_getSourceFileSystemPath().$targetFolder->fullPath;
 

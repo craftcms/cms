@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -19,7 +19,7 @@ class CompositeUniqueValidator extends \CValidator
 
 		if (count($with) < 1)
 		{
-			throw new Exception(Blocks::t('Attribute “with” not set.'));
+			throw new Exception(Craft::t('Attribute “with” not set.'));
 		}
 
 		$uniqueValidator = new \CUniqueValidator();

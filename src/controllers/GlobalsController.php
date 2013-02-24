@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Globals controller class
@@ -12,21 +12,21 @@ class GlobalsController extends BaseController
 	public function actionSaveFieldLayout()
 	{
 		$this->requirePostRequest();
-		blx()->userSession->requireAdmin();
+		craft()->userSession->requireAdmin();
 
 		// Set the field layout
-		$fieldLayout = blx()->fields->assembleLayoutFromPost(false);
+		$fieldLayout = craft()->fields->assembleLayoutFromPost(false);
 		$fieldLayout->type = ElementType::Globals;
-		blx()->fields->deleteLayoutsByType(ElementType::Globals);
+		craft()->fields->deleteLayoutsByType(ElementType::Globals);
 
-		if (blx()->fields->saveLayout($fieldLayout, false))
+		if (craft()->fields->saveLayout($fieldLayout, false))
 		{
-			blx()->userSession->setNotice(Blocks::t('Global fields saved.'));
+			craft()->userSession->setNotice(Craft::t('Global fields saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save global fields.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save global fields.'));
 		}
 
 		$this->renderRequestedTemplate();
@@ -38,20 +38,20 @@ class GlobalsController extends BaseController
 	public function actionSaveContent()
 	{
 		$this->requirePostRequest();
-		blx()->userSession->requirePermission('editGlobals');
+		craft()->userSession->requirePermission('editGlobals');
 
-		$content = blx()->globals->getGlobalContent();
-		$content->setContent(blx()->request->getPost('fields'));
+		$content = craft()->globals->getGlobalContent();
+		$content->setContent(craft()->request->getPost('fields'));
 
-		if (blx()->globals->saveGlobalContent($content))
+		if (craft()->globals->saveGlobalContent($content))
 		{
-			blx()->userSession->setNotice(Blocks::t('Global fields saved.'));
+			craft()->userSession->setNotice(Craft::t('Global fields saved.'));
 
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save global fields.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save global fields.'));
 
 			$this->renderRequestedTemplate(array(
 				'globals' => $content,

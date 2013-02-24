@@ -1,10 +1,10 @@
 {% import "_includes/forms" as forms %}
 
-{% set sections = blx.sections.getAllSections('id') %}
+{% set sections = craft.sections.getAllSections('id') %}
 
 {% if sections %}
 
-	{% if blx.hasPackage('PublishPro') %}
+	{% if craft.hasPackage('PublishPro') %}
 		{{ forms.selectField({
 			label: "Section"|t,
 			instructions: "Which section do you want to publish entries to?"|t,

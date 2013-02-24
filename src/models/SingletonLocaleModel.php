@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Singleton locale model class
@@ -31,7 +31,7 @@ class SingletonLocaleModel extends BaseModel
 		{
 			if ($this->id)
 			{
-				$this->_uri = blx()->elements->getElementUriForLocale($this->singletonId, $this->locale);
+				$this->_uri = craft()->elements->getElementUriForLocale($this->singletonId, $this->locale);
 			}
 			else
 			{

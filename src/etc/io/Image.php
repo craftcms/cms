@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Image
@@ -30,14 +30,14 @@ class Image
 	{
 		if (!IOHelper::fileExists($path))
 		{
-			throw new Exception(Blocks::t('No file exists at the path “{path}”', array('path' => $path)));
+			throw new Exception(Craft::t('No file exists at the path “{path}”', array('path' => $path)));
 		}
 
 		$this->_extension = IOHelper::getExtension($path);
 
-		if (!blx()->images->setMemoryForImage($path))
+		if (!craft()->images->setMemoryForImage($path))
 		{
-			throw new Exception(Blocks::t("Not enough memory available to perform this image operation."));
+			throw new Exception(Craft::t("Not enough memory available to perform this image operation."));
 		}
 
 		switch ($this->_extension)
@@ -63,7 +63,7 @@ class Image
 
 			default:
 			{
-				throw new Exception(Blocks::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+				throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
 			}
 		}
 
@@ -224,9 +224,9 @@ class Image
 	 */
 	private function _getCanvas($width, $height)
 	{
-		if (!blx()->images->setMemoryForImage($this->_imageSourcePath))
+		if (!craft()->images->setMemoryForImage($this->_imageSourcePath))
 		{
-			throw new Exception(Blocks::t("Not enough memory available to perform this image operation."));
+			throw new Exception(Craft::t("Not enough memory available to perform this image operation."));
 		}
 
 		return $this->_preserveTransparency(imagecreatetruecolor($width, $height));

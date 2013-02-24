@@ -1,8 +1,8 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
- * Loads Blocks templates into Twig.
+ * Loads Craft templates into Twig.
  */
 class TemplateLoader implements \Twig_LoaderInterface
 {
@@ -16,7 +16,7 @@ class TemplateLoader implements \Twig_LoaderInterface
 	{
 		if (is_string($template))
 		{
-			return IOHelper::getFileContents(blx()->templates->findTemplate($template));
+			return IOHelper::getFileContents(craft()->templates->findTemplate($template));
 		}
 		else
 		{
@@ -34,7 +34,7 @@ class TemplateLoader implements \Twig_LoaderInterface
 	{
 		if (is_string($template))
 		{
-			return blx()->templates->findTemplate($template);
+			return craft()->templates->findTemplate($template);
 		}
 		else
 		{
@@ -52,14 +52,14 @@ class TemplateLoader implements \Twig_LoaderInterface
 	public function isFresh($template, $cachedModifiedTime)
 	{
 		// If this is a CP request and a DB update is needed, force a recompile.
-		if (blx()->request->isCpRequest() && blx()->updates->isBlocksDbUpdateNeeded())
+		if (craft()->request->isCpRequest() && craft()->updates->isCraftDbUpdateNeeded())
 		{
 			return false;
 		}
 
 		if (is_string($template))
 		{
-			$sourceModifiedTime = IOHelper::getLastTimeModified(blx()->templates->findTemplate($template));
+			$sourceModifiedTime = IOHelper::getLastTimeModified(craft()->templates->findTemplate($template));
 			return $sourceModifiedTime->getTimestamp() <= $cachedModifiedTime;
 		}
 		else

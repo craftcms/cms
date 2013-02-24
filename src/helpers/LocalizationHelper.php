@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -16,8 +16,8 @@ class LocalizationHelper
 	 */
 	public static function normalizeNumber($number)
 	{
-		$language = blx()->language;
-		$languageData = blx()->i18n->getLocaleData($language);
+		$language = craft()->language;
+		$languageData = craft()->i18n->getLocaleData($language);
 		$decimalSymbol = $languageData->getNumberSymbol('decimal');
 		$groupSymbol = $languageData->getNumberSymbol('group');
 

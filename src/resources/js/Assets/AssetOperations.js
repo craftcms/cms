@@ -83,7 +83,7 @@ Assets.OperationManager = Garnish.Base.extend({
 		this.$transformationCheckboxes.prop('disabled', true);
 		this.$indexCheckbox.prop('disabled',  true);
 
-		Blocks.postActionRequest('assetOperations/getSessionId', $.proxy(function(data){
+		Craft.postActionRequest('assetOperations/getSessionId', $.proxy(function(data){
 			this.sessionId = data.sessionId;
 			this.missingFolders = [];
 			this.queue = new AjaxQueueManager(10, this.displayIndexingReport, this);
@@ -100,7 +100,7 @@ Assets.OperationManager = Garnish.Base.extend({
 					doTransformations: checkedOperations.transformations
 				};
 
-				_t.queue.addItem(Blocks.getActionUrl('assetOperations/startIndex'), params, $.proxy(function (data) {
+				_t.queue.addItem(Craft.getActionUrl('assetOperations/startIndex'), params, $.proxy(function (data) {
 
 					progress_bar.attr('total', data.total).attr('current', 0);
 					for (var i = 0; i < data.total; i++) {
@@ -112,7 +112,7 @@ Assets.OperationManager = Garnish.Base.extend({
 							doTransformations: checkedOperations.transformations
 						};
 
-						this.queue.addItem(Blocks.getActionUrl('assetOperations/performIndex'), params, function () {
+						this.queue.addItem(Craft.getActionUrl('assetOperations/performIndex'), params, function () {
 							progress_bar.attr('current', parseInt(progress_bar.attr('current'), 10) + 1);
 							progress_bar.find('>span').html(progress_bar.attr('current') + ' / ' + progress_bar.attr('total'));
 						});
@@ -163,14 +163,14 @@ Assets.OperationManager = Garnish.Base.extend({
 			sources: checkedSources.join(",")
 		};
 
-		$.post(Blocks.getActionUrl('assetOperations/finishIndex'), params, $.proxy(function (data) {
+		$.post(Craft.getActionUrl('assetOperations/finishIndex'), params, $.proxy(function (data) {
 			var html = '';
 
 			if (typeof data.files != "undefined" || this.missingFolders.length > 0) {
-				html += '<div class="body"><p>' + Blocks.t('The following items were found in the database that do not have a physical match.') +  '</p>';
+				html += '<div class="body"><p>' + Craft.t('The following items were found in the database that do not have a physical match.') +  '</p>';
 
 				if (this.missingFolders.length > 0) {
-					html += '<div class="report-part"><strong>' + Blocks.t('Folders') + '</strong>';
+					html += '<div class="report-part"><strong>' + Craft.t('Folders') + '</strong>';
 					for (var i = 0; i < this.missingFolders.length; i++) {
 						html += '<div><label><input type="checkbox" checked="checked" class="delete_folder" value="' + this.missingFolders[i].folder_id + '" /> ' + this.missingFolders[i].folder_name + '</label></div>';
 					}
@@ -178,7 +178,7 @@ Assets.OperationManager = Garnish.Base.extend({
 				}
 
 				if (typeof data.files != "undefined") {
-					html += '<div class="report-part"><strong>' + Blocks.t('Files') + '</strong>';
+					html += '<div class="report-part"><strong>' + Craft.t('Files') + '</strong>';
 					for (var file_id in data.files) {
 						html += '<div><label><input type="checkbox" checked="checked" class="delete_file" value="' + file_id + '" /> ' + data.files[file_id] + '</label></div>';
 					}
@@ -187,8 +187,8 @@ Assets.OperationManager = Garnish.Base.extend({
 
                 html += '</div>';
 				html += '<footer class="footer"><ul class="right">';
-				html += '<li><input type="button" class="btn cancel" value="' + Blocks.t('Cancel') + '"></li>';
-				html += '<li><input type="button" class="btn submit delete" value="' + Blocks.t('Delete') + '"></li>';
+				html += '<li><input type="button" class="btn cancel" value="' + Craft.t('Cancel') + '"></li>';
+				html += '<li><input type="button" class="btn submit delete" value="' + Craft.t('Delete') + '"></li>';
 				html += '</ul></footer>';
 
 				this.$modalContainerDiv.empty().append(html);
@@ -228,7 +228,7 @@ Assets.OperationManager = Garnish.Base.extend({
 						sources: sources.join(",")
 					};
 
-					$.post(Blocks.getActionUrl('assetOperations/finishIndex'), params, $.proxy(function(data) {
+					$.post(Craft.getActionUrl('assetOperations/finishIndex'), params, $.proxy(function(data) {
 						this.hide();
 
 						this.OperationManager.releaseLock();

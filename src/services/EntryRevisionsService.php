@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::PublishPro);
+Craft::requirePackage(CraftPackage::PublishPro);
 
 /**
  *
@@ -39,7 +39,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	{
 		$draftRecord = EntryDraftRecord::model()->find(array(
 			'condition' => 'entryId = :entryId AND locale = :locale',
-			'params' => array(':entryId' => $entryId, ':locale' => blx()->i18n->getPrimarySiteLocale()),
+			'params' => array(':entryId' => $entryId, ':locale' => craft()->i18n->getPrimarySiteLocale()),
 			'offset' => $offset
 		));
 
@@ -59,7 +59,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	{
 		$draftRecords = EntryDraftRecord::model()->findAllByAttributes(array(
 			'entryId' => $entryId,
-			'locale'  => blx()->i18n->getPrimarySiteLocale(),
+			'locale'  => craft()->i18n->getPrimarySiteLocale(),
 		));
 
 		return EntryDraftModel::populateModels($draftRecords);
@@ -74,7 +74,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	public function getEditableDraftsByEntryId($entryId)
 	{
 		$editableDrafts = array();
-		$user = blx()->userSession->getUser();
+		$user = craft()->userSession->getUser();
 
 		if ($user)
 		{
@@ -124,7 +124,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	{
 		$draftRecord = $this->_getDraftRecord($draft);
 
-		if (blx()->entries->saveEntry($draft))
+		if (craft()->entries->saveEntry($draft))
 		{
 			$draftRecord->delete();
 			return true;
@@ -151,7 +151,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 
 			if (!$draftRecord)
 			{
-				throw new Exception(Blocks::t('No draft exists with the ID “{id}”', array('id' => $draft->draftId)));
+				throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draft->draftId)));
 			}
 		}
 		else
@@ -197,7 +197,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	{
 		$versionRecord = EntryVersionRecord::model()->findByAttributes(array(
 			'entryId' => $entryId,
-			'locale'  => blx()->i18n->getPrimarySiteLocale(),
+			'locale'  => craft()->i18n->getPrimarySiteLocale(),
 		));
 
 		if ($versionRecord)
@@ -216,7 +216,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	{
 		$versionRecords = EntryVersionRecord::model()->findAllByAttributes(array(
 			'entryId' => $entryId,
-			'locale'  => blx()->i18n->getPrimarySiteLocale(),
+			'locale'  => craft()->i18n->getPrimarySiteLocale(),
 		));
 
 		return EntryVersionModel::populateModels($versionRecords, 'versionId');
@@ -233,7 +233,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 		$versionRecord = new EntryVersionRecord();
 		$versionRecord->entryId = $entry->id;
 		$versionRecord->sectionId = $entry->sectionId;
-		$versionRecord->creatorId = blx()->userSession->getUser()->id;
+		$versionRecord->creatorId = craft()->userSession->getUser()->id;
 		$versionRecord->locale = $entry->locale;
 		$versionRecord->data = $this->_getRevisionData($entry);
 		return $versionRecord->save();
@@ -263,7 +263,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 
 		$content = $revision->getRawContent();
 
-		foreach (blx()->fields->getAllFields() as $field)
+		foreach (craft()->fields->getAllFields() as $field)
 		{
 			if (isset($content[$field->handle]) && $content[$field->handle] !== null)
 			{

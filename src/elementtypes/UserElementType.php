@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * User element type
@@ -13,7 +13,7 @@ class UserElementType extends BaseElementType
 	 */
 	public function getName()
 	{
-		return Blocks::t('Users');
+		return Craft::t('Users');
 	}
 
 	/**
@@ -24,7 +24,7 @@ class UserElementType extends BaseElementType
 	 */
 	public function getCpEditUriForElement(ElementModel $entry)
 	{
-		if (Blocks::hasPackage(BlocksPackage::Users))
+		if (Craft::hasPackage(CraftPackage::Users))
 		{
 			return 'users/'.$entry->id;
 		}
@@ -41,7 +41,7 @@ class UserElementType extends BaseElementType
 	 */
 	public function isLinkable()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Users))
+		if (Craft::hasPackage(CraftPackage::Users))
 		{
 			return true;
 		}
@@ -79,7 +79,7 @@ class UserElementType extends BaseElementType
 	 */
 	public function getLinkSettingsHtml()
 	{
-		return blx()->templates->render('_components/elementtypes/User/linksettings', array(
+		return craft()->templates->render('_components/elementtypes/User/linksettings', array(
 			'settings' => $this->getLinkSettings()
 		));
 	}
@@ -93,7 +93,7 @@ class UserElementType extends BaseElementType
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
-		Blocks::requirePackage(BlocksPackage::Users);
+		Craft::requirePackage(CraftPackage::Users);
 
 		$query
 			->addSelect('users.username, users.photo, users.firstName, users.lastName, users.email, users.admin, users.status, users.lastLoginDate')

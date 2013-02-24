@@ -1,7 +1,7 @@
 (function($) {
 
 
-Blocks.RecentEntriesWidget = Garnish.Base.extend({
+Craft.RecentEntriesWidget = Garnish.Base.extend({
 
 	params: null,
 	$widget: null,
@@ -19,7 +19,7 @@ Blocks.RecentEntriesWidget = Garnish.Base.extend({
 		this.$tbody = this.$container.find('tbody:first');
 		this.hasEntries = !!this.$tbody.length;
 
-		Blocks.RecentEntriesWidget.instances.push(this);
+		Craft.RecentEntriesWidget.instances.push(this);
 	},
 
 	addEntry: function(entry)
@@ -41,7 +41,7 @@ Blocks.RecentEntriesWidget = Garnish.Base.extend({
 					'<a href="'+entry.url+'">'+entry.title+'</a> ' +
 					'<span class="light">' +
 						entry.postDate +
-						(Blocks.hasPackage('Users') ? ' '+Blocks.t('by {author}', { author: entry.username }) : '') +
+						(Craft.hasPackage('Users') ? ' '+Craft.t('by {author}', { author: entry.username }) : '') +
 					'</span>' +
 				'</td>' +
 			'</tr>'

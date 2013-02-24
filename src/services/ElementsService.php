@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -22,7 +22,7 @@ class ElementsService extends BaseApplicationComponent
 
 		if (!$elementType)
 		{
-			throw new Exception(Blocks::t('No element type exists by the type “{type}”.', array('type' => $type)));
+			throw new Exception(Craft::t('No element type exists by the type “{type}”.', array('type' => $type)));
 		}
 
 		return new ElementCriteriaModel($attributes, $elementType);
@@ -41,10 +41,10 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($subquery)
 		{
-			$query = blx()->db->createCommand()
+			$query = craft()->db->createCommand()
 				//->select('r.id, r.type, r.expiryDate, r.enabled, r.archived, r.dateCreated, r.dateUpdated, r.locale, r.title, r.uri, r.sectionId, r.slug')
 				->select('*')
-				->from('('.$subquery->getText().') AS '.blx()->db->quoteTableName('r'))
+				->from('('.$subquery->getText().') AS '.craft()->db->quoteTableName('r'))
 				->group('r.id');
 
 			$query->params = $subquery->params;
@@ -122,8 +122,8 @@ class ElementsService extends BaseApplicationComponent
 		{
 			$subquery->select('elements.id')->group('elements.id');
 
-			$query = blx()->db->createCommand()
-				->from('('.$subquery->getText().') AS '.blx()->db->quoteTableName('r'));
+			$query = craft()->db->createCommand()
+				->from('('.$subquery->getText().') AS '.craft()->db->quoteTableName('r'));
 
 			$query->params = $subquery->params;
 
@@ -150,7 +150,7 @@ class ElementsService extends BaseApplicationComponent
 
 		$elementType = $criteria->getElementType();
 
-		$query = blx()->db->createCommand()
+		$query = craft()->db->createCommand()
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.locale, elements_i18n.uri')
 			->from('elements elements');
 
@@ -163,15 +163,15 @@ class ElementsService extends BaseApplicationComponent
 			// Locale conditions
 			if (!$criteria->locale)
 			{
-				$criteria->locale = blx()->language;
+				$criteria->locale = craft()->language;
 			}
 
 			$localeIds = array_unique(array_merge(
 				array($criteria->locale),
-				blx()->i18n->getSiteLocaleIds()
+				craft()->i18n->getSiteLocaleIds()
 			));
 
-			$quotedLocaleColumn = blx()->db->quoteColumnName('elements_i18n.locale');
+			$quotedLocaleColumn = craft()->db->quoteColumnName('elements_i18n.locale');
 
 			if (count($localeIds) == 1)
 			{
@@ -185,7 +185,7 @@ class ElementsService extends BaseApplicationComponent
 
 				foreach ($localeIds as $localeId)
 				{
-					$quotedLocale = blx()->db->quoteValue($localeId);
+					$quotedLocale = craft()->db->quoteValue($localeId);
 					$quotedLocales[] = $quotedLocale;
 					$localeOrder[] = "({$quotedLocaleColumn} = {$quotedLocale}) DESC";
 				}
@@ -308,7 +308,7 @@ class ElementsService extends BaseApplicationComponent
 			}
 			else
 			{
-				$contentRecord->locale = blx()->i18n->getPrimarySiteLocale()->getId();
+				$contentRecord->locale = craft()->i18n->getPrimarySiteLocale()->getId();
 			}
 		}
 
@@ -329,9 +329,9 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// Populate the fields' content
-		foreach (blx()->fields->getAllFields() as $field)
+		foreach (craft()->fields->getAllFields() as $field)
 		{
-			$fieldType = blx()->fields->populateFieldType($field);
+			$fieldType = craft()->fields->populateFieldType($field);
 			$fieldType->element = $element;
 
 			if ($fieldType->defineContentAttribute())
@@ -352,7 +352,7 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function postSaveOperations(ElementModel $element, ContentRecord $contentRecord)
 	{
-		if (Blocks::hasPackage(BlocksPackage::Language))
+		if (Craft::hasPackage(CraftPackage::Language))
 		{
 			// Get the other locales' content records
 			$otherContentRecords = ContentRecord::model()->findAll(
@@ -361,14 +361,14 @@ class ElementsService extends BaseApplicationComponent
 			);
 		}
 
-		$updateOtherContentRecords = (Blocks::hasPackage(BlocksPackage::Language) && $otherContentRecords);
+		$updateOtherContentRecords = (Craft::hasPackage(CraftPackage::Language) && $otherContentRecords);
 
-		$fields = blx()->fields->getAllFields();
+		$fields = craft()->fields->getAllFields();
 		$fieldTypes = array();
 
 		foreach ($fields as $field)
 		{
-			$fieldType = blx()->fields->populateFieldType($field);
+			$fieldType = craft()->fields->populateFieldType($field);
 			$fieldType->element = $element;
 			$fieldTypes[] = $fieldType;
 
@@ -411,7 +411,7 @@ class ElementsService extends BaseApplicationComponent
 	{
 		if (!$element->id)
 		{
-			throw new Exception(Blocks::t('Cannot save the content of an unsaved element.'));
+			throw new Exception(Craft::t('Cannot save the content of an unsaved element.'));
 		}
 
 		$contentRecord = $this->prepElementContent($element, $fieldLayout, $localeId);
@@ -440,7 +440,7 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function getElementUriForLocale($elementId, $localeId)
 	{
-		return blx()->db->createCommand()
+		return craft()->db->createCommand()
 			->select('uri')
 			->from('elements_i18n')
 			->where(array('elementId' => $elementId, 'locale' => $localeId))
@@ -499,7 +499,7 @@ class ElementsService extends BaseApplicationComponent
 			$condition = array('id' => $elementId);
 		}
 
-		blx()->db->createCommand()->delete('elements', $condition);
+		craft()->db->createCommand()->delete('elements', $condition);
 
 		return true;
 	}
@@ -514,7 +514,7 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function getAllElementTypes()
 	{
-		return blx()->components->getComponentsByType(ComponentType::Element);
+		return craft()->components->getComponentsByType(ComponentType::Element);
 	}
 
 	/**
@@ -525,6 +525,6 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function getElementType($class)
 	{
-		return blx()->components->getComponentByTypeAndClass(ComponentType::Element, $class);
+		return craft()->components->getComponentByTypeAndClass(ComponentType::Element, $class);
 	}
 }

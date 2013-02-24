@@ -1,10 +1,10 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
  */
-class BlocksPackage
+class CraftPackage
 {
 	const PublishPro          = 'PublishPro';
 	const Users               = 'Users';

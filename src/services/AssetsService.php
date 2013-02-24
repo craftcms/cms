@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -22,7 +22,7 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function getFilesBySourceId($sourceId, $indexBy = null)
 	{
-		$files = blx()->db->createCommand()
+		$files = craft()->db->createCommand()
 			->select('fi.*')
 			->from('assetfiles fi')
 			->join('assetfolders fo', 'fo.id = fi.folderId')
@@ -71,10 +71,10 @@ class AssetsService extends BaseApplicationComponent
 	{
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
-			$criteria = blx()->elements->getCriteria(ElementType::Asset, $criteria);
+			$criteria = craft()->elements->getCriteria(ElementType::Asset, $criteria);
 		}
 
-		$query = blx()->db->createCommand()
+		$query = craft()->db->createCommand()
 			->select('f.*')
 			->from('assetfiles AS f');
 
@@ -110,7 +110,7 @@ class AssetsService extends BaseApplicationComponent
 	{
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
-			$criteria = blx()->elements->getCriteria(ElementType::Asset, $criteria);
+			$criteria = craft()->elements->getCriteria(ElementType::Asset, $criteria);
 		}
 
 		$criteria->limit = 1;
@@ -154,10 +154,10 @@ class AssetsService extends BaseApplicationComponent
 	{
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
-			$criteria = blx()->elements->getCriteria(ElementType::Asset, $criteria);
+			$criteria = craft()->elements->getCriteria(ElementType::Asset, $criteria);
 		}
 
-		$query = blx()->db->createCommand()
+		$query = craft()->db->createCommand()
 			->select('count(id)')
 			->from('assetfiles AS f');
 
@@ -272,8 +272,8 @@ class AssetsService extends BaseApplicationComponent
 	public function saveFileContent(AssetFileModel $file)
 	{
 		// TODO: translation support
-		$fieldLayout = blx()->fields->getLayoutByType(ElementType::Asset);
-		return blx()->elements->saveElementContent($file, $fieldLayout);
+		$fieldLayout = craft()->fields->getLayoutByType(ElementType::Asset);
+		return craft()->elements->saveElementContent($file, $fieldLayout);
 	}
 
 	// -------------------------------------------
@@ -379,10 +379,10 @@ class AssetsService extends BaseApplicationComponent
 			$parentFolder = $this->getFolderById($parentId);
 			if (empty($parentFolder))
 			{
-				throw new Exception(Blocks::t("Can't find the parent folder!"));
+				throw new Exception(Craft::t("Can't find the parent folder!"));
 			}
 
-			$source = blx()->assetSources->getSourceTypeById($parentFolder->sourceId);
+			$source = craft()->assetSources->getSourceTypeById($parentFolder->sourceId);
 			$response = $source->createFolder($parentFolder, $folderName);
 
 		}
@@ -409,10 +409,10 @@ class AssetsService extends BaseApplicationComponent
 			$folder = $this->getFolderById($folderId);
 			if (empty($folder))
 			{
-				throw new Exception(Blocks::t("Can't find the folder!"));
+				throw new Exception(Craft::t("Can't find the folder!"));
 			}
 
-			$source = blx()->assetSources->getSourceTypeById($folder->sourceId);
+			$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
 			$response = $source->deleteFolder($folder);
 
 		}
@@ -456,7 +456,7 @@ class AssetsService extends BaseApplicationComponent
 			$criteria = new FolderCriteriaModel($criteria);
 		}
 
-		$query = blx()->db->createCommand()
+		$query = craft()->db->createCommand()
 			->select('f.*')
 			->from('assetfolders AS f');
 
@@ -517,7 +517,7 @@ class AssetsService extends BaseApplicationComponent
 			$criteria = new FolderCriteriaModel($criteria);
 		}
 
-		$query = blx()->db->createCommand()
+		$query = craft()->db->createCommand()
 			->select('count(id)')
 			->from('assetfolders AS f');
 
@@ -606,14 +606,14 @@ class AssetsService extends BaseApplicationComponent
 
 			$folder = $this->getFolderById($folderId);
 
-			$source = blx()->assetSources->getSourceTypeById($folder->sourceId);
+			$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
 
 			return $source->uploadFile($folder);
 		}
 		catch (Exception $exception)
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setError(Blocks::t('Error uploading the file: {error}', array('error' => $exception->getMessage())));
+			$response->setError(Craft::t('Error uploading the file: {error}', array('error' => $exception->getMessage())));
 			return $response;
 		}
 	}
@@ -657,7 +657,7 @@ class AssetsService extends BaseApplicationComponent
 		list ($folderId, $createdFileId) = explode(":", $responseInfo);
 
 		$folder = $this->getFolderById($folderId);
-		$source = blx()->assetSources->getSourceTypeById($folder->sourceId);
+		$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
 
 		switch ($userResponse)
 		{
@@ -669,7 +669,7 @@ class AssetsService extends BaseApplicationComponent
 					'filename' => $fileName
 				));
 
-				$replaceWith = blx()->assets->getFileById($createdFileId);
+				$replaceWith = craft()->assets->getFileById($createdFileId);
 
 				$source->replaceFile($targetFile, $replaceWith);
 			}
@@ -701,7 +701,7 @@ class AssetsService extends BaseApplicationComponent
 		foreach ($fileIds as $fileId)
 		{
 			$file = $this->getFileById($fileId);
-			$source = blx()->assetSources->getSourceTypeById($file->sourceId);
+			$source = craft()->assetSources->getSourceTypeById($file->sourceId);
 			$source->deleteFile($file);
 		}
 	}

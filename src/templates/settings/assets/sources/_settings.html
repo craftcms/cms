@@ -9,15 +9,15 @@
 
 
 {% if source is not defined and sourceId is defined %}
-	{% set source = blx.assets.getSourceById(sourceId) %}
+	{% set source = craft.assets.getSourceById(sourceId) %}
 	{% if not source %}{% exit 404 %}{% endif %}
 {% endif %}
 
 
 {% if source is defined %}
-	{% set sourceType = blx.assets.populateSourceType(source) %}
+	{% set sourceType = craft.assets.populateSourceType(source) %}
 {% else %}
-	{% set sourceType = blx.assets.getSourceType('Local') %}
+	{% set sourceType = craft.assets.getSourceType('Local') %}
 {% endif %}
 
 
@@ -49,10 +49,10 @@
 			translatable: true
 		}) }}
 
-		{% if blx.hasPackage('Cloud') %}
-			{% set sourceTypes = blx.assets.getAllSourceTypes %}
+		{% if craft.hasPackage('Cloud') %}
+			{% set sourceTypes = craft.assets.getAllSourceTypes %}
 
-            {% includeJsResource "js/Assets/EditSource.js" %}
+			{% includeJsResource "js/Assets/EditSource.js" %}
 
 			{{ forms.selectField({
 				label: "Type",

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -14,10 +14,10 @@ class ProfileLogRoute extends \CProfileLogRoute
 	 */
 	protected function render($view, $data)
 	{
-		$isAjax = blx()->request->isAjaxRequest();
-		$mimeType = blx()->request->getMimeType();
+		$isAjax = craft()->request->isAjaxRequest();
+		$mimeType = craft()->request->getMimeType();
 
-		if (blx()->config->get('devMode') && !blx()->request->isResourceRequest())
+		if (craft()->config->get('devMode') && !craft()->request->isResourceRequest())
 		{
 			if ($this->showInFireBug)
 			{
@@ -28,7 +28,7 @@ class ProfileLogRoute extends \CProfileLogRoute
 
 				$view .= '-firebug';
 			}
-			else if(!(blx() instanceof \CWebApplication) || $isAjax)
+			else if(!(craft() instanceof \CWebApplication) || $isAjax)
 			{
 				return;
 			}
@@ -38,8 +38,8 @@ class ProfileLogRoute extends \CProfileLogRoute
 				return;
 			}
 
-			$viewFile = blx()->path->getCpTemplatesPath().'logging/'.$view.'.php';
-			include(blx()->findLocalizedFile($viewFile, 'en'));
+			$viewFile = craft()->path->getCpTemplatesPath().'logging/'.$view.'.php';
+			include(craft()->findLocalizedFile($viewFile, 'en'));
 		}
 	}
 }

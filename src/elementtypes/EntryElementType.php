@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Section element type
@@ -13,7 +13,7 @@ class EntryElementType extends BaseElementType
 	 */
 	public function getName()
 	{
-		return Blocks::t('Section Entries');
+		return Craft::t('Section Entries');
 	}
 
 	/**
@@ -41,7 +41,7 @@ class EntryElementType extends BaseElementType
 			$section = $entry->getSection();
 
 			// Make sure the section is set to have URLs and is enabled for this locale
-			if ($section->hasUrls && array_key_exists(blx()->language, $section->getLocales()))
+			if ($section->hasUrls && array_key_exists(craft()->language, $section->getLocales()))
 			{
 				return $section->template;
 			}
@@ -108,7 +108,7 @@ class EntryElementType extends BaseElementType
 	 */
 	public function getLinkSettingsHtml()
 	{
-		return blx()->templates->render('_components/elementtypes/Entry/linksettings', array(
+		return craft()->templates->render('_components/elementtypes/Entry/linksettings', array(
 			'settings' => $this->getLinkSettings()
 		));
 	}
@@ -155,14 +155,14 @@ class EntryElementType extends BaseElementType
 
 		if ($criteria->editable)
 		{
-			$user = blx()->userSession->getUser();
+			$user = craft()->userSession->getUser();
 
 			if (!$user)
 			{
 				return false;
 			}
 
-			$editableSectionIds = blx()->sections->getEditableSectionIds();
+			$editableSectionIds = craft()->sections->getEditableSectionIds();
 			$query->andWhere(array('in', 'entries.sectionId', $editableSectionIds));
 
 			$noPeerConditions = array();
@@ -182,7 +182,7 @@ class EntryElementType extends BaseElementType
 			}
 		}
 
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
 			if ($criteria->sectionId)
 			{
@@ -196,7 +196,7 @@ class EntryElementType extends BaseElementType
 			}
 		}
 
-		if (Blocks::hasPackage(BlocksPackage::Users))
+		if (Craft::hasPackage(CraftPackage::Users))
 		{
 			if ($criteria->authorId)
 			{

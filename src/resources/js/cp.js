@@ -178,7 +178,7 @@ var CP = Garnish.Base.extend({
 				{
 					// Create it
 					this.$overflowNavMenuItem = $('<li/>').appendTo(this.$nav);
-					this.$overflowNavMenuBtn = $('<a class="menubtn" title="'+Blocks.t('More')+'">…</a>').appendTo(this.$overflowNavMenuItem);
+					this.$overflowNavMenuBtn = $('<a class="menubtn" title="'+Craft.t('More')+'">…</a>').appendTo(this.$overflowNavMenuItem);
 					this.$overflowNavMenu = $('<div id="overflow-nav" class="menu" data-align="right"/>').appendTo(this.$overflowNavMenuItem);
 					this.$overflowNavMenuList = $('<ul/>').appendTo(this.$overflowNavMenu);
 					this.$overflowNavMenuBtn.menubtn();
@@ -374,7 +374,7 @@ var CP = Garnish.Base.extend({
 		if (!this.customizeNavModal)
 		{
 			var $modal = $('<div id="customize-nav-modal" class="modal"/>').appendTo(document.body),
-				$header = $('<header class="header"><h1>'+Blocks.t('Customize your nav')+'</h1></header>').appendTo($modal),
+				$header = $('<header class="header"><h1>'+Craft.t('Customize your nav')+'</h1></header>').appendTo($modal),
 				$body = $('<div class="body"/>').appendTo($modal),
 				$ul = $('<ul/>').appendTo($body);
 
@@ -544,7 +544,7 @@ var CP = Garnish.Base.extend({
 });
 
 
-Blocks.cp = new CP();
+Craft.cp = new CP();
 
 
 })(jQuery);

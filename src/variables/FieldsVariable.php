@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Content functions
@@ -17,7 +17,7 @@ class FieldsVariable
 	 */
 	public function getAllGroups($indexBy = null)
 	{
-		return blx()->fields->getAllGroups($indexBy);
+		return craft()->fields->getAllGroups($indexBy);
 	}
 
 	/**
@@ -28,7 +28,7 @@ class FieldsVariable
 	 */
 	public function getGroupById($groupId)
 	{
-		return blx()->fields->getGroupById($groupId);
+		return craft()->fields->getGroupById($groupId);
 	}
 
 	// Fields
@@ -42,7 +42,7 @@ class FieldsVariable
 	 */
 	public function getFieldById($fieldId)
 	{
-		return blx()->fields->getFieldById($fieldId);
+		return craft()->fields->getFieldById($fieldId);
 	}
 
 	/**
@@ -53,7 +53,7 @@ class FieldsVariable
 	 */
 	public function getAllFields($indexBy = null)
 	{
-		return blx()->fields->getAllFields($indexBy);
+		return craft()->fields->getAllFields($indexBy);
 	}
 
 	/**
@@ -65,7 +65,7 @@ class FieldsVariable
 	 */
 	public function getFieldsByGroupId($groupId, $indexBy = null)
 	{
-		return blx()->fields->getFieldsByGroupId($groupId, $indexBy);
+		return craft()->fields->getFieldsByGroupId($groupId, $indexBy);
 	}
 
 	// Layouts
@@ -79,7 +79,7 @@ class FieldsVariable
 	 */
 	public function getLayoutById($layoutId)
 	{
-		return blx()->fields->getLayoutById($layoutId);
+		return craft()->fields->getLayoutById($layoutId);
 	}
 
 	/**
@@ -90,7 +90,7 @@ class FieldsVariable
 	 */
 	public function getLayoutByType($type)
 	{
-		return blx()->fields->getLayoutByType($type);
+		return craft()->fields->getLayoutByType($type);
 	}
 
 	// Fieldtypes
@@ -103,7 +103,7 @@ class FieldsVariable
 	 */
 	public function getAllFieldTypes()
 	{
-		$fieldTypes = blx()->fields->getAllFieldTypes();
+		$fieldTypes = craft()->fields->getAllFieldTypes();
 		return FieldTypeVariable::populateVariables($fieldTypes);
 	}
 
@@ -115,7 +115,7 @@ class FieldsVariable
 	 */
 	public function getFieldType($class)
 	{
-		$fieldType = blx()->fields->getFieldType($class);
+		$fieldType = craft()->fields->getFieldType($class);
 
 		if ($fieldType)
 		{
@@ -132,7 +132,7 @@ class FieldsVariable
 	 */
 	public function populateFieldType(FieldModel $field, $element = null)
 	{
-		$fieldType = blx()->fields->populateFieldType($field, $element);
+		$fieldType = craft()->fields->populateFieldType($field, $element);
 
 		if ($fieldType)
 		{

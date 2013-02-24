@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Stores locale info.
@@ -41,12 +41,12 @@ class LocaleModel extends BaseApplicationComponent
 		// If no language is specified, default to the user's language
 		if (!$targetLocaleId)
 		{
-			$targetLocaleId = blx()->language;
+			$targetLocaleId = craft()->language;
 		}
 
 		if (!isset($this->_nameInLanguage) || !array_key_exists($targetLocaleId, $this->_nameInLanguage))
 		{
-			$localeData = blx()->i18n->getLocaleData($targetLocaleId);
+			$localeData = craft()->i18n->getLocaleData($targetLocaleId);
 
 			if ($localeData)
 			{

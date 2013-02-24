@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -7,7 +7,7 @@ namespace Blocks;
 class ComponentsService extends BaseApplicationComponent
 {
 	/**
-	 * @var array The types of components supported by Blocks.
+	 * @var array The types of components supported by Craft.
 	 */
 	public $types;
 
@@ -37,7 +37,7 @@ class ComponentsService extends BaseApplicationComponent
 			$names = array();
 
 			$filter = $ctype['suffix'].'\.php$';
-			$files = IOHelper::getFolderContents(blx()->path->getAppPath().$ctype['subfolder'], false, $filter);
+			$files = IOHelper::getFolderContents(craft()->path->getAppPath().$ctype['subfolder'], false, $filter);
 
 			if (is_array($files) && count($files) > 0)
 			{
@@ -75,7 +75,7 @@ class ComponentsService extends BaseApplicationComponent
 			}
 
 			// Now load any plugin-supplied components
-			$pluginComponents = blx()->plugins->getAllComponentsByType($ctype['subfolder']);
+			$pluginComponents = craft()->plugins->getAllComponentsByType($ctype['subfolder']);
 
 			foreach ($pluginComponents as $component)
 			{
@@ -187,6 +187,6 @@ class ComponentsService extends BaseApplicationComponent
 	 */
 	private function _noComponentTypeExists($type)
 	{
-		throw new Exception(Blocks::t('No component type exists by the name “{type}”', array('type' => $type)));
+		throw new Exception(Craft::t('No component type exists by the name “{type}”', array('type' => $type)));
 	}
 }

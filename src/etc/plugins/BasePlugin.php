@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Plugin base class
@@ -111,7 +111,7 @@ abstract class BasePlugin extends BaseSavableComponentType
 	public function getRecords($scenario = null)
 	{
 		$records = array();
-		$classes = blx()->plugins->getPluginComponentClassesByType($this->getClassHandle(), 'records');
+		$classes = craft()->plugins->getPluginComponentClassesByType($this->getClassHandle(), 'records');
 
 		foreach ($classes as $class)
 		{

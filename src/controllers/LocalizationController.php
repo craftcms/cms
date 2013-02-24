@@ -1,7 +1,7 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
-Blocks::requirePackage(BlocksPackage::Language);
+Craft::requirePackage(CraftPackage::Language);
 
 /**
  * Handles localization actions.
@@ -16,8 +16,8 @@ class LocalizationController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$locale = blx()->request->getRequiredPost('id');
-		$success = blx()->i18n->addSiteLocale($locale);
+		$locale = craft()->request->getRequiredPost('id');
+		$success = craft()->i18n->addSiteLocale($locale);
 		$this->returnJson(array('success' => $success));
 	}
 
@@ -29,8 +29,8 @@ class LocalizationController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$locales = JsonHelper::decode(blx()->request->getRequiredPost('ids'));
-		$success = blx()->i18n->reorderSiteLocales($locales);
+		$locales = JsonHelper::decode(craft()->request->getRequiredPost('ids'));
+		$success = craft()->i18n->reorderSiteLocales($locales);
 		$this->returnJson(array('success' => $success));
 	}
 
@@ -42,8 +42,8 @@ class LocalizationController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$locale = blx()->request->getRequiredPost('id');
-		$success = blx()->i18n->deleteSiteLocale($locale);
+		$locale = craft()->request->getRequiredPost('id');
+		$success = craft()->i18n->deleteSiteLocale($locale);
 		$this->returnJson(array('success' => $success));
 	}
 
@@ -54,17 +54,17 @@ class LocalizationController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$languages = blx()->request->getPost('languages', array());
+		$languages = craft()->request->getPost('languages', array());
 		sort($languages);
 
-		if (blx()->systemSettings->saveSettings('languages', $languages))
+		if (craft()->systemSettings->saveSettings('languages', $languages))
 		{
-			blx()->userSession->setNotice(Blocks::t('Language settings saved.'));
+			craft()->userSession->setNotice(Craft::t('Language settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save language settings.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save language settings.'));
 		}
 
 		$this->renderRequestedTemplate(array(

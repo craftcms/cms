@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,7 +13,7 @@ class Redirect_Node extends \Twig_Node
 	{
 		$compiler
 		    ->addDebugInfo($this)
-		    ->write('header(\'Location: \'.\Blocks\UrlHelper::getUrl(')
+		    ->write('header(\'Location: \'.\Craft\UrlHelper::getUrl(')
 		    ->subcompile($this->getNode('path'))
 		    ->raw(").'');\n");
 	}

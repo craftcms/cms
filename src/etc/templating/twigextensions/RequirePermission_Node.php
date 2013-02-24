@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,7 +13,7 @@ class RequirePermission_Node extends \Twig_Node
 	{
 		$compiler
 		    ->addDebugInfo($this)
-		    ->write('\Blocks\blx()->userSession->requirePermission(')
+		    ->write('\Craft\craft()->userSession->requirePermission(')
 		    ->subcompile($this->getNode('permissionName'))
 		    ->raw(");\n");
 	}

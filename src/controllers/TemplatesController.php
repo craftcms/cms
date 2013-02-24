@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,23 +13,23 @@ class TemplatesController extends BaseController
 	 */
 	public function actionIndex()
 	{
-		if (blx()->request->isCpRequest() &&
+		if (craft()->request->isCpRequest() &&
 			// The only time we'll allow anonymous access to the CP is in the middle of a manual update.
 			!($this->_isValidManualUpdatePath())
 		)
 		{
 			// Make sure the user has access to the CP
-			blx()->userSession->requireLogin();
-			blx()->userSession->requirePermission('accessCp');
+			craft()->userSession->requireLogin();
+			craft()->userSession->requirePermission('accessCp');
 
 			// If they're accessing a plugin's section, make sure that they have permission to do so
-			$firstSeg = blx()->request->getSegment(1);
+			$firstSeg = craft()->request->getSegment(1);
 			if ($firstSeg)
 			{
-				$plugin = $plugin = blx()->plugins->getPlugin($firstSeg);
+				$plugin = $plugin = craft()->plugins->getPlugin($firstSeg);
 				if ($plugin)
 				{
-					blx()->userSession->requirePermission('accessPlugin-'.$plugin->getClassHandle());
+					craft()->userSession->requirePermission('accessPlugin-'.$plugin->getClassHandle());
 				}
 			}
 		}
@@ -43,12 +43,12 @@ class TemplatesController extends BaseController
 	public function actionOffline()
 	{
 		// If this is a site request, make sure the offline template exists
-		if (blx()->request->isSiteRequest())
+		if (craft()->request->isSiteRequest())
 		{
-			if (!IOHelper::fileExists(blx()->path->getSiteTemplatesPath().'offline.html'))
+			if (!IOHelper::fileExists(craft()->path->getSiteTemplatesPath().'offline.html'))
 			{
 				// Set PathService to use the CP templates path instead
-				blx()->path->setTemplatesPath(blx()->path->getCpTemplatesPath());
+				craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
 			}
 		}
 
@@ -61,24 +61,24 @@ class TemplatesController extends BaseController
 	 */
 	private function _isValidManualUpdatePath()
 	{
-		// Is this a manual Blocks update?
-		if (blx()->request->getPath() == 'updates/go/blocks' && blx()->request->getParam('manual', null) == 1)
+		// Is this a manual Craft update?
+		if (craft()->request->getPath() == 'updates/go/craft' && craft()->request->getParam('manual', null) == 1)
 		{
 			// Extra check in case someone manually comes to the url.
-			if (blx()->updates->isBlocksDbUpdateNeeded())
+			if (craft()->updates->isCraftDbUpdateNeeded())
 			{
 				return true;
 			}
 		}
 
 		// Is this a manual plugin update?
-		$segments = blx()->request->getSegments();
-		if (count($segments) == 3 && $segments[0] == 'updates' && $segments[1] == 'go' && blx()->request->getParam('manual', null) == 1)
+		$segments = craft()->request->getSegments();
+		if (count($segments) == 3 && $segments[0] == 'updates' && $segments[1] == 'go' && craft()->request->getParam('manual', null) == 1)
 		{
-			if (($plugin = blx()->plugins->getPlugin($segments[2])) !== null)
+			if (($plugin = craft()->plugins->getPlugin($segments[2])) !== null)
 			{
 				// Extra check in case someone manually comes to the url.
-				if (blx()->plugins->doesPluginRequireDatabaseUpdate($plugin))
+				if (craft()->plugins->doesPluginRequireDatabaseUpdate($plugin))
 				{
 					return true;
 				}

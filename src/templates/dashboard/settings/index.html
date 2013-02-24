@@ -6,7 +6,7 @@
 ] %}
 
 
-{% set widgets = blx.dashboard.getUserWidgets %}
+{% set widgets = craft.dashboard.getUserWidgets %}
 {% set sortable  = (widgets|length > 1) %}
 
 
@@ -21,7 +21,7 @@
 		<table id="widgets" class="data collapsible">
 			<tbody>
 				{% for widget in widgets %}
-					{% set widgetType = blx.dashboard.populateWidgetType(widget) %}
+					{% set widgetType = craft.dashboard.populateWidgetType(widget) %}
 					<tr data-id="{{ widget.id }}" data-name="{{ widgetType ? widgetType.title : widget.type }}">
 						<th scope="row" data-title="{{ 'Name'|t }}">
 							<a href="{{ url('dashboard/settings/' ~ widget.id) }}">{{ widgetType ? widgetType.title : "Unknown"|t }}</a>
@@ -46,7 +46,7 @@
 
 
 {% set js %}
-	new Blocks.AdminTable({
+	new Craft.AdminTable({
 		tableSelector: '#widgets',
 		noObjectsSelector: '#nowidgets',
 		sortable: true,

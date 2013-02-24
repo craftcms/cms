@@ -1,9 +1,9 @@
-if (typeof Blocks == 'undefined')
+if (typeof Craft == 'undefined')
 {
-	Blocks = {};
+	Craft = {};
 }
 
-Blocks = $.extend(Blocks, {
+Craft = $.extend(Craft, {
 
 	navHeight: 48,
 
@@ -29,8 +29,8 @@ Blocks = $.extend(Blocks, {
 	 */
 	t: function(message, params)
 	{
-		if (typeof Blocks.translations[message] != 'undefined')
-			message = Blocks.translations[message];
+		if (typeof Craft.translations[message] != 'undefined')
+			message = Craft.translations[message];
 
 		if (params)
 		{
@@ -44,22 +44,20 @@ Blocks = $.extend(Blocks, {
 	},
 
 	/**
-	 * Returns whether a package is included in this Blocks build.
+	 * Returns whether a package is included in this Craft build.
 	 *
-	 * @param string $package
 	 * @return bool
+	 * @param pkg
 	 */
 	hasPackage: function(pkg)
 	{
-		return ($.inArray(pkg, Blocks.packages) != -1);
+		return ($.inArray(pkg, Craft.packages) != -1);
 	},
 
 	/**
-	 * Returns a URL.
-	 *
-	 * @param string path
-	 * @param array|string|null params
 	 * @return string
+	 * @param path
+	 * @param params
 	 */
 	getUrl: function(path, params)
 	{
@@ -69,7 +67,7 @@ Blocks = $.extend(Blocks, {
 			return path;
 		}
 
-		path = Blocks.trim(path, '/');
+		path = Craft.trim(path, '/');
 
 		var anchor = '';
 
@@ -101,11 +99,11 @@ Blocks = $.extend(Blocks, {
 		}
 		else
 		{
-			params = Blocks.ltrim(params, '&');
+			params = Craft.ltrim(params, '&');
 		}
 
 		// Put it all together
-		var url = Blocks.baseUrl;
+		var url = Craft.baseUrl;
 
 		// Does the base URL already have a query string?
 		var qsMarker = url.indexOf('?');
@@ -121,7 +119,7 @@ Blocks = $.extend(Blocks, {
 			}
 		}
 
-		if (!Blocks.usePathInfo && path)
+		if (!Craft.usePathInfo && path)
 		{
 			// Is the p= param already set?
 			if (params && params.substr(0, 2) == 'p=')
@@ -173,8 +171,8 @@ Blocks = $.extend(Blocks, {
 	 */
 	getResourceUrl: function(path, params)
 	{
-		path = Blocks.resourceTrigger+'/'+Blocks.trim(path, '/');
-		return Blocks.getUrl(path, params);
+		path = Craft.resourceTrigger+'/'+Craft.trim(path, '/');
+		return Craft.getUrl(path, params);
 	},
 
 	/**
@@ -186,8 +184,8 @@ Blocks = $.extend(Blocks, {
 	 */
 	getActionUrl: function(path, params)
 	{
-		path = Blocks.actionTrigger+'/'+Blocks.trim(path, '/');
-		return Blocks.getUrl(path, params);
+		path = Craft.actionTrigger+'/'+Craft.trim(path, '/');
+		return Craft.getUrl(path, params);
 	},
 
 	/**
@@ -200,7 +198,7 @@ Blocks = $.extend(Blocks, {
 	 */
 	postActionRequest: function(action, data, onSuccess, onError)
 	{
-		var url = Blocks.getActionUrl(action);
+		var url = Craft.getActionUrl(action);
 
 		// Param mapping
 		if (typeof data == 'function')
@@ -274,7 +272,7 @@ Blocks = $.extend(Blocks, {
 	{
 		if (!str) return str;
 		if (chars === undefined) chars = ' ';
-		var re = new RegExp('^['+Blocks.escapeChars(chars)+']+');
+		var re = new RegExp('^['+Craft.escapeChars(chars)+']+');
 		return str.replace(re, '');
 	},
 
@@ -289,7 +287,7 @@ Blocks = $.extend(Blocks, {
 	{
 		if (!str) return str;
 		if (chars === undefined) chars = ' ';
-		var re = new RegExp('['+Blocks.escapeChars(chars)+']+$');
+		var re = new RegExp('['+Craft.escapeChars(chars)+']+$');
 		return str.replace(re, '');
 	},
 
@@ -302,8 +300,8 @@ Blocks = $.extend(Blocks, {
 	 */
 	trim: function(str, chars)
 	{
-		str = Blocks.ltrim(str, chars);
-		str = Blocks.rtrim(str, chars);
+		str = Craft.ltrim(str, chars);
+		str = Craft.rtrim(str, chars);
 		return str;
 	},
 
@@ -425,9 +423,9 @@ Blocks = $.extend(Blocks, {
 			{
 				asciiStr += str.charAt(c);
 			}
-			else if (typeof Blocks.asciiCharMap[ascii] != 'undefined')
+			else if (typeof Craft.asciiCharMap[ascii] != 'undefined')
 			{
-				asciiStr += Blocks.asciiCharMap[ascii];
+				asciiStr += Craft.asciiCharMap[ascii];
 			}
 		}
 
@@ -539,7 +537,7 @@ $.extend($.fn, {
 		{
 			if (!$.data(this, 'fieldtoggle'))
 			{
-				new Blocks.FieldToggle(this);
+				new Craft.FieldToggle(this);
 			}
 		});
 	},
@@ -573,7 +571,7 @@ $.extend($.fn, {
 		{
 			if (!$.data(this, 'lightswitch'))
 			{
-				new Blocks.LightSwitch(this, settings);
+				new Craft.LightSwitch(this, settings);
 			}
 		});
 	},

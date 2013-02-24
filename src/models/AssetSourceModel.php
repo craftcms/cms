@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Asset source model class
@@ -15,7 +15,7 @@ class AssetSourceModel extends BaseComponentModel
 	 */
 	function __toString()
 	{
-		return Blocks::t($this->name);
+		return Craft::t($this->name);
 	}
 
 	/**

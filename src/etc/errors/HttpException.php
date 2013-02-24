@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -14,7 +14,7 @@ class HttpException extends \CHttpException
 	function __construct($status = '', $message = null, $code = 0)
 	{
 		$status = $status ? $status : '';
-		Blocks::log(($status ? $status.' - ' : '').$message, \CLogger::LEVEL_ERROR);
+		Craft::log(($status ? $status.' - ' : '').$message, \CLogger::LEVEL_ERROR);
 		parent::__construct($status, $message, $code);
 	}
 }

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * UserIdentity represents the data needed to identify a user.
@@ -23,7 +23,7 @@ class UserIdentity extends \CUserIdentity
 	 */
 	public function authenticate()
 	{
-		$user = blx()->users->getUserByUsernameOrEmail($this->username);
+		$user = craft()->users->getUserByUsernameOrEmail($this->username);
 
 		if ($user)
 		{
@@ -70,19 +70,19 @@ class UserIdentity extends \CUserIdentity
 			case UserStatus::Active:
 			{
 				// Validate the password
-				if (blx()->security->checkString($this->password, $user->password))
+				if (craft()->security->checkString($this->password, $user->password))
 				{
 					if ($user->passwordResetRequired)
 					{
 						$this->_id = $user->id;
 						$this->errorCode = static::ERROR_PASSWORD_RESET_REQUIRED;
-						blx()->users->sendForgotPasswordEmail($user);
+						craft()->users->sendForgotPasswordEmail($user);
 					}
-					else if (blx()->request->isCpRequest() && !$user->can('accessCp'))
+					else if (craft()->request->isCpRequest() && !$user->can('accessCp'))
 					{
 						$this->errorCode = static::ERROR_NO_CP_ACCESS;
 					}
-					else if (blx()->request->isCpRequest() && !Blocks::isSystemOn() && !$user->can('accessCpWhenSystemIsOff'))
+					else if (craft()->request->isCpRequest() && !Craft::isSystemOn() && !$user->can('accessCpWhenSystemIsOff'))
 					{
 						$this->errorCode = static::ERROR_NO_CP_OFFLINE_ACCESS;
 					}
@@ -96,7 +96,7 @@ class UserIdentity extends \CUserIdentity
 				}
 				else
 				{
-					blx()->users->handleInvalidLogin($user);
+					craft()->users->handleInvalidLogin($user);
 
 					// Was that one bad password too many?
 					if ($user->status == UserStatus::Locked)
@@ -113,7 +113,7 @@ class UserIdentity extends \CUserIdentity
 
 			default:
 			{
-				throw new Exception(Blocks::t('User has unknown status “{status}”', array($user->status)));
+				throw new Exception(Craft::t('User has unknown status “{status}”', array($user->status)));
 			}
 		}
 	}
@@ -126,7 +126,7 @@ class UserIdentity extends \CUserIdentity
 	 */
 	private function _getLockedAccountErrorCode()
 	{
-		if (blx()->config->get('cooldownDuration'))
+		if (craft()->config->get('cooldownDuration'))
 		{
 			return static::ERROR_ACCOUNT_COOLDOWN;
 		}

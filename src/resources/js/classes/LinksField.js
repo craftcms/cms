@@ -1,7 +1,7 @@
 /**
- * Links Block
+ * Links Field
  */
-Blocks.LinksField = Garnish.Base.extend({
+Craft.LinksField = Garnish.Base.extend({
 
 	_$inputContainer: null,
 	_$inputTbody: null,
@@ -58,7 +58,7 @@ Blocks.LinksField = Garnish.Base.extend({
 			}, this)
 		});
 
-		this._inputSort = new Blocks.DataTableSorter($table, {
+		this._inputSort = new Craft.DataTableSorter($table, {
 			handle: '.element',
 			filter: $.proxy(function() {
 				return this._inputSelect.getSelectedItems().closest('tr');
@@ -88,7 +88,7 @@ Blocks.LinksField = Garnish.Base.extend({
 			$cancelBtnContainer = $('<li/>').appendTo($rightList),
 			$selectBtnContainer = $('<li/>').appendTo($rightList);
 
-		this._$cancelBtn = $('<div class="btn">'+Blocks.t('Cancel')+'</div>').appendTo($cancelBtnContainer);
+		this._$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($cancelBtnContainer);
 		this._$selectBtn = $('<div class="btn submit disabled">'+this._settings.addLabel+'</div>').appendTo($selectBtnContainer);
 
 		this._modal = new Garnish.Modal($modal);
@@ -132,7 +132,7 @@ Blocks.LinksField = Garnish.Base.extend({
 			selectedIds: JSON.stringify(this._selectedIds)
 		};
 
-		Blocks.postActionRequest('links/getModalBody', data, $.proxy(function(response) {
+		Craft.postActionRequest('links/getModalBody', data, $.proxy(function(response) {
 			this._$modalBody.html(response);
 
 			this._$modalTbody = this._$modalBody.find('tbody:first');

@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -42,7 +42,7 @@ class AssetFileModel extends ElementModel
 	 */
 	public function getFolder()
 	{
-		return blx()->assets->getFolderById($this->folderId);
+		return craft()->assets->getFolderById($this->folderId);
 	}
 
 	/**
@@ -53,7 +53,7 @@ class AssetFileModel extends ElementModel
 	 */
 	public function getUrl($sizeHandle = null)
 	{
-		return blx()->assetSources->getSourceTypeById($this->sourceId)->getSettings()->url.
+		return craft()->assetSources->getSourceTypeById($this->sourceId)->getSettings()->url.
 			$this->getFolder()->fullPath.
 			($sizeHandle ? '_'.$sizeHandle.'/' : '').
 			$this->filename;

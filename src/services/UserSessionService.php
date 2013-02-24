@@ -1,13 +1,13 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
  */
 class UserSessionService extends \CWebUser
 {
-	const FLASH_KEY_PREFIX = 'Blocks.UserSessionService.flash.';
-	const FLASH_COUNTERS   = 'Blocks.UserSessionService.flashcounters';
+	const FLASH_KEY_PREFIX = 'Craft.UserSessionService.flash.';
+	const FLASH_COUNTERS   = 'Craft.UserSessionService.flashcounters';
 
 	/**
 	 * Stores the user identity.
@@ -43,7 +43,7 @@ class UserSessionService extends \CWebUser
 	public function getUser()
 	{
 		// Does a user appear to be logged in?
-		if (blx()->isInstalled() && $this->getState('__id') !== null)
+		if (craft()->isInstalled() && $this->getState('__id') !== null)
 		{
 			if (!isset($this->_user))
 			{
@@ -175,21 +175,21 @@ class UserSessionService extends \CWebUser
 	{
 		if ($this->isGuest())
 		{
-			if (!blx()->request->isAjaxRequest())
+			if (!craft()->request->isAjaxRequest())
 			{
-				if (blx()->request->getPathInfo() !== '')
+				if (craft()->request->getPathInfo() !== '')
 				{
-					$this->setReturnUrl(blx()->request->getPath());
+					$this->setReturnUrl(craft()->request->getPath());
 				}
 			}
 			elseif (isset($this->loginRequiredAjaxResponse))
 			{
 				echo $this->loginRequiredAjaxResponse;
-				blx()->end();
+				craft()->end();
 			}
 
 			$url = UrlHelper::getUrl($this->loginUrl);
-			blx()->request->redirect($url);
+			craft()->request->redirect($url);
 		}
 	}
 
@@ -220,9 +220,9 @@ class UserSessionService extends \CWebUser
 		$passwordModel->password = $password;
 
 		// Require a userAgent string and an IP address to help prevent direct socket connections from trying to login.
-		if (!blx()->request->userAgent || !blx()->request->getIpAddress())
+		if (!craft()->request->userAgent || !craft()->request->getIpAddress())
 		{
-			Blocks::log('Someone tried to login with loginName: '.$username.', without presenting an IP address or userAgent string.', \CLogger::LEVEL_WARNING);
+			Craft::log('Someone tried to login with loginName: '.$username.', without presenting an IP address or userAgent string.', \CLogger::LEVEL_WARNING);
 			$this->logout(true);
 			$this->requireLogin();
 		}
@@ -238,7 +238,7 @@ class UserSessionService extends \CWebUser
 			if ($this->_identity->errorCode == UserIdentity::ERROR_NONE)
 			{
 				// See if the 'rememberUsernameDuration' config item is set. If so, save the name to a cookie.
-				$rememberUsernameDuration = blx()->config->get('rememberUsernameDuration');
+				$rememberUsernameDuration = craft()->config->get('rememberUsernameDuration');
 				if ($rememberUsernameDuration)
 				{
 					$interval = new DateInterval($rememberUsernameDuration);
@@ -265,15 +265,15 @@ class UserSessionService extends \CWebUser
 					{
 						if ($this->allowAutoLogin)
 						{
-							$user = blx()->users->getUserById($id);
+							$user = craft()->users->getUserById($id);
 
 							if ($user)
 							{
 								// Save the necessary info to the identity cookie.
 								$sessionToken = StringHelper::UUID();
-								$hashedToken = blx()->security->hashString($sessionToken);
-								$uid = blx()->users->handleSuccessfulLogin($user, $hashedToken['hash']);
-								$userAgent = blx()->request->userAgent;
+								$hashedToken = craft()->security->hashString($sessionToken);
+								$uid = craft()->users->handleSuccessfulLogin($user, $hashedToken['hash']);
+								$userAgent = craft()->request->userAgent;
 
 								$data = array(
 									$this->getName(),
@@ -288,12 +288,12 @@ class UserSessionService extends \CWebUser
 							}
 							else
 							{
-								throw new Exception(Blocks::t('Could not find a user with Id of {userId}.', array('{userId}' => $this->getId())));
+								throw new Exception(Craft::t('Could not find a user with Id of {userId}.', array('{userId}' => $this->getId())));
 							}
 						}
 						else
 						{
-							throw new Exception(Blocks::t('{class}.allowAutoLogin must be set true in order to use cookie-based authentication.', array('{class}' => get_class($this))));
+							throw new Exception(Craft::t('{class}.allowAutoLogin must be set true in order to use cookie-based authentication.', array('{class}' => get_class($this))));
 						}
 					}
 
@@ -308,7 +308,7 @@ class UserSessionService extends \CWebUser
 			}
 		}
 
-		Blocks::log($username.' tried to log in unsuccessfully.', \CLogger::LEVEL_WARNING);
+		Craft::log($username.' tried to log in unsuccessfully.', \CLogger::LEVEL_WARNING);
 		return false;
 	}
 
@@ -357,13 +357,13 @@ class UserSessionService extends \CWebUser
 		$cookie->httpOnly = true;
 		$cookie->expire = time() + $duration;
 
-		if (blx()->request->isSecureConnection)
+		if (craft()->request->isSecureConnection)
 		{
 			$cookie->secure = true;
 		}
 
-		$cookie->value = blx()->getSecurityManager()->hashData(base64_encode(serialize($data)));
-		blx()->getRequest()->getCookies()->add($cookie->name, $cookie);
+		$cookie->value = craft()->getSecurityManager()->hashData(base64_encode(serialize($data)));
+		craft()->getRequest()->getCookies()->add($cookie->name, $cookie);
 	}
 
 	/**
@@ -372,9 +372,9 @@ class UserSessionService extends \CWebUser
 	 */
 	public function getCookieValue($cookieName)
 	{
-		$cookie = blx()->request->getCookie($this->getStateKeyPrefix().$cookieName);
+		$cookie = craft()->request->getCookie($this->getStateKeyPrefix().$cookieName);
 
-		if ($cookie && !empty($cookie->value) && ($data = blx()->securityManager->validateData($cookie->value)) !== false)
+		if ($cookie && !empty($cookie->value) && ($data = craft()->securityManager->validateData($cookie->value)) !== false)
 		{
 			$data = @unserialize(base64_decode($data));
 			return $data;
@@ -396,23 +396,23 @@ class UserSessionService extends \CWebUser
 	 */
 	protected function renewCookie()
 	{
-		$cookies = blx()->request->getCookies();
+		$cookies = craft()->request->getCookies();
 		$cookie = $cookies->itemAt($this->getStateKeyPrefix());
 
 		// Check the identity cookie and make sure the data hasn't been tampered with.
-		if ($cookie && !empty($cookie->value) && ($data = blx()->securityManager->validateData($cookie->value)) !== false)
+		if ($cookie && !empty($cookie->value) && ($data = craft()->securityManager->validateData($cookie->value)) !== false)
 		{
 			$data = $this->getCookieValue('');
 
 			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3], $data[4], $data[5]))
 			{
 				$savedUserAgent = $data[4];
-				$currentUserAgent = blx()->request->userAgent;
+				$currentUserAgent = craft()->request->userAgent;
 
 				// If the saved userAgent differs from the current one, bail.
 				if ($savedUserAgent !== $currentUserAgent)
 				{
-					Blocks::log('Tried to renew the identity cookie, but the saved userAgent ('.$savedUserAgent.') does not match the current userAgent ('.$currentUserAgent.').', \CLogger::LEVEL_WARNING);
+					Craft::log('Tried to renew the identity cookie, but the saved userAgent ('.$savedUserAgent.') does not match the current userAgent ('.$currentUserAgent.').', \CLogger::LEVEL_WARNING);
 					$this->logout(true);
 				}
 
@@ -445,18 +445,18 @@ class UserSessionService extends \CWebUser
 	protected function restoreFromCookie()
 	{
 		// Require a userAgent string and an IP address to help prevent direct socket connections from trying to login.
-		if (!blx()->request->userAgent || !blx()->request->getIpAddress())
+		if (!craft()->request->userAgent || !craft()->request->getIpAddress())
 		{
-			Blocks::log('Someone tried to restore a session from a cookie without presenting an IP address or userAgent string.', \CLogger::LEVEL_WARNING);
+			Craft::log('Someone tried to restore a session from a cookie without presenting an IP address or userAgent string.', \CLogger::LEVEL_WARNING);
 			$this->logout(true);
 			$this->requireLogin();
 		}
 
 		// See if they have an existing identity cookie.
-		$cookie = blx()->request->getCookies()->itemAt($this->getStateKeyPrefix());
+		$cookie = craft()->request->getCookies()->itemAt($this->getStateKeyPrefix());
 
 		// Grab the identity cookie and make sure the data hasn't been tampered with.
-		if ($cookie && !empty($cookie->value) && is_string($cookie->value) && ($data = blx()->securityManager->validateData($cookie->value)) !== false)
+		if ($cookie && !empty($cookie->value) && is_string($cookie->value) && ($data = craft()->securityManager->validateData($cookie->value)) !== false)
 		{
 			// Grab the data
 			$data = $this->getCookieValue('');
@@ -469,12 +469,12 @@ class UserSessionService extends \CWebUser
 				$seconds = $data[3];
 				$savedUserAgent = $data[4];
 				$states = $data[5];
-				$currentUserAgent = blx()->request->userAgent;
+				$currentUserAgent = craft()->request->userAgent;
 
 				// If the saved userAgent differs from the current one, bail.
 				if ($savedUserAgent !== $currentUserAgent)
 				{
-					Blocks::log('Tried to restore session from the the identity cookie, but the saved userAgent ('.$savedUserAgent.') does not match the current userAgent ('.$currentUserAgent.').', \CLogger::LEVEL_WARNING);
+					Craft::log('Tried to restore session from the the identity cookie, but the saved userAgent ('.$savedUserAgent.') does not match the current userAgent ('.$currentUserAgent.').', \CLogger::LEVEL_WARNING);
 					$this->logout(true);
 				}
 
@@ -485,7 +485,7 @@ class UserSessionService extends \CWebUser
 					$userId = $sessionRow['userId'];
 
 					// Make sure the given session token matches what we have in the db.
-					if (blx()->security->checkString($currentSessionToken, $dbHashedToken))
+					if (craft()->security->checkString($currentSessionToken, $dbHashedToken))
 					{
 						// It's all good.
 						if($this->beforeLogin($loginName, $states, true))
@@ -496,7 +496,7 @@ class UserSessionService extends \CWebUser
 							{
 								// Generate a new session token for the database and cookie.
 								$newSessionToken = StringHelper::UUID();
-								$hashedNewToken = blx()->security->hashString($newSessionToken);
+								$hashedNewToken = craft()->security->hashString($newSessionToken);
 								$this->_updateSessionToken($loginName, $dbHashedToken, $hashedNewToken['hash']);
 
 								// While we're let's clean up stale sessions.
@@ -523,21 +523,21 @@ class UserSessionService extends \CWebUser
 					}
 					else
 					{
-						Blocks::log('Tried to restore session from a cookie, but the given hashed database token value does not appear to belong to the given login name. Hashed db value: '.$dbHashedToken.' and loginName: '.$loginName.'.', \CLogger::LEVEL_ERROR);
+						Craft::log('Tried to restore session from a cookie, but the given hashed database token value does not appear to belong to the given login name. Hashed db value: '.$dbHashedToken.' and loginName: '.$loginName.'.', \CLogger::LEVEL_ERROR);
 						// Forcing logout here clears the identity cookie helping to prevent session fixation.
 						$this->logout(true);
 					}
 				}
 				else
 				{
-					Blocks::log('Tried to restore session from a cookie, but the given login name does not match the given uid. UID: '.$uid.' and loginName: '.$loginName.'.', \CLogger::LEVEL_ERROR);
+					Craft::log('Tried to restore session from a cookie, but the given login name does not match the given uid. UID: '.$uid.' and loginName: '.$loginName.'.', \CLogger::LEVEL_ERROR);
 					// Forcing logout here clears the identity cookie helping to prevent session fixation.
 					$this->logout(true);
 				}
 			}
 			else
 			{
-				Blocks::log('Tried to restore session from a cookie, but it appears we the data in the cookie is invalid.', \CLogger::LEVEL_ERROR);
+				Craft::log('Tried to restore session from a cookie, but it appears we the data in the cookie is invalid.', \CLogger::LEVEL_ERROR);
 				$this->logout(true);
 			}
 		}
@@ -560,10 +560,10 @@ class UserSessionService extends \CWebUser
 	 */
 	protected function beforeLogout()
 	{
-		$cookie = blx()->request->getCookies()->itemAt($this->getStateKeyPrefix());
+		$cookie = craft()->request->getCookies()->itemAt($this->getStateKeyPrefix());
 
 		// Grab the identity cookie information and make sure the data hasn't been tampered with.
-		if ($cookie && !empty($cookie->value) && is_string($cookie->value) && ($data = blx()->securityManager->validateData($cookie->value)) !== false)
+		if ($cookie && !empty($cookie->value) && is_string($cookie->value) && ($data = craft()->securityManager->validateData($cookie->value)) !== false)
 		{
 			// Grab the data
 			$data = $this->getCookieValue('');
@@ -574,12 +574,12 @@ class UserSessionService extends \CWebUser
 				$uid = $data[2];
 
 				// Clean up their row in the sessions table.
-				$user = blx()->users->getUserByUsernameOrEmail($loginName);
-				blx()->db->createCommand()->delete('sessions', 'userId=:userId AND uid=:uid', array('userId' => $user->id, 'uid' => $uid));
+				$user = craft()->users->getUserByUsernameOrEmail($loginName);
+				craft()->db->createCommand()->delete('sessions', 'userId=:userId AND uid=:uid', array('userId' => $user->id, 'uid' => $uid));
 			}
 			else
 			{
-				Blocks::log('During logout, tried to remove the row from the sessions table, but it appears the cookie data is invalid.', \CLogger::LEVEL_ERROR);
+				Craft::log('During logout, tried to remove the row from the sessions table, but it appears the cookie data is invalid.', \CLogger::LEVEL_ERROR);
 			}
 		}
 
@@ -593,7 +593,7 @@ class UserSessionService extends \CWebUser
 	 */
 	private function _findSessionToken($loginName, $uid)
 	{
-		$result = blx()->db->createCommand()
+		$result = craft()->db->createCommand()
 		    ->select('s.token, s.userId')
 		    ->from('sessions s')
 		    ->join('users u', 's.userId = u.id')
@@ -616,8 +616,8 @@ class UserSessionService extends \CWebUser
 	 */
 	private function _updateSessionToken($loginName, $currentToken, $newToken)
 	{
-		$user = blx()->users->getUserByUsernameOrEmail($loginName);
-		blx()->db->createCommand()->update('sessions', array('token' => $newToken), 'token=:currentToken AND userId=:userId', array('currentToken' => $currentToken, 'userId' => $user->id));
+		$user = craft()->users->getUserByUsernameOrEmail($loginName);
+		craft()->db->createCommand()->update('sessions', array('token' => $newToken), 'token=:currentToken AND userId=:userId', array('currentToken' => $currentToken, 'userId' => $user->id));
 	}
 
 	/**
@@ -630,7 +630,7 @@ class UserSessionService extends \CWebUser
 		$pastTimeStamp = $expire->sub($interval)->getTimestamp();
 		$pastTime = DateTimeHelper::formatTimeForDb($pastTimeStamp);
 
-		blx()->db->createCommand()->delete('sessions', 'dateUpdated < :pastTime', array('pastTime' => $pastTime));
+		craft()->db->createCommand()->delete('sessions', 'dateUpdated < :pastTime', array('pastTime' => $pastTime));
 	}
 
 	/**
@@ -641,11 +641,11 @@ class UserSessionService extends \CWebUser
 	{
 		if ($rememberMe)
 		{
-			$duration = blx()->config->get('rememberedUserSessionDuration');
+			$duration = craft()->config->get('rememberedUserSessionDuration');
 		}
 		else
 		{
-			$duration = blx()->config->get('userSessionDuration');
+			$duration = craft()->config->get('userSessionDuration');
 		}
 
 		// Calculate how long the session should last.
@@ -673,7 +673,7 @@ class UserSessionService extends \CWebUser
 	{
 		if (!isset($this->_userRow))
 		{
-			$userRow = blx()->db->createCommand()
+			$userRow = craft()->db->createCommand()
 			    ->select('*')
 			    ->from('{{users}}')
 			    ->where('id=:id', array(':id' => $id))

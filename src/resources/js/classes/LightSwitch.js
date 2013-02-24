@@ -1,7 +1,7 @@
 /**
  * Light Switch
  */
-Blocks.LightSwitch = Garnish.Base.extend({
+Craft.LightSwitch = Garnish.Base.extend({
 
 	settings: null,
 	$outerContainer: null,
@@ -26,7 +26,7 @@ Blocks.LightSwitch = Garnish.Base.extend({
 
 		this.$outerContainer.data('lightswitch', this);
 
-		this.setSettings(settings, Blocks.LightSwitch.defaults);
+		this.setSettings(settings, Craft.LightSwitch.defaults);
 
 		this.$innerContainer = this.$outerContainer.find('.container:first');
 		this.$input = this.$outerContainer.find('input:first');
@@ -64,7 +64,7 @@ Blocks.LightSwitch = Garnish.Base.extend({
 
 	turnOff: function()
 	{
-		this.$innerContainer.stop().animate({marginLeft: Blocks.LightSwitch.offMargin}, 'fast');
+		this.$innerContainer.stop().animate({marginLeft: Craft.LightSwitch.offMargin}, 'fast');
 		this.$input.val('');
 		this.on = false;
 		this.settings.onChange();
@@ -127,8 +127,8 @@ Blocks.LightSwitch = Garnish.Base.extend({
 	{
 		var margin = this.dragStartMargin + this.dragger.mouseDistX;
 
-		if (margin < Blocks.LightSwitch.offMargin)
-			margin = Blocks.LightSwitch.offMargin;
+		if (margin < Craft.LightSwitch.offMargin)
+			margin = Craft.LightSwitch.offMargin;
 		else if (margin > 0)
 			margin = 0;
 

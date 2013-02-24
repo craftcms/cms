@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -64,7 +64,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function getLicenseKeyStatus()
 	{
-		$status = blx()->fileCache->get('licenseKeyStatus');
+		$status = craft()->fileCache->get('licenseKeyStatus');
 		return $status;
 	}
 
@@ -73,7 +73,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function setLicenseKeyStatus($status)
 	{
-		blx()->fileCache->set('licenseKeyStatus', $status, blx()->config->getCacheDuration());
+		craft()->fileCache->set('licenseKeyStatus', $status, craft()->config->getCacheDuration());
 	}
 
 	/**
@@ -91,12 +91,12 @@ class EtService extends BaseApplicationComponent
 	public function decodeEtUpdateValues(EtModel $etModel)
 	{
 		$updateModel = UpdateModel::populateModel($etModel->data);
-		$blocksUpdateModel = BlocksUpdateModel::populateModel($etModel->data['blocks']);
+		$craftUpdateModel = CraftUpdateModel::populateModel($etModel->data['craft']);
 
-		if (!empty($blocksUpdateModel->releases))
+		if (!empty($craftUpdateModel->releases))
 		{
-			$blocksNewReleases = BlocksNewReleaseModel::populateModels($blocksUpdateModel->releases);
-			$blocksUpdateModel->releases = $blocksNewReleases;
+			$craftNewReleases = CraftNewReleaseModel::populateModels($craftUpdateModel->releases);
+			$craftUpdateModel->releases = $craftNewReleases;
 		}
 
 		$pluginUpdateModels = array();
@@ -116,7 +116,7 @@ class EtService extends BaseApplicationComponent
 			}
 		}
 
-		$updateModel->blocks = $blocksUpdateModel;
+		$updateModel->craft = $craftUpdateModel;
 		$updateModel->plugins = $pluginUpdateModels;
 		$etModel->data = $updateModel;
 

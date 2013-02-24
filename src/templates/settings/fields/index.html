@@ -16,7 +16,7 @@
 ] %}
 
 
-{% set groups = blx.fields.getAllGroups('id') %}
+{% set groups = craft.fields.getAllGroups('id') %}
 
 {% if groupId is defined %}
 	{% if groups[groupId] is not defined %}
@@ -25,7 +25,7 @@
 
 	{% set fields = groups[groupId].getFields() %}
 {% else %}
-	{% set fields = blx.fields.getAllFields() %}
+	{% set fields = craft.fields.getAllFields() %}
 {% endif %}
 
 
@@ -109,7 +109,7 @@
 
 
 {% set js %}
-	new Blocks.AdminTable({
+	new Craft.AdminTable({
 		tableSelector: '#fields',
 		noObjectsSelector: '#nofields',
 		deleteAction: 'fields/deleteField'

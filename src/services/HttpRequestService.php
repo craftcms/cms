@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -29,7 +29,7 @@ class HttpRequestService extends \CHttpRequest
 		parent::init();
 
 		// Get the path
-		if (blx()->config->usePathInfo())
+		if (craft()->config->usePathInfo())
 		{
 			$pathInfo = $this->getPathInfo();
 			$path = $pathInfo ? $pathInfo : $this->_getQueryStringPath();
@@ -44,7 +44,7 @@ class HttpRequestService extends \CHttpRequest
 		$this->_segments = array_filter(explode('/', $path));
 
 		// Is this a CP request?
-		$this->_isCpRequest = ($this->getSegment(1) == blx()->config->get('cpTrigger'));
+		$this->_isCpRequest = ($this->getSegment(1) == craft()->config->get('cpTrigger'));
 
 		if ($this->_isCpRequest)
 		{
@@ -58,7 +58,7 @@ class HttpRequestService extends \CHttpRequest
 			// Match against the entire path string as opposed to just the last segment
 			// so that we can support "/page/2"-style pagination URLs
 			$path = implode('/', $this->_segments);
-			$pageTrigger = str_replace('/', '\/', blx()->config->get('pageTrigger'));
+			$pageTrigger = str_replace('/', '\/', craft()->config->get('pageTrigger'));
 
 			if (preg_match("/(.*)\b{$pageTrigger}(\d+)$/", $path, $match))
 			{
@@ -211,7 +211,7 @@ class HttpRequestService extends \CHttpRequest
 		}
 		else
 		{
-			throw new Exception(Blocks::t('Param “{name}” doesn’t exist.', array('name' => $name)));
+			throw new Exception(Craft::t('Param “{name}” doesn’t exist.', array('name' => $name)));
 		}
 	}
 
@@ -232,7 +232,7 @@ class HttpRequestService extends \CHttpRequest
 		}
 		else
 		{
-			throw new Exception(Blocks::t('GET param “{name}” doesn’t exist.', array('name' => $name)));
+			throw new Exception(Craft::t('GET param “{name}” doesn’t exist.', array('name' => $name)));
 		}
 	}
 
@@ -253,7 +253,7 @@ class HttpRequestService extends \CHttpRequest
 		}
 		else
 		{
-			throw new Exception(Blocks::t('POST param “{name}” doesn’t exist.', array('name' => $name)));
+			throw new Exception(Craft::t('POST param “{name}” doesn’t exist.', array('name' => $name)));
 		}
 	}
 
@@ -382,7 +382,7 @@ class HttpRequestService extends \CHttpRequest
 			// clean up the application first because the file downloading could take long time
 			// which may cause timeout of some resources (such as DB connection)
 			ob_start();
-			Blocks::app()->end(0, false);
+			Craft::app()->end(0, false);
 			ob_end_clean();
 
 			echo $content;
@@ -520,7 +520,7 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	private function _getQueryStringPath()
 	{
-		$pathParam = blx()->urlManager->pathParam;
+		$pathParam = craft()->urlManager->pathParam;
 		return trim($this->getQuery($pathParam, ''), '/');
 	}
 
@@ -531,11 +531,11 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	private function _checkRequestType()
 	{
-		$resourceTrigger = blx()->config->get('resourceTrigger');
-		$actionTrigger = blx()->config->get('actionTrigger');
-		$loginPath = trim(blx()->config->get('loginPath'), '/');
-		$resetPasswordPath = trim(blx()->config->get('resetPasswordPath'), '/');
-		$logoutPath = trim(blx()->config->get('logoutPath'), '/');
+		$resourceTrigger = craft()->config->get('resourceTrigger');
+		$actionTrigger = craft()->config->get('actionTrigger');
+		$loginPath = trim(craft()->config->get('loginPath'), '/');
+		$resetPasswordPath = trim(craft()->config->get('resetPasswordPath'), '/');
+		$logoutPath = trim(craft()->config->get('logoutPath'), '/');
 		$firstSegment = $this->getSegment(1);
 
 		// If the first path segment is the resource trigger word, it's a resource request.

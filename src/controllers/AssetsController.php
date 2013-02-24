@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Handles asset tasks
@@ -13,21 +13,21 @@ class AssetsController extends BaseController
 	public function actionSaveFieldLayout()
 	{
 		$this->requirePostRequest();
-		blx()->userSession->requireAdmin();
+		craft()->userSession->requireAdmin();
 
 		// Set the field layout
-		$fieldLayout = blx()->fields->assembleLayoutFromPost(false);
+		$fieldLayout = craft()->fields->assembleLayoutFromPost(false);
 		$fieldLayout->type = ElementType::Asset;
-		blx()->fields->deleteLayoutsByType(ElementType::Asset);
+		craft()->fields->deleteLayoutsByType(ElementType::Asset);
 
-		if (blx()->fields->saveLayout($fieldLayout, false))
+		if (craft()->fields->saveLayout($fieldLayout, false))
 		{
-			blx()->userSession->setNotice(Blocks::t('Asset fields saved.'));
+			craft()->userSession->setNotice(Craft::t('Asset fields saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->userSession->setError(Blocks::t('Couldn’t save asset fields.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save asset fields.'));
 		}
 
 		$this->renderRequestedTemplate();
@@ -39,14 +39,14 @@ class AssetsController extends BaseController
 	public function actionUploadFile()
 	{
 		$this->requireAjaxRequest();
-		$folderId = blx()->request->getQuery('folderId');
+		$folderId = craft()->request->getQuery('folderId');
 
 		// Conflict resolution data
-		$userResponse = blx()->request->getPost('userResponse');
-		$responseInfo = blx()->request->getPost('additionalInfo');
-		$fileName = blx()->request->getPost('fileName');
+		$userResponse = craft()->request->getPost('userResponse');
+		$responseInfo = craft()->request->getPost('additionalInfo');
+		$fileName = craft()->request->getPost('fileName');
 
-		$response = blx()->assets->uploadFile($folderId, $userResponse, $responseInfo, $fileName);
+		$response = craft()->assets->uploadFile($folderId, $userResponse, $responseInfo, $fileName);
 
 		$this->returnJson($response->getResponseData());
 	}
@@ -57,19 +57,19 @@ class AssetsController extends BaseController
 	public function actionViewFolder()
 	{
 		$this->requireAjaxRequest();
-		$folderId = blx()->request->getRequiredPost('folderId');
-		$requestId = blx()->request->getPost('requestId', 0);
-		$viewType = blx()->request->getPost('viewType', 'thumbs');
+		$folderId = craft()->request->getRequiredPost('folderId');
+		$requestId = craft()->request->getPost('requestId', 0);
+		$viewType = craft()->request->getPost('viewType', 'thumbs');
 
-		$folder = blx()->assets->getFolderById($folderId);
-		$files = blx()->assets->getFilesByFolderId($folderId);
+		$folder = craft()->assets->getFolderById($folderId);
+		$files = craft()->assets->getFilesByFolderId($folderId);
 
 
-		$subfolders = blx()->assets->findFolders(array(
+		$subfolders = craft()->assets->findFolders(array(
 			'parentId' => $folderId
 		));
 
-		$html = blx()->templates->render('assets/_views/folder_contents',
+		$html = craft()->templates->render('assets/_views/folder_contents',
 			array(
 				'folder' => $folder,
 				'subfolders' => $subfolders,
@@ -92,24 +92,24 @@ class AssetsController extends BaseController
 		$this->requireLogin();
 		$this->requireAjaxRequest();
 
-		$requestId = blx()->request->getPost('requestId', 0);
-		$fileId = blx()->request->getRequiredPost('fileId');
-		$file = blx()->assets->getFileById($fileId);
+		$requestId = craft()->request->getPost('requestId', 0);
+		$fileId = craft()->request->getRequiredPost('fileId');
+		$file = craft()->assets->getFileById($fileId);
 
 		if (!$file)
 		{
-			throw new Exception(Blocks::t('No asset exists with the ID “{id}”.', array('id' => $fileId)));
+			throw new Exception(Craft::t('No asset exists with the ID “{id}”.', array('id' => $fileId)));
 		}
 
-		$html = blx()->templates->render('assets/_views/file', array(
+		$html = craft()->templates->render('assets/_views/file', array(
 			'file' => $file
 		));
 
 		$this->returnJson(array(
 			'requestId' => $requestId,
-			'headHtml' => blx()->templates->getHeadHtml(),
+			'headHtml' => craft()->templates->getHeadHtml(),
 			'bodyHtml' => $html,
-			'footHtml' => blx()->templates->getFootHtml(),
+			'footHtml' => craft()->templates->getFootHtml(),
 		));
 	}
 
@@ -121,18 +121,18 @@ class AssetsController extends BaseController
 		$this->requireLogin();
 		$this->requireAjaxRequest();
 
-		$fileId = blx()->request->getRequiredPost('fileId');
-		$file = blx()->assets->getFileById($fileId);
+		$fileId = craft()->request->getRequiredPost('fileId');
+		$file = craft()->assets->getFileById($fileId);
 
 		if (!$file)
 		{
-			throw new Exception(Blocks::t('No asset exists with the ID “{id}”.', array('id' => $fileId)));
+			throw new Exception(Craft::t('No asset exists with the ID “{id}”.', array('id' => $fileId)));
 		}
 
-		$fields = blx()->request->getPost('fields', array());
+		$fields = craft()->request->getPost('fields', array());
 		$file->setContent($fields);
 
-		$success = blx()->assets->saveFileContent($file);
+		$success = craft()->assets->saveFileContent($file);
 		$this->returnJson(array('success' => $success));
 	}
 
@@ -143,10 +143,10 @@ class AssetsController extends BaseController
 	{
 		$this->requireLogin();
 		$this->requireAjaxRequest();
-		$parentId = blx()->request->getRequiredPost('parentId');
-		$folderName = blx()->request->getRequiredPost('folderName');
+		$parentId = craft()->request->getRequiredPost('parentId');
+		$folderName = craft()->request->getRequiredPost('folderName');
 
-		$response = blx()->assets->createFolder($parentId, $folderName);
+		$response = craft()->assets->createFolder($parentId, $folderName);
 
 		$this->returnJson($response->getResponseData());
 	}
@@ -158,8 +158,8 @@ class AssetsController extends BaseController
 	{
 		$this->requireLogin();
 		$this->requireAjaxRequest();
-		$folderId = blx()->request->getRequiredPost('folderId');
-		$response = blx()->assets->deleteFolder($folderId);
+		$folderId = craft()->request->getRequiredPost('folderId');
+		$response = craft()->assets->deleteFolder($folderId);
 
 		$this->returnJson($response->getResponseData());
 

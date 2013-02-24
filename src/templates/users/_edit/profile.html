@@ -9,10 +9,10 @@
 
 
 {% if account is not defined %}
-	{% if blx.request.segment(1) == 'myaccount' %}
+	{% if craft.request.segment(1) == 'myaccount' %}
 		{% set account = user %}
 	{% elseif userId %}
-		{% set account = blx.users.status('*').id(userId).first %}
+		{% set account = craft.users.status('*').id(userId).first %}
 	{% endif %}
 	{% if not account %}{% exit 404 %}{% endif %}
 {% endif %}
@@ -39,9 +39,9 @@
 		<input type="hidden" name="action" value="users/saveProfile">
 		<input type="hidden" name="userId" value="{{ account.id }}">
 
-		{% set userFields = blx.systemSettings.userFields %}
+		{% set userFields = craft.systemSettings.userFields %}
 		{% include "_includes/fields" with {
-			fields: blx.fields.getLayoutByType('User').getFields(),
+			fields: craft.fields.getLayoutByType('User').getFields(),
 			entry: account
 		} only %}
 

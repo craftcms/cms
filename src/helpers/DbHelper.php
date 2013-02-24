@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -80,8 +80,8 @@ class DbHelper
 		{
 			$config['column'] = ColumnType::Char;
 			$config['maxLength'] = 12;
-			$config['charset'] = blx()->config->getDbItem('charset');
-			$config['collation'] = blx()->config->getDbItem('collation');
+			$config['charset'] = craft()->config->getDbItem('charset');
+			$config['collation'] = craft()->config->getDbItem('collation');
 		}
 		else if (isset(static::$columnTypeDefaults[$config['column']]))
 		{
@@ -247,7 +247,7 @@ class DbHelper
 		}
 		else
 		{
-			$table = preg_replace('/^\w+/', blx()->db->tablePrefix.'\0', $table);
+			$table = preg_replace('/^\w+/', craft()->db->tablePrefix.'\0', $table);
 		}
 
 		return $table;
@@ -263,7 +263,7 @@ class DbHelper
 	public static function getForeignKeyName($table, $columns)
 	{
 		$columns = ArrayHelper::stringToArray($columns);
-		$name = blx()->db->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
+		$name = craft()->db->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
 		return static::normalizeDbObjectName($name);
 	}
 
@@ -278,7 +278,7 @@ class DbHelper
 	public static function getIndexName($table, $columns, $unique = false)
 	{
 		$columns = ArrayHelper::stringToArray($columns);
-		$name = blx()->db->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
+		$name = craft()->db->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
 		return static::normalizeDbObjectName($name);
 	}
 
@@ -293,7 +293,7 @@ class DbHelper
 	public static function getPrimaryKeyName($table, $columns)
 	{
 		$columns = ArrayHelper::stringToArray($columns);
-		$name = blx()->db->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
+		$name = craft()->db->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
 		return static::normalizeDbObjectName($name);
 	}
 

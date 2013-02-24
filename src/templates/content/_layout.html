@@ -1,8 +1,8 @@
 {% extends "_layouts/cp" %}
 {% set title = "Content"|t %}
 
-{% set showSingletons = blx.singletons.getEditableSingletons()|length %}
-{% set showGlobals = (user.can('editGlobals') and blx.fields.getLayoutByType('Globals').getFields()|length) %}
+{% set showSingletons = craft.singletons.getEditableSingletons()|length %}
+{% set showGlobals = (user.can('editGlobals') and craft.fields.getLayoutByType('Globals').getFields()|length) %}
 
 {% set tabs = {
 	entries: { label: "Entries"|t, url: url('content') },

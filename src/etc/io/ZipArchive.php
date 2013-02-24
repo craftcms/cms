@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -20,7 +20,7 @@ class ZipArchive implements IZip
 
 		if ($zipContents !== true)
 		{
-			Blocks::log('Unable to create zip file: '.$destZip, \CLogger::LEVEL_ERROR);
+			Craft::log('Unable to create zip file: '.$destZip, \CLogger::LEVEL_ERROR);
 			return false;
 		}
 
@@ -41,7 +41,7 @@ class ZipArchive implements IZip
 
 		if ($zipContents !== true)
 		{
-			Blocks::log('Could not open the zip file: '.$srcZip, \CLogger::LEVEL_ERROR);
+			Craft::log('Could not open the zip file: '.$srcZip, \CLogger::LEVEL_ERROR);
 			return false;
 		}
 
@@ -49,7 +49,7 @@ class ZipArchive implements IZip
 		{
 			if (!$info = $zip->statIndex($i))
 			{
-				Blocks::log('Could not retrieve a file from the zip archive '.$srcZip, \CLogger::LEVEL_ERROR);
+				Craft::log('Could not retrieve a file from the zip archive '.$srcZip, \CLogger::LEVEL_ERROR);
 				return false;
 			}
 
@@ -73,13 +73,13 @@ class ZipArchive implements IZip
 
 			if ($contents === false)
 			{
-				Blocks::log('Could not extract file from zip archive '.$srcZip, \CLogger::LEVEL_ERROR);
+				Craft::log('Could not extract file from zip archive '.$srcZip, \CLogger::LEVEL_ERROR);
 				return false;
 			}
 
 			if (!IOHelper::writeToFile($destFolder.'/'.$info, $contents, true, FILE_APPEND))
 			{
-				Blocks::log('Could not copy file to '.$destFolder.'/'.$info.' while unzipping from '.$srcZip, \CLogger::LEVEL_ERROR);
+				Craft::log('Could not copy file to '.$destFolder.'/'.$info.' while unzipping from '.$srcZip, \CLogger::LEVEL_ERROR);
 				return false;
 			}
 		}
@@ -104,7 +104,7 @@ class ZipArchive implements IZip
 
 		if ($zipContents !== true)
 		{
-			Blocks::log('Unable to open zip file: '.$sourceZip, \CLogger::LEVEL_ERROR);
+			Craft::log('Unable to open zip file: '.$sourceZip, \CLogger::LEVEL_ERROR);
 			return false;
 		}
 
@@ -144,7 +144,7 @@ class ZipArchive implements IZip
 
 					if (!$zip->addFromString($relFilePath, $fileContents))
 					{
-						Blocks::log('There was an error adding the file '.$itemToZip.' to the zip: '.$itemToZip, \CLogger::LEVEL_ERROR);
+						Craft::log('There was an error adding the file '.$itemToZip.' to the zip: '.$itemToZip, \CLogger::LEVEL_ERROR);
 					}
 				}
 			}

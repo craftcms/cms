@@ -6,7 +6,7 @@
 
 
 {% if settings is not defined %}
-	{% set settings = blx.systemSettings.users %}
+	{% set settings = craft.systemSettings.users %}
 	{% set freshSettings = true %}
 {% else %}
 	{% set freshSettings = false %}

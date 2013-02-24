@@ -45,11 +45,11 @@ var Routes = Garnish.Base.extend({
 			data['routeIds['+i+']'] = $($routes[i]).attr('data-id');
 		}
 
-		Blocks.postActionRequest('routes/updateRouteOrder', data, $.proxy(function(response, textStatus, jqXHR) {
+		Craft.postActionRequest('routes/updateRouteOrder', data, $.proxy(function(response, textStatus, jqXHR) {
 			if (response.success)
-				Blocks.cp.displayNotice(Blocks.t('New route order saved.'));
+				Craft.cp.displayNotice(Craft.t('New route order saved.'));
 			else
-				Blocks.cp.displayError(Blocks.t('Couldn’t save new route order.'));
+				Craft.cp.displayError(Craft.t('Couldn’t save new route order.'));
 		}, this));
 	},
 
@@ -132,31 +132,31 @@ var RouteSettingsModal = Garnish.Modal.extend({
 			'<div class="body">' +
 				'<div class="field">' +
 					'<div class="heading">' +
-						'<label for="url">'+Blocks.t("If the URI looks like this")+':</label>' +
+						'<label for="url">'+Craft.t("If the URI looks like this")+':</label>' +
 					'</div>' +
 					'<div id="url" class="text url"></div>' +
 					'<div class="url-tokens">' +
-						'<h4>'+Blocks.t("Add a token")+'</h4>' +
-						'<div class="token" data-name="year" data-value="\\d{4}">'+Blocks.t("year")+'</div>' +
-						'<div class="token" data-name="month" data-value="1?\\d">'+Blocks.t("month")+'</div>' +
-						'<div class="token" data-name="day" data-value="[1-3]?\\d">'+Blocks.t("day")+'</div>' +
-						'<div class="token" data-name="number" data-value="\\d+">'+Blocks.t("number")+'</div>' +
-						'<div class="token" data-name="page" data-value="\\d+">'+Blocks.t("page")+'</div>' +
+						'<h4>'+Craft.t("Add a token")+'</h4>' +
+						'<div class="token" data-name="year" data-value="\\d{4}">'+Craft.t("year")+'</div>' +
+						'<div class="token" data-name="month" data-value="1?\\d">'+Craft.t("month")+'</div>' +
+						'<div class="token" data-name="day" data-value="[1-3]?\\d">'+Craft.t("day")+'</div>' +
+						'<div class="token" data-name="number" data-value="\\d+">'+Craft.t("number")+'</div>' +
+						'<div class="token" data-name="page" data-value="\\d+">'+Craft.t("page")+'</div>' +
 					'</div>' +
 				'</div>' +
 				'<div class="field">' +
 					'<div class="heading">' +
-						'<label for="template">'+Blocks.t("Load this template")+':</label>' +
+						'<label for="template">'+Craft.t("Load this template")+':</label>' +
 					'</div>' +
 					'<input id="template" type="text" class="text fullwidth template">' +
 				'</div>' +
 			'</div>' +
 			'<div class="footer">' +
 				'<div class="buttons">' +
-					'<input type="submit" class="btn submit" value="'+Blocks.t("Save")+'"> ' +
-					'<input type="button" class="btn cancel" value="'+Blocks.t("Cancel")+'">' +
+					'<input type="submit" class="btn submit" value="'+Craft.t("Save")+'"> ' +
+					'<input type="button" class="btn cancel" value="'+Craft.t("Cancel")+'">' +
 					'<div class="spinner" style="display: none;"></div>' +
-					'<a class="delete">'+Blocks.t("Delete")+'</a>' +
+					'<a class="delete">'+Craft.t("Delete")+'</a>' +
 				'</div>' +
 			'</div>' +
 		'</form>');
@@ -181,9 +181,9 @@ var RouteSettingsModal = Garnish.Modal.extend({
 
 		// Set the heading
 		if (this.route)
-			this.$heading.html(Blocks.t('Edit Route'));
+			this.$heading.html(Craft.t('Edit Route'));
 		else
-			this.$heading.html(Blocks.t('Create a new route'));
+			this.$heading.html(Craft.t('Create a new route'));
 
 		if (this.route)
 		{
@@ -279,7 +279,7 @@ var RouteSettingsModal = Garnish.Modal.extend({
 	{
 		if (this.route)
 		{
-			this.$heading.html(Blocks.t('Edit Route'));
+			this.$heading.html(Craft.t('Edit Route'));
 			this.$deleteBtn.show();
 		}
 
@@ -319,7 +319,7 @@ var RouteSettingsModal = Garnish.Modal.extend({
 		this.$saveBtn.addClass('active');
 		this.$spinner.show();
 
-		Blocks.postActionRequest('routes/saveRoute', data, $.proxy(function(response, textStatus, jqXHR) {
+		Craft.postActionRequest('routes/saveRoute', data, $.proxy(function(response, textStatus, jqXHR) {
 
 			if (response.success)
 			{
@@ -336,16 +336,16 @@ var RouteSettingsModal = Garnish.Modal.extend({
 					this.route = new Route($route);
 					this.route.modal = this;
 
-					Blocks.routes.sorter.addItems($route);
+					Craft.routes.sorter.addItems($route);
 				}
 
 				this.route.updateHtmlFromModal();
 				this.hide();
 
-				Blocks.cp.displayNotice(Blocks.t('Route saved.'));
+				Craft.cp.displayNotice(Craft.t('Route saved.'));
 			}
 			else
-				Blocks.cp.displayError(Blocks.t('Couldn’t save route.'));
+				Craft.cp.displayError(Craft.t('Couldn’t save route.'));
 
 			this.$saveBtn.removeClass('active');
 			this.$spinner.hide();
@@ -364,10 +364,10 @@ var RouteSettingsModal = Garnish.Modal.extend({
 
 	deleteRoute: function()
 	{
-		if (confirm(Blocks.t(('Are you sure you want to delete this route?'))))
+		if (confirm(Craft.t(('Are you sure you want to delete this route?'))))
 		{
-			Blocks.postActionRequest('routes/deleteRoute', { routeId: this.route.id }, function() {
-				Blocks.cp.displayNotice(Blocks.t('Route deleted.'))
+			Craft.postActionRequest('routes/deleteRoute', { routeId: this.route.id }, function() {
+				Craft.cp.displayNotice(Craft.t('Route deleted.'))
 			});
 
 			this.route.$container.remove();
@@ -378,7 +378,7 @@ var RouteSettingsModal = Garnish.Modal.extend({
 });
 
 
-Blocks.routes = new Routes();
+Craft.routes = new Routes();
 
 
 })(jQuery);

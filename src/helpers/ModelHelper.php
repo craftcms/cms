@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -233,7 +233,7 @@ class ModelHelper
 			{
 				case AttributeType::DateTime:
 				{
-					$rules[] = array($name, 'Blocks\DateTimeValidator');
+					$rules[] = array($name, 'Craft\DateTimeValidator');
 					break;
 				}
 
@@ -251,19 +251,19 @@ class ModelHelper
 
 				case AttributeType::Handle:
 				{
-					$rules[] = array($name, 'Blocks\HandleValidator', 'reservedWords' => ArrayHelper::stringToArray($config['reservedWords']));
+					$rules[] = array($name, 'Craft\HandleValidator', 'reservedWords' => ArrayHelper::stringToArray($config['reservedWords']));
 					break;
 				}
 
 				case AttributeType::Locale:
 				{
-					$rules[] = array($name, 'Blocks\LocaleValidator');
+					$rules[] = array($name, 'Craft\LocaleValidator');
 					break;
 				}
 
 				case AttributeType::Number:
 				{
-					$rule = array($name, 'Blocks\LocaleNumberValidator');
+					$rule = array($name, 'Craft\LocaleNumberValidator');
 
 					if ($config['min'] !== null)
 					{
@@ -396,7 +396,7 @@ class ModelHelper
 						else
 						{
 							$initialColumn = array_shift($columns);
-							$rules[] = array($initialColumn, 'Blocks\CompositeUniqueValidator', 'with' => implode(',', $columns));
+							$rules[] = array($initialColumn, 'Craft\CompositeUniqueValidator', 'with' => implode(',', $columns));
 						}
 					}
 
@@ -430,12 +430,12 @@ class ModelHelper
 
 		if ($urlAttributes)
 		{
-			$rules[] = array(implode(',', $urlAttributes), 'Blocks\UrlValidator', 'defaultScheme' => 'http');
+			$rules[] = array(implode(',', $urlAttributes), 'Craft\UrlValidator', 'defaultScheme' => 'http');
 		}
 
 		if ($uriAttributes)
 		{
-			$rules[] = array(implode(',', $uriAttributes), 'Blocks\UriValidator');
+			$rules[] = array(implode(',', $uriAttributes), 'Craft\UriValidator');
 		}
 
 		if ($strictLengthAttributes)
@@ -489,7 +489,7 @@ class ModelHelper
 				$label = $model->generateAttributeLabel($name);
 			}
 
-			$labels[$name] = Blocks::t($label);
+			$labels[$name] = Craft::t($label);
 		}
 
 		return $labels;

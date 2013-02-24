@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,7 +13,7 @@ class IncludeTranslations_Node extends \Twig_Node
 	{
 		$compiler
 			->addDebugInfo($this)
-			->write("\Blocks\blx()->templates->includeTranslations(\n");
+			->write("\Craft\craft()->templates->includeTranslations(\n");
 
 		foreach ($this->nodes as $index => $node)
 		{

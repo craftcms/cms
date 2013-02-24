@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,7 +13,7 @@ class DropdownFieldType extends BaseOptionsFieldType
 	 */
 	public function getName()
 	{
-		return Blocks::t('Dropdown');
+		return Craft::t('Dropdown');
 	}
 
 	/**
@@ -24,7 +24,7 @@ class DropdownFieldType extends BaseOptionsFieldType
 	 */
 	protected function getOptionsSettingsLabel()
 	{
-		return Blocks::t('Dropdown Options');
+		return Craft::t('Dropdown Options');
 	}
 
 	/**
@@ -36,7 +36,7 @@ class DropdownFieldType extends BaseOptionsFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		return blx()->templates->render('_components/fieldtypes/Dropdown/input', array(
+		return craft()->templates->render('_components/fieldtypes/Dropdown/input', array(
 			'name'     => $name,
 			'value'    => $value,
 			'settings' => $this->getSettings()

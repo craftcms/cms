@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -13,7 +13,7 @@ class DbConnection extends \CDbConnection
 	{
 		parent::init();
 
-		if (blx()->config->get('devMode'))
+		if (craft()->config->get('devMode'))
 		{
 			$this->enableProfiling = true;
 			$this->enableParamLogging = true;

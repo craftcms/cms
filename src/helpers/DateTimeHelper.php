@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  *
@@ -85,27 +85,27 @@ class DateTimeHelper
 
 		if ($weeks)
 		{
-			$timeComponents[] = $weeks.' '.($weeks > 1 ? Blocks::t('weeks') : Blocks::t('week'));
+			$timeComponents[] = $weeks.' '.($weeks > 1 ? Craft::t('weeks') : Craft::t('week'));
 		}
 
 		if ($days)
 		{
-			$timeComponents[] = $days.' '.($days > 1 ? Blocks::t('days') : Blocks::t('day'));
+			$timeComponents[] = $days.' '.($days > 1 ? Craft::t('days') : Craft::t('day'));
 		}
 
 		if ($hours)
 		{
-			$timeComponents[] = $hours.' '.($hours > 1 ? Blocks::t('hours') : Blocks::t('hour'));
+			$timeComponents[] = $hours.' '.($hours > 1 ? Craft::t('hours') : Craft::t('hour'));
 		}
 
 		if ($minutes)
 		{
-			$timeComponents[] = $minutes.' '.($minutes > 1 ? Blocks::t('minutes') : Blocks::t('minute'));
+			$timeComponents[] = $minutes.' '.($minutes > 1 ? Craft::t('minutes') : Craft::t('minute'));
 		}
 
 		if ($seconds)
 		{
-			$timeComponents[] = $seconds.' '.($seconds > 1 ? Blocks::t('seconds') : Blocks::t('second'));
+			$timeComponents[] = $seconds.' '.($seconds > 1 ? Craft::t('seconds') : Craft::t('second'));
 		}
 
 		return implode(', ', $timeComponents);
@@ -144,7 +144,7 @@ class DateTimeHelper
 			}
 		}
 
-		return blx()->dateFormatter->formatDateTime($date);
+		return craft()->dateFormatter->formatDateTime($date);
 	}
 
 	/**

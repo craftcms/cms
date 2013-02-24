@@ -69,17 +69,17 @@ var EmailSettingsForm = Garnish.Base.extend({
 		var data = Garnish.getPostData(this.$form);
 		delete data.action;
 
-		Blocks.postActionRequest('systemSettings/testEmailSettings', data, $.proxy(function(response) {
+		Craft.postActionRequest('systemSettings/testEmailSettings', data, $.proxy(function(response) {
 			this.$testBtn.removeClass('sel');
 			this.$testSpinner.addClass('hidden');
 
 			if (response.success)
 			{
-				alert(Blocks.t('Email sent successfully! Check your inbox.'));
+				alert(Craft.t('Email sent successfully! Check your inbox.'));
 			}
 			else
 			{
-				var error = response.error || Blocks.t('An unknown error occurred.');
+				var error = response.error || Craft.t('An unknown error occurred.');
 				alert(error);
 			}
 		}, this));
@@ -93,7 +93,7 @@ var EmailSettingsForm = Garnish.Base.extend({
 	}
 });
 
-Blocks.emailSettingsForm = new EmailSettingsForm();
+Craft.emailSettingsForm = new EmailSettingsForm();
 
 
 })(jQuery);

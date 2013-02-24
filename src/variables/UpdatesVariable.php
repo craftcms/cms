@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Update functions
@@ -13,7 +13,7 @@ class UpdatesVariable
 	 */
 	public function isUpdateInfoCached()
 	{
-		return blx()->updates->isUpdateInfoCached();
+		return craft()->updates->isUpdateInfoCached();
 	}
 
 	/**
@@ -23,7 +23,7 @@ class UpdatesVariable
 	 */
 	public function isCriticalUpdateAvailable()
 	{
-		return blx()->updates->isCriticalUpdateAvailable();
+		return craft()->updates->isCriticalUpdateAvailable();
 	}
 
 	/**
@@ -33,7 +33,7 @@ class UpdatesVariable
 	 */
 	public function getUnwritableFolders()
 	{
-		return blx()->updates->getUnwritableFolders();
+		return craft()->updates->getUnwritableFolders();
 	}
 
 	/**
@@ -42,7 +42,7 @@ class UpdatesVariable
 	 */
 	public function getUpdates($forceRefresh = false)
 	{
-		return blx()->updates->getUpdates($forceRefresh);
+		return craft()->updates->getUpdates($forceRefresh);
 	}
 
 	/**
@@ -67,12 +67,12 @@ class UpdatesVariable
 	 */
 	private function _getManualUpdateInfo($type)
 	{
-		if (blx()->updates->isBlocksDbUpdateNeeded())
+		if (craft()->updates->isCraftDbUpdateNeeded())
 		{
-			return 'Blocks';
+			return 'Craft';
 		}
 
-		$plugins = blx()->updates->getPluginsThatNeedDbUpdate();
+		$plugins = craft()->updates->getPluginsThatNeedDbUpdate();
 
 		if (!empty($plugins) && isset($plugins[0]))
 		{
