@@ -79,7 +79,7 @@ class EntriesController extends BaseController
 
 		$entryId = blx()->request->getRequiredPost('id');
 
-		blx()->elements->deleteElementsById($entryId);
+		blx()->elements->deleteElementById($entryId);
 		$this->returnJson(array('success' => true));
 	}
 }
