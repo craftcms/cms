@@ -97,7 +97,7 @@ Craft.Installer = Garnish.Base.extend({
 
 			Craft.postActionRequest('install/install', data, $.proxy(function() {
 				this.$currentScreen.find('h1:first').text(Craft.t('All done!'));
-				var $buttons = $('<div class="buttons"><a href="'+Craft.getUrl('dashboard')+'" class="btn big submit">'+Craft.t('Go to CraftCMS')+'</a></div>');
+				var $buttons = $('<div class="buttons"><a href="'+Craft.getUrl('dashboard')+'" class="btn big submit">'+Craft.t('Go to @@@appName@@@')+'</a></div>');
 				$('#spinner').replaceWith($buttons);
 			}, this));
 

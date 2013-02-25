@@ -20,7 +20,7 @@ class Updater
 
 		if ($updateModel->craft->releases == null)
 		{
-			throw new Exception(Craft::t('CraftCMS is already up to date.'));
+			throw new Exception(Craft::t('@@@appName@@@ is already up to date.'));
 		}
 	}
 
@@ -40,7 +40,7 @@ class Updater
 
 		if (!$phpCompat && !$databaseCompat)
 		{
-			throw new Exception(Craft::t('The update can’t be installed because CraftCMS requires PHP version "{requiredPhpVersion}" or higher and MySQL version "{requiredMySqlVersion}" or higher.  You have PHP version "{installedPhpVersion}" and MySQL version "{installedMySqlVersion}" installed.',
+			throw new Exception(Craft::t('The update can’t be installed because @@@appName@@@ requires PHP version "{requiredPhpVersion}" or higher and MySQL version "{requiredMySqlVersion}" or higher.  You have PHP version "{installedPhpVersion}" and MySQL version "{installedMySqlVersion}" installed.',
 				array('requiredPhpVersion' => $requiredMySqlVersion,
 				      'installedPhpVersion' => PHP_VERSION,
 				      'requiredMySqlVersion' => $requiredMySqlVersion,
@@ -49,14 +49,14 @@ class Updater
 		}
 		else if (!$phpCompat)
 		{
-			throw new Exception(Craft::t('The update can’t be installed because CraftCMS requires PHP version "{requiredPhpVersion}" or higher and you have PHP version "{installedPhpVersion}" installed.',
+			throw new Exception(Craft::t('The update can’t be installed because @@@appName@@@ requires PHP version "{requiredPhpVersion}" or higher and you have PHP version "{installedPhpVersion}" installed.',
 				array('requiredPhpVersion' => $requiredMySqlVersion,
 				      'installedPhpVersion' => PHP_VERSION
 			)));
 		}
 		else if (!$databaseCompat)
 		{
-			throw new Exception(Craft::t('The update can’t be installed because CraftCMS requires MySQL version "{requiredMySqlVersion}" or higher and you have MySQL version "{installedMySqlVersion}" installed.',
+			throw new Exception(Craft::t('The update can’t be installed because @@@appName@@@ requires MySQL version "{requiredMySqlVersion}" or higher and you have MySQL version "{installedMySqlVersion}" installed.',
 				array('requiredMySqlVersion' => $requiredMySqlVersion,
 				      'installedMySqlVersion' => $installedMySqlVersion
 				)));
@@ -117,7 +117,7 @@ class Updater
 		$writableErrors = $this->_validateManifestPathsWritable($unzipFolder);
 		if (count($writableErrors) > 0)
 		{
-			throw new Exception(Craft::t('CraftCMS needs to be able to write to the follow paths, but can’t: {files}', array('files' => implode('<br />',  $writableErrors))));
+			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to the follow paths, but can’t: {files}', array('files' => implode('<br />',  $writableErrors))));
 		}
 
 		// Backup any files about to be updated.

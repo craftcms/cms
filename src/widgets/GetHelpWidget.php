@@ -23,7 +23,7 @@ class GetHelpWidget extends BaseWidget
 	 */
 	public function getTitle()
 	{
-		return Craft::t('Send a message to CraftCMS Support');
+		return Craft::t('Send a message to @@@appName@@@ Support');
 	}
 
 	/**
@@ -43,7 +43,7 @@ class GetHelpWidget extends BaseWidget
 
 		$message = "Enter your message here.\n\n" .
 			"------------------------------\n\n" .
-			'CraftCMS version: '.Craft::getVersion().' build '.Craft::getBuild()."\n" .
+			'@@@appName@@@ version: '.Craft::getVersion().' build '.Craft::getBuild()."\n" .
 			'Packages: '.implode(', ', Craft::getStoredPackages());
 
 		$plugins = craft()->plugins->getPlugins();

@@ -24,35 +24,35 @@ class RequirementsChecker extends \CComponent
 				Craft::t('PHP Version'),
 				version_compare(PHP_VERSION, $requiredPhpVersion, ">="),
 				true,
-				'<a href="http://buildwithcraft.com">CraftCMS</a>',
+				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('PHP {version} or higher is required.', array('version' => $requiredPhpVersion))
 			),
 			new Requirement(
 				Craft::t('$_SERVER Variable'),
 				($message = $this->checkServerVar()) === '',
 				true,
-				'<a href="http://buildwithcraft.com">CraftCMS</a>',
+				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				$message
 			),
 			new Requirement(
 				Craft::t('Reflection extension'),
 				class_exists('Reflection', false),
 				true,
-				'<a href="http://buildwithcraft.com">CraftCMS</a>',
+				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				'The <a href="http://php.net/manual/en/class.reflectionextension.php">ReflectionExtension</a> is required.'
 			),
 			new Requirement(
 				Craft::t('PCRE extension'),
 				extension_loaded("pcre"),
 				true,
-				'<a href="http://buildwithcraft.com">CraftCMS</a>',
+				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				'<a href="http://php.net/manual/en/book.pcre.php">PCRE</a> is required.'
 			),
 			new Requirement(
 				'SPL extension',
 				extension_loaded("SPL"),
 				true,
-				'<a href="http://buildwithcraft.com">CraftCMS</a>',
+				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				'<a href="http://php.net/manual/en/book.spl.php">SPL</a> is required.'
 			),
 			new Requirement(
@@ -87,22 +87,22 @@ class RequirementsChecker extends \CComponent
 				Craft::t('MySQL version'),
 				version_compare(craft()->db->serverVersion, $requiredMysqlVersion, ">="),
 				true,
-				'<a href="http://buildwithcraft.com">CraftCMS</a>',
-				Craft::t('MySQL {version} or higher is required to run CraftCMS.', array('version' => $requiredMysqlVersion))
+				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
+				Craft::t('MySQL {version} or higher is required to run @@@appName@@@.', array('version' => $requiredMysqlVersion))
 			),
 			new Requirement(
 				Craft::t('Glob'),
 				function_exists('glob'),
 				true,
-				'<a href="http://buildwithcraft.com">CraftCMS</a>',
+				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('<a href="http://us.php.net/manual/en/function.glob.php">Glob</a> is required.')
 			),
 			new Requirement(
 				Craft::t('MySQL InnoDB support'),
 				craft()->db->getSchema()->isInnoDbEnabled(),
 				true,
-				'<a href="http://buildwithcraft.com">CraftCMS</a>',
-				Craft::t('CraftCMS requires the MySQL InnoDB storage engine to run.')
+				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
+				Craft::t('@@@appName@@@ requires the MySQL InnoDB storage engine to run.')
 			),
 		);
 	}
@@ -148,7 +148,7 @@ class RequirementsChecker extends \CComponent
 	 */
 	private function _calculateServerInfo()
 	{
-		$info[] = '<a href="http://buildwithcraft.com/">CraftCMS</a> v'.Craft::getVersion().' '.Craft::t('build').' '.Craft::getBuild(false);
+		$info[] = '<a href="http://buildwithcraft.com/">@@@appName@@@</a> v'.Craft::getVersion().' '.Craft::t('build').' '.Craft::getBuild(false);
 		$info[] = isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : '';
 		$info[] = 'Yii v'.Craft::getYiiVersion();
 		$info[] =  \CTimestamp::formatDate(craft()->locale->getTimeFormat());;

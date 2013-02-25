@@ -3,7 +3,7 @@
 // Make sure this is PHP 5.3 or later
 if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50300)
 {
-	exit('CraftCMS requires PHP 5.3.0 or later, but you&rsquo;re running '.PHP_VERSION.'. Please talk to your host/IT department about upgrading PHP or your server.');
+	exit('@@@appName@@@ requires PHP 5.3.0 or later, but you&rsquo;re running '.PHP_VERSION.'. Please talk to your host/IT department about upgrading PHP or your server.');
 }
 
 // Is this a script name redirect test?
@@ -32,7 +32,7 @@ defined('YII_TRACE_LEVEL')         || define('YII_TRACE_LEVEL', 3);
 // Check early if storage/ is a valid folder and writable.
 if (($storagePath = realpath(CRAFT_STORAGE_PATH)) === false || !is_dir($storagePath) || !is_writable($storagePath))
 {
-	exit('CraftCMS storage path "'.($storagePath === false ? CRAFT_STORAGE_PATH : $storagePath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
+	exit('@@@appName@@@ storage path "'.($storagePath === false ? CRAFT_STORAGE_PATH : $storagePath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
 }
 
 // Create the runtime path if it doesn't exist already
@@ -55,7 +55,7 @@ if (!is_dir($runtimePath))
 // Check early if storage/runtime is a valid folder and writable.
 if (($runtimePath = realpath(CRAFT_STORAGE_PATH.'runtime/')) === false || !is_dir($runtimePath) || !is_writable($runtimePath))
 {
-	exit('CraftCMS runtime path "'.($runtimePath === false ? CRAFT_STORAGE_PATH.'runtime/' : $runtimePath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
+	exit('@@@appName@@@ runtime path "'.($runtimePath === false ? CRAFT_STORAGE_PATH.'runtime/' : $runtimePath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
 }
 
 // In case yiic is running

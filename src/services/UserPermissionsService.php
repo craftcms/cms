@@ -31,7 +31,7 @@ class UserPermissionsService extends BaseApplicationComponent
 						'label' => Craft::t('Access the CP when the system is off')
 					),
 					'autoUpdateCraft' => array(
-						'label' => Craft::t('Auto-update CraftCMS')
+						'label' => Craft::t('Auto-update @@@appName@@@')
 					),
 				)
 			),

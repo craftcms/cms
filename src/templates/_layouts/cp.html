@@ -3,7 +3,7 @@
 
 {% set body %}
 	{% if user.admin and craft.config.devMode %}
-		<div id="devmode" title="{{ 'CraftCMS is running in Dev Mode.'|t }}"></div>
+		<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
 	{% endif %}
 
 	<header id="header">
@@ -107,6 +107,6 @@
 	</div>
 
 	<div id="version">
-		CraftCMS {{ craft.app.version }} build {{ craft.app.build }}
+		@@@appName@@@ {{ craft.app.version }} build {{ craft.app.build }}
 	</div>
 {% endset %}

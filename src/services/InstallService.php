@@ -18,7 +18,7 @@ class InstallService extends BaseApplicationComponent
 	{
 		if (craft()->isInstalled())
 		{
-			throw new Exception(Craft::t('CraftCMS is already installed.'));
+			throw new Exception(Craft::t('@@@appName@@@ is already installed.'));
 		}
 
 		// Set the language to the desired locale

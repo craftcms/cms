@@ -17,7 +17,7 @@ class m130221_000000_innodb_check extends BaseMigration
 	{
 		if (!craft()->db->getSchema()->isInnoDbEnabled())
 		{
-			throw new Exception('CraftCMS requires the MySQL InnoDB storage engine and it is not enabled for this MySQL installation.');
+			throw new Exception('@@@appName@@@ requires the MySQL InnoDB storage engine and it is not enabled for this MySQL installation.');
 		}
 		else
 		{

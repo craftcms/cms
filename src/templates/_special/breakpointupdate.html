@@ -1,8 +1,8 @@
 {% extends "_layouts/message" %}
-{% set title = "Update CraftCMS"|t %}
+{% set title = "Update @@@appName@@@"|t %}
 
 {% set content %}
-	<p>{{ "You need to be on at least build {minBuild} before you can manually update to build {targetBuild} of CraftCMS."|t({
+	<p>{{ "You need to be on at least build {minBuild} before you can manually update to build {targetBuild} of @@@appName@@@."|t({
 			minBuild:    craft.app.getMinRequiredBuild(),
 			targetBuild: craft.app.getBuild()
 		}) }}</p>

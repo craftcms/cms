@@ -87,7 +87,7 @@ class AssetOperationsController extends BaseController
 
 		if (empty($return))
 		{
-			$this->returnErrorJson(Craft::t("CraftCMS couldn't find the requested file."));
+			$this->returnErrorJson(Craft::t("@@@appName@@@ couldn't find the requested file."));
 		}
 		else
 		{

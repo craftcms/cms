@@ -544,7 +544,7 @@ class ErrorHandler extends \CErrorHandler
 	{
 		if ($this->_devMode)
 		{
-			$version = '<a href="http://buildwithcraft.com/">CraftCMS</a> v'.Craft::getVersion().' '.Craft::t('build').' '.Craft::getBuild();
+			$version = '<a href="http://buildwithcraft.com/">@@@appName@@@</a> v'.Craft::getVersion().' '.Craft::t('build').' '.Craft::getBuild();
 
 			if (isset($_SERVER['SERVER_SOFTWARE']))
 			{

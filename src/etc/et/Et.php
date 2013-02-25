@@ -85,7 +85,7 @@ class Et
 		$this->_model->localBuild = Craft::getBuild();
 		$this->_model->localVersion= Craft::getVersion();
 
-		$this->_options['useragent'] = 'craftcms-requests/'.\Requests::VERSION;
+		$this->_options['useragent'] = 'craft-requests/'.\Requests::VERSION;
 		$this->_options['timeout'] = $this->_timeout;
 	}
 

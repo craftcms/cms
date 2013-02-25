@@ -476,13 +476,13 @@ class WebApp extends \CWebApplication
 			if (!extension_loaded('pdo'))
 			{
 				$missingPdo = true;
-				$messages[] = Craft::t('CraftCMS requires the PDO extension to operate.');
+				$messages[] = Craft::t('@@@appName@@@ requires the PDO extension to operate.');
 			}
 
 			if (!extension_loaded('pdo_mysql'))
 			{
 				$missingPdo = true;
-				$messages[] = Craft::t('CraftCMS requires the PDO_MYSQL driver to operate.');
+				$messages[] = Craft::t('@@@appName@@@ requires the PDO_MYSQL driver to operate.');
 			}
 
 			if (!$missingPdo)
