@@ -81,6 +81,17 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
+	 * Returns the element query condition for a custom status criteria.
+	 *
+	 * @param DbCommand $query
+	 * @param string $status
+	 * @return string|false
+	 */
+	public function getElementQueryStatusCondition(DbCommand $query, $status)
+	{
+	}
+
+	/**
 	 * Modifies an entries query targeting entries of this type.
 	 *
 	 * @param DbCommand $query
