@@ -66,7 +66,7 @@ class UserElementType extends BaseElementType
 			'lastName'      => AttributeType::String,
 			'email'         => AttributeType::Email,
 			'admin'         => AttributeType::Bool,
-			'status'        => array(AttributeType::Enum, 'values' => array(UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived), 'default' => UserStatus::Active),
+			'status'        => array(AttributeType::String, 'default' => UserStatus::Active),
 			'lastLoginDate' => AttributeType::DateTime,
 			'order'         => array(AttributeType::String, 'default' => 'username asc')
 		);
@@ -82,6 +82,28 @@ class UserElementType extends BaseElementType
 		return blx()->templates->render('_components/elementtypes/User/linksettings', array(
 			'settings' => $this->getLinkSettings()
 		));
+	}
+
+	/**
+	 * Returns the element query condition for a custom status criteria.
+	 *
+	 * @param DbCommand $query
+	 * @param string $status
+	 * @return string|false
+	 */
+	public function getElementQueryStatusCondition(DbCommand $query, $status)
+	{
+		switch ($status)
+		{
+			case UserStatus::Active:
+			case UserStatus::Locked:
+			case UserStatus::Suspended:
+			case UserStatus::Pending:
+			case UserStatus::Archived:
+			{
+				return 'users.status = "'.$status.'"';
+			}
+		}
 	}
 
 	/**
