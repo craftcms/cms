@@ -7,6 +7,14 @@ namespace Craft;
 class AssetsService extends BaseApplicationComponent
 {
 
+	private static $_DefaultFileParameters = array(
+		'folderId' => array(),
+		'offset' => 0,
+		'limit' => null,
+		'indexBy' => null,
+		'keywords' => array()
+	);
+
 	/**
 	 * A flag that designates that a file merge is in progress and name uniqueness should not be enforced
 	 * @var bool
@@ -36,22 +44,21 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Get files by a folder id.
 	 *
-	 * @param $folderId
-	 * @param $offset
-	 * @param $limit
-	 * @param string|null $indexBy
+	 * @param $folderIds
+	 * @param $parameters
 	 * @return array
 	 */
-	public function getFilesByFolderId($folderId, $offset = 0, $limit = null, $indexBy = null)
+	public function getFilesByFolderId($folderIds, $parameters)
 	{
-		return $this->findFiles(array(
-			'folderId' => $folderId,
-			'limit' => $limit,
-			'offset' => $offset,
-			'indexBy'  => $indexBy,
+		if (!is_array($folderIds))
+		{
+			$folderIds = array($folderIds);
+		}
 
+		$parameters = array_merge(self::$_DefaultFileParameters, $parameters);
 
-		));
+		$parameters['folderId'] = $folderIds;
+		return $this->findFiles($parameters);
 	}
 
 	/**
@@ -75,6 +82,13 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function findFiles($criteria = null)
 	{
+		$keywords = array();
+		if (is_array($criteria) && !empty($criteria['keywords']))
+		{
+			$keywords = $criteria['keywords'];
+			unset($criteria['keywords']);
+		}
+
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
 			$criteria = craft()->elements->getCriteria(ElementType::Asset, $criteria);
@@ -85,6 +99,11 @@ class AssetsService extends BaseApplicationComponent
 			->from('assetfiles AS f');
 
 		$this->_applyFileConditions($query, $criteria);
+
+		foreach ($keywords as $keyword)
+		{
+			$query->andWhere(array('like', 'filename', '%'.$keyword.'%'));
+		}
 
 		if ($criteria->order)
 		{

@@ -40,7 +40,12 @@
 						<a class="btn list" href="javascript:;" title="{{ 'Display files in a list'|t }}" data-icon="•"></a>
 					</div>
 
-					<div class="search"><input type="text" class="text nicetext fullwidth" data-hint="{{ 'Search assets'|t }}"></div>
+					<div class="search">
+                        <input type="text" class="text nicetext fullwidth" data-hint="{{ 'Search assets'|t }}">
+                        <div class="search-options">
+                            <label><input type="checkbox" class="assets-searchmode"> {{ 'Search nested folders'|t }}</label>
+                        </div>
+                    </div>
 				</div>
 				<div class="temp-spinner">Assets is working..</div>
 

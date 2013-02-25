@@ -57,13 +57,28 @@ class AssetsController extends BaseController
 	public function actionViewFolder()
 	{
 		$this->requireAjaxRequest();
-		$folderId = craft()->request->getRequiredPost('folderId');
+
 		$requestId = craft()->request->getPost('requestId', 0);
+		$folderId = craft()->request->getRequiredPost('folderId');
 		$viewType = craft()->request->getPost('viewType', 'thumbs');
+		$keywords = array_filter(explode(" ", (string) craft()->request->getPost('keywords')));
+		$searchType = craft()->request->getPost('searchMode');
 		$offset = craft()->request->getPost('offset', 0);
 
+		$parameters = array(
+			'offset' => $offset,
+			'keywords' => $keywords
+		);
+
 		$folder = craft()->assets->getFolderById($folderId);
-		$files = craft()->assets->getFilesByFolderId($folderId, $offset);
+
+		$additionalFolderIds = array();
+		if ($searchType == 'deep')
+		{
+			$additionalFolderIds = array_keys(craft()->assets->findChildFolders($folder));
+		}
+
+		$files = craft()->assets->getFilesByFolderId(array_merge(array($folderId), $additionalFolderIds), $parameters);
 
 
 		$subfolders = craft()->assets->findFolders(array(
