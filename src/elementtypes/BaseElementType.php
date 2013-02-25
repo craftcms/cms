@@ -21,10 +21,10 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	/**
 	 * Returns the CP edit URI for a given element.
 	 *
-	 * @param ElementModel $element
+	 * @param BaseElementModel $element
 	 * @return string|false
 	 */
-	public function getCpEditUriForElement(ElementModel $element)
+	public function getCpEditUriForElement(BaseElementModel $element)
 	{
 		return false;
 	}
@@ -32,10 +32,10 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	/**
 	 * Returns the site template path for a matched element.
 	 *
-	 * @param ElementModel
+	 * @param BaseElementModel
 	 * @return string|false
 	 */
-	public function getSiteTemplateForMatchedElement(ElementModel $element)
+	public function getSiteTemplateForMatchedElement(BaseElementModel $element)
 	{
 		return false;
 	}
@@ -99,7 +99,6 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 */
 	public function populateElementModel($row)
 	{
-		return ElementModel::populateModel($row);
 	}
 
 	/**

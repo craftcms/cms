@@ -576,7 +576,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Populates a fieldtype by a field model.
 	 *
 	 * @param FieldModel $field
-	 * @param ElementModel|null $element
+	 * @param BaseElementModel|null $element
 	 * @return BaseFieldType|null
 	 */
 	public function populateFieldType(FieldModel $field, $element = null)

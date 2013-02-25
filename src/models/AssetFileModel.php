@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class AssetFileModel extends ElementModel
+class AssetFileModel extends BaseElementModel
 {
 	protected $elementType = ElementType::Asset;
 

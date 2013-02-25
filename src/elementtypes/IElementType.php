@@ -7,16 +7,16 @@ namespace Blocks;
 interface IElementType extends IComponentType
 {
 	/**
-	 * @param ElementModel $element
+	 * @param BaseElementModel $element
 	 * @return string|false
 	 */
-	public function getCpEditUriForElement(ElementModel $element);
+	public function getCpEditUriForElement(BaseElementModel $element);
 
 	/**
-	 * @param ElementModel
+	 * @param BaseElementModel
 	 * @return string|false
 	 */
-	public function getSiteTemplateForMatchedElement(ElementModel $element);
+	public function getSiteTemplateForMatchedElement(BaseElementModel $element);
 
 	/**
 	 * @return string

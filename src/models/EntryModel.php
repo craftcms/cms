@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Entry model class
  */
-class EntryModel extends ElementModel
+class EntryModel extends BaseElementModel
 {
 	protected $elementType = ElementType::Entry;
 

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * User model class
  */
-class UserModel extends ElementModel
+class UserModel extends BaseElementModel
 {
 	protected $elementType = ElementType::User;
 

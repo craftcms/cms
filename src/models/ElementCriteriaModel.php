@@ -107,7 +107,7 @@ class ElementCriteriaModel extends BaseModel
 	 * Returns the first element that matches the criteria.
 	 *
 	 * @param array|null $attributes
-	 * @return ElementModel|null
+	 * @return BaseElementModel|null
 	 */
 	public function first($attributes = null)
 	{

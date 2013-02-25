@@ -7,7 +7,7 @@ namespace Blocks;
 abstract class BaseFieldType extends BaseSavableComponentType implements IFieldType
 {
 	/**
-	 * @var ElementModel The element that the current instance is associated with
+	 * @var BaseElementModel The element that the current instance is associated with
 	 */
 	public $element;
 

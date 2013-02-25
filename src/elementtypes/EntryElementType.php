@@ -19,10 +19,10 @@ class EntryElementType extends BaseElementType
 	/**
 	 * Returns the CP edit URI for a given element.
 	 *
-	 * @param ElementModel $element
+	 * @param BaseElementModel $element
 	 * @return string|null
 	 */
-	public function getCpEditUriForElement(ElementModel $element)
+	public function getCpEditUriForElement(BaseElementModel $element)
 	{
 		return 'content/'.$element->getSection()->handle.'/'.$element->id;
 	}
@@ -30,10 +30,10 @@ class EntryElementType extends BaseElementType
 	/**
 	 * Returns the site template path for a matched element.
 	 *
-	 * @param ElementModel
+	 * @param BaseElementModel
 	 * @return string|false
 	 */
-	public function getSiteTemplateForMatchedElement(ElementModel $element)
+	public function getSiteTemplateForMatchedElement(BaseElementModel $element)
 	{
 		// Make sure that the entry is actually live
 		if ($element->getStatus() == EntryModel::LIVE)
