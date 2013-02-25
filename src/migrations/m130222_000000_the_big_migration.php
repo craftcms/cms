@@ -810,6 +810,9 @@ class m130222_000000_the_big_migration extends BaseMigration
 	 */
 	private function _cleanupLinksTable()
 	{
+		// Delete any orphaned rows.
+		$this->delete('links', array('or', 'leftElementId=0', 'rightElementId=0'));
+
 		$this->createIndex('links', 'criteriaId,leftElementId,rightElementId', true);
 		$this->addForeignKey('links', 'criteriaId', 'linkcriteria', 'id', 'CASCADE');
 		$this->addForeignKey('links', 'leftElementId', 'elements', 'id', 'CASCADE');
