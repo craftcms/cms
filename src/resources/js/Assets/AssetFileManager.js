@@ -20,15 +20,19 @@ Assets.FileManager = Garnish.Base.extend({
 
 		this.$toolbar = $('.toolbar', this.$manager);
 		this.$upload = $('.buttons .assets-upload');
-		this.$search = $('> .search input.text', this.$toolbar);
 		this.$spinner = $('.temp-spinner', this.$manager);
-		this.$status = $('.asset-status');
-		this.$scrollpane = null;
-		this.$folders = Craft.cp.$sidebarNav.find('.assets-folders:first');
-		this.$folderContainer = $('.folder-container');
+        this.$status = $('.asset-status');
+        this.$scrollpane = null;
+        this.$folders = Craft.cp.$sidebarNav.find('.assets-folders:first');
+        this.$folderContainer = $('.folder-container');
+
+        this.$search = $('> .search', this.$toolbar);
+        this.$searchInput = $('input', this.$search);
+        this.$searchOptions = $('.search-options', this.$search);
+        this.$searchModeCheckbox = $('input', this.$searchOptions);
 
 		this.$viewAsThumbsBtn = $('a.thumbs', this.$toolbar);
-		this.$viewAsListBtn   = $('a.list', this.$toolbar);
+        this.$viewAsListBtn   = $('a.list', this.$toolbar);
 
 		this.$uploadProgress = $('> .assets-fm-uploadprogress', this.$manager);
 		this.$uploadProgressBar = $('.assets-fm-pb-bar', this.$uploadProgress);
@@ -48,6 +52,10 @@ Assets.FileManager = Garnish.Base.extend({
 		this.offset = 0;
 		this.nextOffset = 0;
 		this.lastPageReached = false;
+
+        this.searchTimeout = null;
+        this.searchVal = '';
+        this.showingSearchOptions = false;
 
 		this.selectedFileIds = [];
 		this.folders = [];
@@ -77,7 +85,8 @@ Assets.FileManager = Garnish.Base.extend({
 		this.currentState = {
 			view: 'thumbs',
 			currentFolder: null,
-			folders: {}
+			folders: {},
+            searchMode: 'shallow'
 		};
 
 		this.storageKey = 'Craft_Assets_' + this.settings.namespace;
@@ -191,11 +200,22 @@ Assets.FileManager = Garnish.Base.extend({
 			folder = new Assets.FileManagerFolder(this, this.$topFolderLis[i], 1);
 		}
 
+        // ---------------------------------------
+        // Search
+        // ---------------------------------------
+        if (this.currentState.searchMode == 'deep')
+        {
+            this.$searchModeCheckbox.prop('checked', true);
+        }
+
 		// ---------------------------------------
 		// Asset events
 		// ---------------------------------------
 
-		// Switch between views
+        this.$searchInput.keydown($.proxy(this, '_onSearchKeyDown'));
+        this.$searchModeCheckbox.change($.proxy(this, '_onSearchModeChange'));
+
+        // Switch between views
 		this.$viewAsThumbsBtn.click($.proxy(function () {
 			this.selectViewType('thumbs');
 			this.markActiveViewButton();
@@ -230,6 +250,106 @@ Assets.FileManager = Garnish.Base.extend({
 
 		this.loadFolderContents();
 	},
+
+    /**
+     * On Search Key Down
+     */
+    _onSearchKeyDown: function(event)
+    {
+        // ignore if meta/ctrl key is down
+        if (event.metaKey || event.ctrlKey) return;
+
+        event.stopPropagation();
+
+        // clear the last timeout
+        clearTimeout(this.searchTimeout);
+
+        setTimeout($.proxy(function()
+        {
+            switch (event.keyCode)
+            {
+                case 13: // return
+                {
+                    event.preventDefault();
+                    this._checkKeywordVal();
+                    break;
+                }
+
+                case 27: // esc
+                {
+                    event.preventDefault();
+                    this.$searchInput.val('');
+                    this._checkKeywordVal();
+                    break;
+                }
+
+                default:
+                {
+                    this.searchTimeout = setTimeout($.proxy(this, '_checkKeywordVal'), 500);
+                }
+            }
+
+        }, this), 0);
+    },
+
+    /**
+     * Check the keyword value.
+     */
+    _checkKeywordVal: function()
+    {
+        // has the value changed?
+        if (this.searchVal !== (this.searchVal = this.$searchInput.val()))
+        {
+            if (this.searchVal && !this.showingSearchOptions)
+            {
+                this._showSearchOptions();
+            }
+            else if (!this.searchVal && this.showingSearchOptions)
+            {
+                this._hideSearchOptions()
+            }
+
+
+            this.updateFiles();
+        }
+    },
+
+    /**
+     * Show search options.
+     */
+    _showSearchOptions: function()
+    {
+        this.showingSearchOptions = true;
+        this.$searchOptions.stop().slideDown('fast');
+    },
+
+        /**
+         * Hide search options
+         * @private
+         */
+    _hideSearchOptions: function()
+    {
+        this.showingSearchOptions = false;
+        this.$searchOptions.stop().slideUp('fast');
+    },
+
+    /**
+     * Change search mode.
+     */
+    _onSearchModeChange: function()
+    {
+        if (this.$searchModeCheckbox.prop('checked'))
+        {
+            var searchMode = 'deep';
+        }
+        else
+        {
+            var searchMode = 'shallow';
+        }
+
+        this.storeState('searchMode', searchMode);
+        this.updateFiles();
+    },
 
 	/**
 	 * Select the view type to use.
@@ -409,7 +529,9 @@ Assets.FileManager = Garnish.Base.extend({
 		return {
 			requestId: ++this.requestId,
 			folderId: this.currentState.currentFolder,
-			viewType: this.currentState.view
+			viewType: this.currentState.view,
+            keywords: this.$searchInput.val(),
+            searchMode: this.currentState.searchMode
 		};
 	},
 
