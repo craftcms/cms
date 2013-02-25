@@ -148,7 +148,7 @@ class DashboardController extends BaseController
 					// Grab the most recent rolled-over log file, if one exists.
 					if (IOHelper::fileExists(blx()->path->getLogPath().'blocks.log.1'))
 					{
-						Zip::add($tempZipFile, blx()->path->getLogPath().'blocks1.log.1', blx()->path->getStoragePath());
+						Zip::add($tempZipFile, blx()->path->getLogPath().'blocks.log.1', blx()->path->getStoragePath());
 					}
 
 					// Grab the phperrors log file, if it exists.
