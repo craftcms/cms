@@ -242,7 +242,7 @@ class UsersService extends BaseApplicationComponent
 				blx()->templates->registerTwigAutoloader();
 
 				blx()->email->sendEmailByKey($user, 'verify_email', array(
-					'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $user->uid), blx()->templates->getTwig()->getCharset()),
+					'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), blx()->templates->getTwig()->getCharset()),
 				));
 			}
 
