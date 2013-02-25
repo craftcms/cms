@@ -16,3 +16,4 @@ interface IWidget extends ISavableComponentType
 	 */
 	public function getBodyHtml();
 }
+
