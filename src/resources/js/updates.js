@@ -94,7 +94,7 @@ Craft.postActionRequest('update/getAvailableUpdates', function(response) {
 						$th = $('<th/>').appendTo($tr),
 						$td = $('<td class="thin rightalign"/>').appendTo($tr);
 
-					$th.html('CraftCMS '+response.craft.releases[0].version +
+					$th.html('@@@appName@@@ '+response.craft.releases[0].version +
 						' <span class="light">' +
 						Craft.t('build {build}', { build: response.craft.releases[0].build }) +
 						'</span>' +
@@ -131,7 +131,7 @@ Craft.postActionRequest('update/getAvailableUpdates', function(response) {
 					var $tr = $('<tr/>').appendTo($tbody),
 						$td = $('<td class="notes" colspan="2"/>').appendTo($tr);
 
-					new ReleaseNotes($td, response.craft.releases, 'CraftCMS');
+					new ReleaseNotes($td, response.craft.releases, '@@@appName@@@');
 				}
 
 				if (response.packages)

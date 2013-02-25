@@ -128,7 +128,7 @@ class DashboardController extends BaseController
 		$requestParams = $requestParamDefaults;
 
 		$hsParams = array(
-			'helpSpotApiURL' => 'https://support.craftkscms.com/api/index.php'
+			'helpSpotApiURL' => 'https://support.buildwithcraft.com/api/index.php'
 		);
 
 		$attachment = (bool)craft()->request->getPort('attachDebugFiles');
