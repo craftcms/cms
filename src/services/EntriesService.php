@@ -353,7 +353,7 @@ class EntriesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Processes any tags on the ElementModel for the given EntryRecord.  Will generate a list of tags that need to be
+	 * Processes any tags on the EntryModel for the given EntryRecord.  Will generate a list of tags that need to be
 	 * added, updated or deleted for an entry.
 	 *
 	 * @param EntryModel  $entry

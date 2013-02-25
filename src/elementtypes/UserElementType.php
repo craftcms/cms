@@ -19,10 +19,10 @@ class UserElementType extends BaseElementType
 	/**
 	 * Returns the CP edit URI for a given element.
 	 *
-	 * @param ElementModel $element
+	 * @param BaseElementModel $element
 	 * @return string|null
 	 */
-	public function getCpEditUriForElement(ElementModel $element)
+	public function getCpEditUriForElement(BaseElementModel $element)
 	{
 		if (Craft::hasPackage(CraftPackage::Users))
 		{

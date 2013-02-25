@@ -11,7 +11,7 @@ class GlobalsService extends BaseApplicationComponent
 	/**
 	 * Gets the global content.
 	 *
-	 * @return ElementModel
+	 * @return BaseElementModel
 	 */
 	public function getGlobalContent()
 	{
@@ -23,11 +23,11 @@ class GlobalsService extends BaseApplicationComponent
 
 			if ($record)
 			{
-				$this->_globalContent = ElementModel::populateModel($record);
+				$this->_globalContent = GlobalsModel::populateModel($record);
 			}
 			else
 			{
-				$this->_globalContent = new ElementModel();
+				$this->_globalContent = new GlobalsModel();
 			}
 		}
 
@@ -37,10 +37,10 @@ class GlobalsService extends BaseApplicationComponent
 	/**
 	 * Saves the global content.
 	 *
-	 * @param ElementModel $globals
+	 * @param GlobalsModel $globals
 	 * @return bool
 	 */
-	public function saveGlobalContent(ElementModel $globals)
+	public function saveGlobalContent(GlobalsModel $globals)
 	{
 		if (!$globals->id)
 		{

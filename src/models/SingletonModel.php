@@ -6,7 +6,7 @@ namespace Craft;
  *
  * Used for transporting page data throughout the system.
  */
-class SingletonModel extends ElementModel
+class SingletonModel extends BaseElementModel
 {
 	protected $elementType = ElementType::Singleton;
 

@@ -2,9 +2,9 @@
 namespace Craft;
 
 /**
- * Element model class
+ * Base element model class
  */
-class ElementModel extends BaseModel
+abstract class BaseElementModel extends BaseModel
 {
 	protected $elementType;
 

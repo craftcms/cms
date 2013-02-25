@@ -285,12 +285,12 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Preps an ContentRecord to be saved with an element's data.
 	 *
-	 * @param ElementModel $element
+	 * @param BaseElementModel $element
 	 * @param FieldLayoutModel $fieldLayout
 	 * @param stirng|null $localeId
 	 * @return ContentRecord
 	 */
-	public function prepElementContent(ElementModel $element, FieldLayoutModel $fieldLayout, $localeId = null)
+	public function prepElementContent(BaseElementModel $element, FieldLayoutModel $fieldLayout, $localeId = null)
 	{
 		if ($element->id)
 		{
@@ -347,10 +347,10 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Performs post-save element operations, such as calling all fieldtypes' onAfterElementSave() methods.
 	 *
-	 * @param ElementModel $element
+	 * @param BaseElementModel $element
 	 * @param ContentRecord $element
 	 */
-	public function postSaveOperations(ElementModel $element, ContentRecord $contentRecord)
+	public function postSaveOperations(BaseElementModel $element, ContentRecord $contentRecord)
 	{
 		if (Craft::hasPackage(CraftPackage::Language))
 		{
@@ -403,11 +403,11 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Saves an element's content.
 	 *
-	 * @param ElementModel $element
+	 * @param BaseElementModel $element
 	 * @param FieldLayoutModel $fieldLayout
 	 * @param stirng|null $localeId
 	 */
-	public function saveElementContent(ElementModel $element, FieldLayoutModel $fieldLayout, $localeId = null)
+	public function saveElementContent(BaseElementModel $element, FieldLayoutModel $fieldLayout, $localeId = null)
 	{
 		if (!$element->id)
 		{
@@ -450,10 +450,10 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Returns the CP edit URL for a given element.
 	 *
-	 * @param ElementModel $element
+	 * @param BaseElementModel $element
 	 * @return string|null
 	 */
-	public function getCpEditUrlForElement(ElementModel $element)
+	public function getCpEditUrlForElement(BaseElementModel $element)
 	{
 		$elementType = $this->getElementType($element->type);
 
