@@ -98,6 +98,7 @@ class EntryElementType extends BaseElementType
 			'editable'      => AttributeType::Bool,
 			'after'         => AttributeType::DateTime,
 			'before'        => AttributeType::DateTime,
+			'status'        => array(AttributeType::String, 'default' => EntryModel::LIVE)
 		);
 	}
 
@@ -111,6 +112,47 @@ class EntryElementType extends BaseElementType
 		return craft()->templates->render('_components/elementtypes/Entry/linksettings', array(
 			'settings' => $this->getLinkSettings()
 		));
+	}
+
+	/**
+	 * Returns the element query condition for a custom status criteria.
+	 *
+	 * @param DbCommand $query
+	 * @param string $status
+	 * @return string|false
+	 */
+	public function getElementQueryStatusCondition(DbCommand $query, $status)
+	{
+		$currentTimeDb = DateTimeHelper::currentTimeForDb();
+
+		switch ($status)
+		{
+			case EntryModel::LIVE:
+			{
+				return array('and',
+					'elements.enabled = 1',
+					"entries.postDate <= '{$currentTimeDb}'",
+					array('or', 'entries.expiryDate is null', "entries.expiryDate > '{$currentTimeDb}'")
+				);
+			}
+
+			case EntryModel::PENDING:
+			{
+				return array('and',
+					'elements.enabled = 1',
+					"entries.postDate > '{$currentTimeDb}'"
+				);
+			}
+
+			case EntryModel::EXPIRED:
+			{
+				return array('and',
+					'elements.enabled = 1',
+					'entries.expiryDate is not null',
+					"entries.expiryDate <= '{$currentTimeDb}'"
+				);
+			}
+		}
 	}
 
 	/**
@@ -135,22 +177,12 @@ class EntryElementType extends BaseElementType
 
 		if ($criteria->after)
 		{
-			$query->andWhere(DbHelper::parseDateParam('elements.postDate', '>=', $criteria->after, $query->params));
+			$query->andWhere(DbHelper::parseDateParam('entries.postDate', '>=', $criteria->after, $query->params));
 		}
 
 		if ($criteria->before)
 		{
-			$query->andWhere(DbHelper::parseDateParam('elements.postDate', '<', $criteria->before, $query->params));
-		}
-
-		if ($criteria->status)
-		{
-			$statusCondition = $this->_getEntryStatusCondition($criteria->status);
-
-			if ($statusCondition)
-			{
-				$query->andWhere($statusCondition);
-			}
+			$query->andWhere(DbHelper::parseDateParam('entries.postDate', '<', $criteria->before, $query->params));
 		}
 
 		if ($criteria->editable)
@@ -230,71 +262,5 @@ class EntryElementType extends BaseElementType
 	public function populateElementModel($row)
 	{
 		return EntryModel::populateModel($row);
-	}
-
-	/**
-	 * Returns the element status conditions.
-	 *
-	 * @access private
-	 * @param $statusParam
-	 * @return array
-	 */
-	private function _getEntryStatusCondition($statusParam)
-	{
-		$statusConditions = array();
-		$statuses = ArrayHelper::stringToArray($statusParam);
-
-		foreach ($statuses as $status)
-		{
-			$status = strtolower($status);
-			$currentTimeDb = DateTimeHelper::currentTimeForDb();
-
-			switch ($status)
-			{
-				case 'live':
-				{
-					$statusConditions[] = array('and',
-						'elements.enabled = 1',
-						"elements.postDate <= '{$currentTimeDb}'",
-						array('or', 'elements.expiryDate is null', "elements.expiryDate > '{$currentTimeDb}'")
-					);
-					break;
-				}
-				case 'pending':
-				{
-					$statusConditions[] = array('and',
-						'elements.enabled = 1',
-						"elements.postDate > '{$currentTimeDb}'"
-					);
-					break;
-				}
-				case 'expired':
-				{
-					$statusConditions[] = array('and',
-						'elements.enabled = 1',
-						'elements.expiryDate is not null',
-						"elements.expiryDate <= '{$currentTimeDb}'"
-					);
-					break;
-				}
-				case 'disabled':
-				{
-					$statusConditions[] = 'elements.enabled != 1';
-				}
-			}
-		}
-
-		if ($statusConditions)
-		{
-			if (count($statusConditions) == 1)
-			{
-				return $statusConditions[0];
-			}
-			else
-			{
-				array_unshift($conditions, 'or');
-				return $statusConditions;
-			}
-		}
 	}
 }

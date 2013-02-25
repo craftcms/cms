@@ -242,7 +242,7 @@ class UsersService extends BaseApplicationComponent
 				craft()->templates->registerTwigAutoloader();
 
 				craft()->email->sendEmailByKey($user, 'verify_email', array(
-					'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $user->uid), craft()->templates->getTwig()->getCharset()),
+					'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
 				));
 			}
 
@@ -283,7 +283,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function saveProfile(UserModel $user)
 	{
-		Craft::requirePackage(CraftPackage::Users);
+		Blocks::requirePackage(BlocksPackage::Users);
 
 		$fieldLayout = craft()->fields->getLayoutByType(ElementType::User);
 		return craft()->elements->saveElementContent($user, $fieldLayout);

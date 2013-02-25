@@ -111,7 +111,7 @@ var LoginForm = Garnish.Base.extend({
 				// Add the error message
 				this.showError(response.error);
 
-				if (response.errorCode == 2)
+				if (response.errorCode == 2 || response.errorCode == 1)
 				{
 					$('<br/>').appendTo(this.$error);
 					var $forgotPasswordLink = $('<a>'+Craft.t('Forget your password?')+'</a>').appendTo(this.$error);

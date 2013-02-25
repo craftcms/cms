@@ -442,16 +442,20 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string $html The template with the inputs
 	 * @param string $namespace The namespace to make inputs belong to
+	 * @param bool $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to true.
 	 * @return string The template with namespaced inputs
 	 */
-	public function namespaceInputs($html, $namespace)
+	public function namespaceInputs($html, $namespace, $otherAttributes = true)
 	{
 		// name= attributes
 		$html = preg_replace('/(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
 
 		// id= and for= attributes
-		$idNamespace = rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-');
-		$html = preg_replace('/((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/', '$1'.$idNamespace.'-$4$3', $html);
+		if ($otherAttributes)
+		{
+			$idNamespace = rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-');
+			$html = preg_replace('/((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/', '$1'.$idNamespace.'-$4$3', $html);
+		}
 
 		return $html;
 	}

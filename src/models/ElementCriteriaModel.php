@@ -29,7 +29,7 @@ class ElementCriteriaModel extends BaseModel
 			'id'            => AttributeType::Number,
 			'locale'        => AttributeType::Locale,
 			'uri'           => AttributeType::String,
-			'status'        => AttributeType::String,
+			'status'        => array(AttributeType::String, 'default' => BaseElementModel::ENABLED),
 			'archived'      => AttributeType::Bool,
 			'order'         => array(AttributeType::String, 'default' => 'dateCreated desc'),
 			'offset'        => array(AttributeType::Number, 'default' => 0),

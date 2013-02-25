@@ -111,11 +111,11 @@
 
 			{{ forms.textField({
 				label: "Template"|t,
-				instructions: "The template to use when the page’s URI is requested."|t,
+				instructions: "The template to use when the singleton’s URI is requested."|t,
 				id: 'template',
 				name: 'template',
-				value: (page is defined ? page.template : null),
-				errors: (page is defined ? page.getErrors('template') : null)
+				value: (singleton is defined ? singleton.template : null),
+				errors: (singleton is defined ? singleton.getErrors('template') : null)
 			}) }}
 
 		</div>

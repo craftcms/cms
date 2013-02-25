@@ -40,7 +40,7 @@ class UrlManager extends \CUrlManager
 		// we'll never have a db element match on a control panel request
 		if (craft()->isInstalled() && craft()->request->isSiteRequest())
 		{
-			if (($path = $this->matchEntry()) !== false)
+			if (($path = $this->matchElement()) !== false)
 			{
 				return $path;
 			}
@@ -69,7 +69,7 @@ class UrlManager extends \CUrlManager
 	 *
 	 * @return bool The URI if a match was found, false otherwise.
 	 */
-	public function matchEntry()
+	public function matchElement()
 	{
 		$query = craft()->db->createCommand()
 			->select('elements.id, elements.type')

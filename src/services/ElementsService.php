@@ -154,8 +154,6 @@ class ElementsService extends BaseApplicationComponent
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.locale, elements_i18n.uri')
 			->from('elements elements');
 
-		$whereConditions = array();
-
 		if ($elementType->isLocalizable())
 		{
 			$query->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
@@ -175,7 +173,7 @@ class ElementsService extends BaseApplicationComponent
 
 			if (count($localeIds) == 1)
 			{
-				$whereConditions[] = 'elements_i18n.locale = :locale';
+				$query->andWhere('elements_i18n.locale = :locale');
 				$query->params[':locale'] = $localeIds[0];
 			}
 			else
@@ -190,7 +188,7 @@ class ElementsService extends BaseApplicationComponent
 					$localeOrder[] = "({$quotedLocaleColumn} = {$quotedLocale}) DESC";
 				}
 
-				$whereConditions[] = "{$quotedLocaleColumn} IN (".implode(', ', $quotedLocales).')';
+				$query->andWhere("{$quotedLocaleColumn} IN (".implode(', ', $quotedLocales).')');
 				$query->order($localeOrder);
 			}
 		}
@@ -202,36 +200,77 @@ class ElementsService extends BaseApplicationComponent
 		// The rest
 		if ($criteria->id)
 		{
-			$whereConditions[] = DbHelper::parseParam('elements.id', $criteria->id, $query->params);
+			$query->andWhere(DbHelper::parseParam('elements.id', $criteria->id, $query->params));
 		}
 
-		if ($criteria->uri)
+		if ($criteria->uri !== null)
 		{
-			$whereConditions[] = DbHelper::parseParam('elements_i18n.uri', $criteria->uri, $query->params);
+			$query->andWhere(DbHelper::parseParam('elements_i18n.uri', $criteria->uri, $query->params));
 		}
 
 		if ($criteria->archived)
 		{
-			$whereConditions[] = 'elements.archived = 1';
+			$query->andWhere('elements.archived = 1');
 		}
 		else
 		{
-			$whereConditions[] = 'elements.archived = 0';
-		}
+			$query->andWhere('elements.archived = 0');
 
-		// Apply the conditions
-		if (count($whereConditions) == 1)
-		{
-			$query->where($whereConditions[0]);
-		}
-		else
-		{
-			array_unshift($whereConditions, 'and');
-			$query->where($whereConditions);
-		}
+			if ($criteria->status)
+			{
+				$statusConditions = array();
+				$statuses = ArrayHelper::stringToArray($criteria->status);
 
-		// Give the element type a chance to make any changes
-		$elementType = $criteria->getElementType();
+				foreach ($statuses as $status)
+				{
+					$status = strtolower($status);
+
+					switch ($status)
+					{
+						case BaseElementModel::ENABLED:
+						{
+							$statusConditions[] = 'elements.enabled = 1';
+							break;
+						}
+
+						case BaseElementModel::DISABLED:
+						{
+							$statusConditions[] = 'elements.enabled = 0';
+						}
+
+						default:
+						{
+							// Maybe the element type supports another status?
+							$elementStatusCondition = $elementType->getElementQueryStatusCondition($query, $status);
+
+							if ($elementStatusCondition)
+							{
+								$statusConditions[] = $elementStatusCondition;
+							}
+							else if ($elementStatusCondition === false)
+							{
+								return false;
+							}
+						}
+					}
+				}
+
+				if ($statusConditions)
+				{
+					if (count($statusConditions) == 1)
+					{
+						$statusCondition = $statusConditions[0];
+					}
+					else
+					{
+						array_unshift($conditions, 'or');
+						$statusCondition = $statusConditions;
+					}
+
+					$query->andWhere($statusCondition);
+				}
+			}
+		}
 
 		if ($elementType->modifyElementsQuery($query, $criteria) !== false)
 		{

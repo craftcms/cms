@@ -40,6 +40,13 @@ interface IElementType extends IComponentType
 
 	/**
 	 * @param DbCommand $query
+	 * @param string $status
+	 * @return string|false
+	 */
+	public function getElementQueryStatusCondition(DbCommand $query, $status);
+
+	/**
+	 * @param DbCommand $query
 	 * @param ElementCriteriaModel $criteria
 	 * @return null|false
 	 */
