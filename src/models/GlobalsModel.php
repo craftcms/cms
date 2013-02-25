@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace Craft;
 
 /**
  * Globals model class
@@ -15,6 +15,6 @@ class GlobalsModel extends BaseElementModel
 	 */
 	function __toString()
 	{
-		return Blocks::t('Globals');
+		return Craft::t('Globals');
 	}
 }
