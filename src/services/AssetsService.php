@@ -527,7 +527,7 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function findChildFolders(AssetFolderModel $folderModel)
 	{
-		$query = blx()->db->createCommand()
+		$query = craft()->db->createCommand()
 			->select('f.*')
 			->from('assetfolders AS f')
 			->where(array('like', 'fullPath', $folderModel->fullPath.'%'))
