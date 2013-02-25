@@ -1,7 +1,7 @@
 {% extends "settings/assets/_layout" %}
 {% set selectedTab = 'sources' %}
 {% set sources = craft.assets.getAllSources %}
-craft
+
 {% set content %}
 	<p id="nosources"{% if sources|length %} class="hidden"{% endif %}>
 		{{ "No sources exist yet."|t }}
