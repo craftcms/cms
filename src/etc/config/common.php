@@ -14,16 +14,16 @@ if (file_exists(CRAFT_CONFIG_PATH.'general.php'))
 		$generalConfig = array_merge($generalConfig, $_generalConfig);
 	}
 }
-else if (file_exists(CRAFT_CONFIG_PATH.'craft.php'))
+else if (file_exists(CRAFT_CONFIG_PATH.'blocks.php'))
 {
-	if (is_array($_generalConfig = require_once(CRAFT_CONFIG_PATH.'craft.php')))
+	if (is_array($_generalConfig = require_once(CRAFT_CONFIG_PATH.'blocks.php')))
 	{
 		$generalConfig = array_merge($generalConfig, $_generalConfig);
 	}
-	else if (isset($craftConfig))
+	else if (isset($blocksConfig))
 	{
-		$generalConfig = array_merge($generalConfig, $craftConfig);
-		unset($craftConfig);
+		$generalConfig = array_merge($generalConfig, $blocksConfig);
+		unset($blocksConfig);
 	}
 }
 
