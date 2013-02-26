@@ -11,7 +11,7 @@ class AssetsService extends BaseApplicationComponent
 		'folderId' => array(),
 		'offset' => 0,
 		'limit' => null,
-		'indexBy' => null,
+		'order' => 'filename ASC',
 		'keywords' => array()
 	);
 

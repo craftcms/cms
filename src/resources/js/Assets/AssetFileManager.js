@@ -89,7 +89,9 @@ Assets.FileManager = Garnish.Base.extend({
 			view: 'thumbs',
 			currentFolder: null,
 			folders: {},
-            searchMode: 'shallow'
+            searchMode: 'shallow',
+            orderBy: 'filename',
+            sortOrder: 'ASC'
 		};
 
 		this.storageKey = 'Craft_Assets_' + this.settings.namespace;
@@ -453,12 +455,12 @@ Assets.FileManager = Garnish.Base.extend({
 			if (this.currentState.view == 'list')
 			{
 				this.filesView = new Assets.ListView($('> .folder-contents > .listview', this.$folderContainer), {
-					orderby: this.currentState.orderby,
-					sort:    this.currentState.sort,
+					orderby: this.currentState.orderBy,
+					sort:    this.currentState.sortOrder,
 					onSortChange: $.proxy(function(orderby, sort)
 					{
-						this.storeState('orderby', orderby);
-                        this.storeState('sort', sort);
+						this.storeState('orderBy', orderby);
+                        this.storeState('sortOrder', sort);
 						this.updateFiles();
 					}, this)
 				});
@@ -527,13 +529,21 @@ Assets.FileManager = Garnish.Base.extend({
 	 * Prepare the array for POST request for file view.
 	 */
 	_prepareFileViewPostData: function (folderId) {
-		return {
+		var params = {
 			requestId: ++this.requestId,
 			folderId: this.currentState.currentFolder,
 			viewType: this.currentState.view,
             keywords: this.$searchInput.val(),
             searchMode: this.currentState.searchMode
 		};
+
+        if (this.currentState.view == 'list')
+        {
+            params.orderBy = this.currentState.orderBy;
+            params.sortOrder = this.currentState.sortOrder;
+        }
+
+        return params;
 	},
 
 	/**
