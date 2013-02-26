@@ -119,7 +119,7 @@ class PluginsService extends BaseApplicationComponent
 		{
 			if (isset($this->_enabledPlugins[$lcPluginHandle]))
 			{
-				return $this->_enabledPlugins[$lcHandle];
+				return $this->_enabledPlugins[$lcPluginHandle];
 			}
 			else
 			{

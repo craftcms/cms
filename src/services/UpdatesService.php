@@ -224,11 +224,8 @@ class UpdatesService extends BaseApplicationComponent
 	public function check()
 	{
 		$updateModel = new UpdateModel();
-		$updateModel->craft = new CraftUpdateModel();
-		$updateModel->plugins = array();
-
-		$updateModel->craft->localBuild = Craft::getBuild();
-		$updateModel->craft->localVersion = Craft::getVersion();
+		$updateModel->app->localBuild = Craft::getBuild();
+		$updateModel->app->localVersion = Craft::getVersion();
 
 		$plugins = craft()->plugins->getPlugins();
 

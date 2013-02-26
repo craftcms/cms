@@ -18,8 +18,23 @@ class PluginUpdateModel extends BaseModel
 		$attributes['status']                  = AttributeType::Bool;
 		$attributes['displayName']             = AttributeType::String;
 		$attributes['criticalUpdateAvailable'] = AttributeType::Bool;
-		$attributes['releases']                = AttributeType::Mixed;
+		$attributes['releases']                = AttributeType::Mixed;;
 
 		return $attributes;
+	}
+
+	/**
+	 * @param string $name
+	 * @param mixed  $value
+	 * @return bool|void
+	 */
+	public function setAttribute($name, $value)
+	{
+		if ($name == 'releases')
+		{
+			$value = PluginUpdateModel::populateModels($value);
+		}
+
+		parent::setAttribute($name, $value);
 	}
 }

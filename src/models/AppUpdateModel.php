@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * Stores the available Craft update info.
  */
-class CraftUpdateModel extends BaseModel
+class AppUpdateModel extends BaseModel
 {
 	/**
 	 * @return array|void
@@ -23,9 +23,24 @@ class CraftUpdateModel extends BaseModel
 		$attributes['manualUpdateRequired']    = AttributeType::Bool;
 		$attributes['breakpointRelease']       = AttributeType::Bool;
 		$attributes['versionUpdateStatus']     = AttributeType::String;
-		$attributes['releases']                = AttributeType::Mixed;
 		$attributes['manualDownloadEndpoint']  = AttributeType::String;
+		$attributes['releases']                = AttributeType::Mixed;
 
 		return $attributes;
+	}
+
+	/**
+	 * @param string $name
+	 * @param mixed  $value
+	 * @return bool|void
+	 */
+	public function setAttribute($name, $value)
+	{
+		if ($name == 'releases')
+		{
+			$value = AppNewReleaseModel::populateModels($value);
+		}
+
+		parent::setAttribute($name, $value);
 	}
 }
