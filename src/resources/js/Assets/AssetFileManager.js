@@ -689,12 +689,27 @@ Assets.FileManager = Garnish.Base.extend({
 		}, this));
 	},
 
-    _renameFile: function () {
-
+    /**
+     * View a file
+     */
+    _viewFile: function (ev) {
+        window.open($(ev.currentTarget).attr('data-url'));
     },
 
-    _deleteFile: function () {
+    /**
+     * Rename a file
+     */
+    _renameFile: function () {
+        // TODO rename file
+        alert('Rename file is not yet available');
+    },
 
+    /**
+     * Delete a file
+     */
+    _deleteFile: function () {
+        // TODO delete file
+        alert('Delete file is not yet available');
     },
 
 	/**
@@ -703,9 +718,24 @@ Assets.FileManager = Garnish.Base.extend({
 	_showProperties: function (ev) {
 
 		this.setAssetsBusy();
+        var fileId = 0;
+        var target = ev.target;
+        if (typeof ev.currentTarget != "undefined")
+        {
+            target = ev.currentTarget;
+        }
+
+        if (this.currentState.view == 'thumbs')
+        {
+            fileId = $(target).is('li') ? $(target).attr('data-file') : $(target).parents('li').attr('data-file');
+        }
+        else
+        {
+            fileId = $(target).is('tr') ? $(target).attr('data-file') : $(target).parents('tr').attr('data-file');
+        }
 		var params = {
 			requestId: ++this.requestId,
-			fileId: $(ev.target).is('li') ? $(ev.target).attr('data-file') : $(ev.target).parents('li').attr('data-file')
+			fileId: fileId
 		};
 
 		Craft.postActionRequest('assets/viewFile', params, $.proxy(function(data, textStatus) {
@@ -760,8 +790,7 @@ Assets.FileManager = Garnish.Base.extend({
 	{
 		if (this.settings.mode == 'full')
 		{
-			// TODO Context menu
-		    /*if (this.fileSelect.getTotalSelected() == 1)
+		    if (this.fileSelect.getTotalSelected() == 1)
 			{
 				this._singleFileMenu.enable();
 				this._multiFileMenu.disable();
@@ -770,7 +799,7 @@ Assets.FileManager = Garnish.Base.extend({
 			{
 				this._singleFileMenu.disable();
 				this._multiFileMenu.enable();
-			}*/
+			}
 		}
 
 		// update our internal array of selected files

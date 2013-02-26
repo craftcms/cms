@@ -4,7 +4,7 @@
 <div class="files thumbs">
 	<ul>
 		{% for file in files %}
-			<li class="open-file" data-file="{{ file.id }}">
+			<li class="open-file" data-file="{{ file.id }}" data-url="{{ file.url }}">
                 {% if file.kind == 'image' %}
 				    <div class="thumb-wrapper wrapper-{{ file.id }}"><div class="thumb thumb-{{ file.id }}"></div></div>
                 {% else %}

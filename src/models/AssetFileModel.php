@@ -53,10 +53,16 @@ class AssetFileModel extends ElementModel
 	 */
 	public function getUrl($sizeHandle = null)
 	{
-		return craft()->assetSources->getSourceTypeById($this->sourceId)->getSettings()->url.
-			$this->getFolder()->fullPath.
-			($sizeHandle ? '_'.$sizeHandle.'/' : '').
-			$this->filename;
+		$sourceType = craft()->assetSources->getSourceTypeById($this->sourceId);
+		if ($sourceType->isSourceLocal())
+		{
+			$base = $sourceType->getSettings()->url;
+		}
+		else
+		{
+			$base = $sourceType->getSettings()->urlPrefix;
+		}
+		return $base.$this->getFolder()->fullPath.($sizeHandle ? '_'.$sizeHandle.'/' : '').$this->filename;
 	}
 
 	/**
