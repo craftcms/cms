@@ -1,6 +1,8 @@
 @charset "UTF-8";
 
-#loading { margin-top: 50px !important; padding-top: 70px; text-align: center; background: url({{ resourceUrl('images/spinner-big.gif') }}) no-repeat 50% 0; }
+@import "shared";
+
+#loading { margin-top: 50px !important; padding-top: 70px; text-align: center; background: url(images/spinner-big.gif) no-repeat 50% 0; }
 
 #update-all,
 #updates,
@@ -18,7 +20,7 @@
 #updates td.notes td:first-child { padding-left: 25px; }
 #updates td.notes .category { display: block; border-radius: 2px; padding: 0 7px; text-align: center; font-size: 11px; color: #fff; }
 #updates td.notes .category.added { background: #1888cd; }
-#updates td.notes .category.improved { background: #00b007; }
-#updates td.notes .category.fixed { background: #ff471a; }
+#updates td.notes .category.improved { background: $successcolor; }
+#updates td.notes .category.fixed { background: $errorcolor; }
 
 #update-error { padding-top: 120px; }
