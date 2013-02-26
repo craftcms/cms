@@ -64,7 +64,7 @@ class CraftVariable
 	 */
 	public function getPackages()
 	{
-		return Craft::getStoredPackages();
+		return Craft::getPackages();
 	}
 
 	/**

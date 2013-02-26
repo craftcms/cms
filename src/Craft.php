@@ -81,29 +81,12 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Returns the packages in this Craft install, as defined by the CRAFT_PACKAGES constant.
-	 *
-	 * @static
-	 * @return array|null
-	 */
-	public static function getPackages()
-	{
-		if (!isset(static::$_packages))
-		{
-			static::$_packages = array_filter(ArrayHelper::stringToArray(CRAFT_PACKAGES));
-			sort(static::$_packages);
-		}
-
-		return static::$_packages;
-	}
-
-	/**
 	 * Returns the packages in this Craft install, as defined in the craft_info table.
 	 *
 	 * @static
 	 * @return array|null
 	 */
-	public static function getStoredPackages()
+	public static function getPackages()
 	{
 		$storedCraftInfo = static::_getStoredInfo();
 
@@ -113,8 +96,10 @@ class Craft extends \Yii
 			sort($storedPackages);
 			return $storedPackages;
 		}
-
-		return null;
+		else
+		{
+			return array();
+		}
 	}
 
 	/**
@@ -143,25 +128,15 @@ class Craft extends \Yii
 	 */
 	public static function hasPackage($packageName)
 	{
-		// If Craft is already installed, the check the file system AND database to determine if a package is installed or not.
+		// If Craft is already installed, the check the database to determine if a package is installed or not.
 		if (craft()->isInstalled())
 		{
-			$storedPackages = static::getStoredPackages() == null ? array() : static::getStoredPackages();
-			if (in_array($packageName, $storedPackages) && in_array($packageName, static::getPackages()))
-			{
-				return true;
-			}
+			return in_array($packageName, static::getPackages());
 		}
 		else
 		{
-			// Not installed, so only check the file system.
-			if (in_array($packageName, static::getPackages()))
-			{
-				return true;
-			}
+			return false;
 		}
-
-		return false;
 	}
 
 	/**

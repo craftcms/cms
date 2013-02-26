@@ -58,8 +58,6 @@ if ($tablePrefix)
 	$tablePrefix .= '_';
 }
 
-$packages = explode(',', CRAFT_PACKAGES);
-
 $configArray = array(
 
 	// autoloading model and component classes

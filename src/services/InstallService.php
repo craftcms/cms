@@ -158,7 +158,6 @@ class InstallService extends BaseApplicationComponent
 		$info->version = Craft::getVersion();
 		$info->build = Craft::getBuild();
 		$info->releaseDate = Craft::getReleaseDate();
-		$info->packages = implode(',', Craft::getPackages());
 		$info->siteName = $inputs['siteName'];
 		$info->siteUrl = $inputs['siteUrl'];
 		$info->licenseKey = $inputs['licenseKey'];

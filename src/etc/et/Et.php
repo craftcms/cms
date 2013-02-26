@@ -81,7 +81,7 @@ class Et
 		$this->_model->requestIp = craft()->request->getUserHostAddress();
 		$this->_model->requestTime = DateTimeHelper::currentTimeStamp();
 		$this->_model->requestPort = craft()->request->getPort();
-		$this->_model->installedPackages = ArrayHelper::stringToArray(Craft::getStoredPackages());
+		$this->_model->installedPackages = ArrayHelper::stringToArray(Craft::getPackages());
 		$this->_model->localBuild = Craft::getBuild();
 		$this->_model->localVersion= Craft::getVersion();
 

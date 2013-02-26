@@ -15,7 +15,6 @@ function normalizeDbHostname($dbHostname)
 	return $dbHostname;
 }
 
-$packages = explode(',', CRAFT_PACKAGES);
 $common = require(CRAFT_APP_PATH.'etc/config/common.php');
 
 return CMap::mergeArray($common, array(
