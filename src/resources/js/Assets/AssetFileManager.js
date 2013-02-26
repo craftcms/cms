@@ -328,14 +328,12 @@ Assets.FileManager = Garnish.Base.extend({
             if (this.currentState.view == 'list')
             {
                 this.filesView = new Assets.ListView($('> .folder-contents > .listview', this.$folderContainer), {
-                    orderby: this.state.orderby,
-                    sort:    this.state.sort,
+                    orderby: this.currentState.orderby,
+                    sort:    this.currentState.sort,
                     onSortChange: $.proxy(function(orderby, sort)
                     {
-                        this.setState({
-                            orderby: orderby,
-                            sort: sort
-                        });
+                        this.storeState('orderby', orderby);
+                        this.storeState('sort', sort);
                         this.updateFiles();
                     }, this)
                 });
