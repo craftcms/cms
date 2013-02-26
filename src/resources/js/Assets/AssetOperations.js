@@ -92,15 +92,24 @@ Assets.OperationManager = Garnish.Base.extend({
 			var _t = this;
 
 			checkedSources.each(function () {
-				var progress_bar = $('<div class="progress-bar"><label>' + $(this).parent().text() + '</label><span></span></div>').appendTo(_t.$progressBarContainer);
-				var params = {
-					sourceId: $(this).val(),
+                var $checkbox = $(this);
+                var sourceName = $checkbox.parent().text();
+                var progress_bar = $('<div class="progress-bar"><label>' + sourceName + '</label><span></span></div>').appendTo(_t.$progressBarContainer);
+                var params = {
+					sourceId: $checkbox.val(),
 					session: _t.sessionId,
 					doIndexes: checkedOperations.doIndexes,
 					doTransformations: checkedOperations.transformations
 				};
 
 				_t.queue.addItem(Craft.getActionUrl('assetOperations/startIndex'), params, $.proxy(function (data) {
+
+                    if (typeof data != "object")
+                    {
+                        $checkbox.prop('checked', false);
+                        alert(Craft.t('There was an error while indexing {source}: {message}', {source: sourceName.trim(), message: data}));
+                        return;
+                    }
 
 					progress_bar.attr('total', data.total).attr('current', 0);
 					for (var i = 0; i < data.total; i++) {
