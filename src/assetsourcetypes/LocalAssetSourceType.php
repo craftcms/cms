@@ -6,6 +6,9 @@ namespace Craft;
  */
 class LocalAssetSourceType extends BaseAssetSourceType
 {
+
+	protected $_isSourceLocal = true;
+
 	/**
 	 * Returns the name of the source type.
 	 *
@@ -443,7 +446,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 			foreach ($transformations as $handle => $transformation)
 			{
-				IOHelper::move($baseFromPath.'_'.$handle.'/'.$fileName, $baseToPath.'_'.$handle.'/'.$fileName);
+				IOHelper::move($baseFromPath.'_'.$handle.'/'.$file->filename, $baseToPath.'_'.$handle.'/'.$fileName);
 			}
 		}
 

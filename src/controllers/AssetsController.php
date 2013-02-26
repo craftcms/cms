@@ -61,13 +61,17 @@ class AssetsController extends BaseController
 		$requestId = craft()->request->getPost('requestId', 0);
 		$folderId = craft()->request->getRequiredPost('folderId');
 		$viewType = craft()->request->getPost('viewType', 'thumbs');
+		$orderBy = craft()->request->getPost('orderBy', 'filename');
+		$sortOrder = craft()->request->getPost('sortOrder', 'ASC');
 		$keywords = array_filter(explode(" ", (string) craft()->request->getPost('keywords')));
 		$searchType = craft()->request->getPost('searchMode');
 		$offset = craft()->request->getPost('offset', 0);
 
 		$parameters = array(
 			'offset' => $offset,
-			'keywords' => $keywords
+			'keywords' => $keywords,
+			'order' => $orderBy . ' ' . $sortOrder,
+			'sortOrder' => $sortOrder
 		);
 
 		$folder = craft()->assets->getFolderById($folderId);
@@ -90,7 +94,9 @@ class AssetsController extends BaseController
 				'folder' => $folder,
 				'subfolders' => $subfolders,
 				'view' => $viewType,
-				'files' => $files
+				'files' => $files,
+				'orderBy' => $orderBy,
+				'sort' => $sortOrder
 			)
 		);
 

@@ -7,6 +7,11 @@ namespace Craft;
 abstract class BaseAssetSourceType extends BaseSavableComponentType
 {
 	/**
+	 * @var bool
+	 */
+	protected $_isSourceLocal = false;
+
+	/**
 	 * @access protected
 	 * @var string The type of component this is
 	 */
@@ -233,7 +238,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			craft()->assets->storeFile($fileModel);
 
-			if ($this->model->type != 'Local')
+			if (!$this->isSourceLocal())
 			{
 				// Store copy locally for all sorts of operations.
 				IOHelper::copyFile($filePath, craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel, PATHINFO_EXTENSION));
@@ -251,10 +256,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			$response->setDataItem('fileId', $fileModel->id);
 		}
-		else
-		{
-			IOHelper::deleteFile($filePath);
-		}
+
+		IOHelper::deleteFile($filePath);
 
 		// Prevent sensitive information leak. Just in case.
 		$response->deleteDataItem('filePath');
@@ -411,18 +414,24 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function replaceFile(AssetFileModel $oldFile, AssetFileModel $replaceWith)
 	{
+
 		if ($oldFile->kind == 'image')
 		{
-			// we'll need this if replacing images
-			$localCopy = $this->_getLocalCopy($replaceWith);
 			$this->_deleteGeneratedThumbnails($oldFile);
-			$this->_deleteGeneratedImageTransformations($oldFile);
-		}
+			$this->_deleteSourceFile($oldFile);
 
-		$this->_deleteSourceFile($oldFile);
+			// For remote sources, fetch the source image and move it in the old one's place
+			if (!$this->isSourceLocal())
+			{
+				$localCopy = $this->_getLocalCopy($replaceWith);
+				IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$oldFile->id.'.'.pathinfo($oldFile, PATHINFO_EXTENSION));
+				IOHelper::deleteFile($localCopy);
+			}
+		}
 
 		$this->_moveSourceFile($replaceWith, craft()->assets->getFolderById($oldFile->folderId), $oldFile->filename);
 
+		// Update file info
 		$oldFile->width = $replaceWith->width;
 		$oldFile->height = $replaceWith->height;
 		$oldFile->size = $replaceWith->size;
@@ -613,5 +622,13 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		}
 
 		return join("/", $parts) . '/';
+	}
+
+	/**
+	 * @return boolean
+	 */
+	public function isSourceLocal()
+	{
+		return $this->_isSourceLocal;
 	}
 }
