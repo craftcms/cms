@@ -66,6 +66,9 @@ Assets.FileManager = Garnish.Base.extend({
 		this.fileDrag = null;
 		this.folderDrag = null;
 
+        this._singleFileMenu = null;
+        this._multiFileMenu = null;
+
 		this._promptCallback = function (){};
 
 
@@ -86,7 +89,9 @@ Assets.FileManager = Garnish.Base.extend({
 			view: 'thumbs',
 			currentFolder: null,
 			folders: {},
-            searchMode: 'shallow'
+            searchMode: 'shallow',
+            orderBy: 'filename',
+            sortOrder: 'ASC'
 		};
 
 		this.storageKey = 'Craft_Assets_' + this.settings.namespace;
@@ -450,14 +455,12 @@ Assets.FileManager = Garnish.Base.extend({
 			if (this.currentState.view == 'list')
 			{
 				this.filesView = new Assets.ListView($('> .folder-contents > .listview', this.$folderContainer), {
-					orderby: this.state.orderby,
-					sort:    this.state.sort,
+					orderby: this.currentState.orderBy,
+					sort:    this.currentState.sortOrder,
 					onSortChange: $.proxy(function(orderby, sort)
 					{
-						this.setState({
-							orderby: orderby,
-							sort: sort
-						});
+						this.storeState('orderBy', orderby);
+                        this.storeState('sortOrder', sort);
 						this.updateFiles();
 					}, this)
 				});
@@ -526,13 +529,21 @@ Assets.FileManager = Garnish.Base.extend({
 	 * Prepare the array for POST request for file view.
 	 */
 	_prepareFileViewPostData: function (folderId) {
-		return {
+		var params = {
 			requestId: ++this.requestId,
 			folderId: this.currentState.currentFolder,
 			viewType: this.currentState.view,
             keywords: this.$searchInput.val(),
             searchMode: this.currentState.searchMode
 		};
+
+        if (this.currentState.view == 'list')
+        {
+            params.orderBy = this.currentState.orderBy;
+            params.sortOrder = this.currentState.sortOrder;
+        }
+
+        return params;
 	},
 
 	/**
@@ -579,18 +590,14 @@ Assets.FileManager = Garnish.Base.extend({
 			}
 		});
 
-		// -------------------------------------------
-		//  TODO Context Menus
-		// -------------------------------------------
-		/*
-		var menuOptions = [{ label: Assets.lang.view_file, onClick: $.proxy(this, '_viewFile') }];
+		var menuOptions = [{ label: Craft.t('View file'), onClick: $.proxy(this, '_viewFile') }];
 
 		if (this.settings.mode == 'full')
 		{
-			menuOptions.push({ label: Assets.lang.edit_file, onClick: $.proxy(this, '_showProperties') });
-			menuOptions.push({ label: Assets.lang.rename, onClick: $.proxy(this, '_renameFile') });
+			menuOptions.push({ label: Craft.t('Edit properties'), onClick: $.proxy(this, '_showProperties') });
+			menuOptions.push({ label: Craft.t('Rename file'), onClick: $.proxy(this, '_renameFile') });
 			menuOptions.push('-');
-			menuOptions.push({ label: Assets.lang._delete, onClick: $.proxy(this, '_deleteFile') });
+			menuOptions.push({ label: Craft.t('Delete file'), onClick: $.proxy(this, '_deleteFile') });
 		}
 
 		this._singleFileMenu = new Garnish.ContextMenu($files, menuOptions, {
@@ -600,13 +607,13 @@ Assets.FileManager = Garnish.Base.extend({
 		if (this.settings.mode == 'full')
 		{
 			this._multiFileMenu = new Garnish.ContextMenu($files, [
-				{ label: Assets.lang._delete, onClick: $.proxy(this, '_deleteFiles') }
+				{ label: Craft.t('Delete'), onClick: $.proxy(this, '_deleteFiles') }
 			], {
 				menuClass: 'assets-contextmenu'
 			});
 
 			this._multiFileMenu.disable();
-		}*/
+		}
 	},
 
 	/**
@@ -682,15 +689,53 @@ Assets.FileManager = Garnish.Base.extend({
 		}, this));
 	},
 
+    /**
+     * View a file
+     */
+    _viewFile: function (ev) {
+        window.open($(ev.currentTarget).attr('data-url'));
+    },
+
+    /**
+     * Rename a file
+     */
+    _renameFile: function () {
+        // TODO rename file
+        alert('Rename file is not yet available');
+    },
+
+    /**
+     * Delete a file
+     */
+    _deleteFile: function () {
+        // TODO delete file
+        alert('Delete file is not yet available');
+    },
+
 	/**
 	 * Display file properties window
 	 */
 	_showProperties: function (ev) {
 
 		this.setAssetsBusy();
+        var fileId = 0;
+        var target = ev.target;
+        if (typeof ev.currentTarget != "undefined")
+        {
+            target = ev.currentTarget;
+        }
+
+        if (this.currentState.view == 'thumbs')
+        {
+            fileId = $(target).is('li') ? $(target).attr('data-file') : $(target).parents('li').attr('data-file');
+        }
+        else
+        {
+            fileId = $(target).is('tr') ? $(target).attr('data-file') : $(target).parents('tr').attr('data-file');
+        }
 		var params = {
 			requestId: ++this.requestId,
-			fileId: $(ev.target).is('li') ? $(ev.target).attr('data-file') : $(ev.target).parents('li').attr('data-file')
+			fileId: fileId
 		};
 
 		Craft.postActionRequest('assets/viewFile', params, $.proxy(function(data, textStatus) {
@@ -745,8 +790,7 @@ Assets.FileManager = Garnish.Base.extend({
 	{
 		if (this.settings.mode == 'full')
 		{
-			// TODO Context menu
-		   /* if (this.fileSelect.getTotalSelected() == 1)
+		    if (this.fileSelect.getTotalSelected() == 1)
 			{
 				this._singleFileMenu.enable();
 				this._multiFileMenu.disable();
@@ -755,7 +799,7 @@ Assets.FileManager = Garnish.Base.extend({
 			{
 				this._singleFileMenu.disable();
 				this._multiFileMenu.enable();
-			}*/
+			}
 		}
 
 		// update our internal array of selected files
@@ -910,6 +954,7 @@ Assets.FileManager = Garnish.Base.extend({
 
 	_uploadFollowup: function(returnData)
 	{
+        this.setAssetsBusy();
 		this.promptArray = [];
 
 		var finalCallback = $.proxy(function()

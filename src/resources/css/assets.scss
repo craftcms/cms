@@ -29,6 +29,8 @@
 #main .files.listview table th:first-child,
 #main .files.listview table td:first-child { padding-left: 34px; }
 #main .files.listview table td:first-child img { display: block; float: left; margin: -3px 0 -3px -34px; width: 24px; height: 24px; }
+#main .files.listview thead th.assets-lv-sorting { padding-right: 26px; color: #697780; background: #ecf1f4 url(../images/listview_sort.png) no-repeat 100% 0 !important; }
+#main .files.listview thead th.assets-lv-sorting.assets-lv-desc { background-position: 100% -31px !important; }
 
 
 /*-- uploader --*/
@@ -75,7 +77,7 @@ only screen and (min-resolution: 1.5dppx) {
 	.assets-tv-file .assets-fileicon { background-image: url(../images/file_medium_2x.png); background-size: 69px 89px; }
 	.assets-tv-file.assets-tv-bigthumb .assets-fileicon { background-image: url(../images/file_big_2x.png); background-size: 136px 175px; }
 	.assets-listview table .assets-lv-name .assets-lv-thumb .assets-fileicon { background-image: url(../images/file_small_2x.png); background-size: 22px 28px; }
-
+    .assets-listview thead th.assets-lv-sorting { background-image: url(../images/listview_sort_2x.png) !important; background-size: 26px 62px; }
 	li.assets-fm-folder a span.assets-fm-toggle { background-image: url(../images/foldertoggle_2x.png); background-size: 16px 64px; }
 
     .thumb-wrapper { background-image: url(../images/thumb_bg_2x.png); background-size: 16px 16px; }
