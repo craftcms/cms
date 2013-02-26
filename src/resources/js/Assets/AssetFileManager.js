@@ -66,6 +66,9 @@ Assets.FileManager = Garnish.Base.extend({
 		this.fileDrag = null;
 		this.folderDrag = null;
 
+        this._singleFileMenu = null;
+        this._multiFileMenu = null;
+
 		this._promptCallback = function (){};
 
 
@@ -450,14 +453,12 @@ Assets.FileManager = Garnish.Base.extend({
 			if (this.currentState.view == 'list')
 			{
 				this.filesView = new Assets.ListView($('> .folder-contents > .listview', this.$folderContainer), {
-					orderby: this.state.orderby,
-					sort:    this.state.sort,
+					orderby: this.currentState.orderby,
+					sort:    this.currentState.sort,
 					onSortChange: $.proxy(function(orderby, sort)
 					{
-						this.setState({
-							orderby: orderby,
-							sort: sort
-						});
+						this.storeState('orderby', orderby);
+                        this.storeState('sort', sort);
 						this.updateFiles();
 					}, this)
 				});
@@ -579,18 +580,14 @@ Assets.FileManager = Garnish.Base.extend({
 			}
 		});
 
-		// -------------------------------------------
-		//  TODO Context Menus
-		// -------------------------------------------
-		/*
-		var menuOptions = [{ label: Assets.lang.view_file, onClick: $.proxy(this, '_viewFile') }];
+		var menuOptions = [{ label: Craft.t('View file'), onClick: $.proxy(this, '_viewFile') }];
 
 		if (this.settings.mode == 'full')
 		{
-			menuOptions.push({ label: Assets.lang.edit_file, onClick: $.proxy(this, '_showProperties') });
-			menuOptions.push({ label: Assets.lang.rename, onClick: $.proxy(this, '_renameFile') });
+			menuOptions.push({ label: Craft.t('Edit properties'), onClick: $.proxy(this, '_showProperties') });
+			menuOptions.push({ label: Craft.t('Rename file'), onClick: $.proxy(this, '_renameFile') });
 			menuOptions.push('-');
-			menuOptions.push({ label: Assets.lang._delete, onClick: $.proxy(this, '_deleteFile') });
+			menuOptions.push({ label: Craft.t('Delete file'), onClick: $.proxy(this, '_deleteFile') });
 		}
 
 		this._singleFileMenu = new Garnish.ContextMenu($files, menuOptions, {
@@ -600,13 +597,13 @@ Assets.FileManager = Garnish.Base.extend({
 		if (this.settings.mode == 'full')
 		{
 			this._multiFileMenu = new Garnish.ContextMenu($files, [
-				{ label: Assets.lang._delete, onClick: $.proxy(this, '_deleteFiles') }
+				{ label: Craft.t('Delete'), onClick: $.proxy(this, '_deleteFiles') }
 			], {
 				menuClass: 'assets-contextmenu'
 			});
 
 			this._multiFileMenu.disable();
-		}*/
+		}
 	},
 
 	/**
@@ -682,6 +679,14 @@ Assets.FileManager = Garnish.Base.extend({
 		}, this));
 	},
 
+    _renameFile: function () {
+
+    },
+
+    _deleteFile: function () {
+
+    },
+
 	/**
 	 * Display file properties window
 	 */
@@ -746,7 +751,7 @@ Assets.FileManager = Garnish.Base.extend({
 		if (this.settings.mode == 'full')
 		{
 			// TODO Context menu
-		   /* if (this.fileSelect.getTotalSelected() == 1)
+		    /*if (this.fileSelect.getTotalSelected() == 1)
 			{
 				this._singleFileMenu.enable();
 				this._multiFileMenu.disable();
