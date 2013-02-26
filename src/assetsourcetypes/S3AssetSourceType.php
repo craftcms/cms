@@ -8,6 +8,7 @@ Craft::requirePackage(CraftPackage::PublishPro);
  */
 class S3AssetSourceType extends BaseAssetSourceType
 {
+
 	/**
 	 * A list of predefined endpoints.
 	 *
@@ -520,8 +521,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 			foreach ($transformations as $handle => $transformation)
 			{
-				$this->_s3->copyObject($bucket, $baseFromPath.'_'.$handle.'/'.$fileName, $bucket, $baseToPath.'_'.$handle.'/'.$fileName);
-				$this->_s3->deleteObject($bucket, $baseFromPath.'_'.$handle.'/'.$fileName);
+				$this->_s3->copyObject($bucket, $baseFromPath.'_'.$handle.'/'.$file->filename, $bucket, $baseToPath.'_'.$handle.'/'.$fileName);
+				$this->_s3->deleteObject($bucket, $baseFromPath.'_'.$handle.'/'.$file->filename);
 			}
 		}
 

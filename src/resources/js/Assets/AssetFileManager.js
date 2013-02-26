@@ -915,6 +915,7 @@ Assets.FileManager = Garnish.Base.extend({
 
 	_uploadFollowup: function(returnData)
 	{
+        this.setAssetsBusy();
 		this.promptArray = [];
 
 		var finalCallback = $.proxy(function()
