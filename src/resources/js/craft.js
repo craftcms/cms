@@ -204,8 +204,8 @@ Craft = $.extend(Craft, {
 		if (typeof data == 'function')
 		{
 			// (action, onSuccess, onError)
-			onSuccess = data;
 			onError = onSuccess;
+			onSuccess = data;
 			data = {};
 		}
 
