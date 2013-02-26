@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * Stores the info for a Craft release.
  */
-class CraftNewReleaseModel extends BaseModel
+class AppNewReleaseModel extends BaseModel
 {
 	/**
 	 * @return array

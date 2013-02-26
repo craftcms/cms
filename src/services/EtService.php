@@ -29,7 +29,7 @@ class EtService extends BaseApplicationComponent
 
 		if ($etModel)
 		{
-			$etModel = $this->decodeEtUpdateValues($etModel);
+			$etModel->data = UpdateModel::populateModel($etModel->data);
 			return $etModel;
 		}
 
@@ -82,44 +82,5 @@ class EtService extends BaseApplicationComponent
 	public function decodeEtValues($values)
 	{
 		return EtModel::populateModel(JsonHelper::decode($values));
-	}
-
-	/**
-	 * @param EtModel $etModel
-	 * @return EtModel
-	 */
-	public function decodeEtUpdateValues(EtModel $etModel)
-	{
-		$updateModel = UpdateModel::populateModel($etModel->data);
-		$craftUpdateModel = CraftUpdateModel::populateModel($etModel->data['craft']);
-
-		if (!empty($craftUpdateModel->releases))
-		{
-			$craftNewReleases = CraftNewReleaseModel::populateModels($craftUpdateModel->releases);
-			$craftUpdateModel->releases = $craftNewReleases;
-		}
-
-		$pluginUpdateModels = array();
-
-		if (isset($etModel->data['plugins']))
-		{
-			foreach ($etModel->data['plugins'] as $key => $pluginAttributes)
-			{
-				$pluginUpdateModel = PluginUpdateModel::populateModel($pluginAttributes);
-				if (!empty($pluginUpdateModel->releases))
-				{
-					$pluginNewReleases = PluginNewReleaseModel::populateModel($pluginUpdateModel->releases);
-					$pluginUpdateModel->releases = $pluginNewReleases;
-				}
-
-				$pluginUpdateModels[$key] = PluginUpdateModel::populateModel($pluginUpdateModel);
-			}
-		}
-
-		$updateModel->craft = $craftUpdateModel;
-		$updateModel->plugins = $pluginUpdateModels;
-		$etModel->data = $updateModel;
-
-		return $etModel;
 	}
 }

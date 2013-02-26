@@ -194,7 +194,7 @@ class UpdateHelper
 			// Only use the manifest data starting from the local version
 			for ($counter = 0; $counter < count($manifestData); $counter++)
 			{
-				if (strpos($manifestData[$counter], '##'.$updateModel->craft->localVersion.'.'.$updateModel->craft->localBuild) !== false)
+				if (strpos($manifestData[$counter], '##'.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild) !== false)
 				{
 					break;
 				}

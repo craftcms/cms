@@ -11,11 +11,25 @@ class UpdateModel extends BaseModel
 	 */
 	public function defineAttributes()
 	{
-		$attributes['craft']   = AttributeType::Mixed;
+		$attributes['app']      = array(AttributeType::Mixed, 'model' => 'AppUpdateModel');
 		$attributes['plugins']  = AttributeType::Mixed;
-		$attributes['packages'] = AttributeType::Mixed;
 		$attributes['errors']   = AttributeType::Mixed;
 
 		return $attributes;
+	}
+
+	/**
+	 * @param string $name
+	 * @param mixed  $value
+	 * @return bool|void
+	 */
+	public function setAttribute($name, $value)
+	{
+		if ($name == 'plugins')
+		{
+			$value = PluginUpdateModel::populateModels($value);
+		}
+
+		parent::setAttribute($name, $value);
 	}
 }

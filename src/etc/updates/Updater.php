@@ -18,7 +18,7 @@ class Updater
 			throw new Exception(implode(',', $updateModel->errors));
 		}
 
-		if ($updateModel->craft->releases == null)
+		if ($updateModel->app->releases == null)
 		{
 			throw new Exception(Craft::t('@@@appName@@@ is already up to date.'));
 		}
