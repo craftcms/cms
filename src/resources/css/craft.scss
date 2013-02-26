@@ -19,7 +19,7 @@
 
 body, html { background: #fff; }
 
-body { font-size: 13px; line-height: 18px; color: #555; }
+body { font-size: 13px; line-height: 18px; color: $textcolor; }
 body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 
 .first, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, hr:first-child, .pane:first-child, .grid:first-child, .field:first-child, .toolbar:first-child, .buttons:first-child { margin-top: 0 !important; }
@@ -118,7 +118,7 @@ td.right { float: none; text-align: right; }
 
 .fullwidth { width: 100%; }
 
-.token { display: inline-block; border: 1px solid #c1c1c1; border-radius: 10px; padding: 0 7px 1px; font-size: 12px; line-height: 14px; color: #555; text-shadow: 0 1px 1px rgba(255,255,255,0.5); background: #ddd; }
+.token { display: inline-block; border: 1px solid #c1c1c1; border-radius: 10px; padding: 0 7px 1px; font-size: 12px; line-height: 14px; color: $textcolor; text-shadow: 0 1px 1px rgba(255,255,255,0.5); background: #ddd; }
 .token:focus { border-color: #999; background: #aaa; outline: none; }
 
 .settings-btn { display: block; width: 16px; height: 16px; background: url(../images/settings-btn.png); cursor: pointer; }
@@ -206,7 +206,7 @@ ul.icons { margin-top: 30px; }
 ul.icons:after { @include clearafter; }
 ul.icons li { float: left; margin: 0 10px 30px; }
 ul.icons li.break { clear: left; }
-ul.icons li a { display: block; position: relative; padding-top: 60px; width: 80px; text-align: center; color: #555; }
+ul.icons li a { display: block; position: relative; padding-top: 60px; width: 80px; text-align: center; color: $textcolor; }
 ul.icons li a:before { display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 55px; line-height: 60px; }
 ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 
@@ -228,7 +228,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btn:hover { text-decoration: none; }
 .disabled { opacity: 0.25; cursor: default; }
 
-.btn:not(.submit):not(.noborder) { border: 1px solid #ddd; padding: 0 10px; line-height: 29px; color: #555; background-color: #fff; }
+.btn:not(.submit):not(.noborder) { border: 1px solid #ddd; padding: 0 10px; line-height: 29px; color: $textcolor; background-color: #fff; }
 .btn:not(.submit):not(.noborder):hover { border-color: #ccc; }
 .btn:not(.submit):not(.noborder):active,
 .btn:not(.submit):not(.noborder).active { border-color: #ccc; background-color: #f5f5f5;}
@@ -464,7 +464,7 @@ ul.tree,
 	   -moz-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5);
 }
 .menu ul li + li { margin-top: 3px; }
-.menu ul li a { display: block; margin: 0 -15px; padding: 4px 15px; font-size: 12px; color: #555; text-decoration: none; }
+.menu ul li a { display: block; margin: 0 -15px; padding: 4px 15px; font-size: 12px; color: $textcolor; text-decoration: none; }
 .menu ul li a:not(.sel):hover,
 .menu ul li a:not(.sel):hover .light,
 .menu:not(:hover) ul li a:not(.sel).hover,
@@ -502,7 +502,7 @@ ul.tree,
 input.text,
 textarea.text,
 .text input,
-.text textarea { font-size: 13px; color: #555; box-sizing: border-box; min-height: 31px;
+.text textarea { font-size: 13px; color: $textcolor; box-sizing: border-box; min-height: 31px;
 	-webkit-box-sizing: border-box;
 	   -moz-box-sizing: border-box;
 	-webkit-appearance: none;
@@ -557,7 +557,7 @@ body .redactor_box_fullscreen { z-index: 10000 !important; }
 @media screen and (-webkit-min-device-pixel-ratio: 0)
 {
 	.select:before { @include icon; }
-	.select select { border: 1px solid #ccc; font-size: 13px; color: #555;
+	.select select { border: 1px solid #ccc; font-size: 13px; color: $textcolor;
 		-webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
 	}
 	.select select:focus { border-color: $focusglowcolor; outline: none;

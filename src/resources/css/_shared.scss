@@ -20,6 +20,7 @@ $focusglowcolor: #6eb1db;
 $errorcolor: #d6301a;
 $successcolor: #00b007;
 $hrcolor: #eee;
+$textcolor: #555;
 
 @mixin linear-gradient($from, $to) {
 	background-image: -webkit-linear-gradient(top, $from, $to);

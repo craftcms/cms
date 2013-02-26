@@ -96,7 +96,7 @@ html, body { background: #f2f2f2; }
 #main #sidebar { float: left; margin-left: -200px; width: 170px; }
 #main #sidebar nav { margin-left: -30px; padding-left: 30px; width: 170px; overflow: auto; }
 #main #sidebar nav.fixed { position: fixed; top: 0; }
-#main #sidebar nav li a { display: block; padding: 4px 0; color: #555; }
+#main #sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; }
 #main #sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
 #main #sidebar nav li a.sel { margin-left: -30px; padding-left: 30px; color: #fff; background: $selcolor; cursor: default; }
 
