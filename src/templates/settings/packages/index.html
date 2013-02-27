@@ -20,6 +20,9 @@
 ] %}
 
 
+{% set localeData = craft.i18n.getLocaleData() %}
+
+
 {% set content %}
 	<div id="packages" class="clearafter">
 		<div class="pane package" data-package="Users">
@@ -115,7 +118,6 @@
 
 			<div class="left cc-month">
 				{% set monthInput %}
-					{% set localeData = craft.i18n.getLocaleData() %}
 					<div class="select">
 						<select id="cc-month">
 							{% for month in 1..12 %}
@@ -180,6 +182,8 @@
 		licenseKey: "{{ craft.app.licenseKey|e('js') }}",
 		version:    "{{ craft.app.version|e('js') }}",
 		build:      "{{ craft.app.build|e('js') }}",
+		USD:        "{{ localeData.getCurrencySymbol('USD')|e('js') }}",
+
 		errors: {
 			// Elliott errors
 			package_doesnt_exist: "{{ 'The selected package doesn’t exist anymore.'|t }}",

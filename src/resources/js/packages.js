@@ -424,15 +424,22 @@ Craft.PackageChooser = Garnish.Base.extend({
 
 	formatPrice: function(price)
 	{
-		var dollars = Math.floor(price/100),
-			cents   = (price % 100).toString();
+		var formattedPrice = this.settings.USD + Math.floor(price/100),
+			cents = price % 100;
 
-		while (cents.length < 2)
+		if (cents)
 		{
-			cents += '0';
+			cents = cents.toString();
+
+			while (cents.length < 2)
+			{
+				cents += '0';
+			}
+
+			formattedPrice += '.'+cents;
 		}
 
-		return '$'+dollars+'.'+cents;
+		return formattedPrice;
 	}
 });
 
