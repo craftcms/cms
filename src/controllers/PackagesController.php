@@ -24,25 +24,6 @@ class PackagesController extends BaseController
 	}
 
 	/**
-	 * Fetches the licensed packages from Elliott.
-	 */
-	public function actionFetchPackageInfo()
-	{
-		$this->requireAjaxRequest();
-
-		$this->returnJson(array(
-			'success' => true,
-			'packages' => array(
-				'Users'      => array('licensed' => false, 'price' => 14900, 'salePrice' => 7450),
-				'PublishPro' => array('licensed' => true),
-				'Language'   => array('licensed' => false, 'price' => 29900, 'salePrice' => 14950),
-				'Cloud'      => array('licensed' => true),
-				'Rebrand'    => array('licensed' =>false, 'price' => 4900, 'salePrice' => 2450),
-			),
-		));
-	}
-
-	/**
 	 * Installs a package.
 	 */
 	public function actionInstallPackage()

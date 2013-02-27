@@ -46,10 +46,16 @@ Craft.PackageChooser = Garnish.Base.extend({
 		}
 
 		// Get their licensed packages
-		Craft.postActionRequest('packages/fetchPackageInfo',
-			$.proxy(this, 'initPackages'),
-			$.proxy(this, 'handleBadFetchPackageInfoResponse')
-		);
+		var data = {
+			licenseKey: this.settings.licenseKey
+		};
+
+		$.ajax({
+			url:     '@@@elliottEndpointUrl@@@actions/licenses/getPackageInfo',
+			data:    data,
+			success: $.proxy(this, 'initPackages'),
+			error:   $.proxy(this, 'handleBadFetchPackageInfoResponse')
+		});
 	},
 
 	initPackages: function(response)
