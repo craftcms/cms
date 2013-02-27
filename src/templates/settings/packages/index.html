@@ -109,7 +109,8 @@
 
 			{{ forms.textField({
 				label: "Credit card number"|t,
-				id: 'cc-num'
+				id: 'cc-num',
+				autocomplete: false
 			}) }}
 
 			<div class="left cc-month">
@@ -152,7 +153,8 @@
 				{{ forms.textField({
 					label: "CVC"|t,
 					id: 'cc-cvc',
-					size: 5
+					size: 5,
+					autocomplete: false
 				}) }}
 			</div>
 
