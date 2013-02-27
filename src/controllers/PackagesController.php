@@ -9,7 +9,7 @@ class PackagesController extends BaseController
 	private $_packageList = array(
 		CraftPackage::Users,
 		CraftPackage::PublishPro,
-		CraftPackage::Language,
+		CraftPackage::Localize,
 		CraftPackage::Cloud,
 		CraftPackage::Rebrand,
 	);

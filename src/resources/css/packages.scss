@@ -6,7 +6,7 @@
 #packages ul li { margin-left: 18px; }
 #packages ul li:before { @include icon; content: "√"; float: left; margin: -1px 0 0 -18px; font-size: 15px; }
 
-#packages .package .buttons { position: absolute; left: 0; bottom: 0; padding: 15px; margin: 0; border-top: 1px solid $hrcolor; width: 200px; }
+#packages .package .buttons { position: absolute; left: 0; bottom: 0; padding: 15px; margin: 0; border-top: 1px solid $hrcolor; width: 200px; min-height: 31px; }
 #packages .package .buttons .btn { font-weight: bold; text-transform: uppercase; }
 #packages .package .buttons .btn.price { color: $successcolor; }
 #packages .package .buttons .btn.price del { color: $textcolor; font-weight: bold; }

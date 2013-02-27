@@ -75,7 +75,7 @@ class LocalizationService extends BaseApplicationComponent
 					->from('locales')
 					->order('sortOrder');
 
-				if (!Craft::hasPackage(CraftPackage::Language))
+				if (!Craft::hasPackage(CraftPackage::Localize))
 				{
 					$query->limit(1);
 				}

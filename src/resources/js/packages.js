@@ -96,6 +96,11 @@ Craft.PackageChooser = Garnish.Base.extend({
 
 		pkgInfo.$btnContainer.html('');
 
+		if (!pkgInfo.price)
+		{
+			return;
+		}
+
 		if (pkgInfo.licensed)
 		{
 			if (Craft.hasPackage(pkg))

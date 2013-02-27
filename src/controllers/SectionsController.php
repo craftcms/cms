@@ -27,7 +27,7 @@ class SectionsController extends BaseController
 		$locales = array();
 		$urlFormats = craft()->request->getPost('urlFormat');
 
-		if (Craft::hasPackage(CraftPackage::Language))
+		if (Craft::hasPackage(CraftPackage::Localize))
 		{
 			$localeIds = craft()->request->getPost('locales');
 		}

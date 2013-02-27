@@ -67,7 +67,7 @@
 				translatable: true
 			}) }}
 
-			{% if craft.hasPackage('Language') %}
+			{% if craft.hasPackage('Localize') %}
 				{% set localesInput %}
 					{% for locale in craft.i18n.getSiteLocales() %}
 						<div>
@@ -119,7 +119,7 @@
 				{% from _self import urlFormatInput %}
 
 				{% set urlFormatField %}
-					{% if craft.hasPackage('Language') %}
+					{% if craft.hasPackage('Localize') %}
 						<table class="data">
 							{% for locale in craft.i18n.getSiteLocales() %}
 								<tr id="urlFormatRow-{{ locale.id }}"{% if section is defined and section.locales[locale.id] is not defined %} class="hidden"{% endif %}>

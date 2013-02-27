@@ -20,7 +20,7 @@
 {% requirePermission 'editEntries'~permissionSuffix %}
 
 
-{% if craft.hasPackage('Language') %}
+{% if craft.hasPackage('Localize') %}
 	{% set sectionLocaleIds = section.getLocales()|keys %}
 
 	{% if not sectionLocaleIds %}
@@ -46,7 +46,7 @@
 		{% set entry = craft.entryRevisions.getVersionById(versionId) %}
 	{% else %}
 		{% set params = { id: entryId, status: '*' } %}
-		{% if craft.hasPackage('Language') %}
+		{% if craft.hasPackage('Localize') %}
 			{% set params = params|merge({ locale: localeId }) %}
 		{% endif %}
 		{% set entry = craft.entries.first(params) %}
@@ -90,7 +90,7 @@
 
 
 {% set extraPageHeaderHtml %}
-	{% if craft.hasPackage('Language') %}
+	{% if craft.hasPackage('Localize') %}
 		<div class="select">
 			<select onchange="document.location.href='{{ url('content/'~section.handle~'/'~craft.request.getSegment(3)) }}/'+this.value;">
 				{% for sectionLocale in section.getLocales() %}
@@ -144,7 +144,7 @@
 			<input type="hidden" name="entryId" value="{{ entry.id }}">
 		{% endif %}
 
-		{% if craft.hasPackage('Language') %}
+		{% if craft.hasPackage('Localize') %}
 			<input type="hidden" name="locale" value="{{ localeId }}">
 		{% endif %}
 
