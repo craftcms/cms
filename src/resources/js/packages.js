@@ -302,12 +302,23 @@ Craft.PackageChooser = Garnish.Base.extend({
 	{
 		this.packages[pkg].licensed = true;
 
-		this.performPackageAction(pkg, 'install', $.proxy(function()
+		// Was the package already installed?
+		if (Craft.hasPackage(pkg))
 		{
-			this.onPurchaseResponse();
-			this.ccModal.hide();
-			Craft.cp.displayNotice(Craft.t('{package} purchased successfully!', { 'package': this.packages[pkg].name }));
-		}, this));
+			this.createButtons(pkg);
+			this.onPurchaseComplete(pkg);
+		}
+		else
+		{
+			this.performPackageAction(pkg, 'install', $.proxy(this, 'onPurchaseComplete', pkg));
+		}
+	},
+
+	onPurchaseComplete: function(pkg)
+	{
+		this.onPurchaseResponse();
+		this.ccModal.hide();
+		Craft.cp.displayNotice(Craft.t('{package} purchased successfully!', { 'package': this.packages[pkg].name }));
 	},
 
 	handleUnsuccessfulPurchase: function(error)
