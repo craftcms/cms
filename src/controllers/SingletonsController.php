@@ -24,7 +24,7 @@ class SingletonsController extends BaseController
 		$locales = array();
 		$uris = craft()->request->getPost('uri');
 
-		if (Craft::hasPackage(CraftPackage::Language))
+		if (Craft::hasPackage(CraftPackage::Localize))
 		{
 			$localeIds = craft()->request->getPost('locales');
 		}

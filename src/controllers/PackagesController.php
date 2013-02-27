@@ -9,7 +9,7 @@ class PackagesController extends BaseController
 	private $_packageList = array(
 		CraftPackage::Users,
 		CraftPackage::PublishPro,
-		CraftPackage::Language,
+		CraftPackage::Localize,
 		CraftPackage::Cloud,
 		CraftPackage::Rebrand,
 	);
@@ -24,28 +24,9 @@ class PackagesController extends BaseController
 	}
 
 	/**
-	 * Fetches the licensed packages from Elliott.
+	 * Installs a package.
 	 */
-	public function actionFetchPackageInfo()
-	{
-		$this->requireAjaxRequest();
-
-		$this->returnJson(array(
-			'success' => true,
-			'packages' => array(
-				'Users'      => array('licensed' => false, 'price' => '$149', 'salePrice' => '$74.50'),
-				'PublishPro' => array('licensed' => true),
-				'Language'   => array('licensed' => false, 'price' => '$299', 'salePrice' => '$149.50'),
-				'Cloud'      => array('licensed' => true),
-				'Rebrand'    => array('licensed' =>false, 'price' => '$49', 'salePrice' => '$24.50'),
-			),
-		));
-	}
-
-	/**
-	 * Enables a package.
-	 */
-	public function actionEnablePackage()
+	public function actionInstallPackage()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -63,7 +44,7 @@ class PackagesController extends BaseController
 			throw new Exception(Craft::t('The {package} package is already installed.', array('package' => $package)));
 		}
 
-		// Enable it
+		// Install it
 		$installedPackages[] = $package;
 		craft()->db->createCommand()->update('info', array(
 			'packages' => implode(',', $installedPackages))
@@ -75,9 +56,9 @@ class PackagesController extends BaseController
 	}
 
 	/**
-	 * Disables a package.
+	 * Uninstalls a package.
 	 */
-	public function actionDisablePackage()
+	public function actionUninstallPackage()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -95,7 +76,7 @@ class PackagesController extends BaseController
 			throw new Exception(Craft::t('The {package} package wasn’t installed.', array('package' => $package)));
 		}
 
-		// Disable it
+		// Uninstall it
 		$index = array_search($package, $installedPackages);
 		array_splice($installedPackages, $index, 1);
 		craft()->db->createCommand()->update('info', array(

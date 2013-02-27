@@ -28,7 +28,7 @@
 		<li><a href="{{ url('settings/singletons') }}" data-icon="c">{{ "Singletons"|t }}</a></li>
 		<li><a href="{{ url('settings/globals') }}" data-icon="G">{{ "Globals"|t }}</a></li>
 		<li><a href="{{ url('settings/assets') }}" data-icon="A">{{ "Assets"|t }}</a></li>
-		{% if craft.hasPackage('Language') %}
+		{% if craft.hasPackage('Localize') %}
 			<li><a href="{{ url('settings/locales') }}" data-icon="L">{{ "Locales"|t }}</a></li>
 		{% endif %}
 	</ul>

@@ -73,7 +73,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 
 		$locales = array($this->_primaryLocale);
 
-		if (Craft::hasPackage(CraftPackage::Language))
+		if (Craft::hasPackage(CraftPackage::Localize))
 		{
 			$storedLanguages = craft()->systemSettings->getSettings('languages');
 

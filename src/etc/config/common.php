@@ -141,8 +141,8 @@ $cpRoutes['settings\/singletons\/(?P<singletonId>\d+)']                       = 
 $cpRoutes['myaccount']                                                        = 'users/_edit/account';
 
 // Lanugage package routes
-$cpRoutes['pkgRoutes']['Language']['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/(?P<localeId>\w+)'] = 'content/entries/_edit';
-$cpRoutes['pkgRoutes']['Language']['content\/(?P<sectionHandle>{handle})\/new\/(?P<localeId>\w+)']              = 'content/entries/_edit';
+$cpRoutes['pkgRoutes']['Localize']['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/(?P<localeId>\w+)'] = 'content/entries/_edit';
+$cpRoutes['pkgRoutes']['Localize']['content\/(?P<sectionHandle>{handle})\/new\/(?P<localeId>\w+)']              = 'content/entries/_edit';
 
 // Publish Pro package routes
 $cpRoutes['pkgRoutes']['PublishPro']['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/drafts\/(?P<draftId>\d+)']     = 'content/entries/_edit';

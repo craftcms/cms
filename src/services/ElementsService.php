@@ -391,7 +391,7 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function postSaveOperations(BaseElementModel $element, ContentRecord $contentRecord)
 	{
-		if (Craft::hasPackage(CraftPackage::Language))
+		if (Craft::hasPackage(CraftPackage::Localize))
 		{
 			// Get the other locales' content records
 			$otherContentRecords = ContentRecord::model()->findAll(
@@ -400,7 +400,7 @@ class ElementsService extends BaseApplicationComponent
 			);
 		}
 
-		$updateOtherContentRecords = (Craft::hasPackage(CraftPackage::Language) && $otherContentRecords);
+		$updateOtherContentRecords = (Craft::hasPackage(CraftPackage::Localize) && $otherContentRecords);
 
 		$fields = craft()->fields->getAllFields();
 		$fieldTypes = array();

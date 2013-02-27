@@ -11,7 +11,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function ping()
 	{
-		$et = new Et(ElliottEndPoints::Ping);
+		$et = new Et(ElliottEndpoints::Ping);
 		$response = $et->phoneHome();
 
 		return $response;
@@ -23,7 +23,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function check($updateInfo)
 	{
-		$et = new Et(ElliottEndPoints::CheckForUpdates);
+		$et = new Et(ElliottEndpoints::CheckForUpdates);
 		$et->getModel()->data = $updateInfo;
 		$etModel = $et->phoneHome();
 
@@ -42,7 +42,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function downloadUpdate($downloadPath)
 	{
-		$et = new Et(ElliottEndPoints::DownloadUpdate, 240);
+		$et = new Et(ElliottEndpoints::DownloadUpdate, 240);
 
 		if (IOHelper::folderExists($downloadPath))
 		{

@@ -650,10 +650,18 @@ Garnish.Base = Base.extend({
 		return events.join(' ');
 	},
 
-	addListener: function(elem, events, func)
+	addListener: function(elem, events, data, func)
 	{
 		var $elem = $(elem);
 		events = this._formatEvents(events);
+
+		// Param mapping
+		if (typeof data != 'object')
+		{
+			// (elem, events, func)
+			func = data;
+			data = {};
+		}
 
 		if (typeof func == 'function')
 		{
@@ -664,7 +672,7 @@ Garnish.Base = Base.extend({
 			func = $.proxy(this, func);
 		}
 
-		$elem.on(events, func);
+		$elem.on(events, data, func);
 
 		// Remember that we're listening to this element
 		this._$listeners = this._$listeners.add(elem);

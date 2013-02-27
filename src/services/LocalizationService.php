@@ -75,7 +75,7 @@ class LocalizationService extends BaseApplicationComponent
 					->from('locales')
 					->order('sortOrder');
 
-				if (!Craft::hasPackage(CraftPackage::Language))
+				if (!Craft::hasPackage(CraftPackage::Localize))
 				{
 					$query->limit(1);
 				}
@@ -184,8 +184,13 @@ class LocalizationService extends BaseApplicationComponent
 	 * @param $localeId
 	 * @return \CLocale|null
 	 */
-	public function getLocaleData($localeId)
+	public function getLocaleData($localeId = null)
 	{
+		if (!$localeId)
+		{
+			$localeId = craft()->language;
+		}
+
 		if (!isset($this->_localeData) || !array_key_exists($localeId, $this->_localeData))
 		{
 			if (LocaleData::exists($localeId))

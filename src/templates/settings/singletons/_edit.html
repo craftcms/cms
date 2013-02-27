@@ -45,7 +45,7 @@
 				translatable: true
 			}) }}
 
-			{% if craft.hasPackage('Language') %}
+			{% if craft.hasPackage('Localize') %}
 				{% set localesInput %}
 					{% for locale in craft.i18n.getSiteLocales() %}
 						<div>
@@ -86,7 +86,7 @@
 			{% from _self import uriInput %}
 
 			{% set uriField %}
-				{% if craft.hasPackage('Language') %}
+				{% if craft.hasPackage('Localize') %}
 					<table class="data">
 						{% for locale in craft.i18n.getSiteLocales() %}
 							<tr id="uriRow-{{ locale.id }}"{% if singleton is defined and singleton.locales[locale.id] is not defined %} class="hidden"{% endif %}>
