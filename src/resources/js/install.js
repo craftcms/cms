@@ -9,6 +9,9 @@ Craft.Installer = Garnish.Base.extend({
 	$siteSubmitBtn: null,
 
 	loading: false,
+	installing: null,
+	gettingLicenseKey: null,
+	licenseKey: null,
 
 	/**
 	* Constructor
@@ -25,24 +28,14 @@ Craft.Installer = Garnish.Base.extend({
 		this.$currentScreen = $(this.$screens[0])
 			.removeClass('scaleddown')
 			.animate({opacity: 1}, 'fast', $.proxy(function() {
-				this.addListener($('#getstarted'), 'activate', 'showAccountScreen');
+				this.addListener($('#getstartedbtn'), 'activate', 'showAccountScreen');
 
 				// Give the License Key input focus after half a second
 				this.focusFirstInput();
 
 				// Get ready for form submit
-				this.$licensekeySubmitBtn = $('#licensekeysubmit');
-				this.addListener(this.$licensekeySubmitBtn, 'activate', 'validateLicenseKey');
-				this.addListener($('#licensekeyform'), 'submit', 'validateLicenseKey');
+				this.addListener($('#getstartedbtn'), 'activate', 'validateLicenseKey');
 			}, this));
-	},
-
-	validateLicenseKey: function(event)
-	{
-		event.preventDefault();
-
-		var inputs = ['licensekey'];
-		this.validate('licensekey', inputs, $.proxy(this, 'showAccountScreen'));
 	},
 
 	showAccountScreen: function(event)
@@ -83,7 +76,7 @@ Craft.Installer = Garnish.Base.extend({
 	{
 		this.showScreen(3, $.proxy(function() {
 
-			var inputs = ['licensekey', 'username', 'email', 'password', 'siteName', 'siteUrl', 'locale'];
+			var inputs = ['username', 'email', 'password', 'siteName', 'siteUrl', 'locale'];
 
 			var data = {};
 
@@ -95,13 +88,70 @@ Craft.Installer = Garnish.Base.extend({
 				data[input] = Garnish.getInputPostVal($input);
 			}
 
+			this.installing = true;
+			this.gettingLicenseKey = true;
+
 			Craft.postActionRequest('install/install', data, $.proxy(function() {
-				this.$currentScreen.find('h1:first').text(Craft.t('All done!'));
-				var $buttons = $('<div class="buttons"><a href="'+Craft.getUrl('dashboard')+'" class="btn big submit">'+Craft.t('Go to @@@appName@@@')+'</a></div>');
-				$('#spinner').replaceWith($buttons);
+				this.installing = false;
+				this.allDone();
 			}, this));
 
+			// While we're waiting, see if we can't generate a license key...
+			var data = {
+				email: $('#email').val()
+			};
+
+			$.ajax({
+				url:     '@@@elliottEndpointUrl@@@actions/licenses/createLicense',
+				data:    data,
+				type:    'POST',
+
+				success: $.proxy(function(response)
+				{
+					if (response.success)
+					{
+						this.licenseKey = response.licenseKey;
+					}
+
+					this.gettingLicenseKey = false;
+					this.allDone();
+				}, this),
+
+				error:   $.proxy(function()
+				{
+					this.gettingLicenseKey = false;
+					this.allDone();
+				}, this)
+			});
+
 		}, this));
+	},
+
+	allDone: function()
+	{
+		if (!this.installing && !this.gettingLicenseKey)
+		{
+			if (this.licenseKey)
+			{
+				// Save it
+				var data = {
+					licenseKey: this.licenseKey
+				};
+
+				Craft.postActionRequest('systemSettings/saveLicenseKey', data, $.proxy(this, 'showAllDone'));
+			}
+			else
+			{
+				this.showAllDone();
+			}
+		}
+	},
+
+	showAllDone: function()
+	{
+		this.$currentScreen.find('h1:first').text(Craft.t('All done!'));
+		var $buttons = $('<div class="buttons"><a href="'+Craft.getUrl('dashboard')+'" class="btn big submit">'+Craft.t('Go to @@@appName@@@')+'</a></div>');
+		$('#spinner').replaceWith($buttons);
 	},
 
 	showScreen: function(i, callback)

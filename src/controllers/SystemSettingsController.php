@@ -6,7 +6,6 @@ namespace Craft;
  */
 class SystemSettingsController extends BaseController
 {
-
 	/**
 	 * Saves the general settings.
 	 */
@@ -39,6 +38,28 @@ class SystemSettingsController extends BaseController
 			$this->renderRequestedTemplate(array(
 				'post' => $generalSettingsModel
 			));
+		}
+	}
+
+	/**
+	 * Saves the license key.
+	 */
+	public function actionSaveLicenseKey()
+	{
+		$this->requirePostRequest();
+
+		$info = InfoRecord::model()->find();
+		$info->licenseKey = craft()->request->getPost('licenseKey');
+		$info->save();
+
+		if (craft()->request->isAjaxRequest())
+		{
+			$this->returnJson(array('success' => true));
+		}
+		else
+		{
+			craft()->userSession->setNotice(Craft::t('General settings saved.'));
+			$this->redirectToPostedUrl();
 		}
 	}
 

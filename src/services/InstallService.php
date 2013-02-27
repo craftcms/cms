@@ -160,7 +160,6 @@ class InstallService extends BaseApplicationComponent
 		$info->releaseDate = Craft::getReleaseDate();
 		$info->siteName = $inputs['siteName'];
 		$info->siteUrl = $inputs['siteUrl'];
-		$info->licenseKey = $inputs['licenseKey'];
 		$info->on = true;
 		$info->maintenance = false;
 
