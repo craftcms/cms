@@ -181,6 +181,14 @@ Craft.PackageChooser = Garnish.Base.extend({
 
 		// Attach the event listeners
 		this.addListener(this.ccModal.$container, 'submit', { pkg: pkg }, 'submitPackagePurchase');
+
+		if (!Garnish.isMobileBrowser())
+		{
+			// Focus on the name input once the modal has finished fading in
+			setTimeout(function() {
+				$('#cc-name').focus();
+			}, 500);
+		}
 	},
 
 	cleanupCcModal: function()
