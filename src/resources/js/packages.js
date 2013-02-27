@@ -260,7 +260,7 @@ Craft.PackageChooser = Garnish.Base.extend({
 					};
 
 					$.ajax({
-						url:     'https://elliott.buildwithcraft.com/actions/licenses/purchasePackage',
+						url:     '@@@packagePurchaseEndpoint@@@',
 						type:    'POST',
 						data:    data,
 
