@@ -103,7 +103,7 @@
 		<div class="body">
 
 			{{ forms.textField({
-				label: "Cardholder’s name"|t,
+				label: "Name on the card"|t,
 				id: 'cc-name'
 			}) }}
 
@@ -127,7 +127,7 @@
 				{% endset %}
 
 				{{ forms.field({
-					label: "Exp. month"|t,
+					label: "Expiration month"|t,
 					id: 'cc-month'
 				}, monthInput) }}
 			</div>
