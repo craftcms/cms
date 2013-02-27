@@ -64,14 +64,14 @@ class Et
 	}
 
 	/**
-	 * @param     $endPoint
+	 * @param     $endpoint
 	 * @param int $timeout
 	 */
-	function __construct($endPoint, $timeout = 6)
+	function __construct($endpoint, $timeout = 6)
 	{
-		$endPoint .= craft()->config->get('endPointSuffix');
+		$endpoint .= craft()->config->get('endpointSuffix');
 
-		$this->_endpoint = $endPoint;
+		$this->_endpoint = $endpoint;
 		$this->_timeout = $timeout;
 
 		$this->_model = new EtModel();
