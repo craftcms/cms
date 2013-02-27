@@ -39,6 +39,9 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 [data-icon]:before,
 [data-icon-after]:after { @include icon; }
 
+.secure:before,
+.insecure:before { margin-top: -3px; font-size: 14px; }
+
 [data-icon]:before { content: attr(data-icon); }
 [data-icon-after]:after { content: attr(data-icon-after); }
 
@@ -103,7 +106,7 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .nowrap { white-space: nowrap; }
 .light { color: #999; font-weight: normal; }
 
-.required:after { content: '*'; margin-top: -2px; font-size: 8px; color: $errorcolor; }
+.required:after { content: '*'; margin: -2px 0 0 2px; font-size: 8px; color: $errorcolor; }
 
 .scrollpane { overflow: auto; }
 
@@ -446,8 +449,8 @@ ul.tree,
 }
 
 .modal .header,
-.modal div.body,
 .modal .footer { padding: 15px 30px; }
+.modal div.body { padding: 30px; }
 .modal .header { -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 .modal .header h1 { margin: 0; }
 .modal .footer { -webkit-box-shadow: 0 -1px 2px rgba(0,0,0,0.1); }

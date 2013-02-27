@@ -3,12 +3,23 @@
 
 Craft.PackageChooser = Garnish.Base.extend({
 
+	settings: null,
 	$container: null,
 	grid: null,
-	btnContainers: null,
+	packages: null,
 
-	init: function()
+	ccModal: null,
+	$ccModalHeader: null,
+	$ccModalSecure: null,
+	$ccModalError: null,
+	$ccModalCancelBtn: null,
+	$ccModalSubmitBtn: null,
+	$ccModalSpinner: null,
+
+	init: function(settings)
 	{
+		this.setSettings(settings);
+
 		this.$container = $('#packages');
 
 		// Set up the package grid
@@ -18,22 +29,26 @@ Craft.PackageChooser = Garnish.Base.extend({
 			fillMode:         'grid'
 		});
 
-		// Find each of the button containers
-		this.btnContainers = {};
-		var $btnContainers = this.grid.$items.children('.buttons');
+		// Find each of the packages
+		this.packages = {};
 
-		for (var i = 0; i < $btnContainers.length; i++)
+		for (var i = 0; i < this.grid.$items.length; i++)
 		{
-			var $btnContainer = $($btnContainers[i]),
-				pkg           = $btnContainer.data('package');
+			var $pkgContainer = $(this.grid.$items[i]),
+				pkg           = $pkgContainer.data('package');
 
-			this.btnContainers[pkg] = $btnContainer;
+			this.packages[pkg] = {
+				pkg:           pkg,
+				name:          $pkgContainer.find('h2').text(),
+				$container:    $pkgContainer,
+				$btnContainer: $pkgContainer.children('.buttons')
+			};
 		}
 
 		// Get their licensed packages
 		Craft.postActionRequest('packages/fetchPackageInfo',
 			$.proxy(this, 'initPackages'),
-			$.proxy(this, 'handleBadResponse')
+			$.proxy(this, 'handleBadFetchPackageInfoResponse')
 		);
 	},
 
@@ -42,23 +57,28 @@ Craft.PackageChooser = Garnish.Base.extend({
 		// Just to be sure...
 		if (!response.success)
 		{
-			this.handleBadResponse();
+			this.handleBadFetchPackageInfoResponse();
 			return;
 		}
 
 		this.pkgInfo = response.packages;
 
-		for (var pkg in this.btnContainers)
+		for (var pkg in this.packages)
 		{
+			if (typeof response.packages[pkg] != 'undefined')
+			{
+				$.extend(this.packages[pkg], response.packages[pkg]);
+			}
+
 			this.createButtons(pkg);
 		}
 	},
 
-	handleBadResponse: function()
+	handleBadFetchPackageInfoResponse: function()
 	{
-		for (var i in this.btnContainers)
+		for (var i in this.packages)
 		{
-			this.btnContainers[i].children().css('visibility', 'hidden');
+			this.packages[i].$btnContainer.children().css('visibility', 'hidden');
 		}
 
 		alert(Craft.t('There was a problem determining which packages you’ve purchased.'));
@@ -66,10 +86,9 @@ Craft.PackageChooser = Garnish.Base.extend({
 
 	createButtons: function(pkg)
 	{
-		var $btnContainer = this.btnContainers[pkg],
-			pkgInfo       = this.pkgInfo[pkg];
+		var pkgInfo = this.packages[pkg];
 
-		$btnContainer.html('');
+		pkgInfo.$btnContainer.html('');
 
 		if (pkgInfo.licensed)
 		{
@@ -86,34 +105,36 @@ Craft.PackageChooser = Garnish.Base.extend({
 		{
 			if (pkgInfo.salePrice)
 			{
-				var label = '<del class="light">'+pkgInfo.price+'</del> '+pkgInfo.salePrice;
+				var label = '<del class="light">'+this.formatPrice(pkgInfo.price)+'</del> '+this.formatPrice(pkgInfo.salePrice);
 			}
 			else
 			{
-				var label = pkgInfo.price;
+				var label = this.formatPrice(pkgInfo.price);
 			}
 
 			var $btn = $('<div class="btn price">'+label+'</a>');
+
+			this.addListener($btn, 'activate', { pkg: pkg }, 'purchasePackage');
 		}
 
-		$btn.appendTo($btnContainer);
+		$btn.appendTo(pkgInfo.$btnContainer);
 
 		if (pkgInfo.licensed || Craft.hasPackage(pkg))
 		{
-			var $menuBtn = $('<div class="btn menubtn settings icon"/>').appendTo($btnContainer),
-				$menu    = $('<div class="menu"/>').appendTo($btnContainer),
+			var $menuBtn = $('<div class="btn menubtn settings icon"/>').appendTo(pkgInfo.$btnContainer),
+				$menu    = $('<div class="menu"/>').appendTo(pkgInfo.$btnContainer),
 				$ul      = $('<ul/>').appendTo($menu),
 				$li      = $('<li/>').appendTo($ul);
 
 			if (Craft.hasPackage(pkg))
 			{
 				var label  = Craft.t('Disable'),
-					action = 'disablePackage';
+					action = 'uninstall';
 			}
 			else
 			{
 				var label  = Craft.t('Enable'),
-					action = 'enablePackage';
+					action = 'install';
 			}
 
 			var $a = $('<a>'+label+'</a>').appendTo($li)
@@ -126,21 +147,223 @@ Craft.PackageChooser = Garnish.Base.extend({
 		}
 	},
 
+	purchasePackage: function(ev)
+	{
+		var pkg = ev.data.pkg;
+
+		if (!this.ccModal)
+		{
+			var $modal = $(this.settings.modalHtml).appendTo(document.body);
+			this.ccModal = new Garnish.Modal($modal);
+
+			this.$ccModalHeader    = $modal.find('h1:first');
+			this.$ccModalSecure    = $modal.find('.secure:first');
+			this.$ccModalCancelBtn = $modal.find('.btn.cancel:first');
+			this.$ccModalSubmitBtn = $modal.find('.btn.submit:first');
+			this.$ccModalSpinner   = $modal.find('.spinner:first');
+
+			this.addListener(this.$ccModalCancelBtn, 'activate', function() {
+				this.ccModal.hide();
+			});
+		}
+		else
+		{
+			// Cleanup from last time
+			this.removeListener(this.ccModal.$container, 'submit');
+			this.cleanupCcModal();
+
+			this.ccModal.show();
+		}
+
+		// Update the header
+		var header = Craft.t('Purchase {package}', { 'package': '<em>'+this.packages[pkg].name+'</em>' });
+		this.$ccModalHeader.html(header);
+
+		// Attach the event listeners
+		this.addListener(this.ccModal.$container, 'submit', { pkg: pkg }, 'submitPackagePurchase');
+	},
+
+	cleanupCcModal: function()
+	{
+		this.ccModal.$container.find('.error').removeClass('error');
+
+		if (this.$ccModalError)
+		{
+			this.$ccModalError.remove();
+		}
+	},
+
+	submitPackagePurchase: function(ev)
+	{
+		ev.preventDefault();
+		this.cleanupCcModal();
+
+		var pkg = ev.data.pkg;
+
+		// Get the CC data
+		var ccData = {
+			name:      $('#cc-name').val(),
+		    number:    $('#cc-num').val(),
+		    exp_month: $('#cc-month').val(),
+		    exp_year:  $('#cc-year').val(),
+		    cvc:       $('#cc-cvc').val()
+		};
+
+		// Validate it
+		var validates = true;
+
+		if (!ccData.name)
+		{
+			validates = false;
+			$('#cc-name').addClass('error');
+		}
+
+		if (!Stripe.validateCardNumber(ccData.number))
+		{
+			validates = false;
+			$('#cc-num').addClass('error');
+		}
+
+		if (!Stripe.validateExpiry(ccData.exp_month, ccData.exp_year))
+		{
+			validates = false;
+			$('#cc-month').addClass('error');
+			$('#cc-year').addClass('error');
+		}
+
+		if (!Stripe.validateCVC(ccData.cvc))
+		{
+			validates = false;
+			$('#cc-cvc').addClass('error');
+		}
+
+		if (validates)
+		{
+			// Get a CC token from Stripe.js
+			this.$ccModalSubmitBtn.addClass('active');
+			this.$ccModalSpinner.removeClass('hidden');
+
+			Stripe.setPublishableKey('@@@stripePublishableKey@@@');
+			Stripe.createToken(ccData, $.proxy(function(status, response)
+			{
+				if (!response.error)
+				{
+					// Pass the token along to Elliott to charge the card
+					var data = {
+						ccTokenId:  response.id,
+						'package':  pkg,
+						price:      (this.packages[pkg].salePrice ? this.packages[pkg].salePrice : this.packages[pkg].price),
+						licenseKey: this.settings.licenseKey,
+						email:      this.settings.email,
+						version:    this.settings.version,
+						build:      this.settings.build
+					};
+
+					$.ajax({
+						url:     'https://elliott.buildwithcraft.com/actions/licenses/purchasePackage',
+						type:    'POST',
+						data:    data,
+
+						success: $.proxy(function(response)
+						{
+							if (!response.success && response.error != 'license_has_package')
+							{
+								this.handleUnsuccessfulPurchase(response.error);
+							}
+							else
+							{
+								this.handleSuccessfulPurchase(pkg);
+							}
+						}, this),
+
+						error:   $.proxy(this, 'handleUnsuccessfulPurchase')
+					});
+				}
+				else
+				{
+					this.onPurchaseResponse();
+					Garnish.shake(this.ccModal.$container);
+				}
+			}, this));
+		}
+		else
+		{
+			Garnish.shake(this.ccModal.$container);
+		}
+	},
+
+	onPurchaseResponse: function()
+	{
+		this.$ccModalSubmitBtn.removeClass('active');
+		this.$ccModalSpinner.addClass('hidden');
+	},
+
+	handleSuccessfulPurchase: function(pkg)
+	{
+		this.packages[pkg].licensed = true;
+
+		this.performPackageAction(pkg, 'install', $.proxy(function()
+		{
+			this.onPurchaseResponse();
+			this.ccModal.hide();
+			Craft.cp.displayNotice(Craft.t('{package} purchased successfully!', { 'package': this.packages[pkg].name }));
+		}, this));
+	},
+
+	handleUnsuccessfulPurchase: function(error)
+	{
+		this.onPurchaseResponse();
+
+		if (error)
+		{
+			if (typeof this.settings.errors[error] != 'undefined')
+			{
+				switch (error)
+				{
+					case 'incorrect_number':
+					case 'invalid_number':
+					{
+						$('#cc-num').addClass('error');
+						break;
+					}
+
+					case 'invalid_cvc':
+					case 'incorrect_cvc':
+					{
+						$('#cc-cvc').addClass('error');
+						break;
+					}
+				}
+
+				error = this.settings.errors[error];
+			}
+
+			this.$ccModalError = $('<p class="error centeralign">'+error+'</p>').insertBefore(this.$ccModalSecure);
+		}
+
+		Garnish.shake(this.ccModal.$container);
+	},
+
 	onOptionSelect: function(option)
 	{
 		var $option  = $(option),
 			pkg      = $option.data('package'),
 			action   = $option.data('action');
 
+		this.performPackageAction(pkg, action);
+	},
+
+	performPackageAction: function(pkg, action, callback)
+	{
 		// Show the spinner
-		var $btnContainer = this.btnContainers[pkg],
+		var $btnContainer = this.packages[pkg].$btnContainer,
 			$spinner = $('<div class="spinner"/>').appendTo($btnContainer);
 
 		var data = {
 			'package': pkg
 		};
 
-		Craft.postActionRequest('packages/'+action, data, $.proxy(function(response) {
+		Craft.postActionRequest('packages/'+action+'Package', data, $.proxy(function(response) {
 			$spinner.hide();
 
 			if (!response.success)
@@ -151,13 +374,13 @@ Craft.PackageChooser = Garnish.Base.extend({
 
 			switch (action)
 			{
-				case 'enablePackage':
+				case 'install':
 				{
 					Craft.packages.push(pkg);
 					break;
 				}
 
-				case 'disablePackage':
+				case 'uninstall':
 				{
 					var index = $.inArray(pkg, Craft.packages);
 					Craft.packages.splice(index, 1);
@@ -166,11 +389,27 @@ Craft.PackageChooser = Garnish.Base.extend({
 			}
 
 			this.createButtons(pkg);
+
+			if (typeof callback == 'function')
+			{
+				callback();
+			}
 		}, this));
+	},
+
+	formatPrice: function(price)
+	{
+		var dollars = Math.floor(price/100),
+			cents   = (price % 100).toString();
+
+		while (cents.length < 2)
+		{
+			cents += '0';
+		}
+
+		return '$'+dollars+'.'+cents;
 	}
 });
-
-Craft.packageChooser = new Craft.PackageChooser();
 
 
 })(jQuery);

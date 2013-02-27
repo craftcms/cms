@@ -17,3 +17,15 @@
 #packages .package .buttons .btn.pkg-disabled { background: #999; }
 
 p.light sup { margin-right: 2px; }
+
+#ccmodal .field { margin: 15px 0; }
+
+#ccmodal .cc-year,
+#ccmodal .cc-cvc { margin-left: 15px; }
+#ccmodal .cc-month select { width: 177px; }
+#ccmodal .cc-year select { width: 62px; }
+#ccmodal .cc-cvc input { width: 71px; }
+
+#ccmodal p.secure { margin-bottom: -15px !important; }
+#ccmodal p.secure:before { margin-right: 5px; color: $textcolor; }
+#ccmodal .spinner { position: absolute; bottom: 15px; right: 7px; }

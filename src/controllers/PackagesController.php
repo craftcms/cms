@@ -33,19 +33,19 @@ class PackagesController extends BaseController
 		$this->returnJson(array(
 			'success' => true,
 			'packages' => array(
-				'Users'      => array('licensed' => false, 'price' => '$149', 'salePrice' => '$74.50'),
+				'Users'      => array('licensed' => false, 'price' => 14900, 'salePrice' => 7450),
 				'PublishPro' => array('licensed' => true),
-				'Language'   => array('licensed' => false, 'price' => '$299', 'salePrice' => '$149.50'),
+				'Language'   => array('licensed' => false, 'price' => 29900, 'salePrice' => 14950),
 				'Cloud'      => array('licensed' => true),
-				'Rebrand'    => array('licensed' =>false, 'price' => '$49', 'salePrice' => '$24.50'),
+				'Rebrand'    => array('licensed' =>false, 'price' => 4900, 'salePrice' => 2450),
 			),
 		));
 	}
 
 	/**
-	 * Enables a package.
+	 * Installs a package.
 	 */
-	public function actionEnablePackage()
+	public function actionInstallPackage()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -63,7 +63,7 @@ class PackagesController extends BaseController
 			throw new Exception(Craft::t('The {package} package is already installed.', array('package' => $package)));
 		}
 
-		// Enable it
+		// Install it
 		$installedPackages[] = $package;
 		craft()->db->createCommand()->update('info', array(
 			'packages' => implode(',', $installedPackages))
@@ -75,9 +75,9 @@ class PackagesController extends BaseController
 	}
 
 	/**
-	 * Disables a package.
+	 * Uninstalls a package.
 	 */
-	public function actionDisablePackage()
+	public function actionUninstallPackage()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -95,7 +95,7 @@ class PackagesController extends BaseController
 			throw new Exception(Craft::t('The {package} package wasn’t installed.', array('package' => $package)));
 		}
 
-		// Disable it
+		// Uninstall it
 		$index = array_search($package, $installedPackages);
 		array_splice($installedPackages, $index, 1);
 		craft()->db->createCommand()->update('info', array(
