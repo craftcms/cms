@@ -104,7 +104,7 @@ Craft.PackageChooser = Garnish.Base.extend({
 			}
 			else
 			{
-				var $btn = $('<div class="btn noborder pkg-disabled">'+Craft.t('Disabled')+'</a>');
+				var $btn = $('<div class="btn noborder pkg-uninstalled">'+Craft.t('Uninstalled')+'</a>');
 			}
 		}
 		else
@@ -134,12 +134,12 @@ Craft.PackageChooser = Garnish.Base.extend({
 
 			if (Craft.hasPackage(pkg))
 			{
-				var label  = Craft.t('Disable'),
+				var label  = Craft.t('Uninstall'),
 					action = 'uninstall';
 			}
 			else
 			{
-				var label  = Craft.t('Enable'),
+				var label  = Craft.t('Install'),
 					action = 'install';
 			}
 

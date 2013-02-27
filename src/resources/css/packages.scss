@@ -12,9 +12,9 @@
 #packages .package .buttons .btn.price del { color: $textcolor; font-weight: bold; }
 
 #packages .package .buttons .btn.pkg-installed,
-#packages .package .buttons .btn.pkg-disabled { color: #fff; cursor: default; }
+#packages .package .buttons .btn.pkg-uninstalled { color: #fff; cursor: default; }
 #packages .package .buttons .btn.pkg-installed { background: $successcolor; }
-#packages .package .buttons .btn.pkg-disabled { background: #999; }
+#packages .package .buttons .btn.pkg-uninstalled { background: #999; }
 
 p.light sup { margin-right: 2px; }
 
