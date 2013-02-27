@@ -188,6 +188,9 @@ class AssetsController extends BaseController
 
 	}
 
+	/**
+	 * Rename a folder
+	 */
 	public function actionRenameFolder()
 	{
 		$this->requireLogin();
@@ -201,4 +204,17 @@ class AssetsController extends BaseController
 		$this->returnJson($response->getResponseData());
 	}
 
+	/**
+	 * Delete a file or multiple files.
+	 */
+	public function actionDeleteFile()
+	{
+		$this->requireLogin();
+		$this->requireAjaxRequest();
+		$fileIds = craft()->request->getRequiredPost('fileId');
+
+		$response = craft()->assets->deleteFiles($fileIds);
+		$this->returnJson($response->getResponseData());
+	}
 }
+

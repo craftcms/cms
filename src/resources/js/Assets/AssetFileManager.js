@@ -707,9 +707,65 @@ Assets.FileManager = Garnish.Base.extend({
     /**
      * Delete a file
      */
-    _deleteFile: function () {
-        // TODO delete file
-        alert('Delete file is not yet available');
+    _deleteFile: function (ev) {
+
+        var dataTarget = this._getDataContainer(ev);
+        var fileId = dataTarget.attr('data-id');
+
+        var fileName = dataTarget.attr('data-fileName');
+
+        if (confirm(Craft.t('Are you sure you want to delete "{file}"?', {file: fileName})))
+        {
+            this.setAssetsBusy();
+
+            Craft.postActionRequest('assets/deleteFile', {fileId: fileId}, $.proxy(function(data, textStatus) {
+                this.setAssetsAvailable();
+
+                if (textStatus == 'success')
+                {
+                    if (data.error)
+                    {
+                        alert(data.error);
+                    }
+
+                    this.updateFiles();
+
+                }
+            }, this));
+        }
+    },
+
+    /**
+     * Delete multiple files.
+     */
+    _deleteFiles: function () {
+
+        if (confirm(Craft.t("Are you sure you want to delete these {number} files?", {number: this.fileSelect.getTotalSelected()})))
+        {
+            this.setAssetsBusy();
+
+            var postData = {};
+
+            for (var i = 0; i < this.selectedFileIds.length; i++)
+            {
+                postData['fileId['+i+']'] = this.selectedFileIds[i];
+            }
+
+            Craft.postActionRequest('assets/deleteFile', postData, $.proxy(function(data, textStatus) {
+                this.setAssetsAvailable();
+
+                if (textStatus == 'success')
+                {
+
+                    if (data.error)
+                    {
+                        alert(data.error);
+                    }
+
+                    this.updateFiles();
+                }
+            }, this));
+        }
     },
 
 	/**
@@ -718,24 +774,12 @@ Assets.FileManager = Garnish.Base.extend({
 	_showProperties: function (ev) {
 
 		this.setAssetsBusy();
-        var fileId = 0;
-        var target = ev.target;
-        if (typeof ev.currentTarget != "undefined")
-        {
-            target = ev.currentTarget;
-        }
 
-        if (this.currentState.view == 'thumbs')
-        {
-            fileId = $(target).is('li') ? $(target).attr('data-file') : $(target).parents('li').attr('data-file');
-        }
-        else
-        {
-            fileId = $(target).is('tr') ? $(target).attr('data-file') : $(target).parents('tr').attr('data-file');
-        }
-		var params = {
+        var dataTarget = this._getDataContainer(ev);
+
+        var params = {
 			requestId: ++this.requestId,
-			fileId: fileId
+			fileId: dataTarget.attr('data-id')
 		};
 
 		Craft.postActionRequest('assets/viewFile', params, $.proxy(function(data, textStatus) {
@@ -782,6 +826,30 @@ Assets.FileManager = Garnish.Base.extend({
 
 		}, this));
 	},
+
+    /**
+     * Get data container from an event.
+     *
+     * @param ev
+     * @return jQuery
+     */
+    _getDataContainer: function (ev)
+    {
+        if (typeof ev.currentTarget != "undefined")
+        {
+            target = ev.currentTarget;
+        }
+
+        if (this.currentState.view == 'thumbs')
+        {
+            return $(target).is('li') ? $(target) : $(target).parents('li');
+        }
+        else
+        {
+            return $(target).is('tr') ? $(target) : $(target).parents('tr');
+        }
+
+    },
 
 	/**
 	 * On Selection Change

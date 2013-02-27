@@ -763,8 +763,10 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Delete a list of files by an array of ids (or a single id)
+	 * Delete a list of files by an array of ids (or a single id).
+	 *
 	 * @param $fileIds
+	 * @return AssetOperationResponseModel
 	 */
 	public function deleteFiles($fileIds)
 	{
@@ -773,12 +775,23 @@ class AssetsService extends BaseApplicationComponent
 			$fileIds = array($fileIds);
 		}
 
-		foreach ($fileIds as $fileId)
+		$response = new AssetOperationResponseModel();
+		try
 		{
-			$file = $this->getFileById($fileId);
-			$source = craft()->assetSources->getSourceTypeById($file->sourceId);
-			$source->deleteFile($file);
+			foreach ($fileIds as $fileId)
+			{
+				$file = $this->getFileById($fileId);
+				$source = craft()->assetSources->getSourceTypeById($file->sourceId);
+				$source->deleteFile($file);
+			}
+			$response->setSuccess();
 		}
+		catch (Exception $exception)
+		{
+			$response->setError($exception->getMessage());
+		}
+
+		return $response;
 	}
 
 	/**
