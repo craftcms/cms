@@ -66,9 +66,9 @@ class UpdatesService extends BaseApplicationComponent
 			$updateModel = $this->getUpdates();
 			$count = 0;
 
-			if ($updateModel->craft->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
+			if ($updateModel->app->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
 			{
-				if (isset($updateModel->craft->releases) && count($updateModel->craft->releases) > 0)
+				if (isset($updateModel->app->releases) && count($updateModel->app->releases) > 0)
 				{
 					$count++;
 				}
@@ -88,11 +88,6 @@ class UpdatesService extends BaseApplicationComponent
 				}
 			}
 
-			if (isset($updateModel->packages) && count($updateModel->packages) > 0)
-			{
-				$count++;
-			}
-
 			return $count;
 		}
 	}
@@ -102,7 +97,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isCriticalUpdateAvailable()
 	{
-		if ((isset($this->_updateModel) && $this->_updateModel->craft->criticalUpdateAvailable))
+		if ((isset($this->_updateModel) && $this->_updateModel->app->criticalUpdateAvailable))
 		{
 			return true;
 		}
@@ -115,7 +110,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isManualUpdateRequired()
 	{
-		if ((isset($this->_updateModel) && $this->_updateModel->craft->manualUpdateRequired))
+		if ((isset($this->_updateModel) && $this->_updateModel->app->manualUpdateRequired))
 		{
 			return true;
 		}
@@ -224,6 +219,7 @@ class UpdatesService extends BaseApplicationComponent
 	public function check()
 	{
 		$updateModel = new UpdateModel();
+		$updateModel->app = new AppUpdateModel();
 		$updateModel->app->localBuild = Craft::getBuild();
 		$updateModel->app->localVersion = Craft::getVersion();
 

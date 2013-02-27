@@ -49,7 +49,7 @@ class UpdateController extends BaseController
 				case 'all':
 				{
 					// Craft first.
-					$return[] = array('handle' => 'Craft', 'name' => 'Craft', 'version' => $updateInfo->craft->latestVersion.'.'.$updateInfo->craft->latestBuild, 'critical' => $updateInfo->craft->criticalUpdateAvailable, 'releaseDate' => $updateInfo->craft->latestDate->getTimestamp());
+					$return[] = array('handle' => 'Craft', 'name' => 'Craft', 'version' => $updateInfo->app->latestVersion.'.'.$updateInfo->app->latestBuild, 'critical' => $updateInfo->app->criticalUpdateAvailable, 'releaseDate' => $updateInfo->app->latestDate->getTimestamp());
 
 					// Plugins
 					if ($updateInfo->plugins !== null)
@@ -68,7 +68,7 @@ class UpdateController extends BaseController
 
 				case 'craft':
 				{
-					$return[] = array('handle' => 'Craft', 'name' => 'Craft', 'version' => $updateInfo->craft->latestVersion.'.'.$updateInfo->craft->latestBuild, 'critical' => $updateInfo->craft->criticalUpdateAvailable, 'releaseDate' => $updateInfo->craft->latestDate->getTimestamp());
+					$return[] = array('handle' => 'Craft', 'name' => 'Craft', 'version' => $updateInfo->app->latestVersion.'.'.$updateInfo->app->latestBuild, 'critical' => $updateInfo->app->criticalUpdateAvailable, 'releaseDate' => $updateInfo->app->latestDate->getTimestamp());
 					break;
 				}
 
