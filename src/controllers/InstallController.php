@@ -49,29 +49,6 @@ class InstallController extends BaseController
 	}
 
 	/**
-	 * Validates the license key
-	 */
-	public function actionValidateLicensekey()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
-
-		$licenseKey = new LicenseKeyModel();
-		$licenseKey->licensekey = craft()->request->getPost('licensekey');
-
-		if ($licenseKey->validate())
-		{
-			$return['validates'] = true;
-		}
-		else
-		{
-			$return['errors'] = $licenseKey->getErrors();
-		}
-
-		$this->returnJson($return);
-	}
-
-	/**
 	 * Validates the user account credentials
 	 */
 	public function actionValidateAccount()
@@ -129,7 +106,6 @@ class InstallController extends BaseController
 		$this->requireAjaxRequest();
 
 		// Run the installer
-		$inputs['licenseKey'] = craft()->request->getPost('licensekey');
 		$inputs['username']   = craft()->request->getPost('username');
 		$inputs['email']      = craft()->request->getPost('email');
 		$inputs['password']   = craft()->request->getPost('password');
