@@ -443,7 +443,7 @@ ul.tree,
 /*  Modals
 /* ----------------------------------------*/
 
-.modal { position: fixed; top: 50%; left: 50%; z-index: 9999; margin-left: -200px; width: 400px; background: #fff; overflow: hidden;
+.modal { position: fixed; top: 50%; left: 50%; z-index: 9999; border-radius: 2px; margin-left: -200px; width: 400px; background: #fff; overflow: hidden;
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 4px 20px -7px rgba(0,0,0,0.5);
 	   -moz-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 4px 20px -7px rgba(0,0,0,0.5);
 }

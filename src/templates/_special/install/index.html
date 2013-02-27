@@ -9,7 +9,10 @@
 %}
 
 {% set body %}
-	{% include "_special/install/welcome" %}
+	<div class="beginbtncontainer">
+		<div id="beginbtn" class="btn big submit">{{ "Begin"|t }}</div>
+	</div>
+
 	{% include "_special/install/account" %}
 	{% include "_special/install/site" %}
 	{% include "_special/install/installing" %}
