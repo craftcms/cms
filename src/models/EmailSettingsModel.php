@@ -17,7 +17,7 @@ class EmailSettingsModel extends BaseModel
 			'host'                    => AttributeType::String,
 			'port'                    => AttributeType::String,
 			'smtpAuth'                => AttributeType::String,
-			'userName'                => AttributeType::String,
+			'username'                => AttributeType::String,
 			'password'                => AttributeType::String,
 			'smtpKeepAlive'           => AttributeType::Bool,
 			'smtpSecureTransportType' => AttributeType::String,
