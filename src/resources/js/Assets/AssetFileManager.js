@@ -795,7 +795,7 @@ Assets.FileManager = Garnish.Base.extend({
 				this._singleFileMenu.enable();
 				this._multiFileMenu.disable();
 			}
-			else
+			else if (this.fileSelect.getTotalSelected() > 1)
 			{
 				this._singleFileMenu.disable();
 				this._multiFileMenu.enable();

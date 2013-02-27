@@ -68,17 +68,22 @@ class AssetFileModel extends BaseElementModel
 	/**
 	 * Get the thumb's URL.
 	 *
-	 * @param int $size
+	 * @param int $width
+	 * @param int $height
 	 * @return string
 	 */
-	public function getThumbUrl($size = 125)
+	public function getThumbUrl($width = 125, $height = 125)
 	{
-		if (!is_numeric($size))
+		if (!is_numeric($width))
 		{
-			$size = 125;
+			$width = 125;
+		}
+		if (!is_numeric($height))
+		{
+			$height = 125;
 		}
 
-		return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$size);
+		return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$width.'x'.$height);
 	}
 
 	/**
@@ -91,4 +96,38 @@ class AssetFileModel extends BaseElementModel
 		return pathinfo($this->filename, PATHINFO_EXTENSION);
 	}
 
+	/**
+	 * Return thumbnail data.
+	 *
+	 * @param $maxWidth
+	 * @param $maxHeight
+	 * @return bool|object
+	 */
+	public function getThumbData($maxWidth, $maxHeight)
+	{
+
+		if ($this->kind != "image")
+		{
+			return false;
+		}
+
+		// treat the image as a horizontal?
+		if (($this->height / $this->width) <= ($maxHeight / $maxWidth))
+		{
+			$thumbWidth = $maxWidth;
+			$thumbHeight = round(($maxWidth / $this->width) * $this->height);
+		}
+		else
+		{
+			$thumbHeight = $maxHeight;
+			$thumbWidth = round(($maxHeight / $this->height) * $this->width);
+		}
+
+		return (object) array(
+			'url'     => $this->getThumbUrl($thumbWidth, $thumbHeight),
+			'url2X'  => $this->getThumbUrl($thumbWidth*2, $thumbHeight*2),
+			'width'   => $thumbWidth,
+			'height'  => $thumbHeight,
+		);
+	}
 }

@@ -89,7 +89,7 @@ class ResourcesService extends BaseApplicationComponent
 
 				case 'assetthumbs':
 				{
-					if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !is_numeric($segs[2]))
+					if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !preg_match('/^(?P<width>[0-9]+)x(?P<height>[0-9]+)/', $segs[2]))
 					{
 						return false;
 					}
@@ -116,7 +116,7 @@ class ResourcesService extends BaseApplicationComponent
 							return false;
 						}
 						craft()->images->loadImage($sourcePath)
-							->scale($size, $size)
+							->scale($size)
 							->saveAs($thumbPath);
 					}
 
