@@ -74,12 +74,10 @@ class EntriesService extends BaseApplicationComponent
 		$entryRecord->authorId   = $entry->authorId;
 		$entryRecord->postDate   = DateTimeHelper::normalizeDate($entry->postDate, true);
 		$entryRecord->expiryDate = DateTimeHelper::normalizeDate($entry->expiryDate);
-
-		$elementRecord->enabled = $entry->enabled;
-
 		$entryRecord->validate();
 		$entry->addErrors($entryRecord->getErrors());
 
+		$elementRecord->enabled = $entry->enabled;
 		$elementRecord->validate();
 		$entry->addErrors($elementRecord->getErrors());
 
@@ -162,7 +160,7 @@ class EntriesService extends BaseApplicationComponent
 			$entry->postDate   = $entryRecord->postDate;
 			$entry->expiryDate = $entryRecord->expiryDate;
 
-			// Now that we have an entry ID, save it on the other stuff
+			// Now that we have an element ID, save it on the other stuff
 			if (!$entry->id)
 			{
 				$entry->id = $elementRecord->id;
