@@ -249,7 +249,7 @@ class AssetsService extends BaseApplicationComponent
 
 			if (!$fileRecord)
 			{
-				throw new Exception('No asset exists with the ID “{id}”', array('id' => $file->id));
+				throw new Exception(Craft::t("No asset exists with the ID “{id}”", array('id' => $file->id)));
 			}
 		}
 		else
@@ -792,6 +792,60 @@ class AssetsService extends BaseApplicationComponent
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Move or rename files.
+	 *
+	 * @param $fileIds
+	 * @param $folderId
+	 * @param string $filename if this is a rename operation
+	 * @param string $actions actions to take in case of a conflict.
+	 */
+	public function moveFiles($fileIds, $folderId, $filename = '', $actions = array())
+	{
+		if (!is_array($fileIds))
+		{
+			$fileIds = array($fileIds);
+		}
+
+		$results = array();
+
+		foreach ($fileIds as $i => $fileId)
+		{
+			$file = $this->getFileById($fileId);
+
+			// If this is not a rename operation, then the filename remains the original
+			if (empty($filename))
+			{
+				$filename = $file->filename;
+			}
+
+			$filename = IOHelper::cleanFilename($filename);
+
+			if ($folderId == $file->folderId && ($filename == $file->filename))
+			{
+				$response = new AssetOperationResponseModel();
+				$response->setSuccess();
+				$results[] = $response;
+			}
+
+			$originalSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+			$folder = $this->getFolderById($folderId);
+			$newSourceType = craft()->assetSources->getSourceTypeById($folder->sourceId);
+
+			if ($originalSourceType && $newSourceType)
+			{
+				if ( !$result = $newSourceType->moveFileInsideSource($originalSourceType, $file, $folderId, $filename, $actions[$i]))
+				{
+					$this->_moveFileBetweenSources($originalSourceType, $newSourceType, $file, $folderId, $actions[$i]);
+				}
+			}
+			else
+			{
+				throw new Exception(Craft::t("There was an error moving the file {file}.", array('file' => $file->filename)));
+			}
+		}
 	}
 
 	/**

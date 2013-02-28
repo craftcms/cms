@@ -697,11 +697,56 @@ Assets.FileManager = Garnish.Base.extend({
     },
 
     /**
-     * Rename a file
+     * Rename File
      */
-    _renameFile: function () {
-        // TODO rename file
-        alert('Rename file is not yet available');
+    _renameFile: function(event)
+    {
+        var dataTarget = this._getDataContainer(event);
+        var fileId = dataTarget.attr('data-id'),
+            oldName = dataTarget.attr('data-file_name'),
+            newName = prompt(Craft.t("Rename file"), oldName);
+
+        if (newName && newName != oldName)
+        {
+            this.setAssetsBusy();
+
+            var postData = {
+                fileId:   fileId,
+                folderId: dataTarget.attr('data-folder'),
+                fileName: newName
+            };
+
+            var handleRename = function(data, textStatus)
+            {
+                this.setAssetsAvailable();
+
+                if (textStatus == 'success')
+                {
+                    if (data.prompt)
+                    {
+                        this._showPrompt(data.prompt, data.choices, $.proxy(function (choice) {
+                            if (choice != 'cancel')
+                            {
+                                postData.action = choice;
+                                Craft.postActionRequest('assets/moveFile', postData, $.proxy(handleRename, this));
+                            }
+                        }, this));
+                    }
+
+                    if (data.success)
+                    {
+                        this.updateFiles();
+                    }
+
+                    if (data.error)
+                    {
+                        alert(data.error);
+                    }
+                }
+            };
+
+            Craft.postActionRequest('assets/moveFile', postData, $.proxy(handleRename, this));
+        }
     },
 
     /**

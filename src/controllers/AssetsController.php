@@ -216,5 +216,19 @@ class AssetsController extends BaseController
 		$response = craft()->assets->deleteFiles($fileIds);
 		$this->returnJson($response->getResponseData());
 	}
+
+	/**
+	 * Move a file or multiple files
+	 */
+	public function actionMoveFile()
+	{
+		$fileIds = craft()->request->getRequiredPost('fileId');
+		$folderId = craft()->request->getRequiredPost('folderId');
+		$fileName = craft()->request->getPost('fileName');
+		$actions = craft()->request->getPost('actions');
+
+		$response = craft()->assets->moveFiles($fileIds, $folderId, $fileName, $actions);
+		$this->returnJson($response->getResponseData());
+	}
 }
 

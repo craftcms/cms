@@ -148,6 +148,13 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	abstract protected function _renameSourceFolder(AssetFolderModel $folder, $newName);
 
+	/**
+	 * Determines if a file can be moved internally from original source.
+	 *
+	 * @param BaseAssetSourceType $originalSource
+	 * @return mixed
+	 */
+	abstract protected function canMoveFileFrom(BaseAssetSourceType $originalSource);
 
 	/**
 	 * Return a result object for prompting the user about filename conflicts.
@@ -263,6 +270,24 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$response->deleteDataItem('filePath');
 
 		return $response;
+	}
+
+	/**
+	 * Move file from one path to another if it's possible. Return false on failure.
+	 *
+	 * @param BaseAssetSourceType $originalSource
+	 * @param $file
+	 * @param $folderId
+	 * @param $filename
+	 * @param $action
+	 * @return bool
+	 */
+	public function moveFileInsideSource(BaseAssetSourceType $originalSource, $file, $folderId, $filename, $action)
+	{
+		if (!$this->canMoveFileFrom($originalSource))
+		{
+			return false;
+		}
 	}
 
 	/**
