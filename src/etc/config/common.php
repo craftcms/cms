@@ -109,12 +109,14 @@ $configArray = array(
 //  CP routes
 // -------------------------------------------
 
+$cpRoutes['dashboard\/settings\/new']                                         = 'dashboard/settings/_widgetsettings';
+$cpRoutes['dashboard\/settings\/(?P<widgetId>\d+)']                           = 'dashboard/settings/_widgetsettings';
+
 $cpRoutes['entries\/(?P<filter>{handle})']                                    = 'entries';
 $cpRoutes['entries\/(?P<sectionHandle>{handle})\/new']                        = 'entries/_edit';
 $cpRoutes['entries\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)']           = 'entries/_edit';
 
-$cpRoutes['dashboard\/settings\/new']                                         = 'dashboard/settings/_widgetsettings';
-$cpRoutes['dashboard\/settings\/(?P<widgetId>\d+)']                           = 'dashboard/settings/_widgetsettings';
+$cpRoutes['globals\/(?P<globalSetHandle>{handle})']                           = 'globals';
 
 $cpRoutes['updates\/go\/(?P<handle>[^\/]*)']                                  = 'updates/_go';
 
