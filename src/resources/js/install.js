@@ -9,9 +9,6 @@ Craft.Installer = Garnish.Base.extend({
 	$siteSubmitBtn: null,
 
 	loading: false,
-	installing: null,
-	gettingLicenseKey: null,
-	licenseKey: null,
 
 	/**
 	* Constructor
@@ -74,66 +71,12 @@ Craft.Installer = Garnish.Base.extend({
 				data[input] = Garnish.getInputPostVal($input);
 			}
 
-			this.installing = true;
-			this.gettingLicenseKey = true;
-
-			Craft.postActionRequest('install/install', data, $.proxy(function() {
-				this.installing = false;
-				this.allDone();
-			}, this));
-
-			// While we're waiting, see if we can't generate a license key...
-			var data = {
-				email: $('#email').val()
-			};
-
-			$.ajax({
-				url:     '@@@elliottEndpointUrl@@@actions/licenses/createLicense',
-				data:    data,
-				type:    'POST',
-
-				success: $.proxy(function(response)
-				{
-					if (response.success)
-					{
-						this.licenseKey = response.licenseKey;
-					}
-
-					this.gettingLicenseKey = false;
-					this.allDone();
-				}, this),
-
-				error:   $.proxy(function()
-				{
-					this.gettingLicenseKey = false;
-					this.allDone();
-				}, this)
-			});
+			Craft.postActionRequest('install/install', data, $.proxy(this, 'allDone'));
 
 		}, this));
 	},
 
 	allDone: function()
-	{
-		if (!this.installing && !this.gettingLicenseKey)
-		{
-			if (this.licenseKey)
-			{
-				// Save it
-				var data = {
-					licenseKey: this.licenseKey
-				};
-
-				Craft.postActionRequest('systemSettings/saveLicenseKey', data, $.proxy(this, 'showAllDone'));
-			}
-			else
-			{
-				this.showAllDone();
-			}
-		}
-	},
-
-	showAllDone: function()
 	{
 		this.$currentScreen.find('h1:first').text(Craft.t('All done!'));
 		var $buttons = $('<div class="buttons"><a href="'+Craft.getUrl('dashboard')+'" class="btn big submit">'+Craft.t('Go to @@@appName@@@')+'</a></div>');
