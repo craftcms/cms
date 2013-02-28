@@ -11,9 +11,6 @@ class EtModel extends BaseModel
 	 */
 	public function defineAttributes()
 	{
-		// The site URL as defined in craft_info->siteUrl.
-		$attributes['url'] = AttributeType::String;
-
 		// The client license key.
 		$attributes['licenseKey'] = AttributeType::String;
 
@@ -23,8 +20,8 @@ class EtModel extends BaseModel
 		// Extra arbitrary data to send to the server.
 		$attributes['data'] = AttributeType::Mixed;
 
-		// The domain making the request.
-		$attributes['requestDomain'] = AttributeType::String;
+		// The url making the request.
+		$attributes['requestUrl'] = AttributeType::String;
 
 		// The IP address making the request.
 		$attributes['requestIp'] = AttributeType::String;

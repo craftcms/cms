@@ -75,10 +75,9 @@ class Et
 		$this->_timeout = $timeout;
 
 		$this->_model = new EtModel();
-		$this->_model->url = Craft::getSiteUrl();
 		$this->_model->licenseKey = Craft::getLicenseKey();
-		$this->_model->requestDomain = craft()->request->getServerName();
-		$this->_model->requestIp = craft()->request->getUserHostAddress();
+		$this->_model->requestUrl = craft()->request->getHostInfo().craft()->request->getUrl();
+		$this->_model->requestIp = craft()->request->getIpAddress();
 		$this->_model->requestTime = DateTimeHelper::currentTimeStamp();
 		$this->_model->requestPort = craft()->request->getPort();
 		$this->_model->installedPackages = ArrayHelper::stringToArray(Craft::getPackages());

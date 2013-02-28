@@ -198,7 +198,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
 	 *
 	 * @param $name
-	 * @throws Exception
+	 * @throws HttpException
 	 * @return mixed
 	 */
 	public function getRequiredParam($name)
@@ -219,7 +219,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns the named GET parameter value, or throws an exception if it's not set
 	 *
 	 * @param $name
-	 * @throws Exception
+	 * @throws HttpException
 	 * @return mixed
 	 */
 	public function getRequiredQuery($name)
@@ -240,7 +240,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
 	 *
 	 * @param $name
-	 * @throws Exception
+	 * @throws HttpException
 	 * @return mixed
 	 */
 	public function getRequiredPost($name)

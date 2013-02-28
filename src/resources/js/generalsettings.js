@@ -34,26 +34,30 @@ Craft.LicenseKeyForm = Garnish.Base.extend({
 		this.$newKeyBtn.addClass('active');
 		this.$spinner.removeClass('hidden');
 
-		var data = {
-			email: this.settings.email
-		};
+		var data =
+			JSON.stringify({
+				requestUrl: document.location.href,
+				requestIp: '1.1.1.1',
+				data: this.settings.email
+		});
 
 		$.ajax({
-			url:     '@@@elliottEndpointUrl@@@actions/licenses/createLicense',
+			url:     'http://elliott.buildwithcraft.dev/actions/elliott/app/createLicense',
 			data:    data,
 			type:    'POST',
+			dataType: 'json',
 
 			success: $.proxy(function(response)
 			{
 				this.onLicenseKeyResponse();
 
-				if (response.success)
+				if (response.errors)
 				{
-					this.$input.val(response.licenseKey);
+					this.onUnsuccessfulLicenseKeyResponse();
 				}
 				else
 				{
-					this.onUnsuccessfulLicenseKeyResponse();
+					this.$input.val(response.data);
 				}
 			}, this),
 

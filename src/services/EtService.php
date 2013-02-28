@@ -60,6 +60,24 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
+	 * @param $email
+	 * @return EtModel|bool
+	 */
+	public function createLicense($email)
+	{
+		$et = new Et(ElliottEndpoints::CreateLicense);
+		$et->getModel()->data = $email;
+		$etModel = $et->phoneHome();
+
+		if ($etModel && !empty($etModel->data))
+		{
+			return $etModel->data;
+		}
+
+		return null;
+	}
+
+	/**
 	 * Returns the license key status.
 	 */
 	public function getLicenseKeyStatus()

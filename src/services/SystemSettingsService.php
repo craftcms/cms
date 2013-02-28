@@ -116,4 +116,23 @@ class SystemSettingsService extends BaseApplicationComponent
 
 		return !$record->hasErrors();
 	}
+
+	/**
+	 * Saves the license key.
+	 *
+	 * @param $licenseKey
+	 * @return bool
+	 */
+	public function saveLicenseKey($licenseKey)
+	{
+		$info = InfoRecord::model()->find();
+		$info->licenseKey = $licenseKey;
+
+		if ($info->save())
+		{
+			return true;
+		}
+
+		return false;
+	}
 }

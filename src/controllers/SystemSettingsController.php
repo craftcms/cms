@@ -55,10 +55,7 @@ class SystemSettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$info = InfoRecord::model()->find();
-		$info->licenseKey = craft()->request->getPost('licenseKey');
-
-		if ($info->save())
+		if (craft()->systemSettings->saveLicenseKey(craft()->request->getRequiredPost('licenseKey')))
 		{
 			if (craft()->request->isAjaxRequest())
 			{
