@@ -24,7 +24,7 @@ class EntryElementType extends BaseElementType
 	 */
 	public function getCpEditUriForElement(BaseElementModel $element)
 	{
-		return 'content/'.$element->getSection()->handle.'/'.$element->id;
+		return 'entries/'.$element->getSection()->handle.'/'.$element->id;
 	}
 
 	/**

@@ -4,8 +4,7 @@
 {% import "_includes/forms" as forms %}
 
 {% set crumbs = [
-	{ label: "Content"|t, url: url('content') },
-	{ label: "Entries"|t, url: url('content') }
+	{ label: "Entries"|t, url: url('entries') }
 ] %}
 
 
@@ -13,7 +12,7 @@
 {% if not section %}{% exit 404 %}{% endif %}
 
 {% if craft.hasPackage('PublishPro') %}
-	{% set crumbs = crumbs|merge([ { label: section.name|t, url: url('content/'~section.handle) } ]) %}
+	{% set crumbs = crumbs|merge([ { label: section.name|t, url: url('entries/'~section.handle) } ]) %}
 {% endif %}
 
 {% set permissionSuffix = 'InSection'~section.id %}
@@ -92,7 +91,7 @@
 {% set extraPageHeaderHtml %}
 	{% if craft.hasPackage('Localize') %}
 		<div class="select">
-			<select onchange="document.location.href='{{ url('content/'~section.handle~'/'~craft.request.getSegment(3)) }}/'+this.value;">
+			<select onchange="document.location.href='{{ url('entries/'~section.handle~'/'~craft.request.getSegment(3)) }}/'+this.value;">
 				{% for sectionLocale in section.getLocales() %}
 					{% set locale = craft.i18n.getLocaleById(sectionLocale.locale) %}
 					<option value="{{ locale.id }}"{% if locale.id == localeId %} selected{% endif %}>{{ locale.name }}</option>
@@ -102,7 +101,7 @@
 	{% endif %}
 
 	{% if not isNewEntry and craft.hasPackage('PublishPro') %}
-		{% include "content/entries/_revisions" %}
+		{% include "entries/_revisions" %}
 	{% endif %}
 {% endset %}
 
@@ -260,7 +259,7 @@
 
 				{% if isNewEntry or not entry.enabled or user.can('publishEntries'~permissionSuffix) %}
 					<input type="hidden" name="action" value="entries/saveEntry">
-					<input type="hidden" name="redirect" value="content">
+					<input type="hidden" name="redirect" value="entries">
 
 					<div class="btngroup">
 						<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
@@ -268,8 +267,8 @@
 						<div class="btn submit menubtn"></div>
 						<div class="menu">
 							<ul>
-								<li><a class="formsubmit" data-redirect="{{ 'content/'~section.handle~'/{entryId}' }}">{{ "Save and continue editing"|t }}</a></li>
-								<li><a class="formsubmit" data-redirect="{{ 'content/'~section.handle~'/new' }}">{{ "Save and add another"|t }}</a></li>
+								<li><a class="formsubmit" data-redirect="{{ 'entries/'~section.handle~'/{entryId}' }}">{{ "Save and continue editing"|t }}</a></li>
+								<li><a class="formsubmit" data-redirect="{{ 'entries/'~section.handle~'/new' }}">{{ "Save and add another"|t }}</a></li>
 							</ul>
 						</div>
 					</div>

@@ -24,7 +24,7 @@ class GlobalSetElementType extends BaseElementType
 	 */
 	public function getCpEditUriForElement(BaseElementModel $element)
 	{
-		return 'content/globals/'.$element->handle;
+		return 'globals/'.$element->handle;
 	}
 
 	/**
