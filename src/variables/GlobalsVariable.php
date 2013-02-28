@@ -39,6 +39,16 @@ class GlobalsVariable
 	}
 
 	/**
+	 * Gets the total number of global sets that are editable by the current user.
+	 *
+	 * @return int
+	 */
+	public function getTotalEditableSets()
+	{
+		return craft()->globals->getTotalEditableSets();
+	}
+
+	/**
 	 * Gets a global set by its ID.
 	 *
 	 * @param int $id
