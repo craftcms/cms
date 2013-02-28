@@ -20,27 +20,13 @@ Craft.Installer = Garnish.Base.extend({
 	{
 		this.$screens = Garnish.$bod.children('.modal');
 
-		setTimeout($.proxy(this, 'showWelcomeScreen'), 500);
-	},
-
-	showWelcomeScreen: function()
-	{
-		this.$currentScreen = $(this.$screens[0])
-			.removeClass('scaleddown')
-			.animate({opacity: 1}, 'fast', $.proxy(function() {
-				this.addListener($('#getstartedbtn'), 'activate', 'showAccountScreen');
-
-				// Give the License Key input focus after half a second
-				this.focusFirstInput();
-
-				// Get ready for form submit
-				this.addListener($('#getstartedbtn'), 'activate', 'validateLicenseKey');
-			}, this));
+		this.addListener($('#beginbtn'), 'activate', 'showAccountScreen');
 	},
 
 	showAccountScreen: function(event)
 	{
 		this.showScreen(1, $.proxy(function() {
+			$('#beginbtn').remove();
 			this.$accountSubmitBtn = $('#accountsubmit');
 			this.addListener(this.$accountSubmitBtn, 'activate', 'validateAccount');
 			this.addListener($('#accountform'), 'submit', 'validateAccount');
@@ -160,20 +146,22 @@ Craft.Installer = Garnish.Base.extend({
 		var windowWidth = Garnish.$win.width(),
 			centeredLeftPos = Math.floor(windowWidth / 2);
 
-		this.$currentScreen
-			.css('left', centeredLeftPos)
-			.animate({
-				left: -730,
-				opacity: 0
-			});
+		if (this.$currentScreen)
+		{
+			this.$currentScreen
+				.css('left', centeredLeftPos)
+				.animate({
+					left: -730
+				}, 'fast');
+		}
 
 		// Slide in the new screen
-		this.$currentScreen = $(this.$screens[i])
+		this.$currentScreen = $(this.$screens[i-1])
 			.css({
 				display: 'block',
 				left: windowWidth + 370
 			})
-			.animate({left: centeredLeftPos}, $.proxy(function() {
+			.animate({left: centeredLeftPos}, 'fast', $.proxy(function() {
 				// Relax the screen
 				this.$currentScreen.css('left', '50%');
 
@@ -251,7 +239,7 @@ Craft.Installer = Garnish.Base.extend({
 	{
 		setTimeout($.proxy(function() {
 			this.$currentScreen.find('input:first').focus();
-		}, this), 400);
+		}, this), 300);
 	}
 
 });
