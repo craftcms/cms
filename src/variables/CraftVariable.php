@@ -186,11 +186,11 @@ class CraftVariable
 	}
 
 	/**
-	 * @return SingletonsVariable
+	 * @return GlobalsVariable
 	 */
-	public function singletons()
+	public function globals()
 	{
-		return new SingletonsVariable();
+		return new GlobalsVariable();
 	}
 
 	/**

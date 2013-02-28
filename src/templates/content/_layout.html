@@ -1,11 +1,9 @@
 {% extends "_layouts/cp" %}
 {% set title = "Content"|t %}
 
-{% set showSingletons = craft.singletons.getEditableSingletons()|length %}
-{% set showGlobals = (user.can('editGlobals') and craft.fields.getLayoutByType('Globals').getFields()|length) %}
+{% set showGlobals = craft.globals.getEditableSets()|length %}
 
 {% set tabs = {
 	entries: { label: "Entries"|t, url: url('content') },
-	singletons: (showSingletons ? { label: "Singletons"|t, url: url('content/singletons') } : null),
 	globals: (showGlobals ? { label: "Globals"|t, url: url('content/globals') } : null)
 } %}

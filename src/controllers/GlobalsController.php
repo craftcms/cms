@@ -2,60 +2,93 @@
 namespace Craft;
 
 /**
- * Globals controller class
+ * Handles global set management tasks
  */
 class GlobalsController extends BaseController
 {
 	/**
-	 * Saves the global field layout.
+	 * Saves a global set.
 	 */
-	public function actionSaveFieldLayout()
+	public function actionSaveSet()
 	{
 		$this->requirePostRequest();
-		craft()->userSession->requireAdmin();
+
+		$globalSet = new GlobalSetModel();
+
+		// Set the simple stuff
+		$globalSet->id     = craft()->request->getPost('setId');
+		$globalSet->name   = craft()->request->getPost('name');
+		$globalSet->handle = craft()->request->getPost('handle');
 
 		// Set the field layout
 		$fieldLayout = craft()->fields->assembleLayoutFromPost(false);
-		$fieldLayout->type = ElementType::Globals;
-		craft()->fields->deleteLayoutsByType(ElementType::Globals);
+		$fieldLayout->type = ElementType::GlobalSet;
+		$globalSet->setFieldLayout($fieldLayout);
 
-		if (craft()->fields->saveLayout($fieldLayout, false))
+		// Save it
+		if (craft()->globals->saveSet($globalSet))
 		{
-			craft()->userSession->setNotice(Craft::t('Global fields saved.'));
-			$this->redirectToPostedUrl();
+			craft()->userSession->setNotice(Craft::t('Global set saved.'));
+
+			$this->redirectToPostedUrl(array(
+				'setId' => $globalSet->id
+			));
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save global fields.'));
+			craft()->userSession->setError(Craft::t('Couldn’t save global set.'));
 		}
 
-		$this->renderRequestedTemplate();
+		// Reload the original template
+		$this->renderRequestedTemplate(array(
+			'globalSet' => $globalSet
+		));
 	}
 
 	/**
-	 * Saves the global fields.
+	 * Deletes a global set.
+	 */
+	public function actionDeleteSet()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$globalSetId = craft()->request->getRequiredPost('id');
+
+		craft()->elements->deleteElementById($globalSetId);
+		$this->returnJson(array('success' => true));
+	}
+
+	/**
+	 * Saves a global set's content.
 	 */
 	public function actionSaveContent()
 	{
 		$this->requirePostRequest();
-		craft()->userSession->requirePermission('editGlobals');
 
-		$content = craft()->globals->getGlobalContent();
-		$content->setContent(craft()->request->getPost('fields'));
+		$globalSetId = craft()->request->getRequiredPost('setId');
+		$globalSet = craft()->globals->getSetById($globalSetId);
 
-		if (craft()->globals->saveGlobalContent($content))
+		if (!$globalSet)
 		{
-			craft()->userSession->setNotice(Craft::t('Global fields saved.'));
+			throw new Exception(Craft::t('No global set exists with the ID “{id}”.', array('id' => $globalSetId)));
+		}
 
+		$fields = craft()->request->getPost('fields', array());
+		$globalSet->setContent($fields);
+
+		if (craft()->globals->saveContent($globalSet))
+		{
+			craft()->userSession->setNotice(Craft::t('Globals saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save global fields.'));
-
-			$this->renderRequestedTemplate(array(
-				'globals' => $content,
-			));
+			craft()->userSession->setError(Craft::t('Couldn’t save globals.'));
 		}
+
+		$this->renderRequestedTemplate(array(
+			'globalSet' => $globalSet,
+		));
 	}
 }

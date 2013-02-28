@@ -360,9 +360,9 @@ class m130222_000000_the_big_migration extends BaseMigration
 		$elementTypes = array(
 			//'Entry'       => ElementType::Entry,
 			//'Asset'       => ElementType::Asset,
-			'Page'        => ElementType::Singleton,
+			'Page'        => 'Singleton',
 			'UserProfile' => ElementType::User,
-			'Global'      => ElementType::Globals,
+			'Global'      => 'Globals',
 		);
 
 		foreach ($elementTypes as $entityType => $elementType)
@@ -411,7 +411,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 	private function _migrateSingletons()
 	{
 		// Make singletons elemental
-		$this->_makeElemental('pages', ElementType::Singleton);
+		$this->_makeElemental('pages', 'Singleton');
 
 		// Modify the columns
 		$this->renameColumn('pages', 'title', 'name');
@@ -439,7 +439,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 		{
 			// Migrate the fields
 			$fields = $this->_migrateFields('Singletons - '.$singleton['name'], 'pageblocks', array('pageId' => $singleton['id']));
-			$fieldLayoutId = $this->_saveFieldLayout(ElementType::Singleton, $fields, 'Content');
+			$fieldLayoutId = $this->_saveFieldLayout('Singleton', $fields, 'Content');
 			$this->update('pages', array('fieldLayoutId' => $fieldLayoutId), array('id' => $singleton['id']));
 
 			// Queue up the new data
@@ -745,8 +745,8 @@ class m130222_000000_the_big_migration extends BaseMigration
 		//--------------------
 
 		// Migrate the fields
-		$fields = $this->_migrateFields(ElementType::Globals, 'globalblocks');
-		$this->_saveFieldLayout(ElementType::Globals, $fields);
+		$fields = $this->_migrateFields('Globals', 'globalblocks');
+		$this->_saveFieldLayout('Globals', $fields);
 
 		$oldContent = craft()->db->createCommand()->from('globalcontent')->where(array('language' => $this->_primaryLocale))->queryRow();
 
@@ -754,7 +754,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 		{
 			// Create the new Globals element
 			$this->insert('elements', array(
-				'type'     => ElementType::Globals,
+				'type'     => 'Globals',
 				'enabled'  => 1
 			));
 
@@ -786,7 +786,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 			// Update the Links table
 			//-----------------------
 
-			$linkCriteriaIds = craft()->db->createCommand()->select('id')->where(array('leftElementType' => ElementType::Globals))->from('linkcriteria')->queryColumn();
+			$linkCriteriaIds = craft()->db->createCommand()->select('id')->where(array('leftElementType' => 'Globals'))->from('linkcriteria')->queryColumn();
 
 			if ($linkCriteriaIds)
 			{
@@ -1107,7 +1107,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 				$this->update($fk->table->name, array($fk->column => $elementId), array($fk->column.'_old' => $row['id_old']));
 			}
 
-			if ($elementType == ElementType::Singleton)
+			if ($elementType == 'Singleton')
 			{
 				// Update singleton permissions
 				craft()->db->createCommand()->update('userpermissions',
