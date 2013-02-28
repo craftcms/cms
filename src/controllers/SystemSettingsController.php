@@ -7,6 +7,15 @@ namespace Craft;
 class SystemSettingsController extends BaseController
 {
 	/**
+	 * Init
+	 */
+	public function init()
+	{
+		// All System Settings actions require an admin
+		craft()->userSession->requireAdmin();
+	}
+
+	/**
 	 * Saves the general settings.
 	 */
 	public function actionSaveGeneralSettings()
