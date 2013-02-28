@@ -1,6 +1,10 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 {% set title = "General Settings"|t %}
+{% includeJsResource 'js/generalsettings.js' %}
+{% includeTranslations
+	"A new license key could not be generated for you at this time."
+%}
 
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
@@ -17,7 +21,7 @@
 			label: "System Status"|t,
 			id: 'on',
 			name: 'isSystemOn',
-			on: (post is defined ? post.on : craft.app.isSystemOn),
+			on: (generalSettings is defined ? generalSettings.on : craft.app.isSystemOn),
 			onLabel: "On"|t,
 			offLabel: "Off"|t
 		}) }}
@@ -26,30 +30,58 @@
 			label: "Site Name"|t,
 			id: 'siteName',
 			name: 'siteName',
-			value: (post is defined ? post.siteName : craft.app.siteName),
+			value: (generalSettings is defined ? generalSettings.siteName : craft.app.siteName),
 			autofocus: true,
 			required: true,
-			errors: (post is defined ? post.getErrors('siteName') : null)
+			errors: (generalSettings is defined ? generalSettings.getErrors('siteName') : null)
 		}) }}
 
 		{{ forms.textField({
 			label: "Site URL"|t,
 			id: 'siteUrl',
 			name: 'siteUrl',
-			value: (post is defined ? post.siteUrl : craft.app.siteUrl),
+			value: (generalSettings is defined ? generalSettings.siteUrl : craft.app.siteUrl),
 			required: true,
-			errors: (post is defined ? post.getErrors('siteUrl') : null)
+			errors: (generalSettings is defined ? generalSettings.getErrors('siteUrl') : null)
 		}) }}
 
-		{{ forms.textField({
+		<div class="buttons">
+			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+
+	<hr>
+
+	<form method="post" action="" accept-charset="UTF-8">
+		<input type="hidden" name="action" value="systemSettings/saveLicenseKey">
+		<input type="hidden" name="redirect" value="settings">
+
+		{% set licenseKeyInput %}
+			<table width="100%" cellspacing="0" cellpadding="0" border="0">
+				<tr>
+					<td>
+						{{ forms.text({
+							id: 'licenseKey',
+							class: 'code',
+							name: 'licenseKey',
+							value: (licenseKey is defined ? licenseKey.licenseKey : craft.app.licenseKey),
+							errors: (licenseKey is defined ? licenseKey.getErrors('licenseKey') : null)
+						}) }}
+					</td>
+					<td style="width: 0.1%; padding-left: 15px;">
+						<div id="newkeybtn" class="btn">{{ "Get a new key"|t }}</div>
+					</td>
+				</tr>
+			</table>
+			<div id="licensekeyspinner" class="spinner hidden" style="position: absolute; bottom: 1px; right: -26px;"></div>
+		{% endset %}
+
+		{{ forms.field({
 			label: "License Key"|t,
 			id: 'licenseKey',
-			class: 'code',
-			name: 'licenseKey',
-			value: (post is defined ? post.licenseKey : craft.app.licenseKey),
 			required: true,
-			errors: (post is defined ? post.getErrors('licenseKey') : null)
-		}) }}
+			errors: (licenseKey is defined ? licenseKey.getErrors('licenseKey') : null)
+		}, licenseKeyInput) }}
 
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
@@ -80,3 +112,12 @@
 	{% endif %}
 
 {% endset %}
+
+
+{% set js %}
+	new Craft.LicenseKeyForm({
+		email: "{{ user.email|e('js') }}"
+	});
+{% endset %}
+
+{% includeJs js %}

@@ -17,7 +17,6 @@ class SystemSettingsController extends BaseController
 		$generalSettingsModel->on         = (bool) craft()->request->getPost('isSystemOn');
 		$generalSettingsModel->siteName   = craft()->request->getPost('siteName');
 		$generalSettingsModel->siteUrl    = craft()->request->getPost('siteUrl');
-		$generalSettingsModel->licenseKey = craft()->request->getPost('licenseKey');
 
 		if ($generalSettingsModel->validate())
 		{
@@ -25,7 +24,6 @@ class SystemSettingsController extends BaseController
 			$info->on = $generalSettingsModel->on;
 			$info->siteName = $generalSettingsModel->siteName;
 			$info->siteUrl = $generalSettingsModel->siteUrl;
-			$info->licenseKey = $generalSettingsModel->licenseKey;
 			$info->save();
 
 			craft()->userSession->setNotice(Craft::t('General settings saved.'));
@@ -36,7 +34,7 @@ class SystemSettingsController extends BaseController
 			craft()->userSession->setError(Craft::t('Couldn’t save general settings.'));
 
 			$this->renderRequestedTemplate(array(
-				'post' => $generalSettingsModel
+				'generalSettings' => $generalSettingsModel
 			));
 		}
 	}
@@ -50,16 +48,35 @@ class SystemSettingsController extends BaseController
 
 		$info = InfoRecord::model()->find();
 		$info->licenseKey = craft()->request->getPost('licenseKey');
-		$info->save();
 
-		if (craft()->request->isAjaxRequest())
+		if ($info->save())
 		{
-			$this->returnJson(array('success' => true));
+			if (craft()->request->isAjaxRequest())
+			{
+				$this->returnJson(array('success' => true));
+			}
+			else
+			{
+				craft()->userSession->setNotice(Craft::t('License key saved.'));
+				$this->redirectToPostedUrl();
+			}
 		}
 		else
 		{
-			craft()->userSession->setNotice(Craft::t('General settings saved.'));
-			$this->redirectToPostedUrl();
+			if (craft()->request->isAjaxRequest())
+			{
+				$this->returnJson(array(
+					'errors' => $info->getErrors()
+				));
+			}
+			else
+			{
+				craft()->userSession->setError(Craft::t('Couldn’t save new license key.'));
+
+				$this->renderRequestedTemplate(array(
+					'licenseKey' => $info
+				));
+			}
 		}
 	}
 
