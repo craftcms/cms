@@ -811,6 +811,8 @@ class AssetsService extends BaseApplicationComponent
 
 		$results = array();
 
+		$response = new AssetOperationResponseModel();
+
 		foreach ($fileIds as $i => $fileId)
 		{
 			$file = $this->getFileById($fileId);
@@ -836,16 +838,46 @@ class AssetsService extends BaseApplicationComponent
 
 			if ($originalSourceType && $newSourceType)
 			{
-				if ( !$result = $newSourceType->moveFileInsideSource($originalSourceType, $file, $folderId, $filename, $actions[$i]))
+				if ( !$response = $newSourceType->moveFileInsideSource($originalSourceType, $file, $folder, $filename, $actions[$i]))
 				{
-					$this->_moveFileBetweenSources($originalSourceType, $newSourceType, $file, $folderId, $actions[$i]);
+					$response = $this->_moveFileBetweenSources($originalSourceType, $newSourceType, $file, $folder, $actions[$i]);
 				}
 			}
 			else
 			{
-				throw new Exception(Craft::t("There was an error moving the file {file}.", array('file' => $file->filename)));
+				$response->setError(Craft::t("There was an error moving the file {file}.", array('file' => $file->filename)));
 			}
 		}
+
+		return $response;
+	}
+
+	/**
+	 * Move a file between sources.
+	 *
+	 * @param BaseAssetSourceType $originalSource
+	 * @param BaseAssetSourceType $newSource
+	 * @param AssetFileModel $file
+	 * @param AssetFolderModel $folder
+	 * @param string $action
+	 * @return AssetOperationResponseModel
+	 */
+	private function _moveFileBetweenSources(BaseAssetSourceType $originalSource, BaseAssetSourceType $newSource, AssetFileModel $file, AssetFolderModel $folder, $action = '')
+	{
+		$localCopy = $originalSource->getLocalCopy($file);
+		$response = $newSource->transferFileIntoSource($localCopy, $folder, $file, $action);
+		if ($response->isSuccess())
+		{
+			$originalSource->deleteFile($file);
+			if ($file->kind == "image")
+			{
+				craft()->assetTransformations->updateTransformations($file, array_keys(craft()->assetTransformations->getAssetTransformations()));
+			}
+		}
+
+		IOHelper::deleteFile($localCopy);
+
+		return $response;
 	}
 
 	/**

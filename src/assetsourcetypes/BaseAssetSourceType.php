@@ -85,7 +85,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param AssetFileModel $file
 	 * @return mixed
 	 */
-	abstract protected function _getLocalCopy(AssetFileModel $file);
+	abstract public function getLocalCopy(AssetFileModel $file);
 
 	/**
 	 * Delete just the file inside of a source for an Assets File.
@@ -101,7 +101,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param AssetFolderModel $targetFolder
 	 * @param string $fileName
 	 * @param string $userResponse Conflict resolution response
-	 * @return mixed
+	 * @return AssetOperationResponseModel
 	 */
 	abstract protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $userResponse = '');
 
@@ -273,21 +273,103 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	}
 
 	/**
+	 * Transfer a file into the source.
+	 *
+	 * @param string $localCopy
+	 * @param AssetFolderModel $folder
+	 * @param AssetFileModel $file
+	 * @param $action
+	 * @return AssetOperationResponseModel
+	 */
+	public function transferFileIntoSource($localCopy, AssetFolderModel $folder, AssetFileModel $file, $action)
+	{
+		$filename = IOHelper::cleanFilename($file->filename);
+
+		if (!empty($action))
+		{
+			switch ($action)
+			{
+				case AssetsHelper::ActionReplace:
+				{
+					$fileToDelete = craft()->assets->findFile(array('folderId' => $folder->id, 'filename' => $filename));
+					$this->deleteFile($fileToDelete);
+					break;
+				}
+
+				case AssetsHelper::ActionKeepBoth:
+				{
+					$filename = $this->_getNameReplacement($folder, $filename);
+					break;
+				}
+			}
+		}
+
+		$response = $this->_insertFileInFolder($folder, $localCopy, $filename);
+		if ($response->isSuccess())
+		{
+			$file->folderId = $folder->id;
+			$file->filename = $filename;
+			$file->sourceId = $folder->sourceId;
+			craft()->assets->storeFile($file);
+		}
+
+		return $response;
+	}
+
+	/**
 	 * Move file from one path to another if it's possible. Return false on failure.
 	 *
 	 * @param BaseAssetSourceType $originalSource
-	 * @param $file
-	 * @param $folderId
+	 * @param AssetFileModel $file
+	 * @param AssetFolderModel $targetFolder
 	 * @param $filename
 	 * @param $action
-	 * @return bool
+	 * @return bool|AssetOperationResponseModel
 	 */
-	public function moveFileInsideSource(BaseAssetSourceType $originalSource, $file, $folderId, $filename, $action)
+	public function moveFileInsideSource(BaseAssetSourceType $originalSource, AssetFileModel $file, AssetFolderModel $targetFolder, $filename, $action = '')
 	{
 		if (!$this->canMoveFileFrom($originalSource))
 		{
 			return false;
 		}
+
+		if ($file->folderId == $targetFolder->id && $filename == $file->filename)
+		{
+			$response = new AssetOperationResponseModel();
+			$response->setSuccess();
+			return $response;
+		}
+
+		// If this is a revisited conflict, perform the appropriate actions
+		if (!empty($action))
+		{
+			switch ($action)
+			{
+				case AssetsHelper::ActionReplace:
+				{
+					$fileToDelete = craft()->assets->findFile(array('folderId' => $targetFolder->id, 'filename' => $filename));
+					$this->deleteFile($fileToDelete);
+					break;
+				}
+
+				case AssetsHelper::ActionKeepBoth:
+				{
+					$filename = $this->_getNameReplacement($targetFolder, $filename);
+					break;
+				}
+			}
+		}
+
+		$response = $this->_moveSourceFile($file, $targetFolder, $filename, $action);
+		if ($response->isSuccess())
+		{
+			$file->folderId = $targetFolder->id;
+			$file->filename = $filename;
+			$file->sourceId = $targetFolder->sourceId;
+			craft()->assets->storeFile($file);
+		}
+
+		return $response;
 	}
 
 	/**
@@ -448,7 +530,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			// For remote sources, fetch the source image and move it in the old one's place
 			if (!$this->isSourceLocal())
 			{
-				$localCopy = $this->_getLocalCopy($replaceWith);
+				$localCopy = $this->getLocalCopy($replaceWith);
 				IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$oldFile->id.'.'.pathinfo($oldFile, PATHINFO_EXTENSION));
 				IOHelper::deleteFile($localCopy);
 			}

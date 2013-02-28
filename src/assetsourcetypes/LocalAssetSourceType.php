@@ -349,7 +349,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * @return mixed
 	 */
 
-	protected function _getLocalCopy(AssetFileModel $file)
+	public function getLocalCopy(AssetFileModel $file)
 	{
 		$location = AssetsHelper::getTempFilePath();
 		IOHelper::copyFile($this->_getFileSystemPath($file), $location);
@@ -506,5 +506,17 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		return IOHelper::deleteFolder($this->_getSourceFileSystemPath().$folder->fullPath);
 	}
+
+	/**
+	 * Determines if a file can be moved internally from original source.
+	 *
+	 * @param BaseAssetSourceType $originalSource
+	 * @return mixed
+	 */
+	protected function canMoveFileFrom(BaseAssetSourceType $originalSource)
+	{
+		return $originalSource->isSourceLocal();
+	}
+
 
 }

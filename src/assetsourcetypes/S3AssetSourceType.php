@@ -407,7 +407,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * @return mixed
 	 */
 
-	protected function _getLocalCopy(AssetFileModel $file)
+	public function getLocalCopy(AssetFileModel $file)
 	{
 		$location = AssetsHelper::getTempFilePath();
 
@@ -608,6 +608,27 @@ class S3AssetSourceType extends BaseAssetSourceType
 		}
 
 		return true;
+	}
+
+	/**
+	 * Determines if a file can be moved internally from original source.
+	 *
+	 * @param BaseAssetSourceType $originalSource
+	 * @return mixed
+	 */
+	protected function canMoveFileFrom(BaseAssetSourceType $originalSource)
+	{
+		if ($this->model->type == $originalSource->model->type)
+		{
+			$settings = $originalSource->getSettings();
+			$theseSettings = $this->getSettings();
+			if ($settings->keyId == $theseSettings->keyId && $settings->secret == $theseSettings->secret)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 
