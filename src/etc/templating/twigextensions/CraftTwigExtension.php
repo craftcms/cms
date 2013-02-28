@@ -153,8 +153,8 @@ class CraftTwigExtension extends \Twig_Extension
 			{
 				$globals['user'] = craft()->userSession->getUser();
 
-				// TODO: Deprecate after next breakpoint
-				if (Craft::getStoredBuild() >= 2168)
+				// TODO: Deprecate the build conditional after the next breakpoint
+				if (craft()->request->isSiteRequest() && Craft::getStoredBuild() >= 2168)
 				{
 					foreach (craft()->globals->getAllSets() as $globalSet)
 					{

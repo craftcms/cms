@@ -1,9 +1,0 @@
-{% extends "_layouts/cp" %}
-{% set title = "Content"|t %}
-
-{% set showGlobals = craft.globals.getEditableSets()|length %}
-
-{% set tabs = {
-	entries: { label: "Entries"|t, url: url('content') },
-	globals: (showGlobals ? { label: "Globals"|t, url: url('content/globals') } : null)
-} %}

@@ -6,6 +6,52 @@ namespace Craft;
  */
 class GlobalsService extends BaseApplicationComponent
 {
+	private $_allGlobalSetIds;
+	private $_editableGlobalSetIds;
+	private $_globalSetsById;
+
+	/**
+	 * Returns all of the global set IDs.
+	 *
+	 * @return array
+	 */
+	public function getAllSetIds()
+	{
+		if (!isset($this->_allGlobalSetIds))
+		{
+			$this->_allGlobalSetIds = craft()->db->createCommand()
+				->select('id')
+				->from('globalsets')
+				->queryColumn();
+		}
+
+		return $this->_allGlobalSetIds;
+	}
+
+	/**
+	 * Returns all of the global set IDs that are editable by the current user.
+	 *
+	 * @return array
+	 */
+	public function getEditableSetIds()
+	{
+		if (!isset($this->_editableGlobalSetIds))
+		{
+			$this->_editableGlobalSetIds = array();
+			$allGlobalSetIds = $this->getAllSetIds();
+
+			foreach ($allGlobalSetIds as $globalSetId)
+			{
+				if (craft()->userSession->checkPermission('editGlobalSet'.$globalSetId))
+				{
+					$this->_editableGlobalSetIds[] = $globalSetId;
+				}
+			}
+		}
+
+		return $this->_editableGlobalSetIds;
+	}
+
 	/**
 	 * Gets all global sets.
 	 *
@@ -14,8 +60,30 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	public function getAllSets($indexBy = null)
 	{
-		$globalSetRecords = GlobalSetRecord::model()->with('element', 'element.i18n')->ordered()->findAll();
-		return GlobalSetModel::populateModels($globalSetRecords, $indexBy);
+		if (!isset($this->_globalSetsById))
+		{
+			$globalSetRecords = GlobalSetRecord::model()->with('element', 'element.i18n')->ordered()->findAll();
+			$this->_globalSetsById = GlobalSetModel::populateModels($globalSetRecords, 'id');
+		}
+
+		if ($indexBy == 'id')
+		{
+			$globalSets = $this->_globalSetsById;
+		}
+		else if (!$indexBy)
+		{
+			$globalSets = array_values($this->_globalSetsById);
+		}
+		else
+		{
+			$globalSets = array();
+			foreach ($this->_globalSetsById as $globalSet)
+			{
+				$globalSets[$globalSet->$indexBy] = $globalSet;
+			}
+		}
+
+		return $globalSets;
 	}
 
 	/**
@@ -26,25 +94,28 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	public function getEditableSets($indexBy = null)
 	{
-		$editableSets = array();
-		$allSets = $this->getAllSets();
+		$editableGlobalSetIds = $this->getEditableSetIds();
+		$globalSets = $this->getAllSets('id');
+		$editableGlobalSets = array();
 
-		foreach ($allSets as $globalSet)
+		foreach ($editableGlobalSetIds as $globalSetId)
 		{
-			if (craft()->userSession->checkPermission('editGlobalSet'.$globalSet->id))
+			if (isset($globalSets[$globalSetId]))
 			{
+				$globalSet = $globalSets[$globalSetId];
+
 				if ($indexBy)
 				{
-					$editableSets[$globalSet->$indexBy] = $globalSet;
+					$editableGlobalSets[$globalSet->$indexBy] = $globalSet;
 				}
 				else
 				{
-					$editableSets[] = $globalSet;
+					$editableGlobalSets[] = $globalSet;
 				}
 			}
 		}
 
-		return $editableSets;
+		return $editableGlobalSets;
 	}
 
 	/**
@@ -54,7 +125,17 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	public function getTotalSets()
 	{
-		return GlobalSetRecord::model()->count();
+		return count($this->getAllSetIds());
+	}
+
+	/**
+	 * Gets the total number of global sets that are editable by the current user.
+	 *
+	 * @return int
+	 */
+	public function getTotalEditableSets()
+	{
+		return count($this->getEditableSetIds());
 	}
 
 	/**
@@ -65,12 +146,21 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	public function getSetById($globalSetId)
 	{
-		$globalSetRecord = GlobalSetRecord::model()->with('element')->findById($globalSetId);
-
-		if ($globalSetRecord)
+		if (!isset($this->_globalSetsById) || !array_key_exists($globalSetId, $this->_globalSetsById))
 		{
-			return GlobalSetModel::populateModel($globalSetRecord);
+			$globalSetRecord = GlobalSetRecord::model()->findById($globalSetId);
+
+			if ($globalSetRecord)
+			{
+				$this->_globalSetsById[$globalSetId] = GlobalSetModel::populateModel($globalSetRecord);
+			}
+			else
+			{
+				$this->_globalSetsById[$globalSetId] = null;
+			}
 		}
+
+		return $this->_globalSetsById[$globalSetId];
 	}
 
 	/**

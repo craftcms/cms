@@ -1,5 +1,5 @@
-{% extends "content/_layout" %}
-{% set selectedTab = 'globals' %}
+{% extends "_layouts/cp" %}
+{% set title = "Globals"|t %}
 
 
 {% set globalSets = craft.globals.getEditableSets('handle') %}
@@ -23,7 +23,7 @@
 		<nav>
 			<ul>
 				{% for theGlobalSet in globalSets %}
-					<li><a{% if theGlobalSet.handle == globalSetHandle %} class="sel"{% endif %} href="{{ url('content/globals/'~theGlobalSet.handle) }}">{{ theGlobalSet.name|t }}</a></li>
+					<li><a{% if theGlobalSet.handle == globalSetHandle %} class="sel"{% endif %} href="{{ theGlobalSet.cpEditUrl }}">{{ theGlobalSet.name|t }}</a></li>
 				{% endfor %}
 			</ul>
 		</nav>

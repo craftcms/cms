@@ -14,8 +14,18 @@ class CpVariable
 	public function nav()
 	{
 		$nav['dashboard'] = array('name' => Craft::t('Dashboard'));
-		$nav['content'] = array('name' => Craft::t('Content'));
+
+		if (craft()->sections->getTotalEditableSections())
+		{
+			$nav['entries'] = array('name' => Craft::t('Entries'));
+		}
+
 		$nav['assets'] = array('name' => Craft::t('Assets'));
+
+		if (craft()->globals->getTotalEditableSets())
+		{
+			$nav['globals'] = array('name' => Craft::t('Globals'));
+		}
 
 		if (Craft::hasPackage(CraftPackage::Users) && craft()->userSession->checkPermission('editUsers'))
 		{

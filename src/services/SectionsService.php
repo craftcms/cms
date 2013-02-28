@@ -135,6 +135,26 @@ class SectionsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Gets the total number of sections.
+	 *
+	 * @return int
+	 */
+	public function getTotalSections()
+	{
+		return count($this->getAllSectionIds());
+	}
+
+	/**
+	 * Gets the total number of sections that are editable by the current user.
+	 *
+	 * @return int
+	 */
+	public function getTotalEditableSections()
+	{
+		return count($this->getEditableSectionIds());
+	}
+
+	/**
 	 * Returns a section by its ID.
 	 *
 	 * @param $sectionId
