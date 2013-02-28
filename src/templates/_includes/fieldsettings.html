@@ -52,7 +52,7 @@
 	checked: (field ? field.required : false)
 }) }}
 
-{% if craft.hasPackage('Language') and canBeTranslatable is defined and canBeTranslatable %}
+{% if craft.hasPackage('Localize') and canBeTranslatable is defined and canBeTranslatable %}
 	{{ forms.checkboxField({
 		label: "This field is translatable"|t,
 		name: 'translatable',

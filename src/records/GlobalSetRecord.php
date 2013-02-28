@@ -2,16 +2,16 @@
 namespace Craft;
 
 /**
- *
+ * Field group record class
  */
-class SingletonRecord extends BaseRecord
+class GlobalSetRecord extends BaseRecord
 {
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
-		return 'singletons';
+		return 'globalsets';
 	}
 
 	/**
@@ -20,8 +20,8 @@ class SingletonRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'name'          => AttributeType::Name,
-			'template'      => AttributeType::Template,
+			'name'          => array(AttributeType::Name, 'required' => true),
+			'handle'        => array(AttributeType::Handle, 'maxLength' => 45, 'required' => true),
 			'fieldLayoutId' => AttributeType::Number,
 		);
 	}
@@ -34,7 +34,17 @@ class SingletonRecord extends BaseRecord
 		return array(
 			'element'     => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
 			'fieldLayout' => array(static::BELONGS_TO, 'FieldLayoutRecord', 'onDelete' => static::SET_NULL),
-			'locales'     => array(static::HAS_MANY, 'SingletonLocaleRecord', 'singletonId'),
+		);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function defineIndexes()
+	{
+		return array(
+			array('columns' => array('name'), 'unique' => true),
+			array('columns' => array('handle'), 'unique' => true),
 		);
 	}
 

@@ -47,6 +47,7 @@ class SectionRecord extends BaseRecord
 	public function defineIndexes()
 	{
 		return array(
+			array('columns' => array('name'), 'unique' => true),
 			array('columns' => array('handle'), 'unique' => true),
 		);
 	}

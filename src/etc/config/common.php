@@ -111,10 +111,9 @@ $configArray = array(
 
 $cpRoutes['content']                                                          = 'content/entries/index';
 
-$cpRoutes['content\/singletons']                                              = 'content/singletons';
-$cpRoutes['content\/singletons\/(?P<singletonId>\d+)']                        = 'content/singletons/_edit';
-
 $cpRoutes['content\/globals']                                                 = 'content/globals';
+$cpRoutes['content\/globals\/(?P<globalSetHandle>{handle})']                  = 'content/globals';
+
 $cpRoutes['content\/(?P<sectionHandle>{handle})\/new']                        = 'content/entries/_edit';
 $cpRoutes['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)']           = 'content/entries/_edit';
 $cpRoutes['content\/(?P<filter>{handle})']                                    = 'content/entries/index';
@@ -135,14 +134,14 @@ $cpRoutes['settings\/fields\/edit\/(?P<fieldId>\d+)']                         = 
 $cpRoutes['settings\/plugins\/(?P<pluginClass>{handle})']                     = 'settings/plugins/_settings';
 $cpRoutes['settings\/sections\/new']                                          = 'settings/sections/_edit';
 $cpRoutes['settings\/sections\/(?P<sectionId>\d+)']                           = 'settings/sections/_edit';
-$cpRoutes['settings\/singletons\/new']                                        = 'settings/singletons/_edit';
-$cpRoutes['settings\/singletons\/(?P<singletonId>\d+)']                       = 'settings/singletons/_edit';
+$cpRoutes['settings\/globals\/new']                                           = 'settings/globals/_edit';
+$cpRoutes['settings\/globals\/(?P<globalSetId>\d+)']                          = 'settings/globals/_edit';
 
 $cpRoutes['myaccount']                                                        = 'users/_edit/account';
 
 // Lanugage package routes
-$cpRoutes['pkgRoutes']['Language']['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/(?P<localeId>\w+)'] = 'content/entries/_edit';
-$cpRoutes['pkgRoutes']['Language']['content\/(?P<sectionHandle>{handle})\/new\/(?P<localeId>\w+)']              = 'content/entries/_edit';
+$cpRoutes['pkgRoutes']['Localize']['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/(?P<localeId>\w+)'] = 'content/entries/_edit';
+$cpRoutes['pkgRoutes']['Localize']['content\/(?P<sectionHandle>{handle})\/new\/(?P<localeId>\w+)']              = 'content/entries/_edit';
 
 // Publish Pro package routes
 $cpRoutes['pkgRoutes']['PublishPro']['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/drafts\/(?P<draftId>\d+)']     = 'content/entries/_edit';
@@ -187,7 +186,6 @@ $components['links']['class']                = 'Craft\LinksService';
 $components['migrations']['class']           = 'Craft\MigrationsService';
 $components['path']['class']                 = 'Craft\PathService';
 $components['sections']['class']             = 'Craft\SectionsService';
-$components['singletons']['class']           = 'Craft\SingletonsService';
 
 $components['resources']['class']            = 'Craft\ResourcesService';
 $components['resources']['dateParam']        = 'd';

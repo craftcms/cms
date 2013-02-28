@@ -14,7 +14,7 @@ return array(
 /**
  * Determines whether the system is in dev mode or not.
  */
-'devMode' => true,
+'devMode' => false,
 
 /**
  * The URL segment to trigger a CP request.

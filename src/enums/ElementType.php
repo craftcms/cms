@@ -8,7 +8,6 @@ class ElementType
 {
 	const Asset     = 'Asset';
 	const Entry     = 'Entry';
-	const Globals   = 'Globals';
-	const Singleton = 'Singleton';
+	const GlobalSet = 'GlobalSet';
 	const User      = 'User';
 }

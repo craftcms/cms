@@ -56,4 +56,15 @@ class LocalizationVariable
 	{
 		return craft()->i18n->getPrimarySiteLocale();
 	}
+
+	/**
+	 * Returns the localization data for a given locale.
+	 *
+	 * @param $localeId
+	 * @return \CLocale|null
+	 */
+	public function getLocaleData($localeId = null)
+	{
+		return craft()->i18n->getLocaleData($localeId);
+	}
 }

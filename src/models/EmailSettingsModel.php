@@ -5,20 +5,28 @@ namespace Craft;
  * EmailSettingsModel class.
  * It is used by the 'saveEmail' action of 'settingsController'.
  */
-class EmailSettingsModel extends \CFormModel
+class EmailSettingsModel extends BaseModel
 {
-	public $protocol;
-	public $host;
-	public $port;
-	public $smtpAuth;
-	public $username;
-	public $password;
-	public $smtpKeepAlive;
-	public $smtpSecureTransportType;
-	public $timeout;
-	public $emailAddress;
-	public $senderName;
-	public $testEmailAddress;
+	/**
+	 * @return array
+	 */
+	public function defineAttributes()
+	{
+		return array(
+			'protocol'                => AttributeType::String,
+			'host'                    => AttributeType::String,
+			'port'                    => AttributeType::String,
+			'smtpAuth'                => AttributeType::String,
+			'username'                => AttributeType::String,
+			'password'                => AttributeType::String,
+			'smtpKeepAlive'           => AttributeType::Bool,
+			'smtpSecureTransportType' => AttributeType::String,
+			'timeout'                 => AttributeType::String,
+			'emailAddress'            => AttributeType::Email,
+			'senderName'              => AttributeType::String,
+			'testEmailAddress'        => AttributeType::Email,
+		);
+	}
 
 	/**
 	 * Declares the validation rules.

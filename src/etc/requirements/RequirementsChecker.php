@@ -80,7 +80,7 @@ class RequirementsChecker extends \CComponent
 				Craft::t('GD extension w/ FreeType support'),
 				extension_loaded('gd'),
 				true,
-				'<a href="http://www.yiiframework.com/doc/api/CCaptchaAction">CCaptchaAction</a>, Assets',
+				'Assets',
 				'<a href="http://php.net/manual/en/book.image.php">GD</a> is required.'
 			),
 			new Requirement(

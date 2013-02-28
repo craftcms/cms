@@ -39,6 +39,9 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 [data-icon]:before,
 [data-icon-after]:after { @include icon; }
 
+.secure:before,
+.insecure:before { margin-top: -3px; font-size: 14px; }
+
 [data-icon]:before { content: attr(data-icon); }
 [data-icon-after]:after { content: attr(data-icon-after); }
 
@@ -103,7 +106,7 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .nowrap { white-space: nowrap; }
 .light { color: #999; font-weight: normal; }
 
-.required:after { content: '*'; margin-top: -2px; font-size: 8px; color: $errorcolor; }
+.required:after { content: '*'; margin: -2px 0 0 2px; font-size: 8px; color: $errorcolor; }
 
 .scrollpane { overflow: auto; }
 
@@ -228,7 +231,8 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btn:hover { text-decoration: none; }
 .disabled { opacity: 0.25; cursor: default; }
 
-.btn:not(.submit):not(.noborder) { border: 1px solid #ddd; padding: 0 10px; line-height: 29px; color: $textcolor; background-color: #fff; }
+.btn:not(.submit):not(.noborder) { border: 1px solid #ddd; padding: 0 10px; color: $textcolor; background-color: #fff; }
+.btn:not(.submit):not(.noborder):not(.small) { line-height: 29px; }
 .btn:not(.submit):not(.noborder):hover { border-color: #ccc; }
 .btn:not(.submit):not(.noborder):active,
 .btn:not(.submit):not(.noborder).active { border-color: #ccc; background-color: #f5f5f5;}
@@ -440,14 +444,14 @@ ul.tree,
 /*  Modals
 /* ----------------------------------------*/
 
-.modal { position: fixed; top: 50%; left: 50%; z-index: 9999; margin-left: -200px; width: 400px; background: #fff; overflow: hidden;
+.modal { position: fixed; top: 50%; left: 50%; z-index: 9999; border-radius: 2px; margin-left: -200px; width: 400px; background: #fff; overflow: hidden;
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 4px 20px -7px rgba(0,0,0,0.5);
 	   -moz-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 4px 20px -7px rgba(0,0,0,0.5);
 }
 
 .modal .header,
-.modal div.body,
 .modal .footer { padding: 15px 30px; }
+.modal div.body { padding: 30px; }
 .modal .header { -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 .modal .header h1 { margin: 0; }
 .modal .footer { -webkit-box-shadow: 0 -1px 2px rgba(0,0,0,0.1); }
@@ -540,7 +544,7 @@ textarea.text,
 .passwordwrapper { position: relative; }
 .passwordwrapper .password { width: 100%; }
 .passwordwrapper .password-toggle { display: block; position: absolute; top: 7px; right: 0; width: 44px; text-align: center; }
-.password { padding-right: 70px; }
+.password { padding-right: 44px; }
 .password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
 .datewrapper { position: relative; width: 210px; }

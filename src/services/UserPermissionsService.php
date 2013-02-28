@@ -75,22 +75,14 @@ class UserPermissionsService extends BaseApplicationComponent
 			$permissions[$label] = $this->_getEntryPermissions($section->id);
 		}
 
-		// Singletons
+		// Global sets
 
-		$singletons = craft()->singletons->getAllSingletons();
+		$globalSets = craft()->globals->getAllSets();
 
-		if ($singletons)
+		if ($globalSets)
 		{
-			$permissions[Craft::t('Singletons')] = $this->_getSingletonPermissions($singletons);
+			$permissions[Craft::t('Global Sets')] = $this->_getGlobalSetPermissions($globalSets);
 		}
-
-		// Globals
-
-		$permissions[Craft::t('Globals')] = array(
-			'editGlobals' => array(
-				'label' => Craft::t('Edit globals')
-			)
-		);
 
 		// Plugins
 
@@ -310,41 +302,20 @@ class UserPermissionsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the singleton permissions.
+	 * Returns the global set permissions.
 	 *
 	 * @access private
-	 * @param array $singletons
+	 * @param array $globalSets
 	 * @return array
 	 */
-	private function _getSingletonPermissions($singletons)
+	private function _getGlobalSetPermissions($globalSets)
 	{
 		$permissions = array();
 
-		foreach ($singletons as $singleton)
+		foreach ($globalSets as $globalSet)
 		{
-			$permissions["editSingleton{$singleton->id}"] = array(
-				'label' => Craft::t('Edit “{title}”', array('title' => $singleton->name))
-			);
-		}
-
-		return $permissions;
-	}
-
-	/**
-	 * Returns the global permissions.
-	 *
-	 * @access private
-	 * @param array $globals
-	 * @return array
-	 */
-	private function _getGlobalPermissions($globals)
-	{
-		$permissions = array();
-
-		foreach ($globals as $global)
-		{
-			$permissions["editGlobal{$global->id}"] = array(
-				'label' => Craft::t('Edit “{name}”', array('name' => Craft::t($global->name)))
+			$permissions["editGlobalSet{$globalSet->id}"] = array(
+				'label' => Craft::t('Edit “{title}”', array('title' => $globalSet->name))
 			);
 		}
 

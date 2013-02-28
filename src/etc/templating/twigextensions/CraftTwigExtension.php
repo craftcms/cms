@@ -151,8 +151,16 @@ class CraftTwigExtension extends \Twig_Extension
 			// TODO: Deprecate after next breakpoint
 			if (Craft::getStoredBuild() > 2157)
 			{
-				$globals['globals'] = craft()->globals->getGlobalContent();
 				$globals['user'] = craft()->userSession->getUser();
+
+				// TODO: Deprecate after next breakpoint
+				if (Craft::getStoredBuild() >= 2168)
+				{
+					foreach (craft()->globals->getAllSets() as $globalSet)
+					{
+						$globals[$globalSet->handle] = $globalSet;
+					}
+				}
 			}
 		}
 

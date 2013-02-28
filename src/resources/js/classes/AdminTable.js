@@ -164,7 +164,7 @@ Craft.AdminTable = Garnish.Base.extend({
 		idAttribute: 'data-id',
 		nameAttribute: 'data-name',
 		sortable: false,
-		allowDeleteAll: false,
+		allowDeleteAll: true,
 		reorderAction: null,
 		deleteAction: null,
 		reorderSuccessMessage: 'New order saved.',

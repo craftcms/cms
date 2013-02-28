@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-Craft::requirePackage(CraftPackage::Language);
+Craft::requirePackage(CraftPackage::Localize);
 
 /**
  * Handles localization actions.
@@ -45,30 +45,5 @@ class LocalizationController extends BaseController
 		$locale = craft()->request->getRequiredPost('id');
 		$success = craft()->i18n->deleteSiteLocale($locale);
 		$this->returnJson(array('success' => $success));
-	}
-
-	/**
-	 * Saves the language settings.
-	 */
-	public function actionSave()
-	{
-		$this->requirePostRequest();
-
-		$languages = craft()->request->getPost('languages', array());
-		sort($languages);
-
-		if (craft()->systemSettings->saveSettings('languages', $languages))
-		{
-			craft()->userSession->setNotice(Craft::t('Language settings saved.'));
-			$this->redirectToPostedUrl();
-		}
-		else
-		{
-			craft()->userSession->setError(Craft::t('Couldn’t save language settings.'));
-		}
-
-		$this->renderRequestedTemplate(array(
-			'selectedLanguages' => $languages
-		));
 	}
 }

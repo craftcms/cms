@@ -650,10 +650,18 @@ Garnish.Base = Base.extend({
 		return events.join(' ');
 	},
 
-	addListener: function(elem, events, func)
+	addListener: function(elem, events, data, func)
 	{
 		var $elem = $(elem);
 		events = this._formatEvents(events);
+
+		// Param mapping
+		if (typeof data != 'object')
+		{
+			// (elem, events, func)
+			func = data;
+			data = {};
+		}
 
 		if (typeof func == 'function')
 		{
@@ -664,7 +672,7 @@ Garnish.Base = Base.extend({
 			func = $.proxy(this, func);
 		}
 
-		$elem.on(events, func);
+		$elem.on(events, data, func);
 
 		// Remember that we're listening to this element
 		this._$listeners = this._$listeners.add(elem);
@@ -3391,7 +3399,6 @@ Garnish.PasswordInput = Garnish.Base.extend({
 
 	$showPasswordToggle: null,
 	showingPassword: null,
-	showingCapsIcon: null,
 
 	init: function(passwordInput)
 	{
@@ -3405,8 +3412,6 @@ Garnish.PasswordInput = Garnish.Base.extend({
 		}
 
 		this.$passwordInput.data('passwordInput', this);
-
-		this.showingCapsIcon = false;
 
 		this.$showPasswordToggle = $('<a/>').hide();
 		this.$showPasswordToggle.addClass('password-toggle');
@@ -3431,8 +3436,6 @@ Garnish.PasswordInput = Garnish.Base.extend({
 
 		this.$currentInput = $input;
 
-		this.addListener(this.$currentInput, 'focus', 'onFocus');
-		this.addListener(this.$currentInput, 'keypress', 'onKeyPress');
 		this.addListener(this.$currentInput, 'keypress,keyup,change,blur', 'onInputChange');
 	},
 
@@ -3447,8 +3450,6 @@ Garnish.PasswordInput = Garnish.Base.extend({
 		{
 			return;
 		}
-
-		this.hideCapsIcon();
 
 		if (!this.$textInput)
 		{
@@ -3489,33 +3490,6 @@ Garnish.PasswordInput = Garnish.Base.extend({
 		}
 	},
 
-	showCapsIcon: function()
-	{
-		if (this.showingCapsIcon)
-		{
-			return;
-		}
-
-		this.$currentInput.addClass('capslock');
-		this.showingCapsIcon = true;
-	},
-
-	hideCapsIcon: function()
-	{
-		if (!this.showingCapsIcon)
-		{
-			return;
-		}
-
-		this.$currentInput.removeClass('capslock');
-		this.showingCapsIcon = false;
-	},
-
-	onFocus: function()
-	{
-		this.hideCapsIcon();
-	},
-
 	onKeyDown: function(ev)
 	{
 		if (ev.keyCode == Garnish.ALT_KEY && this.$currentInput.val())
@@ -3534,29 +3508,6 @@ Garnish.PasswordInput = Garnish.Base.extend({
 		{
 			this.hidePassword();
 			this.$showPasswordToggle.show();
-		}
-	},
-
-	onKeyPress: function(ev)
-	{
-		// No need to show the caps lock indicator if we're showing the password
-		if (this.showingPassword)
-		{
-			return;
-		}
-
-		if (!ev.shiftKey && !ev.metaKey)
-		{
-			var str = String.fromCharCode(ev.which);
-
-			if (str.toUpperCase() === str && str.toLowerCase() !== str)
-			{
-				this.showCapsIcon();
-			}
-			else if (str.toLowerCase() === str && str.toUpperCase() !== str)
-			{
-				this.hideCapsIcon();
-			}
 		}
 	},
 

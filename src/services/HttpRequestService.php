@@ -211,7 +211,7 @@ class HttpRequestService extends \CHttpRequest
 		}
 		else
 		{
-			throw new Exception(Craft::t('Param “{name}” doesn’t exist.', array('name' => $name)));
+			throw new HttpException(400, Craft::t('Param “{name}” doesn’t exist.', array('name' => $name)));
 		}
 	}
 
@@ -232,7 +232,7 @@ class HttpRequestService extends \CHttpRequest
 		}
 		else
 		{
-			throw new Exception(Craft::t('GET param “{name}” doesn’t exist.', array('name' => $name)));
+			throw new HttpException(400, Craft::t('GET param “{name}” doesn’t exist.', array('name' => $name)));
 		}
 	}
 
@@ -253,7 +253,7 @@ class HttpRequestService extends \CHttpRequest
 		}
 		else
 		{
-			throw new Exception(Craft::t('POST param “{name}” doesn’t exist.', array('name' => $name)));
+			throw new HttpException(400, Craft::t('POST param “{name}” doesn’t exist.', array('name' => $name)));
 		}
 	}
 
