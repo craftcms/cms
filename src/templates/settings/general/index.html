@@ -83,6 +83,10 @@
 			errors: (licenseKey is defined ? licenseKey.getErrors('licenseKey') : null)
 		}, licenseKeyInput) }}
 
+		{% if craft.app.licenseKey %}
+			<p><strong class="error">{{ "Warning!"|t }}</strong> {{ "Generating a new key will invalidate any packages that are associated with your current key."|t }}</p>
+		{% endif %}
+
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
 		</div>
