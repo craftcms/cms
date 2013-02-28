@@ -36,6 +36,28 @@ class UserSessionService extends \CWebUser
 	private $_sessionRestoredFromCookie;
 
 	/**
+	 *
+	 */
+	function __construct()
+	{
+		// If the identity cookie is missing we assume it has expired.  We need to kill the PHP session information as early
+		// as possible in the request if the session duration is set to be anything greater than 0.
+		$cookies = craft()->request->getCookies();
+		$cookie = $cookies->itemAt($this->getStateKeyPrefix());
+
+		// If there is no cookie, then assume it has expired
+		if (!$cookie)
+		{
+			// If session duration is set to 0, then the session will be over when the browser is closed.
+			if ($this->_getSessionDuration(false) > 0)
+			{
+				// No soup for you!
+				$this->logout(true);
+			}
+		}
+	}
+
+	/**
 	 * Gets the currently logged-in user.
 	 *
 	 * @return UserModel|null
