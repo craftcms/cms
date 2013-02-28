@@ -311,6 +311,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			$file->filename = $filename;
 			$file->sourceId = $folder->sourceId;
 			craft()->assets->storeFile($file);
+
+			if (!$this->isSourceLocal())
+			{
+				// Store copy locally for all sorts of operations.
+				IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$file->id.'.'.pathinfo($file, PATHINFO_EXTENSION));
+			}
 		}
 
 		return $response;
@@ -572,9 +578,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function deleteFile(AssetFileModel $file)
 	{
-		$this->_deleteSourceFile($file);
-		$this->_deleteGeneratedImageTransformations($file);
-		$this->_deleteGeneratedThumbnails($file);
+		$this->finalizeOutgoingTransfer($file);
+
+		IOHelper::deleteFile(craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename));
 
 		craft()->assets->deleteFileRecord($file->id);
 
@@ -582,6 +588,18 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$response->setSuccess();
 
 		return $response;
+	}
+
+	/**
+	 * Finalize an outgoing transfer for a file.
+	 *
+	 * @param AssetFileModel $file
+	 */
+	public function finalizeOutgoingTransfer(AssetFileModel $file)
+	{
+		$this->_deleteGeneratedImageTransformations($file);
+		$this->_deleteGeneratedThumbnails($file);
+		$this->_deleteSourceFile($file);
 	}
 
 	/**

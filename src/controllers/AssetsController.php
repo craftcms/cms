@@ -225,7 +225,7 @@ class AssetsController extends BaseController
 		$fileIds = craft()->request->getRequiredPost('fileId');
 		$folderId = craft()->request->getRequiredPost('folderId');
 		$fileName = craft()->request->getPost('fileName');
-		$actions = craft()->request->getPost('actions');
+		$actions = craft()->request->getPost('action');
 
 		$response = craft()->assets->moveFiles($fileIds, $folderId, $fileName, $actions);
 		$this->returnJson($response->getResponseData());

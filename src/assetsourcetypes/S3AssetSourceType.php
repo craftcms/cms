@@ -439,7 +439,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 		$this->_prepareForRequests();
 		$this->_s3->deleteObject($this->getSettings()->bucket, $this->_getS3Path($file));
-		IOHelper::deleteFile(craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename));
 	}
 
 	/**
@@ -452,12 +451,14 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 		$folder = craft()->assets->getFolderById($file->folderId);
 		$transformations = craft()->assetTransformations->getAssetTransformations();
+		$this->_prepareForRequests();
+
 		$bucket = $this->getSettings()->bucket;
 		$this->_s3->deleteObject($bucket, $this->_getS3Path($file));
 
 		foreach ($transformations as $handle => $transformation)
 		{
-			$this->_s3->deleteObject($bucket, $folder->fullPath.'/_'.$handle.'/'.$file->filename);
+			$this->_s3->deleteObject($bucket, $folder->fullPath.'_'.$handle.'/'.$file->filename);
 		}
 	}
 
@@ -508,7 +509,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 			return $response;
 		}
 
-		$this->_s3->deleteObject($bucket, $file->getFolder()->fullPath.$file->filename);
+		$this->_s3->deleteObject($bucket, $this->_getS3Path($file));
 
 		if ($file->kind == 'image')
 		{

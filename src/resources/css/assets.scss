@@ -10,7 +10,7 @@
 #main .files .open-folder{ -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;}
 
 /*-- manager --*/
-.assets-selected { background: $selcolor; color: #fff; }
+.assets-selected { background: $selcolor; color: #fff !important; }
 .thumb-wrapper { border: 5px solid #fff; background: url(../images/thumb_bg.png) 0 0;
   -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);
   -moz-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);

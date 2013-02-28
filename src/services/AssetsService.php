@@ -809,6 +809,11 @@ class AssetsService extends BaseApplicationComponent
 			$fileIds = array($fileIds);
 		}
 
+		if (!is_array($actions))
+		{
+			$actions = array($actions);
+		}
+
 		$results = array();
 
 		$response = new AssetOperationResponseModel();
@@ -865,17 +870,21 @@ class AssetsService extends BaseApplicationComponent
 	private function _moveFileBetweenSources(BaseAssetSourceType $originalSource, BaseAssetSourceType $newSource, AssetFileModel $file, AssetFolderModel $folder, $action = '')
 	{
 		$localCopy = $originalSource->getLocalCopy($file);
+
+		// File model will be updated in the process, but we need the old data in order to finalize the transfer.
+		$oldFileModel = clone $file;
+
 		$response = $newSource->transferFileIntoSource($localCopy, $folder, $file, $action);
 		if ($response->isSuccess())
 		{
-			$originalSource->deleteFile($file);
+			// Use the previous data to clean up
+			$originalSource->finalizeOutgoingTransfer($oldFileModel);
 			if ($file->kind == "image")
 			{
 				craft()->assetTransformations->updateTransformations($file, array_keys(craft()->assetTransformations->getAssetTransformations()));
 			}
+			IOHelper::deleteFile($localCopy);
 		}
-
-		IOHelper::deleteFile($localCopy);
 
 		return $response;
 	}

@@ -1276,6 +1276,7 @@ class IOHelper
 	 */
 	public static function getFileKind($extension)
 	{
+		$extension = strtolower($extension);
 		$fileKinds = static::getFileKinds();
 		foreach ($fileKinds as $kind => $extensions)
 		{

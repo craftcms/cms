@@ -213,6 +213,213 @@ Assets.FileManager = Garnish.Base.extend({
             this.$searchModeCheckbox.prop('checked', true);
         }
 
+        // ---------------------------------------
+        // Folder dragging
+        // ---------------------------------------
+
+        // ---------------------------------------
+        // File dragging
+        // ---------------------------------------
+        this.fileDrag = new Garnish.DragDrop({
+            activeDropTargetClass: 'sel assets-fm-dragtarget',
+            helperOpacity: 0.5,
+
+            filter: $.proxy(function()
+            {
+                return this.fileSelect.getSelectedItems();
+            }, this),
+
+            helper: $.proxy(function($file)
+            {
+                return this.filesView.getDragHelper($file);
+            }, this),
+
+            dropTargets: $.proxy(function()
+            {
+                var targets = [];
+
+                for (var folderId in this.folders)
+                {
+                    var folder = this.folders[folderId];
+
+                    if (folder.visible)
+                    {
+                        targets.push(folder.$a);
+                    }
+                }
+
+                return targets;
+            }, this),
+
+            onDragStart: $.proxy(function()
+            {
+                this.tempExpandedFolders = [];
+
+                $selectedFolders = this.folderSelect.getSelectedItems();
+                $selectedFolders.removeClass('sel');
+            }, this),
+
+            onDropTargetChange: $.proxy(this, '_onDropTargetChange'),
+
+            onDragStop: $.proxy(function()
+            {
+                if (this.fileDrag.$activeDropTarget)
+                {
+                    // keep it selected
+                    this.fileDrag.$activeDropTarget.addClass('sel');
+
+                    var targetFolderId = this.fileDrag.$activeDropTarget.attr('data-folder');
+
+                    var originalFileIds = [],
+                        newFileNames = [];
+
+
+                    for (var i = 0; i < this.fileDrag.$draggee.length; i++)
+                    {
+                        var originalFileId = this.fileDrag.$draggee[i].getAttribute('data-id'),
+                            fileName = this.fileDrag.$draggee[i].getAttribute('data-fileName');
+
+                        originalFileIds.push(originalFileId);
+                        newFileNames.push(fileName);
+                    }
+
+                    // are any files actually getting moved?
+                    if (originalFileIds.length)
+                    {
+                        this.setAssetsBusy();
+
+                        // for each file to move a separate request
+                        var parameterArray = [];
+                        for (var i = 0; i < originalFileIds.length; i++)
+                        {
+                            parameterArray.push({
+                                fileId: originalFileIds[i],
+                                folderId: targetFolderId,
+                                fileName: newFileNames[i]
+                            });
+                        }
+
+                        // define the callback for when all file moves are complete
+                        var onMoveFinish = $.proxy(function(responseArray)
+                        {
+                            this.promptArray = [];
+
+                            // loop trough all the responses
+                            for (var i = 0; i < responseArray.length; i++)
+                            {
+                                var data = responseArray[i];
+
+                                // push prompt into prompt array
+                                if (data.prompt)
+                                {
+                                    this.promptArray.push(data);
+                                }
+
+                                if (data.error)
+                                {
+                                    alert(data.error);
+                                }
+                            }
+
+                            this.setAssetsAvailable();
+
+                            if (this.promptArray.length > 0)
+                            {
+                                // define callback for completing all prompts
+                                var promptCallback = $.proxy(function(returnData)
+                                {
+                                    this.$folderContainer.html('');
+
+                                    var newParameterArray = [];
+
+                                    // loop trough all returned data and prepare a new request array
+                                    for (var i = 0; i < returnData.length; i++)
+                                    {
+                                        if (returnData[i].choice == 'cancel')
+                                        {
+                                            continue;
+                                        }
+
+                                        // find the matching request parameters for this file and modify them slightly
+                                        for (var ii = 0; ii < parameterArray.length; ii++)
+                                        {
+                                            if (parameterArray[ii].fileName == returnData[i].fileName)
+                                            {
+                                                parameterArray[ii].action = returnData[i].choice;
+                                                newParameterArray.push(parameterArray[ii]);
+                                            }
+                                        }
+                                    }
+
+                                    // nothing to do, carry on
+                                    if (newParameterArray.length == 0)
+                                    {
+                                        this.loadFolderContents();
+                                    }
+                                    else
+                                    {
+                                        // start working
+                                        this.setAssetsBusy();
+
+                                        // move conflicting files again with resolutions now
+                                        this._moveFile(newParameterArray, 0, onMoveFinish);
+                                    }
+                                }, this);
+
+                                this.fileDrag.fadeOutHelpers();
+                                this._showBatchPrompts(this.promptArray, promptCallback);
+
+                            }
+                            else
+                            {
+                                this.fileDrag.fadeOutHelpers();
+                                this.loadFolderContents();
+                            }
+                        }, this);
+
+                        // initiate the file move with the built array, index of 0 and callback to use when done
+                        this._moveFile(parameterArray, 0, onMoveFinish);
+
+                        // skip returning dragees
+                        return;
+                    }
+                }
+                else
+                {
+                    this._collapseExtraExpandedFolders();
+                }
+
+                // re-select the previously selected folders
+                $selectedFolders.addClass('sel');
+
+                this.fileDrag.returnHelpersToDraggees();
+            }, this)
+        });
+
+        this._moveFile = $.proxy(function(parameterArray, parameterIndex, callback)
+        {
+            if (parameterIndex == 0)
+            {
+                this.responseArray = [];
+            }
+
+            Craft.postActionRequest('assets/moveFile', parameterArray[parameterIndex], $.proxy(function(data)
+            {
+                parameterIndex++;
+                this.responseArray.push(data);
+
+                if (parameterIndex >= parameterArray.length)
+                {
+                    callback(this.responseArray);
+                }
+                else
+                {
+                    this._moveFile(parameterArray, parameterIndex, callback);
+                }
+            }, this));
+        }, this);
+
+
 		// ---------------------------------------
 		// Asset events
 		// ---------------------------------------
@@ -429,8 +636,10 @@ Assets.FileManager = Garnish.Base.extend({
 		this.offset = 0;
 		this.nextOffset = 0;
 
-		// TODO Dragging
-		//this.fileDrag.removeAllItems();
+		if (this.settings.mode == 'full')
+        {
+            this.fileDrag.removeAllItems();
+        }
 
 		this._beforeLoadFiles();
 
@@ -566,8 +775,7 @@ Assets.FileManager = Garnish.Base.extend({
 
 		if (this.settings.mode == 'full')
 		{
-			// TODO file dragging
-			//this.fileDrag.addItems($files);
+			this.fileDrag.addItems($files);
 		}
 
 		// double-click handling
@@ -896,6 +1104,25 @@ Assets.FileManager = Garnish.Base.extend({
 
     },
 
+    /**
+     * Collapse Extra Expanded Folders
+     */
+    _collapseExtraExpandedFolders: function(dropTargetFolderId)
+    {
+        clearTimeout(this.expandDropTargetFolderTimeout);
+
+        for (var i = this.tempExpandedFolders.length-1; i >= 0; i--)
+        {
+            var folder = this.tempExpandedFolders[i];
+
+            if (! dropTargetFolderId || !folder.isParent(dropTargetFolderId))
+            {
+                folder.collapse();
+                this.tempExpandedFolders.splice(i, 1);
+            }
+        }
+    },
+
 	/**
 	 * On Selection Change
 	 */
@@ -1084,7 +1311,7 @@ Assets.FileManager = Garnish.Base.extend({
 				userResponse:   parameterArray[parameterIndex].choice
 			};
 
-			$.post(Craft.actionUrl + '/assets/uploadFile', postData, $.proxy(function(data)
+			Craft.postActionRequest('assets/uploadFile', postData, $.proxy(function(data)
 			{
 				++parameterIndex;
 
@@ -1180,7 +1407,7 @@ Assets.FileManager = Garnish.Base.extend({
 		if (itemsToGo)
 		{
 			this.$promptApplyToRemainingContainer.show();
-			this.$promptApplyToRemainingLabel.html(Craft.t('Apply this to the {number} remaining conflicts', {number: itemsToGo}));
+			this.$promptApplyToRemainingLabel.html(' ' + Craft.t('Apply this to the {number} remaining conflicts', {number: itemsToGo}));
 		}
 
 		this.modal.show();
