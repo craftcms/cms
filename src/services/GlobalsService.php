@@ -62,7 +62,7 @@ class GlobalsService extends BaseApplicationComponent
 	{
 		if (!isset($this->_globalSetsById))
 		{
-			$globalSetRecords = GlobalSetRecord::model()->with('element', 'element.i18n')->ordered()->findAll();
+			$globalSetRecords = GlobalSetRecord::model()->with('element')->ordered()->findAll();
 			$this->_globalSetsById = GlobalSetModel::populateModels($globalSetRecords, 'id');
 		}
 
@@ -172,50 +172,75 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	public function saveSet(GlobalSetModel $globalSet)
 	{
-		$globalSetRecord = $this->_getSetRecordById($globalSet->id);
-
-		$isNewSet = $globalSetRecord->isNewRecord();
+		$isNewSet = empty($globalSet->id);
 
 		if (!$isNewSet)
 		{
+			$globalSetRecord = GlobalSetRecord::model()->with('element')->findById($globalSet->id);
+
+			if (!$globalSetRecord)
+			{
+				throw new Exception(Craft::t('No global set exists with the ID “{id}”', array('id' => $globalSet->id)));
+			}
+
 			$oldSet = GlobalSetModel::populateModel($globalSetRecord);
+			$elementRecord = $globalSetRecord->element;
+		}
+		else
+		{
+			$globalSetRecord = new GlobalSetRecord();
+
+			$elementRecord = new ElementRecord();
+			$elementRecord->type = ElementType::GlobalSet;
 		}
 
 		$globalSetRecord->name   = $globalSet->name;
 		$globalSetRecord->handle = $globalSet->handle;
-
 		$globalSetRecord->validate();
 		$globalSet->addErrors($globalSetRecord->getErrors());
 
+		$elementRecord->enabled = $globalSet->enabled;
+		$elementRecord->validate();
+		$globalSet->addErrors($elementRecord->getErrors());
+
 		if (!$globalSet->hasErrors())
 		{
-			if (!$isNewSet && $oldSet->fieldLayoutId)
+			$transaction = craft()->db->beginTransaction();
+			try
 			{
-				// Drop the old field layout
-				craft()->fields->deleteLayoutById($oldSet->fieldLayoutId);
+				if (!$isNewSet && $oldSet->fieldLayoutId)
+				{
+					// Drop the old field layout
+					craft()->fields->deleteLayoutById($oldSet->fieldLayoutId);
+				}
+
+				// Save the new one
+				$fieldLayout = $globalSet->getFieldLayout();
+				craft()->fields->saveLayout($fieldLayout, false);
+
+				// Update the set record/model with the new layout ID
+				$globalSet->fieldLayoutId = $fieldLayout->id;
+				$globalSetRecord->fieldLayoutId = $fieldLayout->id;
+
+				// Save the element record first
+				$elementRecord->save(false);
+
+				// Now that we have an element ID, save it on the other stuff
+				if (!$globalSet->id)
+				{
+					$globalSet->id = $elementRecord->id;
+					$globalSetRecord->id = $globalSet->id;
+				}
+
+				$globalSetRecord->save(false);
+
+				$transaction->commit();
 			}
-
-			// Save the new one
-			$fieldLayout = $globalSet->getFieldLayout();
-			craft()->fields->saveLayout($fieldLayout, false);
-
-			// Update the set record/model with the new layout ID
-			$globalSet->fieldLayoutId = $fieldLayout->id;
-			$globalSetRecord->fieldLayoutId = $fieldLayout->id;
-
-			if ($isNewSet)
+			catch (\Exception $e)
 			{
-				// Create the element record
-				$elementRecord = new ElementRecord();
-				$elementRecord->type = ElementType::GlobalSet;
-				$elementRecord->save();
-
-				// Now that we have the element ID, save it on everything else
-				$globalSet->id = $elementRecord->id;
-				$globalSetRecord->id = $elementRecord->id;
+				$transaction->rollBack();
+				throw $e;
 			}
-
-			$globalSetRecord->save(false);
 
 			return true;
 		}
@@ -234,32 +259,5 @@ class GlobalsService extends BaseApplicationComponent
 	public function saveContent(GlobalSetModel $globalSet)
 	{
 		return craft()->elements->saveElementContent($globalSet, $globalSet->getFieldLayout());
-	}
-
-	/**
-	 * Gets a global set record or creates a new one.
-	 *
-	 * @access private
-	 * @param int $globalSetId
-	 * @throws Exception
-	 * @return GlobalSetRecord
-	 */
-	private function _getSetRecordById($globalSetId = null)
-	{
-		if ($globalSetId)
-		{
-			$globalSetRecord = GlobalSetRecord::model()->with('element')->findById($globalSetId);
-
-			if (!$globalSetRecord)
-			{
-				throw new Exception(Craft::t('No global set exists with the ID “{id}”', array('id' => $globalSetId)));
-			}
-		}
-		else
-		{
-			$globalSetRecord = new GlobalSetRecord();
-		}
-
-		return $globalSetRecord;
 	}
 }
