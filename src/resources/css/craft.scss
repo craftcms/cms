@@ -49,7 +49,7 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 .icon.insecure:before { content: '~'; }
 .icon.add:before { content: '+'; }
 .icon.edit:before { content: '✎'; }
-.icon.settings:before { content: '⚙'; }
+.icon.settings:before { content: '⚙'; margin-top: -2px; }
 
 /* nav */
 .nav { display: block; }
