@@ -231,7 +231,8 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btn:hover { text-decoration: none; }
 .disabled { opacity: 0.25; cursor: default; }
 
-.btn:not(.submit):not(.noborder) { border: 1px solid #ddd; padding: 0 10px; line-height: 29px; color: $textcolor; background-color: #fff; }
+.btn:not(.submit):not(.noborder) { border: 1px solid #ddd; padding: 0 10px; color: $textcolor; background-color: #fff; }
+.btn:not(.submit):not(.noborder):not(.small) { line-height: 29px; }
 .btn:not(.submit):not(.noborder):hover { border-color: #ccc; }
 .btn:not(.submit):not(.noborder):active,
 .btn:not(.submit):not(.noborder).active { border-color: #ccc; background-color: #f5f5f5;}
