@@ -29,6 +29,26 @@ class SectionsVariable
 	}
 
 	/**
+	 * Gets the total number of sections.
+	 *
+	 * @return int
+	 */
+	public function getTotalSections()
+	{
+		return craft()->sections->getTotalSections();
+	}
+
+	/**
+	 * Gets the total number of sections that are editable by the current user.
+	 *
+	 * @return int
+	 */
+	public function getTotalEditableSections()
+	{
+		return craft()->sections->getTotalEditableSections();
+	}
+
+	/**
 	 * Returns a section by its ID.
 	 *
 	 * @param $sectionId
