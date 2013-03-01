@@ -3885,6 +3885,12 @@ Garnish.Select = Garnish.Base.extend({
 			return;
 		}
 
+		// Enfore the filter
+		if (this.settings.filter && !$(ev.target).is(filter))
+		{
+			return;
+		}
+
 		this.mousedownX = ev.pageX;
 		this.mousedownY = ev.pageY;
 
@@ -3912,6 +3918,12 @@ Garnish.Select = Garnish.Base.extend({
 	{
 		// ignore right clicks
 		if (ev.button != Garnish.PRIMARY_CLICK)
+		{
+			return;
+		}
+
+		// Enfore the filter
+		if (this.settings.filter && !$(ev.target).is(filter))
 		{
 			return;
 		}
@@ -4519,6 +4531,7 @@ Garnish.Select = Garnish.Base.extend({
 		waitForDblClick: false,
 		arrowsChangeSelection: true,
 		handle: null,
+		filter: null,
 		onSelectionChange: $.noop
 	},
 

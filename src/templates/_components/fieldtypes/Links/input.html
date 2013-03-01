@@ -11,6 +11,9 @@
 					<tr>
 						<td>
 							<div class="element" data-id="{{ element.id }}">
+								{% if element.getCpEditUrl() %}
+									<a class="edit icon" title="{{ 'Edit'|t }}" href="{{ element.getCpEditUrl() }}" target="_blank"></a>
+								{% endif %}
 								{{ element }}
 								<input type="hidden" name="{{ name }}[]" value="{{ element.id }}">
 							</div>
