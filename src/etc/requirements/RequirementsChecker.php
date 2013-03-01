@@ -148,7 +148,12 @@ class RequirementsChecker extends \CComponent
 	 */
 	private function _calculateServerInfo()
 	{
-		$info[] = '<a href="http://buildwithcraft.com/">@@@appName@@@</a> v'.Craft::getVersion().' '.Craft::t('build').' '.Craft::getBuild(false);
+		$info[] = '<a href="http://buildwithcraft.com/">@@@appName@@@</a> ' .
+			Craft::t('{version} build {build}', array(
+				'version' => CRAFT_VERSION,
+				'build'   => CRAFT_BUILD
+			));
+
 		$info[] = isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : '';
 		$info[] = 'Yii v'.Craft::getYiiVersion();
 		$info[] =  \CTimestamp::formatDate(craft()->locale->getTimeFormat());;

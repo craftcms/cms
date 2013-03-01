@@ -216,8 +216,8 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		$updateModel = new UpdateModel();
 		$updateModel->app = new AppUpdateModel();
-		$updateModel->app->localBuild = Craft::getBuild();
-		$updateModel->app->localVersion = Craft::getVersion();
+		$updateModel->app->localBuild   = CRAFT_BUILD;
+		$updateModel->app->localVersion = CRAFT_VERSION;
 
 		$plugins = craft()->plugins->getPlugins();
 
@@ -524,12 +524,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isCraftDbUpdateNeeded()
 	{
-		if (version_compare(Craft::getBuild(), Craft::getStoredBuild(), '>') || version_compare(Craft::getVersion(), Craft::getStoredVersion(), '>'))
-		{
-			return true;
-		}
-
-		return false;
+		return (CRAFT_BUILD > Craft::getBuild());
 	}
 
 	/**
@@ -543,13 +538,12 @@ class UpdatesService extends BaseApplicationComponent
 		// Only Craft has the concept of a breakpoint, not plugins.
 		if ($this->isCraftDbUpdateNeeded())
 		{
-			if (version_compare(Craft::getStoredBuild(), Craft::getMinRequiredBuild(), '<'))
-			{
-				return true;
-			}
+			return (Craft::getBuild() < Craft::getMinRequiredBuild());
 		}
-
-		return false;
+		else
+		{
+			return false;
+		}
 	}
 
 	/**

@@ -40,68 +40,34 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Returns the Craft version number, as defined by the CRAFT_VERSION constant.
+	 * Returns the Craft version number.
 	 *
 	 * @static
 	 * @return string
 	 */
 	public static function getVersion()
 	{
-		return CRAFT_VERSION;
-	}
-
-	/**
-	 * Returns the Craft version number, as defined in the craft_info table.
-	 *
-	 * @static
-	 * @return string
-	 */
-	public static function getStoredVersion()
-	{
 		return static::getInfo('version');
 	}
 
 	/**
-	 * Returns the Craft build number, as defined by the CRAFT_BUILD constant.
+	 * Returns the Craft build number.
 	 *
 	 * @static
 	 * @return string
 	 */
 	public static function getBuild()
 	{
-		return CRAFT_BUILD;
-	}
-
-	/**
-	 *
-	 * Returns the Craft build number, as defined in the craft_info table.
-	 *
-	 * @static
-	 * @return string
-	 */
-	public static function getStoredBuild()
-	{
 		return static::getInfo('build');
 	}
 
 	/**
-	 * Returns the Craft release date, as defined by the CRAFT_RELEASE_DATE constant.
+	 * Returns the Craft release date.
 	 *
 	 * @static
 	 * @return string
 	 */
 	public static function getReleaseDate()
-	{
-		return CRAFT_RELEASE_DATE;
-	}
-
-	/**
-	 * Returns the Craft release date, as defined in the craft_info table.
-	 *
-	 * @static
-	 * @return string
-	 */
-	public static function getStoredReleaseDate()
 	{
 		return static::getInfo('releaseDate');
 	}

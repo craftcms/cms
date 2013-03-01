@@ -68,7 +68,7 @@ class LocalizationService extends BaseApplicationComponent
 		if (!isset($this->_siteLocales))
 		{
 			// TODO: Deprecate after next breakpoint release.
-			if (Craft::getStoredBuild() > 2157)
+			if (Craft::getBuild() > 2157)
 			{
 				$query = craft()->db->createCommand()
 					->select('locale')

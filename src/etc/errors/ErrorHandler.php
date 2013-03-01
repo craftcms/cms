@@ -57,7 +57,7 @@ class ErrorHandler extends \CErrorHandler
 		if (!craft()->isConsole() && Craft::isInstalled())
 		{
 			// TODO: Deprecate after next breakpoint release.
-			if (Craft::getStoredBuild() > 2157)
+			if (Craft::getBuild() > 2157)
 			{
 				// Set whether the currently logged in user is an admin.
 				if (($currentUser = craft()->userSession->getUser()) !== null)
@@ -544,7 +544,11 @@ class ErrorHandler extends \CErrorHandler
 	{
 		if ($this->_devMode)
 		{
-			$version = '<a href="http://buildwithcraft.com/">@@@appName@@@</a> v'.Craft::getVersion().' '.Craft::t('build').' '.Craft::getBuild();
+			$version = '<a href="http://buildwithcraft.com/">@@@appName@@@</a> ' .
+				Craft::t('{version} build {build}', array(
+					'version' => Craft::getVersion(),
+					'build'   => Craft::getBuild()
+				));
 
 			if (isset($_SERVER['SERVER_SOFTWARE']))
 			{

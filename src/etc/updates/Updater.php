@@ -260,8 +260,8 @@ class Updater
 		if ($handle == 'craft')
 		{
 			// Setting new Craft info.
-			Craft::log('Settings new Craft info in craft_info table.');
-			if (!craft()->updates->setNewCraftInfo(Craft::getVersion(), Craft::getBuild(), Craft::getReleaseDate()))
+			Craft::log('Settings new Craft release info in craft_info table.');
+			if (!craft()->updates->setNewCraftInfo(CRAFT_VERSION, CRAFT_BUILD, CRAFT_RELEASE_DATE))
 			{
 				throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the database info table.'));
 			}

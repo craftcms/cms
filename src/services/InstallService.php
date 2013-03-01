@@ -165,9 +165,9 @@ class InstallService extends BaseApplicationComponent
 		Craft::log('Populating the info table.');
 
 		$info = new InfoModel(array(
-			'version'     => Craft::getVersion(),
-			'build'       => Craft::getBuild(),
-			'releaseDate' => Craft::getReleaseDate(),
+			'version'     => CRAFT_VERSION,
+			'build'       => CRAFT_BUILD,
+			'releaseDate' => CRAFT_RELEASE_DATE,
 			'siteName'    => $inputs['siteName'],
 			'siteUrl'     => $inputs['siteUrl'],
 			'on'          => 1,
