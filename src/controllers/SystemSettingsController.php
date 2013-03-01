@@ -49,44 +49,6 @@ class SystemSettingsController extends BaseController
 	}
 
 	/**
-	 * Saves the license key.
-	 */
-	public function actionSaveLicenseKey()
-	{
-		$this->requirePostRequest();
-
-		if (craft()->systemSettings->saveLicenseKey(craft()->request->getRequiredPost('licenseKey')))
-		{
-			if (craft()->request->isAjaxRequest())
-			{
-				$this->returnJson(array('success' => true));
-			}
-			else
-			{
-				craft()->userSession->setNotice(Craft::t('License key saved.'));
-				$this->redirectToPostedUrl();
-			}
-		}
-		else
-		{
-			if (craft()->request->isAjaxRequest())
-			{
-				$this->returnJson(array(
-					'errors' => $info->getErrors()
-				));
-			}
-			else
-			{
-				craft()->userSession->setError(Craft::t('Couldn’t save new license key.'));
-
-				$this->renderRequestedTemplate(array(
-					'licenseKey' => $info
-				));
-			}
-		}
-	}
-
-	/**
 	 * Saves the email settings.
 	 */
 	public function actionSaveEmailSettings()

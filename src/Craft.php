@@ -201,18 +201,6 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Returns the license key.
-	 *
-	 * @static
-	 * @return string
-	 */
-	public static function getLicenseKey()
-	{
-		$storedCraftInfo = static::_getStoredInfo();
-		return $storedCraftInfo ? $storedCraftInfo->licenseKey : null;
-	}
-
-	/**
 	 * Returns whether the system is on.
 	 *
 	 * @static
