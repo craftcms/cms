@@ -88,8 +88,8 @@ class Et
 		}
 
 		$this->_model->installedPackages = $packages;
-		$this->_model->localBuild = Craft::getBuild();
-		$this->_model->localVersion= Craft::getVersion();
+		$this->_model->localBuild = CRAFT_BUILD;
+		$this->_model->localVersion = CRAFT_VERSION;
 		$this->_model->userEmail = craft()->userSession->getUser()->email;
 
 		$this->_options['useragent'] = 'craft-requests/'.\Requests::VERSION;
@@ -183,7 +183,6 @@ class Et
 		// Make sure the key file does not exist first. Et will never overwrite a license key.
 		if (($keyFile = IOHelper::fileExists(craft()->path->getConfigPath().'license.key')) == false)
 		{
-			$keyFile = craft()->path->getConfigPath().'license.key';
 			preg_match_all("/.{50}/", $key, $matches);
 
 			$formattedKey = '';

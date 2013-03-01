@@ -16,7 +16,7 @@ class DbBackup
 	 */
 	public function run()
 	{
-		$this->_currentVersion = 'v'.Craft::getStoredVersion().'.'.Craft::getStoredBuild();
+		$this->_currentVersion = 'v'.Craft::getVersion().'.'.Craft::getBuild();
 		$result = $this->_processHeader();
 
 		foreach (craft()->db->getSchema()->getTables() as $tableName => $val)

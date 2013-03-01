@@ -7,9 +7,10 @@ namespace Craft;
 class SiteSettingsModel extends BaseModel
 {
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'siteName' => array(AttributeType::Name, 'required' => true),

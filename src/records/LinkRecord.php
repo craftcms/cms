@@ -15,9 +15,10 @@ class LinkRecord extends BaseRecord
 	}
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'leftSortOrder'  => AttributeType::SortOrder,

@@ -13,9 +13,10 @@ class FolderCriteriaModel extends BaseModel
 	const AssetsNoParent = -1;
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'id'       => AttributeType::Number,

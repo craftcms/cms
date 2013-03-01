@@ -25,9 +25,10 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array_merge(parent::defineAttributes(), array(
 			'sectionId'  => AttributeType::Number,

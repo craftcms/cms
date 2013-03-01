@@ -17,9 +17,10 @@ abstract class BaseElementModel extends BaseModel
 	const ARCHIVED = 'archived';
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'id'          => AttributeType::Number,

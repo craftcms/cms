@@ -15,9 +15,10 @@ class AssetFileRecord extends BaseRecord
 	}
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'filename'		=> array(AttributeType::String, 'required' => true),

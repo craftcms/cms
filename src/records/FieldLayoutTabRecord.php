@@ -15,9 +15,10 @@ class FieldLayoutTabRecord extends BaseRecord
 	}
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'name'      => AttributeType::Name,

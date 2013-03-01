@@ -8,9 +8,10 @@ namespace Craft;
 class EmailSettingsModel extends BaseModel
 {
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'protocol'                => AttributeType::String,

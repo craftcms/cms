@@ -2,8 +2,9 @@
 {% set title = "Update @@@appName@@@"|t %}
 
 {% set content %}
-	<p>{{ "You need to be on at least build {minBuild} before you can manually update to build {targetBuild} of @@@appName@@@."|t({
-			minBuild:    craft.app.getMinRequiredBuild(),
-			targetBuild: craft.app.getBuild()
+	<p>{{ "You need to be on at least @@@appName@@@ build {minBuild} before you can manually update to @@@appName@@@ {targetVersion} build {targetBuild}."|t({
+			minBuild:      minBuild,
+			targetVersion: targetVersion,
+			targetBuild:   targetBuild
 		}) }}</p>
 {% endset %}

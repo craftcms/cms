@@ -21,9 +21,10 @@ class UserGroupModel extends BaseModel
 	}
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		$attributes['id'] = AttributeType::Number;
 		$attributes['name'] = AttributeType::String;

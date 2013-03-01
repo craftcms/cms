@@ -19,9 +19,10 @@ class AssetSourceModel extends BaseComponentModel
 	}
 
 	/**
-	 * @return mixed
+	 * @access protected
+	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		$attributes = parent::defineAttributes();
 

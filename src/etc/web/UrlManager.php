@@ -38,7 +38,7 @@ class UrlManager extends \CUrlManager
 	public function processTemplateMatching()
 	{
 		// we'll never have a db element match on a control panel request
-		if (craft()->isInstalled() && craft()->request->isSiteRequest())
+		if (Craft::isInstalled() && craft()->request->isSiteRequest())
 		{
 			if (($path = $this->matchElement()) !== false)
 			{

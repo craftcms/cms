@@ -15,9 +15,10 @@ class UserRecord extends BaseRecord
 	}
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'username'                   => array(AttributeType::String, 'maxLength' => 100, 'required' => true),

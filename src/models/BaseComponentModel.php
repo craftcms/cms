@@ -12,7 +12,11 @@ abstract class BaseComponentModel extends BaseModel
 {
 	private $_settingErrors = array();
 
-	public function defineAttributes()
+	/**
+	 * @access protected
+	 * @return array
+	 */
+	protected function defineAttributes()
 	{
 		$attributes['id'] = array(AttributeType::Number);
 		$attributes['type'] = array(AttributeType::String);

@@ -19,9 +19,10 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array_merge(parent::defineAttributes(), array(
 			'sourceId'		=> AttributeType::Number,

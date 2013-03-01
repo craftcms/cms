@@ -7,9 +7,10 @@ namespace Craft;
 class EtModel extends BaseModel
 {
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		// The client license key.
 		$attributes['licenseKey'] = AttributeType::String;

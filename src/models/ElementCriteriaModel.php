@@ -21,9 +21,10 @@ class ElementCriteriaModel extends BaseModel
 	}
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		$attributes = array(
 			'id'            => AttributeType::Number,

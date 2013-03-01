@@ -23,9 +23,10 @@ class LocaleRecord extends BaseRecord
 	}
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'locale'    => array(AttributeType::Locale, 'required' => true, 'primaryKey' => true),

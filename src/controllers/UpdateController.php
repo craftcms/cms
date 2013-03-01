@@ -119,7 +119,11 @@ class UpdateController extends BaseController
 	 */
 	public function actionBreakpointUpdate()
 	{
-		$this->renderTemplate('_special/breakpointupdate');
+		$this->renderTemplate('_special/breakpointupdate', array(
+			'minBuild'      => CRAFT_MIN_BUILD_REQUIRED,
+			'targetVersion' => BLOCKS_VERSION,
+			'targetBuild'   => BLOCKS_BUILD
+		));
 	}
 
 	/**

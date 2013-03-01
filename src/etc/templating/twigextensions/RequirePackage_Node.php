@@ -12,9 +12,12 @@ class RequirePackage_Node extends \Twig_Node
 	public function compile(\Twig_Compiler $compiler)
 	{
 		$compiler
-		    ->addDebugInfo($this)
-		    ->write('\Craft\Craft::requirePackage(')
-		    ->subcompile($this->getNode('packageName'))
-		    ->raw(");\n");
+			->addDebugInfo($this)
+			->write('if (!\Craft\Craft::hasPackage(')
+			->subcompile($this->getNode('packageName'))
+			->raw(")\n")
+			->write("{\n")
+			->write("\tthrow new \Craft\HttpException(404);\n")
+			->write("}\n");
 	}
 }

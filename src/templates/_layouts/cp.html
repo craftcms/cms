@@ -107,6 +107,9 @@
 	</div>
 
 	<div id="version">
-		@@@appName@@@ {{ craft.app.version }} build {{ craft.app.build }}
+		@@@appName@@@ {{ "{version} build {build}"|t({
+			version: craft.app.version,
+			build:   craft.app.build
+		}) }}
 	</div>
 {% endset %}
