@@ -167,7 +167,7 @@ class Et
 	{
 		if (($keyFile = IOHelper::fileExists(craft()->path->getConfigPath().'license.key')) !== false)
 		{
-			return trim(IOHelper::getFileContents($keyFile));
+			return trim(preg_replace('/\s+/', '', IOHelper::getFileContents($keyFile)));
 		}
 
 		return null;
