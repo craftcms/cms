@@ -60,10 +60,10 @@ class DbConnection extends \CDbConnection
 	 * @param bool $refresh
 	 * @return bool
 	 */
-	public function tableExists($table, $refresh = false)
+	public function tableExists($table, $refresh = null)
 	{
-		// Always refresh the schema cache if Craft isn't installed yet
-		if ($refresh || !craft()->isInstalled)
+		// Default to refreshing the tables if Craft isn't installed yet
+		if ($refresh || ($refresh === null && !craft()->isInstalled))
 		{
 			$this->getSchema()->refresh();
 		}

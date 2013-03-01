@@ -311,7 +311,7 @@ abstract class BaseRecord extends \CActiveRecord
 		$table = $this->getTableName();
 
 		// Does the table exist?
-		if (craft()->db->getSchema()->getTable('{{'.$table.'}}'))
+		if (craft()->db->tableExists($table))
 		{
 			craft()->db->createCommand()->dropTable($table);
 		}
@@ -367,14 +367,14 @@ abstract class BaseRecord extends \CActiveRecord
 		$table = $this->getTableName();
 
 		// Does the table exist?
-		if (craft()->db->getSchema()->getTable('{{'.$table.'}}'))
+		if (craft()->db->tableExists($table, true))
 		{
 			foreach ($this->getBelongsToRelations() as $name => $config)
 			{
 				// Make sure the record's table exists
 				$otherRecord = new $config[1];
 
-				if (craft()->db->tableExists($otherRecord->getTableName(), true))
+				if (craft()->db->tableExists($otherRecord->getTableName()))
 				{
 					craft()->db->createCommand()->dropForeignKey($table, $config[2]);
 				}

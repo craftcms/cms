@@ -537,8 +537,7 @@ class WebApp extends \CWebApplication
 			}
 			else
 			{
-				$infoTable = $this->db->getSchema()->getTable('{{info}}');
-				$this->_isInstalled = (bool)$infoTable;
+				$this->_isInstalled = $this->db->tableExists('info', false);
 			}
 		}
 
