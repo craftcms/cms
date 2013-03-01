@@ -27,7 +27,10 @@
 
 .widget:not(:last-child) { margin-bottom: 4px; }
 .col .widget { display: block; }
-.widget.loading h2 { padding-right: 24px; background: url(../images/spinner.gif) no-repeat 100% 0; }
+
+.widget .spinner { display: none; }
+.widget.loading .spinner { display: block; float: right; margin-left: 10px; }
+.widget h2 { margin-top: 0; }
 
 .widget form + .errors { margin-top: 15px; }
 

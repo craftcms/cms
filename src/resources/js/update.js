@@ -3,11 +3,13 @@
 
 Craft.Updater = Garnish.Base.extend({
 
+	$graphic: null,
 	$status: null,
 	data: null,
 
 	init: function(handle, manualUpdate)
 	{
+		this.$graphic = $('#graphic');
 		this.$status = $('#status');
 
 		if (!handle)
@@ -32,7 +34,7 @@ Craft.Updater = Garnish.Base.extend({
 	showError: function(msg)
 	{
 		this.updateStatus(msg);
-		this.$status.addClass('error');
+		this.$graphic.addClass('error');
 	},
 
 	postActionRequest: function(action)
@@ -70,7 +72,7 @@ Craft.Updater = Garnish.Base.extend({
 
 		if (response.error)
 		{
-			this.$status.addClass('error');
+			this.$graphic.addClass('error');
 			this.updateStatus(response.error);
 		}
 		else if (response.finished)
@@ -88,7 +90,7 @@ Craft.Updater = Garnish.Base.extend({
 	onFinish: function(returnUrl)
 	{
 		this.updateStatus(Craft.t('All done!'));
-		this.$status.addClass('success');
+		this.$graphic.addClass('success');
 
 		// Redirect to the Dashboard in half a second
 		setTimeout(function() {
