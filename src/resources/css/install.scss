@@ -6,7 +6,7 @@ html, body { height: 100%; }
 body { overflow: hidden; background: $submitcolor url(../images/welcome_logo.png) no-repeat 50% 50%; }
 
 .beginbtncontainer { position: absolute; top: 70%; margin-top: -15px; width: 100%; text-align: center; }
-#beginbtn { display: inline-block; border-radius: 5px; padding: 15px 20px; background: hsl(8, 67%, 95%); color: $submitcolor; font-weight: bold; font-size: 25px; height: 48px; line-height: 18px; }
+#beginbtn { display: inline-block; border-radius: 4px; padding: 12px 15px; background: hsl(8, 67%, 95%); color: $submitcolor; font-weight: bold; font-size: 19px; height: 42px; line-height: 18px; }
 #beginbtn:after { margin-top: -4px; }
 #beginbtn:hover { background: #fff; }
 
