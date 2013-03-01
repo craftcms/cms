@@ -15,7 +15,7 @@ class RequirePackage_Node extends \Twig_Node
 			->addDebugInfo($this)
 			->write('if (!\Craft\Craft::hasPackage(')
 			->subcompile($this->getNode('packageName'))
-			->raw(")\n")
+			->raw("))\n")
 			->write("{\n")
 			->write("\tthrow new \Craft\HttpException(404);\n")
 			->write("}\n");
