@@ -46,7 +46,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
 	{
 		if (this.settings.customizableTabs)
 		{
-			var $editBtn = $tab.find('.tabs .edit'),
+			var $editBtn = $tab.find('.tabs .settings'),
 				$menu = $('<div class="menu" data-align="center"/>').insertAfter($editBtn),
 				$ul = $('<ul/>').appendTo($menu);
 
@@ -69,7 +69,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
 
 	initField: function($field)
 	{
-		var $editBtn = $field.find('.edit'),
+		var $editBtn = $field.find('.settings'),
 			$menu = $('<div class="menu" data-align="center"/>').insertAfter($editBtn),
 			$ul = $('<ul/>').appendTo($menu);
 
@@ -242,7 +242,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
 						'<div class="tabs">' +
 							'<div class="tab sel draggable">' +
 								'<span>Tab '+(this.tabGrid.$items.length+1)+'</span>' +
-								'<a class="edit icon" title="'+Craft.t('Rename')+'"></a>' +
+								'<a class="settings icon" title="'+Craft.t('Rename')+'"></a>' +
 							'</div>' +
 						'</div>' +
 						'<div class="fld-tabcontent"></div>' +
@@ -575,14 +575,14 @@ Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
 			$tab.find('.fld-field').removeClass('unused');
 
 			// Add the edit button
-			$tab.find('.tabs .tab').append('<a class="edit icon" title="'+Craft.t('Edit')+'"></a>');
+			$tab.find('.tabs .tab').append('<a class="settings icon" title="'+Craft.t('Edit')+'"></a>');
 
 			// Remove any hidden fields
 			var $fields = $tab.find('.fld-field'),
 				$hiddenFields = $fields.filter('.hidden').remove();
 
 			$fields = $fields.not($hiddenFields);
-			$fields.append('<a class="edit icon" title="'+Craft.t('Edit')+'"></a>');
+			$fields.append('<a class="settings icon" title="'+Craft.t('Edit')+'"></a>');
 
 			for (var i = 0; i < $fields.length; i++)
 			{
@@ -659,7 +659,7 @@ Craft.FieldLayoutDesigner.FieldDrag = Craft.FieldLayoutDesigner.BaseDrag.extend(
 		{
 			// Create a new field based on that one
 			var $field = this.$draggee.clone().removeClass('unused');
-			$field.append('<a class="edit icon" title="'+Craft.t('Edit')+'"></a>');
+			$field.append('<a class="settings icon" title="'+Craft.t('Edit')+'"></a>');
 			this.designer.initField($field);
 
 			// Hide the unused field
