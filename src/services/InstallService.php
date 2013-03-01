@@ -36,6 +36,8 @@ class InstallService extends BaseApplicationComponent
 			$this->_createTablesFromRecords($records);
 			$this->_createForeignKeysFromRecords($records);
 
+			$this->_createAndPopulateInfoTable($inputs);
+
 			Craft::log('Committing the transaction.');
 			$transaction->commit();
 		}
@@ -47,12 +49,6 @@ class InstallService extends BaseApplicationComponent
 
 		// Craft, you are installed now.
 		craft()->setInstalledStatus(true);
-
-		// Fill 'er up
-		$this->_populateInfoTable($inputs);
-
-		// Invalidate cached info after populating the info table.
-		Craft::invalidateCachedInfo();
 
 		$this->_populateMigrationTable();
 		$this->_addLocale($inputs['locale']);
@@ -149,21 +145,36 @@ class InstallService extends BaseApplicationComponent
 	 * @param $inputs
 	 * @throws Exception
 	 */
-	private function _populateInfoTable($inputs)
+	private function _createAndPopulateInfoTable($inputs)
 	{
+		Craft::log('Creating the info table.');
+
+		craft()->db->createCommand()->createTable('info', array(
+			'version'     => array('maxLength' => 15, 'column' => ColumnType::Char, 'required' => true),
+			'build'       => array('maxLength' => 11, 'column' => ColumnType::Int, 'unsigned' => true, 'required' => true),
+			'packages'    => array('maxLength' => 200),
+			'releaseDate' => array('column' => ColumnType::DateTime, 'required' => true),
+			'siteName'    => array('maxLength' => 100, 'column' => ColumnType::Varchar, 'required' => true),
+			'siteUrl'     => array('maxLength' => 255, 'column' => ColumnType::Varchar, 'required' => true),
+			'on'          => array('maxLength' => 1, 'default' => false, 'required' => true, 'column' => ColumnType::TinyInt, 'unsigned' => true),
+			'maintenance' => array('maxLength' => 1, 'default' => false, 'required' => true, 'column' => ColumnType::TinyInt, 'unsigned' => true),
+		));
+
+		Craft::log('Finished creating the info table.');
+
 		Craft::log('Populating the info table.');
 
-		$info = new InfoRecord();
+		$info = new InfoModel(array(
+			'version'     => Craft::getVersion(),
+			'build'       => Craft::getBuild(),
+			'releaseDate' => Craft::getReleaseDate(),
+			'siteName'    => $inputs['siteName'],
+			'siteUrl'     => $inputs['siteUrl'],
+			'on'          => 1,
+			'maintenance' => 0,
+		));
 
-		$info->version = Craft::getVersion();
-		$info->build = Craft::getBuild();
-		$info->releaseDate = Craft::getReleaseDate();
-		$info->siteName = $inputs['siteName'];
-		$info->siteUrl = $inputs['siteUrl'];
-		$info->on = true;
-		$info->maintenance = false;
-
-		if ($info->save())
+		if (Craft::saveInfo($info))
 		{
 			Craft::log('Info table populated successfully.');
 		}

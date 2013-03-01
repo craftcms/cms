@@ -22,28 +22,22 @@ class SystemSettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$generalSettingsModel = new GeneralSettingsModel();
-		$generalSettingsModel->on         = (bool) craft()->request->getPost('isSystemOn');
-		$generalSettingsModel->siteName   = craft()->request->getPost('siteName');
-		$generalSettingsModel->siteUrl    = craft()->request->getPost('siteUrl');
+		$info = Craft::getInfo();
 
-		if ($generalSettingsModel->validate())
+		$info->on       => craft()->request->getPost('on');
+		$info->siteName => craft()->request->getPost('siteName');
+		$info->siteUrl  => craft()->request->getPost('siteUrl');
+
+		if (Craft::saveInfo($info))
 		{
-			$info = InfoRecord::model()->find();
-			$info->on = $generalSettingsModel->on;
-			$info->siteName = $generalSettingsModel->siteName;
-			$info->siteUrl = $generalSettingsModel->siteUrl;
-			$info->save();
-
 			craft()->userSession->setNotice(Craft::t('General settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
 			craft()->userSession->setError(Craft::t('Couldn’t save general settings.'));
-
 			$this->renderRequestedTemplate(array(
-				'generalSettings' => $generalSettingsModel
+				'info' => $info
 			));
 		}
 	}

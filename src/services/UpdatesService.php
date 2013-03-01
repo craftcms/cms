@@ -183,17 +183,13 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function setNewCraftInfo($version, $build, $releaseDate)
 	{
-		$info = InfoRecord::model()->find();
-		$info->version = $version;
-		$info->build = $build;
+		$info = Craft::getInfo();
+
+		$info->version     = $version;
+		$info->build       = $build;
 		$info->releaseDate = $releaseDate;
 
-		if ($info->save())
-		{
-			return true;
-		}
-
-		return false;
+		return Craft::saveInfo($info);
 	}
 
 	/**

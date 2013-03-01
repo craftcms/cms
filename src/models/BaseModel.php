@@ -336,9 +336,7 @@ abstract class BaseModel extends \CModel
 	public static function populateModel($values)
 	{
 		$class = get_called_class();
-		$model = new $class();
-		$model->setAttributes($values);
-		return $model;
+		return new $class($values);
 	}
 
 	/**

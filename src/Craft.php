@@ -6,9 +6,10 @@ namespace Craft;
  */
 class Craft extends \Yii
 {
-	private static $_storedCraftInfo;
-	private static $_packages;
+	private static $_info;
 	private static $_siteUrl;
+
+	private static $_packageList = array('Users', 'PublishPro', 'Localize', 'Cloud', 'Rebrand');
 
 	/**
 	 * Returns the Craft version number, as defined by the CRAFT_VERSION constant.
@@ -29,8 +30,7 @@ class Craft extends \Yii
 	 */
 	public static function getStoredVersion()
 	{
-		$storedCraftInfo = static::_getStoredInfo();
-		return $storedCraftInfo ? $storedCraftInfo->version : null;
+		return static::getInfo('version');
 	}
 
 	/**
@@ -53,8 +53,7 @@ class Craft extends \Yii
 	 */
 	public static function getStoredBuild()
 	{
-		$storedCraftInfo = static::_getStoredInfo();
-		return $storedCraftInfo ? $storedCraftInfo->build : null;
+		return static::getInfo('build');
 	}
 
 	/**
@@ -76,8 +75,7 @@ class Craft extends \Yii
 	 */
 	public static function getStoredReleaseDate()
 	{
-		$storedCraftInfo = static::_getStoredInfo();
-		return $storedCraftInfo ? $storedCraftInfo->releaseDate : null;
+		return static::getInfo('releaseDate');
 	}
 
 	/**
@@ -88,26 +86,89 @@ class Craft extends \Yii
 	 */
 	public static function getPackages()
 	{
-		$storedCraftInfo = static::_getStoredInfo();
+		return static::getInfo('packages');
+	}
 
-		if ($storedCraftInfo)
+	/**
+	 * Returns whether a package is included in this Craft build.
+	 *
+	 * @param $packageName
+	 * @return bool
+	 */
+	public static function hasPackage($packageName)
+	{
+		return in_array($packageName, static::getPackages());
+	}
+
+	/**
+	 * Requires that a given package is installed.
+	 *
+	 * @param string $packageName
+	 * @throws Exception
+	 */
+	public static function requirePackage($packageName)
+	{
+		if (craft()->isInstalled() && !static::hasPackage($packageName))
 		{
-			$storedPackages = array_filter(ArrayHelper::stringToArray($storedCraftInfo->packages));
-			sort($storedPackages);
-			return $storedPackages;
-		}
-		else
-		{
-			return array();
+			throw new HttpException(404);
 		}
 	}
 
 	/**
-	 * Invalidates the cached Info so it is pulled fresh the next time it is needed.
+	 * Installs a package.
+	 *
+	 * @static
+	 * @param string $packageName
+	 * @return bool
 	 */
-	public static function invalidateCachedInfo()
+	public static function installPackage($packageName)
 	{
-		static::$_storedCraftInfo = null;
+		static::_validatePackageName($packageName);
+
+		if (static::hasPackage($packageName))
+		{
+			throw new Exception(Craft::t('The {package} package is already installed.', array('package' => $package)));
+		}
+
+		$installedPackages = static::getPackages();
+		$installedPackages[] = $packageName;
+
+		$info = static::getInfo();
+		$info->packages = $installedPackages;
+		return static::saveInfo($info);
+	}
+
+	/**
+	 * Uninstalls a package.
+	 *
+	 * @static
+	 * @param string $packageName
+	 * @return bool
+	 */
+	public static function uninstallPackage($packageName)
+	{
+		static::_validatePackageName($packageName);
+
+		if (!static::hasPackage($packageName))
+		{
+			throw new Exception(Craft::t('The {package} package isn’t installed.', array('package' => $package)));
+		}
+
+		$installedPackages = static::getPackages();
+		$index = array_search($package, $installedPackages);
+		array_splice($installedPackages, $index, 1);
+
+		$info = static::getInfo();
+		$info->packages = $installedPackages;
+		return static::saveInfo($info);
+	}
+
+	/**
+	 * Clears the cached InfoModel so it is pulled fresh the next time it is needed.
+	 */
+	public static function refreshInfo()
+	{
+		static::$_info = null;
 	}
 
 	/**
@@ -121,39 +182,6 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Returns whether a package is included in this Craft build.
-	 *
-	 * @param $packageName
-	 * @return bool
-	 */
-	public static function hasPackage($packageName)
-	{
-		// If Craft is already installed, the check the database to determine if a package is installed or not.
-		if (craft()->isInstalled())
-		{
-			return in_array($packageName, static::getPackages());
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	/**
-	 * Requires that a given package is installed.
-	 *
-	 * @param string $packageName
-	 * @throws Exception
-	 */
-	public static function requirePackage($packageName)
-	{
-		if (!static::hasPackage($packageName) && craft()->isInstalled())
-		{
-			throw new HttpException(404);
-		}
-	}
-
-	/**
 	 * Returns the site name.
 	 *
 	 * @static
@@ -161,8 +189,7 @@ class Craft extends \Yii
 	 */
 	public static function getSiteName()
 	{
-		$storedCraftInfo = static::_getStoredInfo();
-		return $storedCraftInfo ? $storedCraftInfo->siteName : null;
+		return static::getInfo('siteName');
 	}
 
 	/**
@@ -175,8 +202,9 @@ class Craft extends \Yii
 	{
 		if (!isset(static::$_siteUrl))
 		{
-			$storedCraftInfo = static::_getStoredInfo();
-			if ($storedCraftInfo)
+			$storedSiteUrl = static::getInfo('siteUrl');
+
+			if ($storedSiteUrl)
 			{
 				$port = craft()->request->getPort();
 
@@ -189,7 +217,7 @@ class Craft extends \Yii
 					$port = ':'.$port;
 				}
 
-				static::$_siteUrl = rtrim($storedCraftInfo->siteUrl, '/').$port;
+				static::$_siteUrl = rtrim($storedSiteUrl, '/').$port;
 			}
 			else
 			{
@@ -208,8 +236,7 @@ class Craft extends \Yii
 	 */
 	public static function isSystemOn()
 	{
-		$storedCraftInfo = static::_getStoredInfo();
-		return $storedCraftInfo ? $storedCraftInfo->on == 1 : false;
+		return (bool) static::getInfo('on');
 	}
 
 	/**
@@ -220,46 +247,7 @@ class Craft extends \Yii
 	 */
 	public static function isInMaintenanceMode()
 	{
-		// Don't use the the static property $_storedCraftInfo.  We want the latest info possible.
-		// Not using Active Record here to prevent issues with determining maintenance mode status during a migration
-		if (craft()->isInstalled())
-		{
-			$storedCraftInfo = static::_getStoredInfo();
-			return $storedCraftInfo ? $storedCraftInfo->maintenance == 1 : false;
-		}
-
-		return false;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public static function enableMaintenanceMode()
-	{
-		// Not using Active Record here to prevent issues with turning the site on/off during a migration
-		if (craft()->db->createCommand()->update('info', array('maintenance' => 1)) > 0)
-		{
-			static::$_storedCraftInfo->maintenance = 1;
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * @static
-	 * @return bool
-	 */
-	public static function disableMaintenanceMode()
-	{
-		// Not using Active Record here to prevent issues with turning the site on/off during a migration
-		if (craft()->db->createCommand()->update('info', array('maintenance' => 0)) > 0)
-		{
-			static::$_storedCraftInfo->maintenance = 0;
-			return true;
-		}
-
-		return false;
+		return (bool) static::getInfo('maintenance');
 	}
 
 	/**
@@ -270,13 +258,7 @@ class Craft extends \Yii
 	 */
 	public static function turnSystemOn()
 	{
-		// Not using Active Record here to prevent issues with turning the site on/off during a migration
-		if (craft()->db->createCommand()->update('info', array('on' => 1)) > 0)
-		{
-			return true;
-		}
-
-		return false;
+		return static::_setSystemStatus(1);
 	}
 
 	/**
@@ -287,36 +269,106 @@ class Craft extends \Yii
 	 */
 	public static function turnSystemOff()
 	{
-		// Not using Active Record here to prevent issues with turning the site on/off during a migration
-		if (craft()->db->createCommand()->update('info', array('on' => 0)) > 0)
-		{
-			return true;
-		}
-
-		return false;
+		return static::_setSystemStatus(0);
 	}
 
 	/**
-	 * Return the saved stored Craft info.  If it's not set, get it from the database and return it.
+	 * Enables Maintenance Mode.
 	 *
 	 * @static
-	 * @return InfoRecord
+	 * @return bool
 	 */
-	private static function _getStoredInfo()
+	public static function enableMaintenanceMode()
 	{
-		if (!isset(static::$_storedCraftInfo))
+		return static::_setMaintenanceMode(1);
+	}
+
+	/**
+	 * Disables Maintenance Mode.
+	 *
+	 * @static
+	 * @return bool
+	 */
+	public static function disableMaintenanceMode()
+	{
+		return static::_setMaintenanceMode(0);
+	}
+
+	/**
+	 * Returns the info model, or just a particular attribute.
+	 *
+	 * @static
+	 * @param string|null $attribute
+	 * @return mixed
+	 */
+	public static function getInfo($attribute = null)
+	{
+		if (!isset(static::$_info))
 		{
 			if (craft()->isInstalled())
 			{
-				static::$_storedCraftInfo = InfoRecord::model()->find();
+				$row = craft()->db->createCommand()
+					->select('id,version,build,packages,releaseDate,siteName,siteUrl,on,maintenance')
+					->from('info')
+					->limit(1)
+					->queryRow();
+
+				if (!$row)
+				{
+					throw new Exception(Craft::t('Craft appears to be installed but the info table is empty.'));
+				}
+
+				static::$_info = new InfoModel($row);
 			}
 			else
 			{
-				static::$_storedCraftInfo = false;
+				static::$_info = new InfoModel();
 			}
 		}
 
-		return static::$_storedCraftInfo;
+		if ($attribute)
+		{
+			return static::$_info->getAttribute($attribute);
+		}
+		else
+		{
+			return static::$_info;
+		}
+	}
+
+	/**
+	 * Updates the info row.
+	 *
+	 * @param InfoModel $info
+	 * @return bool
+	 */
+	public static function saveInfo(InfoModel $info)
+	{
+		if ($info->validate())
+		{
+			$attributes = $info->getAttributes(null, true);
+
+			if (craft()->isInstalled())
+			{
+				craft()->db->createCommand()->update('info', $attributes);
+			}
+			else
+			{
+				craft()->db->createCommand()->insert('info', $attributes);
+
+				// Set the new id
+				$info->id = craft()->db->getLastInsertID();
+			}
+
+			// Use this as the new cached InfoModel
+			static::$_info = $info;
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -471,6 +523,49 @@ class Craft extends \Yii
 		}
 
 		static::getLogger()->log($msg, $level, $category);
+	}
+
+	/**
+	 * Turns the system on or off.
+	 *
+	 * @access private
+	 * @param bool $value
+	 * @return bool
+	 */
+	private static function _setSystemStatus($value)
+	{
+		$info = static::getInfo();
+		$info->on = $value;
+		return static::saveInfo($info);
+	}
+
+	/**
+	 * Enables or disables Maintenance Mode
+	 *
+	 * @access private
+	 * @param bool $value
+	 * @return bool
+	 */
+	private static function _setMaintenanceMode($value)
+	{
+		$info = static::getInfo();
+		$info->maintenance = $value;
+		return static::saveInfo($info);
+	}
+
+	/**
+	 * Validates a package name.
+	 *
+	 * @static
+	 * @access private
+	 * @throws Exception
+	 */
+	private static function _validatePackageName($package)
+	{
+		if (!in_array($package, static::$_packageList))
+		{
+			throw new Exception(Craft::t('Craft doesn’t have a package named “{package}”', array('package' => $package)));
+		}
 	}
 
 	/**

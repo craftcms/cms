@@ -8,15 +8,15 @@
 
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8">
-		<input type="hidden" name="action" value="systemSettings/saveGeneralSettings">
+		<input type="hidden" name="action" value="systemSettings/saveinfo">
 		<input type="hidden" name="redirect" value="settings">
 
 		{{ forms.lightswitchField({
 			first: true,
 			label: "System Status"|t,
 			id: 'on',
-			name: 'isSystemOn',
-			on: (generalSettings is defined ? generalSettings.on : craft.app.isSystemOn),
+			name: 'on',
+			on: (info is defined ? info.on : craft.app.isSystemOn),
 			onLabel: "On"|t,
 			offLabel: "Off"|t
 		}) }}
@@ -25,19 +25,19 @@
 			label: "Site Name"|t,
 			id: 'siteName',
 			name: 'siteName',
-			value: (generalSettings is defined ? generalSettings.siteName : craft.app.siteName),
+			value: (info is defined ? info.siteName : craft.app.siteName),
 			autofocus: true,
 			required: true,
-			errors: (generalSettings is defined ? generalSettings.getErrors('siteName') : null)
+			errors: (info is defined ? info.getErrors('siteName') : null)
 		}) }}
 
 		{{ forms.textField({
 			label: "Site URL"|t,
 			id: 'siteUrl',
 			name: 'siteUrl',
-			value: (generalSettings is defined ? generalSettings.siteUrl : craft.app.siteUrl),
+			value: (info is defined ? info.siteUrl : craft.app.siteUrl),
 			required: true,
-			errors: (generalSettings is defined ? generalSettings.getErrors('siteUrl') : null)
+			errors: (info is defined ? info.getErrors('siteUrl') : null)
 		}) }}
 
 		<div class="buttons">

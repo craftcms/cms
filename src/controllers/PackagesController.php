@@ -6,14 +6,6 @@ namespace Craft;
  */
 class PackagesController extends BaseController
 {
-	private $_packageList = array(
-		CraftPackage::Users,
-		CraftPackage::PublishPro,
-		CraftPackage::Localize,
-		CraftPackage::Cloud,
-		CraftPackage::Rebrand,
-	);
-
 	/**
 	 * Init
 	 */
@@ -32,26 +24,10 @@ class PackagesController extends BaseController
 		$this->requireAjaxRequest();
 
 		$package = craft()->request->getRequiredPost('package');
-
-		// Make sure it's a real package name
-		$this->_validatePackageName($package);
-
-		// Make sure it's not already installed
-		$installedPackages = Craft::getPackages();
-
-		if (in_array($package, $installedPackages))
-		{
-			throw new Exception(Craft::t('The {package} package is already installed.', array('package' => $package)));
-		}
-
-		// Install it
-		$installedPackages[] = $package;
-		craft()->db->createCommand()->update('info', array(
-			'packages' => implode(',', $installedPackages))
-		);
+		$success = Craft::installPackage($package);
 
 		$this->returnJson(array(
-			'success' => true
+			'success' => $success
 		));
 	}
 
@@ -64,41 +40,10 @@ class PackagesController extends BaseController
 		$this->requireAjaxRequest();
 
 		$package = craft()->request->getRequiredPost('package');
-
-		// Make sure it's a real package name
-		$this->_validatePackageName($package);
-
-		// Make sure it's actually installed
-		$installedPackages = Craft::getPackages();
-
-		if (!in_array($package, $installedPackages))
-		{
-			throw new Exception(Craft::t('The {package} package wasn’t installed.', array('package' => $package)));
-		}
-
-		// Uninstall it
-		$index = array_search($package, $installedPackages);
-		array_splice($installedPackages, $index, 1);
-		craft()->db->createCommand()->update('info', array(
-			'packages' => implode(',', $installedPackages))
-		);
+		$success = Craft::uninstallPackage($package);
 
 		$this->returnJson(array(
-			'success' => true
+			'success' => $success
 		));
-	}
-
-	/**
-	 * Validates a package name.
-	 *
-	 * @access private
-	 * @throws Exception
-	 */
-	private function _validatePackageName($package)
-	{
-		if (!in_array($package, $this->_packageList))
-		{
-			throw new Exception(Craft::t('Craft doesn’t have a package named “{package}”', array('package' => $package)));
-		}
 	}
 }
