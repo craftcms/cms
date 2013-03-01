@@ -80,8 +80,15 @@ class Et
 		$this->_model->requestIp = craft()->request->getIpAddress();
 		$this->_model->requestTime = DateTimeHelper::currentTimeStamp();
 		$this->_model->requestPort = craft()->request->getPort();
-		$this->_model->installedPackages = ArrayHelper::stringToArray(Craft::getPackages());
-		$this->_model->localBuild   = CRAFT_BUILD;
+
+		$packages = array();
+		foreach (Craft::getPackages() as $packageName)
+		{
+			$packages[] = array('status' => PackageStatus::Invalid, 'name' => $packageName);
+		}
+
+		$this->_model->installedPackages = $packages;
+		$this->_model->localBuild = CRAFT_BUILD;
 		$this->_model->localVersion = CRAFT_VERSION;
 		$this->_model->userEmail = craft()->userSession->getUser()->email;
 
@@ -184,7 +191,7 @@ class Et
 				$formattedKey .= $segment.PHP_EOL;
 			}
 
-			return IOHelper::writeToFile($keyFile, trim($formattedKey));
+			return IOHelper::writeToFile($keyFile, $formattedKey);
 		}
 
 		throw new Exception('Cannot overwrite an existing license.key file.');
