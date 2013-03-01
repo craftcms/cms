@@ -6,10 +6,38 @@ namespace Craft;
  */
 class Craft extends \Yii
 {
+	private static $_isInstalled;
 	private static $_info;
 	private static $_siteUrl;
 
 	private static $_packageList = array('Users', 'PublishPro', 'Localize', 'Cloud', 'Rebrand');
+
+	/**
+	 * Determines if Craft is installed by checking if the info table exists.
+	 *
+	 * @static
+	 * @return bool
+	 */
+	public static function isInstalled()
+	{
+		if (!isset(static::$_isInstalled))
+		{
+			static::$_isInstalled = craft()->db->tableExists('info', false);
+		}
+
+		return static::$_isInstalled;
+	}
+
+	/**
+	 * Tells Craft that it's installed now.
+	 *
+	 * @static
+	 */
+	public static function setIsInstalled()
+	{
+		// If you say so!
+		static::$_isInstalled = true;
+	}
 
 	/**
 	 * Returns the Craft version number, as defined by the CRAFT_VERSION constant.
@@ -108,7 +136,7 @@ class Craft extends \Yii
 	 */
 	public static function requirePackage($packageName)
 	{
-		if (craft()->isInstalled() && !static::hasPackage($packageName))
+		if (Craft::isInstalled() && !static::hasPackage($packageName))
 		{
 			throw new HttpException(404);
 		}
@@ -161,14 +189,6 @@ class Craft extends \Yii
 		$info = static::getInfo();
 		$info->packages = $installedPackages;
 		return static::saveInfo($info);
-	}
-
-	/**
-	 * Clears the cached InfoModel so it is pulled fresh the next time it is needed.
-	 */
-	public static function refreshInfo()
-	{
-		static::$_info = null;
 	}
 
 	/**
@@ -305,7 +325,7 @@ class Craft extends \Yii
 	{
 		if (!isset(static::$_info))
 		{
-			if (craft()->isInstalled())
+			if (Craft::isInstalled())
 			{
 				$row = craft()->db->createCommand()
 					->select('id,version,build,packages,releaseDate,siteName,siteUrl,on,maintenance')
@@ -348,7 +368,7 @@ class Craft extends \Yii
 		{
 			$attributes = $info->getAttributes(null, true);
 
-			if (craft()->isInstalled())
+			if (Craft::isInstalled())
 			{
 				craft()->db->createCommand()->update('info', $attributes);
 			}

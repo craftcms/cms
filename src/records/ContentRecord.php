@@ -24,7 +24,7 @@ class ContentRecord extends BaseRecord
 	{
 		$attributes['locale'] = array(AttributeType::Locale, 'required' => true);
 
-		if (craft()->isInstalled() && !craft()->isConsole())
+		if (Craft::isInstalled() && !craft()->isConsole())
 		{
 			foreach (craft()->fields->getAllFields() as $field)
 			{

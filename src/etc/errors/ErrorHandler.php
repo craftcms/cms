@@ -54,7 +54,7 @@ class ErrorHandler extends \CErrorHandler
 
 		$admin = false;
 
-		if (!craft()->isConsole() && craft()->isInstalled())
+		if (!craft()->isConsole() && Craft::isInstalled())
 		{
 			// TODO: Deprecate after next breakpoint release.
 			if (Craft::getStoredBuild() > 2157)

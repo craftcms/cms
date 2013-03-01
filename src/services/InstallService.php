@@ -16,7 +16,7 @@ class InstallService extends BaseApplicationComponent
 	 */
 	public function run($inputs)
 	{
-		if (craft()->isInstalled())
+		if (Craft::isInstalled())
 		{
 			throw new Exception(Craft::t('@@@appName@@@ is already installed.'));
 		}
@@ -48,7 +48,7 @@ class InstallService extends BaseApplicationComponent
 		}
 
 		// Craft, you are installed now.
-		craft()->setInstalledStatus(true);
+		Craft::setIsInstalled();
 
 		$this->_populateMigrationTable();
 		$this->_addLocale($inputs['locale']);

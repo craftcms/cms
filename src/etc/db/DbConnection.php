@@ -63,7 +63,7 @@ class DbConnection extends \CDbConnection
 	public function tableExists($table, $refresh = null)
 	{
 		// Default to refreshing the tables if Craft isn't installed yet
-		if ($refresh || ($refresh === null && !craft()->isInstalled))
+		if ($refresh || ($refresh === null && !Craft::isInstalled()))
 		{
 			$this->getSchema()->refresh();
 		}

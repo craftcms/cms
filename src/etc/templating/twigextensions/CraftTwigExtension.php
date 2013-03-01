@@ -143,7 +143,7 @@ class CraftTwigExtension extends \Twig_Extension
 		$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->get('loginPath'));
 		$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->get('logoutPath'));
 
-		if (craft()->isInstalled())
+		if (Craft::isInstalled())
 		{
 			$globals['siteName'] = Craft::getSiteName();
 			$globals['siteUrl'] = Craft::getSiteUrl();

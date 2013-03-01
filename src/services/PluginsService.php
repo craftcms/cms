@@ -57,7 +57,7 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function init()
 	{
-		if (craft()->isInstalled())
+		if (Craft::isInstalled())
 		{
 			// Find all of the enabled plugins
 			$records = PluginRecord::model()->findAllByAttributes(array(

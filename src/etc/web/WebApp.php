@@ -35,8 +35,6 @@ class WebApp extends \CWebApplication
 	public $componentAliases;
 
 	private $_templatePath;
-	private $_isInstalled;
-	private $_validDbConfig = null;
 	private $_packageComponents;
 
 	/**
@@ -229,7 +227,7 @@ class WebApp extends \CWebApplication
 		}
 
 		// Should they be?
-		else if (!$this->isInstalled())
+		else if (!Craft::isInstalled())
 		{
 			// Give it to them if accessing the CP
 			if ($isCpRequest)
@@ -455,7 +453,6 @@ class WebApp extends \CWebApplication
 
 		if (!empty($messages))
 		{
-			$this->_validDbConfig = false;
 			throw new Exception(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
 		}
 
@@ -500,58 +497,8 @@ class WebApp extends \CWebApplication
 
 		if (!empty($messages))
 		{
-			$this->_validDbConfig = false;
 			throw new Exception(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
 		}
-
-		$this->_validDbConfig = true;
-	}
-
-	/**
-	 * Checks whether the database config values are valid or not.
-	 *
-	 * @return mixed
-	 */
-	public function isDbConfigValid()
-	{
-		if ($this->_validDbConfig === null)
-		{
-			$this->_validateDbConfig();
-		}
-
-		return $this->_validDbConfig;
-	}
-
-	/**
-	 * Determines if Craft is installed by checking if the info table exists.
-	 *
-	 * @return bool
-	 */
-	public function isInstalled()
-	{
-		if (!isset($this->_isInstalled))
-		{
-			if (!$this->isDbConfigValid())
-			{
-				$this->_isInstalled = false;
-			}
-			else
-			{
-				$this->_isInstalled = $this->db->tableExists('info', false);
-			}
-		}
-
-		return $this->_isInstalled;
-	}
-
-	/**
-	 * Sets the isInstalled state.
-	 *
-	 * @param bool $isInstalled
-	 */
-	public function setInstalledStatus($isInstalled)
-	{
-		$this->_isInstalled = (bool)$isInstalled;
 	}
 
 	/**
