@@ -136,9 +136,11 @@ class Craft extends \Yii
 	 */
 	public static function requirePackage($packageName)
 	{
-		if (Craft::isInstalled() && !static::hasPackage($packageName))
+		if (static::isInstalled() && !static::hasPackage($packageName))
 		{
-			throw new HttpException(404);
+			throw new Exception(Craft::t('The {package} is required to perform this action.', array(
+				'package' => Craft::t($packageName)
+			)));
 		}
 	}
 
@@ -155,7 +157,9 @@ class Craft extends \Yii
 
 		if (static::hasPackage($packageName))
 		{
-			throw new Exception(Craft::t('The {package} package is already installed.', array('package' => $package)));
+			throw new Exception(Craft::t('The {package} package is already installed.', array(
+				'package' => Craft::t($packageName)
+			)));
 		}
 
 		$installedPackages = static::getPackages();
@@ -179,7 +183,9 @@ class Craft extends \Yii
 
 		if (!static::hasPackage($packageName))
 		{
-			throw new Exception(Craft::t('The {package} package isn’t installed.', array('package' => $package)));
+			throw new Exception(Craft::t('The {package} package isn’t installed.', array(
+				'package' => Craft::t($packageName)
+			)));
 		}
 
 		$installedPackages = static::getPackages();
@@ -325,7 +331,7 @@ class Craft extends \Yii
 	{
 		if (!isset(static::$_info))
 		{
-			if (Craft::isInstalled())
+			if (static::isInstalled())
 			{
 				$row = craft()->db->createCommand()
 					->select('id,version,build,packages,releaseDate,siteName,siteUrl,on,maintenance')
@@ -368,7 +374,7 @@ class Craft extends \Yii
 		{
 			$attributes = $info->getAttributes(null, true);
 
-			if (Craft::isInstalled())
+			if (static::isInstalled())
 			{
 				craft()->db->createCommand()->update('info', $attributes);
 			}
@@ -580,11 +586,13 @@ class Craft extends \Yii
 	 * @access private
 	 * @throws Exception
 	 */
-	private static function _validatePackageName($package)
+	private static function _validatePackageName($packageName)
 	{
-		if (!in_array($package, static::$_packageList))
+		if (!in_array($packageName, static::$_packageList))
 		{
-			throw new Exception(Craft::t('Craft doesn’t have a package named “{package}”', array('package' => $package)));
+			throw new Exception(Craft::t('Craft doesn’t have a package named “{package}”', array(
+				'package' => Craft::t($packageName)
+			)));
 		}
 	}
 
