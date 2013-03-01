@@ -98,7 +98,8 @@ class EntryElementType extends BaseElementType
 			'editable'      => AttributeType::Bool,
 			'after'         => AttributeType::DateTime,
 			'before'        => AttributeType::DateTime,
-			'status'        => array(AttributeType::String, 'default' => EntryModel::LIVE)
+			'status'        => array(AttributeType::String, 'default' => EntryModel::LIVE),
+			'order'         => array(AttributeType::String, 'default' => 'postDate desc'),
 		);
 	}
 
