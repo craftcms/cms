@@ -86,6 +86,7 @@ class Craft extends \Yii
 	/**
 	 * Returns whether a package is included in this Craft build.
 	 *
+	 * @static
 	 * @param $packageName
 	 * @return bool
 	 */
@@ -97,6 +98,7 @@ class Craft extends \Yii
 	/**
 	 * Requires that a given package is installed.
 	 *
+	 * @static
 	 * @param string $packageName
 	 * @throws Exception
 	 */
@@ -115,6 +117,7 @@ class Craft extends \Yii
 	 *
 	 * @static
 	 * @param string $packageName
+	 * @throws Exception
 	 * @return bool
 	 */
 	public static function installPackage($packageName)
@@ -141,6 +144,7 @@ class Craft extends \Yii
 	 *
 	 * @static
 	 * @param string $packageName
+	 * @throws Exception
 	 * @return bool
 	 */
 	public static function uninstallPackage($packageName)
@@ -155,7 +159,7 @@ class Craft extends \Yii
 		}
 
 		$installedPackages = static::getPackages();
-		$index = array_search($package, $installedPackages);
+		$index = array_search($packageName, $installedPackages);
 		array_splice($installedPackages, $index, 1);
 
 		$info = static::getInfo();
@@ -281,6 +285,7 @@ class Craft extends \Yii
 	 *
 	 * @static
 	 * @param string|null $attribute
+	 * @throws Exception
 	 * @return mixed
 	 */
 	public static function getInfo($attribute = null)
@@ -510,6 +515,7 @@ class Craft extends \Yii
 	/**
 	 * Turns the system on or off.
 	 *
+	 * @static
 	 * @access private
 	 * @param bool $value
 	 * @return bool
