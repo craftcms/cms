@@ -75,7 +75,7 @@ class Et
 		$this->_timeout = $timeout;
 
 		$this->_model = new EtModel();
-		$this->_model->licenseKey = Craft::getLicenseKey();
+		$this->_model->licenseKey = $this->_getLicenseKey();
 		$this->_model->requestUrl = craft()->request->getHostInfo().craft()->request->getUrl();
 		$this->_model->requestIp = craft()->request->getIpAddress();
 		$this->_model->requestTime = DateTimeHelper::currentTimeStamp();
@@ -83,6 +83,7 @@ class Et
 		$this->_model->installedPackages = ArrayHelper::stringToArray(Craft::getPackages());
 		$this->_model->localBuild = Craft::getBuild();
 		$this->_model->localVersion= Craft::getVersion();
+		$this->_model->userEmail = craft()->userSession->getUser()->email;
 
 		$this->_options['useragent'] = 'craft-requests/'.\Requests::VERSION;
 		$this->_options['timeout'] = $this->_timeout;
@@ -103,6 +104,8 @@ class Et
 	{
 		try
 		{
+			$missingLicenseKey = empty($this->_model->licenseKey);
+
 			$data = JsonHelper::encode($this->_model->getAttributes(null, true));
 			$response = \Requests::post($this->_endpoint, array(), $data, $this->_options);
 
@@ -127,6 +130,11 @@ class Et
 
 				$etModel = craft()->et->decodeEtValues($response->body);
 
+				if ($missingLicenseKey && !empty($etModel->licenseKey))
+				{
+					$this->_setLicenseKey($etModel->licenseKey);
+				}
+
 				// we set the license key status on every request
 				craft()->et->setLicenseKeyStatus($etModel->licenseKeyStatus);
 
@@ -143,5 +151,42 @@ class Et
 		}
 
 		return null;
+	}
+
+	/**
+	 * @return null|string
+	 */
+	private function _getLicenseKey()
+	{
+		if (($keyFile = IOHelper::fileExists(craft()->path->getConfigPath().'license.key')) !== false)
+		{
+			return trim(IOHelper::getFileContents($keyFile));
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param $key
+	 * @return bool
+	 * @throws Exception
+	 */
+	private function _setLicenseKey($key)
+	{
+		// Make sure the key file does not exist first. Et will never overwrite a license key.
+		if (($keyFile = IOHelper::fileExists(craft()->path->getConfigPath().'license.key')) == false)
+		{
+			preg_match_all("/.{50}/", $key, $matches);
+
+			$formattedKey = '';
+			foreach ($matches[0] as $segment)
+			{
+				$formattedKey .= $segment.PHP_EOL;
+			}
+
+			return IOHelper::writeToFile($keyFile, trim($formattedKey));
+		}
+
+		throw new Exception('Cannot overwrite an existing license.key file.');
 	}
 }

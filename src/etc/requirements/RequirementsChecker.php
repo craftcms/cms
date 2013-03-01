@@ -164,6 +164,8 @@ class RequirementsChecker extends \CComponent
 	{
 		$folders = array(
 			craft()->path->getRuntimePath(),
+			craft()->path->getStoragePath(),
+			craft()->path->getConfigPath(),
 		);
 
 		return $folders;

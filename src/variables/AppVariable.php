@@ -58,16 +58,6 @@ class AppVariable
 	}
 
 	/**
-	 * Returns the license key.
-	 *
-	 * @return string
-	 */
-	public function getLicenseKey()
-	{
-		return Craft::getLicenseKey();
-	}
-
-	/**
 	 * Returns whether the system is on.
 	 *
 	 * @return string

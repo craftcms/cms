@@ -283,7 +283,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function saveProfile(UserModel $user)
 	{
-		Blocks::requirePackage(BlocksPackage::Users);
+		Craft::requirePackage(CraftPackage::Users);
 
 		$fieldLayout = craft()->fields->getLayoutByType(ElementType::User);
 		return craft()->elements->saveElementContent($user, $fieldLayout);

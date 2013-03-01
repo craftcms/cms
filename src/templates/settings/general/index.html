@@ -1,15 +1,10 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 {% set title = "General Settings"|t %}
-{% includeJsResource 'js/generalsettings.js' %}
-{% includeTranslations
-	"A new license key could not be generated for you at this time."
-%}
 
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
 ] %}
-
 
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8">
@@ -73,55 +68,6 @@
 		<div class="clear"></div>
 	{% endif %}
 
-	<hr>
-
-	<form method="post" action="" accept-charset="UTF-8">
-		<input type="hidden" name="action" value="systemSettings/saveLicenseKey">
-		<input type="hidden" name="redirect" value="settings">
-
-		{% set licenseKeyInput %}
-			<table width="100%" cellspacing="0" cellpadding="0" border="0">
-				<tr>
-					<td>
-						{{ forms.text({
-							id: 'licenseKey',
-							class: 'code',
-							name: 'licenseKey',
-							value: (licenseKey is defined ? licenseKey.licenseKey : craft.app.licenseKey),
-							errors: (licenseKey is defined ? licenseKey.getErrors('licenseKey') : null)
-						}) }}
-					</td>
-					<td style="width: 0.1%; padding-left: 15px;">
-						<div id="newkeybtn" class="btn">{{ "Get a new key"|t }}</div>
-					</td>
-				</tr>
-			</table>
-			<div id="licensekeyspinner" class="spinner hidden" style="position: absolute; bottom: 1px; right: -26px;"></div>
-		{% endset %}
-
-		{{ forms.field({
-			label: "License Key"|t,
-			id: 'licenseKey',
-			required: true,
-			errors: (licenseKey is defined ? licenseKey.getErrors('licenseKey') : null)
-		}, licenseKeyInput) }}
-
-		{% if craft.app.licenseKey %}
-			<p><strong class="error">{{ "Warning!"|t }}</strong> {{ "Generating a new key will invalidate any packages that are associated with your current key."|t }}</p>
-		{% endif %}
-
-		<div class="buttons">
-			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
-		</div>
-	</form>
-
-{% endset %}
-
-
-{% set js %}
-	new Craft.LicenseKeyForm({
-		email: "{{ user.email|e('js') }}"
-	});
 {% endset %}
 
 {% includeJs js %}

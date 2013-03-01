@@ -22,7 +22,6 @@ class ModelHelper
 		AttributeType::Enum       => array('values' => array(), 'column' => ColumnType::Enum),
 		AttributeType::Handle     => array('reservedWords' => 'id,dateCreated,dateUpdated,uid,title', 'column' => ColumnType::Char),
 		AttributeType::Locale     => array('column' => ColumnType::Locale),
-		AttributeType::LicenseKey => array('length' => 36, 'matchPattern' => '/[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/', 'column' => ColumnType::Char),
 		AttributeType::Name       => array('maxLength' => 100, 'column' => ColumnType::Varchar),
 		AttributeType::Number     => array('min' => null, 'max' => null, 'decimals' => 0),
 		AttributeType::Slug       => array('maxLength' => 50, 'column' => ColumnType::Char),
@@ -297,9 +296,6 @@ class ModelHelper
 				}
 			}
 
-			// Remember if it's a license key
-			$isLicenseKey = ($config['type'] == AttributeType::LicenseKey);
-
 			// Uniques
 			if (!empty($config['unique']))
 			{
@@ -317,12 +313,6 @@ class ModelHelper
 			if ($config['type'] != AttributeType::Bool && !empty($config['required']))
 			{
 				$requiredAttributes[] = $name;
-			}
-
-			// License keys' length=36 is redundant in the context of validation, since matchPattern already enforces 36 chars
-			if ($isLicenseKey)
-			{
-				unset($config['length']);
 			}
 
 			// Lengths

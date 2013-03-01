@@ -16,7 +16,7 @@ class IOHelper
 	 * @static
 	 * @param  string  $path            The path to test.
 	 * @param  bool    $caseInsensitive Whether to perform a case insensitive check or not.
-	 * @return boolean 'true' if the file exists, otherwise 'false'.
+	 * @return string The resolved path of the file if it exists.
 	 */
 	public static function fileExists($path, $caseInsensitive = false)
 	{

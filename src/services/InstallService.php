@@ -61,18 +61,6 @@ class InstallService extends BaseApplicationComponent
 		$this->_saveDefaultMailSettings($inputs['email'], $inputs['siteName']);
 		$this->_createDefaultContent($inputs);
 
-		if (($licenseKey = craft()->et->createLicense($inputs['email'])) !== null)
-		{
-			if (!craft()->systemSettings->saveLicenseKey($licenseKey))
-			{
-				Craft::log('Installed Craft and got the license key '.$licenseKey.' from Elliott, but could not save it to the database.', \CLogger::LEVEL_WARNING);
-			}
-		}
-		else
-		{
-			Craft::log('Installed Craft, but could not get a license key from elliott.', \CLogger::LEVEL_WARNING);
-		}
-
 		Craft::log('Finished installing Craft.');
 	}
 
