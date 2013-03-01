@@ -288,6 +288,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 
 /* spinner */
 .spinner { display: inline-block; vertical-align: bottom; width: 20px; background: url(../images/spinner.gif) no-repeat 50% 50%; }
+.spinner.big { width: 48px; height: 48px; background: url(../images/spinner_big.gif) no-repeat 50% 50%; }
 .btn + .spinner { margin-left: 7px; }
 
 /* small buttons */
@@ -641,7 +642,8 @@ ul.errors li { color: $errorcolor; }
 
 	.status { background-image: url(../images/status_2x.png); background-size: 10px 40px; }
 
-	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px 20px; }
+	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
+	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
 
 	.hud .tip.top { background-image: url(../images/hud-tip-top_2x.png); background-size: 10px 5px; }
 }
