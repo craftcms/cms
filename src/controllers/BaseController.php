@@ -45,7 +45,7 @@ abstract class BaseController extends \CController
 
 		if ($date)
 		{
-			return DateTime::createFromFormat(DateTime::W3C_DATE, $date);
+			return DateTime::createFromFormat('!'.DateTime::W3C_DATE, $date);
 		}
 	}
 
