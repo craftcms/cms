@@ -15,9 +15,10 @@ class RouteRecord extends BaseRecord
 	}
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'urlParts'   => array(AttributeType::String, 'required' => true),

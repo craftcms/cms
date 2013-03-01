@@ -15,9 +15,10 @@ class SystemSettingsRecord extends BaseRecord
 	}
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'category' => array(AttributeType::String, 'maxLength' => 15, 'required' => true),

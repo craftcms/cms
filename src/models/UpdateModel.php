@@ -7,9 +7,10 @@ namespace Craft;
 class UpdateModel extends BaseModel
 {
 	/**
-	 * @return array|void
+	 * @access protected
+	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		$attributes['app']      = array(AttributeType::Mixed, 'model' => 'AppUpdateModel');
 		$attributes['plugins']  = AttributeType::Mixed;

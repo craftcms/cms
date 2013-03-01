@@ -7,9 +7,10 @@ namespace Craft;
 class PasswordModel extends BaseModel
 {
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'password' => array(AttributeType::String, 'minLength' => 6, 'required' => true)

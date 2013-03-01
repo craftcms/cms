@@ -7,9 +7,10 @@ namespace Craft;
 class PluginNewReleaseModel extends BaseModel
 {
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		$attributes['version']  = AttributeType::String;
 		$attributes['date']     = AttributeType::DateTime;

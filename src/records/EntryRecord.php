@@ -15,9 +15,10 @@ class EntryRecord extends BaseRecord
 	}
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'postDate'   => array(AttributeType::DateTime, 'required' => true, 'default' => new DateTime()),

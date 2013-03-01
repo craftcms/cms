@@ -18,9 +18,10 @@ class FieldRecord extends BaseRecord
 	}
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'name'         => array(AttributeType::Name, 'required' => true),

@@ -63,9 +63,10 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Defines this model's attributes.
 	 *
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array();
 	}

@@ -15,9 +15,10 @@ class FieldLayoutRecord extends BaseRecord
 	}
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'type' => array(AttributeType::ClassName, 'required' => true),

@@ -22,9 +22,10 @@ class Model extends BaseModel
 	/**
 	 * Defines this model's attributeDefs.
 	 *
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return $this->_attributeDefs;
 	}

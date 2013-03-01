@@ -145,9 +145,10 @@ abstract class BaseModel extends \CModel
 	 * Defines this model's attributes.
 	 *
 	 * @abstract
+	 * @access protected
 	 * @return array
 	 */
-	abstract public function defineAttributes();
+	abstract protected function defineAttributes();
 
 	/**
 	 * Returns this model's normalized attribute configs.

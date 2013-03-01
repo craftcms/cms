@@ -13,9 +13,10 @@ class GlobalSetModel extends BaseElementModel
 	private $_fieldLayout;
 
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array_merge(parent::defineAttributes(), array(
 			'name'          => AttributeType::Name,
