@@ -17,4 +17,10 @@ class LicenseKeyStatus
 
 	//  Haven't been able to verify the license key status yet.
 	const Unverified = 'Unverified';
+
+	// The domain associated with this license key is not the one the request was made with.
+	const MismatchedDomain = 'MismatchedDomain';
+
+	// There is a package that is not tied to this license key.
+	const InvalidPackage = 'InvalidPackage';
 }
