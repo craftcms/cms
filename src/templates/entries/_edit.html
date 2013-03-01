@@ -193,7 +193,8 @@
 				id: 'postDate',
 				name: 'postDate',
 				value: (entry is defined and entry.postDate ? entry.postDate.w3cDate : null),
-				errors: (entry is defined ? entry.getErrors('postDate') : null)
+				errors: (entry is defined ? entry.getErrors('postDate') : null),
+				autocomplete: false
 			}) }}
 
 			{{ forms.dateField({
@@ -202,7 +203,8 @@
 				id: 'expiryDate',
 				name: 'expiryDate',
 				value: (entry is defined and entry.expiryDate ? entry.expiryDate.w3cDate : null),
-				errors: (entry is defined ? entry.getErrors('expiryDate') : null)
+				errors: (entry is defined ? entry.getErrors('expiryDate') : null),
+				autocomplete: false
 			}) }}
 
 			{{ forms.textField({
