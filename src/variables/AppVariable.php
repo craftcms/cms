@@ -79,16 +79,7 @@ class AppVariable
 		$memoryLimit = (int)(ini_get('memory_limit'));
 		$uploadMb = min($maxUpload, $maxPost, $memoryLimit);
 
-		return (int) $uploadMb * 1024 * 1024;
+		// Convert MB to B and return
+		return $uploadMb * 1048576; // 1024 x 1024 = 1048576
 	}
-
-	/**
-		 * Gets the minimum required build numbers as stored in the CRAFT_MIN_BUILD_REQUIRED constant.
-		 *
-		 * @return mixed
-		 */
-		public function getMinRequiredBuild()
-		{
-			return Craft::getMinRequiredBuild();
-		}
 }

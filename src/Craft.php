@@ -164,16 +164,6 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Returns the minimum required build number, as defined in the CRAFT_MIN_BUILD_REQUIRED constant.
-	 *
-	 * @return mixed
-	 */
-	public static function getMinRequiredBuild()
-	{
-		return CRAFT_MIN_BUILD_REQUIRED;
-	}
-
-	/**
 	 * Returns the site name.
 	 *
 	 * @static

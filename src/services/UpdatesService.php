@@ -538,7 +538,7 @@ class UpdatesService extends BaseApplicationComponent
 		// Only Craft has the concept of a breakpoint, not plugins.
 		if ($this->isCraftDbUpdateNeeded())
 		{
-			return (Craft::getBuild() < Craft::getMinRequiredBuild());
+			return (Craft::getBuild() < CRAFT_MIN_BUILD_REQUIRED);
 		}
 		else
 		{
