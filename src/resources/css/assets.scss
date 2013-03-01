@@ -46,14 +46,14 @@
 
 /*-- default icons --*/
 
-.assets-fileicon { position: relative; margin: -6px -5px; padding: 6px 0; background: no-repeat 50% 50%; }
+.assets-fileicon { position: relative; margin: 10px 21px; padding: 6px 0; background: no-repeat 50% 50%; }
 .assets-fm .assets-fileicon,
 .assets-listview .assets-fileicon { margin-left: auto; margin-right: auto; }
 .assets-tv-file .assets-fileicon { width: 69px; height: 77px; background-image: url(../images/file_medium.png); }
 .assets-tv-file.assets-tv-bigthumb .assets-fileicon { width: 136px; height: 163px; background-image: url(../images/file_big.png); }
 .assets-listview table .assets-lv-name .assets-lv-thumb .assets-fileicon { width: 22px; height: 16px; background-image: url(../images/file_small.png); }
 
-.assets-fileicon .assets-extension { position: absolute; bottom: 50px; width: 100%; text-align: center; font-size: 17px; color: #ddd; text-transform: uppercase}
+.assets-fileicon .assets-extension { position: absolute; bottom: 25px; width: 100%; text-align: center; font-size: 17px; color: #ddd; text-transform: uppercase}
 .assets-tv-file.assets-tv-bigthumb .assets-fileicon .assets-extension { bottom: 26px; font-size: 34px; }
 
 /*-- folder navigation -- */
