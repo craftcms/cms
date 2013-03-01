@@ -521,18 +521,6 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
-	 * Returns whether a table exists.
-	 *
-	 * @param string $table
-	 * @return bool
-	 */
-	public function tableExists($table)
-	{
-		$table = DbHelper::addTablePrefix($table);
-		return (craft()->db->schema->getTable($table, true) !== null);
-	}
-
-	/**
 	 * Adds support for array('column' => 'value') conditional syntax.
 	 * Supports nested conditionals, e.g. array('or', array('column' => 'value'), array('column2' => 'value2'))
 	 *
