@@ -217,7 +217,7 @@ class DashboardController extends BaseController
 		craft()->updates->getUpdates();
 
 		$this->renderTemplate('_components/widgets/Updates/body', array(
-			'total' => craft()->updates->getTotalNumberOfAvailableUpdates()
+			'total' => craft()->updates->getTotalAvailableUpdates()
 		));
 	}
 }

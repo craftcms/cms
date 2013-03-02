@@ -59,7 +59,7 @@ class UpdatesService extends BaseApplicationComponent
 	/**
 	 * @return int
 	 */
-	public function getTotalNumberOfAvailableUpdates()
+	public function getTotalAvailableUpdates()
 	{
 		if ($this->isUpdateInfoCached())
 		{
