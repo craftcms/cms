@@ -95,6 +95,27 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Sets the package status information as an array in the format array('name' => packageName, 'status' => packageStatus)
+	 *
+	 * @param $packageInfo
+	 */
+	public function setPackageStatuses($packageInfo)
+	{
+		craft()->fileCache->set('packageStatuses', $packageInfo, craft()->config->getCacheDuration());
+	}
+
+	/**
+	 * Returns the package status information as an array in the format array('name' => packageName, 'status' => packageStatus)
+	 *
+	 * @return mixed
+	 */
+	public function getPackageStatuses()
+	{
+		$status = craft()->fileCache->get('packageStatuses');
+		return $status;
+	}
+
+	/**
 	 *
 	 */
 	public function decodeEtValues($values)

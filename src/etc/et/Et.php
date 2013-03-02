@@ -145,6 +145,11 @@ class Et
 				// we set the license key status on every request
 				craft()->et->setLicenseKeyStatus($etModel->licenseKeyStatus);
 
+				if (!empty($etModel->installedPackages))
+				{
+					craft()->et->setPackageStatuses($etModel->installedPackages);
+				}
+
 				return $etModel;
 			}
 			else
@@ -183,6 +188,7 @@ class Et
 		// Make sure the key file does not exist first. Et will never overwrite a license key.
 		if (($keyFile = IOHelper::fileExists(craft()->path->getConfigPath().'license.key')) == false)
 		{
+			$keyFile = craft()->path->getConfigPath().'license.key';
 			preg_match_all("/.{50}/", $key, $matches);
 
 			$formattedKey = '';

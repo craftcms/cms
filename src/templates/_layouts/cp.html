@@ -6,6 +6,12 @@
 		<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
 	{% endif %}
 
+	{% if user.admin and craft.cp.areAlertsCached %}
+		{% for alert in craft.cp.getAlerts %}
+			{{ alert }}<br/>
+		{% endfor %}
+	{% endif %}
+
 	<header id="header">
 		<div class="centered">
 			<div id="account">

@@ -86,4 +86,42 @@ class CpVariable
 
 		return $nav;
 	}
+
+	/**
+	 * @return bool
+	 */
+	public function areAlertsCached()
+	{
+		if (craft()->et->getLicenseKeyStatus() !== false || craft()->et->getPackageStatuses())
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getAlerts()
+	{
+		$alerts = array();
+		$licenseKeyStatus = craft()->et->getLicenseKeyStatus();
+		$packagesStatuses = craft()->et->getPackageStatuses();
+
+		if ($licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
+		{
+			$alerts[] = Craft::t('WRONG DOMAIN, FOOL! TRANSFER IT OR PAY UP!');
+		}
+
+		foreach ($packagesStatuses as $packagesStatusInfo)
+		{
+			if ($packagesStatusInfo['status'] == PackageStatus::Invalid)
+			{
+				$alerts[] = Craft::t('YOU DON’T OWN '.strtoupper($packagesStatusInfo['name'].' FOOL!'));
+			}
+		}
+
+		return $alerts;
+	}
 }
