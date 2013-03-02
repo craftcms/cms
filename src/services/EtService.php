@@ -23,7 +23,7 @@ class EtService extends BaseApplicationComponent
 	public function check($updateInfo)
 	{
 		$et = new Et(ElliottEndpoints::CheckForUpdates);
-		$et->getModel()->data = $updateInfo;
+		$et->setData($updateInfo);
 		$etResponse = $et->phoneHome();
 
 		if ($etResponse)
@@ -69,6 +69,71 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Attempts to purchase a package.
+	 *
+	 * @param PackagePurchaseOrderModel $model
+	 * @return bool
+	 */
+	public function purchasePackage(PackagePurchaseOrderModel $model)
+	{
+		if ($model->validate())
+		{
+			$et = new Et(ElliottEndpoints::PurchasePackage);
+			$et->setData($model);
+			$etResponse = $et->phoneHome();
+
+			if ($etResponse && $etResponse->data['success'])
+			{
+				// Success! Let's get this sucker installed.
+				if (!Craft::hasPackage($model->package))
+				{
+					Craft::installPackage($model->package);
+				}
+
+				return true;
+			}
+			else
+			{
+				// Did they at least say why?
+				if ($etResponse && !empty($etResponse['errors']))
+				{
+					switch ($etResponse['errors'][0])
+					{
+						// Validation errors
+						case 'package_doesnt_exist': $error = Craft::t('The selected package doesn’t exist anymore.'); break;
+						case 'invalid_license_key':  $error = Craft::t('Your license key is invalid.'); break;
+						case 'license_has_package':  $error = Craft::t('Your Craft license already has this package.'); break;
+						case 'price_mismatch':       $error = Craft::t('The cost of this package just changed.'); break;
+						case 'unknown_error':        $error = Craft::t('An unknown error occurred.'); break;
+
+						// Stripe errors
+						case 'incorrect_number':     $error = Craft::t('The card number is incorrect.'); break;
+						case 'invalid_number':       $error = Craft::t('The card number is invalid.'); break;
+						case 'invalid_expiry_month': $error = Craft::t('The expiration month is invalid.'); break;
+						case 'invalid_expiry_year':  $error = Craft::t('The expiration year is invalid.'); break;
+						case 'invalid_cvc':          $error = Craft::t('The security code is invalid.'); break;
+						case 'incorrect_cvc':        $error = Craft::t('The security code is incorrect.'); break;
+						case 'expired_card':         $error = Craft::t('Your card has expired.'); break;
+						case 'card_declined':        $error = Craft::t('Your card was declined.'); break;
+						case 'processing_error':     $error = Craft::t('An error occurred while processing your card.'); break;
+
+						default:                     $error = $etResponse->data['error'];
+					}
+				}
+				else
+				{
+					// Something terrible must have happened!
+					$error = Craft::t('Craft is unable to purchase packages at this time.');
+				}
+
+				$model->addError('response', $error);
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Returns the license key status.
 	 */
 	public function getLicenseKeyStatus()
@@ -89,8 +154,9 @@ class EtService extends BaseApplicationComponent
 	/**
 	 *
 	 */
-	public function decodeEtValues($values)
+	public function decodeEtValues($attributes)
 	{
-		return EtModel::populateModel(JsonHelper::decode($values));
+		$attributes = JsonHelper::decode($attributes);
+		return new EtModel($attributes);
 	}
 }

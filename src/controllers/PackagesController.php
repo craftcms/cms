@@ -34,7 +34,7 @@ class PackagesController extends BaseController
 				// Include which packages are actually licensed
 				foreach ($etResponse->licensedPackages as $packageName)
 				{
-					$packages[$packageName]['licensed'] = $isLicensed;
+					$packages[$packageName]['licensed'] = true;
 				}
 
 				$this->returnJson(array(
@@ -61,16 +61,25 @@ class PackagesController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$ccTokenId = craft()->request->getRequiredPost('ccTokenId');
-		$package   = craft()->request->getRequiredPost('package');
-		$price     = craft()->request->getRequiredPost('price');
-
-		$success = craft()->et->purchasePackage($ccTokenId, $package, $price);
-
-		$this->returnJson(array(
-			'success' => $success,
-
+		$model = new PackagePurchaseOrderModel(array(
+			'ccTokenId'     => craft()->request->getRequiredPost('ccTokenId'),
+			'package'       => craft()->request->getRequiredPost('package'),
+			'expectedPrice' => craft()->request->getRequiredPost('expectedPrice'),
 		));
+
+		if (craft()->et->purchasePackage($model))
+		{
+			$this->returnJson(array(
+				'success' => true,
+				'package' => $model->package
+			));
+		}
+		else
+		{
+			$this->returnJson(array(
+				'errors' => $model->getErrors()
+			));
+		}
 	}
 
 	/**

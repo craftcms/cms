@@ -266,13 +266,13 @@ Craft.PackageChooser = Garnish.Base.extend({
 				{
 					// Pass the token along to Elliott to charge the card
 					var data = {
-						ccTokenId:  response.id,
-						'package':  pkg,
-						price:      (this.packages[pkg].salePrice ? this.packages[pkg].salePrice : this.packages[pkg].price)
+						ccTokenId:     response.id,
+						'package':     pkg,
+						expectedPrice: (this.packages[pkg].salePrice ? this.packages[pkg].salePrice : this.packages[pkg].price)
 					};
 
 					Craft.postActionRequest('packages/purchasePackage', data,
-						$.proxy(this, 'handleSuccessfulPurchase', pkg),
+						$.proxy(this, 'handleSuccessfulPurchase'),
 						$.proxy(this, 'handleUnsuccessfulPurchase')
 					);
 				}
@@ -299,48 +299,46 @@ Craft.PackageChooser = Garnish.Base.extend({
 	{
 		if (!response.success)
 		{
-			this.handleUnsuccessfulPurchase(response.error);
+			this.handleUnsuccessfulPurchase(response.errors);
 			return;
 		}
 
-		this.packages[response.pkg].licensed = true;
+		var pkg = response['package'];
+		this.packages[pkg].licensed = true;
+
+		if (!Craft.hasPackage(pkg))
+		{
+			Craft.packages.push(pkg);
+		}
 
 		this.onPurchaseResponse();
 		this.ccModal.hide();
-		this.createButtons(response.pkg);
+		this.createButtons(pkg);
 
-		Craft.cp.displayNotice(Craft.t('{package} purchased successfully!', { 'package': this.packages[response.pkg].name }));
+		Craft.cp.displayNotice(Craft.t('{package} purchased successfully!', { 'package': this.packages[pkg].name }));
 	},
 
-	handleUnsuccessfulPurchase: function(error)
+	handleUnsuccessfulPurchase: function(errors)
 	{
 		this.onPurchaseResponse();
 
-		if (error)
+		if (errors)
 		{
-			if (typeof this.settings.errors[error] != 'undefined')
+			var errorText = '';
+			for (var attribute in errors)
 			{
-				switch (error)
+				for (var i = 0; i < errors[attribute].length; i++)
 				{
-					case 'incorrect_number':
-					case 'invalid_number':
+					if (errorText)
 					{
-						$('#cc-num').addClass('error');
-						break;
+						errorText += '<br>';
 					}
 
-					case 'invalid_cvc':
-					case 'incorrect_cvc':
-					{
-						$('#cc-cvc').addClass('error');
-						break;
-					}
+					errorText += errors[attribute][i];
 				}
-
-				error = this.settings.errors[error];
 			}
 
-			this.$ccModalError = $('<p class="error centeralign">'+error+'</p>').insertBefore(this.$ccModalSecure);
+			this.$ccModalError = $('<p class="error centeralign">'+errorText+'</p>').insertBefore(this.$ccModalSecure);
 		}
 
 		Garnish.shake(this.ccModal.$container);
@@ -370,7 +368,15 @@ Craft.PackageChooser = Garnish.Base.extend({
 
 			if (!response.success)
 			{
-				alert(Craft.t('An unknown error occurred.'));
+				if (response.error)
+				{
+					alert(response.error);
+				}
+				else
+				{
+					alert(Craft.t('An unknown error occurred.'));
+				}
+
 				return;
 			}
 

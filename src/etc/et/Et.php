@@ -99,6 +99,14 @@ class Et
 	}
 
 	/**
+	 * Sets Custom Data on the EtModel.
+	 */
+	public function setData($data)
+	{
+		$this->_model->data = $data;
+	}
+
+	/**
 	 * @return EtModel|null
 	 */
 	public function phoneHome()
