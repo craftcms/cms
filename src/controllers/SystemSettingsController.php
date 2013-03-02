@@ -24,9 +24,9 @@ class SystemSettingsController extends BaseController
 
 		$info = Craft::getInfo();
 
-		$info->on       => craft()->request->getPost('on');
-		$info->siteName => craft()->request->getPost('siteName');
-		$info->siteUrl  => craft()->request->getPost('siteUrl');
+		$info->on       = (bool) craft()->request->getPost('on');
+		$info->siteName = craft()->request->getPost('siteName');
+		$info->siteUrl  = craft()->request->getPost('siteUrl');
 
 		if (Craft::saveInfo($info))
 		{
