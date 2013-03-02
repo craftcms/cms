@@ -3886,7 +3886,7 @@ Garnish.Select = Garnish.Base.extend({
 		}
 
 		// Enfore the filter
-		if (this.settings.filter && !$(ev.target).is(filter))
+		if (this.settings.filter && !$(ev.target).is(this.settings.filter))
 		{
 			return;
 		}
@@ -3923,7 +3923,7 @@ Garnish.Select = Garnish.Base.extend({
 		}
 
 		// Enfore the filter
-		if (this.settings.filter && !$(ev.target).is(filter))
+		if (this.settings.filter && !$(ev.target).is(this.settings.filter))
 		{
 			return;
 		}
