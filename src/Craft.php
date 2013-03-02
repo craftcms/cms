@@ -22,7 +22,7 @@ class Craft extends \Yii
 	{
 		if (!isset(static::$_isInstalled))
 		{
-			static::$_isInstalled = craft()->db->tableExists('info', false);
+			static::$_isInstalled = (craft()->isConsole() || craft()->db->tableExists('info', false));
 		}
 
 		return static::$_isInstalled;
