@@ -176,12 +176,8 @@
 
 {% set js %}
 	Craft.packageChooser = new Craft.PackageChooser({
-		modalHtml:  "{{ modalHtml|e('js') }}",
-		email:      "{{ user.email|e('js') }}",
-		licenseKey: "{{ craft.app.licenseKey|e('js') }}",
-		version:    "{{ craft.app.version|e('js') }}",
-		build:      "{{ craft.app.build|e('js') }}",
-		USD:        "{{ localeData.getCurrencySymbol('USD')|e('js') }}",
+		modalHtml: "{{ modalHtml|e('js') }}",
+		USD:       "{{ localeData.getCurrencySymbol('USD')|e('js') }}",
 
 		errors: {
 			// Elliott errors

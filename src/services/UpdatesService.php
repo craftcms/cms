@@ -142,7 +142,7 @@ class UpdatesService extends BaseApplicationComponent
 				if ($etModel == null)
 				{
 					$updateModel = new UpdateModel();
-					$errors[] = Craft::t('An error occurred when trying to determine if an update is available. Please try again shortly. If the error persists, please contact <a href="mailto://support@buildwithcraft.com">support@buildwithcraft.com</a>.');
+					$errors[] = Craft::t('Craft is unable to determine if an update is available at this time.');
 					$updateModel->errors = $errors;
 				}
 				else

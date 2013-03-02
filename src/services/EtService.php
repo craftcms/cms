@@ -7,33 +7,30 @@ namespace Craft;
 class EtService extends BaseApplicationComponent
 {
 	/**
-	 * @return bool|EtModel
+	 * @return EtModel|null
 	 */
 	public function ping()
 	{
 		$et = new Et(ElliottEndpoints::Ping);
-		$response = $et->phoneHome();
-
-		return $response;
+		$etResponse = $et->phoneHome();
+		return $etResponse;
 	}
 
 	/**
 	 * @param $updateInfo
-	 * @return EtModel|bool
+	 * @return EtModel|null
 	 */
 	public function check($updateInfo)
 	{
 		$et = new Et(ElliottEndpoints::CheckForUpdates);
 		$et->getModel()->data = $updateInfo;
-		$etModel = $et->phoneHome();
+		$etResponse = $et->phoneHome();
 
-		if ($etModel)
+		if ($etResponse)
 		{
-			$etModel->data = UpdateModel::populateModel($etModel->data);
-			return $etModel;
+			$etResponse->data = UpdateModel::populateModel($etResponse->data);
+			return $etResponse;
 		}
-
-		return null;
 	}
 
 	/**
@@ -60,21 +57,15 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $email
-	 * @return EtModel|bool
+	 * Fetches info about the available packages from Elliott.
+	 *
+	 * @return EtModel|null
 	 */
-	public function createLicense($email)
+	public function fetchPackageInfo()
 	{
-		$et = new Et(ElliottEndpoints::CreateLicense);
-		$et->getModel()->data = $email;
-		$etModel = $et->phoneHome();
-
-		if ($etModel && !empty($etModel->data))
-		{
-			return $etModel->data;
-		}
-
-		return null;
+		$et = new Et(ElliottEndpoints::GetPackageInfo);
+		$etResponse = $et->phoneHome();
+		return $etResponse;
 	}
 
 	/**
@@ -82,37 +73,17 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function getLicenseKeyStatus()
 	{
-		$status = craft()->fileCache->get('licenseKeyStatus');
-		return $status;
+		return craft()->fileCache->get('licenseKeyStatus');
 	}
 
 	/**
-	 * Sets the license key status.
-	 */
-	public function setLicenseKeyStatus($status)
-	{
-		craft()->fileCache->set('licenseKeyStatus', $status, craft()->config->getCacheDuration());
-	}
-
-	/**
-	 * Sets the package status information as an array in the format array('name' => packageName, 'status' => packageStatus)
-	 *
-	 * @param $packageInfo
-	 */
-	public function setPackageStatuses($packageInfo)
-	{
-		craft()->fileCache->set('packageStatuses', $packageInfo, craft()->config->getCacheDuration());
-	}
-
-	/**
-	 * Returns the package status information as an array in the format array('name' => packageName, 'status' => packageStatus)
+	 * Returns an array of the packages that this license is tied to.
 	 *
 	 * @return mixed
 	 */
-	public function getPackageStatuses()
+	public function getLicensedPackages()
 	{
-		$status = craft()->fileCache->get('packageStatuses');
-		return $status;
+		return craft()->fileCache->get('licensedPackages');
 	}
 
 	/**

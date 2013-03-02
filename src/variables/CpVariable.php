@@ -92,12 +92,7 @@ class CpVariable
 	 */
 	public function areAlertsCached()
 	{
-		if (craft()->et->getLicenseKeyStatus() !== false || craft()->et->getPackageStatuses())
-		{
-			return true;
-		}
-
-		return false;
+		return (craft()->et->getLicenseKeyStatus() !== false);
 	}
 
 	/**
@@ -107,18 +102,19 @@ class CpVariable
 	{
 		$alerts = array();
 		$licenseKeyStatus = craft()->et->getLicenseKeyStatus();
-		$packagesStatuses = craft()->et->getPackageStatuses();
+		$licensedPackages = craft()->et->getLicensedPackages();
 
 		if ($licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
 		{
 			$alerts[] = Craft::t('WRONG DOMAIN, FOOL! TRANSFER IT OR PAY UP!');
 		}
 
-		foreach ($packagesStatuses as $packagesStatusInfo)
+		// Look for any invalid licenses
+		foreach (Craft::getPackages() as $package)
 		{
-			if ($packagesStatusInfo['status'] == PackageStatus::Invalid)
+			if (!$licensedPackages || !in_array($package, $licensedPackages))
 			{
-				$alerts[] = Craft::t('YOU DON’T OWN '.strtoupper($packagesStatusInfo['name'].' FOOL!'));
+				$alerts[] = Craft::t('YOU DON’T OWN '.strtoupper(Craft::t($package).' FOOL!'));
 			}
 		}
 

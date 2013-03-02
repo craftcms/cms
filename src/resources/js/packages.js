@@ -45,25 +45,17 @@ Craft.PackageChooser = Garnish.Base.extend({
 			};
 		}
 
-		// Get their licensed packages
-		var data = {
-			licenseKey: this.settings.licenseKey
-		};
-
-		$.ajax({
-			url:     '@@@elliottEndpointUrl@@@actions/licenses/getPackageInfo',
-			data:    data,
-			success: $.proxy(this, 'initPackages'),
-			error:   $.proxy(this, 'handleBadFetchPackageInfoResponse')
-		});
+		Craft.postActionRequest('packages/fetchPackageInfo',
+			$.proxy(this, 'initPackages'),
+			$.proxy(this, 'handleBadFetchPackageInfoResponse')
+		);
 	},
 
 	initPackages: function(response)
 	{
-		// Just to be sure...
 		if (!response.success)
 		{
-			this.handleBadFetchPackageInfoResponse();
+			this.handleBadFetchPackageInfoResponse(response.error);
 			return;
 		}
 
@@ -80,14 +72,19 @@ Craft.PackageChooser = Garnish.Base.extend({
 		}
 	},
 
-	handleBadFetchPackageInfoResponse: function()
+	handleBadFetchPackageInfoResponse: function(error)
 	{
 		for (var i in this.packages)
 		{
 			this.packages[i].$btnContainer.children().css('visibility', 'hidden');
 		}
 
-		alert(Craft.t('There was a problem determining which packages you’ve purchased.'));
+		if (!error)
+		{
+			error = Craft.t('An unknown error occurred.');
+		}
+
+		alert(error);
 	},
 
 	createButtons: function(pkg)
@@ -271,32 +268,13 @@ Craft.PackageChooser = Garnish.Base.extend({
 					var data = {
 						ccTokenId:  response.id,
 						'package':  pkg,
-						price:      (this.packages[pkg].salePrice ? this.packages[pkg].salePrice : this.packages[pkg].price),
-						licenseKey: this.settings.licenseKey,
-						email:      this.settings.email,
-						version:    this.settings.version,
-						build:      this.settings.build
+						price:      (this.packages[pkg].salePrice ? this.packages[pkg].salePrice : this.packages[pkg].price)
 					};
 
-					$.ajax({
-						url:     '@@@elliottEndpointUrl@@@actions/licenses/purchasePackage',
-						type:    'POST',
-						data:    data,
-
-						success: $.proxy(function(response)
-						{
-							if (!response.success && response.error != 'license_has_package')
-							{
-								this.handleUnsuccessfulPurchase(response.error);
-							}
-							else
-							{
-								this.handleSuccessfulPurchase(pkg);
-							}
-						}, this),
-
-						error:   $.proxy(this, 'handleUnsuccessfulPurchase')
-					});
+					Craft.postActionRequest('packages/purchasePackage', data,
+						$.proxy(this, 'handleSuccessfulPurchase', pkg),
+						$.proxy(this, 'handleUnsuccessfulPurchase')
+					);
 				}
 				else
 				{
@@ -317,27 +295,21 @@ Craft.PackageChooser = Garnish.Base.extend({
 		this.$ccModalSpinner.addClass('hidden');
 	},
 
-	handleSuccessfulPurchase: function(pkg)
+	handleSuccessfulPurchase: function(response)
 	{
-		this.packages[pkg].licensed = true;
-
-		// Was the package already installed?
-		if (Craft.hasPackage(pkg))
+		if (!response.success)
 		{
-			this.createButtons(pkg);
-			this.onPurchaseComplete(pkg);
+			this.handleUnsuccessfulPurchase(response.error);
+			return;
 		}
-		else
-		{
-			this.performPackageAction(pkg, 'install', $.proxy(this, 'onPurchaseComplete', pkg));
-		}
-	},
 
-	onPurchaseComplete: function(pkg)
-	{
+		this.packages[response.pkg].licensed = true;
+
 		this.onPurchaseResponse();
 		this.ccModal.hide();
-		Craft.cp.displayNotice(Craft.t('{package} purchased successfully!', { 'package': this.packages[pkg].name }));
+		this.createButtons(response.pkg);
+
+		Craft.cp.displayNotice(Craft.t('{package} purchased successfully!', { 'package': this.packages[response.pkg].name }));
 	},
 
 	handleUnsuccessfulPurchase: function(error)

@@ -74,26 +74,20 @@ class Et
 		$this->_endpoint = $endpoint;
 		$this->_timeout = $timeout;
 
-		$this->_model = new EtModel();
-		$this->_model->licenseKey = $this->_getLicenseKey();
-		$this->_model->requestUrl = craft()->request->getHostInfo().craft()->request->getUrl();
-		$this->_model->requestIp = craft()->request->getIpAddress();
-		$this->_model->requestTime = DateTimeHelper::currentTimeStamp();
-		$this->_model->requestPort = craft()->request->getPort();
-
-		$packages = array();
-		foreach (Craft::getPackages() as $packageName)
-		{
-			$packages[] = array('status' => PackageStatus::Invalid, 'name' => $packageName);
-		}
-
-		$this->_model->installedPackages = $packages;
-		$this->_model->localBuild = CRAFT_BUILD;
-		$this->_model->localVersion = CRAFT_VERSION;
-		$this->_model->userEmail = craft()->userSession->getUser()->email;
+		$this->_model = new EtModel(array(
+			'licenseKey'        => $this->_getLicenseKey(),
+			'requestUrl'        => craft()->request->getHostInfo().craft()->request->getUrl(),
+			'requestIp'         => craft()->request->getIpAddress(),
+			'requestTime'       => DateTimeHelper::currentTimeStamp(),
+			'requestPort'       => craft()->request->getPort(),
+			'installedPackages' => Craft::getPackages(),
+			'localBuild'        => CRAFT_BUILD,
+			'localVersion'      => CRAFT_VERSION,
+			'userEmail'         => craft()->userSession->getUser()->email,
+		));
 
 		$this->_options['useragent'] = 'craft-requests/'.\Requests::VERSION;
-		$this->_options['timeout'] = $this->_timeout;
+		$this->_options['timeout']   = $this->_timeout;
 	}
 
 	/**
@@ -105,7 +99,7 @@ class Et
 	}
 
 	/**
-	 * @return bool|EtModel
+	 * @return EtModel|null
 	 */
 	public function phoneHome()
 	{
@@ -142,13 +136,10 @@ class Et
 					$this->_setLicenseKey($etModel->licenseKey);
 				}
 
-				// we set the license key status on every request
-				craft()->et->setLicenseKeyStatus($etModel->licenseKeyStatus);
-
-				if (!empty($etModel->installedPackages))
-				{
-					craft()->et->setPackageStatuses($etModel->installedPackages);
-				}
+				// Cache the license key status and which packages are associated with it
+				$cacheDuration = craft()->config->getCacheDuration();
+				craft()->fileCache->set('licenseKeyStatus', $etModel->licenseKeyStatus, $cacheDuration);
+				craft()->fileCache->set('licensedPackages', $etModel->licensedPackages, $cacheDuration);
 
 				return $etModel;
 			}

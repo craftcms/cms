@@ -34,7 +34,10 @@ class EtModel extends BaseModel
 		$attributes['requestPort'] = AttributeType::String;
 
 		// Any packages installed on the client.
-		$attributes['installedPackages'] = AttributeType::String;
+		$attributes['installedPackages'] = array(AttributeType::Mixed, 'default' => array());
+
+		// All the packages that are actually licensed
+		$attributes['licensedPackages'] = array(AttributeType::Mixed, 'default' => array());
 
 		// The local version number.
 		$attributes['localVersion'] = AttributeType::String;
