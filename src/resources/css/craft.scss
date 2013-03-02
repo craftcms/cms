@@ -130,11 +130,11 @@ td.right { float: none; text-align: right; }
 .error { color: $errorcolor !important; }
 
 .icon.move { display: inline-block; cursor: move; }
-.icon.move:before { content: 'm'; color: #ccc; }
+.icon.move:before { content: 'm'; color: $lightcolor; }
 .icon.move:not(.disabled):hover:before { color: $linkcolor; }
 
 .icon.delete { display: inline-block; }
-.icon.delete:before { content: 'R'; color: #ccc; }
+.icon.delete:before { content: 'R'; color: $lightcolor; }
 .icon.delete:not(.disabled):hover:before { color: $errorcolor; }
 
 .hidden { display: none !important; }
@@ -614,9 +614,12 @@ body .redactor_box_fullscreen { z-index: 10000 !important; }
 
 .addlinksmodal .body { height: 250px; overflow: auto; @include unselectable; }
 
-.element { margin: -5px 0; padding: 4px 7px; cursor: pointer; }
+.element { margin: -5px 0; padding: 4px 26px 4px 7px; }
 .element:before { content: 'l'; margin: -2px 5px 0 0; font-size: 15px; }
 .element:hover { color: $selcolor; }
+.element .edit { float: right; margin-right: -20px; }
+.element .edit:before { margin-top: -2px; font-size: 15px; color: $lightcolor; }
+.element .edit:hover:before { color: $linkcolor; }
 .element.sel { color: #fff; background-color: $selcolor; }
 
 /* errors */

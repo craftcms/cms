@@ -26,7 +26,7 @@ class UpdatesWidget extends BaseWidget
 		if (craft()->updates->isUpdateInfoCached())
 		{
 			return craft()->templates->render('_components/widgets/Updates/body', array(
-				'total' => craft()->updates->getTotalNumberOfAvailableUpdates()
+				'total' => craft()->updates->getTotalAvailableUpdates()
 			));
 		}
 		else
