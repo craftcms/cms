@@ -716,28 +716,6 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * Archives a user.
-	 */
-	public function actionArchiveUser()
-	{
-		$this->requirePostRequest();
-		craft()->userSession->requirePermission('administrateUsers');
-
-		$userId = craft()->request->getRequiredPost('userId');
-		$user = craft()->users->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		craft()->users->archiveUser($user);
-
-		craft()->userSession->setNotice(Craft::t('User deleted.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
 	 * Saves the asset field layout.
 	 */
 	public function actionSaveFieldLayout()
