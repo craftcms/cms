@@ -147,7 +147,7 @@ td.right { float: none; text-align: right; }
 
 .header h1 .version { display: inline-block; position: relative; top: -2px; border-radius: 2px; padding: 0 5px; font-size: 11px; line-height: 18px; color: #fff; background: #555;
 	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.25);
-	   -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+	        box-shadow: 0 1px 2px rgba(0,0,0,0.25);
 }
 
 .header .left,
@@ -169,7 +169,7 @@ td.right { float: none; text-align: right; }
 
 .pane { position: relative; margin: 30px 0; padding: 15px; background: #fff;
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.25);
-	   -moz-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.25);
+	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.25);
 }
 
 .pane h2 { margin-bottom: 15px; border-bottom: none; }
@@ -261,7 +261,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 
 /* button groups */
 .btngroup { display: inline-block; font-size: 0; white-space: nowrap; }
-.btngroup .btn { font-size: 13px; }
+.btngroup .btn { font-size: 13px; vertical-align: middle; }
 .btngroup .btn:not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
 .btngroup .btn:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
 .btngroup .btn[data-icon]:before { margin-right: -2px; }
@@ -321,11 +321,11 @@ div.btn.submit input { position: absolute; left: 100%; }
 .lightswitch { position: relative; border: none !important; width: 80px; height: 31px; overflow: hidden; cursor: pointer; @include unselectable; }
 .lightswitch:after { display: block; position: absolute; z-index: 1; top: 0; left: 0; width: 100%; height: 100%; content: '.'; text-indent: -100%;
 	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
-	   -moz-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
+	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
 }
 .lightswitch:focus:after {
 	-webkit-box-shadow: inset 0 0 0 1px $focusglowcolor;
-	   -moz-box-shadow: inset 0 0 0 1px $focusglowcolor;
+	        box-shadow: inset 0 0 0 1px $focusglowcolor;
 }
 
 .lightswitch .container { margin-left: -50px; width: 130px; }
@@ -335,7 +335,7 @@ div.btn.submit input { position: absolute; left: 100%; }
 .lightswitch .label.on { color: #fff; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background-color: hsl(203, 79%, 50%); }
 .lightswitch .handle { position: relative; float: left; padding: 0; width: 30px; height: 31px; @include linear-gradient(#e5e5e5, #fff);
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
-	   -moz-box-shadow: 0 0 0 1px rgba(0,0,0,0.15)
+	        box-shadow: 0 0 0 1px rgba(0,0,0,0.15)
 }
 
 /* action buttons */
@@ -402,7 +402,7 @@ table.data.collapsed tbody td form { display: inline-block; }
 
 .datatablesorthelper { margin: -2px -7px; padding: 2px 7px; background: #fff;
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 2px 10px -2px rgba(0,0,0,0.25);
-	   -moz-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 2px 10px -2px rgba(0,0,0,0.25);
+	        box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 2px 10px -2px rgba(0,0,0,0.25);
 }
 .datatablesorthelper tr:first-child th,
 .datatablesorthelper tr:first-child td { border-top: none !important; }
@@ -433,7 +433,7 @@ ul.tree,
 
 .hud { position: absolute; background: rgba(25,25,25,0.9);
 	-webkit-box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-	   -moz-box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+	        box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
 .hud .tip { position: absolute; }
 .hud .tip.top { top: -5px; left: 50%; margin-left: -5px; width: 10px; height: 5px; background-image: url(../images/hud-tip-top.png); }
@@ -447,7 +447,7 @@ ul.tree,
 
 .modal { position: fixed; top: 50%; left: 50%; z-index: 9999; border-radius: 2px; margin-left: -200px; width: 400px; background: #fff; overflow: hidden;
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 4px 20px -7px rgba(0,0,0,0.5);
-	   -moz-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 4px 20px -7px rgba(0,0,0,0.5);
+	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 4px 20px -7px rgba(0,0,0,0.5);
 }
 
 .modal .header,
@@ -466,7 +466,7 @@ ul.tree,
 
 .menu { display: none; position: absolute; z-index: 9999; padding: 5px 15px; background: #fff; @include unselectable;
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5);
-	   -moz-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5);
+	        box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5);
 }
 .menu ul li + li { margin-top: 3px; }
 .menu ul li a { display: block; margin: 0 -15px; padding: 4px 15px; font-size: 12px; color: $textcolor; text-decoration: none; }
@@ -490,9 +490,9 @@ ul.tree,
 .text,
 #main div.redactor_box,
 .border-box,
-.lightswitch { border: 1px solid #ccc; border-radius: 0;
-	-webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
-	   -moz-box-shadow: 0 0 0 $blurglowcolor;    -moz-transition: border linear 100ms,    -moz-box-shadow linear 100ms;
+.lightswitch { border: 1px solid #ccc; border-radius: 1px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.1), 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
+	        box-shadow: inset 0 1px 1px rgba(0,0,0,0.1), 0 0 0 $blurglowcolor;    -moz-transition: border linear 100ms,         box-shadow linear 100ms;
 }
 
 .text.focus,
@@ -500,8 +500,8 @@ ul.tree,
 .border-box:focus,
 .border-box.focus,
 .lightswitch:focus { border-color: $focusglowcolor; outline: none;
-	-webkit-box-shadow: 0 0 5px $focusglowcolor;
-	   -moz-box-shadow: 0 0 5px $focusglowcolor;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.1), 0 0 5px $focusglowcolor;
+	        box-shadow: inset 0 1px 1px rgba(0,0,0,0.1), 0 0 5px $focusglowcolor;
 }
 
 input.text,
@@ -558,34 +558,34 @@ textarea.text,
 #main .redactor_toolbar li.redactor_separator { margin: 7px 2px 0 3px !important; height: 19px; border-left: 1px dotted #ccc; border-right: none; }
 
 body .redactor_box_fullscreen { z-index: 10000 !important; }
-/* select */
+
+/**
+ * Selects
+ *
+ * Waiting on this bug to get fixed before Firefox gets our fancy selects:
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=649849
+ */
 @media screen and (-webkit-min-device-pixel-ratio: 0)
 {
-	.select:before { @include icon; }
-	.select select { border: 1px solid #ccc; font-size: 13px; color: $textcolor;
-		-webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
-	}
-	.select select:focus { border-color: $focusglowcolor; outline: none;
-		-webkit-box-shadow: 0 0 5px $focusglowcolor;
-	}
-
 	.select,
 	.select select { border-radius: 2px; }
 	.select { display: inline-block; position: relative; background: #fff; }
-	.select:before { position: absolute; top: 7px; right: 9px; font-size: 10px; content: '▼'; @include unselectable; }
-	.select select { position: relative; padding: 7px 22px 7px 10px; background: none;
-		-webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 0 0 $blurglowcolor; -webkit-appearance: none;
+	.select:before { @include icon; position: absolute; top: 7px; right: 9px; font-size: 10px; content: '▼'; @include unselectable; }
+	.select select { position: relative; border: 1px solid #ccc; padding: 7px 22px 7px 10px; font-size: 13px; color: $textcolor; background: none;
+		-webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; -webkit-appearance: none;
+		        box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 0 0 $blurglowcolor;    -moz-transition: border linear 100ms,         box-shadow linear 100ms;    -moz-appearance: none;
 	}
 	.select:hover select:not(:focus) { border-color: #999; }
-	.select select:focus {
+	.select select:focus { border-color: $focusglowcolor; outline: none;
 		-webkit-box-shadow: inset 0 0 1px $focusglowcolor, 0 0 5px $focusglowcolor;
+		        box-shadow: inset 0 0 1px $focusglowcolor, 0 0 5px $focusglowcolor;
 	}
 }
 
 /* datepicker */
 .ui-datepicker { position: fixed; top: -300px; -padding: 10px; width: 210px; height: 210px; background: #fff;
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.25);
-	   -moz-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.25);
+	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.25);
 }
 .ui-datepicker-header { padding: 8px 8px 4px; }
 .ui-datepicker-prev { float: left; }
@@ -598,7 +598,7 @@ body .redactor_box_fullscreen { z-index: 10000 !important; }
 .ui-datepicker-calendar td a.ui-state-active { background: $linkcolor; color: #fff; cursor: default; }
 .ui-datepicker-calendar td.ui-datepicker-today a { border-radius: 13px;
 	-webkit-box-shadow: inset 0 0 0 2px rgba(0,0,0,0.15);
-	   -moz-box-shadow: inset 0 0 0 2px rgba(0,0,0,0.15);
+	        box-shadow: inset 0 0 0 2px rgba(0,0,0,0.15);
 }
 
 /* links */

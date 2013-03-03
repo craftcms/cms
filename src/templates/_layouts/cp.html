@@ -57,7 +57,9 @@
 			</div>
 		</div>
 
-		<header id="page-header">
+		{% set hasTabs = (tabs is defined and tabs) %}
+
+		<header id="page-header"{% if hasTabs %} class="has-tabs"{% endif %}>
 			{% if crumbs is defined and crumbs %}
 				<nav id="crumbs">
 					<ul>
@@ -78,7 +80,7 @@
 
 			<div class="clear"></div>
 
-			{% if tabs is defined and tabs %}
+			{% if hasTabs %}
 				<nav id="tabs" class="tabs">
 					<ul>
 						{% for tabId, tab in tabs %}
