@@ -22,13 +22,13 @@ class EtModel extends BaseModel
 		$attributes['data'] = AttributeType::Mixed;
 
 		// The url making the request.
-		$attributes['requestUrl'] = AttributeType::String;
+		$attributes['requestUrl'] = array(AttributeType::String, 'default' => '');
 
 		// The IP address making the request.
-		$attributes['requestIp'] = AttributeType::String;
+		$attributes['requestIp'] = array(AttributeType::String, 'default' => '1.1.1.1');
 
 		// The time the request was made.
-		$attributes['requestTime'] = AttributeType::DateTime;
+		$attributes['requestTime'] = array(AttributeType::DateTime, 'default' => DateTimeHelper::currentTimeForDb());
 
 		// The port number the request comes from.
 		$attributes['requestPort'] = AttributeType::String;
