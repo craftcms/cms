@@ -139,17 +139,27 @@ class Et
 
 				$etModel = craft()->et->decodeEtValues($response->body);
 
-				if ($missingLicenseKey && !empty($etModel->licenseKey))
+				// In the case where Elliott throws a PHP fatal error, for example, it will return with a 200 status code and make
+				// inside this block of code, but with a bunch of HTML as the response.  If $etModel->localbuild is set (and it should
+				// be, because it goes out on every request), then we know we have a successful response.
+				if (!empty($etModel->localBuild))
 				{
-					$this->_setLicenseKey($etModel->licenseKey);
+					if ($missingLicenseKey && !empty($etModel->licenseKey))
+					{
+						$this->_setLicenseKey($etModel->licenseKey);
+					}
+
+					// Cache the license key status and which packages are associated with it
+					$cacheDuration = craft()->config->getCacheDuration();
+					craft()->fileCache->set('licenseKeyStatus', $etModel->licenseKeyStatus, $cacheDuration);
+					craft()->fileCache->set('licensedPackages', $etModel->licensedPackages, $cacheDuration);
+
+					return $etModel;
 				}
-
-				// Cache the license key status and which packages are associated with it
-				$cacheDuration = craft()->config->getCacheDuration();
-				craft()->fileCache->set('licenseKeyStatus', $etModel->licenseKeyStatus, $cacheDuration);
-				craft()->fileCache->set('licensedPackages', $etModel->licensedPackages, $cacheDuration);
-
-				return $etModel;
+				else
+				{
+					Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, \CLogger::LEVEL_WARNING);
+				}
 			}
 			else
 			{
