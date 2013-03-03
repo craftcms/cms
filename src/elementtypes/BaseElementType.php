@@ -30,24 +30,16 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * Returns the site template path for a matched element.
+	 * Routes the request when the URI matches an element.
 	 *
 	 * @param BaseElementModel
-	 * @return string|false
+	 * @return mixed Can be false if no special action should be taken,
+	 *               a string if it should route to a template path,
+	 *               or an array that can specify a controller action path, params, etc.
 	 */
-	public function getSiteTemplateForMatchedElement(BaseElementModel $element)
+	public function routeRequestForMatchedElement(BaseElementModel $element)
 	{
 		return false;
-	}
-
-	/**
-	 * Returns the variable name the matched element should be assigned to.
-	 *
-	 * @return string
-	 */
-	public function getVariableNameForMatchedElement()
-	{
-		return 'element';
 	}
 
 	/**

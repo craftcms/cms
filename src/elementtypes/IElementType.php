@@ -14,14 +14,9 @@ interface IElementType extends IComponentType
 
 	/**
 	 * @param BaseElementModel
-	 * @return string|false
+	 * @return mixed
 	 */
-	public function getSiteTemplateForMatchedElement(BaseElementModel $element);
-
-	/**
-	 * @return string
-	 */
-	public function getVariableNameForMatchedElement();
+	public function routeRequestForMatchedElement(BaseElementModel $element);
 
 	/**
 	 * @return bool

@@ -62,7 +62,8 @@ class EntriesController extends BaseController
 			{
 				craft()->userSession->setError(Craft::t('Couldn’t save entry.'));
 
-				$this->renderRequestedTemplate(array(
+				// Send the entry back to the template
+				craft()->urlManager->setRouteVariables(array(
 					'entry' => $entry
 				));
 			}

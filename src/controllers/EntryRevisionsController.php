@@ -50,7 +50,8 @@ class EntryRevisionsController extends BaseController
 		{
 			craft()->userSession->setError(Craft::t('Couldn’t save draft.'));
 
-			$this->renderRequestedTemplate(array(
+			// Send the draft back to the template
+			craft()->urlManager->setRouteVariables(array(
 				'entry' => $draft
 			));
 		}
@@ -85,7 +86,8 @@ class EntryRevisionsController extends BaseController
 		{
 			craft()->userSession->setError(Craft::t('Couldn’t publish draft.'));
 
-			$this->renderRequestedTemplate(array(
+			// Send the draft back to the template
+			craft()->urlManager->setRouteVariables(array(
 				'entry' => $draft
 			));
 		}

@@ -36,7 +36,9 @@ class SystemSettingsController extends BaseController
 		else
 		{
 			craft()->userSession->setError(Craft::t('Couldn’t save general settings.'));
-			$this->renderRequestedTemplate(array(
+
+			// Send the info back to the template
+			craft()->urlManager->setRouteVariables(array(
 				'info' => $info
 			));
 		}
@@ -62,7 +64,8 @@ class SystemSettingsController extends BaseController
 
 		craft()->userSession->setError(Craft::t('Couldn’t save email settings.'));
 
-		$this->renderRequestedTemplate(array(
+		// Send the settings back to the template
+		craft()->urlManager->setRouteVariables(array(
 			'settings' => $settings
 		));
 	}

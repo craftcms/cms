@@ -66,8 +66,8 @@ class SectionsController extends BaseController
 			craft()->userSession->setError(Craft::t('Couldn’t save section.'));
 		}
 
-		// Reload the original template
-		$this->renderRequestedTemplate(array(
+		// Send the section back to the template
+		craft()->urlManager->setRouteVariables(array(
 			'section' => $section
 		));
 	}

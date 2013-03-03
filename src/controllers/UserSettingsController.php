@@ -35,8 +35,8 @@ class UserSettingsController extends BaseController
 			craft()->userSession->setError(Craft::t('Couldn’t save group.'));
 		}
 
-		// Reload the original template
-		$this->renderRequestedTemplate(array(
+		// Send the group back to the template
+		craft()->urlManager->setRouteVariables(array(
 			'group' => $group
 		));
 	}
@@ -75,7 +75,8 @@ class UserSettingsController extends BaseController
 		{
 			craft()->userSession->setError(Craft::t('Couldn’t save user settings.'));
 
-			$this->renderRequestedTemplate(array(
+			// Send the settings back to the template
+			craft()->urlManager->setRouteVariables(array(
 				'settings' => $settings
 			));
 		}

@@ -6,13 +6,19 @@ namespace Craft;
  */
 class TemplatesController extends BaseController
 {
-	public $allowAnonymous = array('actionIndex', 'actionOffline');
+	public $allowAnonymous = array('actionRender', 'actionOffline');
+
+	private $_template;
+	private $_templateSegments;
 
 	/**
 	 * Required
 	 */
-	public function actionIndex()
+	public function actionRender($template, array $variables = array())
 	{
+		$this->_template = $template;
+		$this->_templateSegments = array_filter(explode('/', $this->_template));
+
 		if (craft()->request->isCpRequest() &&
 			// The only time we'll allow anonymous access to the CP is in the middle of a manual update.
 			!($this->_isValidManualUpdatePath())
@@ -34,7 +40,31 @@ class TemplatesController extends BaseController
 			}
 		}
 
-		$this->renderRequestedTemplate();
+		try
+		{
+			$output = $this->renderTemplate($this->_template, $variables, true);
+
+			// Set the Content-Type header
+			$mimeType = craft()->request->getMimeType();
+			header('Content-Type: '.$mimeType.'; charset=utf-8');
+
+			// Output to the browser!
+			echo $output;
+
+			// End the request
+			craft()->end();
+		}
+		catch (TemplateLoaderException $e)
+		{
+			if ($e->template == $this->_template)
+			{
+				throw new HttpException(404);
+			}
+			else
+			{
+				throw $e;
+			}
+		}
 	}
 
 	/**
@@ -62,7 +92,7 @@ class TemplatesController extends BaseController
 	private function _isValidManualUpdatePath()
 	{
 		// Is this a manual Craft update?
-		if (craft()->request->getPath() == 'updates/go/craft' && craft()->request->getParam('manual', null) == 1)
+		if ($this->_template == 'updates/go/craft' && craft()->request->getParam('manual', null) == 1)
 		{
 			// Extra check in case someone manually comes to the url.
 			if (craft()->updates->isCraftDbUpdateNeeded())
@@ -72,10 +102,9 @@ class TemplatesController extends BaseController
 		}
 
 		// Is this a manual plugin update?
-		$segments = craft()->request->getSegments();
-		if (count($segments) == 3 && $segments[0] == 'updates' && $segments[1] == 'go' && craft()->request->getParam('manual', null) == 1)
+		if (count($this->_templateSegments) == 3 && $this->_templateSegments[0] == 'updates' && $this->_templateSegments[1] == 'go' && craft()->request->getParam('manual', null) == 1)
 		{
-			if (($plugin = craft()->plugins->getPlugin($segments[2])) !== null)
+			if (($plugin = craft()->plugins->getPlugin($this->_templateSegments[2])) !== null)
 			{
 				// Extra check in case someone manually comes to the url.
 				if (craft()->plugins->doesPluginRequireDatabaseUpdate($plugin))

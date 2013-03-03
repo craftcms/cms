@@ -109,54 +109,67 @@ $configArray = array(
 //  CP routes
 // -------------------------------------------
 
-$cpRoutes['dashboard\/settings\/new']                                         = 'dashboard/settings/_widgetsettings';
-$cpRoutes['dashboard\/settings\/(?P<widgetId>\d+)']                           = 'dashboard/settings/_widgetsettings';
+$cpRoutes['dashboard/settings/new']               = 'dashboard/settings/_widgetsettings';
+$cpRoutes['dashboard/settings/(?P<widgetId>\d+)'] = 'dashboard/settings/_widgetsettings';
 
-$cpRoutes['entries\/(?P<filter>{handle})']                                    = 'entries';
-$cpRoutes['entries\/(?P<sectionHandle>{handle})\/new']                        = 'entries/_edit';
-$cpRoutes['entries\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)']           = 'entries/_edit';
+$cpRoutes['entries/(?P<filter>{handle})']                         = 'entries';
+$cpRoutes['entries/(?P<sectionHandle>{handle})/new']              = 'entries/_edit';
+$cpRoutes['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)'] = 'entries/_edit';
 
-$cpRoutes['globals\/(?P<globalSetHandle>{handle})']                           = 'globals';
+$cpRoutes['globals/(?P<globalSetHandle>{handle})'] = 'globals';
 
-$cpRoutes['updates\/go\/(?P<handle>[^\/]*)']                                  = 'updates/_go';
+$cpRoutes['updates/go/(?P<handle>[^/]*)'] = 'updates/_go';
 
-$cpRoutes['settings\/assets']                                                 = 'settings/assets/sources';
-$cpRoutes['settings\/assets\/sources\/new']                                   = 'settings/assets/sources/_settings';
-$cpRoutes['settings\/assets\/sources\/(?P<sourceId>\d+)']                     = 'settings/assets/sources/_settings';
-$cpRoutes['settings\/assets\/transformations\/new']                           = 'settings/assets/transformations/_settings';
-$cpRoutes['settings\/assets\/transformations\/(?P<handle>{handle})']          = 'settings/assets/transformations/_settings';
-$cpRoutes['settings\/fields\/(?P<groupId>\d+)']                               = 'settings/fields';
-$cpRoutes['settings\/fields\/new']                                            = 'settings/fields/_edit';
-$cpRoutes['settings\/fields\/edit\/(?P<fieldId>\d+)']                         = 'settings/fields/_edit';
-$cpRoutes['settings\/plugins\/(?P<pluginClass>{handle})']                     = 'settings/plugins/_settings';
-$cpRoutes['settings\/sections\/new']                                          = 'settings/sections/_edit';
-$cpRoutes['settings\/sections\/(?P<sectionId>\d+)']                           = 'settings/sections/_edit';
-$cpRoutes['settings\/globals\/new']                                           = 'settings/globals/_edit';
-$cpRoutes['settings\/globals\/(?P<globalSetId>\d+)']                          = 'settings/globals/_edit';
+$cpRoutes['settings/assets']                                      = 'settings/assets/sources';
+$cpRoutes['settings/assets/sources/new']                          = 'settings/assets/sources/_settings';
+$cpRoutes['settings/assets/sources/(?P<sourceId>\d+)']            = 'settings/assets/sources/_settings';
+$cpRoutes['settings/assets/transformations/new']                  = 'settings/assets/transformations/_settings';
+$cpRoutes['settings/assets/transformations/(?P<handle>{handle})'] = 'settings/assets/transformations/_settings';
+$cpRoutes['settings/fields/(?P<groupId>\d+)']                     = 'settings/fields';
+$cpRoutes['settings/fields/new']                                  = 'settings/fields/_edit';
+$cpRoutes['settings/fields/edit/(?P<fieldId>\d+)']                = 'settings/fields/_edit';
+$cpRoutes['settings/plugins/(?P<pluginClass>{handle})']           = 'settings/plugins/_settings';
+$cpRoutes['settings/sections/new']                                = 'settings/sections/_edit';
+$cpRoutes['settings/sections/(?P<sectionId>\d+)']                 = 'settings/sections/_edit';
+$cpRoutes['settings/globals/new']                                 = 'settings/globals/_edit';
+$cpRoutes['settings/globals/(?P<globalSetId>\d+)']                = 'settings/globals/_edit';
 
-$cpRoutes['myaccount']                                                        = 'users/_edit/account';
+$cpRoutes['settings/routes']['params']['variables'] = array(
+	'tokens' => array(
+		'year'   => '\d{4}',
+		'month'  => '1?\d',
+		'day'    => '[1-3]?\d',
+		'number' => '\d+',
+		'page'   => '\d+',
+		'*'      => '[^\/]+',
+	)
+);
+
+$cpRoutes['myaccount'] = 'users/_edit/account';
 
 // Lanugage package routes
-$cpRoutes['pkgRoutes']['Localize']['entries\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/(?P<localeId>\w+)'] = 'entries/_edit';
-$cpRoutes['pkgRoutes']['Localize']['entries\/(?P<sectionHandle>{handle})\/new\/(?P<localeId>\w+)']              = 'entries/_edit';
+$cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/(?P<localeId>\w+)'] = 'entries/_edit';
+$cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/new/(?P<localeId>\w+)']              = 'entries/_edit';
 
 // Publish Pro package routes
-$cpRoutes['pkgRoutes']['PublishPro']['entries\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/drafts\/(?P<draftId>\d+)']     = 'entries/_edit';
-$cpRoutes['pkgRoutes']['PublishPro']['entries\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/versions\/(?P<versionId>\d+)'] = 'entries/_edit';
+$cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/drafts/(?P<draftId>\d+)']     = 'entries/_edit';
+$cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/versions/(?P<versionId>\d+)'] = 'entries/_edit';
 
 // Users package routes
-$cpRoutes['pkgRoutes']['Users']['myaccount\/profile']                        = 'users/_edit/profile';
-$cpRoutes['pkgRoutes']['Users']['myaccount\/info']                           = 'users/_edit/info';
-$cpRoutes['pkgRoutes']['Users']['myaccount\/admin']                          = 'users/_edit/admin';
-$cpRoutes['pkgRoutes']['Users']['users\/new']                                = 'users/_edit/account';
-$cpRoutes['pkgRoutes']['Users']['users\/(?P<filter>{handle})']               = 'users';
-$cpRoutes['pkgRoutes']['Users']['users\/(?P<userId>\d+)']                    = 'users/_edit/account';
-$cpRoutes['pkgRoutes']['Users']['users\/(?P<userId>\d+)\/profile']           = 'users/_edit/profile';
-$cpRoutes['pkgRoutes']['Users']['users\/(?P<userId>\d+)\/admin']             = 'users/_edit/admin';
-$cpRoutes['pkgRoutes']['Users']['users\/(?P<userId>\d+)\/info']              = 'users/_edit/info';
-$cpRoutes['pkgRoutes']['Users']['settings\/users']                           = 'settings/users/groups';
-$cpRoutes['pkgRoutes']['Users']['settings\/users\/groups\/new']              = 'settings/users/groups/_settings';
-$cpRoutes['pkgRoutes']['Users']['settings\/users\/groups\/(?P<groupId>\d+)'] = 'settings/users/groups/_settings';
+$cpRoutes['pkgRoutes']['Users']['myaccount/profile']             = 'users/_edit/profile';
+$cpRoutes['pkgRoutes']['Users']['myaccount/info']                = 'users/_edit/info';
+$cpRoutes['pkgRoutes']['Users']['myaccount/admin']               = 'users/_edit/admin';
+
+$cpRoutes['pkgRoutes']['Users']['users/new']                     = 'users/_edit/account';
+$cpRoutes['pkgRoutes']['Users']['users/(?P<filter>{handle})']    = 'users';
+$cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)']         = 'users/_edit/account';
+$cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)/profile'] = 'users/_edit/profile';
+$cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)/admin']   = 'users/_edit/admin';
+$cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)/info']    = 'users/_edit/info';
+
+$cpRoutes['pkgRoutes']['Users']['settings/users']                         = 'settings/users/groups';
+$cpRoutes['pkgRoutes']['Users']['settings/users/groups/new']              = 'settings/users/groups/_settings';
+$cpRoutes['pkgRoutes']['Users']['settings/users/groups/(?P<groupId>\d+)'] = 'settings/users/groups/_settings';
 
 // -------------------------------------------
 //  Component config

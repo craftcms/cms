@@ -173,11 +173,11 @@ class WebApp extends \CWebApplication
 			// Load the plugins
 			$this->plugins;
 
-			// Otherwise maybe it's an action request?
+			// If this is an action request, call the controller
 			$this->_processActionRequest();
 
-			// Otherwise run the template controller
-			$this->runController('templates');
+			// If we're still here, finally let UrlManager do it's thing.
+			parent::processRequest();
 		}
 		else
 		{
@@ -311,7 +311,7 @@ class WebApp extends \CWebApplication
 				{
 					$route = $controller.'/'.$action;
 					$this->runController($route);
-					$this->end();
+					return;
 				}
 				else
 				{
@@ -334,7 +334,7 @@ class WebApp extends \CWebApplication
 
 							$route = substr($controller, 0, strpos($controller, 'Controller')).'/'.$action;
 							$this->runController($route);
-							$this->end();
+							return;
 						}
 						else
 						{
@@ -349,7 +349,7 @@ class WebApp extends \CWebApplication
 
 								$route = substr($controller, 0, strpos($controller, 'Controller')).'/'.$action;
 								$this->runController($route);
-								$this->end();
+								return;
 							}
 						}
 					}
@@ -365,7 +365,7 @@ class WebApp extends \CWebApplication
 	 */
 	public function createController($route, $owner = null)
 	{
-		if (($route=trim($route,'/')) === '')
+		if (($route = trim($route, '/')) === '')
 		{
 			$route = $this->defaultController;
 		}

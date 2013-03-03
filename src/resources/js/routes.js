@@ -3,6 +3,7 @@
 
 var Routes = Garnish.Base.extend({
 
+	tokens: null,
 	routes: null,
 	$container: null,
 	$addRouteBtn: null,
@@ -10,6 +11,7 @@ var Routes = Garnish.Base.extend({
 
 	init: function()
 	{
+		this.tokens = {};
 		this.routes = [];
 		this.$container = $('#routes');
 
@@ -125,6 +127,14 @@ var RouteSettingsModal = Garnish.Modal.extend({
 	{
 		this.route = route;
 
+		var tokenHtml = '<h4>'+Craft.t("Add a token")+'</h4>';
+
+		for (var name in Craft.routes.tokens)
+		{
+			var pattern = Craft.routes.tokens[name];
+			tokenHtml += '<div class="token" data-name="'+name+'" data-value="'+pattern+'">'+name+'</div>';
+		}
+
 		var $container = $('<form class="modal route-settings" accept-charset="UTF-8">' +
 			'<div class="header">' +
 				'<h1></h1>' +
@@ -136,12 +146,7 @@ var RouteSettingsModal = Garnish.Modal.extend({
 					'</div>' +
 					'<div id="url" class="text url"></div>' +
 					'<div class="url-tokens">' +
-						'<h4>'+Craft.t("Add a token")+'</h4>' +
-						'<div class="token" data-name="year" data-value="\\d{4}">'+Craft.t("year")+'</div>' +
-						'<div class="token" data-name="month" data-value="1?\\d">'+Craft.t("month")+'</div>' +
-						'<div class="token" data-name="day" data-value="[1-3]?\\d">'+Craft.t("day")+'</div>' +
-						'<div class="token" data-name="number" data-value="\\d+">'+Craft.t("number")+'</div>' +
-						'<div class="token" data-name="page" data-value="\\d+">'+Craft.t("page")+'</div>' +
+						tokenHtml +
 					'</div>' +
 				'</div>' +
 				'<div class="field">' +

@@ -45,8 +45,8 @@ class DashboardController extends BaseController
 			craft()->userSession->setError(Craft::t('Couldn’t save widget.'));
 		}
 
-		// Reload the original template
-		$this->renderRequestedTemplate(array(
+		// Send the widget back to the template
+		craft()->urlManager->setRouteVariables(array(
 			'widget' => $widget
 		));
 	}

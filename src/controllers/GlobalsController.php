@@ -39,8 +39,8 @@ class GlobalsController extends BaseController
 			craft()->userSession->setError(Craft::t('Couldn’t save global set.'));
 		}
 
-		// Reload the original template
-		$this->renderRequestedTemplate(array(
+		// Send the global set back to the template
+		craft()->urlManager->setRouteVariables(array(
 			'globalSet' => $globalSet
 		));
 	}
@@ -87,7 +87,8 @@ class GlobalsController extends BaseController
 			craft()->userSession->setError(Craft::t('Couldn’t save globals.'));
 		}
 
-		$this->renderRequestedTemplate(array(
+		// Send the global set back to the template
+		craft()->urlManager->setRouteVariables(array(
 			'globalSet' => $globalSet,
 		));
 	}

@@ -43,8 +43,11 @@
 
 
 {% set js %}
-	{% for message in ['year', 'month', 'day', 'number', 'page'] %}
-		Craft.translations['{{ message|e("js") }}'] = '{{ message|t(null, null, craft.app.locale)|e("js") }}';
-	{% endfor %}
+	Craft.routes.tokens = {
+		{% for name, pattern in tokens %}
+			{% if not loop.first %},{% endif %}
+			"{{ name|t(null, null, craft.app.locale)|e('js') }}": "{{ pattern|e('js') }}"
+		{% endfor %}
+	};
 {% endset %}
 {% includeJs js %}
