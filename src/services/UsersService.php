@@ -640,32 +640,6 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Archives a user.
-	 *
-	 * @param UserModel $user
-	 * @return bool
-	 */
-	public function archiveUser(UserModel $user)
-	{
-		$userRecord = $this->_getUserRecordById($user->id);
-
-		$userRecord->status = $user->status = UserStatus::Archived;
-		$userRecord->archivedUsername = $user->username;
-		$userRecord->archivedEmail = $user->email;
-		$userRecord->username = '';
-		$userRecord->email = '';
-
-		// Delete their photo folder
-		$photoFolder = craft()->path->getUserPhotosPath().$userRecord->archivedUsername;
-		if (IOHelper::folderExists($photoFolder))
-		{
-			IOHelper::deleteFolder($photoFolder);
-		}
-
-		return $userRecord->save(false);
-	}
-
-	/**
 	 * Gets a user record by its ID.
 	 *
 	 * @access private
