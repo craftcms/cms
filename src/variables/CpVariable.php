@@ -100,24 +100,6 @@ class CpVariable
 	 */
 	public function getAlerts()
 	{
-		$alerts = array();
-		$licenseKeyStatus = craft()->et->getLicenseKeyStatus();
-		$licensedPackages = craft()->et->getLicensedPackages();
-
-		if ($licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
-		{
-			$alerts[] = Craft::t('WRONG DOMAIN, FOOL! TRANSFER IT OR PAY UP!');
-		}
-
-		// Look for any invalid licenses
-		foreach (Craft::getPackages() as $package)
-		{
-			if (!$licensedPackages || !in_array($package, $licensedPackages))
-			{
-				$alerts[] = Craft::t('YOU DON’T OWN '.strtoupper(Craft::t($package).' FOOL!'));
-			}
-		}
-
-		return $alerts;
+		return CpHelper::getAlerts();
 	}
 }

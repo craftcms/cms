@@ -120,7 +120,7 @@ class UpdatesService extends BaseApplicationComponent
 
 	/**
 	 * @param bool $forceRefresh
-	 * @return mixed
+	 * @return UpdateModel|false
 	 */
 	public function getUpdates($forceRefresh = false)
 	{

@@ -7,16 +7,6 @@ namespace Craft;
 class DashboardVariable
 {
 	/**
-	 * Returns dashboard alerts.
-	 *
-	 * @return array
-	 */
-	public function getAlerts()
-	{
-		return DashboardHelper::getAlerts();
-	}
-
-	/**
 	 * Returns all installed widget types.
 	 *
 	 * @return array

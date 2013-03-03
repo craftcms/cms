@@ -169,7 +169,7 @@ td.right { float: none; text-align: right; }
 /*  Panes
 /* ----------------------------------------*/
 
-.pane { position: relative; margin: 30px 0; padding: 15px; background: #fff;
+.pane { position: relative; border-radius: 1px;  margin: 30px 0; padding: 15px; background: #fff;
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.25);
 	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.25);
 }
@@ -228,6 +228,14 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 	-webkit-box-sizing: border-box;
 	   -moz-box-sizing: border-box;
 	-webkit-appearance: none;
+	-webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+	        box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+}
+
+.btn:active,
+.btn.active {
+	-webkit-box-shadow: inset 0 1px 0 rgba(0,0,0,0.05);
+	        box-shadow: inset 0 1px 0 rgba(0,0,0,0.05);
 }
 
 .btn:hover { text-decoration: none; }
@@ -237,7 +245,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btn:not(.submit):not(.noborder):not(.small) { line-height: 29px; }
 .btn:not(.submit):not(.noborder):hover { border-color: #ccc; }
 .btn:not(.submit):not(.noborder):active,
-.btn:not(.submit):not(.noborder).active { border-color: #ccc; background-color: #f5f5f5;}
+.btn:not(.submit):not(.noborder).active { border-color: #ccc; background-color: rgba(0,0,0,0.05); }
 
 .btngroup,
 .btn,
@@ -573,11 +581,11 @@ body .redactor_box_fullscreen { z-index: 10000 !important; }
 	.select select { border-radius: 2px; }
 	.select { display: inline-block; position: relative; background: #fff; }
 	.select:before { @include icon; position: absolute; top: 7px; right: 9px; font-size: 10px; content: '▼'; @include unselectable; }
-	.select select { position: relative; border: 1px solid #ccc; padding: 7px 22px 7px 10px; font-size: 13px; color: $textcolor; background: none;
+	.select select { position: relative; border: 1px solid #ddd; padding: 7px 22px 7px 10px; font-size: 13px; color: $textcolor; background: none;
 		-webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; -webkit-appearance: none;
 		        box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 0 0 $blurglowcolor;    -moz-transition: border linear 100ms,         box-shadow linear 100ms;    -moz-appearance: none;
 	}
-	.select:hover select:not(:focus) { border-color: #999; }
+	.select:hover select:not(:focus) { border-color: #ccc; }
 	.select select:focus { border-color: $focusglowcolor; outline: none;
 		-webkit-box-shadow: inset 0 0 1px $focusglowcolor, 0 0 5px $focusglowcolor;
 		        box-shadow: inset 0 0 1px $focusglowcolor, 0 0 5px $focusglowcolor;

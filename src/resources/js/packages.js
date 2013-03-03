@@ -35,12 +35,14 @@ Craft.PackageChooser = Garnish.Base.extend({
 		for (var i = 0; i < this.grid.$items.length; i++)
 		{
 			var $pkgContainer = $(this.grid.$items[i]),
+				$pkgHeading   = $pkgContainer.find('h2:first'),
 				pkg           = $pkgContainer.data('package');
 
 			this.packages[pkg] = {
 				pkg:           pkg,
-				name:          $pkgContainer.find('h2').text(),
+				name:          $pkgHeading.text(),
 				$container:    $pkgContainer,
+				$heading:      $pkgHeading,
 				$btnContainer: $pkgContainer.children('.buttons')
 			};
 		}
@@ -91,6 +93,12 @@ Craft.PackageChooser = Garnish.Base.extend({
 	{
 		var pkgInfo = this.packages[pkg];
 
+		if (pkgInfo.$badge)
+		{
+			pkgInfo.$badge.remove();
+			delete pkgInfo.$badge;
+		}
+
 		pkgInfo.$btnContainer.html('');
 
 		if (!pkgInfo.price)
@@ -102,30 +110,38 @@ Craft.PackageChooser = Garnish.Base.extend({
 		{
 			if (Craft.hasPackage(pkg))
 			{
-				var $btn = $('<div class="btn noborder pkg-installed">'+Craft.t('Installed!')+'</a>');
+				pkgInfo.$badge = $('<div class="badge installed">'+Craft.t('Installed!')+'</div>');
 			}
 			else
 			{
-				var $btn = $('<div class="btn noborder pkg-uninstalled">'+Craft.t('Uninstalled')+'</a>');
+				pkgInfo.$badge = $('<div class="badge uninstalled">'+Craft.t('Uninstalled')+'</div>');
 			}
 		}
 		else
 		{
+			if (Craft.hasPackage(pkg))
+			{
+				pkgInfo.$badge = $('<div class="badge unlicensed">'+Craft.t('Unlicensed')+'</div>');
+			}
+
 			if (pkgInfo.salePrice)
 			{
-				var label = '<del class="light">'+this.formatPrice(pkgInfo.price)+'</del> '+this.formatPrice(pkgInfo.salePrice);
+				var buyBtnLabel = '<del class="light">'+this.formatPrice(pkgInfo.price)+'</del> '+this.formatPrice(pkgInfo.salePrice);
 			}
 			else
 			{
-				var label = this.formatPrice(pkgInfo.price);
+				var buyBtnLabel = this.formatPrice(pkgInfo.price);
 			}
 
-			var $btn = $('<div class="btn price">'+label+'</a>');
+			var $buyBtn = $('<div class="btn buy">'+buyBtnLabel+'<span>'+Craft.t('Buy')+'</span></a>').appendTo(pkgInfo.$btnContainer);
 
-			this.addListener($btn, 'activate', { pkg: pkg }, 'purchasePackage');
+			this.addListener($buyBtn, 'activate', { pkg: pkg }, 'purchasePackage');
 		}
 
-		$btn.appendTo(pkgInfo.$btnContainer);
+		if (pkgInfo.$badge)
+		{
+			pkgInfo.$badge.insertBefore(pkgInfo.$heading);
+		}
 
 		if (pkgInfo.licensed || Craft.hasPackage(pkg))
 		{
@@ -355,17 +371,14 @@ Craft.PackageChooser = Garnish.Base.extend({
 
 	performPackageAction: function(pkg, action, callback)
 	{
-		// Show the spinner
-		var $btnContainer = this.packages[pkg].$btnContainer,
-			$spinner = $('<div class="spinner"/>').appendTo($btnContainer);
+		var $btnContainer = this.packages[pkg].$btnContainer;
 
 		var data = {
 			'package': pkg
 		};
 
-		Craft.postActionRequest('packages/'+action+'Package', data, $.proxy(function(response) {
-			$spinner.hide();
-
+		Craft.postActionRequest('packages/'+action+'Package', data, $.proxy(function(response)
+		{
 			if (!response.success)
 			{
 				if (response.error)

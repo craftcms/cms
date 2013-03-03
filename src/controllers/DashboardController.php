@@ -7,16 +7,6 @@ namespace Craft;
 class DashboardController extends BaseController
 {
 	/**
-	 *
-	 */
-	public function actionGetAlerts()
-	{
-		$alerts = DashboardHelper::getAlerts(true);
-		$r = array('alerts' => $alerts);
-		$this->returnJson($r);
-	}
-
-	/**
 	 * Saves a widget.
 	 */
 	public function actionSaveUserWidget()
