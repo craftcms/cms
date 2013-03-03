@@ -46,7 +46,7 @@ class EntryElementType extends BaseElementType
 			if ($section->hasUrls && array_key_exists(craft()->language, $section->getLocales()))
 			{
 				return array(
-					'action' => 'templates',
+					'action' => 'templates/render',
 					'params' => array(
 						'template' => $section->template,
 						'variables' => array(
