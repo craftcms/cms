@@ -42,8 +42,6 @@ class UserRecord extends BaseRecord
 			'verificationCodeIssuedDate' => array(AttributeType::DateTime),
 			'passwordResetRequired'      => array(AttributeType::Bool),
 			'lastPasswordChangeDate'     => array(AttributeType::DateTime),
-			'archivedUsername'           => array(AttributeType::String, 'maxLength' => 100),
-			'archivedEmail'              => array(AttributeType::Email),
 		);
 	}
 
