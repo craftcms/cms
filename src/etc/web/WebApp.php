@@ -110,7 +110,7 @@ class WebApp extends \CWebApplication
 
 		// isDbUpdateNeeded will return true if we're in the middle of a manual or auto-update.
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
-		if (craft()->updates->isDbUpdateNeeded() || (Craft::isInMaintenanceMode() && !$this->request->isSiteRequest()))
+		if (craft()->updates->isDbUpdateNeeded() || (Craft::isInMaintenanceMode() && $this->request->isCpRequest()))
 		{
 			// Let all non-action CP requests through.
 			if (
