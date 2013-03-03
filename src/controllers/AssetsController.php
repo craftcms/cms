@@ -79,7 +79,7 @@ class AssetsController extends BaseController
 		$additionalFolderIds = array();
 		if ($searchType == 'deep')
 		{
-			$additionalFolderIds = array_keys(craft()->assets->findChildFolders($folder));
+			$additionalFolderIds = array_keys(craft()->assets->getAllChildFolders($folder));
 		}
 
 		$files = craft()->assets->getFilesByFolderId(array_merge(array($folderId), $additionalFolderIds), $parameters);
@@ -228,6 +228,20 @@ class AssetsController extends BaseController
 		$actions = craft()->request->getPost('action');
 
 		$response = craft()->assets->moveFiles($fileIds, $folderId, $fileName, $actions);
+		$this->returnJson($response->getResponseData());
+	}
+
+	/**
+	 * Move a folder
+	 */
+	public function actionMoveFolder()
+	{
+		$folderId = craft()->request->getRequiredPost('folderId');
+		$parentId = craft()->request->getRequiredPost('parentId');
+		$action = craft()->request->getPost('action');
+
+		$response = craft()->assets->moveFolder($folderId, $parentId, $action);
+
 		$this->returnJson($response->getResponseData());
 	}
 }

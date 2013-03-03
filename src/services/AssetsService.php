@@ -452,6 +452,34 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Move a folder.
+	 *
+	 * @param $folderId
+	 * @param $newParentId
+	 * @param $action
+	 * @return AssetOperationResponseModel
+	 */
+	public function moveFolder($folderId, $newParentId, $action)
+	{
+		$folder = $this->getFolderById($folderId);
+		$newParentFolder = $this->getFolderById($newParentId);
+
+
+		if (!($folder && $newParentFolder))
+		{
+			$response = new AssetOperationResponseModel();
+			$response->setError(Craft::t("Error moving folder - either source or target folders cannot be found"));
+		}
+		else
+		{
+			$newSourceType = craft()->assetSources->getSourceTypeById($newParentFolder->sourceId);
+			$response = $newSourceType->moveFolder($folder, $newParentFolder, !empty($action));
+		}
+
+		return $response;
+	}
+
+	/**
 	 * Delete a folder by it's id.
 	 *
 	 * @param $folderId
@@ -539,12 +567,12 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Find a folder's child folders.
+	 * Find all folder's child folders in it's subtree.
 	 *
 	 * @param AssetFolderModel $folderModel
 	 * @return array
 	 */
-	public function findChildFolders(AssetFolderModel $folderModel)
+	public function getAllChildFolders(AssetFolderModel $folderModel)
 	{
 		$query = craft()->db->createCommand()
 			->select('f.*')

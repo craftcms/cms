@@ -232,9 +232,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		if (IOHelper::fileExists($targetPath))
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setPrompt($this->_getUserPromptOptions($fileName));
-			$response->setDataItem('fileName', $fileName);
-			return $response;
+			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 		if (! IOHelper::copyFile($filePath, $targetPath))
@@ -245,10 +243,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		IOHelper::changePermissions($targetPath, IOHelper::writableFilePermissions);
 
 		$response = new AssetOperationResponseModel();
-		$response->setSuccess();
-		$response->setDataItem('filePath', $targetPath);
-		return $response;
-
+		return $response->setSuccess()->setDataItem('filePath', $targetPath);
 	}
 
 	/**
@@ -373,12 +368,13 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Delete just the source file for an Assets File.
 	 *
-	 * @param AssetFileModel $file
+	 * @param AssetFolderModel $folder
+	 * @param $filename
 	 * @return void
 	 */
-	protected function _deleteSourceFile(AssetFileModel $file)
+	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
-		IOHelper::deleteFile($this->_getFileSystemPath($file));
+		IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->fullPath.$filename);
 	}
 
 	/**
@@ -392,7 +388,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		$transformations = craft()->assetTransformations->getAssetTransformations();
 		foreach ($transformations as $handle => $transformation)
 		{
-			IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->fullPath.'/_'.$handle.'/'.$file->filename);
+			IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->fullPath.'_'.$handle.'/'.$file->filename);
 		}
 	}
 
@@ -423,16 +419,13 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		if ($conflict)
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setPrompt($this->_getUserPromptOptions($fileName));
-			$response->setDataItem('fileName', $fileName);
-			return $response;
+			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 		if (!IOHelper::move($this->_getFileSystemPath($file), $newServerPath))
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setError(Craft::t("Could not save the file"));
-			return $response;
+			return $response->setError(Craft::t("Could not save the file"));
 		}
 
 		if ($file->kind == 'image')
@@ -455,11 +448,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		}
 
 		$response = new AssetOperationResponseModel();
-		$response->setSuccess();
-		$response->setDataItem('newId', $file->id);
-		$response->setDataItem('newFileName', $fileName);
-
-		return $response;
+		return $response->setSuccess()
+				->setDataItem('newId', $file->id)
+				->setDataItem('newFileName', $fileName);
 	}
 
 	/**
@@ -506,9 +497,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFolderModel $folder
 	 * @return boolean
 	 */
-	protected function _deleteSourceFolder(AssetFolderModel $folder)
+	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
-		return IOHelper::deleteFolder($this->_getSourceFileSystemPath().$folder->fullPath);
+		return IOHelper::deleteFolder($this->_getSourceFileSystemPath().$parentFolder->fullPath.$folderName);
 	}
 
 	/**

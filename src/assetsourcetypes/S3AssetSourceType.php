@@ -306,9 +306,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		if ($fileInfo)
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setPrompt($this->_getUserPromptOptions($fileName));
-			$response->setDataItem('fileName', $fileName);
-			return $response;
+			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 		clearstatcache();
@@ -320,9 +318,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		}
 
 		$response = new AssetOperationResponseModel();
-		$response->setSuccess();
-		$response->setDataItem('filePath', $uriPath);
-		return $response;
+		return $response->setSuccess()->setDataItem('filePath', $uriPath);
 	}
 
 	/**
@@ -425,20 +421,21 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	private function _getS3Path(AssetFileModel $file)
 	{
-		$folder = craft()->assets->getFolderById($file->folderId);
+		$folder = $file->getFolder();
 		return $folder->fullPath.$file->filename;
 	}
 
 	/**
 	 * Delete just the source file for an Assets File.
 	 *
-	 * @param AssetFileModel $file
+	 * @param AssetFolderModel $folder
+	 * @param $filename
 	 * @return void
 	 */
-	protected function _deleteSourceFile(AssetFileModel $file)
+	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
 		$this->_prepareForRequests();
-		$this->_s3->deleteObject($this->getSettings()->bucket, $this->_getS3Path($file));
+		$this->_s3->deleteObject($this->getSettings()->bucket, $folder->fullPath.$filename);
 	}
 
 	/**
@@ -494,10 +491,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		if ($conflict)
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setPrompt($this->_getUserPromptOptions($fileName));
-			$response->setDataItem('fileName', $fileName);
-			return $response;
-
+			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 		$bucket = $this->getSettings()->bucket;
@@ -505,8 +499,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		if (!$this->_s3->copyObject($bucket, $file->getFolder()->fullPath.$file->filename, $bucket, $newServerPath))
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setError(Craft::t("Could not save the file"));
-			return $response;
+			return $response->setError(Craft::t("Could not save the file"));
 		}
 
 		$this->_s3->deleteObject($bucket, $this->_getS3Path($file));
@@ -528,11 +521,9 @@ class S3AssetSourceType extends BaseAssetSourceType
 		}
 
 		$response = new AssetOperationResponseModel();
-		$response->setSuccess();
-		$response->setDataItem('newId', $file->id);
-		$response->setDataItem('newFileName', $fileName);
-
-		return $response;
+		return $response->setSuccess()
+				->setDataItem('newId', $file->id)
+				->setDataItem('newFileName', $fileName);
 	}
 
 	/**
@@ -597,11 +588,11 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * @param AssetFolderModel $folder
 	 * @return boolean
 	 */
-	protected function _deleteSourceFolder(AssetFolderModel $folder)
+	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
 		$bucket = $this->getSettings()->bucket;
-		$objectsToDelete = $this->_s3->getBucket($bucket, $folder->fullPath);
+		$objectsToDelete = $this->_s3->getBucket($bucket, $parentFolder->fullPath.$folderName);
 
 		foreach ($objectsToDelete as $uri)
 		{

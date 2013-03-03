@@ -92,7 +92,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param AssetFileModel $file
 	 */
-	abstract protected function _deleteSourceFile(AssetFileModel $file);
+	abstract protected function _deleteSourceFile(AssetFolderModel $folder, $filename);
 
 	/**
 	 * Move a file in source.
@@ -134,10 +134,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete the source folder.
 	 *
-	 * @param AssetFolderModel $folder
+	 * @param AssetFolderModel $parentFolder
+	 * @param $folderName
 	 * @return boolean
 	 */
-	abstract protected function _deleteSourceFolder(AssetFolderModel $folder);
+	abstract protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName);
 
 	/**
 	 * Rename a source folder.
@@ -170,6 +171,25 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				array('value' => AssetsHelper::ActionKeepBoth, 'title' => Craft::t('Rename the new file and keep both')),
 				array('value' => AssetsHelper::ActionReplace, 'title' => Craft::t('Replace the existing file')),
 				array('value' => AssetsHelper::ActionCancel, 'title' => Craft::t('Keep the original file'))
+			)
+		);
+	}
+
+	/**
+	 * Return a result array for prompting the user about folder conflicts.
+	 *
+	 * @param string $folderName the caused of all trouble
+	 * @param int $folderId
+	 * @return object
+	 */
+	protected function _getUserFolderPromptOptions($folderName, $folderId)
+	{
+		return array(
+			'prompt' => Craft::t('Folder {folder} already exists', array('folder' => $folderName)),
+			'file_name' => $folderId,
+			'choices' => array(
+				array('value' => AssetsHelper::ActionReplace, 'title' => Craft::t('Replace the existing folder')),
+				array('value' => AssetsHelper::ActionCancel, 'title' => Craft::t('Cancel the folder move.'))
 			)
 		);
 	}
@@ -245,7 +265,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			craft()->assets->storeFile($fileModel);
 
-			if (!$this->isSourceLocal())
+			if (!$this->isSourceLocal() && $fileModel->kind == 'image')
 			{
 				// Store copy locally for all sorts of operations.
 				IOHelper::copyFile($filePath, craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel, PATHINFO_EXTENSION));
@@ -256,9 +276,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			// Check if we stored a conflict response originally - send that back then.
 			if (isset($conflictResponse))
 			{
-				$response = $conflictResponse;
-				$response->setDataItem('additionalInfo', $folder->id.':'.$fileModel->id);
-				$response->setDataItem('newFileId', $fileModel->id);
+				$response = $conflictResponse->setDataItem('additionalInfo', $folder->id.':'.$fileModel->id)->setDataItem('newFileId', $fileModel->id);
 			}
 
 			$response->setDataItem('fileId', $fileModel->id);
@@ -312,7 +330,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			$file->sourceId = $folder->sourceId;
 			craft()->assets->storeFile($file);
 
-			if (!$this->isSourceLocal())
+			if (!$this->isSourceLocal() && $file->kind == "image")
 			{
 				// Store copy locally for all sorts of operations.
 				IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$file->id.'.'.pathinfo($file, PATHINFO_EXTENSION));
@@ -342,8 +360,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		if ($file->folderId == $targetFolder->id && $filename == $file->filename)
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setSuccess();
-			return $response;
+			return $response->setSuccess();
 		}
 
 		// If this is a revisited conflict, perform the appropriate actions
@@ -354,7 +371,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				case AssetsHelper::ActionReplace:
 				{
 					$fileToDelete = craft()->assets->findFile(array('folderId' => $targetFolder->id, 'filename' => $filename));
-					$this->deleteFile($fileToDelete);
+					if ($fileToDelete)
+					{
+						$this->deleteFile($fileToDelete);
+					}
+					else
+					{
+						$this->_deleteSourceFile($targetFolder, $filename);
+					}
 					break;
 				}
 
@@ -537,7 +561,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			if (!$this->isSourceLocal())
 			{
 				$localCopy = $this->getLocalCopy($replaceWith);
-				IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$oldFile->id.'.'.pathinfo($oldFile, PATHINFO_EXTENSION));
+				if ($oldFile->kind == "image")
+				{
+					IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$oldFile->id.'.'.pathinfo($oldFile, PATHINFO_EXTENSION));
+				}
 				IOHelper::deleteFile($localCopy);
 			}
 		}
@@ -580,14 +607,15 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 		$this->finalizeOutgoingTransfer($file);
 
-		IOHelper::deleteFile(craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename));
+		if (IOHelper::fileExists(craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename)))
+		{
+			IOHelper::deleteFile(craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename));
+		}
 
 		craft()->assets->deleteFileRecord($file->id);
 
 		$response = new AssetOperationResponseModel();
-		$response->setSuccess();
-
-		return $response;
+		return $response->setSuccess();
 	}
 
 	/**
@@ -599,7 +627,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 		$this->_deleteGeneratedImageTransformations($file);
 		$this->_deleteGeneratedThumbnails($file);
-		$this->_deleteSourceFile($file);
+		$this->_deleteSourceFile($file->getFolder(), $file->filename);
 	}
 
 	/**
@@ -635,12 +663,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$folderId = craft()->assets->storeFolder($newFolder);
 
 		$response = new AssetOperationResponseModel();
-		$response->setSuccess();
-		$response->setDataItem('folderId', $folderId);
-		$response->setDataItem('parentId', $parentFolder->id);
-		$response->setDataItem('folderName', $folderName);
-
-		return $response;
+		return $response->setSuccess()
+				->setDataItem('folderId', $folderId)
+		    	->setDataItem('parentId', $parentFolder->id)
+		    	->setDataItem('folderName', $folderName);
 	}
 
 	/**
@@ -673,7 +699,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$newFullPath = $this->_getParentFullPath($folder->fullPath).$newName.'/';
 
 		// Find all folders with affected fullPaths and update them.
-		$folders = craft()->assets->findChildFolders($folder);
+		$folders = craft()->assets->getAllChildFolders($folder);
 		foreach ($folders as $folderModel)
 		{
 			$folderModel->fullPath = preg_replace('#^'.$oldFullPath.'#', $newFullPath, $folderModel->fullPath);
@@ -687,9 +713,101 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		// All set, Scotty!
 		$response = new AssetOperationResponseModel();
-		$response->setSuccess();
-		$response->setDataItem('newName', $newName);
-		return $response;
+		return $response->setSuccess()->setDataItem('newName', $newName);
+	}
+
+	/**
+	 * @param AssetFolderModel $folder
+	 * @param AssetFolderModel $newParentFolder
+	 * @param boolean $overwriteTarget if true will overwrite folder, if needed
+	 * @return AssetOperationResponseModel
+	 */
+	public function moveFolder(AssetFolderModel $folder, AssetFolderModel $newParentFolder, $overwriteTarget = false)
+	{
+		$response = new AssetOperationResponseModel();
+		if ($folder->id == $newParentFolder->id)
+		{
+			return $response->setSuccess();
+		}
+
+		$removeFromTree = '';
+		if ($this->_sourceFolderExists($newParentFolder, $folder->name))
+		{
+			if ($overwriteTarget)
+			{
+				$existingFolder = craft()->assets->findFolder(array('parentId' => $newParentFolder->id, 'name' => $folder->name));
+				if ($existingFolder)
+				{
+					$removeFromTree = $existingFolder->id;
+					$this->deleteFolder($existingFolder);
+				}
+				else
+				{
+					$this->_deleteSourceFolder($newParentFolder, $folder->name);
+				}
+			}
+			else
+			{
+				return $response->setPrompt($this->_getUserFolderPromptOptions($folder->name, $folder->id))->setDataItem('folderId', $folder->id);
+			}
+		}
+
+		$response->setSuccess()->setDataItem('deleteList', array($folder->id))->setDataItem('removeFromTree', $removeFromTree);
+
+		$mirroringData = array('changedFolderIds' => array());
+		$this->_mirrorStructure($newParentFolder, $folder, $mirroringData);
+
+		$response->setDataItem('changedFolderIds', $mirroringData['changedFolderIds']);
+
+		$files = craft()->assets->findFiles(array('folderId' => array_keys(craft()->assets->getAllChildFolders($folder))));
+
+		$transferList = array();
+		foreach ($files as $file)
+		{
+			$transferList[] = array(
+				'fileId' => $file->id,
+				'folderId' => $mirroringData['changedFolderIds'][$file->folderId]['newId'],
+				'fileName' => $file->filename
+			);
+		}
+
+		return $response->setDataItem('transferList', $transferList);
+	}
+
+	/**
+	 * Mirrors a subset of folder tree from one location to other.
+	 *
+	 * @param AssetFolderModel $newLocation
+	 * @param AssetFolderModel $sourceFolder
+	 * @param $changedData
+	 * @throws Exception
+	 */
+	private function _mirrorStructure(AssetFolderModel $newLocation, AssetFolderModel $sourceFolder, &$changedData)
+	{
+		$response = $this->createFolder($newLocation, $sourceFolder->name);
+
+		if ($response->isSuccess())
+		{
+			$newId = $response->getDataItem('folderId');
+			$parentId = $response->getDataItem('parentId');
+
+			$changedData['changedFolderIds'][$sourceFolder->id] = array(
+				'newId' => $newId,
+				'newParentId' => $parentId
+			);
+
+			$newTargetRow = craft()->assets->getFolderById($newId);
+
+			$children = craft()->assets->findFolders(array('parentId' => $sourceFolder->id));
+			foreach ($children as $child)
+			{
+				$this->_mirrorStructure($newTargetRow, $child, $changedData);
+			}
+		}
+		else
+		{
+			throw new Exception(Craft::t("Failed to succesfully mirror folder structure"));
+		}
 	}
 
 	/**
@@ -718,13 +836,13 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			$this->deleteFolder($childFolder);
 		}
 
-		$this->_deleteSourceFolder($folder);
+		$parentFolder = craft()->assets->getFolderById($folder->parentId);
+		$this->_deleteSourceFolder($parentFolder, $folder->name);
 
 		craft()->assets->deleteFolderRecord($folder->id);
 
 		$response = new AssetOperationResponseModel();
-		$response->setSuccess();
-		return $response;
+		return $response->setSuccess();
 	}
 
 	/**
