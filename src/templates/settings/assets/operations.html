@@ -1,7 +1,7 @@
 {% extends "settings/assets/_layout" %}
 {% set selectedTab = 'operations' %}
 {% import "_includes/forms" as forms %}
-{% set sources = craft.assets.getAllSources %}
+{% set sources = craft.assets.getAllSources('id') %}
 
 {% includeTranslations
 	"The following items were found in the database that do not have a physical match.",
