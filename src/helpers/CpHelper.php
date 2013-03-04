@@ -11,17 +11,15 @@ class CpHelper
 	 * @param bool $fetch
 	 * @return array
 	 */
-	public static function getAlerts($fetch = false)
+	public static function getAlerts($path = null, $fetch = false)
 	{
 		$alerts = array();
 
 		if (craft()->updates->isUpdateInfoCached() || $fetch)
 		{
-			$updateModel      = craft()->updates->getUpdates();
-			$licenseKeyStatus = craft()->et->getLicenseKeyStatus();
-			$licensedPackages = craft()->et->getLicensedPackages();
-
-			$path = craft()->request->getPath();
+			// Fetch the updates regardless of whether we're on the Updates page or not,
+			// because the other alerts are relying on cached Elliott info
+			$updateModel = craft()->updates->getUpdates();
 
 			if ($path != 'updates')
 			{
@@ -35,17 +33,27 @@ class CpHelper
 				}
 			}
 
-			if ($path != 'resolvelicense')
+			// Domain mismatch?
+			$licenseKeyStatus = craft()->et->getLicenseKeyStatus();
+
+			if ($licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
 			{
-				if ($licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
-				{
-					$alerts[] = Craft::t('Your @@@appName@@@ license is associated with a different domain.') .
-						' <a class="go" href="'.UrlHelper::getUrl('resolvelicense').'">'.Craft::t('Resolve').'</a>';
-				}
+				$licensedDomain = craft()->et->getLicensedDomain();
+				$licenseKeyPath = craft()->et->getLicenseKeyPath();
+				$licenseKeyFile = IOHelper::getFolderName($licenseKeyPath, false).'/'.IOHelper::getFileName($licenseKeyPath);
+
+				$alerts[] = Craft::t('The license located at {file} belongs to {domain}.', array(
+						'file'   => $licenseKeyFile,
+						'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
+					)) .
+					' <a class="domain-mismatch">'.Craft::t('Transfer it to this domain?').'</a>';
 			}
 
+			// Unlicensed packages?
 			if ($path != 'settings/packages')
 			{
+				$licensedPackages = craft()->et->getLicensedPackages();
+
 				// Look for any unlicensed licenses
 				$unlicensedPackages = array();
 

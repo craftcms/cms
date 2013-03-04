@@ -2,17 +2,53 @@
 namespace Craft;
 
 /**
- * Handles package actions.
+ *
  */
-class PackagesController extends BaseController
+class AppController extends BaseController
 {
 	/**
 	 * Init
 	 */
 	public function init()
 	{
-		// All package actions must be performed by an admin.
+		// All app actions must be performed by an admin.
 		craft()->userSession->requireAdmin();
+	}
+
+	/**
+	 * Loads any CP alerts.
+	 */
+	public function actionGetCpAlerts()
+	{
+		$this->requireAjaxRequest();
+
+		$path = craft()->request->getRequiredPost('path');
+
+		// Fetch 'em and send 'em
+		$alerts = CpHelper::getAlerts($path, true);
+		$this->returnJson($alerts);
+	}
+
+	/**
+	 * Transfers the Craft license to the current domain.
+	 */
+	public function actionTransferLicenseToCurrentDomain()
+	{
+		$this->requireAjaxRequest();
+		$this->requirePostRequest();
+
+		$response = craft()->et->transferLicenseToCurrentDomain();
+
+		if ($response === true)
+		{
+			$this->returnJson(array(
+				'success' => true
+			));
+		}
+		else
+		{
+			$this->returnErrorJson($response);
+		}
 	}
 
 	/**
@@ -26,8 +62,8 @@ class PackagesController extends BaseController
 
 		if ($etResponse)
 		{
-			// Make sure we've got a valid license key
-			if ($etResponse->licenseKeyStatus != LicenseKeyStatus::Valid)
+			// Make sure we've got a valid license key (mismatched domain is OK for these purposes)
+			if ($etResponse->licenseKeyStatus != LicenseKeyStatus::Invalid)
 			{
 				$packages = $etResponse->data;
 

@@ -10,6 +10,8 @@
 	"Attempted to get the width of a modal whose container has not been set.",
 	"Attempted to position a modal whose container has not been set.",
 	"Attempted to position a modal whose container has not been set.",
+	"Are you sure you want to transfer your license to this domain?",
+	"License transferred.",
 	"Save",
 	"Cancel",
 	"Delete",
@@ -53,16 +55,17 @@
 
 <script type="text/javascript">
 	window.Craft = {
-		baseUrl: '{{ url() }}',
-		actionUrl: '{{ actionUrl() }}',
-		resourceUrl: '{{ resourceUrl() }}',
-		usePathInfo: {{ craft.config.usePathInfo() ? 'true' : 'false' }},
-		resourceTrigger: '{{ craft.config.resourceTrigger }}',
-		actionTrigger: '{{ craft.config.actionTrigger }}',
-		language: '{{ craft.locale }}',
-		packages: {{ craft.getPackages|json_encode|raw }},
-		translations: {{ getTranslations()|raw }},
-		maxUploadSize: {{ craft.app.getMaxUploadSize() }}
+		baseUrl:         "{{ url()|e('js') }}",
+		actionUrl:       "{{ actionUrl()|e('js') }}",
+		resourceUrl:     "{{ resourceUrl()|e('js') }}",
+		usePathInfo:     {{ craft.config.usePathInfo() ? 'true' : 'false' }},
+		resourceTrigger: "{{ craft.config.resourceTrigger|e('js') }}",
+		actionTrigger:   "{{ craft.config.actionTrigger|e('js') }}",
+		path:            "{{ craft.request.getPath()|e('js') }}",
+		language:        "{{ craft.locale|e('js') }}",
+		packages:        {{ craft.getPackages|json_encode|raw }},
+		translations:    {{ getTranslations()|raw }},
+		maxUploadSize:   {{ craft.app.getMaxUploadSize() }}
 	};
 </script>
 

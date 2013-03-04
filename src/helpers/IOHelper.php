@@ -230,6 +230,12 @@ class IOHelper
 		}
 		else
 		{
+			if (!is_dir($path))
+			{
+				// Chop off the file
+				$path = pathinfo($path, PATHINFO_DIRNAME);
+			}
+
 			return pathinfo($path, PATHINFO_BASENAME);
 		}
 	}

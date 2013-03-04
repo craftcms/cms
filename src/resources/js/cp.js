@@ -3,6 +3,7 @@
 
 var CP = Garnish.Base.extend({
 
+	$alerts: null,
 	$header: null,
 	$nav: null,
 
@@ -43,6 +44,7 @@ var CP = Garnish.Base.extend({
 	init: function()
 	{
 		// Find all the key elements
+		this.$alerts = $('#alerts');
 		this.$header = $('#header');
 		this.$nav = $('#nav');
 		/* HIDE */
@@ -146,6 +148,12 @@ var CP = Garnish.Base.extend({
 
 			$form.submit();
 		});
+
+		// Alerts
+		if (this.$alerts.length)
+		{
+			this.initAlerts();
+		}
 	},
 
 	/**
@@ -535,22 +543,72 @@ var CP = Garnish.Base.extend({
 
 	fetchAlerts: function()
 	{
-		Craft.postActionRequest('cp/getAlerts', $.proxy(function(response)
+		var data = {
+			path: Craft.path
+		};
+
+		Craft.postActionRequest('app/getCpAlerts', data, $.proxy(this, 'displayAlerts'));
+	},
+
+	displayAlerts: function(alerts)
+	{
+		if (Garnish.isArray(alerts) && alerts.length)
 		{
-			if (Garnish.isArray(response) && response.length)
+			this.$alerts = $('<ul id="alerts"/>').insertBefore($('#header'));
+
+			for (var i = 0; i < alerts.length; i++)
 			{
-				var $alerts = $('<ul id="alerts"/>').insertBefore($('#header'));
-
-				for (var i = 0; i < response.length; i++)
-				{
-					$('<li>'+response[i]+'</li>').appendTo($alerts);
-				}
-
-				var height = $alerts.height();
-
-				$alerts.height(0).animate({ height: height }, 'fast');
+				$('<li>'+alerts[i]+'</li>').appendTo(this.$alerts);
 			}
-		}, this));
+
+			var height = this.$alerts.height();
+
+			this.$alerts.height(0).animate({ height: height }, 'fast', $.proxy(function()
+			{
+				this.$alerts.height('auto');
+			}, this));
+
+			this.initAlerts();
+		}
+	},
+
+	initAlerts: function()
+	{
+		// Is there a domain mismatch?
+		var $transferDomainLink = this.$alerts.find('.domain-mismatch:first');
+
+		if ($transferDomainLink.length)
+		{
+			this.addListener($transferDomainLink, 'click', $.proxy(function(ev)
+			{
+				ev.preventDefault();
+
+				if (confirm(Craft.t('Are you sure you want to transfer your license to this domain?')))
+				{
+					Craft.postActionRequest('app/transferLicenseToCurrentDomain', $.proxy(function(response)
+					{
+						if (response.success)
+						{
+							$transferDomainLink.parent().remove();
+							this.displayNotice(Craft.t('License transferred.'));
+						}
+						else
+						{
+							if (response.error)
+							{
+								var error = response.error;
+							}
+							else
+							{
+								var error = 'An unknown error occurred.';
+							}
+
+							alert(error);
+						}
+					}, this));
+				}
+			}, this));
+		}
 	}
 },
 {

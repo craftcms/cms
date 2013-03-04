@@ -47,7 +47,7 @@ Craft.PackageChooser = Garnish.Base.extend({
 			};
 		}
 
-		Craft.postActionRequest('packages/fetchPackageInfo',
+		Craft.postActionRequest('app/fetchPackageInfo',
 			$.proxy(this, 'initPackages'),
 			$.proxy(this, 'handleBadFetchPackageInfoResponse')
 		);
@@ -287,7 +287,7 @@ Craft.PackageChooser = Garnish.Base.extend({
 						expectedPrice: (this.packages[pkg].salePrice ? this.packages[pkg].salePrice : this.packages[pkg].price)
 					};
 
-					Craft.postActionRequest('packages/purchasePackage', data,
+					Craft.postActionRequest('app/purchasePackage', data,
 						$.proxy(this, 'handleSuccessfulPurchase'),
 						$.proxy(this, 'handleUnsuccessfulPurchase')
 					);
@@ -377,7 +377,7 @@ Craft.PackageChooser = Garnish.Base.extend({
 			'package': pkg
 		};
 
-		Craft.postActionRequest('packages/'+action+'Package', data, $.proxy(function(response)
+		Craft.postActionRequest('app/'+action+'Package', data, $.proxy(function(response)
 		{
 			if (!response.success)
 			{

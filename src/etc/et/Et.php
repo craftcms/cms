@@ -151,8 +151,14 @@ class Et
 
 					// Cache the license key status and which packages are associated with it
 					$cacheDuration = craft()->config->getCacheDuration();
+
 					craft()->fileCache->set('licenseKeyStatus', $etModel->licenseKeyStatus, $cacheDuration);
 					craft()->fileCache->set('licensedPackages', $etModel->licensedPackages, $cacheDuration);
+
+					if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
+					{
+						craft()->fileCache->set('licensedDomain', $etModel->licensedDomain, $cacheDuration);
+					}
 
 					return $etModel;
 				}
@@ -179,7 +185,9 @@ class Et
 	 */
 	private function _getLicenseKey()
 	{
-		if (($keyFile = IOHelper::fileExists(craft()->path->getConfigPath().'license.key')) !== false)
+		$licenseKeyPath = craft()->et->getLicenseKeyPath();
+
+		if (($keyFile = IOHelper::fileExists($licenseKeyPath)) !== false)
 		{
 			return trim(preg_replace('/[\r\n]+/', '', IOHelper::getFileContents($keyFile)));
 		}

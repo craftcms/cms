@@ -100,6 +100,6 @@ class CpVariable
 	 */
 	public function getAlerts()
 	{
-		return CpHelper::getAlerts();
+		return CpHelper::getAlerts(craft()->request->getPath());
 	}
 }

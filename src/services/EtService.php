@@ -57,6 +57,41 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Transfers the installed license to the current domain.
+	 *
+	 * @return true|string Returns true if the request was successful, otherwise returns the error.
+	 */
+	public function transferLicenseToCurrentDomain()
+	{
+		$et = new Et(ElliottEndpoints::TransferLicense);
+		$etResponse = $et->phoneHome();
+
+		if ($etResponse && $etResponse->data['success'])
+		{
+			return true;
+		}
+		else
+		{
+			// Did they at least say why?
+			if ($etResponse && !empty($etResponse['errors']))
+			{
+				switch ($etResponse['errors'][0])
+				{
+					// Validation errors
+					case 'not_public_domain': $error = Craft::t('This domain doesn’t appear to be public.'); break;
+					default:                  $error = $etResponse->data['error'];
+				}
+			}
+			else
+			{
+				$error = Craft::t('Craft is unable to transfer your license to this domain at this time.');
+			}
+
+			return $error;
+		}
+	}
+
+	/**
 	 * Fetches info about the available packages from Elliott.
 	 *
 	 * @return EtModel|null
@@ -134,11 +169,27 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns the path to the license key file.
+	 */
+	public function getLicenseKeyPath()
+	{
+		return craft()->path->getConfigPath().'license.key';
+	}
+
+	/**
 	 * Returns the license key status.
 	 */
 	public function getLicenseKeyStatus()
 	{
 		return craft()->fileCache->get('licenseKeyStatus');
+	}
+
+	/**
+	 * Returns the domain that the installed license key is licensed for.
+	 */
+	public function getLicensedDomain()
+	{
+		return craft()->fileCache->get('licensedDomain');
 	}
 
 	/**
