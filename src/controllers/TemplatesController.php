@@ -9,7 +9,10 @@ class TemplatesController extends BaseController
 	public $allowAnonymous = array('actionRender', 'actionOffline');
 
 	private $_template;
-	private $_templateSegments;
+	/* HIDE */
+	//private $_templateSegments;
+	/* end HIDE */
+	private $_manualUpdateTemplate = 'updates/_go';
 
 	/**
 	 * Required
@@ -17,7 +20,9 @@ class TemplatesController extends BaseController
 	public function actionRender($template, array $variables = array())
 	{
 		$this->_template = $template;
-		$this->_templateSegments = array_filter(explode('/', $this->_template));
+		/* HIDE */
+		//$this->_templateSegments = array_filter(explode('/', $this->_template));
+		/* end HIDE */
 
 		if (craft()->request->isCpRequest() &&
 			// The only time we'll allow anonymous access to the CP is in the middle of a manual update.
@@ -87,12 +92,42 @@ class TemplatesController extends BaseController
 	}
 
 	/**
+	 * Renders the Manual Update notification template.
+	 */
+	public function actionManualUpdateNotification()
+	{
+		$this->actionRender('_special/dbupdate');
+	}
+
+	/**
+	 * Renders the Manual Update template.
+	 */
+	public function actionManualUpdate()
+	{
+		$this->actionRender($this->_manualUpdateTemplate, array(
+			'handle' => craft()->request->getSegment(2)
+		));
+	}
+
+	/**
+	 * Renders the Breakpoint Update notification template.
+	 */
+	public function actionBreakpointUpdateNotification()
+	{
+		$this->actionRender('_special/breakpointupdate', array(
+			'minBuild'      => CRAFT_MIN_BUILD_REQUIRED,
+			'targetVersion' => BLOCKS_VERSION,
+			'targetBuild'   => BLOCKS_BUILD
+		));
+	}
+
+	/**
 	 * @return bool
 	 */
 	private function _isValidManualUpdatePath()
 	{
 		// Is this a manual Craft update?
-		if ($this->_template == 'updates/go/craft' && craft()->request->getParam('manual', null) == 1)
+		if ($this->_template == $this->_manualUpdateTemplate && craft()->request->getParam('manual', null) == 1)
 		{
 			// Extra check in case someone manually comes to the url.
 			if (craft()->updates->isCraftDbUpdateNeeded())
@@ -101,8 +136,9 @@ class TemplatesController extends BaseController
 			}
 		}
 
+		/* HIDE */
 		// Is this a manual plugin update?
-		if (count($this->_templateSegments) == 3 && $this->_templateSegments[0] == 'updates' && $this->_templateSegments[1] == 'go' && craft()->request->getParam('manual', null) == 1)
+		/*if (count($this->_templateSegments) == 3 && $this->_templateSegments[0] == 'updates' && $this->_templateSegments[1] == 'go' && craft()->request->getParam('manual', null) == 1)
 		{
 			if (($plugin = craft()->plugins->getPlugin($this->_templateSegments[2])) !== null)
 			{
@@ -112,7 +148,8 @@ class TemplatesController extends BaseController
 					return true;
 				}
 			}
-		}
+		}*/
+		/* end HIDE */
 
 		return false;
 	}

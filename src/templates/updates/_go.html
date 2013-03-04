@@ -16,6 +16,6 @@
 
 
 {% set js %}
-	new Craft.Updater('{{ handle }}', {{ craft.request.getQuery('manual') ? 1 : 0 }});
+	new Craft.Updater('{{ handle }}', {{ craft.request.getSegment(1) == 'manualupdate' ? 1 : 0 }});
 {% endset %}
 {% includeJs js %}

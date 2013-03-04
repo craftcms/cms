@@ -118,18 +118,18 @@ class WebApp extends \CWebApplication
 				(!$this->request->isActionRequest() || $this->request->getActionSegments() == array('users', 'login'))
 			)
 			{
-				// If there is a 'manual=1' in the query string, run the templates controller.
-				if ($this->request->getParam('manual', null) == 1)
+				// If this is a request to actually manually update Craft, do it
+				if ($this->request->getSegment(1) == 'manualupdate')
 				{
-					$this->runController('templates');
+					$this->runController('templates/manualUpdate');
 					$this->end();
 				}
 				else
 				{
 					if (craft()->updates->isBreakpointUpdateNeeded())
 					{
-						$this->runController('update/breakpointUpdate');
-						$this->end();
+						// Load the breakpoint update template
+						$this->runController('templates/breakpointUpdateNotification');
 					}
 					else
 					{
@@ -141,9 +141,12 @@ class WebApp extends \CWebApplication
 							}
 						}
 
-						$this->runController('update/manualUpdate');
-						$this->end();
+						// Show the manual update notification template
+						$this->runController('templates/manualUpdateNotification');
 					}
+
+					// Kill it
+					$this->end();
 				}
 			}
 			// We'll also let action requests to UpdateController through as well.
