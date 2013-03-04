@@ -61,35 +61,43 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function getTotalAvailableUpdates()
 	{
+		$count = 0;
+
 		if ($this->isUpdateInfoCached())
 		{
 			$updateModel = $this->getUpdates();
-			$count = 0;
 
-			if ($updateModel->app->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
+			// Could be false!
+			if ($updateModel)
 			{
-				if (isset($updateModel->app->releases) && count($updateModel->app->releases) > 0)
+				if (!empty($updateModel->app))
 				{
-					$count++;
-				}
-			}
-
-			if (isset($updateModel->plugins))
-			{
-				foreach ($updateModel->plugins as $plugin)
-				{
-					if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable)
+					if ($updateModel->app->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
 					{
-						if (isset($plugin->releases) && count($plugin->releases) > 0)
+						if (isset($updateModel->app->releases) && count($updateModel->app->releases) > 0)
 						{
 							$count++;
 						}
 					}
 				}
-			}
 
-			return $count;
+				if (!empty($updateModel->plugins))
+				{
+					foreach ($updateModel->plugins as $plugin)
+					{
+						if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable)
+						{
+							if (isset($plugin->releases) && count($plugin->releases) > 0)
+							{
+								$count++;
+							}
+						}
+					}
+				}
+			}
 		}
+
+		return $count;
 	}
 
 	/**
@@ -234,7 +242,7 @@ class UpdatesService extends BaseApplicationComponent
 
 		$updateModel->plugins = $pluginUpdateModels;
 
-		$etModel = craft()->et->check($updateModel);
+		$etModel = craft()->et->checkForUpdates($updateModel);
 		return $etModel;
 	}
 

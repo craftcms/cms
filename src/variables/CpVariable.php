@@ -88,14 +88,19 @@ class CpVariable
 	}
 
 	/**
+	 * Returns whether the CP alerts are cached.
+	 *
 	 * @return bool
 	 */
 	public function areAlertsCached()
 	{
+		// The license key status gets cached on each Elliott request
 		return (craft()->et->getLicenseKeyStatus() !== false);
 	}
 
 	/**
+	 * Returns an array of alerts to display in the CP.
+	 *
 	 * @return array
 	 */
 	public function getAlerts()

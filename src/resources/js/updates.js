@@ -71,7 +71,13 @@ var atLeastOnePluginHasARelease = function(plugins)
 
 Craft.postActionRequest('update/getAvailableUpdates', function(response) {
 
-	$('#loading').fadeOut('fast', function() {
+	$('#loading').fadeOut('fast', function()
+	{
+		if (!response.errors && response.error)
+		{
+			response.errors = [response.error];
+		}
+
 		if (response.errors && response.errors.length > 0)
 		{
 			var $div = $('#update-error');

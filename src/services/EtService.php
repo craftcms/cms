@@ -24,10 +24,12 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Checks if any new updates are available.
+	 *
 	 * @param $updateInfo
 	 * @return EtModel|null
 	 */
-	public function check($updateInfo)
+	public function checkForUpdates($updateInfo)
 	{
 		$et = new Et(static::CheckForUpdates);
 		$et->setData($updateInfo);
@@ -35,7 +37,7 @@ class EtService extends BaseApplicationComponent
 
 		if ($etResponse)
 		{
-			$etResponse->data = UpdateModel::populateModel($etResponse->data);
+			$etResponse->data = new UpdateModel($etResponse->data);
 			return $etResponse;
 		}
 	}
@@ -73,20 +75,28 @@ class EtService extends BaseApplicationComponent
 		$et = new Et(static::TransferLicense);
 		$etResponse = $et->phoneHome();
 
-		if ($etResponse && $etResponse->data['success'])
+		if (!empty($etResponse->data['success']))
 		{
 			return true;
 		}
 		else
 		{
 			// Did they at least say why?
-			if ($etResponse && !empty($etResponse['errors']))
+			if (!empty($etResponse->errors))
 			{
-				switch ($etResponse['errors'][0])
+				switch ($etResponse->errors[0])
 				{
 					// Validation errors
-					case 'not_public_domain': $error = Craft::t('This domain doesn’t appear to be public.'); break;
-					default:                  $error = $etResponse->data['error'];
+					case 'not_public_domain':
+					{
+						// So...
+						return true;
+					}
+
+					default:
+					{
+						$error = $etResponse->data['error'];
+					}
 				}
 			}
 			else
@@ -124,7 +134,7 @@ class EtService extends BaseApplicationComponent
 			$et->setData($model);
 			$etResponse = $et->phoneHome();
 
-			if ($etResponse && $etResponse->data['success'])
+			if (!empty($etResponse->data['success']))
 			{
 				// Success! Let's get this sucker installed.
 				if (!Craft::hasPackage($model->package))
@@ -137,9 +147,9 @@ class EtService extends BaseApplicationComponent
 			else
 			{
 				// Did they at least say why?
-				if ($etResponse && !empty($etResponse['errors']))
+				if (!empty($etResponse->errors))
 				{
-					switch ($etResponse['errors'][0])
+					switch ($etResponse->errors[0])
 					{
 						// Validation errors
 						case 'package_doesnt_exist': $error = Craft::t('The selected package doesn’t exist anymore.'); break;
@@ -184,7 +194,9 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the license key status.
+	 * Returns the license key status, or false if it's unknown.
+	 *
+	 * @return string|false
 	 */
 	public function getLicenseKeyStatus()
 	{
@@ -192,7 +204,9 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the domain that the installed license key is licensed for.
+	 * Returns the domain that the installed license key is licensed for, null if it's not set yet, or false if it's unknown.
+	 *
+	 * @return string|null|false
 	 */
 	public function getLicensedDomain()
 	{
@@ -200,9 +214,9 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns an array of the packages that this license is tied to.
+	 * Returns an array of the packages that this license is tied to, or false if it's unknown.
 	 *
-	 * @return mixed
+	 * @return array|false
 	 */
 	public function getLicensedPackages()
 	{

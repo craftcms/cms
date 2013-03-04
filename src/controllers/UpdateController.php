@@ -20,7 +20,15 @@ class UpdateController extends BaseController
 		craft()->userSession->requirePermission('autoUpdateCraft');
 
 		$updates = craft()->updates->getUpdates(true);
-		$this->returnJson($updates);
+
+		if ($updates)
+		{
+			$this->returnJson($updates);
+		}
+		else
+		{
+			$this->returnErrorJson(Craft::t('Could not fetch available updates at this time.'));
+		}
 	}
 
 	/**

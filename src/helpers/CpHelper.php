@@ -54,29 +54,33 @@ class CpHelper
 			{
 				$licensedPackages = craft()->et->getLicensedPackages();
 
-				// Look for any unlicensed licenses
-				$unlicensedPackages = array();
-
-				foreach (Craft::getPackages() as $package)
+				// Could be false!
+				if (is_array($licensedPackages))
 				{
-					if (!in_array($package, $licensedPackages))
-					{
-						$unlicensedPackages[] = $package;
-					}
-				}
+					// Look for any unlicensed licenses
+					$unlicensedPackages = array();
 
-				if ($unlicensedPackages)
-				{
-					if (count($unlicensedPackages) == 1)
+					foreach (Craft::getPackages() as $package)
 					{
-						$message = Craft::t('The {package} package is installed, but it’s not licensed.', array('package' => Craft::t($unlicensedPackages[0])));
-					}
-					else
-					{
-						$message = Craft::t('You have multiple unlicensed packages installed.');
+						if (!in_array($package, $licensedPackages))
+						{
+							$unlicensedPackages[] = $package;
+						}
 					}
 
-					$alerts[] = $message.' <a class="go" href="'.UrlHelper::getUrl('settings/packages').'">'.Craft::t('Manage packages').'</a>';
+					if ($unlicensedPackages)
+					{
+						if (count($unlicensedPackages) == 1)
+						{
+							$message = Craft::t('The {package} package is installed, but it’s not licensed.', array('package' => Craft::t($unlicensedPackages[0])));
+						}
+						else
+						{
+							$message = Craft::t('You have multiple unlicensed packages installed.');
+						}
+
+						$alerts[] = $message.' <a class="go" href="'.UrlHelper::getUrl('settings/packages').'">'.Craft::t('Manage packages').'</a>';
+					}
 				}
 			}
 		}
