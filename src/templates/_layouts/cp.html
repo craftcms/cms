@@ -2,26 +2,24 @@
 {% includeCssResource "css/cp.css" first %}
 
 {% set body %}
-	{% if user.admin %}
-		{% if craft.config.devMode %}
-			<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
-		{% endif %}
+	{% if user.admin and craft.config.devMode %}
+		<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
+	{% endif %}
 
-		{% if craft.cp.areAlertsCached() %}
-			{% set alerts = craft.cp.getAlerts() %}
-			{% if alerts %}
-				<ul id="alerts">
-					{% for alert in craft.cp.getAlerts() %}
-						<li>{{ alert|raw }}</li>
-					{% endfor %}
-				</ul>
-			{% endif %}
-		{% else %}
-			{% set js %}
-				Craft.cp.fetchAlerts();
-			{% endset %}
-			{% includeJs js %}
+	{% if craft.cp.areAlertsCached() %}
+		{% set alerts = craft.cp.getAlerts() %}
+		{% if alerts %}
+			<ul id="alerts">
+				{% for alert in craft.cp.getAlerts() %}
+					<li>{{ alert|raw }}</li>
+				{% endfor %}
+			</ul>
 		{% endif %}
+	{% else %}
+		{% set js %}
+			Craft.cp.fetchAlerts();
+		{% endset %}
+		{% includeJs js %}
 	{% endif %}
 
 	<header id="header">

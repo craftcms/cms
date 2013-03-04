@@ -21,7 +21,7 @@ class CpHelper
 			// because the other alerts are relying on cached Elliott info
 			$updateModel = craft()->updates->getUpdates();
 
-			if ($path != 'updates')
+			if ($path != 'updates' && craft()->userSession->checkPermission('performUpdates'))
 			{
 				if (!empty($updateModel->app->releases))
 				{
@@ -34,19 +34,25 @@ class CpHelper
 			}
 
 			// Domain mismatch?
-			$licenseKeyStatus = craft()->et->getLicenseKeyStatus();
-
-			if ($licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
+			if (craft()->userSession->isAdmin())
 			{
-				$licensedDomain = craft()->et->getLicensedDomain();
-				$licenseKeyPath = craft()->et->getLicenseKeyPath();
-				$licenseKeyFile = IOHelper::getFolderName($licenseKeyPath, false).'/'.IOHelper::getFileName($licenseKeyPath);
+				$licenseKeyStatus = craft()->et->getLicenseKeyStatus();
 
-				$alerts[] = Craft::t('The license located at {file} belongs to {domain}.', array(
+				if ($licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
+				{
+					$licensedDomain = craft()->et->getLicensedDomain();
+					$licenseKeyPath = craft()->et->getLicenseKeyPath();
+					$licenseKeyFile = IOHelper::getFolderName($licenseKeyPath, false).'/'.IOHelper::getFileName($licenseKeyPath);
+
+					$message = Craft::t('The license located at {file} belongs to {domain}.', array(
 						'file'   => $licenseKeyFile,
 						'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
-					)) .
-					' <a class="domain-mismatch">'.Craft::t('Transfer it to this domain?').'</a>';
+					));
+
+					$action = '<a class="domain-mismatch">'.Craft::t('Transfer it to this domain?').'</a>';
+
+					$alerts[] = $message.' '.$action;
+				}
 			}
 
 			// Unlicensed packages?
@@ -79,7 +85,17 @@ class CpHelper
 							$message = Craft::t('You have multiple unlicensed packages installed.');
 						}
 
-						$alerts[] = $message.' <a class="go" href="'.UrlHelper::getUrl('settings/packages').'">'.Craft::t('Manage packages').'</a>';
+						// Can they actually do something about it?
+						if (craft()->userSession->isAdmin())
+						{
+							$action = '<a class="go" href="'.UrlHelper::getUrl('settings/packages').'">'.Craft::t('Manage packages').'</a>';
+						}
+						else
+						{
+							$action = Craft::t('Please notify one of your site’s admins.');
+						}
+
+						$alerts[] = $message.' '.$action;
 					}
 				}
 			}
