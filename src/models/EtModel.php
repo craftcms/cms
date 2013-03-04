@@ -43,10 +43,10 @@ class EtModel extends BaseModel
 		$attributes['licensedPackages'] = array(AttributeType::Mixed, 'default' => array());
 
 		// The local version number.
-		$attributes['localVersion'] = AttributeType::String;
+		$attributes['localVersion'] = array(AttributeType::String, 'required' => true);
 
 		// The local build number.
-		$attributes['localBuild'] = AttributeType::String;
+		$attributes['localBuild'] = array(AttributeType::Number, 'required' => true);
 
 		// The currently logged in user's email address
 		$attributes['userEmail'] = AttributeType::String;

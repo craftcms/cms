@@ -137,12 +137,9 @@ class Et
 					return $fileName;
 				}
 
-				$etModel = craft()->et->decodeEtValues($response->body);
+				$etModel = craft()->et->decodeEtModel($response->body);
 
-				// In the case where Elliott throws a PHP fatal error, for example, it will return with a 200 status code and make
-				// inside this block of code, but with a bunch of HTML as the response.  If $etModel->localbuild is set (and it should
-				// be, because it goes out on every request), then we know we have a successful response.
-				if (!empty($etModel->localBuild))
+				if ($etModel)
 				{
 					if ($missingLicenseKey && !empty($etModel->licenseKey))
 					{

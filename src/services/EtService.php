@@ -210,11 +210,26 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Creates a new EtModel with provided JSON, and returns it if it's valid.
 	 *
+	 * @return EtModel|null
 	 */
-	public function decodeEtValues($attributes)
+	public function decodeEtModel($attributes)
 	{
-		$attributes = JsonHelper::decode($attributes);
-		return new EtModel($attributes);
+		if ($attributes)
+		{
+			$attributes = JsonHelper::decode($attributes);
+
+			if (is_array($attributes))
+			{
+				$etModel = new EtModel($attributes);
+
+				// Make sure it's valid. (At a minumum, localBuild and localVersion should be set.)
+				if ($etModel->validate())
+				{
+					return $etModel;
+				}
+			}
+		}
 	}
 }
