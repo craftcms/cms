@@ -65,7 +65,7 @@ class CpVariable
 			}
 		}
 
-		if (craft()->userSession->checkPermission('autoUpdateCraft'))
+		if (craft()->userSession->checkPermission('performUpdates'))
 		{
 			$totalAvailableUpdates = craft()->updates->getTotalAvailableUpdates();
 

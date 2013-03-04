@@ -17,7 +17,7 @@ class UpdateController extends BaseController
 	 */
 	public function actionGetAvailableUpdates()
 	{
-		craft()->userSession->requirePermission('autoUpdateCraft');
+		craft()->userSession->requirePermission('performUpdates');
 
 		$updates = craft()->updates->getUpdates(true);
 
@@ -36,7 +36,7 @@ class UpdateController extends BaseController
 	 */
 	public function actionGetUpdates()
 	{
-		craft()->userSession->requirePermission('autoUpdateCraft');
+		craft()->userSession->requirePermission('performUpdates');
 
 		$this->requireAjaxRequest();
 
@@ -148,7 +148,7 @@ class UpdateController extends BaseController
 		if (!$this->_isManualUpdate($data))
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
-			craft()->userSession->requirePermission('autoUpdateCraft');
+			craft()->userSession->requirePermission('performUpdates');
 		}
 		else
 		{
@@ -179,7 +179,7 @@ class UpdateController extends BaseController
 	public function actionProcessDownload()
 	{
 		// This method should never be called in a manual update.
-		craft()->userSession->requirePermission('autoUpdateCraft');
+		craft()->userSession->requirePermission('performUpdates');
 
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -201,7 +201,7 @@ class UpdateController extends BaseController
 	public function actionBackupFiles()
 	{
 		// This method should never be called in a manual update.
-		craft()->userSession->requirePermission('autoUpdateCraft');
+		craft()->userSession->requirePermission('performUpdates');
 
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -223,7 +223,7 @@ class UpdateController extends BaseController
 	public function actionUpdateFiles()
 	{
 		// This method should never be called in a manual update.
-		craft()->userSession->requirePermission('autoUpdateCraft');
+		craft()->userSession->requirePermission('performUpdates');
 
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -256,7 +256,7 @@ class UpdateController extends BaseController
 		else
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
-			craft()->userSession->requirePermission('autoUpdateCraft');
+			craft()->userSession->requirePermission('performUpdates');
 
 			$uid = $data['uid'];
 		}
@@ -295,7 +295,7 @@ class UpdateController extends BaseController
 		else
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
-			craft()->userSession->requirePermission('autoUpdateCraft');
+			craft()->userSession->requirePermission('performUpdates');
 
 			$uid = $data['uid'];
 		}
@@ -336,7 +336,7 @@ class UpdateController extends BaseController
 		else
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
-			craft()->userSession->requirePermission('autoUpdateCraft');
+			craft()->userSession->requirePermission('performUpdates');
 
 			$uid = $data['uid'];
 		}
@@ -369,7 +369,7 @@ class UpdateController extends BaseController
 		else
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
-			craft()->userSession->requirePermission('autoUpdateCraft');
+			craft()->userSession->requirePermission('performUpdates');
 
 			$uid = $data['uid'];
 		}
