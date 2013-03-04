@@ -232,9 +232,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		if (IOHelper::fileExists($targetPath))
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setPrompt($this->_getUserPromptOptions($fileName));
-			$response->setDataItem('fileName', $fileName);
-			return $response;
+			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 		if (! IOHelper::copyFile($filePath, $targetPath))
@@ -245,10 +243,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		IOHelper::changePermissions($targetPath, IOHelper::writableFilePermissions);
 
 		$response = new AssetOperationResponseModel();
-		$response->setSuccess();
-		$response->setDataItem('filePath', $targetPath);
-		return $response;
-
+		return $response->setSuccess()->setDataItem('filePath', $targetPath);
 	}
 
 	/**
@@ -284,15 +279,15 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get the timestamp of when a file transformation was last modified.
+	 * Get the timestamp of when a file transform was last modified.
 	 *
 	 * @param AssetFileModel $fileModel
-	 * @param string $transformationHandle
+	 * @param string $transformHandle
 	 * @return mixed
 	 */
-	public function getTimeTransformationModified(AssetFileModel $fileModel, $transformationHandle)
+	public function getTimeTransformModified(AssetFileModel $fileModel, $transformHandle)
 	{
-		$path = $this->_getImageServerPath($fileModel, $transformationHandle);
+		$path = $this->_getImageServerPath($fileModel, $transformHandle);
 
 		if (!IOHelper::fileExists($path))
 		{
@@ -303,14 +298,14 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Put an image transformation for the File and handle using the provided path to the source image.
+	 * Put an image transform for the File and handle using the provided path to the source image.
 	 *
 	 * @param AssetFileModel $fileModel
 	 * @param $handle
 	 * @param $sourceImage
 	 * @return mixed
 	 */
-	public function putImageTransformation(AssetFileModel $fileModel, $handle, $sourceImage)
+	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
 	{
 		return IOHelper::copyFile($sourceImage, $this->_getImageServerPath($fileModel, $handle));
 	}
@@ -349,7 +344,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * @return mixed
 	 */
 
-	protected function _getLocalCopy(AssetFileModel $file)
+	public function getLocalCopy(AssetFileModel $file)
 	{
 		$location = AssetsHelper::getTempFilePath();
 		IOHelper::copyFile($this->_getFileSystemPath($file), $location);
@@ -373,26 +368,27 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Delete just the source file for an Assets File.
 	 *
-	 * @param AssetFileModel $file
+	 * @param AssetFolderModel $folder
+	 * @param $filename
 	 * @return void
 	 */
-	protected function _deleteSourceFile(AssetFileModel $file)
+	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
-		IOHelper::deleteFile($this->_getFileSystemPath($file));
+		IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->fullPath.$filename);
 	}
 
 	/**
-	 * Delete all the generated image transformations for this file.
+	 * Delete all the generated image transforms for this file.
 	 *
 	 * @param AssetFileModel $file
 	 */
-	protected function _deleteGeneratedImageTransformations(AssetFileModel $file)
+	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
 	{
 		$folder = $file->getFolder();
-		$transformations = craft()->assetTransformations->getAssetTransformations();
-		foreach ($transformations as $handle => $transformation)
+		$transforms = craft()->assetTransforms->getAssetTransforms();
+		foreach ($transforms as $handle => $transform)
 		{
-			IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->fullPath.'/_'.$handle.'/'.$file->filename);
+			IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->fullPath.'_'.$handle.'/'.$file->filename);
 		}
 	}
 
@@ -423,39 +419,38 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		if ($conflict)
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setPrompt($this->_getUserPromptOptions($fileName));
-			$response->setDataItem('fileName', $fileName);
-			return $response;
+			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 		if (!IOHelper::move($this->_getFileSystemPath($file), $newServerPath))
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setError(Craft::t("Could not save the file"));
-			return $response;
+			return $response->setError(Craft::t("Could not save the file"));
 		}
 
 		if ($file->kind == 'image')
 		{
 			$this->_deleteGeneratedThumbnails($file);
 
-			// Move transformations
-			$transformations = craft()->assetTransformations->getAssetTransformations();
+			// Move transforms
+			$transforms = craft()->assetTransforms->getAssetTransforms();
 			$baseFromPath = $this->_getSourceFileSystemPath().$file->getFolder()->fullPath;
 			$baseToPath = $this->_getSourceFileSystemPath().$targetFolder->fullPath;
 
-			foreach ($transformations as $handle => $transformation)
+			foreach ($transforms as $handle => $transform)
 			{
-				IOHelper::move($baseFromPath.'_'.$handle.'/'.$file->filename, $baseToPath.'_'.$handle.'/'.$fileName);
+				if (IOHelper::fileExists($baseFromPath.'_'.$handle.'/'.$file->filename))
+				{
+					IOHelper::ensureFolderExists($baseToPath.'_'.$handle);
+					IOHelper::move($baseFromPath.'_'.$handle.'/'.$file->filename, $baseToPath.'_'.$handle.'/'.$fileName);
+				}
 			}
 		}
 
 		$response = new AssetOperationResponseModel();
-		$response->setSuccess();
-		$response->setDataItem('newId', $file->id);
-		$response->setDataItem('newFileName', $fileName);
-
-		return $response;
+		return $response->setSuccess()
+				->setDataItem('newId', $file->id)
+				->setDataItem('newFileName', $fileName);
 	}
 
 	/**
@@ -502,9 +497,21 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFolderModel $folder
 	 * @return boolean
 	 */
-	protected function _deleteSourceFolder(AssetFolderModel $folder)
+	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
-		return IOHelper::deleteFolder($this->_getSourceFileSystemPath().$folder->fullPath);
+		return IOHelper::deleteFolder($this->_getSourceFileSystemPath().$parentFolder->fullPath.$folderName);
 	}
+
+	/**
+	 * Determines if a file can be moved internally from original source.
+	 *
+	 * @param BaseAssetSourceType $originalSource
+	 * @return mixed
+	 */
+	protected function canMoveFileFrom(BaseAssetSourceType $originalSource)
+	{
+		return $originalSource->isSourceLocal();
+	}
+
 
 }

@@ -249,7 +249,7 @@ class AssetsService extends BaseApplicationComponent
 
 			if (!$fileRecord)
 			{
-				throw new Exception('No asset exists with the ID “{id}”', array('id' => $file->id));
+				throw new Exception(Craft::t("No asset exists with the ID “{id}”", array('id' => $file->id)));
 			}
 		}
 		else
@@ -365,11 +365,12 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Get the folder tree for Assets.
 	 *
+	 * @param $allowedSourceIds
 	 * @return array
 	 */
-	public function getFolderTree()
+	public function getFolderTree($allowedSourceIds)
 	{
-		$folders = $this->findFolders(array('order' => 'fullPath'));
+		$folders = $this->findFolders(array('sourceId' => $allowedSourceIds, 'order' => 'fullPath'));
 		$tree = array();
 		$referenceStore = array();
 
@@ -446,6 +447,34 @@ class AssetsService extends BaseApplicationComponent
 		{
 			$response = new AssetOperationResponseModel();
 			$response->setError($exception->getMessage());
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Move a folder.
+	 *
+	 * @param $folderId
+	 * @param $newParentId
+	 * @param $action
+	 * @return AssetOperationResponseModel
+	 */
+	public function moveFolder($folderId, $newParentId, $action)
+	{
+		$folder = $this->getFolderById($folderId);
+		$newParentFolder = $this->getFolderById($newParentId);
+
+
+		if (!($folder && $newParentFolder))
+		{
+			$response = new AssetOperationResponseModel();
+			$response->setError(Craft::t("Error moving folder - either source or target folders cannot be found"));
+		}
+		else
+		{
+			$newSourceType = craft()->assetSources->getSourceTypeById($newParentFolder->sourceId);
+			$response = $newSourceType->moveFolder($folder, $newParentFolder, !empty($action));
 		}
 
 		return $response;
@@ -539,12 +568,12 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Find a folder's child folders.
+	 * Find all folder's child folders in it's subtree.
 	 *
 	 * @param AssetFolderModel $folderModel
 	 * @return array
 	 */
-	public function findChildFolders(AssetFolderModel $folderModel)
+	public function getAllChildFolders(AssetFolderModel $folderModel)
 	{
 		$query = craft()->db->createCommand()
 			->select('f.*')
@@ -763,8 +792,10 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Delete a list of files by an array of ids (or a single id)
+	 * Delete a list of files by an array of ids (or a single id).
+	 *
 	 * @param $fileIds
+	 * @return AssetOperationResponseModel
 	 */
 	public function deleteFiles($fileIds)
 	{
@@ -773,12 +804,118 @@ class AssetsService extends BaseApplicationComponent
 			$fileIds = array($fileIds);
 		}
 
-		foreach ($fileIds as $fileId)
+		$response = new AssetOperationResponseModel();
+		try
+		{
+			foreach ($fileIds as $fileId)
+			{
+				$file = $this->getFileById($fileId);
+				$source = craft()->assetSources->getSourceTypeById($file->sourceId);
+				$source->deleteFile($file);
+			}
+			$response->setSuccess();
+		}
+		catch (Exception $exception)
+		{
+			$response->setError($exception->getMessage());
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Move or rename files.
+	 *
+	 * @param $fileIds
+	 * @param $folderId
+	 * @param string $filename if this is a rename operation
+	 * @param string $actions actions to take in case of a conflict.
+	 */
+	public function moveFiles($fileIds, $folderId, $filename = '', $actions = array())
+	{
+		if (!is_array($fileIds))
+		{
+			$fileIds = array($fileIds);
+		}
+
+		if (!is_array($actions))
+		{
+			$actions = array($actions);
+		}
+
+		$results = array();
+
+		$response = new AssetOperationResponseModel();
+
+		foreach ($fileIds as $i => $fileId)
 		{
 			$file = $this->getFileById($fileId);
-			$source = craft()->assetSources->getSourceTypeById($file->sourceId);
-			$source->deleteFile($file);
+
+			// If this is not a rename operation, then the filename remains the original
+			if (empty($filename))
+			{
+				$filename = $file->filename;
+			}
+
+			$filename = IOHelper::cleanFilename($filename);
+
+			if ($folderId == $file->folderId && ($filename == $file->filename))
+			{
+				$response = new AssetOperationResponseModel();
+				$response->setSuccess();
+				$results[] = $response;
+			}
+
+			$originalSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+			$folder = $this->getFolderById($folderId);
+			$newSourceType = craft()->assetSources->getSourceTypeById($folder->sourceId);
+
+			if ($originalSourceType && $newSourceType)
+			{
+				if ( !$response = $newSourceType->moveFileInsideSource($originalSourceType, $file, $folder, $filename, $actions[$i]))
+				{
+					$response = $this->_moveFileBetweenSources($originalSourceType, $newSourceType, $file, $folder, $actions[$i]);
+				}
+			}
+			else
+			{
+				$response->setError(Craft::t("There was an error moving the file {file}.", array('file' => $file->filename)));
+			}
 		}
+
+		return $response;
+	}
+
+	/**
+	 * Move a file between sources.
+	 *
+	 * @param BaseAssetSourceType $originalSource
+	 * @param BaseAssetSourceType $newSource
+	 * @param AssetFileModel $file
+	 * @param AssetFolderModel $folder
+	 * @param string $action
+	 * @return AssetOperationResponseModel
+	 */
+	private function _moveFileBetweenSources(BaseAssetSourceType $originalSource, BaseAssetSourceType $newSource, AssetFileModel $file, AssetFolderModel $folder, $action = '')
+	{
+		$localCopy = $originalSource->getLocalCopy($file);
+
+		// File model will be updated in the process, but we need the old data in order to finalize the transfer.
+		$oldFileModel = clone $file;
+
+		$response = $newSource->transferFileIntoSource($localCopy, $folder, $file, $action);
+		if ($response->isSuccess())
+		{
+			// Use the previous data to clean up
+			$originalSource->finalizeOutgoingTransfer($oldFileModel);
+			if ($file->kind == "image")
+			{
+				craft()->assetTransforms->updateTransforms($file, array_keys(craft()->assetTransforms->getAssetTransforms()));
+			}
+			IOHelper::deleteFile($localCopy);
+		}
+
+		return $response;
 	}
 
 	/**

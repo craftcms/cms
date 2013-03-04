@@ -18,7 +18,7 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 		this.$toggle;
 		this.$ul;
 
-		this.id = this.$a.attr('data-folder');
+		this.id = this.$a.attr('data-id');
 
 		this.visible = false;
 		this.visibleBefore = false;
@@ -250,8 +250,7 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 		{
 			if (this.fm.settings.mode == 'full')
 			{
-				// TODO dragging
-				//this.fm.folderDrag.addItems(this.$li);
+				this.fm.folderDrag.addItems(this.$li);
 			}
 		}
 
@@ -517,7 +516,7 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 				{
 					subfolderName = data.folderName;
 						var $li = $('<li class="assets-fm-folder">'
-							  +   '<a data-folder="' + data.folderId + '">'
+							  +   '<a data-id="' + data.folderId + '">'
 							  +     data.folderName
 							  +   '</a>'
 							  + '</li>'),

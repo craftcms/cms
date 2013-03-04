@@ -51,6 +51,8 @@ class AssetsVariable
 		{
 			return new AssetSourceTypeVariable($sourceType);
 		}
+
+		return null;
 	}
 
 	/**
@@ -62,6 +64,57 @@ class AssetsVariable
 	public function getAllSources($indexBy = null)
 	{
 		return craft()->assetSources->getAllSources($indexBy);
+	}
+
+	/**
+	 * Return all source ids.
+	 *
+	 * @return array
+	 */
+	public function getAllSourceIds()
+	{
+		return craft()->assetSources->getAllSourceIds();
+	}
+
+	/**
+	 * Return all viewable source ids.
+	 *
+	 * @return array
+	 */
+	public function getViewableSourceIds()
+	{
+		return craft()->assetSources->getViewableSourceIds();
+	}
+
+	/**
+	 * Return all viewable sources.
+	 *
+	 * @param null $indexBy
+	 * @return array
+	 */
+	public function getViewableSources($indexBy = null)
+	{
+		return craft()->assetSources->getViewableSources($indexBy);
+	}
+
+	/**
+	 * Return total number of sources.
+	 *
+	 * @return int
+	 */
+	public function getTotalSources()
+	{
+		return craft()->assetSources->getTotalSources();
+	}
+
+	/**
+	 * Return total number of viewable sources.
+	 *
+	 * @return int
+	 */
+	public function getTotalViewableSources()
+	{
+		return craft()->assetSources->getTotalViewableSources();
 	}
 
 	/**
@@ -108,35 +161,35 @@ class AssetsVariable
 	}
 
 	// -------------------------------------------
-	// Transformations
+	// Transforms
 	// -------------------------------------------
 
 	/**
-	 * Get all asset transformations.
+	 * Get all asset transforms.
 	 *
 	 * @return array|null
 	 */
-	public function getAllAssetTransformations()
+	public function getAllAssetTransforms()
 	{
-		return craft()->assetTransformations->getAssetTransformations();
+		return craft()->assetTransforms->getAssetTransforms();
 	}
 
 	/**
-	 * Get asset transformation by it's handle.
+	 * Get asset transform by it's handle.
 	 *
 	 * @param $handle
 	 * @return null
 	 */
-	public function getTransformationByHandle($handle)
+	public function getTransformByHandle($handle)
 	{
-		return craft()->assetTransformations->getAssetTransformation($handle);
+		return craft()->assetTransforms->getAssetTransform($handle);
 	}
 
 	/**
-	 * Return a list of possible transformation scale modes
+	 * Return a list of possible transform scale modes
 	 * @return array
 	 */
-	public function getTransformationModes()
+	public function getTransformModes()
 	{
 		return array(
 			'scaleToFit' => Craft::t("Scale to fit"),
@@ -146,11 +199,11 @@ class AssetsVariable
 	}
 
 	/**
-	 * Returns all folders in a structured way
+	 * Returns all folders that a user is allowed to see in a structured way
 	 */
 	public function getAllFolders()
 	{
-		$tree = craft()->assets->getFolderTree();
+		$tree = craft()->assets->getFolderTree(craft()->assetSources->getViewableSourceIds());
 		return $tree;
 	}
 }

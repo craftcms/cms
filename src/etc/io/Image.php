@@ -103,8 +103,10 @@ class Image
 	 * @param bool $scaleIfSmaller
 	 * @return Image
 	 */
-	public function scale($width, $height, $scaleIfSmaller = false)
+	public function scale($width, $height = null, $scaleIfSmaller = false)
 	{
+		$this->_formatDimensions($width, $height);
+
 		if (imagesx($this->_image) > $width || imagesy($this->_image) > $height || $scaleIfSmaller)
 		{
 			$factor = max(imagesx($this->_image) / $width, imagesy($this->_image) / $height);
@@ -122,8 +124,10 @@ class Image
 	 * @param bool $scaleIfSmaller
 	 * @return Image
 	 */
-	public function scaleAndCrop($width, $height, $scaleIfSmaller = false)
+	public function scaleAndCrop($width, $height = null, $scaleIfSmaller = false)
 	{
+		$this->_formatDimensions($width, $height);
+
 		if (imagesx($this->_image) > $width || imagesy($this->_image) > $height || $scaleIfSmaller)
 		{
 			$factor = min(imagesx($this->_image) / $width, imagesy($this->_image) / $height);
@@ -131,9 +135,9 @@ class Image
 			$newWidth = round(imagesx($this->_image) / $factor);
 			$this->_doResize($newWidth, $newHeight);
 
-			$x1 = round($newWidth - $width) / 2;
+			$x1 = round(($newWidth - $width) / 2);
 			$x2 = $x1 + $width;
-			$y1 = round($newHeight - $height) / 2;
+			$y1 = round(($newHeight - $height) / 2);
 			$y2 = $y1 + $height;
 
 			$this->crop($x1, $x2, $y1, $y2);
@@ -151,11 +155,7 @@ class Image
 	 */
 	public function resizeTo($width, $height = null)
 	{
-		if ($height === null)
-		{
-			$height = $width;
-		}
-
+		$this->_formatDimensions($width, $height);
 		$this->_doResize($width, $height);
 
 		return $this;
@@ -264,5 +264,35 @@ class Image
 		}
 
 		return $image;
+	}
+
+	/**
+	 * Format dimensions.
+	 *
+	 * @param $width
+	 * @param $height
+	 * @throws Exception
+	 */
+	private function _formatDimensions(&$width, &$height)
+	{
+		if (is_null($height))
+		{
+			if (preg_match('/^(?P<width>[0-9]+)x(?P<height>[0-9]+)/', $width, $matches))
+			{
+				$width = $matches['width'];
+				$height = $matches['height'];
+			}
+			else
+			{
+				if (is_numeric($width))
+				{
+					$height = $width;
+				}
+				else
+				{
+					throw new Exception("Unrecognized image size");
+				}
+			}
+		}
 	}
 }

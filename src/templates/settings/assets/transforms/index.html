@@ -1,0 +1,50 @@
+{% extends "settings/assets/_layout" %}
+{% set selectedTab = 'transforms' %}
+{% set transforms = craft.assets.getAllAssetTransforms %}
+{% set transformModes = craft.assets.getTransformModes() %}
+
+
+{% set content %}
+<p id="notransforms"{% if transforms|length %} class="hidden"{% endif %}>
+	{{ "No Asset transforms exist yet."|t }}
+</p>
+
+{% if transforms|length %}
+	<table id="transforms" class="data collapsible">
+		<thead>
+			<th scope="col">{{ "Name"|t }}</th>
+			<th scope="col">{{ "Mode"|t }}</th>
+			<th scope="col">{{ "Dimensions"|t }}</th>
+			<td class="thin"></td>
+		</thead>
+		<tbody>
+		{% for transform in transforms %}
+			<tr data-id="{{ transform.id }}" data-name="{{ transform.name|t }}">
+				<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/assets/transforms/' ~ transform.handle) }}">{{ transform.name|t }}</a></th>
+				<td data-title="{{ 'Mode'|t }}">
+					{% if transform.mode %}
+						{{ transformModes[transform.mode] }}
+					{%  endif %}
+				</td>
+				<td data-title="{{ 'Dimensions'|t }}">{{ transform.width }} x {{ transform.height }}</td>
+				<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+{% endif %}
+
+<div class="buttons">
+	<a class="btn submit add icon" href="{{ url('settings/assets/transforms/new') }}">{{ "New Transform"|t }}</a>
+</div>
+{% endset %}
+
+{% set js %}
+	new Craft.AdminTable({
+		tableSelector: '#transforms',
+		noObjectsSelector: '#notransforms',
+		sortable: false,
+		deleteAction: 'assetTransforms/deleteTransform'
+	});
+{% endset %}
+{% includeJs js %}

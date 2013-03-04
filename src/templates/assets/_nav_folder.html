@@ -1,5 +1,5 @@
 <li class="assets-fm-folder">
-    <a href="javascript:;" data-folder="{{ folder.id }}"><span class="assets-folder-label">{{ folder.name }}</span></a>
+    <a href="javascript:;" data-id="{{ folder.id }}"><span class="assets-folder-label">{{ folder.name }}</span></a>
     {% set children = folder.getChildren() %}
     {%  if children is not empty %}
         <ul>

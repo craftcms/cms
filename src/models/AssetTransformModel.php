@@ -4,7 +4,7 @@ namespace Craft;
 /**
  *
  */
-class AssetTransformationModel extends BaseModel
+class AssetTransformModel extends BaseModel
 {
 	/**
 	 * Use the folder name as the string representation.
@@ -17,7 +17,6 @@ class AssetTransformationModel extends BaseModel
 	}
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

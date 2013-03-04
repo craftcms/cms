@@ -7,7 +7,7 @@
 		</thead>
 		<tbody>
             {% for file in files %}
-                <tr class="assets-list-row" data-file="{{ file.id }}" data-url="{{ file.url }}">
+                <tr class="assets-list-row" data-id="{{ file.id }}" data-fileName="{{ file.filename }}" data-folder="{{ file.folderId }}">
                     <td data-title="{{ 'Name'|t }}"><img src="{{ file.getThumbUrl(24) }}" alt="{{ file.filename }}" class="open-file"/> <span class="open-file">{{ file.filename }}</span></td>
                     <td data-title="{{ 'Date Modified'|t }}">{% if file.dateModified %}{{ file.dateModified.format("Y-m-d H:i:s")|datetime }}{% endif %}</td>
                     <td data-title="{{ 'Size'|t }}">{% if file.size %}{{ file.size|filesize }}{% endif %}</td>

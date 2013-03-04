@@ -10,7 +10,7 @@
 #main .files .open-folder{ -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;}
 
 /*-- manager --*/
-.assets-selected { background: $selcolor; color: #fff; }
+.assets-selected { background: $selcolor; color: #fff !important; }
 .thumb-wrapper { border: 5px solid #fff; background: url(../images/thumb_bg.png) 0 0;
   -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);
        box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);
@@ -19,11 +19,10 @@
 
 /*-- thumbs --*/
 #main .files.thumbs ul { margin: -25px 0 0 -15px; }
-#main .files.thumbs .thumb.folder { background-image: url('../images/temp_folder.png'); }
 #main .files.thumbs ul:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
 #main .files.thumbs ul li { float: left; margin: 25px 0 0 15px; width: 110px; height: 153px; text-align: center; padding: 9px; }
 #main .files.thumbs ul li .thumb { background-repeat: no-repeat; background-position: 50% 50%; }
-#main .files.thumbs ul li .filename {  margin-top: 7px; font-size: 11px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; }
+#main .files.thumbs ul li .filename, ul.assets-tv-drag li .filename {  margin-top: 7px; font-size: 11px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; }
 
 /*-- list --*/
 #main .files.listview table th:first-child,
@@ -46,14 +45,14 @@
 
 /*-- default icons --*/
 
-.assets-fileicon { position: relative; margin: -6px -5px; padding: 6px 0; background: no-repeat 50% 50%; }
+.assets-fileicon { position: relative; margin: 10px 21px; padding: 6px 0; background: no-repeat 50% 50%; }
 .assets-fm .assets-fileicon,
 .assets-listview .assets-fileicon { margin-left: auto; margin-right: auto; }
 .assets-tv-file .assets-fileicon { width: 69px; height: 77px; background-image: url(../images/file_medium.png); }
 .assets-tv-file.assets-tv-bigthumb .assets-fileicon { width: 136px; height: 163px; background-image: url(../images/file_big.png); }
 .assets-listview table .assets-lv-name .assets-lv-thumb .assets-fileicon { width: 22px; height: 16px; background-image: url(../images/file_small.png); }
 
-.assets-fileicon .assets-extension { position: absolute; bottom: 50px; width: 100%; text-align: center; font-size: 17px; color: #ddd; text-transform: uppercase}
+.assets-fileicon .assets-extension { position: absolute; bottom: 25px; width: 100%; text-align: center; font-size: 17px; color: #ddd; text-transform: uppercase}
 .assets-tv-file.assets-tv-bigthumb .assets-fileicon .assets-extension { bottom: 26px; font-size: 34px; }
 
 /*-- folder navigation -- */

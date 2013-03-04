@@ -77,7 +77,7 @@ class AssetsController extends BaseController
 		$additionalFolderIds = array();
 		if ($searchType == 'deep')
 		{
-			$additionalFolderIds = array_keys(craft()->assets->findChildFolders($folder));
+			$additionalFolderIds = array_keys(craft()->assets->getAllChildFolders($folder));
 		}
 
 		$files = craft()->assets->getFilesByFolderId(array_merge(array($folderId), $additionalFolderIds), $parameters);
@@ -186,6 +186,9 @@ class AssetsController extends BaseController
 
 	}
 
+	/**
+	 * Rename a folder
+	 */
 	public function actionRenameFolder()
 	{
 		$this->requireLogin();
@@ -199,4 +202,45 @@ class AssetsController extends BaseController
 		$this->returnJson($response->getResponseData());
 	}
 
+	/**
+	 * Delete a file or multiple files.
+	 */
+	public function actionDeleteFile()
+	{
+		$this->requireLogin();
+		$this->requireAjaxRequest();
+		$fileIds = craft()->request->getRequiredPost('fileId');
+
+		$response = craft()->assets->deleteFiles($fileIds);
+		$this->returnJson($response->getResponseData());
+	}
+
+	/**
+	 * Move a file or multiple files
+	 */
+	public function actionMoveFile()
+	{
+		$fileIds = craft()->request->getRequiredPost('fileId');
+		$folderId = craft()->request->getRequiredPost('folderId');
+		$fileName = craft()->request->getPost('fileName');
+		$actions = craft()->request->getPost('action');
+
+		$response = craft()->assets->moveFiles($fileIds, $folderId, $fileName, $actions);
+		$this->returnJson($response->getResponseData());
+	}
+
+	/**
+	 * Move a folder
+	 */
+	public function actionMoveFolder()
+	{
+		$folderId = craft()->request->getRequiredPost('folderId');
+		$parentId = craft()->request->getRequiredPost('parentId');
+		$action = craft()->request->getPost('action');
+
+		$response = craft()->assets->moveFolder($folderId, $parentId, $action);
+
+		$this->returnJson($response->getResponseData());
+	}
 }
+

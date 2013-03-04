@@ -29,30 +29,36 @@ class AssetOperationResponseModel extends BaseModel
 	 * Set an error message.
 	 *
 	 * @param $message
+	 * @return AssetOperationResponseModel
 	 */
 	public function setError($message)
 	{
 		$this->setAttribute('errorMessage', $message);
 		$this->setAttribute('status', self::StatusError);
+		return $this;
 	}
 
 	/**
 	 * Set status to success.
+	 * @return AssetOperationResponseModel
 	 */
 	public function setSuccess()
 	{
 		$this->setAttribute('status', self::StatusSuccess);
+		return $this;
 	}
 
 	/**
 	 * Set prompt data array.
 	 *
 	 * @param $promptData
+	 * @return AssetOperationResponseModel
 	 */
 	public function setPrompt($promptData)
 	{
 		$this->setAttribute('status', self::StatusConflict);
 		$this->setDataItem('prompt', $promptData);
+		return $this;
 	}
 
 	/**
@@ -60,10 +66,12 @@ class AssetOperationResponseModel extends BaseModel
 	 *
 	 * @param $name
 	 * @param $value
+	 * @return AssetOperationResponseModel
 	 */
 	public function setDataItem($name, $value)
 	{
 		$this->_data[$name] = $value;
+		return $this;
 	}
 
 	/**

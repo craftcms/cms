@@ -306,9 +306,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		if ($fileInfo)
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setPrompt($this->_getUserPromptOptions($fileName));
-			$response->setDataItem('fileName', $fileName);
-			return $response;
+			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 		clearstatcache();
@@ -320,9 +318,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		}
 
 		$response = new AssetOperationResponseModel();
-		$response->setSuccess();
-		$response->setDataItem('filePath', $uriPath);
-		return $response;
+		return $response->setSuccess()->setDataItem('filePath', $uriPath);
 	}
 
 	/**
@@ -337,16 +333,16 @@ class S3AssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get the timestamp of when a file transformation was last modified.
+	 * Get the timestamp of when a file transform was last modified.
 	 *
 	 * @param AssetFileModel $fileModel
-	 * @param string $transformationHandle
+	 * @param string $transformHandle
 	 * @return mixed
 	 */
-	public function getTimeTransformationModified(AssetFileModel $fileModel, $transformationHandle)
+	public function getTimeTransformModified(AssetFileModel $fileModel, $transformHandle)
 	{
 		$folder = $fileModel->getFolder();
-		$path = $folder->fullPath.'_'.$transformationHandle.'/'.$fileModel->filename;
+		$path = $folder->fullPath.'_'.$transformHandle.'/'.$fileModel->filename;
 		$this->_prepareForRequests();
 		$info = $this->_s3->getObjectInfo($this->getSettings()->bucket, $path);
 
@@ -359,14 +355,14 @@ class S3AssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	* Put an image transformation for the File and handle using the provided path to the source image.
+	* Put an image transform for the File and handle using the provided path to the source image.
 	*
 	* @param AssetFileModel $fileModel
 	* @param $handle
 	* @param $sourceImage
 	* @return mixed
 	*/
-	public function putImageTransformation(AssetFileModel $fileModel, $handle, $sourceImage)
+	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
 	{
 		$this->_prepareForRequests();
 		$targetFile = $fileModel->getFolder()->fullPath.'_'.$handle.'/'.$fileModel->filename;
@@ -407,7 +403,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * @return mixed
 	 */
 
-	protected function _getLocalCopy(AssetFileModel $file)
+	public function getLocalCopy(AssetFileModel $file)
 	{
 		$location = AssetsHelper::getTempFilePath();
 
@@ -425,39 +421,41 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	private function _getS3Path(AssetFileModel $file)
 	{
-		$folder = craft()->assets->getFolderById($file->folderId);
+		$folder = $file->getFolder();
 		return $folder->fullPath.$file->filename;
 	}
 
 	/**
 	 * Delete just the source file for an Assets File.
 	 *
-	 * @param AssetFileModel $file
+	 * @param AssetFolderModel $folder
+	 * @param $filename
 	 * @return void
 	 */
-	protected function _deleteSourceFile(AssetFileModel $file)
+	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
 		$this->_prepareForRequests();
-		$this->_s3->deleteObject($this->getSettings()->bucket, $this->_getS3Path($file));
-		IOHelper::deleteFile(craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename));
+		$this->_s3->deleteObject($this->getSettings()->bucket, $folder->fullPath.$filename);
 	}
 
 	/**
-	 * Delete all the generated image transformations for this file.
+	 * Delete all the generated image transforms for this file.
 
 	 *
 	 * @param AssetFileModel $file
 	 */
-	protected function _deleteGeneratedImageTransformations(AssetFileModel $file)
+	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
 	{
 		$folder = craft()->assets->getFolderById($file->folderId);
-		$transformations = craft()->assetTransformations->getAssetTransformations();
+		$transforms = craft()->assetTransforms->getAssetTransforms();
+		$this->_prepareForRequests();
+
 		$bucket = $this->getSettings()->bucket;
 		$this->_s3->deleteObject($bucket, $this->_getS3Path($file));
 
-		foreach ($transformations as $handle => $transformation)
+		foreach ($transforms as $handle => $transform)
 		{
-			$this->_s3->deleteObject($bucket, $folder->fullPath.'/_'.$handle.'/'.$file->filename);
+			$this->_s3->deleteObject($bucket, $folder->fullPath.'_'.$handle.'/'.$file->filename);
 		}
 	}
 
@@ -493,10 +491,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		if ($conflict)
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setPrompt($this->_getUserPromptOptions($fileName));
-			$response->setDataItem('fileName', $fileName);
-			return $response;
-
+			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 		$bucket = $this->getSettings()->bucket;
@@ -504,22 +499,21 @@ class S3AssetSourceType extends BaseAssetSourceType
 		if (!$this->_s3->copyObject($bucket, $file->getFolder()->fullPath.$file->filename, $bucket, $newServerPath))
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setError(Craft::t("Could not save the file"));
-			return $response;
+			return $response->setError(Craft::t("Could not save the file"));
 		}
 
-		$this->_s3->deleteObject($bucket, $file->getFolder()->fullPath.$file->filename);
+		$this->_s3->deleteObject($bucket, $this->_getS3Path($file));
 
 		if ($file->kind == 'image')
 		{
 			$this->_deleteGeneratedThumbnails($file);
 
-			// Move transformations
-			$transformations = craft()->assetTransformations->getAssetTransformations();
+			// Move transforms
+			$transforms = craft()->assetTransforms->getAssetTransforms();
 			$baseFromPath = $file->getFolder()->fullPath;
 			$baseToPath = $targetFolder->fullPath;
 
-			foreach ($transformations as $handle => $transformation)
+			foreach ($transforms as $handle => $transform)
 			{
 				$this->_s3->copyObject($bucket, $baseFromPath.'_'.$handle.'/'.$file->filename, $bucket, $baseToPath.'_'.$handle.'/'.$fileName);
 				$this->_s3->deleteObject($bucket, $baseFromPath.'_'.$handle.'/'.$file->filename);
@@ -527,11 +521,9 @@ class S3AssetSourceType extends BaseAssetSourceType
 		}
 
 		$response = new AssetOperationResponseModel();
-		$response->setSuccess();
-		$response->setDataItem('newId', $file->id);
-		$response->setDataItem('newFileName', $fileName);
-
-		return $response;
+		return $response->setSuccess()
+				->setDataItem('newId', $file->id)
+				->setDataItem('newFileName', $fileName);
 	}
 
 	/**
@@ -596,11 +588,11 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * @param AssetFolderModel $folder
 	 * @return boolean
 	 */
-	protected function _deleteSourceFolder(AssetFolderModel $folder)
+	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
 		$bucket = $this->getSettings()->bucket;
-		$objectsToDelete = $this->_s3->getBucket($bucket, $folder->fullPath);
+		$objectsToDelete = $this->_s3->getBucket($bucket, $parentFolder->fullPath.$folderName);
 
 		foreach ($objectsToDelete as $uri)
 		{
@@ -608,6 +600,27 @@ class S3AssetSourceType extends BaseAssetSourceType
 		}
 
 		return true;
+	}
+
+	/**
+	 * Determines if a file can be moved internally from original source.
+	 *
+	 * @param BaseAssetSourceType $originalSource
+	 * @return mixed
+	 */
+	protected function canMoveFileFrom(BaseAssetSourceType $originalSource)
+	{
+		if ($this->model->type == $originalSource->model->type)
+		{
+			$settings = $originalSource->getSettings();
+			$theseSettings = $this->getSettings();
+			if ($settings->keyId == $theseSettings->keyId && $settings->secret == $theseSettings->secret)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 

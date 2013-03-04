@@ -84,6 +84,15 @@ class UserPermissionsService extends BaseApplicationComponent
 			$permissions[Craft::t('Global Sets')] = $this->_getGlobalSetPermissions($globalSets);
 		}
 
+		// Asset sources
+
+		$assetSources = craft()->assetSources->getAllSources();
+
+		if ($assetSources)
+		{
+			$permissions[Craft::t('Asset Sources')] = $this->_getAssetSourcePermissions($assetSources);
+		}
+
 		// Plugins
 
 		foreach (craft()->plugins->callHook('registerUserPermissions') as $pluginHandle => $pluginPermissions)
@@ -316,6 +325,27 @@ class UserPermissionsService extends BaseApplicationComponent
 		{
 			$permissions["editGlobalSet{$globalSet->id}"] = array(
 				'label' => Craft::t('Edit “{title}”', array('title' => $globalSet->name))
+			);
+		}
+
+		return $permissions;
+	}
+
+	/**
+	 * Returns the array source permissions.
+	 *
+	 * @access private
+	 * @param array $assetSources
+	 * @return array
+	 */
+	private function _getAssetSourcePermissions($assetSources)
+	{
+		$permissions = array();
+
+		foreach ($assetSources as $source)
+		{
+			$permissions["viewAssetSource{$source->id}"] = array(
+				'label' => Craft::t('View source “{title}”', array('title' => $source->name))
 			);
 		}
 
