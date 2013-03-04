@@ -4,14 +4,14 @@ namespace Craft;
 /**
  *
  */
-class AssetTransformationRecord extends BaseRecord
+class AssetTransformRecord extends BaseRecord
 {
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
-		return 'assettransformations';
+		return 'assettransforms';
 	}
 
 	/**

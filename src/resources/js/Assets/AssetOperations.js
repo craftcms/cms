@@ -13,9 +13,9 @@ Assets.OperationManager = Garnish.Base.extend({
 	$sourceMasterCheckbox: null,
 	$sourceCheckboxes: null,
 	$indexCheckbox: null,
-	$transformationsCheckbox: null,
-	$transformationMasterCheckbox: null,
-	$transformationCheckboxes: null,
+	$transformsCheckbox: null,
+	$transformMasterCheckbox: null,
+	$transformCheckboxes: null,
 	$progressBarContainer: null,
 
 
@@ -34,10 +34,10 @@ Assets.OperationManager = Garnish.Base.extend({
 		this.$sourceCheckboxes = $('.assets-sources input[type=checkbox]').not('.all');
 
 		this.$indexCheckbox = $('#do-index');
-		this.$transformationsCheckbox = $('#do-transformations');
+		this.$transformsCheckbox = $('#do-transforms');
 
-		this.$transformationMasterCheckbox = $('#transformations input[type=checkbox].all');
-		this.$transformationCheckboxes = $('#transformations input[type=checkbox]').not('.all');
+		this.$transformMasterCheckbox = $('#transforms input[type=checkbox].all');
+		this.$transformCheckboxes = $('#transforms input[type=checkbox]').not('.all');
 
 		this.$progressBarContainer = $('.operation-progress');
 
@@ -53,12 +53,12 @@ Assets.OperationManager = Garnish.Base.extend({
 			return;
 		}
 
-		var checkedTransformations = [];
+		var checkedTransforms = [];
 
-		if (this.$transformationsCheckbox.prop('checked'))
+		if (this.$transformsCheckbox.prop('checked'))
 		{
-			this.$transformationCheckboxes.filter(':checked').each(function () {
-				checkedTransformations.push($(this).val());
+			this.$transformCheckboxes.filter(':checked').each(function () {
+				checkedTransforms.push($(this).val());
 			});
 		}
 
@@ -67,20 +67,20 @@ Assets.OperationManager = Garnish.Base.extend({
 		var checkedSources = this.$sourceCheckboxes.filter(':checked');
 
 
-		if (checkedSources.length == 0 || !(doIndex || checkedTransformations.length))
+		if (checkedSources.length == 0 || !(doIndex || checkedTransforms.length))
 		{
 			this.$startOperationsButton.removeClass('disabled');
 			return;
 		}
 
-		var checkedOperations = {doIndexes: Number(doIndex), transformations: checkedTransformations};
+		var checkedOperations = {doIndexes: Number(doIndex), transforms: checkedTransforms};
 
 		this.$startOperationsButton.addClass('disabled');
 
 		this.$sourceMasterCheckbox.prop('disabled', true);
 		this.$sourceCheckboxes.prop('disabled', true);
-		this.$transformationMasterCheckbox.prop('disabled', true);
-		this.$transformationCheckboxes.prop('disabled', true);
+		this.$transformMasterCheckbox.prop('disabled', true);
+		this.$transformCheckboxes.prop('disabled', true);
 		this.$indexCheckbox.prop('disabled',  true);
 
 		Craft.postActionRequest('assetOperations/getSessionId', $.proxy(function(data){
@@ -99,7 +99,7 @@ Assets.OperationManager = Garnish.Base.extend({
 					sourceId: $checkbox.val(),
 					session: _t.sessionId,
 					doIndexes: checkedOperations.doIndexes,
-					doTransformations: checkedOperations.transformations
+					doTransforms: checkedOperations.transforms
 				};
 
 				_t.queue.addItem(Craft.getActionUrl('assetOperations/startIndex'), params, $.proxy(function (data) {
@@ -118,7 +118,7 @@ Assets.OperationManager = Garnish.Base.extend({
 							sourceId: data.sourceId,
 							offset: i,
 							doIndexes: checkedOperations.doIndexes,
-							doTransformations: checkedOperations.transformations
+							doTransforms: checkedOperations.transforms
 						};
 
 						this.queue.addItem(Craft.getActionUrl('assetOperations/performIndex'), params, function () {
@@ -260,11 +260,11 @@ Assets.OperationManager = Garnish.Base.extend({
 		} else {
 			this.$sourceCheckboxes.prop('disabled', false);
 		}
-		this.$transformationMasterCheckbox.prop('disabled', false);
-		if (this.$transformationMasterCheckbox.prop('checked')) {
-			this.$transformationMasterCheckbox.prop('disabled', false);
+		this.$transformMasterCheckbox.prop('disabled', false);
+		if (this.$transformMasterCheckbox.prop('checked')) {
+			this.$transformMasterCheckbox.prop('disabled', false);
 		} else {
-			this.$transformationCheckboxes.prop('disabled', false);
+			this.$transformCheckboxes.prop('disabled', false);
 		}
 
 		this.$indexCheckbox.prop('disabled', false);

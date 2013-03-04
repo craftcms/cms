@@ -909,7 +909,7 @@ class AssetsService extends BaseApplicationComponent
 			$originalSource->finalizeOutgoingTransfer($oldFileModel);
 			if ($file->kind == "image")
 			{
-				craft()->assetTransformations->updateTransformations($file, array_keys(craft()->assetTransformations->getAssetTransformations()));
+				craft()->assetTransforms->updateTransforms($file, array_keys(craft()->assetTransforms->getAssetTransforms()));
 			}
 			IOHelper::deleteFile($localCopy);
 		}

@@ -18,10 +18,10 @@
 
 	{% if sources|length %}
 
-		{% if transformationHandle is defined %}
-			{% set transformationValue = transformationHandle %}
+		{% if transformHandle is defined %}
+			{% set transformValue = transformHandle %}
 		{% else %}
-			{% set transformationValue = 0 %}
+			{% set transformValue = 0 %}
 		{% endif %}
 
 		{{ forms.checkboxSelectField({
@@ -46,34 +46,34 @@
 					}) }}
 				</li>
 
-				{% set transformations = craft.assets.getAllAssetTransformations() %}
-				{% if transformations|length %}
-					{% set transformationsChecked = (craft.request.getQuery('transformation') is not empty) %}
+				{% set transforms = craft.assets.getAllAssetTransforms() %}
+				{% if transforms|length %}
+					{% set transformsChecked = (craft.request.getQuery('transform') is not empty) %}
 					<li>
 						{{ forms.checkbox({
-							label: "Update transformations"|t,
-							id: 'do-transformations',
-							name: 'do-transformations',
-							class: 'assets-transformations',
-							checked: transformationsChecked,
-							toggle: 'transformations'
+							label: "Update transforms"|t,
+							id: 'do-transforms',
+							name: 'do-transforms',
+							class: 'assets-transforms',
+							checked: transformsChecked,
+							toggle: 'transforms'
 						}) }}
-						<ul id="transformations" class="indent{% if not transformationsChecked %} hidden{% endif %} checkbox-select">
+						<ul id="transforms" class="indent{% if not transformsChecked %} hidden{% endif %} checkbox-select">
 							<li>
 								{{ forms.checkbox({
 									class: 'all',
 									label: '<b>' ~ "All"|t ~ '</b>',
-									checked: (not transformationsChecked)
+									checked: (not transformsChecked)
 								}) }}
 							</li>
-							{% for transformation in transformations %}
+							{% for transform in transforms %}
 								<li>
 									{{ forms.checkbox({
-										label: transformation.name,
-										name: transformation ~ '[]',
-										value: transformation.handle,
-										checked: (not transformationsChecked or (transformationsChecked and craft.request.getQuery('transformation') == transformation.handle)),
-										disabled: (not transformationsChecked)
+										label: transform.name,
+										name: transform ~ '[]',
+										value: transform.handle,
+										checked: (not transformsChecked or (transformsChecked and craft.request.getQuery('transform') == transform.handle)),
+										disabled: (not transformsChecked)
 									}) }}
 								</li>
 							{% endfor %}

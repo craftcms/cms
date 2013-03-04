@@ -108,35 +108,35 @@ class AssetsVariable
 	}
 
 	// -------------------------------------------
-	// Transformations
+	// Transforms
 	// -------------------------------------------
 
 	/**
-	 * Get all asset transformations.
+	 * Get all asset transforms.
 	 *
 	 * @return array|null
 	 */
-	public function getAllAssetTransformations()
+	public function getAllAssetTransforms()
 	{
-		return craft()->assetTransformations->getAssetTransformations();
+		return craft()->assetTransforms->getAssetTransforms();
 	}
 
 	/**
-	 * Get asset transformation by it's handle.
+	 * Get asset transform by it's handle.
 	 *
 	 * @param $handle
 	 * @return null
 	 */
-	public function getTransformationByHandle($handle)
+	public function getTransformByHandle($handle)
 	{
-		return craft()->assetTransformations->getAssetTransformation($handle);
+		return craft()->assetTransforms->getAssetTransform($handle);
 	}
 
 	/**
-	 * Return a list of possible transformation scale modes
+	 * Return a list of possible transform scale modes
 	 * @return array
 	 */
-	public function getTransformationModes()
+	public function getTransformModes()
 	{
 		return array(
 			'scaleToFit' => Craft::t("Scale to fit"),

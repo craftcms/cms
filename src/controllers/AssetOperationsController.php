@@ -35,7 +35,7 @@ class AssetOperationsController extends BaseController
 		}
 		else
 		{
-			// Just the transformations, so get the indexed file list.
+			// Just the transforms, so get the indexed file list.
 			$this->returnJson(array(
 				'sourceId' => 	$sourceId,
 				'total' => craft()->assets->getTotalFiles(array('sourceId' => $sourceId))
@@ -61,9 +61,9 @@ class AssetOperationsController extends BaseController
 			$return = array('success' => (bool) $fileId);
 		}
 
-		// Do the transformation update
-		$transformationsToUpdate = craft()->request->getPost('doTransformations');
-		if ($transformationsToUpdate)
+		// Do the transform update
+		$transformsToUpdate = craft()->request->getPost('doTransforms');
+		if ($transformsToUpdate)
 		{
 			// Did indexing already fill this one for us?
 			if (empty($fileId))
@@ -78,7 +78,7 @@ class AssetOperationsController extends BaseController
 
 			if ($file instanceof AssetFileModel)
 			{
-				if (craft()->assetTransformations->updateTransformations($file, $transformationsToUpdate))
+				if (craft()->assetTransforms->updateTransforms($file, $transformsToUpdate))
 				{
 					$return = array('success' => true);
 				}

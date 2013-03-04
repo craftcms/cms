@@ -41,13 +41,13 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	public abstract function getImageSourcePath(AssetFileModel $fileModel);
 
 	/**
-	 * Get the timestamp of when a file transformation was last modified.
+	 * Get the timestamp of when a file transform was last modified.
 	 *
 	 * @param AssetFileModel $fileModel
-	 * @param string $transformationHandle
+	 * @param string $transformHandle
 	 * @return mixed
 	 */
-	public abstract function getTimeTransformationModified(AssetFileModel $fileModel, $transformationHandle);
+	public abstract function getTimeTransformModified(AssetFileModel $fileModel, $transformHandle);
 
 	/**
 	 * Insert a file from path in folder.
@@ -70,14 +70,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	abstract protected function _getNameReplacement(AssetFolderModel $folder, $fileName);
 
 	/**
-	 * Put an image transformation for the File and handle using the provided path to the source image.
+	 * Put an image transform for the File and handle using the provided path to the source image.
 	 *
 	 * @param AssetFileModel $fileModel
 	 * @param $handle
 	 * @param $sourceImage
 	 * @return mixed
 	 */
-	abstract public function putImageTransformation(AssetFileModel $fileModel, $handle, $sourceImage);
+	abstract public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage);
 
 	/**
 	 * Make a local copy of the file and return the path to it.
@@ -106,12 +106,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	abstract protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $userResponse = '');
 
 	/**
-	 * Delete generated image transformations for a File.
+	 * Delete generated image transforms for a File.
 	 *
 	 * @param AssetFileModel $file
 	 * @return mixed
 	 */
-	abstract protected function _deleteGeneratedImageTransformations(AssetFileModel $file);
+	abstract protected function _deleteGeneratedImageTransforms(AssetFileModel $file);
 
 	/**
 	 * Return TRUE if a physical folder exists.
@@ -271,7 +271,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				IOHelper::copyFile($filePath, craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel, PATHINFO_EXTENSION));
 			}
 
-			craft()->assetTransformations->updateTransformations($fileModel, array_keys(craft()->assetTransformations->getAssetTransformations()));
+			craft()->assetTransforms->updateTransforms($fileModel, array_keys(craft()->assetTransforms->getAssetTransforms()));
 
 			// Check if we stored a conflict response originally - send that back then.
 			if (isset($conflictResponse))
@@ -625,7 +625,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function finalizeOutgoingTransfer(AssetFileModel $file)
 	{
-		$this->_deleteGeneratedImageTransformations($file);
+		$this->_deleteGeneratedImageTransforms($file);
 		$this->_deleteGeneratedThumbnails($file);
 		$this->_deleteSourceFile($file->getFolder(), $file->filename);
 	}

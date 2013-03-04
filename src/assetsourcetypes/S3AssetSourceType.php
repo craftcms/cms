@@ -333,16 +333,16 @@ class S3AssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get the timestamp of when a file transformation was last modified.
+	 * Get the timestamp of when a file transform was last modified.
 	 *
 	 * @param AssetFileModel $fileModel
-	 * @param string $transformationHandle
+	 * @param string $transformHandle
 	 * @return mixed
 	 */
-	public function getTimeTransformationModified(AssetFileModel $fileModel, $transformationHandle)
+	public function getTimeTransformModified(AssetFileModel $fileModel, $transformHandle)
 	{
 		$folder = $fileModel->getFolder();
-		$path = $folder->fullPath.'_'.$transformationHandle.'/'.$fileModel->filename;
+		$path = $folder->fullPath.'_'.$transformHandle.'/'.$fileModel->filename;
 		$this->_prepareForRequests();
 		$info = $this->_s3->getObjectInfo($this->getSettings()->bucket, $path);
 
@@ -355,14 +355,14 @@ class S3AssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	* Put an image transformation for the File and handle using the provided path to the source image.
+	* Put an image transform for the File and handle using the provided path to the source image.
 	*
 	* @param AssetFileModel $fileModel
 	* @param $handle
 	* @param $sourceImage
 	* @return mixed
 	*/
-	public function putImageTransformation(AssetFileModel $fileModel, $handle, $sourceImage)
+	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
 	{
 		$this->_prepareForRequests();
 		$targetFile = $fileModel->getFolder()->fullPath.'_'.$handle.'/'.$fileModel->filename;
@@ -439,21 +439,21 @@ class S3AssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Delete all the generated image transformations for this file.
+	 * Delete all the generated image transforms for this file.
 
 	 *
 	 * @param AssetFileModel $file
 	 */
-	protected function _deleteGeneratedImageTransformations(AssetFileModel $file)
+	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
 	{
 		$folder = craft()->assets->getFolderById($file->folderId);
-		$transformations = craft()->assetTransformations->getAssetTransformations();
+		$transforms = craft()->assetTransforms->getAssetTransforms();
 		$this->_prepareForRequests();
 
 		$bucket = $this->getSettings()->bucket;
 		$this->_s3->deleteObject($bucket, $this->_getS3Path($file));
 
-		foreach ($transformations as $handle => $transformation)
+		foreach ($transforms as $handle => $transform)
 		{
 			$this->_s3->deleteObject($bucket, $folder->fullPath.'_'.$handle.'/'.$file->filename);
 		}
@@ -508,12 +508,12 @@ class S3AssetSourceType extends BaseAssetSourceType
 		{
 			$this->_deleteGeneratedThumbnails($file);
 
-			// Move transformations
-			$transformations = craft()->assetTransformations->getAssetTransformations();
+			// Move transforms
+			$transforms = craft()->assetTransforms->getAssetTransforms();
 			$baseFromPath = $file->getFolder()->fullPath;
 			$baseToPath = $targetFolder->fullPath;
 
-			foreach ($transformations as $handle => $transformation)
+			foreach ($transforms as $handle => $transform)
 			{
 				$this->_s3->copyObject($bucket, $baseFromPath.'_'.$handle.'/'.$file->filename, $bucket, $baseToPath.'_'.$handle.'/'.$fileName);
 				$this->_s3->deleteObject($bucket, $baseFromPath.'_'.$handle.'/'.$file->filename);

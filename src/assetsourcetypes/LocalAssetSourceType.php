@@ -279,15 +279,15 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get the timestamp of when a file transformation was last modified.
+	 * Get the timestamp of when a file transform was last modified.
 	 *
 	 * @param AssetFileModel $fileModel
-	 * @param string $transformationHandle
+	 * @param string $transformHandle
 	 * @return mixed
 	 */
-	public function getTimeTransformationModified(AssetFileModel $fileModel, $transformationHandle)
+	public function getTimeTransformModified(AssetFileModel $fileModel, $transformHandle)
 	{
-		$path = $this->_getImageServerPath($fileModel, $transformationHandle);
+		$path = $this->_getImageServerPath($fileModel, $transformHandle);
 
 		if (!IOHelper::fileExists($path))
 		{
@@ -298,14 +298,14 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Put an image transformation for the File and handle using the provided path to the source image.
+	 * Put an image transform for the File and handle using the provided path to the source image.
 	 *
 	 * @param AssetFileModel $fileModel
 	 * @param $handle
 	 * @param $sourceImage
 	 * @return mixed
 	 */
-	public function putImageTransformation(AssetFileModel $fileModel, $handle, $sourceImage)
+	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
 	{
 		return IOHelper::copyFile($sourceImage, $this->_getImageServerPath($fileModel, $handle));
 	}
@@ -378,15 +378,15 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Delete all the generated image transformations for this file.
+	 * Delete all the generated image transforms for this file.
 	 *
 	 * @param AssetFileModel $file
 	 */
-	protected function _deleteGeneratedImageTransformations(AssetFileModel $file)
+	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
 	{
 		$folder = $file->getFolder();
-		$transformations = craft()->assetTransformations->getAssetTransformations();
-		foreach ($transformations as $handle => $transformation)
+		$transforms = craft()->assetTransforms->getAssetTransforms();
+		foreach ($transforms as $handle => $transform)
 		{
 			IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->fullPath.'_'.$handle.'/'.$file->filename);
 		}
@@ -432,12 +432,12 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		{
 			$this->_deleteGeneratedThumbnails($file);
 
-			// Move transformations
-			$transformations = craft()->assetTransformations->getAssetTransformations();
+			// Move transforms
+			$transforms = craft()->assetTransforms->getAssetTransforms();
 			$baseFromPath = $this->_getSourceFileSystemPath().$file->getFolder()->fullPath;
 			$baseToPath = $this->_getSourceFileSystemPath().$targetFolder->fullPath;
 
-			foreach ($transformations as $handle => $transformation)
+			foreach ($transforms as $handle => $transform)
 			{
 				if (IOHelper::fileExists($baseFromPath.'_'.$handle.'/'.$file->filename))
 				{

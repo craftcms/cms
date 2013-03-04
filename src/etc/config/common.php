@@ -123,8 +123,8 @@ $cpRoutes['updates/go/(?P<handle>[^/]*)'] = 'updates/_go';
 $cpRoutes['settings/assets']                                      = 'settings/assets/sources';
 $cpRoutes['settings/assets/sources/new']                          = 'settings/assets/sources/_settings';
 $cpRoutes['settings/assets/sources/(?P<sourceId>\d+)']            = 'settings/assets/sources/_settings';
-$cpRoutes['settings/assets/transformations/new']                  = 'settings/assets/transformations/_settings';
-$cpRoutes['settings/assets/transformations/(?P<handle>{handle})'] = 'settings/assets/transformations/_settings';
+$cpRoutes['settings/assets/transforms/new']                  = 'settings/assets/transforms/_settings';
+$cpRoutes['settings/assets/transforms/(?P<handle>{handle})'] = 'settings/assets/transforms/_settings';
 $cpRoutes['settings/fields/(?P<groupId>\d+)']                     = 'settings/fields';
 $cpRoutes['settings/fields/new']                                  = 'settings/fields/_edit';
 $cpRoutes['settings/fields/edit/(?P<fieldId>\d+)']                = 'settings/fields/_edit';
@@ -177,7 +177,7 @@ $cpRoutes['pkgRoutes']['Users']['settings/users/groups/(?P<groupId>\d+)'] = 'set
 
 $components['users']['class']                = 'Craft\UsersService';
 $components['assets']['class']               = 'Craft\AssetsService';
-$components['assetTransformations']['class'] = 'Craft\AssetTransformationsService';
+$components['assetTransforms']['class'] = 'Craft\AssetTransformsService';
 $components['assetIndexing']['class']        = 'Craft\AssetIndexingService';
 $components['assetSources']['class']         = 'Craft\AssetSourcesService';
 
