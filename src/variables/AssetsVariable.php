@@ -51,6 +51,8 @@ class AssetsVariable
 		{
 			return new AssetSourceTypeVariable($sourceType);
 		}
+
+		return null;
 	}
 
 	/**
@@ -62,6 +64,57 @@ class AssetsVariable
 	public function getAllSources($indexBy = null)
 	{
 		return craft()->assetSources->getAllSources($indexBy);
+	}
+
+	/**
+	 * Return all source ids.
+	 *
+	 * @return array
+	 */
+	public function getAllSourceIds()
+	{
+		return craft()->assetSources->getAllSourceIds();
+	}
+
+	/**
+	 * Return all viewable source ids.
+	 *
+	 * @return array
+	 */
+	public function getViewableSourceIds()
+	{
+		return craft()->assetSources->getViewableSourceIds();
+	}
+
+	/**
+	 * Return all viewable sources.
+	 *
+	 * @param null $indexBy
+	 * @return array
+	 */
+	public function getViewableSources($indexBy = null)
+	{
+		return craft()->assetSources->getViewableSources($indexBy);
+	}
+
+	/**
+	 * Return total number of sources.
+	 *
+	 * @return int
+	 */
+	public function getTotalSources()
+	{
+		return craft()->assetSources->getTotalSources();
+	}
+
+	/**
+	 * Return total number of viewable sources.
+	 *
+	 * @return int
+	 */
+	public function getTotalViewableSources()
+	{
+		return craft()->assetSources->getTotalViewableSources();
 	}
 
 	/**
@@ -146,11 +199,11 @@ class AssetsVariable
 	}
 
 	/**
-	 * Returns all folders in a structured way
+	 * Returns all folders that a user is allowed to see in a structured way
 	 */
 	public function getAllFolders()
 	{
-		$tree = craft()->assets->getFolderTree();
+		$tree = craft()->assets->getFolderTree(craft()->assetSources->getViewableSourceIds());
 		return $tree;
 	}
 }

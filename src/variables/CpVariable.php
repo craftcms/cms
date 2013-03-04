@@ -20,7 +20,10 @@ class CpVariable
 			$nav['entries'] = array('name' => Craft::t('Entries'));
 		}
 
-		$nav['assets'] = array('name' => Craft::t('Assets'));
+		if (craft()->assetSources->getTotalViewableSources())
+		{
+			$nav['assets'] = array('name' => Craft::t('Assets'));
+		}
 
 		if (craft()->globals->getTotalEditableSets())
 		{

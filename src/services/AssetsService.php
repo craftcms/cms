@@ -365,11 +365,12 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Get the folder tree for Assets.
 	 *
+	 * @param $allowedSourceIds
 	 * @return array
 	 */
-	public function getFolderTree()
+	public function getFolderTree($allowedSourceIds)
 	{
-		$folders = $this->findFolders(array('order' => 'fullPath'));
+		$folders = $this->findFolders(array('sourceId' => $allowedSourceIds, 'order' => 'fullPath'));
 		$tree = array();
 		$referenceStore = array();
 
