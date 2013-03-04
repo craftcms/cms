@@ -18,7 +18,11 @@ class EntryTagModel extends BaseModel
 		return $this->name;
 	}
 
-	public function defineAttributes()
+	/**
+	 * @access protected
+	 * @return array
+	 */
+	protected function defineAttributes()
 	{
 		$attributes['name'] = AttributeType::String;
 		return $attributes;

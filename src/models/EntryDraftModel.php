@@ -9,9 +9,10 @@ Craft::requirePackage(CraftPackage::PublishPro);
 class EntryDraftModel extends EntryModel
 {
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		$attributes = parent::defineAttributes();
 

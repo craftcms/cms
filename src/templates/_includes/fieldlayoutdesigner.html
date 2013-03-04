@@ -21,14 +21,14 @@
 			<div class="tab sel{% if customizableTabs %} draggable{% endif %}">
 				<span>{{ tabName }}</span>
 				{% if customizableTabs %}
-					<a class="edit icon" title="{{ 'Edit'|t }}"></a>
+					<a class="settings icon" title="{{ 'Edit'|t }}"></a>
 				{% endif %}
 			</div>
 		</div>
 		<div class="fld-tabcontent">
 			{% for field in tabFields %}
 				<div class="fld-field{% if field.required %} fld-required{% endif %}" data-id="{{ field.fieldId }}">
-					<a class="edit icon" title="{{ 'Edit'|t }}"></a>
+					<a class="settings icon" title="{{ 'Edit'|t }}"></a>
 					<span>{{ field.getField().name }}</span>
 					<input class="id-input" type="hidden" name="fieldLayout[{{ tabName|url_encode }}][]" value="{{ field.fieldId }}">
 					{% if field.required %}<input class="required-input" type="hidden" name="requiredFields[]" value="{{ field.fieldId }}">{% endif %}

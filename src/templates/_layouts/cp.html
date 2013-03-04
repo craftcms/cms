@@ -2,8 +2,23 @@
 {% includeCssResource "css/cp.css" first %}
 
 {% set body %}
-	{% if user.admin and craft.config.devMode %}
-		<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
+	{% if user.admin %}
+		{% if craft.config.devMode %}
+			<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
+		{% endif %}
+
+		<div id="alerts">
+			{% if craft.cp.areAlertsCached() %}
+				{% for alert in craft.cp.getAlerts() %}
+					<div class="alert">{{ alert|raw }}</div>
+				{% endfor %}
+			{% else %}
+				{% set js %}
+					console.log(Craft.cp);
+				{% endset %}
+				{% includeJs js %}
+			{% endif %}
+		</div>
 	{% endif %}
 
 	<header id="header">
@@ -51,7 +66,9 @@
 			</div>
 		</div>
 
-		<header id="page-header">
+		{% set hasTabs = (tabs is defined and tabs) %}
+
+		<header id="page-header"{% if hasTabs %} class="has-tabs"{% endif %}>
 			{% if crumbs is defined and crumbs %}
 				<nav id="crumbs">
 					<ul>
@@ -72,7 +89,7 @@
 
 			<div class="clear"></div>
 
-			{% if tabs is defined and tabs %}
+			{% if hasTabs %}
 				<nav id="tabs" class="tabs">
 					<ul>
 						{% for tabId, tab in tabs %}
@@ -107,6 +124,9 @@
 	</div>
 
 	<div id="version">
-		@@@appName@@@ {{ craft.app.version }} build {{ craft.app.build }}
+		@@@appName@@@ {{ "{version} build {build}"|t({
+			version: craft.app.version,
+			build:   craft.app.build
+		}) }}
 	</div>
 {% endset %}

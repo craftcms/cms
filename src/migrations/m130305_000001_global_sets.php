@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m130305_000000_global_sets extends BaseMigration
+class m130305_000001_global_sets extends BaseMigration
 {
 	private $_globalSetNames;
 	private $_globalSetHandles;

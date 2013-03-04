@@ -6,14 +6,6 @@ namespace Craft;
  */
 class PackagesController extends BaseController
 {
-	private $_packageList = array(
-		CraftPackage::Users,
-		CraftPackage::PublishPro,
-		CraftPackage::Localize,
-		CraftPackage::Cloud,
-		CraftPackage::Rebrand,
-	);
-
 	/**
 	 * Init
 	 */
@@ -21,6 +13,73 @@ class PackagesController extends BaseController
 	{
 		// All package actions must be performed by an admin.
 		craft()->userSession->requireAdmin();
+	}
+
+	/**
+	 * Fetches the installed package info from Elliott.
+	 */
+	public function actionFetchPackageInfo()
+	{
+		$this->requireAjaxRequest();
+
+		$etResponse = craft()->et->fetchPackageInfo();
+
+		if ($etResponse)
+		{
+			// Make sure we've got a valid license key
+			if ($etResponse->licenseKeyStatus == LicenseKeyStatus::Valid)
+			{
+				$packages = $etResponse->data;
+
+				// Include which packages are actually licensed
+				foreach ($etResponse->licensedPackages as $packageName)
+				{
+					$packages[$packageName]['licensed'] = true;
+				}
+
+				$this->returnJson(array(
+					'success'  => true,
+					'packages' => $packages
+				));
+			}
+			else
+			{
+				$this->returnErrorJson(Craft::t('Your license key is invalid.'));
+			}
+		}
+		else
+		{
+			$this->returnErrorJson(Craft::t('Craft is unable to fetch package info at this time.'));
+		}
+	}
+
+	/**
+	 * Passes along a given CC token to Elliott to purchase a package.
+	 */
+	public function actionPurchasePackage()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$model = new PackagePurchaseOrderModel(array(
+			'ccTokenId'     => craft()->request->getRequiredPost('ccTokenId'),
+			'package'       => craft()->request->getRequiredPost('package'),
+			'expectedPrice' => craft()->request->getRequiredPost('expectedPrice'),
+		));
+
+		if (craft()->et->purchasePackage($model))
+		{
+			$this->returnJson(array(
+				'success' => true,
+				'package' => $model->package
+			));
+		}
+		else
+		{
+			$this->returnJson(array(
+				'errors' => $model->getErrors()
+			));
+		}
 	}
 
 	/**
@@ -32,26 +91,10 @@ class PackagesController extends BaseController
 		$this->requireAjaxRequest();
 
 		$package = craft()->request->getRequiredPost('package');
-
-		// Make sure it's a real package name
-		$this->_validatePackageName($package);
-
-		// Make sure it's not already installed
-		$installedPackages = Craft::getPackages();
-
-		if (in_array($package, $installedPackages))
-		{
-			throw new Exception(Craft::t('The {package} package is already installed.', array('package' => $package)));
-		}
-
-		// Install it
-		$installedPackages[] = $package;
-		craft()->db->createCommand()->update('info', array(
-			'packages' => implode(',', $installedPackages))
-		);
+		$success = Craft::installPackage($package);
 
 		$this->returnJson(array(
-			'success' => true
+			'success' => $success
 		));
 	}
 
@@ -64,41 +107,10 @@ class PackagesController extends BaseController
 		$this->requireAjaxRequest();
 
 		$package = craft()->request->getRequiredPost('package');
-
-		// Make sure it's a real package name
-		$this->_validatePackageName($package);
-
-		// Make sure it's actually installed
-		$installedPackages = Craft::getPackages();
-
-		if (!in_array($package, $installedPackages))
-		{
-			throw new Exception(Craft::t('The {package} package wasn’t installed.', array('package' => $package)));
-		}
-
-		// Uninstall it
-		$index = array_search($package, $installedPackages);
-		array_splice($installedPackages, $index, 1);
-		craft()->db->createCommand()->update('info', array(
-			'packages' => implode(',', $installedPackages))
-		);
+		$success = Craft::uninstallPackage($package);
 
 		$this->returnJson(array(
-			'success' => true
+			'success' => $success
 		));
-	}
-
-	/**
-	 * Validates a package name.
-	 *
-	 * @access private
-	 * @throws Exception
-	 */
-	private function _validatePackageName($package)
-	{
-		if (!in_array($package, $this->_packageList))
-		{
-			throw new Exception(Craft::t('Craft doesn’t have a package named “{package}”', array('package' => $package)));
-		}
 	}
 }

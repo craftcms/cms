@@ -473,7 +473,7 @@ class DbHelper
 					$format = '';
 				}
 
-				$date = DateTime::createFromFormat($format, $date);
+				$date = DateTime::createFromFormat('!'.$format, $date);
 			}
 
 			$param = ':p'.StringHelper::randomString(9);

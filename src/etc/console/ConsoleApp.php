@@ -39,14 +39,6 @@ class ConsoleApp extends \CConsoleApplication
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function isInstalled()
-	{
-		return true;
-	}
-
-	/**
 	 * Returns whether we are executing in the context on a console app.
 	 *
 	 * @return bool

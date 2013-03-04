@@ -35,8 +35,6 @@ class WebApp extends \CWebApplication
 	public $componentAliases;
 
 	private $_templatePath;
-	private $_isInstalled;
-	private $_validDbConfig = null;
 	private $_packageComponents;
 
 	/**
@@ -112,7 +110,7 @@ class WebApp extends \CWebApplication
 
 		// isDbUpdateNeeded will return true if we're in the middle of a manual or auto-update.
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
-		if (craft()->updates->isDbUpdateNeeded() || (Craft::isInMaintenanceMode() && !$this->request->isSiteRequest()))
+		if (craft()->updates->isDbUpdateNeeded() || (Craft::isInMaintenanceMode() && $this->request->isCpRequest()))
 		{
 			// Let all non-action CP requests through.
 			if (
@@ -175,11 +173,11 @@ class WebApp extends \CWebApplication
 			// Load the plugins
 			$this->plugins;
 
-			// Otherwise maybe it's an action request?
+			// If this is an action request, call the controller
 			$this->_processActionRequest();
 
-			// Otherwise run the template controller
-			$this->runController('templates');
+			// If we're still here, finally let UrlManager do it's thing.
+			parent::processRequest();
 		}
 		else
 		{
@@ -229,7 +227,7 @@ class WebApp extends \CWebApplication
 		}
 
 		// Should they be?
-		else if (!$this->isInstalled())
+		else if (!Craft::isInstalled())
 		{
 			// Give it to them if accessing the CP
 			if ($isCpRequest)
@@ -313,7 +311,7 @@ class WebApp extends \CWebApplication
 				{
 					$route = $controller.'/'.$action;
 					$this->runController($route);
-					$this->end();
+					return;
 				}
 				else
 				{
@@ -336,7 +334,7 @@ class WebApp extends \CWebApplication
 
 							$route = substr($controller, 0, strpos($controller, 'Controller')).'/'.$action;
 							$this->runController($route);
-							$this->end();
+							return;
 						}
 						else
 						{
@@ -351,7 +349,7 @@ class WebApp extends \CWebApplication
 
 								$route = substr($controller, 0, strpos($controller, 'Controller')).'/'.$action;
 								$this->runController($route);
-								$this->end();
+								return;
 							}
 						}
 					}
@@ -367,7 +365,7 @@ class WebApp extends \CWebApplication
 	 */
 	public function createController($route, $owner = null)
 	{
-		if (($route=trim($route,'/')) === '')
+		if (($route = trim($route, '/')) === '')
 		{
 			$route = $this->defaultController;
 		}
@@ -455,7 +453,6 @@ class WebApp extends \CWebApplication
 
 		if (!empty($messages))
 		{
-			$this->_validDbConfig = false;
 			throw new Exception(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
 		}
 
@@ -500,59 +497,8 @@ class WebApp extends \CWebApplication
 
 		if (!empty($messages))
 		{
-			$this->_validDbConfig = false;
 			throw new Exception(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
 		}
-
-		$this->_validDbConfig = true;
-	}
-
-	/**
-	 * Checks whether the database config values are valid or not.
-	 *
-	 * @return mixed
-	 */
-	public function isDbConfigValid()
-	{
-		if ($this->_validDbConfig === null)
-		{
-			$this->_validateDbConfig();
-		}
-
-		return $this->_validDbConfig;
-	}
-
-	/**
-	 * Determines if Craft is installed by checking if the info table exists.
-	 *
-	 * @return bool
-	 */
-	public function isInstalled()
-	{
-		if (!isset($this->_isInstalled))
-		{
-			if (!$this->isDbConfigValid())
-			{
-				$this->_isInstalled = false;
-			}
-			else
-			{
-				$infoTable = $this->db->getSchema()->getTable('{{info}}');
-				$this->_isInstalled = (bool)$infoTable;
-			}
-		}
-
-		return $this->_isInstalled;
-	}
-
-	/**
-	 * Sets the isInstalled state.
-	 *
-	 * @param bool $isInstalled
-	 */
-	public function setInstalledStatus($isInstalled)
-	{
-		$this->_isInstalled = (bool)$isInstalled;
 	}
 
 	/**

@@ -11,6 +11,7 @@
 	"Installed!",
 	"Uninstall",
 	"Uninstalled",
+	"Buy",
 	"Purchase {package}",
 	"{package} purchased successfully!"
 %}
@@ -41,7 +42,7 @@
 		</div>
 		<div class="pane package" data-package="PublishPro">
 			<div class="info">
-				<h2>{{ "Publish"|t }} Pro</h2>
+				<h2>{{ "Publish Pro"|t }}</h2>
 				<ul>
 					<li>{{ "Multiple content sections"|t }}</li>
 					<li>{{ "Entry drafts and versioning"|t }}</li>
@@ -176,32 +177,8 @@
 
 {% set js %}
 	Craft.packageChooser = new Craft.PackageChooser({
-		modalHtml:  "{{ modalHtml|e('js') }}",
-		email:      "{{ user.email|e('js') }}",
-		licenseKey: "{{ craft.app.licenseKey|e('js') }}",
-		version:    "{{ craft.app.version|e('js') }}",
-		build:      "{{ craft.app.build|e('js') }}",
-		USD:        "{{ localeData.getCurrencySymbol('USD')|e('js') }}",
-
-		errors: {
-			// Elliott errors
-			package_doesnt_exist: "{{ 'The selected package doesn’t exist anymore.'|t }}",
-			invalid_license_key:  "{{ 'Your license key is invalid.'|t }}",
-			license_has_package:  "{{ 'Your Craft license already has this package.'|t }}",
-			price_mismatch:       "{{ 'The cost of this package just changed.'|t }}",
-			unknown_error:        "{{ 'An unknown error occurred.'|t }}",
-
-			// Stripe errors
-			incorrect_number:     "{{ 'The card number is incorrect.'|t }}",
-			invalid_number:       "{{ 'The card number is invalid.'|t }}",
-			invalid_expiry_month: "{{ 'The expiration month is invalid.'|t }}",
-			invalid_expiry_year:  "{{ 'The expiration year is invalid.'|t }}",
-			invalid_cvc:          "{{ 'The security code is invalid.'|t }}",
-			incorrect_cvc:        "{{ 'The security code is incorrect.'|t }}",
-			expired_card:         "{{ 'Your card has expired.'|t }}",
-			card_declined:        "{{ 'Your card was declined.'|t }}",
-			processing_error:     "{{ 'An error occurred while processing your card.'|t }}"
-		}
+		modalHtml: "{{ modalHtml|e('js') }}",
+		USD:       "{{ localeData.getCurrencySymbol('USD')|e('js') }}"
 	});
 {% endset %}
 

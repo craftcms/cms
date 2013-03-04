@@ -29,8 +29,6 @@ class AssetsController extends BaseController
 		{
 			craft()->userSession->setError(Craft::t('Couldn’t save asset fields.'));
 		}
-
-		$this->renderRequestedTemplate();
 	}
 
 	/**

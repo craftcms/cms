@@ -283,7 +283,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function saveProfile(UserModel $user)
 	{
-		Blocks::requirePackage(BlocksPackage::Users);
+		Craft::requirePackage(CraftPackage::Users);
 
 		$fieldLayout = craft()->fields->getLayoutByType(ElementType::User);
 		return craft()->elements->saveElementContent($user, $fieldLayout);
@@ -637,32 +637,6 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->status = $user->status = UserStatus::Active;
 
 		return $userRecord->save();
-	}
-
-	/**
-	 * Archives a user.
-	 *
-	 * @param UserModel $user
-	 * @return bool
-	 */
-	public function archiveUser(UserModel $user)
-	{
-		$userRecord = $this->_getUserRecordById($user->id);
-
-		$userRecord->status = $user->status = UserStatus::Archived;
-		$userRecord->archivedUsername = $user->username;
-		$userRecord->archivedEmail = $user->email;
-		$userRecord->username = '';
-		$userRecord->email = '';
-
-		// Delete their photo folder
-		$photoFolder = craft()->path->getUserPhotosPath().$userRecord->archivedUsername;
-		if (IOHelper::folderExists($photoFolder))
-		{
-			IOHelper::deleteFolder($photoFolder);
-		}
-
-		return $userRecord->save(false);
 	}
 
 	/**

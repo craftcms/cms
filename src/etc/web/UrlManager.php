@@ -6,10 +6,17 @@ namespace Craft;
  */
 class UrlManager extends \CUrlManager
 {
-	private $_templateVariables = array();
-
 	public $cpRoutes;
 	public $pathParam;
+
+	/**
+	 * @var array List of variables to pass to the routed controller action's $variables argument. Set via setRouteVariables().
+	 * @access private
+	 */
+	private $_routeVariables;
+
+	private $_routeAction;
+	private $_routeParams;
 
 	/**
 	 *
@@ -30,46 +37,132 @@ class UrlManager extends \CUrlManager
 		{
 			$this->setUrlFormat(static::GET_FORMAT);
 		}
+
+		$this->_routeVariables = array();
 	}
 
 	/**
-	 * @return null
+	 * Sets variables to be passed to the routed controllers action's $variables argument.
+	 *
+	 * @param array $variables
 	 */
-	public function processTemplateMatching()
+	public function setRouteVariables($variables)
 	{
-		// we'll never have a db element match on a control panel request
-		if (craft()->isInstalled() && craft()->request->isSiteRequest())
+		$this->_routeVariables = array_merge($this->_routeVariables, $variables);
+	}
+
+	/**
+	 * Determines which controller/action to route the request to.
+	 * Routing candidates include actual template paths, elements with URIs, and registered URL routes.
+	 *
+	 * @param HttpRequestService $request
+	 * @return string The controller/action path.
+	 * @throws HttpException Throws a 404 in the event that we can't figure out where to route the request.
+	 */
+	public function parseUrl(HttpRequestService $request)
+	{
+		$this->_routeAction = null;
+		$this->_routeParams = array(
+			'variables' => array()
+		);
+
+		$path = $request->getPath();
+
+		// Does it look like they're trying to access a public template path?
+		if ($this->_isPublicTemplatePath())
 		{
-			if (($path = $this->matchElement()) !== false)
+			// Default to that, then
+			$this->_processRoute($path);
+		}
+
+		// If this is a site request, see if there's an element assigned to this URI
+		if (Craft::isInstalled() && $request->isSiteRequest())
+		{
+			$this->_processRoute($this->_getMatchedElementRoute($path));
+		}
+
+		// Finally see if there's a URL route that matches
+		$this->_processRoute($this->_getMatchedUrlRoute($path));
+
+		// Did we come up with something?
+		if ($this->_routeAction)
+		{
+			// Merge the route variables into the params
+			$this->_routeParams['variables'] = array_merge($this->_routeParams['variables'], $this->_routeVariables);
+
+			// Save the params in $_GET so they can get mapped to the controller action arguments
+			$_GET = array_merge($_GET, $this->_routeParams);
+
+			// Return the controller action
+			return $this->_routeAction;
+		}
+
+		// If we couldn't figure out what to do with the request, throw a 404
+		throw new HttpException(404);
+	}
+
+	/**
+	 * Processes a route source's response.
+	 *
+	 * @access private
+	 * @param $route
+	 */
+	private function _processRoute($route)
+	{
+		if ($route !== false)
+		{
+			// Normalize it
+			$route = $this->_normalizeRoute($route);
+
+			// Set the new action
+			$this->_routeAction = $route['action'];
+
+			// Merge in any params
+			if (!empty($route['params']))
 			{
-				return $path;
+				$this->_routeParams = array_merge($this->_routeParams, $route['params']);
+			}
+		}
+	}
+
+	/**
+	 * Normalizes a route.
+	 *
+	 * @access private
+	 * @param mixed $route
+	 * @return array
+	 */
+	private function _normalizeRoute($route)
+	{
+		if ($route !== false)
+		{
+			// Strings are template paths
+			if (is_string($route))
+			{
+				$route = array(
+					'params' => array(
+						'template' => $route
+					)
+				);
+			}
+
+			if (!isset($route['action']))
+			{
+				$route['action'] = 'templates/render';
 			}
 		}
 
-		if (($path = $this->matchRoute()) !== false)
-		{
-			return $path;
-		}
-		else
-		{
-			return $this->matchTemplatePath();
-		}
+		return $route;
 	}
 
 	/**
-	 * @return array Any variables that should be passed into the matched template
-	 */
-	public function getTemplateVariables()
-	{
-		return $this->_templateVariables;
-	}
-
-	/**
-	 * Attempts to match a request with an element in the database.
+	 * Attempts to match a path with an element in the database.
 	 *
-	 * @return bool The URI if a match was found, false otherwise.
+	 * @access private
+	 * @param string $path
+	 * @return mixed
 	 */
-	public function matchElement()
+	private function _getMatchedElementRoute($path)
 	{
 		$query = craft()->db->createCommand()
 			->select('elements.id, elements.type')
@@ -77,7 +170,7 @@ class UrlManager extends \CUrlManager
 			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
 
 		$conditions = array('and', 'elements_i18n.uri = :path', 'elements.enabled = 1', 'elements.archived = 0');
-		$params = array(':path' => craft()->request->getPath());
+		$params = array(':path' => $path);
 
 		$localeIds = array_unique(array_merge(
 			array(craft()->language),
@@ -119,14 +212,7 @@ class UrlManager extends \CUrlManager
 			if ($element)
 			{
 				$elementType = $elementCriteria->getElementType();
-				$template = $elementType->getSiteTemplateForMatchedElement($element);
-
-				if ($template !== false)
-				{
-					$varName = $elementType->getVariableNameForMatchedElement();
-					$this->_templateVariables[$varName] = $element;
-					return $template;
-				}
+				return $elementType->routeRequestForMatchedElement($element);
 			}
 		}
 
@@ -134,14 +220,17 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * @return bool
+	 * Attempts to match a path with the registered URL routes.
+	 *
+	 * @access private
+	 * @param string $path
+	 * @return mixed
 	 */
-	public function matchRoute()
+	private function _getMatchedUrlRoute($path)
 	{
 		if (craft()->request->isCpRequest())
 		{
-			// Check the Craft predefined routes.
-
+			// Merge in any package-specific routes for packages that are actually installed
 			if (isset($this->cpRoutes['pkgRoutes']))
 			{
 				// Merge in the package routes
@@ -156,18 +245,19 @@ class UrlManager extends \CUrlManager
 				unset($this->cpRoutes['pkgRoutes']);
 			}
 
-			if (($template = $this->_matchRoutes($this->cpRoutes)) !== false)
+			if (($route = $this->_matchUrlRoutes($path, $this->cpRoutes)) !== false)
 			{
-				return $template;
+				return $route;
 			}
 
 			// As a last ditch to match routes, check to see if any plugins have routes registered that will match.
 			$pluginCpRoutes = craft()->plugins->callHook('registerCpRoutes');
+
 			foreach ($pluginCpRoutes as $pluginRoutes)
 			{
-				if (($template = $this->_matchRoutes($pluginRoutes)) !== false)
+				if (($route = $this->_matchUrlRoutes($path, $pluginRoutes)) !== false)
 				{
-					return $template;
+					return $route;
 				}
 			}
 		}
@@ -176,9 +266,9 @@ class UrlManager extends \CUrlManager
 			// Check the user-defined routes
 			$siteRoutes = craft()->routes->getAllRoutes();
 
-			if (($template = $this->_matchRoutes($siteRoutes)) !== false)
+			if (($route = $this->_matchUrlRoutes($path, $siteRoutes)) !== false)
 			{
-				return $template;
+				return $route;
 			}
 		}
 
@@ -186,32 +276,48 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * Tests the request path against a series of routes, and returns the matched route's template, or false.
+	 * Attempts to match a path with a set of given URL routes.
 	 *
 	 * @access private
+	 * @param string $path
 	 * @param array $routes
-	 * @return string|false
+	 * @return mixed
 	 */
-	private function _matchRoutes($routes)
+	private function _matchUrlRoutes($path, $routes)
 	{
-		foreach ($routes as $pattern => $template)
+		foreach ($routes as $pattern => $route)
 		{
+			// Escape any unescaped forward slashes
+			// Dumb ol' PHP is having trouble with this one when you use single quotes and don't escape the backslashes.
+			$regexPattern = preg_replace("/(?<!\\\\)\\//", '\/', $pattern);
+
 			// Parse {handle} tokens
-			$pattern = str_replace('{handle}', '[a-zA-Z][a-zA-Z0-9_]*', $pattern);
+			$regexPattern = str_replace('{handle}', '[a-zA-Z][a-zA-Z0-9_]*', $regexPattern);
 
 			// Does it match?
-			if (preg_match('/^'.$pattern.'$/', craft()->request->getPath(), $match))
+			if (preg_match('/^'.$regexPattern.'$/', $path, $match))
 			{
-				// Set any capture variables
+				// Normalize the route
+				$route = $this->_normalizeRoute($route);
+
+				// Save the matched components as route variables
+				$routeVariables = array(
+					'matches' => $match
+				);
+
+				// Add any named subpatterns too
 				foreach ($match as $key => $value)
 				{
-					if (!is_numeric($key))
+					// Is this a valid handle?
+					if (preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $key))
 					{
-						$this->_templateVariables[$key] = $value;
+						$routeVariables[$key] = $value;
 					}
 				}
 
-				return $template;
+				$this->setRouteVariables($routeVariables);
+
+				return $route;
 			}
 		}
 
@@ -219,11 +325,13 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
+	 * Returns whether the current path is "public" (no segments that start with underscores).
+	 *
+	 * @access private
 	 * @return bool
 	 */
-	public function matchTemplatePath()
+	private function _isPublicTemplatePath()
 	{
-		// Make sure they're not trying to access a private template
 		if (!craft()->request->isAjaxRequest())
 		{
 			foreach (craft()->request->getSegments() as $requestPathSeg)
@@ -235,6 +343,6 @@ class UrlManager extends \CUrlManager
 			}
 		}
 
-		return craft()->request->getPath();
+		return true;
 	}
 }

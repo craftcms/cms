@@ -102,8 +102,8 @@ class FieldsController extends BaseController
 			craft()->userSession->setError(Craft::t('Couldn’t save field.'));
 		}
 
-		// Reload the original template
-		$this->renderRequestedTemplate(array(
+		// Send the field back to the template
+		craft()->urlManager->setRouteVariables(array(
 			'field' => $field
 		));
 	}

@@ -9,9 +9,10 @@ Craft::requirePackage(CraftPackage::Rebrand);
 class EmailMessageModel extends BaseModel
 {
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'key'      => AttributeType::String,

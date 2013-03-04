@@ -7,13 +7,11 @@ namespace Craft;
 class EtModel extends BaseModel
 {
 	/**
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
-		// The site URL as defined in craft_info->siteUrl.
-		$attributes['url'] = AttributeType::String;
-
 		// The client license key.
 		$attributes['licenseKey'] = AttributeType::String;
 
@@ -23,26 +21,32 @@ class EtModel extends BaseModel
 		// Extra arbitrary data to send to the server.
 		$attributes['data'] = AttributeType::Mixed;
 
-		// The domain making the request.
-		$attributes['requestDomain'] = AttributeType::String;
+		// The url making the request.
+		$attributes['requestUrl'] = array(AttributeType::String, 'default' => '');
 
 		// The IP address making the request.
-		$attributes['requestIp'] = AttributeType::String;
+		$attributes['requestIp'] = array(AttributeType::String, 'default' => '1.1.1.1');
 
 		// The time the request was made.
-		$attributes['requestTime'] = AttributeType::DateTime;
+		$attributes['requestTime'] = array(AttributeType::DateTime, 'default' => DateTimeHelper::currentTimeForDb());
 
 		// The port number the request comes from.
 		$attributes['requestPort'] = AttributeType::String;
 
 		// Any packages installed on the client.
-		$attributes['installedPackages'] = AttributeType::String;
+		$attributes['installedPackages'] = array(AttributeType::Mixed, 'default' => array());
+
+		// All the packages that are actually licensed
+		$attributes['licensedPackages'] = array(AttributeType::Mixed, 'default' => array());
 
 		// The local version number.
 		$attributes['localVersion'] = AttributeType::String;
 
 		// The local build number.
 		$attributes['localBuild'] = AttributeType::String;
+
+		// The currently logged in user's email address
+		$attributes['userEmail'] = AttributeType::String;
 
 		// Any errors to return;
 		$attributes['errors'] = AttributeType::Mixed;

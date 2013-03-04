@@ -22,19 +22,14 @@ class SystemSettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$generalSettingsModel = new GeneralSettingsModel();
-		$generalSettingsModel->on         = (bool) craft()->request->getPost('isSystemOn');
-		$generalSettingsModel->siteName   = craft()->request->getPost('siteName');
-		$generalSettingsModel->siteUrl    = craft()->request->getPost('siteUrl');
+		$info = Craft::getInfo();
 
-		if ($generalSettingsModel->validate())
+		$info->on       = (bool) craft()->request->getPost('on');
+		$info->siteName = craft()->request->getPost('siteName');
+		$info->siteUrl  = craft()->request->getPost('siteUrl');
+
+		if (Craft::saveInfo($info))
 		{
-			$info = InfoRecord::model()->find();
-			$info->on = $generalSettingsModel->on;
-			$info->siteName = $generalSettingsModel->siteName;
-			$info->siteUrl = $generalSettingsModel->siteUrl;
-			$info->save();
-
 			craft()->userSession->setNotice(Craft::t('General settings saved.'));
 			$this->redirectToPostedUrl();
 		}
@@ -42,50 +37,10 @@ class SystemSettingsController extends BaseController
 		{
 			craft()->userSession->setError(Craft::t('Couldn’t save general settings.'));
 
-			$this->renderRequestedTemplate(array(
-				'generalSettings' => $generalSettingsModel
+			// Send the info back to the template
+			craft()->urlManager->setRouteVariables(array(
+				'info' => $info
 			));
-		}
-	}
-
-	/**
-	 * Saves the license key.
-	 */
-	public function actionSaveLicenseKey()
-	{
-		$this->requirePostRequest();
-
-		$info = InfoRecord::model()->find();
-		$info->licenseKey = craft()->request->getPost('licenseKey');
-
-		if ($info->save())
-		{
-			if (craft()->request->isAjaxRequest())
-			{
-				$this->returnJson(array('success' => true));
-			}
-			else
-			{
-				craft()->userSession->setNotice(Craft::t('License key saved.'));
-				$this->redirectToPostedUrl();
-			}
-		}
-		else
-		{
-			if (craft()->request->isAjaxRequest())
-			{
-				$this->returnJson(array(
-					'errors' => $info->getErrors()
-				));
-			}
-			else
-			{
-				craft()->userSession->setError(Craft::t('Couldn’t save new license key.'));
-
-				$this->renderRequestedTemplate(array(
-					'licenseKey' => $info
-				));
-			}
 		}
 	}
 
@@ -109,7 +64,8 @@ class SystemSettingsController extends BaseController
 
 		craft()->userSession->setError(Craft::t('Couldn’t save email settings.'));
 
-		$this->renderRequestedTemplate(array(
+		// Send the settings back to the template
+		craft()->urlManager->setRouteVariables(array(
 			'settings' => $settings
 		));
 	}

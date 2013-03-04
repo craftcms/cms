@@ -63,9 +63,10 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Defines this model's attributes.
 	 *
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array();
 	}
@@ -311,7 +312,7 @@ abstract class BaseRecord extends \CActiveRecord
 		$table = $this->getTableName();
 
 		// Does the table exist?
-		if (craft()->db->getSchema()->getTable('{{'.$table.'}}'))
+		if (craft()->db->tableExists($table))
 		{
 			craft()->db->createCommand()->dropTable($table);
 		}
@@ -367,13 +368,14 @@ abstract class BaseRecord extends \CActiveRecord
 		$table = $this->getTableName();
 
 		// Does the table exist?
-		if (craft()->db->getSchema()->getTable('{{'.$table.'}}'))
+		if (craft()->db->tableExists($table, true))
 		{
 			foreach ($this->getBelongsToRelations() as $name => $config)
 			{
+				// Make sure the record's table exists
 				$otherRecord = new $config[1];
 
-				if ($otherRecord->tableExists())
+				if (craft()->db->tableExists($otherRecord->getTableName()))
 				{
 					craft()->db->createCommand()->dropForeignKey($table, $config[2]);
 				}
@@ -544,20 +546,5 @@ abstract class BaseRecord extends \CActiveRecord
 		}
 
 		return true;
-	}
-
-	/**
-	 * Returns whether the table for this record exists in the database or not.
-	 *
-	 * @return bool
-	 */
-	public function tableExists()
-	{
-		if (craft()->db->getSchema()->getTable('{{'.$this->getTableName().'}}', true) !== null)
-		{
-			return true;
-		}
-
-		return false;
 	}
 }

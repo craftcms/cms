@@ -14,7 +14,6 @@ class AttributeType
 	const Email      = 'email';
 	const Enum       = 'enum';
 	const Handle     = 'handle';
-	const LicenseKey = 'licensekey';
 	const Locale     = 'locale';
 	const Name       = 'name';
 	const Number     = 'number';

@@ -43,7 +43,11 @@ class GetHelpWidget extends BaseWidget
 
 		$message = "Enter your message here.\n\n" .
 			"------------------------------\n\n" .
-			'@@@appName@@@ version: '.Craft::getVersion().' build '.Craft::getBuild()."\n" .
+			'@@@appName@@@ version: ' .
+			Craft::t('{version} build {build}', array(
+				'version' => Craft::getVersion(),
+				'build'   => Craft::getBuild()
+			))."\n" .
 			'Packages: '.implode(', ', Craft::getPackages());
 
 		$plugins = craft()->plugins->getPlugins();

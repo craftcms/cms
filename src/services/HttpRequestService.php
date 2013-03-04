@@ -187,7 +187,13 @@ class HttpRequestService extends \CHttpRequest
 	{
 		if (!$this->_mimeType)
 		{
-			$extension = IOHelper::getExtension($this->getPath(), 'html');
+			$extension = pathinfo($this->getPath(), PATHINFO_EXTENSION);
+
+			if (!$extension)
+			{
+				$extension = 'html';
+			}
+
 			$this->_mimeType = IOHelper::getMimeTypeByExtension('.'.$extension);
 		}
 
@@ -198,7 +204,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
 	 *
 	 * @param $name
-	 * @throws Exception
+	 * @throws HttpException
 	 * @return mixed
 	 */
 	public function getRequiredParam($name)
@@ -219,7 +225,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns the named GET parameter value, or throws an exception if it's not set
 	 *
 	 * @param $name
-	 * @throws Exception
+	 * @throws HttpException
 	 * @return mixed
 	 */
 	public function getRequiredQuery($name)
@@ -240,7 +246,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
 	 *
 	 * @param $name
-	 * @throws Exception
+	 * @throws HttpException
 	 * @return mixed
 	 */
 	public function getRequiredPost($name)

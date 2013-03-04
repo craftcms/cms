@@ -59,7 +59,7 @@ class UpdatesService extends BaseApplicationComponent
 	/**
 	 * @return int
 	 */
-	public function getTotalNumberOfAvailableUpdates()
+	public function getTotalAvailableUpdates()
 	{
 		if ($this->isUpdateInfoCached())
 		{
@@ -120,7 +120,7 @@ class UpdatesService extends BaseApplicationComponent
 
 	/**
 	 * @param bool $forceRefresh
-	 * @return mixed
+	 * @return UpdateModel|false
 	 */
 	public function getUpdates($forceRefresh = false)
 	{
@@ -142,7 +142,7 @@ class UpdatesService extends BaseApplicationComponent
 				if ($etModel == null)
 				{
 					$updateModel = new UpdateModel();
-					$errors[] = Craft::t('An error occurred when trying to determine if an update is available. Please try again shortly. If the error persists, please contact <a href="mailto://support@buildwithcraft.com">support@buildwithcraft.com</a>.');
+					$errors[] = Craft::t('Craft is unable to determine if an update is available at this time.');
 					$updateModel->errors = $errors;
 				}
 				else
@@ -183,17 +183,13 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function setNewCraftInfo($version, $build, $releaseDate)
 	{
-		$info = InfoRecord::model()->find();
-		$info->version = $version;
-		$info->build = $build;
+		$info = Craft::getInfo();
+
+		$info->version     = $version;
+		$info->build       = $build;
 		$info->releaseDate = $releaseDate;
 
-		if ($info->save())
-		{
-			return true;
-		}
-
-		return false;
+		return Craft::saveInfo($info);
 	}
 
 	/**
@@ -220,8 +216,8 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		$updateModel = new UpdateModel();
 		$updateModel->app = new AppUpdateModel();
-		$updateModel->app->localBuild = Craft::getBuild();
-		$updateModel->app->localVersion = Craft::getVersion();
+		$updateModel->app->localBuild   = CRAFT_BUILD;
+		$updateModel->app->localVersion = CRAFT_VERSION;
 
 		$plugins = craft()->plugins->getPlugins();
 
@@ -528,12 +524,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isCraftDbUpdateNeeded()
 	{
-		if (version_compare(Craft::getBuild(), Craft::getStoredBuild(), '>') || version_compare(Craft::getVersion(), Craft::getStoredVersion(), '>'))
-		{
-			return true;
-		}
-
-		return false;
+		return (CRAFT_BUILD > Craft::getBuild());
 	}
 
 	/**
@@ -547,13 +538,12 @@ class UpdatesService extends BaseApplicationComponent
 		// Only Craft has the concept of a breakpoint, not plugins.
 		if ($this->isCraftDbUpdateNeeded())
 		{
-			if (version_compare(Craft::getStoredBuild(), Craft::getMinRequiredBuild(), '<'))
-			{
-				return true;
-			}
+			return (Craft::getBuild() < CRAFT_MIN_BUILD_REQUIRED);
 		}
-
-		return false;
+		else
+		{
+			return false;
+		}
 	}
 
 	/**

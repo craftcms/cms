@@ -76,8 +76,9 @@ var LoginForm = Garnish.Base.extend({
 			loginName: this.$loginNameInput.val()
 		};
 
-		Craft.postActionRequest('users/forgotPassword', data, $.proxy(function(response) {
-			if (response.success)
+		Craft.postActionRequest('users/forgotPassword', data, $.proxy(function(response)
+		{
+			if (typeof response.success != 'undefined' && response.success)
 			{
 				new MessageSentModal();
 			}
@@ -98,10 +99,11 @@ var LoginForm = Garnish.Base.extend({
 			rememberMe: (this.$rememberMeCheckbox.prop('checked') ? 'y' : '')
 		};
 
-		Craft.postActionRequest('users/login', data, $.proxy(function(response) {
-			if (response.success)
+		Craft.postActionRequest('users/login', data, $.proxy(function(response)
+		{
+			if (typeof response.success != 'undefined' && response.success)
 			{
-				window.location = window.returnUrl;
+				window.location.href = window.returnUrl;
 			}
 			else
 			{

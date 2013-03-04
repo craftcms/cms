@@ -7,9 +7,10 @@ namespace Craft;
 class PluginUpdateModel extends BaseModel
 {
 	/**
-	 * @return mixed
+	 * @access protected
+	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		$attributes['class']                   = AttributeType::String;
 		$attributes['localVersion']            = AttributeType::String;

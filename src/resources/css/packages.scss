@@ -3,18 +3,26 @@
 #packages { margin-right: -30px; }
 #packages .package { position: relative; margin: 0 30px 30px 0 !important; padding-bottom: 77px; width: 200px; min-height: 141px; float: left; }
 
+#packages .package .badge { float: right; margin: -16px -16px 0 10px; border-radius: 0 2px 0 2px; padding: 3px 6px; color: #fff; text-shadow: 0 -1px rgba(0,0,0,0.5); font-size: 11px; line-height: 14px; font-weight: bold; text-transform: uppercase;
+	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+}
+#packages .package .badge.installed { background: $successcolor; }
+#packages .package .badge.uninstalled { background: #999; }
+#packages .package .badge.unlicensed { background: $errorcolor; }
+#packages .package h2 { margin-top: 0; float: left; }
+
+
+#packages ul { clear: left; }
 #packages ul li { margin-left: 18px; }
 #packages ul li:before { @include icon; content: "√"; float: left; margin: -1px 0 0 -18px; font-size: 15px; }
 
-#packages .package .buttons { position: absolute; left: 0; bottom: 0; padding: 15px; margin: 0; border-top: 1px solid $hrcolor; width: 200px; min-height: 31px; }
-#packages .package .buttons .btn { font-weight: bold; text-transform: uppercase; }
-#packages .package .buttons .btn.price { color: $successcolor; }
-#packages .package .buttons .btn.price del { color: $textcolor; font-weight: bold; }
-
-#packages .package .buttons .btn.pkg-installed,
-#packages .package .buttons .btn.pkg-uninstalled { color: #fff; cursor: default; }
-#packages .package .buttons .btn.pkg-installed { background: $successcolor; }
-#packages .package .buttons .btn.pkg-uninstalled { background: #999; }
+#packages .package .buttons { position: absolute; left: 0; border-radius: 0 0 1px 1px; bottom: 0; padding: 15px; margin: 0; border-top: 1px solid $hrcolor; width: 200px; min-height: 31px; background: #fcfcfc; }
+#packages .package .buttons .btn { font-weight: bold; }
+#packages .package .buttons .btn.buy { float: left; color: $successcolor; text-transform: uppercase; }
+#packages .package .buttons .btn.buy del { color: $textcolor; font-weight: bold; }
+#packages .package .buttons .btn.buy span { display: inline-block; margin: 5px 0 2px 8px; border-left: 1px solid #eaeaea; padding-left: 8px; line-height: 19px; }
+#packages .package .buttons .btn.settings { float: right; }
 
 p.light sup { margin-right: 2px; }
 

@@ -7,16 +7,6 @@ namespace Craft;
 class DashboardController extends BaseController
 {
 	/**
-	 *
-	 */
-	public function actionGetAlerts()
-	{
-		$alerts = DashboardHelper::getAlerts(true);
-		$r = array('alerts' => $alerts);
-		$this->returnJson($r);
-	}
-
-	/**
 	 * Saves a widget.
 	 */
 	public function actionSaveUserWidget()
@@ -45,8 +35,8 @@ class DashboardController extends BaseController
 			craft()->userSession->setError(Craft::t('Couldn’t save widget.'));
 		}
 
-		// Reload the original template
-		$this->renderRequestedTemplate(array(
+		// Send the widget back to the template
+		craft()->urlManager->setRouteVariables(array(
 			'widget' => $widget
 		));
 	}
@@ -217,7 +207,7 @@ class DashboardController extends BaseController
 		craft()->updates->getUpdates();
 
 		$this->renderTemplate('_components/widgets/Updates/body', array(
-			'total' => craft()->updates->getTotalNumberOfAvailableUpdates()
+			'total' => craft()->updates->getTotalAvailableUpdates()
 		));
 	}
 }

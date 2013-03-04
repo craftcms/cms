@@ -67,11 +67,11 @@ class CpVariable
 
 		if (craft()->userSession->checkPermission('autoUpdateCraft'))
 		{
-			$numberOfUpdates = craft()->updates->getTotalNumberOfAvailableUpdates();
+			$totalAvailableUpdates = craft()->updates->getTotalAvailableUpdates();
 
-			if ($numberOfUpdates > 0)
+			if ($totalAvailableUpdates > 0)
 			{
-				$nav['updates'] = array('name' => Craft::t('Updates'), 'badge' => $numberOfUpdates);
+				$nav['updates'] = array('name' => Craft::t('Updates'), 'badge' => $totalAvailableUpdates);
 			}
 			else
 			{
@@ -85,5 +85,21 @@ class CpVariable
 		}
 
 		return $nav;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function areAlertsCached()
+	{
+		return (craft()->et->getLicenseKeyStatus() !== false);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getAlerts()
+	{
+		return CpHelper::getAlerts();
 	}
 }

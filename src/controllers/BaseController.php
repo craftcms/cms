@@ -45,51 +45,7 @@ abstract class BaseController extends \CController
 
 		if ($date)
 		{
-			return DateTime::createFromFormat(DateTime::W3C_DATE, $date);
-		}
-	}
-
-	/**
-	 * Renders and outputs the template requested by the URL
-	 * and sets the Content-Type header based on the URL extension.
-	 *
-	 * @param array|null $variables
-	 * @throws HttpException
-	 * @throws TemplateLoaderException
-	 * @return void
-	 */
-	public function renderRequestedTemplate($variables = array())
-	{
-		if (($template = craft()->urlManager->processTemplateMatching()) !== false)
-		{
-			$variables = array_merge(craft()->urlManager->getTemplateVariables(), $variables);
-
-			try
-			{
-				$output = $this->renderTemplate($template, $variables, true);
-			}
-			catch (TemplateLoaderException $e)
-			{
-				if ($e->template == $template)
-				{
-					throw new HttpException(404);
-				}
-				else
-				{
-					throw $e;
-				}
-			}
-
-			// Set the Content-Type header
-			$mimeType = craft()->request->getMimeType();
-			header('Content-Type: '.$mimeType.'; charset=utf-8');
-
-			// Output to the browser!
-			echo $output;
-		}
-		else
-		{
-			throw new HttpException(404);
+			return DateTime::createFromFormat('!'.DateTime::W3C_DATE, $date);
 		}
 	}
 
@@ -119,6 +75,9 @@ abstract class BaseController extends \CController
 			else
 			{
 				echo $output;
+
+				// End the request
+				craft()->end();
 			}
 		}
 		else

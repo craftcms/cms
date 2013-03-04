@@ -7,9 +7,10 @@ namespace Craft;
 class AppUpdateModel extends BaseModel
 {
 	/**
-	 * @return array|void
+	 * @access protected
+	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		$attributes['localBuild']              = AttributeType::String;
 		$attributes['localVersion']            = AttributeType::String;

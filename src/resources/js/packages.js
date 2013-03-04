@@ -35,35 +35,29 @@ Craft.PackageChooser = Garnish.Base.extend({
 		for (var i = 0; i < this.grid.$items.length; i++)
 		{
 			var $pkgContainer = $(this.grid.$items[i]),
+				$pkgHeading   = $pkgContainer.find('h2:first'),
 				pkg           = $pkgContainer.data('package');
 
 			this.packages[pkg] = {
 				pkg:           pkg,
-				name:          $pkgContainer.find('h2').text(),
+				name:          $pkgHeading.text(),
 				$container:    $pkgContainer,
+				$heading:      $pkgHeading,
 				$btnContainer: $pkgContainer.children('.buttons')
 			};
 		}
 
-		// Get their licensed packages
-		var data = {
-			licenseKey: this.settings.licenseKey
-		};
-
-		$.ajax({
-			url:     '@@@elliottEndpointUrl@@@actions/licenses/getPackageInfo',
-			data:    data,
-			success: $.proxy(this, 'initPackages'),
-			error:   $.proxy(this, 'handleBadFetchPackageInfoResponse')
-		});
+		Craft.postActionRequest('packages/fetchPackageInfo',
+			$.proxy(this, 'initPackages'),
+			$.proxy(this, 'handleBadFetchPackageInfoResponse')
+		);
 	},
 
 	initPackages: function(response)
 	{
-		// Just to be sure...
 		if (!response.success)
 		{
-			this.handleBadFetchPackageInfoResponse();
+			this.handleBadFetchPackageInfoResponse(response.error);
 			return;
 		}
 
@@ -80,19 +74,30 @@ Craft.PackageChooser = Garnish.Base.extend({
 		}
 	},
 
-	handleBadFetchPackageInfoResponse: function()
+	handleBadFetchPackageInfoResponse: function(error)
 	{
 		for (var i in this.packages)
 		{
 			this.packages[i].$btnContainer.children().css('visibility', 'hidden');
 		}
 
-		alert(Craft.t('There was a problem determining which packages you’ve purchased.'));
+		if (!error)
+		{
+			error = Craft.t('An unknown error occurred.');
+		}
+
+		alert(error);
 	},
 
 	createButtons: function(pkg)
 	{
 		var pkgInfo = this.packages[pkg];
+
+		if (pkgInfo.$badge)
+		{
+			pkgInfo.$badge.remove();
+			delete pkgInfo.$badge;
+		}
 
 		pkgInfo.$btnContainer.html('');
 
@@ -105,30 +110,38 @@ Craft.PackageChooser = Garnish.Base.extend({
 		{
 			if (Craft.hasPackage(pkg))
 			{
-				var $btn = $('<div class="btn noborder pkg-installed">'+Craft.t('Installed!')+'</a>');
+				pkgInfo.$badge = $('<div class="badge installed">'+Craft.t('Installed!')+'</div>');
 			}
 			else
 			{
-				var $btn = $('<div class="btn noborder pkg-uninstalled">'+Craft.t('Uninstalled')+'</a>');
+				pkgInfo.$badge = $('<div class="badge uninstalled">'+Craft.t('Uninstalled')+'</div>');
 			}
 		}
 		else
 		{
+			if (Craft.hasPackage(pkg))
+			{
+				pkgInfo.$badge = $('<div class="badge unlicensed">'+Craft.t('Unlicensed')+'</div>');
+			}
+
 			if (pkgInfo.salePrice)
 			{
-				var label = '<del class="light">'+this.formatPrice(pkgInfo.price)+'</del> '+this.formatPrice(pkgInfo.salePrice);
+				var buyBtnLabel = '<del class="light">'+this.formatPrice(pkgInfo.price)+'</del> '+this.formatPrice(pkgInfo.salePrice);
 			}
 			else
 			{
-				var label = this.formatPrice(pkgInfo.price);
+				var buyBtnLabel = this.formatPrice(pkgInfo.price);
 			}
 
-			var $btn = $('<div class="btn price">'+label+'</a>');
+			var $buyBtn = $('<div class="btn buy">'+buyBtnLabel+'<span>'+Craft.t('Buy')+'</span></a>').appendTo(pkgInfo.$btnContainer);
 
-			this.addListener($btn, 'activate', { pkg: pkg }, 'purchasePackage');
+			this.addListener($buyBtn, 'activate', { pkg: pkg }, 'purchasePackage');
 		}
 
-		$btn.appendTo(pkgInfo.$btnContainer);
+		if (pkgInfo.$badge)
+		{
+			pkgInfo.$badge.insertBefore(pkgInfo.$heading);
+		}
 
 		if (pkgInfo.licensed || Craft.hasPackage(pkg))
 		{
@@ -269,34 +282,15 @@ Craft.PackageChooser = Garnish.Base.extend({
 				{
 					// Pass the token along to Elliott to charge the card
 					var data = {
-						ccTokenId:  response.id,
-						'package':  pkg,
-						price:      (this.packages[pkg].salePrice ? this.packages[pkg].salePrice : this.packages[pkg].price),
-						licenseKey: this.settings.licenseKey,
-						email:      this.settings.email,
-						version:    this.settings.version,
-						build:      this.settings.build
+						ccTokenId:     response.id,
+						'package':     pkg,
+						expectedPrice: (this.packages[pkg].salePrice ? this.packages[pkg].salePrice : this.packages[pkg].price)
 					};
 
-					$.ajax({
-						url:     '@@@elliottEndpointUrl@@@actions/licenses/purchasePackage',
-						type:    'POST',
-						data:    data,
-
-						success: $.proxy(function(response)
-						{
-							if (!response.success && response.error != 'license_has_package')
-							{
-								this.handleUnsuccessfulPurchase(response.error);
-							}
-							else
-							{
-								this.handleSuccessfulPurchase(pkg);
-							}
-						}, this),
-
-						error:   $.proxy(this, 'handleUnsuccessfulPurchase')
-					});
+					Craft.postActionRequest('packages/purchasePackage', data,
+						$.proxy(this, 'handleSuccessfulPurchase'),
+						$.proxy(this, 'handleUnsuccessfulPurchase')
+					);
 				}
 				else
 				{
@@ -317,58 +311,50 @@ Craft.PackageChooser = Garnish.Base.extend({
 		this.$ccModalSpinner.addClass('hidden');
 	},
 
-	handleSuccessfulPurchase: function(pkg)
+	handleSuccessfulPurchase: function(response)
 	{
+		if (!response.success)
+		{
+			this.handleUnsuccessfulPurchase(response.errors);
+			return;
+		}
+
+		var pkg = response['package'];
 		this.packages[pkg].licensed = true;
 
-		// Was the package already installed?
-		if (Craft.hasPackage(pkg))
+		if (!Craft.hasPackage(pkg))
 		{
-			this.createButtons(pkg);
-			this.onPurchaseComplete(pkg);
+			Craft.packages.push(pkg);
 		}
-		else
-		{
-			this.performPackageAction(pkg, 'install', $.proxy(this, 'onPurchaseComplete', pkg));
-		}
-	},
 
-	onPurchaseComplete: function(pkg)
-	{
 		this.onPurchaseResponse();
 		this.ccModal.hide();
+		this.createButtons(pkg);
+
 		Craft.cp.displayNotice(Craft.t('{package} purchased successfully!', { 'package': this.packages[pkg].name }));
 	},
 
-	handleUnsuccessfulPurchase: function(error)
+	handleUnsuccessfulPurchase: function(errors)
 	{
 		this.onPurchaseResponse();
 
-		if (error)
+		if (errors)
 		{
-			if (typeof this.settings.errors[error] != 'undefined')
+			var errorText = '';
+			for (var attribute in errors)
 			{
-				switch (error)
+				for (var i = 0; i < errors[attribute].length; i++)
 				{
-					case 'incorrect_number':
-					case 'invalid_number':
+					if (errorText)
 					{
-						$('#cc-num').addClass('error');
-						break;
+						errorText += '<br>';
 					}
 
-					case 'invalid_cvc':
-					case 'incorrect_cvc':
-					{
-						$('#cc-cvc').addClass('error');
-						break;
-					}
+					errorText += errors[attribute][i];
 				}
-
-				error = this.settings.errors[error];
 			}
 
-			this.$ccModalError = $('<p class="error centeralign">'+error+'</p>').insertBefore(this.$ccModalSecure);
+			this.$ccModalError = $('<p class="error centeralign">'+errorText+'</p>').insertBefore(this.$ccModalSecure);
 		}
 
 		Garnish.shake(this.ccModal.$container);
@@ -385,20 +371,25 @@ Craft.PackageChooser = Garnish.Base.extend({
 
 	performPackageAction: function(pkg, action, callback)
 	{
-		// Show the spinner
-		var $btnContainer = this.packages[pkg].$btnContainer,
-			$spinner = $('<div class="spinner"/>').appendTo($btnContainer);
+		var $btnContainer = this.packages[pkg].$btnContainer;
 
 		var data = {
 			'package': pkg
 		};
 
-		Craft.postActionRequest('packages/'+action+'Package', data, $.proxy(function(response) {
-			$spinner.hide();
-
+		Craft.postActionRequest('packages/'+action+'Package', data, $.proxy(function(response)
+		{
 			if (!response.success)
 			{
-				alert(Craft.t('An unknown error occurred.'));
+				if (response.error)
+				{
+					alert(response.error);
+				}
+				else
+				{
+					alert(Craft.t('An unknown error occurred.'));
+				}
+
 				return;
 			}
 

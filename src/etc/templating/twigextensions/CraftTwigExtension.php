@@ -143,18 +143,18 @@ class CraftTwigExtension extends \Twig_Extension
 		$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->get('loginPath'));
 		$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->get('logoutPath'));
 
-		if (craft()->isInstalled())
+		if (Craft::isInstalled())
 		{
 			$globals['siteName'] = Craft::getSiteName();
 			$globals['siteUrl'] = Craft::getSiteUrl();
 
 			// TODO: Deprecate after next breakpoint
-			if (Craft::getStoredBuild() > 2157)
+			if (Craft::getBuild() > 2157)
 			{
 				$globals['user'] = craft()->userSession->getUser();
 
 				// TODO: Deprecate the build conditional after the next breakpoint
-				if (craft()->request->isSiteRequest() && Craft::getStoredBuild() >= 2168)
+				if (craft()->request->isSiteRequest() && Craft::getBuild() >= 2168)
 				{
 					foreach (craft()->globals->getAllSets() as $globalSet)
 					{

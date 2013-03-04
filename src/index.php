@@ -58,6 +58,12 @@ if (($runtimePath = realpath(CRAFT_STORAGE_PATH.'runtime/')) === false || !is_di
 	exit('@@@appName@@@ runtime path "'.($runtimePath === false ? CRAFT_STORAGE_PATH.'runtime/' : $runtimePath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
 }
 
+// Check early if config is a valid folder and writable.
+if (($siteConfigPath = realpath(CRAFT_CONFIG_PATH)) === false || !is_dir($siteConfigPath) || !is_writable($siteConfigPath))
+{
+	exit('@@@appName@@@ config path "'.($siteConfigPath === false ? CRAFT_CONFIG_PATH : $siteConfigPath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
+}
+
 // In case yiic is running
 if (!class_exists('Yii', false))
 {

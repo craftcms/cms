@@ -46,6 +46,7 @@ Craft.LinksField = Garnish.Base.extend({
 
 		this._inputSelect = new Garnish.Select(this._$inputContainer, $elements, {
 			multi: true,
+			filter: ':not(.edit)',
 			onSelectionChange: $.proxy(function() {
 				if (this._inputSelect.totalSelected)
 				{
@@ -141,6 +142,7 @@ Craft.LinksField = Garnish.Base.extend({
 			this._modalSelect = new Garnish.Select(this._$modalBody, $elements, {
 				multi: true,
 				waitForDblClick: true,
+				filter: ':not(.edit)',
 				onSelectionChange: $.proxy(function() {
 					if (this._modalSelect.totalSelected)
 					{

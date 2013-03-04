@@ -28,12 +28,14 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the site template path for a matched element.
+	 * Routes the request when the URI matches an element.
 	 *
 	 * @param BaseElementModel
-	 * @return string|false
+	 * @return mixed Can be false if no special action should be taken,
+	 *               a string if it should route to a template path,
+	 *               or an array that can specify a controller action path, params, etc.
 	 */
-	public function getSiteTemplateForMatchedElement(BaseElementModel $element)
+	public function routeRequestForMatchedElement(BaseElementModel $element)
 	{
 		// Make sure that the entry is actually live
 		if ($element->getStatus() == EntryModel::LIVE)
@@ -43,21 +45,19 @@ class EntryElementType extends BaseElementType
 			// Make sure the section is set to have URLs and is enabled for this locale
 			if ($section->hasUrls && array_key_exists(craft()->language, $section->getLocales()))
 			{
-				return $section->template;
+				return array(
+					'action' => 'templates/render',
+					'params' => array(
+						'template' => $section->template,
+						'variables' => array(
+							'entry' => $element
+						)
+					)
+				);
 			}
 		}
 
 		return false;
-	}
-
-	/**
-	 * Returns the variable name the matched element should be assigned to.
-	 *
-	 * @return string
-	 */
-	public function getVariableNameForMatchedElement()
-	{
-		return 'entry';
 	}
 
 	/**
@@ -98,7 +98,8 @@ class EntryElementType extends BaseElementType
 			'editable'      => AttributeType::Bool,
 			'after'         => AttributeType::DateTime,
 			'before'        => AttributeType::DateTime,
-			'status'        => array(AttributeType::String, 'default' => EntryModel::LIVE)
+			'status'        => array(AttributeType::String, 'default' => EntryModel::LIVE),
+			'order'         => array(AttributeType::String, 'default' => 'postDate desc'),
 		);
 	}
 

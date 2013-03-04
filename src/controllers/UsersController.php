@@ -175,7 +175,6 @@ class UsersController extends BaseController
 		else
 		{
 			craft()->userSession->setError($error);
-			$this->renderRequestedTemplate();
 		}
 	}
 
@@ -217,10 +216,11 @@ class UsersController extends BaseController
 			{
 				craft()->userSession->setNotice(Craft::t('Couldn’t update password.'));
 
-				$this->renderRequestedTemplate(array(
+				// Send the data back to the template
+				craft()->urlManager->setRouteVariables(array(
 					'errors' => $user->getErrors('newPassword'),
-					'code' => $code,
-					'id' => $id
+					'code'   => $code,
+					'id'     => $id
 				));
 			}
 		}
@@ -339,7 +339,9 @@ class UsersController extends BaseController
 		else
 		{
 			craft()->userSession->setError(Craft::t('Couldn’t save user.'));
-			$this->renderRequestedTemplate(array(
+
+			// Send the account back to the template
+			craft()->urlManager->setRouteVariables(array(
 				'account' => $user
 			));
 		}
@@ -379,7 +381,8 @@ class UsersController extends BaseController
 			craft()->userSession->setError(Craft::t('Couldn’t save profile.'));
 		}
 
-		$this->renderRequestedTemplate(array(
+		// Send the account back to the template
+		craft()->urlManager->setRouteVariables(array(
 			'account' => $user,
 		));
 	}
@@ -713,28 +716,6 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * Archives a user.
-	 */
-	public function actionArchiveUser()
-	{
-		$this->requirePostRequest();
-		craft()->userSession->requirePermission('administrateUsers');
-
-		$userId = craft()->request->getRequiredPost('userId');
-		$user = craft()->users->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		craft()->users->archiveUser($user);
-
-		craft()->userSession->setNotice(Craft::t('User deleted.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
 	 * Saves the asset field layout.
 	 */
 	public function actionSaveFieldLayout()
@@ -756,8 +737,6 @@ class UsersController extends BaseController
 		{
 			craft()->userSession->setError(Craft::t('Couldn’t save user fields.'));
 		}
-
-		$this->renderRequestedTemplate();
 	}
 
 	/**

@@ -74,19 +74,20 @@ class Et
 		$this->_endpoint = $endpoint;
 		$this->_timeout = $timeout;
 
-		$this->_model = new EtModel();
-		$this->_model->url = Craft::getSiteUrl();
-		$this->_model->licenseKey = Craft::getLicenseKey();
-		$this->_model->requestDomain = craft()->request->getServerName();
-		$this->_model->requestIp = craft()->request->getUserHostAddress();
-		$this->_model->requestTime = DateTimeHelper::currentTimeStamp();
-		$this->_model->requestPort = craft()->request->getPort();
-		$this->_model->installedPackages = ArrayHelper::stringToArray(Craft::getPackages());
-		$this->_model->localBuild = Craft::getBuild();
-		$this->_model->localVersion= Craft::getVersion();
+		$this->_model = new EtModel(array(
+			'licenseKey'        => $this->_getLicenseKey(),
+			'requestUrl'        => craft()->request->getHostInfo().craft()->request->getUrl(),
+			'requestIp'         => craft()->request->getIpAddress(),
+			'requestTime'       => DateTimeHelper::currentTimeStamp(),
+			'requestPort'       => craft()->request->getPort(),
+			'installedPackages' => Craft::getPackages(),
+			'localBuild'        => CRAFT_BUILD,
+			'localVersion'      => CRAFT_VERSION,
+			'userEmail'         => craft()->userSession->getUser()->email,
+		));
 
 		$this->_options['useragent'] = 'craft-requests/'.\Requests::VERSION;
-		$this->_options['timeout'] = $this->_timeout;
+		$this->_options['timeout']   = $this->_timeout;
 	}
 
 	/**
@@ -98,12 +99,22 @@ class Et
 	}
 
 	/**
-	 * @return bool|EtModel
+	 * Sets Custom Data on the EtModel.
+	 */
+	public function setData($data)
+	{
+		$this->_model->data = $data;
+	}
+
+	/**
+	 * @return EtModel|null
 	 */
 	public function phoneHome()
 	{
 		try
 		{
+			$missingLicenseKey = empty($this->_model->licenseKey);
+
 			$data = JsonHelper::encode($this->_model->getAttributes(null, true));
 			$response = \Requests::post($this->_endpoint, array(), $data, $this->_options);
 
@@ -128,10 +139,27 @@ class Et
 
 				$etModel = craft()->et->decodeEtValues($response->body);
 
-				// we set the license key status on every request
-				craft()->et->setLicenseKeyStatus($etModel->licenseKeyStatus);
+				// In the case where Elliott throws a PHP fatal error, for example, it will return with a 200 status code and make
+				// inside this block of code, but with a bunch of HTML as the response.  If $etModel->localbuild is set (and it should
+				// be, because it goes out on every request), then we know we have a successful response.
+				if (!empty($etModel->localBuild))
+				{
+					if ($missingLicenseKey && !empty($etModel->licenseKey))
+					{
+						$this->_setLicenseKey($etModel->licenseKey);
+					}
 
-				return $etModel;
+					// Cache the license key status and which packages are associated with it
+					$cacheDuration = craft()->config->getCacheDuration();
+					craft()->fileCache->set('licenseKeyStatus', $etModel->licenseKeyStatus, $cacheDuration);
+					craft()->fileCache->set('licensedPackages', $etModel->licensedPackages, $cacheDuration);
+
+					return $etModel;
+				}
+				else
+				{
+					Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, \CLogger::LEVEL_WARNING);
+				}
 			}
 			else
 			{
@@ -144,5 +172,43 @@ class Et
 		}
 
 		return null;
+	}
+
+	/**
+	 * @return null|string
+	 */
+	private function _getLicenseKey()
+	{
+		if (($keyFile = IOHelper::fileExists(craft()->path->getConfigPath().'license.key')) !== false)
+		{
+			return trim(preg_replace('/[\r\n]+/', '', IOHelper::getFileContents($keyFile)));
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param $key
+	 * @return bool
+	 * @throws Exception
+	 */
+	private function _setLicenseKey($key)
+	{
+		// Make sure the key file does not exist first. Et will never overwrite a license key.
+		if (($keyFile = IOHelper::fileExists(craft()->path->getConfigPath().'license.key')) == false)
+		{
+			$keyFile = craft()->path->getConfigPath().'license.key';
+			preg_match_all("/.{50}/", $key, $matches);
+
+			$formattedKey = '';
+			foreach ($matches[0] as $segment)
+			{
+				$formattedKey .= $segment.PHP_EOL;
+			}
+
+			return IOHelper::writeToFile($keyFile, $formattedKey);
+		}
+
+		throw new Exception('Cannot overwrite an existing license.key file.');
 	}
 }

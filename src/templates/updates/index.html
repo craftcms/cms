@@ -18,7 +18,10 @@
 
 
 {% set content %}
-	<p id="loading">{{ "Checking for updates…"|t }}</p>
+	<div id="loading">
+		<div class="spinner big"></div>
+		<p>{{ "Checking for updates…"|t }}</p>
+	</div>
 
 	<div id="updates">
 		<h2>{{ "System"|t }}</h2>

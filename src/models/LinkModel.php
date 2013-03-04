@@ -9,9 +9,10 @@ namespace Craft;
 class LinkModel extends BaseModel
 {
 	/**
-	 * @return mixed
+	 * @access protected
+	 * @return array
 	 */
-	public function defineAttributes()
+	protected function defineAttributes()
 	{
 		return array(
 			'id'             => AttributeType::Number,
