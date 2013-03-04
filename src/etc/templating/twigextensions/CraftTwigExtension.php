@@ -138,7 +138,11 @@ class CraftTwigExtension extends \Twig_Extension
 	 */
 	public function getGlobals()
 	{
-		$globals['craft'] = new CraftVariable();
+		// Keep the 'blx' variable around for now
+		$craftVariable = new CraftVariable();
+		$globals['craft'] = $craftVariable;
+		$globals['blx']   = $craftVariable;
+
 		$globals['now'] = DateTimeHelper::currentUTCDateTime();
 		$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->get('loginPath'));
 		$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->get('logoutPath'));
