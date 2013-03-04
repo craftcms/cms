@@ -6,28 +6,15 @@ namespace Craft;
  */
 class TemplatesController extends BaseController
 {
-	public $allowAnonymous = array('actionRender', 'actionOffline');
-
-	private $_template;
-	/* HIDE */
-	//private $_templateSegments;
-	/* end HIDE */
-	private $_manualUpdateTemplate = 'updates/_go';
+	// Any permissions not covered in actionRender() should be handled by the templates
+	public $allowAnonymous = true;
 
 	/**
-	 * Required
+	 * Renders a template.
 	 */
 	public function actionRender($template, array $variables = array())
 	{
-		$this->_template = $template;
-		/* HIDE */
-		//$this->_templateSegments = array_filter(explode('/', $this->_template));
-		/* end HIDE */
-
-		if (craft()->request->isCpRequest() &&
-			// The only time we'll allow anonymous access to the CP is in the middle of a manual update.
-			!($this->_isValidManualUpdatePath())
-		)
+		if (craft()->request->isCpRequest())
 		{
 			// Make sure the user has access to the CP
 			craft()->userSession->requireLogin();
@@ -45,31 +32,7 @@ class TemplatesController extends BaseController
 			}
 		}
 
-		try
-		{
-			$output = $this->renderTemplate($this->_template, $variables, true);
-
-			// Set the Content-Type header
-			$mimeType = craft()->request->getMimeType();
-			header('Content-Type: '.$mimeType.'; charset=utf-8');
-
-			// Output to the browser!
-			echo $output;
-
-			// End the request
-			craft()->end();
-		}
-		catch (TemplateLoaderException $e)
-		{
-			if ($e->template == $this->_template)
-			{
-				throw new HttpException(404);
-			}
-			else
-			{
-				throw $e;
-			}
-		}
+		$this->_render($template, $variables);
 	}
 
 	/**
@@ -88,7 +51,7 @@ class TemplatesController extends BaseController
 		}
 
 		// Output the offline template
-		$this->renderTemplate('offline');
+		$this->_render('offline');
 	}
 
 	/**
@@ -96,7 +59,7 @@ class TemplatesController extends BaseController
 	 */
 	public function actionManualUpdateNotification()
 	{
-		$this->actionRender('_special/dbupdate');
+		$this->_render('_special/dbupdate');
 	}
 
 	/**
@@ -104,7 +67,7 @@ class TemplatesController extends BaseController
 	 */
 	public function actionManualUpdate()
 	{
-		$this->actionRender($this->_manualUpdateTemplate, array(
+		$this->_render('updates/_go', array(
 			'handle' => craft()->request->getSegment(2)
 		));
 	}
@@ -114,7 +77,7 @@ class TemplatesController extends BaseController
 	 */
 	public function actionBreakpointUpdateNotification()
 	{
-		$this->actionRender('_special/breakpointupdate', array(
+		$this->_render('_special/breakpointupdate', array(
 			'minBuild'      => CRAFT_MIN_BUILD_REQUIRED,
 			'targetVersion' => BLOCKS_VERSION,
 			'targetBuild'   => BLOCKS_BUILD
@@ -122,35 +85,38 @@ class TemplatesController extends BaseController
 	}
 
 	/**
-	 * @return bool
+	 * Renders a template, sets the mime type header, etc..
+	 *
+	 * @access private
+	 * @param string $template
+	 * @param array|null $variables
 	 */
-	private function _isValidManualUpdatePath()
+	private function _render($template, $variables = array())
 	{
-		// Is this a manual Craft update?
-		if ($this->_template == $this->_manualUpdateTemplate && craft()->request->getParam('manual', null) == 1)
+		try
 		{
-			// Extra check in case someone manually comes to the url.
-			if (craft()->updates->isCraftDbUpdateNeeded())
+			$output = $this->renderTemplate($template, $variables, true);
+
+			// Set the Content-Type header
+			$mimeType = craft()->request->getMimeType();
+			header('Content-Type: '.$mimeType.'; charset=utf-8');
+
+			// Output to the browser!
+			echo $output;
+
+			// End the request
+			craft()->end();
+		}
+		catch (TemplateLoaderException $e)
+		{
+			if ($e->template == $template)
 			{
-				return true;
+				throw new HttpException(404);
+			}
+			else
+			{
+				throw $e;
 			}
 		}
-
-		/* HIDE */
-		// Is this a manual plugin update?
-		/*if (count($this->_templateSegments) == 3 && $this->_templateSegments[0] == 'updates' && $this->_templateSegments[1] == 'go' && craft()->request->getParam('manual', null) == 1)
-		{
-			if (($plugin = craft()->plugins->getPlugin($this->_templateSegments[2])) !== null)
-			{
-				// Extra check in case someone manually comes to the url.
-				if (craft()->plugins->doesPluginRequireDatabaseUpdate($plugin))
-				{
-					return true;
-				}
-			}
-		}*/
-		/* end HIDE */
-
-		return false;
 	}
 }

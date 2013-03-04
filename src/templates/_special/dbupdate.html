@@ -13,7 +13,7 @@
 
 	<p>{{ "To complete the {name} update, some changes must be made to your database."|t({ name: name }) }}</p>
 	<div class="buttons">
-		<a class="btn submit" href="{{ url('updates/go/' ~ handle|lower, 'manual=1') }}">{{ "Finish up"|t }}</a>
+		<a class="btn submit" href="{{ url('manualupdate/' ~ handle|lower) }}">{{ "Finish up"|t }}</a>
 	</div>
 
 {% endset %}

@@ -144,9 +144,6 @@ class WebApp extends \CWebApplication
 						// Show the manual update notification template
 						$this->runController('templates/manualUpdateNotification');
 					}
-
-					// Kill it
-					$this->end();
 				}
 			}
 			// We'll also let action requests to UpdateController through as well.
@@ -155,12 +152,14 @@ class WebApp extends \CWebApplication
 				$controller = $actionSegs[0];
 				$action = isset($actionSegs[1]) ? $actionSegs[1] : 'index';
 				$this->runController($controller.'/'.$action);
-				$this->end();
 			}
 			else
 			{
 				throw new HttpException(503);
 			}
+
+			// YOU SHALL NOT PASS
+			$this->end();
 		}
 
 		// Make sure that the system is on, or that the user has permission to access the site/CP while the system is off
