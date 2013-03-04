@@ -266,7 +266,6 @@ class IOHelper
 	 */
 	public static function getMimeType($path)
 	{
-		$path = static::normalizePathSeparators($path);
 		return \CFileHelper::getMimeType($path);
 	}
 
@@ -279,7 +278,6 @@ class IOHelper
 	 */
 	public static function getMimeTypeByExtension($path)
 	{
-		$path = static::normalizePathSeparators($path);
 		return  \CFileHelper::getMimeTypeByExtension($path);
 	}
 
