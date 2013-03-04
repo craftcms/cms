@@ -531,8 +531,27 @@ var CP = Garnish.Base.extend({
 			this.selectedTab = $tab.attr('href');
 			this.tabs[this.selectedTab].$target.removeClass('hidden');
 		}
-	}
+	},
 
+	fetchAlerts: function()
+	{
+		Craft.postActionRequest('cp/getAlerts', $.proxy(function(response)
+		{
+			if (Garnish.isArray(response) && response.length)
+			{
+				var $alerts = $('<ul id="alerts"/>').insertBefore($('#header'));
+
+				for (var i = 0; i < response.length; i++)
+				{
+					$('<li>'+response[i]+'</li>').appendTo($alerts);
+				}
+
+				var height = $alerts.height();
+
+				$alerts.height(0).animate({ height: height }, 'fast');
+			}
+		}, this));
+	}
 },
 {
 	maxWidth: 1051, //1024,

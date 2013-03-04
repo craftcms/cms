@@ -39,7 +39,7 @@ class CpHelper
 			{
 				if ($licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
 				{
-					$alerts[] = Craft::t('Your @@@appName@@@ license key is tied to a different domain.') .
+					$alerts[] = Craft::t('Your @@@appName@@@ license is associated with a different domain.') .
 						' <a class="go" href="'.UrlHelper::getUrl('resolvelicense').'">'.Craft::t('Resolve').'</a>';
 				}
 			}
@@ -61,7 +61,7 @@ class CpHelper
 				{
 					if (count($unlicensedPackages) == 1)
 					{
-						$message = Craft::t('The {package} package is installed, but it’s not actually licensed.', array('package' => Craft::t($unlicensedPackages[0])));
+						$message = Craft::t('The {package} package is installed, but it’s not licensed.', array('package' => Craft::t($unlicensedPackages[0])));
 					}
 					else
 					{

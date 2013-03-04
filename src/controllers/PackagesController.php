@@ -27,7 +27,7 @@ class PackagesController extends BaseController
 		if ($etResponse)
 		{
 			// Make sure we've got a valid license key
-			if ($etResponse->licenseKeyStatus == LicenseKeyStatus::Valid)
+			if ($etResponse->licenseKeyStatus != LicenseKeyStatus::Valid)
 			{
 				$packages = $etResponse->data;
 

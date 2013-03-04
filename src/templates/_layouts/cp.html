@@ -7,18 +7,21 @@
 			<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
 		{% endif %}
 
-		<div id="alerts">
-			{% if craft.cp.areAlertsCached() %}
-				{% for alert in craft.cp.getAlerts() %}
-					<div class="alert">{{ alert|raw }}</div>
-				{% endfor %}
-			{% else %}
-				{% set js %}
-					console.log(Craft.cp);
-				{% endset %}
-				{% includeJs js %}
+		{% if craft.cp.areAlertsCached() %}
+			{% set alerts = craft.cp.getAlerts() %}
+			{% if alerts %}
+				<ul id="alerts">
+					{% for alert in craft.cp.getAlerts() %}
+						<li>{{ alert|raw }}</li>
+					{% endfor %}
+				</ul>
 			{% endif %}
-		</div>
+		{% else %}
+			{% set js %}
+				Craft.cp.fetchAlerts();
+			{% endset %}
+			{% includeJs js %}
+		{% endif %}
 	{% endif %}
 
 	<header id="header">
