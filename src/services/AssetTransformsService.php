@@ -70,13 +70,13 @@ class AssetTransformsService extends BaseApplicationComponent
 
 		$transformRecord->name = $transform->name;
 		$transformRecord->handle = $transform->handle;
-		$transformRecord->mode = $transform->mode;
 
 		if ($transformRecord->width != $transform->width || $transformRecord->height != $transform->height || $transformRecord->mode != $transform->mode)
 		{
 			$transformRecord->dimensionChangeTime = new DateTime('@'.time());
 		}
 
+		$transformRecord->mode = $transform->mode;
 		$transformRecord->width = $transform->width;
 		$transformRecord->height = $transform->height;
 
