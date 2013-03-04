@@ -1,3 +1,8 @@
+{% set thumbSize = 24 %}
+{% set maxThumbWidth = thumbSize %}
+{% set maxThumbHeight = "%d"|format(maxThumbWidth * 2/3) %}
+
+
 <div class="files listview">
 	<table class="data collapsible">
 		<thead>
@@ -8,7 +13,7 @@
 		<tbody>
             {% for file in files %}
                 <tr class="assets-list-row" data-id="{{ file.id }}" data-fileName="{{ file.filename }}" data-folder="{{ file.folderId }}">
-                    <td data-title="{{ 'Name'|t }}"><img src="{{ file.getThumbUrl(24) }}" alt="{{ file.filename }}" class="open-file"/> <span class="open-file">{{ file.filename }}</span></td>
+                    <td data-title="{{ 'Name'|t }}"><div class="list-thumb thumb-{{ file.id }}"></div><span class="open-file">{{ file.filename }}</span></td>
                     <td data-title="{{ 'Date Modified'|t }}">{% if file.dateModified %}{{ file.dateModified.format("Y-m-d H:i:s")|datetime }}{% endif %}</td>
                     <td data-title="{{ 'Size'|t }}">{% if file.size %}{{ file.size|filesize }}{% endif %}</td>
                 </tr>
@@ -16,3 +21,26 @@
 		</tbody>
 	</table>
 </div>
+
+{% set thumbCss = '' %}
+{% set hiResThumbCss = '' %}
+{% for file in files %}
+    {% if file.kind == 'image' %}
+
+        {% set thumbData = file.getThumbData(maxThumbWidth, maxThumbHeight) %}
+
+        {% set topMargin     = "%d"|format((thumbSize - thumbData.height) / 2) %}
+        {% set bottomMargin  = thumbSize - thumbData.height - topMargin %}
+        {% set leftMargin    = "%d"|format((thumbSize - thumbData.width) / 2) %}
+        {% set rightMargin   = thumbSize - thumbData.width - leftMargin %}
+
+        {% set thumbCss      = thumbCss      ~ '.thumb-'~file.id~' { background-image: url('~thumbData.url~'); height: '~thumbData.height~'px; width: '~thumbData.width~"px;}\n" %}
+        {% set hiResThumbCss = hiResThumbCss ~ '.thumb-'~file.id~' { background-image: url('~thumbData.url2X~'); background-size: '~thumbData.width~'px '~thumbData.height~"px; }\n" %}
+    {% endif %}
+{% endfor %}
+
+{% includeCss thumbCss %}
+{% includeHiResCss hiResThumbCss %}
+
+{{ getHeadHtml() }}
+

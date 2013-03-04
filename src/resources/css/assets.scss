@@ -27,7 +27,7 @@
 /*-- list --*/
 #main .files.listview table th:first-child,
 #main .files.listview table td:first-child { padding-left: 34px; }
-#main .files.listview table td:first-child img { display: block; float: left; margin: -3px 0 -3px -34px; width: 24px; height: 24px; }
+#main .files.listview table td:first-child div.list-thumb { display: block; float: left; margin: -3px 0 -3px -34px; width: 24px; height: 24px; background-repeat: no-repeat; background-position: center;}
 #main .files.listview thead th.assets-lv-sorting { padding-right: 26px; color: #697780; background: #ecf1f4 url(../images/listview_sort.png) no-repeat 100% 0 !important; }
 #main .files.listview thead th.assets-lv-sorting.assets-lv-desc { background-position: 100% -31px !important; }
 
