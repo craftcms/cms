@@ -6,12 +6,19 @@ namespace Craft;
  */
 class EtService extends BaseApplicationComponent
 {
+	const Ping            = '@@@elliottEndpointUrl@@@actions/elliott/app/ping';
+	const CheckForUpdates = '@@@elliottEndpointUrl@@@actions/elliott/app/checkForUpdates';
+	const DownloadUpdate  = '@@@elliottEndpointUrl@@@actions/elliott/app/downloadUpdate';
+	const TransferLicense = '@@@elliottEndpointUrl@@@actions/elliott/app/transferLicenseToCurrentDomain';
+	const GetPackageInfo  = '@@@elliottEndpointUrl@@@actions/elliott/app/getPackageInfo';
+	const PurchasePackage = '@@@elliottEndpointUrl@@@actions/elliott/app/purchasePackage';
+
 	/**
 	 * @return EtModel|null
 	 */
 	public function ping()
 	{
-		$et = new Et(ElliottEndpoints::Ping);
+		$et = new Et(static::Ping);
 		$etResponse = $et->phoneHome();
 		return $etResponse;
 	}
@@ -22,7 +29,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function check($updateInfo)
 	{
-		$et = new Et(ElliottEndpoints::CheckForUpdates);
+		$et = new Et(static::CheckForUpdates);
 		$et->setData($updateInfo);
 		$etResponse = $et->phoneHome();
 
@@ -39,7 +46,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function downloadUpdate($downloadPath)
 	{
-		$et = new Et(ElliottEndpoints::DownloadUpdate, 240);
+		$et = new Et(static::DownloadUpdate, 240);
 
 		if (IOHelper::folderExists($downloadPath))
 		{
@@ -63,7 +70,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function transferLicenseToCurrentDomain()
 	{
-		$et = new Et(ElliottEndpoints::TransferLicense);
+		$et = new Et(static::TransferLicense);
 		$etResponse = $et->phoneHome();
 
 		if ($etResponse && $etResponse->data['success'])
@@ -98,7 +105,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function fetchPackageInfo()
 	{
-		$et = new Et(ElliottEndpoints::GetPackageInfo);
+		$et = new Et(static::GetPackageInfo);
 		$etResponse = $et->phoneHome();
 		return $etResponse;
 	}
@@ -113,7 +120,7 @@ class EtService extends BaseApplicationComponent
 	{
 		if ($model->validate())
 		{
-			$et = new Et(ElliottEndpoints::PurchasePackage);
+			$et = new Et(static::PurchasePackage);
 			$et->setData($model);
 			$etResponse = $et->phoneHome();
 
