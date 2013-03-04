@@ -131,4 +131,83 @@ class AssetFileModel extends BaseElementModel
 			'height'  => $thumbHeight,
 		);
 	}
+
+	/**
+	 * Get image height.
+	 *
+	 * @param string $handle optional transform handle for which to get thumbnail.
+	 * @return bool|float|mixed
+	 */
+
+	public function getHeight($handle = '')
+	{
+		return $this->_getDimension('height', $handle);
+	}
+
+	/**
+	 * Get image width.
+	 *
+	 * @param string $handle optional transform handle for which to get thumbnail.
+	 * @return bool|float|mixed
+	 */
+	public function getWidth($handle = '')
+	{
+		return $this->_getDimension('width', $handle);
+	}
+
+	/**
+	 * Return a dimension of the image.
+	 *
+	 * @param $dimension 'height' or 'width'
+	 * @param $handle
+	 * @return bool|float|mixed
+	 */
+	private function _getDimension($dimension, $handle)
+	{
+		if ($this->kind != 'image' or !in_array($dimension, array('height', 'width')))
+		{
+			return false;
+		}
+
+		if (empty($handle))
+		{
+			return $this->$dimension;
+		}
+
+		try {
+			$transform = craft()->assetTransforms->getAssetTransform($handle);
+			switch ($transform->mode)
+			{
+				case 'stretchToFit':
+				{
+					return $transform->$dimension;
+				}
+
+				case 'scaleToFit':
+				{
+					if ($this->height > $transform->height || $this->width > $transform->width)
+					{
+						$factor = max($this->width / $transform->width, $this->height / $transform->height);
+						return round($this->$dimension / $factor);
+					}
+					return $this->$dimension;
+				}
+
+				case 'scaleAndCrop':
+				{
+					if ($this->height > $transform->height || $this->width > $transform->width)
+					{
+						return $transform->$dimension;
+					}
+					return $this->$dimension;
+				}
+			}
+		}
+		catch (Exception $exception)
+		{
+			// Oh well.
+		}
+
+		return false;
+	}
 }
