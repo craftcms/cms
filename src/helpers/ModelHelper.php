@@ -488,8 +488,9 @@ class ModelHelper
 	/**
 	 * Takes an attribute's config and value and "normalizes" them either for saving to db or sending across a web service.
 	 *
-	 * @param      $storedValue
+	 * @param      $value
 	 * @param bool $jsonEncodeArrays
+	 * @internal param $storedValue
 	 * @return int|mixed|null|string
 	 */
 	public static function packageAttributeValue($value, $jsonEncodeArrays = false)
@@ -525,6 +526,11 @@ class ModelHelper
 		if (is_numeric($value))
 		{
 			return LocalizationHelper::normalizeNumber($value);
+		}
+
+		if (is_bool($value))
+		{
+			return $value ? 1 : 0;
 		}
 
 		return $value;

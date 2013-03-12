@@ -74,7 +74,7 @@ $configArray = array(
 	'components' => array(
 
 		'db' => array(
-			'connectionString'  => strtolower('mysql:host='.$dbConfig['server'].';dbname='.$dbConfig['database'].';port='.$dbConfig['port'].';'),
+			'connectionString'  => strtolower('mysql:host='.$dbConfig['server'].';dbname=').$dbConfig['database'].strtolower(';port='.$dbConfig['port'].';'),
 			'emulatePrepare'    => true,
 			'username'          => $dbConfig['user'],
 			'password'          => $dbConfig['password'],

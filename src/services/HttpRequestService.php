@@ -630,4 +630,24 @@ class HttpRequestService extends \CHttpRequest
 
 		return IOHelper::normalizePathSeparators($pathInfo);
 	}
+
+	/**
+	 * Returns the named POST parameter value, or the entire POST array if no name is specified.
+	 * If $name is specified and the POST parameter does not exist, $defaultValue will be returned.
+	 *
+	 * @param null $name The POST parameter name or null.  If $name is null, it will return the entire POST array.
+	 * @param null   $defaultValue The default parameter value is $name is not null and the POST parameter does not exist.
+	 * @return mixed|null
+	 */
+	public function getPost($name = null, $defaultValue = null)
+	{
+		if (!$name)
+		{
+			return $_POST;
+		}
+		else
+		{
+			return parent::getPost($name, $defaultValue);
+		}
+	}
 }
