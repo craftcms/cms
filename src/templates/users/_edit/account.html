@@ -1,0 +1,135 @@
+{% extends (craft.hasPackage('Users') ? "users/_edit/layout" : "_layouts/cp") %}
+
+{% if craft.hasPackage('Users') %}
+	{% set selectedTab = 'account' %}
+{% else %}
+	{% set title = "My Account"|t %}
+{% endif %}
+
+{% import "_includes/forms" as forms %}
+
+
+{% if account is not defined and craft.request.segment(1) == 'myaccount' %}
+	{% set account = user %}
+{% endif %}
+
+
+{% if craft.hasPackage('Users') %}
+	{% if account is not defined and userId is defined %}
+		{% set account = craft.users.status('*').id(userId).first %}
+		{% if not account %}{% exit 404 %}{% endif %}
+	{% endif %}
+{% endif %}
+
+
+{% set isNewAccount = (account is not defined or not account.id) %}
+
+
+{% set content %}
+	<form method="post" action="" accept-charset="UTF-8">
+		<input type="hidden" name="action" value="users/saveUser">
+		{% if isNewAccount %}
+			<input type="hidden" name="redirect" value="users/{userId}">
+		{% else %}
+			<input type="hidden" name="userId" value="{{ account.id }}">
+		{% endif %}
+
+		{{ forms.textField({
+			first: true,
+			label: "Username"|t,
+			id: 'username',
+			name: 'username',
+			value: (account is defined ? account.username : null),
+			autofocus: true,
+			required: true,
+			errors: (account is defined ? account.getErrors('username') : null)
+		}) }}
+
+		<div class="field">
+			<div class="grid">
+				<div class="col col50"><div class="col-inner">
+					{{ forms.textField({
+						label: "First Name"|t,
+						id: 'firstName',
+						name: 'firstName',
+						value: (account is defined ? account.firstName : null),
+						errors: (account is defined ? account.getErrors('firstName') : null)
+					}) }}
+				</div></div>
+				<div class="col col50"><div class="col-inner">
+					{{ forms.textField({
+						label: "Last Name"|t,
+						id: 'lastName',
+						name: 'lastName',
+						value: (account is defined ? account.lastName : null),
+						errors: (account is defined ? account.getErrors('lastName') : null)
+					}) }}
+				</div></div>
+			</div>
+		</div>
+
+		{{ forms.textField({
+			label: "Email"|t,
+			id: 'email',
+			name: 'email',
+			value: (account is defined ? account.email : null),
+			required: true,
+			errors: (account is defined ? account.getErrors('email') : null)
+		}) }}
+
+		{% if isNewAccount and user.admin %}
+			{{ forms.checkboxField({
+				label: "Require verification"|t,
+				name: 'verificationRequired',
+				checked: (account is defined ? account.verificationRequired : true)
+			}) }}
+		{% endif %}
+
+		{% if account is defined and account.isCurrent or user.admin %}
+			{{ forms.passwordField({
+				label: "Password"|t,
+				instructions: (isNewAccount ? null : "Leave blank to keep password unchanged."|t),
+				id: 'newPassword',
+				name: 'newPassword',
+				errors: (account is defined ? account.getErrors('newPassword') : null)
+			}) }}
+		{% endif %}
+
+		{% if user.admin %}
+			{{ forms.checkboxField({
+				label: "Require a password reset on next login"|t,
+				name: 'passwordResetRequired',
+				checked: (account is defined ? account.passwordResetRequired : true)
+			}) }}
+		{% endif %}
+
+		{{ forms.selectField({
+			label: "Email Format"|t,
+			id: 'emailFormat',
+			name: 'emailFormat',
+			options: { text: "Plain Text"|t, html: "HTML"|t },
+			value: (account is defined ? account.emailFormat : 'text')
+		}) }}
+
+		{% if craft.hasPackage('Localize') %}
+			{% set localeInput %}
+				<div class="select">
+					<select id="preferredLocale" name="preferredLocale">
+						{% set userLocale = account is defined and account.preferredLocale ? account.preferredLocale : craft.locale %}
+						{% for locale in craft.i18n.getSiteLocales %}
+							<option value="{{ locale.id }}" {% if locale.id == userLocale %}selected{% endif %}>{{ locale.nativeName }}</option>
+						{% endfor %}
+					</select>
+				</div>
+			{% endset %}
+
+			{{ forms.field({
+				id: 'preferredLocale',
+				label: "Preferred Locale"|t
+			}, localeInput) }}
+		{% endif %}
+
+		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+
+	</form>
+{% endset %}

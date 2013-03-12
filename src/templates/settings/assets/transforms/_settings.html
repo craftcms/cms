@@ -1,0 +1,94 @@
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') },
+	{ label: "Assets"|t, url: url('settings/assets') },
+	{ label: "Transforms"|t, url: url('settings/assets/transforms') }
+] %}
+
+
+{% if transform is not defined and handle is defined %}
+	{% set transform = craft.assets.getTransformByHandle(handle) %}
+	{% if not transform %}{% exit 404 %}{% endif %}
+{% endif %}
+
+{% set isNewTransform = (transform is not defined or not transform.id) %}
+
+
+{% if isNewTransform %}
+	{% set title = "Create a new asset transform"|t %}
+{% else %}
+	{% set title = transform.name|t %}
+{% endif %}
+
+
+{% set content %}
+	<form method="post" action="" accept-charset="UTF-8">
+		<input type="hidden" name="action" value="assetTransforms/saveTransform">
+
+		{% if not isNewTransform %}<input type="hidden" name="transformId" value="{{ transform.id }}">{% endif %}
+
+		{{ forms.textField({
+			first: true,
+			label: "Name"|t,
+			id: 'name',
+			name: 'name',
+			value: (transform is defined ? transform.name : null),
+			errors: (transform is defined ? transform.getErrors('name') : null),
+			autofocus: true,
+			required: true,
+			translatable: true
+		}) }}
+
+        {{ forms.textField({
+	        label: "Handle"|t,
+	        id: "handle",
+	        name: "handle",
+	        value: (transform is defined ? transform.handle : null),
+	        errors: (transform is defined ? transform.getErrors('handle') : null),
+	        required: true,
+	        translatable: true
+        }) }}
+
+		{{ forms.selectField({
+			label: "Mode"|t,
+			id: "mode",
+			name: "mode",
+			options: craft.assets.transformModes,
+			value: (transform is defined ? transform.mode : null),
+			required: true,
+			translatable: true
+		}) }}
+
+		{{ forms.textField({
+			label: "Width"|t,
+			id: "width",
+			name: "width",
+			size: 5,
+			value: (transform is defined ? transform.width : null),
+			errors: (transform is defined ? transform.getErrors('width') : null),
+			translatable: true
+		}) }}
+
+		{{ forms.textField({
+			label: "Height"|t,
+			id: "height",
+			name: "height",
+			size: 5,
+			value: (transform is defined ? transform.height : null),
+			errors: (transform is defined ? transform.getErrors('height') : null),
+			translatable: true
+		}) }}
+
+		<div class="buttons">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+{% endset %}
+
+
+{% set js %}
+	{% if transform is not defined or not transform.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
+{% endset %}
+{% includeJs js %}

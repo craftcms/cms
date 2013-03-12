@@ -1,0 +1,71 @@
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+{% set title = "General Settings"|t %}
+
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
+
+{% set content %}
+	<form method="post" action="" accept-charset="UTF-8">
+		<input type="hidden" name="action" value="systemSettings/saveGeneralSettings">
+		<input type="hidden" name="redirect" value="settings">
+
+		{{ forms.lightswitchField({
+			first: true,
+			label: "System Status"|t,
+			id: 'on',
+			name: 'on',
+			on: (info is defined ? info.on : craft.app.isSystemOn),
+			onLabel: "On"|t,
+			offLabel: "Off"|t
+		}) }}
+
+		{{ forms.textField({
+			label: "Site Name"|t,
+			id: 'siteName',
+			name: 'siteName',
+			value: (info is defined ? info.siteName : craft.app.siteName),
+			autofocus: true,
+			required: true,
+			errors: (info is defined ? info.getErrors('siteName') : null)
+		}) }}
+
+		{{ forms.textField({
+			label: "Site URL"|t,
+			id: 'siteUrl',
+			name: 'siteUrl',
+			value: (info is defined ? info.siteUrl : craft.app.siteUrl),
+			required: true,
+			errors: (info is defined ? info.getErrors('siteUrl') : null)
+		}) }}
+
+		<div class="buttons">
+			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+
+	{% if craft.hasPackage('Rebrand') %}
+		<hr>
+
+		{% includeTranslations
+			"Are you sure you want to delete the logo?"
+		%}
+
+		{% includeJsResource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
+		{% includeJsResource "js/rebrand.js" %}
+		{% includeCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
+		{% includeCssResource "css/rebrand.css" %}
+
+		{% set logoInput %}
+			{% include 'settings/general/_logo' %}
+		{% endset %}
+
+		{{ forms.field({
+			label: "Logo"|t
+		}, logoInput) }}
+
+		<div class="clear"></div>
+	{% endif %}
+
+{% endset %}

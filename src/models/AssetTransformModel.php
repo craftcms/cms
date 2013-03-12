@@ -1,0 +1,44 @@
+<?php
+namespace Craft;
+
+/**
+ *
+ */
+class AssetTransformModel extends BaseModel
+{
+	/**
+	 * Use the folder name as the string representation.
+	 *
+	 * @return string
+	 */
+	function __toString()
+	{
+		return $this->name;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'                  => AttributeType::Number,
+			'name'                => AttributeType::String,
+			'handle'              => AttributeType::Handle,
+			'width'               => AttributeType::Number,
+			'height'              => AttributeType::Number,
+			'dimensionChangeTime' => AttributeType::DateTime,
+			'mode'                => array(AttributeType::String, 'default' => 'crop'),
+		);
+	}
+
+	/**
+	 * Return true if the transform is a named one.
+	 *
+	 * @return bool
+	 */
+	public function isNamedTransform()
+	{
+		return (bool) $this->getAttribute('name');
+	}
+}

@@ -1,0 +1,27 @@
+{% requirePackage 'Rebrand' %}
+
+{% extends "settings/email/_layout" %}
+{% set selectedTab = 'messages' %}
+{% includeCssResource "css/email_messages.css" %}
+{% includeJsResource "js/email_messages.js" %}
+
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
+
+{% includeTranslations
+	"Couldn’t save message.",
+	"Message saved."
+%}
+
+{% set content %}
+	<div id="messages">
+		{% for message in craft.emailMessages.getAllMessages %}
+			<h2>{{ (message.key~'_heading')|t }}</h2>
+			<div class="pane message" data-key="{{ message.key }}">
+				<div class="subject">{{ message.subject }}</div>
+				<div class="body">{{ message.body|nl2br }}</div>
+			</div>
+		{% endfor %}
+	</div>
+{% endset %}

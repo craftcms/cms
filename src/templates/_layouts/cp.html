@@ -1,0 +1,155 @@
+{% extends "_layouts/base" %}
+
+{% includeCssResource "css/cp.css" first %}
+{%- includeTranslations
+	"More",
+	"Attempted to get the height of a modal whose container has not been set.",
+	"Attempted to get the width of a modal whose container has not been set.",
+	"Attempted to position a modal whose container has not been set.",
+	"Attempted to position a modal whose container has not been set.",
+	"Are you sure you want to transfer your license to this domain?",
+	"License transferred.",
+	"Save",
+	"Cancel",
+	"Delete",
+	"Show",
+	"Hide",
+	"Close",
+	"An unknown error occurred.",
+	"New order saved.",
+	"Couldn’t save new order.",
+	"Are you sure you want to delete “{name}”?",
+	"“{name}” deleted.",
+	"Couldn’t delete “{name}”."
+-%}
+
+{% set body %}
+	{% if user.admin and craft.config.devMode %}
+		<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
+	{% endif %}
+
+	{% if craft.cp.areAlertsCached() %}
+		{% set alerts = craft.cp.getAlerts() %}
+		{% if alerts %}
+			<ul id="alerts">
+				{% for alert in craft.cp.getAlerts() %}
+					<li>{{ alert|raw }}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	{% else %}
+		{% set js %}
+			Craft.cp.fetchAlerts();
+		{% endset %}
+		{% includeJs js %}
+	{% endif %}
+
+	<header id="header">
+		<div class="centered">
+			<div id="account">
+				<a data-icon="☺" class="menubtn" title="{{ 'My Account'|t }}"></a>
+				<div class="menu" data-align="right">
+					<ul>
+						<li><a href="{{ url('myaccount') }}">{{ "My Account"|t }}</a></li>
+						<li><a href="{{ logoutUrl }}">{{ "Sign out"|t }}</a></li>
+					</ul>
+				</div>
+			</div>
+
+			<h2>{{ siteName }}</h2>
+
+			<nav>
+				<ul id="nav">
+					{% set firstSeg = craft.request.segment(1) %}
+					{% if firstSeg == 'myaccount' %}{% set firstSeg = 'users' %}{% endif %}
+					{% for handle, item in craft.cp.nav %}
+						<li>
+							<a id="nav-{{ handle }}" class="{% if item.hasIcon is defined and item.hasIcon %}hasicon{% endif %} {% if firstSeg == handle %}sel{% endif %}" href="{{ url(handle) }}">
+								{{- item.name -}}
+								{%- if item.badge is defined and item.badge -%}
+									<span class="badge">{{ item.badge }}</span>
+								{%- endif -%}
+							</a>
+						</li>
+					{% endfor %}
+					<!-- HIDE -->
+					<li id="customize-nav-btn"><a class="settings icon" title="{{ 'Customize…'|t }}"><span>{{ "Customize…"|t }}</span></a></li>
+					<!-- end HIDE -->
+				</ul>
+			</nav>
+		</div>
+	</header>
+
+	<div id="main-wrapper" class="centered">
+		<div id="notifications-wrapper">
+			<div id="notifications">
+				{% for type, message in craft.session.flashes %}
+					<div class="notification {{ type }}">{{ message }}</div>
+				{% endfor %}
+			</div>
+		</div>
+
+		{% set hasTabs = (tabs is defined and tabs) %}
+
+		<header id="page-header"{% if hasTabs %} class="has-tabs"{% endif %}>
+			{% if crumbs is defined and crumbs %}
+				<nav id="crumbs">
+					<ul>
+						{% for crumb in crumbs %}
+							<li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+						{% endfor %}
+					</ul>
+				</nav>
+			{% endif %}
+
+			{% if title is defined and title %}
+				<h1>{{ title|raw }}</h1>
+			{% endif %}
+
+			{% if extraPageHeaderHtml is defined %}
+				{{ extraPageHeaderHtml }}
+			{% endif %}
+
+			<div class="clear"></div>
+
+			{% if hasTabs %}
+				<nav id="tabs" class="tabs">
+					<ul>
+						{% for tabId, tab in tabs %}
+							{% if tab %}
+								{% set tabIsSelected = ((selectedTab is not defined and loop.first) or (selectedTab is defined and selectedTab == tabId)) -%}
+
+								{% if tabIsSelected and title != tab.label %}
+									{% set title = title~' - '~tab.label %}
+								{%endif -%}
+
+								<li><a id="tab-{{ tabId }}" class="tab{% if tabIsSelected %} sel{% endif %}{% if tab.class is defined %} {{ tab.class }}{% endif %}" href="{{ tab.url }}">{{ tab.label }}</a></li>
+							{% endif %}
+						{% endfor %}
+					</ul>
+				</nav>
+			{% endif %}
+		</header>
+
+		{% set hasSidebar = (sidebar is defined and sidebar) %}
+
+		<div id="main"{% if hasSidebar %} class="has-sidebar"{% endif %}>
+			{% if hasSidebar %}
+				<div id="sidebar">
+					{{ sidebar }}
+				</div>
+			{% endif %}
+
+			<main id="content" role="main">
+				{{ content }}
+			</main>
+		</div>
+	</div>
+
+	<div id="version">
+		@@@appName@@@ {{ "{version} build {build}"|t({
+			version: craft.app.version,
+			build:   craft.app.build
+		}) }}
+	</div>
+{% endset %}

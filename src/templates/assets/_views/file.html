@@ -1,0 +1,19 @@
+<header class="header"><h1>{{ file.filename }}</h1></header>
+<div class="body">
+	<form id="file-fields">
+		<input type="hidden" name="fileId" value="{{ file.id }}" />
+		<div>
+			{% set assetFields = craft.systemSettings.assetFields %}
+			{% include "_includes/fields" with {
+				fields: craft.fields.getLayoutByType('Asset').getFields(),
+				element: file
+			} only %}
+		</div>
+	</form>
+</div>
+<footer class="footer">
+	<ul class="right">
+		<li><input type="button" class="btn cancel" value="{{ 'Cancel'|t }}"></li>
+		<li><input type="submit" class="btn submit" value="{{ 'Save'|t }}"></li>
+	</ul>
+</footer>

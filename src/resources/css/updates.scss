@@ -1,0 +1,26 @@
+@charset "UTF-8";
+
+@import "shared";
+
+#loading { margin-top: 50px !important; text-align: center; }
+
+#update-all,
+#updates,
+#no-system-updates,
+#system-updates,
+#no-plugin-updates,
+#update-error,
+#plugin-updates { display: none; }
+
+#updates .critical { margin-left: 5px; padding: 2px 5px; color: #fff; background: #d6301a; }
+
+#updates td.notes { border-top: none; padding-bottom: 15px; }
+#updates td.notes th { border: none; padding: 12px 0; }
+#updates td.notes td { border: none; padding-top: 3px; padding-bottom: 3px; vertical-align: top; }
+#updates td.notes td:first-child { padding-left: 25px; }
+#updates td.notes .category { display: block; border-radius: 2px; padding: 0 7px; text-align: center; font-size: 11px; color: #fff; }
+#updates td.notes .category.added { background: #1888cd; }
+#updates td.notes .category.improved { background: $successcolor; }
+#updates td.notes .category.fixed { background: $errorcolor; }
+
+#update-error { padding-top: 120px; }

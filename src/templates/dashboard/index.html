@@ -1,0 +1,29 @@
+{% extends "_layouts/cp" %}
+{% set title = "Dashboard"|t %}
+{% includeCssResource "css/dashboard.css" %}
+{% includeJsResource "js/dashboard.js" %}
+
+
+{% set extraPageHeaderHtml %}
+	<a class="btn settings icon" href="{{ url('dashboard/settings') }}" title="{{ 'Settings'|t }}"></a>
+{% endset %}
+
+
+{% set content %}
+	<div class="widgets">
+		<div id="widgets" class="grid">
+			{% for widget in craft.dashboard.getUserWidgets %}
+				{% set widgetType = craft.dashboard.populateWidgetType(widget) %}
+				{% if widgetType %}
+					<div id="widget{{ widget.id }}" class="widget {{ widgetType.classHandle|lower }}" data-id="{{ widget.id }}">
+						<div class="spinner"></div>
+						<h2>{{ widgetType.title }}</h2>
+						<div class="body">
+							{{ widgetType.getBodyHtml|raw }}
+						</div>
+					</div>
+				{% endif %}
+			{% endfor %}
+		</div>
+	</div>
+{% endset %}

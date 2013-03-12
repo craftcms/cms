@@ -1,0 +1,8 @@
+{% from "_includes/forms" import multiselect %}
+
+{{ multiselect({
+	id: name,
+	name: name,
+	options: settings.options,
+	values: values
+}) }}

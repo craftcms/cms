@@ -1,0 +1,7 @@
+{% extends "_layouts/message" %}
+{% set title = "Unauthorized"|t %}
+
+{% set content %}
+	<h2>{{ title }}</h2>
+	<p>{{ "You don’t have the proper credentials to access this page."|t }}</p>
+{% endset %}

@@ -1,0 +1,55 @@
+{% import "_includes/forms" as forms %}
+
+
+{{ forms.textField({
+	label: "Hint Text"|t,
+	instructions: "The text that will be shown if the field doesn’t have a value."|t,
+	id: 'hint',
+	name: 'hint',
+	value: settings.hint,
+	translatable: true,
+	errors: settings.getErrors('hint')
+}) }}
+
+
+{% set maxLengthInput %}
+	{{ forms.text({
+		id: 'maxLength',
+		name: 'maxLength',
+		value: settings.maxLength,
+		size: 3,
+		errors: settings.getErrors('maxLength')
+	}) }}
+
+	{{ forms.select({
+		name: 'maxLengthUnit',
+		options: { words: "words"|t, chars: "characters"|t },
+		value: settings.maxLengthUnit
+	}) }}
+{% endset %}
+
+{{ forms.field({
+	label: "Max Length"|t,
+	id: 'maxLength',
+	errors: settings.getErrors('maxLength')
+}, maxLengthInput) }}
+
+
+{{ forms.checkboxField({
+	label: "Allow line breaks"|t,
+	name: 'multiline',
+	checked: settings.multiline,
+	toggle: 'initialRowsContainer'
+}) }}
+
+
+<div id="initialRowsContainer" class="nested-fields{% if not settings.multiline %} hidden{% endif %}">
+	{{ forms.textField({
+		label: "Initial Rows"|t,
+		id: 'initialRows',
+		name: 'initialRows',
+		value: settings.initialRows,
+		size: 3,
+		errors: settings.getErrors('initialRows')
+	}) }}
+</div>

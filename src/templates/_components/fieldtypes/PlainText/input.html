@@ -1,0 +1,15 @@
+{% import "_includes/forms" as forms %}
+
+{% set config = {
+	id: name,
+	name: name,
+	value: value,
+	hint: settings.hint,
+	rows: settings.initialRows
+} %}
+
+{% if settings.multiline %}
+	{{ forms.textarea(config) }}
+{% else %}
+	{{ forms.text(config) }}
+{% endif %}

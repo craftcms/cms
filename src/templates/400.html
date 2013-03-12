@@ -1,0 +1,7 @@
+{% extends "_layouts/message" %}
+{% set title = "Bad Request"|t %}
+
+{% set content %}
+	<h2>{{ title }}</h2>
+	<p>{{ "The request could not be understood by the server due to malformed syntax."|t }}</p>
+{% endset %}

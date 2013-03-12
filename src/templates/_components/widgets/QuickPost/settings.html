@@ -1,0 +1,52 @@
+{% import "_includes/forms" as forms %}
+
+{% set sections = craft.sections.getAllSections('id') %}
+
+{% if sections %}
+	{% if craft.hasPackage('PublishPro') %}
+		{{ forms.selectField({
+			label: "Section"|t,
+			instructions: "Which section do you want to publish entries to?"|t,
+			id: 'section',
+			name: 'section',
+			options: sections,
+			value: settings.section,
+			toggle: true,
+			targetPrefix: 'section'
+		}) }}
+
+		{% set selectedSectionId = settings.section %}
+	{% else %}
+		{% set selectedSectionId = sections[sections|keys[0]].id %}
+		<input type="hidden" name="section" value="{{ selectedSectionId }}">
+	{% endif %}
+
+	{% set fieldsInput %}
+		{% for section in sections %}
+			{% set show = ((not selectedSectionId and loop.first) or selectedSectionId == section.id) %}
+			<div id="section{{ section.id }}"{% if not show %} class="hidden"{% endif %}>
+				{% for field in section.getFieldLayout().getFields() %}
+					<div>
+						{{ forms.checkbox({
+							label: field.getField().name~(field.required ? ' <span class="required"></span>' : ''),
+							name: 'fields[section'~section.id~'][]',
+							value: field.fieldId,
+							checked: (field.required or field.fieldId in settings.fields),
+							disabled: field.required
+						}) }}
+					</div>
+				{% endfor %}
+			</div>
+		{% endfor %}
+	{% endset %}
+
+	{{ forms.field({
+		label: "Fields"|t,
+		instructions: "Which fields should be visible in the widget?"|t
+	}, fieldsInput) }}
+
+{% else %}
+
+	<p>{{ "No sections exist yet."|t }}</p>
+
+{% endif %}

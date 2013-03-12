@@ -1,0 +1,151 @@
+{% requirePackage 'Users' %}
+{% requirePermission 'administrateUsers' %}
+
+{% extends "users/_edit/layout" %}
+{% set selectedTab = 'admin' %}
+{% import "_includes/forms" as forms %}
+
+
+{% if account is not defined %}
+	{% if craft.request.segment(1) == 'myaccount' %}
+		{% set account = user %}
+	{% elseif userId %}
+		{% set account = craft.users.status('*').id(userId).first %}
+	{% endif %}
+	{% if not account %}{% exit 404 %}{% endif %}
+{% endif %}
+
+
+{% set content %}
+	<h2>{{ "User Groups"|t }}</h2>
+
+	{% set allGroups = craft.userGroups.getAllGroups %}
+	{% set userGroups = account.getGroups('id') %}
+
+	{% if allGroups %}
+		<form method="post" action="" accept-charset="UTF-8">
+			<input type="hidden" name="action" value="users/saveUserGroups">
+			<input type="hidden" name="userId" value="{{ account.id }}">
+
+			<ul>
+				{% for group in allGroups %}
+					<li>
+						{{ forms.checkbox({
+							label: group.name,
+							name: 'groups[]',
+							value: group.id,
+							checked: (group.id in userGroups|keys)
+						}) }}
+					</li>
+				{% endfor %}
+			</ul>
+
+			<div class="buttons">
+				<input type="submit" class="btn small submit" value="{{ 'Save'|t }}">
+			</div>
+		</form>
+	{% else %}
+		<p>{{ "No user groups exist yet."|t }}</p>
+	{% endif %}
+
+	<hr>
+
+	<form method="post" action="" accept-charset="UTF-8">
+		<input type="hidden" name="action" value="users/saveUserPermissions">
+		<input type="hidden" name="userId" value="{{ account.id }}">
+
+		<h2>{{ "Permissions"|t }}</h2>
+
+		<div class="field">
+			{{ forms.checkbox({
+				label: '<strong>' ~ "Admin"|t ~ '</strong>',
+				name: 'admin',
+				checked: account.admin,
+				toggle: 'permissions',
+				reverseToggle: true
+			}) }}
+		</div>
+
+		<div id="permissions" class="field{% if account.admin %} hidden{% endif %}">
+			{% include "_includes/permissions" with {
+				userOrGroup: (account.admin ? null : account),
+				groupPermissions: craft.userPermissions.getGroupPermissionsByUserId(account.id)
+			} only %}
+		</div>
+
+		<div class="buttons">
+			<input type="submit" class="btn small submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+
+	<hr>
+
+	<form method="post" action="" accept-charset="UTF-8">
+		<input type="hidden" name="userId" value="{{ account.id }}">
+
+		<h2>User Info</h2>
+
+		<table class="data">
+			<tbody>
+				<tr>
+					<th class="nowrap">{{ "Account Status"|t }}</th>
+					<td>
+						{% if account.status == 'pending' %}
+							<div class="status"></div> {{ "Unverified"|t }} 
+							<input type="button" class="btn small formsubmit" value="{{ 'Resend Email'|t }}" data-action="users/sendVerificationEmail">
+							<input type="button" class="btn small formsubmit" value="{{ 'Activate'|t }}" data-action="users/activateUser">
+						{% elseif account.status == 'locked' %}
+							<div class="status pending"></div> {{ "Locked"|t }} 
+							<input type="button" class="btn small formsubmit" value="{{ 'Unlock'|t }}" data-action="users/unlockUser">
+						{% elseif account.status == 'suspended' %}
+							<div class="status off"></div> {{ "Suspended"|t }} 
+							<input type="submit" class="btn small formsubmit" value="{{ 'Unsuspend'|t }}" data-action="users/unsuspendUser">
+						{% else %}
+							<div class="status on"></div> {{ "Active"|t }}
+						{% endif %}
+					</td>
+				</tr>
+				{% if account.status == 'locked' and craft.config.cooldownDuration %}
+					<tr>
+						<th class="nowrap">{{ "Cooldown Time Remaining"|t }}</th>
+						<td>{{ account.remainingCooldownTime.humanDuration }}</td>
+					</tr>
+				{% endif %}
+				<tr>
+					<th class="nowrap">{{ "Registration Date" }}</th>
+					<td>{{ account.dateCreated.nice }}</td>
+				</tr>
+				{% if account.status != 'pending' %}
+					<tr>
+						<th class="nowrap">{{ "Last Login Date"|t }}</th>
+						<td>{% if account.lastLoginDate %}{{ account.lastLoginDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</td>
+					</tr>
+
+					<tr>
+						<th class="nowrap">{{ "Last Invalid Login Date"|t }}</th>
+						<td>{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</td>
+					</tr>
+
+					<tr>
+						<th class="nowrap">{{ "Last Password Change Date"|t }}</th>
+						<td>{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</td>
+					</tr>
+
+					<tr>
+						<th class="nowrap">{{ "Invalid Login Count"|t }}</th>
+						<td>{% if account.invalidLoginCount %}{{ account.invalidLoginCount }}{% else %}0{% endif %}</td>
+					</tr>
+				{% endif %}
+			</tbody>
+		</table>
+
+		{% if not account.isCurrent %}
+			<hr>
+
+			{% if account.status != 'suspended' %}
+				<input type="button" class="btn small formsubmit" value="{{ 'Suspend'|t }}" data-action="users/suspendUser">
+			{% endif %}
+
+		{% endif %}
+	</form>
+{% endset %}

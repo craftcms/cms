@@ -1,0 +1,48 @@
+{% requirePackage 'Rebrand' %}
+
+{% import "_includes/forms" as forms %}
+{% set key = craft.request.getPost('key') %}
+{% set localeId = craft.request.getPost('locale') %}
+{% set message = craft.emailMessages.getMessage(key, localeId) %}
+
+
+<header class="header">
+	<h1>{{ "Edit Message"|t }}</h1>
+
+	{% if craft.hasPackage('Localize') %}
+		<ul class="right">
+			<li class="select locale">
+				<select>
+					{% for locale in craft.i18n.getSiteLocales() %}
+						<option value="{{ locale.id }}" {% if locale.id == message.locale %}selected{% endif %}>{{ locale.name }}</option>
+					{% endfor %}
+				</select>
+			</li>
+		</ul>
+	{% endif %}
+</header>
+
+<div class="body">
+	{{ forms.textField({
+		label: "Subject"|t,
+		id: 'message-subject',
+		class: 'message-subject',
+		value: message.subject,
+		required: true
+	}) }}
+
+	{{ forms.textareaField({
+		label: "Body"|t,
+		id: 'message-body',
+		class: 'message-body',
+		value: message.body,
+		rows: 15
+	}) }}
+</div>
+
+<footer class="footer">
+	<ul class="right">
+		<li><input type="button" class="btn cancel" value="{{ 'Cancel'|t }}"></li>
+		<li><input type="submit" class="btn submit" value="{{ 'Save'|t }}"></li>
+	</ul>
+</footer>

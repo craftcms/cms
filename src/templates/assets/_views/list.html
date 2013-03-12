@@ -1,0 +1,53 @@
+{% set thumbSize = 24 %}
+{% set maxThumbWidth = thumbSize %}
+{% set maxThumbHeight = "%d"|format(maxThumbWidth * 2/3) %}
+
+
+<div class="files listview">
+	<table class="data collapsible">
+		<thead>
+			<th scope="col" data-ordeby="filename" class="assets-lv-filename {% if orderBy == "filename" %}assets-lv-sorting assets-lv-{{ sort }}{% endif %}">{{ "Name"|t }}</th>
+			<th scope="col" data-orderby="dateModified" class="assets-lv-dateModified {% if orderBy == "dateModified" %}assets-lv-sorting assets-lv-{{ sort }}{% endif %}">{{ "Date Modified"|t }}</th>
+			<th scope="col" data-orderby="size" class="assets-lv-size {% if orderBy == "size" %}assets-lv-sorting assets-lv-{{ sort }}{% endif %}">{{ "Size"|t }}</th>
+		</thead>
+		<tbody>
+            {% for file in files %}
+                <tr class="assets-list-row" data-id="{{ file.id }}" data-fileName="{{ file.filename }}" data-folder="{{ file.folderId }}">
+                    <td data-title="{{ 'Name'|t }}">
+                        {% if file.kind == 'image' %}
+                            <div class="thumb-wrapper wrapper-{{ file.id }}"><div class="list-thumb thumb-{{ file.id }}"></div></div>
+                        {% else %}
+                            <div class="assets-fileicon"></div>
+                        {% endif %}
+                        <div class="file-name">{{ file.filename }}</div></td>
+                    <td data-title="{{ 'Date Modified'|t }}">{% if file.dateModified %}{{ file.dateModified.format("Y-m-d H:i:s")|datetime }}{% endif %}</td>
+                    <td data-title="{{ 'Size'|t }}">{% if file.size %}{{ file.size|filesize }}{% endif %}</td>
+                </tr>
+            {% endfor %}
+		</tbody>
+	</table>
+</div>
+
+{% set thumbCss = '' %}
+{% set hiResThumbCss = '' %}
+{% for file in files %}
+    {% if file.kind == 'image' %}
+
+        {% set thumbData = file.getThumbData(maxThumbWidth, maxThumbHeight) %}
+
+        {% set topMargin     = "%d"|format((thumbSize - thumbData.height) / 2) %}
+        {% set bottomMargin  = thumbSize - thumbData.height - topMargin %}
+        {% set leftMargin    = "%d"|format((thumbSize - thumbData.width) / 2) %}
+        {% set rightMargin   = thumbSize - thumbData.width - leftMargin %}
+
+        {% set thumbCss      = thumbCss     ~'.thumb-wrapper.wrapper-'~file.id~' { margin: '~topMargin~'px '~rightMargin~'px '~bottomMargin~'px '~(leftMargin-34)~'px; height: '~thumbData.height~'px; width: '~thumbData.width~"px;}\n" %}
+        {% set thumbCss      = thumbCss      ~ '.thumb-'~file.id~' { background-image: url('~thumbData.url~'); height: '~thumbData.height~'px; width: '~thumbData.width~"px;}\n" %}
+        {% set hiResThumbCss = hiResThumbCss ~ '.thumb-'~file.id~' { background-image: url('~thumbData.url2X~'); background-size: '~thumbData.width~'px '~thumbData.height~"px; }\n" %}
+    {% endif %}
+{% endfor %}
+
+{% includeCss thumbCss %}
+{% includeHiResCss hiResThumbCss %}
+
+{{ getHeadHtml() }}
+

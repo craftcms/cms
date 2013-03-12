@@ -1,0 +1,28 @@
+{% if plugin is not defined %}
+	{% set plugin = craft.plugins.getPlugin(pluginClass) %}
+	{% if not plugin %}{% exit 404 %}{% endif %}
+{% endif %}
+
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') },
+	{ label: "Plugins"|t, url: url('settings/plugins') }
+] %}
+
+
+{% extends "_layouts/cp" %}
+{% set title = plugin.name %}
+
+
+{% set content %}
+	<form method="post" action="" accept-charset="UTF-8">
+		<input type="hidden" name="action" value="plugins/savePluginSettings">
+		<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
+		<input type="hidden" name="redirect" value="settings/plugins">
+
+		{{ plugin.settingsHtml|ns('settings', false)|raw }}
+
+		<div class="buttons">
+			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+{% endset %}

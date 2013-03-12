@@ -1,0 +1,22 @@
+{% import "_includes/forms" as forms %}
+{% set field = craft.fields.getFieldById(fieldId) %}
+{% if element is not defined %}{% set element = null %}{% endif %}
+
+{% set value = (element ? attribute(element, field.handle) : null) %}
+{% set errors = (element ? element.getErrors(field.handle) : null) %}
+{% set fieldtype = craft.fields.populateFieldType(field, element) %}
+
+{% if fieldtype %}
+	{% set input = fieldtype.getInputHtml('fields['~field.handle~']', value) %}
+{% else %}
+	{% set input = '<p class="error">' ~ "The fieldtype class “{class}” could not be found."|t({ class: field.type }) ~ '</p>' %}
+{% endif %}
+
+{{ forms.field({
+	label: field.name,
+	required: required,
+	translatable: field.translatable,
+	instructions: field.instructions,
+	id: field.handle,
+	errors: errors
+}, input)|raw }}

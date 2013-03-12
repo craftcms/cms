@@ -1,0 +1,20 @@
+{% import "_includes/forms" as forms %}
+
+
+<div id="account" class="modal">
+	<h1>{{ "Create your account"|t }}</h1>
+
+	<form id="accountform" accept-charset="UTF-8">
+		{{ forms.textField({ label: "Username"|t, id: 'username', maxlength: 255 }) }}
+		{{ forms.textField({ label: "Email"|t, id: 'email', maxlength: 255 }) }}
+		{{ forms.passwordField({ label: "Password"|t, id: 'password' }) }}
+
+		<div class="buttons">
+			<div id="accountsubmit" class="btn big submit">{{ "Next"|t }}
+				<input type="submit" tabindex="-1">
+			</div>
+		</div>
+	</form>
+
+	{% include "_special/install/dots" with {dot: 1} %}
+</div>

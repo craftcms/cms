@@ -1,0 +1,41 @@
+{% set thumbSize = 100 %}
+{% set maxThumbWidth = thumbSize %}
+{% set maxThumbHeight = "%d"|format(maxThumbWidth * 2/3) %}
+
+<div class="files thumbs">
+	<ul>
+		{% for file in files %}
+			<li class="open-file" data-id="{{ file.id }}" data-url="{{ file.url }}" data-fileName="{{ file.filename }}" data-folder="{{ file.folderId }}">
+                {% if file.kind == 'image' %}
+				    <div class="thumb-wrapper wrapper-{{ file.id }}"><div class="thumb thumb-{{ file.id }}"></div></div>
+                {% else %}
+                    <div class="thumb assets-fileicon"><div class="assets-extension">{{ file.extension }}</div></div>
+                {% endif %}
+				<div class="filename">{{ file.filename }}</div>
+			</li>
+		{% endfor %}
+	</ul>
+</div>
+
+{% set thumbCss = '' %}
+{% set hiResThumbCss = '' %}
+{% for file in files %}
+    {% if file.kind == 'image' %}
+
+        {% set thumbData = file.getThumbData(maxThumbWidth, maxThumbHeight) %}
+
+        {% set topMargin     = "%d"|format((thumbSize - thumbData.height) / 2) %}
+        {% set bottomMargin  = thumbSize - thumbData.height - topMargin %}
+        {% set leftMargin    = "%d"|format((thumbSize - thumbData.width) / 2) %}
+        {% set rightMargin   = thumbSize - thumbData.width - leftMargin %}
+
+        {% set thumbCss      = thumbCss     ~'.thumb-wrapper.wrapper-'~file.id~' { margin: '~topMargin~'px '~rightMargin~'px '~bottomMargin~'px '~leftMargin~"px; }\n" %}
+        {% set thumbCss      = thumbCss      ~ '.thumb-'~file.id~' { background-image: url('~thumbData.url~'); height: '~thumbData.height~'px; width: '~thumbData.width~"px;}\n" %}
+        {% set hiResThumbCss = hiResThumbCss ~ '.thumb-'~file.id~' { background-image: url('~thumbData.url2X~'); background-size: '~thumbData.width~'px '~thumbData.height~"px; }\n" %}
+    {% endif %}
+{% endfor %}
+
+{% includeCss thumbCss %}
+{% includeHiResCss hiResThumbCss %}
+
+{{ getHeadHtml() }}

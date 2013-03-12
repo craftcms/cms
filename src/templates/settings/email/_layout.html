@@ -1,0 +1,10 @@
+{% requirePackage 'Rebrand' %}
+
+{% extends "_layouts/cp" %}
+{% set title = "Email Settings"|t %}
+
+
+{% set tabs = {
+	settings: { label: "Settings"|t, url: url('settings/email') },
+	messages: { label: "Messages"|t, url: url('settings/email/messages') }
+} %}

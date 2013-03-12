@@ -1,0 +1,31 @@
+{% import "_includes/forms" as forms %}
+
+
+{{ forms.textField({
+	label: "URL"|t,
+	id: 'url',
+	name: 'url',
+	value: settings.url,
+	required: true,
+	errors: settings.getErrors('url')
+}) }}
+
+
+{{ forms.textField({
+	label: "Title"|t,
+	id: 'title',
+	name: 'title',
+	value: settings.title,
+	required: true,
+	errors: settings.getErrors('title')
+}) }}
+
+
+{{ forms.textField({
+	label: "Limit"|t,
+	id: 'limit',
+	name: 'limit',
+	value: settings.limit,
+	size: 2,
+	errors: settings.getErrors('limit')
+}) }}

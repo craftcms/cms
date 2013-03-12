@@ -1,0 +1,64 @@
+{% extends "_layouts/cp" %}
+{% set title = "Plugins"|t %}
+
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
+
+
+{% set plugins = craft.plugins.getPlugins(false) %}
+
+
+{% set content %}
+	{% if plugins|length %}
+		<table id="plugins" class="data collapsible">
+			<thead>
+				<th scope="col">{{ "Plugin"|t }}</th>
+				<th scope="col">{{ "Developer"|t }}</th>
+				<th scope="col">{{ "Status"|t }}</th>
+				<td class="thin"></td>
+			</thead>
+			<tbody>
+				{% for plugin in plugins %}
+					<tr data-name="{{ plugin.name }}">
+						<th data-title="{{ 'Name'|t }}">
+							{% if plugin.isEnabled and plugin.settingsHtml %}
+								<a href="{{ url('settings/plugins/' ~ plugin.classHandle|lower) }}">{{ plugin.name }}</a>
+							{% else %}
+								{{ plugin.name }}
+							{% endif %}
+							<span class="light">{{ plugin.version }}</span>
+						</th>
+						<td data-title="{{ 'Developer'|t }}"><a{% if plugin.developerUrl %} href="{{ plugin.developerUrl }}"{% endif %}>{{ plugin.developer }}</a></td>
+						<td data-title="{{ 'Status'|t }}">
+							<form action="" method="post" accept-charset="UTF-8">
+								<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
+								{% if plugin.isEnabled %}
+									<span class="status on"></span> {{ "Enabled"|t }} 
+									<input type="button" value="{{ 'Disable'|t }}" class="btn small formsubmit" data-action="plugins/disablePlugin">
+								{% elseif plugin.isInstalled %}
+									<span class="status off"></span> {{ "Disabled"|t }} 
+									<input type="button" value="{{ 'Enable'|t }}" class="btn small formsubmit" data-action="plugins/enablePlugin">
+								{% else %}
+									<span class="status"></span> <span class="light">{{ "Not installed"|t }}</span>
+								{% endif %}
+							</form>
+						</td>
+						<td class="thin rightalign nowrap">
+							<form action="" method="post" accept-charset="UTF-8">
+								<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
+								{% if plugin.isInstalled %}
+									<input type="button" value="{{ 'Uninstall'|t }}" class="btn small formsubmit" data-action="plugins/uninstallPlugin">
+								{% else %}
+									<input type="button" value="{{ 'Install'|t }}" class="btn small formsubmit" data-action="plugins/installPlugin">
+								{% endif %}
+							</form>
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% else %}
+		<p>{{ "There are no available plugins."|t }}
+	{% endif %}
+{% endset %}

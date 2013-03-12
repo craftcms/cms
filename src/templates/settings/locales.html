@@ -1,0 +1,72 @@
+{% requirePackage 'Localize' %}
+
+{% extends "_layouts/cp" %}
+{% includeJsResource "js/locales.js" %}
+{% import "_includes/forms" as forms %}
+{% set title = "Content Locales"|t %}
+{% includeTranslations
+	"Are you sure you want to delete “{name}” and all its associated content?",
+	"Name",
+	"Locale ID",
+	"Reorder",
+	"Delete",
+	"New locale added.",
+	"Unable to add the new locale."
+%}
+
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
+
+
+{% set content %}
+	<form method="post" action="" accept-charset="UTF-8">
+		<input type="hidden" name="action" value="languageSettings/save">
+		<input type="hidden" name="redirect" value="settings">
+
+		<h2>{{ "Which locales does your content target?"|t }}</h2>
+
+		<div class="field">
+			<table id="locales" class="data collapsible">
+				<tbody>
+					{% for locale in craft.i18n.getSiteLocales() %}
+						<tr data-id="{{ locale.id }}" data-name="{{ locale.name }}">
+							<th scope="row" data-title="{{ 'Name'|t }}" width="40%">{{ locale.name }}</th>
+							<td data-title="{{ 'Locale ID' }}">{{ locale.id }}</td>
+							<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
+							<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+
+		<div id="addlocale" class="field">
+			{{ forms.text({
+				hint: "Add a new locale…"|t,
+				id: 'addlocaleinput',
+				autocomplete: false
+			}) }}
+		</div>
+	</form>
+{% endset %}
+
+{% set js %}
+	new Craft.Locales({
+
+		{%- for locale in craft.i18n.getAllLocales() %}
+			{%- if not loop.first %},{% endif -%}
+			'{{ locale.id }}': '{{ locale.name }}'
+		{%- endfor -%}
+
+	}, [
+
+		{%- for locale in craft.i18n.getSiteLocales() %}
+			{%- if not loop.first %},{% endif -%}
+			'{{ locale.id }}'
+		{%- endfor -%}
+
+	]);
+{% endset %}
+
+{% includeJs js %}

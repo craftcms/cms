@@ -1,0 +1,14 @@
+<li class="assets-fm-folder">
+    {% set paddingLeft = 30 + (18 * depth) %}
+    <a href="javascript:;" data-id="{{ folder.id }}" style="padding-left: {{ paddingLeft }}px !important; margin-left: 0 !important;"><span class="assets-folder-label">{{ folder.name }}</span></a>
+    {% set children = folder.getChildren() %}
+    {%  if children is not empty %}
+        <ul>
+            {% for child in children %}
+                {% if child %}
+                    {% include 'assets/_nav_folder' with { folder: child, depth: (depth + 1) } only %}
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>

@@ -1,0 +1,9 @@
+{% if element is not defined %}{% set element = null %}{% endif %}
+
+{% for field in fields %}
+	{% include "_includes/field" with {
+		fieldId: field.fieldId,
+		required: field.required,
+		element: element
+	} only %}
+{% endfor %}

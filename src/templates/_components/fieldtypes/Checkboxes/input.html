@@ -1,0 +1,8 @@
+{% from "_includes/forms" import checkboxGroup %}
+
+{{ checkboxGroup({
+	id: name,
+	name: name,
+	options: settings.options,
+	values: values
+}) }}

@@ -1,0 +1,300 @@
+{% macro errorList(errors) %}
+	{% if errors %}
+		<ul class="errors">
+			{% for error in errors %}
+				<li>{{ error }}</li>
+			{% endfor %}
+		</ul>
+	{% endif %}
+{% endmacro %}
+
+
+{# Inputs #}
+
+
+{% macro textClass(config) %}{{ [
+	'text',
+	(config.class ? config.class : null),
+	(config.hint ? 'nicetext' : null),
+	(config.type == 'password' ? 'password' : null),
+	(config.size is defined and config.size ? null : 'fullwidth')
+]|filter|join(' ') }}{% endmacro %}
+
+
+{% macro text(config) %}
+	{% set config = { id: null, class: null, type: 'text', size: null, maxlength: null, name: null, value: null, autofocus: false, autocomplete: true, required: false, disabled: false, hint: null, errors: null }|merge(config) %}
+	{% set class = _self.textClass(config) %}
+	{% if config.type == 'password' %}<div class="passwordwrapper">{% endif -%}
+	<input class="{{ class }}" type="{{ config.type }}"
+		{%- if config.id %} id="{{ config.id }}"{% endif %}
+		{%- if config.size %} size="{{ config.size }}"{% endif %}
+		{%- if config.name %} name="{{ config.name }}"{% endif %}
+		{%- if config.value %} value="{{ config.value }}"{% endif %}
+		{%- if config.maxlength %} maxlength="{{ config.maxlength }}"{% endif %}
+		{%- if config.autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
+		{%- if not config.autocomplete %} autocomplete="off"{% endif %}
+		{%- if config.disabled %} disabled {% endif %}
+		{%- if config.hint %} data-hint="{{ config.hint }}"{% endif %}>
+	{%- if config.type == 'password' %}</div>{% endif %}
+{% endmacro %}
+
+
+{% macro password(config) %}
+	{{ _self.text(config|merge({ type: 'password' })) }}
+{% endmacro %}
+
+
+{% macro date(config) %}
+	<div class="datewrapper">{{ _self.text(config|merge({ size: 10 })) }}</div>
+	{% set js %}
+		$('#{{ config.id }}').datepicker({
+			dateFormat: $.datepicker.W3C,
+			prevText: '{{ "Prev"|t|e('js') }}',
+			nextText: '{{ "Next"|t|e('js') }}'
+		});
+	{% endset %}
+	{% includeJs js %}
+{% endmacro %}
+
+
+{% macro textarea(config) %}
+	{% set config = { id: null, class: null, type: 'text', rows: 2, cols: 50, name: null, value: null, autofocus: false, required: false, disabled: false, hint: null, errors: null }|merge(config) %}
+	{% set class = _self.textClass(config) %}
+	<textarea class="{{ class }}" rows="{{ config.rows }}" cols="{{ config.cols }}" name="{{ config.name }}"
+		{%- if config.id %} id="{{ config.id }}"{% endif %}
+		{%- if config.autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
+		{%- if config.disabled %} disabled{% endif %}
+		{%- if config.hint %} data-hint="{{ config.hint }}"{% endif %}>{{ config.value }}</textarea>
+{% endmacro %}
+
+
+{% macro select(config) %}
+	{% set config = { id: null, class: null, name: null, value: null, toggle: false, targetPrefix: null, autofocus: false, required: false, disabled: false }|merge(config) %}
+	{% set class = ['select', config.class]|filter|join(' ') %}
+	<div class="{{ class }}">
+		<select
+			{%- if config.id %} id="{{ config.id }}"{% endif %}
+			{%- if config.toggle %} class="fieldtoggle"{% endif %}
+			{%- if config.name %} name="{{ config.name }}"{% endif %}
+			{%- if config.autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
+			{%- if config.disabled %} disabled{% endif %}
+			{%- if config.targetPrefix %} data-target-prefix="{{ config.targetPrefix }}"{% endif %}>
+			{% for value, label in config.options %}
+				<option value="{{ value }}"{% if value == config.value %} selected{% endif %}>{{ label }}</option>
+			{% endfor %}
+		</select>
+	</div>
+{% endmacro %}
+
+
+{% macro multiselect(config) %}
+	{% set config = { id: null, name: null, size: null, options: [], values: [], autofocus: false, required: false, disabled: false }|merge(config) %}
+	<select multiple
+		{%- if config.id %} id="{{ config.id }}"{% endif %}
+		{%- if config.name %} name="{{ config.name }}[]"{% endif %}
+		{%- if config.autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
+		{%- if config.disabled %} disabled{% endif %}
+		{%- if config.size %} size="{{ config.size }}"{% endif %}>
+		{% for value, label in config.options %}
+			<option value="{{ value }}"{% if value in config.values %} selected{% endif %}>{{ label }}</option>
+		{% endfor %}
+	</select>
+{% endmacro %}
+
+
+{% macro checkbox(config) %}
+	{% set config = { id: null, class: null, name: null, value: '1', checked: false, toggle: null, reverseToggle: false, autofocus: false, disabled: false, label: null }|merge(config) %}
+	{% set class = [ (config.class), (config.toggle ? 'fieldtoggle' : null) ]|filter|join(' ') %}
+	<label>
+		<input type="checkbox" value="{{ config.value }}"
+			{%- if config.id %} id="{{ config.id }}"{% endif %}
+			{%- if class %} class="{{ class }}"{% endif %}
+			{%- if config.name %} name="{{ config.name }}"{% endif %}
+			{%- if config.checked %} checked{% endif %}
+			{%- if config.autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
+			{%- if config.disabled %} disabled{% endif %}
+			{%- if config.toggle %} data-target="{{ config.toggle }}"{% endif %}
+			{%- if config.reverseToggle %} data-reverse-toggle="y"{% endif %}>
+		{{ config.label|raw }}
+	</label>
+{% endmacro %}
+
+
+{% macro checkboxGroup(config) %}
+	{% set config = { id: null, name: null, options: [], values: [], autofocus: false }|merge(config) %}
+	{% for value, label in config.options %}
+		<div>
+			{{ _self.checkbox({
+				label: label,
+				id: (loop.first ? config.id : null),
+				name: config.name ~ '[]',
+				value: value,
+				checked: (value in config.values),
+				autofocus: (config.autofocus and loop.first and not craft.request.isMobileBrowser(true))
+			}) }}
+		</div>
+	{% endfor %}
+{% endmacro %}
+
+
+{% macro checkboxSelect(config) %}
+	{% set config = { id: null, allLabel: "All"|t, allValue: '*', name: null, options: [], values: [], autofocus: false, class: ""}|merge(config) %}
+	<div class="checkbox-select {{ config.class }}">
+		<div>
+			{{ _self.checkbox({
+				id: config.id,
+				class: 'all',
+				label: '<b>' ~ config.allLabel ~ '</b>',
+				name: config.name,
+				value: config.allValue,
+				checked: (config.values is empty or config.values == config.allValue),
+				autofocus: (config.autofocus and not craft.request.isMobileBrowser(true))
+			}) }}
+		</div>
+		{% for value, label in config.options %}
+			<div>
+				{{ _self.checkbox({
+					label: label,
+					name: config.name ~ '[]',
+					value: value,
+					checked: (value in config.values or config.values is empty),
+					disabled: (config.values is empty)
+				}) }}
+			</div>
+		{% endfor %}
+	</div>
+{% endmacro %}
+
+
+{% macro radio(config) %}
+	{% set config = { id: null, class: null, name: null, value: '1', checked: false, autofocus: false, disabled: false, label: null }|merge(config) %}
+	<label>
+		<input type="radio" value="{{ config.value }}"
+			{%- if config.id %} id="{{ config.id }}"{% endif %}
+			{%- if config.class %} class="{{ config.class }}"{% endif %}
+			{%- if config.name %} name="{{ config.name }}"{% endif %}
+			{%- if config.checked %} checked{% endif %}
+			{%- if config.autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
+			{%- if config.disabled %} disabled{% endif %}>
+		{{ config.label|raw }}
+	</label>
+{% endmacro %}
+
+
+{% macro radioGroup(config) %}
+	{% set config = { id: null, name: null, options: [], value: null, autofocus: false }|merge(config) %}
+	{% for value, label in config.options %}
+		<div>
+			{{ _self.radio({
+				label: label,
+				id: (loop.first ? config.id : null),
+				name: config.name,
+				value: value,
+				checked: (value == config.value),
+				autofocus: (config.autofocus and loop.first and not craft.request.isMobileBrowser(true))
+			}) }}
+		</div>
+	{% endfor %}
+{% endmacro %}
+
+
+{% macro file(config) %}
+	{% set config = { id: null, name: null, autofocus: false, required: false, disabled: false }|merge(config) %}
+	<input type="file"
+		{%- if config.id %} id="{{ config.id }}"{% endif %}
+		{%- if config.name %} name="{{ config.name }}"{% endif %}
+		{%- if config.autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
+		{%- if config.disabled %} disabled{% endif %}>
+{% endmacro %}
+
+
+{% macro lightswitch(config) %}
+	{% set config = { id: null, name: null, on: false, onLabel: "Yes"|t, offLabel: "No"|t, toggle: null }|merge(config) %}
+	<div class="lightswitch{% if config.on %} on{% endif %}"{% if config.toggle %} data-target="{{ config.toggle }}"{% endif %} tabindex="0">
+		<div class="container">
+			<div class="label on">{{ config.onLabel }}</div>
+			<div class="handle"></div>
+			<div class="label off">{{ config.offLabel }}</div>
+		</div>
+		<input type="hidden" name="{{ config.name }}" value="{{ config.on ? 'on' : '' }}">
+	</div>
+{% endmacro %}
+
+
+{# Fields #}
+
+
+{% macro field(config, input) %}
+	{% set config = { id: null, first: false, label: null, instructions: null, required: false, errors: null }|merge(config) %}
+	<div class="field{% if config.first %} first{% endif %}"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
+		{% if config.label or config.instructions %}
+			<div class="heading">
+				{% if config.label %}
+					<label{% if config.required %} class="required"{% endif %}{% if config.id %} for="{{ config.id }}"{% endif %}>
+						{{ config.label|raw }}
+					</label>
+				{% endif %}
+				{% if config.instructions %}
+					<p>{{ config.instructions|raw }}</p>
+				{% endif %}
+			</div>
+		{% endif %}
+		<div class="input{% if config.errors %} errors{% endif %}">
+			{{ input|raw }}
+		</div>
+		{{ _self.errorList(config.errors) }}
+	</div>
+{% endmacro %}
+
+
+{% macro textField(config) %}
+	{{ _self.field(config, _self.text(config)) }}
+{% endmacro %}
+
+
+{% macro passwordField(config) %}
+	{{ _self.field(config, _self.password(config)) }}
+{% endmacro %}
+
+
+{% macro dateField(config) %}
+	{{ _self.field(config, _self.date(config)) }}
+{% endmacro %}
+
+
+{% macro textareaField(config) %}
+	{{ _self.field(config, _self.textarea(config)) }}
+{% endmacro %}
+
+
+{% macro selectField(config) %}
+	{{ _self.field(config, _self.select(config)) }}
+{% endmacro %}
+
+
+{% macro multiselectField(config) %}
+	{{ _self.field(config, _self.multiselect(config)) }}
+{% endmacro %}
+
+
+{% macro checkboxField(config) %}
+	{% set config = { id: null, first: false }|merge(config) %}
+	<div class="field checkbox{% if config.first %} first{% endif %}"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
+		{{ _self.checkbox(config) }}
+	</div>
+{% endmacro %}
+
+
+{% macro checkboxSelectField(config) %}
+	{{ _self.field(config, _self.checkboxSelect(config)) }}
+{% endmacro %}
+
+
+{% macro fileField(config) %}
+	{{ _self.field(config, _self.file(config)) }}
+{% endmacro %}
+
+
+{% macro lightswitchField(config) %}
+	{{ _self.field(config, _self.lightswitch(config)) }}
+{% endmacro %}

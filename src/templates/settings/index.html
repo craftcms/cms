@@ -1,0 +1,34 @@
+{% extends "_layouts/cp" %}
+{% set title = "Settings"|t %}
+
+
+{% set content %}
+	<h2>System</h2>
+
+	<ul class="icons">
+		<li><a href="{{ url('settings/general') }}" data-icon="g">{{ "General"|t }}</a></li>
+		<li><a href="{{ url('settings/packages') }}" data-icon="a">{{ "Packages"|t }}</a></li>
+		{% if craft.config.siteRoutesSource != 'file' %}
+			<li><a href="{{ url('settings/routes') }}" data-icon="⇈">{{ "Routes"|t }}</a></li>
+		{% endif %}
+		{% if craft.hasPackage('Users') %}
+			<li><a href="{{ url('settings/users') }}" data-icon="U">{{ "Users"|t }}</a></li>
+		{% endif %}
+		<li><a href="{{ url('settings/email') }}" data-icon="E">{{ "Email"|t }}</a></li>
+		<li><a href="{{ url('settings/plugins') }}" data-icon="P">{{ "Plugins"|t }}</a></li>
+	</ul>
+
+	<hr>
+
+	<h2>Content</h2>
+
+	<ul class="icons">
+		<li><a href="{{ url('settings/fields') }}" data-icon="b">{{ "Fields"|t }}</a></li>
+		<li><a href="{{ url('settings/sections') }}" data-icon="n">{{ "Sections"|t }}</a></li>
+		<li><a href="{{ url('settings/assets') }}" data-icon="A">{{ "Assets"|t }}</a></li>
+		<li><a href="{{ url('settings/globals') }}" data-icon="G">{{ "Globals"|t }}</a></li>
+		{% if craft.hasPackage('Localize') %}
+			<li><a href="{{ url('settings/locales') }}" data-icon="L">{{ "Locales"|t }}</a></li>
+		{% endif %}
+	</ul>
+{% endset %}

@@ -1,0 +1,110 @@
+{% extends "settings/assets/_layout" %}
+{% set selectedTab = 'operations' %}
+{% import "_includes/forms" as forms %}
+{% set sources = craft.assets.getAllSources('id') %}
+
+{% includeTranslations
+	"The following items were found in the database that do not have a physical match.",
+	"Folders",
+	"Files",
+	"Cancel",
+	"Delete"
+%}
+
+{% set content %}
+	<p id="nosources" {% if sources|length %}style="display: none"{% endif %}>
+		{{ "No sources exist yet."|t }}
+	</p>
+
+	{% if sources|length %}
+
+		{% if transformHandle is defined %}
+			{% set transformValue = transformHandle %}
+		{% else %}
+			{% set transformValue = 0 %}
+		{% endif %}
+
+		{{ forms.checkboxSelectField({
+			first: true,
+			label: "Sources"|t,
+			instructions: "Which asset sources do you want to perform operations on?"|t,
+			id: 'sourceId',
+			name: 'sourceId',
+			options: sources,
+			values: '',
+			class: "assets-sources"
+		}) }}
+
+		{% set operationsField %}
+			<ul>
+				<li>
+					{{ forms.checkbox({
+						label: "Update indexes"|t,
+						id: 'do-index',
+						name: 'do-index',
+						class: 'assets-index',
+                        checked: 'checked'
+					}) }}
+				</li>
+
+				{% set transforms = craft.assets.getAllAssetTransforms() %}
+                {% if transforms|length < 1 %}
+                    {% set transformsDisabled = true %}
+                    {% set updateTransforms = false %}
+                {% else %}
+                    {% set transformsDisabled = false %}
+                    {% set updateTransforms = 'checked' %}
+                {% endif %}
+
+                {% set transformsChecked = (craft.request.getQuery('transform') is not empty) %}
+                <li>
+                    {{ forms.checkbox({
+                        label: "Update transforms"|t,
+                        id: 'do-transforms',
+                        name: 'do-transforms',
+                        class: 'assets-transforms',
+                        checked: updateTransforms,
+                        toggle: 'transforms',
+                        disabled: transformsDisabled
+                    }) }}
+                    <ul id="transforms" class="indent{% if transformsDisabled %} hidden{% endif %} checkbox-select">
+                        <li>
+                            {{ forms.checkbox({
+                                class: 'all',
+                                label: '<b>' ~ "All"|t ~ '</b>',
+                                checked: (not transformsChecked)
+                            }) }}
+                        </li>
+                        {% for transform in transforms %}
+                            <li>
+                                {{ forms.checkbox({
+                                    label: transform.name,
+                                    name: transform ~ '[]',
+                                    value: transform.handle,
+                                    checked: (not transformsChecked or (transformsChecked and craft.request.getQuery('transform') == transform.handle)),
+                                    disabled: (not transformsChecked)
+                                }) }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+			</ul>
+		{% endset %}
+
+		{{ forms.field({
+			label: "Operations"|t,
+			instructions: "Which operations do you want to perform on the selected sources?"
+		}, operationsField) }}
+
+		<div class="operation-progress"></div>
+
+		<div class="buttons">
+			<div class="btn submit" id="start-operations">{{ "Start"|t }}</a>
+		</div>
+
+		{% includeJsResource "js/Assets/AssetOperations.js" %}
+		{% includeJsResource "js/QueueManager.js" %}
+
+	{% endif %}
+
+{% endset %}

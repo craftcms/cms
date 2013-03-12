@@ -1,0 +1,31 @@
+{% import "_includes/forms" as forms %}
+
+
+{% if craft.hasPackage('PublishPro') %}
+	{% set sectionInput %}
+		<div class="select">
+			<select id="section" name="section">
+				<option value="*">{{ "All"|t }}</option>
+				{% for section in craft.sections.getAllSections() %}
+					<option value="{{ section.id }}"{% if section.id == settings.section %} selected{% endif %}>{{ section.name|t }}</option>
+				{% endfor %}
+			</select>
+		</div>
+	{% endset %}
+
+	{{ forms.field({
+		label: "Section"|t,
+		instructions: "Which section do you want to pull recent entries from?"|t,
+		id: 'section',
+	}, sectionInput) }}
+{% endif %}
+
+
+{{ forms.textField({
+	label: "Limit"|t,
+	id: 'limit',
+	name: 'limit',
+	value: settings.limit,
+	size: 2,
+	errors: settings.getErrors('limit')
+}) }}
