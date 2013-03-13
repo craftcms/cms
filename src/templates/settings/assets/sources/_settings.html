@@ -50,6 +50,8 @@
 		}) }}
 
 		{% if craft.hasPackage('Cloud') %}
+			<hr>
+
 			{% set sourceTypes = craft.assets.getAllSourceTypes %}
 
 			{% includeJsResource "js/Assets/EditSource.js" %}
@@ -74,7 +76,6 @@
 
 				{% if settings %}
 					<div id="{{ _sourceType.classHandle }}"{% if not isCurrent %} class="hidden"{% endif %}>
-						<hr>
 						{% set namespace = 'types[' ~ _sourceType.classHandle ~ ']' %}
 						{{- settings|ns(namespace)|raw -}}
 						<hr>
