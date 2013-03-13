@@ -292,30 +292,12 @@ class UserPermissionsService extends BaseApplicationComponent
 	{
 		$suffix = ':'.$sectionId;
 
-		return array(
+		$permissions = array(
 			"editEntries{$suffix}" => array(
 				'label' => Craft::t('Edit entries'),
 				'nested' => array(
 					"createEntries{$suffix}" => array(
 						'label' => Craft::t('Create entries'),
-					),
-					"editPeerEntries{$suffix}" => array(
-						'label' => Craft::t('Edit other authors’ entries'),
-						'nested' => (Craft::hasPackage(CraftPackage::PublishPro)
-							? array(
-								"editPeerEntryDrafts{$suffix}" => array(
-									'label' => Craft::t('Edit other authors’ drafts'),
-									'nested' => array(
-										"publishPeerEntryDrafts{$suffix}" => array(
-											'label' => Craft::t('Publish other authors’ drafts')
-										),
-									)
-								),
-								"deletePeerEntries{$suffix}" => array(
-									'label' => Craft::t('Delete other authors’ entries')
-								),
-							) : array()
-						)
 					),
 					"publishEntries{$suffix}" => array(
 						'label' => Craft::t('Publish entries live')
@@ -323,6 +305,32 @@ class UserPermissionsService extends BaseApplicationComponent
 				)
 			)
 		);
+
+		if (Craft::hasPackage(CraftPackage::Users))
+		{
+			$permissions["editEntries{$suffix}"]['nested']["editPeerEntries{$suffix}"] = array(
+				'label' => Craft::t('Edit other authors’ entries'),
+				'nested' => array(
+					"deletePeerEntries{$suffix}" => array(
+						'label' => Craft::t('Delete other authors’ entries')
+					),
+				)
+			);
+
+			if (Craft::hasPackage(CraftPackage::PublishPro))
+			{
+				$permissions["editEntries{$suffix}"]['nested']["editPeerEntries{$suffix}"]['nested']["editPeerEntryDrafts{$suffix}"] = array(
+					'label' => Craft::t('Edit other authors’ drafts'),
+					'nested' => array(
+						"publishPeerEntryDrafts{$suffix}" => array(
+							'label' => Craft::t('Publish other authors’ drafts')
+						),
+					)
+				);
+			}
+		}
+
+		return $permissions;
 	}
 
 	/**
