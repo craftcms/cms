@@ -148,7 +148,7 @@
 		{% endif %}
 
 		{{ forms.textField({
-			label: "Title"|t,
+			label: section.titleLabel,
 			id: 'title',
 			name: 'title',
 			value: (entry is defined ? entry.title : null),

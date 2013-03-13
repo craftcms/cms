@@ -110,6 +110,18 @@
 			<div class="search"><input type="text" class="text nicetext fullwidth" data-hint="{{ 'Search entries'|t }}"></div>
 		</div>
 
+		{% if filter %}
+			{% set section = craft.sections.getSectionByHandle(filter) %}
+			{% set sectionTitleLabel = section.titleLabel %}
+		{% else %}
+			{% if craft.hasPackage('PublishPro') %}
+				{% set sectionTitleLabel = "Title"|t %}
+			{% else %}
+				{% set sections = craft.sections.getAllSections() %}
+				{% set sectionTitleLabel = sections[0].titleLabel %}
+			{% endif %}
+		{% endif %}
+
 		{% paginate craft.entries(params).editable(true).limit(50) as entries %}
 
 			<p id="noentries"{% if entries|length %} class="hidden"{% endif %}>
@@ -124,7 +136,7 @@
 				{% set colWidth = round(100 / totalCols) %}
 				<table id="entries" class="data collapsible">
 					<thead>
-						<th scope="col" width="{{ colWidth }}%">{{ "Title"|t }}</th>
+						<th scope="col" width="{{ colWidth }}%">{{ sectionTitleLabel }}</th>
 						<th scope="col" width="{{ colWidth }}%">{{ "Slug"|t }}</th>
 						{% if showSection %}<th scope="col" width="{{ colWidth }}%">{{ "Section"|t }}</th>{% endif %}
 						{% if showStatus %}<th scope="col" width="{{ colWidth }}%">{{ "Status"|t }}</th>{% endif %}
