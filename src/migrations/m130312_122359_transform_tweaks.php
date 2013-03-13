@@ -13,6 +13,21 @@ class m130312_122359_transform_tweaks extends BaseMigration
 	 */
 	public function safeUp()
 	{
+		$assetTransformationsTable = $this->dbConnection->schema->getTable('{{assettransformations}}');
+		$assetTransformsTable = $this->dbConnection->schema->getTable('{{assettransforms}}');
+
+		if ($assetTransformationsTable && !$assetTransformsTable)
+		{
+			$this->dbConnection->createCommand()->renameTable('assettransformations', 'assettransforms');
+			Craft::log('Successfully renamed `assettransformations` to `assettransforms`.', \CLogger::LEVEL_INFO);
+			craft()->db->getSchema()->refresh();
+		}
+		else
+		{
+			Craft::log('Tried to rename `assettransformations` to `assettransforms`, but `assettransforms` already exists.', \CLogger::LEVEL_WARNING);
+		}
+
+		// assettransforms is guaranteed to exist by this point.
 		$this->alterColumn('assettransforms', 'width', 'INT(10) NULL');
 		$this->alterColumn('assettransforms', 'height', 'INT(10) NULL');
 		$this->alterColumn('assettransforms', 'mode', array('column' => ColumnType::Char, 'length' => 7, 'required' => true, 'default' => 'crop'));
