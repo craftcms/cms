@@ -208,7 +208,9 @@ class Craft extends \Yii
 			{
 				$port = craft()->request->getPort();
 
-				if ($port == 80)
+				// If $port == 80, don't show it. If the port is already in the $storedSiteUrl, don't show it.
+				// i.e. http://localhost:8888/craft
+				if ($port == 80 || strpos($storedSiteUrl, ':'.$port) !== false)
 				{
 					$port = '';
 				}
