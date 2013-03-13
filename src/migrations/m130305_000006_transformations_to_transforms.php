@@ -14,7 +14,7 @@ class m130305_000006_transformations_to_transforms extends BaseMigration
 	public function safeUp()
 	{
 		$assetTransformationsTable = $this->dbConnection->schema->getTable('{{assettransformations}}');
-		$assetTransformsTable = $this->dbConnection->schema->getTable('{{assettransformations}}');
+		$assetTransformsTable = $this->dbConnection->schema->getTable('{{assettransforms}}');
 
 		if ($assetTransformationsTable && !$assetTransformsTable)
 		{
