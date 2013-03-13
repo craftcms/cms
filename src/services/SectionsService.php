@@ -375,7 +375,7 @@ class SectionsService extends BaseApplicationComponent
 							$uri = str_replace('{slug}', $entry['slug'], $locale->urlFormat);
 							craft()->db->createCommand()->update('elements_i18n',
 								array('uri' => $uri),
-								array('entryId' => $entry['entryId'], 'locale' => $localeId)
+								array('elementId' => $entry['entryId'], 'locale' => $localeId)
 							);
 						}
 					}
