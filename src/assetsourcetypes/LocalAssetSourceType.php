@@ -386,14 +386,15 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Delete all the generated image transforms for this file.
 	 *
 	 * @param AssetFileModel $file
+	 * @return void
 	 */
 	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
 	{
+		$transformLocations = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
 		$folder = $file->getFolder();
-		$transforms = craft()->assetTransforms->getAssetTransforms();
-		foreach ($transforms as $handle => $transform)
+		foreach ($transformLocations as $location)
 		{
-			IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->fullPath.'_'.$handle.'/'.$file->filename);
+			IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->fullPath.$location.'/'.$file->filename);
 		}
 	}
 
@@ -438,16 +439,16 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			$this->_deleteGeneratedThumbnails($file);
 
 			// Move transforms
-			$transforms = craft()->assetTransforms->getAssetTransforms();
+			$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
 			$baseFromPath = $this->_getSourceFileSystemPath().$file->getFolder()->fullPath;
 			$baseToPath = $this->_getSourceFileSystemPath().$targetFolder->fullPath;
 
-			foreach ($transforms as $handle => $transform)
+			foreach ($transforms as $location)
 			{
-				if (IOHelper::fileExists($baseFromPath.'_'.$handle.'/'.$file->filename))
+				if (IOHelper::fileExists($baseFromPath.$location.'/'.$file->filename))
 				{
-					IOHelper::ensureFolderExists($baseToPath.'_'.$handle);
-					IOHelper::move($baseFromPath.'_'.$handle.'/'.$file->filename, $baseToPath.'_'.$handle.'/'.$fileName);
+					IOHelper::ensureFolderExists($baseToPath.$location);
+					IOHelper::move($baseFromPath.$location.'/'.$file->filename, $baseToPath.$location.'/'.$fileName);
 				}
 			}
 		}
@@ -532,4 +533,27 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		$basePath = $this->_getSourceFileSystemPath().$fileFolder->fullPath;
 		IOHelper::copyFile($basePath.$source.'/'.$file->filename, $basePath.$target.'/'.$file->filename);
 	}
+
+	/**
+	 * Return true if a transform exists at the location for a file.
+	 *
+	 * @param AssetFileModel $file
+	 * @param $location
+	 * @return mixed
+	 */
+	public function transformExists(AssetFileModel $file, $location)
+	{
+		return IOHelper::fileExists($this->_getImageServerPath($file, $location));
+	}
+
+	/**
+	 * Return the source's base URL.
+	 *
+	 * @return string
+	 */
+	public function getBaseUrl()
+	{
+		return $this->getSettings()->url;
+	}
+
 }

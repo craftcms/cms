@@ -199,16 +199,17 @@ class AssetTransformsService extends BaseApplicationComponent
 						break;
 					}
 
-					case 'crop':
-					{
-						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height)->saveAs($targetFile);
-						break;
-
-					}
 					case 'stretch':
 					{
 						craft()->images->loadImage($imageSource)->resizeTo($transform->width, $transform->height)->saveAs($targetFile);
 						break;
+					}
+
+					default:
+					{
+						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height)->saveAs($targetFile);
+						break;
+
 					}
 
 				}
@@ -443,10 +444,8 @@ class AssetTransformsService extends BaseApplicationComponent
 		$transformIndexModel = $this->getTransformIndexModelById($transformId);
 		$file = craft()->assets->getFileById($transformIndexModel->fileId);
 		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
-
-		$property = $sourceType->isSourceLocal() ? "url" : "urlPrefix";
-		$urlBase = $sourceType->getSettings()->{$property};
-		$folderPath = $urlBase.$file->getFolder()->fullPath;
+		$baseUrl = $sourceType->getBaseUrl();
+		$folderPath = $baseUrl.$file->getFolder()->fullPath;
 
 		return $folderPath.$transformIndexModel->location.'/'.$file->filename;
 	}
@@ -462,11 +461,62 @@ class AssetTransformsService extends BaseApplicationComponent
 	{
 		// Create URL to the image
 		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
-		$property = $sourceType->isSourceLocal() ? "url" : "urlPrefix";
-		$urlBase = $sourceType->getSettings()->{$property};
-		$folderPath = $urlBase.$file->getFolder()->fullPath;
+		$baseUrl = $sourceType->getBaseUrl();
+		$folderPath = $baseUrl.$file->getFolder()->fullPath;
 		$transformPath = craft()->assetTransforms->getTransformSubpath($transform);
 
 		return $folderPath.$transformPath.$file->filename;
 	}
+
+	/**
+	 * Cleans up transforms for a source by making sure that all indexed transforms actually exist.
+	 *
+	 * @param $sourceId
+	 */
+	public function cleanUpTransformsForSource($sourceId)
+	{
+		$transformList = craft()->db->createCommand()
+							->where('sourceId = :sourceId AND fileExists = 1', array(':sourceId' => $sourceId))
+							->select('*')
+							->from('assettransformindex')
+							->queryAll();
+
+		$sourceType = craft()->assetSources->getSourceTypeById($sourceId);
+
+		foreach ($transformList as $row)
+		{
+				$file = craft()->assets->getFileById($row['fileId']);
+				if (!$file || !$sourceType->transformExists($file, $row['location']))
+				{
+					craft()->db->createCommand()->delete('assettransformindex', 'id = '.$row['id']);
+				}
+		}
+	}
+
+	/**
+	 * Get generated transform locations for a file.
+	 *
+	 * @param AssetFileModel $file
+	 * @return array|\CDbDataReader
+	 */
+	public function getGeneratedTransformLocationsForFile(AssetFileModel $file)
+	{
+		return craft()->db->createCommand()
+			->where('sourceId = :sourceId AND fileExists = 1 AND fileId = :fileId',
+				array(':sourceId' => $file->sourceId, ':fileId' => $file->id))
+			->select('location')
+			->from('assettransformindex')
+			->queryColumn();
+	}
+
+	/**
+	 * Delete transform records by a file id.
+	 *
+	 * @param $fileId
+	 */
+	public function deleteTransformRecordsByFileId($fileId)
+	{
+		craft()->db->createCommand()->delete('assettransformindex', 'fileId = :fileId', array(':fileId' => $fileId));
+	}
+
 }

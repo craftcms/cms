@@ -908,11 +908,9 @@ class AssetsService extends BaseApplicationComponent
 		if ($response->isSuccess())
 		{
 			// Use the previous data to clean up
-			$originalSource->finalizeOutgoingTransfer($oldFileModel);
-			if ($file->kind == "image")
-			{
-				craft()->assetTransforms->updateTransforms($file, array_keys(craft()->assetTransforms->getAssetTransforms()));
-			}
+			$originalSource->deleteCreatedImages($oldFileModel);
+			$originalSource->finalizeTransfer($oldFileModel);
+			craft()->assetTransforms->deleteTransformRecordsByFileId($oldFileModel);
 			IOHelper::deleteFile($localCopy);
 		}
 
