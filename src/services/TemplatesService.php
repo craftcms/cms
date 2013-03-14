@@ -53,6 +53,8 @@ class TemplatesService extends BaseApplicationComponent
 			}
 
 			$twig = new \Twig_Environment($loader, $options);
+
+			$twig->addExtension(new \Twig_Extension_StringLoader());
 			$twig->addExtension(new CraftTwigExtension());
 
 			if (craft()->config->get('devMode'))
