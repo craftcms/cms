@@ -556,5 +556,4 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		return $this->getSettings()->url;
 	}
 
-
 }

@@ -518,15 +518,4 @@ class AssetTransformsService extends BaseApplicationComponent
 		craft()->db->createCommand()->delete('assettransformindex', 'fileId = :fileId', array(':fileId' => $fileId));
 	}
 
-	/**
-	 * Update a transform index info for a file.
-	 *
-	 * @param AssetFileModel $file
-	 * @return int
-	 */
-	public function updateTransformIndexInfoForFile(AssetFileModel $file)
-	{
-		return craft()->db->createCommand()
-			->update('assettransformindex', array('sourceId' => $file->sourceId), 'fileId = :fileId', array(':fileId' => $file->id));
-	}
 }

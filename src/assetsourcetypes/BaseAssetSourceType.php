@@ -183,7 +183,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	abstract public function getBaseUrl();
 
-
 	/**
 	 * Return a result object for prompting the user about filename conflicts.
 	 *
@@ -339,7 +338,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				case AssetsHelper::ActionReplace:
 				{
 					$fileToDelete = craft()->assets->findFile(array('folderId' => $folder->id, 'filename' => $filename));
-					$this->deleteFile($fileToDelete);
+					if ($fileToDelete)
+					{
+						$this->deleteFile($fileToDelete);
+					}
+					else
+					{
+						$this->_deleteSourceFile($folder, $filename);
+					}
 					break;
 				}
 
@@ -907,4 +913,16 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 		return $this->_isSourceLocal;
 	}
+
+	/**
+	 * Finalize a file transfer between sources for the provided file.
+	 *
+	 * @param AssetFileModel $file
+	 * @return mixed
+	 */
+	public function finalizeTransfer(AssetFileModel $file)
+	{
+		$this->_deleteSourceFile($file->getFolder(), $file->filename);
+	}
+
 }
