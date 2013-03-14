@@ -416,13 +416,13 @@ class TemplatesService extends BaseApplicationComponent
 	public function namespaceInputs($html, $namespace, $otherAttributes = true)
 	{
 		// name= attributes
-		$html = preg_replace('/(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
+		$html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
 
 		// id= and for= attributes
 		if ($otherAttributes)
 		{
 			$idNamespace = rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-');
-			$html = preg_replace('/((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/', '$1'.$idNamespace.'-$4$3', $html);
+			$html = preg_replace('/(?<![\w\-])((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/', '$1'.$idNamespace.'-$4$3', $html);
 		}
 
 		return $html;
