@@ -3,25 +3,20 @@
 /*
  * This file is part of Twig.
  *
- * (c) 2010 Fabien Potencier
+ * (c) 2012 Fabien Potencier
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
 /**
- * Represents a template test.
+ * Represents a callable template test.
  *
  * @package    twig
  * @author     Fabien Potencier <fabien@symfony.com>
  * @deprecated since 1.12 (to be removed in 2.0)
  */
-interface Twig_TestInterface
+interface Twig_TestCallableInterface
 {
-    /**
-     * Compiles a test.
-     *
-     * @return string The PHP code for the test
-     */
-    public function compile();
+    public function getCallable();
 }
