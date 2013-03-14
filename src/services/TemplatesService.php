@@ -6,7 +6,8 @@ namespace Craft;
  */
 class TemplatesService extends BaseApplicationComponent
 {
-	private $_twig;
+	private $_twigs;
+	private $_twigOptions;
 	private $_templatePaths;
 
 	private $_headNodes = array();
@@ -33,24 +34,26 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Gets the Twig instance.
 	 *
+	 * @param string $loaderClass The template loader class to use with the environment.
 	 * @return \Twig_Environment
 	 */
-	public function getTwig()
+	public function getTwig($loaderClass = null)
 	{
-		if (!isset($this->_twig))
+		if (!$loaderClass)
 		{
-			$this->registerTwigAutoloader();
+			$loaderClass = __NAMESPACE__.'\\TemplateLoader';
+		}
 
-			$loader = new TemplateLoader();
-
-			$options['cache'] = craft()->path->getCompiledTemplatesPath();
-			$options['auto_reload'] = true;
-
-			if (craft()->config->get('devMode'))
+		if (!isset($this->_twigs[$loaderClass]))
+		{
+			// Is this the first Twig instance EVER?
+			if (!isset($this->_twigs))
 			{
-				$options['debug'] = true;
-				$options['strict_variables'] = true;
+				$this->registerTwigAutoloader();
 			}
+
+			$loader = new $loaderClass();
+			$options = $this->_getTwigOptions();
 
 			$twig = new \Twig_Environment($loader, $options);
 
@@ -69,16 +72,16 @@ class TemplatesService extends BaseApplicationComponent
 				$twig->addExtension($extension);
 			}
 
-			$this->_twig = $twig;
+			$this->_twigs[$loaderClass] = $twig;
 		}
 
-		return $this->_twig;
+		return $this->_twigs[$loaderClass];
 	}
 
 	/**
 	 * Renders a template.
 	 *
-	 * @param mixed $template The name of the template to load, or a StringTemplate object
+	 * @param mixed $name The name of the template to load
 	 * @param array $variables The variables that should be available to the template
 	 * @return string The rendered template
 	 */
@@ -91,15 +94,14 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Renders a template string.
 	 *
-	 * @param string $cacheKey A unique key for the template
 	 * @param string $template The source template string
 	 * @param array $variables The variables that should be available to the template
 	 * @return string The rendered template
 	 */
-	public function renderString($cacheKey, $template, $variables = array())
+	public function renderString($template, $variables = array())
 	{
-		$stringTemplate = new StringTemplate($cacheKey, $template);
-		return $this->render($stringTemplate, $variables);
+		$twig = $this->getTwig('\Twig_Loader_String');
+		return $this->render($template, $variables);
 	}
 
 	/**
@@ -404,6 +406,54 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Renames input names so they belong to a namespace.
+	 *
+	 * @param string $html The template with the inputs
+	 * @param string $namespace The namespace to make inputs belong to
+	 * @param bool $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to true.
+	 * @return string The template with namespaced inputs
+	 */
+	public function namespaceInputs($html, $namespace, $otherAttributes = true)
+	{
+		// name= attributes
+		$html = preg_replace('/(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
+
+		// id= and for= attributes
+		if ($otherAttributes)
+		{
+			$idNamespace = rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-');
+			$html = preg_replace('/((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/', '$1'.$idNamespace.'-$4$3', $html);
+		}
+
+		return $html;
+	}
+
+	/**
+	 * Returns the Twig environment options
+	 *
+	 * @access private
+	 * @return array
+	 */
+	private function _getTwigOptions()
+	{
+		if (!isset($this->_twigOptions))
+		{
+			$this->_twigOptions = array(
+				'cache'       => craft()->path->getCompiledTemplatesPath(),
+				'auto_reload' => true,
+			);
+
+			if (craft()->config->get('devMode'))
+			{
+				$this->_twigOptions['debug'] = true;
+				$this->_twigOptions['strict_variables'] = true;
+			}
+		}
+
+		return $this->_twigOptions;
+	}
+
+	/**
 	 * Ensures that a template name isn't null, and that it doesn't lead outside the template folder.
 	 * Borrowed from Twig_Loader_Filesystem.
 	 *
@@ -456,28 +506,5 @@ class TemplatesService extends BaseApplicationComponent
 		}
 
 		return null;
-	}
-
-	/**
-	 * Renames input names so they belong to a namespace.
-	 *
-	 * @param string $html The template with the inputs
-	 * @param string $namespace The namespace to make inputs belong to
-	 * @param bool $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to true.
-	 * @return string The template with namespaced inputs
-	 */
-	public function namespaceInputs($html, $namespace, $otherAttributes = true)
-	{
-		// name= attributes
-		$html = preg_replace('/(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
-
-		// id= and for= attributes
-		if ($otherAttributes)
-		{
-			$idNamespace = rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-');
-			$html = preg_replace('/((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/', '$1'.$idNamespace.'-$4$3', $html);
-		}
-
-		return $html;
 	}
 }

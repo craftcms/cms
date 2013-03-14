@@ -258,12 +258,12 @@ class EmailService extends BaseApplicationComponent
 
 		$variables['user'] = $user;
 
-		$email->subject = craft()->templates->renderString($emailModel->subject.' - subject', $emailModel->subject, $variables);
-		$renderedBody = craft()->templates->renderString($emailModel->subject.' - body', $emailModel->body, $variables);
+		$email->subject = craft()->templates->renderString($emailModel->subject, $variables);
+		$renderedBody = craft()->templates->renderString($emailModel->body, $variables);
 
 		if ($user->emailFormat == 'html' && $emailModel->htmlBody)
 		{
-			$renderedHtmlBody = craft()->templates->renderString($emailModel->subject.' - HTML body', $emailModel->htmlBody, $variables);
+			$renderedHtmlBody = craft()->templates->renderString($emailModel->htmlBody, $variables);
 			$email->msgHtml($renderedHtmlBody);
 			$email->altBody = $renderedBody;
 		}
