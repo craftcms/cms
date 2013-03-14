@@ -452,22 +452,21 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 	/**
 	 * Delete all the generated image transforms for this file.
-
 	 *
 	 * @param AssetFileModel $file
+	 * @return void
 	 */
 	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
 	{
 		$folder = craft()->assets->getFolderById($file->folderId);
-		$transforms = craft()->assetTransforms->getAssetTransforms();
+		$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
 		$this->_prepareForRequests();
 
 		$bucket = $this->getSettings()->bucket;
-		$this->_s3->deleteObject($bucket, $this->_getS3Path($file));
 
-		foreach ($transforms as $handle => $transform)
+		foreach ($transforms as $location)
 		{
-			$this->_s3->deleteObject($bucket, $this->_getS3PathPrefix().$folder->fullPath.'_'.$handle.'/'.$file->filename);
+			$this->_s3->deleteObject($bucket, $this->_getS3PathPrefix().$folder->fullPath.$location.'/'.$file->filename);
 		}
 	}
 
@@ -529,19 +528,20 @@ class S3AssetSourceType extends BaseAssetSourceType
 			$this->_deleteGeneratedThumbnails($file);
 
 			// Move transforms
-			$transforms = craft()->assetTransforms->getAssetTransforms();
+			$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
+
 			$baseFromPath = $this->_getS3PathPrefix().$file->getFolder()->fullPath;
 			$baseToPath = $this->_getS3PathPrefix().$targetFolder->fullPath;
 
-			foreach ($transforms as $handle => $transform)
+			foreach ($transforms as $location)
 			{
 				// Surpress errors when trying to move image transforms. Maybe the user hasn't updated them yet.
-				$copyResult = @$this->_s3->copyObject($sourceBucket, $baseFromPath.'_'.$handle.'/'.$file->filename, $bucket, $baseToPath.'_'.$handle.'/'.$fileName);
+				$copyResult = @$this->_s3->copyObject($sourceBucket, $baseFromPath.$location.'/'.$file->filename, $bucket, $baseToPath.$location.'/'.$fileName);
 
 				// If we failed to copy, that's because source wasn't there. Skip delete and save time - everyone's a winner!
 				if ($copyResult)
 				{
-					$this->_s3->deleteObject($sourceBucket, $baseFromPath.'_'.$handle.'/'.$file->filename);
+					$this->_s3->deleteObject($sourceBucket, $baseFromPath.$location.'/'.$file->filename);
 				}
 			}
 		}
@@ -685,4 +685,28 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		return "";
 	}
+
+	/**
+	 * Return true if a transform exists at the location for a file.
+	 *
+	 * @param AssetFileModel $file
+	 * @param $location
+	 * @return mixed
+	 */
+	public function transformExists(AssetFileModel $file, $location)
+	{
+		return (bool) @$this->_s3->getObjectInfo($this->getSettings()->bucket, $this->_getS3PathPrefix().$file->getFolder()->fullPath.$location.'/'.$file->filename);
+	}
+
+	/**
+	 * Return the source's base URL.
+	 *
+	 * @return string
+	 */
+	public function getBaseUrl()
+	{
+		return $this->getSettings()->urlPrefix.$this->_getS3PathPrefix();
+	}
+
+
 }

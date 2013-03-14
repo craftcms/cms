@@ -7,7 +7,7 @@ if (typeof Assets == 'undefined')
 /**
  * Asset Operation Manager
  */
-Assets.OperationManager = Garnish.Base.extend({
+Assets.IndexingManager = Garnish.Base.extend({
 
 	$startOperationsButton: null,
 	$sourceMasterCheckbox: null,
@@ -33,12 +33,6 @@ Assets.OperationManager = Garnish.Base.extend({
 		this.$sourceMasterCheckbox = $('.assets-sources input[type=checkbox].all');
 		this.$sourceCheckboxes = $('.assets-sources input[type=checkbox]').not('.all');
 
-		this.$indexCheckbox = $('#do-index');
-		this.$transformsCheckbox = $('#do-transforms');
-
-		this.$transformMasterCheckbox = $('#transforms input[type=checkbox].all');
-		this.$transformCheckboxes = $('#transforms input[type=checkbox]').not('.all');
-
 		this.$progressBarContainer = $('.operation-progress');
 
 		this.$modalContainerDiv = null;
@@ -53,37 +47,20 @@ Assets.OperationManager = Garnish.Base.extend({
 			return;
 		}
 
-		var checkedTransforms = [];
-
-		if (this.$transformsCheckbox.prop('checked'))
-		{
-			this.$transformCheckboxes.filter(':checked').each(function () {
-				checkedTransforms.push($(this).val());
-			});
-		}
-
-		var doIndex = this.$indexCheckbox.prop('checked');
-
 		var checkedSources = this.$sourceCheckboxes.filter(':checked');
 
-
-		if (checkedSources.length == 0 || !(doIndex || checkedTransforms.length))
+		if (checkedSources.length == 0)
 		{
 			this.$startOperationsButton.removeClass('disabled');
 			return;
 		}
 
-		var checkedOperations = {doIndexes: Number(doIndex), transforms: checkedTransforms};
-
 		this.$startOperationsButton.addClass('disabled');
 
 		this.$sourceMasterCheckbox.prop('disabled', true);
 		this.$sourceCheckboxes.prop('disabled', true);
-		this.$transformMasterCheckbox.prop('disabled', true);
-		this.$transformCheckboxes.prop('disabled', true);
-		this.$indexCheckbox.prop('disabled',  true);
 
-		Craft.postActionRequest('assetOperations/getSessionId', $.proxy(function(data){
+		Craft.postActionRequest('assetIndexing/getSessionId', $.proxy(function(data){
 			this.sessionId = data.sessionId;
 			this.missingFolders = [];
 			this.queue = new AjaxQueueManager(10, this.displayIndexingReport, this);
@@ -97,12 +74,10 @@ Assets.OperationManager = Garnish.Base.extend({
                 var progress_bar = $('<div class="progress-bar"><label>' + sourceName + '</label><span></span></div>').appendTo(_t.$progressBarContainer);
                 var params = {
 					sourceId: $checkbox.val(),
-					session: _t.sessionId,
-					doIndexes: checkedOperations.doIndexes,
-					doTransforms: checkedOperations.transforms
+					session: _t.sessionId
 				};
 
-				_t.queue.addItem(Craft.getActionUrl('assetOperations/startIndex'), params, $.proxy(function (data) {
+				_t.queue.addItem(Craft.getActionUrl('assetIndexing/startIndex'), params, $.proxy(function (data) {
 
                     if (typeof data != "object")
                     {
@@ -116,12 +91,10 @@ Assets.OperationManager = Garnish.Base.extend({
 						params = {
 							session: this.sessionId,
 							sourceId: data.sourceId,
-							offset: i,
-							doIndexes: checkedOperations.doIndexes,
-							doTransforms: checkedOperations.transforms
+							offset: i
 						};
 
-						this.queue.addItem(Craft.getActionUrl('assetOperations/performIndex'), params, function () {
+						this.queue.addItem(Craft.getActionUrl('assetIndexing/performIndex'), params, function () {
 							progress_bar.attr('current', parseInt(progress_bar.attr('current'), 10) + 1);
 							progress_bar.find('>span').html(progress_bar.attr('current') + ' / ' + progress_bar.attr('total'));
 						});
@@ -146,25 +119,11 @@ Assets.OperationManager = Garnish.Base.extend({
 		this.$startOperationsButton.removeClass('disabled');
 		this.$progressBarContainer.html('');
 
-		if ( ! this.$indexCheckbox.prop('checked')) {
-			this.releaseLock();
-			return;
-		}
 		var checkedSources = [];
 
 		this.$sourceCheckboxes.filter(':checked').each(function () {
 			checkedSources.push($(this).val());
 		});
-
-		if (this.$modalContainerDiv == null) {
-			this.$modalContainerDiv = $('<div class="modal index-report"></div>').addClass().appendTo(Garnish.$bod);
-		}
-
-		if (this.modal == null) {
-			this.modal = new Garnish.Modal();
-			this.modal.sessionId = this.sessionId;
-			this.modal.OperationManager = this;
-		}
 
 		var params = {
 			sessionId: this.sessionId,
@@ -172,11 +131,24 @@ Assets.OperationManager = Garnish.Base.extend({
 			sources: checkedSources.join(",")
 		};
 
-		$.post(Craft.getActionUrl('assetOperations/finishIndex'), params, $.proxy(function (data) {
+		$.post(Craft.getActionUrl('assetIndexing/finishIndex'), params, $.proxy(function (data) {
 			var html = '';
 
 			if (typeof data.files != "undefined" || this.missingFolders.length > 0) {
-				html += '<div class="body"><p>' + Craft.t('The following items were found in the database that do not have a physical match.') +  '</p>';
+
+                if (this.$modalContainerDiv == null) {
+                    this.$modalContainerDiv = $('<div class="modal index-report"></div>').addClass().appendTo(Garnish.$bod);
+                }
+
+                if (this.modal == null) {
+                    this.modal = new Garnish.Modal();
+                    this.modal.sessionId = this.sessionId;
+                    this.modal.OperationManager = this;
+                    this.modal.hide();
+                }
+
+
+                html += '<div class="body"><p>' + Craft.t('The following items were found in the database that do not have a physical match.') +  '</p>';
 
 				if (this.missingFolders.length > 0) {
 					html += '<div class="report-part"><strong>' + Craft.t('Folders') + '</strong>';
@@ -237,7 +209,7 @@ Assets.OperationManager = Garnish.Base.extend({
 						sources: sources.join(",")
 					};
 
-					$.post(Craft.getActionUrl('assetOperations/finishIndex'), params, $.proxy(function(data) {
+					$.post(Craft.getActionUrl('assetIndexing/finishIndex'), params, $.proxy(function(data) {
 						this.hide();
 
 						this.OperationManager.releaseLock();
@@ -260,14 +232,6 @@ Assets.OperationManager = Garnish.Base.extend({
 		} else {
 			this.$sourceCheckboxes.prop('disabled', false);
 		}
-		this.$transformMasterCheckbox.prop('disabled', false);
-		if (this.$transformMasterCheckbox.prop('checked')) {
-			this.$transformMasterCheckbox.prop('disabled', false);
-		} else {
-			this.$transformCheckboxes.prop('disabled', false);
-		}
-
-		this.$indexCheckbox.prop('disabled', false);
 	}
 
 

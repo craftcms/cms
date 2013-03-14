@@ -168,6 +168,23 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	abstract public function copyTransform(AssetFileModel $file, $source, $target);
 
 	/**
+	 * Return true if a transform exists at the location for a file.
+	 *
+	 * @param AssetFileModel $file
+	 * @param $location
+	 * @return mixed
+	 */
+	abstract public function transformExists(AssetFileModel $file, $location);
+
+	/**
+	 * Return the source's base URL.
+	 *
+	 * @return string
+	 */
+	abstract public function getBaseUrl();
+
+
+	/**
 	 * Return a result object for prompting the user about filename conflicts.
 	 *
 	 * @param string $fileName the cause of all trouble
@@ -617,14 +634,19 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function deleteFile(AssetFileModel $file)
 	{
-		$this->finalizeOutgoingTransfer($file);
+		// Delete all the created images, such as transforms, thumbnails
+		$this->deleteCreatedImages($file);
+		craft()->assetTransforms->deleteTransformRecordsByFileId($file->id);
+
 
 		if (IOHelper::fileExists(craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename)))
 		{
 			IOHelper::deleteFile(craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename));
 		}
 
+		// Delete DB record and the file itself.
 		craft()->assets->deleteFileRecord($file->id);
+		$this->_deleteSourceFile($file->getFolder(), $file->filename);
 
 		$response = new AssetOperationResponseModel();
 		return $response->setSuccess();
@@ -635,11 +657,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param AssetFileModel $file
 	 */
-	public function finalizeOutgoingTransfer(AssetFileModel $file)
+	public function deleteCreatedImages(AssetFileModel $file)
 	{
 		$this->_deleteGeneratedImageTransforms($file);
 		$this->_deleteGeneratedThumbnails($file);
-		$this->_deleteSourceFile($file->getFolder(), $file->filename);
 	}
 
 	/**
