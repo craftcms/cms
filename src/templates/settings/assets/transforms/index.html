@@ -1,6 +1,6 @@
 {% extends "settings/assets/_layout" %}
 {% set selectedTab = 'transforms' %}
-{% set transforms = craft.assets.getAllAssetTransforms %}
+{% set transforms = craft.assets.getAllTransforms() %}
 {% set transformModes = craft.assets.getTransformModes() %}
 
 

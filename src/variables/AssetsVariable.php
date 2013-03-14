@@ -165,24 +165,24 @@ class AssetsVariable
 	// -------------------------------------------
 
 	/**
-	 * Get all asset transforms.
+	 * Returns all named asset transforms.
 	 *
 	 * @return array|null
 	 */
-	public function getAllAssetTransforms()
+	public function getAllTransforms()
 	{
-		return craft()->assetTransforms->getAssetTransforms();
+		return craft()->assetTransforms->getAllTransforms();
 	}
 
 	/**
-	 * Get asset transform by it's handle.
+	 * Returns an asset transform by its handle.
 	 *
 	 * @param $handle
-	 * @return null
+	 * @return AssetTransformModel|null
 	 */
 	public function getTransformByHandle($handle)
 	{
-		return craft()->assetTransforms->getAssetTransform($handle);
+		return craft()->assetTransforms->getTransformByHandle($handle);
 	}
 
 	/**
