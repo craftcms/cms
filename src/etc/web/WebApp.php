@@ -17,6 +17,8 @@ namespace Craft;
  * @property LinksService                $links                The links service
  * @property ElementsService             $elements             The elements service
  * @property ComponentsService           $components           The components service
+ * @property UserSessionService          $userSession          The user session service
+ * @property UserPermissionsService      $userPermissions      The user permission service
  */
 class WebApp extends \CWebApplication
 {
