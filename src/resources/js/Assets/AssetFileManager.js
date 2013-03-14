@@ -66,8 +66,8 @@ Assets.FileManager = Garnish.Base.extend({
 		this.fileDrag = null;
 		this.folderDrag = null;
 
-        this._singleFileMenu = null;
-        this._multiFileMenu = null;
+        this._singleFileMenu = [];
+        this._multiFileMenu = [];
 
 		this._promptCallback = function (){};
 
@@ -997,6 +997,9 @@ Assets.FileManager = Garnish.Base.extend({
 		this.offset = 0;
 		this.nextOffset = 0;
 
+        this._singleFileMenu = [];
+        this._multiFileMenu = [];
+
 		if (this.settings.mode == 'full')
         {
             this.fileDrag.removeAllItems();
@@ -1169,19 +1172,20 @@ Assets.FileManager = Garnish.Base.extend({
 			menuOptions.push({ label: Craft.t('Delete file'), onClick: $.proxy(this, '_deleteFile') });
 		}
 
-		this._singleFileMenu = new Garnish.ContextMenu($files, menuOptions, {
+
+		this._singleFileMenu.push(new Garnish.ContextMenu($files, menuOptions, {
 			menuClass: 'assets-contextmenu'
-		});
+		}));
 
 		if (this.settings.mode == 'full')
 		{
-			this._multiFileMenu = new Garnish.ContextMenu($files, [
-				{ label: Craft.t('Delete'), onClick: $.proxy(this, '_deleteFiles') }
-			], {
-				menuClass: 'assets-contextmenu'
-			});
-
-			this._multiFileMenu.disable();
+            var menu = new Garnish.ContextMenu($files, [
+                { label: Craft.t('Delete'), onClick: $.proxy(this, '_deleteFiles') }
+            ], {
+                menuClass: 'assets-contextmenu'
+            });
+            menu.disable();
+			this._multiFileMenu.push(menu);
 		}
 	},
 
@@ -1489,19 +1493,27 @@ Assets.FileManager = Garnish.Base.extend({
 	 */
 	_onFileSelectionChange: function()
 	{
-		if (this.settings.mode == 'full')
-		{
-		    if (this.fileSelect.getTotalSelected() == 1)
-			{
-				this._singleFileMenu.enable();
-				this._multiFileMenu.disable();
-			}
-			else if (this.fileSelect.getTotalSelected() > 1)
-			{
-				this._singleFileMenu.disable();
-				this._multiFileMenu.enable();
-			}
-		}
+        if (this.settings.mode == 'full')
+        {
+            var i = 0;
+            if (this.fileSelect.getTotalSelected() == 1)
+            {
+                for (i = 0; i < this._singleFileMenu.length; i++)
+                {
+                    this._singleFileMenu[i].enable();
+                    this._multiFileMenu[i].disable();
+                }
+
+            }
+            else if (this.fileSelect.getTotalSelected() > 1)
+            {
+                for (i = 0; i < this._singleFileMenu.length; i++)
+                {
+                    this._singleFileMenu[i].disable();
+                    this._multiFileMenu[i].enable();
+                }
+            }
+        }
 
 		// update our internal array of selected files
 		this.selectedFileIds = [];
