@@ -199,16 +199,17 @@ class AssetTransformsService extends BaseApplicationComponent
 						break;
 					}
 
-					case 'crop':
-					{
-						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height)->saveAs($targetFile);
-						break;
-
-					}
 					case 'stretch':
 					{
 						craft()->images->loadImage($imageSource)->resizeTo($transform->width, $transform->height)->saveAs($targetFile);
 						break;
+					}
+
+					default:
+					{
+						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height)->saveAs($targetFile);
+						break;
+
 					}
 
 				}

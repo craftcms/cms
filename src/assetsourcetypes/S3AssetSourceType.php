@@ -695,6 +695,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	public function transformExists(AssetFileModel $file, $location)
 	{
+		$this->_prepareForRequests();
 		return (bool) @$this->_s3->getObjectInfo($this->getSettings()->bucket, $this->_getS3PathPrefix().$file->getFolder()->fullPath.$location.'/'.$file->filename);
 	}
 
