@@ -262,7 +262,7 @@ class AssetFileModel extends BaseElementModel
 
 		if (!$transform)
 		{
-			return $this->getAttribute($dimension);
+			return parent::getAttribute($dimension);
 		}
 
 		$transform = craft()->assetTransforms->normalizeTransform($transform);
