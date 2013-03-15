@@ -41,7 +41,7 @@ class ElementCriteriaModel extends BaseModel
 		);
 
 		// Mix in any custom attributes defined by the element type
-		$elementTypeAttributes = $this->_elementType->defineCustomCriteriaAttributes();
+		$elementTypeAttributes = $this->_elementType->defineCriteriaAttributes();
 		$attributes = array_merge($attributes, $elementTypeAttributes);
 
 		// Mix in the custom fields

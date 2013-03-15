@@ -57,4 +57,14 @@ class GlobalSetModel extends BaseElementModel
 	{
 		$this->_fieldLayout = $fieldLayout;
 	}
+
+	/**
+	 * Returns the element's CP edit URL.
+	 *
+	 * @return string|false
+	 */
+	public function getCpEditUrl()
+	{
+		return UrlHelper::getCpUrl('globals/'.$this->handle);
+	}
 }

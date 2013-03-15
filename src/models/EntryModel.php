@@ -129,4 +129,14 @@ class EntryModel extends BaseElementModel
 	{
 		$this->_tags = ArrayHelper::stringToArray($tags);
 	}
+
+	/**
+	 * Returns the element's CP edit URL.
+	 *
+	 * @return string|false
+	 */
+	public function getCpEditUrl()
+	{
+		return UrlHelper::getCpUrl('entries/'.$this->getSection()->handle.'/'.$this->id);
+	}
 }

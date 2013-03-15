@@ -19,47 +19,43 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	private $_linkSettings;
 
 	/**
-	 * Returns the CP edit URI for a given element.
-	 *
-	 * @param BaseElementModel $element
-	 * @return string|false
-	 */
-	public function getCpEditUriForElement(BaseElementModel $element)
-	{
-		return false;
-	}
-
-	/**
-	 * Routes the request when the URI matches an element.
-	 *
-	 * @param BaseElementModel
-	 * @return mixed Can be false if no special action should be taken,
-	 *               a string if it should route to a template path,
-	 *               or an array that can specify a controller action path, params, etc.
-	 */
-	public function routeRequestForMatchedElement(BaseElementModel $element)
-	{
-		return false;
-	}
-
-	/**
-	 * Returns whether this element type is localizable.
+	 * Returns whether this element type can have thumbnails.
 	 *
 	 * @return bool
 	 */
-	public function isLocalizable()
+	public function hasThumbs()
 	{
 		return false;
 	}
 
 	/**
-	 * Returns whether this element type is linkable.
+	 * Returns whether this element type is translatable.
 	 *
 	 * @return bool
 	 */
-	public function isLinkable()
+	public function isTranslatable()
 	{
 		return false;
+	}
+
+	/**
+	 * Returns this element type's sources.
+	 *
+	 * @return array
+	 */
+	public function getSources()
+	{
+		return array();
+	}
+
+	/**
+	 * Returns the attributes that can be shown/sorted by in table views.
+	 *
+	 * @return array
+	 */
+	public function defineTableAttributes()
+	{
+		return array();
 	}
 
 	/**
@@ -67,7 +63,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 *
 	 * @return array
 	 */
-	public function defineCustomCriteriaAttributes()
+	public function defineCriteriaAttributes()
 	{
 		return array();
 	}
@@ -102,6 +98,19 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 */
 	public function populateElementModel($row)
 	{
+	}
+
+	/**
+	 * Routes the request when the URI matches an element.
+	 *
+	 * @param BaseElementModel
+	 * @return mixed Can be false if no special action should be taken,
+	 *               a string if it should route to a template path,
+	 *               or an array that can specify a controller action path, params, etc.
+	 */
+	public function routeRequestForMatchedElement(BaseElementModel $element)
+	{
+		return false;
 	}
 
 	/**
@@ -161,6 +170,6 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 */
 	protected function getLinkSettingsModel()
 	{
-		return new Model($this->defineCustomCriteriaAttributes());
+		return new Model($this->defineCriteriaAttributes());
 	}
 }

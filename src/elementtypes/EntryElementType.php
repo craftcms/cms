@@ -17,67 +17,53 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the CP edit URI for a given element.
+	 * Returns whether this element type is translatable.
 	 *
-	 * @param BaseElementModel $element
-	 * @return string|null
+	 * @return bool
 	 */
-	public function getCpEditUriForElement(BaseElementModel $element)
+	public function isTranslatable()
 	{
-		return 'entries/'.$element->getSection()->handle.'/'.$element->id;
+		return true;
 	}
 
 	/**
-	 * Routes the request when the URI matches an element.
+	 * Returns this element type's sources.
 	 *
-	 * @param BaseElementModel
-	 * @return mixed Can be false if no special action should be taken,
-	 *               a string if it should route to a template path,
-	 *               or an array that can specify a controller action path, params, etc.
+	 * @return array
 	 */
-	public function routeRequestForMatchedElement(BaseElementModel $element)
+	public function getSources()
 	{
-		// Make sure that the entry is actually live
-		if ($element->getStatus() == EntryModel::LIVE)
-		{
-			$section = $element->getSection();
+		$sources = array();
 
-			// Make sure the section is set to have URLs and is enabled for this locale
-			if ($section->hasUrls && array_key_exists(craft()->language, $section->getLocales()))
+		if (Craft::hasPackage(CraftPackage::PublishPro))
+		{
+			foreach (craft()->sections->getEditableSections() as $section)
 			{
-				return array(
-					'action' => 'templates/render',
-					'params' => array(
-						'template' => $section->template,
-						'variables' => array(
-							'entry' => $element
-						)
-					)
+				$key = 'section:'.$section->id;
+
+				$sources[$key] = array(
+					'label'    => $section->name,
+					'criteria' => array('sectionId' => $section->id)
 				);
 			}
 		}
 
-		return false;
+		return $sources;
 	}
 
 	/**
-	 * Returns whether this element type is localizable.
+	 * Returns the attributes that can be shown/sorted by in table views.
 	 *
-	 * @return bool
+	 * @return array
 	 */
-	public function isLocalizable()
+	public function defineTableAttributes()
 	{
-		return true;
-	}
-
-	/**
-	 * Returns whether this element type is linkable.
-	 *
-	 * @return bool
-	 */
-	public function isLinkable()
-	{
-		return true;
+		return array(
+			'slug'     => Craft::t('Slug'),
+			'section'  => Craft::t('Section'),
+			'status'   => Craft::t('Status'),
+			'postDate' => Craft::t('Post Date'),
+		);
 	}
 
 	/**
@@ -85,7 +71,7 @@ class EntryElementType extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineCustomCriteriaAttributes()
+	public function defineCriteriaAttributes()
 	{
 		return array(
 			//'title'         => AttributeType::String,
@@ -101,18 +87,6 @@ class EntryElementType extends BaseElementType
 			'status'        => array(AttributeType::String, 'default' => EntryModel::LIVE),
 			'order'         => array(AttributeType::String, 'default' => 'postDate desc'),
 		);
-	}
-
-	/**
-	 * Returns the link settings HTML
-	 *
-	 * @return string|null
-	 */
-	public function getLinkSettingsHtml()
-	{
-		return craft()->templates->render('_components/elementtypes/Entry/linksettings', array(
-			'settings' => $this->getLinkSettings()
-		));
 	}
 
 	/**
@@ -263,5 +237,38 @@ class EntryElementType extends BaseElementType
 	public function populateElementModel($row)
 	{
 		return EntryModel::populateModel($row);
+	}
+
+	/**
+	 * Routes the request when the URI matches an element.
+	 *
+	 * @param BaseElementModel
+	 * @return mixed Can be false if no special action should be taken,
+	 *               a string if it should route to a template path,
+	 *               or an array that can specify a controller action path, params, etc.
+	 */
+	public function routeRequestForMatchedElement(BaseElementModel $element)
+	{
+		// Make sure that the entry is actually live
+		if ($element->getStatus() == EntryModel::LIVE)
+		{
+			$section = $element->getSection();
+
+			// Make sure the section is set to have URLs and is enabled for this locale
+			if ($section->hasUrls && array_key_exists(craft()->language, $section->getLocales()))
+			{
+				return array(
+					'action' => 'templates/render',
+					'params' => array(
+						'template' => $section->template,
+						'variables' => array(
+							'entry' => $element
+						)
+					)
+				);
+			}
+		}
+
+		return false;
 	}
 }

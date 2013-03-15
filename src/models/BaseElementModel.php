@@ -50,14 +50,21 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the element's CP edit URL.
 	 *
-	 * @return string|null
+	 * @return string|false
 	 */
 	public function getCpEditUrl()
 	{
-		if ($this->id)
-		{
-			return craft()->elements->getCpEditUrlForElement($this);
-		}
+		return false;
+	}
+
+	/**
+	 * Returns the URL to the element's thumbnail, if there is one.
+	 *
+	 * @return string|false
+	 */
+	public function getThumbUrl()
+	{
+		return false;
 	}
 
 	/**

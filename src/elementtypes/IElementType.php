@@ -7,31 +7,29 @@ namespace Craft;
 interface IElementType extends IComponentType
 {
 	/**
-	 * @param BaseElementModel $element
-	 * @return string|false
+	 * @return bool
 	 */
-	public function getCpEditUriForElement(BaseElementModel $element);
-
-	/**
-	 * @param BaseElementModel
-	 * @return mixed
-	 */
-	public function routeRequestForMatchedElement(BaseElementModel $element);
+	public function hasThumbs();
 
 	/**
 	 * @return bool
 	 */
-	public function isLocalizable();
-
-	/**
-	 * @return bool
-	 */
-	public function isLinkable();
+	public function isTranslatable();
 
 	/**
 	 * @return array
 	 */
-	public function defineCustomCriteriaAttributes();
+	public function getSources();
+
+	/**
+	 * @return array
+	 */
+	public function defineTableAttributes();
+
+	/**
+	 * @return array
+	 */
+	public function defineCriteriaAttributes();
 
 	/**
 	 * @param DbCommand $query
@@ -52,6 +50,12 @@ interface IElementType extends IComponentType
 	 * @return BaseModel
 	 */
 	public function populateElementModel($row);
+
+	/**
+	 * @param BaseElementModel
+	 * @return mixed
+	 */
+	public function routeRequestForMatchedElement(BaseElementModel $element);
 
 	/**
 	 * @return BaseModel

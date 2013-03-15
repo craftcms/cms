@@ -154,7 +154,7 @@ class ElementsService extends BaseApplicationComponent
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.locale, elements_i18n.uri')
 			->from('elements elements');
 
-		if ($elementType->isLocalizable())
+		if ($elementType->isTranslatable())
 		{
 			$query->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
 
@@ -484,27 +484,6 @@ class ElementsService extends BaseApplicationComponent
 			->from('elements_i18n')
 			->where(array('elementId' => $elementId, 'locale' => $localeId))
 			->queryScalar();
-	}
-
-	/**
-	 * Returns the CP edit URL for a given element.
-	 *
-	 * @param BaseElementModel $element
-	 * @return string|null
-	 */
-	public function getCpEditUrlForElement(BaseElementModel $element)
-	{
-		$elementType = $this->getElementType($element->type);
-
-		if ($elementType)
-		{
-			$uri = $elementType->getCpEditUriForElement($element);
-
-			if ($uri !== false)
-			{
-				return UrlHelper::getCpUrl($uri);
-			}
-		}
 	}
 
 	/**

@@ -17,13 +17,49 @@ class AssetElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type is linkable.
+	 * Returns whether this element type can have thumbnails.
 	 *
 	 * @return bool
 	 */
-	public function isLinkable()
+	public function hasThumbs()
 	{
 		return true;
+	}
+
+	/**
+	 * Returns this element type's sources.
+	 *
+	 * @return array
+	 */
+	public function getSources()
+	{
+		$sources = array();
+
+		foreach (craft()->assetSources->getViewableSources() as $source)
+		{
+			$key = 'source:'.$source->id;
+
+			$sources[$key] = array(
+				'label'    => $source->name,
+				'criteria' => array('sourceId' => $source->id)
+			);
+		}
+
+		return $sources;
+	}
+
+	/**
+	 * Returns the attributes that can be shown/sorted by in table views.
+	 *
+	 * @return array
+	 */
+	public function defineTableAttributes()
+	{
+		return array(
+			'dateModified' => Craft::t('Date Modified'),
+			'size'         => Craft::t('Size'),
+			'kind'         => Craft::t('Kind'),
+		);
 	}
 
 	/**
@@ -31,7 +67,7 @@ class AssetElementType extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineCustomCriteriaAttributes()
+	public function defineCriteriaAttributes()
 	{
 		return array(
 			'sourceId' => AttributeType::Number,
@@ -40,18 +76,6 @@ class AssetElementType extends BaseElementType
 			'kind'     => AttributeType::String,
 			'order'    => array(AttributeType::String, 'default' => 'filename asc'),
 		);
-	}
-
-	/**
-	 * Returns the link settings HTML
-	 *
-	 * @return string|null
-	 */
-	public function getLinkSettingsHtml()
-	{
-		return craft()->templates->render('_components/elementtypes/Asset/linksettings', array(
-			'settings' => $this->getLinkSettings()
-		));
 	}
 
 	/**
