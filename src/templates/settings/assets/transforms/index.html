@@ -13,6 +13,7 @@
 	<table id="transforms" class="data collapsible">
 		<thead>
 			<th scope="col">{{ "Name"|t }}</th>
+			<th scope="col">{{ "Handle"|t }}</th>
 			<th scope="col">{{ "Mode"|t }}</th>
 			<th scope="col">{{ "Dimensions"|t }}</th>
 			<td class="thin"></td>
@@ -21,6 +22,7 @@
 		{% for transform in transforms %}
 			<tr data-id="{{ transform.id }}" data-name="{{ transform.name|t }}">
 				<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/assets/transforms/' ~ transform.handle) }}">{{ transform.name|t }}</a></th>
+                <td data-title="{{ 'Handle'|t }}"><code>{{ transform.handle }}</code></td>
 				<td data-title="{{ 'Mode'|t }}">
 					{% if transform.mode %}
 						{{ transformModes[transform.mode] }}
