@@ -23,7 +23,7 @@ class AssetTransformRecord extends BaseRecord
 		return array(
 			'name'                => array(AttributeType::String, 'required' => true),
 			'handle'              => array(AttributeType::String, 'required' => true),
-			'mode'                => array(AttributeType::String, 'required' => true),
+			'mode'                => array(AttributeType::Enum, 'required' => true, 'values' => array('stretch', 'fit', 'crop'), 'default' => 'crop'),
 			'height'              => AttributeType::Number,
 			'width'               => AttributeType::Number,
 			'dimensionChangeTime' => AttributeType::DateTime
