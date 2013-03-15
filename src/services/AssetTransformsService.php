@@ -12,11 +12,11 @@ class AssetTransformsService extends BaseApplicationComponent
 	private $_assetTransforms = null;
 
 	/**
-	 * Get all asset transforms.
+	 * Returns all named asset transforms.
 	 *
 	 * @return array|null
 	 */
-	public function getAssetTransforms()
+	public function getAllTransforms()
 	{
 		$this->_loadAssetTransforms();
 
@@ -24,12 +24,12 @@ class AssetTransformsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Get an asset transform by it's handle.
+	 * Returns an asset transform by its handle.
 	 *
 	 * @param $handle
-	 * @return AssetTransformModel
+	 * @return AssetTransformModel|null
 	 */
-	public function getAssetTransform($handle)
+	public function getTransformByHandle($handle)
 	{
 		$this->_loadAssetTransforms();
 
@@ -37,8 +37,6 @@ class AssetTransformsService extends BaseApplicationComponent
 		{
 			return $this->_assetTransforms[$handle];
 		}
-
-		$this->_noTransformExists($handle);
 	}
 
 	/**
@@ -354,27 +352,27 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * Normalize a transform from handle or a set of properties to an AssetTransformModel.
 	 *
-	 * @param array|string $transform
-	 * @return AssetTransformModel
+	 * @param mixed $transform
+	 * @return AssetTransformModel|null
 	 */
 	public function normalizeTransform($transform)
 	{
-		if (is_array($transform))
+		if (!$transform)
 		{
-			$transform = new AssetTransformModel($transform);
+			return null;
 		}
-		else
+		else if (is_string($transform))
 		{
-			if ($transform instanceof AssetTransformModel)
-			{
-				return $transform;
-			}
-			$transform = $this->getAssetTransform($transform);
+			return $this->getTransformByHandle($transform);
 		}
-
-
-
-		return $transform;
+		else if ($transform instanceof AssetTransformModel)
+		{
+			return $transform;
+		}
+		else if (is_object($transform) || is_array($transform))
+		{
+			return new AssetTransformModel($transform);
+		}
 	}
 
 	/**

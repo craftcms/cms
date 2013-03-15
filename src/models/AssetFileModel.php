@@ -8,6 +8,8 @@ class AssetFileModel extends BaseElementModel
 {
 	protected $elementType = ElementType::Asset;
 
+	private $_transform;
+
 	/**
 	 * User the filename as the string representation.
 	 *
@@ -16,6 +18,58 @@ class AssetFileModel extends BaseElementModel
 	function __toString()
 	{
 		return $this->filename;
+	}
+
+	/**
+	 * Checks if an attribute value is set.
+	 *
+	 * @param string $name
+	 * @return bool
+	 */
+	function __isset($name)
+	{
+		// Is it a transform handle?
+		$transform = craft()->assetTransforms->getTransformByHandle($name);
+
+		if ($transform)
+		{
+			return true;
+		}
+		else
+		{
+			return parent::__isset($name);
+		}
+	}
+
+	/**
+	 * Magic getter
+	 *
+	 * @param string $name
+	 * @return mixed
+	 */
+	function __get($name)
+	{
+		// Is it a transform handle?
+		$transform = craft()->assetTransforms->getTransformByHandle($name);
+
+		if ($transform)
+		{
+			// Duplicate this model and set it to that transform
+			$model = new AssetFileModel();
+
+			// Can't just use getAttributes() here because we'll get thrown into an infinite loop.
+			foreach ($this->attributeNames() as $attributeName)
+			{
+				$model->setAttribute($attributeName, parent::getAttribute($attributeName));
+			}
+
+			$model->setTransform($transform);
+			return $model;
+		}
+		else
+		{
+			return parent::__get($name);
+		}
 	}
 
 	/**
@@ -39,11 +93,48 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
+	 * Gets an attribute's value.
+	 *
+	 * @param string $name
+	 * @param bool $flattenValue
+	 * @return mixed
+	 */
+	public function getAttribute($name, $flattenValue = false)
+	{
+		// Override 'width' and 'height' with getWidth() and getHeight()
+		// in case $this->_transform is set.
+		if ($name == 'width')
+		{
+			return $this->getWidth();
+		}
+		else if ($name == 'height')
+		{
+			return $this->getHeight();
+		}
+		else
+		{
+			return parent::getAttribute($name, $flattenValue);
+		}
+	}
+
+	/**
 	 * @return AssetFolderModel|null
 	 */
 	public function getFolder()
 	{
 		return craft()->assets->getFolderById($this->folderId);
+	}
+
+	/**
+	 * Sets the transform.
+	 *
+	 * @param mixed $transform
+	 * @return AssetFileModel
+	 */
+	public function setTransform($transform)
+	{
+		$this->_transform = craft()->assetTransforms->normalizeTransform($transform);
+		return $this;
 	}
 
 	/**
@@ -54,6 +145,11 @@ class AssetFileModel extends BaseElementModel
 	 */
 	public function getUrl($transform = null)
 	{
+		if ($transform === null && isset($this->_transform))
+		{
+			$transform = $this->_transform;
+		}
+
 		return craft()->assets->getUrlForFile($this, $transform);
 	}
 
@@ -97,22 +193,21 @@ class AssetFileModel extends BaseElementModel
 	 */
 	public function getThumbData($maxWidth, $maxHeight)
 	{
-
 		if ($this->kind != "image")
 		{
 			return false;
 		}
 
 		// treat the image as a horizontal?
-		if (($this->height / $this->width) <= ($maxHeight / $maxWidth))
+		if (($this->_getHeight() / $this->_getWidth()) <= ($maxHeight / $maxWidth))
 		{
 			$thumbWidth = $maxWidth;
-			$thumbHeight = round(($maxWidth / $this->width) * $this->height);
+			$thumbHeight = round(($maxWidth / $this->_getWidth()) * $this->_getHeight());
 		}
 		else
 		{
 			$thumbHeight = $maxHeight;
-			$thumbWidth = round(($maxHeight / $this->height) * $this->width);
+			$thumbWidth = round(($maxHeight / $this->_getHeight()) * $this->_getWidth());
 		}
 
 		return (object) array(
@@ -160,6 +255,11 @@ class AssetFileModel extends BaseElementModel
 			return false;
 		}
 
+		if ($transform === null && isset($this->_transform))
+		{
+			$transform = $this->_transform;
+		}
+
 		if (!$transform)
 		{
 			return $this->getAttribute($dimension);
@@ -175,17 +275,39 @@ class AssetFileModel extends BaseElementModel
 		if (!$transform->width || !$transform->height)
 		{
 			// Fill in the blank
-			list($dimensions['width'], $dimensions['height']) = Image::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->width, $this->height);
+			list($dimensions['width'], $dimensions['height']) = Image::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->_getWidth(), $this->_getHeight());
 		}
 
 		// Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
 		if ($transform->mode == 'fit')
 		{
-			$factor = max($this->width / $dimensions['width'], $this->height / $dimensions['height']);
-			$dimensions['width']  = round($this->width / $factor);
-			$dimensions['height'] = round($this->height / $factor);
+			$factor = max($this->_getWidth() / $dimensions['width'], $this->_getHeight() / $dimensions['height']);
+			$dimensions['width']  = round($this->_getWidth() / $factor);
+			$dimensions['height'] = round($this->_getHeight() / $factor);
 		}
 
 		return $dimensions[$dimension];
+	}
+
+	/**
+	 * Returns the actual width attribute, since $this->width gets routed to getWidth() now.
+	 *
+	 * @access private
+	 * @return mixed
+	 */
+	private function _getWidth()
+	{
+		return parent::getAttribute('width');
+	}
+
+	/**
+	 * Returns the actual height attribute, since $this->height gets routed to getHeight() now.
+	 *
+	 * @access private
+	 * @return mixed
+	 */
+	private function _getHeight()
+	{
+		return parent::getAttribute('height');
 	}
 }

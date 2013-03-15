@@ -34,13 +34,9 @@ abstract class BaseModel extends \CModel
 	 */
 	function __get($name)
 	{
-		if (isset($this->_attributes[$name]))
+		if (in_array($name, $this->attributeNames()))
 		{
-			return $this->_attributes[$name];
-		}
-		else if (in_array($name, $this->attributeNames()))
-		{
-			return null;
+			return $this->getAttribute($name);
 		}
 		else
 		{
@@ -99,13 +95,9 @@ abstract class BaseModel extends \CModel
 	 */
 	function __isset($name)
 	{
-		if (isset($this->_attributes[$name]))
-		{
-			return true;
-		}
 		// We're mostly just concerned with whether the attribute exists,
 		// so even not-yet-set attributes should return 'true' here.
-		else if (in_array($name, $this->attributeNames()))
+		if (in_array($name, $this->attributeNames()))
 		{
 			return true;
 		}
