@@ -13,8 +13,17 @@ class AssetSourcesController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$source = new AssetSourceModel();
-		$source->id = craft()->request->getPost('sourceId');
+		$existingSourceId = craft()->request->getPost('sourceId');
+
+		if ($existingSourceId)
+		{
+			$source = craft()->assetSources->getSourceById($existingSourceId);
+		}
+		else
+		{
+			$source = new AssetSourceModel();
+		}
+		
 		$source->name = craft()->request->getPost('name');
 
 		if (Craft::hasPackage(CraftPackage::Cloud))
@@ -25,7 +34,7 @@ class AssetSourcesController extends BaseController
 		$typeSettings = craft()->request->getPost('types');
 		if (isset($typeSettings[$source->type]))
 		{
-			$source->settings = $typeSettings[$source->type];
+			$source->settings = array_merge($source->settings, $typeSettings[$source->type]);
 		}
 
 		// Did it save?
