@@ -150,7 +150,7 @@ class LocalizationService extends BaseApplicationComponent
 		}
 		else
 		{
-			return $this->getSiteLocaleIds();
+			return $this->getSiteLocales();
 		}
 	}
 

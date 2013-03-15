@@ -139,6 +139,7 @@ class DbBackup
 		$header .= 'SET FOREIGN_KEY_CHECKS = 0;'.PHP_EOL;
 		$header .= 'SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";'.PHP_EOL;
 		$header .= 'SET AUTOCOMMIT = 0;'.PHP_EOL;
+		$header .= 'SET NAMES utf8;'.PHP_EOL;
 		$header .= 'START TRANSACTION;'.PHP_EOL.PHP_EOL;
 		$header .= '/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;'.PHP_EOL;
 		$header .= '/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;'.PHP_EOL;
@@ -224,6 +225,7 @@ class DbBackup
 		$result .= PHP_EOL.'--'.PHP_EOL.'-- Data for table `'.$tableName.'`'.PHP_EOL.'--'.PHP_EOL.PHP_EOL;
 		$attrs = array_map(array($db, 'quoteColumnName'), array_keys($rows[0]));
 
+		$result .= 'BEGIN;'.PHP_EOL;
 		$result .= 'INSERT INTO '.$db->quoteTableName($tableName).' ('.implode(', ', $attrs).') VALUES'.PHP_EOL;
 
 		$i = 0;
@@ -256,6 +258,7 @@ class DbBackup
 			}
 
 			$result .= PHP_EOL;
+			$result .= 'COMMIT;'.PHP_EOL;
 			$i++;
 		}
 
