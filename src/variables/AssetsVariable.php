@@ -206,4 +206,19 @@ class AssetsVariable
 		$tree = craft()->assets->getFolderTree(craft()->assetSources->getViewableSourceIds());
 		return $tree;
 	}
+
+	/**
+	 * Get Rackspace regions.
+	 *
+	 * @return array
+	 */
+	public function getRackspaceRegions()
+	{
+		if (Craft::hasPackage('Cloud'))
+		{
+			return array('DFW' => 'Dallas', 'ORD' => 'Chicago');
+		}
+
+		return array();
+	}
 }

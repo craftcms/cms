@@ -94,4 +94,27 @@ class AssetSourcesController extends BaseController
 			}
 		}
 	}
+
+	/**
+	 * Get Rackspace containers.
+	 */
+	public function actionGetRackspaceContainers()
+	{
+		if (Craft::hasPackage(CraftPackage::Cloud))
+		{
+			$username = craft()->request->getRequiredPost('username');
+			$apiKey = craft()->request->getRequiredPost('apiKey');
+			$region = craft()->request->getRequiredPost('region');
+
+			try
+			{
+				$this->returnJson(RackspaceAssetSourceType::getContainerList($username, $apiKey, $region));
+			}
+			catch (Exception $exception)
+			{
+				$this->returnErrorJson($exception->getMessage());
+			}
+		}
+	}
+
 }
