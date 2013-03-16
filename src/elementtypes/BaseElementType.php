@@ -51,9 +51,10 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	/**
 	 * Returns the attributes that can be shown/sorted by in table views.
 	 *
+	 * @param string|null $source
 	 * @return array
 	 */
-	public function defineTableAttributes()
+	public function defineTableAttributes($source = null)
 	{
 		return array();
 	}

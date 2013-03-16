@@ -7,18 +7,18 @@
 
 
 {{ forms.selectField({
-	label: "Link Type"|t,
+	label: "Element Type"|t,
 	instructions: "What do you want to link to?"|t,
 	id: 'type',
 	name: 'type',
-	options: craft.links.getAllLinkableElementTypes(),
+	options: craft.elements.getAllElementTypes(),
 	value: elementType.classHandle,
 	toggle: true,
 	targetPrefix: 'linktype-'
 }) }}
 
 
-{% for _elementType in craft.links.getAllLinkableElementTypes() %}
+{% for _elementType in craft.elements.getAllElementTypes() %}
 	{% set isCurrent = (_elementType.classHandle == elementType.classHandle) %}
 	{% if isCurrent %}
 		{% set elementTypeSettings = elementType.getLinkSettingsHtml() %}

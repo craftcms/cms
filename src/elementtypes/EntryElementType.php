@@ -54,16 +54,50 @@ class EntryElementType extends BaseElementType
 	/**
 	 * Returns the attributes that can be shown/sorted by in table views.
 	 *
+	 * @param string|null $source
 	 * @return array
 	 */
-	public function defineTableAttributes()
+	public function defineTableAttributes($source = null)
 	{
-		return array(
-			'slug'     => Craft::t('Slug'),
-			'section'  => Craft::t('Section'),
-			'status'   => Craft::t('Status'),
-			'postDate' => Craft::t('Post Date'),
-		);
+		$attributes = array();
+
+		if (Craft::hasPackage(CraftPackage::PublishPro))
+		{
+			if ($source && preg_match('/^section:(\d+)$/', $source, $match))
+			{
+				$section = craft()->sections->getSectionById($match[1]);
+			}
+		}
+		else if (!$source)
+		{
+			$sections = craft()->sections->getAllSections();
+
+			if ($sections)
+			{
+				$section = $sections[0];
+			}
+		}
+
+		if (!empty($section))
+		{
+			$attributes['title'] = Craft::t($section->titleLabel);
+		}
+		else
+		{
+			$attributes['title'] = Craft::t('Title');
+		}
+
+		$attributes['slug']     = Craft::t('Slug');
+
+		if (empty($section))
+		{
+			$attributes['section']  = Craft::t('Section');
+		}
+
+		$attributes['status']   = Craft::t('Status');
+		$attributes['postDate'] = Craft::t('Post Date');
+
+		return $attributes;
 	}
 
 	/**

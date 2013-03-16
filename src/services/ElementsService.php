@@ -536,7 +536,7 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets an element type.
+	 * Returns an element type.
 	 *
 	 * @param string $class
 	 * @return BaseElementType|null

@@ -9,44 +9,6 @@ class LinksService extends BaseApplicationComponent
 	private $_criteriaRecordsByTypeAndHandle;
 
 	/**
-	 * Returns all installed linkable element types.
-	 *
-	 * @return array
-	 */
-	public function getAllLinkableElementTypes()
-	{
-		$elementTypes = craft()->elements->getAllElementTypes();
-		$linkableElementTypes = array();
-
-		foreach ($elementTypes as $elementType)
-		{
-			if ($elementType->isLinkable())
-			{
-				$classHandle = $elementType->getClassHandle();
-				$linkableElementTypes[$classHandle] = $elementType;
-			}
-		}
-
-		return $linkableElementTypes;
-	}
-
-	/**
-	 * Returns a linkable element type.
-	 *
-	 * @param string $class
-	 * @return BaseElementType|null
-	 */
-	public function getLinkableElementType($class)
-	{
-		$elementType = craft()->elements->getElementType($class);
-
-		if ($elementType && $elementType->isLinkable())
-		{
-			return $elementType;
-		}
-	}
-
-	/**
 	 * Returns a link criteria model by its ID.
 	 *
 	 * @param int $criteriaId
@@ -175,7 +137,7 @@ class LinksService extends BaseApplicationComponent
 
 		$elementTypeClassProperty = $target.'ElementType';
 		$elementTypeClass = $criteria->$elementTypeClassProperty;
-		$elementType = $this->getLinkableElementType($elementTypeClass);
+		$elementType = craft()->elements->getElementType($elementTypeClass);
 
 		if (!$elementType)
 		{
@@ -214,7 +176,7 @@ class LinksService extends BaseApplicationComponent
 			return array();
 		}
 
-		$elementType = $this->getLinkableElementType($elementTypeClass);
+		$elementType = craft()->elements->getElementType($elementTypeClass);
 
 		if (!$elementType)
 		{

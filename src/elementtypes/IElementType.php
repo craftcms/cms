@@ -24,7 +24,7 @@ interface IElementType extends IComponentType
 	/**
 	 * @return array
 	 */
-	public function defineTableAttributes();
+	public function defineTableAttributes($source = null);
 
 	/**
 	 * @return array

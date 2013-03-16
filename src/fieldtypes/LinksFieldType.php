@@ -99,7 +99,7 @@ class LinksFieldType extends BaseFieldType
 		unset($settings['types'], $settings['type']);
 
 		// Give the element type a chance to pre-process any of its settings
-		$elementType = craft()->links->getLinkableElementType($elementTypeClass);
+		$elementType = craft()->elements->getElementType($elementTypeClass);
 
 		if ($elementType)
 		{
@@ -269,7 +269,7 @@ class LinksFieldType extends BaseFieldType
 		{
 			if ($defaultToEntries)
 			{
-				$elementType = craft()->links->getLinkableElementType(ElementType::Entry);
+				$elementType = craft()->elements->getElementType(ElementType::Entry);
 			}
 			else
 			{

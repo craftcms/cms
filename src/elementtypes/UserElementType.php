@@ -54,9 +54,10 @@ class UserElementType extends BaseElementType
 	/**
 	 * Returns the attributes that can be shown/sorted by in table views.
 	 *
+	 * @param string|null $source
 	 * @return array
 	 */
-	public function defineTableAttributes()
+	public function defineTableAttributes($source = null)
 	{
 		return array(
 			'fullName' => Craft::t('Full Name'),
