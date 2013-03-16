@@ -81,7 +81,7 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Renders a template.
 	 *
-	 * @param mixed $name The name of the template to load
+	 * @param       $template
 	 * @param array $variables The variables that should be available to the template
 	 * @return string The rendered template
 	 */
@@ -101,7 +101,7 @@ class TemplatesService extends BaseApplicationComponent
 	public function renderString($template, $variables = array())
 	{
 		$twig = $this->getTwig('\Twig_Loader_String');
-		return $this->render($template, $variables);
+		return $twig->render($template, $variables);
 	}
 
 	/**
