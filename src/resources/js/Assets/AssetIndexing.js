@@ -237,4 +237,4 @@ Assets.IndexingManager = Garnish.Base.extend({
 
 });
 
-new Assets.OperationManager();
+new Assets.IndexingManager();
