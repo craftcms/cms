@@ -46,7 +46,10 @@ class EntriesController extends BaseController
 				craft()->userSession->setNotice(Craft::t('Entry saved.'));
 
 				$this->redirectToPostedUrl(array(
-					'entryId' => $entry->id
+					'entryId'   => $entry->id,
+					'slug'      => $entry->slug,
+					'url'       => $entry->getUrl(),
+					'cpEditUrl' => $entry->getCpEditUrl(),
 				));
 			}
 		}
