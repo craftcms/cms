@@ -2,23 +2,43 @@
 namespace Craft;
 
 /**
- *
- * @property TemplatesService            $templates            The template service
- * @property AssetsService               $assets               The assets service
  * @property AssetIndexingService        $assetIndexing        The assets indexing service
- * @property AssetTransformsService      $assetTransforms      The assets sizes service
  * @property AssetSourcesService         $assetSources         The assets sources service
- * @property PathService                 $path                 The path service
- * @property UsersService                $users                The users service
- * @property ImagesService               $images               The images service
- * @property ResourcesService            $resources            The resources service
- * @property HttpRequestService          $request              The request service
- * @property DbConnection                $db                   Database
- * @property LinksService                $links                The links service
- * @property ElementsService             $elements             The elements service
+ * @property AssetsService               $assets               The assets service
+ * @property AssetTransformsService      $assetTransforms      The assets sizes service
  * @property ComponentsService           $components           The components service
- * @property UserSessionService          $userSession          The user session service
+ * @property ConfigService               $config               The config service
+ * @property DashboardService            $dashboard            The dashboard service
+ * @property DbConnection                $db                   The database
+ * @property ElementsService             $elements             The elements service
+ * @property EmailMessagesService        $emailMessages        The email messages service
+ * @property EmailService                $email                The email service
+ * @property EntriesService              $entries              The entries service
+ * @property EntryRevisionsService       $entryRevisions       The entry revisions service
+ * @property EtService                   $et                   The E.T. service
+ * @property FeedsService                $feeds                The feeds service
+ * @property FieldsService               $fields               The fields service
+ * @property GlobalsService              $globals              The globals service
+ * @property HttpRequestService          $request              The request service
+ * @property HttpSessionService          $httpSession          The HTTP session service
+ * @property ImagesService               $images               The images service
+ * @property InstallService              $install              The images service
+ * @property LinksService                $links                The links service
+ * @property LocalizationService         $localization         The localization service
+ * @property MigrationsService           $migrations           The migrations service
+ * @property PathService                 $path                 The path service
+ * @property PluginsService              $plugins              The plugins service
+ * @property ResourcesService            $resources            The resources service
+ * @property RoutesService               $routes               The routes service
+ * @property SectionsService             $sections             The sections service
+ * @property SecurityService             $security             The security service
+ * @property SystemSettingsService       $systemSettings       The system settings service
+ * @property TemplatesService            $templates            The template service
+ * @property UpdatesService              $updates              The updates service
+ * @property UserGroupsService           $userGroups           The user groups service
  * @property UserPermissionsService      $userPermissions      The user permission service
+ * @property UserSessionService          $userSession          The user session service
+ * @property UsersService                $users                The users service
  */
 class WebApp extends \CWebApplication
 {
