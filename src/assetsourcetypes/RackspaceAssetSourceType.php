@@ -12,19 +12,18 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	const RackspaceServiceName = 'cloudFiles';
 
 	/**
+	 * Store this reference in case we need some advanced functionality.
+	 *
 	 * @var \OpenCloud\Rackspace
 	 */
 	private $_rackspace;
 
-
 	/**
-	 * Init
+	 * Most operations will be performed on this.
+	 *
+	 * @var \OpenCloud\ObjectStore\Container
 	 */
-	public function init()
-	{
-		$settings = $this->getSettings();
-		$this->_rackspace = AssetsHelper::connectToRackspace($settings->username, $settings->apiKey);
-	}
+	private $_container;
 
 	/**
 	 * Returns the name of the source type.
@@ -101,22 +100,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get a bucket's endpoint by location.
-	 *
-	 * @param $location
-	 * @return string
-	 */
-	public static function getEndpointByLocation($location)
-	{
-		if (isset(static::$_predefinedEndpoints[$location]))
-		{
-			return static::$_predefinedEndpoints[$location];
-		}
-
-		return 's3-'.$location.'.amazonaws.com';
-	}
-
-	/**
 	 * Starts an indexing session.
 	 *
 	 * @param $sessionId
@@ -124,17 +107,24 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	public function startIndex($sessionId)
 	{
-		$settings = $this->getSettings();
-		$this->_prepareForRequests();
-
 		$offset = 0;
 		$total = 0;
 
-		$prefix = $this->_getS3PathPrefix();
-		$fileList = $this->_s3->getBucket($settings->bucket, $prefix);
+		$this->_prepareForRequests();
+		$prefix = $this->_getPathPrefix();
+
+		$files = $this->_container->ObjectList(array('prefix' => $prefix));
+
+		$fileList = array();
+		while ($file = $files->Next())
+		{
+			/** @var \OpenCloud\ObjectStore\DataObject $file */
+			$fileList[] = $file;
+
+		}
 
 		$fileList = array_filter($fileList, function ($value) {
-			$path = $value['name'];
+			$path = $value->name;
 
 			$segments = explode('/', $path);
 
@@ -149,49 +139,27 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			return true;
 		});
 
-		$bucketFolders = array();
+		$containerFolders = array();
 
 		foreach ($fileList as $file)
 		{
 			// Strip the prefix, so we don't index the parent folders
-			$file['name'] = substr($file['name'], strlen($prefix));
+			$file->name = substr($file->name, strlen($prefix));
 
-			if (!preg_match(AssetsHelper::IndexSkipItemsPattern, $file['name']))
+			if (!preg_match(AssetsHelper::IndexSkipItemsPattern, $file->name))
 			{
-				// In S3, it's possible to have files in folders that don't exist. E.g. - one/two/three.jpg.
-				// If folder "one" is empty, except for folder "two", then "one" won't show up in this list so we work around it.
-
-				// Matches all paths with folders, except if folder is last or no folder at all.
-				if (preg_match('/(.*\/).+$/', $file['name'], $matches))
+				if ($file->content_type == 'application/directory')
 				{
-					$folders = explode('/', rtrim($matches[1], '/'));
-					$basePath = '';
-
-					foreach ($folders as $folder)
-					{
-						$basePath .= $folder .'/';
-
-						// This is exactly the case referred to above
-						if ( ! isset($bucketFolders[$basePath]))
-						{
-							$bucketFolders[$basePath] = true;
-						}
-					}
-				}
-
-				if (substr($file['name'], -1) == '/')
-				{
-					$bucketFolders[$file['name']] = true;
+					$containerFolders[$file->name] = true;
 				}
 				else
 				{
-					// Add the prefix back
 					$indexEntry = array(
 						'sourceId' => $this->model->id,
 						'sessionId' => $sessionId,
 						'offset' => $offset++,
-						'uri' => $file['name'],
-						'size' => $file['size']
+						'uri' => $file->name,
+						'size' => $file->bytes
 					);
 
 					craft()->assetIndexing->storeIndexEntry($indexEntry);
@@ -204,9 +172,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$indexedFolderIds[craft()->assetIndexing->ensureTopFolder($this->model)] = true;
 
 		// Ensure folders are in the DB
-		foreach ($bucketFolders as $fullPath => $nothing)
+		foreach ($containerFolders as $fullPath => $nothing)
 		{
-			$folderId = $this->_ensureFolderByFulPath($fullPath);
+			$folderId = $this->_ensureFolderByFulPath($fullPath.'/');
 			$indexedFolderIds[$folderId] = true;
 		}
 
@@ -235,28 +203,26 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$fileModel = $this->_indexFile($uriPath);
 		$this->_prepareForRequests();
 
+
 		if ($fileModel)
 		{
-			$settings = $this->getSettings();
-
 			craft()->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
 
 			$fileModel->size = $indexEntryModel->size;
 
-			$fileInfo = $this->_s3->getObjectInfo($settings->bucket, $this->_getS3PathPrefix().$uriPath);
+			$fileInfo = $this->_container->ObjectList(array('limit' => 1, 'prefix' => $this->_getPathPrefix().$uriPath))->First();
+			$timeModified = new DateTime($fileInfo->last_modified, new \DateTimeZone('UTC'));
 
 			$targetPath = craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
 
-			$timeModified = new DateTime('@'.$fileInfo['time']);
-
 			if ($fileModel->kind == 'image' && $fileModel->dateModified != $timeModified || !IOHelper::fileExists($targetPath))
 			{
-				$this->_s3->getObject($settings->bucket, $this->_getS3PathPrefix().$indexEntryModel->uri, $targetPath);
+				$this->_container->DataObject($this->_getPathPrefix().$uriPath)->SaveToFilename($targetPath);
 				clearstatcache();
 				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
 			}
 
-			$fileModel->dateModified = new DateTime('@'.$fileInfo['time']);
+			$fileModel->dateModified = $timeModified;
 
 			craft()->assets->storeFile($fileModel);
 
@@ -647,7 +613,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * @param object|null $settings to use, if null, will use current settings
 	 * @return string
 	 */
-	private function _getS3PathPrefix($settings = null)
+	private function _getPathPrefix($settings = null)
 	{
 		if (is_null($settings))
 		{
@@ -671,7 +637,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	public function transformExists(AssetFileModel $file, $location)
 	{
-		$this->_prepareForRequests();
 		return (bool) @$this->_s3->getObjectInfo($this->getSettings()->bucket, $this->_getS3PathPrefix().$file->getFolder()->fullPath.$location.'/'.$file->filename);
 	}
 
@@ -682,8 +647,20 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	public function getBaseUrl()
 	{
-		return $this->getSettings()->urlPrefix.$this->_getS3PathPrefix();
+		return $this->getSettings()->urlPrefix.$this->_getPathPrefix();
 	}
 
+	/**
+	 * Prepare the RackSpace object for requests.
+	 */
+	private function _prepareForRequests()
+	{
+		if (is_null($this->_rackspace))
+		{
+			$settings = $this->getSettings();
+			$this->_rackspace = AssetsHelper::connectToRackspace($settings->username, $settings->apiKey);
+			$this->_container = $this->_rackspace->ObjectStore(self::RackspaceServiceName, $settings->region)->Container(rawurlencode($settings->container));
+		}
+	}
 
 }

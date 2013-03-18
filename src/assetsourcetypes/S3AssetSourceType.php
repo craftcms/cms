@@ -205,7 +205,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 				}
 				else
 				{
-					// Add the prefix back
 					$indexEntry = array(
 						'sourceId' => $this->model->id,
 						'sessionId' => $sessionId,
@@ -276,7 +275,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
 			}
 
-			$fileModel->dateModified = new DateTime('@'.$fileInfo['time']);
+			$fileModel->dateModified = $timeModified;
 
 			craft()->assets->storeFile($fileModel);
 
