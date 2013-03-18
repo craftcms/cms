@@ -167,7 +167,7 @@ class WebApp extends \CWebApplication
 			// Set the target language
 			$this->setLanguage($this->_getTargetLanguage());
 
-			//
+			// Set the package components
 			$this->_setPackageComponents();
 
 			// Load the plugins
