@@ -22,13 +22,13 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Filters a list of element IDs by a given search term and mode.
 	 *
-	 * @param array  $elementIds The list of element IDs to filter by the search term.
-	 * @param string $term       The search term.
-	 * @param mixed  $fieldIds   A list of field IDs to search, or null to search everywhere.
-	 * @param string $mode       The search mode ("any", "all", or "exact"). Defaults to "all".
-	 * @return array The filtered list of element IDs.
+	 * @param array       $elementIds The list of element IDs to filter by the search term.
+	 * @param string      $query      The search query.
+	 * @param int|null    $fieldId    The field ID to search within, if any.
+	 * @param string|null $locale     The locale ID to search within, if any.
+	 * @return array      The filtered list of element IDs.
 	 */
-	public function filterElementIdsBySearchTerm($elementIds, $term, $fieldIds = null, $mode = SearchMode::All)
+	public function filterElementIdsByQuery($elementIds, $query, $fieldId = null, $locale = null)
 	{
 		return array();
 	}
