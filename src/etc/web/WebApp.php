@@ -611,11 +611,14 @@ class WebApp extends \CWebApplication
 			// Otherwise check if the browser's preferred language matches any of the site locales
 			$browserLanguages = $this->request->getBrowserLanguages();
 
-			foreach ($browserLanguages as $language)
+			if ($browserLanguages)
 			{
-				if (in_array($language, $siteLocaleIds))
+				foreach ($browserLanguages as $language)
 				{
-					return $language;
+					if (in_array($language, $siteLocaleIds))
+					{
+						return $language;
+					}
 				}
 			}
 		}
