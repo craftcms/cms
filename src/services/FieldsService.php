@@ -197,7 +197,7 @@ class FieldsService extends BaseApplicationComponent
 			}
 			else
 			{
-				$this->_fieldsById[$fieldId] = null;
+				return null;
 			}
 		}
 

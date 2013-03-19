@@ -7,6 +7,33 @@ namespace Craft;
 class StringHelper
 {
 	/**
+	 * Converts an array to a string.
+	 *
+	 * @static
+	 * @param mixed  $arr
+	 * @param string $glue
+	 * @return string
+	 */
+	public static function arrayToString($arr, $glue = ',')
+	{
+		if (is_array($arr))
+		{
+			$stringValues = array();
+
+			foreach ($arr as $value)
+			{
+				$stringValues[] = static::arrayToString($value, $glue);
+			}
+
+			return implode($glue, $stringValues);
+		}
+		else
+		{
+			return (string) $arr;
+		}
+	}
+
+	/**
 	 * @static
 	 * @param $value
 	 * @return bool

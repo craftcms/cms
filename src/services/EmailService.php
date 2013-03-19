@@ -172,7 +172,7 @@ class EmailService extends BaseApplicationComponent
 		$email = new \PhpMailer(true);
 
 		// Set the "from" information.
-		$email->setFrom($emailModel->fromEmail, $emailModel->fromName);
+		$email->SetFrom($emailModel->fromEmail, $emailModel->fromName);
 
 		// Check which protocol we need to use.
 		switch ($emailSettings['protocol'])
@@ -207,24 +207,24 @@ class EmailService extends BaseApplicationComponent
 
 			case EmailerType::Sendmail:
 			{
-				$email->isSendmail();
+				$email->IsSendmail();
 				break;
 			}
 
 			case EmailerType::Php:
 			{
-				$email->isMail();
+				$email->IsMail();
 				break;
 			}
 
 			default:
 			{
-				$email->isMail();
+				$email->IsMail();
 			}
 		}
 
 		// Set the To fields
-		$email->addAddress($user->email, $user->getFullName());
+		$email->AddAddress($user->email, $user->getFullName());
 
 		// Add any BCC's
 		if (!empty($emailModel->bcc))
@@ -236,7 +236,7 @@ class EmailService extends BaseApplicationComponent
 					$bccEmail = $bcc['email'];
 
 					$bccName = !empty($bcc['name']) ? $bcc['name'] : '';
-					$email->addBcc($bccEmail, $bccName);
+					$email->AddBcc($bccEmail, $bccName);
 				}
 			}
 		}
@@ -251,30 +251,48 @@ class EmailService extends BaseApplicationComponent
 					$ccEmail = $cc['email'];
 
 					$ccName = !empty($cc['name']) ? $cc['name'] : '';
-					$email->addCc($ccEmail, $ccName);
+					$email->AddCc($ccEmail, $ccName);
 				}
+			}
+		}
+
+		// Add any string attachments
+		if (!empty($emailModel->stringAttachments))
+		{
+			foreach ($emailModel->stringAttachments as $stringAttachment)
+			{
+				$email->AddStringAttachment($stringAttachment['string'], $stringAttachment['fileName'], $stringAttachment['encoding'], $stringAttachment['type']);
+			}
+		}
+
+		// Add any normal disc attachments
+		if (!empty($emailModel->attachments))
+		{
+			foreach ($emailModel->attachments as $attachment)
+			{
+				$email->AddAttachment($attachment['path'], $attachment['name'], $attachment['encoding'], $attachment['type']);
 			}
 		}
 
 		$variables['user'] = $user;
 
-		$email->subject = craft()->templates->renderString($emailModel->subject, $variables);
+		$email->Subject = craft()->templates->renderString($emailModel->subject, $variables);
 		$renderedBody = craft()->templates->renderString($emailModel->body, $variables);
 
 		if ($user->emailFormat == 'html' && $emailModel->htmlBody)
 		{
 			$renderedHtmlBody = craft()->templates->renderString($emailModel->htmlBody, $variables);
-			$email->msgHtml($renderedHtmlBody);
-			$email->altBody = $renderedBody;
+			$email->MsgHTML($renderedHtmlBody);
+			$email->AltBody = $renderedBody;
 		}
 		else
 		{
-			$email->body = $renderedBody;
+			$email->Body = $renderedBody;
 		}
 
-		if (!$email->send())
+		if (!$email->Send())
 		{
-			throw new Exception(Craft::t('Email error: {error}', array('error' => $email->errorInfo)));
+			throw new Exception(Craft::t('Email error: {error}', array('error' => $email->ErrorInfo)));
 		}
 
 		return true;
@@ -287,27 +305,27 @@ class EmailService extends BaseApplicationComponent
 	 */
 	private function _setSmtpSettings(&$email, $emailSettings)
 	{
-		$email->isSmtp();
+		$email->IsSmtp();
 
 		if (isset($emailSettings['smtpAuth']) && $emailSettings['smtpAuth'] == 1)
 		{
-			$email->smtpAuth = true;
+			$email->SMTPAuth = true;
 
 			if ((!isset($emailSettings['username']) && StringHelper::isNullOrEmpty($emailSettings['username'])) || (!isset($emailSettings['password']) && StringHelper::isNullOrEmpty($emailSettings['password'])))
 			{
 				throw new Exception(Craft::t('Username and password are required.  Check your email settings.'));
 			}
 
-			$email->userName = $emailSettings['username'];
-			$email->password = $emailSettings['password'];
+			$email->Username = $emailSettings['username'];
+			$email->Password = $emailSettings['password'];
 		}
 
 		if (isset($emailSettings['smtpKeepAlive']) && $emailSettings['smtpKeepAlive'] == 1)
 		{
-			$email->smtpKeepAlive = true;
+			$email->SMTPKeepAlive = true;
 		}
 
-		$email->smtpSecure = $emailSettings['smtpSecureTransportType'] != 'none' ? $emailSettings['smtpSecureTransportType'] : null;
+		$email->SMTPSecure = $emailSettings['smtpSecureTransportType'] != 'none' ? $emailSettings['smtpSecureTransportType'] : null;
 
 		if (!isset($emailSettings['host']))
 		{
@@ -324,8 +342,8 @@ class EmailService extends BaseApplicationComponent
 			$emailSettings['timeout'] = $this->_defaultEmailTimeout;
 		}
 
-		$email->host = $emailSettings['host'];
-		$email->port = $emailSettings['port'];
-		$email->timeout = $emailSettings['timeout'];
+		$email->Host = $emailSettings['host'];
+		$email->Port = $emailSettings['port'];
+		$email->Timeout = $emailSettings['timeout'];
 	}
 }

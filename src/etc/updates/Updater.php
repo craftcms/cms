@@ -342,7 +342,7 @@ class Updater
 					}
 					else
 					{
-						$fullPath = IOHelper::normalizePathSeparators(craft()->path->getAppPath().$tempFilePath.'.bak');
+						$fullPath = IOHelper::normalizePathSeparators(craft()->path->getAppPath().$tempFilePath);
 					}
 
 					break;

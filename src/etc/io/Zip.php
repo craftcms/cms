@@ -50,6 +50,15 @@ class Zip
 		{
 			if (IOHelper::getExtension($srcZip) == 'zip')
 			{
+				if (!IOHelper::folderExists($destFolder))
+				{
+					if (!IOHelper::createFolder($destFolder))
+					{
+						Craft::log('Tried to create the unzip destination folder, but could not: '.$destFolder, \CLogger::LEVEL_ERROR);
+						return false;
+					}
+				}
+
 				$zip = static::_getZipInstance($srcZip);
 				$result = $zip->unzip($srcZip, $destFolder);
 
