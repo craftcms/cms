@@ -9,9 +9,11 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Indexes the keywords for a given element and locale.
 	 *
-	 * @param int    $elementId The ID of the element getting indexed.
-	 * @param string $localeId  The locale ID of the content getting indexed.
-	 * @param array  $keywords  The dirty element keywords, indexed by field ID.
+	 * @param int          $elementId The ID of the element getting indexed.
+	 * @param string       $localeId  The locale ID of the content getting indexed.
+	 * @param string|array $keywords  The dirty element keywords.
+	 *                                This can be a string (for all non-content keywords)
+	 *                                or an array of strings, indexed by the field IDs.
 	 * @return bool  Whether the indexing was a success.
 	 */
 	public function indexElementKeywords($elementId, $localeId, $keywords)
