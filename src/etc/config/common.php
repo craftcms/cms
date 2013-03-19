@@ -214,6 +214,7 @@ $components['resources']['class']            = 'Craft\ResourcesService';
 $components['resources']['dateParam']        = 'd';
 
 $components['routes']['class']               = 'Craft\RoutesService';
+$components['search']['class']               = 'Craft\SearchService';
 $components['security']['class']             = 'Craft\SecurityService';
 $components['systemSettings']['class']       = 'Craft\SystemSettingsService';
 $components['templates']['class']            = 'Craft\TemplatesService';
