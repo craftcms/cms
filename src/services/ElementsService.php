@@ -404,21 +404,30 @@ class ElementsService extends BaseApplicationComponent
 
 		$fields = craft()->fields->getAllFields();
 		$fieldTypes = array();
+		$searchKeywordsByLocale = array();
 
 		foreach ($fields as $field)
 		{
+			$fieldHandle = $field->handle;
+
 			$fieldType = craft()->fields->populateFieldType($field);
 			$fieldType->element = $element;
 			$fieldTypes[] = $fieldType;
 
-			// If this field isn't translatable, we should set its new value on the other content records
+			// Get the field's search keywords
+			$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$fieldHandle);
+			$searchKeywordsByLocale[$contentRecord->locale][$field->id] = $fieldSearchKeywords;
+
+			// Should we update this field on the other locales as well?
 			if (!$field->translatable && $updateOtherContentRecords && $fieldType->defineContentAttribute())
 			{
-				$handle = $field->handle;
-
 				foreach ($otherContentRecords as $otherContentRecord)
 				{
-					$otherContentRecord->$handle = $contentRecord->$handle;
+					// Copy the new field value over to the other locale's content record
+					$otherContentRecord->$fieldHandle = $contentRecord->$fieldHandle;
+
+					// Queue up the other locale's new keywords too
+					$searchKeywordsByLocale[$otherContentRecord->locale][$field->id] = $fieldSearchKeywords;
 				}
 			}
 		}
@@ -430,6 +439,12 @@ class ElementsService extends BaseApplicationComponent
 			{
 				$otherContentRecord->save();
 			}
+		}
+
+		// Update the search indexes
+		foreach ($searchKeywordsByLocale as $localeId => $keywords)
+		{
+			craft()->search->indexElementKeywords($element->id, $localeId, $keywords);
 		}
 
 		// Now that everything is finally saved, call fieldtypes' onAfterElementSave();

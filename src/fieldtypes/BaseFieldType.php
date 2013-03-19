@@ -52,6 +52,18 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
+	 * Returns the search keywords that should be associated with this field,
+	 * based on the prepped post data.
+	 *
+	 * @param mixed $value
+	 * @return string
+	 */
+	public function getSearchKeywords($value)
+	{
+		return StringHelper::arrayToString($value, ' ');
+	}
+
+	/**
 	 * Performs any actions before a field is saved.
 	 */
 	public function onBeforeSave()
