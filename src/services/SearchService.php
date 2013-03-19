@@ -20,7 +20,7 @@ class SearchService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Filters a list of element IDs by a given search term and mode.
+	 * Filters a list of element IDs by a given search query.
 	 *
 	 * @param array       $elementIds The list of element IDs to filter by the search term.
 	 * @param string      $query      The search query.
