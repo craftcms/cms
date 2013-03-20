@@ -953,7 +953,7 @@ class AssetsService extends BaseApplicationComponent
 		if (!$transform || !in_array(IOHelper::getExtension($file), Image::getAcceptedExtensions()))
 		{
 			$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
-			$base = $sourceType->isSourceLocal() ? $sourceType->getSettings()->url : $sourceType->getSettings()->urlPrefix;
+			$base = $sourceType->getBaseUrl();
 			return $base.$file->getFolder()->fullPath.$file->filename;
 		}
 
