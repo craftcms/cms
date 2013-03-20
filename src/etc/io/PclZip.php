@@ -56,7 +56,15 @@ class PclZip implements IZip
 				continue;
 			}
 
-			$tempDestFolders[] = $destFolder.'/'.rtrim(IOHelper::getFolderName($zipFile['filename']), '/');
+			$folderName = IOHelper::getFolderName($zipFile['filename']);
+			if ($folderName == './')
+			{
+				$tempDestFolders[] = $destFolder.'/';
+			}
+			else
+			{
+				$tempDestFolders[] = $destFolder.'/'.rtrim(IOHelper::getFolderName($zipFile['filename']), '/');
+			}
 		}
 
 		$tempDestFolders = array_unique($tempDestFolders);
@@ -65,7 +73,7 @@ class PclZip implements IZip
 		foreach ($tempDestFolders as $tempDestFolder)
 		{
 			// Skip over the working directory
-			if ($destFolder == $tempDestFolder)
+			if (rtrim($destFolder, '/') == rtrim($tempDestFolder, '/'))
 			{
 				continue;
 			}

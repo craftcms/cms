@@ -10,7 +10,7 @@
 	{% else %}
 		{% set localeId = editableLocaleIds[0] %}
 	{% endif %}
-{% elseif localeId not in editableLocaleids %}
+{% elseif localeId not in editableLocaleIds %}
 	{% exit 404 %}
 {% endif %}
 
