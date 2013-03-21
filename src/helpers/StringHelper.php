@@ -6,6 +6,8 @@ namespace Craft;
  */
 class StringHelper
 {
+	private static $_asciiCharMap;
+
 	/**
 	 * Converts an array to a string.
 	 *
@@ -159,26 +161,35 @@ class StringHelper
 	}
 
 	/**
-	 * @access private
-	 * @var array
-	 */
-	private static $_asciiCharMap = array(
-		223=>'ss', 224=>'a',  225=>'a',  226=>'a',  229=>'a',  227=>'ae', 230=>'ae', 228=>'ae', 231=>'c',  232=>'e',
-		233=>'e',  234=>'e',  235=>'e',  236=>'i',  237=>'i',  238=>'i',  239=>'i',  241=>'n',  242=>'o',  243=>'o',
-		244=>'o',  245=>'o',  246=>'oe', 249=>'u',  250=>'u',  251=>'u',  252=>'ue', 255=>'y',  257=>'aa', 269=>'ch',
-		275=>'ee', 291=>'gj', 299=>'ii', 311=>'kj', 316=>'lj', 326=>'nj', 353=>'sh', 363=>'uu', 382=>'zh', 256=>'aa',
-		268=>'ch', 274=>'ee', 290=>'gj', 298=>'ii', 310=>'kj', 315=>'lj', 325=>'nj', 352=>'sh', 362=>'uu', 381=>'zh'
-	);
-
-	/**
-	 * Returns the asciiCharMap.
+	 * Returns ASCII character mappings.
 	 *
 	 * @static
 	 * @return array
 	 */
 	public static function getAsciiCharMap()
 	{
-		return self::$_asciiCharMap;
+		if (!isset(static::$_asciiCharMap))
+		{
+			static::$_asciiCharMap = array(
+				223 => 'ss', 224 => 'a',  225 => 'a',  226 => 'a',  229 => 'a',
+				227 => 'ae', 230 => 'ae', 228 => 'ae', 231 => 'c',  232 => 'e',
+				233 => 'e',  234 => 'e',  235 => 'e',  236 => 'i',  237 => 'i',
+				238 => 'i',  239 => 'i',  241 => 'n',  242 => 'o',  243 => 'o',
+				244 => 'o',  245 => 'o',  246 => 'oe', 249 => 'u',  250 => 'u',
+				251 => 'u',  252 => 'ue', 255 => 'y',  257 => 'aa', 269 => 'ch',
+				275 => 'ee', 291 => 'gj', 299 => 'ii', 311 => 'kj', 316 => 'lj',
+				326 => 'nj', 353 => 'sh', 363 => 'uu', 382 => 'zh', 256 => 'aa',
+				268 => 'ch', 274 => 'ee', 290 => 'gj', 298 => 'ii', 310 => 'kj',
+				315 => 'lj', 325 => 'nj', 352 => 'sh', 362 => 'uu', 381 => 'zh'
+			);
+
+			foreach (craft()->config->get('customAsciiCharMappings') as $ascii => $char)
+			{
+				static::$_asciiCharMap[$ascii] = $char;
+			}
+		}
+
+		return static::$_asciiCharMap;
 	}
 
 	/**
@@ -221,6 +232,7 @@ class StringHelper
 	{
 		$asciiStr = '';
 		$strlen = strlen($str);
+		$asciiCharMap = static::getAsciiCharMap();
 
 		for ($c = 0; $c < $strlen; $c++)
 		{
@@ -231,9 +243,9 @@ class StringHelper
 			{
 				$asciiStr .= $char;
 			}
-			else if (isset(static::$_asciiCharMap[$ascii]))
+			else if (isset($asciiCharMap[$ascii]))
 			{
-				$asciiStr .= static::$_asciiCharMap[$ascii];
+				$asciiStr .= $asciiCharMap[$ascii];
 			}
 		}
 
