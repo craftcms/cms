@@ -171,6 +171,17 @@ class StringHelper
 	);
 
 	/**
+	 * Returns the asciiCharMap.
+	 *
+	 * @static
+	 * @return array
+	 */
+	public static function getAsciiCharMap()
+	{
+		return self::$_asciiCharMap;
+	}
+
+	/**
 	 * Converts extended ASCII characters to ASCII.
 	 *
 	 * @static
@@ -198,5 +209,17 @@ class StringHelper
 		}
 
 		return $asciiStr;
+	}
+
+	/**
+	 * Custom alternative to chr().
+	 *
+	 * @static
+	 * @param int $int
+	 * @return string
+	 */
+	public static function chr($int)
+	{
+		return html_entity_decode("&#{$int};", ENT_QUOTES, 'UTF-8');
 	}
 }
