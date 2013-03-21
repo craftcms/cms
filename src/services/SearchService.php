@@ -65,13 +65,11 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Filters a list of element IDs by a given search query.
 	 *
-	 * @param array       $elementIds The list of element IDs to filter by the search query.
-	 * @param string      $query      The search query.
-	 * @param int|null    $fieldId    The field ID to search within, if any.
-	 * @param string|null $locale     The locale ID to search within, if any.
-	 * @return array      The filtered list of element IDs.
+	 * @param array  $elementIds The list of element IDs to filter by the search query.
+	 * @param mixed  $query      The search query.
+	 * @return array The filtered list of element IDs.
 	 */
-	public function filterElementIdsByQuery($elementIds, $query, $fieldId = null, $locale = null)
+	public function filterElementIdsByQuery($elementIds, $query)
 	{
 		return array();
 	}
