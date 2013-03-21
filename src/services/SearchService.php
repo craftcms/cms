@@ -27,6 +27,7 @@ class SearchService extends BaseApplicationComponent
 			else
 			{
 				$fieldId = '0';
+				$attribute = strtolower($attribute);
 			}
 
 			// Clean 'em up
