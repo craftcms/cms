@@ -619,10 +619,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
-		$bucket = $this->getSettings()->bucket;
 		$objectsToDelete = $this->_container->ObjectList(array('prefix' => $this->_getPathPrefix().$parentFolder->fullPath.$folderName));
 
-		foreach ($objectsToDelete as $file)
+		while($file = $objectsToDelete->Next())
 		{
 			$this->_container->DataObject($file->name)->Delete();
 		}
