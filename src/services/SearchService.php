@@ -27,7 +27,7 @@ class SearchService extends BaseApplicationComponent
 		foreach ($keywords as $fieldId => $dirtyKeywords)
 		{
 			// Clean 'em up
-			$cleanKeywords = $this->_normalizeSearchTerm($dirtyKeywords);
+			$cleanKeywords = $this->_normalizeKeywords($dirtyKeywords);
 
 			if ($cleanKeywords)
 			{
@@ -65,7 +65,7 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Filters a list of element IDs by a given search query.
 	 *
-	 * @param array       $elementIds The list of element IDs to filter by the search term.
+	 * @param array       $elementIds The list of element IDs to filter by the search query.
 	 * @param string      $query      The search query.
 	 * @param int|null    $fieldId    The field ID to search within, if any.
 	 * @param string|null $locale     The locale ID to search within, if any.
@@ -77,22 +77,22 @@ class SearchService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Cleans up a search term/keywords.
+	 * Normalizes search keywords.
 	 *
 	 * @access private
-	 * @param string  $term The dirty search term/keywords.
-	 * @return string The cleansed search term/keywords.
+	 * @param string  $keywords The dirty keywords.
+	 * @return string The cleansed keywords.
 	 */
-	private function _normalizeSearchTerm($term)
+	private function _normalizeKeywords($keywords)
 	{
 		// Convert extended ASCII characters to low ASCII
-		$term = StringHelper::asciiString($term);
+		$keywords = StringHelper::asciiString($keywords);
 
 		// Normalize to lowercase
-		$term = strtolower($term);
+		$keywords = strtolower($keywords);
 
 		// ...
 
-		return $term;
+		return $keywords;
 	}
 }
