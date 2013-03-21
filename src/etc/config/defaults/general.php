@@ -209,6 +209,13 @@ return array(
 'requireUserAgentAndIpForSession' => true,
 
 /**
+ * Custom ASCII charater mappings.
+ *
+ * This array is merged into the default one in StringHelper::getAsciiCharMap().
+ */
+'customAsciiCharMappings' => array(),
+
+/**
  * Error Path Keys
  * 'errorPath'      => craft.app.templates.errors.error
  * 'error400Path'   => craft.app.templates.errors.400
