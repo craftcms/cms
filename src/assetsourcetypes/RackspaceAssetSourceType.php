@@ -101,7 +101,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	public static function getContainerList($username, $apiKey, $region)
 	{
-		$rackspace = AssetsHelper::getRackspaceConnectionUsingApiKey($username, $apiKey);
+		$rackspace = AssetsHelper::getRackspaceConnection($username, $apiKey);
 
 		try
 		{
@@ -791,11 +791,11 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 						$endpoint = (object) $endpoint;
 					}
 				}
-				$connection = AssetsHelper::getRackspaceConnectionUsingStoredCredentials($settings->username, $settings->apiKey, static::$_storedCredentials[$key]);
+				$connection = AssetsHelper::getRackspaceConnection($settings->username, $settings->apiKey, static::$_storedCredentials[$key]);
 			}
 			else
 			{
-				$connection = AssetsHelper::getRackspaceConnectionUsingApiKey($settings->username, $settings->apiKey);
+				$connection = AssetsHelper::getRackspaceConnection($settings->username, $settings->apiKey);
 			}
 
 			static::$_rackspaceContainers[$key] = $connection->ObjectStore(self::RackspaceServiceName, $settings->region)->Container(rawurlencode($settings->container));

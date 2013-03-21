@@ -28,36 +28,25 @@ class AssetsHelper
 	}
 
 	/**
-	 * Create a connection to Rackspace, using username and API key.
+	 * Create a connection to Rackspace and re-use existing connection data, if possible.
 	 *
 	 * @param $username
 	 * @param $apiKey
-	 * @return \OpenCloud\Rackspace|null
-	 */
-	public static function getRackspaceConnectionUsingApiKey($username, $apiKey)
-	{
-		if (Craft::hasPackage(CraftPackage::Cloud))
-		{
-			require_once(craft()->path->getLibPath().'Opencloud/rackspace.php');
-			return new \OpenCloud\Rackspace(self::RackspaceAuthUrl, array('username' => $username, 'apiKey' => $apiKey));
-		}
-
-		return null;
-	}
-
-	/**
-	 * Create a connection to Rackspace and re-use existing token, if possible.
-	 *
 	 * @param $credentials
 	 * @return \OpenCloud\Rackspace|null
 	 */
-	public static function getRackspaceConnectionUsingStoredCredentials($username, $apiKey, $credentials)
+	public static function getRackspaceConnection($username, $apiKey, $credentials = null)
 	{
 		if (Craft::hasPackage(CraftPackage::Cloud))
 		{
 			require_once(craft()->path->getLibPath().'Opencloud/rackspace.php');
 			$connection =  new \OpenCloud\Rackspace(self::RackspaceAuthUrl, array('username' => $username, 'apiKey' => $apiKey));
-			$connection->ImportCredentials($credentials);
+
+			if (!is_null($credentials))
+			{
+				$connection->ImportCredentials($credentials);
+			}
+
 			return $connection;
 		}
 
