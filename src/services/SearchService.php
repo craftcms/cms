@@ -18,6 +18,47 @@ class SearchService extends BaseApplicationComponent
 	 */
 	public function indexElementKeywords($elementId, $localeId, $keywords)
 	{
+		if (is_string($keywords))
+		{
+			// Store non-field-specific keywords with a fieldId of '0'
+			$keywords = array('0' => $keywords);
+		}
+
+		foreach ($keywords as $fieldId => $dirtyKeywords)
+		{
+			// Clean 'em up
+			$cleanKeywords = $this->_normalizeSearchTerm($dirtyKeywords);
+
+			if ($cleanKeywords)
+			{
+				// Insert/update the row in searhindex
+				$table = DbHelper::addTablePrefix('searchindex');
+				$sql = 'INSERT INTO '.craft()->db->quoteTableName($table).' (' .
+					craft()->db->quoteColumnName('elementId').', ' .
+					craft()->db->quoteColumnName('fieldId').', ' .
+					craft()->db->quoteColumnName('locale').', ' .
+					craft()->db->quoteColumnName('keywords') .
+					') VALUES (:elementId, :fieldId, :locale, :keywords) ' .
+					'ON DUPLICATE KEY UPDATE '.craft()->db->quoteColumnName('keywords').' = :keywords';
+
+				craft()->db->createCommand()->setText($sql)->execute(array(
+					':elementId' => $elementId,
+					':fieldId'   => $fieldId,
+					':locale'    => $localeId,
+					':keywords'  => $cleanKeywords
+				));
+			}
+			else
+			{
+				// Delete the searchindex row if it exists
+				craft()->db->createCommand()->delete('searchindex', array(
+					'elementId' => $elementId,
+					'fieldId'   => $fieldId,
+					'locale'    => $localeId
+				));
+			}
+		}
+
 		return true;
 	}
 
@@ -33,5 +74,25 @@ class SearchService extends BaseApplicationComponent
 	public function filterElementIdsByQuery($elementIds, $query, $fieldId = null, $locale = null)
 	{
 		return array();
+	}
+
+	/**
+	 * Cleans up a search term/keywords.
+	 *
+	 * @access private
+	 * @param string  $term The dirty search term/keywords.
+	 * @return string The cleansed search term/keywords.
+	 */
+	private function _normalizeSearchTerm($term)
+	{
+		// Convert extended ASCII characters to low ASCII
+		$term = StringHelper::asciiString($term);
+
+		// Normalize to lowercase
+		$term = strtolower($term);
+
+		// ...
+
+		return $term;
 	}
 }
