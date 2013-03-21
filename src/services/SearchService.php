@@ -81,6 +81,8 @@ class SearchService extends BaseApplicationComponent
 	 */
 	public function filterElementIdsByQuery($elementIds, $query)
 	{
+		//$ignore = craft()->config->get('searchIgnoreWords');
+
 		return array();
 	}
 
@@ -88,10 +90,11 @@ class SearchService extends BaseApplicationComponent
 	 * Normalizes search keywords.
 	 *
 	 * @access private
-	 * @param string  $keywords The dirty keywords.
+	 * @param string  $str The dirty keywords.
+	 * @param array  $ignore Ignore words to strip out.
 	 * @return string The cleansed keywords.
 	 */
-	private function _normalizeKeywords($str)
+	private function _normalizeKeywords($str, $ignore = array())
 	{
 		// Flatten
 		if (is_array($str)) $str = StringHelper::arrayToString($str, ' ');
@@ -112,7 +115,14 @@ class SearchService extends BaseApplicationComponent
 		$str = function_exists('mb_strtolower') ? mb_strtolower($str, 'UTF-8') : strtolower($str);
 
 		// Remove ignore-words?
-		// ...
+		if (is_array($ignore) && ! empty($ignore))
+		{
+			foreach ($ignore as $word)
+			{
+				$word = preg_quote($this->_normalizeKeywords($word));
+				$str  = preg_replace("/\b{$word}\b/", '', $str);
+			}
+		}
 
 		// Strip out new lines and superfluous spaces
 		$str = preg_replace('/[\n\r]+/', ' ', $str);
