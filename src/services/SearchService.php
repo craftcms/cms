@@ -80,6 +80,8 @@ class SearchService extends BaseApplicationComponent
 	 */
 	public function filterElementIdsByQuery($elementIds, $query)
 	{
+		//$ignore = craft()->config->get('searchIgnoreWords');
+
 		return array();
 	}
 

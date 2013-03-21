@@ -216,6 +216,11 @@ return array(
 'customAsciiCharMappings' => array(),
 
 /**
+ * Search Ignore Words.
+ */
+'searchIgnoreWords' => array('the', 'and'),
+
+/**
  * Error Path Keys
  * 'errorPath'      => craft.app.templates.errors.error
  * 'error400Path'   => craft.app.templates.errors.400
