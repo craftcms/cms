@@ -9,23 +9,26 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Indexes the keywords for a given element and locale.
 	 *
-	 * @param int          $elementId The ID of the element getting indexed.
-	 * @param string       $localeId  The locale ID of the content getting indexed.
-	 * @param string|array $keywords  The dirty element keywords.
-	 *                                This can be a string (for all non-content keywords)
-	 *                                or an array of strings, indexed by the field IDs.
+	 * @param int    $elementId The ID of the element getting indexed.
+	 * @param string $localeId  The locale ID of the content getting indexed.
+	 * @param array  $keywords  The element keywords, indexed by attribute name or field ID.
 	 * @return bool  Whether the indexing was a success.
 	 */
 	public function indexElementKeywords($elementId, $localeId, $keywords)
 	{
-		if (is_string($keywords))
+		foreach ($keywords as $attribute => $dirtyKeywords)
 		{
-			// Store non-field-specific keywords with a fieldId of '0'
-			$keywords = array('0' => $keywords);
-		}
+			// Is this for a field?
+			if (is_int($attribute) || (string) intval($attribute) === (string) $attribute)
+			{
+				$fieldId = (string) $attribute;
+				$attribute = 'field';
+			}
+			else
+			{
+				$fieldId = '0';
+			}
 
-		foreach ($keywords as $fieldId => $dirtyKeywords)
-		{
 			// Clean 'em up
 			$cleanKeywords = $this->_normalizeKeywords($dirtyKeywords);
 
@@ -38,14 +41,16 @@ class SearchService extends BaseApplicationComponent
 				$table = DbHelper::addTablePrefix('searchindex');
 				$sql = 'INSERT INTO '.craft()->db->quoteTableName($table).' (' .
 					craft()->db->quoteColumnName('elementId').', ' .
+					craft()->db->quoteColumnName('attribute').', ' .
 					craft()->db->quoteColumnName('fieldId').', ' .
 					craft()->db->quoteColumnName('locale').', ' .
 					craft()->db->quoteColumnName('keywords') .
-					') VALUES (:elementId, :fieldId, :locale, :keywords) ' .
+					') VALUES (:elementId, :attribute, :fieldId, :locale, :keywords) ' .
 					'ON DUPLICATE KEY UPDATE '.craft()->db->quoteColumnName('keywords').' = :keywords';
 
 				craft()->db->createCommand()->setText($sql)->execute(array(
 					':elementId' => $elementId,
+					':attribute' => $attribute,
 					':fieldId'   => $fieldId,
 					':locale'    => $localeId,
 					':keywords'  => $cleanKeywords
@@ -56,6 +61,7 @@ class SearchService extends BaseApplicationComponent
 				// Delete the searchindex row if it exists
 				craft()->db->createCommand()->delete('searchindex', array(
 					'elementId' => $elementId,
+					'attribute' => $attribute,
 					'fieldId'   => $fieldId,
 					'locale'    => $localeId
 				));

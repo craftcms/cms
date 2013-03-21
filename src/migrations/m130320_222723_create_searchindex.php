@@ -19,16 +19,17 @@ class m130320_222723_create_searchindex extends BaseMigration
 			$table = DbHelper::addTablePrefix('searchindex');
 
 			$columns = array(
-				'elementId' => DbHelper::generateColumnDefinition(array('column' => ColumnType::Int,    'null' => false)),
-				'fieldId'   => DbHelper::generateColumnDefinition(array('column' => ColumnType::Int,    'null' => false)),
+				'elementId' => DbHelper::generateColumnDefinition(array('column' => ColumnType::Int, 'null' => false)),
+				'attribute' => DbHelper::generateColumnDefinition(array('column' => ColumnType::Varchar, 'maxLength' => 25, 'null' => false)),
+				'fieldId'   => DbHelper::generateColumnDefinition(array('column' => ColumnType::Int, 'null' => false)),
 				'locale'    => DbHelper::generateColumnDefinition(array('column' => ColumnType::Locale, 'null' => false)),
-				'keywords'  => DbHelper::generateColumnDefinition(array('column' => ColumnType::Text,   'null' => false)),
+				'keywords'  => DbHelper::generateColumnDefinition(array('column' => ColumnType::Text, 'null' => false)),
 			);
 
 			$this->execute(craft()->db->getSchema()->createTable($table, $columns, null, 'MyISAM'));
 
 			// Give it a composite primary key
-			$this->addPrimaryKey('searchindex', 'elementId,fieldId,locale');
+			$this->addPrimaryKey('searchindex', 'elementId,attribute,fieldId,locale');
 
 			// Add the FULLTEXT index on `keywords`
 			$this->execute('CREATE FULLTEXT INDEX ' .

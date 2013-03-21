@@ -152,16 +152,17 @@ class InstallService extends BaseApplicationComponent
 		$table = DbHelper::addTablePrefix('searchindex');
 
 		$columns = array(
-			'elementId' => DbHelper::generateColumnDefinition(array('column' => ColumnType::Int,    'null' => false)),
-			'fieldId'   => DbHelper::generateColumnDefinition(array('column' => ColumnType::Int,    'null' => false)),
+			'elementId' => DbHelper::generateColumnDefinition(array('column' => ColumnType::Int, 'null' => false)),
+			'attribute' => DbHelper::generateColumnDefinition(array('column' => ColumnType::Varchar, 'maxLength' => 25, 'null' => false)),
+			'fieldId'   => DbHelper::generateColumnDefinition(array('column' => ColumnType::Int, 'null' => false)),
 			'locale'    => DbHelper::generateColumnDefinition(array('column' => ColumnType::Locale, 'null' => false)),
-			'keywords'  => DbHelper::generateColumnDefinition(array('column' => ColumnType::Text,   'null' => false)),
+			'keywords'  => DbHelper::generateColumnDefinition(array('column' => ColumnType::Text, 'null' => false)),
 		);
 
 		craft()->db->createCommand()->setText(craft()->db->getSchema()->createTable($table, $columns, null, 'MyISAM'))->execute();
 
 		// Give it a composite primary key
-		craft()->db->createCommand()->addPrimaryKey('searchindex', 'elementId,fieldId,locale');
+		craft()->db->createCommand()->addPrimaryKey('searchindex', 'elementId,attribute,fieldId,locale');
 
 		// Add the FULLTEXT index on `keywords`
 		craft()->db->createCommand()->setText('CREATE FULLTEXT INDEX ' .
