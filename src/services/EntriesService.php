@@ -184,6 +184,12 @@ class EntriesService extends BaseApplicationComponent
 			$elementLocaleRecord->save(false);
 			$contentRecord->save(false);
 
+			// Update the search index
+			craft()->search->indexElementKeywords($entry->id, $entry->locale, array(
+				'title' => $entry->title,
+				'slug'  => $entry->slug
+			));
+
 			// If we have any tags to process
 			if (!empty($entryTagRecords))
 			{

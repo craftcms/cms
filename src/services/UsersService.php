@@ -236,6 +236,15 @@ class UsersService extends BaseApplicationComponent
 
 			$userRecord->save(false);
 
+			// Update the search index
+			craft()->search->indexElementKeywords($user->id, craft()->i18n->getPrimarySiteLocaleId(), array(
+				'username'  => $user->username,
+				'firstName' => $user->firstName,
+				'lastName'  => $user->lastName,
+				'fullName'  => $user->getFullName(),
+				'email'     => $user->email
+			));
+
 			// Send a verification email?
 			if ($user->verificationRequired)
 			{
