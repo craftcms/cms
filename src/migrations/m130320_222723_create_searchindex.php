@@ -32,9 +32,9 @@ class m130320_222723_create_searchindex extends BaseMigration
 
 			// Add the FULLTEXT index on `keywords`
 			$this->execute('CREATE FULLTEXT INDEX ' .
-				craft()->db->getSchema()->quoteTableName(DbHelper::getIndexName('searchindex', 'keywords')).' ON ' .
-				craft()->db->getSchema()->quoteTableName($table).' ' .
-				'('.craft()->db->getSchema()->quoteColumnName('keywords').')'
+				craft()->db->quoteTableName(DbHelper::getIndexName('searchindex', 'keywords')).' ON ' .
+				craft()->db->quoteTableName($table).' ' .
+				'('.craft()->db->quoteColumnName('keywords').')'
 			);
 		}
 

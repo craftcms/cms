@@ -165,9 +165,9 @@ class InstallService extends BaseApplicationComponent
 
 		// Add the FULLTEXT index on `keywords`
 		craft()->db->createCommand()->setText('CREATE FULLTEXT INDEX ' .
-			craft()->db->getSchema()->quoteTableName(DbHelper::getIndexName('searchindex', 'keywords')).' ON ' .
-			craft()->db->getSchema()->quoteTableName($table).' ' .
-			'('.craft()->db->getSchema()->quoteColumnName('keywords').')'
+			craft()->db->quoteTableName(DbHelper::getIndexName('searchindex', 'keywords')).' ON ' .
+			craft()->db->quoteTableName($table).' ' .
+			'('.craft()->db->quoteColumnName('keywords').')'
 		)->execute();
 
 		Craft::log('Finished creating the searchindex table.');
