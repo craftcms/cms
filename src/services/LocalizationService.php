@@ -100,12 +100,22 @@ class LocalizationService extends BaseApplicationComponent
 	/**
 	 * Returns the site's primary locale.
 	 *
-	 * @return string
+	 * @return LocaleModel
 	 */
 	public function getPrimarySiteLocale()
 	{
 		$locales = $this->getSiteLocales();
 		return $locales[0];
+	}
+
+	/**
+	 * Returns the site's primary locale ID.
+	 *
+	 * @return string
+	 */
+	public function getPrimarySiteLocaleId()
+	{
+		return $this->getPrimarySiteLocale()->getId();
 	}
 
 	/**

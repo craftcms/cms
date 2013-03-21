@@ -632,7 +632,7 @@ class WebApp extends \CWebApplication
 		}
 
 		// Just use the primary site locale
-		return $this->i18n->getPrimarySiteLocale()->getId();
+		return $this->i18n->getPrimarySiteLocaleId();
 	}
 
 	/**

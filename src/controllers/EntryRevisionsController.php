@@ -32,7 +32,7 @@ class EntryRevisionsController extends BaseController
 			$draft->id        = craft()->request->getRequiredPost('entryId');
 			$draft->sectionId = craft()->request->getRequiredPost('sectionId');
 			$draft->creatorId = craft()->userSession->getUser()->id;
-			$draft->locale    = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocale()->getId());
+			$draft->locale    = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocaleId());
 		}
 
 		$this->_setDraftValuesFromPost($draft);
