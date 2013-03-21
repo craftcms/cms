@@ -351,7 +351,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 	public function getLocalCopy(AssetFileModel $file)
 	{
-		$location = AssetsHelper::getTempFilePath();
+		$location = AssetsHelper::getTempFilePath($file->getExtension());
 		IOHelper::copyFile($this->_getFileSystemPath($file), $location);
 		clearstatcache();
 

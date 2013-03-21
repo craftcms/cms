@@ -412,7 +412,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 	public function getLocalCopy(AssetFileModel $file)
 	{
-		$location = AssetsHelper::getTempFilePath();
+		$location = AssetsHelper::getTempFilePath($file->getExtension());
 
 		$this->_prepareForRequests();
 		$this->_s3->getObject($this->getSettings()->bucket, $this->_getS3Path($file), $location);
