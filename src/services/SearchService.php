@@ -108,7 +108,7 @@ class SearchService extends BaseApplicationComponent
 		$str = strtr($str, $this->_getCharMap());
 
 		// Normalize to lowercase
-		$str = function_exists('mb_strtolower') ? mb_strtolower($str) : strtolower($str);
+		$str = function_exists('mb_strtolower') ? mb_strtolower($str, 'UTF-8') : strtolower($str);
 
 		// Remove ignore-words?
 		// ...
