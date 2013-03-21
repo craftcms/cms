@@ -75,6 +75,16 @@ abstract class Service extends Base {
 	} // public function Url()
 
 	/**
+	 * Return the Connection object.
+	 *
+	 * @return OpenStack
+	 */
+	public function Connection()
+	{
+		return $this->conn;
+	}
+
+	/**
 	 * Returns the /extensions for the service
 	 *
 	 * @api

@@ -454,6 +454,9 @@ class DataObject extends ObjStoreBase {
             case 'Content-Length':
                 $this->content_length = $value;
                 break;
+			case 'Last-Modified':
+				$this->last_modified = $value;
+				break;
             default:
                 break;
             }
