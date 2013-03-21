@@ -33,7 +33,7 @@ class SectionsController extends BaseController
 		}
 		else
 		{
-			$primaryLocaleId = craft()->i18n->getPrimarySiteLocale()->getId();
+			$primaryLocaleId = craft()->i18n->getPrimarySiteLocaleId();
 			$localeIds = array($primaryLocaleId);
 		}
 

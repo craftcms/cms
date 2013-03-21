@@ -347,7 +347,7 @@ class ElementsService extends BaseApplicationComponent
 			}
 			else
 			{
-				$contentRecord->locale = craft()->i18n->getPrimarySiteLocale()->getId();
+				$contentRecord->locale = craft()->i18n->getPrimarySiteLocaleId();
 			}
 		}
 

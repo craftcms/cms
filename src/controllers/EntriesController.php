@@ -16,7 +16,7 @@ class EntriesController extends BaseController
 		$entry = new EntryModel();
 
 		$entry->sectionId  = craft()->request->getRequiredPost('sectionId');
-		$entry->locale     = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocale()->getId());
+		$entry->locale     = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocaleId());
 		$entry->id         = craft()->request->getPost('entryId');
 		$entry->authorId   = craft()->request->getPost('author', craft()->userSession->getUser()->id);
 		$entry->title      = craft()->request->getPost('title');
