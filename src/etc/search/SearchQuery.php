@@ -17,6 +17,7 @@ class SearchQuery
 	function __construct($query)
 	{
 		$this->_query = $query;
+		$this->_tokens = array();
 		$this->_parse();
 	}
 
