@@ -604,11 +604,13 @@ class WebApp extends \CWebApplication
 
 		if (defined('CRAFT_LOCALE'))
 		{
+			$locale = strtolower(CRAFT_LOCALE);
+
 			// Get the list of actual site locale IDs
 			$siteLocaleIds = $this->i18n->getSiteLocaleIds();
 
 			// Is it set to "auto"?
-			if (CRAFT_LOCALE == 'auto')
+			if ($locale == 'auto')
 			{
 				// If the user is logged in *and* has a primary language set, use that
 				$user = $this->userSession->getUser();
@@ -634,9 +636,9 @@ class WebApp extends \CWebApplication
 			}
 
 			// Is it set to a valid site locale?
-			else if (in_array(CRAFT_LOCALE, $siteLocaleIds))
+			else if (in_array($locale, $siteLocaleIds))
 			{
-				return CRAFT_LOCALE;
+				return $locale;
 			}
 		}
 
