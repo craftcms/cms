@@ -185,6 +185,7 @@ class CraftTwigExtension extends \Twig_Extension
 				{
 					foreach (craft()->globals->getAllSets() as $globalSet)
 					{
+						$globalSet->locale = craft()->language;
 						$globals[$globalSet->handle] = $globalSet;
 					}
 				}
