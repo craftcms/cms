@@ -32,6 +32,40 @@ class DateTime extends \DateTime
 	}
 
 	/**
+	 * Creates a new DateTime object from a string.
+	 *
+	 * @param string $date
+	 * @return DateTime
+	 */
+	public static function createFromString($date)
+	{
+		$date = (string) $date;
+
+		if (preg_match('/^(\d{4})(?:-(\d{1,2})(?:-(\d{1,2})(?: (\d{1,2})\:(\d{2})(?:\:(\d{2}))?)?)?)?$/', $date, $m))
+		{
+			// TODO: MySql specific
+			$format = static::MYSQL_DATETIME;
+
+			$date = $m[1] .                                           // year
+				'-'.(!empty($m[2]) ? sprintf('%02d', $m[2]) : '01') . // month
+				'-'.(!empty($m[3]) ? sprintf('%02d', $m[3]) : '01') . // day
+				' '.(!empty($m[4]) ? sprintf('%02d', $m[4]) : '00') . // hour
+				':'.(!empty($m[5]) ? $m[5] : '00') .                  // minute
+				':'.(!empty($m[6]) ? $m[6] : '00');                   // second
+		}
+		else if (preg_match('/^\d{10}$/', $date))
+		{
+			$format = 'U';
+		}
+		else
+		{
+			$format = '';
+		}
+
+		return static::createFromFormat('!'.$format, $date);
+	}
+
+	/**
 	 * @return string
 	 */
 	function __toString()

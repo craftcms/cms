@@ -450,30 +450,7 @@ class DbHelper
 		{
 			if (!$date instanceof \DateTime)
 			{
-				$date = (string) $date;
-
-				if (preg_match('/^(\d{4})(?:-(\d{1,2})(?:-(\d{1,2})(?: (\d{1,2})\:(\d{2})(?:\:(\d{2}))?)?)?)?$/', $date, $m))
-				{
-					// TODO: MySql specific
-					$format = DateTime::MYSQL_DATETIME;
-
-					$date = $m[1] .                                                          // year
-						'-'.(!empty($m[2]) ? (strlen($m[2] == 1 ? '0' : '').$m[2]) : '01') . // month
-						'-'.(!empty($m[3]) ? (strlen($m[3] == 1 ? '0' : '').$m[3]) : '01') . // day
-						' '.(!empty($m[4]) ? (strlen($m[4] == 1 ? '0' : '').$m[4]) : '00') . // hour
-						':'.(!empty($m[5]) ? $m[5] : '00') .                                 // minute
-						':'.(!empty($m[6]) ? $m[6] : '00');                                  // second
-				}
-				else if (preg_match('/^\d{10}$/', $date))
-				{
-					$format = 'U';
-				}
-				else
-				{
-					$format = '';
-				}
-
-				$date = DateTime::createFromFormat('!'.$format, $date);
+				$date = DateTime::createFromString($date);
 			}
 
 			$param = ':p'.StringHelper::randomString(9);
