@@ -155,7 +155,7 @@ class EntriesService extends BaseApplicationComponent
 		$entry->addErrors($elementLocaleRecord->getErrors());
 
 		// Entry content
-		$content = craft()->elements->populateContentFromPost($entry, $section->getFieldLayout(), $entry->locale);
+		$content = craft()->content->populateContentFromPost($entry, $section->getFieldLayout(), $entry->locale);
 		$content->validate();
 		$entry->addErrors($content->getErrors());
 
@@ -188,7 +188,7 @@ class EntriesService extends BaseApplicationComponent
 			// Save the other records
 			$entryLocaleRecord->save(false);
 			$elementLocaleRecord->save(false);
-			craft()->elements->saveContent($content, false);
+			craft()->content->saveContent($content, false);
 
 			// If we have any tags to process
 			if (!empty($entryTagRecords))
@@ -238,7 +238,7 @@ class EntriesService extends BaseApplicationComponent
 			}
 
 			// Perform some post-save operations
-			craft()->elements->postSaveOperations($entry, $content);
+			craft()->content->postSaveOperations($entry, $content);
 
 			return true;
 		}

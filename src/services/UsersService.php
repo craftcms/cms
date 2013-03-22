@@ -286,7 +286,7 @@ class UsersService extends BaseApplicationComponent
 		Craft::requirePackage(CraftPackage::Users);
 
 		$fieldLayout = craft()->fields->getLayoutByType(ElementType::User);
-		return craft()->elements->saveElementContent($user, $fieldLayout);
+		return craft()->content->saveElementContent($user, $fieldLayout);
 	}
 
 	/**

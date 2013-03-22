@@ -278,7 +278,7 @@ class AssetsService extends BaseApplicationComponent
 	{
 		// TODO: translation support
 		$fieldLayout = craft()->fields->getLayoutByType(ElementType::Asset);
-		return craft()->elements->saveElementContent($file, $fieldLayout);
+		return craft()->content->saveElementContent($file, $fieldLayout);
 	}
 
 	// -------------------------------------------

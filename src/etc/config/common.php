@@ -190,10 +190,10 @@ $cpRoutes['pkgRoutes']['Users']['settings/users/groups/(?P<groupId>\d+)'] = 'set
 
 $components['users']['class']                = 'Craft\UsersService';
 $components['assets']['class']               = 'Craft\AssetsService';
-$components['assetTransforms']['class'] = 'Craft\AssetTransformsService';
+$components['assetTransforms']['class']      = 'Craft\AssetTransformsService';
 $components['assetIndexing']['class']        = 'Craft\AssetIndexingService';
 $components['assetSources']['class']         = 'Craft\AssetSourcesService';
-
+$components['content']['class']              = 'Craft\ContentService';
 $components['dashboard']['class']            = 'Craft\DashboardService';
 $components['email']['class']                = 'Craft\EmailService';
 $components['elements']['class']             = 'Craft\ElementsService';

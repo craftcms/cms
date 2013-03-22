@@ -260,6 +260,6 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	public function saveContent(GlobalSetModel $globalSet)
 	{
-		return craft()->elements->saveElementContent($globalSet, $globalSet->getFieldLayout(), $globalSet->locale);
+		return craft()->content->saveElementContent($globalSet, $globalSet->getFieldLayout(), $globalSet->locale);
 	}
 }
