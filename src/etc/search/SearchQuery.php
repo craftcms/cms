@@ -176,4 +176,86 @@ class SearchQuery
 
 		return true;
 	}
+
+	/**
+	 * Generates a piece of WHERE clause for fallback (LIKE) search from search term
+	 *
+	 * @access private
+	 * @param object SearchQueryTerm
+	 * @return string
+	 */
+	private function _getFallbackSqlFromTerm($term)
+	{
+		$sqlTmpl = "(`%s` %s '%s')";
+
+		$like = $term->exclude ? 'NOT LIKE' : 'LIKE';
+		$eq   = $term->exclude ? '!=' : '=';
+
+		if ($term->attribute == 'locale')
+		{
+			return sprintf($sqlTmpl, $term->attribute, $eq, $term->term);
+		}
+		else if ($fieldId = 0) // TODO: get the fieldID from thing
+		{
+			$and = sprintf($sqlTmpl, 'fieldId', '=', $fieldId);
+		}
+		else if (!empty($term->attribute))
+		{
+			$and = sprintf($sqlTmpl, 'attribute', '=', $term->attribute);
+		}
+		else
+		{
+			$and = null;
+		}
+
+		$sql = sprintf($sqlTmpl, 'keywords', $like, "% {$term->term} %");
+
+		if (!empty($and))
+		{
+			$sql = "({$sql} AND {$and})";
+		}
+
+		return $sql;
+	}
+
+	/**
+	 * Generates complete WHERE clause for fallback (LIKE) search from given tokens.
+	 *
+	 * @access private
+	 * @param array $tokens
+	 * @param string $glue
+	 */
+	private function _getFallbackSql($tokens = array(), $glue = 'AND')
+	{
+		if (!$tokens)
+		{
+			$tokens = $this->_tokens;
+		}
+
+		$sql = array();
+
+		foreach ($tokens AS $obj)
+		{
+			if ($obj instanceof SearchQueryTermGroup)
+			{
+				$sql[] = $this->_getFallbackSql($obj->terms, 'OR');
+			}
+			else if ($obj instanceof SearchQueryTerm)
+			{
+				$sql[] = $this->_getFallbackSqlFromTerm($obj);
+			}
+		}
+
+		return implode(" {$glue} ", $sql);
+	}
+
+	/**
+	 * Get sql for current search query.
+	 *
+	 * @return string
+	 */
+	public function getSql()
+	{
+		return $this->isFulltext() ? '' : $this->_getFallbackSql();
+	}
 }

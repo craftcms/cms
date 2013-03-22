@@ -86,7 +86,7 @@ class SearchService extends BaseApplicationComponent
 			$query = new SearchQuery($query);
 		}
 
-		//$ignore = craft()->config->get('searchIgnoreWords');
+		$where = $query->getSql();
 
 		return array();
 	}
