@@ -125,7 +125,7 @@ class SearchQuery
 			}
 
 			// Check if the term is okay for full-test
-			if ($this->_fulltext && (strlen($term) < $this->_ft_min_word_len || in_array($term, $this->_ft_stopwords)))
+			if ($this->_fulltext && $this->_isFulltextTerm($term) === false)
 			{
 				$this->_fulltext = false;
 			}
@@ -141,5 +141,29 @@ class SearchQuery
 				$this->_tokens[] = $term;
 			}
 		}
+	}
+
+	/**
+	 * Determine if search term is eligable for full-text or not.
+	 *
+	 * @access private
+	 * @param sting $str search term to check
+	 * @return bool
+	 */
+	private function _isFulltextTerm($str)
+	{
+		// Check each word in search terms
+		$terms = (strpos($str, ' ')) ? explode(' ', $str) : array($terms);
+
+		// Then loop through terms and return false it doesn't match up
+		foreach ($terms as $term)
+		{
+			if (strlen($term) < $this->_ft_min_word_len || in_array($term, $this->_ft_stopwords))
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 }
