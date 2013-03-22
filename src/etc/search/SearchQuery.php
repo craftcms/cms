@@ -6,13 +6,32 @@ namespace Craft;
  */
 class SearchQuery
 {
+	const FT_MIN_WORD_LENGTH = 4;
+
+	private static $_ftStopWords;
+
 	private $_query;
 	private $_tokens;
 	private $_fulltext;
 
-	private $_ft_min_word_len = 4;
-	private $_ft_stopwords = array("it's", 'able', 'about', 'above', 'according');
+	/**
+	 * Returns the FULLTEXT stop words.
+	 *
+	 * @static
+	 * @access private
+	 * @return array
+	 */
+	private static function _getFulltextStopWords()
+	{
+		if (!isset(static::$_ftStopWords))
+		{
+			static::$_ftStopWords = array_map('StringHelper::normalizeKeywords',
+				array("it's", 'able', 'about', 'above', 'according')
+			);
+		}
 
+		return static::$_ftStopWords;
+	}
 
 	/**
 	 * Constructor
@@ -24,7 +43,6 @@ class SearchQuery
 		$this->_query = $query;
 		$this->_tokens = array();
 		$this->_fulltext = true;
-		$this->_ft_stopwords = array_map('StringHelper::normalizeKeywords', $this->_ft_stopwords);
 		$this->_parse();
 	}
 
@@ -46,6 +64,16 @@ class SearchQuery
 	public function isFulltext()
 	{
 		return $this->_fulltext;
+	}
+
+	/**
+	 * Get sql for current search query.
+	 *
+	 * @return string
+	 */
+	public function getSql()
+	{
+		return $this->isFulltext() ? '' : $this->_getFallbackSql();
 	}
 
 	/**
@@ -135,7 +163,7 @@ class SearchQuery
 			}
 
 			// Check if the term is okay for full-text
-			if ($this->_fulltext && $this->_isFulltextTerm($term) === false)
+			if ($this->_fulltext && !$this->_isFulltextTerm($term))
 			{
 				$this->_fulltext = false;
 			}
@@ -157,18 +185,20 @@ class SearchQuery
 	 * Determine if search term is eligable for full-text or not.
 	 *
 	 * @access private
-	 * @param sting $str search term to check
+	 * @param sting $term The search term to check
 	 * @return bool
 	 */
-	private function _isFulltextTerm($str)
+	private function _isFulltextTerm($term)
 	{
-		// Check each word in search terms
-		$terms = (strpos($str, ' ')) ? explode(' ', $str) : array($terms);
+		$ftStopWords = static::_getFulltextStopWords();
+
+		// Split the term into individual words
+		$words = explode(' ', $term);
 
 		// Then loop through terms and return false it doesn't match up
-		foreach ($terms as $term)
+		foreach ($words as $word)
 		{
-			if (strlen($term) < $this->_ft_min_word_len || in_array($term, $this->_ft_stopwords))
+			if (strlen($word) < static::FT_MIN_WORD_LENGTH || in_array($word, $ftStopWords))
 			{
 				return false;
 			}
@@ -195,7 +225,7 @@ class SearchQuery
 		{
 			return sprintf($sqlTmpl, $term->attribute, $eq, $term->term);
 		}
-		else if ($fieldId = 0) // TODO: get the fieldID from thing
+		else if ($fieldId == '0') // TODO: get the fieldID from thing
 		{
 			$and = sprintf($sqlTmpl, 'fieldId', '=', $fieldId);
 		}
@@ -247,15 +277,5 @@ class SearchQuery
 		}
 
 		return implode(" {$glue} ", $sql);
-	}
-
-	/**
-	 * Get sql for current search query.
-	 *
-	 * @return string
-	 */
-	public function getSql()
-	{
-		return $this->isFulltext() ? '' : $this->_getFallbackSql();
 	}
 }
