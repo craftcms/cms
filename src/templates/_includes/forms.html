@@ -45,7 +45,7 @@
 
 
 {% macro date(config) %}
-	<div class="datewrapper">{{ _self.text(config|merge({ size: 10 })) }}</div>
+	<div class="datewrapper">{{ _self.text(config|merge({ autocomplete: false, size: 10 })) }}</div>
 	{% set js %}
 		$('#{{ config.id }}').datepicker({
 			dateFormat: $.datepicker.W3C,
