@@ -76,11 +76,16 @@ class SearchService extends BaseApplicationComponent
 	 * Filters a list of element IDs by a given search query.
 	 *
 	 * @param array  $elementIds The list of element IDs to filter by the search query.
-	 * @param mixed  $query      The search query.
+	 * @param mixed  $query      The search query (either a string or a SearhQuery instance)
 	 * @return array The filtered list of element IDs.
 	 */
 	public function filterElementIdsByQuery($elementIds, $query)
 	{
+		if (is_string($query))
+		{
+			$query = new SearchQuery($query);
+		}
+
 		//$ignore = craft()->config->get('searchIgnoreWords');
 
 		return array();
