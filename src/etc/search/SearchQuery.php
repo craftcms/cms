@@ -39,6 +39,16 @@ class SearchQuery
 	}
 
 	/**
+	 * Returns the fulltext boolean.
+	 *
+	 * @return bool
+	 */
+	public function isFulltext()
+	{
+		return $this->_fulltext;
+	}
+
+	/**
 	 * Parses the query into an array of tokens.
 	 *
 	 * @access private
@@ -124,7 +134,7 @@ class SearchQuery
 				continue;
 			}
 
-			// Check if the term is okay for full-test
+			// Check if the term is okay for full-text
 			if ($this->_fulltext && $this->_isFulltextTerm($term) === false)
 			{
 				$this->_fulltext = false;
