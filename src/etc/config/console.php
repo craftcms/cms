@@ -15,6 +15,24 @@ function normalizeDbHostname($dbHostname)
 	return $dbHostname;
 }
 
+/**
+ * Returns the correct connection string depending on whether a unixSocket is specific or not in the db config.
+ *
+ * @param $dbConfig
+ * @return string
+ */
+function processConnectionString($dbConfig)
+{
+	if (!empty($dbConfig['unixSocket']))
+	{
+		return strtolower('mysql:unix_socket='.$dbConfig['unixSocket'].';dbname='.$dbConfig['database'].';');
+	}
+	else
+	{
+		return strtolower('mysql:host='.normalizeDbHostname($dbConfig['server']).';dbname='.$dbConfig['database'].';port='.$dbConfig['port'].';');
+	}
+}
+
 $common = require(CRAFT_APP_PATH.'etc/config/common.php');
 
 return CMap::mergeArray($common, array(
@@ -47,7 +65,7 @@ return CMap::mergeArray($common, array(
 
 	'components' => array(
 		'db' => array(
-			'connectionString'  => strtolower('mysql:host='.normalizeDbHostname($dbConfig['server']).';dbname='.$dbConfig['database'].';port='.$dbConfig['port'].';'),
+			'connectionString'  => processConnectionString($dbConfig),
 			'emulatePrepare'    => true,
 			'username'          => $dbConfig['user'],
 			'password'          => $dbConfig['password'],

@@ -418,6 +418,8 @@ class UserSessionService extends \CWebUser
 	 */
 	protected function renewCookie()
 	{
+		$this->_checkVitals();
+
 		$cookies = craft()->request->getCookies();
 		$cookie = $cookies->itemAt($this->getStateKeyPrefix());
 
@@ -431,12 +433,7 @@ class UserSessionService extends \CWebUser
 				$savedUserAgent = $data[4];
 				$currentUserAgent = craft()->request->userAgent;
 
-				// If the saved userAgent differs from the current one, bail.
-				if ($savedUserAgent !== $currentUserAgent)
-				{
-					Craft::log('Tried to renew the identity cookie, but the saved userAgent ('.$savedUserAgent.') does not match the current userAgent ('.$currentUserAgent.').', \CLogger::LEVEL_WARNING);
-					$this->logout(true);
-				}
+				$this->_checkUserAgentString($currentUserAgent, $savedUserAgent);
 
 				// Bump the expiration time.
 				$cookie->expire = time() + $data[3];
@@ -466,13 +463,7 @@ class UserSessionService extends \CWebUser
 	 */
 	protected function restoreFromCookie()
 	{
-		// Require a userAgent string and an IP address to help prevent direct socket connections from trying to login.
-		if (!craft()->request->userAgent || !craft()->request->getIpAddress())
-		{
-			Craft::log('Someone tried to restore a session from a cookie without presenting an IP address or userAgent string.', \CLogger::LEVEL_WARNING);
-			$this->logout(true);
-			$this->requireLogin();
-		}
+		$this->_checkVitals();
 
 		// See if they have an existing identity cookie.
 		$cookie = craft()->request->getCookies()->itemAt($this->getStateKeyPrefix());
@@ -493,12 +484,7 @@ class UserSessionService extends \CWebUser
 				$states = $data[5];
 				$currentUserAgent = craft()->request->userAgent;
 
-				// If the saved userAgent differs from the current one, bail.
-				if ($savedUserAgent !== $currentUserAgent)
-				{
-					Craft::log('Tried to restore session from the the identity cookie, but the saved userAgent ('.$savedUserAgent.') does not match the current userAgent ('.$currentUserAgent.').', \CLogger::LEVEL_WARNING);
-					$this->logout(true);
-				}
+				$this->_checkUserAgentString($currentUserAgent, $savedUserAgent);
 
 				// Get the hashed token from the db based on login name and uid.
 				if (($sessionRow = $this->_findSessionToken($loginName, $uid)) !== false)
@@ -712,5 +698,38 @@ class UserSessionService extends \CWebUser
 		}
 
 		return $this->_userRow;
+	}
+
+	/**
+	 * Checks whether the the current request has a user agent string or IP address.
+	 */
+	private function _checkVitals()
+	{
+		if (craft()->config->get('requireUserAgentAndIpForSession'))
+		{
+			// Require a userAgent string and an IP address to help prevent direct socket connections from trying to login.
+			if (!craft()->request->userAgent || !craft()->request->getIpAddress())
+			{
+				Craft::log('Someone tried to restore a session from a cookie without presenting an IP address or userAgent string.', \CLogger::LEVEL_WARNING);
+				$this->logout(true);
+				$this->requireLogin();
+			}
+		}
+	}
+
+	/**
+	 * Checks whether the current user agent string matches the user agent string saved in the identity cookie.
+	 */
+	private function _checkUserAgentString($currentUserAgent, $savedUserAgent)
+	{
+		if (craft()->config->get('requireMatchingUserAgentForSession'))
+		{
+			// If the saved userAgent differs from the current one, bail.
+			if ($savedUserAgent !== $currentUserAgent)
+			{
+				Craft::log('Tried to restore session from the the identity cookie, but the saved userAgent ('.$savedUserAgent.') does not match the current userAgent ('.$currentUserAgent.').', \CLogger::LEVEL_WARNING);
+				$this->logout(true);
+			}
+		}
 	}
 }

@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * Handles asset indexing and sizing tasks
  */
-class AssetOperationsController extends BaseController
+class AssetIndexingController extends BaseController
 {
 	/**
 	 * Get an indexing session ID

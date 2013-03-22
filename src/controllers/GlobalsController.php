@@ -74,7 +74,7 @@ class GlobalsController extends BaseController
 			throw new Exception(Craft::t('No global set exists with the ID “{id}”.', array('id' => $globalSetId)));
 		}
 
-		$globalSet->locale = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocale()->getId());
+		$globalSet->locale = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocaleId());
 
 		$fields = craft()->request->getPost('fields', array());
 		$globalSet->setContent($fields);

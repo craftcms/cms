@@ -199,6 +199,16 @@ return array(
 'restoreDbOnUpdateFailure' => true,
 
 /**
+ * If set to true, when renewing or restoring session from cookie, the current user agent string must exactly match the user agent string saved in the cookie.
+ */
+'requireMatchingUserAgentForSession' => true,
+
+/**
+ * If set to true, when renewing or restoring session from cookie, the current request must present a user agent and IP address.
+ */
+'requireUserAgentAndIpForSession' => true,
+
+/**
  * Error Path Keys
  * 'errorPath'      => craft.app.templates.errors.error
  * 'error400Path'   => craft.app.templates.errors.400

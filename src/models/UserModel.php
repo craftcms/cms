@@ -76,10 +76,7 @@ class UserModel extends BaseElementModel
 	 */
 	public function getFullName()
 	{
-		if (Craft::hasPackage(CraftPackage::Users))
-		{
-			return $this->firstName . ($this->firstName && $this->lastName ? ' ' : '') . $this->lastName;
-		}
+		return $this->firstName . ($this->firstName && $this->lastName ? ' ' : '') . $this->lastName;
 	}
 
 	/**

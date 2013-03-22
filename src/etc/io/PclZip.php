@@ -33,7 +33,7 @@ class PclZip implements IZip
 	public function unzip($srcZip, $destFolder)
 	{
 		$zip = new \PclZip($srcZip);
-		$destFolders = null;
+		$tempDestFolders = null;
 
 		// check to see if it's a valid archive.
 		if (($zipFiles = $zip->extract(PCLZIP_OPT_EXTRACT_AS_STRING)) == false)
@@ -56,15 +56,24 @@ class PclZip implements IZip
 				continue;
 			}
 
-			$destFolders[] = $destFolder.'/'.rtrim($zipFile['folder'] ? $zipFile['filename'] : IOHelper::getFolderName($zipFile['filename']), '/');
+			$folderName = IOHelper::getFolderName($zipFile['filename']);
+			if ($folderName == './')
+			{
+				$tempDestFolders[] = $destFolder.'/';
+			}
+			else
+			{
+				$tempDestFolders[] = $destFolder.'/'.rtrim(IOHelper::getFolderName($zipFile['filename']), '/');
+			}
 		}
 
-		$destFolders = array_unique($destFolders);
+		$tempDestFolders = array_unique($tempDestFolders);
+		$finalDestFolders = array();
 
-		foreach ($destFolders as $tempDestFolder)
+		foreach ($tempDestFolders as $tempDestFolder)
 		{
 			// Skip over the working directory
-			if (rtrim($destFolder, '/') == $tempDestFolder)
+			if (rtrim($destFolder, '/') == rtrim($tempDestFolder, '/'))
 			{
 				continue;
 			}
@@ -75,28 +84,22 @@ class PclZip implements IZip
 				continue;
 			}
 
-			$parentDirectory = IOHelper::getFolderName($tempDestFolder);
-
-			while (!empty($parentDirectory) && rtrim($destFolder, '/') != $parentDirectory && !in_array($parentDirectory, $destFolders))
-			{
-				$destFolders[] = $parentDirectory;
-				$parentDirectory = IOHelper::getFolderName($parentDirectory);
-			}
+			$finalDestFolders[] = $tempDestFolder;
 		}
 
-		asort($destFolders);
+		asort($finalDestFolders);
 
 		// Create the destination directories.
-		foreach ($destFolders as $tempDestFolder)
+		foreach ($finalDestFolders as $finalDestFolder)
 		{
-			if (!IOHelper::createFolder($tempDestFolder))
+			if (!IOHelper::createFolder($finalDestFolder))
 			{
-				Craft::log('Could not create folder '.$tempDestFolder.' while unziping: '.$srcZip, \CLogger::LEVEL_ERROR);
+				Craft::log('Could not create folder '.$finalDestFolder.' while unzipping: '.$srcZip, \CLogger::LEVEL_ERROR);
 				return false;
 			}
 		}
 
-		unset($destFolders);
+		unset($finalDestFolders);
 
 		// Extract the files from the zip
 		foreach ($zipFiles as $zipFile)

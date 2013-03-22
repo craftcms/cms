@@ -36,6 +36,32 @@ class EntriesService extends BaseApplicationComponent
 	 */
 	public function saveEntry(EntryModel $entry)
 	{
+		// Entry data
+		if ($entry->id)
+		{
+			$entryRecord = EntryRecord::model()->with('element', 'entryTagEntries')->findById($entry->id);
+
+			if (!$entryRecord)
+			{
+				throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
+			}
+
+			$elementRecord = $entryRecord->element;
+
+			// if entry->sectionId is null and there is an entryRecord sectionId, we assume this is a front-end edit.
+			if ($entry->sectionId === null && $entryRecord->sectionId)
+			{
+				$entry->sectionId = $entryRecord->sectionId;
+			}
+		}
+		else
+		{
+			$entryRecord = new EntryRecord();
+
+			$elementRecord = new ElementRecord();
+			$elementRecord->type = ElementType::Entry;
+		}
+
 		$section = craft()->sections->getSectionById($entry->sectionId);
 
 		if (!$section)
@@ -48,26 +74,6 @@ class EntriesService extends BaseApplicationComponent
 		if (!isset($sectionLocales[$entry->locale]))
 		{
 			throw new Exception(Craft::t('The section “{section}” is not enabled for the locale {locale}', array('section' => $section->name, 'locale' => $entry->locale)));
-		}
-
-		// Entry data
-		if ($entry->id)
-		{
-			$entryRecord = EntryRecord::model()->with('element', 'entryTagEntries')->findById($entry->id);
-
-			if (!$entryRecord)
-			{
-				throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
-			}
-
-			$elementRecord = $entryRecord->element;
-		}
-		else
-		{
-			$entryRecord = new EntryRecord();
-
-			$elementRecord = new ElementRecord();
-			$elementRecord->type = ElementType::Entry;
 		}
 
 		$entryRecord->sectionId  = $entry->sectionId;
@@ -88,6 +94,12 @@ class EntriesService extends BaseApplicationComponent
 				'entryId' => $entry->id,
 				'locale'  => $entry->locale
 			));
+
+			// if entry->slug is null and there is an entryLocaleRecord slug, we assume this is a front-end edit.
+			if ($entry->slug === null && $entryLocaleRecord->slug)
+			{
+				$entry->slug = $entryLocaleRecord->slug;
+			}
 		}
 
 		if (empty($entryLocaleRecord))

@@ -27,7 +27,8 @@ class ContentRecord extends BaseRecord
 
 		if (Craft::isInstalled() && !craft()->isConsole())
 		{
-			foreach (craft()->fields->getAllFields() as $field)
+			$allFields = craft()->fields->getAllFields();
+			foreach ($allFields as $field)
 			{
 				$fieldType = craft()->fields->populateFieldType($field);
 

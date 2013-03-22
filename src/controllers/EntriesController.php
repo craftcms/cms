@@ -16,7 +16,7 @@ class EntriesController extends BaseController
 		$entry = new EntryModel();
 
 		$entry->sectionId  = craft()->request->getRequiredPost('sectionId');
-		$entry->locale     = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocale()->getId());
+		$entry->locale     = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocaleId());
 		$entry->id         = craft()->request->getPost('entryId');
 		$entry->authorId   = craft()->request->getPost('author', craft()->userSession->getUser()->id);
 		$entry->title      = craft()->request->getPost('title');
@@ -46,7 +46,10 @@ class EntriesController extends BaseController
 				craft()->userSession->setNotice(Craft::t('Entry saved.'));
 
 				$this->redirectToPostedUrl(array(
-					'entryId' => $entry->id
+					'entryId'   => $entry->id,
+					'slug'      => $entry->slug,
+					'url'       => $entry->getUrl(),
+					'cpEditUrl' => $entry->getCpEditUrl(),
 				));
 			}
 		}
