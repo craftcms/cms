@@ -34,9 +34,16 @@ class DateFieldType extends BaseFieldType
 	 */
 	public function prepValue($value)
 	{
-		if (is_string($value))
+		if ($value)
 		{
-			$value = DateTime::createFromString($value);
+			if (is_string($value))
+			{
+				$value = DateTime::createFromString($value);
+			}
+		}
+		else
+		{
+			$value = null;
 		}
 
 		return $value;
@@ -51,7 +58,7 @@ class DateFieldType extends BaseFieldType
 	 */
 	protected function prepPostData($value)
 	{
-		return DateTime::createFromString($value);
+		return $this->prepValue($value);
 	}
 
 	/**
