@@ -2,20 +2,12 @@
 namespace Craft;
 
 /**
- * Entry content record class
+ * Entry content model class
  */
-class ContentRecord extends BaseRecord
+class ContentModel extends BaseModel
 {
 	private $_requiredFields;
 	private $_attributeConfigs;
-
-	/**
-	 * @return string
-	 */
-	public function getTableName()
-	{
-		return 'content';
-	}
 
 	/**
 	 * @access protected
@@ -23,7 +15,11 @@ class ContentRecord extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		$attributes['locale'] = array(AttributeType::Locale, 'required' => true);
+		$attributes = array(
+			'id'        => AttributeType::Number,
+			'elementId' => array(AttributeType::Number, 'required' => true),
+			'locale'    => array(AttributeType::Locale, 'required' => true)
+		);
 
 		if (Craft::isInstalled() && !craft()->isConsole())
 		{
@@ -56,7 +52,7 @@ class ContentRecord extends BaseRecord
 	}
 
 	/**
-	 * Returns this record's normalized attribute configs.
+	 * Returns this model's normalized attribute configs.
 	 *
 	 * @return array
 	 */
@@ -68,27 +64,6 @@ class ContentRecord extends BaseRecord
 		}
 
 		return $this->_attributeConfigs;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function defineRelations()
-	{
-		return array(
-			'element' => array(static::BELONGS_TO, 'ElementRecord', 'required' => true, 'onDelete' => static::CASCADE),
-			'locale'  => array(static::BELONGS_TO, 'LocaleRecord', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE),
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return array(
-			array('columns' => 'elementId,locale', 'unique' => true),
-		);
 	}
 
 	/**

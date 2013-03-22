@@ -282,72 +282,102 @@ class ElementsService extends BaseApplicationComponent
 		}
 	}
 
-	// Saving Element Content
-	// ======================
+	// Element Content
+	// ===============
 
 	/**
-	 * Returns the content record for a given element and locale.
+	 * Returns the content model for a given element and locale.
 	 *
 	 * @param int $elementId
 	 * @param string|null $localeId
-	 * @return ContentRecord|null
+	 * @return ContentModel|null
 	 */
-	public function getContentRecord($elementId, $localeId = null)
+	public function getContent($elementId, $localeId = null)
 	{
-		$attributes = array('elementId' => $elementId);
+		$conditions = array('elementId' => $elementId);
 
 		if ($localeId)
 		{
-			$attributes['locale'] = $localeId;
+			$conditions['locale'] = $localeId;
 		}
 
-		return ContentRecord::model()->findByAttributes($attributes);
-	}
+		$row = craft()->db->createCommand()
+			->from('content')
+			->where($conditions)
+			->queryRow();
 
-	/**
-	 * Returns the content for a given element and locale.
-	 *
-	 * @param int $elementId
-	 * @param string|null $localeId
-	 * @return array|null
-	 */
-	public function getElementContent($elementId, $localeId = null)
-	{
-		$record = $this->getContentRecord($elementId, $localeId);
-
-		if ($record)
+		if ($row)
 		{
-			return $record->getAttributes();
+			return new ContentModel($row);
 		}
 	}
 
 	/**
-	 * Preps an ContentRecord to be saved with an element's data.
+	 * Saves a content model to the database.
+	 *
+	 * @param ContentModel $content
+	 * @param bool         $validate Whether to call the model's validate() function first.
+	 * @return bool
+	 */
+	public function saveContent(ContentModel $content, $validate = true)
+	{
+		if (!$validate || $content->validate())
+		{
+			$attributes = $content->getAttributes(null, true);
+
+			if ($content->id)
+			{
+				$affectedRows = craft()->db->createCommand()
+					->update('content', $attributes, array('id' => $content->id));
+			}
+			else
+			{
+				$affectedRows = craft()->db->createCommand()
+					->insert('content', $attributes);
+
+				if ($affectedRows)
+				{
+					// Set the new ID
+					$content->id = craft()->db->getLastInsertID();
+				}
+			}
+
+			return (bool) $affectedRows;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Populates a ContentModel with post data.
 	 *
 	 * @param BaseElementModel $element
 	 * @param FieldLayoutModel $fieldLayout
 	 * @param string|null $localeId
-	 * @return ContentRecord
+	 * @return ContentModel
 	 */
-	public function prepElementContent(BaseElementModel $element, FieldLayoutModel $fieldLayout, $localeId = null)
+	public function populateContentFromPost(BaseElementModel $element, FieldLayoutModel $fieldLayout, $localeId = null)
 	{
+		// Does this element already have a row in content?
 		if ($element->id)
 		{
-			$contentRecord = $this->getContentRecord($element->id, $localeId);
+			$content = $this->getContent($element->id, $localeId);
 		}
 
-		if (empty($contentRecord))
+		if (empty($content))
 		{
-			$contentRecord = new ContentRecord();
-			$contentRecord->elementId = $element->id;
+			$content = new ContentModel();
+			$content->elementId = $element->id;
 
 			if ($localeId)
 			{
-				$contentRecord->locale = $localeId;
+				$content->locale = $localeId;
 			}
 			else
 			{
-				$contentRecord->locale = craft()->i18n->getPrimarySiteLocaleId();
+				$content->locale = craft()->i18n->getPrimarySiteLocaleId();
 			}
 		}
 
@@ -364,7 +394,7 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($requiredFields)
 		{
-			$contentRecord->setRequiredFields($requiredFields);
+			$content->setRequiredFields($requiredFields);
 		}
 
 		// Populate the fields' content
@@ -376,31 +406,35 @@ class ElementsService extends BaseApplicationComponent
 			if ($fieldType->defineContentAttribute())
 			{
 				$handle = $field->handle;
-				$contentRecord->$handle = $fieldType->getPostData();
+				$content->$handle = $fieldType->getPostData();
 			}
 		}
 
-		return $contentRecord;
+		return $content;
 	}
 
 	/**
 	 * Performs post-save element operations, such as calling all fieldtypes' onAfterElementSave() methods.
 	 *
 	 * @param BaseElementModel $element
-	 * @param ContentRecord $element
+	 * @param ContentModel $content
 	 */
-	public function postSaveOperations(BaseElementModel $element, ContentRecord $contentRecord)
+	public function postSaveOperations(BaseElementModel $element, ContentModel $content)
 	{
 		if (Craft::hasPackage(CraftPackage::Localize))
 		{
-			// Get the other locales' content records
-			$otherContentRecords = ContentRecord::model()->findAll(
-				'elementId = :elementId AND locale != :locale',
-				array(':elementId' => $element->id, ':locale' => $contentRecord->locale)
-			);
+			// Get the other locales' content
+			$rows = craft()->db->createCommand()
+				->from('content')
+				->where(
+					array('and', 'elementId = :elementId', 'locale != :locale'),
+					array(':elementId' => $element->id, ':locale' => $content->locale))
+				->queryAll();
+
+			$otherContentModels = ContentModel::populateModels($rows);
 		}
 
-		$updateOtherContentRecords = (Craft::hasPackage(CraftPackage::Localize) && $otherContentRecords);
+		$updateOtherContentModels = (Craft::hasPackage(CraftPackage::Localize) && $otherContentModels);
 
 		$fields = craft()->fields->getAllFields();
 		$fieldTypes = array();
@@ -412,23 +446,23 @@ class ElementsService extends BaseApplicationComponent
 			$fieldTypes[] = $fieldType;
 
 			// If this field isn't translatable, we should set its new value on the other content records
-			if (!$field->translatable && $updateOtherContentRecords && $fieldType->defineContentAttribute())
+			if (!$field->translatable && $updateOtherContentModels && $fieldType->defineContentAttribute())
 			{
 				$handle = $field->handle;
 
-				foreach ($otherContentRecords as $otherContentRecord)
+				foreach ($otherContentModels as $otherContentModel)
 				{
-					$otherContentRecord->$handle = $contentRecord->$handle;
+					$otherContentModel->$handle = $content->$handle;
 				}
 			}
 		}
 
 		// Update each of the other content records
-		if ($updateOtherContentRecords)
+		if ($updateOtherContentModels)
 		{
-			foreach ($otherContentRecords as $otherContentRecord)
+			foreach ($otherContentModels as $otherContentModel)
 			{
-				$otherContentRecord->save();
+				$this->saveContent($otherContentModel, false);
 			}
 		}
 
@@ -453,16 +487,16 @@ class ElementsService extends BaseApplicationComponent
 			throw new Exception(Craft::t('Cannot save the content of an unsaved element.'));
 		}
 
-		$contentRecord = $this->prepElementContent($element, $fieldLayout, $localeId);
+		$content = $this->populateContentFromPost($element, $fieldLayout, $localeId);
 
-		if ($contentRecord->save())
+		if ($this->saveContent($content))
 		{
-			$this->postSaveOperations($element, $contentRecord);
+			$this->postSaveOperations($element, $content);
 			return true;
 		}
 		else
 		{
-			$element->addErrors($contentRecord->getErrors());
+			$element->addErrors($content->getErrors());
 			return false;
 		}
 	}
