@@ -21,8 +21,8 @@ class EntriesController extends BaseController
 		$entry->authorId   = craft()->request->getPost('author', craft()->userSession->getUser()->id);
 		$entry->title      = craft()->request->getPost('title');
 		$entry->slug       = craft()->request->getPost('slug');
-		$entry->postDate   = $this->getDateFromPost('postDate');
-		$entry->expiryDate = $this->getDateFromPost('expiryDate');
+		$entry->postDate   = craft()->request->getPost('postDate');
+		$entry->expiryDate = craft()->request->getPost('expiryDate');
 		$entry->enabled    = craft()->request->getPost('enabled');
 		$entry->tags       = craft()->request->getPost('tags');
 

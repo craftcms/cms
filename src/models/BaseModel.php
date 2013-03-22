@@ -243,16 +243,13 @@ abstract class BaseModel extends \CModel
 				{
 					if ($value && !($value instanceof \DateTime))
 					{
-						// Leaving this conditional in because some models might want to utilize a timestamp for transporting
-						// DateTime data. (e.g. EtModel)
 						if (DateTimeHelper::isValidTimeStamp($value))
 						{
 							$value = new DateTime('@'.$value);
 						}
-						else if ($config['column'] == ColumnType::DateTime)
+						else
 						{
-							// TODO: MySql specific
-							$value = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $value);
+							$value = DateTime::createFromString($value);
 						}
 					}
 
