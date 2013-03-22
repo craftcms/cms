@@ -253,13 +253,91 @@ class StringHelper
 	}
 
 	/**
+	 * Normalizes search keywords.
+	 *
+	 * @access private
+	 * @param string  $str The dirty keywords.
+	 * @param array  $ignore Ignore words to strip out.
+	 * @return string The cleansed keywords.
+	 */
+	public static function normalizeKeywords($str, $ignore = array())
+	{
+		// Flatten
+		if (is_array($str)) $str = static::arrayToString($str, ' ');
+
+		// Get rid of tags
+		$str = strip_tags($str);
+
+		// Convert non-breaking spaces entities to regular ones
+		$str = str_replace(array('&nbsp;', '&#160;', '&#xa0;') , ' ', $str);
+
+		// Get rid of entities
+		$str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
+
+		// Remove punctuation and diacritics
+		$str = strtr($str, static::_getCharMap());
+
+		// Normalize to lowercase
+		$str = function_exists('mb_strtolower') ? mb_strtolower($str, 'UTF-8') : strtolower($str);
+
+		// Remove ignore-words?
+		if (is_array($ignore) && ! empty($ignore))
+		{
+			foreach ($ignore as $word)
+			{
+				$word = preg_quote(static::_normalizeKeywords($word));
+				$str  = preg_replace("/\b{$word}\b/", '', $str);
+			}
+		}
+
+		// Strip out new lines and superfluous spaces
+		$str = preg_replace('/[\n\r]+/', ' ', $str);
+		$str = preg_replace('/\s{2,}/', ' ', $str);
+
+		// Trim white space
+		$str = trim($str);
+
+		return $str;
+	}
+
+	/**
+	 * Get array of chars to be used for conversion.
+	 *
+	 * @access private
+	 * @return array
+	 */
+	private static function _getCharMap()
+	{
+		// Keep local copy
+		static $map = array();
+
+		if (empty($map))
+		{
+			// This will replace accented chars with non-accented chars
+			foreach (static::getAsciiCharMap() AS $k => $v)
+			{
+				$map[static::_chr($k)] = $v;
+			}
+
+			// Replace punctuation with a space
+			foreach (static::getAsciiPunctuation() AS $i)
+			{
+				$map[static::_chr($i)] = ' ';
+			}
+		}
+
+		// Return the char map
+		return $map;
+	}
+
+	/**
 	 * Custom alternative to chr().
 	 *
 	 * @static
 	 * @param int $int
 	 * @return string
 	 */
-	public static function chr($int)
+	private static function _chr($int)
 	{
 		return html_entity_decode("&#{$int};", ENT_QUOTES, 'UTF-8');
 	}

@@ -8,6 +8,11 @@ class SearchQuery
 {
 	private $_query;
 	private $_tokens;
+	private $_fulltext;
+
+	private $_ft_min_word_len = 4;
+	private $_ft_stopwords = array("it's", 'able', 'about', 'above', 'according');
+
 
 	/**
 	 * Constructor
@@ -18,6 +23,8 @@ class SearchQuery
 	{
 		$this->_query = $query;
 		$this->_tokens = array();
+		$this->_fulltext = true;
+		$this->_ft_stopwords = array_map('StringHelper::normalizeKeywords', $this->_ft_stopwords);
 		$this->_parse();
 	}
 
@@ -106,6 +113,21 @@ class SearchQuery
 			else
 			{
 				$term = $token;
+			}
+
+			// Clean up the final token, strip out ignore words
+			$term = StringHelper::normalizeKeywords($term, craft()->config->get('searchIgnoreWords'));
+
+			// Skip if cleaning did returned nothing
+			if (!$term)
+			{
+				continue;
+			}
+
+			// Check if the term is okay for full-test
+			if ($this->_fulltext && (strlen($term) < $this->_ft_min_word_len || in_array($term, $this->_ft_stopwords)))
+			{
+				$this->_fulltext = false;
 			}
 
 			$term = new SearchQueryTerm($exclude, $attribute, $term);

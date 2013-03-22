@@ -31,7 +31,7 @@ class SearchService extends BaseApplicationComponent
 			}
 
 			// Clean 'em up
-			$cleanKeywords = $this->_normalizeKeywords($dirtyKeywords);
+			$cleanKeywords = StringHelper::normalizeKeywords($dirtyKeywords);
 
 			if ($cleanKeywords)
 			{
@@ -89,84 +89,6 @@ class SearchService extends BaseApplicationComponent
 		//$ignore = craft()->config->get('searchIgnoreWords');
 
 		return array();
-	}
-
-	/**
-	 * Normalizes search keywords.
-	 *
-	 * @access private
-	 * @param string  $str The dirty keywords.
-	 * @param array  $ignore Ignore words to strip out.
-	 * @return string The cleansed keywords.
-	 */
-	private function _normalizeKeywords($str, $ignore = array())
-	{
-		// Flatten
-		if (is_array($str)) $str = StringHelper::arrayToString($str, ' ');
-
-		// Get rid of tags
-		$str = strip_tags($str);
-
-		// Convert non-breaking spaces entities to regular ones
-		$str = str_replace(array('&nbsp;', '&#160;', '&#xa0;') , ' ', $str);
-
-		// Get rid of entities
-		$str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
-
-		// Remove punctuation and diacritics
-		$str = strtr($str, $this->_getCharMap());
-
-		// Normalize to lowercase
-		$str = function_exists('mb_strtolower') ? mb_strtolower($str, 'UTF-8') : strtolower($str);
-
-		// Remove ignore-words?
-		if (is_array($ignore) && ! empty($ignore))
-		{
-			foreach ($ignore as $word)
-			{
-				$word = preg_quote($this->_normalizeKeywords($word));
-				$str  = preg_replace("/\b{$word}\b/", '', $str);
-			}
-		}
-
-		// Strip out new lines and superfluous spaces
-		$str = preg_replace('/[\n\r]+/', ' ', $str);
-		$str = preg_replace('/\s{2,}/', ' ', $str);
-
-		// Trim white space
-		$str = trim($str);
-
-		return $str;
-	}
-
-	/**
-	 * Get array of chars to be used for conversion.
-	 *
-	 * @access private
-	 * @return array
-	 */
-	private function _getCharMap()
-	{
-		// Keep local copy
-		static $map = array();
-
-		if (empty($map))
-		{
-			// This will replace accented chars with non-accented chars
-			foreach (StringHelper::getAsciiCharMap() AS $k => $v)
-			{
-				$map[StringHelper::chr($k)] = $v;
-			}
-
-			// Replace punctuation with a space
-			foreach (StringHelper::getAsciiPunctuation() AS $i)
-			{
-				$map[StringHelper::chr($i)] = ' ';
-			}
-		}
-
-		// Return the char map
-		return $map;
 	}
 
 }
