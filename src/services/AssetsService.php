@@ -389,6 +389,13 @@ class AssetsService extends BaseApplicationComponent
 			$referenceStore[$folder->id] = $folder;
 		}
 
+		$sort = array();
+		foreach ($tree as $topFolder)
+		{
+			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
+		}
+
+		array_multisort($sort, $tree);
 		return $tree;
 	}
 
