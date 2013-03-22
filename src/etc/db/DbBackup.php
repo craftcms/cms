@@ -258,11 +258,11 @@ class DbBackup
 			}
 
 			$result .= PHP_EOL;
-			$result .= 'COMMIT;'.PHP_EOL;
+
 			$i++;
 		}
 
-		$result .= PHP_EOL.PHP_EOL;
+		$result .= 'COMMIT;'.PHP_EOL.PHP_EOL;
 
 		return $result;
 	}
