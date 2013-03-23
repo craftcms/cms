@@ -138,17 +138,34 @@ class ContentService extends BaseApplicationComponent
 	{
 		if (!$validate || $content->validate())
 		{
-			$attributes = $content->getAttributes(null, true);
+			$values = array(
+				'id'        => $content->id,
+				'elementId' => $content->elementId,
+				'locale'    => $content->locale,
+			);
+
+			$allFields = craft()->fields->getAllFields();
+
+			foreach ($allFields as $field)
+			{
+				$fieldType = craft()->fields->populateFieldType($field);
+
+				// Only include this value if the content table has a column for it
+				if ($fieldType && $fieldType->defineContentAttribute())
+				{
+					$values[$field->handle] = $content->getAttribute($field->handle, true);
+				}
+			}
 
 			if ($content->id)
 			{
 				$affectedRows = craft()->db->createCommand()
-					->update('content', $attributes, array('id' => $content->id));
+					->update('content', $values, array('id' => $content->id));
 			}
 			else
 			{
 				$affectedRows = craft()->db->createCommand()
-					->insert('content', $attributes);
+					->insert('content', $values);
 
 				if ($affectedRows)
 				{

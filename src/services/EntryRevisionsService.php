@@ -53,13 +53,19 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 * Returns drafts of a given entry.
 	 *
 	 * @param int $entryId
+	 * @param string $localeId
 	 * @return array
 	 */
-	public function getDraftsByEntryId($entryId)
+	public function getDraftsByEntryId($entryId, $localeId = null)
 	{
+		if (!$localeId)
+		{
+			$localeId = craft()->i18n->getPrimarySiteLocale();
+		}
+
 		$draftRecords = EntryDraftRecord::model()->findAllByAttributes(array(
 			'entryId' => $entryId,
-			'locale'  => craft()->i18n->getPrimarySiteLocale(),
+			'locale'  => $localeId,
 		));
 
 		return EntryDraftModel::populateModels($draftRecords);
@@ -69,16 +75,17 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 * Returns the drafts of a given entry that are editable by the current user.
 	 *
 	 * @param int $entryId
+	 * @param string $localeId
 	 * @return array
 	 */
-	public function getEditableDraftsByEntryId($entryId)
+	public function getEditableDraftsByEntryId($entryId, $localeId = null)
 	{
 		$editableDrafts = array();
 		$user = craft()->userSession->getUser();
 
 		if ($user)
 		{
-			$allDrafts = $this->getDraftsByEntryId($entryId);
+			$allDrafts = $this->getDraftsByEntryId($entryId, $localeId);
 
 			foreach ($allDrafts as $draft)
 			{
@@ -210,13 +217,19 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 * Returns versions by an entry ID.
 	 *
 	 * @param int $entryId
+	 * @param string $localeId
 	 * @return array
 	 */
-	public function getVersionsByEntryId($entryId)
+	public function getVersionsByEntryId($entryId, $localeId)
 	{
+		if (!$localeId)
+		{
+			$localeId = craft()->i18n->getPrimarySiteLocale();
+		}
+
 		$versionRecords = EntryVersionRecord::model()->findAllByAttributes(array(
 			'entryId' => $entryId,
-			'locale'  => craft()->i18n->getPrimarySiteLocale(),
+			'locale'  => $localeId,
 		));
 
 		return EntryVersionModel::populateModels($versionRecords, 'versionId');
@@ -247,21 +260,18 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 */
 	public function _getRevisionData($revision)
 	{
-		$postDate = DateTimeHelper::normalizeDate($revision->postDate);
-		$expiryDate = DateTimeHelper::normalizeDate($revision->expiryDate);
-
 		$revisionData = array(
 			'authorId'   => $revision->authorId,
 			'title'      => $revision->title,
 			'slug'       => $revision->slug,
-			'postDate'   => ($postDate ? $postDate->getTimestamp() : null),
-			'expiryDate' => ($expiryDate ? $expiryDate->getTimestamp() : null),
+			'postDate'   => ($revision->postDate   ? $revision->postDate->getTimestamp()   : null),
+			'expiryDate' => ($revision->expiryDate ? $revision->expiryDate->getTimestamp() : null),
 			'enabled'    => $revision->enabled,
 			'tags'       => $revision->tags,
 			'fields'     => array(),
 		);
 
-		$content = $revision->getRawContent();
+		$content = $revision->getRawContent()->getAttributes(null, true);
 
 		foreach (craft()->fields->getAllFields() as $field)
 		{
