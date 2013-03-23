@@ -23,42 +23,7 @@ class DateFieldType extends BaseFieldType
 	 */
 	public function defineContentAttribute()
 	{
-		return array(AttributeType::DateTime, 'column' => ColumnType::DateTime);
-	}
-
-	/**
-	 * Preps the field value for use.
-	 *
-	 * @param mixed $value
-	 * @return mixed
-	 */
-	public function prepValue($value)
-	{
-		if ($value)
-		{
-			if (is_string($value))
-			{
-				$value = DateTime::createFromString($value);
-			}
-		}
-		else
-		{
-			$value = null;
-		}
-
-		return $value;
-	}
-
-	/**
-	 * Preps the post data before it's saved to the database.
-	 *
-	 * @access protected
-	 * @param mixed $value
-	 * @return mixed
-	 */
-	protected function prepPostData($value)
-	{
-		return $this->prepValue($value);
+		return AttributeType::DateTime;
 	}
 
 	/**
