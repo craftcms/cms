@@ -75,11 +75,11 @@ class EntryModel extends BaseElementModel
 	{
 		$status = parent::getStatus();
 
-		if ($status == static::ENABLED)
+		if ($status == static::ENABLED && $this->postDate)
 		{
 			$currentTime = DateTimeHelper::currentTimeStamp();
-			$postDate   = $this->postDate->getTimestamp();
-			$expiryDate = ($this->expiryDate ? $this->expiryDate->getTimestamp() : null);
+			$postDate    = $this->postDate->getTimestamp();
+			$expiryDate  = ($this->expiryDate ? $this->expiryDate->getTimestamp() : null);
 
 			if ($postDate <= $currentTime && (!$expiryDate || $expiryDate > $currentTime))
 			{
