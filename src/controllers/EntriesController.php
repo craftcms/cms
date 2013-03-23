@@ -37,7 +37,7 @@ class EntriesController extends BaseController
 				$return['entry']     = $entry->getAttributes();
 				$return['cpEditUrl'] = $entry->getCpEditUrl();
 				$return['author']    = $entry->getAuthor()->getAttributes();
-				$return['postDate']  = $entry->postDate->w3cDate();
+				$return['postDate']  = ($entry->postDate ? $entry->postDate->w3cDate() : null);
 
 				$this->returnJson($return);
 			}

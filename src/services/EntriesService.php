@@ -78,7 +78,7 @@ class EntriesService extends BaseApplicationComponent
 
 		$entryRecord->sectionId  = $entry->sectionId;
 		$entryRecord->authorId   = $entry->authorId;
-		$entryRecord->postDate   = DateTimeHelper::normalizeDate($entry->postDate, true);
+		$entryRecord->postDate   = DateTimeHelper::normalizeDate($entry->postDate, $entry->enabled);
 		$entryRecord->expiryDate = DateTimeHelper::normalizeDate($entry->expiryDate);
 		$entryRecord->validate();
 		$entry->addErrors($entryRecord->getErrors());
