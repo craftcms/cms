@@ -260,15 +260,12 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 */
 	public function _getRevisionData($revision)
 	{
-		$postDate = DateTimeHelper::normalizeDate($revision->postDate);
-		$expiryDate = DateTimeHelper::normalizeDate($revision->expiryDate);
-
 		$revisionData = array(
 			'authorId'   => $revision->authorId,
 			'title'      => $revision->title,
 			'slug'       => $revision->slug,
-			'postDate'   => ($postDate ? $postDate->getTimestamp() : null),
-			'expiryDate' => ($expiryDate ? $expiryDate->getTimestamp() : null),
+			'postDate'   => ($revision->postDate   ? $revision->postDate->getTimestamp()   : null),
+			'expiryDate' => ($revision->expiryDate ? $revision->expiryDate->getTimestamp() : null),
 			'enabled'    => $revision->enabled,
 			'tags'       => $revision->tags,
 			'fields'     => array(),

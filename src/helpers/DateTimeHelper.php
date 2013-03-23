@@ -531,30 +531,4 @@ class DateTimeHelper
 
 		return $date;
 	}
-
-	/**
-	 * Gets a DateTime object from an entry date attribute
-	 *
-	 * @param mixed $dateAttribute
-	 * @param bool|null $required
-	 * @return DateTime|null
-	 */
-	public static function normalizeDate($dateAttribute, $required = false)
-	{
-		if ($dateAttribute instanceof \DateTime)
-		{
-			return $dateAttribute;
-		}
-		else if (static::isValidTimeStamp($dateAttribute))
-		{
-			$dateTime = new DateTime('@'.$dateAttribute);
-			return $dateTime;
-		}
-		else if ($required)
-		{
-			return DateTimeHelper::currentUTCDateTime();
-		}
-	}
-
 }
-
