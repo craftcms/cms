@@ -30,17 +30,6 @@ class ElementRecord extends BaseRecord
 	/**
 	 * @return array
 	 */
-	public function defineRelations()
-	{
-		return array(
-			'i18n'    => array(static::HAS_ONE, 'ElementLocaleRecord', 'elementId', 'condition' => 'i18n.locale=:locale', 'params' => array(':locale' => craft()->language)),
-			'content' => array(static::HAS_ONE, 'ContentRecord', 'elementId', 'condition' => 'content.locale=:locale', 'params' => array(':locale' => craft()->language)),
-		);
-	}
-
-	/**
-	 * @return array
-	 */
 	public function defineIndexes()
 	{
 		return array(

@@ -36,6 +36,7 @@ class InstallService extends BaseApplicationComponent
 			$this->_createTablesFromRecords($records);
 			$this->_createForeignKeysFromRecords($records);
 
+			$this->_createContentTable();
 			$this->_createAndPopulateInfoTable($inputs);
 
 			Craft::log('Committing the transaction.');
@@ -136,6 +137,26 @@ class InstallService extends BaseApplicationComponent
 			Craft::log('Adding foreign keys for record:'. get_class($record));
 			$record->addForeignKeys();
 		}
+	}
+
+	/**
+	 * Creates the content table.
+	 *
+	 * @access private
+	 */
+	private function _createContentTable()
+	{
+		Craft::log('Creating the content table.');
+
+		craft()->db->createCommand()->createTable('content', array(
+			'elementId' => array('column' => ColumnType::Int, 'required' => true),
+			'locale'    => array('column' => ColumnType::Locale, 'required' => true),
+		));
+		craft()->db->createCommand()->createIndex('content', 'elementId,locale', true);
+		craft()->db->createCommand()->addForeignKey('content', 'elementId', 'elements', 'id', 'CASCADE', null);
+		craft()->db->createCommand()->addForeignKey('content', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
+
+		Craft::log('Finished creating the content table.');
 	}
 
 	/**

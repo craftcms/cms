@@ -251,7 +251,7 @@ abstract class BaseElementModel extends BaseModel
 		{
 			if ($this->id)
 			{
-				$this->_content = craft()->elements->getElementContent($this->id, $this->locale);
+				$this->_content = craft()->content->getContent($this->id, $this->locale);
 			}
 			else
 			{
@@ -273,10 +273,11 @@ abstract class BaseElementModel extends BaseModel
 		if (!isset($this->_preppedContent) || !array_key_exists($field->handle, $this->_preppedContent))
 		{
 			$content = $this->_getContent();
+			$fieldHandle = $field->handle;
 
-			if (isset($content[$field->handle]))
+			if (isset($content->$fieldHandle))
 			{
-				$value = $content[$field->handle];
+				$value = $content->$fieldHandle;
 			}
 			else
 			{
