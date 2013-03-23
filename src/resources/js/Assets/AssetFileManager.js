@@ -388,9 +388,9 @@ Assets.FileManager = Garnish.Base.extend({
                                         {
                                             folderDeleteList.push(data.deleteList[ii]);
                                         }
-                                        for (var old_folder_id in data.changedFolderIds)
+                                        for (var oldFolderId in data.changedFolderIds)
                                         {
-                                            changedFolderIds[old_folder_id] = data.changedFolderIds[old_folder_id];
+                                            changedFolderIds[oldFolderId] = data.changedFolderIds[oldFolderId];
                                         }
                                         removeFromTree.push(data.removeFromTree);
                                     }
@@ -735,6 +735,7 @@ Assets.FileManager = Garnish.Base.extend({
 
                     var previousFolder = this.folders[previousFolderId];
                     this.folders[newValue] = previousFolder;
+                    this.folders[newValue].id = newValue;
 
                     $('li.assets-fm-folder > a[data-id="'+previousFolderId+'"]:first').attr('data-id', newValue);
                     folder = this.folders[newValue];

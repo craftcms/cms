@@ -299,8 +299,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				IOHelper::copyFile($filePath, craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel, PATHINFO_EXTENSION));
 			}
 
-			craft()->assetTransforms->updateTransforms($fileModel, array_keys(craft()->assetTransforms->getAllTransforms()));
-
 			// Check if we stored a conflict response originally - send that back then.
 			if (isset($conflictResponse))
 			{

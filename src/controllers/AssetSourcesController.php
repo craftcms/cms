@@ -13,8 +13,17 @@ class AssetSourcesController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$source = new AssetSourceModel();
-		$source->id = craft()->request->getPost('sourceId');
+		$existingSourceId = craft()->request->getPost('sourceId');
+
+		if ($existingSourceId)
+		{
+			$source = craft()->assetSources->getSourceById($existingSourceId);
+		}
+		else
+		{
+			$source = new AssetSourceModel();
+		}
+		
 		$source->name = craft()->request->getPost('name');
 
 		if (Craft::hasPackage(CraftPackage::Cloud))
@@ -25,7 +34,12 @@ class AssetSourcesController extends BaseController
 		$typeSettings = craft()->request->getPost('types');
 		if (isset($typeSettings[$source->type]))
 		{
-			$source->settings = $typeSettings[$source->type];
+			if (!$source->settings)
+			{
+				$source->settings = array();
+			}
+
+			$source->settings = array_merge($source->settings, $typeSettings[$source->type]);
 		}
 
 		// Did it save?
@@ -94,4 +108,27 @@ class AssetSourcesController extends BaseController
 			}
 		}
 	}
+
+	/**
+	 * Get Rackspace containers.
+	 */
+	public function actionGetRackspaceContainers()
+	{
+		if (Craft::hasPackage(CraftPackage::Cloud))
+		{
+			$username = craft()->request->getRequiredPost('username');
+			$apiKey = craft()->request->getRequiredPost('apiKey');
+			$region = craft()->request->getRequiredPost('region');
+
+			try
+			{
+				$this->returnJson(RackspaceAssetSourceType::getContainerList($username, $apiKey, $region));
+			}
+			catch (Exception $exception)
+			{
+				$this->returnErrorJson($exception->getMessage());
+			}
+		}
+	}
+
 }
