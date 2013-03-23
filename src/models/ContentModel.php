@@ -24,27 +24,31 @@ class ContentModel extends BaseModel
 		if (Craft::isInstalled() && !craft()->isConsole())
 		{
 			$allFields = craft()->fields->getAllFields();
+
 			foreach ($allFields as $field)
 			{
 				$fieldType = craft()->fields->populateFieldType($field);
 
-				if (!empty($fieldType))
+				if ($fieldType)
 				{
-					$attribute = $fieldType->defineContentAttribute();
-
-					if ($attribute)
-					{
-						$attribute = ModelHelper::normalizeAttributeConfig($attribute);
-						$attribute['label'] = $field->name;
-
-						if (isset($this->_requiredFields) && in_array($field->id, $this->_requiredFields))
-						{
-							$attribute['required'] = true;
-						}
-
-						$attributes[$field->handle] = $attribute;
-					}
+					$attributeConfig = $fieldType->defineContentAttribute();
 				}
+
+				// Default to Mixed
+				if (!$fieldType || !$attributeConfig)
+				{
+					$attributeConfig = AttributeType::Mixed;
+				}
+
+				$attributeConfig = ModelHelper::normalizeAttributeConfig($attributeConfig);
+				$attributeConfig['label'] = $field->name;
+
+				if (isset($this->_requiredFields) && in_array($field->id, $this->_requiredFields))
+				{
+					$attributeConfig['required'] = true;
+				}
+
+				$attributes[$field->handle] = $attributeConfig;
 			}
 		}
 

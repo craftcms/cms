@@ -261,7 +261,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 			'fields'     => array(),
 		);
 
-		$content = $revision->getRawContent();
+		$content = $revision->getRawContent()->getAttributes(null, true);
 
 		foreach (craft()->fields->getAllFields() as $field)
 		{
