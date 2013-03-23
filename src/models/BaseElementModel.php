@@ -161,9 +161,9 @@ abstract class BaseElementModel extends BaseModel
 
 		if ($fieldHandle)
 		{
-			if (isset($content[$fieldHandle]))
+			if (isset($content->$fieldHandle))
 			{
-				return $content[$fieldHandle];
+				return $content->$fieldHandle;
 			}
 			else
 			{
@@ -183,14 +183,15 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function setContentIndexedByFieldId($content)
 	{
-		$this->_content = array();
+		$this->_content = new ContentModel();
 
 		foreach ($content as $fieldId => $value)
 		{
 			$field = craft()->fields->getFieldById($fieldId);
 			if ($field)
 			{
-				$this->_content[$field->handle] = $value;
+				$fieldHandle = $field->handle;
+				$this->_content->$fieldHandle = $value;
 			}
 		}
 	}
@@ -202,7 +203,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function setContent($content)
 	{
-		$this->_content = $content;
+		$this->_content = new ContentModel($content);
 	}
 
 	/**
@@ -253,9 +254,10 @@ abstract class BaseElementModel extends BaseModel
 			{
 				$this->_content = craft()->content->getContent($this->id, $this->locale);
 			}
-			else
+
+			if (empty($this->_content))
 			{
-				$this->_content = array();
+				$this->_content = new ContentModel();
 			}
 		}
 
