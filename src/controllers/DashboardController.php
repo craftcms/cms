@@ -104,98 +104,112 @@ class DashboardController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$message = craft()->request->getRequiredPost('message');
+		$getHelpModel = new GetHelpModel();
+		$getHelpModel->fromEmail = craft()->request->getPost('fromEmail');
+		$getHelpModel->message = craft()->request->getPost('message');
+		$getHelpModel->attachDebugFiles = (bool)craft()->request->getPost('attachDebugFiles');
 
-		$user = craft()->userSession->getUser();
-
-		$requestParamDefaults = array(
-			'sFirstName' => $user->getFriendlyName(),
-			'sLastName' => ($user->lastName ? $user->lastName : 'Doe'),
-			'sEmail' => $user->email,
-			'tNote' => $message,
-		);
-
-		$requestParams = $requestParamDefaults;
-
-		$hsParams = array(
-			'helpSpotApiURL' => 'https://support.buildwithcraft.com/api/index.php'
-		);
-
-		$attachment = (bool)craft()->request->getPort('attachDebugFiles');
-
-		try
+		if ($getHelpModel->validate())
 		{
-			if ($attachment)
-			{
-				$tempZipFile = craft()->path->getTempPath().StringHelper::UUID().'.zip';
-				IOHelper::createFile($tempZipFile);
+			$user = craft()->userSession->getUser();
 
-				if (IOHelper::folderExists(craft()->path->getLogPath()))
-				{
-					// Grab the latest log file.
-					Zip::add($tempZipFile, craft()->path->getLogPath().'craft.log', craft()->path->getStoragePath());
+			$requestParamDefaults = array(
+				'sFirstName' => $user->getFriendlyName(),
+				'sLastName' => ($user->lastName ? $user->lastName : 'Doe'),
+				'sEmail' => $getHelpModel->fromEmail,
+				'tNote' => $getHelpModel->message,
+			);
 
-					// Grab the most recent rolled-over log file, if one exists.
-					if (IOHelper::fileExists(craft()->path->getLogPath().'craft.log.1'))
-					{
-						Zip::add($tempZipFile, craft()->path->getLogPath().'craft.log.1', craft()->path->getStoragePath());
-					}
-
-					// Grab the phperrors log file, if it exists.
-					if (IOHelper::fileExists(craft()->path->getLogPath().'phperrors.log'))
-					{
-						Zip::add($tempZipFile, craft()->path->getLogPath().'phperrors.log', craft()->path->getRuntimePath());
-					}
-				}
-
-				if (IOHelper::folderExists(craft()->path->getDbBackupPath()))
-				{
-					$contents = IOHelper::getFolderContents(craft()->path->getDbBackupPath());
-					rsort($contents);
-
-					// Only grab the most recent 5 sorted by timestamp.
-					for ($counter = 0; $counter <= 4; $counter++)
-					{
-						Zip::add($tempZipFile, $contents[$counter], craft()->path->getStoragePath());
-					}
-				}
-
-				$requestParams['File1_sFilename'] = 'SupportAttachment.zip';
-				$requestParams['File1_sFileMimeType'] = 'application/zip';
-				$requestParams['File1_bFileBody'] = base64_encode(IOHelper::getFileContents($tempZipFile));
-
-				// Bump the default timeout because of the attachment.
-				$hsParams['callTimeout'] = 60;
-			}
-		}
-		catch(\Exception $e)
-		{
-			Craft::log('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), \CLogger::LEVEL_WARNING);
-
-			// There was a problem zipping, so reset the params and just send the email without the attachment.
 			$requestParams = $requestParamDefaults;
-		}
 
-		require_once craft()->path->getLibPath().'HelpSpotAPI.php';
-		$hsapi = new \HelpSpotAPI($hsParams);
+			$hsParams = array(
+				'helpSpotApiURL' => 'https://support.buildwithcraft.com/api/index.php'
+			);
 
-		$result = $hsapi->requestCreate($requestParams);
-
-		if ($result)
-		{
-			if ($attachment)
+			try
 			{
-				if (IOHelper::fileExists($tempZipFile))
+				if ($getHelpModel->attachDebugFiles)
 				{
-					IOHelper::deleteFile($tempZipFile);
+					$tempZipFile = craft()->path->getTempPath().StringHelper::UUID().'.zip';
+					IOHelper::createFile($tempZipFile);
+
+					if (IOHelper::folderExists(craft()->path->getLogPath()))
+					{
+						// Grab the latest log file.
+						Zip::add($tempZipFile, craft()->path->getLogPath().'craft.log', craft()->path->getStoragePath());
+
+						// Grab the most recent rolled-over log file, if one exists.
+						if (IOHelper::fileExists(craft()->path->getLogPath().'craft.log.1'))
+						{
+							Zip::add($tempZipFile, craft()->path->getLogPath().'craft.log.1', craft()->path->getStoragePath());
+						}
+
+						// Grab the phperrors log file, if it exists.
+						if (IOHelper::fileExists(craft()->path->getLogPath().'phperrors.log'))
+						{
+							Zip::add($tempZipFile, craft()->path->getLogPath().'phperrors.log', craft()->path->getRuntimePath());
+						}
+					}
+
+					if (IOHelper::folderExists(craft()->path->getDbBackupPath()))
+					{
+						// Make a fresh database backup of the current schema/data.
+						craft()->db->backup();
+
+						$contents = IOHelper::getFolderContents(craft()->path->getDbBackupPath());
+						rsort($contents);
+
+						// Only grab the most recent 3 sorted by timestamp.
+						for ($counter = 0; $counter <= 2; $counter++)
+						{
+							Zip::add($tempZipFile, $contents[$counter], craft()->path->getStoragePath());
+						}
+					}
+
+					$requestParams['File1_sFilename'] = 'SupportAttachment.zip';
+					$requestParams['File1_sFileMimeType'] = 'application/zip';
+					$requestParams['File1_bFileBody'] = base64_encode(IOHelper::getFileContents($tempZipFile));
+
+					// Bump the default timeout because of the attachment.
+					$hsParams['callTimeout'] = 60;
 				}
 			}
+			catch(\Exception $e)
+			{
+				Craft::log('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), \CLogger::LEVEL_WARNING);
 
-			$this->returnJson(array('success' => true));
+				// There was a problem zipping, so reset the params and just send the email without the attachment.
+				$requestParams = $requestParamDefaults;
+			}
+
+			require_once craft()->path->getLibPath().'HelpSpotAPI.php';
+			$hsapi = new \HelpSpotAPI($hsParams);
+
+			$result = $hsapi->requestCreate($requestParams);
+
+			if ($result)
+			{
+				if ($getHelpModel->attachDebugFiles)
+				{
+					if (IOHelper::fileExists($tempZipFile))
+					{
+						IOHelper::deleteFile($tempZipFile);
+					}
+				}
+
+				$this->returnJson(array('success' => true));
+			}
+			else
+			{
+				$hsErrors = array_filter(preg_split("/(\r\n|\n|\r)/", $hsapi->errors));
+				$this->returnJson(array('errors' => array('Support' => $hsErrors)));
+			}
 		}
 		else
 		{
-			$this->returnErrorJson($hsapi->errors);
+			$this->returnJson(array(
+				'errors' => $getHelpModel->getErrors(),
+			));
 		}
 	}
 

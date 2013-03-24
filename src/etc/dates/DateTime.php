@@ -21,12 +21,10 @@ class DateTime extends \DateTime
 	{
 		if ($timezone === null)
 		{
-			$dateTime = parent::createFromFormat($format, $time);
+			$timezone = new \DateTimeZone('UTC');
 		}
-		else
-		{
-			$dateTime = parent::createFromFormat($format, $time, $timezone);
-		}
+
+		$dateTime = parent::createFromFormat($format, $time, $timezone);
 
 		return new DateTime('@'.$dateTime->getTimestamp());
 	}
