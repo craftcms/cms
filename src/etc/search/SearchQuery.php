@@ -6,32 +6,8 @@ namespace Craft;
  */
 class SearchQuery
 {
-	const FT_MIN_WORD_LENGTH = 4;
-
-	private static $_ftStopWords;
-
 	private $_query;
 	private $_tokens;
-	private $_fulltext;
-
-	/**
-	 * Returns the FULLTEXT stop words.
-	 *
-	 * @static
-	 * @access private
-	 * @return array
-	 */
-	private static function _getFulltextStopWords()
-	{
-		if (!isset(static::$_ftStopWords))
-		{
-			static::$_ftStopWords = array_map('StringHelper::normalizeKeywords',
-				array("it's", 'able', 'about', 'above', 'according')
-			);
-		}
-
-		return static::$_ftStopWords;
-	}
 
 	/**
 	 * Constructor
@@ -42,7 +18,6 @@ class SearchQuery
 	{
 		$this->_query = $query;
 		$this->_tokens = array();
-		$this->_fulltext = true;
 		$this->_parse();
 	}
 
@@ -54,26 +29,6 @@ class SearchQuery
 	public function getTokens()
 	{
 		return $this->_tokens;
-	}
-
-	/**
-	 * Returns the fulltext boolean.
-	 *
-	 * @return bool
-	 */
-	public function isFulltext()
-	{
-		return $this->_fulltext;
-	}
-
-	/**
-	 * Get sql for current search query.
-	 *
-	 * @return string
-	 */
-	public function getSql()
-	{
-		return $this->isFulltext() ? '' : $this->_getFallbackSql();
 	}
 
 	/**
@@ -153,21 +108,6 @@ class SearchQuery
 				$term = $token;
 			}
 
-			// Clean up the final token, strip out ignore words
-			$term = StringHelper::normalizeKeywords($term, craft()->config->get('searchIgnoreWords'));
-
-			// Skip if cleaning did returned nothing
-			if (!$term)
-			{
-				continue;
-			}
-
-			// Check if the term is okay for full-text
-			if ($this->_fulltext && !$this->_isFulltextTerm($term))
-			{
-				$this->_fulltext = false;
-			}
-
 			$term = new SearchQueryTerm($exclude, $attribute, $term);
 
 			if ($appendToPrevious)
@@ -179,103 +119,5 @@ class SearchQuery
 				$this->_tokens[] = $term;
 			}
 		}
-	}
-
-	/**
-	 * Determine if search term is eligable for full-text or not.
-	 *
-	 * @access private
-	 * @param sting $term The search term to check
-	 * @return bool
-	 */
-	private function _isFulltextTerm($term)
-	{
-		$ftStopWords = static::_getFulltextStopWords();
-
-		// Split the term into individual words
-		$words = explode(' ', $term);
-
-		// Then loop through terms and return false it doesn't match up
-		foreach ($words as $word)
-		{
-			if (strlen($word) < static::FT_MIN_WORD_LENGTH || in_array($word, $ftStopWords))
-			{
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Generates a piece of WHERE clause for fallback (LIKE) search from search term
-	 *
-	 * @access private
-	 * @param object SearchQueryTerm
-	 * @return string
-	 */
-	private function _getFallbackSqlFromTerm($term)
-	{
-		$sqlTmpl = "(`%s` %s '%s')";
-
-		$like = $term->exclude ? 'NOT LIKE' : 'LIKE';
-		$eq   = $term->exclude ? '!=' : '=';
-
-		if ($term->attribute == 'locale')
-		{
-			return sprintf($sqlTmpl, $term->attribute, $eq, $term->term);
-		}
-		else if ($fieldId == '0') // TODO: get the fieldID from thing
-		{
-			$and = sprintf($sqlTmpl, 'fieldId', '=', $fieldId);
-		}
-		else if (!empty($term->attribute))
-		{
-			$and = sprintf($sqlTmpl, 'attribute', '=', $term->attribute);
-		}
-		else
-		{
-			$and = null;
-		}
-
-		$sql = sprintf($sqlTmpl, 'keywords', $like, "% {$term->term} %");
-
-		if (!empty($and))
-		{
-			$sql = "({$sql} AND {$and})";
-		}
-
-		return $sql;
-	}
-
-	/**
-	 * Generates complete WHERE clause for fallback (LIKE) search from given tokens.
-	 *
-	 * @access private
-	 * @param array $tokens
-	 * @param string $glue
-	 */
-	private function _getFallbackSql($tokens = array(), $glue = 'AND')
-	{
-		if (!$tokens)
-		{
-			$tokens = $this->_tokens;
-		}
-
-		$sql = array();
-
-		foreach ($tokens AS $obj)
-		{
-			if ($obj instanceof SearchQueryTermGroup)
-			{
-				$sql[] = $this->_getFallbackSql($obj->terms, 'OR');
-			}
-			else if ($obj instanceof SearchQueryTerm)
-			{
-				$sql[] = $this->_getFallbackSqlFromTerm($obj);
-			}
-		}
-
-		return implode(" {$glue} ", $sql);
 	}
 }
