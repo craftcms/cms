@@ -143,8 +143,8 @@ class SearchService extends BaseApplicationComponent
 		// Get where clause from tokens
 		$where = $this->_getWhereClause();
 
-		print_r($where);
-		exit;
+		// print_r($where);
+		// exit;
 
 
 		return array();
