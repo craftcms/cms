@@ -144,7 +144,7 @@ td.right { float: none; text-align: right; }
 /* headers and footers */
 .clearafter:after { @include clearafter; }
 
-.header { border-bottom-width: 1px; }
+.header { border-bottom-width: 1px; @include linear-gradient(#fff, #fafafa); }
 .footer { border-top-width: 1px; padding-top: 9px; }
 
 .header h1 .version { display: inline-block; position: relative; top: -2px; border-radius: 2px; padding: 0 5px; font-size: 11px; line-height: 18px; color: #fff; background: #555;

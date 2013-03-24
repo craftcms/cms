@@ -77,7 +77,7 @@ html, body { background: #f2f2f2; }
 }
 
 /* page header */
-#page-header { display: block; padding: 30px; overflow: hidden; @include linear-gradient(#fff, #fafafa); }
+#page-header { display: block; padding: 30px; overflow: hidden; }
 #page-header.has-tabs { padding-bottom: 0; }
 #page-header h1 { clear: left; float: left; margin: 0 15px 0 0; line-height: 31px; }
 
