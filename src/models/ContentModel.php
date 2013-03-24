@@ -17,8 +17,8 @@ class ContentModel extends BaseModel
 	{
 		$attributes = array(
 			'id'        => AttributeType::Number,
-			'elementId' => array(AttributeType::Number, 'required' => true),
-			'locale'    => array(AttributeType::Locale, 'required' => true)
+			'elementId' => AttributeType::Number,
+			'locale'    => AttributeType::Locale,
 		);
 
 		if (Craft::isInstalled() && !craft()->isConsole())
