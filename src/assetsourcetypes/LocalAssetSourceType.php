@@ -471,6 +471,10 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
+		if (!IOHelper::isWritable($this->_getSourceFileSystemPath() . $parentFolder->fullPath))
+		{
+			return false;
+		}
 		return IOHelper::createFolder($this->_getSourceFileSystemPath() . $parentFolder->fullPath . $folderName, IOHelper::writableFolderPermissions);
 	}
 
