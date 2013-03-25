@@ -134,8 +134,8 @@ Craft.PackageChooser = Garnish.Base.extend({
 				var buyBtnLabel = this.formatPrice(pkgInfo.price);
 			}
 
-			var $buyBtn = $('<div class="btn buy">'+buyBtnLabel+'<span>'+Craft.t('Buy')+'</span></a>').appendTo(pkgInfo.$btnContainer);
 
+			var $buyBtn = $('<div class="btn buy">'+buyBtnLabel+'<span>'+Craft.t('Buy')+'</span></div>').appendTo(pkgInfo.$btnContainer);
 			this.addListener($buyBtn, 'activate', { pkg: pkg }, 'purchasePackage');
 		}
 
