@@ -32,6 +32,16 @@ class SearchQuery
 	}
 
 	/**
+	 * Returns the given query.
+	 *
+	 * @return string
+	 */
+	public function getQuery()
+	{
+		return $this->_query;
+	}
+
+	/**
 	 * Parses the query into an array of tokens.
 	 *
 	 * @access private
