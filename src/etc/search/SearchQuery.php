@@ -118,7 +118,18 @@ class SearchQuery
 				$term = $token;
 			}
 
-			$term = new SearchQueryTerm($exclude, $attribute, $term);
+			// Do we have a substring?
+			if ($substring = (substr($term, -1) == '*'))
+			{
+				$term = substr($term, 0, -1);
+
+				if (!$term)
+				{
+					continue;
+				}
+			}
+
+			$term = new SearchQueryTerm($exclude, $substring, $attribute, $term);
 
 			if ($appendToPrevious)
 			{
