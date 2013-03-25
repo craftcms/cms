@@ -58,7 +58,7 @@ html, body { background: #f2f2f2; }
 	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.35);
 	        box-shadow: 0 1px 3px rgba(0,0,0,0.35);
 }
-#notifications .notification.notice { background: $linkcolor; }
+#notifications .notification.notice { background: $noticecolor; }
 #notifications .notification.error { background: $submitcolor; }
 
 /* main wrapper */
