@@ -3323,7 +3323,7 @@ Garnish.NiceText = Garnish.Base.extend({
 			this.buildStage();
 		}
 
-		this.$stage.css('width', this.$input.width());
+		this.$stage.css('width', this.$input.outerWidth());
 
 		if (!val)
 		{

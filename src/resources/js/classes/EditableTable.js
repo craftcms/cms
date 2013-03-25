@@ -5,7 +5,7 @@ Craft.EditableTable = Garnish.Base.extend({
 
 	id: null,
 	name: null,
-	colHandles: null,
+	columns: null,
 	rows: null,
 	sorter: null,
 	biggestId: -1,
@@ -14,11 +14,11 @@ Craft.EditableTable = Garnish.Base.extend({
 	$tbody: null,
 	$addRowBtn: null,
 
-	init: function(id, name, colHandles)
+	init: function(id, name, columns)
 	{
 		this.id = id;
 		this.name = name;
-		this.colHandles = colHandles;
+		this.columns = columns;
 
 		this.$table = $('#'+id);
 		this.$tbody = this.$table.children('tbody');
@@ -43,13 +43,45 @@ Craft.EditableTable = Garnish.Base.extend({
 		var rowId = this.biggestId+1,
 			$tr = $('<tr data-id="'+rowId+'"/>').appendTo(this.$tbody);
 
-		for (var i = 0; i < this.colHandles.length; i++)
+		for (var colId in this.columns)
 		{
-			$('<td><textarea name="'+this.name+'['+rowId+']['+this.colHandles[i]+']" rows="1"></textarea></td>').appendTo($tr);
+			var col = this.columns[colId],
+				name = this.name+'['+rowId+']['+colId+']';
+
+			var colHtml = '<td' +
+			              (typeof col['class'] != 'undefined' ? ' class="'+col['class']+'"' : '') +
+			              (typeof col['width'] != 'undefined' ? ' width="'+col['width']+'"' : '') +
+			              '>';
+
+			switch (col.type)
+			{
+				case 'select':
+				{
+					colHtml += '<div class="select small"><select name="'+name+'">';
+
+					for (var optionValue in col.options)
+					{
+						colHtml += '<option value="'+optionValue+'">'+col.options[optionValue]+'</option>';
+					}
+
+					colHtml += '</select></div>';
+
+					break;
+				}
+
+				default:
+				{
+					colHtml += '<textarea name="'+name+']" rows="1"></textarea>';
+				}
+			}
+
+			colHtml += '</td>';
+
+			$(colHtml).appendTo($tr);
 		}
 
-		$('<td class="thin"><a class="move icon" title="'+Craft.t('Reorder')+'"></a></td>').appendTo($tr);
-		$('<td class="thin"><a class="delete icon" title="'+Craft.t('Delete')+'"></a></td>').appendTo($tr);
+		$('<td class="thin action"><a class="move icon" title="'+Craft.t('Reorder')+'"></a></td>').appendTo($tr);
+		$('<td class="thin action"><a class="delete icon" title="'+Craft.t('Delete')+'"></a></td>').appendTo($tr);
 
 		new Craft.EditableTable.Row(this, $tr);
 		this.sorter.addItems($tr);
@@ -66,6 +98,7 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 	niceTexts: null,
 
 	$tr: null,
+	$tds: null,
 	$textareas: null,
 	$deleteBtn: null,
 
@@ -73,6 +106,7 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 	{
 		this.table = table;
 		this.$tr = $(tr);
+		this.$tds = this.$tr.children();
 		this.id = parseInt(this.$tr.attr('data-id'));
 
 		if (this.id > this.table.biggestId)
@@ -80,18 +114,48 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 			this.table.biggestId = this.id;
 		}
 
-		this.$textareas = this.$tr.find('textarea');
+		this.$textareas = $();
 		this.niceTexts = [];
 
-		for (var i = 0 ; i < this.$textareas.length; i++)
+		var i = 0;
+
+		for (var colId in this.table.columns)
 		{
-			this.niceTexts.push(new Garnish.NiceText(this.$textareas[i], {
-				onHeightChange: $.proxy(this, 'onTextareaHeightChange')
-			}));
+			var col = this.table.columns[colId];
+
+			if (col.type != 'select')
+			{
+				var $textarea = $('textarea', this.$tds[i]);
+				this.$textareas = this.$textareas.add($textarea);
+
+				this.niceTexts.push(new Garnish.NiceText($textarea, {
+					onHeightChange: $.proxy(this, 'onTextareaHeightChange')
+				}));
+
+				if (col.type == 'singleline' || col.type == 'number')
+				{
+					this.addListener($textarea, 'keypress', { type: col.type }, 'validateKeypress');
+				}
+			}
+
+			i++;
 		}
 
 		var $deleteBtn = this.$tr.children().last().find('.delete');
 		this.addListener($deleteBtn, 'click', 'deleteRow');
+	},
+
+	validateKeypress: function(ev)
+	{
+		var keyCode = ev.keyCode ? ev.keyCode : ev.charCode;
+
+		if (!ev.metaKey && !ev.ctrlKey && (
+			(keyCode == Garnish.RETURN_KEY) ||
+			(ev.data.type == 'number' && $.inArray(keyCode, Craft.EditableTable.numericKeyCodes) == -1)
+		))
+		{
+			ev.preventDefault();
+		}
 	},
 
 	onTextareaHeightChange: function(height)
@@ -115,4 +179,7 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 		this.table.sorter.removeItems(this.$tr);
 		this.$tr.remove();
 	}
+},
+{
+	numericKeyCodes: [9 /* (tab) */ , 8 /* (delete) */ , 37,38,39,40 /* (arrows) */ , 45,91 /* (minus) */ , 46,190 /* period */ , 48,49,50,51,52,53,54,55,56,57 /* (0-9) */ ]
 });

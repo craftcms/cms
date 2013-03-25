@@ -50,7 +50,7 @@ class TableFieldType extends BaseFieldType
 
 		if (!$columns)
 		{
-			$columns = array('1' => array('heading' => '', 'handle' => ''));
+			$columns = array('1' => array('heading' => '', 'handle' => '', 'type' => 'singleline'));
 		}
 
 		return craft()->templates->render('_components/fieldtypes/Table/settings', array(
@@ -73,17 +73,10 @@ class TableFieldType extends BaseFieldType
 		{
 			$id = preg_replace('/[\[\]]+/', '-', $name);
 
-			$cols = array();
-
-			foreach ($columns as $colId => $col)
-			{
-				$cols[$colId] = $col['heading'];
-			}
-
 			return craft()->templates->render('_components/fieldtypes/Table/input', array(
 				'id'   => $id,
 				'name' => $name,
-				'cols' => $cols,
+				'cols' => $columns,
 				'rows' => $value
 			));
 		}

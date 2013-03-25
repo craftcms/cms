@@ -226,8 +226,8 @@
 	<table id="{{ config.id }}" class="editable">
 		<thead>
 			<tr>
-				{% for heading in config.cols %}
-					<th scope="col" class="header">{{ heading }}</th>
+				{% for col in config.cols %}
+					<th scope="col" class="header">{{ col.heading }}</th>
 				{% endfor %}
 				<th class="header" colspan="2"></th>
 			</tr>
@@ -235,11 +235,24 @@
 		<tbody>
 			{% for rowId, row in config.rows %}
 				<tr data-id="{{ rowId }}">
-					{% for colId in config.cols|keys %}
-						<td><textarea name="{{ config.name }}[{{ rowId }}][{{ colId }}]" rows="1">{% if row[colId] is defined %}{{ row[colId] }}{% endif %}</textarea></td>
+					{% for colId, col in config.cols %}
+						{% set name = config.name~'['~rowId~']['~colId~']' %}
+						{% set value = (row[colId] is defined ? row[colId] : null) %}
+						<td{% if col.class is defined %} class="{{ col.class }}"{% endif %}{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
+							{%- if col.type == 'select' -%}
+								{{ _self.select({
+									class: 'small',
+									name: name,
+									options: col.options,
+									value: value
+								}) }}
+							{%- else -%}
+								<textarea name="{{ name }}" rows="1">{{ value }}</textarea>
+							{%- endif -%}
+						</td>
 					{% endfor %}
-					<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
-					<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+					<td class="thin action"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
+					<td class="thin action"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
 				</tr>
 			{% endfor %}
 		</tbody>
@@ -253,7 +266,7 @@
 		new Craft.EditableTable(
 			"{{ (config.jsId   ? config.jsId   : config.id)   | e('js') }}",
 			"{{ (config.jsName ? config.jsName : config.name) | e('js') }}",
-			{{ config.cols|keys|json_encode|raw }});
+			{{ config.cols|json_encode|raw }});
 	{% endset %}
 
 	{% includeJs js %}
