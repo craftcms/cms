@@ -153,7 +153,8 @@ class ContentService extends BaseApplicationComponent
 				// Only include this value if the content table has a column for it
 				if ($fieldType && $fieldType->defineContentAttribute())
 				{
-					$values[$field->handle] = $content->getAttribute($field->handle, true);
+					$value = $content->getAttribute($field->handle);
+					$values[$field->handle] = ModelHelper::packageAttributeValue($value, true);
 				}
 			}
 

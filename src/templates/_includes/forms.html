@@ -221,6 +221,45 @@
 {% endmacro %}
 
 
+{% macro editableTable(config) %}
+	{% set config = { id: null, name: null, jsId: null, jsName: null, cols: {}, rows: {}, addRowLabel: "Add a row"|t }|merge(config) %}
+	<table id="{{ config.id }}" class="editable">
+		<thead>
+			<tr>
+				{% for heading in config.cols %}
+					<th scope="col" class="header">{{ heading }}</th>
+				{% endfor %}
+				<th class="header" colspan="2"></th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for rowId, row in config.rows %}
+				<tr data-id="{{ rowId }}">
+					{% for colId in config.cols|keys %}
+						<td><textarea name="{{ config.name }}[{{ rowId }}][{{ colId }}]" rows="1">{% if row[colId] is defined %}{{ row[colId] }}{% endif %}</textarea></td>
+					{% endfor %}
+					<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
+					<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<div class="buttons">
+		<div class="btn add icon small">{{ config.addRowLabel }}</div>
+	</div>
+
+	{% set js %}
+		new Craft.EditableTable(
+			"{{ (config.jsId   ? config.jsId   : config.id)   | e('js') }}",
+			"{{ (config.jsName ? config.jsName : config.name) | e('js') }}",
+			{{ config.cols|keys|json_encode|raw }});
+	{% endset %}
+
+	{% includeJs js %}
+{% endmacro %}
+
+
 {# Fields #}
 
 
@@ -297,4 +336,9 @@
 
 {% macro lightswitchField(config) %}
 	{{ _self.field(config, _self.lightswitch(config)) }}
+{% endmacro %}
+
+
+{% macro editableTableField(config) %}
+	{{ _self.field(config, _self.editableTable(config)) }}
 {% endmacro %}

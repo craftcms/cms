@@ -1,23 +1,40 @@
-{% from "_includes/forms" import textarea, checkbox %}
+{% import "_includes/forms" as forms %}
 
+<form method="post" action="" accept-charset="UTF-8">
+	{% set fromEmail = getHelp is defined ? getHelp.fromEmail : user.email %}
+	{% if fromEmail == "support@pixelandtonic.com" %}
+		{% set fromEmail = "" %}
+	{% endif %}
 
-{{ textarea({
-	class: 'message nicetext',
-	rows: 10,
-	value: message
-}) }}
+	{{ forms.textfield({
+		label: "From Email"|t,
+		name: 'fromEmail',
+		value: fromEmail,
+		class: 'fromEmail',
+		errors: getHelp is defined ? getHelp.getErrors('fromEmail') : '',
+		required: true,
+	}) }}
 
-{{ checkbox({
-	id: 'attachDebugFiles',
-	name: 'attachDebugFiles',
-	checked: true,
-	label: 'Include error logs and the latest DB backup',
-}) }}
+	{{ forms.textarea({
+		label: "Message"|t,
+		name: 'message',
+		class: 'message nicetext',
+		rows: 10,
+		value: message
+	}) }}
 
-<div class="buttons last">
-	<div class="btn submit">{{ "Send"|t }}</div>
-	<div class="spinner hidden"></div>
-</div>
+	{{ forms.checkbox({
+		name: 'attachDebugFiles',
+		checked: true,
+		class: 'attachDebugFiles',
+		label: 'Include error logs and database backup',
+	}) }}
 
-{% set email %}<a href="mailto:support@buildwithcraft.com">support@buildwithcraft.com</a>{% endset %}
-<p class="error hidden">{{ "Couldn’t send your message. Please email it to {email} instead."|t({ email: email })|raw }}</p>
+	<div class="buttons last">
+		<input type="submit" class="btn submit" value="{{ 'Send'|t }}">
+		<div class="spinner hidden"></div>
+	</div>
+
+	{% set email %}<a href="mailto:support@buildwithcraft.com">support@buildwithcraft.com</a>{% endset %}
+	<p class="error hidden">{{ "Couldn’t send your message. Please email it to {email} instead."|t({ email: email })|raw }}</p>
+</form>

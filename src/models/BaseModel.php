@@ -265,6 +265,12 @@ abstract class BaseModel extends \CModel
 				}
 				case AttributeType::Mixed:
 				{
+					if ($value && is_string($value) && strpos('{[', $value[0]) !== false)
+					{
+						// Presumably this is JSON.
+						$value = JsonHelper::decode($value);
+					}
+
 					if ($config['model'])
 					{
 						$class = __NAMESPACE__.'\\'.$config['model'];
