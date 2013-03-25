@@ -508,6 +508,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$sourceContainer = $this->_getContainer($originatingSettings);
 		$sourceObject = $sourceContainer->DataObject($originatingSettings->subfolder.$sourceFolder->fullPath.$file);
 
+		// Target object.
 		$targetObject = $this->_getContainer()->DataObject();
 		$targetObject->Create(array('name' => $newServerPath));
 		$sourceObject->Copy($targetObject);
