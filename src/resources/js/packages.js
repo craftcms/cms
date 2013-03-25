@@ -166,7 +166,7 @@ Craft.PackageChooser = Garnish.Base.extend({
 			pkgInfo.$badge.insertBefore(pkgInfo.$heading);
 		}
 
-		if (pkgInfo.licensed || Craft.hasPackage(pkg))
+		if (pkgInfo.licensed || pkgInfo.trial || Craft.hasPackage(pkg))
 		{
 			var $menuBtn = $('<div class="btn menubtn settings icon"/>').appendTo(pkgInfo.$btnContainer),
 				$menu    = $('<div class="menu"/>').appendTo(pkgInfo.$btnContainer),
@@ -439,7 +439,11 @@ Craft.PackageChooser = Garnish.Base.extend({
 
 				// Mark it as in trial
 				this.packages[pkg].trial = true;
-			}));
+
+				this.packages[pkg].eligibleForTrial = false;
+
+				this.createButtons(pkg);
+			}, this));
 		}
 	},
 

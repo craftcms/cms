@@ -74,7 +74,7 @@ class AppController extends BaseController
 				}
 
 				// Include which packages are in trial
-				foreach ($etResponse->packageTrials as $packageName)
+				foreach ($etResponse->packageTrials as $packageName => $expiryDate)
 				{
 					$packages[$packageName]['trial'] = true;
 				}
@@ -154,5 +154,32 @@ class AppController extends BaseController
 		$this->returnJson(array(
 			'success' => $success
 		));
+	}
+
+	/**
+	 * Begins a package trial.
+	 */
+	public function actionBeginPackageTrial()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$model = new TryPackageModel(array(
+			'packageHandle' => craft()->request->getRequiredPost('package'),
+		));
+
+		if (craft()->et->tryPackage($model))
+		{
+			$this->returnJson(array(
+				'success' => true,
+				'package' => $model->packageHandle
+			));
+		}
+		else
+		{
+			$this->returnJson(array(
+				'errors' => $model->getErrors()
+			));
+		}
 	}
 }

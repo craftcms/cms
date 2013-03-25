@@ -6,12 +6,13 @@ namespace Craft;
  */
 class EtService extends BaseApplicationComponent
 {
-	const Ping            = '@@@elliottEndpointUrl@@@actions/elliott/app/ping';
-	const CheckForUpdates = '@@@elliottEndpointUrl@@@actions/elliott/app/checkForUpdates';
-	const DownloadUpdate  = '@@@elliottEndpointUrl@@@actions/elliott/app/downloadUpdate';
-	const TransferLicense = '@@@elliottEndpointUrl@@@actions/elliott/app/transferLicenseToCurrentDomain';
-	const GetPackageInfo  = '@@@elliottEndpointUrl@@@actions/elliott/app/getPackageInfo';
-	const PurchasePackage = '@@@elliottEndpointUrl@@@actions/elliott/app/purchasePackage';
+	const Ping              = '@@@elliottEndpointUrl@@@actions/elliott/app/ping';
+	const CheckForUpdates   = '@@@elliottEndpointUrl@@@actions/elliott/app/checkForUpdates';
+	const DownloadUpdate    = '@@@elliottEndpointUrl@@@actions/elliott/app/downloadUpdate';
+	const TransferLicense   = '@@@elliottEndpointUrl@@@actions/elliott/app/transferLicenseToCurrentDomain';
+	const GetPackageInfo    = '@@@elliottEndpointUrl@@@actions/elliott/app/getPackageInfo';
+	const PurchasePackage   = '@@@elliottEndpointUrl@@@actions/elliott/app/purchasePackage';
+	const StartPackageTrial = '@@@elliottEndpointUrl@@@actions/elliott/app/startPackageTrial';
 
 	/**
 	 * @return EtModel|null
@@ -186,6 +187,48 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
+	 * @param TryPackageModel $model
+	 * @return bool
+	 */
+	public function tryPackage(TryPackageModel $model)
+	{
+		$et = new Et(static::StartPackageTrial);
+		$et->setData($model);
+		$etResponse = $et->phoneHome();
+
+		if (!empty($etResponse->data['success']))
+		{
+			// Install the package.
+			Craft::installPackage($model->packageHandle);
+			return true;
+		}
+		else
+		{
+			// Did they at least say why?
+			if (!empty($etResponse->errors))
+			{
+				switch ($etResponse->errors[0])
+				{
+					// Validation errors
+					case 'package_doesnt_exist': $error = Craft::t('The selected package doesn’t exist anymore.'); break;
+					case 'cannot_trial_package': $error = Craft::t('Your license key is invalid.'); break;
+
+					default:                     $error = $etResponse->errors[0];
+				}
+			}
+			else
+			{
+				// Something terrible must have happened!
+				$error = Craft::t('Craft is unable to trial packages at this time.');
+			}
+
+			$model->addError('response', $error);
+		}
+
+		return false;
+	}
+
+	/**
 	 * Returns the path to the license key file.
 	 */
 	public function getLicenseKeyPath()
@@ -201,6 +244,16 @@ class EtService extends BaseApplicationComponent
 	public function getLicenseKeyStatus()
 	{
 		return craft()->fileCache->get('licenseKeyStatus');
+	}
+
+	/**
+	 * Returns the packages that are in trial status indexed by package handle.
+	 *
+	 * @return mixed
+	 */
+	public function getPackageTrials()
+	{
+		return craft()->fileCache->get('packageTrials');
 	}
 
 	/**
@@ -226,6 +279,7 @@ class EtService extends BaseApplicationComponent
 	/**
 	 * Creates a new EtModel with provided JSON, and returns it if it's valid.
 	 *
+	 * @param $attributes
 	 * @return EtModel|null
 	 */
 	public function decodeEtModel($attributes)
