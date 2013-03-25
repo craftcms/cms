@@ -7,6 +7,7 @@ Craft.EditableTable = Garnish.Base.extend({
 	name: null,
 	columns: null,
 	rows: null,
+	rowIdPrefix: null,
 	sorter: null,
 	biggestId: -1,
 
@@ -14,10 +15,11 @@ Craft.EditableTable = Garnish.Base.extend({
 	$tbody: null,
 	$addRowBtn: null,
 
-	init: function(id, name, columns)
+	init: function(id, name, rowIdPrefix, columns)
 	{
 		this.id = id;
 		this.name = name;
+		this.rowIdPrefix = rowIdPrefix;
 		this.columns = columns;
 
 		this.$table = $('#'+id);
@@ -40,7 +42,7 @@ Craft.EditableTable = Garnish.Base.extend({
 
 	addRow: function()
 	{
-		var rowId = this.biggestId+1,
+		var rowId = this.rowIdPrefix+(this.biggestId+1),
 			$tr = $('<tr data-id="'+rowId+'"/>').appendTo(this.$tbody);
 
 		for (var colId in this.columns)
@@ -107,11 +109,13 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 		this.table = table;
 		this.$tr = $(tr);
 		this.$tds = this.$tr.children();
-		this.id = parseInt(this.$tr.attr('data-id'));
 
-		if (this.id > this.table.biggestId)
+		// Get the row ID, sans prefix
+		var id = parseInt(this.$tr.attr('data-id').substr(this.table.rowIdPrefix.length));
+
+		if (id > this.table.biggestId)
 		{
-			this.table.biggestId = this.id;
+			this.table.biggestId = id;
 		}
 
 		this.$textareas = $();

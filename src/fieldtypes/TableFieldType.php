@@ -50,7 +50,7 @@ class TableFieldType extends BaseFieldType
 
 		if (!$columns)
 		{
-			$columns = array('1' => array('heading' => '', 'handle' => '', 'type' => 'singleline'));
+			$columns = array('col1' => array('heading' => '', 'handle' => '', 'type' => 'singleline'));
 		}
 
 		return craft()->templates->render('_components/fieldtypes/Table/settings', array(
