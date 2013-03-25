@@ -3299,7 +3299,18 @@ Garnish.NiceText = Garnish.Base.extend({
 			position: 'absolute',
 			top: -9999,
 			left: -9999,
-			wordWrap: 'break-word'
+			wordWrap: 'break-word',
+			'border-top-width':    this.$input.css('border-top-width'),
+			'border-right-width':  this.$input.css('border-right-width'),
+			'border-bottom-width': this.$input.css('border-bottom-width'),
+			'border-left-width':   this.$input.css('border-left-width'),
+			'padding-top':         this.$input.css('padding-top'),
+			'padding-right':       this.$input.css('padding-right'),
+			'padding-bottom':      this.$input.css('padding-bottom'),
+			'padding-left':        this.$input.css('padding-left'),
+			'-webkit-box-sizing':  this.$input.css('-webkit-box-sizing'),
+	  		'-moz-box-sizing':     this.$input.css('-moz-box-sizing'),
+	        'box-sizing':          this.$input.css('box-sizing')
 		});
 
 		Garnish.copyTextStyles(this.$input, this.$stage);
@@ -3337,13 +3348,10 @@ Garnish.NiceText = Garnish.Base.extend({
 			// Line breaks
 			val = val.replace(/[\n\r]$/g, '<br/>&nbsp;');
 			val = val.replace(/[\n\r]/g, '<br/>');
-
-			// One extra line for fun
-			val += '<br/>&nbsp;';
 		}
 
 		this.$stage.html(val);
-		this.stageHeight = this.$stage.height();
+		this.stageHeight = this.$stage.outerHeight();
 		return this.stageHeight;
 	},
 
@@ -3354,11 +3362,15 @@ Garnish.NiceText = Garnish.Base.extend({
 		{
 			// update the textarea height
 			var height = this.stageHeight;
+
 			if (height < this.minHeight)
 			{
 				height = this.minHeight;
 			}
-			this.$input.height(height);
+
+			this.$input.css('min-height', height);
+
+			this.settings.onHeightChange(height);
 		}
 	},
 
@@ -3394,7 +3406,8 @@ Garnish.NiceText = Garnish.Base.extend({
 	interval: 100,
 	hintFadeDuration: 50,
 	defaults: {
-		autoHeight: true
+		autoHeight:     true,
+		onHeightChange: $.noop
 	}
 });
 

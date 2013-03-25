@@ -1,0 +1,13 @@
+{% import "_includes/forms.html" as forms %}
+
+{{ forms.editableTableField({
+	label: "Table Columns"|t,
+	instructions: "Define the columns your table should have."|t,
+	id: 'columns',
+	name: 'columns',
+	jsId: 'types-Table-columns',
+	jsName: 'types[Table][columns]',
+	cols: { heading: "Column Heading"|t, handle: "Handle"|t },
+	rows: columns,
+	addRowLabel: "Add a column"|t
+}) }}
