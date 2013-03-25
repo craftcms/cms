@@ -19,35 +19,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * @var array All the stored credentials we know.
 	 */
-	private static $_storedCredentials = array();
-
-	/**
-	 * @var DateTime Datetime when the loaded credentials were last updated.
-	 */
-	private static $_credentialTimestamp = null;
-
-	/**
-	 * When shutting down, export all used credentials.
-	 */
-	public function __destruct()
-	{
-
-		// If data has changed, leave.
-		if (craft()->systemSettings->getCategoryTimeUpdated('rackspace') > static::$_credentialTimestamp)
-		{
-			return;
-		}
-
-		$currentSettings = array();
-
-		foreach (static::$_rackspaceContainers as $key => $container)
-		{
-			/** @var \OpenCloud\ObjectStore\Container $container */
-			$currentSettings[$key] = $container->Service()->Connection()->ExportCredentials();
-		}
-
-		craft()->systemSettings->saveSettings('rackspace', $currentSettings);
-	}
+	private static $_storedContainers = array();
 
 	/**
 	 * Returns the name of the source type.
@@ -774,31 +746,28 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		if (empty(static::$_rackspaceContainers[$key]))
 		{
-			if (empty(static::$_storedCredentials))
+			if (empty(static::$_storedContainers))
 			{
-				static::$_storedCredentials = craft()->systemSettings->getSettings('rackspace');
-				static::$_credentialTimestamp = craft()->systemSettings->getCategoryTimeUpdated('rackspace');
+				static::$_storedContainers = craft()->systemSettings->getSettings('rackspace');
 			}
 
-			if (isset(static::$_storedCredentials[$key]))
+			if (isset(static::$_storedContainers[$key]))
 			{
-				// Craft converts these to array on saving, while Rackspace expect objects.
-				foreach (static::$_storedCredentials[$key]['catalog'] as &$catalog)
+				static::$_rackspaceContainers[$key] = @unserialize(static::$_storedContainers[$key]);
+			}
+
+			// This is fresh information or some corrupt data - either way we'll fetch a new one and save it.
+			if (!isset(static::$_rackspaceContainers[$key]) || !is_object(static::$_rackspaceContainers[$key]))
+			{
+				static::$_rackspaceContainers[$key] = AssetsHelper::getRackspaceConnection($settings->username, $settings->apiKey)->ObjectStore(self::RackspaceServiceName, $settings->region)->Container(rawurlencode($settings->container));
+				$dataToSave = array();
+				foreach (static::$_rackspaceContainers as $key => $container)
 				{
-					$catalog = (object) $catalog;
-					foreach ($catalog->endpoints as &$endpoint)
-					{
-						$endpoint = (object) $endpoint;
-					}
+					$dataToSave[$key] = serialize($container);
 				}
-				$connection = AssetsHelper::getRackspaceConnection($settings->username, $settings->apiKey, static::$_storedCredentials[$key]);
-			}
-			else
-			{
-				$connection = AssetsHelper::getRackspaceConnection($settings->username, $settings->apiKey);
-			}
 
-			static::$_rackspaceContainers[$key] = $connection->ObjectStore(self::RackspaceServiceName, $settings->region)->Container(rawurlencode($settings->container));
+				craft()->systemSettings->saveSettings('rackspace', $dataToSave);
+			}
 		}
 
 		return static::$_rackspaceContainers[$key];
