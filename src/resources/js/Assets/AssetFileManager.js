@@ -1425,9 +1425,7 @@ Assets.FileManager = Garnish.Base.extend({
 
 			this.modal.show();
 
-			this.modal.addListener(Garnish.Modal.$shade, 'click', function () {
-				this.hide();
-			});
+			this.modal.removeListener(Garnish.Modal.$shade, 'click');
 
 			this.modal.addListener(this.modal.$container.find('.btn.cancel'), 'click', function () {
 				this.hide();
