@@ -160,6 +160,24 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns whether the user has shunned a given message.
+	 *
+	 * @param string $message
+	 * @return bool
+	 */
+	public function hasShunned($message)
+	{
+		if ($this->id)
+		{
+			return craft()->users->hasUserShunnedMessage($this->id, $message);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * Returns the time when the user will be over their cooldown period.
 	 *
 	 * @return DateTime|null

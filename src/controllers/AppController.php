@@ -30,6 +30,31 @@ class AppController extends BaseController
 	}
 
 	/**
+	 * Shuns a CP alert for 24 hours.
+	 */
+	public function actionShunCpAlert()
+	{
+		$this->requireAjaxRequest();
+
+		$message = craft()->request->getRequiredPost('message');
+		$user = craft()->userSession->getUser();
+
+		$currentTime = DateTimeHelper::currentUTCDateTime();
+		$tomorrow = $currentTime->add(new DateInterval('P1D'));
+
+		if (craft()->users->shunMessageForUser($user->id, $message, $tomorrow))
+		{
+			$this->returnJson(array(
+				'success' => true
+			));
+		}
+		else
+		{
+			$this->returnErrorJson(Craft::t('An unknown error occurred.'));
+		}
+	}
+
+	/**
 	 * Transfers the Craft license to the current domain.
 	 */
 	public function actionTransferLicenseToCurrentDomain()

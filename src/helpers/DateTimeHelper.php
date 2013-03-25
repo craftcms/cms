@@ -40,11 +40,19 @@ class DateTimeHelper
 	 * @param $timeStamp
 	 * @return DateTime
 	 */
-	public static function formatTimeForDb($timeStamp)
+	public static function formatTimeForDb($timeStamp = null)
 	{
 		// Eventually this will accept a database parameter and format the timestamp for the given database date/time datatype.
 		// For now, it's MySQL only.
-		$dt = new DateTime('@'.$timeStamp);
+		if ($timeStamp)
+		{
+			$dt = new DateTime('@'.$timeStamp);
+		}
+		else
+		{
+			$dt = new DateTime();
+		}
+
 		return $dt->format(DateTime::MYSQL_DATETIME);
 	}
 

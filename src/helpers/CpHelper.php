@@ -14,6 +14,12 @@ class CpHelper
 	public static function getAlerts($path = null, $fetch = false)
 	{
 		$alerts = array();
+		$user = craft()->userSession->getUser();
+
+		if (!$user)
+		{
+			return $alerts;
+		}
 
 		if (craft()->updates->isUpdateInfoCached() || $fetch)
 		{
@@ -21,7 +27,7 @@ class CpHelper
 			// because the other alerts are relying on cached Elliott info
 			$updateModel = craft()->updates->getUpdates();
 
-			if ($path != 'updates' && craft()->userSession->checkPermission('performUpdates'))
+			if ($path != 'updates' && $user->can('performUpdates'))
 			{
 				if (!empty($updateModel->app->releases))
 				{
@@ -48,7 +54,7 @@ class CpHelper
 				));
 
 				// Can they actually do something about it?
-				if (craft()->userSession->isAdmin())
+				if ($user->admin)
 				{
 					$action = '<a class="domain-mismatch">'.Craft::t('Transfer it to this domain?').'</a>';
 				}
@@ -64,8 +70,9 @@ class CpHelper
 			if ($path != 'settings/packages')
 			{
 				$licensedPackages = craft()->et->getLicensedPackages();
+				$packageTrials    = craft()->et->getPackageTrials();
 
-				// Could be false!
+				// Could be false if not cached
 				if (is_array($licensedPackages))
 				{
 					// Look for any unlicensed licenses
@@ -75,7 +82,11 @@ class CpHelper
 					{
 						if (!in_array($package, $licensedPackages))
 						{
-							$unlicensedPackages[] = $package;
+							// Make sure it's not in trial
+							if (!is_array($packageTrials) || !in_array($package, array_keys($packageTrials)))
+							{
+								$unlicensedPackages[] = $package;
+							}
 						}
 					}
 
@@ -91,7 +102,7 @@ class CpHelper
 						}
 
 						// Can they actually do something about it?
-						if (craft()->userSession->isAdmin())
+						if ($user->admin)
 						{
 							$action = '<a class="go" href="'.UrlHelper::getUrl('settings/packages').'">'.Craft::t('Manage packages').'</a>';
 						}
@@ -101,6 +112,42 @@ class CpHelper
 						}
 
 						$alerts[] = $message.' '.$action;
+					}
+				}
+
+				if ($packageTrials && $user->admin && !$user->hasShunned('packageTrialAlert'))
+				{
+					$expiringTrials = array();
+					$currentTime = DateTimeHelper::currentUTCDateTime();
+					$nextWeek = $currentTime->add(new DateInterval('P1W'));
+
+					// See if there are any package trials that expire in less than a week
+					foreach (Craft::getPackages() as $package)
+					{
+						if (!empty($packageTrials[$package]))
+						{
+							if ($packageTrials[$package] < $nextWeek)
+							{
+								$expiringTrials[] = $package;
+							}
+						}
+					}
+
+					if ($expiringTrials)
+					{
+						if (count($expiringTrials) == 1)
+						{
+							$message = Craft::t('Your {package} trial is expiring soon.', array('package' => Craft::t($expiringTrials[0])));
+						}
+						else
+						{
+							$message = Craft::t('You have multiple package trials expiring soon.');
+						}
+
+						$action1 = '<a class="shun:packageTrialAlert">'.Craft::t('Remind me later').'</a>';
+						$action2 = '<a class="go" href="'.UrlHelper::getUrl('settings/packages').'">'.Craft::t('manage packages').'</a>';
+
+						$alerts[] = $message.' '.$action1.' '.Craft::t('or').' '.$action2;
 					}
 				}
 			}

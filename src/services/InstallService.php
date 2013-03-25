@@ -37,6 +37,7 @@ class InstallService extends BaseApplicationComponent
 			$this->_createForeignKeysFromRecords($records);
 
 			$this->_createContentTable();
+			$this->_createShunnedMessagesTable();
 			$this->_createAndPopulateInfoTable($inputs);
 
 			Craft::log('Committing the transaction.');
@@ -157,6 +158,26 @@ class InstallService extends BaseApplicationComponent
 		craft()->db->createCommand()->addForeignKey('content', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
 
 		Craft::log('Finished creating the content table.');
+	}
+
+	/**
+	 * Creates the shunnedmessages table.
+	 *
+	 * @access private
+	 */
+	private function _createShunnedMessagesTable()
+	{
+		Craft::log('Creating the shunnedmessages table.');
+
+		craft()->db->createCommand()->createTable('shunnedmessages', array(
+			'userId'     => array('column' => ColumnType::Int, 'null' => false),
+			'message'    => array('column' => ColumnType::Varchar, 'null' => false),
+			'expiryDate' => array('column' => ColumnType::DateTime),
+		));
+		craft()->db->createCommand()->createIndex('shunnedmessages', 'userId,message', true);
+		craft()->db->createCommand()->addForeignKey('shunnedmessages', 'userId', 'users', 'id', 'CASCADE');
+
+		Craft::log('Finished creating the shunnedmessages table.');
 	}
 
 	/**
