@@ -221,6 +221,59 @@
 {% endmacro %}
 
 
+{% macro editableTable(config) %}
+	{% set config = { id: null, name: null, jsId: null, jsName: null, cols: {}, rows: {}, rowIdPrefix: 'row', addRowLabel: "Add a row"|t }|merge(config) %}
+	<table id="{{ config.id }}" class="editable">
+		<thead>
+			<tr>
+				{% for col in config.cols %}
+					<th scope="col" class="header">{{ col.heading }}</th>
+				{% endfor %}
+				<th class="header" colspan="2"></th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for rowId, row in config.rows %}
+				<tr data-id="{{ rowId }}">
+					{% for colId, col in config.cols %}
+						{% set name = config.name~'['~rowId~']['~colId~']' %}
+						{% set value = (row[colId] is defined ? row[colId] : null) %}
+						<td{% if col.class is defined %} class="{{ col.class }}"{% endif %}{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
+							{%- if col.type == 'select' -%}
+								{{ _self.select({
+									class: 'small',
+									name: name,
+									options: col.options,
+									value: value
+								}) }}
+							{%- else -%}
+								<textarea name="{{ name }}" rows="1">{{ value }}</textarea>
+							{%- endif -%}
+						</td>
+					{% endfor %}
+					<td class="thin action"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
+					<td class="thin action"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<div class="buttons">
+		<div class="btn add icon small">{{ config.addRowLabel }}</div>
+	</div>
+
+	{% set js %}
+		new Craft.EditableTable(
+			"{{ (config.jsId   ? config.jsId   : config.id)   | e('js') }}",
+			"{{ (config.jsName ? config.jsName : config.name) | e('js') }}",
+			"{{ config.rowIdPrefix|e('js') }}",
+			{{ config.cols|json_encode|raw }});
+	{% endset %}
+
+	{% includeJs js %}
+{% endmacro %}
+
+
 {# Fields #}
 
 
@@ -297,4 +350,9 @@
 
 {% macro lightswitchField(config) %}
 	{{ _self.field(config, _self.lightswitch(config)) }}
+{% endmacro %}
+
+
+{% macro editableTableField(config) %}
+	{{ _self.field(config, _self.editableTable(config)) }}
 {% endmacro %}
