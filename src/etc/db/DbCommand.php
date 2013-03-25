@@ -200,28 +200,33 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
-	 * @param $table
-	 * @param $columns
+	 * @param string $table
+	 * @param array  $columns
+	 * @param bool   $includeAuditColumns
 	 * @return int
 	 */
-	public function insert($table, $columns)
+	public function insert($table, $columns, $includeAuditColumns = true)
 	{
 		$table = DbHelper::addTablePrefix($table);
 
-		$columns['dateCreated'] = DateTimeHelper::currentTimeForDb();
-		$columns['dateUpdated'] = DateTimeHelper::currentTimeForDb();
-		$columns['uid'] = StringHelper::UUID();
+		if ($includeAuditColumns)
+		{
+			$columns['dateCreated'] = DateTimeHelper::currentTimeForDb();
+			$columns['dateUpdated'] = DateTimeHelper::currentTimeForDb();
+			$columns['uid']         = StringHelper::UUID();
+		}
 
 		return parent::insert($table, $columns);
 	}
 
 	/**
-	 * @param $table
-	 * @param $columns
-	 * @param $rows
+	 * @param string $table
+	 * @param array  $columns
+	 * @param array  $rows
+	 * @param bool   $includeAuditColumns
 	 * @return int
 	 */
-	public function insertAll($table, $columns, $rows)
+	public function insertAll($table, $columns, $rows, $includeAuditColumns = true)
 	{
 		if (!$rows)
 		{
@@ -230,15 +235,18 @@ class DbCommand extends \CDbCommand
 
 		$table = DbHelper::addTablePrefix($table);
 
-		$columns[] = 'dateCreated';
-		$columns[] = 'dateUpdated';
-		$columns[] = 'uid';
-
-		foreach ($rows as &$row)
+		if ($includeAuditColumns)
 		{
-			$row[] = DateTimeHelper::currentTimeForDb();
-			$row[] = DateTimeHelper::currentTimeForDb();
-			$row[] = StringHelper::UUID();
+			$columns[] = 'dateCreated';
+			$columns[] = 'dateUpdated';
+			$columns[] = 'uid';
+
+			foreach ($rows as &$row)
+			{
+				$row[] = DateTimeHelper::currentTimeForDb();
+				$row[] = DateTimeHelper::currentTimeForDb();
+				$row[] = StringHelper::UUID();
+			}
 		}
 
 		$queryParams = $this->getConnection()->getSchema()->insertAll($table, $columns, $rows);
@@ -246,26 +254,82 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
-	 * @param $table
-	 * @param $columns
-	 * @param string $conditions
-	 * @param array $params
+	 * @param string $table
+	 * @param array  $keyColumns
+	 * @param array  $updateColumns
+	 * @param bool   $includeAuditColumns
 	 * @return int
 	 */
-	public function update($table, $columns, $conditions = '', $params = array())
+	public function insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
+	{
+		if ($includeAuditColumns)
+		{
+			$keyColumns['dateCreated']    = DateTimeHelper::currentTimeForDb();
+			$keyColumns['uid']            = StringHelper::UUID();
+			$updateColumns['dateUpdated'] = DateTimeHelper::currentTimeForDb();
+		}
+
+		// TODO: This is all MySQL specific
+
+		$allColumns = array_merge($keyColumns, $updateColumns);
+		$params = array();
+
+		$table = DbHelper::addTablePrefix($table);
+		$sql = 'INSERT INTO '.craft()->db->quoteTableName($table).' (';
+
+		foreach (array_keys($allColumns) as $i => $column)
+		{
+			if ($i > 0)
+			{
+				$sql .= ', ';
+			}
+
+			$sql .= craft()->db->quoteColumnName($column);
+
+			$params[':'.$column] = $allColumns[$column];
+		}
+
+		$sql .= ') VALUES (:'.implode(', :', array_keys($allColumns)).')' .
+		        ' ON DUPLICATE KEY UPDATE ';
+
+		foreach (array_keys($updateColumns) as $i => $column)
+		{
+			if ($i > 0)
+			{
+				$sql .= ', ';
+			}
+
+			$sql .= craft()->db->quoteColumnName($column).' = :'.$column;
+		}
+
+		return $this->setText($sql)->execute($params);
+	}
+
+	/**
+	 * @param string $table
+	 * @param array  $columns
+	 * @param mixed  $conditions
+	 * @param array  $params
+	 * @param bool   $includeAuditColumns
+	 * @return int
+	 */
+	public function update($table, $columns, $conditions = '', $params = array(), $includeAuditColumns = true)
 	{
 		$table = DbHelper::addTablePrefix($table);
 		$conditions = $this->_normalizeConditions($conditions, $params);
 
-		$columns['dateUpdated'] = DateTimeHelper::currentTimeForDb();
+		if ($includeAuditColumns)
+		{
+			$columns['dateUpdated'] = DateTimeHelper::currentTimeForDb();
+		}
 
 		return parent::update($table, $columns, $conditions, $params);
 	}
 
 	/**
 	 * @param string $table
-	 * @param mixed $conditions
-	 * @param array
+	 * @param mixed  $conditions
+	 * @param array  $params
 	 * @return int
 	 */
 	public function delete($table, $conditions = '', $params = array())
