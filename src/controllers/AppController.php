@@ -73,6 +73,12 @@ class AppController extends BaseController
 					$packages[$packageName]['licensed'] = true;
 				}
 
+				// Include which packages are in trial
+				foreach ($etResponse->packageTrials as $packageName)
+				{
+					$packages[$packageName]['trial'] = true;
+				}
+
 				$this->returnJson(array(
 					'success'  => true,
 					'packages' => $packages
