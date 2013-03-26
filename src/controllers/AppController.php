@@ -101,7 +101,12 @@ class AppController extends BaseController
 				// Include which packages are in trial
 				foreach ($etResponse->packageTrials as $packageName => $expiryDate)
 				{
+					$currentTime = DateTimeHelper::currentUTCDateTime();
+					$diff = $expiryDate - $currentTime->getTimestamp();
+					$daysLeft = round($diff / 86400); // 60 * 60 * 24
+
 					$packages[$packageName]['trial'] = true;
+					$packages[$packageName]['daysLeftInTrial'] = $daysLeft;
 				}
 
 				$this->returnJson(array(

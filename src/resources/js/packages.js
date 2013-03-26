@@ -125,14 +125,23 @@ Craft.PackageChooser = Garnish.Base.extend({
 				// Trial badge
 				if (Craft.hasPackage(pkg))
 				{
-					var badgeClass = 'installed';
+					var badgeClass = 'trial';
 				}
 				else
 				{
 					var badgeClass = 'uninstalled';
 				}
 
-				pkgInfo.$badge = $('<div class="badge '+badgeClass+'">'+Craft.t('Trial')+'</div>');
+				if (pkgInfo.daysLeftInTrial == 1)
+				{
+					var badgeLabel = Craft.t('1 day left');
+				}
+				else
+				{
+					var badgeLabel = Craft.t('{days} days left', { days: pkgInfo.daysLeftInTrial });
+				}
+
+				pkgInfo.$badge = $('<div class="badge '+badgeClass+'">'+badgeLabel+'</div>');
 			}
 			else if (Craft.hasPackage(pkg))
 			{
@@ -412,7 +421,7 @@ Craft.PackageChooser = Garnish.Base.extend({
 	{
 		var pkg = ev.data.pkg;
 
-		if (confirm(Craft.t('Are you sure you wish to start your 30-day {package} trial?', { 'package': this.packages[pkg].name })))
+		if (confirm(Craft.t('Start your 30-day {package} trial?', { 'package': this.packages[pkg].name })))
 		{
 			var data = {
 				'package': pkg

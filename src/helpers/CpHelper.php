@@ -119,7 +119,7 @@ class CpHelper
 				{
 					$expiringTrials = array();
 					$currentTime = DateTimeHelper::currentUTCDateTime();
-					$nextWeek = $currentTime->add(new DateInterval('P1W'));
+					$nextWeek = $currentTime->add(new DateInterval('P1W'))->getTimestamp();
 
 					// See if there are any package trials that expire in less than a week
 					foreach (Craft::getPackages() as $package)

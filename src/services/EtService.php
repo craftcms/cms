@@ -199,7 +199,11 @@ class EtService extends BaseApplicationComponent
 		if (!empty($etResponse->data['success']))
 		{
 			// Install the package.
-			Craft::installPackage($model->packageHandle);
+			if (!Craft::hasPackage($model->packageHandle))
+			{
+				Craft::installPackage($model->packageHandle);
+			}
+
 			return true;
 		}
 		else
