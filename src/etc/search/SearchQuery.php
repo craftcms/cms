@@ -82,11 +82,6 @@ class SearchQuery
 			if ($exclude = ($token[0] == '-'))
 			{
 				$token = substr($token, 1);
-
-				if (!$token)
-				{
-					continue;
-				}
 			}
 
 			// Is this an attribute-specific term?
@@ -122,11 +117,6 @@ class SearchQuery
 			if ($substring = (substr($term, -1) == '*'))
 			{
 				$term = substr($term, 0, -1);
-
-				if (!$term)
-				{
-					continue;
-				}
 			}
 
 			$term = new SearchQueryTerm($exclude, $substring, $attribute, $term);
