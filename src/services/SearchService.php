@@ -310,7 +310,7 @@ class SearchService extends BaseApplicationComponent
 		}
 
 		// Sanatize term
-		if ($keywords = StringHelper::normalizeKeywords($term->term))
+		if ($keywords = $this->_normalizeTerm($term->term))
 		{
 			// Create fulltext clause from term
 			if ($this->_isFulltextTerm($keywords))
@@ -326,7 +326,7 @@ class SearchService extends BaseApplicationComponent
 					$keywords = '"'.$keywords.'"';
 				}
 
-				// Determine prefix for ftKeyword
+				// Determine prefix for the full-text keyword
 				if ($term->exclude)
 				{
 					$prefix = '-';
@@ -342,9 +342,6 @@ class SearchService extends BaseApplicationComponent
 
 				$keywords = $prefix.$keywords;
 
-				// Might need to check for OR as well:
-				// 'salty OR dog' will now effectively be 'salty dog',
-				// because it combines FT with non-FT
 				if ($subSelect)
 				{
 					// If there is a subselect, create the MATCH AGAINST bit
@@ -386,6 +383,25 @@ class SearchService extends BaseApplicationComponent
 		}
 
 		return $sql;
+	}
+
+	/**
+	 * Normalize term from tokens, keep a record for cache
+	 *
+	 * @access private
+	 * @param string $term
+	 * @return string
+	 */
+	private function _normalizeTerm($term)
+	{
+		static $terms = array();
+
+		if (!array_key_exists($term, $terms))
+		{
+			$terms[$term] = StringHelper::normalizeKeywords($term);
+		}
+
+		return $terms[$term];
 	}
 
 	/**
