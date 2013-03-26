@@ -5,6 +5,7 @@ Craft::requirePackage(CraftPackage::Cloud);
 
 /**
  * Rackspace source type class
+ * TODO: List paging
  */
 class RackspaceAssetSourceType extends BaseAssetSourceType
 {
@@ -935,6 +936,37 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		}
 
 		$response = static::_doRequest($url, $method, $headers);
+
+		preg_match('/HTTP\/1.1 (?P<httpStatus>[0-9]{3})/', $response, $matches);
+
+		// Error checking
+		switch ($matches['httpStatus'])
+		{
+			// Invalid token - try to renew it once.
+			case '401':
+			{
+				static $tokenFailure = 0;
+				if (++$tokenFailure == 1)
+				{
+					$this->_refreshConnectionInformation();
+
+					// Remove token header.
+					$newHeaders = array();
+					foreach ($headers as $header)
+					{
+						if (strpos($header, 'X-Auth-Token') === false)
+						{
+							$newHeaders[] = $header;
+						}
+					}
+
+					return $this->_doAuthenticatedRequest($operationType, $target, $method, $newHeaders);
+				}
+				throw new Exception("Token has expired and so did the attempt to renew it. Please check the source settings.");
+				break;
+			}
+
+		}
 
 		return $response;
 	}
