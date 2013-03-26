@@ -78,48 +78,48 @@ class SearchQuery
 				}
 			}
 
+			$term = new SearchQueryTerm();
+
 			// Is this an exclude term?
-			if ($exclude = ($token[0] == '-'))
+			if ($term->exclude = ($token[0] == '-'))
 			{
 				$token = substr($token, 1);
 			}
 
 			// Is this an attribute-specific term?
-			if (preg_match('/^(\w+):(.+)$/', $token, $match))
+			if (preg_match('/^(\w+)(::?)(.+)$/', $token, $match))
 			{
-				$attribute = $match[1];
-				$token = $match[2];
-			}
-			else
-			{
-				$attribute = null;
+				$term->attribute = $match[1];
+				$term->exact     = ($match[2] == '::');
+				$token = $match[3];
 			}
 
 			// Does it start with a quote?
-			if (strpos('"\'', $token[0]) !== false)
+			if ($token && strpos('"\'', $token[0]) !== false)
 			{
 				// Is the end quote at the end of this very token?
 				if ($token[strlen($token)-1] == $token[0])
 				{
-					$term = substr($token, 1, -1);
+					$token = substr($token, 1, -1);
 				}
 				else
 				{
-					$term = substr($token, 1).' '.strtok($token[0]);
+					$token = substr($token, 1).' '.strtok($token[0]);
 				}
 			}
-			else
+
+			// Include sub-word matches?
+			if ($term->subLeft = ($token && $token[0] == '*'))
 			{
-				$term = $token;
+				$token = substr($token, 1);
 			}
 
-			// Do we have a substring?
-			if ($substring = (substr($term, -1) == '*'))
+			if ($term->subRight = ($token && substr($token, -1) == '*'))
 			{
-				$term = substr($term, 0, -1);
+				$token = substr($token, 0, -1);
 			}
 
-			$term = new SearchQueryTerm($exclude, $substring, $attribute, $term);
+			$term->term = $token;
 
 			if ($appendToPrevious)
 			{
