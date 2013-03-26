@@ -13,6 +13,7 @@ class SearchService extends BaseApplicationComponent
 	private static $_ftStopWords;
 
 	private $_tokens;
+	private $_results;
 
 	private $_sqlAndLike;
 	private $_sqlOrLike;
@@ -73,14 +74,9 @@ class SearchService extends BaseApplicationComponent
 	public function indexElementKeywords($elementId, $localeId, $keywords)
 	{
 		// $sql = array(
-		// 	$this->filterElementIdsByQuery(array(), 'salty dog'),
-		// 	$this->filterElementIdsByQuery(array(), 'salty dogs'),
-		// 	$this->filterElementIdsByQuery(array(), 'salty OR dog'),
-		// 	$this->filterElementIdsByQuery(array(), 'salty OR dogs'),
-		// 	$this->filterElementIdsByQuery(array(), 'title:salty OR body:dog'),
-		// 	$this->filterElementIdsByQuery(array(), '"salty dog"'),
-		// 	$this->filterElementIdsByQuery(array(), 'salty -dog'),
-		// 	$this->filterElementIdsByQuery(array(), 'salty locale:en_us'),
+		// 	$this->filterElementIdsByQuery(array(), 'john'),
+		// 	$this->filterElementIdsByQuery(array(), 'water gin'),
+		// 	$this->filterElementIdsByQuery(array(), 'tonic title:gin'),
 		// );
 
 		// die('<pre>'.htmlspecialchars(print_r($sql, true)).'</pre>');
@@ -158,19 +154,32 @@ class SearchService extends BaseApplicationComponent
 		// Get tokens for query
 		$this->_tokens = $query->getTokens();
 
-		// Get the WHERE clause
-		$where = $this->_getWhereClause();
+		// Get where clause from tokens, bail out if no valid query is there
+		if (!($where = $this->_getWhereClause())) return array();
 
-		// Execute query
-		if ($where)
+		// Begin creating SQL
+		$sql = sprintf('SELECT * FROM %s WHERE %s',
+			craft()->db->quoteTableName(DbHelper::addTablePrefix('searchindex')),
+			$where
+		);
+
+		// Append elementIds to QSL
+		if ($elementIds)
 		{
-			$table = DbHelper::addTablePrefix('searchindex');
-			$sql = 'SELECT '.craft()->db->quoteColumnName('elementId').' '.
-				'FROM '.craft()->db->quoteTableName($table).' '.
-				'WHERE '.$where;
-
-			return $sql;
+			$sql .= sprintf(' AND %s IN (%s)',
+				craft()->db->quoteColumnName('elementId'),
+				implode(',', $elementIds)
+			);
 		}
+
+		// Execute the sql
+		$this->_results = craft()->db->createCommand()->setText($sql)->execute();
+
+		// Loop through results and calculate score per element
+
+		// Sort found elementIds by score
+
+		// Return elementIds in the right order
 
 		return array();
 	}
@@ -179,6 +188,7 @@ class SearchService extends BaseApplicationComponent
 	 * Get the complete where clause for current tokens
 	 *
 	 * @access private
+	 * @return string
 	 */
 	private function _getWhereClause()
 	{
@@ -223,11 +233,11 @@ class SearchService extends BaseApplicationComponent
 		// Add the fallback AND clauses to the full where array
 		if ($this->_sqlAndLike)
 		{
-			$where = array_merge($this->_sqlAndLike, $where);
+			$where = array_merge($where, $this->_sqlAndLike);
 		}
 
 		// Return the final result
-		return ($where) ? implode($glue, $where) : null;
+		return implode($glue, $where);
 	}
 
 	/**
