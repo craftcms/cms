@@ -173,7 +173,7 @@ class SearchService extends BaseApplicationComponent
 		}
 
 		// Execute the sql
-		$this->_results = craft()->db->createCommand()->setText($sql)->execute();
+		$this->_results = craft()->db->createCommand()->setText($sql)->queryAll();
 
 		// Loop through results and calculate score per element
 
@@ -442,25 +442,11 @@ class SearchService extends BaseApplicationComponent
 	 */
 	private function _getFieldIdFromAttribute($attribute)
 	{
-		// Create local cache
-		static $fields = array();
+		// Get field id from service
+		$field = craft()->fields->getFieldByHandle($attribute);
 
-		if (!$fields)
-		{
-			// Get all fields
-			$allFields = craft()->fields->getAllFields();
-
-			// Store them like id => handle in local cache
-			foreach ($allFields AS $field)
-			{
-				$fields[$field->id] = $field->handle;
-			}
-
-			// clean up
-			unset($allFields);
-		}
-
-		return (($id = array_search($attribute, $fields)) === false) ? 0 : $id;
+		// Fallback to 0
+		return ($field) ? $field->id : 0;
 	}
 
 
