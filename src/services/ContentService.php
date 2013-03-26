@@ -117,11 +117,8 @@ class ContentService extends BaseApplicationComponent
 			$fieldType = craft()->fields->populateFieldType($field);
 			$fieldType->element = $element;
 
-			if ($fieldType->defineContentAttribute())
-			{
-				$handle = $field->handle;
-				$content->$handle = $fieldType->getPostData();
-			}
+			$handle = $field->handle;
+			$content->$handle = $fieldType->getPostData();
 		}
 
 		return $content;
