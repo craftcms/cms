@@ -10,16 +10,18 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 {
 
 	const RackspaceServiceName = 'cloudFiles';
+	const RackspaceUSAuthHost = 'https://identity.api.rackspacecloud.com/v1.0';
+	const RackspaceUKAuthHost = 'https://lon.identity.api.rackspacecloud.com/v1.0';
+
+	const RackspaceStorageOperation = 'storage';
+	const RackspaceCDNOperation = 'cdn';
 
 	/**
-	 * @var array All the used rackspace containers.
+	 * Stores access information.
+	 *
+	 * @var array
 	 */
-	private static $_rackspaceContainers = array();
-
-	/**
-	 * @var array All the stored credentials we know.
-	 */
-	private static $_storedContainers = array();
+	private static $_accessStore = array();
 
 	/**
 	 * Returns the name of the source type.
@@ -42,7 +44,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		return array(
 			'username'   => array(AttributeType::String, 'required' => true),
 			'apiKey'     => array(AttributeType::String, 'required' => true),
-			'region'     => array(AttributeType::String, 'required' => true),
+			'location'   => array(AttributeType::String, 'required' => true),
 			'container'	 => array(AttributeType::String, 'required' => true),
 			'urlPrefix'  => array(AttributeType::String, 'required' => true),
 			'subfolder'  => array(AttributeType::String, 'default' => ''),
@@ -63,36 +65,29 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 
 	/**
-	 * Get bucket list with credentials.
+	 * Get container list.
 	 *
-	 * @param $username
-	 * @param $apiKey
-	 * @param $region
 	 * @return array
 	 * @throws Exception
 	 */
-	public static function getContainerList($username, $apiKey, $region)
+	public function getContainerList()
 	{
-		$rackspace = AssetsHelper::getRackspaceConnection($username, $apiKey);
 
-		try
-		{
-			$containers = $rackspace->ObjectStore(static::RackspaceServiceName, $region)->CDN()->ContainerList();
-		}
-		catch (\Exception $exception)
-		{
-			throw new Exception($exception->getMessage());
-		}
+		$response = $this->_doAuthenticatedRequest(static::RackspaceCDNOperation, '?format=json');
 
-		$containerList = array();
+		$response = rtrim(substr($response, strpos($response, "\r\n\r\n") + 4));
+		$data = json_decode($response);
 
-		while($container = $containers->Next())
+		$returnData = array();
+		if (is_array($data))
 		{
-			/** @var \OpenCloud\ObjectStore\Container $container */
-			$containerList[] = (object) array('container' => $container->name, 'urlPrefix' => $container->cdn_uri);
+			foreach ($data as $container)
+			{
+				$returnData[] = (object) array('container' => $container->name, 'urlPrefix' => $container->cdn_uri);
+			}
 		}
 
-		return $containerList;
+		return $returnData;
 	}
 
 	/**
@@ -724,6 +719,91 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
+	 * Refresh a connection information and return authorization token.
+	 *
+	 * @param $username
+	 * @param $apiKey
+	 * @throws Exception
+	 */
+	private function _refreshConnectionInformation()
+	{
+		$settings = $this->getSettings();
+		$username = $settings->username;
+		$apiKey = $settings->apiKey;
+		$location = $settings->location;
+
+		$headers = array(
+			'X-Auth-User: '.$username,
+			'X-Auth-Key: '.$apiKey
+		);
+
+		$targetUrl = static::_makeAuthorizationRequestUrl($location);
+		$response = static::_doRequest($targetUrl, 'GET', $headers);
+
+		// Parse the response
+		preg_match('/.*X-Auth-Token: (?P<token>[a-f0-9\-]+)(\r|\n)/', $response, $matches);
+		if (empty($matches['token']))
+		{
+			throw new Exception(Craft::t("Wrong credentials supplied for Rackspace access!"));
+		}
+
+		$token = $matches['token'];
+
+		// If we have a token, we MUST have these as well.
+		preg_match('/.*X-Storage-Url: (?P<storageUrl>[^\s]+)(\r|\n)/', $response, $matches);
+		$storageUrl = $matches['storageUrl'];
+		preg_match('/.*X-CDN-Management-Url: (?P<cdnUrl>[^\s]+)(\r|\n)/', $response, $matches);
+		$cdnUrl = $matches['cdnUrl'];
+
+		$connectionKey = $username.$apiKey;
+
+		$data = array('token' => $token, 'storageUrl' => $storageUrl, 'cdnUrl' => $cdnUrl);
+
+		// Store this in the access store
+		static::$_accessStore[$connectionKey] = $data;
+
+		// And update DB information.
+		static::_updateAccessData($connectionKey, $data);
+	}
+
+	/**
+	 * Create the authorization request URL by location
+	 *
+	 * @param string $location
+	 * @return string
+	 */
+	private static function _makeAuthorizationRequestUrl($location = '')
+	{
+		if ($location == 'uk')
+		{
+			return static::RackspaceUKAuthHost;
+		}
+
+		return static::RackspaceUSAuthHost;
+	}
+
+	/**
+	 * Make a request and return the response.
+	 *
+	 * @param $url
+	 * @param $method
+	 * @param $headers
+	 * @return string
+	 */
+	private static function _doRequest($url, $method = 'GET', $headers = array())
+	{
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+		curl_setopt($ch, CURLOPT_HEADER, 1);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		return curl_exec($ch);
+	}
+
+	/**
 	 * Prepare the RackSpace object for requests.
 	 *
 	 * @param $settings BaseModel
@@ -790,6 +870,113 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			return false;
 		}
 		return $info;
+	}
+
+	/**
+	 * Do an authenticated request against Rackspace severs.
+	 *
+	 * @param string $username username
+	 * @param string $apiKey apiKey
+	 * @param string $target URI target on the Rackspace server
+	 * @param string $method GET/POST/PUT/DELETE
+	 * @param array $headers array of headers. Authorization token will be appended to this before request.
+	 * @return string full response including headers.
+	 * @throws Exception
+	 */
+	private function _doAuthenticatedRequest($operationType, $target = '', $method = 'GET', $headers = array())
+	{
+		$settings = $this->getSettings();
+
+		$username = $settings->username;
+		$apiKey = $settings->apiKey;
+
+		$connectionKey = $username.$apiKey;
+
+		// If we don't have the access information, load it from DB
+		if (empty(static::$_accessStore[$connectionKey]))
+		{
+			static::_loadAccessData();
+		}
+
+		// If we still don't have it, fetch it using username and api key.
+		if (empty(static::$_accessStore[$connectionKey]))
+		{
+			$this->_refreshConnectionInformation();
+		}
+
+		// If we still don't have it, then we're all out of luck.
+		if (empty(static::$_accessStore[$connectionKey]))
+		{
+			throw new Exception(Craft::t("Connection information not found!"));
+		}
+
+		$connectionInformation = static::$_accessStore[$connectionKey];
+
+		$headers[] = 'X-Auth-Token: ' . $connectionInformation['token'];
+
+		switch ($operationType)
+		{
+			case static::RackspaceStorageOperation:
+			{
+				$url = $connectionInformation['storageUrl'].$target;
+				break;
+			}
+
+			case static::RackspaceCDNOperation:
+			{
+				$url = $connectionInformation['cdnUrl'].$target;
+				break;
+			}
+
+			default:
+			{
+				throw new Exception(Craft::t("Unrecognized operation type!"));
+			}
+		}
+
+		$response = static::_doRequest($url, $method, $headers);
+
+		return $response;
+	}
+
+	/**
+	 * Load Rackspace access data from DB.
+	 */
+	private static function _loadAccessData()
+	{
+		$rows = craft()->db->createCommand()->select('connectionKey, token, storageUrl, cdnUrl')->from('rackspaceaccess')->queryAll();
+		foreach ($rows as $row)
+		{
+			static::$_accessStore[$row['connectionKey']] = array(
+															'token' => $row['token'],
+															'storageUrl' => $row['storageUrl'],
+															'cdnUrl' => $row['cdnUrl']);
+		}
+	}
+
+	/**
+	 * Update or insert access data for a connetion key.
+	 *
+	 * @param $connectionKey
+	 * @param $data
+	 */
+	private static function _updateAccessData($connectionKey, $data)
+	{
+		$recordExists = craft()->db->createCommand()
+			->select('id')
+			->where('connectionKey = :connectionKey', array(':connectionKey' => $connectionKey))
+			->from('rackspaceaccess')
+			->queryScalar();
+
+		if ($recordExists)
+		{
+			craft()->db->createCommand()->update('rackspaceaccess', $data, 'id = :id', array(':id' => $recordExists));
+		}
+		else
+		{
+			$data['connectionKey'] = $connectionKey;
+			craft()->db->createCommand()->insert('rackspaceaccess', $data);
+		}
 	}
 
 }

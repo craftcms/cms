@@ -59,7 +59,7 @@ $('.rackspace-refresh-containers').click(function () {
     var params = {
         username:  $('.rackspace-username').val(),
         apiKey: $('.racskspace-api-key').val(),
-        region: $('.rackspace-region-select select').val()
+        location: $('.rackspace-location-select select').val()
     };
 
     $.post(Craft.actionUrl + '/assetSources/getRackspaceContainers', params, $.proxy(function (response) {

@@ -212,11 +212,11 @@ class AssetsVariable
 	 *
 	 * @return array
 	 */
-	public function getRackspaceRegions()
+	public function getRackspaceLocations()
 	{
 		if (Craft::hasPackage('Cloud'))
 		{
-			return array('DFW' => 'Dallas', 'ORD' => 'Chicago');
+			return array('us' => 'US', 'uk' => 'UK');
 		}
 
 		return array();

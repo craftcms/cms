@@ -11,8 +11,6 @@ class AssetsHelper
 	const ActionCancel = 'cancel';
 	const IndexSkipItemsPattern = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
 
-	const RackspaceAuthUrl = 'https://identity.api.rackspacecloud.com/v2.0/';
-
 	/**
 	 * Get a temporary file path.
 	 *
@@ -25,32 +23,6 @@ class AssetsHelper
 		$fileName = uniqid('assets', true) . '.' . $extension;
 
 		return IOHelper::createFile(craft()->path->getTempPath() . $fileName)->getRealPath();
-	}
-
-	/**
-	 * Create a connection to Rackspace and re-use existing connection data, if possible.
-	 *
-	 * @param $username
-	 * @param $apiKey
-	 * @param $credentials
-	 * @return \OpenCloud\Rackspace|null
-	 */
-	public static function getRackspaceConnection($username, $apiKey, $credentials = null)
-	{
-		if (Craft::hasPackage(CraftPackage::Cloud))
-		{
-			require_once(craft()->path->getLibPath().'Opencloud/rackspace.php');
-			$connection =  new \OpenCloud\Rackspace(self::RackspaceAuthUrl, array('username' => $username, 'apiKey' => $apiKey));
-
-			if (!is_null($credentials))
-			{
-				$connection->ImportCredentials($credentials);
-			}
-
-			return $connection;
-		}
-
-		return null;
 	}
 }
 

@@ -118,11 +118,17 @@ class AssetSourcesController extends BaseController
 		{
 			$username = craft()->request->getRequiredPost('username');
 			$apiKey = craft()->request->getRequiredPost('apiKey');
-			$region = craft()->request->getRequiredPost('region');
+			$location = craft()->request->getRequiredPost('location');
 
 			try
 			{
-				$this->returnJson(RackspaceAssetSourceType::getContainerList($username, $apiKey, $region));
+				// Static methods here are no-go (without passing unneeded variables around, such as location), we'll
+				// have to mock up a SourceType object here.
+				$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey, 'location' => $location)));
+
+				/** @var RackspaceAssetSourceType $source */
+				$source = craft()->assetSources->populateSourceType($model);
+				$this->returnJson($source->getContainerList());
 			}
 			catch (Exception $exception)
 			{

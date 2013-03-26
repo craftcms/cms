@@ -23,13 +23,13 @@
 }) }}
 
 {{ selectField({
-    label: "Regions",
-    instructions: "Choose a region to use"|t,
-    id: 'region',
-    name: 'region',
-    options: craft.assets.rackspaceRegions,
-    value: settings.region,
-    class: "rackspace-region-select",
+    label: "Location",
+    instructions: "Choose the account location"|t,
+    id: 'location',
+    name: 'location',
+    options: craft.assets.rackspaceLocations,
+    value: settings.location,
+    class: "rackspace-location-select",
     required: true
 }) }}
 
