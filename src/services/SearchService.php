@@ -359,8 +359,25 @@ class SearchService extends BaseApplicationComponent
 	 */
 	private function _getFieldIdFromAttribute($attribute)
 	{
-		// TODO: make this work
-		return 0;
+		// Create local cache
+		static $fields = array();
+
+		if (!$fields)
+		{
+			// Get all fields
+			$allFields = craft()->fields->getAllFields();
+
+			// Store them like id => handle in local cache
+			foreach ($allFields AS $field)
+			{
+				$fields[$field->id] = $field->handle;
+			}
+
+			// clean up
+			unset($allFields);
+		}
+
+		return (($id = array_search($attribute, $fields)) === false) ? 0 : $id;
 	}
 
 
