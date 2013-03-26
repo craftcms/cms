@@ -74,8 +74,9 @@ class SearchService extends BaseApplicationComponent
 	public function indexElementKeywords($elementId, $localeId, $keywords)
 	{
 		// $sql = array(
-		// 	$this->filterElementIdsByQuery(array(), 'john'),
-		// 	$this->filterElementIdsByQuery(array(), 'water gin'),
+		// 	$this->filterElementIdsByQuery(array(), '*sterd*act'),
+		// 	$this->filterElementIdsByQuery(array(), 'john* *hop'),
+		// 	$this->filterElementIdsByQuery(array(), 'water OR soda foo OR bar'),
 		// 	$this->filterElementIdsByQuery(array(), 'tonic title:gin'),
 		// );
 
@@ -313,9 +314,9 @@ class SearchService extends BaseApplicationComponent
 		if ($keywords = $this->_normalizeTerm($term->term))
 		{
 			// Create fulltext clause from term
-			if ($this->_isFulltextTerm($keywords))
+			if ($this->_isFulltextTerm($keywords) && !$term->subLeft)
 			{
-				if ($term->substring)
+				if ($term->subRight)
 				{
 					$keywords .= '*';
 				}
@@ -361,7 +362,9 @@ class SearchService extends BaseApplicationComponent
 			{
 				// Create LIKE clause from term
 				$like = $term->exclude ? 'NOT LIKE' : 'LIKE';
-				$keywords = $term->substring ? "% {$keywords}%" : "% {$keywords} %";
+
+				$keywords = ($term->subLeft ? '%' : '% ') . $keywords;
+				$keywords .= $term->subRight ? '%' : ' %';
 
 				$sql = $this->_sqlWhere('keywords', $like, $keywords);
 
