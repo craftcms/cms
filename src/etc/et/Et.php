@@ -152,8 +152,13 @@ class Et
 						$packageTrials = $etModel->packageTrials;
 						foreach ($etModel->packageTrials as $packageHandle => $expiryTimestamp)
 						{
-							$dateTime = DateTime::createFromFormat('U', $expiryTimestamp);
-							$packageTrials[$packageHandle] = $dateTime;
+							$expiryDate = DateTime::createFromFormat('U', $expiryTimestamp);
+							$currentDate = DateTimeHelper::currentUTCDateTime();
+
+							if ($currentDate > $expiryDate)
+							{
+								unset($packageTrials[$packageHandle]);
+							}
 						}
 
 						$etModel->packageTrials = $packageTrials;
