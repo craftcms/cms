@@ -20,7 +20,7 @@
 
 #packages .package .buttons { position: absolute; left: 0; border-radius: 0 0 1px 1px; bottom: 0; padding: 11px 15px 15px; margin: 0; border-top: 1px solid $hrcolor; width: 200px; min-height: 31px; background: #fcfcfc; }
 #packages .package .buttons .btn { margin-top: 4px; font-weight: bold; }
-#packages .package .buttons .btn.buy { float: left; color: $successcolor; text-transform: uppercase; }
+#packages .package .buttons .btn.buy { float: left; color: $successcolor; }
 #packages .package .buttons .btn.buy del { color: $textcolor; font-weight: bold; }
 #packages .package .buttons .btn.buy span { display: inline-block; margin: 5px 0 2px 8px; border-left: 1px solid #eaeaea; padding-left: 8px; line-height: 19px; }
 #packages .package .buttons .btn.settings { float: right; }
