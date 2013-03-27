@@ -423,6 +423,16 @@ class SearchService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Remove padding from keywords
+	 */
+	private function _removePadding($keywords, $keepSpaces = false)
+	{
+		$keywords = trim($keywords, '|');
+		if (!$keepSpaces) $keywords = trim($keywords);
+		return $keywords;
+	}
+
+	/**
 	 * Determine if search term is eligable for full-text or not.
 	 *
 	 * @access private
