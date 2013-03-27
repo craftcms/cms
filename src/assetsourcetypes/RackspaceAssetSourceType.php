@@ -106,17 +106,14 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$offset = 0;
 		$total = 0;
 
-		
 		$prefix = $this->_getPathPrefix();
 
-		$response = $this->_doAuthenticatedRequest(static::RackspaceStorageOperation, '/'.rawurlencode($this->getSettings()->container).'?prefix='.$prefix.'&format=json');
-		$extractedResponse = static::_extractRequestResponse($response);
-		$fileList = json_decode($extractedResponse);
-
-		if (!is_array($fileList))
+		try{
+			$fileList = $this->_getFileList($prefix);
+		}
+		catch (Exception $exception)
 		{
-			static::_logUnexpectedResponse($response);
-			return array('sourceId' => $this->model->id, 'error' => Craft::t('Remote server for “{source}” returned an unexpected response.', array('source' => $this->model->name)));
+			return array('error' => $exception->getMessage());
 		}
 
 		$fileList = array_filter($fileList, function ($value) {
@@ -238,7 +235,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 				$this->_downloadFile($this->_getPathPrefix().$uriPath, $targetPath);
 
 				clearstatcache();
-				//list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
+				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
 			}
 
 			$fileModel->dateModified = $timeModified;
@@ -283,12 +280,11 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		}
 
 		clearstatcache();
-		
 
 		// Upload file
 		try
 		{
-			$this->_getContainer()->DataObject()->Create(array('name' => $uriPath, 'content_type' => IOHelper::getMimeType($filePath)), $filePath);
+			$this->_uploadFile($uriPath, $filePath);
 		}
 		catch (\Exception $exception)
 		{
@@ -348,7 +344,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		// Upload file
 		try
 		{
-			$this->_getContainer()->DataObject()->Create(array('name' => $targetFile, 'content_type' => IOHelper::getMimeType($sourceImage)), $sourceImage);
+			$this->_uploadFile($targetFile, $sourceImage);
 			return true;
 		}
 		catch (\Exception $exception)
@@ -366,14 +362,14 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
-		
-		$files = $this->_getContainer()->ObjectList(array('prefix' => $this->_getPathPrefix().$folder->fullPath));
+
+		$prefix = $this->_getPathPrefix().$folder->fullPath;
+
+		$files = $this->_getFileList($prefix);
 
 		$fileList = array();
-
-		while ($file = $files->Next())
+		foreach ($files as $file)
 		{
-			/** @var \OpenCloud\ObjectStore\DataObject $file */
 			$fileList[$file->name] = true;
 		}
 
@@ -428,15 +424,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
-		try
-		{
-			$this->_getContainer()->DataObject($this->_getPathPrefix().$folder->fullPath.$filename)->Delete();
-		}
-		catch (\Exception $exception)
-		{
-			// Okay, so mission accomplished.
-			;
-		}
+		$this->_deleteObject(rawurlencode($this->getSettings()->container).'/'.$this->_getPathPrefix().$folder->fullPath.$filename);
 	}
 
 	/**
@@ -449,19 +437,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	{
 		$folder = craft()->assets->getFolderById($file->folderId);
 		$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
-		
 
 		foreach ($transforms as $location)
 		{
-			try
-			{
-				$this->_getContainer()->DataObject($this->_getPathPrefix().$folder->fullPath.$location.'/'.$file->filename)->Delete();
-			}
-			catch (\Exception $exception)
-			{
-				// Okay, so mission accomplished.
-				;
-			}
+			$this->_deleteObject(rawurlencode($this->getSettings()->container).'/'.$this->_getPathPrefix().$folder->fullPath.$location.'/'.$file->filename);
 		}
 	}
 
@@ -504,15 +483,12 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		// Get the originating source object.
 		$originatingSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 		$originatingSettings = $originatingSourceType->getSettings();
-		$sourceContainer = $this->_getContainer($originatingSettings);
-		$sourceObject = $sourceContainer->DataObject($originatingSettings->subfolder.$sourceFolder->fullPath.$file);
 
-		// Target object.
-		$targetObject = $this->_getContainer()->DataObject();
-		$targetObject->Create(array('name' => $newServerPath));
-		$sourceObject->Copy($targetObject);
+		$sourceUri = rawurlencode($originatingSettings->container).'/'.$originatingSettings->subfolder.$sourceFolder->fullPath.$file;
+		$targetUri = '/'.rawurlencode($this->getSettings()->container).'/'.$newServerPath;
 
-		$sourceObject->Delete();
+		$this->_copyFile($sourceUri, $targetUri);
+		$this->_deleteObject($sourceUri);
 
 		if ($file->kind == 'image')
 		{
@@ -527,18 +503,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			foreach ($transforms as $location)
 			{
 
-				$sourceObject = $sourceContainer->DataObject(($baseFromPath.$location.'/'.$file->filename));
-				$targetObject = $this->_getContainer()->DataObject();
-				$targetObject->Create(array('name' => $baseToPath.$location.'/'.$fileName));
-
-				try {
-					$copyResult = $sourceObject->Copy($targetObject);
-					$sourceObject->Delete();
-				}
-				catch (\Exception $exception)
-				{
-					;
-				}
+				$sourceUri = rawurlencode($originatingSettings->container).'/'.$baseFromPath.$location.'/'.$file->filename;
+				$targetUri = '/'.rawurlencode($this->getSettings()->container).'/'.$baseToPath.$location.'/'.$fileName;
+				$this->_copyFile($sourceUri, $targetUri);
+				$this->_deleteObject($sourceUri);
 			}
 		}
 
@@ -549,7 +517,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return TRUE if a physical folder exists.
+	 * Return true if a folder exists on Rackspace.
 	 *
 	 * @param AssetFolderModel $parentFolder
 	 * @param $folderName
@@ -557,14 +525,12 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
 	{
-
-		
 		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$parentFolder->fullPath.$folderName);
 
 	}
 
 	/**
-	 * Create a physical folder, return TRUE on success.
+	 * Create a folder on Rackspace, return true on success.
 	 *
 	 * @param AssetFolderModel $parentFolder
 	 * @param $folderName
@@ -572,8 +538,13 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
-		
-		return (bool) $this->_getContainer()->DataObject()->Create(array('name' => $this->_getPathPrefix().$parentFolder->fullPath.$folderName, 'content_type' => 'application/directory'));
+		$headers = array(
+			'Content-type: application/directory',
+			'Content-length: 0'
+		);
+		$targetUri = $this->_getPathPrefix().$parentFolder->fullPath.$folderName;
+		$this->_doAuthenticatedRequest(static::RackspaceStorageOperation, rawurlencode($this->getSettings()->container).'/'.$targetUri, 'PUT', $headers);
+		return true;
 	}
 
 	/**
@@ -587,10 +558,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	{
 		$newFullPath = $this->_getPathPrefix().$this->_getParentFullPath($folder->fullPath).$newName.'/';
 
-		
-		$objectList = $this->_getContainer()->ObjectList(array('prefix' => $this->_getPathPrefix().$folder->fullPath));
+		$objectList = $this->_getFileList($this->_getPathPrefix().$folder->fullPath);
 		$filesToMove = array();
-		while($object = $objectList->Next())
+		foreach ($objectList as $object)
 		{
 			$filesToMove[$object->name] = $object;
 		}
@@ -601,22 +571,14 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		{
 			$filePath = substr($file->name, strlen($this->_getPathPrefix().$folder->fullPath));
 
-			$sourceObject = $this->_getContainer()->DataObject($file->name);
-			$targetObject = $this->_getContainer()->DataObject();
-			$targetObject->Create(array('name' => $newFullPath.$filePath));
-
-			$sourceObject->Copy($targetObject);
-			$sourceObject->Delete();
+			$sourceUri = rawurlencode($this->getSettings()->container).'/'.$file->name;
+			$targetUri = rawurlencode($this->getSettings()->container).'/'.$newFullPath.$filePath;
+			$this->_copyFile($sourceUri, $targetUri);
+			$this->_deleteObject($sourceUri);
 		}
 
-		try{
-			// This may or may not exist.
-			$this->_getContainer()->DataObject($this->_getPathPrefix().rtrim($folder->fullPath, '/'))->Delete();
-		}
-		catch (\Exception $exception)
-		{
-			;
-		}
+		// This may or may not exist.
+		$this->_deleteObject(rawurlencode($this->getSettings()->container).'/'.$this->_getPathPrefix().rtrim($folder->fullPath, '/'));
 
 		return TRUE;
 	}
@@ -625,17 +587,22 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Delete the source folder.
 	 *
 	 * @param AssetFolderModel $folder
-	 * @return boolean
+	 * @param $folderName
+	 * @return bool
 	 */
 	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
-		
-		$objectsToDelete = $this->_getContainer()->ObjectList(array('prefix' => $this->_getPathPrefix().$parentFolder->fullPath.$folderName));
 
-		while($file = $objectsToDelete->Next())
+		$container = $this->getSettings()->container;
+		$objectsToDelete = $this->_getFileList($this->_getPathPrefix().$parentFolder->fullPath.$folderName);
+
+		foreach ($objectsToDelete as $file)
 		{
-			$this->_getContainer()->DataObject($file->name)->Delete();
+			$uri = rawurlencode($container).'/'.$file->name;
+			$this->_deleteObject($uri);
 		}
+
+		$this->_deleteObject(rawurlencode($container).'/'.$this->_getPathPrefix().$parentFolder->fullPath.$folderName);
 
 		return true;
 	}
@@ -671,12 +638,12 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	public function copyTransform(AssetFileModel $file, $source, $target)
 	{
-		
+		$container = $this->getSettings()->container;
 		$basePath = $this->_getPathPrefix().$file->getFolder()->fullPath;
-		$sourceObject = $this->_getContainer()->DataObject($basePath.$source.'/'.$file->filename);
-		$targetObject = $this->_getContainer()->DataObject();
-		$targetObject->Create(array('name' => $basePath.$target.'/'.$file->filename));
-		$sourceObject->Copy($targetObject);
+
+		$sourceUri = rawurlencode($container).'/'.$basePath.$source.'/'.$file->filename;
+		$targetUri = rawurlencode($container).'/'.$basePath.$target.'/'.$file->filename;
+		$this->_copyFile($sourceUri, $targetUri);
 	}
 
 	/**
@@ -725,8 +692,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Refresh a connection information and return authorization token.
 	 *
-	 * @param $username
-	 * @param $apiKey
 	 * @throws Exception
 	 */
 	private function _refreshConnectionInformation()
@@ -746,8 +711,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		// Extract the values
 		$token = static::_extractHeader($response, 'X-Auth-Token');
-		$storageUrl = static::_extractHeader($response, 'X-Storage-Url');
-		$cdnUrl = static::_extractHeader($response, 'X-CDN-Management-Url');
+		$storageUrl = rtrim(static::_extractHeader($response, 'X-Storage-Url'), '/').'/';
+		$cdnUrl = rtrim(static::_extractHeader($response, 'X-CDN-Management-Url'), '/').'/';
 
 		if (!($token && $storageUrl && $cdnUrl))
 		{
@@ -821,57 +786,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Prepare the RackSpace object for requests.
-	 *
-	 * @param $settings BaseModel
-	 * @return \OpenCloud\ObjectStore\Container
-	 */
-	private function _getContainer($settings = null)
-	{
-		static $defaultSettings = null;
-
-		// No settings passed, load default and cache them in static variable.
-		if (is_null($settings))
-		{
-			if (is_null($defaultSettings))
-			{
-				$defaultSettings = $this->getSettings();
-			}
-			$settings = $defaultSettings;
-		}
-
-		$key = $settings->username.$settings->apiKey.$settings->region.$settings->container;
-
-		if (empty(static::$_rackspaceContainers[$key]))
-		{
-			if (empty(static::$_storedContainers))
-			{
-				static::$_storedContainers = craft()->systemSettings->getSettings('rackspace');
-			}
-
-			if (isset(static::$_storedContainers[$key]))
-			{
-				static::$_rackspaceContainers[$key] = @unserialize(static::$_storedContainers[$key]);
-			}
-
-			// This is fresh information or some corrupt data - either way we'll fetch a new one and save it.
-			if (!isset(static::$_rackspaceContainers[$key]) || !is_object(static::$_rackspaceContainers[$key]))
-			{
-				static::$_rackspaceContainers[$key] = AssetsHelper::getRackspaceConnection($settings->username, $settings->apiKey)->ObjectStore(self::RackspaceServiceName, $settings->region)->Container(rawurlencode($settings->container));
-				$dataToSave = array();
-				foreach (static::$_rackspaceContainers as $key => $container)
-				{
-					$dataToSave[$key] = serialize($container);
-				}
-
-				craft()->systemSettings->saveSettings('rackspace', $dataToSave);
-			}
-		}
-
-		return static::$_rackspaceContainers[$key];
-	}
-
-	/**
 	 * Get object information by path
 	 * @param $path
 	 * @return bool|object
@@ -879,7 +793,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	private function _getObjectInfo($path)
 	{
 
-		$target = '/'.rawurlencode($this->getSettings()->container).'/'.rawurlencode($path);
+		$target = rawurlencode($this->getSettings()->container).'/'.rawurlencode($path);
 		$response = $this->_doAuthenticatedRequest(static::RackspaceStorageOperation, $target, 'HEAD');
 
 		$lastModified = static::_extractHeader($response, 'Last-Modified');
@@ -1089,5 +1003,76 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		IOHelper::writeToFile($targetFile, $response);
 
 		return true;
+	}
+
+	/**
+	 * Upload a file to Rackspace.
+	 *
+	 * @param $targetUri
+	 * @param $sourceFile
+	 * @return bool
+	 */
+	public function _uploadFile($targetUri, $sourceFile)
+	{
+
+		$fileSize = IOHelper::getFileSize($sourceFile);
+		$fp = fopen($sourceFile, "r");
+
+		$headers = array(
+			'Content-type: ' . IOHelper::getMimeType($sourceFile),
+			'Content-length: ' . $fileSize
+		);
+
+		$curlOptions = array(
+			CURLOPT_UPLOAD => true,
+			CURLOPT_INFILE => $fp,
+			CURLOPT_INFILESIZE => $fileSize
+		);
+
+		$this->_doAuthenticatedRequest(static::RackspaceStorageOperation, rawurlencode($this->getSettings()->container).'/'.$targetUri, 'PUT', $headers, $curlOptions);
+		fclose($fp);
+		return true;
+	}
+
+	/**
+	 * Get file list from Rackspace.
+	 *
+	 * @param $prefix
+	 * @return mixed
+	 * @throws Exception
+	 */
+	private function _getFileList($prefix = '')
+	{
+		$response = $this->_doAuthenticatedRequest(static::RackspaceStorageOperation, rawurlencode($this->getSettings()->container).'?prefix='.$prefix.'&format=json');
+		$extractedResponse = static::_extractRequestResponse($response);
+		$fileList = json_decode($extractedResponse);
+
+		if (!is_array($fileList))
+		{
+			static::_logUnexpectedResponse($response);
+			throw new Exception(Craft::t('Remote server for “{source}” returned an unexpected response.', array('source' => $this->model->name)));
+		}
+
+		return $fileList;
+	}
+
+	/**
+	 * Delete a file on Rackspace.
+	 *
+	 * @param $uriPath
+	 */
+	private function _deleteObject($uriPath)
+	{
+		$this->_doAuthenticatedRequest(static::RackspaceStorageOperation, $uriPath, 'DELETE');
+	}
+
+	/**
+	 * Copy a file on Rackspace.
+	 * @param $sourceUri
+	 * @param $targetUri
+	 */
+	private function _copyFile($sourceUri, $targetUri)
+	{
+		$this->_doAuthenticatedRequest(static::RackspaceStorageOperation, $sourceUri, 'COPY', array('Destination: '.$targetUri));
 	}
 }
