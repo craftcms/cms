@@ -79,7 +79,9 @@
 			{%- if config.autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
 			{%- if config.disabled %} disabled{% endif %}
 			{%- if config.targetPrefix %} data-target-prefix="{{ config.targetPrefix }}"{% endif %}>
-			{% for value, label in config.options %}
+			{% for key, option in config.options %}
+				{% set label = (option.label is defined ? option.label : option) %}
+				{% set value = (option.value is defined ? option.value : key) %}
 				<option value="{{ value }}"{% if value == config.value %} selected{% endif %}>{{ label }}</option>
 			{% endfor %}
 		</select>
@@ -95,7 +97,9 @@
 		{%- if config.autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
 		{%- if config.disabled %} disabled{% endif %}
 		{%- if config.size %} size="{{ config.size }}"{% endif %}>
-		{% for value, label in config.options %}
+		{% for key, option in config.options %}
+			{% set label = (option.label is defined ? option.label : option) %}
+			{% set value = (option.value is defined ? option.value : key) %}
 			<option value="{{ value }}"{% if value in config.values %} selected{% endif %}>{{ label }}</option>
 		{% endfor %}
 	</select>
@@ -122,7 +126,9 @@
 
 {% macro checkboxGroup(config) %}
 	{% set config = { id: null, name: null, options: [], values: [], autofocus: false }|merge(config) %}
-	{% for value, label in config.options %}
+	{% for key, option in config.options %}
+		{% set label = (option.label is defined ? option.label : option) %}
+		{% set value = (option.value is defined ? option.value : key) %}
 		<div>
 			{{ _self.checkbox({
 				label: label,
@@ -151,7 +157,9 @@
 				autofocus: (config.autofocus and not craft.request.isMobileBrowser(true))
 			}) }}
 		</div>
-		{% for value, label in config.options %}
+		{% for key, option in config.options %}
+			{% set label = (option.label is defined ? option.label : option) %}
+			{% set value = (option.value is defined ? option.value : key) %}
 			<div>
 				{{ _self.checkbox({
 					label: label,
@@ -183,7 +191,9 @@
 
 {% macro radioGroup(config) %}
 	{% set config = { id: null, name: null, options: [], value: null, autofocus: false }|merge(config) %}
-	{% for value, label in config.options %}
+	{% for key, option in config.options %}
+		{% set label = (option.label is defined ? option.label : option) %}
+		{% set value = (option.value is defined ? option.value : key) %}
 		<div>
 			{{ _self.radio({
 				label: label,

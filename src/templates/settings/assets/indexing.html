@@ -24,13 +24,17 @@
 			{% set transformValue = 0 %}
 		{% endif %}
 
+		{% set sourceOptions = [] %}
+		{% for source in sources %}
+			{% set sourceOptions = sourceOptions|merge([{ label: source.name, value: source.id }]) %}
+		{% endfor %}
 		{{ forms.checkboxSelectField({
 			first: true,
 			label: "Sources"|t,
 			instructions: "Which asset sources do you want to index?"|t,
 			id: 'sourceId',
 			name: 'sourceId',
-			options: sources,
+			options: sourceOptions,
 			values: '',
 			class: "assets-sources"
 		}) }}

@@ -178,11 +178,15 @@
 			}) }}
 
 			{% if craft.hasPackage('Users') %}
+				{% set authors = [] %}
+				{% for author in craft.users.find() %}
+					{% set authors = authors|merge([{ label: author.name, value: author.id }]) %}
+				{% endfor %}
 				{{ forms.selectField({
 					label: "Author"|t,
 					id: 'author',
 					name: 'author',
-					options: craft.users.indexBy('id').find,
+					options: authors,
 					value: (entry is defined ? entry.authorId : user.id)
 				}) }}
 			{% endif %}

@@ -64,13 +64,17 @@
 			<input type="hidden" name="fieldId" value="{{ fieldId }}">
 		{% endif %}
 
+		{% set groupOptions = [] %}
+		{% for group in groups %}
+			{% set groupOptions = groupOptions|merge([{ label: group.name, value: group.id }]) %}
+		{% endfor %}
 		{{ forms.selectField({
 			first: true,
 			label: "Group"|t,
 			instructions: "Which group should this field be displayed in?"|t,
 			id: 'group',
 			name: 'group',
-			options: groups,
+			options: groupOptions,
 			value: groupId
 		}) }}
 
