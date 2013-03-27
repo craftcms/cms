@@ -22,6 +22,15 @@ Craft.EditableTable = Garnish.Base.extend({
 		this.rowIdPrefix = rowIdPrefix;
 		this.columns = columns;
 
+		// Set the textual columns
+		var textualColTypes = ['singleline', 'multiline', 'number'];
+
+		for (var colId in this.columns)
+		{
+			var col = this.columns[colId];
+			col.textual = Craft.inArray(col.type, textualColTypes);
+		}
+
 		this.$table = $('#'+id);
 		this.$tbody = this.$table.children('tbody');
 
@@ -50,8 +59,7 @@ Craft.EditableTable = Garnish.Base.extend({
 			var col = this.columns[colId],
 				name = this.name+'['+rowId+']['+colId+']';
 
-			var colHtml = '<td' +
-			              (typeof col['class'] != 'undefined' ? ' class="'+col['class']+'"' : '') +
+			var colHtml = '<td class="'+(col.textual ? 'textual' : '')+' '+(typeof col['class'] != 'undefined' ? col['class'] : '')+'"' +
 			              (typeof col['width'] != 'undefined' ? ' width="'+col['width']+'"' : '') +
 			              '>';
 
@@ -67,6 +75,14 @@ Craft.EditableTable = Garnish.Base.extend({
 					}
 
 					colHtml += '</select></div>';
+
+					break;
+				}
+
+				case 'checkbox':
+				{
+					colHtml += '<input type="hidden" name="'+name+'">' +
+					           '<input type="checkbox" name="'+name+'" value="1">';
 
 					break;
 				}
@@ -128,7 +144,7 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 		{
 			var col = this.table.columns[colId];
 
-			if (col.type != 'select')
+			if (col.textual)
 			{
 				$textarea = $('textarea', this.$tds[i]);
 				this.$textareas = this.$textareas.add($textarea);

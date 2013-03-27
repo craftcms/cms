@@ -430,12 +430,14 @@ table.editable { border-radius: 2px; border: 1px solid #ccc; overflow: hidden; w
 	        box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1);
 }
 table.editable tbody tr:not(:first-child) td { border-top: 1px solid rgba(0,0,0,0.07); }
-table.editable thead tr th { padding: 4px 10px; border-bottom: 1px solid #ddd; }
-table.editable tbody tr td:not(.thin) { vertical-align: top; }
+table.editable thead tr th,
+table.editable tbody tr td:not(.textual) { padding: 4px 10px; }
+table.editable thead tr th { border-bottom: 1px solid #ddd; }
+table.editable tbody tr td { vertical-align: middle; text-align: center; background: #fafafa; }
 table.editable tbody tr td:not(:first-child) { border-left: 1px solid rgba(0,0,0,0.07); }
-table.editable tbody tr td.thin { padding: 4px 7px; background: #f5f5f5; }
+table.editable tbody tr td.action { padding: 4px 7px; background: #f5f5f5; }
 table.editable tbody tr td.action + td.action { border-left: none; padding-left: 0; }
-table.editable tbody textarea { display: block; width: 100%; border: none; padding: 7px 10px; overflow: hidden; }
+table.editable tbody textarea { display: block; width: 100%; border: none; padding: 7px 10px; background: #fff; overflow: hidden; }
 table.editable tbody textarea:focus { border: 1px solid #ddd; padding: 6px 9px; outline: none; }
 
 table.editable + .buttons { margin-top: 7px; }

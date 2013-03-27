@@ -257,13 +257,23 @@
 					{% for colId, col in config.cols %}
 						{% set name = config.name~'['~rowId~']['~colId~']' %}
 						{% set value = (row[colId] is defined ? row[colId] : null) %}
-						<td{% if col.class is defined %} class="{{ col.class }}"{% endif %}{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
+						{% set textual = (col.type in ['singleline','multiline','number']) %}
+						<td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
 							{%- if col.type == 'select' -%}
 								{{ _self.select({
 									class: 'small',
 									name: name,
 									options: col.options,
 									value: value
+								}) }}
+							{%- elseif col.type == 'checkbox' -%}
+								{{ _self.hidden({
+									name: name
+								}) -}}
+								{{ _self.checkbox({
+									name: name,
+									value: 1,
+									checked: value
 								}) }}
 							{%- else -%}
 								<textarea name="{{ name }}" rows="1">{{ value }}</textarea>
