@@ -314,7 +314,7 @@ class SearchService extends BaseApplicationComponent
 		if ($keywords = $this->_normalizeTerm($term->term))
 		{
 			// Create fulltext clause from term
-			if ($this->_isFulltextTerm($keywords) && !$term->subLeft)
+			if ($this->_isFulltextTerm($keywords) && !$term->subLeft && !$term->exact)
 			{
 				if ($term->subRight)
 				{
@@ -360,13 +360,22 @@ class SearchService extends BaseApplicationComponent
 			// Create LIKE clause from term
 			else
 			{
-				// Create LIKE clause from term
-				$like = $term->exclude ? 'NOT LIKE' : 'LIKE';
+				if ($term->exact)
+				{
+					// Create exact clause from term
+					$operator = $term->exclude ? '!=' : '=';
+					$keywords = $this->_addPadding($keywords);
+				}
+				else
+				{
+					// Create LIKE clause from term
+					$operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
+					$keywords = ($term->subLeft ? '%' : '% ') . $keywords;
+					$keywords .= $term->subRight ? '%' : ' %';
+				}
 
-				$keywords = ($term->subLeft ? '%' : '% ') . $keywords;
-				$keywords .= $term->subRight ? '%' : ' %';
-
-				$sql = $this->_sqlWhere('keywords', $like, $keywords);
+				// Generate the SQL
+				$sql = $this->_sqlWhere('keywords', $operator, $keywords);
 
 				if (!$subSelect)
 				{
