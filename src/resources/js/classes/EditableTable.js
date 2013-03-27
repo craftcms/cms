@@ -133,6 +133,9 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 				$textarea = $('textarea', this.$tds[i]);
 				this.$textareas = this.$textareas.add($textarea);
 
+				this.addListener($textarea, 'focus', 'onTextareaFocus');
+				this.addListener($textarea, 'mousedown', 'ignoreNextTextareaFocus');
+
 				this.niceTexts.push(new Garnish.NiceText($textarea, {
 					onHeightChange: $.proxy(this, 'onTextareaHeightChange')
 				}));
@@ -168,6 +171,40 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 
 		var $deleteBtn = this.$tr.children().last().find('.delete');
 		this.addListener($deleteBtn, 'click', 'deleteRow');
+	},
+
+	onTextareaFocus: function(ev)
+	{
+		var $textarea = $(ev.currentTarget);
+
+		if ($textarea.data('ignoreNextFocus'))
+		{
+			$textarea.data('ignoreNextFocus', false);
+			return;
+		}
+
+		setTimeout(function()
+		{
+			var val = $textarea.val();
+
+			// Does the browser support setSelectionRange()?
+			if (typeof $textarea[0].setSelectionRange != 'undefined')
+			{
+				// Select the whole value
+				var length = val.length * 2;
+				$textarea[0].setSelectionRange(0, length);
+			}
+			else
+			{
+				// Refresh the value to get the cursor positioned at the end
+				$textarea.val(val);
+			}
+		}, 0);
+	},
+
+	ignoreNextTextareaFocus: function(ev)
+	{
+		$.data(ev.currentTarget, 'ignoreNextFocus', true);
 	},
 
 	validateKeypress: function(ev)
