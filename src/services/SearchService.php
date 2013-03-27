@@ -13,12 +13,9 @@ class SearchService extends BaseApplicationComponent
 	private static $_ftStopWords;
 
 	private $_tokens;
+	private $_terms;
+	private $_groups;
 	private $_results;
-
-	private $_sqlAndLike;
-	private $_sqlOrLike;
-	private $_sqlAndFt;
-	private $_sqlOrFt;
 
 	/**
 	 * Returns the FULLTEXT minimum word length.
@@ -73,14 +70,6 @@ class SearchService extends BaseApplicationComponent
 	 */
 	public function indexElementKeywords($elementId, $localeId, $keywords)
 	{
-		// $sql = array(
-		// 	$this->filterElementIdsByQuery(array(), 'john'),
-		// 	$this->filterElementIdsByQuery(array(), 'water gin'),
-		// 	$this->filterElementIdsByQuery(array(), 'tonic title:gin'),
-		// );
-
-		// die('<pre>'.htmlspecialchars(print_r($sql, true)).'</pre>');
-
 		foreach ($keywords as $attribute => $dirtyKeywords)
 		{
 			// Is this for a field?
@@ -101,7 +90,7 @@ class SearchService extends BaseApplicationComponent
 			if ($cleanKeywords)
 			{
 				// Add padding around keywords
-				$cleanKeywords = "| {$cleanKeywords} |";
+				$cleanKeywords = $this->_addPadding($cleanKeywords);
 
 				// Insert/update the row in searchindex
 				$table = DbHelper::addTablePrefix('searchindex');
@@ -144,7 +133,7 @@ class SearchService extends BaseApplicationComponent
 	 * @param mixed  $query      The search query (either a string or a SearchQuery instance)
 	 * @return array The filtered list of element IDs.
 	 */
-	public function filterElementIdsByQuery($elementIds, $query)
+	public function filterElementIdsByQuery($elementIds, $query, $score = true)
 	{
 		if (is_string($query))
 		{
@@ -152,10 +141,29 @@ class SearchService extends BaseApplicationComponent
 		}
 
 		// Get tokens for query
-		$this->_tokens = $query->getTokens();
+		$this->_tokens  = $query->getTokens();
+		$this->_terms   = array();
+		$this->_groups  = array();
+		$this->_results = array();
+
+		// Set Terms and Groups based on tokens
+		foreach ($this->_tokens as $obj)
+		{
+			if ($obj instanceof SearchQueryTermGroup)
+			{
+				$this->_groups[] = $obj->terms;
+			}
+			else
+			{
+				$this->_terms[] = $obj;
+			}
+		}
 
 		// Get where clause from tokens, bail out if no valid query is there
-		if (!($where = $this->_getWhereClause())) return array();
+		if (!($where = $this->_getWhereClause()))
+		{
+			return array();
+		}
 
 		// Begin creating SQL
 		$sql = sprintf('SELECT * FROM %s WHERE %s',
@@ -173,15 +181,133 @@ class SearchService extends BaseApplicationComponent
 		}
 
 		// Execute the sql
-		$this->_results = craft()->db->createCommand()->setText($sql)->queryAll();
+		$results = craft()->db->createCommand()->setText($sql)->queryAll();
 
-		// Loop through results and calculate score per element
+		// Are we scoring the results?
+		if ($score)
+		{
+			// Loop through results and calculate score per element
+			foreach ($results as $row)
+			{
+				$eId = $row['elementId'];
+				$score = $this->_scoreRow($row);
 
-		// Sort found elementIds by score
+				if (!isset($this->_results[$eId]))
+				{
+					$this->_results[$eId] = $score;
+				}
+				else
+				{
+					$this->_results[$eId] += $score;
+				}
+			}
 
-		// Return elementIds in the right order
+			// Sort found elementIds by score
+			asort($this->_results);
 
-		return array();
+			// Store entry ids in return value
+			$elementIds = array_keys($this->_results);
+		}
+		else
+		{
+			// Don't apply score, just return the IDs
+			$elementIds = array();
+
+			foreach ($results as $row)
+			{
+				$elementIds[] = $row['elementId'];
+			}
+
+			$elementIds = array_unique($elementIds);
+		}
+
+		// Return elementIds
+		return $elementIds;
+	}
+
+	/**
+	 * Calculate score for a result.
+	 *
+	 * @access private
+	 * @param array  $row  A single result from the search query.
+	 * @return float  The total score for this row.
+	 */
+	private function _scoreRow($row)
+	{
+		// Starting point
+		$score = 0;
+
+		// Loop through AND-terms and score each one against this row
+		foreach ($this->_terms AS $term)
+		{
+			$score += $this->_scoreTerm($term, $row);
+		}
+
+		// Loop through each group of OR-terms
+		foreach ($this->_groups AS $terms)
+		{
+			// OR-terms are weighted less
+			// depending on the amount of OR terms in the group
+			$weight = 1 / count($terms);
+
+			// Get the score for each term and add it to the total
+			foreach ($terms AS $term)
+			{
+				$score += $this->_scoreTerm($term, $row, $weight);
+			}
+		}
+
+		return $score;
+	}
+
+	/**
+	 * Calculate score for a row/term combination.
+	 *
+	 * @access private
+	 * @param object $term    The SearchQueryTerm to score.
+	 * @param array  $row     The result row to score against.
+	 * @param float  $weight  Optional weight for this term.
+	 * @return float  The total score for this term/row combination.
+	 */
+	private function _scoreTerm($term, $row, $weight = 1)
+	{
+		// Skip these terms: locale and exact filtering is just that,
+		// no weighted search applies since all elements will already
+		// apply for these filters.
+		if ($term->attribute == 'locale' ||
+			$term->exact ||
+			!($keywords = $this->_normalizeTerm($term->term))
+		) return 0;
+
+		// Account for substrings
+		if ($term->subLeft)  $keywords = $keywords.' ';
+		if ($term->subRight) $keywords = ' '.$keywords;
+
+		// Get haystack and safe word count
+		$haystack  = $this->_removePadding($row['keywords'], true);
+		$wordCount = count(array_filter(explode(' ', $haystack)));
+
+		// Get number of matches
+		$score = substr_count($haystack, $keywords);
+
+		// Exact match
+		if (trim($keywords) == trim($haystack))
+		{
+			$mod = 100;
+		}
+		// Don't scale up for substring matches
+		else if ($term->subLeft || $term->subRight)
+		{
+			$mod = 10;
+		}
+		else
+		{
+			$mod = 50;
+		}
+
+		$score = ($score / $wordCount) * $mod * $weight;
+
+		return $score;
 	}
 
 	/**
@@ -192,85 +318,76 @@ class SearchService extends BaseApplicationComponent
 	 */
 	private function _getWhereClause()
 	{
-		// Reset the lot
-		$this->_sqlAndLike = array();
-		$this->_sqlOrLike = array();
-		$this->_sqlAndFt = array();
-		$this->_sqlOrFt = array();
-		$where = array();
+		$where  = array();
 
-		// Get the subselects from tokens and set the internal keyword arrays
-		if ($sql = $this->_processTokens())
+		// Add the regular terms to the WHERE clause
+		if ($this->_terms)
 		{
-			$where[] = $sql;
+			$where[] = $this->_processTokens($this->_terms);
 		}
 
-		// Are we combining the clauses with AND or OR?
-		$glue = ($this->_sqlAndLike || $this->_sqlAndFt) ? ' AND ' : ' OR ';
-
-		// Check if there are full-text OR keywords
-		if ($num = count($this->_sqlOrFt))
+		// Add each group to the where clause
+		foreach ($this->_groups as $group)
 		{
-			$this->_sqlAndFt[] = ($num == 1)
-				? $this->_sqlOrFt[0]
-				: '+('.implode(' ', $this->_sqlOrFt).')';
+			$where[] = $this->_processTokens($group, false);
 		}
 
-		// Generate single full-text clause for all keywords
-		if ($this->_sqlAndFt)
-		{
-			$where[] = $this->_sqlMatch(implode(' ', $this->_sqlAndFt));
-		}
-
-		// Check if there are fallback OR clauses
-		if ($num = count($this->_sqlOrLike))
-		{
-			$this->_sqlAndLike[] = ($num == 1)
-				? $this->_sqlOrLike[0]
-				: '('.implode(' OR ', $this->_sqlOrLike).')';
-		}
-
-		// Add the fallback AND clauses to the full where array
-		if ($this->_sqlAndLike)
-		{
-			$where = array_merge($where, $this->_sqlAndLike);
-		}
-
-		// Return the final result
-		return implode($glue, $where);
+		// And combine everything with AND
+		return implode(' AND ', $where);
 	}
 
 	/**
-	 * Generates partial WHERE clause for search from given tokens: subselects only.
-	 * Also populates the internal keywords arrays.
+	 * Generates partial WHERE clause for search from given tokens
 	 *
 	 * @access private
 	 * @param array $tokens
 	 * @param string $glue
 	 */
-	private function _processTokens($tokens = array(), $glue = 'AND')
+	private function _processTokens($tokens = array(), $inclusive = true)
 	{
-		// If no tokens are fiven, check internal ones
-		if (!$tokens)
-		{
-			$tokens = $this->_tokens;
-		}
-
+		$andor = $inclusive ? ' AND ' : ' OR ';
 		$where = array();
+		$words = array();
 
-		foreach ($tokens AS $obj)
+		foreach ($tokens as $obj)
 		{
-			if ($obj instanceof SearchQueryTermGroup && ($sql = $this->_processTokens($obj->terms, 'OR')))
-			{
-				$where[] = '('.$sql.')';
-			}
-			else if ($obj instanceof SearchQueryTerm && ($sql = $this->_getSqlFromTerm($obj, $glue)))
+			// Get SQL and/or keywords
+			list($sql, $keywords) = $this->_getSqlFromTerm($obj);
+
+			// If we have SQL, just add that
+			if ($sql)
 			{
 				$where[] = $sql;
 			}
+
+			// No SQL but keywords, save them for later
+			else if ($keywords)
+			{
+				if ($inclusive)
+				{
+					$keywords = '+'.$keywords;
+				}
+
+				$words[] = $keywords;
+			}
 		}
 
-		return implode(" {$glue} ", $where);
+		// If we collected full-text words, combine them into one
+		if ($words)
+		{
+			$where[] = $this->_sqlMatch($words);
+		}
+
+		// Implode WHERE clause to a string
+		$where = implode($andor, $where);
+
+		// And group together for non-inclusive queries
+		if (!$inclusive)
+		{
+			$where = "({$where})";
+		}
+
+		return $where;
 	}
 
 	/**
@@ -278,18 +395,19 @@ class SearchService extends BaseApplicationComponent
 	 *
 	 * @access private
 	 * @param object SearchQueryTerm
-	 * @return string
+	 * @return array
 	 */
-	private function _getSqlFromTerm($term, $andor)
+	private function _getSqlFromTerm(SearchQueryTerm $term)
 	{
 		// Initiate return value
 		$sql = null;
+		$keywords = null;
 
 		// Check for locale first
 		if ($term->attribute == 'locale')
 		{
-			// TODO: exclude locale?
-			return $this->_sqlWhere($term->attribute, '=', $term->term);
+			$oper = $term->exclude ? '!=' : '=';
+			return array($this->_sqlWhere($term->attribute, $oper, $term->term), $keywords);
 		}
 
 		// Check for other attributes
@@ -313,9 +431,9 @@ class SearchService extends BaseApplicationComponent
 		if ($keywords = $this->_normalizeTerm($term->term))
 		{
 			// Create fulltext clause from term
-			if ($this->_isFulltextTerm($keywords))
+			if ($this->_isFulltextTerm($keywords) && !$term->subLeft && !$term->exact)
 			{
-				if ($term->substring)
+				if ($term->subRight)
 				{
 					$keywords .= '*';
 				}
@@ -329,50 +447,37 @@ class SearchService extends BaseApplicationComponent
 				// Determine prefix for the full-text keyword
 				if ($term->exclude)
 				{
-					$prefix = '-';
-				}
-				else if ($andor == 'AND')
-				{
-					$prefix = '+';
-				}
-				else
-				{
-					$prefix = '';
+					$keywords = '-'.$keywords;
 				}
 
-				$keywords = $prefix.$keywords;
-
+				// Only create an SQL clause if there's a subselect
+				// Otherwise, return the keywords
 				if ($subSelect)
 				{
 					// If there is a subselect, create the MATCH AGAINST bit
 					$sql = $this->_sqlMatch($keywords);
-				}
-				else
-				{
-					// If there is no subselect, save keyword for later, so it's one big happy query
-					($andor == 'AND')
-						? $this->_sqlAndFt[] = $keywords
-						: $this->_sqlOrFt[]  = $keywords;
 				}
 			}
 
 			// Create LIKE clause from term
 			else
 			{
-				// Create LIKE clause from term
-				$like = $term->exclude ? 'NOT LIKE' : 'LIKE';
-				$keywords = $term->substring ? "% {$keywords}%" : "% {$keywords} %";
-
-				$sql = $this->_sqlWhere('keywords', $like, $keywords);
-
-				if (!$subSelect)
+				if ($term->exact)
 				{
-					($andor == 'AND')
-						? $this->_sqlAndLike[] = $sql
-						: $this->_sqlOrLike[]  = $sql;
-
-					$sql = null;
+					// Create exact clause from term
+					$operator = $term->exclude ? '!=' : '=';
+					$keywords = $this->_addPadding($keywords);
 				}
+				else
+				{
+					// Create LIKE clause from term
+					$operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
+					$keywords = ($term->subLeft ? '%' : '% ') . $keywords;
+					$keywords .= $term->subRight ? '%' : ' %';
+				}
+
+				// Generate the SQL
+				$sql = $this->_sqlWhere('keywords', $operator, $keywords);
 			}
 
 			// If we have a where clause in the subselect, add the keyword bit to it
@@ -382,11 +487,11 @@ class SearchService extends BaseApplicationComponent
 			}
 		}
 
-		return $sql;
+		return array($sql, $keywords);
 	}
 
 	/**
-	 * Normalize term from tokens, keep a record for cache
+	 * Normalize term from tokens, keep a record for cache.
 	 *
 	 * @access private
 	 * @param string $term
@@ -405,10 +510,35 @@ class SearchService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Add padding to keywords for storing in the DB.
+	 *
+	 * @access private
+	 * @param string $keywords
+	 * @return string
+	 */
+	private function _addPadding($keywords)
+	{
+		return " {$keywords} ";
+	}
+
+	/**
+	 * Remove padding from keywords.
+	 * Might seem silly now, but padding might change.
+	 *
+	 * @access private
+	 * @param string $keywords
+	 * @return string
+	 */
+	private function _removePadding($keywords)
+	{
+		return trim($keywords);
+	}
+
+	/**
 	 * Determine if search term is eligable for full-text or not.
 	 *
 	 * @access private
-	 * @param sting $term The search term to check
+	 * @param string $term The search term to check
 	 * @return bool
 	 */
 	private function _isFulltextTerm($term)
@@ -449,9 +579,14 @@ class SearchService extends BaseApplicationComponent
 		return ($field) ? $field->id : 0;
 	}
 
-
 	/**
 	 * Get SQL bit for simple WHERE clause
+	 *
+	 * @access private
+	 * @param string $key   Attribute
+	 * @param string $oper  Operator
+	 * @param string $val   Value
+	 * @return string
 	 */
 	private function _sqlWhere($key, $oper, $val)
 	{
@@ -463,19 +598,28 @@ class SearchService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Get SQL but for MATCH AGAINST clause
+	 * Get SQL but for MATCH AGAINST clause.
+	 *
+	 * @access private
+	 * @param mixed  $val   String or Array of keywords
+	 * @param bool   $bool  Use In Boolean Mode or not
+	 * @return string
 	 */
-	private function _sqlMatch($val, $booleanMode = true)
+	private function _sqlMatch($val, $bool = true)
 	{
 		return sprintf("MATCH(%s) AGAINST('%s'%s)",
 			craft()->db->quoteColumnName('keywords'),
-			$val,
-			($booleanMode ? ' IN BOOLEAN MODE' : '')
+			(is_array($val) ? implode(' ', $val) : $val),
+			($bool ? ' IN BOOLEAN MODE' : '')
 		);
 	}
 
 	/**
-	 * Get SQL but for MATCH AGAINST clause
+	 * Get SQL bit for sub-selects.
+	 *
+	 * @access private
+	 * @param string $where
+	 * @return string
 	 */
 	private function _sqlSubSelect($where)
 	{
