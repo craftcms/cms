@@ -70,22 +70,6 @@ class SearchService extends BaseApplicationComponent
 	 */
 	public function indexElementKeywords($elementId, $localeId, $keywords)
 	{
-		// $sql = array(
-		// 	$this->filterElementIdsByQuery(array(), 'lorem ipsum OR dolor'),
-		// 	$this->filterElementIdsByQuery(array(), 'lorem foo ipsum OR bar'),
-		// 	$this->filterElementIdsByQuery(array(), 'lorem OR ipsum'),
-		// 	$this->filterElementIdsByQuery(array(), 'lorem OR ipsum foo OR bar'),
-		// 	$this->filterElementIdsByQuery(array(), 'lorem OR foo ipsum OR bar'),
-		// 	$this->filterElementIdsByQuery(array(), 'lorem ipsum foo OR bar'),
-
-		// );
-
-		// die('<pre>'.htmlspecialchars(print_r($sql, true)).'</pre>');
-
-		// $this->filterElementIdsByQuery(array(), 'kir OR gin');
-
-		// die('<pre>'.htmlspecialchars(print_r($this->_results, true)).'</pre>');
-
 		foreach ($keywords as $attribute => $dirtyKeywords)
 		{
 			// Is this for a field?
@@ -157,14 +141,29 @@ class SearchService extends BaseApplicationComponent
 		}
 
 		// Get tokens for query
-		$this->_tokens = $query->getTokens();
+		$this->_tokens  = $query->getTokens();
+		$this->_terms   = array();
+		$this->_groups  = array();
 		$this->_results = array();
 
 		// Set Terms and Groups based on tokens
-		$this->_setTermsAndGroups();
+		foreach ($this->_tokens as $obj)
+		{
+			if ($obj instanceof SearchQueryTermGroup)
+			{
+				$this->_groups[] = $obj->terms;
+			}
+			else
+			{
+				$this->_terms[] = $obj;
+			}
+		}
 
 		// Get where clause from tokens, bail out if no valid query is there
-		if (!($where = $this->_getWhereClause())) return array();
+		if (!($where = $this->_getWhereClause()))
+		{
+			return array();
+		}
 
 		// Begin creating SQL
 		$sql = sprintf('SELECT * FROM %s WHERE %s',
@@ -208,21 +207,31 @@ class SearchService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Calculate score for a result
+	 * Calculate score for a result.
+	 *
+	 * @access private
+	 * @param array  $row  A single result from the search query.
+	 * @return float  The total score for this row.
 	 */
 	private function _scoreRow($row)
 	{
+		// Starting point
 		$score = 0;
 
+		// Loop through AND-terms and score each one against this row
 		foreach ($this->_terms AS $term)
 		{
 			$score += $this->_scoreTerm($term, $row);
 		}
 
+		// Loop through each group of OR-terms
 		foreach ($this->_groups AS $terms)
 		{
+			// OR-terms are weighted less
+			// depending on the amount of OR terms in the group
 			$weight = 1 / count($terms);
 
+			// Get the score for each term and add it to the total
 			foreach ($terms AS $term)
 			{
 				$score += $this->_scoreTerm($term, $row, $weight);
@@ -234,6 +243,12 @@ class SearchService extends BaseApplicationComponent
 
 	/**
 	 * Calculate score for a row/term combination.
+	 *
+	 * @access private
+	 * @param object $term    The SearchQueryTerm to score.
+	 * @param array  $row     The result row to score against.
+	 * @param float  $weight  Optional weight for this term.
+	 * @return float  The total score for this term/row combination.
 	 */
 	private function _scoreTerm($term, $row, $weight = 1)
 	{
@@ -457,28 +472,6 @@ class SearchService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Set Terms and Groups based on internal tokens
-	 */
-	private function _setTermsAndGroups()
-	{
-		$this->_terms  = array();
-		$this->_groups = array();
-
-		// Split termgroups and terms
-		foreach ($this->_tokens as $obj)
-		{
-			if ($obj instanceof SearchQueryTermGroup)
-			{
-				$this->_groups[] = $obj->terms;
-			}
-			else
-			{
-				$this->_terms[] = $obj;
-			}
-		}
-	}
-
-	/**
 	 * Normalize term from tokens, keep a record for cache.
 	 *
 	 * @access private
@@ -506,24 +499,27 @@ class SearchService extends BaseApplicationComponent
 	 */
 	private function _addPadding($keywords)
 	{
-		return "| {$keywords} |";
+		return " {$keywords} ";
 	}
 
 	/**
-	 * Remove padding from keywords
+	 * Remove padding from keywords.
+	 * Might seem silly now, but padding might change.
+	 *
+	 * @access private
+	 * @param string $keywords
+	 * @return string
 	 */
-	private function _removePadding($keywords, $keepSpaces = false)
+	private function _removePadding($keywords)
 	{
-		$keywords = trim($keywords, '|');
-		if (!$keepSpaces) $keywords = trim($keywords);
-		return $keywords;
+		return trim($keywords);
 	}
 
 	/**
 	 * Determine if search term is eligable for full-text or not.
 	 *
 	 * @access private
-	 * @param sting $term The search term to check
+	 * @param string $term The search term to check
 	 * @return bool
 	 */
 	private function _isFulltextTerm($term)
@@ -566,6 +562,12 @@ class SearchService extends BaseApplicationComponent
 
 	/**
 	 * Get SQL bit for simple WHERE clause
+	 *
+	 * @access private
+	 * @param string $key   Attribute
+	 * @param string $oper  Operator
+	 * @param string $val   Value
+	 * @return string
 	 */
 	private function _sqlWhere($key, $oper, $val)
 	{
@@ -577,19 +579,28 @@ class SearchService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Get SQL but for MATCH AGAINST clause
+	 * Get SQL but for MATCH AGAINST clause.
+	 *
+	 * @access private
+	 * @param mixed  $val   String or Array of keywords
+	 * @param bool   $bool  Use In Boolean Mode or not
+	 * @return string
 	 */
-	private function _sqlMatch($val, $booleanMode = true)
+	private function _sqlMatch($val, $bool = true)
 	{
 		return sprintf("MATCH(%s) AGAINST('%s'%s)",
 			craft()->db->quoteColumnName('keywords'),
 			(is_array($val) ? implode(' ', $val) : $val),
-			($booleanMode ? ' IN BOOLEAN MODE' : '')
+			($bool ? ' IN BOOLEAN MODE' : '')
 		);
 	}
 
 	/**
-	 * Get SQL but for MATCH AGAINST clause
+	 * Get SQL bit for sub-selects.
+	 *
+	 * @access private
+	 * @param string $where
+	 * @return string
 	 */
 	private function _sqlSubSelect($where)
 	{
