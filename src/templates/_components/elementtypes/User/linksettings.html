@@ -2,11 +2,15 @@
 
 {% from "_includes/forms" import checkboxSelectField %}
 
+{% set userGroups = [] %}
+{% for group in craft.userGroups.getAllGroups() %}
+	{% set userGroups = userGroups|merge([{ label: group.name, value: group.id }]) %}
+{% endfor %}
 {{ checkboxSelectField({
 	label: "User Groups"|t,
 	instructions: "Which user groups do you want to link users from?"|t,
 	id: 'groupId',
 	name: 'groupId',
-	options: craft.userGroups.getAllGroups('id'),
+	options: userGroups,
 	values: settings.groupId
 }) }}
