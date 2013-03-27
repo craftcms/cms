@@ -120,6 +120,7 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 
 		this.$textareas = $();
 		this.niceTexts = [];
+		var textareasByColId = {};
 
 		var i = 0;
 
@@ -129,7 +130,7 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 
 			if (col.type != 'select')
 			{
-				var $textarea = $('textarea', this.$tds[i]);
+				$textarea = $('textarea', this.$tds[i]);
 				this.$textareas = this.$textareas.add($textarea);
 
 				this.niceTexts.push(new Garnish.NiceText($textarea, {
@@ -138,11 +139,31 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 
 				if (col.type == 'singleline' || col.type == 'number')
 				{
-					this.addListener($textarea, 'keypress', { type: col.type }, 'validateKeypress');
+					this.addListener($textarea, 'keypress,change', { type: col.type }, 'validateKeypress');
 				}
+
+				textareasByColId[colId] = $textarea;
 			}
 
 			i++;
+		}
+
+		// Now look for any autopopulate columns
+		for (var colId in this.table.columns)
+		{
+			var col = this.table.columns[colId];
+
+			if (col.autopopulate && typeof textareasByColId[col.autopopulate] != 'undefined' && !textareasByColId[colId].val())
+			{
+				if (col.autopopulate == 'handle')
+				{
+					new Craft.HandleGenerator(textareasByColId[colId], textareasByColId[col.autopopulate]);
+				}
+				else
+				{
+					new Craft.BaseInputGenerator(textareasByColId[colId], textareasByColId[col.autopopulate]);
+				}
+			}
 		}
 
 		var $deleteBtn = this.$tr.children().last().find('.delete');
