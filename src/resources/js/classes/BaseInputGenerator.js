@@ -23,14 +23,22 @@ Craft.BaseInputGenerator = Garnish.Base.extend({
 
 		this.listening = true;
 
-		this.addListener(this.$source, 'keypress,keyup,change,blur', 'updateTarget');
-		this.addListener(this.$target, 'keypress,keyup,change', 'stopListening');
+		this.addListener(this.$source, 'textchange', 'updateTarget');
+
+		this.addListener(this.$target, 'focus', function() {
+			this.addListener(this.$target, 'textchange', 'stopListening');
+			this.addListener(this.$target, 'blur', function() {
+				this.removeListener(this.$target, 'textchange,blur');
+			});
+		});
 	},
 
 	stopListening: function()
 	{
 		if (!this.listening)
+		{
 			return;
+		}
 
 		this.listening = false;
 
