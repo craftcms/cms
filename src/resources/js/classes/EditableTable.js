@@ -6,8 +6,6 @@ Craft.EditableTable = Garnish.Base.extend({
 	id: null,
 	name: null,
 	columns: null,
-	rows: null,
-	rowIdPrefix: null,
 	sorter: null,
 	biggestId: -1,
 
@@ -15,20 +13,18 @@ Craft.EditableTable = Garnish.Base.extend({
 	$tbody: null,
 	$addRowBtn: null,
 
-	init: function(id, name, rowIdPrefix, columns)
+	init: function(id, name, columns, settings)
 	{
 		this.id = id;
 		this.name = name;
-		this.rowIdPrefix = rowIdPrefix;
 		this.columns = columns;
+		this.setSettings(settings, Craft.EditableTable.defaults);
 
 		// Set the textual columns
-		var textualColTypes = ['singleline', 'multiline', 'number'];
-
 		for (var colId in this.columns)
 		{
 			var col = this.columns[colId];
-			col.textual = Craft.inArray(col.type, textualColTypes);
+			col.textual = Craft.inArray(col.type, Craft.EditableTable.textualColTypes);
 		}
 
 		this.$table = $('#'+id);
@@ -51,7 +47,7 @@ Craft.EditableTable = Garnish.Base.extend({
 
 	addRow: function()
 	{
-		var rowId = this.rowIdPrefix+(this.biggestId+1),
+		var rowId = this.settings.rowIdPrefix+(this.biggestId+1),
 			$tr = $('<tr data-id="'+rowId+'"/>').appendTo(this.$tbody);
 
 		for (var colId in this.columns)
@@ -103,6 +99,17 @@ Craft.EditableTable = Garnish.Base.extend({
 
 		new Craft.EditableTable.Row(this, $tr);
 		this.sorter.addItems($tr);
+
+		// onAddRow callback
+		this.settings.onAddRow($tr);
+	}
+},
+{
+	textualColTypes: ['singleline', 'multiline', 'number'],
+	defaults: {
+		rowIdPrefix: '',
+		onAddRow: $.noop,
+		onDeleteRow: $.noop
 	}
 });
 
@@ -127,7 +134,7 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 		this.$tds = this.$tr.children();
 
 		// Get the row ID, sans prefix
-		var id = parseInt(this.$tr.attr('data-id').substr(this.table.rowIdPrefix.length));
+		var id = parseInt(this.$tr.attr('data-id').substr(this.table.settings.rowIdPrefix.length));
 
 		if (id > this.table.biggestId)
 		{
@@ -256,6 +263,9 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 	{
 		this.table.sorter.removeItems(this.$tr);
 		this.$tr.remove();
+
+		// onDeleteRow callback
+		this.table.settings.onDeleteRow(this.$tr);
 	}
 },
 {
