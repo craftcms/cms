@@ -294,8 +294,8 @@ class SearchService extends BaseApplicationComponent
 		// Check for locale first
 		if ($term->attribute == 'locale')
 		{
-			// TODO: exclude locale?
-			return array($this->_sqlWhere($term->attribute, '=', $term->term), $keywords);
+			$oper = $term->exclude ? '!=' : '=';
+			return array($this->_sqlWhere($term->attribute, $oper, $term->term), $keywords);
 		}
 
 		// Check for other attributes
