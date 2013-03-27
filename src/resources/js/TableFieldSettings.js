@@ -131,9 +131,7 @@ Craft.TableFieldSettings = Garnish.Base.extend({
 		tableHtml += '</tbody>' +
 			'</table>';
 
-		var $newTable = $(tableHtml);
-
-		this.defaultsTable.$table.replaceWith($newTable);
+		this.defaultsTable.$table.replaceWith(tableHtml);
 		this.defaultsTable.destroy();
 		delete this.defaultsTable;
 		this.initDefaultsTable();
