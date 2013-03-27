@@ -102,7 +102,7 @@ class SearchService extends BaseApplicationComponent
 			if ($cleanKeywords)
 			{
 				// Add padding around keywords
-				$cleanKeywords = "| {$cleanKeywords} |";
+				$cleanKeywords = $this->_addPadding($cleanKeywords);
 
 				// Insert/update the row in searchindex
 				$table = DbHelper::addTablePrefix('searchindex');
@@ -389,7 +389,7 @@ class SearchService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Normalize term from tokens, keep a record for cache
+	 * Normalize term from tokens, keep a record for cache.
 	 *
 	 * @access private
 	 * @param string $term
@@ -405,6 +405,18 @@ class SearchService extends BaseApplicationComponent
 		}
 
 		return $terms[$term];
+	}
+
+	/**
+	 * Add padding to keywords for storing in the DB.
+	 *
+	 * @access private
+	 * @param string $keywords
+	 * @return string
+	 */
+	private function _addPadding($keywords)
+	{
+		return "| {$keywords} |";
 	}
 
 	/**
@@ -451,7 +463,6 @@ class SearchService extends BaseApplicationComponent
 		// Fallback to 0
 		return ($field) ? $field->id : 0;
 	}
-
 
 	/**
 	 * Get SQL bit for simple WHERE clause
