@@ -40,11 +40,19 @@ class DateTimeHelper
 	 * @param $timeStamp
 	 * @return DateTime
 	 */
-	public static function formatTimeForDb($timeStamp)
+	public static function formatTimeForDb($timeStamp = null)
 	{
 		// Eventually this will accept a database parameter and format the timestamp for the given database date/time datatype.
 		// For now, it's MySQL only.
-		$dt = new DateTime('@'.$timeStamp);
+		if ($timeStamp)
+		{
+			$dt = new DateTime('@'.$timeStamp);
+		}
+		else
+		{
+			$dt = new DateTime();
+		}
+
 		return $dt->format(DateTime::MYSQL_DATETIME);
 	}
 
@@ -531,30 +539,4 @@ class DateTimeHelper
 
 		return $date;
 	}
-
-	/**
-	 * Gets a DateTime object from an entry date attribute
-	 *
-	 * @param mixed $dateAttribute
-	 * @param bool|null $required
-	 * @return DateTime|null
-	 */
-	public static function normalizeDate($dateAttribute, $required = false)
-	{
-		if ($dateAttribute instanceof \DateTime)
-		{
-			return $dateAttribute;
-		}
-		else if (static::isValidTimeStamp($dateAttribute))
-		{
-			$dateTime = new DateTime('@'.$dateAttribute);
-			return $dateTime;
-		}
-		else if ($required)
-		{
-			return DateTimeHelper::currentUTCDateTime();
-		}
-	}
-
 }
-

@@ -67,7 +67,7 @@ class HttpRequestService extends \CHttpRequest
 			if (preg_match("/(.*)\b{$pageTrigger}(\d+)$/", $path, $match))
 			{
 				// Capture the page num
-				$this->_pageNum = $match[2];
+				$this->_pageNum = (int) $match[2];
 
 				// Sanitize
 				$newPath = $this->decodePathInfo($match[1]);

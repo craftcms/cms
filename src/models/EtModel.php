@@ -39,8 +39,11 @@ class EtModel extends BaseModel
 		// Any packages installed on the client.
 		$attributes['installedPackages'] = array(AttributeType::Mixed, 'default' => array());
 
-		// All the packages that are actually licensed
+		// All the packages that are actually licensed.
 		$attributes['licensedPackages'] = array(AttributeType::Mixed, 'default' => array());
+
+		// Any packages that are in trial mode.
+		$attributes['packageTrials'] = array(AttributeType::Mixed, 'default' => array());
 
 		// The local version number.
 		$attributes['localVersion'] = array(AttributeType::String, 'required' => true);

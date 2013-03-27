@@ -1,15 +1,19 @@
 {% import "_includes/forms" as forms %}
 
-{% set sections = craft.sections.getAllSections('id') %}
+{% set sections = craft.sections.getAllSections() %}
 
 {% if sections %}
 	{% if craft.hasPackage('PublishPro') %}
+		{% set sectionOptions = [] %}
+		{% for section in sections %}
+			{% set sectionOptions = sectionOptions|merge([{ label: section.name, value: section.id }]) %}
+		{% endfor %}
 		{{ forms.selectField({
 			label: "Section"|t,
 			instructions: "Which section do you want to publish entries to?"|t,
 			id: 'section',
 			name: 'section',
-			options: sections,
+			options: sectionOptions,
 			value: settings.section,
 			toggle: true,
 			targetPrefix: 'section'
@@ -17,7 +21,7 @@
 
 		{% set selectedSectionId = settings.section %}
 	{% else %}
-		{% set selectedSectionId = sections[sections|keys[0]].id %}
+		{% set selectedSectionId = sections[0].id %}
 		<input type="hidden" name="section" value="{{ selectedSectionId }}">
 	{% endif %}
 

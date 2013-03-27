@@ -120,11 +120,36 @@ Craft.PackageChooser = Garnish.Base.extend({
 		}
 		else
 		{
-			if (Craft.hasPackage(pkg))
+			if (pkgInfo.trial)
 			{
+				// Trial badge
+				if (Craft.hasPackage(pkg))
+				{
+					var badgeClass = 'trial';
+				}
+				else
+				{
+					var badgeClass = 'uninstalled';
+				}
+
+				if (pkgInfo.daysLeftInTrial == 1)
+				{
+					var badgeLabel = Craft.t('1 day left');
+				}
+				else
+				{
+					var badgeLabel = Craft.t('{days} days left', { days: pkgInfo.daysLeftInTrial });
+				}
+
+				pkgInfo.$badge = $('<div class="badge '+badgeClass+'">'+badgeLabel+'</div>');
+			}
+			else if (Craft.hasPackage(pkg))
+			{
+				// Unlicensed badge
 				pkgInfo.$badge = $('<div class="badge unlicensed">'+Craft.t('Unlicensed')+'</div>');
 			}
 
+			// Price / Buy button
 			if (pkgInfo.salePrice)
 			{
 				var buyBtnLabel = '<del class="light">'+this.formatPrice(pkgInfo.price)+'</del> '+this.formatPrice(pkgInfo.salePrice);
@@ -134,9 +159,15 @@ Craft.PackageChooser = Garnish.Base.extend({
 				var buyBtnLabel = this.formatPrice(pkgInfo.price);
 			}
 
-			var $buyBtn = $('<div class="btn buy">'+buyBtnLabel+'<span>'+Craft.t('Buy')+'</span></a>').appendTo(pkgInfo.$btnContainer);
-
+			var $buyBtn = $('<div class="btn buy">'+buyBtnLabel+'<span>'+Craft.t('Buy')+'</span></div>').appendTo(pkgInfo.$btnContainer);
 			this.addListener($buyBtn, 'activate', { pkg: pkg }, 'purchasePackage');
+
+			// Try button
+			if (pkgInfo.eligibleForTrial)
+			{
+				var $tryBtn = $('<div class="btn try">'+Craft.t('Try')+'</div>').appendTo(pkgInfo.$btnContainer);
+				this.addListener($tryBtn, 'activate', { pkg: pkg }, 'tryPackage');
+			}
 		}
 
 		if (pkgInfo.$badge)
@@ -144,7 +175,7 @@ Craft.PackageChooser = Garnish.Base.extend({
 			pkgInfo.$badge.insertBefore(pkgInfo.$heading);
 		}
 
-		if (pkgInfo.licensed || Craft.hasPackage(pkg))
+		if (pkgInfo.licensed || pkgInfo.trial || Craft.hasPackage(pkg))
 		{
 			var $menuBtn = $('<div class="btn menubtn settings icon"/>').appendTo(pkgInfo.$btnContainer),
 				$menu    = $('<div class="menu"/>').appendTo(pkgInfo.$btnContainer),
@@ -384,6 +415,45 @@ Craft.PackageChooser = Garnish.Base.extend({
 		    $('#cc-cvc').val('');
 
 		}, this), Craft.PackageChooser.clearCcModalTimeoutDuration);
+	},
+
+	tryPackage: function(ev)
+	{
+		var pkg = ev.data.pkg;
+
+		if (confirm(Craft.t('Start your 30-day {package} trial?', { 'package': this.packages[pkg].name })))
+		{
+			var data = {
+				'package': pkg
+			};
+
+			Craft.postActionRequest('app/beginPackageTrial', data, $.proxy(function(response)
+			{
+				if (!response.success)
+				{
+					if (response.error)
+					{
+						alert(response.error);
+					}
+					else
+					{
+						alert(Craft.t('An unknown error occurred.'));
+					}
+
+					return;
+				}
+
+				// Mark it as installed
+				Craft.packages.push(pkg);
+
+				// Mark it as in trial
+				this.packages[pkg].trial = true;
+				this.packages[pkg].eligibleForTrial = false;
+				this.packages[pkg].daysLeftInTrial = 30;
+
+				this.createButtons(pkg);
+			}, this));
+		}
 	},
 
 	onOptionSelect: function(option)

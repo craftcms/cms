@@ -16,22 +16,24 @@ class EntryRevisionsVariable
 	 * Returns entry drafts by an entry ID.
 	 *
 	 * @param int $entryId
+	 * @param string $localeId
 	 * @return array
 	 */
-	public function getDraftsByEntryId($entryId)
+	public function getDraftsByEntryId($entryId, $localeId = null)
 	{
-		return craft()->entryRevisions->getDraftsByEntryId($entryId);
+		return craft()->entryRevisions->getDraftsByEntryId($entryId, $localeId);
 	}
 
 	/**
 	 * Returns the drafts of a given entry that are editable by the current user.
 	 *
 	 * @param int $entryId
+	 * @param string $localeId
 	 * @return array
 	 */
-	public function getEditableDraftsByEntryId($entryId)
+	public function getEditableDraftsByEntryId($entryId, $localeId = null)
 	{
-		return craft()->entryRevisions->getEditableDraftsByEntryId($entryId);
+		return craft()->entryRevisions->getEditableDraftsByEntryId($entryId, $localeId);
 	}
 
 	/**
@@ -65,11 +67,12 @@ class EntryRevisionsVariable
 	 * Returns entry versions by an entry ID.
 	 *
 	 * @param int $entryId
+	 * @param string $localeId
 	 * @return array
 	 */
-	public function getVersionsByEntryId($entryId)
+	public function getVersionsByEntryId($entryId, $localeId)
 	{
-		return craft()->entryRevisions->getVersionsByEntryId($entryId);
+		return craft()->entryRevisions->getVersionsByEntryId($entryId, $localeId);
 	}
 
 	/**

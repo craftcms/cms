@@ -33,23 +33,6 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Gets a date from post.
-	 *
-	 * @access protected
-	 * @param string $name
-	 * @return DateTime|null
-	 */
-	protected function getDateFromPost($name)
-	{
-		$date = craft()->request->getPost($name);
-
-		if ($date)
-		{
-			return DateTime::createFromFormat('!'.DateTime::W3C_DATE, $date);
-		}
-	}
-
-	/**
 	 * Renders a template, and either outputs or returns it.
 	 *
 	 * @param string $template The name of the template to load

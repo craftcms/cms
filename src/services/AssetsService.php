@@ -150,27 +150,6 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets a file's content record by its file ID.
-	 *
-	 * @param int $fileId
-	 * @return AssetContentRecord
-	 */
-	public function getFileContentRecordByFileId($fileId)
-	{
-		$contentRecord = AssetContentRecord::model()->findByAttributes(array(
-			'fileId' => $fileId
-		));
-
-		if (!$contentRecord)
-		{
-			$contentRecord = new AssetContentRecord();
-			$contentRecord->fileId = $fileId;
-		}
-
-		return $contentRecord;
-	}
-
-	/**
 	 * Gets the total number of files that match a given criteria.
 	 *
 	 * @param mixed $criteria
@@ -306,7 +285,7 @@ class AssetsService extends BaseApplicationComponent
 	{
 		// TODO: translation support
 		$fieldLayout = craft()->fields->getLayoutByType(ElementType::Asset);
-		return craft()->elements->saveElementContent($file, $fieldLayout);
+		return craft()->content->saveElementContent($file, $fieldLayout);
 	}
 
 	// -------------------------------------------

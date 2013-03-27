@@ -609,6 +609,45 @@ var CP = Garnish.Base.extend({
 				}
 			}, this));
 		}
+
+		// Are there any shunnable alerts?
+		var $shunnableAlerts = this.$alerts.find('a[class^="shun:"]');
+
+		for (var i = 0; i < $shunnableAlerts.length; i++)
+		{
+			this.addListener($shunnableAlerts[i], 'click', $.proxy(function(ev)
+			{
+				ev.preventDefault();
+
+				var $link = $(ev.currentTarget);
+
+				var data = {
+					message: $link.prop('className').substr(5)
+				};
+
+				Craft.postActionRequest('app/shunCpAlert', data, $.proxy(function(response)
+				{
+					if (response.success)
+					{
+						$link.parent().remove();
+					}
+					else
+					{
+						if (response.error)
+						{
+							var error = response.error;
+						}
+						else
+						{
+							var error = 'An unknown error occurred.';
+						}
+
+						alert(error);
+					}
+				}, this));
+
+			}, this));
+		}
 	}
 },
 {

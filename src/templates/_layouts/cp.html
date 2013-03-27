@@ -15,6 +15,7 @@
 	"Show",
 	"Hide",
 	"Close",
+	"Reorder",
 	"An unknown error occurred.",
 	"New order saved.",
 	"Couldn’t save new order.",
@@ -91,7 +92,7 @@
 
 		{% set hasTabs = (tabs is defined and tabs) %}
 
-		<header id="page-header"{% if hasTabs %} class="has-tabs"{% endif %}>
+		<header id="page-header" class="header{% if hasTabs %} has-tabs{% endif %}">
 			{% if crumbs is defined and crumbs %}
 				<nav id="crumbs">
 					<ul>

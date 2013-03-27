@@ -35,7 +35,7 @@ class EntryModel extends BaseElementModel
 			'authorId'   => AttributeType::Number,
 			'title'      => AttributeType::String,
 			'slug'       => AttributeType::String,
-			'postDate'   => array(AttributeType::DateTime, 'default' => new DateTime()),
+			'postDate'   => AttributeType::DateTime,
 			'expiryDate' => AttributeType::DateTime,
 		));
 	}
@@ -75,17 +75,17 @@ class EntryModel extends BaseElementModel
 	{
 		$status = parent::getStatus();
 
-		if ($status == static::ENABLED)
+		if ($status == static::ENABLED && $this->postDate)
 		{
 			$currentTime = DateTimeHelper::currentTimeStamp();
-			$postDate = ($this->postDate ? $this->postDate->getTimestamp() : null);
-			$expiryDate = ($this->expiryDate ? $this->expiryDate->getTimestamp() : null);
+			$postDate    = $this->postDate->getTimestamp();
+			$expiryDate  = ($this->expiryDate ? $this->expiryDate->getTimestamp() : null);
 
 			if ($postDate <= $currentTime && (!$expiryDate || $expiryDate > $currentTime))
 			{
 				return static::LIVE;
 			}
-			else if ($postDate && $postDate > $currentTime)
+			else if ($postDate > $currentTime)
 			{
 				return static::PENDING;
 			}

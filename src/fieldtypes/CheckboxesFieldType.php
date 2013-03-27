@@ -38,10 +38,26 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 	 */
 	public function getInputHtml($name, $values)
 	{
+		$options = $this->getOptions();
+
+		// If this is a new entry, look for any default options
+		if (!isset($this->element))
+		{
+			$values = array();
+
+			foreach ($options as $option)
+			{
+				if (!empty($option['default']))
+				{
+					$values[] = $option['value'];
+				}
+			}
+		}
+
 		return craft()->templates->render('_components/fieldtypes/Checkboxes/input', array(
-			'name'     => $name,
-			'values'   => $values,
-			'settings' => $this->getSettings()
+			'name'    => $name,
+			'values'  => $values,
+			'options' => $options
 		));
 	}
 }
