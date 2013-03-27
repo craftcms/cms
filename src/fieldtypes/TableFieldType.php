@@ -115,7 +115,7 @@ class TableFieldType extends BaseFieldType
 				{
 					if ($col['handle'])
 					{
-						$row[$col['handle']] = $row[$colId];
+						$row[$col['handle']] = (isset($row[$colId]) ? $row[$colId] : null);
 					}
 				}
 			}
