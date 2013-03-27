@@ -5,38 +5,18 @@
 	instructions: "Define the columns your table should have."|t,
 	id: 'columns',
 	name: 'columns',
-	rowIdPrefix: 'col',
-	jsId: 'types-Table-columns',
-	jsName: 'types[Table][columns]',
-	cols: {
-		heading: {
-			heading: "Column Heading"|t,
-			type: 'singleline',
-			autopopulate: 'handle'
-		},
-		handle: {
-			heading: "Handle"|t,
-			class: 'code',
-			type: 'singleline'
-		},
-		width: {
-			heading: "Width"|t,
-			class: 'code',
-			type: 'singleline',
-			width: 50
-		},
-		type: {
-			heading: "Type"|t,
-			class: 'thin',
-			type: 'select',
-			options: {
-				singleline: "Single-line Text"|t,
-				multiline: "Multi-line text"|t,
-				number: "Number"|t,
-				checkbox: "Checkbox"|t,
-			}
-		}
-	},
+	cols: columnSettings,
 	rows: columns,
-	addRowLabel: "Add a column"|t
+	addRowLabel: "Add a column"|t,
+	initJs: false
+}) }}
+
+{{ forms.editableTableField({
+	label: "Default Values"|t,
+	instructions: "Define the default values for the field."|t,
+	id: 'defaults',
+	name: 'defaults',
+	cols: columns,
+	rows: defaults,
+	initJs: false
 }) }}

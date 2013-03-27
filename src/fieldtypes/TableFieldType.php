@@ -36,6 +36,7 @@ class TableFieldType extends BaseFieldType
 	{
 		return array(
 			'columns' => AttributeType::Mixed,
+			'defaults' => AttributeType::Mixed,
 		);
 	}
 
@@ -47,14 +48,62 @@ class TableFieldType extends BaseFieldType
 	public function getSettingsHtml()
 	{
 		$columns = $this->getSettings()->columns;
+		$defaults = $this->getSettings()->defaults;
 
 		if (!$columns)
 		{
 			$columns = array('col1' => array('heading' => '', 'handle' => '', 'type' => 'singleline'));
+
+			// Update the actual settings model for getInputHtml()
+			$this->getSettings()->columns = $columns;
 		}
 
+		if (!$defaults)
+		{
+			$defaults = array('row1' => array());
+		}
+
+		$columnSettings = array(
+			'heading' => array(
+				'heading' => Craft::t('Column Heading'),
+				'type' => 'singleline',
+				'autopopulate' => 'handle'
+			),
+			'handle' => array(
+				'heading' => Craft::t('Handle'),
+				'class' => 'code',
+				'type' => 'singleline'
+			),
+			'width' => array(
+				'heading' => Craft::t('Width'),
+				'class' => 'code',
+				'type' => 'singleline',
+				'width' => 50
+			),
+			'type' => array(
+				'heading' => Craft::t('Type'),
+				'class' => 'thin',
+				'type' => 'select',
+				'options' => array(
+					'singleline' => Craft::t('Single-line Text'),
+					'multiline' => Craft::t('Multi-line text'),
+					'number' => Craft::t('Number'),
+					'checkbox' => Craft::t('Checkbox'),
+				)
+			),
+		);
+
+		craft()->templates->includeJsResource('js/TableFieldSettings.js');
+		craft()->templates->includeJs('new Craft.TableFieldSettings(' .
+			JsonHelper::encode($columns).', ' .
+			JsonHelper::encode($defaults).', ' .
+			JsonHelper::encode($columnSettings) .
+		');');
+
 		return craft()->templates->render('_components/fieldtypes/Table/settings', array(
-			'columns' => $columns,
+			'columns'        => $columns,
+			'defaults'       => $defaults,
+			'columnSettings' => $columnSettings
 		));
 	}
 
@@ -71,6 +120,17 @@ class TableFieldType extends BaseFieldType
 
 		if ($columns)
 		{
+			// If this is a new entry, use the default values
+			if (!isset($this->element))
+			{
+				$defaults = $this->getSettings()->defaults;
+
+				if (is_array($defaults))
+				{
+					$value = array_values($defaults);
+				}
+			}
+
 			$id = preg_replace('/[\[\]]+/', '-', $name);
 
 			return craft()->templates->render('_components/fieldtypes/Table/input', array(
