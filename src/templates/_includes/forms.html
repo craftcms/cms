@@ -222,7 +222,7 @@
 
 
 {% macro editableTable(config) %}
-	{% set config = { id: null, name: null, jsId: null, jsName: null, cols: {}, rows: {}, rowIdPrefix: 'row', addRowLabel: "Add a row"|t }|merge(config) %}
+	{% set config = { id: null, name: null, jsId: null, jsName: null, cols: {}, rows: {}, rowIdPrefix: '', addRowLabel: "Add a row"|t }|merge(config) %}
 	<table id="{{ config.id }}" class="editable">
 		<thead>
 			<tr>
