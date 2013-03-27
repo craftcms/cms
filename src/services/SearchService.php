@@ -133,7 +133,7 @@ class SearchService extends BaseApplicationComponent
 	 * @param mixed  $query      The search query (either a string or a SearchQuery instance)
 	 * @return array The filtered list of element IDs.
 	 */
-	public function filterElementIdsByQuery($elementIds, $query)
+	public function filterElementIdsByQuery($elementIds, $query, $score = true)
 	{
 		if (is_string($query))
 		{
@@ -183,27 +183,46 @@ class SearchService extends BaseApplicationComponent
 		// Execute the sql
 		$results = craft()->db->createCommand()->setText($sql)->queryAll();
 
-		// Loop through results and calculate score per element
-		foreach ($results as $row)
+		// Are we scoring the results?
+		if ($score)
 		{
-			$eId = $row['elementId'];
-			$score = $this->_scoreRow($row);
+			// Loop through results and calculate score per element
+			foreach ($results as $row)
+			{
+				$eId = $row['elementId'];
+				$score = $this->_scoreRow($row);
 
-			if (!isset($this->_results[$eId]))
-			{
-				$this->_results[$eId] = $score;
+				if (!isset($this->_results[$eId]))
+				{
+					$this->_results[$eId] = $score;
+				}
+				else
+				{
+					$this->_results[$eId] += $score;
+				}
 			}
-			else
+
+			// Sort found elementIds by score
+			asort($this->_results);
+
+			// Store entry ids in return value
+			$elementIds = array_keys($this->_results);
+		}
+		else
+		{
+			// Don't apply score, just return the IDs
+			$elementIds = array();
+
+			foreach ($results as $row)
 			{
-				$this->_results[$eId] += $score;
+				$elementIds[] = $row['elementId'];
 			}
+
+			$elementIds = array_unique($elementIds);
 		}
 
-		// Sort found elementIds by score
-		asort($this->_results);
-
-		// Return elementIds in the right order
-		return array_keys($this->_results);
+		// Return elementIds
+		return $elementIds;
 	}
 
 	/**
