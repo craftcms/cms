@@ -4,7 +4,7 @@
 Craft.EditableTable = Garnish.Base.extend({
 
 	id: null,
-	name: null,
+	baseName: null,
 	columns: null,
 	sorter: null,
 	biggestId: -1,
@@ -13,19 +13,12 @@ Craft.EditableTable = Garnish.Base.extend({
 	$tbody: null,
 	$addRowBtn: null,
 
-	init: function(id, name, columns, settings)
+	init: function(id, baseName, columns, settings)
 	{
 		this.id = id;
-		this.name = name;
+		this.baseName = baseName;
 		this.columns = columns;
 		this.setSettings(settings, Craft.EditableTable.defaults);
-
-		// Set the textual columns
-		for (var colId in this.columns)
-		{
-			var col = this.columns[colId];
-			col.textual = Craft.inArray(col.type, Craft.EditableTable.textualColTypes);
-		}
 
 		this.$table = $('#'+id);
 		this.$tbody = this.$table.children('tbody');
@@ -48,54 +41,8 @@ Craft.EditableTable = Garnish.Base.extend({
 	addRow: function()
 	{
 		var rowId = this.settings.rowIdPrefix+(this.biggestId+1),
-			$tr = $('<tr data-id="'+rowId+'"/>').appendTo(this.$tbody);
-
-		for (var colId in this.columns)
-		{
-			var col = this.columns[colId],
-				name = this.name+'['+rowId+']['+colId+']';
-
-			var colHtml = '<td class="'+(col.textual ? 'textual' : '')+' '+(typeof col['class'] != 'undefined' ? col['class'] : '')+'"' +
-			              (typeof col['width'] != 'undefined' ? ' width="'+col['width']+'"' : '') +
-			              '>';
-
-			switch (col.type)
-			{
-				case 'select':
-				{
-					colHtml += '<div class="select small"><select name="'+name+'">';
-
-					for (var optionValue in col.options)
-					{
-						colHtml += '<option value="'+optionValue+'">'+col.options[optionValue]+'</option>';
-					}
-
-					colHtml += '</select></div>';
-
-					break;
-				}
-
-				case 'checkbox':
-				{
-					colHtml += '<input type="hidden" name="'+name+'">' +
-					           '<input type="checkbox" name="'+name+'" value="1">';
-
-					break;
-				}
-
-				default:
-				{
-					colHtml += '<textarea name="'+name+'" rows="1"></textarea>';
-				}
-			}
-
-			colHtml += '</td>';
-
-			$(colHtml).appendTo($tr);
-		}
-
-		$('<td class="thin action"><a class="move icon" title="'+Craft.t('Reorder')+'"></a></td>').appendTo($tr);
-		$('<td class="thin action"><a class="delete icon" title="'+Craft.t('Delete')+'"></a></td>').appendTo($tr);
+			rowHtml = Craft.EditableTable.getRowHtml(rowId, this.columns, this.baseName, {}),
+			$tr = $(rowHtml).appendTo(this.$tbody);
 
 		new Craft.EditableTable.Row(this, $tr);
 		this.sorter.addItems($tr);
@@ -110,6 +57,61 @@ Craft.EditableTable = Garnish.Base.extend({
 		rowIdPrefix: '',
 		onAddRow: $.noop,
 		onDeleteRow: $.noop
+	},
+
+	getRowHtml: function(rowId, columns, baseName, values)
+	{
+		var rowHtml = '<tr data-id="'+rowId+'">';
+
+		for (var colId in columns)
+		{
+			var col = columns[colId],
+				name = baseName+'['+rowId+']['+colId+']',
+				value = (typeof values[colId] != 'undefined' ? values[colId] : ''),
+				textual = Craft.inArray(col.type, Craft.EditableTable.textualColTypes);
+
+			rowHtml += '<td class="'+(textual ? 'textual' : '')+' '+(typeof col['class'] != 'undefined' ? col['class'] : '')+'"' +
+			              (typeof col['width'] != 'undefined' ? ' width="'+col['width']+'"' : '') +
+			              '>';
+
+			switch (col.type)
+			{
+				case 'select':
+				{
+					rowHtml += '<div class="select small"><select name="'+name+'">';
+
+					for (var optionValue in col.options)
+					{
+						rowHtml += '<option value="'+optionValue+'"'+(optionValue == value ? ' selected' : '')+'>'+col.options[optionValue]+'</option>';
+					}
+
+					rowHtml += '</select></div>';
+
+					break;
+				}
+
+				case 'checkbox':
+				{
+					rowHtml += '<input type="hidden" name="'+name+'">' +
+					           '<input type="checkbox" name="'+name+'" value="1"'+(value ? ' checked' : '')+'>';
+
+					break;
+				}
+
+				default:
+				{
+					rowHtml += '<textarea name="'+name+'" rows="1">'+value+'</textarea>';
+				}
+			}
+
+			rowHtml += '</td>';
+		}
+
+		rowHtml += '<td class="thin action"><a class="move icon" title="'+Craft.t('Reorder')+'"></a></td>' +
+				'<td class="thin action"><a class="delete icon" title="'+Craft.t('Delete')+'"></a></td>' +
+			'</tr>';
+
+		return rowHtml;
 	}
 });
 
@@ -151,7 +153,7 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 		{
 			var col = this.table.columns[colId];
 
-			if (col.textual)
+			if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes))
 			{
 				$textarea = $('textarea', this.$tds[i]);
 				this.$textareas = this.$textareas.add($textarea);

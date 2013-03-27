@@ -83,35 +83,7 @@ Craft.TableFieldSettings = Garnish.Base.extend({
 
 		for (var rowId in defaults)
 		{
-			var row = defaults[rowId];
-
-			tableHtml += '<tr data-id="'+rowId+'">';
-
-			for (var colId in columns)
-			{
-				var col = columns[colId],
-					name = defaultsTableName+'['+rowId+']['+colId+']',
-					value = (typeof row[colId] != 'undefined' ? row[colId] : ''),
-					textual = Craft.inArray(col.type, Craft.EditableTable.textualColTypes);
-
-				tableHtml += '<td'+(textual ? ' class="textual"' : '')+(col.width ? ' width="'+col.width+'"' : '')+'>';
-
-				if (col.type == 'checkbox')
-				{
-					tableHtml += '<input type="hidden" name="'+name+'">' +
-						'<input type="checkbox" name="'+name+'" value="1"'+(value ? ' checked' : '')+'>';
-				}
-				else
-				{
-					tableHtml += '<textarea name="'+name+'" rows="1">'+value+'</textarea>';
-				}
-
-				tableHtml += '</td>';
-			}
-
-			tableHtml += '<td class="thin action"><a class="move icon" title="'+Craft.t('Reorder')+'"></a></td>' +
-					'<td class="thin action"><a class="delete icon" title="'+Craft.t('Delete')+'"></a></td>' +
-				'</tr>';
+			tableHtml += Craft.EditableTable.getRowHtml(rowId, columns, defaultsTableName, defaults[rowId]);
 		}
 
 		tableHtml += '</tbody>' +
