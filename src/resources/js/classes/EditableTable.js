@@ -167,7 +167,7 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 
 				if (col.type == 'singleline' || col.type == 'number')
 				{
-					this.addListener($textarea, 'keypress,change', { type: col.type }, 'validateKeypress');
+					this.addListener($textarea, 'keypress', { type: col.type }, 'validateKeypress');
 				}
 
 				textareasByColId[colId] = $textarea;
@@ -238,7 +238,7 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 
 		if (!ev.metaKey && !ev.ctrlKey && (
 			(keyCode == Garnish.RETURN_KEY) ||
-			(ev.data.type == 'number' && $.inArray(keyCode, Craft.EditableTable.numericKeyCodes) == -1)
+			(ev.data.type == 'number' && !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes))
 		))
 		{
 			ev.preventDefault();
