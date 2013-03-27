@@ -9,7 +9,6 @@ var columnsTableId = 'types-Table-columns',
 
 Craft.TableFieldSettings = Garnish.Base.extend({
 
-	columns: null,
 	defaults: null,
 	columnSettings: null,
 
@@ -18,12 +17,11 @@ Craft.TableFieldSettings = Garnish.Base.extend({
 
 	init: function(columns, defaults, columnSettings)
 	{
-		this.columns = columns;
 		this.defaults = defaults;
 		this.columnSettings = columnSettings;
 
 		this.initColumnsTable();
-		this.initDefaultsTable();
+		this.initDefaultsTable(columns);
 	},
 
 	initColumnsTable: function()
@@ -38,9 +36,9 @@ Craft.TableFieldSettings = Garnish.Base.extend({
 		this.columnsTable.sorter.settings.onSortChange = $.proxy(this, 'reconstructDefaultsTable');
 	},
 
-	initDefaultsTable: function()
+	initDefaultsTable: function(columns)
 	{
-		this.defaultsTable = new Craft.EditableTable(defaultsTableId, defaultsTableName, this.columns, {
+		this.defaultsTable = new Craft.EditableTable(defaultsTableId, defaultsTableName, columns, {
 			rowIdPrefix: 'row'
 		});
 	},
@@ -92,7 +90,7 @@ Craft.TableFieldSettings = Garnish.Base.extend({
 		this.defaultsTable.$table.replaceWith(tableHtml);
 		this.defaultsTable.destroy();
 		delete this.defaultsTable;
-		this.initDefaultsTable();
+		this.initDefaultsTable(columns);
 	}
 
 });
