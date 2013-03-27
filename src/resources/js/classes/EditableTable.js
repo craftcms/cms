@@ -73,7 +73,7 @@ Craft.EditableTable = Garnish.Base.extend({
 
 				default:
 				{
-					colHtml += '<textarea name="'+name+']" rows="1"></textarea>';
+					colHtml += '<textarea name="'+name+'" rows="1"></textarea>';
 				}
 			}
 
