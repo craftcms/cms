@@ -15,11 +15,6 @@ class SearchService extends BaseApplicationComponent
 	private $_tokens;
 	private $_results;
 
-	private $_sqlAndLike;
-	private $_sqlOrLike;
-	private $_sqlAndFt;
-	private $_sqlOrFt;
-
 	/**
 	 * Returns the FULLTEXT minimum word length.
 	 *
@@ -74,10 +69,13 @@ class SearchService extends BaseApplicationComponent
 	public function indexElementKeywords($elementId, $localeId, $keywords)
 	{
 		// $sql = array(
-		// 	$this->filterElementIdsByQuery(array(), '*sterd*act'),
-		// 	$this->filterElementIdsByQuery(array(), 'john* *hop'),
-		// 	$this->filterElementIdsByQuery(array(), 'water OR soda foo OR bar'),
-		// 	$this->filterElementIdsByQuery(array(), 'tonic title:gin'),
+		// 	$this->filterElementIdsByQuery(array(), 'lorem ipsum OR dolor'),
+		// 	$this->filterElementIdsByQuery(array(), 'lorem foo ipsum OR bar'),
+		// 	$this->filterElementIdsByQuery(array(), 'lorem OR ipsum'),
+		// 	$this->filterElementIdsByQuery(array(), 'lorem OR ipsum foo OR bar'),
+		// 	$this->filterElementIdsByQuery(array(), 'lorem OR foo ipsum OR bar'),
+		// 	$this->filterElementIdsByQuery(array(), 'lorem ipsum foo OR bar'),
+
 		// );
 
 		// die('<pre>'.htmlspecialchars(print_r($sql, true)).'</pre>');
@@ -193,85 +191,91 @@ class SearchService extends BaseApplicationComponent
 	 */
 	private function _getWhereClause()
 	{
-		// Reset the lot
-		$this->_sqlAndLike = array();
-		$this->_sqlOrLike = array();
-		$this->_sqlAndFt = array();
-		$this->_sqlOrFt = array();
-		$where = array();
+		$terms  = array();
+		$groups = array();
+		$where  = array();
 
-		// Get the subselects from tokens and set the internal keyword arrays
-		if ($sql = $this->_processTokens())
+		// Split termgroups and terms
+		foreach ($this->_tokens as $obj)
 		{
-			$where[] = $sql;
+			if ($obj instanceof SearchQueryTermGroup)
+			{
+				$groups[] = $obj->terms;
+			}
+			else
+			{
+				$terms[] = $obj;
+			}
 		}
 
-		// Are we combining the clauses with AND or OR?
-		$glue = ($this->_sqlAndLike || $this->_sqlAndFt) ? ' AND ' : ' OR ';
-
-		// Check if there are full-text OR keywords
-		if ($num = count($this->_sqlOrFt))
+		// Add the regular terms to the WHERE clause
+		if ($terms)
 		{
-			$this->_sqlAndFt[] = ($num == 1)
-				? $this->_sqlOrFt[0]
-				: '+('.implode(' ', $this->_sqlOrFt).')';
+			$where[] = $this->_processTokens($terms);
 		}
 
-		// Generate single full-text clause for all keywords
-		if ($this->_sqlAndFt)
+		// Add each group to the where clause
+		foreach ($groups as $group)
 		{
-			$where[] = $this->_sqlMatch(implode(' ', $this->_sqlAndFt));
+			$where[] = $this->_processTokens($group, false);
 		}
 
-		// Check if there are fallback OR clauses
-		if ($num = count($this->_sqlOrLike))
-		{
-			$this->_sqlAndLike[] = ($num == 1)
-				? $this->_sqlOrLike[0]
-				: '('.implode(' OR ', $this->_sqlOrLike).')';
-		}
-
-		// Add the fallback AND clauses to the full where array
-		if ($this->_sqlAndLike)
-		{
-			$where = array_merge($where, $this->_sqlAndLike);
-		}
-
-		// Return the final result
-		return implode($glue, $where);
+		// And combine everything with AND
+		return implode(' AND ', $where);
 	}
 
 	/**
-	 * Generates partial WHERE clause for search from given tokens: subselects only.
-	 * Also populates the internal keywords arrays.
+	 * Generates partial WHERE clause for search from given tokens
 	 *
 	 * @access private
 	 * @param array $tokens
 	 * @param string $glue
 	 */
-	private function _processTokens($tokens = array(), $glue = 'AND')
+	private function _processTokens($tokens = array(), $inclusive = true)
 	{
-		// If no tokens are fiven, check internal ones
-		if (!$tokens)
-		{
-			$tokens = $this->_tokens;
-		}
-
+		$andor = $inclusive ? ' AND ' : ' OR ';
 		$where = array();
+		$words = array();
 
-		foreach ($tokens AS $obj)
+		foreach ($tokens as $obj)
 		{
-			if ($obj instanceof SearchQueryTermGroup && ($sql = $this->_processTokens($obj->terms, 'OR')))
-			{
-				$where[] = '('.$sql.')';
-			}
-			else if ($obj instanceof SearchQueryTerm && ($sql = $this->_getSqlFromTerm($obj, $glue)))
+			// Get SQL and/or keywords
+			list($sql, $keywords) = $this->_getSqlFromTerm($obj);
+
+			// If we have SQL, just add that
+			if ($sql)
 			{
 				$where[] = $sql;
 			}
+
+			// No SQL but keywords, save them for later
+			else if ($keywords)
+			{
+				if ($inclusive)
+				{
+					$keywords = '+'.$keywords;
+				}
+
+				$words[] = $keywords;
+			}
 		}
 
-		return implode(" {$glue} ", $where);
+		// If we collected full-text words, combine them into one
+		if ($words)
+		{
+			$where[] = $this->_sqlMatch($words);
+		}
+
+		// Implode WHERE clause to a string
+		$where = implode($andor, $where);
+
+		// And group together for non-inclusive queries
+		if (!$inclusive)
+		{
+			$where = "({$where})";
+		}
+
+		return $where;
 	}
 
 	/**
@@ -279,18 +283,19 @@ class SearchService extends BaseApplicationComponent
 	 *
 	 * @access private
 	 * @param object SearchQueryTerm
-	 * @return string
+	 * @return array
 	 */
-	private function _getSqlFromTerm($term, $andor)
+	private function _getSqlFromTerm(SearchQueryTerm $term)
 	{
 		// Initiate return value
 		$sql = null;
+		$keywords = null;
 
 		// Check for locale first
 		if ($term->attribute == 'locale')
 		{
 			// TODO: exclude locale?
-			return $this->_sqlWhere($term->attribute, '=', $term->term);
+			return array($this->_sqlWhere($term->attribute, '=', $term->term), $keywords);
 		}
 
 		// Check for other attributes
@@ -330,30 +335,15 @@ class SearchService extends BaseApplicationComponent
 				// Determine prefix for the full-text keyword
 				if ($term->exclude)
 				{
-					$prefix = '-';
-				}
-				else if ($andor == 'AND')
-				{
-					$prefix = '+';
-				}
-				else
-				{
-					$prefix = '';
+					$keywords = '-'.$keywords;
 				}
 
-				$keywords = $prefix.$keywords;
-
+				// Only create an SQL clause if there's a subselect
+				// Otherwise, return the keywords
 				if ($subSelect)
 				{
 					// If there is a subselect, create the MATCH AGAINST bit
 					$sql = $this->_sqlMatch($keywords);
-				}
-				else
-				{
-					// If there is no subselect, save keyword for later, so it's one big happy query
-					($andor == 'AND')
-						? $this->_sqlAndFt[] = $keywords
-						: $this->_sqlOrFt[]  = $keywords;
 				}
 			}
 
@@ -376,15 +366,6 @@ class SearchService extends BaseApplicationComponent
 
 				// Generate the SQL
 				$sql = $this->_sqlWhere('keywords', $operator, $keywords);
-
-				if (!$subSelect)
-				{
-					($andor == 'AND')
-						? $this->_sqlAndLike[] = $sql
-						: $this->_sqlOrLike[]  = $sql;
-
-					$sql = null;
-				}
 			}
 
 			// If we have a where clause in the subselect, add the keyword bit to it
@@ -394,7 +375,7 @@ class SearchService extends BaseApplicationComponent
 			}
 		}
 
-		return $sql;
+		return array($sql, $keywords);
 	}
 
 	/**
@@ -492,7 +473,7 @@ class SearchService extends BaseApplicationComponent
 	{
 		return sprintf("MATCH(%s) AGAINST('%s'%s)",
 			craft()->db->quoteColumnName('keywords'),
-			$val,
+			(is_array($val) ? implode(' ', $val) : $val),
 			($booleanMode ? ' IN BOOLEAN MODE' : '')
 		);
 	}
