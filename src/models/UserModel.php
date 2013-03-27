@@ -15,15 +15,7 @@ class UserModel extends BaseElementModel
 	 */
 	function __toString()
 	{
-		$fullName = $this->getFullName();
-		if ($fullName)
-		{
-			return $fullName;
-		}
-		else
-		{
-			return $this->username;
-		}
+		return $this->getName();
 	}
 
 	/**
@@ -77,6 +69,25 @@ class UserModel extends BaseElementModel
 	public function getFullName()
 	{
 		return $this->firstName . ($this->firstName && $this->lastName ? ' ' : '') . $this->lastName;
+	}
+
+	/**
+	 * Returns the user's full name or username.
+	 *
+	 * @return string
+	 */
+	public function getName()
+	{
+		$fullName = $this->getFullName();
+
+		if ($fullName)
+		{
+			return $fullName;
+		}
+		else
+		{
+			return $this->username;
+		}
 	}
 
 	/**
