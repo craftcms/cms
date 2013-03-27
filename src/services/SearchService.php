@@ -82,6 +82,10 @@ class SearchService extends BaseApplicationComponent
 
 		// die('<pre>'.htmlspecialchars(print_r($sql, true)).'</pre>');
 
+		// $this->filterElementIdsByQuery(array(), 'kir OR gin');
+
+		// die('<pre>'.htmlspecialchars(print_r($this->_results, true)).'</pre>');
+
 		foreach ($keywords as $attribute => $dirtyKeywords)
 		{
 			// Is this for a field?
@@ -178,15 +182,98 @@ class SearchService extends BaseApplicationComponent
 		}
 
 		// Execute the sql
-		$this->_results = craft()->db->createCommand()->setText($sql)->queryAll();
+		$results = craft()->db->createCommand()->setText($sql)->queryAll();
 
 		// Loop through results and calculate score per element
+		foreach ($results as $row)
+		{
+			$eId = $row['elementId'];
+			$score = $this->_scoreRow($row);
+
+			if (!isset($this->_results[$eId]))
+			{
+				$this->_results[$eId] = $score;
+			}
+			else
+			{
+				$this->_results[$eId] += $score;
+			}
+		}
 
 		// Sort found elementIds by score
+		asort($this->_results);
 
 		// Return elementIds in the right order
+		return array_keys($this->_results);
+	}
 
-		return array();
+	/**
+	 * Calculate score for a result
+	 */
+	private function _scoreRow($row)
+	{
+		$score = 0;
+
+		foreach ($this->_terms AS $term)
+		{
+			$score += $this->_scoreTerm($term, $row);
+		}
+
+		foreach ($this->_groups AS $terms)
+		{
+			$weight = 1 / count($terms);
+
+			foreach ($terms AS $term)
+			{
+				$score += $this->_scoreTerm($term, $row, $weight);
+			}
+		}
+
+		return $score;
+	}
+
+	/**
+	 * Calculate score for a row/term combination.
+	 */
+	private function _scoreTerm($term, $row, $weight = 1)
+	{
+		// Skip these terms: locale and exact filtering is just that,
+		// no weighted search applies since all elements will already
+		// apply for these filters.
+		if ($term->attribute == 'locale' ||
+			$term->exact ||
+			!($keywords = $this->_normalizeTerm($term->term))
+		) return 0;
+
+		// Account for substrings
+		if ($term->subLeft)  $keywords = $keywords.' ';
+		if ($term->subRight) $keywords = ' '.$keywords;
+
+		// Get haystack and safe word count
+		$haystack  = $this->_removePadding($row['keywords'], true);
+		$wordCount = count(array_filter(explode(' ', $haystack)));
+
+		// Get number of matches
+		$score = substr_count($haystack, $keywords);
+
+		// Exact match
+		if (trim($keywords) == trim($haystack))
+		{
+			$mod = 100;
+		}
+		// Don't scale up for substring matches
+		else if ($term->subLeft || $term->subRight)
+		{
+			$mod = 10;
+		}
+		else
+		{
+			$mod = 50;
+		}
+
+		$score = ($score / $wordCount) * $mod * $weight;
+
+		return $score;
 	}
 
 	/**
