@@ -15,8 +15,6 @@ Craft.TableFieldSettings = Garnish.Base.extend({
 
 	columnsTable: null,
 	defaultsTable: null,
-	reconstructTimeout: null,
-	reconstructInterval: null,
 
 	init: function(columns, defaults, columnSettings)
 	{
@@ -55,23 +53,11 @@ Craft.TableFieldSettings = Garnish.Base.extend({
 
 	initColumnSettingInputs: function($container)
 	{
-		var $allInputs = $container.find('td:first-child textarea, td:nth-child(3) textarea, td:nth-child(4) select'),
-			$textareas = $allInputs.filter('textarea');
+		var $textareas = $container.find('td:first-child textarea, td:nth-child(3) textarea'),
+			$typeSelect = $container.find('td:nth-child(4) select')
 
-		$allInputs.change($.proxy(this, 'reconstructDefaultsTable'));
-
-		$textareas.focus($.proxy(function() {
-			clearTimeout(this.reconstructTimeout);
-			this.reconstructTimeout = setTimeout($.proxy(function() {
-				clearInterval(this.reconstructInterval);
-				this.reconstructInterval = setInterval($.proxy(this, 'reconstructDefaultsTable'), 500);
-			}, this), 1);
-		}, this));
-
-		$textareas.blur($.proxy(function() {
-			clearInterval(this.reconstructInterval);
-			clearTimeout(this.reconstructTimeout);
-		}, this));
+		this.addListener($textareas, 'textchange', 'reconstructDefaultsTable');
+		this.addListener($typeSelect, 'change', 'reconstructDefaultsTable');
 	},
 
 	reconstructDefaultsTable: function()
