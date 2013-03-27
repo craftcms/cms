@@ -73,7 +73,7 @@ Craft.TableFieldSettings = Garnish.Base.extend({
 
 		for (var colId in columns)
 		{
-			tableHtml += '<th scope="col" class="header">'+columns[colId].heading+'</th>';
+			tableHtml += '<th scope="col" class="header">'+(columns[colId].heading ? columns[colId].heading : '&nbsp;')+'</th>';
 		}
 
 		tableHtml += '<th class="header" colspan="2"></th>' +
