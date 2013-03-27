@@ -146,11 +146,30 @@ class Et
 						$this->_setLicenseKey($etModel->licenseKey);
 					}
 
+					// Do some packageTrial timestamp to datetime conversions.
+					if (!empty($etModel->packageTrials))
+					{
+						$packageTrials = $etModel->packageTrials;
+						foreach ($etModel->packageTrials as $packageHandle => $expiryTimestamp)
+						{
+							$expiryDate = DateTime::createFromFormat('U', $expiryTimestamp);
+							$currentDate = DateTimeHelper::currentUTCDateTime();
+
+							if ($currentDate > $expiryDate)
+							{
+								unset($packageTrials[$packageHandle]);
+							}
+						}
+
+						$etModel->packageTrials = $packageTrials;
+					}
+
 					// Cache the license key status and which packages are associated with it
 					$cacheDuration = craft()->config->getCacheDuration();
 
 					craft()->fileCache->set('licenseKeyStatus', $etModel->licenseKeyStatus, $cacheDuration);
 					craft()->fileCache->set('licensedPackages', $etModel->licensedPackages, $cacheDuration);
+					craft()->fileCache->set('packageTrials', $etModel->packageTrials, $cacheDuration);
 
 					if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
 					{

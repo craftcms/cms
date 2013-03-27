@@ -295,7 +295,7 @@ class UsersService extends BaseApplicationComponent
 		Craft::requirePackage(CraftPackage::Users);
 
 		$fieldLayout = craft()->fields->getLayoutByType(ElementType::User);
-		return craft()->elements->saveElementContent($user, $fieldLayout);
+		return craft()->content->saveElementContent($user, $fieldLayout);
 	}
 
 	/**
@@ -646,6 +646,78 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->status = $user->status = UserStatus::Active;
 
 		return $userRecord->save();
+	}
+
+	/**
+	 * Shuns a message for a user.
+	 *
+	 * @param int      $userId
+	 * @param string   $message
+	 * @param DateTime $expiryDate
+	 * @return bool
+	 */
+	public function shunMessageForUser($userId, $message, $expiryDate = null)
+	{
+		if ($expiryDate instanceof \DateTime)
+		{
+			$expiryDate = DateTimeHelper::formatTimeForDb($expiryDate->getTimestamp());
+		}
+		else
+		{
+			$expiryDate = null;
+		}
+
+		$affectedRows = craft()->db->createCommand()->insertOrUpdate('shunnedmessages', array(
+			'userId'  => $userId,
+			'message' => $message
+		), array(
+			'expiryDate' => $expiryDate
+		));
+
+		return (bool) $affectedRows;
+	}
+
+	/**
+	 * Unshuns a message for a user.
+	 *
+	 * @param int      $userId
+	 * @param string   $message
+	 * @return bool
+	 */
+	public function unshunMessageForUser($userId, $message)
+	{
+		$affectedRows = craft()->db->createCommand()->delete('shunnedmessages', array(
+			'userId'  => $userId,
+			'message' => $message
+		));
+
+		return (bool) $affectedRows;
+	}
+
+	/**
+	 * Returns whether a message is shunned for a user.
+	 *
+	 * @param int      $userId
+	 * @param string   $message
+	 * @return bool
+	 */
+	public function hasUserShunnedMessage($userId, $message)
+	{
+		$row = craft()->db->createCommand()
+			->select('id')
+			->from('shunnedmessages')
+			->where(array('and',
+				'userId = :userId',
+				'message = :message',
+				array('or', 'expiryDate IS NULL', 'expiryDate > :now')
+			), array(
+				':userId'  => $userId,
+				':message' => $message,
+				':now'     => DateTimeHelper::formatTimeForDb()
+			))
+			->queryRow(false);
+
+		return (bool) $row;
 	}
 
 	/**

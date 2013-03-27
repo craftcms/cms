@@ -36,10 +36,25 @@ class DropdownFieldType extends BaseOptionsFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
+		$options = $this->getOptions();
+
+		// If this is a new entry, look for a default option
+		if (!isset($this->element))
+		{
+			foreach ($options as $option)
+			{
+				if (!empty($option['default']))
+				{
+					$value = $option['value'];
+					break;
+				}
+			}
+		}
+
 		return craft()->templates->render('_components/fieldtypes/Dropdown/input', array(
-			'name'     => $name,
-			'value'    => $value,
-			'settings' => $this->getSettings()
+			'name'    => $name,
+			'value'   => $value,
+			'options' => $options
 		));
 	}
 }

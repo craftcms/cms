@@ -596,42 +596,53 @@ class WebApp extends \CWebApplication
 	 */
 	private function _getTargetLanguage()
 	{
-		$siteLocaleIds = $this->i18n->getSiteLocaleIds();
-
-		if ($this->request->isCpRequest())
+		// CP requests should get "auto" by default
+		if ($this->request->isCpRequest() && !defined('CRAFT_LOCALE'))
 		{
-			// If the user is logged in *and* has a primary language set, use that
-			$user = $this->userSession->getUser();
+			define('CRAFT_LOCALE', 'auto');
+		}
 
-			if ($user && $user->preferredLocale)
+		if (defined('CRAFT_LOCALE'))
+		{
+			$locale = strtolower(CRAFT_LOCALE);
+
+			// Get the list of actual site locale IDs
+			$siteLocaleIds = $this->i18n->getSiteLocaleIds();
+
+			// Is it set to "auto"?
+			if ($locale == 'auto')
 			{
-				return $user->preferredLocale;
-			}
+				// If the user is logged in *and* has a primary language set, use that
+				$user = $this->userSession->getUser();
 
-			// Otherwise check if the browser's preferred language matches any of the site locales
-			$browserLanguages = $this->request->getBrowserLanguages();
-
-			if ($browserLanguages)
-			{
-				foreach ($browserLanguages as $language)
+				if ($user && $user->preferredLocale)
 				{
-					if (in_array($language, $siteLocaleIds))
+					return $user->preferredLocale;
+				}
+
+				// Otherwise check if the browser's preferred language matches any of the site locales
+				$browserLanguages = $this->request->getBrowserLanguages();
+
+				if ($browserLanguages)
+				{
+					foreach ($browserLanguages as $language)
 					{
-						return $language;
+						if (in_array($language, $siteLocaleIds))
+						{
+							return $language;
+						}
 					}
 				}
 			}
-		}
-		else
-		{
-			// Is CRAFT_LOCALE set to a valid site locale?
-			if (defined('CRAFT_LOCALE') && in_array(CRAFT_LOCALE, $siteLocaleIds))
+
+			// Is it set to a valid site locale?
+			else if (in_array($locale, $siteLocaleIds))
 			{
-				return CRAFT_LOCALE;
+				return $locale;
 			}
 		}
 
-		// Just use the primary site locale
+		// Use the primary site locale by default
 		return $this->i18n->getPrimarySiteLocaleId();
 	}
 

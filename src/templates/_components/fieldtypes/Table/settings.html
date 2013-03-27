@@ -1,0 +1,22 @@
+{% import "_includes/forms.html" as forms %}
+
+{{ forms.editableTableField({
+	label: "Table Columns"|t,
+	instructions: "Define the columns your table should have."|t,
+	id: 'columns',
+	name: 'columns',
+	cols: columnSettings,
+	rows: columns,
+	addRowLabel: "Add a column"|t,
+	initJs: false
+}) }}
+
+{{ forms.editableTableField({
+	label: "Default Values"|t,
+	instructions: "Define the default values for the field."|t,
+	id: 'defaults',
+	name: 'defaults',
+	cols: columns,
+	rows: defaults,
+	initJs: false
+}) }}

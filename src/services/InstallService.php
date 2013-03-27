@@ -35,8 +35,10 @@ class InstallService extends BaseApplicationComponent
 			// Create the tables
 			$this->_createTablesFromRecords($records);
 			$this->_createForeignKeysFromRecords($records);
-			$this->_createSearchIndexTable();
 
+			$this->_createContentTable();
+			$this->_createShunnedMessagesTable();
+			$this->_createSearchIndexTable();
 			$this->_createAndPopulateInfoTable($inputs);
 
 			Craft::log('Committing the transaction.');
@@ -137,6 +139,46 @@ class InstallService extends BaseApplicationComponent
 			Craft::log('Adding foreign keys for record:'. get_class($record));
 			$record->addForeignKeys();
 		}
+	}
+
+	/**
+	 * Creates the content table.
+	 *
+	 * @access private
+	 */
+	private function _createContentTable()
+	{
+		Craft::log('Creating the content table.');
+
+		craft()->db->createCommand()->createTable('content', array(
+			'elementId' => array('column' => ColumnType::Int, 'required' => true),
+			'locale'    => array('column' => ColumnType::Locale, 'required' => true),
+		));
+		craft()->db->createCommand()->createIndex('content', 'elementId,locale', true);
+		craft()->db->createCommand()->addForeignKey('content', 'elementId', 'elements', 'id', 'CASCADE', null);
+		craft()->db->createCommand()->addForeignKey('content', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
+
+		Craft::log('Finished creating the content table.');
+	}
+
+	/**
+	 * Creates the shunnedmessages table.
+	 *
+	 * @access private
+	 */
+	private function _createShunnedMessagesTable()
+	{
+		Craft::log('Creating the shunnedmessages table.');
+
+		craft()->db->createCommand()->createTable('shunnedmessages', array(
+			'userId'     => array('column' => ColumnType::Int, 'null' => false),
+			'message'    => array('column' => ColumnType::Varchar, 'null' => false),
+			'expiryDate' => array('column' => ColumnType::DateTime),
+		));
+		craft()->db->createCommand()->createIndex('shunnedmessages', 'userId,message', true);
+		craft()->db->createCommand()->addForeignKey('shunnedmessages', 'userId', 'users', 'id', 'CASCADE');
+
+		Craft::log('Finished creating the shunnedmessages table.');
 	}
 
 	/**

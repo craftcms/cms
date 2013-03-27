@@ -36,6 +36,32 @@ class EntriesService extends BaseApplicationComponent
 	 */
 	public function saveEntry(EntryModel $entry)
 	{
+		// Entry data
+		if ($entry->id)
+		{
+			$entryRecord = EntryRecord::model()->with('element', 'entryTagEntries')->findById($entry->id);
+
+			if (!$entryRecord)
+			{
+				throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
+			}
+
+			$elementRecord = $entryRecord->element;
+
+			// if entry->sectionId is null and there is an entryRecord sectionId, we assume this is a front-end edit.
+			if ($entry->sectionId === null && $entryRecord->sectionId)
+			{
+				$entry->sectionId = $entryRecord->sectionId;
+			}
+		}
+		else
+		{
+			$entryRecord = new EntryRecord();
+
+			$elementRecord = new ElementRecord();
+			$elementRecord->type = ElementType::Entry;
+		}
+
 		$section = craft()->sections->getSectionById($entry->sectionId);
 
 		if (!$section)
@@ -50,30 +76,16 @@ class EntriesService extends BaseApplicationComponent
 			throw new Exception(Craft::t('The section “{section}” is not enabled for the locale {locale}', array('section' => $section->name, 'locale' => $entry->locale)));
 		}
 
-		// Entry data
-		if ($entry->id)
-		{
-			$entryRecord = EntryRecord::model()->with('element', 'entryTagEntries')->findById($entry->id);
-
-			if (!$entryRecord)
-			{
-				throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
-			}
-
-			$elementRecord = $entryRecord->element;
-		}
-		else
-		{
-			$entryRecord = new EntryRecord();
-
-			$elementRecord = new ElementRecord();
-			$elementRecord->type = ElementType::Entry;
-		}
-
 		$entryRecord->sectionId  = $entry->sectionId;
 		$entryRecord->authorId   = $entry->authorId;
-		$entryRecord->postDate   = DateTimeHelper::normalizeDate($entry->postDate, true);
-		$entryRecord->expiryDate = DateTimeHelper::normalizeDate($entry->expiryDate);
+		$entryRecord->postDate   = $entry->postDate;
+		$entryRecord->expiryDate = $entry->expiryDate;
+
+		if ($entry->enabled && !$entryRecord->postDate)
+		{
+			$entryRecord->postDate = DateTimeHelper::currentUTCDateTime();
+		}
+
 		$entryRecord->validate();
 		$entry->addErrors($entryRecord->getErrors());
 
@@ -149,9 +161,9 @@ class EntriesService extends BaseApplicationComponent
 		$entry->addErrors($elementLocaleRecord->getErrors());
 
 		// Entry content
-		$contentRecord = craft()->elements->prepElementContent($entry, $section->getFieldLayout(), $entry->locale);
-		$contentRecord->validate();
-		$entry->addErrors($contentRecord->getErrors());
+		$content = craft()->content->populateContentFromPost($entry, $section->getFieldLayout(), $entry->locale);
+		$content->validate();
+		$entry->addErrors($content->getErrors());
 
 		// Tags
 		$entryTagRecords = $this->_processTags($entry, $entryRecord);
@@ -177,12 +189,12 @@ class EntriesService extends BaseApplicationComponent
 
 			$entryLocaleRecord->entryId = $entry->id;
 			$elementLocaleRecord->elementId = $entry->id;
-			$contentRecord->elementId = $entry->id;
+			$content->elementId = $entry->id;
 
 			// Save the other records
 			$entryLocaleRecord->save(false);
 			$elementLocaleRecord->save(false);
-			$contentRecord->save(false);
+			craft()->content->saveContent($content, false);
 
 			// Update the search index
 			craft()->search->indexElementKeywords($entry->id, $entry->locale, array(
@@ -238,7 +250,7 @@ class EntriesService extends BaseApplicationComponent
 			}
 
 			// Perform some post-save operations
-			craft()->elements->postSaveOperations($entry, $contentRecord);
+			craft()->content->postSaveOperations($entry, $content);
 
 			return true;
 		}

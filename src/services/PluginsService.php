@@ -173,11 +173,15 @@ class PluginsService extends BaseApplicationComponent
 
 				// Find all of the plugins in the plugins folder
 				$pluginsPath = craft()->path->getPluginsPath();
-				$pluginFolders = IOHelper::getFolderContents($pluginsPath, false);
+				$pluginFolderContents = IOHelper::getFolderContents($pluginsPath, false);
 
-				foreach ($pluginFolders as $pluginFolder)
+				foreach ($pluginFolderContents as $pluginFolderContent)
 				{
-					$paths = array_merge($paths, IOHelper::getFolderContents($pluginFolder, false, ".*Plugin\.php"));
+					// Make sure it's actually a folder.
+					if (IOHelper::folderExists($pluginFolderContent))
+					{
+						$paths = array_merge($paths, IOHelper::getFolderContents($pluginFolderContent, false, ".*Plugin\.php"));
+					}
 				}
 
 				if (is_array($paths) && count($paths) > 0)

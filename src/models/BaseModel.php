@@ -241,25 +241,36 @@ abstract class BaseModel extends \CModel
 			{
 				case AttributeType::DateTime:
 				{
-					if ($value && !($value instanceof \DateTime))
+					if ($value)
 					{
-						// Leaving this conditional in because some models might want to utilize a timestamp for transporting
-						// DateTime data. (e.g. EtModel)
-						if (DateTimeHelper::isValidTimeStamp($value))
+						if (!($value instanceof \DateTime))
 						{
-							$value = new DateTime('@'.$value);
+							if (DateTimeHelper::isValidTimeStamp($value))
+							{
+								$value = new DateTime('@'.$value);
+							}
+							else
+							{
+								$value = DateTime::createFromString($value);
+							}
 						}
-						else if ($config['column'] == ColumnType::DateTime)
-						{
-							// TODO: MySql specific
-							$value = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $value);
-						}
+					}
+					else
+					{
+						// No empty strings allowed!
+						$value = null;
 					}
 
 					break;
 				}
 				case AttributeType::Mixed:
 				{
+					if ($value && is_string($value) && strpos('{[', $value[0]) !== false)
+					{
+						// Presumably this is JSON.
+						$value = JsonHelper::decode($value);
+					}
+
 					if ($config['model'])
 					{
 						$class = __NAMESPACE__.'\\'.$config['model'];

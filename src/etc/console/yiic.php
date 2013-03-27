@@ -2,9 +2,34 @@
 
 $configPath = dirname(__FILE__).'/../config/console.php';
 
+$frontConfigPath = false;
+
+// See if --configPath is specified from the command line.  If so, use that.
+if (isset($_SERVER['argv']))
+{
+	foreach ($argv as $key => $arg)
+	{
+		if (strpos($arg, '--configPath=') !== false)
+		{
+			$parts = explode('=', $arg);
+			$frontConfigPath = rtrim($parts[1], '/').'/';
+			unset($_SERVER['argv'][$key]);
+			break;
+		}
+	}
+}
+
 defined('CRAFT_BASE_PATH')         || define('CRAFT_BASE_PATH', str_replace('\\', '/', realpath(dirname(__FILE__).'/../../../')).'/');
 defined('CRAFT_APP_PATH')          || define('CRAFT_APP_PATH',          CRAFT_BASE_PATH.'app/');
-defined('CRAFT_CONFIG_PATH')       || define('CRAFT_CONFIG_PATH',       CRAFT_BASE_PATH.'config/');
+if ($frontConfigPath)
+{
+	defined('CRAFT_CONFIG_PATH')   || define('CRAFT_CONFIG_PATH',       $frontConfigPath);
+}
+else
+{
+	defined('CRAFT_CONFIG_PATH')   || define('CRAFT_CONFIG_PATH',       CRAFT_BASE_PATH.'config/');
+}
+
 defined('CRAFT_PLUGINS_PATH')      || define('CRAFT_PLUGINS_PATH',      CRAFT_BASE_PATH.'plugins/');
 defined('CRAFT_STORAGE_PATH')      || define('CRAFT_STORAGE_PATH',      CRAFT_BASE_PATH.'storage/');
 defined('CRAFT_TEMPLATES_PATH')    || define('CRAFT_TEMPLATES_PATH',    CRAFT_BASE_PATH.'templates/');
