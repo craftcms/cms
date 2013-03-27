@@ -13,6 +13,8 @@ class SearchService extends BaseApplicationComponent
 	private static $_ftStopWords;
 
 	private $_tokens;
+	private $_terms;
+	private $_groups;
 	private $_results;
 
 	/**
@@ -152,6 +154,10 @@ class SearchService extends BaseApplicationComponent
 
 		// Get tokens for query
 		$this->_tokens = $query->getTokens();
+		$this->_results = array();
+
+		// Set Terms and Groups based on tokens
+		$this->_setTermsAndGroups();
 
 		// Get where clause from tokens, bail out if no valid query is there
 		if (!($where = $this->_getWhereClause())) return array();
@@ -191,31 +197,16 @@ class SearchService extends BaseApplicationComponent
 	 */
 	private function _getWhereClause()
 	{
-		$terms  = array();
-		$groups = array();
 		$where  = array();
 
-		// Split termgroups and terms
-		foreach ($this->_tokens as $obj)
-		{
-			if ($obj instanceof SearchQueryTermGroup)
-			{
-				$groups[] = $obj->terms;
-			}
-			else
-			{
-				$terms[] = $obj;
-			}
-		}
-
 		// Add the regular terms to the WHERE clause
-		if ($terms)
+		if ($this->_terms)
 		{
-			$where[] = $this->_processTokens($terms);
+			$where[] = $this->_processTokens($this->_terms);
 		}
 
 		// Add each group to the where clause
-		foreach ($groups as $group)
+		foreach ($this->_groups as $group)
 		{
 			$where[] = $this->_processTokens($group, false);
 		}
@@ -376,6 +367,28 @@ class SearchService extends BaseApplicationComponent
 		}
 
 		return array($sql, $keywords);
+	}
+
+	/**
+	 * Set Terms and Groups based on internal tokens
+	 */
+	private function _setTermsAndGroups()
+	{
+		$this->_terms  = array();
+		$this->_groups = array();
+
+		// Split termgroups and terms
+		foreach ($this->_tokens as $obj)
+		{
+			if ($obj instanceof SearchQueryTermGroup)
+			{
+				$this->_groups[] = $obj->terms;
+			}
+			else
+			{
+				$this->_terms[] = $obj;
+			}
+		}
 	}
 
 	/**
