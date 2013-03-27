@@ -5,7 +5,6 @@ Craft::requirePackage(CraftPackage::Cloud);
 
 /**
  * Rackspace source type class
- * TODO: List paging
  */
 class RackspaceAssetSourceType extends BaseAssetSourceType
 {
@@ -76,16 +75,20 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		$response = $this->_doAuthenticatedRequest(static::RackspaceCDNOperation, '?format=json');
 
-		$response = rtrim(substr($response, strpos($response, "\r\n\r\n") + 4));
-		$data = json_decode($response);
+		$extractedResponse = static::_extractRequestResponse($response);
+		$data = json_decode($extractedResponse);
 
 		$returnData = array();
 		if (is_array($data))
 		{
 			foreach ($data as $container)
 			{
-				$returnData[] = (object) array('container' => $container->name, 'urlPrefix' => $container->cdn_uri);
+				$returnData[] = (object) array('container' => $container->name, 'urlPrefix' => rtrim($container->cdn_uri, '/').'/');
 			}
+		}
+		else
+		{
+			static::_logUnexpectedResponse($response);
 		}
 
 		return $returnData;
@@ -96,6 +99,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param $sessionId
 	 * @return array
+	 * @throws Exception
 	 */
 	public function startIndex($sessionId)
 	{
@@ -105,14 +109,14 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		
 		$prefix = $this->_getPathPrefix();
 
-		$files = $this->_getContainer()->ObjectList(array('prefix' => $prefix));
+		$response = $this->_doAuthenticatedRequest(static::RackspaceStorageOperation, '/'.rawurlencode($this->getSettings()->container).'?prefix='.$prefix.'&format=json');
+		$extractedResponse = static::_extractRequestResponse($response);
+		$fileList = json_decode($extractedResponse);
 
-		$fileList = array();
-		while ($file = $files->Next())
+		if (!is_array($fileList))
 		{
-			/** @var \OpenCloud\ObjectStore\DataObject $file */
-			$fileList[] = $file;
-
+			static::_logUnexpectedResponse($response);
+			return array('sourceId' => $this->model->id, 'error' => Craft::t('Remote server for “{source}” returned an unexpected response.', array('source' => $this->model->name)));
 		}
 
 		$fileList = array_filter($fileList, function ($value) {
@@ -216,8 +220,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		$uriPath = $indexEntryModel->uri;
 		$fileModel = $this->_indexFile($uriPath);
-		
-
 
 		if ($fileModel)
 		{
@@ -226,15 +228,17 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			$fileModel->size = $indexEntryModel->size;
 
 			$fileInfo = $this->_getObjectInfo($this->_getPathPrefix().$uriPath);
-			$timeModified = new DateTime($fileInfo->last_modified, new \DateTimeZone('UTC'));
+
+			$timeModified = new DateTime($fileInfo->lastModified, new \DateTimeZone('UTC'));
 
 			$targetPath = craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
 
 			if ($fileModel->kind == 'image' && $fileModel->dateModified != $timeModified || !IOHelper::fileExists($targetPath))
 			{
-				$this->_getContainer()->DataObject($this->_getPathPrefix().$uriPath)->SaveToFilename($targetPath);
+				$this->_downloadFile($this->_getPathPrefix().$uriPath, $targetPath);
+
 				clearstatcache();
-				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
+				//list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
 			}
 
 			$fileModel->dateModified = $timeModified;
@@ -398,8 +402,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	{
 		$location = AssetsHelper::getTempFilePath($file->getExtension());
 
-		
-		$this->_getContainer()->DataObject($this->_getRackspacePath($file))->SaveToFilename($location);
+		$this->_downloadFile($this->_getRackspacePath($file), $location);
 
 		return $location;
 	}
@@ -741,20 +744,15 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$targetUrl = static::_makeAuthorizationRequestUrl($location);
 		$response = static::_doRequest($targetUrl, 'GET', $headers);
 
-		// Parse the response
-		preg_match('/.*X-Auth-Token: (?P<token>[a-f0-9\-]+)(\r|\n)/', $response, $matches);
-		if (empty($matches['token']))
+		// Extract the values
+		$token = static::_extractHeader($response, 'X-Auth-Token');
+		$storageUrl = static::_extractHeader($response, 'X-Storage-Url');
+		$cdnUrl = static::_extractHeader($response, 'X-CDN-Management-Url');
+
+		if (!($token && $storageUrl && $cdnUrl))
 		{
 			throw new Exception(Craft::t("Wrong credentials supplied for Rackspace access!"));
 		}
-
-		$token = $matches['token'];
-
-		// If we have a token, we MUST have these as well.
-		preg_match('/.*X-Storage-Url: (?P<storageUrl>[^\s]+)(\r|\n)/', $response, $matches);
-		$storageUrl = $matches['storageUrl'];
-		preg_match('/.*X-CDN-Management-Url: (?P<cdnUrl>[^\s]+)(\r|\n)/', $response, $matches);
-		$cdnUrl = $matches['cdnUrl'];
 
 		$connectionKey = $username.$apiKey;
 
@@ -766,6 +764,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		// And update DB information.
 		static::_updateAccessData($connectionKey, $data);
 	}
+
 
 	/**
 	 * Create the authorization request URL by location
@@ -791,17 +790,34 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * @param $headers
 	 * @return string
 	 */
-	private static function _doRequest($url, $method = 'GET', $headers = array())
+	private static function _doRequest($url, $method = 'GET', $headers = array(), $curlOptions = array())
 	{
 		$ch = curl_init($url);
-		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+		if ($method == 'HEAD')
+		{
+			curl_setopt($ch, CURLOPT_NOBODY, 1);
+		}
+		else
+		{
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+		}
+
+		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		curl_setopt($ch, CURLOPT_HEADER, 1);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-		return curl_exec($ch);
+		foreach ($curlOptions as $option => $value)
+		{
+			curl_setopt($ch, $option, $value);
+		}
+
+		$response = curl_exec($ch);
+		curl_close($ch);
+
+		return $response;
 	}
 
 	/**
@@ -858,33 +874,37 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Get object information by path
 	 * @param $path
-	 * @return bool|\OpenCloud\ObjectStore\DataObject
+	 * @return bool|object
 	 */
 	private function _getObjectInfo($path)
 	{
-		try
-		{
-			$info = $this->_getContainer()->DataObject($path);
-		}
-		catch (\Exception $exception)
+
+		$target = '/'.rawurlencode($this->getSettings()->container).'/'.rawurlencode($path);
+		$response = $this->_doAuthenticatedRequest(static::RackspaceStorageOperation, $target, 'HEAD');
+
+		$lastModified = static::_extractHeader($response, 'Last-Modified');
+		$size = static::_extractHeader($response, 'Content-Length');
+
+		if (!$lastModified)
 		{
 			return false;
 		}
-		return $info;
+
+		return (object) array('lastModified' => $lastModified, 'size' => $size);
 	}
 
 	/**
 	 * Do an authenticated request against Rackspace severs.
 	 *
-	 * @param string $username username
-	 * @param string $apiKey apiKey
+	 * @param string $operationType operation type so we know which server to target
 	 * @param string $target URI target on the Rackspace server
 	 * @param string $method GET/POST/PUT/DELETE
 	 * @param array $headers array of headers. Authorization token will be appended to this before request.
+	 * @param array $curlOptions additional curl options to set.
 	 * @return string full response including headers.
 	 * @throws Exception
 	 */
-	private function _doAuthenticatedRequest($operationType, $target = '', $method = 'GET', $headers = array())
+	private function _doAuthenticatedRequest($operationType, $target = '', $method = 'GET', $headers = array(), $curlOptions = array())
 	{
 		$settings = $this->getSettings();
 
@@ -935,37 +955,40 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			}
 		}
 
-		$response = static::_doRequest($url, $method, $headers);
+		$response = static::_doRequest($url, $method, $headers, $curlOptions);
 
 		preg_match('/HTTP\/1.1 (?P<httpStatus>[0-9]{3})/', $response, $matches);
 
-		// Error checking
-		switch ($matches['httpStatus'])
+		if (!empty($matches['httpStatus']))
 		{
-			// Invalid token - try to renew it once.
-			case '401':
+			// Error checking
+			switch ($matches['httpStatus'])
 			{
-				static $tokenFailure = 0;
-				if (++$tokenFailure == 1)
+				// Invalid token - try to renew it once.
+				case '401':
 				{
-					$this->_refreshConnectionInformation();
-
-					// Remove token header.
-					$newHeaders = array();
-					foreach ($headers as $header)
+					static $tokenFailure = 0;
+					if (++$tokenFailure == 1)
 					{
-						if (strpos($header, 'X-Auth-Token') === false)
+						$this->_refreshConnectionInformation();
+
+						// Remove token header.
+						$newHeaders = array();
+						foreach ($headers as $header)
 						{
-							$newHeaders[] = $header;
+							if (strpos($header, 'X-Auth-Token') === false)
+							{
+								$newHeaders[] = $header;
+							}
 						}
+
+						return $this->_doAuthenticatedRequest($operationType, $target, $method, $newHeaders);
 					}
-
-					return $this->_doAuthenticatedRequest($operationType, $target, $method, $newHeaders);
+					throw new Exception("Token has expired and the attempt to renew it failed. Please check the source settings.");
+					break;
 				}
-				throw new Exception("Token has expired and so did the attempt to renew it. Please check the source settings.");
-				break;
-			}
 
+			}
 		}
 
 		return $response;
@@ -1011,4 +1034,60 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		}
 	}
 
+	/**
+	 * Extract a header from a response.
+	 *
+	 * @param $response
+	 * @param $header
+	 * @return mixed
+	 */
+	private static function _extractHeader($response, $header)
+	{
+		preg_match('/.*'.$header.': (?P<value>.+)\r/', $response, $matches);
+		return isset($matches['value']) ? $matches['value'] : false;
+	}
+
+
+
+	/**
+	 * Extract the response form a response that has headers.
+	 *
+	 * @param $response
+	 * @return string
+	 */
+	private static function _extractRequestResponse($response)
+	{
+		return rtrim(substr($response, strpos($response, "\r\n\r\n") + 4));
+	}
+
+	/**
+	 * Log an unexpected response.
+	 *
+	 * @param $response
+	 */
+	private static function _logUnexpectedResponse($response)
+	{
+		Craft::log("RACKSPACE: Received unexpected response: " . $response);
+	}
+
+	/**
+	 * Download a file to the target location. The file will be downloaded using the public URL, instead of cURL.
+	 *
+	 * @param $path
+	 * @param $targetFile
+	 * @return bool
+	 */
+	private function _downloadFile($path, $targetFile)
+	{
+		$target = $this->getSettings()->urlPrefix.$path;
+
+		$ch = curl_init($target);
+		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		$response = curl_exec($ch);
+
+		IOHelper::writeToFile($targetFile, $response);
+
+		return true;
+	}
 }
