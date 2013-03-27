@@ -1,10 +1,29 @@
-{% from "_includes/forms" import textareaField %}
+{% import "_includes/forms" as forms %}
 
-{{ textareaField({
+{{ forms.editableTableField({
 	label: label,
-	instructions: "Place each option on a new line. If you want to give an option a custom label, use the format “<code>OptionValue => OptionLabel</code>”."|t|raw,
+	instructions: "Define the available options."|t|raw,
 	id: 'options',
 	name: 'options',
-	value: options,
-	rows: 10
+	jsId: 'types-'~class~'-options',
+	jsName: 'types['~class~'][options]',
+	addRowLabel: "Add an option"|t,
+	cols: {
+		label: {
+			heading: "Option Label"|t,
+			type: 'singleline',
+			autopopulate: 'value'
+		},
+		value: {
+			heading: "Value"|t,
+			type: 'singleline',
+			class: 'code'
+		},
+		default: {
+			heading: "Default?"|t,
+			type: 'checkbox',
+			class: 'thin'
+		}
+	},
+	rows: options
 }) }}
