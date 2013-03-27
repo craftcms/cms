@@ -21,6 +21,15 @@
 ]|filter|join(' ') }}{% endmacro %}
 
 
+{% macro hidden(config) -%}
+	{%- set config = { id: null, name: null, value: null }|merge(config) -%}
+	<input type="hidden"
+		{%- if config.id %} id="{{ config.id }}"{% endif %}
+		{%- if config.name %} name="{{ config.name }}"{% endif %}
+		{%- if config.value %} value="{{ config.value }}"{% endif %}>
+{%- endmacro %}
+
+
 {% macro text(config) %}
 	{% set config = { id: null, class: null, type: 'text', size: null, maxlength: null, name: null, value: null, autofocus: false, autocomplete: true, required: false, disabled: false, hint: null, errors: null }|merge(config) %}
 	{% set class = _self.textClass(config) %}
