@@ -424,7 +424,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
-		$this->_deleteObject(rawurlencode($this->getSettings()->container).'/'.$this->_getPathPrefix().$folder->fullPath.$filename);
+		$this->_deleteObject($this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().$folder->fullPath.$filename));
 	}
 
 	/**
@@ -440,7 +440,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		foreach ($transforms as $location)
 		{
-			$this->_deleteObject(rawurlencode($this->getSettings()->container).'/'.$this->_getPathPrefix().$folder->fullPath.$location.'/'.$file->filename);
+			$this->_deleteObject($this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().$folder->fullPath.$location.'/'.$file->filename));
 		}
 	}
 
@@ -484,8 +484,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$originatingSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 		$originatingSettings = $originatingSourceType->getSettings();
 
-		$sourceUri = rawurlencode($originatingSettings->container).'/'.$originatingSettings->subfolder.$sourceFolder->fullPath.$file;
-		$targetUri = '/'.rawurlencode($this->getSettings()->container).'/'.$newServerPath;
+		$sourceUri = $this->_prepareRequestURI($originatingSettings->container, $originatingSettings->subfolder.$sourceFolder->fullPath.$file);
+		$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $newServerPath);
 
 		$this->_copyFile($sourceUri, $targetUri);
 		$this->_deleteObject($sourceUri);
@@ -503,8 +503,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			foreach ($transforms as $location)
 			{
 
-				$sourceUri = rawurlencode($originatingSettings->container).'/'.$baseFromPath.$location.'/'.$file->filename;
-				$targetUri = '/'.rawurlencode($this->getSettings()->container).'/'.$baseToPath.$location.'/'.$fileName;
+				$sourceUri = $this->_prepareRequestURI($originatingSettings->container, $baseFromPath.$location.'/'.$file->filename);
+				$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $baseToPath.$location.'/'.$fileName);
 				$this->_copyFile($sourceUri, $targetUri);
 				$this->_deleteObject($sourceUri);
 			}
@@ -542,8 +542,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			'Content-type: application/directory',
 			'Content-length: 0'
 		);
-		$targetUri = $this->_getPathPrefix().$parentFolder->fullPath.$folderName;
-		$this->_doAuthenticatedRequest(static::RackspaceStorageOperation, rawurlencode($this->getSettings()->container).'/'.$targetUri, 'PUT', $headers);
+
+		$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().$parentFolder->fullPath.$folderName);
+
+		$this->_doAuthenticatedRequest(static::RackspaceStorageOperation,  $targetUri, 'PUT', $headers);
 		return true;
 	}
 
@@ -571,14 +573,14 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		{
 			$filePath = substr($file->name, strlen($this->_getPathPrefix().$folder->fullPath));
 
-			$sourceUri = rawurlencode($this->getSettings()->container).'/'.$file->name;
-			$targetUri = rawurlencode($this->getSettings()->container).'/'.$newFullPath.$filePath;
+			$sourceUri = $this->_prepareRequestURI($this->getSettings()->container, $file->name);
+			$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $newFullPath.$filePath);
 			$this->_copyFile($sourceUri, $targetUri);
 			$this->_deleteObject($sourceUri);
 		}
 
 		// This may or may not exist.
-		$this->_deleteObject(rawurlencode($this->getSettings()->container).'/'.$this->_getPathPrefix().rtrim($folder->fullPath, '/'));
+		$this->_deleteObject($this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().rtrim($folder->fullPath, '/')));
 
 		return TRUE;
 	}
@@ -598,11 +600,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		foreach ($objectsToDelete as $file)
 		{
-			$uri = rawurlencode($container).'/'.$file->name;
-			$this->_deleteObject($uri);
+			$this->_deleteObject($this->_prepareRequestURI($container, $file->name));
 		}
 
-		$this->_deleteObject(rawurlencode($container).'/'.$this->_getPathPrefix().$parentFolder->fullPath.$folderName);
+		$this->_deleteObject($this->_prepareRequestURI($container, $this->_getPathPrefix().$parentFolder->fullPath.$folderName));
 
 		return true;
 	}
@@ -641,8 +642,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$container = $this->getSettings()->container;
 		$basePath = $this->_getPathPrefix().$file->getFolder()->fullPath;
 
-		$sourceUri = rawurlencode($container).'/'.$basePath.$source.'/'.$file->filename;
-		$targetUri = rawurlencode($container).'/'.$basePath.$target.'/'.$file->filename;
+		$sourceUri = $this->_prepareRequestURI($container, $basePath.$source.'/'.$file->filename);
+		$targetUri = $this->_prepareRequestURI($container, $basePath.$target.'/'.$file->filename);
 		$this->_copyFile($sourceUri, $targetUri);
 	}
 
@@ -793,7 +794,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	private function _getObjectInfo($path)
 	{
 
-		$target = rawurlencode($this->getSettings()->container).'/'.rawurlencode($path);
+		$target = $this->_prepareRequestURI($this->getSettings()->container, $path);
 		$response = $this->_doAuthenticatedRequest(static::RackspaceStorageOperation, $target, 'HEAD');
 
 		$lastModified = static::_extractHeader($response, 'Last-Modified');
@@ -1029,7 +1030,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			CURLOPT_INFILESIZE => $fileSize
 		);
 
-		$this->_doAuthenticatedRequest(static::RackspaceStorageOperation, rawurlencode($this->getSettings()->container).'/'.$targetUri, 'PUT', $headers, $curlOptions);
+		$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $targetUri);
+		$this->_doAuthenticatedRequest(static::RackspaceStorageOperation, $targetUri, 'PUT', $headers, $curlOptions);
 		fclose($fp);
 		return true;
 	}
@@ -1043,7 +1045,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	private function _getFileList($prefix = '')
 	{
-		$response = $this->_doAuthenticatedRequest(static::RackspaceStorageOperation, rawurlencode($this->getSettings()->container).'?prefix='.$prefix.'&format=json');
+		$targetUri = $this->_prepareRequestURI($this->getSettings()->container).'?prefix='.$prefix.'&format=json';
+		$response = $this->_doAuthenticatedRequest(static::RackspaceStorageOperation, $targetUri);
+
 		$extractedResponse = static::_extractRequestResponse($response);
 		$fileList = json_decode($extractedResponse);
 
@@ -1073,6 +1077,19 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	private function _copyFile($sourceUri, $targetUri)
 	{
+		$targetUri = '/'.ltrim($targetUri, '/');
 		$this->_doAuthenticatedRequest(static::RackspaceStorageOperation, $sourceUri, 'COPY', array('Destination: '.$targetUri));
+	}
+
+	/**
+	 * Prepare a request URI by container and target path.
+	 *
+	 * @param $container
+	 * @param $uri
+	 * @return string
+	 */
+	private function _prepareRequestURI($container, $uri = '')
+	{
+		return rawurlencode($container).(!empty($uri) ? '/'.rawurlencode($uri) : '');
 	}
 }
