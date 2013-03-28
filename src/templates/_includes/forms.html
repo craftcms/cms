@@ -246,7 +246,7 @@
 		<thead>
 			<tr>
 				{% for col in config.cols %}
-					<th scope="col" class="header">{{ col.heading }}</th>
+					<th scope="col" class="header">{{ col.heading ? col.heading : ' ' }}</th>
 				{% endfor %}
 				<th class="header" colspan="2"></th>
 			</tr>

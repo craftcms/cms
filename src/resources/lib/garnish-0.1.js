@@ -683,69 +683,99 @@ Garnish.Base = Base.extend({
 		this._$listeners = this._$listeners.add(elem);
 
 		// Prep for activate event?
-		if (events.search(/\bactivate\b/) != -1)
+		if (events.search(/\bactivate\b/) != -1 && !$elem.data('activatable'))
 		{
-			if (!$elem.data('activatable'))
+			var activateNamespace = this._namespace+'-activate';
+
+			// Prevent buttons from getting focus on click
+			$elem.on('mousedown'+activateNamespace, function(ev)
 			{
-				var activateNamespace = this._namespace+'-activate';
+				ev.preventDefault();
+			});
 
-				// Prevent buttons from getting focus on click
-				$elem.on('mousedown'+activateNamespace, function(ev)
+			$elem.on('click'+activateNamespace, function(ev)
+			{
+				ev.preventDefault();
+
+				var elemIndex = $.inArray(ev.currentTarget, $elem),
+					$evElem = $(elem[elemIndex]);
+
+				if (!$evElem.hasClass('disabled'))
+				{
+					$evElem.trigger('activate');
+				}
+			});
+
+			$elem.on('keydown'+activateNamespace, function(ev)
+			{
+				var elemIndex = $.inArray(ev.currentTarget, $elem);
+				if (elemIndex != -1 && ev.keyCode == Garnish.SPACE_KEY)
 				{
 					ev.preventDefault();
-				});
-
-				$elem.on('click'+activateNamespace, function(ev)
-				{
-					ev.preventDefault();
-
-					var elemIndex = $.inArray(ev.currentTarget, $elem),
-						$evElem = $(elem[elemIndex]);
+					var $evElem = $($elem[elemIndex]);
 
 					if (!$evElem.hasClass('disabled'))
 					{
-						$evElem.trigger('activate');
-					}
-				});
+						$evElem.addClass('active');
 
-				$elem.on('keydown'+activateNamespace, function(ev)
-				{
-					var elemIndex = $.inArray(ev.currentTarget, $elem);
-					if (elemIndex != -1 && ev.keyCode == Garnish.SPACE_KEY)
-					{
-						ev.preventDefault();
-						var $evElem = $($elem[elemIndex]);
-
-						if (!$evElem.hasClass('disabled'))
+						Garnish.$doc.on('keyup'+activateNamespace, function(ev)
 						{
-							$evElem.addClass('active');
-
-							Garnish.$doc.on('keyup'+activateNamespace, function(ev)
+							$elem.removeClass('active');
+							if (ev.keyCode == Garnish.SPACE_KEY)
 							{
-								$elem.removeClass('active');
-								if (ev.keyCode == Garnish.SPACE_KEY)
-								{
-									ev.preventDefault();
-									$evElem.trigger('activate');
-								}
-								Garnish.$doc.off('keyup'+activateNamespace);
-							});
-						}
+								ev.preventDefault();
+								$evElem.trigger('activate');
+							}
+							Garnish.$doc.off('keyup'+activateNamespace);
+						});
 					}
-				});
-
-				if (!$elem.hasClass('disabled'))
-				{
-					$elem.attr('tabindex', '0');
 				}
-				else
-				{
-					$elem.removeAttr('tabindex');
-				}
+			});
 
-				$elem.data('activatable', true);
+			if (!$elem.hasClass('disabled'))
+			{
+				$elem.attr('tabindex', '0');
+			}
+			else
+			{
+				$elem.removeAttr('tabindex');
 			}
 
+			$elem.data('activatable', true);
+		}
+
+		// Prep for chanegtext event?
+		if (events.search(/\btextchange\b/) != -1)
+		{
+			// Store the initial values
+			for (var i = 0; i < $elem.length; i++)
+			{
+				var _$elem = $($elem[i]);
+				_$elem.data('textchangeValue', _$elem.val());
+
+				if (!_$elem.data('textchangeable'))
+				{
+					var textchangeNamespace = this._namespace+'-textchange',
+						events = 'keypress'+textchangeNamespace +
+							' keyup'+textchangeNamespace +
+							' change'+textchangeNamespace +
+							' blur'+textchangeNamespace;
+
+					_$elem.on(events, function(ev)
+					{
+						var _$elem = $(ev.currentTarget),
+							val = _$elem.val();
+
+						if (val != _$elem.data('textchangeValue'))
+						{
+							_$elem.data('textchangeValue', val);
+							_$elem.trigger('textchange');
+						}
+					});
+
+					_$elem.data('textchangeable', true);
+				}
+			}
 		}
 	},
 
@@ -3185,6 +3215,7 @@ Garnish.NiceText = Garnish.Base.extend({
 	focussed: false,
 	showingHint: false,
 	val: null,
+	inputBoxSizing: 'content-box',
 	stageHeight: null,
 	minHeight: null,
 	interval: null,
@@ -3299,19 +3330,27 @@ Garnish.NiceText = Garnish.Base.extend({
 			position: 'absolute',
 			top: -9999,
 			left: -9999,
-			wordWrap: 'break-word',
-			'border-top-width':    this.$input.css('border-top-width'),
-			'border-right-width':  this.$input.css('border-right-width'),
-			'border-bottom-width': this.$input.css('border-bottom-width'),
-			'border-left-width':   this.$input.css('border-left-width'),
-			'padding-top':         this.$input.css('padding-top'),
-			'padding-right':       this.$input.css('padding-right'),
-			'padding-bottom':      this.$input.css('padding-bottom'),
-			'padding-left':        this.$input.css('padding-left'),
-			'-webkit-box-sizing':  this.$input.css('-webkit-box-sizing'),
-	  		'-moz-box-sizing':     this.$input.css('-moz-box-sizing'),
-	        'box-sizing':          this.$input.css('box-sizing')
+			wordWrap: 'break-word'
 		});
+
+		this.inputBoxSizing = this.$input.css('box-sizing');
+
+		if (this.inputBoxSizing == 'border-box')
+		{
+			this.$stage.css({
+				'border-top-width':    this.$input.css('border-top-width'),
+				'border-right-width':  this.$input.css('border-right-width'),
+				'border-bottom-width': this.$input.css('border-bottom-width'),
+				'border-left-width':   this.$input.css('border-left-width'),
+				'padding-top':         this.$input.css('padding-top'),
+				'padding-right':       this.$input.css('padding-right'),
+				'padding-bottom':      this.$input.css('padding-bottom'),
+				'padding-left':        this.$input.css('padding-left'),
+				'-webkit-box-sizing':  this.inputBoxSizing,
+		  		'-moz-box-sizing':     this.inputBoxSizing,
+		        'box-sizing':          this.inputBoxSizing
+			});
+		}
 
 		Garnish.copyTextStyles(this.$input, this.$stage);
 	},
@@ -3323,7 +3362,14 @@ Garnish.NiceText = Garnish.Base.extend({
 			this.buildStage();
 		}
 
-		this.$stage.css('width', this.$input.outerWidth());
+		if (this.inputBoxSizing == 'border-box')
+		{
+			this.$stage.css('width', this.$input.outerWidth());
+		}
+		else
+		{
+			this.$stage.css('width', this.$input.width());
+		}
 
 		if (!val)
 		{
@@ -3351,7 +3397,16 @@ Garnish.NiceText = Garnish.Base.extend({
 		}
 
 		this.$stage.html(val);
-		this.stageHeight = this.$stage.outerHeight();
+
+		if (this.inputBoxSizing == 'border-box')
+		{
+			this.stageHeight = this.$stage.outerHeight();
+		}
+		else
+		{
+			this.stageHeight = this.$stage.height();
+		}
+
 		return this.stageHeight;
 	},
 
