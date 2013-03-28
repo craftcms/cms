@@ -9,7 +9,6 @@ Craft::requirePackage(CraftPackage::Cloud);
 class RackspaceAssetSourceType extends BaseAssetSourceType
 {
 
-	const RackspaceServiceName = 'cloudFiles';
 	const RackspaceUSAuthHost = 'https://identity.api.rackspacecloud.com/v1.0';
 	const RackspaceUKAuthHost = 'https://lon.identity.api.rackspacecloud.com/v1.0';
 
