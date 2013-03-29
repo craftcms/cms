@@ -1,0 +1,12 @@
+<div class="datewrapper">
+	{%- include "_includes/forms/text" with { autocomplete: false, size: 10 } -%}
+</div>
+
+{%- set js %}
+	$('#{{ id }}').datepicker({
+		dateFormat: $.datepicker.W3C,
+		prevText: '{{ "Prev"|t|e('js') }}',
+		nextText: '{{ "Next"|t|e('js') }}'
+	});
+{%- endset %}
+{%- includeJs js %}
