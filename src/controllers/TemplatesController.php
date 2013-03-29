@@ -95,48 +95,7 @@ class TemplatesController extends BaseController
 	{
 		try
 		{
-			$output = $this->renderTemplate($template, $variables, true);
-
-			// Set the Content-Type header
-			$mimeType = craft()->request->getMimeType();
-			header('Content-Type: '.$mimeType.'; charset=utf-8');
-
-			if ($mimeType == 'text/html')
-			{
-				// Are there any head/foot nodes left in the queue?
-				$headHtml = craft()->templates->getHeadHtml();
-				$footHtml = craft()->templates->getFootHtml();
-
-				if ($headHtml)
-				{
-					if (($endHeadPos = stripos($output, '</head>')) !== false)
-					{
-						$output = substr($output, 0, $endHeadPos) . $headHtml . substr($output, $endHeadPos);
-					}
-					else
-					{
-						$output .= $headHtml;
-					}
-				}
-
-				if ($footHtml)
-				{
-					if (($endBodyPos = stripos($output, '</body>')) !== false)
-					{
-						$output = substr($output, 0, $endBodyPos) . $footHtml . substr($output, $endBodyPos);
-					}
-					else
-					{
-						$output .= $footHtml;
-					}
-				}
-			}
-
-			// Output to the browser!
-			echo $output;
-
-			// End the request
-			craft()->end();
+			$this->renderTemplate($template, $variables);
 		}
 		catch (TemplateLoaderException $e)
 		{
