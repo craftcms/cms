@@ -425,10 +425,6 @@ table.data.collapsed tbody td form { display: inline-block; }
 .datatablesorthelper tr:last-child th,
 .datatablesorthelper tr:last-child td { border-bottom: none !important; }
 
-table.editable { border-radius: 2px; border: 1px solid #ccc; overflow: hidden; width: 100%;
-	-webkit-box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1);
-	        box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1);
-}
 table.editable tbody tr:not(:first-child) td { border-top: 1px solid rgba(0,0,0,0.07); }
 table.editable thead tr th,
 table.editable tbody tr td:not(.textual) { padding: 4px 10px; }
@@ -521,6 +517,11 @@ ul.tree,
 /* ----------------------------------------
 /*  Fields
 /* ----------------------------------------*/
+
+.shadow-box { border-radius: 2px; border: 1px solid #ccc; overflow: hidden; width: 100%;
+	-webkit-box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1);
+	        box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1);
+}
 
 .text,
 #main div.redactor_box,
