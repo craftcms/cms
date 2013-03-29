@@ -26,7 +26,11 @@ class DateTime extends \DateTime
 
 		$dateTime = parent::createFromFormat($format, $time, $timezone);
 
-		return new DateTime('@'.$dateTime->getTimestamp());
+		$timeStamp = $dateTime->getTimestamp();
+		if (DateTimeHelper::isValidTimeStamp($timeStamp))
+		{
+			return new DateTime('@'.$dateTime->getTimestamp());
+		}
 	}
 
 	/**
