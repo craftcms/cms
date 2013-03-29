@@ -18,6 +18,12 @@ class FeedsService extends BaseApplicationComponent
 	{
 		$items = array();
 
+		if (!extension_loaded('dom'))
+		{
+			Craft::log('Craft needs the PHP DOM extension (http://www.php.net/manual/en/book.dom.php) enabled to parse feeds.', \CLogger::LEVEL_WARNING);
+			return $items;
+		}
+
 		$this->_registerSimplePieAutoloader();
 		$feed = new \SimplePie();
 		$feed->set_feed_url($url);
