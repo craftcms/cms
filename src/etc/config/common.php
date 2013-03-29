@@ -113,8 +113,8 @@ $cpRoutes['dashboard/settings/new']               = 'dashboard/settings/_widgets
 $cpRoutes['dashboard/settings/(?P<widgetId>\d+)'] = 'dashboard/settings/_widgetsettings';
 
 $cpRoutes['entries/(?P<filter>{handle})']                         = 'entries';
-$cpRoutes['entries/(?P<sectionHandle>{handle})/new']              = 'entries/_edit';
-$cpRoutes['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)'] = 'entries/_edit';
+$cpRoutes['entries/(?P<sectionHandle>{handle})/new']              = array('action' => 'entries/editEntry');
+$cpRoutes['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)'] = array('action' => 'entries/editEntry');
 
 $cpRoutes['globals/(?P<globalSetHandle>{handle})'] = 'globals';
 
@@ -123,8 +123,8 @@ $cpRoutes['updates/go/(?P<handle>[^/]*)'] = 'updates/_go';
 $cpRoutes['settings/assets']                                      = 'settings/assets/sources';
 $cpRoutes['settings/assets/sources/new']                          = 'settings/assets/sources/_settings';
 $cpRoutes['settings/assets/sources/(?P<sourceId>\d+)']            = 'settings/assets/sources/_settings';
-$cpRoutes['settings/assets/transforms/new']                  = 'settings/assets/transforms/_settings';
-$cpRoutes['settings/assets/transforms/(?P<handle>{handle})'] = 'settings/assets/transforms/_settings';
+$cpRoutes['settings/assets/transforms/new']                       = 'settings/assets/transforms/_settings';
+$cpRoutes['settings/assets/transforms/(?P<handle>{handle})']      = 'settings/assets/transforms/_settings';
 $cpRoutes['settings/fields/(?P<groupId>\d+)']                     = 'settings/fields';
 $cpRoutes['settings/fields/new']                                  = 'settings/fields/_edit';
 $cpRoutes['settings/fields/edit/(?P<fieldId>\d+)']                = 'settings/fields/_edit';
@@ -160,13 +160,13 @@ $cpRoutes['settings/routes'] = array(
 $cpRoutes['myaccount'] = 'users/_edit/account';
 
 // Lanugage package routes
-$cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/(?P<localeId>\w+)'] = 'entries/_edit';
-$cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/new/(?P<localeId>\w+)']              = 'entries/_edit';
+$cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/(?P<localeId>\w+)'] = array('action' => 'entries/editEntry');
+$cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/new/(?P<localeId>\w+)']              = array('action' => 'entries/editEntry');
 $cpRoutes['pkgRoutes']['Localize']['globals/(?P<localeId>\w+)/(?P<globalSetHandle>{handle})']                = 'globals';
 
 // Publish Pro package routes
-$cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/drafts/(?P<draftId>\d+)']     = 'entries/_edit';
-$cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/versions/(?P<versionId>\d+)'] = 'entries/_edit';
+$cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/drafts/(?P<draftId>\d+)']     = array('action' => 'entries/editEntry');
+$cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/versions/(?P<versionId>\d+)'] = array('action' => 'entries/editEntry');
 
 // Users package routes
 $cpRoutes['pkgRoutes']['Users']['myaccount/profile']             = 'users/_edit/profile';
