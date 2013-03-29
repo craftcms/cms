@@ -51,7 +51,7 @@ class DropdownFieldType extends BaseOptionsFieldType
 			}
 		}
 
-		return craft()->templates->render('_components/fieldtypes/Dropdown/input', array(
+		return craft()->templates->render('_includes/forms/select', array(
 			'name'    => $name,
 			'value'   => $value,
 			'options' => $options

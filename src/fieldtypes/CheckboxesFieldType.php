@@ -54,10 +54,10 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 			}
 		}
 
-		return craft()->templates->render('_components/fieldtypes/Checkboxes/input', array(
+		return craft()->templates->render('_includes/forms/checkboxGroup', array(
 			'name'    => $name,
-			'values'  => $values,
-			'options' => $options
+			'options' => $options,
+			'values'  => $values
 		));
 	}
 }

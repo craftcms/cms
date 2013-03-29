@@ -115,10 +115,14 @@ class ContentService extends BaseApplicationComponent
 		foreach (craft()->fields->getAllFields() as $field)
 		{
 			$fieldType = craft()->fields->populateFieldType($field);
-			$fieldType->element = $element;
 
-			$handle = $field->handle;
-			$content->$handle = $fieldType->getPostData();
+			if ($fieldType)
+			{
+				$fieldType->element = $element;
+
+				$handle = $field->handle;
+				$content->$handle = $fieldType->getPostData();
+			}
 		}
 
 		return $content;
@@ -209,26 +213,25 @@ class ContentService extends BaseApplicationComponent
 
 		foreach ($fields as $field)
 		{
-			$fieldHandle = $field->handle;
-
 			$fieldType = craft()->fields->populateFieldType($field);
-			$fieldType->element = $element;
-			$fieldTypes[] = $fieldType;
 
-			// Get the field's search keywords
-			$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$fieldHandle);
-			$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
-
-			// Should we update this field on the other locales as well?
-			if (!$field->translatable && $updateOtherContentModels && $fieldType->defineContentAttribute())
+			if ($fieldType)
 			{
-				foreach ($otherContentModels as $otherContentModel)
-				{
-					// Copy the new field value over to the other locale's content record
-					$otherContentModel->$handle = $content->$handle;
+				// Get the field's search keywords
+				$fieldSearchKeywords = $fieldType->getSearchKeywords($element->getAttribute($field->handle));
+				$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
 
-					// Queue up the other locale's new keywords too
-					$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
+				// Should we update this field on the other locales as well?
+				if (!$field->translatable && $updateOtherContentModels && $fieldType->defineContentAttribute())
+				{
+					foreach ($otherContentModels as $otherContentModel)
+					{
+						// Copy the new field value over to the other locale's content record
+						$otherContentModel->$handle = $content->$handle;
+
+						// Queue up the other locale's new keywords too
+						$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
+					}
 				}
 			}
 		}

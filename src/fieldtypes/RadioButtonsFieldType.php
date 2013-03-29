@@ -51,7 +51,7 @@ class RadioButtonsFieldType extends BaseOptionsFieldType
 			}
 		}
 
-		return craft()->templates->render('_components/fieldtypes/RadioButtons/input', array(
+		return craft()->templates->render('_includes/forms/radioGroup', array(
 			'name'    => $name,
 			'value'   => $value,
 			'options' => $options

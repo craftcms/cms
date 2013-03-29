@@ -1,0 +1,23 @@
+{%- set class = [
+	'select',
+	(class is defined ? class : null)
+]|filter|join(' ') %}
+
+{%- set options = (options is defined ? options : []) %}
+{%- set value = (value is defined ? value : null) -%}
+
+<div class="{{ class }}">
+	<select
+		{%- if id is defined and id %} id="{{ id }}"{% endif %}
+		{%- if toggle is defined and toggle %} class="fieldtoggle"{% endif %}
+		{%- if name is defined and name %} name="{{ name }}"{% endif %}
+		{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
+		{%- if disabled is defined and disabled %} disabled{% endif %}
+		{%- if targetPrefix is defined and targetPrefix %} data-target-prefix="{{ targetPrefix }}"{% endif %}>
+		{% for key, option in options %}
+			{% set optionLabel = (option.label is defined ? option.label : option) %}
+			{% set optionValue = (option.value is defined ? option.value : key) %}
+			<option value="{{ optionValue }}"{% if optionValue == value %} selected{% endif %}>{{ optionLabel }}</option>
+		{% endfor %}
+	</select>
+</div>

@@ -113,8 +113,8 @@ $cpRoutes['dashboard/settings/new']               = 'dashboard/settings/_widgets
 $cpRoutes['dashboard/settings/(?P<widgetId>\d+)'] = 'dashboard/settings/_widgetsettings';
 
 $cpRoutes['entries/(?P<filter>{handle})']                         = 'entries';
-$cpRoutes['entries/(?P<sectionHandle>{handle})/new']              = 'entries/_edit';
-$cpRoutes['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)'] = 'entries/_edit';
+$cpRoutes['entries/(?P<sectionHandle>{handle})/new']              = array('action' => 'entries/editEntry');
+$cpRoutes['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)'] = array('action' => 'entries/editEntry');
 
 $cpRoutes['globals/(?P<globalSetHandle>{handle})'] = 'globals';
 
@@ -160,13 +160,13 @@ $cpRoutes['settings/routes'] = array(
 $cpRoutes['myaccount'] = 'users/_edit/account';
 
 // Lanugage package routes
-$cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/(?P<localeId>\w+)'] = 'entries/_edit';
-$cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/new/(?P<localeId>\w+)']              = 'entries/_edit';
+$cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/(?P<localeId>\w+)'] = array('action' => 'entries/editEntry');
+$cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/new/(?P<localeId>\w+)']              = array('action' => 'entries/editEntry');
 $cpRoutes['pkgRoutes']['Localize']['globals/(?P<localeId>\w+)/(?P<globalSetHandle>{handle})']                = 'globals';
 
 // Publish Pro package routes
-$cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/drafts/(?P<draftId>\d+)']     = 'entries/_edit';
-$cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/versions/(?P<versionId>\d+)'] = 'entries/_edit';
+$cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/drafts/(?P<draftId>\d+)']     = array('action' => 'entries/editEntry');
+$cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/versions/(?P<versionId>\d+)'] = array('action' => 'entries/editEntry');
 
 // Users package routes
 $cpRoutes['pkgRoutes']['Users']['myaccount/profile']             = 'users/_edit/profile';

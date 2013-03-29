@@ -36,8 +36,15 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		return craft()->templates->render('_components/fieldtypes/RichText/settings', array(
-			'settings' => $this->getSettings()
+		return craft()->templates->renderMacro('_includes/forms', 'textField', array(
+			array(
+				'label'  => Craft::t('Min Height (in pixels)'),
+				'id'     => 'minHeight',
+				'name'   => 'minHeight',
+				'value'  => $this->getSettings()->minHeight,
+				'size'   => 3,
+				'errors' => $this->getSettings()->getErrors('minHeight')
+			)
 		));
 	}
 
@@ -59,9 +66,16 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function prepValue($value)
 	{
-		// Prevent everyone from having to use the |raw filter when outputting RTE content
-		$charset = craft()->templates->getTwig()->getCharset();
-		return new \Twig_Markup($value, $charset);
+		if ($value)
+		{
+			// Prevent everyone from having to use the |raw filter when outputting RTE content
+			$charset = craft()->templates->getTwig()->getCharset();
+			return new \Twig_Markup($value, $charset);
+		}
+		else
+		{
+			return '';
+		}
 	}
 
 	/**

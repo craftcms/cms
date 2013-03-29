@@ -54,7 +54,7 @@ class MultiSelectFieldType extends BaseOptionsFieldType
 			}
 		}
 
-		return craft()->templates->render('_components/fieldtypes/MultiSelect/input', array(
+		return craft()->templates->render('_includes/forms/multiselect', array(
 			'name'    => $name,
 			'values'  => $values,
 			'options' => $options
