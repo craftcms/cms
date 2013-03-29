@@ -99,6 +99,11 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($query)
 		{
+			if ($criteria->order)
+			{
+				$query->order($criteria->order);
+			}
+
 			$result = $query->queryRow();
 
 			if ($result)
