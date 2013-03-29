@@ -59,9 +59,16 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function prepValue($value)
 	{
-		// Prevent everyone from having to use the |raw filter when outputting RTE content
-		$charset = craft()->templates->getTwig()->getCharset();
-		return new \Twig_Markup($value, $charset);
+		if ($value)
+		{
+			// Prevent everyone from having to use the |raw filter when outputting RTE content
+			$charset = craft()->templates->getTwig()->getCharset();
+			return new \Twig_Markup($value, $charset);
+		}
+		else
+		{
+			return '';
+		}
 	}
 
 	/**
