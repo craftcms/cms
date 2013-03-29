@@ -3,7 +3,7 @@
 {%- set options = (options is defined ? options : []) %}
 {%- set values = (values is defined ? values : []) -%}
 
-<div class="checkbox-select{% if class is defined %}{{ class }}{% endif %}">
+<div class="checkbox-select{% if class is defined %} {{ class }}{% endif %}">
 	<div>
 		{% include "_includes/forms/checkbox" with {
 			id:        (id is defined ? id : null),
