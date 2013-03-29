@@ -81,14 +81,29 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Renders a template.
 	 *
-	 * @param       $template
-	 * @param array $variables The variables that should be available to the template
+	 * @param string $template
+	 * @param array  $variables The variables that should be available to the template
 	 * @return string The rendered template
 	 */
 	public function render($template, $variables = array())
 	{
 		$twig = $this->getTwig();
 		return $twig->render($template, $variables);
+	}
+
+	/**
+	 * Renders a macro within a given template.
+	 *
+	 * @param string $template
+	 * @param string $macro
+	 * @param array  $args
+	 * @return string
+	 */
+	public function renderMacro($template, $macro, $args = array())
+	{
+		$twig = $this->getTwig();
+		$twigTemplate = $twig->loadTemplate($template);
+		return call_user_func_array(array($twigTemplate, 'get'.$macro), $args);
 	}
 
 	/**
