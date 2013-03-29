@@ -115,10 +115,14 @@ class ContentService extends BaseApplicationComponent
 		foreach (craft()->fields->getAllFields() as $field)
 		{
 			$fieldType = craft()->fields->populateFieldType($field);
-			$fieldType->element = $element;
 
-			$handle = $field->handle;
-			$content->$handle = $fieldType->getPostData();
+			if ($fieldType)
+			{
+				$fieldType->element = $element;
+
+				$handle = $field->handle;
+				$content->$handle = $fieldType->getPostData();
+			}
 		}
 
 		return $content;
@@ -209,17 +213,21 @@ class ContentService extends BaseApplicationComponent
 		foreach ($fields as $field)
 		{
 			$fieldType = craft()->fields->populateFieldType($field);
-			$fieldType->element = $element;
-			$fieldTypes[] = $fieldType;
 
-			// If this field isn't translatable, we should set its new value on the other content records
-			if (!$field->translatable && $updateOtherContentModels && $fieldType->defineContentAttribute())
+			if ($fieldType)
 			{
-				$handle = $field->handle;
+				$fieldType->element = $element;
+				$fieldTypes[] = $fieldType;
 
-				foreach ($otherContentModels as $otherContentModel)
+				// If this field isn't translatable, we should set its new value on the other content records
+				if (!$field->translatable && $updateOtherContentModels && $fieldType->defineContentAttribute())
 				{
-					$otherContentModel->$handle = $content->$handle;
+					$handle = $field->handle;
+
+					foreach ($otherContentModels as $otherContentModel)
+					{
+						$otherContentModel->$handle = $content->$handle;
+					}
 				}
 			}
 		}
