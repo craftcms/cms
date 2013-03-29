@@ -36,8 +36,15 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		return craft()->templates->render('_components/fieldtypes/RichText/settings', array(
-			'settings' => $this->getSettings()
+		return craft()->templates->renderMacro('_includes/forms', 'textField', array(
+			array(
+				'label'  => Craft::t('Min Height (in pixels)'),
+				'id'     => 'minHeight',
+				'name'   => 'minHeight',
+				'value'  => $this->getSettings()->minHeight,
+				'size'   => 3,
+				'errors' => $this->getSettings()->getErrors('minHeight')
+			)
 		));
 	}
 

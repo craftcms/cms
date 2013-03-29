@@ -53,10 +53,36 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 			$options = array(array('label' => '', 'value' => ''));
 		}
 
-		return craft()->templates->render('_components/fieldtypes/optionsfieldsettings', array(
-			'label'   => $this->getOptionsSettingsLabel(),
-			'class'   => $this->getClassHandle(),
-			'options' => $options
+		$class = $this->getClassHandle();
+
+		return craft()->templates->renderMacro('_includes/forms', 'editableTableField', array(
+			array(
+				'label'        => $this->getOptionsSettingsLabel(),
+				'instructions' => Craft::t('Define the available options.'),
+				'id'           => 'options',
+				'name'         => 'options',
+				'jsId'         => 'types-'.$class.'-options',
+				'jsName'       => 'types['.$class.'][options]',
+				'addRowLabel'  => Craft::t('Add an option'),
+				'cols'         => array(
+					'label' => array(
+						'heading'      => Craft::t('Option Label'),
+						'type'         => 'singleline',
+						'autopopulate' => 'value'
+					),
+					'value' => array(
+						'heading'      => Craft::t('Value'),
+						'type'         => 'singleline',
+						'class'        => 'code'
+					),
+					'default' => array(
+						'heading'      => Craft::t('Default?'),
+						'type'         => 'checkbox',
+						'class'        => 'thin'
+					),
+				),
+				'rows' => $options
+			)
 		));
 	}
 

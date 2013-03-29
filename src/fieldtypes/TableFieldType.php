@@ -100,11 +100,32 @@ class TableFieldType extends BaseFieldType
 			JsonHelper::encode($columnSettings) .
 		');');
 
-		return craft()->templates->render('_components/fieldtypes/Table/settings', array(
-			'columns'        => $columns,
-			'defaults'       => $defaults,
-			'columnSettings' => $columnSettings
+		$columnsField = craft()->templates->renderMacro('_includes/forms', 'editableTableField', array(
+			array(
+				'label'        => Craft::t('Table Columns'),
+				'instructions' => Craft::t('Define the columns your table should have.'),
+				'id'           => 'columns',
+				'name'         => 'columns',
+				'cols'         => $columnSettings,
+				'rows'         => $columns,
+				'addRowLabel'  => Craft::t('Add a column'),
+				'initJs'       => false
+			)
 		));
+
+		$defaultsField = craft()->templates->renderMacro('_includes/forms', 'editableTableField', array(
+			array(
+				'label'        => Craft::t('Default Values'),
+				'instructions' => Craft::t('Define the default values for the field.'),
+				'id'           => 'defaults',
+				'name'         => 'defaults',
+				'cols'         => $columns,
+				'rows'         => $defaults,
+				'initJs'       => false
+			)
+		));
+
+		return $columnsField . $defaultsField;
 	}
 
 	/**
@@ -133,7 +154,7 @@ class TableFieldType extends BaseFieldType
 
 			$id = preg_replace('/[\[\]]+/', '-', $name);
 
-			return craft()->templates->render('_components/fieldtypes/Table/input', array(
+			return craft()->templates->render('_includes/forms/editableTable', array(
 				'id'   => $id,
 				'name' => $name,
 				'cols' => $columns,

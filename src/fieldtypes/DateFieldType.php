@@ -35,10 +35,10 @@ class DateFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		return craft()->templates->render('_components/fieldtypes/Date/input', array(
+		return craft()->templates->render('_includes/forms/date', array(
 			'id'    => preg_replace('/[\[\]]+/', '-', $name),
 			'name'  => $name,
-			'value' => $value
+			'value' => ($value ? $value->w3cDate() : null)
 		));
 	}
 }
