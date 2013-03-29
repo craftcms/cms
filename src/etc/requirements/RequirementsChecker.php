@@ -104,6 +104,13 @@ class RequirementsChecker extends \CComponent
 				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('@@@appName@@@ requires the MySQL InnoDB storage engine to run.')
 			),
+			new Requirement(
+				Craft::t('SSL support'),
+				extension_loaded('openssl'),
+				true,
+				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
+				Craft::t('@@@appName@@@ requires <a href="http://php.net/manual/en/book.openssl.php">OpenSSL</a> in order to run.')
+			),
 		);
 	}
 

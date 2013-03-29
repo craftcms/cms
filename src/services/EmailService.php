@@ -171,6 +171,9 @@ class EmailService extends BaseApplicationComponent
 
 		$email = new \PhpMailer(true);
 
+		// Default the charset to UTF-8
+		$email->CharSet = 'UTF-8';
+
 		// Set the "from" information.
 		$email->SetFrom($emailModel->fromEmail, $emailModel->fromName);
 
