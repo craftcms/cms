@@ -141,6 +141,6 @@
 
 
 {% macro editableTableField(config) %}
-	{% set input = _self.editableTable(config) %}
+	{% set input %}{% include "_includes/forms/editableTable" with config only %}{% endset %}
 	{{ _self.field(config, input) }}
 {% endmacro %}
