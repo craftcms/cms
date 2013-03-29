@@ -117,6 +117,18 @@ class ElementCriteriaModel extends BaseModel
 	}
 
 	/**
+	 * Returns the last element that matches the criteria.
+	 *
+	 * @param array|null $attributes
+	 * @return BaseElementModel|null
+	 */
+	public function last($attributes = null)
+	{
+		$this->setAttributes($attributes);
+		return craft()->elements->findElement($this, true);
+	}
+
+	/**
 	 * Returns the total elements that match the criteria.
 	 *
 	 * @param array|null $attributes
