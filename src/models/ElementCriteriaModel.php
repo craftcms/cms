@@ -36,6 +36,7 @@ class ElementCriteriaModel extends BaseModel
 			'offset'        => array(AttributeType::Number, 'default' => 0),
 			'limit'         => array(AttributeType::Number, 'default' => 100),
 			'indexBy'       => AttributeType::String,
+			'search'        => AttributeType::String,
 			//'dateCreated'   => AttributeType::DateTime,
 			//'dateUpdated'   => AttributeType::DateTime,
 		);
