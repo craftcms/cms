@@ -55,7 +55,7 @@ class ConfigService extends BaseApplicationComponent
 			if ($duration)
 			{
 				$interval = new DateInterval($duration);
-				$this->_cacheDuration = $interval->seconds();
+				$this->_cacheDuration = $interval->toSeconds();
 			}
 			else
 			{
