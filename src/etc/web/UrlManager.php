@@ -207,7 +207,7 @@ class UrlManager extends \CUrlManager
 			$elementCriteria = craft()->elements->getCriteria($row['type']);
 			$elementCriteria->id = $row['id'];
 
-			$element = craft()->elements->findElement($elementCriteria);
+			$element = $elementCriteria->first();
 
 			if ($element)
 			{
