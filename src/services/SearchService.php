@@ -131,9 +131,10 @@ class SearchService extends BaseApplicationComponent
 	 *
 	 * @param array  $elementIds The list of element IDs to filter by the search query.
 	 * @param mixed  $query      The search query (either a string or a SearchQuery instance)
+	 * @param bool   $scoreResults Whether to order the results based on how closely they match the query.
 	 * @return array The filtered list of element IDs.
 	 */
-	public function filterElementIdsByQuery($elementIds, $query, $score = true)
+	public function filterElementIdsByQuery($elementIds, $query, $scoreResults = true)
 	{
 		if (is_string($query))
 		{
@@ -184,7 +185,7 @@ class SearchService extends BaseApplicationComponent
 		$results = craft()->db->createCommand()->setText($sql)->queryAll();
 
 		// Are we scoring the results?
-		if ($score)
+		if ($scoreResults)
 		{
 			// Loop through results and calculate score per element
 			foreach ($results as $row)
