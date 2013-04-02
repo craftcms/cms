@@ -247,6 +247,17 @@ class Craft extends \Yii
 	}
 
 	/**
+	 * Returns the system time zone.
+	 *
+	 * @static
+	 * @return string
+	 */
+	public function getTimezone()
+	{
+		return static::getInfo('timezone');
+	}
+
+	/**
 	 * Returns whether the system is on.
 	 *
 	 * @static
@@ -327,7 +338,6 @@ class Craft extends \Yii
 			if (static::isInstalled())
 			{
 				$row = craft()->db->createCommand()
-					->select('id,version,build,packages,releaseDate,siteName,siteUrl,on,maintenance')
 					->from('info')
 					->limit(1)
 					->queryRow();

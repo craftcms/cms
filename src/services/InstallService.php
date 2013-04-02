@@ -150,8 +150,8 @@ class InstallService extends BaseApplicationComponent
 		Craft::log('Creating the content table.');
 
 		craft()->db->createCommand()->createTable('content', array(
-			'elementId' => array('column' => ColumnType::Int, 'required' => true),
-			'locale'    => array('column' => ColumnType::Locale, 'required' => true),
+			'elementId' => array('column' => ColumnType::Int, 'null' => false),
+			'locale'    => array('column' => ColumnType::Locale, 'null' => false),
 		));
 		craft()->db->createCommand()->createIndex('content', 'elementId,locale', true);
 		craft()->db->createCommand()->addForeignKey('content', 'elementId', 'elements', 'id', 'CASCADE', null);
@@ -192,14 +192,15 @@ class InstallService extends BaseApplicationComponent
 		Craft::log('Creating the info table.');
 
 		craft()->db->createCommand()->createTable('info', array(
-			'version'     => array('maxLength' => 15, 'column' => ColumnType::Char, 'required' => true),
-			'build'       => array('maxLength' => 11, 'column' => ColumnType::Int, 'unsigned' => true, 'required' => true),
-			'packages'    => array('maxLength' => 200),
-			'releaseDate' => array('column' => ColumnType::DateTime, 'required' => true),
-			'siteName'    => array('maxLength' => 100, 'column' => ColumnType::Varchar, 'required' => true),
-			'siteUrl'     => array('maxLength' => 255, 'column' => ColumnType::Varchar, 'required' => true),
-			'on'          => array('maxLength' => 1, 'default' => false, 'required' => true, 'column' => ColumnType::TinyInt, 'unsigned' => true),
-			'maintenance' => array('maxLength' => 1, 'default' => false, 'required' => true, 'column' => ColumnType::TinyInt, 'unsigned' => true),
+			'version'     => array('column' => ColumnType::Char, 'length' => 15, 'null' => false),
+			'build'       => array('column' => ColumnType::Int, 'length' => 11, 'unsigned' => true, 'null' => false),
+			'packages'    => array('column' => ColumnType::Varchar, 'length' => 200),
+			'releaseDate' => array('column' => ColumnType::DateTime, 'null' => false),
+			'siteName'    => array('column' => ColumnType::Varchar, 'length' => 100, 'null' => false),
+			'siteUrl'     => array('column' => ColumnType::Varchar, 'length' => 255, 'null' => false),
+			'timezone'    => array('column' => ColumnType::Varchar, 'length' => 30),
+			'on'          => array('column' => ColumnType::TinyInt, 'length' => 1, 'unsigned' => true, 'default' => false, 'null' => false),
+			'maintenance' => array('column' => ColumnType::TinyInt, 'length' => 1, 'unsigned' => true, 'default' => false, 'null' => false),
 		));
 
 		Craft::log('Finished creating the info table.');
