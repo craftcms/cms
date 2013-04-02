@@ -209,6 +209,11 @@ return array(
 'requireUserAgentAndIpForSession' => true,
 
 /**
+ * The maximum amount of memory Craft will try to reserve during memory intensive operations such as zipping, unzipping, updating, etc.
+ */
+'phpMaxMemoryLimit' => '256M',
+
+/**
  * Error Path Keys
  * 'errorPath'      => craft.app.templates.errors.error
  * 'error400Path'   => craft.app.templates.errors.400
