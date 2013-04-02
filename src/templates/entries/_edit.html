@@ -36,8 +36,8 @@
 			label: section.titleLabel,
 			id: 'title',
 			name: 'title',
-			value: (entry is defined ? entry.title : null),
-			errors: (entry is defined ? entry.getErrors('title') : null),
+			value: entry.title,
+			errors: entry.getErrors('title'),
 			first: true,
 			autofocus: true,
 			required: true
@@ -47,7 +47,7 @@
 			<div id="tab{{ loop.index }}"{% if not loop.first %} class="hidden"{% endif %}>
 				{% include "_includes/fields" with {
 					fields: tab.getFields(),
-					element: (entry is defined ? entry : null)
+					element: entry
 				} only %}
 			</div>
 		{% endfor %}
@@ -57,8 +57,8 @@
 				label: "Slug"|t,
 				id: 'slug',
 				name: 'slug',
-				value: (entry is defined ? entry.slug : null),
-				errors: (entry is defined ? entry.getErrors('slug') : null),
+				value: entry.slug,
+				errors: entry.getErrors('slug'),
 				required: true
 			}) }}
 
@@ -72,7 +72,7 @@
 					id: 'author',
 					name: 'author',
 					options: authors,
-					value: (entry is defined ? entry.authorId : user.id)
+					value: entry.authorId
 				}) }}
 			{% endif %}
 
@@ -81,8 +81,8 @@
 				instructions: "When should the entry go live? (Set automatically if left blank)"|t,
 				id: 'postDate',
 				name: 'postDate',
-				value: (entry is defined and entry.postDate ? entry.postDate.w3cDate : null),
-				errors: (entry is defined ? entry.getErrors('postDate') : null)
+				value: (entry.postDate ? entry.postDate.w3cDate : null),
+				errors: entry.getErrors('postDate')
 			}) }}
 
 			{{ forms.dateField({
@@ -90,8 +90,8 @@
 				instructions: "When should the entry expire?"|t,
 				id: 'expiryDate',
 				name: 'expiryDate',
-				value: (entry is defined and entry.expiryDate ? entry.expiryDate.w3cDate : null),
-				errors: (entry is defined ? entry.getErrors('expiryDate') : null)
+				value: (entry.expiryDate ? entry.expiryDate.w3cDate : null),
+				errors: entry.getErrors('expiryDate')
 			}) }}
 
 			{{ forms.textField({
@@ -99,8 +99,8 @@
 				instructions: "List multiple tags separated by commas."|t,
 				id: 'tags',
 				name: 'tags',
-				value: (entry is defined ? entry.tags|join(', ') : null),
-				errors: (entry is defined ? entry.getErrors('tags') : null),
+				value: entry.tags|join(', '),
+				errors: entry.getErrors('tags'),
 			}) }}
 
 			{% if user.can('publishEntries'~permissionSuffix) %}
@@ -111,7 +111,7 @@
 					{{ forms.checkboxField({
 						label: "Entry is enabled",
 						name: 'enabled',
-						checked: (entry is defined ? entry.enabled : true)
+						checked: entry.enabled
 					}) }}
 				{% endset %}
 				{{ forms.field({
@@ -183,6 +183,6 @@
 {% endset %}
 
 
-{% if entry is not defined or not entry.slug %}
+{% if not entry.slug %}
 	{% includeJs "new Craft.SlugGenerator('#title', '#slug');" %}
 {% endif %}
