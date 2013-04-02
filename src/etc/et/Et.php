@@ -165,8 +165,6 @@ class Et
 					}
 
 					// Cache the license key status and which packages are associated with it
-					$cacheDuration = craft()->config->getCacheDuration();
-
 					craft()->fileCache->set('licenseKeyStatus', $etModel->licenseKeyStatus);
 					craft()->fileCache->set('licensedPackages', $etModel->licensedPackages);
 					craft()->fileCache->set('packageTrials', $etModel->packageTrials);
