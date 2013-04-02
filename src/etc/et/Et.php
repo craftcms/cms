@@ -167,13 +167,13 @@ class Et
 					// Cache the license key status and which packages are associated with it
 					$cacheDuration = craft()->config->getCacheDuration();
 
-					craft()->fileCache->set('licenseKeyStatus', $etModel->licenseKeyStatus, $cacheDuration);
-					craft()->fileCache->set('licensedPackages', $etModel->licensedPackages, $cacheDuration);
-					craft()->fileCache->set('packageTrials', $etModel->packageTrials, $cacheDuration);
+					craft()->fileCache->set('licenseKeyStatus', $etModel->licenseKeyStatus);
+					craft()->fileCache->set('licensedPackages', $etModel->licensedPackages);
+					craft()->fileCache->set('packageTrials', $etModel->packageTrials);
 
 					if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
 					{
-						craft()->fileCache->set('licensedDomain', $etModel->licensedDomain, $cacheDuration);
+						craft()->fileCache->set('licensedDomain', $etModel->licensedDomain);
 					}
 
 					return $etModel;

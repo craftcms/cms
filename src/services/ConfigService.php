@@ -112,7 +112,7 @@ class ConfigService extends BaseApplicationComponent
 					}
 
 					// Cache it
-					craft()->fileCache->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls, $this->getCacheDuration());
+					craft()->fileCache->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls);
 				}
 			}
 		}
@@ -175,7 +175,7 @@ class ConfigService extends BaseApplicationComponent
 					}
 
 					// Cache it
-					craft()->fileCache->set('usePathInfo', $this->_usePathInfo, $this->getCacheDuration());
+					craft()->fileCache->set('usePathInfo', $this->_usePathInfo);
 				}
 			}
 		}
