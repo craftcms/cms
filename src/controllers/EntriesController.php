@@ -88,7 +88,8 @@ class EntriesController extends BaseController
 			{
 				$variables['entry'] = new EntryModel();
 				$variables['entry']->sectionId = $variables['section']->id;
-				$variables['entry']->userId = craft()->userSession->getUser()->id;
+				$variables['entry']->authorId = craft()->userSession->getUser()->id;
+				$variables['entry']->enabled = true;
 			}
 		}
 
