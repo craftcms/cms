@@ -268,7 +268,7 @@ $components['urlManager']['pathParam'] = 'p';
 
 $components['errorHandler']['class'] = 'Craft\ErrorHandler';
 
-$components['fileCache']['class'] = 'CFileCache';
+$components['fileCache']['class'] = 'Craft\FileCache';
 
 $components['log']['class'] = 'Craft\LogRouter';
 $components['log']['routes'] = array(
