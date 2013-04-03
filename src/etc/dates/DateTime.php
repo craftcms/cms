@@ -43,10 +43,11 @@ class DateTime extends \DateTime
 	 *  - Relaxed versions of W3C and MySQL formats (single-digit months, days, and hours)
 	 *  - Unix timestamps
 	 *
-	 * @param string $date
+	 * @param string      $date
+	 * @param stirng|null $timezone The PHP timezone identifier, if not specified in $date. Defaults to UTC. (See http://php.net/manual/en/timezones.php)
 	 * @return DateTime
 	 */
-	public static function createFromString($date)
+	public static function createFromString($date, $timezone = null)
 	{
 		$date = (string) $date;
 
@@ -81,6 +82,11 @@ class DateTime extends \DateTime
 				$format .= 'P';
 				$date   .= $m['tzd'];
 			}
+			else if ($timezone !== null)
+			{
+				$format .= 'e';
+				$date   .= $timezone;
+			}
 		}
 		else if (preg_match('/^\d{10}$/', $date))
 		{
@@ -100,6 +106,21 @@ class DateTime extends \DateTime
 	function __toString()
 	{
 		return $this->format('M j, Y');
+	}
+
+	/**
+	 * @param string $format
+	 * @param bool   $setTimezone Whether to output the string in the current timezone.
+	 * @return string
+	 */
+	function format($format, $setTimezone = true)
+	{
+		if ($setTimezone)
+		{
+			$this->setTimezone(new \DateTimeZone(craft()->timezone));
+		}
+
+		return parent::format($format);
 	}
 
 	/**

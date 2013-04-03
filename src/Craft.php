@@ -252,7 +252,7 @@ class Craft extends \Yii
 	 * @static
 	 * @return string
 	 */
-	public function getTimezone()
+	public static function getTimezone()
 	{
 		return static::getInfo('timezone');
 	}

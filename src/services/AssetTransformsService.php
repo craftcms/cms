@@ -243,8 +243,8 @@ class AssetTransformsService extends BaseApplicationComponent
 		if ($entry)
 		{
 			// If the file has been indexed after any changes impacting the transform, return the record
-			$indexedAfterFileModified = $entry['dateIndexed'] >= $file->dateModified->format(DateTime::MYSQL_DATETIME);
-			$indexedAfterTransformParameterChange = (!$transform->isNamedTransform() || ($transform->isNamedTransform() && $entry['dateIndexed'] >= $transform->dimensionChangeTime->format(DateTime::MYSQL_DATETIME)));
+			$indexedAfterFileModified = $entry['dateIndexed'] >= $file->dateModified->format(DateTime::MYSQL_DATETIME, false);
+			$indexedAfterTransformParameterChange = (!$transform->isNamedTransform() || ($transform->isNamedTransform() && $entry['dateIndexed'] >= $transform->dimensionChangeTime->format(DateTime::MYSQL_DATETIME, false)));
 
 			if ($indexedAfterFileModified && $indexedAfterTransformParameterChange)
 			{
@@ -264,7 +264,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		$data = array(
 			'fileId' => $file->id,
 			'sourceId' => $file->sourceId,
-			'dateIndexed' => $time->format(DateTime::MYSQL_DATETIME),
+			'dateIndexed' => $time->format(DateTime::MYSQL_DATETIME, false),
 			'location' => $transformLocation,
 			'fileExists' => 0,
 			'inProgress' => 0
