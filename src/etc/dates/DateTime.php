@@ -8,25 +8,33 @@ class DateTime extends \DateTime
 {
 	const W3C_DATE = 'Y-m-d';
 	const MYSQL_DATETIME = 'Y-m-d H:i:s';
+	const UTC = 'UTC';
 
 	/**
 	 * Creates a new \Craft\DateTime object (rather than \DateTime)
 	 *
 	 * @param string $format
 	 * @param string $time
-	 * @param \DateTimeZone|null $timezone
+	 * @param mixed  $timezone The timezone the string is set in (defaults to UTC).
 	 * @return DateTime
 	 */
 	public static function createFromFormat($format, $time, $timezone = null)
 	{
-		if ($timezone === null)
+		if (!$timezone)
 		{
-			$timezone = new \DateTimeZone('UTC');
+			// Default to UTC
+			$timezone = static::UTC;
+		}
+
+		if (is_string($timezone))
+		{
+			$timezone = new \DateTimeZone($timezone);
 		}
 
 		$dateTime = parent::createFromFormat($format, $time, $timezone);
 
 		$timeStamp = $dateTime->getTimestamp();
+
 		if (DateTimeHelper::isValidTimeStamp($timeStamp))
 		{
 			return new DateTime('@'.$dateTime->getTimestamp());
@@ -110,16 +118,23 @@ class DateTime extends \DateTime
 
 	/**
 	 * @param string $format
-	 * @param bool   $setTimezone Whether to output the string in the current timezone.
+	 * @param mixed  $timezone The timezone to output the date in (defaults to the current app timezone).
 	 * @return string
 	 */
-	function format($format, $setTimezone = true)
+	function format($format, $timezone = null)
 	{
-		if ($setTimezone)
+		if (!$timezone)
 		{
-			$this->setTimezone(new \DateTimeZone(craft()->timezone));
+			// Default to the current app timezone
+			$timezone = craft()->timezone;
 		}
 
+		if (is_string($timezone))
+		{
+			$timezone = new \DateTimeZone($timezone);
+		}
+
+		$this->setTimezone($timezone);
 		return parent::format($format);
 	}
 
