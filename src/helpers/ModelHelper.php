@@ -523,11 +523,6 @@ class ModelHelper
 			}
 		}
 
-		if (is_numeric($value))
-		{
-			return LocalizationHelper::normalizeNumber($value);
-		}
-
 		if (is_bool($value))
 		{
 			return $value ? 1 : 0;
