@@ -78,14 +78,15 @@ class DateInterval extends \DateInterval
 	public static function fromSeconds($seconds)
 	{
 		$interval = new static('PT0S');
-
+		$seconds = (int)$seconds;
 		foreach (array('y' => self::SECONDS_YEAR, 'm' => self::SECONDS_MONTH, 'd' => self::SECONDS_DAY, 'h' => self::SECONDS_HOUR, 'i' => self::SECONDS_MINUTE) as $property => $increment)
 		{
-			if (bccomp($seconds, $increment) !== -1)
+			$increment = (int)$increment;
+			if ($seconds === $increment || $seconds > $increment)
 			{
-				$count = floor(bcdiv($seconds, $increment, 1));
+				$count = (int)floor($seconds / $increment);
 				$interval->$property = $count;
-				$seconds = bcsub($seconds, bcmul($count, $increment));
+				$seconds = $seconds - ($count * $increment);
 			}
 		}
 
@@ -107,34 +108,34 @@ class DateInterval extends \DateInterval
 			$interval = $this;
 		}
 
-		$seconds = (string)$interval->s;
+		$seconds = (int)$interval->s;
 
 		if ($interval->i)
 		{
-			$seconds = bcadd($seconds, bcmul($interval->i, self::SECONDS_MINUTE));
+			$seconds = $seconds + ((int)$interval->i * self::SECONDS_MINUTE);
 		}
 
 		if ($interval->h)
 		{
-			$seconds = bcadd($seconds, bcmul($interval->h, self::SECONDS_HOUR));
+			$seconds = $seconds + ((int)$interval->h * self::SECONDS_HOUR);
 		}
 
 		if ($interval->d)
 		{
-			$seconds = bcadd($seconds, bcmul($interval->d, self::SECONDS_DAY));
+			$seconds = $seconds + ((int)$interval->d * self::SECONDS_DAY);
 		}
 
 		if ($interval->m)
 		{
-			$seconds = bcadd($seconds, bcmul($interval->m, self::SECONDS_MONTH));
+			$seconds = $seconds + ((int)$interval->m * self::SECONDS_MONTH);
 		}
 
 		if ($interval->y)
 		{
-			$seconds = bcadd($seconds, bcmul($interval->y, self::SECONDS_YEAR));
+			$seconds = $seconds + ((int)$interval->y * self::SECONDS_YEAR);
 		}
 
-		return $seconds;
+		return (string)$seconds;
 	}
 
 	/**

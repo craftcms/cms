@@ -58,6 +58,20 @@ class Zip
 						return false;
 					}
 				}
+				else
+				{
+					// If the destination folder exists and it has contents, clear them.
+					if (($conents = IOHelper::getFolderContents($destFolder)) !== false)
+					{
+						// Begin the great purge.
+						if (!IOHelper::clearFolder($destFolder))
+						{
+							Craft::log('Tried to clear the contents of the unzip destination folder, but could not: '.$destFolder, \CLogger::LEVEL_ERROR);
+							return false;
+						}
+					}
+
+				}
 
 				$zip = static::_getZipInstance($srcZip);
 				$result = $zip->unzip($srcZip, $destFolder);
