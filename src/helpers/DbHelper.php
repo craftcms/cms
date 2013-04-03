@@ -450,7 +450,7 @@ class DbHelper
 		{
 			if (!$date instanceof \DateTime)
 			{
-				$date = DateTime::createFromString($date);
+				$date = DateTime::createFromString($date, craft()->timezone);
 			}
 
 			$param = ':p'.StringHelper::randomString(9);
