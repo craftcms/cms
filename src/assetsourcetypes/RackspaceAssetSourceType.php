@@ -423,7 +423,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
-		$this->_deleteObject($this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().$folder->fullPath.$filename));
+		$uriPath = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix() . $folder->fullPath . $filename);
+
+		$this->_deleteObject($uriPath);
+		$this->_purgeObject($uriPath);
 	}
 
 	/**
@@ -1068,6 +1071,17 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	{
 		$this->_doAuthenticatedRequest(static::RackspaceStorageOperation, $uriPath, 'DELETE');
 	}
+
+	/**
+	 * Purge a file from Akamai CDN
+	 *
+	 * @param $uriPath
+	 */
+	private function _purgeObject($uriPath)
+	{
+		$this->_doAuthenticatedRequest(static::RackspaceCDNOperation, $uriPath, 'DELETE');
+	}
+
 
 	/**
 	 * Copy a file on Rackspace.
