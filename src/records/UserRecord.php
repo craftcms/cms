@@ -57,7 +57,6 @@ class UserRecord extends BaseRecord
 
 		if (Craft::hasPackage(CraftPackage::Users))
 		{
-			$relations['profile'] = array(static::HAS_ONE, 'UserProfileRecord', 'userId');
 			$relations['groups']  = array(static::MANY_MANY, 'UserGroupRecord', 'usergroups_users(userId, groupId)');
 		}
 
