@@ -237,6 +237,76 @@ Craft = $.extend(Craft, {
 	},
 
 	/**
+	 * Expands an array of POST array-style strings into an actual array.
+	 *
+	 * @param array arr
+	 * @return array
+	 */
+	expandPostArray: function(arr)
+	{
+		var expanded = {};
+
+		for (key in arr)
+		{
+			var value = arr[key],
+				m = key.match(/^(\w+)(\[.*)?/);
+
+			if (m[2])
+			{
+				// Get all of the nested keys
+				var keys = m[2].match(/\[[^\[\]]*\]/g);
+
+				// Chop off the brackets
+				for (var i = 0; i < keys.length; i++)
+				{
+					keys[i] = keys[i].substring(1, keys[i].length-1);
+				}
+			}
+			else
+			{
+				var keys = [];
+			}
+
+			keys.unshift(m[1]);
+
+			var parentElem = expanded;
+
+			for (var i = 0; i < keys.length; i++)
+			{
+				if (i < keys.length-1)
+				{
+					if (typeof parentElem[keys[i]] == 'undefined')
+					{
+						// Figure out what this will be by looking at the next key
+						if (!keys[i+1] || parseInt(keys[i+1]) == keys[i+1])
+						{
+							parentElem[keys[i]] = [];
+						}
+						else
+						{
+							parentElem[keys[i]] = {};
+						}
+					}
+
+					parentElem = parentElem[keys[i]];
+				}
+				else
+				{
+					// Last one. Set the value
+					if (!keys[i])
+					{
+						keys[i] = parentElem.length;
+					}
+
+					parentElem[keys[i]] = value;
+				}
+			}
+		}
+
+		return expanded;
+	},
+
+	/**
 	 * Takes an array or string of chars, and places a backslash before each one, returning the combined string.
 	 *
 	 * Userd by ltrim() and rtrim()

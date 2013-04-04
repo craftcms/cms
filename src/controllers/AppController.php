@@ -30,6 +30,31 @@ class AppController extends BaseController
 	}
 
 	/**
+	 * Shuns a CP alert for 24 hours.
+	 */
+	public function actionShunCpAlert()
+	{
+		$this->requireAjaxRequest();
+
+		$message = craft()->request->getRequiredPost('message');
+		$user = craft()->userSession->getUser();
+
+		$currentTime = DateTimeHelper::currentUTCDateTime();
+		$tomorrow = $currentTime->add(new DateInterval('P1D'));
+
+		if (craft()->users->shunMessageForUser($user->id, $message, $tomorrow))
+		{
+			$this->returnJson(array(
+				'success' => true
+			));
+		}
+		else
+		{
+			$this->returnErrorJson(Craft::t('An unknown error occurred.'));
+		}
+	}
+
+	/**
 	 * Transfers the Craft license to the current domain.
 	 */
 	public function actionTransferLicenseToCurrentDomain()
@@ -74,9 +99,14 @@ class AppController extends BaseController
 				}
 
 				// Include which packages are in trial
-				foreach ($etResponse->packageTrials as $packageName)
+				foreach ($etResponse->packageTrials as $packageName => $expiryDate)
 				{
+					$currentTime = DateTimeHelper::currentUTCDateTime();
+					$diff = $expiryDate - $currentTime->getTimestamp();
+					$daysLeft = round($diff / 86400); // 60 * 60 * 24
+
 					$packages[$packageName]['trial'] = true;
+					$packages[$packageName]['daysLeftInTrial'] = $daysLeft;
 				}
 
 				$this->returnJson(array(
@@ -154,5 +184,32 @@ class AppController extends BaseController
 		$this->returnJson(array(
 			'success' => $success
 		));
+	}
+
+	/**
+	 * Begins a package trial.
+	 */
+	public function actionBeginPackageTrial()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$model = new TryPackageModel(array(
+			'packageHandle' => craft()->request->getRequiredPost('package'),
+		));
+
+		if (craft()->et->tryPackage($model))
+		{
+			$this->returnJson(array(
+				'success' => true,
+				'package' => $model->packageHandle
+			));
+		}
+		else
+		{
+			$this->returnJson(array(
+				'errors' => $model->getErrors()
+			));
+		}
 	}
 }

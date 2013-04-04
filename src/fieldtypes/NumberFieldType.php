@@ -62,10 +62,10 @@ class NumberFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		return craft()->templates->render('_components/fieldtypes/Number/input', array(
-			'name'     => $name,
-			'value'    => $value,
-			'settings' => $this->getSettings()
+		return craft()->templates->render('_includes/forms/text', array(
+			'name'  => $name,
+			'value' => $value,
+			'size'  => 5
 		));
 	}
 }

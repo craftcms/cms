@@ -37,6 +37,7 @@ class InstallService extends BaseApplicationComponent
 			$this->_createForeignKeysFromRecords($records);
 
 			$this->_createContentTable();
+			$this->_createShunnedMessagesTable();
 			$this->_createAndPopulateInfoTable($inputs);
 
 			Craft::log('Committing the transaction.');
@@ -149,14 +150,34 @@ class InstallService extends BaseApplicationComponent
 		Craft::log('Creating the content table.');
 
 		craft()->db->createCommand()->createTable('content', array(
-			'elementId' => array('column' => ColumnType::Int, 'required' => true),
-			'locale'    => array('column' => ColumnType::Locale, 'required' => true),
+			'elementId' => array('column' => ColumnType::Int, 'null' => false),
+			'locale'    => array('column' => ColumnType::Locale, 'null' => false),
 		));
 		craft()->db->createCommand()->createIndex('content', 'elementId,locale', true);
 		craft()->db->createCommand()->addForeignKey('content', 'elementId', 'elements', 'id', 'CASCADE', null);
 		craft()->db->createCommand()->addForeignKey('content', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
 
 		Craft::log('Finished creating the content table.');
+	}
+
+	/**
+	 * Creates the shunnedmessages table.
+	 *
+	 * @access private
+	 */
+	private function _createShunnedMessagesTable()
+	{
+		Craft::log('Creating the shunnedmessages table.');
+
+		craft()->db->createCommand()->createTable('shunnedmessages', array(
+			'userId'     => array('column' => ColumnType::Int, 'null' => false),
+			'message'    => array('column' => ColumnType::Varchar, 'null' => false),
+			'expiryDate' => array('column' => ColumnType::DateTime),
+		));
+		craft()->db->createCommand()->createIndex('shunnedmessages', 'userId,message', true);
+		craft()->db->createCommand()->addForeignKey('shunnedmessages', 'userId', 'users', 'id', 'CASCADE');
+
+		Craft::log('Finished creating the shunnedmessages table.');
 	}
 
 	/**
@@ -171,14 +192,15 @@ class InstallService extends BaseApplicationComponent
 		Craft::log('Creating the info table.');
 
 		craft()->db->createCommand()->createTable('info', array(
-			'version'     => array('maxLength' => 15, 'column' => ColumnType::Char, 'required' => true),
-			'build'       => array('maxLength' => 11, 'column' => ColumnType::Int, 'unsigned' => true, 'required' => true),
-			'packages'    => array('maxLength' => 200),
-			'releaseDate' => array('column' => ColumnType::DateTime, 'required' => true),
-			'siteName'    => array('maxLength' => 100, 'column' => ColumnType::Varchar, 'required' => true),
-			'siteUrl'     => array('maxLength' => 255, 'column' => ColumnType::Varchar, 'required' => true),
-			'on'          => array('maxLength' => 1, 'default' => false, 'required' => true, 'column' => ColumnType::TinyInt, 'unsigned' => true),
-			'maintenance' => array('maxLength' => 1, 'default' => false, 'required' => true, 'column' => ColumnType::TinyInt, 'unsigned' => true),
+			'version'     => array('column' => ColumnType::Char, 'length' => 15, 'null' => false),
+			'build'       => array('column' => ColumnType::Int, 'length' => 11, 'unsigned' => true, 'null' => false),
+			'packages'    => array('column' => ColumnType::Varchar, 'length' => 200),
+			'releaseDate' => array('column' => ColumnType::DateTime, 'null' => false),
+			'siteName'    => array('column' => ColumnType::Varchar, 'length' => 100, 'null' => false),
+			'siteUrl'     => array('column' => ColumnType::Varchar, 'length' => 255, 'null' => false),
+			'timezone'    => array('column' => ColumnType::Varchar, 'length' => 30),
+			'on'          => array('column' => ColumnType::TinyInt, 'length' => 1, 'unsigned' => true, 'default' => false, 'null' => false),
+			'maintenance' => array('column' => ColumnType::TinyInt, 'length' => 1, 'unsigned' => true, 'default' => false, 'null' => false),
 		));
 
 		Craft::log('Finished creating the info table.');

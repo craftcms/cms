@@ -7,6 +7,17 @@ namespace Craft;
 class FeedsService extends BaseApplicationComponent
 {
 	/**
+	 *
+	 */
+	public function init()
+	{
+		parent::init();
+
+		// Import this here to ensure that libs like SimplePie are using our version of the class and not any servers's random version.
+		require_once(Craft::getPathOfAlias('system.vendors.idna_convert').DIRECTORY_SEPARATOR.'idna_convert.class.php');
+	}
+
+	/**
 	 * Returns the items for the Feed widget.
 	 *
 	 * @param string|array $url
@@ -17,6 +28,12 @@ class FeedsService extends BaseApplicationComponent
 	public function getFeedItems($url, $limit = 0, $offset = 0)
 	{
 		$items = array();
+
+		if (!extension_loaded('dom'))
+		{
+			Craft::log('Craft needs the PHP DOM extension (http://www.php.net/manual/en/book.dom.php) enabled to parse feeds.', \CLogger::LEVEL_WARNING);
+			return $items;
+		}
 
 		$this->_registerSimplePieAutoloader();
 		$feed = new \SimplePie();

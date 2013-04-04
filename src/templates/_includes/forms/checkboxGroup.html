@@ -1,0 +1,18 @@
+{%- set options = (options is defined ? options : []) %}
+{%- set values = (values is defined ? values : []) %}
+{%- set name = (name is defined and name ? name~'[]' : null) %}
+
+{%- for key, option in options %}
+	{%- set optionLabel = (option.label is defined ? option.label : option) %}
+	{%- set optionValue = (option.value is defined ? option.value : key) -%}
+	<div>
+		{% include "_includes/forms/checkbox" with {
+			label:     optionLabel,
+			id:        (loop.first and id is defined ? id : null),
+			name:      name,
+			value:     optionValue,
+			checked:   (optionValue in values),
+			autofocus: (autofocus is defined and autofocus and loop.first and not craft.request.isMobileBrowser(true))
+		} only %}
+	</div>
+{%- endfor %}

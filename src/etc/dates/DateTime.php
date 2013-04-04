@@ -8,25 +8,37 @@ class DateTime extends \DateTime
 {
 	const W3C_DATE = 'Y-m-d';
 	const MYSQL_DATETIME = 'Y-m-d H:i:s';
+	const UTC = 'UTC';
 
 	/**
 	 * Creates a new \Craft\DateTime object (rather than \DateTime)
 	 *
 	 * @param string $format
 	 * @param string $time
-	 * @param \DateTimeZone|null $timezone
+	 * @param mixed  $timezone The timezone the string is set in (defaults to UTC).
 	 * @return DateTime
 	 */
 	public static function createFromFormat($format, $time, $timezone = null)
 	{
-		if ($timezone === null)
+		if (!$timezone)
 		{
-			$timezone = new \DateTimeZone('UTC');
+			// Default to UTC
+			$timezone = static::UTC;
+		}
+
+		if (is_string($timezone))
+		{
+			$timezone = new \DateTimeZone($timezone);
 		}
 
 		$dateTime = parent::createFromFormat($format, $time, $timezone);
 
-		return new DateTime('@'.$dateTime->getTimestamp());
+		$timeStamp = $dateTime->getTimestamp();
+
+		if (DateTimeHelper::isValidTimeStamp($timeStamp))
+		{
+			return new DateTime('@'.$dateTime->getTimestamp());
+		}
 	}
 
 	/**
@@ -39,10 +51,11 @@ class DateTime extends \DateTime
 	 *  - Relaxed versions of W3C and MySQL formats (single-digit months, days, and hours)
 	 *  - Unix timestamps
 	 *
-	 * @param string $date
+	 * @param string      $date
+	 * @param stirng|null $timezone The PHP timezone identifier, if not specified in $date. Defaults to UTC. (See http://php.net/manual/en/timezones.php)
 	 * @return DateTime
 	 */
-	public static function createFromString($date)
+	public static function createFromString($date, $timezone = null)
 	{
 		$date = (string) $date;
 
@@ -77,6 +90,11 @@ class DateTime extends \DateTime
 				$format .= 'P';
 				$date   .= $m['tzd'];
 			}
+			else if ($timezone !== null)
+			{
+				$format .= 'e';
+				$date   .= $timezone;
+			}
 		}
 		else if (preg_match('/^\d{10}$/', $date))
 		{
@@ -96,6 +114,28 @@ class DateTime extends \DateTime
 	function __toString()
 	{
 		return $this->format('M j, Y');
+	}
+
+	/**
+	 * @param string $format
+	 * @param mixed  $timezone The timezone to output the date in (defaults to the current app timezone).
+	 * @return string
+	 */
+	function format($format, $timezone = null)
+	{
+		if (!$timezone)
+		{
+			// Default to the current app timezone
+			$timezone = craft()->timezone;
+		}
+
+		if (is_string($timezone))
+		{
+			$timezone = new \DateTimeZone($timezone);
+		}
+
+		$this->setTimezone($timezone);
+		return parent::format($format);
 	}
 
 	/**

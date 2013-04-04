@@ -33,19 +33,27 @@ class DateTimeHelper
 		// Eventually this will return the time in the appropriate database format for MySQL, Postgre, etc.
 		// For now, it's MySQL only.
 		$date = DateTimeHelper::currentUTCDateTime();
-		return $date->format(DateTime::MYSQL_DATETIME);
+		return $date->format(DateTime::MYSQL_DATETIME, DateTime::UTC);
 	}
 
 	/**
 	 * @param $timeStamp
 	 * @return DateTime
 	 */
-	public static function formatTimeForDb($timeStamp)
+	public static function formatTimeForDb($timeStamp = null)
 	{
 		// Eventually this will accept a database parameter and format the timestamp for the given database date/time datatype.
 		// For now, it's MySQL only.
-		$dt = new DateTime('@'.$timeStamp);
-		return $dt->format(DateTime::MYSQL_DATETIME);
+		if ($timeStamp)
+		{
+			$dt = new DateTime('@'.$timeStamp);
+		}
+		else
+		{
+			$dt = new DateTime();
+		}
+
+		return $dt->format(DateTime::MYSQL_DATETIME, DateTime::UTC);
 	}
 
 	/**

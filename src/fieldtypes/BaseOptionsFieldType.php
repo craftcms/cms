@@ -22,36 +22,6 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Preps the settings before they're saved to the database.
-	 *
-	 * @param array $settings
-	 * @return array
-	 */
-	public function prepSettings($settings)
-	{
-		// Expand the options setting into an array.
-		if (!isset($settings['options']) || !is_array($settings['options']))
-		{
-			$options = array();
-
-			if (!empty($settings['options']) && is_string($settings['options']))
-			{
-				$lines = array_filter(preg_split('/[\r\n]+/', $settings['options']));
-
-				foreach($lines as $line)
-				{
-					$parts = preg_split('/=>/', $line, 2);
-					$options[trim($parts[0])] = (isset($parts[1])) ? trim($parts[1]) : trim($parts[0]);
-				}
-			}
-
-			$settings['options'] = $options;
-		}
-
-		return $settings;
-	}
-
-	/**
 	 * Returns the content attribute config.
 	 *
 	 * @return mixed
@@ -75,28 +45,62 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		// Prepare the options array for the textarea
-		$options = '';
+		$options = $this->getOptions();
 
-		if (is_array($this->getSettings()->options))
+		if (!$options)
 		{
-			foreach ($this->getSettings()->options as $value => $label)
-			{
-				if ((string)$value === (string)$label)
-				{
-					$options .= $label."\n";
-				}
-				else
-				{
-					$options .= $value.' => '.$label."\n";
-				}
-			}
+			// Give it a default row
+			$options = array(array('label' => '', 'value' => ''));
 		}
 
-		return craft()->templates->render('_components/fieldtypes/optionsfieldsettings', array(
-			'label'   => $this->getOptionsSettingsLabel(),
-			'options' => $options
+		$class = $this->getClassHandle();
+
+		return craft()->templates->renderMacro('_includes/forms', 'editableTableField', array(
+			array(
+				'label'        => $this->getOptionsSettingsLabel(),
+				'instructions' => Craft::t('Define the available options.'),
+				'id'           => 'options',
+				'name'         => 'options',
+				'jsId'         => 'types-'.$class.'-options',
+				'jsName'       => 'types['.$class.'][options]',
+				'addRowLabel'  => Craft::t('Add an option'),
+				'cols'         => array(
+					'label' => array(
+						'heading'      => Craft::t('Option Label'),
+						'type'         => 'singleline',
+						'autopopulate' => 'value'
+					),
+					'value' => array(
+						'heading'      => Craft::t('Value'),
+						'type'         => 'singleline',
+						'class'        => 'code'
+					),
+					'default' => array(
+						'heading'      => Craft::t('Default?'),
+						'type'         => 'checkbox',
+						'class'        => 'thin'
+					),
+				),
+				'rows' => $options
+			)
 		));
+	}
+
+	/**
+	 * Preps the settings before they're saved to the database.
+	 *
+	 * @param array $settings
+	 * @return array
+	 */
+	public function prepSettings($settings)
+	{
+		if (!empty($settings['options']))
+		{
+			// Drop the string row keys
+			$settings['options'] = array_values($settings['options']);
+		}
+
+		return $settings;
 	}
 
 	/**
@@ -107,4 +111,34 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	 * @return string
 	 */
 	abstract protected function getOptionsSettingsLabel();
+
+	/**
+	 * Returns the field options, accounting for the old school way of saving them.
+	 *
+	 * @access protected
+	 * @return array
+	 */
+	protected function getOptions()
+	{
+		$oldOptions = $this->getSettings()->options;
+		$newOptions = array();
+
+		if (is_array($oldOptions))
+		{
+			foreach ($oldOptions as $key => $option)
+			{
+				// Old school?
+				if (!is_array($option))
+				{
+					$newOptions[] = array('label' => $option, 'value' => $key, 'default' => '');
+				}
+				else
+				{
+					$newOptions[] = $option;
+				}
+			}
+		}
+
+		return $newOptions;
+	}
 }

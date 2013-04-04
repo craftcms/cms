@@ -1,91 +1,5 @@
 {% extends "_layouts/cp" %}
-{% includeCssResource "css/entry.css" %}
 {% import "_includes/forms" as forms %}
-
-{% set crumbs = [
-	{ label: "Entries"|t, url: url('entries') }
-] %}
-
-
-{% set section = craft.sections.getSectionByHandle(sectionHandle) %}
-{% if not section %}{% exit 404 %}{% endif %}
-
-{% if craft.hasPackage('PublishPro') %}
-	{% set crumbs = crumbs|merge([ { label: section.name|t, url: url('entries/'~section.handle) } ]) %}
-{% endif %}
-
-{% set permissionSuffix = ':'~section.id %}
-{% requirePermission 'editEntries'~permissionSuffix %}
-
-
-{% if craft.hasPackage('Localize') %}
-	{% set editableLocaleIds = craft.i18n.getEditableLocaleIds() %}
-	{% set sectionLocaleIds = section.getLocales()|keys|intersect(editableLocaleIds) %}
-
-	{% if not sectionLocaleIds %}
-		{% exit 404 %}
-	{% endif %}
-
-	{% if localeId is not defined %}
-		{% set localeId = craft.locale %}
-
-		{% if localeId not in sectionLocaleIds %}
-			{% set localeId = sectionLocaleIds[0] %}
-		{% endif %}
-	{% elseif localeId not in sectionLocaleIds %}
-		{% exit 404 %}
-	{% endif %}
-{% endif %}
-
-
-{% if entry is not defined and entryId is defined %}
-	{% if draftId is defined %}
-		{% set entry = craft.entryRevisions.getDraftById(draftId) %}
-	{% elseif versionId is defined %}
-		{% set entry = craft.entryRevisions.getVersionById(versionId) %}
-	{% else %}
-		{% set params = { id: entryId, status: '*' } %}
-		{% if craft.hasPackage('Localize') %}
-			{% set params = params|merge({ locale: localeId }) %}
-		{% endif %}
-		{% set entry = craft.entries.first(params) %}
-	{% endif %}
-
-	{% if not entry %}{% exit 404 %}{% endif %}
-{% endif %}
-
-
-{% set isNewEntry = (entry is not defined or not entry.id) %}
-
-
-{% if isNewEntry %}
-	{% requirePermission 'createEntries'~permissionSuffix %}
-{% elseif entry.authorId != user.id %}
-	{% requirePermission 'editPeerEntries'~permissionSuffix %}
-{% endif %}
-
-
-{% if not isNewEntry and entry.classHandle == 'EntryDraft' %}
-	{% if entry.creatorId != user.id %}
-		{% requirePermission 'editPeerEntryDrafts'~permissionSuffix %}
-	{% endif %}
-
-	{% set revisionLabel = "Draft {id}"|t({ id: draftId }) %}
-{% elseif not isNewEntry and entry.classHandle == 'EntryVersion' %}
-	{% set revisionLabel = "Version {id}"|t({ id: versionId }) %}
-{% else %}
-	{% set revisionLabel = "Current"|t %}
-{% endif %}
-
-
-{% if isNewEntry %}
-	{% set title = "Create a new entry"|t %}
-{% else %}
-	{% set title = entry.title %}
-	{% if entry is defined and entry.classHandle != 'Entry' %}
-		{% set title = title ~ ' <span class="hidden">(' ~ revisionLabel ~ ')</span>' %}
-	{% endif %}
-{% endif %}
 
 
 {% set extraPageHeaderHtml %}
@@ -100,46 +14,17 @@
 		</div>
 	{% endif %}
 
-	{% if not isNewEntry and craft.hasPackage('PublishPro') %}
+	{% if entry.id and craft.hasPackage('PublishPro') %}
 		{% include "entries/_revisions" %}
 	{% endif %}
 {% endset %}
-
-
-{% set tabs = [] %}
-
-{% for tab in section.getFieldLayout().getTabs() %}
-	{% set hasErrors = false %}
-	{% if entry is defined %}
-		{% for field in tab.getFields() %}
-			{% if entry.getErrors(field.getField().handle) %}
-				{% set hasErrors = true %}
-			{% endif %}
-		{% endfor %}
-	{% endif %}
-
-	{% set tabs = tabs|merge([{
-		label: tab.name,
-		url: '#tab'~loop.index,
-		class: (hasErrors ? 'error' : null)
-	}]) %}
-{% endfor %}
-
-
-{% set hasErrors = (entry is defined and (entry.getErrors('slug') or entry.getErrors('postDate') or entry.getErrors('expiryDate') or entry.getErrors('tags'))) %}
-
-{% set tabs = tabs|merge([{
-	label: "Settings"|t,
-	url: '#entry-settings',
-	class: (hasErrors ? 'error' : null)
-}]) %}
 
 
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8">
 		<input type="hidden" name="sectionId" value="{{ section.id }}">
 
-		{% if not isNewEntry %}
+		{% if entry.id %}
 			<input type="hidden" name="entryId" value="{{ entry.id }}">
 		{% endif %}
 
@@ -151,8 +36,8 @@
 			label: section.titleLabel,
 			id: 'title',
 			name: 'title',
-			value: (entry is defined ? entry.title : null),
-			errors: (entry is defined ? entry.getErrors('title') : null),
+			value: entry.title,
+			errors: entry.getErrors('title'),
 			first: true,
 			autofocus: true,
 			required: true
@@ -162,7 +47,7 @@
 			<div id="tab{{ loop.index }}"{% if not loop.first %} class="hidden"{% endif %}>
 				{% include "_includes/fields" with {
 					fields: tab.getFields(),
-					element: (entry is defined ? entry : null)
+					element: entry
 				} only %}
 			</div>
 		{% endfor %}
@@ -172,18 +57,22 @@
 				label: "Slug"|t,
 				id: 'slug',
 				name: 'slug',
-				value: (entry is defined ? entry.slug : null),
-				errors: (entry is defined ? entry.getErrors('slug') : null),
+				value: entry.slug,
+				errors: entry.getErrors('slug'),
 				required: true
 			}) }}
 
 			{% if craft.hasPackage('Users') %}
+				{% set authors = [] %}
+				{% for author in craft.users.find() %}
+					{% set authors = authors|merge([{ label: author.name, value: author.id }]) %}
+				{% endfor %}
 				{{ forms.selectField({
 					label: "Author"|t,
 					id: 'author',
 					name: 'author',
-					options: craft.users.indexBy('id').find,
-					value: (entry is defined ? entry.authorId : user.id)
+					options: authors,
+					value: entry.authorId
 				}) }}
 			{% endif %}
 
@@ -192,8 +81,8 @@
 				instructions: "When should the entry go live? (Set automatically if left blank)"|t,
 				id: 'postDate',
 				name: 'postDate',
-				value: (entry is defined and entry.postDate ? entry.postDate.w3cDate : null),
-				errors: (entry is defined ? entry.getErrors('postDate') : null)
+				value: (entry.postDate ? entry.postDate.w3cDate : null),
+				errors: entry.getErrors('postDate')
 			}) }}
 
 			{{ forms.dateField({
@@ -201,8 +90,8 @@
 				instructions: "When should the entry expire?"|t,
 				id: 'expiryDate',
 				name: 'expiryDate',
-				value: (entry is defined and entry.expiryDate ? entry.expiryDate.w3cDate : null),
-				errors: (entry is defined ? entry.getErrors('expiryDate') : null)
+				value: (entry.expiryDate ? entry.expiryDate.w3cDate : null),
+				errors: entry.getErrors('expiryDate')
 			}) }}
 
 			{{ forms.textField({
@@ -210,19 +99,19 @@
 				instructions: "List multiple tags separated by commas."|t,
 				id: 'tags',
 				name: 'tags',
-				value: (entry is defined ? entry.tags|join(', ') : null),
-				errors: (entry is defined ? entry.getErrors('tags') : null),
+				value: entry.tags|join(', '),
+				errors: entry.getErrors('tags'),
 			}) }}
 
 			{% if user.can('publishEntries'~permissionSuffix) %}
 				{% set statusLabel -%}
-					{{ "Status:"|t }} <i>{{ isNewEntry ? "Never saved"|t : entry.status|ucfirst|t }}</i>
+					{{ "Status:"|t }} <i>{{ entry.id ? entry.status|ucfirst|t : "Never saved"|t  }}</i>
 				{%- endset %}
 				{% set statusInput %}
 					{{ forms.checkboxField({
 						label: "Entry is enabled",
 						name: 'enabled',
-						checked: (entry is defined ? entry.enabled : true)
+						checked: entry.enabled
 					}) }}
 				{% endset %}
 				{{ forms.field({
@@ -235,7 +124,7 @@
 		<hr>
 
 		<div class="buttons">
-			{% if not isNewEntry and entry.classHandle == 'EntryDraft' %}
+			{% if entry.id and entry.classHandle == 'EntryDraft' %}
 
 				<input type="hidden" name="action" value="entryRevisions/saveDraft">
 				<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{{ entry.draftId }}">
@@ -246,7 +135,7 @@
 					<input type="button" class="btn formsubmit" value="{{ 'Publish Draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.cpEditUrl }}">
 				{% endif %}
 
-			{% elseif not isNewEntry and entry.classHandle == 'EntryVersion' %}
+			{% elseif entry.id and entry.classHandle == 'EntryVersion' %}
 
 				<!-- HIDE -->
 				<input type="hidden" name="action" value="entryRevisions/saveVersionAsDraft">
@@ -257,7 +146,7 @@
 
 			{% else %}
 
-				{% if isNewEntry or not entry.enabled or user.can('publishEntries'~permissionSuffix) %}
+				{% if not entry.id or not entry.enabled or user.can('publishEntries'~permissionSuffix) %}
 					<input type="hidden" name="action" value="entries/saveEntry">
 
 					{% if blx.hasPackage('PublishPro') %}
@@ -278,7 +167,7 @@
 						</div>
 					</div>
 
-					{% if not isNewEntry and craft.hasPackage('PublishPro') %}
+					{% if entry.id and craft.hasPackage('PublishPro') %}
 						<input type="button" class="btn formsubmit" value="{{ 'Save as Draft'|t }}" data-action="entryRevisions/saveDraft" data-redirect="{{ entry.cpEditUrl }}/drafts/{draftId}">
 					{% endif %}
 				{% else %}
@@ -294,7 +183,6 @@
 {% endset %}
 
 
-{% if entry is not defined or not entry.slug %}
+{% if not entry.slug %}
 	{% includeJs "new Craft.SlugGenerator('#title', '#slug');" %}
 {% endif %}
-

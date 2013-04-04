@@ -36,6 +36,7 @@ class TableFieldType extends BaseFieldType
 	{
 		return array(
 			'columns' => AttributeType::Mixed,
+			'defaults' => AttributeType::Mixed,
 		);
 	}
 
@@ -47,15 +48,84 @@ class TableFieldType extends BaseFieldType
 	public function getSettingsHtml()
 	{
 		$columns = $this->getSettings()->columns;
+		$defaults = $this->getSettings()->defaults;
 
 		if (!$columns)
 		{
-			$columns = array('1' => array('heading' => '', 'handle' => ''));
+			$columns = array('col1' => array('heading' => '', 'handle' => '', 'type' => 'singleline'));
+
+			// Update the actual settings model for getInputHtml()
+			$this->getSettings()->columns = $columns;
 		}
 
-		return craft()->templates->render('_components/fieldtypes/Table/settings', array(
-			'columns' => $columns,
+		if (!$defaults)
+		{
+			$defaults = array('row1' => array());
+		}
+
+		$columnSettings = array(
+			'heading' => array(
+				'heading' => Craft::t('Column Heading'),
+				'type' => 'singleline',
+				'autopopulate' => 'handle'
+			),
+			'handle' => array(
+				'heading' => Craft::t('Handle'),
+				'class' => 'code',
+				'type' => 'singleline'
+			),
+			'width' => array(
+				'heading' => Craft::t('Width'),
+				'class' => 'code',
+				'type' => 'singleline',
+				'width' => 50
+			),
+			'type' => array(
+				'heading' => Craft::t('Type'),
+				'class' => 'thin',
+				'type' => 'select',
+				'options' => array(
+					'singleline' => Craft::t('Single-line Text'),
+					'multiline' => Craft::t('Multi-line text'),
+					'number' => Craft::t('Number'),
+					'checkbox' => Craft::t('Checkbox'),
+				)
+			),
+		);
+
+		craft()->templates->includeJsResource('js/TableFieldSettings.js');
+		craft()->templates->includeJs('new Craft.TableFieldSettings(' .
+			JsonHelper::encode($columns).', ' .
+			JsonHelper::encode($defaults).', ' .
+			JsonHelper::encode($columnSettings) .
+		');');
+
+		$columnsField = craft()->templates->renderMacro('_includes/forms', 'editableTableField', array(
+			array(
+				'label'        => Craft::t('Table Columns'),
+				'instructions' => Craft::t('Define the columns your table should have.'),
+				'id'           => 'columns',
+				'name'         => 'columns',
+				'cols'         => $columnSettings,
+				'rows'         => $columns,
+				'addRowLabel'  => Craft::t('Add a column'),
+				'initJs'       => false
+			)
 		));
+
+		$defaultsField = craft()->templates->renderMacro('_includes/forms', 'editableTableField', array(
+			array(
+				'label'        => Craft::t('Default Values'),
+				'instructions' => Craft::t('Define the default values for the field.'),
+				'id'           => 'defaults',
+				'name'         => 'defaults',
+				'cols'         => $columns,
+				'rows'         => $defaults,
+				'initJs'       => false
+			)
+		));
+
+		return $columnsField . $defaultsField;
 	}
 
 	/**
@@ -71,19 +141,23 @@ class TableFieldType extends BaseFieldType
 
 		if ($columns)
 		{
-			$id = preg_replace('/[\[\]]+/', '-', $name);
-
-			$cols = array();
-
-			foreach ($columns as $colId => $col)
+			// If this is a new entry, use the default values
+			if (!isset($this->element))
 			{
-				$cols[$colId] = $col['heading'];
+				$defaults = $this->getSettings()->defaults;
+
+				if (is_array($defaults))
+				{
+					$value = array_values($defaults);
+				}
 			}
 
-			return craft()->templates->render('_components/fieldtypes/Table/input', array(
+			$id = preg_replace('/[\[\]]+/', '-', $name);
+
+			return craft()->templates->render('_includes/forms/editableTable', array(
 				'id'   => $id,
 				'name' => $name,
-				'cols' => $cols,
+				'cols' => $columns,
 				'rows' => $value
 			));
 		}
@@ -122,7 +196,7 @@ class TableFieldType extends BaseFieldType
 				{
 					if ($col['handle'])
 					{
-						$row[$col['handle']] = $row[$colId];
+						$row[$col['handle']] = (isset($row[$colId]) ? $row[$colId] : null);
 					}
 				}
 			}

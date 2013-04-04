@@ -91,14 +91,28 @@ class ElementsService extends BaseApplicationComponent
 	 * Finds an element.
 	 *
 	 * @param mixed $criteria
-	 * @return SectionElementModel|null
+	 * @param bool  $getLast
+	 * @return BaseElementModel|null
 	 */
-	public function findElement($criteria = null)
+	public function findElement($criteria = null, $getLast = false)
 	{
 		$query = $this->buildElementsQuery($criteria);
 
 		if ($query)
 		{
+			if ($order = $criteria->order)
+			{
+				if ($getLast)
+				{
+					// swap asc's and desc's
+					$order = str_ireplace('asc', 'thisisjustatemporarything', $order);
+					$order = str_ireplace('desc', 'asc', $order);
+					$order = str_ireplace('thisisjustatemporarything', 'desc', $order);
+				}
+
+				$query->order($order);
+			}
+
 			$result = $query->queryRow();
 
 			if ($result)
@@ -145,7 +159,7 @@ class ElementsService extends BaseApplicationComponent
 	{
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
-			$criteria = $this->getCriteria('SectionElement', $criteria);
+			$criteria = $this->getCriteria('Entry', $criteria);
 		}
 
 		$elementType = $criteria->getElementType();

@@ -1,0 +1,14 @@
+{%- set onLabel = (onLabel is defined ? onLabel : "Yes"|t) %}
+{%- set offLabel = (offLabel is defined ? offLabel : "No"|t) %}
+{%- set on = (on is defined ? on : false) %}
+
+<div class="lightswitch{% if on %} on{% endif %}"{% if toggle is defined and toggle %} data-target="{{ toggle }}"{% endif %} tabindex="0">
+	<div class="container">
+		<div class="label on">{{ onLabel }}</div>
+		<div class="handle"></div>
+		<div class="label off">{{ offLabel }}</div>
+	</div>
+	<input type="hidden"
+		{%- if name is defined and name %} name="{{ name }}" {% endif -%}
+		value="{{ on ? 'on' : null }}">
+</div>

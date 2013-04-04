@@ -16,7 +16,7 @@
 			label: "System Status"|t,
 			id: 'on',
 			name: 'on',
-			on: (info is defined ? info.on : craft.app.isSystemOn),
+			on: info.on,
 			onLabel: "On"|t,
 			offLabel: "Off"|t
 		}) }}
@@ -25,19 +25,27 @@
 			label: "Site Name"|t,
 			id: 'siteName',
 			name: 'siteName',
-			value: (info is defined ? info.siteName : craft.app.siteName),
+			value: info.siteName,
 			autofocus: true,
 			required: true,
-			errors: (info is defined ? info.getErrors('siteName') : null)
+			errors: info.getErrors('siteName')
 		}) }}
 
 		{{ forms.textField({
 			label: "Site URL"|t,
 			id: 'siteUrl',
 			name: 'siteUrl',
-			value: (info is defined ? info.siteUrl : craft.app.siteUrl),
+			value: info.siteUrl,
 			required: true,
-			errors: (info is defined ? info.getErrors('siteUrl') : null)
+			errors: info.getErrors('siteUrl')
+		}) }}
+
+		{{ forms.selectField({
+			label: "Timezone"|t,
+			id: 'timezone',
+			name: 'timezone',
+			value: info.timezone,
+			options: timezoneOptions
 		}) }}
 
 		<div class="buttons">

@@ -92,10 +92,13 @@ class PclZip implements IZip
 		// Create the destination directories.
 		foreach ($finalDestFolders as $finalDestFolder)
 		{
-			if (!IOHelper::createFolder($finalDestFolder))
+			if (!IOHelper::folderExists($finalDestFolder))
 			{
-				Craft::log('Could not create folder '.$finalDestFolder.' while unzipping: '.$srcZip, \CLogger::LEVEL_ERROR);
-				return false;
+				if (!IOHelper::createFolder($finalDestFolder))
+				{
+					Craft::log('Could not create folder '.$finalDestFolder.' while unzipping: '.$srcZip, \CLogger::LEVEL_ERROR);
+					return false;
+				}
 			}
 		}
 

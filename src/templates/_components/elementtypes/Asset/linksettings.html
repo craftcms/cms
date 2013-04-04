@@ -1,10 +1,14 @@
 {% from "_includes/forms" import checkboxSelectField %}
 
+{% set sourceOptions = [] %}
+{% for source in craft.assets.getAllSources() %}
+	{% set sourceOptions = sourceOptions|merge([{ label: source.name, value: source.id }]) %}
+{% endfor %}
 {{ checkboxSelectField({
 	label: "Asset Sources"|t,
 	instructions: "Which asset sources do you want to link files from?"|t,
 	id: 'sourceId',
 	name: 'sourceId',
-	options: craft.assets.getAllSources('id'),
+	options: sourceOptions,
 	values: settings.sourceId
 }) }}

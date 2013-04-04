@@ -34,7 +34,7 @@ class ZipArchive implements IZip
 	 */
 	public function unzip($srcZip, $destFolder)
 	{
-		@ini_set('memory_limit', '256M');
+		@ini_set('memory_limit', craft()->config->get('phpMaxMemoryLimit'));
 
 		$zip = new \ZipArchive();
 		$zipContents = $zip->open($srcZip, \ZipArchive::CHECKCONS);

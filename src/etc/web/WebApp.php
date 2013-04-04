@@ -82,6 +82,16 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
+	 * Returns the current target timezone.
+	 *
+	 * @return string
+	 */
+	public function getTimezone()
+	{
+		return Craft::getTimezone();
+	}
+
+	/**
 	 * Processes the request.
 	 *
 	 * @throws HttpException

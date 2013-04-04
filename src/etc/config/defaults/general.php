@@ -180,7 +180,7 @@ return array(
 /**
  * Allowed file upload extensions.
  */
-'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,mid,mov,mp3,mp4,mpc,mpeg,mpg,ods,odt,ogg,pdf,png,pt,pptx,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vsd,wav,wma,wmv,xls,xlsx,zip',
+'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,mid,mov,mp3,mp4,m4a,m4v,mpc,mpeg,mpg,ods,odt,ogg,pdf,png,pt,pptx,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vsd,wav,wma,wmv,xls,xlsx,zip',
 
 /**
  * If set to 'auto', Craft will attempt to detect if PHP is set to save sessions to a distributed cache location (i.e. memcache)
@@ -207,6 +207,11 @@ return array(
  * If set to true, when renewing or restoring session from cookie, the current request must present a user agent and IP address.
  */
 'requireUserAgentAndIpForSession' => true,
+
+/**
+ * The maximum amount of memory Craft will try to reserve during memory intensive operations such as zipping, unzipping, updating, etc.
+ */
+'phpMaxMemoryLimit' => '256M',
 
 /**
  * Error Path Keys

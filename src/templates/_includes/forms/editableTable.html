@@ -1,0 +1,56 @@
+{%- set cols = (cols is defined ? cols : []) %}
+{%- set rows = (rows is defined ? rows : []) -%}
+
+<table id="{{ id }}" class="shadow-box editable">
+	<thead>
+		<tr>
+			{% for col in cols %}
+				<th scope="col" class="header">{{ col.heading ? col.heading : ' ' }}</th>
+			{% endfor %}
+			<th class="header" colspan="2"></th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for rowId, row in rows %}
+			<tr data-id="{{ rowId }}">
+				{% for colId, col in cols %}
+					{% set cellName = name~'['~rowId~']['~colId~']' %}
+					{% set value = (row[colId] is defined ? row[colId] : null) %}
+					{% set textual = (col.type in ['singleline','multiline','number']) %}
+					<td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
+						{%- if col.type == 'select' -%}
+							{% include "_includes/forms/select" with {
+								class:   'small',
+								name:    cellName,
+								options: col.options,
+								value:   value
+							} only %}
+						{%- elseif col.type == 'checkbox' -%}
+							<input type="hidden" name="{{ cellName }}">
+							<input type="checkbox" name="{{ cellName }}" value="1"{% if value %} checked{% endif %}>
+						{%- else -%}
+							<textarea name="{{ cellName }}" rows="1">{{ value }}</textarea>
+						{%- endif -%}
+					</td>
+				{% endfor %}
+				<td class="thin action"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
+				<td class="thin action"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<div class="buttons">
+	<div class="btn add icon small">{{ addRowLabel is defined ? addRowLabel : "Add a row"|t }}</div>
+</div>
+
+{% if initJs is not defined or initJs %}
+	{% set js %}
+		new Craft.EditableTable(
+			"{{ (jsId is defined   ? jsId   : id)   | e('js') }}",
+			"{{ (jsName is defined ? jsName : name) | e('js') }}",
+			{{ cols|json_encode|raw }});
+	{% endset %}
+
+	{% includeJs js %}
+{% endif %}
