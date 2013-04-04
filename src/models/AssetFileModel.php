@@ -246,13 +246,13 @@ class AssetFileModel extends BaseElementModel
 	 *
 	 * @param $dimension 'height' or 'width'
 	 * @param $transform
-	 * @return bool|float|mixed
+	 * @return null|float|mixed
 	 */
 	private function _getDimension($dimension, $transform)
 	{
 		if ($this->kind != 'image')
 		{
-			return false;
+			return null;
 		}
 
 		if ($transform === null && isset($this->_transform))
