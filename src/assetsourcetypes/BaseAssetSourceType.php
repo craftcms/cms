@@ -407,10 +407,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 					if ($fileToDelete)
 					{
 						$this->deleteFile($fileToDelete);
+						$this->_purgeCachedSourceFile($targetFolder, $filename);
 					}
 					else
 					{
 						$this->_deleteSourceFile($targetFolder, $filename);
+						$this->_purgeCachedSourceFile($targetFolder, $filename);
 					}
 					break;
 				}
@@ -589,6 +591,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		{
 			$this->_deleteGeneratedThumbnails($oldFile);
 			$this->_deleteSourceFile($oldFile->getFolder(), $oldFile->filename);
+			$this->_purgeCachedSourceFile($oldFile->getFolder(), $oldFile->filename);
 
 			// For remote sources, fetch the source image and move it in the old one's place
 			if (!$this->isSourceLocal())
@@ -923,4 +926,15 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$this->_deleteSourceFile($file->getFolder(), $file->filename);
 	}
 
+	/**
+	 * Purge a file from the Source's cache. Sources that need this should override this method.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param $filename
+	 * @return void
+	 */
+	protected function _purgeCachedSourceFile(AssetFolderModel $folder, $filename)
+	{
+		return;
+	}
 }

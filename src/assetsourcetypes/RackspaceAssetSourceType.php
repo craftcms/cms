@@ -426,7 +426,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$uriPath = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix() . $folder->fullPath . $filename);
 
 		$this->_deleteObject($uriPath);
-		$this->_purgeObject($uriPath);
+
 	}
 
 	/**
@@ -1082,6 +1082,17 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$this->_doAuthenticatedRequest(static::RackspaceCDNOperation, $uriPath, 'DELETE');
 	}
 
+	/**
+	 * Purge a file from Akamai CDN.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param $filename
+	 */
+	protected function _purgeCachedSourceFile(AssetFolderModel $folder, $filename)
+	{
+		$uriPath = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix() . $folder->fullPath . $filename);
+		$this->_purgeObject($uriPath);
+	}
 
 	/**
 	 * Copy a file on Rackspace.
