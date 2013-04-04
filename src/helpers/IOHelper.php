@@ -546,6 +546,7 @@ class IOHelper
 			return false;
 		}
 
+		Craft::log('Tried to read the file contents at '.$path.', but either the file does not exist or is it not readable.', \CLogger::LEVEL_ERROR);
 		return false;
 	}
 
