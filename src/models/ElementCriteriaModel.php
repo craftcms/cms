@@ -113,7 +113,13 @@ class ElementCriteriaModel extends BaseModel
 	public function first($attributes = null)
 	{
 		$this->setAttributes($attributes);
-		return craft()->elements->findElement($this);
+		$this->limit = 1;
+		$elements = $this->find();
+
+		if ($elements)
+		{
+			return $elements[0];
+		}
 	}
 
 	/**
@@ -125,7 +131,18 @@ class ElementCriteriaModel extends BaseModel
 	public function last($attributes = null)
 	{
 		$this->setAttributes($attributes);
-		return craft()->elements->findElement($this, true);
+
+		if ($order = $this->order)
+		{
+			// swap asc's and desc's
+			$order = str_ireplace('asc', 'thisisjustatemporarything', $order);
+			$order = str_ireplace('desc', 'asc', $order);
+			$order = str_ireplace('thisisjustatemporarything', 'desc', $order);
+
+			$this->order($order);
+		}
+
+		return $this->first();
 	}
 
 	/**

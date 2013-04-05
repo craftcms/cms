@@ -88,41 +88,6 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Finds an element.
-	 *
-	 * @param mixed $criteria
-	 * @param bool  $getLast
-	 * @return BaseElementModel|null
-	 */
-	public function findElement($criteria = null, $getLast = false)
-	{
-		$query = $this->buildElementsQuery($criteria);
-
-		if ($query)
-		{
-			if ($order = $criteria->order)
-			{
-				if ($getLast)
-				{
-					// swap asc's and desc's
-					$order = str_ireplace('asc', 'thisisjustatemporarything', $order);
-					$order = str_ireplace('desc', 'asc', $order);
-					$order = str_ireplace('thisisjustatemporarything', 'desc', $order);
-				}
-
-				$query->order($order);
-			}
-
-			$result = $query->queryRow();
-
-			if ($result)
-			{
-				return $criteria->getElementType()->populateElementModel($result);
-			}
-		}
-	}
-
-	/**
 	 * Gets the total number of elements.
 	 *
 	 * @param mixed $criteria
