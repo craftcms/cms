@@ -26,7 +26,7 @@ class RebrandController extends BaseController
 			{
 				$folderPath = craft()->path->getTempUploadsPath();
 				IOHelper::ensureFolderExists($folderPath);
-				IOHelper::clearFolder($folderPath);
+				IOHelper::clearFolder($folderPath, true);
 
 				$fileName = IOHelper::cleanFilename($uploader->file->getName());
 
