@@ -30,7 +30,7 @@ class Zip
 
 		IOHelper::createFile($destZip);
 
-		@ini_set('memory_limit', '256M');
+		@ini_set('memory_limit', craft()->config->get('phpMaxMemoryLimit'));
 
 		$zip = static::_getZipInstance($destZip);
 		return $zip->zip(IOHelper::getRealPath($source), IOHelper::getRealPath($destZip));
@@ -44,7 +44,7 @@ class Zip
 	 */
 	public static function unzip($srcZip, $destFolder)
 	{
-		@ini_set('memory_limit', '256M');
+		@ini_set('memory_limit', craft()->config->get('phpMaxMemoryLimit'));
 
 		if (IOHelper::fileExists($srcZip))
 		{
@@ -57,6 +57,20 @@ class Zip
 						Craft::log('Tried to create the unzip destination folder, but could not: '.$destFolder, \CLogger::LEVEL_ERROR);
 						return false;
 					}
+				}
+				else
+				{
+					// If the destination folder exists and it has contents, clear them.
+					if (($conents = IOHelper::getFolderContents($destFolder)) !== false)
+					{
+						// Begin the great purge.
+						if (!IOHelper::clearFolder($destFolder))
+						{
+							Craft::log('Tried to clear the contents of the unzip destination folder, but could not: '.$destFolder, \CLogger::LEVEL_ERROR);
+							return false;
+						}
+					}
+
 				}
 
 				$zip = static::_getZipInstance($srcZip);
@@ -104,7 +118,7 @@ class Zip
 			return false;
 		}
 
-		@ini_set('memory_limit', '256M');
+		@ini_set('memory_limit', craft()->config->get('phpMaxMemoryLimit'));
 
 		$zip = static::_getZipInstance($sourceZip);
 		if ($zip->add($sourceZip, $pathToAdd, $basePath, $pathPrefix))

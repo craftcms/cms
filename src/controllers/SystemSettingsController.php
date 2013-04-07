@@ -16,6 +16,58 @@ class SystemSettingsController extends BaseController
 	}
 
 	/**
+	 * Shows the general settings form.
+	 *
+	 * @param array $variables
+	 */
+	public function actionGeneralSettings(array $variables = array())
+	{
+		if (empty($variables['info']))
+		{
+			$variables['info'] = Craft::getInfo();
+		}
+
+		// Assemble the timezone options array
+		// (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
+		$variables['timezoneOptions'] = array();
+
+		$utc = new DateTime();
+		$offsets = array();
+		$includedAbbrs = array();
+
+		foreach (\DateTimeZone::listIdentifiers() as $timezoneId)
+		{
+			$timezone = new \DateTimeZone($timezoneId);
+			$transition =  $timezone->getTransitions($utc->getTimestamp(), $utc->getTimestamp());
+			$abbr = $transition[0]['abbr'];
+
+			if (in_array($abbr, $includedAbbrs))
+			{
+				continue;
+			}
+
+			$offset = round($timezone->getOffset($utc) / 60);
+
+			if ($offset)
+			{
+				$format = sprintf('%+d:%02u', floor($offset / 60), floor(abs($offset) % 60));
+			}
+			else
+			{
+				$format = '';
+			}
+
+			$offsets[] = $offset;
+			$includedAbbrs[] = $abbr;
+			$variables['timezoneOptions'][$timezoneId] = 'UTC'.$format.($abbr != 'UTC' ? " ({$abbr})" : '');
+		}
+
+		array_multisort($offsets, $variables['timezoneOptions']);
+
+		$this->renderTemplate('settings/general/index', $variables);
+	}
+
+	/**
 	 * Saves the general settings.
 	 */
 	public function actionSaveGeneralSettings()
@@ -27,6 +79,7 @@ class SystemSettingsController extends BaseController
 		$info->on       = (bool) craft()->request->getPost('on');
 		$info->siteName = craft()->request->getPost('siteName');
 		$info->siteUrl  = craft()->request->getPost('siteUrl');
+		$info->timezone = craft()->request->getPost('timezone');
 
 		if (Craft::saveInfo($info))
 		{

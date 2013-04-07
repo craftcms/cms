@@ -7,6 +7,15 @@ namespace Craft;
 class Updater
 {
 	/**
+	 *
+	 */
+	function __construct()
+	{
+		// I need more memory.
+		@ini_set('memory_limit', craft()->config->get('phpMaxMemoryLimit'));
+	}
+
+	/**
 	 * @throws Exception
 	 */
 	public function getLatestUpdateInfo()

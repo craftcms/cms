@@ -128,6 +128,7 @@ $cpRoutes['settings/assets/transforms/(?P<handle>{handle})']      = 'settings/as
 $cpRoutes['settings/fields/(?P<groupId>\d+)']                     = 'settings/fields';
 $cpRoutes['settings/fields/new']                                  = 'settings/fields/_edit';
 $cpRoutes['settings/fields/edit/(?P<fieldId>\d+)']                = 'settings/fields/_edit';
+$cpRoutes['settings/general']                                     = array('action' => 'systemSettings/generalSettings');
 $cpRoutes['settings/plugins/(?P<pluginClass>{handle})']           = 'settings/plugins/_settings';
 $cpRoutes['settings/sections/new']                                = 'settings/sections/_edit';
 $cpRoutes['settings/sections/(?P<sectionId>\d+)']                 = 'settings/sections/_edit';
@@ -269,7 +270,7 @@ $components['urlManager']['pathParam'] = 'p';
 
 $components['errorHandler']['class'] = 'Craft\ErrorHandler';
 
-$components['fileCache']['class'] = 'CFileCache';
+$components['fileCache']['class'] = 'Craft\FileCache';
 
 $components['log']['class'] = 'Craft\LogRouter';
 $components['log']['routes'] = array(

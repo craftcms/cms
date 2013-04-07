@@ -116,6 +116,7 @@ class EntryElementType extends BaseElementType
 			'authorGroup'   => AttributeType::String,
 			'section'       => AttributeType::Mixed,
 			'editable'      => AttributeType::Bool,
+			'postDate'      => AttributeType::Mixed,
 			'after'         => AttributeType::Mixed,
 			'before'        => AttributeType::Mixed,
 			'status'        => array(AttributeType::String, 'default' => EntryModel::LIVE),
@@ -184,14 +185,21 @@ class EntryElementType extends BaseElementType
 			$query->andWhere(DbHelper::parseParam('entries_i18n.slug', $criteria->slug, $query->params));
 		}
 
-		if ($criteria->after)
+		if ($criteria->postDate)
 		{
-			$query->andWhere(DbHelper::parseDateParam('entries.postDate', '>=', $criteria->after, $query->params));
+			$query->andWhere(DbHelper::parseDateParam('entries.postDate', '=', $criteria->postDate, $query->params));
 		}
-
-		if ($criteria->before)
+		else
 		{
-			$query->andWhere(DbHelper::parseDateParam('entries.postDate', '<', $criteria->before, $query->params));
+			if ($criteria->after)
+			{
+				$query->andWhere(DbHelper::parseDateParam('entries.postDate', '>=', $criteria->after, $query->params));
+			}
+
+			if ($criteria->before)
+			{
+				$query->andWhere(DbHelper::parseDateParam('entries.postDate', '<', $criteria->before, $query->params));
+			}
 		}
 
 		if ($criteria->editable)

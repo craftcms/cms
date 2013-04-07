@@ -88,7 +88,8 @@ class EntriesController extends BaseController
 			{
 				$variables['entry'] = new EntryModel();
 				$variables['entry']->sectionId = $variables['section']->id;
-				$variables['entry']->userId = craft()->userSession->getUser()->id;
+				$variables['entry']->authorId = craft()->userSession->getUser()->id;
+				$variables['entry']->enabled = true;
 			}
 		}
 
@@ -220,8 +221,8 @@ class EntriesController extends BaseController
 		$entry->authorId   = craft()->request->getPost('author', craft()->userSession->getUser()->id);
 		$entry->title      = craft()->request->getPost('title');
 		$entry->slug       = craft()->request->getPost('slug');
-		$entry->postDate   = craft()->request->getPost('postDate');
-		$entry->expiryDate = craft()->request->getPost('expiryDate');
+		$entry->postDate   = (($postDate   = craft()->request->getPost('postDate'))   ? DateTime::createFromString($postDate,   craft()->timezone) : null);
+		$entry->expiryDate = (($expiryDate = craft()->request->getPost('expiryDate')) ? DateTime::createFromString($expiryDate, craft()->timezone) : null);
 		$entry->enabled    = craft()->request->getPost('enabled');
 		$entry->tags       = craft()->request->getPost('tags');
 

@@ -20,6 +20,7 @@ class InfoModel extends BaseModel
 			'releaseDate' => array(AttributeType::DateTime, 'required' => true),
 			'siteName'    => array(AttributeType::Name, 'required' => true),
 			'siteUrl'     => array(AttributeType::Url, 'required' => true),
+			'timezone'    => array(AttributeType::String, 'maxLength' => 30, 'default' => date_default_timezone_get()),
 			'on'          => AttributeType::Bool,
 			'maintenance' => AttributeType::Bool,
 		);
