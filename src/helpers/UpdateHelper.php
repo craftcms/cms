@@ -173,6 +173,7 @@ class UpdateHelper
 	 *
 	 * @static
 	 * @param $manifestDataPath
+	 * @throws Exception
 	 * @return array
 	 */
 	public static function getManifestData($manifestDataPath)
@@ -181,6 +182,11 @@ class UpdateHelper
 		{
 			// get manifest file
 			$manifestFileData = IOHelper::getFileContents($manifestDataPath.'/craft_manifest', true);
+
+			if ($manifestFileData === false)
+			{
+				throw new Exception('There was a problem reading the update manifest data.');
+			}
 
 			// Remove any trailing empty newlines
 			if ($manifestFileData[count($manifestFileData) - 1] == '')

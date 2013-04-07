@@ -546,6 +546,7 @@ class IOHelper
 			return false;
 		}
 
+		Craft::log('Tried to read the file contents at '.$path.', but either the file does not exist or is it not readable.', \CLogger::LEVEL_ERROR);
 		return false;
 	}
 
@@ -979,10 +980,11 @@ class IOHelper
 	 * Purges the contents of a folder while leaving the folder itself.
 	 *
 	 * @static
-	 * @param  string $path The path of the folder to clear.
+	 * @param  string $path           The path of the folder to clear.
+	 * @param  bool   $suppressErrors Whether to suppress any errors (usually permissions related) when deleting the files or folders.
 	 * @return bool  'true' if is successfully purges the folder, 'false' if the folder does not exist.
 	 */
-	public static function clearFolder($path)
+	public static function clearFolder($path, $suppressErrors = false)
 	{
 		$path = static::normalizePathSeparators($path);
 
@@ -996,11 +998,11 @@ class IOHelper
 
 				if (static::fileExists($item))
 				{
-					static::deleteFile($item);
+					static::deleteFile($item, $suppressErrors);
 				}
 				elseif (static::folderExists($item))
 				{
-					static::deleteFolder($item);
+					static::deleteFolder($item, $suppressErrors);
 				}
 			}
 
@@ -1018,10 +1020,12 @@ class IOHelper
 	 * Deletes a file from the file system.
 	 *
 	 * @static
-	 * @param  string $path The path of the file to delete.
+	 *
+	 * @param  string $path           The path of the file to delete.
+	 * @param  bool   $suppressErrors Whether to suppress any errors (usually permissions related) when deleting the file.
 	 * @return bool   'true' if successful, 'false' if it cannot be deleted, it does not exist or it is not writable.
 	 */
-	public static function deleteFile($path)
+	public static function deleteFile($path, $suppressErrors = false)
 	{
 		$path = static::normalizePathSeparators($path);
 
@@ -1029,14 +1033,29 @@ class IOHelper
 		{
 			if (static::isWritable($path))
 			{
-				if (unlink($path))
+				if ($suppressErrors)
 				{
-					return true;
+					if (@unlink($path))
+					{
+						return true;
+					}
+					else
+					{
+						Craft::log('Could not delete the file '.$path.'.', \CLogger::LEVEL_ERROR);
+					}
 				}
 				else
 				{
-					Craft::log('Could not delete the file '.$path.'.', \CLogger::LEVEL_ERROR);
+					if (unlink($path))
+					{
+						return true;
+					}
+					else
+					{
+						Craft::log('Could not delete the file '.$path.'.', \CLogger::LEVEL_ERROR);
+					}
 				}
+
 			}
 			else
 			{
@@ -1055,10 +1074,11 @@ class IOHelper
 	 * Deletes a folder from the file system.
 	 *
 	 * @static
-	 * @param  string $path The path of the folder to delete.
+	 * @param  string $path           The path of the folder to delete.
+	 * @param  bool   $suppressErrors Whether to suppress any errors (usually permissions related) when deleting the folder.
 	 * @return bool   'true' if successful, 'false' if it cannot be deleted, it does not exist or it is not writable.
 	 */
-	public static function deleteFolder($path)
+	public static function deleteFolder($path, $suppressErrors = false)
 	{
 		$path = static::normalizePathSeparators($path);
 
@@ -1067,17 +1087,33 @@ class IOHelper
 			if (static::isWritable($path))
 			{
 				// Empty the folder contents first.
-				static::clearFolder($path);
+				static::clearFolder($path, $suppressErrors);
 
-				// Delete the folder.
-				if (rmdir($path))
+				if ($suppressErrors)
 				{
-					return true;
+					// Delete the folder.
+					if (@rmdir($path))
+					{
+						return true;
+					}
+					else
+					{
+						Craft::log('Could not delete the folder '.$path.'.', \CLogger::LEVEL_ERROR);
+					}
 				}
 				else
 				{
-					Craft::log('Could not delete the folder '.$path.'.', \CLogger::LEVEL_ERROR);
+					// Delete the folder.
+					if (rmdir($path))
+					{
+						return true;
+					}
+					else
+					{
+						Craft::log('Could not delete the folder '.$path.'.', \CLogger::LEVEL_ERROR);
+					}
 				}
+
 			}
 			else
 			{

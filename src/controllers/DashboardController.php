@@ -147,7 +147,7 @@ class DashboardController extends BaseController
 						// Grab the phperrors log file, if it exists.
 						if (IOHelper::fileExists(craft()->path->getLogPath().'phperrors.log'))
 						{
-							Zip::add($tempZipFile, craft()->path->getLogPath().'phperrors.log', craft()->path->getRuntimePath());
+							Zip::add($tempZipFile, craft()->path->getLogPath().'phperrors.log', craft()->path->getStoragePath());
 						}
 					}
 

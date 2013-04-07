@@ -175,7 +175,7 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		Craft::log('Flushing update info from cache.');
 
-		if (IOHelper::clearFolder(craft()->path->getCompiledTemplatesPath()) && IOHelper::clearFolder(craft()->path->getCachePath()))
+		if (IOHelper::clearFolder(craft()->path->getCompiledTemplatesPath(), true) && IOHelper::clearFolder(craft()->path->getCachePath(), true))
 		{
 			return true;
 		}
