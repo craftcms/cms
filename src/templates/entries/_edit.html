@@ -172,7 +172,7 @@
 					{% endif %}
 				{% else %}
 					{% if craft.hasPackage('PublishPro') %}
-						<input type="hidden" name="action" value="entryRevisions/createDraft">
+						<input type="hidden" name="action" value="entryRevisions/saveDraft">
 						<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{draftId}">
 						<input type="submit" class="btn submit" value="{{ 'Save as Draft'|t }}">
 					{% endif %}
