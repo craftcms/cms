@@ -60,9 +60,12 @@ class ErrorHandler extends \CErrorHandler
 			if (Craft::getBuild() > 2157)
 			{
 				// Set whether the currently logged in user is an admin.
-				if (($currentUser = craft()->userSession->getUser()) !== null)
+				if (isset(craft()->userSession))
 				{
-					$admin = $currentUser->admin == 1 ? true : false;
+					if (($currentUser = craft()->userSession->getUser()) !== null)
+					{
+						$admin = $currentUser->admin == 1 ? true : false;
+					}
 				}
 			}
 		}
