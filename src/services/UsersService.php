@@ -236,16 +236,6 @@ class UsersService extends BaseApplicationComponent
 
 			$userRecord->save(false);
 
-			// Send a verification email?
-			if ($user->verificationRequired)
-			{
-				craft()->templates->registerTwigAutoloader();
-
-				craft()->email->sendEmailByKey($user, 'verify_email', array(
-					'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
-				));
-			}
-
 			if (!$isNewUser)
 			{
 				// Has the username changed?
@@ -265,6 +255,16 @@ class UsersService extends BaseApplicationComponent
 						IOHelper::rename($oldFolder, $newFolder);
 					}
 				}
+			}
+
+			// Send a verification email?
+			if ($user->verificationRequired)
+			{
+				craft()->templates->registerTwigAutoloader();
+
+				craft()->email->sendEmailByKey($user, 'verify_email', array(
+					'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+				));
 			}
 
 			return true;
