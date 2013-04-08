@@ -67,7 +67,7 @@ class RequirementsChecker extends \CComponent
 				extension_loaded('pdo_mysql'),
 				true,
 				Craft::t('All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>'),
-				Craft::t('The PDO_MYSQL driver is required if you are using a MySQL database.')
+				Craft::t('The <http://php.net/manual/en/ref.pdo-mysql.php>PDO MySQL</a> driver is required if you are using a MySQL database.')
 			),
 			new Requirement(
 				Craft::t('Mcrypt extension'),
@@ -77,7 +77,7 @@ class RequirementsChecker extends \CComponent
 				Craft::t('<a href="http://php.net/manual/en/book.mcrypt.php">Mcrypt</a> is required.')
 			),
 			new Requirement(
-				Craft::t('GD extension w/ FreeType support'),
+				Craft::t('GD extension with FreeType support'),
 				extension_loaded('gd'),
 				true,
 				'Assets',
@@ -89,13 +89,6 @@ class RequirementsChecker extends \CComponent
 				true,
 				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('MySQL {version} or higher is required to run @@@appName@@@.', array('version' => $requiredMysqlVersion))
-			),
-			new Requirement(
-				Craft::t('Glob'),
-				function_exists('glob'),
-				true,
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
-				Craft::t('<a href="http://us.php.net/manual/en/function.glob.php">Glob</a> is required.')
 			),
 			new Requirement(
 				Craft::t('MySQL InnoDB support'),
