@@ -211,7 +211,7 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Creates the Rackspace access table.
 	 */
-	public function createRackspaceAccessTable()
+	public function _createRackspaceAccessTable()
 	{
 		Craft::log('Creating the Rackspace access table.');
 
