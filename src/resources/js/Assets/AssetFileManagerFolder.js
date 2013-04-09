@@ -386,7 +386,11 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 
 		this.parent = newParent;
 
-	},
+        this.depth = this.parent.depth + 1;
+        var padding = 30 + (18 * (this.depth - 1));
+
+        this.$a.attr('style', 'padding-left: '+padding+'px; margin-left: 0 !important;');
+    },
 
 	/**
 	 * Update Id
@@ -515,10 +519,10 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 				if (data.success)
 				{
                     var subfolderDepth = this.depth + 1,
-                        padding = 20 + (18 * subfolderDepth),
+                        padding = 30 + (18 * (subfolderDepth - 1)),
 					    subfolderName = data.folderName,
 						$li = $('<li class="assets-fm-folder">'
-							  +   '<a data-id="' + data.folderId + '" style="padding-left: '+padding+'px;">'
+							  +   '<a data-id="' + data.folderId + '" style="padding-left: '+padding+'px; margin-left: 0 !important;">'
 							  +     data.folderName
 							  +   '</a>'
 							  + '</li>'),

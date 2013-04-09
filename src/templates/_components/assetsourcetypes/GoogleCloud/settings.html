@@ -1,0 +1,59 @@
+{% requirePackage('Cloud') %}
+
+{% from "_includes/forms" import textField, selectField%}
+
+{{ textField({
+	label: "Access Key ID"|t,
+	id: 'keyId',
+	name: 'keyId',
+	value: settings.keyId,
+	errors: settings.getErrors('keyId'),
+    class: 'google-key-id',
+	required: true
+}) }}
+
+{{ textField({
+	label: "Secret Access Key"|t,
+	id: 'secret',
+	name: 'secret',
+	value: settings.secret,
+	errors: settings.getErrors('secret'),
+    class: 'google-secret-key',
+	required: true
+}) }}
+
+<div class="btn google-refresh-buckets">{{ "Refresh bucket list"|t }}</div>
+
+{{ selectField({
+    label: "Bucket",
+    instructions: "Choose a bucket to use"|t,
+    id: 'bucket',
+    name: 'bucket',
+    options: { (settings.bucket): settings.bucket},
+    value: settings.bucket,
+    disabled: true,
+    class: "google-bucket-select"
+}) }}
+
+{{ textField({
+    label: "Subfolder"|t,
+    instructions: "If you want to use a bucket’s subfolder as a Source, specify the path to use here."|t,
+    id: 'subfolder',
+    name: 'subfolder',
+    value: settings.subfolder,
+    errors: settings.getErrors('subfolder'),
+    required: false,
+    class: "google-subfolder",
+    hint: 'path/to/folder'
+}) }}
+
+{{ textField({
+    label: "URL Prefix "|t,
+    instructions: "If you have set up a CNAME record pointing to this bucket, you can enter it here. Otherwise leave this setting alone."|t,
+    id: 'urlPrefix',
+    name: 'urlPrefix',
+    value: settings.urlPrefix,
+    errors: settings.getErrors('url_prefix'),
+    required: true,
+    class: "google-url-prefix"
+}) }}

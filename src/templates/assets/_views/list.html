@@ -12,7 +12,7 @@
 		</thead>
 		<tbody>
             {% for file in files %}
-                <tr class="assets-list-row" data-id="{{ file.id }}" data-fileName="{{ file.filename }}" data-folder="{{ file.folderId }}">
+                <tr class="assets-list-row" data-id="{{ file.id }}" data-fileName="{{ file.filename }}" data-folder="{{ file.folderId }}" data-url="{{ file.url }}">
                     <td data-title="{{ 'Name'|t }}">
                         {% if file.kind == 'image' %}
                             <div class="thumb-wrapper wrapper-{{ file.id }}"><div class="list-thumb thumb-{{ file.id }}"></div></div>
