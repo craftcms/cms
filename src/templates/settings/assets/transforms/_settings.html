@@ -1,4 +1,5 @@
 {% extends "_layouts/cp" %}
+{% includeCssResource 'css/transforms.css' %}
 {% import "_includes/forms" as forms %}
 
 {% set crumbs = [
@@ -52,15 +53,29 @@
 	        translatable: true
         }) }}
 
-		{{ forms.selectField({
-			label: "Mode"|t,
-			id: "mode",
-			name: "mode",
-			options: craft.assets.transformModes,
-			value: (transform is defined ? transform.mode : null),
-			required: true,
-			translatable: true
-		}) }}
+        {% set modeInput %}
+        	<div id="mode">
+        		<label id="mode-crop">
+        			<input type="radio" name="mode" value="crop"{% if transform is not defined or transform.mode == 'crop' %} checked{% endif %}>
+        			{{ "Crop"|t }}
+        		</label>
+
+        		<label id="mode-fit">
+        			<input type="radio" name="mode" value="fit"{% if transform is defined and transform.mode == 'fit' %} checked{% endif %}>
+        			{{ "Fit"|t }}
+        		</label>
+
+        		<label id="mode-stretch">
+        			<input type="radio" name="mode" value="stretch"{% if transform is defined and transform.mode == 'stretch' %} checked{% endif %}>
+        			{{ "Stretch"|t }}
+        		</label>
+        	</div>
+        {% endset %}
+
+		{{ forms.field({
+			label: "Mode"|t
+		}, modeInput) }}
+
 
 		{{ forms.textField({
 			label: "Width"|t,
