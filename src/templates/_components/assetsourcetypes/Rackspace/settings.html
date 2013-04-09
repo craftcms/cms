@@ -1,0 +1,70 @@
+{% requirePackage('Cloud') %}
+
+{% from "_includes/forms" import textField, selectField%}
+
+{{ textField({
+	label: "Username"|t,
+	id: 'username',
+	name: 'username',
+	value: settings.username,
+	errors: settings.getErrors('username'),
+    class: 'rackspace-username',
+	required: true
+}) }}
+
+{{ textField({
+	label: "API key"|t,
+	id: 'apiKey',
+	name: 'apiKey',
+	value: settings.apiKey,
+	errors: settings.getErrors('apiKey'),
+    class: 'racskspace-api-key',
+	required: true
+}) }}
+
+{{ selectField({
+    label: "Location",
+    instructions: "Choose the account location"|t,
+    id: 'location',
+    name: 'location',
+    options: craft.assets.rackspaceLocations,
+    value: settings.location,
+    class: "rackspace-location-select",
+    required: true
+}) }}
+
+<div class="btn rackspace-refresh-containers">{{ "Refresh container list"|t }}</div>
+
+{{ selectField({
+    label: "Container",
+    instructions: "Choose a container to use"|t,
+    id: 'container',
+    name: 'container',
+    options: { (settings.container): settings.container},
+    value: settings.container,
+    disabled: true,
+    class: "container-select"
+}) }}
+
+{{ textField({
+    label: "Subfolder"|t,
+    instructions: "If you want to use a container’s subfolder as a Source, specify the path to use here."|t,
+    id: 'subfolder',
+    name: 'subfolder',
+    value: settings.subfolder,
+    errors: settings.getErrors('subfolder'),
+    required: false,
+    class: "subfolder",
+    hint: 'path/to/folder'
+}) }}
+
+{{ textField({
+    label: "URL Prefix "|t,
+    instructions: "If you have set up a CNAME record pointing to this container, you can enter it here. Otherwise leave this setting alone."|t,
+    id: 'urlPrefix',
+    name: 'urlPrefix',
+    value: settings.urlPrefix,
+    errors: settings.getErrors('url_prefix'),
+    required: true,
+    class: "rackspace-urlPrefix"
+}) }}

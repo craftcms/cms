@@ -8,18 +8,20 @@
 *aspnet_client/*
 Build/*
 
-Source/.idea/.name
-
-Source/.idea/Craft Source.iml
-
-Source/.idea/misc.xml
-
-Source/.idea/encodings.xml
-
-Source/.idea/modules.xml
+Source/.idea/libraries/sass_stdlib.xml
 
 Source/.idea/scopes/scope_settings.xml
 
+Source/.idea/workspace.xml
+
+*.iml
+
+Source/.idea/encodings.xml
+
+Source/.idea/misc.xml
+
+Source/.idea/modules.xml
+
 Source/.idea/vcs.xml
 
-Source/.idea/workspace.xml
+Source/.idea/.name
