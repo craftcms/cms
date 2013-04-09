@@ -26,6 +26,7 @@
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8">
 		<input type="hidden" name="action" value="assetTransforms/saveTransform">
+		<input type="hidden" name="redirect" value="settings/assets/transforms">
 
 		{% if not isNewTransform %}<input type="hidden" name="transformId" value="{{ transform.id }}">{% endif %}
 
