@@ -76,6 +76,25 @@
 			label: "Mode"|t
 		}, modeInput) }}
 
+		<div id="position-container"{% if transform is defined and transform.mode != 'crop' %} class="hidden"{% endif %}>
+			{{ forms.selectField({
+				label: "Crop Position"|t,
+				id: 'position',
+				name: 'position',
+				options: {
+					'top-left': "Top-Left"|t,
+					'top-center': "Top-Center"|t,
+					'top-right': "Top-Right"|t,
+					'center-left': "Center-Left"|t,
+					'center-center': "Center-Center"|t,
+					'center-right': "Center-Right"|t,
+					'bottom-left': "Bottom-Left"|t,
+					'bottom-center': "Bottom-Center"|t,
+					'bottom-right': "Bottom-Right"|t
+				},
+				value: (transform is defined and transform.mode == 'crop' ? transform.position : 'center-center')
+			}) }}
+		</div>
 
 		{{ forms.textField({
 			label: "Width"|t,
@@ -106,5 +125,17 @@
 
 {% set js %}
 	{% if transform is not defined or not transform.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
+
+	$('#mode input').change(function()
+	{
+		if ($(this).val() == 'crop')
+		{
+			$('#position-container').removeClass('hidden');
+		}
+		else
+		{
+			$('#position-container').addClass('hidden');
+		}
+	})
 {% endset %}
 {% includeJs js %}
