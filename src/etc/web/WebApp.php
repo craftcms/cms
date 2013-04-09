@@ -77,9 +77,6 @@ class WebApp extends \CWebApplication
 		$this->getComponent('request');
 		$this->getComponent('log');
 
-		// Set our own custom logger.
-		Craft::setLogger(new Logger());
-
 		parent::init();
 	}
 
