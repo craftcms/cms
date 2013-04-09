@@ -487,7 +487,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 
 		$this->_prepareForRequests($originatingSettings);
 
-		if (!$this->_googleCloud->copyObject($sourceBucket, $this->_getPathPrefix().$file->getFolder()->fullPath.$file->filename, $bucket, $newServerPath, \GC::ACL_PUBLIC_READ))
+		if (!$this->_googleCloud->copyObject($sourceBucket, $this->_getPathPrefix($originatingSettings).$file->getFolder()->fullPath.$file->filename, $bucket, $newServerPath, \GC::ACL_PUBLIC_READ))
 		{
 			$response = new AssetOperationResponseModel();
 			return $response->setError(Craft::t("Could not save the file"));
