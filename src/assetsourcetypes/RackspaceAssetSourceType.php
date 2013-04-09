@@ -29,7 +29,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	public function getName()
 	{
-		return 'RackSpace Cloud';
+		return 'Rackspace Cloud Files';
 	}
 
 	/**
@@ -140,7 +140,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 			if (!preg_match(AssetsHelper::IndexSkipItemsPattern, $file->name))
 			{
-				// So in RackSpace a folder may or may not exist. For path a/path/to/file.jpg, any of those folders may
+				// So in Rackspace a folder may or may not exist. For path a/path/to/file.jpg, any of those folders may
 				// or may not exist. So we have to add all the segments to $containerFolders to make sure we index them
 
 				// Matches all paths with folders, except if there if no folder at all.
@@ -268,7 +268,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		$uriPath = $this->_getPathPrefix().$folder->fullPath.$fileName;
 
-		
+
 
 		$fileInfo = $this->_getObjectInfo($uriPath);
 
@@ -316,7 +316,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	{
 		$folder = $fileModel->getFolder();
 		$path = $this->_getPathPrefix().$folder->fullPath.$transformLocation.'/'.$fileModel->filename;
-		
+
 		$fileInfo = $this->_getObjectInfo($path);
 
 		if (empty($fileInfo))
@@ -337,7 +337,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	*/
 	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
 	{
-		
+
 		$targetFile = $this->_getPathPrefix().$fileModel->getFolder()->fullPath.'_'.ltrim($handle, '_').'/'.$fileModel->filename;
 
 		// Upload file
@@ -469,7 +469,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			'filename' => $fileName
 		));
 
-		
+
 		$fileInfo = $this->_getObjectInfo($newServerPath);
 
 		$conflict = $fileInfo || (!craft()->assets->isMergeInProgress() && is_object($conflictingRecord));
