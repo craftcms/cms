@@ -89,7 +89,7 @@ class AssetSourcesController extends BaseController
 	}
 
 	/**
-	 * Get Amazon S3 sources.
+	 * Get Amazon S3 buckets.
 	 */
 	public function actionGetS3Buckets()
 	{
@@ -137,4 +137,24 @@ class AssetSourcesController extends BaseController
 		}
 	}
 
+	/**
+	 * Get Google Cloud Storage buckets.
+	 */
+	public function actionGetGoogleCloudBuckets()
+	{
+		if (Craft::hasPackage(CraftPackage::Cloud))
+		{
+			$keyId = craft()->request->getRequiredPost('keyId');
+			$secret = craft()->request->getRequiredPost('secret');
+
+			try
+			{
+				$this->returnJson(GoogleCloudAssetSourceType::getBucketList($keyId, $secret));
+			}
+			catch (Exception $exception)
+			{
+				$this->returnErrorJson($exception->getMessage());
+			}
+		}
+	}
 }

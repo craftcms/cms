@@ -4,25 +4,20 @@ namespace Craft;
 Craft::requirePackage(CraftPackage::Cloud);
 
 /**
- * S3 source type class
+ * Google Cloud source type class
  */
-class S3AssetSourceType extends BaseAssetSourceType
+class GoogleCloudAssetSourceType extends BaseAssetSourceType
 {
 
 	/**
-	 * A list of predefined endpoints.
-	 *
-	 * @var array
+	 * @var string
 	 */
-	private static $_predefinedEndpoints = array(
-		'US' => 's3.amazonaws.com',
-		'EU' => 's3-eu-west-1.amazonaws.com'
-	);
+	private static $_endpoint = 'storage.googleapis.com';
 
 	/**
-	 * @var \S3
+	 * @var \GC
 	 */
-	private $_s3;
+	private $_googleCloud;
 
 	/**
 	 * Returns the name of the source type.
@@ -31,7 +26,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	public function getName()
 	{
-		return 'Amazon S3';
+		return 'Google Cloud Storage';
 	}
 
 	/**
@@ -46,7 +41,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 			'keyId'      => array(AttributeType::String, 'required' => true),
 			'secret'     => array(AttributeType::String, 'required' => true),
 			'bucket'     => array(AttributeType::String, 'required' => true),
-			'location'   => array(AttributeType::String, 'required' => true),
 			'urlPrefix'  => array(AttributeType::String, 'required' => true),
 			'subfolder'  => array(AttributeType::String, 'default' => ''),
 		);
@@ -59,7 +53,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	public function getSettingsHtml()
 	{
-		return craft()->templates->render('_components/assetsourcetypes/S3/settings', array(
+		return craft()->templates->render('_components/assetsourcetypes/GoogleCloud/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -76,13 +70,12 @@ class S3AssetSourceType extends BaseAssetSourceType
 			$settings = $this->getSettings();
 		}
 
-		if (is_null($this->_s3))
+		if (is_null($this->_googleCloud))
 		{
-			$this->_s3 = new \S3($settings->keyId, $settings->secret);
+			$this->_googleCloud = new \GC($settings->keyId, $settings->secret);
 		}
 
-		\S3::setAuth($settings->keyId, $settings->secret);
-		$this->_s3->setEndpoint(static::getEndpointByLocation($settings->location));
+		\GC::setAuth($settings->keyId, $settings->secret);
 	}
 
 	/**
@@ -95,8 +88,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	public static function getBucketList($keyId, $secret)
 	{
-		$s3 = new \S3($keyId, $secret);
-		$buckets = @$s3->listBuckets();
+		$googleCloud = new \GC($keyId, $secret);
+		$buckets = @$googleCloud->listBuckets();
 
 		if (empty($buckets))
 		{
@@ -107,33 +100,17 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		foreach ($buckets as $bucket)
 		{
-			$location = $s3->getBucketLocation($bucket);
+			$location = $googleCloud->getBucketLocation($bucket);
 
 			$bucketList[] = array(
 				'bucket' => $bucket,
 				'location' => $location,
-				'url_prefix' => 'http://'.static::getEndpointByLocation($location).'/'.$bucket.'/'
+				'url_prefix' => 'http://'.static::$_endpoint.'/'.$bucket.'/'
 			);
 
 		}
 
 		return $bucketList;
-	}
-
-	/**
-	 * Get a bucket's endpoint by location.
-	 *
-	 * @param $location
-	 * @return string
-	 */
-	public static function getEndpointByLocation($location)
-	{
-		if (isset(static::$_predefinedEndpoints[$location]))
-		{
-			return static::$_predefinedEndpoints[$location];
-		}
-
-		return 's3-'.$location.'.amazonaws.com';
 	}
 
 	/**
@@ -151,7 +128,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$total = 0;
 
 		$prefix = $this->_getPathPrefix();
-		$fileList = $this->_s3->getBucket($settings->bucket, $prefix);
+		$fileList = $this->_googleCloud->getBucket($settings->bucket, $prefix);
 
 		$fileList = array_filter($fileList, function ($value) {
 			$path = $value['name'];
@@ -262,7 +239,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 			$fileModel->size = $indexEntryModel->size;
 
-			$fileInfo = $this->_s3->getObjectInfo($settings->bucket, $this->_getPathPrefix().$uriPath);
+			$fileInfo = $this->_googleCloud->getObjectInfo($settings->bucket, $this->_getPathPrefix().$uriPath);
 
 			$targetPath = craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
 
@@ -270,7 +247,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 			if ($fileModel->kind == 'image' && $fileModel->dateModified != $timeModified || !IOHelper::fileExists($targetPath))
 			{
-				$this->_s3->getObject($settings->bucket, $this->_getPathPrefix().$indexEntryModel->uri, $targetPath);
+				$this->_googleCloud->getObject($settings->bucket, $this->_getPathPrefix().$indexEntryModel->uri, $targetPath);
 				clearstatcache();
 				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
 			}
@@ -308,7 +285,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		$this->_prepareForRequests();
 		$settings = $this->getSettings();
-		$fileInfo = $this->_s3->getObjectInfo($settings->bucket, $uriPath);
+		$fileInfo = $this->_googleCloud->getObjectInfo($settings->bucket, $uriPath);
 
 		if ($fileInfo)
 		{
@@ -319,7 +296,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		clearstatcache();
 		$this->_prepareForRequests();
 
-		if (!$this->_s3->putObject(array('file' => $filePath), $this->getSettings()->bucket, $uriPath, \S3::ACL_PUBLIC_READ))
+		if (!$this->_googleCloud->putObject(array('file' => $filePath), $this->getSettings()->bucket, $uriPath, \GC::ACL_PUBLIC_READ))
 		{
 			throw new Exception(Craft::t('Could not copy file to target destination'));
 		}
@@ -351,7 +328,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$folder = $fileModel->getFolder();
 		$path = $this->_getPathPrefix().$folder->fullPath.$transformLocation.'/'.$fileModel->filename;
 		$this->_prepareForRequests();
-		$info = $this->_s3->getObjectInfo($this->getSettings()->bucket, $path);
+		$info = $this->_googleCloud->getObjectInfo($this->getSettings()->bucket, $path);
 
 		if (empty($info))
 		{
@@ -374,7 +351,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$this->_prepareForRequests();
 		$targetFile = $this->_getPathPrefix().$fileModel->getFolder()->fullPath.'_'.ltrim($handle, '_').'/'.$fileModel->filename;
 
-		return $this->_s3->putObject(array('file' => $sourceImage), $this->getSettings()->bucket, $targetFile, \S3::ACL_PUBLIC_READ);
+		return $this->_googleCloud->putObject(array('file' => $sourceImage), $this->getSettings()->bucket, $targetFile, \GC::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -387,7 +364,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
 		$this->_prepareForRequests();
-		$fileList = $this->_s3->getBucket($this->getSettings()->bucket, $this->_getPathPrefix().$folder->fullPath);
+		$fileList = $this->_googleCloud->getBucket($this->getSettings()->bucket, $this->_getPathPrefix().$folder->fullPath);
 
 		$fileNameParts = explode(".", $fileName);
 		$extension = array_pop($fileNameParts);
@@ -415,7 +392,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$location = AssetsHelper::getTempFilePath($file->getExtension());
 
 		$this->_prepareForRequests();
-		$this->_s3->getObject($this->getSettings()->bucket, $this->_getS3Path($file), $location);
+		$this->_googleCloud->getObject($this->getSettings()->bucket, $this->_getS3Path($file), $location);
 
 		return $location;
 	}
@@ -442,7 +419,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
 		$this->_prepareForRequests();
-		@$this->_s3->deleteObject($this->getSettings()->bucket, $this->_getPathPrefix().$folder->fullPath.$filename);
+		@$this->_googleCloud->deleteObject($this->getSettings()->bucket, $this->_getPathPrefix().$folder->fullPath.$filename);
 	}
 
 	/**
@@ -461,7 +438,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		foreach ($transforms as $location)
 		{
-			@$this->_s3->deleteObject($bucket, $this->_getPathPrefix().$folder->fullPath.$location.'/'.$file->filename);
+			@$this->_googleCloud->deleteObject($bucket, $this->_getPathPrefix().$folder->fullPath.$location.'/'.$file->filename);
 		}
 	}
 
@@ -490,7 +467,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		$this->_prepareForRequests();
 		$settings = $this->getSettings();
-		$fileInfo = $this->_s3->getObjectInfo($settings->bucket, $newServerPath);
+		$fileInfo = $this->_googleCloud->getObjectInfo($settings->bucket, $newServerPath);
 
 		$conflict = $fileInfo || (!craft()->assets->isMergeInProgress() && is_object($conflictingRecord));
 
@@ -510,13 +487,13 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		$this->_prepareForRequests($originatingSettings);
 
-		if (!$this->_s3->copyObject($sourceBucket, $this->_getPathPrefix().$file->getFolder()->fullPath.$file->filename, $bucket, $newServerPath, \S3::ACL_PUBLIC_READ))
+		if (!$this->_googleCloud->copyObject($sourceBucket, $this->_getPathPrefix().$file->getFolder()->fullPath.$file->filename, $bucket, $newServerPath, \GC::ACL_PUBLIC_READ))
 		{
 			$response = new AssetOperationResponseModel();
 			return $response->setError(Craft::t("Could not save the file"));
 		}
 
-		@$this->_s3->deleteObject($sourceBucket, $this->_getS3Path($file));
+		@$this->_googleCloud->deleteObject($sourceBucket, $this->_getS3Path($file));
 
 		if ($file->kind == 'image')
 		{
@@ -531,12 +508,12 @@ class S3AssetSourceType extends BaseAssetSourceType
 			foreach ($transforms as $location)
 			{
 				// Surpress errors when trying to move image transforms. Maybe the user hasn't updated them yet.
-				$copyResult = @$this->_s3->copyObject($sourceBucket, $baseFromPath.$location.'/'.$file->filename, $bucket, $baseToPath.$location.'/'.$fileName, \S3::ACL_PUBLIC_READ);
+				$copyResult = @$this->_googleCloud->copyObject($sourceBucket, $baseFromPath.$location.'/'.$file->filename, $bucket, $baseToPath.$location.'/'.$fileName, \GC::ACL_PUBLIC_READ);
 
 				// If we failed to copy, that's because source wasn't there. Skip delete and save time - everyone's a winner!
 				if ($copyResult)
 				{
-					@$this->_s3->deleteObject($sourceBucket, $baseFromPath.$location.'/'.$file->filename);
+					@$this->_googleCloud->deleteObject($sourceBucket, $baseFromPath.$location.'/'.$file->filename);
 				}
 			}
 		}
@@ -558,7 +535,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 
 		$this->_prepareForRequests();
-		return (bool) $this->_s3->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$parentFolder->fullPath.$folderName);
+		return (bool) $this->_googleCloud->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$parentFolder->fullPath.$folderName);
 
 	}
 
@@ -572,7 +549,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
-		return $this->_s3->putObject('', $this->getSettings()->bucket, $this->_getPathPrefix().rtrim($parentFolder->fullPath.$folderName, '/') . '/', \S3::ACL_PUBLIC_READ);
+		return $this->_googleCloud->putObject('', $this->getSettings()->bucket, $this->_getPathPrefix().rtrim($parentFolder->fullPath.$folderName, '/') . '/', \GC::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -589,15 +566,15 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		$this->_prepareForRequests();
 		$bucket = $this->getSettings()->bucket;
-		$filesToMove = $this->_s3->getBucket($bucket, $this->_getPathPrefix().$folder->fullPath);
+		$filesToMove = $this->_googleCloud->getBucket($bucket, $this->_getPathPrefix().$folder->fullPath);
 
 		rsort($filesToMove);
 		foreach ($filesToMove as $file)
 		{
 			$filePath = substr($file['name'], strlen($this->_getPathPrefix().$folder->fullPath));
 
-			$this->_s3->copyObject($bucket, $file['name'], $bucket, $newFullPath . $filePath, \S3::ACL_PUBLIC_READ);
-			@$this->_s3->deleteObject($bucket, $file['name']);
+			$this->_googleCloud->copyObject($bucket, $file['name'], $bucket, $newFullPath . $filePath, \GC::ACL_PUBLIC_READ);
+			@$this->_googleCloud->deleteObject($bucket, $file['name']);
 		}
 
 		return TRUE;
@@ -613,11 +590,11 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 		$this->_prepareForRequests();
 		$bucket = $this->getSettings()->bucket;
-		$objectsToDelete = $this->_s3->getBucket($bucket, $this->_getPathPrefix().$parentFolder->fullPath.$folderName);
+		$objectsToDelete = $this->_googleCloud->getBucket($bucket, $this->_getPathPrefix().$parentFolder->fullPath.$folderName);
 
 		foreach ($objectsToDelete as $uri)
 		{
-			@$this->_s3->deleteObject($bucket, $uri['name']);
+			@$this->_googleCloud->deleteObject($bucket, $uri['name']);
 		}
 
 		return true;
@@ -657,7 +634,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$this->_prepareForRequests();
 		$basePath = $this->_getPathPrefix().$file->getFolder()->fullPath;
 		$bucket = $this->getSettings()->bucket;
-		@$this->_s3->copyObject($bucket, $basePath.$source.'/'.$file->filename, $bucket, $basePath.$target.'/'.$file->filename, \S3::ACL_PUBLIC_READ);
+		@$this->_googleCloud->copyObject($bucket, $basePath.$source.'/'.$file->filename, $bucket, $basePath.$target.'/'.$file->filename, \GC::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -691,7 +668,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	public function transformExists(AssetFileModel $file, $location)
 	{
 		$this->_prepareForRequests();
-		return (bool) @$this->_s3->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$file->getFolder()->fullPath.$location.'/'.$file->filename);
+		return (bool) @$this->_googleCloud->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$file->getFolder()->fullPath.$location.'/'.$file->filename);
 	}
 
 	/**
