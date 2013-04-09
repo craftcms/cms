@@ -233,7 +233,7 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Creates the Rackspace access table.
 	 */
-	public function _createRackspaceAccessTable()
+	private function _createRackspaceAccessTable()
 	{
 		Craft::log('Creating the Rackspace access table.');
 
@@ -243,8 +243,8 @@ class InstallService extends BaseApplicationComponent
 			'storageUrl'     => array('column' => ColumnType::Varchar, 'required' => true),
 			'cdnUrl'         => array('column' => ColumnType::Varchar, 'required' => true),
 		));
-		craft()->db->createCommand()->createIndex('rackspaceaccess', 'connectionKey', true);
 
+		craft()->db->createCommand()->createIndex('rackspaceaccess', 'connectionKey', true);
 		Craft::log('Finished creating the Rackspace access table.');
 	}
 
