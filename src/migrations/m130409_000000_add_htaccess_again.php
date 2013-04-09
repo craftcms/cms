@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m130417_000000_add_htaccess_again extends BaseMigration
+class m130409_000000_add_htaccess_again extends BaseMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
