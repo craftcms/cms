@@ -12,7 +12,7 @@ class Exception extends \CException
 	 */
 	function __construct($message, $code = 0)
 	{
-		Craft::log($message, \CLogger::LEVEL_ERROR);
+		Craft::log($message, LogLevel::Error);
 		parent::__construct($message, $code);
 	}
 }

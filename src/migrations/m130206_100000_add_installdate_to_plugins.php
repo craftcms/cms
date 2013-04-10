@@ -25,12 +25,12 @@ class m130206_100000_add_installdate_to_plugins extends BaseMigration
 			}
 			else
 			{
-				Craft::log('The `installDate` column already exists in the `plugins` table.', \CLogger::LEVEL_WARNING);
+				Craft::log('The `installDate` column already exists in the `plugins` table.', LogLevel::Warning);
 			}
 		}
 		else
 		{
-			Craft::log('The `plugins` table is missing. No idea what is going on here.', \CLogger::LEVEL_WARNING);
+			Craft::log('The `plugins` table is missing. No idea what is going on here.', LogLevel::Warning);
 		}
 	}
 }

@@ -34,17 +34,17 @@ class m130409_000000_add_htaccess_again extends BaseMigration
 						}
 						else
 						{
-							Craft::log($file.' does not exist at '.$fullFilePath.'.  We created the file, but were unable to write to it.', \CLogger::LEVEL_WARNING);
+							Craft::log($file.' does not exist at '.$fullFilePath.'.  We created the file, but were unable to write to it.', LogLevel::Warning);
 						}
 					}
 					else
 					{
-						Craft::log($file.' does not exist at '.$fullFilePath.', and we tried to create it, but could not.', \CLogger::LEVEL_WARNING);
+						Craft::log($file.' does not exist at '.$fullFilePath.', and we tried to create it, but could not.', LogLevel::Warning);
 					}
 				}
 				else
 				{
-					Craft::log($file.' does not exist at '.$fullFilePath.', but we do not have write access to that folder.', \CLogger::LEVEL_WARNING);
+					Craft::log($file.' does not exist at '.$fullFilePath.', but we do not have write access to that folder.', LogLevel::Warning);
 				}
 			}
 			else
@@ -55,7 +55,7 @@ class m130409_000000_add_htaccess_again extends BaseMigration
 		catch (\Exception $e)
 		{
 			// Log and swallow
-			Craft::log('There was a problem trying to the .htaccess file: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
+			Craft::log('There was a problem trying to the .htaccess file: '.$e->getMessage(), LogLevel::Error);
 		}
 
 		return true;

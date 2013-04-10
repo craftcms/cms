@@ -18,11 +18,11 @@ class LoggingHelper
 	{
 		$time = date('H:i:s.', $time).sprintf('%03d', (int)(($time - (int)$time) * 1000));
 
-		if ($level === \CLogger::LEVEL_WARNING)
+		if ($level === LogLevel::Warning)
 		{
 			$func = 'warn';
 		}
-		else if ($level === \CLogger::LEVEL_ERROR)
+		else if ($level === LogLevel::Error)
 		{
 			$func = 'error';
 		}

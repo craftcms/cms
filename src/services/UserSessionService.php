@@ -244,7 +244,7 @@ class UserSessionService extends \CWebUser
 		// Require a userAgent string and an IP address to help prevent direct socket connections from trying to login.
 		if (!craft()->request->userAgent || !craft()->request->getIpAddress())
 		{
-			Craft::log('Someone tried to login with loginName: '.$username.', without presenting an IP address or userAgent string.', \CLogger::LEVEL_WARNING);
+			Craft::log('Someone tried to login with loginName: '.$username.', without presenting an IP address or userAgent string.', LogLevel::Warning);
 			$this->logout(true);
 			$this->requireLogin();
 		}
@@ -330,7 +330,7 @@ class UserSessionService extends \CWebUser
 			}
 		}
 
-		Craft::log($username.' tried to log in unsuccessfully.', \CLogger::LEVEL_WARNING);
+		Craft::log($username.' tried to log in unsuccessfully.', LogLevel::Warning);
 		return false;
 	}
 
@@ -531,21 +531,21 @@ class UserSessionService extends \CWebUser
 					}
 					else
 					{
-						Craft::log('Tried to restore session from a cookie, but the given hashed database token value does not appear to belong to the given login name. Hashed db value: '.$dbHashedToken.' and loginName: '.$loginName.'.', \CLogger::LEVEL_ERROR);
+						Craft::log('Tried to restore session from a cookie, but the given hashed database token value does not appear to belong to the given login name. Hashed db value: '.$dbHashedToken.' and loginName: '.$loginName.'.', LogLevel::Error);
 						// Forcing logout here clears the identity cookie helping to prevent session fixation.
 						$this->logout(true);
 					}
 				}
 				else
 				{
-					Craft::log('Tried to restore session from a cookie, but the given login name does not match the given uid. UID: '.$uid.' and loginName: '.$loginName.'.', \CLogger::LEVEL_ERROR);
+					Craft::log('Tried to restore session from a cookie, but the given login name does not match the given uid. UID: '.$uid.' and loginName: '.$loginName.'.', LogLevel::Error);
 					// Forcing logout here clears the identity cookie helping to prevent session fixation.
 					$this->logout(true);
 				}
 			}
 			else
 			{
-				Craft::log('Tried to restore session from a cookie, but it appears we the data in the cookie is invalid.', \CLogger::LEVEL_ERROR);
+				Craft::log('Tried to restore session from a cookie, but it appears we the data in the cookie is invalid.', LogLevel::Error);
 				$this->logout(true);
 			}
 		}
@@ -587,7 +587,7 @@ class UserSessionService extends \CWebUser
 			}
 			else
 			{
-				Craft::log('During logout, tried to remove the row from the sessions table, but it appears the cookie data is invalid.', \CLogger::LEVEL_ERROR);
+				Craft::log('During logout, tried to remove the row from the sessions table, but it appears the cookie data is invalid.', LogLevel::Error);
 			}
 		}
 
@@ -710,7 +710,7 @@ class UserSessionService extends \CWebUser
 			// Require a userAgent string and an IP address to help prevent direct socket connections from trying to login.
 			if (!craft()->request->userAgent || !craft()->request->getIpAddress())
 			{
-				Craft::log('Someone tried to restore a session from a cookie without presenting an IP address or userAgent string.', \CLogger::LEVEL_WARNING);
+				Craft::log('Someone tried to restore a session from a cookie without presenting an IP address or userAgent string.', LogLevel::Warning);
 				$this->logout(true);
 				$this->requireLogin();
 			}
@@ -727,7 +727,7 @@ class UserSessionService extends \CWebUser
 			// If the saved userAgent differs from the current one, bail.
 			if ($savedUserAgent !== $currentUserAgent)
 			{
-				Craft::log('Tried to restore session from the the identity cookie, but the saved userAgent ('.$savedUserAgent.') does not match the current userAgent ('.$currentUserAgent.').', \CLogger::LEVEL_WARNING);
+				Craft::log('Tried to restore session from the the identity cookie, but the saved userAgent ('.$savedUserAgent.') does not match the current userAgent ('.$currentUserAgent.').', LogLevel::Warning);
 				$this->logout(true);
 			}
 		}

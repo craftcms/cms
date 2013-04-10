@@ -67,12 +67,12 @@ class UsersService extends BaseApplicationComponent
 			}
 			else
 			{
-				Craft::log('Found a with UID:'.$uid.', but the verification code given: '.$code.' does not match the hash in the database.', \CLogger::LEVEL_WARNING);
+				Craft::log('Found a with UID:'.$uid.', but the verification code given: '.$code.' does not match the hash in the database.', LogLevel::Warning);
 			}
 		}
 		else
 		{
-			Craft::log('Could not find a user with UID:'.$uid.' that has a verification code that is not expired.', \CLogger::LEVEL_WARNING);
+			Craft::log('Could not find a user with UID:'.$uid.' that has a verification code that is not expired.', LogLevel::Warning);
 		}
 
 		return null;

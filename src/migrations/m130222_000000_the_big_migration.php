@@ -1220,7 +1220,7 @@ class m130222_000000_the_big_migration extends BaseMigration
 					$field['handle'] = $field['oldHandle'].$i;
 				}
 
-				Craft::log("Renamed the {$groupName}/{$field['name']} field's handle from '{$field['oldHandle']}' to '{$field['handle']}'.", \CLogger::LEVEL_WARNING);
+				Craft::log("Renamed the {$groupName}/{$field['name']} field's handle from '{$field['oldHandle']}' to '{$field['handle']}'.", LogLevel::Warning);
 			}
 
 			$this->_fieldHandles[] = $field['handle'];

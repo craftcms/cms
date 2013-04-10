@@ -43,7 +43,7 @@ class m130221_000000_innodb_check extends BaseMigration
 
 			if (!empty($badTables))
 			{
-				Craft::log('The following tables are not using InnoDB for storage when they should be: '.implode(', ', $badTables), \CLogger::LEVEL_ERROR);
+				Craft::log('The following tables are not using InnoDB for storage when they should be: '.implode(', ', $badTables), LogLevel::Error);
 				throw new Exception('One or more of the database tables are not using InnoDB for storage.');
 			}
 		}

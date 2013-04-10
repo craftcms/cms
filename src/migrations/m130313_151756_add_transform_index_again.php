@@ -29,11 +29,11 @@ class m130313_151756_add_transform_index_again extends BaseMigration
 
 			$this->createIndex('assettransformindex', 'sourceId, fileId, location');
 
-			Craft::log('Successfully created the `assettransformindex` table.', \CLogger::LEVEL_INFO);
+			Craft::log('Successfully created the `assettransformindex` table.');
 		}
 		else
 		{
-			Craft::log('Tried to add the `assettransformindex` table, but it looks like it already exists.', \CLogger::LEVEL_WARNING);
+			Craft::log('Tried to add the `assettransformindex` table, but it looks like it already exists.', LogLevel::Warning);
 		}
 
 		return true;

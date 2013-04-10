@@ -32,7 +32,7 @@ class m130409_000001_create_rackspaceaccess_table extends BaseMigration
 		}
 		else
 		{
-			Craft::log('Tried to create the `rackspaceaccess` table, but it already exists.', \CLogger::LEVEL_WARNING);
+			Craft::log('Tried to create the `rackspaceaccess` table, but it already exists.', LogLevel::Warning);
 		}
 
 		return true;

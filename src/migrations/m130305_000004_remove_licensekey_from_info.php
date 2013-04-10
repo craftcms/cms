@@ -24,12 +24,12 @@ class m130305_000004_remove_licensekey_from_info extends BaseMigration
 			}
 			else
 			{
-				Craft::log('Could not find a `licenseKey` column in the `info` table.', \CLogger::LEVEL_WARNING);
+				Craft::log('Could not find a `licenseKey` column in the `info` table.', LogLevel::Warning);
 			}
 		}
 		else
 		{
-			Craft::log('Could not find an `info` table. Wut?', \CLogger::LEVEL_ERROR);
+			Craft::log('Could not find an `info` table. Wut?', LogLevel::Error);
 		}
 	}
 }
