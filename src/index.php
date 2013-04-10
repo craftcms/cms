@@ -29,8 +29,9 @@ defined('CRAFT_TEMPLATES_PATH')    || define('CRAFT_TEMPLATES_PATH',    CRAFT_BA
 defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', CRAFT_BASE_PATH.'translations/');
 defined('YII_TRACE_LEVEL')         || define('YII_TRACE_LEVEL', 3);
 
-// Check early if storage/ is a valid folder and writable.
-if (($storagePath = realpath(CRAFT_STORAGE_PATH)) === false || !is_dir($storagePath) || !is_writable($storagePath) || !is_executable($storagePath))
+// Not using is_executable here, but it's worthless.
+// Check early if storage/ is a valid folder, writable and executable.
+if (($storagePath = realpath(CRAFT_STORAGE_PATH)) === false || !is_dir($storagePath) || !is_writable($storagePath) || !@file_exists($storagePath.'.'))
 {
 	exit('@@@appName@@@ storage path "'.($storagePath === false ? CRAFT_STORAGE_PATH : $storagePath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
 }
@@ -53,13 +54,13 @@ if (!is_dir($runtimePath))
 }
 
 // Check early if storage/runtime is a valid folder and writable.
-if (($runtimePath = realpath(CRAFT_STORAGE_PATH.'runtime/')) === false || !is_dir($runtimePath) || !is_writable($runtimePath) || !is_executable($runtimePath))
+if (($runtimePath = realpath(CRAFT_STORAGE_PATH.'runtime/')) === false || !is_dir($runtimePath) || !is_writable($runtimePath) || !!@file_exists($storagePath.'.'))
 {
 	exit('@@@appName@@@ runtime path "'.($runtimePath === false ? CRAFT_STORAGE_PATH.'runtime/' : $runtimePath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
 }
 
 // Check early if config is a valid folder and writable.
-if (($siteConfigPath = realpath(CRAFT_CONFIG_PATH)) === false || !is_dir($siteConfigPath) || !is_writable($siteConfigPath) || !is_executable($siteConfigPath))
+if (($siteConfigPath = realpath(CRAFT_CONFIG_PATH)) === false || !is_dir($siteConfigPath) || !is_writable($siteConfigPath) || !!@file_exists($storagePath.'.'))
 {
 	exit('@@@appName@@@ config path "'.($siteConfigPath === false ? CRAFT_CONFIG_PATH : $siteConfigPath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
 }
