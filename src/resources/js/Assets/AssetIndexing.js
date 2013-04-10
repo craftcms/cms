@@ -25,6 +25,7 @@ Assets.IndexingManager = Garnish.Base.extend({
 	modal: null,
 
 	missingFolders: [],
+    errors: [],
 
 	init: function()
 	{
@@ -47,6 +48,7 @@ Assets.IndexingManager = Garnish.Base.extend({
 			return;
 		}
 
+        this.errors = [];
 		var checkedSources = this.$sourceCheckboxes.filter(':checked');
 
 		if (checkedSources.length == 0)
@@ -83,6 +85,12 @@ Assets.IndexingManager = Garnish.Base.extend({
                     {
                         $checkbox.prop('checked', false);
                         alert(Craft.t('There was an error while indexing {source}: {message}', {source: sourceName.trim(), message: data}));
+                        return;
+                    }
+
+                    if (typeof data.error != "undefined")
+                    {
+                        this.errors.push(data.error);
                         return;
                     }
 
@@ -124,6 +132,11 @@ Assets.IndexingManager = Garnish.Base.extend({
 		this.$sourceCheckboxes.filter(':checked').each(function () {
 			checkedSources.push($(this).val());
 		});
+
+        for (var i = 0; i < this.errors.length; i++)
+        {
+            alert(this.errors[i]);
+        }
 
 		var params = {
 			sessionId: this.sessionId,

@@ -61,21 +61,6 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Check if the FileSystem path is a writable folder
-	 * @return array
-	 */
-	public function getSourceErrors()
-	{
-		$errors = array();
-		if (!(IOHelper::folderExists($this->_getSourceFileSystemPath()) && IOHelper::isWritable($this->_getSourceFileSystemPath()))) {
-			$errors['path'] = Craft::t("The destination folder doesn't exist or is not writable.");
-		}
-
-		return $errors;
-	}
-
-
-	/**
 	 * Starts an indexing session.
 	 *
 	 * @param $sessionId
@@ -88,6 +73,12 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		$indexedFolderIds[craft()->assetIndexing->ensureTopFolder($this->model)] = true;
 
 		$localPath = $this->_getSourceFileSystemPath();
+
+		if ($localPath == '/' || !IOHelper::folderExists($localPath))
+		{
+			return array('sourceId' => $this->model->id, 'error' => Craft::t('The path of your source “{source}” appears to be invalid.', array('source' => $this->model->name)));
+		}
+
 		$fileList = IOHelper::getFolderContents($localPath, true);
 
 		$fileList = array_filter($fileList, function ($value) use ($localPath)
@@ -351,7 +342,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 	public function getLocalCopy(AssetFileModel $file)
 	{
-		$location = AssetsHelper::getTempFilePath();
+		$location = AssetsHelper::getTempFilePath($file->getExtension());
 		IOHelper::copyFile($this->_getFileSystemPath($file), $location);
 		clearstatcache();
 
@@ -480,6 +471,10 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
+		if (!IOHelper::isWritable($this->_getSourceFileSystemPath() . $parentFolder->fullPath))
+		{
+			return false;
+		}
 		return IOHelper::createFolder($this->_getSourceFileSystemPath() . $parentFolder->fullPath . $folderName, IOHelper::writableFolderPermissions);
 	}
 

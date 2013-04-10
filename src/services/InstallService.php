@@ -40,6 +40,8 @@ class InstallService extends BaseApplicationComponent
 			$this->_createShunnedMessagesTable();
 			$this->_createAndPopulateInfoTable($inputs);
 
+			$this->_createRackspaceAccessTable();
+
 			Craft::log('Committing the transaction.');
 			$transaction->commit();
 		}
@@ -226,6 +228,24 @@ class InstallService extends BaseApplicationComponent
 			Craft::log('Could not populate the info table.', \CLogger::LEVEL_ERROR);
 			throw new Exception(Craft::t('There was a problem saving to the info table:').$this->_getFlattenedErrors($info->getErrors()));
 		}
+	}
+
+	/**
+	 * Creates the Rackspace access table.
+	 */
+	private function _createRackspaceAccessTable()
+	{
+		Craft::log('Creating the Rackspace access table.');
+
+		craft()->db->createCommand()->createTable('rackspaceaccess', array(
+			'connectionKey'  => array('column' => ColumnType::Varchar, 'required' => true),
+			'token'          => array('column' => ColumnType::Varchar, 'required' => true),
+			'storageUrl'     => array('column' => ColumnType::Varchar, 'required' => true),
+			'cdnUrl'         => array('column' => ColumnType::Varchar, 'required' => true),
+		));
+
+		craft()->db->createCommand()->createIndex('rackspaceaccess', 'connectionKey', true);
+		Craft::log('Finished creating the Rackspace access table.');
 	}
 
 	/**

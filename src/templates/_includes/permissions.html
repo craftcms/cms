@@ -2,7 +2,7 @@
 
 {% macro permissionList(context, permissions, id, hidden) %}
 	{% from "_includes/forms" import checkbox %}
-	<ul{% if id %} id="{{ id }}"{% endif %} class="indent{% if hidden %} hidden{% endif %}">
+	<ul{% if id %} id="{{ id|replace(':', '-') }}"{% endif %} class="indent{% if hidden %} hidden{% endif %}">
 		{% for permissionName, props in permissions %}
 			{% set isInGroupPermissions = (context.groupPermissions is defined and permissionName|lower in context.groupPermissions) %}
 			{% set checked = (isInGroupPermissions
@@ -20,7 +20,7 @@
 					value: permissionName,
 					checked: checked,
 					disabled: isInGroupPermissions,
-					toggle: (hasNestedPermissions ? permissionName~'-nested' : null)
+					toggle: (hasNestedPermissions ? permissionName|replace(':', '-')~'-nested' : null)
 				}) }}
 				{% if hasNestedPermissions %}
 					{{ _self.permissionList(context, props.nested, permissionName~'-nested', not checked) }}
