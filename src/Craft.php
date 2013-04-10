@@ -527,13 +527,14 @@ class Craft extends \Yii
 	 * Logs a message.
 	 * Messages logged by this method may be retrieved via {@link CLogger::getLogs} and may be recorded in different media, such as file, email, database, using {@link CLogRouter}.
 	 *
-	 * @param string $msg message to be logged
-	 * @param string $level level of the message (e.g. 'trace', 'warning', 'error'). It is case-insensitive.
+	 * @param string $msg      message to be logged
+	 * @param string $level    level of the message (e.g. 'trace', 'warning', 'error'). It is case-insensitive.
+	 * @param bool   $force    Whether to force the message to be logged regardless of the level or category.
 	 * @param string $category category of the message (e.g. 'system.web'). It is case-insensitive.
 	 */
-	public static function log($msg, $level = \CLogger::LEVEL_INFO, $category = 'application')
+	public static function log($msg, $level = LogLevel::Info, $force = false, $category = 'application')
 	{
-		if (YII_DEBUG && YII_TRACE_LEVEL > 0 && $level !== \CLogger::LEVEL_PROFILE)
+		if ((YII_DEBUG && YII_TRACE_LEVEL > 0 && $level !== LogLevel::Profile) || $force)
 		{
 			$traces = debug_backtrace();
 			$count = 0;
@@ -557,7 +558,7 @@ class Craft extends \Yii
 			echo $msg."\n";
 		}
 
-		static::getLogger()->log($msg, $level, $category);
+		static::getLogger()->log($msg, $level, $force, $category);
 	}
 
 	/**
@@ -619,6 +620,7 @@ class Craft extends \Yii
 
 /**
  * Returns the current craft() instance.  This is a wrapper function for the Craft::app() instance.
+ *
  * @return WebApp|ConsoleApp
  */
 function craft()
