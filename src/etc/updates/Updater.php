@@ -103,7 +103,8 @@ class Updater
 
 		// Unpack the downloaded package.
 		Craft::log('Unpacking the downloaded package.', LogLevel::Info, true);
-		$unzipFolder = craft()->path->getTempPath().IOHelper::getFileName($downloadFilePath, false);
+		$tempFolderName = StringHelper::UUID().'-'.IOHelper::getFileName($downloadFilePath, false);
+		$unzipFolder = craft()->path->getTempPath().$tempFolderName;
 
 		if (!$this->_unpackPackage($downloadFilePath, $unzipFolder))
 		{
