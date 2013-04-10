@@ -77,6 +77,24 @@ class WebApp extends \CWebApplication
 		$this->getComponent('request');
 		$this->getComponent('log');
 
+		// Attach our own custom Logger
+		Craft::setLogger(new Logger());
+
+		// If we're not in devMode or this is a resource request, we're going to remove some logging routes.
+		if (!craft()->config->get('devMode') || ($resourceRequest = $this->request->isResourceRequest()) == true)
+		{
+			// If it's a resource request, we don't want any logging routes, including craft.log
+			// If it's not a resource request, we'll keep the FileLogRoute around.
+			if ($resourceRequest)
+			{
+				craft()->log->removeRoute('FileLogRoute');
+			}
+
+			// Don't need either of these if not in devMode or it's a resource request.
+			craft()->log->removeRoute('WebLogRoute');
+			craft()->log->removeRoute('ProfileLogRoute');
+		}
+
 		parent::init();
 	}
 
@@ -498,7 +516,7 @@ class WebApp extends \CWebApplication
 		// Most likely missing PDO in general or the specific database PDO driver.
 		catch(\CDbException $e)
 		{
-			Craft::log($e->getMessage(), \CLogger::LEVEL_ERROR);
+			Craft::log($e->getMessage(), LogLevel::Error);
 			$missingPdo = false;
 
 			// TODO: Multi-db driver check.
@@ -516,13 +534,13 @@ class WebApp extends \CWebApplication
 
 			if (!$missingPdo)
 			{
-				Craft::log($e->getMessage(), \CLogger::LEVEL_ERROR);
+				Craft::log($e->getMessage(), LogLevel::Error);
 				$messages[] = Craft::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
 			}
 		}
 		catch (\Exception $e)
 		{
-			Craft::log($e->getMessage(), \CLogger::LEVEL_ERROR);
+			Craft::log($e->getMessage(), LogLevel::Error);
 			$messages[] = Craft::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
 		}
 
