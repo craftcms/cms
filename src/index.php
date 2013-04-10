@@ -64,6 +64,14 @@ if (($siteConfigPath = realpath(CRAFT_CONFIG_PATH)) === false || !is_dir($siteCo
 	exit('@@@appName@@@ config path "'.($siteConfigPath === false ? CRAFT_CONFIG_PATH : $siteConfigPath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
 }
 
+$userConfig = require_once CRAFT_CONFIG_PATH.'general.php';
+
+// Set YII_DEBUG to true if we're in devMode.
+if (isset($userConfig['devMode']) && $userConfig['devMode'] == true)
+{
+	define('YII_DEBUG', true);
+}
+
 // In case yiic is running
 if (!class_exists('Yii', false))
 {
