@@ -69,12 +69,16 @@ class AssetTransformsService extends BaseApplicationComponent
 		$transformRecord->name = $transform->name;
 		$transformRecord->handle = $transform->handle;
 
-		if ($transformRecord->width != $transform->width || $transformRecord->height != $transform->height || $transformRecord->mode != $transform->mode)
+		$heightChanged = $transformRecord->width != $transform->width || $transformRecord->height != $transform->height;
+		$modeChanged = $transformRecord->mode != $transform->mode || $transformRecord->position != $transform->position;
+
+		if ($heightChanged || $modeChanged)
 		{
 			$transformRecord->dimensionChangeTime = new DateTime('@'.time());
 		}
 
 		$transformRecord->mode = $transform->mode;
+		$transformRecord->position = $transform->position;
 		$transformRecord->width = $transform->width;
 		$transformRecord->height = $transform->height;
 
@@ -205,7 +209,8 @@ class AssetTransformsService extends BaseApplicationComponent
 
 					default:
 					{
-						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height)->saveAs($targetFile);
+
+						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height, true, $transform->position)->saveAs($targetFile);
 						break;
 
 					}
