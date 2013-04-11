@@ -92,7 +92,7 @@ class Updater
 			throw new Exception(Craft::t('There was a problem downloading the package.'));
 		}
 
-		$uid = IOHelper::getFileName($fileName, false);
+		$uid = StringHelper::UUID();
 
 		// Validate the downloaded update against ET.
 		Craft::log('Validating downloaded update.', LogLevel::Info, true);
@@ -103,8 +103,7 @@ class Updater
 
 		// Unpack the downloaded package.
 		Craft::log('Unpacking the downloaded package.', LogLevel::Info, true);
-		$tempFolderName = StringHelper::UUID().'-'.IOHelper::getFileName($downloadFilePath, false);
-		$unzipFolder = craft()->path->getTempPath().$tempFolderName;
+		$unzipFolder = craft()->path->getTempPath().$uid;
 
 		if (!$this->_unpackPackage($downloadFilePath, $unzipFolder))
 		{
