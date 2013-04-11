@@ -23,7 +23,7 @@
 				label:    optionLabel,
 				name:     (name is defined ? name~'[]' : null),
 				value:    optionValue,
-				checked:  (values is empty or value in values),
+				checked:  (values is empty or optionValue in values),
 				disabled: (values is empty)
 			} only %}
 		</div>
