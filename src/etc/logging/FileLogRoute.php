@@ -14,7 +14,7 @@ class FileLogRoute extends \CFileLogRoute
 		$this->setLogPath(craft()->path->getLogPath());
 		$this->setLogFile('craft.log');
 
-		$this->levels = craft()->config->get('devMode') ? '' : 'error, warning';
+		$this->levels = craft()->config->get('devMode') ? '' : 'error,warning';
 		$this->filter = craft()->config->get('devMode') ? 'CLogFilter' : null;
 
 		parent::init();
@@ -39,13 +39,34 @@ class FileLogRoute extends \CFileLogRoute
 
 		foreach ($logs as $log)
 		{
-			$log[0] = LoggingHelper::redact($log[0]);
-			@fwrite($fp, $this->formatLogMessage($log[0], $log[1], $log[2], $log[3]));
+			$message = LoggingHelper::redact($log[0]);
+			$level = $log[1];
+			$category = $log[2];
+			$time = $log[3];
+			$force = (isset($log[4]) && $log[4] == true) ? true : false;
+
+			@fwrite($fp, $this->formatLogMessage($message, $level, $category, $time, $force));
 		}
 
 		@fwrite($fp, PHP_EOL.'******************************************************************************************************'.PHP_EOL);
 
 		@flock($fp, LOCK_UN);
 		@fclose($fp);
+	}
+
+	/**
+	 * Formats a log message given different fields.
+	 *
+	 * @param  string  $message  The message content
+	 * @param  integer $level    The message level
+	 * @param  string  $category The message category
+	 * @param  integer $time     The message timestamp
+	 * @param  bool    $force    Whether the message was forced or not
+	 *
+	 * @return string            formatted message
+	 */
+	protected function formatLogMessage($message, $level, $category, $time, $force)
+	{
+		return @date('Y/m/d H:i:s',$time)." [$level] [$category]".($force ? " [Forced]" : "")." $message\n";
 	}
 }

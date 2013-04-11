@@ -242,7 +242,7 @@ class ElementsService extends BaseApplicationComponent
 					}
 					else
 					{
-						array_unshift($conditions, 'or');
+						array_unshift($statusConditions, 'or');
 						$statusCondition = $statusConditions;
 					}
 

@@ -21,11 +21,11 @@ class m130313_181630_transformations_to_transforms_part_deux extends BaseMigrati
 		if ($assetTransformationsTable && !$assetTransformsTable)
 		{
 			$this->dbConnection->createCommand()->renameTable('assettransformations', 'assettransforms');
-			Craft::log('Successfully renamed `assettransformations` to `assettransforms`.', \CLogger::LEVEL_INFO);
+			Craft::log('Successfully renamed `assettransformations` to `assettransforms`.');
 		}
 		else
 		{
-			Craft::log('Tried to rename `assettransformations` to `assettransforms`, but `assettransforms` already exists.', \CLogger::LEVEL_WARNING);
+			Craft::log('Tried to rename `assettransformations` to `assettransforms`, but `assettransforms` already exists.', LogLevel::Warning);
 		}
 
 		return true;

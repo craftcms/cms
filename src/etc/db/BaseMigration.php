@@ -32,8 +32,8 @@ abstract class BaseMigration extends \CDbMigration
 		}
 		catch(\Exception $e)
 		{
-			Craft::log($e->getMessage().' ('.$e->getFile().':'.$e->getLine().')', \CLogger::LEVEL_ERROR);
-			Craft::log($e->getTraceAsString(), \CLogger::LEVEL_ERROR);
+			Craft::log($e->getMessage().' ('.$e->getFile().':'.$e->getLine().')', LogLevel::Error);
+			Craft::log($e->getTraceAsString(), LogLevel::Error);
 
 			$transaction->rollback();
 			return false;
@@ -285,7 +285,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function down()
 	{
-		Craft::log('Down migrations are not supported.', \CLogger::LEVEL_WARNING);
+		Craft::log('Down migrations are not supported.', LogLevel::Warning);
 	}
 
 	/**
@@ -293,7 +293,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function safeDown()
 	{
-		Craft::log('Down migrations are not supported.', \CLogger::LEVEL_WARNING);
+		Craft::log('Down migrations are not supported.', LogLevel::Warning);
 	}
 
 	/**

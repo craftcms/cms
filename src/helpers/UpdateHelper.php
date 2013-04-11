@@ -105,7 +105,7 @@ class UpdateHelper
 					{
 						if ($folder)
 						{
-							Craft::log('Updating folder: '.$destFile);
+							Craft::log('Updating folder: '.$destFile, LogLevel::Info, true);
 
 							$tempFolder = rtrim($destFile, '/').StringHelper::UUID().'/';
 							$tempTempFolder = rtrim($destFile, '/').'-tmp/';
@@ -119,7 +119,7 @@ class UpdateHelper
 						}
 						else
 						{
-							Craft::log('Updating file: '.$destFile);
+							Craft::log('Updating file: '.$destFile, LogLevel::Info, true);
 							IOHelper::copyFile($sourceFile, $destFile);
 						}
 
@@ -130,7 +130,7 @@ class UpdateHelper
 		}
 		catch (\Exception $e)
 		{
-			Craft::log('Error updating files: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
+			Craft::log('Error updating files: '.$e->getMessage(), LogLevel::Error);
 			UpdateHelper::rollBackFileChanges($manifestData);
 			return false;
 		}

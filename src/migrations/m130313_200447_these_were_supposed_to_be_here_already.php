@@ -45,17 +45,17 @@ class m130313_200447_these_were_supposed_to_be_here_already extends BaseMigratio
 							}
 							else
 							{
-								Craft::log($file.' does not exist at '.$fullFilePath.'.  We created the file, but were unable to write to it.', \CLogger::LEVEL_WARNING);
+								Craft::log($file.' does not exist at '.$fullFilePath.'.  We created the file, but were unable to write to it.', LogLevel::Warning);
 							}
 						}
 						else
 						{
-							Craft::log($file.' does not exist at '.$fullFilePath.', and we tried to create it, but could not.', \CLogger::LEVEL_WARNING);
+							Craft::log($file.' does not exist at '.$fullFilePath.', and we tried to create it, but could not.', LogLevel::Warning);
 						}
 					}
 					else
 					{
-						Craft::log($file.' does not exist at '.$fullFilePath.', but we do not have write access to that folder.', \CLogger::LEVEL_WARNING);
+						Craft::log($file.' does not exist at '.$fullFilePath.', but we do not have write access to that folder.', LogLevel::Warning);
 					}
 				}
 				else
@@ -67,7 +67,7 @@ class m130313_200447_these_were_supposed_to_be_here_already extends BaseMigratio
 		catch (\Exception $e)
 		{
 			// Log and swallow
-			Craft::log('There was a problem trying to add the .htaccess/web.config files: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
+			Craft::log('There was a problem trying to add the .htaccess/web.config files: '.$e->getMessage(), LogLevel::Error);
 		}
 
 		return true;

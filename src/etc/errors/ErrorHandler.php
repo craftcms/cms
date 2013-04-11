@@ -88,7 +88,7 @@ class ErrorHandler extends \CErrorHandler
 			$info = $data->read();
 			$info = serialize($info);
 
-			Craft::log('Deadlock error, innodb status: '.$info, \CLogger::LEVEL_ERROR, 'system.db.CDbCommand');
+			Craft::log('Deadlock error, innodb status: '.$info, LogLevel::Error, 'system.db.CDbCommand');
 		}
 
 		$app = craft();

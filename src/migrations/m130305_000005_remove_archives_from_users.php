@@ -28,7 +28,7 @@ class m130305_000005_remove_archives_from_users extends BaseMigration
 			}
 			else
 			{
-				Craft::log('Could not find a `archivedUsername` column in the `users` table.', \CLogger::LEVEL_WARNING);
+				Craft::log('Could not find a `archivedUsername` column in the `users` table.', LogLevel::Warning);
 			}
 
 			// Delete archivedEmail
@@ -39,12 +39,12 @@ class m130305_000005_remove_archives_from_users extends BaseMigration
 			}
 			else
 			{
-				Craft::log('Could not find a `archivedEmail` column in the `users` table.', \CLogger::LEVEL_WARNING);
+				Craft::log('Could not find a `archivedEmail` column in the `users` table.', LogLevel::Warning);
 			}
 		}
 		else
 		{
-			Craft::log('Could not find an `users` table. Wut?', \CLogger::LEVEL_ERROR);
+			Craft::log('Could not find an `users` table. Wut?', LogLevel::Error);
 		}
 	}
 }

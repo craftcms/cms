@@ -9,7 +9,7 @@ $dbConfig = require_once(CRAFT_APP_PATH.'etc/config/defaults/db.php');
 
 if (file_exists(CRAFT_CONFIG_PATH.'general.php'))
 {
-	if (is_array($_generalConfig = require_once(CRAFT_CONFIG_PATH.'general.php')))
+	if (is_array($_generalConfig = @include(CRAFT_CONFIG_PATH.'general.php')))
 	{
 		$generalConfig = array_merge($generalConfig, $_generalConfig);
 	}
@@ -34,7 +34,6 @@ if (is_array($_dbConfig = require_once(CRAFT_CONFIG_PATH.'db.php')))
 
 if ($generalConfig['devMode'] == true)
 {
-	defined('YII_DEBUG') || define('YII_DEBUG', true);
 	error_reporting(E_ALL & ~E_STRICT);
 	ini_set('display_errors', 1);
 	ini_set('log_errors', 1);

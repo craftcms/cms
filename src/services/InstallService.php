@@ -87,7 +87,7 @@ class InstallService extends BaseApplicationComponent
 				$ref = new \ReflectionClass($class);
 				if ($ref->isAbstract() || $ref->isInterface())
 				{
-					Craft::log("Skipping record {$file} because it’s abstract or an interface.", \CLogger::LEVEL_WARNING);
+					Craft::log("Skipping record {$file} because it’s abstract or an interface.", LogLevel::Warning);
 					continue;
 				}
 
@@ -99,12 +99,12 @@ class InstallService extends BaseApplicationComponent
 				}
 				else
 				{
-					Craft::log("Skipping record {$file} because it doesn’t have a createTable() method.", \CLogger::LEVEL_WARNING);
+					Craft::log("Skipping record {$file} because it doesn’t have a createTable() method.", LogLevel::Warning);
 				}
 			}
 			else
 			{
-				Craft::log("Skipping record {$file} because it doesn’t exist.", \CLogger::LEVEL_WARNING);
+				Craft::log("Skipping record {$file} because it doesn’t exist.", LogLevel::Warning);
 			}
 		}
 
@@ -225,7 +225,7 @@ class InstallService extends BaseApplicationComponent
 		}
 		else
 		{
-			Craft::log('Could not populate the info table.', \CLogger::LEVEL_ERROR);
+			Craft::log('Could not populate the info table.', LogLevel::Error);
 			throw new Exception(Craft::t('There was a problem saving to the info table:').$this->_getFlattenedErrors($info->getErrors()));
 		}
 	}
@@ -265,7 +265,7 @@ class InstallService extends BaseApplicationComponent
 		}
 		else
 		{
-			Craft::log('Could not populate the migration table.', \CLogger::LEVEL_ERROR);
+			Craft::log('Could not populate the migration table.', LogLevel::Error);
 			throw new Exception(Craft::t('There was a problem saving to the migrations table:').$this->_getFlattenedErrors($migration->getErrors()));
 		}
 	}
@@ -308,7 +308,7 @@ class InstallService extends BaseApplicationComponent
 		}
 		else
 		{
-			Craft::log('Could not create the user.', \CLogger::LEVEL_ERROR);
+			Craft::log('Could not create the user.', LogLevel::Error);
 			throw new Exception(Craft::t('There was a problem creating the user:').$this->_getFlattenedErrors($user->getErrors()));
 		}
 	}
@@ -329,7 +329,7 @@ class InstallService extends BaseApplicationComponent
 		}
 		else
 		{
-			Craft::log('Could not log the user in.', \CLogger::LEVEL_WARNING);
+			Craft::log('Could not log the user in.', LogLevel::Warning);
 		}
 	}
 
@@ -356,7 +356,7 @@ class InstallService extends BaseApplicationComponent
 		}
 		else
 		{
-			Craft::log('Could not save default email settings.', \CLogger::LEVEL_WARNING);
+			Craft::log('Could not save default email settings.', LogLevel::Warning);
 		}
 	}
 
@@ -379,7 +379,7 @@ class InstallService extends BaseApplicationComponent
 		}
 		else
 		{
-			Craft::log('Could not save the Default field group.', \CLogger::LEVEL_WARNING);
+			Craft::log('Could not save the Default field group.', LogLevel::Warning);
 		}
 
 		Craft::log('Creating the Body field.');
@@ -397,7 +397,7 @@ class InstallService extends BaseApplicationComponent
 		}
 		else
 		{
-			Craft::log('Could not save the Body field.', \CLogger::LEVEL_WARNING);
+			Craft::log('Could not save the Body field.', LogLevel::Warning);
 		}
 
 		Craft::log('Creating the Blog section.');
@@ -445,7 +445,7 @@ class InstallService extends BaseApplicationComponent
 		}
 		else
 		{
-			Craft::log('Could not save the Blog section.', \CLogger::LEVEL_WARNING);
+			Craft::log('Could not save the Blog section.', LogLevel::Warning);
 		}
 	}
 

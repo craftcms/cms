@@ -98,6 +98,19 @@ class UserElementType extends BaseElementType
 		$query
 			->addSelect('users.username, users.photo, users.firstName, users.lastName, users.email, users.admin, users.status, users.lastLoginDate, users.lockoutDate')
 			->join('users users', 'users.id = elements.id');
+
+		if ($criteria->groupId)
+		{
+			$query->join('usergroups_users usergroups_users', 'users.id = usergroups_users.userId');
+			$query->andWhere(DbHelper::parseParam('usergroups_users.groupId', $criteria->groupId, $query->params));
+		}
+
+		if ($criteria->group)
+		{
+			$query->join('usergroups_users usergroups_users', 'users.id = usergroups_users.userId');
+			$query->join('usergroups usergroups', 'usergroups_users.groupId = usergroups.id');
+			$query->andWhere(DbHelper::parseParam('usergroups.handle', $criteria->group, $query->params));
+		}
 	}
 
 	/**

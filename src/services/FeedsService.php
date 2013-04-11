@@ -31,7 +31,7 @@ class FeedsService extends BaseApplicationComponent
 
 		if (!extension_loaded('dom'))
 		{
-			Craft::log('Craft needs the PHP DOM extension (http://www.php.net/manual/en/book.dom.php) enabled to parse feeds.', \CLogger::LEVEL_WARNING);
+			Craft::log('Craft needs the PHP DOM extension (http://www.php.net/manual/en/book.dom.php) enabled to parse feeds.', LogLevel::Warning);
 			return $items;
 		}
 

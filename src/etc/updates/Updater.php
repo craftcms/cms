@@ -78,11 +78,11 @@ class Updater
 	 */
 	public function processDownload()
 	{
-		Craft::log ('Starting to process the update download.');
+		Craft::log ('Starting to process the update download.', LogLevel::Info, true);
 		$tempPath = craft()->path->getTempPath();
 
 		// Download the package from ET.
-		Craft::log('Downloading patch file to '.$tempPath);
+		Craft::log('Downloading patch file to '.$tempPath, LogLevel::Info, true);
 		if (($fileName = craft()->et->downloadUpdate($tempPath)) !== false)
 		{
 			$downloadFilePath = $tempPath.$fileName;
@@ -92,18 +92,18 @@ class Updater
 			throw new Exception(Craft::t('There was a problem downloading the package.'));
 		}
 
-		$uid = IOHelper::getFileName($fileName, false);
+		$uid = StringHelper::UUID();
 
 		// Validate the downloaded update against ET.
-		Craft::log('Validating downloaded update.');
+		Craft::log('Validating downloaded update.', LogLevel::Info, true);
 		if (!$this->_validateUpdate($downloadFilePath))
 		{
 			throw new Exception(Craft::t('There was a problem validating the downloaded package.'));
 		}
 
 		// Unpack the downloaded package.
-		Craft::log('Unpacking the downloaded package.');
-		$unzipFolder = craft()->path->getTempPath().IOHelper::getFileName($downloadFilePath, false);
+		Craft::log('Unpacking the downloaded package.', LogLevel::Info, true);
+		$unzipFolder = craft()->path->getTempPath().$uid;
 
 		if (!$this->_unpackPackage($downloadFilePath, $unzipFolder))
 		{
@@ -122,7 +122,7 @@ class Updater
 		$unzipFolder = UpdateHelper::getUnzipFolderFromUID($uid);
 
 		// Validate that the paths in the update manifest file are all writable by Craft
-		Craft::log('Validating update manifest file paths are writable.');
+		Craft::log('Validating update manifest file paths are writable.', LogLevel::Info, true);
 		$writableErrors = $this->_validateManifestPathsWritable($unzipFolder);
 		if (count($writableErrors) > 0)
 		{
@@ -130,7 +130,7 @@ class Updater
 		}
 
 		// Backup any files about to be updated.
-		Craft::log('Backing up files that are about to be updated.');
+		Craft::log('Backing up files that are about to be updated.', LogLevel::Info, true);
 		if (!$this->_backupFiles($unzipFolder))
 		{
 			throw new Exception(Craft::t('There was a problem backing up your files for the update.'));
@@ -146,14 +146,14 @@ class Updater
 		$unzipFolder = UpdateHelper::getUnzipFolderFromUID($uid);
 
 		// Put the site into maintenance mode.
-		Craft::log('Putting the site into maintenance mode.');
+		Craft::log('Putting the site into maintenance mode.', LogLevel::Info, true);
 		Craft::enableMaintenanceMode();
 
 		// Update the files.
-		Craft::log('Performing file update.');
+		Craft::log('Performing file update.', LogLevel::Info, true);
 		if (!UpdateHelper::doFileUpdate(UpdateHelper::getManifestData($unzipFolder), $unzipFolder))
 		{
-			Craft::log('Taking the site out of maintenance mode.');
+			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
 			Craft::disableMaintenanceMode();
 
 			throw new Exception(Craft::t('There was a problem updating your files.'));
@@ -169,7 +169,7 @@ class Updater
 	{
 		try
 		{
-			Craft::log('Starting to backup database.');
+			Craft::log('Starting to backup database.', LogLevel::Info, true);
 			if (($dbBackupPath = craft()->db->backup()) === false)
 			{
 				// If uid !== false, then it's an auto update.
@@ -178,7 +178,7 @@ class Updater
 					UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
 				}
 
-				Craft::log('Taking the site out of maintenance mode.');
+				Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
 				Craft::disableMaintenanceMode();
 
 				throw new Exception(Craft::t('There was a problem backing up your database.'));
@@ -196,7 +196,7 @@ class Updater
 				UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
 			}
 
-			Craft::log('Taking the site out of maintenance mode.');
+			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
 			Craft::disableMaintenanceMode();
 
 			throw new Exception(Craft::t('There was a problem backing up your database.'));
@@ -213,13 +213,13 @@ class Updater
 	{
 		try
 		{
-			Craft::log('Running migrations...');
+			Craft::log('Running migrations...', LogLevel::Info, true);
 			if (!craft()->migrations->runToTop($plugin))
 			{
-				Craft::log('Something went wrong running a migration. :-(', \CLogger::LEVEL_ERROR);
+				Craft::log('Something went wrong running a migration. :-(', LogLevel::Error);
 				craft()->updates->rollbackUpdate($uid, $dbBackupPath);
 
-				Craft::log('Taking the site out of maintenance mode.');
+				Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
 				Craft::disableMaintenanceMode();
 
 				throw new Exception(Craft::t('There was a problem updating your database.'));
@@ -229,7 +229,7 @@ class Updater
 		{
 			craft()->updates->rollbackUpdate($uid, $dbBackupPath);
 
-			Craft::log('Taking the site out of maintenance mode.');
+			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
 			Craft::disableMaintenanceMode();
 
 			throw new Exception(Craft::t('There was a problem updating your database.'));
@@ -251,16 +251,16 @@ class Updater
 			$unzipFolder = UpdateHelper::getUnzipFolderFromUID($uid);
 
 			// Clean-up any leftover files.
-			Craft::log('Cleaning up temp files after update.');
+			Craft::log('Cleaning up temp files after update.', LogLevel::Info, true);
 			$this->_cleanTempFiles($zipFile, $unzipFolder);
 		}
 
 		// Take the site out of maintenance mode.
-		Craft::log('Taking the site out of maintenance mode.');
+		Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
 		Craft::disableMaintenanceMode();
 
 		// Clear the updates cache.
-		Craft::log('Clearing the update cache.');
+		Craft::log('Clearing the update cache.', LogLevel::Info, true);
 		if (!craft()->updates->flushUpdateInfoFromCache())
 		{
 			throw new Exception(Craft::t('The update was performed successfully, but there was a problem invalidating the update cache.'));
@@ -269,7 +269,7 @@ class Updater
 		if ($handle == 'craft')
 		{
 			// Setting new Craft info.
-			Craft::log('Settings new Craft release info in craft_info table.');
+			Craft::log('Settings new Craft release info in craft_info table.', LogLevel::Info, true);
 			if (!craft()->updates->setNewCraftInfo(CRAFT_VERSION, CRAFT_BUILD, CRAFT_RELEASE_DATE))
 			{
 				throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the database info table.'));
@@ -292,7 +292,7 @@ class Updater
 			}
 		}
 
-		Craft::log('Finished Updater.');
+		Craft::log('Finished Updater.', LogLevel::Info, true);
 		return true;
 	}
 
@@ -363,7 +363,7 @@ class Updater
 			{
 				if (($folder = IOHelper::getFolder($fullPath)) !== false)
 				{
-					Craft::log('Deleting folder: '.$folder->getRealPath());
+					Craft::log('Deleting folder: '.$folder->getRealPath(), LogLevel::Info, true);
 					$folder->delete();
 				}
 			}
@@ -371,7 +371,7 @@ class Updater
 			{
 				if (($file = IOHelper::getFile($fullPath)) !== false)
 				{
-					Craft::log('Deleting file: '.$file->getRealPath());
+					Craft::log('Deleting file: '.$file->getRealPath(), LogLevel::Info, true);
 					$file->delete();
 				}
 			}
@@ -393,7 +393,7 @@ class Updater
 	 */
 	private function _validateUpdate($downloadFilePath)
 	{
-		Craft::log('Validating MD5 for '.$downloadFilePath);
+		Craft::log('Validating MD5 for '.$downloadFilePath, LogLevel::Info, true);
 		$sourceMD5 = IOHelper::getFileName($downloadFilePath, false);
 
 		$localMD5 = IOHelper::getFileMD5($downloadFilePath);
@@ -418,7 +418,7 @@ class Updater
 	 */
 	private function _unpackPackage($downloadFilePath, $unzipFolder)
 	{
-		Craft::log('Unzipping package to '.$unzipFolder);
+		Craft::log('Unzipping package to '.$unzipFolder, LogLevel::Info, true);
 		if (Zip::unzip($downloadFilePath, $unzipFolder))
 		{
 			return true;
@@ -512,7 +512,7 @@ class Updater
 					$folderPath = UpdateHelper::cleanManifestFolderLine($filePath);
 					if (IOHelper::folderExists($folderPath))
 					{
-						Craft::log('Backing up folder '.$folderPath);
+						Craft::log('Backing up folder '.$folderPath, LogLevel::Info, true);
 						IOHelper::createFolder($folderPath.'.bak');
 						IOHelper::copyFolder($folderPath.'/', $folderPath.'.bak/');
 					}
@@ -523,7 +523,7 @@ class Updater
 					// If the file doesn't exist, it's probably a new file.
 					if (IOHelper::fileExists($filePath))
 					{
-						Craft::log('Backing up file '.$filePath);
+						Craft::log('Backing up file '.$filePath, LogLevel::Info, true);
 						IOHelper::copyFile($filePath, $filePath.'.bak');
 					}
 				}
@@ -531,7 +531,7 @@ class Updater
 		}
 		catch (\Exception $e)
 		{
-			Craft::log('Error updating files: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
+			Craft::log('Error updating files: '.$e->getMessage(), LogLevel::Error);
 			UpdateHelper::rollBackFileChanges($manifestData);
 			return false;
 		}

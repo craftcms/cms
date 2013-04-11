@@ -108,7 +108,7 @@ class ConfigService extends BaseApplicationComponent
 					}
 					catch (\Exception $e)
 					{
-						Craft::log('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
+						Craft::log('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), LogLevel::Error);
 					}
 
 					// Cache it
@@ -170,7 +170,7 @@ class ConfigService extends BaseApplicationComponent
 						}
 						catch (\Exception $e)
 						{
-							Craft::log('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
+							Craft::log('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(), LogLevel::Error);
 						}
 					}
 

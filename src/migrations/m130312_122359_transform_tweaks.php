@@ -24,7 +24,7 @@ class m130312_122359_transform_tweaks extends BaseMigration
 		}
 		else
 		{
-			Craft::log('Tried to rename `assettransformations` to `assettransforms`, but `assettransforms` already exists.', \CLogger::LEVEL_WARNING);
+			Craft::log('Tried to rename `assettransformations` to `assettransforms`, but `assettransforms` already exists.', LogLevel::Warning);
 		}
 
 		// assettransforms is guaranteed to exist by this point.

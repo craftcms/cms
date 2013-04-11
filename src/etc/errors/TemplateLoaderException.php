@@ -15,7 +15,7 @@ class TemplateLoaderException extends Exception
 	{
 		$this->template = $template;
 		$message = Craft::t('Unable to find the template “{template}”.', array('template' => $this->template));
-		Craft::log($message, \CLogger::LEVEL_ERROR);
+		Craft::log($message, LogLevel::Error);
 
 		parent::__construct($message, null, null);
 	}

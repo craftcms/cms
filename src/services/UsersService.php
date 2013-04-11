@@ -67,12 +67,12 @@ class UsersService extends BaseApplicationComponent
 			}
 			else
 			{
-				Craft::log('Found a with UID:'.$uid.', but the verification code given: '.$code.' does not match the hash in the database.', \CLogger::LEVEL_WARNING);
+				Craft::log('Found a with UID:'.$uid.', but the verification code given: '.$code.' does not match the hash in the database.', LogLevel::Warning);
 			}
 		}
 		else
 		{
-			Craft::log('Could not find a user with UID:'.$uid.' that has a verification code that is not expired.', \CLogger::LEVEL_WARNING);
+			Craft::log('Could not find a user with UID:'.$uid.' that has a verification code that is not expired.', LogLevel::Warning);
 		}
 
 		return null;
@@ -384,45 +384,6 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Sets a user record up for a new verification code without saving it.
-	 *
-	 * @access private
-	 * @param UserRecord $userRecord
-	 * @return string
-	 */
-	private function _setVerificationCodeOnUserRecord(UserRecord $userRecord)
-	{
-		$unhashedCode = StringHelper::UUID();
-		$hashedCode = craft()->security->hashString($unhashedCode);
-		$userRecord->verificationCode = $hashedCode['hash'];
-		$userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
-
-		return $unhashedCode;
-	}
-
-	/**
-	 * Gets the account verification URL for a user record.
-	 *
-	 * @access private
-	 * @param $verificationCode
-	 * @param $uid
-	 * @return string
-	 */
-	private function _getVerifyAccountUrl($verificationCode, $uid)
-	{
-		if (craft()->request->isSecureConnection)
-		{
-			return UrlHelper::getUrl(craft()->config->get('resetPasswordPath'), array(
-				'code' => $verificationCode, 'id' => $uid
-			), 'https');
-		}
-
-		return UrlHelper::getUrl(craft()->config->get('resetPasswordPath'), array(
-			'code' => $verificationCode, 'id' => $uid
-		));
-	}
-
-	/**
 	 * Changes a user's password.
 	 *
 	 * @param UserModel $user
@@ -439,48 +400,6 @@ class UsersService extends BaseApplicationComponent
 		}
 		else
 		{
-			return false;
-		}
-	}
-
-	/**
-	 * Sets a user record up for a new password without saving it.
-	 *
-	 * @access private
-	 * @param UserModel $user
-	 * @param UserRecord $userRecord
-	 * @return bool
-	 */
-	private function _setPasswordOnUserRecord(UserModel $user, UserRecord $userRecord)
-	{
-		// Validate the password first
-		$passwordModel = new PasswordModel();
-		$passwordModel->password = $user->newPassword;
-
-		if ($passwordModel->validate())
-		{
-			$hashAndType = craft()->security->hashString($user->newPassword);
-
-			$userRecord->password = $user->password = $hashAndType['hash'];
-			$userRecord->encType = $user->encType = $hashAndType['encType'];
-			$userRecord->status = $user->status = UserStatus::Active;
-			$userRecord->invalidLoginWindowStart = null;
-			$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
-			$userRecord->verificationCode = null;
-			$userRecord->verificationCodeIssuedDate = null;
-			$userRecord->passwordResetRequired = $user->passwordResetRequired = false;
-			$userRecord->lastPasswordChangeDate = $user->lastPasswordChangeDate = DateTimeHelper::currentUTCDateTime();
-
-			$user->newPassword = null;
-
-			return true;
-		}
-		else
-		{
-			$user->addErrors(array(
-				'newPassword' => $passwordModel->getErrors('password')
-			));
-
 			return false;
 		}
 	}
@@ -551,27 +470,6 @@ class UsersService extends BaseApplicationComponent
 		$user->invalidLoginCount = $userRecord->invalidLoginCount;
 
 		return $userRecord->save();
-	}
-
-
-	/**
-	 * Determines if a user is within their invalid login window.
-	 *
-	 * @param UserRecord $userRecord
-	 * @return bool
-	 */
-	private function _isUserInsideInvalidLoginWindow(UserRecord $userRecord)
-	{
-		if ($userRecord->invalidLoginWindowStart)
-		{
-			$duration = new DateInterval(craft()->config->get('invalidLoginWindowDuration'));
-			$end = $userRecord->invalidLoginWindowStart->add($duration);
-			return ($end >= DateTimeHelper::currentUTCDateTime());
-		}
-		else
-		{
-			return false;
-		}
 	}
 
 	/**
@@ -804,6 +702,107 @@ class UsersService extends BaseApplicationComponent
 		{
 			array_unshift($whereConditions, 'and');
 			$query->where($whereConditions, $whereParams);
+		}
+	}
+
+	/**
+	 * Sets a user record up for a new verification code without saving it.
+	 *
+	 * @access private
+	 * @param UserRecord $userRecord
+	 * @return string
+	 */
+	private function _setVerificationCodeOnUserRecord(UserRecord $userRecord)
+	{
+		$unhashedCode = StringHelper::UUID();
+		$hashedCode = craft()->security->hashString($unhashedCode);
+		$userRecord->verificationCode = $hashedCode['hash'];
+		$userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
+
+		return $unhashedCode;
+	}
+
+	/**
+	 * Gets the account verification URL for a user record.
+	 *
+	 * @access private
+	 * @param $verificationCode
+	 * @param $uid
+	 * @return string
+	 */
+	private function _getVerifyAccountUrl($verificationCode, $uid)
+	{
+		if (craft()->request->isSecureConnection)
+		{
+			return UrlHelper::getUrl(craft()->config->get('resetPasswordPath'), array(
+				'code' => $verificationCode, 'id' => $uid
+			), 'https');
+		}
+
+		return UrlHelper::getUrl(craft()->config->get('resetPasswordPath'), array(
+			'code' => $verificationCode, 'id' => $uid
+		));
+	}
+
+	/**
+	 * Determines if a user is within their invalid login window.
+	 *
+	 * @param UserRecord $userRecord
+	 * @return bool
+	 */
+	private function _isUserInsideInvalidLoginWindow(UserRecord $userRecord)
+	{
+		if ($userRecord->invalidLoginWindowStart)
+		{
+			$duration = new DateInterval(craft()->config->get('invalidLoginWindowDuration'));
+			$end = $userRecord->invalidLoginWindowStart->add($duration);
+			return ($end >= DateTimeHelper::currentUTCDateTime());
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Sets a user record up for a new password without saving it.
+	 *
+	 * @access private
+	 * @param UserModel $user
+	 * @param UserRecord $userRecord
+	 * @return bool
+	 */
+	private function _setPasswordOnUserRecord(UserModel $user, UserRecord $userRecord)
+	{
+		// Validate the password first
+		$passwordModel = new PasswordModel();
+		$passwordModel->password = $user->newPassword;
+
+		if ($passwordModel->validate())
+		{
+			$hashAndType = craft()->security->hashString($user->newPassword);
+
+			$userRecord->password = $user->password = $hashAndType['hash'];
+			$userRecord->encType = $user->encType = $hashAndType['encType'];
+			$userRecord->status = $user->status = UserStatus::Active;
+			$userRecord->invalidLoginWindowStart = null;
+			$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
+			$userRecord->verificationCode = null;
+			$userRecord->verificationCodeIssuedDate = null;
+			$userRecord->passwordResetRequired = $user->passwordResetRequired = false;
+			$userRecord->lastPasswordChangeDate = $user->lastPasswordChangeDate = DateTimeHelper::currentUTCDateTime();
+
+			$user->newPassword = null;
+
+			return true;
+		}
+		else
+		{
+			$user->addErrors(array(
+				'newPassword' => $passwordModel->getErrors('password')
+			));
+
+			return false;
 		}
 	}
 }

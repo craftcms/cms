@@ -71,7 +71,7 @@
 				</div>
 			{% endif %}
 		{% else %}
-			{% if user.can('createEntries') %}
+			{% if user.can('createEntries:'~firstSection.id) %}
 				<div class="buttons">
 					<a class="btn submit add icon" href="{{ url('entries/'~firstSection.handle~'/new') }}">{{ "New Entry"|t }}</a>
 				</div>
