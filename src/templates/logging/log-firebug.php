@@ -7,35 +7,45 @@ if (typeof(console) == 'object')
 	<?php
 	$environmentData = array_shift($data);
 
-	$cookiePos = strpos($environmentData[0], '$_COOKIE');
-	$serverPos = strpos($environmentData[0], '$_SERVER');
-	$sessionPos = strpos($environmentData[0], '$_SESSION');
+	$message = $environmentData[0];
+	$level = $environmentData[1];
+	$category = $environmentData[2];
+	$timestamp = $environmentData[3];
+	$forced = isset($environmentData[4]) ? $environmentData[4] : false;
 
-	$getInfo = substr($environmentData[0], 0, $cookiePos);
+	$cookiePos = strpos($message, '$_COOKIE');
+	$serverPos = strpos($message, '$_SERVER');
+	$sessionPos = strpos($message, '$_SESSION');
+
+	$getInfo = substr($message, 0, $cookiePos);
 	$nextPos = !$sessionPos ? $serverPos : $sessionPos;
-	$cookieInfo = substr($environmentData[0], $cookiePos, $nextPos - $cookiePos);
+	$cookieInfo = substr($message, $cookiePos, $nextPos - $cookiePos);
 
 	$sessionInfo = false;
 	if ($sessionPos)
 	{
-		$sessionInfo = substr($environmentData[0], $sessionPos, $serverPos - $sessionPos);
+		$sessionInfo = substr($message, $sessionPos, $serverPos - $sessionPos);
 	}
 
-	$serverInfo = substr($environmentData[0], $serverPos);
+	$serverInfo = substr($message, $serverPos);
 
-	Craft\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $getInfo, Craft\Craft::t('GET Info'));
-	Craft\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $cookieInfo, Craft\Craft::t('COOKIE Info'));
+	Craft\LoggingHelper::processFireBugLogEntry($level, $timestamp, $category, $getInfo, Craft\Craft::t('GET Info'), $forced);
+	Craft\LoggingHelper::processFireBugLogEntry($level, $timestamp, $category, $cookieInfo, Craft\Craft::t('COOKIE Info'), $forced);
+
 	if ($sessionInfo)
 	{
-		Craft\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $sessionInfo, Craft\Craft::t('SESSION Info'));
+		Craft\LoggingHelper::processFireBugLogEntry($level, $timestamp, $category, $sessionInfo, Craft\Craft::t('SESSION Info'), $forced);
 	}
-	Craft\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $serverInfo, Craft\Craft::t('SERVER Info'));
+
+	Craft\LoggingHelper::processFireBugLogEntry($level, $timestamp, $category, $serverInfo, Craft\Craft::t('SERVER Info'), $forced);
 
 	echo "\tconsole.groupCollapsed(\"Logs\");\n";
-	foreach ($data as $index => $log)
+
+	foreach ($data as $log)
 	{
-		Craft\LoggingHelper::processFireBugLogEntry($log[1], $log[3], $log[2], $log[0]);
+		Craft\LoggingHelper::processFireBugLogEntry($log[1], $log[3], $log[2], $log[0], null, isset($log[4]) ? $log[4] : false);
 	}
+
 	echo "\tconsole.groupEnd();\n";
 
 	?>

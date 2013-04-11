@@ -8,13 +8,15 @@ class LoggingHelper
 {
 	/**
 	 * @static
-	 * @param $level
-	 * @param $time
-	 * @param $category
-	 * @param $content
+	 *
+	 * @param      $level
+	 * @param      $time
+	 * @param      $category
+	 * @param      $content
 	 * @param null $groupName
+	 * @param bool $forced
 	 */
-	public static function processFireBugLogEntry($level, $time, $category, $content, $groupName = null)
+	public static function processFireBugLogEntry($level, $time, $category, $content, $groupName = null, $forced = false)
 	{
 		$time = date('H:i:s.', $time).sprintf('%03d', (int)(($time - (int)$time) * 1000));
 
@@ -36,7 +38,7 @@ class LoggingHelper
 			echo "\tconsole.groupCollapsed(\"{$groupName}\");\n";
 		}
 
-		$content = \CJavaScript::quote("[$time][$level][$category]\n$content");
+		$content = \CJavaScript::quote("[$time][$level][$category]".($forced ? "[Forced]" : "")."\n$content");
 		echo "\tconsole.{$func}(\"{$content}\");\n";
 
 		if ($groupName !== null)
