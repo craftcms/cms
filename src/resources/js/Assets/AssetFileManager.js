@@ -1411,7 +1411,7 @@ Assets.FileManager = Garnish.Base.extend({
 			$modalContainerDiv = this.$modalContainerDiv;
 
 			if ($modalContainerDiv == null) {
-				$modalContainerDiv = $('<div class="modal"></div>').addClass().appendTo(Garnish.$bod);
+				$modalContainerDiv = $('<div class="modal assets-modal"></div>').addClass().appendTo(Garnish.$bod);
 			}
 
 			if (this.modal == null) {
