@@ -227,7 +227,7 @@ class Image
 	 */
 	private function _doResize($width, $height)
 	{
-		$output = $this->_preserveTransparency($this->_getCanvas($width, $height));
+		$output = $this->_getCanvas($width, $height);
 
 		imagecopyresampled($output, $this->_image, 0, 0, 0, 0, $width, $height, imagesx($this->_image), imagesy($this->_image));
 
@@ -244,6 +244,9 @@ class Image
 	{
 
 		$extension = IOHelper::getExtension($targetPath);
+
+		// Just in case no image operation was run, we try to preserve transparency here as well.
+		$this->_image = $this->_preserveTransparency($this->_image);
 
 		$result = false;
 
