@@ -261,6 +261,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$filePath = AssetsHelper::getTempFilePath(IOHelper::getExtension($fileName));
 		$uploader->file->save($filePath);
 
+		// We hate Javascript and PHP in our image files.
+		if (IOHelper::getFileKind(pathinfo($filePath, PATHINFO_EXTENSION)) == 'image')
+		{
+			craft()->images->cleanImage($filePath);
+		}
 
 		$response = $this->_insertFileInFolder($folder, $filePath, $fileName);
 
