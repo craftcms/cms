@@ -211,7 +211,7 @@ class WebApp extends \CWebApplication
 			// Log out the user
 			if ($this->userSession->isLoggedIn())
 			{
-				$this->userSession->logout();
+				$this->userSession->logout(false);
 			}
 
 			if ($this->request->isCpRequest())

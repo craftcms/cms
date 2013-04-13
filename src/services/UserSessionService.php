@@ -52,7 +52,7 @@ class UserSessionService extends \CWebUser
 			if ($this->_getSessionDuration(false) > 0)
 			{
 				// No soup for you!
-				$this->logout(true);
+				$this->logout(false);
 			}
 		}
 	}
@@ -245,7 +245,7 @@ class UserSessionService extends \CWebUser
 		if (!craft()->request->userAgent || !craft()->request->getIpAddress())
 		{
 			Craft::log('Someone tried to login with loginName: '.$username.', without presenting an IP address or userAgent string.', LogLevel::Warning);
-			$this->logout(true);
+			$this->logout();
 			$this->requireLogin();
 		}
 
@@ -414,6 +414,43 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
+	 * Clears all user identity information from persistent storage. This will remove the data stored via {@link setState}.
+	 */
+	public function clearStates()
+	{
+		if (isset($_SESSION))
+		{
+			$keys = array_keys($_SESSION);
+			$prefix = $this->getStateKeyPrefix();
+
+			$n = strlen($prefix);
+			foreach($keys as $key)
+			{
+				if (!strncmp($key, $prefix, $n))
+				{
+					unset($_SESSION[$key]);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Changes the current user with the specified identity information. This method is called by {@link login} and {@link restoreFromCookie}
+	 * when the current user needs to be populated with the corresponding identity information. Derived classes may override this method
+	 * by retrieving additional user-related information. Make sure the parent implementation is called first.
+	 *
+	 * @param mixed  $id     A unique identifier for the user
+	 * @param string $name   The display name for the user
+	 * @param array  $states Identity states
+	 */
+	protected function changeIdentity($id,$name,$states)
+	{
+		$this->setId($id);
+		$this->setName($name);
+		$this->loadIdentityStates($states);
+	}
+
+	/**
 	 *
 	 */
 	protected function renewCookie()
@@ -450,7 +487,7 @@ class UserSessionService extends \CWebUser
 				// If they are not a guest, they still have a valid PHP session, but at this point their identity cookie has expired, so let's kill it all.
 				if (!$this->isGuest())
 				{
-					$this->logout(true);
+					$this->logout(false);
 				}
 			}
 		}
@@ -533,20 +570,20 @@ class UserSessionService extends \CWebUser
 					{
 						Craft::log('Tried to restore session from a cookie, but the given hashed database token value does not appear to belong to the given login name. Hashed db value: '.$dbHashedToken.' and loginName: '.$loginName.'.', LogLevel::Error);
 						// Forcing logout here clears the identity cookie helping to prevent session fixation.
-						$this->logout(true);
+						$this->logout();
 					}
 				}
 				else
 				{
 					Craft::log('Tried to restore session from a cookie, but the given login name does not match the given uid. UID: '.$uid.' and loginName: '.$loginName.'.', LogLevel::Error);
 					// Forcing logout here clears the identity cookie helping to prevent session fixation.
-					$this->logout(true);
+					$this->logout();
 				}
 			}
 			else
 			{
 				Craft::log('Tried to restore session from a cookie, but it appears we the data in the cookie is invalid.', LogLevel::Error);
-				$this->logout(true);
+				$this->logout();
 			}
 		}
 		else
@@ -557,7 +594,7 @@ class UserSessionService extends \CWebUser
 				// If they are not a guest, they still have a valid PHP session, but at this point their identity cookie has expired, so let's kill it all.
 				if (!$this->isGuest())
 				{
-					$this->logout(true);
+					$this->logout(false);
 				}
 			}
 		}
@@ -590,6 +627,8 @@ class UserSessionService extends \CWebUser
 				Craft::log('During logout, tried to remove the row from the sessions table, but it appears the cookie data is invalid.', LogLevel::Error);
 			}
 		}
+
+		$this->_userRow = null;
 
 		return true;
 	}
@@ -681,15 +720,22 @@ class UserSessionService extends \CWebUser
 	{
 		if (!isset($this->_userRow))
 		{
-			$userRow = craft()->db->createCommand()
-			    ->select('*')
-			    ->from('{{users}}')
-			    ->where('id=:id', array(':id' => $id))
-			    ->queryRow();
-
-			if ($userRow)
+			if ($id)
 			{
-				$this->_userRow = $userRow;
+				$userRow = craft()->db->createCommand()
+				    ->select('*')
+				    ->from('{{users}}')
+				    ->where('id=:id', array(':id' => $id))
+				    ->queryRow();
+
+				if ($userRow)
+				{
+					$this->_userRow = $userRow;
+				}
+				else
+				{
+					$this->_userRow = false;
+				}
 			}
 			else
 			{

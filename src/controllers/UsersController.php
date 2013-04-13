@@ -129,7 +129,7 @@ class UsersController extends BaseController
 	 */
 	public function actionLogout()
 	{
-		craft()->userSession->logout();
+		craft()->userSession->logout(false);
 		$this->redirect('');
 	}
 
