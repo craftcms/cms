@@ -9,34 +9,47 @@ class TemplateLoader implements \Twig_LoaderInterface
 	/**
 	 * Gets the source code of a template.
 	 *
-	 * @param string $name The name of the template to load
-	 * @return string The template source code
+	 * @param  string $template The name of the template to load, or a StringTemplate object.
+	 * @return string           The template source code.
 	 */
-	public function getSource($name)
+	public function getSource($template)
 	{
-		$path = craft()->templates->findTemplate($name);
-		return IOHelper::getFileContents($path);
+		if (is_string($template))
+		{
+			return IOHelper::getFileContents(craft()->templates->findTemplate($template));
+		}
+		else
+		{
+			return $template->template;
+		}
 	}
 
 	/**
 	 * Gets the cache key to use for the cache for a given template.
 	 *
-	 * @param string $name The name of the template to load
-	 * @return string The cache key (the path to the template)
+	 * @param string $template The name of the template to load, or a StringTemplate object.
+	 * @return string          The cache key (the path to the template)
 	 */
-	public function getCacheKey($name)
+	public function getCacheKey($template)
 	{
-		return craft()->templates->findTemplate($name);
+		if (is_string($template))
+		{
+			return craft()->templates->findTemplate($template);
+		}
+		else
+		{
+			return $template->cacheKey;
+		}
 	}
 
 	/**
 	 * Returns whether the cached template is still up-to-date with the latest template.
 	 *
-	 * @param string $name The template name
+	 * @param string    $template           The template name, or a StringTemplate object.
 	 * @param timestamp $cachedModifiedTime The last modification time of the cached template
 	 * @return bool
 	 */
-	public function isFresh($name, $cachedModifiedTime)
+	public function isFresh($template, $cachedModifiedTime)
 	{
 		// If this is a CP request and a DB update is needed, force a recompile.
 		if (craft()->request->isCpRequest() && craft()->updates->isCraftDbUpdateNeeded())
@@ -44,8 +57,14 @@ class TemplateLoader implements \Twig_LoaderInterface
 			return false;
 		}
 
-		$path = craft()->templates->findTemplate($name);
-		$sourceModifiedTime = IOHelper::getLastTimeModified($path);
-		return ($sourceModifiedTime->getTimestamp() <= $cachedModifiedTime);
+		if (is_string($template))
+		{
+			$sourceModifiedTime = IOHelper::getLastTimeModified(craft()->templates->findTemplate($template));
+			return $sourceModifiedTime->getTimestamp() <= $cachedModifiedTime;
+		}
+		else
+		{
+			return false;
+		}
 	}
 }

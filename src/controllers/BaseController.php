@@ -35,9 +35,9 @@ abstract class BaseController extends \CController
 	/**
 	 * Renders a template, and either outputs or returns it.
 	 *
-	 * @param string $template The name of the template to load
-	 * @param array $variables The variables that should be available to the template
-	 * @param bool $return Whether to return the results, rather than output them
+	 * @param mixed $template      The name of the template to load, or a StringTemplate object.
+	 * @param array $variables     The variables that should be available to the template
+	 * @param bool  $return        Whether to return the results, rather than output them
 	 * @param bool  $processOutput
 	 * @throws HttpException
 	 * @return mixed
