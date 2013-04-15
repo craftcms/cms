@@ -43,19 +43,21 @@ class EmailService extends BaseApplicationComponent
 	 */
 	public function sendEmailByKey(UserModel $user, $key, $variables = array())
 	{
+		$emailModel = new EmailModel();
+
 		if (Craft::hasPackage(CraftPackage::Rebrand))
 		{
 			$message = craft()->emailMessages->getMessage($key, $user->preferredLocale);
 
-			$subject  = $message->subject;
-			$body     = $message->body;
-			$htmlBody = $message->htmlBody;
+			$emailModel->subject  = $message->subject;
+			$emailModel->body     = $message->body;
+			$emailModel->htmlBody = $message->htmlBody;
 		}
 		else
 		{
-			$subject  = Craft::t($key.'_subject');
-			$body     = Craft::t($key.'_body');
-			$htmlBody = Craft::t($key.'_html_body');
+			$emailModel->subject  = Craft::t($key.'_subject');
+			$emailModel->body     = Craft::t($key.'_body');
+			$emailModel->htmlBody = Craft::t($key.'_html_body');
 		}
 
 		$tempTemplatesPath = '';
@@ -78,7 +80,7 @@ class EmailService extends BaseApplicationComponent
 			$template = '_special/email';
 		}
 
-		if (!$htmlBody || $htmlBody == $key.'_html_body')
+		if (!$emailModel->htmlBody || $emailModel->htmlBody == $key.'_html_body')
 		{
 			// Auto-generate the HTML content
 			if (!class_exists('\Markdown_Parser', false))
@@ -87,22 +89,17 @@ class EmailService extends BaseApplicationComponent
 			}
 
 			$md = new \Markdown_Parser();
-			$htmlBody = $md->transform($body);
+			$emailModel->htmlBody = $md->transform($emailModel->body);
 		}
 
-		$htmlBody = "{% extends '{$template}' %}\n" .
+		$emailModel->htmlBody = "{% extends '{$template}' %}\n" .
 			"{% set body %}\n" .
-			$htmlBody .
+			$emailModel->htmlBody .
 			"{% endset %}\n";
 
 		// Temporarily swap the templates path
 		$originalTemplatesPath = craft()->path->getTemplatesPath();
 		craft()->path->setTemplatesPath($tempTemplatesPath);
-
-		$emailModel = new EmailModel();
-		$emailModel->subject = $subject;
-		$emailModel->body = $body;
-		$emailModel->htmlBody = $htmlBody;
 
 		// Send the email
 		$return = $this->_sendEmail($user, $emailModel, $variables);
