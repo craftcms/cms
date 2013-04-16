@@ -301,7 +301,6 @@ class UsersController extends BaseController
 		$user->firstName       = craft()->request->getPost('firstName');
 		$user->lastName        = craft()->request->getPost('lastName');
 		$user->email           = craft()->request->getPost('email');
-		$user->emailFormat     = craft()->request->getPost('emailFormat');
 		$user->preferredLocale = craft()->request->getPost('preferredLocale');
 
 		// Only admins can opt out of requiring email verification

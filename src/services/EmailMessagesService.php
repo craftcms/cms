@@ -55,14 +55,12 @@ class EmailMessagesService extends BaseApplicationComponent
 			{
 				$message->subject  = $recordsByKey[$key]->subject;
 				$message->body     = $recordsByKey[$key]->body;
-				$message->htmlBody = $recordsByKey[$key]->htmlBody;
 			}
 			else
 			{
 				// Default to whatever's in the translation file
 				$message->subject  = Craft::t($key.'_subject');
 				$message->body     = Craft::t($key.'_body');
-				$message->htmlBody = Craft::t($key.'_html_body');
 			}
 
 			$messages[] = $message;
@@ -93,7 +91,6 @@ class EmailMessagesService extends BaseApplicationComponent
 
 		$message->subject  = $record->subject;
 		$message->body     = $record->body;
-		$message->htmlBody = $record->htmlBody;
 
 		return $message;
 	}
@@ -110,7 +107,6 @@ class EmailMessagesService extends BaseApplicationComponent
 
 		$record->subject  = $message->subject;
 		$record->body     = $message->body;
-		$record->htmlBody = $message->htmlBody;
 
 		if ($record->save())
 		{
@@ -150,7 +146,6 @@ class EmailMessagesService extends BaseApplicationComponent
 			$record->locale   = $localeId;
 			$record->subject  = Craft::t($key.'_subject');
 			$record->body     = Craft::t($key.'_body');
-			$record->htmlBody = Craft::t($key.'_html_body');
 		}
 
 		return $record;

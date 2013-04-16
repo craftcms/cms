@@ -191,17 +191,11 @@ class UsersService extends BaseApplicationComponent
 			$userRecord = new UserRecord();
 		}
 
-		if (!$user->emailFormat)
-		{
-			$user->emailFormat = 'text';
-		}
-
 		// Set the user record attributes
 		$userRecord->username              = $user->username;
 		$userRecord->firstName             = $user->firstName;
 		$userRecord->lastName              = $user->lastName;
 		$userRecord->email                 = $user->email;
-		$userRecord->emailFormat           = $user->emailFormat;
 		$userRecord->admin                 = $user->admin;
 		$userRecord->passwordResetRequired = $user->passwordResetRequired;
 		$userRecord->preferredLocale       = $user->preferredLocale;

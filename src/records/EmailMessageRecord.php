@@ -27,7 +27,6 @@ class EmailMessageRecord extends BaseRecord
 			'locale'   => array(AttributeType::Locale, 'required' => true),
 			'subject'  => array(AttributeType::String, 'required' => true, 'maxLength' => 1000),
 			'body'     => array(AttributeType::String, 'required' => true, 'column' => ColumnType::Text),
-			'htmlBody' => array(AttributeType::String, 'column' => ColumnType::Text),
 		);
 	}
 

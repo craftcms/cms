@@ -33,7 +33,6 @@ class UserModel extends BaseElementModel
 			'password'               => AttributeType::String,
 			'encType'                => AttributeType::String,
 			'preferredLocale'        => AttributeType::Locale,
-			'emailFormat'            => array(AttributeType::String, 'default' => 'text'),
 			'admin'                  => AttributeType::Bool,
 			'status'                 => AttributeType::Enum,
 			'lastLoginDate'          => AttributeType::DateTime,
