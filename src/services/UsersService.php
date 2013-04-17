@@ -6,20 +6,31 @@ namespace Craft;
  */
 class UsersService extends BaseApplicationComponent
 {
+	private $_usersById;
+
 	/**
 	 * Gets a user by their ID.
 	 *
-	 * @param $id
-	 * @return UserModel
+	 * @param $userId
+	 * @return UserModel|null
 	 */
-	public function getUserById($id)
+	public function getUserById($userId)
 	{
-		$userRecord = UserRecord::model()->findById($id);
-
-		if ($userRecord)
+		if (!isset($this->_usersById) || !array_key_exists($userId, $this->_usersById))
 		{
-			return UserModel::populateModel($userRecord);
+			$userRecord = UserRecord::model()->findById($userId);
+
+			if ($userRecord)
+			{
+				$this->_usersById[$userId] = UserModel::populateModel($userRecord);
+			}
+			else
+			{
+				$this->_usersById[$userId] = null;
+			}
 		}
+
+		return $this->_usersById[$userId];
 	}
 
 	/**
