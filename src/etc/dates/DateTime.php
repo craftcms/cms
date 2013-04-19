@@ -143,7 +143,7 @@ class DateTime extends \DateTime
 	 */
 	public function atom()
 	{
-		return $this->format(static::ATOM);
+		return $this->format(static::ATOM, static::UTC);
 	}
 
 	/**
@@ -151,7 +151,7 @@ class DateTime extends \DateTime
 	 */
 	public function cookie()
 	{
-		return $this->format(static::COOKIE);
+		return $this->format(static::COOKIE, static::UTC);
 	}
 
 	/**
@@ -159,7 +159,7 @@ class DateTime extends \DateTime
 	 */
 	public function iso8601()
 	{
-		return $this->format(static::ISO8601);
+		return $this->format(static::ISO8601, static::UTC);
 	}
 
 	/**
@@ -167,7 +167,7 @@ class DateTime extends \DateTime
 	 */
 	public function rfc822()
 	{
-		return $this->format(static::RFC822);
+		return $this->format(static::RFC822, static::UTC);
 	}
 
 	/**
@@ -175,7 +175,7 @@ class DateTime extends \DateTime
 	 */
 	public function rfc850()
 	{
-		return $this->format(static::RFC850);
+		return $this->format(static::RFC850, static::UTC);
 	}
 
 	/**
@@ -183,7 +183,7 @@ class DateTime extends \DateTime
 	 */
 	public function rfc1036()
 	{
-		return $this->format(static::RFC1036);
+		return $this->format(static::RFC1036, static::UTC);
 	}
 
 	/**
@@ -191,7 +191,7 @@ class DateTime extends \DateTime
 	 */
 	public function rfc1123()
 	{
-		return $this->format(static::RFC1123);
+		return $this->format(static::RFC1123, static::UTC);
 	}
 
 	/**
@@ -199,7 +199,7 @@ class DateTime extends \DateTime
 	 */
 	public function rfc2822()
 	{
-		return $this->format(static::RFC2822);
+		return $this->format(static::RFC2822, static::UTC);
 	}
 
 	/**
@@ -207,7 +207,7 @@ class DateTime extends \DateTime
 	 */
 	public function rfc3339()
 	{
-		return $this->format(static::RFC3339);
+		return $this->format(static::RFC3339, static::UTC);
 	}
 
 	/**
@@ -215,7 +215,7 @@ class DateTime extends \DateTime
 	 */
 	public function rss()
 	{
-		return $this->format(static::RSS);
+		return $this->format(static::RSS, static::UTC);
 	}
 
 	/**
