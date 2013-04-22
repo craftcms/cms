@@ -81,7 +81,7 @@
 				instructions: "When should the entry go live? (Set automatically if left blank)"|t,
 				id: 'postDate',
 				name: 'postDate',
-				value: (entry.postDate ? entry.postDate.w3cDate : null),
+				value: (entry.postDate ? entry.postDate.getTimeStamp : null),
 				errors: entry.getErrors('postDate')
 			}) }}
 
@@ -90,7 +90,7 @@
 				instructions: "When should the entry expire?"|t,
 				id: 'expiryDate',
 				name: 'expiryDate',
-				value: (entry.expiryDate ? entry.expiryDate.w3cDate : null),
+				value: (entry.expiryDate ? entry.expiryDate.dateField : null),
 				errors: entry.getErrors('expiryDate')
 			}) }}
 
@@ -137,12 +137,6 @@
 
 			{% elseif entry.id and entry.classHandle == 'EntryVersion' %}
 
-				<!-- HIDE -->
-				<input type="hidden" name="action" value="entryRevisions/saveVersionAsDraft">
-				<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{draftId}">
-				<input type="hidden" name="versionId" value="{{ entry.versionId }}">
-				<input type="submit" class="btn" value="{{ 'Save as Draft'|t }}">
-				<!-- end HIDE -->
 
 			{% else %}
 
