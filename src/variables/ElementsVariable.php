@@ -15,9 +15,9 @@ class ElementsVariable
 	{
 		$elementTypes = array();
 
-		foreach (craft()->elements->getAllElementTypes() as $elementType)
+		foreach (craft()->elements->getAllElementTypes() as $classHandle => $elementType)
 		{
-			$elementTypes[] = new ElementTypeVariable($elementType);
+			$elementTypes[$classHandle] = new ElementTypeVariable($elementType);
 		}
 
 		return $elementTypes;

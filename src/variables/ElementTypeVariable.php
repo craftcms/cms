@@ -7,30 +7,29 @@ namespace Craft;
 class ElementTypeVariable extends BaseComponentTypeVariable
 {
 	/**
-	 * Returns the element type's link settings HTML.
-	 *
-	 * @return string
-	 */
-	public function getLinkSettingsHtml()
-	{
-		return $this->component->getLinkSettingsHtml();
-	}
-
-	/**
 	 * Return a key/label list of the element type's sources.
 	 *
-	 * @return array
+	 * @return array|false
 	 */
 	public function getSources()
 	{
-		$sources = array();
+		$sources = $this->component->getSources();
 
-		foreach ($this->component->getSources() as $key => $source)
+		if (is_array($sources))
 		{
-			$sources[$key] = $source['label'];
-		}
+			$sourceLabels = array();
 
-		return $sources;
+			foreach ($sources as $key => $source)
+			{
+				$sourceLabels[$key] = $source['label'];
+			}
+
+			return $sourceLabels;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -47,7 +46,7 @@ class ElementTypeVariable extends BaseComponentTypeVariable
 		{
 			$sources = $this->component->getSources();
 
-			if (isset($sources[$source]))
+			if (is_array($sources) && isset($sources[$source]))
 			{
 				$criteriaAttributes = $sources[$source]['criteria'];
 			}

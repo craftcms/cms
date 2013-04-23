@@ -1,0 +1,22 @@
+{%- set attributes = elementType.getTableAttributes() %}
+{%- set elements = (elements is defined ? elements : []) -%}
+
+<div id="{{ id }}" class="elementselect">
+	{% include "_elements/tableview" with { editable: true } %}
+</div>
+
+<div class="buttons">
+	<div class="btn small add icon">{{ "Add {type}"|t({ type: elementType.getClassHandle()|lower }) }}</div>
+</div>
+
+{% set js %}
+	new Craft.ElementSelectInput(
+		"{{ id|e('js') }}",
+		"{{ name|e('js') }}",
+		"{{ elementType.getClassHandle()|e('js') }}",
+		{{ sources|json_encode|raw }},
+		{{ limit ? limit : 'null' }}
+	);
+{% endset %}
+
+{% includeJs js %}

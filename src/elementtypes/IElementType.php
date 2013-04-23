@@ -56,25 +56,4 @@ interface IElementType extends IComponentType
 	 * @return mixed
 	 */
 	public function routeRequestForMatchedElement(BaseElementModel $element);
-
-	/**
-	 * @return BaseModel
-	 */
-	public function getLinkSettings();
-
-	/**
-	 * @param array $values
-	 */
-	public function setLinkSettings($values);
-
-	/**
-	 * @param array $settings
-	 * @return array
-	 */
-	public function prepLinkSettings($settings);
-
-	/**
-	 * @return string|null
-	 */
-	public function getLinkSettingsHtml();
 }

@@ -3073,7 +3073,7 @@ Garnish.Modal = Garnish.Base.extend({
 				});
 			}
 
-			this.$container.delay(50).fadeIn();
+			this.$container.delay(50).fadeIn($.proxy(this, 'onFadeIn'));
 		}
 
 		this.visible = true;
@@ -3094,10 +3094,20 @@ Garnish.Modal = Garnish.Base.extend({
 
 		this.visible = false;
 		Garnish.Modal.visibleModal = null;
-		Garnish.Modal.$shade.fadeOut('fast');
+		Garnish.Modal.$shade.fadeOut('fast', $.proxy(this, 'onFadeOut'));
 		this.removeListener(Garnish.Modal.$shade, 'click');
 
 		this.settings.onHide();
+	},
+
+	onFadeIn: function()
+	{
+		this.settings.onFadeIn();
+	},
+
+	onFadeOut: function()
+	{
+		this.settings.onFadeOut();
 	},
 
 	getHeight: function()
@@ -3195,7 +3205,9 @@ Garnish.Modal = Garnish.Base.extend({
 	defaults: {
 		draggable: true,
 		onShow: $.noop,
-		onHide: $.noop
+		onHide: $.noop,
+		onFadeIn: $.noop,
+		onFadeOut: $.noop
 	},
 	instances: [],
 	visibleModal: null,

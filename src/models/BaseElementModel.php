@@ -108,12 +108,14 @@ abstract class BaseElementModel extends BaseModel
 			return true;
 		}
 
+		/* HIDE */
 		// Is $name a RTL link handle?
 		$linkCriteria = craft()->links->getCriteriaByTypeAndHandle($this->getAttribute('type'), $name, 'rtl');
 		if ($linkCriteria)
 		{
 			return true;
 		}
+		/* end HIDE */
 
 		return false;
 	}
@@ -140,6 +142,7 @@ abstract class BaseElementModel extends BaseModel
 			{
 				return $this->_getPreppedContentForField($field);
 			}
+			/* HIDE */
 			else if ($this->getAttribute('id'))
 			{
 				// Is $name a RTL link handle?
@@ -150,6 +153,7 @@ abstract class BaseElementModel extends BaseModel
 					return craft()->links->getLinkedElements($linkCriteria, $this->getAttribute('id'), 'rtl');
 				}
 			}
+			/* end HIDE */
 
 			// Fine, throw the exception
 			throw $e;

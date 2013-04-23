@@ -13,12 +13,6 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	protected $componentType = 'ElementType';
 
 	/**
-	 * @access private
-	 * @var BaseModel The model representing the current component instance's link settings.
-	 */
-	private $_linkSettings;
-
-	/**
 	 * Returns whether this element type can have thumbnails.
 	 *
 	 * @return bool
@@ -41,11 +35,11 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	/**
 	 * Returns this element type's sources.
 	 *
-	 * @return array
+	 * @return array|false
 	 */
 	public function getSources()
 	{
-		return array();
+		return false;
 	}
 
 	/**
@@ -112,65 +106,5 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	public function routeRequestForMatchedElement(BaseElementModel $element)
 	{
 		return false;
-	}
-
-	/**
-	 * Gets the link settings.
-	 *
-	 * @return BaseModel
-	 */
-	public function getLinkSettings()
-	{
-		if (!isset($this->_linkSettings))
-		{
-			$this->_linkSettings = $this->getLinkSettingsModel();
-		}
-
-		return $this->_linkSettings;
-	}
-
-	/**
-	 * Sets the link setting values.
-	 *
-	 * @param array $values
-	 */
-	public function setLinkSettings($values)
-	{
-		if ($values)
-		{
-			$this->getLinkSettings()->setAttributes($values);
-		}
-	}
-
-	/**
-	 * Preps the settings before they're saved to the database.
-	 *
-	 * @param array $settings
-	 * @return array
-	 */
-	public function prepLinkSettings($settings)
-	{
-		return $settings;
-	}
-
-	/**
-	 * Returns the link settings HTML.
-	 *
-	 * @return string|null
-	 */
-	public function getLinkSettingsHtml()
-	{
-		return null;
-	}
-
-	/**
-	 * Gets the link settings model.
-	 *
-	 * @access protected
-	 * @return BaseModel
-	 */
-	protected function getLinkSettingsModel()
-	{
-		return new Model($this->defineCriteriaAttributes());
 	}
 }

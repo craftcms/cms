@@ -37,6 +37,7 @@ class InstallService extends BaseApplicationComponent
 			$this->_createForeignKeysFromRecords($records);
 
 			$this->_createContentTable();
+			$this->_createRelationsTable();
 			$this->_createShunnedMessagesTable();
 			$this->_createSearchIndexTable();
 			$this->_createAndPopulateInfoTable($inputs);
@@ -159,6 +160,29 @@ class InstallService extends BaseApplicationComponent
 		craft()->db->createCommand()->addForeignKey('content', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
 
 		Craft::log('Finished creating the content table.');
+	}
+
+	/**
+	 * Creates the relations table.
+	 *
+	 * @access private
+	 */
+	private function _createRelationsTable()
+	{
+		Craft::log('Creating the relations table.');
+
+		craft()->db->createCommand()->createTable('relations', array(
+			'fieldId'   => array('column' => ColumnType::Int, 'null' => false),
+			'parentId'  => array('column' => ColumnType::Int, 'null' => false),
+			'childId'   => array('column' => ColumnType::Int, 'null' => false),
+			'sortOrder' => array('column' => ColumnType::TinyInt),
+		));
+		craft()->db->createCommand()->createIndex('relations', 'fieldId,parentId,childId', true);
+		craft()->db->createCommand()->addForeignKey('relations', 'fieldId', 'fields', 'id');
+		craft()->db->createCommand()->addForeignKey('relations', 'parentId', 'elements', 'id');
+		craft()->db->createCommand()->addForeignKey('relations', 'childId', 'elements', 'id');
+
+		Craft::log('Finished creating the relations table.');
 	}
 
 	/**

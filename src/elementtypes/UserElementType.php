@@ -29,7 +29,7 @@ class UserElementType extends BaseElementType
 	/**
 	 * Returns this element type's sources.
 	 *
-	 * @return array
+	 * @return array|false
 	 */
 	public function getSources()
 	{
