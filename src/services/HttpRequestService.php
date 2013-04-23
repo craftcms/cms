@@ -553,6 +553,7 @@ class HttpRequestService extends \CHttpRequest
 		$actionTrigger = craft()->config->get('actionTrigger');
 		$loginPath = trim(craft()->config->get('loginPath'), '/');
 		$resetPasswordPath = trim(craft()->config->get('resetPasswordPath'), '/');
+		$validateAccountPath = trim(craft()->config->get('validateAccountPath'), '/');
 		$logoutPath = trim(craft()->config->get('logoutPath'), '/');
 		$firstSegment = $this->getSegment(1);
 
@@ -564,7 +565,7 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request
-		if ($firstSegment === $actionTrigger || in_array($this->_path, array($loginPath, $resetPasswordPath, $logoutPath)))
+		if ($firstSegment === $actionTrigger || in_array($this->_path, array($loginPath, $resetPasswordPath, $validateAccountPath, $logoutPath)))
 		{
 			$this->_isActionRequest = true;
 
@@ -575,6 +576,10 @@ class HttpRequestService extends \CHttpRequest
 			else if ($this->_path == $resetPasswordPath)
 			{
 				$this->_actionSegments = array('users', 'resetPassword');
+			}
+			else if ($this->_path == $validateAccountPath)
+			{
+				$this->_actionSegments = array('users', 'validate');
 			}
 			else if ($this->_path == $logoutPath)
 			{
