@@ -7,8 +7,28 @@ namespace Craft;
 class LocaleData extends \CLocale
 {
 	/**
-	 * Overriding getLanguage() from \CLocale because this is where we do want
-	 * to chop off the territory half of a locale ID.
+	 * Returns the instance of the specified locale. Since the constructor of CLocale is protected, you can only use
+	 * this method to obtain an instance of the specified locale.
+	 *
+	 * @param  string $id The locale ID (e.g. en_US)
+	 * @return LocaleData The locale instance
+	 */
+	public static function getInstance($id)
+	{
+		static $locales = array();
+
+		if (isset($locales[$id]))
+		{
+			return $locales[$id];
+		}
+		else
+		{
+			return $locales[$id] = new LocaleData($id);
+		}
+	}
+
+	/**
+	 * Overriding getLanguage() from \CLocale because this is where we do want to chop off the territory half of a locale ID.
 	 */
 	public function getLanguage($id)
 	{
@@ -27,5 +47,18 @@ class LocaleData extends \CLocale
 		$dataFile = $dataPath.'/'.$id.'.php';
 
 		return IOHelper::fileExists($dataFile);
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function is24HourTimeFormat()
+	{
+		if (stripos($this->getTimeFormat('short'), 'a') !== false)
+		{
+			return false;
+		}
+
+		return true;
 	}
 }

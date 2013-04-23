@@ -97,4 +97,22 @@ class LocalizationVariable
 	{
 		return craft()->i18n->getLocaleData($localeId);
 	}
+
+	/**
+	 * Returns whether the given locale prefers a 24 hour time format or AM/PM format.
+	 *
+	 * @param $localeId
+	 * @return bool
+	 */
+	public function is24HourTimeFormat($localeId)
+	{
+		$locale = craft()->i18n->getLocaleData($localeId);
+
+		if ($locale)
+		{
+			return $locale->is24HourTimeFormat();
+		}
+
+		return false;
+	}
 }

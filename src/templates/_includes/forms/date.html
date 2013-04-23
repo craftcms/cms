@@ -3,10 +3,25 @@
 </div>
 
 {%- set js %}
-	$('#{{ id }}').datepicker({
-		dateFormat: $.datepicker.W3C,
-		prevText: '{{ "Prev"|t|e('js') }}',
-		nextText: '{{ "Next"|t|e('js') }}'
+
+	var $datePicker = $('#{{ id }}');
+	$datePicker.datepicker({
+		constrainInput: false,
+		dateFormat: $.datepicker.W3C + {{ craft.i18n.is24HourTimeFormat(craft.app.getLocale) ? "\" '00:00'\"" : "\" '12:00 AM'\"" }},
+		prevText:   '{{ "Prev"|t|e('js') }}',
+		nextText:   '{{ "Next"|t|e('js') }}',
 	});
+
+	{% if value %}
+		// Get the user's timezone offset and convert it to seconds.
+		var timezoneOffset = new Date().getTimezoneOffset() * 60;
+
+		// Because javascript uses milliseconds
+		var adjustedDate = 1000 * ({{ value }} + timezoneOffset);
+
+		// setDate has to be called by itself: http://stackoverflow.com/a/7209256/684
+		$datePicker.datepicker('setDate', new Date(adjustedDate));
+	{% endif %}
+
 {%- endset %}
 {%- includeJs js %}
