@@ -53,8 +53,7 @@ class AppVariable
 	 */
 	public function getLocale()
 	{
-		return 'en_us';
-		return Craft::getLanguage();
+		return craft()->getLanguage();
 	}
 
 	/**

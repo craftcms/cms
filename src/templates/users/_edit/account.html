@@ -103,14 +103,6 @@
 			}) }}
 		{% endif %}
 
-		{{ forms.selectField({
-			label: "Email Format"|t,
-			id: 'emailFormat',
-			name: 'emailFormat',
-			options: { text: "Plain Text"|t, html: "HTML"|t },
-			value: (account is defined ? account.emailFormat : 'text')
-		}) }}
-
 		{% if craft.hasPackage('Localize') %}
 			{% set localeInput %}
 				<div class="select">

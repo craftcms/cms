@@ -65,6 +65,6 @@ class ImagesService extends BaseApplicationComponent
 	public function cleanImage($filePath)
 	{
 		$image = new Image();
-		return $image->loadImage($filePath)->saveAs($filePath);
+		return $image->loadImage($filePath)->saveAs($filePath, true);
 	}
 }

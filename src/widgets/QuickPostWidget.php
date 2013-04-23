@@ -41,7 +41,19 @@ class QuickPostWidget extends BaseWidget
 	 */
 	public function getSettingsHtml()
 	{
+		// Find the sections the user has permission to create entries in
+		$sections = array();
+
+		foreach (craft()->sections->getAllSections() as $section)
+		{
+			if (craft()->userSession->checkPermission('createEntries:'.$section->id))
+			{
+				$sections[] = $section;
+			}
+		}
+
 		return craft()->templates->render('_components/widgets/QuickPost/settings', array(
+			'sections' => $sections,
 			'settings' => $this->getSettings()
 		));
 	}

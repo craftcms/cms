@@ -229,6 +229,17 @@ class EntriesController extends BaseController
 		$fields = craft()->request->getPost('fields');
 		$entry->setContent($fields);
 
+		if (!$entry->id)
+		{
+			// Make sure the user is allowed to create entries in this section
+			craft()->userSession->requirePermission('createEntries'.$entry->sectionId);
+		}
+		else
+		{
+			// Make sure the user is allowed to edit entries in this section
+			craft()->userSession->requirePermission('editEntries'.$entry->sectionId);
+		}
+
 		if (craft()->entries->saveEntry($entry))
 		{
 			if (craft()->request->isAjaxRequest())

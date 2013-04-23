@@ -122,11 +122,14 @@ class Image
 	 * @param $width
 	 * @param $height
 	 * @param bool $scaleIfSmaller
+	 * @param string $cropPosition
 	 * @return Image
 	 */
-	public function scaleAndCrop($width, $height = null, $scaleIfSmaller = true)
+	public function scaleAndCrop($width, $height = null, $scaleIfSmaller = true, $cropPositions = 'center-center')
 	{
 		$this->_formatDimensions($width, $height);
+
+		list($verticalPosition, $horizontalPosition) = explode("-", $cropPositions);
 
 		if ($scaleIfSmaller || imagesx($this->_image) > $width || imagesy($this->_image) > $height)
 		{
@@ -135,10 +138,65 @@ class Image
 			$newWidth = round(imagesx($this->_image) / $factor);
 			$this->_doResize($newWidth, $newHeight);
 
-			$x1 = round(($newWidth - $width) / 2);
-			$x2 = $x1 + $width;
-			$y1 = round(($newHeight - $height) / 2);
-			$y2 = $y1 + $height;
+			if ($newWidth - $width > 0)
+			{
+				switch ($horizontalPosition)
+				{
+					case 'left':
+					{
+						$x1 = 0;
+						$x2 = $x1 + $width;
+						break;
+					}
+					case 'right':
+					{
+						$x2 = $newWidth;
+						$x1 = $newWidth - $width;
+						break;
+					}
+					default:
+					{
+						$x1 = round(($newWidth - $width) / 2);
+						$x2 = $x1 + $width;
+						break;
+					}
+				}
+				$y1 = 0;
+				$y2 = $y1 + $height;
+			}
+			elseif ($newHeight - $height > 0)
+			{
+				switch ($verticalPosition)
+				{
+					case 'top':
+					{
+						$y1 = 0;
+						$y2 = $y1 + $height;
+						break;
+					}
+					case 'bottom':
+					{
+						$y2 = $newHeight;
+						$y1 = $newHeight - $height;
+						break;
+					}
+					default:
+					{
+						$y1 = round(($newHeight - $height) / 2);
+						$y2 = $y1 + $height;
+						break;
+					}
+				}
+				$x1 = 0;
+				$x2 = $x1 + $width;
+			}
+			else
+			{
+				$x1 = round(($newWidth - $width) / 2);
+				$x2 = $x1 + $width;
+				$y1 = round(($newHeight - $height) / 2);
+				$y2 = $y1 + $height;
+			}
 
 			$this->crop($x1, $x2, $y1, $y2);
 		}
@@ -169,7 +227,7 @@ class Image
 	 */
 	private function _doResize($width, $height)
 	{
-		$output = $this->_preserveTransparency($this->_getCanvas($width, $height));
+		$output = $this->_getCanvas($width, $height);
 
 		imagecopyresampled($output, $this->_image, 0, 0, 0, 0, $width, $height, imagesx($this->_image), imagesy($this->_image));
 
@@ -186,6 +244,9 @@ class Image
 	{
 
 		$extension = IOHelper::getExtension($targetPath);
+
+		// Just in case no image operation was run, we try to preserve transparency here as well.
+		$this->_image = $this->_preserveTransparency($this->_image);
 
 		$result = false;
 

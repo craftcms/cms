@@ -19,7 +19,7 @@ class Zip
 
 		if (!IOHelper::folderExists($source) && !IOHelper::fileExists($destZip))
 		{
-			Craft::log('Tried to zip the contents of '.$source.' to '.$destZip.', but the source path does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to zip the contents of '.$source.' to '.$destZip.', but the source path does not exist.', LogLevel::Error);
 			return false;
 		}
 
@@ -54,7 +54,7 @@ class Zip
 				{
 					if (!IOHelper::createFolder($destFolder))
 					{
-						Craft::log('Tried to create the unzip destination folder, but could not: '.$destFolder, \CLogger::LEVEL_ERROR);
+						Craft::log('Tried to create the unzip destination folder, but could not: '.$destFolder, LogLevel::Error);
 						return false;
 					}
 				}
@@ -66,7 +66,7 @@ class Zip
 						// Begin the great purge.
 						if (!IOHelper::clearFolder($destFolder))
 						{
-							Craft::log('Tried to clear the contents of the unzip destination folder, but could not: '.$destFolder, \CLogger::LEVEL_ERROR);
+							Craft::log('Tried to clear the contents of the unzip destination folder, but could not: '.$destFolder, LogLevel::Error);
 							return false;
 						}
 					}
@@ -82,19 +82,19 @@ class Zip
 				}
 				else
 				{
-					Craft::log('There was an error unzipping the file: '.$srcZip, \CLogger::LEVEL_ERROR);
+					Craft::log('There was an error unzipping the file: '.$srcZip, LogLevel::Error);
 					return false;
 				}
 			}
 			else
 			{
-				Craft::log($srcZip.' is not a zip file and cannot be unzipped.', \CLogger::LEVEL_ERROR);
+				Craft::log($srcZip.' is not a zip file and cannot be unzipped.', LogLevel::Error);
 				return false;
 			}
 		}
 		else
 		{
-			Craft::log('Unzipping is only available for files.', \CLogger::LEVEL_ERROR);
+			Craft::log('Unzipping is only available for files.', LogLevel::Error);
 			return false;
 		}
 	}
@@ -114,7 +114,7 @@ class Zip
 
 		if (!IOHelper::fileExists($sourceZip) || (!IOHelper::fileExists($pathToAdd) && !IOHelper::folderExists($pathToAdd)))
 		{
-			Craft::log('Tried to add '.$pathToAdd.' to the zip file '.$sourceZip.', but one of them does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to add '.$pathToAdd.' to the zip file '.$sourceZip.', but one of them does not exist.', LogLevel::Error);
 			return false;
 		}
 

@@ -6,6 +6,10 @@
 {%- set value = (value is defined ? value : 1) -%}
 
 <label>
+	{% if name is defined %}
+		<input type="hidden" name="{{ name }}" value="">
+	{% endif -%}
+
 	<input type="checkbox" value="{{ value }}"
 		{%- if id is defined and id %} id="{{ id }}"{% endif %}
 		{%- if class %} class="{{ class }}"{% endif %}

@@ -20,6 +20,7 @@ class AssetTransformsController extends BaseController
 		$transform->width = craft()->request->getPost('width');
 		$transform->height = craft()->request->getPost('height');
 		$transform->mode = craft()->request->getPost('mode');
+		$transform->position = craft()->request->getPost('position');
 
 		if (empty($transform->width) && empty($transform->height))
 		{

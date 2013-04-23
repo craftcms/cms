@@ -23,7 +23,7 @@
 			<ul class="assets-folders">
 				{% for folder in folders %}
 					{% if folder %}
-                        {% include 'assets/_nav_folder' with { folder: folder, depth: 0 } only %}
+                        {% include 'assets/_nav_folder' with { folder: folder, depth: 1 } only %}
 					{% endif %}
 				{% endfor %}
 			</ul>

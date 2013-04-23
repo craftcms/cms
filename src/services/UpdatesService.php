@@ -173,9 +173,9 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function flushUpdateInfoFromCache()
 	{
-		Craft::log('Flushing update info from cache.');
+		Craft::log('Flushing update info from cache.', LogLevel::Info, true);
 
-		if (IOHelper::clearFolder(craft()->path->getCompiledTemplatesPath()) && IOHelper::clearFolder(craft()->path->getCachePath()))
+		if (IOHelper::clearFolder(craft()->path->getCompiledTemplatesPath(), true) && IOHelper::clearFolder(craft()->path->getCachePath(), true))
 		{
 			return true;
 		}
@@ -280,7 +280,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function prepareUpdate($manual, $handle)
 	{
-		Craft::log('Preparing to update '.$handle.'.');
+		Craft::log('Preparing to update '.$handle.'.', LogLevel::Info, true);
 
 		try
 		{
@@ -294,7 +294,7 @@ class UpdatesService extends BaseApplicationComponent
 
 			$updater->checkRequirements();
 
-			Craft::log('Finished preparing to update '.$handle.'.');
+			Craft::log('Finished preparing to update '.$handle.'.', LogLevel::Info, true);
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -308,7 +308,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function processUpdateDownload()
 	{
-		Craft::log('Starting to process the update download.');
+		Craft::log('Starting to process the update download.', LogLevel::Info, true);
 
 		try
 		{
@@ -316,7 +316,7 @@ class UpdatesService extends BaseApplicationComponent
 			$result = $updater->processDownload();
 			$result['success'] = true;
 
-			Craft::log('Finished processing the update download.');
+			Craft::log('Finished processing the update download.', LogLevel::Info, true);
 			return $result;
 		}
 		catch (\Exception $e)
@@ -331,14 +331,14 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function backupFiles($uid)
 	{
-		Craft::log('Starting to backup files that need to be updated.');
+		Craft::log('Starting to backup files that need to be updated.', LogLevel::Info, true);
 
 		try
 		{
 			$updater = new Updater();
 			$updater->backupFiles($uid);
 
-			Craft::log('Finished backing up files.');
+			Craft::log('Finished backing up files.', LogLevel::Info, true);
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -353,14 +353,14 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function updateFiles($uid)
 	{
-		Craft::log('Starting to update files.');
+		Craft::log('Starting to update files.', LogLevel::Info, true);
 
 		try
 		{
 			$updater = new Updater();
 			$updater->updateFiles($uid);
 
-			Craft::log('Finished updating files.');
+			Craft::log('Finished updating files.', LogLevel::Info, true);
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -375,7 +375,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function backupDatabase($uid)
 	{
-		Craft::log('Starting to backup database.');
+		Craft::log('Starting to backup database.', LogLevel::Info, true);
 
 		try
 		{
@@ -384,12 +384,12 @@ class UpdatesService extends BaseApplicationComponent
 
 			if (!$result)
 			{
-				Craft::log('Did not backup database because there were no migrations to run.');
+				Craft::log('Did not backup database because there were no migrations to run.', LogLevel::Info, true);
 				return array('success' => true);
 			}
 			else
 			{
-				Craft::log('Finished backing up database.');
+				Craft::log('Finished backing up database.', LogLevel::Info, true);
 				return array('success' => true, 'dbBackupPath' => $result);
 			}
 		}
@@ -409,7 +409,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function updateDatabase($uid, $handle, $dbBackupPath = false)
 	{
-		Craft::log('Starting to update the database.');
+		Craft::log('Starting to update the database.', LogLevel::Info, true);
 
 		try
 		{
@@ -417,22 +417,22 @@ class UpdatesService extends BaseApplicationComponent
 
 			if ($handle == 'craft')
 			{
-				Craft::log('Craft wants to update the database.');
+				Craft::log('Craft wants to update the database.', LogLevel::Info, true);
 				$updater->updateDatabase($uid, $dbBackupPath);
-				Craft::log('Craft is done updating the database.');
+				Craft::log('Craft is done updating the database.', LogLevel::Info, true);
 			}
 			else
 			{
 				$plugin = craft()->plugins->getPlugin($handle);
 				if ($plugin)
 				{
-					Craft::log('The plugin, '.$plugin->getName().' wants to update the database.');
+					Craft::log('The plugin, '.$plugin->getName().' wants to update the database.', LogLevel::Info, true);
 					$updater->updateDatabase($uid, $dbBackupPath, $plugin);
-					Craft::log('The plugin, '.$plugin->getName().' is done updating the database.');
+					Craft::log('The plugin, '.$plugin->getName().' is done updating the database.', LogLevel::Info, true);
 				}
 				else
 				{
-					Craft::log('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.', \CLogger::LEVEL_ERROR);
+					Craft::log('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.', LogLevel::Error);
 					throw new Exception(Craft::t('Cannot find an enabled plugin with the handle '.$handle));
 				}
 			}
@@ -452,14 +452,14 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function updateCleanUp($uid, $handle)
 	{
-		Craft::log('Starting to clean up after the update.');
+		Craft::log('Starting to clean up after the update.', LogLevel::Info, true);
 
 		try
 		{
 			$updater = new Updater();
 			$updater->cleanUp($uid, $handle);
 
-			Craft::log('Finished cleaning up after the update.');
+			Craft::log('Finished cleaning up after the update.', LogLevel::Info, true);
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -481,20 +481,20 @@ class UpdatesService extends BaseApplicationComponent
 
 			if ($dbBackupPath && craft()->config->get('backupDbOnUpdate') && craft()->config->get('restoreDbOnUpdateFailure'))
 			{
-				Craft::log('Rolling back any database changes.');
+				Craft::log('Rolling back any database changes.', LogLevel::Info, true);
 				UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
-				Craft::log('Done rolling back any database changes.');
+				Craft::log('Done rolling back any database changes.', LogLevel::Info, true);
 			}
 
 			// If uid !== false, it's an auto-update.
 			if ($uid !== false)
 			{
-				Craft::log('Rolling back any file changes.');
+				Craft::log('Rolling back any file changes.', LogLevel::Info, true);
 				UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
-				Craft::log('Done rolling back any file changes.');
+				Craft::log('Done rolling back any file changes.', LogLevel::Info, true);
 			}
 
-			Craft::log('Finished rolling back changes.');
+			Craft::log('Finished rolling back changes.', LogLevel::Info, true);
 			return array('success' => true);
 		}
 		catch (\Exception $e)

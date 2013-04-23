@@ -246,7 +246,7 @@ class AssetFileModel extends BaseElementModel
 	 *
 	 * @param $dimension 'height' or 'width'
 	 * @param $transform
-	 * @return bool|null|mixed
+	 * @return null|float|mixed
 	 */
 	private function _getDimension($dimension, $transform)
 	{

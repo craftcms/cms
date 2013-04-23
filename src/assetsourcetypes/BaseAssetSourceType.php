@@ -261,6 +261,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$filePath = AssetsHelper::getTempFilePath(IOHelper::getExtension($fileName));
 		$uploader->file->save($filePath);
 
+		// We hate Javascript and PHP in our image files.
+		if (IOHelper::getFileKind(pathinfo($filePath, PATHINFO_EXTENSION)) == 'image')
+		{
+			craft()->images->cleanImage($filePath);
+		}
 
 		$response = $this->_insertFileInFolder($folder, $filePath, $fileName);
 
@@ -298,8 +303,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				// Store copy locally for all sorts of operations.
 				IOHelper::copyFile($filePath, craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel, PATHINFO_EXTENSION));
 			}
-
-			craft()->assetTransforms->updateTransforms($fileModel, array_keys(craft()->assetTransforms->getAllTransforms()));
 
 			// Check if we stored a conflict response originally - send that back then.
 			if (isset($conflictResponse))
@@ -409,10 +412,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 					if ($fileToDelete)
 					{
 						$this->deleteFile($fileToDelete);
+						$this->_purgeCachedSourceFile($targetFolder, $filename);
 					}
 					else
 					{
 						$this->_deleteSourceFile($targetFolder, $filename);
+						$this->_purgeCachedSourceFile($targetFolder, $filename);
 					}
 					break;
 				}
@@ -591,6 +596,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		{
 			$this->_deleteGeneratedThumbnails($oldFile);
 			$this->_deleteSourceFile($oldFile->getFolder(), $oldFile->filename);
+			$this->_purgeCachedSourceFile($oldFile->getFolder(), $oldFile->filename);
 
 			// For remote sources, fetch the source image and move it in the old one's place
 			if (!$this->isSourceLocal())
@@ -925,4 +931,15 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$this->_deleteSourceFile($file->getFolder(), $file->filename);
 	}
 
+	/**
+	 * Purge a file from the Source's cache. Sources that need this should override this method.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param $filename
+	 * @return void
+	 */
+	protected function _purgeCachedSourceFile(AssetFolderModel $folder, $filename)
+	{
+		return;
+	}
 }

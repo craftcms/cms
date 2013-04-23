@@ -178,17 +178,17 @@ class Et
 				}
 				else
 				{
-					Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, \CLogger::LEVEL_WARNING);
+					Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, LogLevel::Warning);
 				}
 			}
 			else
 			{
-				Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, \CLogger::LEVEL_WARNING);
+				Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, LogLevel::Warning);
 			}
 		}
 		catch (\Exception $e)
 		{
-			Craft::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
+			Craft::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), LogLevel::Error);
 		}
 
 		return null;

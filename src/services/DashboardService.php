@@ -181,13 +181,18 @@ class DashboardService extends BaseApplicationComponent
 
 		foreach ($sections as $section)
 		{
-			$widget = new WidgetModel();
-			$widget->type = 'QuickPost';
-			$widget->settings = array(
-				'section' => $section->id
-			);
+			// Only add widgets for sections they have create privileges to.
+			if (craft()->userSession->checkPermission('createEntries:'.$section->id))
+			{
+				$widget = new WidgetModel();
+				$widget->type = 'QuickPost';
 
-			$this->saveUserWidget($widget);
+				$widget->settings = array(
+					'section' => $section->id
+				);
+
+				$this->saveUserWidget($widget);
+			}
 		}
 
 		// Recent Entries widget
@@ -204,10 +209,13 @@ class DashboardService extends BaseApplicationComponent
 		);
 		$this->saveUserWidget($widget);
 
-		// Updates widget
-		$widget = new WidgetModel();
-		$widget->type = 'Updates';
-		$this->saveUserWidget($widget);
+		// Only add the updates widget if they have permission to perform updates
+		if (craft()->userSession->checkPermission('performupdates'))
+		{
+			$widget = new WidgetModel();
+			$widget->type = 'Updates';
+			$this->saveUserWidget($widget);
+		}
 
 		// Get Help widget
 		$widget = new WidgetModel();

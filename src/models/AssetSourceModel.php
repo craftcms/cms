@@ -28,6 +28,7 @@ class AssetSourceModel extends BaseComponentModel
 
 		$attributes['name'] = AttributeType::String;
 		$attributes['type']['default'] = 'Local';
+		$attributes['sortOrder'] = AttributeType::String;
 
 		return $attributes;
 	}

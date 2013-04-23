@@ -34,7 +34,7 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Gets the Twig instance.
 	 *
-	 * @param string $loaderClass The template loader class to use with the environment.
+	 * @param  string            $loaderClass The template loader class to use with the environment.
 	 * @return \Twig_Environment
 	 */
 	public function getTwig($loaderClass = null)
@@ -81,9 +81,9 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Renders a template.
 	 *
-	 * @param string $template
-	 * @param array  $variables The variables that should be available to the template
-	 * @return string The rendered template
+	 * @param  string $template The name of the template to load, or a StringTemplate object
+	 * @param  array  $variables The variables that should be available to the template
+	 * @return string            The rendered template
 	 */
 	public function render($template, $variables = array())
 	{
@@ -94,9 +94,9 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Renders a macro within a given template.
 	 *
-	 * @param string $template
-	 * @param string $macro
-	 * @param array  $args
+	 * @param  string $template
+	 * @param  string $macro
+	 * @param  array  $args
 	 * @return string
 	 */
 	public function renderMacro($template, $macro, $args = array())
@@ -109,14 +109,14 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Renders a template string.
 	 *
-	 * @param string $template The source template string
-	 * @param array $variables The variables that should be available to the template
-	 * @return string The rendered template
+	 * @param  string $template  The source template string
+	 * @param  array  $variables The variables that should be available to the template
+	 * @return string            The rendered template
 	 */
 	public function renderString($template, $variables = array())
 	{
-		$twig = $this->getTwig('\Twig_Loader_String');
-		return $twig->render($template, $variables);
+		$stringTemplate = new StringTemplate(md5($template), $template);
+		return $this->render($stringTemplate, $variables);
 	}
 
 	/**

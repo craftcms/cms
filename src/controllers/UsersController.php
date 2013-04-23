@@ -129,7 +129,7 @@ class UsersController extends BaseController
 	 */
 	public function actionLogout()
 	{
-		craft()->userSession->logout();
+		craft()->userSession->logout(false);
 		$this->redirect('');
 	}
 
@@ -301,7 +301,6 @@ class UsersController extends BaseController
 		$user->firstName       = craft()->request->getPost('firstName');
 		$user->lastName        = craft()->request->getPost('lastName');
 		$user->email           = craft()->request->getPost('email');
-		$user->emailFormat     = craft()->request->getPost('emailFormat');
 		$user->preferredLocale = craft()->request->getPost('preferredLocale');
 
 		// Only admins can opt out of requiring email verification
@@ -329,22 +328,31 @@ class UsersController extends BaseController
 			$user->passwordResetRequired = (bool)craft()->request->getPost('passwordResetRequired');
 		}
 
-		if (craft()->users->saveUser($user))
+		try
 		{
-			craft()->userSession->setNotice(Craft::t('User saved.'));
-			$this->redirectToPostedUrl(array(
-				'userId' => $user->id
-			));
-		}
-		else
-		{
-			craft()->userSession->setError(Craft::t('Couldn’t save user.'));
+			if (craft()->users->saveUser($user))
+			{
+				craft()->userSession->setNotice(Craft::t('User saved.'));
 
-			// Send the account back to the template
-			craft()->urlManager->setRouteVariables(array(
-				'account' => $user
-			));
+				$this->redirectToPostedUrl(array(
+					'userId' => $user->id
+				));
+			}
+			else
+			{
+				craft()->userSession->setError(Craft::t('Couldn’t save user.'));
+			}
 		}
+		catch (\phpmailerException $e)
+		{
+			craft()->userSession->setError(Craft::t('Registered user, but couldn’t send verification email. Check your email settings.'));
+		}
+
+		// Send the account back to the template
+		craft()->urlManager->setRouteVariables(array(
+			'account' => $user
+		));
+
 	}
 
 	/**

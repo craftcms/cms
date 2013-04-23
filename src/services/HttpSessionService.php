@@ -12,7 +12,7 @@ class HttpSessionService extends \CHttpSession
 	public function init()
 	{
 		// Check if the config value has actually been set to true/false
-		$configVal = $this->get('overridePHPSessionLocation');
+		$configVal = craft()->config->get('overridePHPSessionLocation');
 
 		// If it's set to true, override the PHP save session path.
 		if (is_bool($configVal) && $configVal === true)

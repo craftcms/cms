@@ -1,0 +1,1119 @@
+<?php
+namespace Craft;
+
+Craft::requirePackage(CraftPackage::Cloud);
+
+/**
+ * Rackspace source type class
+ */
+class RackspaceAssetSourceType extends BaseAssetSourceType
+{
+
+	const RackspaceUSAuthHost = 'https://identity.api.rackspacecloud.com/v1.0';
+	const RackspaceUKAuthHost = 'https://lon.identity.api.rackspacecloud.com/v1.0';
+
+	const RackspaceStorageOperation = 'storage';
+	const RackspaceCDNOperation = 'cdn';
+
+	/**
+	 * Stores access information.
+	 *
+	 * @var array
+	 */
+	private static $_accessStore = array();
+
+	/**
+	 * Returns the name of the source type.
+	 *
+	 * @return string
+	 */
+	public function getName()
+	{
+		return 'Rackspace Cloud Files';
+	}
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @access protected
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'username'   => array(AttributeType::String, 'required' => true),
+			'apiKey'     => array(AttributeType::String, 'required' => true),
+			'location'   => array(AttributeType::String, 'required' => true),
+			'container'	 => array(AttributeType::String, 'required' => true),
+			'urlPrefix'  => array(AttributeType::String, 'required' => true),
+			'subfolder'  => array(AttributeType::String, 'default' => ''),
+		);
+	}
+
+	/**
+	 * Returns the component's settings HTML.
+	 *
+	 * @return string|null
+	 */
+	public function getSettingsHtml()
+	{
+		return craft()->templates->render('_components/assetsourcetypes/Rackspace/settings', array(
+			'settings' => $this->getSettings()
+		));
+	}
+
+
+	/**
+	 * Get container list.
+	 *
+	 * @return array
+	 * @throws Exception
+	 */
+	public function getContainerList()
+	{
+
+		$response = $this->_doAuthenticatedRequest(static::RackspaceCDNOperation, '?format=json');
+
+		$extractedResponse = static::_extractRequestResponse($response);
+		$data = json_decode($extractedResponse);
+
+		$returnData = array();
+		if (is_array($data))
+		{
+			foreach ($data as $container)
+			{
+				$returnData[] = (object) array('container' => $container->name, 'urlPrefix' => rtrim($container->cdn_uri, '/').'/');
+			}
+		}
+		else
+		{
+			static::_logUnexpectedResponse($response);
+		}
+
+		return $returnData;
+	}
+
+	/**
+	 * Starts an indexing session.
+	 *
+	 * @param $sessionId
+	 * @return array
+	 * @throws Exception
+	 */
+	public function startIndex($sessionId)
+	{
+		$offset = 0;
+		$total = 0;
+
+		$prefix = $this->_getPathPrefix();
+
+		try{
+			$fileList = $this->_getFileList($prefix);
+		}
+		catch (Exception $exception)
+		{
+			return array('error' => $exception->getMessage());
+		}
+
+		$fileList = array_filter($fileList, function ($value) {
+			$path = $value->name;
+
+			$segments = explode('/', $path);
+
+			foreach ($segments as $segment)
+			{
+				if (isset($segment[0]) && $segment[0] == '_')
+				{
+					return false;
+				}
+			}
+
+			return true;
+		});
+
+		$containerFolders = array();
+
+		foreach ($fileList as $file)
+		{
+			// Strip the prefix, so we don't index the parent folders
+			$file->name = substr($file->name, strlen($prefix));
+
+			if (!preg_match(AssetsHelper::IndexSkipItemsPattern, $file->name))
+			{
+				// So in Rackspace a folder may or may not exist. For path a/path/to/file.jpg, any of those folders may
+				// or may not exist. So we have to add all the segments to $containerFolders to make sure we index them
+
+				// Matches all paths with folders, except if there if no folder at all.
+				if (preg_match('/(.*\/).+$/', $file->name, $matches))
+				{
+					$folders = explode('/', rtrim($matches[1], '/'));
+					$basePath = '';
+
+					foreach ($folders as $folder)
+					{
+						$basePath .= $folder;
+
+						// This is exactly the case referred to above
+						if ( ! isset($containerFolders[$basePath]))
+						{
+							$containerFolders[$basePath] = true;
+						}
+
+						$basePath .= '/';
+					}
+				}
+
+				if ($file->content_type == 'application/directory')
+				{
+					$containerFolders[$file->name] = true;
+				}
+				else
+				{
+					$indexEntry = array(
+						'sourceId' => $this->model->id,
+						'sessionId' => $sessionId,
+						'offset' => $offset++,
+						'uri' => $file->name,
+						'size' => $file->bytes
+					);
+
+					craft()->assetIndexing->storeIndexEntry($indexEntry);
+					$total++;
+				}
+			}
+		}
+
+		$indexedFolderIds = array();
+		$indexedFolderIds[craft()->assetIndexing->ensureTopFolder($this->model)] = true;
+
+		// Ensure folders are in the DB
+		foreach ($containerFolders as $fullPath => $nothing)
+		{
+			$folderId = $this->_ensureFolderByFulPath($fullPath.'/');
+			$indexedFolderIds[$folderId] = true;
+		}
+
+		$missingFolders = $this->_getMissingFolders($indexedFolderIds);
+
+		return array('sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders);
+	}
+
+	/**
+	 * Process an indexing session.
+	 *
+	 * @param $sessionId
+	 * @param $offset
+	 * @return mixed
+	 */
+	public function processIndex($sessionId, $offset)
+	{
+		$indexEntryModel = craft()->assetIndexing->getIndexEntry($this->model->id, $sessionId, $offset);
+
+		if (empty($indexEntryModel))
+		{
+			return false;
+		}
+
+		$uriPath = $indexEntryModel->uri;
+		$fileModel = $this->_indexFile($uriPath);
+
+		if ($fileModel)
+		{
+			craft()->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
+
+			$fileModel->size = $indexEntryModel->size;
+
+			$fileInfo = $this->_getObjectInfo($this->_getPathPrefix().$uriPath);
+
+			$timeModified = new DateTime($fileInfo->lastModified, new \DateTimeZone('UTC'));
+
+			$targetPath = craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
+
+			if ($fileModel->kind == 'image' && $fileModel->dateModified != $timeModified || !IOHelper::fileExists($targetPath))
+			{
+				$this->_downloadFile($this->_getPathPrefix().$uriPath, $targetPath);
+
+				clearstatcache();
+				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
+			}
+
+			$fileModel->dateModified = $timeModified;
+
+			craft()->assets->storeFile($fileModel);
+
+			return $fileModel->id;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Insert a file from path in folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param $filePath
+	 * @param $fileName
+	 * @return AssetFileModel
+	 * @throws Exception
+	 */
+	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
+	{
+		$fileName = IOHelper::cleanFilename($fileName);
+		$extension = IOHelper::getExtension($fileName);
+
+		if (! IOHelper::isExtensionAllowed($extension))
+		{
+			throw new Exception(Craft::t('This file type is not allowed'));
+		}
+
+		$uriPath = $this->_getPathPrefix().$folder->fullPath.$fileName;
+
+
+
+		$fileInfo = $this->_getObjectInfo($uriPath);
+
+		if ($fileInfo)
+		{
+			$response = new AssetOperationResponseModel();
+			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
+		}
+
+		clearstatcache();
+
+		// Upload file
+		try
+		{
+			$this->_uploadFile($uriPath, $filePath);
+		}
+		catch (\Exception $exception)
+		{
+			throw new Exception(Craft::t('Could not copy file to target destination'));
+		}
+
+		$response = new AssetOperationResponseModel();
+		return $response->setSuccess()->setDataItem('filePath', $uriPath);
+	}
+
+	/**
+	 * Get the image source path with the optional handle name.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @return mixed
+	 */
+	public function getImageSourcePath(AssetFileModel $fileModel)
+	{
+		return craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
+	}
+
+	/**
+	 * Get the timestamp of when a file transform was last modified.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @param string $transformLocation
+	 * @return mixed
+	 */
+	public function getTimeTransformModified(AssetFileModel $fileModel, $transformLocation)
+	{
+		$folder = $fileModel->getFolder();
+		$path = $this->_getPathPrefix().$folder->fullPath.$transformLocation.'/'.$fileModel->filename;
+
+		$fileInfo = $this->_getObjectInfo($path);
+
+		if (empty($fileInfo))
+		{
+			return false;
+		}
+
+		return new DateTime($fileInfo->last_modified, new \DateTimeZone('UTC'));
+	}
+
+	/**
+	* Put an image transform for the File and handle using the provided path to the source image.
+	*
+	* @param AssetFileModel $fileModel
+	* @param $handle
+	* @param $sourceImage
+	* @return mixed
+	*/
+	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
+	{
+
+		$targetFile = $this->_getPathPrefix().$fileModel->getFolder()->fullPath.'_'.ltrim($handle, '_').'/'.$fileModel->filename;
+
+		// Upload file
+		try
+		{
+			$this->_uploadFile($targetFile, $sourceImage);
+			return true;
+		}
+		catch (\Exception $exception)
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Get a name replacement for a filename already taken in a folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param $fileName
+	 * @return mixed
+	 */
+	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
+	{
+
+		$prefix = $this->_getPathPrefix().$folder->fullPath;
+
+		$files = $this->_getFileList($prefix);
+
+		$fileList = array();
+		foreach ($files as $file)
+		{
+			$fileList[$file->name] = true;
+		}
+
+		$fileNameParts = explode(".", $fileName);
+		$extension = array_pop($fileNameParts);
+
+		$fileNameStart = join(".", $fileNameParts) . '_';
+		$index = 1;
+
+		while ( isset($fileList[$this->_getPathPrefix().$folder->fullPath . $fileNameStart . $index . '.' . $extension]))
+		{
+			$index++;
+		}
+
+		return $fileNameStart . $index . '.' . $extension;
+	}
+
+	/**
+	 * Make a local copy of the file and return the path to it.
+	 *
+	 * @param AssetFileModel $file
+	 * @return mixed
+	 */
+
+	public function getLocalCopy(AssetFileModel $file)
+	{
+		$location = AssetsHelper::getTempFilePath($file->getExtension());
+
+		$this->_downloadFile($this->_getRackspacePath($file), $location);
+
+		return $location;
+	}
+
+	/**
+	 * Get a file's S3 path.
+	 *
+	 * @param AssetFileModel $file
+	 * @return string
+	 */
+	private function _getRackspacePath(AssetFileModel $file)
+	{
+		$folder = $file->getFolder();
+		return $this->_getPathPrefix().$folder->fullPath.$file->filename;
+	}
+
+	/**
+	 * Delete just the source file for an Assets File.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param $filename
+	 * @return void
+	 */
+	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
+	{
+		$uriPath = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix() . $folder->fullPath . $filename);
+
+		$this->_deleteObject($uriPath);
+
+	}
+
+	/**
+	 * Delete all the generated image transforms for this file.
+	 *
+	 * @param AssetFileModel $file
+	 * @return void
+	 */
+	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
+	{
+		$folder = craft()->assets->getFolderById($file->folderId);
+		$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
+
+		foreach ($transforms as $location)
+		{
+			$this->_deleteObject($this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().$folder->fullPath.$location.'/'.$file->filename));
+		}
+	}
+
+	/**
+	 * Move a file in source.
+	 *
+	 * @param AssetFileModel $file
+	 * @param AssetFolderModel $targetFolder
+	 * @param string $fileName
+	 * @param string $userResponse Conflict resolution response
+	 * @return mixed
+	 */
+	protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $userResponse = '')
+	{
+		if (empty($fileName))
+		{
+			$fileName = $file->filename;
+		}
+
+		$newServerPath = $this->_getPathPrefix().$targetFolder->fullPath.$fileName;
+
+		$conflictingRecord = craft()->assets->findFile(array(
+			'folderId' => $targetFolder->id,
+			'filename' => $fileName
+		));
+
+
+		$fileInfo = $this->_getObjectInfo($newServerPath);
+
+		$conflict = $fileInfo || (!craft()->assets->isMergeInProgress() && is_object($conflictingRecord));
+
+		if ($conflict)
+		{
+			$response = new AssetOperationResponseModel();
+			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
+		}
+
+		$sourceFolder = $file->getFolder();
+
+		// Get the originating source object.
+		$originatingSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+		$originatingSettings = $originatingSourceType->getSettings();
+
+		$sourceUri = $this->_prepareRequestURI($originatingSettings->container, $originatingSettings->subfolder.$sourceFolder->fullPath.$file);
+		$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $newServerPath);
+
+		$this->_copyFile($sourceUri, $targetUri);
+		$this->_deleteObject($sourceUri);
+
+		if ($file->kind == 'image')
+		{
+			$this->_deleteGeneratedThumbnails($file);
+
+			// Move transforms
+			$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
+
+			$baseFromPath = $originatingSettings->subfolder.$sourceFolder->fullPath;
+			$baseToPath = $this->_getPathPrefix().$targetFolder->fullPath;
+
+			foreach ($transforms as $location)
+			{
+
+				$sourceUri = $this->_prepareRequestURI($originatingSettings->container, $baseFromPath.$location.'/'.$file->filename);
+				$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $baseToPath.$location.'/'.$fileName);
+				$this->_copyFile($sourceUri, $targetUri);
+				$this->_deleteObject($sourceUri);
+			}
+		}
+
+		$response = new AssetOperationResponseModel();
+		return $response->setSuccess()
+				->setDataItem('newId', $file->id)
+				->setDataItem('newFileName', $fileName);
+	}
+
+	/**
+	 * Return true if a folder exists on Rackspace.
+	 *
+	 * @param AssetFolderModel $parentFolder
+	 * @param $folderName
+	 * @return boolean
+	 */
+	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
+	{
+		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$parentFolder->fullPath.$folderName);
+
+	}
+
+	/**
+	 * Create a folder on Rackspace, return true on success.
+	 *
+	 * @param AssetFolderModel $parentFolder
+	 * @param $folderName
+	 * @return boolean
+	 */
+	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
+	{
+		$headers = array(
+			'Content-type: application/directory',
+			'Content-length: 0'
+		);
+
+		$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().$parentFolder->fullPath.$folderName);
+
+		$this->_doAuthenticatedRequest(static::RackspaceStorageOperation,  $targetUri, 'PUT', $headers);
+		return true;
+	}
+
+	/**
+	 * Rename a source folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param $newName
+	 * @return boolean
+	 */
+	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
+	{
+		$newFullPath = $this->_getPathPrefix().$this->_getParentFullPath($folder->fullPath).$newName.'/';
+
+		$objectList = $this->_getFileList($this->_getPathPrefix().$folder->fullPath);
+		$filesToMove = array();
+		foreach ($objectList as $object)
+		{
+			$filesToMove[$object->name] = $object;
+		}
+
+		krsort($filesToMove);
+
+		foreach ($filesToMove as $file)
+		{
+			$filePath = substr($file->name, strlen($this->_getPathPrefix().$folder->fullPath));
+
+			$sourceUri = $this->_prepareRequestURI($this->getSettings()->container, $file->name);
+			$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $newFullPath.$filePath);
+			$this->_copyFile($sourceUri, $targetUri);
+			$this->_deleteObject($sourceUri);
+		}
+
+		// This may or may not exist.
+		$this->_deleteObject($this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().rtrim($folder->fullPath, '/')));
+
+		return TRUE;
+	}
+
+	/**
+	 * Delete the source folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param $folderName
+	 * @return bool
+	 */
+	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
+	{
+
+		$container = $this->getSettings()->container;
+		$objectsToDelete = $this->_getFileList($this->_getPathPrefix().$parentFolder->fullPath.$folderName);
+
+		foreach ($objectsToDelete as $file)
+		{
+			$this->_deleteObject($this->_prepareRequestURI($container, $file->name));
+		}
+
+		$this->_deleteObject($this->_prepareRequestURI($container, $this->_getPathPrefix().$parentFolder->fullPath.$folderName));
+
+		return true;
+	}
+
+	/**
+	 * Determines if a file can be moved internally from original source.
+	 *
+	 * @param BaseAssetSourceType $originalSource
+	 * @return mixed
+	 */
+	protected function canMoveFileFrom(BaseAssetSourceType $originalSource)
+	{
+		if ($this->model->type == $originalSource->model->type)
+		{
+			$settings = $originalSource->getSettings();
+			$theseSettings = $this->getSettings();
+			if ($settings->username == $theseSettings->username && $settings->apiKey == $theseSettings->apiKey)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Copy a transform for a file from source location to target location.
+	 *
+	 * @param AssetFileModel $file
+	 * @param $source
+	 * @param $target
+	 * @return mixed
+	 */
+	public function copyTransform(AssetFileModel $file, $source, $target)
+	{
+		$container = $this->getSettings()->container;
+		$basePath = $this->_getPathPrefix().$file->getFolder()->fullPath;
+
+		$sourceUri = $this->_prepareRequestURI($container, $basePath.$source.'/'.$file->filename);
+		$targetUri = $this->_prepareRequestURI($container, $basePath.$target.'/'.$file->filename);
+		$this->_copyFile($sourceUri, $targetUri);
+	}
+
+	/**
+	 * Return a prefix for S3 path for settings.
+	 *
+	 * @param object|null $settings to use, if null, will use current settings
+	 * @return string
+	 */
+	private function _getPathPrefix($settings = null)
+	{
+		if (is_null($settings))
+		{
+			$settings = $this->getSettings();
+		}
+
+		if (!empty($settings->subfolder))
+		{
+			return rtrim($settings->subfolder, '/').'/';
+		}
+
+		return "";
+	}
+
+	/**
+	 * Return true if a transform exists at the location for a file.
+	 *
+	 * @param AssetFileModel $file
+	 * @param $location
+	 * @return mixed
+	 */
+	public function transformExists(AssetFileModel $file, $location)
+	{
+		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$file->getFolder()->fullPath.$location.'/'.$file->filename);
+	}
+
+	/**
+	 * Return the source's base URL.
+	 *
+	 * @return string
+	 */
+	public function getBaseUrl()
+	{
+		return $this->getSettings()->urlPrefix.$this->_getPathPrefix();
+	}
+
+	/**
+	 * Refresh a connection information and return authorization token.
+	 *
+	 * @throws Exception
+	 */
+	private function _refreshConnectionInformation()
+	{
+		$settings = $this->getSettings();
+		$username = $settings->username;
+		$apiKey = $settings->apiKey;
+		$location = $settings->location;
+
+		$headers = array(
+			'X-Auth-User: '.$username,
+			'X-Auth-Key: '.$apiKey
+		);
+
+		$targetUrl = static::_makeAuthorizationRequestUrl($location);
+		$response = static::_doRequest($targetUrl, 'GET', $headers);
+
+		// Extract the values
+		$token = static::_extractHeader($response, 'X-Auth-Token');
+		$storageUrl = rtrim(static::_extractHeader($response, 'X-Storage-Url'), '/').'/';
+		$cdnUrl = rtrim(static::_extractHeader($response, 'X-CDN-Management-Url'), '/').'/';
+
+		if (!($token && $storageUrl && $cdnUrl))
+		{
+			throw new Exception(Craft::t("Wrong credentials supplied for Rackspace access!"));
+		}
+
+		$connectionKey = $username.$apiKey;
+
+		$data = array('token' => $token, 'storageUrl' => $storageUrl, 'cdnUrl' => $cdnUrl);
+
+		// Store this in the access store
+		static::$_accessStore[$connectionKey] = $data;
+
+		// And update DB information.
+		static::_updateAccessData($connectionKey, $data);
+	}
+
+
+	/**
+	 * Create the authorization request URL by location
+	 *
+	 * @param string $location
+	 * @return string
+	 */
+	private static function _makeAuthorizationRequestUrl($location = '')
+	{
+		if ($location == 'uk')
+		{
+			return static::RackspaceUKAuthHost;
+		}
+
+		return static::RackspaceUSAuthHost;
+	}
+
+	/**
+	 * Make a request and return the response.
+	 *
+	 * @param $url
+	 * @param $method
+	 * @param $headers
+	 * @return string
+	 */
+	private static function _doRequest($url, $method = 'GET', $headers = array(), $curlOptions = array())
+	{
+		$ch = curl_init($url);
+		if ($method == 'HEAD')
+		{
+			curl_setopt($ch, CURLOPT_NOBODY, 1);
+		}
+		else
+		{
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+		}
+
+		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+		curl_setopt($ch, CURLOPT_HEADER, 1);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		foreach ($curlOptions as $option => $value)
+		{
+			curl_setopt($ch, $option, $value);
+		}
+
+		$response = curl_exec($ch);
+		curl_close($ch);
+
+		return $response;
+	}
+
+	/**
+	 * Get object information by path
+	 * @param $path
+	 * @return bool|object
+	 */
+	private function _getObjectInfo($path)
+	{
+
+		$target = $this->_prepareRequestURI($this->getSettings()->container, $path);
+		$response = $this->_doAuthenticatedRequest(static::RackspaceStorageOperation, $target, 'HEAD');
+
+		$lastModified = static::_extractHeader($response, 'Last-Modified');
+		$size = static::_extractHeader($response, 'Content-Length');
+
+		if (!$lastModified)
+		{
+			return false;
+		}
+
+		return (object) array('lastModified' => $lastModified, 'size' => $size);
+	}
+
+	/**
+	 * Do an authenticated request against Rackspace severs.
+	 *
+	 * @param string $operationType operation type so we know which server to target
+	 * @param string $target URI target on the Rackspace server
+	 * @param string $method GET/POST/PUT/DELETE
+	 * @param array $headers array of headers. Authorization token will be appended to this before request.
+	 * @param array $curlOptions additional curl options to set.
+	 * @return string full response including headers.
+	 * @throws Exception
+	 */
+	private function _doAuthenticatedRequest($operationType, $target = '', $method = 'GET', $headers = array(), $curlOptions = array())
+	{
+		$settings = $this->getSettings();
+
+		$username = $settings->username;
+		$apiKey = $settings->apiKey;
+
+		$connectionKey = $username.$apiKey;
+
+		// If we don't have the access information, load it from DB
+		if (empty(static::$_accessStore[$connectionKey]))
+		{
+			static::_loadAccessData();
+		}
+
+		// If we still don't have it, fetch it using username and api key.
+		if (empty(static::$_accessStore[$connectionKey]))
+		{
+			$this->_refreshConnectionInformation();
+		}
+
+		// If we still don't have it, then we're all out of luck.
+		if (empty(static::$_accessStore[$connectionKey]))
+		{
+			throw new Exception(Craft::t("Connection information not found!"));
+		}
+
+		$connectionInformation = static::$_accessStore[$connectionKey];
+
+		$headers[] = 'X-Auth-Token: ' . $connectionInformation['token'];
+
+		switch ($operationType)
+		{
+			case static::RackspaceStorageOperation:
+			{
+				$url = $connectionInformation['storageUrl'].$target;
+				break;
+			}
+
+			case static::RackspaceCDNOperation:
+			{
+				$url = $connectionInformation['cdnUrl'].$target;
+				break;
+			}
+
+			default:
+			{
+				throw new Exception(Craft::t("Unrecognized operation type!"));
+			}
+		}
+
+		$response = static::_doRequest($url, $method, $headers, $curlOptions);
+
+		preg_match('/HTTP\/1.1 (?P<httpStatus>[0-9]{3})/', $response, $matches);
+
+		if (!empty($matches['httpStatus']))
+		{
+			// Error checking
+			switch ($matches['httpStatus'])
+			{
+				// Invalid token - try to renew it once.
+				case '401':
+				{
+					static $tokenFailure = 0;
+					if (++$tokenFailure == 1)
+					{
+						$this->_refreshConnectionInformation();
+
+						// Remove token header.
+						$newHeaders = array();
+						foreach ($headers as $header)
+						{
+							if (strpos($header, 'X-Auth-Token') === false)
+							{
+								$newHeaders[] = $header;
+							}
+						}
+
+						return $this->_doAuthenticatedRequest($operationType, $target, $method, $newHeaders);
+					}
+					throw new Exception("Token has expired and the attempt to renew it failed. Please check the source settings.");
+					break;
+				}
+
+			}
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Load Rackspace access data from DB.
+	 */
+	private static function _loadAccessData()
+	{
+		$rows = craft()->db->createCommand()->select('connectionKey, token, storageUrl, cdnUrl')->from('rackspaceaccess')->queryAll();
+		foreach ($rows as $row)
+		{
+			static::$_accessStore[$row['connectionKey']] = array(
+															'token' => $row['token'],
+															'storageUrl' => $row['storageUrl'],
+															'cdnUrl' => $row['cdnUrl']);
+		}
+	}
+
+	/**
+	 * Update or insert access data for a connetion key.
+	 *
+	 * @param $connectionKey
+	 * @param $data
+	 */
+	private static function _updateAccessData($connectionKey, $data)
+	{
+		$recordExists = craft()->db->createCommand()
+			->select('id')
+			->where('connectionKey = :connectionKey', array(':connectionKey' => $connectionKey))
+			->from('rackspaceaccess')
+			->queryScalar();
+
+		if ($recordExists)
+		{
+			craft()->db->createCommand()->update('rackspaceaccess', $data, 'id = :id', array(':id' => $recordExists));
+		}
+		else
+		{
+			$data['connectionKey'] = $connectionKey;
+			craft()->db->createCommand()->insert('rackspaceaccess', $data);
+		}
+	}
+
+	/**
+	 * Extract a header from a response.
+	 *
+	 * @param $response
+	 * @param $header
+	 * @return mixed
+	 */
+	private static function _extractHeader($response, $header)
+	{
+		preg_match('/.*'.$header.': (?P<value>.+)\r/', $response, $matches);
+		return isset($matches['value']) ? $matches['value'] : false;
+	}
+
+
+
+	/**
+	 * Extract the response form a response that has headers.
+	 *
+	 * @param $response
+	 * @return string
+	 */
+	private static function _extractRequestResponse($response)
+	{
+		return rtrim(substr($response, strpos($response, "\r\n\r\n") + 4));
+	}
+
+	/**
+	 * Log an unexpected response.
+	 *
+	 * @param $response
+	 */
+	private static function _logUnexpectedResponse($response)
+	{
+		Craft::log("RACKSPACE: Received unexpected response: " . $response);
+	}
+
+	/**
+	 * Download a file to the target location. The file will be downloaded using the public URL, instead of cURL.
+	 *
+	 * @param $path
+	 * @param $targetFile
+	 * @return bool
+	 */
+	private function _downloadFile($path, $targetFile)
+	{
+		$target = $this->getSettings()->urlPrefix.$path;
+
+		$ch = curl_init($target);
+		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		$response = curl_exec($ch);
+
+		IOHelper::writeToFile($targetFile, $response);
+
+		return true;
+	}
+
+	/**
+	 * Upload a file to Rackspace.
+	 *
+	 * @param $targetUri
+	 * @param $sourceFile
+	 * @return bool
+	 */
+	public function _uploadFile($targetUri, $sourceFile)
+	{
+
+		$fileSize = IOHelper::getFileSize($sourceFile);
+		$fp = fopen($sourceFile, "r");
+
+		$headers = array(
+			'Content-type: ' . IOHelper::getMimeType($sourceFile),
+			'Content-length: ' . $fileSize
+		);
+
+		$curlOptions = array(
+			CURLOPT_UPLOAD => true,
+			CURLOPT_INFILE => $fp,
+			CURLOPT_INFILESIZE => $fileSize
+		);
+
+		$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $targetUri);
+		$this->_doAuthenticatedRequest(static::RackspaceStorageOperation, $targetUri, 'PUT', $headers, $curlOptions);
+		fclose($fp);
+		return true;
+	}
+
+	/**
+	 * Get file list from Rackspace.
+	 *
+	 * @param $prefix
+	 * @return mixed
+	 * @throws Exception
+	 */
+	private function _getFileList($prefix = '')
+	{
+		$targetUri = $this->_prepareRequestURI($this->getSettings()->container).'?prefix='.$prefix.'&format=json';
+		$response = $this->_doAuthenticatedRequest(static::RackspaceStorageOperation, $targetUri);
+
+		$extractedResponse = static::_extractRequestResponse($response);
+		$fileList = json_decode($extractedResponse);
+
+		if (!is_array($fileList))
+		{
+			static::_logUnexpectedResponse($response);
+			throw new Exception(Craft::t('Remote server for “{source}” returned an unexpected response.', array('source' => $this->model->name)));
+		}
+
+		return $fileList;
+	}
+
+	/**
+	 * Delete a file on Rackspace.
+	 *
+	 * @param $uriPath
+	 */
+	private function _deleteObject($uriPath)
+	{
+		$this->_doAuthenticatedRequest(static::RackspaceStorageOperation, $uriPath, 'DELETE');
+	}
+
+	/**
+	 * Purge a file from Akamai CDN
+	 *
+	 * @param $uriPath
+	 */
+	private function _purgeObject($uriPath)
+	{
+		$this->_doAuthenticatedRequest(static::RackspaceCDNOperation, $uriPath, 'DELETE');
+	}
+
+	/**
+	 * Purge a file from Akamai CDN.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param $filename
+	 */
+	protected function _purgeCachedSourceFile(AssetFolderModel $folder, $filename)
+	{
+		$uriPath = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix() . $folder->fullPath . $filename);
+		$this->_purgeObject($uriPath);
+	}
+
+	/**
+	 * Copy a file on Rackspace.
+	 * @param $sourceUri
+	 * @param $targetUri
+	 */
+	private function _copyFile($sourceUri, $targetUri)
+	{
+		$targetUri = '/'.ltrim($targetUri, '/');
+		$this->_doAuthenticatedRequest(static::RackspaceStorageOperation, $sourceUri, 'COPY', array('Destination: '.$targetUri));
+	}
+
+	/**
+	 * Prepare a request URI by container and target path.
+	 *
+	 * @param $container
+	 * @param $uri
+	 * @return string
+	 */
+	private function _prepareRequestURI($container, $uri = '')
+	{
+		return rawurlencode($container).(!empty($uri) ? '/'.rawurlencode($uri) : '');
+	}
+}

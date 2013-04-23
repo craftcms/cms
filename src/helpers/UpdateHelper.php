@@ -105,7 +105,7 @@ class UpdateHelper
 					{
 						if ($folder)
 						{
-							Craft::log('Updating folder: '.$destFile);
+							Craft::log('Updating folder: '.$destFile, LogLevel::Info, true);
 
 							$tempFolder = rtrim($destFile, '/').StringHelper::UUID().'/';
 							$tempTempFolder = rtrim($destFile, '/').'-tmp/';
@@ -119,7 +119,7 @@ class UpdateHelper
 						}
 						else
 						{
-							Craft::log('Updating file: '.$destFile);
+							Craft::log('Updating file: '.$destFile, LogLevel::Info, true);
 							IOHelper::copyFile($sourceFile, $destFile);
 						}
 
@@ -130,7 +130,7 @@ class UpdateHelper
 		}
 		catch (\Exception $e)
 		{
-			Craft::log('Error updating files: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
+			Craft::log('Error updating files: '.$e->getMessage(), LogLevel::Error);
 			UpdateHelper::rollBackFileChanges($manifestData);
 			return false;
 		}
@@ -173,6 +173,7 @@ class UpdateHelper
 	 *
 	 * @static
 	 * @param $manifestDataPath
+	 * @throws Exception
 	 * @return array
 	 */
 	public static function getManifestData($manifestDataPath)
@@ -181,6 +182,11 @@ class UpdateHelper
 		{
 			// get manifest file
 			$manifestFileData = IOHelper::getFileContents($manifestDataPath.'/craft_manifest', true);
+
+			if ($manifestFileData === false)
+			{
+				throw new Exception('There was a problem reading the update manifest data.');
+			}
 
 			// Remove any trailing empty newlines
 			if ($manifestFileData[count($manifestFileData) - 1] == '')

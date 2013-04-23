@@ -375,6 +375,13 @@ class AssetsService extends BaseApplicationComponent
 			$referenceStore[$folder->id] = $folder;
 		}
 
+		$sort = array();
+		foreach ($tree as $topFolder)
+		{
+			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
+		}
+
+		array_multisort($sort, $tree);
 		return $tree;
 	}
 
@@ -939,7 +946,7 @@ class AssetsService extends BaseApplicationComponent
 		if (!$transform || !in_array(IOHelper::getExtension($file), Image::getAcceptedExtensions()))
 		{
 			$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
-			$base = $sourceType->isSourceLocal() ? $sourceType->getSettings()->url : $sourceType->getSettings()->urlPrefix;
+			$base = $sourceType->getBaseUrl();
 			return $base.$file->getFolder()->fullPath.$file->filename;
 		}
 

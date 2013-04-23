@@ -144,7 +144,7 @@ class SystemSettingsController extends BaseController
 			}
 			catch (\Exception $e)
 			{
-				Craft::log($e->getMessage(), \CLogger::LEVEL_ERROR);
+				Craft::log($e->getMessage(), LogLevel::Error);
 			}
 		}
 

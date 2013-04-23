@@ -1,7 +1,5 @@
 {% import "_includes/forms" as forms %}
 
-{% set sections = craft.sections.getAllSections() %}
-
 {% if sections %}
 	{% if craft.hasPackage('PublishPro') %}
 		{% set sectionOptions = [] %}

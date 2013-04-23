@@ -69,11 +69,12 @@ class Folder extends BaseIO
 	}
 
 	/**
+	 * @param bool $suppressErrors
 	 * @return bool
 	 */
-	public function clear()
+	public function clear($suppressErrors = false)
 	{
-		if (!IOHelper::clearFolder($this->getRealPath()))
+		if (!IOHelper::clearFolder($this->getRealPath(), $suppressErrors))
 		{
 			return false;
 		}

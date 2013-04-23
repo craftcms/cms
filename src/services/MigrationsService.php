@@ -33,11 +33,11 @@ class MigrationsService extends BaseApplicationComponent
 		{
 			if ($plugin)
 			{
-				Craft::log('No new migration(s) found for the plugin '.$plugin->getClassHandle().'. Your system is up-to-date.');
+				Craft::log('No new migration(s) found for the plugin '.$plugin->getClassHandle().'. Your system is up-to-date.', LogLevel::Info, true);
 			}
 			else
 			{
-				Craft::log('No new migration(s) found for Craft. Your system is up-to-date.');
+				Craft::log('No new migration(s) found for Craft. Your system is up-to-date.', LogLevel::Info, true);
 			}
 
 			return true;
@@ -47,16 +47,16 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($plugin)
 		{
-			Craft::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for plugin ".$plugin->getClassHandle().":");
+			Craft::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for plugin ".$plugin->getClassHandle().":", LogLevel::Info, true);
 		}
 		else
 		{
-			Craft::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for Craft:");
+			Craft::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for Craft:", LogLevel::Info, true);
 		}
 
 		foreach ($migrations as $migration)
 		{
-			Craft::log($migration);
+			Craft::log($migration, LogLevel::Info, true);
 		}
 
 		foreach ($migrations as $migration)
@@ -71,11 +71,11 @@ class MigrationsService extends BaseApplicationComponent
 			{
 				if ($plugin)
 				{
-					Craft::log('Migration failed for plugin '.$plugin->getClassHandle().'. All later '.$plugin->getClassHandle().' migrations are canceled.', \CLogger::LEVEL_ERROR);
+					Craft::log('Migration failed for plugin '.$plugin->getClassHandle().'. All later '.$plugin->getClassHandle().' migrations are canceled.', LogLevel::Error);
 				}
 				else
 				{
-					Craft::log('Migration failed for Craft. All later Craft migrations are canceled.', \CLogger::LEVEL_ERROR);
+					Craft::log('Migration failed for Craft. All later Craft migrations are canceled.', LogLevel::Error);
 				}
 
 				return false;
@@ -84,11 +84,11 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($plugin)
 		{
-			Craft::log($plugin->getClassHandle().' migrated up successfully.');
+			Craft::log($plugin->getClassHandle().' migrated up successfully.', LogLevel::Info, true);
 		}
 		else
 		{
-			Craft::log('Craft migrated up successfully.');
+			Craft::log('Craft migrated up successfully.', LogLevel::Info, true);
 		}
 
 		return true;
@@ -108,11 +108,11 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($plugin)
 		{
-			Craft::log('Applying migration: '.$class.' for plugin: '.$plugin->getClassHandle());
+			Craft::log('Applying migration: '.$class.' for plugin: '.$plugin->getClassHandle(), LogLevel::Info, true);
 		}
 		else
 		{
-			Craft::log('Applying migration: '.$class);
+			Craft::log('Applying migration: '.$class, LogLevel::Info, true);
 		}
 
 		$start = microtime(true);
@@ -141,13 +141,13 @@ class MigrationsService extends BaseApplicationComponent
 			}
 
 			$time = microtime(true) - $start;
-			Craft::log('Applied migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)');
+			Craft::log('Applied migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)', LogLevel::Info, true);
 			return true;
 		}
 		else
 		{
 			$time = microtime(true) - $start;
-			Craft::log('Failed to apply migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)', \CLogger::LEVEL_ERROR);
+			Craft::log('Failed to apply migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)', LogLevel::Error);
 			return false;
 		}
 	}

@@ -9,6 +9,8 @@ class DateTime extends \DateTime
 	const W3C_DATE = 'Y-m-d';
 	const MYSQL_DATETIME = 'Y-m-d H:i:s';
 	const UTC = 'UTC';
+	const DATEFIELD_24HOUR = 'Y-m-d H:m';
+	const DATEFIELD_12HOUR = 'Y-m-d h:m A';
 
 	/**
 	 * Creates a new \Craft\DateTime object (rather than \DateTime)
@@ -33,12 +35,17 @@ class DateTime extends \DateTime
 
 		$dateTime = parent::createFromFormat($format, $time, $timezone);
 
-		$timeStamp = $dateTime->getTimestamp();
-
-		if (DateTimeHelper::isValidTimeStamp($timeStamp))
+		if ($dateTime)
 		{
-			return new DateTime('@'.$dateTime->getTimestamp());
+			$timeStamp = $dateTime->getTimestamp();
+
+			if (DateTimeHelper::isValidTimeStamp($timeStamp))
+			{
+				return new DateTime('@'.$dateTime->getTimestamp());
+			}
 		}
+
+		return false;
 	}
 
 	/**
@@ -57,21 +64,22 @@ class DateTime extends \DateTime
 	 */
 	public static function createFromString($date, $timezone = null)
 	{
-		$date = (string) $date;
+		$date = trim((string) $date);
 
 		if (preg_match('/^
-			(?P<year>\d{4})                                 # YYYY (four digit year)
+			(?P<year>\d{4})                                            # YYYY (four digit year)
 			(?:
-				-(?P<mon>\d\d?)                             # -M or -MM (one or two digit month)
+				-(?P<mon>\d\d?)                                        # -M or -MM (one or two digit month)
 				(?:
-					-(?P<day>\d\d?)                         # -D or -DD (one or two digit day)
+					-(?P<day>\d\d?)                                    # -D or -DD (one or two digit day)
 					(?:
-						[T\ ](?P<hour>\d\d?)\:(?P<min>\d\d) # [T or space]hh:mm (one or two digit hour and two digit minute)
+						[T\ ](?P<hour>\d\d?)\:(?P<min>\d\d)            # [T or space]hh:mm (one or two digit hour and two digit minute)
 						(?:
-							\:(?P<sec>\d\d)                 # :ss (two digit second)
-							(?:\.\d+)?                      # .s (decimal fraction of a second -- not supported)
+							\:(?P<sec>\d\d)                            # :ss (two digit second)
+							(?:\.\d+)?                                 # .s (decimal fraction of a second -- not supported)
 						)?
-						(?:Z|(?P<tzd>[+\-]\d\d\:\d\d))?     # Z or [+ or -]hh:ss (UTC or a timezone offset)
+						(?:[ ]?(?P<ampm>(AM|PM|am|pm))?)?              # An optional space and AM or PM
+						(?:Z|(?P<tzd>[+\-]\d\d\:\d\d))?                # Z or [+ or -]hh:ss (UTC or a timezone offset)
 					)?
 				)?
 			)?$/x', $date, $m))
@@ -94,6 +102,12 @@ class DateTime extends \DateTime
 			{
 				$format .= 'e';
 				$date   .= $timezone;
+			}
+
+			if (!empty($m['ampm']))
+			{
+				$format .= ' A';
+				$date .= ' '.$m['ampm'];
 			}
 		}
 		else if (preg_match('/^\d{10}$/', $date))
@@ -143,7 +157,7 @@ class DateTime extends \DateTime
 	 */
 	public function atom()
 	{
-		return $this->format(static::ATOM);
+		return $this->format(static::ATOM, static::UTC);
 	}
 
 	/**
@@ -151,7 +165,7 @@ class DateTime extends \DateTime
 	 */
 	public function cookie()
 	{
-		return $this->format(static::COOKIE);
+		return $this->format(static::COOKIE, static::UTC);
 	}
 
 	/**
@@ -159,7 +173,7 @@ class DateTime extends \DateTime
 	 */
 	public function iso8601()
 	{
-		return $this->format(static::ISO8601);
+		return $this->format(static::ISO8601, static::UTC);
 	}
 
 	/**
@@ -167,7 +181,7 @@ class DateTime extends \DateTime
 	 */
 	public function rfc822()
 	{
-		return $this->format(static::RFC822);
+		return $this->format(static::RFC822, static::UTC);
 	}
 
 	/**
@@ -175,7 +189,7 @@ class DateTime extends \DateTime
 	 */
 	public function rfc850()
 	{
-		return $this->format(static::RFC850);
+		return $this->format(static::RFC850, static::UTC);
 	}
 
 	/**
@@ -183,7 +197,7 @@ class DateTime extends \DateTime
 	 */
 	public function rfc1036()
 	{
-		return $this->format(static::RFC1036);
+		return $this->format(static::RFC1036, static::UTC);
 	}
 
 	/**
@@ -191,7 +205,7 @@ class DateTime extends \DateTime
 	 */
 	public function rfc1123()
 	{
-		return $this->format(static::RFC1123);
+		return $this->format(static::RFC1123, static::UTC);
 	}
 
 	/**
@@ -199,7 +213,7 @@ class DateTime extends \DateTime
 	 */
 	public function rfc2822()
 	{
-		return $this->format(static::RFC2822);
+		return $this->format(static::RFC2822, static::UTC);
 	}
 
 	/**
@@ -207,7 +221,7 @@ class DateTime extends \DateTime
 	 */
 	public function rfc3339()
 	{
-		return $this->format(static::RFC3339);
+		return $this->format(static::RFC3339, static::UTC);
 	}
 
 	/**
@@ -215,7 +229,7 @@ class DateTime extends \DateTime
 	 */
 	public function rss()
 	{
-		return $this->format(static::RSS);
+		return $this->format(static::RSS, static::UTC);
 	}
 
 	/**
@@ -232,6 +246,29 @@ class DateTime extends \DateTime
 	public function w3cDate()
 	{
 		return $this->format(static::W3C_DATE);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function mySqlDateTime()
+	{
+		return $this->format(static::MYSQL_DATETIME);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function dateField()
+	{
+		$locale = craft()->i18n->getLocaleData(craft()->getLanguage());
+
+		if ($locale->is24HourTimeFormat())
+		{
+			return $this->format(static::DATEFIELD_24HOUR);
+		}
+
+		return $this->format(static::DATEFIELD_12HOUR);
 	}
 
 	/**

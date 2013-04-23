@@ -1,4 +1,5 @@
 {% extends "_layouts/cp" %}
+{% includeCssResource 'css/transforms.css' %}
 {% import "_includes/forms" as forms %}
 
 {% set crumbs = [
@@ -26,6 +27,7 @@
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8">
 		<input type="hidden" name="action" value="assetTransforms/saveTransform">
+		<input type="hidden" name="redirect" value="settings/assets/transforms">
 
 		{% if not isNewTransform %}<input type="hidden" name="transformId" value="{{ transform.id }}">{% endif %}
 
@@ -51,15 +53,48 @@
 	        translatable: true
         }) }}
 
-		{{ forms.selectField({
-			label: "Mode"|t,
-			id: "mode",
-			name: "mode",
-			options: craft.assets.transformModes,
-			value: (transform is defined ? transform.mode : null),
-			required: true,
-			translatable: true
-		}) }}
+        {% set modeInput %}
+        	<div id="mode">
+        		<label id="mode-crop">
+        			<input type="radio" name="mode" value="crop"{% if transform is not defined or transform.mode == 'crop' %} checked{% endif %}>
+        			{{ "Crop"|t }}
+        		</label>
+
+        		<label id="mode-fit">
+        			<input type="radio" name="mode" value="fit"{% if transform is defined and transform.mode == 'fit' %} checked{% endif %}>
+        			{{ "Fit"|t }}
+        		</label>
+
+        		<label id="mode-stretch">
+        			<input type="radio" name="mode" value="stretch"{% if transform is defined and transform.mode == 'stretch' %} checked{% endif %}>
+        			{{ "Stretch"|t }}
+        		</label>
+        	</div>
+        {% endset %}
+
+		{{ forms.field({
+			label: "Mode"|t
+		}, modeInput) }}
+
+		<div id="position-container"{% if transform is defined and transform.mode != 'crop' %} class="hidden"{% endif %}>
+			{{ forms.selectField({
+				label: "Crop Position"|t,
+				id: 'position',
+				name: 'position',
+				options: {
+					'top-left': "Top-Left"|t,
+					'top-center': "Top-Center"|t,
+					'top-right': "Top-Right"|t,
+					'center-left': "Center-Left"|t,
+					'center-center': "Center-Center"|t,
+					'center-right': "Center-Right"|t,
+					'bottom-left': "Bottom-Left"|t,
+					'bottom-center': "Bottom-Center"|t,
+					'bottom-right': "Bottom-Right"|t
+				},
+				value: (transform is defined and transform.mode == 'crop' ? transform.position : 'center-center')
+			}) }}
+		</div>
 
 		{{ forms.textField({
 			label: "Width"|t,
@@ -90,5 +125,17 @@
 
 {% set js %}
 	{% if transform is not defined or not transform.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
+
+	$('#mode input').change(function()
+	{
+		if ($(this).val() == 'crop')
+		{
+			$('#position-container').removeClass('hidden');
+		}
+		else
+		{
+			$('#position-container').addClass('hidden');
+		}
+	})
 {% endset %}
 {% includeJs js %}

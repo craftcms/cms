@@ -28,7 +28,7 @@ class m130315_180929_fix_assettransforms_mode extends BaseMigration
 				}
 				else
 				{
-					Craft::log('Tried to clean up `assettransforms` table and the `mode` column, but `mode_temp` already exists. Attempting to gracefully recover.', \CLogger::LEVEL_WARNING);
+					Craft::log('Tried to clean up `assettransforms` table and the `mode` column, but `mode_temp` already exists. Attempting to gracefully recover.', LogLevel::Warning);
 				}
 
 				$this->update('assettransforms', array('mode' => 'fit'), 'mode_temp = "scaleToFit" OR mode_temp = "scaleTo"');
@@ -39,12 +39,12 @@ class m130315_180929_fix_assettransforms_mode extends BaseMigration
 			}
 			else
 			{
-				Craft::log('Tried to clean up `assettransforms` table, but the `mode` column does not exist.', \CLogger::LEVEL_ERROR);
+				Craft::log('Tried to clean up `assettransforms` table, but the `mode` column does not exist.', LogLevel::Error);
 			}
 		}
 		else
 		{
-			Craft::log('Tried to clean up `assettransforms` table, but it does not exist.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to clean up `assettransforms` table, but it does not exist.', LogLevel::Error);
 		}
 	}
 }

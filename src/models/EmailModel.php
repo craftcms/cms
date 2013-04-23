@@ -28,7 +28,6 @@ class EmailModel extends BaseModel
 			'htmlBody'          => array(AttributeType::String),
 			'cc'                => array(AttributeType::Mixed),
 			'bcc'               => array(AttributeType::Mixed),
-			'emailFormat'       => array(AttributeType::String, 'default' => 'text'),
 			'stringAttachments' => array(AttributeType::Mixed),
 			'attachments'       => array(AttributeType::Mixed),
 		);

@@ -69,12 +69,16 @@ class AssetTransformsService extends BaseApplicationComponent
 		$transformRecord->name = $transform->name;
 		$transformRecord->handle = $transform->handle;
 
-		if ($transformRecord->width != $transform->width || $transformRecord->height != $transform->height || $transformRecord->mode != $transform->mode)
+		$heightChanged = $transformRecord->width != $transform->width || $transformRecord->height != $transform->height;
+		$modeChanged = $transformRecord->mode != $transform->mode || $transformRecord->position != $transform->position;
+
+		if ($heightChanged || $modeChanged)
 		{
 			$transformRecord->dimensionChangeTime = new DateTime('@'.time());
 		}
 
 		$transformRecord->mode = $transform->mode;
+		$transformRecord->position = $transform->position;
 		$transformRecord->width = $transform->width;
 		$transformRecord->height = $transform->height;
 
@@ -205,7 +209,8 @@ class AssetTransformsService extends BaseApplicationComponent
 
 					default:
 					{
-						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height)->saveAs($targetFile);
+
+						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height, true, $transform->position)->saveAs($targetFile);
 						break;
 
 					}
@@ -282,12 +287,14 @@ class AssetTransformsService extends BaseApplicationComponent
 	public function generateTransform(AssetTransformIndexModel $transformIndexData)
 	{
 		// For _widthxheight_mode
-		if (preg_match('/_(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)_(?P<mode>[a-z]+)/i', $transformIndexData->location, $matches))
+		if (preg_match('/_(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)/i', $transformIndexData->location, $matches))
 		{
 			$data = array(
-				'width'  => ($matches['width']  != 'AUTO' ? $matches['width']  : null),
-				'height' => ($matches['height'] != 'AUTO' ? $matches['height'] : null),
-				'mode'   => $matches['mode']
+				'width'      => ($matches['width']  != 'AUTO' ? $matches['width']  : null),
+				'height'     => ($matches['height'] != 'AUTO' ? $matches['height'] : null),
+				'mode'       => $matches['mode'],
+				'position'   => $matches['position']
+
 			);
 
 			$parameters = $this->normalizeTransform($data);
@@ -383,7 +390,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	private function _getTransformLocation(AssetTransformModel $transform)
 	{
-		return $transform->isNamedTransform() ? '_'.$transform->handle : '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').'_'.$transform->mode;
+		return $transform->isNamedTransform() ? '_'.$transform->handle : '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').'_'.$transform->mode.'_'.$transform->position;
 	}
 
 	/**

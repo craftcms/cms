@@ -123,7 +123,7 @@ class DashboardController extends BaseController
 			$requestParams = $requestParamDefaults;
 
 			$hsParams = array(
-				'helpSpotApiURL' => 'https://support.buildwithcraft.com/api/index.php'
+				'helpSpotApiURL' => 'https://support.pixelandtonic.com/api/index.php'
 			);
 
 			try
@@ -147,7 +147,7 @@ class DashboardController extends BaseController
 						// Grab the phperrors log file, if it exists.
 						if (IOHelper::fileExists(craft()->path->getLogPath().'phperrors.log'))
 						{
-							Zip::add($tempZipFile, craft()->path->getLogPath().'phperrors.log', craft()->path->getRuntimePath());
+							Zip::add($tempZipFile, craft()->path->getLogPath().'phperrors.log', craft()->path->getStoragePath());
 						}
 					}
 
@@ -176,7 +176,7 @@ class DashboardController extends BaseController
 			}
 			catch(\Exception $e)
 			{
-				Craft::log('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), \CLogger::LEVEL_WARNING);
+				Craft::log('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), LogLevel::Warning);
 
 				// There was a problem zipping, so reset the params and just send the email without the attachment.
 				$requestParams = $requestParamDefaults;

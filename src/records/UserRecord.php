@@ -29,7 +29,6 @@ class UserRecord extends BaseRecord
 			'password'                   => array(AttributeType::String, 'maxLength' => 255, 'column' => ColumnType::Char),
 			'encType'                    => array(AttributeType::String, 'maxLength' => 10, 'column' => ColumnType::Char),
 			'preferredLocale'            => array(AttributeType::Locale),
-			'emailFormat'                => array(AttributeType::Enum, 'values' => array('text', 'html'), 'default' => 'text', 'required' => true),
 			'admin'                      => array(AttributeType::Bool),
 			'status'                     => array(AttributeType::Enum, 'values' => array('locked', 'suspended', 'pending', 'active', 'archived'), 'default' => 'pending'),
 			'lastLoginDate'              => array(AttributeType::DateTime),

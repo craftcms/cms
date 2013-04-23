@@ -68,12 +68,12 @@ class m130220_000000_session_shuffle extends BaseMigration
 			}
 			else
 			{
-				Craft::log('The `authSessionToken` column does not exist in the `users` table.', \CLogger::LEVEL_WARNING);
+				Craft::log('The `authSessionToken` column does not exist in the `users` table.', LogLevel::Warning);
 			}
 		}
 		else
 		{
-			Craft::log('The `users` table is missing. No idea what is going on here.', \CLogger::LEVEL_ERROR);
+			Craft::log('The `users` table is missing. No idea what is going on here.', LogLevel::Error);
 		}
 	}
 }

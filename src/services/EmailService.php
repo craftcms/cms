@@ -26,7 +26,6 @@ class EmailService extends BaseApplicationComponent
 			$user->email = $emailModel->toEmail;
 			$user->firstName = $emailModel->toFirstName;
 			$user->lastName = $emailModel->toLastName;
-			$user->emailFormat = $emailModel->emailFormat;
 		}
 
 		return $this->_sendEmail($user, $emailModel, $variables);
@@ -43,19 +42,19 @@ class EmailService extends BaseApplicationComponent
 	 */
 	public function sendEmailByKey(UserModel $user, $key, $variables = array())
 	{
+		$emailModel = new EmailModel();
+
 		if (Craft::hasPackage(CraftPackage::Rebrand))
 		{
 			$message = craft()->emailMessages->getMessage($key, $user->preferredLocale);
 
-			$subject  = $message->subject;
-			$body     = $message->body;
-			$htmlBody = $message->htmlBody;
+			$emailModel->subject  = $message->subject;
+			$emailModel->body     = $message->body;
 		}
 		else
 		{
-			$subject  = Craft::t($key.'_subject');
-			$body     = Craft::t($key.'_body');
-			$htmlBody = Craft::t($key.'_html_body');
+			$emailModel->subject  = Craft::t($key.'_subject');
+			$emailModel->body     = Craft::t($key.'_body');
 		}
 
 		$tempTemplatesPath = '';
@@ -78,31 +77,20 @@ class EmailService extends BaseApplicationComponent
 			$template = '_special/email';
 		}
 
-		if (!$htmlBody || $htmlBody == $key.'_html_body')
+		if (!$emailModel->htmlBody)
 		{
 			// Auto-generate the HTML content
-			if (!class_exists('\Markdown_Parser', false))
-			{
-				require_once craft()->path->getFrameworkPath().'vendors/markdown/markdown.php';
-			}
-
-			$md = new \Markdown_Parser();
-			$htmlBody = $md->transform($body);
+			$emailModel->htmlBody = $this->_markItDown($emailModel->body);
 		}
 
-		$htmlBody = "{% extends '{$template}' %}\n" .
-			"{% set body %}\n" .
-			$htmlBody .
+		$emailModel->htmlBody = "{% extends '{$template}' %}\n".
+			"{% set body %}\n".
+			$emailModel->htmlBody.
 			"{% endset %}\n";
 
 		// Temporarily swap the templates path
 		$originalTemplatesPath = craft()->path->getTemplatesPath();
 		craft()->path->setTemplatesPath($tempTemplatesPath);
-
-		$emailModel = new EmailModel();
-		$emailModel->subject = $subject;
-		$emailModel->body = $body;
-		$emailModel->htmlBody = $htmlBody;
 
 		// Send the email
 		$return = $this->_sendEmail($user, $emailModel, $variables);
@@ -280,17 +268,20 @@ class EmailService extends BaseApplicationComponent
 		$variables['user'] = $user;
 
 		$email->Subject = craft()->templates->renderString($emailModel->subject, $variables);
-		$renderedBody = craft()->templates->renderString($emailModel->body, $variables);
 
-		if ($user->emailFormat == 'html' && $emailModel->htmlBody)
+		// If they populated an htmlBody, use it.
+		if ($emailModel->htmlBody)
 		{
 			$renderedHtmlBody = craft()->templates->renderString($emailModel->htmlBody, $variables);
 			$email->MsgHTML($renderedHtmlBody);
-			$email->AltBody = $renderedBody;
+			$email->AltBody = craft()->templates->renderString($emailModel->body, $variables);
 		}
 		else
 		{
-			$email->Body = $renderedBody;
+			// They didn't provide an htmlBody, so markdown the body.
+			$renderedHtmlBody = craft()->templates->renderString($this->_markItDown($emailModel->body), $variables);
+			$email->MsgHTML($renderedHtmlBody);
+			$email->AltBody = craft()->templates->renderString($emailModel->body, $variables);
 		}
 
 		if (!$email->Send())
@@ -348,5 +339,20 @@ class EmailService extends BaseApplicationComponent
 		$email->Host = $emailSettings['host'];
 		$email->Port = $emailSettings['port'];
 		$email->Timeout = $emailSettings['timeout'];
+	}
+
+	/**
+	 * @param $text
+	 * @return string
+	 */
+	private function _markItDown($text)
+	{
+		if (!class_exists('\Markdown_Parser', false))
+		{
+			require_once craft()->path->getFrameworkPath().'vendors/markdown/markdown.php';
+		}
+
+		$md = new \Markdown_Parser();
+		return $md->transform($text);
 	}
 }

@@ -27,11 +27,11 @@ class m130325_181058_shunnedmessages extends BaseMigration
 			$this->createIndex('shunnedmessages', 'userId,message', true);
 			$this->addForeignKey('shunnedmessages', 'userId', 'users', 'id', 'CASCADE');
 
-			Craft::log('Sucessfully created the `shunnedmessages` table.', \CLogger::LEVEL_INFO);
+			Craft::log('Sucessfully created the `shunnedmessages` table.');
 		}
 		else
 		{
-			Craft::log('Tried to create the `shunnedmessages` table, but it already exists.', \CLogger::LEVEL_WARNING);
+			Craft::log('Tried to create the `shunnedmessages` table, but it already exists.', LogLevel::Warning);
 		}
 
 		return true;

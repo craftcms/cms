@@ -18,7 +18,7 @@ class PclZip implements IZip
 
 		if ($result == 0)
 		{
-			Craft::log('Unable to create zip file: '.$destZip, \CLogger::LEVEL_ERROR);
+			Craft::log('Unable to create zip file: '.$destZip, LogLevel::Error);
 			return false;
 		}
 
@@ -38,13 +38,13 @@ class PclZip implements IZip
 		// check to see if it's a valid archive.
 		if (($zipFiles = $zip->extract(PCLZIP_OPT_EXTRACT_AS_STRING)) == false)
 		{
-			Craft::log('Tried to unzip '.$srcZip.', but PclZip thinks it is not a valid zip archive.', \CLogger::LEVEL_ERROR);
+			Craft::log('Tried to unzip '.$srcZip.', but PclZip thinks it is not a valid zip archive.', LogLevel::Error);
 			return false;
 		}
 
 		if (count($zipFiles) == 0)
 		{
-			Craft::log($srcZip.' appears to be an empty zip archive.', \CLogger::LEVEL_ERROR);
+			Craft::log($srcZip.' appears to be an empty zip archive.', LogLevel::Error);
 			return false;
 		}
 
@@ -96,7 +96,7 @@ class PclZip implements IZip
 			{
 				if (!IOHelper::createFolder($finalDestFolder))
 				{
-					Craft::log('Could not create folder '.$finalDestFolder.' while unzipping: '.$srcZip, \CLogger::LEVEL_ERROR);
+					Craft::log('Could not create folder '.$finalDestFolder.' while unzipping: '.$srcZip, LogLevel::Error);
 					return false;
 				}
 			}
@@ -122,7 +122,7 @@ class PclZip implements IZip
 
 			if (!IOHelper::writeToFile($destFile, $zipFile['content'], true, FILE_APPEND))
 			{
-				Craft::log('Could not copy the file '.$destFile.' while unziping: '.$srcZip, \CLogger::LEVEL_ERROR);
+				Craft::log('Could not copy the file '.$destFile.' while unziping: '.$srcZip, LogLevel::Error);
 				return false;
 			}
 		}
@@ -174,7 +174,7 @@ class PclZip implements IZip
 
 		if ($result == 0)
 		{
-			Craft::log('Unable to add to zip file: '.$sourceZip, \CLogger::LEVEL_ERROR);
+			Craft::log('Unable to add to zip file: '.$sourceZip, LogLevel::Error);
 			return false;
 		}
 
