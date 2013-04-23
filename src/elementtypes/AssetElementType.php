@@ -38,6 +38,9 @@ class AssetElementType extends BaseElementType
 			'folderId' => AttributeType::Number,
 			'filename' => AttributeType::String,
 			'kind'     => AttributeType::String,
+			'width'    => AttributeType::Number,
+			'height'   => AttributeType::Number,
+			'size'     => AttributeType::Number,
 			'order'    => array(AttributeType::String, 'default' => 'filename asc'),
 		);
 	}
@@ -85,6 +88,21 @@ class AssetElementType extends BaseElementType
 		if ($criteria->kind)
 		{
 			$query->andWhere(DbHelper::parseParam('assetfiles.kind', $criteria->kind, $query->params));
+		}
+
+		if ($criteria->width)
+		{
+			$query->andWhere(DbHelper::parseParam('assetfiles.width', $criteria->width, $query->params));
+		}
+
+		if ($criteria->height)
+		{
+			$query->andWhere(DbHelper::parseParam('assetfiles.height', $criteria->height, $query->params));
+		}
+
+		if ($criteria->size)
+		{
+			$query->andWhere(DbHelper::parseParam('assetfiles.size', $criteria->size, $query->params));
 		}
 	}
 

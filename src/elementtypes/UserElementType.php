@@ -59,16 +59,17 @@ class UserElementType extends BaseElementType
 	public function defineCustomCriteriaAttributes()
 	{
 		return array(
-			'groupId'       => AttributeType::Number,
-			'group'         => AttributeType::Mixed,
-			'username'      => AttributeType::String,
-			'firstName'     => AttributeType::String,
-			'lastName'      => AttributeType::String,
-			'email'         => AttributeType::Email,
-			'admin'         => AttributeType::Bool,
-			'status'        => array(AttributeType::Enum, 'values' => array(UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived), 'default' => UserStatus::Active),
-			'lastLoginDate' => AttributeType::DateTime,
-			'order'         => array(AttributeType::String, 'default' => 'username asc')
+			'groupId'        => AttributeType::Number,
+			'group'          => AttributeType::Mixed,
+			'username'       => AttributeType::String,
+			'firstName'      => AttributeType::String,
+			'lastName'       => AttributeType::String,
+			'email'          => AttributeType::Email,
+			'admin'          => AttributeType::Bool,
+			'status'         => array(AttributeType::Enum, 'values' => array(UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived), 'default' => UserStatus::Active),
+			'lastLoginDate'  => AttributeType::DateTime,
+			'order'          => array(AttributeType::String, 'default' => 'username asc'),
+			'preferredLocale'=> AttributeType::String,
 		);
 	}
 
@@ -110,6 +111,36 @@ class UserElementType extends BaseElementType
 			$query->join('usergroups_users usergroups_users', 'users.id = usergroups_users.userId');
 			$query->join('usergroups usergroups', 'usergroups_users.groupId = usergroups.id');
 			$query->andWhere(DbHelper::parseParam('usergroups.handle', $criteria->group, $query->params));
+		}
+
+		if ($criteria->username)
+		{
+			$query->andWhere(DbHelper::parseParam('users.username', $criteria->username, $query->params));
+		}
+
+		if ($criteria->firstName)
+		{
+			$query->andWhere(DbHelper::parseParam('users.firstName', $criteria->firstName, $query->params));
+		}
+
+		if ($criteria->lastName)
+		{
+			$query->andWhere(DbHelper::parseParam('users.lastName', $criteria->lastName, $query->params));
+		}
+
+		if ($criteria->email)
+		{
+			$query->andWhere(DbHelper::parseParam('users.email', $criteria->email, $query->params));
+		}
+
+		if ($criteria->preferredLocale)
+		{
+			$query->andWhere(DbHelper::parseParam('users.preferredLocale', $criteria->preferredLocale, $query->params));
+		}
+
+		if ($criteria->status)
+		{
+			$query->andWhere(DbHelper::parseParam('users.status', $criteria->status, $query->params));
 		}
 	}
 
