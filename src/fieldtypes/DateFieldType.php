@@ -38,7 +38,34 @@ class DateFieldType extends BaseFieldType
 		return craft()->templates->render('_includes/forms/date', array(
 			'id'    => preg_replace('/[\[\]]+/', '-', $name),
 			'name'  => $name,
-			'value' => ($value ? $value->w3cDate() : null)
+			'value' => ($value ? $value->getTimestamp() : null)
 		));
+	}
+
+	/**
+	 * Get the posted time and adjust it for timezones.
+	 *
+	 * @param mixed $value
+	 * @return DateTime
+	 */
+	protected function prepPostData($value)
+	{
+		// Ugly?  Yes.  Yes it is.
+		$timeString = $value->format(DateTime::MYSQL_DATETIME, 'UTC');
+		return DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $timeString, craft()->getTimeZone());
+	}
+
+	/**
+	 * Convert back to the server's timezone.
+	 *
+	 * @param mixed $value
+	 * @return DateTime
+	 */
+	public function prepValue($value)
+	{
+		if ($value)
+		{
+			return $value->setTimezone(new \DateTimeZone(craft()->getTimeZone()));
+		}
 	}
 }
