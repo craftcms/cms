@@ -25,7 +25,8 @@ class RichTextFieldType extends BaseFieldType
 	protected function defineSettings()
 	{
 		return array(
-			'minHeight' => array(AttributeType::Number, 'default' => 100, 'min' => 1),
+			'minHeight'   => array(AttributeType::Number, 'default' => 100, 'min' => 1),
+			'cleanupHtml' => array(AttributeType::Bool, 'default' => true),
 		);
 	}
 
@@ -44,6 +45,15 @@ class RichTextFieldType extends BaseFieldType
 				'value'  => $this->getSettings()->minHeight,
 				'size'   => 3,
 				'errors' => $this->getSettings()->getErrors('minHeight')
+			)
+		)) .
+		craft()->templates->renderMacro('_includes/forms', 'checkboxField', array(
+			array(
+				'label'        => Craft::t('Clean up HTML?'),
+				'instructions' => Craft::t('Removes <code>&lt;span&gt;</code>’s, empty tags, and most <code>style</code> attributes on save.'),
+				'id'           => 'cleanupHtml',
+				'name'         => 'cleanupHtml',
+				'checked'      => $this->getSettings()->cleanupHtml
 			)
 		));
 	}
@@ -126,6 +136,19 @@ class RichTextFieldType extends BaseFieldType
 		{
 			// Swap any pagebreak <hr>'s with <!--pagebreak-->'s
 			$value = preg_replace('/<hr class="redactor_pagebreak" unselectable="on" contenteditable="false"\s*(\/)?>/', '<!--pagebreak-->', $value);
+
+			if ($this->getSettings()->cleanupHtml)
+			{
+				// Remove <span>s
+				$value = preg_replace('/<span[^>]*>/', '', $value);
+				$value = str_replace('</span>', '', $value);
+
+				// Remove inline styles
+				$value = preg_replace('/(<(?:h1|h2|h3|h4|h5|h6|p|div|blockquote|pre)\b[^>]*)\s+style="[^"]*"/', '$1', $value);
+
+				// Remove empty tags
+				$value = preg_replace('/<(h1|h2|h3|h4|h5|h6|p|div|blockquote|pre)\s*><\/\1>/', '', $value);
+			}
 		}
 
 		return $value;
