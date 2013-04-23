@@ -13,7 +13,7 @@ class EntryElementType extends BaseElementType
 	 */
 	public function getName()
 	{
-		return Craft::t('Section Entries');
+		return Craft::t('Entries');
 	}
 
 	/**
@@ -29,7 +29,7 @@ class EntryElementType extends BaseElementType
 	/**
 	 * Returns this element type's sources.
 	 *
-	 * @return array
+	 * @return array|false
 	 */
 	public function getSources()
 	{

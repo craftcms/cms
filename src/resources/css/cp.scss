@@ -77,7 +77,7 @@ html, body { background: #f2f2f2; }
 }
 
 /* page header */
-#page-header { display: block; padding: 30px; overflow: hidden; }
+#page-header { display: block; padding: 30px; background-color: #fff; overflow: hidden; }
 #page-header.has-tabs { padding-bottom: 0; }
 #page-header h1 { clear: left; float: left; margin: 0 15px 0 0; line-height: 31px; }
 
@@ -101,12 +101,13 @@ html, body { background: #f2f2f2; }
 #main.has-sidebar { padding-left: 230px; }
 #main.has-sidebar:after { @include clearafter; }
 
-#main #sidebar { float: left; margin-left: -200px; width: 170px; }
-#main #sidebar nav { margin-left: -30px; padding-left: 30px; width: 170px; overflow: auto; }
+.sidebar { float: left; margin-left: -200px; width: 170px; }
+.sidebar nav { margin-left: -30px; padding-left: 30px; width: 170px; overflow: auto; }
+.sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; }
+.sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
+.sidebar nav li a.sel { margin-left: -30px; padding-left: 30px; color: #fff; background: $selcolor; cursor: default; }
+
 #main #sidebar nav.fixed { position: fixed; top: 0; }
-#main #sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; }
-#main #sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
-#main #sidebar nav li a.sel { margin-left: -30px; padding-left: 30px; color: #fff; background: $selcolor; cursor: default; }
 
 #main #sidebar-alt { margin-bottom: 30px; }
 #main #sidebar-alt:after { @include clearafter; }

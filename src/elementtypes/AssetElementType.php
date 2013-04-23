@@ -29,7 +29,7 @@ class AssetElementType extends BaseElementType
 	/**
 	 * Returns this element type's sources.
 	 *
-	 * @return array
+	 * @return array|false
 	 */
 	public function getSources()
 	{
@@ -57,6 +57,7 @@ class AssetElementType extends BaseElementType
 	public function defineTableAttributes($source = null)
 	{
 		return array(
+			'filename'     => Craft::t('Filename'),
 			'dateModified' => Craft::t('Date Modified'),
 			'size'         => Craft::t('Size'),
 			'kind'         => Craft::t('Kind'),

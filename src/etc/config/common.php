@@ -205,9 +205,9 @@ $components['fieldTypes']['class']           = 'Craft\FieldTypesService';
 $components['globals']['class']              = 'Craft\GlobalsService';
 $components['install']['class']              = 'Craft\InstallService';
 $components['images']['class']               = 'Craft\ImagesService';
-$components['links']['class']                = 'Craft\LinksService';
 $components['migrations']['class']           = 'Craft\MigrationsService';
 $components['path']['class']                 = 'Craft\PathService';
+$components['relations']['class']            = 'Craft\RelationsService';
 $components['sections']['class']             = 'Craft\SectionsService';
 
 $components['resources']['class']            = 'Craft\ResourcesService';

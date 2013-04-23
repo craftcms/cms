@@ -1,14 +1,9 @@
 {% import "_includes/forms" as forms %}
 
 
-{% if settings.criteriaId is defined %}
-	<input type="hidden" name="criteriaId" value="{{ settings.criteriaId }}">
-{% endif %}
-
-
 {{ forms.selectField({
 	label: "Element Type"|t,
-	instructions: "What do you want to link to?"|t,
+	instructions: "What type of elements do you want to link to?"|t,
 	id: 'type',
 	name: 'type',
 	options: craft.elements.getAllElementTypes(),
@@ -19,16 +14,24 @@
 
 
 {% for _elementType in craft.elements.getAllElementTypes() %}
-	{% set isCurrent = (_elementType.classHandle == elementType.classHandle) %}
-	{% if isCurrent %}
-		{% set elementTypeSettings = elementType.getLinkSettingsHtml() %}
-	{% else %}
-		{% set elementTypeSettings = _elementType.getLinkSettingsHtml() %}
-	{% endif %}
+	{% set sources = _elementType.getSources() %}
 
-	{% if elementTypeSettings %}
+	{% set isCurrent = (_elementType.classHandle == elementType.classHandle) %}
+
+	{% if sources is iterable or elementTypeSettings %}
+		{% set namespace = 'types[' ~ _elementType.classHandle ~ ']' %}
+
 		<div id="linktype-{{ _elementType.classHandle }}"{% if not isCurrent %} class="hidden"{% endif %}>
-			{% set namespace = 'types[' ~ _elementType.classHandle ~ ']' %}
+			{% if sources is iterable %}
+				{{ forms.checkboxSelectField({
+					label: "Sources"|t,
+					instructions: "Which sources do you want to link elements from?"|t,
+					name: namespace~'[sources]',
+					options: sources,
+					values: (_elementType.classHandle == elementType.classHandle ? settings.sources : null)
+				}) }}
+			{% endif %}
+
 			{{- elementTypeSettings|ns(namespace)|raw -}}
 		</div>
 	{% endif %}
