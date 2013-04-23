@@ -123,7 +123,7 @@ class DashboardController extends BaseController
 			$requestParams = $requestParamDefaults;
 
 			$hsParams = array(
-				'helpSpotApiURL' => 'https://support.buildwithcraft.com/api/index.php'
+				'helpSpotApiURL' => 'https://support.pixelandtonic.com/api/index.php'
 			);
 
 			try
