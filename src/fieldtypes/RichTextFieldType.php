@@ -27,6 +27,7 @@ class RichTextFieldType extends BaseFieldType
 		return array(
 			'minHeight'   => array(AttributeType::Number, 'default' => 100, 'min' => 1),
 			'cleanupHtml' => array(AttributeType::Bool, 'default' => true),
+			'configFile'  => AttributeType::String,
 		);
 	}
 
@@ -37,24 +38,25 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		return craft()->templates->renderMacro('_includes/forms', 'textField', array(
-			array(
-				'label'  => Craft::t('Min Height (in pixels)'),
-				'id'     => 'minHeight',
-				'name'   => 'minHeight',
-				'value'  => $this->getSettings()->minHeight,
-				'size'   => 3,
-				'errors' => $this->getSettings()->getErrors('minHeight')
-			)
-		)) .
-		craft()->templates->renderMacro('_includes/forms', 'checkboxField', array(
-			array(
-				'label'        => Craft::t('Clean up HTML?'),
-				'instructions' => Craft::t('Removes <code>&lt;span&gt;</code>’s, empty tags, and most <code>style</code> attributes on save.'),
-				'id'           => 'cleanupHtml',
-				'name'         => 'cleanupHtml',
-				'checked'      => $this->getSettings()->cleanupHtml
-			)
+		$configOptions = array('' => Craft::t('None'));
+		$configPath = craft()->path->getConfigPath().'redactor/';
+
+		if (IOHelper::folderExists($configPath))
+		{
+			$configFiles = IOHelper::getFolderContents($configPath, false, '\.json$');
+
+			if (is_array($configFiles))
+			{
+				foreach ($configFiles as $file)
+				{
+					$configOptions[IOHelper::getFileName($file)] = IOHelper::getFileName($file, false);
+				}
+			}
+		}
+
+		return craft()->templates->render('_components/fieldtypes/RichText/settings', array(
+			'settings' => $this->getSettings(),
+			'configOptions' => $configOptions
 		));
 	}
 
@@ -111,6 +113,23 @@ class RichTextFieldType extends BaseFieldType
 		if ($this->getSettings()->minHeight)
 		{
 			$config['minHeight'] = $this->getSettings()->minHeight;
+		}
+
+		// Custom config?
+		if ($this->getSettings()->configFile)
+		{
+			$customConfigPath = craft()->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
+			$customConfigContents = IOHelper::getFileContents($customConfigPath);
+
+			if (is_string($customConfigContents))
+			{
+				$customConfig = JsonHelper::decode($customConfigContents);
+
+				if (is_array($customConfig))
+				{
+					$config = array_merge($config, $customConfig);
+				}
+			}
 		}
 
 		$configJson = JsonHelper::encode($config);

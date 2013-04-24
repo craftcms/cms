@@ -1,0 +1,42 @@
+{% import '_includes/forms' as forms %}
+
+
+{{ forms.textField({
+	label: "Min Height (in pixels)"|t,
+	id: 'minHeight',
+	name: 'minHeight',
+	value: settings.minHeight,
+	size: 3,
+	errors: settings.getErrors('minHeight')
+}) }}
+
+
+{% if configOptions|length > 1 %}
+	{% set configInput %}
+		{{ forms.select({
+			id: 'configFle',
+			name: 'configFile',
+			options: configOptions,
+			value: settings.configFile
+		}) }}
+	{% endset %}
+{% else %}
+	{% set configInput %}
+		<p>{{ "You don’t have any Redactor configs yet."|t }}</p>
+	{% endset %}
+{% endif %}
+
+{{ forms.field({
+	label: "Config"|t,
+	instructions: "You can save Redactor configs as .json files in craft/config/redactor/."|t,
+	id: 'configFile'
+}, configInput) }}
+
+
+{{ forms.checkboxField({
+	label: "Clean up HTML?"|t,
+	instructions: "Removes <code>&lt;span&gt;</code>’s, empty tags, and most <code>style</code> attributes on save."|t,
+	id: 'cleanupHtml',
+	name: 'cleanupHtml',
+	checked: settings.cleanupHtml
+}) }}
