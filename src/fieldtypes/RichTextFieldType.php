@@ -37,7 +37,7 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		$configOptions = array('' => Craft::t('None'));
+		$configOptions = array('' => Craft::t('Default'));
 		$configPath = craft()->path->getConfigPath().'redactor/';
 
 		if (IOHelper::folderExists($configPath))
@@ -104,31 +104,18 @@ class RichTextFieldType extends BaseFieldType
 		craft()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
 		craft()->templates->includeJsResource('lib/redactor/plugins/pagebreak.js');
 
-		$config = array(
-			'buttons' => array('html','|','formatting','|','bold','italic','|','unorderedlist','orderedlist','|','link','image','video','table'),
-			'plugins' => array('fullscreen', 'pagebreak'),
-		);
-
-		// Custom config?
+		// Config?
 		if ($this->getSettings()->configFile)
 		{
-			$customConfigPath = craft()->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
-			$customConfigContents = IOHelper::getFileContents($customConfigPath);
-
-			if (is_string($customConfigContents))
-			{
-				$customConfig = JsonHelper::decode($customConfigContents);
-
-				if (is_array($customConfig))
-				{
-					$config = array_merge($config, $customConfig);
-				}
-			}
+			$configPath = craft()->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
+			$config = IOHelper::getFileContents($configPath);
+		}
+		else
+		{
+			$config = '';
 		}
 
-		$configJson = JsonHelper::encode($config);
-
-		craft()->templates->includeJs('$(".redactor-'.$this->model->handle.'").redactor('.$configJson.');');
+		craft()->templates->includeJs('$(".redactor-'.$this->model->handle.'").redactor('.$config.');');
 
 		// Swap any <!--pagebreak-->'s with <hr>'s
 		$value = str_replace('<!--pagebreak-->', '<hr class="redactor_pagebreak" unselectable="on" contenteditable="false" />', $value);
