@@ -54,6 +54,21 @@ return array(
 'resetPasswordPath' => 'resetpassword',
 
 /**
+ * The path Craft will use when validating a user's account.
+ */
+'validateAccountPath' => 'validate',
+
+/**
+ * If this is set, Craft will redirect to here upon successful validation. Otherwise, it defaults to the login page.
+ */
+'validateSuccessPath' => '',
+
+/**
+ * If this is set, Craft will redirect to here if validation was not successful. Otherwise, an exception is thrown.
+ */
+'validateFailurePath' => '',
+
+/**
  * The path to trigger a user session logout.
  */
 'logoutPath' => 'logout',

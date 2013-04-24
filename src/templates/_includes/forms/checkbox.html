@@ -6,7 +6,7 @@
 {%- set value = (value is defined ? value : 1) -%}
 
 <label>
-	{% if name is defined %}
+	{% if name is defined and name|length < 3 or name|slice(-2) != '[]' %}
 		<input type="hidden" name="{{ name }}" value="">
 	{% endif -%}
 

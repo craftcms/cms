@@ -81,7 +81,7 @@
 				instructions: "When should the entry go live? (Set automatically if left blank)"|t,
 				id: 'postDate',
 				name: 'postDate',
-				value: (entry.postDate ? entry.postDate.getTimeStamp : null),
+				value: (entry.postDate ? entry.postDate : null),
 				errors: entry.getErrors('postDate')
 			}) }}
 
@@ -90,7 +90,7 @@
 				instructions: "When should the entry expire?"|t,
 				id: 'expiryDate',
 				name: 'expiryDate',
-				value: (entry.expiryDate ? entry.expiryDate.dateField : null),
+				value: (entry.expiryDate ? entry.expiryDate : null),
 				errors: entry.getErrors('expiryDate')
 			}) }}
 

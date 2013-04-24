@@ -9,8 +9,8 @@ class DateTime extends \DateTime
 	const W3C_DATE = 'Y-m-d';
 	const MYSQL_DATETIME = 'Y-m-d H:i:s';
 	const UTC = 'UTC';
-	const DATEFIELD_24HOUR = 'Y-m-d H:m';
-	const DATEFIELD_12HOUR = 'Y-m-d h:m A';
+	const DATEFIELD_24HOUR = 'Y-m-d H:i';
+	const DATEFIELD_12HOUR = 'Y-m-d h:i A';
 
 	/**
 	 * Creates a new \Craft\DateTime object (rather than \DateTime)
@@ -267,8 +267,10 @@ class DateTime extends \DateTime
 		{
 			return $this->format(static::DATEFIELD_24HOUR);
 		}
-
-		return $this->format(static::DATEFIELD_12HOUR);
+		else
+		{
+			return $this->format(static::DATEFIELD_12HOUR);
+		}
 	}
 
 	/**

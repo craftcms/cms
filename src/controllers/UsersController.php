@@ -6,7 +6,7 @@ namespace Craft;
  */
 class UsersController extends BaseController
 {
-	protected $allowAnonymous = array('actionLogin', 'actionForgotPassword', 'actionVerify', 'actionResetPassword', 'actionSaveUser');
+	protected $allowAnonymous = array('actionLogin', 'actionForgotPassword', 'actionValidate', 'actionResetPassword', 'actionSaveUser');
 
 	/**
 	 * Displays the login template, and handles login post requests.
@@ -180,6 +180,9 @@ class UsersController extends BaseController
 
 	/**
 	 * Resets a user's password once they've verified they have access to their email.
+	 *
+	 * @throws HttpException
+	 * @throws Exception
 	 */
 	public function actionResetPassword()
 	{
@@ -252,6 +255,61 @@ class UsersController extends BaseController
 	}
 
 	/**
+	 * Validate that a user has access to an email address.
+	 *
+	 * @throws HttpException
+	 * @throws Exception
+	 */
+	public function actionValidate()
+	{
+		if (craft()->userSession->isLoggedIn())
+		{
+			$this->redirect('');
+		}
+
+		$code = craft()->request->getRequiredQuery('code');
+		$id = craft()->request->getRequiredQuery('id');
+		$user = craft()->users->getUserByVerificationCodeAndUid($code, $id);
+
+		if (!$user)
+		{
+			if (($template = craft()->config->get('validateFailurePath')) != '')
+			{
+				$this->redirect(UrlHelper::getSiteUrl($template));
+			}
+			else
+			{
+				throw new Exception(Craft::t('Invalid verification code.'));
+			}
+		}
+
+		if (craft()->users->activateUser($user))
+		{
+			if (($template = craft()->config->get('validateSuccessPath')) != '')
+			{
+				$template = UrlHelper::getSiteUrl(craft()->config->get('validateSuccessPath'));
+			}
+			else
+			{
+				$template = UrlHelper::getUrl(craft()->config->get('loginPath'));
+			}
+		}
+		else
+		{
+			if (($template = craft()->config->get('validateFailurePath')) === '')
+			{
+				throw new Exception(Craft::t('There was a problem activating this account.'));
+			}
+			else
+			{
+				$template = UrlHelper::getSiteUrl($template);
+			}
+		}
+
+		$this->redirect($template);
+	}
+
+	/**
 	 * Registers a new user, or saves an existing user's account settings.
 	 */
 	public function actionSaveUser()
@@ -297,10 +355,13 @@ class UsersController extends BaseController
 			$user = new UserModel();
 		}
 
-		$user->username        = craft()->request->getPost('username');
+		$userName = craft()->request->getPost('username');
+		$email = craft()->request->getPost('email');
+
+		$user->username        = $userName === null ? $email : $userName;
+		$user->email           = $email;
 		$user->firstName       = craft()->request->getPost('firstName');
 		$user->lastName        = craft()->request->getPost('lastName');
-		$user->email           = craft()->request->getPost('email');
 		$user->preferredLocale = craft()->request->getPost('preferredLocale');
 
 		// Only admins can opt out of requiring email verification
@@ -319,7 +380,15 @@ class UsersController extends BaseController
 		// Only admins can change other users' passwords
 		if (!$user->id || $user->isCurrent() || craft()->userSession->isAdmin())
 		{
-			$user->newPassword = craft()->request->getPost('newPassword');
+			$password = craft()->request->getPost('newPassword');
+
+			// If $password is null and there is no userId, we assume it's a front-end registration with a 'password' field.
+			if (!$password && !$user->id)
+			{
+				$password = craft()->request->getPost('password');
+			}
+
+			$user->newPassword = $password;
 		}
 
 		// Only admins can require users to reset their passwords

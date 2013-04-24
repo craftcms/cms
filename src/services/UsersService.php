@@ -393,7 +393,7 @@ class UsersService extends BaseApplicationComponent
 		craft()->templates->registerTwigAutoloader();
 
 		return craft()->email->sendEmailByKey($user, 'forgot_password', array(
-			'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+			'link' => new \Twig_Markup($this->_getResetPasswordUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
 		));
 	}
 
@@ -647,9 +647,9 @@ class UsersService extends BaseApplicationComponent
 	 * Applies WHERE conditions to a DbCommand query for users.
 	 *
 	 * @access private
-	 * @param DbCommand $query
-	 * @param           $criteria
-	 * @param array     $criteria
+	 * @param  DbCommand $query
+	 * @param            $criteria
+	 * @return void
 	 */
 	private function _applyUserConditions($query, $criteria)
 	{
@@ -723,7 +723,7 @@ class UsersService extends BaseApplicationComponent
 	 * Sets a user record up for a new verification code without saving it.
 	 *
 	 * @access private
-	 * @param UserRecord $userRecord
+	 * @param  UserRecord $userRecord
 	 * @return string
 	 */
 	private function _setVerificationCodeOnUserRecord(UserRecord $userRecord)
@@ -737,24 +737,45 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets the account verification URL for a user record.
+	 * Gets the account verification URL for a user account.
 	 *
 	 * @access private
-	 * @param $verificationCode
+	 * @param  $code
+	 * @param  $uid
+	 * @return string
+	 */
+	private function _getVerifyAccountUrl($code, $uid)
+	{
+		if (craft()->request->isSecureConnection)
+		{
+			return UrlHelper::getUrl(craft()->config->get('validateAccountPath'), array(
+				'code' => $code, 'id' => $uid
+			), 'https');
+		}
+
+		return UrlHelper::getUrl(craft()->config->get('validateAccountPath'), array(
+			'code' => $code, 'id' => $uid
+		));
+	}
+
+	/**
+	 * Gets the reset password URL for a user account.
+	 *
+	 * @param $code
 	 * @param $uid
 	 * @return string
 	 */
-	private function _getVerifyAccountUrl($verificationCode, $uid)
+	private function _getResetPasswordUrl($code, $uid)
 	{
 		if (craft()->request->isSecureConnection)
 		{
 			return UrlHelper::getUrl(craft()->config->get('resetPasswordPath'), array(
-				'code' => $verificationCode, 'id' => $uid
+				'code' => $code, 'id' => $uid
 			), 'https');
 		}
 
 		return UrlHelper::getUrl(craft()->config->get('resetPasswordPath'), array(
-			'code' => $verificationCode, 'id' => $uid
+			'code' => $code, 'id' => $uid
 		));
 	}
 
