@@ -224,6 +224,8 @@ class ContentService extends BaseApplicationComponent
 				// Should we update this field on the other locales as well?
 				if (!$field->translatable && $updateOtherContentModels && $fieldType->defineContentAttribute())
 				{
+					$handle = $field->handle;
+
 					foreach ($otherContentModels as $otherContentModel)
 					{
 						// Copy the new field value over to the other locale's content record
