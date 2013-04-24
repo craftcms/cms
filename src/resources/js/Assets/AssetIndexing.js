@@ -104,7 +104,7 @@ Assets.IndexingManager = Garnish.Base.extend({
 
 						this.queue.addItem(Craft.getActionUrl('assetIndexing/performIndex'), params, function () {
 							progress_bar.attr('current', parseInt(progress_bar.attr('current'), 10) + 1);
-							progress_bar.find('>span').html(progress_bar.attr('current') + ' / ' + progress_bar.attr('total'));
+							progress_bar.find('>span').html(' ' + progress_bar.attr('current') + ' / ' + progress_bar.attr('total'));
 						});
 					}
 
