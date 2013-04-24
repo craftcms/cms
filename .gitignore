@@ -1,4 +1,5 @@
 *.idea/*
+Source/.idea/*
 *.log
 *.bak
 *.DS_Store
@@ -7,4 +8,3 @@
 *Thumbs.db
 *aspnet_client/*
 Build/*
-Source/craft/app/vendor/*
