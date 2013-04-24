@@ -25,9 +25,8 @@ class RichTextFieldType extends BaseFieldType
 	protected function defineSettings()
 	{
 		return array(
-			'minHeight'   => array(AttributeType::Number, 'default' => 100, 'min' => 1),
-			'cleanupHtml' => array(AttributeType::Bool, 'default' => true),
 			'configFile'  => AttributeType::String,
+			'cleanupHtml' => array(AttributeType::Bool, 'default' => true),
 		);
 	}
 
@@ -109,11 +108,6 @@ class RichTextFieldType extends BaseFieldType
 			'buttons' => array('html','|','formatting','|','bold','italic','|','unorderedlist','orderedlist','|','link','image','video','table'),
 			'plugins' => array('fullscreen', 'pagebreak'),
 		);
-
-		if ($this->getSettings()->minHeight)
-		{
-			$config['minHeight'] = $this->getSettings()->minHeight;
-		}
 
 		// Custom config?
 		if ($this->getSettings()->configFile)

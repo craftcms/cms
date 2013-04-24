@@ -1,16 +1,6 @@
 {% import '_includes/forms' as forms %}
 
 
-{{ forms.textField({
-	label: "Min Height (in pixels)"|t,
-	id: 'minHeight',
-	name: 'minHeight',
-	value: settings.minHeight,
-	size: 3,
-	errors: settings.getErrors('minHeight')
-}) }}
-
-
 {% if configOptions|length > 1 %}
 	{% set configInput %}
 		{{ forms.select({
