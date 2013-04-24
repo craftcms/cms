@@ -105,7 +105,7 @@ class EntryRevisionsController extends BaseController
 		$draft->slug       = craft()->request->getPost('slug');
 		$draft->postDate   = craft()->request->getPost('postDate');
 		$draft->expiryDate = craft()->request->getPost('expiryDate');
-		$draft->enabled    = craft()->request->getPost('enabled');
+		$draft->enabled    = (bool)craft()->request->getPost('enabled');
 		$draft->tags       = craft()->request->getPost('tags');
 
 		$draft->setContent(craft()->request->getPost('fields'));
