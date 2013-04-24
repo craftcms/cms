@@ -59,12 +59,12 @@ return array(
 'validateAccountPath' => 'validate',
 
 /**
- * If this is set, Craft will redirect to here upon successfull validation. Otherwise, it defaults to the login page.
+ * If this is set, Craft will redirect to here upon successful validation. Otherwise, it defaults to the login page.
  */
 'validateSuccessPath' => '',
 
 /**
- *
+ * If this is set, Craft will redirect to here if validation was not successful. Otherwise, an exception is thrown.
  */
 'validateFailurePath' => '',
 
