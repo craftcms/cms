@@ -1,5 +1,9 @@
+{% if value is not defined -%}
+	{% set value = null -%}
+{% endif -%}
+
 <div class="datewrapper">
-	{%- include "_includes/forms/text" with { autocomplete: false, size: 10 } -%}
+	{%- include "_includes/forms/text" with { autocomplete: false, size: 10, value: (value ? value.dateField : '') } -%}
 </div>
 
 {%- set js %}
@@ -7,21 +11,11 @@
 	var $datePicker = $('#{{ id }}');
 	$datePicker.datepicker({
 		constrainInput: false,
-		dateFormat: $.datepicker.W3C + {{ craft.i18n.is24HourTimeFormat(craft.app.getLocale) ? "\" '00:00'\"" : "\" '12:00 AM'\"" }},
+		dateFormat: $.datepicker.W3C + " '{{ craft.i18n.is24HourTimeFormat(craft.app.getLocale) ? '00:00' : '12:00 AM' }}'",
+		defaultDate: new Date({% if value %}{{ value.year }}, {{ value.month-1 }}, {{ value.day }}{% endif %}),
 		prevText:   '{{ "Prev"|t|e('js') }}',
 		nextText:   '{{ "Next"|t|e('js') }}',
 	});
-
-	{% if value %}
-		// Get the user's timezone offset and convert it to seconds.
-		var timezoneOffset = new Date().getTimezoneOffset() * 60;
-
-		// Because javascript uses milliseconds
-		var adjustedDate = 1000 * ({{ value }} + timezoneOffset);
-
-		// setDate has to be called by itself: http://stackoverflow.com/a/7209256/684
-		$datePicker.datepicker('setDate', new Date(adjustedDate));
-	{% endif %}
 
 {%- endset %}
 {%- includeJs js %}

@@ -38,7 +38,7 @@ class DateFieldType extends BaseFieldType
 		return craft()->templates->render('_includes/forms/date', array(
 			'id'    => preg_replace('/[\[\]]+/', '-', $name),
 			'name'  => $name,
-			'value' => ($value ? $value->getTimestamp() : null)
+			'value' => $value
 		));
 	}
 
@@ -50,9 +50,12 @@ class DateFieldType extends BaseFieldType
 	 */
 	protected function prepPostData($value)
 	{
-		// Ugly?  Yes.  Yes it is.
-		$timeString = $value->format(DateTime::MYSQL_DATETIME, 'UTC');
-		return DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $timeString, craft()->getTimeZone());
+		if ($value)
+		{
+			// Ugly?  Yes.  Yes it is.
+			$timeString = $value->format(DateTime::MYSQL_DATETIME, DateTime::UTC);
+			return DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $timeString, craft()->getTimeZone());
+		}
 	}
 
 	/**
