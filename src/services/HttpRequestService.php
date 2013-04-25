@@ -642,7 +642,7 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request
-		if ($firstSegment === $actionTrigger || in_array($this->_path, array($loginPath, $resetPasswordPath, $validateAccountPath, $logoutPath)))
+		if ($firstSegment === $actionTrigger || (in_array($this->_path, array($loginPath, $resetPasswordPath, $validateAccountPath, $logoutPath)) && !$this->getParam('action')))
 		{
 			$this->_isActionRequest = true;
 
