@@ -620,10 +620,10 @@ class IOHelper
 	 * @param  string $path       The path of the file to write to.
 	 * @param  string $contents   The contents to be written to the file.
 	 * @param  bool   $autoCreate Whether or not to autocreate the file if it does not exist.
-	 * @param  int    $flags      Any flags that need to be set when writing to the file.
+	 * @param  bool   $append     If true, will append the data to the contents of the file, otherwise it will overwrite the contents.
 	 * @return bool   'true' upon successful writing to the file, otherwise false.
 	 */
-	public static function writeToFile($path, $contents, $autoCreate = true, $flags = 0)
+	public static function writeToFile($path, $contents, $autoCreate = true, $append = false)
 	{
 		$path = static::normalizePathSeparators($path);
 
@@ -647,6 +647,17 @@ class IOHelper
 
 		if (static::isWritable($path))
 		{
+			$flags = 0;
+			if (craft()->config->get('useLockWhenWritingToFile') === true)
+			{
+				$flags |= LOCK_EX;
+			}
+
+			if ($append)
+			{
+				$flags |= FILE_APPEND;
+			}
+
 			if ((file_put_contents($path, $contents, $flags)) !== false)
 			{
 				return true;
@@ -1357,5 +1368,26 @@ class IOHelper
 		return preg_replace('/[^a-z0-9\-_\.]/i', '_', str_replace(chr(0), '', $fileName));
 	}
 
+	/**
+	 * Will set the access and modification times of the given file to the given time, or the current time if it is not supplied.
+	 *
+	 * @param      $fileName
+	 * @param  null $time
+	 * @return bool
+	 */
+	public static function touch($fileName, $time = null)
+	{
+		if (!$time)
+		{
+			$time = time();
+		}
+
+		if (@touch($fileName, $time))
+		{
+			return true;
+		}
+
+		return false;
+	}
 }
 
