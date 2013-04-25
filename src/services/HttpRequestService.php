@@ -583,7 +583,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns the part of the querystring minus any p= parameter regardless of whether PATH_INFO is enabled or not.
 	 * @return string
 	 */
-	public function getPathInfoQueryString()
+	public function getQueryStringWithoutPath()
 	{
 		// Get the full querystring.
 		$queryString = $this->getQueryString();
