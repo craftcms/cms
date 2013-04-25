@@ -653,6 +653,8 @@ body .redactor_dropdown { z-index: 10001 !important; }
 .ui-timepicker-list li:hover { background: $linkcolor; color: #fff; }
 .ui-timepicker-list li.ui-timepicker-selected { background: $selcolor; color: #fff; cursor: default; }
 
+html.ui-timepicker-noscroll,
+html.ui-timepicker-noscroll body { overflow: hidden; }
 
 /* links */
 .links .border-box { padding: 7px; @include unselectable; }
