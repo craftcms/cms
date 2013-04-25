@@ -199,10 +199,20 @@ class UserSessionService extends \CWebUser
 		{
 			if (!craft()->request->isAjaxRequest())
 			{
-				if (craft()->request->getPathInfo() !== '')
+				$url = craft()->request->getPath();
+				if (($queryString = craft()->request->getPathInfoQueryString()))
 				{
-					$this->setReturnUrl(craft()->request->getPath());
+					if (craft()->request->getPathInfo())
+					{
+						$url .= '?'.$queryString;
+					}
+					else
+					{
+						$url .= '&'.$queryString;
+					}
 				}
+
+				$this->setReturnUrl($url);
 			}
 			elseif (isset($this->loginRequiredAjaxResponse))
 			{

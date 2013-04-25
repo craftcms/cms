@@ -14,4 +14,14 @@ class StatePersister extends \CStatePersister
 		$this->stateFile = craft()->path->getStatePath().'state.bin';
 		parent::init();
 	}
+
+	/**
+	 * Saves application state in persistent storage.
+	 *
+	 * @param mixed $state state data (must be serializable).
+	 */
+	public function save($state)
+	{
+		IOHelper::writeToFile($this->stateFile, serialize($state));
+	}
 }

@@ -34,8 +34,14 @@ class FileLogRoute extends \CFileLogRoute
 			$this->rotateFiles();
 		}
 
+		$lock = craft()->config->get('useLockWhenWritingToFile') === true;
+
 		$fp = @fopen($logFile, 'a');
-		@flock($fp, LOCK_EX);
+
+		if ($lock)
+		{
+			@flock($fp, LOCK_EX);
+		}
 
 		foreach ($logs as $log)
 		{
@@ -50,7 +56,11 @@ class FileLogRoute extends \CFileLogRoute
 
 		@fwrite($fp, PHP_EOL.'******************************************************************************************************'.PHP_EOL);
 
-		@flock($fp, LOCK_UN);
+		if ($lock)
+		{
+			@flock($fp, LOCK_UN);
+		}
+
 		@fclose($fp);
 	}
 

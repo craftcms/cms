@@ -531,6 +531,83 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Wrapper for Yii's decodePathInfo, plus we clean up path separators.
+	 *
+	 * @param string $pathInfo
+	 * @return string
+	 */
+	public function decodePathInfo($pathInfo)
+	{
+		$pathInfo = urldecode($pathInfo);
+
+		// is it UTF-8?
+		// http://w3.org/International/questions/qa-forms-utf-8.html
+		if (!preg_match('%^(?:
+		   [\x09\x0A\x0D\x20-\x7E]            # ASCII
+		 | [\xC2-\xDF][\x80-\xBF]             # non-overlong 2-byte
+		 | \xE0[\xA0-\xBF][\x80-\xBF]         # excluding overlongs
+		 | [\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}  # straight 3-byte
+		 | \xED[\x80-\x9F][\x80-\xBF]         # excluding surrogates
+		 | \xF0[\x90-\xBF][\x80-\xBF]{2}      # planes 1-3
+		 | [\xF1-\xF3][\x80-\xBF]{3}          # planes 4-15
+		 | \xF4[\x80-\x8F][\x80-\xBF]{2}      # plane 16
+		)*$%xs', $pathInfo))
+		{
+			 $pathInfo = utf8_encode($pathInfo);
+		}
+
+		return IOHelper::normalizePathSeparators($pathInfo);
+	}
+
+	/**
+	 * Returns the named POST parameter value, or the entire POST array if no name is specified.
+	 * If $name is specified and the POST parameter does not exist, $defaultValue will be returned.
+	 *
+	 * @param null $name The POST parameter name or null.  If $name is null, it will return the entire POST array.
+	 * @param null   $defaultValue The default parameter value is $name is not null and the POST parameter does not exist.
+	 * @return mixed|null
+	 */
+	public function getPost($name = null, $defaultValue = null)
+	{
+		if (!$name)
+		{
+			return $_POST;
+		}
+		else
+		{
+			return parent::getPost($name, $defaultValue);
+		}
+	}
+
+	/**
+	 * Returns the part of the querystring minus any p= parameter regardless of whether PATH_INFO is enabled or not.
+	 * @return string
+	 */
+	public function getPathInfoQueryString()
+	{
+		// Get the full querystring.
+		$queryString = $this->getQueryString();
+
+		$parts = explode('&', $queryString);
+
+		if (count($parts) == 1)
+		{
+			return '';
+		}
+
+		foreach ($parts as $key => $part)
+		{
+			if (strpos($part, 'p=') !== false)
+			{
+				unset($parts[$key]);
+				break;
+			}
+		}
+
+		return implode('&', $parts);
+	}
+
+	/**
 	 * Returns the query string path.
 	 *
 	 * @access private
@@ -605,54 +682,5 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		$this->_isTemplateRequest = true;
-	}
-
-	/**
-	 * Wrapper for Yii's decodePathInfo, plus we clean up path separators.
-	 *
-	 * @param string $pathInfo
-	 * @return string
-	 */
-	public function decodePathInfo($pathInfo)
-	{
-		$pathInfo = urldecode($pathInfo);
-
-		// is it UTF-8?
-		// http://w3.org/International/questions/qa-forms-utf-8.html
-		if (!preg_match('%^(?:
-		   [\x09\x0A\x0D\x20-\x7E]            # ASCII
-		 | [\xC2-\xDF][\x80-\xBF]             # non-overlong 2-byte
-		 | \xE0[\xA0-\xBF][\x80-\xBF]         # excluding overlongs
-		 | [\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}  # straight 3-byte
-		 | \xED[\x80-\x9F][\x80-\xBF]         # excluding surrogates
-		 | \xF0[\x90-\xBF][\x80-\xBF]{2}      # planes 1-3
-		 | [\xF1-\xF3][\x80-\xBF]{3}          # planes 4-15
-		 | \xF4[\x80-\x8F][\x80-\xBF]{2}      # plane 16
-		)*$%xs', $pathInfo))
-		{
-			 $pathInfo = utf8_encode($pathInfo);
-		}
-
-		return IOHelper::normalizePathSeparators($pathInfo);
-	}
-
-	/**
-	 * Returns the named POST parameter value, or the entire POST array if no name is specified.
-	 * If $name is specified and the POST parameter does not exist, $defaultValue will be returned.
-	 *
-	 * @param null $name The POST parameter name or null.  If $name is null, it will return the entire POST array.
-	 * @param null   $defaultValue The default parameter value is $name is not null and the POST parameter does not exist.
-	 * @return mixed|null
-	 */
-	public function getPost($name = null, $defaultValue = null)
-	{
-		if (!$name)
-		{
-			return $_POST;
-		}
-		else
-		{
-			return parent::getPost($name, $defaultValue);
-		}
 	}
 }

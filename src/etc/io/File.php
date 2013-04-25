@@ -131,12 +131,12 @@ class File extends BaseIO
 
 	/**
 	 * @param $contents
-	 * @param $flags
+	 * @param $append
 	 * @return bool
 	 */
-	public function write($contents, $flags)
+	public function write($contents, $append)
 	{
-		if (!IOHelper::writeToFile($this->getRealPath(), $contents, false, $flags))
+		if (!IOHelper::writeToFile($this->getRealPath(), $contents, false, $append))
 		{
 			return false;
 		}
@@ -195,5 +195,18 @@ class File extends BaseIO
 		}
 
 		return $this->_md5;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function touch()
+	{
+		if (!IOHelper::touch($this->getRealPath()))
+		{
+			return false;
+		}
+
+		return true;
 	}
 }
