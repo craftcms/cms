@@ -76,7 +76,7 @@
 				}) }}
 			{% endif %}
 
-			{{ forms.dateField({
+			{{ forms.dateTimeField({
 				label: "Post Date"|t,
 				instructions: "When should the entry go live? (Set automatically if left blank)"|t,
 				id: 'postDate',
@@ -85,7 +85,7 @@
 				errors: entry.getErrors('postDate')
 			}) }}
 
-			{{ forms.dateField({
+			{{ forms.dateTimeField({
 				label: "Expiration Date"|t,
 				instructions: "When should the entry expire?"|t,
 				id: 'expiryDate',

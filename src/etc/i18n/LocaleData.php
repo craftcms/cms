@@ -61,4 +61,18 @@ class LocaleData extends \CLocale
 
 		return true;
 	}
+
+	/**
+	 * @return DateFormatter
+	 */
+	public function getDateFormatter()
+	{
+		if ($this->_dateFormatter === null)
+		{
+			$this->_dateFormatter = new DateFormatter($this);
+		}
+
+		return $this->_dateFormatter;
+	}
+
 }

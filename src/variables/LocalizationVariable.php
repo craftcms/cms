@@ -115,4 +115,28 @@ class LocalizationVariable
 
 		return false;
 	}
+
+	/**
+	 * Returns the jQuery UI Datepicker date format, per the current locale.
+	 *
+	 * @return string
+	 */
+	public function getDatepickerJsFormat()
+	{
+		$localeData = craft()->i18n->getLocaleData(craft()->language);
+		$dateFormatter = $localeData->getDateFormatter();
+		return $dateFormatter->getDatepickerJsFormat();
+	}
+
+	/**
+	 * Returns the jQuery Timepicker time format, per the current locale.
+	 *
+	 * @return string
+	 */
+	public function getTimepickerJsFormat()
+	{
+		$localeData = craft()->i18n->getLocaleData(craft()->language);
+		$dateFormatter = $localeData->getDateFormatter();
+		return $dateFormatter->getTimepickerPhpFormat();
+	}
 }
