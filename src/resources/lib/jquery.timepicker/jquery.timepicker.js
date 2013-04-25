@@ -117,7 +117,6 @@ requires jQuery 1.7+
 			methods.hide();
 
 			list.show();
-			$('html').addClass('ui-timepicker-noscroll');
 
 			if ((self.offset().top + self.outerHeight(true) + list.outerHeight()) > $(window).height() + $(window).scrollTop()) {
 				// position the dropdown on top
@@ -164,7 +163,6 @@ requires jQuery 1.7+
 				}
 
 				list.hide();
-				$('html').removeClass('ui-timepicker-noscroll');
 				self.trigger('hideTimepicker');
 			});
 		},
@@ -366,7 +364,6 @@ requires jQuery 1.7+
 
 			if (_selectValue(self)) {
 				list.hide();
-				$('html').removeClass('ui-timepicker-noscroll');
 			}
 		});
 	}
@@ -566,7 +563,6 @@ requires jQuery 1.7+
 			case 27: // escape
 				list.find('li').removeClass('ui-timepicker-selected');
 				list.hide();
-				$('html').removeClass('ui-timepicker-noscroll');
 				break;
 
 			case 9: //tab
