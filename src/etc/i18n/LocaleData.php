@@ -50,19 +50,6 @@ class LocaleData extends \CLocale
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function is24HourTimeFormat()
-	{
-		if (stripos($this->getTimeFormat('short'), 'a') !== false)
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
 	 * @return DateFormatter
 	 */
 	public function getDateFormatter()

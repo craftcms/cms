@@ -200,7 +200,7 @@ class UserSessionService extends \CWebUser
 			if (!craft()->request->isAjaxRequest())
 			{
 				$url = craft()->request->getPath();
-				if (($queryString = craft()->request->getPathInfoQueryString()))
+				if (($queryString = craft()->request->getQueryStringWithoutPath()))
 				{
 					if (craft()->request->getPathInfo())
 					{

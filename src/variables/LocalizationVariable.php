@@ -99,24 +99,6 @@ class LocalizationVariable
 	}
 
 	/**
-	 * Returns whether the given locale prefers a 24 hour time format or AM/PM format.
-	 *
-	 * @param $localeId
-	 * @return bool
-	 */
-	public function is24HourTimeFormat($localeId)
-	{
-		$locale = craft()->i18n->getLocaleData($localeId);
-
-		if ($locale)
-		{
-			return $locale->is24HourTimeFormat();
-		}
-
-		return false;
-	}
-
-	/**
 	 * Returns the jQuery UI Datepicker date format, per the current locale.
 	 *
 	 * @return string

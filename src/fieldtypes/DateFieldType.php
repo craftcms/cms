@@ -27,6 +27,36 @@ class DateFieldType extends BaseFieldType
 	}
 
 	/**
+	 * Defines the settings.
+	 *
+	 * @access protected
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'showTime' => AttributeType::Bool,
+		);
+	}
+
+	/**
+	 * Returns the field's settings HTML.
+	 *
+	 * @return string|null
+	 */
+	public function getSettingsHtml()
+	{
+		return craft()->templates->renderMacro('_includes/forms.html', 'checkboxField', array(
+			array(
+				'label' => Craft::t('Show time?'),
+				'id' => 'showTime',
+				'name' => 'showTime',
+				'checked' => $this->getSettings()->showTime,
+			)
+		));
+	}
+
+	/**
 	 * Returns the field's input HTML.
 	 *
 	 * @param string $name
@@ -35,11 +65,22 @@ class DateFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		return craft()->templates->render('_includes/forms/date', array(
-			'id'    => preg_replace('/[\[\]]+/', '-', $name),
-			'name'  => $name,
-			'value' => $value
+		$input = craft()->templates->render('_includes/forms/date', array(
+			'id'       => preg_replace('/[\[\]]+/', '-', $name),
+			'name'     => $name,
+			'value'    => $value
 		));
+
+		if ($this->getSettings()->showTime)
+		{
+			$input .= ' '.craft()->templates->render('_includes/forms/time', array(
+				'id'       => preg_replace('/[\[\]]+/', '-', $name),
+				'name'     => $name,
+				'value'    => $value
+			));
+		}
+
+		return $input;
 	}
 
 	/**
