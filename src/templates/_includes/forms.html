@@ -26,6 +26,11 @@
 {% endmacro %}
 
 
+{% macro time(config) %}
+	{% include "_includes/forms/time" with config only %}
+{% endmacro %}
+
+
 {% macro textarea(config) %}
 	{% include "_includes/forms/textarea" with config only %}
 {% endmacro %}
@@ -106,6 +111,16 @@
 
 {% macro dateField(config) %}
 	{{ _self.field(config, _self.date(config)) }}
+{% endmacro %}
+
+
+{% macro timeField(config) %}
+	{{ _self.field(config, _self.time(config)) }}
+{% endmacro %}
+
+
+{% macro dateTimeField(config) %}
+	{{ _self.field(config, _self.date(config)~_self.time(config)) }}
 {% endmacro %}
 
 

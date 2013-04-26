@@ -33,6 +33,7 @@ class SystemSettingsController extends BaseController
 
 		$utc = new DateTime();
 		$offsets = array();
+		$timezoneIds = array();
 		$includedAbbrs = array();
 
 		foreach (\DateTimeZone::listIdentifiers() as $timezoneId)
@@ -41,16 +42,19 @@ class SystemSettingsController extends BaseController
 			$transition =  $timezone->getTransitions($utc->getTimestamp(), $utc->getTimestamp());
 			$abbr = $transition[0]['abbr'];
 
-			if (in_array($abbr, $includedAbbrs))
-			{
-				continue;
-			}
-
 			$offset = round($timezone->getOffset($utc) / 60);
 
 			if ($offset)
 			{
-				$format = sprintf('%+d:%02u', floor($offset / 60), floor(abs($offset) % 60));
+				$hour = floor($offset / 60);
+				$minutes = floor(abs($offset) % 60);
+
+				$format = sprintf('%+d', $hour);
+
+				if ($minutes)
+				{
+					$format .= ':'.sprintf('%02u', $minutes);
+				}
 			}
 			else
 			{
@@ -58,11 +62,12 @@ class SystemSettingsController extends BaseController
 			}
 
 			$offsets[] = $offset;
+			$timezoneIds[] = $timezoneId;
 			$includedAbbrs[] = $abbr;
-			$variables['timezoneOptions'][$timezoneId] = 'UTC'.$format.($abbr != 'UTC' ? " ({$abbr})" : '');
+			$variables['timezoneOptions'][$timezoneId] = 'UTC'.$format.($abbr != 'UTC' ? " ({$abbr})" : '').($timezoneId != 'UTC' ? ' - '.$timezoneId : '');
 		}
 
-		array_multisort($offsets, $variables['timezoneOptions']);
+		array_multisort($offsets, $timezoneIds, $variables['timezoneOptions']);
 
 		$this->renderTemplate('settings/general/index', $variables);
 	}

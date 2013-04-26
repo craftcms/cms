@@ -531,83 +531,6 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the query string path.
-	 *
-	 * @access private
-	 * @return string
-	 */
-	private function _getQueryStringPath()
-	{
-		$pathParam = craft()->urlManager->pathParam;
-		return trim($this->getQuery($pathParam, ''), '/');
-	}
-
-	/**
-	 * Checks to see if this is an action or resource request.
-	 *
-	 * @access private
-	 */
-	private function _checkRequestType()
-	{
-		$resourceTrigger = craft()->config->get('resourceTrigger');
-		$actionTrigger = craft()->config->get('actionTrigger');
-		$loginPath = trim(craft()->config->get('loginPath'), '/');
-		$resetPasswordPath = trim(craft()->config->get('resetPasswordPath'), '/');
-		$validateAccountPath = trim(craft()->config->get('validateAccountPath'), '/');
-		$logoutPath = trim(craft()->config->get('logoutPath'), '/');
-		$firstSegment = $this->getSegment(1);
-
-		// If the first path segment is the resource trigger word, it's a resource request.
-		if ($firstSegment === $resourceTrigger)
-		{
-			$this->_isResourceRequest = true;
-			return;
-		}
-
-		// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request
-		if ($firstSegment === $actionTrigger || in_array($this->_path, array($loginPath, $resetPasswordPath, $validateAccountPath, $logoutPath)))
-		{
-			$this->_isActionRequest = true;
-
-			if ($this->_path == $loginPath)
-			{
-				$this->_actionSegments = array('users', 'login');
-			}
-			else if ($this->_path == $resetPasswordPath)
-			{
-				$this->_actionSegments = array('users', 'resetPassword');
-			}
-			else if ($this->_path == $validateAccountPath)
-			{
-				$this->_actionSegments = array('users', 'validate');
-			}
-			else if ($this->_path == $logoutPath)
-			{
-				$this->_actionSegments = array('users', 'logout');
-			}
-			else
-			{
-				$this->_actionSegments = array_slice($this->_segments, 1);
-			}
-
-			return;
-		}
-
-		// If there's a non-empty 'action' param (either in the query string or post data), it's an action request
-		if (($action = $this->getParam('action')) !== null)
-		{
-			$this->_isActionRequest = true;
-
-			// Sanitize
-			$action = $this->decodePathInfo($action);
-			$this->_actionSegments = array_filter(explode('/', $action));
-			return;
-		}
-
-		$this->_isTemplateRequest = true;
-	}
-
-	/**
 	 * Wrapper for Yii's decodePathInfo, plus we clean up path separators.
 	 *
 	 * @param string $pathInfo
@@ -654,5 +577,110 @@ class HttpRequestService extends \CHttpRequest
 		{
 			return parent::getPost($name, $defaultValue);
 		}
+	}
+
+	/**
+	 * Returns the part of the querystring minus any p= parameter regardless of whether PATH_INFO is enabled or not.
+	 * @return string
+	 */
+	public function getQueryStringWithoutPath()
+	{
+		// Get the full querystring.
+		$queryString = $this->getQueryString();
+
+		$parts = explode('&', $queryString);
+
+		if (count($parts) == 1)
+		{
+			return '';
+		}
+
+		foreach ($parts as $key => $part)
+		{
+			if (strpos($part, 'p=') !== false)
+			{
+				unset($parts[$key]);
+				break;
+			}
+		}
+
+		return implode('&', $parts);
+	}
+
+	/**
+	 * Returns the query string path.
+	 *
+	 * @access private
+	 * @return string
+	 */
+	private function _getQueryStringPath()
+	{
+		$pathParam = craft()->urlManager->pathParam;
+		return trim($this->getQuery($pathParam, ''), '/');
+	}
+
+	/**
+	 * Checks to see if this is an action or resource request.
+	 *
+	 * @access private
+	 */
+	private function _checkRequestType()
+	{
+		$resourceTrigger = craft()->config->get('resourceTrigger');
+		$actionTrigger = craft()->config->get('actionTrigger');
+		$loginPath = trim(craft()->config->get('loginPath'), '/');
+		$resetPasswordPath = trim(craft()->config->get('resetPasswordPath'), '/');
+		$validateAccountPath = trim(craft()->config->get('validateAccountPath'), '/');
+		$logoutPath = trim(craft()->config->get('logoutPath'), '/');
+		$firstSegment = $this->getSegment(1);
+
+		// If the first path segment is the resource trigger word, it's a resource request.
+		if ($firstSegment === $resourceTrigger)
+		{
+			$this->_isResourceRequest = true;
+			return;
+		}
+
+		// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request
+		if ($firstSegment === $actionTrigger || (in_array($this->_path, array($loginPath, $resetPasswordPath, $validateAccountPath, $logoutPath)) && !$this->getParam('action')))
+		{
+			$this->_isActionRequest = true;
+
+			if ($this->_path == $loginPath)
+			{
+				$this->_actionSegments = array('users', 'login');
+			}
+			else if ($this->_path == $resetPasswordPath)
+			{
+				$this->_actionSegments = array('users', 'resetPassword');
+			}
+			else if ($this->_path == $validateAccountPath)
+			{
+				$this->_actionSegments = array('users', 'validate');
+			}
+			else if ($this->_path == $logoutPath)
+			{
+				$this->_actionSegments = array('users', 'logout');
+			}
+			else
+			{
+				$this->_actionSegments = array_slice($this->_segments, 1);
+			}
+
+			return;
+		}
+
+		// If there's a non-empty 'action' param (either in the query string or post data), it's an action request
+		if (($action = $this->getParam('action')) !== null)
+		{
+			$this->_isActionRequest = true;
+
+			// Sanitize
+			$action = $this->decodePathInfo($action);
+			$this->_actionSegments = array_filter(explode('/', $action));
+			return;
+		}
+
+		$this->_isTemplateRequest = true;
 	}
 }

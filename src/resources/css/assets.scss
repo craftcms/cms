@@ -21,7 +21,7 @@
 .listview .thumb-wrapper { border-width: 2px;}
 .listview .assets-fileicon { float: left; height: 28px; width: 22px; background: url('../images/file_small.png') no-repeat 50% 50%; margin: 0 0 0 -31px; padding: 0;}
 
-.assets-modal { max-height: 400px; overflow: scroll;}
+.assets-modal, .index-report { max-height: 400px; overflow: scroll;}
 
 /*-- thumbs --*/
 #main .files.thumbs ul { margin: -25px 0 0 -15px; }

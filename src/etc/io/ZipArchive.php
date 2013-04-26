@@ -77,7 +77,7 @@ class ZipArchive implements IZip
 				return false;
 			}
 
-			if (!IOHelper::writeToFile($destFolder.'/'.$info, $contents, true, FILE_APPEND))
+			if (!IOHelper::writeToFile($destFolder.'/'.$info, $contents, true, true))
 			{
 				Craft::log('Could not copy file to '.$destFolder.'/'.$info.' while unzipping from '.$srcZip, LogLevel::Error);
 				return false;

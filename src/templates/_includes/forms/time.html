@@ -1,0 +1,30 @@
+{% if value is not defined -%}
+	{% set value = null -%}
+{% endif -%}
+
+{% set id = id ~ '-time' -%}
+
+{% if name is defined and name is not empty -%}
+	{% set name = name ~ '[time]' -%}
+{% endif -%}
+
+{% includeJsResource 'lib/jquery.timepicker/jquery.timepicker'~(craft.config.useCompressedJs ? '.min' : '')~'.js' -%}
+
+{% if value is not defined -%}
+	{% set value = null -%}
+{% endif -%}
+
+<div class="timewrapper">
+	{%- include "_includes/forms/text" with { autocomplete: false, size: 10, value: (value ? value.timepicker : '') } -%}
+</div>
+
+{%- set js %}
+
+	var $timePicker = $('#{{ id }}');
+	$timePicker.timepicker({
+		timeFormat: '{{ craft.i18n.timepickerJsFormat }}',
+		closeOnWindowScroll: false
+	});
+
+{%- endset %}
+{%- includeJs js %}

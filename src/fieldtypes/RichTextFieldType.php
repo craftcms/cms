@@ -25,7 +25,7 @@ class RichTextFieldType extends BaseFieldType
 	protected function defineSettings()
 	{
 		return array(
-			'minHeight'   => array(AttributeType::Number, 'default' => 100, 'min' => 1),
+			'configFile'  => AttributeType::String,
 			'cleanupHtml' => array(AttributeType::Bool, 'default' => true),
 		);
 	}
@@ -37,24 +37,25 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		return craft()->templates->renderMacro('_includes/forms', 'textField', array(
-			array(
-				'label'  => Craft::t('Min Height (in pixels)'),
-				'id'     => 'minHeight',
-				'name'   => 'minHeight',
-				'value'  => $this->getSettings()->minHeight,
-				'size'   => 3,
-				'errors' => $this->getSettings()->getErrors('minHeight')
-			)
-		)) .
-		craft()->templates->renderMacro('_includes/forms', 'checkboxField', array(
-			array(
-				'label'        => Craft::t('Clean up HTML?'),
-				'instructions' => Craft::t('Removes <code>&lt;span&gt;</code>’s, empty tags, and most <code>style</code> attributes on save.'),
-				'id'           => 'cleanupHtml',
-				'name'         => 'cleanupHtml',
-				'checked'      => $this->getSettings()->cleanupHtml
-			)
+		$configOptions = array('' => Craft::t('Default'));
+		$configPath = craft()->path->getConfigPath().'redactor/';
+
+		if (IOHelper::folderExists($configPath))
+		{
+			$configFiles = IOHelper::getFolderContents($configPath, false, '\.json$');
+
+			if (is_array($configFiles))
+			{
+				foreach ($configFiles as $file)
+				{
+					$configOptions[IOHelper::getFileName($file)] = IOHelper::getFileName($file, false);
+				}
+			}
+		}
+
+		return craft()->templates->render('_components/fieldtypes/RichText/settings', array(
+			'settings' => $this->getSettings(),
+			'configOptions' => $configOptions
 		));
 	}
 
@@ -103,24 +104,23 @@ class RichTextFieldType extends BaseFieldType
 		craft()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
 		craft()->templates->includeJsResource('lib/redactor/plugins/pagebreak.js');
 
-		$config = array(
-			'buttons' => array('html','|','formatting','|','bold','italic','|','unorderedlist','orderedlist','|','link','image','video','table'),
-			'plugins' => array('fullscreen', 'pagebreak'),
-		);
-
-		if ($this->getSettings()->minHeight)
+		// Config?
+		if ($this->getSettings()->configFile)
 		{
-			$config['minHeight'] = $this->getSettings()->minHeight;
+			$configPath = craft()->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
+			$config = IOHelper::getFileContents($configPath);
+		}
+		else
+		{
+			$config = '';
 		}
 
-		$configJson = JsonHelper::encode($config);
-
-		craft()->templates->includeJs('$(".redactor-'.$this->model->handle.'").redactor('.$configJson.');');
+		craft()->templates->includeJs('$(".redactor-'.$this->model->handle.'").redactor('.$config.');');
 
 		// Swap any <!--pagebreak-->'s with <hr>'s
 		$value = str_replace('<!--pagebreak-->', '<hr class="redactor_pagebreak" unselectable="on" contenteditable="false" />', $value);
 
-		return '<textarea name="'.$name.'" class="redactor-'.$this->model->handle.'" style="display: none">'.$value.'</textarea>';
+		return '<textarea name="'.$name.'" class="redactor-'.$this->model->handle.'" style="display: none">'.htmlentities($value, ENT_NOQUOTES, 'UTF-8').'</textarea>';
 	}
 
 	/**

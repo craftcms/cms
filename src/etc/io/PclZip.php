@@ -120,7 +120,7 @@ class PclZip implements IZip
 
 			$destFile = $destFolder.'/'.$zipFile['filename'];
 
-			if (!IOHelper::writeToFile($destFile, $zipFile['content'], true, FILE_APPEND))
+			if (!IOHelper::writeToFile($destFile, $zipFile['content'], true, true))
 			{
 				Craft::log('Could not copy the file '.$destFile.' while unziping: '.$srcZip, LogLevel::Error);
 				return false;

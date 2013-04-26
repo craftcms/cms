@@ -58,65 +58,101 @@ class DateTime extends \DateTime
 	 *  - Relaxed versions of W3C and MySQL formats (single-digit months, days, and hours)
 	 *  - Unix timestamps
 	 *
-	 * @param string      $date
-	 * @param stirng|null $timezone The PHP timezone identifier, if not specified in $date. Defaults to UTC. (See http://php.net/manual/en/timezones.php)
-	 * @return DateTime
+	 * @param string|array $date
+	 * @param stirng|null  $timezone The PHP timezone identifier, if not specified in $date. Defaults to UTC. (See http://php.net/manual/en/timezones.php)
+	 * @return DateTime|null|false
 	 */
 	public static function createFromString($date, $timezone = null)
 	{
-		$date = trim((string) $date);
-
-		if (preg_match('/^
-			(?P<year>\d{4})                                            # YYYY (four digit year)
-			(?:
-				-(?P<mon>\d\d?)                                        # -M or -MM (one or two digit month)
-				(?:
-					-(?P<day>\d\d?)                                    # -D or -DD (one or two digit day)
-					(?:
-						[T\ ](?P<hour>\d\d?)\:(?P<min>\d\d)            # [T or space]hh:mm (one or two digit hour and two digit minute)
-						(?:
-							\:(?P<sec>\d\d)                            # :ss (two digit second)
-							(?:\.\d+)?                                 # .s (decimal fraction of a second -- not supported)
-						)?
-						(?:[ ]?(?P<ampm>(AM|PM|am|pm))?)?              # An optional space and AM or PM
-						(?:Z|(?P<tzd>[+\-]\d\d\:\d\d))?                # Z or [+ or -]hh:ss (UTC or a timezone offset)
-					)?
-				)?
-			)?$/x', $date, $m))
+		// Was this a date/time-picker?
+		if (is_array($date) && (isset($date['date']) || isset($date['time'])))
 		{
-			$format = 'Y-m-d H:i:s';
-
-			$date = $m['year'] .
-				'-'.(!empty($m['mon'])  ? sprintf('%02d', $m['mon'])  : '01') .
-				'-'.(!empty($m['day'])  ? sprintf('%02d', $m['day'])  : '01') .
-				' '.(!empty($m['hour']) ? sprintf('%02d', $m['hour']) : '00') .
-				':'.(!empty($m['min'])  ? $m['min']                   : '00') .
-				':'.(!empty($m['sec'])  ? $m['sec']                   : '00');
-
-			if (!empty($m['tzd']))
+			if (empty($date['date']) && empty($date['time']))
 			{
-				$format .= 'P';
-				$date   .= $m['tzd'];
-			}
-			else if ($timezone !== null)
-			{
-				$format .= 'e';
-				$date   .= $timezone;
+				return null;
 			}
 
-			if (!empty($m['ampm']))
+			$localeData = craft()->i18n->getLocaleData(craft()->language);
+			$dateFormatter = $localeData->getDateFormatter();
+
+			$dt = $date;
+			$date = '';
+			$format = '';
+
+			if (!empty($dt['date']))
 			{
-				$format .= ' A';
-				$date .= ' '.$m['ampm'];
+				$date .= $dt['date'];
+				$format .= $dateFormatter->getDatepickerPhpFormat();
 			}
-		}
-		else if (preg_match('/^\d{10}$/', $date))
-		{
-			$format = 'U';
+
+			if (!empty($dt['date']) && !empty($dt['time']))
+			{
+				$date .= ' ';
+				$format .= ' ';
+			}
+
+			if (!empty($dt['time']))
+			{
+				$date .= $dt['time'];
+				$format .= $dateFormatter->getTimepickerPhpFormat();
+			}
 		}
 		else
 		{
-			$format = '';
+			$date = trim((string) $date);
+
+			if (preg_match('/^
+				(?P<year>\d{4})                                            # YYYY (four digit year)
+				(?:
+					-(?P<mon>\d\d?)                                        # -M or -MM (one or two digit month)
+					(?:
+						-(?P<day>\d\d?)                                    # -D or -DD (one or two digit day)
+						(?:
+							[T\ ](?P<hour>\d\d?)\:(?P<min>\d\d)            # [T or space]hh:mm (one or two digit hour and two digit minute)
+							(?:
+								\:(?P<sec>\d\d)                            # :ss (two digit second)
+								(?:\.\d+)?                                 # .s (decimal fraction of a second -- not supported)
+							)?
+							(?:[ ]?(?P<ampm>(AM|PM|am|pm))?)?              # An optional space and AM or PM
+							(?:Z|(?P<tzd>[+\-]\d\d\:\d\d))?                # Z or [+ or -]hh:ss (UTC or a timezone offset)
+						)?
+					)?
+				)?$/x', $date, $m))
+			{
+				$format = 'Y-m-d H:i:s';
+
+				$date = $m['year'] .
+					'-'.(!empty($m['mon'])  ? sprintf('%02d', $m['mon'])  : '01') .
+					'-'.(!empty($m['day'])  ? sprintf('%02d', $m['day'])  : '01') .
+					' '.(!empty($m['hour']) ? sprintf('%02d', $m['hour']) : '00') .
+					':'.(!empty($m['min'])  ? $m['min']                   : '00') .
+					':'.(!empty($m['sec'])  ? $m['sec']                   : '00');
+
+				if (!empty($m['tzd']))
+				{
+					$format .= 'P';
+					$date   .= $m['tzd'];
+				}
+				else if ($timezone !== null)
+				{
+					$format .= 'e';
+					$date   .= $timezone;
+				}
+
+				if (!empty($m['ampm']))
+				{
+					$format .= ' A';
+					$date .= ' '.$m['ampm'];
+				}
+			}
+			else if (preg_match('/^\d{10}$/', $date))
+			{
+				$format = 'U';
+			}
+			else
+			{
+				$format = '';
+			}
 		}
 
 		return static::createFromFormat('!'.$format, $date);
@@ -259,18 +295,23 @@ class DateTime extends \DateTime
 	/**
 	 * @return string
 	 */
-	public function dateField()
+	public function datepicker()
 	{
-		$locale = craft()->i18n->getLocaleData(craft()->getLanguage());
+		$localeData = craft()->i18n->getLocaleData(craft()->language);
+		$dateFormatter = $localeData->getDateFormatter();
+		$format = $dateFormatter->getDatepickerPhpFormat();
+		return $this->format($format);
+	}
 
-		if ($locale->is24HourTimeFormat())
-		{
-			return $this->format(static::DATEFIELD_24HOUR);
-		}
-		else
-		{
-			return $this->format(static::DATEFIELD_12HOUR);
-		}
+	/**
+	 * @return string
+	 */
+	public function timepicker()
+	{
+		$localeData = craft()->i18n->getLocaleData(craft()->language);
+		$dateFormatter = $localeData->getDateFormatter();
+		$format = $dateFormatter->getTimepickerPhpFormat();
+		return $this->format($format);
 	}
 
 	/**

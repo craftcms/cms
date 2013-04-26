@@ -572,29 +572,6 @@ var CP = Garnish.Base.extend({
 		}
 	},
 
-	getTime: function(is24HourFormat)
-	{
-		var date = new Date();
-		var origHour = date.getHours();
-		var tempHour = origHour;
-		var minute = date.getMinutes();
-
-
-		if (!is24HourFormat) {
-			if (tempHour != 0) {
-				tempHour = ((tempHour + 11) % 12) + 1;
-			}
-		}
-
-		var timeString = '' + ('0' + ((tempHour % 24) || 12)).replace(/.*(\d\d)$/, '$1') + ':' + ('0' + minute).replace(/.*(\d\d)$/, '$1');
-
-		if (!is24HourFormat) {
-			timeString += (origHour > 11 ? ' PM' : ' AM');
-		}
-
-		return timeString;
-	},
-
 	initAlerts: function()
 	{
 		// Is there a domain mismatch?
