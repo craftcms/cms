@@ -426,6 +426,17 @@ class UsersController extends BaseController
 		{
 			if (craft()->users->saveUser($user))
 			{
+				if ($publicRegistration)
+				{
+					// Assign them to the default user group, if any
+					$defaultGroup = craft()->systemSettings->getSetting('users', 'defaultGroup');
+
+					if ($defaultGroup)
+					{
+						craft()->userGroups->assignUserToGroups($user->id, array($defaultGroup));
+					}
+				}
+
 				craft()->userSession->setNotice(Craft::t('User saved.'));
 
 				$this->redirectToPostedUrl(array(

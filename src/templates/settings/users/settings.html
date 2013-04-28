@@ -25,10 +25,18 @@
 				toggle: 'defaultGroup'
 			}) }}
 
-			<div id="defaultGroup">
-				{{ forms.dropdownField({
-					label: "Default user group"|t
-					instructions: "Choose a user group that publicly-registered members be added to by default."
+			<div id="defaultGroup"{% if settings.allowPublicRegistration is not defined or not settings.allowPublicRegistration %} class="hidden"{% endif %}>
+				{% set groups = [{ label: "None"|t, value: '' }] %}
+				{% for group in craft.userGroups.getAllGroups() %}
+					{% set groups = groups|merge([{ label: group.name, value: group.id }]) %}
+				{% endfor %}
+
+				{{ forms.selectField({
+					label: "Default User Group"|t,
+					instructions: "Choose a user group that publicly-registered members be added to by default.",
+					name: 'defaultGroup',
+					options: groups,
+					value: (settings.defaultGroup is defined ? settings.defaultGroup : null)
 				}) }}
 			</div>
 
