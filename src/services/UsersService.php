@@ -214,7 +214,8 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->validate();
 		$user->addErrors($userRecord->getErrors());
 
-		if ($user->newPassword)
+		// If newPassword is set at all, even to an empty string, validate & set it.
+		if ($user->newPassword !== null)
 		{
 			$this->_setPasswordOnUserRecord($user, $userRecord);
 		}

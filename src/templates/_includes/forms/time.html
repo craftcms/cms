@@ -22,7 +22,8 @@
 
 	var $timePicker = $('#{{ id }}');
 	$timePicker.timepicker({
-		timeFormat: '{{ craft.i18n.timepickerJsFormat }}'
+		timeFormat: '{{ craft.i18n.timepickerJsFormat }}',
+		closeOnWindowScroll: false
 	});
 
 {%- endset %}

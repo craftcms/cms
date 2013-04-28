@@ -88,7 +88,7 @@
 				id: 'password',
 				name: 'password',
 				value: (settings.password is defined ? settings.password : null),
-				errors: (settings.protocol != 'Smtp' ? (freshSettings ? null : settings.getErrors('password')) : null)
+				errors: (settings.protocol is defined and settings.protocol != 'Smtp' ? (freshSettings ? null : settings.getErrors('password')) : null)
 			}) }}
 
 			{{ forms.textField({
@@ -138,7 +138,7 @@
 					id: 'smtp-username',
 					name: 'smtpUsername',
 					value: (settings.username is defined ? settings.username : null),
-					errors: (settings.protocol == 'Smtp' ? (freshSettings ? null : settings.getErrors('username')) : null)
+					errors: (settings.protocol is defined and settings.protocol == 'Smtp' ? (freshSettings ? null : settings.getErrors('username')) : null)
 				}) }}
 
 				{{ forms.passwordField({
@@ -146,7 +146,7 @@
 					id: 'smtpPassword',
 					name: 'smtpPassword',
 					value: (settings.password is defined ? settings.password : null),
-					errors: (settings.protocol == 'Smtp' ? (freshSettings ? null : settings.getErrors('password')) : null)
+					errors: (settings.protocol is defined and settings.protocol == 'Smtp' ? (freshSettings ? null : settings.getErrors('password')) : null)
 				}) }}
 			</div>
 
