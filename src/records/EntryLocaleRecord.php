@@ -23,7 +23,7 @@ class EntryLocaleRecord extends BaseRecord
 		return array(
 			'locale' => array(AttributeType::Locale, 'required' => true),
 			'title'  => array(AttributeType::String, 'required' => true),
-			'slug'   => array(AttributeType::Slug, 'required' => true),
+			'slug'   => array(AttributeType::String, 'required' => true),
 		);
 	}
 
