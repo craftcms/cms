@@ -24,7 +24,7 @@ abstract class BaseElementModel extends BaseModel
 	{
 		return array(
 			'id'          => AttributeType::Number,
-			'type'        => array(AttributeType::String, 'default' => $this->elementType),
+			//'type'        => array(AttributeType::String, 'default' => $this->elementType),
 			'enabled'     => array(AttributeType::Bool, 'default' => true),
 			'archived'    => array(AttributeType::Bool, 'default' => false),
 			'locale'      => AttributeType::Locale,
