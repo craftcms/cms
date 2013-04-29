@@ -62,7 +62,7 @@ class m130416_000000_relations extends BaseMigration
 
 					$sourcePrefix = $elementTypes[$elementType]['sourcePrefix'];
 
-					if (!empty($criteriaSettings[$sourcePrefix.'Id']))
+					if (!empty($criteriaSettings[$sourcePrefix.'Id']) && is_array($criteriaSettings[$sourcePrefix.'Id']))
 					{
 						foreach ($criteriaSettings[$sourcePrefix.'Id'] as $sourceId)
 						{
