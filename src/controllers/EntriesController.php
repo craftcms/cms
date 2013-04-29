@@ -232,12 +232,12 @@ class EntriesController extends BaseController
 		if (!$entry->id)
 		{
 			// Make sure the user is allowed to create entries in this section
-			craft()->userSession->requirePermission('createEntries'.$entry->sectionId);
+			craft()->userSession->requirePermission('createEntries:'.$entry->sectionId);
 		}
 		else
 		{
 			// Make sure the user is allowed to edit entries in this section
-			craft()->userSession->requirePermission('editEntries'.$entry->sectionId);
+			craft()->userSession->requirePermission('editEntries:'.$entry->sectionId);
 		}
 
 		if (craft()->entries->saveEntry($entry))

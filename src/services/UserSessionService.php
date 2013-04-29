@@ -384,7 +384,7 @@ class UserSessionService extends \CWebUser
 
 				if ($timeRemaining)
 				{
-					$humanTimeRemaining = $timeRemaining->humanDuration(false);
+					$humanTimeRemaining = $timeRemaining->humanDuration();
 					$error = Craft::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining));
 				}
 				else

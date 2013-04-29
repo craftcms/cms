@@ -15,6 +15,7 @@
 	{% if not account %}{% exit 404 %}{% endif %}
 {% endif %}
 
+{% set isNewAccount = (account is not defined or not account.id) %}
 
 {% set content %}
 	<h2>{{ "User Groups"|t }}</h2>
@@ -62,6 +63,7 @@
 				name: 'admin',
 				checked: account.admin,
 				toggle: 'permissions',
+				disabled: (isNewAccount or (user.admin or account.isCurrent) ? false : true),
 				reverseToggle: true
 			}) }}
 		</div>
@@ -92,8 +94,7 @@
 					<td>
 						{% if account.status == 'pending' %}
 							<div class="status"></div> {{ "Unverified"|t }} 
-							<input type="button" class="btn small formsubmit" value="{{ 'Resend Email'|t }}" data-action="users/sendVerificationEmail">
-							<input type="button" class="btn small formsubmit" value="{{ 'Activate'|t }}" data-action="users/activateUser">
+							<input type="button" class="btn small formsubmit" value="{{ 'Resend Email'|t }}" data-action="users/sendActivationEmail">
 						{% elseif account.status == 'locked' %}
 							<div class="status pending"></div> {{ "Locked"|t }} 
 							<input type="button" class="btn small formsubmit" value="{{ 'Unlock'|t }}" data-action="users/unlockUser">
