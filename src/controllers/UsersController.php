@@ -225,7 +225,7 @@ class UsersController extends BaseController
 
 		if (!$user)
 		{
-			if (($url = craft()->config->get('validateFailurePath')) != '')
+			if (($url = craft()->config->get('activateFailurePath')) != '')
 			{
 				$this->redirect(UrlHelper::getSiteUrl($url));
 			}
@@ -238,19 +238,19 @@ class UsersController extends BaseController
 		if (craft()->users->activateUser($user))
 		{
 			// Successfully activated user, do they require a password reset?
-			if ($user->passwordResetRequired)
+			if ($user->passwordResetRequired || !$user->password)
 			{
-				// Password reset required, generating a new verficiation code and sending to the setPassword url.
+				// Password reset required, generating a new verification code and sending to the setPassword url.
 				$code = craft()->users->setVerificationCodeOnUser($user);
 				$url = craft()->users->getSetPasswordUrl($code, $id);
 			}
 			else
 			{
 				// No password reset required.
-				if (($url = craft()->config->get('validateSuccessPath')) != '')
+				if (($url = craft()->config->get('activateSuccessPath')) != '')
 				{
 					// They have specified a custom validate success path, use it.
-					$url = UrlHelper::getSiteUrl(craft()->config->get('validateSuccessPath'));
+					$url = UrlHelper::getSiteUrl(craft()->config->get('activateSuccessPath'));
 				}
 				else
 				{
@@ -261,7 +261,7 @@ class UsersController extends BaseController
 		}
 		else
 		{
-			if (($url = craft()->config->get('validateFailurePath')) === '')
+			if (($url = craft()->config->get('activateFailurePath')) === '')
 			{
 				// Failed to validate user and there is no custom validation failure path.  Throw an exception.
 				throw new Exception(Craft::t('There was a problem activating this account.'));
@@ -340,8 +340,17 @@ class UsersController extends BaseController
 			$user = new UserModel();
 		}
 
-		$userName = craft()->request->getPost('username');
-		$email = craft()->request->getPost('email');
+		// If you're not an admin and editing a user that is not yours, then you can't edit the username or email.
+		if ($userId && $userId != craft()->userSession->getUser()->id && !craft()->userSession->isAdmin())
+		{
+			$userName = $user->username;
+			$email = $user->email;
+		}
+		else
+		{
+			$userName = craft()->request->getPost('username');
+			$email = craft()->request->getPost('email');
+		}
 
 		$user->username        = $userName === null ? $email : $userName;
 		$user->email           = $email;
@@ -349,17 +358,10 @@ class UsersController extends BaseController
 		$user->lastName        = craft()->request->getPost('lastName');
 		$user->preferredLocale = craft()->request->getPost('preferredLocale');
 
-		// Only admins can opt out of requiring email verification
+		// If it's a new user, set the verificationRequired bit.
 		if (!$user->id)
 		{
-			if (craft()->userSession->isAdmin())
-			{
-				$user->verificationRequired = (bool) craft()->request->getPost('verificationRequired');
-			}
-			else
-			{
-				$user->verificationRequired = true;
-			}
+			$user->verificationRequired = true;
 		}
 
 		// Password handling differs depending on whether this is a public registration form or the CP
@@ -370,15 +372,15 @@ class UsersController extends BaseController
 		}
 		else
 		{
-			// Only admins can change other users' passwords
-			if ($user->isCurrent() || craft()->userSession->isAdmin())
+			// Only the existing logged-in user can change their password.
+			if ($user->isCurrent())
 			{
 				$newPassword = craft()->request->getPost('newPassword');
 
 				// Only actually set it if it's not empty.
 				if ($newPassword)
 				{
-					$user->newPassword = (string) $newPassword;
+					$user->newPassword = (string)$newPassword;
 				}
 			}
 		}
@@ -417,7 +419,7 @@ class UsersController extends BaseController
 		}
 		catch (\phpmailerException $e)
 		{
-			craft()->userSession->setError(Craft::t('Registered user, but couldn’t send verification email. Check your email settings.'));
+			craft()->userSession->setError(Craft::t('Registered user, but couldn’t send activation email. Check your email settings.'));
 		}
 
 		// Send the account back to the template
@@ -686,9 +688,9 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * Sends a new verification email to a user.
+	 * Sends a new activation email to a user.
 	 */
-	public function actionSendVerificationEmail()
+	public function actionSendActivationEmail()
 	{
 		$this->requirePostRequest();
 		craft()->userSession->requirePermission('administrateUsers');
@@ -701,31 +703,9 @@ class UsersController extends BaseController
 			$this->_noUserExists($userId);
 		}
 
-		craft()->users->sendVerificationEmail($user);
+		craft()->users->sendActivationEmail($user);
 
-		craft()->userSession->setNotice(Craft::t('Verification email sent.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Activates a user, bypassing email verification.
-	 */
-	public function actionActivateUser()
-	{
-		$this->requirePostRequest();
-		craft()->userSession->requirePermission('administrateUsers');
-
-		$userId = craft()->request->getRequiredPost('userId');
-		$user = craft()->users->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		craft()->users->activateUser($user);
-
-		craft()->userSession->setNotice(Craft::t('User activated.'));
+		craft()->userSession->setNotice(Craft::t('Activation email sent.'));
 		$this->redirectToPostedUrl();
 	}
 

@@ -41,9 +41,14 @@
 			name: 'username',
 			value: (account is defined ? account.username : null),
 			autofocus: true,
-			required: true,
+			required: (isNewAccount or (user.admin or account.isCurrent) ? true : false),
+			disabled: (isNewAccount or (user.admin or account.isCurrent) ? false : true),
 			errors: (account is defined ? account.getErrors('username') : null)
 		}) }}
+
+		{% if (not isNewAccount and (not user.admin and not account.isCurrent)) %}
+			<input type="hidden" name="username" id="username" value="{{ account.username }}">
+		{% endif %}
 
 		<div class="field">
 			<div class="grid">
@@ -73,19 +78,16 @@
 			id: 'email',
 			name: 'email',
 			value: (account is defined ? account.email : null),
-			required: true,
+			required: (isNewAccount or (user.admin or account.isCurrent) ? true : false),
+			disabled: (isNewAccount or (user.admin or account.isCurrent) ? false : true),
 			errors: (account is defined ? account.getErrors('email') : null)
 		}) }}
 
-		{% if isNewAccount and user.admin %}
-			{{ forms.checkboxField({
-				label: "Require verification"|t,
-				name: 'verificationRequired',
-				checked: (account is defined ? account.verificationRequired : true)
-			}) }}
+		{% if (not isNewAccount and (not user.admin and not account.isCurrent)) %}
+			<input type="hidden" name="email" id="email" value="{{ account.email }}">
 		{% endif %}
 
-		{% if account is defined and account.isCurrent or user.admin %}
+		{% if account is defined and account.isCurrent %}
 			{{ forms.passwordField({
 				label: "Password"|t,
 				instructions: (isNewAccount ? null : "Leave blank to keep password unchanged."|t),
@@ -95,7 +97,7 @@
 			}) }}
 		{% endif %}
 
-		{% if user.admin %}
+		{% if user.admin and not isNewAccount %}
 			{{ forms.checkboxField({
 				label: "Require a password reset on next login"|t,
 				name: 'passwordResetRequired',
