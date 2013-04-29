@@ -6,8 +6,9 @@ html, body { height: 100%; }
 
 #login-form { display: block; position: absolute; top: 50%; left: 50%; margin: -135px 0 0 -150px; padding-top: 116px; width: 300px; background: url(../images/craft.png) no-repeat 0 0; }
 .field { margin: 10px 0; }
-#forgot-password { margin-left: 5px; font-style: normal; font-size: 11px; }
-
+#forgot-password { position: relative; z-index: 1; display: block; float: right; font-style: normal; font-size: 11px; color: #999; }
+#forgot-password:hover { color: $linkcolor; text-decoration: none; }
+p.error { margin-top: -15px; }
 .email-sent { position: absolute; z-index: 9999; top: 50%; left: 50%; margin: -33px 0 0 -142px; padding-left: 50px; width: 220px; background: #fff; }
 .email-sent:before { @include icon; display: block; position: absolute; top: 23px; left: 10px; content: 'E'; font-size: 36px; color: $linkcolor; }
 
