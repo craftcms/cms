@@ -860,7 +860,13 @@ class UsersService extends BaseApplicationComponent
 			$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
 			$userRecord->verificationCode = null;
 			$userRecord->verificationCodeIssuedDate = null;
-			$userRecord->passwordResetRequired = $user->passwordResetRequired = false;
+
+			// If it's an existing user, reset the passwordResetRequired bit.
+			if ($user->id)
+			{
+				$userRecord->passwordResetRequired = $user->passwordResetRequired = false;
+			}
+
 			$userRecord->lastPasswordChangeDate = $user->lastPasswordChangeDate = DateTimeHelper::currentUTCDateTime();
 
 			$user->newPassword = null;
