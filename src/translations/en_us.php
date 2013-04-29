@@ -1,10 +1,10 @@
 <?php
 
 return array (
-	'verify_email_heading' => 'When someone creates an account:',
-	'verify_email_subject' => 'Verify your email address',
-	'verify_email_body' => "Hey {{user.friendlyName}},\n\n" .
-		"Thanks for creating an account with {{siteName}}! Before we activate your account, please verify your email address by clicking on this link:\n\n" .
+	'account_activation_heading' => 'When someone creates an account:',
+	'account_activation_subject' => 'Activate your account',
+	'account_activation_body' => "Hey {{user.friendlyName}},\n\n" .
+		"Thanks for creating an account with {{siteName}}! To activate your account, click the following link:\n\n" .
 		"{{link}}\n\n" .
 		"If you weren't expecting this email, just ignore it.",
 

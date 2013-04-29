@@ -263,13 +263,12 @@ class UsersService extends BaseApplicationComponent
 				}
 			}
 
-			// Send a verification email?
-			if ($user->verificationRequired)
+			if ($isNewUser)
 			{
 				craft()->templates->registerTwigAutoloader();
 
-				craft()->email->sendEmailByKey($user, 'verify_email', array(
-					'link' => new \Twig_Markup($this->getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+				craft()->email->sendEmailByKey($user, 'account_activation', array(
+					'link' => new \Twig_Markup($this->getActivateAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
 				));
 			}
 
@@ -296,9 +295,9 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Sends a verification email
+	 * Sends an activation email
 	 */
-	public function sendVerificationEmail(UserModel $user)
+	public function sendActivationEmail(UserModel $user)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
@@ -306,8 +305,8 @@ class UsersService extends BaseApplicationComponent
 
 		craft()->templates->registerTwigAutoloader();
 
-		return craft()->email->sendEmailByKey($user, 'verify_email', array(
-			'link' => new \Twig_Markup($this->getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+		return craft()->email->sendEmailByKey($user, 'account_activation', array(
+			'link' => new \Twig_Markup($this->getActivateAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
 		));
 	}
 
@@ -638,15 +637,15 @@ class UsersService extends BaseApplicationComponent
 	 * @param  bool $full
 	 * @return string
 	 */
-	public function getVerifyAccountUrl($code, $uid, $full = true)
+	public function getActivateAccountUrl($code, $uid, $full = true)
 	{
 		if (craft()->request->isCpRequest())
 		{
-			$url = 'validate';
+			$url = 'activate';
 		}
 		else
 		{
-			$url = craft()->config->get('validateAccountPath');
+			$url = craft()->config->get('activateAccountPath');
 		}
 
 		if (!$full)

@@ -36,7 +36,7 @@ class EmailMessagesService extends BaseApplicationComponent
 		// Now assemble the whole list of messages
 		$messages = array();
 
-		$keys = array('verify_email', 'verify_new_email', 'forgot_password');
+		$keys = array('account_activation', 'verify_new_email', 'forgot_password');
 
 		// Give plugins a chance to add additional messages
 		foreach (craft()->plugins->callHook('registerEmailMessages') as $pluginKeys)

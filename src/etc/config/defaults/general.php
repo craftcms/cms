@@ -54,19 +54,19 @@ return array(
 'setPasswordPath' => 'setpassword',
 
 /**
- * The path Craft will use when validating a user's account.
+ * The path Craft will use when activating a user's account.
  */
-'validateAccountPath' => 'validate',
+'activateAccountPath' => 'activate',
 
 /**
- * If this is set, Craft will redirect to here upon successful validation. Otherwise, it defaults to the login page.
+ * If this is set, Craft will redirect to here upon successful activation. Otherwise, it defaults to the login page.
  */
-'validateSuccessPath' => '',
+'activateSuccessPath' => '',
 
 /**
- * If this is set, Craft will redirect to here if validation was not successful. Otherwise, an exception is thrown.
+ * If this is set, Craft will redirect to here if activation was not successful. Otherwise, an exception is thrown.
  */
-'validateFailurePath' => '',
+'activateFailurePath' => '',
 
 /**
  * The path to trigger a user session logout.
