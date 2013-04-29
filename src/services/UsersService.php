@@ -214,7 +214,8 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->validate();
 		$user->addErrors($userRecord->getErrors());
 
-		if ($user->newPassword)
+		// If newPassword is set at all, even to an empty string, validate & set it.
+		if ($user->newPassword !== null)
 		{
 			$this->_setPasswordOnUserRecord($user, $userRecord);
 		}
@@ -277,7 +278,7 @@ class UsersService extends BaseApplicationComponent
 				craft()->templates->registerTwigAutoloader();
 
 				craft()->email->sendEmailByKey($user, 'verify_email', array(
-					'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+					'link' => new \Twig_Markup($this->getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
 				));
 			}
 
@@ -315,7 +316,7 @@ class UsersService extends BaseApplicationComponent
 		craft()->templates->registerTwigAutoloader();
 
 		return craft()->email->sendEmailByKey($user, 'verify_email', array(
-			'link' => new \Twig_Markup($this->_getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+			'link' => new \Twig_Markup($this->getVerifyAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
 		));
 	}
 
@@ -393,7 +394,7 @@ class UsersService extends BaseApplicationComponent
 		craft()->templates->registerTwigAutoloader();
 
 		return craft()->email->sendEmailByKey($user, 'forgot_password', array(
-			'link' => new \Twig_Markup($this->_getResetPasswordUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+			'link' => new \Twig_Markup($this->getSetPasswordUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
 		));
 	}
 
@@ -624,6 +625,93 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Sets a new verification code on the user's record.
+	 *
+	 * @param UserModel $user
+	 * @return string
+	 */
+	public function setVerificationCodeOnUser(UserModel $user)
+	{
+		$userRecord = $this->_getUserRecordById($user->id);
+		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
+		$userRecord->save();
+
+		return $unhashedVerificationCode;
+	}
+
+	/**
+	 * Gets the account verification URL for a user account.
+	 *
+	 * @param       $code
+	 * @param       $uid
+	 * @param  bool $full
+	 * @return string
+	 */
+	public function getVerifyAccountUrl($code, $uid, $full = true)
+	{
+		if (craft()->request->isCpRequest())
+		{
+			$url = 'validate';
+		}
+		else
+		{
+			$url = craft()->config->get('validateAccountPath');
+		}
+
+		if (!$full)
+		{
+			return $url;
+		}
+
+		if (craft()->request->isSecureConnection)
+		{
+			return UrlHelper::getUrl($url, array(
+				'code' => $code, 'id' => $uid
+			), 'https');
+		}
+
+		return UrlHelper::getUrl($url, array(
+			'code' => $code, 'id' => $uid
+		));
+	}
+
+	/**
+	 * Gets the set password URL for a user account.
+	 *
+	 * @param       $code
+	 * @param       $uid
+	 * @param  bool $full
+	 * @return string
+	 */
+	public function getSetPasswordUrl($code, $uid, $full = true)
+	{
+		if (craft()->request->isCpRequest())
+		{
+			$url = 'setpassword';
+		}
+		else
+		{
+			$url = craft()->config->get('setPasswordPath');
+		}
+
+		if (!$full)
+		{
+			return $url;
+		}
+
+		if (craft()->request->isSecureConnection)
+		{
+			return UrlHelper::getUrl($url, array(
+				'code' => $code, 'id' => $uid
+			), 'https');
+		}
+
+		return UrlHelper::getUrl($url, array(
+			'code' => $code, 'id' => $uid
+		));
+	}
+
+	/**
 	 * Gets a user record by its ID.
 	 *
 	 * @access private
@@ -737,49 +825,6 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets the account verification URL for a user account.
-	 *
-	 * @access private
-	 * @param  $code
-	 * @param  $uid
-	 * @return string
-	 */
-	private function _getVerifyAccountUrl($code, $uid)
-	{
-		if (craft()->request->isSecureConnection)
-		{
-			return UrlHelper::getUrl(craft()->config->get('validateAccountPath'), array(
-				'code' => $code, 'id' => $uid
-			), 'https');
-		}
-
-		return UrlHelper::getUrl(craft()->config->get('validateAccountPath'), array(
-			'code' => $code, 'id' => $uid
-		));
-	}
-
-	/**
-	 * Gets the reset password URL for a user account.
-	 *
-	 * @param $code
-	 * @param $uid
-	 * @return string
-	 */
-	private function _getResetPasswordUrl($code, $uid)
-	{
-		if (craft()->request->isSecureConnection)
-		{
-			return UrlHelper::getUrl(craft()->config->get('resetPasswordPath'), array(
-				'code' => $code, 'id' => $uid
-			), 'https');
-		}
-
-		return UrlHelper::getUrl(craft()->config->get('resetPasswordPath'), array(
-			'code' => $code, 'id' => $uid
-		));
-	}
-
-	/**
 	 * Determines if a user is within their invalid login window.
 	 *
 	 * @param UserRecord $userRecord
@@ -824,7 +869,13 @@ class UsersService extends BaseApplicationComponent
 			$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
 			$userRecord->verificationCode = null;
 			$userRecord->verificationCodeIssuedDate = null;
-			$userRecord->passwordResetRequired = $user->passwordResetRequired = false;
+
+			// If it's an existing user, reset the passwordResetRequired bit.
+			if ($user->id)
+			{
+				$userRecord->passwordResetRequired = $user->passwordResetRequired = false;
+			}
+
 			$userRecord->lastPasswordChangeDate = $user->lastPasswordChangeDate = DateTimeHelper::currentUTCDateTime();
 
 			$user->newPassword = null;

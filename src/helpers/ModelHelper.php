@@ -24,7 +24,6 @@ class ModelHelper
 		AttributeType::Locale     => array('column' => ColumnType::Locale),
 		AttributeType::Name       => array('maxLength' => 100, 'column' => ColumnType::Varchar),
 		AttributeType::Number     => array('min' => null, 'max' => null, 'decimals' => 0),
-		AttributeType::Slug       => array('maxLength' => 50, 'column' => ColumnType::Char),
 		AttributeType::SortOrder  => array('column' => ColumnType::TinyInt),
 		AttributeType::Template   => array('maxLength' => 500, 'column' => ColumnType::Varchar),
 		AttributeType::Url        => array('maxLength' => 255, 'column' => ColumnType::Varchar),

@@ -49,9 +49,9 @@ return array(
 'loginPath' => 'login',
 
 /**
- * The path Craft will use to reset users' passwords.
+ * The path Craft will use to set users' passwords.
  */
-'resetPasswordPath' => 'resetpassword',
+'setPasswordPath' => 'setpassword',
 
 /**
  * The path Craft will use when validating a user's account.

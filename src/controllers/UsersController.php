@@ -6,7 +6,7 @@ namespace Craft;
  */
 class UsersController extends BaseController
 {
-	protected $allowAnonymous = array('actionLogin', 'actionForgotPassword', 'actionValidate', 'actionResetPassword', 'actionSaveUser');
+	protected $allowAnonymous = array('actionLogin', 'actionForgotPassword', 'actionValidate', 'actionSetPassword', 'actionSaveUser');
 
 	/**
 	 * Displays the login template, and handles login post requests.
@@ -43,66 +43,18 @@ class UsersController extends BaseController
 			else
 			{
 				$errorCode = craft()->userSession->getLoginErrorCode();
-
-				switch ($errorCode)
-				{
-					case UserIdentity::ERROR_PASSWORD_RESET_REQUIRED:
-					{
-						$error = Craft::t('You need to reset your password. Check your email for instructions.');
-						break;
-					}
-					case UserIdentity::ERROR_ACCOUNT_LOCKED:
-					{
-						$error = Craft::t('Account locked.');
-						break;
-					}
-					case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
-					{
-						$user = craft()->users->getUserByUsernameOrEmail($loginName);
-						$timeRemaining = $user->getRemainingCooldownTime();
-
-						if ($timeRemaining)
-						{
-							$humanTimeRemaining = $timeRemaining->humanDuration(false);
-							$error = Craft::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining));
-						}
-						else
-						{
-							$error = Craft::t('Account locked.');
-						}
-						break;
-					}
-					case UserIdentity::ERROR_ACCOUNT_SUSPENDED:
-					{
-						$error = Craft::t('Account suspended.');
-						break;
-					}
-					case UserIdentity::ERROR_NO_CP_ACCESS:
-					{
-						$error = Craft::t('You cannot access the CP with that account.');
-						break;
-					}
-					case UserIdentity::ERROR_NO_CP_OFFLINE_ACCESS:
-					{
-						$error = Craft::t('You cannot access the CP while the system is offline with that account.');
-						break;
-					}
-					default:
-					{
-						$error = Craft::t('Invalid username or password.');
-					}
-				}
+				$errorMessage = craft()->userSession->getLoginErrorMessage($errorCode);
 
 				if (craft()->request->isAjaxRequest())
 				{
 					$this->returnJson(array(
 						'errorCode' => $errorCode,
-						'error' => $error
+						'error' => $errorMessage
 					));
 				}
 				else
 				{
-					craft()->userSession->setError($error);
+					craft()->userSession->setError($errorMessage);
 
 					$vars = array(
 						'loginName' => $loginName,
@@ -179,12 +131,12 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * Resets a user's password once they've verified they have access to their email.
+	 * Sets a user's password once they've verified they have access to their email.
 	 *
 	 * @throws HttpException
 	 * @throws Exception
 	 */
-	public function actionResetPassword()
+	public function actionSetPassword()
 	{
 		if (craft()->userSession->isLoggedIn())
 		{
@@ -210,7 +162,13 @@ class UsersController extends BaseController
 			if (craft()->users->changePassword($user))
 			{
 				// Log them in
-				craft()->userSession->login($user->username, $newPassword);
+				if (!craft()->userSession->login($user->username, $newPassword))
+				{
+					$errorCode = craft()->userSession->getLoginErrorCode();
+					$errorMessage = craft()->userSession->getLoginErrorMessage($errorCode);
+
+					Craft::log('Tried to automatically log in after a password update, but could not: '.$errorMessage, LogLevel::Warning);
+				}
 
 				craft()->userSession->setNotice(Craft::t('Password updated.'));
 				$this->redirectToPostedUrl();
@@ -238,18 +196,12 @@ class UsersController extends BaseController
 				throw new HttpException(404);
 			}
 
-			if (craft()->request->isCpRequest())
-			{
-				$template = 'resetpassword';
-			}
-			else
-			{
-				$template = craft()->config->get('resetPasswordPath');
-			}
+			$template = craft()->users->getSetPasswordUrl($code, $id, false);
 
 			$this->renderTemplate($template, array(
 				'code' => $code,
-				'id' => $id
+				'id' => $id,
+				'newUser' => ($user->password ? false : true),
 			));
 		}
 	}
@@ -273,9 +225,9 @@ class UsersController extends BaseController
 
 		if (!$user)
 		{
-			if (($template = craft()->config->get('validateFailurePath')) != '')
+			if (($url = craft()->config->get('validateFailurePath')) != '')
 			{
-				$this->redirect(UrlHelper::getSiteUrl($template));
+				$this->redirect(UrlHelper::getSiteUrl($url));
 			}
 			else
 			{
@@ -285,28 +237,43 @@ class UsersController extends BaseController
 
 		if (craft()->users->activateUser($user))
 		{
-			if (($template = craft()->config->get('validateSuccessPath')) != '')
+			// Successfully activated user, do they require a password reset?
+			if ($user->passwordResetRequired)
 			{
-				$template = UrlHelper::getSiteUrl(craft()->config->get('validateSuccessPath'));
+				// Password reset required, generating a new verficiation code and sending to the setPassword url.
+				$code = craft()->users->setVerificationCodeOnUser($user);
+				$url = craft()->users->getSetPasswordUrl($code, $id);
 			}
 			else
 			{
-				$template = UrlHelper::getUrl(craft()->config->get('loginPath'));
+				// No password reset required.
+				if (($url = craft()->config->get('validateSuccessPath')) != '')
+				{
+					// They have specified a custom validate success path, use it.
+					$url = UrlHelper::getSiteUrl(craft()->config->get('validateSuccessPath'));
+				}
+				else
+				{
+					// No password reset required and no custom validate success path.  Send to login page.
+					$url = UrlHelper::getUrl(craft()->config->get('loginPath'));
+				}
 			}
 		}
 		else
 		{
-			if (($template = craft()->config->get('validateFailurePath')) === '')
+			if (($url = craft()->config->get('validateFailurePath')) === '')
 			{
+				// Failed to validate user and there is no custom validation failure path.  Throw an exception.
 				throw new Exception(Craft::t('There was a problem activating this account.'));
 			}
 			else
 			{
-				$template = UrlHelper::getSiteUrl($template);
+				// Failed to activate user and there is a custom validate failure path set, so use it.
+				$url = UrlHelper::getSiteUrl($url);
 			}
 		}
 
-		$this->redirect($template);
+		$this->redirect($url);
 	}
 
 	/**
@@ -331,6 +298,9 @@ class UsersController extends BaseController
 			$userId = craft()->userSession->getUser()->id;
 		}
 
+		$publicRegistration = false;
+
+		// Are we editing an existing user?
 		if ($userId)
 		{
 			if ($userId != craft()->userSession->getUser()->id)
@@ -347,9 +317,24 @@ class UsersController extends BaseController
 		}
 		else
 		{
-			if (!craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
+			// Are they already logged in?
+			if (craft()->userSession->getUser())
 			{
+				// Make sure they have permission to register users
 				craft()->userSession->requirePermission('registerUsers');
+			}
+			else
+			{
+				// Make sure that public registration is allowed
+				if (craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
+				{
+					$publicRegistration = true;
+				}
+				else
+				{
+					// Sorry pal.
+					throw new HttpException(403);
+				}
 			}
 
 			$user = new UserModel();
@@ -377,18 +362,25 @@ class UsersController extends BaseController
 			}
 		}
 
-		// Only admins can change other users' passwords
-		if (!$user->id || $user->isCurrent() || craft()->userSession->isAdmin())
+		// Password handling differs depending on whether this is a public registration form or the CP
+		if ($publicRegistration)
 		{
-			$password = craft()->request->getPost('newPassword');
-
-			// If $password is null and there is no userId, we assume it's a front-end registration with a 'password' field.
-			if (!$password && !$user->id)
+			// Force newPassword to be a string so it gets validated.
+			$user->newPassword = (string) craft()->request->getPost('password');
+		}
+		else
+		{
+			// Only admins can change other users' passwords
+			if ($user->isCurrent() || craft()->userSession->isAdmin())
 			{
-				$password = craft()->request->getPost('password');
-			}
+				$newPassword = craft()->request->getPost('newPassword');
 
-			$user->newPassword = $password;
+				// Only actually set it if it's not empty.
+				if ($newPassword)
+				{
+					$user->newPassword = (string) $newPassword;
+				}
+			}
 		}
 
 		// Only admins can require users to reset their passwords
@@ -401,6 +393,17 @@ class UsersController extends BaseController
 		{
 			if (craft()->users->saveUser($user))
 			{
+				if ($publicRegistration)
+				{
+					// Assign them to the default user group, if any
+					$defaultGroup = craft()->systemSettings->getSetting('users', 'defaultGroup');
+
+					if ($defaultGroup)
+					{
+						craft()->userGroups->assignUserToGroups($user->id, array($defaultGroup));
+					}
+				}
+
 				craft()->userSession->setNotice(Craft::t('User saved.'));
 
 				$this->redirectToPostedUrl(array(

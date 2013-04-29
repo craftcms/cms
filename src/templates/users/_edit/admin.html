@@ -19,7 +19,7 @@
 {% set content %}
 	<h2>{{ "User Groups"|t }}</h2>
 
-	{% set allGroups = craft.userGroups.getAllGroups %}
+	{% set allGroups = craft.userGroups.getAllGroups() %}
 	{% set userGroups = account.getGroups('id') %}
 
 	{% if allGroups %}

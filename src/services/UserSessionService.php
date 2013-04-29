@@ -358,6 +358,66 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
+	 * Gets the proper error message from the given error code.
+	 *
+	 * @param $errorCode
+	 * @return null|string
+	 */
+	public function getLoginErrorMessage($errorCode)
+	{
+		switch ($errorCode)
+		{
+			case UserIdentity::ERROR_PASSWORD_RESET_REQUIRED:
+			{
+				$error = Craft::t('You need to reset your password. Check your email for instructions.');
+				break;
+			}
+			case UserIdentity::ERROR_ACCOUNT_LOCKED:
+			{
+				$error = Craft::t('Account locked.');
+				break;
+			}
+			case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
+			{
+				$user = craft()->users->getUserByUsernameOrEmail($loginName);
+				$timeRemaining = $user->getRemainingCooldownTime();
+
+				if ($timeRemaining)
+				{
+					$humanTimeRemaining = $timeRemaining->humanDuration(false);
+					$error = Craft::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining));
+				}
+				else
+				{
+					$error = Craft::t('Account locked.');
+				}
+				break;
+			}
+			case UserIdentity::ERROR_ACCOUNT_SUSPENDED:
+			{
+				$error = Craft::t('Account suspended.');
+				break;
+			}
+			case UserIdentity::ERROR_NO_CP_ACCESS:
+			{
+				$error = Craft::t('You cannot access the CP with that account.');
+				break;
+			}
+			case UserIdentity::ERROR_NO_CP_OFFLINE_ACCESS:
+			{
+				$error = Craft::t('You cannot access the CP while the system is offline with that account.');
+				break;
+			}
+			default:
+			{
+				$error = Craft::t('Invalid username or password.');
+			}
+		}
+
+		return $error;
+	}
+
+	/**
 	 * @return string
 	 */
 	public function getRememberedUsername()
