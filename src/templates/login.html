@@ -4,7 +4,6 @@
 {% includeCssResource "css/login.css" %}
 {% includeJsResource "js/login.js" %}
 {% includeTranslations
-	"Forget your password?",
 	"Reset Password",
 	"Check your email for instructions to reset your password."
 %}
@@ -30,6 +29,7 @@
 
 					'<div id="login-fields" class="nested-fields">' +
 						'{{ forms.passwordField({ id: "password", name: "password", hint: "Password"|t })|e("js") }}' +
+						'<a id="forgot-password">{{ "Forget your password?"|t }}</a>' +
 						{% if craft.config.rememberedUserSessionDuration %}
 							'{{ forms.checkboxField({ id: "rememberMe", label: "Keep me logged in"|t })|e("js") }}' +
 						{% endif %}
@@ -37,7 +37,7 @@
 
 					'<div class="buttons">' +
 						'<div id="submit" class="btn submit disabled {% if not craft.request.isSecure %}in{% endif %}secure icon">' +
-							'{{ "Login"|t }}' +
+							'<span>{{ "Login"|t }}</span>' +
 							'<input type="submit">' +
 						'</div>' +
 						'<div id="spinner" class="spinner hidden"></div>' +

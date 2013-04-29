@@ -7,6 +7,7 @@ var LoginForm = Garnish.Base.extend({
 	$loginFields: null,
 	$passwordPaneItem: null,
 	$passwordInput: null,
+	$forgotPasswordLink: null,
 	$rememberMeCheckbox: null,
 	$submitBtn: null,
 	$spinner: null,
@@ -22,12 +23,14 @@ var LoginForm = Garnish.Base.extend({
 		this.$loginFields = $('#login-fields');
 		this.$passwordPaneItem = this.$loginFields.children();
 		this.$passwordInput = $('#password');
+		this.$forgotPasswordLink = $('#forgot-password');
 		this.$submitBtn = $('#submit');
 		this.$spinner = $('#spinner');
 		this.$rememberMeCheckbox = $('#rememberMe');
 
 		this.addListener(this.$loginNameInput, 'keypress,keyup,change,blur', 'onInputChange');
 		this.addListener(this.$passwordInput, 'keypress,keyup,change,blur', 'onInputChange');
+		this.addListener(this.$forgotPasswordLink, 'activate', 'onForgetPassword');
 		this.addListener(this.$submitBtn, 'activate', 'onSubmit');
 		this.addListener(this.$form, 'submit', 'onSubmit');
 	},
@@ -62,12 +65,18 @@ var LoginForm = Garnish.Base.extend({
 		this.loading = true;
 
 		if (this.$error)
+		{
 			this.$error.remove();
+		}
 
 		if (this.forgotPassword)
+		{
 			this.submitForgotPassword();
+		}
 		else
+		{
 			this.submitLogin();
+		}
 	},
 
 	submitForgotPassword: function()
@@ -112,13 +121,6 @@ var LoginForm = Garnish.Base.extend({
 
 				// Add the error message
 				this.showError(response.error);
-
-				if (response.errorCode == 2 || response.errorCode == 1)
-				{
-					$('<br/>').appendTo(this.$error);
-					var $forgotPasswordLink = $('<a>'+Craft.t('Forget your password?')+'</a>').appendTo(this.$error);
-					this.addListener($forgotPasswordLink, 'mousedown', 'onForgetPassword');
-				}
 			}
 		}, this));
 
@@ -146,7 +148,10 @@ var LoginForm = Garnish.Base.extend({
 		event.preventDefault();
 		this.$loginNameInput.focus();
 
-		this.$error.remove();
+		if (this.$error)
+		{
+			this.$error.remove();
+		}
 
 		var formTopMargin = parseInt(this.$form.css('margin-top')),
 			loginFieldsHeight = this.$loginFields.height(),
