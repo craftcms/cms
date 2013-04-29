@@ -49,6 +49,16 @@ class AssetElementType extends BaseElementType
 	}
 
 	/**
+	 * Defines which model attributes should be searchable.
+	 *
+	 * @return array
+	 */
+	public function defineSearchableAttributes()
+	{
+		return array('filename', 'extension', 'kind');
+	}
+
+	/**
 	 * Returns the attributes that can be shown/sorted by in table views.
 	 *
 	 * @param string|null $source

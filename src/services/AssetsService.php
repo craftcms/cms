@@ -260,11 +260,7 @@ class AssetsService extends BaseApplicationComponent
 			}
 
 			// Update the search index
-			craft()->search->indexElementKeywords($file->id, craft()->i18n->getPrimarySiteLocaleId(), array(
-				'filename'  => $file->filename,
-				'extension' => IOHelper::getExtension($file),
-				'kind'      => $file->kind,
-			));
+			craft()->search->indexElementAttributes($file);
 
 			return true;
 		}

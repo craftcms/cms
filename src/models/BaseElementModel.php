@@ -35,6 +35,16 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns the type of element this is.
+	 *
+	 * @return string
+	 */
+	public function getElementType()
+	{
+		return $this->elementType;
+	}
+
+	/**
 	 * Returns the element's full URL.
 	 *
 	 * @return string

@@ -61,66 +61,43 @@ class SearchService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Indexes the keywords for a given element and locale.
+	 * Indexes the attributes of a given element defined by its element type.
+	 *
+	 * @param BaseElementModel $element
+	 * @param string|null      $localeId
+	 * @return bool Whether the indexing was a success.
+	 */
+	public function indexElementAttributes(BaseElementModel $element, $localeId = null)
+	{
+		// Get the element type
+		$elementTypeClass = $element->getElementType();
+		$elementType = craft()->elements->getElementType($elementTypeClass);
+
+		// Does it have any searchable attributes?
+		$searchableAttributes = $elementType->defineSearchableAttributes();
+
+		foreach ($searchableAttributes as $attribute)
+		{
+			$value = $element->$attribute;
+			$this->_indexElementKeywords($element->id, $attribute, '0', $localeId, $value);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Indexes the field values for a given element and locale.
 	 *
 	 * @param int    $elementId The ID of the element getting indexed.
 	 * @param string $localeId  The locale ID of the content getting indexed.
-	 * @param array  $keywords  The element keywords, indexed by attribute name or field ID.
+	 * @param array  $fields    The field values, indexed by field ID.
 	 * @return bool  Whether the indexing was a success.
 	 */
-	public function indexElementKeywords($elementId, $localeId, $keywords)
+	public function indexElementFields($elementId, $localeId, $fields)
 	{
-		foreach ($keywords as $attribute => $dirtyKeywords)
+		foreach ($fields as $fieldId => $value)
 		{
-			// Is this for a field?
-			if (is_int($attribute) || (string) intval($attribute) === (string) $attribute)
-			{
-				$fieldId = (string) $attribute;
-				$attribute = 'field';
-			}
-			else
-			{
-				$fieldId = '0';
-				$attribute = strtolower($attribute);
-			}
-
-			// Clean 'em up
-			$cleanKeywords = StringHelper::normalizeKeywords($dirtyKeywords);
-
-			if ($cleanKeywords)
-			{
-				// Add padding around keywords
-				$cleanKeywords = $this->_addPadding($cleanKeywords);
-
-				// Insert/update the row in searchindex
-				$table = DbHelper::addTablePrefix('searchindex');
-				$sql = 'INSERT INTO '.craft()->db->quoteTableName($table).' (' .
-					craft()->db->quoteColumnName('elementId').', ' .
-					craft()->db->quoteColumnName('attribute').', ' .
-					craft()->db->quoteColumnName('fieldId').', ' .
-					craft()->db->quoteColumnName('locale').', ' .
-					craft()->db->quoteColumnName('keywords') .
-					') VALUES (:elementId, :attribute, :fieldId, :locale, :keywords) ' .
-					'ON DUPLICATE KEY UPDATE '.craft()->db->quoteColumnName('keywords').' = :keywords';
-
-				craft()->db->createCommand()->setText($sql)->execute(array(
-					':elementId' => $elementId,
-					':attribute' => $attribute,
-					':fieldId'   => $fieldId,
-					':locale'    => $localeId,
-					':keywords'  => $cleanKeywords
-				));
-			}
-			else
-			{
-				// Delete the searchindex row if it exists
-				craft()->db->createCommand()->delete('searchindex', array(
-					'elementId' => $elementId,
-					'attribute' => $attribute,
-					'fieldId'   => $fieldId,
-					'locale'    => $localeId
-				));
-			}
+			$this->_indexElementKeywords($elementId, 'field', (string) $fieldId, $localeId, $value);
 		}
 
 		return true;
@@ -224,6 +201,64 @@ class SearchService extends BaseApplicationComponent
 
 		// Return elementIds
 		return $elementIds;
+	}
+
+	/**
+	 * Indexes keywords for a specific element attribute/field.
+	 *
+	 * @access private
+	 * @param int         $elementId
+	 * @param string      $attribute
+	 * @param string      $fieldId
+	 * @param string|null $localeId
+	 * @param string      $dirtyKeywords
+	 */
+	private function _indexElementKeywords($elementId, $attribute, $fieldId, $localeId, $dirtyKeywords)
+	{
+		$attribute = strtolower($attribute);
+
+		if (!$localeId)
+		{
+			$localeId = craft()->i18n->getPrimarySiteLocaleId();
+		}
+
+		// Clean 'em up
+		$cleanKeywords = StringHelper::normalizeKeywords($dirtyKeywords);
+
+		if ($cleanKeywords)
+		{
+			// Add padding around keywords
+			$cleanKeywords = $this->_addPadding($cleanKeywords);
+
+			// Insert/update the row in searchindex
+			$table = DbHelper::addTablePrefix('searchindex');
+			$sql = 'INSERT INTO '.craft()->db->quoteTableName($table).' (' .
+				craft()->db->quoteColumnName('elementId').', ' .
+				craft()->db->quoteColumnName('attribute').', ' .
+				craft()->db->quoteColumnName('fieldId').', ' .
+				craft()->db->quoteColumnName('locale').', ' .
+				craft()->db->quoteColumnName('keywords') .
+				') VALUES (:elementId, :attribute, :fieldId, :locale, :keywords) ' .
+				'ON DUPLICATE KEY UPDATE '.craft()->db->quoteColumnName('keywords').' = :keywords';
+
+			craft()->db->createCommand()->setText($sql)->execute(array(
+				':elementId' => $elementId,
+				':attribute' => $attribute,
+				':fieldId'   => $fieldId,
+				':locale'    => $localeId,
+				':keywords'  => $cleanKeywords
+			));
+		}
+		else
+		{
+			// Delete the searchindex row if it exists
+			craft()->db->createCommand()->delete('searchindex', array(
+				'elementId' => $elementId,
+				'attribute' => $attribute,
+				'fieldId'   => $fieldId,
+				'locale'    => $localeId
+			));
+		}
 	}
 
 	/**

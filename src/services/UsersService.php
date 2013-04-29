@@ -264,13 +264,7 @@ class UsersService extends BaseApplicationComponent
 			}
 
 			// Update the search index
-			craft()->search->indexElementKeywords($user->id, craft()->i18n->getPrimarySiteLocaleId(), array(
-				'username'  => $user->username,
-				'firstName' => $user->firstName,
-				'lastName'  => $user->lastName,
-				'fullName'  => $user->getFullName(),
-				'email'     => $user->email
-			));
+			craft()->search->indexElementAttributes($user);
 
 			if ($isNewUser)
 			{

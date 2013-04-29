@@ -154,7 +154,8 @@ class ContentService extends BaseApplicationComponent
 				// Only include this value if the content table has a column for it
 				if ($fieldType && $fieldType->defineContentAttribute())
 				{
-					$value = $content->getAttribute($field->handle);
+					$handle = $field->handle;
+					$value = $content->$handle;
 					$values[$field->handle] = ModelHelper::packageAttributeValue($value, true);
 				}
 			}
@@ -218,7 +219,8 @@ class ContentService extends BaseApplicationComponent
 			if ($fieldType)
 			{
 				// Get the field's search keywords
-				$fieldSearchKeywords = $fieldType->getSearchKeywords($element->getAttribute($field->handle));
+				$handle = $field->handle;
+				$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$handle);
 				$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
 
 				// Should we update this field on the other locales as well?
@@ -250,7 +252,7 @@ class ContentService extends BaseApplicationComponent
 		// Update the search indexes
 		foreach ($searchKeywordsByLocale as $localeId => $keywords)
 		{
-			craft()->search->indexElementKeywords($element->id, $localeId, $keywords);
+			craft()->search->indexElementFields($element->id, $localeId, $keywords);
 		}
 
 		// Now that everything is finally saved, call fieldtypes' onAfterElementSave();

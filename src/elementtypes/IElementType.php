@@ -24,6 +24,11 @@ interface IElementType extends IComponentType
 	/**
 	 * @return array
 	 */
+	public function defineSearchableAttributes();
+
+	/**
+	 * @return array
+	 */
 	public function defineTableAttributes($source = null);
 
 	/**
