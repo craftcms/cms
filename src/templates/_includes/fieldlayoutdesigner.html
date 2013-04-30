@@ -30,7 +30,7 @@
 				<div class="fld-field{% if field.required %} fld-required{% endif %}" data-id="{{ field.fieldId }}">
 					<a class="settings icon" title="{{ 'Edit'|t }}"></a>
 					<span>{{ field.getField().name }}</span>
-					<input class="id-input" type="hidden" name="fieldLayout[{{ tabName|url_encode }}][]" value="{{ field.fieldId }}">
+					<input class="id-input" type="hidden" name="fieldLayout[{{ tabName|e('url') }}][]" value="{{ field.fieldId }}">
 					{% if field.required %}<input class="required-input" type="hidden" name="requiredFields[]" value="{{ field.fieldId }}">{% endif %}
 				</div>
 			{% endfor %}
