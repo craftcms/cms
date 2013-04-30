@@ -73,12 +73,32 @@ class Updater
 	}
 
 	/**
+	 * Clean up any .bak files that may have been leftover from a previous update.
+	 */
+	public function prepAppFolder()
+	{
+		$bakFiles = IOHelper::getFolderContents(craft()->path->getAppPath(), true, ".*\.bak$");
+
+		foreach ($bakFiles as $file)
+		{
+			if (IOHelper::fileExists($file))
+			{
+				if (IOHelper::isWritable($file))
+				{
+					Craft::log('Deleting a stray .bak file: '.$file, LogLevel::Info, true);
+					IOHelper::deleteFile($file, true);
+				}
+			}
+		}
+	}
+
+	/**
 	 * @return array
 	 * @throws Exception
 	 */
 	public function processDownload()
 	{
-		Craft::log ('Starting to process the update download.', LogLevel::Info, true);
+		Craft::log('Starting to process the update download.', LogLevel::Info, true);
 		$tempPath = craft()->path->getTempPath();
 
 		// Download the package from ET.
