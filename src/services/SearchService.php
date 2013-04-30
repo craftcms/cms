@@ -225,39 +225,28 @@ class SearchService extends BaseApplicationComponent
 		// Clean 'em up
 		$cleanKeywords = StringHelper::normalizeKeywords($dirtyKeywords);
 
+		// Save 'em
+		$keyColumns = array(
+			'elementId' => $elementId,
+			'attribute' => $attribute,
+			'fieldId'   => $fieldId,
+			'locale'    => $localeId
+		);
+
 		if ($cleanKeywords)
 		{
 			// Add padding around keywords
 			$cleanKeywords = $this->_addPadding($cleanKeywords);
 
 			// Insert/update the row in searchindex
-			$table = DbHelper::addTablePrefix('searchindex');
-			$sql = 'INSERT INTO '.craft()->db->quoteTableName($table).' (' .
-				craft()->db->quoteColumnName('elementId').', ' .
-				craft()->db->quoteColumnName('attribute').', ' .
-				craft()->db->quoteColumnName('fieldId').', ' .
-				craft()->db->quoteColumnName('locale').', ' .
-				craft()->db->quoteColumnName('keywords') .
-				') VALUES (:elementId, :attribute, :fieldId, :locale, :keywords) ' .
-				'ON DUPLICATE KEY UPDATE '.craft()->db->quoteColumnName('keywords').' = :keywords';
-
-			craft()->db->createCommand()->setText($sql)->execute(array(
-				':elementId' => $elementId,
-				':attribute' => $attribute,
-				':fieldId'   => $fieldId,
-				':locale'    => $localeId,
-				':keywords'  => $cleanKeywords
-			));
+			craft()->db->createCommand()->insertOrUpdate('searchindex', $keyColumns, array(
+				'keywords'  => $cleanKeywords
+			), false);
 		}
 		else
 		{
 			// Delete the searchindex row if it exists
-			craft()->db->createCommand()->delete('searchindex', array(
-				'elementId' => $elementId,
-				'attribute' => $attribute,
-				'fieldId'   => $fieldId,
-				'locale'    => $localeId
-			));
+			craft()->db->createCommand()->delete('searchindex', $keyColumns);
 		}
 	}
 
