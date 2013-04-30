@@ -293,7 +293,6 @@ class UpdatesService extends BaseApplicationComponent
 			}
 
 			$updater->checkRequirements();
-			$updater->prepAppFolder();
 
 			Craft::log('Finished preparing to update '.$handle.'.', LogLevel::Info, true);
 			return array('success' => true);
