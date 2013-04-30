@@ -263,7 +263,7 @@ class UsersService extends BaseApplicationComponent
 				}
 			}
 
-			if ($isNewUser)
+			if ($isNewUser && $user->verificationRequired)
 			{
 				craft()->templates->registerTwigAutoloader();
 
