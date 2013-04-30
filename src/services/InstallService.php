@@ -74,7 +74,7 @@ class InstallService extends BaseApplicationComponent
 		$records = array();
 
 		$recordsFolder = craft()->path->getAppPath().'records/';
-		$recordFiles = IOHelper::getFolderContents($recordsFolder, false, ".*Record\.php");
+		$recordFiles = IOHelper::getFolderContents($recordsFolder, false, ".*Record\.php$");
 
 		foreach ($recordFiles as $file)
 		{
