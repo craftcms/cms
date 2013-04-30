@@ -112,7 +112,7 @@ var LoginForm = Garnish.Base.extend({
 		{
 			if (typeof response.success != 'undefined' && response.success)
 			{
-				window.location.href = window.returnUrl;
+				window.location.href = Craft.getUrl(window.returnUrl);
 			}
 			else
 			{
