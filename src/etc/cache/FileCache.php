@@ -7,6 +7,7 @@ namespace Craft;
 class FileCache extends \CFileCache
 {
 	private $_gced = false;
+	private $_originalKey;
 
 	/**
 	 *
@@ -50,6 +51,8 @@ class FileCache extends \CFileCache
 			$value = call_user_func($this->serializer[0], array($value, $dependency));
 		}
 
+		$this->_originalKey = $id;
+
 		return $this->setValue($this->generateUniqueKey($id), $value, $expire);
 	}
 
@@ -86,6 +89,8 @@ class FileCache extends \CFileCache
 			$value = call_user_func($this->serializer[0], array($value, $dependency));
 		}
 
+		$this->_originalKey = $id;
+
 		return $this->addValue($this->generateUniqueKey($id), $value, $expire);
 	}
 
@@ -119,14 +124,29 @@ class FileCache extends \CFileCache
 			IOHelper::createFolder(IOHelper::getFolderName($cacheFile), 0777);
 		}
 
-		if (IOHelper::writeToFile($cacheFile, $value) !== false)
+		if ($this->_originalKey == 'useWriteFileLock')
 		{
-			IOHelper::changePermissions($cacheFile, 0777);
-			return IOHelper::touch($cacheFile, $expire);
+			if (IOHelper::writeToFile($cacheFile, $value, true, false, true) !== false)
+			{
+				IOHelper::changePermissions($cacheFile, 0777);
+				return IOHelper::touch($cacheFile, $expire);
+			}
+			else
+			{
+				return false;
+			}
 		}
 		else
 		{
-			return false;
+			if (IOHelper::writeToFile($cacheFile, $value) !== false)
+			{
+				IOHelper::changePermissions($cacheFile, 0777);
+				return IOHelper::touch($cacheFile, $expire);
+			}
+			else
+			{
+				return false;
+			}
 		}
 	}
 }

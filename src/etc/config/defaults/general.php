@@ -229,11 +229,6 @@ return array(
 'phpMaxMemoryLimit' => '256M',
 
 /**
- * Whether to use an exclusive lock when writing to files on the file system. Users of NFS and other file systems that do not support file locking will have to turn this off.
- */
-'useLockWhenWritingToFile' => true,
-
-/**
  * Error Path Keys
  * 'errorPath'      => craft.app.templates.errors.error
  * 'error400Path'   => craft.app.templates.errors.400
