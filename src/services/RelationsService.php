@@ -101,8 +101,8 @@ class RelationsService extends BaseApplicationComponent
 		$transaction = craft()->db->beginTransaction();
 		try
 		{
-			// Delete the existing links
-			craft()->db->createCommand()->delete('links', array(
+			// Delete the existing relations
+			craft()->db->createCommand()->delete('relations', array(
 				'fieldId'  => $fieldId,
 				'parentId' => $parentId
 			));
@@ -117,7 +117,7 @@ class RelationsService extends BaseApplicationComponent
 				}
 
 				$columns = array('fieldId', 'parentId', 'childId', 'sortOrder');
-				craft()->db->createCommand()->insertAll('links', $columns, $values);
+				craft()->db->createCommand()->insertAll('relations', $columns, $values);
 			}
 
 			$transaction->commit();
@@ -141,6 +141,8 @@ class RelationsService extends BaseApplicationComponent
 	 */
 	private function _getRelatedElements($source, $target, $sourceId, $fieldId, $elementTypeClass)
 	{
+		$ordered = ($source == 'parent' && $target == 'child' && $elementTypeClass !== null);
+
 		if ($elementTypeClass)
 		{
 			$elementType = craft()->elements->getElementType($elementTypeClass);
@@ -153,7 +155,7 @@ class RelationsService extends BaseApplicationComponent
 				if ($query)
 				{
 					$this->_addConditionsToRelationsQuery($query, $source, $target, $sourceId, $fieldId);
-					return $this->_getElementsFromQuery($elementType, $query);
+					return $this->_getElementsFromQuery($elementType, $query, $ordered);
 				}
 			}
 
@@ -181,7 +183,7 @@ class RelationsService extends BaseApplicationComponent
 
 					if ($query)
 					{
-						$element = $this->_getElementsFromQuery($elementType, $query);
+						$element = $this->_getElementsFromQuery($elementType, $query, $ordered);
 
 						if ($element)
 						{
@@ -215,12 +217,6 @@ class RelationsService extends BaseApplicationComponent
 		{
 			$query->andWhere(array('relations.fieldId' => $fieldId));
 		}
-
-		if ($source == 'parent')
-		{
-			$query->addSelect('relations.sortOrder')
-				->order('sortOrder');
-		}
 	}
 
 	/**
@@ -229,10 +225,16 @@ class RelationsService extends BaseApplicationComponent
 	 * @access private
 	 * @param BaseElementType $elementType
 	 * @param DbCommand       $subquery
+	 * @param bool            $ordered
 	 * @return array
 	 */
-	private function _getElementsFromQuery(BaseElementType $elementType, DbCommand $subquery)
+	private function _getElementsFromQuery(BaseElementType $elementType, DbCommand $subquery, $ordered = false)
 	{
+		if ($ordered)
+		{
+			$subquery->addSelect('relations.sortOrder');
+		}
+
 		// Only get the unique elements (no locale duplicates)
 		$query = craft()->db->createCommand()
 			->select('*')
@@ -240,6 +242,11 @@ class RelationsService extends BaseApplicationComponent
 			->group('r.id');
 
 		$query->params = $subquery->params;
+
+		if ($ordered)
+		{
+			$query->order('sortOrder');
+		}
 
 		$result = $query->queryAll();
 		$elements = array();

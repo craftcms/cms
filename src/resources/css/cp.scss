@@ -5,7 +5,7 @@
 $headerBgColor: #333;
 
 html { overflow-y:scroll; }
-html, body { background: #f2f2f2; }
+html, body { background: $bgcolor; }
 
 /* dev mode */
 #devmode { width: 100%; height: 5px; background: $headerBgColor url(../images/devmode.png) repeat-x 50% 0; cursor: help; }
@@ -117,7 +117,7 @@ html, body { background: #f2f2f2; }
 #main #content { display: block; }
 
 /* version */
-#version { margin: 15px 0; text-align: center; color: #aaa; font-size: 11px; }
+#version { margin: 15px 0; text-align: center; color: rgba(0,0,0,0.25); font-size: 11px; }
 
 /* max widths for readability */
 .field { max-width: 600px; }

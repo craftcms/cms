@@ -2,11 +2,17 @@
 {%- set elements = (elements is defined ? elements : []) -%}
 
 <div id="{{ id }}" class="elementselect">
-	{% include "_elements/tableview" with { editable: true } %}
-</div>
+	<div class="elements">
+		{% for element in elements %}
+			<div class="element removable" data-id="{{ element.id }}">
+				<input type="hidden" name="{{ name }}[]" value="{{ element.id }}">
+				<a class="delete icon" title="{{ 'Remove'|t }}"></a>
+				<span class="label">{{ element }}</span>
+			</div>
+		{% endfor %}
+	</div>
 
-<div class="buttons">
-	<div class="btn small add icon">{{ "Add {type}"|t({ type: elementType.getClassHandle()|lower }) }}</div>
+	<div class="btn add icon">{{ "Add {type}"|t({ type: elementType.getClassHandle()|lower }) }}</div>
 </div>
 
 {% set js %}

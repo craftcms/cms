@@ -15,6 +15,7 @@ class ElementsController extends BaseController
 
 		$showSources = craft()->request->getParam('sources');
 		$source = craft()->request->getParam('selectedSource');
+		$disabledElementIds = craft()->request->getParam('disabledElementIds');
 		$view = craft()->request->getParam('view', 'table');
 
 		$elementType = $this->_getElementType();
@@ -43,7 +44,7 @@ class ElementsController extends BaseController
 			$source = null;
 		}
 
-		$elementsHtml = $this->_renderElementsHtml($elementType, $source, null, 0, $view, true);
+		$elementsHtml = $this->_renderElementsHtml($elementType, $source, null, 0, $view, $disabledElementIds, true);
 
 		$this->renderTemplate('_elements/selectormodal', array(
 			'sources'        => $sources,
@@ -98,7 +99,7 @@ class ElementsController extends BaseController
 	 * @param bool            $return
 	 * @return string
 	 */
-	private function _renderElementsHtml(BaseElementType $elementType, $source, $search, $offset, $view, $return = false)
+	private function _renderElementsHtml(BaseElementType $elementType, $source, $search, $offset, $view, $disabledElementIds = array(), $return = false)
 	{
 		$criteria = craft()->elements->getCriteria($elementType->getClassHandle());
 
@@ -122,7 +123,8 @@ class ElementsController extends BaseController
 
 		// Find the elements!
 		$variables = array(
-			'elements' => $criteria->find()
+			'elements' => $criteria->find(),
+			'disabledElementIds' => $disabledElementIds,
 		);
 
 		if ($view == 'table')

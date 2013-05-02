@@ -92,7 +92,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $elements)
 	{
-		$id = preg_replace('/[\[\]]+/', '-', $name);
+		$id = rtrim(preg_replace('/[\[\]]+/', '-', $name), '-');
 
 		if (!is_array($elements))
 		{

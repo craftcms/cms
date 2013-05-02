@@ -24,6 +24,9 @@ $hrcolor: #eee;
 $textcolor: #555;
 $lightcolor: #ccc;
 
+$bgcolor: #e6e2d9;
+$highlight: #f8f4eb;
+
 @mixin linear-gradient($from, $to) {
 	background-image: -webkit-linear-gradient(top, $from, $to);
 	background-image:    -moz-linear-gradient(top, $from, $to);

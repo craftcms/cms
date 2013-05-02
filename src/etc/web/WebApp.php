@@ -23,11 +23,11 @@ namespace Craft;
  * @property HttpSessionService          $httpSession          The HTTP session service
  * @property ImagesService               $images               The images service
  * @property InstallService              $install              The images service
- * @property LinksService                $links                The links service
  * @property LocalizationService         $localization         The localization service
  * @property MigrationsService           $migrations           The migrations service
  * @property PathService                 $path                 The path service
  * @property PluginsService              $plugins              The plugins service
+ * @property RelationsService            $relations            The relations service
  * @property ResourcesService            $resources            The resources service
  * @property RoutesService               $routes               The routes service
  * @property SectionsService             $sections             The sections service

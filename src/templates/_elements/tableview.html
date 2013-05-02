@@ -1,6 +1,6 @@
 {% set editable = editable is defined and editable %}
 
-<table class="elements-tableview data">
+<table class="data">
 	<thead>
 		{% for attribute, label in attributes %}
 			<th scope="col">{{ label }}</th>
@@ -12,17 +12,16 @@
 	</thead>
 	<tbody>
 		{% for element in elements %}
-			<tr data-id="{{ element.id }}" data-name="{{ element }}">
+			<tr{% if element.id in disabledElementIds %} class="disabled"{% endif %} data-id="{{ element.id }}" data-label="{{ element }}">
 				{% for attribute, label in attributes %}
-					{% set value = attribute(element, attribute) %}
 					{% if loop.index == 1 %}
 						<td scope="row" data-title="{{ label }}">
-							{{- value -}}
-							{%- if element.getCpEditUrl() -%}
-								<a class="go" title="{{ 'Edit'|t }}" href="{{ element.getCpEditUrl() }}" target="_blank"></a>
-							{%- endif -%}
+							<div class="element">
+								{{ element }}
+							</div>
 						</td>
 					{% else %}
+						{% set value = attribute(element, attribute) %}
 						<td data-title="{{ label }}">{{ value }}</td>
 					{% endif %}
 				{% endfor %}

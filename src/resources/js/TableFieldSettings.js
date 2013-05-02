@@ -65,7 +65,7 @@ Craft.TableFieldSettings = Garnish.Base.extend({
 			columns = columnsTableData.types.Table.columns,
 			defaults = defaultsTableData.types.Table.defaults;
 
-		var tableHtml = '<table id="'+defaultsTableId+'" class="editable">' +
+		var tableHtml = '<table id="'+defaultsTableId+'" class="editable shadow-box">' +
 			'<thead>' +
 				'<tr>';
 

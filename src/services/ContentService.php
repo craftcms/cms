@@ -218,6 +218,8 @@ class ContentService extends BaseApplicationComponent
 
 			if ($fieldType)
 			{
+				$fieldType->element = $element;
+
 				// Get the field's search keywords
 				$handle = $field->handle;
 				$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$handle);
@@ -237,6 +239,8 @@ class ContentService extends BaseApplicationComponent
 						$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
 					}
 				}
+
+				$fieldTypes[] = $fieldType;
 			}
 		}
 

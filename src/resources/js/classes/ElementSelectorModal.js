@@ -24,6 +24,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 			$body = $('<div class="body"><div class="spinner big"></div></div>').appendTo($container),
 			$footer = $('<div class="footer"/>').appendTo($container),
 			$buttons = $('<div class="buttons rightalign"/>').appendTo($footer),
+			$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttons),
 			$selectBtn = $('<div class="btn disabled submit">'+Craft.t('Select')+'</div>').appendTo($buttons);
 
 		this.base($container);
@@ -31,6 +32,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		this.$body = $body;
 		this.$selectBtn = $selectBtn;
 
+		this.addListener($cancelBtn, 'activate', 'cancel');
 		this.addListener(this.$selectBtn, 'activate', 'selectElements');
 	},
 
@@ -40,12 +42,14 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		{
 			// Get the modal body HTML based on the settings
 			var data = {
-				elementType: this.settings.elementType,
-				sources:     this.settings.sources
+				elementType:        this.settings.elementType,
+				sources:            this.settings.sources,
+				disabledElementIds: this.settings.disabledElementIds
 			};
 
 			Craft.postActionRequest('elements/getModalBody', data, $.proxy(function(response)
 			{
+				// Initialize the contents
 				this.$body.html(response);
 
 				this.$spinner = this.$body.find('.spinner:first');
@@ -125,18 +129,83 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		}
 	},
 
+	cancel: function()
+	{
+		this.hide();
+		this.settings.onCancel();
+	},
+
 	selectElements: function()
 	{
 		if (this.elementSelect && this.elementSelect.totalSelected)
 		{
-			var $elements = this.elementSelect.getSelectedItems();
-			console.log($elements);
+			var $selectedRows = this.elementSelect.getSelectedItems(),
+				elements = [];
+
+			for (var i = 0; i < $selectedRows.length; i++)
+			{
+				var $row = $($selectedRows[i]);
+
+				elements.push({
+					id: $row.data('id'),
+					label: $row.data('label')
+				});
+			}
+
+			this.hide();
+			this.settings.onSelect(elements);
+
+			if (this.settings.disableOnSelect)
+			{
+				this.disableElements($selectedRows);
+			}
 		}
+	},
+
+	enableElements: function($elements)
+	{
+		$elements.removeClass('disabled');
+		this.elementSelect.addItems($elements);
+	},
+
+	disableElements: function($elements)
+	{
+		$elements.removeClass('sel').addClass('disabled');
+		this.elementSelect.removeItems($elements);
+	},
+
+	getElementsById: function(elementIds)
+	{
+		elementIds = $.makeArray(elementIds);
+		var $elements = $();
+
+		for (var i = 0; i < elementIds.length; i++)
+		{
+			$elements = $elements.add(this.$elements.find('tbody:first > tr[data-id='+elementIds[i]+']'));
+		}
+
+		return $elements;
+	},
+
+	enableElementsById: function(elementIds)
+	{
+		var $elements = this.getElementsById(elementIds);
+		this.enableElements($elements);
+	},
+
+	disableElementsById: function(elementIds)
+	{
+		var $elements = this.getElementsById(elementIds);
+		this.disableElements($elements);
 	}
 },
 {
 	defaults: {
 		elementType: null,
-		sources: null
+		sources: null,
+		disabledElementIds: null,
+		disableOnSelect: true,
+		onCancel: $.noop,
+		onSelect: $.noop
 	}
 });
