@@ -34,7 +34,7 @@ Craft.EditableTable = Garnish.Base.extend({
 			new Craft.EditableTable.Row(this, $rows[i]);
 		}
 
-		this.$addRowBtn = this.$table.next('.buttons').children('.add');
+		this.$addRowBtn = this.$table.next('.add');
 		this.addListener(this.$addRowBtn, 'activate', 'addRow');
 	},
 

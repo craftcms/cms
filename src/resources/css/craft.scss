@@ -268,7 +268,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btn[data-icon]:before,
 .btn[data-icon-after]:after,
 .btn.icon:before,
-.menubtn:after { margin-top: -2px; position: relative; font-size: 17px; }
+.menubtn:after { margin-top: -2px; position: relative; }
 
 .btn.small[data-icon]:before,
 .btn.small[data-icon-after]:after,
@@ -433,8 +433,8 @@ table.data.collapsed tbody td form { display: inline-block; }
 	-webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
 	        box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
 }
-.element.removable { padding-right: 29px; }
-.element.removable .delete { float: right; margin-right: -22px; }
+.element.removable { padding-right: 25px; }
+.element.removable .delete { float: right; margin-right: -15px; }
 .element.removable .delete:before { color: rgba(0,0,0,0.2); }
 
 /* element select fields */
@@ -483,9 +483,13 @@ table.editable tbody tr td.action + td.action { border-left: none; padding-left:
 table.editable tbody textarea { display: block; width: 100%; border: none; padding: 7px 10px; background: #fff; overflow: hidden; }
 table.editable tbody textarea:focus { border: 1px solid #ddd; padding: 6px 9px; outline: none; }
 
+table.editable + .btn.add { display: block; border-radius: 0 0 2px 2px; border: 1px dashed #ccc; border-top: none; background: none;
+	-webkit-box-shadow: none;
+	        box-shadow: none;
+}
+
 .border-box + .buttons,
-.shadow-box + .buttons,
-table.editable + .buttons { margin-top: 7px; }
+.shadow-box + .buttons { margin-top: 7px; }
 
 /* ----------------------------------------
 /*  Nav

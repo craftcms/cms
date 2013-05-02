@@ -39,10 +39,7 @@
 		{% endfor %}
 	</tbody>
 </table>
-
-<div class="buttons">
-	<div class="btn add icon small">{{ addRowLabel is defined ? addRowLabel : "Add a row"|t }}</div>
-</div>
+<div class="btn add icon">{{ addRowLabel is defined ? addRowLabel : "Add a row"|t }}</div>
 
 {% if initJs is not defined or initJs %}
 	{% set js %}
