@@ -2,6 +2,7 @@
 {%- set allValue = (allValue is defined ? allValue : '*') %}
 {%- set options = (options is defined ? options : []) %}
 {%- set values = (values is defined ? values : []) -%}
+{%- set allChecked = (values is empty or values == allValue) %}
 
 <div class="checkbox-select{% if class is defined %} {{ class }}{% endif %}">
 	<div>
@@ -11,7 +12,7 @@
 			label:     '<b>' ~ (allLabel is defined ? allLabel : "All"|t) ~ '</b>',
 			name:      (name is defined ? name : null),
 			value:     allValue,
-			checked:   (values is empty or values == allValue),
+			checked:   allChecked,
 			autofocus: (autofocus is defined and autofocus and not craft.request.isMobileBrowser(true))
 		} only %}
 	</div>
@@ -23,8 +24,8 @@
 				label:    optionLabel,
 				name:     (name is defined ? name~'[]' : null),
 				value:    optionValue,
-				checked:  (values is empty or optionValue in values),
-				disabled: (values is empty)
+				checked:  (allChecked or optionValue in values),
+				disabled: allChecked
 			} only %}
 		</div>
 	{% endfor %}
