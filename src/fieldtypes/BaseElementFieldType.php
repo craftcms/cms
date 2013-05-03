@@ -55,7 +55,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 	{
 		return craft()->templates->render('_components/fieldtypes/elementfieldsettings', array(
 			'sources'  => $this->_getElementType()->getSources(),
-			'settings' => $this->getSettings()
+			'settings' => $this->getSettings(),
+			'type'     => $this->getName()
 		));
 	}
 
