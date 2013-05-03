@@ -521,7 +521,6 @@ class UsersService extends BaseApplicationComponent
 	public function suspendUser(UserModel $user)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
-
 		$userRecord->status = $user->status = UserStatus::Suspended;
 
 		return $userRecord->save();
