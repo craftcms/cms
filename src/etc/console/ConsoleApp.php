@@ -23,6 +23,9 @@ class ConsoleApp extends \CConsoleApplication
 
 		craft()->getComponent('log');
 
+		// Set our own custom runtime path.
+		$this->setRuntimePath(craft()->path->getRuntimePath());
+
 		// No need for these.
 		craft()->log->removeRoute('WebLogRoute');
 		craft()->log->removeRoute('ProfileLogRoute');
