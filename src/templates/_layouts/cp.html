@@ -91,9 +91,8 @@
 			</div>
 		</div>
 
-		{% set hasTabs = (tabs is defined and tabs) %}
+		<header id="page-header">
 
-		<header id="page-header" class="header{% if hasTabs %} has-tabs{% endif %}">
 			{% if crumbs is defined and crumbs %}
 				<nav id="crumbs">
 					<ul>
@@ -109,12 +108,14 @@
 			{% endif %}
 
 			{% if extraPageHeaderHtml is defined %}
-				{{ extraPageHeaderHtml }}
+				<div id="extra-headers">
+					{{ extraPageHeaderHtml }}
+				</div>
 			{% endif %}
 
 			<div class="clear"></div>
 
-			{% if hasTabs %}
+			{% if tabs is defined and tabs %}
 				<nav id="tabs" class="tabs">
 					<ul>
 						{% for tabId, tab in tabs %}

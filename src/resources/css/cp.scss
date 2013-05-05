@@ -4,8 +4,15 @@
 
 $headerBgColor: #333;
 
-html { overflow-y:scroll; }
-html, body { background: $bgcolor; }
+html { overflow-y: scroll; }
+html, body,
+#nav li a.sel { background: $bgcolor; }
+
+#tabs li .tab.sel,
+#main {
+	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 2px 10px -2px rgba(0,0,0,0.1);
+	        box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 2px 10px -2px rgba(0,0,0,0.1);
+}
 
 /* dev mode */
 #devmode { width: 100%; height: 5px; background: $headerBgColor url(../images/devmode.png) repeat-x 50% 0; cursor: help; }
@@ -20,22 +27,22 @@ html, body { background: $bgcolor; }
 .centered { margin: 0 auto; max-width: 1024px; max-width: 1051px; }
 
 /* header */
-#header { position: relative; margin-bottom: -10px; border-bottom: 10px solid $headerBgColor; background: $headerBgColor; max-height: 76px; overflow: hidden; }
+#header { position: relative; background: $headerBgColor; max-height: 76px; overflow: hidden; }
 #header:after { @include clearafter; }
 #header a { color: #aaa; -webkit-transition: color linear 50ms; }
 #header a:hover { color: #fff; text-decoration: none; }
 
-#header #account { float: right; margin-right: 5px; height: 38px; }
+#header #account { float: right; height: 38px; }
 #header #account > a { display: block; padding: 0 10px; line-height: 38px; }
 
-#header h2 { float: left; margin: 0; padding: 10px 0 10px 30px; color: #fff; }
+#header h2 { float: left; margin: 0 0 0 30px; padding: 10px 0; color: #fff; }
 
-#header #nav { float: left; margin-left: 20px; }
-#header #nav li { float: left; height: 38px; }
-#header #nav li a { display: block; margin-top: 2px; padding: 4px 10px; line-height: 28px; }
-#header #nav li a.active { color: #fff; }
-#header #nav li a.sel { position: relative; z-index: 1; border-radius: 2px 2px 0 0; color: #333; }
-#header #nav li a:not(.sel) .badge { color: #333; }
+#nav { float: left; margin-left: 20px; }
+#nav li { float: left; height: 38px; }
+#nav li a { display: block; margin-top: 2px; padding: 4px 10px; line-height: 28px; }
+#nav li a.active { color: #fff; }
+#nav li a.sel { position: relative; z-index: 1; border-radius: 3px 3px 0 0; color: #333; }
+#nav li a:not(.sel) .badge { color: #333; }
 
 /* HIDE */
 #customize-nav-btn span { display: none; }
@@ -62,42 +69,36 @@ html, body { background: $bgcolor; }
 #notifications .notification.error { background: $submitcolor; }
 
 /* main wrapper */
-#main-wrapper { position: relative; border-radius: 2px; overflow: hidden; }
-
-#header #nav li a.sel,
-#main-wrapper { background: #fff;
-	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.1);
-	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.1);
-}
-
-#main,
-#tabs .tab.sel {
-	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px -1px rgba(0,0,0,0.25);
-	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px -1px rgba(0,0,0,0.25);
-}
+#main-wrapper { position: relative; }
 
 /* page header */
-#page-header { display: block; padding: 30px; background-color: #fff; overflow: hidden; }
-#page-header.has-tabs { padding-bottom: 0; }
-#page-header h1 { clear: left; float: left; margin: 0 15px 0 0; line-height: 31px; }
+#page-header { display: block; position: relative; z-index: 1; padding: 0 30px; overflow: hidden; text-shadow: 0 1px 0 #fff; }
+#page-header h1 { float: left; margin: 35px 0; line-height: 1; }
+#page-header #extra-headers { float: left; margin: 33px 0 0 15px; }
+#page-header #extra-headers > .select,
+#page-header #extra-headers > .menubtn { display: block; margin-left: 5px; float: left; }
 
-#crumbs { margin: -20px 0 10px 0; }
+#crumbs { margin: 10px 0 -15px; font-size: 0; }
 #crumbs:after { @include clearafter; }
-#crumbs li { float: left; }
-#crumbs li:after { @include icon; margin: -1px 5px 0; content: '>'; font-size: 11px; color: #bbb; }
+#crumbs li { display: inline-block; font-size: 13px; }
+#crumbs li:after { @include icon; margin: -1px 5px 0; content: '>'; font-size: 11px; color: #ddd; }
+#crumbs li a { color: #aaa; }
+#crumbs li a:hover { color: $linkcolor; text-decoration: none; }
 
 /* tabs */
 .tabs:after { @include clearafter; }
 .tabs .tab { display: block; padding: 8px 10px; color: #777; }
 .tabs .tab:hover { text-decoration: none; color: $linkcolor; }
-.tabs .tab.sel { border-radius: 2px 2px 0 0; color: #333; cursor: default; }
+.tabs .tab.sel { border-radius: 3px 3px 0 0; color: #000; cursor: default; }
 
-#tabs { margin-top: 15px; }
-#tabs li { float: left; }
+#tabs { margin-left: -10px; font-size: 0; }
+#tabs li { display: inline-block; font-size: 13px; }
+#tabs li a { color: #555; }
+#tabs li a:not(.sel):hover { color: $linkcolor; }
 #tabs li .tab.sel { background: #fff; }
 
 /* main */
-#main { padding: 30px; min-height: 500px; }
+#main { position: relative; padding: 30px; min-height: 500px; border-radius: 3px; background: #fff; }
 #main.has-sidebar { padding-left: 230px; }
 #main.has-sidebar:after { @include clearafter; }
 
@@ -117,7 +118,7 @@ html, body { background: $bgcolor; }
 #main #content { display: block; }
 
 /* version */
-#version { margin: 15px 0; text-align: center; color: rgba(0,0,0,0.25); font-size: 11px; }
+#version { margin: 15px 0; text-align: center; color: #aaa; text-shadow: 0 1px 0 #fff; font-size: 11px; }
 
 /* max widths for readability */
 .field { max-width: 600px; }
