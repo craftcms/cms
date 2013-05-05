@@ -8,6 +8,7 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 	elementType: null,
 	sources: null,
 	limit: null,
+	totalElements: 0,
 	elementSelect: null,
 	elementSort: null,
 	modal: null,
@@ -29,6 +30,13 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 		this.$elementsContainer = this.$container.children('.elements');
 		this.$elements = this.$elementsContainer.children();
 		this.$addElementBtn = this.$container.children('.btn.add');
+
+		this.totalElements = this.$elements.length;
+
+		if (this.limit && this.totalElements == this.limit)
+		{
+			this.$addElementBtn.addClass('disabled');
+		}
 
 		this.elementSelect = new Garnish.Select(this.$elements, {
 			multi: true
@@ -65,11 +73,19 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 			}
 
 			$element.remove();
+			this.totalElements--;
+			this.$addElementBtn.removeClass('disabled');
 		}, this));
 	},
 
 	showModal: function()
 	{
+		// Make sure we haven't reached the limit
+		if (this.limit && this.totalElements == this.limit)
+		{
+			return;
+		}
+
 		if (!this.modal)
 		{
 			var selectedElementIds = [];
@@ -95,7 +111,17 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 
 	selectElements: function(elements)
 	{
-		for (var i = 0; i < elements.length; i++)
+		if (this.limit)
+		{
+			var slotsLeft = this.limit - this.totalElements,
+				max = Math.min(elements.length, slotsLeft);
+		}
+		else
+		{
+			var max = elements.length;
+		}
+
+		for (var i = 0; i < max; i++)
 		{
 			var element = elements[i],
 				$element = $(
@@ -110,6 +136,13 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 
 			this.$elements = this.$elements.add($element);
 			this.initElements($element);
+		}
+
+		this.totalElements += max;
+
+		if (this.limit && this.totalElements == this.limit)
+		{
+			this.$addElementBtn.addClass('disabled');
 		}
 	}
 });

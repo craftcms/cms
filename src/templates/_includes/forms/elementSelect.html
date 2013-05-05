@@ -1,5 +1,5 @@
-{%- set attributes = elementType.getTableAttributes() %}
-{%- set elements = (elements is defined ? elements : []) -%}
+{% set attributes = elementType.getTableAttributes() -%}
+{% set elements = (elements is defined ? elements : []) -%}
 
 <div id="{{ id }}" class="elementselect">
 	<div class="elements">
