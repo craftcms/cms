@@ -57,7 +57,8 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 				this.$search = this.$body.find('.search:first input:first');
 				this.$elements = this.$body.find('.elements:first');
 
-				this.source = this.$sources.filter('.sel').data('id');
+				this.$source = this.$sources.filter('.sel');
+				this.source = this.$source.data('id');
 
 				this.resetElementSelect();
 
@@ -71,6 +72,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 					this.searchTimeout = setTimeout($.proxy(this, 'updateElements'), 500);
 				}, this));
 
+				this.addListener(this.$sources, 'activate', 'selectSource');
 				this.addListener(this.$elements, 'dblclick', 'selectElements');
 			}, this));
 
@@ -133,6 +135,14 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 	{
 		this.hide();
 		this.settings.onCancel();
+	},
+
+	selectSource: function(ev)
+	{
+		this.$source.removeClass('sel');
+		this.$source = $(ev.currentTarget).addClass('sel');
+		this.source = this.$source.data('id');
+		this.updateElements();
 	},
 
 	selectElements: function()
