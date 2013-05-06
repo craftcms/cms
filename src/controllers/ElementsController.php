@@ -14,9 +14,8 @@ class ElementsController extends BaseController
 		$this->requireAjaxRequest();
 
 		$showSources = craft()->request->getParam('sources');
-		$source = craft()->request->getParam('selectedSource');
+		$state = craft()->request->getParam('state', array());
 		$disabledElementIds = craft()->request->getParam('disabledElementIds');
-		$view = craft()->request->getParam('view', 'table');
 
 		$elementType = $this->_getElementType();
 		$sources = $elementType->getSources();
@@ -34,21 +33,21 @@ class ElementsController extends BaseController
 
 		if ($sources)
 		{
-			if (!$source || !isset($sourcs[$source]))
+			if (empty($state['source']) || !isset($sources[$state['source']]))
 			{
-				$source = array_shift(array_keys($sources));
+				$state['source'] = array_shift(array_keys($sources));
 			}
 		}
 		else
 		{
-			$source = null;
+			$state['source'] = null;
 		}
 
-		$elementsHtml = $this->_renderElementsHtml($elementType, $source, null, 0, $view, $disabledElementIds, true);
+		$elementsHtml = $this->_renderElementsHtml($elementType, $state, null, 0, $disabledElementIds, true);
 
 		$this->renderTemplate('_elements/selectormodal', array(
 			'sources'        => $sources,
-			'selectedSource' => $source,
+			'selectedSource' => $state['source'],
 			'elementsHtml'   => $elementsHtml
 		));
 	}
@@ -59,12 +58,11 @@ class ElementsController extends BaseController
 	public function actionGetElements()
 	{
 		$elementType = $this->_getElementType();
-		$source = craft()->request->getParam('source');
+		$state = craft()->request->getParam('state', array());
 		$search = craft()->request->getParam('search');
 		$offset = craft()->request->getParam('offset', 0);
-		$view = craft()->request->getParam('view', 'table');
 
-		$this->_renderElementsHtml($elementType, $source, $search, $offset, $view);
+		$this->_renderElementsHtml($elementType, $state, $search, $offset);
 	}
 
 	/**
@@ -92,25 +90,29 @@ class ElementsController extends BaseController
 	 *
 	 * @access private
 	 * @param BaseElementType $elementType
-	 * @param string          $source
+	 * @param array           $state
 	 * @param string          $search
 	 * @param int             $offset
-	 * @param string          $view
+	 * @param array           $disabledElementIds
 	 * @param bool            $return
 	 * @return string
 	 */
-	private function _renderElementsHtml(BaseElementType $elementType, $source, $search, $offset, $view, $disabledElementIds = array(), $return = false)
+	private function _renderElementsHtml(BaseElementType $elementType, $state, $search, $offset, $disabledElementIds = array(), $return = false)
 	{
 		$criteria = craft()->elements->getCriteria($elementType->getClassHandle());
 
-		if ($source)
+		if (!empty($state['source']))
 		{
 			$sources = $elementType->getSources();
 
-			if (isset($sources[$source]))
+			if (isset($sources[$state['source']]))
 			{
-				$criteria->setAttributes($sources[$source]['criteria']);
+				$criteria->setAttributes($sources[$state['source']]['criteria']);
 			}
+		}
+		else
+		{
+			$state['source'] = null;
 		}
 
 		if ($search)
@@ -127,9 +129,14 @@ class ElementsController extends BaseController
 			'disabledElementIds' => $disabledElementIds,
 		);
 
-		if ($view == 'table')
+		if (!isset($state['view']))
 		{
-			$variables['attributes'] = $elementType->defineTableAttributes($source);
+			$state['view'] = 'table';
+		}
+
+		if ($state['view'] == 'table')
+		{
+			$variables['attributes'] = $elementType->defineTableAttributes($state['source']);
 			$template = '_elements/tableview';
 		}
 		else

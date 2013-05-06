@@ -97,6 +97,7 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 			}
 
 			this.modal = new Craft.ElementSelectorModal({
+				id: this.id,
 				elementType: this.elementType,
 				sources: this.sources,
 				disabledElementIds: selectedElementIds,

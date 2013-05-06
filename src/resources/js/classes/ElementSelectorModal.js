@@ -4,6 +4,8 @@
 Craft.ElementSelectorModal = Garnish.Modal.extend({
 
 	initialized: false,
+	state: null,
+	stateStorageId: null,
 	source: null,
 	searchTimeout: null,
 	elementSelect: null,
@@ -32,8 +34,43 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		this.$body = $body;
 		this.$selectBtn = $selectBtn;
 
+        // Set the state object
+        this.state = {};
+
+        if (typeof Storage !== 'undefined' && this.settings.id)
+        {
+        	this.stateStorageId = 'Craft.ElementSelectorModal.'+this.settings.id;
+
+        	if (typeof localStorage[this.stateStorageId] != 'undefined')
+        	{
+        		this.state = JSON.parse(localStorage[this.stateStorageId]);
+        	}
+        }
+
 		this.addListener($cancelBtn, 'activate', 'cancel');
 		this.addListener(this.$selectBtn, 'activate', 'selectElements');
+	},
+
+	getState: function(key)
+	{
+		if (typeof this.state[key] != 'undefined')
+		{
+			return this.state[key];
+		}
+		else
+		{
+			return null;
+		}
+	},
+
+	setState: function(key, value)
+	{
+		this.state[key] = value;
+
+		if (this.stateStorageId)
+		{
+		    localStorage[this.stateStorageId] = JSON.stringify(this.state);
+		}
 	},
 
 	onFadeIn: function()
@@ -44,7 +81,8 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 			var data = {
 				elementType:        this.settings.elementType,
 				sources:            this.settings.sources,
-				disabledElementIds: this.settings.disabledElementIds
+				disabledElementIds: this.settings.disabledElementIds,
+				state:              this.state
 			};
 
 			Craft.postActionRequest('elements/getModalBody', data, $.proxy(function(response)
@@ -56,9 +94,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 				this.$sources = this.$body.find('.sidebar:first a');
 				this.$search = this.$body.find('.search:first input:first');
 				this.$elements = this.$body.find('.elements:first');
-
 				this.$source = this.$sources.filter('.sel');
-				this.source = this.$source.data('id');
 
 				this.resetElementSelect();
 
@@ -88,9 +124,8 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 
 		var data = {
 			elementType: this.settings.elementType,
-			source:      this.source,
+			state:       this.state,
 			search:      this.$search.val(),
-			filter:      ':not(a)'
 		};
 
 		Craft.postActionRequest('elements/getElements', data, $.proxy(function(response)
@@ -141,7 +176,8 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 	{
 		this.$source.removeClass('sel');
 		this.$source = $(ev.currentTarget).addClass('sel');
-		this.source = this.$source.data('id');
+
+		this.setState('source', this.$source.data('id'));
 		this.updateElements();
 	},
 
@@ -211,6 +247,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 },
 {
 	defaults: {
+		id: null,
 		elementType: null,
 		sources: null,
 		disabledElementIds: null,
