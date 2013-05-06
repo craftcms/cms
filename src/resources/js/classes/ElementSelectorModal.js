@@ -15,6 +15,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 	$spinner: null,
 	$sources: null,
 	$search: null,
+	$headers: null,
 	$elements: null,
 
 	init: function(settings)
@@ -35,7 +36,9 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		this.$selectBtn = $selectBtn;
 
         // Set the state object
-        this.state = {};
+        this.state = {
+        	view: 'table'
+        };
 
         if (typeof Storage !== 'undefined' && this.settings.id)
         {
@@ -43,7 +46,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 
         	if (typeof localStorage[this.stateStorageId] != 'undefined')
         	{
-        		this.state = JSON.parse(localStorage[this.stateStorageId]);
+        		$.extend(this.state, JSON.parse(localStorage[this.stateStorageId]));
         	}
         }
 
@@ -65,7 +68,14 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 
 	setState: function(key, value)
 	{
-		this.state[key] = value;
+		if (typeof key == 'object')
+		{
+			$.extend(this.state, key);
+		}
+		else
+		{
+			this.state[key] = value;
+		}
 
 		if (this.stateStorageId)
 		{
@@ -96,8 +106,6 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 				this.$elements = this.$body.find('.elements:first');
 				this.$source = this.$sources.filter('.sel');
 
-				this.resetElementSelect();
-
 				this.addListener(this.$search, 'textchange', $.proxy(function()
 				{
 					if (this.searchTimeout)
@@ -110,6 +118,10 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 
 				this.addListener(this.$sources, 'activate', 'selectSource');
 				this.addListener(this.$elements, 'dblclick', 'selectElements');
+
+
+				this.onAfterUpdateElements();
+
 			}, this));
 
 			this.initialized = true;
@@ -132,12 +144,20 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		{
 			this.$elements.html(response);
 			this.$spinner.addClass('hidden');
-			this.resetElementSelect();
+			this.onAfterUpdateElements();
 		}, this));
 	},
 
-	resetElementSelect: function()
+	onAfterUpdateElements: function()
 	{
+		if (this.state.view == 'table')
+		{
+			var $headers = this.$body.find('thead th');
+			console.log($headers);
+			this.addListener($headers, 'activate', 'onSortChange');
+		}
+
+		// Reset the element select
 		if (this.elementSelect)
 		{
 			this.elementSelect.destroy();
@@ -164,6 +184,33 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		{
 			this.$selectBtn.addClass('disabled');
 		}
+	},
+
+	onSortChange: function(ev)
+	{
+		var $th = $(ev.currentTarget),
+			attribute = $th.attr('data-attribute');
+
+		if (this.getState('order') == attribute)
+		{
+			if (this.getState('sort') == 'asc')
+			{
+				this.setState('sort', 'desc');
+			}
+			else
+			{
+				this.setState('sort', 'asc');
+			}
+		}
+		else
+		{
+			this.setState({
+				order: attribute,
+				sort: 'asc'
+			});
+		}
+
+		this.updateElements();
 	},
 
 	cancel: function()

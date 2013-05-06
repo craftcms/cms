@@ -115,6 +115,11 @@ class ElementsController extends BaseController
 			$state['source'] = null;
 		}
 
+		if (!empty($state['order']))
+		{
+			$criteria->order = $state['order'].' '.$state['sort'];
+		}
+
 		if ($search)
 		{
 			$criteria->search = $search;
@@ -125,8 +130,9 @@ class ElementsController extends BaseController
 
 		// Find the elements!
 		$variables = array(
-			'elements' => $criteria->find(),
+			'elements'           => $criteria->find(),
 			'disabledElementIds' => $disabledElementIds,
+			'state'              => $state,
 		);
 
 		if (!isset($state['view']))

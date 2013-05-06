@@ -364,6 +364,8 @@ h2 + .actions { margin-top: -54px; }
 /* ----------------------------------------*/
 
 table thead th { font-weight: bold; text-align: left; vertical-align: top; font-size: 11px; line-height: 1.2; color: rgba(0,0,0,0.5); text-shadow: 0 1px 0 #fff; }
+table thead th.ordered { padding-right: 26px; background: $highlight url(../images/listview_sort.png) no-repeat 100% -4px; }
+table thead th.ordered.desc { background-position: 100% -35px; }
 
 td.thin { width: 0.01% !important; vertical-align: middle; }
 
@@ -458,7 +460,7 @@ table.data.collapsed tbody td form { display: inline-block; }
 .modal.elementselector .body .main .elements { margin: 0 -30px; }
 .modal.elementselector .body .main .elements table.data .element { display: inline-block; }
 .modal.elementselector .body .main .elements table.data tr th,
-.modal.elementselector .body .main .elements table.data tr td { padding-top: 4px; padding-bottom: 4px; }
+.modal.elementselector .body .main .elements table.data tr td { padding-top: 4px; padding-bottom: 4px; cursor: default;}
 .modal.elementselector .body .main .elements table.data tr th:first-child,
 .modal.elementselector .body .main .elements table.data tr td:first-child { padding-left: 30px; }
 .modal.elementselector .body .main .elements table.data tr th:last-child,
@@ -725,6 +727,8 @@ ul.errors li { color: $errorcolor; }
 {
 	.backbtn { background-image: url(../images/backbtn-right_2x.png); background-size: 185px 113px; }
 	.backbtn:before { background-image: url(../images/backbtn-left_2x.png); background-size: 15px 113px; }
+
+	table thead th.ordered { background-image: url(../images/listview_sort_2x.png); background-size: 26px; }
 
 	.status { background-image: url(../images/status_2x.png); background-size: 10px 40px; }
 
