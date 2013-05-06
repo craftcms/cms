@@ -85,11 +85,21 @@ class TemplatesController extends BaseController
 	}
 
 	/**
+	 * Renders the Invalid Track template.
+	 */
+	public function actionInvalidTrack()
+	{
+		$this->_render('_special/invalidtrack');
+	}
+
+	/**
 	 * Renders a template, sets the mime type header, etc..
 	 *
 	 * @access private
-	 * @param string $template
+	 * @param string     $template
 	 * @param array|null $variables
+	 * @throws HttpException
+	 * @throws TemplateLoaderException|\Exception
 	 */
 	private function _render($template, $variables = array())
 	{
