@@ -51,7 +51,7 @@ class FileLogRoute extends \CFileLogRoute
 			$time = $log[3];
 			$force = (isset($log[4]) && $log[4] == true) ? true : false;
 
-			@fwrite($fp, $this->formatLogMessage($message, $level, $category, $time, $force));
+			@fwrite($fp, $this->formatLogMessageWithForce($message, $level, $category, $time, $force));
 		}
 
 		@fwrite($fp, PHP_EOL.'******************************************************************************************************'.PHP_EOL);
@@ -75,7 +75,7 @@ class FileLogRoute extends \CFileLogRoute
 	 *
 	 * @return string            formatted message
 	 */
-	protected function formatLogMessage($message, $level, $category, $time, $force)
+	protected function formatLogMessageWithForce($message, $level, $category, $time, $force)
 	{
 		return @date('Y/m/d H:i:s',$time)." [$level] [$category]".($force ? " [Forced]" : "")." $message\n";
 	}

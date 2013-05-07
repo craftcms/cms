@@ -266,7 +266,7 @@ class UsersService extends BaseApplicationComponent
 			// Update the search index
 			craft()->search->indexElementAttributes($user);
 
-			if ($isNewUser)
+			if ($isNewUser && $user->verificationRequired)
 			{
 				craft()->templates->registerTwigAutoloader();
 
