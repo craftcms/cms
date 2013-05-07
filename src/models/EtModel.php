@@ -54,8 +54,8 @@ class EtModel extends BaseModel
 		// The currently logged in user's email address.
 		$attributes['userEmail'] = AttributeType::String;
 
-		// The track this install is on.
-		$attributes['track'] = array(AttributeType::String, 'required' => true);
+		// The track this install is on.  Not required for backwards compatibility.
+		$attributes['track'] = array(AttributeType::String);
 
 		// Any errors to return;
 		$attributes['errors'] = AttributeType::Mixed;
