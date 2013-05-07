@@ -559,6 +559,22 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns true if the track on the file system matches the track in the database, false otherwise.
+	 * This effectively makes sure that a user cannot change tracks while manually updating.
+	 *
+	 * @return bool
+	 */
+	public function isTrackValid()
+	{
+		if (strcmp(Craft::getTrack(), CRAFT_TRACK) !== 0)
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Returns a list of plugins that are in need of a database update.
 	 *
 	 * @return array|null
