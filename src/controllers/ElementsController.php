@@ -43,7 +43,8 @@ class ElementsController extends BaseController
 			$state['source'] = null;
 		}
 
-		$elementsHtml = $this->_renderElementsHtml($elementType, $state, null, 0, $disabledElementIds, true);
+		$criteria = $this->_getElementCriteria($elementType, $state);
+		$elementsHtml = $this->_renderElementsHtml($elementType, $state, $criteria, $disabledElementIds, true);
 
 		$this->renderTemplate('_elements/selectormodal', array(
 			'sources'        => $sources,
@@ -59,10 +60,10 @@ class ElementsController extends BaseController
 	{
 		$elementType = $this->_getElementType();
 		$state = craft()->request->getParam('state', array());
-		$search = craft()->request->getParam('search');
-		$offset = craft()->request->getParam('offset', 0);
+		$disabledElementIds = craft()->request->getParam('disabledElementIds');
 
-		$this->_renderElementsHtml($elementType, $state, $search, $offset);
+		$criteria = $this->_getElementCriteria($elementType, $state);
+		$this->_renderElementsHtml($elementType, $state, $criteria, $disabledElementIds);
 	}
 
 	/**
@@ -86,18 +87,13 @@ class ElementsController extends BaseController
 	}
 
 	/**
-	 * Renders the updated list of elements for an ElementSelectorModal.
+	 * Returns the element criteria based on the request parameters.
 	 *
-	 * @access private
 	 * @param BaseElementType $elementType
 	 * @param array           $state
-	 * @param string          $search
-	 * @param int             $offset
-	 * @param array           $disabledElementIds
-	 * @param bool            $return
-	 * @return string
+	 * @return ElementCriteriaModel
 	 */
-	private function _renderElementsHtml(BaseElementType $elementType, $state, $search, $offset, $disabledElementIds = array(), $return = false)
+	private function _getElementCriteria($elementType, $state)
 	{
 		$criteria = craft()->elements->getCriteria($elementType->getClassHandle());
 
@@ -120,15 +116,32 @@ class ElementsController extends BaseController
 			$criteria->order = $state['order'].' '.$state['sort'];
 		}
 
-		if ($search)
+		if ($search = craft()->request->getParam('search'))
 		{
 			$criteria->search = $search;
 		}
 
-		$criteria->limit = 100;
-		$criteria->offset = $offset;
+		if ($offset = craft()->request->getParam('offset'))
+		{
+			$criteria->offset = $offset;
+		}
 
-		// Find the elements!
+		return $criteria;
+	}
+
+	/**
+	 * Renders the updated list of elements for an ElementSelectorModal.
+	 *
+	 * @access private
+	 * @param BaseElementType      $elementType
+	 * @param array                $state
+	 * @param ElementCriteriaModel $criteria
+	 * @param array                $disabledElementIds
+	 * @param bool                 $return
+	 * @return string
+	 */
+	private function _renderElementsHtml(BaseElementType $elementType, $state, $criteria, $disabledElementIds = array(), $return = false)
+	{
 		$variables = array(
 			'elements'           => $criteria->find(),
 			'disabledElementIds' => $disabledElementIds,
