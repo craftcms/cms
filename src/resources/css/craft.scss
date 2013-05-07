@@ -461,7 +461,7 @@ table.data.collapsed tbody td form { display: inline-block; }
 .elementselect .caboose { float: left; }
 
 /* element selector modals */
-.modal.elementselector { margin-left: -350px; width: 700px; }
+.modal.elementselector { margin-left: -350px; width: 700px; @include unselectable; }
 .modal.elementselector .spinner { position: absolute; top: 30px; right: 5px; }
 .modal.elementselector .body { position: relative; height: 350px; padding-left: 230px; }
 .modal.elementselector .body .sidebar { margin: -30px 0 -30px -230px; padding: 30px 0 30px 30px; border-right: 1px solid #eee; height: 350px; overflow: scroll; }
