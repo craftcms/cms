@@ -84,6 +84,7 @@ class Et
 			'localBuild'        => CRAFT_BUILD,
 			'localVersion'      => CRAFT_VERSION,
 			'userEmail'         => craft()->userSession->getUser()->email,
+			'track'             => CRAFT_TRACK,
 		));
 
 		$this->_options['useragent'] = 'craft-requests/'.\Requests::VERSION;

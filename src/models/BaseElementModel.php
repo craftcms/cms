@@ -70,9 +70,11 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the URL to the element's thumbnail, if there is one.
 	 *
+	 * @param int $width
+	 * @param int $height
 	 * @return string|false
 	 */
-	public function getThumbUrl()
+	public function getThumbUrl($width = null, $height = null)
 	{
 		return false;
 	}

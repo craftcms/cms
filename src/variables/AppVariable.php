@@ -7,7 +7,7 @@ namespace Craft;
 class AppVariable
 {
 	/**
-	 * Returns the current Craft version.
+	 * Returns the installed Craft version.
 	 *
 	 * @return string
 	 */
@@ -17,13 +17,23 @@ class AppVariable
 	}
 
 	/**
-	 * Returns the current Craft build.
+	 * Returns the installed Craft build.
 	 *
 	 * @return string
 	 */
 	public function getBuild()
 	{
 		return Craft::getBuild();
+	}
+
+	/**
+	 * Returns the installed Craft release date.
+	 *
+	 * @return DateTime
+	 */
+	public function getReleaseDate()
+	{
+		return Craft::getReleasedate();
 	}
 
 	/**

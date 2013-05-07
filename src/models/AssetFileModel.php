@@ -168,7 +168,7 @@ class AssetFileModel extends BaseElementModel
 		}
 		if (!is_numeric($height))
 		{
-			$height = 125;
+			$height = $width;
 		}
 
 		return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$width.'x'.$height);

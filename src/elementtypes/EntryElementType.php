@@ -104,7 +104,6 @@ class EntryElementType extends BaseElementType
 			$attributes['section']  = Craft::t('Section');
 		}
 
-		$attributes['status']   = Craft::t('Status');
 		$attributes['postDate'] = Craft::t('Post Date');
 
 		return $attributes;

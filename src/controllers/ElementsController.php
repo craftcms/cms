@@ -14,9 +14,8 @@ class ElementsController extends BaseController
 		$this->requireAjaxRequest();
 
 		$showSources = craft()->request->getParam('sources');
-		$source = craft()->request->getParam('selectedSource');
+		$state = craft()->request->getParam('state', array());
 		$disabledElementIds = craft()->request->getParam('disabledElementIds');
-		$view = craft()->request->getParam('view', 'table');
 
 		$elementType = $this->_getElementType();
 		$sources = $elementType->getSources();
@@ -34,21 +33,22 @@ class ElementsController extends BaseController
 
 		if ($sources)
 		{
-			if (!$source || !isset($sourcs[$source]))
+			if (empty($state['source']) || !isset($sources[$state['source']]))
 			{
-				$source = array_shift(array_keys($sources));
+				$state['source'] = array_shift(array_keys($sources));
 			}
 		}
 		else
 		{
-			$source = null;
+			$state['source'] = null;
 		}
 
-		$elementsHtml = $this->_renderElementsHtml($elementType, $source, null, 0, $view, $disabledElementIds, true);
+		$criteria = $this->_getElementCriteria($elementType, $state);
+		$elementsHtml = $this->_renderElementsHtml($elementType, $state, $criteria, $disabledElementIds, true);
 
 		$this->renderTemplate('_elements/selectormodal', array(
 			'sources'        => $sources,
-			'selectedSource' => $source,
+			'selectedSource' => $state['source'],
 			'elementsHtml'   => $elementsHtml
 		));
 	}
@@ -59,12 +59,11 @@ class ElementsController extends BaseController
 	public function actionGetElements()
 	{
 		$elementType = $this->_getElementType();
-		$source = craft()->request->getParam('source');
-		$search = craft()->request->getParam('search');
-		$offset = craft()->request->getParam('offset', 0);
-		$view = craft()->request->getParam('view', 'table');
+		$state = craft()->request->getParam('state', array());
+		$disabledElementIds = craft()->request->getParam('disabledElementIds');
 
-		$this->_renderElementsHtml($elementType, $source, $search, $offset, $view);
+		$criteria = $this->_getElementCriteria($elementType, $state);
+		$this->_renderElementsHtml($elementType, $state, $criteria, $disabledElementIds);
 	}
 
 	/**
@@ -88,48 +87,75 @@ class ElementsController extends BaseController
 	}
 
 	/**
-	 * Renders the updated list of elements for an ElementSelectorModal.
+	 * Returns the element criteria based on the request parameters.
 	 *
-	 * @access private
 	 * @param BaseElementType $elementType
-	 * @param string          $source
-	 * @param string          $search
-	 * @param int             $offset
-	 * @param string          $view
-	 * @param bool            $return
-	 * @return string
+	 * @param array           $state
+	 * @return ElementCriteriaModel
 	 */
-	private function _renderElementsHtml(BaseElementType $elementType, $source, $search, $offset, $view, $disabledElementIds = array(), $return = false)
+	private function _getElementCriteria($elementType, $state)
 	{
 		$criteria = craft()->elements->getCriteria($elementType->getClassHandle());
 
-		if ($source)
+		if (!empty($state['source']))
 		{
 			$sources = $elementType->getSources();
 
-			if (isset($sources[$source]))
+			if (isset($sources[$state['source']]))
 			{
-				$criteria->setAttributes($sources[$source]['criteria']);
+				$criteria->setAttributes($sources[$state['source']]['criteria']);
 			}
 		}
+		else
+		{
+			$state['source'] = null;
+		}
 
-		if ($search)
+		if (!empty($state['order']))
+		{
+			$criteria->order = $state['order'].' '.$state['sort'];
+		}
+
+		if ($search = craft()->request->getParam('search'))
 		{
 			$criteria->search = $search;
 		}
 
-		$criteria->limit = 100;
-		$criteria->offset = $offset;
+		if ($offset = craft()->request->getParam('offset'))
+		{
+			$criteria->offset = $offset;
+		}
 
-		// Find the elements!
+		return $criteria;
+	}
+
+	/**
+	 * Renders the updated list of elements for an ElementSelectorModal.
+	 *
+	 * @access private
+	 * @param BaseElementType      $elementType
+	 * @param array                $state
+	 * @param ElementCriteriaModel $criteria
+	 * @param array                $disabledElementIds
+	 * @param bool                 $return
+	 * @return string
+	 */
+	private function _renderElementsHtml(BaseElementType $elementType, $state, $criteria, $disabledElementIds = array(), $return = false)
+	{
 		$variables = array(
-			'elements' => $criteria->find(),
+			'elements'           => $criteria->find(),
 			'disabledElementIds' => $disabledElementIds,
+			'state'              => $state,
 		);
 
-		if ($view == 'table')
+		if (!isset($state['view']))
 		{
-			$variables['attributes'] = $elementType->defineTableAttributes($source);
+			$state['view'] = 'table';
+		}
+
+		if ($state['view'] == 'table')
+		{
+			$variables['attributes'] = $elementType->defineTableAttributes($state['source']);
 			$template = '_elements/tableview';
 		}
 		else

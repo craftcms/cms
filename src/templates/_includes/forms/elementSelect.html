@@ -1,14 +1,10 @@
-{%- set attributes = elementType.getTableAttributes() %}
-{%- set elements = (elements is defined ? elements : []) -%}
+{% set attributes = elementType.getTableAttributes() -%}
+{% set elements = (elements is defined ? elements : []) -%}
 
 <div id="{{ id }}" class="elementselect">
 	<div class="elements">
 		{% for element in elements %}
-			<div class="element removable" data-id="{{ element.id }}">
-				<input type="hidden" name="{{ name }}[]" value="{{ element.id }}">
-				<a class="delete icon" title="{{ 'Remove'|t }}"></a>
-				<span class="label">{{ element }}</span>
-			</div>
+			{% include "_elements/element" with { isField: true } %}
 		{% endfor %}
 	</div>
 
