@@ -44,26 +44,60 @@ class ElementsController extends BaseController
 		}
 
 		$criteria = $this->_getElementCriteria($elementType, $state);
-		$elementsHtml = $this->_renderElementsHtml($elementType, $state, $criteria, $disabledElementIds, true);
 
-		$this->renderTemplate('_elements/selectormodal', array(
+		$bodyHtml = $this->renderTemplate('_elements/modal/body', array(
 			'sources'        => $sources,
 			'selectedSource' => $state['source'],
-			'elementsHtml'   => $elementsHtml
+		), true);
+
+		$elementContainerHtml = $this->_renderModalElementContainerHtml($elementType, $state);
+		$elementDataHtml = $this->_renderModalElementDataHtml($elementType, $state, $criteria, $disabledElementIds);
+
+		$totalVisible = $criteria->offset + $criteria->limit;
+		$remainingElements = $criteria->total() - $totalVisible;
+
+		$this->returnJson(array(
+			'bodyHtml'             => $bodyHtml,
+			'elementContainerHtml' => $elementContainerHtml,
+			'elementDataHtml'      => $elementDataHtml,
+			'headHtml'             => craft()->templates->getHeadHtml(),
+			'totalVisible'         => $totalVisible,
+			'more'                 => ($remainingElements > 0),
 		));
 	}
 
 	/**
 	 * Renders and returns the list of elements in an ElementSelectorModal.
 	 */
-	public function actionGetElements()
+	public function actionGetModalElements()
 	{
 		$elementType = $this->_getElementType();
 		$state = craft()->request->getParam('state', array());
 		$disabledElementIds = craft()->request->getParam('disabledElementIds');
 
 		$criteria = $this->_getElementCriteria($elementType, $state);
-		$this->_renderElementsHtml($elementType, $state, $criteria, $disabledElementIds);
+
+		if (!$criteria->offset)
+		{
+			$elementContainerHtml = $this->_renderModalElementContainerHtml($elementType, $state);
+		}
+		else
+		{
+			$elementContainerHtml = null;
+		}
+
+		$elementDataHtml = $this->_renderModalElementDataHtml($elementType, $state, $criteria, $disabledElementIds);
+
+		$totalVisible = $criteria->offset + $criteria->limit;
+		$remainingElements = $criteria->total() - $totalVisible;
+
+		$this->returnJson(array(
+			'elementContainerHtml' => $elementContainerHtml,
+			'elementDataHtml'      => $elementDataHtml,
+			'headHtml'             => craft()->templates->getHeadHtml(),
+			'totalVisible'         => $totalVisible,
+			'more'                 => ($remainingElements > 0),
+		));
 	}
 
 	/**
@@ -130,39 +164,37 @@ class ElementsController extends BaseController
 	}
 
 	/**
-	 * Renders the updated list of elements for an ElementSelectorModal.
+	 * Renders the element container HTML for the ElementSelectorModal.
+	 *
+	 * @access private
+	 * @param BaseElementType      $elementType
+	 * @param array                $state
+	 * @return string
+	 */
+	private function _renderModalElementContainerHtml(BaseElementType $elementType, $state)
+	{
+		return $this->renderTemplate('_elements/modal/elementcontainer', array(
+			'state'              => $state,
+			'attributes'         => $elementType->defineTableAttributes($state['source'])
+		), true);
+	}
+
+	/**
+	 * Renders the element data HTML for the ElementSelectorModal.
 	 *
 	 * @access private
 	 * @param BaseElementType      $elementType
 	 * @param array                $state
 	 * @param ElementCriteriaModel $criteria
 	 * @param array                $disabledElementIds
-	 * @param bool                 $return
 	 * @return string
 	 */
-	private function _renderElementsHtml(BaseElementType $elementType, $state, $criteria, $disabledElementIds = array(), $return = false)
+	private function _renderModalElementDataHtml(BaseElementType $elementType, $state, ElementCriteriaModel $criteria, $disabledElementIds)
 	{
-		$variables = array(
+		return $this->renderTemplate('_elements/modal/elementdata', array(
+			'attributes'         => $elementType->defineTableAttributes($state['source']),
 			'elements'           => $criteria->find(),
 			'disabledElementIds' => $disabledElementIds,
-			'state'              => $state,
-		);
-
-		if (!isset($state['view']))
-		{
-			$state['view'] = 'table';
-		}
-
-		if ($state['view'] == 'table')
-		{
-			$variables['attributes'] = $elementType->defineTableAttributes($state['source']);
-			$template = '_elements/tableview';
-		}
-		else
-		{
-			$template = '_elements/thumbview';
-		}
-
-		return $this->renderTemplate($template, $variables, $return);
+		), true);
 	}
 }
