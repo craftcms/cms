@@ -164,7 +164,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 			delete this.elementSelect;
 		}
 
-		var $trs = this.$elements.find('tbody:first > tr');
+		var $trs = this.$elements.find('tbody:first > tr:not(.disabled)');
 
 		this.elementSelect = new Garnish.Select(this.$elements, $trs, {
 			multi: true,
