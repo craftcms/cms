@@ -133,6 +133,20 @@ class WebApp extends \CWebApplication
 			throw new HttpException(503);
 		}
 
+		// If the track has changed, put the brakes on the request.
+		if (!craft()->updates->isTrackValid())
+		{
+			if ($this->request->isCpRequest())
+			{
+				$this->runController('templates/invalidtrack');
+				$this->end();
+			}
+			else
+			{
+				throw new HttpException(503);
+			}
+		}
+
 		// isDbUpdateNeeded will return true if we're in the middle of a manual or auto-update.
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
 		if ($this->updates->isDbUpdateNeeded() || (Craft::isInMaintenanceMode() && $this->request->isCpRequest()))

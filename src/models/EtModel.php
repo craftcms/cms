@@ -51,8 +51,11 @@ class EtModel extends BaseModel
 		// The local build number.
 		$attributes['localBuild'] = array(AttributeType::Number, 'required' => true);
 
-		// The currently logged in user's email address
+		// The currently logged in user's email address.
 		$attributes['userEmail'] = AttributeType::String;
+
+		// The track this install is on.  Not required for backwards compatibility.
+		$attributes['track'] = array(AttributeType::String);
 
 		// Any errors to return;
 		$attributes['errors'] = AttributeType::Mixed;

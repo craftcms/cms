@@ -81,10 +81,10 @@ class SystemSettingsController extends BaseController
 
 		$info = Craft::getInfo();
 
-		$info->on       = (bool) craft()->request->getPost('on');
-		$info->siteName = craft()->request->getPost('siteName');
-		$info->siteUrl  = craft()->request->getPost('siteUrl');
-		$info->timezone = craft()->request->getPost('timezone');
+		$info->on          = (bool) craft()->request->getPost('on');
+		$info->siteName    = craft()->request->getPost('siteName');
+		$info->siteUrl     = craft()->request->getPost('siteUrl');
+		$info->timezone    = craft()->request->getPost('timezone');
 
 		if (Craft::saveInfo($info))
 		{
