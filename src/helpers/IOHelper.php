@@ -621,9 +621,10 @@ class IOHelper
 	 * @param  string $contents   The contents to be written to the file.
 	 * @param  bool   $autoCreate Whether or not to autocreate the file if it does not exist.
 	 * @param  bool   $append     If true, will append the data to the contents of the file, otherwise it will overwrite the contents.
+	 * @param  null   $noFileLock
 	 * @return bool   'true' upon successful writing to the file, otherwise false.
 	 */
-	public static function writeToFile($path, $contents, $autoCreate = true, $append = false)
+	public static function writeToFile($path, $contents, $autoCreate = true, $append = false, $noFileLock = null)
 	{
 		$path = static::normalizePathSeparators($path);
 
@@ -647,23 +648,67 @@ class IOHelper
 
 		if (static::isWritable($path))
 		{
-			$flags = 0;
-			if (craft()->config->get('useLockWhenWritingToFile') === true)
+			// We haven't cached file lock information yet and this is not a noFileLock request.
+			if (($useFileLock = craft()->fileCache->get('useWriteFileLock')) === false && !$noFileLock)
 			{
-				$flags |= LOCK_EX;
-			}
+				// For file systems that don't support file locking... LOOKING AT YOU NFS!!!
+				set_error_handler(array(new IOHelper(), 'handleError'));
 
-			if ($append)
+				try
+				{
+					Craft::log('Tried to write to file at '.$path.' using LOCK_EX.', LogLevel::Info, true);
+					if (static::_writeToFile($path, $contents, true, $append))
+					{
+						// Restore quickly.
+						restore_error_handler();
+
+						// Cache the file lock info to use LOCK_EX for 2 months.
+						Craft::log('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.', LogLevel::Info, true);
+						craft()->fileCache->set('useWriteFileLock', 'yes', 5184000);
+						return true;
+					}
+				}
+				catch (ErrorException $e)
+				{
+					// Restore here before we attempt to write again.
+					restore_error_handler();
+
+					// Try again without the lock flag.
+					Craft::log('Trying to write to file at '.$path.' without LOCK_EX.', LogLevel::Info, true);
+					if (static::_writeToFile($path, $contents, false, $append))
+					{
+						// Cache the file lock info to not use LOCK_EX for 2 months.
+						Craft::log('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', LogLevel::Info, true);
+						craft()->fileCache->set('useWriteFileLock', 'no', 5184000);
+						return true;
+					}
+				}
+
+				// Make sure we're really restored
+				restore_error_handler();
+			}
+			else
 			{
-				$flags |= FILE_APPEND;
-			}
+				// If cache says use LOCK_X and this is not a noFileLock request.
+				if ($useFileLock == 'yes' && !$noFileLock)
+				{
+					// Write with LOCK_EX
+					if (static::_writeToFile($path, $contents, true, $append))
+					{
+						return true;
+					}
+				}
+				else
+				{
+					// Write without LOCK_EX
+					if (static::_writeToFile($path, $contents, false, $append))
+					{
+						Craft::log('Tried to write to file at '.$path.', could not.', LogLevel::Error);
+						return false;
+					}
+				}
 
-			if ((file_put_contents($path, $contents, $flags)) !== false)
-			{
-				return true;
 			}
-
-			Craft::log('Tried to write to file at '.$path.', could not.', LogLevel::Error);
 		}
 		else
 		{
@@ -1389,5 +1434,55 @@ class IOHelper
 
 		return false;
 	}
-}
 
+	/**
+	 * @param       $errNo
+	 * @param       $errStr
+	 * @param       $errFile
+	 * @param       $errLine
+	 * @param array $errContext
+	 * @return bool
+	 * @throws ErrorException
+	 */
+	public function handleError($errNo, $errStr, $errFile, $errLine, array $errContext)
+	{
+		// The error was suppressed with the @-operator
+		if (0 === error_reporting())
+		{
+			return false;
+		}
+
+		$message = 'ErrNo: '.$errNo.': '.$errStr.' in file: '.$errFile.' on line: '.$errLine.'.';
+
+		throw new ErrorException($message, 0);
+	}
+
+	/**
+	 * @param       $path
+	 * @param       $contents
+	 * @param  bool $lock
+	 * @param  bool $append
+	 * @return bool
+	 */
+	private static function _writeToFile($path, $contents, $lock = true, $append = true)
+	{
+		$flags = 0;
+
+		if ($lock)
+		{
+			$flags |= LOCK_EX;
+		}
+
+		if ($append)
+		{
+			$flags |= FILE_APPEND;
+		}
+
+		if ((file_put_contents($path, $contents, $flags)) !== false)
+		{
+			return true;
+		}
+
+		return false;
+	}
+}

@@ -77,6 +77,9 @@ class WebApp extends \CWebApplication
 		$this->getComponent('request');
 		$this->getComponent('log');
 
+		// Set our own custom runtime path.
+		$this->setRuntimePath(craft()->path->getRuntimePath());
+
 		// Attach our own custom Logger
 		Craft::setLogger(new Logger());
 

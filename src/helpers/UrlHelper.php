@@ -136,7 +136,7 @@ class UrlHelper
 	 * @param              $mustShowScriptName
 	 * @return string
 	 */
-	private function _getUrl($path, $params, $protocol, $dynamicBaseUrl, $mustShowScriptName)
+	private static function _getUrl($path, $params, $protocol, $dynamicBaseUrl, $mustShowScriptName)
 	{
 		$anchor = '';
 

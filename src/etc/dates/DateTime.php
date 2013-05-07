@@ -133,11 +133,6 @@ class DateTime extends \DateTime
 					$format .= 'P';
 					$date   .= $m['tzd'];
 				}
-				else if ($timezone !== null)
-				{
-					$format .= 'e';
-					$date   .= $timezone;
-				}
 
 				if (!empty($m['ampm']))
 				{
@@ -153,6 +148,12 @@ class DateTime extends \DateTime
 			{
 				$format = '';
 			}
+		}
+
+		if ($timezone)
+		{
+			$format .= 'e';
+			$date   .= $timezone;
 		}
 
 		return static::createFromFormat('!'.$format, $date);

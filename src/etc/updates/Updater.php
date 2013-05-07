@@ -78,7 +78,7 @@ class Updater
 	 */
 	public function processDownload()
 	{
-		Craft::log ('Starting to process the update download.', LogLevel::Info, true);
+		Craft::log('Starting to process the update download.', LogLevel::Info, true);
 		$tempPath = craft()->path->getTempPath();
 
 		// Download the package from ET.
@@ -224,6 +224,28 @@ class Updater
 
 				throw new Exception(Craft::t('There was a problem updating your database.'));
 			}
+
+			// If plugin is null we're looking at Craft.
+			if ($plugin === null)
+			{
+				// Setting new Craft info.
+				Craft::log('Settings new Craft release info in craft_info table.', LogLevel::Info, true);
+				if (!craft()->updates->setNewCraftInfo(CRAFT_VERSION, CRAFT_BUILD, CRAFT_RELEASE_DATE))
+				{
+					throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the database info table.'));
+				}
+			}
+			else
+			{
+				if (!craft()->updates->setNewPluginInfo($plugin))
+				{
+					throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
+				}
+			}
+
+			// Take the site out of maintenance mode.
+			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
+			Craft::disableMaintenanceMode();
 		}
 		catch (\Exception $e)
 		{
@@ -238,58 +260,26 @@ class Updater
 
 	/**
 	 * @param $uid
-	 * @param $handle
 	 * @throws Exception
 	 * @return bool
 	 */
-	public function cleanUp($uid, $handle)
+	public function cleanUp($uid)
 	{
 		// If uid !== false, then it's an auto-update.
 		if ($uid !== false)
 		{
-			$zipFile = UpdateHelper::getZipFileFromUID($uid);
 			$unzipFolder = UpdateHelper::getUnzipFolderFromUID($uid);
 
 			// Clean-up any leftover files.
 			Craft::log('Cleaning up temp files after update.', LogLevel::Info, true);
-			$this->_cleanTempFiles($zipFile, $unzipFolder);
+			$this->_cleanTempFiles($unzipFolder);
 		}
-
-		// Take the site out of maintenance mode.
-		Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-		Craft::disableMaintenanceMode();
 
 		// Clear the updates cache.
 		Craft::log('Clearing the update cache.', LogLevel::Info, true);
 		if (!craft()->updates->flushUpdateInfoFromCache())
 		{
 			throw new Exception(Craft::t('The update was performed successfully, but there was a problem invalidating the update cache.'));
-		}
-
-		if ($handle == 'craft')
-		{
-			// Setting new Craft info.
-			Craft::log('Settings new Craft release info in craft_info table.', LogLevel::Info, true);
-			if (!craft()->updates->setNewCraftInfo(CRAFT_VERSION, CRAFT_BUILD, CRAFT_RELEASE_DATE))
-			{
-				throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the database info table.'));
-			}
-		}
-		else
-		{
-			$plugin = craft()->plugins->getPlugin($handle);
-
-			if ($plugin)
-			{
-				if (!craft()->updates->setNewPluginInfo($plugin))
-				{
-					throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
-				}
-			}
-			else
-			{
-				throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
-			}
 		}
 
 		Craft::log('Finished Updater.', LogLevel::Info, true);
@@ -299,8 +289,36 @@ class Updater
 	/**
 	 * Remove any temp files and/or folders that might have been created.
 	 */
-	private function _cleanTempFiles($zipFile, $unzipFolder)
+	private function _cleanTempFiles($unzipFolder)
 	{
+		// Get rid of all the .bak files/folders.
+		$baks = IOHelper::getFolderContents(craft()->path->getAppPath(), true, ".*\.bak$");
+
+		foreach ($baks as $bak)
+		{
+			if (IOHelper::fileExists($bak))
+			{
+				if (IOHelper::isWritable($bak))
+				{
+					Craft::log('Deleting .bak file: '.$bak, LogLevel::Info, true);
+					IOHelper::deleteFile($bak, true);
+				}
+			}
+			else
+			{
+				if (IOHelper::folderExists($bak))
+				{
+					if (IOHelper::isWritable($bak))
+					{
+						Craft::log('Deleting .bak folder:'.$bak, LogLevel::Info, true);
+						IOHelper::clearFolder($bak, true);
+						IOHelper::deleteFolder($bak, true);
+					}
+				}
+			}
+		}
+
+		// Now delete any files/folders that were marked for deletion in the manifest file.
 		$manifestData = UpdateHelper::getManifestData($unzipFolder);
 
 		foreach ($manifestData as $row)
@@ -327,21 +345,6 @@ class Updater
 
 			switch (trim($rowData[1]))
 			{
-				// If the file/folder was "added" in the manifest file, then it will have a backup we need to remove.
-				case PatchManifestFileAction::Add:
-				{
-					if ($tempFilePath == '')
-					{
-						$fullPath = IOHelper::normalizePathSeparators(rtrim(craft()->path->getAppPath(), '/').'.bak');
-					}
-					else
-					{
-						$fullPath = IOHelper::normalizePathSeparators(craft()->path->getAppPath().$tempFilePath.'.bak');
-					}
-
-					break;
-				}
-
 				// If the file/folder was set to be deleted, there is no backup and we go ahead and remove it now.
 				case PatchManifestFileAction::Remove:
 				{
@@ -377,11 +380,8 @@ class Updater
 			}
 		}
 
-		// Delete the temp patch folder
-		IOHelper::deleteFolder($unzipFolder);
-
-		// Delete the downloaded patch file.
-		IOHelper::deleteFile($zipFile);
+		// Clear the temp folder.
+		IOHelper::clearFolder(craft()->path->getTempPath(), true);
 	}
 
 	/**
