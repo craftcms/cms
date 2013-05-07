@@ -241,7 +241,8 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 
 				elements.push({
 					id: $row.data('id'),
-					label: $row.data('label')
+					label: $row.data('label'),
+					hasThumb: $row.find('.element').hasClass('hasthumb')
 				});
 			}
 

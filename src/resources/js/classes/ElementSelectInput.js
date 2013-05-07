@@ -133,6 +133,12 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 					'</div>'
 				);
 
+			if (element.hasThumb)
+			{
+				$element.addClass('hasthumb');
+				$('<div class="thumb thumb'+element.id+'"></div>').prependTo($element);
+			}
+
 			$element.appendTo(this.$elementsContainer);
 
 			this.$elements = this.$elements.add($element);

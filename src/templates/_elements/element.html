@@ -1,0 +1,21 @@
+{% if isField is not defined -%}
+	{% set isField = false -%}
+{% endif -%}
+
+{% set thumbUrl = element.getThumbUrl(45, 45) -%}
+{% if thumbUrl -%}
+	{% set thumbClass = 'thumb'~element.id -%}
+	{% includeCss '.'~thumbClass~' { background-image: url('~thumbUrl~'); }' -%}
+	{% includeHiResCss '.'~thumbClass~' { background-image: url('~element.getThumbUrl(90, 90)~'); }' -%}
+{% endif -%}
+
+<div class="element{% if isField %} removable{% endif %}{% if thumbUrl %} hasthumb{% endif %}" data-id="{{ element.id }}">
+	{% if thumbUrl -%}
+		<div class="thumb {{ thumbClass }}"></div>
+	{% endif %}
+	{% if isField -%}
+		<input type="hidden" name="{{ name }}[]" value="{{ element.id }}">
+		<a class="delete icon" title="{{ 'Remove'|t }}"></a>
+	{% endif -%}
+	<span class="label">{{ element }}</span>
+</div>
