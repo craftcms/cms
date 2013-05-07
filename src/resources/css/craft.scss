@@ -460,29 +460,6 @@ table.data.collapsed tbody td form { display: inline-block; }
 }
 .elementselect .caboose { float: left; }
 
-/* element selector modals */
-.modal.elementselector { margin-left: -350px; width: 700px; @include unselectable; }
-.modal.elementselector .spinner { position: absolute; top: 30px; right: 5px; }
-.modal.elementselector .body { position: relative; height: 350px; padding-left: 230px; }
-.modal.elementselector .body .sidebar { margin: -30px 0 -30px -230px; padding: 30px 0 30px 30px; border-right: 1px solid #eee; height: 350px; overflow: scroll; }
-.modal.elementselector .body .spinner.big { top: 205px; left: 350px; margin: -24px 0 0 -24px; }
-.modal.elementselector .body .main { margin: -30px; padding: 30px; height: 350px; overflow: scroll; }
-.modal.elementselector .body .main .elements { margin: 0 -30px; }
-.modal.elementselector .body .main .elements table.data .element { display: inline-block; }
-.modal.elementselector .body .main .elements table.data tr th,
-.modal.elementselector .body .main .elements table.data tr td { padding-top: 4px; padding-bottom: 4px; cursor: default;}
-.modal.elementselector .body .main .elements table.data tr th:first-child,
-.modal.elementselector .body .main .elements table.data tr td:first-child { padding-left: 30px; }
-.modal.elementselector .body .main .elements table.data tr th:last-child,
-.modal.elementselector .body .main .elements table.data tr td:last-child { padding-right: 30px; }
-.modal.elementselector .body .main .elements table.data tr:focus { outline: none; }
-.modal.elementselector .body .main .elements table.data tr.sel th,
-.modal.elementselector .body .main .elements table.data tr.sel td { background: #f5f5f5; }
-.modal.elementselector .body .main .elements table.data tr.disabled { opacity: 1; color: #d4d4d4; }
-.modal.elementselector .body .main .elements table.data tr.disabled .element { opacity: 0.25; }
-.modal.elementselector .body .main .elements table.data tr.disabled + tr.disabled th,
-.modal.elementselector .body .main .elements table.data tr.disabled + tr.disabled td { border-top-color: rgba(0,0,0,0.025); }
-
 /* editable tables */
 table.editable tbody tr:not(:first-child) td { border-top: 1px solid rgba(0,0,0,0.07); }
 table.editable thead tr th,
@@ -553,6 +530,29 @@ ul.tree,
 .modal > .footer:after { @include clearafter; }
 
 .modal-shade { display: none; position: fixed; top: 0; left: 0; z-index: 9998; width: 100%; height: 100%; background: rgba(255,255,255,0.8); }
+
+/* element selector modals */
+.elementselectormodal { margin-left: -350px; width: 700px; @include unselectable; }
+.elementselectormodal .spinner { position: absolute; top: 30px; right: 5px; }
+.elementselectormodal .body { position: relative; height: 350px; padding-left: 230px; }
+.elementselectormodal .body .sidebar { margin: -30px 0 -30px -230px; padding: 30px 0 30px 30px; border-right: 1px solid #eee; height: 350px; overflow: scroll; }
+.elementselectormodal .body .spinner.big { top: 205px; left: 350px; margin: -24px 0 0 -24px; }
+.elementselectormodal .body .main { margin: -30px; padding: 30px; height: 350px; overflow: scroll; }
+.elementselectormodal .body .main .elements { margin: 0 -30px; }
+.elementselectormodal .body .main .elements table.data .element { display: inline-block; }
+.elementselectormodal .body .main .elements table.data tr th,
+.elementselectormodal .body .main .elements table.data tr td { padding-top: 4px; padding-bottom: 4px; cursor: default;}
+.elementselectormodal .body .main .elements table.data tr th:first-child,
+.elementselectormodal .body .main .elements table.data tr td:first-child { padding-left: 30px; }
+.elementselectormodal .body .main .elements table.data tr th:last-child,
+.elementselectormodal .body .main .elements table.data tr td:last-child { padding-right: 30px; }
+.elementselectormodal .body .main .elements table.data tr:focus { outline: none; }
+.elementselectormodal .body .main .elements table.data tr.sel th,
+.elementselectormodal .body .main .elements table.data tr.sel td { background: #f5f5f5; }
+.elementselectormodal .body .main .elements table.data tr.disabled { opacity: 1; color: #d4d4d4; }
+.elementselectormodal .body .main .elements table.data tr.disabled .element { opacity: 0.25; }
+.elementselectormodal .body .main .elements table.data tr.disabled + tr.disabled th,
+.elementselectormodal .body .main .elements table.data tr.disabled + tr.disabled td { border-top-color: rgba(0,0,0,0.025); }
 
 /* ----------------------------------------
 /*  Menus

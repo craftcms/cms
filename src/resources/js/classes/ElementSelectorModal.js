@@ -23,7 +23,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		this.setSettings(settings, Craft.ElementSelectorModal.defaults);
 
 		// Build the modal
-		var $container = $('<div class="modal elementselector"></div>').appendTo(Garnish.$bod),
+		var $container = $('<div class="modal elementselectormodal"></div>').appendTo(Garnish.$bod),
 			$body = $('<div class="body"><div class="spinner big"></div></div>').appendTo($container),
 			$footer = $('<div class="footer"/>').appendTo($container),
 			$buttons = $('<div class="buttons rightalign"/>').appendTo($footer),
