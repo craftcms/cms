@@ -232,6 +232,8 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 	{
 		if (this.elementSelect && this.elementSelect.totalSelected)
 		{
+			this.elementSelect.clearMouseUpTimeout();
+
 			var $selectedRows = this.elementSelect.getSelectedItems(),
 				elements = [];
 
