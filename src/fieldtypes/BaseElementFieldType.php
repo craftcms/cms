@@ -72,16 +72,23 @@ abstract class BaseElementFieldType extends BaseFieldType
 		// or we're loading a draft/version.
 		if (is_array($value))
 		{
-			return craft()->relations->getElementsById($this->elementType, array_filter($value));
+			$elements = craft()->relations->getElementsById($this->elementType, array_filter($value));
 		}
 		else if (isset($this->element) && $this->element->id)
 		{
-			return craft()->relations->getRelatedElements($this->element->id, $this->model->id, $this->elementType);
+			$elements = craft()->relations->getRelatedElements($this->element->id, $this->model->id, $this->elementType);
 		}
 		else
 		{
-			return array();
+			$elements = array();
 		}
+
+		if ($this->getSettings()->limit)
+		{
+			$elements = array_slice($elements, 0, $this->getSettings()->limit);
+		}
+
+		return $elements;
 	}
 
 	/**

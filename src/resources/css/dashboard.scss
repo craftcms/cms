@@ -3,25 +3,21 @@
 @import "shared";
 
 #main-wrapper { background: none; -webkit-box-shadow: none; box-shadow: none; overflow: visible; }
-#main { padding: 0; -webkit-box-shadow: none; box-shadow: none; }
+#main { padding: 0; -webkit-box-shadow: none; box-shadow: none; background: none; }
 
-#page-header,
 .widget { border-radius: 2px; overflow: hidden;
-	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.1);
-	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.1)
+	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 2px 10px -2px rgba(0,0,0,0.1);
+	        box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 2px 10px -2px rgba(0,0,0,0.1);
 }
-
-#page-header { margin-bottom: 4px; }
 
 /* dashboard */
 .widgets { position: relative; }
-#widgets { margin: 0; }
-.widgets .col .col-inner { margin: 0 0 0 4px; }
-.widgets .col:first-child .col-inner { margin-left: 0; }
+#widgets { margin: 0 -5px; }
+.widgets .col .col-inner { margin: 0 5px; }
 
 .widget { display: none; padding: 30px; background: #fff; }
 
-.widget:not(:last-child) { margin-bottom: 4px; }
+.widget:not(:last-child) { margin-bottom: 10px; }
 .col .widget { display: block; }
 
 .widget .spinner { display: none; }

@@ -4,6 +4,8 @@
 Craft.ElementSelectorModal = Garnish.Modal.extend({
 
 	initialized: false,
+	state: null,
+	stateStorageId: null,
 	source: null,
 	searchTimeout: null,
 	elementSelect: null,
@@ -13,6 +15,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 	$spinner: null,
 	$sources: null,
 	$search: null,
+	$headers: null,
 	$elements: null,
 
 	init: function(settings)
@@ -20,7 +23,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		this.setSettings(settings, Craft.ElementSelectorModal.defaults);
 
 		// Build the modal
-		var $container = $('<div class="modal elementselector"></div>').appendTo(Garnish.$bod),
+		var $container = $('<div class="modal elementselectormodal"></div>').appendTo(Garnish.$bod),
 			$body = $('<div class="body"><div class="spinner big"></div></div>').appendTo($container),
 			$footer = $('<div class="footer"/>').appendTo($container),
 			$buttons = $('<div class="buttons rightalign"/>').appendTo($footer),
@@ -32,8 +35,52 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		this.$body = $body;
 		this.$selectBtn = $selectBtn;
 
+        // Set the state object
+        this.state = {
+        	view: 'table'
+        };
+
+        if (typeof Storage !== 'undefined' && this.settings.id)
+        {
+        	this.stateStorageId = 'Craft.ElementSelectorModal.'+this.settings.id;
+
+        	if (typeof localStorage[this.stateStorageId] != 'undefined')
+        	{
+        		$.extend(this.state, JSON.parse(localStorage[this.stateStorageId]));
+        	}
+        }
+
 		this.addListener($cancelBtn, 'activate', 'cancel');
 		this.addListener(this.$selectBtn, 'activate', 'selectElements');
+	},
+
+	getState: function(key)
+	{
+		if (typeof this.state[key] != 'undefined')
+		{
+			return this.state[key];
+		}
+		else
+		{
+			return null;
+		}
+	},
+
+	setState: function(key, value)
+	{
+		if (typeof key == 'object')
+		{
+			$.extend(this.state, key);
+		}
+		else
+		{
+			this.state[key] = value;
+		}
+
+		if (this.stateStorageId)
+		{
+		    localStorage[this.stateStorageId] = JSON.stringify(this.state);
+		}
 	},
 
 	onFadeIn: function()
@@ -44,7 +91,8 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 			var data = {
 				elementType:        this.settings.elementType,
 				sources:            this.settings.sources,
-				disabledElementIds: this.settings.disabledElementIds
+				disabledElementIds: this.settings.disabledElementIds,
+				state:              this.state
 			};
 
 			Craft.postActionRequest('elements/getModalBody', data, $.proxy(function(response)
@@ -56,10 +104,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 				this.$sources = this.$body.find('.sidebar:first a');
 				this.$search = this.$body.find('.search:first input:first');
 				this.$elements = this.$body.find('.elements:first');
-
-				this.source = this.$sources.filter('.sel').data('id');
-
-				this.resetElementSelect();
+				this.$source = this.$sources.filter('.sel');
 
 				this.addListener(this.$search, 'textchange', $.proxy(function()
 				{
@@ -71,7 +116,12 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 					this.searchTimeout = setTimeout($.proxy(this, 'updateElements'), 500);
 				}, this));
 
+				this.addListener(this.$sources, 'activate', 'selectSource');
 				this.addListener(this.$elements, 'dblclick', 'selectElements');
+
+
+				this.onAfterUpdateElements();
+
 			}, this));
 
 			this.initialized = true;
@@ -85,29 +135,37 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		this.$spinner.removeClass('hidden');
 
 		var data = {
-			elementType: this.settings.elementType,
-			source:      this.source,
-			search:      this.$search.val(),
-			filter:      ':not(a)'
+			elementType:        this.settings.elementType,
+			state:              this.state,
+			search:             this.$search.val(),
+			disabledElementIds: this.settings.disabledElementIds,
 		};
 
 		Craft.postActionRequest('elements/getElements', data, $.proxy(function(response)
 		{
 			this.$elements.html(response);
 			this.$spinner.addClass('hidden');
-			this.resetElementSelect();
+			this.onAfterUpdateElements();
 		}, this));
 	},
 
-	resetElementSelect: function()
+	onAfterUpdateElements: function()
 	{
+		if (this.state.view == 'table')
+		{
+			var $headers = this.$body.find('thead th');
+			console.log($headers);
+			this.addListener($headers, 'activate', 'onSortChange');
+		}
+
+		// Reset the element select
 		if (this.elementSelect)
 		{
 			this.elementSelect.destroy();
 			delete this.elementSelect;
 		}
 
-		var $trs = this.$elements.find('tbody:first > tr');
+		var $trs = this.$elements.find('tbody:first > tr:not(.disabled)');
 
 		this.elementSelect = new Garnish.Select(this.$elements, $trs, {
 			multi: true,
@@ -129,16 +187,54 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		}
 	},
 
+	onSortChange: function(ev)
+	{
+		var $th = $(ev.currentTarget),
+			attribute = $th.attr('data-attribute');
+
+		if (this.getState('order') == attribute)
+		{
+			if (this.getState('sort') == 'asc')
+			{
+				this.setState('sort', 'desc');
+			}
+			else
+			{
+				this.setState('sort', 'asc');
+			}
+		}
+		else
+		{
+			this.setState({
+				order: attribute,
+				sort: 'asc'
+			});
+		}
+
+		this.updateElements();
+	},
+
 	cancel: function()
 	{
 		this.hide();
 		this.settings.onCancel();
 	},
 
+	selectSource: function(ev)
+	{
+		this.$source.removeClass('sel');
+		this.$source = $(ev.currentTarget).addClass('sel');
+
+		this.setState('source', this.$source.data('id'));
+		this.updateElements();
+	},
+
 	selectElements: function()
 	{
 		if (this.elementSelect && this.elementSelect.totalSelected)
 		{
+			this.elementSelect.clearMouseUpTimeout();
+
 			var $selectedRows = this.elementSelect.getSelectedItems(),
 				elements = [];
 
@@ -148,7 +244,8 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 
 				elements.push({
 					id: $row.data('id'),
-					label: $row.data('label')
+					label: $row.data('label'),
+					hasThumb: $row.find('.element').hasClass('hasthumb')
 				});
 			}
 
@@ -162,45 +259,98 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		}
 	},
 
+	rememberDisabledElementId: function(elementId)
+	{
+		var index = $.inArray(elementId, this.settings.disabledElementIds);
+
+		if (index == -1)
+		{
+			this.settings.disabledElementIds.push(elementId);
+		}
+	},
+
+	forgetDisabledElementId: function(elementId)
+	{
+		var index = $.inArray(elementId, this.settings.disabledElementIds);
+
+		if (index != -1)
+		{
+			this.settings.disabledElementIds.splice(index, 1);
+		}
+	},
+
 	enableElements: function($elements)
 	{
 		$elements.removeClass('disabled');
 		this.elementSelect.addItems($elements);
+
+		for (var i = 0; i < $elements.length; i++)
+		{
+			var elementId = $($elements[i]).data('id');
+			this.forgetDisabledElementId(elementId);
+		}
 	},
 
 	disableElements: function($elements)
 	{
 		$elements.removeClass('sel').addClass('disabled');
 		this.elementSelect.removeItems($elements);
+
+		for (var i = 0; i < $elements.length; i++)
+		{
+			var elementId = $($elements[i]).data('id');
+			this.rememberDisabledElementId(elementId);
+		}
 	},
 
-	getElementsById: function(elementIds)
+	getElementById: function(elementId)
 	{
-		elementIds = $.makeArray(elementIds);
-		var $elements = $();
-
-		for (var i = 0; i < elementIds.length; i++)
-		{
-			$elements = $elements.add(this.$elements.find('tbody:first > tr[data-id='+elementIds[i]+']'));
-		}
-
-		return $elements;
+		return this.$elements.find('tbody:first > tr[data-id='+elementId+']:first');
 	},
 
 	enableElementsById: function(elementIds)
 	{
-		var $elements = this.getElementsById(elementIds);
-		this.enableElements($elements);
+		elementIds = $.makeArray(elementIds);
+
+		for (var i = 0; i < elementIds.length; i++)
+		{
+			var elementId = elementIds[i],
+				$element = this.getElementById(elementId);
+
+			if ($element.length)
+			{
+				this.enableElements($element);
+			}
+			else
+			{
+				this.forgetDisabledElementId(elementId);
+			}
+		}
 	},
 
 	disableElementsById: function(elementIds)
 	{
-		var $elements = this.getElementsById(elementIds);
-		this.disableElements($elements);
+		elementIds = $.makeArray(elementIds);
+
+		for (var i = 0; i < elementIds.length; i++)
+		{
+			var elementId = elementIds[i],
+				$element = this.getElementById(elementId);
+
+			if ($element.length)
+			{
+				this.disableElements($element);
+			}
+			else
+			{
+				this.rememberDisabledElementId(elementId);
+			}
+		}
 	}
 },
 {
 	defaults: {
+		id: null,
 		elementType: null,
 		sources: null,
 		disabledElementIds: null,
