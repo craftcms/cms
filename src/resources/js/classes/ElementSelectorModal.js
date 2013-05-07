@@ -14,9 +14,11 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 	$selectBtn: null,
 	$spinner: null,
 	$sources: null,
+	$main: null,
 	$search: null,
-	$headers: null,
 	$elements: null,
+	$headers: null,
+	$tbody: null,
 
 	init: function(settings)
 	{
@@ -36,9 +38,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		this.$selectBtn = $selectBtn;
 
         // Set the state object
-        this.state = {
-        	view: 'table'
-        };
+        this.state = {};
 
         if (typeof Storage !== 'undefined' && this.settings.id)
         {
@@ -83,29 +83,38 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		}
 	},
 
+	getControllerData: function()
+	{
+		return {
+			elementType:        this.settings.elementType,
+			disabledElementIds: this.settings.disabledElementIds,
+			state:              this.state,
+			search:             (this.$search ? this.$search.val() : null)
+		};
+	},
+
 	onFadeIn: function()
 	{
 		if (!this.initialized)
 		{
 			// Get the modal body HTML based on the settings
-			var data = {
-				elementType:        this.settings.elementType,
-				sources:            this.settings.sources,
-				disabledElementIds: this.settings.disabledElementIds,
-				state:              this.state
-			};
+			var data = this.getControllerData();
+			data.sources = this.settings.sources;
 
 			Craft.postActionRequest('elements/getModalBody', data, $.proxy(function(response)
 			{
 				// Initialize the contents
-				this.$body.html(response);
+				this.$body.html(response.bodyHtml);
 
 				this.$spinner = this.$body.find('.spinner:first');
 				this.$sources = this.$body.find('.sidebar:first a');
-				this.$search = this.$body.find('.search:first input:first');
-				this.$elements = this.$body.find('.elements:first');
+				this.$main = this.$body.find('.main:first');
+				this.$search = this.$main.find('.search:first input:first');
+				this.$elements = this.$main.find('.elements:first');
+
 				this.$source = this.$sources.filter('.sel');
 
+				this.addListener(this.$sources, 'activate', 'selectSource');
 				this.addListener(this.$search, 'textchange', $.proxy(function()
 				{
 					if (this.searchTimeout)
@@ -116,11 +125,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 					this.searchTimeout = setTimeout($.proxy(this, 'updateElements'), 500);
 				}, this));
 
-				this.addListener(this.$sources, 'activate', 'selectSource');
-				this.addListener(this.$elements, 'dblclick', 'selectElements');
-
-
-				this.onAfterUpdateElements();
+				this.setNewElementContainerHtml(response);
 
 			}, this));
 
@@ -130,33 +135,32 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		this.base();
 	},
 
-	updateElements: function()
+	setNewElementContainerHtml: function(response)
 	{
-		this.$spinner.removeClass('hidden');
+		this.$elements.html(response.elementContainerHtml);
 
-		var data = {
-			elementType:        this.settings.elementType,
-			state:              this.state,
-			search:             this.$search.val(),
-			disabledElementIds: this.settings.disabledElementIds,
-		};
+		var $headers = this.$main.find('thead:first > th');
+		this.addListener($headers, 'activate', 'onSortChange');
 
-		Craft.postActionRequest('elements/getElements', data, $.proxy(function(response)
-		{
-			this.$elements.html(response);
-			this.$spinner.addClass('hidden');
-			this.onAfterUpdateElements();
-		}, this));
+		this.$tbody = this.$elements.find('tbody:first');
+
+		this.addListener(this.$tbody, 'dblclick', 'selectElements');
+
+		this.setNewElementDataHtml(response);
 	},
 
-	onAfterUpdateElements: function()
+	setNewElementDataHtml: function(response, append)
 	{
-		if (this.state.view == 'table')
+		if (append)
 		{
-			var $headers = this.$body.find('thead th');
-			console.log($headers);
-			this.addListener($headers, 'activate', 'onSortChange');
+			this.$tbody.append(response.elementDataHtml);
 		}
+		else
+		{
+			this.$tbody.html(response.elementDataHtml);
+		}
+
+		$('head').append(response.headHtml);
 
 		// Reset the element select
 		if (this.elementSelect)
@@ -165,13 +169,56 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 			delete this.elementSelect;
 		}
 
-		var $trs = this.$elements.find('tbody:first > tr:not(.disabled)');
+		var $trs = this.$tbody.children(':not(.disabled)');
 
-		this.elementSelect = new Garnish.Select(this.$elements, $trs, {
+		this.elementSelect = new Garnish.Select(this.$tbody, $trs, {
 			multi: true,
 			vertical: true,
 			waitForDblClick: true,
 			onSelectionChange: $.proxy(this, 'onSelectionChange')
+		});
+
+		if (response.more)
+		{
+			this.totalVisible = response.totalVisible;
+			this.prepareToLoadMore();
+		}
+	},
+
+	updateElements: function()
+	{
+		this.$spinner.removeClass('hidden');
+		this.removeListener(this.$main, 'scroll');
+
+		var data = this.getControllerData();
+
+		Craft.postActionRequest('elements/getModalElements', data, $.proxy(function(response)
+		{
+			this.$spinner.addClass('hidden');
+
+			this.setNewElementContainerHtml(response);
+		}, this));
+	},
+
+	prepareToLoadMore: function()
+	{
+		this.addListener(this.$main, 'scroll', function()
+		{
+			if (this.$main.prop('scrollHeight') - this.$main.scrollTop() == this.$main.outerHeight())
+			{
+				this.$spinner.removeClass('hidden');
+				this.removeListener(this.$main, 'scroll');
+
+				var data = this.getControllerData();
+				data.offset = this.totalVisible;
+
+				Craft.postActionRequest('elements/getModalElements', data, $.proxy(function(response)
+				{
+					this.$spinner.addClass('hidden');
+
+					this.setNewElementDataHtml(response, true);
+				}, this));
+			}
 		});
 	},
 
@@ -305,7 +352,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 
 	getElementById: function(elementId)
 	{
-		return this.$elements.find('tbody:first > tr[data-id='+elementId+']:first');
+		return this.$tbody.children('[data-id='+elementId+']:first');
 	},
 
 	enableElementsById: function(elementIds)

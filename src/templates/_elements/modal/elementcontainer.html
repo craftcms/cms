@@ -1,0 +1,11 @@
+<table class="data">
+	<thead>
+		{% for attribute, label in attributes %}
+			{% set ordered = (state.order is defined and state.order == attribute) %}
+			<th scope="col" data-attribute="{{ attribute }}"{% if ordered %} class="ordered{% if state.sort == 'desc' %} desc{% endif %}"{% endif %}>
+				{{ label }}
+			</th>
+		{% endfor %}
+	</thead>
+	<tbody></tbody>
+</table>
