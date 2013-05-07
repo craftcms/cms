@@ -454,7 +454,7 @@ table.data.collapsed tbody td form { display: inline-block; }
 .elementselect:after { @include clearafter; }
 .elementselect .element,
 .elementselect .btn { float: left; margin: 0 10px 10px 0; }
-.elementselect .btn { border: 1px dashed rgba(0,0,0,0.2) !important; background: none !important;
+.elementselect .btn { border: 1px dashed rgba(0,0,0,0.2) !important; background: none;
 	-webkit-box-shadow: none;
 	        box-shadow: none;
 }
