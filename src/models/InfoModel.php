@@ -23,6 +23,7 @@ class InfoModel extends BaseModel
 			'timezone'    => array(AttributeType::String, 'maxLength' => 30, 'default' => date_default_timezone_get()),
 			'on'          => AttributeType::Bool,
 			'maintenance' => AttributeType::Bool,
+			'track'       => array(AttributeType::String, 'maxLength' => 40, 'column' => ColumnType::Varchar, 'required' => true),
 		);
 	}
 

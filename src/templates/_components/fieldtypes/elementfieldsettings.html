@@ -1,0 +1,20 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.checkboxSelectField({
+	label: "Sources"|t,
+	instructions: "Which sources would you {type} from?"|t({ type: type|lower }),
+	id: 'sources',
+	name: 'sources',
+	options: sources,
+	values: settings.sources
+})}}
+
+{{ forms.textField({
+	label: "Limit"|t,
+	instructions: "Limit the number of {type} that can be selected."|t({ type: type|lower }),
+	id: 'limit',
+	name: 'limit',
+	value: settings.limit,
+	size: 2,
+	errors: settings.getErrors('limit')
+}) }}

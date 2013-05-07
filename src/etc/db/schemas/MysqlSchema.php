@@ -151,15 +151,16 @@ class MysqlSchema extends \CMysqlSchema
 	}
 
 	/**
-	 * @param string $table
-	 * @param array  $columns
-	 * @param null   $options
-	 * @return string
+	 * @param string $table   The name of the table (including prefix, or wrapped in "{{" and "}}").
+	 * @param array  $columns An array of columns.
+	 * @param string $options Any additional SQL to append to the end of the query.
+	 * @param string $engine  The engine the table should use ("InnoDb" or "MyISAM"). Default is "InnoDb".
+	 * @return string The full SQL for creating a table.
 	 */
-	public function createTable($table, $columns, $options = null)
+	public function createTable($table, $columns, $options = null, $engine = 'InnoDb')
 	{
 		$cols = array();
-		$options = 'ENGINE=InnoDb DEFAULT CHARSET='.craft()->config->getDbItem('charset').' COLLATE='.craft()->config->getDbItem('collation').($options ? ' '.$options : '');
+		$options = 'ENGINE='.$engine.' DEFAULT CHARSET='.craft()->config->getDbItem('charset').' COLLATE='.craft()->config->getDbItem('collation').($options ? ' '.$options : '');
 
 		foreach ($columns as $name => $type)
 		{

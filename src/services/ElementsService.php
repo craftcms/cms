@@ -41,6 +41,14 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($subquery)
 		{
+			if ($criteria->search)
+			{
+				$elementIds = $this->_getElementIdsFromQuery($subquery);
+				$scoredSearchResults = ($criteria->order == 'score');
+				$filteredElementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, $scoredSearchResults);
+				$subquery->andWhere(array('in', 'elements.id', $filteredElementIds));
+			}
+
 			$query = craft()->db->createCommand()
 				//->select('r.id, r.type, r.expiryDate, r.enabled, r.archived, r.dateCreated, r.dateUpdated, r.locale, r.title, r.uri, r.sectionId, r.slug')
 				->select('*')
@@ -49,7 +57,7 @@ class ElementsService extends BaseApplicationComponent
 
 			$query->params = $subquery->params;
 
-			if ($criteria->order)
+			if ($criteria->order && $criteria->order != 'score')
 			{
 				$query->order($criteria->order);
 			}
@@ -65,6 +73,18 @@ class ElementsService extends BaseApplicationComponent
 			}
 
 			$result = $query->queryAll();
+
+			if ($criteria->search && $scoredSearchResults)
+			{
+				$searchPositions = array();
+
+				foreach ($result as $row)
+				{
+					$searchPositions[] = array_search($row['id'], $filteredElementIds);
+				}
+
+				array_multisort($searchPositions, $result);
+			}
 
 			$elementType = $criteria->getElementType();
 			$indexBy = $criteria->indexBy;
@@ -99,14 +119,14 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($subquery)
 		{
-			$subquery->select('elements.id')->group('elements.id');
+			$elementIds = $this->_getElementIdsFromQuery($subquery);
 
-			$query = craft()->db->createCommand()
-				->from('('.$subquery->getText().') AS '.craft()->db->quoteTableName('r'));
+			if ($criteria->search)
+			{
+				$elementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, false);
+			}
 
-			$query->params = $subquery->params;
-
-			return $query->count('r.id');
+			return count($elementIds);
 		}
 		else
 		{
@@ -133,7 +153,7 @@ class ElementsService extends BaseApplicationComponent
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.locale, elements_i18n.uri')
 			->from('elements elements');
 
-		if ($elementType->isLocalizable())
+		if ($elementType->isTranslatable())
 		{
 			$query->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
 
@@ -281,27 +301,6 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the CP edit URL for a given element.
-	 *
-	 * @param BaseElementModel $element
-	 * @return string|null
-	 */
-	public function getCpEditUrlForElement(BaseElementModel $element)
-	{
-		$elementType = $this->getElementType($element->type);
-
-		if ($elementType)
-		{
-			$uri = $elementType->getCpEditUriForElement($element);
-
-			if ($uri !== false)
-			{
-				return UrlHelper::getCpUrl($uri);
-			}
-		}
-	}
-
-	/**
 	 * Returns the localization record for a given element and locale.
 	 *
 	 * @param int $elementId
@@ -351,7 +350,7 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets an element type.
+	 * Returns an element type.
 	 *
 	 * @param string $class
 	 * @return BaseElementType|null
@@ -359,5 +358,29 @@ class ElementsService extends BaseApplicationComponent
 	public function getElementType($class)
 	{
 		return craft()->components->getComponentByTypeAndClass(ComponentType::Element, $class);
+	}
+
+	// Private functions
+	// =================
+
+	/**
+	 * Returns the unique element IDs that match a given element query.
+	 *
+	 * @param DbCommand $query
+	 * @return array
+	 */
+	private function _getElementIdsFromQuery(DbCommand $query)
+	{
+		// Get the matched element IDs, and then have the SearchService filter them.
+		$elementIdsQuery = craft()->db->createCommand()
+			->select('elements.id')
+			->from('elements elements')
+			->group('elements.id');
+
+		$elementIdsQuery->setWhere($query->getWhere());
+		$elementIdsQuery->setJoin($query->getJoin());
+
+		$elementIdsQuery->params = $query->params;
+		return $elementIdsQuery->queryColumn();
 	}
 }

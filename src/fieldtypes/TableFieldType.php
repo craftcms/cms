@@ -152,7 +152,7 @@ class TableFieldType extends BaseFieldType
 				}
 			}
 
-			$id = preg_replace('/[\[\]]+/', '-', $name);
+			$id = rtrim(preg_replace('/[\[\]]+/', '-', $name), '-');
 
 			return craft()->templates->render('_includes/forms/editableTable', array(
 				'id'   => $id,

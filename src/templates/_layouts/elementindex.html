@@ -1,0 +1,64 @@
+{% extends "_layouts/cp" %}
+
+{% set elementType = craft.elements.getElementType(elementType) %}
+
+{% if not elementType %}
+	{% exit 404 %}
+{% endif %}
+
+{% set sources = elementType.getSources() %}
+{% set source = craft.request.getParam('source') %}
+{% set elements = elementType.getElements(source) %}
+{% set attributes = elementType.getTableAttributes(source) %}
+
+
+{% set sidebar %}
+
+	{% if sources %}
+		<nav>
+			<ul>
+				<li><a href="{{ url(craft.request.path) }}" {% if not source %}class="sel"{% endif %}>{{ "All"|t }}</a></li>
+
+				{% for key, label in sources %}
+					<li><a href="{{ url(craft.request.path, { source: key }) }}"{% if source == key %} class="sel"{% endif %}>{{ label }}</a></li>
+				{% endfor %}
+			</ul>
+		</nav>
+	{% endif %}
+
+{% endset %}
+
+
+{% set content %}
+
+	<div class="toolbar">
+		<div class="search"><input type="text" class="text nicetext fullwidth" data-hint="{{ 'Search entries'|t }}"></div>
+	</div>
+
+	{% if elements %}
+
+		<table id="entries" class="data collapsible">
+			<thead>
+				{% for attribute, label in attributes %}
+					<th scope="col">{{ label }}</th>
+				{% endfor %}
+			</thead>
+			<tbody>
+				{% for element in elements %}
+					<tr data-id="{{ element.id }}" data-name="{{ element }}">
+						{% for attribute, label in attributes %}
+							{% set value = attribute(element, attribute) %}
+							{% if loop.index == 1 %}
+								<th scope="row" data-title="{{ label }}"><a href="{{ element.cpEditUrl }}">{{ value }}</a></th>
+							{% else %}
+								<td data-title="{{ label }}">{{ value }}</td>
+							{% endif %}
+						{% endfor %}
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	{% endif %}
+
+{% endset %}

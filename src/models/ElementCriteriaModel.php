@@ -36,12 +36,13 @@ class ElementCriteriaModel extends BaseModel
 			'offset'        => array(AttributeType::Number, 'default' => 0),
 			'limit'         => array(AttributeType::Number, 'default' => 100),
 			'indexBy'       => AttributeType::String,
+			'search'        => AttributeType::String,
 			//'dateCreated'   => AttributeType::DateTime,
 			//'dateUpdated'   => AttributeType::DateTime,
 		);
 
 		// Mix in any custom attributes defined by the element type
-		$elementTypeAttributes = $this->_elementType->defineCustomCriteriaAttributes();
+		$elementTypeAttributes = $this->_elementType->defineCriteriaAttributes();
 		$attributes = array_merge($attributes, $elementTypeAttributes);
 
 		// Mix in the custom fields

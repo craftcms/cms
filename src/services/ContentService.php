@@ -154,7 +154,8 @@ class ContentService extends BaseApplicationComponent
 				// Only include this value if the content table has a column for it
 				if ($fieldType && $fieldType->defineContentAttribute())
 				{
-					$value = $content->getAttribute($field->handle);
+					$handle = $field->handle;
+					$value = $content->$handle;
 					$values[$field->handle] = ModelHelper::packageAttributeValue($value, true);
 				}
 			}
@@ -209,6 +210,7 @@ class ContentService extends BaseApplicationComponent
 
 		$fields = craft()->fields->getAllFields();
 		$fieldTypes = array();
+		$searchKeywordsByLocale = array();
 
 		foreach ($fields as $field)
 		{
@@ -217,18 +219,28 @@ class ContentService extends BaseApplicationComponent
 			if ($fieldType)
 			{
 				$fieldType->element = $element;
-				$fieldTypes[] = $fieldType;
 
-				// If this field isn't translatable, we should set its new value on the other content records
+				// Get the field's search keywords
+				$handle = $field->handle;
+				$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$handle);
+				$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
+
+				// Should we update this field on the other locales as well?
 				if (!$field->translatable && $updateOtherContentModels && $fieldType->defineContentAttribute())
 				{
 					$handle = $field->handle;
 
 					foreach ($otherContentModels as $otherContentModel)
 					{
+						// Copy the new field value over to the other locale's content record
 						$otherContentModel->$handle = $content->$handle;
+
+						// Queue up the other locale's new keywords too
+						$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
 					}
 				}
+
+				$fieldTypes[] = $fieldType;
 			}
 		}
 
@@ -239,6 +251,12 @@ class ContentService extends BaseApplicationComponent
 			{
 				$this->saveContent($otherContentModel, false);
 			}
+		}
+
+		// Update the search indexes
+		foreach ($searchKeywordsByLocale as $localeId => $keywords)
+		{
+			craft()->search->indexElementFields($element->id, $localeId, $keywords);
 		}
 
 		// Now that everything is finally saved, call fieldtypes' onAfterElementSave();

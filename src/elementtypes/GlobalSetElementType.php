@@ -17,14 +17,13 @@ class GlobalSetElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the CP edit URI for a given element.
+	 * Returns whether this element type is translatable.
 	 *
-	 * @param BaseElementModel $element
-	 * @return string|null
+	 * @return bool
 	 */
-	public function getCpEditUriForElement(BaseElementModel $element)
+	public function isTranslatable()
 	{
-		return 'globals/'.$element->handle;
+		return true;
 	}
 
 	/**

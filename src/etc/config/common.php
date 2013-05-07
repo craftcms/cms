@@ -205,15 +205,16 @@ $components['fieldTypes']['class']           = 'Craft\FieldTypesService';
 $components['globals']['class']              = 'Craft\GlobalsService';
 $components['install']['class']              = 'Craft\InstallService';
 $components['images']['class']               = 'Craft\ImagesService';
-$components['links']['class']                = 'Craft\LinksService';
 $components['migrations']['class']           = 'Craft\MigrationsService';
 $components['path']['class']                 = 'Craft\PathService';
+$components['relations']['class']            = 'Craft\RelationsService';
 $components['sections']['class']             = 'Craft\SectionsService';
 
 $components['resources']['class']            = 'Craft\ResourcesService';
 $components['resources']['dateParam']        = 'd';
 
 $components['routes']['class']               = 'Craft\RoutesService';
+$components['search']['class']               = 'Craft\SearchService';
 $components['security']['class']             = 'Craft\SecurityService';
 $components['systemSettings']['class']       = 'Craft\SystemSettingsService';
 $components['templates']['class']            = 'Craft\TemplatesService';

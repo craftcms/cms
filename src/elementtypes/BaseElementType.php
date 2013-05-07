@@ -13,53 +13,54 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	protected $componentType = 'ElementType';
 
 	/**
-	 * @access private
-	 * @var BaseModel The model representing the current component instance's link settings.
-	 */
-	private $_linkSettings;
-
-	/**
-	 * Returns the CP edit URI for a given element.
-	 *
-	 * @param BaseElementModel $element
-	 * @return string|false
-	 */
-	public function getCpEditUriForElement(BaseElementModel $element)
-	{
-		return false;
-	}
-
-	/**
-	 * Routes the request when the URI matches an element.
-	 *
-	 * @param BaseElementModel
-	 * @return mixed Can be false if no special action should be taken,
-	 *               a string if it should route to a template path,
-	 *               or an array that can specify a controller action path, params, etc.
-	 */
-	public function routeRequestForMatchedElement(BaseElementModel $element)
-	{
-		return false;
-	}
-
-	/**
-	 * Returns whether this element type is localizable.
+	 * Returns whether this element type can have thumbnails.
 	 *
 	 * @return bool
 	 */
-	public function isLocalizable()
+	public function hasThumbs()
 	{
 		return false;
 	}
 
 	/**
-	 * Returns whether this element type is linkable.
+	 * Returns whether this element type is translatable.
 	 *
 	 * @return bool
 	 */
-	public function isLinkable()
+	public function isTranslatable()
 	{
 		return false;
+	}
+
+	/**
+	 * Returns this element type's sources.
+	 *
+	 * @return array|false
+	 */
+	public function getSources()
+	{
+		return false;
+	}
+
+	/**
+	 * Defines which model attributes should be searchable.
+	 *
+	 * @return array
+	 */
+	public function defineSearchableAttributes()
+	{
+		return array();
+	}
+
+	/**
+	 * Returns the attributes that can be shown/sorted by in table views.
+	 *
+	 * @param string|null $source
+	 * @return array
+	 */
+	public function defineTableAttributes($source = null)
+	{
+		return array();
 	}
 
 	/**
@@ -67,7 +68,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 *
 	 * @return array
 	 */
-	public function defineCustomCriteriaAttributes()
+	public function defineCriteriaAttributes()
 	{
 		return array();
 	}
@@ -105,62 +106,15 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * Gets the link settings.
+	 * Routes the request when the URI matches an element.
 	 *
-	 * @return BaseModel
+	 * @param BaseElementModel
+	 * @return mixed Can be false if no special action should be taken,
+	 *               a string if it should route to a template path,
+	 *               or an array that can specify a controller action path, params, etc.
 	 */
-	public function getLinkSettings()
+	public function routeRequestForMatchedElement(BaseElementModel $element)
 	{
-		if (!isset($this->_linkSettings))
-		{
-			$this->_linkSettings = $this->getLinkSettingsModel();
-		}
-
-		return $this->_linkSettings;
-	}
-
-	/**
-	 * Sets the link setting values.
-	 *
-	 * @param array $values
-	 */
-	public function setLinkSettings($values)
-	{
-		if ($values)
-		{
-			$this->getLinkSettings()->setAttributes($values);
-		}
-	}
-
-	/**
-	 * Preps the settings before they're saved to the database.
-	 *
-	 * @param array $settings
-	 * @return array
-	 */
-	public function prepLinkSettings($settings)
-	{
-		return $settings;
-	}
-
-	/**
-	 * Returns the link settings HTML.
-	 *
-	 * @return string|null
-	 */
-	public function getLinkSettingsHtml()
-	{
-		return null;
-	}
-
-	/**
-	 * Gets the link settings model.
-	 *
-	 * @access protected
-	 * @return BaseModel
-	 */
-	protected function getLinkSettingsModel()
-	{
-		return new Model($this->defineCustomCriteriaAttributes());
+		return false;
 	}
 }

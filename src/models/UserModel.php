@@ -223,6 +223,23 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns the element's CP edit URL.
+	 *
+	 * @return string|false
+	 */
+	public function getCpEditUrl()
+	{
+		if (Craft::hasPackage(CraftPackage::Users))
+		{
+			return UrlHelper::getCpUrl('users/'.$this->id);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * Populates a new user instance with a given set of attributes.
 	 *
 	 * @static

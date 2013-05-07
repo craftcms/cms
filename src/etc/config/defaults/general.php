@@ -224,6 +224,18 @@ return array(
 'requireUserAgentAndIpForSession' => true,
 
 /**
+ * Custom ASCII charater mappings.
+ *
+ * This array is merged into the default one in StringHelper::getAsciiCharMap().
+ */
+'customAsciiCharMappings' => array(),
+
+/**
+ * Search Ignore Words.
+ */
+'searchIgnoreWords' => array('the', 'and'),
+
+/**
  * The maximum amount of memory Craft will try to reserve during memory intensive operations such as zipping, unzipping, updating, etc.
  */
 'phpMaxMemoryLimit' => '256M',

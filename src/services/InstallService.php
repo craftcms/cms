@@ -37,7 +37,9 @@ class InstallService extends BaseApplicationComponent
 			$this->_createForeignKeysFromRecords($records);
 
 			$this->_createContentTable();
+			$this->_createRelationsTable();
 			$this->_createShunnedMessagesTable();
+			$this->_createSearchIndexTable();
 			$this->_createAndPopulateInfoTable($inputs);
 
 			$this->_createRackspaceAccessTable();
@@ -163,6 +165,29 @@ class InstallService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Creates the relations table.
+	 *
+	 * @access private
+	 */
+	private function _createRelationsTable()
+	{
+		Craft::log('Creating the relations table.');
+
+		craft()->db->createCommand()->createTable('relations', array(
+			'fieldId'   => array('column' => ColumnType::Int, 'null' => false),
+			'parentId'  => array('column' => ColumnType::Int, 'null' => false),
+			'childId'   => array('column' => ColumnType::Int, 'null' => false),
+			'sortOrder' => array('column' => ColumnType::TinyInt),
+		));
+		craft()->db->createCommand()->createIndex('relations', 'fieldId,parentId,childId', true);
+		craft()->db->createCommand()->addForeignKey('relations', 'fieldId', 'fields', 'id');
+		craft()->db->createCommand()->addForeignKey('relations', 'parentId', 'elements', 'id');
+		craft()->db->createCommand()->addForeignKey('relations', 'childId', 'elements', 'id');
+
+		Craft::log('Finished creating the relations table.');
+	}
+
+	/**
 	 * Creates the shunnedmessages table.
 	 *
 	 * @access private
@@ -180,6 +205,41 @@ class InstallService extends BaseApplicationComponent
 		craft()->db->createCommand()->addForeignKey('shunnedmessages', 'userId', 'users', 'id', 'CASCADE');
 
 		Craft::log('Finished creating the shunnedmessages table.');
+	}
+
+	/**
+	 * Creates the searchindex table.
+	 *
+	 * @access private
+	 */
+	private function _createSearchIndexTable()
+	{
+		Craft::log('Creating the searchindex table.');
+
+		// Taking the scenic route here so we can get to MysqlSchema's $engine argument
+		$table = DbHelper::addTablePrefix('searchindex');
+
+		$columns = array(
+			'elementId' => DbHelper::generateColumnDefinition(array('column' => ColumnType::Int, 'null' => false)),
+			'attribute' => DbHelper::generateColumnDefinition(array('column' => ColumnType::Varchar, 'maxLength' => 25, 'null' => false)),
+			'fieldId'   => DbHelper::generateColumnDefinition(array('column' => ColumnType::Int, 'null' => false)),
+			'locale'    => DbHelper::generateColumnDefinition(array('column' => ColumnType::Locale, 'null' => false)),
+			'keywords'  => DbHelper::generateColumnDefinition(array('column' => ColumnType::Text, 'null' => false)),
+		);
+
+		craft()->db->createCommand()->setText(craft()->db->getSchema()->createTable($table, $columns, null, 'MyISAM'))->execute();
+
+		// Give it a composite primary key
+		craft()->db->createCommand()->addPrimaryKey('searchindex', 'elementId,attribute,fieldId,locale');
+
+		// Add the FULLTEXT index on `keywords`
+		craft()->db->createCommand()->setText('CREATE FULLTEXT INDEX ' .
+			craft()->db->quoteTableName(DbHelper::getIndexName('searchindex', 'keywords')).' ON ' .
+			craft()->db->quoteTableName($table).' ' .
+			'('.craft()->db->quoteColumnName('keywords').')'
+		)->execute();
+
+		Craft::log('Finished creating the searchindex table.');
 	}
 
 	/**
@@ -203,6 +263,7 @@ class InstallService extends BaseApplicationComponent
 			'timezone'    => array('column' => ColumnType::Varchar, 'length' => 30),
 			'on'          => array('column' => ColumnType::TinyInt, 'length' => 1, 'unsigned' => true, 'default' => false, 'null' => false),
 			'maintenance' => array('column' => ColumnType::TinyInt, 'length' => 1, 'unsigned' => true, 'default' => false, 'null' => false),
+			'track'       => array('column' => ColumnType::Varchar, 'maxLength' => 40, 'required' => true),
 		));
 
 		Craft::log('Finished creating the info table.');
@@ -217,6 +278,7 @@ class InstallService extends BaseApplicationComponent
 			'siteUrl'     => $inputs['siteUrl'],
 			'on'          => 1,
 			'maintenance' => 0,
+			'track'       => '@@@track@@@',
 		));
 
 		if (Craft::saveInfo($info))

@@ -107,6 +107,14 @@ class CraftVariable
 	}
 
 	/**
+	 * @return ElementsVariable
+	 */
+	public function elements()
+	{
+		return new ElementsVariable();
+	}
+
+	/**
 	 * @return FieldTypesVariable
 	 */
 	public function fieldTypes()

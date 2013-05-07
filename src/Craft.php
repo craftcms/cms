@@ -79,6 +79,17 @@ class Craft extends \Yii
 	}
 
 	/**
+	 * Returns the Craft track.
+	 *
+	 * @static
+	 * @return string
+	 */
+	public static function getTrack()
+	{
+		return static::getInfo('track');
+	}
+
+	/**
 	 * Returns the packages in this Craft install, as defined in the craft_info table.
 	 *
 	 * @static

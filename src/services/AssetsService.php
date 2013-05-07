@@ -259,6 +259,9 @@ class AssetsService extends BaseApplicationComponent
 				$file->id = $fileRecord->id;
 			}
 
+			// Update the search index
+			craft()->search->indexElementAttributes($file);
+
 			return true;
 		}
 		else

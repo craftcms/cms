@@ -66,7 +66,7 @@ class DateFieldType extends BaseFieldType
 	public function getInputHtml($name, $value)
 	{
 		$input = craft()->templates->render('_includes/forms/date', array(
-			'id'       => preg_replace('/[\[\]]+/', '-', $name),
+			'id'       => rtrim(preg_replace('/[\[\]]+/', '-', $name), '-'),
 			'name'     => $name,
 			'value'    => $value
 		));
@@ -74,7 +74,7 @@ class DateFieldType extends BaseFieldType
 		if ($this->getSettings()->showTime)
 		{
 			$input .= ' '.craft()->templates->render('_includes/forms/time', array(
-				'id'       => preg_replace('/[\[\]]+/', '-', $name),
+				'id'       => rtrim(preg_replace('/[\[\]]+/', '-', $name), '-'),
 				'name'     => $name,
 				'value'    => $value
 			));

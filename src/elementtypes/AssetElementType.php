@@ -17,13 +17,61 @@ class AssetElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type is linkable.
+	 * Returns whether this element type can have thumbnails.
 	 *
 	 * @return bool
 	 */
-	public function isLinkable()
+	public function hasThumbs()
 	{
 		return true;
+	}
+
+	/**
+	 * Returns this element type's sources.
+	 *
+	 * @return array|false
+	 */
+	public function getSources()
+	{
+		$sources = array();
+
+		foreach (craft()->assetSources->getViewableSources() as $source)
+		{
+			$key = 'source:'.$source->id;
+
+			$sources[$key] = array(
+				'label'    => $source->name,
+				'criteria' => array('sourceId' => $source->id)
+			);
+		}
+
+		return $sources;
+	}
+
+	/**
+	 * Defines which model attributes should be searchable.
+	 *
+	 * @return array
+	 */
+	public function defineSearchableAttributes()
+	{
+		return array('filename', 'extension', 'kind');
+	}
+
+	/**
+	 * Returns the attributes that can be shown/sorted by in table views.
+	 *
+	 * @param string|null $source
+	 * @return array
+	 */
+	public function defineTableAttributes($source = null)
+	{
+		return array(
+			'filename'     => Craft::t('Filename'),
+			'dateModified' => Craft::t('Date Modified'),
+			'size'         => Craft::t('Size'),
+			'kind'         => Craft::t('Kind'),
+		);
 	}
 
 	/**
@@ -31,7 +79,7 @@ class AssetElementType extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineCustomCriteriaAttributes()
+	public function defineCriteriaAttributes()
 	{
 		return array(
 			'sourceId' => AttributeType::Number,
@@ -43,18 +91,6 @@ class AssetElementType extends BaseElementType
 			'size'     => AttributeType::Number,
 			'order'    => array(AttributeType::String, 'default' => 'filename asc'),
 		);
-	}
-
-	/**
-	 * Returns the link settings HTML
-	 *
-	 * @return string|null
-	 */
-	public function getLinkSettingsHtml()
-	{
-		return craft()->templates->render('_components/elementtypes/Asset/linksettings', array(
-			'settings' => $this->getLinkSettings()
-		));
 	}
 
 	/**

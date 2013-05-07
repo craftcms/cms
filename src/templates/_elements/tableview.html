@@ -1,0 +1,35 @@
+{% set editable = editable is defined and editable %}
+
+<table class="data">
+	<thead>
+		{% for attribute, label in attributes %}
+			<th scope="col">{{ label }}</th>
+		{% endfor %}
+		{% if editable %}
+			<th class="thin"></th>
+			<th class="thin"></th>
+		{% endif %}
+	</thead>
+	<tbody>
+		{% for element in elements %}
+			<tr{% if element.id in disabledElementIds %} class="disabled"{% endif %} data-id="{{ element.id }}" data-label="{{ element }}">
+				{% for attribute, label in attributes %}
+					{% if loop.index == 1 %}
+						<td scope="row" data-title="{{ label }}">
+							<div class="element">
+								{{ element }}
+							</div>
+						</td>
+					{% else %}
+						{% set value = attribute(element, attribute) %}
+						<td data-title="{{ label }}">{{ value }}</td>
+					{% endif %}
+				{% endfor %}
+				{% if editable %}
+					<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
+					<td class="thin"><a class="delete icon" title="{{ 'Remove'|t }}"></a></td>
+				{% endif %}
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>

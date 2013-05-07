@@ -6,6 +6,9 @@ namespace Craft;
  */
 class StringHelper
 {
+	private static $_asciiCharMap;
+	private static $_asciiPunctuation;
+
 	/**
 	 * Converts an array to a string.
 	 *
@@ -159,16 +162,64 @@ class StringHelper
 	}
 
 	/**
-	 * @access private
-	 * @var array
+	 * Returns ASCII character mappings.
+	 *
+	 * @static
+	 * @return array
 	 */
-	private static $_asciiCharMap = array(
-		223=>'ss', 224=>'a',  225=>'a',  226=>'a',  229=>'a',  227=>'ae', 230=>'ae', 228=>'ae', 231=>'c',  232=>'e',
-		233=>'e',  234=>'e',  235=>'e',  236=>'i',  237=>'i',  238=>'i',  239=>'i',  241=>'n',  242=>'o',  243=>'o',
-		244=>'o',  245=>'o',  246=>'oe', 249=>'u',  250=>'u',  251=>'u',  252=>'ue', 255=>'y',  257=>'aa', 269=>'ch',
-		275=>'ee', 291=>'gj', 299=>'ii', 311=>'kj', 316=>'lj', 326=>'nj', 353=>'sh', 363=>'uu', 382=>'zh', 256=>'aa',
-		268=>'ch', 274=>'ee', 290=>'gj', 298=>'ii', 310=>'kj', 315=>'lj', 325=>'nj', 352=>'sh', 362=>'uu', 381=>'zh'
-	);
+	public static function getAsciiCharMap()
+	{
+		if (!isset(static::$_asciiCharMap))
+		{
+			static::$_asciiCharMap = array(
+				223 => 'ss', 224 => 'a',  225 => 'a',  226 => 'a',  229 => 'a',
+				227 => 'ae', 230 => 'ae', 228 => 'ae', 231 => 'c',  232 => 'e',
+				233 => 'e',  234 => 'e',  235 => 'e',  236 => 'i',  237 => 'i',
+				238 => 'i',  239 => 'i',  241 => 'n',  242 => 'o',  243 => 'o',
+				244 => 'o',  245 => 'o',  246 => 'oe', 249 => 'u',  250 => 'u',
+				251 => 'u',  252 => 'ue', 255 => 'y',  257 => 'aa', 269 => 'ch',
+				275 => 'ee', 291 => 'gj', 299 => 'ii', 311 => 'kj', 316 => 'lj',
+				326 => 'nj', 353 => 'sh', 363 => 'uu', 382 => 'zh', 256 => 'aa',
+				268 => 'ch', 274 => 'ee', 290 => 'gj', 298 => 'ii', 310 => 'kj',
+				315 => 'lj', 325 => 'nj', 352 => 'sh', 362 => 'uu', 381 => 'zh'
+			);
+
+			foreach (craft()->config->get('customAsciiCharMappings') as $ascii => $char)
+			{
+				static::$_asciiCharMap[$ascii] = $char;
+			}
+		}
+
+		return static::$_asciiCharMap;
+	}
+
+	/**
+	 * Returns the asciiPunctuation array.
+	 *
+	 * @static
+	 * @return array
+	 */
+	public static function getAsciiPunctuation()
+	{
+		if (!isset(static::$_asciiPunctuation))
+		{
+			static::$_asciiPunctuation =  array(
+				33, 34, 35, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 58, 59, 60, 62, 63,
+				64, 91, 92, 93, 94, 123, 124, 125, 126, 161, 162, 163, 164, 165, 166,
+				167, 168, 169, 170, 171, 172, 174, 175, 176, 177, 178, 179, 180, 181,
+				182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 215, 402, 710, 732,
+				8211, 8212, 8213, 8216, 8217, 8218, 8220, 8221, 8222, 8224, 8225, 8226,
+				8227, 8230, 8240, 8242, 8243, 8249, 8250, 8252, 8254, 8260, 8364, 8482,
+				8592, 8593, 8594, 8595, 8596, 8629, 8656, 8657, 8658, 8659, 8660, 8704,
+				8706, 8707, 8709, 8711, 8712, 8713, 8715, 8719, 8721, 8722, 8727, 8730,
+				8733, 8734, 8736, 8743, 8744, 8745, 8746, 8747, 8756, 8764, 8773, 8776,
+				8800, 8801, 8804, 8805, 8834, 8835, 8836, 8838, 8839, 8853, 8855, 8869,
+				8901, 8968, 8969, 8970, 8971, 9001, 9002, 9674, 9824, 9827, 9829, 9830
+			);
+		}
+
+		return static::$_asciiPunctuation;
+	}
 
 	/**
 	 * Converts extended ASCII characters to ASCII.
@@ -181,6 +232,7 @@ class StringHelper
 	{
 		$asciiStr = '';
 		$strlen = strlen($str);
+		$asciiCharMap = static::getAsciiCharMap();
 
 		for ($c = 0; $c < $strlen; $c++)
 		{
@@ -191,12 +243,102 @@ class StringHelper
 			{
 				$asciiStr .= $char;
 			}
-			else if (isset(static::$_asciiCharMap[$ascii]))
+			else if (isset($asciiCharMap[$ascii]))
 			{
-				$asciiStr .= static::$_asciiCharMap[$ascii];
+				$asciiStr .= $asciiCharMap[$ascii];
 			}
 		}
 
 		return $asciiStr;
+	}
+
+	/**
+	 * Normalizes search keywords.
+	 *
+	 * @access private
+	 * @param string  $str The dirty keywords.
+	 * @param array  $ignore Ignore words to strip out.
+	 * @return string The cleansed keywords.
+	 */
+	public static function normalizeKeywords($str, $ignore = array())
+	{
+		// Flatten
+		if (is_array($str)) $str = static::arrayToString($str, ' ');
+
+		// Get rid of tags
+		$str = strip_tags($str);
+
+		// Convert non-breaking spaces entities to regular ones
+		$str = str_replace(array('&nbsp;', '&#160;', '&#xa0;') , ' ', $str);
+
+		// Get rid of entities
+		$str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
+
+		// Remove punctuation and diacritics
+		$str = strtr($str, static::_getCharMap());
+
+		// Normalize to lowercase
+		$str = function_exists('mb_strtolower') ? mb_strtolower($str, 'UTF-8') : strtolower($str);
+
+		// Remove ignore-words?
+		if (is_array($ignore) && ! empty($ignore))
+		{
+			foreach ($ignore as $word)
+			{
+				$word = preg_quote(static::_normalizeKeywords($word));
+				$str  = preg_replace("/\b{$word}\b/", '', $str);
+			}
+		}
+
+		// Strip out new lines and superfluous spaces
+		$str = preg_replace('/[\n\r]+/', ' ', $str);
+		$str = preg_replace('/\s{2,}/', ' ', $str);
+
+		// Trim white space
+		$str = trim($str);
+
+		return $str;
+	}
+
+	/**
+	 * Get array of chars to be used for conversion.
+	 *
+	 * @access private
+	 * @return array
+	 */
+	private static function _getCharMap()
+	{
+		// Keep local copy
+		static $map = array();
+
+		if (empty($map))
+		{
+			// This will replace accented chars with non-accented chars
+			foreach (static::getAsciiCharMap() AS $k => $v)
+			{
+				$map[static::_chr($k)] = $v;
+			}
+
+			// Replace punctuation with a space
+			foreach (static::getAsciiPunctuation() AS $i)
+			{
+				$map[static::_chr($i)] = ' ';
+			}
+		}
+
+		// Return the char map
+		return $map;
+	}
+
+	/**
+	 * Custom alternative to chr().
+	 *
+	 * @static
+	 * @param int $int
+	 * @return string
+	 */
+	private static function _chr($int)
+	{
+		return html_entity_decode("&#{$int};", ENT_QUOTES, 'UTF-8');
 	}
 }

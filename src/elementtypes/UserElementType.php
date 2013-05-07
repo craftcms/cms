@@ -17,38 +17,63 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the CP edit URI for a given element.
-	 *
-	 * @param BaseElementModel $element
-	 * @return string|null
-	 */
-	public function getCpEditUriForElement(BaseElementModel $element)
-	{
-		if (Craft::hasPackage(CraftPackage::Users))
-		{
-			return 'users/'.$element->id;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	/**
-	 * Returns whether this element type is linkable.
+	 * Returns whether this element type can have thumbnails.
 	 *
 	 * @return bool
 	 */
-	public function isLinkable()
+	public function hasThumbs()
 	{
+		return true;
+	}
+
+	/**
+	 * Returns this element type's sources.
+	 *
+	 * @return array|false
+	 */
+	public function getSources()
+	{
+		$sources = array();
+
 		if (Craft::hasPackage(CraftPackage::Users))
 		{
-			return true;
+			foreach (craft()->userGroups->getAllGroups() as $group)
+			{
+				$key = 'group:'.$group->id;
+
+				$sources[$key] = array(
+					'label'    => $group->name,
+					'criteria' => array('groupId' => $group->id)
+				);
+			}
 		}
-		else
-		{
-			return false;
-		}
+
+		return $sources;
+	}
+
+	/**
+	 * Defines which model attributes should be searchable.
+	 *
+	 * @return array
+	 */
+	public function defineSearchableAttributes()
+	{
+		return array('username', 'firstName', 'lastName', 'fullName', 'email');
+	}
+
+	/**
+	 * Returns the attributes that can be shown/sorted by in table views.
+	 *
+	 * @param string|null $source
+	 * @return array
+	 */
+	public function defineTableAttributes($source = null)
+	{
+		return array(
+			'fullName' => Craft::t('Full Name'),
+			'email'    => Craft::t('Email'),
+			'status'   => Craft::t('Status'),
+		);
 	}
 
 	/**
@@ -56,7 +81,7 @@ class UserElementType extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineCustomCriteriaAttributes()
+	public function defineCriteriaAttributes()
 	{
 		return array(
 			'groupId'        => AttributeType::Number,
@@ -71,18 +96,6 @@ class UserElementType extends BaseElementType
 			'order'          => array(AttributeType::String, 'default' => 'username asc'),
 			'preferredLocale'=> AttributeType::String,
 		);
-	}
-
-	/**
-	 * Returns the link settings HTML
-	 *
-	 * @return string|null
-	 */
-	public function getLinkSettingsHtml()
-	{
-		return craft()->templates->render('_components/elementtypes/User/linksettings', array(
-			'settings' => $this->getLinkSettings()
-		));
 	}
 
 	/**

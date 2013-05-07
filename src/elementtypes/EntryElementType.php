@@ -13,71 +13,101 @@ class EntryElementType extends BaseElementType
 	 */
 	public function getName()
 	{
-		return Craft::t('Section Entries');
+		return Craft::t('Entries');
 	}
 
 	/**
-	 * Returns the CP edit URI for a given element.
+	 * Returns whether this element type is translatable.
 	 *
-	 * @param BaseElementModel $element
-	 * @return string|null
+	 * @return bool
 	 */
-	public function getCpEditUriForElement(BaseElementModel $element)
+	public function isTranslatable()
 	{
-		return 'entries/'.$element->getSection()->handle.'/'.$element->id;
+		return true;
 	}
 
 	/**
-	 * Routes the request when the URI matches an element.
+	 * Returns this element type's sources.
 	 *
-	 * @param BaseElementModel
-	 * @return mixed Can be false if no special action should be taken,
-	 *               a string if it should route to a template path,
-	 *               or an array that can specify a controller action path, params, etc.
+	 * @return array|false
 	 */
-	public function routeRequestForMatchedElement(BaseElementModel $element)
+	public function getSources()
 	{
-		// Make sure that the entry is actually live
-		if ($element->getStatus() == EntryModel::LIVE)
+		$sources = array();
+
+		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
-			$section = $element->getSection();
-
-			// Make sure the section is set to have URLs and is enabled for this locale
-			if ($section->hasUrls && array_key_exists(craft()->language, $section->getLocales()))
+			foreach (craft()->sections->getEditableSections() as $section)
 			{
-				return array(
-					'action' => 'templates/render',
-					'params' => array(
-						'template' => $section->template,
-						'variables' => array(
-							'entry' => $element
-						)
-					)
+				$key = 'section:'.$section->id;
+
+				$sources[$key] = array(
+					'label'    => $section->name,
+					'criteria' => array('sectionId' => $section->id)
 				);
 			}
 		}
 
-		return false;
+		return $sources;
 	}
 
 	/**
-	 * Returns whether this element type is localizable.
+	 * Defines which model attributes should be searchable.
 	 *
-	 * @return bool
+	 * @return array
 	 */
-	public function isLocalizable()
+	public function defineSearchableAttributes()
 	{
-		return true;
+		return array('title', 'slug');
 	}
 
 	/**
-	 * Returns whether this element type is linkable.
+	 * Returns the attributes that can be shown/sorted by in table views.
 	 *
-	 * @return bool
+	 * @param string|null $source
+	 * @return array
 	 */
-	public function isLinkable()
+	public function defineTableAttributes($source = null)
 	{
-		return true;
+		$attributes = array();
+
+		if (Craft::hasPackage(CraftPackage::PublishPro))
+		{
+			if ($source && preg_match('/^section:(\d+)$/', $source, $match))
+			{
+				$section = craft()->sections->getSectionById($match[1]);
+			}
+		}
+		else if (!$source)
+		{
+			$sections = craft()->sections->getAllSections();
+
+			if ($sections)
+			{
+				$section = $sections[0];
+			}
+		}
+
+		if (!empty($section))
+		{
+			$attributes['title'] = Craft::t($section->titleLabel);
+		}
+		else
+		{
+			$attributes['title'] = Craft::t('Title');
+		}
+
+		$attributes['slug']     = Craft::t('Slug');
+
+		if (empty($section))
+		{
+			$attributes['section']  = Craft::t('Section');
+		}
+
+		$attributes['status']   = Craft::t('Status');
+		$attributes['postDate'] = Craft::t('Post Date');
+
+		return $attributes;
 	}
 
 	/**
@@ -85,7 +115,7 @@ class EntryElementType extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineCustomCriteriaAttributes()
+	public function defineCriteriaAttributes()
 	{
 		return array(
 			//'title'         => AttributeType::String,
@@ -102,18 +132,6 @@ class EntryElementType extends BaseElementType
 			'status'        => array(AttributeType::String, 'default' => EntryModel::LIVE),
 			'order'         => array(AttributeType::String, 'default' => 'postDate desc'),
 		);
-	}
-
-	/**
-	 * Returns the link settings HTML
-	 *
-	 * @return string|null
-	 */
-	public function getLinkSettingsHtml()
-	{
-		return craft()->templates->render('_components/elementtypes/Entry/linksettings', array(
-			'settings' => $this->getLinkSettings()
-		));
 	}
 
 	/**
@@ -271,5 +289,38 @@ class EntryElementType extends BaseElementType
 	public function populateElementModel($row)
 	{
 		return EntryModel::populateModel($row);
+	}
+
+	/**
+	 * Routes the request when the URI matches an element.
+	 *
+	 * @param BaseElementModel
+	 * @return mixed Can be false if no special action should be taken,
+	 *               a string if it should route to a template path,
+	 *               or an array that can specify a controller action path, params, etc.
+	 */
+	public function routeRequestForMatchedElement(BaseElementModel $element)
+	{
+		// Make sure that the entry is actually live
+		if ($element->getStatus() == EntryModel::LIVE)
+		{
+			$section = $element->getSection();
+
+			// Make sure the section is set to have URLs and is enabled for this locale
+			if ($section->hasUrls && array_key_exists(craft()->language, $section->getLocales()))
+			{
+				return array(
+					'action' => 'templates/render',
+					'params' => array(
+						'template' => $section->template,
+						'variables' => array(
+							'entry' => $element
+						)
+					)
+				);
+			}
+		}
+
+		return false;
 	}
 }

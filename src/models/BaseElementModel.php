@@ -24,7 +24,7 @@ abstract class BaseElementModel extends BaseModel
 	{
 		return array(
 			'id'          => AttributeType::Number,
-			'type'        => array(AttributeType::String, 'default' => $this->elementType),
+			//'type'        => array(AttributeType::String, 'default' => $this->elementType),
 			'enabled'     => array(AttributeType::Bool, 'default' => true),
 			'archived'    => array(AttributeType::Bool, 'default' => false),
 			'locale'      => AttributeType::Locale,
@@ -32,6 +32,16 @@ abstract class BaseElementModel extends BaseModel
 			'dateCreated' => AttributeType::DateTime,
 			'dateUpdated' => AttributeType::DateTime,
 		);
+	}
+
+	/**
+	 * Returns the type of element this is.
+	 *
+	 * @return string
+	 */
+	public function getElementType()
+	{
+		return $this->elementType;
 	}
 
 	/**
@@ -50,14 +60,21 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the element's CP edit URL.
 	 *
-	 * @return string|null
+	 * @return string|false
 	 */
 	public function getCpEditUrl()
 	{
-		if ($this->id)
-		{
-			return craft()->elements->getCpEditUrlForElement($this);
-		}
+		return false;
+	}
+
+	/**
+	 * Returns the URL to the element's thumbnail, if there is one.
+	 *
+	 * @return string|false
+	 */
+	public function getThumbUrl()
+	{
+		return false;
 	}
 
 	/**
@@ -101,12 +118,14 @@ abstract class BaseElementModel extends BaseModel
 			return true;
 		}
 
+		/* HIDE */
 		// Is $name a RTL link handle?
 		$linkCriteria = craft()->links->getCriteriaByTypeAndHandle($this->getAttribute('type'), $name, 'rtl');
 		if ($linkCriteria)
 		{
 			return true;
 		}
+		/* end HIDE */
 
 		return false;
 	}
@@ -133,6 +152,7 @@ abstract class BaseElementModel extends BaseModel
 			{
 				return $this->_getPreppedContentForField($field);
 			}
+			/* HIDE */
 			else if ($this->getAttribute('id'))
 			{
 				// Is $name a RTL link handle?
@@ -143,6 +163,7 @@ abstract class BaseElementModel extends BaseModel
 					return craft()->links->getLinkedElements($linkCriteria, $this->getAttribute('id'), 'rtl');
 				}
 			}
+			/* end HIDE */
 
 			// Fine, throw the exception
 			throw $e;

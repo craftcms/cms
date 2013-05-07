@@ -23,11 +23,11 @@ namespace Craft;
  * @property HttpSessionService          $httpSession          The HTTP session service
  * @property ImagesService               $images               The images service
  * @property InstallService              $install              The images service
- * @property LinksService                $links                The links service
  * @property LocalizationService         $localization         The localization service
  * @property MigrationsService           $migrations           The migrations service
  * @property PathService                 $path                 The path service
  * @property PluginsService              $plugins              The plugins service
+ * @property RelationsService            $relations            The relations service
  * @property ResourcesService            $resources            The resources service
  * @property RoutesService               $routes               The routes service
  * @property SectionsService             $sections             The sections service
@@ -76,6 +76,9 @@ class WebApp extends \CWebApplication
 		// Initialize HttpRequestService and LogRouter right away
 		$this->getComponent('request');
 		$this->getComponent('log');
+
+		// Set our own custom runtime path.
+		$this->setRuntimePath(craft()->path->getRuntimePath());
 
 		// Attach our own custom Logger
 		Craft::setLogger(new Logger());
@@ -128,6 +131,20 @@ class WebApp extends \CWebApplication
 		if (Craft::isInMaintenanceMode() && $this->request->isSiteRequest())
 		{
 			throw new HttpException(503);
+		}
+
+		// If the track has changed, put the brakes on the request.
+		if (!craft()->updates->isTrackValid())
+		{
+			if ($this->request->isCpRequest())
+			{
+				$this->runController('templates/invalidtrack');
+				$this->end();
+			}
+			else
+			{
+				throw new HttpException(503);
+			}
 		}
 
 		// isDbUpdateNeeded will return true if we're in the middle of a manual or auto-update.

@@ -7,31 +7,34 @@ namespace Craft;
 interface IElementType extends IComponentType
 {
 	/**
-	 * @param BaseElementModel $element
-	 * @return string|false
+	 * @return bool
 	 */
-	public function getCpEditUriForElement(BaseElementModel $element);
-
-	/**
-	 * @param BaseElementModel
-	 * @return mixed
-	 */
-	public function routeRequestForMatchedElement(BaseElementModel $element);
+	public function hasThumbs();
 
 	/**
 	 * @return bool
 	 */
-	public function isLocalizable();
-
-	/**
-	 * @return bool
-	 */
-	public function isLinkable();
+	public function isTranslatable();
 
 	/**
 	 * @return array
 	 */
-	public function defineCustomCriteriaAttributes();
+	public function getSources();
+
+	/**
+	 * @return array
+	 */
+	public function defineSearchableAttributes();
+
+	/**
+	 * @return array
+	 */
+	public function defineTableAttributes($source = null);
+
+	/**
+	 * @return array
+	 */
+	public function defineCriteriaAttributes();
 
 	/**
 	 * @param DbCommand $query
@@ -54,23 +57,8 @@ interface IElementType extends IComponentType
 	public function populateElementModel($row);
 
 	/**
-	 * @return BaseModel
+	 * @param BaseElementModel
+	 * @return mixed
 	 */
-	public function getLinkSettings();
-
-	/**
-	 * @param array $values
-	 */
-	public function setLinkSettings($values);
-
-	/**
-	 * @param array $settings
-	 * @return array
-	 */
-	public function prepLinkSettings($settings);
-
-	/**
-	 * @return string|null
-	 */
-	public function getLinkSettingsHtml();
+	public function routeRequestForMatchedElement(BaseElementModel $element);
 }
