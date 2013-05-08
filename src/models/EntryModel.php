@@ -67,9 +67,9 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the entry's status.
+	 * Returns the element's status.
 	 *
-	 * @return string
+	 * @return string|null
 	 */
 	public function getStatus()
 	{

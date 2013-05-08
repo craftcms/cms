@@ -113,6 +113,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 				this.$elements = this.$main.find('.elements:first');
 
 				this.$source = this.$sources.filter('.sel');
+				this.setState('source', this.$source.data('id'));
 
 				this.addListener(this.$sources, 'activate', 'selectSource');
 				this.addListener(this.$search, 'textchange', $.proxy(function()
@@ -287,12 +288,15 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 
 			for (var i = 0; i < $selectedRows.length; i++)
 			{
-				var $row = $($selectedRows[i]);
+				var $row = $($selectedRows[i]),
+					$element = $row.find('.element');
 
 				elements.push({
 					id: $row.data('id'),
 					label: $row.data('label'),
-					hasThumb: $row.find('.element').hasClass('hasthumb')
+					status: $row.data('status'),
+					hasThumb: $element.hasClass('hasthumb'),
+					$element: $element
 				});
 			}
 

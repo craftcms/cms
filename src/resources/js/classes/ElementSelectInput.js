@@ -39,7 +39,8 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 		}
 
 		this.elementSelect = new Garnish.Select(this.$elements, {
-			multi: true
+			multi: true,
+			filter: ':not(.delete)'
 		});
 
 		this.elementSort = new Garnish.DragSort({
@@ -63,18 +64,30 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 		this.elementSelect.addItems($elements);
 		this.elementSort.addItems($elements);
 
-		$elements.find('.delete').on('click', $.proxy(function(ev) {
+		$elements.find('.delete').on('click', $.proxy(function(ev)
+		{
 			var $element = $(ev.currentTarget).closest('.element');
+
 			this.$elements = this.$elements.not($element);
+			this.elementSelect.removeItems($element);
 
 			if (this.modal)
 			{
 				this.modal.enableElementsById($element.data('id'));
 			}
 
-			$element.remove();
 			this.totalElements--;
 			this.$addElementBtn.removeClass('disabled');
+
+			$element.css('z-index', 0);
+
+			$element.animate({
+				marginLeft: -($element.outerWidth() + parseInt($element.css('margin-right'))),
+				opacity: -1 // double speed!
+			}, function() {
+				$element.remove();
+			});
+
 		}, this));
 	},
 
@@ -112,6 +125,8 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 
 	selectElements: function(elements)
 	{
+		this.elementSelect.deselectAll();
+
 		if (this.limit)
 		{
 			var slotsLeft = this.limit - this.totalElements,
@@ -125,24 +140,35 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 		for (var i = 0; i < max; i++)
 		{
 			var element = elements[i],
-				$element = $(
-					'<div class="element removable" data-id="'+element.id+'">' +
-						'<input type="hidden" name="'+this.name+'[]" value="'+element.id+'">' +
-						'<a class="delete icon" title="'+Craft.t('Remove')+'"></a>' +
-						'<span class="label">'+element.label+'</span>' +
-					'</div>'
-				);
+				$newElement = element.$element.clone();
 
-			if (element.hasThumb)
-			{
-				$element.addClass('hasthumb');
-				$('<div class="thumb thumb'+element.id+'"></div>').prependTo($element);
-			}
+			// Make a couple tweaks
+			$newElement.addClass('removable');
+			$newElement.prepend('<input type="hidden" name="'+this.name+'[]" value="'+element.id+'">' +
+				'<a class="delete icon" title="'+Craft.t('Remove')+'"></a>');
 
-			$element.appendTo(this.$elementsContainer);
+			$newElement.appendTo(this.$elementsContainer);
 
-			this.$elements = this.$elements.add($element);
-			this.initElements($element);
+			// Animate it into place
+			var origOffset = element.$element.offset(),
+				destOffset = $newElement.offset();
+
+			$newElement.css({
+				left:   origOffset.left - destOffset.left,
+				top:    origOffset.top - destOffset.top,
+				zIndex: 10000
+			});
+
+			$newElement.animate({
+				left: 0,
+				top: 0
+			}, function() {
+				$(this).css('z-index', 1);
+			});
+
+			this.$elements = this.$elements.add($newElement);
+			this.initElements($newElement);
+			this.elementSelect.selectItem($newElement);
 		}
 
 		this.totalElements += max;

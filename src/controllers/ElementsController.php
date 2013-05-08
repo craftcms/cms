@@ -131,6 +131,8 @@ class ElementsController extends BaseController
 	{
 		$criteria = craft()->elements->getCriteria($elementType->getClassHandle());
 
+		$criteria->status = null;
+
 		if (!empty($state['source']))
 		{
 			$sources = $elementType->getSources();

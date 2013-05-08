@@ -10,12 +10,15 @@
 {% endif -%}
 
 <div class="element{% if isField %} removable{% endif %}{% if thumbUrl %} hasthumb{% endif %}" data-id="{{ element.id }}">
-	{% if thumbUrl -%}
-		<div class="thumb {{ thumbClass }}"></div>
-	{% endif %}
 	{% if isField -%}
 		<input type="hidden" name="{{ name }}[]" value="{{ element.id }}">
 		<a class="delete icon" title="{{ 'Remove'|t }}"></a>
 	{% endif -%}
+	{% if thumbUrl -%}
+		<div class="thumb {{ thumbClass }}"></div>
+	{% endif %}
+	{% if element.getStatus() %}
+		<div class="status {{ element.getStatus() }}"></div>
+	{% endif %}
 	<span class="label">{{ element }}</span>
 </div>
