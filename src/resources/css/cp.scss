@@ -76,7 +76,8 @@ html, body,
 #page-header h1 { display: inline; line-height: 1; }
 #page-header #extra-headers { display: inline-block; position: relative; top: 5px; }
 #page-header #extra-headers > .select,
-#page-header #extra-headers > .menubtn { display: block; margin-left: 5px; float: left; }
+#page-header #extra-headers > .menubtn,
+#page-header #extra-headers > .btn { display: block; margin-left: 5px; float: left; }
 
 #crumbs { margin: -25px 0 20px; font-size: 0; }
 #crumbs:after { @include clearafter; }

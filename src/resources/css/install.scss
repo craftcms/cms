@@ -43,7 +43,8 @@ input.hidden { position: absolute; top: 100px; }
 #installing h1 { margin-top: 140px; }
 #installing #spinner { display: block; margin: 0 auto; }
 #welcome .buttons,
-#installing .buttons { position: static; margin-top: 0; text-align: center; }
+#installing .buttons { position: static; margin: 0; text-align: center; }
+#installing .buttons .btn { margin: 0; float: none; }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
 	   only screen and (   -moz-min-device-pixel-ratio: 1.5),
