@@ -167,6 +167,7 @@ class AssetIndexingService extends BaseApplicationComponent
 					{
 						$folderId = (int) $folderId;
 					}
+
 					$folders = craft()->assets->findFolders(array('id' => $command['folderIds']));
 
 					foreach ($folders as $folder)
