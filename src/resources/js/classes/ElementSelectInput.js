@@ -39,7 +39,8 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 		}
 
 		this.elementSelect = new Garnish.Select(this.$elements, {
-			multi: true
+			multi: true,
+			filter: ':not(.delete)'
 		});
 
 		this.elementSort = new Garnish.DragSort({
@@ -63,9 +64,12 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 		this.elementSelect.addItems($elements);
 		this.elementSort.addItems($elements);
 
-		$elements.find('.delete').on('click', $.proxy(function(ev) {
+		$elements.find('.delete').on('click', $.proxy(function(ev)
+		{
 			var $element = $(ev.currentTarget).closest('.element');
+
 			this.$elements = this.$elements.not($element);
+			this.elementSelect.removeItems($element);
 
 			if (this.modal)
 			{
