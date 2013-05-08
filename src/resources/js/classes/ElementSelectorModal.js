@@ -113,6 +113,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 				this.$elements = this.$main.find('.elements:first');
 
 				this.$source = this.$sources.filter('.sel');
+				this.setState('source', this.$source.data('id'));
 
 				this.addListener(this.$sources, 'activate', 'selectSource');
 				this.addListener(this.$search, 'textchange', $.proxy(function()
