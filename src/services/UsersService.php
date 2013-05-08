@@ -340,7 +340,7 @@ class UsersService extends BaseApplicationComponent
 
 		if ($result)
 		{
-			IOHelper::changePermissions($targetPath, IOHelper::writableFilePermissions);
+			IOHelper::changePermissions($targetPath, IOHelper::writableFilePermissions());
 			$record = UserRecord::model()->findById($user->id);
 			$record->photo = $filename;
 			$record->save();

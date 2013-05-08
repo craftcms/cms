@@ -6,10 +6,6 @@ namespace Craft;
  */
 class IOHelper
 {
-	const defaultFolderPermissions = 0755;
-	const writableFolderPermissions = 0777;
-	const writableFilePermissions = 0666;
-
 	/**
 	 * Tests whether the given file path exists on the file system.
 	 *
@@ -1397,7 +1393,7 @@ class IOHelper
 	{
 		if (!IOHelper::folderExists($folderPath))
 		{
-			IOHelper::createFolder($folderPath, self::writableFolderPermissions);
+			IOHelper::createFolder($folderPath, self::getWritableFolderPermissions());
 		}
 	}
 
@@ -1436,6 +1432,30 @@ class IOHelper
 	}
 
 	/**
+	 * @return mixed
+	 */
+	public static function getDefaultFolderPermissions()
+	{
+		return craft()->config->get('defaultFolderPermissions');
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public static function getWritableFolderPermissions()
+	{
+		return craft()->config->get('writableFolderPermissions');
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public static function getWritableFilePermissions()
+	{
+		return craft()->config->get('getWritableFilePermissions');
+	}
+
+	/**
 	 * @param       $errNo
 	 * @param       $errStr
 	 * @param       $errFile
@@ -1462,6 +1482,7 @@ class IOHelper
 	 * @param       $contents
 	 * @param  bool $lock
 	 * @param  bool $append
+	 *
 	 * @return bool
 	 */
 	private static function _writeToFile($path, $contents, $lock = true, $append = true)
