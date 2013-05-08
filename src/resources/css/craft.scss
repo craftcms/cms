@@ -140,6 +140,7 @@ td.right { float: none; text-align: right; }
 .icon.delete { display: inline-block; }
 .icon.delete:before { content: 'R'; color: rgba(0,0,0,0.2); }
 .icon.delete:not(.disabled):hover:before { color: $errorcolor; }
+.icon.delete:not(.disabled):active:before { color: #8c3b2e; }
 
 .hidden { display: none !important; }
 
