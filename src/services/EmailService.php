@@ -214,8 +214,15 @@ class EmailService extends BaseApplicationComponent
 			}
 		}
 
-		// Set the To fields
-		$email->AddAddress($user->email, $user->getFullName());
+		// If they have the test email config var set to something, use it instead of the supplied email.
+		if (($testToEmail = craft()->config->get('testToEmailAddress')) != '')
+		{
+			$email->AddAddress($testToEmail, 'Test Email');
+		}
+		else
+		{
+			$email->AddAddress($user->email, $user->getFullName());
+		}
 
 		// Add any BCC's
 		if (!empty($emailModel->bcc))

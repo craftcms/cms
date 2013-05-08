@@ -229,6 +229,11 @@ return array(
 'phpMaxMemoryLimit' => '256M',
 
 /**
+ * If this is set, then any emails sent through the EmailService will go to this address instead of EmailModel->toEmail.
+ */
+'testToEmailAddress' => '',
+
+/**
  * Error Path Keys
  * 'errorPath'      => craft.app.templates.errors.error
  * 'error400Path'   => craft.app.templates.errors.400
