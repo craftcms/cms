@@ -84,7 +84,7 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 			$element.animate({
 				marginLeft: -($element.outerWidth() + parseInt($element.css('margin-right'))),
 				opacity: -1 // double speed!
-			}, function() {
+			}, 'fast', function() {
 				$element.remove();
 			});
 
