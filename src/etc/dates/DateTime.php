@@ -84,17 +84,17 @@ class DateTime extends \DateTime
 				$date .= $dt['date'];
 				$format .= $dateFormatter->getDatepickerPhpFormat();
 			}
-
-			if (!empty($dt['date']) && !empty($dt['time']))
+			else
 			{
-				$date .= ' ';
-				$format .= ' ';
+				$current = new DateTime('now', new \DateTimeZone($timezone));
+				$date .= $current->month().'/'.$current->day().'/'.$current->year();
+				$format .= 'n/j/Y';
 			}
 
 			if (!empty($dt['time']))
 			{
-				$date .= $dt['time'];
-				$format .= $dateFormatter->getTimepickerPhpFormat();
+				$date .= ' '.$dt['time'];
+				$format .= ' '.$dateFormatter->getTimepickerPhpFormat();
 			}
 		}
 		else
