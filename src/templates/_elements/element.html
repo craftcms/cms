@@ -17,5 +17,8 @@
 		<input type="hidden" name="{{ name }}[]" value="{{ element.id }}">
 		<a class="delete icon" title="{{ 'Remove'|t }}"></a>
 	{% endif -%}
+	{% if element.getStatus() %}
+		<div class="status {{ element.getStatus() }}"></div>
+	{% endif %}
 	<span class="label">{{ element }}</span>
 </div>

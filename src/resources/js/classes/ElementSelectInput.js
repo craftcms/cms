@@ -126,18 +126,14 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 		{
 			var element = elements[i],
 				$element = $(
-					'<div class="element removable" data-id="'+element.id+'">' +
+					'<div class="element removable'+(element.hasThumb ? ' hasthumb' : '')+'" data-id="'+element.id+'">' +
+						(element.hasThumb ? '<div class="thumb thumb'+element.id+'"></div>' : '') +
 						'<input type="hidden" name="'+this.name+'[]" value="'+element.id+'">' +
 						'<a class="delete icon" title="'+Craft.t('Remove')+'"></a>' +
+						(element.status ? '<div class="status '+element.status+'"></div> ' : '') +
 						'<span class="label">'+element.label+'</span>' +
 					'</div>'
 				);
-
-			if (element.hasThumb)
-			{
-				$element.addClass('hasthumb');
-				$('<div class="thumb thumb'+element.id+'"></div>').prependTo($element);
-			}
 
 			$element.appendTo(this.$elementsContainer);
 

@@ -82,7 +82,7 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the element's status.
 	 *
-	 * @return string
+	 * @return string|null
 	 */
 	public function getStatus()
 	{
