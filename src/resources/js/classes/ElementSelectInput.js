@@ -125,20 +125,18 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 		for (var i = 0; i < max; i++)
 		{
 			var element = elements[i],
-				$element = $(
-					'<div class="element removable'+(element.hasThumb ? ' hasthumb' : '')+'" data-id="'+element.id+'">' +
-						(element.hasThumb ? '<div class="thumb thumb'+element.id+'"></div>' : '') +
-						'<input type="hidden" name="'+this.name+'[]" value="'+element.id+'">' +
-						'<a class="delete icon" title="'+Craft.t('Remove')+'"></a>' +
-						(element.status ? '<div class="status '+element.status+'"></div> ' : '') +
-						'<span class="label">'+element.label+'</span>' +
-					'</div>'
-				);
+				$newElement = element.$element.clone();
 
-			$element.appendTo(this.$elementsContainer);
+			// Make a couple tweaks
+			$newElement.addClass('removable');
+			$newElement.prepend('<input type="hidden" name="'+this.name+'[]" value="'+element.id+'">' +
+				'<a class="delete icon" title="'+Craft.t('Remove')+'"></a>');
 
-			this.$elements = this.$elements.add($element);
-			this.initElements($element);
+			$newElement.appendTo(this.$elementsContainer);
+
+
+			this.$elements = this.$elements.add($newElement);
+			this.initElements($newElement);
 		}
 
 		this.totalElements += max;
