@@ -43,13 +43,13 @@ if (!is_dir($runtimePath))
 {
 	$oldumask = umask(0);
 
-	if (!mkdir($runtimePath, 0754, true))
+	if (!mkdir($runtimePath, 0755, true))
 	{
 		exit('Tried to create a folder at '.$runtimePath.', but could not.');
 	}
 
 	// Because setting permission with mkdir is a crapshoot.
-	chmod($runtimePath, 0754);
+	chmod($runtimePath, 0755);
 	umask($oldumask);
 }
 

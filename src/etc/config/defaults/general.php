@@ -241,6 +241,26 @@ return array(
 'phpMaxMemoryLimit' => '256M',
 
 /**
+ * If this is set, then any emails sent through the EmailService will go to this address instead of EmailModel->toEmail.
+ */
+'testToEmailAddress' => '',
+
+/**
+ * The default permissions Craft will use when creating a folder on the file system.
+ */
+'defaultFolderPermissions' => 0755,
+
+/**
+ * The permissions Craft will use when creating a folder to ensure that it is writable.
+ */
+'writableFolderPermissions' => 0777,
+
+/**
+ * The permissions Craft will use when creating a file to ensure that it is writable.
+ */
+'writableFilePermissions' => 0777,
+
+/**
  * Error Path Keys
  * 'errorPath'      => craft.app.templates.errors.error
  * 'error400Path'   => craft.app.templates.errors.400
