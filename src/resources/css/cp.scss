@@ -72,13 +72,13 @@ html, body,
 #main-wrapper { position: relative; }
 
 /* page header */
-#page-header { display: block; position: relative; z-index: 1; padding: 0 30px; overflow: hidden; text-shadow: 0 1px 0 #fff; }
-#page-header h1 { float: left; margin: 35px 0; line-height: 1; }
-#page-header #extra-headers { float: left; margin: 33px 0 0 15px; }
+#page-header { display: block; position: relative; z-index: 1; padding: 35px 30px; overflow: hidden; text-shadow: 0 1px 0 #fff; }
+#page-header h1 { display: inline; line-height: 1; }
+#page-header #extra-headers { display: inline-block; position: relative; top: 5px; }
 #page-header #extra-headers > .select,
 #page-header #extra-headers > .menubtn { display: block; margin-left: 5px; float: left; }
 
-#crumbs { margin: 10px 0 -15px; font-size: 0; }
+#crumbs { margin: -25px 0 20px; font-size: 0; }
 #crumbs:after { @include clearafter; }
 #crumbs li { display: inline-block; font-size: 13px; }
 #crumbs li:after { @include icon; margin: -1px 5px 0; content: '>'; font-size: 11px; color: #ddd; }
@@ -91,7 +91,7 @@ html, body,
 .tabs .tab:hover { text-decoration: none; color: $linkcolor; }
 .tabs .tab.sel { border-radius: 3px 3px 0 0; color: #000; cursor: default; }
 
-#tabs { margin-left: -10px; font-size: 0; }
+#tabs { margin: 35px 0 -35px -10px; font-size: 0; }
 #tabs li { display: inline-block; font-size: 13px; }
 #tabs li a { color: #555; }
 #tabs li a:not(.sel):hover { color: $linkcolor; }
