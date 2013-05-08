@@ -53,6 +53,7 @@ class DateTime extends \DateTime
 	 *
 	 * Supports the following formats:
 	 *
+	 *  - An array of the date and time in the current locale's short formats
 	 *  - All W3C date and time formats (http://www.w3.org/TR/NOTE-datetime)
 	 *  - MySQL DATE and DATETIME formats (http://dev.mysql.com/doc/refman/5.1/en/datetime.html)
 	 *  - Relaxed versions of W3C and MySQL formats (single-digit months, days, and hours)
@@ -84,17 +85,18 @@ class DateTime extends \DateTime
 				$date .= $dt['date'];
 				$format .= $dateFormatter->getDatepickerPhpFormat();
 			}
-
-			if (!empty($dt['date']) && !empty($dt['time']))
+			else
 			{
-				$date .= ' ';
-				$format .= ' ';
+				// Default to the current date, because that makes more sense than Jan 1, 1970
+				$current = new DateTime('now', new \DateTimeZone($timezone));
+				$date .= $current->month().'/'.$current->day().'/'.$current->year();
+				$format .= 'n/j/Y';
 			}
 
 			if (!empty($dt['time']))
 			{
-				$date .= $dt['time'];
-				$format .= $dateFormatter->getTimepickerPhpFormat();
+				$date .= ' '.$dt['time'];
+				$format .= ' '.$dateFormatter->getTimepickerPhpFormat();
 			}
 		}
 		else
