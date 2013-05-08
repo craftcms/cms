@@ -459,6 +459,7 @@ table.data.collapsed tbody td form { display: inline-block; }
 	-webkit-box-shadow: none;
 	        box-shadow: none;
 }
+.elementselect .element { z-index: 1; }
 .elementselect .caboose { float: left; }
 
 /* editable tables */

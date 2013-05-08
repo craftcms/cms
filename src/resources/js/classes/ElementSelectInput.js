@@ -72,9 +72,18 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 				this.modal.enableElementsById($element.data('id'));
 			}
 
-			$element.remove();
 			this.totalElements--;
 			this.$addElementBtn.removeClass('disabled');
+
+			$element.css('z-index', 0);
+
+			$element.animate({
+				marginLeft: -($element.outerWidth() + parseInt($element.css('margin-right'))),
+				opacity: -1 // double speed!
+			}, function() {
+				$element.remove();
+			});
+
 		}, this));
 	},
 
@@ -112,6 +121,8 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 
 	selectElements: function(elements)
 	{
+		this.elementSelect.deselectAll();
+
 		if (this.limit)
 		{
 			var slotsLeft = this.limit - this.totalElements,
@@ -134,9 +145,26 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 
 			$newElement.appendTo(this.$elementsContainer);
 
+			// Animate it into place
+			var origOffset = element.$element.offset(),
+				destOffset = $newElement.offset();
+
+			$newElement.css({
+				left:   origOffset.left - destOffset.left,
+				top:    origOffset.top - destOffset.top,
+				zIndex: 10000
+			});
+
+			$newElement.animate({
+				left: 0,
+				top: 0
+			}, function() {
+				$(this).css('z-index', 1);
+			});
 
 			this.$elements = this.$elements.add($newElement);
 			this.initElements($newElement);
+			this.elementSelect.selectItem($newElement);
 		}
 
 		this.totalElements += max;
