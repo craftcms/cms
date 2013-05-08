@@ -121,14 +121,14 @@ class FileCache extends \CFileCache
 
 		if ($this->directoryLevel > 0)
 		{
-			IOHelper::createFolder(IOHelper::getFolderName($cacheFile), 0777);
+			IOHelper::createFolder(IOHelper::getFolderName($cacheFile), IOHelper::getWritableFolderPermissions());
 		}
 
 		if ($this->_originalKey == 'useWriteFileLock')
 		{
 			if (IOHelper::writeToFile($cacheFile, $value, true, false, true) !== false)
 			{
-				IOHelper::changePermissions($cacheFile, 0777);
+				IOHelper::changePermissions($cacheFile, IOHelper::writableFilePermissions());
 				return IOHelper::touch($cacheFile, $expire);
 			}
 			else
@@ -140,7 +140,7 @@ class FileCache extends \CFileCache
 		{
 			if (IOHelper::writeToFile($cacheFile, $value) !== false)
 			{
-				IOHelper::changePermissions($cacheFile, 0777);
+				IOHelper::changePermissions($cacheFile, IOHelper::writableFilePermissions());
 				return IOHelper::touch($cacheFile, $expire);
 			}
 			else

@@ -42,6 +42,7 @@ class InstallService extends BaseApplicationComponent
 			$this->_createSearchIndexTable();
 			$this->_createAndPopulateInfoTable($inputs);
 
+			$this->_createAssetTransformIndexTable();
 			$this->_createRackspaceAccessTable();
 
 			Craft::log('Committing the transaction.');
@@ -308,6 +309,26 @@ class InstallService extends BaseApplicationComponent
 
 		craft()->db->createCommand()->createIndex('rackspaceaccess', 'connectionKey', true);
 		Craft::log('Finished creating the Rackspace access table.');
+	}
+
+	/**
+	 * Create the Asset Transform Index table.
+	 */
+	private function _createAssetTransformIndexTable()
+	{
+		Craft::log('Creating the Asset transform index table.');
+
+		craft()->db->createCommand()->createTable('assettransformindex', array(
+			'fileId'       => array('maxLength' => 11, 'column' => ColumnType::Int, 'required' => true),
+			'location'     => array('maxLength' => 255, 'column' => ColumnType::Varchar, 'required' => true),
+			'sourceId'     => array('maxLength' => 11, 'column' => ColumnType::Int, 'required' => true),
+			'fileExists'   => array('column' => ColumnType::Bool),
+			'inProgress'   => array('column' => ColumnType::Bool),
+			'dateIndexed'  => array('column' => ColumnType::DateTime),
+		));
+
+		craft()->db->createCommand()->createIndex('assettransformindex', 'sourceId, fileId, location');
+		Craft::log('Finished creating the Asset transform index table.');
 	}
 
 	/**
