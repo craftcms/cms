@@ -19,7 +19,7 @@ class UrlHelper
 	public static function getUrl($path = '', $params = null, $protocol = '', $mustShowScriptName = false)
 	{
 		// Return $path if it appears to be an absolute URL.
-		if (strpos($path, '://') !== false)
+		if (strpos($path, '://') !== false || strncmp($path, '//', 2) == 0)
 		{
 			return $path;
 		}
