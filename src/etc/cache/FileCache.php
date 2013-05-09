@@ -128,7 +128,7 @@ class FileCache extends \CFileCache
 		{
 			if (IOHelper::writeToFile($cacheFile, $value, true, false, true) !== false)
 			{
-				IOHelper::changePermissions($cacheFile, IOHelper::writableFilePermissions());
+				IOHelper::changePermissions($cacheFile, IOHelper::getWritableFilePermissions());
 				return IOHelper::touch($cacheFile, $expire);
 			}
 			else
@@ -140,7 +140,7 @@ class FileCache extends \CFileCache
 		{
 			if (IOHelper::writeToFile($cacheFile, $value) !== false)
 			{
-				IOHelper::changePermissions($cacheFile, IOHelper::writableFilePermissions());
+				IOHelper::changePermissions($cacheFile, IOHelper::getWritableFilePermissions());
 				return IOHelper::touch($cacheFile, $expire);
 			}
 			else
