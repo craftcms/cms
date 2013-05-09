@@ -151,7 +151,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	private function _noTransformExists($handle)
 	{
-		throw new Exception(Craft::t("Can't find the transform with handle “{handle}”", array('handle' => $handle)));
+		throw new Exception(Craft::t("Can’t find the transform with handle “{handle}”", array('handle' => $handle)));
 	}
 
 	/**

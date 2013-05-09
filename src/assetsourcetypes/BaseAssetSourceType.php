@@ -192,7 +192,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	protected function _getUserPromptOptions($fileName)
 	{
 		return (object) array(
-			'message' => Craft::t('File "{file}" already exists at target location', array('file' => $fileName)),
+			'message' => Craft::t('File “{file}” already exists at target location', array('file' => $fileName)),
 			'choices' => array(
 				array('value' => AssetsHelper::ActionKeepBoth, 'title' => Craft::t('Rename the new file and keep both')),
 				array('value' => AssetsHelper::ActionReplace, 'title' => Craft::t('Replace the existing file')),
@@ -211,7 +211,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	protected function _getUserFolderPromptOptions($folderName, $folderId)
 	{
 		return array(
-			'message' => Craft::t('Folder "{folder}" already exists at target location', array('folder' => $folderName)),
+			'message' => Craft::t('Folder “{folder}” already exists at target location', array('folder' => $folderName)),
 			'file_name' => $folderId,
 			'choices' => array(
 				array('value' => AssetsHelper::ActionReplace, 'title' => Craft::t('Replace the existing folder')),
@@ -727,17 +727,17 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$parentFolder = craft()->assets->getFolderById($folder->parentId);
 		if (!$parentFolder)
 		{
-			throw new Exception(Craft::t("Cannot rename folder \"{folder}\"!", array('folder' => $folder->name)));
+			throw new Exception(Craft::t("Cannot rename folder “{folder}”!", array('folder' => $folder->name)));
 		}
 		if ($this->_sourceFolderExists($parentFolder, $newName))
 		{
-			throw new Exception(Craft::t("Folder \"{folder}\" already exists there.", array('folder' => $newName)));
+			throw new Exception(Craft::t("Folder “{folder}” already exists there.", array('folder' => $newName)));
 		}
 
 		// Try to rename the folder in the source
 		if (!$this->_renameSourceFolder($folder, $newName))
 		{
-			throw new Exception(Craft::t("Cannot rename folder \"{folder}\"!", array('folder' => $folder->name)));
+			throw new Exception(Craft::t("Cannot rename folder “{folder}”!", array('folder' => $folder->name)));
 		}
 
 		$oldFullPath = $folder->fullPath;
@@ -851,7 +851,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		}
 		else
 		{
-			throw new Exception(Craft::t("Failed to succesfully mirror folder structure"));
+			throw new Exception(Craft::t("Failed to successfully mirror folder structure"));
 		}
 	}
 
