@@ -182,8 +182,8 @@ Garnish = {
 	CMD_KEY:    91,
 
 	// Mouse button constants
-	PRIMARY_CLICK:   0,
-	SECONDARY_CLICK: 2,
+	PRIMARY_CLICK:   1,
+	SECONDARY_CLICK: 3,
 
 	// Axis constants
 	X_AXIS: 'x',
@@ -847,7 +847,7 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	onMouseDown: function(ev)
 	{
 		// Ignore right clicks
-		if (ev.button != Garnish.PRIMARY_CLICK)
+		if (ev.which != Garnish.PRIMARY_CLICK)
 		{
 			return;
 		}
@@ -1209,7 +1209,7 @@ Garnish.ContextMenu = Garnish.Base.extend({
 	showMenu: function(ev)
 	{
 		// Ignore left mouse clicks
-		if (ev.type == 'mousedown' && ev.button != Garnish.SECONDARY_CLICK)
+		if (ev.type == 'mousedown' && ev.which != Garnish.SECONDARY_CLICK)
 		{
 			return;
 		}
@@ -2384,7 +2384,14 @@ Garnish.Menu = Garnish.Base.extend({
 			this.$btn = $(this.settings.attachToButton);
 		}
 
-		this.addListener(this.$options, 'mousedown', 'selectOption');
+		// Prevent clicking on the container from hiding the menu
+		this.addListener(this.$container, 'mousedown', function(ev)
+		{
+			ev.stopPropagation();
+		});
+
+		// Listen for option clicks
+		this.addListener(this.$options, 'click', 'selectOption');
 	},
 
 	setPositionRelativeToButton: function()
@@ -2484,7 +2491,7 @@ Garnish.MenuBtn = Garnish.Base.extend({
 
 	onMouseDown: function(ev)
 	{
-		if (ev.button != Garnish.PRIMARY_CLICK || ev.metaKey)
+		if (ev.which != Garnish.PRIMARY_CLICK || ev.metaKey)
 		{
 			return;
 		}
@@ -2503,6 +2510,8 @@ Garnish.MenuBtn = Garnish.Base.extend({
 
 	showMenu: function()
 	{
+		// Prevent the option selection mousedown event from
+
 		this.menu.show();
 		this.$btn.addClass('active');
 		this.showingMenu = true;
@@ -3073,7 +3082,7 @@ Garnish.Modal = Garnish.Base.extend({
 				});
 			}
 
-			this.$container.delay(50).fadeIn();
+			this.$container.delay(50).fadeIn($.proxy(this, 'onFadeIn'));
 		}
 
 		this.visible = true;
@@ -3094,10 +3103,20 @@ Garnish.Modal = Garnish.Base.extend({
 
 		this.visible = false;
 		Garnish.Modal.visibleModal = null;
-		Garnish.Modal.$shade.fadeOut('fast');
+		Garnish.Modal.$shade.fadeOut('fast', $.proxy(this, 'onFadeOut'));
 		this.removeListener(Garnish.Modal.$shade, 'click');
 
 		this.settings.onHide();
+	},
+
+	onFadeIn: function()
+	{
+		this.settings.onFadeIn();
+	},
+
+	onFadeOut: function()
+	{
+		this.settings.onFadeOut();
 	},
 
 	getHeight: function()
@@ -3195,7 +3214,9 @@ Garnish.Modal = Garnish.Base.extend({
 	defaults: {
 		draggable: true,
 		onShow: $.noop,
-		onHide: $.noop
+		onHide: $.noop,
+		onFadeIn: $.noop,
+		onFadeOut: $.noop
 	},
 	instances: [],
 	visibleModal: null,
@@ -3959,12 +3980,12 @@ Garnish.Select = Garnish.Base.extend({
 	onMouseDown: function(ev)
 	{
 		// ignore right clicks
-		if (ev.button != Garnish.PRIMARY_CLICK)
+		if (ev.which != Garnish.PRIMARY_CLICK)
 		{
 			return;
 		}
 
-		// Enfore the filter
+		// Enforce the filter
 		if (this.settings.filter && !$(ev.target).is(this.settings.filter))
 		{
 			return;
@@ -3975,7 +3996,7 @@ Garnish.Select = Garnish.Base.extend({
 
 		var $item = $($.data(ev.currentTarget, 'select-item'));
 
-		if (ev.metaKey)
+		if (ev.metaKey || ev.ctrlKey)
 		{
 			this.toggleItem($item);
 		}
@@ -3996,7 +4017,7 @@ Garnish.Select = Garnish.Base.extend({
 	onMouseUp: function(ev)
 	{
 		// ignore right clicks
-		if (ev.button != Garnish.PRIMARY_CLICK)
+		if (ev.which != Garnish.PRIMARY_CLICK)
 		{
 			return;
 		}
@@ -4010,7 +4031,7 @@ Garnish.Select = Garnish.Base.extend({
 		var $item = $($.data(ev.currentTarget, 'select-item'));
 
 		// was this a click?
-		if (! ev.metaKey && ! ev.shiftKey && Garnish.getDist(this.mousedownX, this.mousedownY, ev.pageX, ev.pageY) < 1)
+		if (! (ev.metaKey || ev.ctrlKey) && ! ev.shiftKey && Garnish.getDist(this.mousedownX, this.mousedownY, ev.pageX, ev.pageY) < 1)
 		{
 			this.selectItem($item);
 
