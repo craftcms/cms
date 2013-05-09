@@ -1452,7 +1452,7 @@ class IOHelper
 	 */
 	public static function getWritableFilePermissions()
 	{
-		return craft()->config->get('getWritableFilePermissions');
+		return craft()->config->get('writableFilePermissions');
 	}
 
 	/**
