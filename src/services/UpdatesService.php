@@ -566,7 +566,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isTrackValid()
 	{
-		if (strcmp(Craft::getTrack(), CRAFT_TRACK) !== 0)
+		if (($track = Craft::getTrack()) && $track != CRAFT_TRACK)
 		{
 			return false;
 		}
