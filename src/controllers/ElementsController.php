@@ -33,21 +33,25 @@ class ElementsController extends BaseController
 
 		if ($sources)
 		{
-			if (empty($state['source']) || !isset($sources[$state['source']]))
+			// Was there a previously-selected source?
+			if (!empty($state['source']))
 			{
-				$state['source'] = array_shift(array_keys($sources));
+				$sourcePath = $this->_getSourcePath($sources, $state['source']);
 			}
-		}
-		else
-		{
-			$state['source'] = null;
+
+			if (empty($sourcePath))
+			{
+				// Default to the first source
+				$state['source'] = array_shift(array_keys($sources));
+				$sourcePath = array($state['source']);
+			}
 		}
 
 		$criteria = $this->_getElementCriteria($elementType, $state);
 
 		$bodyHtml = $this->renderTemplate('_elements/modal/body', array(
-			'sources'        => $sources,
-			'selectedSource' => $state['source'],
+			'sources'    => $sources,
+			'sourcePath' => $sourcePath,
 		), true);
 
 		$elementContainerHtml = $this->_renderModalElementContainerHtml($elementType, $state);
@@ -101,6 +105,62 @@ class ElementsController extends BaseController
 	}
 
 	/**
+	 * Returns the full path to the selected source.
+	 *
+	 * @param array  $sources
+	 * @param string $selectedSource
+	 * @return array|null
+	 */
+	private function _getSourcePath($sources, $selectedSource)
+	{
+		if (isset($sources[$selectedSource]))
+		{
+			return array($selectedSource);
+		}
+		else
+		{
+			// Look through any nested sources
+			foreach ($sources as $key => $source)
+			{
+				if (!empty($source['nested']) && ($nestedSourcePath = $this->_getSourcePath($source['nested'], $selectedSource)))
+				{
+					return array_merge(array($key), $nestedSourcePath);
+				}
+			}
+		}
+
+		return null;
+	}
+
+
+	/**
+	 * Returns the criteria for a given source.
+	 *
+	 * @param array  $sources
+	 * @param string $selectedSource
+	 * @return array|null
+	 */
+	private function _getSourceCriteria($sources, $selectedSource)
+	{
+		if (isset($sources[$selectedSource]))
+		{
+			return $sources[$selectedSource]['criteria'];
+		}
+		else
+		{
+			// Look through any nested sources
+			foreach ($sources as $key => $source)
+			{
+				if (!empty($source['nested']) && ($nestedSourceCriteria = $this->_getSourceCriteria($source['nested'], $selectedSource)))
+				{
+					return $nestedSourceCriteria;
+				}
+			}
+		}
+
+		return null;
+	}
+	/**
 	 * Returns the element type based on the posted element type class.
 	 *
 	 * @access private
@@ -136,15 +196,12 @@ class ElementsController extends BaseController
 		if (!empty($state['source']))
 		{
 			$sources = $elementType->getSources();
+			$sourceCriteria = $this->_getSourceCriteria($sources, $state['source']);
 
-			if (isset($sources[$state['source']]))
+			if ($sourceCriteria)
 			{
-				$criteria->setAttributes($sources[$state['source']]['criteria']);
+				$criteria->setAttributes($sourceCriteria);
 			}
-		}
-		else
-		{
-			$state['source'] = null;
 		}
 
 		if (!empty($state['order']))

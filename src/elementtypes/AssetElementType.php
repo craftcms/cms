@@ -33,19 +33,10 @@ class AssetElementType extends BaseElementType
 	 */
 	public function getSources()
 	{
-		$sources = array();
+		$viewableSourceIds = craft()->assetSources->getViewableSourceIds();
+		$tree = craft()->assets->getFolderTree($viewableSourceIds);
 
-		foreach (craft()->assetSources->getViewableSources() as $source)
-		{
-			$key = 'source:'.$source->id;
-
-			$sources[$key] = array(
-				'label'    => $source->name,
-				'criteria' => array('sourceId' => $source->id)
-			);
-		}
-
-		return $sources;
+		return $this->_assembleSourceList($tree);
 	}
 
 	/**
@@ -151,5 +142,31 @@ class AssetElementType extends BaseElementType
 	public function populateElementModel($row)
 	{
 		return AssetFileModel::populateModel($row);
+	}
+
+	/**
+	 * Transforms an asset folder tree into a source list.
+	 *
+	 * @access private
+	 * @param array $folders
+	 * @param bool  $nested
+	 * @return array
+	 */
+	private function _assembleSourceList($folders, $nested = false)
+	{
+		$sources = array();
+
+		foreach ($folders as $folder)
+		{
+			$key = 'folder:'.$folder->id;
+
+			$sources[$key] = array(
+				'label'    => $folder->name,
+				'criteria' => array('folderId' => $folder->id),
+				'nested'   => $this->_assembleSourceList($folder->getChildren())
+			);
+		}
+
+		return $sources;
 	}
 }

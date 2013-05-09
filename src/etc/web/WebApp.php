@@ -335,7 +335,7 @@ class WebApp extends \CWebApplication
 		if ($this->config->get('devMode'))
 		{
 			$exceptionArr['trace']  = $data['trace'];
-			$exceptionArr['traces'] = $data['traces'];
+			$exceptionArr['traces'] = (isset($data['traces']) ? $data['traces'] : null);
 			$exceptionArr['file']   = $data['file'];
 			$exceptionArr['line']   = $data['line'];
 			$exceptionArr['type']   = $data['type'];

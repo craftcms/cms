@@ -107,7 +107,7 @@ html, body,
 .sidebar nav { margin-left: -30px; padding-left: 30px; width: 170px; overflow: auto; }
 .sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; }
 .sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
-.sidebar nav li a.sel { margin-left: -30px; padding-left: 30px; color: #fff; background: $selcolor; cursor: default; }
+.sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $selcolor; cursor: default; }
 
 #main #sidebar nav.fixed { position: fixed; top: 0; }
 

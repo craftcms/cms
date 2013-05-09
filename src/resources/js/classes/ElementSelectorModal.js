@@ -13,7 +13,9 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 	$body: null,
 	$selectBtn: null,
 	$spinner: null,
+	$sidebar: null,
 	$sources: null,
+	$sourceToggles: null,
 	$main: null,
 	$search: null,
 	$elements: null,
@@ -107,7 +109,9 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 				this.$body.html(response.bodyHtml);
 
 				this.$spinner = this.$body.find('.spinner:first');
-				this.$sources = this.$body.find('.sidebar:first a');
+				this.$sidebar = this.$body.find('.sidebar:first');
+				this.$sources = this.$sidebar.find('a');
+				this.$sourceToggles = this.$sidebar.find('.toggle');
 				this.$main = this.$body.find('.main:first');
 				this.$search = this.$main.find('.search:first input:first');
 				this.$elements = this.$main.find('.elements:first');
@@ -115,7 +119,8 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 				this.$source = this.$sources.filter('.sel');
 				this.setState('source', this.$source.data('id'));
 
-				this.addListener(this.$sources, 'activate', 'selectSource');
+				this.addListener(this.$sources, 'click', 'selectSource');
+				this.addListener(this.$sourceToggles, 'click', 'toggleNestedSources');
 				this.addListener(this.$search, 'textchange', $.proxy(function()
 				{
 					if (this.searchTimeout)
@@ -275,6 +280,11 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 
 		this.setState('source', this.$source.data('id'));
 		this.updateElements();
+	},
+
+	toggleNestedSources: function(ev)
+	{
+		$(ev.currentTarget).parent().toggleClass('expanded');
 	},
 
 	selectElements: function()
