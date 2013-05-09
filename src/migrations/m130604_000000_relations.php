@@ -68,7 +68,24 @@ class m130604_000000_relations extends BaseMigration
 						{
 							foreach ($criteriaSettings[$sourcePrefix.'Id'] as $sourceId)
 							{
-								$fieldSettings['sources'][] = $sourcePrefix.':'.$sourceId;
+								if ($elementType == 'Asset')
+								{
+									// Use the top level folder ID for this source
+									$folderId = craft()->db->createCommand()
+										->select('id')
+										->from('assetfolders')
+										->where('sourceId = :sourceId and parentId is null', array(':sourceId' => $sourceId))
+										->queryScalar();
+
+									if ($folderId)
+									{
+										$fieldSettings['sources'][] = 'folder:'.$folderId;
+									}
+								}
+								else
+								{
+									$fieldSettings['sources'][] = $sourcePrefix.':'.$sourceId;
+								}
 							}
 						}
 
