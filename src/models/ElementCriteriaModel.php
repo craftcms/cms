@@ -37,8 +37,8 @@ class ElementCriteriaModel extends BaseModel
 			'limit'         => array(AttributeType::Number, 'default' => 100),
 			'indexBy'       => AttributeType::String,
 			'search'        => AttributeType::String,
-			//'dateCreated'   => AttributeType::DateTime,
-			//'dateUpdated'   => AttributeType::DateTime,
+			'dateCreated'   => AttributeType::Mixed,
+			'dateUpdated'   => AttributeType::Mixed,
 		);
 
 		// Mix in any custom attributes defined by the element type
