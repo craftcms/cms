@@ -19,7 +19,6 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 	$main: null,
 	$search: null,
 	$elements: null,
-	$headers: null,
 	$tbody: null,
 
 	init: function(settings)
@@ -145,8 +144,8 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 	{
 		this.$elements.html(response.elementContainerHtml);
 
-		var $headers = this.$main.find('thead:first > th');
-		this.addListener($headers, 'activate', 'onSortChange');
+		var $headers = this.$main.find('thead:first th');
+		this.addListener($headers, 'click', 'onSortChange');
 
 		this.$tbody = this.$elements.find('tbody:first');
 
@@ -242,6 +241,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 
 	onSortChange: function(ev)
 	{
+		console.log('onSortChange');
 		var $th = $(ev.currentTarget),
 			attribute = $th.attr('data-attribute');
 
