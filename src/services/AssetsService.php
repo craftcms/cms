@@ -395,7 +395,7 @@ class AssetsService extends BaseApplicationComponent
 			$parentFolder = $this->getFolderById($parentId);
 			if (empty($parentFolder))
 			{
-				throw new Exception(Craft::t("Can't find the parent folder!"));
+				throw new Exception(Craft::t("Can’t find the parent folder!"));
 			}
 
 			$source = craft()->assetSources->getSourceTypeById($parentFolder->sourceId);
@@ -426,7 +426,7 @@ class AssetsService extends BaseApplicationComponent
 			$folder = $this->getFolderById($folderId);
 			if (empty($folder))
 			{
-				throw new Exception(Craft::t("Can't find the folder to rename!"));
+				throw new Exception(Craft::t("Can’t find the folder to rename!"));
 			}
 
 			$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
@@ -484,7 +484,7 @@ class AssetsService extends BaseApplicationComponent
 			$folder = $this->getFolderById($folderId);
 			if (empty($folder))
 			{
-				throw new Exception(Craft::t("Can't find the folder!"));
+				throw new Exception(Craft::t("Can’t find the folder!"));
 			}
 
 			$source = craft()->assetSources->getSourceTypeById($folder->sourceId);

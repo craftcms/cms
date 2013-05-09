@@ -18,9 +18,17 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function get($item)
 	{
-		if (isset(craft()->params['generalConfig'][$item]))
+		// If we're looking for devMode and we haven't installed Craft yet and it's a CP request, pretend like devMode is turned on.
+		if ($item == 'devMode' && !Craft::isInstalled() && craft()->request->isCpRequest())
 		{
-			return craft()->params['generalConfig'][$item];
+			return true;
+		}
+		else
+		{
+			if (isset(craft()->params['generalConfig'][$item]))
+			{
+				return craft()->params['generalConfig'][$item];
+			}
 		}
 	}
 
