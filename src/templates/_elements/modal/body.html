@@ -3,11 +3,7 @@
 {% if sources %}
 	<div class="sidebar">
 		<nav>
-			<ul>
-				{% for key, source in sources %}
-					<li><a data-id="{{ key }}"{% if selectedSource == key %} class="sel"{% endif %}>{{ source.label }}</a></li>
-				{% endfor %}
-			</ul>
+			{% include "_elements/modal/sources" with { depth: 0 } %}
 		</nav>
 	</div>
 {% endif %}

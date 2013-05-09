@@ -26,9 +26,16 @@ class TemplateHelper
 		$path = craft()->request->getPath();
 		$pageUrlPrefix = ($path ? $path.'/' : '').craft()->config->get('pageTrigger');
 
+		$last = $offset + $limit;
+
+		if ($last > $total)
+		{
+			$last = $total;
+		}
+
 		$info = array(
 			'first'       => $offset + 1,
-			'last'        => $offset + $limit,
+			'last'        => $last,
 			'total'       => $total,
 			'currentPage' => $currentPage,
 			'totalPages'  => $totalPages,

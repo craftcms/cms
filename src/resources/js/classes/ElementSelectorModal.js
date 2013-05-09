@@ -13,11 +13,12 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 	$body: null,
 	$selectBtn: null,
 	$spinner: null,
+	$sidebar: null,
 	$sources: null,
+	$sourceToggles: null,
 	$main: null,
 	$search: null,
 	$elements: null,
-	$headers: null,
 	$tbody: null,
 
 	init: function(settings)
@@ -107,7 +108,9 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 				this.$body.html(response.bodyHtml);
 
 				this.$spinner = this.$body.find('.spinner:first');
-				this.$sources = this.$body.find('.sidebar:first a');
+				this.$sidebar = this.$body.find('.sidebar:first');
+				this.$sources = this.$sidebar.find('a');
+				this.$sourceToggles = this.$sidebar.find('.toggle');
 				this.$main = this.$body.find('.main:first');
 				this.$search = this.$main.find('.search:first input:first');
 				this.$elements = this.$main.find('.elements:first');
@@ -115,7 +118,8 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 				this.$source = this.$sources.filter('.sel');
 				this.setState('source', this.$source.data('id'));
 
-				this.addListener(this.$sources, 'activate', 'selectSource');
+				this.addListener(this.$sources, 'click', 'selectSource');
+				this.addListener(this.$sourceToggles, 'click', 'toggleNestedSources');
 				this.addListener(this.$search, 'textchange', $.proxy(function()
 				{
 					if (this.searchTimeout)
@@ -140,8 +144,8 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 	{
 		this.$elements.html(response.elementContainerHtml);
 
-		var $headers = this.$main.find('thead:first > th');
-		this.addListener($headers, 'activate', 'onSortChange');
+		var $headers = this.$main.find('thead:first th');
+		this.addListener($headers, 'click', 'onSortChange');
 
 		this.$tbody = this.$elements.find('tbody:first');
 
@@ -237,6 +241,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 
 	onSortChange: function(ev)
 	{
+		console.log('onSortChange');
 		var $th = $(ev.currentTarget),
 			attribute = $th.attr('data-attribute');
 
@@ -275,6 +280,11 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 
 		this.setState('source', this.$source.data('id'));
 		this.updateElements();
+	},
+
+	toggleNestedSources: function(ev)
+	{
+		$(ev.currentTarget).parent().toggleClass('expanded');
 	},
 
 	selectElements: function()

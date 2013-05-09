@@ -433,7 +433,7 @@ class UpdatesService extends BaseApplicationComponent
 				else
 				{
 					Craft::log('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.', LogLevel::Error);
-					throw new Exception(Craft::t('Cannot find an enabled plugin with the handle '.$handle));
+					throw new Exception(Craft::t('Cannot find an enabled plugin with the handle {handle}.', array('handle' => $handle)));
 				}
 			}
 
@@ -566,7 +566,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isTrackValid()
 	{
-		if (strcmp(Craft::getTrack(), CRAFT_TRACK) !== 0)
+		if (($track = Craft::getTrack()) && $track != CRAFT_TRACK)
 		{
 			return false;
 		}

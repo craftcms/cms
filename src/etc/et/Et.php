@@ -232,6 +232,6 @@ class Et
 			return IOHelper::writeToFile($keyFile, $formattedKey);
 		}
 
-		throw new Exception('Cannot overwrite an existing license.key file.');
+		throw new Exception(Craft::t('Cannot overwrite an existing license.key file.'));
 	}
 }

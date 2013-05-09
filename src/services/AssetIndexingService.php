@@ -224,7 +224,7 @@ class AssetIndexingService extends BaseApplicationComponent
 
 			default:
 			{
-				throw new Exception(Craft::t('Unkown indexing command!'));
+				throw new Exception(Craft::t('Unknown indexing command!'));
 			}
 		}
 
