@@ -101,6 +101,32 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.
+	 *
+	 * @param array|null $attributes
+	 * @return ElementCriteriaModel
+	 */
+	public function getChildren($attributes = null)
+	{
+		$criteria = craft()->elements->getCriteria($this->elementType, $attributes);
+		$criteria->childOf($this);
+		return $criteria;
+	}
+
+	/**
+	 * Returns a new ElementCriteriaModel prepped to return this element's same-type parents.
+	 *
+	 * @param array|null $attributes
+	 * @return ElementCriteriaModel
+	 */
+	public function getParents($attributes = null)
+	{
+		$criteria = craft()->elements->getCriteria($this->elementType, $attributes);
+		$criteria->parentOf($this);
+		return $criteria;
+	}
+
+	/**
 	 * Is set?
 	 *
 	 * @param $name

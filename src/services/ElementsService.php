@@ -281,6 +281,22 @@ class ElementsService extends BaseApplicationComponent
 			$query->andWhere(DbHelper::parseDateParam('elements.dateUpdated', '=', $criteria->dateUpdated, $query->params));
 		}
 
+		if ($criteria->parentOf)
+		{
+			$children = $this->_normalizeRelationParam($criteria->parentOf);
+
+			$query->join('relations parents', 'parents.parentId = elements.id');
+			$query->andWhere(DbHelper::parseParam('parents.childId', $children, $query->params));
+		}
+
+		if ($criteria->childOf)
+		{
+			$parents = $this->_normalizeRelationParam($criteria->childOf);
+
+			$query->join('relations children', 'children.childId = elements.id');
+			$query->andWhere(DbHelper::parseParam('children.parentId', $parents, $query->params));
+		}
+
 		if ($elementType->modifyElementsQuery($query, $criteria) !== false)
 		{
 			return $query;
@@ -372,6 +388,34 @@ class ElementsService extends BaseApplicationComponent
 
 	// Private functions
 	// =================
+
+	/**
+	 * Normalizes parentOf and childOf criteria params,
+	 * allowing them to be set to ElementCriteriaModel's,
+	 * and swapping them with their IDs.
+	 *
+	 * @param mixed $param
+	 * @return mixed
+	 */
+	private function _normalizeRelationParam($param)
+	{
+		if (is_array($param))
+		{
+			foreach ($param as &$val)
+			{
+				if ($val instanceof BaseElementModel)
+				{
+					$val = $val->id;
+				}
+			}
+		}
+		else if ($param instanceof BaseElementModel)
+		{
+			$param = $param->id;
+		}
+
+		return $param;
+	}
 
 	/**
 	 * Returns the unique element IDs that match a given element query.

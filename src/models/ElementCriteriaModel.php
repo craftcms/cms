@@ -39,6 +39,8 @@ class ElementCriteriaModel extends BaseModel
 			'search'        => AttributeType::String,
 			'dateCreated'   => AttributeType::Mixed,
 			'dateUpdated'   => AttributeType::Mixed,
+			'parentOf'      => AttributeType::Mixed,
+			'childOf'       => AttributeType::Mixed,
 		);
 
 		// Mix in any custom attributes defined by the element type
