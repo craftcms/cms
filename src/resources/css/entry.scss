@@ -4,3 +4,14 @@
 
 span.draft { margin-top: -4px; display: inline-block; border: 2px solid #bbb; border-radius: 4px; padding: 0 4px; height: 16px; vertical-align: middle; font-size: 11px; line-height: 16px; text-transform: uppercase; font-weight: bold; color: $textcolor; }
 h1 span.draft span { display: none; }
+
+#previewmode-btn { float: right; margin-bottom: 30px; }
+
+#previewmode-editor,
+#previewmode-iframe { position: fixed; z-index: 1; top: 0; height: 100%; background: #fff; }
+
+#previewmode-editor { left: -400px; padding: 0 30px; width: 340px; border-right: 1px solid #ccc; overflow: auto; }
+#previewmode-editor .field:first-child { padding-top: 30px; }
+#previewmode-closebtn { margin-bottom: 30px; }
+
+#previewmode-iframe { left: 100%; border-left: 1px solid #ccc; }

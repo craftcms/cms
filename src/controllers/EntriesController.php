@@ -195,6 +195,34 @@ class EntriesController extends BaseController
 			$variables['entry']->getErrors('tags')
 		));
 
+		// Enable preview mode?
+		$variables['showPreviewBtn'] = false;
+
+		if (!craft()->request->isMobileBrowser(true) && $variables['section']->hasUrls)
+		{
+			// Make sure the section's template actually exists
+			$templatesPath = craft()->path->getTemplatesPath();
+			craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
+
+			try
+			{
+				$templateExists = (bool) craft()->templates->findTemplate($variables['section']->template);
+			}
+			catch (TemplateLoaderException $e)
+			{
+				$templateExists = false;
+			}
+
+			craft()->path->setTemplatesPath($templatesPath);
+
+			if ($templateExists)
+			{
+				craft()->templates->includeJsResource('js/EntryPreviewMode.js');
+				craft()->templates->includeJs('new Craft.EntryPreviewMode();');
+				$variables['showPreviewBtn'] = true;
+			}
+		}
+
 		$variables['tabs'][] = array(
 			'label' => Craft::t('Settings'),
 			'url'   => '#entry-settings',
@@ -207,27 +235,33 @@ class EntriesController extends BaseController
 	}
 
 	/**
+	 * Previews an entry.
+	 */
+	public function actionPreviewEntry()
+	{
+		$this->requirePostRequest();
+
+		$entry = $this->_populateEntryModel();
+		$section = $entry->getSection();
+
+		if ($section)
+		{
+			$this->renderTemplate($section->template, array(
+				'entry' => $entry
+			));
+		}
+
+		craft()->end();
+	}
+
+	/**
 	 * Saves an entry.
 	 */
 	public function actionSaveEntry()
 	{
 		$this->requirePostRequest();
 
-		$entry = new EntryModel();
-
-		$entry->sectionId  = craft()->request->getRequiredPost('sectionId');
-		$entry->locale     = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocaleId());
-		$entry->id         = craft()->request->getPost('entryId');
-		$entry->authorId   = craft()->request->getPost('author', craft()->userSession->getUser()->id);
-		$entry->title      = craft()->request->getPost('title');
-		$entry->slug       = craft()->request->getPost('slug');
-		$entry->postDate   = (($postDate   = craft()->request->getPost('postDate'))   ? DateTime::createFromString($postDate,   craft()->timezone) : null);
-		$entry->expiryDate = (($expiryDate = craft()->request->getPost('expiryDate')) ? DateTime::createFromString($expiryDate, craft()->timezone) : null);
-		$entry->enabled    = (bool)craft()->request->getPost('enabled');
-		$entry->tags       = craft()->request->getPost('tags');
-
-		$fields = craft()->request->getPost('fields');
-		$entry->setContent($fields);
+		$entry = $this->_populateEntryModel();
 
 		if (!$entry->id)
 		{
@@ -296,5 +330,49 @@ class EntriesController extends BaseController
 
 		craft()->elements->deleteElementById($entryId);
 		$this->returnJson(array('success' => true));
+	}
+
+	/**
+	 * Populates an EntryModel with post data.
+	 *
+	 * @access private
+	 * @return EntryModel
+	 */
+	private function _populateEntryModel()
+	{
+		$entryId = craft()->request->getPost('entryId');
+
+		if ($entryId)
+		{
+			$criteria = craft()->elements->getCriteria(ElementType::Entry);
+			$criteria->id = $entryId;
+			$criteria->status = '*';
+			$entry = $criteria->first();
+
+			if (!$entry)
+			{
+				throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entryId)));
+			}
+		}
+		else
+		{
+			$entry = new EntryModel();
+		}
+
+		$entry->sectionId  = craft()->request->getRequiredPost('sectionId');
+		$entry->locale     = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocaleId());
+		$entry->id         = craft()->request->getPost('entryId');
+		$entry->authorId   = craft()->request->getPost('author', craft()->userSession->getUser()->id);
+		$entry->title      = craft()->request->getPost('title');
+		$entry->slug       = craft()->request->getPost('slug');
+		$entry->postDate   = (($postDate   = craft()->request->getPost('postDate'))   ? DateTime::createFromString($postDate,   craft()->timezone) : null);
+		$entry->expiryDate = (($expiryDate = craft()->request->getPost('expiryDate')) ? DateTime::createFromString($expiryDate, craft()->timezone) : null);
+		$entry->enabled    = (bool)craft()->request->getPost('enabled');
+		$entry->tags       = craft()->request->getPost('tags');
+
+		$fields = craft()->request->getPost('fields');
+		$entry->setContent($fields);
+
+		return $entry;
 	}
 }

@@ -334,6 +334,81 @@ Craft = $.extend(Craft, {
 	},
 
 	/**
+	 * Compares two variables and returns whether they are equal in value.
+	 * Recursively compares array and object values.
+	 *
+	 * @param mixed obj1
+	 * @param mixed obj2
+	 * @return bool
+	 */
+	compare: function(obj1, obj2)
+	{
+		// Compare the types
+		if (typeof obj1 != typeof obj2)
+		{
+			return false;
+		}
+
+		if (typeof obj1 == 'object')
+		{
+			// Compare the lengths
+			if (obj1.length != obj2.length)
+			{
+				return false;
+			}
+
+			// Is one of them an array but the other is not?
+			if ((obj1 instanceof Array) != (obj2 instanceof Array))
+			{
+				return false;
+			}
+
+			// If they're actual objects (not arrays), compare the keys
+			if (!(obj1 instanceof Array))
+			{
+				if (!Craft.compare(Craft.getObjectKeys(obj1), Craft.getObjectKeys(obj2)))
+				{
+					return false;
+				}
+			}
+
+			// Compare each value
+			for (var i in obj1)
+			{
+				if (!Craft.compare(obj1[i], obj2[i]))
+				{
+					return false;
+				}
+			}
+
+			// All clear
+			return true;
+		}
+		else
+		{
+			return (obj1 === obj2);
+		}
+	},
+
+	/**
+	 * Returns an array of an object's keys.
+	 *
+	 * @param object obj
+	 * @return string
+	 */
+	getObjectKeys: function(obj)
+	{
+		var keys = [];
+
+		for (var key in obj)
+		{
+			keys.push(key);
+		}
+
+		return keys;
+	},
+
+	/**
 	 * Takes an array or string of chars, and places a backslash before each one, returning the combined string.
 	 *
 	 * Userd by ltrim() and rtrim()
