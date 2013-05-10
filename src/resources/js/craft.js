@@ -59,7 +59,7 @@ Craft = $.extend(Craft, {
 	 * @param path
 	 * @param params
 	 */
-	getUrl: function(path, params)
+	getUrl: function(path, params, baseUrl)
 	{
 		// Return path if it appears to be an absolute URL.
 		if (path.search('://') != -1 || path.substr(0, 2) == '//')
@@ -103,7 +103,14 @@ Craft = $.extend(Craft, {
 		}
 
 		// Put it all together
-		var url = Craft.baseUrl;
+		if (baseUrl)
+		{
+			var url = baseUrl;
+		}
+		else
+		{
+			var url = Craft.baseUrl;
+		}
 
 		// Does the base URL already have a query string?
 		var qsMarker = url.indexOf('?');
@@ -160,6 +167,26 @@ Craft = $.extend(Craft, {
 		}
 
 		return url;
+	},
+
+	/**
+	 * @return string
+	 * @param path
+	 * @param params
+	 */
+	getCpUrl: function(path, params)
+	{
+		return this.getUrl(path, params, Craft.baseCpUrl)
+	},
+
+	/**
+	 * @return string
+	 * @param path
+	 * @param params
+	 */
+	getSiteUrl: function(path, params)
+	{
+		return this.getUrl(path, params, Craft.baseSiteUrl)
 	},
 
 	/**
