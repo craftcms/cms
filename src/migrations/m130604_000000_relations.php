@@ -136,6 +136,12 @@ class m130604_000000_relations extends BaseMigration
 
 			// Drop the linkcriteria table
 			$this->dropTable('linkcriteria');
+
+			Craft::log('Successfully added the `relations` table and ran the relations migration.', LogLevel::Info, true);
+		}
+		else
+		{
+			Craft::log('Tried to add the `relations` table, but it already exists..', LogLevel::Warning, true);
 		}
 
 		return true;
