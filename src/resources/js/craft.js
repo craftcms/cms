@@ -59,7 +59,7 @@ Craft = $.extend(Craft, {
 	 * @param path
 	 * @param params
 	 */
-	getUrl: function(path, params)
+	getUrl: function(path, params, baseUrl)
 	{
 		// Return path if it appears to be an absolute URL.
 		if (path.search('://') != -1 || path.substr(0, 2) == '//')
@@ -103,7 +103,14 @@ Craft = $.extend(Craft, {
 		}
 
 		// Put it all together
-		var url = Craft.baseUrl;
+		if (baseUrl)
+		{
+			var url = baseUrl;
+		}
+		else
+		{
+			var url = Craft.baseUrl;
+		}
 
 		// Does the base URL already have a query string?
 		var qsMarker = url.indexOf('?');
@@ -160,6 +167,26 @@ Craft = $.extend(Craft, {
 		}
 
 		return url;
+	},
+
+	/**
+	 * @return string
+	 * @param path
+	 * @param params
+	 */
+	getCpUrl: function(path, params)
+	{
+		return this.getUrl(path, params, Craft.baseCpUrl)
+	},
+
+	/**
+	 * @return string
+	 * @param path
+	 * @param params
+	 */
+	getSiteUrl: function(path, params)
+	{
+		return this.getUrl(path, params, Craft.baseSiteUrl)
 	},
 
 	/**
@@ -304,6 +331,81 @@ Craft = $.extend(Craft, {
 		}
 
 		return expanded;
+	},
+
+	/**
+	 * Compares two variables and returns whether they are equal in value.
+	 * Recursively compares array and object values.
+	 *
+	 * @param mixed obj1
+	 * @param mixed obj2
+	 * @return bool
+	 */
+	compare: function(obj1, obj2)
+	{
+		// Compare the types
+		if (typeof obj1 != typeof obj2)
+		{
+			return false;
+		}
+
+		if (typeof obj1 == 'object')
+		{
+			// Compare the lengths
+			if (obj1.length != obj2.length)
+			{
+				return false;
+			}
+
+			// Is one of them an array but the other is not?
+			if ((obj1 instanceof Array) != (obj2 instanceof Array))
+			{
+				return false;
+			}
+
+			// If they're actual objects (not arrays), compare the keys
+			if (!(obj1 instanceof Array))
+			{
+				if (!Craft.compare(Craft.getObjectKeys(obj1), Craft.getObjectKeys(obj2)))
+				{
+					return false;
+				}
+			}
+
+			// Compare each value
+			for (var i in obj1)
+			{
+				if (!Craft.compare(obj1[i], obj2[i]))
+				{
+					return false;
+				}
+			}
+
+			// All clear
+			return true;
+		}
+		else
+		{
+			return (obj1 === obj2);
+		}
+	},
+
+	/**
+	 * Returns an array of an object's keys.
+	 *
+	 * @param object obj
+	 * @return string
+	 */
+	getObjectKeys: function(obj)
+	{
+		var keys = [];
+
+		for (var key in obj)
+		{
+			keys.push(key);
+		}
+
+		return keys;
 	},
 
 	/**

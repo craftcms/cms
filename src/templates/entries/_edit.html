@@ -21,7 +21,11 @@
 
 
 {% set content %}
-	<form method="post" action="" accept-charset="UTF-8">
+	{% if showPreviewBtn %}
+		<div id="previewmode-btn" class="btn" data-icon="view">Preview Mode</div>
+	{% endif %}
+
+	<form id="entry-form" method="post" action="" accept-charset="UTF-8">
 		<input type="hidden" name="sectionId" value="{{ section.id }}">
 
 		{% if entry.id %}

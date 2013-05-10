@@ -36,6 +36,8 @@
 <script type="text/javascript">
 	window.Craft = {
 		baseUrl:         "{{ url()|e('js') }}",
+		baseCpUrl:       "{{ cpUrl()|e('js') }}",
+		baseSiteUrl:     "{{ siteUrl()|e('js') }}",
 		actionUrl:       "{{ actionUrl()|e('js') }}",
 		resourceUrl:     "{{ resourceUrl()|e('js') }}",
 		usePathInfo:     {{ craft.config.usePathInfo() ? 'true' : 'false' }},
