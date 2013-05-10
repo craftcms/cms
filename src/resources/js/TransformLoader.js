@@ -40,7 +40,7 @@ TransformLoader.prototype = {
 	init: function()
 	{
 		this.escapedPlaceholderUrl = this.placeholderUrl.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
-		this.placeholderUrlPattern = '\\b'+this.escapedPlaceholderUrl+'#(\\d+)\\b';
+		this.placeholderUrlPattern = this.escapedPlaceholderUrl+'#(\\d+)\\b';
 
 		this.placeholderUrlRegex = new RegExp(this.placeholderUrlPattern);
 		this.multiPlaceholderUrlRegex = new RegExp(this.placeholderUrlPattern, 'g');
@@ -217,7 +217,7 @@ TransformLoader.prototype = {
 
 	replaceTransformImages: function(transformId, transformUrl)
 	{
-		var placeholderRegex = new RegExp('\\b'+this.escapedPlaceholderUrl+'#'+transformId+'\\b', 'g');
+		var placeholderRegex = new RegExp(this.escapedPlaceholderUrl+'#'+transformId+'\\b', 'g');
 
 		// Return any <img> tags back to their original state
 		for (var i = 0; i < this.transforms[transformId].imageTags.length; i++)
