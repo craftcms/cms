@@ -34,6 +34,7 @@ html, body,
 
 #header #account { float: right; height: 38px; }
 #header #account > a { display: block; padding: 0 10px; line-height: 38px; }
+#header #account > a:after { margin-left: 4px; }
 
 #header h2 { float: left; margin: 0 0 0 30px; padding: 10px 0; color: #fff; }
 
@@ -82,7 +83,7 @@ html, body,
 #crumbs { margin: -25px 0 20px; font-size: 0; }
 #crumbs:after { @include clearafter; }
 #crumbs li { display: inline-block; font-size: 13px; }
-#crumbs li:after { @include icon; margin: -1px 5px 0; content: '>'; font-size: 11px; color: #ddd; }
+#crumbs li:after { @include icon; margin: -1px 5px 0; content: '>'; font-size: 11px; color: #ccc; }
 #crumbs li a { color: #aaa; }
 #crumbs li a:hover { color: $linkcolor; text-decoration: none; }
 

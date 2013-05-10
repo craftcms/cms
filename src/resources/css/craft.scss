@@ -4,11 +4,12 @@
 @import "reset";
 
 @font-face {
-	font-family: 'pictosregular';
-	src: url('../fonts/pictos_custom-webfont.eot');
-	src: url('../fonts/pictos_custom-webfont.eot?#iefix') format('embedded-opentype'),
-		 url('../fonts/pictos_custom-webfont.woff') format('woff'),
-		 url('../fonts/pictos_custom-webfont.ttf') format('truetype');
+	font-family: 'Craft';
+	src:url('../fonts/Craft.eot');
+	src:url('../fonts/Craft.eot?#iefix') format('embedded-opentype'),
+		url('../fonts/Craft.woff') format('woff'),
+		url('../fonts/Craft.ttf') format('truetype'),
+		url('../fonts/Craft.svg#Craft') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
@@ -30,6 +31,7 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 .menulist ul li a.sel:before,
 .search:before,
 .datewrapper:before,
+.timewrapper:before,
 .element:before,
 .secure:before,
 .insecure:before,
@@ -45,11 +47,11 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 [data-icon]:before { content: attr(data-icon); }
 [data-icon-after]:after { content: attr(data-icon-after); }
 
-.icon.secure:before { content: '`'; }
-.icon.insecure:before { content: '~'; }
+.icon.secure:before { content: 'secure'; }
+.icon.insecure:before { content: 'insecure'; }
 .icon.add:before { content: '+'; }
 .icon.edit:before { content: '✎'; }
-.icon.settings:before { content: '⚙'; margin-top: -2px; }
+.icon.settings:before { content: '⚙'; }
 
 /* nav */
 .nav { display: block; }
@@ -108,7 +110,7 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .nowrap { white-space: nowrap; }
 .light { color: #999; font-weight: normal; }
 
-.required:after { content: '*'; margin: -2px 0 0 2px; font-size: 9px; color: $errorcolor; }
+.required:after { content: '*'; margin: -2px 0 0 2px; font-size: 7px; color: $errorcolor; }
 
 .scrollpane { overflow: auto; }
 
@@ -134,11 +136,11 @@ td.right { float: none; text-align: right; }
 .error { color: $errorcolor !important; }
 
 .icon.move { display: inline-block; cursor: move; }
-.icon.move:before { content: 'm'; color: rgba(0,0,0,0.2); }
+.icon.move:before { content: 'move'; color: rgba(0,0,0,0.2); }
 .icon.move:not(.disabled):hover:before { color: $linkcolor; }
 
 .icon.delete { display: inline-block; }
-.icon.delete:before { content: 'R'; color: rgba(0,0,0,0.2); }
+.icon.delete:before { content: 'remove'; color: rgba(0,0,0,0.2); }
 .icon.delete:not(.disabled):hover:before { color: $errorcolor; }
 .icon.delete:not(.disabled):active:before { color: #8c3b2e; }
 
@@ -215,7 +217,7 @@ ul.icons:after { @include clearafter; }
 ul.icons li { float: left; margin: 0 10px 30px; }
 ul.icons li.break { clear: left; }
 ul.icons li a { display: block; position: relative; padding-top: 60px; width: 80px; text-align: center; color: $textcolor; }
-ul.icons li a:before { display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 55px; line-height: 60px; }
+ul.icons li a:before { display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 40px; line-height: 60px; }
 ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 
 /* ----------------------------------------
@@ -264,12 +266,12 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btn.icon:not(:empty):before { margin-right: 5px; }
 .btn[data-icon-after]:not(:empty):after,
 .menubtn:not(:empty):after,
-.menubtn.icon:after { margin-left: 5px; }
+.menubtn.icon:after { margin-left: 6px; }
 
 .btn[data-icon]:before,
 .btn[data-icon-after]:after,
 .btn.icon:before,
-.menubtn:after { margin-top: -2px; position: relative; }
+.menubtn:after { position: relative; }
 
 .btn.small[data-icon]:before,
 .btn.small[data-icon-after]:after,
@@ -293,7 +295,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 
 /* menu buttons */
 .menubtn { @include unselectable; }
-.menubtn:after { margin-top: 1px; content: '▼'; font-size: 0.8em; }
+.menubtn:after { margin-top: -2px; content: '▼'; font-size: 0.8em; }
 .menubtn:not(.submit):not(.noborder):after { margin-top: -1px; }
 
 /* spinner */
@@ -447,8 +449,8 @@ table.data.collapsed tbody td form { display: inline-block; }
 	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
 }
 
-.element.removable { padding-right: 25px; }
-.element.removable .delete { position: absolute; right: 10px; }
+.element.removable { padding-right: 27px; }
+.element.removable .delete { position: absolute; right: 7px; }
 .element.removable .delete:before { color: rgba(0,0,0,0.2); }
 
 /* element select fields */
@@ -590,7 +592,7 @@ ul.tree,
 .menulist h2 { margin: 10px 0 3px; }
 .menulist ul li + li { margin-top: 0; }
 .menulist ul li a { margin-left: -30px; padding: 3px 15px 3px 30px; }
-.menulist ul li a.sel:before { content: "√"; float: left; margin: -1px 0 0 -18px; font-size: 15px; }
+.menulist ul li a.sel:before { content: '√'; float: left; margin: 3px 0 0 -17px; font-size: 10px; }
 
 /* ----------------------------------------
 /*  Fields
@@ -652,7 +654,7 @@ table.editable textarea { font-size: 13px; line-height: 17px; color: $textcolor;
 .text.error { border-color: $errorcolor !important; }
 
 .search { position: relative; cursor: text; }
-.search:before { position: absolute; top: 7px; left: 8px; content: "s"; color: #a1a4a6; }
+.search:before { position: absolute; top: 9px; left: 9px; content: 'search'; color: #a1a4a6; }
 .search .text { padding-left: 27px; }
 
 .texthint-container { position: relative; height: 0; }
@@ -665,11 +667,12 @@ table.editable textarea { font-size: 13px; line-height: 17px; color: $textcolor;
 .password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
 .datewrapper { display: inline-block; position: relative; width: 8.5em; }
-.datewrapper:before { position: absolute; top: 7px; left: 8px; content: "d"; color: #a1a4a6; }
+.datewrapper:before { position: absolute; top: 8px; left: 9px; content: 'date'; color: #a1a4a6; }
 .datewrapper .text { padding-left: 27px; width: 100%; }
 
-.timewrapper { display: inline-block; width: 6.5em; }
-.timewrapper .text { width: 100%; }
+.timewrapper { display: inline-block; position: relative; width: 8em; }
+.timewrapper:before { position: absolute; top: 9px; left: 8px; content: 'time'; color: #a1a4a6; }
+.timewrapper .text { padding-left: 24px; width: 100%; }
 
 /* redactor */
 #main .redactor_box { padding: 0 5px; }
@@ -723,8 +726,8 @@ body .redactor_dropdown { z-index: 10001 !important; }
 }
 
 /* timepicker */
-.ui-timepicker-list { overflow-y: auto; width: 6.5em; height: 210px; z-index: 10001; }
-.ui-timepicker-list li { padding: 2px 0 2px 8px; white-space: nowrap; cursor: pointer; }
+.ui-timepicker-list { overflow-y: auto; width: 8em; height: 210px; z-index: 10001; }
+.ui-timepicker-list li { padding: 2px 0 2px 25px; white-space: nowrap; cursor: pointer; }
 .ui-timepicker-list li:hover { background: $linkcolor; color: #fff; }
 .ui-timepicker-list li.ui-timepicker-selected { background: $selcolor; color: #fff; cursor: default; }
 

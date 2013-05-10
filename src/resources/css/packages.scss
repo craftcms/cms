@@ -16,7 +16,7 @@
 
 #packages ul { clear: left; }
 #packages ul li { margin-left: 18px; }
-#packages ul li:before { @include icon; content: "√"; float: left; margin: -1px 0 0 -18px; font-size: 15px; }
+#packages ul li:before { @include icon; content: '√'; float: left; margin: 3px 0 0 -17px; font-size: 10px; }
 
 #packages .package .buttons { position: absolute; left: 0; border-radius: 0 0 1px 1px; bottom: 0; padding: 11px 15px 15px; margin: 0; border-top: 1px solid $hrcolor; width: 200px; min-height: 31px; background: #fcfcfc; }
 #packages .package .buttons .btn { margin-top: 4px; font-weight: bold; }
