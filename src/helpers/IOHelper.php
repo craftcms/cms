@@ -584,7 +584,7 @@ class IOHelper
 	{
 		if ($permissions == null)
 		{
-			$permissions = static::defaultFolderPermissions;
+			$permissions = craft()->config->get('defaultFolderPermissions');
 		}
 
 		$path = static::normalizePathSeparators($path);
@@ -869,7 +869,7 @@ class IOHelper
 
 			if (!static::folderExists($destFolder))
 			{
-				static::createFolder($destFolder, static::defaultFolderPermissions);
+				static::createFolder($destFolder, craft()->config->get('defaultFolderPermissions'));
 			}
 
 			if (static::isReadable($path))
