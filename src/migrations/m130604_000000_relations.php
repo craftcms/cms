@@ -130,12 +130,18 @@ class m130604_000000_relations extends BaseMigration
 
 			// Add the indexes and foreign keys back
 			$this->createIndex('relations', 'fieldId,parentId,childId', true);
-			$this->addForeignKey('relations', 'fieldId', 'fields', 'id');
-			$this->addForeignKey('relations', 'parentId', 'elements', 'id');
-			$this->addForeignKey('relations', 'childId', 'elements', 'id');
+			$this->addForeignKey('relations', 'fieldId', 'fields', 'id', 'CASCADE');
+			$this->addForeignKey('relations', 'parentId', 'elements', 'id', 'CASCADE');
+			$this->addForeignKey('relations', 'childId', 'elements', 'id', 'CASCADE');
 
 			// Drop the linkcriteria table
 			$this->dropTable('linkcriteria');
+
+			Craft::log('Successfully added the `relations` table and ran the relations migration.', LogLevel::Info, true);
+		}
+		else
+		{
+			Craft::log('Tried to add the `relations` table, but it already exists..', LogLevel::Warning, true);
 		}
 
 		return true;

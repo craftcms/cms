@@ -37,6 +37,12 @@ class m130604_000000_create_searchindex extends BaseMigration
 				craft()->db->quoteTableName($table).' ' .
 				'('.craft()->db->quoteColumnName('keywords').')'
 			);
+
+			Craft::log('Successfully added the `searchindex` table with a fulltext index on `keywords`.', LogLevel::Info, true);
+		}
+		else
+		{
+			Craft::log('Tried to add the `searchindex` table, but it already exists.', LogLevel::Warning, true);
 		}
 
 		return true;
