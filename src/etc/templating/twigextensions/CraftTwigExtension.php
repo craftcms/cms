@@ -123,52 +123,18 @@ class CraftTwigExtension extends \Twig_Extension
 	{
 		$groups = array();
 
+		$twig = craft()->templates->getTwig('\\Twig_Loader_String');
+		$template = $twig->loadTemplate('{{ object.'.$item.' }}');
+
 		foreach ($arr as $key => $object)
 		{
-			if ((is_array($object) && array_key_exists($item, $object)) || ($object instanceof \ArrayAccess && isset($object[$item])))
+			$value = $template->render(array(
+				'object' => $object
+			));
+
+			if ($value)
 			{
-			    $value = $object[$item];
-			}
-			else if (is_object($object))
-			{
-				if (isset($object->$item) || array_key_exists($item, $object))
-				{
-					$value = $object->$item;
-				}
-				else
-				{
-					$class = get_class($object);
-
-					if (!isset($this->_classMethods[$class]))
-					{
-						$this->_classMethods[$class] = array_change_key_case(get_class_methods($object));
-					}
-
-					$lcItem = strtolower($item);
-
-					if (in_array('get'.$lcItem, $this->_classMethods[$class]))
-					{
-						$method = 'get'.$item;
-					}
-					else if (in_array('get'.$lcItem, $this->_classMethods[$class]))
-					{
-						$method = 'is'.$item;
-					}
-					else if (in_array('__call', $this->_classMethods[$class]))
-					{
-						$method = $item;
-					}
-
-					if (!empty($method))
-					{
-						$value = $object->$method();
-					}
-				}
-			}
-
-			if (!empty($value))
-			{
-				$groups[(string) $value][] = $object;
+				$groups[$value][] = $object;
 			}
 		}
 
