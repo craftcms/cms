@@ -310,7 +310,7 @@ class FieldsService extends BaseApplicationComponent
 					else
 					{
 						// Existing field going from a field that did not define any content attributes to one that does.
-						if (!craft()->db->schema->columnExists('content', $field->handle))
+						if (!craft()->db->schema->columnExists('content', $fieldRecord->oldHandle))
 						{
 							craft()->db->createCommand()->addColumn('content', $field->handle, $column);
 						}
