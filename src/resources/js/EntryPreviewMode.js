@@ -4,12 +4,12 @@
 Craft.EntryPreviewMode = Garnish.Base.extend({
 
 	$form: null,
-	$previewModeBtn: null,
+	$btn: null,
+	$spinner: null,
 	$shade: null,
 	$editor: null,
 	$closeBtn: null,
 	$iframe: null,
-	iframeDocument: null,
 
 	postUrl: null,
 	basePostData: null,
@@ -32,7 +32,8 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		}
 
 		this.$form = $('#entry-form');
-		this.$previewModeBtn = $('#previewmode-btn');
+		this.$btn = $('#previewmode-btn');
+		this.$spinner = $('#previewmode-spinner');
 
 		this.basePostData = {
 			action: 'entries/previewEntry'
@@ -45,7 +46,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			this.basePostData[$input.attr('name')] = $input.val();
 		}
 
-		this.addListener(this.$previewModeBtn, 'click', 'togglePreviewMode');
+		this.addListener(this.$btn, 'click', 'togglePreviewMode');
 	},
 
 	togglePreviewMode: function()
@@ -70,7 +71,6 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			this.$editor = $('<div id="previewmode-editor"></div>').appendTo(Garnish.$bod);
 			this.$closeBtn = $('<div id="previewmode-closebtn" class="btn">'+Craft.t('Done')+'</div>').appendTo(this.$editor);
 			this.$iframe = $('<iframe id="previewmode-iframe" frameborder="0" />').appendTo(Garnish.$bod);
-			this.iframeDocument = this.$iframe[0].contentWindow.document;
 
 			this.addListener(this.$closeBtn, 'click', 'hidePreviewMode');
 		}
@@ -92,32 +92,51 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			});
 		}
 
+		if (this.updateIframe())
+		{
+			this.$spinner.removeClass('hidden');
+			this.addListener(this.$iframe, 'load', function() {
+				this.slideIn();
+				this.removeListener(this.$iframe, 'load');
+			});
+		}
+		else
+		{
+			this.slideIn();
+		}
+
+		this.inPreviewMode = true;
+	},
+
+	slideIn: function()
+	{
+		$('html').addClass('noscroll');
+		this.$spinner.addClass('hidden');
+
 		this.$iframe.css('left', Garnish.$win.width());
 		this.$iframe.show();
 
 		this.addListener(Garnish.$win, 'resize', 'setIframeWidth');
 		this.setIframeWidth();
 
-		this.$shade.fadeIn('fast', $.proxy(function()
-		{
-			this.$editor.show().animate({
-				left: 0
-			});
+		this.$shade.fadeIn();
 
-			this.$iframe.animate({
-				left: Craft.EntryPreviewMode.formWidth-1
-			}, $.proxy(function() {
-				this.updateIframe();
-				this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
-			}, this));
+		this.$editor.show().animate({
+			left: 0
+		}, 'slow');
 
+		this.$iframe.animate({
+			left: Craft.EntryPreviewMode.formWidth
+		}, 'slow', $.proxy(function() {
+			this.updateIframe();
+			this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
 		}, this));
-
-		this.inPreviewMode = true;
 	},
 
 	hidePreviewMode: function()
 	{
+		$('html').removeClass('noscroll');
+
 		this.removeListener(Garnish.$win, 'resize');
 		clearInterval(this.updateIframeInterval);
 
@@ -130,11 +149,11 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 
 		var windowWidth = Garnish.$win.width();
 
-		this.$shade.delay(400).fadeOut('fast');
+		this.$shade.delay(200).fadeOut();
 
 		this.$editor.animate({
 			left: -Craft.EntryPreviewMode.formWidth
-		}, $.proxy(function() {
+		}, 'slow', $.proxy(function() {
 			for (var i = 0; i < this.fields.length; i++)
 			{
 				this.fields[i].$newClone.remove();
@@ -144,7 +163,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 
 		this.$iframe.animate({
 			left: windowWidth
-		}, $.proxy(function() {
+		}, 'slow', $.proxy(function() {
 			this.$iframe.hide();
 		}, this));
 
@@ -161,7 +180,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		if (this.loading)
 		{
 			this.checkAgain = true;
-			return;
+			return false;
 		}
 
 		// Has the post data changed?
@@ -172,13 +191,21 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			this.lastPostData = postData;
 			this.loading = true;
 
-			var data = $.extend({}, postData, this.basePostData);
+			var data = $.extend({}, postData, this.basePostData),
+				scrollTop = $(this.$iframe[0].contentWindow.document).scrollTop();
 
 			$.post(this.postUrl, data, $.proxy(function(response)
 			{
-				this.iframeDocument.open();
-				this.iframeDocument.write(response);
-				this.iframeDocument.close();
+				var html = response +
+					'<script type="text/javascript">document.body.scrollTop = '+scrollTop+';</script>';
+
+				// Set the iframe to use the same bg as the iframe body,
+				// to reduce the blink when reloading the DOM
+				this.$iframe.css('background', $(this.$iframe[0].contentWindow.document.body).css('background'));
+
+				this.$iframe[0].contentWindow.document.open();
+				this.$iframe[0].contentWindow.document.write(html);
+				this.$iframe[0].contentWindow.document.close();
 
 				this.loading = false;
 
@@ -189,6 +216,12 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 				}
 
 			}, this));
+
+			return true;
+		}
+		else
+		{
+			return false;
 		}
 	}
 

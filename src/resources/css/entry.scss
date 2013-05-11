@@ -6,6 +6,7 @@ span.draft { margin-top: -4px; display: inline-block; border: 2px solid #bbb; bo
 h1 span.draft span { display: none; }
 
 #previewmode-btn { float: right; margin-bottom: 30px; }
+#previewmode-spinner { position: absolute; top: 30px; right: 6px; }
 
 #previewmode-editor,
 #previewmode-iframe { position: fixed; top: 0; height: 100%; background: #fff; background-clip: padding-box; }
@@ -14,4 +15,4 @@ h1 span.draft span { display: none; }
 #previewmode-editor .field:first-child { padding-top: 30px; }
 #previewmode-closebtn { margin-bottom: 30px; }
 
-#previewmode-iframe { z-index: 2; left: 100%; border-left: 1px solid rgba(0,0,0,0.1); }
+#previewmode-iframe { z-index: 2; left: 100%; }

@@ -20,6 +20,9 @@
 
 body, html { background: #fff; }
 
+html.noscroll,
+html.noscroll body { overflow: hidden; }
+
 body { font-size: 13px; line-height: 18px; color: $textcolor; }
 body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 
@@ -533,8 +536,8 @@ ul.tree,
 .modal > .footer { -webkit-box-shadow: 0 -1px 2px rgba(0,0,0,0.1); }
 .modal > .footer:after { @include clearafter; }
 
-.modal-shade { display: none; position: fixed; top: 0; left: 0; z-index: 9998; width: 100%; height: 100%; background: rgba(255,255,255,0.8); }
-.modal-shade.dark { background: rgba(0,0,0,0.5); }
+.modal-shade { display: none; position: fixed; top: 0; left: 0; z-index: 9998; width: 100%; height: 100%; background: rgba(255,255,255,0.75); }
+.modal-shade.dark { background: rgba(0,0,0,0.75); }
 
 /* element selector modals */
 .elementselectormodal { margin-left: -350px; width: 700px; @include unselectable; }
