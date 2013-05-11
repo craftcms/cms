@@ -5,6 +5,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 
 	$form: null,
 	$previewModeBtn: null,
+	$shade: null,
 	$editor: null,
 	$closeBtn: null,
 	$iframe: null,
@@ -61,8 +62,11 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 
 	showPreviewMode: function()
 	{
+		$(document.activeElement).blur();
+
 		if (!this.$editor)
 		{
+			this.$shade = $('<div class="modal-shade dark"></div>').appendTo(Garnish.$bod).css('z-index', 2);
 			this.$editor = $('<div id="previewmode-editor"></div>').appendTo(Garnish.$bod);
 			this.$closeBtn = $('<div id="previewmode-closebtn" class="btn">'+Craft.t('Done')+'</div>').appendTo(this.$editor);
 			this.$iframe = $('<iframe id="previewmode-iframe" frameborder="0" />').appendTo(Garnish.$bod);
@@ -94,15 +98,19 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		this.addListener(Garnish.$win, 'resize', 'setIframeWidth');
 		this.setIframeWidth();
 
-		this.$editor.show().animate({
-			left: 0
-		});
+		this.$shade.fadeIn('fast', $.proxy(function()
+		{
+			this.$editor.show().animate({
+				left: 0
+			});
 
-		this.$iframe.animate({
-			left: Craft.EntryPreviewMode.formWidth
-		}, $.proxy(function() {
-			this.updateIframe();
-			this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
+			this.$iframe.animate({
+				left: Craft.EntryPreviewMode.formWidth-1
+			}, $.proxy(function() {
+				this.updateIframe();
+				this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
+			}, this));
+
 		}, this));
 
 		this.inPreviewMode = true;
@@ -122,8 +130,10 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 
 		var windowWidth = Garnish.$win.width();
 
+		this.$shade.delay(400).fadeOut('fast');
+
 		this.$editor.animate({
-			left: -400
+			left: -Craft.EntryPreviewMode.formWidth
 		}, $.proxy(function() {
 			for (var i = 0; i < this.fields.length; i++)
 			{
