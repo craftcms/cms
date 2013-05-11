@@ -15,7 +15,7 @@
 {% endif -%}
 
 <div class="timewrapper">
-	{%- include "_includes/forms/text" with { autocomplete: false, size: 10, value: (value ? value.timepicker : '') } -%}
+	{%- include "_includes/forms/text" with { autocomplete: false, size: 10, value: (value ? value.localeTime() : '') } -%}
 </div>
 
 {%- set js %}

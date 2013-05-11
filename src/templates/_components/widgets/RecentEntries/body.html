@@ -14,7 +14,7 @@
 					<td>
 						<a href="{{ entry.getCpEditUrl() }}">{{ entry.title }}</a>
 						<span class="light">
-							{{ entry.postDate.w3cDate }}
+							{{ entry.postDate.localeDate() }}
 							{% if craft.hasPackage('Users') %}
 								{{ "by {author}"|t({ author: entry.author.username }) }}
 							{% endif %}
