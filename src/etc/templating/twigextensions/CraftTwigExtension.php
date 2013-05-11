@@ -132,10 +132,7 @@ class CraftTwigExtension extends \Twig_Extension
 				'object' => $object
 			));
 
-			if ($value)
-			{
-				$groups[$value][] = $object;
-			}
+			$groups[$value][] = $object;
 		}
 
 		return $groups;
