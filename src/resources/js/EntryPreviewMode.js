@@ -115,7 +115,9 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 
 		for (var i = 0; i < this.fields.length; i++)
 		{
-			this.fields[i].$clone.replaceWith(this.fields[i].$field);
+			var field = this.fields[i];
+			field.$newClone = field.$field.clone().insertAfter(field.$field);
+			field.$clone.replaceWith(field.$field);
 		}
 
 		var windowWidth = Garnish.$win.width();
@@ -123,6 +125,10 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		this.$editor.animate({
 			left: -400
 		}, $.proxy(function() {
+			for (var i = 0; i < this.fields.length; i++)
+			{
+				this.fields[i].$newClone.remove();
+			}
 			this.$editor.hide();
 		}, this));
 
