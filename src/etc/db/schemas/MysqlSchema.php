@@ -240,4 +240,26 @@ class MysqlSchema extends \CMysqlSchema
 		return false;
 	}
 
+	/**
+	 * Checks if a column exists in a table.
+	 *
+	 * @param $table
+	 * @param $column
+	 * @return bool
+	 */
+	public function columnExists($table, $column)
+	{
+		$table = $this->dbConnection->schema->getTable('{{'.$table.'}}');
+
+		if ($table)
+		{
+			if (($column = $table->getColumn($column)) !== null)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 }
