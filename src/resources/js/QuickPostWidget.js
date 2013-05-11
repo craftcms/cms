@@ -69,7 +69,7 @@ Craft.QuickPostWidget = Garnish.Base.extend({
 							widget.addEntry({
 								url:      response.cpEditUrl,
 								title:    response.entry.title,
-								postDate: response.entry.postDate.date.substr(0, 10),
+								postDate: response.postDate,
 								username: response.author.username
 							});
 						}

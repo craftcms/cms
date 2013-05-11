@@ -9,7 +9,7 @@
 {% endif -%}
 
 <div class="datewrapper">
-	{%- include "_includes/forms/text" with { autocomplete: false, size: 10, value: (value ? value.datepicker : '') } -%}
+	{%- include "_includes/forms/text" with { autocomplete: false, size: 10, value: (value ? value.localeDate() : '') } -%}
 </div>
 
 {%- set js %}
