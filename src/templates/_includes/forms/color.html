@@ -1,4 +1,9 @@
-<input{% if class is defined %} class="{{ class }}"{% endif %} type="color"
+{%- set class = [
+	'btn big',
+	(class is defined and class ? class : null)
+]|filter|join(' ') %}
+
+<input class="{{ class }}" type="color"
 	{%- if id is defined and id %} id="{{ id }}"{% endif %}
 	{%- if name is defined and name %} name="{{ name }}"{% endif %}
 	{%- if value is defined and value %} value="{{ value }}"{% endif %}
