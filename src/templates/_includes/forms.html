@@ -31,6 +31,11 @@
 {% endmacro %}
 
 
+{% macro color(config) %}
+	{% include "_includes/forms/color" with config only %}
+{% endmacro %}
+
+
 {% macro textarea(config) %}
 	{% include "_includes/forms/textarea" with config only %}
 {% endmacro %}
@@ -116,6 +121,11 @@
 
 {% macro timeField(config) %}
 	{{ _self.field(config, _self.time(config)) }}
+{% endmacro %}
+
+
+{% macro colorField(config) %}
+	{{ _self.field(config, _self.color(config)) }}
 {% endmacro %}
 
 
