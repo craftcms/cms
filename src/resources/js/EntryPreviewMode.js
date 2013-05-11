@@ -10,6 +10,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 	$iframe: null,
 	iframeDocument: null,
 
+	postUrl: null,
 	basePostData: null,
 	inPreviewMode: false,
 	fields: null,
@@ -18,12 +19,24 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 	loading: false,
 	checkAgain: false,
 
-	init: function()
+	init: function(entryUrl)
 	{
+		if (entryUrl)
+		{
+			this.postUrl = entryUrl;
+		}
+		else
+		{
+			this.postUrl = Craft.baseSiteUrl;
+		}
+
 		this.$form = $('#entry-form');
 		this.$previewModeBtn = $('#previewmode-btn');
 
-		this.basePostData = {};
+		this.basePostData = {
+			action: 'entries/previewEntry'
+		};
+
 		var $hiddenInputs = this.$form.children('input[type=hidden]');
 		for (var i = 0; i < $hiddenInputs.length; i++)
 		{
@@ -145,7 +158,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 
 			var data = $.extend({}, postData, this.basePostData);
 
-			$.post(Craft.getSiteUrl(Craft.actionTrigger+'/entries/previewEntry'), data, $.proxy(function(response)
+			$.post(this.postUrl, data, $.proxy(function(response)
 			{
 				this.iframeDocument.open();
 				this.iframeDocument.write(response);
