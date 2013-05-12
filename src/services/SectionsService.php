@@ -359,7 +359,11 @@ class SectionsService extends BaseApplicationComponent
 					else
 					{
 						$newLocaleData[] = array($section->id, $localeId, $locale->urlFormat);
-						$updateEntries = true;
+
+						if (!$isNewSection)
+						{
+							$updateEntries = true;
+						}
 					}
 
 					if ($updateEntries && $section->hasUrls)
