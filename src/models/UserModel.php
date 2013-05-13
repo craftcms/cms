@@ -61,6 +61,39 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns whether the user is in a specific group.
+	 *
+	 * @param mixed $group The user group model, its handle, or ID.
+	 * @return bool
+	 */
+	public function isInGroup($group)
+	{
+		if (Craft::hasPackage(CraftPackage::Users))
+		{
+			if (is_object($group) && $group instanceof UserGroupModel)
+			{
+				$group = $group->id;
+			}
+
+			if (is_numeric($group))
+			{
+				$groups = array_keys($this->getGroups('id'));
+			}
+			else if (is_string($group))
+			{
+				$groups = array_keys($this->getGroups('handle'));
+			}
+
+			if (!empty($groups))
+			{
+				return in_array($group, $groups);
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Gets the user's full name.
 	 *
 	 * @return string|null
