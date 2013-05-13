@@ -384,7 +384,7 @@ class SectionsService extends BaseApplicationComponent
 
 						foreach ($entries as $entry)
 						{
-							$uri = craft()->entries->getEntryUri($entry, $locale->urlFormat);
+							$uri = craft()->templates->renderObjectTemplate($locale->urlFormat, $entry);
 
 							if ($uri != $entry->uri)
 							{

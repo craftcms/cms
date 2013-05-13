@@ -41,10 +41,13 @@ class EntryRevisionsController extends BaseController
 		{
 			craft()->userSession->setNotice(Craft::t('Draft saved.'));
 
-			$this->redirectToPostedUrl(array(
-				'entryId' => $draft->id,
-				'draftId' => $draft->draftId
-			));
+			// TODO: Deprecate
+			if (isset($_POST['redirect']))
+			{
+				$_POST['redirect'] = str_replace('{entryId}', '{id}', $_POST['redirect']);
+			}
+
+			$this->redirectToPostedUrl($draft);
 		}
 		else
 		{
@@ -78,9 +81,13 @@ class EntryRevisionsController extends BaseController
 		{
 			craft()->userSession->setNotice(Craft::t('Draft published.'));
 
-			$this->redirectToPostedUrl(array(
-				'entryId' => $draft->id
-			));
+			// TODO: Deprecate
+			if (isset($_POST['redirect']))
+			{
+				$_POST['redirect'] = str_replace('{entryId}', '{id}', $_POST['redirect']);
+			}
+
+			$this->redirectToPostedUrl($draft);
 		}
 		else
 		{

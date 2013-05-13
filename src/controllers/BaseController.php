@@ -174,9 +174,9 @@ abstract class BaseController extends \CController
 	/**
 	 * Redirects to the URI specified in the POST.
 	 *
-	 * @param array|null $variables Variables to parse in the URL
+	 * @param mixed $object Object containing properties that should be parsed for in the URL.
 	 */
-	public function redirectToPostedUrl($variables = array())
+	public function redirectToPostedUrl($object = null)
 	{
 		$url = craft()->request->getPost('redirect');
 
@@ -185,9 +185,9 @@ abstract class BaseController extends \CController
 			$url = craft()->request->getPath();
 		}
 
-		foreach ($variables as $name => $value)
+		if ($object)
 		{
-			$url = str_replace('{'.$name.'}', $value, $url);
+			$url = craft()->templates->renderObjectTemplate($url, $object);
 		}
 
 		$this->redirect($url);

@@ -120,7 +120,14 @@ class ErrorHandler extends \CErrorHandler
 			if ($exception instanceof \Twig_Error)
 			{
 				// This is the template file for the exception.
-				$templateFile = craft()->templates->findTemplate($exception->getTemplateFile());
+				try
+				{
+					$templateFile = craft()->templates->findTemplate($exception->getTemplateFile());
+				}
+				catch (TemplateLoaderException $e)
+				{
+					$templateFile = $exception->getTemplateFile();
+				}
 
 				$this->_error = $data = array(
 					'code' => 500,
