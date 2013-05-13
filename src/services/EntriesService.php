@@ -6,8 +6,6 @@ namespace Craft;
  */
 class EntriesService extends BaseApplicationComponent
 {
-	private $_urlFormatTemplates;
-
 	/**
 	 * Returns tags by a given entry ID.
 	 *
@@ -156,7 +154,7 @@ class EntriesService extends BaseApplicationComponent
 				)));
 			}
 
-			$elementLocaleRecord->uri = $this->getEntryUri($entry, $urlFormat);
+			$elementLocaleRecord->uri = craft()->templates->renderObjectTemplate($urlFormat, $entry);
 		}
 
 		$elementLocaleRecord->validate();
@@ -254,28 +252,6 @@ class EntriesService extends BaseApplicationComponent
 		{
 			return false;
 		}
-	}
-
-	/**
-	 * Returns an entry's URI based on a given URL format.
-	 *
-	 * @param EntryModel $entry
-	 * @param string $urlFormat
-	 * @return string
-	 */
-	public function getEntryUri(EntryModel $entry, $urlFormat)
-	{
-		// Have we already parsed this URL format?
-		if (!isset($this->_urlFormatTemplates[$urlFormat]))
-		{
-			$templateString = str_replace(array('{', '}'), array('{{entry.', '}}'), $urlFormat);
-			$twig = craft()->templates->getTwig('\\Twig_Loader_String');
-			$this->_urlFormatTemplates[$urlFormat] = $twig->loadTemplate($templateString);
-		}
-
-		return $this->_urlFormatTemplates[$urlFormat]->render(array(
-			'entry' => $entry
-		));
 	}
 
 	// Private methods
