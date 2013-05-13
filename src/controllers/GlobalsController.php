@@ -30,9 +30,13 @@ class GlobalsController extends BaseController
 		{
 			craft()->userSession->setNotice(Craft::t('Global set saved.'));
 
-			$this->redirectToPostedUrl(array(
-				'setId' => $globalSet->id
-			));
+			// TODO: Deprecate
+			if (isset($_POST['redirect']))
+			{
+				$_POST['redirect'] = str_replace('{setId}', '{id}', $_POST['redirect']);
+			}
+
+			$this->redirectToPostedUrl($globalSet);
 		}
 		else
 		{

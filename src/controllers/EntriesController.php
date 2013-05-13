@@ -256,12 +256,13 @@ class EntriesController extends BaseController
 			{
 				craft()->userSession->setNotice(Craft::t('Entry saved.'));
 
-				$this->redirectToPostedUrl(array(
-					'entryId'   => $entry->id,
-					'slug'      => $entry->slug,
-					'url'       => $entry->getUrl(),
-					'cpEditUrl' => $entry->getCpEditUrl(),
-				));
+				// TODO: Deprecate
+				if (isset($_POST['redirect']))
+				{
+					$_POST['redirect'] = str_replace('{entryId}', '{id}', $_POST['redirect']);
+				}
+
+				$this->redirectToPostedUrl($entry);
 			}
 		}
 		else

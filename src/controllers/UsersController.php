@@ -408,9 +408,13 @@ class UsersController extends BaseController
 
 				craft()->userSession->setNotice(Craft::t('User saved.'));
 
-				$this->redirectToPostedUrl(array(
-					'userId' => $user->id
-				));
+				// TODO: Deprecate
+				if (isset($_POST['redirect']))
+				{
+					$_POST['redirect'] = str_replace('{userId}', '{id}', $_POST['redirect']);
+				}
+
+				$this->redirectToPostedUrl($user);
 			}
 			else
 			{

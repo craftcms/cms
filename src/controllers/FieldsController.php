@@ -92,10 +92,13 @@ class FieldsController extends BaseController
 		{
 			craft()->userSession->setNotice(Craft::t('Field saved.'));
 
-			$this->redirectToPostedUrl(array(
-				'fieldId' => $field->id,
-				'groupId' => $field->groupId,
-			));
+			// TODO: Deprecate
+			if (isset($_POST['redirect']))
+			{
+				$_POST['redirect'] = str_replace('{fieldId}', '{id}', $_POST['redirect']);
+			}
+
+			$this->redirectToPostedUrl($field);
 		}
 		else
 		{
