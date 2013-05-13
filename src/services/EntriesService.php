@@ -142,7 +142,7 @@ class EntriesService extends BaseApplicationComponent
 			$elementLocaleRecord->locale = $entry->locale;
 		}
 
-		if ($section->hasUrls)
+		if ($section->hasUrls && $entry->enabled)
 		{
 			// Make sure the section's URL format is valid. This shouldn't be possible due to section validation,
 			// but it's not enforced by the DB, so anything is possible.
@@ -156,6 +156,10 @@ class EntriesService extends BaseApplicationComponent
 			}
 
 			$elementLocaleRecord->uri = craft()->templates->renderObjectTemplate($urlFormat, $entry);
+		}
+		else
+		{
+			$elementLocaleRecord->uri = null;
 		}
 
 		$elementLocaleRecord->validate();
