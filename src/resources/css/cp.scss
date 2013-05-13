@@ -21,7 +21,7 @@ html, body,
 #alerts li { padding: 2px 30px; }
 #alerts li:first-child { padding-top: 4px; }
 #alerts li:last-child { padding-bottom: 4px; }
-#alerts li:before { @include icon; margin: -1px 3px 0 0; content: '⚠'; font-size: 16px; }
+#alerts li:before { @include icon; margin: -1px 3px 0 0; content: 'alert'; font-size: 16px; }
 #alerts li a { color: $errorcolor; text-decoration: underline; }
 
 .centered { margin: 0 auto; max-width: 1024px; max-width: 1051px; }

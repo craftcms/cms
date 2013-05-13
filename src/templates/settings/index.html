@@ -6,10 +6,10 @@
 	<h2>System</h2>
 
 	<ul class="icons">
-		<li><a href="{{ url('settings/general') }}" data-icon="wrench">{{ "General"|t }}</a></li>
+		<li><a href="{{ url('settings/general') }}" data-icon="general">{{ "General"|t }}</a></li>
 		<li><a href="{{ url('settings/packages') }}" data-icon="package">{{ "Packages"|t }}</a></li>
 		{% if craft.config.siteRoutesSource != 'file' %}
-			<li><a href="{{ url('settings/routes') }}" data-icon="world">{{ "Routes"|t }}</a></li>
+			<li><a href="{{ url('settings/routes') }}" data-icon="routes">{{ "Routes"|t }}</a></li>
 		{% endif %}
 		{% if craft.hasPackage('Users') %}
 			<li><a href="{{ url('settings/users') }}" data-icon="users">{{ "Users"|t }}</a></li>
@@ -25,7 +25,7 @@
 	<ul class="icons">
 		<li><a href="{{ url('settings/fields') }}" data-icon="field">{{ "Fields"|t }}</a></li>
 		<li><a href="{{ url('settings/sections') }}" data-icon="section">{{ "Sections"|t }}</a></li>
-		<li><a href="{{ url('settings/assets') }}" data-icon="image">{{ "Assets"|t }}</a></li>
+		<li><a href="{{ url('settings/assets') }}" data-icon="assets">{{ "Assets"|t }}</a></li>
 		<li><a href="{{ url('settings/globals') }}" data-icon="globe">{{ "Globals"|t }}</a></li>
 		{% if craft.hasPackage('Localize') %}
 			<li><a href="{{ url('settings/locales') }}" data-icon="language">{{ "Locales"|t }}</a></li>

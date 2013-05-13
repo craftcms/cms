@@ -53,8 +53,8 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 .icon.secure:before { content: 'secure'; }
 .icon.insecure:before { content: 'insecure'; }
 .icon.add:before { content: '+'; }
-.icon.edit:before { content: '✎'; }
-.icon.settings:before { content: '⚙'; }
+.icon.edit:before { content: 'edit'; }
+.icon.settings:before { content: 'settings'; }
 
 /* nav */
 .nav { display: block; }
