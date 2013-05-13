@@ -699,7 +699,11 @@ class IOHelper
 					// Write without LOCK_EX
 					if (static::_writeToFile($path, $contents, false, $append))
 					{
-						Craft::log('Tried to write to file at '.$path.', could not.', LogLevel::Error);
+						return true;
+					}
+					else
+					{
+						Craft::log('Tried to write to file at '.$path.' and could not.', LogLevel::Error);
 						return false;
 					}
 				}

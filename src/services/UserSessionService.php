@@ -690,7 +690,11 @@ class UserSessionService extends \CWebUser
 
 				// Clean up their row in the sessions table.
 				$user = craft()->users->getUserByUsernameOrEmail($loginName);
-				craft()->db->createCommand()->delete('sessions', 'userId=:userId AND uid=:uid', array('userId' => $user->id, 'uid' => $uid));
+
+				if ($user)
+				{
+					craft()->db->createCommand()->delete('sessions', 'userId=:userId AND uid=:uid', array('userId' => $user->id, 'uid' => $uid));
+				}
 			}
 			else
 			{
