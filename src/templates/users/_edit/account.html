@@ -29,7 +29,7 @@
 	<form method="post" action="" accept-charset="UTF-8">
 		<input type="hidden" name="action" value="users/saveUser">
 		{% if isNewAccount %}
-			<input type="hidden" name="redirect" value="users/{userId}">
+			<input type="hidden" name="redirect" value="users/{id}">
 		{% else %}
 			<input type="hidden" name="userId" value="{{ account.id }}">
 		{% endif %}

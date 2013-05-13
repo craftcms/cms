@@ -149,7 +149,13 @@
 							{% endif %}
 							<tr data-id="{{ entry.id }}" data-name="{{ entry.title|t }}">
 								<th scope="row" data-title="{{ 'Title'|t }}"><a href="{{ entry.cpEditUrl }}">{{ entry.title }}</a></th>
-								<td data-title="{{ 'Slug'|t }}"><a href="{{ entry.url }}">{{ entry.slug }}</a></td>
+								<td data-title="{{ 'Slug'|t }}">
+									{%- if entry.url -%}
+										<a href="{{ entry.url }}">{{ entry.slug }}</a>
+									{%- else -%}
+										{{ entry.slug }}
+									{%- endif -%}
+								</td>
 								{% if showSection %}<td data-title="{{ 'Section'|t }}">{{ entrySection.name }}</th>{% endif %}
 								{% if showStatus %}<td data-title="{{ 'Status'|t }}"><div class="status {{ statuses[entry.status] }}"></div> {{ entry.status|ucfirst|t }}</td>{% endif %}
 								<td class="thin">

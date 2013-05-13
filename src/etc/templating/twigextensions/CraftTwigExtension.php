@@ -123,15 +123,11 @@ class CraftTwigExtension extends \Twig_Extension
 	{
 		$groups = array();
 
-		$twig = craft()->templates->getTwig('\\Twig_Loader_String');
-		$template = $twig->loadTemplate('{{ object.'.$item.' }}');
+		$template = '{'.$item.'}';
 
 		foreach ($arr as $key => $object)
 		{
-			$value = $template->render(array(
-				'object' => $object
-			));
-
+			$value = craft()->templates->renderObjectTemplate($template, $object);
 			$groups[$value][] = $object;
 		}
 

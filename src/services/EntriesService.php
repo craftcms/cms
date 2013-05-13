@@ -6,8 +6,6 @@ namespace Craft;
  */
 class EntriesService extends BaseApplicationComponent
 {
-	private $_urlFormatTemplates;
-
 	/**
 	 * Returns tags by a given entry ID.
 	 *
@@ -85,7 +83,8 @@ class EntriesService extends BaseApplicationComponent
 
 		if ($entry->enabled && !$entryRecord->postDate)
 		{
-			$entryRecord->postDate = DateTimeHelper::currentUTCDateTime();
+			// Default the post date to the current date/time
+			$entryRecord->postDate = $entry->postDate = DateTimeHelper::currentUTCDateTime();
 		}
 
 		$entryRecord->validate();
@@ -143,7 +142,7 @@ class EntriesService extends BaseApplicationComponent
 			$elementLocaleRecord->locale = $entry->locale;
 		}
 
-		if ($section->hasUrls)
+		if ($section->hasUrls && $entry->enabled)
 		{
 			// Make sure the section's URL format is valid. This shouldn't be possible due to section validation,
 			// but it's not enforced by the DB, so anything is possible.
@@ -156,7 +155,11 @@ class EntriesService extends BaseApplicationComponent
 				)));
 			}
 
-			$elementLocaleRecord->uri = $this->getEntryUri($entry, $urlFormat);
+			$elementLocaleRecord->uri = craft()->templates->renderObjectTemplate($urlFormat, $entry);
+		}
+		else
+		{
+			$elementLocaleRecord->uri = null;
 		}
 
 		$elementLocaleRecord->validate();
@@ -176,9 +179,6 @@ class EntriesService extends BaseApplicationComponent
 		{
 			// Save the element record first
 			$elementRecord->save(false);
-
-			$entry->postDate   = $entryRecord->postDate;
-			$entry->expiryDate = $entryRecord->expiryDate;
 
 			// Now that we have an element ID, save it on the other stuff
 			if (!$entry->id)
@@ -257,28 +257,6 @@ class EntriesService extends BaseApplicationComponent
 		{
 			return false;
 		}
-	}
-
-	/**
-	 * Returns an entry's URI based on a given URL format.
-	 *
-	 * @param EntryModel $entry
-	 * @param string $urlFormat
-	 * @return string
-	 */
-	public function getEntryUri(EntryModel $entry, $urlFormat)
-	{
-		// Have we already parsed this URL format?
-		if (!isset($this->_urlFormatTemplates[$urlFormat]))
-		{
-			$templateString = str_replace(array('{', '}'), array('{{entry.', '}}'), $urlFormat);
-			$twig = craft()->templates->getTwig('\\Twig_Loader_String');
-			$this->_urlFormatTemplates[$urlFormat] = $twig->loadTemplate($templateString);
-		}
-
-		return $this->_urlFormatTemplates[$urlFormat]->render(array(
-			'entry' => $entry
-		));
 	}
 
 	// Private methods
