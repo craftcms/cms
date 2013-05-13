@@ -83,7 +83,8 @@ class EntriesService extends BaseApplicationComponent
 
 		if ($entry->enabled && !$entryRecord->postDate)
 		{
-			$entryRecord->postDate = DateTimeHelper::currentUTCDateTime();
+			// Default the post date to the current date/time
+			$entryRecord->postDate = $entry->postDate = DateTimeHelper::currentUTCDateTime();
 		}
 
 		$entryRecord->validate();
@@ -174,9 +175,6 @@ class EntriesService extends BaseApplicationComponent
 		{
 			// Save the element record first
 			$elementRecord->save(false);
-
-			$entry->postDate   = $entryRecord->postDate;
-			$entry->expiryDate = $entryRecord->expiryDate;
 
 			// Now that we have an element ID, save it on the other stuff
 			if (!$entry->id)
