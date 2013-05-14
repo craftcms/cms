@@ -95,15 +95,16 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	public function getEditableSets($indexBy = null, $localeId = null)
 	{
+		$globalSets = $this->getAllSets();
 		$editableGlobalSetIds = $this->getEditableSetIds();
-		$globalSets = $this->getAllSets('id');
 		$editableGlobalSets = array();
 
-		foreach ($editableGlobalSetIds as $globalSetId)
+		foreach ($globalSets as $globalSet)
 		{
-			if (isset($globalSets[$globalSetId]))
+			if (in_array($globalSet->id, $editableGlobalSetIds))
 			{
-				$globalSet = new GlobalSetModel($globalSets[$globalSetId]->getAttributes());
+				// Clone the model with the requested locale
+				$globalSet = new GlobalSetModel($globalSet->getAttributes());
 				$globalSet->locale = $localeId;
 
 				if ($indexBy)
