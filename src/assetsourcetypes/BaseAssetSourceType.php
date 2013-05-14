@@ -735,11 +735,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	public function renameFolder(AssetFolderModel $folder, $newName)
 	{
 		$parentFolder = craft()->assets->getFolderById($folder->parentId);
+
 		if (!$parentFolder)
 		{
 			throw new Exception(Craft::t("Cannot rename folder “{folder}”!", array('folder' => $folder->name)));
 		}
-		if ($this->_sourceFolderExists($parentFolder, $newName))
+
+		// Allow this for changing the case
+		if (!(strtolower($newName) == strtolower($folder->name)) && $this->_sourceFolderExists($parentFolder, $newName))
 		{
 			throw new Exception(Craft::t("Folder “{folder}” already exists there.", array('folder' => $newName)));
 		}
