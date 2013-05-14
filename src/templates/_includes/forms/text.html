@@ -18,5 +18,5 @@
 	{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
 	{%- if autocomplete is not defined or not autocomplete %} autocomplete="off"{% endif %}
 	{%- if disabled is defined and disabled %} disabled {% endif %}
-	{%- if hint is defined and hint %} data-hint="{{ hint }}"{% endif %}>
+	{%- if hint is defined and hint %} placeholder="{{ hint }}"{% endif %}>
 {%- if type == 'password' %}</div>{% endif %}
