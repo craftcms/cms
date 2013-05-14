@@ -193,6 +193,10 @@ Assets.FileManager = Garnish.Base.extend({
 			onSelectionChange: $.proxy(this, 'loadFolderContents')
 		});
 
+        // Overriding the method provided by Garnish.
+        this.folderSelect.originalKeyDown = this.folderSelect.onKeyDown;
+        this.folderSelect.onKeyDown = $.proxy(this._folderSelectKeyboardNavigation, this);
+
 		// initialize top-level folders
 		this.$topFolderUl = this.$folders;
 		this.$topFolderLis = this.$topFolderUl.children().filter('li');
@@ -824,6 +828,46 @@ Assets.FileManager = Garnish.Base.extend({
 
 		this.loadFolderContents();
 	},
+
+    /**
+     *
+     * @param ev
+     * @private
+     */
+    _folderSelectKeyboardNavigation: function (ev)
+    {
+        var currentFolder = this.folders[this.getCurrentFolderId()];
+
+        switch (ev.keyCode)
+        {
+            case Garnish.LEFT_KEY:
+            {
+                if (currentFolder.hasSubfolders() && currentFolder.expanded)
+                {
+                    currentFolder.collapse();
+                }
+                else
+                {
+                    if (currentFolder.depth > 1)
+                    {
+                        currentFolder.parent.select();
+                    }
+                }
+                break;
+            }
+
+            case Garnish.RIGHT_KEY:
+            {
+                if (currentFolder.hasSubfolders() && !currentFolder.expanded)
+                {
+                    currentFolder.expand();
+                }
+                break;
+            }
+        }
+
+        this.folderSelect.originalKeyDown(ev);
+    },
 
     /**
      * On Search Key Down
