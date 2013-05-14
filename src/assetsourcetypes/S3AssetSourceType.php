@@ -471,10 +471,10 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * @param AssetFileModel $file
 	 * @param AssetFolderModel $targetFolder
 	 * @param string $fileName
-	 * @param string $userResponse Conflict resolution response
+	 * @param bool $overwrite if True, will overwrite target destination
 	 * @return mixed
 	 */
-	protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $userResponse = '')
+	protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
 	{
 		if (empty($fileName))
 		{
@@ -492,7 +492,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$settings = $this->getSettings();
 		$fileInfo = $this->_s3->getObjectInfo($settings->bucket, $newServerPath);
 
-		$conflict = $fileInfo || (!craft()->assets->isMergeInProgress() && is_object($conflictingRecord));
+		$conflict = !$overwrite && ($fileInfo || (!craft()->assets->isMergeInProgress() && is_object($conflictingRecord)));
 
 		if ($conflict)
 		{

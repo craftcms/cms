@@ -100,10 +100,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param AssetFileModel $file
 	 * @param AssetFolderModel $targetFolder
 	 * @param string $fileName
-	 * @param string $userResponse Conflict resolution response
+	 * @param bool $overwrite if True, will overwrite target destination
 	 * @return AssetOperationResponseModel
 	 */
-	abstract protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $userResponse = '');
+	abstract protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false);
 
 	/**
 	 * Delete generated image transforms for a File.
@@ -430,7 +430,17 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			}
 		}
 
-		$response = $this->_moveSourceFile($file, $targetFolder, $filename, $action);
+		// If it's the same folder and the case is changing (if it's not, it's covered above), overwrite the file.
+		if ($file->folderId == $targetFolder->id && strtolower($filename) == strtolower($file->filename))
+		{
+			$overwrite = true;
+		}
+		else
+		{
+			$overwrite = false;
+		}
+
+		$response = $this->_moveSourceFile($file, $targetFolder, $filename, $overwrite);
 		if ($response->isSuccess())
 		{
 			$file->folderId = $targetFolder->id;
