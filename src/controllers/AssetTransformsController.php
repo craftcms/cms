@@ -32,7 +32,7 @@ class AssetTransformsController extends BaseController
 			if (craft()->assetTransforms->saveTransform($transform))
 			{
 				craft()->userSession->setNotice(Craft::t('Transform saved.'));
-				$this->redirectToPostedUrl(array('handle' => $transform->handle));
+				$this->redirectToPostedUrl($transform);
 			}
 			else
 			{

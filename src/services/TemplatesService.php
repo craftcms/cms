@@ -9,6 +9,7 @@ class TemplatesService extends BaseApplicationComponent
 	private $_twigs;
 	private $_twigOptions;
 	private $_templatePaths;
+	private $_objectTemplates;
 
 	private $_headNodes = array();
 	private $_footNodes = array();
@@ -118,6 +119,47 @@ class TemplatesService extends BaseApplicationComponent
 		$stringTemplate = new StringTemplate(md5($template), $template);
 		return $this->render($stringTemplate, $variables);
 	}
+
+	/**
+	 * Renders a micro template for accessing properties of a single object.
+	 *
+	 * @param string $template
+	 * @param mixed $object
+	 * @return string
+	 */
+	public function renderObjectTemplate($template, $object)
+	{
+		// Get a Twig instance with the String template loader
+		$twig = $this->getTwig('\\Twig_Loader_String');
+
+		// Have we already parsed this template?
+		if (!isset($this->_objectTemplates[$template]))
+		{
+			$formattedTemplate = str_replace(array('{', '}'), array('{{object.', '}}'), $template);
+			$this->_objectTemplates[$template] = $twig->loadTemplate($formattedTemplate);
+		}
+
+		// Temporarily disable strict variables if it's enabled
+		$strictVariables = $twig->isStrictVariables();
+		if ($strictVariables)
+		{
+			$twig->disableStrictVariables();
+		}
+
+		// Render it!
+		$return = $this->_objectTemplates[$template]->render(array(
+			'object' => $object
+		));
+
+		// Re-enable strict variables
+		if ($strictVariables)
+		{
+			$twig->enableStrictVariables();
+		}
+
+		return $return;
+	}
+
 
 	/**
 	 * Prepares an HTML node for inclusion in the <head> of the template.

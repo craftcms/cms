@@ -62,7 +62,7 @@ Craft = $.extend(Craft, {
 	getUrl: function(path, params)
 	{
 		// Return path if it appears to be an absolute URL.
-		if (path.search('://') != -1)
+		if (path.search('://') != -1 || path.substr(0, 2) == '//')
 		{
 			return path;
 		}

@@ -6,10 +6,6 @@ namespace Craft;
  */
 class IOHelper
 {
-	const defaultFolderPermissions = 0755;
-	const writableFolderPermissions = 0777;
-	const writableFilePermissions = 0666;
-
 	/**
 	 * Tests whether the given file path exists on the file system.
 	 *
@@ -588,7 +584,7 @@ class IOHelper
 	{
 		if ($permissions == null)
 		{
-			$permissions = static::defaultFolderPermissions;
+			$permissions = craft()->config->get('defaultFolderPermissions');
 		}
 
 		$path = static::normalizePathSeparators($path);
@@ -703,7 +699,11 @@ class IOHelper
 					// Write without LOCK_EX
 					if (static::_writeToFile($path, $contents, false, $append))
 					{
-						Craft::log('Tried to write to file at '.$path.', could not.', LogLevel::Error);
+						return true;
+					}
+					else
+					{
+						Craft::log('Tried to write to file at '.$path.' and could not.', LogLevel::Error);
 						return false;
 					}
 				}
@@ -873,7 +873,7 @@ class IOHelper
 
 			if (!static::folderExists($destFolder))
 			{
-				static::createFolder($destFolder, static::defaultFolderPermissions);
+				static::createFolder($destFolder, craft()->config->get('defaultFolderPermissions'));
 			}
 
 			if (static::isReadable($path))
@@ -1397,7 +1397,7 @@ class IOHelper
 	{
 		if (!IOHelper::folderExists($folderPath))
 		{
-			IOHelper::createFolder($folderPath, self::writableFolderPermissions);
+			IOHelper::createFolder($folderPath, self::getWritableFolderPermissions());
 		}
 	}
 
@@ -1436,6 +1436,30 @@ class IOHelper
 	}
 
 	/**
+	 * @return mixed
+	 */
+	public static function getDefaultFolderPermissions()
+	{
+		return craft()->config->get('defaultFolderPermissions');
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public static function getWritableFolderPermissions()
+	{
+		return craft()->config->get('writableFolderPermissions');
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public static function getWritableFilePermissions()
+	{
+		return craft()->config->get('writableFilePermissions');
+	}
+
+	/**
 	 * @param       $errNo
 	 * @param       $errStr
 	 * @param       $errFile
@@ -1462,6 +1486,7 @@ class IOHelper
 	 * @param       $contents
 	 * @param  bool $lock
 	 * @param  bool $append
+	 *
 	 * @return bool
 	 */
 	private static function _writeToFile($path, $contents, $lock = true, $append = true)

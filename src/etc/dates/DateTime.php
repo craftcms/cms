@@ -166,7 +166,7 @@ class DateTime extends \DateTime
 	 */
 	function __toString()
 	{
-		return $this->format('M j, Y');
+		return $this->format(static::W3C_DATE);
 	}
 
 	/**
@@ -298,7 +298,7 @@ class DateTime extends \DateTime
 	/**
 	 * @return string
 	 */
-	public function datepicker()
+	public function localeDate()
 	{
 		$localeData = craft()->i18n->getLocaleData(craft()->language);
 		$dateFormatter = $localeData->getDateFormatter();
@@ -309,7 +309,7 @@ class DateTime extends \DateTime
 	/**
 	 * @return string
 	 */
-	public function timepicker()
+	public function localeTime()
 	{
 		$localeData = craft()->i18n->getLocaleData(craft()->language);
 		$dateFormatter = $localeData->getDateFormatter();

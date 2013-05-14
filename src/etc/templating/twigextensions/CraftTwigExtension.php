@@ -6,6 +6,8 @@ namespace Craft;
  */
 class CraftTwigExtension extends \Twig_Extension
 {
+	private $_classMethods;
+
 	/**
 	 * Returns the token parser instances to add to the existing list.
 	 *
@@ -53,6 +55,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'intersect'  => new \Twig_Filter_Function('array_intersect'),
 			'without'    => new \Twig_Filter_Method($this, 'withoutFilter'),
 			'replace'    => new \Twig_Filter_Method($this, 'replaceFilter'),
+			'group'      => new \Twig_Filter_Method($this, 'groupFilter'),
 			'filter'     => new \Twig_Filter_Function('array_filter'),
 			'ucfirst'    => new \Twig_Filter_Function('ucfirst'),
 			'lcfirst'    => new \Twig_Filter_Function('lcfirst'),
@@ -93,6 +96,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 * @param mixed $str
 	 * @param mixed $search
 	 * @param mixed $replace
+	 * @return mixed
 	 */
 	public function replaceFilter($str, $search, $replace = null)
 	{
@@ -106,6 +110,28 @@ class CraftTwigExtension extends \Twig_Extension
 			// Otherwise use str_replace
 			return str_replace($search, $replace, $str);
 		}
+	}
+
+	/**
+	 * Groups an array by a common property.
+	 *
+	 * @param array $arr
+	 * @param string $item
+	 * @return array
+	 */
+	public function groupFilter($arr, $item)
+	{
+		$groups = array();
+
+		$template = '{'.$item.'}';
+
+		foreach ($arr as $key => $object)
+		{
+			$value = craft()->templates->renderObjectTemplate($template, $object);
+			$groups[$value][] = $object;
+		}
+
+		return $groups;
 	}
 
 	/**

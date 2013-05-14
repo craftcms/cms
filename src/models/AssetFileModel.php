@@ -198,6 +198,12 @@ class AssetFileModel extends BaseElementModel
 			return false;
 		}
 
+		// In case getimagesize returned false.
+		if (!$this->_getWidth() || !$this->_getHeight())
+		{
+			return false;
+		}
+
 		// treat the image as a horizontal?
 		if (($this->_getHeight() / $this->_getWidth()) <= ($maxHeight / $maxWidth))
 		{

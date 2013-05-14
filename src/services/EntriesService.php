@@ -83,7 +83,8 @@ class EntriesService extends BaseApplicationComponent
 
 		if ($entry->enabled && !$entryRecord->postDate)
 		{
-			$entryRecord->postDate = DateTimeHelper::currentUTCDateTime();
+			// Default the post date to the current date/time
+			$entryRecord->postDate = $entry->postDate = DateTimeHelper::currentUTCDateTime();
 		}
 
 		$entryRecord->validate();
@@ -141,7 +142,7 @@ class EntriesService extends BaseApplicationComponent
 			$elementLocaleRecord->locale = $entry->locale;
 		}
 
-		if ($section->hasUrls)
+		if ($section->hasUrls && $entry->enabled)
 		{
 			// Make sure the section's URL format is valid. This shouldn't be possible due to section validation,
 			// but it's not enforced by the DB, so anything is possible.
@@ -154,7 +155,11 @@ class EntriesService extends BaseApplicationComponent
 				)));
 			}
 
-			$elementLocaleRecord->uri = str_replace('{slug}', $entry->slug, $urlFormat);
+			$elementLocaleRecord->uri = craft()->templates->renderObjectTemplate($urlFormat, $entry);
+		}
+		else
+		{
+			$elementLocaleRecord->uri = null;
 		}
 
 		$elementLocaleRecord->validate();
@@ -174,9 +179,6 @@ class EntriesService extends BaseApplicationComponent
 		{
 			// Save the element record first
 			$elementRecord->save(false);
-
-			$entry->postDate   = $entryRecord->postDate;
-			$entry->expiryDate = $entryRecord->expiryDate;
 
 			// Now that we have an element ID, save it on the other stuff
 			if (!$entry->id)

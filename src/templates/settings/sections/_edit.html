@@ -28,7 +28,7 @@
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8">
 		<input type="hidden" name="action" value="sections/saveSection">
-		<input type="hidden" name="redirect" value="settings/sections/{sectionId}">
+		<input type="hidden" name="redirect" value="settings/sections/{id}">
 		{% if not isNewSection %}<input type="hidden" name="sectionId" value="{{ section.id }}">{% endif %}
 
 		<div id="section-settings">
@@ -137,7 +137,7 @@
 
 				{{ forms.field({
 					label: "Entry URL Format"|t,
-					instructions: "What the entry URLs should look like."|t,
+					instructions: "What the entry URLs should look like. <code>{slug}</code> is required, but it can also include any entry properties, e.g. <code>{postDate.year}</code>."|t,
 					required: true,
 					errors: (section is defined ? section.getErrors('urlFormat') : null)
 				}, urlFormatField) }}

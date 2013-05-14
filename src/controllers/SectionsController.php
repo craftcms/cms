@@ -57,9 +57,13 @@ class SectionsController extends BaseController
 		{
 			craft()->userSession->setNotice(Craft::t('Section saved.'));
 
-			$this->redirectToPostedUrl(array(
-				'sectionId' => $section->id
-			));
+			// TODO: Deprecate
+			if (isset($_POST['redirect']))
+			{
+				$_POST['redirect'] = str_replace('{sectionId}', '{id}', $_POST['redirect']);
+			}
+
+			$this->redirectToPostedUrl($section);
 		}
 		else
 		{

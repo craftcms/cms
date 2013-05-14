@@ -901,7 +901,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 						return $this->_doAuthenticatedRequest($operationType, $target, $method, $newHeaders);
 					}
-					throw new Exception("Token has expired and the attempt to renew it failed. Please check the source settings.");
+					throw new Exception(Craft::t('Token has expired and the attempt to renew it failed. Please check the source settings.'));
 					break;
 				}
 

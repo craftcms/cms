@@ -248,7 +248,7 @@ class EntriesController extends BaseController
 				$return['entry']     = $entry->getAttributes();
 				$return['cpEditUrl'] = $entry->getCpEditUrl();
 				$return['author']    = $entry->getAuthor()->getAttributes();
-				$return['postDate']  = ($entry->postDate ? $entry->postDate->w3cDate() : null);
+				$return['postDate']  = ($entry->postDate ? $entry->postDate->localeDate() : null);
 
 				$this->returnJson($return);
 			}
@@ -256,12 +256,13 @@ class EntriesController extends BaseController
 			{
 				craft()->userSession->setNotice(Craft::t('Entry saved.'));
 
-				$this->redirectToPostedUrl(array(
-					'entryId'   => $entry->id,
-					'slug'      => $entry->slug,
-					'url'       => $entry->getUrl(),
-					'cpEditUrl' => $entry->getCpEditUrl(),
-				));
+				// TODO: Deprecate
+				if (isset($_POST['redirect']))
+				{
+					$_POST['redirect'] = str_replace('{entryId}', '{id}', $_POST['redirect']);
+				}
+
+				$this->redirectToPostedUrl($entry);
 			}
 		}
 		else

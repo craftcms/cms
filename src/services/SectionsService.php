@@ -324,6 +324,10 @@ class SectionsService extends BaseApplicationComponent
 					$section->id = $sectionRecord->id;
 				}
 
+				// Might as well update our cache of the section while we have it.
+				// (It's possilbe that the URL format includes {section.handle} or something...)
+				$this->_sectionsById[$section->id] = $section;
+
 				// Update the sections_i18n table
 				$newLocaleData = array();
 
@@ -359,24 +363,36 @@ class SectionsService extends BaseApplicationComponent
 					else
 					{
 						$newLocaleData[] = array($section->id, $localeId, $locale->urlFormat);
-						$updateEntries = true;
+
+						if (!$isNewSection)
+						{
+							$updateEntries = true;
+						}
 					}
 
 					if ($updateEntries && $section->hasUrls)
 					{
-						$entries = craft()->db->createCommand()
-							->select('entryId,slug')
-							->from('entries_i18n')
-							->where(array('sectionId' => $section->id, 'locale' => $localeId))
-							->queryAll();
+						// This may take a while...
+						set_time_limit(120);
+
+						// Fetch all the entries in this section
+						$entries = craft()->elements->getCriteria(ElementType::Entry, array(
+							'sectionId' => $section->id,
+							'locale'    => $localeId,
+							'limit'     => null,
+						))->find();
 
 						foreach ($entries as $entry)
 						{
-							$uri = str_replace('{slug}', $entry['slug'], $locale->urlFormat);
-							craft()->db->createCommand()->update('elements_i18n',
-								array('uri' => $uri),
-								array('elementId' => $entry['entryId'], 'locale' => $localeId)
-							);
+							$uri = craft()->templates->renderObjectTemplate($locale->urlFormat, $entry);
+
+							if ($uri != $entry->uri)
+							{
+								craft()->db->createCommand()->update('elements_i18n',
+									array('uri' => $uri),
+									array('elementId' => $entry->id, 'locale' => $localeId)
+								);
+							}
 						}
 					}
 				}

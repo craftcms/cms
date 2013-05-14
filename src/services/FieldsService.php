@@ -309,7 +309,27 @@ class FieldsService extends BaseApplicationComponent
 					}
 					else
 					{
-						craft()->db->createCommand()->alterColumn('content', $fieldRecord->oldHandle, $column, $field->handle);
+						// Existing field going from a field that did not define any content attributes to one that does.
+						if (!craft()->db->schema->columnExists('content', $fieldRecord->oldHandle))
+						{
+							craft()->db->createCommand()->addColumn('content', $field->handle, $column);
+						}
+						else
+						{
+							// Existing field that already had a column defined, just altering it.
+							craft()->db->createCommand()->alterColumn('content', $fieldRecord->oldHandle, $column, $field->handle);
+						}
+					}
+				}
+				else
+				{
+					// Did the old field have a column we need to remove?
+					if (!$isNewField)
+					{
+						if ($fieldRecord->oldHandle && craft()->db->schema->columnExists('content', $fieldRecord->oldHandle))
+						{
+							craft()->db->createCommand()->dropColumn('content', $fieldRecord->oldHandle);
+						}
 					}
 				}
 
