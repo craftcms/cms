@@ -22,8 +22,8 @@
 					<tr data-id="{{ source.id }}" data-name="{{ source.name|t }}">
 						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/assets/sources/' ~ source.id) }}">{{ source.name|t }}</a></th>
 						{% if craft.hasPackage('Cloud') %}<td data-title="{{ 'Type'|t }}">{{ craft.assets.populateSourceType(source).name }}</td>{% endif %}
-						{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
-						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+						{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a></td>{% endif %}
+						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 					</tr>
 				{% endfor %}
 			</tbody>

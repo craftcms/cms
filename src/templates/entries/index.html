@@ -160,7 +160,7 @@
 								{% if showStatus %}<td data-title="{{ 'Status'|t }}"><div class="status {{ statuses[entry.status] }}"></div> {{ entry.status|ucfirst|t }}</td>{% endif %}
 								<td class="thin">
 									{% if entry.authorId == user.id or user.can('deletePeerEntries:'~entry.sectionId) %}
-										<a class="delete icon" title="{{ 'Delete'|t }}"></a>
+										<a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a>
 									{% endif %}
 								</td>
 							</tr>

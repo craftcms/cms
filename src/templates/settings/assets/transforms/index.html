@@ -29,7 +29,7 @@
 					{%  endif %}
 				</td>
 				<td data-title="{{ 'Dimensions'|t }}">{{ transform.width ? transform.width : 'Auto'|t }} &times; {{ transform.height ? transform.height : 'Auto'|t }}</td>
-				<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+				<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 			</tr>
 		{% endfor %}
 		</tbody>

@@ -143,7 +143,7 @@ Assets.FileManager = Garnish.Base.extend({
 			action:       Craft.actionUrl + '/assets/uploadFile',
 			template:     '<div class="assets-qq-uploader">'
 				+   '<div class="assets-qq-upload-drop-area"></div>'
-				+   '<a href="javascript:;" class="btn submit assets-qq-upload-button" data-icon="↑" style="position: relative; overflow: hidden; direction: ltr; ">' + Craft.t('Upload files') + '</a>'
+				+   '<a href="javascript:;" class="btn submit assets-qq-upload-button" data-icon="↑" style="position: relative; overflow: hidden; direction: ltr; " role="button">' + Craft.t('Upload files') + '</a>'
 				+   '<ul class="assets-qq-upload-list"></ul>'
 				+ '</div>',
 

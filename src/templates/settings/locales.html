@@ -33,8 +33,8 @@
 						<tr data-id="{{ locale.id }}" data-name="{{ locale.name }}">
 							<th scope="row" data-title="{{ 'Name'|t }}" width="40%">{{ locale.name }}</th>
 							<td data-title="{{ 'Locale ID' }}">{{ locale.id }}</td>
-							<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
-							<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+							<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a></td>
+							<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 						</tr>
 					{% endfor %}
 				</tbody>

@@ -47,8 +47,8 @@
 			<div id="groupsettingsbtn" class="btn settings icon menubtn" title="{{ 'Settings' }}"></div>
 			<div class="menu">
 				<ul>
-					<li><a data-action="rename">{{ "Rename selected group"|t }}</a></li>
-					<li><a data-action="delete">{{ "Delete selected group"|t }}</a></li>
+					<li><a data-action="rename" role="button">{{ "Rename selected group"|t }}</a></li>
+					<li><a data-action="delete" role="button">{{ "Delete selected group"|t }}</a></li>
 				</ul>
 			</div>
 		{% endif %}
@@ -91,7 +91,7 @@
 							{% endif %}
 						</td>
 						{% if groupId is not defined %}<td data-title="{{ 'Group'|t }}">{{ field.group.name }}</td>{% endif %}
-						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 					</tr>
 				{% endfor %}
 			</tbody>

@@ -31,8 +31,8 @@
 								<span class="light error">({{ widget.type }})</span>
 							{% endif %}
 						</th>
-						{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
-						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+						{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a></td>{% endif %}
+						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 					</tr>
 				{% endfor %}
 			</tbody>

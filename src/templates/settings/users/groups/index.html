@@ -22,7 +22,7 @@
 					<tr data-id="{{ group.id }}" data-name="{{ group.name|t }}">
 						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/users/groups/' ~ group.id) }}">{{ group.name|t }}</a></th>
 						<td data-title="{{ 'Handle'|t }}"><code>{{ group.handle }}</code></td>
-						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 					</tr>
 				{% endfor %}
 			</tbody>
