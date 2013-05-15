@@ -698,7 +698,7 @@ body .redactor_dropdown { z-index: 10001 !important; }
 	.select,
 	.select select { border-radius: 3px; }
 	.select { display: inline-block; position: relative; background: #fff; }
-	.select:before { @include icon; position: absolute; top: 7px; right: 9px; font-size: 10px; content: '▼'; @include unselectable; }
+	.select:before { @include icon; position: absolute; top: 10px; right: 9px; font-size: 10px; content: '▼'; @include unselectable; }
 	.select select { position: relative; border: 1px solid #ddd; padding: 7px 22px 7px 10px; font-size: 13px; color: $textcolor; background: none;
 		-webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; -webkit-appearance: none;
 		        box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 0 0 $blurglowcolor;    -moz-transition: border linear 100ms,         box-shadow linear 100ms;    -moz-appearance: none;
