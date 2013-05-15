@@ -46,7 +46,7 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Returns the Craft version number.
+	 * Returns the installed Craft version.
 	 *
 	 * @static
 	 * @return string
@@ -57,7 +57,7 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Returns the Craft build number.
+	 * Returns the installed Craft build.
 	 *
 	 * @static
 	 * @return string
@@ -68,7 +68,7 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Returns the Craft release date.
+	 * Returns the installed Craft release date.
 	 *
 	 * @static
 	 * @return string
