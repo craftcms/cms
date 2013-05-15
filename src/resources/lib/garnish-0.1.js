@@ -2513,8 +2513,6 @@ Garnish.MenuBtn = Garnish.Base.extend({
 
 	showMenu: function()
 	{
-		// Prevent the option selection mousedown event from
-
 		this.menu.show();
 		this.$btn.addClass('active');
 		this.showingMenu = true;
