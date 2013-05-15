@@ -1174,13 +1174,13 @@ Assets.FileManager = Garnish.Base.extend({
 		}
 
 
-		this._singleFileMenu.push(new Garnish.ContextMenu($files, menuOptions));
+		this._singleFileMenu.push(new Garnish.ContextMenu($files, menuOptions, {menuClass: 'menu assets-contextmenu'}));
 
 		if (this.settings.mode == 'full')
 		{
             var menu = new Garnish.ContextMenu($files, [
                 { label: Craft.t('Delete'), onClick: $.proxy(this, '_deleteFiles') }
-            ]);
+            ], {menuClass: 'menu assets-contextmenu'});
             menu.disable();
 			this._multiFileMenu.push(menu);
 		}

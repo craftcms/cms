@@ -56,7 +56,7 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 			menuOptions.push({ label: Craft.t('Delete folder'), onClick: $.proxy(this, '_delete') });
 		}
 
-		new Garnish.ContextMenu(this.$a, menuOptions);
+		new Garnish.ContextMenu(this.$a, menuOptions, {menuClass: 'menu assets-contextmenu'});
 	},
 
 	// -------------------------------------------
