@@ -1169,7 +1169,6 @@ Garnish.ContextMenu = Garnish.Base.extend({
 	buildMenu: function()
 	{
 		this.$menu = $('<div class="'+this.settings.menuClass+'" style="display: none" />');
-		//this.$menu = $('<ul class="'+this.settings.menuClass+'" style="display: none" />');
 
 		var $ul = $('<ul/>').appendTo(this.$menu);
 
