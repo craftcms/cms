@@ -110,16 +110,14 @@ class SectionsService extends BaseApplicationComponent
 	 */
 	public function getEditableSections($indexBy = null)
 	{
+		$sections = $this->getAllSections();
 		$editableSectionIds = $this->getEditableSectionIds();
-		$sections = $this->getAllSections('id');
 		$editableSections = array();
 
-		foreach ($editableSectionIds as $sectionId)
+		foreach ($sections as $section)
 		{
-			if (isset($sections[$sectionId]))
+			if (in_array($section->id, $editableSectionIds))
 			{
-				$section = $sections[$sectionId];
-
 				if ($indexBy)
 				{
 					$editableSections[$section->$indexBy] = $section;

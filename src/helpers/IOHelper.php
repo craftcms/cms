@@ -652,7 +652,7 @@ class IOHelper
 
 				try
 				{
-					Craft::log('Tried to write to file at '.$path.' using LOCK_EX.', LogLevel::Info, true);
+					Craft::log('Trying to write to file at '.$path.' using LOCK_EX.', LogLevel::Info, true);
 					if (static::_writeToFile($path, $contents, true, $append))
 					{
 						// Restore quickly.
@@ -662,6 +662,18 @@ class IOHelper
 						Craft::log('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.', LogLevel::Info, true);
 						craft()->fileCache->set('useWriteFileLock', 'yes', 5184000);
 						return true;
+					}
+					else
+					{
+						// Try again without the lock flag.
+						Craft::log('Trying to write to file at '.$path.' without LOCK_EX.', LogLevel::Info, true);
+						if (static::_writeToFile($path, $contents, false, $append))
+						{
+							// Cache the file lock info to not use LOCK_EX for 2 months.
+							Craft::log('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', LogLevel::Info, true);
+							craft()->fileCache->set('useWriteFileLock', 'no', 5184000);
+							return true;
+						}
 					}
 				}
 				catch (ErrorException $e)
@@ -688,6 +700,7 @@ class IOHelper
 				// If cache says use LOCK_X and this is not a noFileLock request.
 				if ($useFileLock == 'yes' && !$noFileLock)
 				{
+					Craft::log('Cache says use LOCK_EX. Writing to '.$path.'.', LogLevel::Info, true);
 					// Write with LOCK_EX
 					if (static::_writeToFile($path, $contents, true, $append))
 					{
@@ -696,6 +709,7 @@ class IOHelper
 				}
 				else
 				{
+					Craft::log('Cache says not to use LOCK_EX. Writing to '.$path.'.', LogLevel::Info, true);
 					// Write without LOCK_EX
 					if (static::_writeToFile($path, $contents, false, $append))
 					{
