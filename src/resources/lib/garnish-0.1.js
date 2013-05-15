@@ -1168,7 +1168,9 @@ Garnish.ContextMenu = Garnish.Base.extend({
 	 */
 	buildMenu: function()
 	{
-		this.$menu = $('<ul class="'+this.settings.menuClass+'" style="display: none" />');
+		this.$menu = $('<div class="'+this.settings.menuClass+'" style="display: none" />');
+
+		var $ul = $('<ul/>').appendTo(this.$menu);
 
 		for (var i in this.options)
 		{
@@ -1176,11 +1178,12 @@ Garnish.ContextMenu = Garnish.Base.extend({
 
 			if (option == '-')
 			{
-				$('<li class="'+this.settings.optionBreakClass+'"></li>').appendTo(this.$menu);
+				// Create a new <ul>
+				$ul = $('<ul/>').appendTo(this.$menu);
 			}
 			else
 			{
-				var $li = $('<li></li>').appendTo(this.$menu),
+				var $li = $('<li></li>').appendTo($ul),
 					$a = $('<a>'+option.label+'</a>').appendTo($li);
 
 				if (typeof option.onClick == 'function')
@@ -1274,8 +1277,7 @@ Garnish.ContextMenu = Garnish.Base.extend({
 },
 {
 	defaults: {
-		menuClass: 'contextmenu',
-		optionBreakClass: 'contextmenu-break',
+		menuClass: 'menu'
 	},
 	counter: 0
 });
@@ -2442,6 +2444,7 @@ Garnish.Menu = Garnish.Base.extend({
 	selectOption: function(ev)
 	{
 		this.settings.onOptionSelect(ev.currentTarget);
+		this.hide();
 	}
 
 },
@@ -2510,8 +2513,6 @@ Garnish.MenuBtn = Garnish.Base.extend({
 
 	showMenu: function()
 	{
-		// Prevent the option selection mousedown event from
-
 		this.menu.show();
 		this.$btn.addClass('active');
 		this.showingMenu = true;
