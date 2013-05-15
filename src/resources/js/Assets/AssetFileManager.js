@@ -1298,7 +1298,7 @@ Assets.FileManager = Garnish.Base.extend({
                 {
                     if (data.prompt)
                     {
-                        this._showPrompt(data.prompt, data.choices, $.proxy(function (choice) {
+                        this._showPrompt(data.prompt, data.prompt.choices, $.proxy(function (choice) {
                             if (choice != 'cancel')
                             {
                                 postData.action = choice;
