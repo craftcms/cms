@@ -147,10 +147,7 @@
 		</div>
 	</div>
 
-	<div id="version">
-		@@@appName@@@ {{ "{version} build {build}"|t({
-			version: craft.app.version,
-			build:   craft.app.build
-		}) }}
+	<div id="footer">
+		@@@appName@@@ {{ craft.app.version }}.{{ craft.app.build }}  •  Released on {{ craft.app.releaseDate.localeDate }}  •  Copyright {{ now.year}} Pixel &amp; Tonic, Inc. All rights reserved.
 	</div>
 {% endset %}
