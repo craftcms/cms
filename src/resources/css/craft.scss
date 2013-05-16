@@ -506,6 +506,46 @@ ul.tree,
 .status.expired { background-position: 0 -20px; }
 
 /* ----------------------------------------
+/*  Progress bar
+/* ----------------------------------------*/
+
+.progressbar { border-radius: 6px; border: 2px solid $textcolor; padding: 2px; }
+.progressbar-inner { border-radius: 2px; height: 4px; background: $textcolor; }
+.progressbar:not(.pending) .progressbar-inner {
+	-webkit-transition: width linear 50ms;
+	   -moz-transition: width linear 50ms;
+}
+.progressbar.pending .progressbar-inner { background: url(../images/progressbar_pending.png) repeat-x;
+	-webkit-animation-name: pendingprogress;
+	   -moz-animation-name: pendingprogress;
+	        animation-name: pendingprogress;
+	-webkit-animation-timing-function: linear;
+	   -moz-animation-timing-function: linear;
+	        animation-timing-function: linear;
+	-webkit-animation-duration: 250ms;
+	   -moz-animation-duration: 250ms;
+	        animation-duration: 250ms;
+	-webkit-animation-iteration-count: infinite;
+	   -moz-animation-iteration-count: infinite;
+	        animation-iteration-count: infinite;
+}
+
+@-webkit-keyframes pendingprogress {
+	0% { background-position: 0; }
+	100% { background-position: -50px; }
+}
+
+@-moz-keyframes pendingprogress {
+	from { background-position: 0; }
+	to { background-position: -50px; }
+}
+
+@keyframes pendingprogress {
+	from { background-position: 0; }
+	to { background-position: -50px; }
+}
+
+/* ----------------------------------------
 /*  Modals
 /* ----------------------------------------*/
 
@@ -517,7 +557,7 @@ ul.tree,
 
 .modal { position: fixed; top: 50%; left: 50%; margin-left: -200px; width: 400px; overflow: hidden; }
 .hud { position: absolute; }
-.hud .body { padding: 30px; }
+.hud .body { position: relative; padding: 30px; overflow: hidden; }
 .hud .tip { position: absolute; background: no-repeat 0 0; }
 .hud .tip-left { left: -15px; width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
 .hud .tip-top { top: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_top.png); }
@@ -758,6 +798,8 @@ ul.errors li { color: $errorcolor; }
 
 	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
 	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
+
+	.progressbar.pending .progressbar-inner { background-image: url(../images/progressbar_pending_2x.png); background-size: 50px; }
 
 	.hud .tip-left { background-image: url(../images/hudtip_left_2x.png); background-size: 15px 30px; }
 	.hud .tip-top { background-image: url(../images/hudtip_top_2x.png); background-size: 30px 15px; }

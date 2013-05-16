@@ -41,4 +41,15 @@ abstract class BaseTool extends BaseComponentType implements ITool
 	{
 		return Craft::t('Go!');
 	}
+
+	/**
+	 * Performs the tool's action.
+	 *
+	 * @param array $params
+	 * @return array
+	 */
+	public function performAction($params = array())
+	{
+		return array('complete' => true);
+	}
 }

@@ -20,4 +20,10 @@ interface ITool extends IComponentType
 	 * @return string
 	 */
 	public function getButtonLabel();
+
+	/**
+	 * @param array $params
+	 * @return array
+	 */
+	public function performAction($params = array());
 }
