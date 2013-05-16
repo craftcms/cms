@@ -13,8 +13,8 @@ Craft.Tool = Garnish.Base.extend({
 	buttonLabel: null,
 	hud: null,
 	totalActions: null,
-	loadingActions: null,
 	completedActions: null,
+	loadingActions: null,
 	queue: null,
 
 	init: function(toolClass, optionsHtml, buttonLabel)
@@ -69,9 +69,11 @@ Craft.Tool = Garnish.Base.extend({
 		}
 
 		this.totalActions = 1;
-		this.loadingActions = 1;
 		this.completedActions = 0;
 		this.queue = [];
+
+		this.loadingActions = 0;
+		this.currentBatchQueue = [];
 
 		this.$progressBar.css({
 			top: Math.round(this.hud.$body.outerHeight() / 2) - 6
@@ -100,6 +102,8 @@ Craft.Tool = Garnish.Base.extend({
 
 	postActionRequest: function(data)
 	{
+		this.loadingActions++;
+
 		data.tool = this.toolClass;
 
 		Craft.postActionRequest('tools/performAction', data, $.proxy(function(response) {
@@ -107,33 +111,50 @@ Craft.Tool = Garnish.Base.extend({
 			this.loadingActions--;
 			this.completedActions++;
 
-			// Add any more to the queue?
+			// Add any new batches to the queue?
 			if (response && typeof response.next != 'undefined' && response.next)
 			{
 				for (var i = 0; i < response.next.length; i++)
 				{
-					this.totalActions++;
-					this.queue.push(response.next[i]);
+					if (response.next[i].length)
+					{
+						this.totalActions += response.next[i].length;
+						this.queue.push(response.next[i]);
+					}
 				}
-			}
-
-			while (this.loadingActions < Craft.Tool.maxConcurrentActions && this.completedActions + this.loadingActions < this.totalActions)
-			{
-				this.loadingActions++;
-				var data = this.queue.shift();
-				this.postActionRequest(data);
 			}
 
 			this.updateProgressBar();
 
-			// All done?
-			if (!this.loadingActions && !this.queue.length)
+			// Load as many additional items in the current batch as possible
+			while (this.loadingActions < Craft.Tool.maxConcurrentActions && this.currentBatchQueue.length)
 			{
-				// Quick delay so things don't look too crazy.
-				setTimeout($.proxy(this, 'onComplete'), 300);
+				this.loadNextAction();
+			}
+
+			// Was that the end of the batch?
+			if (!this.loadingActions)
+			{
+				// Is there another batch?
+				if (this.queue.length)
+				{
+					this.currentBatchQueue = this.queue.shift();
+					this.loadNextAction();
+				}
+				else
+				{
+					// Quick delay so things don't look too crazy.
+					setTimeout($.proxy(this, 'onComplete'), 300);
+				}
 			}
 
 		}, this));
+	},
+
+	loadNextAction: function()
+	{
+		var data = this.currentBatchQueue.shift();
+		this.postActionRequest(data);
 	},
 
 	onComplete: function()
