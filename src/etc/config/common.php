@@ -119,6 +119,7 @@ $cpRoutes['globals/(?P<globalSetHandle>{handle})'] = 'globals';
 
 $cpRoutes['updates/go/(?P<handle>[^/]*)'] = 'updates/_go';
 
+$cpRoutes['settings']                                             = array('action' => 'systemSettings/settingsIndex');
 $cpRoutes['settings/assets']                                      = 'settings/assets/sources';
 $cpRoutes['settings/assets/sources/new']                          = 'settings/assets/sources/_settings';
 $cpRoutes['settings/assets/sources/(?P<sourceId>\d+)']            = 'settings/assets/sources/_settings';
@@ -226,6 +227,7 @@ $components['components'] = array(
 		'assetSource' => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSourceType', 'instanceof' => 'BaseAssetSourceType'),
 		'element'     => array('subfolder' => 'elementtypes',     'suffix' => 'ElementType',     'instanceof' => 'IElementType'),
 		'field'       => array('subfolder' => 'fieldtypes',       'suffix' => 'FieldType',       'instanceof' => 'IFieldType'),
+		'tool'        => array('subfolder' => 'tools',            'suffix' => 'Tool',            'instanceof' => 'ITool'),
 		'widget'      => array('subfolder' => 'widgets',          'suffix' => 'Widget',          'instanceof' => 'IWidget'),
 	)
 );

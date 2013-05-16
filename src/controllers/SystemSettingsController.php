@@ -16,6 +16,18 @@ class SystemSettingsController extends BaseController
 	}
 
 	/**
+	 * Shows the settings index.
+	 */
+	public function actionSettingsIndex()
+	{
+		// Get all the tools
+		$tools = craft()->components->getComponentsByType(ComponentType::Tool);
+		$variables['tools'] = ToolVariable::populateVariables($tools);
+
+		$this->renderTemplate('settings/index', $variables);
+	}
+
+	/**
 	 * Shows the general settings form.
 	 *
 	 * @param array $variables

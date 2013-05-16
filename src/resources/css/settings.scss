@@ -1,0 +1,16 @@
+@charset "UTF-8";
+
+@import "shared";
+
+
+#content ul { margin-top: 20px; }
+#content ul:after { @include clearafter; }
+#content ul li { float: left; margin: 0 5px 20px; }
+#content ul li.break { clear: left; }
+#content ul li a { display: block; position: relative; padding-top: 60px; width: 100px; text-align: center; color: $textcolor; }
+#content ul li a:before { display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 40px; line-height: 60px; }
+#content ul li a:hover { text-decoration: none; color: $linkcolor; }
+
+.toolhud { width: 200px; }
+.toolhud .buttons { text-align: center; }
+.toolhud .buttons .btn { float: none; display: inline-block; }

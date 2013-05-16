@@ -1,11 +1,14 @@
 {% extends "_layouts/cp" %}
 {% set title = "Settings"|t %}
 
+{% includeCssResource 'css/settings.css' %}
+{% includeJsResource 'js/settings.js' %}
+
 
 {% set content %}
 	<h2>System</h2>
 
-	<ul class="icons">
+	<ul>
 		<li><a href="{{ url('settings/general') }}" data-icon="general">{{ "General"|t }}</a></li>
 		<li><a href="{{ url('settings/packages') }}" data-icon="package">{{ "Packages"|t }}</a></li>
 		{% if craft.config.siteRoutesSource != 'file' %}
@@ -22,7 +25,7 @@
 
 	<h2>Content</h2>
 
-	<ul class="icons">
+	<ul>
 		<li><a href="{{ url('settings/fields') }}" data-icon="field">{{ "Fields"|t }}</a></li>
 		<li><a href="{{ url('settings/sections') }}" data-icon="section">{{ "Sections"|t }}</a></li>
 		<li><a href="{{ url('settings/assets') }}" data-icon="assets">{{ "Assets"|t }}</a></li>
@@ -30,5 +33,16 @@
 		{% if craft.hasPackage('Localize') %}
 			<li><a href="{{ url('settings/locales') }}" data-icon="language">{{ "Locales"|t }}</a></li>
 		{% endif %}
+	</ul>
+
+	<hr>
+
+	<h2>Tools</h2>
+
+	<ul id="tools">
+		{% for tool in tools %}
+			<li><a id="tool-{{ tool.getClassHandle() }}" data-icon="tool">{{ tool.getName() }}</a></li>
+			{% includeJs 'new Craft.Tool("'~tool.getClassHandle()~'", '~tool.getOptionsHtml()|json_encode~');' %}
+		{% endfor %}
 	</ul>
 {% endset %}

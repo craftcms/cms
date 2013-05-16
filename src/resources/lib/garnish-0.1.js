@@ -1994,8 +1994,8 @@ Garnish.HUD = Garnish.Base.extend({
 		this.triggerOffsetTop = this.triggerOffset.top;
 
 		// get the HUD dimensions
-		this.width = this.$hud.width();
-		this.height = this.$hud.height();
+		this.width = this.$hud.outerWidth();
+		this.height = this.$hud.outerHeight();
 
 		// get the minimum horizontal/vertical clearance needed to fit the HUD
 		this.minHorizontalClearance = this.width + this.settings.triggerSpacing + this.settings.windowSpacing;
@@ -2021,6 +2021,14 @@ Garnish.HUD = Garnish.Base.extend({
 			this._setLeftPos();
 			this._setTipClass('top');
 		}
+		// above?
+		else if (this.topClearance >= this.minVerticalClearance)
+		{
+			var top = this.triggerOffsetTop - (this.height + this.settings.triggerSpacing);
+			this.$hud.css('top', top);
+			this._setLeftPos();
+			this._setTipClass('bottom');
+		}
 		// to the right?
 		else if (this.rightClearance >= this.minHorizontalClearance)
 		{
@@ -2036,14 +2044,6 @@ Garnish.HUD = Garnish.Base.extend({
 			this.$hud.css('left', left);
 			this._setTopPos();
 			this._setTipClass('right');
-		}
-		// above?
-		else if (this.topClearance >= this.minVerticalClearance)
-		{
-			var top = this.triggerOffsetTop - (this.height + this.settings.triggerSpacing);
-			this.$hud.css('top', top);
-			this._setLeftPos();
-			this._setTipClass('bottom');
 		}
 		// ok, which one comes the closest -- right or bottom?
 		else
