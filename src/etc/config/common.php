@@ -93,7 +93,7 @@ $configArray = array(
 		),
 
 		'formatter' => array(
-			'class' => '\CFormatter'
+			'class' => 'CFormatter'
 		),
 	),
 
