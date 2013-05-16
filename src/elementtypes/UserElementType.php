@@ -107,8 +107,6 @@ class UserElementType extends BaseElementType
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
-		Craft::requirePackage(CraftPackage::Users);
-
 		$query
 			->addSelect('users.username, users.photo, users.firstName, users.lastName, users.email, users.admin, users.status, users.lastLoginDate, users.lockoutDate')
 			->join('users users', 'users.id = elements.id');
