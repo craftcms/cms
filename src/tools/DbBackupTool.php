@@ -15,4 +15,14 @@ class DbBackupTool extends BaseTool
 	{
 		return Craft::t('Backup Database');
 	}
+
+	/**
+	 * Returns the tool's icon value.
+	 *
+	 * @return string
+	 */
+	public function getIconValue()
+	{
+		return 'database';
+	}
 }

@@ -5,12 +5,14 @@ Craft.Tool = Garnish.Base.extend({
 
 	$trigger: null,
 	optionsHtml: null,
+	buttonLabel: null,
 	hud: null,
 
-	init: function(toolClass, optionsHtml)
+	init: function(toolClass, optionsHtml, buttonLabel)
 	{
 		this.$trigger = $('#tool-'+toolClass);
 		this.optionsHtml = optionsHtml;
+		this.buttonLabel = buttonLabel;
 
 		this.addListener(this.$trigger, 'click', 'showHUD');
 	},
@@ -23,7 +25,7 @@ Craft.Tool = Garnish.Base.extend({
 		{
 			var contentsHtml = this.optionsHtml +
 				'<div class="buttons">' +
-					'<div class="btn submit">'+Craft.t('Go!')+'</div>' +
+					'<div class="btn submit">'+this.buttonLabel+'</div>' +
 				'</div>';
 
 			this.hud = new Garnish.HUD(this.$trigger, contentsHtml, {

@@ -17,6 +17,16 @@ class AssetIndexTool extends BaseTool
 	}
 
 	/**
+	 * Returns the tool's icon value.
+	 *
+	 * @return string
+	 */
+	public function getIconValue()
+	{
+		return 'assets';
+	}
+
+	/**
 	 * Returns the tool's options HTML.
 	 *
 	 * @return string

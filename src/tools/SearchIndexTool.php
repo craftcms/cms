@@ -15,4 +15,14 @@ class SearchIndexTool extends BaseTool
 	{
 		return Craft::t('Update Search Indexes');
 	}
+
+	/**
+	 * Returns the tool's icon value.
+	 *
+	 * @return string
+	 */
+	public function getIconValue()
+	{
+		return 'search';
+	}
 }

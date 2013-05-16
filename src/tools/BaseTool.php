@@ -13,6 +13,16 @@ abstract class BaseTool extends BaseComponentType implements ITool
 	protected $componentType = 'Tool';
 
 	/**
+	 * Returns the tool's icon value.
+	 *
+	 * @return string
+	 */
+	public function getIconValue()
+	{
+		return 'tool';
+	}
+
+	/**
 	 * Returns the tool's options HTML.
 	 *
 	 * @return string
@@ -20,5 +30,15 @@ abstract class BaseTool extends BaseComponentType implements ITool
 	public function getOptionsHtml()
 	{
 		return '';
+	}
+
+	/**
+	 * Returns the tool's button label.
+	 *
+	 * @return string
+	 */
+	public function getButtonLabel()
+	{
+		return Craft::t('Go!');
 	}
 }

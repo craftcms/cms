@@ -17,6 +17,16 @@ class ClearCachesTool extends BaseTool
 	}
 
 	/**
+	 * Returns the tool's icon value.
+	 *
+	 * @return string
+	 */
+	public function getIconValue()
+	{
+		return 'trash';
+	}
+
+	/**
 	 * Returns the tool's options HTML.
 	 *
 	 * @return string
@@ -34,5 +44,15 @@ class ClearCachesTool extends BaseTool
 			'name'    => 'caches',
 			'options' => $options
 		));
+	}
+
+	/**
+	 * Returns the tool's button label.
+	 *
+	 * @return string
+	 */
+	public function getButtonLabel()
+	{
+		return Craft::t('Clear!');
 	}
 }
