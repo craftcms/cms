@@ -46,6 +46,10 @@ class ElementsController extends BaseController
 				$sourcePath = array($state['source']);
 			}
 		}
+		else
+		{
+			$sourcePath = null;
+		}
 
 		$criteria = $this->_getElementCriteria($elementType, $state);
 
