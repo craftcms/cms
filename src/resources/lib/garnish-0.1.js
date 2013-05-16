@@ -562,6 +562,11 @@ Garnish = {
 		{
 			var $input = $($inputs[i]);
 
+			if ($input.prop('disabled'))
+			{
+				continue;
+			}
+
 			var inputName = $input.attr('name');
 			if (!inputName)
 			{
