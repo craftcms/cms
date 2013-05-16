@@ -4,6 +4,7 @@
 Craft.Tool = Garnish.Base.extend({
 
 	$trigger: null,
+	$form: null,
 	optionsHtml: null,
 	buttonLabel: null,
 	hud: null,
@@ -23,21 +24,29 @@ Craft.Tool = Garnish.Base.extend({
 
 		if (!this.hud)
 		{
-			var contentsHtml = this.optionsHtml +
+			this.$form = $('<form/>').html(this.optionsHtml +
 				'<div class="buttons">' +
-					'<div class="btn submit">'+this.buttonLabel+'</div>' +
-				'</div>';
+					'<input type="submit" class="btn submit" value="'+this.buttonLabel+'">' +
+				'</div>');
 
-			this.hud = new Garnish.HUD(this.$trigger, contentsHtml, {
+			this.hud = new Garnish.HUD(this.$trigger, this.$form, {
 				hudClass: 'hud toolhud',
 				triggerSpacing: 10,
 				tipWidth: 30
 			});
+
+			this.addListener(this.$form, 'submit', 'onSubmit');
 		}
 		else
 		{
 			this.hud.show();
 		}
+	},
+
+	onSubmit: function(ev)
+	{
+		ev.preventDefault();
+		var data = Garnish.getPostData(this.$form);
 	}
 
 });

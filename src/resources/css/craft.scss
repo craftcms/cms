@@ -517,7 +517,7 @@ ul.tree,
 
 .modal { position: fixed; top: 50%; left: 50%; margin-left: -200px; width: 400px; overflow: hidden; }
 .hud { position: absolute; }
-.hud .contents { padding: 30px; }
+.hud .body { padding: 30px; }
 .hud .tip { position: absolute; background: no-repeat 0 0; }
 .hud .tip-left { left: -15px; width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
 .hud .tip-top { top: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_top.png); }

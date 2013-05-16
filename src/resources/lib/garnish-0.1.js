@@ -1935,7 +1935,7 @@ Garnish.HUD = Garnish.Base.extend({
 	/**
 	 * Constructor
 	 */
-	init: function(trigger, contentsHtml, settings) {
+	init: function(trigger, bodyContents, settings) {
 
 		this.$trigger = $(trigger);
 		this.setSettings(settings, Garnish.HUD.defaults);
@@ -1944,7 +1944,7 @@ Garnish.HUD = Garnish.Base.extend({
 
 		this.$hud = $('<div class="'+this.settings.hudClass+'" />').appendTo(Garnish.$bod);
 		this.$tip = $('<div class="'+this.settings.tipClass+'" />').appendTo(this.$hud);
-		this.$contents = $('<div class="'+this.settings.contentsClass+'" />').appendTo(this.$hud).html(contentsHtml);
+		this.$body = $('<div class="'+this.settings.bodyClass+'" />').appendTo(this.$hud).append(bodyContents)
 
 		this.show();
 
@@ -2166,7 +2166,7 @@ Garnish.HUD = Garnish.Base.extend({
 	defaults: {
 		hudClass: 'hud',
 		tipClass: 'tip',
-		contentsClass: 'contents',
+		bodyClass: 'body',
 		triggerSpacing: 7,
 		windowSpacing: 20,
 		tipWidth: 8,
