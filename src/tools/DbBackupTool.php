@@ -25,4 +25,15 @@ class DbBackupTool extends BaseTool
 	{
 		return 'database';
 	}
+
+	/**
+	 * Performs the tool's action.
+	 *
+	 * @param array $params
+	 * @return array
+	 */
+	public function performAction($params = array())
+	{
+		craft()->db->backup();
+	}
 }
