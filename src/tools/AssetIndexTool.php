@@ -34,12 +34,9 @@ class AssetIndexTool extends BaseTool
 			);
 		}
 
-		return craft()->templates->renderMacro('_includes/forms', 'checkboxSelectField', array(
-			array(
-				'label'   => Craft::t('Sources'),
-				'name'    => 'sources',
-				'options' => $sourceOptions
-			)
+		return craft()->templates->render('_includes/forms/checkboxSelect', array(
+			'name'    => 'sources',
+			'options' => $sourceOptions
 		));
 	}
 }
