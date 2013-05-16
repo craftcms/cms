@@ -212,6 +212,18 @@ h3 + .pane { margin-top: 15px; }
 .grid .col25 { width: 25%; }
 
 /* ----------------------------------------
+/*  Icon lists
+/* ----------------------------------------*/
+
+ul.icons { margin-top: 20px; }
+ul.icons:after { @include clearafter; }
+ul.icons li { float: left; margin: 0 5px 20px; }
+ul.icons li.break { clear: left; }
+ul.icons li a { display: block; position: relative; padding-top: 60px; width: 100px; text-align: center; color: $textcolor; }
+ul.icons li a:before { display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 40px; line-height: 60px; }
+ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
+
+/* ----------------------------------------
 /*  Buttons
 /* ----------------------------------------*/
 
