@@ -8,6 +8,9 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend({
 		// Remove HTML tags
 		sourceVal = sourceVal.replace("/<(.*?)>/g", '');
 
+		// Remove apostrophes
+		sourceVal = sourceVal.replace("/['’]/g", '');
+
 		// Make it lowercase
 		sourceVal = sourceVal.toLowerCase();
 
