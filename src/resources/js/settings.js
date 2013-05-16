@@ -112,14 +112,14 @@ Craft.Tool = Garnish.Base.extend({
 			this.completedActions++;
 
 			// Add any new batches to the queue?
-			if (response && typeof response.next != 'undefined' && response.next)
+			if (response && typeof response.batches != 'undefined' && response.batches)
 			{
-				for (var i = 0; i < response.next.length; i++)
+				for (var i = 0; i < response.batches.length; i++)
 				{
-					if (response.next[i].length)
+					if (response.batches[i].length)
 					{
-						this.totalActions += response.next[i].length;
-						this.queue.push(response.next[i]);
+						this.totalActions += response.batches[i].length;
+						this.queue.push(response.batches[i]);
 					}
 				}
 			}
