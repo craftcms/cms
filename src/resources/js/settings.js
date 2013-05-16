@@ -45,6 +45,7 @@ Craft.Tool = Garnish.Base.extend({
 				tipWidth: 30
 			});
 
+			Craft.initUiElements(this.$form);
 			this.addListener(this.$form, 'submit', 'onSubmit');
 		}
 		else
