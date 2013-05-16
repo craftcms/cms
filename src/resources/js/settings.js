@@ -72,6 +72,10 @@ Craft.Tool = Garnish.Base.extend({
 		this.completedActions = 0;
 		this.queue = [];
 
+		this.$progressBar.css({
+			top: Math.round(this.hud.$body.outerHeight() / 2) - 6
+		});
+
 		this.$form.stop().animate({
 			left: -200
 		}, 'fast');
@@ -139,12 +143,16 @@ Craft.Tool = Garnish.Base.extend({
 			this.$allDone = $('<div class="alldone" data-icon="√" />').appendTo(this.hud.$body);
 		}
 
+		this.$allDone.css({
+			top: Math.round(this.hud.$body.outerHeight() / 2) - 30
+		});
+
 		this.$progressBar.animate({
 			left: -170
 		}, 'fast');
 
 		this.$allDone.animate({
-			left: -30
+			left: 30
 		}, 'fast');
 	}
 
