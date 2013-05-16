@@ -84,8 +84,9 @@ Craft.Tool = Garnish.Base.extend({
 		this.$progressBar.stop().animate({
 			left: 30
 		}, 'fast', $.proxy(function() {
-			var params = Garnish.getPostData(this.$form);
-			this.postActionRequest(params);
+			var data = Garnish.getPostData(this.$form);
+			data.start = true;
+			this.postActionRequest(data);
 		}, this));
 	},
 
@@ -97,12 +98,9 @@ Craft.Tool = Garnish.Base.extend({
 		this.$innerProgressBar.width(width);
 	},
 
-	postActionRequest: function(params)
+	postActionRequest: function(data)
 	{
-		var data = {
-			tool: this.toolClass,
-			params: params
-		};
+		data.tool = this.toolClass;
 
 		Craft.postActionRequest('tools/performAction', data, $.proxy(function(response) {
 
@@ -110,7 +108,7 @@ Craft.Tool = Garnish.Base.extend({
 			this.completedActions++;
 
 			// Add any more to the queue?
-			if (typeof response.next != 'undefined' && response.next)
+			if (response && typeof response.next != 'undefined' && response.next)
 			{
 				for (var i = 0; i < response.next.length; i++)
 				{
@@ -122,8 +120,8 @@ Craft.Tool = Garnish.Base.extend({
 			while (this.loadingActions < Craft.Tool.maxConcurrentActions && this.completedActions + this.loadingActions < this.totalActions)
 			{
 				this.loadingActions++;
-				var params = this.queue.shift();
-				this.postActionRequest(params);
+				var data = this.queue.shift();
+				this.postActionRequest(data);
 			}
 
 			this.updateProgressBar();
@@ -131,7 +129,8 @@ Craft.Tool = Garnish.Base.extend({
 			// All done?
 			if (!this.loadingActions && !this.queue.length)
 			{
-				this.onComplete();
+				// Quick delay so things don't look too crazy.
+				setTimeout($.proxy(this, 'onComplete'), 300);
 			}
 
 		}, this));
