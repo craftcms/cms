@@ -208,6 +208,27 @@ class WebApp extends \CWebApplication
 			($this->request->isCpRequest()) && $this->userSession->checkPermission('accessCpWhenSystemIsOff')
 		)
 		{
+			// If this is a non-login CP request, make sure the user has access to the CP
+			if (craft()->request->isCpRequest() &&
+				!($this->request->isActionRequest() && $this->request->getActionSegments() == array('users', 'login'))
+			)
+			{
+				// Make sure the user has access to the CP
+				craft()->userSession->requireLogin();
+				craft()->userSession->requirePermission('accessCp');
+
+				// If they're accessing a plugin's section, make sure that they have permission to do so
+				$firstSeg = craft()->request->getSegment(1);
+				if ($firstSeg)
+				{
+					$plugin = $plugin = craft()->plugins->getPlugin($firstSeg);
+					if ($plugin)
+					{
+						craft()->userSession->requirePermission('accessPlugin-'.$plugin->getClassHandle());
+					}
+				}
+			}
+
 			// Set the target language
 			$this->setLanguage($this->_getTargetLanguage());
 

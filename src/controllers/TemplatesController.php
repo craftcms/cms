@@ -14,24 +14,6 @@ class TemplatesController extends BaseController
 	 */
 	public function actionRender($template, array $variables = array())
 	{
-		if (craft()->request->isCpRequest())
-		{
-			// Make sure the user has access to the CP
-			craft()->userSession->requireLogin();
-			craft()->userSession->requirePermission('accessCp');
-
-			// If they're accessing a plugin's section, make sure that they have permission to do so
-			$firstSeg = craft()->request->getSegment(1);
-			if ($firstSeg)
-			{
-				$plugin = $plugin = craft()->plugins->getPlugin($firstSeg);
-				if ($plugin)
-				{
-					craft()->userSession->requirePermission('accessPlugin-'.$plugin->getClassHandle());
-				}
-			}
-		}
-
 		$this->_render($template, $variables);
 	}
 
