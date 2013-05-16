@@ -123,7 +123,7 @@ class Craft extends \Yii
 	{
 		if (static::isInstalled() && !static::hasPackage($packageName))
 		{
-			throw new Exception(Craft::t('The {package} is required to perform this action.', array(
+			throw new Exception(Craft::t('The {package} package is required to perform this action.', array(
 				'package' => Craft::t($packageName)
 			)));
 		}
