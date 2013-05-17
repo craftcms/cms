@@ -23,10 +23,11 @@ class ToolsController extends BaseController
 		$this->requirePostRequest();
 
 		$class = craft()->request->getRequiredPost('tool');
+		$params = craft()->request->getPost('params', array());
 
 		$tool = craft()->components->getComponentByTypeAndClass(ComponentType::Tool, $class);
 
-		$response = $tool->performAction($_POST);
+		$response = $tool->performAction($params);
 		$this->returnJson($response);
 	}
 }
