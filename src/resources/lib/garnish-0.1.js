@@ -3059,6 +3059,10 @@ Garnish.Modal = Garnish.Base.extend({
 			}
 		}
 
+		this.addListener(this.$container, 'click', function(ev) {
+			ev.stopPropagation();
+		});
+
 		this.addListener(this.$container, 'keydown', 'onKeyDown');
 		this.addListener(this.$closeBtn, 'click', 'hide');
 	},
@@ -3099,8 +3103,13 @@ Garnish.Modal = Garnish.Base.extend({
 		this.settings.onShow();
 	},
 
-	hide: function()
+	hide: function(ev)
 	{
+		if (ev)
+		{
+			ev.stopPropagation();
+		}
+
 		if (this.$container)
 		{
 			this.$container.fadeOut('fast');
