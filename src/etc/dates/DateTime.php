@@ -85,7 +85,7 @@ class DateTime extends \DateTime
 
 				// Check for a two-digit year
 				$altFormat = str_replace('Y', 'y', $format);
-				if (static::createFromFormat($format, $date) !== false)
+				if (static::createFromFormat($altFormat, $date) !== false)
 				{
 					$format = $altFormat;
 				}
