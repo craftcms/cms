@@ -48,7 +48,9 @@ class ElementsController extends BaseController
 		}
 		else
 		{
+			// No source information has ben setup, yet.
 			$sourcePath = null;
+			$state['source'] = null;
 		}
 
 		$criteria = $this->_getElementCriteria($elementType, $state);
