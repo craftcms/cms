@@ -1,6 +1,9 @@
 {% extends "_layouts/cp" %}
 {% set title = "Settings"|t %}
 
+{% includeCssResource 'css/settings.css' %}
+{% includeJsResource 'js/settings.js' %}
+
 
 {% set content %}
 	<h2>System</h2>
@@ -30,5 +33,16 @@
 		{% if craft.hasPackage('Localize') %}
 			<li><a href="{{ url('settings/locales') }}" data-icon="language">{{ "Locales"|t }}</a></li>
 		{% endif %}
+	</ul>
+
+	<hr>
+
+	<h2>Tools</h2>
+
+	<ul class="icons">
+		{% for tool in tools %}
+			<li><a id="tool-{{ tool.getClassHandle() }}" data-icon="{{ tool.getIconValue() }}">{{ tool.getName() }}</a></li>
+			{% includeJs 'new Craft.Tool("'~tool.getClassHandle()~'", '~tool.getOptionsHtml()|json_encode~', "'~tool.getButtonLabel()~'");' %}
+		{% endfor %}
 	</ul>
 {% endset %}

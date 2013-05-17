@@ -68,7 +68,9 @@ class DateTime extends \DateTime
 		// Was this a date/time-picker?
 		if (is_array($date) && (isset($date['date']) || isset($date['time'])))
 		{
-			if (empty($date['date']) && empty($date['time']))
+			$dt = $date;
+
+			if (empty($dt['date']) && empty($dt['time']))
 			{
 				return null;
 			}
@@ -76,17 +78,23 @@ class DateTime extends \DateTime
 			$localeData = craft()->i18n->getLocaleData(craft()->language);
 			$dateFormatter = $localeData->getDateFormatter();
 
-			$dt = $date;
-			$date = '';
-			$format = '';
-
 			if (!empty($dt['date']))
 			{
-				$date .= $dt['date'];
-				$format .= $dateFormatter->getDatepickerPhpFormat();
+				$date = $dt['date'];
+				$format = $dateFormatter->getDatepickerPhpFormat();
+
+				// Check for a two-digit year
+				$altFormat = str_replace('Y', 'y', $format);
+				if (static::createFromFormat($altFormat, $date) !== false)
+				{
+					$format = $altFormat;
+				}
 			}
 			else
 			{
+				$date = '';
+				$format = '';
+
 				// Default to the current date, because that makes more sense than Jan 1, 1970
 				$current = new DateTime('now', new \DateTimeZone($timezone));
 				$date .= $current->month().'/'.$current->day().'/'.$current->year();

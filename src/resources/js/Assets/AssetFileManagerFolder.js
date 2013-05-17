@@ -46,21 +46,17 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 
 		if (this.fm.settings.mode == 'full' && this.depth > 1)
 		{
-			menuOptions.push({ label: Craft.t('Rename'), onClick: $.proxy(this, '_rename') });
-			menuOptions.push('-');
+			menuOptions.push({ label: Craft.t('Rename folder'), onClick: $.proxy(this, '_rename') });
 		}
 
 		menuOptions.push({ label: Craft.t('New subfolder'), onClick: $.proxy(this, '_createSubfolder') });
 
 		if (this.fm.settings.mode == 'full' && this.depth > 1)
 		{
-			menuOptions.push('-');
-			menuOptions.push({ label: Craft.t('Delete'), onClick: $.proxy(this, '_delete') });
+			menuOptions.push({ label: Craft.t('Delete folder'), onClick: $.proxy(this, '_delete') });
 		}
 
-		new Garnish.ContextMenu(this.$a, menuOptions, {
-			menuClass: 'assets-contextmenu'
-		});
+		new Garnish.ContextMenu(this.$a, menuOptions, {menuClass: 'menu assets-contextmenu'});
 	},
 
 	// -------------------------------------------

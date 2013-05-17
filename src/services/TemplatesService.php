@@ -130,7 +130,7 @@ class TemplatesService extends BaseApplicationComponent
 	public function renderObjectTemplate($template, $object)
 	{
 		// Get a Twig instance with the String template loader
-		$twig = $this->getTwig('\\Twig_Loader_String');
+		$twig = $this->getTwig('Twig_Loader_String');
 
 		// Have we already parsed this template?
 		if (!isset($this->_objectTemplates[$template]))

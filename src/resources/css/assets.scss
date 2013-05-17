@@ -23,6 +23,10 @@
 
 .assets-modal, .index-report { max-height: 400px; overflow: scroll;}
 
+.assets-contextmenu { padding: 0;}
+.assets-contextmenu ul { padding: 5px 15px;}
+.assets-contextmenu ul + ul { border-top: 1px solid rgba(0,0,0,0.1);}
+
 /*-- thumbs --*/
 #main .files.thumbs ul { margin: -25px 0 0 -15px; }
 #main .files.thumbs ul:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
@@ -79,12 +83,6 @@ li.assets-fm-folder a.assets-fm-expanded span.assets-fm-toggle { background-posi
 
 li.assets-fm-folder a.sel span.assets-fm-toggle { background-position: 0 -16px; }
 li.assets-fm-folder a.sel.assets-fm-expanded span.assets-fm-toggle { background-position: 0 -48px; }
-/*-- context menu --*/
-.assets-contextmenu { position: absolute; z-index: 99999; border-radius: 2px; padding: 4px 0; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 10px rgba(0, 0, 0, 0.1);      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 10px rgba(0, 0, 0, 0.1); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 10px rgba(0, 0, 0, 0.1); -webkit-user-select: none; -moz-user-select: none; }
-.assets-contextmenu li.contextmenu-break { margin: 4px 0; border-top: 1px solid #eee; height: 0; }
-.assets-contextmenu li a { display: block; padding: 4px 10px; text-decoration: none; cursor: default; }
-.assets-contextmenu li a:hover { background-color: $selcolor !important; color: #fff !important; cursor: pointer; }
-
 
 /*-- Retina -- */
 @media only screen and (-moz-min-device-pixel-ratio: 1.5),

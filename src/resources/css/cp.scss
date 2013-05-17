@@ -43,7 +43,7 @@ html, body,
 #nav li a { display: block; margin-top: 2px; padding: 4px 10px; line-height: 28px; }
 #nav li a.active { color: #fff; }
 #nav li a.sel { position: relative; z-index: 1; border-radius: 3px 3px 0 0; color: #333; }
-#nav li a:not(.sel) .badge { color: #333; }
+#nav li a:not(.sel) .badge { color: #333 !important; }
 
 /* HIDE */
 #customize-nav-btn span { display: none; }
@@ -52,6 +52,7 @@ html, body,
 
 #header #nav li a .badge,
 #overflow-nav li a .badge { display: inline-block; position: relative; top: -6px; border-radius: 6px; padding: 0 3px; font-size: 10px; line-height: 12px; color: #fff; background: $submitcolor; }
+#overflow-nav li a:hover .badge { color: $selcolor; }
 
 /* HIDE */
 #overflow-nav li a { padding-left: 30px; }
@@ -119,8 +120,8 @@ html, body,
 
 #main #content { display: block; }
 
-/* version */
-#version { margin: 15px 0; text-align: center; color: #aaa; text-shadow: 0 1px 0 #fff; font-size: 11px; }
+/* footer */
+#footer { margin: 15px 0; text-align: center; color: #aaa; text-shadow: 0 1px 0 #fff; font-size: 11px; }
 
 /* max widths for readability */
 .field { max-width: 600px; }

@@ -562,6 +562,11 @@ Garnish = {
 		{
 			var $input = $($inputs[i]);
 
+			if ($input.prop('disabled'))
+			{
+				continue;
+			}
+
 			var inputName = $input.attr('name');
 			if (!inputName)
 			{
@@ -1168,7 +1173,9 @@ Garnish.ContextMenu = Garnish.Base.extend({
 	 */
 	buildMenu: function()
 	{
-		this.$menu = $('<ul class="'+this.settings.menuClass+'" style="display: none" />');
+		this.$menu = $('<div class="'+this.settings.menuClass+'" style="display: none" />');
+
+		var $ul = $('<ul/>').appendTo(this.$menu);
 
 		for (var i in this.options)
 		{
@@ -1176,11 +1183,12 @@ Garnish.ContextMenu = Garnish.Base.extend({
 
 			if (option == '-')
 			{
-				$('<li class="'+this.settings.optionBreakClass+'"></li>').appendTo(this.$menu);
+				// Create a new <ul>
+				$ul = $('<ul/>').appendTo(this.$menu);
 			}
 			else
 			{
-				var $li = $('<li></li>').appendTo(this.$menu),
+				var $li = $('<li></li>').appendTo($ul),
 					$a = $('<a>'+option.label+'</a>').appendTo($li);
 
 				if (typeof option.onClick == 'function')
@@ -1274,8 +1282,7 @@ Garnish.ContextMenu = Garnish.Base.extend({
 },
 {
 	defaults: {
-		menuClass: 'contextmenu',
-		optionBreakClass: 'contextmenu-break',
+		menuClass: 'menu'
 	},
 	counter: 0
 });
@@ -1933,7 +1940,7 @@ Garnish.HUD = Garnish.Base.extend({
 	/**
 	 * Constructor
 	 */
-	init: function(trigger, contentsHtml, settings) {
+	init: function(trigger, bodyContents, settings) {
 
 		this.$trigger = $(trigger);
 		this.setSettings(settings, Garnish.HUD.defaults);
@@ -1942,7 +1949,7 @@ Garnish.HUD = Garnish.Base.extend({
 
 		this.$hud = $('<div class="'+this.settings.hudClass+'" />').appendTo(Garnish.$bod);
 		this.$tip = $('<div class="'+this.settings.tipClass+'" />').appendTo(this.$hud);
-		this.$contents = $('<div class="'+this.settings.contentsClass+'" />').appendTo(this.$hud).html(contentsHtml);
+		this.$body = $('<div class="'+this.settings.bodyClass+'" />').appendTo(this.$hud).append(bodyContents)
 
 		this.show();
 
@@ -1992,8 +1999,8 @@ Garnish.HUD = Garnish.Base.extend({
 		this.triggerOffsetTop = this.triggerOffset.top;
 
 		// get the HUD dimensions
-		this.width = this.$hud.width();
-		this.height = this.$hud.height();
+		this.width = this.$hud.outerWidth();
+		this.height = this.$hud.outerHeight();
 
 		// get the minimum horizontal/vertical clearance needed to fit the HUD
 		this.minHorizontalClearance = this.width + this.settings.triggerSpacing + this.settings.windowSpacing;
@@ -2019,6 +2026,14 @@ Garnish.HUD = Garnish.Base.extend({
 			this._setLeftPos();
 			this._setTipClass('top');
 		}
+		// above?
+		else if (this.topClearance >= this.minVerticalClearance)
+		{
+			var top = this.triggerOffsetTop - (this.height + this.settings.triggerSpacing);
+			this.$hud.css('top', top);
+			this._setLeftPos();
+			this._setTipClass('bottom');
+		}
 		// to the right?
 		else if (this.rightClearance >= this.minHorizontalClearance)
 		{
@@ -2034,14 +2049,6 @@ Garnish.HUD = Garnish.Base.extend({
 			this.$hud.css('left', left);
 			this._setTopPos();
 			this._setTipClass('right');
-		}
-		// above?
-		else if (this.topClearance >= this.minVerticalClearance)
-		{
-			var top = this.triggerOffsetTop - (this.height + this.settings.triggerSpacing);
-			this.$hud.css('top', top);
-			this._setLeftPos();
-			this._setTipClass('bottom');
 		}
 		// ok, which one comes the closest -- right or bottom?
 		else
@@ -2164,7 +2171,7 @@ Garnish.HUD = Garnish.Base.extend({
 	defaults: {
 		hudClass: 'hud',
 		tipClass: 'tip',
-		contentsClass: 'contents',
+		bodyClass: 'body',
 		triggerSpacing: 7,
 		windowSpacing: 20,
 		tipWidth: 8,
@@ -2442,6 +2449,7 @@ Garnish.Menu = Garnish.Base.extend({
 	selectOption: function(ev)
 	{
 		this.settings.onOptionSelect(ev.currentTarget);
+		this.hide();
 	}
 
 },
@@ -2510,8 +2518,6 @@ Garnish.MenuBtn = Garnish.Base.extend({
 
 	showMenu: function()
 	{
-		// Prevent the option selection mousedown event from
-
 		this.menu.show();
 		this.$btn.addClass('active');
 		this.showingMenu = true;

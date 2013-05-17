@@ -9,6 +9,6 @@ class ComponentType
 	const AssetSource = 'assetSource';
 	const Element     = 'element';
 	const Field       = 'field';
-	const Link        = 'link';
+	const Tool        = 'tool';
 	const Widget      = 'widget';
 }

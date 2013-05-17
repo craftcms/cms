@@ -642,6 +642,17 @@ Craft = $.extend(Craft, {
 		}
 
 		return $ul;
+	},
+
+	initUiElements: function($container)
+	{
+		$('.checkbox-select', $container).checkboxselect();
+		$('.fieldtoggle', $container).fieldtoggle();
+		$('.lightswitch', $container).lightswitch();
+		$('.nicetext', $container).nicetext();
+		$('input.password', $container).passwordinput();
+		$('.pill', $container).pill();
+		$('.menubtn', $container).menubtn();
 	}
 });
 
@@ -796,11 +807,5 @@ $.extend($.fn, {
 
 Garnish.$doc.ready(function()
 {
-	$('.checkbox-select').checkboxselect();
-	$('.fieldtoggle').fieldtoggle();
-	$('.lightswitch').lightswitch();
-	$('.nicetext').nicetext();
-	$('input.password').passwordinput();
-	$('.pill').pill();
-	$('.menubtn').menubtn();
+	Craft.initUiElements();
 });

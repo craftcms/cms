@@ -326,7 +326,7 @@ Assets.FileManager = Garnish.Base.extend({
 
                         this.setAssetsBusy();
                         this._initProgressBar();
-                        
+
 
                         var parameterArray = [];
 
@@ -576,7 +576,7 @@ Assets.FileManager = Garnish.Base.extend({
                     {
                         this.setAssetsBusy();
                         this._initProgressBar();
-                        
+
 
                         // for each file to move a separate request
                         var parameterArray = [];
@@ -652,7 +652,7 @@ Assets.FileManager = Garnish.Base.extend({
                                         // start working
                                         this.setAssetsBusy();
                                         this._initProgressBar();
-                                        
+
 
                                         // move conflicting files again with resolutions now
                                         this._moveFile(newParameterArray, 0, onMoveFinish);
@@ -704,7 +704,7 @@ Assets.FileManager = Garnish.Base.extend({
                 parameterIndex++;
                 var width = Math.min(100, Math.round(100 * parameterIndex / parameterArray.length)) + '%';
                 this.$uploadProgressBar.width(width);
-                
+
                 this.responseArray.push(data);
 
                 if (parameterIndex >= parameterArray.length)
@@ -725,7 +725,7 @@ Assets.FileManager = Garnish.Base.extend({
         {
             this.setAssetsBusy();
             this._initProgressBar();
-            
+
 
             var moveCallback = $.proxy(function(folderDeleteList, changedFolderIds, removeFromTree)
             {
@@ -767,7 +767,7 @@ Assets.FileManager = Garnish.Base.extend({
 
                 this.setAssetsAvailable();
                 this._hideProgressBar();
-                
+
                 this.loadFolderContents();
                 this.folderDrag.returnHelpersToDraggees();
 
@@ -785,7 +785,7 @@ Assets.FileManager = Garnish.Base.extend({
                 moveCallback(folderDeleteList, changedFolderIds, removeFromTree);
             }
         }, this);
-        
+
 		// ---------------------------------------
 		// Asset events
 		// ---------------------------------------
@@ -1218,17 +1218,13 @@ Assets.FileManager = Garnish.Base.extend({
 		}
 
 
-		this._singleFileMenu.push(new Garnish.ContextMenu($files, menuOptions, {
-			menuClass: 'assets-contextmenu'
-		}));
+		this._singleFileMenu.push(new Garnish.ContextMenu($files, menuOptions, {menuClass: 'menu assets-contextmenu'}));
 
 		if (this.settings.mode == 'full')
 		{
             var menu = new Garnish.ContextMenu($files, [
                 { label: Craft.t('Delete'), onClick: $.proxy(this, '_deleteFiles') }
-            ], {
-                menuClass: 'assets-contextmenu'
-            });
+            ], {menuClass: 'menu assets-contextmenu'});
             menu.disable();
 			this._multiFileMenu.push(menu);
 		}
@@ -1638,7 +1634,7 @@ Assets.FileManager = Garnish.Base.extend({
 
 			// prepare the progress bar
 			this._initProgressBar();
-			
+
 			this._uploadFileProgress = {};
 
 			this._uploadTotalFiles = 1;
@@ -1714,8 +1710,8 @@ Assets.FileManager = Garnish.Base.extend({
 	{
         this.setAssetsBusy();
         this._initProgressBar();
-        
-        
+
+
 		this.promptArray = [];
 
 		var finalCallback = $.proxy(function()
@@ -1737,7 +1733,7 @@ Assets.FileManager = Garnish.Base.extend({
 			{
 				parameterIndex++;
                 var width = Math.min(100, Math.round(100 * parameterIndex / parameterArray.length)) + '%';
-                
+
 				if (parameterIndex == parameterArray.length)
 				{
 					callback();
@@ -1785,7 +1781,7 @@ Assets.FileManager = Garnish.Base.extend({
         this.$uploadProgressBar.width('0%');
         this.$uploadProgress.removeClass('hidden');
     },
-        
+
 	/**
 	 * Show the user prompt with a given message and choices, plus an optional "Apply to remaining" checkbox.
 	 *

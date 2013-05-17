@@ -215,11 +215,11 @@ h3 + .pane { margin-top: 15px; }
 /*  Icon lists
 /* ----------------------------------------*/
 
-ul.icons { margin-top: 30px; }
+ul.icons { margin-top: 20px; }
 ul.icons:after { @include clearafter; }
-ul.icons li { float: left; margin: 0 10px 30px; }
+ul.icons li { float: left; margin: 0 5px 20px; }
 ul.icons li.break { clear: left; }
-ul.icons li a { display: block; position: relative; padding-top: 60px; width: 80px; text-align: center; color: $textcolor; }
+ul.icons li a { display: block; position: relative; padding-top: 60px; width: 100px; text-align: center; color: $textcolor; }
 ul.icons li a:before { display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 40px; line-height: 60px; }
 ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 
@@ -506,27 +506,63 @@ ul.tree,
 .status.expired { background-position: 0 -20px; }
 
 /* ----------------------------------------
-/*  HUD
+/*  Progress bar
 /* ----------------------------------------*/
 
-.hud { position: absolute; background: rgba(25,25,25,0.9);
-	-webkit-box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-	        box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+.progressbar { border-radius: 6px; border: 2px solid $textcolor; padding: 2px; }
+.progressbar-inner { border-radius: 2px; height: 4px; background: $textcolor; }
+.progressbar:not(.pending) .progressbar-inner {
+	-webkit-transition: width linear 50ms;
+	   -moz-transition: width linear 50ms;
 }
-.hud .tip { position: absolute; }
-.hud .tip.top { top: -5px; left: 50%; margin-left: -5px; width: 10px; height: 5px; background-image: url(../images/hud-tip-top.png); }
-.hud .tip.right { right: -5px; width: 5px; height: 10px; background-image: url(../images/hud-tip-right.png); }
-.hud .tip.bottom { bottom: -5px; width: 10px; height: 5px; background-image: url(../images/hud-tip-bottom.png); }
-.hud .tip.left { left: -5px; width: 5px; height: 10px; background-image: url(../images/hud-tip-left.png); }
+.progressbar.pending .progressbar-inner { background: url(../images/progressbar_pending.png) repeat-x;
+	-webkit-animation-name: pendingprogress;
+	   -moz-animation-name: pendingprogress;
+	        animation-name: pendingprogress;
+	-webkit-animation-timing-function: linear;
+	   -moz-animation-timing-function: linear;
+	        animation-timing-function: linear;
+	-webkit-animation-duration: 250ms;
+	   -moz-animation-duration: 250ms;
+	        animation-duration: 250ms;
+	-webkit-animation-iteration-count: infinite;
+	   -moz-animation-iteration-count: infinite;
+	        animation-iteration-count: infinite;
+}
+
+@-webkit-keyframes pendingprogress {
+	0% { background-position: 0; }
+	100% { background-position: -50px; }
+}
+
+@-moz-keyframes pendingprogress {
+	from { background-position: 0; }
+	to { background-position: -50px; }
+}
+
+@keyframes pendingprogress {
+	from { background-position: 0; }
+	to { background-position: -50px; }
+}
 
 /* ----------------------------------------
 /*  Modals
 /* ----------------------------------------*/
 
-.modal { position: fixed; top: 50%; left: 50%; z-index: 9999; border-radius: 3px; margin-left: -200px; width: 400px; background: #fff; overflow: hidden;
+.modal,
+.hud { z-index: 9999; border-radius: 3px; background: #fff;
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 4px 20px -7px rgba(0,0,0,0.5);
 	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 4px 20px -7px rgba(0,0,0,0.5);
 }
+
+.modal { position: fixed; top: 50%; left: 50%; margin-left: -200px; width: 400px; overflow: hidden; }
+.hud { position: absolute; }
+.hud .body { position: relative; padding: 30px; overflow: hidden; }
+.hud .tip { position: absolute; background: no-repeat 0 0; }
+.hud .tip-left { left: -15px; width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
+.hud .tip-top { top: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_top.png); }
+.hud .tip-right { right: -15px; width: 15px; height: 30px; background-image: url(../images/hudtip_right.png); }
+.hud .tip-bottom { bottom: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_bottom.png); }
 
 .modal > .header,
 .modal > .footer { padding: 15px 30px; }
@@ -698,7 +734,7 @@ body .redactor_dropdown { z-index: 10001 !important; }
 	.select,
 	.select select { border-radius: 3px; }
 	.select { display: inline-block; position: relative; background: #fff; }
-	.select:before { @include icon; position: absolute; top: 7px; right: 9px; font-size: 10px; content: '▼'; @include unselectable; }
+	.select:before { @include icon; position: absolute; top: 10px; right: 9px; font-size: 10px; content: '▼'; @include unselectable; }
 	.select select { position: relative; border: 1px solid #ddd; padding: 7px 22px 7px 10px; font-size: 13px; color: $textcolor; background: none;
 		-webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; -webkit-appearance: none;
 		        box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 0 0 $blurglowcolor;    -moz-transition: border linear 100ms,         box-shadow linear 100ms;    -moz-appearance: none;
@@ -763,7 +799,12 @@ ul.errors li { color: $errorcolor; }
 	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
 	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
 
-	.hud .tip.top { background-image: url(../images/hud-tip-top_2x.png); background-size: 10px 5px; }
+	.progressbar.pending .progressbar-inner { background-image: url(../images/progressbar_pending_2x.png); background-size: 50px; }
+
+	.hud .tip-left { background-image: url(../images/hudtip_left_2x.png); background-size: 15px 30px; }
+	.hud .tip-top { background-image: url(../images/hudtip_top_2x.png); background-size: 30px 15px; }
+	.hud .tip-right { background-image: url(../images/hudtip_right_2x.png); background-size: 15px 30px; }
+	.hud .tip-bottom { background-image: url(../images/hudtip_bottom_2x.png); background-size: 30px 15px; }
 
 	.elementselectormodal .body .sidebar li .toggle { background-image: url(../images/foldertoggle_2x.png); background-size: 16px; }
 }
