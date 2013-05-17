@@ -42,8 +42,15 @@ class SearchIndexTool extends BaseTool
 				->from('elements')
 				->queryAll();
 
+			$batch = array();
+
+			foreach ($elements as $element)
+			{
+				$batch[] = array('params' => $element);
+			}
+
 			return array(
-				'batches' => array($elements)
+				'batches' => array($batch)
 			);
 		}
 		else
