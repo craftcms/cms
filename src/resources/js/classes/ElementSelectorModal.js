@@ -6,7 +6,6 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 	initialized: false,
 	state: null,
 	stateStorageId: null,
-	source: null,
 	searchTimeout: null,
 	elementSelect: null,
 
