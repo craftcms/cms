@@ -379,7 +379,7 @@ class UserSessionService extends \CWebUser
 			}
 			case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
 			{
-				$user = craft()->users->getUserByUsernameOrEmail($loginName);
+				$user = $this->getUser();
 				$timeRemaining = $user->getRemainingCooldownTime();
 
 				if ($timeRemaining)
