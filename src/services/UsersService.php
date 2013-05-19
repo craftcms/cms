@@ -701,6 +701,24 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Validates a given password against a hash.
+	 *
+	 * @param $hash
+	 * @param $password
+	 * @return bool
+	 */
+	public function validatePassword($hash, $password)
+	{
+		if (craft()->security->checkString($password, $hash))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+
+	/**
 	 * Gets a user record by its ID.
 	 *
 	 * @access private

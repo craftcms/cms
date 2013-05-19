@@ -194,10 +194,19 @@ class WebApp extends \CWebApplication
 			($this->request->isCpRequest()) && $this->userSession->checkPermission('accessCpWhenSystemIsOff')
 		)
 		{
-			// If this is a non-login CP request, make sure the user has access to the CP
+			// Set the target language
+			$this->setLanguage($this->_getTargetLanguage());
+
+			// Set the package components
+			$this->_setPackageComponents();
+
+			// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
 			if (craft()->request->isCpRequest() &&
-				!($this->request->isActionRequest() && $this->request->getActionSegments() == array('users', 'login'))
-			)
+				!($this->request->isActionRequest() &&
+					($this->request->getActionSegments() == array('users', 'login') ||
+					 $this->request->getActionSegments() == array('users', 'validate') ||
+					 $this->request->getActionSegments() == array('users', 'setPassword'))
+			))
 			{
 				// Make sure the user has access to the CP
 				craft()->userSession->requireLogin();
@@ -214,12 +223,6 @@ class WebApp extends \CWebApplication
 					}
 				}
 			}
-
-			// Set the target language
-			$this->setLanguage($this->_getTargetLanguage());
-
-			// Set the package components
-			$this->_setPackageComponents();
 
 			// Load the plugins
 			$this->plugins;

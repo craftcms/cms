@@ -46,10 +46,6 @@
 			errors: (account is defined ? account.getErrors('username') : null)
 		}) }}
 
-		{% if (not isNewAccount and (not user.admin and not account.isCurrent)) %}
-			<input type="hidden" name="username" id="username" value="{{ account.username }}">
-		{% endif %}
-
 		<div class="field">
 			<div class="grid">
 				<div class="col col50"><div class="col-inner">
@@ -83,10 +79,6 @@
 			errors: (account is defined ? account.getErrors('email') : null)
 		}) }}
 
-		{% if (not isNewAccount and (not user.admin and not account.isCurrent)) %}
-			<input type="hidden" name="email" id="email" value="{{ account.email }}">
-		{% endif %}
-
 		{% if account is defined and account.isCurrent %}
 			{{ forms.passwordField({
 				label: "Password"|t,
@@ -94,6 +86,13 @@
 				id: 'newPassword',
 				name: 'newPassword',
 				errors: (account is defined ? account.getErrors('newPassword') : null)
+			}) }}
+
+			{{ forms.textField({
+				label: "Current Password"|t,
+				id: 'currentPassword',
+				name: 'currentPassword',
+				errors: (account is defined ? account.getErrors('currentPassword') : null)
 			}) }}
 		{% endif %}
 

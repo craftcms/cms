@@ -70,7 +70,7 @@ class UserIdentity extends \CUserIdentity
 			case UserStatus::Active:
 			{
 				// Validate the password
-				if (craft()->security->checkString($this->password, $user->password))
+				if (craft()->users->validatePassword($user->password, $this->password))
 				{
 					if ($user->passwordResetRequired)
 					{
