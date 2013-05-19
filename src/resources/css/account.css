@@ -1,4 +1,3 @@
-@charset "UTF-8";
-
-#info .left strong { color: #666; }
-#info .right { color: #999; }
+.btn.lock { margin-left: 5px; }
+#verifypasswordmodal .buttons { margin-top: 1em; }
+#verifypasswordmodal .buttons .spinner { position: absolute; top: 0; right: -24px; }
