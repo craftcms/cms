@@ -780,29 +780,27 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * Validates a password for a user.
+	 * Verifies a password for a user.
 	 *
 	 * @return bool
 	 */
-	public function actionValidatePassword()
+	public function actionVerifyPassword()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$userId = craft()->request->getRequiredParam('userId');
-		$password = craft()->request->getRequiredParam('currentPassword');
-
-		$user = craft()->users->getUserById($userId);
+		$password = craft()->request->getRequiredParam('password');
+		$user = craft()->userSession->getUser();
 
 		if ($user)
 		{
 			if (craft()->users->validatePassword($user->password, $password))
 			{
-				$this->returnJson(array('valid' => true));
+				$this->returnJson(array('success' => true));
 			}
 		}
 
-		$this->returnJson(array('valid' => false));
+		$this->returnErrorJson(Craft::t('Invalid password.'));
 	}
 
 	/**
