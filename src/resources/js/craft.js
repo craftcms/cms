@@ -273,7 +273,7 @@ Craft = $.extend(Craft, {
 	{
 		var expanded = {};
 
-		for (key in arr)
+		for (var key in arr)
 		{
 			var value = arr[key],
 				m = key.match(/^(\w+)(\[.*)?/);
@@ -302,7 +302,7 @@ Craft = $.extend(Craft, {
 			{
 				if (i < keys.length-1)
 				{
-					if (typeof parentElem[keys[i]] == 'undefined')
+					if (typeof parentElem[keys[i]] != 'object')
 					{
 						// Figure out what this will be by looking at the next key
 						if (!keys[i+1] || parseInt(keys[i+1]) == keys[i+1])

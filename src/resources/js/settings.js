@@ -86,9 +86,15 @@ Craft.Tool = Garnish.Base.extend({
 		this.$progressBar.stop().animate({
 			left: 30
 		}, 'fast', $.proxy(function() {
-			var data = Garnish.getPostData(this.$form);
-			data['params[start]'] = true;
-			this.loadAction(data);
+
+			var postData = Garnish.getPostData(this.$form),
+				params = Craft.expandPostArray(postData);
+			params.start = true;
+
+			this.loadAction({
+				params: params
+			});
+
 		}, this));
 	},
 
@@ -104,51 +110,101 @@ Craft.Tool = Garnish.Base.extend({
 	{
 		this.loadingActions++;
 
-		data.tool = this.toolClass;
+		if (typeof data.confirm != 'undefined' && data.confirm)
+		{
+			this.showConfirmDialog(data);
+		}
+		else
+		{
+			this.postActionRequest(data.params);
+		}
+	},
 
-		Craft.postActionRequest('tools/performAction', data, $.proxy(function(response) {
+	showConfirmDialog: function(data)
+	{
+		var $modal = $('<form class="modal confirmmodal"/>').appendTo(Garnish.$bod),
+			$body = $('<div class="body"/>').appendTo($modal).html(data.confirm),
+			$footer = $('<footer class="footer"/>').appendTo($modal),
+			$buttons = $('<div class="buttons right"/>').appendTo($footer),
+			$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttons),
+			$okBtn = $('<input type="submit" class="btn submit" value="'+Craft.t('OK')+'"/>').appendTo($buttons);
 
-			this.loadingActions--;
-			this.completedActions++;
+		Craft.initUiElements($body);
 
-			// Add any new batches to the queue?
-			if (response && typeof response.batches != 'undefined' && response.batches)
+		var modal = new Garnish.Modal($modal, {
+			onHide: $.proxy(this, 'onActionResponse')
+		});
+
+		this.addListener($cancelBtn, 'click', function() {
+			modal.hide();
+		});
+
+		this.addListener($modal, 'submit', function(ev) {
+			ev.preventDefault();
+
+			modal.settings.onHide = $.noop;
+			modal.hide();
+
+			var postData = Garnish.getPostData($body);
+			var params = Craft.expandPostArray(postData);
+
+			$.extend(params, data.params);
+
+			this.postActionRequest(params);
+		});
+	},
+
+	postActionRequest: function(params)
+	{
+		var data = {
+			tool: this.toolClass,
+			params: params
+		};
+
+		Craft.postActionRequest('tools/performAction', data, $.proxy(this, 'onActionResponse'));
+	},
+
+	onActionResponse: function(response)
+	{
+		this.loadingActions--;
+		this.completedActions++;
+
+		// Add any new batches to the queue?
+		if (response && typeof response.batches != 'undefined' && response.batches)
+		{
+			for (var i = 0; i < response.batches.length; i++)
 			{
-				for (var i = 0; i < response.batches.length; i++)
+				if (response.batches[i].length)
 				{
-					if (response.batches[i].length)
-					{
-						this.totalActions += response.batches[i].length;
-						this.queue.push(response.batches[i]);
-					}
+					this.totalActions += response.batches[i].length;
+					this.queue.push(response.batches[i]);
 				}
 			}
+		}
 
-			this.updateProgressBar();
+		this.updateProgressBar();
 
-			// Load as many additional items in the current batch as possible
-			while (this.loadingActions < Craft.Tool.maxConcurrentActions && this.currentBatchQueue.length)
+		// Load as many additional items in the current batch as possible
+		while (this.loadingActions < Craft.Tool.maxConcurrentActions && this.currentBatchQueue.length)
+		{
+			this.loadNextAction();
+		}
+
+		// Was that the end of the batch?
+		if (!this.loadingActions)
+		{
+			// Is there another batch?
+			if (this.queue.length)
 			{
+				this.currentBatchQueue = this.queue.shift();
 				this.loadNextAction();
 			}
-
-			// Was that the end of the batch?
-			if (!this.loadingActions)
+			else
 			{
-				// Is there another batch?
-				if (this.queue.length)
-				{
-					this.currentBatchQueue = this.queue.shift();
-					this.loadNextAction();
-				}
-				else
-				{
-					// Quick delay so things don't look too crazy.
-					setTimeout($.proxy(this, 'onComplete'), 300);
-				}
+				// Quick delay so things don't look too crazy.
+				setTimeout($.proxy(this, 'onComplete'), 300);
 			}
-
-		}, this));
+		}
 	},
 
 	loadNextAction: function()
