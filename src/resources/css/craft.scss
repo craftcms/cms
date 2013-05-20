@@ -261,7 +261,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 
 .btngroup,
 .btn,
-.spinner { height: 31px; }
+.spinner { height: 30px; }
 
 .menubtn:empty { padding-left: 8px; padding-right: 8px; }
 
@@ -614,7 +614,7 @@ ul.tree,
 
 .menu,
 .ui-datepicker,
-.ui-timepicker-list { z-index: 9999; background: #fff; @include unselectable;
+.ui-timepicker-list { z-index: 9999; margin-left: 1px; border-radius: 3px; background: #fff; @include unselectable;
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5);
 	        box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5);
 }
