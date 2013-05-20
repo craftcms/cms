@@ -95,7 +95,8 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		if (this.updateIframe())
 		{
 			this.$spinner.removeClass('hidden');
-			this.addListener(this.$iframe, 'load', function() {
+			this.addListener(this.$iframe, 'load', function()
+			{
 				this.slideIn();
 				this.removeListener(this.$iframe, 'load');
 			});
@@ -121,15 +122,19 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 
 		this.$shade.fadeIn();
 
-		this.$editor.show().animate({
+		this.$editor.show().stop().animate({
 			left: 0
 		}, 'slow');
 
-		this.$iframe.animate({
+		this.$iframe.stop().animate({
 			left: Craft.EntryPreviewMode.formWidth
 		}, 'slow', $.proxy(function() {
-			this.updateIframe();
 			this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
+
+			this.addListener(Garnish.$bod, 'keyup', function()
+			{
+				this.hidePreviewMode();
+			});
 		}, this));
 	},
 
@@ -138,7 +143,12 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		$('html').removeClass('noscroll');
 
 		this.removeListener(Garnish.$win, 'resize');
-		clearInterval(this.updateIframeInterval);
+		this.removeListener(Garnish.$bod, 'keyup');
+
+		if (this.updateIframeInterval)
+		{
+			clearInterval(this.updateIframeInterval);
+		}
 
 		for (var i = 0; i < this.fields.length; i++)
 		{
@@ -151,7 +161,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 
 		this.$shade.delay(200).fadeOut();
 
-		this.$editor.animate({
+		this.$editor.stop().animate({
 			left: -Craft.EntryPreviewMode.formWidth
 		}, 'slow', $.proxy(function() {
 			for (var i = 0; i < this.fields.length; i++)
@@ -161,7 +171,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			this.$editor.hide();
 		}, this));
 
-		this.$iframe.animate({
+		this.$iframe.stop().animate({
 			left: windowWidth
 		}, 'slow', $.proxy(function() {
 			this.$iframe.hide();
