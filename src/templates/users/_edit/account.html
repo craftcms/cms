@@ -8,6 +8,9 @@
 
 {% import "_includes/forms" as forms %}
 
+{% includeCssResource 'css/account.css' %}
+{% includeJsResource 'js/account.js' %}
+
 
 {% if account is not defined and craft.request.segment(1) == 'myaccount' %}
 	{% set account = user %}
@@ -26,7 +29,7 @@
 
 
 {% set content %}
-	<form method="post" action="" accept-charset="UTF-8">
+	<form id="userform" method="post" action="" accept-charset="UTF-8">
 		<input type="hidden" name="action" value="users/saveUser">
 		{% if isNewAccount %}
 			<input type="hidden" name="redirect" value="users/{id}">
@@ -45,10 +48,6 @@
 			disabled: (isNewAccount or (user.admin or account.isCurrent) ? false : true),
 			errors: (account is defined ? account.getErrors('username') : null)
 		}) }}
-
-		{% if (not isNewAccount and (not user.admin and not account.isCurrent)) %}
-			<input type="hidden" name="username" id="username" value="{{ account.username }}">
-		{% endif %}
 
 		<div class="field">
 			<div class="grid">
@@ -73,36 +72,73 @@
 			</div>
 		</div>
 
-		{{ forms.textField({
-			label: "Email"|t,
-			id: 'email',
-			name: 'email',
-			value: (account is defined ? account.email : null),
-			required: (isNewAccount or (user.admin or account.isCurrent) ? true : false),
-			disabled: (isNewAccount or (user.admin or account.isCurrent) ? false : true),
-			errors: (account is defined ? account.getErrors('email') : null)
-		}) }}
+		{% if isNewAccount %}
 
-		{% if (not isNewAccount and (not user.admin and not account.isCurrent)) %}
-			<input type="hidden" name="email" id="email" value="{{ account.email }}">
-		{% endif %}
+			{{ forms.textField({
+				label: "Email"|t,
+				id: 'email',
+				name: 'email',
+				value: (account is defined ? account.email : null),
+				required: true,
+				errors: (account is defined ? account.getErrors('email') : null)
+			}) }}
 
-		{% if account is defined and account.isCurrent %}
-			{{ forms.passwordField({
-				label: "Password"|t,
-				instructions: (isNewAccount ? null : "Leave blank to keep password unchanged."|t),
+		{% elseif account.isCurrent or user.admin %}
+
+			{% set emailInput %}
+				<table>
+					<tr>
+						<td>
+							{{ forms.text({
+								id: 'email',
+								name: 'email',
+								value: (account is defined ? account.email : null),
+								required: true,
+								disabled: true,
+								errors: account.getErrors('email')
+							}) }}
+						</td>
+						<td class="thin">
+							<div id="emailLockBtn" class="btn lock" data-icon="`" title="{{ 'Click to change the email address.'|t }}"></div>
+						</td>
+					</tr>
+				</table>
+			{% endset %}
+			{{ forms.field({
+				label: "Email"|t,
+				id: 'email',
+			}, emailInput) }}
+
+			{% set newPasswordInput %}
+				<table>
+					<tr>
+						<td>
+							{{ forms.password({
+								id: 'newPassword',
+								name: 'newPassword',
+								disabled: true,
+								errors: account.getErrors('newPassword')
+							}) }}
+						</td>
+						<td class="thin">
+							<div id="newPasswordLockBtn" class="btn lock" data-icon="`" title="{{ 'Click to set a new password.'|t }}"></div>
+						</td>
+					</tr>
+				</table>
+			{% endset %}
+			{{ forms.field({
+				label: "New Password"|t,
 				id: 'newPassword',
-				name: 'newPassword',
-				errors: (account is defined ? account.getErrors('newPassword') : null)
-			}) }}
-		{% endif %}
+			}, newPasswordInput) }}
 
-		{% if user.admin and not isNewAccount %}
-			{{ forms.checkboxField({
-				label: "Require a password reset on next login"|t,
-				name: 'passwordResetRequired',
-				checked: (account is defined ? account.passwordResetRequired : true)
-			}) }}
+			{% if user.admin %}
+				{{ forms.checkboxField({
+					label: "Require a password reset on next login"|t,
+					name: 'passwordResetRequired',
+					checked: account.passwordResetRequired
+				}) }}
+			{% endif %}
+
 		{% endif %}
 
 		{% if craft.hasPackage('Localize') %}

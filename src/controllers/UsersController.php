@@ -299,6 +299,7 @@ class UsersController extends BaseController
 		}
 
 		$publicRegistration = false;
+		$valid = true;
 
 		// Are we editing an existing user?
 		if ($userId)
@@ -340,90 +341,82 @@ class UsersController extends BaseController
 			$user = new UserModel();
 		}
 
-		// If you're not an admin and editing a user that is not yours, then you can't edit the username or email.
-		if ($userId && $userId != craft()->userSession->getUser()->id && !craft()->userSession->isAdmin())
+		// Can only change sensitive fields if you are an admin or this is your account.
+		if (craft()->userSession->isAdmin() || ($userId && $userId == craft()->userSession->getUser()->id))
 		{
-			$userName = $user->username;
-			$email = $user->email;
+			// Validate stuff.
+			$valid = $this->_validateSensitiveFields($userId, $user, $publicRegistration);
 		}
-		else
+
+		if ($valid)
 		{
 			$userName = craft()->request->getPost('username');
-			$email = craft()->request->getPost('email');
-		}
 
-		$user->username        = $userName === null ? $email : $userName;
-		$user->email           = $email;
-		$user->firstName       = craft()->request->getPost('firstName');
-		$user->lastName        = craft()->request->getPost('lastName');
-		$user->preferredLocale = craft()->request->getPost('preferredLocale');
-
-		// If it's a new user, set the verificationRequired bit.
-		if (!$user->id)
-		{
-			$user->verificationRequired = true;
-		}
-
-		// Password handling differs depending on whether this is a public registration form or the CP
-		if ($publicRegistration)
-		{
-			// Force newPassword to be a string so it gets validated.
-			$user->newPassword = (string) craft()->request->getPost('password');
-		}
-		else
-		{
-			// Only the existing logged-in user can change their password.
-			if ($user->isCurrent())
+			if (!$userId)
 			{
-				$newPassword = craft()->request->getPost('newPassword');
+				$user->email = craft()->request->getPost('email');
 
-				// Only actually set it if it's not empty.
-				if ($newPassword)
-				{
-					$user->newPassword = (string)$newPassword;
-				}
-			}
-		}
-
-		// Only admins can require users to reset their passwords
-		if (craft()->userSession->isAdmin())
-		{
-			$user->passwordResetRequired = (bool)craft()->request->getPost('passwordResetRequired');
-		}
-
-		try
-		{
-			if (craft()->users->saveUser($user))
-			{
+				// If it is a new user and public registration is enabled, grab the password from post.
 				if ($publicRegistration)
 				{
-					// Assign them to the default user group, if any
-					$defaultGroup = craft()->systemSettings->getSetting('users', 'defaultGroup');
-
-					if ($defaultGroup)
-					{
-						craft()->userGroups->assignUserToGroups($user->id, array($defaultGroup));
-					}
+					$user->newPassword = craft()->request->getPost('password');
 				}
-
-				craft()->userSession->setNotice(Craft::t('User saved.'));
-
-				// TODO: Deprecate
-				if (isset($_POST['redirect']))
-				{
-					$_POST['redirect'] = str_replace('{userId}', '{id}', $_POST['redirect']);
-				}
-
-				$this->redirectToPostedUrl($user);
 			}
-			else
+
+			// If no username was provided, set it to the email.
+			$userName = $userName === null ? $user->email : $userName;
+
+			$user->username = $userName;
+			$user->firstName       = craft()->request->getPost('firstName');
+			$user->lastName        = craft()->request->getPost('lastName');
+			$user->preferredLocale = craft()->request->getPost('preferredLocale');
+
+			// If it's a new user, set the verificationRequired bit.
+			if (!$user->id)
 			{
-				craft()->userSession->setError(Craft::t('Couldn’t save user.'));
+				$user->verificationRequired = true;
 			}
-		}
-		catch (\phpmailerException $e)
-		{
-			craft()->userSession->setError(Craft::t('Registered user, but couldn’t send activation email. Check your email settings.'));
+
+			// Only admins can require users to reset their passwords
+			if (craft()->userSession->isAdmin())
+			{
+				$user->passwordResetRequired = (bool)craft()->request->getPost('passwordResetRequired');
+			}
+
+			try
+			{
+				if (craft()->users->saveUser($user))
+				{
+					if ($publicRegistration)
+					{
+						// Assign them to the default user group, if any
+						$defaultGroup = craft()->systemSettings->getSetting('users', 'defaultGroup');
+
+						if ($defaultGroup)
+						{
+							craft()->userGroups->assignUserToGroups($user->id, array($defaultGroup));
+						}
+					}
+
+					craft()->userSession->setNotice(Craft::t('User saved.'));
+
+					// TODO: Deprecate
+					if (isset($_POST['redirect']))
+					{
+						$_POST['redirect'] = str_replace('{userId}', '{id}', $_POST['redirect']);
+					}
+
+					$this->redirectToPostedUrl($user);
+				}
+				else
+				{
+					craft()->userSession->setError(Craft::t('Couldn’t save user.'));
+				}
+			}
+			catch (\phpmailerException $e)
+			{
+				craft()->userSession->setError(Craft::t('Registered user, but couldn’t send activation email. Check your email settings.'));
+			}
 		}
 
 		// Send the account back to the template
@@ -804,6 +797,30 @@ class UsersController extends BaseController
 	}
 
 	/**
+	 * Verifies a password for a user.
+	 *
+	 * @return bool
+	 */
+	public function actionVerifyPassword()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$password = craft()->request->getRequiredParam('password');
+		$user = craft()->userSession->getUser();
+
+		if ($user)
+		{
+			if (craft()->users->validatePassword($user->password, $password))
+			{
+				$this->returnJson(array('success' => true));
+			}
+		}
+
+		$this->returnErrorJson(Craft::t('Invalid password.'));
+	}
+
+	/**
 	 * Throws a "no user exists" exception
 	 *
 	 * @access private
@@ -813,5 +830,105 @@ class UsersController extends BaseController
 	private function _noUserExists($userId)
 	{
 		throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+	}
+
+	/**
+	 * @param $password
+	 * @return bool
+	 */
+	private function _validateCurrentPassword($password)
+	{
+		if ($password)
+		{
+			$user = craft()->userSession->getUser();
+
+			if ($user)
+			{
+				if (craft()->users->validatePassword($user->password, $password))
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param $userId
+	 * @param $user
+	 * @param $publicRegistration
+	 * @return bool
+	 */
+	private function _validateSensitiveFields($userId, $user, $publicRegistration)
+	{
+		$email = craft()->request->getPost('email');
+		$password = craft()->request->getPost('password');
+
+		// If this is an existing user
+		if ($userId)
+		{
+			// If the user changed their email, make sure they have validated with their password.
+			if ($email && $email != $user->email)
+			{
+				if ($password)
+				{
+					if ($this->_validateCurrentPassword($password))
+					{
+						$user->email = $email;
+					}
+					else
+					{
+						craft()->userSession->setError(Craft::t('Incorrect current password.'));
+						Craft::log('Tried to change password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
+						return false;
+					}
+				}
+				else
+				{
+					craft()->userSession->setError(Craft::t('You must supply your existing password.'));
+					Craft::log('Tried to change the email for userId: '.$user->id.', but the did not supply the existing password.', LogLevel::Warning);
+					return false;
+				}
+			}
+		}
+
+		// If public registration is enabled, make sure it's a new user before we set the password.
+		if ($publicRegistration && !$user->id)
+		{
+			// Force newPassword to be a string so it gets validated.
+			$user->newPassword = (string) craft()->request->getPost('password');
+		}
+		else
+		{
+			// Only an existing logged-in user or admins can change passwords.
+			if (craft()->userSession->isAdmin() || $user->isCurrent())
+			{
+				$newPassword = craft()->request->getPost('newPassword');
+
+				// Only actually validate/set it if these are not empty
+				if ($newPassword && $password)
+				{
+					if ($this->_validateCurrentPassword($password))
+					{
+						$user->newPassword = (string)$newPassword;
+					}
+					else
+					{
+						craft()->userSession->setError(Craft::t('Incorrect current password.'));
+						Craft::log('Tried to change password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
+						return false;
+					}
+				}
+				else if ($newPassword && !$password)
+				{
+					craft()->userSession->setError(Craft::t('You must supply your existing password.'));
+					Craft::log('Tried to change password for userId: '.$user->id.', but the did not supply the existing password.', LogLevel::Warning);
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 }
