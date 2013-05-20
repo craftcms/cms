@@ -275,12 +275,28 @@ class UsersService extends BaseApplicationComponent
 				));
 			}
 
+			// Fire an 'onSaveUser' event
+			$this->onSaveUser(new Event($this, array(
+				'user'      => $user,
+				'isNewUser' => $isNewUser
+			)));
+
 			return true;
 		}
 		else
 		{
 			return false;
 		}
+	}
+
+	/**
+	 * Fires an 'onSaveUser' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onSaveUser(Event $event)
+	{
+		$this->raiseEvent('onSaveUser', $event);
 	}
 
 	/**
@@ -294,7 +310,30 @@ class UsersService extends BaseApplicationComponent
 		Craft::requirePackage(CraftPackage::Users);
 
 		$fieldLayout = craft()->fields->getLayoutByType(ElementType::User);
-		return craft()->content->saveElementContent($user, $fieldLayout);
+
+		if (craft()->content->saveElementContent($user, $fieldLayout))
+		{
+			// Fire an 'onSaveProfile' event
+			$this->onSaveProfile(new Event($this, array(
+				'user' => $user
+			)));
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Fires an 'onSaveProfile' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onSaveProfile(Event $event)
+	{
+		$this->raiseEvent('onSaveProfile', $event);
 	}
 
 	/**
