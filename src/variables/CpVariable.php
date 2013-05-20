@@ -20,14 +20,14 @@ class CpVariable
 			$nav['entries'] = array('name' => Craft::t('Entries'));
 		}
 
-		if (craft()->assetSources->getTotalViewableSources())
-		{
-			$nav['assets'] = array('name' => Craft::t('Assets'));
-		}
-
 		if (craft()->globals->getTotalEditableSets())
 		{
 			$nav['globals'] = array('name' => Craft::t('Globals'));
+		}
+
+		if (craft()->assetSources->getTotalViewableSources())
+		{
+			$nav['assets'] = array('name' => Craft::t('Assets'));
 		}
 
 		if (Craft::hasPackage(CraftPackage::Users) && craft()->userSession->checkPermission('editUsers'))
