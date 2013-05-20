@@ -1,16 +1,20 @@
-<h2>{{ 'Missing items'|t }}</h2>
-<p>{{ 'The following items were found in the database that do not have a physical match.'|t }}</p>
+{% if missingFolders and missingFiles %}
+	{% set items = "folders and files"|t %}
+{% elseif missingFolders %}
+	{% set items = "folders"|t %}
+{% else %}
+	{% set items = "files"|t %}
+{% endif %}
 
-{% if missingFolders is not empty %}
-    <h3>{{ 'Folders'|t }}</h3>
+<h2>{{ "Missing {items}"|t({ items: items }) }}</h2>
+<p>{{ 'The following {items} could not be found. Should they be deleted from the index?'|t({ items: items }) }}</p>
+
+<ul>
     {% for folderId, folderName in missingFolders %}
-        <div><label><input type="checkbox" checked="checked" name="deleteFolder[]" value="{{ folderId }}" /> {{ folderName }}</label></div>
+        <li><label><input type="checkbox" checked="checked" name="deleteFolder[]" value="{{ folderId }}" /> {{ folderName }}</label></li>
     {% endfor %}
-{% endif %}
 
-{% if missingFiles is not empty %}
-    <h3>{{ 'Files'|t }}</h3>
     {% for fileId, fileName in missingFiles %}
-        <div><label><input type="checkbox" checked="checked" name="deleteFile[]" value="{{ fileId }}" /> {{ fileName }}</label></div>
+        <li><label><input type="checkbox" checked="checked" name="deleteFile[]" value="{{ fileId }}" /> {{ fileName }}</label></li>
     {% endfor %}
-{% endif %}
+</ul>
