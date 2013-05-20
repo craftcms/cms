@@ -58,6 +58,7 @@ class WebApp extends \CWebApplication
 	private $_templatePath;
 	private $_packageComponents;
 	private $_isDbConfigValid = false;
+	private $_pendingEvents;
 
 	/**
 	 * Processes resource requests before anything else has a chance to initialize.
@@ -468,6 +469,92 @@ class WebApp extends \CWebApplication
 		}
 
 		parent::setComponents($components, $merge);
+	}
+
+	/**
+	 * Attaches an event listener, or remembers it for later if the component has not been initialized yet.
+	 *
+	 * @param string $event
+	 * @param mixed  $handler
+	 */
+	public function on($event, $handler)
+	{
+		list($componentId, $eventName) = explode('.', $event, 2);
+
+		$component = $this->getComponent($componentId, false);
+
+		// Normalize the event name
+		if (strncmp($eventName, 'on', 2) !== 0)
+		{
+			$eventName = 'on'.ucfirst($eventName);
+		}
+
+		if ($component)
+		{
+			$component->$eventName = $handler;
+		}
+		else
+		{
+			$this->_pendingEvents[$componentId][$eventName][] = $handler;
+		}
+	}
+
+	/**
+	 * Override getComponent() so we can attach any pending events if the component is getting initialized.
+	 *
+	 * @param string $id
+	 * @param boolean $createIfNull
+	 * @return mixed
+	 */
+	public function getComponent($id, $createIfNull = true)
+	{
+		$component = parent::getComponent($id, false);
+
+		if (!$component && $createIfNull)
+		{
+			$component = parent::getComponent($id, true);
+			$this->_attachEventListeners($id);
+		}
+
+		return $component;
+	}
+
+	/**
+	 * Override setComponent so we can attach any pending events.
+	 *
+	 * @param string $id
+	 * @param mixed  $component
+	 * @param bool   $merge
+	 */
+	public function setComponent($id, $component, $merge = true)
+	{
+		parent::setComponent($id, $component, $merge);
+		$this->_attachEventListeners($id);
+	}
+
+	/**
+	 * Attaches any pending event listeners to the newly-initialized component.
+	 *
+	 * @access private
+	 * @param string $componentId
+	 */
+	private function _attachEventListeners($componentId)
+	{
+		if (isset($this->_pendingEvents[$componentId]))
+		{
+			$component = $this->getComponent($componentId, false);
+
+			if ($component)
+			{
+				foreach ($this->_pendingEvents[$componentId] as $eventName => $handlers)
+				{
+					foreach ($handlers as $handler)
+					{
+						$component->$eventName = $handler;
+					}
+				}
+			}
+		}
 	}
 
 	/**

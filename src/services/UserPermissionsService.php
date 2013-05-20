@@ -110,7 +110,7 @@ class UserPermissionsService extends BaseApplicationComponent
 
 		// Plugins
 
-		foreach (craft()->plugins->callHook('registerUserPermissions') as $pluginHandle => $pluginPermissions)
+		foreach (craft()->plugins->call('registerUserPermissions') as $pluginHandle => $pluginPermissions)
 		{
 			$plugin = craft()->plugins->getPlugin($pluginHandle);
 			$permissions[$plugin->getName()] = $pluginPermissions;

@@ -154,6 +154,9 @@ var CP = Garnish.Base.extend({
 		{
 			this.initAlerts();
 		}
+
+        // Make placeholders work for IE9, too.
+        $('input, textarea').placeholder();
 	},
 
 	/**

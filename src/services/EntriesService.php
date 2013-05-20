@@ -36,8 +36,10 @@ class EntriesService extends BaseApplicationComponent
 	 */
 	public function saveEntry(EntryModel $entry)
 	{
+		$isNewEntry = !$entry->id;
+
 		// Entry data
-		if ($entry->id)
+		if (!$isNewEntry)
 		{
 			$entryRecord = EntryRecord::model()->with('element', 'entryTagEntries')->findById($entry->id);
 
@@ -251,12 +253,28 @@ class EntriesService extends BaseApplicationComponent
 			// Perform some post-save operations
 			craft()->content->postSaveOperations($entry, $content);
 
+			// Fire an 'onSaveEntry' event
+			$this->onSaveEntry(new Event($this, array(
+				'entry'      => $entry,
+				'isNewEntry' => $isNewEntry
+			)));
+
 			return true;
 		}
 		else
 		{
 			return false;
 		}
+	}
+
+	/**
+	 * Fires an 'onSaveEntry' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onSaveEntry(Event $event)
+	{
+		$this->raiseEvent('onSaveEntry', $event);
 	}
 
 	// Private methods

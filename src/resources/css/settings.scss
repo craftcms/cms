@@ -10,3 +10,5 @@
 
 .toolhud .progressbar { position: absolute; left: 230px; width: 132px; }
 .toolhud .alldone { position: absolute; left: 230px; width: 140px; font-size: 40px; line-height: 50px; text-align: center; }
+
+.confirmmodal .body { max-height: 200px; overflow: auto; }

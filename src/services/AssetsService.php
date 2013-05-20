@@ -281,7 +281,29 @@ class AssetsService extends BaseApplicationComponent
 	{
 		// TODO: translation support
 		$fieldLayout = craft()->fields->getLayoutByType(ElementType::Asset);
-		return craft()->content->saveElementContent($file, $fieldLayout);
+		if (craft()->content->saveElementContent($file, $fieldLayout))
+		{
+			// Fire an 'onSaveFileContent' event
+			$this->onSaveFileContent(new Event($this, array(
+				'file' => $file
+			)));
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Fires an 'onSaveFileContent' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onSaveFileContent(Event $event)
+	{
+		$this->raiseEvent('onSaveFileContent', $event);
 	}
 
 	// -------------------------------------------

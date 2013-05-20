@@ -160,7 +160,9 @@ class ContentService extends BaseApplicationComponent
 				}
 			}
 
-			if ($content->id)
+			$isNewContent = !$content->id;
+
+			if (!$isNewContent)
 			{
 				$affectedRows = craft()->db->createCommand()
 					->update('content', $values, array('id' => $content->id));
@@ -177,12 +179,29 @@ class ContentService extends BaseApplicationComponent
 				}
 			}
 
-			return (bool) $affectedRows;
+			if ($affectedRows)
+			{
+				// Fire an 'onSaveContent' event
+				$this->onSaveContent(new Event($this, array(
+					'content'      => $content,
+					'isNewContent' => $isNewContent
+				)));
+
+				return true;
+			}
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
+	}
+
+	/**
+	 * Fires an 'onSaveContent' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onSaveContent(Event $event)
+	{
+		$this->raiseEvent('onSaveContent', $event);
 	}
 
 	/**

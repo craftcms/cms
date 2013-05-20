@@ -192,30 +192,7 @@ class AssetIndexingService extends BaseApplicationComponent
 
 			case 'statistics':
 			{
-				// Load the record IDs of the files that were indexed.
-				$processedFiles = craft()->db->createCommand()
-					->select('recordId')
-					->from('assetindexdata')
-					->where('sessionId = :sessionId AND recordId IS NOT NULL', array(':sessionId' => $sessionId))
-					->queryColumn();
-
-				$processedFiles = array_flip($processedFiles);
-
-				$fileEntries = craft()->db->createCommand()
-						->select('fi.sourceId, fi.id AS fileId, fi.filename, fo.fullPath, s.name AS sourceName')
-						->from('assetfiles AS fi')
-						->join('assetfolders AS fo', 'fi.folderId = fo.id')
-						->join('assetsources AS s', 's.id = fi.sourceId')
-						->where(array('in', 'fi.sourceId', $sources))
-						->queryAll();
-
-				foreach ($fileEntries as $fileEntry)
-				{
-					if (!isset($processedFiles[$fileEntry['fileId']]))
-					{
-						$output['files'][$fileEntry['fileId']] = $fileEntry['sourceName'].'/'.$fileEntry['fullPath'].$fileEntry['filename'];
-					}
-				}
+				$output['files'] = $this->getMissingFiles($sources, $sessionId);
 
 				craft()->db->createCommand()->delete('assetindexdata', array('sessionId' => $sessionId));
 
@@ -230,4 +207,65 @@ class AssetIndexingService extends BaseApplicationComponent
 
 		return $output;
 	}
+
+	/**
+	 * Return a list of missing files for an indexing session.
+	 *
+	 * @param $sources
+	 * @param $sessionId
+	 * @return array
+	 */
+	public function getMissingFiles($sources, $sessionId)
+	{
+		$output = array();
+
+		// Load the record IDs of the files that were indexed.
+		$processedFiles = craft()->db->createCommand()
+			->select('recordId')
+			->from('assetindexdata')
+			->where('sessionId = :sessionId AND recordId IS NOT NULL', array(':sessionId' => $sessionId))
+			->queryColumn();
+
+		$processedFiles = array_flip($processedFiles);
+
+		$fileEntries = craft()->db->createCommand()
+			->select('fi.sourceId, fi.id AS fileId, fi.filename, fo.fullPath, s.name AS sourceName')
+			->from('assetfiles AS fi')
+			->join('assetfolders AS fo', 'fi.folderId = fo.id')
+			->join('assetsources AS s', 's.id = fi.sourceId')
+			->where(array('in', 'fi.sourceId', $sources))
+			->queryAll();
+
+		foreach ($fileEntries as $fileEntry)
+		{
+			if (!isset($processedFiles[$fileEntry['fileId']]))
+			{
+				$output[$fileEntry['fileId']] = $fileEntry['sourceName'].'/'.$fileEntry['fullPath'].$fileEntry['filename'];
+			}
+		}
+
+		return $output;
+	}
+
+	/**
+	 * Remove obsolete file records.
+	 *
+	 * @param $fileIds
+	 */
+	public function removeObsoleteFileRecords($fileIds)
+	{
+		craft()->db->createCommand()->delete('assettransformindex', array('in', 'fileId', $fileIds));
+		craft()->db->createCommand()->delete('assetfiles', array('in', 'id', $fileIds));
+	}
+
+	/**
+	 * Remove obsolete folder records.
+	 *
+	 * @param $folderIds
+	 */
+	public function removeObsoleteFolderRecords($folderIds)
+	{
+		craft()->db->createCommand()->delete('assetfolders', array('in', 'id', $folderIds));
+	}
+
 }

@@ -216,7 +216,7 @@ class GC
 	private static function __triggerError($message, $file, $line, $code = 0)
 	{
 		if (self::$useExceptions)
-			throw new S3Exception($message, $file, $line, $code);
+			throw new GCException($message, $file, $line, $code);
 		else
 			trigger_error($message, E_USER_WARNING);
 	}
@@ -2046,7 +2046,7 @@ final class GCRequest
 
 }
 
-class S3Exception extends Exception {
+class GCException extends Exception {
 	function __construct($message, $file, $line, $code = 0)
 	{
 		parent::__construct($message, $code);

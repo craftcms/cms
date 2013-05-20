@@ -261,6 +261,28 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	public function saveContent(GlobalSetModel $globalSet)
 	{
-		return craft()->content->saveElementContent($globalSet, $globalSet->getFieldLayout(), $globalSet->locale);
+		if (craft()->content->saveElementContent($globalSet, $globalSet->getFieldLayout(), $globalSet->locale))
+		{
+			// Fire an 'onSaveGlobalContent' event
+			$this->onSaveGlobalContent(new Event($this, array(
+				'globalSet' => $globalSet
+			)));
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Fires an 'onSaveGlobalContent' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onSaveGlobalContent(Event $event)
+	{
+		$this->raiseEvent('onSaveGlobalContent', $event);
 	}
 }

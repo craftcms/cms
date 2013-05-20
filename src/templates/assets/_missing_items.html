@@ -1,0 +1,20 @@
+{% if missingFolders and missingFiles %}
+	{% set items = "folders and files"|t %}
+{% elseif missingFolders %}
+	{% set items = "folders"|t %}
+{% else %}
+	{% set items = "files"|t %}
+{% endif %}
+
+<h2>{{ "Missing {items}"|t({ items: items }) }}</h2>
+<p>{{ 'The following {items} could not be found. Should they be deleted from the index?'|t({ items: items }) }}</p>
+
+<ul>
+    {% for folderId, folderName in missingFolders %}
+        <li><label><input type="checkbox" checked="checked" name="deleteFolder[]" value="{{ folderId }}" /> {{ folderName }}</label></li>
+    {% endfor %}
+
+    {% for fileId, fileName in missingFiles %}
+        <li><label><input type="checkbox" checked="checked" name="deleteFile[]" value="{{ fileId }}" /> {{ fileName }}</label></li>
+    {% endfor %}
+</ul>
