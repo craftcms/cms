@@ -341,8 +341,8 @@ class UsersController extends BaseController
 			$user = new UserModel();
 		}
 
-		// Can only change usernames/emails/passwords if you are an admin or this is your account.
-		if (craft()->userSession->isAdmin() || ($userId && $userId == craft()->userSession->GetUser()->id))
+		// Can only change sensitive fields if you are an admin or this is your account.
+		if (craft()->userSession->isAdmin() || ($userId && $userId == craft()->userSession->getUser()->id))
 		{
 			// Validate stuff.
 			$valid = $this->_validateSensitiveFields($userId, $user, $publicRegistration);
@@ -350,6 +350,12 @@ class UsersController extends BaseController
 
 		if ($valid)
 		{
+			$userName = craft()->request->getPost('username');
+
+			// If no username was provided, set it to the email.
+			$userName = $userName === null ? $user->email : $userName;
+
+			$user->username = $userName;
 			$user->firstName       = craft()->request->getPost('firstName');
 			$user->lastName        = craft()->request->getPost('lastName');
 			$user->preferredLocale = craft()->request->getPost('preferredLocale');
@@ -816,17 +822,21 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * @param $user
-	 * @param $currentPassword
+	 * @param $password
 	 * @return bool
 	 */
-	private function _validateCurrentPassword($user, $currentPassword)
+	private function _validateCurrentPassword($password)
 	{
-		if ($currentPassword)
+		if ($password)
 		{
-			if (craft()->users->validatePassword($user->password, $currentPassword))
+			$user = craft()->userSession->getUser();
+
+			if ($user)
 			{
-				return true;
+				if (craft()->users->validatePassword($user->password, $password))
+				{
+					return true;
+				}
 			}
 		}
 
@@ -841,60 +851,34 @@ class UsersController extends BaseController
 	 */
 	private function _validateSensitiveFields($userId, $user, $publicRegistration)
 	{
-		$userName = craft()->request->getPost('username');
 		$email = craft()->request->getPost('email');
+		$password = craft()->request->getPost('password');
 
-		$userName = $userName === null ? $email : $userName;
-
-		// If this is an existing user and they changed their username, make sure they have validated with their password.
-		if ($userId && $userName != $user->username)
+		// If this is an existing user
+		if ($userId)
 		{
-			$currentPassword = craft()->request->getPost('currentPassword');
-
-			if ($currentPassword)
+			// If the user changed their email, make sure they have validated with their password.
+			if ($email && $email != $user->email)
 			{
-				if ($this->_validateCurrentPassword($user, $currentPassword))
+				if ($password)
 				{
-					$user->username = $userName;
+					if ($this->_validateCurrentPassword($password))
+					{
+						$user->email = $email;
+					}
+					else
+					{
+						craft()->userSession->setError(Craft::t('Incorrect current password.'));
+						Craft::log('Tried to change password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
+						return false;
+					}
 				}
 				else
 				{
-					craft()->userSession->setError(Craft::t('Incorrect current password.'));
-					Craft::log('Tried to change password for userId: '.$user->id.', but the currentPassword does not match what the user supplied.', LogLevel::Warning);
+					craft()->userSession->setError(Craft::t('You must supply your existing password.'));
+					Craft::log('Tried to change the email for userId: '.$user->id.', but the did not supply the existing password.', LogLevel::Warning);
 					return false;
 				}
-			}
-			else
-			{
-				craft()->userSession->setError(Craft::t('You must supply your existing password.'));
-				Craft::log('Tried to change the username for userId: '.$user->id.', but the did not supply the existing password.', LogLevel::Warning);
-				return false;
-			}
-		}
-
-		// If this is an existing user and they changed their username, make sure they have validated with their password.
-		if ($userId && $email != $user->email)
-		{
-			$currentPassword = craft()->request->getPost('currentPassword');
-
-			if ($currentPassword)
-			{
-				if ($this->_validateCurrentPassword($user, $currentPassword))
-				{
-					$user->email = $email;
-				}
-				else
-				{
-					craft()->userSession->setError(Craft::t('Incorrect current password.'));
-					Craft::log('Tried to change password for userId: '.$user->id.', but the currentPassword does not match what the user supplied.', LogLevel::Warning);
-					return false;
-				}
-			}
-			else
-			{
-				craft()->userSession->setError(Craft::t('You must supply your existing password.'));
-				Craft::log('Tried to change the email for userId: '.$user->id.', but the did not supply the existing password.', LogLevel::Warning);
-				return false;
 			}
 		}
 
@@ -906,27 +890,26 @@ class UsersController extends BaseController
 		}
 		else
 		{
-			// Only the existing logged-in user can change their password.
-			if ($user->isCurrent())
+			// Only an existing logged-in user or admins can change passwords.
+			if (craft()->userSession->isAdmin() || $user->isCurrent())
 			{
 				$newPassword = craft()->request->getPost('newPassword');
-				$currentPassword = craft()->request->getPost('currentPassword');
 
 				// Only actually validate/set it if these are not empty
-				if ($newPassword && $currentPassword)
+				if ($newPassword && $password)
 				{
-					if ($this->_validateCurrentPassword($user, $currentPassword))
+					if ($this->_validateCurrentPassword($password))
 					{
 						$user->newPassword = (string)$newPassword;
 					}
 					else
 					{
 						craft()->userSession->setError(Craft::t('Incorrect current password.'));
-						Craft::log('Tried to change password for userId: '.$user->id.', but the currentPassword does not match what the user supplied.', LogLevel::Warning);
+						Craft::log('Tried to change password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
 						return false;
 					}
 				}
-				else if ($newPassword && !$currentPassword)
+				else if ($newPassword && !$password)
 				{
 					craft()->userSession->setError(Craft::t('You must supply your existing password.'));
 					Craft::log('Tried to change password for userId: '.$user->id.', but the did not supply the existing password.', LogLevel::Warning);

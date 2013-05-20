@@ -63,7 +63,7 @@ var AccountSettingForm = Garnish.Base.extend({
 				if (typeof response.success != 'undefined' && response.success)
 				{
 					$('<input type="hidden" name="password" value="'+password+'"/>').appendTo('#userform');
-					$('#emailInput, #newPasswordInput').removeClass('disabled').removeAttr('disabled');
+					$('#email, #newPassword').removeClass('disabled').removeAttr('disabled');
 					this.$lockBtns.remove();
 					this.modal.hide();
 				}
