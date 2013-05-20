@@ -59,8 +59,8 @@ class EmailMessagesService extends BaseApplicationComponent
 			else
 			{
 				// Default to whatever's in the translation file
-				$message->subject  = Craft::t($key.'_subject');
-				$message->body     = Craft::t($key.'_body');
+				$message->subject  = Craft::t($key.'_subject', null, null, 'en_us');
+				$message->body     = Craft::t($key.'_body', null, null, 'en_us');
 			}
 
 			$messages[] = $message;
@@ -144,8 +144,8 @@ class EmailMessagesService extends BaseApplicationComponent
 			$record = new EmailMessageRecord();
 			$record->key = $key;
 			$record->locale   = $localeId;
-			$record->subject  = Craft::t($key.'_subject');
-			$record->body     = Craft::t($key.'_body');
+			$record->subject  = Craft::t($key.'_subject', null, null, 'en_us');
+			$record->body     = Craft::t($key.'_body', null, null, 'en_us');
 		}
 
 		return $record;
