@@ -3098,7 +3098,9 @@ Garnish.Modal = Garnish.Base.extend({
 		this.visible = true;
 		Garnish.Modal.visibleModal = this;
 		Garnish.Modal.$shade.fadeIn(50);
+
 		this.addListener(Garnish.Modal.$shade, 'click', 'hide');
+		this.addListener(Garnish.$bod, 'keyup', 'onKeypress');
 
 		this.settings.onShow();
 	},
@@ -3120,8 +3122,17 @@ Garnish.Modal = Garnish.Base.extend({
 		Garnish.Modal.visibleModal = null;
 		Garnish.Modal.$shade.fadeOut('fast', $.proxy(this, 'onFadeOut'));
 		this.removeListener(Garnish.Modal.$shade, 'click');
+		this.removeListener(Garnish.$bod, 'keyup');
 
 		this.settings.onHide();
+	},
+
+	onKeypress: function(ev)
+	{
+		if (ev.keyCode == Garnish.ESC_KEY)
+		{
+			this.hide();
+		}
 	},
 
 	onFadeIn: function()
