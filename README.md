@@ -66,3 +66,12 @@ The build script supports the following options:
 **Note:** Java is required for Javascript compression. If you omit `--compressjs`, you will need to add the following to your Craft install’s craft/config/general.php file:
 
     'useCompressedJs' => false,
+
+## Development Guidelines
+
+### Accessibility
+
+* If a link is acting as a button, give it a role="button" attribute to avoid confusing screen-readers.
+* Use HTML5 "placeholder" attributes for input and text fields.
+* Make sure to use <label> tags.
+

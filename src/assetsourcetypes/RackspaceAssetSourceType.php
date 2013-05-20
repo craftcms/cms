@@ -165,6 +165,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 				if ($file->content_type == 'application/directory')
 				{
+					// Rackspace may or may not have these at the end.
+					$file->name = rtrim($file->name, '/');
 					$containerFolders[$file->name] = true;
 				}
 				else
