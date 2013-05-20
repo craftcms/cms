@@ -67,7 +67,7 @@ class TemplatesService extends BaseApplicationComponent
 			}
 
 			// Give plugins a chance to add their own Twig extensions
-			$pluginExtensions = craft()->plugins->callHook('addTwigExtension');
+			$pluginExtensions = craft()->plugins->call('addTwigExtension');
 			foreach ($pluginExtensions as $extension)
 			{
 				$twig->addExtension($extension);

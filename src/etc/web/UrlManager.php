@@ -251,7 +251,7 @@ class UrlManager extends \CUrlManager
 			}
 
 			// As a last ditch to match routes, check to see if any plugins have routes registered that will match.
-			$pluginCpRoutes = craft()->plugins->callHook('registerCpRoutes');
+			$pluginCpRoutes = craft()->plugins->call('registerCpRoutes');
 
 			foreach ($pluginCpRoutes as $pluginRoutes)
 			{

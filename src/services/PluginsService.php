@@ -417,26 +417,44 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Calls a hook in any plugin that has it.
+	 * Calls a method on all plugins that have the method.
 	 *
-	 * @param string $hook
+	 * @param string $method
 	 * @param array $args
 	 * @return array
 	 */
-	public function callHook($hook, $args = array())
+	public function call($method, $args = array())
 	{
 		$result = array();
-		$methodName = 'hook'.ucfirst($hook);
+		$altMethod = 'hook'.ucfirst($method);
 
 		foreach ($this->getPlugins() as $plugin)
 		{
-			if (method_exists($plugin, $methodName))
+			if (method_exists($plugin, $method))
 			{
-				$result[$plugin->getClassHandle()] = call_user_func_array(array($plugin, $methodName), $args);
+				$result[$plugin->getClassHandle()] = call_user_func_array(array($plugin, $method), $args);
+			}
+			else if (method_exists($plugin, $altMethod))
+			{
+				// TODO: deprecate
+				$result[$plugin->getClassHandle()] = call_user_func_array(array($plugin, $altMethod), $args);
 			}
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Provides legacy support for craft()->plugins->callHook().
+	 *
+	 * @param string $method
+	 * @param array $args
+	 * @return array
+	 */
+	public function callHook($method, $args = array())
+	{
+		// TODO: deprecate
+		return $this->call($method, $args);
 	}
 
 	/**

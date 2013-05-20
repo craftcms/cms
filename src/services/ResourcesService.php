@@ -150,7 +150,7 @@ class ResourcesService extends BaseApplicationComponent
 		}
 
 		// Maybe a plugin wants to do something custom with this URL
-		$pluginPaths = craft()->plugins->callHook('getResourcePath', array($path));
+		$pluginPaths = craft()->plugins->call('getResourcePath', array($path));
 		foreach ($pluginPaths as $path)
 		{
 			if ($path && IOHelper::fileExists($path))
