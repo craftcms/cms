@@ -26,7 +26,7 @@ var AccountSettingForm = Garnish.Base.extend({
 				$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttons),
 				$submitBtn = $('<input type="submit" class="btn submit" value="'+Craft.t('Continue')+'" />').appendTo($buttons);
 
-			this.$currentPasswordInput = $('<input type="password" class="text password fullwidth"/>').appendTo($passwordWrapper).passwordinput();
+			this.$currentPasswordInput = $('<input type="password" class="text password fullwidth"/>').appendTo($passwordWrapper).passwordinput().focus();
 			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttons);
 			this.modal = new Garnish.Modal($form);
 
@@ -63,8 +63,9 @@ var AccountSettingForm = Garnish.Base.extend({
 				if (typeof response.success != 'undefined' && response.success)
 				{
 					$('<input type="hidden" name="password" value="'+password+'"/>').appendTo('#userform');
-					$('#emailInput, #newPasswordInput').removeClass('disabled').removeAttr('disabled');
+					$('#email, #newPassword').removeClass('disabled').removeAttr('disabled');
 					this.$lockBtns.remove();
+					this.modal.hide();
 				}
 				else
 				{

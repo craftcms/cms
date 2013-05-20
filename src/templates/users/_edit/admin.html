@@ -63,7 +63,7 @@
 				name: 'admin',
 				checked: account.admin,
 				toggle: 'permissions',
-				disabled: (isNewAccount or (user.admin or account.isCurrent) ? false : true),
+				disabled: (user.admin ? false : true),
 				reverseToggle: true
 			}) }}
 		</div>

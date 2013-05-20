@@ -135,7 +135,7 @@ class WebApp extends \CWebApplication
 
 		// isDbUpdateNeeded will return true if we're in the middle of a manual or auto-update.
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
-		if ($this->updates->isDbUpdateNeeded() || (Craft::isInMaintenanceMode() && $this->request->isCpRequest()))
+		if ($this->updates->isDbUpdateNeeded() || (Craft::isInMaintenanceMode() && $this->request->isCpRequest()) || $this->request->getActionSegments() == array('update', 'cleanUp'))
 		{
 			// Let all non-action CP requests through.
 			if (
@@ -194,10 +194,14 @@ class WebApp extends \CWebApplication
 			($this->request->isCpRequest()) && $this->userSession->checkPermission('accessCpWhenSystemIsOff')
 		)
 		{
-			// If this is a non-login CP request, make sure the user has access to the CP
-			if (craft()->request->isCpRequest() &&
-				!($this->request->isActionRequest() && $this->request->getActionSegments() == array('users', 'login'))
-			)
+			// Set the target language
+			$this->setLanguage($this->_getTargetLanguage());
+
+			// Set the package components
+			$this->_setPackageComponents();
+
+			// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
+			if (craft()->request->isCpRequest() && !($this->request->isActionRequest() && $this->_isValidActionRequest()))
 			{
 				// Make sure the user has access to the CP
 				craft()->userSession->requireLogin();
@@ -214,12 +218,6 @@ class WebApp extends \CWebApplication
 					}
 				}
 			}
-
-			// Set the target language
-			$this->setLanguage($this->_getTargetLanguage());
-
-			// Set the package components
-			$this->_setPackageComponents();
 
 			// Load the plugins
 			$this->plugins;
@@ -768,5 +766,23 @@ class WebApp extends \CWebApplication
 
 			throw new HttpException(404);
 		}
+	}
+
+	/**
+	 * @return bool
+	 */
+	private function _isValidActionRequest()
+	{
+		if (
+			$this->request->getActionSegments() == array('users', 'login') ||
+			$this->request->getActionSegments() == array('users', 'validate') ||
+			$this->request->getActionSegments() == array('users', 'setPassword') ||
+			$this->request->getActionSegments() == array('users', 'forgotPassword') ||
+			$this->request->getActionSegments() == array('users', 'saveUser'))
+		{
+			return true;
+		}
+
+		return false;
 	}
 }
