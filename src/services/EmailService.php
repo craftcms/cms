@@ -53,8 +53,8 @@ class EmailService extends BaseApplicationComponent
 		}
 		else
 		{
-			$emailModel->subject  = Craft::t($key.'_subject');
-			$emailModel->body     = Craft::t($key.'_body');
+			$emailModel->subject  = Craft::t($key.'_subject', null, null, 'en_us');
+			$emailModel->body     = Craft::t($key.'_body', null, null, 'en_us');
 		}
 
 		$tempTemplatesPath = '';
