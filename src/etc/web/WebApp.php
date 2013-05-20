@@ -201,12 +201,7 @@ class WebApp extends \CWebApplication
 			$this->_setPackageComponents();
 
 			// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
-			if (craft()->request->isCpRequest() &&
-				!($this->request->isActionRequest() &&
-					($this->request->getActionSegments() == array('users', 'login') ||
-					 $this->request->getActionSegments() == array('users', 'validate') ||
-					 $this->request->getActionSegments() == array('users', 'setPassword'))
-			))
+			if (craft()->request->isCpRequest() && !($this->request->isActionRequest() && $this->_isValidActionRequest()))
 			{
 				// Make sure the user has access to the CP
 				craft()->userSession->requireLogin();
@@ -771,5 +766,23 @@ class WebApp extends \CWebApplication
 
 			throw new HttpException(404);
 		}
+	}
+
+	/**
+	 * @return bool
+	 */
+	private function _isValidActionRequest()
+	{
+		if (
+			$this->request->getActionSegments() == array('users', 'login') ||
+			$this->request->getActionSegments() == array('users', 'validate') ||
+			$this->request->getActionSegments() == array('users', 'setPassword') ||
+			$this->request->getActionSegments() == array('users', 'forgotPassword') ||
+			$this->request->getActionSegments() == array('users', 'saveUser'))
+		{
+			return true;
+		}
+
+		return false;
 	}
 }

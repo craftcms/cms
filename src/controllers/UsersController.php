@@ -352,6 +352,17 @@ class UsersController extends BaseController
 		{
 			$userName = craft()->request->getPost('username');
 
+			if (!$userId)
+			{
+				$user->email = craft()->request->getPost('email');
+
+				// If it is a new user and public registration is enabled, grab the password from post.
+				if ($publicRegistration)
+				{
+					$user->newPassword = craft()->request->getPost('password');
+				}
+			}
+
 			// If no username was provided, set it to the email.
 			$userName = $userName === null ? $user->email : $userName;
 
