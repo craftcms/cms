@@ -73,7 +73,5 @@ The build script supports the following options:
 
 * If a link is acting as a button, give it a role="button" attribute to avoid confusing screen-readers.
 * Use HTML5 "placeholder" attributes for input and text fields.
-* If using checkboxes, be sure to include <label> elements.
-* Be sure to use the "required" attribute for required input fields.
-
+* Make sure to use <label> tags.
 
