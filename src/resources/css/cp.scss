@@ -107,9 +107,17 @@ html, body,
 
 .sidebar { float: left; margin-left: -200px; width: 170px; }
 .sidebar nav { margin-left: -30px; padding-left: 30px; width: 170px; overflow: auto; }
+.sidebar nav li { position: relative; }
 .sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; }
 .sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
 .sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $selcolor; cursor: default; }
+
+.sidebar nav li .toggle { position: absolute; top: 5px; left: -21px; width: 16px; height: 16px; background: url(../images/foldertoggle.png) no-repeat 0 0; }
+.sidebar nav li.expanded > .toggle { background-position: 0 -32px; }
+.sidebar nav li a.sel + .toggle { background-position: 0 -16px; }
+.sidebar nav li.expanded > a.sel + .toggle { background-position: 0 -48px; }
+.sidebar nav li ul { margin-left: 25px; display: none; }
+.sidebar nav li.expanded > ul { display: block; }
 
 #main #sidebar nav.fixed { position: fixed; top: 0; }
 

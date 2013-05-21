@@ -13,23 +13,7 @@ class ElementTypeVariable extends BaseComponentTypeVariable
 	 */
 	public function getSources()
 	{
-		$sources = $this->component->getSources();
-
-		if (is_array($sources))
-		{
-			$sourceLabels = array();
-
-			foreach ($sources as $key => $source)
-			{
-				$sourceLabels[$key] = $source['label'];
-			}
-
-			return $sourceLabels;
-		}
-		else
-		{
-			return false;
-		}
+		return $this->component->getSources();
 	}
 
 	/**

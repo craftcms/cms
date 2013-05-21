@@ -39,6 +39,7 @@ class ElementsController extends BaseController
 	public function actionGetElements()
 	{
 		$elementType = $this->_getElementType();
+		$mode = craft()->request->getParam('mode', 'index');
 		$state = craft()->request->getParam('state', array());
 		$disabledElementIds = craft()->request->getParam('disabledElementIds');
 
@@ -46,14 +47,22 @@ class ElementsController extends BaseController
 
 		if (!$criteria->offset)
 		{
-			$elementContainerHtml = $this->_renderElementIndexContainerHtml($elementType, $state);
+			$elementContainerHtml = $this->renderTemplate('_elements/elementcontainer', array(
+				'state'      => $state,
+				'attributes' => $elementType->defineTableAttributes($state['source'])
+			), true);
 		}
 		else
 		{
 			$elementContainerHtml = null;
 		}
 
-		$elementDataHtml = $this->_renderElementIndexDataHtml($elementType, $state, $criteria, $disabledElementIds);
+		$elementDataHtml = $this->renderTemplate('_elements/elementdata', array(
+			'mode'               => $mode,
+			'attributes'         => $elementType->defineTableAttributes($state['source']),
+			'elements'           => $criteria->find(),
+			'disabledElementIds' => $disabledElementIds,
+		), true);
 
 		$totalVisible = $criteria->offset + $criteria->limit;
 		$remainingElements = $criteria->total() - $totalVisible;
@@ -183,40 +192,5 @@ class ElementsController extends BaseController
 		}
 
 		return $criteria;
-	}
-
-	/**
-	 * Renders the element container HTML for the ElementIndex.
-	 *
-	 * @access private
-	 * @param BaseElementType      $elementType
-	 * @param array                $state
-	 * @return string
-	 */
-	private function _renderElementIndexContainerHtml(BaseElementType $elementType, $state)
-	{
-		return $this->renderTemplate('_elements/elementcontainer', array(
-			'state'              => $state,
-			'attributes'         => $elementType->defineTableAttributes($state['source'])
-		), true);
-	}
-
-	/**
-	 * Renders the element data HTML for the ElementIndex.
-	 *
-	 * @access private
-	 * @param BaseElementType      $elementType
-	 * @param array                $state
-	 * @param ElementCriteriaModel $criteria
-	 * @param array                $disabledElementIds
-	 * @return string
-	 */
-	private function _renderElementIndexDataHtml(BaseElementType $elementType, $state, ElementCriteriaModel $criteria, $disabledElementIds)
-	{
-		return $this->renderTemplate('_elements/elementdata', array(
-			'attributes'         => $elementType->defineTableAttributes($state['source']),
-			'elements'           => $criteria->find(),
-			'disabledElementIds' => $disabledElementIds,
-		), true);
 	}
 }

@@ -434,20 +434,28 @@ table.data.collapsed tbody td form { display: inline-block; }
 .datatablesorthelper tr:last-child td { border-bottom: none !important; }
 
 /* elements */
-.element { position: relative; border-radius: 3px; border: 1px solid rgba(0,0,0,0.15); padding: 5px 10px; text-shadow: 0 1px 0 rgba(255,255,255,0.5); background: $highlight; cursor: default;
+.element { position: relative; padding: 5px 0; cursor: pointer; }
+.element .status { margin: 0 1px 0 0; }
+
+.element.hasthumb { padding-left: 37px !important; }
+.element.hasthumb .thumb { position: absolute; top: -1px; left: 0; border-radius: 2px; width: 30px; height: 30px; background-color: #ccc; background-repeat: no-repeat; background-position: 50% 50%; background-size: cover;
+	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px -1px rgba(0,0,0,0.25);
+	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px -1px rgba(0,0,0,0.25);
+}
+
+.element.selectable { border-radius: 3px; border: 1px solid rgba(0,0,0,0.15); padding-left: 10px; padding-right: 10px; text-shadow: 0 1px 0 rgba(255,255,255,0.5); background: $highlight; cursor: default;
 	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 	        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
-.element:focus { outline: none; }
-.element.sel,
-.sel .element { background: #ccc;
+.element.selectable:focus { outline: none; }
+.element.selectable.sel,
+.sel .element.selectable { background: #ccc;
 	-webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
 	        box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
 }
-.element .status { margin: 0 1px 0 -2px; }
 
-.element.hasthumb { padding-left: 37px; }
-.element.hasthumb .thumb { position: absolute; top: -1px; left: -1px; border-radius: 3px 0 0 3px; width: 30px; height: 30px; background-color: #ccc; background-repeat: no-repeat; background-position: 50% 50%; background-size: cover;
+.element.selectable .thumb { margin-left: -1px; }
+.element.selectable .thumb { left: -1px; border-radius: 3px 0 0 3px;
 	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
 	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
 }
@@ -583,13 +591,6 @@ ul.tree,
 .elementselectormodal .body .spinner.big { top: 205px; left: 350px; margin: -24px 0 0 -24px; }
 
 .elementselectormodal .body .sidebar { margin: -30px 0 -30px -230px; padding: 30px 0 30px 30px; border-right: 1px solid #eee; height: 350px; overflow: scroll; }
-.elementselectormodal .body .sidebar li { position: relative; }
-.elementselectormodal .body .sidebar li .toggle { position: absolute; top: 5px; left: -21px; width: 16px; height: 16px; background: url(../images/foldertoggle.png) no-repeat 0 0; }
-.elementselectormodal .body .sidebar li.expanded > .toggle { background-position: 0 -32px; }
-.elementselectormodal .body .sidebar li a.sel + .toggle { background-position: 0 -16px; }
-.elementselectormodal .body .sidebar li.expanded > a.sel + .toggle { background-position: 0 -48px; }
-.elementselectormodal .body .sidebar li ul { margin-left: 25px; display: none; }
-.elementselectormodal .body .sidebar li.expanded > ul { display: block; }
 
 .elementselectormodal .body .main { margin: -30px; padding: 30px; height: 350px; overflow: scroll; }
 .elementselectormodal .body .main .elements { margin: 0 -30px; }

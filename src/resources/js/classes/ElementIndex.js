@@ -13,7 +13,6 @@ Craft.ElementIndex = Garnish.Base.extend({
 	$sidebar: null,
 	$sources: null,
 	$sourceToggles: null,
-	$main: null,
 	$search: null,
 	$elements: null,
 	$tbody: null,
@@ -42,9 +41,8 @@ Craft.ElementIndex = Garnish.Base.extend({
     	this.$sidebar = this.$container.find('.sidebar:first');
     	this.$sources = this.$sidebar.find('a');
     	this.$sourceToggles = this.$sidebar.find('.toggle');
-    	this.$main = this.$container.find('.main:first');
-    	this.$search = this.$main.find('.search:first input:first');
-    	this.$elements = this.$main.find('.elements:first');
+    	this.$search = this.$container.find('.search:first input:first');
+    	this.$elements = this.$container.find('.elements:first');
 
     	// Select the initial source
     	var source = this.getState('source');
@@ -125,6 +123,7 @@ Craft.ElementIndex = Garnish.Base.extend({
 	{
 		return {
 			elementType:        this.elementType,
+			mode:               this.settings.mode,
 			disabledElementIds: this.settings.disabledElementIds,
 			state:              this.state,
 			search:             (this.$search ? this.$search.val() : null)
@@ -134,7 +133,7 @@ Craft.ElementIndex = Garnish.Base.extend({
 	updateElements: function()
 	{
 		this.$spinner.removeClass('hidden');
-		this.removeListener(this.$main, 'scroll');
+		//this.removeListener(this.$main, 'scroll');
 
 		var data = this.getControllerData();
 
@@ -144,7 +143,7 @@ Craft.ElementIndex = Garnish.Base.extend({
 
 			this.$elements.html(response.elementContainerHtml);
 
-			var $headers = this.$main.find('thead:first th');
+			var $headers = this.$elements.find('thead:first th');
 			this.addListener($headers, 'click', 'onSortChange');
 
 			this.$tbody = this.$elements.find('tbody:first');
@@ -171,7 +170,7 @@ Craft.ElementIndex = Garnish.Base.extend({
 		{
 			this.totalVisible = response.totalVisible;
 
-			this.addListener(this.$main, 'scroll', function()
+			/*this.addListener(this.$main, 'scroll', function()
 			{
 				if (this.$main.prop('scrollHeight') - this.$main.scrollTop() == this.$main.outerHeight())
 				{
@@ -188,7 +187,7 @@ Craft.ElementIndex = Garnish.Base.extend({
 						this.setNewElementDataHtml(response, true);
 					}, this));
 				}
-			});
+			});*/
 		}
 
 		this.settings.onUpdateElements(append);
@@ -340,6 +339,7 @@ Craft.ElementIndex = Garnish.Base.extend({
 },
 {
 	defaults: {
+		mode: 'index',
 		id: null,
 		disabledElementIds: null,
 		onUpdateElements: $.noop,
