@@ -79,7 +79,15 @@ class AssetIndexTool extends BaseTool
 			{
 				// Get the indexing list
 				$indexList = craft()->assetIndexing->getIndexListForSource($sessionId, $sourceId);
-				$missingFolders += $indexList['missingFolders'];
+				if (!empty($indexList['error']))
+				{
+					continue;
+				}
+
+				if (isset($indexList['missingFolders']))
+				{
+					$missingFolders += $indexList['missingFolders'];
+				}
 
 				// Add the initial request
 				$batches[] = array(
