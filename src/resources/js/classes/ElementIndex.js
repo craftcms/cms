@@ -39,7 +39,7 @@ Craft.ElementIndex = Garnish.Base.extend({
     	// Find the DOM elements
     	this.$spinner = this.$container.find('.spinner:first');
     	this.$sidebar = this.$container.find('.sidebar:first');
-    	this.$sources = this.$sidebar.find('a');
+    	this.$sources = this.$sidebar.find('nav a');
     	this.$sourceToggles = this.$sidebar.find('.toggle');
     	this.$search = this.$container.find('.search:first input:first');
     	this.$elements = this.$container.find('.elements:first');

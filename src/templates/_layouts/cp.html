@@ -135,17 +135,23 @@
 			{% endif %}
 		</header>
 
-		{% set hasSidebar = (sidebar is defined and sidebar) %}
+		{% if sidebar is not defined %}
+			{% set sidebar = block('sidebar')|trim %}
+		{% endif %}
 
-		<div id="main"{% if hasSidebar %} class="has-sidebar"{% endif %}>
-			{% if hasSidebar %}
+		<div id="main"{% if sidebar is not empty %} class="has-sidebar"{% endif %}>
+			{% if sidebar is not empty %}
 				<div id="sidebar" class="sidebar">
-					{{ sidebar }}
+					{{ sidebar|raw }}
 				</div>
 			{% endif %}
 
 			<main id="content" role="main">
-				{{ content }}
+				{% block content %}
+					{% if content is defined %}
+						{{ content }}
+					{% endif %}
+				{% endblock %}
 			</main>
 		</div>
 	</div>

@@ -20,7 +20,7 @@
 	{% if element.getStatus() %}
 		<div class="status {{ element.getStatus() }}"></div>
 	{% endif %}
-	{% if mode == 'index' %}
+	{% if mode == 'index' and element.getCpEditUrl() %}
 		<a class="label" href="{{ element.getCpEditUrl() }}">{{ element }}</a>
 	{% else %}
 		<span class="label">{{ element }}</span>

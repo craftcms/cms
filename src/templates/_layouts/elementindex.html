@@ -10,24 +10,24 @@
 {% set sources = elementType.getSources() %}
 
 
-{% set sidebar %}
+{% block sidebar %}
 	{% if sources is not empty %}
 		<nav>
 			{% include "_elements/sources" %}
 		</nav>
 	{% endif %}
-{% endset %}
+{% endblock %}
 
 
-{% set content %}
+{% block content %}
 	<div class="main">
 		<div class="toolbar">
-			<div class="search"><input type="text" class="text nicetext fullwidth" placeholder="{{ 'Search entries'|t }}"></div>
+			<div class="search"><input type="text" class="text nicetext fullwidth" placeholder="{{ 'Search'|t }}"></div>
 		</div>
 
 		<div class="elements"></div>
 	</div>
-{% endset %}
+{% endblock %}
 
 
 {% set js %}

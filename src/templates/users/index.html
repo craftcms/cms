@@ -1,3 +1,14 @@
 {% extends "_layouts/elementindex" %}
 {% set title = "Users"|t %}
 {% set elementType = 'User' %}
+
+
+{% block sidebar %}
+	{% if user.can('registerUsers') %}
+		<div class="buttons">
+			<a class="btn submit add icon" href="{{ url('users/new') }}">{{ "New User"|t }}</a>
+		</div>
+	{% endif %}
+
+	{{ parent() }}
+{% endblock %}
