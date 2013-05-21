@@ -92,9 +92,10 @@ class FieldsController extends BaseController
 		{
 			craft()->userSession->setNotice(Craft::t('Field saved.'));
 
-			// TODO: Deprecate
-			if (isset($_POST['redirect']))
+			// TODO: Remove for 2.0
+			if (isset($_POST['redirect']) && strpos($_POST['redirect'], '{fieldId}') !== false)
 			{
+				Craft::log('The {fieldId} token within the ‘redirect’ param on fields/saveField requests has been deprecated. Use {id} instead.', LogLevel::Warning);
 				$_POST['redirect'] = str_replace('{fieldId}', '{id}', $_POST['redirect']);
 			}
 
