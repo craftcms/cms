@@ -2,11 +2,11 @@
 	{% set mode = 'index' %}
 {% endif -%}
 
-{% set thumbUrl = element.getThumbUrl(45, 45) -%}
+{% set thumbUrl = element.getThumbUrl(30, 30) -%}
 {% if thumbUrl -%}
 	{% set thumbClass = 'thumb'~element.id -%}
 	{% includeCss '.'~thumbClass~' { background-image: url('~thumbUrl~'); }' -%}
-	{% includeHiResCss '.'~thumbClass~' { background-image: url('~element.getThumbUrl(90, 90)~'); }' -%}
+	{% includeHiResCss '.'~thumbClass~' { background-image: url('~element.getThumbUrl(60, 60)~'); }' -%}
 {% endif -%}
 
 <div class="element{% if mode != 'index' %} selectable{% endif %}{% if mode == 'field' %} removable{% endif %}{% if thumbUrl %} hasthumb{% endif %}" data-id="{{ element.id }}">
