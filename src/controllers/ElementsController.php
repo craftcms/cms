@@ -104,7 +104,6 @@ class ElementsController extends BaseController
 		return null;
 	}
 
-
 	/**
 	 * Returns the criteria for a given source.
 	 *
@@ -116,7 +115,14 @@ class ElementsController extends BaseController
 	{
 		if (isset($sources[$selectedSource]))
 		{
-			return $sources[$selectedSource]['criteria'];
+			if (isset($sources[$selectedSource]['criteria']))
+			{
+				return $sources[$selectedSource]['criteria'];
+			}
+			else
+			{
+				return array();
+			}
 		}
 		else
 		{

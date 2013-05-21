@@ -19,14 +19,16 @@
 	{%- for key, option in options %}
 		{%- set optionLabel = (option.label is defined ? option.label : option) %}
 		{%- set optionValue = (option.value is defined ? option.value : key) -%}
-		<div>
-			{% include "_includes/forms/checkbox" with {
-				label:    optionLabel,
-				name:     (name is defined ? name~'[]' : null),
-				value:    optionValue,
-				checked:  (allChecked or optionValue in values),
-				disabled: allChecked
-			} only %}
-		</div>
+		{% if optionValue != allValue %}
+			<div>
+				{% include "_includes/forms/checkbox" with {
+					label:    optionLabel,
+					name:     (name is defined ? name~'[]' : null),
+					value:    optionValue,
+					checked:  (allChecked or optionValue in values),
+					disabled: allChecked
+				} only %}
+			</div>
+		{% endif %}
 	{% endfor %}
 </div>

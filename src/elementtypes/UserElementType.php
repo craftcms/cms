@@ -33,7 +33,11 @@ class UserElementType extends BaseElementType
 	 */
 	public function getSources()
 	{
-		$sources = array();
+		$sources = array(
+			'*' => array(
+				'label' => Craft::t('All users')
+			)
+		);
 
 		if (Craft::hasPackage(CraftPackage::Users))
 		{

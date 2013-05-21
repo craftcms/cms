@@ -33,7 +33,11 @@ class EntryElementType extends BaseElementType
 	 */
 	public function getSources()
 	{
-		$sources = array();
+		$sources = array(
+			'*' => array(
+				'label' => Craft::t('All entries')
+			)
+		);
 
 		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
