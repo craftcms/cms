@@ -73,7 +73,7 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 
 			if (this.modal)
 			{
-				this.modal.enableElementsById($element.data('id'));
+				this.modal.elementIndex.enableElementsById($element.data('id'));
 			}
 
 			this.totalElements--;
@@ -109,9 +109,8 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 				selectedElementIds.push($element.data('id'));
 			}
 
-			this.modal = new Craft.ElementSelectorModal({
+			this.modal = new Craft.ElementSelectorModal(this.elementType, {
 				id: this.id,
-				elementType: this.elementType,
 				sources: this.sources,
 				disabledElementIds: selectedElementIds,
 				onSelect: $.proxy(this, 'selectElements')

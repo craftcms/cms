@@ -14,9 +14,6 @@ class ElementsController extends BaseController
 		$this->requireAjaxRequest();
 
 		$showSources = craft()->request->getParam('sources');
-		$state = craft()->request->getParam('state', array());
-		$disabledElementIds = craft()->request->getParam('disabledElementIds');
-
 		$elementType = $this->_getElementType();
 		$sources = $elementType->getSources();
 
@@ -31,55 +28,15 @@ class ElementsController extends BaseController
 			}
 		}
 
-		if ($sources)
-		{
-			// Was there a previously-selected source?
-			if (!empty($state['source']))
-			{
-				$sourcePath = $this->_getSourcePath($sources, $state['source']);
-			}
-
-			if (empty($sourcePath))
-			{
-				// Default to the first source
-				$state['source'] = array_shift(array_keys($sources));
-				$sourcePath = array($state['source']);
-			}
-		}
-		else
-		{
-			// No source information has ben setup, yet.
-			$sourcePath = null;
-			$state['source'] = null;
-		}
-
-		$criteria = $this->_getElementCriteria($elementType, $state);
-
-		$bodyHtml = $this->renderTemplate('_elements/modal/body', array(
-			'sources'    => $sources,
-			'sourcePath' => $sourcePath,
-		), true);
-
-		$elementContainerHtml = $this->_renderModalElementContainerHtml($elementType, $state);
-		$elementDataHtml = $this->_renderModalElementDataHtml($elementType, $state, $criteria, $disabledElementIds);
-
-		$totalVisible = $criteria->offset + $criteria->limit;
-		$remainingElements = $criteria->total() - $totalVisible;
-
-		$this->returnJson(array(
-			'bodyHtml'             => $bodyHtml,
-			'elementContainerHtml' => $elementContainerHtml,
-			'elementDataHtml'      => $elementDataHtml,
-			'headHtml'             => craft()->templates->getHeadHtml(),
-			'totalVisible'         => $totalVisible,
-			'more'                 => ($remainingElements > 0),
+		$this->renderTemplate('_elements/modalbody', array(
+			'sources' => $sources
 		));
 	}
 
 	/**
-	 * Renders and returns the list of elements in an ElementSelectorModal.
+	 * Renders and returns the list of elements in an ElementIndex.
 	 */
-	public function actionGetModalElements()
+	public function actionGetElements()
 	{
 		$elementType = $this->_getElementType();
 		$state = craft()->request->getParam('state', array());
@@ -89,14 +46,14 @@ class ElementsController extends BaseController
 
 		if (!$criteria->offset)
 		{
-			$elementContainerHtml = $this->_renderModalElementContainerHtml($elementType, $state);
+			$elementContainerHtml = $this->_renderElementIndexContainerHtml($elementType, $state);
 		}
 		else
 		{
 			$elementContainerHtml = null;
 		}
 
-		$elementDataHtml = $this->_renderModalElementDataHtml($elementType, $state, $criteria, $disabledElementIds);
+		$elementDataHtml = $this->_renderElementIndexDataHtml($elementType, $state, $criteria, $disabledElementIds);
 
 		$totalVisible = $criteria->offset + $criteria->limit;
 		$remainingElements = $criteria->total() - $totalVisible;
@@ -229,23 +186,23 @@ class ElementsController extends BaseController
 	}
 
 	/**
-	 * Renders the element container HTML for the ElementSelectorModal.
+	 * Renders the element container HTML for the ElementIndex.
 	 *
 	 * @access private
 	 * @param BaseElementType      $elementType
 	 * @param array                $state
 	 * @return string
 	 */
-	private function _renderModalElementContainerHtml(BaseElementType $elementType, $state)
+	private function _renderElementIndexContainerHtml(BaseElementType $elementType, $state)
 	{
-		return $this->renderTemplate('_elements/modal/elementcontainer', array(
+		return $this->renderTemplate('_elements/elementcontainer', array(
 			'state'              => $state,
 			'attributes'         => $elementType->defineTableAttributes($state['source'])
 		), true);
 	}
 
 	/**
-	 * Renders the element data HTML for the ElementSelectorModal.
+	 * Renders the element data HTML for the ElementIndex.
 	 *
 	 * @access private
 	 * @param BaseElementType      $elementType
@@ -254,9 +211,9 @@ class ElementsController extends BaseController
 	 * @param array                $disabledElementIds
 	 * @return string
 	 */
-	private function _renderModalElementDataHtml(BaseElementType $elementType, $state, ElementCriteriaModel $criteria, $disabledElementIds)
+	private function _renderElementIndexDataHtml(BaseElementType $elementType, $state, ElementCriteriaModel $criteria, $disabledElementIds)
 	{
-		return $this->renderTemplate('_elements/modal/elementdata', array(
+		return $this->renderTemplate('_elements/elementdata', array(
 			'attributes'         => $elementType->defineTableAttributes($state['source']),
 			'elements'           => $criteria->find(),
 			'disabledElementIds' => $disabledElementIds,

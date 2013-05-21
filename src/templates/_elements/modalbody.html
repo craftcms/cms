@@ -1,9 +1,9 @@
 <div class="spinner hidden"></div>
 
-{% if sources %}
+{% if sources is defined and sources is not empty %}
 	<div class="sidebar">
 		<nav>
-			{% include "_elements/modal/sources" with { depth: 0 } %}
+			{% include "_elements/sources" %}
 		</nav>
 	</div>
 {% endif %}
