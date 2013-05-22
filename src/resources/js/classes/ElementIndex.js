@@ -10,7 +10,8 @@ Craft.ElementIndex = Garnish.Base.extend({
 
 	$container: null,
 	$scroller: null,
-	$spinner: null,
+	$mainSpinner: null,
+	$loadingMoreSpinner: null,
 	$sidebar: null,
 	$sources: null,
 	$sourceToggles: null,
@@ -38,7 +39,8 @@ Craft.ElementIndex = Garnish.Base.extend({
         }
 
     	// Find the DOM elements
-    	this.$spinner = this.$container.find('.spinner:first');
+    	this.$mainSpinner = this.$container.find('.toolbar:first .spinner:first');
+    	this.$loadingMoreSpinner = this.$container.find('.spinner.loadingmore')
     	this.$sidebar = this.$container.find('.sidebar:first');
     	this.$sources = this.$sidebar.find('nav a');
     	this.$sourceToggles = this.$sidebar.find('.toggle');
@@ -142,14 +144,14 @@ Craft.ElementIndex = Garnish.Base.extend({
 
 	updateElements: function()
 	{
-		this.$spinner.removeClass('hidden');
+		this.$mainSpinner.removeClass('hidden');
 		this.removeListener(this.$scroller, 'scroll');
 
 		var data = this.getControllerData();
 
 		Craft.postActionRequest('elements/getElements', data, $.proxy(function(response)
 		{
-			this.$spinner.addClass('hidden');
+			this.$mainSpinner.addClass('hidden');
 
 			this.$elements.html(response.elementContainerHtml);
 
@@ -187,7 +189,7 @@ Craft.ElementIndex = Garnish.Base.extend({
 					(this.$scroller.prop('scrollHeight') - this.$scroller.scrollTop() == this.$scroller.outerHeight())
 				)
 				{
-					this.$spinner.removeClass('hidden');
+					this.$loadingMoreSpinner.removeClass('hidden');
 					this.removeListener(this.$scroller, 'scroll');
 
 					var data = this.getControllerData();
@@ -195,7 +197,7 @@ Craft.ElementIndex = Garnish.Base.extend({
 
 					Craft.postActionRequest('elements/getElements', data, $.proxy(function(response)
 					{
-						this.$spinner.addClass('hidden');
+						this.$loadingMoreSpinner.addClass('hidden');
 
 						this.setNewElementDataHtml(response, true);
 					}, this));

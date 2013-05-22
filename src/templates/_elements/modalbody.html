@@ -1,5 +1,3 @@
-<div class="spinner hidden"></div>
-
 {% if sources is defined and sources is not empty %}
 	<div class="sidebar">
 		<nav>
@@ -11,7 +9,12 @@
 <div class="main">
 	<div class="toolbar">
 		<div class="search"><input type="text" class="text nicetext fullwidth" placeholder="{{ 'Search'|t }}"></div>
+		<div class="spinner hidden"></div>
 	</div>
 
 	<div class="elements"></div>
+
+	<div class="centeralign">
+		<div class="spinner loadingmore hidden"></div>
+	</div>
 </div>

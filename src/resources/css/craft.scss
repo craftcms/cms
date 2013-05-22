@@ -227,7 +227,8 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 /*  Buttons
 /* ----------------------------------------*/
 
-.toolbar { margin: 30px 0; height: 31px; }
+.toolbar { position: relative; margin: 30px 0; height: 31px; }
+.toolbar .spinner { position: absolute; top: 0; right: -24px; }
 
 .buttons { position: relative; margin: 30px 0 30px -4px; }
 .buttons:after { @include clearafter; }
@@ -585,9 +586,8 @@ ul.tree,
 
 /* element selector modals */
 .elementselectormodal { margin-left: -350px; width: 700px; @include unselectable; }
-.elementselectormodal .spinner { position: absolute; top: 30px; right: 5px; }
 .elementselectormodal .body { position: relative; height: 350px; padding-left: 230px; }
-.elementselectormodal .body .spinner.big { top: 205px; left: 350px; margin: -24px 0 0 -24px; }
+.elementselectormodal .body .spinner.big { position: absolute; top: 205px; left: 350px; margin: -24px 0 0 -24px; }
 
 .elementselectormodal .body .sidebar { margin: -30px 0 -30px -230px; padding: 30px 0 30px 30px; border-right: 1px solid #eee; height: 350px; overflow: scroll; }
 
