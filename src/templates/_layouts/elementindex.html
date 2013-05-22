@@ -30,10 +30,10 @@
 {% endblock %}
 
 
-{% set js %}
+{% block initJs %}
 	new Craft.ElementIndex('{{ elementTypeClass }}', $('#main'), {
 		id: '{{ elementTypeClass }}Index'
 	});
-{% endset %}
+{% endblock %}
 
-{% includeJs js %}
+{% includeJs block('initJs') %}
