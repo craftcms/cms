@@ -4,7 +4,7 @@
 
 {% set iconUrl = element.getIconUrl(30, 30) -%}
 {% if iconUrl -%}
-	{% set iconClass = 'icon'~element.id -%}
+	{% set iconClass = 'elementicon'~element.id -%}
 	{% includeCss '.'~iconClass~' { background-image: url('~iconUrl~'); }' -%}
 	{% includeHiResCss '.'~iconClass~' { background-image: url('~element.getIconUrl(60, 60)~'); }' -%}
 {% endif -%}
@@ -15,7 +15,7 @@
 		<a class="delete icon" title="{{ 'Remove'|t }}"></a>
 	{% endif -%}
 	{% if iconUrl -%}
-		<div class="icon {{ iconClass }}"></div>
+		<div class="elementicon {{ iconClass }}"></div>
 	{% endif %}
 	{% if element.getStatus() %}
 		<div class="status {{ element.getStatus() }}"></div>
