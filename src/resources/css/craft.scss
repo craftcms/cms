@@ -433,7 +433,7 @@ table.data.collapsed tbody td form { display: inline-block; }
 .datatablesorthelper tr:last-child td { border-bottom: none !important; }
 
 /* elements */
-.element { position: relative; padding: 5px 0; cursor: default; }
+.element { position: relative; padding: 5px 0; cursor: default; @include unselectable; }
 .element .status { margin: 0 1px 0 0; }
 
 .element.hasicon { padding-left: 37px !important; }
