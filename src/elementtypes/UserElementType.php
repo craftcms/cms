@@ -62,7 +62,8 @@ class UserElementType extends BaseElementType
 	 */
 	public function defineSearchableAttributes()
 	{
-		return array('username', 'firstName', 'lastName', 'fullName', 'email');
+		return array('username', 'firstName', 'lastName', 'fullName', 'email'
+		);
 	}
 
 	/**
@@ -74,9 +75,10 @@ class UserElementType extends BaseElementType
 	public function defineTableAttributes($source = null)
 	{
 		return array(
-			'fullName' => Craft::t('Full Name'),
-			'email'    => Craft::t('Email'),
-			'status'   => Craft::t('Status'),
+			array('label' => Craft::t('Name'),       'attribute' => 'username'),
+			array('label' => Craft::t('Email'),      'attribute' => 'email',         'display' => '<a href="mailto:{email}">{email}</a>'),
+			array('label' => Craft::t('Join Date'),  'attribute' => 'dateCreated',   'display' => '{dateCreated.localeDate}'),
+			array('label' => Craft::t('Last Login'), 'attribute' => 'lastLoginDate', 'display' => '{lastLoginDate.localeDate}'),
 		);
 	}
 

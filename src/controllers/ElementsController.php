@@ -43,13 +43,14 @@ class ElementsController extends BaseController
 		$state = craft()->request->getParam('state', array());
 		$disabledElementIds = craft()->request->getParam('disabledElementIds');
 
-		$criteria = $this->_getElementCriteria($elementType, $state);
+		$tableAttributes = $elementType->defineTableAttributes($state['source']);
+		$criteria = $this->_getElementCriteria($elementType, $state, $tableAttributes);
 
 		if (!$criteria->offset)
 		{
 			$elementContainerHtml = $this->renderTemplate('_elements/elementcontainer', array(
 				'state'      => $state,
-				'attributes' => $elementType->defineTableAttributes($state['source'])
+				'attributes' => $tableAttributes
 			), true);
 		}
 		else
@@ -59,7 +60,7 @@ class ElementsController extends BaseController
 
 		$elementDataHtml = $this->renderTemplate('_elements/elementdata', array(
 			'mode'               => $mode,
-			'attributes'         => $elementType->defineTableAttributes($state['source']),
+			'attributes'         => $tableAttributes,
 			'elements'           => $criteria->find(),
 			'disabledElementIds' => $disabledElementIds,
 		), true);
@@ -163,9 +164,10 @@ class ElementsController extends BaseController
 	 *
 	 * @param BaseElementType $elementType
 	 * @param array           $state
+	 * @param array           $tableAttributes
 	 * @return ElementCriteriaModel
 	 */
-	private function _getElementCriteria($elementType, $state)
+	private function _getElementCriteria($elementType, $state, $tableAttributes)
 	{
 		$criteria = craft()->elements->getCriteria($elementType->getClassHandle());
 
@@ -184,7 +186,15 @@ class ElementsController extends BaseController
 
 		if (!empty($state['order']))
 		{
-			$criteria->order = $state['order'].' '.$state['sort'];
+			// Validate it
+			foreach ($tableAttributes as $attribute)
+			{
+				if ($attribute['attribute'] == $state['order'])
+				{
+					$criteria->order = $state['order'].' '.$state['sort'];
+					break;
+				}
+			}
 		}
 
 		if ($search = craft()->request->getParam('search'))

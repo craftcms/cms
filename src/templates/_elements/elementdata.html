@@ -1,13 +1,23 @@
 {% for element in elements %}
 	<tr{% if element.id in disabledElementIds %} class="disabled"{% endif %} data-id="{{ element.id }}" data-label="{{ element }}" data-status="{{ element.getStatus() }}">
-		{% for attribute, label in attributes %}
+		{% for attribute in attributes %}
 			{% if loop.index == 1 %}
-				<td scope="row" data-title="{{ label }}">
+				<td scope="row" data-title="{{ attribute.label }}">
 					{% include "_elements/element" %}
 				</td>
 			{% else %}
-				{% set value = attribute(element, attribute) %}
-				<td data-title="{{ label }}">{{ value }}</td>
+				{% if attribute.display is defined %}
+					{% set value = phattribute(element, attribute.display) %}
+				{% else %}
+					{% set value = attribute(element, attribute.attribute) %}
+				{% endif %}
+				<td data-title="{{ attribute.label }}">
+					{%- if attribute.link is defined and attribute.link and element.getUrl() -%}
+						<a href="{{ element.getUrl() }}" target="_blank">{{ value|raw }}</a>
+					{%- else -%}
+						{{ value|raw }}
+					{%- endif -%}
+				</td>
 			{% endif %}
 		{% endfor %}
 	</tr>

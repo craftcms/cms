@@ -58,10 +58,9 @@ class AssetElementType extends BaseElementType
 	public function defineTableAttributes($source = null)
 	{
 		return array(
-			'filename'     => Craft::t('Filename'),
-			'dateModified' => Craft::t('Date Modified'),
-			'size'         => Craft::t('Size'),
-			'kind'         => Craft::t('Kind'),
+			array('label' => Craft::t('Filename'),      'attribute' => 'filename'),
+			array('label' => Craft::t('Size'),          'attribute' => 'size',         'display' => '{size|filesize}'),
+			array('label' => Craft::t('Date Modified'), 'attribute' => 'dateModified', 'display' => '{dateModified.localeDate}'),
 		);
 	}
 

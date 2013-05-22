@@ -94,21 +94,25 @@ class EntryElementType extends BaseElementType
 
 		if (!empty($section))
 		{
-			$attributes['title'] = Craft::t($section->titleLabel);
+			$titleLabel = Craft::t($section->titleLabel);
 		}
 		else
 		{
-			$attributes['title'] = Craft::t('Title');
+			$titleLabel = Craft::t('Title');
 		}
 
-		$attributes['slug']     = Craft::t('Slug');
+		$attributes = array(
+			array('label' => $titleLabel,      'attribute' => 'title'),
+			array('label' => Craft::t('Slug'), 'attribute' => 'slug', 'link' => true),
+		);
 
 		if (empty($section))
 		{
-			$attributes['section']  = Craft::t('Section');
+			$attributes[] = array('label' => Craft::t('Section'), 'attribute' => 'sectionId', 'display' => '{section}');
 		}
 
-		$attributes['postDate'] = Craft::t('Post Date');
+		$attributes[] = array('label' => Craft::t('Post Date'), 'attribute' => 'postDate', 'display' => '{postDate.localeDate}');
+		$attributes[] = array('label' => Craft::t('Expiry Date'), 'attribute' => 'expiryDate', 'display' => '{expiryDate.localeDate}');
 
 		return $attributes;
 	}

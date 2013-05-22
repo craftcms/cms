@@ -149,6 +149,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'actionUrl'       => new \Twig_Function_Function('\Craft\UrlHelper::getActionUrl'),
 			'getHeadHtml'     => new \Twig_Function_Method($this, 'getHeadHtmlFunction'),
 			'getFootHtml'     => new \Twig_Function_Method($this, 'getFootHtmlFunction'),
+			'phattribute'     => new \Twig_Function_Method($this, 'getPhattribute'),
 			'getTranslations' => new \Twig_Function_Function('\Craft\craft()->templates->getTranslations'),
 			'round'           => new \Twig_Function_Function('round'),
 			'ceil'            => new \Twig_Function_Function('ceil'),
@@ -178,6 +179,18 @@ class CraftTwigExtension extends \Twig_Extension
 	{
 		$html = craft()->templates->getFootHtml();
 		return $this->getTwigMarkup($html);
+	}
+
+	/**
+	 * Renders a micro template for accessing properties of a single object.
+	 *
+	 * @param mixed $object
+	 * @param string $template
+	 * @return string
+	 */
+	public function getPhattribute($object, $template)
+	{
+		return craft()->templates->renderObjectTemplate($template, $object);
 	}
 
 	/**
