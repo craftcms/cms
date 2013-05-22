@@ -1,18 +1,18 @@
 <div class="files listview">
 	<table class="data collapsible">
 		<thead>
-			<th scope="col" data-ordeby="filename" class="assets-lv-filename {% if orderBy == "filename" %}assets-lv-sorting assets-lv-{{ sort }}{% endif %}">{{ "Name"|t }}</th>
-			<th scope="col" data-orderby="dateModified" class="assets-lv-dateModified {% if orderBy == "dateModified" %}assets-lv-sorting assets-lv-{{ sort }}{% endif %}">{{ "Date Modified"|t }}</th>
-			<th scope="col" data-orderby="size" class="assets-lv-size {% if orderBy == "size" %}assets-lv-sorting assets-lv-{{ sort }}{% endif %}">{{ "Size"|t }}</th>
+			<th scope="col" data-ordeby="filename" class="assets-lv-filename {% if orderBy == "filename" %}ordered {{ sort }}{% endif %}">{{ "Filename"|t }}</th>
+			<th scope="col" data-orderby="size" class="assets-lv-size {% if orderBy == "size" %}ordered {{ sort }}{% endif %}">{{ "Size"|t }}</th>
+			<th scope="col" data-orderby="dateModified" class="assets-lv-dateModified {% if orderBy == "dateModified" %}ordered {{ sort }}{% endif %}">{{ "Date Modified"|t }}</th>
 		</thead>
 		<tbody>
 			{% for file in files %}
 				<tr class="assets-list-row" data-id="{{ file.id }}" data-fileName="{{ file.filename }}" data-folder="{{ file.folderId }}" data-url="{{ file.url }}">
-					<td data-title="{{ 'Name'|t }}">
+					<td data-title="{{ 'Filename'|t }}">
                         {% include "_elements/element" with { element: file } %}
                     </td>
-					<td data-title="{{ 'Date Modified'|t }}">{% if file.dateModified %}{{ file.dateModified.format("Y-m-d H:i:s")|datetime }}{% endif %}</td>
 					<td data-title="{{ 'Size'|t }}">{% if file.size %}{{ file.size|filesize }}{% endif %}</td>
+					<td data-title="{{ 'Date Modified'|t }}">{% if file.dateModified %}{{ file.dateModified.localeDate }}{% endif %}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

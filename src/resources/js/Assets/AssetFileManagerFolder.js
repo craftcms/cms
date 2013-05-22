@@ -79,10 +79,10 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 		// add the toggle
 		if (! this.$toggle)
 		{
-			this.$toggle = $('<span class="assets-fm-toggle"></span>');
+			this.$toggle = $('<div class="toggle"></div>');
 		}
 
-		this.$toggle.prependTo(this.$a);
+		this.$toggle.insertAfter(this.$a);
 
 		// prevent toggle button clicks from triggering multi select functions
 		this.addListener(this.$toggle, 'mouseup,mousedown,click', function(ev)
@@ -203,7 +203,7 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 
 		this.expanded = true;
 
-		this.$a.addClass('assets-fm-expanded');
+		this.$a.parent().addClass('expanded');
 
 		this.$ul.show();
 		this._onShowSubfolders();
@@ -220,7 +220,7 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 		if (! this.expanded) return;
 
 		this.expanded = false;
-		this.$a.removeClass('assets-fm-expanded');
+		this.$a.parent().removeClass('expanded');
 
 		this.$ul.hide();
 		this._onHideSubfolders();
@@ -383,9 +383,6 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 		this.parent = newParent;
 
         this.depth = this.parent.depth + 1;
-        var padding = 30 + (18 * (this.depth - 1));
-
-        this.$a.attr('style', 'padding-left: '+padding+'px; margin-left: 0 !important;');
     },
 
 	/**
@@ -515,10 +512,9 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 				if (data.success)
 				{
                     var subfolderDepth = this.depth + 1,
-                        padding = 30 + (18 * (subfolderDepth - 1)),
 					    subfolderName = data.folderName,
 						$li = $('<li class="assets-fm-folder">'
-							  +   '<a data-id="' + data.folderId + '" style="padding-left: '+padding+'px; margin-left: 0 !important;">'
+							  +   '<a data-id="' + data.folderId + '">'
 							  +     data.folderName
 							  +   '</a>'
 							  + '</li>'),

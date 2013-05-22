@@ -252,8 +252,7 @@ Assets.FileManager = Garnish.Base.extend({
                 var $helper = $('<ul class="assets-fm-folderdrag" />').append($folder);
 
                 // collapse this folder
-                $('> a', $folder).removeClass('assets-fm-expanded');
-                $('> ul', $folder).hide();
+                $folder.removeClass('expanded');
 
                 // set the helper width to the folders container width
                 $helper.width(this.$folders[0].scrollWidth);
@@ -283,7 +282,7 @@ Assets.FileManager = Garnish.Base.extend({
                 this.tempExpandedFolders = [];
 
                 // hide the expanded draggees' subfolders
-                $('> a.assets-fm-expanded + ul', this.folderDrag.$draggee).hide();
+                this.folderDrag.$draggee.filter('.expanded').removeClass('expanded').addClass('expanded-tmp')
             }, this),
 
             onDropTargetChange: $.proxy(this, '_onDropTargetChange'),
@@ -291,7 +290,7 @@ Assets.FileManager = Garnish.Base.extend({
             onDragStop: $.proxy(function()
             {
                 // show the expanded draggees' subfolders
-                $('> a.assets-fm-expanded + ul', this.folderDrag.$draggee).show();
+                this.folderDrag.$draggee.filter('.expanded-tmp').removeClass('expanded-tmp').addClass('expanded');
 
                 // Only move if we have a valid target and we're not trying to move into our direct parent
                 if (
