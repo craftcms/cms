@@ -1,21 +1,21 @@
-{% set iconSize = 30 -%}
-{% set hiresIconSize = iconSize * 2 %}
+{% set thumbSize = 30 -%}
+{% set iconSize = 28 -%}
 
 {% if mode is not defined -%}
 	{% set mode = 'index' -%}
 {% endif -%}
 
-{% set thumbUrl = element.getThumbUrl(iconSize) -%}
+{% set thumbUrl = element.getThumbUrl(thumbSize) -%}
 {% if thumbUrl -%}
 	{% set thumbClass = 'elementthumb'~element.id -%}
 	{% includeCss '.'~thumbClass~' { background-image: url('~thumbUrl~'); }' -%}
-	{% includeHiResCss '.'~thumbClass~' { background-image: url('~element.getThumbUrl(hiresIconSize)~'); }' -%}
+	{% includeHiResCss '.'~thumbClass~' { background-image: url('~element.getThumbUrl(thumbSize * 2)~'); background-size: '~thumbSize~'px; }' -%}
 {% else -%}
 	{% set iconUrl = element.getIconUrl(iconSize) -%}
 	{% if iconUrl -%}
 		{% set iconClass = 'elementicon'~element.id -%}
 		{% includeCss '.'~iconClass~' { background-image: url('~iconUrl~'); }' -%}
-		{% includeHiResCss '.'~iconClass~' { background-image: url('~element.getIconUrl(hiresIconSize)~'); }' -%}
+		{% includeHiResCss '.'~iconClass~' { background-image: url('~element.getIconUrl(iconSize * 2)~'); background-size: '~iconSize~'px; }' -%}
 	{% endif -%}
 {% endif -%}
 
