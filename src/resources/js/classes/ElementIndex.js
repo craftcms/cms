@@ -9,6 +9,7 @@ Craft.ElementIndex = Garnish.Base.extend({
 	searchTimeout: null,
 
 	$container: null,
+	$scroller: null,
 	$spinner: null,
 	$sidebar: null,
 	$sources: null,
@@ -43,6 +44,15 @@ Craft.ElementIndex = Garnish.Base.extend({
     	this.$sourceToggles = this.$sidebar.find('.toggle');
     	this.$search = this.$container.find('.search:first input:first');
     	this.$elements = this.$container.find('.elements:first');
+
+    	if (this.settings.mode == 'index')
+    	{
+    		this.$scroller = Garnish.$win;
+    	}
+    	else
+    	{
+    		this.$scroller = this.$container.find('.main');
+    	}
 
     	// Select the initial source
     	var source = this.getState('source');
@@ -133,7 +143,7 @@ Craft.ElementIndex = Garnish.Base.extend({
 	updateElements: function()
 	{
 		this.$spinner.removeClass('hidden');
-		//this.removeListener(this.$main, 'scroll');
+		this.removeListener(this.$scroller, 'scroll');
 
 		var data = this.getControllerData();
 
@@ -170,12 +180,15 @@ Craft.ElementIndex = Garnish.Base.extend({
 		{
 			this.totalVisible = response.totalVisible;
 
-			/*this.addListener(this.$main, 'scroll', function()
+			this.addListener(this.$scroller, 'scroll', function()
 			{
-				if (this.$main.prop('scrollHeight') - this.$main.scrollTop() == this.$main.outerHeight())
+				if (
+					(this.$scroller[0] == Garnish.$win[0] && ( Garnish.$win.innerHeight() + Garnish.$bod.scrollTop() >= Garnish.$bod.height() )) ||
+					(this.$scroller.prop('scrollHeight') - this.$scroller.scrollTop() == this.$scroller.outerHeight())
+				)
 				{
 					this.$spinner.removeClass('hidden');
-					this.removeListener(this.$main, 'scroll');
+					this.removeListener(this.$scroller, 'scroll');
 
 					var data = this.getControllerData();
 					data.offset = this.totalVisible;
@@ -187,7 +200,7 @@ Craft.ElementIndex = Garnish.Base.extend({
 						this.setNewElementDataHtml(response, true);
 					}, this));
 				}
-			});*/
+			});
 		}
 
 		this.settings.onUpdateElements(append);
