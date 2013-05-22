@@ -2,20 +2,20 @@
 	{% set mode = 'index' %}
 {% endif -%}
 
-{% set thumbUrl = element.getThumbUrl(30, 30) -%}
-{% if thumbUrl -%}
-	{% set thumbClass = 'thumb'~element.id -%}
-	{% includeCss '.'~thumbClass~' { background-image: url('~thumbUrl~'); }' -%}
-	{% includeHiResCss '.'~thumbClass~' { background-image: url('~element.getThumbUrl(60, 60)~'); }' -%}
+{% set iconUrl = element.getIconUrl(30, 30) -%}
+{% if iconUrl -%}
+	{% set iconClass = 'icon'~element.id -%}
+	{% includeCss '.'~iconClass~' { background-image: url('~iconUrl~'); }' -%}
+	{% includeHiResCss '.'~iconClass~' { background-image: url('~element.getIconUrl(60, 60)~'); }' -%}
 {% endif -%}
 
-<div class="element{% if mode != 'index' %} selectable{% endif %}{% if mode == 'field' %} removable{% endif %}{% if thumbUrl %} hasthumb{% endif %}" data-id="{{ element.id }}">
+<div class="element{% if mode != 'index' %} selectable{% endif %}{% if mode == 'field' %} removable{% endif %}{% if iconUrl %} hasicon{% endif %}" data-id="{{ element.id }}">
 	{% if mode == 'field' -%}
 		<input type="hidden" name="{{ name }}[]" value="{{ element.id }}">
 		<a class="delete icon" title="{{ 'Remove'|t }}"></a>
 	{% endif -%}
-	{% if thumbUrl -%}
-		<div class="thumb {{ thumbClass }}"></div>
+	{% if iconUrl -%}
+		<div class="icon {{ iconClass }}"></div>
 	{% endif %}
 	{% if element.getStatus() %}
 		<div class="status {{ element.getStatus() }}"></div>

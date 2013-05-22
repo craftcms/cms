@@ -154,6 +154,17 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns the URL to the element's icon image, if there is one.
+	 *
+	 * @param int|null $size
+	 * @return string|false
+	 */
+	public function getIconUrl($size = null)
+	{
+		return $this->getThumbUrl($size, $size);
+	}
+
+	/**
 	 * Get the thumb's URL.
 	 *
 	 * @param int $width

@@ -68,13 +68,12 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Returns the URL to the element's thumbnail, if there is one.
+	 * Returns the URL to the element's icon image, if there is one.
 	 *
-	 * @param int $width
-	 * @param int $height
+	 * @param int|null $size
 	 * @return string|false
 	 */
-	public function getThumbUrl($width = null, $height = null)
+	public function getIconUrl($size = null)
 	{
 		return false;
 	}
