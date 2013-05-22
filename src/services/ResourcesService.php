@@ -9,6 +9,15 @@ class ResourcesService extends BaseApplicationComponent
 	public $dateParam;
 
 	/**
+	 * Icon background data.
+	 *
+	 * @var int
+	 */
+	private static $_iconSourceSize = 350;
+	private static $_iconSourceFile = 'etc/assets/fileicon.png';
+	private static $_iconFontFile = 'fonts/helveticaneue-webfont.ttf';
+
+	/**
 	 * Resolves a resource path to the actual file system path, or returns false if the resource cannot be found.
 	 *
 	 * @param string $path
@@ -89,7 +98,7 @@ class ResourcesService extends BaseApplicationComponent
 
 				case 'assetthumbs':
 				{
-					if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !preg_match('/^(?P<width>[0-9]+)x(?P<height>[0-9]+)/', $segs[2]))
+					if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !is_numeric($segs[2]))
 					{
 						return false;
 					}
@@ -102,7 +111,8 @@ class ResourcesService extends BaseApplicationComponent
 
 					$sourceType = craft()->assetSources->getSourceTypeById($fileModel->sourceId);
 
-					$size = IOHelper::cleanFilename($segs[2]);
+					$size = $segs[2];
+
 					$thumbFolder = craft()->path->getAssetsThumbsPath().$size.'/';
 					IOHelper::ensureFolderExists($thumbFolder);
 
@@ -116,11 +126,26 @@ class ResourcesService extends BaseApplicationComponent
 							return false;
 						}
 						craft()->images->loadImage($sourcePath)
-							->scaleToFit($size)
+							->scaleAndCrop($size, $size)
 							->saveAs($thumbPath);
 					}
 
 					return $thumbPath;
+				}
+
+				case 'icons':
+				{
+					if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[2]) || !preg_match('/^(?P<extension>[a-z_0-9]+)/i', $segs[1]))
+					{
+						return false;
+					}
+
+					$ext = strtolower($segs[1]);
+					$size = $segs[2];
+
+					$iconPath = $this->_getIconPath($ext, $size);
+
+					return $iconPath;
 				}
 
 				case 'logo':
@@ -242,5 +267,86 @@ class ResourcesService extends BaseApplicationComponent
 		}
 
 		return $match[1].$url.$match[4];
+	}
+
+	/**
+	 * Get icon path for an extension and size
+	 *
+	 * @param $ext
+	 * @param $size
+	 * @return string
+	 */
+	private function _getIconPath($ext, $size)
+	{
+		if (strlen($ext) > 4)
+		{
+			$ext = '';
+		}
+
+		$extAlias = array(
+			'docx' => 'doc',
+			'xlsx' => 'xls',
+			'pptx' => 'ppt',
+			'jpeg' => 'jpg',
+			'html' => 'html',
+		);
+
+		if (isset($extAlias[$ext]))
+		{
+			$ext = $extAlias[$ext];
+		}
+
+		$sizeFolder = craft()->path->getAssetsIconsPath().$size;
+
+		// See if we have the icon already
+		$iconLocation = $sizeFolder.'/'.$ext.'.png';
+
+		if (IOHelper::fileExists($iconLocation))
+		{
+			return $iconLocation;
+		}
+
+		// We are going to need that folder to exist.
+		IOHelper::ensureFolderExists($sizeFolder);
+
+		$sourceFolder = craft()->path->getAssetsIconsPath().static::$_iconSourceSize;
+
+		// Do we have a source icon that we can resize?
+		$sourceIconLocation = $sourceFolder.'/'.$ext.'.png';
+		if (!IOHelper::fileExists($sourceIconLocation))
+		{
+			$image = imagecreatefrompng(craft()->path->getAppPath().static::$_iconSourceFile);
+			// Text placement.
+			if ($ext)
+			{
+				$color = imagecolorallocate($image, 125, 125, 125);
+				$text = strtoupper($ext);
+				$font = craft()->path->getResourcesPath().static::$_iconFontFile;
+
+				// Get the bounding box so we can calculate the position
+				$box = imagettfbbox(60, 0, $font, $text);
+				$width = $box[4] - $box[0];
+
+				// place the text in the center-bottom-ish of the image
+				imagettftext($image, 60, 0, ceil((static::$_iconSourceSize - $width) / 2) - 5, static::$_iconSourceSize - 70, $color, $font, $text);
+			}
+
+			// Preserve transparency
+			imagealphablending($image, false);
+			$color = imagecolorallocatealpha($image, 0, 0, 0, 127);
+			imagefill($image, 0, 0, $color);
+			imagesavealpha($image, true);
+
+			// Make sure we have a folder to save to and save it.
+			IOHelper::ensureFolderExists($sourceFolder);
+			imagepng($image, $sourceIconLocation);
+		}
+
+		// Resize the source icon to fit this size.
+		craft()->images->loadImage($sourceIconLocation)
+			->scaleAndCrop($size, $size)
+			->saveAs($iconLocation);
+
+		return $iconLocation;
 	}
 }

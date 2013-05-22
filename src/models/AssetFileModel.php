@@ -154,35 +154,51 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the URL to the element's icon image, if there is one.
+	 * Get the thumb's URL.
 	 *
-	 * @param int|null $size
-	 * @return string|false
+	 * @param int $size
+	 * @return string
 	 */
-	public function getIconUrl($size = null)
+	public function getThumbUrl($size = 125)
 	{
-		return $this->getThumbUrl($size, $size);
+
+		if ($this->_hasThumb())
+		{
+			return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$size);
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
-	 * Get the thumb's URL.
+	 * Get the icons URL.
 	 *
-	 * @param int $width
-	 * @param int $height
+	 * @param int $size
 	 * @return string
 	 */
-	public function getThumbUrl($width = 125, $height = 125)
+	public function getIconUrl($size = 125)
 	{
-		if (!is_numeric($width))
-		{
-			$width = 125;
-		}
-		if (!is_numeric($height))
-		{
-			$height = $width;
-		}
 
-		return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$width.'x'.$height);
+		if ($this->_hasThumb())
+		{
+			return false;
+		}
+		else
+		{
+			return UrlHelper::getResourceUrl('icons/'.$this->getExtension().'/'.$size);
+		}
+	}
+
+	/**
+	 * Does this file have a thumbnail?
+	 *
+	 * @return bool
+	 */
+	private function _hasThumb()
+	{
+		return $this->kind == 'image' && $this->_getHeight() && $this->_getWidth();
 	}
 
 	/**
@@ -193,46 +209,6 @@ class AssetFileModel extends BaseElementModel
 	public function getExtension()
 	{
 		return pathinfo($this->filename, PATHINFO_EXTENSION);
-	}
-
-	/**
-	 * Return thumbnail data.
-	 *
-	 * @param $maxWidth
-	 * @param $maxHeight
-	 * @return bool|object
-	 */
-	public function getThumbData($maxWidth, $maxHeight)
-	{
-		if ($this->kind != "image")
-		{
-			return false;
-		}
-
-		// In case getimagesize returned false.
-		if (!$this->_getWidth() || !$this->_getHeight())
-		{
-			return false;
-		}
-
-		// treat the image as a horizontal?
-		if (($this->_getHeight() / $this->_getWidth()) <= ($maxHeight / $maxWidth))
-		{
-			$thumbWidth = $maxWidth;
-			$thumbHeight = round(($maxWidth / $this->_getWidth()) * $this->_getHeight());
-		}
-		else
-		{
-			$thumbHeight = $maxHeight;
-			$thumbWidth = round(($maxHeight / $this->_getHeight()) * $this->_getWidth());
-		}
-
-		return (object) array(
-			'url'     => $this->getThumbUrl($thumbWidth, $thumbHeight),
-			'url2X'  => $this->getThumbUrl($thumbWidth*2, $thumbHeight*2),
-			'width'   => $thumbWidth,
-			'height'  => $thumbHeight,
-		);
 	}
 
 	/**

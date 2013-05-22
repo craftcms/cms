@@ -129,6 +129,16 @@ class PathService extends BaseApplicationComponent
 	/**
 	 * @return string
 	 */
+	public function getAssetsIconsPath()
+	{
+		$path = $this->getAssetsPath() . 'icons/';
+		IOHelper::ensureFolderExists($path);
+		return $path;
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getLogPath()
 	{
 		$path = $this->getRuntimePath().'logs/';
