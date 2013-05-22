@@ -111,7 +111,6 @@ $configArray = array(
 $cpRoutes['dashboard/settings/new']               = 'dashboard/settings/_widgetsettings';
 $cpRoutes['dashboard/settings/(?P<widgetId>\d+)'] = 'dashboard/settings/_widgetsettings';
 
-$cpRoutes['entries/(?P<filter>{handle})']                         = 'entries';
 $cpRoutes['entries/(?P<sectionHandle>{handle})/new']              = array('action' => 'entries/editEntry');
 $cpRoutes['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)'] = array('action' => 'entries/editEntry');
 
@@ -175,7 +174,6 @@ $cpRoutes['pkgRoutes']['Users']['myaccount/info']                = 'users/_edit/
 $cpRoutes['pkgRoutes']['Users']['myaccount/admin']               = 'users/_edit/admin';
 
 $cpRoutes['pkgRoutes']['Users']['users/new']                     = 'users/_edit/account';
-$cpRoutes['pkgRoutes']['Users']['users/(?P<filter>{handle})']    = 'users';
 $cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)']         = 'users/_edit/account';
 $cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)/profile'] = 'users/_edit/profile';
 $cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)/admin']   = 'users/_edit/admin';
