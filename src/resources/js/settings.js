@@ -201,6 +201,12 @@ Craft.Tool = Garnish.Base.extend({
 			}
 			else
 			{
+				if (response && typeof response.backupFile != 'undefined' && response.backupFile)
+				{
+					var $iframe = $('<iframe/>', {'src' : Craft.getActionUrl('tools/downloadBackupFile', {'fileName':response.backupFile}) }).hide();
+					this.$form.append($iframe);
+				}
+
 				// Quick delay so things don't look too crazy.
 				setTimeout($.proxy(this, 'onComplete'), 300);
 			}

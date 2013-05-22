@@ -16,7 +16,7 @@ class ToolsController extends BaseController
 	}
 
 	/**
-	 * Permorms a tool's action.
+	 * Performs a tool's action.
 	 */
 	public function actionPerformAction()
 	{
@@ -29,5 +29,18 @@ class ToolsController extends BaseController
 
 		$response = $tool->performAction($params);
 		$this->returnJson($response);
+	}
+
+	/**
+	 * Returns a database backup zip file to the browser.
+	 */
+	public function actionDownloadBackupFile()
+	{
+		$fileName = craft()->request->getRequiredQuery('fileName');
+
+		if (($filePath = IOHelper::fileExists(craft()->path->getTempPath().$fileName.'.zip')) == true)
+		{
+			craft()->request->sendFile(IOHelper::getFileName($filePath), IOHelper::getFileContents($filePath), array('forceDownload' => true));
+		}
 	}
 }
