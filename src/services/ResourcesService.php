@@ -13,8 +13,6 @@ class ResourcesService extends BaseApplicationComponent
 	 *
 	 * @var int
 	 */
-	private static $_iconSourceSize = 350;
-	private static $_iconSourceFile = 'etc/assets/fileicon.png';
 	private static $_iconFontFile = 'fonts/helveticaneue-webfont.ttf';
 
 	/**
@@ -288,7 +286,7 @@ class ResourcesService extends BaseApplicationComponent
 			'xlsx' => 'xls',
 			'pptx' => 'ppt',
 			'jpeg' => 'jpg',
-			'html' => 'html',
+			'html' => 'htm',
 		);
 
 		if (isset($extAlias[$ext]))
@@ -309,26 +307,43 @@ class ResourcesService extends BaseApplicationComponent
 		// We are going to need that folder to exist.
 		IOHelper::ensureFolderExists($sizeFolder);
 
-		$sourceFolder = craft()->path->getAssetsIconsPath().static::$_iconSourceSize;
+		// Determine the closest source size
+		$sourceSizes = array(
+			array('size' => 28, 'extSize' => 4, 'extY' => 20),
+			array('size' => 56, 'extSize' => 8, 'extY' => 40),
+			array('size' => 178, 'extSize' => 30, 'extY' => 142),
+			array('size' => 350, 'extSize' => 60, 'extY' => 280)
+		);
+
+		foreach ($sourceSizes as $sourceSize)
+		{
+			if ($sourceSize['size'] >= $size)
+			{
+				break;
+			}
+		}
+
+		$sourceFolder = craft()->path->getAssetsIconsPath().$sourceSize['size'];
 
 		// Do we have a source icon that we can resize?
 		$sourceIconLocation = $sourceFolder.'/'.$ext.'.png';
 		if (!IOHelper::fileExists($sourceIconLocation))
 		{
-			$image = imagecreatefrompng(craft()->path->getAppPath().static::$_iconSourceFile);
+			$sourceFile = craft()->path->getAppPath().'etc/assets/fileicons/'.$sourceSize['size'].'.png';
+			$image = imagecreatefrompng($sourceFile);
 			// Text placement.
 			if ($ext)
 			{
-				$color = imagecolorallocate($image, 125, 125, 125);
+				$color = imagecolorallocate($image, 153, 153, 153);
 				$text = strtoupper($ext);
 				$font = craft()->path->getResourcesPath().static::$_iconFontFile;
 
 				// Get the bounding box so we can calculate the position
-				$box = imagettfbbox(60, 0, $font, $text);
+				$box = imagettfbbox($sourceSize['extSize'], 0, $font, $text);
 				$width = $box[4] - $box[0];
 
 				// place the text in the center-bottom-ish of the image
-				imagettftext($image, 60, 0, ceil((static::$_iconSourceSize - $width) / 2) - 5, static::$_iconSourceSize - 70, $color, $font, $text);
+				imagettftext($image, $sourceSize['extSize'], 0, ceil(($sourceSize['size'] - $width) / 2), $sourceSize['extY'], $color, $font, $text);
 			}
 
 			// Preserve transparency
@@ -342,10 +357,13 @@ class ResourcesService extends BaseApplicationComponent
 			imagepng($image, $sourceIconLocation);
 		}
 
-		// Resize the source icon to fit this size.
-		craft()->images->loadImage($sourceIconLocation)
-			->scaleAndCrop($size, $size)
-			->saveAs($iconLocation);
+		if ($size != $sourceSize['size'])
+		{
+			// Resize the source icon to fit this size.
+			craft()->images->loadImage($sourceIconLocation)
+				->scaleAndCrop($size, $size)
+				->saveAs($iconLocation);
+		}
 
 		return $iconLocation;
 	}

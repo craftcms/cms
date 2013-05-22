@@ -161,7 +161,6 @@ class AssetFileModel extends BaseElementModel
 	 */
 	public function getThumbUrl($size = 125)
 	{
-
 		if ($this->_hasThumb())
 		{
 			return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$size);

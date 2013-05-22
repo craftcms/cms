@@ -1,28 +1,43 @@
-{% if mode is not defined %}
-	{% set mode = 'index' %}
+{% set iconSize = 30 -%}
+{% set hiresIconSize = iconSize * 2 %}
+
+{% if mode is not defined -%}
+	{% set mode = 'index' -%}
 {% endif -%}
 
-{% set iconUrl = element.getIconUrl(30, 30) -%}
-{% if iconUrl -%}
-	{% set iconClass = 'elementicon'~element.id -%}
-	{% includeCss '.'~iconClass~' { background-image: url('~iconUrl~'); }' -%}
-	{% includeHiResCss '.'~iconClass~' { background-image: url('~element.getIconUrl(60, 60)~'); }' -%}
+{% set thumbUrl = element.getThumbUrl(iconSize) -%}
+{% if thumbUrl -%}
+	{% set thumbClass = 'elementthumb'~element.id -%}
+	{% includeCss '.'~thumbClass~' { background-image: url('~thumbUrl~'); }' -%}
+	{% includeHiResCss '.'~thumbClass~' { background-image: url('~element.getThumbUrl(hiresIconSize)~'); }' -%}
+{% else -%}
+	{% set iconUrl = element.getIconUrl(iconSize) -%}
+	{% if iconUrl -%}
+		{% set iconClass = 'elementicon'~element.id -%}
+		{% includeCss '.'~iconClass~' { background-image: url('~iconUrl~'); }' -%}
+		{% includeHiResCss '.'~iconClass~' { background-image: url('~element.getIconUrl(hiresIconSize)~'); }' -%}
+	{% endif -%}
 {% endif -%}
 
-<div class="element{% if mode != 'index' %} selectable{% endif %}{% if mode == 'field' %} removable{% endif %}{% if iconUrl %} hasicon{% endif %}" data-id="{{ element.id }}">
+<div class="element{% if mode != 'index' %} selectable{% endif %}{% if mode == 'field' %} removable{% endif %}{% if thumbUrl or iconUrl %} hasicon{% endif %}" data-id="{{ element.id }}">
 	{% if mode == 'field' -%}
 		<input type="hidden" name="{{ name }}[]" value="{{ element.id }}">
 		<a class="delete icon" title="{{ 'Remove'|t }}"></a>
 	{% endif -%}
-	{% if iconUrl -%}
+
+	{% if thumbUrl -%}
+		<div class="elementicon elementthumb {{ thumbClass }}"></div>
+	{% elseif iconUrl -%}
 		<div class="elementicon {{ iconClass }}"></div>
-	{% endif %}
-	{% if element.getStatus() %}
+	{% endif -%}
+
+	{% if element.getStatus() -%}
 		<div class="status {{ element.getStatus() }}"></div>
-	{% endif %}
-	{% if mode == 'index' and element.getCpEditUrl() %}
+	{% endif -%}
+
+	{% if mode == 'index' and element.getCpEditUrl() -%}
 		<a class="label" href="{{ element.getCpEditUrl() }}">{{ element }}</a>
-	{% else %}
+	{% else -%}
 		<span class="label">{{ element }}</span>
-	{% endif %}
+	{% endif -%}
 </div>
