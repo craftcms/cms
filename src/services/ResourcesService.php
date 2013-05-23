@@ -9,13 +9,6 @@ class ResourcesService extends BaseApplicationComponent
 	public $dateParam;
 
 	/**
-	 * Icon background data.
-	 *
-	 * @var int
-	 */
-	private static $_iconFontFile = 'fonts/helveticaneue-webfont.ttf';
-
-	/**
 	 * Resolves a resource path to the actual file system path, or returns false if the resource cannot be found.
 	 *
 	 * @param string $path
@@ -336,7 +329,7 @@ class ResourcesService extends BaseApplicationComponent
 			{
 				$color = imagecolorallocate($image, 153, 153, 153);
 				$text = strtoupper($ext);
-				$font = craft()->path->getResourcesPath().static::$_iconFontFile;
+				$font = craft()->path->getAppPath().'etc/assets/helveticaneue-webfont.ttf';
 
 				// Get the bounding box so we can calculate the position
 				$box = imagettfbbox($sourceSize['extSize'], 0, $font, $text);
