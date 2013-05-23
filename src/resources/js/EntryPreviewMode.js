@@ -8,7 +8,6 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 	$spinner: null,
 	$shade: null,
 	$editor: null,
-	$closeBtn: null,
 	$iframe: null,
 
 	postUrl: null,
@@ -69,10 +68,12 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		{
 			this.$shade = $('<div class="modal-shade dark"></div>').appendTo(Garnish.$bod).css('z-index', 2);
 			this.$editor = $('<div id="previewmode-editor"></div>').appendTo(Garnish.$bod);
-			this.$closeBtn = $('<div id="previewmode-closebtn" class="btn">'+Craft.t('Done')+'</div>').appendTo(this.$editor);
 			this.$iframe = $('<iframe id="previewmode-iframe" frameborder="0" />').appendTo(Garnish.$bod);
 
-			this.addListener(this.$closeBtn, 'click', 'hidePreviewMode');
+			var $buttons = $('<div id="previewmode-closebtncontainer"></div>').appendTo(this.$editor),
+				$closeBtn = $('<div class="btn" data-icon="x" title="'+Craft.t('Close Preview Mode')+'"></div>').appendTo($buttons);
+
+			this.addListener($closeBtn, 'click', 'hidePreviewMode');
 		}
 
 		// Move all the fields into the editor rather than copying them
@@ -84,7 +85,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			var $field = $($fields[i]),
 				$clone = $field.clone().insertAfter($field);
 
-			$field.insertBefore(this.$closeBtn);
+			$field.appendTo(this.$editor);
 
 			this.fields.push({
 				$field: $field,
@@ -131,9 +132,12 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		}, 'slow', $.proxy(function() {
 			this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
 
-			this.addListener(Garnish.$bod, 'keyup', function()
+			this.addListener(Garnish.$bod, 'keyup', function(ev)
 			{
-				this.hidePreviewMode();
+				if (ev.keyCode == Garnish.ESC_KEY)
+				{
+					this.hidePreviewMode();
+				}
 			});
 		}, this));
 	},
