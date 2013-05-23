@@ -3,8 +3,8 @@
 @import "shared";
 
 #main .toolbar { position: relative;}
-#main .toolbar .btngroup { float: right; margin-right: 50px; }
-#main .toolbar .search { margin-right: 136px; }
+#main .toolbar .btngroup { float: right; }
+#main .toolbar .search { margin-right: 80px; }
 #main .toolbar .search .search-options { padding: 10px 0 0 5px; display: none;}
 
 #main .files .open-file{ -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;}
@@ -12,7 +12,6 @@
 
 /*-- manager --*/
 .assets-page-loading .folder-contents{ padding-bottom: 30px; background: url('../images/spinner.gif') no-repeat center bottom; }
-.toolbar .spinner{ background: url('../images/spinner.gif') no-repeat center middle; height: 34px; width: 34px; position: absolute; right: 0; top: 0;}
 .assets-selected { background: $selcolor; color: #fff !important; }
 .thumb-wrapper { border: 5px solid #fff; background: url(../images/thumb_bg.png) 0 0;
                  -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);
@@ -30,7 +29,7 @@
 .assets-contextmenu ul + ul { border-top: 1px solid rgba(0,0,0,0.1);}
 
 /*-- thumbs --*/
-#main .files.thumbs ul { margin: -25px 0 0 -15px; }
+#main .files.thumbs ul { margin: -9px 0 0 -9px; }
 #main .files.thumbs ul:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
 #main .files.thumbs ul li { float: left; margin: 1px 0 0 1px; width: 110px; height: 128px; text-align: center; padding: 9px; }
 #main .files.thumbs ul li .thumb { background-repeat: no-repeat; background-position: 50% 50%; }
