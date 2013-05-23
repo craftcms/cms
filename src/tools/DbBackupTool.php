@@ -35,7 +35,7 @@ class DbBackupTool extends BaseTool
 	{
 		return craft()->templates->render('_includes/forms/checkbox', array(
 			'name'    => 'downloadBackup',
-			'label'   => Craft::t('Download Backup?'),
+			'label'   => Craft::t('Download backup?'),
 			'checked' => true,
 		));
 	}
