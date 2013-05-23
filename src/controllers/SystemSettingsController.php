@@ -22,6 +22,8 @@ class SystemSettingsController extends BaseController
 	{
 		// Get all the tools
 		$tools = craft()->components->getComponentsByType(ComponentType::Tool);
+		ksort($tools);
+
 		$variables['tools'] = ToolVariable::populateVariables($tools);
 
 		$this->renderTemplate('settings/index', $variables);
