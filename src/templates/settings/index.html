@@ -6,7 +6,7 @@
 
 
 {% set content %}
-	<h2>System</h2>
+	<h2>{{ "System"|t }}</h2>
 
 	<ul class="icons">
 		<li><a href="{{ url('settings/general') }}" data-icon="general">{{ "General"|t }}</a></li>
@@ -23,7 +23,7 @@
 
 	<hr>
 
-	<h2>Content</h2>
+	<h2>{{ "Content"|t }}</h2>
 
 	<ul class="icons">
 		<li><a href="{{ url('settings/fields') }}" data-icon="field">{{ "Fields"|t }}</a></li>
@@ -37,7 +37,7 @@
 
 	<hr>
 
-	<h2>Tools</h2>
+	<h2>{{ "Tools"|t }}</h2>
 
 	<ul class="icons">
 		{% for tool in tools %}

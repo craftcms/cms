@@ -539,7 +539,7 @@ Assets.FileManagerFolder = Garnish.Base.extend({
 	 */
 	_delete: function()
 	{
-		if (confirm(Craft.t('Really delete folder "{folder}"?', {folder: this.folderName})))
+		if (confirm(Craft.t('Really delete folder “{folder}”?', {folder: this.folderName})))
 		{
 
 			var params = {
