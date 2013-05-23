@@ -161,7 +161,7 @@ class AssetFileModel extends BaseElementModel
 	 */
 	public function getThumbUrl($size = 125)
 	{
-		if ($this->_hasThumb())
+		if ($this->hasThumb())
 		{
 			return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$size);
 		}
@@ -180,7 +180,7 @@ class AssetFileModel extends BaseElementModel
 	public function getIconUrl($size = 125)
 	{
 
-		if ($this->_hasThumb())
+		if ($this->hasThumb())
 		{
 			return false;
 		}
@@ -195,7 +195,7 @@ class AssetFileModel extends BaseElementModel
 	 *
 	 * @return bool
 	 */
-	private function _hasThumb()
+	public function hasThumb()
 	{
 		return $this->kind == 'image' && $this->_getHeight() && $this->_getWidth();
 	}
