@@ -7,6 +7,7 @@ namespace Craft;
 abstract class BaseOptionsFieldType extends BaseFieldType
 {
 	protected $multi = false;
+	private $_options;
 
 	/**
 	 * Defines the settings.
@@ -104,6 +105,48 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	}
 
 	/**
+	 * Preps the field value for use.
+	 *
+	 * @param mixed $value
+	 * @return mixed
+	 */
+	public function prepValue($value)
+	{
+		$selectedValues = ArrayHelper::stringToArray($value);
+
+		if ($this->multi)
+		{
+			if (is_array($value))
+			{
+				// Convert all the values to OptionData objects
+				foreach ($value as &$val)
+				{
+					$label = $this->getOptionLabel($val);
+					$val = new OptionData($label, $val, true);
+				}
+			}
+
+			$value = new MultiOptionsFieldData($value);
+		}
+		else
+		{
+			// Convert the value to a SingleOptionFieldData object
+			$label = $this->getOptionLabel($value);
+			$value = new SingleOptionFieldData($label, $value, true);
+		}
+
+		$value->options = array();
+
+		foreach ($this->getOptions() as $option)
+		{
+			$selected = in_array($option['value'], $selectedValues);
+			$value->options[] = new OptionData($option['label'], $option['value'], $selected);
+		}
+
+		return $value;
+	}
+
+	/**
 	 * Returns the label for the Options setting.
 	 *
 	 * @abstract
@@ -120,25 +163,49 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	 */
 	protected function getOptions()
 	{
-		$oldOptions = $this->getSettings()->options;
-		$newOptions = array();
-
-		if (is_array($oldOptions))
+		if (!isset($this->_options))
 		{
-			foreach ($oldOptions as $key => $option)
+			$this->_options = array();
+
+			$options = $this->getSettings()->options;
+
+			if (is_array($options))
 			{
-				// Old school?
-				if (!is_array($option))
+				foreach ($options as $key => $option)
 				{
-					$newOptions[] = array('label' => $option, 'value' => $key, 'default' => '');
-				}
-				else
-				{
-					$newOptions[] = $option;
+					// Old school?
+					if (!is_array($option))
+					{
+						$this->_options[] = array('label' => $option, 'value' => $key, 'default' => '');
+					}
+					else
+					{
+						$this->_options[] = $option;
+					}
 				}
 			}
 		}
 
-		return $newOptions;
+		return $this->_options;
+	}
+
+	/**
+	 * Returns an option's label by its value.
+	 *
+	 * @access protected
+	 * @param stirng $value
+	 * @return string
+	 */
+	protected function getOptionLabel($value)
+	{
+		foreach ($this->getOptions() as $option)
+		{
+			if ($option['value'] == $value)
+			{
+				return $option['label'];
+			}
+		}
+
+		return $value;
 	}
 }

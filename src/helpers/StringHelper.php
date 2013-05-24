@@ -19,7 +19,7 @@ class StringHelper
 	 */
 	public static function arrayToString($arr, $glue = ',')
 	{
-		if (is_array($arr))
+		if (is_array($arr) || $arr instanceof \IteratorAggregate)
 		{
 			$stringValues = array();
 
