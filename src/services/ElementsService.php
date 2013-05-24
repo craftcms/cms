@@ -283,18 +283,23 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($criteria->parentOf)
 		{
-			$children = $this->_normalizeRelationParam($criteria->parentOf);
+			list($childIds, $fieldIds) = $this->_normalizeRelationParams($criteria->parentOf, $criteria->parentField);
 
 			$query->join('relations parents', 'parents.parentId = elements.id');
-			$query->andWhere(DbHelper::parseParam('parents.childId', $children, $query->params));
+			$query->andWhere(DbHelper::parseParam('parents.childId', $childIds, $query->params));
+
+			if ($fieldIds)
+			{
+				$query->andWhere(DbHelper::parseParam('parents.fieldId', $fieldIds, $query->params));
+			}
 		}
 
 		if ($criteria->childOf)
 		{
-			$parents = $this->_normalizeRelationParam($criteria->childOf);
+			list($parentIds, $fieldIds) = $this->_normalizeRelationParams($criteria->childOf, $criteria->childField);
 
 			$query->join('relations children', 'children.childId = elements.id');
-			$query->andWhere(DbHelper::parseParam('children.parentId', $parents, $query->params));
+			$query->andWhere(DbHelper::parseParam('children.parentId', $parentIds, $query->params));
 		}
 
 		if ($elementType->modifyElementsQuery($query, $criteria) !== false)
@@ -394,27 +399,40 @@ class ElementsService extends BaseApplicationComponent
 	 * allowing them to be set to ElementCriteriaModel's,
 	 * and swapping them with their IDs.
 	 *
-	 * @param mixed $param
-	 * @return mixed
+	 * @param mixed $elements
+	 * @param mixed $fields
+	 * @return array
 	 */
-	private function _normalizeRelationParam($param)
+	private function _normalizeRelationParams($elements, $fields)
 	{
-		if (is_array($param))
+		// Normalize the element(s)
+		$elements = ArrayHelper::stringToArray($elements);
+
+		foreach ($elements as &$element)
 		{
-			foreach ($param as &$val)
+			if ($element instanceof BaseElementModel)
 			{
-				if ($val instanceof BaseElementModel)
+				$element = $element->id;
+			}
+		}
+
+		// Normalize the field(s)
+		$fields = ArrayHelper::stringToArray($fields);
+
+		foreach ($fields as &$field)
+		{
+			if (is_string($field) && !is_numeric($field))
+			{
+				$fieldModel = craft()->fields->getFieldByHandle($field);
+
+				if ($fieldModel)
 				{
-					$val = $val->id;
+					$field = $fieldModel->id;
 				}
 			}
 		}
-		else if ($param instanceof BaseElementModel)
-		{
-			$param = $param->id;
-		}
 
-		return $param;
+		return array($elements, $fields);
 	}
 
 	/**

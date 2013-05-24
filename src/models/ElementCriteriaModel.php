@@ -41,6 +41,8 @@ class ElementCriteriaModel extends BaseModel
 			'dateUpdated'   => AttributeType::Mixed,
 			'parentOf'      => AttributeType::Mixed,
 			'childOf'       => AttributeType::Mixed,
+			'parentField'     => AttributeType::String,
+			'childField'      => AttributeType::String,
 		);
 
 		// Mix in any custom attributes defined by the element type
