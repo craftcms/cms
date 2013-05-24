@@ -861,7 +861,7 @@ class UsersController extends BaseController
 	 * @param $publicRegistration
 	 * @return bool
 	 */
-	private function _validateSensitiveFields($userId, $user, $publicRegistration)
+	private function _validateSensitiveFields($userId, UserModel $user, $publicRegistration)
 	{
 		$email = craft()->request->getPost('email');
 		$password = craft()->request->getPost('password');
@@ -880,15 +880,15 @@ class UsersController extends BaseController
 					}
 					else
 					{
-						craft()->userSession->setError(Craft::t('Incorrect current password.'));
 						Craft::log('Tried to change password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
+						$user->addError('currentPassword', Craft::t('Incorrect current password.'));
 						return false;
 					}
 				}
 				else
 				{
-					craft()->userSession->setError(Craft::t('You must supply your existing password.'));
 					Craft::log('Tried to change the email for userId: '.$user->id.', but the did not supply the existing password.', LogLevel::Warning);
+					$user->addError('currentPassword', Craft::t('You must supply your existing password.'));
 					return false;
 				}
 			}
@@ -916,14 +916,14 @@ class UsersController extends BaseController
 					}
 					else
 					{
-						craft()->userSession->setError(Craft::t('Incorrect current password.'));
+						$user->addError('currentPassword', Craft::t('Incorrect current password.'));
 						Craft::log('Tried to change password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
 						return false;
 					}
 				}
 				else if ($newPassword && !$password)
 				{
-					craft()->userSession->setError(Craft::t('You must supply your existing password.'));
+					$user->addError('currentPassword', Craft::t('You must supply your existing password.'));
 					Craft::log('Tried to change password for userId: '.$user->id.', but the did not supply the existing password.', LogLevel::Warning);
 					return false;
 				}

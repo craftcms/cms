@@ -43,6 +43,7 @@ class UserModel extends BaseElementModel
 			'lastPasswordChangeDate' => AttributeType::DateTime,
 			'verificationRequired'   => AttributeType::Bool,
 			'newPassword'            => AttributeType::String,
+			'currentPassword'        => AttributeType::String,
 		));
 	}
 
