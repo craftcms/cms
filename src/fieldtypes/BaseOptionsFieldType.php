@@ -113,6 +113,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	public function prepValue($value)
 	{
 		$selectedValues = ArrayHelper::stringToArray($value);
+		$selectedValueOptions = array();
 
 		if ($this->multi)
 		{
@@ -123,6 +124,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 				{
 					$label = $this->getOptionLabel($val);
 					$val = new OptionData($label, $val, true);
+					$selectedValueOptions[] = $val;
 				}
 			}
 
@@ -133,14 +135,23 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 			// Convert the value to a SingleOptionFieldData object
 			$label = $this->getOptionLabel($value);
 			$value = new SingleOptionFieldData($label, $value, true);
+			$selectedValueOptions[] = $value;
 		}
 
 		$value->options = array();
 
 		foreach ($this->getOptions() as $option)
 		{
-			$selected = in_array($option['value'], $selectedValues);
-			$value->options[] = new OptionData($option['label'], $option['value'], $selected);
+			$key = array_search($option['value'], $selectedValues);
+
+			if ($key !== false)
+			{
+				$value->options[] = $selectedValueOptions[$key];
+			}
+			else
+			{
+				$value->options[] = new OptionData($option['label'], $option['value'], false);
+			}
 		}
 
 		return $value;
