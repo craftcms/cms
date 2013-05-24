@@ -381,10 +381,7 @@ class FieldsService extends BaseApplicationComponent
 	public function deleteField(FieldModel $field)
 	{
 		// De we need to delete the content column?
-		$fieldType = $this->populateFieldType($field);
-		$column = $fieldType->defineContentAttribute();
-
-		if ($column)
+		if (craft()->db->schema->columnExists('content', $field->handle))
 		{
 			craft()->db->createCommand()->dropColumn('content', $field->handle);
 		}
