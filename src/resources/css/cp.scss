@@ -81,11 +81,11 @@ html, body,
 #page-header #extra-headers > .menubtn,
 #page-header #extra-headers > .btn { display: block; margin-left: 5px; float: left; }
 
-#crumbs { margin: -25px 0 20px; font-size: 0; }
+#crumbs { margin: -35px 0 10px; font-size: 0; }
 #crumbs:after { @include clearafter; }
 #crumbs li { display: inline-block; font-size: 13px; }
 #crumbs li:after { @include icon; margin: -1px 5px 0; content: '>'; font-size: 11px; color: #ccc; }
-#crumbs li a { color: #aaa; }
+#crumbs li a { display: inline-block; padding: 10px 0; color: #aaa; }
 #crumbs li a:hover { color: $linkcolor; text-decoration: none; }
 
 /* tabs */
