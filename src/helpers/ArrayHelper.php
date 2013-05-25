@@ -99,7 +99,7 @@ class ArrayHelper
 		}
 		else if (is_string($str))
 		{
-			return array_map('trim', explode(',', $str));
+			return array_filter(array_map('trim', explode(',', $str)));
 		}
 		else
 		{
