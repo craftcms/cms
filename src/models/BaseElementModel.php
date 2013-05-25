@@ -113,44 +113,28 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.
 	 *
-	 * @param mixed       $attributes
-	 * @param string|null $fieldHandle
+	 * @param mixed $field
 	 * @return ElementCriteriaModel
 	 */
-	public function getChildren($attributes = null, $fieldHandle = null)
+	public function getChildren($field = null)
 	{
-		// Support for getChildren($fieldHandle)
-		if (is_string($attributes))
-		{
-			$fieldHandle = $attributes;
-			$attributes = null;
-		}
-
-		$criteria = craft()->elements->getCriteria($this->elementType, $attributes);
+		$criteria = craft()->elements->getCriteria($this->elementType);
 		$criteria->childOf($this);
-		$criteria->childField($fieldHandle);
+		$criteria->childField($field);
 		return $criteria;
 	}
 
 	/**
 	 * Returns a new ElementCriteriaModel prepped to return this element's same-type parents.
 	 *
-	 * @param mixed       $attributes
-	 * @param string|null $fieldHandle
+	 * @param mixed $field
 	 * @return ElementCriteriaModel
 	 */
-	public function getParents($attributes = null, $fieldHandle = null)
+	public function getParents($field = null)
 	{
-		// Support for getParents($fieldHandle)
-		if (is_string($attributes))
-		{
-			$fieldHandle = $attributes;
-			$attributes = null;
-		}
-
-		$criteria = craft()->elements->getCriteria($this->elementType, $attributes);
+		$criteria = craft()->elements->getCriteria($this->elementType);
 		$criteria->parentOf($this);
-		$criteria->parentField($fieldHandle);
+		$criteria->parentField($field);
 		return $criteria;
 	}
 
