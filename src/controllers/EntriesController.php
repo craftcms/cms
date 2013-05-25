@@ -156,7 +156,8 @@ class EntriesController extends BaseController
 
 		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
-			$variables['crumbs'][] = array('label' => $variables['section']->name, 'url' => UrlHelper::getUrl('entries/'.$variables['section']->handle));
+			// Not really necessary, but it's nice to see that section name...
+			$variables['crumbs'][] = array('label' => $variables['section']->name, 'url' => UrlHelper::getUrl('entries'));
 		}
 
 
