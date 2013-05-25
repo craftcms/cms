@@ -70,8 +70,9 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			this.$editor = $('<div id="previewmode-editor"></div>').appendTo(Garnish.$bod);
 			this.$iframe = $('<iframe id="previewmode-iframe" frameborder="0" />').appendTo(Garnish.$bod);
 
-			var $buttons = $('<div id="previewmode-closebtncontainer"></div>').appendTo(this.$editor),
-				$closeBtn = $('<div class="btn" data-icon="x" title="'+Craft.t('Close Preview Mode')+'"></div>').appendTo($buttons);
+			var $header = $('<header class="header"></header>').appendTo(this.$editor),
+				$closeBtn = $('<div class="btn" data-icon="x" title="'+Craft.t('Close')+'"></div>').appendTo($header),
+				$heading = $('<h1>'+Craft.t('Live Preview')+'</h1>').appendTo($header);
 
 			this.addListener($closeBtn, 'click', 'hidePreviewMode');
 		}
