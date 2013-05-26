@@ -25,7 +25,7 @@ class PlainTextFieldType extends BaseFieldType
 	protected function defineSettings()
 	{
 		return array(
-			'hint'          => array(AttributeType::String, 'default' => Craft::t('Enter text…', null, null, null, craft()->language)),
+			'hint'          => array(AttributeType::String),
 			'multiline'     => array(AttributeType::Bool),
 			'initialRows'   => array(AttributeType::Number, 'min' => 1, 'default' => 4),
 			'maxLength'     => array(AttributeType::Number, 'min' => 0),
