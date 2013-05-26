@@ -8,6 +8,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 	$spinner: null,
 	$shade: null,
 	$editor: null,
+	$iframeContainer: null,
 	$iframe: null,
 
 	postUrl: null,
@@ -68,7 +69,8 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		{
 			this.$shade = $('<div class="modal-shade dark"></div>').appendTo(Garnish.$bod).css('z-index', 2);
 			this.$editor = $('<div id="previewmode-editor"></div>').appendTo(Garnish.$bod);
-			this.$iframe = $('<iframe id="previewmode-iframe" frameborder="0" />').appendTo(Garnish.$bod);
+			this.$iframeContainer = $('<div id="previewmode-iframe-container" />').appendTo(Garnish.$bod);
+			this.$iframe = $('<iframe id="previewmode-iframe" frameborder="0" />').appendTo(this.$iframeContainer);
 
 			var $header = $('<header class="header"></header>').appendTo(this.$editor),
 				$closeBtn = $('<div class="btn" data-icon="x" title="'+Craft.t('Close')+'"></div>').appendTo($header),
@@ -116,8 +118,8 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		$('html').addClass('noscroll');
 		this.$spinner.addClass('hidden');
 
-		this.$iframe.css('left', Garnish.$win.width());
-		this.$iframe.show();
+		this.$iframeContainer.css('left', Garnish.$win.width());
+		this.$iframeContainer.show();
 
 		this.addListener(Garnish.$win, 'resize', 'setIframeWidth');
 		this.setIframeWidth();
@@ -128,7 +130,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			left: 0
 		}, 'slow');
 
-		this.$iframe.stop().animate({
+		this.$iframeContainer.stop().animate({
 			left: Craft.EntryPreviewMode.formWidth
 		}, 'slow', $.proxy(function() {
 			this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
@@ -176,10 +178,10 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			this.$editor.hide();
 		}, this));
 
-		this.$iframe.stop().animate({
+		this.$iframeContainer.stop().animate({
 			left: windowWidth
 		}, 'slow', $.proxy(function() {
-			this.$iframe.hide();
+			this.$iframeContainer.hide();
 		}, this));
 
 		this.inPreviewMode = false;
@@ -187,7 +189,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 
 	setIframeWidth: function()
 	{
-		this.$iframe.width(Garnish.$win.width()-Craft.EntryPreviewMode.formWidth);
+		this.$iframeContainer.width(Garnish.$win.width()-Craft.EntryPreviewMode.formWidth);
 	},
 
 	updateIframe: function()
