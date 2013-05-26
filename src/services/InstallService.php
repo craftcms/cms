@@ -6,6 +6,8 @@ namespace Craft;
  */
 class InstallService extends BaseApplicationComponent
 {
+	private $_user;
+
 	/**
 	 * Installs Craft!
 	 *
@@ -378,21 +380,21 @@ class InstallService extends BaseApplicationComponent
 	{
 		Craft::log('Creating user.');
 
-		$user = new UserModel();
+		$this->_user = new UserModel();
 
-		$user->username = $inputs['username'];
-		$user->newPassword = $inputs['password'];
-		$user->email = $inputs['email'];
-		$user->admin = true;
+		$this->_user->username = $inputs['username'];
+		$this->_user->newPassword = $inputs['password'];
+		$this->_user->email = $inputs['email'];
+		$this->_user->admin = true;
 
-		if (craft()->users->saveUser($user))
+		if (craft()->users->saveUser($this->_user))
 		{
 			Craft::log('User created successfully.');
 		}
 		else
 		{
 			Craft::log('Could not create the user.', LogLevel::Error);
-			throw new Exception(Craft::t('There was a problem creating the user:').$this->_getFlattenedErrors($user->getErrors()));
+			throw new Exception(Craft::t('There was a problem creating the user:').$this->_getFlattenedErrors($this->_user->getErrors()));
 		}
 	}
 
@@ -465,16 +467,41 @@ class InstallService extends BaseApplicationComponent
 			Craft::log('Could not save the Default field group.', LogLevel::Warning);
 		}
 
+		// Heading field
+
+		Craft::log('Creating the Heading field.');
+
+		$headingField = new FieldModel();
+		$headingField->groupId      = $group->id;
+		$headingField->name         = Craft::t('Heading');
+		$headingField->handle       = 'heading';
+		$headingField->translatable = true;
+		$headingField->type         = 'PlainText';
+
+		if (craft()->fields->saveField($headingField))
+		{
+			Craft::log('Heading field created successfully.');
+		}
+		else
+		{
+			Craft::log('Could not save the Heading field.', LogLevel::Warning);
+		}
+
+		// Body field
+
 		Craft::log('Creating the Body field.');
 
-		$field = new FieldModel();
-		$field->groupId      = $group->id;
-		$field->type         = 'RichText';
-		$field->name         = Craft::t('Body');
-		$field->handle       = 'body';
-		$field->translatable = true;
+		$bodyField = new FieldModel();
+		$bodyField->groupId      = $group->id;
+		$bodyField->name         = Craft::t('Body');
+		$bodyField->handle       = 'body';
+		$bodyField->translatable = true;
+		$bodyField->type         = 'RichText';
+		$bodyField->settings = array(
+			'configFile' => 'Standard.json'
+		);
 
-		if (craft()->fields->saveField($field))
+		if (craft()->fields->saveField($bodyField))
 		{
 			Craft::log('Body field created successfully.');
 		}
@@ -483,52 +510,138 @@ class InstallService extends BaseApplicationComponent
 			Craft::log('Could not save the Body field.', LogLevel::Warning);
 		}
 
-		Craft::log('Creating the Blog section.');
+		// Homepage global set
 
-		$layoutFields = array(
+		Craft::log('Creating the Homepage global set.');
+
+		$homepageLayoutFields = array(
 			array(
-				'fieldId'   => $field->id,
+				'fieldId'   => $headingField->id,
+				'sortOrder' => 1
+			),
+			array(
+				'fieldId'   => $bodyField->id,
+				'sortOrder' => 2
+			)
+		);
+
+		$homepageLayout = new FieldLayoutModel();
+		$homepageLayout->type = ElementType::GlobalSet;
+		$homepageLayout->setFields($homepageLayoutFields);
+
+		$homepageGlobalSet = new GlobalSetModel();
+		$homepageGlobalSet->name = Craft::t('Homepage');
+		$homepageGlobalSet->handle = 'homepage';
+		$homepageGlobalSet->setFieldLayout($homepageLayout);
+
+		if (craft()->globals->saveSet($homepageGlobalSet))
+		{
+			Craft::log('Homepage global set created successfully.');
+		}
+		else
+		{
+			Craft::log('Could not save the Homepage global set.', LogLevel::Warning);
+		}
+
+		// Homepage content
+
+		$vars = array(
+			'siteName' => ucfirst(craft()->request->getServerName())
+		);
+
+		Craft::log('Setting the Homepage content.');
+
+		$homepageGlobalSet->locale = $inputs['locale'];
+		$homepageGlobalSet->setContent(array(
+			'heading' => Craft::t('Welcome to {siteName}!', $vars),
+			'body'    => '<p>'.Craft::t('It’s true, this site doesn’t have a whole lot of content yet, but don’t worry. Our web developers have just installed the CMS, and they’re setting things up for the content editors this very moment. Soon {siteName} will be an oasis of fresh perspectives, sharp analyses, and astute opinions that will keep you coming back again and again.', $vars).'</p>',
+		));
+
+		if (craft()->globals->saveContent($homepageGlobalSet))
+		{
+			Craft::log('Homepage content set successfully.');
+		}
+		else
+		{
+			Craft::log('Could not set the Homepage content.', LogLevel::Warning);
+		}
+
+		// News section
+
+		Craft::log('Creating the News section.');
+
+		$newsLayoutFields = array(
+			array(
+				'fieldId'   => $bodyField->id,
 				'required'  => true,
 				'sortOrder' => 1
 			)
 		);
 
-		$layoutTabs = array(
+		$newsLayoutTabs = array(
 			array(
 				'name'      => Craft::t('Content'),
 				'sortOrder' => 1,
-				'fields'    => $layoutFields
+				'fields'    => $newsLayoutFields
 			)
 		);
 
-		$layout = new FieldLayoutModel();
-		$layout->type = ElementType::Entry;
-		$layout->setTabs($layoutTabs);
-		$layout->setFields($layoutFields);
+		$newsLayout = new FieldLayoutModel();
+		$newsLayout->type = ElementType::Entry;
+		$newsLayout->setTabs($newsLayoutTabs);
+		$newsLayout->setFields($newsLayoutFields);
 
-		$section = new SectionModel();
-		$section->name       = Craft::t('Blog');
-		$section->handle     = 'blog';
-		$section->titleLabel = Craft::t('Title');
-		$section->hasUrls    = true;
-		$section->template   = 'blog/_entry';
+		$newsSection = new SectionModel();
+		$newsSection->name     = Craft::t('News');
+		$newsSection->handle   = 'news';
+		$newsSection->hasUrls  = true;
+		$newsSection->template = 'news/_entry';
 
-		$section->setLocales(array(
+		$newsSection->setLocales(array(
 			$inputs['locale'] => SectionLocaleModel::populateModel(array(
 				'locale'    => $inputs['locale'],
-				'urlFormat' => 'blog/{slug}',
+				'urlFormat' => 'news/{postDate.year}/{slug}',
 			))
 		));
 
-		$section->setFieldLayout($layout);
+		$newsSection->setFieldLayout($newsLayout);
 
-		if (craft()->sections->saveSection($section))
+		if (craft()->sections->saveSection($newsSection))
 		{
-			Craft::log('Blog section created successfully.');
+			Craft::log('News section created successfully.');
 		}
 		else
 		{
-			Craft::log('Could not save the Blog section.', LogLevel::Warning);
+			Craft::log('Could not save the News section.', LogLevel::Warning);
+		}
+
+		// News entry
+
+		Craft::log('Creating a News entry.');
+
+		$newsEntry = new EntryModel();
+		$newsEntry->sectionId  = $newsSection->id;
+		$newsEntry->locale     = $inputs['locale'];
+		$newsEntry->authorId   = $this->_user->id;
+		$newsEntry->title      = Craft::t('We just installed Craft!');
+		$newsEntry->enabled    = true;
+		$newsEntry->setContent(array(
+			'body' => '<p>'
+					. Craft::t('Craft is the CMS that’s powering {siteName}. It’s beautiful, powerful, flexible, and easy-to-use, and it’s made by Pixel &amp; Tonic. We can’t wait to dive in and see what it’s capable of!', $vars)
+					. '</p><!--pagebreak--><p>'
+					. Craft::t('This is even more captivating content, which you couldn’t see on the News index page because it was entered after a Page Break, and the News index template only likes to show the content on the first page.')
+					. '</p><p>'
+					. Craft::t('Craft: a nice alternative to Word, if you’re making a website.')
+					. '</p>',
+		));
+
+		if (craft()->entries->saveEntry($newsEntry))
+		{
+			Craft::log('News entry created successfully.');
+		}
+		else
+		{
+			Craft::log('Could not save the News entry.', LogLevel::Warning);
 		}
 	}
 
