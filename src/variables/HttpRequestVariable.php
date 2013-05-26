@@ -7,6 +7,14 @@ namespace Craft;
 class HttpRequestVariable
 {
 	/**
+	 * Returns whether this is an Ajax request.
+	 */
+	public function isAjax()
+	{
+		return craft()->request->isAjaxRequest();
+	}
+
+	/**
 	 * Returns whether this is a secure connection.
 	 *
 	 * @return bool
