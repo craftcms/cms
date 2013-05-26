@@ -118,7 +118,7 @@ class RichTextFieldType extends BaseFieldType
 		craft()->templates->includeJs('$(".redactor-'.$this->model->handle.'").redactor('.$config.');');
 
 		// Swap any <!--pagebreak-->'s with <hr>'s
-		$value = str_replace('<!--pagebreak-->', '<hr class="redactor_pagebreak" unselectable="on" contenteditable="false" />', $value);
+		$value = str_replace('<!--pagebreak-->', '<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />', $value);
 
 		return '<textarea name="'.$name.'" class="redactor-'.$this->model->handle.'" style="display: none">'.htmlentities($value, ENT_NOQUOTES, 'UTF-8').'</textarea>';
 	}
@@ -135,7 +135,7 @@ class RichTextFieldType extends BaseFieldType
 		if ($value)
 		{
 			// Swap any pagebreak <hr>'s with <!--pagebreak-->'s
-			$value = preg_replace('/<hr class="redactor_pagebreak" unselectable="on" contenteditable="false"\s*(\/)?>/', '<!--pagebreak-->', $value);
+			$value = preg_replace('/<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false"\s*(\/)?>/', '<!--pagebreak-->', $value);
 
 			if ($this->getSettings()->cleanupHtml)
 			{

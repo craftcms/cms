@@ -13,7 +13,7 @@ RedactorPlugins.pagebreak = {
 
 	insertPageBreak: function()
 	{
-		var $pagebreakNode = $('<hr class="redactor_pagebreak" unselectable="on" contenteditable="false" />'),
+		var $pagebreakNode = $('<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />'),
 			$currentNode = $(this.getCurrentNode());
 
 		if ($currentNode.length && !$currentNode.is('div.redactor_editor'))
