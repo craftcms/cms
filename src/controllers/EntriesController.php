@@ -243,6 +243,12 @@ class EntriesController extends BaseController
 		$this->requirePostRequest();
 
 		$entry = $this->_populateEntryModel();
+
+		if (!$entry->postDate)
+		{
+			$entry->postDate = new DateTime();
+		}
+
 		$section = $entry->getSection();
 
 		if ($section)
