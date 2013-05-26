@@ -230,6 +230,12 @@ class CraftTwigExtension extends \Twig_Extension
 				}
 			}
 		}
+		else
+		{
+			$globals['siteName'] = null;
+			$globals['siteUrl'] = null;
+			$globals['user'] = null;
+		}
 
 		return $globals;
 	}
