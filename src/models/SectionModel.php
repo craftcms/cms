@@ -31,7 +31,7 @@ class SectionModel extends BaseModel
 			'id'            => AttributeType::Number,
 			'name'          => AttributeType::String,
 			'handle'        => AttributeType::String,
-			'titleLabel'    => AttributeType::String,
+			'titleLabel'    => array(AttributeType::String, 'default' => Craft::t('Title')),
 			'hasUrls'       => AttributeType::Bool,
 			'template'      => AttributeType::String,
 			'fieldLayoutId' => AttributeType::Number,
