@@ -1,7 +1,7 @@
 {%- set class = [
 	'text',
 	(class is defined and class ? class : null),
-	(hint is defined and hint ? 'nicetext' : null),
+	(placeholder is defined and placeholder ? 'nicetext' : null),
 	(size is defined and size ? null : 'fullwidth')
 ]|filter|join(' ') %}
 
@@ -13,4 +13,4 @@
 	{%- if name is defined and name %} name="{{ name }}"{% endif %}
 	{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
 	{%- if disabled is defined and disabled %} disabled{% endif %}
-	{%- if hint is defined and hint %} placeholder="{{ hint }}"{% endif %}>{{ value is defined ? value : null }}</textarea>
+	{%- if placeholder is defined and placeholder %} placeholder="{{ placeholder }}"{% endif %}>{{ value is defined ? value : null }}</textarea>
