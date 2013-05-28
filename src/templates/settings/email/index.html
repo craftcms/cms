@@ -80,7 +80,8 @@
 				label: "Username"|t,
 				id: 'username',
 				name: 'username',
-				value: (settings.username is defined ? settings.username : null)
+				value: (settings.username is defined ? settings.username : null),
+				errors: (settings.username is defined and settings.protocol != 'Smtp' ? (freshSettings ? null : settings.getErrors('username')) : null)
 			}) }}
 
 			{{ forms.passwordField({
