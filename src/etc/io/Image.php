@@ -40,24 +40,51 @@ class Image
 			throw new Exception(Craft::t("Not enough memory available to perform this image operation."));
 		}
 
+		$imageInfo = @getimagesize($path);
+		if (!is_array($imageInfo))
+		{
+			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+		}
+
 		switch ($this->_extension)
 		{
 			case 'jpg':
 			case 'jpeg':
 			{
-				$this->_image = imagecreatefromjpeg($path);
+				if ($imageInfo[2] == IMAGETYPE_JPEG)
+				{
+					$this->_image = imagecreatefromjpeg($path);
+				}
+				else
+				{
+					throw new Exception(Craft::t('The file "{path}" does not appear to be a valid JPEG image.', array('path' => $path)));
+				}
 				break;
 			}
 
 			case 'gif':
 			{
-				$this->_image = imagecreatefromgif($path);
+				if ($imageInfo[2] == IMAGETYPE_GIF)
+				{
+					$this->_image = imagecreatefromgif($path);
+				}
+				else
+				{
+					throw new Exception(Craft::t('The file "{path}" does not appear to be a valid GIF image.', array('path' => $path)));
+				}
 				break;
 			}
 
 			case 'png':
 			{
-				$this->_image = imagecreatefrompng($path);
+				if ($imageInfo[2] == IMAGETYPE_PNG)
+				{
+					$this->_image = imagecreatefrompng($path);
+				}
+				else
+				{
+					throw new Exception(Craft::t('The file "{path}" does not appear to be a valid PNG image.', array('path' => $path)));
+				}
 				break;
 			}
 

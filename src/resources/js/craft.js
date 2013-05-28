@@ -761,13 +761,13 @@ $.extend($.fn, {
 
 	nicetext: function()
 	{
-		return this.each(function()
+		/*return this.each(function()
 		{
 			if (!$.data(this, 'text'))
 			{
-				new Garnish.NiceText(this, {hint: this.getAttribute('data-hint')});
+				new Garnish.NiceText(this, {hint: this.getAttribute('placeholder')});
 			}
-		});
+		});*/
 	},
 
 	passwordinput: function()
