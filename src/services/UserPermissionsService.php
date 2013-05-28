@@ -302,6 +302,9 @@ class UserPermissionsService extends BaseApplicationComponent
 					"publishEntries{$suffix}" => array(
 						'label' => Craft::t('Publish entries live')
 					),
+					"deleteEntries{$suffix}" => array(
+						'label' => Craft::t('Delete entries')
+					),
 				)
 			)
 		);

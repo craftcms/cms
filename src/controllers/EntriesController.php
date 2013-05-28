@@ -335,7 +335,11 @@ class EntriesController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$entryId = craft()->request->getRequiredPost('id');
+		$entry = $this->_populateEntryModel();
+		$section = $entry->getSection();
+		craft()->userSession->requirePermission('deleteEntries:'.$section->id);
+
+		$entryId = $entry->id;
 
 		craft()->elements->deleteElementById($entryId);
 		$this->returnJson(array('success' => true));
