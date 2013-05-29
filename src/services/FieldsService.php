@@ -409,6 +409,8 @@ class FieldsService extends BaseApplicationComponent
 		{
 			return FieldLayoutModel::populateModel($layoutRecord);
 		}
+
+		return null;
 	}
 
 	/**
