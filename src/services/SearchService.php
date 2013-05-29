@@ -79,6 +79,7 @@ class SearchService extends BaseApplicationComponent
 		foreach ($searchableAttributes as $attribute)
 		{
 			$value = $element->$attribute;
+			$value = StringHelper::arrayToString($value);
 			$this->_indexElementKeywords($element->id, $attribute, '0', $localeId, $value);
 		}
 
