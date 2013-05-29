@@ -17,6 +17,7 @@ Craft.ElementIndex = Garnish.Base.extend({
 	$sourceToggles: null,
 	$search: null,
 	$elements: null,
+	$table: null,
 	$tbody: null,
 
 	init: function(elementType, $container, settings)
@@ -147,6 +148,11 @@ Craft.ElementIndex = Garnish.Base.extend({
 		this.$mainSpinner.removeClass('hidden');
 		this.removeListener(this.$scroller, 'scroll');
 
+		if (this.$table)
+		{
+			Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.not(this.$table);
+		}
+
 		var data = this.getControllerData();
 
 		Craft.postActionRequest('elements/getElements', data, $.proxy(function(response)
@@ -158,7 +164,10 @@ Craft.ElementIndex = Garnish.Base.extend({
 			var $headers = this.$elements.find('thead:first th');
 			this.addListener($headers, 'click', 'onSortChange');
 
-			this.$tbody = this.$elements.find('tbody:first');
+			this.$table = this.$elements.find('table:first');
+			this.$tbody = this.$table.find('tbody:first');
+
+			Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.add(this.$table);
 
 			this.setNewElementDataHtml(response);
 		}, this));
@@ -204,6 +213,8 @@ Craft.ElementIndex = Garnish.Base.extend({
 				}
 			});
 		}
+
+		Craft.cp.updateResponsiveTables();
 
 		this.settings.onUpdateElements(append);
 	},
