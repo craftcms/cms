@@ -781,6 +781,13 @@ ul.errors li { color: $errorcolor; }
 .message-container #message { top: 50%; margin-left: auto; margin-right: auto; width: 320px; }
 
 /* ----------------------------------------
+/* IE hacks
+/* ----------------------------------------*/
+
+/* Fix layout of modal element selectors for IE8 */
+.elementselectormodal .body .main { float: left\9; width: 440px\9; }
+
+/* ----------------------------------------
 /*  Retina graphics
 /* ----------------------------------------*/
 
