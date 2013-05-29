@@ -40,6 +40,12 @@ var AccountSettingForm = Garnish.Base.extend({
 		{
 			this.modal.show();
 		}
+
+		// Auto-focus the password input
+		if (!Garnish.isMobileBrowser(true))
+		{
+			this.$currentPasswordInput.focus();
+		}
 	},
 
 	submitCurrentPassword: function(ev)
