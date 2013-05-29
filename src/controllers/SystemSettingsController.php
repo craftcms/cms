@@ -125,7 +125,8 @@ class SystemSettingsController extends BaseController
 
 		$settings = $this->_getEmailSettingsFromPost();
 
-		if ($settings !== false)
+		// If $settings is an instance of EmailSettingsModel, there were validation errors.
+		if (!$settings instanceof EmailSettingsModel)
 		{
 			if (craft()->systemSettings->saveSettings('email', $settings))
 			{
@@ -152,7 +153,8 @@ class SystemSettingsController extends BaseController
 
 		$settings = $this->_getEmailSettingsFromPost();
 
-		if ($settings !== false)
+		// If $settings is an instance of EmailSettingsModel, there were validation errors.
+		if (!$settings instanceof EmailSettingsModel)
 		{
 			try
 			{
@@ -206,7 +208,7 @@ class SystemSettingsController extends BaseController
 		// Validate user input
 		if (!$emailSettings->validate())
 		{
-			return false;
+			return $emailSettings;
 		}
 
 		$settings['protocol']     = $emailSettings->protocol;

@@ -156,7 +156,7 @@ var CP = Garnish.Base.extend({
 		}
 
         // Make placeholders work for IE9, too.
-        $('input, textarea').placeholder();
+        $('input[type!=password], textarea').placeholder();
 	},
 
 	/**

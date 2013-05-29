@@ -56,7 +56,7 @@
 		{% if craft.hasPackage('Rebrand') %}
 			{{ forms.textField({
 				label: "HTML Email Template"|t,
-				instructions: "The template @@@appName@@@ will use for users who prefer HTML email"|t,
+				instructions: "The template @@@appName@@@ will use for HTML emails"|t,
 				id: 'template',
 				name: 'template',
 				value: (settings.template is defined ? settings.template : null),
@@ -80,7 +80,8 @@
 				label: "Username"|t,
 				id: 'username',
 				name: 'username',
-				value: (settings.username is defined ? settings.username : null)
+				value: (settings.username is defined ? settings.username : null),
+				errors: (settings.username is defined and settings.protocol != 'Smtp' ? (freshSettings ? null : settings.getErrors('username')) : null)
 			}) }}
 
 			{{ forms.passwordField({
