@@ -12,8 +12,10 @@
 
 /* dashboard */
 .widgets { position: relative; }
-#widgets { margin: 0 -5px; }
-.widgets .col .col-inner { margin: 0 5px; }
+.widgets #widgets { margin: 0; }
+.widgets .col .col-inner { margin: 0; }
+.widgets .col:not(:first-child) .col-inner { margin-left: 5px; }
+.widgets .col:not(:last-child) .col-inner { margin-right: 5px; }
 
 .widget { display: none; padding: 30px; background: #fff; }
 
