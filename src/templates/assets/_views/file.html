@@ -1,7 +1,7 @@
 <header class="header"><h1>{{ file.filename }}</h1></header>
 <div class="body">
 	<form id="file-fields">
-		<input type="hidden" name="fileId" value="{{ file.id }}" />
+		<input type="hidden" name="fileId" value="{{ file.id }}">
 		<div>
 			{% set assetFields = craft.systemSettings.assetFields %}
 			{% include "_includes/fields" with {
