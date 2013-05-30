@@ -146,6 +146,14 @@ var CP = Garnish.Base.extend({
 				$('<input type="hidden" name="redirect" value="'+$btn.attr('data-redirect')+'"/>').appendTo($form);
 			}
 
+            if ($btn.attr('data-confirm'))
+            {
+                if (!confirm($btn.attr('data-confirm')))
+                {
+                    return;
+                }
+            }
+
 			$form.submit();
 		});
 
