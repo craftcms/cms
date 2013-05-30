@@ -179,6 +179,7 @@ Garnish = {
 	RIGHT_KEY:  39,
 	DOWN_KEY:   40,
 	A_KEY:      65,
+	S_KEY:      83,
 	CMD_KEY:    91,
 
 	// Mouse button constants
@@ -3100,14 +3101,7 @@ Garnish.Modal = Garnish.Base.extend({
 		Garnish.Modal.$shade.fadeIn(50);
 
 		this.addListener(Garnish.Modal.$shade, 'click', 'hide');
-
-		this.addListener(Garnish.$bod, 'keyup', function(ev)
-		{
-			if (ev.keyCode == Garnish.ESC_KEY)
-			{
-				this.hide();
-			}
-		});
+		this.addListener(Garnish.$bod, 'keyup', 'onKeypress');
 
 		this.settings.onShow();
 	},
@@ -3132,6 +3126,14 @@ Garnish.Modal = Garnish.Base.extend({
 		this.removeListener(Garnish.$bod, 'keyup');
 
 		this.settings.onHide();
+	},
+
+	onKeypress: function(ev)
+	{
+		if (ev.keyCode == Garnish.ESC_KEY)
+		{
+			this.hide();
+		}
 	},
 
 	onFadeIn: function()
