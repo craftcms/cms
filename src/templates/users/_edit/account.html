@@ -168,7 +168,17 @@
 			}, localeInput) }}
 		{% endif %}
 
-		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+        <div class="btngroup">
+            <input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+            <div class="btn submit menubtn"></div>
+            <div class="menu">
+                <ul>
+                    <li><a class="formsubmit" data-redirect="users/{id}">{{ "Save and continue editing"|t }}</a></li>
+                    <li><a class="formsubmit" data-redirect="users/new">{{ "Save and add another"|t }}</a></li>
+                </ul>
+            </div>
+        </div>
 
-	</form>
+
+    </form>
 {% endset %}
