@@ -42,6 +42,7 @@ class CraftTwigExtension extends \Twig_Extension
 	{
 		$translateFilter = new \Twig_Filter_Function('\Craft\Craft::t');
 		$namespaceFilter = new \Twig_Filter_Function('\Craft\craft()->templates->namespaceInputs');
+		$markdownFilter = new \Twig_Filter_Method($this, 'markdownFilter');
 
 		return array(
 			'translate'  => $translateFilter,
@@ -56,6 +57,8 @@ class CraftTwigExtension extends \Twig_Extension
 			'without'    => new \Twig_Filter_Method($this, 'withoutFilter'),
 			'replace'    => new \Twig_Filter_Method($this, 'replaceFilter'),
 			'group'      => new \Twig_Filter_Method($this, 'groupFilter'),
+			'markdown'   => $markdownFilter,
+			'md'         => $markdownFilter,
 			'filter'     => new \Twig_Filter_Function('array_filter'),
 			'ucfirst'    => new \Twig_Filter_Function('ucfirst'),
 			'lcfirst'    => new \Twig_Filter_Function('lcfirst'),
@@ -132,6 +135,19 @@ class CraftTwigExtension extends \Twig_Extension
 		}
 
 		return $groups;
+	}
+
+	/**
+	 * Parses text through Markdown.
+	 *
+	 * @param string $str
+	 * @return string
+	 */
+	public function markdownFilter($str)
+	{
+		$html = StringHelper::parseMarkdown($str);
+		$charset = craft()->templates->getTwig()->getCharset();
+		return new \Twig_Markup($html, $charset);
 	}
 
 	/**
