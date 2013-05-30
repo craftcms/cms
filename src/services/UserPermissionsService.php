@@ -63,6 +63,9 @@ class UserPermissionsService extends BaseApplicationComponent
 					)
 				),
 			),
+			'deleteUsers' => array(
+				'label' => Craft::t('Delete users')
+			),
 		);
 
 		// Locales
