@@ -333,6 +333,9 @@ class UserPermissionsService extends BaseApplicationComponent
 						"publishPeerEntryDrafts{$suffix}" => array(
 							'label' => Craft::t('Publish other authors’ drafts')
 						),
+						"deletePeerEntryDrafts{$suffix}" => array(
+							'label' => Craft::t('Delete other authors’ drafts')
+						),
 					)
 				);
 			}
