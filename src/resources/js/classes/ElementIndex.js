@@ -101,6 +101,12 @@ Craft.ElementIndex = Garnish.Base.extend({
 
     		this.searchTimeout = setTimeout($.proxy(this, 'updateElements'), 500);
     	}, this));
+
+    	// Auto-focus the Search box
+    	if (!Garnish.isMobileBrowser(true))
+    	{
+    		this.$search.focus();
+    	}
 	},
 
 	getState: function(key)

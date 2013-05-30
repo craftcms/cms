@@ -79,24 +79,24 @@ class WebApp extends \CWebApplication
 		$this->getComponent('log');
 
 		// Set our own custom runtime path.
-		$this->setRuntimePath(craft()->path->getRuntimePath());
+		$this->setRuntimePath($this->path->getRuntimePath());
 
 		// Attach our own custom Logger
 		Craft::setLogger(new Logger());
 
 		// If we're not in devMode or this is a resource request, we're going to remove some logging routes.
-		if (!craft()->config->get('devMode') || ($resourceRequest = $this->request->isResourceRequest()) == true)
+		if (!$this->config->get('devMode') || ($resourceRequest = $this->request->isResourceRequest()) == true)
 		{
 			// If it's a resource request, we don't want any logging routes, including craft.log
 			// If it's not a resource request, we'll keep the FileLogRoute around.
 			if ($resourceRequest)
 			{
-				craft()->log->removeRoute('FileLogRoute');
+				$this->log->removeRoute('FileLogRoute');
 			}
 
 			// Don't need either of these if not in devMode or it's a resource request.
-			craft()->log->removeRoute('WebLogRoute');
-			craft()->log->removeRoute('ProfileLogRoute');
+			$this->log->removeRoute('WebLogRoute');
+			$this->log->removeRoute('ProfileLogRoute');
 		}
 
 		parent::init();
@@ -135,7 +135,7 @@ class WebApp extends \CWebApplication
 		}
 
 		// If the track has changed, put the brakes on the request.
-		if (!craft()->updates->isTrackValid())
+		if (!$this->updates->isTrackValid())
 		{
 			if ($this->request->isCpRequest())
 			{
@@ -216,20 +216,20 @@ class WebApp extends \CWebApplication
 			$this->_setPackageComponents();
 
 			// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
-			if (craft()->request->isCpRequest() && !($this->request->isActionRequest() && $this->_isValidActionRequest()))
+			if ($this->request->isCpRequest() && !($this->request->isActionRequest() && $this->_isValidActionRequest()))
 			{
 				// Make sure the user has access to the CP
-				craft()->userSession->requireLogin();
-				craft()->userSession->requirePermission('accessCp');
+				$this->userSession->requireLogin();
+				$this->userSession->requirePermission('accessCp');
 
 				// If they're accessing a plugin's section, make sure that they have permission to do so
-				$firstSeg = craft()->request->getSegment(1);
+				$firstSeg = $this->request->getSegment(1);
 				if ($firstSeg)
 				{
-					$plugin = $plugin = craft()->plugins->getPlugin($firstSeg);
+					$plugin = $plugin = $this->plugins->getPlugin($firstSeg);
 					if ($plugin)
 					{
-						craft()->userSession->requirePermission('accessPlugin-'.$plugin->getClassHandle());
+						$this->userSession->requirePermission('accessPlugin-'.$plugin->getClassHandle());
 					}
 				}
 			}

@@ -17,6 +17,16 @@ class UserSessionVariable
 	}
 
 	/**
+	 * Returns the currently logged in user.
+	 *
+	 * @return UserModel|null
+	 */
+	public function getUser()
+	{
+		return craft()->userSession->getUser();
+	}
+
+	/**
 	 * Returns the remembered username from cookie.
 	 *
 	 * @return string

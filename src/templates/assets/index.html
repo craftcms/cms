@@ -1,4 +1,5 @@
 {% extends "_layouts/cp" %}
+{% from "_includes/forms" import text %}
 {% set title = "Assets"|t %}
 {% includeCssResource "css/assets.css" %}
 {% set folders = craft.assets.getAllFolders %}
@@ -60,7 +61,10 @@
 					</div>
 
 					<div class="search">
-						<input type="text" class="text nicetext fullwidth" placeholder="{{ 'Search'|t }}">
+						{{ text({
+							placeholder: "Search"|t,
+							autofocus: true
+						}) }}
 						<div class="search-options">
 							<label><input type="checkbox" class="assets-searchmode"> {{ 'Search nested folders'|t }}</label>
 						</div>

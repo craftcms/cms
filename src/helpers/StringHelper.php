@@ -301,6 +301,24 @@ class StringHelper
 	}
 
 	/**
+	 * Runs a string through Markdown.
+	 *
+	 * @static
+	 * @param string $str
+	 * @return string
+	 */
+	public static function parseMarkdown($str)
+	{
+		if (!class_exists('\Markdown_Parser', false))
+		{
+			require_once craft()->path->getFrameworkPath().'vendors/markdown/markdown.php';
+		}
+
+		$md = new \Markdown_Parser();
+		return $md->transform($str);
+	}
+
+	/**
 	 * Get array of chars to be used for conversion.
 	 *
 	 * @access private
