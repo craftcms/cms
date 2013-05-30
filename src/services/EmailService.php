@@ -80,7 +80,7 @@ class EmailService extends BaseApplicationComponent
 		if (!$emailModel->htmlBody)
 		{
 			// Auto-generate the HTML content
-			$emailModel->htmlBody = $this->_markItDown($emailModel->body);
+			$emailModel->htmlBody = StringHelper::parseMarkdown($emailModel->body);
 		}
 
 		$emailModel->htmlBody = "{% extends '{$template}' %}\n".
@@ -286,7 +286,7 @@ class EmailService extends BaseApplicationComponent
 		else
 		{
 			// They didn't provide an htmlBody, so markdown the body.
-			$renderedHtmlBody = craft()->templates->renderString($this->_markItDown($emailModel->body), $variables);
+			$renderedHtmlBody = craft()->templates->renderString(StringHelper::parseMarkdown($emailModel->body), $variables);
 			$email->MsgHTML($renderedHtmlBody);
 			$email->AltBody = craft()->templates->renderString($emailModel->body, $variables);
 		}
@@ -346,20 +346,5 @@ class EmailService extends BaseApplicationComponent
 		$email->Host = $emailSettings['host'];
 		$email->Port = $emailSettings['port'];
 		$email->Timeout = $emailSettings['timeout'];
-	}
-
-	/**
-	 * @param $text
-	 * @return string
-	 */
-	private function _markItDown($text)
-	{
-		if (!class_exists('\Markdown_Parser', false))
-		{
-			require_once craft()->path->getFrameworkPath().'vendors/markdown/markdown.php';
-		}
-
-		$md = new \Markdown_Parser();
-		return $md->transform($text);
 	}
 }
