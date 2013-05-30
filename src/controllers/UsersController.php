@@ -752,12 +752,12 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * Suspends a user.
+	 * Deletes a user.
 	 */
 	public function actionDeleteUser()
 	{
 		$this->requirePostRequest();
-		craft()->userSession->requirePermission('administrateUsers');
+		craft()->userSession->requirePermission('deleteUsers');
 
 		$userId = craft()->request->getRequiredPost('userId');
 		$user = craft()->users->getUserById($userId);
