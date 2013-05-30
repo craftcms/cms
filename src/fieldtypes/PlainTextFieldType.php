@@ -28,8 +28,10 @@ class PlainTextFieldType extends BaseFieldType
 			'placeholder'   => array(AttributeType::String),
 			'multiline'     => array(AttributeType::Bool),
 			'initialRows'   => array(AttributeType::Number, 'min' => 1, 'default' => 4),
+			/* HIDE */
 			'maxLength'     => array(AttributeType::Number, 'min' => 0),
 			'maxLengthUnit' => array(AttributeType::Enum, 'values' => array('words', 'chars')),
+			/* end HIDE */
 		);
 	}
 

@@ -11,7 +11,7 @@
 	errors: settings.getErrors('placeholder')
 }) }}
 
-
+<!-- HIDE -->
 {% set maxLengthInput %}
 	{{ forms.text({
 		id: 'maxLength',
@@ -33,6 +33,7 @@
 	id: 'maxLength',
 	errors: settings.getErrors('maxLength')
 }, maxLengthInput) }}
+<!-- end HIDE -->
 
 
 {{ forms.checkboxField({
