@@ -449,6 +449,7 @@ class InstallService extends BaseApplicationComponent
 	 * Creates initial database content for the install.
 	 *
 	 * @access private
+	 * @param $inputs
 	 * @return null
 	 */
 	private function _createDefaultContent($inputs)
