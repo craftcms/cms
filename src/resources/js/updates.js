@@ -145,6 +145,7 @@ Craft.postActionRequest('update/getAvailableUpdates', function(response) {
 				$('#no-system-updates').show();
 			}
 
+			/* HIDE */
 			if (response.plugins && atLeastOnePluginHasARelease(response.plugins))
 			{
 				var $table = $('#plugin-updates'),
@@ -177,6 +178,7 @@ Craft.postActionRequest('update/getAvailableUpdates', function(response) {
 			{
 				$('#no-plugin-updates').show();
 			}
+			/* end HIDE */
 
 			$('#updates').fadeIn('fast');
 
