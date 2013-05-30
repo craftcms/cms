@@ -570,6 +570,19 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Deletes a user.
+	 *
+	 * @param UserModel $user
+	 * @return bool
+	 */
+	public function deleteUser(UserModel $user)
+	{
+		$userRecord = $this->_getUserRecordById($user->id);
+
+		return $userRecord->delete();
+	}
+
+	/**
 	 * Unsuspends a user.
 	 *
 	 * @param UserModel $user

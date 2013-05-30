@@ -144,7 +144,10 @@
 			<hr>
 
 			{% if account.status != 'suspended' %}
-				<input type="button" class="btn small formsubmit" value="{{ 'Suspend'|t }}" data-action="users/suspendUser">
+				<input type="button" class="btn small formsubmit" value="{{ 'Suspend'|t }}" data-action="users/suspendUser" />
+                <input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="users/deleteUser"
+                       data-confirm="{{ 'Deleting a using will delete their entries. Are you sure?'|t }}"
+                       data-redirect="users/" />
 			{% endif %}
 
 		{% endif %}

@@ -752,6 +752,29 @@ class UsersController extends BaseController
 	}
 
 	/**
+	 * Suspends a user.
+	 */
+	public function actionDeleteUser()
+	{
+		$this->requirePostRequest();
+		craft()->userSession->requirePermission('administrateUsers');
+
+		$userId = craft()->request->getRequiredPost('userId');
+		$user = craft()->users->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		craft()->users->deleteUser($user);
+
+		craft()->userSession->setNotice(Craft::t('User deleted.'));
+		$this->redirectToPostedUrl();
+	}
+
+
+	/**
 	 * Unsuspends a user.
 	 */
 	public function actionUnsuspendUser()

@@ -146,6 +146,14 @@ var CP = Garnish.Base.extend({
 				$('<input type="hidden" name="redirect" value="'+$btn.attr('data-redirect')+'"/>').appendTo($form);
 			}
 
+            if ($btn.attr('data-confirm'))
+            {
+                if (!confirm($btn.attr('data-confirm')))
+                {
+                    return;
+                }
+            }
+
 			$form.submit();
 		});
 
@@ -157,7 +165,21 @@ var CP = Garnish.Base.extend({
 
         // Make placeholders work for IE9, too.
         $('input[type!=password], textarea').placeholder();
-	},
+
+        // Listen for save shortcuts in primary forms
+        var $primaryForm = $('form[data-saveshortcut="1"]:first');
+        if ($primaryForm.length == 1)
+        {
+            this.addListener(Garnish.$doc, 'keydown', function (ev) {
+                if ((ev.metaKey || ev.ctrlKey) && ev.keyCode == Garnish.S_KEY)
+                {
+                    $primaryForm.submit();
+                    return false;
+                }
+                return true;
+            });
+        }
+    },
 
 	/**
 	 * Handles stuff that should happen when the window is resized.
