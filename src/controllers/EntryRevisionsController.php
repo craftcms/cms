@@ -101,6 +101,11 @@ class EntryRevisionsController extends BaseController
 			throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draftId)));
 		}
 
+		if ($draft->creatorId != craft()->userSession->getUser()->id)
+		{
+			craft()->userSession->requirePermission('publishPeerEntryDrafts:'.$draft->sectionId);
+		}
+
 		$this->_setDraftValuesFromPost($draft);
 
 		if (craft()->entryRevisions->publishDraft($draft))
