@@ -124,6 +124,12 @@
 					instructions: "An entry is only “live” if it is enabled, has a Post Date in the past, and an Expiration Date in the future."|t
 				}, statusInput) }}
 			{% endif %}
+
+            {% if user.can('deleteEntries'~permissionSuffix) %}
+                <input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="entries/deleteEntry"
+                       data-confirm="{{ 'Are you sure you want to delete this entry?'|t }}"
+                    data-redirect="entries">
+            {% endif %}
 		</div>
 
 		<hr>

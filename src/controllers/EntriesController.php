@@ -333,7 +333,6 @@ class EntriesController extends BaseController
 	public function actionDeleteEntry()
 	{
 		$this->requirePostRequest();
-		$this->requireAjaxRequest();
 
 		$entry = $this->_populateEntryModel();
 		$section = $entry->getSection();
@@ -342,7 +341,8 @@ class EntriesController extends BaseController
 		$entryId = $entry->id;
 
 		craft()->elements->deleteElementById($entryId);
-		$this->returnJson(array('success' => true));
+
+		$this->redirectToPostedUrl();
 	}
 
 	/**
