@@ -2,9 +2,9 @@
  *
  * Color picker
  * Author: Stefan Petre www.eyecon.ro
- * 
+ *
  * Dual licensed under the MIT and GPL licenses
- * 
+ *
  */
 (function ($) {
 	var ColorPicker = function () {
@@ -13,7 +13,7 @@
 			inAction,
 			charMin = 65,
 			visible,
-			tpl = '<div class="colorpicker"><div class="colorpicker_color"><div><div></div></div></div><div class="colorpicker_hue"><div></div></div><div class="colorpicker_new_color"></div><div class="colorpicker_current_color"></div><div class="colorpicker_hex"><input type="text" maxlength="6" size="6" /></div><div class="colorpicker_rgb_r colorpicker_field"><input type="text" maxlength="3" size="3" /><span></span></div><div class="colorpicker_rgb_g colorpicker_field"><input type="text" maxlength="3" size="3" /><span></span></div><div class="colorpicker_rgb_b colorpicker_field"><input type="text" maxlength="3" size="3" /><span></span></div><div class="colorpicker_hsb_h colorpicker_field"><input type="text" maxlength="3" size="3" /><span></span></div><div class="colorpicker_hsb_s colorpicker_field"><input type="text" maxlength="3" size="3" /><span></span></div><div class="colorpicker_hsb_b colorpicker_field"><input type="text" maxlength="3" size="3" /><span></span></div><div class="colorpicker_submit"></div></div>',
+			tpl = '<div class="colorpicker"><div class="colorpicker_color"><div><div></div></div></div><div class="colorpicker_hue"><div></div></div><div class="colorpicker_new_color"></div><div class="colorpicker_current_color"></div><div class="colorpicker_hex"><input type="text" maxlength="6" size="6" /></div><div class="colorpicker_rgb_r colorpicker_field"><input type="text" maxlength="3" size="3" /><span></span></div><div class="colorpicker_rgb_g colorpicker_field"><input type="text" maxlength="3" size="3" /><span></span></div><div class="colorpicker_rgb_b colorpicker_field"><input type="text" maxlength="3" size="3" /><span></span></div><div class="colorpicker_hsb_h colorpicker_field"><input type="text" maxlength="3" size="3" /><span></span></div><div class="colorpicker_hsb_s colorpicker_field"><input type="text" maxlength="3" size="3" /><span></span></div><div class="colorpicker_hsb_b colorpicker_field"><input type="text" maxlength="3" size="3" /><span></span></div></div>',
 			defaults = {
 				eventName: 'click',
 				onShow: function () {},
@@ -112,7 +112,7 @@
 					y: ev.pageY,
 					field: field,
 					val: parseInt(field.val(), 10),
-					preview: $(this).parent().parent().data('colorpicker').livePreview					
+					preview: $(this).parent().parent().data('colorpicker').livePreview
 				};
 				$(document).bind('mouseup', current, upIncrement);
 				$(document).bind('mousemove', current, moveIncrement);
@@ -262,7 +262,7 @@
 					s: Math.min(100, Math.max(0, hsb.s)),
 					b: Math.min(100, Math.max(0, hsb.b))
 				};
-			}, 
+			},
 			fixRGB = function (rgb) {
 				return {
 					r: Math.min(255, Math.max(0, rgb.r)),
@@ -281,7 +281,7 @@
 					hex = o.join('');
 				}
 				return hex;
-			}, 
+			},
 			HexToRGB = function (hex) {
 				var hex = parseInt(((hex.indexOf('#') > -1) ? hex.substring(1) : hex), 16);
 				return {r: hex >> 16, g: (hex & 0x00FF00) >> 8, b: (hex & 0x0000FF)};
@@ -300,7 +300,7 @@
 				var delta = max - min;
 				hsb.b = max;
 				if (max != 0) {
-					
+
 				}
 				hsb.s = max != 0 ? 255 * delta / max : 0;
 				if (hsb.s != 0) {
@@ -412,10 +412,6 @@
 						options.newColor = cal.find('div.colorpicker_new_color');
 						options.currentColor = cal.find('div.colorpicker_current_color');
 						cal.data('colorpicker', options);
-						cal.find('div.colorpicker_submit')
-							.bind('mouseenter', enterSubmit)
-							.bind('mouseleave', leaveSubmit)
-							.bind('click', clickSubmit);
 						fillRGBFields(options.color, cal.get(0));
 						fillHSBFields(options.color, cal.get(0));
 						fillHexFields(options.color, cal.get(0));
@@ -484,27 +480,46 @@
 })(jQuery);
 
 // Create colorpickers, if we have to.
-$(function () {
-    // Check if we have to replace the color input
-    var colorInput = document.createElement("input");
-    colorInput.setAttribute("type", "color");
-    if (colorInput.type === "text")
-    {
-        $('input[type=color]').each(function () {
-            var colorInput = $(this);
-            colorInput.prop('type', 'hidden');
-            var colorPicker = $('<div class="colorpickerElement"></div>');
-            colorInput.after(colorPicker);
+(function($) {
+	// Make sure the browser doesn't support <input type="color">
+	var input = document.createElement('input');
+	input.setAttribute('type', 'color');
 
-            colorPicker.ColorPicker({
-                color: colorInput.val(),
-                flat: true,
-                onChange: function (hsb, hex, rgb) {
-                    colorInput.val('#' + hex);
-                }
-            });
+	if (input.type != 'color')
+	{
+		$('input[type=color]').each(function () {
+			(function($input) {
 
-        });
+				var $container = $('<div class="color" />'),
+					$preview = $('<div class="colorpreview" />').appendTo($container),
+					$hiddenInput = $('<input type="hidden" />').appendTo($container);
 
-    }
-});
+				if ($input.val())
+				{
+					$preview.css('background-color', $input.val());
+					$hiddenInput.val($input.val());
+				}
+
+				$hiddenInput.attr('name', $input.attr('name'));
+
+				$input.replaceWith($container);
+
+				$container.ColorPicker({
+					color: $hiddenInput.val(),
+					onShow: function (colpkr) {
+						$container.addClass('active');
+					},
+					onHide: function (colpkr) {
+						$container.removeClass('active');
+					},
+					onChange: function (hsb, hex, rgb) {
+						$preview.css('backgroundColor', '#'+hex);
+						$hiddenInput.val('#'+hex);
+					}
+				});
+
+			})($(this));
+		});
+	}
+
+})(jQuery);
