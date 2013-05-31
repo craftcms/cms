@@ -129,17 +129,25 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 */
 	public function publishDraft(EntryDraftModel $draft)
 	{
-		$draftRecord = $this->_getDraftRecord($draft);
-
 		if (craft()->entries->saveEntry($draft))
 		{
-			$draftRecord->delete();
+			$this->deleteDraft($draft);
 			return true;
 		}
 		else
 		{
 			return false;
 		}
+	}
+
+	/**
+	 * Deletes a draft by it's model.
+	 * @param EntryDraftModel $draft
+	 */
+	public function deleteDraft(EntryDraftModel $draft)
+	{
+		$draftRecord = $this->_getDraftRecord($draft);
+		$draftRecord->delete();
 	}
 
 	/**

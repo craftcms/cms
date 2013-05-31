@@ -127,7 +127,7 @@
 
             {% if user.can('deleteEntries'~permissionSuffix) %}
                 <input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="entries/deleteEntry"
-                       data-confirm="{{ 'Are you sure you want to delete this entry?'|t }}"
+                    data-confirm="{{ 'Are you sure you want to delete this entry?'|t }}"
                     data-redirect="entries">
             {% endif %}
 		</div>
@@ -146,7 +146,12 @@
 					<input type="button" class="btn formsubmit" value="{{ 'Publish Draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.cpEditUrl }}">
 				{% endif %}
 
-			{% elseif entry.id and entry.classHandle == 'EntryVersion' %}
+                {% if user.can('publishEntries'~permissionSuffix) and (entry.creatorId == user.id or user.can('deletePeerEntryDrafts'~permissionSuffix)) %}
+                    <input type="button" class="btn formsubmit" value="{{ 'Delete Draft'|t }}" data-action="entryRevisions/deleteDraft"
+                       data-confirm="{{ 'Are you sure you want to delete this draft?'|t }}"
+                       data-redirect="{{ entry.cpEditUrl }}"/>
+                {% endif %}
+            {% elseif entry.id and entry.classHandle == 'EntryVersion' %}
 
 
 			{% else %}

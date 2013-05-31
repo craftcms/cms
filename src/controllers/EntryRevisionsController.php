@@ -62,7 +62,32 @@ class EntryRevisionsController extends BaseController
 	}
 
 	/**
-	 * Publishes a draft.
+	 * Deletes a draft.
+	 */
+	public function actionDeleteDraft()
+	{
+		$this->requirePostRequest();
+
+		$draftId = craft()->request->getPost('draftId');
+		$draft = craft()->entryRevisions->getDraftById($draftId);
+
+		if (!$draft)
+		{
+			throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draftId)));
+		}
+
+		if ($draft->creatorId != craft()->userSession->getUser()->id)
+		{
+			craft()->userSession->requirePermission('deletePeerEntryDrafts:'.$draft->sectionId);
+		}
+
+		craft()->entryRevisions->deleteDraft($draft);
+
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Publish a draft.
 	 */
 	public function actionPublishDraft()
 	{
@@ -101,6 +126,7 @@ class EntryRevisionsController extends BaseController
 			));
 		}
 	}
+
 
 	/**
 	 * Sets the draft model's values from the post data.
