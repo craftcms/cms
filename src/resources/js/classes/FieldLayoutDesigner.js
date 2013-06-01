@@ -50,7 +50,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
 				$menu = $('<div class="menu" data-align="center"/>').insertAfter($editBtn),
 				$ul = $('<ul/>').appendTo($menu);
 
-			$('<li><a data-action="rename">'+Craft.t('Rename…')+'</a></li>').appendTo($ul);
+			$('<li><a data-action="rename">'+Craft.t('Rename')+'</a></li>').appendTo($ul);
 			$('<li><a data-action="delete">'+Craft.t('Delete')+'</a></li>').appendTo($ul);
 
 			new Garnish.MenuBtn($editBtn, {
