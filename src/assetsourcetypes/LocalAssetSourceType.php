@@ -139,7 +139,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	private function _getSourceFileSystemPath()
 	{
 		$path = $this->getSettings()->path;
-		$path = realpath($path).'/';
+		$path = IOHelper::getRealPath($path);
 		return $path;
 	}
 
