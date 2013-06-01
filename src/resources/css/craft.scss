@@ -459,27 +459,23 @@ ul.tree,
 .status.off { background-position: 0 -20px; }
 
 /* ----------------------------------------
-/*  HUD
-/* ----------------------------------------*/
-
-.hud { position: absolute; background: rgba(25,25,25,0.9);
-	-webkit-box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-	        box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-}
-.hud .tip { position: absolute; }
-.hud .tip.top { top: -5px; left: 50%; margin-left: -5px; width: 10px; height: 5px; background-image: url(../images/hud-tip-top.png); }
-.hud .tip.right { right: -5px; width: 5px; height: 10px; background-image: url(../images/hud-tip-right.png); }
-.hud .tip.bottom { bottom: -5px; width: 10px; height: 5px; background-image: url(../images/hud-tip-bottom.png); }
-.hud .tip.left { left: -5px; width: 5px; height: 10px; background-image: url(../images/hud-tip-left.png); }
-
-/* ----------------------------------------
 /*  Modals
 /* ----------------------------------------*/
 
-.modal { position: fixed; top: 50%; left: 50%; z-index: 9999; border-radius: 2px; margin-left: -200px; width: 400px; background: #fff; overflow: hidden;
+.modal,
+.hud { z-index: 9999; border-radius: 3px; background: #fff;
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 4px 20px -7px rgba(0,0,0,0.5);
 	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 4px 20px -7px rgba(0,0,0,0.5);
 }
+
+.modal { position: fixed; top: 50%; left: 50%; margin-left: -200px; width: 400px; overflow: hidden; }
+.hud { position: absolute; }
+.hud .body { padding: 30px; }
+.hud .tip { position: absolute; background: no-repeat 0 0; }
+.hud .tip-left { left: -15px; width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
+.hud .tip-top { top: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_top.png); }
+.hud .tip-right { right: -15px; width: 15px; height: 30px; background-image: url(../images/hudtip_right.png); }
+.hud .tip-bottom { bottom: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_bottom.png); }
 
 .modal .header,
 .modal .footer { padding: 15px 30px; }
@@ -702,5 +698,8 @@ ul.errors li { color: $errorcolor; }
 	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
 	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
 
-	.hud .tip.top { background-image: url(../images/hud-tip-top_2x.png); background-size: 10px 5px; }
+	.hud .tip-left { background-image: url(../images/hudtip_left_2x.png); background-size: 15px 30px; }
+	.hud .tip-top { background-image: url(../images/hudtip_top_2x.png); background-size: 30px 15px; }
+	.hud .tip-right { background-image: url(../images/hudtip_right_2x.png); background-size: 15px 30px; }
+	.hud .tip-bottom { background-image: url(../images/hudtip_bottom_2x.png); background-size: 30px 15px; }
 }
