@@ -23,7 +23,7 @@ class AppUpdateModel extends BaseModel
 		$attributes['criticalUpdateAvailable'] = AttributeType::Bool;
 		$attributes['manualUpdateRequired']    = AttributeType::Bool;
 		$attributes['breakpointRelease']       = AttributeType::Bool;
-		$attributes['newLicenseUrl']           = AttributeType::String;
+		$attributes['licenseUpdated']          = AttributeType::String;
 		$attributes['versionUpdateStatus']     = AttributeType::String;
 		$attributes['manualDownloadEndpoint']  = AttributeType::String;
 		$attributes['releases']                = AttributeType::Mixed;
