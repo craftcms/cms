@@ -144,7 +144,7 @@ Craft.postActionRequest('update/getAvailableUpdates', function(response) {
 
 							if (!hud)
 							{
-								$form = $('<form><p>'+Craft.t('Craft’s <a href="http://buildwithcraft.com/license" target="_blank">Terms and Conditions</a> have been updated.')+'</p></form>');
+								$form = $('<form><p>'+Craft.t('Craft’s <a href="http://buildwithcraft.com/license" target="_blank">Terms and Conditions</a> have changed.')+'</p></form>');
 								$label = $('<label> '+Craft.t('I agree.')+' &nbsp;</label>').appendTo($form);
 								$checkbox = $('<input type="checkbox"/>').prependTo($label);
 								$submitBtn = $('<input class="btn submit" type="submit"/>').appendTo($form);
