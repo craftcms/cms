@@ -1,6 +1,9 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
+{% includeTranslations
+	"Live Preview"
+%}
 
 {% set extraPageHeaderHtml %}
 	{% if craft.hasPackage('Localize') %}
