@@ -197,6 +197,9 @@ class UpdatesService extends BaseApplicationComponent
 		$info->build       = $build;
 		$info->releaseDate = $releaseDate;
 
+		// TODO: Deprecate after next breakpoint release.
+		$info->track = '@@@track@@@';
+
 		return Craft::saveInfo($info);
 	}
 
