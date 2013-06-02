@@ -120,15 +120,13 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($migration->up() !== false)
 		{
-			$column = $this->_getCorrectApplyTimeColumn();
-
 			if ($plugin)
 			{
 				$pluginRecord = craft()->plugins->getPluginRecord($plugin);
 
 				craft()->db->createCommand()->insert($this->_migrationTable, array(
 					'version' => $class,
-					$column => DateTimeHelper::currentTimeForDb(),
+					'applyTime' => DateTimeHelper::currentTimeForDb(),
 					'pluginId' => $pluginRecord->getPrimaryKey()
 				));
 			}
@@ -136,7 +134,7 @@ class MigrationsService extends BaseApplicationComponent
 			{
 				craft()->db->createCommand()->insert($this->_migrationTable, array(
 					'version' => $class,
-					$column => DateTimeHelper::currentTimeForDb()
+					'applyTime' => DateTimeHelper::currentTimeForDb()
 				));
 			}
 
@@ -177,12 +175,10 @@ class MigrationsService extends BaseApplicationComponent
 	 */
 	public function getMigrationHistory($plugin = null, $limit = null)
 	{
-		$column = $this->_getCorrectApplyTimeColumn();
-
 		if ($plugin === 'all')
 		{
 			$query = craft()->db->createCommand()
-				->select('version, '.$column)
+				->select('version, applyTime')
 				->from($this->_migrationTable)
 				->order('version DESC');
 		}
@@ -191,7 +187,7 @@ class MigrationsService extends BaseApplicationComponent
 			$pluginRecord = craft()->plugins->getPluginRecord($plugin);
 
 			$query = craft()->db->createCommand()
-				->select('version, '.$column)
+				->select('version, applyTime')
 				->from($this->_migrationTable)
 				->where('pluginId = :pluginId', array(':pluginId' => $pluginRecord->getPrimaryKey()))
 				->order('version DESC');
@@ -199,7 +195,7 @@ class MigrationsService extends BaseApplicationComponent
 		else
 		{
 			$query = craft()->db->createCommand()
-				->select('version, '.$column)
+				->select('version, applyTime')
 				->from($this->_migrationTable)
 				->where('pluginId IS NULL')
 				->order('version DESC');
@@ -215,10 +211,8 @@ class MigrationsService extends BaseApplicationComponent
 		// Convert the dates to DateTime objects
 		foreach ($migrations as &$migration)
 		{
-			$column = $this->_getCorrectApplyTimeColumn();
-
 			// TODO: MySQL specific.
-			$migration['applyTime'] = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $migration[$column]);
+			$migration['applyTime'] = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $migration['applyTime']);
 		}
 
 		return $migrations;
@@ -330,24 +324,5 @@ class MigrationsService extends BaseApplicationComponent
 	public function getTemplate()
 	{
 		return file_get_contents(Craft::getPathOfAlias('app.etc.updates.migrationtemplate').'.php');
-	}
-
-	/**
-	 * TODO: Deprecate after next breakpoint.
-	 *
-	 * @return string
-	 */
-	private function _getCorrectApplyTimeColumn()
-	{
-		$migrationsTable = craft()->db->getSchema()->getTable('{{migrations}}');
-
-		$applyTimeColumn = 'apply_time';
-
-		if ($migrationsTable->getColumn('applyTime') !== null)
-		{
-			$applyTimeColumn = 'applyTime';
-		}
-
-		return $applyTimeColumn;
 	}
 }

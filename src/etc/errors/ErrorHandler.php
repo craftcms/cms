@@ -56,16 +56,12 @@ class ErrorHandler extends \CErrorHandler
 
 		if (!craft()->isConsole() && Craft::isInstalled())
 		{
-			// TODO: Deprecate after next breakpoint release.
-			if (Craft::getBuild() > 2157)
+			// Set whether the currently logged in user is an admin.
+			if (isset(craft()->userSession))
 			{
-				// Set whether the currently logged in user is an admin.
-				if (isset(craft()->userSession))
+				if (($currentUser = craft()->userSession->getUser()) !== null)
 				{
-					if (($currentUser = craft()->userSession->getUser()) !== null)
-					{
-						$admin = $currentUser->admin == 1 ? true : false;
-					}
+					$admin = $currentUser->admin == 1 ? true : false;
 				}
 			}
 		}

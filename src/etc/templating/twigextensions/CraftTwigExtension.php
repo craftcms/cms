@@ -230,19 +230,14 @@ class CraftTwigExtension extends \Twig_Extension
 			$globals['siteName'] = Craft::getSiteName();
 			$globals['siteUrl'] = Craft::getSiteUrl();
 
-			// TODO: Deprecate after next breakpoint
-			if (Craft::getBuild() > 2157)
-			{
-				$globals['user'] = craft()->userSession->getUser();
+			$globals['user'] = craft()->userSession->getUser();
 
-				// TODO: Deprecate the build conditional after the next breakpoint
-				if (craft()->request->isSiteRequest() && Craft::getBuild() >= 2168)
+			if (craft()->request->isSiteRequest())
+			{
+				foreach (craft()->globals->getAllSets() as $globalSet)
 				{
-					foreach (craft()->globals->getAllSets() as $globalSet)
-					{
-						$globalSet->locale = craft()->language;
-						$globals[$globalSet->handle] = $globalSet;
-					}
+					$globalSet->locale = craft()->language;
+					$globals[$globalSet->handle] = $globalSet;
 				}
 			}
 		}

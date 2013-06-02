@@ -390,12 +390,6 @@ class Craft extends \Yii
 
 			if (static::isInstalled())
 			{
-				// TODO: remove after the next breakpoint release
-				if (static::getBuild() < 2205)
-				{
-					unset($attributes['timezone']);
-				}
-
 				craft()->db->createCommand()->update('info', $attributes);
 			}
 			else

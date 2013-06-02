@@ -67,25 +67,21 @@ class LocalizationService extends BaseApplicationComponent
 	{
 		if (!isset($this->_siteLocales))
 		{
-			// TODO: Deprecate after next breakpoint release.
-			if (Craft::getBuild() > 2157)
+			$query = craft()->db->createCommand()
+				->select('locale')
+				->from('locales')
+				->order('sortOrder');
+
+			if (!Craft::hasPackage(CraftPackage::Localize))
 			{
-				$query = craft()->db->createCommand()
-					->select('locale')
-					->from('locales')
-					->order('sortOrder');
+				$query->limit(1);
+			}
 
-				if (!Craft::hasPackage(CraftPackage::Localize))
-				{
-					$query->limit(1);
-				}
+			$localeIds = $query->queryColumn();
 
-				$localeIds = $query->queryColumn();
-
-				foreach ($localeIds as $localeId)
-				{
-					$this->_siteLocales[] = new LocaleModel($localeId);
-				}
+			foreach ($localeIds as $localeId)
+			{
+				$this->_siteLocales[] = new LocaleModel($localeId);
 			}
 
 			if (empty($this->_siteLocales))

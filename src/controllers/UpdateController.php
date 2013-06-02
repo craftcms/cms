@@ -280,15 +280,13 @@ class UpdateController extends BaseController
 			$uid = $data['uid'];
 		}
 
-		$handle = $this->_getFixedHandle($data);
-
 		if (isset($data['dbBackupPath']))
 		{
-			$return = craft()->updates->updateDatabase($uid, $handle, $data['dbBackupPath']);
+			$return = craft()->updates->updateDatabase($uid, $data['handle'], $data['dbBackupPath']);
 		}
 		else
 		{
-			$return = craft()->updates->updateDatabase($uid, $handle);
+			$return = craft()->updates->updateDatabase($uid, $data['handle']);
 		}
 
 		if (!$return['success'])
@@ -321,9 +319,7 @@ class UpdateController extends BaseController
 			$uid = $data['uid'];
 		}
 
-		$handle = $this->_getFixedHandle($data);
-
-		$return = craft()->updates->updateCleanUp($uid, $handle);
+		$return = craft()->updates->updateCleanUp($uid, $data['handle']);
 		if (!$return['success'])
 		{
 			$this->returnJson(array('error' => $return['message']));
@@ -383,24 +379,5 @@ class UpdateController extends BaseController
 		}
 
 		return false;
-	}
-
-	/**
-	 * TODO: deprecate after next breakpoint
-	 *
-	 * @param $data
-	 * @return string
-	 */
-	private function _getFixedHandle($data)
-	{
-
-		if (!isset($data['handle']))
-		{
-			return 'craft';
-		}
-		else
-		{
-			return $data['handle'];
-		}
 	}
 }
