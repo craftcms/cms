@@ -606,7 +606,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 	/**
 	 * Delete the source folder.
 	 *
-	 * @param AssetFolderModel $folder
+	 * @param AssetFolderModel $parentFolder
+	 * @param                  $folderName
 	 * @return boolean
 	 */
 	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
