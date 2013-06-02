@@ -107,7 +107,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		$prefix = $this->_getPathPrefix();
 
-		try{
+		try
+		{
 			$fileList = $this->_getFileList($prefix);
 		}
 		catch (Exception $exception)
