@@ -90,7 +90,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete just the file inside of a source for an Assets File.
 	 *
-	 * @param AssetFileModel $file
+	 * @param AssetFolderModel $folder
+	 * @param                  $filename
+	 * @return
 	 */
 	abstract protected function _deleteSourceFile(AssetFolderModel $folder, $filename);
 
