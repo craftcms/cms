@@ -45,24 +45,24 @@ class CraftTwigExtension extends \Twig_Extension
 		$markdownFilter = new \Twig_Filter_Method($this, 'markdownFilter');
 
 		return array(
-			'translate'  => $translateFilter,
-			't'          => $translateFilter,
+			'currency'   => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatCurrency'),
+			'datetime'   => new \Twig_Filter_Function('\Craft\craft()->dateFormatter->formatDateTime'),
+			'filesize'	 => new \Twig_Filter_Function('\Craft\craft()->formatter->formatSize'),
+			'filter'     => new \Twig_Filter_Function('array_filter'),
+			'group'      => new \Twig_Filter_Method($this, 'groupFilter'),
+			'intersect'  => new \Twig_Filter_Function('array_intersect'),
+			'lcfirst'    => new \Twig_Filter_Function('lcfirst'),
+			'markdown'   => $markdownFilter,
+			'md'         => $markdownFilter,
 			'namespace'  => $namespaceFilter,
 			'ns'         => $namespaceFilter,
 			'number'     => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatDecimal'),
-			'currency'   => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatCurrency'),
 			'percentage' => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatPercentage'),
-			'datetime'   => new \Twig_Filter_Function('\Craft\craft()->dateFormatter->formatDateTime'),
-			'intersect'  => new \Twig_Filter_Function('array_intersect'),
-			'without'    => new \Twig_Filter_Method($this, 'withoutFilter'),
 			'replace'    => new \Twig_Filter_Method($this, 'replaceFilter'),
-			'group'      => new \Twig_Filter_Method($this, 'groupFilter'),
-			'markdown'   => $markdownFilter,
-			'md'         => $markdownFilter,
-			'filter'     => new \Twig_Filter_Function('array_filter'),
+			'translate'  => $translateFilter,
+			't'          => $translateFilter,
 			'ucfirst'    => new \Twig_Filter_Function('ucfirst'),
-			'lcfirst'    => new \Twig_Filter_Function('lcfirst'),
-			'filesize'	 => new \Twig_Filter_Function('\Craft\craft()->formatter->formatSize'),
+			'without'    => new \Twig_Filter_Method($this, 'withoutFilter'),
 		);
 	}
 
