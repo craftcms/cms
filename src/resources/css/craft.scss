@@ -353,7 +353,7 @@ div.btn.submit input { position: absolute; left: 100%; }
 .colorpicker { z-index: 2; }
 
 /* switch */
-.lightswitch { position: relative; border: none !important; width: 80px; height: 31px; overflow: hidden; cursor: pointer; @include unselectable; }
+.lightswitch { position: relative; border: none !important; width: 80px; height: 31px; overflow: hidden; cursor: pointer; @include unselectable; overflow: hidden; }
 .lightswitch:after { display: block; position: absolute; z-index: 1; top: 0; left: 0; width: 100%; height: 100%; content: '.'; text-indent: -100%;
 	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
 	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
@@ -672,7 +672,7 @@ ul.tree,
 .text,
 #main div.redactor_box,
 .border-box,
-.lightswitch { border: 1px solid #ccc; border-radius: 3px; overflow: hidden;
+.lightswitch { border: 1px solid #ccc; border-radius: 3px;
 	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.1), 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
 	        box-shadow: inset 0 1px 1px rgba(0,0,0,0.1), 0 0 0 $blurglowcolor;    -moz-transition: border linear 100ms,         box-shadow linear 100ms;
 }
@@ -742,9 +742,9 @@ table.editable textarea { font-size: 13px; line-height: 17px; color: $textcolor;
 
 /* redactor */
 body .redactor_box { padding: 0 5px; }
-body .redactor_toolbar { height: 33px !important; background: none; border-bottom: 1px dotted #ddd; }
-body .redactor_toolbar li a:hover { border-radius: 3px; border: 1px solid #d4d4d4; background-color: #e8e8e8; }
-body .redactor_toolbar li.redactor_separator { margin: 7px 2px 0 3px !important; height: 19px; border-left: 1px dotted #ddd; border-right: none; }
+body .redactor_box .redactor_toolbar { height: 33px !important; background: none; border-bottom: 1px dotted #ddd; }
+body .redactor_box .redactor_toolbar li a:hover { border-radius: 3px; border: 1px solid #d4d4d4; background-color: #e8e8e8; }
+body .redactor_box .redactor_toolbar li.redactor_separator { margin: 7px 2px 0 3px !important; height: 19px; border-left: 1px dotted #ddd; border-right: none; }
 
 body .redactor_box_fullscreen { z-index: 10000 !important; }
 body .redactor_dropdown { z-index: 10001 !important; }

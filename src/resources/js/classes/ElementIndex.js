@@ -141,8 +141,9 @@ Craft.ElementIndex = Garnish.Base.extend({
 	getControllerData: function()
 	{
 		return {
-			elementType:        this.elementType,
 			mode:               this.settings.mode,
+			elementType:        this.elementType,
+			criteria:           this.settings.criteria,
 			disabledElementIds: this.settings.disabledElementIds,
 			state:              this.state,
 			search:             (this.$search ? this.$search.val() : null)
@@ -373,7 +374,8 @@ Craft.ElementIndex = Garnish.Base.extend({
 	defaults: {
 		mode: 'index',
 		id: null,
-		disabledElementIds: null,
+		criteria: null,
+		disabledElementIds: [],
 		onUpdateElements: $.noop,
 		onEnableElements: $.noop,
 		onDisableElements: $.noop
