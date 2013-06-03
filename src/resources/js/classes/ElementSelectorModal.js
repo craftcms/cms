@@ -96,7 +96,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		var $trs = this.elementIndex.$tbody.children(':not(.disabled)');
 
 		this.elementSelect = new Garnish.Select(this.elementIndex.$tbody, $trs, {
-			multi: true,
+			multi: this.settings.multiSelect,
 			vertical: true,
 			waitForDblClick: true,
 			onSelectionChange: $.proxy(this, 'onSelectionChange')
@@ -169,6 +169,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		id: null,
 		sources: null,
 		criteria: null,
+		multiSelect: false,
 		disabledElementIds: null,
 		disableOnSelect: true,
 		onCancel: $.noop,
