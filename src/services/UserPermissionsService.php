@@ -25,7 +25,7 @@ class UserPermissionsService extends BaseApplicationComponent
 				'label' => Craft::t('Access the site when the system is off')
 			),
 			'accessCp' => array(
-				'label' => 'Access the CP',
+				'label' => Craft::t('Access the CP'),
 				'nested' => array(
 					'accessCpWhenSystemIsOff' => array(
 						'label' => Craft::t('Access the CP when the system is off')
