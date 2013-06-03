@@ -33,7 +33,7 @@
 
 				{{ forms.selectField({
 					label: "Default User Group"|t,
-					instructions: "Choose a user group that publicly-registered members be added to by default.",
+					instructions: "Choose a user group that publicly-registered members be added to by default."|t,
 					name: 'defaultGroup',
 					options: groups,
 					value: (settings.defaultGroup is defined ? settings.defaultGroup : null)
