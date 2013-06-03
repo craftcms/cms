@@ -9,6 +9,7 @@ class NumberHelper
 	/**
 	 * Returns the "word" version of a number
 	 *
+	 * @static
 	 * @param int $num The number
 	 * @return string The number word, or the original number if it's >= 10
 	 */
@@ -38,10 +39,11 @@ class NumberHelper
 	/**
 	 * Returns the uppercase alphabetic version of a number
 	 *
+	 * @static
 	 * @param int $num The number
 	 * @return string The alphabetic version of the number
 	 */
-	function upperAlpha($num)
+	public static function upperAlpha($num)
 	{
 		$num--;
 		$alpha = '';
@@ -60,10 +62,11 @@ class NumberHelper
 	/**
 	 * Returns the lowercase alphabetic version of a number
 	 *
+	 * @static
 	 * @param int $num The number
 	 * @return string The alphabetic version of the number
 	 */
-	function lowerAlpha($num)
+	public static function lowerAlpha($num)
 	{
 		$alpha = static::upperAlpha($num);
 		return strtolower($alpha);
@@ -72,10 +75,11 @@ class NumberHelper
 	/**
 	 * Returns the uppercase roman numeral version of a number
 	 *
+	 * @static
 	 * @param int $num The number
 	 * @return string The roman numeral version of the number
 	 */
-	function upperRoman($num)
+	public static function upperRoman($num)
 	{
 		$roman = '';
 
@@ -110,13 +114,39 @@ class NumberHelper
 	/**
 	 * Returns the lowercase roman numeral version of a number
 	 *
+	 * @static
 	 * @param int $num The number
 	 * @return string The roman numeral version of the number
 	 */
-	function lowerRoman($num)
+	public static function lowerRoman($num)
 	{
 		$roman = static::upperRoman($num);
 		return strtolower($roman);
 	}
 
+	/**
+	 * Returns the numeric value of a variable.
+	 *
+	 * If the variable is an object with a __toString() method,
+	 * the numeric value of its string representation will be returned.
+	 *
+	 * @static
+	 * @param mixed $var
+	 * @return mixed
+	 */
+	public static function makeNumeric($var)
+	{
+		if (is_numeric($var))
+		{
+			return $var;
+		}
+		else if (is_object($var) && method_exists($var, '__toString'))
+		{
+			return static::makeNumeric($var->__toString());
+		}
+		else
+		{
+			return (int) !empty($var);
+		}
+	}
 }
