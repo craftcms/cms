@@ -136,24 +136,17 @@ html, body,
 
 /* field layout forms */
 
-@font-face {
-	font-family: 'TektonPro-Regular';
-	src: url('../fonts/TektonPro-Regular.otf') format('embedded-opentype');
-	font-weight: normal;
-	font-style: normal;
-}
-
 $fldBgColor: #fff;
 $fldChalkColor: #2f1fb5;
 $fldGuideColor: #f4f3fb;
 
 .fieldlayoutform,
 .fld-tab,
-.fld-field { color: $fldChalkColor; font-family: 'TektonPro-Regular'; font-style: italic; text-transform: uppercase; }
+.fld-field { color: $fldChalkColor; font-family: 'Coming Soon', sans-serif; font-style: italic; text-transform: uppercase; }
 
 .fieldlayoutform { border: 1px solid $fldGuideColor; padding: 30px 30px 29px 29px; background: url(../images/fieldlayoutform-bg.png) 0 0; }
 .fieldlayoutform:after { @include clearafter; }
-.fieldlayoutform h2 { margin: 3px 0 27px !important; font-size: 19px; line-height: 30px; text-decoration: underline; color: $fldChalkColor; margin-bottom: 30px; }
+.fieldlayoutform h2 { margin: 3px 0 27px !important; font-size: 20px; line-height: 30px; font-weight: normal; text-decoration: underline; color: $fldChalkColor; margin-bottom: 30px; }
 
 .fieldlayoutform .fld-tabs { margin: 0 0 29px -30px; }
 .fieldlayoutform .unusedfields { margin: 30px 0 -30px -30px; }
@@ -164,7 +157,7 @@ $fldGuideColor: #f4f3fb;
 .fieldlayoutform .buttons { margin: 0 0 58px; }
 .fieldlayoutform .buttons .btn.add { margin-right: 15px; border-color: $fldChalkColor; padding: 2px 10px 0; line-height: 27px; color: $fldChalkColor; background: transparent; }
 .fieldlayoutform .buttons .btn.add:before { margin-top: -2px; }
-.fieldlayoutform .buttons h3 { margin: 0; display: inline-block; padding: 9px 6px; line-height: 15px; text-decoration: underline; }
+.fieldlayoutform .buttons h3 { margin: 0; display: inline-block; padding: 9px 6px; line-height: 15px; }
 
 .fld-tab { float: left; margin: 0 -1px 30px 30px; width: 211px; }
 
