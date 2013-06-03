@@ -58,6 +58,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 				this.elementIndex = new Craft.ElementIndex(this.elementType, this.$body, {
 					mode:               'modal',
 					id:                 this.settings.id,
+					criteria:           this.settings.criteria,
 					disabledElementIds: this.settings.disabledElementIds,
 					onUpdateElements:   $.proxy(this, 'onUpdateElements'),
 					onEnableElements:   $.proxy(this, 'onEnableElements'),
@@ -167,6 +168,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 	defaults: {
 		id: null,
 		sources: null,
+		criteria: null,
 		disabledElementIds: null,
 		disableOnSelect: true,
 		onCancel: $.noop,

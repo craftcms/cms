@@ -38,8 +38,8 @@ class ElementsController extends BaseController
 	 */
 	public function actionGetElements()
 	{
-		$elementType = $this->_getElementType();
 		$mode = craft()->request->getParam('mode', 'index');
+		$elementType = $this->_getElementType();
 		$state = craft()->request->getParam('state', array());
 		$disabledElementIds = craft()->request->getParam('disabledElementIds');
 
@@ -169,7 +169,8 @@ class ElementsController extends BaseController
 	 */
 	private function _getElementCriteria($elementType, $state, $tableAttributes)
 	{
-		$criteria = craft()->elements->getCriteria($elementType->getClassHandle());
+		$baseCriteria = craft()->request->getPost('criteria');
+		$criteria = craft()->elements->getCriteria($elementType->getClassHandle(), $baseCriteria);
 
 		$criteria->status = null;
 
