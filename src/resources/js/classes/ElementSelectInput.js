@@ -112,6 +112,7 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 			this.modal = new Craft.ElementSelectorModal(this.elementType, {
 				id: this.id,
 				sources: this.sources,
+				criteria: { status: null },
 				multiSelect: true,
 				disabledElementIds: selectedElementIds,
 				onSelect: $.proxy(this, 'selectElements')

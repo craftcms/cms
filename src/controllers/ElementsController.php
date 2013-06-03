@@ -172,8 +172,6 @@ class ElementsController extends BaseController
 		$baseCriteria = craft()->request->getPost('criteria');
 		$criteria = craft()->elements->getCriteria($elementType->getClassHandle(), $baseCriteria);
 
-		$criteria->status = null;
-
 		if (!empty($state['source']))
 		{
 			$sources = $elementType->getSources();
