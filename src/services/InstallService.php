@@ -204,6 +204,7 @@ class InstallService extends BaseApplicationComponent
 			'timezone'    => array('column' => ColumnType::Varchar, 'length' => 30),
 			'on'          => array('column' => ColumnType::TinyInt, 'length' => 1, 'unsigned' => true, 'default' => false, 'null' => false),
 			'maintenance' => array('column' => ColumnType::TinyInt, 'length' => 1, 'unsigned' => true, 'default' => false, 'null' => false),
+			'track'       => array('column' => ColumnType::Varchar, 'maxLength' => 40, 'required' => true),
 		));
 
 		Craft::log('Finished creating the info table.');
@@ -218,6 +219,7 @@ class InstallService extends BaseApplicationComponent
 			'siteUrl'     => $inputs['siteUrl'],
 			'on'          => 1,
 			'maintenance' => 0,
+			'track'       => '@@@track@@@',
 		));
 
 		if (Craft::saveInfo($info))
