@@ -5,16 +5,13 @@ RedactorPlugins.pagebreak = {
 	init: function()
 	{
 		this.fullscreen = false;
-		this.addBtn('pagebreak', 'Insert Page Break', function(obj)
-		{
-			obj.insertPageBreak();
-		});
+		this.buttonAdd('pagebreak', 'Insert Page Break', $.proxy(this, 'insertPageBreak'));
 	},
 
 	insertPageBreak: function()
 	{
 		var $pagebreakNode = $('<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />'),
-			$currentNode = $(this.getCurrentNode());
+			$currentNode = $(this.getCurrent());
 
 		if ($currentNode.length && !$currentNode.is('div.redactor_editor'))
 		{
