@@ -112,10 +112,10 @@ class RichTextFieldType extends BaseFieldType
 		}
 		else
 		{
-			$config = '';
+			$config = '{}';
 		}
 
-		craft()->templates->includeJs('$(".redactor-'.$this->model->handle.'").redactor('.$config.');');
+		craft()->templates->includeJs(craft()->templates->render('_components/fieldtypes/RichText/init.js', array('handle' => $this->model->handle, 'config' => $config)));
 
 		// Swap any <!--pagebreak-->'s with <hr>'s
 		$value = str_replace('<!--pagebreak-->', '<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />', $value);
