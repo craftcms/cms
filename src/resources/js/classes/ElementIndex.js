@@ -375,7 +375,7 @@ Craft.ElementIndex = Garnish.Base.extend({
 		mode: 'index',
 		id: null,
 		criteria: null,
-		disabledElementIds: null,
+		disabledElementIds: [],
 		onUpdateElements: $.noop,
 		onEnableElements: $.noop,
 		onDisableElements: $.noop

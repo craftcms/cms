@@ -170,7 +170,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 		sources: null,
 		criteria: null,
 		multiSelect: false,
-		disabledElementIds: null,
+		disabledElementIds: [],
 		disableOnSelect: true,
 		onCancel: $.noop,
 		onSelect: $.noop
