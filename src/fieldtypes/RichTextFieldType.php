@@ -115,7 +115,12 @@ class RichTextFieldType extends BaseFieldType
 			$config = '{}';
 		}
 
-		craft()->templates->includeJs(craft()->templates->render('_components/fieldtypes/RichText/init.js', array('handle' => $this->model->handle, 'config' => $config)));
+		$sections = JsonHelper::encode($this->_getSectionSources());
+
+		craft()->templates->includeJs(craft()->templates->render('_components/fieldtypes/RichText/init.js', array(
+			'handle' => $this->model->handle,
+			'config' => $config,
+			'sections' => $sections)));
 
 		// Swap any <!--pagebreak-->'s with <hr>'s
 		$value = str_replace('<!--pagebreak-->', '<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />', $value);
@@ -152,5 +157,25 @@ class RichTextFieldType extends BaseFieldType
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Get available section sources.
+	 *
+	 * @return array
+	 */
+	private function _getSectionSources()
+	{
+		$sections = craft()->sections->getAllSections();
+		$sources = array();
+		foreach ($sections as $section)
+		{
+			if ($section->hasUrls)
+			{
+				$sources[] = 'section:' . $section->id;
+			}
+		}
+
+		return $sources;
 	}
 }

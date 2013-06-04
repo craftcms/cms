@@ -5,8 +5,6 @@ if (typeof config.buttonsCustom == "undefined")
   config.buttonsCustom = {};
 }
 
-
-
 config.buttonsCustom.image = {
     title: Craft.t('Insert image'),
     dropdown:
@@ -37,10 +35,48 @@ config.buttonsCustom.image = {
                     }
                 });
                 elementSelectModal.show();
-                var html = 'ss';
             }
         }
     }
 };
+
+config.buttonsCustom.link = {
+    title: Craft.t('Link'),
+    dropdown: {
+        link_entry:
+        {
+            title: Craft.t('Link an entry'),
+            callback: function () {
+                var editor = this;
+                editor.selectionSave();
+
+                var elementSelectModal = new Craft.ElementSelectorModal('Entry', {
+                    sources: {{sections|raw}},
+                    onSelect: function (elements) {
+                        if (elements.length)
+                        {
+                            editor.selectionRestore();
+                            var element = elements[0];
+                            editor.insertNode($('<a href="' + element.$element.attr('data-url') + '">' + element.label + '</a>')[0]);
+
+                            editor.sync();
+                        }
+                    }
+                });
+                elementSelectModal.show();
+            }
+        },
+        link:
+        {
+            title: Craft.t('Insert link'),
+            callback: function () { this.linkShow();}
+        },
+        unlink:
+        {
+            title: Craft.t('Remove link'),
+            callback: function () { this.unlink();}
+        }
+    }
+}
 
 $(targetSelector).redactor(config);
