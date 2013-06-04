@@ -1,6 +1,6 @@
 {% extends "_layouts/base" %}
 
-{% set body %}
+{% block body %}
 	<div class="message-container">
 		<div id="message" class="pane">
 			{{ content }}
@@ -12,4 +12,4 @@
 			message.setAttribute('style', 'margin-top: '+margin+'px !important;');
 		</script>
 	</div>
-{% endset %}
+{% endblock %}
