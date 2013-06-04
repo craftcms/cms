@@ -85,7 +85,7 @@
 	<form method="post" action="" accept-charset="UTF-8">
 		<input type="hidden" name="userId" value="{{ account.id }}">
 
-		<h2>User Info</h2>
+		<h2>{{ "User Info"|t }}</h2>
 
 		<table class="data">
 			<tbody>
@@ -113,7 +113,7 @@
 					</tr>
 				{% endif %}
 				<tr>
-					<th class="nowrap">{{ "Registration Date" }}</th>
+					<th class="nowrap">{{ "Registration Date"|t }}</th>
 					<td>{{ account.dateCreated.nice }}</td>
 				</tr>
 				{% if account.status != 'pending' %}
