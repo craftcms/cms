@@ -158,20 +158,20 @@ class CraftTwigExtension extends \Twig_Extension
 	public function getFunctions()
 	{
 		return array(
-			'url'             => new \Twig_Function_Function('\Craft\UrlHelper::getUrl'),
-			'cpUrl'           => new \Twig_Function_Function('\Craft\UrlHelper::getCpUrl'),
-			'siteUrl'         => new \Twig_Function_Function('\Craft\UrlHelper::getSiteUrl'),
-			'resourceUrl'     => new \Twig_Function_Function('\Craft\UrlHelper::getResourceUrl'),
-			'actionUrl'       => new \Twig_Function_Function('\Craft\UrlHelper::getActionUrl'),
-			'getHeadHtml'     => new \Twig_Function_Method($this, 'getHeadHtmlFunction'),
-			'getFootHtml'     => new \Twig_Function_Method($this, 'getFootHtmlFunction'),
-			'getTranslations' => new \Twig_Function_Function('\Craft\craft()->templates->getTranslations'),
-			'round'           => new \Twig_Function_Function('round'),
-			'ceil'            => new \Twig_Function_Function('ceil'),
-			'floor'           => new \Twig_Function_Function('floor'),
-			'min'             => new \Twig_Function_Function('min'),
-			'max'             => new \Twig_Function_Function('max'),
+			'actionUrl'            => new \Twig_Function_Function('\Craft\UrlHelper::getActionUrl'),
+			'cpUrl'                => new \Twig_Function_Function('\Craft\UrlHelper::getCpUrl'),
+			'ceil'                 => new \Twig_Function_Function('ceil'),
+			'floor'                => new \Twig_Function_Function('floor'),
+			'getHeadHtml'          => new \Twig_Function_Method($this, 'getHeadHtmlFunction'),
+			'getFootHtml'          => new \Twig_Function_Method($this, 'getFootHtmlFunction'),
+			'getTranslations'      => new \Twig_Function_Function('\Craft\craft()->templates->getTranslations'),
+			'max'                  => new \Twig_Function_Function('max'),
+			'min'                  => new \Twig_Function_Function('min'),
 			'renderObjectTemplate' => new \Twig_Function_Function('\Craft\craft()->templates->renderObjectTemplate'),
+			'round'                => new \Twig_Function_Function('round'),
+			'resourceUrl'          => new \Twig_Function_Function('\Craft\UrlHelper::getResourceUrl'),
+			'siteUrl'              => new \Twig_Function_Function('\Craft\UrlHelper::getSiteUrl'),
+			'url'                  => new \Twig_Function_Function('\Craft\UrlHelper::getUrl'),
 		);
 	}
 
