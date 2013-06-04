@@ -15,9 +15,7 @@
 	{% else %}
 		{% requirePermission 'editUsers' %}
 
-		{% set name = account.fullName ? account.fullName : account.username %}
-		{% set lastChar = name|slice(account.fullName|length-1) %}
-		{% set title = name ~ (lastChar|lower == "s" ? "’" : "’s") ~ ' ' ~ "Account"|t %}
+		{% set title = "{user}’s Account"|t({ user: account.name }) %}
 		{% set baseUrl = 'users/' ~ account.id %}
 	{% endif %}
 {% else %}
