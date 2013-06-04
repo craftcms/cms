@@ -6,77 +6,88 @@ if (typeof config.buttonsCustom == "undefined")
 }
 
 config.buttonsCustom.image = {
-    title: Craft.t('Insert image'),
-    dropdown:
-    {
-        from_web: {
-            title: Craft.t('Insert URL'),
-            callback: function () { this.imageShow();}
-        },
-        from_assets: {
-            title: Craft.t('Choose image'),
-            callback: function () {
+	title: Craft.t('Insert image'),
+	dropdown:
+	{
+		from_web: {
+			title: Craft.t('Insert URL'),
+			callback: function () { this.imageShow();}
+		},
+		from_assets: {
+			title: Craft.t('Choose image'),
+			callback: function () {
 
-                var editor = this;
-                editor.selectionSave();
+				this.selectionSave();
 
-                var elementSelectModal = new Craft.ElementSelectorModal('Asset', {
-                    criteria: { kind: 'image' },
-                    onSelect: function (elements) {
-                        if (elements.length)
-                        {
-                            editor.selectionRestore();
+				if (typeof this.assetSelectionModal == 'undefined')
+				{
+					this.assetSelectionModal = new Craft.ElementSelectorModal('Asset', {
+						criteria: { kind: 'image' },
+						onSelect: $.proxy(function(elements) {
+							if (elements.length)
+							{
+								this.selectionRestore();
 
-                            var element = elements[0].$element;
-                            editor.insertNode($('<img src="' + element.attr('data-url') + '" />')[0]);
+								var element = elements[0].$element;
+								this.insertNode($('<img src="' + element.attr('data-url') + '" />')[0]);
 
-                            editor.sync();
-                        }
-                    }
-                });
-                elementSelectModal.show();
-            }
-        }
-    }
+								this.sync();
+							}
+						}, this)
+					});
+				}
+				else
+				{
+					this.assetSelectionModal.show();
+				}
+			}
+		}
+	}
 };
 
 config.buttonsCustom.link = {
-    title: Craft.t('Link'),
-    dropdown: {
-        link_entry:
-        {
-            title: Craft.t('Link an entry'),
-            callback: function () {
-                var editor = this;
-                editor.selectionSave();
+	title: Craft.t('Link'),
+	dropdown: {
+		link_entry:
+		{
+			title: Craft.t('Link to an entry'),
+			callback: function () {
 
-                var elementSelectModal = new Craft.ElementSelectorModal('Entry', {
-                    sources: {{sections|raw}},
-                    onSelect: function (elements) {
-                        if (elements.length)
-                        {
-                            editor.selectionRestore();
-                            var element = elements[0];
-                            editor.insertNode($('<a href="' + element.$element.attr('data-url') + '">' + element.label + '</a>')[0]);
+				this.selectionSave();
 
-                            editor.sync();
-                        }
-                    }
-                });
-                elementSelectModal.show();
-            }
-        },
-        link:
-        {
-            title: Craft.t('Insert link'),
-            callback: function () { this.linkShow();}
-        },
-        unlink:
-        {
-            title: Craft.t('Remove link'),
-            callback: function () { this.unlink();}
-        }
-    }
+				if (typeof this.entrySelectionModal == 'undefined')
+				{
+					this.entrySelectionModal = new Craft.ElementSelectorModal('Entry', {
+						sources: {{sections|raw}},
+						onSelect: $.proxy(function(elements) {
+							if (elements.length)
+							{
+								this.selectionRestore();
+								var element = elements[0];
+								this.insertNode($('<a href="' + element.$element.attr('data-url') + '">' + element.label + '</a>')[0]);
+
+								this.sync();
+							}
+						}, this)
+					});
+				}
+				else
+				{
+					this.entrySelectionModal.show();
+				}
+			}
+		},
+		link:
+		{
+			title: Craft.t('Insert link'),
+			callback: function () { this.linkShow();}
+		},
+		unlink:
+		{
+			title: Craft.t('Remove link'),
+			callback: function () { this.unlink();}
+		}
+	}
 }
 
 $(targetSelector).redactor(config);
