@@ -743,7 +743,7 @@ table.editable textarea { font-size: 13px; line-height: 17px; color: $textcolor;
 
 /* redactor */
 body .redactor_box { padding: 0 5px; }
-body .redactor_box .redactor_toolbar { height: 33px !important; background: none; border-bottom: 1px dotted #ddd; }
+body .redactor_box .redactor_toolbar { background: none; border-bottom: 1px dotted #ddd; }
 body .redactor_box .redactor_toolbar li a:hover { border-radius: 3px; border: 1px solid #d4d4d4; background-color: #e8e8e8; }
 body .redactor_box .redactor_toolbar li.redactor_separator { margin: 7px 2px 0 3px !important; height: 19px; border-left: 1px dotted #ddd; border-right: none; }
 
