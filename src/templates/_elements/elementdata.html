@@ -7,7 +7,7 @@
 				</td>
 			{% else %}
 				{% if attribute.display is defined %}
-					{% set value = phattribute(element, attribute.display) %}
+					{% set value = renderObjectTemplate(attribute.display, element) %}
 				{% else %}
 					{% set value = attribute(element, attribute.attribute) %}
 				{% endif %}
