@@ -48,14 +48,31 @@ class DashboardService extends BaseApplicationComponent
 	{
 		$widgetRecords = $this->_getUserWidgetRecords();
 
+		// If there are no widget records, this is the first time they've hit the dashboard.
 		if (!$widgetRecords)
 		{
 			// Add the defaults and try again
 			$this->_addDefaultUserWidgets();
 			$widgetRecords = $this->_getUserWidgetRecords();
 		}
+		else
+		{
+			// Get only the enabled widgtes.
+			foreach ($widgetRecords as $key => $widgetRecord)
+			{
+				if (!$widgetRecord->enabled)
+				{
+					unset($widgetRecords[$key]);
+				}
+			}
+		}
 
-		return WidgetModel::populateModels($widgetRecords, $indexBy);
+		if (count($widgetRecords) > 0)
+		{
+			return WidgetModel::populateModels($widgetRecords, $indexBy);
+		}
+
+		return array();
 	}
 
 	/**
@@ -128,14 +145,17 @@ class DashboardService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Deletes a widget.
+	 * Soft deletes a widget.
 	 *
 	 * @param int $widgetId
 	 * @return bool
 	 */
 	public function deleteUserWidgetById($widgetId)
 	{
-		craft()->db->createCommand()->delete('widgets', array('id' => $widgetId));
+		$widgetRecord = $this->_getUserWidgetRecordById($widgetId);
+		$widgetRecord->enabled = false;
+		$widgetRecord->save();
+
 		return true;
 	}
 

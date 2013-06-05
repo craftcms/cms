@@ -24,6 +24,7 @@ class WidgetRecord extends BaseRecord
 			'type'      => array(AttributeType::ClassName, 'required' => true),
 			'sortOrder' => AttributeType::SortOrder,
 			'settings'  => AttributeType::Mixed,
+			'enabled'   => array(AttributeType::Bool, 'default' => true),
 		);
 	}
 
