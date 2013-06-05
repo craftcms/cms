@@ -65,7 +65,7 @@ class UserSettingsController extends BaseController
 		$this->requireAdmin();
 
 		$settings['allowPublicRegistration'] = (bool) craft()->request->getPost('allowPublicRegistration');
-		$settings['defaultGroup'] = (bool) craft()->request->getPost('defaultGroup');
+		$settings['defaultGroup'] = craft()->request->getPost('defaultGroup');
 
 		if (craft()->systemSettings->saveSettings('users', $settings))
 		{
