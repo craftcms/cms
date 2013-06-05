@@ -13,7 +13,7 @@
 /*-- manager --*/
 .assets-page-loading .folder-contents{ padding-bottom: 30px; background: url('../images/spinner.gif') no-repeat center bottom; }
 .assets-selected { background: $selcolor; color: #fff !important; }
-.thumb-wrapper { border: 5px solid #fff; background: url(../images/thumb_bg.png) 0 0;
+.thumb-wrapper { border: 5px solid #fff; background: url(../images/checkers.png) 0 0;
                  -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);
                     -moz-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);
                          box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);}
@@ -75,6 +75,6 @@ only screen and (min-resolution: 1.5dppx) {
 	.assets-tv-file.assets-tv-bigthumb .assets-fileicon { background-image: url(../images/file_big_2x.png); background-size: 136px 175px; }
 	.assets-listview table .assets-lv-name .assets-lv-thumb .assets-fileicon { background-image: url(../images/file_small_2x.png); background-size: 22px 28px; }
 
-    .thumb-wrapper { background-image: url(../images/thumb_bg_2x.png); background-size: 16px 16px; }
+    .thumb-wrapper { background-image: url(../images/checkers_2x.png); background-size: 16px 16px; }
     .toolbar .spinner, .assets-page-loading .folder-contents{ background-image: url('../images/spinner_2x.gif'); background-size: 20px 20px; }
 }
