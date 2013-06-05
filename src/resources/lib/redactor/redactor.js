@@ -1864,6 +1864,13 @@
 
 				var keyPosition = this.buttonGet(key).position(), left = keyPosition.left + 'px', btnHeight = 29;
 
+                // Edit by Pixel & Tonic.
+                // Compensate for dropdown going out of editor bounds to the right.
+                if (this.buttonGet(key).position().left + $dropdown.outerWidth() < this.$box.outerWidth() == false)
+                {
+                    left = (this.buttonGet(key).position().left - $dropdown.outerWidth() + this.buttonGet(key).outerWidth()) + 'px';
+                }
+
 				if (this.opts.air)
 				{
 					$dropdown.css({ position: 'absolute', left: left, top: btnHeight + 'px' }).show();
