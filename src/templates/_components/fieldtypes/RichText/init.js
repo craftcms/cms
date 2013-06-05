@@ -85,7 +85,7 @@ config.buttonsCustom.link = {
 		unlink:
 		{
 			title: Craft.t('Remove link'),
-			callback: function () { this.unlink();}
+			callback: function () { this.exec('unlink');}
 		}
 	}
 }
