@@ -38,7 +38,7 @@ RedactorPlugins.fullscreen = {
 			this.$box.addClass('redactor_box_fullscreen').after(this.tmpspan);
 
 			$('body, html').css('overflow', 'hidden');
-			$('body').prepend(this.$box);
+			$('body').append(this.$box);
 
 			if (this.opts.iframe) this.fullscreenIframe(html);
 
