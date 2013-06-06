@@ -109,7 +109,7 @@ Craft.ElementSelectInput = Garnish.Base.extend({
 				selectedElementIds.push($element.data('id'));
 			}
 
-			this.modal = new Craft.ElementSelectorModal(this.elementType, {
+			this.modal = Craft.createElementSelectorModal(this.elementType, {
 				id: this.id,
 				sources: this.sources,
 				criteria: { status: null },

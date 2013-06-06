@@ -1,7 +1,7 @@
 /**
  * Element selector modal class
  */
-Craft.ElementSelectorModal = Garnish.Modal.extend({
+Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 
 	elementType: null,
 	elementIndex: null,
@@ -20,7 +20,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 	init: function(elementType, settings)
 	{
 		this.elementType = elementType;
-		this.setSettings(settings, Craft.ElementSelectorModal.defaults);
+		this.setSettings(settings, Craft.BaseElementSelectorModal.defaults);
 
 		// Build the modal
 		var $container = $('<div class="modal elementselectormodal"></div>').appendTo(Garnish.$bod),

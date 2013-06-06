@@ -644,6 +644,11 @@ $.extend(Craft, {
 		return $ul;
 	},
 
+	/**
+	 * Initializes any common UI elements in a given container.
+	 *
+	 * @param jQuery $container
+	 */
 	initUiElements: function($container)
 	{
 		$('.checkbox-select', $container).checkboxselect();
@@ -653,6 +658,44 @@ $.extend(Craft, {
 		$('input.password', $container).passwordinput();
 		$('.pill', $container).pill();
 		$('.menubtn', $container).menubtn();
+	},
+
+	_esmClasses: {},
+
+	/**
+	 * Registers an element selector modal class for a given element type.
+	 *
+	 * @param string elementType
+	 * @param function func
+	 */
+	registerElementSelectorModal: function(elementType, func)
+	{
+		if (typeof this._esmClasses[elementType] != 'undefined')
+		{
+			throw 'An element selector modal class has already been registered for the element type “'+elementType+'”.';
+		}
+
+		this._esmClasses[elementType] = func;
+	},
+
+	/**
+	 * Creates a new element selector modal for a given element type.
+	 *
+	 * @param string elementType
+	 * @param object settings
+	 */
+	createElementSelectorModal: function(elementType, settings)
+	{
+		if (typeof this._esmClasses[elementType] != 'undefined')
+		{
+			var func = this._esmClasses[elementType];
+		}
+		else
+		{
+			var func = Craft.BaseElementSelectorModal;
+		}
+
+		return new func(elementType, settings);
 	}
 });
 
