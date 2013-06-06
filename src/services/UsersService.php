@@ -228,6 +228,12 @@ class UsersService extends BaseApplicationComponent
 				$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 			}
 
+			// Fire an 'onBeforeSaveUser' event
+			$this->onBeforeSaveUser(new Event($this, array(
+				'user'      => $user,
+				'isNewUser' => $isNewUser
+			)));
+
 			if ($isNewUser)
 			{
 				// Create the entry record
@@ -287,6 +293,16 @@ class UsersService extends BaseApplicationComponent
 		{
 			return false;
 		}
+	}
+
+	/**
+	 * Fires an 'onBeforeSaveUser' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeSaveUser(Event $event)
+	{
+		$this->raiseEvent('onBeforeSaveUser', $event);
 	}
 
 	/**
