@@ -62,11 +62,12 @@ config.buttonsCustom.link = {
 						onSelect: $.proxy(function(elements) {
 							if (elements.length)
 							{
-								this.selectionRestore();
-								var element = elements[0];
-								this.insertNode($('<a href="' + element.$element.attr('data-url') + '">' + element.label + '</a>')[0]);
-
-								this.sync();
+                                this.selectionRestore();
+                                var element = elements[0];
+                                var selection = this.getSelectionText();
+                                var title = selection.length > 0 ? selection : element.label;
+                                this.insertNode($('<a href="' + element.$element.attr('data-url') + '">' + title + '</a>')[0]);
+                                this.sync();
 							}
 						}, this)
 					});
