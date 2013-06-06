@@ -87,6 +87,7 @@ class AssetFileModel extends BaseElementModel
 			'width'			=> AttributeType::Number,
 			'height'		=> AttributeType::Number,
 			'size'			=> AttributeType::Number,
+			'dateModified'  => AttributeType::DateTime
 		));
 	}
 
