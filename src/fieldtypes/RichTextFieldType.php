@@ -100,7 +100,11 @@ class RichTextFieldType extends BaseFieldType
 	{
 		craft()->templates->includeCssResource('lib/redactor/redactor.css');
 		craft()->templates->includeCssResource('lib/redactor/plugins/pagebreak.css');
-		craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
+
+		// Gotta use the uncompressed Redactor JS until the compressed one gets our Live Preview menu fix
+		craft()->templates->includeJsResource('lib/redactor/redactor.js');
+		//craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
+
 		craft()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
 		craft()->templates->includeJsResource('lib/redactor/plugins/pagebreak.js');
 
