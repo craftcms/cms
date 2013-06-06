@@ -3,7 +3,7 @@ if (typeof Craft == 'undefined')
 	Craft = {};
 }
 
-Craft = $.extend(Craft, {
+$.extend(Craft, {
 
 	navHeight: 48,
 
