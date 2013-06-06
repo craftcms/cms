@@ -167,7 +167,15 @@ class ErrorHandler extends \CErrorHandler
 				}
 				else
 				{
-					$this->render('error', $data);
+					// If it's a database connection problem, display a special template.
+					if ($exception instanceof DbConnectException)
+					{
+						$this->render('_special/dbconnect', $data);
+					}
+					else
+					{
+						$this->render('error', $data);
+					}
 				}
 			}
 			else
@@ -179,8 +187,15 @@ class ErrorHandler extends \CErrorHandler
 				}
 				else
 				{
-					// If we've made it this far, just render the exception template.
-					$this->render('exception', $data);
+					// If it's a database connection problem, display a special template.
+					if ($exception instanceof DbConnectException)
+					{
+						$this->render('_special/dbconnect', $data);
+					}
+					else
+					{
+						$this->render('exception', $data);
+					}
 				}
 			}
 		}
@@ -409,7 +424,7 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function render($template, $data)
 	{
-		$viewFile = $this->getViewFile($template, $data['code']);
+		$viewFile = $this->getViewFile($template, $data['code'], $data['type']);
 
 		if (($this->_devMode) && $template == 'exception')
 		{
@@ -432,6 +447,9 @@ class ErrorHandler extends \CErrorHandler
 				}
 			}
 
+			$path = substr($viewFile, strlen(craft()->path->getTemplatesPath()));
+			$path = substr($path, 0, strpos($path, '.'));
+
 			try
 			{
 				$controller = craft()->getController();
@@ -439,9 +457,9 @@ class ErrorHandler extends \CErrorHandler
 
 				if ($controller && ($controller instanceof $baseControllerClass))
 				{
-					$controller->renderTemplate($fileName, $data);
+					$controller->renderTemplate($path, $data);
 				}
-				else if (($output = craft()->templates->render($fileName, $data)) !== false)
+				else if (($output = craft()->templates->render($path, $data)) !== false)
 				{
 					echo $output;
 				}
@@ -461,13 +479,15 @@ class ErrorHandler extends \CErrorHandler
 	 * Looks for the template under the specified directory.
 	 *
 	 * @access protected
-	 * @param string $templatePath the folder containing the views
-	 * @param string $templateName template name (either 'exception' or 'error')
-	 * @param integer $code HTTP status code
-	 * @param string $srcLanguage the language that the template is in
+	 * @param  string      $templatePath the folder containing the views
+	 * @param  string      $templateName template name (either 'exception' or 'error')
+	 * @param  integer     $code         HTTP status code
+	 * @param  string      $type         A string description of the type of error.
+	 * @param  string      $srcLanguage  the language that the template is in
+	 *
 	 * @return string template path
 	 */
-	protected function getViewFileInternal($templatePath, $templateName, $code, $srcLanguage = null)
+	protected function getViewFileInternal($templatePath, $templateName, $code, $type, $srcLanguage = null)
 	{
 		if (strpos($templatePath, '/framework/') !== false)
 		{
@@ -477,7 +497,8 @@ class ErrorHandler extends \CErrorHandler
 		{
 			$extension = 'html';
 
-			if ($code && is_numeric($code))
+			// Grab the numeric template from the code unless we're looking in the "_special" directory and it's not a Twig template syntax error
+			if ($code && is_numeric($code) && strpos($templateName, '_special') === false && $type != 'Template Syntax Error')
 			{
 				$templateName = (string) $code;
 			}
@@ -512,11 +533,12 @@ class ErrorHandler extends \CErrorHandler
 	 * Determines which view file should be used.
 	 *
 	 * @access protected
-	 * @param string $view view name (either 'exception' or 'error')
-	 * @param integer $code HTTP status code
+	 * @param  string  $view view name (either 'exception' or 'error')
+	 * @param  integer $code HTTP status code
+	 * @param  string $type
 	 * @return string view file path
 	 */
-	protected function getViewFile($view, $code)
+	protected function getViewFile($view, $code, $type)
 	{
 		$viewPaths = array();
 
@@ -536,7 +558,7 @@ class ErrorHandler extends \CErrorHandler
 
 		for ($counter = 0; $counter < count($viewPaths); $counter ++)
 		{
-			$viewFile = $this->getViewFileInternal($viewPaths[$counter], $view, $code, null);
+			$viewFile = $this->getViewFileInternal($viewPaths[$counter], $view, $code, $type, null);
 
 			if (IOHelper::fileExists($viewFile))
 			{

@@ -625,7 +625,7 @@ class WebApp extends \CWebApplication
 
 		if (!empty($messages))
 		{
-			throw new Exception(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
+			throw new DbConnectException(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
 		}
 
 		try
@@ -669,7 +669,7 @@ class WebApp extends \CWebApplication
 
 		if (!empty($messages))
 		{
-			throw new Exception(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
+			throw new DbConnectException(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
 		}
 
 		$this->_isDbConfigValid = true;
