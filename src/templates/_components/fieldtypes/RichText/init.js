@@ -1,5 +1,7 @@
 var config = {{config|raw}};
 var targetSelector = '.redactor-{{handle}}';
+
+// Replace the image and link dropdowns with slight modifications.
 if (typeof config.buttonsCustom == "undefined")
 {
   config.buttonsCustom = {};
@@ -97,5 +99,7 @@ config.buttonsCustom.link = {
 		}
 	}
 }
+
+config.fullscreenAppend = true;
 
 $(targetSelector).redactor(config);
