@@ -13,6 +13,7 @@ class ElementsService extends BaseApplicationComponent
 	 * Returns an element criteria model for a given element type.
 	 *
 	 * @param string $type
+	 * @param mixed $attributes
 	 * @return ElementCriteriaModel
 	 * @throws Exception
 	 */
@@ -32,9 +33,10 @@ class ElementsService extends BaseApplicationComponent
 	 * Finds elements.
 	 *
 	 * @param mixed $criteria
+	 * @param bool $justIds
 	 * @return array
 	 */
-	public function findElements($criteria = null)
+	public function findElements($criteria = null, $justIds = false)
 	{
 		$elements = array();
 		$subquery = $this->buildElementsQuery($criteria);
@@ -49,11 +51,25 @@ class ElementsService extends BaseApplicationComponent
 				$subquery->andWhere(array('in', 'elements.id', $filteredElementIds));
 			}
 
-			$query = craft()->db->createCommand()
-				//->select('r.id, r.type, r.expiryDate, r.enabled, r.archived, r.dateCreated, r.dateUpdated, r.locale, r.title, r.uri, r.sectionId, r.slug')
-				->select('*')
-				->from('('.$subquery->getText().') AS '.craft()->db->quoteTableName('r'))
-				->group('r.id');
+			$query = craft()->db->createCommand();
+
+			if ($justIds)
+			{
+				$query->select('r.id');
+			}
+			else
+			{
+				/* HIDE */
+				// Todo: We can improve SQL performance by selecting the specific columns.
+				// Problem is that we don't know exactly what they are.
+				// Probably have to parse the 'SELECT' clause.
+				$query->select('r.id, r.type, r.expiryDate, r.enabled, r.archived, r.dateCreated, r.dateUpdated, r.locale, r.title, r.uri, r.sectionId, r.slug');
+				/* end HIDE */
+				$query->select('*');
+			}
+
+			$query->from('('.$subquery->getText().') AS '.craft()->db->quoteTableName('r'))
+			      ->group('r.id');
 
 			$query->params = $subquery->params;
 
@@ -86,20 +102,30 @@ class ElementsService extends BaseApplicationComponent
 				array_multisort($searchPositions, $result);
 			}
 
-			$elementType = $criteria->getElementType();
-			$indexBy = $criteria->indexBy;
-
-			foreach ($result as $row)
+			if ($justIds)
 			{
-				$element = $elementType->populateElementModel($row);
-
-				if ($indexBy)
+				foreach ($result as $row)
 				{
-					$elements[$element->$indexBy] = $element;
+					$elements[] = $row['id'];
 				}
-				else
+			}
+			else
+			{
+				$elementType = $criteria->getElementType();
+				$indexBy = $criteria->indexBy;
+
+				foreach ($result as $row)
 				{
-					$elements[] = $element;
+					$element = $elementType->populateElementModel($row);
+
+					if ($indexBy)
+					{
+						$elements[$element->$indexBy] = $element;
+					}
+					else
+					{
+						$elements[] = $element;
+					}
 				}
 			}
 		}
@@ -108,7 +134,7 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets the total number of elements.
+	 * Returns the total number of elements that match a given criteria.
 	 *
 	 * @param mixed $criteria
 	 * @return int

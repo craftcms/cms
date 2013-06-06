@@ -111,6 +111,28 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns the next element relative to this one, from a given set of criteria.
+	 *
+	 * @param mixed $criteria
+	 * @return ElementCriteriaModel|null
+	 */
+	public function getNext($criteria = null)
+	{
+		return $this->_getRelativeElement($criteria, 1);
+	}
+
+	/**
+	 * Returns the previous element relative to this one, from a given set of criteria.
+	 *
+	 * @param mixed $criteria
+	 * @return ElementCriteriaModel|null
+	 */
+	public function getPrev($criteria = null)
+	{
+		return $this->_getRelativeElement($criteria, -1);
+	}
+
+	/**
 	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.
 	 *
 	 * @param mixed $field
@@ -300,6 +322,34 @@ abstract class BaseElementModel extends BaseModel
 		}
 
 		return $model;
+	}
+
+	/**
+	 * Returns an element right before/after this one, from a given set of criteria.
+	 *
+	 * @access private
+	 * @param mixed $criteria
+	 * @param int $dir
+	 * @return BaseElementModel|null
+	 */
+	private function _getRelativeElement($criteria, $dir)
+	{
+		if ($this->id)
+		{
+			if (!($criteria instanceof ElementCriteriaModel))
+			{
+				$criteria = craft()->elements->getCriteria($this->elementType, $criteria);
+			}
+
+			$elementIds = craft()->elements->findElements($criteria, true);
+			$key = array_search($this->id, $elementIds);
+
+			if ($key !== false && isset($elementIds[$key+$dir]))
+			{
+				$criteria->id = $elementIds[$key+$dir];
+				return $criteria->first();
+			}
+		}
 	}
 
 	/**
