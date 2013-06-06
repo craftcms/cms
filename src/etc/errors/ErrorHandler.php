@@ -434,7 +434,14 @@ class ErrorHandler extends \CErrorHandler
 
 			try
 			{
-				if (($output = craft()->templates->render($fileName, $data)) !== false)
+				$controller = craft()->getController();
+				$baseControllerClass = __NAMESPACE__.'\\BaseController';
+
+				if ($controller && ($controller instanceof $baseControllerClass))
+				{
+					$controller->renderTemplate($fileName, $data);
+				}
+				else if (($output = craft()->templates->render($fileName, $data)) !== false)
 				{
 					echo $output;
 				}
