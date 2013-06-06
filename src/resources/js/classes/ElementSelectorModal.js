@@ -30,7 +30,7 @@ Craft.ElementSelectorModal = Garnish.Modal.extend({
 			$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttons),
 			$selectBtn = $('<div class="btn disabled submit">'+Craft.t('Select')+'</div>').appendTo($buttons);
 
-		this.base($container);
+		this.base($container, settings);
 
 		this.$body = $body;
 		this.$selectBtn = $selectBtn;

@@ -1,5 +1,7 @@
 var config = {{config|raw}};
 var targetSelector = '.redactor-{{handle}}';
+
+// Replace the image and link dropdowns with slight modifications.
 if (typeof config.buttonsCustom == "undefined")
 {
   config.buttonsCustom = {};
@@ -18,7 +20,7 @@ config.buttonsCustom.image = {
 			callback: function () {
 
 				this.selectionSave();
-
+                var editor = this;
 				if (typeof this.assetSelectionModal == 'undefined')
 				{
 					this.assetSelectionModal = new Craft.ElementSelectorModal('Asset', {
@@ -26,18 +28,21 @@ config.buttonsCustom.image = {
 						onSelect: $.proxy(function(elements) {
 							if (elements.length)
 							{
-								this.selectionRestore();
+                                editor.selectionRestore();
 
 								var element = elements[0].$element;
-								this.insertNode($('<img src="' + element.attr('data-url') + '" />')[0]);
+                                editor.insertNode($('<img src="' + element.attr('data-url') + '" />')[0]);
 
-								this.sync();
+                                editor.sync();
+                                editor.dropdownHideAll();
 							}
-						}, this)
+						}, this),
+                        closeOtherModals: false
 					});
 				}
 				else
 				{
+                    this.assetSelectionModal.shiftModalToEnd();
 					this.assetSelectionModal.show();
 				}
 			}
@@ -55,25 +60,29 @@ config.buttonsCustom.link = {
 
 				this.selectionSave();
 
+                var editor = this;
 				if (typeof this.entrySelectionModal == 'undefined')
 				{
 					this.entrySelectionModal = new Craft.ElementSelectorModal('Entry', {
 						sources: {{sections|raw}},
-						onSelect: $.proxy(function(elements) {
+						onSelect: function(elements) {
 							if (elements.length)
 							{
-                                this.selectionRestore();
+                                editor.selectionRestore();
                                 var element = elements[0];
-                                var selection = this.getSelectionText();
+                                var selection = editor.getSelectionText();
                                 var title = selection.length > 0 ? selection : element.label;
-                                this.insertNode($('<a href="' + element.$element.attr('data-url') + '">' + title + '</a>')[0]);
-                                this.sync();
-							}
-						}, this)
+                                editor.insertNode($('<a href="' + element.$element.attr('data-url') + '">' + title + '</a>')[0]);
+                                editor.sync();
+                            }
+                            editor.dropdownHideAll();
+						},
+                        closeOtherModals: false
 					});
 				}
 				else
 				{
+                    this.entrySelectionModal.shiftModalToEnd();
 					this.entrySelectionModal.show();
 				}
 			}
@@ -90,5 +99,7 @@ config.buttonsCustom.link = {
 		}
 	}
 }
+
+config.fullscreenAppend = true;
 
 $(targetSelector).redactor(config);
