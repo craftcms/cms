@@ -103,7 +103,7 @@ return array(
 	'Choose a container to use' => 'Choisir un conteneur à utiliser',
 	'Choose a new password' => 'Choisir un nouveau mot de passe',
 	'Choose a password' => 'Choisir un mot de passe',
-	'Choose a user group that publicly-registered members will be added to by default.' => 'Choisissez un groupe d\\'utilisateurs auquel les membres qui s\\'enregistrent publiquement seront rattachés par défaut.',
+	'Choose a user group that publicly-registered members will be added to by default.' => 'Choisissez un groupe d\'utilisateurs auquel les membres qui s\'enregistrent publiquement seront rattachés par défaut.',
 	'Choose image' => 'Choisir l\'image',
 	'Choose the account location' => 'Choisir l\'emplacement du compte',
 	'Clean up HTML?' => 'Nettoyer le HTML ?',
