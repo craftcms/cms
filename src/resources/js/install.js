@@ -95,7 +95,7 @@ Craft.Installer = Garnish.Base.extend({
 				.css('left', centeredLeftPos)
 				.animate({
 					left: -730
-				});
+				}, 300);
 		}
 
 		// Slide in the new screen
@@ -104,7 +104,7 @@ Craft.Installer = Garnish.Base.extend({
 				display: 'block',
 				left: windowWidth + 370
 			})
-			.animate({left: centeredLeftPos}, $.proxy(function() {
+			.animate({left: centeredLeftPos}, 300, $.proxy(function() {
 				// Relax the screen
 				this.$currentScreen.css('left', '50%');
 

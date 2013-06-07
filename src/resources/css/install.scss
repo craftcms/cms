@@ -3,14 +3,15 @@
 @import "shared";
 
 html, body { height: 100%; }
-body { overflow: hidden; background: $submitcolor url(../images/welcome_logo.png) no-repeat 50% 50%; }
+body { overflow: hidden; background: #fff url(../images/install_bg.jpg) no-repeat 50% 50%; background-size: 100%; }
 
-.beginbtncontainer { position: absolute; top: 70%; margin-top: -15px; width: 100%; text-align: center; }
-#beginbtn { display: inline-block; border-radius: 4px; padding: 12px 15px; background: hsl(8, 67%, 95%); color: $submitcolor; font-weight: bold; font-size: 19px; height: 42px; line-height: 18px; }
-#beginbtn:after { margin-top: -4px; }
-#beginbtn:hover { background: #fff; }
+.beginbtncontainer { position: absolute; top: 50%; margin-top: -15px; width: 100%; text-align: center; }
+#beginbtn { display: inline-block; border-radius: 4px; padding: 12px 15px; font-weight: bold; font-size: 19px; height: 42px; line-height: 18px; }
 
-.modal { display: none; position: absolute; top: 50%; left: 50%; margin: -255px 0 0 -385px; padding: 35px; width: 700px; height: 440px; background: #fff; }
+.modal { display: none; position: absolute; top: 50%; left: 50%; margin: -255px 0 0 -385px; padding: 35px; width: 700px; height: 440px; background: #fff;
+	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px #000;
+	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px #000;
+}
 
 h1 { margin-bottom: 35px; text-align: center; }
 .grid { margin-top: 35px; margin-bottom: 35px; }
@@ -19,7 +20,7 @@ h1 { margin-bottom: 35px; text-align: center; }
 #beginbtn,
 .buttons .btn { padding-right: 10px; }
 #beginbtn:after,
-.buttons .btn:after { @include icon; margin-left: 4px; font-size: 20px; width: 20px; content: '→'; }
+.buttons .btn:after { @include icon; margin: -4px 0 0 4px; font-size: 20px; width: 20px; content: '→'; }
 .buttons .btn.loading:after { height: 24px; content: ''; background: url(../images/spinner_submit.gif) no-repeat 0 0; }
 
 .dots { position: absolute; bottom: 10px; left: 50%; margin-left: -17px; }
@@ -52,6 +53,5 @@ input.hidden { position: absolute; top: 100px; }
 	   only screen and (        min-device-pixel-ratio: 1.5),
 	   only screen and (        min-resolution: 1.5dppx)
 {
-	body { background-image: url(../images/welcome_logo_2x.png); background-size: 208px; }
 	.buttons .btn.loading:after { background-image: url(../images/spinner_submit_2x.gif); background-size: 20px 2px; }
 }
