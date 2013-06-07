@@ -5,6 +5,8 @@
 {% includeCssResource "css/updates.css" %}
 {% includeJsResource "js/updates.js" %}
 {% includeTranslations
+	"You’ve got updates!",
+	"No system updates are available.",
 	"build {build}",
 	"Critical",
 	"Update",
@@ -28,26 +30,4 @@
 		<div class="spinner big"></div>
 		<p>{{ "Checking for updates…"|t }}</p>
 	</div>
-
-	<div id="updates">
-		<h2>{{ "System"|t }}</h2>
-		<p id="no-system-updates">{{ "No system updates are available."|t }}</p>
-
-		<table id="system-updates" class="data">
-			<tbody>
-			</tbody>
-		</table>
-
-		<!-- HIDE -->
-		<h2>{{ "Plugins"|t }}</h2>
-		<p id="no-plugin-updates">{{ "No plugin updates are available."|t }}</p>
-
-		<table id="plugin-updates" class="data">
-			<tbody>
-			</tbody>
-		</table>
-		<!-- end HIDE -->
-	</div>
-
-	<div id="update-error"></div>
 {% endset %}
