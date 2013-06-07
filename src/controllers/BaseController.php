@@ -57,9 +57,17 @@ abstract class BaseController extends \CController
 			}
 			else
 			{
-				// Set the Content-Type header
-				$mimeType = craft()->request->getMimeType();
-				header('Content-Type: '.$mimeType.'; charset=utf-8');
+				// In case someone does a domain.com/invalidpath.css
+				if ($template == '404')
+				{
+					$mimeType = 'text/html';
+				}
+				else
+				{
+					// Set the Content-Type header
+					$mimeType = craft()->request->getMimeType();
+					header('Content-Type: '.$mimeType.'; charset=utf-8');
+				}
 
 				if ($mimeType == 'text/html')
 				{
