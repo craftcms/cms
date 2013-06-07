@@ -9,8 +9,8 @@
 #content hr { clear: both; margin: 30px -30px; }
 #content .critical { margin-left: 5px; border-radius: 2px; padding: 2px 5px; font-weight: normal; color: #fff; background: #d6301a; }
 
-#content ul li { padding: 2px 0 2px 25px; }
-#content ul li:before { @include icon; float: left; margin-left: -23px; font-size: 16px; }
+#content ul li { padding: 3px 0 3px 25px; }
+#content ul li:before { @include icon; float: left; margin: 1px 0 1px -23px; font-size: 16px; }
 #content ul li.added:before { content: 'wand'; color: $noticecolor; }
 #content ul li.improved:before { content: 'brush'; }
 #content ul li.fixed:before { content: 'screwdriver'; color: $submitcolor; }
