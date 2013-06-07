@@ -106,4 +106,15 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	{
 		return $value;
 	}
+
+	/**
+	 * Returns whether this is the first time the element's content has been edited.
+	 *
+	 * @access protected
+	 * @return bool
+	 */
+	protected function isFresh()
+	{
+		return (!isset($this->element) || (empty($this->element->getContent()->id) && !$this->element->hasErrors()));
+	}
 }

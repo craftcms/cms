@@ -81,7 +81,6 @@ class AssetFileModel extends BaseElementModel
 		return array_merge(parent::defineAttributes(), array(
 			'sourceId'		=> AttributeType::Number,
 			'folderId'		=> AttributeType::Number,
-			'contentId'		=> AttributeType::Number,
 			'filename'		=> AttributeType::String,
 			'originalName'	=> AttributeType::String,
 			'kind'			=> AttributeType::String,

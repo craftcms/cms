@@ -2999,6 +2999,7 @@ Garnish.Modal = Garnish.Base.extend({
 	$footer: null,
 	$footerBtns: null,
 	$submitBtn: null,
+	$shade: null,
 
 	_headerHeight: null,
 	_footerHeight: null,
@@ -3014,12 +3015,23 @@ Garnish.Modal = Garnish.Base.extend({
 		{
 			// (settings)
 			settings = container;
-			items = null;
+            container = null;
 		}
 
 		this.setSettings(settings, Garnish.Modal.defaults);
 
-		if (container)
+        // If container already set, drop the shade below it.
+        if (container)
+        {
+            this.$shade = $('<div class="modal-shade"/>').insertBefore(container);
+        }
+        else
+        {
+            this.$shade = $('<div class="modal-shade"/>').appendTo(Garnish.$bod);
+        }
+
+
+        if (container)
 		{
 			this.setContainer(container);
 			this.show();
@@ -3070,7 +3082,9 @@ Garnish.Modal = Garnish.Base.extend({
 
 	show: function()
 	{
-		if (Garnish.Modal.visibleModal)
+
+        // Close other modals as needed
+		if (Garnish.Modal.visibleModal && this.settings.closeOtherModals)
 		{
 			Garnish.Modal.visibleModal.hide();
 		}
@@ -3098,10 +3112,17 @@ Garnish.Modal = Garnish.Base.extend({
 
 		this.visible = true;
 		Garnish.Modal.visibleModal = this;
-		Garnish.Modal.$shade.fadeIn(50);
+		this.$shade.fadeIn(50);
 
-		this.addListener(Garnish.Modal.$shade, 'click', 'hide');
-		this.addListener(Garnish.$bod, 'keyup', 'onKeypress');
+		this.addListener(this.$shade, 'click', 'hide');
+
+		this.addListener(Garnish.$bod, 'keyup', function(ev)
+		{
+			if (ev.keyCode == Garnish.ESC_KEY)
+			{
+				this.hide();
+			}
+		});
 
 		this.settings.onShow();
 	},
@@ -3121,19 +3142,11 @@ Garnish.Modal = Garnish.Base.extend({
 
 		this.visible = false;
 		Garnish.Modal.visibleModal = null;
-		Garnish.Modal.$shade.fadeOut('fast', $.proxy(this, 'onFadeOut'));
-		this.removeListener(Garnish.Modal.$shade, 'click');
+		this.$shade.fadeOut('fast', $.proxy(this, 'onFadeOut'));
+		this.removeListener(this.$shade, 'click');
 		this.removeListener(Garnish.$bod, 'keyup');
 
 		this.settings.onHide();
-	},
-
-	onKeypress: function(ev)
-	{
-		if (ev.keyCode == Garnish.ESC_KEY)
-		{
-			this.hide();
-		}
 	},
 
 	onFadeIn: function()
@@ -3234,7 +3247,13 @@ Garnish.Modal = Garnish.Base.extend({
 		{
 			this.dragger.destroy();
 		}
-	}
+	},
+
+    shiftModalToEnd: function ()
+    {
+        this.$shade.appendTo(Garnish.$bod);
+        this.$container.appendTo(Garnish.$bod);
+    }
 },
 {
 	relativeElemPadding: 8,
@@ -3243,11 +3262,11 @@ Garnish.Modal = Garnish.Base.extend({
 		onShow: $.noop,
 		onHide: $.noop,
 		onFadeIn: $.noop,
-		onFadeOut: $.noop
+		onFadeOut: $.noop,
+        closeOtherModals: true
 	},
 	instances: [],
-	visibleModal: null,
-	$shade: $('<div class="modal-shade"/>').appendTo(Garnish.$bod)
+	visibleModal: null
 });
 
 

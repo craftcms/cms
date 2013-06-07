@@ -583,7 +583,7 @@ ul.tree,
 	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 4px 20px -7px rgba(0,0,0,0.5);
 }
 
-.modal { position: fixed; z-index: 9999; top: 50%; left: 50%; margin-left: -200px; width: 400px; overflow: hidden; }
+.modal { position: fixed; z-index: 9998; top: 50%; left: 50%; margin-left: -200px; width: 400px; overflow: hidden; }
 .hud { position: absolute; z-index: 9997; }
 .hud .body { position: relative; padding: 30px; overflow: hidden; }
 .hud .tip { position: absolute; background: no-repeat 0 0; }
@@ -747,8 +747,8 @@ body .redactor_box .redactor_toolbar { background: none; border-bottom: 1px dott
 body .redactor_box .redactor_toolbar li a:hover { border-radius: 3px; border: 1px solid #d4d4d4; background-color: #e8e8e8; }
 body .redactor_box .redactor_toolbar li.redactor_separator { margin: 7px 2px 0 3px !important; height: 19px; border-left: 1px dotted #ddd; border-right: none; }
 
-body .redactor_box_fullscreen { z-index: 10000 !important; }
-body .redactor_dropdown { z-index: 10001 !important; }
+body .redactor_box_fullscreen { z-index: 9998 !important; }
+body .redactor_dropdown { z-index: 9998 !important; }
 
 /**
  * Selects

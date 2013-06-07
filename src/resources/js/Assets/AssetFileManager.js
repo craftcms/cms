@@ -1449,29 +1449,31 @@ Assets.FileManager = Garnish.Base.extend({
 
 			$modalContainerDiv = this.$modalContainerDiv;
 
-			if ($modalContainerDiv == null) {
-				$modalContainerDiv = $('<div class="modal assets-modal"></div>').addClass().appendTo(Garnish.$bod);
+            if ($modalContainerDiv == null) {
+				$modalContainerDiv = $('<div class="modal assets-modal"></div>').appendTo(Garnish.$bod);
 			}
 
-			if (this.modal == null) {
-				this.modal = new Garnish.Modal();
+            $modalContainerDiv.empty().append(data.headHtml);
+            $modalContainerDiv.append(data.bodyHtml);
+            $modalContainerDiv.append(data.footHtml);
+
+            if (this.modal == null) {
+				this.modal = new Garnish.Modal($modalContainerDiv, {});
 			}
+            else
+            {
+                this.modal.setContainer($modalContainerDiv);
+                this.modal.show();
+            }
 
-			$modalContainerDiv.empty().append(data.headHtml);
-			$modalContainerDiv.append(data.bodyHtml);
-			$modalContainerDiv.append(data.footHtml);
-			this.modal.setContainer($modalContainerDiv);
-
-			this.modal.show();
-
-			this.modal.removeListener(Garnish.Modal.$shade, 'click');
+			this.modal.removeListener(this.modal.$shade, 'click');
 
 			this.modal.addListener(this.modal.$container.find('.btn.cancel'), 'click', function () {
 				this.hide();
 			});
 
 			this.modal.addListener(this.modal.$container.find('.btn.submit'), 'click', function () {
-				this.removeListener(Garnish.Modal.$shade, 'click');
+				this.removeListener(this.$shade, 'click');
 
 				var params = $('form#file-fields').serialize();
 

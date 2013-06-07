@@ -141,8 +141,7 @@ class TableFieldType extends BaseFieldType
 
 		if ($columns)
 		{
-			// If this is a new entry, use the default values
-			if (!isset($this->element))
+			if ($this->isFresh())
 			{
 				$defaults = $this->getSettings()->defaults;
 

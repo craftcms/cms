@@ -41,7 +41,7 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 		$options = $this->getOptions();
 
 		// If this is a new entry, look for any default options
-		if (!isset($this->element))
+		if ($this->isFresh())
 		{
 			$values = array();
 

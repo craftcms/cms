@@ -240,7 +240,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function getRawContent($fieldHandle = null)
 	{
-		$content = $this->_getContent();
+		$content = $this->getContent();
 
 		if ($fieldHandle)
 		{
@@ -286,7 +286,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function setContent($values)
 	{
-		$content = $this->_getContent();
+		$content = $this->getContent();
 		$content->setAttributes($values);
 	}
 
@@ -355,10 +355,9 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the content for the element.
 	 *
-	 * @access private
-	 * @return array
+	 * @return ContentModel
 	 */
-	private function _getContent()
+	public function getContent()
 	{
 		if (!isset($this->_content))
 		{
@@ -386,7 +385,7 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if (!isset($this->_preppedContent) || !array_key_exists($field->handle, $this->_preppedContent))
 		{
-			$content = $this->_getContent();
+			$content = $this->getContent();
 			$fieldHandle = $field->handle;
 
 			if (isset($content->$fieldHandle))
