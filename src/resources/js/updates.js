@@ -89,7 +89,7 @@ Craft.postActionRequest('update/getAvailableUpdates', function(response) {
 			};
 
 			var autoUpdateThat = function() {
-				document.location.href = Craft.getUrl('updates/go/craft');
+				window.location.href = Craft.getUrl('updates/go/craft');
 			};
 
 			var $heading = $('<h2>'+Craft.t('You’ve got updates!')+'</h2>').appendTo(Craft.cp.$content),

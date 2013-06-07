@@ -3,7 +3,9 @@
 @import "shared";
 
 html, body { height: 100%; }
-body { overflow: hidden; background: #fff url(../images/install_bg.jpg) no-repeat 50% 50%; background-size: 100%; }
+body { overflow: hidden; background: #fff; }
+
+#bg { position: fixed; top: 0; left: 0; width: 143%; height: 100%; background: url(../images/install_bg.jpg) no-repeat 0 50%; background-size: 100%; }
 
 .beginbtncontainer { position: absolute; top: 50%; margin-top: -15px; width: 100%; text-align: center; }
 #beginbtn { display: inline-block; border-radius: 4px; padding: 12px 15px; font-weight: bold; font-size: 19px; height: 42px; line-height: 18px; }

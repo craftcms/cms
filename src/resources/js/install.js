@@ -2,6 +2,7 @@
 
 Craft.Installer = Garnish.Base.extend({
 
+	$bg: null,
 	$screens: null,
 	$currentScreen: null,
 
@@ -15,6 +16,7 @@ Craft.Installer = Garnish.Base.extend({
 	*/
 	init: function()
 	{
+		this.$bg = $('#bg');
 		this.$screens = Garnish.$bod.children('.modal');
 
 		this.addListener($('#beginbtn'), 'activate', 'showAccountScreen');
@@ -79,12 +81,33 @@ Craft.Installer = Garnish.Base.extend({
 	allDone: function()
 	{
 		this.$currentScreen.find('h1:first').text(Craft.t('All done!'));
-		var $buttons = $('<div class="buttons"><a href="'+Craft.getUrl('dashboard')+'" class="btn big submit">'+Craft.t('Go to @@@appName@@@')+'</a></div>');
+
+		var $buttons = $('<div class="buttons"/>'),
+			$go = $('<div class="btn big submit">'+Craft.t('Go to @@@appName@@@')+'</div>').appendTo($buttons);
+
 		$('#spinner').replaceWith($buttons);
+
+		this.addListener($go, 'click', function() {
+			this.showScreen(30, null, 1000);
+
+			setTimeout(function() {
+				window.location.href = Craft.getUrl('dashboard');
+			}, Craft.Installer.duration);
+		});
 	},
 
-	showScreen: function(i, callback)
+	showScreen: function(i, callback, bgDuration)
 	{
+		if (!bgDuration)
+		{
+			bgDuration = Craft.Installer.duration;
+		}
+
+		// Slide the BG
+		this.$bg.animate({
+			left: '-'+(i*5)+'%'
+		}, bgDuration);
+
 		// Slide out the old screen
 		var windowWidth = Garnish.$win.width(),
 			centeredLeftPos = Math.floor(windowWidth / 2);
@@ -94,17 +117,17 @@ Craft.Installer = Garnish.Base.extend({
 			this.$currentScreen
 				.css('left', centeredLeftPos)
 				.animate({
-					left: -730
-				}, 300);
+					left: -400
+				}, Craft.Installer.duration);
 		}
 
 		// Slide in the new screen
 		this.$currentScreen = $(this.$screens[i-1])
 			.css({
 				display: 'block',
-				left: windowWidth + 370
+				left: windowWidth + 400
 			})
-			.animate({left: centeredLeftPos}, 300, $.proxy(function() {
+			.animate({left: centeredLeftPos}, Craft.Installer.duration, $.proxy(function() {
 				// Relax the screen
 				this.$currentScreen.css('left', '50%');
 
@@ -182,9 +205,12 @@ Craft.Installer = Garnish.Base.extend({
 	{
 		setTimeout($.proxy(function() {
 			this.$currentScreen.find('input:first').focus();
-		}, this), 300);
+		}, this), Craft.Installer.duration);
 	}
 
+},
+{
+	duration: 300
 });
 
 Garnish.$win.on('load', function() {
