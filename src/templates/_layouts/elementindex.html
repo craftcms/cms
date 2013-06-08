@@ -1,5 +1,4 @@
 {% extends "_layouts/cp" %}
-{% from "_includes/forms" import text %}
 
 {% set elementTypeClass = elementType %}
 {% set elementType = craft.elements.getElementType(elementTypeClass) %}
@@ -21,22 +20,7 @@
 
 
 {% block content %}
-	<div class="main">
-		<div class="toolbar">
-			<div class="search">
-				{{ text({
-					placeholder: "Search"|t
-				}) }}
-			</div>
-			<div class="spinner hidden"></div>
-		</div>
-
-		<div class="elements"></div>
-
-		<div class="centeralign">
-			<div class="spinner loadingmore hidden"></div>
-		</div>
-	</div>
+	{% include "_elements/indexcontainer" with { hasThumbs: elementType.hasThumbs() } %}
 {% endblock %}
 
 

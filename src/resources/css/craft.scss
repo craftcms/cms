@@ -229,6 +229,8 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 
 .toolbar { position: relative; margin: 30px 0; height: 31px; }
 .toolbar .spinner { position: absolute; top: 0; right: -24px; }
+.toolbar table { width: 100%; }
+.toolbar table td:not(:first-child) { padding-left: 15px; }
 
 .buttons { position: relative; margin: 30px 0 30px -4px; }
 .buttons:after { @include clearafter; }

@@ -29,7 +29,8 @@ class ElementsController extends BaseController
 		}
 
 		$this->renderTemplate('_elements/modalbody', array(
-			'sources' => $sources
+			'sources'   => $sources,
+			'hasThumbs' => $elementType->hasThumbs()
 		));
 	}
 

@@ -1,0 +1,32 @@
+{% from "_includes/forms" import text -%}
+
+<div class="main">
+	<div class="toolbar">
+		<table>
+			<tr>
+				<td>
+					<div class="search">
+						{{ text({
+							placeholder: "Search"|t
+						}) }}
+					</div>
+				</td>
+				{% if hasThumbs %}
+					<td class="thin">
+						<div class="btngroup">
+							<div class="btn table" title="{{ 'Display in a table'|t }}" data-icon="list" role="button"></div>
+							<div class="btn thumbs" title="{{ 'Display as thumbnails'|t }}" data-icon="grid" role="button"></div>
+						</div>
+					</td>
+				{% endif %}
+			</tr>
+		</table>
+		<div class="spinner hidden"></div>
+	</div>
+
+	<div class="elements"></div>
+
+	<div class="centeralign">
+		<div class="spinner loadingmore hidden"></div>
+	</div>
+</div>
