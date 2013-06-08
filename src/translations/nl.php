@@ -168,7 +168,7 @@ return array(
 	'Couldn’t update password.' => 'Kon wachtwoord niet aanpassen.',
 	'Craft Update' => 'Craft update',
 	'Craft appears to be installed but the info table is empty.' => 'Craft lijkt te zijn geïnstalleerd, maar de info tabel is leeg.',
-	'Craft can’t connect to the database when the values in your “craft/config/db.php” file.' => 'Craft can’t connect to the database when the values in your “craft/config/db.php” file.',
+	'Craft can’t connect to the database with the values in your “craft/config/db.php” file.' => 'Craft can’t connect to the database with the values in your “craft/config/db.php” file.',
 	'Craft doesn’t have a package named “{package}”' => 'Craft heeft geen pakket genaamd “{package}”',
 	'Craft is already installed.' => 'Craft is al geïnstalleerd.',
 	'Craft is already up to date.' => 'U heeft al de nieuwste versie van Craft.',
