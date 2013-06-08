@@ -41,7 +41,7 @@
 
 
 {% block initJs %}
-	new Craft.ElementIndex('{{ elementTypeClass }}', $('#main'), {
+	Craft.createElementIndex('{{ elementTypeClass }}', $('#main'), {
 		id: '{{ elementTypeClass }}Index',
 		criteria: { status: null }
 	});

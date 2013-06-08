@@ -3,7 +3,6 @@
 {% set elementType = 'Asset' %}
 
 {% includeCssResource "css/assets.css" %}
-{% includeJsResource "js/Assets/AssetIndex.js" %}
 
 
 {% block sidebar %}
@@ -13,9 +12,4 @@
 	</div>
 
 	{{ parent() }}
-{% endblock %}
-
-
-{% block initJs %}
-	{{ parent()|replace('ElementIndex', 'AssetIndex')|raw }}
 {% endblock %}

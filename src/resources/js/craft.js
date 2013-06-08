@@ -660,7 +660,25 @@ $.extend(Craft, {
 		$('.menubtn', $container).menubtn();
 	},
 
-	_esmClasses: {},
+	_elementIndexClasses: {},
+	_elementSelectorModalClasses: {},
+
+	/**
+	 * Registers an element index class for a given element type.
+	 *
+	 * @param string elementType
+	 * @param function func
+	 */
+	registerElementIndexClass: function(elementType, func)
+	{
+		if (typeof this._elementIndexClasses[elementType] != 'undefined')
+		{
+			throw 'An element index class has already been registered for the element type “'+elementType+'”.';
+		}
+
+		this._elementIndexClasses[elementType] = func;
+	},
+
 
 	/**
 	 * Registers an element selector modal class for a given element type.
@@ -668,14 +686,36 @@ $.extend(Craft, {
 	 * @param string elementType
 	 * @param function func
 	 */
-	registerElementSelectorModal: function(elementType, func)
+	registerElementSelectorModalClass: function(elementType, func)
 	{
-		if (typeof this._esmClasses[elementType] != 'undefined')
+		if (typeof this._elementSelectorModalClasses[elementType] != 'undefined')
 		{
 			throw 'An element selector modal class has already been registered for the element type “'+elementType+'”.';
 		}
 
-		this._esmClasses[elementType] = func;
+		this._elementSelectorModalClasses[elementType] = func;
+	},
+
+	/**
+	 * Creates a new element index for a given element type.
+	 *
+	 * @param string elementType
+	 * @param mixed  $container
+	 * @param object settings
+	 * @return BaseElementIndex
+	 */
+	createElementIndex: function(elementType, $container, settings)
+	{
+		if (typeof this._elementIndexClasses[elementType] != 'undefined')
+		{
+			var func = this._elementIndexClasses[elementType];
+		}
+		else
+		{
+			var func = Craft.BaseElementIndex;
+		}
+
+		return new func(elementType, $container, settings);
 	},
 
 	/**
@@ -686,9 +726,9 @@ $.extend(Craft, {
 	 */
 	createElementSelectorModal: function(elementType, settings)
 	{
-		if (typeof this._esmClasses[elementType] != 'undefined')
+		if (typeof this._elementSelectorModalClasses[elementType] != 'undefined')
 		{
-			var func = this._esmClasses[elementType];
+			var func = this._elementSelectorModalClasses[elementType];
 		}
 		else
 		{

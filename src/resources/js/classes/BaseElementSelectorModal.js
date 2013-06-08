@@ -55,7 +55,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 				this.$body.html(response);
 
 				// Initialize the element index
-				this.elementIndex = new Craft.ElementIndex(this.elementType, this.$body, {
+				this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
 					mode:               'modal',
 					id:                 this.settings.id,
 					criteria:           this.settings.criteria,

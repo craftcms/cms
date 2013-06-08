@@ -1,7 +1,7 @@
 /**
  * Element index class
  */
-Craft.ElementIndex = Garnish.Base.extend({
+Craft.BaseElementIndex = Garnish.Base.extend({
 
 	elementType: null,
 	state: null,
@@ -24,14 +24,14 @@ Craft.ElementIndex = Garnish.Base.extend({
 	{
 		this.elementType = elementType;
 		this.$container = $container;
-		this.setSettings(settings, Craft.ElementIndex.defaults);
+		this.setSettings(settings, Craft.BaseElementIndex.defaults);
 
         // Set the state object
         this.state = {};
 
         if (typeof Storage !== 'undefined' && this.settings.id)
         {
-        	this.stateStorageId = 'Craft.ElementIndex.'+this.settings.id;
+        	this.stateStorageId = 'Craft.BaseElementIndex.'+this.settings.id;
 
         	if (typeof localStorage[this.stateStorageId] != 'undefined')
         	{
