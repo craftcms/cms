@@ -168,7 +168,7 @@ return array(
 	'Couldn’t update password.' => 'Couldn’t update password.',
 	'Craft Update' => 'Craft Update',
 	'Craft appears to be installed but the info table is empty.' => 'Craft appears to be installed but the info table is empty.',
-	'Craft can’t connect to the database when the values in your “craft/config/db.php” file.' => 'Craft can’t connect to the database when the values in your “craft/config/db.php” file.',
+	'Craft can’t connect to the database with the values in your “craft/config/db.php” file.' => 'Craft can’t connect to the database with the values in your “craft/config/db.php” file.',
 	'Craft doesn’t have a package named “{package}”' => 'Craft doesn’t have a package named “{package}”',
 	'Craft is already installed.' => 'Craft is already installed.',
 	'Craft is already up to date.' => 'Craft is already up to date.',
