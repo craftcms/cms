@@ -13,6 +13,9 @@ class Updater
 	{
 		// I need more memory.
 		@ini_set('memory_limit', craft()->config->get('phpMaxMemoryLimit'));
+
+		// I need more time.
+		set_time_limit(120);
 	}
 
 	/**

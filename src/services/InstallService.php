@@ -18,6 +18,12 @@ class InstallService extends BaseApplicationComponent
 	 */
 	public function run($inputs)
 	{
+		// I need more memory.
+		@ini_set('memory_limit', craft()->config->get('phpMaxMemoryLimit'));
+
+		// I need more time.
+		set_time_limit(120);
+
 		if (Craft::isInstalled())
 		{
 			throw new Exception(Craft::t('@@@appName@@@ is already installed.'));
