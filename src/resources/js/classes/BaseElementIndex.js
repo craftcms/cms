@@ -22,7 +22,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	$sourceToggles: null,
 	$elements: null,
 	$table: null,
-	$tbody: null,
+	$elementContainer: null,
 
 	init: function(elementType, $container, settings)
 	{
@@ -94,12 +94,19 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     		var $viewBtn = this.$viewBtns.filter('[data-view='+view+']:first');
     	}
 
-    	if (!view || !$viewBtn.length);
+    	if (!view || !$viewBtn.length)
     	{
     		var $viewBtn = this.$viewBtns.filter('[data-view=table]:first');
     	}
 
-    	this.selectView($viewBtn);
+    	if ($viewBtn.length)
+    	{
+    		this.selectView($viewBtn);
+    	}
+    	else
+    	{
+    		this.setState('view', 'table');
+    	}
 
     	// Load up the elements!
     	this.updateElements();
@@ -185,7 +192,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.$mainSpinner.removeClass('hidden');
 		this.removeListener(this.$scroller, 'scroll');
 
-		if (this.$table)
+		if (this.getState('view') == 'table' && this.$table)
 		{
 			Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.not(this.$table);
 		}
@@ -198,13 +205,20 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 			this.$elements.html(response.elementContainerHtml);
 
-			var $headers = this.$elements.find('thead:first th');
-			this.addListener($headers, 'click', 'onSortChange');
+			if (this.getState('view') == 'table')
+			{
+				var $headers = this.$elements.find('thead:first th');
+				this.addListener($headers, 'click', 'onSortChange');
 
-			this.$table = this.$elements.find('table:first');
-			this.$tbody = this.$table.find('tbody:first');
+				this.$table = this.$elements.find('table:first');
+				this.$elementContainer = this.$table.find('tbody:first');
 
-			Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.add(this.$table);
+				Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.add(this.$table);
+			}
+			else
+			{
+				this.$elementContainer = this.$elements.children('ul');
+			}
 
 			this.setNewElementDataHtml(response);
 		}, this));
@@ -214,11 +228,11 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	{
 		if (append)
 		{
-			this.$tbody.append(response.elementDataHtml);
+			this.$elementContainer.append(response.elementDataHtml);
 		}
 		else
 		{
-			this.$tbody.html(response.elementDataHtml);
+			this.$elementContainer.html(response.elementDataHtml);
 		}
 
 		$('head').append(response.headHtml);
@@ -304,7 +318,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		}
 
 		this.$source = $source.addClass('sel');
-		this.setState('source', this.$source.data('key'));
+		this.setState('source', $source.data('key'));
 	},
 
 	selectView: function($viewBtn)
@@ -315,7 +329,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		}
 
 		this.$viewBtn = $viewBtn.addClass('active');
-		this.setState('view', this.$source.data('view'));
+		this.setState('view', $viewBtn.data('view'));
 	},
 
 	rememberDisabledElementId: function(elementId)
@@ -366,7 +380,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 	getElementById: function(elementId)
 	{
-		return this.$tbody.children('[data-id='+elementId+']:first');
+		return this.$elementContainer.children('[data-id='+elementId+']:first');
 	},
 
 	enableElementsById: function(elementIds)

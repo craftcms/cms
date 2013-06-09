@@ -83,7 +83,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 	{
 		if (!appended)
 		{
-			this.addListener(this.elementIndex.$tbody, 'dblclick', 'selectElements');
+			this.addListener(this.elementIndex.$elementContainer, 'dblclick', 'selectElements');
 		}
 
 		// Reset the element select
@@ -93,9 +93,9 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 			delete this.elementSelect;
 		}
 
-		var $trs = this.elementIndex.$tbody.children(':not(.disabled)');
+		var $trs = this.elementIndex.$elementContainer.children(':not(.disabled)');
 
-		this.elementSelect = new Garnish.Select(this.elementIndex.$tbody, $trs, {
+		this.elementSelect = new Garnish.Select(this.elementIndex.$elementContainer, $trs, {
 			multi: this.settings.multiSelect,
 			vertical: true,
 			waitForDblClick: true,

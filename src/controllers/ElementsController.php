@@ -44,28 +44,79 @@ class ElementsController extends BaseController
 		$state = craft()->request->getParam('state', array());
 		$disabledElementIds = craft()->request->getParam('disabledElementIds');
 
-		$tableAttributes = $elementType->defineTableAttributes($state['source']);
-		$criteria = $this->_getElementCriteria($elementType, $state, $tableAttributes);
+		$baseCriteria = craft()->request->getPost('criteria');
+		$criteria = craft()->elements->getCriteria($elementType->getClassHandle(), $baseCriteria);
+
+		if (!empty($state['source']))
+		{
+			$sources = $elementType->getSources();
+			$sourceCriteria = $this->_getSourceCriteria($sources, $state['source']);
+
+			if ($sourceCriteria)
+			{
+				$criteria->setAttributes($sourceCriteria);
+			}
+		}
+
+		if ($search = craft()->request->getParam('search'))
+		{
+			$criteria->search = $search;
+		}
+
+		if ($offset = craft()->request->getParam('offset'))
+		{
+			$criteria->offset = $offset;
+		}
+
+		/* HIDE */
+		// Should work once we've centralized titles
+		$criteria->order = 'title';
+		/* end HIDE */
+
+		$containerVars = array(
+			'state' => $state
+		);
+
+		$elementVars = array(
+			'mode'               => $mode,
+			'elements'           => $criteria->find(),
+			'disabledElementIds' => $disabledElementIds,
+		);
+
+		if ($state['view'] == 'table')
+		{
+			// Make sure the attribute is actually allowed
+			$tableAttributes = $elementType->defineTableAttributes($state['source']);
+
+			// Ordering by an attribute?
+			if (!empty($state['order']))
+			{
+				foreach ($tableAttributes as $attribute)
+				{
+					if ($attribute['attribute'] == $state['order'])
+					{
+						$criteria->order = $state['order'].' '.$state['sort'];
+						break;
+					}
+				}
+			}
+
+			$containerVars['attributes'] = $tableAttributes;
+			$elementVars['attributes'] = $tableAttributes;
+		}
+
+		$viewFolder = '_elements/'.$state['view'].'view/';
 
 		if (!$criteria->offset)
 		{
-			$elementContainerHtml = $this->renderTemplate('_elements/elementcontainer', array(
-				'state'      => $state,
-				'attributes' => $tableAttributes
-			), true);
+			$elementContainerHtml = $this->renderTemplate($viewFolder.'container', $containerVars, true);
 		}
 		else
 		{
 			$elementContainerHtml = null;
 		}
 
-		$elementDataHtml = $this->renderTemplate('_elements/elementdata', array(
-			'mode'               => $mode,
-			'attributes'         => $tableAttributes,
-			'elements'           => $criteria->find(),
-			'disabledElementIds' => $disabledElementIds,
-		), true);
-
+		$elementDataHtml = $this->renderTemplate($viewFolder.'elements', $elementVars, true);
 		$totalVisible = $criteria->offset + $criteria->limit;
 		$remainingElements = $criteria->total() - $totalVisible;
 
@@ -158,55 +209,5 @@ class ElementsController extends BaseController
 		}
 
 		return $elementType;
-	}
-
-	/**
-	 * Returns the element criteria based on the request parameters.
-	 *
-	 * @param BaseElementType $elementType
-	 * @param array           $state
-	 * @param array           $tableAttributes
-	 * @return ElementCriteriaModel
-	 */
-	private function _getElementCriteria($elementType, $state, $tableAttributes)
-	{
-		$baseCriteria = craft()->request->getPost('criteria');
-		$criteria = craft()->elements->getCriteria($elementType->getClassHandle(), $baseCriteria);
-
-		if (!empty($state['source']))
-		{
-			$sources = $elementType->getSources();
-			$sourceCriteria = $this->_getSourceCriteria($sources, $state['source']);
-
-			if ($sourceCriteria)
-			{
-				$criteria->setAttributes($sourceCriteria);
-			}
-		}
-
-		if (!empty($state['order']))
-		{
-			// Validate it
-			foreach ($tableAttributes as $attribute)
-			{
-				if ($attribute['attribute'] == $state['order'])
-				{
-					$criteria->order = $state['order'].' '.$state['sort'];
-					break;
-				}
-			}
-		}
-
-		if ($search = craft()->request->getParam('search'))
-		{
-			$criteria->search = $search;
-		}
-
-		if ($offset = craft()->request->getParam('offset'))
-		{
-			$criteria->offset = $offset;
-		}
-
-		return $criteria;
 	}
 }
