@@ -175,39 +175,42 @@ class PluginsService extends BaseApplicationComponent
 				$pluginsPath = craft()->path->getPluginsPath();
 				$pluginFolderContents = IOHelper::getFolderContents($pluginsPath, false);
 
-				foreach ($pluginFolderContents as $pluginFolderContent)
+				if ($pluginFolderContents)
 				{
-					// Make sure it's actually a folder.
-					if (IOHelper::folderExists($pluginFolderContent))
+					foreach ($pluginFolderContents as $pluginFolderContent)
 					{
-						$paths = array_merge($paths, IOHelper::getFolderContents($pluginFolderContent, false, ".*Plugin\.php"));
-					}
-				}
-
-				if (is_array($paths) && count($paths) > 0)
-				{
-					foreach ($paths as $path)
-					{
-						$path = IOHelper::normalizePathSeparators($path);
-						$fileName = IOHelper::getFileName($path, false);
-
-						// Chop off the "Plugin" suffix
-						$handle = substr($fileName, 0, strlen($fileName) - 6);
-
-						$plugin = $this->getPlugin($handle, false);
-
-						if ($plugin)
+						// Make sure it's actually a folder.
+						if (IOHelper::folderExists($pluginFolderContent))
 						{
-							$this->_allPlugins[] = $plugin;
-							$names[] = $plugin->getName();
+							$paths = array_merge($paths, IOHelper::getFolderContents($pluginFolderContent, false, ".*Plugin\.php"));
 						}
 					}
-				}
 
-				if (!empty($names))
-				{
-					// Sort plugins by name
-					array_multisort($names, $this->_allPlugins);
+					if (is_array($paths) && count($paths) > 0)
+					{
+						foreach ($paths as $path)
+						{
+							$path = IOHelper::normalizePathSeparators($path);
+							$fileName = IOHelper::getFileName($path, false);
+
+							// Chop off the "Plugin" suffix
+							$handle = substr($fileName, 0, strlen($fileName) - 6);
+
+							$plugin = $this->getPlugin($handle, false);
+
+							if ($plugin)
+							{
+								$this->_allPlugins[] = $plugin;
+								$names[] = $plugin->getName();
+							}
+						}
+					}
+
+					if (!empty($names))
+					{
+						// Sort plugins by name
+						array_multisort($names, $this->_allPlugins);
+					}
 				}
 			}
 
