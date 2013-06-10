@@ -9,6 +9,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	searchTimeout: null,
 
 	$container: null,
+    $main: null,
 	$scroller: null,
 	$toolbar: null,
 	$search: null,
@@ -44,7 +45,8 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         }
 
     	// Find the DOM elements
-    	this.$toolbar = this.$container.find('.toolbar:first');
+        this.$main = this.$container.find('.main');
+        this.$toolbar = this.$container.find('.toolbar:first');
     	this.$search = this.$toolbar.find('.search:first input:first');
     	this.$viewBtns = this.$toolbar.find('.btngroup .btn');
     	this.$mainSpinner = this.$toolbar.find('.spinner:first');
@@ -54,13 +56,18 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     	this.$sourceToggles = this.$sidebar.find('.toggle');
     	this.$elements = this.$container.find('.elements:first');
 
+        if (typeof this.settings.onAfterHtmlInit == "function")
+        {
+            this.settings.onAfterHtmlInit();
+        }
+
     	if (this.settings.mode == 'index')
     	{
     		this.$scroller = Garnish.$win;
     	}
     	else
     	{
-    		this.$scroller = this.$container.find('.main');
+    		this.$scroller = this.$main;
     	}
 
     	// Select the initial source
@@ -317,8 +324,14 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			this.$source.removeClass('sel');
 		}
 
+        var sourceKey = $source.data('key');
 		this.$source = $source.addClass('sel');
-		this.setState('source', $source.data('key'));
+		this.setState('source', sourceKey);
+
+        if (typeof this.settings.onSelectSource == "function")
+        {
+            this.settings.onSelectSource(sourceKey);
+        }
 	},
 
 	selectView: function($viewBtn)
@@ -431,6 +444,8 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		disabledElementIds: [],
 		onUpdateElements: $.noop,
 		onEnableElements: $.noop,
-		onDisableElements: $.noop
+		onDisableElements: $.noop,
+        onSelectSource: $.noop,
+        onAfterHtmlInit: $.noop
 	}
 });

@@ -34,9 +34,6 @@ Assets.FileManager = Garnish.Base.extend({
 		this.$viewAsThumbsBtn = $('a.thumbs', this.$toolbar);
 		this.$viewAsListBtn   = $('a.list', this.$toolbar);
 
-		this.$uploadProgress = $('> .assets-uploadprogress', this.$manager);
-		this.$uploadProgressBar = $('.assets-pb-bar', this.$uploadProgress);
-
 		this.$modalContainerDiv = null;
 		this.$prompt = null;
 		this.$promptApplyToRemainingContainer = null;
@@ -138,42 +135,13 @@ Assets.FileManager = Garnish.Base.extend({
 		//  File Uploads
 		// -------------------------------------------
 
-		this.uploader = new qqUploader.FileUploader({
-			element:      this.$upload[0],
-			action:       Craft.actionUrl + '/assets/uploadFile',
-			template:     '<div class="assets-qq-uploader">'
-				+   '<div class="assets-qq-upload-drop-area"></div>'
-				+   '<a href="javascript:;" class="btn submit assets-qq-upload-button" data-icon="↑" style="position: relative; overflow: hidden; direction: ltr; " role="button">' + Craft.t('Upload files') + '</a>'
-				+   '<ul class="assets-qq-upload-list"></ul>'
-				+ '</div>',
+        var uploaderCallbacks = {
+            onSubmit:     $.proxy(this, '_onUploadSubmit'),
+            onProgress:   $.proxy(this, '_onUploadProgress'),
+            onComplete:   $.proxy(this, '_onUploadComplete')
+        };
 
-			fileTemplate: '<li>'
-				+   '<span class="assets-qq-upload-file"></span>'
-				+   '<span class="assets-qq-upload-spinner"></span>'
-				+   '<span class="assets-qq-upload-size"></span>'
-				+   '<a class="assets-qq-upload-cancel" href="#">Cancel</a>'
-				+   '<span class="assets-qq-upload-failed-text">Failed</span>'
-				+ '</li>',
-
-			classes:      {
-				button:     'assets-qq-upload-button',
-				drop:       'assets-qq-upload-drop-area',
-				dropActive: 'assets-qq-upload-drop-area-active',
-				list:       'assets-qq-upload-list',
-
-				file:       'assets-qq-upload-file',
-				spinner:    'assets-qq-upload-spinner',
-				size:       'assets-qq-upload-size',
-				cancel:     'assets-qq-upload-cancel',
-
-				success:    'assets-qq-upload-success',
-				fail:       'assets-qq-upload-fail'
-			},
-
-			onSubmit:     $.proxy(this, '_onUploadSubmit'),
-			onProgress:   $.proxy(this, '_onUploadProgress'),
-			onComplete:   $.proxy(this, '_onUploadComplete')
-		});
+		this.uploader = new Assets.Uploader(this.$upload, uploaderCallbacks);
 
 		if (this.$upload.length == 2)
 		{
