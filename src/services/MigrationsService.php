@@ -122,12 +122,12 @@ class MigrationsService extends BaseApplicationComponent
 		{
 			if ($plugin)
 			{
-				$pluginRecord = craft()->plugins->getPluginRecord($plugin);
+				$pluginInfo = craft()->plugins->getPluginInfo($plugin);
 
 				craft()->db->createCommand()->insert($this->_migrationTable, array(
 					'version' => $class,
 					'applyTime' => DateTimeHelper::currentTimeForDb(),
-					'pluginId' => $pluginRecord->getPrimaryKey()
+					'pluginId' => $pluginInfo['id']
 				));
 			}
 			else
@@ -184,12 +184,12 @@ class MigrationsService extends BaseApplicationComponent
 		}
 		else if ($plugin)
 		{
-			$pluginRecord = craft()->plugins->getPluginRecord($plugin);
+			$pluginInfo = craft()->plugins->getPluginInfo($plugin);
 
 			$query = craft()->db->createCommand()
 				->select('version, applyTime')
 				->from($this->_migrationTable)
-				->where('pluginId = :pluginId', array(':pluginId' => $pluginRecord->getPrimaryKey()))
+				->where('pluginId = :pluginId', array(':pluginId' => $pluginInfo['id']))
 				->order('version DESC');
 		}
 		else
@@ -240,8 +240,8 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($plugin)
 		{
-			$pluginRecord = craft()->plugins->getPluginRecord($plugin);
-			$storedDate = $pluginRecord->installDate->getTimestamp();
+			$pluginInfo = craft()->plugins->getPluginInfo($plugin);
+			$storedDate = $pluginInfo['installDate']->getTimestamp();
 		}
 		else
 		{
