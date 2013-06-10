@@ -486,12 +486,10 @@ table.data.collapsed tbody td form { display: inline-block; }
 .element.removable .delete:before { color: rgba(0,0,0,0.2); }
 
 .thumbsview { margin: 0 -15px -15px 0; }
-.thumbsview li { float: left; margin: 0 15px 15px 0; width: 104px; }
-.elementselectormodal .thumbsview { margin: 0 -8px -8px 0; }
-.elementselectormodal .thumbsview li { margin: 0 8px 8px 0; }
+.thumbsview li { float: left; margin: 0 15px 15px 0; width: 100px; }
 
-.thumbsview .element { padding: 109px 0 5px !important; }
-.thumbsview .element .elementicon { width: 104px; height: 104px; }
+.thumbsview .element { padding: 105px 0 5px !important; }
+.thumbsview .element .elementicon { width: 100px; height: 100px; }
 .thumbsview .element.selectable .elementthumb { border-radius: 3px 3px 0 0; }
 .thumbsview .element .label { display: block; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -622,7 +620,7 @@ ul.tree,
 .modal-shade.dark { background: rgba(0,0,0,0.75); }
 
 /* element selector modals */
-.elementselectormodal { margin-left: -350px; width: 700px; @include unselectable; }
+.elementselectormodal { margin-left: -350px; width: 705px; @include unselectable; }
 .elementselectormodal .body { position: relative; height: 350px; padding-left: 230px; }
 .elementselectormodal .body .spinner.big { position: absolute; top: 205px; left: 350px; margin: -24px 0 0 -24px; }
 
@@ -823,7 +821,7 @@ ul.errors li { color: $errorcolor; }
 /* ----------------------------------------*/
 
 /* Fix layout of modal element selectors for IE8 */
-.elementselectormodal .body .main { float: left\9; width: 440px\9; }
+.elementselectormodal .body .main { float: left\9; width: 445px\9; }
 
 /* ----------------------------------------
 /*  Retina graphics
