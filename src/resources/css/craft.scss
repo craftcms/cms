@@ -602,17 +602,17 @@ ul.tree,
 .hud .tip-bottom { bottom: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_bottom.png); }
 
 .modal > .header,
-.modal > .footer { padding: 15px 30px; }
+.modal > .footer { position: relative; padding: 15px 30px; }
 .modal > .body { padding: 30px; }
 .modal > .body:after { @include clearafter; }
 .modal > .header {
-    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.1);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.1);
 }
 .modal > .header h1 { margin: 0; }
 .modal > .footer {
-    -webkit-box-shadow: 0 -1px 2px rgba(0,0,0,0.1);
-            box-shadow: 0 -1px 2px rgba(0,0,0,0.1);
+    -webkit-box-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+            box-shadow: 0 -1px 0 rgba(0,0,0,0.1);
 }
 .modal > .footer:after { @include clearafter; }
 
@@ -624,7 +624,7 @@ ul.tree,
 .elementselectormodal .body { position: relative; height: 350px; padding-left: 230px; }
 .elementselectormodal .body .spinner.big { position: absolute; top: 205px; left: 350px; margin: -24px 0 0 -24px; }
 
-.elementselectormodal .body .sidebar { margin: -30px 0 -30px -230px; padding: 30px 0 30px 30px; border-right: 1px solid #eee; height: 350px; overflow: scroll; }
+.elementselectormodal .body .sidebar { margin: -30px 0 -30px -230px; padding: 30px 0 30px 30px; border-right: 1px solid #e5e5e5; height: 350px; overflow: scroll; }
 
 .elementselectormodal .body .main { margin: -30px; padding: 30px; height: 350px; overflow: scroll; }
 
