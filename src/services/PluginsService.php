@@ -315,7 +315,7 @@ class PluginsService extends BaseApplicationComponent
 				'class'       => $plugin->getClassHandle(),
 				'version'     => $plugin->version,
 				'enabled'     => true,
-				'installDate' => DateTimeHelper::currentTimeStamp()
+				'installDate' => DateTimeHelper::currentTimeForDb(),
 			));
 
 			$plugin->isInstalled = true;
