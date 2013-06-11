@@ -1,35 +1,12 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
-{% set crumbs = [
-	{ label: "Settings"|t, url: url('settings') },
-	{ label: "Globals"|t, url: url('settings/globals') }
-] %}
-
-{% if globalSet is not defined and globalSetId is defined %}
-	{% set globalSet = craft.globals.getSetById(globalSetId) %}
-	{% if not globalSet %}{% exit 404 %}{% endif %}
-{% endif %}
-
-{% set isNewGlobalSet = (globalSet is not defined or not globalSet.id) %}
-
-{% if isNewGlobalSet %}
-	{% set title = "Create a new global set"|t %}
-{% else %}
-	{% set title = globalSet.name %}
-{% endif %}
-
-{% set tabs = {
-	settings: { label: "Settings"|t, url: '#set-settings' },
-	fieldlayout: { label: "Field Layout"|t, url: '#set-fieldlayout' }
-} %}
-
 
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
 		<input type="hidden" name="action" value="globals/saveSet">
 		<input type="hidden" name="redirect" value="settings/globals/{id}">
-		{% if not isNewGlobalSet %}<input type="hidden" name="setId" value="{{ globalSet.id }}">{% endif %}
+		{% if globalSet.id %}<input type="hidden" name="setId" value="{{ globalSet.id }}">{% endif %}
 
 		<div id="set-settings">
 			{{ forms.textField({
@@ -38,8 +15,8 @@
 				instructions: "What this global set will be called in the CP."|t,
 				id: 'name',
 				name: 'name',
-				value: (globalSet is defined ? globalSet.name : null),
-				errors: (globalSet is defined ? globalSet.getErrors('name') : null),
+				value: globalSet.name,
+				errors: globalSet.getErrors('name'),
 				autofocus: true,
 				required: true,
 				translatable: true
@@ -51,8 +28,8 @@
 				id: 'handle',
 				class: 'code',
 				name: 'handle',
-				value: (globalSet is defined ? globalSet.handle : null),
-				errors: (globalSet is defined ? globalSet.getErrors('handle') : null),
+				value: globalSet.handle,
+				errors: globalSet.getErrors('handle'),
 				required: true
 			}) }}
 
@@ -60,7 +37,7 @@
 
 		<div id="set-fieldlayout" class="hidden">
 			{% include "_includes/fieldlayoutdesigner" with {
-				fieldLayout: (globalSet is defined ? globalSet.getFieldLayout() : null),
+				fieldLayout: globalSet.getFieldLayout(),
 				customizableTabs: false,
 				tab: 'fieldlayout'
 			} only %}

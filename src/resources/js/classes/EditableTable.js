@@ -47,6 +47,9 @@ Craft.EditableTable = Garnish.Base.extend({
 		new Craft.EditableTable.Row(this, $tr);
 		this.sorter.addItems($tr);
 
+		// Focus the first input in the row
+		$tr.find('input,textarea,select').first().focus();
+
 		// onAddRow callback
 		this.settings.onAddRow($tr);
 	}

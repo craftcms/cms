@@ -714,7 +714,7 @@ table.editable textarea { font-size: 13px; line-height: 17px; color: $textcolor;
 .field.checkbox + .field.checkbox { margin-top: -22px; }
 
 .text { padding: 6px 7px; background: #fff; }
-.text input { margin: 0; padding: 0; border: none; outline: none; }
+.text input { margin: 0; padding: 0; border: none; outline: none; background: none; }
 .text.small { padding: 3px; }
 
 .input.errors .text,
@@ -751,6 +751,8 @@ body .redactor_box .redactor_toolbar li.redactor_separator { margin: 7px 2px 0 3
 
 body .redactor_box_fullscreen { z-index: 9998 !important; }
 body .redactor_dropdown { z-index: 9998 !important; }
+body .redactor_editor ul { list-style-type: disc; }
+body .redactor_editor ol { list-style-type: decimal; }
 
 /**
  * Selects
