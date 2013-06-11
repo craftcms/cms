@@ -361,9 +361,10 @@ class UserSessionService extends \CWebUser
 	 * Gets the proper error message from the given error code.
 	 *
 	 * @param $errorCode
+	 * @param $loginName
 	 * @return null|string
 	 */
-	public function getLoginErrorMessage($errorCode)
+	public function getLoginErrorMessage($errorCode, $loginName)
 	{
 		switch ($errorCode)
 		{
@@ -379,13 +380,21 @@ class UserSessionService extends \CWebUser
 			}
 			case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
 			{
-				$user = $this->getUser();
-				$timeRemaining = $user->getRemainingCooldownTime();
+				$user = craft()->users->getUserByUsernameOrEmail($loginName);
 
-				if ($timeRemaining)
+				if ($user)
 				{
-					$humanTimeRemaining = $timeRemaining->humanDuration();
-					$error = Craft::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining));
+					$timeRemaining = $user->getRemainingCooldownTime();
+
+					if ($timeRemaining)
+					{
+						$humanTimeRemaining = $timeRemaining->humanDuration();
+						$error = Craft::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining));
+					}
+					else
+					{
+						$error = Craft::t('Account locked.');
+					}
 				}
 				else
 				{
