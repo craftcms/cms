@@ -173,6 +173,56 @@ class SystemSettingsController extends BaseController
 	}
 
 	/**
+	 * Global Set edit form.
+	 *
+	 * @param array $variables
+	 * @throws HttpException
+	 */
+	public function actionEditGlobalSet(array $variables = array())
+	{
+		// Breadcrumbs
+		$variables['crumbs'] = array(
+			array('label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')),
+			array('label' => Craft::t('Globals'),  'url' => UrlHelper::getUrl('settings/globals'))
+		);
+
+		// Tabs
+		$variables['tabs'] = array(
+			'settings'    => array('label' => Craft::t('Settings'),     'url' => '#set-settings'),
+			'fieldlayout' => array('label' => Craft::t('Field Layout'), 'url' => '#set-fieldlayout')
+		);
+
+		if (empty($variables['globalSet']))
+		{
+			if (!empty($variables['globalSetId']))
+			{
+				$variables['globalSet'] = craft()->globals->getSetById($variables['globalSetId']);
+
+				if (!$variables['globalSet'])
+				{
+					throw new HttpException(404);
+				}
+			}
+			else
+			{
+				$variables['globalSet'] = new GlobalSetModel();
+			}
+		}
+
+		if ($variables['globalSet']->id)
+		{
+			$variables['title'] = $variables['globalSet']->name;
+		}
+		else
+		{
+			$variables['title'] = Craft::t('Create a new global set');
+		}
+
+		// Render the template!
+		$this->renderTemplate('settings/globals/_edit', $variables);
+	}
+
+	/**
 	 * Returns the email settings from the post data.
 	 *
 	 * @access private

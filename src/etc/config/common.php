@@ -131,8 +131,8 @@ $cpRoutes['settings/general']                                     = array('actio
 $cpRoutes['settings/plugins/(?P<pluginClass>{handle})']           = 'settings/plugins/_settings';
 $cpRoutes['settings/sections/new']                                = 'settings/sections/_edit';
 $cpRoutes['settings/sections/(?P<sectionId>\d+)']                 = 'settings/sections/_edit';
-$cpRoutes['settings/globals/new']                                 = 'settings/globals/_edit';
-$cpRoutes['settings/globals/(?P<globalSetId>\d+)']                = 'settings/globals/_edit';
+$cpRoutes['settings/globals/new']                                 = array('action' => 'systemSettings/editGlobalSet');
+$cpRoutes['settings/globals/(?P<globalSetId>\d+)']                = array('action' => 'systemSettings/editGlobalSet');
 
 $cpRoutes['settings/packages'] = array(
 	'params' => array(
