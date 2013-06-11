@@ -40,6 +40,9 @@ class UserSessionService extends \CWebUser
 	 */
 	function __construct()
 	{
+		// Let's set our own state key prefix. Leaving identical to CWebUser for the key so people won't get logged out when updating.
+		$this->setStateKeyPrefix(md5('Yii.UserSessionService.'.craft()->getId()));
+
 		// If the identity cookie is missing we assume it has expired.  We need to kill the PHP session information as early
 		// as possible in the request if the session duration is set to be anything greater than 0.
 		$cookies = craft()->request->getCookies();
