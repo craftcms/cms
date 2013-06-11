@@ -43,7 +43,7 @@ class UsersController extends BaseController
 			else
 			{
 				$errorCode = craft()->userSession->getLoginErrorCode();
-				$errorMessage = craft()->userSession->getLoginErrorMessage($errorCode);
+				$errorMessage = craft()->userSession->getLoginErrorMessage($errorCode, $loginName);
 
 				if (craft()->request->isAjaxRequest())
 				{
@@ -58,7 +58,9 @@ class UsersController extends BaseController
 
 					$vars = array(
 						'loginName' => $loginName,
-						'rememberMe' => $rememberMe
+						'rememberMe' => $rememberMe,
+						'errorCode' => $errorCode,
+						'errorMessage' => $errorMessage,
 					);
 				}
 			}
@@ -165,7 +167,7 @@ class UsersController extends BaseController
 				if (!craft()->userSession->login($user->username, $newPassword))
 				{
 					$errorCode = craft()->userSession->getLoginErrorCode();
-					$errorMessage = craft()->userSession->getLoginErrorMessage($errorCode);
+					$errorMessage = craft()->userSession->getLoginErrorMessage($errorCode, $user->username);
 
 					Craft::log('Tried to automatically log in after a password update, but could not: '.$errorMessage, LogLevel::Warning);
 				}
