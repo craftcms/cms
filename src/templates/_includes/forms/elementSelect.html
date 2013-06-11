@@ -1,4 +1,5 @@
 {% set elements = (elements is defined ? elements : []) -%}
+{% set jsClass = (jsClass is defined and jsClass ? jsClass : 'Craft.BaseElementSelectInput') -%}
 
 <div id="{{ id }}" class="elementselect">
 	<div class="elements">
@@ -11,7 +12,7 @@
 </div>
 
 {% set js %}
-	new Craft.ElementSelectInput(
+	new {{ jsClass }}(
 		"{{ id|e('js') }}",
 		"{{ name|e('js') }}",
 		"{{ elementType.getClassHandle()|e('js') }}",

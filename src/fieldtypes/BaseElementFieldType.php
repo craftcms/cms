@@ -13,6 +13,12 @@ abstract class BaseElementFieldType extends BaseFieldType
 	protected $elementType;
 
 	/**
+	 * @access protected
+	 * @var string|null $inputJsClass The JS class that should be initialized for the input.
+	 */
+	protected $inputJsClass;
+
+	/**
 	 * Returns the type of field this is.
 	 *
 	 * @return string
@@ -108,6 +114,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		}
 
 		return craft()->templates->render('_includes/forms/elementSelect', array(
+			'jsClass'     => $this->inputJsClass,
 			'elementType' => new ElementTypeVariable($this->_getElementType()),
 			'id'          => $id,
 			'name'        => $name,

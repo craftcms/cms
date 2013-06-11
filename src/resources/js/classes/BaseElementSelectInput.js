@@ -1,7 +1,7 @@
 /**
  * Element Select input
  */
-Craft.ElementSelectInput = Garnish.Base.extend({
+Craft.BaseElementSelectInput = Garnish.Base.extend({
 
 	id: null,
 	name: null,
