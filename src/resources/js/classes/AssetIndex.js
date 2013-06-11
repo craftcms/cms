@@ -14,11 +14,23 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     initialSourceKey: null,
     isIndexBusy: false,
     _uploadFileProgress: {},
+    uploadedFileIds: [],
 
 	init: function(elementType, $container, settings)
 	{
+
         settings.onSelectSource = $.proxy(this, '_selectSource');
         settings.onAfterHtmlInit = $.proxy(this, '_initializeComponents');
+
+        // Avoid overwriting existing callbacks.
+        var onUpdateElements = settings.onUpdateElements;
+
+        // TODO figure out why $.proxy borked here
+        var _t = this;
+        settings.onUpdateElements = function () {
+            onUpdateElements();
+            _t._onUpdateElements.call(_t);
+        };
 
         this.base(elementType, $container, settings);
     },
@@ -75,7 +87,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
      * @private
      */
     _onUploadSubmit: function(id) {
-        // Show the progress bar for the first file
+        // prepare an upload batch
         if (! this.uploader.getInProgress()) {
 
             this.setIndexBusy();
@@ -83,6 +95,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             // Initial values
             this.progressBar.resetProgressBar();
             this._uploadFileProgress = {};
+            this.uploadedFileIds = [];
         }
 
         // Prepare tracking
@@ -120,19 +133,16 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         this._updateUploadProgress();
 
         if (response.success || response.prompt) {
+
+            // TODO respect the select settings
             // Add the uploaded file to the selected ones, if appropriate
-            //if (this.settings.multiSelect || !this.selectedFileIds.length)
-            //{
-                console.log('Add to selected');
-                //this.selectedFileIds.push(response.fileId);
-            //}
+            this.uploadedFileIds.push(response.fileId);
 
             // If there is a prompt, add it to the queue
             if (response.prompt)
             {
                 this.promptHandler.addPrompt(response);
             }
-
         }
 
         // is this the last file?
@@ -147,7 +157,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             }
             else
             {
-                console.log('load folder content');
+                this.updateElements();
             }
         }
     },
@@ -177,7 +187,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         {
             this.setIndexBusy();
             this.progressBar.hideProgressBar();
-            console.log('load folder content');
+            this.updateElements();
         }, this);
 
         this.progressBar.setItemCount(returnData.length);
@@ -192,6 +202,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
             Craft.postActionRequest('assets/uploadFile', postData, $.proxy(function(data)
             {
+                if (typeof data.fileId != "undefined")
+                {
+                    this.uploadedFileIds.push(data.fileId);
+                }
                 parameterIndex++;
                 this.progressBar.incrementProcessedItemCount(1);
                 this.progressBar.updateProgressBar();
@@ -208,6 +222,27 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         }, this);
 
         doFollowup(returnData, 0, finalCallback);
+    },
+
+    /**
+     * Perform actions after updating elements
+     * @private
+     */
+    _onUpdateElements: function ()
+    {
+        // See if we have freshly uploaded files to add to selection
+        if (this.uploadedFileIds.length)
+        {
+            var item = null;
+            for (var i = 0; i < this.uploadedFileIds.length; i++)
+            {
+                item = this.$main.find('[data-id=' + this.uploadedFileIds[i] + ']');
+                this.selector.selectItem(item);
+            }
+
+            // Reset the list.
+            this.uploadedFileIds = [];
+        }
     }
 });
 

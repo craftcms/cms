@@ -7,6 +7,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	state: null,
 	stateStorageId: null,
 	searchTimeout: null,
+    selector: null,
 
 	$container: null,
     $main: null,
@@ -69,7 +70,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     	{
     		this.$scroller = this.$main;
     	}
-
+        
     	// Select the initial source
     	var source = this.getState('source');
 
@@ -434,7 +435,12 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 				this.rememberDisabledElementId(elementId);
 			}
 		}
-	}
+	},
+
+    setSelector: function (obj)
+    {
+        this.selector = obj;
+    }
 },
 {
 	defaults: {

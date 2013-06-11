@@ -775,6 +775,8 @@ class AssetsService extends BaseApplicationComponent
 		$folder = $this->getFolderById($folderId);
 		$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
 
+		$fileId = null;
+
 		switch ($userResponse)
 		{
 			case AssetsHelper::ActionReplace:
@@ -788,6 +790,7 @@ class AssetsService extends BaseApplicationComponent
 				$replaceWith = craft()->assets->getFileById($createdFileId);
 
 				$source->replaceFile($targetFile, $replaceWith);
+				$fileId = $targetFile->id;
 			}
 			// Falling through to delete the file
 			case AssetsHelper::ActionCancel:
@@ -795,10 +798,19 @@ class AssetsService extends BaseApplicationComponent
 				$this->deleteFiles($createdFileId);
 				break;
 			}
+			default:
+			{
+				$fileId = $createdFileId;
+				break;
+			}
 		}
 
 		$response = new AssetOperationResponseModel();
 		$response->setSuccess();
+		if ($fileId)
+		{
+			$response->setDataItem('fileId', $fileId);
+		}
 
 		return $response;
 	}
