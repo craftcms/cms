@@ -307,7 +307,9 @@ class EntriesService extends BaseApplicationComponent
 		$slug = preg_replace('/[^a-z0-9]+$/', '', $slug);
 
 		// Get the "words"
-		$slug = implode('-', array_filter(preg_split('/[^a-z0-9]+/', $slug)));
+		$words = preg_split('/[^a-z0-9]+/', $slug);
+		$words = ArrayHelper::filterEmptyStringsFromArray($words);
+		$slug = implode('-', $words);
 
 		if ($slug)
 		{
