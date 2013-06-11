@@ -712,7 +712,7 @@ table.editable textarea { font-size: 13px; line-height: 17px; color: $textcolor;
 .field.checkbox + .field.checkbox { margin-top: -22px; }
 
 .text { padding: 6px 7px; background: #fff; }
-.text input { margin: 0; padding: 0; border: none; outline: none; }
+.text input { margin: 0; padding: 0; border: none; outline: none; background: none; }
 .text.small { padding: 3px; }
 
 .input.errors .text,
