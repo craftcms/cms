@@ -122,12 +122,12 @@ class MigrationsService extends BaseApplicationComponent
 		{
 			if ($plugin)
 			{
-				$pluginRecord = craft()->plugins->getPluginRecord($plugin);
+				$pluginInfo = craft()->plugins->getPluginInfo($plugin);
 
 				craft()->db->createCommand()->insert($this->_migrationTable, array(
 					'version' => $class,
 					'applyTime' => DateTimeHelper::currentTimeForDb(),
-					'pluginId' => $pluginRecord->getPrimaryKey()
+					'pluginId' => $pluginInfo['id']
 				));
 			}
 			else
@@ -151,13 +151,20 @@ class MigrationsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param      $class
-	 * @param null $plugin
+	 * @param       $class
+	 * @param  null $plugin
+	 * @throws Exception
 	 * @return mixed
 	 */
 	public function instantiateMigration($class, $plugin = null)
 	{
 		$file = IOHelper::normalizePathSeparators($this->getMigrationPath($plugin).$class.'.php');
+
+		if (!IOHelper::fileExists($file) || !IOHelper::isReadable($file))
+		{
+			Craft::log('Tried to find migration file '.$file.' for class '.$class.', but could not.', LogLevel::Error);
+			throw new Exception(Craft::t('Could not find the requested migration file.'));
+		}
 
 		require_once($file);
 
@@ -184,12 +191,12 @@ class MigrationsService extends BaseApplicationComponent
 		}
 		else if ($plugin)
 		{
-			$pluginRecord = craft()->plugins->getPluginRecord($plugin);
+			$pluginInfo = craft()->plugins->getPluginInfo($plugin);
 
 			$query = craft()->db->createCommand()
 				->select('version, applyTime')
 				->from($this->_migrationTable)
-				->where('pluginId = :pluginId', array(':pluginId' => $pluginRecord->getPrimaryKey()))
+				->where('pluginId = :pluginId', array(':pluginId' => $pluginInfo['id']))
 				->order('version DESC');
 		}
 		else
@@ -227,57 +234,62 @@ class MigrationsService extends BaseApplicationComponent
 	 */
 	public function getNewMigrations($plugin = null)
 	{
-		$applied = array();
+		$migrations = array();
 		$migrationPath = $this->getMigrationPath($plugin);
 
-		foreach ($this->getMigrationHistory($plugin) as $migration)
+		if (IOHelper::folderExists($migrationPath) && IOHelper::isReadable($migrationPath))
 		{
-			$applied[] = $migration['version'];
-		}
+			$applied = array();
 
-		$migrations = array();
-		$handle = opendir($migrationPath);
-
-		if ($plugin)
-		{
-			$pluginRecord = craft()->plugins->getPluginRecord($plugin);
-			$storedDate = $pluginRecord->installDate->getTimestamp();
-		}
-		else
-		{
-			$storedDate = Craft::getReleaseDate()->getTimestamp();
-		}
-
-		while (($file = readdir($handle)) !== false)
-		{
-			if ($file[0] === '.')
+			foreach ($this->getMigrationHistory($plugin) as $migration)
 			{
-				continue;
+				$applied[] = $migration['version'];
 			}
 
-			$path = IOHelper::normalizePathSeparators($migrationPath.$file);
-			$class = IOHelper::getFileName($path, false);
+			$handle = opendir($migrationPath);
 
-			// Have we already run this migration?
-			if (in_array($class, $applied))
+			if ($plugin)
 			{
-				continue;
+				$pluginInfo = craft()->plugins->getPluginInfo($plugin);
+				$storedDate = $pluginInfo['installDate']->getTimestamp();
+			}
+			else
+			{
+				$storedDate = Craft::getReleaseDate()->getTimestamp();
 			}
 
-			if (preg_match('/^m(\d\d)(\d\d)(\d\d)_(\d\d)(\d\d)(\d\d)_\w+\.php$/', $file, $matches))
+			while (($file = readdir($handle)) !== false)
 			{
-				// Check the migration timestamp against the Craft release date
-				$time = strtotime('20'.$matches[1].'-'.$matches[2].'-'.$matches[3].' '.$matches[4].':'.$matches[5].':'.$matches[6]);
-
-				if ($time > $storedDate)
+				if ($file[0] === '.')
 				{
-					$migrations[] = $class;
+					continue;
+				}
+
+				$path = IOHelper::normalizePathSeparators($migrationPath.$file);
+				$class = IOHelper::getFileName($path, false);
+
+				// Have we already run this migration?
+				if (in_array($class, $applied))
+				{
+					continue;
+				}
+
+				if (preg_match('/^m(\d\d)(\d\d)(\d\d)_(\d\d)(\d\d)(\d\d)_\w+\.php$/', $file, $matches))
+				{
+					// Check the migration timestamp against the Craft release date
+					$time = strtotime('20'.$matches[1].'-'.$matches[2].'-'.$matches[3].' '.$matches[4].':'.$matches[5].':'.$matches[6]);
+
+					if ($time > $storedDate)
+					{
+						$migrations[] = $class;
+					}
 				}
 			}
+
+			closedir($handle);
+			sort($migrations);
 		}
 
-		closedir($handle);
-		sort($migrations);
 		return $migrations;
 	}
 
@@ -305,14 +317,6 @@ class MigrationsService extends BaseApplicationComponent
 		else
 		{
 			$path = craft()->path->getMigrationsPath();
-		}
-
-		if (!IOHelper::folderExists($path))
-		{
-			if (!IOHelper::createFolder($path))
-			{
-				throw new Exception(Craft::t('Tried to create the migration folder at “{folder}”, but could not.', array('folder' => $path)));
-			}
 		}
 
 		return $path;

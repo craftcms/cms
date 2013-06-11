@@ -7,11 +7,11 @@ namespace Craft;
 class PluginsVariable
 {
 	/**
-	 * Returns a plugin.
+	 * Returns a plugin by its class handle.
 	 *
 	 * @param string $class
 	 * @param bool   $enabledOnly
-	 * @return PluginRecord
+	 * @return PluginVariable|null
 	 */
 	public function getPlugin($class, $enabledOnly = true)
 	{

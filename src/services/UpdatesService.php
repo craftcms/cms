@@ -204,20 +204,18 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $plugin
+	 * @param BasePlugin $plugin
 	 * @return bool
 	 */
-	public function setNewPluginInfo($plugin)
+	public function setNewPluginInfo(BasePlugin $plugin)
 	{
-		$pluginRecord = craft()->plugins->getPluginRecord($plugin);
+		$affectedRows = craft()->db->createCommand()->update('plugins', array(
+			'version' => $plugin->getVersion()
+		), array(
+			'class' => $plugin->getClassHandle()
+		));
 
-		$pluginRecord->version = $plugin->getVersion();
-		if ($pluginRecord->save())
-		{
-			return true;
-		}
-
-		return false;
+		return (bool) $affectedRows;
 	}
 
 	/**
