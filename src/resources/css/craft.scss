@@ -749,6 +749,8 @@ body .redactor_box .redactor_toolbar li.redactor_separator { margin: 7px 2px 0 3
 
 body .redactor_box_fullscreen { z-index: 9998 !important; }
 body .redactor_dropdown { z-index: 9998 !important; }
+body .redactor_editor ul { list-style-type: disc; }
+body .redactor_editor ol { list-style-type: decimal; }
 
 /**
  * Selects
