@@ -48,17 +48,23 @@ Craft.PackageChooser = Garnish.Base.extend({
 			};
 		}
 
-		Craft.postActionRequest('app/fetchPackageInfo',
-			$.proxy(this, 'initPackages'),
-			$.proxy(this, 'handleBadFetchPackageInfoResponse')
-		);
+		Craft.postActionRequest('app/fetchPackageInfo', $.proxy(this, 'initPackages'));
 	},
 
 	initPackages: function(response)
 	{
 		if (!response.success)
 		{
-			this.handleBadFetchPackageInfoResponse(response.error);
+			if (response.error)
+			{
+				var error = response.error;
+			}
+			else
+			{
+				var error = Craft.t('An unknown error occurred.');
+			}
+
+			alert(error);
 			return;
 		}
 
@@ -73,21 +79,6 @@ Craft.PackageChooser = Garnish.Base.extend({
 
 			this.createButtons(pkg);
 		}
-	},
-
-	handleBadFetchPackageInfoResponse: function(error)
-	{
-		for (var i in this.packages)
-		{
-			this.packages[i].$btnContainer.children().css('visibility', 'hidden');
-		}
-
-		if (!error)
-		{
-			error = Craft.t('An unknown error occurred.');
-		}
-
-		alert(error);
 	},
 
 	createButtons: function(pkg)
