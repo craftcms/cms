@@ -70,7 +70,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     	{
     		this.$scroller = this.$main;
     	}
-        
+
     	// Select the initial source
     	var source = this.getState('source');
 
