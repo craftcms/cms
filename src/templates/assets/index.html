@@ -1,103 +1,10 @@
-{% extends "_layouts/cp" %}
-{% from "_includes/forms" import text %}
+{% extends "_layouts/elementindex" %}
 {% set title = "Assets"|t %}
+{% set elementType = 'Asset' %}
+
 {% includeCssResource "css/assets.css" %}
-{% set folders = craft.assets.getAllFolders %}
-{% set view = 'thumbs' %}
-
-{% includeTranslations
-	"Upload files",
-	"View file",
-	"Edit properties",
-	"Rename file",
-	"Delete file",
-	"Delete",
-	"Are you sure you want to delete “{file}”?",
-	"Are you sure you want to delete these {number} files?",
-	"What do you want to do?",
-	"Apply this to the {number} remaining conflicts?",
-	"Rename folder",
-	"New subfolder",
-	"Delete folder",
-	"Enter the name of the folder",
-	"Really delete folder “{folder}”?"
-%}
-
-{% if folders %}
-
-	{% includeJsResource "js/Assets/Uploader.js" %}
-	{% includeJsResource "js/Assets/AssetFileManager.js" %}
-	{% includeJsResource "js/Assets/ListView.js" %}
-	{% includeJsResource "js/Assets/ThumbView.js" %}
-	{% includeJsResource "js/Assets/AssetFileManagerFolder.js" %}
-	{% includeJsResource "js/Assets/AssetPanel.js" %}
-
-	{% set sidebar %}
-		<div class="buttons">
-			<div class="assets-upload">
-			</div>
-		</div>
-
-		<nav>
-			<ul class="assets-folders">
-				{% for folder in folders %}
-					{% if folder %}
-						{% include 'assets/_nav_folder' with { folder: folder, depth: 1 } only %}
-					{% endif %}
-				{% endfor %}
-			</ul>
-		</nav>
-	{% endset %}
-
-	{% set content %}
-		<div class="assets">
-
-			<div class="asset-content">
-				<div class="toolbar">
-					<div class="spinner hidden"></div>
-
-					<div class="btngroup">
-						<a class="btn thumbs" href="javascript:;" title="{{ 'Display files as thumbnails'|t }}" data-icon="grid" role="button"></a>
-						<a class="btn list" href="javascript:;" title="{{ 'Display files in a list'|t }}" data-icon="list" role="button"></a>
-					</div>
-
-					<div class="search">
-						{{ text({
-							placeholder: "Search"|t,
-							autofocus: true
-						}) }}
-						<div class="search-options">
-							<label><input type="checkbox" class="assets-searchmode"> {{ 'Search nested folders'|t }}</label>
-						</div>
-					</div>
-
-				</div>
 
 
-				<div class="folder-container" data-folder="0">
-
-				</div>
-
-				<div class="asset-status">
-
-				</div>
-			</div>
-
-			<div class="assets-uploadprogress hidden">
-				<div class="assets-progressbar">
-					<div class="assets-pb-bar"></div>
-				</div>
-			</div>
-
-		</div>
-	{% endset %}
-
-{% else %}
-
-	{% set content %}
-		<p class="centeralign">
-			{{ "No asset sources exist yet."|t }}
-			<a class="go" href="{{ url('settings/assets/sources/new') }}">{{ "Create the first one"|t }}</a>
-		</p>
-	{% endset %}
-{% endif %}
+{% block sidebar %}
+	{{ parent() }}
+{% endblock %}
