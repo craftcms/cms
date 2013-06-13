@@ -440,6 +440,17 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     setSelector: function (obj)
     {
         this.selector = obj;
+    },
+
+    addCallback: function (currentCallback, newCallback)
+    {
+        return $.proxy(function () {
+            if (typeof currentCallback == 'function')
+            {
+                currentCallback.apply(this, arguments);
+            }
+            newCallback.apply(this, arguments);
+        }, this);
     }
 },
 {

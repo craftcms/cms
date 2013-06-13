@@ -19,18 +19,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 	init: function(elementType, $container, settings)
 	{
 
-        settings.onSelectSource = $.proxy(this, '_selectSource');
-        settings.onAfterHtmlInit = $.proxy(this, '_initializeComponents');
-
-        // Avoid overwriting existing callbacks.
-        var onUpdateElements = settings.onUpdateElements;
-
-        // TODO figure out why $.proxy borked here
-        var _t = this;
-        settings.onUpdateElements = function () {
-            onUpdateElements();
-            _t._onUpdateElements.call(_t);
-        };
+        // Piggyback some callbacks
+        settings.onSelectSource = this.addCallback(settings.onSelectSource, $.proxy(this, '_selectSource'));
+        settings.onAfterHtmlInit = this.addCallback(settings.onAfterHtmlInit, $.proxy(this, '_initializeComponents'));
+        settings.onUpdateElements = this.addCallback(settings.onUpdateElements, $.proxy(this, '_onUpdateElements'));
 
         this.base(elementType, $container, settings);
     },
