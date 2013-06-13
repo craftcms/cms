@@ -743,6 +743,11 @@ table.editable textarea { font-size: 13px; line-height: 17px; color: $textcolor;
 .timewrapper:before { position: absolute; top: 9px; left: 8px; content: 'time'; color: #a1a4a6; }
 .timewrapper .text { padding-left: 24px; width: 100%; }
 
+/* Assets related */
+.hud.assetshud .body{ max-height: 500px; overflow: auto; }
+.hud.assetshud .body .hud-buttons { padding: 15px; }
+.hud.assetshud .body .hud-buttons .btn { float: right; }
+
 /* redactor */
 body .redactor_box { padding: 0 5px; }
 body .redactor_box .redactor_toolbar { background: none; border-bottom: 1px dotted #ddd; }
