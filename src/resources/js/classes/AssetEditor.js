@@ -33,7 +33,7 @@ Assets.AssetEditor = Garnish.Base.extend({
             // Create a new HUD
             Craft.postActionRequest('assets/viewFile', params, $.proxy(function(data, textStatus) {
 
-                this._removeHud();
+                this.removeHud();
 
                 if (data.requestId != this.requestId) {
                     return;
@@ -65,17 +65,17 @@ Assets.AssetEditor = Garnish.Base.extend({
             this._showSpinner();
 
             Craft.postActionRequest('assets/saveFileContent', params, $.proxy(function(data, textStatus) {
-                this._removeHud();
+                this.removeHud();
             }, this));
         },
 
         _showSpinner: function ()
         {
-            this._removeHud();
+            this.removeHud();
             this.hud = new Garnish.HUD(this.$trigger, $('<div class="body"><div class="spinner big"></div></div>'));
         },
 
-        _removeHud: function ()
+        removeHud: function ()
         {
             if (this.hud !== null)
             {
