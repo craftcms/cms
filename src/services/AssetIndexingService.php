@@ -121,94 +121,6 @@ class AssetIndexingService extends BaseApplicationComponent
 		craft()->db->createCommand()->update('assetindexdata', array('recordId' => $recordId), array('id' => $entryId));
 	}
 
-	/**
-	 * Finish indexing by sessionId, source list and a JSON command.
-	 *
-	 * @param $sessionId
-	 * @param $sources
-	 * @param $command
-	 * @return array $output
-	 * @throws Exception
-	 */
-	public function finishIndex($sessionId, $sources, $command)
-	{
-		$command = JsonHelper::decode($command);
-		$output = array();
-
-		switch ($command['command'])
-		{
-			case 'delete':
-			{
-				if ( ! empty($command['fileIds']))
-				{
-					foreach ($command['fileIds'] as &$fileId)
-					{
-						$fileId = (int) $fileId;
-					}
-
-					AssetFileRecord::model()->deleteAll('id IN (' . implode(",", $command['fileIds']).')');
-
-					// TODO: delete all created sizes as well
-					foreach ($command['fileIds'] as $fileId)
-					{
-						$files = glob(craft()->path->getAssetsImageSourcePath().$fileId.'.*');
-						foreach ($files as $file)
-						{
-							IOHelper::deleteFile($file);
-						}
-
-						IOHelper::deleteFolder(craft()->path->getAssetsThumbsPath().$fileId);
-
-						craft()->elements->deleteElementById($fileId);
-					}
-				}
-
-				if ( ! empty($command['folderIds']))
-				{
-					foreach ($command['folderIds'] as &$folderId)
-					{
-						$folderId = (int) $folderId;
-					}
-
-					$folders = craft()->assets->findFolders(array('id' => $command['folderIds']));
-
-					foreach ($folders as $folder)
-					{
-						$fileIds = craft()->db->createCommand()
-							->select('fi.id')
-							->from('assetfiles AS fi')
-							->join('assetfolders AS fo', 'fi.folderId = fo.id AND fo.fullPath LIKE :fullPath AND fo.sourceId = :sourceId',
-								array(
-									':fullPath' => $folder->fullPath.'%',
-									':sourceId' => $folder->sourceId
-								))
-							->queryColumn();
-					}
-
-					AssetFolderRecord::model()->deleteAll('id IN ('.implode(",", $command['folderIds']).')');
-				}
-
-				$output['success'] = TRUE;
-				break;
-			}
-
-			case 'statistics':
-			{
-				$output['files'] = $this->getMissingFiles($sources, $sessionId);
-
-				craft()->db->createCommand()->delete('assetindexdata', array('sessionId' => $sessionId));
-
-				break;
-			}
-
-			default:
-			{
-				throw new Exception(Craft::t('Unknown indexing command!'));
-			}
-		}
-
-		return $output;
-	}
 
 	/**
 	 * Return a list of missing files for an indexing session.
@@ -258,6 +170,10 @@ class AssetIndexingService extends BaseApplicationComponent
 	{
 		craft()->db->createCommand()->delete('assettransformindex', array('in', 'fileId', $fileIds));
 		craft()->db->createCommand()->delete('assetfiles', array('in', 'id', $fileIds));
+		foreach ($fileIds as $fileId)
+		{
+			craft()->elements->deleteElementById($fileId);
+		}
 	}
 
 	/**
