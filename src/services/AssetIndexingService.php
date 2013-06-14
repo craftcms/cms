@@ -158,6 +158,8 @@ class AssetIndexingService extends BaseApplicationComponent
 						}
 
 						IOHelper::deleteFolder(craft()->path->getAssetsThumbsPath().$fileId);
+
+						craft()->elements->deleteElementById($fileId);
 					}
 				}
 
