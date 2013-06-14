@@ -519,7 +519,7 @@ class Craft extends \Yii
 			}
 		}
 
-		$translation = parent::t($category, $message, $normalizedVariables, $source, $language);
+		$translation = parent::t($category, (string)$message, $normalizedVariables, $source, $language);
 		if (craft()->config->get('translationDebugOutput'))
 		{
 			$translation = '@'.$translation.'@';
