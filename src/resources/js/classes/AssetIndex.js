@@ -360,8 +360,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         {
             this._multiFileMenu.enable();
         }
-    }
+    },
 
+    _showProperties: function (event)
+    {
+        $(event.currentTarget).dblclick();
+    },
+
+    _viewFile: function (event)
+    {
+        window.open($(event.currentTarget).find('[data-url]').attr('data-url'));
+    }
 });
 
 // Register it!
