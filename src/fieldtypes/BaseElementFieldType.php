@@ -88,7 +88,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			$elements = array_slice($elements, 0, $this->getSettings()->limit);
 		}
 
-		return $elements;
+		return new RelationFieldData($elements);
 	}
 
 	/**
@@ -102,16 +102,16 @@ abstract class BaseElementFieldType extends BaseFieldType
 	{
 		$id = rtrim(preg_replace('/[\[\]]+/', '-', $name), '-');
 
-		if (!is_array($elements))
+		if (!($elements instanceof RelationFieldData))
 		{
-			$elements = array();
+			$elements = new RelationFieldData();
 		}
 
 		return craft()->templates->render('_includes/forms/elementSelect', array(
 			'elementType' => new ElementTypeVariable($this->_getElementType()),
 			'id'          => $id,
 			'name'        => $name,
-			'elements'    => $elements,
+			'elements'    => $elements->all,
 			'sources'     => $this->getSettings()->sources,
 			'limit'       => $this->getSettings()->limit,
 		));
