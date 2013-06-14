@@ -836,6 +836,7 @@ class AssetsService extends BaseApplicationComponent
 				$file = $this->getFileById($fileId);
 				$source = craft()->assetSources->getSourceTypeById($file->sourceId);
 				$source->deleteFile($file);
+				craft()->elements->deleteElementById($fileId);
 			}
 			$response->setSuccess();
 		}
