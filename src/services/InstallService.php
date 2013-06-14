@@ -188,10 +188,11 @@ class InstallService extends BaseApplicationComponent
 			'childId'   => array('column' => ColumnType::Int, 'null' => false),
 			'sortOrder' => array('column' => ColumnType::TinyInt),
 		));
+
 		craft()->db->createCommand()->createIndex('relations', 'fieldId,parentId,childId', true);
-		craft()->db->createCommand()->addForeignKey('relations', 'fieldId', 'fields', 'id');
-		craft()->db->createCommand()->addForeignKey('relations', 'parentId', 'elements', 'id');
-		craft()->db->createCommand()->addForeignKey('relations', 'childId', 'elements', 'id');
+		craft()->db->createCommand()->addForeignKey('relations', 'fieldId', 'fields', 'id', 'CASCADE');
+		craft()->db->createCommand()->addForeignKey('relations', 'parentId', 'elements', 'id', 'CASCADE');
+		craft()->db->createCommand()->addForeignKey('relations', 'childId', 'elements', 'id', 'CASCADE');
 
 		Craft::log('Finished creating the relations table.');
 	}

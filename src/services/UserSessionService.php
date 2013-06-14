@@ -40,6 +40,9 @@ class UserSessionService extends \CWebUser
 	 */
 	function __construct()
 	{
+		// Let's set our own state key prefix. Leaving identical to CWebUser for the key so people won't get logged out when updating.
+		$this->setStateKeyPrefix(md5('Yii.Craft\UserSessionService.'.craft()->getId()));
+
 		// If the identity cookie is missing we assume it has expired.  We need to kill the PHP session information as early
 		// as possible in the request if the session duration is set to be anything greater than 0.
 		$cookies = craft()->request->getCookies();
@@ -361,9 +364,10 @@ class UserSessionService extends \CWebUser
 	 * Gets the proper error message from the given error code.
 	 *
 	 * @param $errorCode
+	 * @param $loginName
 	 * @return null|string
 	 */
-	public function getLoginErrorMessage($errorCode)
+	public function getLoginErrorMessage($errorCode, $loginName)
 	{
 		switch ($errorCode)
 		{
@@ -379,13 +383,21 @@ class UserSessionService extends \CWebUser
 			}
 			case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
 			{
-				$user = $this->getUser();
-				$timeRemaining = $user->getRemainingCooldownTime();
+				$user = craft()->users->getUserByUsernameOrEmail($loginName);
 
-				if ($timeRemaining)
+				if ($user)
 				{
-					$humanTimeRemaining = $timeRemaining->humanDuration();
-					$error = Craft::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining));
+					$timeRemaining = $user->getRemainingCooldownTime();
+
+					if ($timeRemaining)
+					{
+						$humanTimeRemaining = $timeRemaining->humanDuration();
+						$error = Craft::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining));
+					}
+					else
+					{
+						$error = Craft::t('Account locked.');
+					}
 				}
 				else
 				{

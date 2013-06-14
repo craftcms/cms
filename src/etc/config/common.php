@@ -131,8 +131,8 @@ $cpRoutes['settings/general']                                     = array('actio
 $cpRoutes['settings/plugins/(?P<pluginClass>{handle})']           = 'settings/plugins/_settings';
 $cpRoutes['settings/sections/new']                                = 'settings/sections/_edit';
 $cpRoutes['settings/sections/(?P<sectionId>\d+)']                 = 'settings/sections/_edit';
-$cpRoutes['settings/globals/new']                                 = 'settings/globals/_edit';
-$cpRoutes['settings/globals/(?P<globalSetId>\d+)']                = 'settings/globals/_edit';
+$cpRoutes['settings/globals/new']                                 = array('action' => 'systemSettings/editGlobalSet');
+$cpRoutes['settings/globals/(?P<globalSetId>\d+)']                = array('action' => 'systemSettings/editGlobalSet');
 
 $cpRoutes['settings/packages'] = array(
 	'params' => array(
@@ -147,8 +147,8 @@ $cpRoutes['settings/routes'] = array(
 		'variables' => array(
 			'tokens' => array(
 				'year'   => '\d{4}',
-				'month'  => '1?\d',
-				'day'    => '[1-3]?\d',
+				'month'  => '(?:0[1-9]|1[012])',
+				'day'    => '(?:0[1-9]|[12][0-9]|3[01])',
 				'number' => '\d+',
 				'page'   => '\d+',
 				'*'      => '[^\/]+',
