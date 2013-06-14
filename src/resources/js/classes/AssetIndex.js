@@ -370,7 +370,43 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     _viewFile: function (event)
     {
         window.open($(event.currentTarget).find('[data-url]').attr('data-url'));
-    }
+    },
+
+    /**
+     * Delete a file
+     */
+    _deleteFile: function (event) {
+
+        var $target = $(event.currentTarget);
+        var fileId = $target.attr('data-id');
+
+        var fileName = $target.attr('data-label');
+
+        if (confirm(Craft.t('Are you sure you want to delete “{file}”?', {file: fileName})))
+        {
+            if ($target.data('AssetEditor'))
+            {
+                $target.data('AssetEditor').removeHud();
+            }
+            
+            this.setIndexBusy();
+
+            Craft.postActionRequest('assets/deleteFile', {fileId: fileId}, $.proxy(function(data, textStatus) {
+                this.setIndexAvailable();
+
+                if (textStatus == 'success')
+                {
+                    if (data.error)
+                    {
+                        alert(data.error);
+                    }
+
+                    this.updateElements();
+
+                }
+            }, this));
+        }
+    },
 });
 
 // Register it!
