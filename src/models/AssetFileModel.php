@@ -233,16 +233,6 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the element's status.
-	 *
-	 * @return string|null
-	 */
-	public function getStatus()
-	{
-		return null;
-	}
-
-	/**
 	 * Return a dimension of the image.
 	 *
 	 * @param $dimension 'height' or 'width'
