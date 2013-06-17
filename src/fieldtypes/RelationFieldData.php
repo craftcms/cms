@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * Relation field data class
  */
-class RelationFieldData extends BaseArray
+class RelationFieldData extends \ArrayObject
 {
 	public $all;
 
@@ -25,14 +25,16 @@ class RelationFieldData extends BaseArray
 		}
 
 		// Only the enabled/live elements make it to the primary $values array
-		$this->values = array();
+		$enabledElements = array();
 
 		foreach ($this->all as $element)
 		{
 			if ($element->status == 'enabled' || $element->status == 'live')
 			{
-				$this->values[] = $element;
+				$enabledElements[] = $element;
 			}
 		}
+
+		parent::__construct($enabledElements);
 	}
 }

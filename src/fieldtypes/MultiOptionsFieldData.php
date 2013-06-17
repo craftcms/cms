@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * Multi-select option field data class
  */
-class MultiOptionsFieldData extends BaseArray
+class MultiOptionsFieldData extends \ArrayObject
 {
 	public $options;
 
@@ -16,7 +16,7 @@ class MultiOptionsFieldData extends BaseArray
 	{
 		$value = (string) $value;
 
-		foreach ($this->values as $selectedValue)
+		foreach ($this as $selectedValue)
 		{
 			if ($value == $selectedValue->value)
 			{
