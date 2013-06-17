@@ -13,6 +13,8 @@ class ToolsController extends BaseController
 	{
 		// All tool actions require an admin
 		craft()->userSession->requireAdmin();
+
+		craft()->config->maxPowerCaptain();
 	}
 
 	/**
