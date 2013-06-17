@@ -5,33 +5,37 @@
 	{% set mode = 'index' -%}
 {% endif -%}
 
-{% set thumbUrl = element.getThumbUrl(thumbSize) -%}
-{% if thumbUrl -%}
-	{% set thumbClass = 'elementthumb'~element.id -%}
-	{% includeCss '.'~thumbClass~' { background-image: url('~thumbUrl~'); }' -%}
-	{% includeHiResCss '.'~thumbClass~' { background-image: url('~element.getThumbUrl(thumbSize * 2)~'); background-size: '~thumbSize~'px; }' -%}
-{% else -%}
-	{% set iconUrl = element.getIconUrl(iconSize) -%}
-	{% if iconUrl -%}
-		{% set iconClass = 'elementicon'~element.id -%}
-		{% includeCss '.'~iconClass~' { background-image: url('~iconUrl~'); }' -%}
-		{% includeHiResCss '.'~iconClass~' { background-image: url('~element.getIconUrl(iconSize * 2)~'); background-size: '~iconSize~'px; }' -%}
+{% if elementType.hasThumbs %}
+	{% set thumbUrl = element.getThumbUrl(thumbSize) -%}
+	{% if thumbUrl -%}
+		{% set thumbClass = 'elementthumb'~element.id -%}
+		{% includeCss '.'~thumbClass~' { background-image: url('~thumbUrl~'); }' -%}
+		{% includeHiResCss '.'~thumbClass~' { background-image: url('~element.getThumbUrl(thumbSize * 2)~'); background-size: '~thumbSize~'px; }' -%}
+	{% else -%}
+		{% set iconUrl = element.getIconUrl(iconSize) -%}
+		{% if iconUrl -%}
+			{% set iconClass = 'elementicon'~element.id -%}
+			{% includeCss '.'~iconClass~' { background-image: url('~iconUrl~'); }' -%}
+			{% includeHiResCss '.'~iconClass~' { background-image: url('~element.getIconUrl(iconSize * 2)~'); background-size: '~iconSize~'px; }' -%}
+		{% endif -%}
 	{% endif -%}
-{% endif -%}
+{% endif %}
 
-<div class="element{% if mode != 'index' %} selectable{% endif %}{% if mode == 'field' %} removable{% endif %}{% if thumbUrl or iconUrl %} hasicon{% endif %}" data-id="{{ element.id }}" data-url="{{ element.url }}">
+<div class="element{% if mode != 'index' %} selectable{% endif %}{% if mode == 'field' %} removable{% endif %}{% if elementType.hasThumbs and (thumbUrl or iconUrl) %} hasicon{% endif %}" data-id="{{ element.id }}" data-url="{{ element.url }}">
 	{% if mode == 'field' -%}
 		<input type="hidden" name="{{ name }}[]" value="{{ element.id }}">
 		<a class="delete icon" title="{{ 'Remove'|t }}"></a>
 	{% endif -%}
 
-	{% if thumbUrl -%}
-		<div class="elementicon elementthumb {{ thumbClass }}"></div>
-	{% elseif iconUrl -%}
-		<div class="elementicon {{ iconClass }}"></div>
-	{% endif -%}
+	{% if elementType.hasThumbs %}
+		{% if thumbUrl -%}
+			<div class="elementicon elementthumb {{ thumbClass }}"></div>
+		{% elseif iconUrl -%}
+			<div class="elementicon {{ iconClass }}"></div>
+		{% endif -%}
+	{% endif %}
 
-	{% if element.getStatus() -%}
+	{% if elementType.hasStatuses -%}
 		<div class="status {{ element.getStatus() }}"></div>
 	{% endif -%}
 

@@ -60,6 +60,7 @@ class ElementsController extends BaseController
 
 		$elementDataHtml = $this->renderTemplate('_elements/elementdata', array(
 			'mode'               => $mode,
+			'elementType'        => new ElementTypeVariable($elementType),
 			'attributes'         => $tableAttributes,
 			'elements'           => $criteria->find(),
 			'disabledElementIds' => $disabledElementIds,

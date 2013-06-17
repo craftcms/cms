@@ -7,6 +7,26 @@ namespace Craft;
 class ElementTypeVariable extends BaseComponentTypeVariable
 {
 	/**
+	 * Returns whether this element type can have statuses.
+	 *
+	 * @return bool
+	 */
+	public function hasStatuses()
+	{
+		return $this->component->hasStatuses();
+	}
+
+	/**
+	 * Returns whether this element type can have thumbnails.
+	 *
+	 * @return bool
+	 */
+	public function hasThumbs()
+	{
+		return $this->component->hasThumbs();
+	}
+
+	/**
 	 * Return a key/label list of the element type's sources.
 	 *
 	 * @return array|false

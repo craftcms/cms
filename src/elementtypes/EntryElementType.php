@@ -17,6 +17,16 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
+	 * Returns whether this element type can have statuses.
+	 *
+	 * @return bool
+	 */
+	public function hasStatuses()
+	{
+		return true;
+	}
+
+	/**
 	 * Returns whether this element type is translatable.
 	 *
 	 * @return bool
