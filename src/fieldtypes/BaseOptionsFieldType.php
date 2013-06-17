@@ -125,6 +125,10 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 					$val = new OptionData($label, $val, true);
 				}
 			}
+			else
+			{
+				$value = array();
+			}
 
 			$value = new MultiOptionsFieldData($value);
 		}

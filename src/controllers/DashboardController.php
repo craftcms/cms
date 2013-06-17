@@ -104,6 +104,8 @@ class DashboardController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
+		craft()->config->maxPowerCaptain();
+
 		$getHelpModel = new GetHelpModel();
 		$getHelpModel->fromEmail = craft()->request->getPost('fromEmail');
 		$getHelpModel->message = craft()->request->getPost('message');
