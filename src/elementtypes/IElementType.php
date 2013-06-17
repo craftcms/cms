@@ -9,6 +9,11 @@ interface IElementType extends IComponentType
 	/**
 	 * @return bool
 	 */
+	public function hasStatuses();
+
+	/**
+	 * @return bool
+	 */
 	public function hasThumbs();
 
 	/**

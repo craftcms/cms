@@ -190,4 +190,16 @@ class ConfigService extends BaseApplicationComponent
 
 		return $this->_usePathInfo == 'no' ? false : true;
 	}
+
+	/**
+	 * For when you have to give it all you can.
+	 */
+	public function maxPowerCaptain()
+	{
+		// I need more memory.
+		@ini_set('memory_limit', craft()->config->get('phpMaxMemoryLimit'));
+
+		// I need more time.
+		set_time_limit(120);
+	}
 }

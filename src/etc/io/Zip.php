@@ -30,7 +30,7 @@ class Zip
 
 		IOHelper::createFile($destZip);
 
-		@ini_set('memory_limit', craft()->config->get('phpMaxMemoryLimit'));
+		craft()->config->maxPowerCaptain();
 
 		$zip = static::_getZipInstance($destZip);
 		return $zip->zip(IOHelper::getRealPath($source), IOHelper::getRealPath($destZip));
@@ -44,7 +44,7 @@ class Zip
 	 */
 	public static function unzip($srcZip, $destFolder)
 	{
-		@ini_set('memory_limit', craft()->config->get('phpMaxMemoryLimit'));
+		craft()->config->maxPowerCaptain();
 
 		if (IOHelper::fileExists($srcZip))
 		{
@@ -118,7 +118,7 @@ class Zip
 			return false;
 		}
 
-		@ini_set('memory_limit', craft()->config->get('phpMaxMemoryLimit'));
+		craft()->config->maxPowerCaptain();
 
 		$zip = static::_getZipInstance($sourceZip);
 		if ($zip->add($sourceZip, $pathToAdd, $basePath, $pathPrefix))
