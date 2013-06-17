@@ -17,6 +17,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     isIndexBusy: false,
     _uploadFileProgress: {},
     uploadedFileIds: [],
+    selectedFileIds: [],
 
     _singleFileMenu: null,
     _multiFileMenu: null,
@@ -294,6 +295,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     _onElementSelectionChange: function ()
     {
         this._enableElementContextMenu();
+        var selected = this.selector.getSelectedItems();
+        this.selectedFileIds = [];
+        for (var i = 0; i < selected.length; i++)
+        {
+            this.selectedFileIds[i] = $(selected[i]).attr('data-id');
+        }
     },
 
     _attachElementEvents: function ($elements)
@@ -388,7 +395,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             {
                 $target.data('AssetEditor').removeHud();
             }
-            
+
             this.setIndexBusy();
 
             Craft.postActionRequest('assets/deleteFile', {fileId: fileId}, $.proxy(function(data, textStatus) {
@@ -403,6 +410,39 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
                     this.updateElements();
 
+                }
+            }, this));
+        }
+    },
+
+    /**
+     * Delete multiple files.
+     */
+    _deleteFiles: function () {
+
+        if (confirm(Craft.t("Are you sure you want to delete these {number} files?", {number: this.selector.getTotalSelected()})))
+        {
+            this.setIndexBusy();
+
+            var postData = {};
+
+            for (var i = 0; i < this.selectedFileIds.length; i++)
+            {
+                postData['fileId['+i+']'] = this.selectedFileIds[i];
+            }
+
+            Craft.postActionRequest('assets/deleteFile', postData, $.proxy(function(data, textStatus) {
+                this.setIndexAvailable();
+
+                if (textStatus == 'success')
+                {
+
+                    if (data.error)
+                    {
+                        alert(data.error);
+                    }
+
+                    this.updateElements();
                 }
             }, this));
         }
