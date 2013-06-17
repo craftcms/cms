@@ -96,7 +96,8 @@ class AssetsController extends BaseController
 				'view' => $viewType,
 				'files' => $files,
 				'orderBy' => $orderBy,
-				'sort' => $sortOrder
+				'sort' => $sortOrder,
+				'elementType' => new ElementTypeVariable(craft()->elements->getElementType(ElementType::Asset))
 			)
 		);
 

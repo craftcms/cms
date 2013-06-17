@@ -13,6 +13,16 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	protected $componentType = 'ElementType';
 
 	/**
+	 * Returns whether this element type can have statuses.
+	 *
+	 * @return bool
+	 */
+	public function hasStatuses()
+	{
+		return false;
+	}
+
+	/**
 	 * Returns whether this element type can have thumbnails.
 	 *
 	 * @return bool
