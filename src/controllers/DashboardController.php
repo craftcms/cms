@@ -173,7 +173,7 @@ class DashboardController extends BaseController
 					$requestParams['File1_bFileBody'] = base64_encode(IOHelper::getFileContents($tempZipFile));
 
 					// Bump the default timeout because of the attachment.
-					$hsParams['callTimeout'] = 60;
+					$hsParams['callTimeout'] = 120;
 				}
 			}
 			catch(\Exception $e)
