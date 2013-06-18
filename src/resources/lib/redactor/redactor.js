@@ -1,6 +1,6 @@
 /*
-	Redactor v9.0
-	Updated: May 30, 2013
+	Redactor v9.0.1
+	Updated: Jun 10, 2013
 
 	http://imperavi.com/redactor/
 
@@ -71,15 +71,19 @@
 	}
 
 	$.Redactor = Redactor;
+	$.Redactor.VERSION = '9.0.1';
 	$.Redactor.opts = {
 
 			// callbacks
 			initCallback: false,
+			changeCallback: false,
 			focusCallback: false,
 			blurCallback: false,
 			keydownCallback: false,
 			keyupCallback: false,
 			execCommandCallback: false,
+			pasteBeforeCallback: false,
+			pasteAfterCallback: false,
 			autosaveCallback: false,
 			imageUploadCallback: false,
 			imageUploadErrorCallback: false,
@@ -130,6 +134,8 @@
 			observeImages: true,
 
 			modalOverlay: true,
+
+			tabFocus: true,
 
 			air: false,
 			airButtons: ['formatting', '|', 'bold', 'italic', 'deleted', '|', 'unorderedlist', 'orderedlist', 'outdent', 'indent', '|', 'fontcolor', 'backcolor'],
@@ -202,6 +208,7 @@
 					table: 'Table',
 					link: 'Link',
 					link_insert: 'Insert link',
+					link_edit: 'Edit link',
 					unlink: 'Unlink',
 					formatting: 'Formatting',
 					paragraph: 'Normal text',
@@ -348,6 +355,7 @@
 
 			// Build
 			this.buildStart();
+
 		},
 		initToolbar: function(lang)
 		{
@@ -759,8 +767,10 @@
 				$('#' + this.$element[0].id + '_code').html(htmlEncode(html));
 			}
 
-			// after callback
+			// onchange & after callback
 			this.callback('syncAfter', false, html);
+			this.callback('change', false, html);
+
 		},
 		syncClean: function(html)
 		{
@@ -1018,7 +1028,7 @@
 					{
 						this.insertNode(document.createElement('br'));
 						e.preventDefault();
-						return;
+						return false;
 					}
 
 					// pre
@@ -1054,6 +1064,7 @@
 										$(blockElem).replaceWith(node);
 										this.selectionStart(node);
 									}
+
 
 								}, this), 1);
 							}
@@ -1112,6 +1123,9 @@
 				// tab
 				if (key === this.keyCode.TAB && this.opts.shortcuts )
 				{
+					if (!this.opts.tabFocus) return true;
+					if (this.isEmpty(this.get())) return true;
+
 					e.preventDefault();
 
 					if (pre === true && !e.shiftKey)
@@ -1133,10 +1147,13 @@
 				// delete zero-width space before the removing
 				if (key === this.keyCode.BACKSPACE)
 				{
-					var value = $.trim(current.nodeValue.replace(/[^\u0000-\u007E]/g, ''));
-					if (current.nodeType === 3 && current.nodeValue.charCodeAt(0) == 8203 && value == '')
+					if (typeof current.nodeValue !== 'undefined' && current.nodeValue !== null)
 					{
-						current.remove();
+						var value = $.trim(current.nodeValue.replace(/[^\u0000-~]/g, ''));
+						if (current.remove && current.nodeType === 3 && current.nodeValue.charCodeAt(0) == 8203 && value == '')
+						{
+							current.remove();
+						}
 					}
 				}
 
@@ -1826,7 +1843,7 @@
 				if (btnObject.name === 'separator') $item = $('<a class="redactor_separator_drop">');
 				else
 				{
-					$item = $('<a href="javascript:;" class="' + btnObject.className + '">' + btnObject.title + '</a>');
+					$item = $('<a href="javascript:;" class="' + btnObject.className + ' redactor_dropdown_' + btnName + '">' + btnObject.title + '</a>');
 					$item.on('click', $.proxy(function(e)
 					{
 						if (e.preventDefault) e.preventDefault();
@@ -2065,6 +2082,10 @@
 		{
 			var parent = this.getParent();
 			this.buttonInactiveAll();
+
+			if (parent && parent.tagName === 'A') this.$toolbar.find('a.redactor_dropdown_link').text(this.opts.curLang.link_edit);
+			else this.$toolbar.find('a.redactor_dropdown_link').text(this.opts.curLang.link_insert);
+
 
 			if (this.opts.activeButtonsAdd)
 			{
@@ -2659,10 +2680,18 @@
 			/* this.$editor.find('span[data-redactor!="verified"]').filter(':not([id*="selection-marker"])').contents().unwrap(); */
 			// label, abbr, mark, meter, code, q, dfn, ins, time, kbd, var
 
-			var $elem = this.$editor.find('img, a, b, strong, sub, sup, i, em, u, small, strike, del, span, cite')
-				.filter('[style*="font-size"][style*="line-height"]')
+			var $elem = this.$editor.find('img, a, b, strong, sub, sup, i, em, u, small, strike, del, span, cite');
+
+				$elem.filter('[style*="font-size"][style*="line-height"]')
 				.css('font-size', '')
 				.css('line-height', '');
+
+				$elem.filter('[style*="background-color: transparent;"][style*="line-height"]')
+				.css('background-color', '')
+				.css('line-height', '');
+
+				$elem.filter('[style*="background-color: transparent;"]')
+				.css('background-color', '');
 
 			$.each($elem, $.proxy(function(i,s)
 			{
@@ -3318,13 +3347,16 @@
 
 			var currBlock = this.getBlock();
 
-			var htmlTagName = $html.contents()[0].tagName;
-
-			// If the inserted and received text tags match
-			if ($html.contents().length == 1 && htmlTagName != 'P' && htmlTagName == currBlock.tagName || htmlTagName == 'PRE')
+			if ($html.contents().length == 1)
 			{
-				html = $html.text();
-				$html = $('<div>').append(html);
+				var htmlTagName = $html.contents()[0].tagName;
+
+				// If the inserted and received text tags match
+				if (htmlTagName != 'P' && htmlTagName == currBlock.tagName || htmlTagName == 'PRE')
+				{
+					html = $html.text();
+					$html = $('<div>').append(html);
+				}
 			}
 
 			// add text in a paragraph
@@ -3405,6 +3437,7 @@
 		},
 		insertNode: function(node)
 		{
+			node = node[0] || node;
 			var sel = this.getSelection();
 			if (sel.getRangeAt && sel.rangeCount)
 			{
@@ -3495,6 +3528,8 @@
 		},
 		pasteClean: function(html)
 		{
+			html = this.callback('pasteBefore', false, html);
+
 			// clean up pre
 			if (this.currentOrParentIs('PRE'))
 			{
@@ -3614,6 +3649,8 @@
 
 				this.$editor.focus();
 			}
+
+			html = this.callback('pasteAfter', false, html);
 
 			this.insertHtml(html);
 
@@ -4276,13 +4313,18 @@
 		{
 			this.bufferSet();
 
+			if (!this.$table) return;
+
 			this.$table.remove();
 			this.$table = false;
 			this.sync();
+
 		},
 		tableDeleteRow: function()
 		{
 			this.bufferSet();
+
+			if (!this.$current_tr) return;
 
 			// Set the focus correctly
 			var $focusTR = this.$current_tr.prev().length ? this.$current_tr.prev() : this.$current_tr.next();
@@ -4445,18 +4487,24 @@
 
 				var sel = this.getSelection();
 				var url = '', text = '', target = '';
-				var par = sel.anchorNode.parentNode;
 
 				var elem = this.getParent();
+				var par = $(elem).parent().get(0);
+				if (par && par.tagName === 'A')
+				{
+					elem = par;
+				}
+
 				if (elem && elem.tagName === 'A')
 				{
 					url = elem.href;
 					text = $(elem).text();
 					target = elem.target;
 
-					if (sel.toString() === '') this.insert_link_node = elem;
+					this.insert_link_node = elem;
 				}
 				else text = sel.toString();
+
 
 				$('.redactor_link_text').val(text);
 
@@ -5850,7 +5898,7 @@
 		{
 			var el, sel = this.getSelection();
 
-			if (sel.rangeCount > 0) el = sel.getRangeAt(0).startContainer;
+			if (sel.rangeCount && sel.rangeCount > 0) el = sel.getRangeAt(0).startContainer;
 			if (!el) return false;
 			if (this.opts.iframe)
 			{
