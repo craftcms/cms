@@ -54,17 +54,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         // Context menus for the folders
         var assetIndex = this;
         this.$sources.each(function () {
-            var menuOptions = [{ label: Craft.t('New subfolder'), onClick: $.proxy(assetIndex, '_createSubfolder') }];
-
-            element = $(this);
-
-            // For all folders that are not top folders
-            if (element.parents('ul').length > 1)
-            {
-                menuOptions.push({ label: Craft.t('Rename folder'), onClick: $.proxy(assetIndex, '_renameFolder') });
-                menuOptions.push({ label: Craft.t('Delete folder'), onClick: $.proxy(assetIndex, '_deleteFolder') });
-            }
-            new Garnish.ContextMenu(element, menuOptions, {menuClass: 'menu assets-contextmenu'});
+            assetIndex._createFolderContextMenu.apply(assetIndex, $(this));
         });
 
         // ---------------------------------------
@@ -690,33 +680,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         }
     },
 
-    /**
-     * Collapse Extra Expanded Folders
-     */
-    _collapseExtraExpandedFolders: function(dropTargetFolderId)
-    {
-
-        clearTimeout(this.expandDropTargetFolderTimeout);
-
-        // If a source id is passed in, exclude it's parents
-        if (dropTargetFolderId)
-        {
-            var excluded = this._getSourceByFolderId(dropTargetFolderId).parents('li').find('>a');
-        }
-
-        for (var i = this.tempExpandedFolders.length-1; i >= 0; i--)
-        {
-            var source = this.tempExpandedFolders[i];
-
-            // check the parent list, if a source id is passed in
-            if (! dropTargetFolderId || excluded.filter('[data-key="' + source.data('key') + '"]').length == 0)
-            {
-                this._collapseFolder(source);
-                this.tempExpandedFolders.splice(i, 1);
-            }
-        }
-    },
-
     _getDragHelper: function ($element)
     {
         var currentView = this.getState('view');
@@ -769,6 +732,33 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         }
     },
 
+    /**
+     * Collapse Extra Expanded Folders
+     */
+    _collapseExtraExpandedFolders: function(dropTargetFolderId)
+    {
+
+        clearTimeout(this.expandDropTargetFolderTimeout);
+
+        // If a source id is passed in, exclude it's parents
+        if (dropTargetFolderId)
+        {
+            var excluded = this._getSourceByFolderId(dropTargetFolderId).parents('li').find('>a');
+        }
+
+        for (var i = this.tempExpandedFolders.length-1; i >= 0; i--)
+        {
+            var source = this.tempExpandedFolders[i];
+
+            // check the parent list, if a source id is passed in
+            if (! dropTargetFolderId || excluded.filter('[data-key="' + source.data('key') + '"]').length == 0)
+            {
+                this._collapseFolder(source);
+                this.tempExpandedFolders.splice(i, 1);
+            }
+        }
+    },
+
     _getSourceByFolderId: function (folderId)
     {
         return this.$sources.filter('[data-key="folder:' + folderId + '"]');
@@ -802,6 +792,144 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         if (li.hasClass('expanded'))
         {
             li.find('> .toggle').click();
+        }
+    },
+
+    _createFolderContextMenu: function (element)
+    {
+        element = $(element);
+        var menuOptions = [{ label: Craft.t('New subfolder'), onClick: $.proxy(this, '_createSubfolder', element) }];
+
+        // For all folders that are not top folders
+        if (element.parents('ul').length > 1)
+        {
+            menuOptions.push({ label: Craft.t('Rename folder'), onClick: $.proxy(this, '_renameFolder', element) });
+            menuOptions.push({ label: Craft.t('Delete folder'), onClick: $.proxy(this, '_deleteFolder', element) });
+        }
+        new Garnish.ContextMenu(element, menuOptions, {menuClass: 'menu assets-contextmenu'});
+
+    },
+
+    _createSubfolder: function (parentFolder)
+    {
+        var subfolderName = prompt(Craft.t('Enter the name of the folder'));
+
+        if (subfolderName)
+        {
+            var params = {
+                parentId:  this._getFolderIdFromSourceKey(parentFolder.data('key')),
+                folderName: subfolderName
+            };
+
+            this.setIndexBusy();
+
+            Craft.postActionRequest('assets/createFolder', params, $.proxy(function(data)
+            {
+                this.setIndexAvailable();
+
+                if (data.success)
+                {
+                    this._prepareParentForChildren(parentFolder);
+
+                    var subFolder = $('<li><a data-key="folder:' + data.folderId + '">' + data.folderName + '</a></li>');
+
+                    this.addListener(subFolder.find('a'), 'click', function(ev)
+                    {
+                        this.selectSource($(ev.currentTarget));
+                        this.updateElements();
+                    });
+
+                    this._createFolderContextMenu(subFolder.find('a'));
+                    this._addSubfolder(parentFolder, subFolder);
+
+                }
+
+                if (data.error)
+                {
+                    alert(data.error);
+                }
+            }, this));
+        }
+    },
+
+    _deleteFolder: function (targetFolder)
+    {
+        if (confirm(Craft.t('Really delete folder “{folder}”?', {folder: $.trim(targetFolder.text())})))
+        {
+
+            var params = {
+                folderId: this._getFolderIdFromSourceKey(targetFolder.data('key'))
+            }
+
+            this.setIndexBusy();
+
+            Craft.postActionRequest('assets/deleteFolder', params, $.proxy(function(data)
+            {
+                this.setIndexAvailable();
+
+                if (data.success)
+                {
+                    var parentFolder = targetFolder.parent().parent().parent().find('> a');
+
+                    // remove folder and any trace from it's parent, if needed.
+                    targetFolder.parent().remove();
+                    if (parentFolder.siblings('ul').find('li').length == 0)
+                    {
+                        parentFolder.siblings('ul').remove();
+                        parentFolder.siblings('.toggleFolder').remove();
+                        parentFolder.parent().removeClass('expanded');
+                    }
+                }
+
+                if (data.error)
+                {
+                    alert(data.error);
+                }
+
+            }, this));
+        }
+    },
+
+    /**
+     * Prepare a source folder for children folder.
+     *
+     * @param parentFolder
+     * @private
+     */
+    _prepareParentForChildren: function (parentFolder)
+    {
+        if (!this._hasSubfolders(parentFolder))
+        {
+            parentFolder.parent().addClass('expanded').append('<div class="toggle"></div><ul></ul>');
+            this.addListener(parentFolder.siblings('.toggle'), 'click', function(ev)
+            {
+                $(ev.currentTarget).parent().toggleClass('expanded');
+            });
+
+        }
+    },
+
+    /**
+     * Add a subfolder to the parent folder at the correct spot.
+     *
+     * @param parentFolder
+     * @param subFolder
+     * @private
+     */
+    _addSubfolder: function (parentFolder, subFolder)
+    {
+        var existingChildren = parentFolder.siblings('ul').find('li');
+        var folderInserted = false;
+        existingChildren.each(function () {
+            if (!folderInserted && $.trim($(this).text()) > $.trim(subFolder.text()))
+            {
+                $(this).before(subFolder);
+                folderInserted = true;
+            }
+        });
+        if (!folderInserted)
+        {
+            parentFolder.siblings('ul').append(subFolder);
         }
     }
 });
