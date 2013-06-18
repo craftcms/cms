@@ -261,6 +261,17 @@ return array(
 'writableFilePermissions' => 0777,
 
 /**
+ * The file extensions Craft will look for when loading a front-end template,
+ * if the extension was omitted from the template path.
+ */
+'defaultTemplateExtensions' => array('html', 'twig'),
+
+/**
+ * The filenames (sans extensions) Craft will look for to serve as the front-end template directory "indexes".
+ */
+'indexTemplateFilenames' => array('index'),
+
+/**
  * Error Path Keys
  * 'errorPath'      => craft.app.templates.errors.error
  * 'error400Path'   => craft.app.templates.errors.400
