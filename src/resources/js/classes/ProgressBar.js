@@ -74,7 +74,6 @@ Assets.ProgressBar = Garnish.Base.extend({
     updateProgressBar: function ()
     {
         // Only fools would allow accidental division by zero.
-        this._processedItemCount = Math.max(this._processedItemCount, 1);
         this._itemCount = Math.max(this._itemCount, 1);
 
         var width = Math.min(100, Math.round(100 * this._processedItemCount / this._itemCount));
