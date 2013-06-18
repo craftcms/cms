@@ -7,6 +7,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     $uploadButton: null,
     $progressBar: null,
     $folders: null,
+    $previouslySelectedFolder: null,
 
     uploader: null,
     promptHandler: null,
@@ -22,11 +23,16 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     _singleFileMenu: null,
     _multiFileMenu: null,
 
+    fileDrag: null,
+    folderDrag: null,
+    expandDropTargetFolderTimeout: null,
+    tempExpandedFolders: [],
+
 	init: function(elementType, $container, settings)
 	{
 
-        // Piggyback some callbacks
-        settings.onSelectSource = this.addCallback(settings.onSelectSource, $.proxy(this, '_selectSource'));
+        // Piggyback some callbacksF
+        settings.onSelectSource = this.addCallback(settings.onSelectSource, $.proxy(this, '_onSelectSource'));
         settings.onAfterHtmlInit = this.addCallback(settings.onAfterHtmlInit, $.proxy(this, '_initializeComponents'));
         settings.onUpdateElements = this.addCallback(settings.onUpdateElements, $.proxy(this, '_onUpdateElements'));
 
@@ -61,6 +67,238 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             new Garnish.ContextMenu(element, menuOptions, {menuClass: 'menu assets-contextmenu'});
         });
 
+        // ---------------------------------------
+        // File dragging
+        // ---------------------------------------
+        this.fileDrag = new Garnish.DragDrop({
+            activeDropTargetClass: 'sel assets-fm-dragtarget',
+            helperOpacity: 0.5,
+
+            filter: $.proxy(function()
+            {
+                return this.selector.getSelectedItems();
+            }, this),
+
+            helper: $.proxy(function($file)
+            {
+                return this._getDragHelper($file);
+            }, this),
+
+            dropTargets: $.proxy(function()
+            {
+                var targets = [];
+
+                this.$sources.each(function ()
+                {
+                    targets.push($(this));
+                });
+
+                return targets;
+            }, this),
+
+            onDragStart: $.proxy(function()
+            {
+                this.tempExpandedFolders = [];
+
+                this.$previouslySelectedFolder = this.$source.removeClass('sel');
+
+            }, this),
+
+            onDropTargetChange: $.proxy(this, '_onDropTargetChange'),
+
+            onDragStop: $.proxy(this, '_onFileDragStop')
+        });
+    },
+
+    _onFileDragStop: function ()
+    {
+        if (this.fileDrag.$activeDropTarget)
+        {
+            // keep it selected
+            this.fileDrag.$activeDropTarget.addClass('sel');
+
+            var targetFolderId = this._getFolderIdFromSourceKey(this.fileDrag.$activeDropTarget.data('key'));
+            var originalFileIds = [],
+                newFileNames = [];
+
+
+            // For each file, prepare array data.
+            for (var i = 0; i < this.fileDrag.$draggee.length; i++)
+            {
+                var originalFileId = this.fileDrag.$draggee[i].getAttribute('data-id'),
+                    fileName = this.fileDrag.$draggee[i].getAttribute('data-label');
+
+                originalFileIds.push(originalFileId);
+                newFileNames.push(fileName);
+            }
+
+            // are any files actually getting moved?
+            if (originalFileIds.length)
+            {
+                this.setIndexBusy();
+                this.progressBar.resetProgressBar();
+                this.progressBar.setItemCount(originalFileIds.length);
+                this.progressBar.showProgressBar();
+
+
+                // for each file to move a separate request
+                var parameterArray = [];
+                for (i = 0; i < originalFileIds.length; i++)
+                {
+                    parameterArray.push({
+                        fileId: originalFileIds[i],
+                        folderId: targetFolderId,
+                        fileName: newFileNames[i]
+                    });
+                }
+
+                // define the callback for when all file moves are complete
+                var onMoveFinish = $.proxy(function(responseArray)
+                {
+                    this.promptHandler.resetPrompts();
+
+                    // loop trough all the responses
+                    for (var i = 0; i < responseArray.length; i++)
+                    {
+                        var data = responseArray[i];
+
+                        // push prompt into prompt array
+                        if (data.prompt)
+                        {
+                            this.promptHandler.addPrompt(data);
+                        }
+
+                        if (data.error)
+                        {
+                            alert(data.error);
+                        }
+                    }
+
+                    this.setIndexAvailable();
+                    this.progressBar.hideProgressBar();
+
+                    if (this.promptHandler.getPromptCount())
+                    {
+                        // define callback for completing all prompts
+                        var promptCallback = $.proxy(function(returnData)
+                        {
+                            var newParameterArray = [];
+
+                            // loop trough all returned data and prepare a new request array
+                            for (var i = 0; i < returnData.length; i++)
+                            {
+                                if (returnData[i].choice == 'cancel')
+                                {
+                                    continue;
+                                }
+
+                                // find the matching request parameters for this file and modify them slightly
+                                for (var ii = 0; ii < parameterArray.length; ii++)
+                                {
+                                    if (parameterArray[ii].fileName == returnData[i].fileName)
+                                    {
+                                        parameterArray[ii].action = returnData[i].choice;
+                                        newParameterArray.push(parameterArray[ii]);
+                                    }
+                                }
+                            }
+
+                            // nothing to do, carry on
+                            if (newParameterArray.length == 0)
+                            {
+                                this._selectSourceByFolderId(targetFolderId);
+                            }
+                            else
+                            {
+                                // start working
+                                this.setIndexBusy();
+                                this.progressBar.resetProgressBar();
+                                this.progressBar.setItemCount(this.promptHandler.getPromptCount());
+                                this.progressBar.showProgressBar();
+
+                                // move conflicting files again with resolutions now
+                                this._moveFile(newParameterArray, 0, onMoveFinish);
+                            }
+                        }, this);
+
+                        this.fileDrag.fadeOutHelpers();
+                        this.promptHandler.showBatchPrompts(promptCallback);
+                    }
+                    else
+                    {
+                        this.fileDrag.fadeOutHelpers();
+                        this._selectSourceByFolderId(targetFolderId);
+                    }
+                }, this);
+
+                // initiate the file move with the built array, index of 0 and callback to use when done
+                this._moveFile(parameterArray, 0, onMoveFinish);
+
+                // skip returning dragees
+                return;
+            }
+        }
+        else
+        {
+            this._collapseExtraExpandedFolders();
+        }
+
+        // re-select the previously selected folders
+        this.$previouslySelectedFolder.addClass('sel');
+
+        this.fileDrag.returnHelpersToDraggees();
+    },
+
+    /**
+     * Move a file using data from a parameter array.
+     *
+     * @param parameterArray
+     * @param parameterIndex
+     * @param callback
+     * @private
+     */
+    _moveFile: function (parameterArray, parameterIndex, callback)
+    {
+        if (parameterIndex == 0)
+        {
+            this.responseArray = [];
+        }
+
+        Craft.postActionRequest('assets/moveFile', parameterArray[parameterIndex], $.proxy(function(data)
+        {
+            this.progressBar.incrementProcessedItemCount(1);
+            this.progressBar.updateProgressBar();
+
+            this.responseArray.push(data);
+
+            parameterIndex++;
+
+            if (parameterIndex >= parameterArray.length)
+            {
+                callback(this.responseArray);
+            }
+            else
+            {
+                this._moveFile(parameterArray, parameterIndex, callback);
+            }
+        }, this));
+    },
+
+    _selectSourceByFolderId: function (targetFolderId)
+    {
+        var targetSource = this._getSourceByFolderId(targetFolderId);
+
+        // Make sure that all the parent sources are expanded and this source is visible.
+        var parentSources = targetSource.parent().parents('li');
+        parentSources.each(function () {
+            if (!$(this).hasClass('expanded'))
+            {
+                $(this).find('> .toggle').click();
+            }
+        });
+
+        this.selectSource(targetSource);
+        this.updateElements();
     },
 
     /**
@@ -103,9 +341,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
      * @param sourceKey
      * @private
      */
-    _selectSource: function (sourceKey)
+    _onSelectSource: function (sourceKey)
     {
-        this.uploader.setParams({folderId: sourceKey.split(':')[1]});
+        this.uploader.setParams({folderId: this._getFolderIdFromSourceKey(sourceKey)});
+    },
+
+    _getFolderIdFromSourceKey: function (sourceKey)
+    {
+        return sourceKey.split(':')[1];
     },
 
     /**
@@ -190,14 +433,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         }
     },
 
-    setIndexBusy: function () {
-        this.isIndexBusy = true;
-    },
-
-    setIndexAvailable: function () {
-        this.isIndexBusy = false;
-    },
-
     /**
      * Follow up to an upload that triggered at least one conflict resolution prompt.
      *
@@ -263,6 +498,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             $elements = this.$elementContainer.children(':not(.disabled)');
             this._initElementSelect($elements);
             this._attachElementEvents($elements);
+            this._initElementDragger($elements);
         }
 
         // See if we have freshly uploaded files to add to selection
@@ -312,6 +548,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         // Context menus
         this._destroyElementContextMenus();
         this._createElementContextMenus($elements);
+    },
+
+    _initElementDragger: function ($elements)
+    {
+        this.fileDrag.removeAllItems();
+        this.fileDrag.addItems($elements);
     },
 
     _editProperties: function (event)
@@ -447,6 +689,121 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             }, this));
         }
     },
+
+    /**
+     * Collapse Extra Expanded Folders
+     */
+    _collapseExtraExpandedFolders: function(dropTargetFolderId)
+    {
+
+        clearTimeout(this.expandDropTargetFolderTimeout);
+
+        // If a source id is passed in, exclude it's parents
+        if (dropTargetFolderId)
+        {
+            var excluded = this._getSourceByFolderId(dropTargetFolderId).parents('li').find('>a');
+        }
+
+        for (var i = this.tempExpandedFolders.length-1; i >= 0; i--)
+        {
+            var source = this.tempExpandedFolders[i];
+
+            // check the parent list, if a source id is passed in
+            if (! dropTargetFolderId || excluded.filter('[data-key="' + source.data('key') + '"]').length == 0)
+            {
+                this._collapseFolder(source);
+                this.tempExpandedFolders.splice(i, 1);
+            }
+        }
+    },
+
+    _getDragHelper: function ($element)
+    {
+        var currentView = this.getState('view');
+        switch (currentView)
+        {
+            case 'table':
+            {
+                var $container = $('<div class="assets-listview assets-lv-drag" />'),
+                    $table = $('<table cellpadding="0" cellspacing="0" border="0" />').appendTo($container),
+                    $tbody = $('<tbody />').appendTo($table);
+
+                $table.width(this.$table.width());
+                $tbody.append($element);
+
+                return $container;
+            }
+            case 'thumbs':
+            {
+                return $('<ul class="thumbsview assets-tv-drag" />').append($element.removeClass('sel'));
+            }
+        }
+
+        return $();
+    },
+
+    /**
+     * On Drop Target Change
+     */
+    _onDropTargetChange: function($dropTarget)
+    {
+        clearTimeout(this.expandDropTargetFolderTimeout);
+
+        if ($dropTarget)
+        {
+            var folderId = this._getFolderIdFromSourceKey($dropTarget.data('key'));
+
+            if (folderId)
+            {
+                this.dropTargetFolder = this._getSourceByFolderId(folderId);
+
+                if (this._hasSubfolders(this.dropTargetFolder) && ! this._isExpanded(this.dropTargetFolder))
+                {
+                    this.expandDropTargetFolderTimeout = setTimeout($.proxy(this, '_expandFolder'), 500);
+                }
+            }
+            else
+            {
+                this.dropTargetFolder = null;
+            }
+        }
+    },
+
+    _getSourceByFolderId: function (folderId)
+    {
+        return this.$sources.filter('[data-key="folder:' + folderId + '"]');
+    },
+
+    _hasSubfolders: function (source)
+    {
+        return source.siblings('ul').find('li').length;
+    },
+
+    _isExpanded: function (source)
+    {
+        return source.parent('li').hasClass('expanded');
+    },
+
+    _expandFolder: function ()
+    {
+        // collapse any temp-expanded drop targets that aren't parents of this one
+        this._collapseExtraExpandedFolders(this._getFolderIdFromSourceKey(this.dropTargetFolder.data('key')));
+
+        this.dropTargetFolder.parent().find('> .toggle').click();
+
+        // keep a record of that
+        this.tempExpandedFolders.push(this.dropTargetFolder);
+
+    },
+
+    _collapseFolder: function (source)
+    {
+        var li = source.parent();
+        if (li.hasClass('expanded'))
+        {
+            li.find('> .toggle').click();
+        }
+    }
 });
 
 // Register it!

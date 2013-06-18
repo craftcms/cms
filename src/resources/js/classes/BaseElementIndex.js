@@ -451,6 +451,16 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             }
             newCallback.apply(this, arguments);
         }, this);
+    },
+
+    setIndexBusy: function () {
+        this.$mainSpinner.removeClass('hidden');
+        this.isIndexBusy = true;
+    },
+
+    setIndexAvailable: function () {
+        this.$mainSpinner.addClass('hidden');
+        this.isIndexBusy = false;
     }
 },
 {
