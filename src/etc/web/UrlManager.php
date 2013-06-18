@@ -72,17 +72,17 @@ class UrlManager extends \CUrlManager
 		if ($this->_isPublicTemplatePath())
 		{
 			// Default to that, then
-			$this->_processRoute($path);
+			$this->_setRoute($path);
 		}
 
 		// If this is a site request, see if there's an element assigned to this URI
 		if (Craft::isInstalled() && $request->isSiteRequest())
 		{
-			$this->_processRoute($this->_getMatchedElementRoute($path));
+			$this->_setRoute($this->_getMatchedElementRoute($path));
 		}
 
 		// Finally see if there's a URL route that matches
-		$this->_processRoute($this->_getMatchedUrlRoute($path));
+		$this->_setRoute($this->_getMatchedUrlRoute($path));
 
 		// Did we come up with something?
 		if ($this->_routeAction)
@@ -102,12 +102,12 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * Processes a route source's response.
+	 * Sets the route.
 	 *
 	 * @access private
-	 * @param $route
+	 * @param mixed $route
 	 */
-	private function _processRoute($route)
+	private function _setRoute($route)
 	{
 		if ($route !== false)
 		{
