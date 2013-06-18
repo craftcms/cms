@@ -32,8 +32,7 @@ RedactorPlugins.pagebreak = {
 		var $p = $('<p><br/></p>').insertAfter($pagebreakNode);
 
 		this.$editor.focus();
-		this.syncCode();
+		this.sync();
 		this.setSelection($p[0], 0, $p[0], 0);
-
 	}
 };
