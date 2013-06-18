@@ -59,12 +59,8 @@ class ElementsService extends BaseApplicationComponent
 			}
 			else
 			{
-				/* HIDE */
-				// Todo: We can improve SQL performance by selecting the specific columns.
-				// Problem is that we don't know exactly what they are.
-				// Probably have to parse the 'SELECT' clause.
-				$query->select('r.id, r.type, r.expiryDate, r.enabled, r.archived, r.dateCreated, r.dateUpdated, r.locale, r.title, r.uri, r.sectionId, r.slug');
-				/* end HIDE */
+				// Tests are showing that listing out all of the columns here is actually slower
+				// than just doing SELECT * -- probably due to the large number of columns we need to select.
 				$query->select('*');
 			}
 
