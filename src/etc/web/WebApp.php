@@ -134,6 +134,9 @@ class WebApp extends \CWebApplication
 			throw new HttpException(503);
 		}
 
+		// Set the target language
+		$this->setLanguage($this->_getTargetLanguage());
+
 		// If the track has changed, put the brakes on the request.
 		if (!$this->updates->isTrackValid())
 		{
@@ -209,9 +212,6 @@ class WebApp extends \CWebApplication
 			($this->request->isCpRequest()) && $this->userSession->checkPermission('accessCpWhenSystemIsOff')
 		)
 		{
-			// Set the target language
-			$this->setLanguage($this->_getTargetLanguage());
-
 			// Set the package components
 			$this->_setPackageComponents();
 
