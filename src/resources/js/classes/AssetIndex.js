@@ -839,8 +839,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                         this.updateElements();
                     });
 
-                    this._createFolderContextMenu(subFolder.find('a'));
                     this._addSubfolder(parentFolder, subFolder);
+                    this._createFolderContextMenu(subFolder.find('a'));
 
                 }
 
@@ -916,6 +916,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
      * @param subFolder
      * @private
      */
+
     _addSubfolder: function (parentFolder, subFolder)
     {
         var existingChildren = parentFolder.siblings('ul').find('li');
