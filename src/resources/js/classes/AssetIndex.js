@@ -891,6 +891,40 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     },
 
     /**
+     * Rename
+     */
+    _renameFolder: function(targetFolder)
+    {
+        var oldName = $.trim(targetFolder.text()),
+            newName = prompt(Craft.t('Rename folder'), oldName);
+
+        if (newName && newName != oldName)
+        {
+            var params = {
+                folderId: this._getFolderIdFromSourceKey(targetFolder.data('key')),
+                newName: newName
+            };
+
+            this.setIndexBusy();
+
+            Craft.postActionRequest('assets/renameFolder', params, $.proxy(function(data)
+            {
+                this.setIndexAvailable();
+
+                if (data.success)
+                {
+                    targetFolder.text(data.newName);
+                }
+
+                if (data.error)
+                {
+                    alert(data.error);
+                }
+            }, this), 'json');
+        }
+    },
+
+    /**
      * Prepare a source folder for children folder.
      *
      * @param parentFolder
