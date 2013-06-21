@@ -19,7 +19,17 @@ class UpdateController extends BaseController
 	{
 		craft()->userSession->requirePermission('performUpdates');
 
-		$updates = craft()->updates->getUpdates(true);
+		try
+		{
+			$updates = craft()->updates->getUpdates(true);
+		}
+		catch (EtException $e)
+		{
+			if ($e->getCode() == 10001)
+			{
+				$this->returnErrorJson($e->getMessage());
+			}
+		}
 
 		if ($updates)
 		{
