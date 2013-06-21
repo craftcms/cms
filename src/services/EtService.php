@@ -233,14 +233,6 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the path to the license key file.
-	 */
-	public function getLicenseKeyPath()
-	{
-		return craft()->path->getConfigPath().'license.key';
-	}
-
-	/**
 	 * Returns the license key status, or false if it's unknown.
 	 *
 	 * @return string|false
