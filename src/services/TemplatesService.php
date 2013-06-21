@@ -11,6 +11,9 @@ class TemplatesService extends BaseApplicationComponent
 	private $_templatePaths;
 	private $_objectTemplates;
 
+	private $_defaultTemplateExtensions;
+	private $_indexTemplateFilenames;
+
 	private $_headNodes = array();
 	private $_footNodes = array();
 	private $_cssFiles = array();
@@ -551,7 +554,34 @@ class TemplatesService extends BaseApplicationComponent
 		}
 		else
 		{
-			$testPaths = array($path.'.html', $path.'/index.html');
+			if (!isset($this->_defaultTemplateExtensions))
+			{
+				if (craft()->request->isCpRequest())
+				{
+					$this->_defaultTemplateExtensions = array('html', 'twig');
+					$this->_indexTemplateFilenames = array('index');
+				}
+				else
+				{
+					$this->_defaultTemplateExtensions = craft()->config->get('defaultTemplateExtensions');
+					$this->_indexTemplateFilenames = craft()->config->get('indexTemplateFilenames');
+				}
+			}
+
+			$testPaths = array();
+
+			foreach ($this->_defaultTemplateExtensions as $extension)
+			{
+				$testPaths[] = $path.'.'.$extension;
+			}
+
+			foreach ($this->_indexTemplateFilenames as $filename)
+			{
+				foreach ($this->_defaultTemplateExtensions as $extension)
+				{
+					$testPaths[] = $path.'/'.$filename.'.'.$extension;
+				}
+			}
 		}
 
 		foreach ($testPaths as $path)

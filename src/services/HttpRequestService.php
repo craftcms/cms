@@ -194,13 +194,7 @@ class HttpRequestService extends \CHttpRequest
 	{
 		if (!$this->_mimeType)
 		{
-			$extension = pathinfo($this->getPath(), PATHINFO_EXTENSION);
-
-			if (!$extension)
-			{
-				$extension = 'html';
-			}
-
+			$extension = IOHelper::getExtension($this->getPath(), 'html');
 			$this->_mimeType = IOHelper::getMimeTypeByExtension('.'.$extension);
 		}
 

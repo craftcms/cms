@@ -57,17 +57,17 @@ abstract class BaseController extends \CController
 			}
 			else
 			{
-				// In case someone does a domain.com/invalidpath.css
-				if ($template == '404')
+				// Get the template file's MIME type
+				$templateFile = craft()->templates->findTemplate($template);
+				$extension = IOHelper::getExtension($templateFile, 'html');
+				$mimeType = IOHelper::getMimeTypeByExtension('.'.$extension);
+
+				if (!$mimeType)
 				{
 					$mimeType = 'text/html';
 				}
-				else
-				{
-					// Set the Content-Type header
-					$mimeType = craft()->request->getMimeType();
-					header('Content-Type: '.$mimeType.'; charset=utf-8');
-				}
+
+				header('Content-Type: '.$mimeType.'; charset=utf-8');
 
 				if ($mimeType == 'text/html')
 				{
