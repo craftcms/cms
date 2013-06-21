@@ -29,7 +29,7 @@ class RelationFieldData extends \ArrayObject
 
 		foreach ($this->all as $element)
 		{
-			if ($element->status == 'enabled' || $element->status == 'live')
+			if ($element->getStatus() == 'enabled' || $element->getStatus() == 'live')
 			{
 				$enabledElements[] = $element;
 			}

@@ -200,7 +200,7 @@ class Et
 	 */
 	private function _getLicenseKey()
 	{
-		$licenseKeyPath = craft()->et->getLicenseKeyPath();
+		$licenseKeyPath = craft()->path->getLicenseKeyPath();
 
 		if (($keyFile = IOHelper::fileExists($licenseKeyPath)) !== false)
 		{
@@ -218,18 +218,24 @@ class Et
 	private function _setLicenseKey($key)
 	{
 		// Make sure the key file does not exist first. Et will never overwrite a license key.
-		if (($keyFile = IOHelper::fileExists(craft()->path->getConfigPath().'license.key')) == false)
+		if (($keyFile = IOHelper::fileExists(craft()->path->getLicenseKeyPath())) == false)
 		{
-			$keyFile = craft()->path->getConfigPath().'license.key';
-			preg_match_all("/.{50}/", $key, $matches);
+			$keyFile = craft()->path->getLicenseKeyPath();
 
-			$formattedKey = '';
-			foreach ($matches[0] as $segment)
+			if (IOHelper::isWritable(IOHelper::getFolderName($keyFile)))
 			{
-				$formattedKey .= $segment.PHP_EOL;
+				preg_match_all("/.{50}/", $key, $matches);
+
+				$formattedKey = '';
+				foreach ($matches[0] as $segment)
+				{
+					$formattedKey .= $segment.PHP_EOL;
+				}
+
+				return IOHelper::writeToFile($keyFile, $formattedKey);
 			}
 
-			return IOHelper::writeToFile($keyFile, $formattedKey);
+			throw new Exception(Craft::t('Craft needs to be able to write to your “craft/config” folder and it can’t.'));
 		}
 
 		throw new Exception(Craft::t('Cannot overwrite an existing license.key file.'));
