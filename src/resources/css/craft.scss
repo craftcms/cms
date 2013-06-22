@@ -593,7 +593,7 @@ ul.tree,
 .hud .tip-bottom { bottom: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_bottom.png); }
 
 .modal > .header,
-.modal > .footer { padding: 15px 30px; }
+.modal > .footer { position: relative; padding: 15px 30px; }
 .modal > .body { padding: 30px; }
 .modal > .body:after { @include clearafter; }
 .modal > .header {
@@ -602,8 +602,8 @@ ul.tree,
 }
 .modal > .header h1 { margin: 0; }
 .modal > .footer {
-    -webkit-box-shadow: 0 -1px 2px rgba(0,0,0,0.1);
-            box-shadow: 0 -1px 2px rgba(0,0,0,0.1);
+    -webkit-box-shadow: 0 -1px 0 0 rgba(0,0,0,0.1);
+            box-shadow: 0 -1px 0 0 rgba(0,0,0,0.1);
 }
 .modal > .footer:after { @include clearafter; }
 
