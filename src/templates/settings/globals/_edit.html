@@ -5,7 +5,7 @@
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
 		<input type="hidden" name="action" value="globals/saveSet">
-		<input type="hidden" name="redirect" value="settings/globals/{id}">
+		<input type="hidden" name="redirect" value="settings/globals">
 		{% if globalSet.id %}<input type="hidden" name="setId" value="{{ globalSet.id }}">{% endif %}
 
 		<div id="set-settings">
