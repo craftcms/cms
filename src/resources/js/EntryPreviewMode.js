@@ -10,6 +10,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 	$editor: null,
 	$iframeContainer: null,
 	$iframe: null,
+	$fieldPlaceholder: null,
 
 	postUrl: null,
 	basePostData: null,
@@ -34,6 +35,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		this.$form = $('#entry-form');
 		this.$btn = $('#previewmode-btn');
 		this.$spinner = $('#previewmode-spinner');
+		this.$fieldPlaceholder = $('<div/>');
 
 		this.basePostData = {
 			action: 'entries/previewEntry'
@@ -84,14 +86,16 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		this.fields = [];
 		var $fields = this.$form.children('.field').add(this.$form.children(':not(#entry-settings)').children('.field'));
 
-		// For who knows what reason, radio buttons seem to lose their selections when moved.
-		var $radios = this.findCheckedRadios($fields);
-
 		for (var i= 0; i < $fields.length; i++)
 		{
 			var $field = $($fields[i]),
-				$clone = $field.clone().insertAfter($field);
+				$clone = $field.clone();
 
+			// It's important that the actual field is added to the DOM *after* the clone,
+			// so any radio buttons in the field get deselected from the clone rather than the actual field.
+			this.$fieldPlaceholder.insertAfter($field);
+			$field.detach();
+			this.$fieldPlaceholder.replaceWith($clone);
 			$field.appendTo(this.$editor);
 
 			this.fields.push({
@@ -169,7 +173,13 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		for (var i = 0; i < this.fields.length; i++)
 		{
 			var field = this.fields[i];
-			field.$newClone = field.$field.clone().insertAfter(field.$field);
+			field.$newClone = field.$field.clone();
+
+			// It's important that the actual field is added to the DOM *after* the clone,
+			// so any radio buttons in the field get deselected from the clone rather than the actual field.
+			this.$fieldPlaceholder.insertAfter(field.$field);
+			field.$field.detach();
+			this.$fieldPlaceholder.replaceWith(field.$newClone);
 			field.$clone.replaceWith(field.$field);
 		}
 
@@ -262,7 +272,6 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 	{
 		$radios.prop('checked', true);
 	}
-
 },
 {
 	formWidth: 400
