@@ -50,3 +50,11 @@
 		</div>
 	</form>
 {% endset %}
+
+
+{% if not globalSet.handle %}
+	{% set js %}
+		new Craft.HandleGenerator('#name', '#handle');
+	{% endset %}
+	{% includeJs js %}
+{% endif %}
