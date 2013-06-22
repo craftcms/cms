@@ -83,6 +83,10 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		// so any JS that's referencing the elements won't break.
 		this.fields = [];
 		var $fields = this.$form.children('.field').add(this.$form.children(':not(#entry-settings)').children('.field'));
+
+		// For who knows what reason, radio buttons seem to lose their selections when moved.
+		var $radios = this.findCheckedRadios($fields);
+
 		for (var i= 0; i < $fields.length; i++)
 		{
 			var $field = $($fields[i]),
@@ -95,6 +99,8 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 				$clone: $clone
 			});
 		}
+
+		this.checkRadios($radios);
 
 		if (this.updateIframe())
 		{
@@ -157,12 +163,17 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			clearInterval(this.updateIframeInterval);
 		}
 
+		// For who knows what reason, radio buttons seem to lose their selections when moved.
+		var $radios = this.findCheckedRadios(this.$editor);
+
 		for (var i = 0; i < this.fields.length; i++)
 		{
 			var field = this.fields[i];
 			field.$newClone = field.$field.clone().insertAfter(field.$field);
 			field.$clone.replaceWith(field.$field);
 		}
+
+		this.checkRadios($radios);
 
 		var windowWidth = Garnish.$win.width();
 
@@ -240,6 +251,16 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		{
 			return false;
 		}
+	},
+
+	findCheckedRadios: function($container)
+	{
+		return $container.find('input[type=radio]:checked');
+	},
+
+	checkRadios: function($radios)
+	{
+		$radios.prop('checked', true);
 	}
 
 },
