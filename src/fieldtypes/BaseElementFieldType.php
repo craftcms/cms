@@ -113,6 +113,13 @@ abstract class BaseElementFieldType extends BaseFieldType
 			$elements = new RelationFieldData();
 		}
 
+		$criteria = array('status' => null);
+
+		if (!empty($this->element->id))
+		{
+			$criteria['id'] = 'not '.$this->element->id;
+		}
+
 		return craft()->templates->render('_includes/forms/elementSelect', array(
 			'jsClass'     => $this->inputJsClass,
 			'elementType' => new ElementTypeVariable($this->_getElementType()),
@@ -120,6 +127,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			'name'        => $name,
 			'elements'    => $elements->all,
 			'sources'     => $this->getSettings()->sources,
+			'criteria'    => $criteria,
 			'limit'       => $this->getSettings()->limit,
 		));
 	}
