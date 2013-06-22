@@ -45,7 +45,7 @@ class CpHelper
 			if ($licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
 			{
 				$licensedDomain = craft()->et->getLicensedDomain();
-				$licenseKeyPath = craft()->et->getLicenseKeyPath();
+				$licenseKeyPath = craft()->path->getLicenseKeyPath();
 				$licenseKeyFile = IOHelper::getFolderName($licenseKeyPath, false).'/'.IOHelper::getFileName($licenseKeyPath);
 
 				$message = Craft::t('The license located at {file} belongs to {domain}.', array(

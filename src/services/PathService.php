@@ -310,4 +310,12 @@ class PathService extends BaseApplicationComponent
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
+
+	/**
+	 * Returns the path to the license key file.
+	 */
+	public function getLicenseKeyPath()
+	{
+		return $this->getConfigPath().'license.key';
+	}
 }

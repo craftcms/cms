@@ -2,10 +2,10 @@
     <div class="image-chooser" style="margin-left: {{ round((500-width)/2) }}px">
         <img src="{{ imageUrl }}" width="{{ width }}" height="{{ height }}" data-factor="{{ factor }}">
     </div>
-    <footer class="footer">
-        <ul class="right">
-            <li><input type="button" class="btn cancel" value="{{ "Cancel"|t }}"></li>
-            <li><input type="submit" class="btn submit" value="{{ "Save"|t }}"></li>
-        </ul>
-    </footer>
 </div>
+<footer class="footer">
+    <ul class="right buttons">
+        <li><input type="button" class="btn cancel" value="{{ "Cancel"|t }}"></li>
+        <li><input type="submit" class="btn submit" value="{{ "Save"|t }}"></li>
+    </ul>
+</footer>

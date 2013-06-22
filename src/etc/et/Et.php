@@ -108,6 +108,7 @@ class Et
 	}
 
 	/**
+	 * @throws EtException|\Exception
 	 * @return EtModel|null
 	 */
 	public function phoneHome()
@@ -115,6 +116,12 @@ class Et
 		try
 		{
 			$missingLicenseKey = empty($this->_model->licenseKey);
+
+			// No craft/config/license.key file and we can't even write to the config folder.  Don't even make the call home.
+			if ($missingLicenseKey && !$this->_isConfigFolderWritable())
+			{
+				throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
+			}
 
 			$data = JsonHelper::encode($this->_model->getAttributes(null, true));
 			$response = \Requests::post($this->_endpoint, array(), $data, $this->_options);
@@ -187,6 +194,12 @@ class Et
 				Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, LogLevel::Warning);
 			}
 		}
+		// Let's log and rethrow any EtExceptions.
+		catch (EtException $e)
+		{
+			Craft::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), LogLevel::Error);
+			throw $e;
+		}
 		catch (\Exception $e)
 		{
 			Craft::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), LogLevel::Error);
@@ -200,7 +213,7 @@ class Et
 	 */
 	private function _getLicenseKey()
 	{
-		$licenseKeyPath = craft()->et->getLicenseKeyPath();
+		$licenseKeyPath = craft()->path->getLicenseKeyPath();
 
 		if (($keyFile = IOHelper::fileExists($licenseKeyPath)) !== false)
 		{
@@ -213,25 +226,39 @@ class Et
 	/**
 	 * @param $key
 	 * @return bool
-	 * @throws Exception
+	 * @throws Exception|EtException
 	 */
 	private function _setLicenseKey($key)
 	{
 		// Make sure the key file does not exist first. Et will never overwrite a license key.
-		if (($keyFile = IOHelper::fileExists(craft()->path->getConfigPath().'license.key')) == false)
+		if (($keyFile = IOHelper::fileExists(craft()->path->getLicenseKeyPath())) == false)
 		{
-			$keyFile = craft()->path->getConfigPath().'license.key';
-			preg_match_all("/.{50}/", $key, $matches);
+			$keyFile = craft()->path->getLicenseKeyPath();
 
-			$formattedKey = '';
-			foreach ($matches[0] as $segment)
+			if ($this->_isConfigFolderWritable())
 			{
-				$formattedKey .= $segment.PHP_EOL;
+				preg_match_all("/.{50}/", $key, $matches);
+
+				$formattedKey = '';
+				foreach ($matches[0] as $segment)
+				{
+					$formattedKey .= $segment.PHP_EOL;
+				}
+
+				return IOHelper::writeToFile($keyFile, $formattedKey);
 			}
 
-			return IOHelper::writeToFile($keyFile, $formattedKey);
+			throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
 		}
 
 		throw new Exception(Craft::t('Cannot overwrite an existing license.key file.'));
+	}
+
+	/**
+	 * @return bool
+	 */
+	private function _isConfigFolderWritable()
+	{
+	 return IOHelper::isWritable(IOHelper::getFolderName(craft()->path->getLicenseKeyPath()));
 	}
 }

@@ -53,16 +53,16 @@ if (!is_dir($runtimePath))
 	umask($oldumask);
 }
 
-// Check early if storage/runtime is a valid folder and writable.
+// Check early if storage/runtime is a valid folder and writable. !@file_exists('/.') is a workaround for the terrible is_executable().
 if (($runtimePath = realpath(CRAFT_STORAGE_PATH.'runtime/')) === false || !is_dir($runtimePath) || !is_writable($runtimePath) || !@file_exists($runtimePath.'/.'))
 {
 	exit('@@@appName@@@ runtime path "'.($runtimePath === false ? CRAFT_STORAGE_PATH.'runtime/' : $runtimePath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
 }
 
-// Check early if config is a valid folder and writable.
-if (($siteConfigPath = realpath(CRAFT_CONFIG_PATH)) === false || !is_dir($siteConfigPath) || !is_writable($siteConfigPath) || !@file_exists($siteConfigPath.'/.'))
+// Check early if config is a valid folder and writable. !@file_exists('/.') is a workaround for the terrible is_executable().
+if (($siteConfigPath = realpath(CRAFT_CONFIG_PATH)) === false || !is_dir($siteConfigPath) || !@file_exists($siteConfigPath.'/.'))
 {
-	exit('@@@appName@@@ config path "'.($siteConfigPath === false ? CRAFT_CONFIG_PATH : $siteConfigPath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
+	exit('@@@appName@@@ config path "'.($siteConfigPath === false ? CRAFT_CONFIG_PATH : $siteConfigPath).'" isn&rsquo;t valid. Please make sure the folder exists and is readable by your web server process.');
 }
 
 $userConfig = require_once CRAFT_CONFIG_PATH.'general.php';

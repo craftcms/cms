@@ -32,16 +32,16 @@ namespace Craft;
  	/**
  	 * Returns a specific page.
  	 *
- 	 * @param int $page
+ 	 * @param int $pageNumber
  	 * @return string|null
  	 */
- 	public function getPage($page)
+ 	public function getPage($pageNumber)
  	{
  		$pages = $this->getPages();
 
- 		if (isset($pages[$page-1]))
+ 		if (isset($pages[$pageNumber - 1]))
  		{
- 			return $pages[$page-1];
+ 			return $pages[$pageNumber - 1];
  		}
  	}
 
