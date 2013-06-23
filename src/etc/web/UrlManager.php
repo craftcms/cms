@@ -106,14 +106,21 @@ class UrlManager extends \CUrlManager
 	/**
 	 * Returns the element that was matched by the URI.
 	 *
-	 * @return BaseElementModel|null
+	 * @return BaseElementModel|false
 	 */
 	public function getMatchedElement()
 	{
 		if (!isset($this->_matchedElement))
 		{
-			$path = craft()->request->getPath();
-			$this->_getMatchedElementRoute($path);
+			if (craft()->request->isSiteRequest())
+			{
+				$path = craft()->request->getPath();
+				$this->_getMatchedElementRoute($path);
+			}
+			else
+			{
+				$this->_matchedElement = false;
+			}
 		}
 
 		return $this->_matchedElement;
