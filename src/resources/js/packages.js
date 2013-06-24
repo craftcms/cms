@@ -412,7 +412,7 @@ Craft.PackageChooser = Garnish.Base.extend({
 	{
 		var pkg = ev.data.pkg;
 
-		if (confirm(Craft.t('Start your 30-day {package} trial?', { 'package': this.packages[pkg].name })))
+		if (confirm(Craft.t('Start your 14-day {package} trial?', { 'package': this.packages[pkg].name })))
 		{
 			var data = {
 				'package': pkg
