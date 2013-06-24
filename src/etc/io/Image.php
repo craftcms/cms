@@ -146,10 +146,10 @@ class Image
 	/**
 	 * Scale and crop image to exactly fit the specified size.
 	 *
-	 * @param $width
-	 * @param $height
-	 * @param bool $scaleIfSmaller
-	 * @param string $cropPosition
+	 * @param        $width
+	 * @param        $height
+	 * @param bool   $scaleIfSmaller
+	 * @param string $cropPositions
 	 * @return Image
 	 */
 	public function scaleAndCrop($width, $height = null, $scaleIfSmaller = true, $cropPositions = 'center-center')
@@ -247,6 +247,82 @@ class Image
 	}
 
 	/**
+	 * Saves the image to the target path.
+	 *
+	 * @param      $targetPath
+	 * @param bool $sanitizeAndAutoQuality
+	 * @return bool
+	 */
+	public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
+	{
+		$extension = IOHelper::getExtension($targetPath);
+
+		// Just in case no image operation was run, we try to preserve transparency here as well.
+		$this->_image = $this->_preserveTransparency($this->_image);
+
+		$result = false;
+
+		switch ($extension)
+		{
+			case 'jpeg':
+			case 'jpg':
+			{
+				if ($sanitizeAndAutoQuality)
+				{
+					clearstatcache();
+					$originalSize = IOHelper::getFileSize($targetPath);
+					$result = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
+				}
+				else
+				{
+					$this->_generateImage($extension, $targetPath, 75);
+				}
+
+				break;
+			}
+
+			case 'gif':
+			{
+				$result = imagegif($this->_image, $targetPath);
+				break;
+			}
+
+			case 'png':
+			{
+				$this->_generateImage($extension, $targetPath, 9);
+				break;
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Calculate missing dimension.
+	 *
+	 * @param $width
+	 * @param $height
+	 * @param $sourceWidth
+	 * @param $sourceHeight
+	 * @return array Array of the width and height.
+	 */
+	public static function calculateMissingDimension($width, $height, $sourceWidth, $sourceHeight)
+	{
+		$factor = $sourceWidth / $sourceHeight;
+
+		if (empty($height))
+		{
+			$height = round($width / $factor);
+		}
+		else if (empty($width))
+		{
+			$width = round($height * $factor);
+		}
+
+		return array($width, $height);
+	}
+
+	/**
 	 * Perform the actual resize.
 	 *
 	 * @param $width
@@ -262,44 +338,24 @@ class Image
 	}
 
 	/**
-	 * Saves the image to the target path.
+	 * Format dimensions.
 	 *
-	 * @param $targetPath
-	 * @return bool
+	 * @param $width
+	 * @param $height
+	 * @throws Exception
 	 */
-	public function saveAs($targetPath)
+	private function _formatDimensions(&$width, &$height = null)
 	{
-
-		$extension = IOHelper::getExtension($targetPath);
-
-		// Just in case no image operation was run, we try to preserve transparency here as well.
-		$this->_image = $this->_preserveTransparency($this->_image);
-
-		$result = false;
-
-		switch ($extension)
+		if (preg_match('/^(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)/', $width, $matches))
 		{
-			case 'jpeg':
-			case 'jpg':
-			{
-				$result = imagejpeg($this->_image, $targetPath, 100);
-				break;
-			}
-
-			case 'gif':
-			{
-				$result = imagegif($this->_image, $targetPath);
-				break;
-			}
-
-			case 'png':
-			{
-				$result = imagepng($this->_image, $targetPath, 5);
-				break;
-			}
+			$width  = $matches['width']  != 'AUTO' ? $matches['width']  : null;
+			$height = $matches['height'] != 'AUTO' ? $matches['height'] : null;
 		}
 
-		return $result;
+		if (!$height || !$width)
+		{
+			list($width, $height) = static::calculateMissingDimension($width, $height, imagesx($this->_image), imagesy($this->_image));
+		}
 	}
 
 	/**
@@ -355,48 +411,73 @@ class Image
 	}
 
 	/**
-	 * Format dimensions.
 	 *
-	 * @param $width
-	 * @param $height
-	 * @throws Exception
 	 */
-	private function _formatDimensions(&$width, &$height = null)
+	private function _autoGuessImageQuality($targetPath, $originalSize, $extension, $minQuality, $maxQuality, $step = 0)
 	{
-		if (preg_match('/^(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)/', $width, $matches))
+		$tempFileName = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'-temp.'.$extension;
+
+		// Find our target quality by splitting the min and max qualities
+		$midQuality = (int)ceil($minQuality + (($maxQuality - $minQuality) / 2));
+
+		// Set the min and max acceptable ranges. .10 means anything between 90% and 110% of the original file size is acceptable.
+		$acceptableRange = .10;
+
+		// Generate a new temp image and get it's file size.
+		$this->_generateImage($extension, $tempFileName, $midQuality);
+		$newFileSize = IOHelper::getFileSize($tempFileName);
+
+		// If we're on step 10 or we're within our acceptable range threshold, let's use the current image.
+		if ($step == 10 || abs(1 - $originalSize / $newFileSize) < $acceptableRange)
 		{
-			$width  = $matches['width']  != 'AUTO' ? $matches['width']  : null;
-			$height = $matches['height'] != 'AUTO' ? $matches['height'] : null;
+			// Generate one last time.
+			return $this->_generateImage($extension, $targetPath, $midQuality);
 		}
 
-		if (!$height || !$width)
+		$step++;
+
+		// Too little.
+		if ($newFileSize > $originalSize)
 		{
-			list($width, $height) = static::calculateMissingDimension($width, $height, imagesx($this->_image), imagesy($this->_image));
+			return $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, $minQuality, $midQuality, $step);
+		}
+		// Too much.
+		else
+		{
+			return $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, $midQuality, $maxQuality, $step);
 		}
 	}
 
 	/**
-	 * Calculate missing dimension.
-	 *
-	 * @param $width
-	 * @param $height
-	 * @param $sourceWidth
-	 * @param $sourceHeight
-	 * @return array Array of the width and height.
+	 * @param $extension
+	 * @param $targetPath
+	 * @param $targetQuality
+	 * @return bool
 	 */
-	public static function calculateMissingDimension($width, $height, $sourceWidth, $sourceHeight)
+	private function _generateImage($extension, $targetPath, $targetQuality)
 	{
-		$factor = $sourceWidth / $sourceHeight;
-
-		if (empty($height))
+		switch ($extension)
 		{
-			$height = round($width / $factor);
-		}
-		else if (empty($width))
-		{
-			$width = round($height * $factor);
+			case 'jpeg':
+			case 'jpg':
+			{
+				$result = imagejpeg($this->_image, $targetPath, $targetQuality);
+				break;
+			}
+
+			case 'gif':
+			{
+				$result = imagegif($this->_image, $targetPath);
+				break;
+			}
+
+			case 'png':
+			{
+				$result = imagepng($this->_image, $targetPath, $targetQuality);
+				break;
+			}
 		}
 
-		return array($width, $height);
+		return $result;
 	}
 }
