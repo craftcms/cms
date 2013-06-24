@@ -376,7 +376,13 @@ class DateTime extends \DateTime
 				if ($interval->s) $spec .= $interval->s.'S';
 			}
 
-			return new DateInterval($spec);
+			$newInterval = new DateInterval($spec);
+			$newInterval->invert = $interval->invert;
+
+			// Apparently 'days' is a read-only property. Oh well.
+			//$newInterval->days = $interval->days;
+
+			return $newInterval;
 		}
 		else
 		{
