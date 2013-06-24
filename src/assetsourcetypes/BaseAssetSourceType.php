@@ -264,7 +264,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$uploader->file->save($filePath);
 
 		// We hate Javascript and PHP in our image files.
-		if (IOHelper::getFileKind(pathinfo($filePath, PATHINFO_EXTENSION)) == 'image')
+		if (IOHelper::getFileKind(IOHelper::getExtension($filePath)) == 'image')
 		{
 			craft()->images->cleanImage($filePath);
 		}
