@@ -440,7 +440,7 @@ Craft.PackageChooser = Garnish.Base.extend({
 				// Mark it as in trial
 				this.packages[pkg].trial = true;
 				this.packages[pkg].eligibleForTrial = false;
-				this.packages[pkg].daysLeftInTrial = 30;
+				this.packages[pkg].daysLeftInTrial = 14;
 
 				this.createButtons(pkg);
 			}, this));
