@@ -412,7 +412,7 @@ Craft.PackageChooser = Garnish.Base.extend({
 	{
 		var pkg = ev.data.pkg;
 
-		if (confirm(Craft.t('Start your 30-day {package} trial?', { 'package': this.packages[pkg].name })))
+		if (confirm(Craft.t('Start your 14-day {package} trial?', { 'package': this.packages[pkg].name })))
 		{
 			var data = {
 				'package': pkg
@@ -440,7 +440,7 @@ Craft.PackageChooser = Garnish.Base.extend({
 				// Mark it as in trial
 				this.packages[pkg].trial = true;
 				this.packages[pkg].eligibleForTrial = false;
-				this.packages[pkg].daysLeftInTrial = 30;
+				this.packages[pkg].daysLeftInTrial = 14;
 
 				this.createButtons(pkg);
 			}, this));

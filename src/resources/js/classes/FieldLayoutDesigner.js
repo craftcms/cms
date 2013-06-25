@@ -582,7 +582,7 @@ Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
 				$hiddenFields = $fields.filter('.hidden').remove();
 
 			$fields = $fields.not($hiddenFields);
-			$fields.append('<a class="settings icon" title="'+Craft.t('Edit')+'"></a>');
+			$fields.prepend('<a class="settings icon" title="'+Craft.t('Edit')+'"></a>');
 
 			for (var i = 0; i < $fields.length; i++)
 			{
@@ -659,7 +659,7 @@ Craft.FieldLayoutDesigner.FieldDrag = Craft.FieldLayoutDesigner.BaseDrag.extend(
 		{
 			// Create a new field based on that one
 			var $field = this.$draggee.clone().removeClass('unused');
-			$field.append('<a class="settings icon" title="'+Craft.t('Edit')+'"></a>');
+			$field.prepend('<a class="settings icon" title="'+Craft.t('Edit')+'"></a>');
 			this.designer.initField($field);
 
 			// Hide the unused field
