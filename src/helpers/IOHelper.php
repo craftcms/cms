@@ -1424,7 +1424,7 @@ class IOHelper
 	public static function cleanFilename($fileName)
 	{
 		$fileName = StringHelper::asciiString(ltrim($fileName, '.'));
-		return preg_replace('/[^a-z0-9\-_\.]/i', '_', str_replace(chr(0), '', $fileName));
+		return preg_replace('/[^@a-z0-9\-_\.]/i', '_', str_replace(chr(0), '', $fileName));
 	}
 
 	/**
