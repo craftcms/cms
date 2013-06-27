@@ -114,7 +114,8 @@ class RichTextFieldType extends BaseFieldType
 			$configPath = craft()->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
 			$config = IOHelper::getFileContents($configPath);
 		}
-		else
+
+		if (empty($config))
 		{
 			$config = '{}';
 		}
