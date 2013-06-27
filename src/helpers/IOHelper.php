@@ -1377,6 +1377,7 @@ class IOHelper
 			'pdf'         => array('pdf'),
 			'photoshop'   => array('psd','psb'),
 			'php'         => array('php'),
+			'powerpoint'  => array('ppt', 'pptx'),
 			'text'        => array('txt','text'),
 			'video'       => array('mov','m4v','wmv','avi','flv','mp4','ogg','ogv','rm'),
 			'word'        => array('doc','docx')
