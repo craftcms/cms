@@ -105,7 +105,7 @@ html, body,
 #main.has-sidebar { padding-left: 230px; }
 #main.has-sidebar:after { @include clearafter; }
 
-.sidebar { float: left; margin-left: -200px; width: 170px; }
+.sidebar { position: absolute; margin-left: -200px; width: 170px; }
 .sidebar nav { margin-left: -30px; padding-left: 30px; width: 170px; overflow: auto; }
 .sidebar nav li { position: relative; }
 .sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; @include unselectable; }
