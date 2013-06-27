@@ -25,6 +25,22 @@ class HttpRequestVariable
 	}
 
 	/**
+	 * Returns whether this is a Live Preview request.
+	 *
+	 * @return bool
+	 */
+	public function isLivePreview()
+	{
+		$actionSegments = craft()->request->getActionSegments();
+
+		return (
+			count($actionSegments) == 2 &&
+			$actionSegments[0] == 'entries' &&
+			$actionSegments[1] == 'previewEntry'
+		);
+	}
+
+	/**
 	 * Returns the request's URI.
 	 *
 	 * @return mixed
