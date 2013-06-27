@@ -8,6 +8,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	stateStorageId: null,
 	searchTimeout: null,
     selector: null,
+    sourceSelect: null,
 
 	$container: null,
     $main: null,
@@ -125,11 +126,14 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			$(ev.currentTarget).parent().toggleClass('expanded');
 		});
 
-    	this.addListener(this.$sources, 'click', function(ev)
-		{
-			this.selectSource($(ev.currentTarget));
-			this.updateElements();
-		});
+        // The source selector
+        this.sourceSelect = new Garnish.Select(this.$sidebar.find('nav'), this.$sources, {
+            selectedClass:     'sel',
+            multi:             false,
+            waitForDblClick:   false,
+            vertical:          true,
+            onSelectionChange: $.proxy(this, '_onSourceSelect')
+        });
 
 		this.addListener(this.$viewBtns, 'click', function(ev)
 		{
@@ -153,6 +157,18 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     		this.$search.focus();
     	}
 	},
+
+    _onSourceSelect: function ()
+    {
+        var sourceElement = this.$sources.filter('.sel');
+        if (sourceElement.length == 0)
+        {
+            sourceElement = this.$sources.filter(':first');
+        }
+
+        this.selectSource(sourceElement);
+        this.updateElements();
+    },
 
 	getState: function(key)
 	{
