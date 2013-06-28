@@ -53,9 +53,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     {
         // Context menus for the folders
         var assetIndex = this;
-        this.$sources.each(function () {
-            assetIndex._createFolderContextMenu.apply(assetIndex, $(this));
-        });
 
         // ---------------------------------------
         // File dragging
@@ -97,6 +94,78 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             onDropTargetChange: $.proxy(this, '_onDropTargetChange'),
 
             onDragStop: $.proxy(this, '_onFileDragStop')
+        });
+
+        // ---------------------------------------
+        // Folder dragging
+        // ---------------------------------------
+        this.folderDrag = new Garnish.DragDrop({
+            activeDropTargetClass: 'sel assets-fm-dragtarget',
+            helperOpacity: 0.5,
+
+            filter: $.proxy(function()
+            {
+                // return each of the selected <a>'s parent <li>s
+                var $selected = this.sourceSelect.getSelectedItems(),
+                    draggees = [];
+                for (var i = 0; i < $selected.length; i++)
+                {
+
+                    var $source = $($selected[i]).parent();
+
+                    draggees.push($source[0]);
+                }
+
+                return $(draggees);
+            }, this),
+
+            helper: $.proxy(function($folder)
+            {
+                var $helper = $('<ul class="assets-fm-folderdrag" />').append($folder);
+
+                // collapse this folder
+                $folder.removeClass('expanded');
+
+                // set the helper width to the folders container width
+                $helper.width(this.$sidebar[0].scrollWidth);
+
+                return $helper;
+            }, this),
+
+            dropTargets: $.proxy(function()
+            {
+                var targets = [];
+
+                this.$sources.each(function ()
+                {
+                   if (!$(this).is(assetIndex.folderDrag.$draggee))
+                   {
+                       targets.push($(this));
+                   }
+                });
+
+                return targets;
+            }, this),
+
+            onDragStart: $.proxy(function()
+            {
+                this.tempExpandedFolders = [];
+
+                // hide the expanded draggees' subfolders
+                this.folderDrag.$draggee.filter('.expanded').removeClass('expanded').addClass('expanded-tmp')
+            }, this),
+
+            onDropTargetChange: $.proxy(this, '_onDropTargetChange'),
+
+            onDragStop: $.proxy(this, '_onFolderDragStop')
+        });
+
+        this.$sources.each(function () {
+            assetIndex._createFolderContextMenu.apply(assetIndex, $(this));
+            if ($(this).parents('ul').length > 1)
+            {
+                assetIndex.folderDrag.addItems($(this).parent());
+            }
         });
     },
 
@@ -237,6 +306,297 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         this.$previouslySelectedFolder.addClass('sel');
 
         this.fileDrag.returnHelpersToDraggees();
+    },
+
+    _onFolderDragStop: function ()
+    {
+        // show the expanded draggees' subfolders
+        this.folderDrag.$draggee.filter('.expanded-tmp').removeClass('expanded-tmp').addClass('expanded');
+
+        // Only move if we have a valid target and we're not trying to move into our direct parent
+        if (
+            this.folderDrag.$activeDropTarget
+                && this.folderDrag.$activeDropTarget.siblings('ul').find('>li').filter(this.folderDrag.$draggee).length == 0)
+        {
+
+            var targetFolderId = this._getFolderIdFromSourceKey(this.folderDrag.$activeDropTarget.data('key'));
+
+            this._collapseExtraExpandedFolders(targetFolderId);
+
+            // get the old folder IDs, and sort them so that we're moving the most-nested folders first
+            var folderIds = [];
+
+            for (var i = 0; i < this.folderDrag.$draggee.length; i++)
+            {
+                var $a = $('> a', this.folderDrag.$draggee[i]),
+                    folderId = this._getFolderIdFromSourceKey($a.data('key')),
+                    $source = this._getSourceByFolderId(folderId);
+
+                // make sure it's not already in the target folder
+                if (this._getFolderIdFromSourceKey(this._getParentSource($source).data('key')) != targetFolderId)
+                {
+                    folderIds.push(folderId);
+                }
+            }
+
+            if (folderIds.length)
+            {
+                folderIds.sort();
+                folderIds.reverse();
+
+                this.setIndexBusy();
+                this.progressBar.resetProgressBar();
+                this.progressBar.setItemCount(folderIds.length);
+                this.progressBar.showProgressBar();
+
+                var responseArray = [];
+                var parameterArray = [];
+
+                for (var i = 0; i < folderIds.length; i++)
+                {
+                    parameterArray.push({
+                        folderId: folderIds[i],
+                        parentId: targetFolderId
+                    });
+                }
+
+                // increment, so to avoid displaying folder files that are being moved
+                this.requestId++;
+
+                /*
+                 Here's the rundown:
+                 1) Send all the folders being moved
+                 2) Get results:
+                   a) For all conflicting, receive prompts and resolve them to get:
+                   b) For all valid move operations: by now server has created the needed folders
+                      in target destination. Server returns an array of file move operations
+                   c) server also returns a list of all the folder id changes
+                   d) and the data-id of node to be removed, in case of conflict
+                   e) and a list of folders to delete after the move
+                 3) From data in 2) build a large file move operation array
+                 4) Create a request loop based on this, so we can display progress bar
+                 5) when done, delete all the folders and perform other maintenance
+                 6) Champagne
+                 */
+
+                // this will hold the final list of files to move
+                var fileMoveList = [];
+
+                // these folders have to be deleted at the end
+                var folderDeleteList = [];
+
+                // this one tracks the changed folder ids
+                var changedFolderIds = {};
+
+                var removeFromTree = [];
+
+                var onMoveFinish = $.proxy(function(responseArray)
+                {
+                    this.promptHandler.resetPrompts();
+
+                    // loop trough all the responses
+                    for (var i = 0; i < responseArray.length; i++)
+                    {
+                        var data = responseArray[i];
+
+                        // if succesful and have data, then update
+                        if (data.success)
+                        {
+                            if (data.transferList && data.deleteList && data.changedFolderIds)
+                            {
+                                for (var ii = 0; ii < data.transferList.length; ii++)
+                                {
+                                    fileMoveList.push(data.transferList[ii]);
+                                }
+                                for (var ii = 0; ii < data.deleteList.length; ii++)
+                                {
+                                    folderDeleteList.push(data.deleteList[ii]);
+                                }
+                                for (var oldFolderId in data.changedFolderIds)
+                                {
+                                    changedFolderIds[oldFolderId] = data.changedFolderIds[oldFolderId];
+                                }
+                                removeFromTree.push(data.removeFromTree);
+                            }
+                        }
+
+                        // push prompt into prompt array
+                        if (data.prompt)
+                        {
+                            this.promptHandler.addPrompt(data);
+                        }
+
+                        if (data.error)
+                        {
+                            alert(data.error);
+                        }
+                    }
+
+                    if (this.promptHandler.getPromptCount())
+                    {
+                        // define callback for completing all prompts
+                        var promptCallback = $.proxy(function(returnData)
+                        {
+                            this.promptHandler.resetPrompts();
+                            this.setNewElementDataHtml('');
+
+                            var newParameterArray = [];
+
+                            // loop trough all returned data and prepare a new request array
+                            for (var i = 0; i < returnData.length; i++)
+                            {
+                                if (returnData[i].choice == 'cancel')
+                                {
+                                    continue;
+                                }
+
+                                parameterArray[0].action = returnData[i].choice;
+                                newParameterArray.push(parameterArray[0]);
+
+                            }
+
+                            // start working on them lists, baby
+                            if (newParameterArray.length == 0)
+                            {
+                                $.proxy(this, '_performActualFolderMove', fileMoveList, folderDeleteList, changedFolderIds, removeFromTree)();
+                            }
+                            else
+                            {
+                                // start working
+                                this.setIndexBusy();
+                                this.progressBar.resetProgressBar();
+                                this.progressBar.setItemCount(this.promptHandler.getPromptCount());
+                                this.progressBar.showProgressBar();
+
+                                // move conflicting files again with resolutions now
+                                moveFolder(newParameterArray, 0, onMoveFinish);
+                            }
+                        }, this);
+
+                        this.promptHandler.showBatchPrompts(promptCallback);
+
+                        this.setIndexAvailable();
+                        this.progressBar.hideProgressBar();
+                    }
+                    else
+                    {
+                        $.proxy(this, '_performActualFolderMove', fileMoveList, folderDeleteList, changedFolderIds, removeFromTree)();
+                    }
+
+                }, this);
+
+                var moveFolder = $.proxy(function(parameterArray, parameterIndex, callback)
+                {
+                    if (parameterIndex == 0)
+                    {
+                        responseArray = [];
+                    }
+
+                    Craft.postActionRequest('assets/moveFolder', parameterArray[parameterIndex], $.proxy(function(data)
+                    {
+                        parameterIndex++;
+                        this.progressBar.incrementProcessedItemCount(1);
+                        this.progressBar.updateProgressBar();
+
+                        responseArray.push(data);
+
+                        if (parameterIndex >= parameterArray.length)
+                        {
+                            callback(responseArray);
+                        }
+                        else
+                        {
+                            moveFolder(parameterArray, parameterIndex, callback);
+                        }
+                    }, this));
+                }, this);
+
+                // initiate the folder move with the built array, index of 0 and callback to use when done
+                moveFolder(parameterArray, 0, onMoveFinish);
+
+                // skip returning dragees until we get the Ajax response
+                return;
+            }
+        }
+        else
+        {
+            this._collapseExtraExpandedFolders();
+        }
+
+        this.folderDrag.returnHelpersToDraggees();
+    },
+
+    /**
+     * Really move the folder. Like really. For real.
+     */
+    _performActualFolderMove: function (fileMoveList, folderDeleteList, changedFolderIds, removeFromTree)
+    {
+        this.setIndexBusy();
+        this.progressBar.resetProgressBar();
+        this.progressBar.setItemCount(1);
+        this.progressBar.showProgressBar();
+
+
+        var moveCallback = $.proxy(function(folderDeleteList, changedFolderIds, removeFromTree)
+        {
+            //Move the folders around in the tree
+            for (var previousFolderId in changedFolderIds)
+            {
+                var previousFolder = this._getSourceByFolderId(previousFolderId);
+
+                var siblings = previousFolder.siblings('ul, .toggle');
+                var parentSource = this._getParentSource(previousFolder);
+                previousFolder = previousFolder.attr('data-key', 'folder:' + changedFolderIds[previousFolderId].newId).parent();
+
+                var newParent = this._getSourceByFolderId(changedFolderIds[previousFolderId].newParentId);
+                this._prepareParentForChildren(newParent);
+                this._addSubfolder(newParent, previousFolder);
+                previousFolder.after(siblings);
+
+                this._cleanUpTree(parentSource);
+                this.$sidebar.find('ul>ul, ul>.toggle').remove();
+            }
+
+            // delete the old folders
+            for (var i = 0; i < folderDeleteList.length; i++)
+            {
+                Craft.postActionRequest('assets/deleteFolder', {folderId: folderDeleteList[i]});
+            }
+
+            this.setIndexAvailable();
+            this.progressBar.hideProgressBar();
+
+            this.updateElements();
+            this.folderDrag.returnHelpersToDraggees();
+
+        }, this);
+
+        if (fileMoveList.length > 0)
+        {
+            this._moveFile(fileMoveList, 0, $.proxy(function()
+            {
+                moveCallback(folderDeleteList, changedFolderIds, removeFromTree);
+            }, this));
+        }
+        else
+        {
+            moveCallback(folderDeleteList, changedFolderIds, removeFromTree);
+        }
+    },
+
+    /**
+     * Get parent source for a source.
+     * @param $source
+     * @returns {*}
+     * @private
+     */
+    _getParentSource: function ($source)
+    {
+        if ($source.parents('ul').length == 1)
+        {
+            return null;
+        }
+        return $source.parent().parent().siblings('a');
     },
 
     /**
@@ -833,15 +1193,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
                     var subFolder = $('<li><a data-key="folder:' + data.folderId + '">' + data.folderName + '</a></li>');
 
-                    this.addListener(subFolder.find('a'), 'click', function(ev)
-                    {
-                        this.selectSource($(ev.currentTarget));
-                        this.updateElements();
-                    });
-
+                    var $a = subFolder.find('a');
                     this._addSubfolder(parentFolder, subFolder);
-                    this._createFolderContextMenu(subFolder.find('a'));
-
+                    this._createFolderContextMenu($a);
+                    this.sourceSelect.addItems($a);
+                    this.folderDrag.addItems($a.parent());
+                    this.$sources = this.$sources.add($a);
                 }
 
                 if (data.error)
@@ -869,16 +1226,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
                 if (data.success)
                 {
-                    var parentFolder = targetFolder.parent().parent().parent().find('> a');
+                    var parentFolder = this._getParentSource(targetFolder);
 
                     // remove folder and any trace from it's parent, if needed.
                     targetFolder.parent().remove();
-                    if (parentFolder.siblings('ul').find('li').length == 0)
-                    {
-                        parentFolder.siblings('ul').remove();
-                        parentFolder.siblings('.toggleFolder').remove();
-                        parentFolder.parent().removeClass('expanded');
-                    }
+                    this._cleanUpTree(parentFolder);
+
+                    this.$sources = this.$sources.not(targetFolder);
+                    this.sourceSelect.removeItems(targetFolder);
                 }
 
                 if (data.error)
@@ -965,6 +1320,16 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         if (!folderInserted)
         {
             parentFolder.siblings('ul').append(subFolder);
+        }
+    },
+
+    _cleanUpTree: function (parentFolder)
+    {
+        if (parentFolder !== null && parentFolder.siblings('ul').find('li').length == 0)
+        {
+            parentFolder.siblings('ul').remove();
+            parentFolder.siblings('.toggle').remove();
+            parentFolder.parent().removeClass('expanded');
         }
     }
 });

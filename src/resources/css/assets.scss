@@ -60,6 +60,12 @@
 .assets-fileicon .assets-extension { position: absolute; bottom: 15px; width: 100%; text-align: center; font-size: 17px; color: #ddd; text-transform: uppercase}
 .assets-tv-file.assets-tv-bigthumb .assets-fileicon .assets-extension { bottom: 26px; font-size: 34px; }
 
+/*-- Folder drag --*/
+
+.assets-fm-folderdrag ul { display: none }
+.assets-fm-folderdrag li { background: $selcolor; padding: 4px 0 0 10px; height: 18px !important;}
+.assets-fm-folderdrag li a { color: #fff !important;}
+
 /*-- Retina -- */
 @media only screen and (-moz-min-device-pixel-ratio: 1.5),
 only screen and (-o-min-device-pixel-ratio: 3/2),
