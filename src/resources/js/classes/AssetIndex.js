@@ -105,15 +105,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
             filter: $.proxy(function()
             {
-                // return each of the selected <a>'s parent <li>s
+                // return each of the selected <a>'s parent <li>s, except for top level drag attampts.
                 var $selected = this.sourceSelect.getSelectedItems(),
                     draggees = [];
                 for (var i = 0; i < $selected.length; i++)
                 {
 
                     var $source = $($selected[i]).parent();
-
-                    draggees.push($source[0]);
+                    if ($source.parents('ul').length > 1)
+                    {
+                        draggees.push($source[0]);
+                    }
                 }
 
                 return $(draggees);
@@ -480,7 +482,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                     }
                     else
                     {
-                        $.proxy(this, '_performActualFolderMove', fileMoveList, folderDeleteList, changedFolderIds, removeFromTree)();
+                        $.proxy(this, '_performActualFolderMove', fileMoveList, folderDeleteList, changedFolderIds, removeFromTree, targetFolderId)();
                     }
 
                 }, this);
@@ -529,7 +531,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     /**
      * Really move the folder. Like really. For real.
      */
-    _performActualFolderMove: function (fileMoveList, folderDeleteList, changedFolderIds, removeFromTree)
+    _performActualFolderMove: function (fileMoveList, folderDeleteList, changedFolderIds, removeFromTree, targetFolderId)
     {
         this.setIndexBusy();
         this.progressBar.resetProgressBar();
@@ -540,22 +542,50 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         var moveCallback = $.proxy(function(folderDeleteList, changedFolderIds, removeFromTree)
         {
             //Move the folders around in the tree
+            var topFolderLi = $();
+            var folderToMove = $();
+            var topMovedFolderId = 0;
+
+            // Change the folder ids
             for (var previousFolderId in changedFolderIds)
             {
-                var previousFolder = this._getSourceByFolderId(previousFolderId);
+                folderToMove = this._getSourceByFolderId(previousFolderId);
 
-                var siblings = previousFolder.siblings('ul, .toggle');
-                var parentSource = this._getParentSource(previousFolder);
-                previousFolder = previousFolder.attr('data-key', 'folder:' + changedFolderIds[previousFolderId].newId).parent();
+                // Change the id and select the containing element as the folder element.
+                folderToMove = folderToMove
+                                    .attr('data-key', 'folder:' + changedFolderIds[previousFolderId].newId)
+                                    .data('key', 'folder:' + changedFolderIds[previousFolderId].newId).parent();
 
-                var newParent = this._getSourceByFolderId(changedFolderIds[previousFolderId].newParentId);
-                this._prepareParentForChildren(newParent);
-                this._addSubfolder(newParent, previousFolder);
-                previousFolder.after(siblings);
-
-                this._cleanUpTree(parentSource);
-                this.$sidebar.find('ul>ul, ul>.toggle').remove();
+                if (topFolderLi.length == 0 || topFolderLi.parents().filter(folderToMove).length > 0)
+                {
+                    topFolderLi = folderToMove;
+                    topFolderMovedId = changedFolderIds[previousFolderId].newId;
+                }
             }
+
+            if (topFolderLi.length == 0)
+            {
+                this.setIndexAvailable();
+                this.progressBar.hideProgressBar();
+                this.folderDrag.returnHelpersToDraggees();
+
+                return;
+            }
+
+            var topFolder = topFolderLi.find('>a');
+
+            // Now move the uppermost node.
+            var siblings = topFolderLi.siblings('ul, .toggle');
+            var parentSource = this._getParentSource(topFolder);
+
+            var newParent = this._getSourceByFolderId(targetFolderId);
+            this._prepareParentForChildren(newParent);
+            this._addSubfolder(newParent, topFolderLi);
+            console.log(topFolder);
+            topFolder.after(siblings);
+
+            this._cleanUpTree(parentSource);
+            this.$sidebar.find('ul>ul, ul>.toggle').remove();
 
             // delete the old folders
             for (var i = 0; i < folderDeleteList.length; i++)
@@ -565,9 +595,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
             this.setIndexAvailable();
             this.progressBar.hideProgressBar();
-
-            this.updateElements();
             this.folderDrag.returnHelpersToDraggees();
+            this._selectSourceByFolderId(topFolderMovedId);
 
         }, this);
 
@@ -1229,11 +1258,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                     var parentFolder = this._getParentSource(targetFolder);
 
                     // remove folder and any trace from it's parent, if needed.
+                    this.$sources = this.$sources.not(targetFolder);
+                    this.sourceSelect.removeItems(targetFolder);
+
                     targetFolder.parent().remove();
                     this._cleanUpTree(parentFolder);
 
-                    this.$sources = this.$sources.not(targetFolder);
-                    this.sourceSelect.removeItems(targetFolder);
                 }
 
                 if (data.error)
