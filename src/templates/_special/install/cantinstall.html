@@ -4,15 +4,32 @@
 
 {% set content %}
 	<h2>{{ title }} :(</h2>
-	<p>{{ "Your server doesn’t meet the following requirements to install @@@appName@@@:"|t }}</p>
 
-	<ul class="bullets">
-		{% for req in reqCheck.requirements %}
-			{% if req.result == 'failed' %}
-				<li>{{ req.notes|raw }}</li>
-			{% endif %}
-		{% endfor %}
-	</ul>
+	{% if reqCheck.result == 'failed' %}
+		<p>{{ "Your server doesn’t meet the following requirements to install Craft:"|t }}</p>
 
-	<p>{{ "Please talk to your host/IT department about upgrading your server."|t }}</p>
+		<ul class="bullets">
+			{% for req in reqCheck.requirements %}
+				{% if req.result == 'failed' %}
+					<li>{{ req.notes|raw }}</li>
+				{% endif %}
+			{% endfor %}
+		</ul>
+
+		<p>{{ "Please talk to your host/IT department about upgrading your server."|t }}</p>
+    {% endif %}
+
+	{% if reqCheck.errorFolders | length %}
+		<p>{{ "Craft needs to be able to write to the following folders, but can’t:"|t }}</p>
+
+		<ul class="bullets">
+			{% for errorFolder in reqCheck.errorFolders %}
+				<li>{{ errorFolder }}</li>
+			{% endfor %}
+		</ul>
+
+		<p>{{ "Please make these folders writable and try to run the installer again."|t }}</p>
+	{% endif %}
+
+
 {% endset %}
