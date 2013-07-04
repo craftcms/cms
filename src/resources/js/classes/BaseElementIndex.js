@@ -346,7 +346,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.$source = $source.addClass('sel');
 		this.setState('source', sourceKey);
 
-        this.onSelectSource();
+        this.onSelectSource(sourceKey);
 	},
 
 	onSelectSource: function(sourceKey)
