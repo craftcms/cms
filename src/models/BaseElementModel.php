@@ -341,7 +341,7 @@ abstract class BaseElementModel extends BaseModel
 				$criteria = craft()->elements->getCriteria($this->elementType, $criteria);
 			}
 
-			$elementIds = craft()->elements->findElements($criteria, true);
+			$elementIds = $criteria->ids();
 			$key = array_search($this->id, $elementIds);
 
 			if ($key !== false && isset($elementIds[$key+$dir]))
