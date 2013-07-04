@@ -7,7 +7,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	state: null,
 	stateStorageId: null,
 	searchTimeout: null,
-    selector: null,
+    elementSelect: null,
     sourceSelect: null,
 
 	$container: null,
@@ -454,9 +454,9 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		}
 	},
 
-    setSelector: function (obj)
+    setElementSelect: function (obj)
     {
-        this.selector = obj;
+        this.elementSelect = obj;
     },
 
     addCallback: function (currentCallback, newCallback)

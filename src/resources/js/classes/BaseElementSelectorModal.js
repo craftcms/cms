@@ -102,7 +102,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 			onSelectionChange: $.proxy(this, 'onSelectionChange')
 		});
 
-        this.elementIndex.setSelector(this.elementSelect);
+        this.elementIndex.setElementSelect(this.elementSelect);
 
     },
 

@@ -63,7 +63,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
             filter: $.proxy(function()
             {
-                return this.selector.getSelectedItems();
+                return this.elementSelect.getSelectedItems();
             }, this),
 
             helper: $.proxy(function($file)
@@ -886,8 +886,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             var item = null;
             for (var i = 0; i < this._uploadedFileIds.length; i++)
             {
-                item = this.$main.find('[data-id=' + this._uploadedFileIds[i] + ']');
-                this.selector.selectItem(item);
+                item = this.$main.find('[data-id=' + this._uploadedFileIds[i] + ']:first');
+                this.elementSelect.selectItem(item);
             }
 
             // Reset the list.
@@ -897,6 +897,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
     _initElementSelect: function ($children)
     {
+
+        if (typeof this.elementSelect == "object" && this.elementSelect != null)
+        {
+            this.elementSelect.destroy();
+            delete this.elementSelect;
+        }
+
         var elementSelect = new Garnish.Select(this.$elementContainer, $children, {
             multi: true,
             vertical: (this.getState('view') == 'table'),
@@ -904,13 +911,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             onSelectionChange: $.proxy(this, '_onElementSelectionChange')
         });
 
-        this.setSelector(elementSelect);
+        this.setElementSelect(elementSelect);
     },
 
     _onElementSelectionChange: function ()
     {
         this._enableElementContextMenu();
-        var selected = this.selector.getSelectedItems();
+        var selected = this.elementSelect.getSelectedItems();
         this._selectedFileIds = [];
         for (var i = 0; i < selected.length; i++)
         {
@@ -980,11 +987,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         this._multiFileMenu.disable();
         this._singleFileMenu.disable();
 
-        if (this.selector.getTotalSelected() == 1)
+        if (this.elementSelect.getTotalSelected() == 1)
         {
             this._singleFileMenu.enable();
         }
-        else if (this.selector.getTotalSelected() > 1)
+        else if (this.elementSelect.getTotalSelected() > 1)
         {
             this._multiFileMenu.enable();
         }
@@ -1041,7 +1048,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
      */
     _deleteFiles: function () {
 
-        if (confirm(Craft.t("Are you sure you want to delete these {number} files?", {number: this.selector.getTotalSelected()})))
+        if (confirm(Craft.t("Are you sure you want to delete these {number} files?", {number: this.elementSelect.getTotalSelected()})))
         {
             this.setIndexBusy();
 
