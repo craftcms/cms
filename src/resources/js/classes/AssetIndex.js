@@ -723,6 +723,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     onSelectSource: function(sourceKey)
     {
         this.uploader.setParams({folderId: this._getFolderIdFromSourceKey(sourceKey)});
+
+        this.base(sourceKey);
     },
 
     _getFolderIdFromSourceKey: function (sourceKey)
