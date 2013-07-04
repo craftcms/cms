@@ -427,34 +427,49 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	private function _normalizeRelationParams($elements, $fields)
 	{
+		$elementIds = array();
+		$fieldIds = array();
+
 		// Normalize the element(s)
 		$elements = ArrayHelper::stringToArray($elements);
 
-		foreach ($elements as &$element)
+		foreach ($elements as $element)
 		{
-			if ($element instanceof BaseElementModel)
+			if (is_numeric($element) && intval($element) == $element)
 			{
-				$element = $element->id;
+				$elementIds[] = $element;
+			}
+			else if ($element instanceof BaseElementModel)
+			{
+				$elementIds[] = $element->id;
+			}
+			else if ($element instanceof ElementCriteriaModel)
+			{
+				$elementIds = array_merge($elementIds, $element->ids());
 			}
 		}
 
 		// Normalize the field(s)
 		$fields = ArrayHelper::stringToArray($fields);
 
-		foreach ($fields as &$field)
+		foreach ($fields as $field)
 		{
-			if (is_string($field) && !is_numeric($field))
+			if (is_numeric($field) && intval($field) == $field)
+			{
+				$fieldIds[] = $field;
+			}
+			else if (is_string($field))
 			{
 				$fieldModel = craft()->fields->getFieldByHandle($field);
 
 				if ($fieldModel)
 				{
-					$field = $fieldModel->id;
+					$fieldIds[] = $fieldModel->id;
 				}
 			}
 		}
 
-		return array($elements, $fields);
+		return array($elementIds, $fieldIds);
 	}
 
 	/**
