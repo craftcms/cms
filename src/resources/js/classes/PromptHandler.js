@@ -1,13 +1,7 @@
-// define the Assets global
-if (typeof Assets == 'undefined')
-{
-    Assets = {};
-}
-
 /**
  * File Manager.
  */
-Assets.PromptHandler = Garnish.Base.extend({
+Craft.PromptHandler = Garnish.Base.extend({
 
     $modalContainerDiv: null,
     $prompt: null,

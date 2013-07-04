@@ -16,6 +16,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
     initialSourceKey: null,
     isIndexBusy: false,
+    _uploadTotalFiles: 0,
     _uploadFileProgress: {},
     _uploadedFileIds: [],
     _selectedFileIds: [],
@@ -702,8 +703,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             this.$progressBar = $('<div class="assets-uploadprogress hidden"><div class="assets-progressbar"><div class="assets-pb-bar"></div></div></div>').appendTo(this.$main);
         }
 
-        this.promptHandler = new Assets.PromptHandler();
-        this.progressBar = new Assets.ProgressBar(this.$progressBar);
+        this.promptHandler = new Craft.PromptHandler();
+        this.progressBar = new Craft.ProgressBar(this.$progressBar);
 
         var uploaderCallbacks = {
             onSubmit:     $.proxy(this, '_onUploadSubmit'),
@@ -711,7 +712,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             onComplete:   $.proxy(this, '_onUploadComplete')
         };
 
-        this.uploader = new Assets.Uploader (this.$uploadButton, uploaderCallbacks);
+        this.uploader = new Craft.Uploader (this.$uploadButton, uploaderCallbacks);
     },
 
     /**
@@ -744,8 +745,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
             // Initial values
             this.progressBar.resetProgressBar();
+            this.progressBar.showProgressBar();
             this._uploadFileProgress = {};
             this._uploadedFileIds = [];
+            this._uploadTotalFiles = 1;
+        }
+        else
+        {
+            this._uploadTotalFiles++;
         }
 
         // Prepare tracking
@@ -771,7 +778,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             totalPercent += this._uploadFileProgress[id];
         }
 
-        var width = Math.round(100 * totalPercent / this._uploadTotalFiles);
+        var width = Math.round(100 * totalPercent / this._uploadTotalFiles) + '%';
         this.progressBar.setProgressPercentage(width);
     },
 

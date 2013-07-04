@@ -1,14 +1,7 @@
-// define the Assets global
-if (typeof Assets == 'undefined')
-{
-    Assets = {};
-}
-
-
 /**
  * File Manager.
  */
-Assets.ProgressBar = Garnish.Base.extend({
+Craft.ProgressBar = Garnish.Base.extend({
 
     $uploadProgress: null,
     $uploadProgressBar: null,
@@ -34,6 +27,7 @@ Assets.ProgressBar = Garnish.Base.extend({
         this.setItemCount(1);
         this.setProcessedItemCount(0);
         this.updateProgressBar();
+
     },
 
     /**

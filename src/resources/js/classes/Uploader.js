@@ -1,14 +1,7 @@
-// define the Assets global
-if (typeof Assets == 'undefined')
-{
-    Assets = {};
-}
-
-
 /**
  * File Manager.
  */
-Assets.Uploader = Garnish.Base.extend({
+Craft.Uploader = Garnish.Base.extend({
 
     uploader: null,
 
