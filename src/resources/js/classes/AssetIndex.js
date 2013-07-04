@@ -33,7 +33,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 	{
 
         // Piggyback some callbacksF
-        settings.onSelectSource = this.addCallback(settings.onSelectSource, $.proxy(this, '_onSelectSource'));
         settings.onAfterHtmlInit = this.addCallback(settings.onAfterHtmlInit, $.proxy(this, '_initializeComponents'));
         settings.onUpdateElements = this.addCallback(settings.onUpdateElements, $.proxy(this, '_onUpdateElements'));
 
@@ -721,7 +720,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
      * @param sourceKey
      * @private
      */
-    _onSelectSource: function (sourceKey)
+    onSelectSource: function(sourceKey)
     {
         this.uploader.setParams({folderId: this._getFolderIdFromSourceKey(sourceKey)});
     },

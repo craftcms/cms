@@ -346,10 +346,12 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.$source = $source.addClass('sel');
 		this.setState('source', sourceKey);
 
-        if (typeof this.settings.onSelectSource == "function")
-        {
-            this.settings.onSelectSource(sourceKey);
-        }
+        this.onSelectSource();
+	},
+
+	onSelectSource: function(sourceKey)
+	{
+		this.settings.onSelectSource(sourceKey);
 	},
 
 	selectView: function($viewBtn)
