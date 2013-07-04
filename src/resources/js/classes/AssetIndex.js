@@ -581,7 +581,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             var newParent = this._getSourceByFolderId(targetFolderId);
             this._prepareParentForChildren(newParent);
             this._addSubfolder(newParent, topFolderLi);
-            console.log(topFolder);
+
             topFolder.after(siblings);
 
             this._cleanUpTree(parentSource);
