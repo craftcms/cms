@@ -7,11 +7,11 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	state: null,
 	stateStorageId: null,
 	searchTimeout: null,
-    elementSelect: null,
-    sourceSelect: null,
+	elementSelect: null,
+	sourceSelect: null,
 
 	$container: null,
-    $main: null,
+	$main: null,
 	$scroller: null,
 	$toolbar: null,
 	$search: null,
@@ -33,105 +33,105 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.$container = $container;
 		this.setSettings(settings, Craft.BaseElementIndex.defaults);
 
-        // Set the state object
-        this.state = {};
+		// Set the state object
+		this.state = {};
 
-        if (typeof Storage !== 'undefined' && this.settings.id)
-        {
-        	this.stateStorageId = 'Craft.BaseElementIndex.'+this.settings.id;
+		if (typeof Storage !== 'undefined' && this.settings.id)
+		{
+			this.stateStorageId = 'Craft.BaseElementIndex.'+this.settings.id;
 
-        	if (typeof localStorage[this.stateStorageId] != 'undefined')
-        	{
-        		$.extend(this.state, JSON.parse(localStorage[this.stateStorageId]));
-        	}
-        }
+			if (typeof localStorage[this.stateStorageId] != 'undefined')
+			{
+				$.extend(this.state, JSON.parse(localStorage[this.stateStorageId]));
+			}
+		}
 
-    	// Find the DOM elements
-        this.$main = this.$container.find('.main');
-        this.$toolbar = this.$container.find('.toolbar:first');
-    	this.$search = this.$toolbar.find('.search:first input:first');
-    	this.$viewBtns = this.$toolbar.find('.btngroup .btn');
-    	this.$mainSpinner = this.$toolbar.find('.spinner:first');
-    	this.$loadingMoreSpinner = this.$container.find('.spinner.loadingmore')
-    	this.$sidebar = this.$container.find('.sidebar:first');
-    	this.$sources = this.$sidebar.find('nav a');
-    	this.$sourceToggles = this.$sidebar.find('.toggle');
-    	this.$elements = this.$container.find('.elements:first');
+		// Find the DOM elements
+		this.$main = this.$container.find('.main');
+		this.$toolbar = this.$container.find('.toolbar:first');
+		this.$search = this.$toolbar.find('.search:first input:first');
+		this.$viewBtns = this.$toolbar.find('.btngroup .btn');
+		this.$mainSpinner = this.$toolbar.find('.spinner:first');
+		this.$loadingMoreSpinner = this.$container.find('.spinner.loadingmore')
+		this.$sidebar = this.$container.find('.sidebar:first');
+		this.$sources = this.$sidebar.find('nav a');
+		this.$sourceToggles = this.$sidebar.find('.toggle');
+		this.$elements = this.$container.find('.elements:first');
 
-        this.onAfterHtmlInit();
+		this.onAfterHtmlInit();
 
-    	if (this.settings.mode == 'index')
-    	{
-    		this.$scroller = Garnish.$win;
-    	}
-    	else
-    	{
-    		this.$scroller = this.$main;
-    	}
+		if (this.settings.mode == 'index')
+		{
+			this.$scroller = Garnish.$win;
+		}
+		else
+		{
+			this.$scroller = this.$main;
+		}
 
-    	// Select the initial source
-    	var source = this.getState('source');
+		// Select the initial source
+		var source = this.getState('source');
 
-    	if (source)
-    	{
-    		var $source = this.getSourceByKey(source);
+		if (source)
+		{
+			var $source = this.getSourceByKey(source);
 
-    		if ($source)
-    		{
-    			// Expand any parent sources
-    			var $parentSources = $source.parentsUntil('.sidebar', 'li');
-    			$parentSources.not(':first').addClass('expanded');
-    		}
-    	}
+			if ($source)
+			{
+				// Expand any parent sources
+				var $parentSources = $source.parentsUntil('.sidebar', 'li');
+				$parentSources.not(':first').addClass('expanded');
+			}
+		}
 
-    	if (!source || !$source)
-    	{
-    		// Select the first source by default
-    		var $source = this.$sources.first();
-    	}
+		if (!source || !$source)
+		{
+			// Select the first source by default
+			var $source = this.$sources.first();
+		}
 
-    	this.selectSource($source);
+		this.selectSource($source);
 
-    	// Select the initial view mode
-    	var view = this.getState('view');
+		// Select the initial view mode
+		var view = this.getState('view');
 
-    	if (view)
-    	{
-    		var $viewBtn = this.$viewBtns.filter('[data-view='+view+']:first');
-    	}
+		if (view)
+		{
+			var $viewBtn = this.$viewBtns.filter('[data-view='+view+']:first');
+		}
 
-    	if (!view || !$viewBtn.length)
-    	{
-    		var $viewBtn = this.$viewBtns.filter('[data-view=table]:first');
-    	}
+		if (!view || !$viewBtn.length)
+		{
+			var $viewBtn = this.$viewBtns.filter('[data-view=table]:first');
+		}
 
-    	if ($viewBtn.length)
-    	{
-    		this.selectView($viewBtn);
-    	}
-    	else
-    	{
-    		this.setState('view', 'table');
-    	}
+		if ($viewBtn.length)
+		{
+			this.selectView($viewBtn);
+		}
+		else
+		{
+			this.setState('view', 'table');
+		}
 
-    	// Load up the elements!
-    	this.updateElements();
+		// Load up the elements!
+		this.updateElements();
 
-    	// Add some listeners
-    	this.addListener(this.$sourceToggles, 'click', function(ev)
+		// Add some listeners
+		this.addListener(this.$sourceToggles, 'click', function(ev)
 		{
 			$(ev.currentTarget).parent().toggleClass('expanded');
-            ev.stopPropagation();
+			ev.stopPropagation();
 		});
 
-        // The source selector
-        this.sourceSelect = new Garnish.Select(this.$sidebar.find('nav'), this.$sources, {
-            selectedClass:     'sel',
-            multi:             false,
-            waitForDblClick:   false,
-            vertical:          true,
-            onSelectionChange: $.proxy(this, '_onSourceChange')
-        });
+		// The source selector
+		this.sourceSelect = new Garnish.Select(this.$sidebar.find('nav'), this.$sources, {
+			selectedClass:     'sel',
+			multi:             false,
+			waitForDblClick:   false,
+			vertical:          true,
+			onSelectionChange: $.proxy(this, '_onSourceChange')
+		});
 
 		this.addListener(this.$viewBtns, 'click', function(ev)
 		{
@@ -139,34 +139,34 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			this.updateElements();
 		});
 
-    	this.addListener(this.$search, 'textchange', $.proxy(function()
-    	{
-    		if (this.searchTimeout)
-    		{
-    			clearTimeout(this.searchTimeout);
-    		}
+		this.addListener(this.$search, 'textchange', $.proxy(function()
+		{
+			if (this.searchTimeout)
+			{
+				clearTimeout(this.searchTimeout);
+			}
 
-    		this.searchTimeout = setTimeout($.proxy(this, 'updateElements'), 500);
-    	}, this));
+			this.searchTimeout = setTimeout($.proxy(this, 'updateElements'), 500);
+		}, this));
 
-    	// Auto-focus the Search box
-    	if (!Garnish.isMobileBrowser(true))
-    	{
-    		this.$search.focus();
-    	}
+		// Auto-focus the Search box
+		if (!Garnish.isMobileBrowser(true))
+		{
+			this.$search.focus();
+		}
 	},
 
-    _onSourceChange: function ()
-    {
-        var sourceElement = this.$sources.filter('.sel');
-        if (sourceElement.length == 0)
-        {
-            sourceElement = this.$sources.filter(':first');
-        }
+	_onSourceChange: function ()
+	{
+		var sourceElement = this.$sources.filter('.sel');
+		if (sourceElement.length == 0)
+		{
+			sourceElement = this.$sources.filter(':first');
+		}
 
-        this.selectSource(sourceElement);
-        this.updateElements();
-    },
+		this.selectSource(sourceElement);
+		this.updateElements();
+	},
 
 	getState: function(key)
 	{
@@ -193,7 +193,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 		if (this.stateStorageId)
 		{
-		    localStorage[this.stateStorageId] = JSON.stringify(this.state);
+			localStorage[this.stateStorageId] = JSON.stringify(this.state);
 		}
 	},
 
@@ -292,10 +292,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.onUpdateElements(append);
 	},
 
-    onUpdateElements: function (append)
-    {
-        this.settings.onUpdateElements(append);
-    },
+	onUpdateElements: function (append)
+	{
+		this.settings.onUpdateElements(append);
+	},
 
 	onSortChange: function(ev)
 	{
@@ -344,11 +344,11 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			this.$source.removeClass('sel');
 		}
 
-        var sourceKey = $source.data('key');
+		var sourceKey = $source.data('key');
 		this.$source = $source.addClass('sel');
 		this.setState('source', sourceKey);
 
-        this.onSelectSource(sourceKey);
+		this.onSelectSource(sourceKey);
 	},
 
 	onSelectSource: function(sourceKey)
@@ -356,12 +356,12 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.settings.onSelectSource(sourceKey);
 	},
 
-    onAfterHtmlInit: function ()
-    {
-        this.settings.onAfterHtmlInit()
-    },
+	onAfterHtmlInit: function ()
+	{
+		this.settings.onAfterHtmlInit()
+	},
 
-    selectView: function($viewBtn)
+	selectView: function($viewBtn)
 	{
 		if (this.$viewBtn)
 		{
@@ -463,31 +463,31 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		}
 	},
 
-    setElementSelect: function (obj)
-    {
-        this.elementSelect = obj;
-    },
+	setElementSelect: function (obj)
+	{
+		this.elementSelect = obj;
+	},
 
-    addCallback: function (currentCallback, newCallback)
-    {
-        return $.proxy(function () {
-            if (typeof currentCallback == 'function')
-            {
-                currentCallback.apply(this, arguments);
-            }
-            newCallback.apply(this, arguments);
-        }, this);
-    },
+	addCallback: function (currentCallback, newCallback)
+	{
+		return $.proxy(function () {
+			if (typeof currentCallback == 'function')
+			{
+				currentCallback.apply(this, arguments);
+			}
+			newCallback.apply(this, arguments);
+		}, this);
+	},
 
-    setIndexBusy: function () {
-        this.$mainSpinner.removeClass('hidden');
-        this.isIndexBusy = true;
-    },
+	setIndexBusy: function () {
+		this.$mainSpinner.removeClass('hidden');
+		this.isIndexBusy = true;
+	},
 
-    setIndexAvailable: function () {
-        this.$mainSpinner.addClass('hidden');
-        this.isIndexBusy = false;
-    }
+	setIndexAvailable: function () {
+		this.$mainSpinner.addClass('hidden');
+		this.isIndexBusy = false;
+	}
 },
 {
 	defaults: {
@@ -498,7 +498,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		onUpdateElements: $.noop,
 		onEnableElements: $.noop,
 		onDisableElements: $.noop,
-        onSelectSource: $.noop,
-        onAfterHtmlInit: $.noop
+		onSelectSource: $.noop,
+		onAfterHtmlInit: $.noop
 	}
 });
