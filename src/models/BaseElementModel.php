@@ -358,6 +358,8 @@ abstract class BaseElementModel extends BaseModel
 			if (empty($this->_content))
 			{
 				$this->_content = new ContentModel();
+				$this->_content->elementId = $this->id;
+				$this->_content->locale = $this->locale;
 			}
 		}
 

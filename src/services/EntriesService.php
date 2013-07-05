@@ -168,7 +168,8 @@ class EntriesService extends BaseApplicationComponent
 		$entry->addErrors($elementLocaleRecord->getErrors());
 
 		// Entry content
-		$content = craft()->content->populateContentFromPost($entry, $section->getFieldLayout(), $entry->locale);
+		$fieldLayout = $section->getFieldLayout();
+		$content = craft()->content->prepElementContentForSave($entry, $fieldLayout);
 		$content->validate();
 		$entry->addErrors($content->getErrors());
 

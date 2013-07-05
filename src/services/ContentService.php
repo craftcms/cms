@@ -36,7 +36,7 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Saves an element's content.
 	 *
-	 * This is just a wrapper for populateContentFromPost(), saveContent(), and postSaveOperations().
+	 * This is just a wrapper for prepElementContentForSave(), saveContent(), and postSaveOperations().
 	 * It should only be used when an element's content is saved separately from its other attributes.
 	 *
 	 * @param BaseElementModel $element
@@ -50,7 +50,7 @@ class ContentService extends BaseApplicationComponent
 			throw new Exception(Craft::t('Cannot save the content of an unsaved element.'));
 		}
 
-		$content = $this->populateContentFromPost($element, $fieldLayout, $localeId);
+		$content = $this->prepElementContentForSave($element, $fieldLayout, $localeId);
 
 		if ($this->saveContent($content))
 		{
@@ -65,35 +65,15 @@ class ContentService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Populates a ContentModel with post data.
+	 * Prepares an element's content for being saved to the database.
 	 *
 	 * @param BaseElementModel $element
 	 * @param FieldLayoutModel $fieldLayout
-	 * @param string|null $localeId
 	 * @return ContentModel
 	 */
-	public function populateContentFromPost(BaseElementModel $element, FieldLayoutModel $fieldLayout, $localeId = null)
+	public function prepElementContentForSave(BaseElementModel $element, FieldLayoutModel $fieldLayout)
 	{
-		// Does this element already have a row in content?
-		if ($element->id)
-		{
-			$content = $this->getElementContent($element->id, $localeId);
-		}
-
-		if (empty($content))
-		{
-			$content = new ContentModel();
-			$content->elementId = $element->id;
-
-			if ($localeId)
-			{
-				$content->locale = $localeId;
-			}
-			else
-			{
-				$content->locale = craft()->i18n->getPrimarySiteLocaleId();
-			}
-		}
+		$content = $element->getContent();
 
 		// Set the required fields from the layout
 		$requiredFields = array();
@@ -111,7 +91,7 @@ class ContentService extends BaseApplicationComponent
 			$content->setRequiredFields($requiredFields);
 		}
 
-		// Populate the fields' content
+		// Give the fieldtypes a chance to clean up the post data
 		foreach (craft()->fields->getAllFields() as $field)
 		{
 			$fieldType = craft()->fields->populateFieldType($field);
@@ -121,7 +101,7 @@ class ContentService extends BaseApplicationComponent
 				$fieldType->element = $element;
 
 				$handle = $field->handle;
-				$content->$handle = $fieldType->getPostData();
+				$content->$handle = $fieldType->prepValueFromPost($content->$handle);
 			}
 		}
 
