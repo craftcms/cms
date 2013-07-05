@@ -152,8 +152,8 @@ class AssetsController extends BaseController
 			throw new Exception(Craft::t('No asset exists with the ID “{id}”.', array('id' => $fileId)));
 		}
 
-		$fields = craft()->request->getPost('fields', array());
-		$file->setContent($fields);
+		$fields = craft()->request->getPost('fields');
+		$file->getContent()->setAttributes($fields);
 
 		$success = craft()->assets->saveFileContent($file);
 		$this->returnJson(array('success' => $success));

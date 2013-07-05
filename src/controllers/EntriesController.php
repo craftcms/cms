@@ -384,7 +384,7 @@ class EntriesController extends BaseController
 		$entry->tags       = craft()->request->getPost('tags');
 
 		$fields = craft()->request->getPost('fields');
-		$entry->setContent($fields);
+		$entry->getContent()->setAttributes($fields);
 
 		return $entry;
 	}

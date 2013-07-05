@@ -560,7 +560,7 @@ class InstallService extends BaseApplicationComponent
 		Craft::log('Setting the Homepage content.');
 
 		$homepageGlobalSet->locale = $inputs['locale'];
-		$homepageGlobalSet->setContent(array(
+		$homepageGlobalSet->getContent()->setAttributes(array(
 			'heading' => Craft::t('Welcome to {siteName}!', $vars),
 			'body'    => '<p>'.Craft::t('It’s true, this site doesn’t have a whole lot of content yet, but don’t worry. Our web developers have just installed the CMS, and they’re setting things up for the content editors this very moment. Soon {siteName} will be an oasis of fresh perspectives, sharp analyses, and astute opinions that will keep you coming back again and again.', $vars).'</p>',
 		));
@@ -633,7 +633,7 @@ class InstallService extends BaseApplicationComponent
 		$newsEntry->authorId   = $this->_user->id;
 		$newsEntry->title      = Craft::t('We just installed Craft!');
 		$newsEntry->enabled    = true;
-		$newsEntry->setContent(array(
+		$newsEntry->getContent()->setAttributes(array(
 			'body' => '<p>'
 					. Craft::t('Craft is the CMS that’s powering {siteName}. It’s beautiful, powerful, flexible, and easy-to-use, and it’s made by Pixel &amp; Tonic. We can’t wait to dive in and see what it’s capable of!', $vars)
 					. '</p><!--pagebreak--><p>'

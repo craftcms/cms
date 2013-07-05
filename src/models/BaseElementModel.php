@@ -280,17 +280,6 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Sets the content.
-	 *
-	 * @param array $values
-	 */
-	public function setContent($values)
-	{
-		$content = $this->getContent();
-		$content->setAttributes($values);
-	}
-
-	/**
 	 * Populates a new model instance with a given set of attributes.
 	 *
 	 * @static
