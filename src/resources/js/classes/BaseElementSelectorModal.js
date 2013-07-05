@@ -101,7 +101,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 			waitForDblClick: true,
 			onSelectionChange: $.proxy(this, 'onSelectionChange')
 		});
-	},
+
+        this.elementIndex.setElementSelect(this.elementSelect);
+
+    },
 
 	onSelectionChange: function()
 	{
