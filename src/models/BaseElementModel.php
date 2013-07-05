@@ -352,7 +352,7 @@ abstract class BaseElementModel extends BaseModel
 		{
 			if ($this->id)
 			{
-				$this->_content = craft()->content->getContent($this->id, $this->locale);
+				$this->_content = craft()->content->getElementContent($this->id, $this->locale);
 			}
 
 			if (empty($this->_content))
