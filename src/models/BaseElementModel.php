@@ -280,17 +280,6 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Sets the content.
-	 *
-	 * @param array $values
-	 */
-	public function setContent($values)
-	{
-		$content = $this->getContent();
-		$content->setAttributes($values);
-	}
-
-	/**
 	 * Populates a new model instance with a given set of attributes.
 	 *
 	 * @static
@@ -363,7 +352,7 @@ abstract class BaseElementModel extends BaseModel
 		{
 			if ($this->id)
 			{
-				$this->_content = craft()->content->getContent($this->id, $this->locale);
+				$this->_content = craft()->content->getElementContent($this->id, $this->locale);
 			}
 
 			if (empty($this->_content))

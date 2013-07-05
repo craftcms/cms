@@ -13,7 +13,7 @@ class ContentService extends BaseApplicationComponent
 	 * @param string|null $localeId
 	 * @return ContentModel|null
 	 */
-	public function getContent($elementId, $localeId = null)
+	public function getElementContent($elementId, $localeId = null)
 	{
 		$conditions = array('elementId' => $elementId);
 
@@ -77,7 +77,7 @@ class ContentService extends BaseApplicationComponent
 		// Does this element already have a row in content?
 		if ($element->id)
 		{
-			$content = $this->getContent($element->id, $localeId);
+			$content = $this->getElementContent($element->id, $localeId);
 		}
 
 		if (empty($content))
