@@ -32,4 +32,20 @@ class AssetSourceModel extends BaseComponentModel
 
 		return $attributes;
 	}
+
+	/**
+	 * Return the SourceType's name.
+	 *
+	 * @return string
+	 */
+	public function getSourceTypeName()
+	{
+		$sourceType =  craft()->assetSources->populateSourceType($this);
+		if ($sourceType)
+		{
+			return $sourceType->getName();
+		}
+		return "";
+	}
+
 }

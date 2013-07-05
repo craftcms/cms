@@ -15,6 +15,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	const RackspaceStorageOperation = 'storage';
 	const RackspaceCDNOperation = 'cdn';
 
+	static private $_rackspaceAuthLocations = array('us' => 'US', 'uk' => 'UK');
+
 	/**
 	 * Stores access information.
 	 *
@@ -58,7 +60,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	public function getSettingsHtml()
 	{
 		return craft()->templates->render('_components/assetsourcetypes/Rackspace/settings', array(
-			'settings' => $this->getSettings()
+			'settings' => $this->getSettings(),
+			'rackspaceLocations' => static::$_rackspaceAuthLocations,
 		));
 	}
 

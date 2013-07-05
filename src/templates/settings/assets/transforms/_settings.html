@@ -8,12 +8,6 @@
 	{ label: "Transforms"|t, url: url('settings/assets/transforms') }
 ] %}
 
-
-{% if transform is not defined and handle is defined %}
-	{% set transform = craft.assets.getTransformByHandle(handle) %}
-	{% if not transform %}{% exit 404 %}{% endif %}
-{% endif %}
-
 {% set isNewTransform = (transform is not defined or not transform.id) %}
 
 

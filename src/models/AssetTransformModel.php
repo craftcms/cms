@@ -6,6 +6,7 @@ namespace Craft;
  */
 class AssetTransformModel extends BaseModel
 {
+
 	/**
 	 * Use the folder name as the string representation.
 	 *
@@ -41,5 +42,19 @@ class AssetTransformModel extends BaseModel
 	public function isNamedTransform()
 	{
 		return (bool) $this->getAttribute('name');
+	}
+
+	/**
+	 * Get a list of transform modes.
+	 *
+	 * @return array
+	 */
+	public static function getTransformModes()
+	{
+		return array(
+			'crop'    => Craft::t('Scale and crop'),
+			'fit'     => Craft::t('Scale to fit'),
+			'stretch' => Craft::t('Stretch to fit')
+		);
 	}
 }

@@ -91,11 +91,12 @@ class CraftVariable
 	}
 
 	/**
-	 * @return AssetsVariable
+	 * @param array|null $criteria
+	 * @return ElementCriteriaModel
 	 */
-	public function assets()
+	public function assets($criteria = null)
 	{
-		return new AssetsVariable();
+		return craft()->elements->getCriteria(ElementType::Asset, $criteria);
 	}
 
 	/**
