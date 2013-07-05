@@ -32,10 +32,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 	init: function(elementType, $container, settings)
 	{
 
-        // Piggyback some callbacksF
-        settings.onAfterHtmlInit = this.addCallback(settings.onAfterHtmlInit, $.proxy(this, '_initializeComponents'));
-        settings.onUpdateElements = this.addCallback(settings.onUpdateElements, $.proxy(this, '_onUpdateElements'));
-
         this.base(elementType, $container, settings);
 
 
@@ -685,7 +681,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
      *
      * @private
      */
-    _initializeComponents: function ()
+    onAfterHtmlInit: function ()
     {
         if (!this.$buttons)
         {
@@ -712,6 +708,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         };
 
         this.uploader = new Craft.Uploader (this.$uploadButton, uploaderCallbacks);
+
+        this.base();
     },
 
     /**
@@ -878,7 +876,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
      * Perform actions after updating elements
      * @private
      */
-    _onUpdateElements: function ()
+    onUpdateElements: function (append)
     {
         if (this.indexMode)
         {
@@ -901,6 +899,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             // Reset the list.
             this._uploadedFileIds = [];
         }
+
+        this.base(append)
     },
 
     _initElementSelect: function ($children)

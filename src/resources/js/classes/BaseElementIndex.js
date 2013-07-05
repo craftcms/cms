@@ -58,10 +58,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     	this.$sourceToggles = this.$sidebar.find('.toggle');
     	this.$elements = this.$container.find('.elements:first');
 
-        if (typeof this.settings.onAfterHtmlInit == "function")
-        {
-            this.settings.onAfterHtmlInit();
-        }
+        this.onAfterHtmlInit();
 
     	if (this.settings.mode == 'index')
     	{
@@ -133,7 +130,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             multi:             false,
             waitForDblClick:   false,
             vertical:          true,
-            onSelectionChange: $.proxy(this, '_onSourceSelect')
+            onSelectionChange: $.proxy(this, '_onSourceChange')
         });
 
 		this.addListener(this.$viewBtns, 'click', function(ev)
@@ -159,7 +156,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     	}
 	},
 
-    _onSourceSelect: function ()
+    _onSourceChange: function ()
     {
         var sourceElement = this.$sources.filter('.sel');
         if (sourceElement.length == 0)
@@ -292,8 +289,13 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 		Craft.cp.updateResponsiveTables();
 
-		this.settings.onUpdateElements(append);
+		this.onUpdateElements(append);
 	},
+
+    onUpdateElements: function (append)
+    {
+        this.settings.onUpdateElements(append);
+    },
 
 	onSortChange: function(ev)
 	{
@@ -354,7 +356,12 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.settings.onSelectSource(sourceKey);
 	},
 
-	selectView: function($viewBtn)
+    onAfterHtmlInit: function ()
+    {
+        this.settings.onAfterHtmlInit()
+    },
+
+    selectView: function($viewBtn)
 	{
 		if (this.$viewBtn)
 		{
