@@ -3283,9 +3283,10 @@ Garnish.NiceText = Garnish.Base.extend({
 	showingHint: false,
 	val: null,
 	inputBoxSizing: 'content-box',
-	stageHeight: null,
+	height: null,
 	minHeight: null,
 	interval: null,
+	initialized: false,
 
 	init: function(input, settings)
 	{
@@ -3306,10 +3307,10 @@ Garnish.NiceText = Garnish.Base.extend({
 		this.autoHeight = (this.settings.autoHeight && this.$input.prop('nodeName') == 'TEXTAREA');
 		if (this.autoHeight)
 		{
-			this.minHeight = this.getStageHeight('');
-			this.setHeight();
+			this.minHeight = this.getHeightForValue('');
+			this.updateHeight();
 
-			this.addListener(Garnish.$win, 'resize', 'setHeight');
+			this.addListener(Garnish.$win, 'resize', 'updateHeight');
 		}
 
 		if (this.settings.hint)
@@ -3341,6 +3342,8 @@ Garnish.NiceText = Garnish.Base.extend({
 		this.addListener(this.$input, 'focus', 'onFocus');
 		this.addListener(this.$input, 'blur', 'onBlur');
 		this.addListener(this.$input, 'keydown', 'onKeyDown');
+
+		this.initialized = true;
 	},
 
 	getVal: function()
@@ -3381,7 +3384,7 @@ Garnish.NiceText = Garnish.Base.extend({
 
 			if (this.autoHeight)
 			{
-				this.setHeight();
+				this.updateHeight();
 			}
 		}
 
@@ -3422,7 +3425,7 @@ Garnish.NiceText = Garnish.Base.extend({
 		Garnish.copyTextStyles(this.$input, this.$stage);
 	},
 
-	getStageHeight: function(val)
+	getHeightForValue: function(val)
 	{
 		if (!this.$stage)
 		{
@@ -3467,33 +3470,38 @@ Garnish.NiceText = Garnish.Base.extend({
 
 		if (this.inputBoxSizing == 'border-box')
 		{
-			this.stageHeight = this.$stage.outerHeight();
+			this.getHeightForValue._height = this.$stage.outerHeight();
 		}
 		else
 		{
-			this.stageHeight = this.$stage.height();
+			this.getHeightForValue._height = this.$stage.height();
 		}
 
-		return this.stageHeight;
+		if (this.minHeight && this.getHeightForValue._height < this.minHeight)
+		{
+			this.getHeightForValue._height = this.minHeight;
+		}
+
+		return this.getHeightForValue._height;
 	},
 
-	setHeight: function()
+	updateHeight: function()
 	{
 		// has the height changed?
-		if (this.stageHeight !== this.getStageHeight(this.val))
+		if (this.height !== (this.height = this.getHeightForValue(this.val)))
 		{
-			// update the textarea height
-			var height = this.stageHeight;
+			this.$input.css('min-height', this.height);
 
-			if (height < this.minHeight)
+			if (this.initialized)
 			{
-				height = this.minHeight;
+				this.onHeightChange();
 			}
-
-			this.$input.css('min-height', height);
-
-			this.settings.onHeightChange(height);
 		}
+	},
+
+	onHeightChange: function()
+	{
+		this.settings.onHeightChange();
 	},
 
 	onFocus: function()
