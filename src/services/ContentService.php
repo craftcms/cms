@@ -73,10 +73,18 @@ class ContentService extends BaseApplicationComponent
 	 */
 	public function prepElementContentForSave(BaseElementModel $element, FieldLayoutModel $fieldLayout)
 	{
+		$elementTypeClass = $element->getElementType();
+		$elementType = craft()->elements->getElementType($elementTypeClass);
+
 		$content = $element->getContent();
 
 		// Set the required fields from the layout
 		$requiredFields = array();
+
+		if ($elementType->hasTitles())
+		{
+			$requiredFields[] = 'title';
+		}
 
 		foreach ($fieldLayout->getFields() as $field)
 		{
@@ -123,6 +131,7 @@ class ContentService extends BaseApplicationComponent
 				'id'        => $content->id,
 				'elementId' => $content->elementId,
 				'locale'    => $content->locale,
+				'title'     => $content->title,
 			);
 
 			$allFields = craft()->fields->getAllFields();

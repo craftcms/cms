@@ -747,9 +747,7 @@ table.editable textarea { font-size: 13px; line-height: 17px; color: $textcolor;
 .timewrapper .text { padding-left: 24px; width: 100%; }
 
 /* Assets related */
-.hud.assetshud .body{ max-height: 500px; overflow: auto; }
-.hud.assetshud .body .hud-buttons { padding: 15px; }
-.hud.assetshud .body .hud-buttons .btn { float: right; }
+.hud.assetshud .body { max-height: 500px; overflow: auto; }
 
 /* Prompts */
 .modal.prompt-modal .buttons .btn { margin: 5px; }

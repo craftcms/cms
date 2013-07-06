@@ -39,7 +39,7 @@ Assets.AssetEditor = Garnish.Base.extend({
                     return;
                 }
 
-                $hudHtml = $((data.headHtml ? data.headHtml : '') + (data.bodyHtml ? data.bodyHtml : '') + (data.footHtml ? data.footHtml : ''));
+                $hudHtml = $('<div/>').html((data.headHtml ? data.headHtml : '') + (data.bodyHtml ? data.bodyHtml : '') + (data.footHtml ? data.footHtml : ''));
 
                 this.hud = new Garnish.HUD(this.$trigger, $hudHtml, {
                     hudClass: 'hud assetshud',
@@ -64,8 +64,15 @@ Assets.AssetEditor = Garnish.Base.extend({
 
             this._showSpinner();
 
-            Craft.postActionRequest('assets/saveFileContent', params, $.proxy(function(data, textStatus) {
-                this.removeHud();
+            Craft.postActionRequest('assets/saveFileContent', params, $.proxy(function(response, textStatus)
+            {
+                if (response.success)
+                {
+                    // Update the title
+                    this.$trigger.find('.label').text(response.title);
+
+                    this.removeHud();
+                }
             }, this));
         },
 

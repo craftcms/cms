@@ -76,6 +76,11 @@ class SearchService extends BaseApplicationComponent
 		// Does it have any searchable attributes?
 		$searchableAttributes = $elementType->defineSearchableAttributes();
 
+		if ($elementType->hasTitles())
+		{
+			$searchableAttributes[] = 'title';
+		}
+
 		foreach ($searchableAttributes as $attribute)
 		{
 			$value = $element->$attribute;

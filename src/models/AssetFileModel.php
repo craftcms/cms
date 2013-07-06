@@ -11,16 +11,6 @@ class AssetFileModel extends BaseElementModel
 	private $_transform;
 
 	/**
-	 * User the filename as the string representation.
-	 *
-	 * @return string
-	 */
-	function __toString()
-	{
-		return $this->filename;
-	}
-
-	/**
 	 * Checks if an attribute value is set.
 	 *
 	 * @param string $name

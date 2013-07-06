@@ -161,6 +161,7 @@ class InstallService extends BaseApplicationComponent
 		craft()->db->createCommand()->createTable('content', array(
 			'elementId' => array('column' => ColumnType::Int, 'null' => false),
 			'locale'    => array('column' => ColumnType::Locale, 'null' => false),
+			'title'     => array('column' => ColumnType::Varchar),
 		));
 		craft()->db->createCommand()->createIndex('content', 'elementId,locale', true);
 		craft()->db->createCommand()->addForeignKey('content', 'elementId', 'elements', 'id', 'CASCADE', null);
@@ -627,8 +628,8 @@ class InstallService extends BaseApplicationComponent
 		$newsEntry->sectionId  = $newsSection->id;
 		$newsEntry->locale     = $inputs['locale'];
 		$newsEntry->authorId   = $this->_user->id;
-		$newsEntry->title      = Craft::t('We just installed Craft!');
 		$newsEntry->enabled    = true;
+		$newsEntry->getContent()->title = Craft::t('We just installed Craft!');
 		$newsEntry->getContent()->setAttributes(array(
 			'body' => '<p>'
 					. Craft::t('Craft is the CMS that’s powering {siteName}. It’s beautiful, powerful, flexible, and easy-to-use, and it’s made by Pixel &amp; Tonic. We can’t wait to dive in and see what it’s capable of!', $vars)

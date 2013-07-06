@@ -104,7 +104,7 @@ class EntriesService extends BaseApplicationComponent
 				'locale'  => $entry->locale
 			));
 
-			// if entry->slug is null and there is an entryLocaleRecord slug, we assume this is a front-end edit.
+			// If entry->slug is null and there is an entryLocaleRecord slug, we assume this is a front-end edit.
 			if ($entry->slug === null && $entryLocaleRecord->slug)
 			{
 				$entry->slug = $entryLocaleRecord->slug;
@@ -117,8 +117,6 @@ class EntriesService extends BaseApplicationComponent
 			$entryLocaleRecord->sectionId = $entry->sectionId;
 			$entryLocaleRecord->locale    = $entry->locale;
 		}
-
-		$entryLocaleRecord->title = $entry->title;
 
 		if ($entryLocaleRecord->isNewRecord() || $entry->slug != $entryLocaleRecord->slug)
 		{
@@ -289,7 +287,7 @@ class EntriesService extends BaseApplicationComponent
 	 */
 	private function _generateEntrySlug(EntryModel $entry)
 	{
-		$slug = ($entry->slug ? $entry->slug : $entry->title);
+		$slug = ($entry->slug ? $entry->slug : $entry->getTitle());
 
 		// Remove HTML tags
 		$slug = preg_replace('/<(.*?)>/', '', $slug);

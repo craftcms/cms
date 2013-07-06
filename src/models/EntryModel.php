@@ -15,16 +15,6 @@ class EntryModel extends BaseElementModel
 	const EXPIRED  = 'expired';
 
 	/**
-	 * Use the entry's title as its string representation.
-	 *
-	 * @return string
-	 */
-	function __toString()
-	{
-		return $this->title;
-	}
-
-	/**
 	 * @access protected
 	 * @return array
 	 */
@@ -33,7 +23,6 @@ class EntryModel extends BaseElementModel
 		return array_merge(parent::defineAttributes(), array(
 			'sectionId'  => AttributeType::Number,
 			'authorId'   => AttributeType::Number,
-			'title'      => AttributeType::String,
 			'slug'       => AttributeType::String,
 			'postDate'   => AttributeType::DateTime,
 			'expiryDate' => AttributeType::DateTime,

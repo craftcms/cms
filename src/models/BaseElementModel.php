@@ -27,11 +27,21 @@ abstract class BaseElementModel extends BaseModel
 			//'type'        => array(AttributeType::String, 'default' => $this->elementType),
 			'enabled'     => array(AttributeType::Bool, 'default' => true),
 			'archived'    => array(AttributeType::Bool, 'default' => false),
-			'locale'      => AttributeType::Locale,
+			'locale'      => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
 			'uri'         => AttributeType::String,
 			'dateCreated' => AttributeType::DateTime,
 			'dateUpdated' => AttributeType::DateTime,
 		);
+	}
+
+	/**
+	 * Use the entry's title as its string representation.
+	 *
+	 * @return string
+	 */
+	function __toString()
+	{
+		return $this->getTitle();
 	}
 
 	/**
@@ -158,6 +168,17 @@ abstract class BaseElementModel extends BaseModel
 		$criteria->parentOf($this);
 		$criteria->parentField($field);
 		return $criteria;
+	}
+
+	/**
+	 * Returns the element's title.
+	 *
+	 * @return string
+	 */
+	public function getTitle()
+	{
+		$content = $this->getContent();
+		return $content->title;
 	}
 
 	/**

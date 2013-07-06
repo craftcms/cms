@@ -376,12 +376,13 @@ class EntriesController extends BaseController
 		$entry->locale     = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocaleId());
 		$entry->id         = craft()->request->getPost('entryId');
 		$entry->authorId   = craft()->request->getPost('author', craft()->userSession->getUser()->id);
-		$entry->title      = craft()->request->getPost('title');
 		$entry->slug       = craft()->request->getPost('slug');
 		$entry->postDate   = (($postDate   = craft()->request->getPost('postDate'))   ? DateTime::createFromString($postDate,   craft()->timezone) : null);
 		$entry->expiryDate = (($expiryDate = craft()->request->getPost('expiryDate')) ? DateTime::createFromString($expiryDate, craft()->timezone) : null);
 		$entry->enabled    = (bool)craft()->request->getPost('enabled');
 		$entry->tags       = craft()->request->getPost('tags');
+
+		$entry->getContent()->title = craft()->request->getPost('title');
 
 		$fields = craft()->request->getPost('fields');
 		$entry->getContent()->setAttributes($fields);
