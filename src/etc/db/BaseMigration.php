@@ -72,14 +72,15 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param $table
 	 * @param $columns
 	 * @param $vals
+	 * @param bool
 	 * @return int
 	 */
-	public function insertAll($table, $columns, $vals)
+	public function insertAll($table, $columns, $vals, $includeAuditColumns = true)
 	{
 		Craft::log('Batch inserting into '.$table.'...');
 
 		$time = microtime(true);
-		$this->dbConnection->createCommand()->insertAll($table, $columns, $vals);
+		$this->dbConnection->createCommand()->insertAll($table, $columns, $vals, $includeAuditColumns);
 
 		$this->_processDoneTime($time);
 	}
@@ -319,13 +320,14 @@ abstract class BaseMigration extends \CDbMigration
 	 *
 	 * @param string $table the table that new rows will be inserted into.
 	 * @param array $columns the column data (name=>value) to be inserted into the table.
+	 * @param bool $includeAuditColumns
 	 */
-	public function insert($table, $columns)
+	public function insert($table, $columns, $includeAuditColumns = true)
 	{
 		Craft::log('Inserting into '.$table.'...');
 
 		$time = microtime(true);
-		$this->dbConnection->createCommand()->insert($table, $columns);
+		$this->dbConnection->createCommand()->insert($table, $columns, $includeAuditColumns);
 
 		$this->_processDoneTime($time);
 	}
@@ -338,9 +340,10 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param array  $columns    the column data (name=>value) to be updated.
 	 * @param mixed  $conditions the conditions that will be put in the WHERE part. Please refer to {@link CDbCommand::where} on how to specify conditions.
 	 * @param array  $params     the parameters to be bound to the query.
+	 * @param bool   $includeAuditColumns
 	 * @return void
 	 */
-	public function update($table, $columns, $conditions = '', $params = array())
+	public function update($table, $columns, $conditions = '', $params = array(), $includeAuditColumns = true)
 	{
 		Craft::log('Updating '.$table.'...');
 
