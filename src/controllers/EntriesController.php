@@ -192,8 +192,7 @@ class EntriesController extends BaseController
 		$hasErrors = ($variables['entry']->hasErrors() && (
 			$variables['entry']->getErrors('slug') ||
 			$variables['entry']->getErrors('postDate') ||
-			$variables['entry']->getErrors('expiryDate') ||
-			$variables['entry']->getErrors('tags')
+			$variables['entry']->getErrors('expiryDate')
 		));
 
 		// Enable preview mode?
@@ -380,7 +379,6 @@ class EntriesController extends BaseController
 		$entry->postDate   = (($postDate   = craft()->request->getPost('postDate'))   ? DateTime::createFromString($postDate,   craft()->timezone) : null);
 		$entry->expiryDate = (($expiryDate = craft()->request->getPost('expiryDate')) ? DateTime::createFromString($expiryDate, craft()->timezone) : null);
 		$entry->enabled    = (bool)craft()->request->getPost('enabled');
-		$entry->tags       = craft()->request->getPost('tags');
 
 		$entry->getContent()->title = craft()->request->getPost('title');
 
