@@ -39,7 +39,7 @@ Assets.AssetEditor = Garnish.Base.extend({
                     return;
                 }
 
-                $hudHtml = $(data.headHtml + data.bodyHtml + data.footHtml);
+                $hudHtml = $((data.headHtml ? data.headHtml : '') + (data.bodyHtml ? data.bodyHtml : '') + (data.footHtml ? data.footHtml : ''));
 
                 this.hud = new Garnish.HUD(this.$trigger, $hudHtml, {
                     hudClass: 'hud assetshud',
