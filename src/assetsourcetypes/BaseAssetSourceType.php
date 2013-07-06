@@ -819,7 +819,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		$response->setDataItem('changedFolderIds', $mirroringData['changedFolderIds']);
 
-		$files = craft()->assets->findFiles(array('folderId' => array_keys(craft()->assets->getAllChildFolders($folder))));
+		$criteria = craft()->elements->getCriteria(ElementType::Asset);
+		$criteria->folderId = array_keys(craft()->assets->getAllChildFolders($folder));
+		$files = $criteria->find();
 
 		$transferList = array();
 		foreach ($files as $file)
@@ -878,11 +880,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function deleteFolder(AssetFolderModel $folder)
 	{
-
 		// Get rid of children files
-		$files = craft()->assets->findFiles(array(
-			'folderId' => $folder->id
-		));
+		$criteria = craft()->elements->getCriteria(ElementType::Asset);
+		$criteria->folderId = $folder->id;
+		$files = $criteria->find();
 
 		foreach ($files as $file)
 		{

@@ -52,63 +52,6 @@ class AssetsController extends BaseController
 	}
 
 	/**
-	 * View a folder
-	 */
-	public function actionViewFolder()
-	{
-		$this->requireAjaxRequest();
-
-		$requestId = craft()->request->getPost('requestId', 0);
-		$folderId = craft()->request->getRequiredPost('folderId');
-		$viewType = craft()->request->getPost('viewType', 'thumbs');
-		$orderBy = craft()->request->getPost('orderBy', 'filename');
-		$sortOrder = craft()->request->getPost('sortOrder', 'ASC');
-		$keywords = array_filter(explode(" ", (string) craft()->request->getPost('keywords')));
-		$searchType = craft()->request->getPost('searchMode');
-		$offset = craft()->request->getPost('offset', 0);
-
-		$parameters = array(
-			'offset' => $offset,
-			'keywords' => $keywords,
-			'order' => $orderBy . ' ' . $sortOrder,
-			'sortOrder' => $sortOrder
-		);
-
-		$folder = craft()->assets->getFolderById($folderId);
-
-		$additionalFolderIds = array();
-		if ($searchType == 'deep')
-		{
-			$additionalFolderIds = array_keys(craft()->assets->getAllChildFolders($folder));
-		}
-
-		$files = craft()->assets->getFilesByFolderId(array_merge(array($folderId), $additionalFolderIds), $parameters);
-
-
-		$subfolders = craft()->assets->findFolders(array(
-			'parentId' => $folderId
-		));
-
-		$html = craft()->templates->render('assets/_views/folder_contents',
-			array(
-				'folder' => $folder,
-				'subfolders' => $subfolders,
-				'view' => $viewType,
-				'files' => $files,
-				'orderBy' => $orderBy,
-				'sort' => $sortOrder,
-				'elementType' => new ElementTypeVariable(craft()->elements->getElementType(ElementType::Asset))
-			)
-		);
-
-		$this->returnJson(array(
-			'requestId' => $requestId,
-			'html' => $html,
-			'total' => count($files)
-		));
-	}
-
-	/**
 	 * View a file's content.
 	 */
 	public function actionViewFile()

@@ -175,6 +175,12 @@ class ElementsService extends BaseApplicationComponent
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.locale, elements_i18n.uri')
 			->from('elements elements');
 
+		if ($elementType->hasTitles() && $criteria)
+		{
+			$query->addSelect('content.title');
+			$query->join('content content', 'content.elementId = elements.id');
+		}
+
 		if ($elementType->isTranslatable())
 		{
 			$query->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
