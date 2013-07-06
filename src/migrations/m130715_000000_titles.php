@@ -61,6 +61,9 @@ class m130715_000000_titles extends BaseMigration
 			}
 
 			unset($assets);
+
+			// Create the index on the new titles column
+			craft()->db->createCommand()->createIndex('content', 'title');
 		}
 		else
 		{

@@ -164,6 +164,7 @@ class InstallService extends BaseApplicationComponent
 			'title'     => array('column' => ColumnType::Varchar),
 		));
 		craft()->db->createCommand()->createIndex('content', 'elementId,locale', true);
+		craft()->db->createCommand()->createIndex('content', 'title');
 		craft()->db->createCommand()->addForeignKey('content', 'elementId', 'elements', 'id', 'CASCADE', null);
 		craft()->db->createCommand()->addForeignKey('content', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
 
