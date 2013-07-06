@@ -351,6 +351,23 @@ abstract class BaseMigration extends \CDbMigration
 	}
 
 	/**
+	 * @param string $table
+	 * @param array  $keyColumns
+	 * @param array  $updateColumns
+	 * @param bool   $includeAuditColumns
+	 * @return int
+	 */
+	public function insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
+	{
+		Craft::log('Inserting or updating '.$table.'...');
+
+		$time = microtime(true);
+		$this->dbConnection->createCommand()->insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns);
+
+		$this->_processDoneTime($time);
+	}
+
+	/**
 	 * Creates and executes a DELETE SQL statement.
 	 *
 	 * @param string $table      the table where the data will be deleted from.
