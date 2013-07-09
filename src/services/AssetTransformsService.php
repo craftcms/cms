@@ -39,22 +39,6 @@ class AssetTransformsService extends BaseApplicationComponent
 		}
 	}
 
-	/**
-	 * @return array
-	 */
-	private function _loadAssetTransforms()
-	{
-		if (is_null($this->_assetTransforms))
-		{
-			$this->_assetTransforms = array();
-			$models = AssetTransformModel::populateModels(AssetTransformRecord::model()->findAll());
-
-			foreach ($models as $model)
-			{
-				$this->_assetTransforms[$model->handle] = $model;
-			}
-		}
-	}
 
 	/**
 	 * Saves an asset transform.
@@ -114,44 +98,6 @@ class AssetTransformsService extends BaseApplicationComponent
 	{
 		craft()->db->createCommand()->delete('assettransforms', array('id' => $transformId));
 		return true;
-	}
-
-	/**
-	 * Gets a transform's record.
-	 *
-	 * @param int $id
-	 * @param string $handle assumed handle for image transform for nicer error messages.
-	 * @return AssetTransformRecord
-	 */
-	private function _getTransformRecordById($id = null, $handle = "")
-	{
-		if ($id)
-		{
-			$transformRecord = AssetTransformRecord::model()->findById($id);
-
-			if (!$transformRecord)
-			{
-				$this->_noTransformExists($handle);
-			}
-		}
-		else
-		{
-			$transformRecord = new AssetTransformRecord();
-		}
-
-		return $transformRecord;
-	}
-
-	/**
-	 * Throws a "No transform exists" exception.
-	 *
-	 * @access private
-	 * @param int $handle
-	 * @throws Exception
-	 */
-	private function _noTransformExists($handle)
-	{
-		throw new Exception(Craft::t("Can’t find the transform with handle “{handle}”", array('handle' => $handle)));
 	}
 
 	/**
@@ -216,6 +162,7 @@ class AssetTransformsService extends BaseApplicationComponent
 					}
 
 				}
+
 				clearstatcache(true, $targetFile);
 				$sourceType->putImageTransform($fileModel, $transformLocation, $targetFile);
 				IOHelper::deleteFile($targetFile);
@@ -383,17 +330,6 @@ class AssetTransformsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Get a trasnform's location folder.
-	 *
-	 * @param AssetTransformModel $transform
-	 * @return string
-	 */
-	private function _getTransformLocation(AssetTransformModel $transform)
-	{
-		return $transform->isNamedTransform() ? '_'.$transform->handle : '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').'_'.$transform->mode.'_'.$transform->position;
-	}
-
-	/**
 	 * Store a transform index data by it's model.
 	 *
 	 * @param AssetTransformIndexModel $data
@@ -524,4 +460,69 @@ class AssetTransformsService extends BaseApplicationComponent
 		craft()->db->createCommand()->delete('assettransformindex', 'fileId = :fileId', array(':fileId' => $fileId));
 	}
 
+	/**
+	 * Get a trasnform's location folder.
+	 *
+	 * @param AssetTransformModel $transform
+	 * @return string
+	 */
+	private function _getTransformLocation(AssetTransformModel $transform)
+	{
+		return $transform->isNamedTransform() ? '_'.$transform->handle : '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').'_'.$transform->mode.'_'.$transform->position;
+	}
+
+	/**
+	 * Gets a transform's record.
+	 *
+	 * @param int $id
+	 * @param string $handle assumed handle for image transform for nicer error messages.
+	 * @return AssetTransformRecord
+	 */
+	private function _getTransformRecordById($id = null, $handle = "")
+	{
+		if ($id)
+		{
+			$transformRecord = AssetTransformRecord::model()->findById($id);
+
+			if (!$transformRecord)
+			{
+				$this->_noTransformExists($handle);
+			}
+		}
+		else
+		{
+			$transformRecord = new AssetTransformRecord();
+		}
+
+		return $transformRecord;
+	}
+
+	/**
+	 * Throws a "No transform exists" exception.
+	 *
+	 * @access private
+	 * @param int $handle
+	 * @throws Exception
+	 */
+	private function _noTransformExists($handle)
+	{
+		throw new Exception(Craft::t("Can’t find the transform with handle “{handle}”", array('handle' => $handle)));
+	}
+
+	/**
+	 * @return array
+	 */
+	private function _loadAssetTransforms()
+	{
+		if (is_null($this->_assetTransforms))
+		{
+			$this->_assetTransforms = array();
+			$models = AssetTransformModel::populateModels(AssetTransformRecord::model()->findAll());
+
+			foreach ($models as $model)
+			{
+				$this->_assetTransforms[$model->handle] = $model;
+			}
+		}
+	}
 }
