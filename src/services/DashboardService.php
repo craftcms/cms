@@ -197,12 +197,13 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	private function _addDefaultUserWidgets()
 	{
+		$user = craft()->userSession->getUser();
 		$sections = craft()->sections->getAllSections();
 
 		foreach ($sections as $section)
 		{
 			// Only add widgets for sections they have create privileges to.
-			if (craft()->userSession->checkPermission('createEntries:'.$section->id))
+			if ($user->can('createEntries:'.$section->id))
 			{
 				$widget = new WidgetModel();
 				$widget->type = 'QuickPost';
@@ -220,6 +221,22 @@ class DashboardService extends BaseApplicationComponent
 		$widget->type = 'RecentEntries';
 		$this->saveUserWidget($widget);
 
+		// Get Help widget
+		if ($user->admin)
+		{
+			$widget = new WidgetModel();
+			$widget->type = 'GetHelp';
+			$this->saveUserWidget($widget);
+		}
+
+		// Updates widget
+		if ($user->can('performupdates'))
+		{
+			$widget = new WidgetModel();
+			$widget->type = 'Updates';
+			$this->saveUserWidget($widget);
+		}
+
 		// Blog & Tonic feed widget
 		$widget = new WidgetModel();
 		$widget->type = 'Feed';
@@ -227,19 +244,6 @@ class DashboardService extends BaseApplicationComponent
 			'url'   => 'http://feeds.feedburner.com/blogandtonic',
 			'title' => 'Blog & Tonic'
 		);
-		$this->saveUserWidget($widget);
-
-		// Only add the updates widget if they have permission to perform updates
-		if (craft()->userSession->checkPermission('performupdates'))
-		{
-			$widget = new WidgetModel();
-			$widget->type = 'Updates';
-			$this->saveUserWidget($widget);
-		}
-
-		// Get Help widget
-		$widget = new WidgetModel();
-		$widget->type = 'GetHelp';
 		$this->saveUserWidget($widget);
 	}
 

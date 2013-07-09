@@ -179,6 +179,9 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 			i++;
 		}
 
+		// Now that all of the text cells have been nice-ified, let's normalize the heights
+		this.onTextareaHeightChange();
+
 		// Now look for any autopopulate columns
 		for (var colId in this.table.columns)
 		{
@@ -248,16 +251,16 @@ Craft.EditableTable.Row = Garnish.Base.extend({
 		}
 	},
 
-	onTextareaHeightChange: function(height)
+	onTextareaHeightChange: function()
 	{
 		// Keep all the textareas' heights in sync
 		var tallestTextareaHeight = -1;
 
 		for (var i = 0; i < this.niceTexts.length; i++)
 		{
-			if (this.niceTexts[i].stageHeight > tallestTextareaHeight)
+			if (this.niceTexts[i].height > tallestTextareaHeight)
 			{
-				tallestTextareaHeight = this.niceTexts[i].stageHeight;
+				tallestTextareaHeight = this.niceTexts[i].height;
 			}
 		}
 

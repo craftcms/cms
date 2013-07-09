@@ -1377,6 +1377,7 @@ class IOHelper
 			'pdf'         => array('pdf'),
 			'photoshop'   => array('psd','psb'),
 			'php'         => array('php'),
+			'powerpoint'  => array('ppt', 'pptx'),
 			'text'        => array('txt','text'),
 			'video'       => array('mov','m4v','wmv','avi','flv','mp4','ogg','ogv','rm'),
 			'word'        => array('doc','docx')
@@ -1424,7 +1425,7 @@ class IOHelper
 	public static function cleanFilename($fileName)
 	{
 		$fileName = StringHelper::asciiString(ltrim($fileName, '.'));
-		return preg_replace('/[^a-z0-9\-_\.]/i', '_', str_replace(chr(0), '', $fileName));
+		return preg_replace('/[^@a-z0-9\-_\.]/i', '_', str_replace(chr(0), '', $fileName));
 	}
 
 	/**
