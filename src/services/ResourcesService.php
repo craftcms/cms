@@ -198,8 +198,34 @@ class ResourcesService extends BaseApplicationComponent
 		{
 			throw new HttpException(404);
 		}
+		
+		// If there is a timestamp and HTTP_IF_MODIFIED_SINCE exists, check the timestamp against requested file's last modified date.
+		// If the last modified date is less than the timestamp, return a 304 not modified and let the browser serve it from cache.
+		$timestamp = craft()->request->getParam('d', null);
+		$fetchContent = true;
 
-		$content = IOHelper::getFileContents($path);
+		if ($timestamp !== null && array_key_exists('HTTP_IF_MODIFIED_SINCE', $_SERVER))
+		{
+			$requestDate = DateTime::createFromFormat('U', $timestamp);
+			$lastModifiedFileDate = IOHelper::getLastTimeModified($path);
+
+			if ($lastModifiedFileDate && $lastModifiedFileDate <= $requestDate)
+			{
+				header('HTTP/1.1 304 Not Modified');
+				$fetchContent = false;
+				$content = '';
+			}
+		}
+		
+		if ($fetchContent)
+		{
+			$content = IOHelper::getFileContents($path);
+		
+			if (!$content)
+			{
+				throw new HttpException(404);
+			}
+		}
 
 		// Normalize URLs in CSS files
 		$mimeType = IOHelper::getMimeTypeByExtension($path);
