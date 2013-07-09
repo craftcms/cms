@@ -150,24 +150,6 @@ class InstallService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Creates the tags table.
-	 *
-	 * @access private
-	 */
-	private function _createTagsTable()
-	{
-		Craft::log('Creating the tags table.');
-
-		craft()->db->createCommand()->createTable('tags', array(
-			'name' => array('column' => ColumnType::Varchar),
-		));
-		craft()->db->createCommand()->createIndex('tags', 'name', true);
-		craft()->db->createCommand()->addForeignKey('tags', 'id', 'elements', 'id', 'CASCADE');
-
-		Craft::log('Finished creating the tags table.');
-	}
-
-	/**
 	 * Creates the content table.
 	 *
 	 * @access private

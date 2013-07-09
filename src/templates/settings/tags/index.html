@@ -1,0 +1,47 @@
+{% extends "_layouts/cp" %}
+{% set title = "Tag Sets"|t %}
+
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
+
+
+{% set content %}
+	<div id="notagsets"{% if tagSets|length %} class="hidden"{% endif %}>
+		<p>{{ "No tag sets exist yet."|t }}</p>
+	</div>
+
+	{% if tagSets|length %}
+		<table id="tagsets" class="data collapsible">
+			<thead>
+				<th scope="col">{{ "Name"|t }}</th>
+				<th scope="col">{{ "Handle"|t }}</th>
+				<td class="thin"></td>
+			</thead>
+			<tbody>
+				{% for tagSet in tagSets %}
+					<tr data-id="{{ tagSet.id }}" data-name="{{ tagSet.name|t }}">
+						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/tags/' ~ tagSet.id) }}">{{ tagSet.name|t }}</a></th>
+						<td data-title="{{ 'Handle'|t }}"><code>{{ tagSet.handle }}</code></td>
+						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+
+	<div class="buttons">
+		<a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New Tag Set"|t }}</a>
+	</div>
+{% endset %}
+
+
+{% set js %}
+	new Craft.AdminTable({
+		tableSelector: '#tagsets',
+		noObjectsSelector: '#notagsets',
+		deleteAction: 'tags/deleteTagSet',
+		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its tags?"|t }}',
+	});
+{% endset %}
+{% includeJs js %}

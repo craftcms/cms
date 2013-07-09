@@ -129,11 +129,14 @@ $cpRoutes['settings/fields/(?P<groupId>\d+)']                     = 'settings/fi
 $cpRoutes['settings/fields/new']                                  = 'settings/fields/_edit';
 $cpRoutes['settings/fields/edit/(?P<fieldId>\d+)']                = 'settings/fields/_edit';
 $cpRoutes['settings/general']                                     = array('action' => 'systemSettings/generalSettings');
+$cpRoutes['settings/globals/new']                                 = array('action' => 'systemSettings/editGlobalSet');
+$cpRoutes['settings/globals/(?P<globalSetId>\d+)']                = array('action' => 'systemSettings/editGlobalSet');
 $cpRoutes['settings/plugins/(?P<pluginClass>{handle})']           = 'settings/plugins/_settings';
 $cpRoutes['settings/sections/new']                                = 'settings/sections/_edit';
 $cpRoutes['settings/sections/(?P<sectionId>\d+)']                 = 'settings/sections/_edit';
-$cpRoutes['settings/globals/new']                                 = array('action' => 'systemSettings/editGlobalSet');
-$cpRoutes['settings/globals/(?P<globalSetId>\d+)']                = array('action' => 'systemSettings/editGlobalSet');
+$cpRoutes['settings/tags']                                        = array('action' => 'tags/index');
+$cpRoutes['settings/tags/new']                                    = array('action' => 'tags/editTagSet');
+$cpRoutes['settings/tags/(?P<tagSetId>\d+)']                      = array('action' => 'tags/editTagSet');
 
 $cpRoutes['settings/packages'] = array(
 	'params' => array(
@@ -217,6 +220,7 @@ $components['routes']['class']               = 'Craft\RoutesService';
 $components['search']['class']               = 'Craft\SearchService';
 $components['security']['class']             = 'Craft\SecurityService';
 $components['systemSettings']['class']       = 'Craft\SystemSettingsService';
+$components['tags']['class']                 = 'Craft\TagsService';
 $components['templates']['class']            = 'Craft\TemplatesService';
 $components['updates']['class']              = 'Craft\UpdatesService';
 
