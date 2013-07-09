@@ -296,26 +296,6 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Fires an 'onBeforeSaveUser' event.
-	 *
-	 * @param Event $event
-	 */
-	public function onBeforeSaveUser(Event $event)
-	{
-		$this->raiseEvent('onBeforeSaveUser', $event);
-	}
-
-	/**
-	 * Fires an 'onSaveUser' event.
-	 *
-	 * @param Event $event
-	 */
-	public function onSaveUser(Event $event)
-	{
-		$this->raiseEvent('onSaveUser', $event);
-	}
-
-	/**
 	 * Saves a user's profile.
 	 *
 	 * @param UserModel $user
@@ -595,7 +575,27 @@ class UsersService extends BaseApplicationComponent
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
 
-		return $userRecord->delete();
+		if ($userRecord)
+		{
+			// Fire an 'onBeforeDeleteUser' event
+			$this->onBeforeDeleteUser(new Event($this, array(
+				'user' => $user
+			)));
+
+			$success = $userRecord->delete();
+
+			if ($success)
+			{
+				// Fire an 'onDeleteUser' event
+				$this->onDeleteUser(new Event($this, array(
+					'user' => $user
+				)));
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -789,6 +789,49 @@ class UsersService extends BaseApplicationComponent
 		return false;
 	}
 
+	// Events
+
+	/**
+	 * Fires an 'onBeforeSaveUser' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeSaveUser(Event $event)
+	{
+		$this->raiseEvent('onBeforeSaveUser', $event);
+	}
+
+	/**
+	 * Fires an 'onSaveUser' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onSaveUser(Event $event)
+	{
+		$this->raiseEvent('onSaveUser', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeDeleteUser' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeDeleteUser(Event $event)
+	{
+		$this->raiseEvent('onBeforeDeleteUser', $event);
+	}
+
+	/**
+	 * Fires an 'onDeleteUser' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onDeleteUser(Event $event)
+	{
+		$this->raiseEvent('onDeleteUser', $event);
+	}
+
+	// Private stuff
 
 	/**
 	 * Gets a user record by its ID.
