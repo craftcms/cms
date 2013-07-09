@@ -27,11 +27,21 @@ abstract class BaseElementModel extends BaseModel
 			//'type'        => array(AttributeType::String, 'default' => $this->elementType),
 			'enabled'     => array(AttributeType::Bool, 'default' => true),
 			'archived'    => array(AttributeType::Bool, 'default' => false),
-			'locale'      => AttributeType::Locale,
+			'locale'      => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
 			'uri'         => AttributeType::String,
 			'dateCreated' => AttributeType::DateTime,
 			'dateUpdated' => AttributeType::DateTime,
 		);
+	}
+
+	/**
+	 * Use the entry's title as its string representation.
+	 *
+	 * @return string
+	 */
+	function __toString()
+	{
+		return $this->getTitle();
 	}
 
 	/**
@@ -161,6 +171,17 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns the element's title.
+	 *
+	 * @return string
+	 */
+	public function getTitle()
+	{
+		$content = $this->getContent();
+		return $content->title;
+	}
+
+	/**
 	 * Is set?
 	 *
 	 * @param $name
@@ -280,17 +301,6 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Sets the content.
-	 *
-	 * @param array $values
-	 */
-	public function setContent($values)
-	{
-		$content = $this->getContent();
-		$content->setAttributes($values);
-	}
-
-	/**
 	 * Populates a new model instance with a given set of attributes.
 	 *
 	 * @static
@@ -341,7 +351,7 @@ abstract class BaseElementModel extends BaseModel
 				$criteria = craft()->elements->getCriteria($this->elementType, $criteria);
 			}
 
-			$elementIds = craft()->elements->findElements($criteria, true);
+			$elementIds = $criteria->ids();
 			$key = array_search($this->id, $elementIds);
 
 			if ($key !== false && isset($elementIds[$key+$dir]))
@@ -363,12 +373,14 @@ abstract class BaseElementModel extends BaseModel
 		{
 			if ($this->id)
 			{
-				$this->_content = craft()->content->getContent($this->id, $this->locale);
+				$this->_content = craft()->content->getElementContent($this->id, $this->locale);
 			}
 
 			if (empty($this->_content))
 			{
 				$this->_content = new ContentModel();
+				$this->_content->elementId = $this->id;
+				$this->_content->locale = $this->locale;
 			}
 		}
 

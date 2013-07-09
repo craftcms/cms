@@ -13,7 +13,6 @@ class HttpRequestService extends \CHttpRequest
 	private $_isCpRequest = false;
 	private $_isResourceRequest = false;
 	private $_isActionRequest = false;
-	private $_isTemplateRequest = false;
 
 	private $_actionSegments;
 	private $_isMobileBrowser;
@@ -165,16 +164,6 @@ class HttpRequestService extends \CHttpRequest
 	public function isActionRequest()
 	{
 		return $this->_isActionRequest;
-	}
-
-	/**
-	 * Returns whether this is a template request.
-	 *
-	 * @return bool
-	 */
-	public function isTemplateRequest()
-	{
-		return $this->_isTemplateRequest;
 	}
 
 	/**
@@ -632,11 +621,10 @@ class HttpRequestService extends \CHttpRequest
 		if ($firstSegment === $resourceTrigger)
 		{
 			$this->_isResourceRequest = true;
-			return;
 		}
 
 		// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request
-		if ($firstSegment === $actionTrigger || (in_array($this->_path, array($loginPath, $setPasswordPath, $activateAccountPath, $logoutPath)) && !$this->getParam('action')))
+		else if ($firstSegment === $actionTrigger || (in_array($this->_path, array($loginPath, $setPasswordPath, $activateAccountPath, $logoutPath)) && !$this->getParam('action')))
 		{
 			$this->_isActionRequest = true;
 
@@ -660,21 +648,16 @@ class HttpRequestService extends \CHttpRequest
 			{
 				$this->_actionSegments = array_slice($this->_segments, 1);
 			}
-
-			return;
 		}
 
 		// If there's a non-empty 'action' param (either in the query string or post data), it's an action request
-		if (($action = $this->getParam('action')) !== null)
+		else if (($action = $this->getParam('action')) !== null)
 		{
 			$this->_isActionRequest = true;
 
 			// Sanitize
 			$action = $this->decodePathInfo($action);
 			$this->_actionSegments = array_filter(explode('/', $action));
-			return;
 		}
-
-		$this->_isTemplateRequest = true;
 	}
 }

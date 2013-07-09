@@ -175,6 +175,12 @@ class ElementsService extends BaseApplicationComponent
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.locale, elements_i18n.uri')
 			->from('elements elements');
 
+		if ($elementType->hasTitles() && $criteria)
+		{
+			$query->addSelect('content.title');
+			$query->join('content content', 'content.elementId = elements.id');
+		}
+
 		if ($elementType->isTranslatable())
 		{
 			$query->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
@@ -427,34 +433,49 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	private function _normalizeRelationParams($elements, $fields)
 	{
+		$elementIds = array();
+		$fieldIds = array();
+
 		// Normalize the element(s)
 		$elements = ArrayHelper::stringToArray($elements);
 
-		foreach ($elements as &$element)
+		foreach ($elements as $element)
 		{
-			if ($element instanceof BaseElementModel)
+			if (is_numeric($element) && intval($element) == $element)
 			{
-				$element = $element->id;
+				$elementIds[] = $element;
+			}
+			else if ($element instanceof BaseElementModel)
+			{
+				$elementIds[] = $element->id;
+			}
+			else if ($element instanceof ElementCriteriaModel)
+			{
+				$elementIds = array_merge($elementIds, $element->ids());
 			}
 		}
 
 		// Normalize the field(s)
 		$fields = ArrayHelper::stringToArray($fields);
 
-		foreach ($fields as &$field)
+		foreach ($fields as $field)
 		{
-			if (is_string($field) && !is_numeric($field))
+			if (is_numeric($field) && intval($field) == $field)
+			{
+				$fieldIds[] = $field;
+			}
+			else if (is_string($field))
 			{
 				$fieldModel = craft()->fields->getFieldByHandle($field);
 
 				if ($fieldModel)
 				{
-					$field = $fieldModel->id;
+					$fieldIds[] = $fieldModel->id;
 				}
 			}
 		}
 
-		return array($elements, $fields);
+		return array($elementIds, $fieldIds);
 	}
 
 	/**

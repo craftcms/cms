@@ -1,8 +1,5 @@
 {% extends "settings/assets/_layout" %}
 {% set selectedTab = 'transforms' %}
-{% set transforms = craft.assets.getAllTransforms() %}
-{% set transformModes = craft.assets.getTransformModes() %}
-
 
 {% set content %}
 <p id="notransforms"{% if transforms|length %} class="hidden"{% endif %}>

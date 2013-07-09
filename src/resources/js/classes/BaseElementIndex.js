@@ -7,8 +7,11 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	state: null,
 	stateStorageId: null,
 	searchTimeout: null,
+	elementSelect: null,
+	sourceSelect: null,
 
 	$container: null,
+	$main: null,
 	$scroller: null,
 	$toolbar: null,
 	$search: null,
@@ -30,97 +33,104 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.$container = $container;
 		this.setSettings(settings, Craft.BaseElementIndex.defaults);
 
-        // Set the state object
-        this.state = {};
+		// Set the state object
+		this.state = {};
 
-        if (typeof Storage !== 'undefined' && this.settings.id)
-        {
-        	this.stateStorageId = 'Craft.BaseElementIndex.'+this.settings.id;
+		if (typeof Storage !== 'undefined' && this.settings.id)
+		{
+			this.stateStorageId = 'Craft.BaseElementIndex.'+this.settings.id;
 
-        	if (typeof localStorage[this.stateStorageId] != 'undefined')
-        	{
-        		$.extend(this.state, JSON.parse(localStorage[this.stateStorageId]));
-        	}
-        }
+			if (typeof localStorage[this.stateStorageId] != 'undefined')
+			{
+				$.extend(this.state, JSON.parse(localStorage[this.stateStorageId]));
+			}
+		}
 
-    	// Find the DOM elements
-    	this.$toolbar = this.$container.find('.toolbar:first');
-    	this.$search = this.$toolbar.find('.search:first input:first');
-    	this.$viewBtns = this.$toolbar.find('.btngroup .btn');
-    	this.$mainSpinner = this.$toolbar.find('.spinner:first');
-    	this.$loadingMoreSpinner = this.$container.find('.spinner.loadingmore')
-    	this.$sidebar = this.$container.find('.sidebar:first');
-    	this.$sources = this.$sidebar.find('nav a');
-    	this.$sourceToggles = this.$sidebar.find('.toggle');
-    	this.$elements = this.$container.find('.elements:first');
+		// Find the DOM elements
+		this.$main = this.$container.find('.main');
+		this.$toolbar = this.$container.find('.toolbar:first');
+		this.$search = this.$toolbar.find('.search:first input:first');
+		this.$viewBtns = this.$toolbar.find('.btngroup .btn');
+		this.$mainSpinner = this.$toolbar.find('.spinner:first');
+		this.$loadingMoreSpinner = this.$container.find('.spinner.loadingmore')
+		this.$sidebar = this.$container.find('.sidebar:first');
+		this.$sources = this.$sidebar.find('nav a');
+		this.$sourceToggles = this.$sidebar.find('.toggle');
+		this.$elements = this.$container.find('.elements:first');
 
-    	if (this.settings.mode == 'index')
-    	{
-    		this.$scroller = Garnish.$win;
-    	}
-    	else
-    	{
-    		this.$scroller = this.$container.find('.main');
-    	}
+		this.onAfterHtmlInit();
 
-    	// Select the initial source
-    	var source = this.getState('source');
+		if (this.settings.mode == 'index')
+		{
+			this.$scroller = Garnish.$win;
+		}
+		else
+		{
+			this.$scroller = this.$main;
+		}
 
-    	if (source)
-    	{
-    		var $source = this.getSourceByKey(source);
+		// Select the initial source
+		var source = this.getState('source');
 
-    		if ($source)
-    		{
-    			// Expand any parent sources
-    			var $parentSources = $source.parentsUntil('.sidebar', 'li');
-    			$parentSources.not(':first').addClass('expanded');
-    		}
-    	}
+		if (source)
+		{
+			var $source = this.getSourceByKey(source);
 
-    	if (!source || !$source)
-    	{
-    		// Select the first source by default
-    		var $source = this.$sources.first();
-    	}
+			if ($source)
+			{
+				// Expand any parent sources
+				var $parentSources = $source.parentsUntil('.sidebar', 'li');
+				$parentSources.not(':first').addClass('expanded');
+			}
+		}
 
-    	this.selectSource($source);
+		if (!source || !$source)
+		{
+			// Select the first source by default
+			var $source = this.$sources.first();
+		}
 
-    	// Select the initial view mode
-    	var view = this.getState('view');
+		this.selectSource($source);
 
-    	if (view)
-    	{
-    		var $viewBtn = this.$viewBtns.filter('[data-view='+view+']:first');
-    	}
+		// Select the initial view mode
+		var view = this.getState('view');
 
-    	if (!view || !$viewBtn.length)
-    	{
-    		var $viewBtn = this.$viewBtns.filter('[data-view=table]:first');
-    	}
+		if (view)
+		{
+			var $viewBtn = this.$viewBtns.filter('[data-view='+view+']:first');
+		}
 
-    	if ($viewBtn.length)
-    	{
-    		this.selectView($viewBtn);
-    	}
-    	else
-    	{
-    		this.setState('view', 'table');
-    	}
+		if (!view || !$viewBtn.length)
+		{
+			var $viewBtn = this.$viewBtns.filter('[data-view=table]:first');
+		}
 
-    	// Load up the elements!
-    	this.updateElements();
+		if ($viewBtn.length)
+		{
+			this.selectView($viewBtn);
+		}
+		else
+		{
+			this.setState('view', 'table');
+		}
 
-    	// Add some listeners
-    	this.addListener(this.$sourceToggles, 'click', function(ev)
+		// Load up the elements!
+		this.updateElements();
+
+		// Add some listeners
+		this.addListener(this.$sourceToggles, 'click', function(ev)
 		{
 			$(ev.currentTarget).parent().toggleClass('expanded');
+			ev.stopPropagation();
 		});
 
-    	this.addListener(this.$sources, 'click', function(ev)
-		{
-			this.selectSource($(ev.currentTarget));
-			this.updateElements();
+		// The source selector
+		this.sourceSelect = new Garnish.Select(this.$sidebar.find('nav'), this.$sources, {
+			selectedClass:     'sel',
+			multi:             false,
+			waitForDblClick:   false,
+			vertical:          true,
+			onSelectionChange: $.proxy(this, '_onSourceChange')
 		});
 
 		this.addListener(this.$viewBtns, 'click', function(ev)
@@ -129,21 +139,33 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			this.updateElements();
 		});
 
-    	this.addListener(this.$search, 'textchange', $.proxy(function()
-    	{
-    		if (this.searchTimeout)
-    		{
-    			clearTimeout(this.searchTimeout);
-    		}
+		this.addListener(this.$search, 'textchange', $.proxy(function()
+		{
+			if (this.searchTimeout)
+			{
+				clearTimeout(this.searchTimeout);
+			}
 
-    		this.searchTimeout = setTimeout($.proxy(this, 'updateElements'), 500);
-    	}, this));
+			this.searchTimeout = setTimeout($.proxy(this, 'updateElements'), 500);
+		}, this));
 
-    	// Auto-focus the Search box
-    	if (!Garnish.isMobileBrowser(true))
-    	{
-    		this.$search.focus();
-    	}
+		// Auto-focus the Search box
+		if (!Garnish.isMobileBrowser(true))
+		{
+			this.$search.focus();
+		}
+	},
+
+	_onSourceChange: function ()
+	{
+		var sourceElement = this.$sources.filter('.sel');
+		if (sourceElement.length == 0)
+		{
+			sourceElement = this.$sources.filter(':first');
+		}
+
+		this.selectSource(sourceElement);
+		this.updateElements();
 	},
 
 	getState: function(key)
@@ -171,7 +193,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 		if (this.stateStorageId)
 		{
-		    localStorage[this.stateStorageId] = JSON.stringify(this.state);
+			localStorage[this.stateStorageId] = JSON.stringify(this.state);
 		}
 	},
 
@@ -267,6 +289,11 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 		Craft.cp.updateResponsiveTables();
 
+		this.onUpdateElements(append);
+	},
+
+	onUpdateElements: function (append)
+	{
 		this.settings.onUpdateElements(append);
 	},
 
@@ -317,8 +344,21 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			this.$source.removeClass('sel');
 		}
 
+		var sourceKey = $source.data('key');
 		this.$source = $source.addClass('sel');
-		this.setState('source', $source.data('key'));
+		this.setState('source', sourceKey);
+
+		this.onSelectSource(sourceKey);
+	},
+
+	onSelectSource: function(sourceKey)
+	{
+		this.settings.onSelectSource(sourceKey);
+	},
+
+	onAfterHtmlInit: function ()
+	{
+		this.settings.onAfterHtmlInit()
 	},
 
 	selectView: function($viewBtn)
@@ -421,6 +461,32 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 				this.rememberDisabledElementId(elementId);
 			}
 		}
+	},
+
+	setElementSelect: function (obj)
+	{
+		this.elementSelect = obj;
+	},
+
+	addCallback: function (currentCallback, newCallback)
+	{
+		return $.proxy(function () {
+			if (typeof currentCallback == 'function')
+			{
+				currentCallback.apply(this, arguments);
+			}
+			newCallback.apply(this, arguments);
+		}, this);
+	},
+
+	setIndexBusy: function () {
+		this.$mainSpinner.removeClass('hidden');
+		this.isIndexBusy = true;
+	},
+
+	setIndexAvailable: function () {
+		this.$mainSpinner.addClass('hidden');
+		this.isIndexBusy = false;
 	}
 },
 {
@@ -431,6 +497,8 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		disabledElementIds: [],
 		onUpdateElements: $.noop,
 		onEnableElements: $.noop,
-		onDisableElements: $.noop
+		onDisableElements: $.noop,
+		onSelectSource: $.noop,
+		onAfterHtmlInit: $.noop
 	}
 });

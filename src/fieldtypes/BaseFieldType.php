@@ -42,12 +42,12 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	/**
 	 * Returns the input value as it should be saved to the database.
 	 *
+	 * @param mixed $value
 	 * @return mixed
 	 */
-	public function getPostData()
+	public function prepValueFromPost($value)
 	{
-		$fieldHandle = $this->model->handle;
-		$value = $this->element->getRawContent($fieldHandle);
+		// TODO: Remove redundant prepPostData() in Craft 2.0
 		return $this->prepPostData($value);
 	}
 

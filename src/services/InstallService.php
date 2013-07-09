@@ -150,6 +150,24 @@ class InstallService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Creates the tags table.
+	 *
+	 * @access private
+	 */
+	private function _createTagsTable()
+	{
+		Craft::log('Creating the tags table.');
+
+		craft()->db->createCommand()->createTable('tags', array(
+			'name' => array('column' => ColumnType::Varchar),
+		));
+		craft()->db->createCommand()->createIndex('tags', 'name', true);
+		craft()->db->createCommand()->addForeignKey('tags', 'id', 'elements', 'id', 'CASCADE');
+
+		Craft::log('Finished creating the tags table.');
+	}
+
+	/**
 	 * Creates the content table.
 	 *
 	 * @access private
@@ -161,8 +179,10 @@ class InstallService extends BaseApplicationComponent
 		craft()->db->createCommand()->createTable('content', array(
 			'elementId' => array('column' => ColumnType::Int, 'null' => false),
 			'locale'    => array('column' => ColumnType::Locale, 'null' => false),
+			'title'     => array('column' => ColumnType::Varchar),
 		));
 		craft()->db->createCommand()->createIndex('content', 'elementId,locale', true);
+		craft()->db->createCommand()->createIndex('content', 'title');
 		craft()->db->createCommand()->addForeignKey('content', 'elementId', 'elements', 'id', 'CASCADE', null);
 		craft()->db->createCommand()->addForeignKey('content', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
 
@@ -556,7 +576,7 @@ class InstallService extends BaseApplicationComponent
 		Craft::log('Setting the Homepage content.');
 
 		$homepageGlobalSet->locale = $inputs['locale'];
-		$homepageGlobalSet->setContent(array(
+		$homepageGlobalSet->getContent()->setAttributes(array(
 			'heading' => Craft::t('Welcome to {siteName}!', $vars),
 			'body'    => '<p>'.Craft::t('It’s true, this site doesn’t have a whole lot of content yet, but don’t worry. Our web developers have just installed the CMS, and they’re setting things up for the content editors this very moment. Soon {siteName} will be an oasis of fresh perspectives, sharp analyses, and astute opinions that will keep you coming back again and again.', $vars).'</p>',
 		));
@@ -627,9 +647,9 @@ class InstallService extends BaseApplicationComponent
 		$newsEntry->sectionId  = $newsSection->id;
 		$newsEntry->locale     = $inputs['locale'];
 		$newsEntry->authorId   = $this->_user->id;
-		$newsEntry->title      = Craft::t('We just installed Craft!');
 		$newsEntry->enabled    = true;
-		$newsEntry->setContent(array(
+		$newsEntry->getContent()->title = Craft::t('We just installed Craft!');
+		$newsEntry->getContent()->setAttributes(array(
 			'body' => '<p>'
 					. Craft::t('Craft is the CMS that’s powering {siteName}. It’s beautiful, powerful, flexible, and easy-to-use, and it’s made by Pixel &amp; Tonic. We can’t wait to dive in and see what it’s capable of!', $vars)
 					. '</p><!--pagebreak--><p>'

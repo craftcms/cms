@@ -7,27 +7,6 @@ namespace Craft;
 class EntriesService extends BaseApplicationComponent
 {
 	/**
-	 * Returns tags by a given entry ID.
-	 *
-	 * @param $entryId
-	 * @return array
-	 */
-	public function getTagsByEntryId($entryId)
-	{
-		$tags = array();
-
-		$entryRecord = EntryRecord::model()->findById($entryId);
-		$entryTagRecords = $this->_getTagsForEntry($entryRecord);
-
-		foreach ($entryTagRecords as $record)
-		{
-			$tags[] = $record->name;
-		}
-
-		return $tags;
-	}
-
-	/**
 	 * Saves an entry.
 	 *
 	 * @param EntryModel $entry
@@ -41,7 +20,7 @@ class EntriesService extends BaseApplicationComponent
 		// Entry data
 		if (!$isNewEntry)
 		{
-			$entryRecord = EntryRecord::model()->with('element', 'entryTagEntries')->findById($entry->id);
+			$entryRecord = EntryRecord::model()->with('element')->findById($entry->id);
 
 			if (!$entryRecord)
 			{
@@ -104,7 +83,7 @@ class EntriesService extends BaseApplicationComponent
 				'locale'  => $entry->locale
 			));
 
-			// if entry->slug is null and there is an entryLocaleRecord slug, we assume this is a front-end edit.
+			// If entry->slug is null and there is an entryLocaleRecord slug, we assume this is a front-end edit.
 			if ($entry->slug === null && $entryLocaleRecord->slug)
 			{
 				$entry->slug = $entryLocaleRecord->slug;
@@ -117,8 +96,6 @@ class EntriesService extends BaseApplicationComponent
 			$entryLocaleRecord->sectionId = $entry->sectionId;
 			$entryLocaleRecord->locale    = $entry->locale;
 		}
-
-		$entryLocaleRecord->title = $entry->title;
 
 		if ($entryLocaleRecord->isNewRecord() || $entry->slug != $entryLocaleRecord->slug)
 		{
@@ -168,14 +145,10 @@ class EntriesService extends BaseApplicationComponent
 		$entry->addErrors($elementLocaleRecord->getErrors());
 
 		// Entry content
-		$content = craft()->content->populateContentFromPost($entry, $section->getFieldLayout(), $entry->locale);
+		$fieldLayout = $section->getFieldLayout();
+		$content = craft()->content->prepElementContentForSave($entry, $fieldLayout);
 		$content->validate();
 		$entry->addErrors($content->getErrors());
-
-		// Tags
-		$entryTagRecords = $this->_processTags($entry, $entryRecord);
-		$tagErrors = $this->_validateEntryTagRecords($entryTagRecords);
-		$entry->addErrors($tagErrors);
 
 		if (!$entry->hasErrors())
 		{
@@ -202,47 +175,6 @@ class EntriesService extends BaseApplicationComponent
 
 			// Update the search index
 			craft()->search->indexElementAttributes($entry, $entry->locale);
-
-			// If we have any tags to process
-			if (!empty($entryTagRecords))
-			{
-				// Create any of the new tag records first.
-				if (isset($entryTagRecords['new']))
-				{
-					foreach ($entryTagRecords['new'] as $newEntryTagRecord)
-					{
-						$newEntryTagRecord->save(false);
-					}
-				}
-
-				// Add any tags to the entry.
-				if (isset($entryTagRecords['add']))
-				{
-					foreach ($entryTagRecords['add'] as $addEntryTagRecord)
-					{
-						$entryTagEntryRecord = new EntryTagEntryRecord();
-						$entryTagEntryRecord->tagId = $addEntryTagRecord->id;
-						$entryTagEntryRecord->entryId = $elementRecord->id;
-						$entryTagEntryRecord->save(false);
-
-						$this->_updateTagCount($addEntryTagRecord);
-					}
-				}
-
-				// Process any tags that need to be removed from the entry.
-				if (isset($entryTagRecords['delete']))
-				{
-					foreach ($entryTagRecords['delete'] as $deleteEntryTagRecord)
-					{
-						EntryTagEntryRecord::model()->deleteAllByAttributes(array(
-							'tagId'   => $deleteEntryTagRecord->id,
-							'entryId' => $elementRecord->id
-						));
-
-						$this->_updateTagCount($deleteEntryTagRecord);
-					}
-				}
-			}
 
 			// Save a new version
 			if (Craft::hasPackage(CraftPackage::PublishPro))
@@ -288,7 +220,7 @@ class EntriesService extends BaseApplicationComponent
 	 */
 	private function _generateEntrySlug(EntryModel $entry)
 	{
-		$slug = ($entry->slug ? $entry->slug : $entry->title);
+		$slug = ($entry->slug ? $entry->slug : $entry->getTitle());
 
 		// Remove HTML tags
 		$slug = preg_replace('/<(.*?)>/', '', $slug);
@@ -346,187 +278,5 @@ class EntriesService extends BaseApplicationComponent
 		{
 			$entry->slug = '';
 		}
-	}
-
-	/**
-	 * Keeps the given $entryTagRecord->count column up-to-date with the number of entries using that tag.
-	 *
-	 * @param EntryTagRecord $entryTagRecord
-	 */
-	private function _updateTagCount(EntryTagRecord $entryTagRecord)
-	{
-		$criteria = new \CDbCriteria();
-		$criteria->addCondition('tagId =:tagId');
-		$criteria->params[':tagId'] = $entryTagRecord->id;
-		$tagCount = EntryTagEntryRecord::model()->count($criteria);
-
-		// If the count is zero, let's delete the entryTagRecord.
-		if ($tagCount == 0)
-		{
-			$entryTagRecord->delete();
-		}
-		else
-		{
-			$entryTagRecord->count = $tagCount;
-			$entryTagRecord->save(false);
-		}
-	}
-
-	/**
-	 * Checks to see if there are any tag validation errors.  If so, returns them.
-	 *
-	 * @param $entryTagRecords
-	 * @return array
-	 */
-	private function _validateEntryTagRecords($entryTagRecords)
-	{
-		$errors = array();
-
-		foreach ($entryTagRecords as $entryTagRecordActions)
-		{
-			foreach ($entryTagRecordActions as $entryTagRecord)
-			{
-				if (!$entryTagRecord->validate())
-				{
-					$errors[] = $entryTagRecord->getErrors();
-				}
-			}
-		}
-
-		return $errors;
-	}
-
-	/**
-	 * Processes any tags on the EntryModel for the given EntryRecord.  Will generate a list of tags that need to be
-	 * added, updated or deleted for an entry.
-	 *
-	 * @param EntryModel  $entry
-	 * @param EntryRecord $entryRecord
-	 * @return array
-	 */
-	private function _processTags(EntryModel $entry, EntryRecord $entryRecord)
-	{
-		$entryTagRecords = array();
-
-		// Get the entries' current EntryTags
-		$currentEntryTagRecords = $this->_getTagsForEntry($entryRecord);
-
-		// See if any tags have even changed for this entry.
-		if (count($currentEntryTagRecords) == count($entry->tags))
-		{
-			$identical = true;
-
-			foreach ($currentEntryTagRecords as $currentEntryTagRecord)
-			{
-				if (!preg_grep("/{$currentEntryTagRecord->name}/i", $entry->tags))
-				{
-					// Something is different.
-					$identical = false;
-					break;
-				}
-			}
-
-			if ($identical)
-			{
-				// Identical, so just return the empty array.
-				return $entryTagRecords;
-			}
-		}
-
-		// Process the new entry tags.
-		foreach ($entry->tags as $newEntryTag)
-		{
-			foreach ($currentEntryTagRecords as $currentEntryTagRecord)
-			{
-				// The current entry already has this tag assigned to it... skip.
-				if (strtolower($currentEntryTagRecord->name) == strtolower($newEntryTag))
-				{
-					// Try the next $newEntryTag
-					continue 2;
-				}
-			}
-
-			// If we make it here, then we know the tag is new for this entry because it doesn't exist in $currentEntryTagRecords
-			// Make sure the tag exists at all, if not create the record.
-			if (($entryTagRecord = $this->_getEntryTagRecordByName($newEntryTag)) == null)
-			{
-				$entryTagRecord = new EntryTagRecord();
-				$entryTagRecord->name = $newEntryTag;
-				$entryTagRecord->count = 1;
-
-				// Keep track of the new tag records.
-				$entryTagRecords['new'][] = $entryTagRecord;
-			}
-
-			// Keep track of the tags we'll need to add to the entry.
-			$entryTagRecords['add'][] = $entryTagRecord;
-		}
-
-		// Now check for deleted tags from the entry.
-		foreach ($currentEntryTagRecords as $currentEntryTagRecord)
-		{
-			foreach ($entry->tags as $newEntryTag)
-			{
-				if (strtolower($currentEntryTagRecord->name) == strtolower($newEntryTag))
-				{
-					// Try the next $currentEntryTagRecord
-					continue 2;
-				}
-			}
-
-			// If we made it here, then we know the tag was removed from the entry.
-			$entryTagRecords['delete'][] = $currentEntryTagRecord;
-		}
-
-		return $entryTagRecords;
-	}
-
-	/**
-	 * Given an entry, will return an array of EntryTagRecords associated with the entry.
-	 *
-	 * @param EntryRecord $entryRecord
-	 * @return array
-	 */
-	private function _getTagsForEntry(EntryRecord $entryRecord)
-	{
-		$currentEntryTagRecords = array();
-		$entryTagEntries = $entryRecord->entryTagEntries;
-
-		foreach ($entryTagEntries as $entryTagEntry)
-		{
-			if (($currentEntryTagRecord = $this->_getEntryTagRecordById($entryTagEntry->tagId)) !== null)
-			{
-				$currentEntryTagRecords[] = $currentEntryTagRecord;
-			}
-		}
-
-		return $currentEntryTagRecords;
-	}
-
-	/**
-	 * Returns an EntryTagRecord with the given tag name.
-	 *
-	 * @param $tagName
-	 * @return EntryTagRecord
-	 */
-	private function _getEntryTagRecordByName($tagName)
-	{
-		$entryTagRecord = EntryTagRecord::model()->findByAttributes(
-			array('name' => $tagName)
-		);
-
-		return $entryTagRecord;
-	}
-
-	/**
-	 * Returns an EntryTagRecord with the given ID.
-	 *
-	 * @param $id
-	 * @return EntryTagRecord
-	 */
-	private function _getEntryTagRecordById($id)
-	{
-		$entryTagRecord = EntryTagRecord::model()->findByPk($id);
-		return $entryTagRecord;
 	}
 }

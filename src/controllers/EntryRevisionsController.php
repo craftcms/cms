@@ -148,7 +148,8 @@ class EntryRevisionsController extends BaseController
 		$draft->enabled    = (bool)craft()->request->getPost('enabled');
 		$draft->tags       = craft()->request->getPost('tags');
 
-		$draft->setContent(craft()->request->getPost('fields'));
+		$fields = craft()->request->getPost('fields');
+		$draft->getContent()->setAttributes($fields);
 
 		if (Craft::hasPackage(CraftPackage::Users))
 		{

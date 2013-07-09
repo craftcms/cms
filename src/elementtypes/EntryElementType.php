@@ -17,6 +17,16 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
+	 * Returns whether this element type has titles.
+	 *
+	 * @return bool
+	 */
+	public function hasTitles()
+	{
+		return true;
+	}
+
+	/**
 	 * Returns whether this element type can have statuses.
 	 *
 	 * @return bool
@@ -72,7 +82,7 @@ class EntryElementType extends BaseElementType
 	 */
 	public function defineSearchableAttributes()
 	{
-		return array('title', 'slug', 'tags');
+		return array('slug', 'tags');
 	}
 
 	/**
@@ -135,7 +145,6 @@ class EntryElementType extends BaseElementType
 	public function defineCriteriaAttributes()
 	{
 		return array(
-			//'title'         => AttributeType::String,
 			'slug'          => AttributeType::String,
 			'sectionId'     => AttributeType::Number,
 			'authorId'      => AttributeType::Number,
@@ -202,7 +211,7 @@ class EntryElementType extends BaseElementType
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('entries.sectionId, entries.authorId, entries.postDate, entries.expiryDate, entries_i18n.title, entries_i18n.slug')
+			->addSelect('entries.sectionId, entries.authorId, entries.postDate, entries.expiryDate, entries_i18n.slug')
 			->join('entries entries', 'entries.id = elements.id')
 			->join('entries_i18n entries_i18n', 'entries_i18n.entryId = elements.id')
 			->andWhere('entries_i18n.locale = elements_i18n.locale');

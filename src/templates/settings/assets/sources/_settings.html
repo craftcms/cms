@@ -7,20 +7,6 @@
 	{ label: "Sources"|t, url: url('settings/assets') }
 ] %}
 
-
-{% if source is not defined and sourceId is defined %}
-	{% set source = craft.assets.getSourceById(sourceId) %}
-	{% if not source %}{% exit 404 %}{% endif %}
-{% endif %}
-
-
-{% if source is defined %}
-	{% set sourceType = craft.assets.populateSourceType(source) %}
-{% else %}
-	{% set sourceType = craft.assets.getSourceType('Local') %}
-{% endif %}
-
-
 {% set isNewSource = (source is not defined or not source.id) %}
 
 
@@ -52,9 +38,7 @@
 		{% if craft.hasPackage('Cloud') %}
 			<hr>
 
-			{% set sourceTypes = craft.assets.getAllSourceTypes %}
-
-			{% includeJsResource "js/Assets/EditSource.js" %}
+			{% includeJsResource "js/asseteditsourcesettings.js" %}
 
 			{{ forms.selectField({
 				label: "Type",

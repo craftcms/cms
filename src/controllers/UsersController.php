@@ -450,8 +450,8 @@ class UsersController extends BaseController
 			throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
 		}
 
-		$fields = craft()->request->getPost('fields', array());
-		$user->setContent($fields);
+		$fields = craft()->request->getPost('fields');
+		$user->getContent()->setAttributes($fields);
 
 		if (craft()->users->saveProfile($user))
 		{

@@ -22,7 +22,6 @@ class EntryLocaleRecord extends BaseRecord
 	{
 		return array(
 			'locale' => array(AttributeType::Locale, 'required' => true),
-			'title'  => array(AttributeType::String, 'required' => true),
 			'slug'   => array(AttributeType::String, 'required' => true),
 		);
 	}
@@ -47,7 +46,6 @@ class EntryLocaleRecord extends BaseRecord
 		return array(
 			array('columns' => array('entryId', 'locale'), 'unique' => true),
 			array('columns' => array('slug','sectionId','locale'), 'unique' => true),
-			array('columns' => array('title')),
 		);
 	}
 }

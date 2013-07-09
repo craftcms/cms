@@ -110,6 +110,18 @@ class ElementCriteriaModel extends BaseModel
 	}
 
 	/**
+	 * Returns all element IDs that match the criteria.
+	 *
+	 * @param array|null $attributes
+	 * @return array
+	 */
+	public function ids($attributes = null)
+	{
+		$this->setAttributes($attributes);
+		return craft()->elements->findElements($this, true);
+	}
+
+	/**
 	 * Returns the first element that matches the criteria.
 	 *
 	 * @param array|null $attributes
