@@ -28,7 +28,7 @@
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
 		<input type="hidden" name="action" value="sections/saveSection">
-		<input type="hidden" name="redirect" value="settings/sections/{id}">
+		<input type="hidden" name="redirect" value="settings/sections">
 		{% if not isNewSection %}<input type="hidden" name="sectionId" value="{{ section.id }}">{% endif %}
 
 		<div id="section-settings">
