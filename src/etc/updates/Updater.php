@@ -125,7 +125,7 @@ class Updater
 		$writableErrors = $this->_validateManifestPathsWritable($unzipFolder);
 		if (count($writableErrors) > 0)
 		{
-			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to the follow paths, but can’t: {files}', array('files' => implode('<br />',  $writableErrors))));
+			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to the follow paths, but can’t:<br /> {files}', array('files' => implode('<br />',  $writableErrors))));
 		}
 
 		// Backup any files about to be updated.
