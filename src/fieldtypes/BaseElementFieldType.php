@@ -19,6 +19,12 @@ abstract class BaseElementFieldType extends BaseFieldType
 	protected $inputJsClass;
 
 	/**
+	 * @access protected
+	 * @var bool $allowMultipleSources Whether to allow multiple source selection in the settings.
+	 */
+	protected $allowMultipleSources = true;
+
+	/**
 	 * Returns the type of field this is.
 	 *
 	 * @return string
@@ -46,10 +52,18 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	protected function defineSettings()
 	{
-		return array(
-			'sources' => AttributeType::Mixed,
-			'limit'   => array(AttributeType::Number, 'min' => 0),
-		);
+		if ($this->allowMultipleSources)
+		{
+			$settings['sources'] = AttributeType::Mixed;
+		}
+		else
+		{
+			$settings['source'] = AttributeType::String;
+		}
+
+		$settings['limit'] = array(AttributeType::Number, 'min' => 0);
+
+		return $settings;
 	}
 
 	/**
@@ -60,9 +74,10 @@ abstract class BaseElementFieldType extends BaseFieldType
 	public function getSettingsHtml()
 	{
 		return craft()->templates->render('_components/fieldtypes/elementfieldsettings', array(
-			'sources'  => $this->_getElementType()->getSources(),
-			'settings' => $this->getSettings(),
-			'type'     => $this->getName()
+			'allowMultipleSources' => $this->allowMultipleSources,
+			'sources'              => $this->_getElementType()->getSources(),
+			'settings'             => $this->getSettings(),
+			'type'                 => $this->getName()
 		));
 	}
 
@@ -120,15 +135,25 @@ abstract class BaseElementFieldType extends BaseFieldType
 			$criteria['id'] = 'not '.$this->element->id;
 		}
 
+		if ($this->allowMultipleSources)
+		{
+			$sources = $this->getSettings()->sources;
+		}
+		else
+		{
+			$sources = array($this->getSettings()->source);
+		}
+
 		return craft()->templates->render('_includes/forms/elementSelect', array(
-			'jsClass'     => $this->inputJsClass,
-			'elementType' => new ElementTypeVariable($this->_getElementType()),
-			'id'          => $id,
-			'name'        => $name,
-			'elements'    => $elements->all,
-			'sources'     => $this->getSettings()->sources,
-			'criteria'    => $criteria,
-			'limit'       => $this->getSettings()->limit,
+			'jsClass'        => $this->inputJsClass,
+			'elementType'    => new ElementTypeVariable($this->_getElementType()),
+			'id'             => $id,
+			'name'           => $name,
+			'elements'       => $elements->all,
+			'sources'        => $sources,
+			'criteria'       => $criteria,
+			'limit'          => $this->getSettings()->limit,
+			'addButtonLabel' => $this->getAddButtonLabel(),
 		));
 	}
 
@@ -140,6 +165,19 @@ abstract class BaseElementFieldType extends BaseFieldType
 		$rawValue = $this->element->getRawContent($this->model->handle);
 		$elementIds = is_array($rawValue) ? array_filter($rawValue) : array();
 		craft()->relations->saveRelations($this->model->id, $this->element->id, $elementIds);
+	}
+
+	/**
+	 * Returns the label for the "Add" button.
+	 *
+	 * @access protected
+	 * @return string
+	 */
+	protected function getAddButtonLabel()
+	{
+		return Craft::t('Add {type}', array(
+			'type' => strtolower($this->_getElementType()->getClassHandle())
+		));
 	}
 
 	/**

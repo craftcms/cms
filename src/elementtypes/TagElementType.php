@@ -17,6 +17,28 @@ class TagElementType extends BaseElementType
 	}
 
 	/**
+	 * Returns this element type's sources.
+	 *
+	 * @return array|false
+	 */
+	public function getSources()
+	{
+		$sources = array();
+
+		foreach (craft()->tags->getAllTagSets() as $tagSet)
+		{
+			$key = 'tagset:'.$tagSet->id;
+
+			$sources[$key] = array(
+				'label'    => $tagSet->name,
+				'criteria' => array('tagset' => $tagSet->id)
+			);
+		}
+
+		return $sources;
+	}
+
+	/**
 	 * Defines which model attributes should be searchable.
 	 *
 	 * @return array

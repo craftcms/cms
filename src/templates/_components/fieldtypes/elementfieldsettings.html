@@ -1,13 +1,30 @@
 {% import "_includes/forms" as forms %}
 
-{{ forms.checkboxSelectField({
-	label: "Sources"|t,
-	instructions: "Which sources do you want to select {type} from?"|t({ type: type|lower }),
-	id: 'sources',
-	name: 'sources',
-	options: sources,
-	values: settings.sources
-})}}
+{% if sources %}
+	{% if allowMultipleSources %}
+		{{ forms.checkboxSelectField({
+			label: "Sources"|t,
+			instructions: "Which sources do you want to select {type} from?"|t({ type: type|lower }),
+			id: 'sources',
+			name: 'sources',
+			options: sources,
+			values: settings.sources
+		})}}
+	{% else %}
+		{{ forms.selectField({
+			label: "Source"|t,
+			instructions: "Which source do you want to select {type} from?"|t({ type: type|lower }),
+			id: 'source',
+			name: 'source',
+			options: sources,
+			value: settings.source
+		}) }}
+	{% endif %}
+{% else %}
+	{{ forms.field({
+		label: (allowMultipleSources ? "Sources"|t : "Source"|t)
+	}, '<p class="error">' ~ "No sources exist yet."|t ~ '</p>') }}
+{% endif %}
 
 {{ forms.textField({
 	label: "Limit"|t,
