@@ -99,4 +99,19 @@ class TagsController extends BaseController
 			'tagSet' => $tagSet
 		));
 	}
+
+	/**
+	 * Deletes a tag set.
+	 */
+	public function actionDeleteTagSet()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+		craft()->userSession->requireAdmin();
+
+		$sectionId = craft()->request->getRequiredPost('id');
+
+		craft()->tags->deleteTagSetById($sectionId);
+		$this->returnJson(array('success' => true));
+	}
 }

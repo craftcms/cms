@@ -204,4 +204,16 @@ class TagsService extends BaseApplicationComponent
 			return false;
 		}
 	}
+
+	/**
+	 * Deletes a tag set by its ID.
+	 *
+	 * @param int $tagSetId
+	 * @return bool
+	*/
+	public function deleteTagSetById($tagSetId)
+	{
+		$affectedRows = craft()->db->createCommand()->delete('tagsets', array('id' => $tagSetId));
+		return (bool) $affectedRows;
+	}
 }
