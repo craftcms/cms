@@ -109,7 +109,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	public function updateTransforms(AssetFileModel $fileModel, $transformsToUpdate)
 	{
-		if (!in_array(IOHelper::getExtension($fileModel), Image::getAcceptedExtensions()))
+		if (!in_array(IOHelper::getExtension($fileModel->filename), Image::getAcceptedExtensions()))
 		{
 			return true;
 		}
