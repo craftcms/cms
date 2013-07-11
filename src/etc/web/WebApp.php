@@ -8,6 +8,7 @@ namespace Craft;
  * @property AssetTransformsService      $assetTransforms      The assets sizes service
  * @property ComponentsService           $components           The components service
  * @property ConfigService               $config               The config service
+ * @property ContentService              $content              The content service
  * @property DashboardService            $dashboard            The dashboard service
  * @property DbConnection                $db                   The database
  * @property ElementsService             $elements             The elements service
