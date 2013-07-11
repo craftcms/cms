@@ -126,6 +126,10 @@ class AssetsService extends BaseApplicationComponent
 			// Update the search index
 			craft()->search->indexElementAttributes($file);
 
+			// Save the content
+			$file->getContent()->title = IOHelper::getFileName($file->filename, false);
+			$this->saveFileContent($file);
+
 			return true;
 		}
 		else
