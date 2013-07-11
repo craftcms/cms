@@ -27,6 +27,7 @@ class ElementCriteriaModel extends BaseModel
 	protected function defineAttributes()
 	{
 		$attributes = array(
+			'source'        => AttributeType::String,
 			'id'            => AttributeType::Number,
 			'locale'        => AttributeType::Locale,
 			'uri'           => AttributeType::String,
@@ -41,8 +42,8 @@ class ElementCriteriaModel extends BaseModel
 			'dateUpdated'   => AttributeType::Mixed,
 			'parentOf'      => AttributeType::Mixed,
 			'childOf'       => AttributeType::Mixed,
-			'parentField'     => AttributeType::String,
-			'childField'      => AttributeType::String,
+			'parentField'   => AttributeType::String,
+			'childField'    => AttributeType::String,
 		);
 
 		// Mix in any custom attributes defined by the element type

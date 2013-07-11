@@ -49,13 +49,7 @@ class ElementsController extends BaseController
 
 		if (!empty($state['source']))
 		{
-			$sources = $elementType->getSources();
-			$sourceCriteria = $this->_getSourceCriteria($sources, $state['source']);
-
-			if ($sourceCriteria)
-			{
-				$criteria->setAttributes($sourceCriteria);
-			}
+			$criteria->source = $state['source'];
 		}
 
 		if ($search = craft()->request->getParam('search'))
@@ -130,68 +124,6 @@ class ElementsController extends BaseController
 		));
 	}
 
-	/**
-	 * Returns the full path to the selected source.
-	 *
-	 * @param array  $sources
-	 * @param string $selectedSource
-	 * @return array|null
-	 */
-	private function _getSourcePath($sources, $selectedSource)
-	{
-		if (isset($sources[$selectedSource]))
-		{
-			return array($selectedSource);
-		}
-		else
-		{
-			// Look through any nested sources
-			foreach ($sources as $key => $source)
-			{
-				if (!empty($source['nested']) && ($nestedSourcePath = $this->_getSourcePath($source['nested'], $selectedSource)))
-				{
-					return array_merge(array($key), $nestedSourcePath);
-				}
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns the criteria for a given source.
-	 *
-	 * @param array  $sources
-	 * @param string $selectedSource
-	 * @return array|null
-	 */
-	private function _getSourceCriteria($sources, $selectedSource)
-	{
-		if (isset($sources[$selectedSource]))
-		{
-			if (isset($sources[$selectedSource]['criteria']))
-			{
-				return $sources[$selectedSource]['criteria'];
-			}
-			else
-			{
-				return array();
-			}
-		}
-		else
-		{
-			// Look through any nested sources
-			foreach ($sources as $key => $source)
-			{
-				if (!empty($source['nested']) && ($nestedSourceCriteria = $this->_getSourceCriteria($source['nested'], $selectedSource)))
-				{
-					return $nestedSourceCriteria;
-				}
-			}
-		}
-
-		return null;
-	}
 	/**
 	 * Returns the element type based on the posted element type class.
 	 *

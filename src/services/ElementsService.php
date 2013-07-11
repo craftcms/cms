@@ -171,6 +171,21 @@ class ElementsService extends BaseApplicationComponent
 
 		$elementType = $criteria->getElementType();
 
+		if ($criteria->source)
+		{
+			$sources = $elementType->getSources();
+			$sourceCriteria = $this->_getSourceCriteria($sources, $criteria->source);
+
+			if ($sourceCriteria !== null)
+			{
+				$criteria->setAttributes($sourceCriteria);
+			}
+			else
+			{
+				return false;
+			}
+		}
+
 		$query = craft()->db->createCommand()
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.locale, elements_i18n.uri')
 			->from('elements elements');
@@ -421,6 +436,41 @@ class ElementsService extends BaseApplicationComponent
 
 	// Private functions
 	// =================
+
+	/**
+	 * Returns the criteria for a given source.
+	 *
+	 * @param array  $sources
+	 * @param string $selectedSource
+	 * @return array|null
+	 */
+	private function _getSourceCriteria($sources, $selectedSource)
+	{
+		if (isset($sources[$selectedSource]))
+		{
+			if (isset($sources[$selectedSource]['criteria']))
+			{
+				return $sources[$selectedSource]['criteria'];
+			}
+			else
+			{
+				return array();
+			}
+		}
+		else
+		{
+			// Look through any nested sources
+			foreach ($sources as $key => $source)
+			{
+				if (!empty($source['nested']) && ($nestedSourceCriteria = $this->_getSourceCriteria($source['nested'], $selectedSource)))
+				{
+					return $nestedSourceCriteria;
+				}
+			}
+		}
+
+		return null;
+	}
 
 	/**
 	 * Normalizes parentOf and childOf criteria params,
