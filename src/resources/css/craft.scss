@@ -32,7 +32,7 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 /* icons */
 .icon:before,
 .menulist ul li a.sel:before,
-.search:before,
+.texticon:before,
 .datewrapper:before,
 .timewrapper:before,
 .element:before,
@@ -55,6 +55,7 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 .icon.add:before { content: '+'; }
 .icon.edit:before { content: 'edit'; }
 .icon.settings:before { content: 'settings'; }
+.icon.search:before { content: 'search'; }
 
 /* nav */
 .nav { display: block; }
@@ -725,12 +726,12 @@ table.editable textarea { font-size: 13px; line-height: 17px; color: $textcolor;
 .input.errors .border-box,
 .text.error { border-color: $errorcolor !important; }
 
-.search { position: relative; cursor: text; }
-.search:before { position: absolute; top: 9px; left: 9px; content: 'search'; color: #a1a4a6; }
-.search .text { padding-left: 27px; }
+.texticon { position: relative; cursor: text; }
+.texticon:before { position: absolute; top: 9px; left: 9px; color: $lighttextcolor; }
+.texticon .text { padding-left: 26px; }
 
 .texthint-container { position: relative; height: 0; }
-.texthint { position: absolute; top: -1px; width: 100%; color: #a1a4a6; cursor: text; }
+.texthint { position: absolute; top: -1px; width: 100%; color: $lighttextcolor; cursor: text; }
 
 .passwordwrapper { position: relative; }
 .passwordwrapper .password { width: 100%; }
@@ -739,12 +740,17 @@ table.editable textarea { font-size: 13px; line-height: 17px; color: $textcolor;
 .password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
 .datewrapper { display: inline-block; position: relative; width: 8.5em; }
-.datewrapper:before { position: absolute; top: 8px; left: 9px; content: 'date'; color: #a1a4a6; }
+.datewrapper:before { position: absolute; top: 8px; left: 9px; content: 'date'; color: $lighttextcolor; }
 .datewrapper .text { padding-left: 27px; width: 100%; }
 
 .timewrapper { display: inline-block; position: relative; width: 8em; }
-.timewrapper:before { position: absolute; top: 9px; left: 8px; content: 'time'; color: #a1a4a6; }
+.timewrapper:before { position: absolute; top: 9px; left: 8px; content: 'time'; color: $lighttextcolor; }
 .timewrapper .text { padding-left: 24px; width: 100%; }
+
+::-webkit-input-placeholder { color: $lighttextcolor; }
+:-moz-placeholder { color: $lighttextcolor; }
+::-moz-placeholder { color: $lighttextcolor; }
+:-ms-input-placeholder { color: $lighttextcolor; }
 
 /* Assets related */
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
