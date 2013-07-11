@@ -404,7 +404,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 		$baseUrl = $sourceType->getBaseUrl();
 		$folderPath = $baseUrl.$file->getFolder()->fullPath;
-		$transformPath = craft()->assetTransforms->getTransformSubpath($transform);
+		$transformPath = $this->getTransformSubpath($transform);
 
 		return $folderPath.$transformPath.$file->filename;
 	}

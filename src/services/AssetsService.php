@@ -655,7 +655,7 @@ class AssetsService extends BaseApplicationComponent
 					'filename' => $fileName
 				));
 
-				$replaceWith = craft()->assets->getFileById($createdFileId);
+				$replaceWith = $this->getFileById($createdFileId);
 
 				$source->replaceFile($targetFile, $replaceWith);
 				$fileId = $targetFile->id;
