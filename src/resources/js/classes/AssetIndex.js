@@ -183,7 +183,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			for (var i = 0; i < this._fileDrag.$draggee.length; i++)
 			{
 				var originalFileId = this._fileDrag.$draggee[i].getAttribute('data-id'),
-					fileName = this._fileDrag.$draggee[i].getAttribute('data-label');
+					fileName = $(this._fileDrag.$draggee[i]).find('[data-url]').attr('data-url').split('/').pop();
 
 				originalFileIds.push(originalFileId);
 				newFileNames.push(fileName);
