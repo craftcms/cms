@@ -498,6 +498,17 @@ table.data.collapsed tbody td form { display: inline-block; }
 .elementselect .element { z-index: 1; }
 .elementselect .caboose { float: left; }
 
+/* tag select fields */
+.tagselect .add { position: relative; z-index: 1; display: inline-block; width: 12em; }
+.tagselect .add .text { padding-right: 30px; }
+.tagselect .add .spinner { position: absolute; top: 0; right: 5px; }
+
+.tagmenu { margin-left: -1px !important; min-width: 12em;
+	-webkit-box-sizing: border-box;
+	   -moz-box-sizing: border-box;
+	        box-sizing: border-box;
+}
+
 /* editable tables */
 table.editable tbody tr:not(:first-child) td { border-top: 1px solid rgba(0,0,0,0.07); }
 table.editable thead tr th,

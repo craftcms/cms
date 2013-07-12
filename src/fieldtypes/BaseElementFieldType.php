@@ -31,7 +31,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function getName()
 	{
-		return $this->_getElementType()->getName();
+		return $this->getElementType()->getName();
 	}
 
 	/**
@@ -75,7 +75,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	{
 		return craft()->templates->render('_components/fieldtypes/elementfieldsettings', array(
 			'allowMultipleSources' => $this->allowMultipleSources,
-			'sources'              => $this->_getElementType()->getSources(),
+			'sources'              => $this->getElementType()->getSources(),
 			'settings'             => $this->getSettings(),
 			'type'                 => $this->getName()
 		));
@@ -146,7 +146,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 		return craft()->templates->render('_includes/forms/elementSelect', array(
 			'jsClass'        => $this->inputJsClass,
-			'elementType'    => new ElementTypeVariable($this->_getElementType()),
+			'elementType'    => new ElementTypeVariable($this->getElementType()),
 			'id'             => $id,
 			'name'           => $name,
 			'elements'       => $elements->all,
@@ -176,18 +176,18 @@ abstract class BaseElementFieldType extends BaseFieldType
 	protected function getAddButtonLabel()
 	{
 		return Craft::t('Add {type}', array(
-			'type' => strtolower($this->_getElementType()->getClassHandle())
+			'type' => strtolower($this->getElementType()->getClassHandle())
 		));
 	}
 
 	/**
 	 * Returns the element type.
 	 *
-	 * @access private
+	 * @access protected
 	 * @return BaseElementType
 	 * @throws Exception
 	 */
-	private function _getElementType()
+	protected function getElementType()
 	{
 		$elementType = craft()->elements->getElementType($this->elementType);
 

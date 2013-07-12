@@ -97,7 +97,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
 		}
 
 		var $option = $(option),
-			$tab = $option.data('menu').$btn.parent().parent().parent(),
+			$tab = $option.data('menu').$trigger.parent().parent().parent(),
 			action = $option.data('action');
 
 		switch (action)
@@ -118,7 +118,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
 	onFieldOptionSelect: function(option)
 	{
 		var $option = $(option),
-			$field = $option.data('menu').$btn.parent(),
+			$field = $option.data('menu').$trigger.parent(),
 			action = $option.data('action');
 
 		switch (action)

@@ -129,7 +129,7 @@ var CP = Garnish.Base.extend({
 			// Is this a menu item?
 			if ($btn.data('menu'))
 			{
-				var $form = $btn.data('menu').$btn.closest('form');
+				var $form = $btn.data('menu').$trigger.closest('form');
 			}
 			else
 			{

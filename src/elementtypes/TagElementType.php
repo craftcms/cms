@@ -31,7 +31,7 @@ class TagElementType extends BaseElementType
 
 			$sources[$key] = array(
 				'label'    => $tagSet->name,
-				'criteria' => array('tagset' => $tagSet->id)
+				'criteria' => array('tagsetId' => $tagSet->id)
 			);
 		}
 
@@ -69,8 +69,10 @@ class TagElementType extends BaseElementType
 	public function defineCriteriaAttributes()
 	{
 		return array(
-			'name'  => AttributeType::String,
-			'order' => array(AttributeType::String, 'default' => 'name desc'),
+			'name'     => AttributeType::String,
+			'tagset'   => AttributeType::Mixed,
+			'tagsetId' => AttributeType::Mixed,
+			'order'    => array(AttributeType::String, 'default' => 'name desc'),
 		);
 	}
 
@@ -86,6 +88,22 @@ class TagElementType extends BaseElementType
 		$query
 			->addSelect('tags.name')
 			->join('tags tags', 'tags.id = elements.id');
+
+		if ($criteria->name)
+		{
+			$query->andWhere(DbHelper::parseParam('tags.name', $criteria->name, $query->params));
+		}
+
+		if ($criteria->tagsetId)
+		{
+			$query->andWhere(DbHelper::parseParam('tags.setId', $criteria->tagsetId, $query->params));
+		}
+
+		if ($criteria->tagset)
+		{
+			$query->join('tagsets tagsets', 'tagsets.id = tags.setId');
+			$query->andWhere(DbHelper::parseParam('tagsets.handle', $criteria->tagset, $query->params));
+		}
 	}
 
 	/**

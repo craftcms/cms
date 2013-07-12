@@ -37,9 +37,9 @@ class m130715_000001_tags extends BaseMigration
 		MigrationHelper::makeElemental('tags', 'Tag');
 
 		// Make some tweaks on the tags table
-		$this->alterColumn('tags', 'name', array('column' => ColumnType::Varchar));
+		$this->alterColumn('tags', 'name', array('column' => ColumnType::Varchar, 'null' => false));
 		$this->dropColumn('tags', 'count');
-		$this->addColumnBefore('tags', 'setId', array('column' => ColumnType::Int), 'name');
+		$this->addColumnBefore('tags', 'setId', array('column' => ColumnType::Int, 'null' => false), 'name');
 		$this->dropIndex('tags', 'name', true);
 
 		// Place all current tags into the Default group
@@ -76,10 +76,11 @@ class m130715_000001_tags extends BaseMigration
 		}
 
 		$this->insert('fields', array(
-			'groupId' => $groupId,
-			'name'    => 'Tags',
-			'handle'  => $handle,
-			'type'    => 'Tags'
+			'groupId'  => $groupId,
+			'name'     => 'Tags',
+			'handle'   => $handle,
+			'type'     => 'Tags',
+			'settings' => JsonHelper::encode(array('source' => 'tagset:'.$tagSetId)),
 		));
 
 		$fieldId = craft()->db->getLastInsertID();

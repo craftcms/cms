@@ -10,6 +10,7 @@ class TagsService extends BaseApplicationComponent
 	private $_tagSetsById;
 	private $_fetchedAllTagSets = false;
 
+	// Tag sets
 
 	/**
 	 * Returns all of the set IDs.
@@ -216,4 +217,94 @@ class TagsService extends BaseApplicationComponent
 		$affectedRows = craft()->db->createCommand()->delete('tagsets', array('id' => $tagSetId));
 		return (bool) $affectedRows;
 	}
+
+	// Tags
+
+	/**
+	 * Saves a tag.
+	 *
+	 * @param TagModel $tag
+	 * @throws Exception
+	 * @return bool
+	 */
+	public function saveTag(TagModel $tag)
+	{
+		$isNewTag = !$tag->id;
+
+		// Tag data
+		if (!$isNewTag)
+		{
+			$tagRecord = TagRecord::model()->with('element')->findById($tag->id);
+
+			if (!$tagRecord)
+			{
+				throw new Exception(Craft::t('No tag exists with the ID “{id}”', array('id' => $tag->id)));
+			}
+
+			$elementRecord = $tagRecord->element;
+
+			// If tag->setId is null and there is an tagRecord setId, we assume this is a front-end edit.
+			if ($tag->setId === null && $tagRecord->setId)
+			{
+				$tag->setId = $tagRecord->setId;
+			}
+		}
+		else
+		{
+			$tagRecord = new TagRecord();
+
+			$elementRecord = new ElementRecord();
+			$elementRecord->type = ElementType::Tag;
+		}
+
+		$tagRecord->setId = $tag->setId;
+		$tagRecord->name = $tag->name;
+
+		$tagRecord->validate();
+		$tag->addErrors($tagRecord->getErrors());
+
+		$elementRecord->validate();
+		$tag->addErrors($elementRecord->getErrors());
+
+		if (!$tag->hasErrors())
+		{
+			// Save the element record first
+			$elementRecord->save(false);
+
+			// Now that we have an element ID, save it on the other stuff
+			if (!$tag->id)
+			{
+				$tag->id = $elementRecord->id;
+				$tagRecord->id = $tag->id;
+			}
+
+			$tagRecord->save(false);
+
+			// Update the search index
+			craft()->search->indexElementAttributes($tag, $tag->locale);
+
+			// Fire an 'onSaveTag' event
+			$this->onSaveTag(new Event($this, array(
+				'tag'      => $tag,
+				'isNewTag' => $isNewTag
+			)));
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Fires an 'onSaveTag' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onSaveTag(Event $event)
+	{
+		$this->raiseEvent('onSaveTag', $event);
+	}
+
 }

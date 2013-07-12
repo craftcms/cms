@@ -35,7 +35,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 
 		this.totalElements = this.$elements.length;
 
-		if (this.limit && this.totalElements == this.limit)
+		if (this.limit && this.totalElements >= this.limit)
 		{
 			this.$addElementBtn.addClass('disabled');
 		}
@@ -79,7 +79,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 			}
 
 			this.totalElements--;
-			this.$addElementBtn.removeClass('disabled');
+
+			if (this.$addElementBtn)
+			{
+				this.$addElementBtn.removeClass('disabled');
+			}
 
 			$element.css('z-index', 0);
 

@@ -21,7 +21,7 @@ class TagRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
-			'name'   => AttributeType::String,
+			'name'   => array(AttributeType::String, 'required' => true),
 		);
 	}
 

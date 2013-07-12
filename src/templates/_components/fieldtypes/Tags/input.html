@@ -1,0 +1,31 @@
+{% set elements = (elements is defined ? elements : []) -%}
+{% set criteria = (criteria is defined and criteria ? criteria : null) -%}
+{% from "_includes/forms" import text %}
+
+<div id="{{ id }}" class="elementselect tagselect">
+	<div class="elements">
+		{% for element in elements %}
+			{% include "_elements/element" with { mode: 'field' } %}
+		{% endfor %}
+	</div>
+
+	<div class="texticon add icon">
+		{{ text({
+			width: 'auto',
+			placeholder: "Add a tag"|t
+		}) }}
+		<div class="spinner hidden"></div>
+	</div>
+</div>
+
+{% set js %}
+	new Craft.TagSelectInput(
+		"{{ id|e('js') }}",
+		"{{ name|e('js') }}",
+		"{{ source|e('js') }}",
+		{{ limit ? limit : 'null' }},
+		{{ elementId ? elementId : 'null' }}
+	);
+{% endset %}
+
+{% includeJs js %}

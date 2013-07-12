@@ -114,4 +114,61 @@ class TagsController extends BaseController
 		craft()->tags->deleteTagSetById($sectionId);
 		$this->returnJson(array('success' => true));
 	}
+
+	/**
+	 * Searches for tags.
+	 */
+	public function actionSearchForTags()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$search = craft()->request->getPost('search');
+		$source = craft()->request->getPost('source');
+		$excludeIds = craft()->request->getPost('excludeIds');
+
+		$criteria = craft()->elements->getCriteria(ElementType::Tag, array(
+			'search' => 'name:'.$search.'*',
+			'source' => $source,
+			'id'     => 'not '.implode(',', $excludeIds)
+		));
+
+		$tags = $criteria->find();
+
+		$return = array();
+		$exactMatches = array();
+		$tagNameLengths = array();
+		$exactMatch = false;
+
+		$normalizedSearch = StringHelper::normalizeKeywords($search);
+
+		foreach ($tags as $tag)
+		{
+			$return[] = array(
+				'id'   => $tag->id,
+				'name' => $tag->name
+			);
+
+			$tagNameLengths[] = strlen($tag->name);
+
+			$normalizedName = StringHelper::normalizeKeywords($tag->name);
+
+			if ($normalizedName == $normalizedSearch)
+			{
+				$exactMatches[] = 1;
+				$exactMatch = true;
+			}
+			else
+			{
+				$exactMatches[] = 0;
+			}
+		}
+
+		array_multisort($exactMatches, SORT_DESC, $tagNameLengths, $return);
+
+		$this->returnJson(array(
+			'tags'       => $return,
+			'exactMatch' => $exactMatch
+		));
+	}
 }

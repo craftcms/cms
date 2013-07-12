@@ -25,8 +25,8 @@ class TagModel extends BaseElementModel
 	protected function defineAttributes()
 	{
 		return array_merge(parent::defineAttributes(), array(
-			'setId'  => AttributeType::Number,
-			'name' => AttributeType::String,
+			'setId' => AttributeType::Number,
+			'name'  => AttributeType::String,
 		));
 	}
 
