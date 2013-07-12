@@ -198,7 +198,7 @@ class ResourcesService extends BaseApplicationComponent
 		{
 			throw new HttpException(404);
 		}
-		
+
 		// If there is a timestamp and HTTP_IF_MODIFIED_SINCE exists, check the timestamp against requested file's last modified date.
 		// If the last modified date is less than the timestamp, return a 304 not modified and let the browser serve it from cache.
 		$timestamp = craft()->request->getParam('d', null);
@@ -216,15 +216,12 @@ class ResourcesService extends BaseApplicationComponent
 				$content = '';
 			}
 		}
-		
+
 		if ($fetchContent)
 		{
+			// Note that $content may be empty -- they could be requesting a blank text file or something.
+			// It doens't matter. No need to throw a 404.
 			$content = IOHelper::getFileContents($path);
-		
-			if (!$content)
-			{
-				throw new HttpException(404);
-			}
 		}
 
 		// Normalize URLs in CSS files
