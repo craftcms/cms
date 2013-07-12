@@ -143,20 +143,20 @@ class AssetTransformsService extends BaseApplicationComponent
 				{
 					case 'fit':
 					{
-						craft()->images->loadImage($imageSource)->scaleToFit($transform->width, $transform->height)->saveAs($targetFile, true);
+						craft()->images->loadImage($imageSource)->scaleToFit($transform->width, $transform->height)->saveAs($targetFile);
 						break;
 					}
 
 					case 'stretch':
 					{
-						craft()->images->loadImage($imageSource)->resizeTo($transform->width, $transform->height)->saveAs($targetFile, true);
+						craft()->images->loadImage($imageSource)->resizeTo($transform->width, $transform->height)->saveAs($targetFile);
 						break;
 					}
 
 					default:
 					{
 
-						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height, true, $transform->position)->saveAs($targetFile, true);
+						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height, true, $transform->position)->saveAs($targetFile);
 						break;
 
 					}
