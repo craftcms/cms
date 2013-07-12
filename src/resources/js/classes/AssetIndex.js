@@ -183,7 +183,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			for (var i = 0; i < this._fileDrag.$draggee.length; i++)
 			{
 				var originalFileId = this._fileDrag.$draggee[i].getAttribute('data-id'),
-					fileName = this._fileDrag.$draggee[i].getAttribute('data-label');
+					fileName = $(this._fileDrag.$draggee[i]).find('[data-url]').attr('data-url').split('/').pop();
 
 				originalFileIds.push(originalFileId);
 				newFileNames.push(fileName);
@@ -1014,6 +1014,65 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 	{
 		window.open($(event.currentTarget).find('[data-url]').attr('data-url'));
 	},
+
+    /**
+     * Rename File
+     */
+    _renameFile: function(event)
+    {
+        var $target = $(event.currentTarget);
+        var fileId = $target.attr('data-id'),
+            oldName = $target.find('[data-url]').attr('data-url').split('/').pop(),
+            newName = prompt(Craft.t("Rename file"), oldName);
+
+        if (newName && newName != oldName)
+        {
+            this.setIndexBusy();
+
+            var postData = {
+                fileId:   fileId,
+                folderId: this._getFolderIdFromSourceKey(this.$source.data('key')),
+                fileName: newName
+            };
+
+            var handleRename = function(data, textStatus)
+            {
+                this.setIndexAvailable();
+
+                this.promptHandler.resetPrompts();
+                if (textStatus == 'success')
+                {
+                    if (data.prompt)
+                    {
+                        this.promptHandler.addPrompt(data);
+
+                        var callback = $.proxy(function (choice) {
+                            choice = choice[0].choice;
+                            if (choice != 'cancel')
+                            {
+                                postData.action = choice;
+                                Craft.postActionRequest('assets/moveFile', postData, $.proxy(handleRename, this));
+                            }
+                        }, this);
+
+                        this.promptHandler.showBatchPrompts(callback);
+                    }
+
+                    if (data.success)
+                    {
+                        this.updateElements();
+                    }
+
+                    if (data.error)
+                    {
+                        alert(data.error);
+                    }
+                }
+            };
+
+            Craft.postActionRequest('assets/moveFile', postData, $.proxy(handleRename, this));
+        }
+    },
 
 	/**
 	 * Delete a file

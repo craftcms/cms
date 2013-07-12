@@ -126,6 +126,10 @@ class AssetsService extends BaseApplicationComponent
 			// Update the search index
 			craft()->search->indexElementAttributes($file);
 
+			// Save the content
+			$file->getContent()->title = IOHelper::getFileName($file->filename, false);
+			$this->saveFileContent($file);
+
 			return true;
 		}
 		else
@@ -651,7 +655,7 @@ class AssetsService extends BaseApplicationComponent
 					'filename' => $fileName
 				));
 
-				$replaceWith = craft()->assets->getFileById($createdFileId);
+				$replaceWith = $this->getFileById($createdFileId);
 
 				$source->replaceFile($targetFile, $replaceWith);
 				$fileId = $targetFile->id;
@@ -838,7 +842,7 @@ class AssetsService extends BaseApplicationComponent
 	{
 		$returnPlaceholder = false;
 
-		if (!$transform || !in_array(IOHelper::getExtension($file), Image::getAcceptedExtensions()))
+		if (!$transform || !in_array(IOHelper::getExtension($file->filename), Image::getAcceptedExtensions()))
 		{
 			$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 			$base = $sourceType->getBaseUrl();

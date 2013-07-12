@@ -109,7 +109,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	public function updateTransforms(AssetFileModel $fileModel, $transformsToUpdate)
 	{
-		if (!in_array(IOHelper::getExtension($fileModel), Image::getAcceptedExtensions()))
+		if (!in_array(IOHelper::getExtension($fileModel->filename), Image::getAcceptedExtensions()))
 		{
 			return true;
 		}
@@ -143,20 +143,20 @@ class AssetTransformsService extends BaseApplicationComponent
 				{
 					case 'fit':
 					{
-						craft()->images->loadImage($imageSource)->scaleToFit($transform->width, $transform->height)->saveAs($targetFile);
+						craft()->images->loadImage($imageSource)->scaleToFit($transform->width, $transform->height)->saveAs($targetFile, true);
 						break;
 					}
 
 					case 'stretch':
 					{
-						craft()->images->loadImage($imageSource)->resizeTo($transform->width, $transform->height)->saveAs($targetFile);
+						craft()->images->loadImage($imageSource)->resizeTo($transform->width, $transform->height)->saveAs($targetFile, true);
 						break;
 					}
 
 					default:
 					{
 
-						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height, true, $transform->position)->saveAs($targetFile);
+						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height, true, $transform->position)->saveAs($targetFile, true);
 						break;
 
 					}
@@ -404,7 +404,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 		$baseUrl = $sourceType->getBaseUrl();
 		$folderPath = $baseUrl.$file->getFolder()->fullPath;
-		$transformPath = craft()->assetTransforms->getTransformSubpath($transform);
+		$transformPath = $this->getTransformSubpath($transform);
 
 		return $folderPath.$transformPath.$file->filename;
 	}
