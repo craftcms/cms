@@ -359,7 +359,7 @@ class HttpRequestService extends \CHttpRequest
 			header('Pragma: cache');
 			header('Cache-Control: max-age='.$cacheTime);
 			$modifiedTime = IOHelper::getLastTimeModified($path);
-			header('Last-Modified: '.gmdate('D, d M Y H:i:s', $modifiedTime->getTimestamp().' GMT'));
+			header('Last-Modified: '.gmdate("D, d M Y H:i:s", $modifiedTime->getTimestamp()).' GMT');
 		}
 		else
 		{
