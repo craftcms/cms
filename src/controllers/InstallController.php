@@ -27,25 +27,16 @@ class InstallController extends BaseController
 	 */
 	public function actionIndex()
 	{
-		// Run the requirements checker
-		$reqCheck = new RequirementsChecker();
-		$reqCheck->run();
+		craft()->runController('templates/requirementscheck');
 
-		if ($reqCheck->getResult() == InstallStatus::Failure)
-		{
-			$this->renderTemplate('_special/install/cantinstall', array('reqCheck' => $reqCheck));
-		}
-		else
-		{
-			// Guess the site name based on the server name
-			$server = craft()->request->getServerName();
-			$words = preg_split('/[\-_\.]+/', $server);
-			array_pop($words);
-			$vars['siteName'] = implode(' ', array_map('ucfirst', $words));
-			$vars['siteUrl'] = 'http://'.$server;
+		// Guess the site name based on the server name
+		$server = craft()->request->getServerName();
+		$words = preg_split('/[\-_\.]+/', $server);
+		array_pop($words);
+		$vars['siteName'] = implode(' ', array_map('ucfirst', $words));
+		$vars['siteUrl'] = 'http://'.$server;
 
-			$this->renderTemplate('_special/install', $vars);
-		}
+		$this->renderTemplate('_special/install', $vars);
 	}
 
 	/**

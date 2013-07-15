@@ -74,6 +74,44 @@ class TemplatesController extends BaseController
 		$this->_render('_special/invalidtrack');
 	}
 
+	public function actionRequirementsCheck()
+	{
+		// Run the requirements checker
+		$reqCheck = new RequirementsChecker();
+		$reqCheck->run();
+
+		if ($reqCheck->getResult() == InstallStatus::Failure)
+		{
+			// Coming from Updater.php
+			if (craft()->request->isAjaxRequest())
+			{
+				$message = '<br /><br />';
+
+				foreach ($reqCheck->getRequirements() as $req)
+				{
+					if ($req->result == 'failed')
+					{
+						$message .= $req->notes.'<br />';
+					}
+				}
+
+				throw new Exception(Craft::t('The update can’t be installed. :( {message}', array('message' => $message)));
+			}
+			else
+			{
+				$this->_render('_special/cantrun', array('reqCheck' => $reqCheck));
+				craft()->end();
+			}
+
+
+		}
+		else
+		{
+			// Cache the app path.
+			craft()->fileCache->set('appPath', craft()->path->getAppPath());
+		}
+	}
+
 	/**
 	 * Renders a template, sets the mime type header, etc..
 	 *
