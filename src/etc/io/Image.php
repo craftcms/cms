@@ -270,7 +270,7 @@ class Image
 				if ($sanitizeAndAutoQuality)
 				{
 					clearstatcache();
-					$originalSize = IOHelper::getFileSize($targetPath);
+					$originalSize = IOHelper::getFileSize($this->_imageSourcePath);
 					$result = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
 				}
 				else
