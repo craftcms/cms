@@ -138,6 +138,9 @@ class WebApp extends \CWebApplication
 		// Set the target language
 		$this->setLanguage($this->_getTargetLanguage());
 
+		// Check if the app path has changed.  If so, run the requirements check again.
+		$this->_processRequirementsCheck();
+
 		// If the track has changed, put the brakes on the request.
 		if (!$this->updates->isTrackValid())
 		{
@@ -886,5 +889,20 @@ class WebApp extends \CWebApplication
 		}
 
 		return false;
+	}
+
+	/**
+	 * If there is not cached app path or the existing cached app path does not match the current one, let’s run the requirement checker again.
+	 * This should catch the case where an install is deployed to another server that doesn’t meet Craft’s minimum requirements.
+	 */
+	private function _processRequirementsCheck()
+	{
+		$cachedAppPath = craft()->fileCache->get('appPath');
+		$appPath = $this->path->getAppPath();
+
+		if ($cachedAppPath === false || $cachedAppPath !== $appPath)
+		{
+			$this->runController('templates/requirementscheck');
+		}
 	}
 }
