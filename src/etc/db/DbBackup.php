@@ -27,7 +27,7 @@ class DbBackup
 		$result .= $this->_processConstraints();
 		$result .= $this->_processFooter();
 
-		$fileName = gmdate('ymd_His').'_'.$this->_currentVersion.'.sql';
+		$fileName = IOHelper::cleanFilename(Craft::getSiteName()).'_'.gmdate('ymd_His').'_'.$this->_currentVersion.'.sql';
 		$filePath = craft()->path->getDbBackupPath().strtolower($fileName);
 		IOHelper::writeToFile($filePath, $result);
 
