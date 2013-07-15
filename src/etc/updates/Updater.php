@@ -39,36 +39,7 @@ class Updater
 	 */
 	public function checkRequirements()
 	{
-		$installedMySqlVersion = craft()->db->serverVersion;
-		$requiredMySqlVersion = craft()->params['requiredMysqlVersion'];
-		$requiredPhpVersion = craft()->params['requiredPhpVersion'];
-
-		$phpCompat = version_compare(PHP_VERSION, $requiredPhpVersion, '>=');
-		$databaseCompat = version_compare($installedMySqlVersion, $requiredMySqlVersion, '>=');
-
-		if (!$phpCompat && !$databaseCompat)
-		{
-			throw new Exception(Craft::t('The update can’t be installed because @@@appName@@@ requires PHP version “{requiredPhpVersion}” or higher and MySQL version “{requiredMySqlVersion}” or higher.  You have PHP version “{installedPhpVersion}” and MySQL version “{installedMySqlVersion}” installed.',
-				array('requiredPhpVersion' => $requiredMySqlVersion,
-				      'installedPhpVersion' => PHP_VERSION,
-				      'requiredMySqlVersion' => $requiredMySqlVersion,
-				      'installedMySqlVersion' => $installedMySqlVersion
-				)));
-		}
-		else if (!$phpCompat)
-		{
-			throw new Exception(Craft::t('The update can’t be installed because @@@appName@@@ requires PHP version “{requiredPhpVersion}” or higher and you have PHP version “{installedPhpVersion}” installed.',
-				array('requiredPhpVersion' => $requiredMySqlVersion,
-				      'installedPhpVersion' => PHP_VERSION
-			)));
-		}
-		else if (!$databaseCompat)
-		{
-			throw new Exception(Craft::t('The update can’t be installed because @@@appName@@@ requires MySQL version “{requiredMySqlVersion}” or higher and you have MySQL version “{installedMySqlVersion}” installed.',
-				array('requiredMySqlVersion' => $requiredMySqlVersion,
-				      'installedMySqlVersion' => $installedMySqlVersion
-				)));
-		}
+		craft()->runController('templates/requirementscheck');
 	}
 
 	/**

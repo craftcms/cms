@@ -1,12 +1,12 @@
 {% extends "_layouts/message" %}
-{% set title = "Can’t install @@@appName@@@"|t %}
+{% set title = "Can’t run @@@appName@@@"|t %}
 
 
 {% set content %}
 	<h2>{{ title }} :(</h2>
 
-	{% if reqCheck.result == 'failed' %}
-		<p>{{ "Your server doesn’t meet the following requirements to install Craft:"|t }}</p>
+	{% if reqCheck.result == 'failure' %}
+		<p>{{ "Your server doesn’t meet the following requirements to run Craft:"|t }}</p>
 
 		<ul class="bullets">
 			{% for req in reqCheck.requirements %}
@@ -28,7 +28,7 @@
 			{% endfor %}
 		</ul>
 
-		<p>{{ "Please make these folders writable and try to run the installer again."|t }}</p>
+		<p>{{ "Please make these folders writable and try again."|t }}</p>
 	{% endif %}
 
 
