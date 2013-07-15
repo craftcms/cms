@@ -82,7 +82,7 @@ class EntryElementType extends BaseElementType
 	 */
 	public function defineSearchableAttributes()
 	{
-		return array('slug', 'tags');
+		return array('slug');
 	}
 
 	/**
