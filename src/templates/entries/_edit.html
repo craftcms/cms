@@ -102,15 +102,6 @@
 				errors: entry.getErrors('expiryDate')
 			}) }}
 
-			{{ forms.textField({
-				label: "Tags"|t,
-				instructions: "List multiple tags separated by commas."|t,
-				id: 'tags',
-				name: 'tags',
-				value: entry.tags|join(', '),
-				errors: entry.getErrors('tags'),
-			}) }}
-
 			{% if user.can('publishEntries'~permissionSuffix) %}
 				{% set statusLabel -%}
 					{{ "Status:"|t }} <i>{{ entry.id ? entry.status|ucfirst|t : "Never saved"|t  }}</i>
