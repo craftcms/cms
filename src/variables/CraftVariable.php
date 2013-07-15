@@ -259,6 +259,15 @@ class CraftVariable
 	}
 
 	/**
+	 * @param array|null $criteria
+	 * @return ElementCriteriaModel
+	 */
+	public function tags($criteria = null)
+	{
+		return craft()->elements->getCriteria(ElementType::Tag, $criteria);
+	}
+
+	/**
 	 * @return UpdatesVariable
 	 */
 	public function updates()
