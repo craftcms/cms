@@ -250,6 +250,13 @@ $components['plugins'] = array(
 	)
 );
 
+// Plugins: This is for experimental use only.
+// The Element Type API is likely to change before this config setting is removed.
+if (!empty($generalConfig['enablePluginElementTypes']))
+{
+	$components['plugins']['componentTypes']['element'] = array('subfolder' => 'elementtypes', 'suffix' => 'ElementType', 'instanceof' => 'IElementType');
+}
+
 // Publish Pro package components
 $components['pkgComponents']['PublishPro']['entryRevisions']['class'] = 'Craft\EntryRevisionsService';
 
