@@ -275,7 +275,7 @@ class Image
 				}
 				else
 				{
-					$this->_generateImage($extension, $targetPath, 75);
+					return $this->_generateImage($extension, $targetPath, 75);
 				}
 
 				break;
@@ -289,7 +289,7 @@ class Image
 
 			case 'png':
 			{
-				$this->_generateImage($extension, $targetPath, 9);
+				return $this->_generateImage($extension, $targetPath, 9);
 				break;
 			}
 		}
