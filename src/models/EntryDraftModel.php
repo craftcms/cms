@@ -42,13 +42,15 @@ class EntryDraftModel extends EntryModel
 		$fieldContent = $entryData['fields'];
 		$attributes['draftId'] = $attributes['id'];
 		$attributes['id'] = $attributes['entryId'];
-		unset($attributes['data'], $entryData['fields'], $attributes['entryId']);
+		$title = $entryData['title'];
+		unset($attributes['data'], $entryData['fields'], $attributes['entryId'], $entryData['title']);
 
 		$attributes = array_merge($attributes, $entryData);
 
 		// Initialize the draft
 		$draft = parent::populateModel($attributes);
-		$draft->setContentIndexedByFieldId($fieldContent);
+		$draft->getContent()->title = $title;
+		$draft->getContent()->setValuesByFieldId($fieldContent);
 
 		return $draft;
 	}

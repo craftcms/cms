@@ -99,4 +99,23 @@ class ContentModel extends BaseModel
 			}
 		}
 	}
+
+	/**
+	 * Sets content values indexed by the field ID.
+	 *
+	 * @param array $values
+	 */
+	public function setValuesByFieldId($values)
+	{
+		foreach ($values as $fieldId => $value)
+		{
+			$field = craft()->fields->getFieldById($fieldId);
+
+			if ($field)
+			{
+				$fieldHandle = $field->handle;
+				$this->$fieldHandle = $value;
+			}
+		}
+	}
 }

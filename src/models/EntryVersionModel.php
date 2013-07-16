@@ -43,13 +43,15 @@ class EntryVersionModel extends EntryModel
 		$fieldContent = $entryData['fields'];
 		$attributes['versionId'] = $attributes['id'];
 		$attributes['id'] = $attributes['entryId'];
-		unset($attributes['data'], $entryData['fields'], $attributes['entryId']);
+		$title = $entryData['title'];
+		unset($attributes['data'], $entryData['fields'], $attributes['entryId'], $entryData['title']);
 
 		$attributes = array_merge($attributes, $entryData);
 
 		// Initialize the version
 		$version = parent::populateModel($attributes);
-		$version->setContentIndexedByFieldId($fieldContent);
+		$version->getContent()->title = $title;
+		$version->getContent()->setValuesByFieldId($fieldContent);
 
 		return $version;
 	}

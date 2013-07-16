@@ -281,26 +281,6 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Sets content that's indexed by the field ID.
-	 *
-	 * @param array $content
-	 */
-	public function setContentIndexedByFieldId($content)
-	{
-		$this->_content = new ContentModel();
-
-		foreach ($content as $fieldId => $value)
-		{
-			$field = craft()->fields->getFieldById($fieldId);
-			if ($field)
-			{
-				$fieldHandle = $field->handle;
-				$this->_content->$fieldHandle = $value;
-			}
-		}
-	}
-
-	/**
 	 * Populates a new model instance with a given set of attributes.
 	 *
 	 * @static
