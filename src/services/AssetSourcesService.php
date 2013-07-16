@@ -91,7 +91,14 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function getAllSourceTypes()
 	{
-		return craft()->components->getComponentsByType(ComponentType::AssetSource);
+		if (Craft::hasPackage(CraftPackage::Cloud))
+		{
+			return craft()->components->getComponentsByType(ComponentType::AssetSource);
+		}
+		else
+		{
+			return array(craft()->components->getComponentByTypeAndClass(ComponentType::AssetSource, 'Local'));
+		}
 	}
 
 	/**
