@@ -7,6 +7,48 @@ namespace Craft;
 class AssetTransformsController extends BaseController
 {
 	/**
+	 * Shows the asset transform list.
+	 */
+	public function actionTransformIndex()
+	{
+		craft()->userSession->requireAdmin();
+
+		$variables['transforms'] = craft()->assetTransforms->getAllTransforms();
+		$variables['transformModes'] = AssetTransformModel::getTransformModes();
+
+		$this->renderTemplate('settings/assets/transforms/index', $variables);
+	}
+
+	/**
+	 * Edit an asset transform.
+	 *
+	 * @param array $variables
+	 * @throws HttpException
+	 */
+	public function actionEditTransform(array $variables = array())
+	{
+		craft()->userSession->requireAdmin();
+
+		if (empty($variables['transform']))
+		{
+			if (!empty($variables['handle']))
+			{
+				$variables['transform'] = craft()->assetTransforms->getTransformByHandle($variables['handle']);
+				if (!$variables['transform'])
+				{
+					throw new HttpException(404);
+				}
+			}
+			else
+			{
+				$variables['transform'] = new AssetTransformModel();
+			}
+		}
+
+		$this->renderTemplate('settings/assets/transforms/_settings', $variables);
+	}
+
+	/**
 	 * Saves an asset source.
 	 */
 	public function actionSaveTransform()

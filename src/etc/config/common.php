@@ -119,12 +119,12 @@ $cpRoutes['globals/(?P<globalSetHandle>{handle})'] = 'globals';
 $cpRoutes['updates/go/(?P<handle>[^/]*)'] = 'updates/_go';
 
 $cpRoutes['settings']                                             = array('action' => 'systemSettings/settingsIndex');
-$cpRoutes['settings/assets']                                      = array('action' => 'systemSettings/listAssetSources');
-$cpRoutes['settings/assets/sources/new']                          = array('action' => 'systemSettings/editAssetSource');
-$cpRoutes['settings/assets/sources/(?P<sourceId>\d+)']            = array('action' => 'systemSettings/editAssetSource');
-$cpRoutes['settings/assets/transforms']                           = array('action' => 'systemSettings/listAssetTransforms');
-$cpRoutes['settings/assets/transforms/new']                       = array('action' => 'systemSettings/editAssetTransform');
-$cpRoutes['settings/assets/transforms/(?P<handle>{handle})']      = array('action' => 'systemSettings/editAssetTransform');
+$cpRoutes['settings/assets']                                      = array('action' => 'assetSources/sourceIndex');
+$cpRoutes['settings/assets/sources/new']                          = array('action' => 'assetSources/editSource');
+$cpRoutes['settings/assets/sources/(?P<sourceId>\d+)']            = array('action' => 'assetSources/editSource');
+$cpRoutes['settings/assets/transforms']                           = array('action' => 'assetTransforms/transformIndex');
+$cpRoutes['settings/assets/transforms/new']                       = array('action' => 'assetTransforms/editTransform');
+$cpRoutes['settings/assets/transforms/(?P<handle>{handle})']      = array('action' => 'assetTransforms/editTransform');
 $cpRoutes['settings/fields/(?P<groupId>\d+)']                     = 'settings/fields';
 $cpRoutes['settings/fields/new']                                  = 'settings/fields/_edit';
 $cpRoutes['settings/fields/edit/(?P<fieldId>\d+)']                = 'settings/fields/_edit';
