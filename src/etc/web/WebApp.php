@@ -35,6 +35,7 @@ namespace Craft;
  * @property SecurityService             $security             The security service
  * @property SystemSettingsService       $systemSettings       The system settings service
  * @property TemplatesService            $templates            The template service
+ * @property TagsService                 $tags                 The tags service
  * @property UpdatesService              $updates              The updates service
  * @property UserGroupsService           $userGroups           The user groups service
  * @property UserPermissionsService      $userPermissions      The user permission service
