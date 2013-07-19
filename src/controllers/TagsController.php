@@ -182,11 +182,24 @@ class TagsController extends BaseController
 
 		$requestId = craft()->request->getPost('requestId', 0);
 		$tagId = craft()->request->getRequiredPost('elementId');
+		$tag = craft()->tags->getTagById($tagId);
+
+		if (!$tag)
+		{
+			throw new Exception(Craft::t('No tag exists with the ID “{id}”.', array('id' => $tagId)));
+		}
+
+		$elementType = craft()->elements->getElementType(ElementType::Tag);
+
+		$html = craft()->templates->render('_includes/edit_element', array(
+			'element' => $tag,
+			'elementType' => new ElementTypeVariable($elementType)
+		));
 
 		$this->returnJson(array(
 			'requestId' => $requestId,
 			'headHtml' => craft()->templates->getHeadHtml(),
-			'bodyHtml' => "Tag fields for tag with ID of ".$tagId."!",
+			'bodyHtml' => $html,
 			'footHtml' => craft()->templates->getFootHtml(),
 		));
 	}
@@ -201,9 +214,21 @@ class TagsController extends BaseController
 
 		$tagId = craft()->request->getRequiredPost('elementId');
 
+		$tag = craft()->tags->getTagById($tagId);
+
+		if (!$tag)
+		{
+			throw new Exception(Craft::t('No tag exists with the ID “{id}”.', array('id' => $tagId)));
+		}
+
+		$fields = craft()->request->getPost('fields');
+		$tag->getContent()->setAttributes($fields);
+
+		$success = craft()->tags->saveTagContent($tag);
+
 		$this->returnJson(array(
 			'success' => true,
-			'title'   => "New title [".$tagId ."]"
+			'title'   => (string) $tag
 		));
 	}
 }

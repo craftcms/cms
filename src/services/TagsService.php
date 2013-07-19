@@ -307,4 +307,57 @@ class TagsService extends BaseApplicationComponent
 		$this->raiseEvent('onSaveTag', $event);
 	}
 
+	/**
+	 * Returns a tag by its ID.
+	 *
+	 * @param $tagId
+	 * @return TagModel|null
+	 */
+	public function getTagById($tagId)
+	{
+		return $this->findTag(array(
+			'id' => $tagId
+		));
+	}
+
+	/**
+	 * Finds the first tag that matches the given criteria.
+	 *
+	 * @param mixed $criteria
+	 * @return TagModel|null
+	 */
+	public function findTag($criteria = null)
+	{
+		if (!($criteria instanceof ElementCriteriaModel))
+		{
+			$criteria = craft()->elements->getCriteria(ElementType::Tag, $criteria);
+		}
+		return $criteria->first();
+	}
+
+	/**
+	 * Saves a tag's content.
+	 *
+	 * @param TagModel $tag
+	 * @return bool
+	 */
+	public function saveTagContent(TagModel $tag)
+	{
+		// TODO: translation support
+		$fieldLayout = craft()->fields->getLayoutByType(ElementType::Tag);
+		if (craft()->content->saveElementContent($tag, $fieldLayout))
+		{
+			// Fire an 'onSaveFileContent' event
+			$this->onSaveTagContent(new Event($this, array(
+				'tag' => $tag
+			)));
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 }
