@@ -1079,6 +1079,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             Craft.postActionRequest('assets/moveFile', postData, $.proxy(handleRename, this));
         }
     },
+				this.promptHandler.resetPrompts();
 
 	/**
 	 * Delete a file
