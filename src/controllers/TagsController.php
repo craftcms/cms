@@ -125,7 +125,7 @@ class TagsController extends BaseController
 
 		$search = craft()->request->getPost('search');
 		$source = craft()->request->getPost('source');
-		$excludeIds = craft()->request->getPost('excludeIds');
+		$excludeIds = craft()->request->getPost('excludeIds', array());
 
 		$criteria = craft()->elements->getCriteria(ElementType::Tag, array(
 			'search' => 'name:'.$search.'*',
@@ -169,6 +169,44 @@ class TagsController extends BaseController
 		$this->returnJson(array(
 			'tags'       => $return,
 			'exactMatch' => $exactMatch
+		));
+	}
+
+	/**
+	 * View a tag's metadata.
+	 */
+	public function actionViewTag()
+	{
+		$this->requireLogin();
+		$this->requireAjaxRequest();
+
+		$requestId = craft()->request->getPost('requestId', 0);
+		$tagId = craft()->request->getRequiredPost('elementId');
+
+		$this->returnJson(array(
+			'requestId' => $requestId,
+			'headHtml' => craft()->templates->getHeadHtml(),
+			'bodyHtml' => "Tag fields for tag with ID of ".$tagId."!",
+			'footHtml' => craft()->templates->getFootHtml(),
+		));
+
+
+
+	}
+
+	/**
+	 * Save a tag's metadata.
+	 */
+	public function actionSaveTagContent()
+	{
+		$this->requireLogin();
+		$this->requireAjaxRequest();
+
+		$tagId = craft()->request->getRequiredPost('elementId');
+
+		$this->returnJson(array(
+			'success' => true,
+			'title'   => "New title [".$tagId ."]"
 		));
 	}
 }
