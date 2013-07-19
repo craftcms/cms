@@ -32,7 +32,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
             var settings = {
                 elementId: $target.attr('data-id'),
                 $trigger: $target,
-                loadContentAction: 'assets/viewFile',
+                loadContentAction: 'assets/editFileContent',
                 saveContentAction: 'assets/saveFileContent'
             };
             $target.data('ElementEditor', new Craft.ElementEditor(settings));

@@ -54,7 +54,7 @@ class AssetsController extends BaseController
 	/**
 	 * View a file's content.
 	 */
-	public function actionViewFile()
+	public function actionEditFileContent()
 	{
 		$this->requireLogin();
 		$this->requireAjaxRequest();
