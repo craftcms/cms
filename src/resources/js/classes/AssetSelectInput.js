@@ -27,11 +27,17 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     _editProperties: function (event)
     {
         var $target = $(event.currentTarget);
-        if (!$target.data('AssetEditor'))
+        if (!$target.data('ElementEditor'))
         {
-            $target.data('AssetEditor', new Assets.AssetEditor($target.attr('data-id'), $target));
+            var settings = {
+                elementId: $target.attr('data-id'),
+                $trigger: $target,
+                loadContentAction: 'assets/viewFile',
+                saveContentAction: 'assets/saveFileContent'
+            };
+            $target.data('ElementEditor', new Craft.ElementEditor(settings));
         }
 
-        $target.data('AssetEditor').show();
+        $target.data('ElementEditor').show();
     }
 });

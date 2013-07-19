@@ -1,37 +1,32 @@
-// define the Assets global
-if (typeof Assets == 'undefined')
-{
-    Assets = {};
-}
-
-
 /**
- * File Manager.
+ * Element editor
  */
-Assets.AssetEditor = Garnish.Base.extend({
+Craft.ElementEditor = Garnish.Base.extend({
 
         hud: null,
-        asetId: 0,
+        elementId: 0,
         requestId: 0,
         $trigger: null,
 
-        init: function(assetId, $trigger)
+        init: function(settings)
         {
-            this.assetId = assetId;
-            this.$trigger = $trigger;
+            this.setSettings(settings, Craft.ElementEditor.defaults);
+
+            this.elementId = this.settings.elementId;
+            this.$trigger = this.settings.$trigger;
         },
 
         show: function ()
         {
             var params = {
                 requestId: ++this.requestId,
-                fileId: this.assetId
+                elementId: this.elementId
             };
 
             this._showSpinner();
 
             // Create a new HUD
-            Craft.postActionRequest('assets/viewFile', params, $.proxy(function(data, textStatus) {
+            Craft.postActionRequest(this.settings.loadContentAction, params, $.proxy(function(data, textStatus) {
 
                 this.removeHud();
 
@@ -48,13 +43,13 @@ Assets.AssetEditor = Garnish.Base.extend({
                 });
 
                 Craft.initUiElements($hudHtml);
-                this.addListener($hudHtml.find('form'), 'submit', $.proxy(this, '_saveAssetDetails'));
+                this.addListener($hudHtml.find('form'), 'submit', $.proxy(this, '_saveElementDetails'));
 
 
             }, this));
         },
 
-        _saveAssetDetails: function (event)
+        _saveElementDetails: function (event)
         {
             event.preventDefault();
 
@@ -64,7 +59,7 @@ Assets.AssetEditor = Garnish.Base.extend({
 
             this._showSpinner();
 
-            Craft.postActionRequest('assets/saveFileContent', params, $.proxy(function(response, textStatus)
+            Craft.postActionRequest(this.settings.saveContentAction, params, $.proxy(function(response, textStatus)
             {
                 if (response.success)
                 {
@@ -91,5 +86,13 @@ Assets.AssetEditor = Garnish.Base.extend({
             }
         }
 
+    },
+    {
+        defaults: {
+            elementId: null,
+            $trigger: null,
+            loadContentAction: null,
+            saveContentAction: null
+        }
     }
 );

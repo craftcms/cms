@@ -60,7 +60,7 @@ class AssetsController extends BaseController
 		$this->requireAjaxRequest();
 
 		$requestId = craft()->request->getPost('requestId', 0);
-		$fileId = craft()->request->getRequiredPost('fileId');
+		$fileId = craft()->request->getRequiredPost('elementId');
 		$file = craft()->assets->getFileById($fileId);
 
 		if (!$file)
@@ -88,7 +88,7 @@ class AssetsController extends BaseController
 		$this->requireLogin();
 		$this->requireAjaxRequest();
 
-		$fileId = craft()->request->getRequiredPost('fileId');
+		$fileId = craft()->request->getRequiredPost('elementId');
 		$file = craft()->assets->getFileById($fileId);
 
 		if (!$file)
