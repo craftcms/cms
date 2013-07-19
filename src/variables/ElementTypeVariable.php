@@ -35,4 +35,15 @@ class ElementTypeVariable extends BaseComponentTypeVariable
 	{
 		return $this->component->getSources();
 	}
+
+	/**
+	 * Returns whether this element type can have titles.
+	 *
+	 * @return bool
+	 */
+	public function hasTitles()
+	{
+		return $this->component->hasTitles();
+	}
+
 }
