@@ -459,6 +459,26 @@ class InstallService extends BaseApplicationComponent
 	 */
 	private function _createDefaultContent($inputs)
 	{
+		// Default tag set
+
+		Craft::log('Creating the Default tag set.');
+
+		$tagSet = new TagSetModel();
+		$tagSet->name   = Craft::t('Default');
+		$tagSet->handle = 'default';
+
+		// Save it
+		if (craft()->tags->saveTagSet($tagSet))
+		{
+			Craft::log('Default tag set created successfully.');
+		}
+		else
+		{
+			Craft::log('Could not save the Default tag set.', LogLevel::Warning);
+		}
+
+		// Default field group
+
 		Craft::log('Creating the Default field group.');
 
 		$group = new FieldGroupModel();
@@ -514,6 +534,28 @@ class InstallService extends BaseApplicationComponent
 		else
 		{
 			Craft::log('Could not save the Body field.', LogLevel::Warning);
+		}
+
+		// Tags field
+
+		Craft::log('Creating the Tags field.');
+
+		$tagsField = new FieldModel();
+		$tagsField->groupId      = $group->id;
+		$tagsField->name         = Craft::t('Tags');
+		$tagsField->handle       = 'tags';
+		$tagsField->type         = 'Tags';
+		$tagsField->settings = array(
+			'source' => 'tagset:'.$tagSet->id
+		);
+
+		if (craft()->fields->saveField($tagsField))
+		{
+			Craft::log('Tags field created successfully.');
+		}
+		else
+		{
+			Craft::log('Could not save the Tags field.', LogLevel::Warning);
 		}
 
 		// Homepage global set
@@ -581,7 +623,11 @@ class InstallService extends BaseApplicationComponent
 				'fieldId'   => $bodyField->id,
 				'required'  => true,
 				'sortOrder' => 1
-			)
+			),
+			array(
+				'fieldId'   => $tagsField->id,
+				'sortOrder' => 2
+			),
 		);
 
 		$newsLayoutTabs = array(
