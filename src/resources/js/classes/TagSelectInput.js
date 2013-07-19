@@ -233,7 +233,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
             var settings = {
                 elementId: $target.attr('data-id'),
                 $trigger: $target,
-                loadContentAction: 'tags/viewTag',
+                loadContentAction: 'tags/editTagContent',
                 saveContentAction: 'tags/saveTagContent'
             };
             $target.data('ElementEditor', new Craft.ElementEditor(settings));
