@@ -173,9 +173,9 @@ class TagsController extends BaseController
 	}
 
 	/**
-	 * View a tag's metadata.
+	 * Edits a tag's content.
 	 */
-	public function actionViewTag()
+	public function actionEditTagContent()
 	{
 		$this->requireLogin();
 		$this->requireAjaxRequest();
@@ -189,13 +189,10 @@ class TagsController extends BaseController
 			'bodyHtml' => "Tag fields for tag with ID of ".$tagId."!",
 			'footHtml' => craft()->templates->getFootHtml(),
 		));
-
-
-
 	}
 
 	/**
-	 * Save a tag's metadata.
+	 * Saves a tag's content.
 	 */
 	public function actionSaveTagContent()
 	{
