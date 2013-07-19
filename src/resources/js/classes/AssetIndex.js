@@ -952,13 +952,19 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 	_editProperties: function (event)
 	{
-		var $target = $(event.currentTarget);
-		if (!$target.data('AssetEditor'))
-		{
-			$target.data('AssetEditor', new Assets.AssetEditor($target.attr('data-id'), $target));
-		}
+        var $target = $(event.currentTarget);
+        if (!$target.data('ElementEditor'))
+        {
+            var settings = {
+                elementId: $target.attr('data-id'),
+                $trigger: $target,
+                loadContentAction: 'assets/editFileContent',
+                saveContentAction: 'assets/saveFileContent'
+            };
+            $target.data('ElementEditor', new Craft.ElementEditor(settings));
+        }
 
-		$target.data('AssetEditor').show();
+        $target.data('ElementEditor').show();
 	},
 
 	_createElementContextMenus: function ($elements)
