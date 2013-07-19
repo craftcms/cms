@@ -172,7 +172,7 @@ class TagsService extends BaseApplicationComponent
 
 				// Save the new one
 				$fieldLayout = $tagSet->getFieldLayout();
-				craft()->fields->saveLayout($fieldLayout);
+				craft()->fields->saveLayout($fieldLayout, false);
 
 				// Update the tag set record/model with the new layout ID
 				$tagSet->fieldLayoutId = $fieldLayout->id;
