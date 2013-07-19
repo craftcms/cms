@@ -125,7 +125,7 @@ class TagsController extends BaseController
 
 		$search = craft()->request->getPost('search');
 		$source = craft()->request->getPost('source');
-		$excludeIds = craft()->request->getPost('excludeIds');
+		$excludeIds = craft()->request->getPost('excludeIds', array());
 
 		$criteria = craft()->elements->getCriteria(ElementType::Tag, array(
 			'search' => 'name:'.$search.'*',
