@@ -69,11 +69,10 @@ class AssetsController extends BaseController
 		}
 
 		$elementType = craft()->elements->getElementType(ElementType::Asset);
-		$elementType = new ElementTypeVariable($elementType);
 
 		$html = craft()->templates->render('_includes/edit_element', array(
 			'element' => $file,
-			'elementType' => $elementType,
+			'elementType' => new ElementTypeVariable($elementType),
 		));
 
 		$this->returnJson(array(
