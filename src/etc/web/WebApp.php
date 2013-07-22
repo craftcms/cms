@@ -154,58 +154,11 @@ class WebApp extends \CWebApplication
 			}
 		}
 
-		// isDbUpdateNeeded will return true if we're in the middle of a manual or auto-update.
+		// isCraftDbUpdateNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
-		if ($this->updates->isDbUpdateNeeded() || (Craft::isInMaintenanceMode() && $this->request->isCpRequest()) || $this->request->getActionSegments() == array('update', 'cleanUp'))
+		if ($this->updates->isCraftDbUpdateNeeded() || (Craft::isInMaintenanceMode() && $this->request->isCpRequest()) || $this->request->getActionSegments() == array('update', 'cleanUp'))
 		{
-			// Let all non-action CP requests through.
-			if (
-				$this->request->isCpRequest() &&
-				(!$this->request->isActionRequest() || $this->request->getActionSegments() == array('users', 'login'))
-			)
-			{
-				// If this is a request to actually manually update Craft, do it
-				if ($this->request->getSegment(1) == 'manualupdate')
-				{
-					$this->runController('templates/manualUpdate');
-					$this->end();
-				}
-				else
-				{
-					if ($this->updates->isBreakpointUpdateNeeded())
-					{
-						// Load the breakpoint update template
-						$this->runController('templates/breakpointUpdateNotification');
-					}
-					else
-					{
-						if (!$this->request->isAjaxRequest())
-						{
-							if ($this->request->getPathInfo() !== '')
-							{
-								$this->userSession->setReturnUrl($this->request->getPath());
-							}
-						}
-
-						// Show the manual update notification template
-						$this->runController('templates/manualUpdateNotification');
-					}
-				}
-			}
-			// We'll also let action requests to UpdateController through as well.
-			else if ($this->request->isActionRequest() && (($actionSegs = $this->request->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] == 'update')
-			{
-				$controller = $actionSegs[0];
-				$action = isset($actionSegs[1]) ? $actionSegs[1] : 'index';
-				$this->runController($controller.'/'.$action);
-			}
-			else
-			{
-				throw new HttpException(503);
-			}
-
-			// YOU SHALL NOT PASS
-			$this->end();
+			$this->_processUpdateLogic();
 		}
 
 		// Make sure that the system is on, or that the user has permission to access the site/CP while the system is off
@@ -217,6 +170,12 @@ class WebApp extends \CWebApplication
 		{
 			// Set the package components
 			$this->_setPackageComponents();
+
+			// Check if a plugin needs to update the database.
+			if ($this->updates->isPluginDbUpdateNeeded())
+			{
+				$this->_processUpdateLogic();
+			}
 
 			// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
 			if ($this->request->isCpRequest() && !($this->request->isActionRequest() && $this->_isValidActionRequest()))
@@ -533,6 +492,22 @@ class WebApp extends \CWebApplication
 	{
 		parent::setComponent($id, $component, $merge);
 		$this->_attachEventListeners($id);
+	}
+
+	/**
+	 * Returns whether Craft has a given component and if it is initialized or not.
+	 *
+	 * @param $name
+	 * @return bool
+	 */
+	public function isComponentInitialized($name)
+	{
+		if (craft()->hasComponent($name) && (($component = craft()->getComponent($name, false)) && $component->getIsInitialized()))
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -903,5 +878,57 @@ class WebApp extends \CWebApplication
 		{
 			$this->runController('templates/requirementscheck');
 		}
+	}
+
+	private function _processUpdateLogic()
+	{
+		// Let all non-action CP requests through.
+		if (
+			$this->request->isCpRequest() &&
+			(!$this->request->isActionRequest() || $this->request->getActionSegments() == array('users', 'login'))
+		)
+		{
+			// If this is a request to actually manually update Craft, do it
+			if ($this->request->getSegment(1) == 'manualupdate')
+			{
+				$this->runController('templates/manualUpdate');
+				$this->end();
+			}
+			else
+			{
+				if ($this->updates->isBreakpointUpdateNeeded())
+				{
+					// Load the breakpoint update template
+					$this->runController('templates/breakpointUpdateNotification');
+				}
+				else
+				{
+					if (!$this->request->isAjaxRequest())
+					{
+						if ($this->request->getPathInfo() !== '')
+						{
+							$this->userSession->setReturnUrl($this->request->getPath());
+						}
+					}
+
+					// Show the manual update notification template
+					$this->runController('templates/manualUpdateNotification');
+				}
+			}
+		}
+		// We'll also let action requests to UpdateController through as well.
+		else if ($this->request->isActionRequest() && (($actionSegs = $this->request->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] == 'update')
+		{
+			$controller = $actionSegs[0];
+			$action = isset($actionSegs[1]) ? $actionSegs[1] : 'index';
+			$this->runController($controller.'/'.$action);
+		}
+		else
+		{
+			throw new HttpException(503);
+		}
+
+		// YOU SHALL NOT PASS
+		$this->end();
 	}
 }

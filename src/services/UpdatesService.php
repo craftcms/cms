@@ -507,17 +507,12 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Determines if we're in the middle of a manual update either because of Craft or a plugin, and a DB update is needed.
+	 * Returns if a plugin needs to run a database update or not.
 	 *
 	 * @return bool
 	 */
-	public function isDbUpdateNeeded()
+	public function isPluginDbUpdateNeeded()
 	{
-		if ($this->isCraftDbUpdateNeeded())
-		{
-			return true;
-		}
-
 		$plugins = craft()->plugins->getPlugins();
 
 		foreach ($plugins as $plugin)

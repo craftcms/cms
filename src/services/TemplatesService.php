@@ -66,11 +66,16 @@ class TemplatesService extends BaseApplicationComponent
 				$twig->addExtension(new \Twig_Extension_Debug());
 			}
 
-			// Give plugins a chance to add their own Twig extensions
-			$pluginExtensions = craft()->plugins->call('addTwigExtension');
-			foreach ($pluginExtensions as $extension)
+			// Only do this if the plugins component has been initialized.
+			// Might not have been in the case of an exception template early in the request.
+			if (craft()->isComponentInitialized('plugins'))
 			{
-				$twig->addExtension($extension);
+				// Give plugins a chance to add their own Twig extensions
+				$pluginExtensions = craft()->plugins->call('addTwigExtension');
+				foreach ($pluginExtensions as $extension)
+				{
+					$twig->addExtension($extension);
+				}
 			}
 
 			$this->_twigs[$loaderClass] = $twig;

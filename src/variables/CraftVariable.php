@@ -14,20 +14,23 @@ class CraftVariable
 	 */
 	public function __get($name)
 	{
-		$plugin = craft()->plugins->getPlugin($name);
-
-		if ($plugin && $plugin->isEnabled)
+		if (craft()->isComponentInitialized('plugins'))
 		{
-			$pluginName = $plugin->getClassHandle();
-			$className = __NAMESPACE__.'\\'.$pluginName.'Variable';
+			$plugin = craft()->plugins->getPlugin($name);
 
-			// Variables should already be imported by the plugin service, but let's double check.
-			if (!class_exists($className))
+			if ($plugin && $plugin->isEnabled)
 			{
-				Craft::import('plugins.'.strtolower($pluginName).'.variables.'.$pluginName.'Variable');
-			}
+				$pluginName = $plugin->getClassHandle();
+				$className = __NAMESPACE__.'\\'.$pluginName.'Variable';
 
-			return new $className;
+				// Variables should already be imported by the plugin service, but let's double check.
+				if (!class_exists($className))
+				{
+					Craft::import('plugins.'.strtolower($pluginName).'.variables.'.$pluginName.'Variable');
+				}
+
+				return new $className;
+			}
 		}
 	}
 
@@ -37,11 +40,14 @@ class CraftVariable
 	 */
 	public function __isset($name)
 	{
-		$plugin = craft()->plugins->getPlugin($name);
-
-		if ($plugin && $plugin->isEnabled)
+		if (craft()->isComponentInitialized('plugins'))
 		{
-			return true;
+			$plugin = craft()->plugins->getPlugin($name);
+
+			if ($plugin && $plugin->isEnabled)
+			{
+				return true;
+			}
 		}
 
 		return false;
