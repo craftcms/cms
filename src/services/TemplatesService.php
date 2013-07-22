@@ -68,7 +68,7 @@ class TemplatesService extends BaseApplicationComponent
 
 			// Only do this if the plugins component has been initialized.
 			// Might not have been in the case of an exception template early in the request.
-			if (craft()->isComponentInitialized('plugins'))
+			if (craft()->hasComponent('plugins'))
 			{
 				// Give plugins a chance to add their own Twig extensions
 				$pluginExtensions = craft()->plugins->call('addTwigExtension');

@@ -495,22 +495,6 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Returns whether Craft has a given component and if it is initialized or not.
-	 *
-	 * @param $name
-	 * @return bool
-	 */
-	public function isComponentInitialized($name)
-	{
-		if (craft()->hasComponent($name) && (($component = craft()->getComponent($name, false)) && $component->getIsInitialized()))
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
 	 * Attaches any pending event listeners to the newly-initialized component.
 	 *
 	 * @access private

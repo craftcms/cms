@@ -14,7 +14,7 @@ class CraftVariable
 	 */
 	public function __get($name)
 	{
-		if (craft()->isComponentInitialized('plugins'))
+		if (craft()->hasComponent('plugins'))
 		{
 			$plugin = craft()->plugins->getPlugin($name);
 
@@ -40,7 +40,7 @@ class CraftVariable
 	 */
 	public function __isset($name)
 	{
-		if (craft()->isComponentInitialized('plugins'))
+		if (craft()->hasComponent('plugins'))
 		{
 			$plugin = craft()->plugins->getPlugin($name);
 
