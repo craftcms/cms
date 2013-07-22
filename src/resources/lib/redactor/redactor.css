@@ -22,7 +22,6 @@ body .redactor_box_fullscreen {
     width: 100%;
 }
 
-
 .redactor_box iframe {
 	display: block;
 	margin: 0;
@@ -82,7 +81,7 @@ body .redactor_box_fullscreen {
 .redactor_editor blockquote,
 .redactor_editor pre {
 	font-size: 15px !important;
-	line-height: 1.45em;
+	line-height: 1.5em;
 }
 
 .redactor_editor,
@@ -292,11 +291,12 @@ body .redactor_box_fullscreen {
 	background: -o-linear-gradient(top,  #fafafa 0%,#e5e5e5 94%,#d3d3d3 94%,#d3d3d3 100%);
 	background: -ms-linear-gradient(top,  #fafafa 0%,#e5e5e5 94%,#d3d3d3 94%,#d3d3d3 100%);
 	background: linear-gradient(to bottom,  #fafafa 0%,#e5e5e5 94%,#d3d3d3 94%,#d3d3d3 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fafafa', endColorstr='#d3d3d3',GradientType=0 );
+
 	list-style: none !important;
 	font-size: 0;
 	font-family: Helvetica, Arial, Verdana, Tahoma, sans-serif !important;
 	line-height: 0 !important;
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fafafa', endColorstr='#d3d3d3',GradientType=0 );
 
 }
 .redactor_toolbar:after {
@@ -557,12 +557,14 @@ body .redactor_toolbar li a.redactor_btn_pre		 		{ background-position: -875px; 
 	background: -o-linear-gradient(top,  #f7f7f7 0%,#e2e2e2 100%);
 	background: -ms-linear-gradient(top,  #f7f7f7 0%,#e2e2e2 100%);
 	background: linear-gradient(to bottom,  #f7f7f7 0%,#e2e2e2 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7f7f7', endColorstr='#e2e2e2',GradientType=0 );
+
 	box-shadow: 0px 5px 60px #000;
 	color: #000;
 	text-shadow: 0 1px 0 #fff;
 	font-size: 12px !important;
 	font-family: Helvetica, Arial, Verdana, Tahoma, sans-serif;
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7f7f7', endColorstr='#e2e2e2',GradientType=0 );
+
 }
 #redactor_modal header {
 	padding: 11px 30px 0 15px;
@@ -602,6 +604,9 @@ body .redactor_toolbar li a.redactor_btn_pre		 		{ background-position: -875px; 
 	width: 99%;
 	font-size: 14px;
 }
+
+
+
 .redactor_modal_box {
 	overflow: auto;
 	margin-bottom: 10px;
@@ -614,7 +619,7 @@ body .redactor_toolbar li a.redactor_btn_pre		 		{ background-position: -875px; 
 }
 #redactor_image_box_select {
 	display: block;
-	margin-bottom: 15px;
+	margin-bottom: 15px !important;
 	width: 200px;
 }
 #redactor_image_box img {
@@ -690,7 +695,6 @@ body .redactor_toolbar li a.redactor_btn_pre		 		{ background-position: -875px; 
 	border-color: #5ca9e4;
 	box-shadow: 0 0 0 2px rgba(70, 161, 231, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2) inset;
 }
-
 .redactor_modal_btn {
 	position: relative;
 	display: inline-block;
