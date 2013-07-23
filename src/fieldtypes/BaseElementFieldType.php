@@ -168,6 +168,25 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
+	 * Returns the search keywords that should be associated with this field,
+	 * based on the prepped post data.
+	 *
+	 * @param mixed $value
+	 * @return string
+	 */
+	public function getSearchKeywords($value)
+	{
+		$titles = array();
+
+		foreach ($value->all as $element)
+		{
+			$titles[] = (string) $element;
+		}
+
+		return parent::getSearchKeywords($titles);
+	}
+
+	/**
 	 * Performs any additional actions after the element has been saved.
 	 */
 	public function onAfterElementSave()
