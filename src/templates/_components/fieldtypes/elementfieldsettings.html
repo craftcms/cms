@@ -26,12 +26,14 @@
 	}, '<p class="error">' ~ "No sources exist yet."|t ~ '</p>') }}
 {% endif %}
 
-{{ forms.textField({
-	label: "Limit"|t,
-	instructions: "Limit the number of selectable {type}."|t({ type: type|lower }),
-	id: 'limit',
-	name: 'limit',
-	value: settings.limit,
-	size: 2,
-	errors: settings.getErrors('limit')
-}) }}
+{% if allowLimit %}
+	{{ forms.textField({
+		label: "Limit"|t,
+		instructions: "Limit the number of selectable {type}."|t({ type: type|lower }),
+		id: 'limit',
+		name: 'limit',
+		value: settings.limit,
+		size: 2,
+		errors: settings.getErrors('limit')
+	}) }}
+{% endif %}

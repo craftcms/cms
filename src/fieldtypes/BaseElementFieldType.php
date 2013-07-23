@@ -25,6 +25,12 @@ abstract class BaseElementFieldType extends BaseFieldType
 	protected $allowMultipleSources = true;
 
 	/**
+	 * @access protected
+	 * @var bool $allowLimit Whether to allow the Limit setting.
+	 */
+	protected $allowLimit = true;
+
+	/**
 	 * Returns the type of field this is.
 	 *
 	 * @return string
@@ -61,7 +67,10 @@ abstract class BaseElementFieldType extends BaseFieldType
 			$settings['source'] = AttributeType::String;
 		}
 
-		$settings['limit'] = array(AttributeType::Number, 'min' => 0);
+		if ($this->allowLimit)
+		{
+			$settings['limit'] = array(AttributeType::Number, 'min' => 0);
+		}
 
 		return $settings;
 	}
@@ -75,6 +84,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	{
 		return craft()->templates->render('_components/fieldtypes/elementfieldsettings', array(
 			'allowMultipleSources' => $this->allowMultipleSources,
+			'allowLimit'           => $this->allowLimit,
 			'sources'              => $this->getElementType()->getSources(),
 			'settings'             => $this->getSettings(),
 			'type'                 => $this->getName()
@@ -104,7 +114,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			$elements = array();
 		}
 
-		if ($this->getSettings()->limit)
+		if ($this->allowLimit && $this->getSettings()->limit)
 		{
 			$elements = array_slice($elements, 0, $this->getSettings()->limit);
 		}
@@ -152,7 +162,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			'elements'       => $elements->all,
 			'sources'        => $sources,
 			'criteria'       => $criteria,
-			'limit'          => $this->getSettings()->limit,
+			'limit'          => ($this->allowLimit ? $this->getSettings()->limit : null),
 			'addButtonLabel' => $this->getAddButtonLabel(),
 		));
 	}

@@ -21,6 +21,12 @@ class TagsFieldType extends BaseElementFieldType
 	protected $allowMultipleSources = false;
 
 	/**
+	 * @access protected
+	 * @var bool $allowLimit Whether to allow the Limit setting.
+	 */
+	protected $allowLimit = false;
+
+	/**
 	 * Returns the field's input HTML.
 	 *
 	 * @param string $name
