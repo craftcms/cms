@@ -275,7 +275,7 @@ class Image
 				}
 				else
 				{
-					return $this->_generateImage($extension, $targetPath, 75);
+					return $this->_generateImage($extension, $targetPath, craft()->config->get('defaultJPGQualityLevel'));
 				}
 
 				break;
@@ -289,7 +289,7 @@ class Image
 
 			case 'png':
 			{
-				return $this->_generateImage($extension, $targetPath, 9);
+				return $this->_generateImage($extension, $targetPath, craft()->config->get('defaultPNGCompressionLevel'));
 				break;
 			}
 		}

@@ -261,6 +261,16 @@ return array(
 'writableFilePermissions' => 0777,
 
 /**
+ * The quality level Craft will use when saving JPG files. Ranges from 0 (worst quality, smallest file) to 100 (best quality, biggest file).
+ */
+'defaultJPGQualityLevel' => 75,
+
+/**
+ * The compression level Craft will use when saving PNG files. Ranges from 0 (no compression) to 9 (high compression).
+ */
+'defaultPNGCompressionLevel' => 9,
+
+/**
  * Error Path Keys
  * 'errorPath'      => craft.app.templates.errors.error
  * 'error400Path'   => craft.app.templates.errors.400
