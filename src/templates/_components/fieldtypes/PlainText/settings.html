@@ -11,30 +11,14 @@
 	errors: settings.getErrors('placeholder')
 }) }}
 
-<!-- HIDE -->
-{% set maxLengthInput %}
-	{{ forms.text({
-		id: 'maxLength',
-		name: 'maxLength',
-		value: settings.maxLength,
-		size: 3,
-		errors: settings.getErrors('maxLength')
-	}) }}
-
-	{{ forms.select({
-		name: 'maxLengthUnit',
-		options: { words: "words"|t, chars: "characters"|t },
-		value: settings.maxLengthUnit
-	}) }}
-{% endset %}
-
-{{ forms.field({
+{{ forms.textField({
 	label: "Max Length"|t,
 	id: 'maxLength',
+	name: 'maxLength',
+	value: settings.maxLength,
+	size: 3,
 	errors: settings.getErrors('maxLength')
-}, maxLengthInput) }}
-<!-- end HIDE -->
-
+}) }}
 
 {{ forms.checkboxField({
 	label: "Allow line breaks"|t,

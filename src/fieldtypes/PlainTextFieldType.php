@@ -28,10 +28,7 @@ class PlainTextFieldType extends BaseFieldType
 			'placeholder'   => array(AttributeType::String),
 			'multiline'     => array(AttributeType::Bool),
 			'initialRows'   => array(AttributeType::Number, 'min' => 1, 'default' => 4),
-			/* HIDE */
 			'maxLength'     => array(AttributeType::Number, 'min' => 0),
-			'maxLengthUnit' => array(AttributeType::Enum, 'values' => array('words', 'chars')),
-			/* end HIDE */
 		);
 	}
 
@@ -54,14 +51,31 @@ class PlainTextFieldType extends BaseFieldType
 	 */
 	public function defineContentAttribute()
 	{
-		if ($this->getSettings()->multiline)
+		$maxLength = $this->getSettings()->maxLength;
+
+		if (!$maxLength)
 		{
-			return array(AttributeType::String, 'column' => ColumnType::Text);
+			$columnType == ColumnType::Text;
+		}
+		// TODO: MySQL specific
+		else if ($maxLength <= 255)
+		{
+			$columnType = ColumnType::Varchar;
+		}
+		else if ($maxLength <= 65535)
+		{
+			$columnType = ColumnType::Text;
+		}
+		else if ($maxLength <= 16777215)
+		{
+			$columnType = ColumnType::MediumText;
 		}
 		else
 		{
-			return array(AttributeType::String, 'column' => ColumnType::Varchar);
+			$columnType = ColumnType::LongText;
 		}
+
+		return array(AttributeType::String, 'column' => $columnType, 'maxLength' => $maxLength);
 	}
 
 	/**
