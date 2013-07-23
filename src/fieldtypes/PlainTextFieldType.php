@@ -55,7 +55,7 @@ class PlainTextFieldType extends BaseFieldType
 
 		if (!$maxLength)
 		{
-			$columnType == ColumnType::Text;
+			$columnType = ColumnType::Text;
 		}
 		// TODO: MySQL specific
 		else if ($maxLength <= 255)
