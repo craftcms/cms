@@ -348,7 +348,7 @@ abstract class BaseMigration extends \CDbMigration
 		Craft::log('Updating '.$table.'...');
 
 		$time = microtime(true);
-		$this->dbConnection->createCommand()->update($table, $columns, $conditions, $params);
+		$this->dbConnection->createCommand()->update($table, $columns, $conditions, $params, $includeAuditColumns);
 
 		$this->_processDoneTime($time);
 	}
