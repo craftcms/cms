@@ -51,6 +51,7 @@ class m130729_000000_titles extends BaseMigration
 			foreach ($assets as $asset)
 			{
 				$filename = pathinfo($asset['filename'], PATHINFO_FILENAME);
+				$filename = str_replace('_', ' ', $filename);
 
 				$this->insertOrUpdate('content', array(
 					'elementId' => $asset['id'],
