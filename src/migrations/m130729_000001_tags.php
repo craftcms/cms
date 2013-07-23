@@ -100,6 +100,14 @@ class m130729_000001_tags extends BaseMigration
 
 			$this->insertAll('relations', array('fieldId', 'parentId', 'childId', 'dateCreated', 'dateUpdated', 'uid'), $tagRelations, false);
 
+			// Update the search indexes
+			$this->update('searchindex', array(
+				'attribute' => 'field',
+				'fieldId'   => $fieldId
+			), array(
+				'attribute' => 'tags'
+			), array(), false);
+
 			// Drop the old entrytags_entries table
 			$this->dropTable('entrytags_entries');
 		}
