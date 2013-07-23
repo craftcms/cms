@@ -6,7 +6,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 	id: null,
 	name: null,
 	source: null,
-	limit: null,
 	elementId: null,
 	elementSort: null,
 	searchTimeout: null,
@@ -18,12 +17,11 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 	$addTagInput: null,
 	$spinner: null,
 
-	init: function(id, name, source, limit, elementId)
+	init: function(id, name, source, elementId)
 	{
 		this.id = id;
 		this.name = name;
 		this.source = source;
-		this.limit = limit;
 		this.elementId = elementId;
 
 		this.$container = $('#'+this.id);
@@ -33,11 +31,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 		this.$spinner = this.$addTagInput.next();
 
 		this.totalElements = this.$elements.length;
-
-		if (this.limit && this.totalElements >= this.limit)
-		{
-			this.$addTagInput.addClass('disabled').attr('disabled', 'disabled');
-		}
 
 		this.elementSelect = new Garnish.Select(this.$elements, {
 			multi: true,

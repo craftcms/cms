@@ -48,7 +48,6 @@ class TagsFieldType extends BaseElementFieldType
 			'name'           => $name,
 			'elements'       => $elements->all,
 			'source'         => $this->getSettings()->source,
-			'limit'          => $this->getSettings()->limit,
 			'elementId'      => (!empty($this->element->id) ? $this->element->id : null),
 		));
 	}
