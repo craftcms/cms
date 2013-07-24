@@ -195,7 +195,7 @@ return array(
 /**
  * Allowed file upload extensions.
  */
-'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,mid,mov,mp3,mp4,m4a,m4v,mpc,mpeg,mpg,ods,odt,ogg,pdf,png,ppt,pptx,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vsd,wav,wma,wmv,xls,xlsx,zip',
+'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,mid,mov,mp3,mp4,m4a,m4v,mpc,mpeg,mpg,ods,odt,ogg,pdf,png,ppt,pptx,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vsd,wav,webm,wma,wmv,xls,xlsx,zip',
 
 /**
  * If set to 'auto', Craft will attempt to detect if PHP is set to save sessions to a distributed cache location (i.e. memcache)
@@ -261,6 +261,16 @@ return array(
 'writableFilePermissions' => 0777,
 
 /**
+ * The quality level Craft will use when saving JPG files. Ranges from 0 (worst quality, smallest file) to 100 (best quality, biggest file).
+ */
+'defaultJPGQualityLevel' => 75,
+
+/**
+ * The compression level Craft will use when saving PNG files. Ranges from 0 (no compression) to 9 (high compression).
+ */
+'defaultPNGCompressionLevel' => 9,
+
+/**
  * The file extensions Craft will look for when loading a front-end template,
  * if the extension was omitted from the template path.
  */
@@ -270,6 +280,7 @@ return array(
  * The filenames (sans extensions) Craft will look for to serve as the front-end template directory "indexes".
  */
 'indexTemplateFilenames' => array('index'),
+
 
 /**
  * Error Path Keys

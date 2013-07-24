@@ -32,6 +32,12 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			this.postUrl = Craft.baseSiteUrl;
 		}
 
+		// Load the preview over SSL if the current request is
+		if (document.location.protocol == 'https:')
+		{
+			this.postUrl = this.postUrl.replace(/^http:/, 'https:');
+		}
+
 		this.$form = $('#entry-form');
 		this.$btn = $('#previewmode-btn');
 		this.$spinner = $('#previewmode-spinner');
