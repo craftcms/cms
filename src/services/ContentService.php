@@ -201,6 +201,28 @@ class ContentService extends BaseApplicationComponent
 	 */
 	public function postSaveOperations(BaseElementModel $element, ContentModel $content)
 	{
+		// Get all of the fieldtypes
+		$fields = craft()->fields->getAllFields();
+		$fieldTypes = array();
+		$fieldTypesWithDuplicateContent = array();
+
+		foreach ($fields as $field)
+		{
+			$fieldType = craft()->fields->populateFieldType($field);
+
+			if ($fieldType)
+			{
+				$fieldType->element = $element;
+				$fieldTypes[] = $fieldType;
+
+				if (!$field->translatable && $fieldType->defineContentAttribute())
+				{
+					$fieldTypesWithDuplicateContent[] = $fieldType;
+				}
+			}
+		}
+
+		// Are we dealing with other locales as well?
 		if (Craft::hasPackage(CraftPackage::Localize))
 		{
 			// Get the other locales' content
@@ -212,65 +234,63 @@ class ContentService extends BaseApplicationComponent
 				->queryAll();
 
 			$otherContentModels = ContentModel::populateModels($rows);
-		}
 
-		$updateOtherContentModels = (Craft::hasPackage(CraftPackage::Localize) && $otherContentModels);
-
-		$fields = craft()->fields->getAllFields();
-		$fieldTypes = array();
-		$searchKeywordsByLocale = array();
-
-		foreach ($fields as $field)
-		{
-			$fieldType = craft()->fields->populateFieldType($field);
-
-			if ($fieldType)
+			if ($otherContentModels)
 			{
-				$fieldType->element = $element;
-
-				// Get the field's search keywords
-				$handle = $field->handle;
-				$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$handle);
-				$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
-
-				// Should we update this field on the other locales as well?
-				if (!$field->translatable && $updateOtherContentModels && $fieldType->defineContentAttribute())
+				foreach ($fieldTypesWithDuplicateContent as $fieldType)
 				{
-					$handle = $field->handle;
+					$handle = $fieldType->model->handle;
 
+					// Copy the content over!
 					foreach ($otherContentModels as $otherContentModel)
 					{
-						// Copy the new field value over to the other locale's content record
 						$otherContentModel->$handle = $content->$handle;
-
-						// Queue up the other locale's new keywords too
-						$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
 					}
 				}
 
-				$fieldTypes[] = $fieldType;
+				foreach ($otherContentModels as $otherContentModel)
+				{
+					$this->saveContent($otherContentModel, false);
+				}
 			}
 		}
-
-		// Update each of the other content records
-		if ($updateOtherContentModels)
+		else
 		{
-			foreach ($otherContentModels as $otherContentModel)
-			{
-				$this->saveContent($otherContentModel, false);
-			}
+			$otherContentModels = null;
 		}
 
-		// Update the search indexes
-		foreach ($searchKeywordsByLocale as $localeId => $keywords)
-		{
-			craft()->search->indexElementFields($element->id, $localeId, $keywords);
-		}
-
-		// Now that everything is finally saved, call fieldtypes' onAfterElementSave();
+		// Now that all of the content saved for all locales,
+		// call all fieldtypes' onAfterElementSave() functions
 		foreach ($fieldTypes as $fieldType)
 		{
 			$fieldType->onAfterElementSave();
+		}
+
+		// Update the search keyword indexes
+		$searchKeywordsByLocale = array();
+
+		foreach ($fieldTypes as $fieldType)
+		{
+			$field = $fieldType->model;
+			$handle = $field->handle;
+
+			// Set the keywords for the content's locale
+			$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$handle);
+			$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
+
+			// Should we queue up the other locales' new keywords too?
+			if ($otherContentModels && in_array($fieldType, $fieldTypesWithDuplicateContent))
+			{
+				foreach ($otherContentModels as $otherContentModel)
+				{
+					$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
+				}
+			}
+		}
+
+		foreach ($searchKeywordsByLocale as $localeId => $keywords)
+		{
+			craft()->search->indexElementFields($element->id, $localeId, $keywords);
 		}
 	}
 }
