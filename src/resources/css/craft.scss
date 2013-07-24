@@ -131,7 +131,7 @@ td.right { float: none; text-align: right; }
 
 .token { display: inline-block; border: 1px solid #c1c1c1; border-radius: 10px; padding: 0 7px 1px; font-size: 12px; line-height: 14px; color: $textcolor; text-shadow: 0 1px 1px rgba(255,255,255,0.5); background: #ddd; }
 .token[data-name='*'] { text-indent: -100px; overflow: hidden; }
-.token[data-name='*']:before { @include icon; display: block; float: left; margin: 1px 0 -1px; font-size: 9px; content: '*'; text-indent: 0; }
+.token[data-name='*']:before { @include icon; display: block; float: left; margin: 3px 0 -1px; font-size: 9px; content: '*'; text-indent: 0; }
 .token:focus { border-color: #999; background: #aaa; outline: none; }
 
 .settings-btn { display: block; width: 16px; height: 16px; background: url(../images/settings-btn.png); cursor: pointer; }
