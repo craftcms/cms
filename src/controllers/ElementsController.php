@@ -62,11 +62,6 @@ class ElementsController extends BaseController
 			$criteria->offset = $offset;
 		}
 
-		/* HIDE */
-		// Should work once we've centralized titles
-		$criteria->order = 'title';
-		/* end HIDE */
-
 		$containerVars = array(
 			'state' => $state
 		);
@@ -74,7 +69,6 @@ class ElementsController extends BaseController
 		$elementVars = array(
 			'mode'               => $mode,
 			'elementType'        => new ElementTypeVariable($elementType),
-			'elements'           => $criteria->find(),
 			'disabledElementIds' => $disabledElementIds,
 		);
 
@@ -99,6 +93,9 @@ class ElementsController extends BaseController
 			$containerVars['attributes'] = $tableAttributes;
 			$elementVars['attributes'] = $tableAttributes;
 		}
+
+		// Find the elements!
+		$elementVars['elements'] = $criteria->find();
 
 		$viewFolder = '_elements/'.$state['view'].'view/';
 
