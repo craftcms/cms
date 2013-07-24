@@ -144,7 +144,8 @@ class SearchService extends BaseApplicationComponent
 		}
 
 		// Get where clause from tokens, bail out if no valid query is there
-		if (!($where = $this->_getWhereClause()))
+		$where = $this->_getWhereClause();
+		if (!$where)
 		{
 			return array();
 		}
@@ -447,8 +448,16 @@ class SearchService extends BaseApplicationComponent
 			// Is attribute a valid fieldId?
 			$fieldId = $this->_getFieldIdFromAttribute($term->attribute);
 
-			$attr = ($fieldId) ? 'fieldId' : 'attribute';
-			$val  = ($fieldId) ? $fieldId  : $term->attribute;
+			if ($fieldId)
+			{
+				$attr = 'fieldId';
+				$val  = $fieldId;
+			}
+			else
+			{
+				$attr = 'attribute';
+				$val  = $term->attribute;
+			}
 
 			// Use subselect for attributes
 			$subSelect = $this->_sqlWhere($attr, '=', $val);
@@ -459,63 +468,76 @@ class SearchService extends BaseApplicationComponent
 		}
 
 		// Sanatize term
-		if ($keywords = $this->_normalizeTerm($term->term))
+		if ($term->term)
 		{
-			// Create fulltext clause from term
-			if ($this->_isFulltextTerm($keywords) && !$term->subLeft && !$term->exact && !$term->exclude)
+			$keywords = $this->_normalizeTerm($term->term);
+
+			if ($keywords)
 			{
-				if ($term->subRight)
+				// Create fulltext clause from term
+				if ($this->_isFulltextTerm($keywords) && !$term->subLeft && !$term->exact && !$term->exclude)
 				{
-					$keywords .= '*';
+					if ($term->subRight)
+					{
+						$keywords .= '*';
+					}
+
+					// Add quotes for exact match
+					if (strpos($keywords, ' ') != false)
+					{
+						$keywords = '"'.$keywords.'"';
+					}
+
+					// Determine prefix for the full-text keyword
+					if ($term->exclude)
+					{
+						$keywords = '-'.$keywords;
+					}
+
+					// Only create an SQL clause if there's a subselect
+					// Otherwise, return the keywords
+					if ($subSelect)
+					{
+						// If there is a subselect, create the MATCH AGAINST bit
+						$sql = $this->_sqlMatch($keywords);
+					}
 				}
 
-				// Add quotes for exact match
-				if (strpos($keywords, ' ') != false)
-				{
-					$keywords = '"'.$keywords.'"';
-				}
-
-				// Determine prefix for the full-text keyword
-				if ($term->exclude)
-				{
-					$keywords = '-'.$keywords;
-				}
-
-				// Only create an SQL clause if there's a subselect
-				// Otherwise, return the keywords
-				if ($subSelect)
-				{
-					// If there is a subselect, create the MATCH AGAINST bit
-					$sql = $this->_sqlMatch($keywords);
-				}
-			}
-
-			// Create LIKE clause from term
-			else
-			{
-				if ($term->exact)
-				{
-					// Create exact clause from term
-					$operator = $term->exclude ? '!=' : '=';
-					$keywords = $this->_addPadding($keywords);
-				}
+				// Create LIKE clause from term
 				else
 				{
-					// Create LIKE clause from term
-					$operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
-					$keywords = ($term->subLeft ? '%' : '% ') . $keywords;
-					$keywords .= $term->subRight ? '%' : ' %';
+					if ($term->exact)
+					{
+						// Create exact clause from term
+						$operator = $term->exclude ? '!=' : '=';
+						$keywords = $this->_addPadding($keywords);
+					}
+					else
+					{
+						// Create LIKE clause from term
+						$operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
+						$keywords = ($term->subLeft ? '%' : '% ') . $keywords;
+						$keywords .= $term->subRight ? '%' : ' %';
+					}
+
+					// Generate the SQL
+					$sql = $this->_sqlWhere('keywords', $operator, $keywords);
 				}
-
-				// Generate the SQL
-				$sql = $this->_sqlWhere('keywords', $operator, $keywords);
 			}
-
-			// If we have a where clause in the subselect, add the keyword bit to it
-			if ($subSelect && $sql)
+		}
+		else
+		{
+			// Support for attribute:* syntax to just check if something has *any* keyword value
+			if ($term->subLeft)
 			{
-				$sql = $this->_sqlSubSelect($subSelect.' AND '.$sql);
+				$sql = $this->_sqlWhere('keywords', 'LIKE', '%');
 			}
+		}
+
+		// If we have a where clause in the subselect, add the keyword bit to it
+		if ($subSelect && $sql)
+		{
+			$sql = $this->_sqlSubSelect($subSelect.' AND '.$sql);
 		}
 
 		return array($sql, $keywords);
