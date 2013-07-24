@@ -176,9 +176,10 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function getSearchKeywords($value)
 	{
+		$elements = $this->prepValue(null);
 		$titles = array();
 
-		foreach ($value->all as $element)
+		foreach ($elements->all as $element)
 		{
 			$titles[] = (string) $element;
 		}
