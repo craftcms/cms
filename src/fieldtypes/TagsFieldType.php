@@ -76,7 +76,7 @@ class TagsFieldType extends BaseElementFieldType
 				// Last-minute check
 				$criteria = craft()->elements->getCriteria(Elementtype::Tag, array(
 					'tagsetId' => $tagSetId,
-					'name'     => $name
+					'search'   => 'name:'.$name
 				));
 
 				$ids = $criteria->ids();
