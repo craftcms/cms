@@ -64,7 +64,12 @@ class InstallService extends BaseApplicationComponent
 		$this->_populateMigrationTable();
 		$this->_addLocale($inputs['locale']);
 		$this->_addUser($inputs);
-		$this->_logUserIn($inputs);
+
+		if (!craft()->isConsole())
+		{
+			$this->_logUserIn($inputs);
+		}
+
 		$this->_saveDefaultMailSettings($inputs['email'], $inputs['siteName']);
 		$this->_createDefaultContent($inputs);
 
