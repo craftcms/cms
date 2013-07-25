@@ -2,6 +2,7 @@
 
 Yii::setPathOfAlias('app', CRAFT_APP_PATH);
 Yii::setPathOfAlias('plugins', CRAFT_PLUGINS_PATH);
+Yii::setPathOfAlias('Imagine', CRAFT_APP_PATH.'/lib/Imagine');
 
 // Load the configs
 $generalConfig = require_once(CRAFT_APP_PATH.'etc/config/defaults/general.php');
