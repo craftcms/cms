@@ -59,6 +59,24 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns an array of the locale IDs which Craft has been translated into.
+	 *
+	 * @return array
+	 */
+	public function getAppLocaleIds()
+	{
+		$locales = $this->getAppLocales();
+		$localeIds = array();
+
+		foreach ($locales as $locale)
+		{
+			$localeIds[] = $locale->id;
+		}
+
+		return $localeIds;
+	}
+
+	/**
 	 * Returns the locales that the site is translated for.
 	 *
 	 * @return array
