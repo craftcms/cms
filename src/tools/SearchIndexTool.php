@@ -73,6 +73,13 @@ class SearchIndexTool extends BaseTool
 
 					foreach ($query as $row)
 					{
+						// The locale column might be null since the element_i18n table was left-joined into the query,
+						// In that case it should be removed from the $row array so that the default value can be used.
+						if (!$row['locale'])
+						{
+							unset($row['locale']);
+						}
+
 						// Populate the actual element model
 						$element = $elementType->populateElementModel($row);
 
