@@ -196,10 +196,10 @@ class ElementsService extends BaseApplicationComponent
 			$query->join('content content', 'content.elementId = elements.id');
 		}
 
+		$query->leftJoin('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
+
 		if ($elementType->isTranslatable())
 		{
-			$query->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
-
 			// Locale conditions
 			if (!$criteria->locale)
 			{
@@ -233,10 +233,6 @@ class ElementsService extends BaseApplicationComponent
 				$query->andWhere("{$quotedLocaleColumn} IN (".implode(', ', $quotedLocales).')');
 				$query->order($localeOrder);
 			}
-		}
-		else
-		{
-			$query->leftJoin('elements_i18n elements_i18n', 'elements.id = elements_i18n.elementId');
 		}
 
 		// The rest
