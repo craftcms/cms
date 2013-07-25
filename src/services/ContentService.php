@@ -41,16 +41,15 @@ class ContentService extends BaseApplicationComponent
 	 *
 	 * @param BaseElementModel $element
 	 * @param FieldLayoutModel $fieldLayout
-	 * @param string|null $localeId
 	 */
-	public function saveElementContent(BaseElementModel $element, FieldLayoutModel $fieldLayout, $localeId = null)
+	public function saveElementContent(BaseElementModel $element, FieldLayoutModel $fieldLayout)
 	{
 		if (!$element->id)
 		{
 			throw new Exception(Craft::t('Cannot save the content of an unsaved element.'));
 		}
 
-		$content = $this->prepElementContentForSave($element, $fieldLayout, $localeId);
+		$content = $this->prepElementContentForSave($element, $fieldLayout);
 
 		if ($this->saveContent($content))
 		{
