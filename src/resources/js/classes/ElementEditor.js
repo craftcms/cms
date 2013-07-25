@@ -7,6 +7,7 @@ Craft.ElementEditor = Garnish.Base.extend({
         elementId: 0,
         requestId: 0,
         $trigger: null,
+        $spinner: null,
 
         init: function(settings)
         {
@@ -28,7 +29,7 @@ Craft.ElementEditor = Garnish.Base.extend({
             // Create a new HUD
             Craft.postActionRequest(this.settings.loadContentAction, params, $.proxy(function(data, textStatus) {
 
-                this.removeHud();
+                this._hideSpinner();
 
                 if (data.requestId != this.requestId) {
                     return;
@@ -74,7 +75,13 @@ Craft.ElementEditor = Garnish.Base.extend({
         _showSpinner: function ()
         {
             this.removeHud();
-            this.hud = new Garnish.HUD(this.$trigger, $('<div class="body"><div class="spinner big"></div></div>'));
+
+            this.$trigger.find('.label').addClass('spinner inline');
+        },
+
+        _hideSpinner: function ()
+        {
+            this.$trigger.find('.label').removeClass('spinner inline');
         },
 
         removeHud: function ()
