@@ -653,6 +653,11 @@ ul.tree,
 .elementselectormodal .body .main .elements .tableview table tr.disabled + tr.disabled th,
 .elementselectormodal .body .main .elements .tableview table tr.disabled + tr.disabled td { border-top-color: rgba(0,0,0,0.025); }
 
+/* element editing HUD */
+.element-hud-form .buttons .spinner { position: absolute; top: 0; right: -24px; }
+.element-hud-form .buttons { position: relative; }
+
+
 /* ----------------------------------------
 /*  Menus
 /* ----------------------------------------*/

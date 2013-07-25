@@ -1,6 +1,7 @@
 /**
  * Element editor
  */
+var x;
 Craft.ElementEditor = Garnish.Base.extend({
 
         hud: null,
@@ -45,6 +46,8 @@ Craft.ElementEditor = Garnish.Base.extend({
 
                 Craft.initUiElements($hudHtml);
                 this.addListener($hudHtml.find('form'), 'submit', $.proxy(this, '_saveElementDetails'));
+                this.addListener($hudHtml.find('.btn.submit'), 'click', function (ev) {$(ev.currentTarget).parents('form').submit();});
+                this.addListener($hudHtml.find('.btn.cancel'), 'click', $.proxy(this, 'removeHud'));
 
 
             }, this));
@@ -54,11 +57,10 @@ Craft.ElementEditor = Garnish.Base.extend({
         {
             event.preventDefault();
 
+            this.hud.$body.find('.spinner').removeClass('hidden');
+
             $form = $(event.currentTarget);
-
             var params = $form.serialize();
-
-            this._showSpinner();
 
             Craft.postActionRequest(this.settings.saveContentAction, params, $.proxy(function(response, textStatus)
             {
@@ -66,8 +68,12 @@ Craft.ElementEditor = Garnish.Base.extend({
                 {
                     // Update the title
                     this.$trigger.find('.label').text(response.title);
-
+                    this.hud.$body.find('.spinner').hide();
                     this.removeHud();
+                }
+                else
+                {
+                    this.hud.$body.find('.spinner').addClass('hidden');
                 }
             }, this));
         },
