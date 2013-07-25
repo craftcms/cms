@@ -298,16 +298,6 @@ class TagsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Fires an 'onSaveTag' event.
-	 *
-	 * @param Event $event
-	 */
-	public function onSaveTag(Event $event)
-	{
-		$this->raiseEvent('onSaveTag', $event);
-	}
-
-	/**
 	 * Returns a tag by its ID.
 	 *
 	 * @param $tagId
@@ -347,7 +337,7 @@ class TagsService extends BaseApplicationComponent
 		$fieldLayout = craft()->fields->getLayoutByType(ElementType::Tag);
 		if (craft()->content->saveElementContent($tag, $fieldLayout))
 		{
-			// Fire an 'onSaveFileContent' event
+			// Fire an 'onSaveTagContent' event
 			$this->onSaveTagContent(new Event($this, array(
 				'tag' => $tag
 			)));
@@ -360,4 +350,25 @@ class TagsService extends BaseApplicationComponent
 		}
 	}
 
+	// Events
+
+	/**
+	 * Fires an 'onSaveTag' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onSaveTag(Event $event)
+	{
+		$this->raiseEvent('onSaveTag', $event);
+	}
+
+	/**
+	 * Fires an 'onSaveTagContent' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onSaveTagContent(Event $event)
+	{
+		$this->raiseEvent('onSaveTagContent', $event);
+	}
 }
