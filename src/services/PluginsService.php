@@ -12,6 +12,14 @@ class PluginsService extends BaseApplicationComponent
 	public $componentTypes;
 
 	/**
+	 * Stores whether plugins have been loaded yet for this request.
+	 *
+	 * @access private
+	 * @var bool
+	 */
+	private $_pluginsLoaded = false;
+
+	/**
 	 * Stores all plugins, whether installed or not.
 	 *
 	 * @access private
@@ -53,11 +61,21 @@ class PluginsService extends BaseApplicationComponent
 	private $_enabledPluginInfo = array();
 
 	/**
-	 * Init
+	 * Returns whether plugins have been loaded yet for this request.
+	 *
+	 * @return bool
 	 */
-	public function init()
+	public function arePluginsLoaded()
 	{
-		if (Craft::isInstalled())
+		return $this->_pluginsLoaded;
+	}
+
+	/**
+	 * Loads the enabled plugins.
+	 */
+	public function loadPlugins()
+	{
+		if (!$this->_pluginsLoaded)
 		{
 			// Find all of the enabled plugins
 			$rows = craft()->db->createCommand()
@@ -104,6 +122,11 @@ class PluginsService extends BaseApplicationComponent
 			{
 				$plugin->init();
 			}
+
+			$this->_pluginsLoaded = true;
+
+			// Fire an 'onLoadPlugins' event
+			$this->onLoadPlugins(new Event($this));
 		}
 	}
 
@@ -560,6 +583,20 @@ class PluginsService extends BaseApplicationComponent
 			return $this->_enabledPluginInfo[$plugin->getClassHandle()];
 		}
 	}
+
+	// Events
+
+	/**
+	 * Fires an 'onLoadPlugins' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onLoadPlugins(Event $event)
+	{
+		$this->raiseEvent('onLoadPlugins', $event);
+	}
+
+	// Private Methods
 
 	/**
 	 * Throws a "no plugin exists" exception.

@@ -69,16 +69,24 @@ class TemplatesService extends BaseApplicationComponent
 				$twig->addExtension(new \Twig_Extension_Debug());
 			}
 
-			// Only do this if the plugins component has been initialized.
-			// Might not have been in the case of an exception template early in the request.
-			if (craft()->hasComponent('plugins'))
+			// Give plugins a chance to add their own Twig extensions
+
+			// All plugins may not have been loaded yet if an exception is being thrown
+			// or a plugin is loading a template as part of of its init() function.
+			if (craft()->plugins->arePluginsLoaded())
 			{
-				// Give plugins a chance to add their own Twig extensions
 				$pluginExtensions = craft()->plugins->call('addTwigExtension');
+
 				foreach ($pluginExtensions as $extension)
 				{
 					$twig->addExtension($extension);
 				}
+			}
+			else
+			{
+				// Wait around for plugins to actually be loaded,
+				// then do it for all Twig environments that have been created.
+				craft()->on('plugins.loadPlugins', array($this, '_onPluginsLoaded'));
 			}
 
 			$this->_twigs[$loaderClass] = $twig;
@@ -598,5 +606,24 @@ class TemplatesService extends BaseApplicationComponent
 		}
 
 		return null;
+	}
+
+	/**
+	 * Loads plugin-supplied Twig extensions now that all plugins have been loaded.
+	 *
+	 * @access private
+	 * @param Event $event
+	 */
+	public function _onPluginsLoaded(Event $event)
+	{
+		$pluginExtensions = craft()->plugins->call('addTwigExtension');
+
+		foreach ($this->_twigs as $twig)
+		{
+			foreach ($pluginExtensions as $extension)
+			{
+				$twig->addExtension($extension);
+			}
+		}
 	}
 }

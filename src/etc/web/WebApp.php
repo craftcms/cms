@@ -173,6 +173,9 @@ class WebApp extends \CWebApplication
 			// Set the package components
 			$this->_setPackageComponents();
 
+			// Load the plugins
+			craft()->plugins->loadPlugins();
+
 			// Check if a plugin needs to update the database.
 			if ($this->updates->isPluginDbUpdateNeeded())
 			{
@@ -197,9 +200,6 @@ class WebApp extends \CWebApplication
 					}
 				}
 			}
-
-			// Load the plugins
-			$this->plugins;
 
 			// If this is an action request, call the controller
 			$this->_processActionRequest();
