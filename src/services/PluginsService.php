@@ -20,6 +20,14 @@ class PluginsService extends BaseApplicationComponent
 	private $_pluginsLoaded = false;
 
 	/**
+	 * Stores whether plugins are in the middle of being loaded.
+	 *
+	 * @access private
+	 * @var bool
+	 */
+	private $_loadingPlugins = false;
+
+	/**
 	 * Stores all plugins, whether installed or not.
 	 *
 	 * @access private
@@ -75,8 +83,11 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function loadPlugins()
 	{
-		if (!$this->_pluginsLoaded)
+		if (!$this->_pluginsLoaded && !$this->_loadingPlugins)
 		{
+			// Prevent this function from getting called twice.
+			$this->_loadingPlugins = true;
+
 			// Find all of the enabled plugins
 			$rows = craft()->db->createCommand()
 				->select('id, class, version, settings, installDate')
@@ -124,6 +135,7 @@ class PluginsService extends BaseApplicationComponent
 			}
 
 			$this->_pluginsLoaded = true;
+			$this->_loadingPlugins = false;
 
 			// Fire an 'onLoadPlugins' event
 			$this->onLoadPlugins(new Event($this));
