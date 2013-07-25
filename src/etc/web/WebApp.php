@@ -710,56 +710,82 @@ class WebApp extends \CWebApplication
 	 */
 	private function _getTargetLanguage()
 	{
-		// Will any locale validation be necessary here?
-		if ($this->request->isCpRequest() || defined('CRAFT_LOCALE'))
+		if (Craft::isInstalled())
 		{
-			if ($this->request->isCpRequest())
+			// Will any locale validation be necessary here?
+			if ($this->request->isCpRequest() || defined('CRAFT_LOCALE'))
 			{
-				$locale = 'auto';
-			}
-			else
-			{
-				$locale = strtolower(CRAFT_LOCALE);
-			}
-
-			// Get the list of actual site locale IDs
-			$siteLocaleIds = $this->i18n->getSiteLocaleIds();
-
-			// Is it set to "auto"?
-			if ($locale == 'auto')
-			{
-				// If the user is logged in *and* has a primary language set, use that
-				$user = $this->userSession->getUser();
-
-				if ($user && $user->preferredLocale)
+				if ($this->request->isCpRequest())
 				{
-					return $user->preferredLocale;
+					$locale = 'auto';
+				}
+				else
+				{
+					$locale = strtolower(CRAFT_LOCALE);
 				}
 
-				// Otherwise check if the browser's preferred language matches any of the site locales
-				$browserLanguages = $this->request->getBrowserLanguages();
+				// Get the list of actual site locale IDs
+				$siteLocaleIds = $this->i18n->getSiteLocaleIds();
 
-				if ($browserLanguages)
+				// Is it set to "auto"?
+				if ($locale == 'auto')
 				{
-					foreach ($browserLanguages as $language)
+					// If the user is logged in *and* has a primary language set, use that
+					$user = $this->userSession->getUser();
+
+					if ($user && $user->preferredLocale)
 					{
-						if (in_array($language, $siteLocaleIds))
+						return $user->preferredLocale;
+					}
+
+					// Otherwise check if the browser's preferred language matches any of the site locales
+					$browserLanguages = $this->request->getBrowserLanguages();
+
+					if ($browserLanguages)
+					{
+						foreach ($browserLanguages as $language)
 						{
-							return $language;
+							if (in_array($language, $siteLocaleIds))
+							{
+								return $language;
+							}
 						}
+					}
+				}
+
+				// Is it set to a valid site locale?
+				else if (in_array($locale, $siteLocaleIds))
+				{
+					return $locale;
+				}
+			}
+
+			// Use the primary site locale by default
+			return $this->i18n->getPrimarySiteLocaleId();
+		}
+		else
+		{
+			// Just try to find a match between the browser's preferred locales
+			// and the locales Craft has been translated into.
+
+			$browserLanguages = $this->request->getBrowserLanguages();
+
+			if ($browserLanguages)
+			{
+				$appLocaleIds = $this->i18n->getAppLocaleIds();
+
+				foreach ($browserLanguages as $language)
+				{
+					if (in_array($language, $appLocaleIds))
+					{
+						return $language;
 					}
 				}
 			}
 
-			// Is it set to a valid site locale?
-			else if (in_array($locale, $siteLocaleIds))
-			{
-				return $locale;
-			}
+			// Default to the source language.
+			return $this->sourceLanguage;
 		}
-
-		// Use the primary site locale by default
-		return $this->i18n->getPrimarySiteLocaleId();
 	}
 
 	/**
