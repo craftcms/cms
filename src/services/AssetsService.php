@@ -121,14 +121,14 @@ class AssetsService extends BaseApplicationComponent
 			{
 				// Save the ID on the model now that we have it
 				$file->id = $fileRecord->id;
+
+				// Give it a default title based on the file name
+				$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
+				$this->saveFileContent($file);
 			}
 
 			// Update the search index
 			craft()->search->indexElementAttributes($file);
-
-			// Save the content
-			$file->getContent()->title = IOHelper::getFileName($file->filename, false);
-			$this->saveFileContent($file);
 
 			return true;
 		}
@@ -151,6 +151,9 @@ class AssetsService extends BaseApplicationComponent
 		$fieldLayout = craft()->fields->getLayoutByType(ElementType::Asset);
 		if (craft()->content->saveElementContent($file, $fieldLayout))
 		{
+			// Update the search index since the title may have just changed
+			craft()->search->indexElementAttributes($file);
+
 			// Fire an 'onSaveFileContent' event
 			$this->onSaveFileContent(new Event($this, array(
 				'file' => $file
