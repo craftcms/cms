@@ -710,15 +710,17 @@ class WebApp extends \CWebApplication
 	 */
 	private function _getTargetLanguage()
 	{
-		// CP requests should get "auto" by default
-		if ($this->request->isCpRequest() && !defined('CRAFT_LOCALE'))
+		// Will any locale validation be necessary here?
+		if ($this->request->isCpRequest() || defined('CRAFT_LOCALE'))
 		{
-			define('CRAFT_LOCALE', 'auto');
-		}
-
-		if (defined('CRAFT_LOCALE'))
-		{
-			$locale = strtolower(CRAFT_LOCALE);
+			if ($this->request->isCpRequest())
+			{
+				$locale = 'auto';
+			}
+			else
+			{
+				$locale = strtolower(CRAFT_LOCALE);
+			}
 
 			// Get the list of actual site locale IDs
 			$siteLocaleIds = $this->i18n->getSiteLocaleIds();
