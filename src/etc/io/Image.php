@@ -9,14 +9,47 @@ class Image
 	private $_imageSourcePath;
 	private $_image;
 	private $_extension;
+	private $_instance;
+	private $_width;
+	private $_height;
+	private $_isGd;
+
+	function __construct()
+	{
+		if (extension_loaded('imagick'))
+		{
+			$this->_instance = new \Imagine\Imagick\Imagine();
+			$this->_isGd = false;
+		}
+
+		$this->_instance = new \Imagine\Gd\Imagine();
+		$this->_isGd = true;
+	}
 
 	/**
-	 * Return a list of accepted extensions
-	 * @return array
+	 * TODO?
+	 * @return int
 	 */
-	public static function getAcceptedExtensions()
+	public function getWidth()
 	{
-		return array('jpg', 'jpeg', 'gif', 'png');
+		return $this->_width;
+	}
+
+	/**
+	 * TODO?
+	 * @return int
+	 */
+	public function getHeight()
+	{
+		return $this->_height;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getExtension()
+	{
+		return $this->_extension;
 	}
 
 	/**
@@ -33,8 +66,6 @@ class Image
 			throw new Exception(Craft::t('No file exists at the path “{path}”', array('path' => $path)));
 		}
 
-		$this->_extension = IOHelper::getExtension($path);
-
 		if (!craft()->images->setMemoryForImage($path))
 		{
 			throw new Exception(Craft::t("Not enough memory available to perform this image operation."));
@@ -46,55 +77,11 @@ class Image
 			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
 		}
 
-		switch ($this->_extension)
-		{
-			case 'jpg':
-			case 'jpeg':
-			{
-				if ($imageInfo[2] == IMAGETYPE_JPEG)
-				{
-					$this->_image = imagecreatefromjpeg($path);
-				}
-				else
-				{
-					throw new Exception(Craft::t('The file "{path}" does not appear to be a valid JPEG image.', array('path' => $path)));
-				}
-				break;
-			}
-
-			case 'gif':
-			{
-				if ($imageInfo[2] == IMAGETYPE_GIF)
-				{
-					$this->_image = imagecreatefromgif($path);
-				}
-				else
-				{
-					throw new Exception(Craft::t('The file "{path}" does not appear to be a valid GIF image.', array('path' => $path)));
-				}
-				break;
-			}
-
-			case 'png':
-			{
-				if ($imageInfo[2] == IMAGETYPE_PNG)
-				{
-					$this->_image = imagecreatefrompng($path);
-				}
-				else
-				{
-					throw new Exception(Craft::t('The file "{path}" does not appear to be a valid PNG image.', array('path' => $path)));
-				}
-				break;
-			}
-
-			default:
-			{
-				throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
-			}
-		}
-
+		$this->_image = $this->_instance->open($path);
+		$this->_extension = IOHelper::getExtension($path);
 		$this->_imageSourcePath = $path;
+		$this->_width = $this->_image->getSize()->getWidth();
+		$this->_height = $this->_image->getSize()->getHeight();
 
 		return $this;
 	}
@@ -113,11 +100,7 @@ class Image
 		$width = $x2 - $x1;
 		$height = $y2 - $y1;
 
-		$output = $this->_getCanvas($width, $height);
-
-		imagecopyresampled($output, $this->_image, 0, 0, $x1, $y1, $width, $height, $width, $height);
-
-		$this->_image = $output;
+		$this->_image->crop(new \Imagine\Image\Point($x1, $y1), new \Imagine\Image\Box($width, $height));
 
 		return $this;
 	}
@@ -125,19 +108,19 @@ class Image
 	/**
 	 * Scale the image to fit within the specified size.
 	 *
-	 * @param $width
-	 * @param $height
+	 * @param $targetWidth
+	 * @param $targetHeight
 	 * @param bool $scaleIfSmaller
 	 * @return Image
 	 */
-	public function scaleToFit($width, $height = null, $scaleIfSmaller = true)
+	public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true)
 	{
-		$this->_formatDimensions($width, $height);
+		$this->_normalizeDimensions($targetWidth, $targetHeight);
 
-		if ($scaleIfSmaller || imagesx($this->_image) > $width || imagesy($this->_image) > $height)
+		if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight)
 		{
-			$factor = max(imagesx($this->_image) / $width, imagesy($this->_image) / $height);
-			$this->_doResize(round(imagesx($this->_image) / $factor), round(imagesy($this->_image) / $factor));
+			$factor = max($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
+			$this->resize(round($this->getWidth() / $factor), round($this->getHeight() / $factor));
 		}
 
 		return $this;
@@ -146,83 +129,87 @@ class Image
 	/**
 	 * Scale and crop image to exactly fit the specified size.
 	 *
-	 * @param        $width
-	 * @param        $height
+	 * @param        $targetWidth
+	 * @param        $targetHeight
 	 * @param bool   $scaleIfSmaller
 	 * @param string $cropPositions
 	 * @return Image
 	 */
-	public function scaleAndCrop($width, $height = null, $scaleIfSmaller = true, $cropPositions = 'center-center')
+	public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center')
 	{
-		$this->_formatDimensions($width, $height);
+		$this->_normalizeDimensions($targetWidth, $targetHeight);
 
 		list($verticalPosition, $horizontalPosition) = explode("-", $cropPositions);
 
-		if ($scaleIfSmaller || imagesx($this->_image) > $width || imagesy($this->_image) > $height)
+		if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight)
 		{
-			$factor = min(imagesx($this->_image) / $width, imagesy($this->_image) / $height);
-			$newHeight = round(imagesy($this->_image) / $factor);
-			$newWidth = round(imagesx($this->_image) / $factor);
-			$this->_doResize($newWidth, $newHeight);
+			// Scale first.
+			$factor = min($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
+			$newHeight = round($this->getHeight() / $factor);
+			$newWidth = round($this->getWidth() / $factor);
 
-			if ($newWidth - $width > 0)
+			$this->resize($newWidth, $newHeight);
+
+			// Now crop.
+			if ($newWidth - $targetWidth > 0)
 			{
 				switch ($horizontalPosition)
 				{
 					case 'left':
 					{
 						$x1 = 0;
-						$x2 = $x1 + $width;
+						$x2 = $x1 + $targetWidth;
 						break;
 					}
 					case 'right':
 					{
 						$x2 = $newWidth;
-						$x1 = $newWidth - $width;
+						$x1 = $newWidth - $targetWidth;
 						break;
 					}
 					default:
 					{
-						$x1 = round(($newWidth - $width) / 2);
-						$x2 = $x1 + $width;
+						$x1 = round(($newWidth - $targetWidth) / 2);
+						$x2 = $x1 + $targetWidth;
 						break;
 					}
 				}
+
 				$y1 = 0;
-				$y2 = $y1 + $height;
+				$y2 = $y1 + $targetHeight;
 			}
-			elseif ($newHeight - $height > 0)
+			elseif ($newHeight - $targetHeight > 0)
 			{
 				switch ($verticalPosition)
 				{
 					case 'top':
 					{
 						$y1 = 0;
-						$y2 = $y1 + $height;
+						$y2 = $y1 + $targetHeight;
 						break;
 					}
 					case 'bottom':
 					{
 						$y2 = $newHeight;
-						$y1 = $newHeight - $height;
+						$y1 = $newHeight - $targetHeight;
 						break;
 					}
 					default:
 					{
-						$y1 = round(($newHeight - $height) / 2);
-						$y2 = $y1 + $height;
+						$y1 = round(($newHeight - $targetHeight) / 2);
+						$y2 = $y1 + $targetHeight;
 						break;
 					}
 				}
 				$x1 = 0;
-				$x2 = $x1 + $width;
+				$x2 = $x1 + $targetWidth;
 			}
 			else
 			{
-				$x1 = round(($newWidth - $width) / 2);
-				$x2 = $x1 + $width;
-				$y1 = round(($newHeight - $height) / 2);
-				$y2 = $y1 + $height;
+				$x1 = round(($newWidth - $targetWidth) / 2);
+				$x2 = $x1 + $targetWidth;
+				$y1 = round(($newHeight - $targetHeight) / 2);
+				$y2 = $y1 + $targetHeight;
 			}
 
 			$this->crop($x1, $x2, $y1, $y2);
@@ -234,14 +221,14 @@ class Image
 	/**
 	 * Resizes the image. If $height is not specified, it will default to $width, creating a square.
 	 *
-	 * @param int $width
-	 * @param int|null $height
+	 * @param int $targetWidth
+	 * @param int|null $targetHeight
 	 * @return Image
 	 */
-	public function resizeTo($width, $height = null)
+	public function resize($targetWidth, $targetHeight = null)
 	{
-		$this->_formatDimensions($width, $height);
-		$this->_doResize($width, $height);
+		$this->_normalizeDimensions($targetWidth, $targetHeight);
+		$this->_image->resize(new \Imagine\Image\Box($targetWidth, $targetHeight), $this->_getResizeFilter());
 
 		return $this;
 	}
@@ -255,96 +242,29 @@ class Image
 	 */
 	public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
 	{
-		$extension = IOHelper::getExtension($targetPath);
+		$extension = $this->getExtension();
+		$options = $this->_getSaveOptions();
 
-		// Just in case no image operation was run, we try to preserve transparency here as well.
-		$this->_image = $this->_preserveTransparency($this->_image);
-
-		$result = false;
-
-		switch ($extension)
+		if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality)
 		{
-			case 'jpeg':
-			case 'jpg':
-			{
-				if ($sanitizeAndAutoQuality)
-				{
-					clearstatcache();
-					$originalSize = IOHelper::getFileSize($this->_imageSourcePath);
-					$result = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
-				}
-				else
-				{
-					return $this->_generateImage($extension, $targetPath, 75);
-				}
-
-				break;
-			}
-
-			case 'gif':
-			{
-				$result = imagegif($this->_image, $targetPath);
-				break;
-			}
-
-			case 'png':
-			{
-				return $this->_generateImage($extension, $targetPath, 9);
-				break;
-			}
+			clearstatcache();
+			$originalSize = IOHelper::getFileSize($this->_imageSourcePath);
+			$this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
 		}
-
-		return $result;
+		else
+		{
+			return $this->_image->save($targetPath, $options);
+		}
 	}
 
 	/**
-	 * Calculate missing dimension.
-	 *
-	 * @param $width
-	 * @param $height
-	 * @param $sourceWidth
-	 * @param $sourceHeight
-	 * @return array Array of the width and height.
-	 */
-	public static function calculateMissingDimension($width, $height, $sourceWidth, $sourceHeight)
-	{
-		$factor = $sourceWidth / $sourceHeight;
-
-		if (empty($height))
-		{
-			$height = round($width / $factor);
-		}
-		else if (empty($width))
-		{
-			$width = round($height * $factor);
-		}
-
-		return array($width, $height);
-	}
-
-	/**
-	 * Perform the actual resize.
-	 *
-	 * @param $width
-	 * @param $height
-	 */
-	private function _doResize($width, $height)
-	{
-		$output = $this->_getCanvas($width, $height);
-
-		imagecopyresampled($output, $this->_image, 0, 0, 0, 0, $width, $height, imagesx($this->_image), imagesy($this->_image));
-
-		$this->_image = $output;
-	}
-
-	/**
-	 * Format dimensions.
+	 * Normalizes the given dimensions.  If width or height is set to 'AUTO', we calculate the missing dimension.
 	 *
 	 * @param $width
 	 * @param $height
 	 * @throws Exception
 	 */
-	private function _formatDimensions(&$width, &$height = null)
+	private function _normalizeDimensions(&$width, &$height = null)
 	{
 		if (preg_match('/^(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)/', $width, $matches))
 		{
@@ -354,68 +274,19 @@ class Image
 
 		if (!$height || !$width)
 		{
-			list($width, $height) = static::calculateMissingDimension($width, $height, imagesx($this->_image), imagesy($this->_image));
+			list($width, $height) = ImageHelper::calculateMissingDimension($width, $height, $this->getWidth(), $this->getHeight());
 		}
 	}
 
 	/**
-	 * Get canvas.
 	 *
-	 * @param $width
-	 * @param $height
-	 * @return resource
-	 * @throws Exception
 	 */
-	private function _getCanvas($width, $height)
+	private function _autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $maxQuality, $step = 0)
 	{
-		if (!craft()->images->setMemoryForImage($this->_imageSourcePath))
+		if ($step == 0)
 		{
-			throw new Exception(Craft::t("Not enough memory available to perform this image operation."));
+			$tempFileName = IOHelper::getFolderName($tempFileName).IOHelper::getFileName($tempFileName, false).'-temp.'.$extension;
 		}
-
-		return $this->_preserveTransparency(imagecreatetruecolor($width, $height));
-	}
-
-	/**
-	 * Preserves transparency depending on the file extension.
-	 *
-	 * @param resource $image
-	 * @return mixed $image
-	 */
-	private function _preserveTransparency($image)
-	{
-		// Preserve transparency for GIFs and PNGs
-		if (in_array($this->_extension, array('gif', 'png')))
-		{
-			$transparencyIndex = imagecolortransparent($this->_image);
-
-			// Is the index set?
-			if ($transparencyIndex >= 0)
-			{
-				$transparentColor = imagecolorsforindex($this->_image, $transparencyIndex);
-				$transparencyIndex = imagecolorallocate($image, $transparentColor['red'], $transparentColor['green'], $transparentColor['blue']);
-				imagefill($image, 0, 0, $transparencyIndex);
-				imagecolortransparent($this->_image, $transparencyIndex);
-			}
-			// PNG, baby
-			elseif ($this->_extension == 'png')
-			{
-				imagealphablending($image, false);
-				$color = imagecolorallocatealpha($image, 0, 0, 0, 127);
-				imagefill($image, 0, 0, $color);
-				imagesavealpha($image, true);
-			}
-		}
-
-		return $image;
-	}
-
-	/**
-	 *
-	 */
-	private function _autoGuessImageQuality($targetPath, $originalSize, $extension, $minQuality, $maxQuality, $step = 0)
-	{
-		$tempFileName = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'-temp.'.$extension;
 
 		// Find our target quality by splitting the min and max qualities
 		$midQuality = (int)ceil($minQuality + (($maxQuality - $minQuality) / 2));
@@ -423,15 +294,20 @@ class Image
 		// Set the min and max acceptable ranges. .10 means anything between 90% and 110% of the original file size is acceptable.
 		$acceptableRange = .10;
 
+		clearstatcache();
+
 		// Generate a new temp image and get it's file size.
-		$this->_generateImage($extension, $tempFileName, $midQuality);
+		$this->_image->save($tempFileName, $this->_getSaveOptions($midQuality));
 		$newFileSize = IOHelper::getFileSize($tempFileName);
 
 		// If we're on step 10 or we're within our acceptable range threshold, let's use the current image.
 		if ($step == 10 || abs(1 - $originalSize / $newFileSize) < $acceptableRange)
 		{
+			clearstatcache();
+
 			// Generate one last time.
-			return $this->_generateImage($extension, $targetPath, $midQuality);
+			$this->_image->save($tempFileName, $this->_getSaveOptions($midQuality));
+			return true;
 		}
 
 		$step++;
@@ -439,45 +315,53 @@ class Image
 		// Too little.
 		if ($newFileSize > $originalSize)
 		{
-			return $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, $minQuality, $midQuality, $step);
+			return $this->_autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $midQuality, $step);
 		}
 		// Too much.
 		else
 		{
-			return $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, $midQuality, $maxQuality, $step);
+			return $this->_autoGuessImageQuality($tempFileName, $originalSize, $extension, $midQuality, $maxQuality, $step);
 		}
 	}
 
 	/**
-	 * @param $extension
-	 * @param $targetPath
-	 * @param $targetQuality
-	 * @return bool
+	 * @return mixed
 	 */
-	private function _generateImage($extension, $targetPath, $targetQuality)
+	private function _getResizeFilter()
 	{
-		switch ($extension)
+		return ($this->_isGd ? \Imagine\Image\ImageInterface::FILTER_UNDEFINED : \Imagine\Image\ImageInterface::FILTER_LANCZOS);
+	}
+
+	/**
+	 * @param null $quality
+	 * @return array
+	 */
+	private function _getSaveOptions($quality = null)
+	{
+		$quality = (!$quality ? craft()->config->get('defaultImageQualityLevel') : $quality);
+
+		switch ($this->getExtension())
 		{
 			case 'jpeg':
 			case 'jpg':
 			{
-				$result = imagejpeg($this->_image, $targetPath, $targetQuality);
-				break;
+				return array('quality' => $quality, 'flatten' => true);
 			}
 
 			case 'gif':
 			{
-				$result = imagegif($this->_image, $targetPath);
-				break;
+				return array('flatten' => false);
 			}
 
 			case 'png':
 			{
-				$result = imagepng($this->_image, $targetPath, $targetQuality);
-				break;
+				return array('quality' => $quality, 'flatten' => false);
+			}
+
+			default:
+			{
+				return array();
 			}
 		}
-
-		return $result;
 	}
 }

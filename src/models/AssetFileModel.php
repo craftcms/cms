@@ -256,7 +256,7 @@ class AssetFileModel extends BaseElementModel
 		if (!$transform->width || !$transform->height)
 		{
 			// Fill in the blank
-			list($dimensions['width'], $dimensions['height']) = Image::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->_getWidth(), $this->_getHeight());
+			list($dimensions['width'], $dimensions['height']) = ImageHelper::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->_getWidth(), $this->_getHeight());
 		}
 
 		// Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
