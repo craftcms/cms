@@ -311,6 +311,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .spinner.big { width: 48px; height: 48px; background: url(../images/spinner_big.gif) no-repeat 50% 50%; }
 .btn + .spinner { margin-left: 7px; }
 .spinner.inline { display: inline; background: url(../images/spinner.gif) no-repeat 100% 2px; padding: 2px 30px 5px 0;}
+.spinner.element-spinner { background-image: url(../images/spinner_element.gif); }
 
 /* small buttons */
 .btngroup.small .btn,
@@ -862,6 +863,7 @@ ul.errors li { color: $errorcolor; }
 	.status { background-image: url(../images/status_2x.png); background-size: 10px 40px; }
 
 	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
+	.spinner.element-spinner { background-image: url(../images/spinner_element_2x.gif); }
 	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
 
 	.progressbar.pending .progressbar-inner { background-image: url(../images/progressbar_pending_2x.png); background-size: 50px; }
