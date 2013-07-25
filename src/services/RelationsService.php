@@ -99,6 +99,9 @@ class RelationsService extends BaseApplicationComponent
 	 */
 	public function saveRelations($fieldId, $parentId, $childIds)
 	{
+		// Prevent duplicate child IDs.
+		$childIds = array_unique($childIds);
+
 		$transaction = craft()->db->beginTransaction();
 		try
 		{
