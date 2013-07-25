@@ -478,10 +478,10 @@ class PluginsService extends BaseApplicationComponent
 	 * @param string $method
 	 * @param array $args
 	 * @return array
+	 * @deprecated Deprecated since 1.0
 	 */
 	public function callHook($method, $args = array())
 	{
-		// TODO: Remove for 2.0
 		Craft::log('The craft()->plugins->callHook() method has been deprecated. Use craft()->plugins->call() instead.', LogLevel::Warning);
 		return $this->call($method, $args);
 	}
