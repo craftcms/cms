@@ -410,8 +410,8 @@ class PluginsService extends BaseApplicationComponent
 		$settings = $plugin->prepSettings($settings);
 		$settings = JsonHelper::encode($settings);
 
-		$affectedRows = craft()->db->update('plugins', array(
-			'settings' => JsonHelper::encode($settings)
+		$affectedRows = craft()->db->createCommand()->update('plugins', array(
+			'settings' => $settings
 		), array(
 			'class' => $plugin->getClassHandle()
 		));
