@@ -338,7 +338,7 @@ class Image
 	 */
 	private function _getSaveOptions($quality = null)
 	{
-		$quality = (!$quality ? craft()->config->get('defaultImageQualityLevel') : $quality);
+		$quality = (!$quality ? craft()->config->get('defaultImageQuality') : $quality);
 
 		switch ($this->getExtension())
 		{
