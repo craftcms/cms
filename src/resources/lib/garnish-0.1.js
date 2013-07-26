@@ -2374,7 +2374,7 @@ Garnish.Menu = Garnish.Base.extend({
 
 	$container: null,
 	$options: null,
-	$trigger: null,
+	$btn: null,
 
 	/**
 	 * Constructor
@@ -2387,9 +2387,9 @@ Garnish.Menu = Garnish.Base.extend({
 		this.$options = this.$container.find('a');
 		this.$options.data('menu', this);
 
-		if (this.settings.attachToElement)
+		if (this.settings.attachToButton)
 		{
-			this.$trigger = $(this.settings.attachToElement);
+			this.$btn = $(this.settings.attachToButton);
 		}
 
 		// Prevent clicking on the container from hiding the menu
@@ -2411,9 +2411,9 @@ Garnish.Menu = Garnish.Base.extend({
 		var windowHeight = Garnish.$win.height(),
 			windowScrollTop = Garnish.$win.scrollTop(),
 
-			btnOffset = this.$trigger.offset(),
-			btnWidth = this.$trigger.outerWidth(),
-			btnHeight = this.$trigger.outerHeight(),
+			btnOffset = this.$btn.offset(),
+			btnWidth = this.$btn.outerWidth(),
+			btnHeight = this.$btn.outerHeight(),
 			btnOffsetBottom = btnOffset.top + btnHeight,
 			btnOffsetTop = btnOffset.top,
 
@@ -2455,7 +2455,7 @@ Garnish.Menu = Garnish.Base.extend({
 
 	show: function()
 	{
-		if (this.$trigger)
+		if (this.$btn)
 		{
 			this.setPositionRelativeToButton();
 		}
@@ -2477,7 +2477,7 @@ Garnish.Menu = Garnish.Base.extend({
 },
 {
 	defaults: {
-		attachToElement: null,
+		attachToButton: null,
 		onOptionSelect: $.noop
 	}
 });
@@ -2512,7 +2512,7 @@ Garnish.MenuBtn = Garnish.Base.extend({
 
 		var $menu = this.$btn.next('.menu');
 		this.menu = new Garnish.Menu($menu, {
-			attachToElement: this.$btn,
+			attachToButton: this.$btn,
 			onOptionSelect: $.proxy(this, 'onOptionSelect')
 		});
 
@@ -3548,9 +3548,15 @@ Garnish.NiceText = Garnish.Base.extend({
 	destroy: function()
 	{
 		this.base();
-		this.$hint.remove();
-		this.$stage.remove();
-	}
+        if (this.$hint !== null)
+        {
+            this.$hint.remove();
+        }
+        if (this.$stage !== null)
+        {
+            this.$stage.remove();
+        }
+    }
 
 },
 {
