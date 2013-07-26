@@ -868,7 +868,7 @@ ul.errors li { color: $errorcolor; }
 	.status { background-image: url(../images/status_2x.png); background-size: 10px 40px; }
 
 	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
-	.spinner.element-spinner { background-image: url(../images/spinner_element_2x.gif); }
+	.spinner.element-spinner { background-image: url(../images/spinner_element_2x.gif); background-size: 20px; }
 	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
 
 	.progressbar.pending .progressbar-inner { background-image: url(../images/progressbar_pending_2x.png); background-size: 50px; }
