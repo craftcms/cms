@@ -19,16 +19,16 @@ var Base = function() {
 
 Base.extend = function(_instance, _static) { // subclass
 	var extend = Base.prototype.extend;
-
+	
 	// build the prototype
 	Base._prototyping = true;
 	var proto = new this;
 	extend.call(proto, _instance);
   proto.base = function() {
-	// call this method from any other method to invoke that method's ancestor
+    // call this method from any other method to invoke that method's ancestor
   };
 	delete Base._prototyping;
-
+	
 	// create the wrapper for the constructor function
 	//var constructor = proto.constructor.valueOf(); //-dean
 	var constructor = proto.constructor;
@@ -43,7 +43,7 @@ Base.extend = function(_instance, _static) { // subclass
 			}
 		}
 	};
-
+	
 	// build the class interface
 	klass.ancestor = this;
 	klass.extend = this.extend;
@@ -120,7 +120,7 @@ Base = Base.extend({
 }, {
 	ancestor: Object,
 	version: "1.1",
-
+	
 	forEach: function(object, block, context) {
 		for (var key in object) {
 			if (this.prototype[key] === undefined) {
@@ -128,7 +128,7 @@ Base = Base.extend({
 			}
 		}
 	},
-
+		
 	implement: function() {
 		for (var i = 0; i < arguments.length; i++) {
 			if (typeof arguments[i] == "function") {
@@ -141,7 +141,7 @@ Base = Base.extend({
 		}
 		return this;
 	},
-
+	
 	toString: function() {
 		return String(this.valueOf());
 	}
@@ -1951,7 +1951,7 @@ Garnish.HUD = Garnish.Base.extend({
             Garnish.HUD.activeHUDs = {};
         }
 
-        this.showing = false;
+		this.showing = false;
 
 		this.$hud = $('<div class="'+this.settings.hudClass+'" />').appendTo(Garnish.$bod);
 		this.$tip = $('<div class="'+this.settings.tipClass+'" />').appendTo(this.$hud);
@@ -1977,11 +1977,11 @@ Garnish.HUD = Garnish.Base.extend({
 			return;
 		}
 
-		if (!this.settings.closeOtherHUDs)
+		if (Garnish.HUD.activeHUDs.length && !this.settings.closeOtherHUDs)
 		{
 			for (var hudID in Garnish.HUD.activeHUDs) {
-				Garnish.HUD.activeHUDs[hudID].hide();
-			}
+                Garnish.HUD.activeHUDs[hudID].hide();
+            }
 		}
 
 		this.$hud.show();
@@ -3045,23 +3045,23 @@ Garnish.Modal = Garnish.Base.extend({
 		{
 			// (settings)
 			settings = container;
-			container = null;
+            container = null;
 		}
 
 		this.setSettings(settings, Garnish.Modal.defaults);
 
-		// If container already set, drop the shade below it.
-		if (container)
-		{
-			this.$shade = $('<div class="modal-shade"/>').insertBefore(container);
-		}
-		else
-		{
-			this.$shade = $('<div class="modal-shade"/>').appendTo(Garnish.$bod);
-		}
+        // If container already set, drop the shade below it.
+        if (container)
+        {
+            this.$shade = $('<div class="modal-shade"/>').insertBefore(container);
+        }
+        else
+        {
+            this.$shade = $('<div class="modal-shade"/>').appendTo(Garnish.$bod);
+        }
 
 
-		if (container)
+        if (container)
 		{
 			this.setContainer(container);
 			this.show();
@@ -3113,7 +3113,7 @@ Garnish.Modal = Garnish.Base.extend({
 	show: function()
 	{
 
-		// Close other modals as needed
+        // Close other modals as needed
 		if (Garnish.Modal.visibleModal && this.settings.closeOtherModals)
 		{
 			Garnish.Modal.visibleModal.hide();
@@ -3279,11 +3279,11 @@ Garnish.Modal = Garnish.Base.extend({
 		}
 	},
 
-	shiftModalToEnd: function ()
-	{
-		this.$shade.appendTo(Garnish.$bod);
-		this.$container.appendTo(Garnish.$bod);
-	}
+    shiftModalToEnd: function ()
+    {
+        this.$shade.appendTo(Garnish.$bod);
+        this.$container.appendTo(Garnish.$bod);
+    }
 },
 {
 	relativeElemPadding: 8,
@@ -3293,7 +3293,7 @@ Garnish.Modal = Garnish.Base.extend({
 		onHide: $.noop,
 		onFadeIn: $.noop,
 		onFadeOut: $.noop,
-		closeOtherModals: true
+        closeOtherModals: true
 	},
 	instances: [],
 	visibleModal: null
@@ -3447,8 +3447,8 @@ Garnish.NiceText = Garnish.Base.extend({
 				'padding-bottom':      this.$input.css('padding-bottom'),
 				'padding-left':        this.$input.css('padding-left'),
 				'-webkit-box-sizing':  this.inputBoxSizing,
-				'-moz-box-sizing':     this.inputBoxSizing,
-				'box-sizing':          this.inputBoxSizing
+		  		'-moz-box-sizing':     this.inputBoxSizing,
+		        'box-sizing':          this.inputBoxSizing
 			});
 		}
 
@@ -3557,12 +3557,15 @@ Garnish.NiceText = Garnish.Base.extend({
 	destroy: function()
 	{
 		this.base();
-		if (this.$hint !== null)
-		{
-			this.$hint.remove();
-		}
-		this.$stage.remove();
-	}
+        if (this.$hint !== null)
+        {
+            this.$hint.remove();
+        }
+        if (this.$stage !== null)
+        {
+            this.$stage.remove();
+        }
+    }
 
 },
 {
@@ -4648,8 +4651,8 @@ Garnish.Select = Garnish.Base.extend({
 	 */
 	 resetItemOrder: function()
 	 {
-		this.$items = $().add(this.$items);
-		this.updateIndexes();
+	 	this.$items = $().add(this.$items);
+	 	this.updateIndexes();
 	 },
 
 	/**
