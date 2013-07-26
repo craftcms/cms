@@ -101,6 +101,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 * @access protected
 	 * @param mixed $value
 	 * @return mixed
+	 * @deprecated Deprecated since 1.1
 	 */
 	protected function prepPostData($value)
 	{
