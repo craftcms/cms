@@ -1934,6 +1934,69 @@ Garnish.DragSort = Garnish.Drag.extend({
 
 
 /**
+ * ESC key manager class
+ */
+Garnish.EscManager = Garnish.Base.extend({
+
+	handlers: null,
+
+	init: function()
+	{
+		this.handlers = [];
+
+		this.addListener(Garnish.$bod, 'keyup', function(ev)
+		{
+			if (ev.keyCode == Garnish.ESC_KEY)
+			{
+				this.escapeLatest(ev);
+			}
+		});
+	},
+
+	register: function(obj, func)
+	{
+		this.handlers.push({
+			obj: obj,
+			func: func
+		});
+	},
+
+	unregister: function(obj)
+	{
+		for (var i = this.handlers.length - 1; i >= 0; i--)
+		{
+			if (this.handlers[i].obj == obj)
+			{
+				this.handlers.splice(i, 1);
+			}
+		}
+	},
+
+	escapeLatest: function(ev)
+	{
+		if (this.handlers.length)
+		{
+			var handler = this.handlers.pop();
+
+			if (typeof handler.func == 'function')
+			{
+				var func = handler.func;
+			}
+			else
+			{
+				var func = handler.obj[handler.func];
+			}
+
+			func.call(handler.obj, ev);
+		}
+	}
+
+});
+
+Garnish.escManager = new Garnish.EscManager();
+
+
+/**
  * HUD
  */
 Garnish.HUD = Garnish.Base.extend({
@@ -2100,6 +2163,8 @@ Garnish.HUD = Garnish.Base.extend({
 		this.showing = true;
 		Garnish.HUD.activeHUDs[this._namespace] = this;
 
+		Garnish.escManager.register(this, 'hide');
+
 		// onShow callback
 		this.settings.onShow();
 	},
@@ -2171,6 +2236,8 @@ Garnish.HUD = Garnish.Base.extend({
 		this.showing = false;
 
 		delete Garnish.HUD.activeHUDs[this._namespace];
+
+		Garnish.escManager.unregister(this);
 
 		// onHide callback
 		this.settings.onHide();
@@ -2470,11 +2537,15 @@ Garnish.Menu = Garnish.Base.extend({
 		}
 
 		this.$container.fadeIn(50);
+
+		Garnish.escManager.register(this, 'hide');
 	},
 
 	hide: function()
 	{
 		this.$container.fadeOut('fast');
+
+		Garnish.escManager.unregister(this);
 	},
 
 	selectOption: function(ev)
@@ -3112,7 +3183,6 @@ Garnish.Modal = Garnish.Base.extend({
 
 	show: function()
 	{
-
         // Close other modals as needed
 		if (Garnish.Modal.visibleModal && this.settings.closeOtherModals)
 		{
@@ -3146,13 +3216,7 @@ Garnish.Modal = Garnish.Base.extend({
 
 		this.addListener(this.$shade, 'click', 'hide');
 
-		this.addListener(Garnish.$bod, 'keyup', function(ev)
-		{
-			if (ev.keyCode == Garnish.ESC_KEY)
-			{
-				this.hide();
-			}
-		});
+		Garnish.escManager.register(this, 'hide');
 
 		this.settings.onShow();
 	},
@@ -3176,6 +3240,7 @@ Garnish.Modal = Garnish.Base.extend({
 		this.removeListener(this.$shade, 'click');
 		this.removeListener(Garnish.$bod, 'keyup');
 
+		Garnish.escManager.unregister(this);
 		this.settings.onHide();
 	},
 
