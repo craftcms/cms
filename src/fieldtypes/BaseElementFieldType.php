@@ -131,7 +131,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $elements)
 	{
-		$id = rtrim(preg_replace('/[\[\]]+/', '-', $name), '-');
+		$id = rtrim(preg_replace('/[\[\]]+/', '-', $name), '-').'-'.StringHelper::UUID();
 
 		if (!($elements instanceof RelationFieldData))
 		{
