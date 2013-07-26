@@ -1946,7 +1946,12 @@ Garnish.HUD = Garnish.Base.extend({
 		this.$trigger = $(trigger);
 		this.setSettings(settings, Garnish.HUD.defaults);
 
-		this.showing = false;
+        if (typeof Garnish.HUD.activeHUDs == "undefined")
+        {
+            Garnish.HUD.activeHUDs = {};
+        }
+
+        this.showing = false;
 
 		this.$hud = $('<div class="'+this.settings.hudClass+'" />').appendTo(Garnish.$bod);
 		this.$tip = $('<div class="'+this.settings.tipClass+'" />').appendTo(this.$hud);
@@ -1959,6 +1964,7 @@ Garnish.HUD = Garnish.Base.extend({
 		{
 			ev.stopPropagation();
 		});
+
 	},
 
 	/**
@@ -1971,9 +1977,11 @@ Garnish.HUD = Garnish.Base.extend({
 			return;
 		}
 
-		if (Garnish.HUD.active && !this.settings.closeOtherHUDs)
+		if (!this.settings.closeOtherHUDs)
 		{
-			Garnish.HUD.active.hide();
+			for (var hudID in Garnish.HUD.activeHUDs) {
+				Garnish.HUD.activeHUDs[hudID].hide();
+			}
 		}
 
 		this.$hud.show();
@@ -2090,7 +2098,7 @@ Garnish.HUD = Garnish.Base.extend({
 		}
 
 		this.showing = true;
-		Garnish.HUD.active = this;
+		Garnish.HUD.activeHUDs[this._namespace] = this;
 
 		// onShow callback
 		this.settings.onShow();
@@ -2162,7 +2170,7 @@ Garnish.HUD = Garnish.Base.extend({
 		this.$hud.hide();
 		this.showing = false;
 
-		Garnish.HUD.active = null;
+		delete Garnish.HUD.activeHUDs[this._namespace];
 
 		// onHide callback
 		this.settings.onHide();
