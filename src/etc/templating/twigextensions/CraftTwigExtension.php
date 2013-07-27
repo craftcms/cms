@@ -233,8 +233,8 @@ class CraftTwigExtension extends \Twig_Extension
 		$globals['blx']   = $craftVariable;
 
 		$globals['now'] = DateTimeHelper::currentUTCDateTime();
-		$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->get('loginPath'));
-		$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->get('logoutPath'));
+		$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->getLoginPath());
+		$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->getLogoutPath());
 
 		if (Craft::isInstalled())
 		{

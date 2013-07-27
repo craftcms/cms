@@ -611,10 +611,13 @@ class HttpRequestService extends \CHttpRequest
 	{
 		$resourceTrigger = craft()->config->get('resourceTrigger');
 		$actionTrigger = craft()->config->get('actionTrigger');
-		$loginPath = trim(craft()->config->get('loginPath'), '/');
-		$setPasswordPath = trim(craft()->config->get('setPasswordPath'), '/');
-		$activateAccountPath = trim(craft()->config->get('activateAccountPath'), '/');
-		$logoutPath = trim(craft()->config->get('logoutPath'), '/');
+		$frontEndLoginPath = trim(craft()->config->get('loginPath'), '/');
+		$frontEndLogoutPath = trim(craft()->config->get('logoutPath'), '/');
+		$frontEndSetPasswordPath = trim(craft()->config->get('setPasswordPath'), '/');
+		$cpLoginPath = craft()->config->getCpLoginPath();
+		$cpLogoutPath = craft()->config->getCpLogoutPath();
+		$cpSetPasswordPath = craft()->config->getCpSetPasswordPath();
+
 		$firstSegment = $this->getSegment(1);
 
 		// If the first path segment is the resource trigger word, it's a resource request.
@@ -624,23 +627,19 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request
-		else if ($firstSegment === $actionTrigger || (in_array($this->_path, array($loginPath, $setPasswordPath, $activateAccountPath, $logoutPath)) && !$this->getParam('action')))
+		else if ($firstSegment === $actionTrigger || (in_array($this->_path, array($frontEndLoginPath, $cpLoginPath, $frontEndSetPasswordPath, $cpSetPasswordPath, $frontEndLogoutPath, $cpLogoutPath)) && !$this->getParam('action')))
 		{
 			$this->_isActionRequest = true;
 
-			if ($this->_path == $loginPath)
+			if (in_array($this->_path, array($cpLoginPath, $frontEndLoginPath)))
 			{
 				$this->_actionSegments = array('users', 'login');
 			}
-			else if ($this->_path == $setPasswordPath)
+			else if (in_array($this->_path, array($frontEndSetPasswordPath, $cpSetPasswordPath)))
 			{
 				$this->_actionSegments = array('users', 'setPassword');
 			}
-			else if ($this->_path == $activateAccountPath)
-			{
-				$this->_actionSegments = array('users', 'validate');
-			}
-			else if ($this->_path == $logoutPath)
+			else if (in_array($this->_path, array($frontEndLogoutPath, $cpLogoutPath)))
 			{
 				$this->_actionSegments = array('users', 'logout');
 			}

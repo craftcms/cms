@@ -277,7 +277,7 @@ class UsersService extends BaseApplicationComponent
 				craft()->templates->registerTwigAutoloader();
 
 				craft()->email->sendEmailByKey($user, 'account_activation', array(
-					'link' => new \Twig_Markup($this->getActivateAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+					'link' => new \Twig_Markup(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
 				));
 			}
 
@@ -344,7 +344,7 @@ class UsersService extends BaseApplicationComponent
 		craft()->templates->registerTwigAutoloader();
 
 		return craft()->email->sendEmailByKey($user, 'account_activation', array(
-			'link' => new \Twig_Markup($this->getActivateAccountUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+			'link' => new \Twig_Markup(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
 		));
 	}
 
@@ -422,7 +422,7 @@ class UsersService extends BaseApplicationComponent
 		craft()->templates->registerTwigAutoloader();
 
 		return craft()->email->sendEmailByKey($user, 'forgot_password', array(
-			'link' => new \Twig_Markup($this->getSetPasswordUrl($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+			'link' => new \Twig_Markup(craft()->config->getSetPasswordPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
 		));
 	}
 
@@ -701,78 +701,6 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets the account verification URL for a user account.
-	 *
-	 * @param       $code
-	 * @param       $uid
-	 * @param  bool $full
-	 * @return string
-	 */
-	public function getActivateAccountUrl($code, $uid, $full = true)
-	{
-		if (craft()->request->isCpRequest())
-		{
-			$url = 'activate';
-		}
-		else
-		{
-			$url = craft()->config->get('activateAccountPath');
-		}
-
-		if (!$full)
-		{
-			return $url;
-		}
-
-		if (craft()->request->isSecureConnection)
-		{
-			return UrlHelper::getUrl($url, array(
-				'code' => $code, 'id' => $uid
-			), 'https');
-		}
-
-		return UrlHelper::getUrl($url, array(
-			'code' => $code, 'id' => $uid
-		));
-	}
-
-	/**
-	 * Gets the set password URL for a user account.
-	 *
-	 * @param       $code
-	 * @param       $uid
-	 * @param  bool $full
-	 * @return string
-	 */
-	public function getSetPasswordUrl($code, $uid, $full = true)
-	{
-		if (craft()->request->isCpRequest())
-		{
-			$url = 'setpassword';
-		}
-		else
-		{
-			$url = craft()->config->get('setPasswordPath');
-		}
-
-		if (!$full)
-		{
-			return $url;
-		}
-
-		if (craft()->request->isSecureConnection)
-		{
-			return UrlHelper::getUrl($url, array(
-				'code' => $code, 'id' => $uid
-			), 'https');
-		}
-
-		return UrlHelper::getUrl($url, array(
-			'code' => $code, 'id' => $uid
-		));
-	}
-
-	/**
 	 * Validates a given password against a hash.
 	 *
 	 * @param $hash
@@ -1006,9 +934,19 @@ class UsersService extends BaseApplicationComponent
 		}
 		else
 		{
-			$user->addErrors(array(
-				'newPassword' => $passwordModel->getErrors('password')
-			));
+			// If it's a new user AND we allow public registration, set it on the 'password' field and not 'newpassword'.
+			if (!$user->id && craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
+			{
+				$user->addErrors(array(
+					'password' => $passwordModel->getErrors('password')
+				));
+			}
+			else
+			{
+				$user->addErrors(array(
+					'newPassword' => $passwordModel->getErrors('password')
+				));
+			}
 
 			return false;
 		}

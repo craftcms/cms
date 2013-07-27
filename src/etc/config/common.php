@@ -308,7 +308,6 @@ $components['httpSession']['sessionName'] = 'CraftSessionId';
 
 $components['userSession']['class'] = 'Craft\UserSessionService';
 $components['userSession']['allowAutoLogin']  = true;
-$components['userSession']['loginUrl']        = $generalConfig['loginPath'];
 $components['userSession']['autoRenewCookie'] = true;
 
 $configArray['components'] = array_merge($configArray['components'], $components);

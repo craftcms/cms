@@ -223,7 +223,7 @@ class UserSessionService extends \CWebUser
 				craft()->end();
 			}
 
-			$url = UrlHelper::getUrl($this->loginUrl);
+			$url = UrlHelper::getUrl(craft()->config->getLoginPath());
 			craft()->request->redirect($url);
 		}
 	}

@@ -202,4 +202,134 @@ class ConfigService extends BaseApplicationComponent
 		// I need more time.
 		set_time_limit(120);
 	}
+
+	/**
+	 * Returns the correct login path based on the type of the current request.
+	 *
+	 * @return mixed|string
+	 */
+	public function getLoginPath()
+	{
+		if (craft()->request->isSiteRequest())
+		{
+			return craft()->config->get('loginPath');
+		}
+
+		return $this->getCpLoginPath();
+	}
+
+	/**
+	 * Returns the correct logout path based on the type of the current request.
+	 *
+	 * @return mixed|string
+	 */
+	public function getLogoutPath()
+	{
+		if (craft()->request->isSiteRequest())
+		{
+			return craft()->config->get('logoutPath');
+		}
+
+		return $this->getCpLogoutPath();
+	}
+
+	/**
+	 * Gets the account verification URL for a user account.
+	 *
+	 * @param       $code
+	 * @param       $uid
+	 * @param  bool $full
+	 * @return string
+	 */
+	public function getActivateAccountPath($code, $uid, $full = true)
+	{
+		$url = 'actions/users/validate';
+
+		if (!$full)
+		{
+			return $url;
+		}
+
+		if (craft()->request->isSecureConnection)
+		{
+			$url = UrlHelper::getUrl($url, array(
+				'code' => $code, 'id' => $uid
+			), 'https');
+		}
+
+		$url = UrlHelper::getUrl($url, array(
+			'code' => $code, 'id' => $uid
+		));
+
+		// Special case because we don't want the CP trigger showing in the email.
+		return str_replace(craft()->config->get('cpTrigger').'/', '', $url);
+	}
+
+	/**
+	 * Gets the set password URL for a user account.
+	 *
+	 * @param       $code
+	 * @param       $uid
+	 * @param  bool $full
+	 * @return string
+	 */
+	public function getSetPasswordPath($code, $uid, $full = true)
+	{
+		if (craft()->request->isSiteRequest())
+		{
+			$url = craft()->config->get('setPasswordPath');
+		}
+		else
+		{
+			$url = $this->getCpSetPasswordPath();
+		}
+
+		if (!$full)
+		{
+			return $url;
+		}
+
+		if (craft()->request->isSecureConnection)
+		{
+			return UrlHelper::getUrl($url, array(
+				'code' => $code, 'id' => $uid
+			), 'https');
+		}
+
+		return UrlHelper::getUrl($url, array(
+			'code' => $code, 'id' => $uid
+		));
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCpSetPasswordPath()
+	{
+		return 'setpassword';
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCpActivateAccountPath()
+	{
+		return 'activate';
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCpLoginPath()
+	{
+		return 'login';
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCpLogoutPath()
+	{
+		return 'logout';
+	}
 }
