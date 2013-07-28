@@ -365,4 +365,20 @@ class ConfigService extends BaseApplicationComponent
 	{
 		return 'logout';
 	}
+
+	/**
+	 * Parses a string for any environment variable tags.
+	 *
+	 * @param string $str
+	 * @return string $str
+	 */
+	public function parseEnvironmentString($str)
+	{
+		foreach ($this->get('environmentVariables') as $key => $value)
+		{
+			$str = str_replace('{'.$key.'}', $value, $str);
+		}
+
+		return $str;
+	}
 }

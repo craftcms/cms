@@ -139,7 +139,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	private function _getSourceFileSystemPath(BaseAssetSourceType $sourceType = null)
 	{
-		$path = is_null($sourceType) ? $this->getSettings()->path : $sourceType->getSettings()->path;
+		$path = is_null($sourceType) ? $this->getBasePath() : $sourceType->getBasePath();
 		$path = IOHelper::getRealPath($path);
 		return $path;
 	}
@@ -551,7 +551,18 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	public function getBaseUrl()
 	{
-		return $this->getSettings()->url;
+		$url = $this->getSettings()->url;
+		return craft()->config->parseEnvironmentString($url);
 	}
 
+	/**
+	 * Returns the source's base server path.
+	 *
+	 * @return string
+	 */
+	public function getBasePath()
+	{
+		$path = $this->getSettings()->path;
+		return craft()->config->parseEnvironmentString($path);
+	}
 }

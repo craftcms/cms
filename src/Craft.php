@@ -8,6 +8,7 @@ class Craft extends \Yii
 {
 	private static $_isInstalled;
 	private static $_info;
+	private static $_siteName;
 	private static $_siteUrl;
 
 	private static $_packageList = array('Users', 'PublishPro', 'Localize', 'Cloud', 'Rebrand');
@@ -192,7 +193,13 @@ class Craft extends \Yii
 	 */
 	public static function getSiteName()
 	{
-		return static::getInfo('siteName');
+		if (!isset(static::$_siteName))
+		{
+			$siteName = static::getInfo('siteName');
+			static::$_siteName = craft()->config->parseEnvironmentString($siteName);
+		}
+
+		return static::$_siteName;
 	}
 
 	/**
@@ -217,6 +224,8 @@ class Craft extends \Yii
 
 			if ($storedSiteUrl)
 			{
+				$storedSiteUrl = craft()->config->parseEnvironmentString($storedSiteUrl);
+
 				$port = craft()->request->getPort();
 
 				// If $port == 80, don't show it. If the port is already in the $storedSiteUrl, don't show it.

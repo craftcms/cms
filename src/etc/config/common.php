@@ -4,22 +4,50 @@ Yii::setPathOfAlias('app', CRAFT_APP_PATH);
 Yii::setPathOfAlias('plugins', CRAFT_PLUGINS_PATH);
 Yii::setPathOfAlias('Imagine', CRAFT_APP_PATH.'/lib/Imagine');
 
-// Load the configs
+// Load the deafult configs
 $generalConfig = require_once(CRAFT_APP_PATH.'etc/config/defaults/general.php');
 $dbConfig = require_once(CRAFT_APP_PATH.'etc/config/defaults/db.php');
 
+/**
+ * Merges a base config array with a custom config array,
+ * taking environment-specific configs into account.
+ *
+ * @param array &$baseConfig
+ * @param array $customConfig
+ */
+function mergeConfigs(&$baseConfig, $customConfig)
+{
+	// Is this a multi-environment config?
+	if (array_key_exists('*', $customConfig))
+	{
+		foreach ($customConfig as $env => $envConfig)
+		{
+			if ($env == '*' || strpos(CRAFT_ENVIRONMENT, $env) !== false)
+			{
+				$baseConfig = array_merge($baseConfig, $envConfig);
+			}
+		}
+	}
+	else
+	{
+		$baseConfig = array_merge($baseConfig, $customConfig);
+	}
+}
+
+// Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
 if (file_exists(CRAFT_CONFIG_PATH.'general.php'))
 {
-	if (is_array($_generalConfig = @include(CRAFT_CONFIG_PATH.'general.php')))
+	if (is_array($customGeneralConfig = @include(CRAFT_CONFIG_PATH.'general.php')))
 	{
-		$generalConfig = array_merge($generalConfig, $_generalConfig);
+		mergeConfigs($generalConfig, $customGeneralConfig);
 	}
 }
 else if (file_exists(CRAFT_CONFIG_PATH.'blocks.php'))
 {
-	if (is_array($_generalConfig = require_once(CRAFT_CONFIG_PATH.'blocks.php')))
+	// Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
+	if (is_array($customGeneralConfig = require_once(CRAFT_CONFIG_PATH.'blocks.php')))
 	{
-		$generalConfig = array_merge($generalConfig, $_generalConfig);
+		mergeConfigs($generalConfig, $customGeneralConfig);
 	}
 	else if (isset($blocksConfig))
 	{
@@ -28,9 +56,10 @@ else if (file_exists(CRAFT_CONFIG_PATH.'blocks.php'))
 	}
 }
 
-if (is_array($_dbConfig = require_once(CRAFT_CONFIG_PATH.'db.php')))
+// Originally db.php defined a $dbConfig variable.
+if (is_array($customDbConfig = require_once(CRAFT_CONFIG_PATH.'db.php')))
 {
-	$dbConfig = array_merge($dbConfig, $_dbConfig);
+	mergeConfigs($dbConfig, $customDbConfig);
 }
 
 if ($generalConfig['devMode'] == true)
