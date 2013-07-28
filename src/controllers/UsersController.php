@@ -169,7 +169,7 @@ class UsersController extends BaseController
 
 			if (!$user)
 			{
-				throw new Exception(Craft::t('Invalid verification code.'));
+				throw new HttpException('200', Craft::t('Invalid verification code.'));
 			}
 
 			$newPassword = craft()->request->getRequiredPost('newPassword');
@@ -186,8 +186,18 @@ class UsersController extends BaseController
 					Craft::log('Tried to automatically log in after a password update, but could not: '.$errorMessage, LogLevel::Warning);
 				}
 
-				craft()->userSession->setNotice(Craft::t('Password updated.'));
-				$this->redirectToPostedUrl();
+				// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
+				if (!$user->can('accessCp'))
+				{
+					// No password reset required and they have permissions to access the CP, so send them to the login page.
+					$url = UrlHelper::getUrl(craft()->config->get('setPasswordSuccessPath'));
+					$this->redirect($url);
+				}
+				else
+				{
+					craft()->userSession->setNotice(Craft::t('Password updated.'));
+					$this->redirectToPostedUrl();
+				}
 			}
 			else
 			{
@@ -253,33 +263,16 @@ class UsersController extends BaseController
 
 		if (craft()->users->activateUser($user))
 		{
-			// Successfully activated user, do they require a password reset?
-			if ($user->passwordResetRequired || !$user->password)
-			{
-				// Password reset required, generating a new verification code and sending to the setPassword url.
-				$code = craft()->users->setVerificationCodeOnUser($user);
+			// All users that go through account activation will need to set their password.
+			$code = craft()->users->setVerificationCodeOnUser($user);
 
-				if ($user->can('accessCp'))
-				{
-					$url = craft()->config->getSetPasswordPath($code, $id, true, 'cp');
-				}
-				else
-				{
-					$url = craft()->config->getSetPasswordPath($code, $id);
-				}
+			if ($user->can('accessCp'))
+			{
+				$url = craft()->config->getSetPasswordPath($code, $id, true, 'cp');
 			}
 			else
 			{
-				if ($user->can('accessCp'))
-				{
-					// No password reset required and they have permissions to access the CP, so send them to the login page.
-					$url = UrlHelper::getUrl(craft()->config->get('loginPath'));
-				}
-				else
-				{
-					// No password reset required and they can't access the CP, so we assume they've setup a custom front-end activateSuccessPath page.
-					$url = UrlHelper::getSiteUrl(craft()->config->get('activateSuccessPath'));
-				}
+				$url = craft()->config->getSetPasswordPath($code, $id);
 			}
 		}
 		else
@@ -287,7 +280,7 @@ class UsersController extends BaseController
 			if (($url = craft()->config->get('activateFailurePath')) === '')
 			{
 				// Failed to validate user and there is no custom validation failure path.  Throw an exception.
-				throw new Exception(Craft::t('There was a problem activating this account.'));
+				throw new HttpException('200', Craft::t('There was a problem activating this account.'));
 			}
 			else
 			{

@@ -54,12 +54,17 @@ return array(
 'setPasswordPath' => 'setpassword',
 
 /**
- * If this is set, Craft will redirect to here upon successful activation. Otherwise, it defaults to the login page.
+ * The path Craft will use when activating a user's account.
  */
-'activateSuccessPath' => '',
+'activateAccountPath' => 'activate',
 
 /**
- * If this is set, Craft will redirect to here if activation was not successful. Otherwise, an exception is thrown.
+ * If this is set, Craft will redirect to here upon successful activation. Otherwise, it defaults to the login page.
+ */
+'setPasswordSuccessPath' => '',
+
+/**
+ * If this is set, Craft will redirect to here if account activation was not successful. Otherwise, an exception is thrown.
  */
 'activateFailurePath' => '',
 
