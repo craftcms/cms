@@ -20,11 +20,9 @@ function mergeConfigs(&$baseConfig, $customConfig)
 	// Is this a multi-environment config?
 	if (array_key_exists('*', $customConfig))
 	{
-		$serverName = $_SERVER['SERVER_NAME'];
-
 		foreach ($customConfig as $env => $envConfig)
 		{
-			if ($env == '*' || strpos($serverName, $env) !== false)
+			if ($env == '*' || strpos(CRAFT_ENVIRONMENT, $env) !== false)
 			{
 				$baseConfig = array_merge($baseConfig, $envConfig);
 			}
