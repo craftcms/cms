@@ -500,7 +500,16 @@ class ErrorHandler extends \CErrorHandler
 			// Grab the numeric template from the code unless we're looking in the "_special" directory and it's not a Twig template syntax error
 			if ($code && is_numeric($code) && strpos($templateName, '_special') === false && $type != 'Template Syntax Error')
 			{
-				$templateName = (string) $code;
+				// If it's a 200 HttpException, use the error template.
+				if ((string)$code == '200')
+				{
+					$templateName = 'error';
+				}
+				else
+				{
+					$templateName = (string)$code;
+				}
+
 			}
 		}
 

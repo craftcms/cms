@@ -94,42 +94,56 @@ class UsersController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$loginName = craft()->request->getRequiredPost('loginName');
+		$loginName = craft()->request->getPost('loginName');
+		$errors = array();
 
-		$user = craft()->users->getUserByUsernameOrEmail($loginName);
-
-		if ($user)
+		if (!$loginName)
 		{
-			if (craft()->users->sendForgotPasswordEmail($user))
+			$errors[] = Craft::t('Username or email is required.');
+		}
+		else
+		{
+			$user = craft()->users->getUserByUsernameOrEmail($loginName);
+
+			if ($user)
 			{
-				if (craft()->request->isAjaxRequest())
+				if (craft()->users->sendForgotPasswordEmail($user))
 				{
-					$this->returnJson(array('success' => true));
+					if (craft()->request->isAjaxRequest())
+					{
+						$this->returnJson(array('success' => true));
+					}
+					else
+					{
+						craft()->userSession->setNotice(Craft::t('Check your email for instructions to reset your password.'));
+						$this->redirectToPostedUrl();
+					}
 				}
 				else
 				{
-					craft()->userSession->setNotice(Craft::t('Check your email for instructions to reset your password.'));
-					$this->redirectToPostedUrl();
+					$errors[] = Craft::t('There was a problem sending the forgot password email.');
 				}
 			}
 			else
 			{
-				$error = Craft::t('There was a problem sending the forgot password email.');
+				$errors[] = Craft::t('Invalid username or email.');
 			}
-		}
-		else
-		{
-			$error = Craft::t('Invalid username or email.');
 		}
 
 		if (craft()->request->isAjaxRequest())
 		{
-			$this->returnErrorJson($error);
+			$this->returnErrorJson($errors);
 		}
 		else
 		{
-			craft()->userSession->setError($error);
+			// Send the data back to the template
+			craft()->urlManager->setRouteVariables(array(
+				'errors' => $errors,
+				'loginName'   => $loginName,
+			));
 		}
+
+
 	}
 
 	/**
@@ -198,7 +212,7 @@ class UsersController extends BaseController
 				throw new HttpException(404);
 			}
 
-			$template = craft()->users->getSetPasswordUrl($code, $id, false);
+			$template = craft()->config->getSetPasswordPath($code, $id, false);
 
 			$this->renderTemplate($template, array(
 				'code' => $code,
@@ -233,7 +247,7 @@ class UsersController extends BaseController
 			}
 			else
 			{
-				throw new Exception(Craft::t('Invalid verification code.'));
+				throw new HttpException('200', Craft::t('Invalid verification code.'));
 			}
 		}
 
@@ -244,20 +258,27 @@ class UsersController extends BaseController
 			{
 				// Password reset required, generating a new verification code and sending to the setPassword url.
 				$code = craft()->users->setVerificationCodeOnUser($user);
-				$url = craft()->users->getSetPasswordUrl($code, $id);
-			}
-			else
-			{
-				// No password reset required.
-				if (($url = craft()->config->get('activateSuccessPath')) != '')
+
+				if ($user->can('accessCp'))
 				{
-					// They have specified a custom validate success path, use it.
-					$url = UrlHelper::getSiteUrl(craft()->config->get('activateSuccessPath'));
+					$url = craft()->config->getSetPasswordPath($code, $id, true, 'cp');
 				}
 				else
 				{
-					// No password reset required and no custom validate success path.  Send to login page.
+					$url = craft()->config->getSetPasswordPath($code, $id);
+				}
+			}
+			else
+			{
+				if ($user->can('accessCp'))
+				{
+					// No password reset required and they have permissions to access the CP, so send them to the login page.
 					$url = UrlHelper::getUrl(craft()->config->get('loginPath'));
+				}
+				else
+				{
+					// No password reset required and they can't access the CP, so we assume they've setup a custom front-end activateSuccessPath page.
+					$url = UrlHelper::getSiteUrl(craft()->config->get('activateSuccessPath'));
 				}
 			}
 		}
@@ -366,7 +387,7 @@ class UsersController extends BaseController
 			}
 
 			// If no username was provided, set it to the email.
-			$userName = $userName === null ? $user->email : $userName;
+			$userName = $userName == null ? $user->email : $userName;
 
 			$user->username = $userName;
 			$user->firstName       = craft()->request->getPost('firstName');
@@ -922,8 +943,21 @@ class UsersController extends BaseController
 		// If public registration is enabled, make sure it's a new user before we set the password.
 		if ($publicRegistration && !$user->id)
 		{
-			// Force newPassword to be a string so it gets validated.
-			$user->newPassword = (string) craft()->request->getPost('password');
+			$password = (string)craft()->request->getPost('password');
+
+			// Validate the password.
+			$passwordModel = new PasswordModel();
+			$passwordModel->password = $password;
+
+			if ($passwordModel->validate())
+			{
+				$user->password = $password;
+			}
+			else
+			{
+				$user->addError('password', $passwordModel->getError('password'));
+				return false;
+			}
 		}
 		else
 		{
@@ -937,7 +971,18 @@ class UsersController extends BaseController
 				{
 					if ($this->_validateCurrentPassword($password))
 					{
-						$user->newPassword = (string)$newPassword;
+						$newPasswordModel = new PasswordModel();
+						$newPasswordModel->password = $newPassword;
+
+						if ($newPasswordModel->validate())
+						{
+							$user->newPassword = (string)$newPassword;
+						}
+						else
+						{
+							$user->addError('newPassword', $newPasswordModel->getError('password'));
+							return false;
+						}
 					}
 					else
 					{
