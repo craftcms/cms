@@ -261,13 +261,12 @@ return array(
 'defaultImageQuality' => 75,
 
 /**
- * The file extensions Craft will look for when loading a front-end template,
- * if the extension was omitted from the template path.
+ * The template file extensions Craft will look for when matching a template path to a file on the front end.
  */
 'defaultTemplateExtensions' => array('html', 'twig'),
 
 /**
- * The filenames (sans extensions) Craft will look for to serve as the front-end template directory "indexes".
+ * The template filenames (sans extension) Craft will look for within a directory to represent the directory’s “index” template when matching a template path to a file on the front end.
  */
 'indexTemplateFilenames' => array('index'),
 
