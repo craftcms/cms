@@ -94,42 +94,56 @@ class UsersController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$loginName = craft()->request->getRequiredPost('loginName');
+		$loginName = craft()->request->getPost('loginName');
+		$errors = array();
 
-		$user = craft()->users->getUserByUsernameOrEmail($loginName);
-
-		if ($user)
+		if (!$loginName)
 		{
-			if (craft()->users->sendForgotPasswordEmail($user))
+			$errors[] = Craft::t('Username or email is required.');
+		}
+		else
+		{
+			$user = craft()->users->getUserByUsernameOrEmail($loginName);
+
+			if ($user)
 			{
-				if (craft()->request->isAjaxRequest())
+				if (craft()->users->sendForgotPasswordEmail($user))
 				{
-					$this->returnJson(array('success' => true));
+					if (craft()->request->isAjaxRequest())
+					{
+						$this->returnJson(array('success' => true));
+					}
+					else
+					{
+						craft()->userSession->setNotice(Craft::t('Check your email for instructions to reset your password.'));
+						$this->redirectToPostedUrl();
+					}
 				}
 				else
 				{
-					craft()->userSession->setNotice(Craft::t('Check your email for instructions to reset your password.'));
-					$this->redirectToPostedUrl();
+					$errors[] = Craft::t('There was a problem sending the forgot password email.');
 				}
 			}
 			else
 			{
-				$error = Craft::t('There was a problem sending the forgot password email.');
+				$errors[] = Craft::t('Invalid username or email.');
 			}
-		}
-		else
-		{
-			$error = Craft::t('Invalid username or email.');
 		}
 
 		if (craft()->request->isAjaxRequest())
 		{
-			$this->returnErrorJson($error);
+			$this->returnErrorJson($errors);
 		}
 		else
 		{
-			craft()->userSession->setError($error);
+			// Send the data back to the template
+			craft()->urlManager->setRouteVariables(array(
+				'errors' => $errors,
+				'loginName'   => $loginName,
+			));
 		}
+
+
 	}
 
 	/**
