@@ -267,21 +267,38 @@ class ConfigService extends BaseApplicationComponent
 
 	/**
 	 * Gets the set password URL for a user account.
+	 * TODO: Not proud of this... at all.
 	 *
 	 * @param       $code
 	 * @param       $uid
 	 * @param  bool $full
+	 * @param  null $requestType
 	 * @return string
 	 */
-	public function getSetPasswordPath($code, $uid, $full = true)
+	public function getSetPasswordPath($code, $uid, $full = true, $requestType = null)
 	{
-		if (craft()->request->isSiteRequest())
+		$cp = false;
+
+		if (!$requestType)
 		{
-			$url = craft()->config->get('setPasswordPath');
+			if (craft()->request->isSiteRequest())
+			{
+				$url = craft()->config->get('setPasswordPath');
+			}
+			else
+			{
+				$url = $this->getCpSetPasswordPath();
+				$cp = true;
+			}
 		}
-		else
+		else if ($requestType == 'cp')
 		{
 			$url = $this->getCpSetPasswordPath();
+			$cp = true;
+		}
+		else if ($requestType == 'site')
+		{
+			$url = craft()->config->get('setPasswordPath');
 		}
 
 		if (!$full)
@@ -289,16 +306,32 @@ class ConfigService extends BaseApplicationComponent
 			return $url;
 		}
 
-		if (craft()->request->isSecureConnection)
+		if ($cp)
 		{
+			if (craft()->request->isSecureConnection)
+			{
+				return UrlHelper::getCpUrl($url, array(
+					'code' => $code, 'id' => $uid
+				), 'https');
+			}
+
+			return UrlHelper::getCpUrl($url, array(
+				'code' => $code, 'id' => $uid
+			));
+		}
+		else
+		{
+			if (craft()->request->isSecureConnection)
+			{
+				return UrlHelper::getUrl($url, array(
+					'code' => $code, 'id' => $uid
+				), 'https');
+			}
+
 			return UrlHelper::getUrl($url, array(
 				'code' => $code, 'id' => $uid
-			), 'https');
+			));
 		}
-
-		return UrlHelper::getUrl($url, array(
-			'code' => $code, 'id' => $uid
-		));
 	}
 
 	/**

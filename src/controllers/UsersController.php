@@ -258,7 +258,15 @@ class UsersController extends BaseController
 			{
 				// Password reset required, generating a new verification code and sending to the setPassword url.
 				$code = craft()->users->setVerificationCodeOnUser($user);
-				$url = craft()->config->getSetPasswordPath($code, $id);
+
+				if ($user->can('accessCp'))
+				{
+					$url = craft()->config->getSetPasswordPath($code, $id, true, 'cp');
+				}
+				else
+				{
+					$url = craft()->config->getSetPasswordPath($code, $id);
+				}
 			}
 			else
 			{
