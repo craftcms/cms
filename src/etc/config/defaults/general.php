@@ -270,6 +270,19 @@ return array(
  */
 'indexTemplateFilenames' => array('index'),
 
+/**
+ * Any environment-specific variables that should be swapped out in URL and Path settings.
+ *
+ * For example if you set it to:
+ *
+ *     array(
+ *         'siteUrl' => 'http://example.com/'
+ *     )
+ *
+ * ...then you would be able to use "{siteUrl}" in your Site URL setting or the URL settings for your Asset sources.
+ */
+'environmentVariables' => array(),
+
 
 /**
  * Error Path Keys

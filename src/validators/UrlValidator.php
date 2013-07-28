@@ -18,6 +18,12 @@ class UrlValidator extends \CUrlValidator
 	 */
 	public function validateValue($value)
 	{
+		// Ignore URLs with any environment variables in them
+		if (strpos($value, '{') !== false)
+		{
+			return $value;
+		}
+
 		if ($this->defaultScheme !== null && strncmp($value, '//', 2) == 0)
 		{
 			$this->defaultScheme = null;
