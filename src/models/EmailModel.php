@@ -27,6 +27,7 @@ class EmailModel extends BaseModel
 			'body'              => array(AttributeType::String, 'required' => true),
 			'htmlBody'          => array(AttributeType::String),
 			'replyTo'           => array(AttributeType::Email),
+			'sender'            => array(AttributeType::Email),
 			'cc'                => array(AttributeType::Mixed),
 			'bcc'               => array(AttributeType::Mixed),
 			'stringAttachments' => array(AttributeType::Mixed),
