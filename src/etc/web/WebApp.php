@@ -201,9 +201,6 @@ class WebApp extends \CWebApplication
 				}
 			}
 
-			// If this is an action request, call the controller
-			$this->_processActionRequest();
-
 			// If we're still here, finally let UrlManager do it's thing.
 			parent::processRequest();
 		}
@@ -236,6 +233,12 @@ class WebApp extends \CWebApplication
 		if (($route = trim($route, '/')) === '')
 		{
 			$route = $this->defaultController;
+		}
+
+		// If this is an action request, run some extra logic.
+		if ($component = $this->_processActions())
+		{
+			return $component;
 		}
 
 		$routeParts = explode('/', $route);
@@ -681,7 +684,8 @@ class WebApp extends \CWebApplication
 			$actionSegs = $this->request->getActionSegments();
 			if (isset($actionSegs[0]) && $actionSegs[0] == 'install')
 			{
-				$this->_processActionRequest();
+				$this->runController($actionSegs[0].'/'.$actionSegs[1]);
+				$this->end();
 			}
 		}
 
@@ -794,11 +798,11 @@ class WebApp extends \CWebApplication
 	 * @access private
 	 * @throws HttpException
 	 */
-	private function _processActionRequest()
+	private function _processActions()
 	{
-		if ($this->request->isActionRequest())
+		if ($this->request->isActionRequest() || $this->urlManager->getRouteActionSegments())
 		{
-			$actionSegs = $this->request->getActionSegments();
+			$actionSegs = $this->request->isActionRequest() ? $this->request->getActionSegments() : $this->urlManager->getRouteActionSegments();
 
 			// See if there is a first segment.
 			if (isset($actionSegs[0]))
@@ -810,9 +814,10 @@ class WebApp extends \CWebApplication
 				$class = __NAMESPACE__.'\\'.ucfirst($controller).'Controller';
 				if (class_exists($class))
 				{
-					$route = $controller.'/'.$action;
-					$this->runController($route);
-					return;
+					return array(
+						Craft::createComponent($class, $controller),
+						$this->parseActionParams($action),
+					);
 				}
 				else
 				{
@@ -826,16 +831,18 @@ class WebApp extends \CWebApplication
 						// Check to see if the second segment is an existing controller.  If no second segment, check for "PluginHandle"Controller, which is a plugin's default controller.
 						// i.e. pluginHandle/testController or pluginHandle/pluginController
 						$controller = (isset($actionSegs[1]) ? ucfirst($pluginHandle).'_'.ucfirst($actionSegs[1]) : ucfirst($pluginHandle)).'Controller';
+						$class = __NAMESPACE__.'\\'.$controller;
 
-						if (class_exists(__NAMESPACE__.'\\'.$controller))
+						if (class_exists($class))
 						{
 							// Check to see if there is a 3rd path segment.  If so, use it for the action.  If not, use the default Index for the action.
 							// i.e. pluginHandle/pluginController/index or pluginHandle/pluginController/testAction
 							$action = isset($actionSegs[2]) ? $actionSegs[2] : 'Index';
 
-							$route = substr($controller, 0, strpos($controller, 'Controller')).'/'.$action;
-							$this->runController($route);
-							return;
+							return array(
+								Craft::createComponent($class, $controller),
+								$this->parseActionParams($action),
+							);
 						}
 						else
 						{
@@ -848,9 +855,10 @@ class WebApp extends \CWebApplication
 							{
 								$action = $actionSegs[1];
 
-								$route = substr($controller, 0, strpos($controller, 'Controller')).'/'.$action;
-								$this->runController($route);
-								return;
+								return array(
+									Craft::createComponent($class, $controller),
+									$this->parseActionParams($action),
+								);
 							}
 						}
 					}
