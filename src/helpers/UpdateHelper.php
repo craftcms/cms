@@ -154,6 +154,44 @@ class UpdateHelper
 	}
 
 	/**
+	 * Returns the local build number from the given manifest file.
+	 *
+	 * @param $manifestData
+	 * @return bool|string
+	 */
+	public static function getLocalBuildFromManifest($manifestData)
+	{
+		if (static::isManifestVersionInfoLine($manifestData[0]))
+		{
+			$parts = explode(';', $manifestData[0]);
+			$index = strrpos($parts[0], '.');
+			$version = substr($parts[0], $index + 1);
+			return $version;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns the local version number from the given manifest file.
+	 *
+	 * @param $manifestData
+	 * @return bool|string
+	 */
+	public static function getLocalVersionFromManifest($manifestData)
+	{
+		if (static::isManifestVersionInfoLine($manifestData[0]))
+		{
+			$parts = explode(';', $manifestData[0]);
+			$index = strrpos($parts[0], '.');
+			$build = substr($parts[0], 2, $index - 2);
+			return $build;
+		}
+
+		return false;
+	}
+
+	/**
 	 * @static
 	 * @param $line
 	 * @return bool
