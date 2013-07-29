@@ -600,7 +600,7 @@ ul.tree,
 }
 
 .modal { position: fixed; z-index: 9998; top: 50%; left: 50%; margin-left: -200px; width: 400px; overflow: hidden; }
-.hud { position: absolute; z-index: 9997; display: none; }
+.hud { position: absolute; z-index: 9997; display: none; top: 0; }
 .hud .body { position: relative; padding: 30px; overflow: hidden; }
 .hud .tip { position: absolute; background: no-repeat 0 0; }
 .hud .tip-left { left: -15px; width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
