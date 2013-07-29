@@ -42,13 +42,17 @@ class TagsFieldType extends BaseElementFieldType
 			$elements = new RelationFieldData();
 		}
 
+		$fieldVariable = new FieldsVariable();
+		$elementVariable = new ElementTypeVariable($this->getElementType());
+
 		return craft()->templates->render('_components/fieldtypes/Tags/input', array(
-			'elementType'    => new ElementTypeVariable($this->getElementType()),
+			'elementType'    => $elementVariable,
 			'id'             => $id,
 			'name'           => $name,
 			'elements'       => $elements->all,
 			'source'         => $this->getSettings()->source,
 			'elementId'      => (!empty($this->element->id) ? $this->element->id : null),
+			'fieldCount'     => count($fieldVariable->getLayoutByType(ElementType::Tag)->getFields()),
 		));
 	}
 

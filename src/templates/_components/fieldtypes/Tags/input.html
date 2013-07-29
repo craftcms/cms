@@ -23,7 +23,8 @@
 		"{{ id|e('js') }}",
 		"{{ name|e('js') }}",
 		"{{ source|e('js') }}",
-		{{ elementId ? elementId : 'null' }}
+		{{ elementId ? elementId : 'null' }},
+		{{ fieldCount }}
 	);
 {% endset %}
 

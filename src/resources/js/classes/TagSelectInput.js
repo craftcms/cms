@@ -17,7 +17,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 	$addTagInput: null,
 	$spinner: null,
 
-	init: function(id, name, source, elementId)
+	init: function(id, name, source, elementId, hasFields)
 	{
 		this.id = id;
 		this.name = name;
@@ -92,7 +92,10 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 			}, this), 1);
 		});
 
-        this._attachHUDEvents();
+        if (hasFields)
+        {
+            this._attachHUDEvents();
+        }
 	},
 
 	searchForTags: function()
