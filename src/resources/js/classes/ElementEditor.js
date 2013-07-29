@@ -39,7 +39,7 @@ Craft.ElementEditor = Garnish.Base.extend({
 				$hudHtml = $('<div/>').html((data.headHtml ? data.headHtml : '') + (data.bodyHtml ? data.bodyHtml : '') + (data.footHtml ? data.footHtml : ''));
 
 				this.hud = new Garnish.HUD(this.$trigger, $hudHtml, {
-					hudClass: 'hud assetshud',
+					hudClass: 'hud contenthud',
 					triggerSpacing: 10,
 					tipWidth: 30,
 					closeOtherHUDs: true
