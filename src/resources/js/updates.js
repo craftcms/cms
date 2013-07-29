@@ -71,11 +71,11 @@ Craft.postActionRequest('update/getAvailableUpdates', function(response) {
 
 					if (match)
 					{
-						$li.addClass(match[1].toLowerCase()).text(match[2]);
+						$li.addClass(match[1].toLowerCase()).html(match[2]);
 					}
 					else
 					{
-						$li.text(note);
+						$li.html(note);
 					}
 				}
 			}
