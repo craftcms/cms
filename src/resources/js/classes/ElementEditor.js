@@ -83,12 +83,16 @@ Craft.ElementEditor = Garnish.Base.extend({
 		{
 			this.removeHud();
 
-			this.$trigger.find('.label').addClass('spinner inline element-spinner');
+            this.$trigger.find('.delete').addClass('hidden');
+            this.$trigger.find('.label').addClass('spinner element-spinner inline');
+            this.$trigger.removeClass('removable');
 		},
 
 		_hideSpinner: function ()
 		{
-			this.$trigger.find('.label').removeClass('spinner inline element-spinner');
+            this.$trigger.find('.delete').removeClass('hidden');
+			this.$trigger.find('.label').removeClass('spinner element-spinner inline');
+            this.$trigger.addClass('removable');
 		},
 
 		removeHud: function ()
