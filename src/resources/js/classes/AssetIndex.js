@@ -953,6 +953,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 	_editProperties: function (event)
 	{
 		var $target = $(event.currentTarget);
+        if (this.getState('view') == "table")
+        {
+            $target = $target.find('.element');
+        }
+
 		if (!$target.data('ElementEditor'))
 		{
 			var settings = {
