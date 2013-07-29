@@ -308,6 +308,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 *
 	 * @param mixed $transform
 	 * @return AssetTransformModel|null
+	 * @throws Exception
 	 */
 	public function normalizeTransform($transform)
 	{
@@ -317,7 +318,12 @@ class AssetTransformsService extends BaseApplicationComponent
 		}
 		else if (is_string($transform))
 		{
-			return $this->getTransformByHandle($transform);
+			$transformModel =  $this->getTransformByHandle($transform);
+			if ($transformModel)
+			{
+				return $transformModel;
+			}
+			throw new Exception(Craft::t("The transform “{handle}” cannot be found!", array('handle' => $transform)));
 		}
 		else if ($transform instanceof AssetTransformModel)
 		{
