@@ -90,13 +90,9 @@ Craft.ElementEditor = Garnish.Base.extend({
             {
                 this.$trigger.removeClass('removable').data('elementInputField', true);
             }
-            else
-            {
-                // Index mode.
-                this.$trigger.find('.label').addClass('index-mode');
-            }
 
-            this.$trigger.find('.label').addClass('spinner element-spinner inline').wrapInner('<nobr></nobr>');
+			this.$trigger.find('.label').css('padding-right', '20px');
+			this.$trigger.find('.label').after('<div class="spinner element-spinner" style="position: absolute; right: 2px; bottom: -1px;"></div>');
 		},
 
 		_hideSpinner: function ()
@@ -108,10 +104,10 @@ Craft.ElementEditor = Garnish.Base.extend({
             {
                 this.$trigger.addClass('removable');
             }
-            else
-            {
-                this.$trigger.find('.label').removeClass('index-mode');
-            }
+
+			this.$trigger.find('.label').css('padding-right', '0');
+			this.$trigger.find('.label').siblings('.spinner').remove();
+
 		},
 
 		removeHud: function ()

@@ -310,9 +310,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .spinner { display: inline-block; vertical-align: bottom; width: 20px; background: url(../images/spinner.gif) no-repeat 50% 50%; }
 .spinner.big { width: 48px; height: 48px; background: url(../images/spinner_big.gif) no-repeat 50% 50%; }
 .btn + .spinner { margin-left: 7px; }
-.spinner.inline { display: inline; background: url(../images/spinner.gif) no-repeat center right; padding: 2px 25px 5px 0; margin-right: -5px;}
 .spinner.element-spinner { background-image: url(../images/spinner_element.gif); }
-.spinner.index-mode { padding: 0 25px 0 0; margin-right: 0; height: auto !important; width: auto !important;}
 
 /* small buttons */
 .btngroup.small .btn,
