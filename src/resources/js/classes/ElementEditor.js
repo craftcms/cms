@@ -42,7 +42,7 @@ Craft.ElementEditor = Garnish.Base.extend({
 					hudClass: 'hud contenthud',
 					triggerSpacing: 10,
 					tipWidth: 30,
-					closeOtherHUDs: true
+					closeOtherHUDs: false
 				});
 
 				Craft.initUiElements($hudHtml);
