@@ -878,6 +878,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 	 */
 	onUpdateElements: function (append)
 	{
+		this.base(append)
+
 		if (this.indexMode)
 		{
 			$elements = this.$elementContainer.children(':not(.disabled)');
@@ -899,8 +901,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			// Reset the list.
 			this._uploadedFileIds = [];
 		}
-
-		this.base(append)
 	},
 
 	_initElementSelect: function ($children)
