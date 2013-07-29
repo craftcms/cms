@@ -2047,9 +2047,7 @@ Garnish.HUD = Garnish.Base.extend({
 			}
 		}
 
-        // Sometimes Chrome conveniently forgets to apply all the CSS classes and without the position and
-        // top CSS properties, this would expand the page downwards in some cases.
-        this.$hud.show().css('position', 'absolute').css('top', 0);
+		this.$hud.show();
 
 		// -------------------------------------------
 		//  Get all relevant dimensions, lengths, etc
