@@ -84,15 +84,34 @@ Craft.ElementEditor = Garnish.Base.extend({
 			this.removeHud();
 
             this.$trigger.find('.delete').addClass('hidden');
+
+            // If the removable class is present, then treat this as an Input Field.
+            if (this.$trigger.hasClass('removable'))
+            {
+                this.$trigger.removeClass('removable').data('elementInputField', true);
+            }
+            else
+            {
+                // Index mode.
+                this.$trigger.find('.label').addClass('index-mode');
+            }
+
             this.$trigger.find('.label').addClass('spinner element-spinner inline').wrapInner('<nobr></nobr>');
-            this.$trigger.removeClass('removable');
 		},
 
 		_hideSpinner: function ()
 		{
             this.$trigger.find('.delete').removeClass('hidden');
 			this.$trigger.find('.label').removeClass('spinner element-spinner inline').html(this.$trigger.find('.label nobr').html());
-            this.$trigger.addClass('removable');
+
+            if (this.$trigger.data('elementInputField'))
+            {
+                this.$trigger.addClass('removable');
+            }
+            else
+            {
+                this.$trigger.find('.label').removeClass('index-mode');
+            }
 		},
 
 		removeHud: function ()
