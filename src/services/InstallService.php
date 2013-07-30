@@ -472,6 +472,10 @@ class InstallService extends BaseApplicationComponent
 		$tagSet->name   = Craft::t('Default');
 		$tagSet->handle = 'default';
 
+		$fieldLayout = new FieldLayoutModel();
+		$fieldLayout->type = ElementType::Tag;
+		$tagSet->setFieldLayout($fieldLayout);
+
 		// Save it
 		if (craft()->tags->saveTagSet($tagSet))
 		{
