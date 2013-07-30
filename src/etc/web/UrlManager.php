@@ -127,14 +127,6 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * @return mixed
-	 */
-	public function getRouteActionSegments()
-	{
-		return array_filter(explode('/', $this->_routeAction));
-	}
-
-	/**
 	 * Sets the route.
 	 *
 	 * @access private
