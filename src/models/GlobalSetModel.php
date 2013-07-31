@@ -42,6 +42,7 @@ class GlobalSetModel extends BaseElementModel
 			if (empty($this->_fieldLayout))
 			{
 				$this->_fieldLayout = new FieldLayoutModel();
+				$this->_fieldLayout->type = ElementType::GlobalSet;
 			}
 		}
 
