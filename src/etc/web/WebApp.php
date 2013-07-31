@@ -59,8 +59,8 @@ class WebApp extends \CWebApplication
 
 	private $_templatePath;
 	private $_packageComponents;
-	private $_isDbConfigValid = false;
 	private $_pendingEvents;
+	private $_isDbConfigValid = false;
 
 	/**
 	 * Processes resource requests before anything else has a chance to initialize.
@@ -124,8 +124,8 @@ class WebApp extends \CWebApplication
 		// If this is a resource request, we should respond with the resource ASAP
 		$this->_processResourceRequest();
 
-		// Database config validation
-		$this->_validateDbConfig();
+		// Validate some basics on the database configuration file.
+		$this->_validateDbConfigFile();
 
 		// Process install requests
 		$this->_processInstallRequest();
@@ -251,16 +251,6 @@ class WebApp extends \CWebApplication
 				$this->parseActionParams($action),
 			);
 		}
-	}
-
-	/**
-	 * Returns whether the current db configuration is valid.
-	 *
-	 * @return bool
-	 */
-	public function isDbConfigValid()
-	{
-		return $this->_isDbConfigValid;
 	}
 
 	/**
@@ -497,6 +487,14 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function isDbConfigValid()
+	{
+		return $this->_isDbConfigValid;
+	}
+
+	/**
 	 * Attaches any pending event listeners to the newly-initialized component.
 	 *
 	 * @access private
@@ -537,106 +535,6 @@ class WebApp extends \CWebApplication
 
 			$this->resources->sendResource($path);
 		}
-	}
-
-	/**
-	 * Validates that we can connect to the database with the settings in the db config file.
-	 *
-	 * @access private
-	 * @return mixed
-	 * @throws Exception|HttpException
-	 */
-	private function _validateDbConfig()
-	{
-		$messages = array();
-
-		$databaseServerName = $this->config->getDbItem('server');
-		$databaseAuthName = $this->config->getDbItem('user');
-		$databaseName = $this->config->getDbItem('database');
-		$databasePort = $this->config->getDbItem('port');
-		$databaseCharset = $this->config->getDbItem('charset');
-		$databaseCollation = $this->config->getDbItem('collation');
-
-		if (StringHelper::isNullOrEmpty($databaseServerName))
-		{
-			$messages[] = Craft::t('The database server name isn’t set in your db config file.');
-		}
-
-		if (StringHelper::isNullOrEmpty($databaseAuthName))
-		{
-			$messages[] = Craft::t('The database user name isn’t set in your db config file.');
-		}
-
-		if (StringHelper::isNullOrEmpty($databaseName))
-		{
-			$messages[] = Craft::t('The database name isn’t set in your db config file.');
-		}
-
-		if (StringHelper::isNullOrEmpty($databasePort))
-		{
-			$messages[] = Craft::t('The database port isn’t set in your db config file.');
-		}
-
-		if (StringHelper::isNullOrEmpty($databaseCharset))
-		{
-			$messages[] = Craft::t('The database charset isn’t set in your db config file.');
-		}
-
-		if (StringHelper::isNullOrEmpty($databaseCollation))
-		{
-			$messages[] = Craft::t('The database collation isn’t set in your db config file.');
-		}
-
-		if (!empty($messages))
-		{
-			throw new DbConnectException(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
-		}
-
-		try
-		{
-			$connection = $this->db;
-			if (!$connection)
-			{
-				$messages[] = Craft::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
-			}
-		}
-		// Most likely missing PDO in general or the specific database PDO driver.
-		catch(\CDbException $e)
-		{
-			Craft::log($e->getMessage(), LogLevel::Error);
-			$missingPdo = false;
-
-			// TODO: Multi-db driver check.
-			if (!extension_loaded('pdo'))
-			{
-				$missingPdo = true;
-				$messages[] = Craft::t('@@@appName@@@ requires the PDO extension to operate.');
-			}
-
-			if (!extension_loaded('pdo_mysql'))
-			{
-				$missingPdo = true;
-				$messages[] = Craft::t('@@@appName@@@ requires the PDO_MYSQL driver to operate.');
-			}
-
-			if (!$missingPdo)
-			{
-				Craft::log($e->getMessage(), LogLevel::Error);
-				$messages[] = Craft::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
-			}
-		}
-		catch (\Exception $e)
-		{
-			Craft::log($e->getMessage(), LogLevel::Error);
-			$messages[] = Craft::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
-		}
-
-		if (!empty($messages))
-		{
-			throw new DbConnectException(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
-		}
-
-		$this->_isDbConfigValid = true;
 	}
 
 	/**
@@ -944,5 +842,59 @@ class WebApp extends \CWebApplication
 
 		// YOU SHALL NOT PASS
 		$this->end();
+	}
+
+	/**
+	 * Make sure the basics are in place in the db connection file before we actually try to connect later on.
+	 *
+	 * @throws DbConnectException
+	 */
+	private function _validateDbConfigFile()
+	{
+		$messages = array();
+
+		$databaseServerName = craft()->config->getDbItem('server');
+		$databaseAuthName = craft()->config->getDbItem('user');
+		$databaseName = craft()->config->getDbItem('database');
+		$databasePort = craft()->config->getDbItem('port');
+		$databaseCharset = craft()->config->getDbItem('charset');
+		$databaseCollation = craft()->config->getDbItem('collation');
+
+		if (StringHelper::isNullOrEmpty($databaseServerName))
+		{
+			$messages[] = Craft::t('The database server name isn’t set in your db config file.');
+		}
+
+		if (StringHelper::isNullOrEmpty($databaseAuthName))
+		{
+			$messages[] = Craft::t('The database user name isn’t set in your db config file.');
+		}
+
+		if (StringHelper::isNullOrEmpty($databaseName))
+		{
+			$messages[] = Craft::t('The database name isn’t set in your db config file.');
+		}
+
+		if (StringHelper::isNullOrEmpty($databasePort))
+		{
+			$messages[] = Craft::t('The database port isn’t set in your db config file.');
+		}
+
+		if (StringHelper::isNullOrEmpty($databaseCharset))
+		{
+			$messages[] = Craft::t('The database charset isn’t set in your db config file.');
+		}
+
+		if (StringHelper::isNullOrEmpty($databaseCollation))
+		{
+			$messages[] = Craft::t('The database collation isn’t set in your db config file.');
+		}
+
+		if (!empty($messages))
+		{
+			throw new DbConnectException(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
+		}
+
+		$this->_isDbConfigValid = true;
 	}
 }

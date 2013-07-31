@@ -18,8 +18,8 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function get($item)
 	{
-		// If we're looking for devMode and we haven't installed Craft yet and it's a CP request, pretend like devMode is turned on.
-		if ($item == 'devMode' && !Craft::isInstalled() && craft()->request->isCpRequest())
+		// If we're looking for devMode and we it looks like we're on the installer and it's a CP request, pretend like devMode is turned on.
+		if (!craft()->isConsole() && $item == 'devMode' && craft()->request->getSegment(1) == 'install' && craft()->request->isCpRequest())
 		{
 			return true;
 		}

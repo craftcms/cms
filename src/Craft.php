@@ -22,7 +22,7 @@ class Craft extends \Yii
 	public static function isInstalled()
 	{
 		// If the db config isn't valid, then we'll assume it's not installed.
-		if (!craft()->isDbConfigValid())
+		if (!craft()->db->isDbConnectionValid())
 		{
 			return false;
 		}
