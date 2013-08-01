@@ -491,7 +491,13 @@ class UpdatesService extends BaseApplicationComponent
 			if ($uid !== false)
 			{
 				Craft::log('Rolling back any file changes.', LogLevel::Info, true);
-				UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
+				$manifestData = UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid));
+
+				if ($manifestData)
+				{
+					UpdateHelper::rollBackFileChanges($manifestData);
+				}
+
 				Craft::log('Done rolling back any file changes.', LogLevel::Info, true);
 			}
 

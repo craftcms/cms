@@ -291,61 +291,64 @@ class Updater
 		// Now delete any files/folders that were marked for deletion in the manifest file.
 		$manifestData = UpdateHelper::getManifestData($unzipFolder);
 
-		foreach ($manifestData as $row)
+		if ($manifestData)
 		{
-			if (UpdateHelper::isManifestVersionInfoLine($row))
+			foreach ($manifestData as $row)
 			{
-				continue;
-			}
-
-			$rowData = explode(';', $row);
-
-			$folder = false;
-			if (UpdateHelper::isManifestLineAFolder($rowData[0]))
-			{
-				$folder = true;
-				$tempFilePath = UpdateHelper::cleanManifestFolderLine($rowData[0]);
-			}
-			else
-			{
-				$tempFilePath = $rowData[0];
-			}
-
-			$fullPath = '';
-
-			switch (trim($rowData[1]))
-			{
-				// If the file/folder was set to be deleted, there is no backup and we go ahead and remove it now.
-				case PatchManifestFileAction::Remove:
+				if (UpdateHelper::isManifestVersionInfoLine($row))
 				{
-					if ($tempFilePath == '')
-					{
-						$fullPath = IOHelper::normalizePathSeparators(craft()->path->getAppPath());
-					}
-					else
-					{
-						$fullPath = IOHelper::normalizePathSeparators(craft()->path->getAppPath().$tempFilePath);
-					}
-
-					break;
+					continue;
 				}
-			}
 
-			// Delete any files/folders we backed up.
-			if ($folder)
-			{
-				if (($folder = IOHelper::getFolder($fullPath)) !== false)
+				$rowData = explode(';', $row);
+
+				$folder = false;
+				if (UpdateHelper::isManifestLineAFolder($rowData[0]))
 				{
-					Craft::log('Deleting folder: '.$folder->getRealPath(), LogLevel::Info, true);
-					$folder->delete();
+					$folder = true;
+					$tempFilePath = UpdateHelper::cleanManifestFolderLine($rowData[0]);
 				}
-			}
-			else
-			{
-				if (($file = IOHelper::getFile($fullPath)) !== false)
+				else
 				{
-					Craft::log('Deleting file: '.$file->getRealPath(), LogLevel::Info, true);
-					$file->delete();
+					$tempFilePath = $rowData[0];
+				}
+
+				$fullPath = '';
+
+				switch (trim($rowData[1]))
+				{
+					// If the file/folder was set to be deleted, there is no backup and we go ahead and remove it now.
+					case PatchManifestFileAction::Remove:
+					{
+						if ($tempFilePath == '')
+						{
+							$fullPath = IOHelper::normalizePathSeparators(craft()->path->getAppPath());
+						}
+						else
+						{
+							$fullPath = IOHelper::normalizePathSeparators(craft()->path->getAppPath().$tempFilePath);
+						}
+
+						break;
+					}
+				}
+
+				// Delete any files/folders we backed up.
+				if ($folder)
+				{
+					if (($folder = IOHelper::getFolder($fullPath)) !== false)
+					{
+						Craft::log('Deleting folder: '.$folder->getRealPath(), LogLevel::Info, true);
+						$folder->delete();
+					}
+				}
+				else
+				{
+					if (($file = IOHelper::getFile($fullPath)) !== false)
+					{
+						Craft::log('Deleting file: '.$file->getRealPath(), LogLevel::Info, true);
+						$file->delete();
+					}
 				}
 			}
 		}

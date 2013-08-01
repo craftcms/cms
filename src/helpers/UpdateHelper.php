@@ -218,34 +218,37 @@ class UpdateHelper
 	{
 		if (static::$_manifestData == null)
 		{
-			// get manifest file
-			$manifestFileData = IOHelper::getFileContents($manifestDataPath.'/craft_manifest', true);
-
-			if ($manifestFileData === false)
+			if (IOHelper::fileExists($manifestDataPath.'/craft_manifest'))
 			{
-				throw new Exception(Craft::t('There was a problem reading the update manifest data.'));
-			}
+				// get manifest file
+				$manifestFileData = IOHelper::getFileContents($manifestDataPath.'/craft_manifest', true);
 
-			// Remove any trailing empty newlines
-			if ($manifestFileData[count($manifestFileData) - 1] == '')
-			{
-				array_pop($manifestFileData);
-			}
-
-			$manifestData = array_map('trim', $manifestFileData);
-			$updateModel = craft()->updates->getUpdates();
-
-			// Only use the manifest data starting from the local version
-			for ($counter = 0; $counter < count($manifestData); $counter++)
-			{
-				if (strpos($manifestData[$counter], '##'.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild) !== false)
+				if ($manifestFileData === false)
 				{
-					break;
+					throw new Exception(Craft::t('There was a problem reading the update manifest data.'));
 				}
-			}
 
-			$manifestData = array_slice($manifestData, $counter);
-			static::$_manifestData = $manifestData;
+				// Remove any trailing empty newlines
+				if ($manifestFileData[count($manifestFileData) - 1] == '')
+				{
+					array_pop($manifestFileData);
+				}
+
+				$manifestData = array_map('trim', $manifestFileData);
+				$updateModel = craft()->updates->getUpdates();
+
+				// Only use the manifest data starting from the local version
+				for ($counter = 0; $counter < count($manifestData); $counter++)
+				{
+					if (strpos($manifestData[$counter], '##'.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild) !== false)
+					{
+						break;
+					}
+				}
+
+				$manifestData = array_slice($manifestData, $counter);
+				static::$_manifestData = $manifestData;
+			}
 		}
 
 		return static::$_manifestData;
