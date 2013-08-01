@@ -238,7 +238,7 @@ class PluginsService extends BaseApplicationComponent
 
 							if ($plugin)
 							{
-								$this->_allPlugins[] = $plugin;
+								$this->_allPlugins[strtolower($handle)] = $plugin;
 								$names[] = $plugin->getName();
 							}
 						}
