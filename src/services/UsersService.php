@@ -368,7 +368,7 @@ class UsersService extends BaseApplicationComponent
 		IOHelper::ensureFolderExists($userPhotoFolder);
 		IOHelper::ensureFolderExists($targetFolder);
 
-		$filename = pathinfo($source, PATHINFO_BASENAME);
+		$filename = IOHelper::getFileName($source);
 		$targetPath = $targetFolder . $filename;
 
 

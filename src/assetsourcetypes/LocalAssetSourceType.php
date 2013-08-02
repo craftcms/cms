@@ -252,7 +252,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		foreach ($fileList as $file)
 		{
-			$existingFiles[pathinfo($file, PATHINFO_BASENAME)] = true;
+			$existingFiles[IOHelper::getFileName($file)] = true;
 		}
 
 		$fileParts = explode(".", $fileName);

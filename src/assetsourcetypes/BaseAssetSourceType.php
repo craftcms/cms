@@ -281,13 +281,13 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		if ($response->isSuccess())
 		{
-			$filename = pathinfo($response->getDataItem('filePath'), PATHINFO_BASENAME);
+			$filename = IOHelper::getFileName($response->getDataItem('filePath'));
 
 			$fileModel = new AssetFileModel();
 			$fileModel->sourceId = $this->model->id;
 			$fileModel->folderId = $folder->id;
-			$fileModel->filename = pathinfo($filename, PATHINFO_BASENAME);
-			$fileModel->kind = IOHelper::getFileKind(pathinfo($filename, PATHINFO_EXTENSION));
+			$fileModel->filename = IOHelper::getFileName($filename);
+			$fileModel->kind = IOHelper::getFileKind(IOHelper::getExtension($filename));
 			$fileModel->size = filesize($filePath);
 			$fileModel->dateModified = IOHelper::getLastTimeModified($filePath);
 
@@ -373,7 +373,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			if (!$this->isSourceLocal() && $file->kind == "image")
 			{
 				// Store copy locally for all sorts of operations.
-				IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$file->id.'.'.pathinfo($file, PATHINFO_EXTENSION));
+				IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file));
 			}
 		}
 
@@ -616,7 +616,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				$localCopy = $this->getLocalCopy($replaceWith);
 				if ($oldFile->kind == "image")
 				{
-					IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$oldFile->id.'.'.pathinfo($oldFile, PATHINFO_EXTENSION));
+					IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$oldFile->id.'.'.IOHelper::getExtension($oldFile));
 				}
 				IOHelper::deleteFile($localCopy);
 			}
