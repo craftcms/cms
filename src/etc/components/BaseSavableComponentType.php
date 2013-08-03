@@ -46,6 +46,16 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	}
 
 	/**
+	 * Returns the component's settings HTML.
+	 *
+	 * @return string|null
+	 */
+	public function getSettingsHtml()
+	{
+		return null;
+	}
+
+	/**
 	 * Preps the settings before they're saved to the database.
 	 *
 	 * @param array $settings
@@ -54,16 +64,6 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	public function prepSettings($settings)
 	{
 		return $settings;
-	}
-
-	/**
-	 * Returns the component's settings HTML.
-	 *
-	 * @return string|null
-	 */
-	public function getSettingsHtml()
-	{
-		return null;
 	}
 
 	/**
