@@ -162,8 +162,8 @@ $cpRoutes['settings/general']                                     = array('actio
 $cpRoutes['settings/globals/new']                                 = array('action' => 'systemSettings/editGlobalSet');
 $cpRoutes['settings/globals/(?P<globalSetId>\d+)']                = array('action' => 'systemSettings/editGlobalSet');
 $cpRoutes['settings/plugins/(?P<pluginClass>{handle})']           = 'settings/plugins/_settings';
-$cpRoutes['settings/sections/new']                                = 'settings/sections/_edit';
-$cpRoutes['settings/sections/(?P<sectionId>\d+)']                 = 'settings/sections/_edit';
+$cpRoutes['settings/sections/new']                                = array('action' => 'sections/editSection');
+$cpRoutes['settings/sections/(?P<sectionId>\d+)']                 = array('action' => 'sections/editSection');
 $cpRoutes['settings/tags']                                        = array('action' => 'tags/index');
 $cpRoutes['settings/tags/new']                                    = array('action' => 'tags/editTagSet');
 $cpRoutes['settings/tags/(?P<tagSetId>\d+)']                      = array('action' => 'tags/editTagSet');

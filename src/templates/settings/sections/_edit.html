@@ -1,35 +1,12 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
-{% set crumbs = [
-	{ label: "Settings"|t, url: url('settings') },
-	{ label: "Sections"|t, url: url('settings/sections') }
-] %}
-
-{% if section is not defined and sectionId is defined %}
-	{% set section = craft.sections.getSectionById(sectionId) %}
-	{% if not section %}{% exit 404 %}{% endif %}
-{% endif %}
-
-{% set isNewSection = (section is not defined or not section.id) %}
-
-{% if isNewSection %}
-	{% set title = "Create a new section"|t %}
-{% else %}
-	{% set title = section.name %}
-{% endif %}
-
-{% set tabs = {
-	settings: { label: "Settings"|t, url: '#section-settings' },
-	fieldlayout: { label: "Field Layout"|t, url: '#section-fieldlayout' }
-} %}
-
 
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
 		<input type="hidden" name="action" value="sections/saveSection">
 		<input type="hidden" name="redirect" value="settings/sections">
-		{% if not isNewSection %}<input type="hidden" name="sectionId" value="{{ section.id }}">{% endif %}
+		{% if section.id %}<input type="hidden" name="sectionId" value="{{ section.id }}">{% endif %}
 
 		<div id="section-settings">
 			{{ forms.textField({
@@ -38,8 +15,8 @@
 				instructions: "What this section will be called in the CP."|t,
 				id: 'name',
 				name: 'name',
-				value: (section is defined ? section.name : null),
-				errors: (section is defined ? section.getErrors('name') : null),
+				value: section.name,
+				errors: section.getErrors('name'),
 				autofocus: true,
 				required: true,
 				translatable: true
@@ -51,8 +28,8 @@
 				id: 'handle',
 				class: 'code',
 				name: 'handle',
-				value: (section is defined ? section.handle : null),
-				errors: (section is defined ? section.getErrors('handle') : null),
+				value: section.handle,
+				errors: section.getErrors('handle'),
 				required: true
 			}) }}
 
@@ -61,8 +38,8 @@
 				instructions: "What do you want the entries’ “Title” fields to be labeled?"|t,
 				id: 'titleLabel',
 				name: 'titleLabel',
-				value: (section is defined ? section.titleLabel : 'Title'),
-				errors: (section is defined ? section.getErrors('titleLabel') : null),
+				value: section.titleLabel,
+				errors: section.getErrors('titleLabel'),
 				required: true,
 				translatable: true
 			}) }}
@@ -75,7 +52,7 @@
 								label: locale.name~' ('~locale.id~')',
 								name: 'locales[]',
 								value: locale.id,
-								checked: (section is not defined or (section is defined and section.locales[locale.id] is defined)),
+								checked: (brandNewSection or section.locales[locale.id] is defined),
 								toggle: 'urlFormatRow-'~locale.id
 							}) }}
 						</div>
@@ -93,22 +70,22 @@
 			{{ forms.checkboxField({
 				label: "Entries in this section have their own URLs"|t,
 				name: 'hasUrls',
-				checked: (section is defined ? section.hasUrls : true),
+				checked: (brandNewSection or section.hasUrls),
 				toggle: 'has-urls-setting'
 			}) }}
 
-			<div id="has-urls-setting" class="nested-fields{% if section is defined and not section.hasUrls %} hidden{% endif %}">
+			<div id="has-urls-setting" class="nested-fields{% if not brandNewSection and not section.hasUrls %} hidden{% endif %}">
 
 				{% macro urlFormatInput(locale, section) %}
 					{% import "_includes/forms" as forms %}
-					{% set errors = section ? section.getErrors('urlFormat-'~locale.id) : null %}
+					{% set errors = section.getErrors('urlFormat-'~locale.id) %}
 
 					<div class="input{% if errors %} errors{% endif %}">
 						{{ forms.text({
 							id: 'urlFormat-'~locale.id,
 							class: 'code',
 							name: 'urlFormat['~locale.id~']',
-							value: (section is defined and section.locales[locale.id] is defined ? section.locales[locale.id].urlFormat : null),
+							value: (section.locales[locale.id] is defined ? section.locales[locale.id].urlFormat : null),
 							errors: errors
 						}) }}
 					</div>
@@ -122,16 +99,16 @@
 					{% if craft.hasPackage('Localize') %}
 						<table class="data">
 							{% for locale in craft.i18n.getSiteLocales() %}
-								<tr id="urlFormatRow-{{ locale.id }}"{% if section is defined and section.locales[locale.id] is not defined %} class="hidden"{% endif %}>
+								<tr id="urlFormatRow-{{ locale.id }}"{% if not brandNewSection and section.locales[locale.id] is not defined %} class="hidden"{% endif %}>
 									<th class="thin nowrap">{{ locale.id }}</th>
 									<td>
-										{{ urlFormatInput(locale, (section is defined ? section : null)) }}
+										{{ urlFormatInput(locale, section) }}
 									</td>
 								</tr>
 							{% endfor %}
 						</table>
 					{% else %}
-						{{ urlFormatInput(craft.i18n.getPrimarySiteLocale(), (section is defined ? section : null)) }}
+						{{ urlFormatInput(craft.i18n.getPrimarySiteLocale(), section) }}
 					{% endif %}
 				{% endset %}
 
@@ -139,7 +116,7 @@
 					label: "Entry URL Format"|t,
 					instructions: "What the entry URLs should look like. <code>{slug}</code> is required, but it can also include any entry properties, e.g. <code>{postDate.year}</code>."|t,
 					required: true,
-					errors: (section is defined ? section.getErrors('urlFormat') : null)
+					errors: section.getErrors('urlFormat')
 				}, urlFormatField) }}
 
 				{{ forms.textField({
@@ -147,8 +124,8 @@
 					instructions: "The template to use when an entry’s URL is requested."|t,
 					id: 'template',
 					name: 'template',
-					value: (section is defined ? section.template : null),
-					errors: (section is defined ? section.getErrors('template') : null)
+					value: section.template,
+					errors: section.getErrors('template')
 				}) }}
 
 			</div>
@@ -157,7 +134,7 @@
 
 		<div id="section-fieldlayout" class="hidden">
 			{% include "_includes/fieldlayoutdesigner" with {
-				fieldLayout: (section is defined ? section.getFieldLayout() : null),
+				fieldLayout: section.getFieldLayout(),
 				tab: 'fieldlayout'
 			} only %}
 		</div>
@@ -172,10 +149,10 @@
 
 
 {% set js %}
-	{% if section is not defined or not section.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
+	{% if not section.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
 
 	{% for locale in craft.i18n.getSiteLocales() %}
-		{% if section is not defined or section.locales[locale.id] is not defined or not section.locales[locale.id].urlFormat %}
+		{% if section.locales[locale.id] is not defined or not section.locales[locale.id].urlFormat %}
 			new Craft.EntryUrlFormatGenerator('#name', '#urlFormat-{{ locale.id }}');
 		{% endif %}
 	{% endfor %}

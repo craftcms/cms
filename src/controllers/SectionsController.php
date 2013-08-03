@@ -7,6 +7,52 @@ namespace Craft;
 class SectionsController extends BaseController
 {
 	/**
+	 * Edit a section.
+	 *
+	 * @param array $vars
+	 * @throws HttpException
+	 */
+	public function actionEditSection(array $vars = array())
+	{
+		craft()->userSession->requireAdmin();
+
+		$vars['brandNewSection'] = false;
+
+		if (empty($vars['section']))
+		{
+			if (!empty($vars['sectionId']))
+			{
+				$vars['section'] = craft()->sections->getSectionById($vars['sectionid']);
+
+				if (!$vars['section'])
+				{
+					throw new HttpException(404);
+				}
+
+				$vars['title'] = $vars['section']->name;
+			}
+			else
+			{
+				$vars['section'] = new SectionModel();
+				$vars['title'] = Craft::t('Create a new section');
+				$vars['brandNewSection'] = true;
+			}
+		}
+
+		$vars['crumbs'] = array(
+			array('label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')),
+			array('label' => Craft::t('Sections'), 'url' => UrlHelper::getUrl('settings/sections')),
+		);
+
+		$vars['tabs'] = array(
+			'settings'    => array('label' => Craft::t('Settings'),     'url' => '#section-settings'),
+			'fieldlayout' => array('label' => Craft::t('Field Layout'), 'url' => '#section-fieldlayout'),
+		);
+
+		$this->renderTemplate('settings/sections/_edit', $vars);
+	}
+
+	/**
 	 * Saves a section
 	 */
 	public function actionSaveSection()
