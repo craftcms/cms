@@ -83,9 +83,38 @@ Craft.EditableTable = Garnish.Base.extend({
 				{
 					rowHtml += '<div class="select small"><select name="'+name+'">';
 
-					for (var optionValue in col.options)
+					var hasOptgroups = false;
+
+					for (var key in col.options)
 					{
-						rowHtml += '<option value="'+optionValue+'"'+(optionValue == value ? ' selected' : '')+'>'+col.options[optionValue]+'</option>';
+						var option = col.options[key];
+
+						if (typeof option.optgroup != 'undefined')
+						{
+							if (hasOptgroups)
+							{
+								rowHtml += '</optgroup>';
+							}
+							else
+							{
+								hasOptgroups = true;
+							}
+
+							rowHtml += '<optgroup label="'+option.optgroup+'">';
+						}
+						else
+						{
+							var optionLabel = (typeof option.label != 'undefined' ? option.label : option),
+								optionValue = (typeof option.value != 'undefined' ? option.value : key),
+								optionDisabled = (typeof option.disabled != 'undefined' ? option.disabled : false);
+
+							rowHtml += '<option value="'+optionValue+'"'+(optionValue == value ? ' selected' : '')+(optionDisabled ? ' disabled' : '')+'>'+optionLabel+'</option>';
+						}
+					}
+
+					if (hasOptgroups)
+					{
+						rowHtml += '</optgroup>';
 					}
 
 					rowHtml += '</select></div>';

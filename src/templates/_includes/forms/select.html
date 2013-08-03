@@ -4,7 +4,8 @@
 ]|filter|join(' ') %}
 
 {%- set options = (options is defined ? options : []) %}
-{%- set value = (value is defined ? value : null) -%}
+{%- set value = (value is defined ? value : null) %}
+{%- set hasOptgroups = false -%}
 
 <div class="{{ class }}">
 	<select
@@ -15,9 +16,22 @@
 		{%- if disabled is defined and disabled %} disabled{% endif %}
 		{%- if targetPrefix is defined and targetPrefix %} data-target-prefix="{{ targetPrefix }}"{% endif %}>
 		{% for key, option in options %}
-			{% set optionLabel = (option.label is defined ? option.label : option) %}
-			{% set optionValue = (option.value is defined ? option.value : key) %}
-			<option value="{{ optionValue }}"{% if optionValue == value %} selected{% endif %}>{{ optionLabel }}</option>
+			{% if option.optgroup is defined %}
+				{% if hasOptgroups %}
+					</optgroup>
+				{% else %}
+					{% set hasOptgroups = true %}
+				{% endif %}
+				<optgroup label="{{ option.optgroup }}">
+			{% else %}
+				{% set optionLabel = (option.label is defined ? option.label : option) %}
+				{% set optionValue = (option.value is defined ? option.value : key) %}
+				{% set optionDisabled = (option.disabled is defined ? option.disabled : false) %}
+				<option value="{{ optionValue }}"{% if optionValue == value %} selected{% endif %}{% if optionDisabled %} disabled{% endif %}>{{ optionLabel }}</option>
+			{% endif %}
 		{% endfor %}
+		{% if hasOptgroups %}
+			</optgroup>
+		{% endif %}
 	</select>
 </div>
