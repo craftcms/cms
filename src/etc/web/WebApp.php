@@ -230,6 +230,10 @@ class WebApp extends \CWebApplication
 
 	/**
 	 * Creates a controller instance based on a route.
+	 *
+	 * @param string $route
+	 * @param mixed $owner
+	 * @return array|null
 	 */
 	public function createController($route, $owner = null)
 	{
@@ -238,13 +242,35 @@ class WebApp extends \CWebApplication
 			$route = $this->defaultController;
 		}
 
-		$routeParts = explode('/', $route);
-		$controllerId = ucfirst(array_shift($routeParts));
-		$action = implode('/', $routeParts);
+		$routeParts = array_filter(explode('/', $route));
 
-		$class = __NAMESPACE__.'\\'.$controllerId.'Controller';
+		// First check if the controller class is a combination of the first two segments.
+		// That way FooController won't steal all of Foo_BarController's requests.
+		if (isset($routeParts[1]))
+		{
+			$controllerId = ucfirst($routeParts[0]).'_'.ucfirst($routeParts[1]);
+			$class = __NAMESPACE__.'\\'.$controllerId.'Controller';
 
-		if (class_exists($class))
+			if (class_exists($class))
+			{
+				$action = implode('/', array_slice($routeParts, 2));
+			}
+		}
+
+		// If that didn't work, now look for that FooController.
+		if (!isset($action))
+		{
+			$controllerId = ucfirst($routeParts[0]);
+			$class = __NAMESPACE__.'\\'.$controllerId.'Controller';
+
+			if (class_exists($class))
+			{
+				$action = implode('/', array_slice($routeParts, 1));
+			}
+		}
+
+		// Did we find a valid controller?
+		if (isset($action))
 		{
 			return array(
 				Craft::createComponent($class, $controllerId),
@@ -697,65 +723,8 @@ class WebApp extends \CWebApplication
 		if ($this->request->isActionRequest())
 		{
 			$actionSegs = $this->request->getActionSegments();
-
-			// See if there is a first segment.
-			if (isset($actionSegs[0]))
-			{
-				$controller = $actionSegs[0];
-				$action = isset($actionSegs[1]) ? $actionSegs[1] : '';
-
-				// Check for a valid controller
-				$class = __NAMESPACE__.'\\'.ucfirst($controller).'Controller';
-				if (class_exists($class))
-				{
-					$route = $controller.'/'.$action;
-					$this->runController($route);
-					return;
-				}
-				else
-				{
-					// Mayhaps this is a plugin action request.
-					$plugin = strtolower($actionSegs[0]);
-
-					if (($plugin = $this->plugins->getPlugin($plugin)) !== null)
-					{
-						$pluginHandle = $plugin->getClassHandle();
-
-						// Check to see if the second segment is an existing controller.  If no second segment, check for "PluginHandle"Controller, which is a plugin's default controller.
-						// i.e. pluginHandle/testController or pluginHandle/pluginController
-						$controller = (isset($actionSegs[1]) ? ucfirst($pluginHandle).'_'.ucfirst($actionSegs[1]) : ucfirst($pluginHandle)).'Controller';
-
-						if (class_exists(__NAMESPACE__.'\\'.$controller))
-						{
-							// Check to see if there is a 3rd path segment.  If so, use it for the action.  If not, use the default Index for the action.
-							// i.e. pluginHandle/pluginController/index or pluginHandle/pluginController/testAction
-							$action = isset($actionSegs[2]) ? $actionSegs[2] : 'Index';
-
-							$route = substr($controller, 0, strpos($controller, 'Controller')).'/'.$action;
-							$this->runController($route);
-							return;
-						}
-						else
-						{
-							// It's possible the 2nd segment is an action and they are using the plugin's default controller.
-							// i.e. pluginHandle/testAction or pluginHandle/indexAction.
-							// Here, the plugin's default controller is assumed.
-							$controller = ucfirst($pluginHandle).'Controller';
-
-							if (class_exists(__NAMESPACE__.'\\'.$controller))
-							{
-								$action = $actionSegs[1];
-
-								$route = substr($controller, 0, strpos($controller, 'Controller')).'/'.$action;
-								$this->runController($route);
-								return;
-							}
-						}
-					}
-				}
-			}
-
-			throw new HttpException(404);
+			$route = implode('/', $actionSegs);
+			$this->runController($route);
 		}
 	}
 
