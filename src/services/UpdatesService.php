@@ -283,6 +283,11 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		Craft::log('Preparing to update '.$handle.'.', LogLevel::Info, true);
 
+		// Fire an 'onBeginUpdate' event and pass in the type
+		$this->onBeginUpdate(new Event($this, array(
+			'type' => $manual ? 'manual' : 'auto'
+		)));
+
 		try
 		{
 			$updater = new Updater();
@@ -461,6 +466,12 @@ class UpdatesService extends BaseApplicationComponent
 			$updater->cleanUp($uid, $handle);
 
 			Craft::log('Finished cleaning up after the update.', LogLevel::Info, true);
+
+			// Fire an 'onEndUpdate' event and pass in that it was a successful update.
+			$this->onEndUpdate(new Event($this, array(
+				'success' => true
+			)));
+
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -478,6 +489,11 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		try
 		{
+			// Fire an 'onEndUpdate' event and pass in that the update failed.
+			$this->onEndUpdate(new Event($this, array(
+				'success' => false
+			)));
+
 			craft()->config->maxPowerCaptain();
 
 			if ($dbBackupPath && craft()->config->get('backupDbOnUpdate') && craft()->config->get('restoreDbOnUpdateFailure'))
@@ -596,5 +612,25 @@ class UpdatesService extends BaseApplicationComponent
 		}
 
 		return $pluginsThatNeedDbUpdate;
+	}
+
+	/**
+	 * Fires an 'onBeginUpdate' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeginUpdate(Event $event)
+	{
+		$this->raiseEvent('onBeginUpdate', $event);
+	}
+
+	/**
+	 * Fires an 'onEndUpdate' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onEndUpdate(Event $event)
+	{
+		$this->raiseEvent('onEndUpdate', $event);
 	}
 }
