@@ -72,7 +72,7 @@ class TagElementType extends BaseElementType
 			'name'  => AttributeType::String,
 			'set'   => AttributeType::Mixed,
 			'setId' => AttributeType::Mixed,
-			'order' => array(AttributeType::String, 'default' => 'name desc'),
+			'order' => array(AttributeType::String, 'default' => 'name asc'),
 		);
 	}
 
