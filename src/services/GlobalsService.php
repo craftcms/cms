@@ -254,6 +254,48 @@ class GlobalsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Deletes a global set by its ID.
+	 *
+	 * @param int $setId
+	 * @throws \Exception
+	 * @return bool
+	*/
+	public function deleteSetById($setId)
+	{
+		if (!$setId)
+		{
+			return false;
+		}
+
+		$transaction = craft()->db->beginTransaction();
+		try
+		{
+			// Delete the field layout
+			$fieldLayoutId = craft()->db->createCommand()
+				->select('fieldLayoutId')
+				->from('globalsets')
+				->where(array('id' => $setId))
+				->queryScalar();
+
+			if ($fieldLayoutId)
+			{
+				craft()->fields->deleteLayoutById($fieldLayoutId);
+			}
+
+			$affectedRows = craft()->elements->deleteElementById($setId);
+
+			$transaction->commit();
+
+			return (bool) $affectedRows;
+		}
+		catch (\Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
+	}
+
+	/**
 	 * Saves a global set's content
 	 *
 	 * @param GlobalSetModel $globalSet

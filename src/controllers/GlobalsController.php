@@ -60,7 +60,7 @@ class GlobalsController extends BaseController
 
 		$globalSetId = craft()->request->getRequiredPost('id');
 
-		craft()->elements->deleteElementById($globalSetId);
+		craft()->globals->deleteSetById($globalSetId);
 		$this->returnJson(array('success' => true));
 	}
 

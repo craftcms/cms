@@ -449,7 +449,36 @@ class SectionsService extends BaseApplicationComponent
 	*/
 	public function deleteSectionById($sectionId)
 	{
-		craft()->db->createCommand()->delete('sections', array('id' => $sectionId));
-		return true;
+		if (!$sectionId)
+		{
+			return false;
+		}
+
+		$transaction = craft()->db->beginTransaction();
+		try
+		{
+			// Delete the field layout
+			$fieldLayoutId = craft()->db->createCommand()
+				->select('fieldLayoutId')
+				->from('sections')
+				->where(array('id' => $sectionId))
+				->queryScalar();
+
+			if ($fieldLayoutId)
+			{
+				craft()->fields->deleteLayoutById($fieldLayoutId);
+			}
+
+			$affectedRows = craft()->db->createCommand()->delete('sections', array('id' => $sectionId));
+
+			$transaction->commit();
+
+			return (bool) $affectedRows;
+		}
+		catch (\Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
 	}
 }
