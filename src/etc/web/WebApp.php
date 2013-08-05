@@ -105,6 +105,17 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
+	 * Returns the localization data for a given locale.
+	 *
+	 * @param string $localeId
+	 * @return LocaleData
+	 */
+	public function getLocale($localeId = null)
+	{
+		return craft()->i18n->getLocaleData($localeId);
+	}
+
+	/**
 	 * Returns the current target timezone.
 	 *
 	 * @return string
