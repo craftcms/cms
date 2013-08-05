@@ -58,6 +58,12 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.$sourceToggles = this.$sidebar.find('.toggle');
 		this.$elements = this.$container.find('.elements:first');
 
+		// No source, no party.
+		if (this.$sources.length == 0)
+		{
+			return;
+		}
+
 		this.onAfterHtmlInit();
 
 		if (this.settings.mode == 'index')
