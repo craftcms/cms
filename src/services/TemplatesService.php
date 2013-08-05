@@ -501,6 +501,11 @@ class TemplatesService extends BaseApplicationComponent
 			}
 		}
 
+		if (!isset($this->_twigs))
+		{
+			$this->registerTwigAutoloader();
+		}
+
 		throw new TemplateLoaderException($name);
 	}
 
