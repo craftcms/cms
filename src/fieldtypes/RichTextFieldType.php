@@ -7,7 +7,7 @@ namespace Craft;
 class RichTextFieldType extends BaseFieldType
 {
 	private static $_includedFieldResources = false;
-	private static $_inputLang;
+	private static $_inputLang = 'en';
 
 	/**
 	 * Returns the type of field this is.
@@ -107,29 +107,20 @@ class RichTextFieldType extends BaseFieldType
 		if ($this->getSettings()->configFile)
 		{
 			$configPath = craft()->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
-			$json = IOHelper::getFileContents($configPath);
-
-			if ($json)
-			{
-				$config = JsonHelper::decode($json);
-			}
+			$config = IOHelper::getFileContents($configPath);
 		}
 
 		if (empty($config))
 		{
-			$config = array();
-		}
-
-		if (static::$_inputLang)
-		{
-			$config['lang'] = static::$_inputLang;
+			$config = '{}';
 		}
 
 		$sections = JsonHelper::encode($this->_getSectionSources());
 
 		craft()->templates->includeJs(craft()->templates->render('_components/fieldtypes/RichText/init.js', array(
 			'handle'   => $this->model->handle,
-			'config'   => JsonHelper::encode($config),
+			'config'   => $config,
+			'lang'     => static::$_inputLang,
 			'sections' => $sections
 		)));
 
