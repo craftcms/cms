@@ -285,7 +285,7 @@ class EntriesController extends BaseController
 			if (craft()->request->isAjaxRequest())
 			{
 				$return['success']   = true;
-				$return['entry']     = $entry->getAttributes();
+				$return['title']     = $entry->title;
 				$return['cpEditUrl'] = $entry->getCpEditUrl();
 				$return['author']    = $entry->getAuthor()->getAttributes();
 				$return['postDate']  = ($entry->postDate ? $entry->postDate->localeDate() : null);
