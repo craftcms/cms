@@ -141,6 +141,16 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns the element's status.
+	 *
+	 * @return string|null
+	 */
+	public function getStatus()
+	{
+		return $this->getAttribute('status');
+	}
+
+	/**
 	 * Returns the URL to the user's photo.
 	 *
 	 * @param int $size
