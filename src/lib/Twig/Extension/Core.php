@@ -152,6 +152,7 @@ class Twig_Extension_Core extends Twig_Extension
             new Twig_SimpleFilter('split', 'twig_split_filter'),
             new Twig_SimpleFilter('sort', 'twig_sort_filter'),
             new Twig_SimpleFilter('merge', 'twig_array_merge'),
+            new Twig_SimpleFilter('batch', 'twig_array_batch'),
 
             // string/array filters
             new Twig_SimpleFilter('reverse', 'twig_reverse_filter', array('needs_environment' => true)),
@@ -170,8 +171,8 @@ class Twig_Extension_Core extends Twig_Extension
         );
 
         if (function_exists('mb_get_info')) {
-            $filters['upper'] = new Twig_Filter_Function('twig_upper_filter', array('needs_environment' => true));
-            $filters['lower'] = new Twig_Filter_Function('twig_lower_filter', array('needs_environment' => true));
+            $filters[] = new Twig_SimpleFilter('upper', 'twig_upper_filter', array('needs_environment' => true));
+            $filters[] = new Twig_SimpleFilter('lower', 'twig_lower_filter', array('needs_environment' => true));
         }
 
         return $filters;
@@ -190,7 +191,7 @@ class Twig_Extension_Core extends Twig_Extension
             new Twig_SimpleFunction('cycle', 'twig_cycle'),
             new Twig_SimpleFunction('random', 'twig_random', array('needs_environment' => true)),
             new Twig_SimpleFunction('date', 'twig_date_converter', array('needs_environment' => true)),
-            new Twig_SimpleFunction('include', 'twig_include', array('needs_environment' => true, 'needs_context' => true)),
+            new Twig_SimpleFunction('include', 'twig_include', array('needs_environment' => true, 'needs_context' => true, 'is_safe' => array('all'))),
         );
     }
 
@@ -514,15 +515,19 @@ function twig_number_format_filter(Twig_Environment $env, $number, $decimal = nu
 }
 
 /**
- * URL encodes a string.
+ * URL encodes a string as a path segment or an array as a query string.
  *
- * @param string $url A URL
- * @param bool   $raw true to use rawurlencode() instead of urlencode
+ * @param string|array $url A URL or an array of query parameters
+ * @param bool         $raw true to use rawurlencode() instead of urlencode
  *
  * @return string The URL encoded value
  */
 function twig_urlencode_filter($url, $raw = false)
 {
+    if (is_array($url)) {
+        return http_build_query($url, '', '&');
+    }
+
     if ($raw) {
         return rawurlencode($url);
     }
@@ -842,21 +847,62 @@ function twig_in_filter($value, $compare)
  */
 function twig_escape_filter(Twig_Environment $env, $string, $strategy = 'html', $charset = null, $autoescape = false)
 {
-    if ($autoescape && is_object($string) && $string instanceof Twig_Markup) {
+    if ($autoescape && $string instanceof Twig_Markup) {
         return $string;
     }
 
-    if (!is_string($string) && !(is_object($string) && method_exists($string, '__toString'))) {
-        return $string;
+    if (!is_string($string)) {
+        if (is_object($string) && method_exists($string, '__toString')) {
+            $string = (string) $string;
+        } else {
+            return $string;
+        }
     }
 
     if (null === $charset) {
         $charset = $env->getCharset();
     }
 
-    $string = (string) $string;
-
     switch ($strategy) {
+        case 'html':
+            // see http://php.net/htmlspecialchars
+
+            // Using a static variable to avoid initializing the array
+            // each time the function is called. Moving the declaration on the
+            // top of the function slow downs other escaping strategies.
+            static $htmlspecialcharsCharsets = array(
+                'ISO-8859-1' => true, 'ISO8859-1' => true,
+                'ISO-8859-15' => true, 'ISO8859-15' => true,
+                'utf-8' => true, 'UTF-8' => true,
+                'CP866' => true, 'IBM866' => true, '866' => true,
+                'CP1251' => true, 'WINDOWS-1251' => true, 'WIN-1251' => true,
+                '1251' => true,
+                'CP1252' => true, 'WINDOWS-1252' => true, '1252' => true,
+                'KOI8-R' => true, 'KOI8-RU' => true, 'KOI8R' => true,
+                'BIG5' => true, '950' => true,
+                'GB2312' => true, '936' => true,
+                'BIG5-HKSCS' => true,
+                'SHIFT_JIS' => true, 'SJIS' => true, '932' => true,
+                'EUC-JP' => true, 'EUCJP' => true,
+                'ISO8859-5' => true, 'ISO-8859-5' => true, 'MACROMAN' => true,
+            );
+
+            if (isset($htmlspecialcharsCharsets[$charset])) {
+                return htmlspecialchars($string, ENT_QUOTES | ENT_SUBSTITUTE, $charset);
+            }
+
+            if (isset($htmlspecialcharsCharsets[strtoupper($charset)])) {
+                // cache the lowercase variant for future iterations
+                $htmlspecialcharsCharsets[$charset] = true;
+
+                return htmlspecialchars($string, ENT_QUOTES | ENT_SUBSTITUTE, $charset);
+            }
+
+            $string = twig_convert_encoding($string, 'UTF-8', $charset);
+            $string = htmlspecialchars($string, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+            return twig_convert_encoding($string, $charset, 'UTF-8');
+
         case 'js':
             // escape all non-alphanumeric characters
             // into their \xHH or \uHHHH representations
@@ -910,40 +956,10 @@ function twig_escape_filter(Twig_Environment $env, $string, $strategy = 'html', 
 
             return $string;
 
-        case 'html':
-            // see http://php.net/htmlspecialchars
-
-            // Using a static variable to avoid initializing the array
-            // each time the function is called. Moving the declaration on the
-            // top of the function slow downs other escaping strategies.
-            static $htmlspecialcharsCharsets = array(
-                'iso-8859-1' => true, 'iso8859-1' => true,
-                'iso-8859-15' => true, 'iso8859-15' => true,
-                'utf-8' => true,
-                'cp866' => true, 'ibm866' => true, '866' => true,
-                'cp1251' => true, 'windows-1251' => true, 'win-1251' => true,
-                '1251' => true,
-                'cp1252' => true, 'windows-1252' => true, '1252' => true,
-                'koi8-r' => true, 'koi8-ru' => true, 'koi8r' => true,
-                'big5' => true, '950' => true,
-                'gb2312' => true, '936' => true,
-                'big5-hkscs' => true,
-                'shift_jis' => true, 'sjis' => true, '932' => true,
-                'euc-jp' => true, 'eucjp' => true,
-                'iso8859-5' => true, 'iso-8859-5' => true, 'macroman' => true,
-            );
-
-            if (isset($htmlspecialcharsCharsets[strtolower($charset)])) {
-                return htmlspecialchars($string, ENT_QUOTES | ENT_SUBSTITUTE, $charset);
-            }
-
-            $string = twig_convert_encoding($string, 'UTF-8', $charset);
-            $string = htmlspecialchars($string, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-
-            return twig_convert_encoding($string, $charset, 'UTF-8');
-
         case 'url':
-            if (version_compare(PHP_VERSION, '5.3.0', '<')) {
+            // hackish test to avoid version_compare that is much slower, this works unless PHP releases a 5.10.*
+            // at that point however PHP 5.2.* support can be removed
+            if (PHP_VERSION < '5.3.0') {
                 return str_replace('%7E', '~', rawurlencode($string));
             }
 
@@ -1257,11 +1273,11 @@ function twig_test_iterable($value)
 /**
  * Renders a template.
  *
- * @param string  template       The template to render
- * @param array   variables      The variables to pass to the template
- * @param Boolean with_context   Whether to pass the current context variables or not
- * @param Boolean ignore_missing Whether to ignore missing templates or not
- * @param Boolean sandboxed      Whether to sandbox the template or not
+ * @param string  $template       The template to render
+ * @param array   $variables      The variables to pass to the template
+ * @param Boolean $with_context   Whether to pass the current context variables or not
+ * @param Boolean $ignore_missing Whether to ignore missing templates or not
+ * @param Boolean $sandboxed      Whether to sandbox the template or not
  *
  * @return string The rendered template
  */
@@ -1279,7 +1295,7 @@ function twig_include(Twig_Environment $env, $context, $template, $variables = a
     }
 
     try {
-        return $env->resolveTemplate($template)->display($variables);
+        return $env->resolveTemplate($template)->render($variables);
     } catch (Twig_Error_Loader $e) {
         if (!$ignoreMissing) {
             throw $e;
@@ -1306,4 +1322,34 @@ function twig_constant($constant, $object = null)
     }
 
     return constant($constant);
+}
+
+/**
+ * Batches item.
+ *
+ * @param array   $items An array of items
+ * @param integer $size  The size of the batch
+ * @param string  $fill  A string to fill missing items
+ *
+ * @return array
+ */
+function twig_array_batch($items, $size, $fill = null)
+{
+    if ($items instanceof Traversable) {
+        $items = iterator_to_array($items, false);
+    }
+
+    $size = ceil($size);
+
+    $result = array_chunk($items, $size, true);
+
+    if (null !== $fill) {
+        $last = count($result) - 1;
+        $result[$last] = array_merge(
+            $result[$last],
+            array_fill(0, $size - count($result[$last]), $fill)
+        );
+    }
+
+    return $result;
 }
