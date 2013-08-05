@@ -30,7 +30,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		}
 		else
 		{
-			this.postUrl = Craft.baseSiteUrl;
+			this.postUrl = Craft.baseSiteUrl.replace(/\/+$/, '') + '/';
 		}
 
 		this.locale = locale;
