@@ -24,16 +24,19 @@ config.buttonsCustom.image = {
 				if (typeof this.assetSelectionModal == 'undefined')
 				{
 					this.assetSelectionModal = Craft.createElementSelectorModal('Asset', {
+						multiSelect: true,
 						criteria: { kind: 'image' },
 						onSelect: $.proxy(function(elements) {
 							if (elements.length)
 							{
                                 editor.selectionRestore();
+								for (var i = 0; i < elements.length; i++)
+								{
+									var element = elements[i].$element;
+									editor.insertNode($('<img src="' + element.attr('data-url') + '" />')[0]);
+									editor.sync();
+								}
 
-								var element = elements[0].$element;
-                                editor.insertNode($('<img src="' + element.attr('data-url') + '" />')[0]);
-
-                                editor.sync();
                                 editor.dropdownHideAll();
 							}
 						}, this),
