@@ -93,8 +93,7 @@
 								name: 'email',
 								value: (account is defined ? account.email : null),
 								required: true,
-								disabled: true,
-								errors: account.getErrors('email')
+								disabled: true
 							}) }}
 						</td>
 						<td class="thin">
@@ -102,7 +101,10 @@
 						</td>
 					</tr>
 				</table>
+
+				{{ forms.errorList(account.getErrors('email')) }}
 			{% endset %}
+
 			{{ forms.field({
 				label: "Email"|t,
 				id: 'email',
@@ -115,8 +117,7 @@
 							{{ forms.password({
 								id: 'newPassword',
 								name: 'newPassword',
-								disabled: true,
-								errors: account.getErrors('newPassword')
+								disabled: true
 							}) }}
 						</td>
 						<td class="thin">
@@ -124,7 +125,10 @@
 						</td>
 					</tr>
 				</table>
+
+				{{ forms.errorList(account.getErrors('newPassword')) }}
 			{% endset %}
+
 			{{ forms.field({
 				label: "New Password"|t,
 				id: 'newPassword',
