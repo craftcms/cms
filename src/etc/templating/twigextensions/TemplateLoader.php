@@ -4,8 +4,27 @@ namespace Craft;
 /**
  * Loads Craft templates into Twig.
  */
-class TemplateLoader implements \Twig_LoaderInterface
+class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterface
 {
+	 /**
+     * Checks if a template exists.
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function exists($name)
+    {
+    	try
+    	{
+    		craft()->templates->findTemplate($name);
+    		return true;
+    	}
+    	catch (TemplateLoaderException $e)
+    	{
+    		return false;
+    	}
+    }
+
 	/**
 	 * Gets the source code of a template.
 	 *
