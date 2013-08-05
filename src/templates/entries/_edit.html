@@ -160,7 +160,7 @@
 						<div class="btn submit menubtn"></div>
 						<div class="menu">
 							<ul>
-								<li><a class="formsubmit" data-redirect="entries/{{ section.handle }}/{id}">{{ "Save and continue editing"|t }}</a></li>
+								<li><a class="formsubmit" data-redirect="entries/{{ section.handle }}/{id}{% if craft.hasPackage('Localize') and craft.locale != localeId %}/{{ localeId }}{% endif %}">{{ "Save and continue editing"|t }}</a></li>
 								<li><a class="formsubmit" data-redirect="entries/{{ section.handle }}/new">{{ "Save and add another"|t }}</a></li>
 							</ul>
 						</div>

@@ -11,10 +11,7 @@
 {% includeCssResource 'css/account.css' %}
 {% includeJsResource 'js/account.js' %}
 
-{% set isUsersAccount = false %}
-
 {% if account is not defined and craft.request.segment(1) == 'myaccount' %}
-	{% set isUsersAccount = true %}
 	{% set account = user %}
 {% endif %}
 
@@ -23,11 +20,6 @@
 	{% if account is not defined and userId is defined %}
 		{% set account = craft.users.status('*').id(userId).first %}
 		{% if not account %}{% exit 404 %}{% endif %}
-
-		{% set currentUser = craft.session.getUser(userId) %}
-		{% if currentUser is defined and (account.email == currentUser.email) %}
-			{% set isUsersAccount = true %}
-		{% endif %}
 	{% endif %}
 {% endif %}
 
@@ -101,8 +93,7 @@
 								name: 'email',
 								value: (account is defined ? account.email : null),
 								required: true,
-								disabled: true,
-								errors: account.getErrors('email')
+								disabled: true
 							}) }}
 						</td>
 						<td class="thin">
@@ -110,7 +101,10 @@
 						</td>
 					</tr>
 				</table>
+
+				{{ forms.errorList(account.getErrors('email')) }}
 			{% endset %}
+
 			{{ forms.field({
 				label: "Email"|t,
 				id: 'email',
@@ -123,8 +117,7 @@
 							{{ forms.password({
 								id: 'newPassword',
 								name: 'newPassword',
-								disabled: true,
-								errors: account.getErrors('newPassword')
+								disabled: true
 							}) }}
 						</td>
 						<td class="thin">
@@ -132,7 +125,10 @@
 						</td>
 					</tr>
 				</table>
+
+				{{ forms.errorList(account.getErrors('newPassword')) }}
 			{% endset %}
+
 			{{ forms.field({
 				label: "New Password"|t,
 				id: 'newPassword',
@@ -153,7 +149,7 @@
 				<div class="select">
 					<select id="preferredLocale" name="preferredLocale">
 						{% set allSiteLocales = craft.i18n.getSiteLocales %}
-						{% set userLocale = account is defined and account.preferredLocale ? account.preferredLocale : (isUsersAccount ? craft.locale : allSiteLocales[0]) %}
+						{% set userLocale = account is defined and account.preferredLocale ? account.preferredLocale : (account.isCurrent ? craft.locale : allSiteLocales[0]) %}
 
 						{% for locale in allSiteLocales %}
 							<option value="{{ locale.id }}" {% if locale.id == userLocale %}selected{% endif %}>{{ locale.nativeName }}</option>
@@ -168,7 +164,7 @@
 			}, localeInput) }}
 		{% endif %}
 
-        {% if isUsersAccount %}
+        {% if account is defined and account.isCurrent %}
             <input type="submit" class="btn submit" value="{{ 'Save'|t }}">
         {% else %}
             <div class="btngroup">

@@ -6,6 +6,9 @@ namespace Craft;
  */
 class RichTextFieldType extends BaseFieldType
 {
+	private static $_includedFieldResources = false;
+	private static $_inputLang = 'en';
+
 	/**
 	 * Returns the type of field this is.
 	 *
@@ -98,15 +101,7 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		craft()->templates->includeCssResource('lib/redactor/redactor.css');
-		craft()->templates->includeCssResource('lib/redactor/plugins/pagebreak.css');
-
-		// Gotta use the uncompressed Redactor JS until the compressed one gets our Live Preview menu fix
-		craft()->templates->includeJsResource('lib/redactor/redactor.js');
-		//craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
-
-		craft()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
-		craft()->templates->includeJsResource('lib/redactor/plugins/pagebreak.js');
+		$this->_includeFieldResources();
 
 		// Config?
 		if ($this->getSettings()->configFile)
@@ -125,6 +120,7 @@ class RichTextFieldType extends BaseFieldType
 		craft()->templates->includeJs(craft()->templates->render('_components/fieldtypes/RichText/init.js', array(
 			'handle'   => $this->model->handle,
 			'config'   => $config,
+			'lang'     => static::$_inputLang,
 			'sections' => $sections
 		)));
 
@@ -183,5 +179,64 @@ class RichTextFieldType extends BaseFieldType
 		}
 
 		return $sources;
+	}
+
+	/**
+	 * Includes the input resources.
+	 *
+	 * @access private
+	 */
+	private function _includeFieldResources()
+	{
+		if (!static::$_includedFieldResources)
+		{
+			craft()->templates->includeCssResource('lib/redactor/redactor.css');
+			craft()->templates->includeCssResource('lib/redactor/plugins/pagebreak.css');
+
+			// Gotta use the uncompressed Redactor JS until the compressed one gets our Live Preview menu fix
+			craft()->templates->includeJsResource('lib/redactor/redactor.js');
+			//craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
+
+			craft()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
+			craft()->templates->includeJsResource('lib/redactor/plugins/pagebreak.js');
+
+			// Check to see if the Redactor has been translated into the current locale
+			if (craft()->language != craft()->sourceLanguage)
+			{
+				// First try to include the actual target locale
+				if (!$this->_includeLangFile(craft()->language))
+				{
+					// Otherwise try to load the language (without the territory half)
+					$languageId = craft()->locale->getLanguageID(craft()->language);
+					$this->_includeLangFile($languageId);
+				}
+			}
+
+			static::$_includedFieldResources = true;
+		}
+	}
+
+	/**
+	 * Attempts to include a Redactor language file.
+	 *
+	 * @access private
+	 * @param string $lang
+	 * @return bool
+	 */
+	private function _includeLangFile($lang)
+	{
+		$path = 'lib/redactor/lang/'.$lang.'.js';
+
+		if (IOHelper::fileExists(craft()->path->getResourcesPath().$path))
+		{
+			craft()->templates->includeJsResource($path);
+			static::$_inputLang = $lang;
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 }

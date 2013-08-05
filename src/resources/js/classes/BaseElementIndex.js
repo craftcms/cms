@@ -265,6 +265,8 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 		$('head').append(response.headHtml);
 
+		Craft.cp.setMaxSidebarHeight();
+
 		// More?
 		if (response.more)
 		{

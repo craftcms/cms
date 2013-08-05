@@ -218,7 +218,7 @@ class EntriesController extends BaseController
 			if ($templateExists)
 			{
 				craft()->templates->includeJsResource('js/EntryPreviewMode.js');
-				craft()->templates->includeJs('new Craft.EntryPreviewMode('.JsonHelper::encode($variables['entry']->getUrl()).');');
+				craft()->templates->includeJs('new Craft.EntryPreviewMode('.JsonHelper::encode($variables['entry']->getUrl()).', "'.$variables['entry']->locale.'");');
 				$variables['showPreviewBtn'] = true;
 			}
 		}
@@ -240,6 +240,8 @@ class EntriesController extends BaseController
 	public function actionPreviewEntry()
 	{
 		$this->requirePostRequest();
+
+		craft()->setLanguage(craft()->request->getPost('locale'));
 
 		$entry = $this->_populateEntryModel();
 
@@ -285,7 +287,7 @@ class EntriesController extends BaseController
 			if (craft()->request->isAjaxRequest())
 			{
 				$return['success']   = true;
-				$return['entry']     = $entry->getAttributes();
+				$return['title']     = $entry->title;
 				$return['cpEditUrl'] = $entry->getCpEditUrl();
 				$return['author']    = $entry->getAuthor()->getAttributes();
 				$return['postDate']  = ($entry->postDate ? $entry->postDate->localeDate() : null);

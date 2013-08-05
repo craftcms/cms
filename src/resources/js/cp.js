@@ -58,6 +58,9 @@ var CP = Garnish.Base.extend({
 		this.$content = $('#content');
 		this.$collapsibleTables = this.$content.find('table.collapsible');
 
+		// Set the max sidebar height
+		this.setMaxSidebarHeight();
+
 		// Find all the nav items
 		this.navItems = [];
 		this.totalNavWidth = CP.baseNavWidth;
@@ -181,6 +184,11 @@ var CP = Garnish.Base.extend({
         }
     },
 
+    setMaxSidebarHeight: function()
+    {
+    	this.$sidebar.css('max-height', this.$main.height());
+    },
+
 	/**
 	 * Handles stuff that should happen when the window is resized.
 	 */
@@ -197,6 +205,9 @@ var CP = Garnish.Base.extend({
 
 		// Update any responsive tables
 		this.updateResponsiveTables();
+
+		// Reset the max sidebar height
+		this.setMaxSidebarHeight();
 	},
 
 	updateResponsiveNav: function()
@@ -508,6 +519,7 @@ var CP = Garnish.Base.extend({
 			this.$sidebarNavPlaceholder.remove();
 			this.$sidebarNav.removeClass('fixed');
 			this.fixedSidebarNav = false;
+			this.$sidebarNav.css('max-height', 'none');
 		}
 	},
 
@@ -563,6 +575,8 @@ var CP = Garnish.Base.extend({
 			var $tab = $(ev.currentTarget).addClass('sel');
 			this.selectedTab = $tab.attr('href');
 			this.tabs[this.selectedTab].$target.removeClass('hidden');
+
+			this.setMaxSidebarHeight();
 		}
 	},
 

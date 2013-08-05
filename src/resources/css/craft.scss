@@ -540,12 +540,18 @@ ul.tree,
 
 /* status icons */
 .status { display: inline-block; margin-right: 5px; width: 10px; height: 10px; background: url(../images/status.png) no-repeat 0 -30px; }
+
 .status.on,
 .status.live,
-.status.enabled { background-position: 0 0; }
-.status.pending { background-position: 0 -10px; }
+.status.active,
+.status.enabled { background-position: 0 0; } /* green */
+
+.status.locked,
+.status.pending { background-position: 0 -10px; } /* orange */
+
 .status.off,
-.status.expired { background-position: 0 -20px; }
+.status.suspended,
+.status.expired { background-position: 0 -20px; } /* red */
 
 /* ----------------------------------------
 /*  Progress bar

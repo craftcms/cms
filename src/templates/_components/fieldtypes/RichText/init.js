@@ -1,22 +1,28 @@
-var config = {{config|raw}};
-var targetSelector = '.redactor-{{handle}}';
+(function($) {
+
+
+var config = {{ config|raw }},
+	targetSelector = '.redactor-{{ handle }}',
+	lang = $.Redactor.opts.langs['{{ lang }}'];
+
+config.lang = '{{ lang }}';
 
 // Replace the image and link dropdowns with slight modifications.
 if (typeof config.buttonsCustom == "undefined")
 {
-  config.buttonsCustom = {};
+	config.buttonsCustom = {};
 }
 
 config.buttonsCustom.image = {
-	title: Craft.t('Insert image'),
+	title: "{{ 'Insert image'|t|e('js') }}",
 	dropdown:
 	{
 		from_web: {
-			title: Craft.t('Insert URL'),
+			title: "{{ 'Insert URL'|t|e('js') }}",
 			callback: function () { this.imageShow();}
 		},
 		from_assets: {
-			title: Craft.t('Choose image'),
+			title: "{{ 'Choose image'|t|e('js') }}",
 			callback: function () {
 
 				this.selectionSave();
@@ -54,11 +60,11 @@ config.buttonsCustom.image = {
 };
 
 config.buttonsCustom.link = {
-	title: Craft.t('Link'),
+	title: "{{ 'Link'|t|e('js') }}",
 	dropdown: {
 		link_entry:
 		{
-			title: Craft.t('Link to an entry'),
+			title: "{{ 'Link to an entry'|t|e('js') }}",
 			callback: function () {
 
 				this.selectionSave();
@@ -125,13 +131,13 @@ config.buttonsCustom.link = {
 		},
 		link:
 		{
-			title: Craft.t('Insert link'),
-			callback: function () { this.linkShow();}
+			title: lang.link_insert,
+			func:  'linkShow'
 		},
 		unlink:
 		{
-			title: Craft.t('Remove link'),
-			callback: function () { this.exec('unlink');}
+			title: lang.unlink,
+			exec:  'unlink'
 		}
 	}
 }
@@ -139,3 +145,6 @@ config.buttonsCustom.link = {
 config.fullscreenAppend = true;
 
 $(targetSelector).redactor(config);
+
+
+})(jQuery);
