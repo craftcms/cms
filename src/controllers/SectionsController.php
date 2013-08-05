@@ -9,47 +9,47 @@ class SectionsController extends BaseController
 	/**
 	 * Edit a section.
 	 *
-	 * @param array $vars
+	 * @param array $variables
 	 * @throws HttpException
 	 */
-	public function actionEditSection(array $vars = array())
+	public function actionEditSection(array $variables = array())
 	{
 		craft()->userSession->requireAdmin();
 
-		$vars['brandNewSection'] = false;
+		$variables['brandNewSection'] = false;
 
-		if (empty($vars['section']))
+		if (empty($variables['section']))
 		{
-			if (!empty($vars['sectionId']))
+			if (!empty($variables['sectionId']))
 			{
-				$vars['section'] = craft()->sections->getSectionById($vars['sectionid']);
+				$variables['section'] = craft()->sections->getSectionById($variables['sectionId']);
 
-				if (!$vars['section'])
+				if (!$variables['section'])
 				{
 					throw new HttpException(404);
 				}
 
-				$vars['title'] = $vars['section']->name;
+				$variables['title'] = $variables['section']->name;
 			}
 			else
 			{
-				$vars['section'] = new SectionModel();
-				$vars['title'] = Craft::t('Create a new section');
-				$vars['brandNewSection'] = true;
+				$variables['section'] = new SectionModel();
+				$variables['title'] = Craft::t('Create a new section');
+				$variables['brandNewSection'] = true;
 			}
 		}
 
-		$vars['crumbs'] = array(
+		$variables['crumbs'] = array(
 			array('label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')),
 			array('label' => Craft::t('Sections'), 'url' => UrlHelper::getUrl('settings/sections')),
 		);
 
-		$vars['tabs'] = array(
+		$variables['tabs'] = array(
 			'settings'    => array('label' => Craft::t('Settings'),     'url' => '#section-settings'),
 			'fieldlayout' => array('label' => Craft::t('Field Layout'), 'url' => '#section-fieldlayout'),
 		);
 
-		$this->renderTemplate('settings/sections/_edit', $vars);
+		$this->renderTemplate('settings/sections/_edit', $variables);
 	}
 
 	/**
