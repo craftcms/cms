@@ -1004,6 +1004,7 @@ class UsersController extends BaseController
 
 	/**
 	 * @param $userId
+	 * @return void
 	 */
 	private function _assignDefaultGroupToUser($userId)
 	{
