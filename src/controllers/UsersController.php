@@ -315,6 +315,7 @@ class UsersController extends BaseController
 		}
 
 		$publicRegistration = false;
+		$canRegisterUsers = false;
 		$valid = true;
 
 		// Are we editing an existing user?
@@ -337,21 +338,25 @@ class UsersController extends BaseController
 			// Are they already logged in?
 			if (craft()->userSession->getUser())
 			{
-				// Make sure they have permission to register users
+				// Make sure they have permission to register users, regardless of if public registration is enabled or not.
 				craft()->userSession->requirePermission('registerUsers');
+				$canRegisterUsers = true;
 			}
-			else
+
+			// Is public registration enabled?
+			if (Craft::hasPackage(CraftPackage::Users))
 			{
-				// Make sure that public registration is allowed
 				if (craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
 				{
 					$publicRegistration = true;
 				}
-				else
-				{
-					// Sorry pal.
-					throw new HttpException(403);
-				}
+			}
+
+			// If there is no public registration and the current user can't register users, complain loudly.
+			if (!$publicRegistration && !$canRegisterUsers)
+			{
+				// Sorry pal.
+				throw new HttpException(403);
 			}
 
 			$user = new UserModel();
@@ -361,7 +366,7 @@ class UsersController extends BaseController
 		if (craft()->userSession->isAdmin() || ($userId && $userId == craft()->userSession->getUser()->id))
 		{
 			// Validate stuff.
-			$valid = $this->_validateSensitiveFields($userId, $user, $publicRegistration);
+			$valid = $this->_validateSensitiveFields($userId, $user, $publicRegistration || $canRegisterUsers);
 		}
 
 		if ($valid)
@@ -372,8 +377,8 @@ class UsersController extends BaseController
 			{
 				$user->email = craft()->request->getPost('email');
 
-				// If it is a new user and public registration is enabled, grab the password from post.
-				if ($publicRegistration)
+				// If it is a new user and public registration is enabled or it's a new user and the current user can register users, grab the password from post.
+				if (($publicRegistration || $canRegisterUsers) && !craft()->request->isCpRequest())
 				{
 					$user->newPassword = craft()->request->getPost('password');
 				}
@@ -403,15 +408,9 @@ class UsersController extends BaseController
 			{
 				if (craft()->users->saveUser($user))
 				{
-					if ($publicRegistration)
+					if (($publicRegistration || $canRegisterUsers) && !craft()->request->isCpRequest())
 					{
-						// Assign them to the default user group, if any
-						$defaultGroup = craft()->systemSettings->getSetting('users', 'defaultGroup');
-
-						if ($defaultGroup)
-						{
-							craft()->userGroups->assignUserToGroups($user->id, array($defaultGroup));
-						}
+						$this->_assignDefaultGroupToUser($user->id);
 					}
 
 					craft()->userSession->setNotice(Craft::t('User saved.'));
@@ -433,6 +432,12 @@ class UsersController extends BaseController
 			catch (\phpmailerException $e)
 			{
 				craft()->userSession->setError(Craft::t('Registered user, but couldn’t send activation email. Check your email settings.'));
+
+				// Still assign the default group
+				if (($publicRegistration || $canRegisterUsers) && !craft()->request->isCpRequest())
+				{
+					$this->_assignDefaultGroupToUser($user->id);
+				}
 			}
 		}
 
@@ -909,32 +914,37 @@ class UsersController extends BaseController
 		if ($userId)
 		{
 			// If the user changed their email, make sure they have validated with their password.
-			if ($email && $email != $user->email)
+			if ($email != $user->email)
 			{
 				if ($password)
 				{
 					if ($this->_validateCurrentPassword($password))
 					{
-						$user->email = $email;
+						if (!$email)
+						{
+							$user->addError('email', Craft::t('Email address is required.'));
+						}
+						else
+						{
+							$user->email = $email;
+						}
 					}
 					else
 					{
 						Craft::log('Tried to change password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
 						$user->addError('currentPassword', Craft::t('Incorrect current password.'));
-						return false;
 					}
 				}
 				else
 				{
 					Craft::log('Tried to change the email for userId: '.$user->id.', but the did not supply the existing password.', LogLevel::Warning);
 					$user->addError('currentPassword', Craft::t('You must supply your existing password.'));
-					return false;
 				}
 			}
 		}
 
 		// If public registration is enabled, make sure it's a new user before we set the password.
-		if ($publicRegistration && !$user->id)
+		if ($publicRegistration && !$user->id && !craft()->request->isCpRequest())
 		{
 			$password = (string)craft()->request->getPost('password');
 
@@ -949,7 +959,6 @@ class UsersController extends BaseController
 			else
 			{
 				$user->addError('password', $passwordModel->getError('password'));
-				return false;
 			}
 		}
 		else
@@ -974,25 +983,36 @@ class UsersController extends BaseController
 						else
 						{
 							$user->addError('newPassword', $newPasswordModel->getError('password'));
-							return false;
 						}
 					}
 					else
 					{
 						$user->addError('currentPassword', Craft::t('Incorrect current password.'));
 						Craft::log('Tried to change password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
-						return false;
 					}
 				}
 				else if ($newPassword && !$password)
 				{
 					$user->addError('currentPassword', Craft::t('You must supply your existing password.'));
 					Craft::log('Tried to change password for userId: '.$user->id.', but the did not supply the existing password.', LogLevel::Warning);
-					return false;
 				}
 			}
 		}
 
-		return true;
+		return !$user->hasErrors();
+	}
+
+	/**
+	 * @param $userId
+	 */
+	private function _assignDefaultGroupToUser($userId)
+	{
+		// Assign them to the default user group, if any
+		$defaultGroup = craft()->systemSettings->getSetting('users', 'defaultGroup');
+
+		if ($defaultGroup)
+		{
+			craft()->userGroups->assignUserToGroups($userId, array($defaultGroup));
+		}
 	}
 }
