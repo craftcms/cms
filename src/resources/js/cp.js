@@ -192,8 +192,6 @@ var CP = Garnish.Base.extend({
     		this.setMaxSidebarHeight._maxHeight = this.$main.height();
     	}
 
-    	console.log(this.setMaxSidebarHeight._maxHeight);
-
     	this.$sidebar.css('max-height', this.setMaxSidebarHeight._maxHeight);
     },
 
