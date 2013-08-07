@@ -1,7 +1,10 @@
+{% if not craft.hasPackage('Users') %}
+	{% exit 404 %}
+{% endif %}
+
 {% extends "_layouts/elementindex" %}
 {% set title = "Users"|t %}
 {% set elementType = 'User' %}
-
 
 {% block sidebar %}
 	{% if user.can('registerUsers') %}
