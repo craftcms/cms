@@ -577,21 +577,41 @@ class UsersService extends BaseApplicationComponent
 
 		if ($userRecord)
 		{
-			// Fire an 'onBeforeDeleteUser' event
-			$this->onBeforeDeleteUser(new Event($this, array(
-				'user' => $user
-			)));
-
-			$success = $userRecord->delete();
-
-			if ($success)
+			$transaction = craft()->db->beginTransaction();
+			try
 			{
-				// Fire an 'onDeleteUser' event
-				$this->onDeleteUser(new Event($this, array(
+				// Fire an 'onBeforeDeleteUser' event
+				$this->onBeforeDeleteUser(new Event($this, array(
 					'user' => $user
 				)));
 
-				return true;
+				// Grab the entry IDs that were authored by this user so we can delete them too.
+				$entryIds = craft()->db->createCommand()
+					->select('id')
+					->from('entries')
+					->where(array('authorId' => $user->id))
+					->queryColumn();
+
+				craft()->elements->deleteElementById($entryIds);
+
+				$success = $userRecord->delete();
+
+				$transaction->commit();
+
+				if ($success)
+				{
+					// Fire an 'onDeleteUser' event
+					$this->onDeleteUser(new Event($this, array(
+						'user' => $user
+					)));
+
+					return true;
+				}
+			}
+			catch (\Exception $e)
+			{
+				$transaction->rollBack();
+				throw $e;
 			}
 		}
 
