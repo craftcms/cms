@@ -573,49 +573,52 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function deleteUser(UserModel $user)
 	{
-		$userRecord = $this->_getUserRecordById($user->id);
-
-		if ($userRecord)
+		if (!$user->id)
 		{
-			$transaction = craft()->db->beginTransaction();
-			try
+			return false;
+		}
+
+		$transaction = craft()->db->beginTransaction();
+		try
+		{
+			// Fire an 'onBeforeDeleteUser' event
+			$this->onBeforeDeleteUser(new Event($this, array(
+				'user' => $user
+			)));
+
+			// Grab the entry IDs that were authored by this user so we can delete them too.
+			$entryIds = craft()->db->createCommand()
+				->select('id')
+				->from('entries')
+				->where(array('authorId' => $user->id))
+				->queryColumn();
+
+			craft()->elements->deleteElementById($entryIds);
+
+			// Delete the user
+			$success = craft()->elements->deleteElementById($user->id);
+
+			$transaction->commit();
+
+			if ($success)
 			{
-				// Fire an 'onBeforeDeleteUser' event
-				$this->onBeforeDeleteUser(new Event($this, array(
+				// Fire an 'onDeleteUser' event
+				$this->onDeleteUser(new Event($this, array(
 					'user' => $user
 				)));
 
-				// Grab the entry IDs that were authored by this user so we can delete them too.
-				$entryIds = craft()->db->createCommand()
-					->select('id')
-					->from('entries')
-					->where(array('authorId' => $user->id))
-					->queryColumn();
-
-				craft()->elements->deleteElementById($entryIds);
-
-				$success = $userRecord->delete();
-
-				$transaction->commit();
-
-				if ($success)
-				{
-					// Fire an 'onDeleteUser' event
-					$this->onDeleteUser(new Event($this, array(
-						'user' => $user
-					)));
-
-					return true;
-				}
+				return true;
 			}
-			catch (\Exception $e)
+			else
 			{
-				$transaction->rollBack();
-				throw $e;
+				return false;
 			}
 		}
-
-		return false;
+		catch (\Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
 	}
 
 	/**
