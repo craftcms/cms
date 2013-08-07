@@ -311,7 +311,18 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function deleteSourceById($sourceId)
 	{
+		// Grab the asset file ids so we can clean the elements table.
+		$assetFileIds = craft()->db->createCommand()
+			->select('id')
+			->from('assetfiles')
+			->where(array('sourceId' => $sourceId))
+			->queryColumn();
+
+		craft()->db->createCommand()->delete('elements', array('in', 'id', $assetFileIds));
+
+		// Nuke the asset source.
 		craft()->db->createCommand()->delete('assetsources', array('id' => $sourceId));
+
 		return true;
 	}
 

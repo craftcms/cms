@@ -27,16 +27,6 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type can have thumbnails.
-	 *
-	 * @return bool
-	 */
-	public function hasThumbs()
-	{
-		return true;
-	}
-
-	/**
 	 * Returns this element type's sources.
 	 *
 	 * @return array|false

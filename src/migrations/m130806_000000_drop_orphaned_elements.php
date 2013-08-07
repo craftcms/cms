@@ -41,7 +41,7 @@ class m130806_000000_drop_orphaned_elements extends BaseMigration
 	private function _getIdsInTable($table)
 	{
 		$ids = craft()->db->createCommand()
-			->select('Id')
+			->select('id')
 			->from($table)
 			->queryColumn();
 
