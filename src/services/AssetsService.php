@@ -813,17 +813,6 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Delete a file record by id.
-	 *
-	 * @param $fileId
-	 * @return bool
-	 */
-	public function deleteFileRecord($fileId)
-	{
-		return (bool) AssetFileRecord::model()->deleteAll('id = :fileId', array(':fileId' => $fileId));
-	}
-
-	/**
 	* Delete a folder record by id.
 	*
 	* @param $fileId

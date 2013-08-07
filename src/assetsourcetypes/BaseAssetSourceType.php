@@ -669,7 +669,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		}
 
 		// Delete DB record and the file itself.
-		craft()->assets->deleteFileRecord($file->id);
+		craft()->elements->deleteElementById($file->id);
 		$this->_deleteSourceFile($file->getFolder(), $file->filename);
 
 		$response = new AssetOperationResponseModel();
