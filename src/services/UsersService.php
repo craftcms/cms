@@ -569,6 +569,7 @@ class UsersService extends BaseApplicationComponent
 	 * Deletes a user.
 	 *
 	 * @param UserModel $user
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function deleteUser(UserModel $user)
