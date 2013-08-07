@@ -210,8 +210,9 @@ class TagsService extends BaseApplicationComponent
 	 * Deletes a tag set by its ID.
 	 *
 	 * @param int $tagSetId
+	 * @throws \Exception
 	 * @return bool
-	*/
+	 */
 	public function deleteTagSetById($tagSetId)
 	{
 		if (!$tagSetId)
@@ -233,6 +234,15 @@ class TagsService extends BaseApplicationComponent
 			{
 				craft()->fields->deleteLayoutById($fieldLayoutId);
 			}
+
+			// Grab the tag ids so we can clean the elements table.
+			$tagIds = craft()->db->createCommand()
+				->select('id')
+				->from('tags')
+				->where(array('setId' => $tagSetId))
+				->queryColumn();
+
+			craft()->db->createCommand()->delete('elements', array('in', 'id', $tagIds));
 
 			$affectedRows = craft()->db->createCommand()->delete('tagsets', array('id' => $tagSetId));
 

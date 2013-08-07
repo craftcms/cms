@@ -469,6 +469,16 @@ class SectionsService extends BaseApplicationComponent
 				craft()->fields->deleteLayoutById($fieldLayoutId);
 			}
 
+			// Grab the entry ids so we can clean the elements table.
+			$entryIds = craft()->db->createCommand()
+				->select('id')
+				->from('entries')
+				->where(array('sectionId' => $sectionId))
+				->queryColumn();
+
+			craft()->db->createCommand()->delete('elements', array('in', 'id', $entryIds));
+
+			// Delete the section.
 			$affectedRows = craft()->db->createCommand()->delete('sections', array('id' => $sectionId));
 
 			$transaction->commit();
