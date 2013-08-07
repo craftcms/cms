@@ -149,7 +149,7 @@
 				<div class="select">
 					<select id="preferredLocale" name="preferredLocale">
 						{% set allSiteLocales = craft.i18n.getSiteLocales %}
-						{% set userLocale = account is defined and account.preferredLocale ? account.preferredLocale : (account.isCurrent ? craft.locale : allSiteLocales[0]) %}
+						{% set userLocale = account is defined and account.preferredLocale ? account.preferredLocale : (account is defined and account.isCurrent ? craft.locale : allSiteLocales[0]) %}
 
 						{% for locale in allSiteLocales %}
 							<option value="{{ locale.id }}" {% if locale.id == userLocale %}selected{% endif %}>{{ locale.nativeName }}</option>
