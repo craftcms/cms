@@ -82,6 +82,8 @@
 				errors: (account is defined ? account.getErrors('email') : null)
 			}) }}
 
+		<p>{{ "Registering a new user will require them to validate their account via email. Make sure your {emailSettings} are valid."|t({ emailSettings: '<a href="' ~ url('settings/email') ~ '">email settings</a>'})|raw }}</p>
+
 		{% elseif account.isCurrent or user.admin %}
 
 			{% set emailInput %}
@@ -149,7 +151,7 @@
 				<div class="select">
 					<select id="preferredLocale" name="preferredLocale">
 						{% set allSiteLocales = craft.i18n.getSiteLocales %}
-						{% set userLocale = account is defined and account.preferredLocale ? account.preferredLocale : (account.isCurrent ? craft.locale : allSiteLocales[0]) %}
+						{% set userLocale = account is defined and account.preferredLocale ? account.preferredLocale : (account is defined and account.isCurrent ? craft.locale : allSiteLocales[0]) %}
 
 						{% for locale in allSiteLocales %}
 							<option value="{{ locale.id }}" {% if locale.id == userLocale %}selected{% endif %}>{{ locale.nativeName }}</option>

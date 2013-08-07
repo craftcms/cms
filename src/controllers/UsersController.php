@@ -316,7 +316,6 @@ class UsersController extends BaseController
 
 		$publicRegistration = false;
 		$canRegisterUsers = false;
-		$valid = true;
 
 		// Are we editing an existing user?
 		if ($userId)
@@ -335,6 +334,9 @@ class UsersController extends BaseController
 		}
 		else
 		{
+			// Users package is required
+			Craft::requirePackage(CraftPackage::Users);
+
 			// Are they already logged in?
 			if (craft()->userSession->getUser())
 			{
@@ -342,10 +344,9 @@ class UsersController extends BaseController
 				craft()->userSession->requirePermission('registerUsers');
 				$canRegisterUsers = true;
 			}
-
-			// Is public registration enabled?
-			if (Craft::hasPackage(CraftPackage::Users))
+			else
 			{
+				// Is public registration enabled?
 				if (craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
 				{
 					$publicRegistration = true;
@@ -363,10 +364,14 @@ class UsersController extends BaseController
 		}
 
 		// Can only change sensitive fields if you are an admin or this is your account.
-		if (craft()->userSession->isAdmin() || ($userId && $userId == craft()->userSession->getUser()->id))
+		if (craft()->userSession->isAdmin() || $user->isCurrent())
 		{
 			// Validate stuff.
 			$valid = $this->_validateSensitiveFields($userId, $user, $publicRegistration || $canRegisterUsers);
+		}
+		else
+		{
+			$valid = true;
 		}
 
 		if ($valid)
@@ -377,8 +382,8 @@ class UsersController extends BaseController
 			{
 				$user->email = craft()->request->getPost('email');
 
-				// If it is a new user and public registration is enabled or it's a new user and the current user can register users, grab the password from post.
-				if (($publicRegistration || $canRegisterUsers) && !craft()->request->isCpRequest())
+				// If it is a new user, grab the password from post.
+				if (!$userId && !craft()->request->isCpRequest())
 				{
 					$user->newPassword = craft()->request->getPost('password');
 				}
@@ -408,7 +413,7 @@ class UsersController extends BaseController
 			{
 				if (craft()->users->saveUser($user))
 				{
-					if (($publicRegistration || $canRegisterUsers) && !craft()->request->isCpRequest())
+					if ($publicRegistration)
 					{
 						$this->_assignDefaultGroupToUser($user->id);
 					}
