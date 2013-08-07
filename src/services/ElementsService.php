@@ -399,6 +399,11 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function deleteElementById($elementId)
 	{
+		if (!$elementId)
+		{
+			return false;
+		}
+
 		if (is_array($elementId))
 		{
 			$condition = array('in', 'id', $elementId);
@@ -408,9 +413,9 @@ class ElementsService extends BaseApplicationComponent
 			$condition = array('id' => $elementId);
 		}
 
-		craft()->db->createCommand()->delete('elements', $condition);
+		$affectedRows = craft()->db->createCommand()->delete('elements', $condition);
 
-		return true;
+		return (bool) $affectedRows;
 	}
 
 	// Element types

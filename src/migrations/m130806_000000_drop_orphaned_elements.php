@@ -17,7 +17,8 @@ class m130806_000000_drop_orphaned_elements extends BaseMigration
 		$allIds = array_merge(
 			$this->_getIdsInTable('assetfiles'),
 			$this->_getIdsInTable('tags'),
-			$this->_getIdsInTable('entries')
+			$this->_getIdsInTable('entries'),
+			$this->_getIdsInTable('users')
 		);
 
 		if ($allIds)

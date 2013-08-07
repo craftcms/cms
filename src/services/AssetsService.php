@@ -364,13 +364,13 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Delete a folder by it's id.
+	 * Deletes a folder by its ID.
 	 *
-	 * @param $folderId
+	 * @param int $folderId
 	 * @return AssetOperationResponseModel
 	 * @throws Exception
 	 */
-	public function deleteFolder($folderId)
+	public function deleteFolderById($folderId)
 	{
 		try
 		{
@@ -810,17 +810,6 @@ class AssetsService extends BaseApplicationComponent
 		}
 
 		return $response;
-	}
-
-	/**
-	 * Delete a file record by id.
-	 *
-	 * @param $fileId
-	 * @return bool
-	 */
-	public function deleteFileRecord($fileId)
-	{
-		return (bool) AssetFileRecord::model()->deleteAll('id = :fileId', array(':fileId' => $fileId));
 	}
 
 	/**

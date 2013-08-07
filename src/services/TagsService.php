@@ -242,7 +242,7 @@ class TagsService extends BaseApplicationComponent
 				->where(array('setId' => $tagSetId))
 				->queryColumn();
 
-			craft()->db->createCommand()->delete('elements', array('in', 'id', $tagIds));
+			craft()->elements->deleteElementById($tagIds);
 
 			$affectedRows = craft()->db->createCommand()->delete('tagsets', array('id' => $tagSetId));
 

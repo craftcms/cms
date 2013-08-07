@@ -136,7 +136,7 @@ class AssetsController extends BaseController
 		$this->requireLogin();
 		$this->requireAjaxRequest();
 		$folderId = craft()->request->getRequiredPost('folderId');
-		$response = craft()->assets->deleteFolder($folderId);
+		$response = craft()->assets->deleteFolderById($folderId);
 
 		$this->returnJson($response->getResponseData());
 

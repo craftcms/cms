@@ -569,20 +569,37 @@ class UsersService extends BaseApplicationComponent
 	 * Deletes a user.
 	 *
 	 * @param UserModel $user
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function deleteUser(UserModel $user)
 	{
-		$userRecord = $this->_getUserRecordById($user->id);
+		if (!$user->id)
+		{
+			return false;
+		}
 
-		if ($userRecord)
+		$transaction = craft()->db->beginTransaction();
+		try
 		{
 			// Fire an 'onBeforeDeleteUser' event
 			$this->onBeforeDeleteUser(new Event($this, array(
 				'user' => $user
 			)));
 
-			$success = $userRecord->delete();
+			// Grab the entry IDs that were authored by this user so we can delete them too.
+			$entryIds = craft()->db->createCommand()
+				->select('id')
+				->from('entries')
+				->where(array('authorId' => $user->id))
+				->queryColumn();
+
+			craft()->elements->deleteElementById($entryIds);
+
+			// Delete the user
+			$success = craft()->elements->deleteElementById($user->id);
+
+			$transaction->commit();
 
 			if ($success)
 			{
@@ -593,9 +610,16 @@ class UsersService extends BaseApplicationComponent
 
 				return true;
 			}
+			else
+			{
+				return false;
+			}
 		}
-
-		return false;
+		catch (\Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
 	}
 
 	/**
