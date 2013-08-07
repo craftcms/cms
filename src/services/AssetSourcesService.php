@@ -311,7 +311,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function deleteSourceById($sourceId)
 	{
-		if (!$tagSetId)
+		if (!$sourceId)
 		{
 			return false;
 		}
