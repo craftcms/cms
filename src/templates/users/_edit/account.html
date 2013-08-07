@@ -82,8 +82,6 @@
 				errors: (account is defined ? account.getErrors('email') : null)
 			}) }}
 
-		<p>{{ "Registering a new user will require them to validate their account via email. Make sure your {emailSettings} are valid."|t({ emailSettings: '<a href="' ~ url('settings/email') ~ '">email settings</a>'})|raw }}</p>
-
 		{% elseif account.isCurrent or user.admin %}
 
 			{% set emailInput %}
@@ -179,6 +177,10 @@
                     </ul>
                 </div>
             </div>
+        {% endif %}
+
+        {% if isNewAccount %}
+        	<p class="field">{{ 'Note: new users must validate their account via email. Please ensure your <a href="{url}">email settings</a> are valid.'|t({ url: url('settings/email') })|raw }}</p>
         {% endif %}
 
 
