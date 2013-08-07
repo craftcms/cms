@@ -29,7 +29,8 @@ class RelationFieldData extends \ArrayObject
 
 		foreach ($this->all as $element)
 		{
-			if ($element->getStatus() == 'enabled' || $element->getStatus() == 'live')
+			// TODO: Elements really need a single way of identifying whether they should be "live" or not.
+			if (in_array($element->getStatus(), array('enabled', 'live', 'active')))
 			{
 				$enabledElements[] = $element;
 			}
