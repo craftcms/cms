@@ -254,17 +254,6 @@ Garnish = {
 	},
 
 	/**
-	 * Returns whether a variable is a plain object (not an array, element, or jQuery collection).
-	 *
-	 * @param mixed val
-	 * @return bool
-	 */
-	isObject: function(val)
-	{
-		return (typeof val == 'object' && !Garnish.isArray(val) && !Garnish.isJquery(val) && typeof val.nodeType == 'undefined');
-	},
-
-	/**
 	 * Returns whether a variable is a string.
 	 *
 	 * @param mixed val
@@ -833,7 +822,7 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	init: function(items, settings)
 	{
 		// Param mapping
-		if (!settings && Garnish.isObject(items))
+		if (!settings && $.isPlainObject(items))
 		{
 			// (settings)
 			settings = items;
@@ -1312,7 +1301,7 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 	init: function(items, settings)
 	{
 		// Param mapping
-		if (!settings && Garnish.isObject(items))
+		if (!settings && $.isPlainObject(items))
 		{
 			// (settings)
 			settings = items;
@@ -1719,7 +1708,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 	init: function(items, settings)
 	{
 		// Param mapping
-		if (!settings && Garnish.isObject(items))
+		if (!settings && $.isPlainObject(items))
 		{
 			// (settings)
 			settings = items;
@@ -3112,7 +3101,7 @@ Garnish.Modal = Garnish.Base.extend({
 	init: function(container, settings)
 	{
 		// Param mapping
-		if (!settings && Garnish.isObject(container))
+		if (!settings && $.isPlainObject(container))
 		{
 			// (settings)
 			settings = container;
@@ -3932,7 +3921,7 @@ Garnish.Select = Garnish.Base.extend({
 		this.$container = $(container);
 
 		// Param mapping
-		if (!settings && Garnish.isObject(items))
+		if (!settings && $.isPlainObject(items))
 		{
 			// (container, settings)
 			settings = items;
