@@ -1,6 +1,9 @@
 {% extends "settings/assets/_layout" %}
 {% set selectedTab = 'transforms' %}
 
+{% set docsUrl = 'http://docs.buildwithcraft.com/cp/settings/assets.html#image-transforms' %}
+
+
 {% set content %}
 <p id="notransforms"{% if transforms|length %} class="hidden"{% endif %}>
 	{{ "No Asset transforms exist yet."|t }}

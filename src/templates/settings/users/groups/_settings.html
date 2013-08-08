@@ -9,6 +9,8 @@
 	{ label: "User Groups"|t, url: url('settings/users') }
 ] %}
 
+{% set docsUrl = 'http://docs.buildwithcraft.com/cp/settings/users.html#user-groups' %}
+
 
 {% if group is not defined and groupId is defined %}
 	{% set group = craft.userGroups.getGroupById(groupId) %}
