@@ -700,7 +700,7 @@ class IOHelper
 				// If cache says use LOCK_X and this is not a noFileLock request.
 				if ($useFileLock == 'yes' && !$noFileLock)
 				{
-					Craft::log('Cache says use LOCK_EX. Writing to '.$path.'.', LogLevel::Info, true);
+					Craft::log('Cache says use LOCK_EX. Writing to '.$path.'.', LogLevel::Info);
 					// Write with LOCK_EX
 					if (static::_writeToFile($path, $contents, true, $append))
 					{
@@ -709,7 +709,7 @@ class IOHelper
 				}
 				else
 				{
-					Craft::log('Cache says not to use LOCK_EX. Writing to '.$path.'.', LogLevel::Info, true);
+					Craft::log('Cache says not to use LOCK_EX. Writing to '.$path.'.', LogLevel::Info);
 					// Write without LOCK_EX
 					if (static::_writeToFile($path, $contents, false, $append))
 					{
