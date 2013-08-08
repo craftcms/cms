@@ -443,6 +443,8 @@ table.data.collapsed tbody tr:after { @include clearafter; }
 table.data.collapsed tbody th:not(.thin),
 table.data.collapsed tbody td:not(.thin) { clear: left; }
 table.data.collapsed tbody td form { display: inline-block; }
+table.data.collapsed tbody tr:last-child th:not(:last-child),
+table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 
 .datatablesorthelper,
 .editabletablesorthelper { background: #fff;
