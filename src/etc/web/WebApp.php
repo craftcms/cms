@@ -169,7 +169,11 @@ class WebApp extends \CWebApplication
 
 		// isCraftDbUpdateNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
-		if ($this->updates->isCraftDbUpdateNeeded() || (Craft::isInMaintenanceMode() && $this->request->isCpRequest()) || $this->request->getActionSegments() == array('update', 'cleanUp'))
+		if (Craft::isSystemOn() ||
+			($this->request->isActionRequest() && $this->request->getActionSegments() == array('users', 'login')) ||
+			($this->request->isSiteRequest() && $this->userSession->checkPermission('accessSiteWhenSystemIsOff')) ||
+			($this->request->isCpRequest()) && $this->userSession->checkPermission('accessCpWhenSystemIsOff')
+		)
 		{
 			$this->_processUpdateLogic();
 		}
