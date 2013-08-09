@@ -21,14 +21,21 @@ class Craft extends \Yii
 	 */
 	public static function isInstalled()
 	{
-		// If the db config isn't valid, then we'll assume it's not installed.
-		if (!craft()->db->isDbConnectionValid())
-		{
-			return false;
-		}
-
 		if (!isset(static::$_isInstalled))
 		{
+			try
+			{
+				// If the db config isn't valid, then we'll assume it's not installed.
+				if (!craft()->db->isDbConnectionValid())
+				{
+					return false;
+				}
+			}
+			catch (DbConnectException $e)
+			{
+				return false;
+			}
+
 			static::$_isInstalled = (craft()->isConsole() || craft()->db->tableExists('info', false));
 		}
 
