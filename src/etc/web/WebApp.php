@@ -605,7 +605,7 @@ class WebApp extends \CWebApplication
 		$isCpRequest = $this->request->isCpRequest();
 
 		// Are they requesting an installer template/action specifically?
-		if ($isCpRequest && $this->request->getSegment(1) === 'install')
+		if ($isCpRequest && $this->request->getSegment(1) === 'install' && !Craft::isInstalled())
 		{
 			$action = $this->request->getSegment(2, 'index');
 			$this->runController('install/'.$action);
