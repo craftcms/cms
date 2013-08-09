@@ -51,13 +51,17 @@ class UserModel extends BaseElementModel
 	 * Returns the user's groups.
 	 *
 	 * @param string|null $indexBy
-	 * @return array|null
+	 * @return array
 	 */
 	public function getGroups($indexBy = null)
 	{
 		if (Craft::hasPackage(CraftPackage::Users))
 		{
 			return craft()->userGroups->getGroupsByUserId($this->id, $indexBy);
+		}
+		else
+		{
+			return array();
 		}
 	}
 
