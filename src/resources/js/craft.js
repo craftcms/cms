@@ -72,7 +72,7 @@ $.extend(Craft, {
 		var anchor = '';
 
 		// Normalize the params
-		if (Garnish.isObject(params))
+		if ($.isPlainObject(params))
 		{
 			var aParams = [];
 
