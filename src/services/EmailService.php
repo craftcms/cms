@@ -257,7 +257,7 @@ class EmailService extends BaseApplicationComponent
 		// Add a reply to (if any)
 		if (!empty($emailModel->replyTo))
 		{
-			$email->AddReplyTo($email->replyTo);
+			$email->AddReplyTo($emailModel->replyTo);
 		}
 
 		// Add a sender header (if any)
