@@ -74,28 +74,31 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		$localPath = $this->_getSourceFileSystemPath();
 
-		if ($localPath == '/' || !IOHelper::folderExists($localPath))
+		if ($localPath == '/' || !IOHelper::folderExists($localPath) || $localPath === false)
 		{
 			return array('sourceId' => $this->model->id, 'error' => Craft::t('The path of your source “{source}” appears to be invalid.', array('source' => $this->model->name)));
 		}
 
 		$fileList = IOHelper::getFolderContents($localPath, true);
 
-		$fileList = array_filter($fileList, function ($value) use ($localPath)
+		if ($fileList && is_array($fileList) && count($fileList) > 0)
 		{
-			$path = substr($value, strlen($localPath));
-			$segments = explode('/', $path);
-
-			foreach ($segments as $segment)
+			$fileList = array_filter($fileList, function ($value) use ($localPath)
 			{
-				if (isset($segment[0]) && $segment[0] == '_')
-				{
-					return false;
-				}
-			}
+				$path = substr($value, strlen($localPath));
+				$segments = explode('/', $path);
 
-			return true;
-		});
+				foreach ($segments as $segment)
+				{
+					if (isset($segment[0]) && $segment[0] == '_')
+					{
+						return false;
+					}
+				}
+
+				return true;
+			});
+		}
 
 		$offset = 0;
 		$total = 0;
