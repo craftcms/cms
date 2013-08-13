@@ -41,15 +41,17 @@ class ContentService extends BaseApplicationComponent
 	 *
 	 * @param BaseElementModel $element
 	 * @param FieldLayoutModel $fieldLayout
+	 * @param bool             $validate
+	 * @return bool
 	 */
-	public function saveElementContent(BaseElementModel $element, FieldLayoutModel $fieldLayout)
+	public function saveElementContent(BaseElementModel $element, FieldLayoutModel $fieldLayout, $validate = true)
 	{
 		if (!$element->id)
 		{
 			throw new Exception(Craft::t('Cannot save the content of an unsaved element.'));
 		}
 
-		$content = $this->prepElementContentForSave($element, $fieldLayout);
+		$content = $this->prepElementContentForSave($element, $fieldLayout, $validate);
 
 		if ($this->saveContent($content))
 		{
@@ -68,34 +70,38 @@ class ContentService extends BaseApplicationComponent
 	 *
 	 * @param BaseElementModel $element
 	 * @param FieldLayoutModel $fieldLayout
+	 * @param bool             $validate
 	 * @return ContentModel
 	 */
-	public function prepElementContentForSave(BaseElementModel $element, FieldLayoutModel $fieldLayout)
+	public function prepElementContentForSave(BaseElementModel $element, FieldLayoutModel $fieldLayout, $validate = true)
 	{
 		$elementTypeClass = $element->getElementType();
 		$elementType = craft()->elements->getElementType($elementTypeClass);
 
 		$content = $element->getContent();
 
-		// Set the required fields from the layout
-		$requiredFields = array();
-
-		if ($elementType->hasTitles())
+		if ($validate)
 		{
-			$requiredFields[] = 'title';
-		}
+			// Set the required fields from the layout
+			$requiredFields = array();
 
-		foreach ($fieldLayout->getFields() as $field)
-		{
-			if ($field->required)
+			if ($elementType->hasTitles())
 			{
-				$requiredFields[] = $field->fieldId;
+				$requiredFields[] = 'title';
 			}
-		}
 
-		if ($requiredFields)
-		{
-			$content->setRequiredFields($requiredFields);
+			foreach ($fieldLayout->getFields() as $field)
+			{
+				if ($field->required)
+				{
+					$requiredFields[] = $field->fieldId;
+				}
+			}
+
+			if ($requiredFields)
+			{
+				$content->setRequiredFields($requiredFields);
+			}
 		}
 
 		// Give the fieldtypes a chance to clean up the post data
