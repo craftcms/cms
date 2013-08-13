@@ -102,21 +102,30 @@ class ConfigService extends BaseApplicationComponent
 				}
 				else
 				{
-					// Test the server for it
-					try
+					// PHP Dev Server does omit the script name from 404s without any help from a redirect script,
+					// *unless* the URI looks like a file, in which case it'll just throw a 404.
+					if (AppHelper::isPhpDevServer())
 					{
-						$baseUrl = craft()->request->getHostInfo().craft()->request->getScriptUrl();
-						$url = substr($baseUrl, 0, strrpos($baseUrl, '/')).'/testScriptNameRedirect';
-						$response = \Requests::get($url);
-
-						if ($response->success && $response->body === 'success')
-						{
-							$this->_omitScriptNameInUrls = 'yes';
-						}
+						$this->_omitScriptNameInUrls = false;
 					}
-					catch (\Exception $e)
+					else
 					{
-						Craft::log('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), LogLevel::Error);
+						// Test the server for it
+						try
+						{
+							$baseUrl = craft()->request->getHostInfo().craft()->request->getScriptUrl();
+							$url = substr($baseUrl, 0, strrpos($baseUrl, '/')).'/testScriptNameRedirect';
+							$response = \Requests::get($url);
+
+							if ($response->success && $response->body === 'success')
+							{
+								$this->_omitScriptNameInUrls = 'yes';
+							}
+						}
+						catch (\Exception $e)
+						{
+							Craft::log('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), LogLevel::Error);
+						}
 					}
 
 					// Cache it
@@ -160,6 +169,12 @@ class ConfigService extends BaseApplicationComponent
 					// If there is already a PATH_INFO var available, we know it supports it.
 					// Added the !empty() check for nginx.
 					if (!empty($_SERVER['PATH_INFO']))
+					{
+						$this->_usePathInfo = true;
+					}
+					// PHP Dev Server supports path info, and doesn't support simultaneous requests,
+					// so we need to explicitly check for that.
+					else if (AppHelper::isPhpDevServer())
 					{
 						$this->_usePathInfo = true;
 					}
