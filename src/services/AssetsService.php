@@ -124,7 +124,7 @@ class AssetsService extends BaseApplicationComponent
 
 				// Give it a default title based on the file name
 				$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
-				$this->saveFileContent($file);
+				$this->saveFileContent($file, false);
 			}
 
 			// Update the search index
@@ -143,13 +143,14 @@ class AssetsService extends BaseApplicationComponent
 	 * Saves a file's content.
 	 *
 	 * @param AssetFileModel $file
+	 * @param bool           $validate
 	 * @return bool
 	 */
-	public function saveFileContent(AssetFileModel $file)
+	public function saveFileContent(AssetFileModel $file, $validate = true)
 	{
 		// TODO: translation support
 		$fieldLayout = craft()->fields->getLayoutByType(ElementType::Asset);
-		if (craft()->content->saveElementContent($file, $fieldLayout))
+		if (craft()->content->saveElementContent($file, $fieldLayout, $validate))
 		{
 			// Update the search index since the title may have just changed
 			craft()->search->indexElementAttributes($file);

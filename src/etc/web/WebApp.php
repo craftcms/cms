@@ -167,12 +167,16 @@ class WebApp extends \CWebApplication
 			}
 		}
 
+		// Set the package components
+		$this->_setPackageComponents();
+
 		// isCraftDbUpdateNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
-		if (Craft::isSystemOn() ||
-			($this->request->isActionRequest() && $this->request->getActionSegments() == array('users', 'login')) ||
-			($this->request->isSiteRequest() && $this->userSession->checkPermission('accessSiteWhenSystemIsOff')) ||
-			($this->request->isCpRequest()) && $this->userSession->checkPermission('accessCpWhenSystemIsOff')
+		if (
+			$this->updates->isCraftDbUpdateNeeded() ||
+			(Craft::isInMaintenanceMode() && $this->request->isCpRequest()) ||
+			$this->request->getActionSegments() == array('update', 'cleanUp') ||
+			$this->request->getActionSegments() == array('update', 'rollback')
 		)
 		{
 			$this->_processUpdateLogic();
@@ -185,9 +189,6 @@ class WebApp extends \CWebApplication
 			($this->request->isCpRequest()) && $this->userSession->checkPermission('accessCpWhenSystemIsOff')
 		)
 		{
-			// Set the package components
-			$this->_setPackageComponents();
-
 			// Load the plugins
 			craft()->plugins->loadPlugins();
 

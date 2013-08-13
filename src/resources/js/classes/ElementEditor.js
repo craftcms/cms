@@ -75,6 +75,7 @@ Craft.ElementEditor = Garnish.Base.extend({
 				else
 				{
 					this.hud.$body.find('.spinner').addClass('hidden');
+					Garnish.shake(this.hud.$hud);
 				}
 			}, this));
 		},
