@@ -72,6 +72,85 @@ class MigrationHelper
 	}
 
 	/**
+	 * Renames a column, while also updating any index and FK names that use the column.
+	 *
+	 * @static
+	 * @param string $tableName
+	 * @param string $oldName
+	 * @param string $newName
+	 */
+	public static function renameColumn($tableName, $oldName, $newName)
+	{
+		$table = static::_getTable($tableName);
+		$allOtherTableFks = static::_findForeignKeysToTable($tableName);
+
+		// Temporarily drop any FKs and indexes that include this column
+		$columnFks = array();
+		$columnIndexs = array();
+		$otherTableFks = array();
+
+		foreach ($table->fks as $fk)
+		{
+			$key = array_search($oldName, $fk->columns);
+			if ($key !== false)
+			{
+				$columnFks[] = array($fk, $key);
+				static::_dropForeignKey($fk);
+			}
+		}
+
+		foreach ($table->indexes as $index)
+		{
+			$key = array_search($oldName, $index->columns);
+			if ($key !== false)
+			{
+				$columnIndexes[] = array($index, $key);
+				static::_dropIndex($index);
+			}
+		}
+
+		foreach ($allOtherTableFks as $fkData)
+		{
+			$key = array_search($oldName, $fkData->fk->refColumns);
+			if ($key !== false)
+			{
+				$otherTableFks[] = array($fkData->fk, $key);
+				static::_dropForeignKey($fkData->fk);
+			}
+		}
+
+		// Rename the column
+		craft()->db->createCommand()->renameColumn($tableName, $oldName, $newName);
+
+		// Update the table records
+		$table->columns[$newName] = $table->columns[$oldName];
+		$table->columns[$newName]->name = $newName;
+		unset($table->columns[$oldName]);
+
+		// Restore the FKs and indexes, and update our records
+		foreach ($otherTableFks as $fkData)
+		{
+			list($fk, $key) = $fkData;
+			$fk->refColumns[$key] = $newName;
+			static::_restoreForeignKey($fk);
+		}
+
+		foreach ($columnIndexes as $indexData)
+		{
+			list($index, $key) = $indexData;
+			$index->columns[$key] = $newName;
+			static::_restoreIndex($index);
+		}
+
+		foreach ($columnFks as $fkData)
+		{
+			list($fk, $key) = $fkData;
+			$fk->columns[$key] = $newName;
+			static::_restoreForeignKey($fk);
+		}
+	}
+
+	/**
 	 * Creates elements for all rows in a given table, swaps its 'id' PK for 'elementId',
 	 * and updates the names of any FK's in other tables.
 	 *
