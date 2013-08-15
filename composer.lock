@@ -11,12 +11,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "e643dc13e4f24b2e1a0586cc1c94bb19146be402"
+                "reference": "99a690a7444304a1e136e3d361c2f760c7df057d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/e643dc13e4f24b2e1a0586cc1c94bb19146be402",
-                "reference": "e643dc13e4f24b2e1a0586cc1c94bb19146be402",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/99a690a7444304a1e136e3d361c2f760c7df057d",
+                "reference": "99a690a7444304a1e136e3d361c2f760c7df057d",
                 "shasum": ""
             },
             "require": {
@@ -95,7 +95,7 @@
                 "rest",
                 "web service"
             ],
-            "time": "2013-08-14 19:36:14"
+            "time": "2013-08-15 20:53:03"
         },
         {
             "name": "phpmailer/phpmailer",
