@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "d321827c572d9f6652951f917fccd449",
+    "hash": "a9e771181d306c45ad4433ec0677467d",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -11,12 +11,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "45fbe6ef8d34b2b0b212217b092450da17254443"
+                "reference": "e643dc13e4f24b2e1a0586cc1c94bb19146be402"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/45fbe6ef8d34b2b0b212217b092450da17254443",
-                "reference": "45fbe6ef8d34b2b0b212217b092450da17254443",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/e643dc13e4f24b2e1a0586cc1c94bb19146be402",
+                "reference": "e643dc13e4f24b2e1a0586cc1c94bb19146be402",
                 "shasum": ""
             },
             "require": {
@@ -95,7 +95,7 @@
                 "rest",
                 "web service"
             ],
-            "time": "2013-08-07 03:07:47"
+            "time": "2013-08-14 19:36:14"
         },
         {
             "name": "symfony/event-dispatcher",
@@ -150,6 +150,55 @@
             "description": "Symfony EventDispatcher Component",
             "homepage": "http://symfony.com",
             "time": "2013-07-21 12:12:18"
+        },
+        {
+            "name": "twig/twig",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/fabpot/Twig.git",
+                "reference": "fcf007e9a2e6c65594360ae7fa3c410ae8d56a11"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/fabpot/Twig/zipball/fcf007e9a2e6c65594360ae7fa3c410ae8d56a11",
+                "reference": "fcf007e9a2e6c65594360ae7fa3c410ae8d56a11",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.2.4"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.14-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Twig_": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Armin Ronacher",
+                    "email": "armin.ronacher@active-4.com"
+                }
+            ],
+            "description": "Twig, the flexible, fast, and secure template language for PHP",
+            "homepage": "http://twig.sensiolabs.org",
+            "keywords": [
+                "templating"
+            ],
+            "time": "2013-08-07 12:53:34"
         }
     ],
     "packages-dev": [
@@ -160,7 +209,8 @@
     ],
     "minimum-stability": "stable",
     "stability-flags": {
-        "guzzle/guzzle": 20
+        "guzzle/guzzle": 20,
+        "twig/twig": 20
     },
     "platform": [
 

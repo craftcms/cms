@@ -1,5 +1,6 @@
 {
     "require": {
-        "guzzle/guzzle": "dev-master"
+        "guzzle/guzzle": "dev-master",
+        "twig/twig": "1.14.*@dev"
     }
 }

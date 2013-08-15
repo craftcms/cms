@@ -274,8 +274,6 @@ class UsersService extends BaseApplicationComponent
 
 			if ($isNewUser && $user->verificationRequired)
 			{
-				craft()->templates->registerTwigAutoloader();
-
 				craft()->email->sendEmailByKey($user, 'account_activation', array(
 					'link' => new \Twig_Markup(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
 				));
@@ -340,8 +338,6 @@ class UsersService extends BaseApplicationComponent
 		$userRecord = $this->_getUserRecordById($user->id);
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
-
-		craft()->templates->registerTwigAutoloader();
 
 		return craft()->email->sendEmailByKey($user, 'account_activation', array(
 			'link' => new \Twig_Markup(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
@@ -418,8 +414,6 @@ class UsersService extends BaseApplicationComponent
 		$userRecord = $this->_getUserRecordById($user->id);
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
-
-		craft()->templates->registerTwigAutoloader();
 
 		return craft()->email->sendEmailByKey($user, 'forgot_password', array(
 			'link' => new \Twig_Markup(craft()->config->getSetPasswordPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
