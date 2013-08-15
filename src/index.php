@@ -80,6 +80,9 @@ if (!class_exists('Yii', false))
 	require_once CRAFT_APP_PATH.'framework/yii.php';
 }
 
+// Load up Composer's files
+require_once CRAFT_APP_PATH.'vendor/autoload.php';
+
 // Disable the PHP include path
 Yii::$enableIncludePath = false;
 

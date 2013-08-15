@@ -1,0 +1,5 @@
+{
+    "require": {
+        "guzzle/guzzle": "dev-master"
+    }
+}

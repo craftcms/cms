@@ -14,10 +14,6 @@ return CMap::mergeArray(
 		'import' => array(
 			'application.lib.*',
 			'application.lib.PhpMailer.*',
-			'application.lib.Requests.*',
-			'application.lib.Requests.Auth.*',
-			'application.lib.Requests.Response.*',
-			'application.lib.Requests.Transport.*',
 			'application.lib.qqFileUploader.*',
 		),
 
