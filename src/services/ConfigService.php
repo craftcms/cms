@@ -115,9 +115,11 @@ class ConfigService extends BaseApplicationComponent
 						{
 							$baseUrl = craft()->request->getHostInfo().craft()->request->getScriptUrl();
 							$url = substr($baseUrl, 0, strrpos($baseUrl, '/')).'/testScriptNameRedirect';
-							$response = \Requests::get($url);
 
-							if ($response->success && $response->body === 'success')
+							$client = new \Guzzle\Http\Client();
+							$response = $client->get($url, array(), array('connect_timeout' => 2, 'timeout' => 4))->send();
+
+							if ($response->isSuccessful() && $response->getBody(true) === 'success')
 							{
 								$this->_omitScriptNameInUrls = 'yes';
 							}
@@ -184,9 +186,10 @@ class ConfigService extends BaseApplicationComponent
 						try
 						{
 							$url = craft()->request->getHostInfo().craft()->request->getScriptUrl().'/testPathInfo';
-							$response = \Requests::get($url);
+							$client = new \Guzzle\Http\Client();
+							$response = $client->get($url, array(), array('connect_timeout' => 2, 'timeout' => 4))->send();
 
-							if ($response->success && $response->body === 'success')
+							if ($response->isSuccessful() && $response->getBody(true) === 'success')
 							{
 								$this->_usePathInfo = 'yes';
 							}

@@ -1,29 +1,18 @@
 <?php
 namespace Craft;
 
-	/**
-	 * The `$options` parameter takes an associative array with the following
-	 * options:
-	 *
-	 * - `timeout`: How long should we wait for a response? (integer, seconds, default: 10)
-	 * - `useragent`: Useragent to send to the server (string, default: php-requests/$version)
-	 * - `follow_redirects`: Should we follow 3xx redirects? (boolean, default: true)
-	 * - `redirects`: How many times should we redirect before erroring? (integer, default: 10)
-	 * - `blocking`: Should we block processing on this request? (boolean, default: true)
-	 * - `filename`: File to stream the body to instead. (string|boolean, default: false)
-	 * - `auth`: Authentication handler or array of user/password details to use for Basic authentication (RequestsAuth|array|boolean, default: false)
-	 * - `idn`: Enable IDN parsing (boolean, default: true)
-	 * - `transport`: Custom transport. Either a class name, or a transport object. Defaults to the first working transport from {@see getTransport()} (string|RequestsTransport, default: {@see getTransport()})
-	 *
-	 */
 class Et
 {
 	private $_endpoint;
 	private $_timeout;
 	private $_model;
-	private $_options = array();
+	private $_allowRedirects = true;
+	private $_userAgent;
+	private $_destinationFileName;
 
 	/**
+	 * The maximum number of seconds to allow for an entire transfer to take place before timing out.  Set 0 to wait indefinitely.
+	 *
 	 * @return int
 	 */
 	public function getTimeout()
@@ -32,47 +21,55 @@ class Et
 	}
 
 	/**
-	 * @param $followRedirects
+	 * The maximum number of seconds to wait while trying to connect. Set to 0 to wait indefinitely.
+	 *
+	 * @return int
 	 */
-	public function setFollowRedirects($followRedirects)
+	public function getConnectTimeout()
 	{
-		$this->_options['follow_redirects'] = $followRedirects;
+		return $this->_connectTimeout;
 	}
 
 	/**
-	 * @param $maxRedirects
+	 * Whether or not to follow redirects on the request.  Defaults to true.
+	 *
+	 * @param $allowRedirects
+	 * @return void
 	 */
-	public function setMaxRedirects($maxRedirects)
+	public function setAllowRedirects($allowRedirects)
 	{
-		$this->_options['redirects'] = $maxRedirects;
+		$this->_allowRedirects = $allowRedirects;
 	}
 
 	/**
-	 * @param $blocking
+	 * @return bool
 	 */
-	public function setBlocking($blocking)
+	public function getAllowRedirects()
 	{
-		$this->_options['blocking'] = $blocking;
+		return $this->_allowRedirects;
 	}
 
 	/**
 	 * @param $destinationFileName
+	 * @return void
 	 */
 	public function setDestinationFileName($destinationFileName)
 	{
-		$this->_options['filename'] = $destinationFileName;
+		$this->_destinationFileName = $destinationFileName;
 	}
 
 	/**
 	 * @param     $endpoint
 	 * @param int $timeout
+	 * @param int $connectTimeout
 	 */
-	function __construct($endpoint, $timeout = 30)
+	function __construct($endpoint, $timeout = 30, $connectTimeout = 2)
 	{
 		$endpoint .= craft()->config->get('endpointSuffix');
 
 		$this->_endpoint = $endpoint;
 		$this->_timeout = $timeout;
+		$this->_connectTimeout = $connectTimeout;
 
 		$this->_model = new EtModel(array(
 			'licenseKey'        => $this->_getLicenseKey(),
@@ -86,9 +83,7 @@ class Et
 			'userEmail'         => craft()->userSession->getUser()->email,
 			'track'             => CRAFT_TRACK,
 		));
-
-		$this->_options['useragent'] = 'craft-requests/'.\Requests::VERSION;
-		$this->_options['timeout']   = $this->_timeout;
+		$this->_userAgent = 'Craft/'.Craft::getVersion().'.'.Craft::getBuild();
 	}
 
 	/**
@@ -124,28 +119,52 @@ class Et
 			}
 
 			$data = JsonHelper::encode($this->_model->getAttributes(null, true));
-			$response = \Requests::post($this->_endpoint, array(), $data, $this->_options);
 
-			if ($response->success)
+			$client = new \Guzzle\Http\Client();
+			$client->setUserAgent($this->_userAgent, true);
+
+			$options = array(
+				'timeout'         => $this->getTimeout(),
+				'connect_timeout' => $this->getConnectTimeout(),
+				'allow_redirects' => $this->getAllowRedirects(),
+			);
+
+			$request = $client->post($this->_endpoint, $options);
+
+			$request->setBody($data, 'application/json');
+			$response = $request->send();
+
+			if ($response->isSuccessful())
 			{
-				if (isset($this->_options['filename']))
+				if ($this->_destinationFileName)
 				{
-					$fileName = IOHelper::getFileName($this->_options['filename'], false);
+					$body = $response->getBody();
+
+					// Make sure we're at the beginning of the stream.
+					$body->rewind();
+
+					// Write it out to the file
+					IOHelper::writeToFile($this->_destinationFileName, $body->getStream(), true);
+
+					// Close the stream.
+					$body->close();
+
+					$fileName = IOHelper::getFileName($this->_destinationFileName, false);
 
 					// If the file name is a UUID, we know it was temporarily set and they want to use the name of the file that was on the sending server.
 					if (StringHelper::isUUID($fileName))
 					{
-						$contentDisposition = $response->headers->offsetGet('content-disposition');
-						preg_match("/\"(.*)\"/us", $contentDisposition, $matches);
+						$contentDisposition = $response->getHeader('content-disposition')->toArray();
+						preg_match("/\"(.*)\"/us", $contentDisposition[0], $matches);
 						$fileName = $matches[1];
 
-						IOHelper::rename($this->_options['filename'], IOHelper::getFolderName($this->_options['filename']).$fileName);
+						IOHelper::rename($this->_destinationFileName, IOHelper::getFolderName($this->_destinationFileName).$fileName);
 					}
 
 					return $fileName;
 				}
 
-				$etModel = craft()->et->decodeEtModel($response->body);
+				$etModel = craft()->et->decodeEtModel($response->getBody());
 
 				if ($etModel)
 				{
@@ -186,12 +205,12 @@ class Et
 				}
 				else
 				{
-					Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, LogLevel::Warning);
+					Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
 				}
 			}
 			else
 			{
-				Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, LogLevel::Warning);
+				Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
 			}
 		}
 		// Let's log and rethrow any EtExceptions.
