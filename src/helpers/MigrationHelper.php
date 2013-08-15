@@ -19,31 +19,17 @@ class MigrationHelper
 	 * @param string $tableName
 	 * @param array $columns
 	 */
-	public static dropForeignKeyIfExists($tableName, $columns)
+	public static function dropForeignKeyIfExists($tableName, $columns)
 	{
 		$table = static::_getTable($tableName);
 
 		foreach ($table->fks as $i => $fk)
 		{
-			if (count($columns) == count($fk->columns))
+			if ($columns == $fk->columns)
 			{
-				$theOne = true;
-
-				foreach ($columns as $column)
-				{
-					if (!in_array($column, $fk->columns))
-					{
-						$theOne = false;
-						break;
-					}
-				}
-
-				if ($theOne)
-				{
-					static::_dropForeignKey($fk);
-					unset($table->fks[$i]);
-					break;
-				}
+				static::_dropForeignKey($fk);
+				unset($table->fks[$i]);
+				break;
 			}
 		}
 	}
@@ -54,32 +40,19 @@ class MigrationHelper
 	 * @static
 	 * @param string $tableName
 	 * @param array $columns
+	 * @param bool $unique
 	 */
-	public static dropIndexIfExists($tableName, $columns)
+	public static function dropIndexIfExists($tableName, $columns, $unique = false)
 	{
 		$table = static::_getTable($tableName);
 
 		foreach ($table->indexes as $i => $index)
 		{
-			if (count($columns) == count($index->columns))
+			if ($columns == $index->columns && $unique == $index->unique)
 			{
-				$theOne = true;
-
-				foreach ($columns as $column)
-				{
-					if (!in_array($column, $index->columns))
-					{
-						$theOne = false;
-						break;
-					}
-				}
-
-				if ($theOne)
-				{
-					static::_dropIndex($index);
-					unset($table->indexes[$i]);
-					break;
-				}
+				static::_dropIndex($index);
+				unset($table->indexes[$i]);
+				break;
 			}
 		}
 	}
