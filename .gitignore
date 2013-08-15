@@ -8,4 +8,13 @@ Source/.idea/*
 *Thumbs.db
 *aspnet_client/*
 Build/*
-
+Source/craft/app/vendor/guzzle/guzzle/.git
+Source/craft/app/vendor/guzzle/guzzle/.gitignore
+Source/craft/app/vendor/phpmailer/phpmailer/.git
+Source/craft/app/vendor/phpmailer/phpmailer/.gitignore
+Source/craft/app/vendor/simplepie/simplepie/.git
+Source/craft/app/vendor/simplepie/simplepie/.gitignore
+Source/craft/app/vendor/symfony/event-dispatcher/Symfony/Component/EventDispatcher/.git
+Source/craft/app/vendor/symfony/event-dispatcher/Symfony/Component/EventDispatcher/.gitignore
+Source/craft/app/vendor/twig/twig/.git
+Source/craft/app/vendor/twig/twig/.gitignore
