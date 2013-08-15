@@ -8,3 +8,14 @@ Source/.idea/*
 *Thumbs.db
 *aspnet_client/*
 Build/*
+*vendor*/.gitignore
+*guzzle/.gitignore
+*guzzle/.git/*
+*phpmailer/.gitignore
+*phpmailer/.git/*
+*simplepie/.gitignore
+*simplepie/.git/*
+*Symfony/Component/EventDispatcher/.gitignore
+*Symfony/Component/EventDispatcher/.git/*
+*twig/.gitignore
+*twig/.git/*
