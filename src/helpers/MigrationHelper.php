@@ -13,20 +13,47 @@ class MigrationHelper
 	private static $_fkRefActions = 'RESTRICT|CASCADE|NO ACTION|SET DEFAULT|SET NULL';
 
 	/**
-	 * Records all the foreign keys and indexes for each table.
+	 * Drops a foreign key if it exists.
 	 *
 	 * @static
+	 * @param string $tableName
+	 * @param array $columns
 	 */
-	public static function analyzeTables()
+	public static function dropForeignKeyIfExists($tableName, $columns)
 	{
-		static::$_tables = array();
+		$table = static::_getTable($tableName);
 
-		$tables = craft()->db->getSchema()->getTableNames();
-
-		foreach ($tables as $table)
+		foreach ($table->fks as $i => $fk)
 		{
-			$table = substr($table, static::_getTablePrefixLength());
-			static::_analyzeTable($table);
+			if ($columns == $fk->columns)
+			{
+				static::_dropForeignKey($fk);
+				unset($table->fks[$i]);
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Drops an index if it exists.
+	 *
+	 * @static
+	 * @param string $tableName
+	 * @param array $columns
+	 * @param bool $unique
+	 */
+	public static function dropIndexIfExists($tableName, $columns, $unique = false)
+	{
+		$table = static::_getTable($tableName);
+
+		foreach ($table->indexes as $i => $index)
+		{
+			if ($columns == $index->columns && $unique == $index->unique)
+			{
+				static::_dropIndex($index);
+				unset($table->indexes[$i]);
+				break;
+			}
 		}
 	}
 
@@ -237,7 +264,7 @@ class MigrationHelper
 	{
 		if (!isset(static::$_tables))
 		{
-			static::analyzeTables();
+			static::_analyzeTables();
 		}
 
 		return static::$_tables;
@@ -319,6 +346,25 @@ class MigrationHelper
 		}
 
 		return static::$_tablePrefixLength;
+	}
+
+	/**
+	 * Records all the foreign keys and indexes for each table.
+	 *
+	 * @static
+	 * @access private
+	 */
+	private static function _analyzeTables()
+	{
+		static::$_tables = array();
+
+		$tables = craft()->db->getSchema()->getTableNames();
+
+		foreach ($tables as $table)
+		{
+			$table = substr($table, static::_getTablePrefixLength());
+			static::_analyzeTable($table);
+		}
 	}
 
 	/**
