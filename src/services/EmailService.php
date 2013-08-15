@@ -157,7 +157,7 @@ class EmailService extends BaseApplicationComponent
 			throw new Exception(Craft::t('Could not determine how to send the email.  Check your email settings.'));
 		}
 
-		$email = new \PhpMailer(true);
+		$email = new \PHPMailer(true);
 
 		// Default the charset to UTF-8
 		$email->CharSet = 'UTF-8';

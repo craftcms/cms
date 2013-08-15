@@ -13,8 +13,6 @@ return CMap::mergeArray(
 		// autoloading model and component classes
 		'import' => array(
 			'application.lib.*',
-			'application.lib.PhpMailer.*',
-			'application.lib.qqFileUploader.*',
 		),
 
 		'params' => array(
