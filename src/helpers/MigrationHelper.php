@@ -13,6 +13,78 @@ class MigrationHelper
 	private static $_fkRefActions = 'RESTRICT|CASCADE|NO ACTION|SET DEFAULT|SET NULL';
 
 	/**
+	 * Drops a foreign key if it exists.
+	 *
+	 * @static
+	 * @param string $tableName
+	 * @param array $columns
+	 */
+	public static dropForeignKeyIfExists($tableName, $columns)
+	{
+		$table = static::_getTable($tableName);
+
+		foreach ($table->fks as $i => $fk)
+		{
+			if (count($columns) == count($fk->columns))
+			{
+				$theOne = true;
+
+				foreach ($columns as $column)
+				{
+					if (!in_array($column, $fk->columns))
+					{
+						$theOne = false;
+						break;
+					}
+				}
+
+				if ($theOne)
+				{
+					static::_dropForeignKey($fk);
+					unset($table->fks[$i]);
+					break;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Drops an index if it exists.
+	 *
+	 * @static
+	 * @param string $tableName
+	 * @param array $columns
+	 */
+	public static dropIndexIfExists($tableName, $columns)
+	{
+		$table = static::_getTable($tableName);
+
+		foreach ($table->indexes as $i => $index)
+		{
+			if (count($columns) == count($index->columns))
+			{
+				$theOne = true;
+
+				foreach ($columns as $column)
+				{
+					if (!in_array($column, $index->columns))
+					{
+						$theOne = false;
+						break;
+					}
+				}
+
+				if ($theOne)
+				{
+					static::_dropIndex($index);
+					unset($table->indexes[$i]);
+					break;
+				}
+			}
+		}
+	}
+
+	/**
 	 * Renames a table, while also updating its index and FK names,
 	 * as well as any other FK names pointing to the table.
 	 *
