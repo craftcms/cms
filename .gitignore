@@ -8,4 +8,4 @@ Source/.idea/*
 *Thumbs.db
 *aspnet_client/*
 Build/*
-Source/craft/app/vendor/*
+/Source/craft/app/vendor/*
