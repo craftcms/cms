@@ -21,7 +21,7 @@ class FieldLayoutTabRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
-			'name'      => AttributeType::Name,
+			'name'      => array(AttributeType::Name, 'required' => true),
 			'sortOrder' => AttributeType::SortOrder,
 		);
 	}

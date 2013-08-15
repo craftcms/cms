@@ -23,7 +23,17 @@ class UserPermissionRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
-			'name' => array(AttributeType::Name, 'required' => true, 'unique' => true),
+			'name' => array(AttributeType::Name, 'required' => true),
+		);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function defineIndexes()
+	{
+		return array(
+			array('columns' => array('name'), 'unique' => true),
 		);
 	}
 }
