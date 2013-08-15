@@ -103,7 +103,9 @@ html, body,
 /* main */
 #main { position: relative; padding: 30px; min-height: 500px; border-radius: 3px; background: #fff; }
 #main.has-sidebar { padding-left: 230px; }
-#main.has-sidebar:after { @include clearafter; }
+#main.has-help { padding-bottom: 60px; min-height: 470px; }
+#main.has-help #help { position: absolute; bottom: 17px; right: 17px; font-size: 26px; }
+#main:after { @include clearafter; }
 
 .sidebar { position: absolute; margin: -30px 0 -30px -230px; padding: 30px 0 30px 30px; width: 170px; overflow: auto; }
 .sidebar nav { margin-left: -30px; padding-left: 30px; width: 170px; overflow: auto; }

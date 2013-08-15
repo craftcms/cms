@@ -36,6 +36,7 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 .datewrapper:before,
 .timewrapper:before,
 .element:before,
+#help:before,
 .secure:before,
 .insecure:before,
 .go:after,
@@ -57,6 +58,8 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 .icon.settings:before { content: 'settings'; }
 .icon.search:before { content: 'search'; }
 
+.help:before { content: '?'; color: #9d2dcc; }
+
 /* nav */
 .nav { display: block; }
 .nav ul li a { display: block; padding: 5px 0; color: #b3b3b3; }
@@ -70,6 +73,8 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 h1 { margin-bottom: 30px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 30px; line-height: 1; color: #000; }
 h2 { margin: 15px 0; font-size: 15px; font-weight: bold; line-height: 1.2; color: #2c2c2c; }
 h3 { margin: 15px 0; font-weight: bold; line-height: 1.2; }
+
+h2[data-icon]:before { margin: -4px 6px 0 0; font-size: 19px; }
 
 /* sections */
 section { margin: 30px 0 30px 30px; }

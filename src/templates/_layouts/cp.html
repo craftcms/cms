@@ -26,6 +26,14 @@
 	"Couldn’t delete “{name}”."
 -%}
 
+{% if sidebar is not defined %}
+	{% set sidebar = block('sidebar')|trim %}
+{% endif %}
+{% set hasSidebar = (sidebar is not empty) %}
+
+{% set hasHelp = (docsUrl is defined and docsUrl is not empty) %}
+
+
 {% set body %}
 	{% if user.admin and craft.config.devMode %}
 		<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
@@ -135,12 +143,8 @@
 			{% endif %}
 		</header>
 
-		{% if sidebar is not defined %}
-			{% set sidebar = block('sidebar')|trim %}
-		{% endif %}
-
-		<div id="main"{% if sidebar is not empty %} class="has-sidebar"{% endif %}>
-			{% if sidebar is not empty %}
+		<div id="main" class="{% if hasSidebar %}has-sidebar{% endif %} {% if hasHelp %}has-help{% endif %}">
+			{% if hasSidebar %}
 				<div id="sidebar" class="sidebar">
 					{{ sidebar|raw }}
 				</div>
@@ -152,6 +156,10 @@
 						{{ content }}
 					{% endif %}
 				{% endblock %}
+
+				{% if hasHelp %}
+					<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
+				{% endif %}
 			</main>
 		</div>
 	</div>
