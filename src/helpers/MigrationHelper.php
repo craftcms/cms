@@ -13,20 +13,47 @@ class MigrationHelper
 	private static $_fkRefActions = 'RESTRICT|CASCADE|NO ACTION|SET DEFAULT|SET NULL';
 
 	/**
-	 * Records all the foreign keys and indexes for each table.
+	 * Drops a foreign key if it exists.
 	 *
 	 * @static
+	 * @param string $tableName
+	 * @param array $columns
 	 */
-	public static function analyzeTables()
+	public static function dropForeignKeyIfExists($tableName, $columns)
 	{
-		static::$_tables = array();
+		$table = static::_getTable($tableName);
 
-		$tables = craft()->db->getSchema()->getTableNames();
-
-		foreach ($tables as $table)
+		foreach ($table->fks as $i => $fk)
 		{
-			$table = substr($table, static::_getTablePrefixLength());
-			static::_analyzeTable($table);
+			if ($columns == $fk->columns)
+			{
+				static::_dropForeignKey($fk);
+				unset($table->fks[$i]);
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Drops an index if it exists.
+	 *
+	 * @static
+	 * @param string $tableName
+	 * @param array $columns
+	 * @param bool $unique
+	 */
+	public static function dropIndexIfExists($tableName, $columns, $unique = false)
+	{
+		$table = static::_getTable($tableName);
+
+		foreach ($table->indexes as $i => $index)
+		{
+			if ($columns == $index->columns && $unique == $index->unique)
+			{
+				static::_dropIndex($index);
+				unset($table->indexes[$i]);
+				break;
+			}
 		}
 	}
 
@@ -68,6 +95,85 @@ class MigrationHelper
 		{
 			$fk->fk->refTable = $newName;
 			static::_restoreForeignKey($fk->fk);
+		}
+	}
+
+	/**
+	 * Renames a column, while also updating any index and FK names that use the column.
+	 *
+	 * @static
+	 * @param string $tableName
+	 * @param string $oldName
+	 * @param string $newName
+	 */
+	public static function renameColumn($tableName, $oldName, $newName)
+	{
+		$table = static::_getTable($tableName);
+		$allOtherTableFks = static::_findForeignKeysToTable($tableName);
+
+		// Temporarily drop any FKs and indexes that include this column
+		$columnFks = array();
+		$columnIndexs = array();
+		$otherTableFks = array();
+
+		foreach ($table->fks as $fk)
+		{
+			$key = array_search($oldName, $fk->columns);
+			if ($key !== false)
+			{
+				$columnFks[] = array($fk, $key);
+				static::_dropForeignKey($fk);
+			}
+		}
+
+		foreach ($table->indexes as $index)
+		{
+			$key = array_search($oldName, $index->columns);
+			if ($key !== false)
+			{
+				$columnIndexes[] = array($index, $key);
+				static::_dropIndex($index);
+			}
+		}
+
+		foreach ($allOtherTableFks as $fkData)
+		{
+			$key = array_search($oldName, $fkData->fk->refColumns);
+			if ($key !== false)
+			{
+				$otherTableFks[] = array($fkData->fk, $key);
+				static::_dropForeignKey($fkData->fk);
+			}
+		}
+
+		// Rename the column
+		craft()->db->createCommand()->renameColumn($tableName, $oldName, $newName);
+
+		// Update the table records
+		$table->columns[$newName] = $table->columns[$oldName];
+		$table->columns[$newName]->name = $newName;
+		unset($table->columns[$oldName]);
+
+		// Restore the FKs and indexes, and update our records
+		foreach ($otherTableFks as $fkData)
+		{
+			list($fk, $key) = $fkData;
+			$fk->refColumns[$key] = $newName;
+			static::_restoreForeignKey($fk);
+		}
+
+		foreach ($columnIndexes as $indexData)
+		{
+			list($index, $key) = $indexData;
+			$index->columns[$key] = $newName;
+			static::_restoreIndex($index);
+		}
+
+		foreach ($columnFks as $fkData)
+		{
+			list($fk, $key) = $fkData;
+			$fk->columns[$key] = $newName;
+			static::_restoreForeignKey($fk);
 		}
 	}
 
@@ -158,7 +264,7 @@ class MigrationHelper
 	{
 		if (!isset(static::$_tables))
 		{
-			static::analyzeTables();
+			static::_analyzeTables();
 		}
 
 		return static::$_tables;
@@ -240,6 +346,25 @@ class MigrationHelper
 		}
 
 		return static::$_tablePrefixLength;
+	}
+
+	/**
+	 * Records all the foreign keys and indexes for each table.
+	 *
+	 * @static
+	 * @access private
+	 */
+	private static function _analyzeTables()
+	{
+		static::$_tables = array();
+
+		$tables = craft()->db->getSchema()->getTableNames();
+
+		foreach ($tables as $table)
+		{
+			$table = substr($table, static::_getTablePrefixLength());
+			static::_analyzeTable($table);
+		}
 	}
 
 	/**

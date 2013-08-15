@@ -162,6 +162,12 @@ class EmailService extends BaseApplicationComponent
 		// Default the charset to UTF-8
 		$email->CharSet = 'UTF-8';
 
+		// Add a reply to (if any).  Make sure it’s set before setting From, because email is dumb.
+		if (!empty($emailModel->replyTo))
+		{
+			$email->AddReplyTo($emailModel->replyTo);
+		}
+
 		// Set the "from" information.
 		$email->SetFrom($emailModel->fromEmail, $emailModel->fromName);
 
@@ -252,12 +258,6 @@ class EmailService extends BaseApplicationComponent
 					$email->AddCc($ccEmail, $ccName);
 				}
 			}
-		}
-
-		// Add a reply to (if any)
-		if (!empty($emailModel->replyTo))
-		{
-			$email->AddReplyTo($emailModel->replyTo);
 		}
 
 		// Add a sender header (if any)
