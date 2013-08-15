@@ -1,0 +1,7 @@
+{
+    "require": {
+        "guzzle/guzzle": "dev-master",
+        "twig/twig": "1.14.*@dev",
+        "simplepie/simplepie": "dev-master"
+    }
+}

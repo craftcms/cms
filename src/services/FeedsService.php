@@ -35,7 +35,6 @@ class FeedsService extends BaseApplicationComponent
 			return $items;
 		}
 
-		$this->_registerSimplePieAutoloader();
 		$feed = new \SimplePie();
 		$feed->set_feed_url($url);
 		$feed->set_cache_location(craft()->path->getCachePath());
@@ -279,25 +278,5 @@ class FeedsService extends BaseApplicationComponent
 		}
 
 		return $categories;
-	}
-
-	/**
-	 * Registers the SimplePie autoloader.
-	 *
-	 * @access private
-	 */
-	private function _registerSimplePieAutoloader()
-	{
-		if (!class_exists('\SimplePie_Autoloader', false))
-		{
-			require_once craft()->path->getLibPath().'SimplePie/autoloader.php';
-			Craft::registerAutoloader(array(new \SimplePie_Autoloader, 'autoload'));
-
-			// Did it work?
-			if (!class_exists('SimplePie'))
-			{
-				throw new Exception(Craft::t('The SimplePie autoloader was not registered properly.'));
-			}
-		}
 	}
 }

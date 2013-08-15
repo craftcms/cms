@@ -24,18 +24,6 @@ class TemplatesService extends BaseApplicationComponent
 	private $_translations = array();
 
 	/**
-	 * Registers the Twig autoloader.
-	 */
-	public function registerTwigAutoloader()
-	{
-		if (!class_exists('\Twig_Autoloader', false))
-		{
-			require_once craft()->path->getLibPath().'Twig/Autoloader.php';
-			Craft::registerAutoloader(array(new \Twig_Autoloader, 'autoload'));
-		}
-	}
-
-	/**
 	 * Gets the Twig instance.
 	 *
 	 * @param  string            $loaderClass The template loader class to use with the environment.
@@ -50,12 +38,6 @@ class TemplatesService extends BaseApplicationComponent
 
 		if (!isset($this->_twigs[$loaderClass]))
 		{
-			// Is this the first Twig instance EVER?
-			if (!isset($this->_twigs))
-			{
-				$this->registerTwigAutoloader();
-			}
-
 			$loader = new $loaderClass();
 			$options = $this->_getTwigOptions();
 
@@ -499,11 +481,6 @@ class TemplatesService extends BaseApplicationComponent
 					return $this->_templatePaths[$name] = $path;
 				}
 			}
-		}
-
-		if (!isset($this->_twigs))
-		{
-			$this->registerTwigAutoloader();
 		}
 
 		throw new TemplateLoaderException($name);

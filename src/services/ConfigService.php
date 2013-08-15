@@ -102,21 +102,32 @@ class ConfigService extends BaseApplicationComponent
 				}
 				else
 				{
-					// Test the server for it
-					try
+					// PHP Dev Server does omit the script name from 404s without any help from a redirect script,
+					// *unless* the URI looks like a file, in which case it'll just throw a 404.
+					if (AppHelper::isPhpDevServer())
 					{
-						$baseUrl = craft()->request->getHostInfo().craft()->request->getScriptUrl();
-						$url = substr($baseUrl, 0, strrpos($baseUrl, '/')).'/testScriptNameRedirect';
-						$response = \Requests::get($url);
-
-						if ($response->success && $response->body === 'success')
-						{
-							$this->_omitScriptNameInUrls = 'yes';
-						}
+						$this->_omitScriptNameInUrls = false;
 					}
-					catch (\Exception $e)
+					else
 					{
-						Craft::log('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), LogLevel::Error);
+						// Test the server for it
+						try
+						{
+							$baseUrl = craft()->request->getHostInfo().craft()->request->getScriptUrl();
+							$url = substr($baseUrl, 0, strrpos($baseUrl, '/')).'/testScriptNameRedirect';
+
+							$client = new \Guzzle\Http\Client();
+							$response = $client->get($url, array(), array('connect_timeout' => 2, 'timeout' => 4))->send();
+
+							if ($response->isSuccessful() && $response->getBody(true) === 'success')
+							{
+								$this->_omitScriptNameInUrls = 'yes';
+							}
+						}
+						catch (\Exception $e)
+						{
+							Craft::log('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), LogLevel::Error);
+						}
 					}
 
 					// Cache it
@@ -163,15 +174,22 @@ class ConfigService extends BaseApplicationComponent
 					{
 						$this->_usePathInfo = true;
 					}
+					// PHP Dev Server supports path info, and doesn't support simultaneous requests,
+					// so we need to explicitly check for that.
+					else if (AppHelper::isPhpDevServer())
+					{
+						$this->_usePathInfo = true;
+					}
 					else
 					{
 						// Test the server for it
 						try
 						{
 							$url = craft()->request->getHostInfo().craft()->request->getScriptUrl().'/testPathInfo';
-							$response = \Requests::get($url);
+							$client = new \Guzzle\Http\Client();
+							$response = $client->get($url, array(), array('connect_timeout' => 2, 'timeout' => 4))->send();
 
-							if ($response->success && $response->body === 'success')
+							if ($response->isSuccessful() && $response->getBody(true) === 'success')
 							{
 								$this->_usePathInfo = 'yes';
 							}

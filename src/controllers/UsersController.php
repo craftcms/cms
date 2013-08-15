@@ -919,7 +919,7 @@ class UsersController extends BaseController
 		if ($userId)
 		{
 			// If the user changed their email, make sure they have validated with their password.
-			if ($email != $user->email)
+			if ($email && $email != $user->email)
 			{
 				if ($password)
 				{
