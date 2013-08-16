@@ -10,6 +10,15 @@ class GlobalSetModel extends BaseElementModel
 {
 	protected $elementType = ElementType::GlobalSet;
 
+	/**
+	 * Use the global set's name as its string representation.
+	 *
+	 * @return string
+	 */
+	function __toString()
+	{
+		return $this->name;
+	}
 
 	/**
 	 * @access protected
