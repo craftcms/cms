@@ -33,36 +33,12 @@ class TagSetModel extends BaseModel
 	}
 
 	/**
-	 * Returns the section's field layout.
-	 *
-	 * @return FieldLayoutModel
+	 * @return array
 	 */
-	public function getFieldLayout()
+	public function behaviors()
 	{
-		if (!isset($this->_fieldLayout))
-		{
-			if ($this->fieldLayoutId)
-			{
-				$this->_fieldLayout = craft()->fields->getLayoutById($this->fieldLayoutId);
-			}
-
-			if (empty($this->_fieldLayout))
-			{
-				$this->_fieldLayout = new FieldLayoutModel();
-				$this->_fieldLayout->type = ElementType::Tag;
-			}
-		}
-
-		return $this->_fieldLayout;
-	}
-
-	/**
-	 * Sets the section's field layout.
-	 *
-	 * @param FieldLayoutModel $fieldLayout
-	 */
-	public function setFieldLayout(FieldLayoutModel $fieldLayout)
-	{
-		$this->_fieldLayout = $fieldLayout;
+		return array(
+			'fieldLayout' => new FieldLayoutBehavior(),
+		);
 	}
 }

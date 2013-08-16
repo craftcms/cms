@@ -39,6 +39,16 @@ class SectionModel extends BaseModel
 	}
 
 	/**
+	 * @return array
+	 */
+	public function behaviors()
+	{
+		return array(
+			'fieldLayout' => new FieldLayoutBehavior(),
+		);
+	}
+
+	/**
 	 * Returns the section's locale models
 	 *
 	 * @return array
@@ -86,39 +96,5 @@ class SectionModel extends BaseModel
 				$this->addError($key, $error);
 			}
 		}
-	}
-
-	/**
-	 * Returns the section's field layout.
-	 *
-	 * @return FieldLayoutModel
-	 */
-	public function getFieldLayout()
-	{
-		if (!isset($this->_fieldLayout))
-		{
-			if ($this->fieldLayoutId)
-			{
-				$this->_fieldLayout = craft()->fields->getLayoutById($this->fieldLayoutId);
-			}
-
-			if (empty($this->_fieldLayout))
-			{
-				$this->_fieldLayout = new FieldLayoutModel();
-				$this->_fieldLayout->type = ElementType::Entry;
-			}
-		}
-
-		return $this->_fieldLayout;
-	}
-
-	/**
-	 * Sets the section's field layout.
-	 *
-	 * @param FieldLayoutModel $fieldLayout
-	 */
-	public function setFieldLayout(FieldLayoutModel $fieldLayout)
-	{
-		$this->_fieldLayout = $fieldLayout;
 	}
 }

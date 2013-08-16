@@ -24,6 +24,8 @@ abstract class BaseModel extends \CModel
 	{
 		ModelHelper::populateAttributeDefaults($this);
 		$this->setAttributes($attributes);
+
+		$this->attachBehaviors($this->behaviors());
 	}
 
 	/**
