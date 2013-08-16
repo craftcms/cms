@@ -10,7 +10,6 @@ class GlobalSetModel extends BaseElementModel
 {
 	protected $elementType = ElementType::GlobalSet;
 
-	private $_fieldLayout;
 
 	/**
 	 * @access protected

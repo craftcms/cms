@@ -9,7 +9,6 @@ namespace Craft;
 class SectionModel extends BaseModel
 {
 	private $_locales;
-	private $_fieldLayout;
 
 	/**
 	 * Use the translated section name as the string representation.

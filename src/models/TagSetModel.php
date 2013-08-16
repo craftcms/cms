@@ -6,8 +6,6 @@ namespace Craft;
  */
 class TagSetModel extends BaseModel
 {
-	private $_fieldLayout;
-
 	/**
 	 * Use the translated tag set's name as the string representation.
 	 *
