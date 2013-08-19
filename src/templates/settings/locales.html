@@ -1,9 +1,13 @@
 {% requirePackage 'Localize' %}
 
 {% extends "_layouts/cp" %}
+{% set title = "Content Locales"|t %}
+
+{% set docsUrl = 'http://docs.buildwithcraft.com/cp/settings/locales.html' %}
+
 {% includeJsResource "js/locales.js" %}
 {% import "_includes/forms" as forms %}
-{% set title = "Content Locales"|t %}
+
 {% includeTranslations
 	"Are you sure you want to delete “{name}” and all its associated content?",
 	"Name",

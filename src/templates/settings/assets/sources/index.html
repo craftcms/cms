@@ -1,6 +1,9 @@
 {% extends "settings/assets/_layout" %}
 {% set selectedTab = 'sources' %}
 
+{% set docsUrl = 'http://docs.buildwithcraft.com/cp/settings/assets.html' %}
+
+
 {% set content %}
 	<p id="nosources"{% if sources|length %} class="hidden"{% endif %}>
 		{{ "No sources exist yet."|t }}

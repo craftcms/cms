@@ -6,6 +6,9 @@
 {% set title = "Users"|t %}
 {% set elementType = 'User' %}
 
+{% set docsUrl = 'http://docs.buildwithcraft.com/cp/settings/users.html' %}
+
+
 {% block sidebar %}
 	{% if user.can('registerUsers') %}
 		<div class="buttons">

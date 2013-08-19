@@ -29,9 +29,9 @@ class TagsController extends BaseController
 	{
 		craft()->userSession->requireAdmin();
 
-		if (empty($variables['tagSet']))
+		if (!empty($variables['tagSetId']))
 		{
-			if (!empty($variables['tagSetId']))
+			if (empty($variables['tagSet']))
 			{
 				$variables['tagSet'] = craft()->tags->getTagSetById($variables['tagSetId']);
 
@@ -40,18 +40,16 @@ class TagsController extends BaseController
 					throw new HttpException(404);
 				}
 			}
-			else
-			{
-				$variables['tagSet'] = new TagSetModel();
-			}
-		}
 
-		if ($variables['tagSet']->id)
-		{
 			$variables['title'] = $variables['tagSet']->name;
 		}
 		else
 		{
+			if (empty($variables['tagSet']))
+			{
+				$variables['tagSet'] = new TagSetModel();
+			}
+
 			$variables['title'] = Craft::t('Create a new tag set');
 		}
 
