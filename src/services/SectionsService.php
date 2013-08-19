@@ -212,33 +212,6 @@ class SectionsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets a section record or creates a new one.
-	 *
-	 * @access private
-	 * @param int $sectionId
-	 * @throws Exception
-	 * @return SectionRecord
-	 */
-	private function _getSectionRecordById($sectionId = null)
-	{
-		if ($sectionId)
-		{
-			$sectionRecord = SectionRecord::model()->findById($sectionId);
-
-			if (!$sectionRecord)
-			{
-				throw new Exception(Craft::t('No section exists with the ID “{id}”', array('id' => $sectionId)));
-			}
-		}
-		else
-		{
-			$sectionRecord = new SectionRecord();
-		}
-
-		return $sectionRecord;
-	}
-
-	/**
 	 * Saves a section.
 	 *
 	 * @param SectionModel $section
@@ -247,13 +220,22 @@ class SectionsService extends BaseApplicationComponent
 	 */
 	public function saveSection(SectionModel $section)
 	{
-		$sectionRecord = $this->_getSectionRecordById($section->id);
-
-		$isNewSection = $sectionRecord->isNewRecord();
-
-		if (!$isNewSection)
+		if ($section->id)
 		{
+			$sectionRecord = SectionRecord::model()->findById($section->id);
+
+			if (!$sectionRecord)
+			{
+				throw new Exception(Craft::t('No section exists with the ID “{id}”', array('id' => $sectionId)));
+			}
+
+			$isNewSection = false;
 			$oldSection = SectionModel::populateModel($sectionRecord);
+		}
+		else
+		{
+			$sectionRecord = new SectionRecord();
+			$isNewSection = true;
 		}
 
 		$sectionRecord->name       = $section->name;
@@ -457,18 +439,6 @@ class SectionsService extends BaseApplicationComponent
 		$transaction = craft()->db->beginTransaction();
 		try
 		{
-			// Delete the field layout
-			$fieldLayoutId = craft()->db->createCommand()
-				->select('fieldLayoutId')
-				->from('sections')
-				->where(array('id' => $sectionId))
-				->queryScalar();
-
-			if ($fieldLayoutId)
-			{
-				craft()->fields->deleteLayoutById($fieldLayoutId);
-			}
-
 			// Grab the entry ids so we can clean the elements table.
 			$entryIds = craft()->db->createCommand()
 				->select('id')
