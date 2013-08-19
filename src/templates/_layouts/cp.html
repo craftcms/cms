@@ -133,7 +133,7 @@
 
 								{% if tabIsSelected and title != tab.label %}
 									{% set title = title~' - '~tab.label %}
-								{%endif -%}
+								{% endif -%}
 
 								<li><a id="tab-{{ tabId }}" class="tab{% if tabIsSelected %} sel{% endif %}{% if tab.class is defined %} {{ tab.class }}{% endif %}" href="{{ tab.url }}">{{ tab.label }}</a></li>
 							{% endif %}
