@@ -393,6 +393,19 @@ class SectionsService extends BaseApplicationComponent
 					}
 				}
 
+				// Create an entry type if this is a brand new section
+				if ($isNewSection)
+				{
+					$entryType = new EntryTypeModel();
+
+					$entryType->sectionId  = $section->id;
+					$entryType->name       = $section->name;
+					$entryType->handle     = $section->handle;
+					$entryType->titleLabel = Craft::t('Title');
+
+					$this->saveEntryType($entryType);
+				}
+
 				$transaction->commit();
 			}
 			catch (\Exception $e)
