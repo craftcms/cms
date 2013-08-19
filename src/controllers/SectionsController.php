@@ -7,6 +7,15 @@ namespace Craft;
 class SectionsController extends BaseController
 {
 	/**
+	 * Init
+	 */
+	public function init()
+	{
+		// All section actions require an admin
+		craft()->userSession->requireAdmin();
+	}
+
+	/**
 	 * Edit a section.
 	 *
 	 * @param array $variables
@@ -14,8 +23,6 @@ class SectionsController extends BaseController
 	 */
 	public function actionEditSection(array $variables = array())
 	{
-		craft()->userSession->requireAdmin();
-
 		$variables['brandNewSection'] = false;
 
 		if (empty($variables['section']))
