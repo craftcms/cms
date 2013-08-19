@@ -29,8 +29,9 @@ class QuickPostWidget extends BaseWidget
 	protected function defineSettings()
 	{
 		return array(
-			'section' => array(AttributeType::Number, 'required' => true),
-			'fields'  => AttributeType::Mixed,
+			'section'   => array(AttributeType::Number, 'required' => true),
+			'entryType' => AttributeType::Number,
+			'fields'    => AttributeType::Mixed,
 		);
 	}
 
@@ -68,9 +69,14 @@ class QuickPostWidget extends BaseWidget
 	{
 		$sectionId = $settings['section'];
 
-		if (isset($settings['fields']['section'.$sectionId]))
+		if (isset($settings['sections']))
 		{
-			$settings['fields'] = $settings['fields']['section'.$sectionId];
+			if (isset($settings['sections'][$sectionId]))
+			{
+				$settings = array_merge($settings, $settings['sections'][$sectionId]);
+			}
+
+			unset($settings['sections']);
 		}
 
 		return $settings;
@@ -113,12 +119,35 @@ class QuickPostWidget extends BaseWidget
 			return '<p>'.Craft::t('No section has been selected yet.').'</p>';
 		}
 
-		$params = array('sectionId' => $section->id);
+		$entryTypes = $section->getEntryTypes();
+
+		if (!$entryTypes)
+		{
+			return '<p>'.Craft::t('No entry types exist for this section.').'</p>';
+		}
+
+		if ($this->getSettings()->entryType && isset($entryTypes[$this->getSettings()->entryType]))
+		{
+			$entryTypeId = $this->getSettings()->entryType;
+		}
+		else
+		{
+			$entryTypeId = array_shift(array_keys($entryTypes));
+		}
+
+		$entryType = $entryTypes[$entryTypeId];
+
+		$params = array(
+			'sectionId'   => $section->id,
+			'entryTypeId' => $entryTypeId,
+		);
+
 		craft()->templates->includeJs('new Craft.QuickPostWidget('.$this->model->id.', '.JsonHelper::encode($params).', function() {');
 
 		$html = craft()->templates->render('_components/widgets/QuickPost/body', array(
-			'section'  => $section,
-			'settings' => $this->getSettings()
+			'section'   => $section,
+			'entryType' => $entryType,
+			'settings'  => $this->getSettings()
 		));
 
 		craft()->templates->includeJs('});');

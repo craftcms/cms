@@ -30,6 +30,7 @@
 			<thead>
 				<th scope="col">{{ "Name"|t }}</th>
 				<th scope="col">{{ "Handle"|t }}</th>
+				<th scope="col">{{ "Entry Types"}}</th>
 				<td class="thin"></td>
 			</thead>
 			<tbody>
@@ -37,6 +38,7 @@
 					<tr data-id="{{ section.id }}" data-name="{{ section.name|t }}">
 						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
 						<td data-title="{{ 'Handle'|t }}"><code>{{ section.handle }}</code></td>
+						<td data-title="{{ 'Entry Types'|t }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes') }}">{{ "Edit entry types ({count})"|t({ count: section.getEntryTypes()|length }) }}</a></td>
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 					</tr>
 				{% endfor %}

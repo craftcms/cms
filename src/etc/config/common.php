@@ -148,25 +148,28 @@ $cpRoutes['globals/(?P<globalSetHandle>{handle})'] = 'globals';
 
 $cpRoutes['updates/go/(?P<handle>[^/]*)'] = 'updates/_go';
 
-$cpRoutes['settings']                                             = array('action' => 'systemSettings/settingsIndex');
-$cpRoutes['settings/assets']                                      = array('action' => 'assetSources/sourceIndex');
-$cpRoutes['settings/assets/sources/new']                          = array('action' => 'assetSources/editSource');
-$cpRoutes['settings/assets/sources/(?P<sourceId>\d+)']            = array('action' => 'assetSources/editSource');
-$cpRoutes['settings/assets/transforms']                           = array('action' => 'assetTransforms/transformIndex');
-$cpRoutes['settings/assets/transforms/new']                       = array('action' => 'assetTransforms/editTransform');
-$cpRoutes['settings/assets/transforms/(?P<handle>{handle})']      = array('action' => 'assetTransforms/editTransform');
-$cpRoutes['settings/fields/(?P<groupId>\d+)']                     = 'settings/fields';
-$cpRoutes['settings/fields/new']                                  = 'settings/fields/_edit';
-$cpRoutes['settings/fields/edit/(?P<fieldId>\d+)']                = 'settings/fields/_edit';
-$cpRoutes['settings/general']                                     = array('action' => 'systemSettings/generalSettings');
-$cpRoutes['settings/globals/new']                                 = array('action' => 'systemSettings/editGlobalSet');
-$cpRoutes['settings/globals/(?P<globalSetId>\d+)']                = array('action' => 'systemSettings/editGlobalSet');
-$cpRoutes['settings/plugins/(?P<pluginClass>{handle})']           = 'settings/plugins/_settings';
-$cpRoutes['settings/sections/new']                                = array('action' => 'sections/editSection');
-$cpRoutes['settings/sections/(?P<sectionId>\d+)']                 = array('action' => 'sections/editSection');
-$cpRoutes['settings/tags']                                        = array('action' => 'tags/index');
-$cpRoutes['settings/tags/new']                                    = array('action' => 'tags/editTagSet');
-$cpRoutes['settings/tags/(?P<tagSetId>\d+)']                      = array('action' => 'tags/editTagSet');
+$cpRoutes['settings']                                                             = array('action' => 'systemSettings/settingsIndex');
+$cpRoutes['settings/assets']                                                      = array('action' => 'assetSources/sourceIndex');
+$cpRoutes['settings/assets/sources/new']                                          = array('action' => 'assetSources/editSource');
+$cpRoutes['settings/assets/sources/(?P<sourceId>\d+)']                            = array('action' => 'assetSources/editSource');
+$cpRoutes['settings/assets/transforms']                                           = array('action' => 'assetTransforms/transformIndex');
+$cpRoutes['settings/assets/transforms/new']                                       = array('action' => 'assetTransforms/editTransform');
+$cpRoutes['settings/assets/transforms/(?P<handle>{handle})']                      = array('action' => 'assetTransforms/editTransform');
+$cpRoutes['settings/fields/(?P<groupId>\d+)']                                     = 'settings/fields';
+$cpRoutes['settings/fields/new']                                                  = 'settings/fields/_edit';
+$cpRoutes['settings/fields/edit/(?P<fieldId>\d+)']                                = 'settings/fields/_edit';
+$cpRoutes['settings/general']                                                     = array('action' => 'systemSettings/generalSettings');
+$cpRoutes['settings/globals/new']                                                 = array('action' => 'systemSettings/editGlobalSet');
+$cpRoutes['settings/globals/(?P<globalSetId>\d+)']                                = array('action' => 'systemSettings/editGlobalSet');
+$cpRoutes['settings/plugins/(?P<pluginClass>{handle})']                           = 'settings/plugins/_settings';
+$cpRoutes['settings/sections/new']                                                = array('action' => 'sections/editSection');
+$cpRoutes['settings/sections/(?P<sectionId>\d+)']                                 = array('action' => 'sections/editSection');
+$cpRoutes['settings/sections/(?P<sectionId>\d+)/entrytypes']                      = array('action' => 'sections/entryTypesIndex');
+$cpRoutes['settings/sections/(?P<sectionId>\d+)/entrytypes/new']                  = array('action' => 'sections/editEntryType');
+$cpRoutes['settings/sections/(?P<sectionId>\d+)/entrytypes/(?P<entryTypeId>\d+)'] = array('action' => 'sections/editEntryType');
+$cpRoutes['settings/tags']                                                        = array('action' => 'tags/index');
+$cpRoutes['settings/tags/new']                                                    = array('action' => 'tags/editTagSet');
+$cpRoutes['settings/tags/(?P<tagSetId>\d+)']                                      = array('action' => 'tags/editTagSet');
 
 $cpRoutes['settings/packages'] = array(
 	'params' => array(

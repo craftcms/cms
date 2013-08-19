@@ -12,6 +12,8 @@ class SectionsService extends BaseApplicationComponent
 	private $_sectionsById;
 	private $_fetchedAllSections = false;
 
+	private $_entryTypesById;
+
 	/**
 	 * Returns all of the section IDs.
 	 *
@@ -238,10 +240,9 @@ class SectionsService extends BaseApplicationComponent
 			$isNewSection = true;
 		}
 
-		$sectionRecord->name       = $section->name;
-		$sectionRecord->handle     = $section->handle;
-		$sectionRecord->titleLabel = $section->titleLabel;
-		$sectionRecord->hasUrls    = $section->hasUrls;
+		$sectionRecord->name    = $section->name;
+		$sectionRecord->handle  = $section->handle;
+		$sectionRecord->hasUrls = $section->hasUrls;
 
 		if ($section->hasUrls)
 		{
@@ -282,20 +283,6 @@ class SectionsService extends BaseApplicationComponent
 			$transaction = craft()->db->beginTransaction();
 			try
 			{
-				if (!$isNewSection && $oldSection->fieldLayoutId)
-				{
-					// Drop the old field layout
-					craft()->fields->deleteLayoutById($oldSection->fieldLayoutId);
-				}
-
-				// Save the new one
-				$fieldLayout = $section->getFieldLayout();
-				craft()->fields->saveLayout($fieldLayout);
-
-				// Update the section record/model with the new layout ID
-				$section->fieldLayoutId = $fieldLayout->id;
-				$sectionRecord->fieldLayoutId = $fieldLayout->id;
-
 				$sectionRecord->save(false);
 
 				// Now that we have a section ID, save it on the model
@@ -450,6 +437,182 @@ class SectionsService extends BaseApplicationComponent
 
 			// Delete the section.
 			$affectedRows = craft()->db->createCommand()->delete('sections', array('id' => $sectionId));
+
+			$transaction->commit();
+
+			return (bool) $affectedRows;
+		}
+		catch (\Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
+	}
+
+	// Entry types
+
+	/**
+	 * Returns a section's entry types.
+	 *
+	 * @param int $sectionId
+	 * @param string|null $indexBy
+	 * @return array
+	 */
+	public function getEntryTypesBySectionId($sectionId, $indexBy = null)
+	{
+		$records = EntryTypeRecord::model()->ordered()->findAllByAttributes(array(
+			'sectionId' => $sectionId
+		));
+
+		return EntryTypeModel::populateModels($records, $indexBy);
+	}
+
+	/**
+	 * Returns an entry type by its ID.
+	 *
+	 * @param int $entryTypeId
+	 * @return EntryTypeModel|null
+	 */
+	public function getEntryTypeById($entryTypeId)
+	{
+		if (!isset($this->_entryTypesById) || !array_key_exists($entryTypeId, $this->_entryTypesById))
+		{
+			$entryTypeRecord = EntryTypeRecord::model()->findById($entryTypeId);
+
+			if ($entryTypeRecord)
+			{
+				$this->_entryTypesById[$entryTypeId] = EntryTypeModel::populateModel($entryTypeRecord);
+			}
+			else
+			{
+				$this->_entryTypesById[$entryTypeId] = null;
+			}
+		}
+
+		return $this->_entryTypesById[$entryTypeId];
+	}
+
+	/**
+	 * Saves an entry type.
+	 *
+	 * @param EntryTypeModel $entryType
+	 * @throws \Exception
+	 * @return bool
+	 */
+	public function saveEntryType(EntryTypeModel $entryType)
+	{
+		if ($entryType->id)
+		{
+			$entryTypeRecord = EntryTypeRecord::model()->findById($entryType->id);
+
+			if (!$entryTypeRecord)
+			{
+				throw new Exception(Craft::t('No entry type exists with the ID “{id}”', array('id' => $entryTypeId)));
+			}
+
+			$isNewEntryType = false;
+			$oldEntryType = EntryTypeModel::populateModel($entryTypeRecord);
+		}
+		else
+		{
+			$entryTypeRecord = new EntryTypeRecord();
+			$isNewEntryType = true;
+		}
+
+		$entryTypeRecord->sectionId  = $entryType->sectionId;
+		$entryTypeRecord->name       = $entryType->name;
+		$entryTypeRecord->handle     = $entryType->handle;
+		$entryTypeRecord->titleLabel = $entryType->titleLabel;
+
+		$entryTypeRecord->validate();
+		$entryType->addErrors($entryTypeRecord->getErrors());
+
+		if (!$entryType->hasErrors())
+		{
+			$transaction = craft()->db->beginTransaction();
+			try
+			{
+				if (!$isNewEntryType && $oldEntryType->fieldLayoutId)
+				{
+					// Drop the old field layout
+					craft()->fields->deleteLayoutById($oldEntryType->fieldLayoutId);
+				}
+
+				// Save the new one
+				$fieldLayout = $entryType->getFieldLayout();
+				craft()->fields->saveLayout($fieldLayout);
+
+				// Update the entry type record/model with the new layout ID
+				$entryType->fieldLayoutId = $fieldLayout->id;
+				$entryTypeRecord->fieldLayoutId = $fieldLayout->id;
+
+				$entryTypeRecord->save(false);
+
+				// Now that we have an entry type ID, save it on the model
+				if (!$entryType->id)
+				{
+					$entryType->id = $entryTypeRecord->id;
+				}
+
+				// Might as well update our cache of the entry type while we have it.
+				$this->_entryTypesById[$entryType->id] = $entryType;
+
+				$transaction->commit();
+			}
+			catch (\Exception $e)
+			{
+				$transaction->rollBack();
+				throw $e;
+			}
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Deletes an entry type by its ID.
+	 *
+	 * @param int $entryTypeId
+	 * @throws \Exception
+	 * @return bool
+	*/
+	public function deleteEntryTypeById($entryTypeId)
+	{
+		if (!$entryTypeId)
+		{
+			return false;
+		}
+
+		$transaction = craft()->db->beginTransaction();
+		try
+		{
+			// Delete the field layout
+			$fieldLayoutId = craft()->db->createCommand()
+				->select('fieldLayoutId')
+				->from('entrytypes')
+				->where(array('id' => $entryTypeId))
+				->queryScalar();
+
+			if ($fieldLayoutId)
+			{
+				craft()->fields->deleteLayoutById($fieldLayoutId);
+			}
+
+			// Grab the entry ids so we can clean the elements table.
+			$entryIds = craft()->db->createCommand()
+				->select('id')
+				->from('entries')
+				->where(array('typeId' => $entryTypeId))
+				->queryColumn();
+
+			craft()->elements->deleteElementById($entryIds);
+
+			// Delete the entry type.
+			$affectedRows = craft()->db->createCommand()->delete('entrytypes', array('id' => $entryTypeId));
 
 			$transaction->commit();
 

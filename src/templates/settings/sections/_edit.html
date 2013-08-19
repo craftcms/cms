@@ -11,135 +11,114 @@
 		<input type="hidden" name="redirect" value="settings/sections">
 		{% if section.id %}<input type="hidden" name="sectionId" value="{{ section.id }}">{% endif %}
 
-		<div id="section-settings">
-			{{ forms.textField({
-				first: true,
-				label: "Name"|t,
-				instructions: "What this section will be called in the CP."|t,
-				id: 'name',
-				name: 'name',
-				value: section.name,
-				errors: section.getErrors('name'),
-				autofocus: true,
-				required: true,
-				translatable: true
-			}) }}
+		{{ forms.textField({
+			first: true,
+			label: "Name"|t,
+			instructions: "What this section will be called in the CP."|t,
+			id: 'name',
+			name: 'name',
+			value: section.name,
+			errors: section.getErrors('name'),
+			autofocus: true,
+			required: true,
+			translatable: true
+		}) }}
 
-			{{ forms.textField({
-				label: "Handle"|t,
-				instructions: "How you’ll refer to this section in the templates."|t,
-				id: 'handle',
-				class: 'code',
-				name: 'handle',
-				value: section.handle,
-				errors: section.getErrors('handle'),
-				required: true
-			}) }}
+		{{ forms.textField({
+			label: "Handle"|t,
+			instructions: "How you’ll refer to this section in the templates."|t,
+			id: 'handle',
+			class: 'code',
+			name: 'handle',
+			value: section.handle,
+			errors: section.getErrors('handle'),
+			required: true
+		}) }}
 
-			{{ forms.textField({
-				label: "“Title” Label"|t,
-				instructions: "What do you want the entries’ “Title” fields to be labeled?"|t,
-				id: 'titleLabel',
-				name: 'titleLabel',
-				value: section.titleLabel,
-				errors: section.getErrors('titleLabel'),
-				required: true,
-				translatable: true
-			}) }}
-
-			{% if craft.hasPackage('Localize') %}
-				{% set localesInput %}
-					{% for locale in craft.i18n.getSiteLocales() %}
-						<div>
-							{{ forms.checkbox({
-								label: locale.name~' ('~locale.id~')',
-								name: 'locales[]',
-								value: locale.id,
-								checked: (brandNewSection or section.locales[locale.id] is defined),
-								toggle: 'urlFormatRow-'~locale.id
-							}) }}
-						</div>
-					{% endfor %}
-				{% endset %}
-
-				{{ forms.field({
-					label: "Locales"|t,
-					instructions: "Which locales should this section be enabled in?"|t
-				}, localesInput) }}
-			{% endif %}
-
-			<hr>
-
-			{{ forms.checkboxField({
-				label: "Entries in this section have their own URLs"|t,
-				name: 'hasUrls',
-				checked: (brandNewSection or section.hasUrls),
-				toggle: 'has-urls-setting'
-			}) }}
-
-			<div id="has-urls-setting" class="nested-fields{% if not brandNewSection and not section.hasUrls %} hidden{% endif %}">
-
-				{% macro urlFormatInput(locale, section) %}
-					{% import "_includes/forms" as forms %}
-					{% set errors = section.getErrors('urlFormat-'~locale.id) %}
-
-					<div class="input{% if errors %} errors{% endif %}">
-						{{ forms.text({
-							id: 'urlFormat-'~locale.id,
-							class: 'code',
-							name: 'urlFormat['~locale.id~']',
-							value: (section.locales[locale.id] is defined ? section.locales[locale.id].urlFormat : null),
-							errors: errors
+		{% if craft.hasPackage('Localize') %}
+			{% set localesInput %}
+				{% for locale in craft.i18n.getSiteLocales() %}
+					<div>
+						{{ forms.checkbox({
+							label: locale.name~' ('~locale.id~')',
+							name: 'locales[]',
+							value: locale.id,
+							checked: (brandNewSection or section.locales[locale.id] is defined),
+							toggle: 'urlFormatRow-'~locale.id
 						}) }}
 					</div>
+				{% endfor %}
+			{% endset %}
 
-					{{ forms.errorList(errors) }}
-				{% endmacro %}
+			{{ forms.field({
+				label: "Locales"|t,
+				instructions: "Which locales should this section be enabled in?"|t
+			}, localesInput) }}
+		{% endif %}
 
-				{% from _self import urlFormatInput %}
+		<hr>
 
-				{% set urlFormatField %}
-					{% if craft.hasPackage('Localize') %}
-						<table class="data">
-							{% for locale in craft.i18n.getSiteLocales() %}
-								<tr id="urlFormatRow-{{ locale.id }}"{% if not brandNewSection and section.locales[locale.id] is not defined %} class="hidden"{% endif %}>
-									<th class="thin nowrap">{{ locale.id }}</th>
-									<td>
-										{{ urlFormatInput(locale, section) }}
-									</td>
-								</tr>
-							{% endfor %}
-						</table>
-					{% else %}
-						{{ urlFormatInput(craft.i18n.getPrimarySiteLocale(), section) }}
-					{% endif %}
-				{% endset %}
+		{{ forms.checkboxField({
+			label: "Entries in this section have their own URLs"|t,
+			name: 'hasUrls',
+			checked: (brandNewSection or section.hasUrls),
+			toggle: 'has-urls-setting'
+		}) }}
 
-				{{ forms.field({
-					label: "Entry URL Format"|t,
-					instructions: "What the entry URLs should look like. <code>{slug}</code> is required, but it can also include any entry properties, e.g. <code>{postDate.year}</code>."|t,
-					required: true,
-					errors: section.getErrors('urlFormat')
-				}, urlFormatField) }}
+		<div id="has-urls-setting" class="nested-fields{% if not brandNewSection and not section.hasUrls %} hidden{% endif %}">
 
-				{{ forms.textField({
-					label: "Entry Template"|t,
-					instructions: "The template to use when an entry’s URL is requested."|t,
-					id: 'template',
-					name: 'template',
-					value: section.template,
-					errors: section.getErrors('template')
-				}) }}
+			{% macro urlFormatInput(locale, section) %}
+				{% import "_includes/forms" as forms %}
+				{% set errors = section.getErrors('urlFormat-'~locale.id) %}
 
-			</div>
+				<div class="input{% if errors %} errors{% endif %}">
+					{{ forms.text({
+						id: 'urlFormat-'~locale.id,
+						class: 'code',
+						name: 'urlFormat['~locale.id~']',
+						value: (section.locales[locale.id] is defined ? section.locales[locale.id].urlFormat : null),
+						errors: errors
+					}) }}
+				</div>
 
-		</div>
+				{{ forms.errorList(errors) }}
+			{% endmacro %}
 
-		<div id="section-fieldlayout" class="hidden">
-			{% include "_includes/fieldlayoutdesigner" with {
-				fieldLayout: section.getFieldLayout(),
-				tab: 'fieldlayout'
-			} only %}
+			{% from _self import urlFormatInput %}
+
+			{% set urlFormatField %}
+				{% if craft.hasPackage('Localize') %}
+					<table class="data">
+						{% for locale in craft.i18n.getSiteLocales() %}
+							<tr id="urlFormatRow-{{ locale.id }}"{% if not brandNewSection and section.locales[locale.id] is not defined %} class="hidden"{% endif %}>
+								<th class="thin nowrap">{{ locale.id }}</th>
+								<td>
+									{{ urlFormatInput(locale, section) }}
+								</td>
+							</tr>
+						{% endfor %}
+					</table>
+				{% else %}
+					{{ urlFormatInput(craft.i18n.getPrimarySiteLocale(), section) }}
+				{% endif %}
+			{% endset %}
+
+			{{ forms.field({
+				label: "Entry URL Format"|t,
+				instructions: "What the entry URLs should look like. <code>{slug}</code> is required, but it can also include any entry properties, e.g. <code>{postDate.year}</code>."|t,
+				required: true,
+				errors: section.getErrors('urlFormat')
+			}, urlFormatField) }}
+
+			{{ forms.textField({
+				label: "Entry Template"|t,
+				instructions: "The template to use when an entry’s URL is requested."|t,
+				id: 'template',
+				name: 'template',
+				value: section.template,
+				errors: section.getErrors('template')
+			}) }}
+
 		</div>
 
 		<hr>

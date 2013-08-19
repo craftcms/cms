@@ -145,7 +145,14 @@ class EntriesService extends BaseApplicationComponent
 		$entry->addErrors($elementLocaleRecord->getErrors());
 
 		// Entry content
-		$fieldLayout = $section->getFieldLayout();
+		$entryType = $entry->getType();
+
+		if (!$entryType)
+		{
+			throw new Exception(Craft::t('No entry types are available for this entry.'));
+		}
+
+		$fieldLayout = $entryType->getFieldLayout();
 		$content = craft()->content->prepElementContentForSave($entry, $fieldLayout);
 		$content->validate();
 		$entry->addErrors($content->getErrors());

@@ -18,6 +18,7 @@ var CP = Garnish.Base.extend({
 
 	$notificationWrapper: null,
 	$notificationContainer: null,
+	$contentTabsContainer: null,
 	$main: null,
 	$sidebar: null,
 	$altSidebar: null,
@@ -91,30 +92,7 @@ var CP = Garnish.Base.extend({
 		/* end HIDE */
 
 		// Tabs
-		this.tabs = {};
-		var $tabs = $('#tabs a');
-
-		// Find the tabs that link to a div on the page
-		for (var i = 0; i < $tabs.length; i++)
-		{
-			var $tab = $($tabs[i]),
-				href = $tab.attr('href');
-
-			if (href && href.charAt(0) == '#')
-			{
-				this.tabs[href] = {
-					$tab: $tab,
-					$target: $(href)
-				};
-
-				this.addListener($tab, 'activate', 'selectTab');
-			}
-
-			if (!this.selectedTab && $tab.hasClass('sel'))
-			{
-				this.selectedTab = href;
-			}
-		}
+		this.initContentTabs();
 
 		if (document.location.hash && typeof this.tabs[document.location.hash] != 'undefined')
 		{
@@ -146,13 +124,13 @@ var CP = Garnish.Base.extend({
 				$('<input type="hidden" name="redirect" value="'+$btn.attr('data-redirect')+'"/>').appendTo($form);
 			}
 
-            if ($btn.attr('data-confirm'))
-            {
-                if (!confirm($btn.attr('data-confirm')))
-                {
-                    return;
-                }
-            }
+			if ($btn.attr('data-confirm'))
+			{
+				if (!confirm($btn.attr('data-confirm')))
+				{
+					return;
+				}
+			}
 
 			$form.submit();
 		});
@@ -163,37 +141,76 @@ var CP = Garnish.Base.extend({
 			this.initAlerts();
 		}
 
-        // Make placeholders work for IE9, too.
-        $('input[type!=password], textarea').placeholder();
+		// Make placeholders work for IE9, too.
+		$('input[type!=password], textarea').placeholder();
 
-        // Listen for save shortcuts in primary forms
-        var $primaryForm = $('form[data-saveshortcut="1"]:first');
-        if ($primaryForm.length == 1)
-        {
-            this.addListener(Garnish.$doc, 'keydown', function (ev) {
-                if ((ev.metaKey || ev.ctrlKey) && ev.keyCode == Garnish.S_KEY)
-                {
-                    $primaryForm.submit();
-                    return false;
-                }
-                return true;
-            });
-        }
-    },
+		// Listen for save shortcuts in primary forms
+		var $primaryForm = $('form[data-saveshortcut="1"]:first');
+		if ($primaryForm.length == 1)
+		{
+			this.addListener(Garnish.$doc, 'keydown', function (ev) {
+				if ((ev.metaKey || ev.ctrlKey) && ev.keyCode == Garnish.S_KEY)
+				{
+					$primaryForm.submit();
+					return false;
+				}
+				return true;
+			});
+		}
+	},
 
-    setMaxSidebarHeight: function()
-    {
-    	if (this.fixedSidebar)
-    	{
-	    	this.setMaxSidebarHeight._maxHeight = this.$main.offset().top + this.$main.height() - Garnish.$win.scrollTop();
-    	}
-    	else
-    	{
-    		this.setMaxSidebarHeight._maxHeight = this.$main.height();
-    	}
+	initContentTabs: function()
+	{
+		this.$contentTabsContainer = $('#tabs');
+		this.tabs = {};
+		this.selectedTab = null;
 
-    	this.$sidebar.css('max-height', this.setMaxSidebarHeight._maxHeight);
-    },
+		var $tabs = this.$contentTabsContainer.find('a');
+
+		if ($tabs.length)
+		{
+			// Find the tabs that link to a div on the page
+			for (var i = 0; i < $tabs.length; i++)
+			{
+				var $tab = $($tabs[i]),
+					href = $tab.attr('href');
+
+				if (href && href.charAt(0) == '#')
+				{
+					this.tabs[href] = {
+						$tab: $tab,
+						$target: $(href)
+					};
+
+					this.addListener($tab, 'activate', 'selectContentTab');
+				}
+
+				if (!this.selectedTab && $tab.hasClass('sel'))
+				{
+					this.selectedTab = href;
+				}
+			}
+
+			if (!this.selectedTab)
+			{
+				$($tabs[0]).trigger('activate');
+			}
+		}
+	},
+
+	setMaxSidebarHeight: function()
+	{
+		if (this.fixedSidebar)
+		{
+			this.setMaxSidebarHeight._maxHeight = this.$main.offset().top + this.$main.height() - Garnish.$win.scrollTop();
+		}
+		else
+		{
+			this.setMaxSidebarHeight._maxHeight = this.$main.height();
+		}
+
+		this.$sidebar.css('max-height', this.setMaxSidebarHeight._maxHeight);
+	},
 
 	/**
 	 * Handles stuff that should happen when the window is resized.
@@ -549,18 +566,26 @@ var CP = Garnish.Base.extend({
 	},
 
 	/**
-	 * Select a tab
+	 * Deselects the current content tab.
 	 */
-	selectTab: function(ev)
+	deselectContentTab: function()
+	{
+		if (this.selectedTab)
+		{
+			this.tabs[this.selectedTab].$tab.removeClass('sel');
+			this.tabs[this.selectedTab].$target.addClass('hidden');
+		}
+	},
+
+	/**
+	 * Selects a content tab.
+	 */
+	selectContentTab: function(ev)
 	{
 		if (!this.selectedTab || ev.currentTarget != this.tabs[this.selectedTab].$tab[0])
 		{
 			// Hide the selected tab
-			if (this.selectedTab)
-			{
-				this.tabs[this.selectedTab].$tab.removeClass('sel');
-				this.tabs[this.selectedTab].$target.addClass('hidden');
-			}
+			this.deselectContentTab();
 
 			var $tab = $(ev.currentTarget).addClass('sel');
 			this.selectedTab = $tab.attr('href');

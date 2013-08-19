@@ -9,6 +9,7 @@ namespace Craft;
 class SectionModel extends BaseModel
 {
 	private $_locales;
+	private $_entryTypes;
 
 	/**
 	 * Use the translated section name as the string representation.
@@ -27,23 +28,12 @@ class SectionModel extends BaseModel
 	protected function defineAttributes()
 	{
 		return array(
-			'id'            => AttributeType::Number,
-			'name'          => AttributeType::String,
-			'handle'        => AttributeType::String,
-			'titleLabel'    => array(AttributeType::String, 'default' => Craft::t('Title')),
-			'hasUrls'       => AttributeType::Bool,
-			'template'      => AttributeType::String,
-			'fieldLayoutId' => AttributeType::Number,
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function behaviors()
-	{
-		return array(
-			'fieldLayout' => new FieldLayoutBehavior(),
+			'id'       => AttributeType::Number,
+			'name'     => AttributeType::String,
+			'handle'   => AttributeType::String,
+			'hasUrls'  => AttributeType::Bool,
+			'template' => AttributeType::String,
+			'maxDepth' => AttributeType::Number,
 		);
 	}
 
@@ -94,6 +84,55 @@ class SectionModel extends BaseModel
 			{
 				$this->addError($key, $error);
 			}
+		}
+	}
+
+	/**
+	 * Returns the section's entry types.
+	 *
+	 * @return array
+	 */
+	public function getEntryTypes()
+	{
+		if (!isset($this->_entryTypes))
+		{
+			if ($this->id)
+			{
+				$this->_entryTypes = craft()->sections->getEntryTypesBySectionId($this->id, 'id');
+			}
+			else
+			{
+				$this->_entryTypes = array();
+			}
+		}
+
+		return $this->_entryTypes;
+	}
+
+	/**
+	 * Returns the section's URL format (or URL) for the current locale.
+	 *
+	 * @return string|null
+	 */
+	public function getUrlFormat()
+	{
+		$locales = $this->getLocales();
+
+		if ($locales)
+		{
+			$localeIds = array_keys($locales);
+
+			// Does this section target the current locale?
+			if (in_array(craft()->language, $localeIds))
+			{
+				$localeId = craft()->language;
+			}
+			else
+			{
+				$localeId = array_unshift($localeIds);
+			}
+
+			return $locales[$localeId]->urlFormat;
 		}
 	}
 }

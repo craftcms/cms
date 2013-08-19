@@ -4,7 +4,7 @@
 	{% if craft.hasPackage('PublishPro') %}
 		{% set sectionOptions = [] %}
 		{% for section in sections %}
-			{% set sectionOptions = sectionOptions|merge([{ label: section.name, value: section.id }]) %}
+			{% set sectionOptions = sectionOptions|merge([{ label: section.name|t, value: section.id }]) %}
 		{% endfor %}
 		{{ forms.selectField({
 			label: "Section"|t,
@@ -23,29 +23,50 @@
 		<input type="hidden" name="section" value="{{ selectedSectionId }}">
 	{% endif %}
 
-	{% set fieldsInput %}
-		{% for section in sections %}
-			{% set show = ((not selectedSectionId and loop.first) or selectedSectionId == section.id) %}
-			<div id="section{{ section.id }}"{% if not show %} class="hidden"{% endif %}>
-				{% for field in section.getFieldLayout().getFields() %}
-					<div>
-						{{ forms.checkbox({
-							label: field.getField().name~(field.required ? ' <span class="required"></span>' : ''),
-							name: 'fields[section'~section.id~'][]',
-							value: field.fieldId,
-							checked: (field.required or field.fieldId in settings.fields),
-							disabled: field.required
-						}) }}
+	{% for section in sections %}
+		{% set showSection = ((not selectedSectionId and loop.first) or selectedSectionId == section.id) %}
+		<div id="section{{ section.id }}"{% if not showSection %} class="hidden"{% endif %}>
+
+			{% set entryTypeOptions = [] %}
+			{% for entryType in section.getEntryTypes() %}
+				{% set entryTypeOptions = entryTypeOptions|merge([{ label: entryType.name|t, value: entryType.id }]) %}
+			{% endfor %}
+			{{ forms.selectField({
+				label: "Entry Type"|t,
+				instructions: "Which type of entries do you want to publish?"|t,
+				id: 'entryType',
+				name: 'sections['~section.id~'][entryType]',
+				options: entryTypeOptions,
+				value: settings.entryType,
+				toggle: true,
+				targetPrefix: 'section'~section.id~'-type'
+			}) }}
+
+			{% set fieldsInput %}
+				{% for entryType in section.getEntryTypes() %}
+					{% set showEntryType = (((not showSection or not settings.entryType) and loop.first) or settings.entryType == entryType.id) %}
+					<div id="section{{ section.id }}-type{{ entryType.id }}"{% if not showEntryType %} class="hidden"{% endif %}>
+						{% for field in entryType.getFieldLayout().getFields() %}
+							<div>
+								{{ forms.checkbox({
+									label: field.getField().name~(field.required ? ' <span class="required"></span>' : ''),
+									name: 'sections['~section.id~'][fields][]',
+									value: field.fieldId,
+									checked: (field.required or field.fieldId in settings.fields),
+									disabled: field.required
+								}) }}
+							</div>
+						{% endfor %}
 					</div>
 				{% endfor %}
-			</div>
-		{% endfor %}
-	{% endset %}
+			{% endset %}
 
-	{{ forms.field({
-		label: "Fields"|t,
-		instructions: "Which fields should be visible in the widget?"|t
-	}, fieldsInput) }}
+			{{ forms.field({
+				label: "Fields"|t,
+				instructions: "Which fields should be visible in the widget?"|t
+			}, fieldsInput) }}
+		</div>
+	{% endfor %}
 
 {% else %}
 

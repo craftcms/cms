@@ -20,6 +20,7 @@ class EntryModel extends BaseElementModel
 	{
 		return array_merge(parent::defineAttributes(), array(
 			'sectionId'  => AttributeType::Number,
+			'typeId'     => AttributeType::Number,
 			'authorId'   => AttributeType::Number,
 			'slug'       => AttributeType::String,
 			'postDate'   => AttributeType::DateTime,
@@ -37,6 +38,34 @@ class EntryModel extends BaseElementModel
 		if ($this->sectionId)
 		{
 			return craft()->sections->getSectionById($this->sectionId);
+		}
+	}
+
+	/**
+	 * Returns the type of entry.
+	 *
+	 * @return EntryTypeModel|null
+	 */
+	public function getType()
+	{
+		$section = $this->getSection();
+
+		if ($section)
+		{
+			$sectionEntryTypes = $section->getEntryTypes();
+
+			if ($sectionEntryTypes)
+			{
+				if ($this->typeId && isset($sectionEntryTypes[$this->typeId]))
+				{
+					return $sectionEntryTypes[$this->typeId];
+				}
+				else
+				{
+					// Just return the first one
+					return $sectionEntryTypes[array_shift(array_keys($sectionEntryTypes))];
+				}
+			}
 		}
 	}
 

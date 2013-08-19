@@ -40,27 +40,22 @@
 			<input type="hidden" name="locale" value="{{ localeId }}">
 		{% endif %}
 
-		{{ forms.textField({
-			label: section.titleLabel,
-			id: 'title',
-			name: 'title',
-			value: entry.title,
-			errors: entry.getErrors('title'),
-			first: true,
-			autofocus: true,
-			required: true
-		}) }}
+		{% if showEntryTypes %}
+			{{ forms.selectField({
+				label: "Entry Type"|t,
+				id: 'entryType',
+				name: 'typeId',
+				value: entryType.id,
+				options: entryTypeOptions,
+				first: true
+			}) }}
+		{% endif %}
 
-		{% for tab in section.getFieldLayout().getTabs() %}
-			<div id="tab{{ loop.index }}"{% if not loop.first %} class="hidden"{% endif %}>
-				{% include "_includes/fields" with {
-					fields: tab.getFields(),
-					element: entry
-				} only %}
-			</div>
-		{% endfor %}
+		<div id="fields">
+			{% include "entries/_fields" %}
+		</div>
 
-		<div id="entry-settings"{% if section.getFieldLayout().getTabs()|length %} class="hidden"{% endif %}>
+		<div id="entry-settings"{% if entryType.getFieldLayout().getTabs()|length %} class="hidden"{% endif %}>
 			{{ forms.textField({
 				label: "Slug"|t,
 				id: 'slug',

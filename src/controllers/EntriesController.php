@@ -14,102 +14,7 @@ class EntriesController extends BaseController
 	 */
 	public function actionEditEntry(array $variables = array())
 	{
-		$variables['section'] = craft()->sections->getSectionByHandle($variables['sectionHandle']);
-
-		if (!$variables['section'])
-		{
-			throw new HttpException(404);
-		}
-
-		$variables['permissionSuffix'] = ':'.$variables['section']->id;
-
-		// Make sure the user is allowed to edit entries in this section
-		craft()->userSession->requirePermission('editEntries'.$variables['permissionSuffix']);
-
-		if (Craft::hasPackage(CraftPackage::Localize))
-		{
-			// Figure out which locales the user is allowed to edit in this section
-			$sectionLocaleIds = array_keys($variables['section']->getLocales());
-			$editableLocaleIds = craft()->i18n->getEditableLocaleIds();
-			$editableSectionLocaleIds = array_intersect($sectionLocaleIds, $editableLocaleIds);
-
-			if (!$editableSectionLocaleIds)
-			{
-				throw new HttpException(404);
-			}
-
-			if (empty($variables['localeId']))
-			{
-				$variables['localeId'] = craft()->language;
-
-				if (!in_array($variables['localeId'], $editableSectionLocaleIds))
-				{
-					$variables['localeId'] = $editableSectionLocaleIds[0];
-				}
-			}
-			else if (!in_array($variables['localeId'], $editableSectionLocaleIds))
-			{
-				throw new HttpException(404);
-			}
-		}
-
-		if (empty($variables['entry']))
-		{
-			if (!empty($variables['entryId']))
-			{
-				if (!empty($variables['draftId']))
-				{
-					$variables['entry'] = craft()->entryRevisions->getDraftById($variables['draftId']);
-				}
-				else if (!empty($variables['versionId']))
-				{
-					$variables['entry'] = craft()->entryRevisions->getVersionById($variables['versionId']);
-				}
-				else
-				{
-					$criteria = craft()->elements->getCriteria(ElementType::Entry);
-					$criteria->id = $variables['entryId'];
-					$criteria->status = '*';
-
-					if (Craft::hasPackage(CraftPackage::Localize))
-					{
-						$criteria->locale = $variables['localeId'];
-					}
-
-					$variables['entry'] = $criteria->first();
-				}
-
-				if (!$variables['entry'])
-				{
-					throw new HttpException(404);
-				}
-			}
-			else
-			{
-				$variables['entry'] = new EntryModel();
-				$variables['entry']->sectionId = $variables['section']->id;
-				$variables['entry']->authorId = craft()->userSession->getUser()->id;
-				$variables['entry']->enabled = true;
-			}
-		}
-
-		// More permission enforcement
-		if (!$variables['entry']->id)
-		{
-			craft()->userSession->requirePermission('createEntries'.$variables['permissionSuffix']);
-		}
-		else if ($variables['entry']->authorId != craft()->userSession->getUser()->id)
-		{
-			craft()->userSession->requirePermission('editPeerEntries'.$variables['permissionSuffix']);
-		}
-
-		if ($variables['entry']->id && $variables['entry']->getClassHandle() == 'EntryDraft')
-		{
-			if ($variables['entry']->creatorId != craft()->userSession->getUser()->id)
-			{
-				craft()->userSession->requirePermission('editPeerEntryDrafts'.$variables['permissionSuffix']);
-			}
-		}
+		$this->_prepEditEntryVariables($variables);
 
 		// Page title w/ revision label
 		if (Craft::hasPackage(CraftPackage::PublishPro))
@@ -160,40 +65,25 @@ class EntriesController extends BaseController
 			$variables['crumbs'][] = array('label' => $variables['section']->name, 'url' => UrlHelper::getUrl('entries'));
 		}
 
+		// Multiple entry types?
+		$entryTypes = $variables['section']->getEntryTypes();
 
-		// Tabs
-		$variables['tabs'] = array();
-
-		foreach ($variables['section']->getFieldLayout()->getTabs() as $index => $tab)
+		if (count($entryTypes) > 1)
 		{
-			// Do any of the fields on this tab have errors?
-			$hasErrors = false;
+			$variables['showEntryTypes'] = true;
 
-			if ($variables['entry']->hasErrors())
+			foreach ($entryTypes as $entryType)
 			{
-				foreach ($tab->getFields() as $field)
-				{
-					if ($variables['entry']->getErrors($field->getField()->handle))
-					{
-						$hasErrors = true;
-						break;
-					}
-				}
+				$variables['entryTypeOptions'][] = array('label' => Craft::t($entryType->name), 'value' => $entryType->id);
 			}
 
-			$variables['tabs'][] = array(
-				'label' => $tab->name,
-				'url'   => '#tab'.($index+1),
-				'class' => ($hasErrors ? 'error' : null)
-			);
+			craft()->templates->includeJsResource('js/EntryTypeSwitcher.js');
+			craft()->templates->includeJs('new Craft.EntryTypeSwitcher();');
 		}
-
-		// Settings tab
-		$hasErrors = ($variables['entry']->hasErrors() && (
-			$variables['entry']->getErrors('slug') ||
-			$variables['entry']->getErrors('postDate') ||
-			$variables['entry']->getErrors('expiryDate')
-		));
+		else
+		{
+			$variables['showEntryTypes'] = false;
+		}
 
 		// Enable preview mode?
 		$variables['showPreviewBtn'] = false;
@@ -223,15 +113,37 @@ class EntriesController extends BaseController
 			}
 		}
 
-		$variables['tabs'][] = array(
-			'label' => Craft::t('Settings'),
-			'url'   => '#entry-settings',
-			'class' => ($hasErrors ? 'error' : null)
-		);
-
 		// Render the template!
 		craft()->templates->includeCssResource('css/entry.css');
 		$this->renderTemplate('entries/_edit', $variables);
+	}
+
+	public function actionSwitchEntryType()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$variables['sectionId'] = craft()->request->getRequiredPost('sectionId');
+		$variables['entry'] = $this->_populateEntryModel();
+		$variables['showEntryTypes'] = true;
+
+		$this->_prepEditEntryVariables($variables);
+
+		$tabsHtml = '<ul>';
+
+		foreach ($variables['tabs'] as $tabId => $tab)
+		{
+			$tabsHtml .= '<li><a id="tab-'.$tabId.'" class="tab'.(isset($tab['class']) ? ' '.$tab['class'] : '').'" href="'.$tab['url'].'">'.$tab['label'].'</a></li>';
+		}
+
+		$tabsHtml .= '</ul>';
+
+		$this->returnJson(array(
+			'tabsHtml'   => $tabsHtml,
+			'fieldsHtml' => craft()->templates->render('entries/_fields', $variables),
+			'headHtml'   => craft()->templates->getHeadHtml(),
+			'footHtml'   => craft()->templates->getFootHtml(),
+		));
 	}
 
 	/**
@@ -347,6 +259,168 @@ class EntriesController extends BaseController
 	}
 
 	/**
+	 * Preps entry edit variables.
+	 *
+	 * @access private
+	 * @param array &$variables
+	 */
+	private function _prepEditEntryVariables(&$variables)
+	{
+		if (!empty($variables['sectionHandle']))
+		{
+			$variables['section'] = craft()->sections->getSectionByHandle($variables['sectionHandle']);
+		}
+		else if (!empty($variables['sectionId']))
+		{
+			$variables['section'] = craft()->sections->getSectionById($variables['sectionId']);
+		}
+
+		if (empty($variables['section']))
+		{
+			throw new HttpException(404);
+		}
+
+		$variables['permissionSuffix'] = ':'.$variables['section']->id;
+
+		// Make sure the user is allowed to edit entries in this section
+		craft()->userSession->requirePermission('editEntries'.$variables['permissionSuffix']);
+
+		if (Craft::hasPackage(CraftPackage::Localize))
+		{
+			// Figure out which locales the user is allowed to edit in this section
+			$sectionLocaleIds = array_keys($variables['section']->getLocales());
+			$editableLocaleIds = craft()->i18n->getEditableLocaleIds();
+			$editableSectionLocaleIds = array_intersect($sectionLocaleIds, $editableLocaleIds);
+
+			if (!$editableSectionLocaleIds)
+			{
+				throw new HttpException(404);
+			}
+
+			if (empty($variables['localeId']))
+			{
+				$variables['localeId'] = craft()->language;
+
+				if (!in_array($variables['localeId'], $editableSectionLocaleIds))
+				{
+					$variables['localeId'] = $editableSectionLocaleIds[0];
+				}
+			}
+			else if (!in_array($variables['localeId'], $editableSectionLocaleIds))
+			{
+				throw new HttpException(404);
+			}
+		}
+
+		// Now let's set up the actual entry
+		if (empty($variables['entry']))
+		{
+			if (!empty($variables['entryId']))
+			{
+				if (!empty($variables['draftId']))
+				{
+					$variables['entry'] = craft()->entryRevisions->getDraftById($variables['draftId']);
+				}
+				else if (!empty($variables['versionId']))
+				{
+					$variables['entry'] = craft()->entryRevisions->getVersionById($variables['versionId']);
+				}
+				else
+				{
+					$criteria = craft()->elements->getCriteria(ElementType::Entry);
+					$criteria->id = $variables['entryId'];
+					$criteria->status = '*';
+
+					if (Craft::hasPackage(CraftPackage::Localize))
+					{
+						$criteria->locale = $variables['localeId'];
+					}
+
+					$variables['entry'] = $criteria->first();
+				}
+
+				if (!$variables['entry'])
+				{
+					throw new HttpException(404);
+				}
+			}
+			else
+			{
+				$variables['entry'] = new EntryModel();
+				$variables['entry']->sectionId = $variables['section']->id;
+				$variables['entry']->authorId = craft()->userSession->getUser()->id;
+				$variables['entry']->enabled = true;
+			}
+		}
+
+		// More permission enforcement
+		if (!$variables['entry']->id)
+		{
+			craft()->userSession->requirePermission('createEntries'.$variables['permissionSuffix']);
+		}
+		else if ($variables['entry']->authorId != craft()->userSession->getUser()->id)
+		{
+			craft()->userSession->requirePermission('editPeerEntries'.$variables['permissionSuffix']);
+		}
+
+		if ($variables['entry']->id && $variables['entry']->getClassHandle() == 'EntryDraft')
+		{
+			if ($variables['entry']->creatorId != craft()->userSession->getUser()->id)
+			{
+				craft()->userSession->requirePermission('editPeerEntryDrafts'.$variables['permissionSuffix']);
+			}
+		}
+
+		// Entry type
+		$variables['entryType'] = $variables['entry']->getType();
+
+		if (!$variables['entryType'])
+		{
+			throw new Exception(Craft::t('No entry types are available for this entry.'));
+		}
+
+		// Tabs
+		$variables['tabs'] = array();
+
+		foreach ($variables['entryType']->getFieldLayout()->getTabs() as $index => $tab)
+		{
+			// Do any of the fields on this tab have errors?
+			$hasErrors = false;
+
+			if ($variables['entry']->hasErrors())
+			{
+				foreach ($tab->getFields() as $field)
+				{
+					if ($variables['entry']->getErrors($field->getField()->handle))
+					{
+						$hasErrors = true;
+						break;
+					}
+				}
+			}
+
+			$variables['tabs'][] = array(
+				'label' => $tab->name,
+				'url'   => '#tab'.($index+1),
+				'class' => ($hasErrors ? 'error' : null)
+			);
+		}
+
+		// Settings tab
+		$hasErrors = ($variables['entry']->hasErrors() && (
+			$variables['entry']->getErrors('slug') ||
+			$variables['entry']->getErrors('postDate') ||
+			$variables['entry']->getErrors('expiryDate')
+		));
+
+		$variables['tabs'][] = array(
+			'label' => Craft::t('Settings'),
+			'url'   => '#entry-settings',
+			'class' => ($hasErrors ? 'error' : null)
+		);
+	}
+
+	/**
 	 * Populates an EntryModel with post data.
 	 *
 	 * @access private
@@ -374,6 +448,7 @@ class EntriesController extends BaseController
 		}
 
 		$entry->sectionId  = craft()->request->getRequiredPost('sectionId');
+		$entry->typeId     = craft()->request->getRequiredPost('typeId');
 		$entry->locale     = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocaleId());
 		$entry->id         = craft()->request->getPost('entryId');
 		$entry->authorId   = craft()->request->getPost('author', craft()->userSession->getUser()->id);

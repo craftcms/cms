@@ -112,18 +112,9 @@ class EntryElementType extends BaseElementType
 			}
 		}
 
-		if (!empty($section))
-		{
-			$titleLabel = Craft::t($section->titleLabel);
-		}
-		else
-		{
-			$titleLabel = Craft::t('Title');
-		}
-
 		$attributes = array(
-			array('label' => $titleLabel,      'attribute' => 'title'),
-			array('label' => Craft::t('Slug'), 'attribute' => 'slug', 'link' => true),
+			array('label' => Craft::t('Title'), 'attribute' => 'title'),
+			array('label' => Craft::t('Slug'),  'attribute' => 'slug', 'link' => true),
 		);
 
 		if (empty($section))

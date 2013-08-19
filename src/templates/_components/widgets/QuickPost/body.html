@@ -3,13 +3,13 @@
 
 <form method="post" action="" accept-charset="UTF-8">
 	{{ forms.textField({
-		label: section.titleLabel|t,
+		label: entryType.titleLabel|t,
 		id: 'title',
 		name: 'title',
 		required: true
 	}) }}
 
-	{% for field in section.getFieldLayout().getFields() %}
+	{% for field in entryType.getFieldLayout().getFields() %}
 		{% if field.required or field.fieldId in settings.fields %}
 			{% include "_includes/field" with {
 				fieldId: field.fieldId,
