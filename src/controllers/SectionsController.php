@@ -25,9 +25,9 @@ class SectionsController extends BaseController
 	{
 		$variables['brandNewSection'] = false;
 
-		if (empty($variables['section']))
+		if (!empty($variables['sectionId']))
 		{
-			if (!empty($variables['sectionId']))
+			if (empty($variables['section']))
 			{
 				$variables['section'] = craft()->sections->getSectionById($variables['sectionId']);
 
@@ -35,15 +35,19 @@ class SectionsController extends BaseController
 				{
 					throw new HttpException(404);
 				}
-
-				$variables['title'] = $variables['section']->name;
 			}
-			else
+
+			$variables['title'] = $variables['section']->name;
+		}
+		else
+		{
+			if (empty($variables['section']))
 			{
 				$variables['section'] = new SectionModel();
-				$variables['title'] = Craft::t('Create a new section');
 				$variables['brandNewSection'] = true;
 			}
+
+			$variables['title'] = Craft::t('Create a new section');
 		}
 
 		$variables['crumbs'] = array(
