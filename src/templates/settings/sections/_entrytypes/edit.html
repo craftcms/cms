@@ -1,0 +1,68 @@
+{% extends "_layouts/cp" %}
+
+{% import "_includes/forms" as forms %}
+
+
+{% set content %}
+	<form method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
+		<input type="hidden" name="action" value="sections/saveEntryType">
+		<input type="hidden" name="redirect" value="settings/sections/{{ section.id }}/entrytypes">
+		<input type="hidden" name="sectionId" value="{{ section.id }}">
+		{% if entryType.id %}<input type="hidden" name="entryTypeId" value="{{ entryType.id }}">{% endif %}
+
+		<div id="entrytype-settings">
+			{{ forms.textField({
+				first: true,
+				label: "Name"|t,
+				instructions: "What this entry type will be called in the CP."|t,
+				id: 'name',
+				name: 'name',
+				value: entryType.name,
+				errors: entryType.getErrors('name'),
+				autofocus: true,
+				required: true,
+				translatable: true
+			}) }}
+
+			{{ forms.textField({
+				label: "Handle"|t,
+				instructions: "How you’ll refer to this entry type in the templates."|t,
+				id: 'handle',
+				class: 'code',
+				name: 'handle',
+				value: entryType.handle,
+				errors: entryType.getErrors('handle'),
+				required: true
+			}) }}
+
+			{{ forms.textField({
+				label: "“Title” Label"|t,
+				instructions: "What do you want the entries’ “Title” fields to be labeled?"|t,
+				id: 'titleLabel',
+				name: 'titleLabel',
+				value: entryType.titleLabel,
+				errors: entryType.getErrors('titleLabel'),
+				required: true,
+				translatable: true
+			}) }}
+		</div>
+
+		<div id="entrytype-fieldlayout" class="hidden">
+			{% include "_includes/fieldlayoutdesigner" with {
+				fieldLayout: entryType.getFieldLayout(),
+				tab: 'fieldlayout'
+			} only %}
+		</div>
+
+		<hr>
+
+		<div class="buttons">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+{% endset %}
+
+
+{% if not entryType.handle %}
+	{% includeJs "new Craft.HandleGenerator('#name', '#handle');" %}
+{% endif %}
