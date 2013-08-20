@@ -1,6 +1,21 @@
 <?php
 namespace Craft;
 
+	/**
+	 * The `$options` parameter takes an associative array with the following
+	 * options:
+	 *
+	 * - `timeout`: How long should we wait for a response? (integer, seconds, default: 10)
+	 * - `useragent`: Useragent to send to the server (string, default: php-requests/$version)
+	 * - `follow_redirects`: Should we follow 3xx redirects? (boolean, default: true)
+	 * - `redirects`: How many times should we redirect before erroring? (integer, default: 10)
+	 * - `blocking`: Should we block processing on this request? (boolean, default: true)
+	 * - `filename`: File to stream the body to instead. (string|boolean, default: false)
+	 * - `auth`: Authentication handler or array of user/password details to use for Basic authentication (RequestsAuth|array|boolean, default: false)
+	 * - `idn`: Enable IDN parsing (boolean, default: true)
+	 * - `transport`: Custom transport. Either a class name, or a transport object. Defaults to the first working transport from {@see getTransport()} (string|RequestsTransport, default: {@see getTransport()})
+	 *
+	 */
 class Et
 {
 	private $_endpoint;
@@ -118,110 +133,146 @@ class Et
 				throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
 			}
 
-			$data = JsonHelper::encode($this->_model->getAttributes(null, true));
-
-			$client = new \Guzzle\Http\Client();
-			$client->setUserAgent($this->_userAgent, true);
-
-			$options = array(
-				'timeout'         => $this->getTimeout(),
-				'connect_timeout' => $this->getConnectTimeout(),
-				'allow_redirects' => $this->getAllowRedirects(),
-			);
-
-			$request = $client->post($this->_endpoint, $options);
-
-			$request->setBody($data, 'application/json');
-			$response = $request->send();
-
-			if ($response->isSuccessful())
+			if (!craft()->fileCache->get('etConnectFailure'))
 			{
-				if ($this->_destinationFileName)
+				$data = JsonHelper::encode($this->_model->getAttributes(null, true));
+
+				$client = new \Guzzle\Http\Client();
+				$client->setUserAgent($this->_userAgent, true);
+
+				$options = array(
+					'timeout'         => $this->getTimeout(),
+					'connect_timeout' => $this->getConnectTimeout(),
+					'allow_redirects' => $this->getAllowRedirects(),
+				);
+
+				$request = $client->post($this->_endpoint, $options);
+
+				$request->setBody($data, 'application/json');
+				$response = $request->send();
+
+				if ($response->isSuccessful())
 				{
-					$body = $response->getBody();
-
-					// Make sure we're at the beginning of the stream.
-					$body->rewind();
-
-					// Write it out to the file
-					IOHelper::writeToFile($this->_destinationFileName, $body->getStream(), true);
-
-					// Close the stream.
-					$body->close();
-
-					$fileName = IOHelper::getFileName($this->_destinationFileName, false);
-
-					// If the file name is a UUID, we know it was temporarily set and they want to use the name of the file that was on the sending server.
-					if (StringHelper::isUUID($fileName))
+					// Clear the connection failure cached item if it exists.
+					if (craft()->fileCache->get('etConnectFailure'))
 					{
-						$contentDisposition = $response->getHeader('content-disposition')->toArray();
-						preg_match("/\"(.*)\"/us", $contentDisposition[0], $matches);
-						$fileName = $matches[1];
-
-						IOHelper::rename($this->_destinationFileName, IOHelper::getFolderName($this->_destinationFileName).$fileName);
+						craft()->fileCache->delete('etConnectFailure');
 					}
 
-					return $fileName;
-				}
-
-				$etModel = craft()->et->decodeEtModel($response->getBody());
-
-				if ($etModel)
-				{
-					if ($missingLicenseKey && !empty($etModel->licenseKey))
+					if ($this->_destinationFileName)
 					{
-						$this->_setLicenseKey($etModel->licenseKey);
-					}
+						$body = $response->getBody();
 
-					// Do some packageTrial timestamp to datetime conversions.
-					if (!empty($etModel->packageTrials))
-					{
-						$packageTrials = $etModel->packageTrials;
-						foreach ($etModel->packageTrials as $packageHandle => $expiryTimestamp)
+						// Make sure we're at the beginning of the stream.
+						$body->rewind();
+
+						// Write it out to the file
+						IOHelper::writeToFile($this->_destinationFileName, $body->getStream(), true);
+
+						// Close the stream.
+						$body->close();
+
+						$fileName = IOHelper::getFileName($this->_destinationFileName, false);
+
+						// If the file name is a UUID, we know it was temporarily set and they want to use the name of the file that was on the sending server.
+						if (StringHelper::isUUID($fileName))
 						{
-							$expiryDate = DateTime::createFromFormat('U', $expiryTimestamp);
-							$currentDate = DateTimeHelper::currentUTCDateTime();
+							$contentDisposition = $response->getHeader('content-disposition')->toArray();
+							preg_match("/\"(.*)\"/us", $contentDisposition[0], $matches);
+							$fileName = $matches[1];
 
-							if ($currentDate > $expiryDate)
-							{
-								unset($packageTrials[$packageHandle]);
-							}
+							IOHelper::rename($this->_destinationFileName, IOHelper::getFolderName($this->_destinationFileName).$fileName);
 						}
 
-						$etModel->packageTrials = $packageTrials;
+						return $fileName;
 					}
 
-					// Cache the license key status and which packages are associated with it
-					craft()->fileCache->set('licenseKeyStatus', $etModel->licenseKeyStatus);
-					craft()->fileCache->set('licensedPackages', $etModel->licensedPackages);
-					craft()->fileCache->set('packageTrials', $etModel->packageTrials);
+					$etModel = craft()->et->decodeEtModel($response->getBody());
 
-					if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
+					if ($etModel)
 					{
-						craft()->fileCache->set('licensedDomain', $etModel->licensedDomain);
-					}
+						if ($missingLicenseKey && !empty($etModel->licenseKey))
+						{
+							$this->_setLicenseKey($etModel->licenseKey);
+						}
 
-					return $etModel;
+						// Do some packageTrial timestamp to datetime conversions.
+						if (!empty($etModel->packageTrials))
+						{
+							$packageTrials = $etModel->packageTrials;
+							foreach ($etModel->packageTrials as $packageHandle => $expiryTimestamp)
+							{
+								$expiryDate = DateTime::createFromFormat('U', $expiryTimestamp);
+								$currentDate = DateTimeHelper::currentUTCDateTime();
+
+								if ($currentDate > $expiryDate)
+								{
+									unset($packageTrials[$packageHandle]);
+								}
+							}
+
+							$etModel->packageTrials = $packageTrials;
+						}
+
+						// Cache the license key status and which packages are associated with it
+						craft()->fileCache->set('licenseKeyStatus', $etModel->licenseKeyStatus);
+						craft()->fileCache->set('licensedPackages', $etModel->licensedPackages);
+						craft()->fileCache->set('packageTrials', $etModel->packageTrials);
+
+						if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
+						{
+							craft()->fileCache->set('licensedDomain', $etModel->licensedDomain);
+						}
+
+						if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
+						{
+							craft()->fileCache->set('licensedDomain', $etModel->licensedDomain);
+						}
+
+						return $etModel;
+					}
+					else
+					{
+						Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
+
+						if (craft()->fileCache->get('etConnectFailure'))
+						{
+							// There was an error, but at least we connected.
+							craft()->fileCache->delete('etConnectFailure');
+						}
+					}
 				}
 				else
 				{
 					Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
+
+					if (craft()->fileCache->get('etConnectFailure'))
+					{
+						// There was an error, but at least we connected.
+						craft()->fileCache->delete('etConnectFailure');
+					}
 				}
-			}
-			else
-			{
-				Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
 			}
 		}
 		// Let's log and rethrow any EtExceptions.
 		catch (EtException $e)
 		{
 			Craft::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), LogLevel::Error);
+
+			if (craft()->fileCache->get('etConnectFailure'))
+			{
+				// There was an error, but at least we connected.
+				craft()->fileCache->delete('etConnectFailure');
+			}
+
 			throw $e;
 		}
 		catch (\Exception $e)
 		{
 			Craft::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), LogLevel::Error);
+
+			// Cache the failure for 5 minutes so we don't try again.
+			craft()->fileCache->set('etConnectFailure', true, 300);
 		}
 
 		return null;
