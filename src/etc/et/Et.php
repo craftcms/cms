@@ -151,85 +151,96 @@ class Et
 				$request->setBody($data, 'application/json');
 				$response = $request->send();
 
-			if ($response->isSuccessful())
-			{
-				// Clear the connection failure cached item if it exists.
-				if (craft()->fileCache->get('etConnectFailure'))
+				if ($response->isSuccessful())
 				{
-					craft()->fileCache->delete('etConnectFailure');
-				}
-
-				if ($this->_destinationFileName)
-				{
-					$body = $response->getBody();
-
-					// Make sure we're at the beginning of the stream.
-					$body->rewind();
-
-					// Write it out to the file
-					IOHelper::writeToFile($this->_destinationFileName, $body->getStream(), true);
-
-					// Close the stream.
-					$body->close();
-
-					$fileName = IOHelper::getFileName($this->_destinationFileName, false);
-
-					// If the file name is a UUID, we know it was temporarily set and they want to use the name of the file that was on the sending server.
-					if (StringHelper::isUUID($fileName))
+					// Clear the connection failure cached item if it exists.
+					if (craft()->fileCache->get('etConnectFailure'))
 					{
-						$contentDisposition = $response->getHeader('content-disposition')->toArray();
-						preg_match("/\"(.*)\"/us", $contentDisposition[0], $matches);
-						$fileName = $matches[1];
-
-						IOHelper::rename($this->_destinationFileName, IOHelper::getFolderName($this->_destinationFileName).$fileName);
+						craft()->fileCache->delete('etConnectFailure');
 					}
 
-					return $fileName;
-				}
-
-				$etModel = craft()->et->decodeEtModel($response->getBody());
-
-				if ($etModel)
-				{
-					if ($missingLicenseKey && !empty($etModel->licenseKey))
+					if ($this->_destinationFileName)
 					{
-						$this->_setLicenseKey($etModel->licenseKey);
-					}
+						$body = $response->getBody();
 
-					// Do some packageTrial timestamp to datetime conversions.
-					if (!empty($etModel->packageTrials))
-					{
-						$packageTrials = $etModel->packageTrials;
-						foreach ($etModel->packageTrials as $packageHandle => $expiryTimestamp)
+						// Make sure we're at the beginning of the stream.
+						$body->rewind();
+
+						// Write it out to the file
+						IOHelper::writeToFile($this->_destinationFileName, $body->getStream(), true);
+
+						// Close the stream.
+						$body->close();
+
+						$fileName = IOHelper::getFileName($this->_destinationFileName, false);
+
+						// If the file name is a UUID, we know it was temporarily set and they want to use the name of the file that was on the sending server.
+						if (StringHelper::isUUID($fileName))
 						{
-							$expiryDate = DateTime::createFromFormat('U', $expiryTimestamp);
-							$currentDate = DateTimeHelper::currentUTCDateTime();
+							$contentDisposition = $response->getHeader('content-disposition')->toArray();
+							preg_match("/\"(.*)\"/us", $contentDisposition[0], $matches);
+							$fileName = $matches[1];
 
-							if ($currentDate > $expiryDate)
-							{
-								unset($packageTrials[$packageHandle]);
-							}
+							IOHelper::rename($this->_destinationFileName, IOHelper::getFolderName($this->_destinationFileName).$fileName);
 						}
 
-						$etModel->packageTrials = $packageTrials;
+						return $fileName;
 					}
 
-					// Cache the license key status and which packages are associated with it
-					craft()->fileCache->set('licenseKeyStatus', $etModel->licenseKeyStatus);
-					craft()->fileCache->set('licensedPackages', $etModel->licensedPackages);
-					craft()->fileCache->set('packageTrials', $etModel->packageTrials);
+					$etModel = craft()->et->decodeEtModel($response->getBody());
 
-					if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
+					if ($etModel)
 					{
-						craft()->fileCache->set('licensedDomain', $etModel->licensedDomain);
-					}
+						if ($missingLicenseKey && !empty($etModel->licenseKey))
+						{
+							$this->_setLicenseKey($etModel->licenseKey);
+						}
 
-					if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
+						// Do some packageTrial timestamp to datetime conversions.
+						if (!empty($etModel->packageTrials))
+						{
+							$packageTrials = $etModel->packageTrials;
+							foreach ($etModel->packageTrials as $packageHandle => $expiryTimestamp)
+							{
+								$expiryDate = DateTime::createFromFormat('U', $expiryTimestamp);
+								$currentDate = DateTimeHelper::currentUTCDateTime();
+
+								if ($currentDate > $expiryDate)
+								{
+									unset($packageTrials[$packageHandle]);
+								}
+							}
+
+							$etModel->packageTrials = $packageTrials;
+						}
+
+						// Cache the license key status and which packages are associated with it
+						craft()->fileCache->set('licenseKeyStatus', $etModel->licenseKeyStatus);
+						craft()->fileCache->set('licensedPackages', $etModel->licensedPackages);
+						craft()->fileCache->set('packageTrials', $etModel->packageTrials);
+
+						if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
+						{
+							craft()->fileCache->set('licensedDomain', $etModel->licensedDomain);
+						}
+
+						if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
+						{
+							craft()->fileCache->set('licensedDomain', $etModel->licensedDomain);
+						}
+
+						return $etModel;
+					}
+					else
 					{
-						craft()->fileCache->set('licensedDomain', $etModel->licensedDomain);
-					}
+						Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
 
-					return $etModel;
+						if (craft()->fileCache->get('etConnectFailure'))
+						{
+							// There was an error, but at least we connected.
+							craft()->fileCache->delete('etConnectFailure');
+						}
+					}
 				}
 				else
 				{
@@ -240,16 +251,6 @@ class Et
 						// There was an error, but at least we connected.
 						craft()->fileCache->delete('etConnectFailure');
 					}
-				}
-			}
-			else
-			{
-				Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
-
-				if (craft()->fileCache->get('etConnectFailure'))
-				{
-					// There was an error, but at least we connected.
-					craft()->fileCache->delete('etConnectFailure');
 				}
 			}
 		}
