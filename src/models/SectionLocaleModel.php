@@ -16,7 +16,7 @@ class SectionLocaleModel extends BaseModel
 			'id'        => AttributeType::Number,
 			'sectionId' => AttributeType::Number,
 			'locale'    => AttributeType::Locale,
-			'urlFormat' => AttributeType::Bool,
+			'urlFormat' => AttributeType::String,
 		);
 	}
 }
