@@ -623,6 +623,30 @@ class InstallService extends BaseApplicationComponent
 
 		Craft::log('Creating the News section.');
 
+		$newsSection = new SectionModel();
+		$newsSection->name     = Craft::t('News');
+		$newsSection->handle   = 'news';
+		$newsSection->hasUrls  = true;
+		$newsSection->template = 'news/_entry';
+
+		$newsSection->setLocales(array(
+			$inputs['locale'] => SectionLocaleModel::populateModel(array(
+				'locale'    => $inputs['locale'],
+				'urlFormat' => 'news/{postDate.year}/{slug}',
+			))
+		));
+
+		if (craft()->sections->saveSection($newsSection))
+		{
+			Craft::log('News section created successfully.');
+		}
+		else
+		{
+			Craft::log('Could not save the News section.', LogLevel::Warning);
+		}
+
+		Craft::log('Saving the News entry type.');
+
 		$newsLayoutFields = array(
 			array(
 				'fieldId'   => $bodyField->id,
@@ -648,28 +672,17 @@ class InstallService extends BaseApplicationComponent
 		$newsLayout->setTabs($newsLayoutTabs);
 		$newsLayout->setFields($newsLayoutFields);
 
-		$newsSection = new SectionModel();
-		$newsSection->name     = Craft::t('News');
-		$newsSection->handle   = 'news';
-		$newsSection->hasUrls  = true;
-		$newsSection->template = 'news/_entry';
+		$newsEntryTypes = $newsSection->getEntryTypes();
+		$newsEntryType = $newsEntryTypes[array_shift(array_keys($newsEntryTypes))];
+		$newsEntryType->setFieldLayout($newsLayout);
 
-		$newsSection->setLocales(array(
-			$inputs['locale'] => SectionLocaleModel::populateModel(array(
-				'locale'    => $inputs['locale'],
-				'urlFormat' => 'news/{postDate.year}/{slug}',
-			))
-		));
-
-		$newsSection->setFieldLayout($newsLayout);
-
-		if (craft()->sections->saveSection($newsSection))
+		if (craft()->sections->saveEntryType($newsEntrytype))
 		{
-			Craft::log('News section created successfully.');
+			Craft::log('News entry type saved successfully.');
 		}
 		else
 		{
-			Craft::log('Could not save the News section.', LogLevel::Warning);
+			Craft::log('Could not save the News entry type.', LogLevel::Warning);
 		}
 
 		// News entry
