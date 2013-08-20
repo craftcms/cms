@@ -414,8 +414,8 @@ table.info > tbody > tr > td { padding: 0 0 2px 0; }
 
 /* data */
 table.data { width: 100%; }
-table.data th,
-table.data td { padding-left: 10px; }
+table.data th:not(:first-child),
+table.data td:not(:first-child) { padding-left: 10px; }
 table.data thead th,
 table.data thead td { padding-top: 4px; padding-bottom: 4px; cursor: default; }
 table.data tbody th,
