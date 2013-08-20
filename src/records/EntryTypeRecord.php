@@ -23,7 +23,7 @@ class EntryTypeRecord extends BaseRecord
 		return array(
 			'name'       => array(AttributeType::Name, 'required' => true),
 			'handle'     => array(AttributeType::Handle, 'required' => true),
-			'titleLabel' => array(AttributeType::String, 'required' => true, 'default' => 'Title'),
+			'titleLabel' => array(AttributeType::String, 'default' => 'Title'),
 		);
 	}
 
