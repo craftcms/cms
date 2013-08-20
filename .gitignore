@@ -60,3 +60,12 @@ Source/craft/app/vendor/twig/twig/.travis.yml
 Source/craft/app/vendor/twig/twig/AUTHORS
 Source/craft/app/vendor/twig/twig/phpunit.xml.dist
 Source/craft/app/vendor/twig/twig/README.markdown
+
+Source/craft/app/vendor/imagine/imagine/.git
+Source/craft/app/vendor/imagine/imagine/.gitignore
+Source/craft/app/vendor/imagine/imagine/docs
+Source/craft/app/vendor/imagine/imagine/tests
+Source/craft/app/vendor/imagine/imagine/.travis.yml
+Source/craft/app/vendor/imagine/imagine/Rakefile
+Source/craft/app/vendor/imagine/imagine/phpunit.xml.dist
+Source/craft/app/vendor/imagine/imagine/README.md
