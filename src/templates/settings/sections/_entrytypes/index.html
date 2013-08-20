@@ -1,0 +1,39 @@
+{% extends "_layouts/cp" %}
+
+{% set content %}
+	<table id="entrytypes" class="data collapsible">
+		<thead>
+			<th scope="col">{{ "Name"|t }}</th>
+			<th scope="col">{{ "Handle"|t }}</th>
+			{% if section.getEntryTypes() | length > 1 %}
+				<td class="thin"></td>
+			{% endif %}
+		</thead>
+		<tbody>
+			{% for entryType in section.getEntryTypes() %}
+				<tr data-id="{{ entryType.id }}" data-name="{{ entryType.name }}">
+					<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id) }}">{{ entryType.name }}</a></th>
+					<td data-title="{{ 'Handle'|t }}"><code>{{ section.handle }}</code></td>
+					{% if section.getEntryTypes() | length > 1 %}
+						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
+					{% endif %}
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<div class="buttons">
+		<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/new') }}" class="btn submit add icon">{{ "New Entry Type"|t }}</a>
+	</div>
+{% endset %}
+
+
+{% set js %}
+	new Craft.AdminTable({
+		tableSelector: '#entrytypes',
+		deleteAction: 'sections/deleteEntryType',
+		allowDeleteAll: false,
+		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all entries that use it?"|t }}',
+	});
+{% endset %}
+{% includeJs js %}
