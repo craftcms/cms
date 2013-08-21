@@ -587,9 +587,9 @@ class SectionsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Deletes an entry type by its ID.
+	 * Deletes an entry type(s) by its ID.
 	 *
-	 * @param int $entryTypeId
+	 * @param int|array $entryTypeId
 	 * @throws \Exception
 	 * @return bool
 	*/
@@ -604,28 +604,53 @@ class SectionsService extends BaseApplicationComponent
 		try
 		{
 			// Delete the field layout
-			$fieldLayoutId = craft()->db->createCommand()
+			 $query = craft()->db->createCommand()
 				->select('fieldLayoutId')
-				->from('entrytypes')
-				->where(array('id' => $entryTypeId))
-				->queryScalar();
+				->from('entrytypes');
 
-			if ($fieldLayoutId)
+			if (is_array($entryTypeId))
 			{
-				craft()->fields->deleteLayoutById($fieldLayoutId);
+				$query->where(array('in', 'id', $entryTypeId));
+			}
+			else
+			{
+				$query->where(array('id' => $entryTypeId));
 			}
 
-			// Grab the entry ids so we can clean the elements table.
-			$entryIds = craft()->db->createCommand()
+			$fieldLayoutIds = $query->queryColumn();
+
+			if ($fieldLayoutIds)
+			{
+				craft()->fields->deleteLayoutById($fieldLayoutIds);
+			}
+
+			// Grab the entry IDs so we can clean the elements table.
+			$query = craft()->db->createCommand()
 				->select('id')
-				->from('entries')
-				->where(array('typeId' => $entryTypeId))
-				->queryColumn();
+				->from('entries');
+
+			if (is_array($entryTypeId))
+			{
+				$query->where(array('in', 'typeId', $entryTypeId));
+			}
+			else
+			{
+				$query->where(array('typeId' => $entryTypeId));
+			}
+
+			$entryIds = $query->queryColumn();
 
 			craft()->elements->deleteElementById($entryIds);
 
 			// Delete the entry type.
-			$affectedRows = craft()->db->createCommand()->delete('entrytypes', array('id' => $entryTypeId));
+			if (is_array($entryTypeId))
+			{
+				$affectedRows = craft()->db->createCommand()->delete('entrytypes', array('in', 'id', $entryTypeId));
+			}
+			else
+			{
+				$affectedRows = craft()->db->createCommand()->delete('entrytypes', array('id' => $entryTypeId));
+			}
 
 			$transaction->commit();
 

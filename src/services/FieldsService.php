@@ -544,14 +544,27 @@ class FieldsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Deletes a field layout by its ID.
+	 * Deletes a field layout(s) by its ID.
 	 *
-	 * @param int $layoutId
+	 * @param int|array $layoutId
 	 * @return bool
 	 */
 	public function deleteLayoutById($layoutId)
 	{
-		$affectedRows = craft()->db->createCommand()->delete('fieldlayouts', array('id' => $layoutId));
+		if (!$layoutId)
+		{
+			return false;
+		}
+
+		if (is_array($layoutId))
+		{
+			$affectedRows = craft()->db->createCommand()->delete('fieldlayouts', array('in', 'id', $layoutId));
+		}
+		else
+		{
+			$affectedRows = craft()->db->createCommand()->delete('fieldlayouts', array('id' => $layoutId));
+		}
+
 		return (bool) $affectedRows;
 	}
 
