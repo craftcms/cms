@@ -27,8 +27,15 @@ class WebLogRoute extends \CWebLogRoute
 				}
 
 				$view .= '-firebug';
+
+				if (($userAgent = craft()->request->getUserAgent()) !== null && preg_match('/msie [5-9]/i', $userAgent))
+				{
+					echo '<script type="text/javascript">';
+					echo IOHelper::getFileContents((IOHelper::getFolderName(__FILE__).'/../vendors/console-normalizer/normalizeconsole.min.js'));
+					echo "</script>\n";
+				}
 			}
-			else if(!(craft() instanceof \CWebApplication) || $isAjax)
+			else if (!(craft() instanceof \CWebApplication) || $isAjax)
 			{
 				return;
 			}
