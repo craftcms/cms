@@ -71,7 +71,7 @@ class InstallService extends BaseApplicationComponent
 		}
 
 		$this->_saveDefaultMailSettings($inputs['email'], $inputs['siteName']);
-		//$this->_createDefaultContent($inputs);
+		$this->_createDefaultContent($inputs);
 
 		Craft::log('Finished installing Craft.');
 	}
