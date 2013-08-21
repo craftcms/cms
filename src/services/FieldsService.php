@@ -284,7 +284,7 @@ class FieldsService extends BaseApplicationComponent
 
 		if ($recordValidates && $settingsValidate)
 		{
-			$transaction = craft()->db->beginTransaction();
+			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
 				$fieldType->onBeforeSave();
@@ -335,11 +335,18 @@ class FieldsService extends BaseApplicationComponent
 
 				$fieldType->onAfterSave();
 
-				$transaction->commit();
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
 			}
 			catch (\Exception $e)
 			{
-				$transaction->rollBack();
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
+
 				throw $e;
 			}
 

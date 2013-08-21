@@ -208,7 +208,7 @@ class GlobalsService extends BaseApplicationComponent
 
 		if (!$globalSet->hasErrors())
 		{
-			$transaction = craft()->db->beginTransaction();
+			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
 				if (!$isNewSet && $oldSet->fieldLayoutId)
@@ -237,11 +237,18 @@ class GlobalsService extends BaseApplicationComponent
 
 				$globalSetRecord->save(false);
 
-				$transaction->commit();
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
 			}
 			catch (\Exception $e)
 			{
-				$transaction->rollBack();
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
+
 				throw $e;
 			}
 
@@ -267,7 +274,7 @@ class GlobalsService extends BaseApplicationComponent
 			return false;
 		}
 
-		$transaction = craft()->db->beginTransaction();
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
 			// Delete the field layout
@@ -284,13 +291,20 @@ class GlobalsService extends BaseApplicationComponent
 
 			$affectedRows = craft()->elements->deleteElementById($setId);
 
-			$transaction->commit();
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
 
 			return (bool) $affectedRows;
 		}
 		catch (\Exception $e)
 		{
-			$transaction->rollBack();
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
 			throw $e;
 		}
 	}

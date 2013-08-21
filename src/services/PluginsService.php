@@ -345,7 +345,7 @@ class PluginsService extends BaseApplicationComponent
 			throw new Exception(Craft::t('“{plugin}” is already installed.', array('plugin' => $plugin->getName())));
 		}
 
-		$transaction = craft()->db->beginTransaction();
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
 			// Add the plugins as a record to the database.
@@ -363,11 +363,18 @@ class PluginsService extends BaseApplicationComponent
 			$this->_importPluginComponents($plugin);
 			$plugin->createTables();
 
-			$transaction->commit();
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
 		}
 		catch (\Exception $e)
 		{
-			$transaction->rollBack();
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
 			throw $e;
 		}
 
@@ -409,7 +416,7 @@ class PluginsService extends BaseApplicationComponent
 
 		$plugin->onBeforeUninstall();
 
-		$transaction = craft()->db->beginTransaction();
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
 			$plugin->dropTables();
@@ -417,11 +424,18 @@ class PluginsService extends BaseApplicationComponent
 			// Remove the row from the database.
 			craft()->db->createCommand()->delete('plugins', array('class' => $plugin->getClassHandle()));
 
-			$transaction->commit();
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
 		}
 		catch (\Exception $e)
 		{
-			$transaction->rollBack();
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
 			throw $e;
 		}
 

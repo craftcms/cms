@@ -168,7 +168,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function reorderUserWidgets($widgetIds)
 	{
-		$transaction = craft()->db->beginTransaction();
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 
 		try
 		{
@@ -179,11 +179,18 @@ class DashboardService extends BaseApplicationComponent
 				$widgetRecord->save();
 			}
 
-			$transaction->commit();
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
 		}
 		catch (\Exception $e)
 		{
-			$transaction->rollBack();
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
 			throw $e;
 		}
 

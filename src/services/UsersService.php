@@ -573,7 +573,7 @@ class UsersService extends BaseApplicationComponent
 			return false;
 		}
 
-		$transaction = craft()->db->beginTransaction();
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
 			// Fire an 'onBeforeDeleteUser' event
@@ -593,7 +593,10 @@ class UsersService extends BaseApplicationComponent
 			// Delete the user
 			$success = craft()->elements->deleteElementById($user->id);
 
-			$transaction->commit();
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
 
 			if ($success)
 			{
@@ -611,7 +614,11 @@ class UsersService extends BaseApplicationComponent
 		}
 		catch (\Exception $e)
 		{
-			$transaction->rollBack();
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
 			throw $e;
 		}
 	}

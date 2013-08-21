@@ -15,7 +15,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function up()
 	{
-		$transaction = $this->dbConnection->beginTransaction();
+		$transaction = $this->dbConnection->getCurrentTransaction() === null ? $this->dbConnection->beginTransaction() : null;
 
 		try
 		{
@@ -23,11 +23,19 @@ abstract class BaseMigration extends \CDbMigration
 
 			if ($result === false)
 			{
-				$transaction->rollback();
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
+
 				return false;
 			}
 
-			$transaction->commit();
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
+
 			return true;
 		}
 		catch(\Exception $e)
@@ -35,7 +43,11 @@ abstract class BaseMigration extends \CDbMigration
 			Craft::log($e->getMessage().' ('.$e->getFile().':'.$e->getLine().')', LogLevel::Error);
 			Craft::log($e->getTraceAsString(), LogLevel::Error);
 
-			$transaction->rollback();
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
 			return false;
 		}
 	}
