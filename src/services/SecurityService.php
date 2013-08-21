@@ -4,9 +4,9 @@ namespace Craft;
 /**
  *
  */
-class SecurityService extends BaseApplicationComponent
+class SecurityService extends \CSecurityManager
 {
-	private $_iterationCount;
+	private $_blowFishHashCost;
 
 	/**
 	 *
@@ -14,7 +14,7 @@ class SecurityService extends BaseApplicationComponent
 	function __construct()
 	{
 		parent::init();
-		$this->_iterationCount = craft()->config->get('phpPass-iterationCount');
+		$this->_blowFishHashCost = craft()->config->get('blowfishHashCost');
 	}
 
 	/**
@@ -26,34 +26,37 @@ class SecurityService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $string
+	 * Hashes a given password with the blowfish encryption algorithm.
+	 *
+	 * @param      $string        The string to hash
+	 * @param bool $validateHash  If you want to validate the just generated hash. Will throw an exception is validation fails.
 	 * @throws Exception
-	 * @return string
+	 * @return string             The hash.
 	 */
-	public function hashString($string)
+	public function hashPassword($string, $validateHash = false)
 	{
-		$hasher = new \PasswordHash($this->_iterationCount, false);
-		$hashAndType = $hasher->hashPassword($string);
-		$check = $hasher->checkPassword($string, $hashAndType['hash']);
+		$hash = \CPasswordHelper::hashPassword($string, $this->_blowFishHashCost);
 
-		if (!$check)
+		if ($validateHash)
 		{
-			throw new Exception(Craft::t('Could not hash the given string.'));
+			if (!$this->checkPassword($string, $hash))
+			{
+				throw new Exception(Craft::t('Could not hash the given string.'));
+			}
 		}
 
-		return $hashAndType;
+		return $hash;
 	}
 
 	/**
+	 * Validates a blowfish hash against a given string for sameness.
+	 *
 	 * @param $string
 	 * @param $storedHash
 	 * @return bool
 	 */
-	public function checkString($string, $storedHash)
+	public function checkPassword($string, $storedHash)
 	{
-		$hasher = new \PasswordHash($this->_iterationCount, false);
-		$check = $hasher->checkPassword($string, $storedHash);
-
-		return $check;
+		return \CPasswordHelper::verifyPassword($string, $storedHash);
 	}
 }

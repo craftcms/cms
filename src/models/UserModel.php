@@ -31,7 +31,6 @@ class UserModel extends BaseElementModel
 			'lastName'               => AttributeType::String,
 			'email'                  => AttributeType::Email,
 			'password'               => AttributeType::String,
-			'encType'                => AttributeType::String,
 			'preferredLocale'        => AttributeType::Locale,
 			'admin'                  => AttributeType::Bool,
 			'status'                 => AttributeType::Enum,
