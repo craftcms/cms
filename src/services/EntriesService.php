@@ -152,6 +152,9 @@ class EntriesService extends BaseApplicationComponent
 			throw new Exception(Craft::t('No entry types are available for this entry.'));
 		}
 
+		// Set the typeId attribute on the model in case it hasn't been set
+		$entry->typeId = $entryRecord->typeId = $entryType->id;
+
 		$fieldLayout = $entryType->getFieldLayout();
 		$content = craft()->content->prepElementContentForSave($entry, $fieldLayout);
 		$content->validate();
