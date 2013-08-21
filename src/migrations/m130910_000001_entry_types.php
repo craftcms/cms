@@ -27,7 +27,7 @@ class m130910_000001_entry_types extends BaseMigration
 		$this->addForeignKey('entrytypes', 'fieldLayoutId', 'fieldlayouts', 'id', 'SET NULL', null);
 
 		// Add the 'typeId' column to the entries table
-		$this->addColumnAfter('entries', 'typeId', array('column' => ColumnType::Int, 'null' => false), 'sectionId');
+		$this->addColumnAfter('entries', 'typeId', array('column' => ColumnType::Int), 'sectionId');
 
 		// Create an entry type for each section
 
