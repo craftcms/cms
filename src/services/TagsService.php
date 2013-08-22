@@ -161,7 +161,7 @@ class TagsService extends BaseApplicationComponent
 
 		if (!$tagSet->hasErrors())
 		{
-			$transaction = craft()->db->beginTransaction();
+			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
 				if (!$isNewTagSet && $oldTagSet->fieldLayoutId)
@@ -190,11 +190,18 @@ class TagsService extends BaseApplicationComponent
 				// Might as well update our cache of the tag set while we have it.
 				$this->_tagSetsById[$tagSet->id] = $tagSet;
 
-				$transaction->commit();
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
 			}
 			catch (\Exception $e)
 			{
-				$transaction->rollBack();
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
+
 				throw $e;
 			}
 
@@ -220,7 +227,7 @@ class TagsService extends BaseApplicationComponent
 			return false;
 		}
 
-		$transaction = craft()->db->beginTransaction();
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
 			// Delete the field layout
@@ -246,13 +253,20 @@ class TagsService extends BaseApplicationComponent
 
 			$affectedRows = craft()->db->createCommand()->delete('tagsets', array('id' => $tagSetId));
 
-			$transaction->commit();
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
 
 			return (bool) $affectedRows;
 		}
 		catch (\Exception $e)
 		{
-			$transaction->rollBack();
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
 			throw $e;
 		}
 	}

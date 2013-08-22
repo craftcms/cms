@@ -31,7 +31,7 @@ class InstallService extends BaseApplicationComponent
 		$records = $this->findInstallableRecords();
 
 		// Start the transaction
-		$transaction = craft()->db->beginTransaction();
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
 			Craft::log('Installing Craft.');
@@ -50,11 +50,18 @@ class InstallService extends BaseApplicationComponent
 			$this->_createRackspaceAccessTable();
 
 			Craft::log('Committing the transaction.');
-			$transaction->commit();
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
 		}
 		catch (\Exception $e)
 		{
-			$transaction->rollBack();
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
 			throw $e;
 		}
 

@@ -111,7 +111,6 @@ $configArray = array(
 			'tablePrefix'       => $tablePrefix,
 			'driverMap'         => array('mysql' => 'Craft\MysqlSchema'),
 			'class'             => 'Craft\DbConnection',
-			'pdoClass'          => 'Craft\PDO',
 		),
 
 		'config' => array(

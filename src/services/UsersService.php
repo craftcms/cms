@@ -72,7 +72,7 @@ class UsersService extends BaseApplicationComponent
 
 		if ($userRecord)
 		{
-			if (craft()->security->checkString($code, $userRecord->verificationCode))
+			if (craft()->security->checkPassword($code, $userRecord->verificationCode))
 			{
 				return UserModel::populateModel($userRecord);
 			}
@@ -573,7 +573,7 @@ class UsersService extends BaseApplicationComponent
 			return false;
 		}
 
-		$transaction = craft()->db->beginTransaction();
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
 			// Fire an 'onBeforeDeleteUser' event
@@ -593,7 +593,10 @@ class UsersService extends BaseApplicationComponent
 			// Delete the user
 			$success = craft()->elements->deleteElementById($user->id);
 
-			$transaction->commit();
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
 
 			if ($success)
 			{
@@ -611,7 +614,11 @@ class UsersService extends BaseApplicationComponent
 		}
 		catch (\Exception $e)
 		{
-			$transaction->rollBack();
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
 			throw $e;
 		}
 	}
@@ -727,7 +734,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function validatePassword($hash, $password)
 	{
-		if (craft()->security->checkString($password, $hash))
+		if (craft()->security->checkPassword($password, $hash))
 		{
 			return true;
 		}
@@ -885,8 +892,8 @@ class UsersService extends BaseApplicationComponent
 	private function _setVerificationCodeOnUserRecord(UserRecord $userRecord)
 	{
 		$unhashedCode = StringHelper::UUID();
-		$hashedCode = craft()->security->hashString($unhashedCode);
-		$userRecord->verificationCode = $hashedCode['hash'];
+		$hashedCode = craft()->security->hashData(base64_encode(serialize($unhashedCode)));
+		$userRecord->verificationCode = $hashedCode;
 		$userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
 
 		return $unhashedCode;
@@ -928,10 +935,9 @@ class UsersService extends BaseApplicationComponent
 
 		if ($passwordModel->validate())
 		{
-			$hashAndType = craft()->security->hashString($user->newPassword);
+			$hash = craft()->security->hashPassword($user->newPassword);
 
-			$userRecord->password = $user->password = $hashAndType['hash'];
-			$userRecord->encType = $user->encType = $hashAndType['encType'];
+			$userRecord->password = $user->password = $hash;
 			$userRecord->status = $user->status = UserStatus::Active;
 			$userRecord->invalidLoginWindowStart = null;
 			$userRecord->invalidLoginCount = $user->invalidLoginCount = null;

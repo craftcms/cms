@@ -102,7 +102,7 @@ class RelationsService extends BaseApplicationComponent
 		// Prevent duplicate child IDs.
 		$childIds = array_unique($childIds);
 
-		$transaction = craft()->db->beginTransaction();
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
 			// Delete the existing relations
@@ -124,11 +124,18 @@ class RelationsService extends BaseApplicationComponent
 				craft()->db->createCommand()->insertAll('relations', $columns, $values);
 			}
 
-			$transaction->commit();
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
 		}
 		catch (\Exception $e)
 		{
-			$transaction->rollBack();
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
 			throw $e;
 		}
 	}

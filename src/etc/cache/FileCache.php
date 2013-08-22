@@ -138,10 +138,10 @@ class FileCache extends \CFileCache
 		}
 		else
 		{
-			if (IOHelper::writeToFile($cacheFile, $value) !== false)
+			if (IOHelper::writeToFile($cacheFile, $this->embedExpiry ? $expire.$value : $value) !== false)
 			{
 				IOHelper::changePermissions($cacheFile, IOHelper::getWritableFilePermissions());
-				return IOHelper::touch($cacheFile, $expire);
+				return $this->embedExpiry ? true : IOHelper::touch($cacheFile, $expire);
 			}
 			else
 			{

@@ -280,7 +280,7 @@ class SectionsService extends BaseApplicationComponent
 
 		if (!$section->hasErrors())
 		{
-			$transaction = craft()->db->beginTransaction();
+			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
 				$sectionRecord->save(false);
@@ -406,11 +406,18 @@ class SectionsService extends BaseApplicationComponent
 					$this->saveEntryType($entryType);
 				}
 
-				$transaction->commit();
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
 			}
 			catch (\Exception $e)
 			{
-				$transaction->rollBack();
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
+
 				throw $e;
 			}
 
@@ -436,7 +443,7 @@ class SectionsService extends BaseApplicationComponent
 			return false;
 		}
 
-		$transaction = craft()->db->beginTransaction();
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
 			// Grab the entry ids so we can clean the elements table.
@@ -451,13 +458,20 @@ class SectionsService extends BaseApplicationComponent
 			// Delete the section.
 			$affectedRows = craft()->db->createCommand()->delete('sections', array('id' => $sectionId));
 
-			$transaction->commit();
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
 
 			return (bool) $affectedRows;
 		}
 		catch (\Exception $e)
 		{
-			$transaction->rollBack();
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
 			throw $e;
 		}
 	}
@@ -542,7 +556,7 @@ class SectionsService extends BaseApplicationComponent
 
 		if (!$entryType->hasErrors())
 		{
-			$transaction = craft()->db->beginTransaction();
+			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
 				if (!$isNewEntryType && $oldEntryType->fieldLayoutId)
@@ -570,11 +584,18 @@ class SectionsService extends BaseApplicationComponent
 				// Might as well update our cache of the entry type while we have it.
 				$this->_entryTypesById[$entryType->id] = $entryType;
 
-				$transaction->commit();
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
 			}
 			catch (\Exception $e)
 			{
-				$transaction->rollBack();
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
+
 				throw $e;
 			}
 
@@ -600,7 +621,7 @@ class SectionsService extends BaseApplicationComponent
 			return false;
 		}
 
-		$transaction = craft()->db->beginTransaction();
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
 			// Delete the field layout
@@ -652,13 +673,20 @@ class SectionsService extends BaseApplicationComponent
 				$affectedRows = craft()->db->createCommand()->delete('entrytypes', array('id' => $entryTypeId));
 			}
 
-			$transaction->commit();
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
 
 			return (bool) $affectedRows;
 		}
 		catch (\Exception $e)
 		{
-			$transaction->rollBack();
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
 			throw $e;
 		}
 	}

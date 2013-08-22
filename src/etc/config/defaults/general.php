@@ -37,6 +37,14 @@ return array(
 'backupDbOnUpdate' => true,
 
 /**
+ * The higher the cost value, the longer it takes to generate the hash and to verify a password against it. Higher cost
+ * therefore slows down a brute-force attack. For best protection against brute for attacks, set it to the highest value that is tolerable on production servers.
+ * The time taken to compute the hash doubles for every increment by one of $cost. So, for example, if the
+ * hash takes 1 second to compute when $cost is 14 then then the compute time varies as 2^($cost - 14) seconds.
+ */
+'blowfishHashCost' => 13,
+
+/**
  * The length of time Craft will keep things cached in craft/storage/runtime/.
  *
  * Set to '0' to cache things indefinitely.
@@ -161,14 +169,6 @@ return array(
  * The maximum amount of memory Craft will try to reserve during memory intensive operations such as zipping, unzipping and updating.
  */
 'phpMaxMemoryLimit' => '256M',
-
-// PHPPass Config
-/**
- * Controls the number of iterations for key stretching. A setting of 8 means the hash algorithm will be applied 2^8 = 256 times.
- *
- * This setting should be kept between 4 and 31.
- */
-'phpPass-iterationCount' => 8,
 
 /**
  * The amount of time Craft will remember a username and pre-populate it on the CP login page.

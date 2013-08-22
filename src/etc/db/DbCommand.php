@@ -610,7 +610,7 @@ class DbCommand extends \CDbCommand
 		{
 			if (!is_numeric($key))
 			{
-				$param = ':p'.StringHelper::randomString(9);
+				$param = ':p'.craft()->security->generateRandomString(9, false);
 				$normalizedConditions[] = $key.'='.$param;
 				$params[$param] = $value;
 				unset($conditions[$key]);

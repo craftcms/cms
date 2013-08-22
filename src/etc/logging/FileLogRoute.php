@@ -27,12 +27,22 @@ class FileLogRoute extends \CFileLogRoute
 	 */
 	protected function processLogs($logs)
 	{
-		$logFile = IOHelper::normalizePathSeparators($this->getLogPath().'/'.$this->getLogFile());
+		$text = '';
 
-		if (IOHelper::getFileSize($logFile) > $this->getMaxFileSize() * 1024)
+		foreach ($logs as $log)
 		{
-			$this->rotateFiles();
+			$message = LoggingHelper::redact($log[0]);
+			$level = $log[1];
+			$category = $log[2];
+			$time = $log[3];
+			$force = (isset($log[4]) && $log[4] == true) ? true : false;
+
+			$text .= $this->formatLogMessageWithForce($message, $level, $category, $time, $force);
 		}
+
+		$text .= PHP_EOL.'******************************************************************************************************'.PHP_EOL;
+
+		$logFile = IOHelper::normalizePathSeparators($this->getLogPath().'/'.$this->getLogFile());
 
 		$lock = craft()->config->get('useLockWhenWritingToFile') === true;
 
@@ -43,25 +53,37 @@ class FileLogRoute extends \CFileLogRoute
 			@flock($fp, LOCK_EX);
 		}
 
-		foreach ($logs as $log)
+		if (IOHelper::getFileSize($logFile) > $this->getMaxFileSize() * 1024)
 		{
-			$message = LoggingHelper::redact($log[0]);
-			$level = $log[1];
-			$category = $log[2];
-			$time = $log[3];
-			$force = (isset($log[4]) && $log[4] == true) ? true : false;
+			$this->rotateFiles();
 
-			@fwrite($fp, $this->formatLogMessageWithForce($message, $level, $category, $time, $force));
+			if ($lock)
+			{
+				@flock($fp, LOCK_UN);
+			}
+
+			@fclose($fp);
+
+			if ($lock)
+			{
+				IOHelper::writeToFile($logFile, $text, false, true, false);
+			}
+			else
+			{
+				IOHelper::writeToFile($logFile, $text, false, true, true);
+			}
 		}
-
-		@fwrite($fp, PHP_EOL.'******************************************************************************************************'.PHP_EOL);
-
-		if ($lock)
+		else
 		{
-			@flock($fp, LOCK_UN);
-		}
+			@fwrite($fp, $text);
 
-		@fclose($fp);
+			if ($lock)
+			{
+				@flock($fp, LOCK_UN);
+			}
+
+			@fclose($fp);
+		}
 	}
 
 	/**

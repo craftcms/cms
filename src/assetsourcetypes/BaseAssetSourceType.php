@@ -662,10 +662,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$this->deleteCreatedImages($file);
 		craft()->assetTransforms->deleteTransformRecordsByFileId($file->id);
 
-
-		if (IOHelper::fileExists(craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename)))
+		$filePath = craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename);
+		if (IOHelper::fileExists($filePath))
 		{
-			IOHelper::deleteFile(craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename));
+			IOHelper::deleteFile($filePath);
 		}
 
 		// Delete DB record and the file itself.
