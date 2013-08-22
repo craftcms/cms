@@ -135,7 +135,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			selectedClass:     'sel',
 			multi:             false,
 			vertical:          true,
-			onSelectionChange: $.proxy(this, '_onSourceChange')
+			onSelectionChange: $.proxy(this, 'onSourceChange')
 		});
 
 		this.addListener(this.$viewBtns, 'click', function(ev)
@@ -161,7 +161,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		}
 	},
 
-	_onSourceChange: function ()
+	onSourceChange: function()
 	{
 		var sourceElement = this.$sources.filter('.sel');
 		if (sourceElement.length == 0)
@@ -299,7 +299,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.onUpdateElements(append);
 	},
 
-	onUpdateElements: function (append)
+	onUpdateElements: function(append)
 	{
 		this.settings.onUpdateElements(append);
 	},
@@ -363,7 +363,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.settings.onSelectSource(sourceKey);
 	},
 
-	onAfterHtmlInit: function ()
+	onAfterHtmlInit: function()
 	{
 		this.settings.onAfterHtmlInit()
 	},
@@ -470,14 +470,14 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		}
 	},
 
-	setElementSelect: function (obj)
+	setElementSelect: function(obj)
 	{
 		this.elementSelect = obj;
 	},
 
-	addCallback: function (currentCallback, newCallback)
+	addCallback: function(currentCallback, newCallback)
 	{
-		return $.proxy(function () {
+		return $.proxy(function() {
 			if (typeof currentCallback == 'function')
 			{
 				currentCallback.apply(this, arguments);
@@ -486,12 +486,12 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		}, this);
 	},
 
-	setIndexBusy: function () {
+	setIndexBusy: function() {
 		this.$mainSpinner.removeClass('hidden');
 		this.isIndexBusy = true;
 	},
 
-	setIndexAvailable: function () {
+	setIndexAvailable: function() {
 		this.$mainSpinner.addClass('hidden');
 		this.isIndexBusy = false;
 	}
