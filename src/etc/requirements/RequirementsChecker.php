@@ -111,6 +111,13 @@ class RequirementsChecker extends \CComponent
 				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('@@@appName@@@ requires <a href="http://php.net/manual/en/book.curl.php">cURL</a> in order to run.')
 			),
+			new Requirement(
+				Craft::t('crypt() with CRYPT_BLOWFISH enabled'),
+				true,
+				function_exists('crypt') && defined('CRYPT_BLOWFISH') && CRYPT_BLOWFISH,
+				'<a href="http://www.yiiframework.com/doc/api/1.1/CPasswordHelper">CPasswordHelper</a>',
+				Craft::t('@@@appName@@@ requires the <a href="http://php.net/manual/en/function.crypt.php">crypt()</a> function with CRYPT_BLOWFISH enabled for secure password storage.')
+			),
 
 		);
 	}
