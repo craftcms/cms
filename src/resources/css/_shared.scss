@@ -21,11 +21,11 @@ $errorcolor: #da5a47;
 $successcolor: #00b007;
 $noticecolor: #5286d9;
 $hrcolor: #eee;
-$textcolor: #555;
-$lighttextcolor: #999;
+$textcolor: #292d33;
+$lighttextcolor: hsl(216, 11%, 75%);
 
-$bgcolor: #f5f5f5;
-$highlight: #f5f5f5;
+$bgcolor: #f2f4f5;
+$highlight: #f2f4f5;
 
 @mixin linear-gradient($from, $to) {
 	background-image: -webkit-linear-gradient(top, $from, $to);
