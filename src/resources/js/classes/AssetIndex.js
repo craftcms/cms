@@ -787,6 +787,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 	_onUploadComplete: function(id, fileName, response) {
 		this._uploadFileProgress[id] = 1;
 		this._updateUploadProgress();
+		var doReload = true;
 
 		if (response.success || response.prompt) {
 
@@ -799,6 +800,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			{
 				this.promptHandler.addPrompt(response);
 			}
+		}
+		else
+		{
+			alert(Craft.t('Upload failed for') + ' ' + fileName);
+			doReload = false;
 		}
 
 		// for the last file, display prompts, if any. If not - just update the element view.
@@ -813,7 +819,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			}
 			else
 			{
-				this.updateElements();
+				if (doReload)
+				{
+					this.updateElements();
+				}
+
 			}
 		}
 	},
