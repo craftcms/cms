@@ -4177,14 +4177,14 @@ Garnish.Select = Garnish.Base.extend({
 		// was this a click?
 		if (! (ev.metaKey || ev.ctrlKey) && ! ev.shiftKey && Garnish.getDist(this.mousedownX, this.mousedownY, ev.pageX, ev.pageY) < 1)
 		{
-			this.selectItem($item);
-
 			// wait a moment before deselecting others
 			// to give the user a chance to double-click
 			this.clearMouseUpTimeout();
 			this.mouseUpTimeout = setTimeout($.proxy(function() {
 				this.deselectOthers($item);
 			}, this), this.mouseUpTimeoutDuration);
+
+			this.selectItem($item);
 		}
 	},
 
@@ -4754,7 +4754,7 @@ Garnish.Select = Garnish.Base.extend({
 			{
 				this.callbackTimeout = null;
 				this.settings.onSelectionChange();
-			}, this), 300);
+			}, this), this.mouseUpTimeoutDuration);
 		}
 	},
 

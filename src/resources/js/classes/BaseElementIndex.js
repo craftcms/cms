@@ -134,7 +134,6 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.sourceSelect = new Garnish.Select(this.$sidebar.find('nav'), this.$sources, {
 			selectedClass:     'sel',
 			multi:             false,
-			waitForDblClick:   false,
 			vertical:          true,
 			onSelectionChange: $.proxy(this, '_onSourceChange')
 		});
