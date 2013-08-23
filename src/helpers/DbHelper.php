@@ -419,7 +419,7 @@ class DbHelper
 			}
 			else
 			{
-				$param = ':p'.craft()->security->generateRandomString(9, false);
+				$param = ':p'.StringHelper::randomString(9);
 				$params[$param] = trim($value);
 				$conditions[] = $key.$operator.$param;
 			}
@@ -458,7 +458,7 @@ class DbHelper
 				$date = DateTime::createFromString($date, Craft::getTimezone());
 			}
 
-			$param = ':p'.craft()->security->generateRandomString(9, false);
+			$param = ':p'.StringHelper::randomString(9);
 			$params[$param] = DateTimeHelper::formatTimeForDb($date->getTimestamp());
 			$conditions[] = $key.$operator.$param;
 		}

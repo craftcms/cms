@@ -915,7 +915,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 		var elementSelect = new Garnish.Select(this.$elementContainer, $children, {
 			multi: true,
 			vertical: (this.getState('view') == 'table'),
-			waitForDblClick: true,
 			onSelectionChange: $.proxy(this, '_onElementSelectionChange')
 		});
 

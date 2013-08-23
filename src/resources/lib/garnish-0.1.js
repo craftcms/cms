@@ -3904,7 +3904,6 @@ Garnish.Select = Garnish.Base.extend({
 	mousedownX: null,
 	mousedownY: null,
 	mouseUpTimeout: null,
-	mouseUpTimeoutDuration: null,
 	callbackTimeout: null,
 
 	$focusable: null,
@@ -3938,7 +3937,6 @@ Garnish.Select = Garnish.Base.extend({
 		this.$container.data('select', this);
 
 		this.setSettings(settings, Garnish.Select.defaults);
-		this.mouseUpTimeoutDuration = (this.settings.waitForDblClick ? 300 : 0);
 
 		this.$items = $();
 		this.addItems(items);
@@ -4148,11 +4146,6 @@ Garnish.Select = Garnish.Base.extend({
 		{
 			this.selectRange($item);
 		}
-		else if (! this.isSelected($item))
-		{
-			this.deselectAll();
-			this.selectItem($item);
-		}
 	},
 
 	/**
@@ -4177,14 +4170,20 @@ Garnish.Select = Garnish.Base.extend({
 		// was this a click?
 		if (! (ev.metaKey || ev.ctrlKey) && ! ev.shiftKey && Garnish.getDist(this.mousedownX, this.mousedownY, ev.pageX, ev.pageY) < 1)
 		{
-			this.selectItem($item);
+			// If this is already selected, wait a moment to see if this is a double click before making any rash decisions
+			if (this.isSelected($item))
+			{
+				this.clearMouseUpTimeout();
 
-			// wait a moment before deselecting others
-			// to give the user a chance to double-click
-			this.clearMouseUpTimeout();
-			this.mouseUpTimeout = setTimeout($.proxy(function() {
-				this.deselectOthers($item);
-			}, this), this.mouseUpTimeoutDuration);
+				this.mouseUpTimeout = setTimeout($.proxy(function() {
+					this.deselectOthers($item);
+				}, this), 300);
+			}
+			else
+			{
+				this.deselectAll();
+				this.selectItem($item);
+			}
 		}
 	},
 
@@ -4754,7 +4753,7 @@ Garnish.Select = Garnish.Base.extend({
 			{
 				this.callbackTimeout = null;
 				this.settings.onSelectionChange();
-			}, this), 300);
+			}, this), 1);
 		}
 	},
 
@@ -4772,7 +4771,6 @@ Garnish.Select = Garnish.Base.extend({
 		multi: false,
 		vertical: false,
 		horizontal: false,
-		waitForDblClick: false,
 		arrowsChangeSelection: true,
 		handle: null,
 		filter: null,
