@@ -50,20 +50,23 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 				sources:     this.settings.sources
 			};
 
-			Craft.postActionRequest('elements/getModalBody', data, $.proxy(function(response)
-			{
-				this.$body.html(response);
+			Craft.postActionRequest('elements/getModalBody', data, $.proxy(function(response, textStatus) {
 
-				// Initialize the element index
-				this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
-					mode:               'modal',
-					id:                 this.settings.id,
-					criteria:           this.settings.criteria,
-					disabledElementIds: this.settings.disabledElementIds,
-					onUpdateElements:   $.proxy(this, 'onUpdateElements'),
-					onEnableElements:   $.proxy(this, 'onEnableElements'),
-					onDisableElements:  $.proxy(this, 'onDisableElements')
-				});
+				if (textStatus == 'success')
+				{
+					this.$body.html(response);
+
+					// Initialize the element index
+					this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
+						mode:               'modal',
+						id:                 this.settings.id,
+						criteria:           this.settings.criteria,
+						disabledElementIds: this.settings.disabledElementIds,
+						onUpdateElements:   $.proxy(this, 'onUpdateElements'),
+						onEnableElements:   $.proxy(this, 'onEnableElements'),
+						onDisableElements:  $.proxy(this, 'onDisableElements')
+					});
+				}
 
 			}, this));
 		}

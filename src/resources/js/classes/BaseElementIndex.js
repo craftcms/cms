@@ -226,28 +226,32 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 		var data = this.getControllerData();
 
-		Craft.postActionRequest('elements/getElements', data, $.proxy(function(response)
-		{
+		Craft.postActionRequest('elements/getElements', data, $.proxy(function(response, textStatus) {
+
 			this.$mainSpinner.addClass('hidden');
 
-			this.$elements.html(response.elementContainerHtml);
-
-			if (this.getState('view') == 'table')
+			if (textStatus == 'success')
 			{
-				var $headers = this.$elements.find('thead:first th');
-				this.addListener($headers, 'click', 'onSortChange');
+				this.$elements.html(response.elementContainerHtml);
 
-				this.$table = this.$elements.find('table:first');
-				this.$elementContainer = this.$table.find('tbody:first');
+				if (this.getViewState('mode') == 'table')
+				{
+					var $headers = this.$elements.find('thead:first th');
+					this.addListener($headers, 'click', 'onSortChange');
 
-				Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.add(this.$table);
+					this.$table = this.$elements.find('table:first');
+					this.$elementContainer = this.$table.find('tbody:first');
+
+					Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.add(this.$table);
+				}
+				else
+				{
+					this.$elementContainer = this.$elements.children('ul');
+				}
+
+				this.setNewElementDataHtml(response);
 			}
-			else
-			{
-				this.$elementContainer = this.$elements.children('ul');
-			}
 
-			this.setNewElementDataHtml(response);
 		}, this));
 	},
 

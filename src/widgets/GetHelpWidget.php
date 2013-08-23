@@ -38,7 +38,7 @@ class GetHelpWidget extends BaseWidget
 		craft()->templates->includeJs($js);
 
 		craft()->templates->includeJsResource('js/GetHelpWidget.js');
-		craft()->templates->includeTranslations('Message sent successfully.');
+		craft()->templates->includeTranslations('Message sent successfully.', 'Couldn’t send support request.');
 
 
 		$message = "Enter your message here.\n\n" .

@@ -562,6 +562,11 @@ var CP = Garnish.Base.extend({
 	 */
 	displayError: function(message)
 	{
+		if (!message)
+		{
+			message = Craft.t('An unknown error occurred.');
+		}
+
 		this.displayNotification('error', message);
 	},
 
@@ -639,26 +644,21 @@ var CP = Garnish.Base.extend({
 
 				if (confirm(Craft.t('Are you sure you want to transfer your license to this domain?')))
 				{
-					Craft.postActionRequest('app/transferLicenseToCurrentDomain', $.proxy(function(response)
-					{
-						if (response.success)
+					Craft.postActionRequest('app/transferLicenseToCurrentDomain', $.proxy(function(response, textStatus) {
+
+						if (textStatus == 'success')
 						{
-							$transferDomainLink.parent().remove();
-							this.displayNotice(Craft.t('License transferred.'));
-						}
-						else
-						{
-							if (response.error)
+							if (response.success)
 							{
-								var error = response.error;
+								$transferDomainLink.parent().remove();
+								this.displayNotice(Craft.t('License transferred.'));
 							}
 							else
 							{
-								var error = 'An unknown error occurred.';
+								Craft.cp.displayError(response.error);
 							}
-
-							alert(error);
 						}
+
 					}, this));
 				}
 			}, this));
@@ -679,25 +679,20 @@ var CP = Garnish.Base.extend({
 					message: $link.prop('className').substr(5)
 				};
 
-				Craft.postActionRequest('app/shunCpAlert', data, $.proxy(function(response)
-				{
-					if (response.success)
+				Craft.postActionRequest('app/shunCpAlert', data, $.proxy(function(response, textStatus) {
+
+					if (textStatus == 'success')
 					{
-						$link.parent().remove();
-					}
-					else
-					{
-						if (response.error)
+						if (response.success)
 						{
-							var error = response.error;
+							$link.parent().remove();
 						}
 						else
 						{
-							var error = 'An unknown error occurred.';
+							Craft.cp.displayError(response.error);
 						}
-
-						alert(error);
 					}
+
 				}, this));
 
 			}, this));

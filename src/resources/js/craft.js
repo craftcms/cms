@@ -220,27 +220,39 @@ $.extend(Craft, {
 	 *
 	 * @param string action
 	 * @param object|null data
-	 * @param function|null onSuccess
-	 * @param funciton|null onError
+	 * @param function|null callback
 	 */
-	postActionRequest: function(action, data, onSuccess, onError)
+	postActionRequest: function(action, data, callback)
 	{
-		var url = Craft.getActionUrl(action);
-
 		// Param mapping
 		if (typeof data == 'function')
 		{
-			// (action, onSuccess, onError)
-			onError = onSuccess;
-			onSuccess = data;
+			// (action, callback)
+			callback = data;
 			data = {};
 		}
 
-		return $.ajax(url, {
-			type: 'POST',
-			data: data,
-			success: onSuccess,
-			error: onError
+		return $.ajax({
+			url:      Craft.getActionUrl(action),
+			type:     'POST',
+			data:     data,
+			success:  callback,
+			error:    function(jqXHR, textStatus, errorThrown) {
+				callback(null, textStatus, jqXHR);
+			},
+			complete: function(jqXHR, textStatus) {
+				if (textStatus != 'success')
+				{
+					if (typeof Craft.cp != 'undefined')
+					{
+						Craft.cp.displayError();
+					}
+					else
+					{
+						alert(Craft.t('An unknown error occurred.'));
+					}
+				}
+			}
 		});
 	},
 

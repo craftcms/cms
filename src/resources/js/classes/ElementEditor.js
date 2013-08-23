@@ -32,7 +32,7 @@ Craft.ElementEditor = Garnish.Base.extend({
 
 				this._hideSpinner();
 
-				if (data.requestId != this.requestId) {
+				if (textStatus != 'success' || data.requestId != this.requestId) {
 					return;
 				}
 
@@ -65,17 +65,20 @@ Craft.ElementEditor = Garnish.Base.extend({
 
 			Craft.postActionRequest(this.settings.saveContentAction, params, $.proxy(function(response, textStatus)
 			{
-				if (response.success)
+				this.hud.$body.find('.spinner').addClass('hidden');
+
+				if (textStatus == 'success')
 				{
-					// Update the title
-					this.$trigger.find('.label').text(response.title);
-					this.hud.$body.find('.spinner').hide();
-					this.removeHud();
-				}
-				else
-				{
-					this.hud.$body.find('.spinner').addClass('hidden');
-					Garnish.shake(this.hud.$hud);
+					if (textStatus == 'success' && response.success)
+					{
+						// Update the title
+						this.$trigger.find('.label').text(response.title);
+						this.removeHud();
+					}
+					else
+					{
+						Garnish.shake(this.hud.$hud);
+					}
 				}
 			}, this));
 		},

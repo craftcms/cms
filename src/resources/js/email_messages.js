@@ -94,31 +94,34 @@ var MessageSettingsModal = Garnish.Modal.extend({
 
 		$.post(Craft.getUrl('settings/email/_message_modal'), data, $.proxy(function(response, textStatus, jqXHR)
 		{
-			if (!this.$container)
+			if (textStatus == 'success')
 			{
-				var $container = $('<form class="modal message-settings" accept-charset="UTF-8">'+response+'</form>').appendTo(Garnish.$bod);
-				this.setContainer($container);
-				this.show();
+				if (!this.$container)
+				{
+					var $container = $('<form class="modal message-settings" accept-charset="UTF-8">'+response+'</form>').appendTo(Garnish.$bod);
+					this.setContainer($container);
+					this.show();
+				}
+				else
+				{
+					this.$container.html(response);
+				}
+
+				this.$localeSelect = this.$container.find('.locale:first > select');
+				this.$subjectInput = this.$container.find('.message-subject:first');
+				this.$bodyInput = this.$container.find('.message-body:first');
+				this.$saveBtn = this.$container.find('.submit:first');
+				this.$cancelBtn = this.$container.find('.cancel:first');
+				this.$spinner = this.$container.find('.spinner:first');
+
+				this.addListener(this.$localeSelect, 'change', 'switchLocale');
+				this.addListener(this.$container, 'submit', 'saveMessage');
+				this.addListener(this.$cancelBtn, 'click', 'cancel');
+
+				setTimeout($.proxy(function() {
+					this.$subjectInput.focus();
+				}, this), 100)
 			}
-			else
-			{
-				this.$container.html(response);
-			}
-
-			this.$localeSelect = this.$container.find('.locale:first > select');
-			this.$subjectInput = this.$container.find('.message-subject:first');
-			this.$bodyInput = this.$container.find('.message-body:first');
-			this.$saveBtn = this.$container.find('.submit:first');
-			this.$cancelBtn = this.$container.find('.cancel:first');
-			this.$spinner = this.$container.find('.spinner:first');
-
-			this.addListener(this.$localeSelect, 'change', 'switchLocale');
-			this.addListener(this.$container, 'submit', 'saveMessage');
-			this.addListener(this.$cancelBtn, 'click', 'cancel');
-
-			setTimeout($.proxy(function() {
-				this.$subjectInput.focus();
-			}, this), 100)
 
 		}, this));
 	},
@@ -164,23 +167,30 @@ var MessageSettingsModal = Garnish.Modal.extend({
 		this.$saveBtn.addClass('active');
 		this.$spinner.show();
 
-		Craft.postActionRequest('emailMessages/saveMessage', data, $.proxy(function(response, textStatus, jqXHR) {
-
-			if (response.success)
-			{
-				// Only update the page if we're editing the app target locale
-				if (data.locale == Craft.language)
-					this.message.updateHtmlFromModal();
-
-				this.hide();
-				Craft.cp.displayNotice(Craft.t('Message saved.'));
-			}
-			else
-				Craft.cp.displayError(Craft.t('Couldn’t save message.'));
+		Craft.postActionRequest('emailMessages/saveMessage', data, $.proxy(function(response, textStatus) {
 
 			this.$saveBtn.removeClass('active');
 			this.$spinner.hide();
 			this.loading = false;
+
+			if (textStatus == 'success')
+			{
+				if (response.success)
+				{
+					// Only update the page if we're editing the app target locale
+					if (data.locale == Craft.language)
+					{
+						this.message.updateHtmlFromModal();
+					}
+
+					this.hide();
+					Craft.cp.displayNotice(Craft.t('Message saved.'));
+				}
+				else
+				{
+					Craft.cp.displayError();
+				}
+			}
 
 		}, this));
 	},

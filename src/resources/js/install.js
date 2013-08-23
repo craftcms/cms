@@ -73,27 +73,39 @@ Craft.Installer = Garnish.Base.extend({
 				data[input] = Garnish.getInputPostVal($input);
 			}
 
-			Craft.postActionRequest('install/install', data, $.proxy(this, 'allDone'));
+			$.ajax({
+				url:      Craft.getActionUrl('install/install'),
+				type:     'POST',
+				data:     data,
+				complete: $.proxy(this, 'allDone')
+			});
 
 		}, this));
 	},
 
-	allDone: function()
+	allDone: function(response, textStatus)
 	{
-		this.$currentScreen.find('h1:first').text(Craft.t('All done!'));
+		if (textStatus == 'success' && response.success)
+		{
+			this.$currentScreen.find('h1:first').text(Craft.t('All done!'));
 
-		var $buttons = $('<div class="buttons"/>'),
-			$go = $('<div class="btn big submit">'+Craft.t('Go to @@@appName@@@')+'</div>').appendTo($buttons);
+			var $buttons = $('<div class="buttons"/>'),
+				$go = $('<div class="btn big submit">'+Craft.t('Go to @@@appName@@@')+'</div>').appendTo($buttons);
 
-		$('#spinner').replaceWith($buttons);
+			$('#spinner').replaceWith($buttons);
 
-		this.addListener($go, 'click', function() {
-			this.showScreen(30, null, 1000);
+			this.addListener($go, 'click', function() {
+				this.showScreen(30, null, 1000);
 
-			setTimeout(function() {
-				window.location.href = Craft.getUrl('dashboard');
-			}, Craft.Installer.duration);
-		});
+				setTimeout(function() {
+					window.location.href = Craft.getUrl('dashboard');
+				}, Craft.Installer.duration);
+			});
+		}
+		else
+		{
+			this.$currentScreen.find('h1:first').text('Oops.');
+		}
 	},
 
 	showScreen: function(i, callback, bgDuration)
@@ -163,41 +175,48 @@ Craft.Installer = Garnish.Base.extend({
 			data[input] = Garnish.getInputPostVal($input);
 		}
 
-		Craft.postActionRequest(action, data, $.proxy(function(response) {
-			if (response.validates)
-				callback();
-			else
-			{
-				for (var input in response.errors)
-				{
-					var errors = response.errors[input],
-						$input = $('#'+input),
-						$field = $input.closest('.field'),
-						$ul = $('<ul class="errors"/>').appendTo($field);
-
-					for (var i = 0; i < errors.length; i++)
-					{
-						var error = errors[i];
-						$('<li>'+error+'</li>').appendTo($ul);
-					}
-
-					if (!$input.is(':focus'))
-					{
-						$input.addClass('error');
-						($.proxy(function($input) {
-							this.addListener($input, 'focus', function() {
-								$input.removeClass('error');
-								this.removeListener($input, 'focus');
-							});
-						}, this))($input);
-					}
-				}
-
-				Garnish.shake(this.$currentScreen);
-			}
+		Craft.postActionRequest(action, data, $.proxy(function(response, textStatus) {
 
 			this.loading = false;
 			$submitBtn.removeClass('sel loading');
+
+			if (textStatus == 'success')
+			{
+				if (response.validates)
+				{
+					callback();
+				}
+				else
+				{
+					for (var input in response.errors)
+					{
+						var errors = response.errors[input],
+							$input = $('#'+input),
+							$field = $input.closest('.field'),
+							$ul = $('<ul class="errors"/>').appendTo($field);
+
+						for (var i = 0; i < errors.length; i++)
+						{
+							var error = errors[i];
+							$('<li>'+error+'</li>').appendTo($ul);
+						}
+
+						if (!$input.is(':focus'))
+						{
+							$input.addClass('error');
+							($.proxy(function($input) {
+								this.addListener($input, 'focus', function() {
+									$input.removeClass('error');
+									this.removeListener($input, 'focus');
+								});
+							}, this))($input);
+						}
+					}
+
+					Garnish.shake(this.$currentScreen);
+				}
+			}
+
 		}, this));
 	},
 

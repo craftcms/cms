@@ -161,16 +161,21 @@ Craft.Tool = Garnish.Base.extend({
 			params: params
 		};
 
-		Craft.postActionRequest('tools/performAction', data, $.proxy(this, 'onActionResponse'));
+		$.ajax({
+			url:      Craft.getActionUrl('tools/performAction'),
+			type:     'POST',
+			data:     data,
+			complete: $.proxy(this, 'onActionResponse')
+		})
 	},
 
-	onActionResponse: function(response)
+	onActionResponse: function(response, textStatus)
 	{
 		this.loadingActions--;
 		this.completedActions++;
 
 		// Add any new batches to the queue?
-		if (response && typeof response.batches != 'undefined' && response.batches)
+		if (textStatus == 'success' && response && response.batches)
 		{
 			for (var i = 0; i < response.batches.length; i++)
 			{
@@ -201,7 +206,7 @@ Craft.Tool = Garnish.Base.extend({
 			}
 			else
 			{
-				if (response && typeof response.backupFile != 'undefined' && response.backupFile)
+				if (response && response.backupFile)
 				{
 					var $iframe = $('<iframe/>', {'src' : Craft.getActionUrl('tools/downloadBackupFile', {'fileName':response.backupFile}) }).hide();
 					this.$form.append($iframe);

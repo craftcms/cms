@@ -148,8 +148,13 @@ Craft.ImageHandler = Garnish.Base.extend({
 			if (confirm(settings.deleteMessage))
 			{
 				$(this).parent().append('<div class="blocking-modal"></div>');
-				Craft.postActionRequest(settings.deleteAction, settings.postParameters, $.proxy(function(response){
-					_this.onImageDelete.apply(_this, [response]);
+				Craft.postActionRequest(settings.deleteAction, settings.postParameters, $.proxy(function(response, textStatus) {
+
+					if (textStatus == 'success')
+					{
+						_this.onImageDelete.apply(_this, [response]);
+					}
+
 				}, this));
 
 			}
@@ -216,15 +221,18 @@ Craft.ImageModal = Garnish.Modal.extend({
 
 		params = $.extend(this._postParameters, params);
 
-		Craft.postActionRequest(this._cropAction, params, $.proxy(function(response)
-		{
-			if (response.error)
+		Craft.postActionRequest(this._cropAction, params, $.proxy(function(response, textStatus) {
+
+			if (textStatus == 'success')
 			{
-				alert(response.error);
-			}
-			else
-			{
-				this.imageHandler.onImageSave.apply(this.imageHandler, [response]);
+				if (response.error)
+				{
+					Craft.cp.displayError(response.error);
+				}
+				else
+				{
+					this.imageHandler.onImageSave.apply(this.imageHandler, [response]);
+				}
 			}
 
 			this.hide();

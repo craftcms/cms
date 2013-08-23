@@ -47,11 +47,20 @@ var Routes = Garnish.Base.extend({
 			data['routeIds['+i+']'] = $($routes[i]).attr('data-id');
 		}
 
-		Craft.postActionRequest('routes/updateRouteOrder', data, $.proxy(function(response, textStatus, jqXHR) {
-			if (response.success)
-				Craft.cp.displayNotice(Craft.t('New route order saved.'));
-			else
-				Craft.cp.displayError(Craft.t('Couldn’t save new route order.'));
+		Craft.postActionRequest('routes/updateRouteOrder', data, $.proxy(function(response, textStatus) {
+
+			if (textStatus == 'success')
+			{
+				if (response.success)
+				{
+					Craft.cp.displayNotice(Craft.t('New route order saved.'));
+				}
+				else
+				{
+					Craft.cp.displayError(Craft.t('Couldn’t save new route order.'));
+				}
+			}
+
 		}, this));
 	},
 
@@ -324,43 +333,48 @@ var RouteSettingsModal = Garnish.Modal.extend({
 		this.$saveBtn.addClass('active');
 		this.$spinner.show();
 
-		Craft.postActionRequest('routes/saveRoute', data, $.proxy(function(response, textStatus, jqXHR) {
-
-			if (response.success)
-			{
-				// Is this a new route?
-				if (!this.route)
-				{
-					var $route = $('<div class="pane route" data-id="'+response.routeId+'">' +
-						'<div class="url"></div>' +
-						'<div class="template"></div>' +
-					'</div>');
-
-					$route.appendTo('#routes');
-
-					this.route = new Route($route);
-					this.route.modal = this;
-
-					Craft.routes.sorter.addItems($route);
-
-					// Was this the first one?
-					if (Craft.routes.sorter.$items.length == 1)
-					{
-						$('#noroutes').addClass('hidden');
-					}
-				}
-
-				this.route.updateHtmlFromModal();
-				this.hide();
-
-				Craft.cp.displayNotice(Craft.t('Route saved.'));
-			}
-			else
-				Craft.cp.displayError(Craft.t('Couldn’t save route.'));
+		Craft.postActionRequest('routes/saveRoute', data, $.proxy(function(response, textStatus) {
 
 			this.$saveBtn.removeClass('active');
 			this.$spinner.hide();
 			this.loading = false;
+
+			if (textStatus == 'success')
+			{
+				if (response.success)
+				{
+					// Is this a new route?
+					if (!this.route)
+					{
+						var $route = $('<div class="pane route" data-id="'+response.routeId+'">' +
+							'<div class="url"></div>' +
+							'<div class="template"></div>' +
+						'</div>');
+
+						$route.appendTo('#routes');
+
+						this.route = new Route($route);
+						this.route.modal = this;
+
+						Craft.routes.sorter.addItems($route);
+
+						// Was this the first one?
+						if (Craft.routes.sorter.$items.length == 1)
+						{
+							$('#noroutes').addClass('hidden');
+						}
+					}
+
+					this.route.updateHtmlFromModal();
+					this.hide();
+
+					Craft.cp.displayNotice(Craft.t('Route saved.'));
+				}
+				else
+				{
+					Craft.cp.displayError(Craft.t('Couldn’t save route.'));
+				}
+			}
 
 		}, this));
 	},
@@ -377,8 +391,11 @@ var RouteSettingsModal = Garnish.Modal.extend({
 	{
 		if (confirm(Craft.t(('Are you sure you want to delete this route?'))))
 		{
-			Craft.postActionRequest('routes/deleteRoute', { routeId: this.route.id }, function() {
-				Craft.cp.displayNotice(Craft.t('Route deleted.'))
+			Craft.postActionRequest('routes/deleteRoute', { routeId: this.route.id }, function(response, textStatus) {
+				if (textStatus == 'success')
+				{
+					Craft.cp.displayNotice(Craft.t('Route deleted.'))
+				}
 			});
 
 			Craft.routes.sorter.removeItems(this.route.$container);

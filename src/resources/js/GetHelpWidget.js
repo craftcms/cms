@@ -48,7 +48,8 @@ Craft.GetHelpWidget = Garnish.Base.extend({
 			attachDebugFiles: this.$attachDebugFiles.val()
 		};
 
-		Craft.postActionRequest('dashboard/sendSupportRequest', data, $.proxy(function(response) {
+		Craft.postActionRequest('dashboard/sendSupportRequest', data, $.proxy(function(response, textStatus) {
+
 			this.loading = false;
 			this.$sendBtn.removeClass('active');
 			this.$spinner.addClass('hidden');
@@ -58,34 +59,38 @@ Craft.GetHelpWidget = Garnish.Base.extend({
 				this.$errorList.children().remove();
 			}
 
-			if (response.success)
+			if (textStatus == 'success')
 			{
-				this.$message.val(this.originalBodyVal);
-				this.$fromEmail.val(this.originalFromVal);
-				this.$attachDebugFiles.val(this.originalAttachDebugFilesVal);
-				Craft.cp.displayNotice(Craft.t('Message sent successfully.'));
-			}
-			else
-			{
-				Craft.cp.displayError(Craft.t('Couldn’t send support request.'));
-
-				if (response.errors)
+				if (response.success)
 				{
-					if (!this.$errorList)
-					{
-						this.$errorList = $('<ul class="errors"/>').insertAfter(this.$form);
-					}
+					this.$message.val(this.originalBodyVal);
+					this.$fromEmail.val(this.originalFromVal);
+					this.$attachDebugFiles.val(this.originalAttachDebugFilesVal);
+					Craft.cp.displayNotice(Craft.t('Message sent successfully.'));
+				}
+				else
+				{
+					Craft.cp.displayError(Craft.t('Couldn’t send support request.'));
 
-					for (var attribute in response.errors)
+					if (response.errors)
 					{
-						for (var i = 0; i < response.errors[attribute].length; i++)
+						if (!this.$errorList)
 						{
-							var error = response.errors[attribute][i];
-							$('<li>'+error+'</li>').appendTo(this.$errorList);
+							this.$errorList = $('<ul class="errors"/>').insertAfter(this.$form);
+						}
+
+						for (var attribute in response.errors)
+						{
+							for (var i = 0; i < response.errors[attribute].length; i++)
+							{
+								var error = response.errors[attribute][i];
+								$('<li>'+error+'</li>').appendTo(this.$errorList);
+							}
 						}
 					}
 				}
 			}
+
 		}, this));
 	}
 });

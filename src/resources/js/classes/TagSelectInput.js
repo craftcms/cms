@@ -134,36 +134,40 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 				excludeIds: excludeIds,
 			};
 
-			Craft.postActionRequest('tags/searchForTags', data, $.proxy(function(response)
-			{
-				var $menu = $('<div class="menu tagmenu"/>').appendTo(Garnish.$bod),
-					$ul = $('<ul/>').appendTo($menu);
-
-				if (!response.exactMatch)
-				{
-					var $li = $('<li/>').appendTo($ul);
-					$('<a class="hover"/>').appendTo($li).text(data.search);
-				}
-
-				for (var i = 0; i < response.tags.length; i++)
-				{
-					var $li = $('<li/>').appendTo($ul),
-						$a = $('<a/>').appendTo($li).text(response.tags[i].name).data('id', response.tags[i].id);
-
-					if (response.exactMatch && i == 0)
-					{
-						$a.addClass('hover');
-					}
-				}
-
-				this.searchMenu = new Garnish.Menu($menu, {
-					attachToElement: this.$addTagInput,
-					onOptionSelect: $.proxy(this, 'selectTag')
-				});
-
-				this.searchMenu.show();
+			Craft.postActionRequest('tags/searchForTags', data, $.proxy(function(response, textStatus) {
 
 				this.$spinner.addClass('hidden');
+
+				if (textStatus == 'success')
+				{
+					var $menu = $('<div class="menu tagmenu"/>').appendTo(Garnish.$bod),
+						$ul = $('<ul/>').appendTo($menu);
+
+					if (!response.exactMatch)
+					{
+						var $li = $('<li/>').appendTo($ul);
+						$('<a class="hover"/>').appendTo($li).text(data.search);
+					}
+
+					for (var i = 0; i < response.tags.length; i++)
+					{
+						var $li = $('<li/>').appendTo($ul),
+							$a = $('<a/>').appendTo($li).text(response.tags[i].name).data('id', response.tags[i].id);
+
+						if (response.exactMatch && i == 0)
+						{
+							$a.addClass('hover');
+						}
+					}
+
+					this.searchMenu = new Garnish.Menu($menu, {
+						attachToElement: this.$addTagInput,
+						onOptionSelect: $.proxy(this, 'selectTag')
+					});
+
+					this.searchMenu.show();
+				}
+
 			}, this));
 		}
 		else

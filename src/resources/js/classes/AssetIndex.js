@@ -490,13 +490,16 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 						responseArray = [];
 					}
 
-					Craft.postActionRequest('assets/moveFolder', parameterArray[parameterIndex], $.proxy(function(data)
-					{
+					Craft.postActionRequest('assets/moveFolder', parameterArray[parameterIndex], $.proxy(function(data, textStatus) {
+
 						parameterIndex++;
 						this.progressBar.incrementProcessedItemCount(1);
 						this.progressBar.updateProgressBar();
 
-						responseArray.push(data);
+						if (textStatus == 'success')
+						{
+							responseArray.push(data);
+						}
 
 						if (parameterIndex >= parameterArray.length)
 						{
@@ -506,6 +509,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 						{
 							moveFolder(parameterArray, parameterIndex, callback);
 						}
+
 					}, this));
 				}, this);
 
@@ -639,12 +643,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			this.responseArray = [];
 		}
 
-		Craft.postActionRequest('assets/moveFile', parameterArray[parameterIndex], $.proxy(function(data)
-		{
+		Craft.postActionRequest('assets/moveFile', parameterArray[parameterIndex], $.proxy(function(data, textStatus) {
+
 			this.progressBar.incrementProcessedItemCount(1);
 			this.progressBar.updateProgressBar();
 
-			this.responseArray.push(data);
+			if (textStatus == 'success')
+			{
+				this.responseArray.push(data);
+			}
 
 			parameterIndex++;
 
@@ -656,6 +663,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			{
 				this._moveFile(parameterArray, parameterIndex, callback);
 			}
+
 		}, this));
 	},
 
@@ -848,9 +856,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 				userResponse:   parameterArray[parameterIndex].choice
 			};
 
-			Craft.postActionRequest('assets/uploadFile', postData, $.proxy(function(data)
-			{
-				if (typeof data.fileId != "undefined")
+			Craft.postActionRequest('assets/uploadFile', postData, $.proxy(function(data, textStatus) {
+
+				if (textStatus == 'success' && data.fileId)
 				{
 					this._uploadedFileIds.push(data.fileId);
 				}
@@ -867,6 +875,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 					doFollowup(parameterArray, parameterIndex, callback);
 				}
 			}, this));
+
 		}, this);
 
 		doFollowup(returnData, 0, finalCallback);
@@ -914,7 +923,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 		var elementSelect = new Garnish.Select(this.$elementContainer, $children, {
 			multi: true,
-			vertical: (this.getState('view') == 'table'),
+			vertical: (this.getViewState('mode') == 'table'),
 			onSelectionChange: $.proxy(this, '_onElementSelectionChange')
 		});
 
@@ -952,7 +961,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 	_editProperties: function (event)
 	{
 		var $target = $(event.currentTarget);
-        if (this.getState('view') == "table")
+        if (this.getViewState('mode') == 'table')
         {
             $target = $target.find('.element');
         }
@@ -1104,6 +1113,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			this.setIndexBusy();
 
 			Craft.postActionRequest('assets/deleteFile', {fileId: fileId}, $.proxy(function(data, textStatus) {
+
 				this.setIndexAvailable();
 
 				if (textStatus == 'success')
@@ -1116,6 +1126,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 					this.updateElements();
 
 				}
+
 			}, this));
 		}
 	},
@@ -1137,11 +1148,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			}
 
 			Craft.postActionRequest('assets/deleteFile', postData, $.proxy(function(data, textStatus) {
+
 				this.setIndexAvailable();
 
 				if (textStatus == 'success')
 				{
-
 					if (data.error)
 					{
 						alert(data.error);
@@ -1149,13 +1160,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 					this.updateElements();
 				}
+
 			}, this));
 		}
 	},
 
 	_getDragHelper: function ($element)
 	{
-		var currentView = this.getState('view');
+		var currentView = this.getViewState('mode');
 		switch (currentView)
 		{
 			case 'table':
@@ -1296,11 +1308,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 			this.setIndexBusy();
 
-			Craft.postActionRequest('assets/createFolder', params, $.proxy(function(data)
-			{
+			Craft.postActionRequest('assets/createFolder', params, $.proxy(function(data, textStatus) {
+
 				this.setIndexAvailable();
 
-				if (data.success)
+				if (textStatus == 'success' && data.success)
 				{
 					this._prepareParentForChildren(parentFolder);
 
@@ -1314,10 +1326,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 					this.$sources = this.$sources.add($a);
 				}
 
-				if (data.error)
+				if (textStatus == 'success' && data.error)
 				{
 					alert(data.error);
 				}
+
 			}, this));
 		}
 	},
@@ -1326,18 +1339,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 	{
 		if (confirm(Craft.t('Really delete folder “{folder}”?', {folder: $.trim(targetFolder.text())})))
 		{
-
 			var params = {
 				folderId: this._getFolderIdFromSourceKey(targetFolder.data('key'))
 			}
 
 			this.setIndexBusy();
 
-			Craft.postActionRequest('assets/deleteFolder', params, $.proxy(function(data)
-			{
+			Craft.postActionRequest('assets/deleteFolder', params, $.proxy(function(data, textStatus) {
+
 				this.setIndexAvailable();
 
-				if (data.success)
+				if (textStatus == 'success' && data.success)
 				{
 					var parentFolder = this._getParentSource(targetFolder);
 
@@ -1350,7 +1362,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 				}
 
-				if (data.error)
+				if (textStatus == 'success' && data.error)
 				{
 					alert(data.error);
 				}
@@ -1376,19 +1388,20 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 			this.setIndexBusy();
 
-			Craft.postActionRequest('assets/renameFolder', params, $.proxy(function(data)
-			{
+			Craft.postActionRequest('assets/renameFolder', params, $.proxy(function(data, textStatus) {
+
 				this.setIndexAvailable();
 
-				if (data.success)
+				if (textStatus == 'success' && data.success)
 				{
 					targetFolder.text(data.newName);
 				}
 
-				if (data.error)
+				if (textStatus == 'success' && data.error)
 				{
 					alert(data.error);
 				}
+
 			}, this), 'json');
 		}
 	},

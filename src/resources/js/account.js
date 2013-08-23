@@ -62,20 +62,23 @@ var AccountSettingForm = Garnish.Base.extend({
 				password: password
 			};
 
-			Craft.postActionRequest('users/verifyPassword', data, $.proxy(function(response) {
+			Craft.postActionRequest('users/verifyPassword', data, $.proxy(function(response, textStatus) {
 
 				this.$spinner.addClass('hidden');
 
-				if (typeof response.success != 'undefined' && response.success)
+				if (textStatus == 'success')
 				{
-					$('<input type="hidden" name="password" value="'+password+'"/>').appendTo('#userform');
-					$('#email, #newPassword').removeClass('disabled').removeAttr('disabled');
-					this.$lockBtns.remove();
-					this.modal.hide();
-				}
-				else
-				{
-					Garnish.shake(this.modal.$container);
+					if (response.success)
+					{
+						$('<input type="hidden" name="password" value="'+password+'"/>').appendTo('#userform');
+						$('#email, #newPassword').removeClass('disabled').removeAttr('disabled');
+						this.$lockBtns.remove();
+						this.modal.hide();
+					}
+					else
+					{
+						Garnish.shake(this.modal.$container);
+					}
 				}
 
 			}, this));

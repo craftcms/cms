@@ -9,12 +9,26 @@ Craft.UpdatesWidget = Garnish.Base.extend({
 		this.$widget = $('#widget'+widgetId);
 		this.$widget.addClass('loading');
 
-		Craft.postActionRequest('dashboard/checkForUpdates', $.proxy(function(response) {
+		$.ajax({
+			url:      Craft.getActionUrl('dashboard/checkForUpdates'),
+			type:     'POST',
+			complete: $.proxy(function(response, textStatus)
+			{
+				this.$widget.removeClass('loading');
 
-			this.$widget.removeClass('loading');
-			this.$widget.find('.body').html(response);
+				if (textStatus == 'success')
+				{
+					var text = response;
+				}
+				else
+				{
+					var text = Craft.t('An unknown error occurred.');
+				}
 
-		}, this));
+				this.$widget.find('.body').html(text);
+			}, this)
+		});
+
 	}
 });
 

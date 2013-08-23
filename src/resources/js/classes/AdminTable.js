@@ -89,16 +89,20 @@ Craft.AdminTable = Garnish.Base.extend({
 			ids: JSON.stringify(ids)
 		};
 
-		Craft.postActionRequest(this.settings.reorderAction, data, $.proxy(function(response)
-		{
-			if (response.success)
+		Craft.postActionRequest(this.settings.reorderAction, data, $.proxy(function(response, textStatus) {
+
+			if (textStatus == 'success')
 			{
-				Craft.cp.displayNotice(Craft.t(this.settings.reorderSuccessMessage));
+				if (response.success)
+				{
+					Craft.cp.displayNotice(Craft.t(this.settings.reorderSuccessMessage));
+				}
+				else
+				{
+					Craft.cp.displayError(Craft.t(this.settings.reorderFailMessage));
+				}
 			}
-			else
-			{
-				Craft.cp.displayError(Craft.t(this.settings.reorderFailMessage));
-			}
+
 		}, this));
 	},
 
@@ -115,20 +119,25 @@ Craft.AdminTable = Garnish.Base.extend({
 
 		if (this.confirmDeleteObject($row))
 		{
-			Craft.postActionRequest(this.settings.deleteAction, { id: id }, $.proxy(function(response) {
-				if (response.success)
-				{
-					$row.remove();
-					this.totalObjects--;
-					this.onDeleteObject();
-					this.settings.onDeleteObject(id);
+			Craft.postActionRequest(this.settings.deleteAction, { id: id }, $.proxy(function(response, textStatus) {
 
-					Craft.cp.displayNotice(Craft.t(this.settings.deleteSuccessMessage, { name: name }));
-				}
-				else
+				if (textStatus == 'success')
 				{
-					Craft.cp.displayError(Craft.t(this.settings.deleteFailMessage, { name: name }));
+					if (response.success)
+					{
+						$row.remove();
+						this.totalObjects--;
+						this.onDeleteObject();
+						this.settings.onDeleteObject(id);
+
+						Craft.cp.displayNotice(Craft.t(this.settings.deleteSuccessMessage, { name: name }));
+					}
+					else
+					{
+						Craft.cp.displayError(Craft.t(this.settings.deleteFailMessage, { name: name }));
+					}
 				}
+
 			}, this));
 		}
 	},

@@ -85,18 +85,22 @@ var LoginForm = Garnish.Base.extend({
 			loginName: this.$loginNameInput.val()
 		};
 
-		Craft.postActionRequest('users/forgotPassword', data, $.proxy(function(response)
-		{
-			if (typeof response.success != 'undefined' && response.success)
+		Craft.postActionRequest('users/forgotPassword', data, $.proxy(function(response, textStatus) {
+
+			if (textStatus == 'success')
 			{
-				new MessageSentModal();
-			}
-			else
-			{
-				this.showError(response.error);
+				if (response.success)
+				{
+					new MessageSentModal();
+				}
+				else
+				{
+					this.showError(response.error);
+				}
 			}
 
 			this.onSubmitResponse();
+
 		}, this));
 	},
 
@@ -108,20 +112,28 @@ var LoginForm = Garnish.Base.extend({
 			rememberMe: (this.$rememberMeCheckbox.prop('checked') ? 'y' : '')
 		};
 
-		Craft.postActionRequest('users/login', data, $.proxy(function(response)
-		{
-			if (typeof response.success != 'undefined' && response.success)
+		Craft.postActionRequest('users/login', data, $.proxy(function(response, textStatus) {
+
+			if (textStatus == 'success')
 			{
-				window.location.href = Craft.getUrl(window.returnUrl);
+				if (response.success)
+				{
+					window.location.href = Craft.getUrl(window.returnUrl);
+				}
+				else
+				{
+					Garnish.shake(this.$form);
+					this.onSubmitResponse();
+
+					// Add the error message
+					this.showError(response.error);
+				}
 			}
 			else
 			{
-				Garnish.shake(this.$form);
 				this.onSubmitResponse();
-
-				// Add the error message
-				this.showError(response.error);
 			}
+
 		}, this));
 
 		return false;
@@ -137,7 +149,9 @@ var LoginForm = Garnish.Base.extend({
 	showError: function(error)
 	{
 		if (!error)
+		{
 			error = Craft.t('An unknown error occurred.');
+		}
 
 		this.$error = $('<p class="error" style="display:none">'+error+'</p>').appendTo(this.$form);
 		this.$error.fadeIn();

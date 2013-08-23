@@ -22,15 +22,18 @@ Craft.EntryTypeSwitcher = Garnish.Base.extend({
 	{
 		this.$spinner.removeClass('hidden');
 
-		Craft.postActionRequest('entries/switchEntryType', this.$form.serialize(), $.proxy(function(response) {
+		Craft.postActionRequest('entries/switchEntryType', this.$form.serialize(), $.proxy(function(response, textStatus) {
 			this.$spinner.addClass('hidden');
 
-			Craft.cp.deselectContentTab();
-			Craft.cp.$contentTabsContainer.html(response.tabsHtml);
-			this.$fields.html(response.fieldsHtml);
-			Craft.cp.initContentTabs();
+			if (textStatus == 'success')
+			{
+				Craft.cp.deselectContentTab();
+				Craft.cp.$contentTabsContainer.html(response.tabsHtml);
+				this.$fields.html(response.fieldsHtml);
+				Craft.cp.initContentTabs();
 
-			$(response.headHtml + response.footHtml).appendTo(Garnish.$bod);
+				$(response.headHtml + response.footHtml).appendTo(Garnish.$bod);
+			}
 		}, this));
 	}
 
