@@ -27,7 +27,6 @@
 			actionUrl:       "{{ actionUrl()|e('js') }}",
 			resourceUrl:     "{{ resourceUrl()|e('js') }}",
 			usePathInfo:     {{ craft.config.usePathInfo() ? 'true' : 'false' }},
-	</noscript>
 			resourceTrigger: "{{ craft.config.resourceTrigger|e('js') }}",
 			actionTrigger:   "{{ craft.config.actionTrigger|e('js') }}",
 			path:            "{{ craft.request.getPath()|e('js') }}",
