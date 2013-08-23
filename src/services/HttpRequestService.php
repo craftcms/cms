@@ -319,10 +319,11 @@ class HttpRequestService extends \CHttpRequest
 	 *
 	 * We're overriding this from \CHttpRequest so we can have more control over the headers.
 	 *
-	 * @param string $path
-	 * @param string $content
+	 * @param string     $path
+	 * @param string     $content
 	 * @param array|null $options
-	 * @param bool|null $terminate
+	 * @param bool|null  $terminate
+	 * @throws HttpException
 	 */
 	public function sendFile($path, $content, $options = array(), $terminate = true)
 	{
@@ -615,16 +616,50 @@ class HttpRequestService extends \CHttpRequest
 	{
 		if (!$name)
 		{
-			return $_POST;
+			$post = array();
+
+			foreach ($_POST as $key => $value)
+			{
+				$post[$key] = StringHelper::convertToUTF8($value);
+			}
+
+			return $post;
 		}
 		else
 		{
-			return parent::getPost($name, $defaultValue);
+			if (isset($_POST[$name]))
+			{
+				return StringHelper::convertToUTF8($_POST[$name]);
+			}
+			else
+			{
+				return $defaultValue;
+			}
+		}
+	}
+
+	/**
+	 * Returns the named GET parameter value. If the GET parameter does not exist, the second parameter to this method will be returned.
+	 *
+	 * @param string $name the GET parameter name
+	 * @param mixed $defaultValue the default parameter value if the GET parameter does not exist.
+	 * @return mixed the GET parameter value
+	 */
+	public function getQuery($name, $defaultValue = null)
+	{
+		if (isset($_GET[$name]))
+		{
+			return StringHelper::convertToUTF8($_GET[$name]);
+		}
+		else
+		{
+			return $defaultValue;
 		}
 	}
 
 	/**
 	 * Returns the part of the querystring minus any p= parameter regardless of whether PATH_INFO is enabled or not.
+	 *
 	 * @return string
 	 */
 	public function getQueryStringWithoutPath()
