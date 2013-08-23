@@ -457,7 +457,11 @@ class EntriesController extends BaseController
 		$entry->expiryDate = (($expiryDate = craft()->request->getPost('expiryDate')) ? DateTime::createFromString($expiryDate, craft()->timezone) : null);
 		$entry->enabled    = (bool)craft()->request->getPost('enabled');
 
-		$entry->getContent()->title = craft()->request->getPost('title');
+		$title = craft()->request->getPost('title');
+		if ($title !== null)
+		{
+			$entry->getContent()->title = $title;
+		}
 
 		$fields = craft()->request->getPost('fields');
 		$entry->getContent()->setAttributes($fields);
