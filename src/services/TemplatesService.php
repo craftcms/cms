@@ -426,6 +426,25 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns whether a template exists or not.
+	 *
+	 * @param string $name
+	 * @return bool
+	 */
+	public function doesTemplateExist($name)
+	{
+		try
+		{
+			$this->findTemplate($name);
+			return true;
+		}
+		catch (TemplateLoaderException $e)
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * Finds a template on the file system and returns its path.
 	 *
 	 * @param string $name

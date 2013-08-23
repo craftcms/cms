@@ -14,15 +14,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
      */
     public function exists($name)
     {
-    	try
-    	{
-    		craft()->templates->findTemplate($name);
-    		return true;
-    	}
-    	catch (TemplateLoaderException $e)
-    	{
-    		return false;
-    	}
+    	return craft()->templates->doesTemplateExist($name);
     }
 
 	/**
