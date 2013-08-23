@@ -221,18 +221,19 @@ $.extend(Craft, {
 	 * @param string action
 	 * @param object|null data
 	 * @param function|null callback
+	 * @param object|null options
 	 */
-	postActionRequest: function(action, data, callback)
+	postActionRequest: function(action, data, callback, options)
 	{
-		// Param mapping
+		// Make 'data' optional
 		if (typeof data == 'function')
 		{
-			// (action, callback)
+			options = callback;
 			callback = data;
-			data = {};
+			data = undefined;
 		}
 
-		return $.ajax({
+		return $.ajax($.extend({
 			url:      Craft.getActionUrl(action),
 			type:     'POST',
 			data:     data,
@@ -253,7 +254,7 @@ $.extend(Craft, {
 					}
 				}
 			}
-		});
+		}, options));
 	},
 
 	/**

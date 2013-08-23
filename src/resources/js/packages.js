@@ -53,6 +53,11 @@ Craft.PackageChooser = Garnish.Base.extend({
 
 	initPackages: function(response, textStatus)
 	{
+		for (var pkg in this.packages)
+		{
+			this.packages[pkg].$btnContainer.html('');
+		}
+
 		if (textStatus == 'success')
 		{
 			if (response.success)
@@ -85,8 +90,6 @@ Craft.PackageChooser = Garnish.Base.extend({
 			pkgInfo.$badge.remove();
 			delete pkgInfo.$badge;
 		}
-
-		pkgInfo.$btnContainer.html('');
 
 		if (!pkgInfo.price)
 		{

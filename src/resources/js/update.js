@@ -43,21 +43,19 @@ Craft.Updater = Garnish.Base.extend({
 			data: this.data
 		};
 
-		$.ajax({
-			url:      Craft.getActionUrl(action),
-			type:     'POST',
-			data:     data,
-			complete: $.proxy(function(response, textStatus)
+		Craft.postActionRequest(action, data, $.proxy(function(response, textStatus) {
+
+			if (textStatus == 'success' && response.success)
 			{
-				if (textStatus == 'success' && response.success)
-				{
-					this.onSuccessResponse(response);
-				}
-				else
-				{
-					this.onErrorResponse();
-				}
-			}, this)
+				this.onSuccessResponse(response);
+			}
+			else
+			{
+				this.onErrorResponse();
+			}
+
+		}, this), {
+			complete: $.noop
 		});
 	},
 

@@ -161,12 +161,9 @@ Craft.Tool = Garnish.Base.extend({
 			params: params
 		};
 
-		$.ajax({
-			url:      Craft.getActionUrl('tools/performAction'),
-			type:     'POST',
-			data:     data,
-			complete: $.proxy(this, 'onActionResponse')
-		})
+		Craft.postActionRequest('tools/performAction', data, $.proxy(this, 'onActionResponse'), {
+			complete: $.noop
+		});
 	},
 
 	onActionResponse: function(response, textStatus)

@@ -73,11 +73,8 @@ Craft.Installer = Garnish.Base.extend({
 				data[input] = Garnish.getInputPostVal($input);
 			}
 
-			$.ajax({
-				url:      Craft.getActionUrl('install/install'),
-				type:     'POST',
-				data:     data,
-				complete: $.proxy(this, 'allDone')
+			Craft.postActionRequest('install/install', data, $.proxy(this, 'allDone'), {
+				complete: $.noop
 			});
 
 		}, this));
