@@ -153,6 +153,9 @@ class WebApp extends \CWebApplication
 		// Check if the app path has changed.  If so, run the requirements check again.
 		$this->_processRequirementsCheck();
 
+		// Now that we've ran the requirements checker, set MB to use UTF-8
+		mb_internal_encoding('UTF-8');
+
 		// If the track has changed, put the brakes on the request.
 		if (!$this->updates->isTrackValid())
 		{
