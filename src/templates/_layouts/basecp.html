@@ -12,16 +12,9 @@
 	{{ body }}
 
 	<noscript>
-		<div class="no-access">
+		<div class="message-container no-access">
 			<div class="pane notice">
-				<div class="pane-body">
-					<div class="pane-item notice">
-						<div class="icon"></div>
-						<p>{{ "JavaScript must be enabled to access the @@@appName@@@ control panel."|t }}<br>
-							<a class="go" href="">See how</a>
-						</p>
-					</div>
-				</div>
+				<p>{{ "JavaScript must be enabled to access the @@@appName@@@ control panel."|t }}</p>
 			</div>
 		</div>
 	</noscript>
@@ -34,6 +27,7 @@
 			actionUrl:       "{{ actionUrl()|e('js') }}",
 			resourceUrl:     "{{ resourceUrl()|e('js') }}",
 			usePathInfo:     {{ craft.config.usePathInfo() ? 'true' : 'false' }},
+	</noscript>
 			resourceTrigger: "{{ craft.config.resourceTrigger|e('js') }}",
 			actionTrigger:   "{{ craft.config.actionTrigger|e('js') }}",
 			path:            "{{ craft.request.getPath()|e('js') }}",

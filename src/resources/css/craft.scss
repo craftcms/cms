@@ -18,7 +18,7 @@
 /*  Basic stuff
 /* ----------------------------------------*/
 
-body, html { background: #fff; }
+body, html { background: $bgcolor; }
 
 html.noscroll,
 html.noscroll body { overflow: hidden; }
@@ -184,8 +184,8 @@ td.right { float: none; text-align: right; }
 /* ----------------------------------------*/
 
 .pane { position: relative; border-radius: 1px;  margin: 30px 0; padding: 15px; background: #fff;
-	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.25);
-	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.25);
+	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 5px 20px -5px rgba(0,0,0,0.2);
+	        box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 5px 20px -5px rgba(0,0,0,0.2);
 }
 
 .pane h2 { margin-bottom: 15px; border-bottom: none; }
@@ -419,11 +419,13 @@ table.data td:not(:first-child) { padding-left: 10px; }
 table.data thead th,
 table.data thead td { padding-top: 4px; padding-bottom: 4px; cursor: default; }
 table.data tbody th,
-table.data tbody td { padding-top: 7px; padding-bottom: 7px; text-align: left; vertical-align: middle; border-top: 1px dotted rgba(0,0,0,0.1); }
-table.data tbody tr:last-child th,
-table.data tbody tr:last-child td { border-bottom: 1px dotted rgba(0,0,0,0.1); }
+table.data tbody td { padding-top: 7px; padding-bottom: 7px; text-align: left; vertical-align: middle; border-bottom: 1px dotted rgba(0,0,0,0.1); }
+table.data tbody tr:first-child th,
+table.data tbody tr:first-child td { border-top: 1px dotted $hrcolor; }
+table.data thead + tbody tr:first-child th,
+table.data thead + tbody tr:first-child td { border-top-style: solid; }
 table.data thead th { font-weight: bold; white-space: nowrap; }
-table.data td.timestamp { text-align: right; vertical-align: bottom; white-space: nowrap; color: #999; }
+table.data td.timestamp { text-align: right; vertical-align: bottom; white-space: nowrap; color: $lighttextcolor; }
 table.data td form { height: 22px; }
 table.data td .btngroup { display: inline; }
 
@@ -437,7 +439,7 @@ table.data.collapsed tbody td { display: block; border: none; padding: 0; text-a
 table.data.collapsed tbody th,
 table.data.collapsed tbody td { padding: 2px 0; }
 table.data.collapsed thead { display: none; }
-table.data.collapsed tbody tr { padding: 6px 0; border-bottom: 1px dotted rgba(0,0,0,0.1); }
+table.data.collapsed tbody tr { padding: 6px 0; border-bottom: 1px dotted $hrcolor; }
 table.data.collapsed tbody .thin { margin-right: 5px; float: left; width: auto; }
 table.data.collapsed tbody th[data-title],
 table.data.collapsed tbody td[data-title] { margin-right: 0; float: none; }
@@ -853,8 +855,9 @@ ul.errors { margin-top: 5px; list-style-type: square; padding-left: 20px; }
 ul.errors li { color: $errorcolor; }
 
 /* message pages */
-.message-container { position: absolute; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(250,250,250,0.9); }
-.message-container #message { top: 50%; margin-left: auto; margin-right: auto; width: 320px; }
+.message-container { position: absolute; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; }
+.message-container.no-access { background: rgba(50,50,50,0.9); }
+.message-container .pane { top: 50%; margin-top: -33px !important; margin-left: auto; margin-right: auto; width: 320px; }
 
 /* ----------------------------------------
 /* IE hacks
