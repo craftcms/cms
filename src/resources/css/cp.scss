@@ -103,7 +103,7 @@ html { overflow-y: scroll; }
 #tabs li .tab.sel { background: #fff; }
 
 /* main */
-#main { position: relative; padding: 30px; min-height: 500px; border-radius: 3px; background: #fff; }
+#main { position: relative; padding: 30px; min-height: 500px; background: #fff; }
 #main.has-sidebar { padding-left: 230px; }
 #main.has-help { padding-bottom: 60px; min-height: 470px; }
 #main.has-help #help { position: absolute; bottom: 17px; right: 17px; font-size: 26px; }
