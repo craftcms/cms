@@ -75,7 +75,7 @@ class TagsFieldType extends BaseElementFieldType
 		{
 			if (strncmp($tagId, 'new:', 4) == 0)
 			{
-				$name = substr($tagId, 4);
+				$name = mb_substr($tagId, 4);
 
 				// Last-minute check
 				$criteria = craft()->elements->getCriteria(Elementtype::Tag, array(
@@ -120,7 +120,7 @@ class TagsFieldType extends BaseElementFieldType
 
 			if (strncmp($source, 'tagset:', 7) == 0)
 			{
-				$this->_tagSetId = (int) substr($source, 7);
+				$this->_tagSetId = (int) mb_substr($source, 7);
 			}
 			else
 			{

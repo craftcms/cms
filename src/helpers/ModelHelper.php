@@ -136,7 +136,7 @@ class ModelHelper
 
 		// Figure out the max length
 		$maxAbsSize = intval($config['unsigned'] ? $config['max'] : max(abs($config['min']), abs($config['max'])));
-		$config['length'] = ($maxAbsSize ? strlen($maxAbsSize) : 0) + $config['decimals'];
+		$config['length'] = ($maxAbsSize ? mb_strlen($maxAbsSize) : 0) + $config['decimals'];
 
 		// Decimal or int?
 		if ($config['decimals'] > 0)

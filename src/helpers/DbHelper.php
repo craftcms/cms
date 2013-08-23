@@ -311,7 +311,7 @@ class DbHelper
 		$maxLength = 64;
 
 		$name = trim($name, '_');
-		$nameLength = strlen($name);
+		$nameLength = mb_strlen($name);
 
 		if ($nameLength > $maxLength)
 		{
@@ -325,17 +325,17 @@ class DbHelper
 			{
 				foreach ($parts as $i => $part)
 				{
-					$newLength = round($maxLetters * strlen($part) / $totalLetters);
-					$parts[$i] = substr($part, 0, $newLength);
+					$newLength = round($maxLetters * mb_strlen($part) / $totalLetters);
+					$parts[$i] = mb_substr($part, 0, $newLength);
 				}
 			}
 
 			$name = implode('_', $parts);
 
 			// Just to be safe
-			if (strlen($name) > $maxLength)
+			if (mb_strlen($name) > $maxLength)
 			{
-				$name = substr($name, 0, $maxLength);
+				$name = mb_substr($name, 0, $maxLength);
 			}
 		}
 
@@ -387,11 +387,11 @@ class DbHelper
 			foreach (static::$_operators as $testOperator)
 			{
 				// Does the value start with this operator?
-				$length = strlen($testOperator);
+				$length = mb_strlen($testOperator);
 
-				if (strncmp(strtolower($value), $testOperator, $length) == 0)
+				if (strncmp(mb_strtolower($value), $testOperator, $length) == 0)
 				{
-					$value = substr($value, $length);
+					$value = mb_substr($value, $length);
 
 					if ($testOperator == 'not ')
 					{

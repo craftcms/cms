@@ -57,14 +57,14 @@ class ZipArchive implements IZip
 			$info = IOHelper::normalizePathSeparators($info['name']);
 
 			// found a directory
-			if (substr($info, -1) === '/')
+			if (mb_substr($info, -1) === '/')
 			{
 				IOHelper::createFolder($destFolder.'/'.$info);
 				continue;
 			}
 
 			 // Don't extract the OSX __MACOSX directory
-			if (substr($info, 0, 9) === '__MACOSX/')
+			if (mb_substr($info, 0, 9) === '__MACOSX/')
 			{
 				continue;
 			}
@@ -122,7 +122,7 @@ class ZipArchive implements IZip
 			if (IOHelper::isReadable($itemToZip))
 			{
 				// Figure out the relative path we'll be adding to the zip.
-				$relFilePath = substr($itemToZip, strlen($basePath));
+				$relFilePath = mb_substr($itemToZip, mb_strlen($basePath));
 
 				if ($pathPrefix)
 				{

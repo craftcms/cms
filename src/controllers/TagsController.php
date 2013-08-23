@@ -147,7 +147,7 @@ class TagsController extends BaseController
 				'name' => $tag->name
 			);
 
-			$tagNameLengths[] = strlen($tag->name);
+			$tagNameLengths[] = mb_strlen($tag->name);
 
 			$normalizedName = StringHelper::normalizeKeywords($tag->name);
 

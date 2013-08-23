@@ -172,7 +172,7 @@ class UserPermissionsService extends BaseApplicationComponent
 	public function doesGroupHavePermission($groupId, $checkPermission)
 	{
 		$allPermissions = $this->getPermissionsByGroupId($groupId);
-		$checkPermission = strtolower($checkPermission);
+		$checkPermission = mb_strtolower($checkPermission);
 
 		return in_array($checkPermission, $allPermissions);
 	}
@@ -245,7 +245,7 @@ class UserPermissionsService extends BaseApplicationComponent
 	public function doesUserHavePermission($userId, $checkPermission)
 	{
 		$allPermissions = $this->getPermissionsByUserId($userId);
-		$checkPermission = strtolower($checkPermission);
+		$checkPermission = mb_strtolower($checkPermission);
 
 		return in_array($checkPermission, $allPermissions);
 	}
@@ -442,7 +442,7 @@ class UserPermissionsService extends BaseApplicationComponent
 	private function _getPermissionRecordByName($permissionName)
 	{
 		// Permission names are always stored in lowercase
-		$permissionName = strtolower($permissionName);
+		$permissionName = mb_strtolower($permissionName);
 
 		$permissionRecord = UserPermissionRecord::model()->findByAttributes(array(
 			'name' => $permissionName

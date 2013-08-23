@@ -38,14 +38,14 @@ abstract class BaseComponentType extends BaseApplicationComponent implements ICo
 		if (!isset($this->_classHandle))
 		{
 			// Chop off the namespace
-			$classHandle = substr(get_class($this), strlen(__NAMESPACE__) + 1);
+			$classHandle = mb_substr(get_class($this), mb_strlen(__NAMESPACE__) + 1);
 
 			// Chop off the class suffix
-			$suffixLength = strlen($this->componentType);
+			$suffixLength = mb_strlen($this->componentType);
 
-			if (substr($classHandle, -$suffixLength) == $this->componentType)
+			if (mb_substr($classHandle, -$suffixLength) == $this->componentType)
 			{
-				$classHandle = substr($classHandle, 0, -$suffixLength);
+				$classHandle = mb_substr($classHandle, 0, -$suffixLength);
 			}
 
 			$this->_classHandle = $classHandle;

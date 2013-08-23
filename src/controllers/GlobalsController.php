@@ -31,7 +31,7 @@ class GlobalsController extends BaseController
 			craft()->userSession->setNotice(Craft::t('Global set saved.'));
 
 			// TODO: Remove for 2.0
-			if (isset($_POST['redirect']) && strpos($_POST['redirect'], '{setId}') !== false)
+			if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{setId}') !== false)
 			{
 				Craft::log('The {setId} token within the ‘redirect’ param on globals/saveSet requests has been deprecated. Use {id} instead.', LogLevel::Warning);
 				$_POST['redirect'] = str_replace('{setId}', '{id}', $_POST['redirect']);

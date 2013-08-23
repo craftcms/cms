@@ -476,7 +476,7 @@ abstract class BaseRecord extends \CActiveRecord
 	private function _normalizeRelation($name, &$config)
 	{
 		// Add the namespace to the class name
-		if (strpos($config[1], '\\') === false)
+		if (mb_strpos($config[1], '\\') === false)
 		{
 			$config[1] = __NAMESPACE__.'\\'.$config[1];
 		}

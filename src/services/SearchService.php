@@ -222,7 +222,7 @@ class SearchService extends BaseApplicationComponent
 	 */
 	private function _indexElementKeywords($elementId, $attribute, $fieldId, $localeId, $dirtyKeywords)
 	{
-		$attribute = strtolower($attribute);
+		$attribute = mb_strtolower($attribute);
 
 		if (!$localeId)
 		{
@@ -296,10 +296,10 @@ class SearchService extends BaseApplicationComponent
 	 * Calculate score for a row/term combination.
 	 *
 	 * @access private
-	 * @param object $term    The SearchQueryTerm to score.
-	 * @param array  $row     The result row to score against.
-	 * @param float  $weight  Optional weight for this term.
-	 * @return float  The total score for this term/row combination.
+	 * @param  object    $term    The SearchQueryTerm to score.
+	 * @param  array     $row     The result row to score against.
+	 * @param  float|int $weight  Optional weight for this term.
+	 * @return float              The total score for this term/row combination.
 	 */
 	private function _scoreTerm($term, $row, $weight = 1)
 	{
@@ -320,7 +320,7 @@ class SearchService extends BaseApplicationComponent
 		$wordCount = count(array_filter(explode(' ', $haystack)));
 
 		// Get number of matches
-		$score = substr_count($haystack, $keywords);
+		$score = mb_substr_count($haystack, $keywords);
 
 		// Exact match
 		if (trim($keywords) == trim($haystack))
@@ -483,7 +483,7 @@ class SearchService extends BaseApplicationComponent
 					}
 
 					// Add quotes for exact match
-					if (strpos($keywords, ' ') != false)
+					if (mb_strpos($keywords, ' ') != false)
 					{
 						$keywords = '"'.$keywords.'"';
 					}
@@ -607,7 +607,7 @@ class SearchService extends BaseApplicationComponent
 		// Then loop through terms and return false it doesn't match up
 		foreach ($words as $word)
 		{
-			if (strlen($word) < static::_getMinWordLength() || in_array($word, $ftStopWords))
+			if (mb_strlen($word) < static::_getMinWordLength() || in_array($word, $ftStopWords))
 			{
 				return false;
 			}

@@ -131,7 +131,7 @@ class ResourcesService extends BaseApplicationComponent
 						return false;
 					}
 
-					$ext = strtolower($segs[1]);
+					$ext = mb_strtolower($segs[1]);
 					$size = $segs[2];
 
 					$iconPath = $this->_getIconPath($ext, $size);
@@ -226,7 +226,7 @@ class ResourcesService extends BaseApplicationComponent
 
 		// Normalize URLs in CSS files
 		$mimeType = IOHelper::getMimeTypeByExtension($path);
-		if (strpos($mimeType, 'css') !== false)
+		if (mb_strpos($mimeType, 'css') !== false)
 		{
 			$content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', array(&$this, '_normalizeCssUrl'), $content);
 		}
@@ -267,11 +267,11 @@ class ResourcesService extends BaseApplicationComponent
 
 		// Make sure this is a resource URL
 		$resourceTrigger = craft()->config->get('resourceTrigger');
-		$resourceTriggerPos = strpos($url, $resourceTrigger);
+		$resourceTriggerPos = mb_strpos($url, $resourceTrigger);
 		if ($resourceTriggerPos !== false)
 		{
 			// Give UrlHelper a chance to add the timestamp
-			$path = substr($url, $resourceTriggerPos+strlen($resourceTrigger));
+			$path = mb_substr($url, $resourceTriggerPos + mb_strlen($resourceTrigger));
 			$url = UrlHelper::getResourceUrl($path);
 		}
 
@@ -287,7 +287,7 @@ class ResourcesService extends BaseApplicationComponent
 	 */
 	private function _getIconPath($ext, $size)
 	{
-		if (strlen($ext) > 4)
+		if (mb_strlen($ext) > 4)
 		{
 			$ext = '';
 		}
@@ -346,7 +346,7 @@ class ResourcesService extends BaseApplicationComponent
 			if ($ext)
 			{
 				$color = imagecolorallocate($image, 153, 153, 153);
-				$text = strtoupper($ext);
+				$text = mb_strtoupper($ext);
 				$font = craft()->path->getAppPath().'etc/assets/helveticaneue-webfont.ttf';
 
 				// Get the bounding box so we can calculate the position

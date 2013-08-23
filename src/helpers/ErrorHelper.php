@@ -26,7 +26,7 @@ class ErrorHelper
 		$halfLines = (int)($maxLines / 2);
 		$beginLine = $errorLine - $halfLines > 0 ? $errorLine - $halfLines : 0;
 		$endLine = $errorLine + $halfLines < $lineCount ? $errorLine + $halfLines : $lineCount - 1;
-		$lineNumberWidth = strlen($endLine + 1);
+		$lineNumberWidth = mb_strlen($endLine + 1);
 
 		$output='';
 		for ($i = $beginLine; $i <= $endLine; ++$i)
@@ -58,7 +58,7 @@ class ErrorHelper
 		if (isset($trace['file']))
 		{
 			$systemPath = realpath(dirname(__FILE__).'/..');
-			return $trace['file'] === 'unknown' || strpos(realpath($trace['file']), $systemPath.DIRECTORY_SEPARATOR) === 0;
+			return $trace['file'] === 'unknown' || mb_strpos(realpath($trace['file']), $systemPath.DIRECTORY_SEPARATOR) === 0;
 		}
 
 		return false;
@@ -103,9 +103,9 @@ class ErrorHelper
 			}
 			else if (is_string($value))
 			{
-				if (strlen($value) > 64)
+				if (mb_strlen($value) > 64)
 				{
-					$args[$key] = '"'.substr($value, 0, 64).'..."';
+					$args[$key] = '"'.mb_substr($value, 0, 64).'..."';
 				}
 				else
 				{

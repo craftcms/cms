@@ -505,7 +505,7 @@ class UserSessionService extends \CWebUser
 			$keys = array_keys($_SESSION);
 			$prefix = $this->getStateKeyPrefix();
 
-			$n = strlen($prefix);
+			$n = mb_strlen($prefix);
 			foreach($keys as $key)
 			{
 				if (!strncmp($key, $prefix, $n))

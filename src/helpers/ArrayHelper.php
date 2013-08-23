@@ -149,9 +149,10 @@ class ArrayHelper
 	 * @static
 	 * @access private
 	 * @param $val
+	 * @return bool
 	 */
 	private function _isNotAnEmptyString($val)
 	{
-		return (strlen($val) != 0);
+		return (mb_strlen($val) != 0);
 	}
 }

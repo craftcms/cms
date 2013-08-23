@@ -77,9 +77,9 @@ abstract class BaseController extends \CController
 
 					if ($headHtml)
 					{
-						if (($endHeadPos = stripos($output, '</head>')) !== false)
+						if (($endHeadPos = mb_stripos($output, '</head>')) !== false)
 						{
-							$output = substr($output, 0, $endHeadPos) . $headHtml . substr($output, $endHeadPos);
+							$output = mb_substr($output, 0, $endHeadPos) . $headHtml . mb_substr($output, $endHeadPos);
 						}
 						else
 						{
@@ -89,9 +89,9 @@ abstract class BaseController extends \CController
 
 					if ($footHtml)
 					{
-						if (($endBodyPos = stripos($output, '</body>')) !== false)
+						if (($endBodyPos = mb_stripos($output, '</body>')) !== false)
 						{
-							$output = substr($output, 0, $endBodyPos) . $footHtml . substr($output, $endBodyPos);
+							$output = mb_substr($output, 0, $endBodyPos) . $footHtml . mb_substr($output, $endBodyPos);
 						}
 						else
 						{

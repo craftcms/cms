@@ -127,7 +127,7 @@ class EntriesService extends BaseApplicationComponent
 			// but it's not enforced by the DB, so anything is possible.
 			$urlFormat = $sectionLocales[$entry->locale]->urlFormat;
 
-			if (!$urlFormat || strpos($urlFormat, '{slug}') === false)
+			if (!$urlFormat || mb_strpos($urlFormat, '{slug}') === false)
 			{
 				throw new Exception(Craft::t('The section “{section}” doesn’t have a valid URL Format.', array(
 					'section' => Craft::t($section->name)
@@ -239,7 +239,7 @@ class EntriesService extends BaseApplicationComponent
 		$slug = str_replace(array('\'', '’'), array('', ''), $slug);
 
 		// Make it lowercase
-		$slug = strtolower($slug);
+		$slug = mb_strtolower($slug);
 
 		// Convert extended ASCII characters to basic ASCII
 		$slug = StringHelper::asciiString($slug);

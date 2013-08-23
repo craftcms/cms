@@ -18,7 +18,7 @@ class DbCommand extends \CDbCommand
 		{
 			$column = (string) $column;
 		}
-		else if (strpos($column, '(') === false)
+		else if (mb_strpos($column, '(') === false)
 		{
 			if (preg_match('/^(.*?)(?i:\s+as\s+|\s+)(.*)$/', $column, $matches))
 			{
@@ -627,7 +627,7 @@ class DbCommand extends \CDbCommand
 			if ($conditions)
 			{
 				// Is this already an AND conditional?
-				if (strtolower($conditions[0]) == 'and')
+				if (mb_strtolower($conditions[0]) == 'and')
 				{
 					// Just merge our normalized conditions into the $conditions
 					$conditions = array_merge($conditions, $normalizedConditions);

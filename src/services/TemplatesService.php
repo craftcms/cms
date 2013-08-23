@@ -485,12 +485,12 @@ class TemplatesService extends BaseApplicationComponent
 			$name = craft()->request->decodePathInfo($name);
 
 			$parts = array_filter(explode('/', $name));
-			$pluginHandle = strtolower(array_shift($parts));
+			$pluginHandle = mb_strtolower(array_shift($parts));
 
 			if ($pluginHandle && ($plugin = craft()->plugins->getPlugin($pluginHandle)) !== null)
 			{
 				// Get the template path for the plugin.
-				$basePath = craft()->path->getPluginsPath().strtolower($plugin->getClassHandle()).'/templates/';
+				$basePath = craft()->path->getPluginsPath().mb_strtolower($plugin->getClassHandle()).'/templates/';
 
 				// Chop off the plugin segment, since that's already covered by $basePath
 				$tempName = implode('/', $parts);
@@ -563,7 +563,7 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	private function _validateTemplateName($name)
 	{
-		if (strpos($name, "\0") !== false)
+		if (mb_strpos($name, "\0") !== false)
 		{
 			throw new \Twig_Error_Loader(Craft::t('A template name cannot contain NUL bytes.'));
 		}

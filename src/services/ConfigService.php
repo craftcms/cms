@@ -114,7 +114,7 @@ class ConfigService extends BaseApplicationComponent
 						try
 						{
 							$baseUrl = craft()->request->getHostInfo().craft()->request->getScriptUrl();
-							$url = substr($baseUrl, 0, strrpos($baseUrl, '/')).'/testScriptNameRedirect';
+							$url = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/')).'/testScriptNameRedirect';
 
 							$client = new \Guzzle\Http\Client();
 							$response = $client->get($url, array(), array('connect_timeout' => 2, 'timeout' => 4))->send();
