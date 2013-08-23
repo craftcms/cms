@@ -267,7 +267,7 @@ class SectionsService extends BaseApplicationComponent
 				{
 					$section->addError($errorKey, Craft::t('{attribute} cannot be blank.', array('attribute' => 'URL Format')));
 				}
-				else if (strpos($sectionLocale->urlFormat, '{slug}') === false)
+				else if (mb_strpos($sectionLocale->urlFormat, '{slug}') === false)
 				{
 					$section->addError($errorKey, Craft::t('URL Format must contain “{slug}”'));
 				}

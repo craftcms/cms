@@ -83,7 +83,7 @@ class SearchQuery
 			// Is this an exclude term?
 			if ($term->exclude = ($token[0] == '-'))
 			{
-				$token = substr($token, 1);
+				$token = mb_substr($token, 1);
 			}
 
 			// Is this an attribute-specific term?
@@ -95,28 +95,28 @@ class SearchQuery
 			}
 
 			// Does it start with a quote?
-			if ($token && strpos('"\'', $token[0]) !== false)
+			if ($token && mb_strpos('"\'', $token[0]) !== false)
 			{
 				// Is the end quote at the end of this very token?
-				if ($token[strlen($token)-1] == $token[0])
+				if ($token[mb_strlen($token)-1] == $token[0])
 				{
-					$token = substr($token, 1, -1);
+					$token = mb_substr($token, 1, -1);
 				}
 				else
 				{
-					$token = substr($token, 1).' '.strtok($token[0]);
+					$token = mb_substr($token, 1).' '.strtok($token[0]);
 				}
 			}
 
 			// Include sub-word matches?
 			if ($term->subLeft = ($token && $token[0] == '*'))
 			{
-				$token = substr($token, 1);
+				$token = mb_substr($token, 1);
 			}
 
 			if ($term->subRight = ($token && substr($token, -1) == '*'))
 			{
-				$token = substr($token, 0, -1);
+				$token = mb_substr($token, 0, -1);
 			}
 
 			$term->term = $token;

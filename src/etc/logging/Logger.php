@@ -51,24 +51,24 @@ class Logger extends \CLogger
 	 */
 	public function getLogs($levels = '', $categories = array(), $except = array())
 	{
-		$this->_levels = preg_split('/[\s,]+/', strtolower($levels), -1, PREG_SPLIT_NO_EMPTY);
+		$this->_levels = preg_split('/[\s,]+/', mb_strtolower($levels), -1, PREG_SPLIT_NO_EMPTY);
 
 		if (is_string($categories))
 		{
-			$this->_categories = preg_split('/[\s,]+/', strtolower($categories), -1, PREG_SPLIT_NO_EMPTY);
+			$this->_categories = preg_split('/[\s,]+/', mb_strtolower($categories), -1, PREG_SPLIT_NO_EMPTY);
 		}
 		else
 		{
-			$this->_categories = array_filter(array_map('strtolower', $categories));
+			$this->_categories = array_filter(array_map('mb_strtolower', $categories));
 		}
 
 		if (is_string($except))
 		{
-			$this->_except = preg_split('/[\s,]+/', strtolower($except), -1, PREG_SPLIT_NO_EMPTY);
+			$this->_except = preg_split('/[\s,]+/', mb_strtolower($except), -1, PREG_SPLIT_NO_EMPTY);
 		}
 		else
 		{
-			$this->_except = array_filter(array_map('strtolower', $except));
+			$this->_except = array_filter(array_map('mb_strtolower', $except));
 		}
 
 		$ret = $this->_logs;
@@ -106,12 +106,12 @@ class Logger extends \CLogger
 	 */
 	protected function filterAllCategories($value, $index)
 	{
-		$cat = strtolower($value[$index]);
+		$cat = mb_strtolower($value[$index]);
 		$ret = empty($this->_categories);
 
 		foreach($this->_categories as $category)
 		{
-			if($cat === $category || (($c = rtrim($category, '.*')) !== $category && strpos($cat, $c) === 0))
+			if($cat === $category || (($c = rtrim($category, '.*')) !== $category && mb_strpos($cat, $c) === 0))
 			{
 				$ret = true;
 			}
@@ -121,7 +121,7 @@ class Logger extends \CLogger
 		{
 			foreach ($this->_except as $category)
 			{
-				if ($cat === $category || (($c = rtrim($category, '.*')) !== $category && strpos($cat, $c) === 0))
+				if ($cat === $category || (($c = rtrim($category, '.*')) !== $category && mb_strpos($cat, $c) === 0))
 				{
 					$ret = false;
 				}
@@ -149,6 +149,6 @@ class Logger extends \CLogger
 			}
 		}
 
-		return in_array(strtolower($value[1]), $this->_levels);
+		return in_array(mb_strtolower($value[1]), $this->_levels);
 	}
 }

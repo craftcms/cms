@@ -22,8 +22,8 @@ class HandleValidator extends \CValidator
 		if ($handle)
 		{
 			$reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);
-			$reservedWords = array_map('strtolower', $reservedWords);
-			$lcHandle = strtolower($handle);
+			$reservedWords = array_map('mb_strtolower', $reservedWords);
+			$lcHandle = mb_strtolower($handle);
 
 			if (in_array($lcHandle, $reservedWords))
 			{

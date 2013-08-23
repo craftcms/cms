@@ -206,7 +206,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	protected function getAddButtonLabel()
 	{
 		return Craft::t('Add {type}', array(
-			'type' => strtolower($this->getElementType()->getClassHandle())
+			'type' => mb_strtolower($this->getElementType()->getClassHandle())
 		));
 	}
 

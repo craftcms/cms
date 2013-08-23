@@ -314,7 +314,7 @@ class MigrationHelper
 						$fkColumnName = $fk->columns[$fkColumnIndex];
 
 						// Get its column type
-						$fkColumnRequired = (strpos($otherTable->columns[$fkColumnName]->type, 'NOT NULL') !== false);
+						$fkColumnRequired = (mb_strpos($otherTable->columns[$fkColumnName]->type, 'NOT NULL') !== false);
 						$fkColumnType = array_merge(static::$_idColumnType, array('required' => $fkColumnRequired));
 
 						$fks[] = (object) array(
@@ -342,7 +342,7 @@ class MigrationHelper
 	{
 		if (!isset(static::$_tablePrefixLength))
 		{
-			static::$_tablePrefixLength = strlen(craft()->db->tablePrefix);
+			static::$_tablePrefixLength = mb_strlen(craft()->db->tablePrefix);
 		}
 
 		return static::$_tablePrefixLength;
@@ -362,7 +362,7 @@ class MigrationHelper
 
 		foreach ($tables as $table)
 		{
-			$table = substr($table, static::_getTablePrefixLength());
+			$table = mb_substr($table, static::_getTablePrefixLength());
 			static::_analyzeTable($table);
 		}
 	}
@@ -409,7 +409,7 @@ class MigrationHelper
 				static::$_tables[$table]->fks[] = (object) array(
 					'name'        => $name,
 					'columns'     => explode('`,`', $match[2]),
-					'refTable'    => substr($match[3], static::_getTablePrefixLength()),
+					'refTable'    => mb_substr($match[3], static::_getTablePrefixLength()),
 					'refColumns'  => explode('`,`', $match[4]),
 					'onDelete'    => (!empty($match[6]) ? $match[6] : null),
 					'onUpdate'    => (!empty($match[8]) ? $match[8] : null),

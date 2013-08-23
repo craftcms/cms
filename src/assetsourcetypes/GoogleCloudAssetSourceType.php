@@ -151,7 +151,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		foreach ($fileList as $file)
 		{
 			// Strip the prefix, so we don't index the parent folders
-			$file['name'] = substr($file['name'], strlen($prefix));
+			$file['name'] = mb_substr($file['name'], mb_strlen($prefix));
 
 			if (!preg_match(AssetsHelper::IndexSkipItemsPattern, $file['name']))
 			{
@@ -176,7 +176,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 					}
 				}
 
-				if (substr($file['name'], -1) == '/')
+				if (mb_substr($file['name'], -1) == '/')
 				{
 					$bucketFolders[$file['name']] = true;
 				}
@@ -571,7 +571,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		rsort($filesToMove);
 		foreach ($filesToMove as $file)
 		{
-			$filePath = substr($file['name'], strlen($this->_getPathPrefix().$folder->fullPath));
+			$filePath = mb_substr($file['name'], mb_strlen($this->_getPathPrefix().$folder->fullPath));
 
 			$this->_googleCloud->copyObject($bucket, $file['name'], $bucket, $newFullPath . $filePath, \GC::ACL_PUBLIC_READ);
 			@$this->_googleCloud->deleteObject($bucket, $file['name']);
@@ -583,7 +583,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Delete the source folder.
 	 *
-	 * @param AssetFolderModel $folder
+	 * @param AssetFolderModel $parentFolder
+	 * @param                  $folderName
 	 * @return boolean
 	 */
 	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)

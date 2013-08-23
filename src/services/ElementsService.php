@@ -268,7 +268,7 @@ class ElementsService extends BaseApplicationComponent
 
 				foreach ($statuses as $status)
 				{
-					$status = strtolower($status);
+					$status = mb_strtolower($status);
 
 					switch ($status)
 					{

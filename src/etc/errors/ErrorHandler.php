@@ -447,8 +447,8 @@ class ErrorHandler extends \CErrorHandler
 				}
 			}
 
-			$path = substr($viewFile, strlen(craft()->path->getTemplatesPath()));
-			$path = substr($path, 0, strpos($path, '.'));
+			$path = mb_substr($viewFile, mb_strlen(craft()->path->getTemplatesPath()));
+			$path = mb_substr($path, 0, mb_strpos($path, '.'));
 
 			try
 			{

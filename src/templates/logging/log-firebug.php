@@ -13,21 +13,21 @@ if (typeof(console) == 'object')
 	$timestamp = $environmentData[3];
 	$forced = isset($environmentData[4]) ? $environmentData[4] : false;
 
-	$cookiePos = strpos($message, '$_COOKIE');
-	$serverPos = strpos($message, '$_SERVER');
-	$sessionPos = strpos($message, '$_SESSION');
+	$cookiePos = mb_strpos($message, '$_COOKIE');
+	$serverPos = mb_strpos($message, '$_SERVER');
+	$sessionPos = mb_strpos($message, '$_SESSION');
 
-	$getInfo = substr($message, 0, $cookiePos);
+	$getInfo = mb_substr($message, 0, $cookiePos);
 	$nextPos = !$sessionPos ? $serverPos : $sessionPos;
-	$cookieInfo = substr($message, $cookiePos, $nextPos - $cookiePos);
+	$cookieInfo = mb_substr($message, $cookiePos, $nextPos - $cookiePos);
 
 	$sessionInfo = false;
 	if ($sessionPos)
 	{
-		$sessionInfo = substr($message, $sessionPos, $serverPos - $sessionPos);
+		$sessionInfo = mb_substr($message, $sessionPos, $serverPos - $sessionPos);
 	}
 
-	$serverInfo = substr($message, $serverPos);
+	$serverInfo = mb_substr($message, $serverPos);
 
 	Craft\LoggingHelper::processFireBugLogEntry($level, $timestamp, $category, $getInfo, Craft\Craft::t('GET Info'), $forced);
 	Craft\LoggingHelper::processFireBugLogEntry($level, $timestamp, $category, $cookieInfo, Craft\Craft::t('COOKIE Info'), $forced);

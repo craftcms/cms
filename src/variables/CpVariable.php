@@ -44,7 +44,7 @@ class CpVariable
 			{
 				if (craft()->userSession->checkPermission('accessPlugin-'.$plugin->getClassHandle()))
 				{
-					$lcHandle = strtolower($plugin->getClassHandle());
+					$lcHandle = mb_strtolower($plugin->getClassHandle());
 					$nav[$lcHandle] = array('name' => $plugin->getName());
 				}
 			}

@@ -19,7 +19,7 @@ class UrlHelper
 	public static function getUrl($path = '', $params = null, $protocol = '', $mustShowScriptName = false)
 	{
 		// Return $path if it appears to be an absolute URL.
-		if (strpos($path, '://') !== false || strncmp($path, '//', 2) == 0)
+		if (mb_strpos($path, '://') !== false || strncmp($path, '//', 2) == 0)
 		{
 			return $path;
 		}
@@ -173,7 +173,7 @@ class UrlHelper
 
 			if (!$mustShowScriptName && craft()->config->omitScriptNameInUrls())
 			{
-				$baseUrl = substr($baseUrl, 0, strrpos($baseUrl, '/'));
+				$baseUrl = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/'));
 			}
 		}
 		else
@@ -182,7 +182,7 @@ class UrlHelper
 
 			if ($mustShowScriptName || !craft()->config->omitScriptNameInUrls())
 			{
-				$baseUrl .= strrchr(craft()->urlManager->getBaseUrl(), '/');
+				$baseUrl .= mb_strrichr(craft()->urlManager->getBaseUrl(), '/');
 			}
 		}
 

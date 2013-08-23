@@ -155,6 +155,9 @@ class WebApp extends \CWebApplication
 
 		// Now that we've ran the requirements checker, set MB to use UTF-8
 		mb_internal_encoding('UTF-8');
+		mb_http_input('UTF-8');
+		mb_http_output('UTF-8');
+		mb_detect_order('auto');
 
 		// If the track has changed, put the brakes on the request.
 		if (!$this->updates->isTrackValid())
@@ -308,7 +311,7 @@ class WebApp extends \CWebApplication
 	{
 		if (!isset($this->_templatePath))
 		{
-			if (strpos(get_class($this->request), 'HttpRequest') !== false)
+			if (mb_strpos(get_class($this->request), 'HttpRequest') !== false)
 			{
 				$this->_templatePath = $this->path->getTemplatesPath();
 			}

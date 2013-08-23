@@ -21,7 +21,7 @@ class VariableHelper
 		if (is_array($instances))
 		{
 			$namespace = __NAMESPACE__.'\\';
-			if (strncmp($class, $namespace, strlen($namespace)) != 0)
+			if (strncmp($class, $namespace, mb_strlen($namespace)) != 0)
 			{
 				$class = $namespace.$class;
 			}

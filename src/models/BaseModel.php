@@ -119,14 +119,14 @@ abstract class BaseModel extends \CModel
 		if (!isset($this->_classHandle))
 		{
 			// Chop off the namespace
-			$classHandle = substr(get_class($this), strlen(__NAMESPACE__) + 1);
+			$classHandle = mb_substr(get_class($this), mb_strlen(__NAMESPACE__) + 1);
 
 			// Chop off the class suffix
-			$suffixLength = strlen($this->classSuffix);
+			$suffixLength = mb_strlen($this->classSuffix);
 
-			if (substr($classHandle, -$suffixLength) == $this->classSuffix)
+			if (mb_substr($classHandle, -$suffixLength) == $this->classSuffix)
 			{
-				$classHandle = substr($classHandle, 0, -$suffixLength);
+				$classHandle = mb_substr($classHandle, 0, -$suffixLength);
 			}
 
 			$this->_classHandle = $classHandle;
@@ -267,7 +267,7 @@ abstract class BaseModel extends \CModel
 				}
 				case AttributeType::Mixed:
 				{
-					if ($value && is_string($value) && strpos('{[', $value[0]) !== false)
+					if ($value && is_string($value) && mb_strpos('{[', $value[0]) !== false)
 					{
 						// Presumably this is JSON.
 						$value = JsonHelper::decode($value);

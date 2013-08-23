@@ -421,7 +421,7 @@ class UsersController extends BaseController
 					craft()->userSession->setNotice(Craft::t('User saved.'));
 
 					// TODO: Remove for 2.0
-					if (isset($_POST['redirect']) && strpos($_POST['redirect'], '{userId}') !== false)
+					if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{userId}') !== false)
 					{
 						Craft::log('The {userId} token within the ‘redirect’ param on users/saveUser requests has been deprecated. Use {id} instead.', LogLevel::Warning);
 						$_POST['redirect'] = str_replace('{userId}', '{id}', $_POST['redirect']);
@@ -589,9 +589,9 @@ class UsersController extends BaseController
 			$source = craft()->request->getRequiredPost('source');
 
 			// Strip off any querystring info, if any.
-			if (($qIndex = strpos($source, '?')) !== false)
+			if (($qIndex = mb_strpos($source, '?')) !== false)
 			{
-				$source = substr($source, 0, strpos($source, '?'));
+				$source = mb_substr($source, 0, mb_strpos($source, '?'));
 			}
 
 			$user = craft()->users->getUserById($userId);

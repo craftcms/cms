@@ -85,7 +85,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		{
 			$fileList = array_filter($fileList, function ($value) use ($localPath)
 			{
-				$path = substr($value, strlen($localPath));
+				$path = mb_substr($value, mb_strlen($localPath));
 				$segments = explode('/', $path);
 
 				foreach ($segments as $segment)
@@ -169,7 +169,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		$file = $indexEntryModel->uri;
 
 		// This is the part of the path that actually matters
-		$uriPath = substr($file, strlen($uploadPath));
+		$uriPath = mb_substr($file, mb_strlen($uploadPath));
 
 		$fileModel = $this->_indexFile($uriPath);
 

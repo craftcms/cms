@@ -248,7 +248,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		}
 		else
 		{
-			$parameters = $this->normalizeTransform(substr($transformIndexData->location, 1));
+			$parameters = $this->normalizeTransform(mb_substr($transformIndexData->location, 1));
 		}
 
 		$sourceType = craft()->assetSources->getSourceTypeById($transformIndexData->sourceId);

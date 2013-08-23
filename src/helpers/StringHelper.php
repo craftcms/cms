@@ -88,7 +88,7 @@ class StringHelper
 		$randomString = '';
 
 		// count the number of chars in the valid chars string so we know how many choices we have
-		$numValidChars = strlen($validChars);
+		$numValidChars = mb_strlen($validChars);
 
 		// repeat the steps until we've created a string of the right length
 		for ($i = 0; $i < $length; $i++)
@@ -231,7 +231,7 @@ class StringHelper
 	public static function asciiString($str)
 	{
 		$asciiStr = '';
-		$strlen = strlen($str);
+		$strlen = mb_strlen($str);
 		$asciiCharMap = static::getAsciiCharMap();
 
 		for ($c = 0; $c < $strlen; $c++)
@@ -278,7 +278,7 @@ class StringHelper
 		$str = strtr($str, static::_getCharMap());
 
 		// Normalize to lowercase
-		$str = function_exists('mb_strtolower') ? mb_strtolower($str, 'UTF-8') : strtolower($str);
+		$str = mb_strtolower($str);
 
 		// Remove ignore-words?
 		if (is_array($ignore) && ! empty($ignore))
@@ -326,7 +326,7 @@ class StringHelper
 	 */
 	public static function convertToUTF8($string)
 	{
-		$currentEncoding = strtolower(mb_detect_encoding($string, mb_detect_order(), true));
+		$currentEncoding = mb_strtolower(mb_detect_encoding($string, mb_detect_order(), true));
 
 		if ($currentEncoding == 'utf-8')
 		{

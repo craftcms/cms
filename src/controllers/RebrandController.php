@@ -88,9 +88,9 @@ class RebrandController extends BaseController
 			$source = craft()->request->getRequiredPost('source');
 
 			// Strip off any querystring info, if any.
-			if (($qIndex = strpos($source, '?')) !== false)
+			if (($qIndex = mb_strpos($source, '?')) !== false)
 			{
-				$source = substr($source, 0, strpos($source, '?'));
+				$source = mb_substr($source, 0, mb_strpos($source, '?'));
 			}
 
 			$imagePath = craft()->path->getTempUploadsPath().$source;
