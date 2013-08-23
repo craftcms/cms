@@ -69,7 +69,6 @@ class StringHelper
 	}
 
 	/**
-	 * @static
 	 * @return string
 	 */
 	public static function UUID()
@@ -278,6 +277,32 @@ class StringHelper
 
 		$md = new \Markdown_Parser();
 		return $md->transform($str);
+	}
+
+	/**
+	 * Attempts to convert a string to UTF-8 and clean any non-valid UTF-8 characters.
+	 *
+	 * @param      $string
+	 * @return bool|string
+	 */
+	public static function convertToUTF8($string)
+	{
+		$currentEncoding = strtolower(mb_detect_encoding($string, mb_detect_order(), true));
+
+		if ($currentEncoding == 'utf-8')
+		{
+			return \HTMLPurifier_Encoder::cleanUTF8($string);
+		}
+
+		require_once Craft::getPathOfAlias('system.vendors.htmlpurifier').'/HTMLPurifier.standalone.php';
+
+		$config = \HTMLPurifier_Config::createDefault();
+		$config->set('Core.Encoding', $currentEncoding);
+
+		$string = \HTMLPurifier_Encoder::cleanUTF8($string);
+		$string = \HTMLPurifier_Encoder::convertToUTF8($string, $config, null);
+
+		return $string;
 	}
 
 	/**
