@@ -2,9 +2,6 @@
 
 @import "shared";
 
-$headerBgColor: #41474d;
-$headerBottomBgColor: #2b2e33;
-
 html { overflow-y: scroll; }
 
 #tabs li .tab.sel,
@@ -27,11 +24,10 @@ html { overflow-y: scroll; }
 
 /* header */
 #header { position: relative; padding-top: 5px; max-height: 76px; overflow: hidden; background: $headerBgColor;
-	background: -webkit-linear-gradient($headerBgColor, $headerBottomBgColor);
-	background:    -moz-linear-gradient($headerBgColor, $headerBottomBgColor);
+	@include linear-gradient($headerBgColor, $headerBottomBgColor);
 }
 #header:after { @include clearafter; }
-#header a { color: #b4b9c0; -webkit-transition: color linear 50ms; }
+#header a { color: hsl($hue, 5%, 75%); -webkit-transition: color linear 50ms; }
 #header a:hover { color: #fff; text-decoration: none; }
 
 #header #account { float: right; height: 38px; }
@@ -54,7 +50,7 @@ html { overflow-y: scroll; }
 
 #header #nav li a .badge,
 #overflow-nav li a .badge { display: inline-block; position: relative; top: -6px; border-radius: 6px; padding: 0 3px; font-size: 10px; line-height: 12px; color: #fff; background: $submitcolor; }
-#overflow-nav li a:hover .badge { color: $selcolor; }
+#overflow-nav li a:hover .badge { color: $headerBgColor; }
 
 /* HIDE */
 #overflow-nav li a { padding-left: 30px; }
@@ -118,7 +114,9 @@ html { overflow-y: scroll; }
 .sidebar nav li { position: relative; }
 .sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; @include unselectable; outline: none; }
 .sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
-.sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $selcolor; cursor: default; }
+.sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $headerBgColor; cursor: default;
+	background: -webkit-linear-gradient($headerBgColor, $headerBottomBgColor);
+}
 
 .sidebar nav li .toggle { position: absolute; top: 5px; left: -21px; width: 16px; height: 16px; background: url(../images/foldertoggle.png) no-repeat 0 0; }
 .sidebar nav li.expanded > .toggle { background-position: 0 -32px; }

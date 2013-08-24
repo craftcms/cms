@@ -158,7 +158,7 @@ td.right { float: none; text-align: right; }
 /* headers and footers */
 .clearafter:after { @include clearafter; }
 
-.header { border-bottom-width: 1px; @include linear-gradient(#fff, $highlight); }
+.header { border-bottom-width: 1px; @include linear-gradient(#fff, $bgcolor); }
 .footer { border-top-width: 1px; padding-top: 9px; }
 
 .header .left,
@@ -297,6 +297,8 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btngroup .btn:active,
 .btngroup .btn.active { position: relative; z-index: 1; }
 
+.btngroup .btn.active { cursor: default; }
+
 .btngroup .btn:not(:first-child) { margin-left: -1px; }
 .btngroup .btn.submit:not(:first-child) { border-left: 1px solid rgba(0,0,0,0.1); }
 .btngroup .btn.submit:not(:last-child) { border-right: 1px solid rgba(0,0,0,0.1); }
@@ -395,17 +397,13 @@ h2 + .actions { margin-top: -54px; }
 /* ----------------------------------------*/
 
 table thead th { font-weight: bold; text-align: left; vertical-align: top; font-size: 11px; line-height: 1.2; color: rgba(0,0,0,0.5); text-shadow: 0 1px 0 #fff; }
-table thead th.ordered { padding-right: 26px; background: $highlight url(../images/listview_sort.png) no-repeat 100% -4px;
+table thead th.ordered { padding-right: 26px; background: $bgcolor url(../images/listview_sort.png) no-repeat 100% -4px;
 	-webkit-box-shadow: inset 0 1px 5px rgba(0,0,0,0.1);
 	   -moz-box-shadow: inset 0 1px 5px rgba(0,0,0,0.1);
 }
 table thead th.ordered.desc { background-position: 100% -35px; }
 
 td.thin { width: 0.01% !important; vertical-align: middle; }
-
-/* info */
-table.info > tbody > tr > th { padding: 0 10px 2px 0; width: 150px; text-align: right; color: $mediumdark; }
-table.info > tbody > tr > td { padding: 0 0 2px 0; }
 
 /* data */
 table.data { width: 100%; }
@@ -521,7 +519,7 @@ table.editable tbody tr td:not(.textual) { padding: 4px 10px; }
 table.editable thead tr th { border-bottom: 1px solid rgba(0,0,0,0.15); }
 table.editable tbody tr td { vertical-align: middle; text-align: center; background: #fff; }
 table.editable tbody tr td:not(:first-child) { border-left: 1px solid rgba(0,0,0,0.07); }
-table.editable tbody tr td.action { padding: 4px 7px; background: $highlight; }
+table.editable tbody tr td.action { padding: 4px 7px; background: $bgcolor; }
 table.editable tbody tr td.action + td.action { border-left: none; padding-left: 0; }
 table.editable tbody textarea { display: block; width: 100%; border: none; padding: 7px 10px; background: #fff; overflow: hidden; }
 table.editable tbody textarea:focus { border: 1px solid rgba(0,0,0,0.15); padding: 6px 9px; outline: none; }
@@ -684,7 +682,7 @@ ul.tree,
 .menu ul li a:not(.sel):hover,
 .menu ul li a:not(.sel):hover .light,
 .menu:not(:hover) ul li a:not(.sel).hover,
-.menu:not(:hover) ul li a:not(.sel).hover .light { color: #fff; background: $selcolor; }
+.menu:not(:hover) ul li a:not(.sel).hover .light { color: #fff; background: $headerBgColor; }
 .menu ul li a.sel { color: #999; cursor: default; }
 
 
@@ -833,7 +831,7 @@ body .redactor_editor ol { list-style-type: decimal; }
 .ui-datepicker-calendar td { padding: 2px; }
 .ui-datepicker-calendar td a { display: block; width: 26px; line-height: 26px; text-align: center; color: #808080; }
 .ui-datepicker-calendar td a:hover { background: $linkcolor; color: #fff; text-decoration: none; }
-.ui-datepicker-calendar td a.ui-state-active { background: $selcolor; color: #fff; cursor: default; }
+.ui-datepicker-calendar td a.ui-state-active { background: $headerBgColor; color: #fff; cursor: default; }
 .ui-datepicker-calendar td.ui-datepicker-today a { border-radius: 13px;
 	-webkit-box-shadow: inset 0 0 0 2px rgba(0,0,0,0.15);
 	        box-shadow: inset 0 0 0 2px rgba(0,0,0,0.15);
@@ -843,7 +841,7 @@ body .redactor_editor ol { list-style-type: decimal; }
 .ui-timepicker-list { margin-left: 1px; overflow-y: auto; width: 8em; height: 210px; z-index: 10001; }
 .ui-timepicker-list li { padding: 2px 0 2px 25px; white-space: nowrap; cursor: pointer; }
 .ui-timepicker-list li:hover { background: $linkcolor; color: #fff; }
-.ui-timepicker-list li.ui-timepicker-selected { background: $selcolor; color: #fff; cursor: default; }
+.ui-timepicker-list li.ui-timepicker-selected { background: $headerBgColor; color: #fff; cursor: default; }
 
 /* errors */
 ul.errors { margin-top: 5px; list-style-type: square; padding-left: 20px; }
