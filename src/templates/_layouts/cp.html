@@ -57,20 +57,40 @@
 
 	<header id="header">
 		<div class="centered">
-			<div id="account">
-				<a data-icon="user" class="menubtn" title="{{ 'My Account'|t }}" role="button"></a>
-				<div class="menu" data-align="right">
-					<ul>
-						<li><a href="{{ url('myaccount') }}">{{ "My Account"|t }}</a></li>
-						<li><a href="{{ logoutUrl }}">{{ "Sign out"|t }}</a></li>
-					</ul>
-				</div>
-			</div>
+			<ul class="right">
+				{% if user.can('performUpdates') %}
+					{% set totalUpdates = craft.app.getTotalAvailableUpdates() %}
+					<li class="updates{% if craft.app.isCriticalUpdateAvailable() %} critical{% endif %}">
+						<a data-icon="newstamp" href="{{ url('updates') }}" title="{{ 'Updates available!'|t }}">
+							<span>{{ totalUpdates }}</span>
+						</a>
+					</li>
+				{% endif %}
+
+				{% if user.admin %}
+					<li>
+						<a class="settings" data-icon="settings" href="{{ url('settings') }}" title="{{ 'Settings'|t }}"></a>
+					</li>
+				{% endif %}
+
+				<li>
+					<a data-icon="user" class="myaccount menubtn" title="{{ 'My Account'|t }}" role="button"></a>
+					<div class="menu" data-align="right">
+						<ul>
+							<li><a href="{{ url('myaccount') }}">{{ "My Account"|t }}</a></li>
+							<li><a href="{{ logoutUrl }}">{{ "Sign out"|t }}</a></li>
+						</ul>
+					</div>
+				</li>
+			</ul>
 
 			<h2>{{ siteName }}</h2>
 
 			<nav>
 				<ul id="nav">
+					<li>
+						<a id="nav-home" data-icon="home" href="{{ siteUrl() }}" title="{{ 'Site Homepage'|t }}" target="_blank"></a>
+					</li>
 					{% set firstSeg = craft.request.segment(1) %}
 					{% if firstSeg == 'myaccount' %}{% set firstSeg = 'users' %}{% endif %}
 					{% for handle, item in craft.cp.nav %}

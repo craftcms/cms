@@ -50,25 +50,6 @@ class CpVariable
 			}
 		}
 
-		if (craft()->userSession->checkPermission('performUpdates'))
-		{
-			$totalAvailableUpdates = craft()->updates->getTotalAvailableUpdates();
-
-			if ($totalAvailableUpdates > 0)
-			{
-				$nav['updates'] = array('name' => Craft::t('Updates'), 'badge' => $totalAvailableUpdates);
-			}
-			else
-			{
-				$nav['updates'] = array('name' => Craft::t('Updates'));
-			}
-		}
-
-		if (craft()->userSession->isAdmin())
-		{
-			$nav['settings'] = array('name' => Craft::t('Settings'));
-		}
-
 		return $nav;
 	}
 

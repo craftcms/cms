@@ -77,6 +77,26 @@ class AppVariable
 	}
 
 	/**
+	 * Returns how many updates are available.
+	 *
+	 * @return int
+	 */
+	public function getTotalAvailableUpdates()
+	{
+		return craft()->updates->getTotalAvailableUpdates();
+	}
+
+	/**
+	 * Returns whether a critical update is available.
+	 *
+	 * @return bool
+	 */
+	public function isCriticalUpdateAvailable()
+	{
+		return craft()->updates->isCriticalUpdateAvailable();
+	}
+
+	/**
 	 * Return max upload size in bytes.
 	 *
 	 * @return int

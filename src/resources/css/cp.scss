@@ -18,7 +18,7 @@ html { overflow-y: scroll; }
 #alerts li:first-child { padding-top: 4px; }
 #alerts li:last-child { padding-bottom: 4px; }
 #alerts li:before { @include icon; margin: -1px 3px 0 0; content: 'alert'; font-size: 16px; }
-#alerts li a { color: $errorcolor; text-decoration: underline; }
+#alerts li a { color: $errorcolor; text-decoration: underline; white-space: nowrap; }
 
 .centered { margin: 0 auto; max-width: 1024px; max-width: 1051px; }
 
@@ -27,12 +27,21 @@ html { overflow-y: scroll; }
 	@include linear-gradient($headerBgColor, $headerBottomBgColor);
 }
 #header:after { @include clearafter; }
-#header a { color: hsl($hue, 5%, 75%); -webkit-transition: color linear 50ms; }
-#header a:hover { color: #fff; text-decoration: none; }
+#header a { color: hsl($hue, 5%, 75%); -webkit-transition: color linear 100ms; }
+#header a:hover,
+#header a.active { color: #fff; text-decoration: none; }
 
-#header #account { float: right; height: 38px; }
-#header #account > a { display: block; padding: 0 10px; line-height: 38px; }
-#header #account > a:after { margin-left: 4px; }
+#header .right { float: right; height: 38px; }
+#header .right > li { float: left; }
+#header .right a { display: block; padding: 0 7px; line-height: 36px; }
+#header .right a.menubtn:after { margin-left: 4px; }
+#header .right .updates a { position: relative; color: $noticecolor; }
+#header .right .updates.critical a { color: $submitcolor; }
+#header .right .updates a:hover { color: #fff !important; }
+#header .right .updates a:before { font-size: 18px; width: 18px; }
+#header .right .updates a span { display: block; position: absolute; left: 7px; top: 0; width: 18px; text-align: center; color: $headerBgColor; font-weight: bold; font-size: 11px; }
+#header .right .settings:before { font-size: 18px; }
+#header .right .myaccount:before { font-size: 16px; }
 
 #header h2 { float: left; margin: 0 0 0 30px; padding: 10px 0; color: #fff; }
 
@@ -42,6 +51,9 @@ html { overflow-y: scroll; }
 #nav li a.active { color: #fff; }
 #nav li a.sel { position: relative; z-index: 1; border-radius: 3px 3px 0 0; color: #333; background: $bgcolor; }
 #nav li a:not(.sel) .badge { color: #333 !important; }
+#nav li a.menubtn { line-height: 26px; }
+
+#nav li a#nav-home { font-size: 18px; line-height: 26px; }
 
 /* HIDE */
 #customize-nav-btn span { display: none; }
