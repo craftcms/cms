@@ -60,16 +60,18 @@
 			<ul class="right">
 				{% if user.can('performUpdates') %}
 					{% set totalUpdates = craft.app.getTotalAvailableUpdates() %}
-					{% if totalUpdates == 1 %}
-						{% set updateText = "1 update available"|t %}
-					{% else %}
-						{% set updateText = "{num} updates available"|t({ num: totalUpdates }) %}
+					{% if totalUpdates %}
+						{% if totalUpdates == 1 %}
+							{% set updateText = "1 update available"|t %}
+						{% else %}
+							{% set updateText = "{num} updates available"|t({ num: totalUpdates }) %}
+						{% endif %}
+						<li class="updates{% if craft.app.isCriticalUpdateAvailable() %} critical{% endif %}">
+							<a data-icon="newstamp" href="{{ url('updates') }}" title="{{ updateText }}">
+								<span>{{ totalUpdates }}</span>
+							</a>
+						</li>
 					{% endif %}
-					<li class="updates{% if craft.app.isCriticalUpdateAvailable() %} critical{% endif %}">
-						<a data-icon="newstamp" href="{{ url('updates') }}" title="{{ updateText }}">
-							<span>{{ totalUpdates }}</span>
-						</a>
-					</li>
 				{% endif %}
 
 				{% if user.admin %}
