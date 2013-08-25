@@ -33,16 +33,6 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * Returns whether this element type can have thumbnails.
-	 *
-	 * @return bool
-	 */
-	public function hasThumbs()
-	{
-		return false;
-	}
-
-	/**
 	 * Returns whether this element type is translatable.
 	 *
 	 * @return bool

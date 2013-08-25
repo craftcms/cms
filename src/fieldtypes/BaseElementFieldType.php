@@ -82,10 +82,20 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
+		$sources = array();
+
+		foreach ($this->getElementType()->getSources() as $key => $source)
+		{
+			if (!isset($source['heading']))
+			{
+				$sources[] = array('label' => $source['label'], 'value' => $key);
+			}
+		}
+
 		return craft()->templates->render('_components/fieldtypes/elementfieldsettings', array(
 			'allowMultipleSources' => $this->allowMultipleSources,
 			'allowLimit'           => $this->allowLimit,
-			'sources'              => $this->getElementType()->getSources(),
+			'sources'              => $sources,
 			'settings'             => $this->getSettings(),
 			'type'                 => $this->getName()
 		));

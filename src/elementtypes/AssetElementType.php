@@ -27,16 +27,6 @@ class AssetElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type can have thumbnails.
-	 *
-	 * @return bool
-	 */
-	public function hasThumbs()
-	{
-		return true;
-	}
-
-	/**
 	 * Returns this element type's sources.
 	 *
 	 * @return array|false
@@ -170,9 +160,10 @@ class AssetElementType extends BaseElementType
 			$key = 'folder:'.$folder->id;
 
 			$sources[$key] = array(
-				'label'    => $folder->name,
-				'criteria' => array('folderId' => $folder->id),
-				'nested'   => $this->_assembleSourceList($folder->getChildren())
+				'label'     => $folder->name,
+				'hasThumbs' => true,
+				'criteria'  => array('folderId' => $folder->id),
+				'nested'    => $this->_assembleSourceList($folder->getChildren())
 			);
 		}
 

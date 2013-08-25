@@ -7,39 +7,35 @@
 	{% set mode = 'index' -%}
 {% endif -%}
 
-{% if elementType.hasThumbs %}
-	{% set thumbUrl = element.getThumbUrl(thumbSize) -%}
-	{% if thumbUrl -%}
-		{% set thumbClass = 'elementthumb'~element.id -%}
-		{% includeCss '.'~thumbClass~' { background-image: url('~thumbUrl~'); }' -%}
-		{% includeHiResCss '.'~thumbClass~' { background-image: url('~element.getThumbUrl(thumbSize * 2)~'); background-size: '~thumbSize~'px; }' -%}
-		{% includeCss '.thumbsview .'~thumbClass~' { background-image: url('~element.getThumbUrl(thumbsViewThumbSize)~'); }' -%}
-		{% includeHiResCss '.thumbsview .'~thumbClass~' { background-image: url('~element.getThumbUrl(thumbsViewThumbSize * 2)~'); background-size: '~thumbsViewThumbSize~'px; }' -%}
-	{% else -%}
-		{% set iconUrl = element.getIconUrl(iconSize) -%}
-		{% if iconUrl -%}
-			{% set iconClass = 'elementicon'~element.id -%}
-			{% includeCss '.'~iconClass~' { background-image: url('~iconUrl~'); }' -%}
-			{% includeHiResCss '.'~iconClass~' { background-image: url('~element.getIconUrl(iconSize * 2)~'); background-size: '~iconSize~'px; }' -%}
-			{% includeCss '.thumbsview .'~iconClass~' { background-image: url('~element.getIconUrl(thumbsViewIconSize)~'); }' -%}
-			{% includeHiResCss '.thumbsview .'~iconClass~' { background-image: url('~element.getIconUrl(thumbsViewIconSize * 2)~'); background-size: '~thumbsViewIconSize~'px; }' -%}
-		{% endif %}
-	{% endif -%}
-{% endif %}
+{% set thumbUrl = element.getThumbUrl(thumbSize) -%}
+{% if thumbUrl -%}
+	{% set thumbClass = 'elementthumb'~element.id -%}
+	{% includeCss '.'~thumbClass~' { background-image: url('~thumbUrl~'); }' -%}
+	{% includeHiResCss '.'~thumbClass~' { background-image: url('~element.getThumbUrl(thumbSize * 2)~'); background-size: '~thumbSize~'px; }' -%}
+	{% includeCss '.thumbsview .'~thumbClass~' { background-image: url('~element.getThumbUrl(thumbsViewThumbSize)~'); }' -%}
+	{% includeHiResCss '.thumbsview .'~thumbClass~' { background-image: url('~element.getThumbUrl(thumbsViewThumbSize * 2)~'); background-size: '~thumbsViewThumbSize~'px; }' -%}
+{% else -%}
+	{% set iconUrl = element.getIconUrl(iconSize) -%}
+	{% if iconUrl -%}
+		{% set iconClass = 'elementicon'~element.id -%}
+		{% includeCss '.'~iconClass~' { background-image: url('~iconUrl~'); }' -%}
+		{% includeHiResCss '.'~iconClass~' { background-image: url('~element.getIconUrl(iconSize * 2)~'); background-size: '~iconSize~'px; }' -%}
+		{% includeCss '.thumbsview .'~iconClass~' { background-image: url('~element.getIconUrl(thumbsViewIconSize)~'); }' -%}
+		{% includeHiResCss '.thumbsview .'~iconClass~' { background-image: url('~element.getIconUrl(thumbsViewIconSize * 2)~'); background-size: '~thumbsViewIconSize~'px; }' -%}
+	{% endif %}
+{% endif -%}
 
-<div class="element{% if mode == 'field' %} removable{% endif %}{% if elementType.hasThumbs and (thumbUrl or iconUrl) %} hasicon{% endif %}" data-id="{{ element.id }}" data-url="{{ element.url }}">
+<div class="element{% if mode == 'field' %} removable{% endif %}{% if thumbUrl or iconUrl %} hasicon{% endif %}" data-id="{{ element.id }}" data-url="{{ element.url }}">
 	{% if mode == 'field' -%}
 		<input type="hidden" name="{{ name }}[]" value="{{ element.id }}">
 		<a class="delete icon" title="{{ 'Remove'|t }}"></a>
 	{% endif -%}
 
-	{% if elementType.hasThumbs %}
-		{% if thumbUrl -%}
-			<div class="elementicon elementthumb {{ thumbClass }}"></div>
-		{% elseif iconUrl -%}
-			<div class="elementicon {{ iconClass }}"></div>
-		{% endif -%}
-	{% endif %}
+	{% if thumbUrl -%}
+		<div class="elementicon elementthumb {{ thumbClass }}"></div>
+	{% elseif iconUrl -%}
+		<div class="elementicon {{ iconClass }}"></div>
+	{% endif -%}
 
 	{% if elementType.hasStatuses -%}
 		<div class="status {{ element.getStatus() }}"></div>
