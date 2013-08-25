@@ -147,7 +147,10 @@ html { overflow-y: scroll; }
 #main #content { display: block; }
 
 /* footer */
-#footer { margin: 15px 0; text-align: center; color: #aaa; text-shadow: 0 1px 0 #fff; font-size: 11px; }
+#footer { margin: 15px 0; text-align: center; font-size: 0; }
+#footer li { display: inline-block; font-size: 11px; color: $lighttextcolor; text-shadow: 0 1px 0 #fff; }
+#footer li:not(:last-child):after { display: inline-block; margin: 0 7px; content: '•'; }
+#footer li a { color: $lighttextcolor; text-decoration: underline; }
 
 /* max widths for readability */
 .field { max-width: 600px; }

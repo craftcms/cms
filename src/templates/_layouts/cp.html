@@ -60,8 +60,13 @@
 			<ul class="right">
 				{% if user.can('performUpdates') %}
 					{% set totalUpdates = craft.app.getTotalAvailableUpdates() %}
+					{% if totalUpdates == 1 %}
+						{% set updateText = "1 update available"|t %}
+					{% else %}
+						{% set updateText = "{num} updates available"|t({ num: totalUpdates }) %}
+					{% endif %}
 					<li class="updates{% if craft.app.isCriticalUpdateAvailable() %} critical{% endif %}">
-						<a data-icon="newstamp" href="{{ url('updates') }}" title="{{ 'Updates available!'|t }}">
+						<a data-icon="newstamp" href="{{ url('updates') }}" title="{{ updateText }}">
 							<span>{{ totalUpdates }}</span>
 						</a>
 					</li>
@@ -184,7 +189,12 @@
 		</div>
 	</div>
 
-	<div id="footer">
-		@@@appName@@@ {{ craft.app.version }}.{{ craft.app.build }}  •  {{ "Released on"|t }} {{ craft.app.releaseDate.localeDate }}  •  {{ "Copyright"|t }} {{ now.year}} Pixel &amp; Tonic, Inc. {{ "All rights reserved."|t }}
-	</div>
+	<ul id="footer">
+		<li>@@@appName@@@ {{ craft.app.version }}.{{ craft.app.build }}</li>
+		<li>{{ "Released on"|t }} {{ craft.app.releaseDate.localeDate }}</li>
+		{% if user.can('performUpdates') %}
+			<li><a href="{{ url('updates') }}">{{ totalUpdates ? updateText : "Check for updates"|t }}</a></li>
+		{% endif %}
+		<li>{{ "Copyright"|t }} {{ now.year}} Pixel &amp; Tonic, Inc. {{ "All rights reserved."|t }}</li>
+	</ul>
 {% endset %}
