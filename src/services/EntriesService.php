@@ -235,22 +235,12 @@ class EntriesService extends BaseApplicationComponent
 		// Remove HTML tags
 		$slug = preg_replace('/<(.*?)>/', '', $slug);
 
-		// Remove apostrophes
-		$slug = str_replace(array('\'', '’'), array('', ''), $slug);
-
 		// Make it lowercase
 		$slug = mb_strtolower($slug);
 
-		// Convert extended ASCII characters to basic ASCII
-		$slug = StringHelper::asciiString($slug);
-
-		// Slug must start and end with alphanumeric characters
-		$slug = preg_replace('/^[^a-z0-9]+/', '', $slug);
-		$slug = preg_replace('/[^a-z0-9]+$/', '', $slug);
-
-		// Get the "words"
-		$words = preg_split('/[^a-z0-9]+/', $slug);
-		$words = ArrayHelper::filterEmptyStringsFromArray($words);
+		// Get the "words". This will search for any unicode "letters" or "numbers"
+		preg_match_all('/[\p{L}\p{N}]+/u', $slug, $words);
+		$words = ArrayHelper::filterEmptyStringsFromArray($words[0]);
 		$slug = implode('-', $words);
 
 		if ($slug)
