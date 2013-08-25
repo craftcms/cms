@@ -37,10 +37,13 @@ return array(
 'backupDbOnUpdate' => true,
 
 /**
- * The higher the cost value, the longer it takes to generate the hash and to verify a password against it. Higher cost
- * therefore slows down a brute-force attack. For best protection against brute for attacks, set it to the highest value that is tolerable on production servers.
- * The time taken to compute the hash doubles for every increment by one of $cost. So, for example, if the
- * hash takes 1 second to compute when $cost is 14 then then the compute time varies as 2^($cost - 14) seconds.
+ * The higher the cost value, the longer it takes to generate a password hash and to verify against it. Therefore, higher cost slows down a brute-force attack.
+ *
+ * For best protection against brute force attacks, set it to the highest value that is tolerable on production servers.
+ *
+ * The time taken to compute the hash doubles for every increment by one for this value.
+ *
+ * For example, if the hash takes 1 second to compute when the value is 14 then the compute time varies as 2^(value - 14) seconds.
  */
 'blowfishHashCost' => 13,
 
