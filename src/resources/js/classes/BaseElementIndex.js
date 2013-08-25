@@ -15,12 +15,14 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	$scroller: null,
 	$toolbar: null,
 	$search: null,
-	$viewBtns: null,
-	$viewBtn: null,
+	$viewModeBtnContainer: null,
+	viewModeBtns: null,
+	viewMode: null,
 	$mainSpinner: null,
 	$loadingMoreSpinner: null,
 	$sidebar: null,
 	$sources: null,
+	sourceKey: null,
 	$source: null,
 	$sourceToggles: null,
 	$elements: null,
@@ -34,7 +36,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.setSettings(settings, Craft.BaseElementIndex.defaults);
 
 		// Set the state object
-		this.state = {};
+		this.state = {
+			source: null,
+			viewStates: {}
+		};
 
 		if (typeof Storage !== 'undefined' && this.settings.id)
 		{
@@ -50,13 +55,30 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.$main = this.$container.find('.main');
 		this.$toolbar = this.$container.find('.toolbar:first');
 		this.$search = this.$toolbar.find('.search:first input:first');
-		this.$viewBtns = this.$toolbar.find('.btngroup .btn');
 		this.$mainSpinner = this.$toolbar.find('.spinner:first');
 		this.$loadingMoreSpinner = this.$container.find('.spinner.loadingmore')
 		this.$sidebar = this.$container.find('.sidebar:first');
 		this.$sources = this.$sidebar.find('nav a');
 		this.$sourceToggles = this.$sidebar.find('.toggle');
 		this.$elements = this.$container.find('.elements:first');
+
+		// View Mode buttons
+		this.viewModeBtns = {};
+		this.$viewModeBtnContainer = this.$toolbar.find('.viewbtns:first');
+		var $viewModeBtns = this.$viewModeBtnContainer.find('.btn');
+
+		for (var i = 0; i < $viewModeBtns.length; i++)
+		{
+			var $viewModeBtn = $($viewModeBtns[i]),
+				view = $viewModeBtn.data('view');
+
+			this.viewModeBtns[view] = $viewModeBtn;
+
+			this.addListener($viewModeBtn, 'click', { view: view }, function(ev) {
+				this.selectViewMode(ev.data.view);
+				this.updateElements();
+			});
+		}
 
 		// No source, no party.
 		if (this.$sources.length == 0)
@@ -98,28 +120,6 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 		this.selectSource($source);
 
-		// Select the initial view mode
-		var view = this.getState('view');
-
-		if (view)
-		{
-			var $viewBtn = this.$viewBtns.filter('[data-view='+view+']:first');
-		}
-
-		if (!view || !$viewBtn.length)
-		{
-			var $viewBtn = this.$viewBtns.filter('[data-view=table]:first');
-		}
-
-		if ($viewBtn.length)
-		{
-			this.selectView($viewBtn);
-		}
-		else
-		{
-			this.setState('view', 'table');
-		}
-
 		// Load up the elements!
 		this.updateElements();
 
@@ -136,12 +136,6 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			multi:             false,
 			vertical:          true,
 			onSelectionChange: $.proxy(this, 'onSourceChange')
-		});
-
-		this.addListener(this.$viewBtns, 'click', function(ev)
-		{
-			this.selectView($(ev.currentTarget));
-			this.updateElements();
 		});
 
 		this.addListener(this.$search, 'textchange', $.proxy(function()
@@ -196,9 +190,60 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			this.state[key] = value;
 		}
 
+		this.storeState();
+	},
+
+	getViewStateForSource: function(source)
+	{
+		if (typeof this.state.viewStates[source] == 'undefined')
+		{
+			// Set it now so any modifications to it by whoever's calling this will be stored.
+			this.state.viewStates[source] = {};
+		}
+
+		return this.state.viewStates[source];
+	},
+
+	getViewState: function(key)
+	{
+		var viewState = this.getViewStateForSource(this.getState('source'));
+
+		if (typeof viewState[key] != 'undefined')
+		{
+			return viewState[key];
+		}
+		else
+		{
+			return null;
+		}
+	},
+
+	setViewState: function(key, value)
+	{
+		var viewState = this.getViewStateForSource(this.getState('source'));
+
+		if (typeof key == 'object')
+		{
+			$.extend(viewState, key);
+		}
+		else
+		{
+			viewState[key] = value;
+		}
+
+		this.state.viewStates[this.getState('source')] = viewState;
+		this.storeState();
+	},
+
+	storeState: function()
+	{
 		if (this.stateStorageId)
 		{
-			localStorage[this.stateStorageId] = JSON.stringify(this.state);
+			// Recreate the object to prevent old, unwanted values from getting stored
+			localStorage[this.stateStorageId] = JSON.stringify({
+				source:     this.state.source,
+				viewStates: this.state.viewStates
+			});
 		}
 	},
 
@@ -209,7 +254,8 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			elementType:        this.elementType,
 			criteria:           this.settings.criteria,
 			disabledElementIds: this.settings.disabledElementIds,
-			state:              this.state,
+			source:             this.getState('source'),
+			viewState:          this.getViewStateForSource(this.getState('source')),
 			search:             (this.$search ? this.$search.val() : null)
 		};
 	},
@@ -219,7 +265,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.$mainSpinner.removeClass('hidden');
 		this.removeListener(this.$scroller, 'scroll');
 
-		if (this.getState('view') == 'table' && this.$table)
+		if (this.getViewState('mode') == 'table' && this.$table)
 		{
 			Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.not(this.$table);
 		}
@@ -288,11 +334,15 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 					var data = this.getControllerData();
 					data.offset = this.totalVisible;
 
-					Craft.postActionRequest('elements/getElements', data, $.proxy(function(response)
-					{
+					Craft.postActionRequest('elements/getElements', data, $.proxy(function(response, textStatus) {
+
 						this.$loadingMoreSpinner.addClass('hidden');
 
-						this.setNewElementDataHtml(response, true);
+						if (textStatus == 'success')
+						{
+							this.setNewElementDataHtml(response, true);
+						}
+
 					}, this));
 				}
 			});
@@ -313,20 +363,20 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		var $th = $(ev.currentTarget),
 			attribute = $th.attr('data-attribute');
 
-		if (this.getState('order') == attribute)
+		if (this.getViewState('order') == attribute)
 		{
-			if (this.getState('sort') == 'asc')
+			if (this.getViewState('sort') == 'asc')
 			{
-				this.setState('sort', 'desc');
+				this.setViewState('sort', 'desc');
 			}
 			else
 			{
-				this.setState('sort', 'asc');
+				this.setViewState('sort', 'asc');
 			}
 		}
 		else
 		{
-			this.setState({
+			this.setViewState({
 				order: attribute,
 				sort: 'asc'
 			});
@@ -350,21 +400,84 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 	selectSource: function($source)
 	{
+		if (this.$source == $source)
+		{
+			return;
+		}
+
 		if (this.$source)
 		{
 			this.$source.removeClass('sel');
 		}
 
-		var sourceKey = $source.data('key');
+		this.sourceKey = $source.data('key');
 		this.$source = $source.addClass('sel');
-		this.setState('source', sourceKey);
+		this.setState('source', this.sourceKey);
 
-		this.onSelectSource(sourceKey);
+		this.setViewModeForNewSource();
+		this.onSelectSource();
 	},
 
-	onSelectSource: function(sourceKey)
+	setViewModeForNewSource: function()
 	{
-		this.settings.onSelectSource(sourceKey);
+		// Have they already visited this source?
+		var viewMode = this.getViewState('mode');
+
+		if (!viewMode || !this.doesSourceHaveViewMode(viewMode))
+		{
+			// Default to structure view if the source has it
+			if (this.doesSourceHaveViewMode('structure'))
+			{
+				viewMode = 'structure';
+			}
+			// Otherwise try to keep using the current view mode
+			else if (this.viewMode && this.doesSourceHaveViewMode(this.viewMode))
+			{
+				viewMode = this.viewMode;
+			}
+			// Fine, use table view
+			else
+			{
+				viewMode = 'table';
+			}
+		}
+
+		this.selectViewMode(viewMode);
+
+		// Should we be showing the buttons?
+		var showViewModeBtns = false;
+
+		for (var viewMode in this.viewModeBtns)
+		{
+			if (viewMode == 'table')
+			{
+				continue;
+			}
+
+			if (this.doesSourceHaveViewMode(viewMode))
+			{
+				this.viewModeBtns[viewMode].removeClass('hidden');
+				showViewModeBtns = true;
+			}
+			else
+			{
+				this.viewModeBtns[viewMode].addClass('hidden');
+			}
+		}
+
+		if (showViewModeBtns)
+		{
+			this.$viewModeBtnContainer.removeClass('hidden');
+		}
+		else
+		{
+			this.$viewModeBtnContainer.addClass('hidden');
+		}
+	},
+
+	onSelectSource: function()
+	{
+		this.settings.onSelectSource(this.sourceKey);
 	},
 
 	onAfterHtmlInit: function()
@@ -372,15 +485,32 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.settings.onAfterHtmlInit()
 	},
 
-	selectView: function($viewBtn)
+	doesSourceHaveViewMode: function(viewMode)
 	{
-		if (this.$viewBtn)
+		return (viewMode == 'table' || this.$source.data('has-'+viewMode));
+	},
+
+	selectViewMode: function(viewMode)
+	{
+		// Make sure it's not already selected, and that the current source supports it
+		if (this.viewMode == viewMode)
 		{
-			this.$viewBtn.removeClass('active');
+			return;
 		}
 
-		this.$viewBtn = $viewBtn.addClass('active');
-		this.setState('view', $viewBtn.data('view'));
+		if (!this.doesSourceHaveViewMode(viewMode))
+		{
+			return;
+		}
+
+		if (this.viewMode)
+		{
+			this.viewModeBtns[this.viewMode].removeClass('active');
+		}
+
+		this.viewMode = viewMode;
+		this.viewModeBtns[this.viewMode].addClass('active');
+		this.setViewState('mode', this.viewMode);
 	},
 
 	rememberDisabledElementId: function(elementId)

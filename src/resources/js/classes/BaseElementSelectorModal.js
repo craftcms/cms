@@ -100,7 +100,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 
 		this.elementSelect = new Garnish.Select(this.elementIndex.$elementContainer, $trs, {
 			multi: this.settings.multiSelect,
-			vertical: (this.elementIndex.getState('view') == 'table'),
+			vertical: (this.elementIndex.getViewState('mode') == 'table'),
 			onSelectionChange: $.proxy(this, 'onSelectionChange')
 		});
 

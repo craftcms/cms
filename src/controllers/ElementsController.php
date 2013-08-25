@@ -29,8 +29,7 @@ class ElementsController extends BaseController
 		}
 
 		$this->renderTemplate('_elements/modalbody', array(
-			'sources'   => $sources,
-			'hasThumbs' => $elementType->hasThumbs()
+			'sources'   => $sources
 		));
 	}
 
@@ -41,15 +40,16 @@ class ElementsController extends BaseController
 	{
 		$mode = craft()->request->getParam('mode', 'index');
 		$elementType = $this->_getElementType();
-		$state = craft()->request->getParam('state', array());
+		$source = craft()->request->getParam('source');
+		$viewState = craft()->request->getParam('viewState');
 		$disabledElementIds = craft()->request->getParam('disabledElementIds');
 
 		$baseCriteria = craft()->request->getPost('criteria');
 		$criteria = craft()->elements->getCriteria($elementType->getClassHandle(), $baseCriteria);
 
-		if (!empty($state['source']))
+		if ($source)
 		{
-			$criteria->source = $state['source'];
+			$criteria->source = $source;
 		}
 
 		if ($search = craft()->request->getParam('search'))
@@ -63,7 +63,7 @@ class ElementsController extends BaseController
 		}
 
 		$containerVars = array(
-			'state' => $state
+			'state' => $viewState
 		);
 
 		$elementVars = array(
@@ -72,19 +72,19 @@ class ElementsController extends BaseController
 			'disabledElementIds' => $disabledElementIds,
 		);
 
-		if ($state['view'] == 'table')
+		if ($viewState['mode'] == 'table')
 		{
 			// Make sure the attribute is actually allowed
-			$tableAttributes = $elementType->defineTableAttributes($state['source']);
+			$tableAttributes = $elementType->defineTableAttributes($source);
 
 			// Ordering by an attribute?
-			if (!empty($state['order']))
+			if (!empty($viewState['order']))
 			{
 				foreach ($tableAttributes as $attribute)
 				{
-					if ($attribute['attribute'] == $state['order'])
+					if ($attribute['attribute'] == $viewState['order'])
 					{
-						$criteria->order = $state['order'].' '.$state['sort'];
+						$criteria->order = $viewState['order'].' '.$viewState['sort'];
 						break;
 					}
 				}
@@ -97,7 +97,7 @@ class ElementsController extends BaseController
 		// Find the elements!
 		$elementVars['elements'] = $criteria->find();
 
-		$viewFolder = '_elements/'.$state['view'].'view/';
+		$viewFolder = '_elements/'.$viewState['mode'].'view/';
 
 		if (!$criteria->offset)
 		{
