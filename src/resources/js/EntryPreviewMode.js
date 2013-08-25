@@ -94,7 +94,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		// Move all the fields into the editor rather than copying them
 		// so any JS that's referencing the elements won't break.
 		this.fields = [];
-		var $fields = this.$form.children('.field').add(this.$form.children(':not(#entry-settings)').children('.field'));
+		var $fields = this.$form.find('.field').not($('#entry-settings').find('.field'));
 
 		for (var i= 0; i < $fields.length; i++)
 		{

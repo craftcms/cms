@@ -2,17 +2,12 @@
 
 @import "shared";
 
-$headerBgColor: #41474d;
-$headerBottomBgColor: #2b2e33;
-
 html { overflow-y: scroll; }
-html, body,
-#nav li a.sel { background: $bgcolor; }
 
 #tabs li .tab.sel,
 #main {
-	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 2px 10px -2px rgba(0,0,0,0.1);
-	        box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 2px 10px -2px rgba(0,0,0,0.1);
+	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 5px 20px -5px rgba(0,0,0,0.2);
+	        box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 5px 20px -5px rgba(0,0,0,0.2);
 }
 
 /* dev mode */
@@ -23,22 +18,30 @@ html, body,
 #alerts li:first-child { padding-top: 4px; }
 #alerts li:last-child { padding-bottom: 4px; }
 #alerts li:before { @include icon; margin: -1px 3px 0 0; content: 'alert'; font-size: 16px; }
-#alerts li a { color: $errorcolor; text-decoration: underline; }
+#alerts li a { color: $errorcolor; text-decoration: underline; white-space: nowrap; }
 
 .centered { margin: 0 auto; max-width: 1024px; max-width: 1051px; }
 
 /* header */
 #header { position: relative; padding-top: 5px; max-height: 76px; overflow: hidden; background: $headerBgColor;
-	background: -webkit-linear-gradient($headerBgColor, $headerBottomBgColor);
-	background:    -moz-linear-gradient($headerBgColor, $headerBottomBgColor);
+	@include linear-gradient($headerBgColor, $headerBottomBgColor);
 }
 #header:after { @include clearafter; }
-#header a { color: #b4b9c0; -webkit-transition: color linear 50ms; }
-#header a:hover { color: #fff; text-decoration: none; }
+#header a { color: hsl($hue, 5%, 75%); -webkit-transition: color linear 100ms; }
+#header a:hover,
+#header a.active { color: #fff; text-decoration: none; }
 
-#header #account { float: right; height: 38px; }
-#header #account > a { display: block; padding: 0 10px; line-height: 38px; }
-#header #account > a:after { margin-left: 4px; }
+#header .right { float: right; height: 38px; }
+#header .right > li { float: left; }
+#header .right a { display: block; padding: 0 7px; line-height: 36px; }
+#header .right a.menubtn:after { margin-left: 4px; }
+#header .right .updates a { position: relative; color: $noticecolor; }
+#header .right .updates.critical a { color: $submitcolor; }
+#header .right .updates a:hover { color: #fff !important; }
+#header .right .updates a:before { font-size: 20px; width: 20px; }
+#header .right .updates a span { display: block; position: absolute; left: 7px; top: 1px; width: 20px; text-align: center; color: $headerBgColor; font-weight: bold; font-size: 11px; }
+#header .right .settings:before { font-size: 18px; }
+#header .right .myaccount:before { font-size: 16px; }
 
 #header h2 { float: left; margin: 0 0 0 30px; padding: 10px 0; color: #fff; }
 
@@ -46,8 +49,11 @@ html, body,
 #nav li { float: left; height: 38px; }
 #nav li a { display: block; margin-top: 2px; padding: 4px 10px; line-height: 28px; }
 #nav li a.active { color: #fff; }
-#nav li a.sel { position: relative; z-index: 1; border-radius: 3px 3px 0 0; color: #333; }
+#nav li a.sel { position: relative; z-index: 1; border-radius: 3px 3px 0 0; color: #333; background: $bgcolor; }
 #nav li a:not(.sel) .badge { color: #333 !important; }
+#nav li a.menubtn { line-height: 26px; }
+
+#nav li a#nav-home { font-size: 18px; line-height: 26px; }
 
 /* HIDE */
 #customize-nav-btn span { display: none; }
@@ -56,7 +62,7 @@ html, body,
 
 #header #nav li a .badge,
 #overflow-nav li a .badge { display: inline-block; position: relative; top: -6px; border-radius: 6px; padding: 0 3px; font-size: 10px; line-height: 12px; color: #fff; background: $submitcolor; }
-#overflow-nav li a:hover .badge { color: $selcolor; }
+#overflow-nav li a:hover .badge { color: $headerBgColor; }
 
 /* HIDE */
 #overflow-nav li a { padding-left: 30px; }
@@ -105,7 +111,7 @@ html, body,
 #tabs li .tab.sel { background: #fff; }
 
 /* main */
-#main { position: relative; padding: 30px; min-height: 500px; border-radius: 3px; background: #fff; }
+#main { position: relative; padding: 30px; min-height: 500px; background: #fff; }
 #main.has-sidebar { padding-left: 230px; }
 #main.has-help { padding-bottom: 60px; min-height: 470px; }
 #main.has-help #help { position: absolute; bottom: 17px; right: 17px; font-size: 26px; }
@@ -120,7 +126,9 @@ html, body,
 .sidebar nav li { position: relative; }
 .sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; @include unselectable; outline: none; }
 .sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
-.sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $selcolor; cursor: default; }
+.sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $headerBgColor; cursor: default;
+	background: -webkit-linear-gradient($headerBgColor, $headerBottomBgColor);
+}
 
 .sidebar nav li .toggle { position: absolute; top: 5px; left: -21px; width: 16px; height: 16px; background: url(../images/foldertoggle.png) no-repeat 0 0; }
 .sidebar nav li.expanded > .toggle { background-position: 0 -32px; }
@@ -139,7 +147,10 @@ html, body,
 #main #content { display: block; }
 
 /* footer */
-#footer { margin: 15px 0; text-align: center; color: #aaa; text-shadow: 0 1px 0 #fff; font-size: 11px; }
+#footer { margin: 15px 0; text-align: center; font-size: 0; }
+#footer li { display: inline-block; font-size: 11px; color: $lighttextcolor; text-shadow: 0 1px 0 #fff; }
+#footer li:not(:last-child):after { display: inline-block; margin: 0 7px; content: '•'; }
+#footer li a { color: $lighttextcolor; text-decoration: underline; }
 
 /* max widths for readability */
 .field { max-width: 600px; }

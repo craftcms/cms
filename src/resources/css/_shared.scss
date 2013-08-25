@@ -1,31 +1,20 @@
-$darkbgcolor: #3d3f40;
-$lightbgcolor: #797d80;
+$hue: 210;
 
-$xxxlight: #f2f0e6;
-$xxlight: #e5e3da;
-$xlight: #d9d7ce;
-$light: #ccc7c2;
-$mediumlight: #b3aeaa;
-$medium: #999591;
-$mediumdark: #807b79;
-$dark: #666361;
-$xdark: #4d4b49;
-$xxdark: #333230;
+$headerBgColor: hsl($hue, 10%, 30%);
+$headerBottomBgColor: hsl($hue, 10%, 20%);
+$bgcolor: hsl($hue, 8%, 95%);
 
-$linkcolor: #5295ff;
-$selcolor: #555;
+$textcolor: hsl($hue, 20%, 20%);
+$lighttextcolor: hsl($hue, 11%, 75%);
+$linkcolor: hsl($hue, 90%, 50%);
+$hrcolor: hsl($hue, 10%, 90%);
+$blurglowcolor: hsla($hue, 70%, 70%, 0);
+$focusglowcolor: hsl($hue, 70%, 70%);
+
 $submitcolor: #da5a47;
-$blurglowcolor: rgba(55,156,219,0);
-$focusglowcolor: #6eb1db;
 $errorcolor: #da5a47;
 $successcolor: #00b007;
 $noticecolor: #5286d9;
-$hrcolor: #eee;
-$textcolor: #292d33;
-$lighttextcolor: hsl(216, 11%, 75%);
-
-$bgcolor: #f2f4f5;
-$highlight: #f2f4f5;
 
 @mixin linear-gradient($from, $to) {
 	background-image: -webkit-linear-gradient(top, $from, $to);
