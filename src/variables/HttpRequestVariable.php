@@ -144,6 +144,17 @@ class HttpRequestVariable
 	}
 
 	/**
+	 * Returns a \CHttpCookie if it exists, otherwise, null.
+	 *
+	 * @param $name
+	 * @return \CHttpCookie|null
+	 */
+	public function getCookie($name)
+	{
+		return craft()->request->getCookie($name);
+	}
+
+	/**
 	 * Returns the server name.
 	 *
 	 * @return string
