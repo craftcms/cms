@@ -180,7 +180,10 @@ class SectionsService extends BaseApplicationComponent
 			}
 		}
 
-		return $this->_sectionsById[$sectionId];
+		if (isset($this->_sectionsById[$sectionId]))
+		{
+			return $this->_sectionsById[$sectionId];
+		}
 	}
 
 	/**
