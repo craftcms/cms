@@ -53,7 +53,7 @@ class ClearCachesTool extends BaseTool
 	 * Performs the tool's action.
 	 *
 	 * @param array $params
-	 * @return array
+	 * @return void
 	 */
 	public function performAction($params = array())
 	{
@@ -62,40 +62,61 @@ class ClearCachesTool extends BaseTool
 			return;
 		}
 
-		$allFolders = array_keys($this->_getFolders());
-
 		if ($params['folders'] == '*')
 		{
-			$folders = $allFolders;
+			$folders = array_keys($this->_getFolders());
 		}
 		else
 		{
 			$folders = $params['folders'];
 		}
 
+		$allFolders = array_keys($this->_getFolders(false));
+
 		foreach ($folders as $folder)
 		{
-			if (in_array($folder, $allFolders))
+			foreach ($allFolders as $allFolder)
 			{
-				$path = craft()->path->getRuntimePath().$folder;
-				IOHelper::clearFolder($path, true);
+				if (md5($allFolder) == $folder)
+				{
+					IOHelper::clearFolder($allFolder, true);
+					break;
+				}
 			}
 		}
 	}
 
 	/**
-	 * Returns the cache folders we allow to be cleared.
+	 * Returns the cache folders we allow to be cleared as well as any plugin cache paths that have used the 'registerCachePaths' hook.
 	 *
 	 * @access private
+	 * @param  bool    $obfuscate If true, will MD5 the path so it will be obfuscated in the template.
 	 * @return array
 	 */
-	private function _getFolders()
+	private function _getFolders($obfuscate = true)
 	{
-		return array(
-			'cache' => Craft::t('File caches'),
-			'assets' => Craft::t('Asset thumbs'),
-			'compiled_templates' => Craft::t('Compiled templates'),
-			'temp' => Craft::t('Temp files'),
+		$runtimePath = craft()->path->getRuntimePath();
+
+		$folders = array(
+			$obfuscate ? md5($runtimePath.'cache') : $runtimePath.'cache'                           => Craft::t('File caches'),
+			$obfuscate ? md5($runtimePath.'assets') : $runtimePath.'assets'                         => Craft::t('Asset thumbs'),
+			$obfuscate ? md5($runtimePath.'compiled_templates') : $runtimePath.'compiled_templates' => Craft::t('Compiled templates'),
+			$obfuscate ? md5($runtimePath.'temp') : $runtimePath.'temp'                             => Craft::t('Temp files'),
 		);
+
+		$pluginCachePaths = craft()->plugins->call('registerCachePaths');
+
+		if (is_array($pluginCachePaths) && count($pluginCachePaths) > 0)
+		{
+			foreach ($pluginCachePaths as $paths)
+			{
+				foreach ($paths as $path => $label)
+				{
+					$folders[$obfuscate ? md5($path) : $path] = $label;
+				}
+			}
+		}
+
+		return $folders;
 	}
 }
