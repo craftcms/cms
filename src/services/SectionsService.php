@@ -160,7 +160,11 @@ class SectionsService extends BaseApplicationComponent
 	 */
 	public function getSectionById($sectionId)
 	{
-		if (!isset($this->_sectionsById) || !array_key_exists($sectionId, $this->_sectionsById))
+		// If we've already fetched all sections we can save ourselves a trip to the DB
+		// for section IDs that don't exist
+		if (!$this->_fetchedAllSections &&
+			(!isset($this->_sectionsById) || !array_key_exists($sectionId, $this->_sectionsById))
+		)
 		{
 			$sectionRecord = SectionRecord::model()->findById($sectionId);
 
