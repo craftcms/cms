@@ -15,6 +15,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	$scroller: null,
 	$toolbar: null,
 	$search: null,
+	$viewModeBtnTd: null,
 	$viewModeBtnContainer: null,
 	viewModeBtns: null,
 	viewMode: null,
@@ -64,21 +65,29 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 		// View Mode buttons
 		this.viewModeBtns = {};
-		this.$viewModeBtnContainer = this.$toolbar.find('.viewbtns:first');
-		var $viewModeBtns = this.$viewModeBtnContainer.find('.btn');
+		this.$viewModeBtnTd = this.$toolbar.find('.viewbtns:first');
+		this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(this.$viewModeBtnTd);
 
-		for (var i = 0; i < $viewModeBtns.length; i++)
+		var viewModes = [
+			{ mode: 'table',     title: Craft.t('Display in a table'),     icon: 'list' },
+			{ mode: 'structure', title: Craft.t('Display hierarchically'), icon: 'structure' },
+			{ mode: 'thumbs',    title: Craft.t('Display as thumbnails'),  icon: 'grid' }
+		];
+
+		for (var i = 0; i < viewModes.length; i++)
 		{
-			var $viewModeBtn = $($viewModeBtns[i]),
-				view = $viewModeBtn.data('view');
+			var viewMode = viewModes[i],
+				$viewModeBtn = $('<div class="btn" title="'+viewMode.title+'" data-icon="'+viewMode.icon+'" data-view="'+viewMode.mode+'" role="button"/>')
 
-			this.viewModeBtns[view] = $viewModeBtn;
+			this.viewModeBtns[viewMode.mode] = $viewModeBtn;
 
-			this.addListener($viewModeBtn, 'click', { view: view }, function(ev) {
-				this.selectViewMode(ev.data.view);
+			this.addListener($viewModeBtn, 'click', { mode: viewMode.mode }, function(ev) {
+				this.selectViewMode(ev.data.mode);
 				this.updateElements();
 			});
 		}
+
+		this.viewModeBtns.table.appendTo(this.$viewModeBtnContainer);
 
 		// No source, no party.
 		if (this.$sources.length == 0)
@@ -456,22 +465,22 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 			if (this.doesSourceHaveViewMode(viewMode))
 			{
-				this.viewModeBtns[viewMode].removeClass('hidden');
+				this.viewModeBtns[viewMode].appendTo(this.$viewModeBtnContainer);
 				showViewModeBtns = true;
 			}
 			else
 			{
-				this.viewModeBtns[viewMode].addClass('hidden');
+				this.viewModeBtns[viewMode].detach();
 			}
 		}
 
 		if (showViewModeBtns)
 		{
-			this.$viewModeBtnContainer.removeClass('hidden');
+			this.$viewModeBtnTd.removeClass('hidden');
 		}
 		else
 		{
-			this.$viewModeBtnContainer.addClass('hidden');
+			this.$viewModeBtnTd.addClass('hidden');
 		}
 	},
 
