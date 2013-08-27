@@ -224,6 +224,16 @@ class UsersController extends BaseController
 
 			$template = craft()->config->getSetPasswordPath($code, $id, false);
 
+			// If it's a front-end request and they haven't setup a front-end template yet, load the CP setpassword template.
+			if (craft()->request->isSiteRequest())
+			{
+				if (!craft()->templates->doesTemplateExist($template))
+				{
+					// Set PathService to use the CP templates path instead
+					craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+				}
+			}
+
 			$this->renderTemplate($template, array(
 				'code' => $code,
 				'id' => $id,
