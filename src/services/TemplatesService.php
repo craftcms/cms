@@ -203,7 +203,7 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function includeFootNode($node, $first = false)
 	{
-		Craft::log('The craft()->templates->includeHeadNode() method has been deprecated. Use craft()->templates->includeHeadHtml() instead.', LogLevel::Warning);
+		Craft::log('The craft()->templates->includeFootNode() method has been deprecated. Use craft()->templates->includeFootHtml() instead.', LogLevel::Warning);
 		$this->includeFootHtml($node, $first);
 	}
 
