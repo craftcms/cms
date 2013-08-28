@@ -40,7 +40,7 @@ class ElementsController extends BaseController
 	 */
 	public function actionGetElements()
 	{
-		$context = craft()->request->getParam('context', 'index');
+		$context = craft()->request->getParam('context');
 		$elementType = $this->_getElementType();
 		$state = craft()->request->getParam('state', array());
 		$disabledElementIds = craft()->request->getParam('disabledElementIds');
@@ -50,7 +50,17 @@ class ElementsController extends BaseController
 
 		if (!empty($state['source']))
 		{
-			$criteria->source = $state['source'];
+			$sources = $elementType->getSources($context);
+			$sourceCriteria = $this->_getSourceCriteria($sources, $state['source']);
+
+			if ($sourceCriteria !== null)
+			{
+				$criteria->setAttributes($sourceCriteria);
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		if ($search = craft()->request->getParam('search'))
@@ -141,4 +151,40 @@ class ElementsController extends BaseController
 
 		return $elementType;
 	}
+
+	/**
+	 * Returns the criteria for a given source.
+	 *
+	 * @param array  $sources
+	 * @param string $selectedSource
+	 * @return array|null
+	 */
+	private function _getSourceCriteria($sources, $selectedSource)
+	{
+		if (isset($sources[$selectedSource]))
+		{
+			if (isset($sources[$selectedSource]['criteria']))
+			{
+				return $sources[$selectedSource]['criteria'];
+			}
+			else
+			{
+				return array();
+			}
+		}
+		else
+		{
+			// Look through any nested sources
+			foreach ($sources as $key => $source)
+			{
+				if (!empty($source['nested']) && ($nestedSourceCriteria = $this->_getSourceCriteria($source['nested'], $selectedSource)))
+				{
+					return $nestedSourceCriteria;
+				}
+			}
+		}
+
+		return null;
+	}
+
 }

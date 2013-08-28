@@ -27,7 +27,6 @@ class ElementCriteriaModel extends BaseModel
 	protected function defineAttributes()
 	{
 		$attributes = array(
-			'source'        => AttributeType::String,
 			'id'            => AttributeType::Number,
 			'locale'        => AttributeType::Locale,
 			'uri'           => AttributeType::String,
