@@ -33,6 +33,17 @@ class ConfigService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Sets a config item value.
+	 *
+	 * @param string $item
+	 * @param mixed $value
+	 */
+	public function set($item, $value)
+	{
+		craft()->params['generalConfig'][$item] = $value;
+	}
+
+	/**
 	 * Get a DB config item
 	 *
 	 * @param      $item
