@@ -78,7 +78,7 @@ class ElementsController extends BaseController
 		);
 
 		$elementVars = array(
-			'mode'               => $context,
+			'context'            => $context,
 			'elementType'        => new ElementTypeVariable($elementType),
 			'disabledElementIds' => $disabledElementIds,
 		);
