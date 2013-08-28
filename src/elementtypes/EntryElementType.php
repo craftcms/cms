@@ -54,7 +54,7 @@ class EntryElementType extends BaseElementType
 	 */
 	public function getSources($context = null)
 	{
-		if ($context == 'index')
+		if ($context != 'modal')
 		{
 			$sections = craft()->sections->getEditableSections();
 		}

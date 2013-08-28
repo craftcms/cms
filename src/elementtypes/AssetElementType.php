@@ -44,7 +44,7 @@ class AssetElementType extends BaseElementType
 	 */
 	public function getSources($context = null)
 	{
-		if ($context == 'index')
+		if ($context != 'modal')
 		{
 			$sourceIds = craft()->assetSources->getViewableSourceIds();
 		}
