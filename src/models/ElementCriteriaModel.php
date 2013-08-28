@@ -69,12 +69,6 @@ class ElementCriteriaModel extends BaseModel
 	 */
 	public function setAttribute($name, $value)
 	{
-		// Treat asterisks as null (for fun)
-		if ($value === '*')
-		{
-			$value = null;
-		}
-
 		return parent::setAttribute($name, $value);
 	}
 
