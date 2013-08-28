@@ -6,7 +6,7 @@
 <div id="{{ id }}" class="elementselect">
 	<div class="elements">
 		{% for element in elements %}
-			{% include "_elements/element" with { mode: 'field' } %}
+			{% include "_elements/element" with { context: 'field' } %}
 		{% endfor %}
 	</div>
 
