@@ -29,11 +29,12 @@ class ElementTypeVariable extends BaseComponentTypeVariable
 	/**
 	 * Return a key/label list of the element type's sources.
 	 *
+	 * @param string|null $context
 	 * @return array|false
 	 */
-	public function getSources()
+	public function getSources($context = null)
 	{
-		return $this->component->getSources();
+		return $this->component->getSources($context);
 	}
 
 	/**

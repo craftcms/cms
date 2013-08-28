@@ -39,13 +39,21 @@ class AssetElementType extends BaseElementType
 	/**
 	 * Returns this element type's sources.
 	 *
+	 * @param string|null $context
 	 * @return array|false
 	 */
-	public function getSources()
+	public function getSources($context = null)
 	{
-		$viewableSourceIds = craft()->assetSources->getViewableSourceIds();
-		$tree = craft()->assets->getFolderTree($viewableSourceIds);
+		if ($context == 'index')
+		{
+			$sourceIds = craft()->assetSources->getViewableSourceIds();
+		}
+		else
+		{
+			$sourceIds = craft()->assetSources->getAllSourceIds();
+		}
 
+		$tree = craft()->assets->getFolderTree($sourceIds);
 		return $this->_assembleSourceList($tree);
 	}
 

@@ -14,8 +14,9 @@ class ElementsController extends BaseController
 		$this->requireAjaxRequest();
 
 		$showSources = craft()->request->getParam('sources');
+		$context = craft()->request->getParam('context');
 		$elementType = $this->_getElementType();
-		$sources = $elementType->getSources();
+		$sources = $elementType->getSources($context);
 
 		if (is_array($showSources))
 		{
