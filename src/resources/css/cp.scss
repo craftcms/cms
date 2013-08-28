@@ -20,7 +20,7 @@ html { overflow-y: scroll; }
 #alerts li:before { @include icon; margin: -1px 3px 0 0; content: 'alert'; font-size: 16px; }
 #alerts li a { color: $errorcolor; text-decoration: underline; white-space: nowrap; }
 
-.centered { margin: 0 auto; max-width: 1024px; max-width: 1051px; }
+.centered { margin: 0 auto; max-width: 1051px; padding: 0 30px; }
 
 /* header */
 #header { position: relative; padding-top: 5px; max-height: 76px; overflow: hidden; border-top: 1px solid #000; text-shadow: 0 -1px rgba(0,0,0,0.5); background: $headerBgColor;
@@ -45,7 +45,7 @@ html { overflow-y: scroll; }
 #header .right .settings:before { font-size: 18px; }
 #header .right .myaccount:before { font-size: 16px; }
 
-#header h2 { float: left; margin: 0 0 0 30px; padding: 10px 0; color: #fff; }
+#header h2 { float: left; margin: 0 0 0 5px; padding: 10px 0; color: #fff; }
 
 #nav { float: left; margin-left: 20px; }
 #nav li { float: left; height: 38px; }
@@ -85,11 +85,8 @@ html { overflow-y: scroll; }
 #notifications .notification.notice { background: $noticecolor; }
 #notifications .notification.error { background: $submitcolor; }
 
-/* main wrapper */
-#main-wrapper { position: relative; }
-
 /* page header */
-#page-header { display: block; position: relative; z-index: 1; padding: 35px 30px; overflow: hidden; text-shadow: 0 1px 0 #fff; }
+#page-header { display: block; position: relative; z-index: 1; padding: 35px 5px; overflow: hidden; text-shadow: 0 1px 0 #fff; }
 #page-header h1 { display: inline; line-height: 1; }
 #page-header #extra-headers { display: inline-block; position: relative; top: 5px; }
 #page-header #extra-headers > .select,
@@ -109,15 +106,15 @@ html { overflow-y: scroll; }
 .tabs .tab:hover { text-decoration: none; color: $linkcolor; }
 .tabs .tab.sel { border-radius: 3px 3px 0 0; color: #000; cursor: default; }
 
-#tabs { margin: 35px 0 -35px -10px; font-size: 0; }
+#tabs { margin: 35px 0 -35px 15px; font-size: 0; }
 #tabs li { display: inline-block; font-size: 13px; }
 #tabs li a { color: #555; }
 #tabs li a:not(.sel):hover { color: $linkcolor; }
 #tabs li .tab.sel { background: #fff; }
 
 /* main */
-#main { position: relative; padding: 30px; min-height: 500px; background: #fff; }
-#main.has-sidebar { padding-left: 230px; }
+#main { position: relative; padding: 30px; max-width: 991px; min-height: 500px; background: #fff; }
+#main.has-sidebar { padding-left: 230px; max-width: 791px; }
 #main.has-help { padding-bottom: 60px; min-height: 470px; }
 #main.has-help #help { position: absolute; bottom: 17px; right: 17px; font-size: 26px; }
 #main:after { @include clearafter; }

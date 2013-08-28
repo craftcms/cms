@@ -70,8 +70,8 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 .nav ul li a.sel { color: #2c2c2c; }
 
 /* headings */
-h1 { margin-bottom: 30px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 30px; line-height: 1; color: #000; }
-h2 { margin: 15px 0; font-size: 15px; font-weight: bold; line-height: 1.2; color: #2c2c2c; }
+h1 { margin-bottom: 30px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 30px; line-height: 1; color: $submitcolor; }
+h2 { margin: 15px 0; font-size: 15px; font-weight: bold; line-height: 1.2; }
 h3 { margin: 15px 0; font-weight: bold; line-height: 1.2; }
 
 h2[data-icon]:before { margin: -4px 6px 0 0; font-size: 19px; }

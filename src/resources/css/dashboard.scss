@@ -2,8 +2,7 @@
 
 @import "shared";
 
-#main-wrapper { background: none; -webkit-box-shadow: none; box-shadow: none; overflow: visible; }
-#main { padding: 0; -webkit-box-shadow: none; box-shadow: none; background: none; }
+#main { padding: 0; max-width: 1051px; -webkit-box-shadow: none; box-shadow: none; background: none; }
 
 .widget { overflow: hidden;
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 5px 20px -5px rgba(0,0,0,0.2);
