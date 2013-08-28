@@ -61,29 +61,38 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function getUserByVerificationCodeAndUid($code, $uid)
 	{
-		$date = DateTimeHelper::currentUTCDateTime();
-		$duration = new DateInterval(craft()->config->get('verificationCodeDuration'));
-		$date->sub($duration);
+		$userRecord = UserRecord::model()->findByAttributes(array(
+			'uid' => $uid
+		));
 
-		$userRecord = UserRecord::model()->find(
-			'verificationCodeIssuedDate >:date AND uid=:uid',
-			array(':date' => DateTimeHelper::formatTimeForDb($date->getTimestamp()), ':uid' => $uid)
-		);
-
-		if ($userRecord)
+		if ($userRecord && $userRecord->status != UserStatus::Active && $userRecord->verificationCodeIssuedDate)
 		{
-			if (craft()->security->checkPassword($code, $userRecord->verificationCode))
+			$user = UserModel::populateModel($userRecord);
+
+			// Fire an 'onBeforeVerifyUser' event
+			$this->onBeforeVerifyUser(new Event($this, array(
+				'user' => $user
+			)));
+
+			$minCodeIssueDate = DateTimeHelper::currentUTCDateTime();
+			$duration = new DateInterval(craft()->config->get('verificationCodeDuration'));
+			$minCodeIssueDate->sub($duration);
+
+			if (
+				$userRecord->verificationCodeIssuedDate > $minCodeIssueDate &&
+				craft()->security->checkPassword($code, $userRecord->verificationCode)
+			)
 			{
-				return UserModel::populateModel($userRecord);
+				return $user;
 			}
 			else
 			{
-				Craft::log('Found a with UID:'.$uid.', but the verification code given: '.$code.' does not match the hash in the database.', LogLevel::Warning);
+				Craft::log('Found a with UID:'.$uid.', but the verification code given: '.$code.' has either expired or does not match the hash in the database.', LogLevel::Warning);
 			}
 		}
 		else
 		{
-			Craft::log('Could not find a user with UID:'.$uid.' that has a verification code that is not expired.', LogLevel::Warning);
+			Craft::log('Could not find a user with UID:'.$uid.'.', LogLevel::Warning);
 		}
 
 		return null;
@@ -762,6 +771,16 @@ class UsersService extends BaseApplicationComponent
 	public function onSaveUser(Event $event)
 	{
 		$this->raiseEvent('onSaveUser', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeVerifyUser' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeVerifyUser(Event $event)
+	{
+		$this->raiseEvent('onBeforeVerifyUser', $event);
 	}
 
 	/**
