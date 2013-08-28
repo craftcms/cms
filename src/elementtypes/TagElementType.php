@@ -19,9 +19,10 @@ class TagElementType extends BaseElementType
 	/**
 	 * Returns this element type's sources.
 	 *
+	 * @param string|null $context
 	 * @return array|false
 	 */
-	public function getSources()
+	public function getSources($context = null)
 	{
 		$sources = array();
 

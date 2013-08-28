@@ -49,19 +49,37 @@ class EntryElementType extends BaseElementType
 	/**
 	 * Returns this element type's sources.
 	 *
+	 * @param string|null $context
 	 * @return array|false
 	 */
-	public function getSources()
+	public function getSources($context = null)
 	{
+		if ($context == 'index')
+		{
+			$sections = craft()->sections->getEditableSections();
+		}
+		else
+		{
+			$sections = craft()->sections->getAllSections();
+		}
+
+		$sectionIds = array();
+
+		foreach ($sections as $section)
+		{
+			$sectionIds[] = $section->id;
+		}
+
 		$sources = array(
 			'*' => array(
-				'label' => Craft::t('All entries')
+				'label'    => Craft::t('All entries'),
+				'criteria' => array('sectionId' => $sectionIds)
 			)
 		);
 
 		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
-			foreach (craft()->sections->getEditableSections() as $section)
+			foreach ($sections as $section)
 			{
 				$key = 'section:'.$section->id;
 

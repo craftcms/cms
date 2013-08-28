@@ -22,9 +22,10 @@ interface IElementType extends IComponentType
 	public function isTranslatable();
 
 	/**
+	 * @param string|null $context
 	 * @return array
 	 */
-	public function getSources();
+	public function getSources($context = null);
 
 	/**
 	 * @return array

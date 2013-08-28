@@ -12,7 +12,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 	uploader: null,
 	promptHandler: null,
 	progressBar: null,
-	indexMode: false,
 
 	initialSourceKey: null,
 	isIndexBusy: false,
@@ -31,13 +30,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 	init: function(elementType, $container, settings)
 	{
-
 		this.base(elementType, $container, settings);
 
-
-		if (this.settings.mode == "index")
+		if (this.settings.context == 'index')
 		{
-			this.indexMode = true;
 			this.initIndexMode();
 		}
 	},
@@ -893,7 +889,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 	{
 		this.base(append)
 
-		if (this.indexMode)
+		if (this.settings.context == 'index')
 		{
 			$elements = this.$elementContainer.children(':not(.disabled)');
 			this._initElementSelect($elements);

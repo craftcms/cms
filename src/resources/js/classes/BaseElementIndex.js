@@ -97,7 +97,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 		this.onAfterHtmlInit();
 
-		if (this.settings.mode == 'index')
+		if (this.settings.context == 'index')
 		{
 			this.$scroller = Garnish.$win;
 		}
@@ -259,7 +259,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	getControllerData: function()
 	{
 		return {
-			mode:               this.settings.mode,
+			context:            this.settings.context,
 			elementType:        this.elementType,
 			criteria:           this.settings.criteria,
 			disabledElementIds: this.settings.disabledElementIds,
@@ -641,7 +641,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 },
 {
 	defaults: {
-		mode: 'index',
+		context: 'index',
 		id: null,
 		criteria: null,
 		disabledElementIds: [],

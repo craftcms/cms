@@ -45,7 +45,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 		{
 			// Get the modal body HTML based on the settings
 			var data = {
-				mode:        'modal',
+				context:     'modal',
 				elementType: this.elementType,
 				sources:     this.settings.sources
 			};
@@ -58,7 +58,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 
 					// Initialize the element index
 					this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
-						mode:               'modal',
+						context:            'modal',
 						id:                 this.settings.id,
 						criteria:           this.settings.criteria,
 						disabledElementIds: this.settings.disabledElementIds,
