@@ -73,62 +73,67 @@ class ElementsController extends BaseController
 			$criteria->offset = $offset;
 		}
 
-		$containerVars = array(
-			'state' => $viewState
-		);
-
-		$elementVars = array(
+		$variables = array(
+			'state'              => $viewState,
 			'context'            => $context,
 			'elementType'        => new ElementTypeVariable($elementType),
 			'disabledElementIds' => $disabledElementIds,
 		);
 
-		if ($viewState['mode'] == 'table')
+		switch ($viewState['mode'])
 		{
-			// Make sure the attribute is actually allowed
-			$tableAttributes = $elementType->defineTableAttributes($source);
-
-			// Ordering by an attribute?
-			if (!empty($viewState['order']))
+			case 'table':
 			{
-				foreach ($tableAttributes as $attribute)
+				// Make sure the attribute is actually allowed
+				$tableAttributes = $elementType->defineTableAttributes($source);
+
+				// Ordering by an attribute?
+				if (!empty($viewState['order']))
 				{
-					if ($attribute['attribute'] == $viewState['order'])
+					foreach ($tableAttributes as $attribute)
 					{
-						$criteria->order = $viewState['order'].' '.$viewState['sort'];
-						break;
+						if ($attribute['attribute'] == $viewState['order'])
+						{
+							$criteria->order = $viewState['order'].' '.$viewState['sort'];
+							break;
+						}
 					}
 				}
+
+				$variables['attributes'] = $tableAttributes;
+
+				break;
 			}
 
-			$containerVars['attributes'] = $tableAttributes;
-			$elementVars['attributes'] = $tableAttributes;
+			case 'structure':
+			{
+				$criteria->limit = null;
+				$criteria->offset = null;
+			}
 		}
 
 		// Find the elements!
-		$elementVars['elements'] = $criteria->find();
-
-		$viewFolder = '_elements/'.$viewState['mode'].'view/';
+		$variables['elements'] = $criteria->find();
 
 		if (!$criteria->offset)
 		{
-			$elementContainerHtml = $this->renderTemplate($viewFolder.'container', $containerVars, true);
+			$template = 'container';
 		}
 		else
 		{
-			$elementContainerHtml = null;
+			$template = 'elements';
 		}
 
-		$elementDataHtml = $this->renderTemplate($viewFolder.'elements', $elementVars, true);
+		$html = craft()->templates->render('_elements/'.$viewState['mode'].'view/'.$template, $variables);
+
 		$totalVisible = $criteria->offset + $criteria->limit;
 		$remainingElements = $criteria->total() - $totalVisible;
 
 		$this->returnJson(array(
-			'elementContainerHtml' => $elementContainerHtml,
-			'elementDataHtml'      => $elementDataHtml,
-			'headHtml'             => craft()->templates->getHeadHtml(),
-			'totalVisible'         => $totalVisible,
-			'more'                 => ($remainingElements > 0),
+			'html'         => $html,
+			'headHtml'     => craft()->templates->getHeadHtml(),
+			'totalVisible' => $totalVisible,
+			'more'         => ($remainingElements > 0),
 		));
 	}
 

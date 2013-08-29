@@ -287,24 +287,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 			if (textStatus == 'success')
 			{
-				this.$elements.html(response.elementContainerHtml);
-
-				if (this.getViewState('mode') == 'table')
-				{
-					var $headers = this.$elements.find('thead:first th');
-					this.addListener($headers, 'click', 'onSortChange');
-
-					this.$table = this.$elements.find('table:first');
-					this.$elementContainer = this.$table.find('tbody:first');
-
-					Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.add(this.$table);
-				}
-				else
-				{
-					this.$elementContainer = this.$elements.children('ul');
-				}
-
-				this.setNewElementDataHtml(response);
+				this.setNewElementDataHtml(response, false);
 			}
 
 		}, this));
@@ -312,13 +295,28 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 	setNewElementDataHtml: function(response, append)
 	{
-		if (append)
+		if (!append)
 		{
-			this.$elementContainer.append(response.elementDataHtml);
+			this.$elements.html(response.html);
+
+			if (this.getViewState('mode') == 'table')
+			{
+				var $headers = this.$elements.find('thead:first th');
+				this.addListener($headers, 'click', 'onSortChange');
+
+				this.$table = this.$elements.find('table:first');
+				this.$elementContainer = this.$table.find('tbody:first');
+
+				Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.add(this.$table);
+			}
+			else
+			{
+				this.$elementContainer = this.$elements.children('ul');
+			}
 		}
 		else
 		{
-			this.$elementContainer.html(response.elementDataHtml);
+			this.$elementContainer.append(response.html);
 		}
 
 		$('head').append(response.headHtml);

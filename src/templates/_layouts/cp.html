@@ -118,7 +118,7 @@
 		</div>
 	</header>
 
-	<div id="main-wrapper" class="centered">
+	<div class="centered">
 		<div id="notifications-wrapper">
 			<div id="notifications">
 				{% for type, message in craft.session.flashes %}
@@ -169,26 +169,26 @@
 				</nav>
 			{% endif %}
 		</header>
+	</div>
 
-		<div id="main" class="{% if hasSidebar %}has-sidebar{% endif %} {% if hasHelp %}has-help{% endif %}">
-			{% if hasSidebar %}
-				<div id="sidebar" class="sidebar">
-					{{ sidebar|raw }}
-				</div>
-			{% endif %}
+	<div id="main" class="centered {% if hasSidebar %}has-sidebar{% endif %} {% if hasHelp %}has-help{% endif %}">
+		{% if hasSidebar %}
+			<div id="sidebar" class="sidebar">
+				{{ sidebar|raw }}
+			</div>
+		{% endif %}
 
-			<main id="content" role="main">
-				{% block content %}
-					{% if content is defined %}
-						{{ content }}
-					{% endif %}
-				{% endblock %}
-
-				{% if hasHelp %}
-					<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
+		<main id="content" role="main">
+			{% block content %}
+				{% if content is defined %}
+					{{ content }}
 				{% endif %}
-			</main>
-		</div>
+			{% endblock %}
+
+			{% if hasHelp %}
+				<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
+			{% endif %}
+		</main>
 	</div>
 
 	<ul id="footer">
