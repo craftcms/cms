@@ -222,19 +222,22 @@ class UsersController extends BaseController
 				throw new HttpException(404);
 			}
 
-			$template = craft()->config->getSetPasswordPath($code, $id, false);
+			$url = craft()->config->getSetPasswordPath($code, $id, $user);
 
-			// If it's a front-end request and they haven't setup a front-end template yet, load the CP setpassword template.
-			if (craft()->request->isSiteRequest())
+			if (!$user->can('accessCp'))
 			{
-				if (!craft()->templates->doesTemplateExist($template))
+				if (!craft()->templates->doesTemplateExist(craft()->config->get('setPasswordPath')))
 				{
 					// Set PathService to use the CP templates path instead
 					craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
 				}
 			}
+			else
+			{
+				craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+			}
 
-			$this->renderTemplate($template, array(
+			$this->renderTemplate($url, array(
 				'code' => $code,
 				'id' => $id,
 				'newUser' => ($user->password ? false : true),
@@ -276,14 +279,7 @@ class UsersController extends BaseController
 			// All users that go through account activation will need to set their password.
 			$code = craft()->users->setVerificationCodeOnUser($user);
 
-			if ($user->can('accessCp'))
-			{
-				$url = craft()->config->getSetPasswordPath($code, $id, true, 'cp');
-			}
-			else
-			{
-				$url = craft()->config->getSetPasswordPath($code, $id);
-			}
+			$url = 'actions/users/setpassword';
 		}
 		else
 		{
@@ -298,6 +294,17 @@ class UsersController extends BaseController
 				$url = UrlHelper::getSiteUrl($url);
 			}
 		}
+
+		if (craft()->request->isSecureConnection)
+		{
+			$url = UrlHelper::getUrl($url, array(
+				'code' => $code, 'id' => $id
+			), 'https');
+		}
+
+		$url = UrlHelper::getUrl($url, array(
+			'code' => $code, 'id' => $id
+		));
 
 		$this->redirect($url);
 	}
