@@ -279,7 +279,7 @@ class UsersController extends BaseController
 			// All users that go through account activation will need to set their password.
 			$code = craft()->users->setVerificationCodeOnUser($user);
 
-			$url = 'actions/users/setpassword';
+			$url = craft()->config->get('actionTrigger').'/users/setpassword';
 		}
 		else
 		{
