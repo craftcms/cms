@@ -18,7 +18,7 @@
 
 {% if craft.hasPackage('Users') %}
 	{% if account is not defined and userId is defined %}
-		{% set account = craft.users.status('*').id(userId).first %}
+		{% set account = craft.users.status(null).id(userId).first %}
 		{% if not account %}{% exit 404 %}{% endif %}
 	{% endif %}
 {% endif %}
