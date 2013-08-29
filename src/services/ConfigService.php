@@ -6,6 +6,20 @@ namespace Craft;
  */
 class ConfigService extends BaseApplicationComponent
 {
+	/**
+	 * The general configuration names and values as defined in craft/app/etc/config and craft/config
+	 *
+	 * @var
+	 */
+	public $generalConfig;
+
+	/**
+	 * The database configuration names and values as defined in craft/app/etc/config and craft/config
+	 *
+	 * @var
+	 */
+	public $dbConfig;
+
 	private $_cacheDuration;
 	private $_omitScriptNameInUrls;
 	private $_usePathInfo;
@@ -25,9 +39,9 @@ class ConfigService extends BaseApplicationComponent
 		}
 		else
 		{
-			if (isset(craft()->params['generalConfig'][$item]))
+			if (isset($this->generalConfig[$item]))
 			{
-				return craft()->params['generalConfig'][$item];
+				return $this->generalConfig[$item];
 			}
 		}
 	}
@@ -40,7 +54,7 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function set($item, $value)
 	{
-		craft()->params['generalConfig'][$item] = $value;
+		$this->generalConfig[$item] = $value;
 	}
 
 	/**
@@ -52,9 +66,9 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function getDbItem($item, $default = null)
 	{
-		if (isset(craft()->params['dbConfig'][$item]))
+		if (isset($this->dbConfig[$item]))
 		{
-			return craft()->params['dbConfig'][$item];
+			return $this->dbConfig[$item];
 		}
 
 		return $default;
@@ -296,71 +310,57 @@ class ConfigService extends BaseApplicationComponent
 
 	/**
 	 * Gets the set password URL for a user account.
-	 * TODO: Not proud of this... at all.
 	 *
 	 * @param       $code
 	 * @param       $uid
+	 * @param       $user
 	 * @param  bool $full
-	 * @param  null $requestType
 	 * @return string
 	 */
-	public function getSetPasswordPath($code, $uid, $full = true, $requestType = null)
+	public function getSetPasswordPath($code, $uid, $user, $full = false)
 	{
-		$cp = false;
-
-		if (!$requestType)
-		{
-			if (craft()->request->isSiteRequest())
-			{
-				$url = craft()->config->get('setPasswordPath');
-			}
-			else
-			{
-				$url = $this->getCpSetPasswordPath();
-				$cp = true;
-			}
-		}
-		else if ($requestType == 'cp')
+		if ($user->can('accessCp'))
 		{
 			$url = $this->getCpSetPasswordPath();
-			$cp = true;
-		}
-		else if ($requestType == 'site')
-		{
-			$url = craft()->config->get('setPasswordPath');
-		}
 
-		if (!$full)
-		{
-			return $url;
-		}
-
-		if ($cp)
-		{
-			if (craft()->request->isSecureConnection)
+			if ($full)
 			{
-				return UrlHelper::getCpUrl($url, array(
-					'code' => $code, 'id' => $uid
-				), 'https');
+				if (craft()->request->isSecureConnection)
+				{
+					$url = UrlHelper::getCpUrl($url, array(
+						'code' => $code, 'id' => $uid
+					), 'https');
+				}
+				else
+				{
+					$url = UrlHelper::getCpUrl($url, array(
+						'code' => $code, 'id' => $uid
+					));
+				}
 			}
-
-			return UrlHelper::getCpUrl($url, array(
-				'code' => $code, 'id' => $uid
-			));
 		}
 		else
 		{
-			if (craft()->request->isSecureConnection)
-			{
-				return UrlHelper::getUrl($url, array(
-					'code' => $code, 'id' => $uid
-				), 'https');
-			}
+			$url = craft()->config->get('setPasswordPath');
 
-			return UrlHelper::getUrl($url, array(
-				'code' => $code, 'id' => $uid
-			));
+			if ($full)
+			{
+				if (craft()->request->isSecureConnection)
+				{
+					$url = UrlHelper::getUrl($url, array(
+						'code' => $code, 'id' => $uid
+					), 'https');
+				}
+				else
+				{
+					$url = UrlHelper::getUrl($url, array(
+						'code' => $code, 'id' => $uid
+					));
+				}
+			}
 		}
+
+		return $url;
 	}
 
 	/**

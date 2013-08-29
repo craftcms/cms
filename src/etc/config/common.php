@@ -114,7 +114,9 @@ $configArray = array(
 		),
 
 		'config' => array(
-			'class' => 'Craft\ConfigService',
+			'class'         => 'Craft\ConfigService',
+			'generalConfig' => $generalConfig,
+			'dbConfig'      => $dbConfig,
 		),
 
 		'i18n' => array(
@@ -128,8 +130,6 @@ $configArray = array(
 
 	'params' => array(
 		'adminEmail'            => 'admin@website.com',
-		'dbConfig'              => $dbConfig,
-		'generalConfig'         => $generalConfig,
 	)
 );
 

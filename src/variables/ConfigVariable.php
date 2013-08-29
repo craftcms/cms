@@ -14,7 +14,7 @@ class ConfigVariable
 	 */
 	function __isset($name)
 	{
-		return isset(craft()->params['generalConfig'][$name]);
+		return isset(craft()->config->generalConfig[$name]);
 	}
 
 	/**
