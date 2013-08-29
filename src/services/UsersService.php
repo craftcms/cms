@@ -65,7 +65,7 @@ class UsersService extends BaseApplicationComponent
 			'uid' => $uid
 		));
 
-		if ($userRecord && $userRecord->status != UserStatus::Active && $userRecord->verificationCodeIssuedDate)
+		if ($userRecord && $userRecord->verificationCodeIssuedDate)
 		{
 			$user = UserModel::populateModel($userRecord);
 
@@ -425,7 +425,7 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->save();
 
 		return craft()->email->sendEmailByKey($user, 'forgot_password', array(
-			'link' => new \Twig_Markup(craft()->config->getSetPasswordPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+			'link' => new \Twig_Markup(craft()->config->getSetPasswordPath($unhashedVerificationCode, $userRecord->uid, $userRecord), craft()->templates->getTwig()->getCharset()),
 		));
 	}
 
