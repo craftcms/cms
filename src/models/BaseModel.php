@@ -88,22 +88,38 @@ abstract class BaseModel extends \CModel
 	}
 
 	/**
-	 * Checks if an attribute value is set.
+	 * Treats attributes defined by defineAttributes() as properties.
 	 *
 	 * @param string $name
 	 * @return bool
 	 */
 	function __isset($name)
 	{
-		// We're mostly just concerned with whether the attribute exists,
-		// so even not-yet-set attributes should return 'true' here.
-		if (in_array($name, $this->attributeNames()))
+		if (parent::__isset($name) || in_array($name, $this->attributeNames()))
 		{
 			return true;
 		}
 		else
 		{
-			return parent::__isset($name);
+			return false;
+		}
+	}
+
+	/**
+	 * Treats attributes defined by defineAttributes() as array offsets.
+	 *
+	 * @param mixed $offset
+	 * @return boolean
+	 */
+	public function offsetExists($offset)
+	{
+		if (parent::offsetExists($offset) || in_array($offset, $this->attributeNames()))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
 		}
 	}
 
