@@ -182,35 +182,39 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Is set?
+	 * Treats custom fields as properties.
 	 *
 	 * @param $name
 	 * @return bool
 	 */
 	function __isset($name)
 	{
-		if (parent::__isset($name))
+		if (parent::__isset($name) || craft()->fields->getFieldByHandle($name))
 		{
 			return true;
 		}
+		else
+		{
+			return false;
+		}
+	}
 
-		// Is $name a field handle?
-		$field = craft()->fields->getFieldByHandle($name);
-		if ($field)
+	/**
+	 * Treats custom fields as array offsets.
+	 *
+	 * @param mixed $offset
+	 * @return boolean
+	 */
+	public function offsetExists($offset)
+	{
+		if (parent::offsetExists($offset) || craft()->fields->getFieldByHandle($offset))
 		{
 			return true;
 		}
-
-		/* HIDE */
-		// Is $name a RTL link handle?
-		$linkCriteria = craft()->links->getCriteriaByTypeAndHandle($this->getAttribute('type'), $name, 'rtl');
-		if ($linkCriteria)
+		else
 		{
-			return true;
+			return false;
 		}
-		/* end HIDE */
-
-		return false;
 	}
 
 	/**
@@ -235,18 +239,6 @@ abstract class BaseElementModel extends BaseModel
 			{
 				return $this->_getPreppedContentForField($field);
 			}
-			/* HIDE */
-			else if ($this->getAttribute('id'))
-			{
-				// Is $name a RTL link handle?
-				$linkCriteria = craft()->links->getCriteriaByTypeAndHandle($this->getAttribute('type'), $name, 'rtl');
-
-				if ($linkCriteria)
-				{
-					return craft()->links->getLinkedElements($linkCriteria, $this->getAttribute('id'), 'rtl');
-				}
-			}
-			/* end HIDE */
 
 			// Fine, throw the exception
 			throw $e;
