@@ -1,9 +1,10 @@
 /**
  * Asset image transform loader class.
  */
-TransformLoader = function(placeholderUrl, spinnerUrl, generateTransformUrl)
+TransformLoader = function(placeholderUrl, entityPlaceholderUrl, spinnerUrl, generateTransformUrl)
 {
 	this.placeholderUrl = placeholderUrl;
+	this.entityPlaceholderUrl = entityPlaceholderUrl;
 	this.spinnerUrl = spinnerUrl;
 	this.generateTransformUrl = generateTransformUrl;
 
@@ -37,10 +38,16 @@ TransformLoader.prototype = {
 		}
 	},
 
+	escapeForRegex: function(str)
+	{
+		return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+	},
+
 	init: function()
 	{
-		this.escapedPlaceholderUrl = this.placeholderUrl.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
-		this.placeholderUrlPattern = this.escapedPlaceholderUrl+'#(\\d+)\\b';
+		this.escapedPlaceholderUrl = this.escapeForRegex(this.placeholderUrl);
+		this.escapedEntityPlaceholderUrl = this.escapeForRegex(this.entityPlaceholderUrl);
+		this.placeholderUrlPattern = '(?:'+this.escapedPlaceholderUrl+'|'+this.escapedEntityPlaceholderUrl+')#(\\d+)\\b';
 
 		this.placeholderUrlRegex = new RegExp(this.placeholderUrlPattern);
 		this.multiPlaceholderUrlRegex = new RegExp(this.placeholderUrlPattern, 'g');
