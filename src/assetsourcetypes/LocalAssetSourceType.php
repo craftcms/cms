@@ -208,10 +208,16 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		$targetFolder = $this->_getSourceFileSystemPath() . $folder->fullPath;
 
-		// Make sure the folder is writable
-		if (! IOHelper::isWritable($targetFolder))
+		// Make sure the folder exists.
+		if (!IOHelper::folderExists($targetFolder))
 		{
-			throw new Exception(Craft::t('Target destination is not writable'));
+			throw new Exception(Craft::t('The “File System Path” specified for this asset source does not appear to exist.'));
+		}
+
+		// Make sure the folder is writable
+		if (!IOHelper::isWritable($targetFolder))
+		{
+			throw new Exception(Craft::t('Craft is not able to write to the “File System Path” specified for this asset source.'));
 		}
 
 		$fileName = IOHelper::cleanFilename($fileName);
