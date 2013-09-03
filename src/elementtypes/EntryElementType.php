@@ -124,7 +124,7 @@ class EntryElementType extends BaseElementType
 						$sources[$key]['sortable'] = craft()->userSession->checkPermission('publishEntries:'.$section->id);
 						$sources[$key]['moveAction'] = 'entries/moveEntry';
 						$sources[$key]['maxDepth'] = $section->maxDepth;
-						$sources[$key]['criteria']['structured'] = true;
+						$sources[$key]['newChildUrl'] = 'entries/'.$section->handle.'/new';
 					}
 				}
 			}
@@ -194,18 +194,23 @@ class EntryElementType extends BaseElementType
 	public function defineCriteriaAttributes()
 	{
 		return array(
-			'slug'          => AttributeType::String,
-			'sectionId'     => AttributeType::Number,
-			'authorId'      => AttributeType::Number,
-			'authorGroupId' => AttributeType::Number,
-			'authorGroup'   => AttributeType::String,
-			'section'       => AttributeType::Mixed,
-			'editable'      => AttributeType::Bool,
-			'postDate'      => AttributeType::Mixed,
-			'after'         => AttributeType::Mixed,
-			'before'        => AttributeType::Mixed,
-			'status'        => array(AttributeType::String, 'default' => EntryModel::LIVE),
-			'order'         => array(AttributeType::String, 'default' => 'postDate desc'),
+			'slug'            => AttributeType::String,
+			'sectionId'       => AttributeType::Number,
+			'authorId'        => AttributeType::Number,
+			'authorGroupId'   => AttributeType::Number,
+			'authorGroup'     => AttributeType::String,
+			'section'         => AttributeType::Mixed,
+			'editable'        => AttributeType::Bool,
+			'postDate'        => AttributeType::Mixed,
+			'after'           => AttributeType::Mixed,
+			'before'          => AttributeType::Mixed,
+			'status'          => array(AttributeType::String, 'default' => EntryModel::LIVE),
+			'order'           => array(AttributeType::String, 'default' => 'lft, postDate desc'),
+			'ancestorOf'      => AttributeType::Mixed,
+			'ancestorDelta'   => AttributeType::Number,
+			'descendantOf'    => AttributeType::Mixed,
+			'descendantDelta' => AttributeType::Number,
+			'depth'           => AttributeType::Number,
 		);
 	}
 
@@ -260,10 +265,10 @@ class EntryElementType extends BaseElementType
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('entries.sectionId, entries.authorId, entries.lft, entries.depth, entries.postDate, entries.expiryDate, entries_i18n.slug')
+			->addSelect('entries.sectionId, entries.authorId, entries.root, entries.lft, entries.rgt, entries.depth, entries.postDate, entries.expiryDate, entries_i18n.slug')
 			->join('entries entries', 'entries.id = elements.id')
 			->join('entries_i18n entries_i18n', 'entries_i18n.entryId = elements.id')
-			->andWhere('entries.lft != 1')
+			->andWhere(array('or', 'entries.lft IS NULL', 'entries.lft != 1'))
 			->andWhere('entries_i18n.locale = elements_i18n.locale');
 
 		if ($criteria->slug)
@@ -330,10 +335,55 @@ class EntryElementType extends BaseElementType
 				$query->andWhere(DbHelper::parseParam('sections.handle', $criteria->section, $query->params));
 			}
 
-			if ($criteria->structured)
+			if ($criteria->ancestorOf)
 			{
-				$criteria->order = 'lft';
-				$criteria->status = null;
+				if (!$criteria->ancestorOf instanceof EntryModel)
+				{
+					$criteria->ancestorOf = craft()->entries->getEntryById($criteria->ancestorOf);
+				}
+
+				if ($criteria->ancestorOf)
+				{
+					$query->andWhere(
+						array('and', 'entries.lft < :lft', 'entries.rgt > :rgt'),
+						array(':lft' => $criteria->ancestorOf->lft, ':rgt' => $criteria->ancestorOf->rgt)
+					);
+
+					if ($criteria->ancestorDelta)
+					{
+						$query->andWhere('entries.depth >= :depth',
+							array(':depth' => $criteria->ancestorOf->depth - $criteria->ancestorDelta)
+						);
+					}
+				}
+			}
+
+			if ($criteria->descendantOf)
+			{
+				if (!$criteria->descendantOf instanceof EntryModel)
+				{
+					$criteria->descendantOf = craft()->entries->getEntryById($criteria->descendantOf);
+				}
+
+				if ($criteria->descendantOf)
+				{
+					$query->andWhere(
+						array('and', 'entries.lft > :lft', 'entries.rgt < :rgt'),
+						array(':lft' => $criteria->descendantOf->lft, ':rgt' => $criteria->descendantOf->rgt)
+					);
+
+					if ($criteria->descendantDelta)
+					{
+						$query->andWhere('entries.depth <= :depth',
+							array(':depth' => $criteria->descendantOf->depth + $criteria->descendantDelta)
+						);
+					}
+				}
+			}
+
+			if ($criteria->depth)
+			{
+				$query->andWhere(DbHelper::parseParam('entries.depth', $criteria->depth, $query->params));
 			}
 		}
 

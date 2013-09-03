@@ -34,10 +34,26 @@ class EntriesService extends BaseApplicationComponent
 	{
 		$isNewEntry = !$entry->id;
 
+		$saveStructure = (Craft::hasPackage(CraftPackage::PublishPro) &&
+			$entry->getSection()->type == SectionType::Structure &&
+			$entry->parentId !== null &&
+			($entry->parentId !== '0' || $entry->depth != 1) &&
+			(!$entry->getParent() || $entry->getParent()->id != $entry->parentId)
+		);
+
+		if ($saveStructure)
+		{
+			$entryRecordClass = __NAMESPACE__.'\\StructuredEntryRecord';
+		}
+		else
+		{
+			$entryRecordClass = __NAMESPACE__.'\\EntryRecord';
+		}
+
 		// Entry data
 		if (!$isNewEntry)
 		{
-			$entryRecord = EntryRecord::model()->with('element')->findById($entry->id);
+			$entryRecord = $entryRecordClass::model()->with('element')->findById($entry->id);
 
 			if (!$entryRecord)
 			{
@@ -54,7 +70,7 @@ class EntriesService extends BaseApplicationComponent
 		}
 		else
 		{
-			$entryRecord = new EntryRecord();
+			$entryRecord = new $entryRecordClass();
 
 			$elementRecord = new ElementRecord();
 			$elementRecord->type = ElementType::Entry;
@@ -189,6 +205,32 @@ class EntriesService extends BaseApplicationComponent
 				$entryRecord->id = $entry->id;
 			}
 
+			// Has the parent changed?
+			if ($saveStructure)
+			{
+				if ($entry->parentId === '0')
+				{
+					$parentEntryRecord = StructuredEntryRecord::model()->roots()->findByAttributes(array(
+						'sectionId' => $section->id
+					));
+				}
+				else
+				{
+					$parentEntryRecord = StructuredEntryRecord::model()->findById($entry->parentId);
+				}
+
+				if ($isNewEntry)
+				{
+					$entryRecord->appendTo($parentEntryRecord);
+				}
+				else
+				{
+					$entryRecord->moveAsLast($parentEntryRecord);
+				}
+
+				$entryRecord->detachBehavior('nestedSet');
+			}
+
 			$entryRecord->save(false);
 
 			$entryLocaleRecord->entryId = $entry->id;
@@ -227,6 +269,52 @@ class EntriesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns an entry's ancestors.
+	 *
+	 * @param EntryModel $entry
+	 * @param int|null $delta
+	 * @return array
+	 */
+	public function getEntryAncestors(EntryModel $entry, $delta = null)
+	{
+		if (Craft::hasPackage(CraftPackage::PublishPro) && $entry->getSection()->type == SectionType::Structure && $entry->depth > 1)
+		{
+			$criteria = craft()->elements->getCriteria(ElementType::Entry);
+			$criteria->sectionId = $entry->sectionId;
+			$criteria->ancestorOf = $entry;
+			$criteria->ancestorDelta = $delta;
+			return $criteria->find();
+		}
+		else
+		{
+			return array();
+		}
+	}
+
+	/**
+	 * Returns an entry's descendants.
+	 *
+	 * @param EntryModel $entry
+	 * @param int|null $delta
+	 * @return array
+	 */
+	public function getEntryDescendants(EntryModel $entry, $delta = null)
+	{
+		if (Craft::hasPackage(CraftPackage::PublishPro) && $entry->getSection()->type == SectionType::Structure)
+		{
+			$criteria = craft()->elements->getCriteria(ElementType::Entry);
+			$criteria->sectionId = $entry->sectionId;
+			$criteria->descendantOf = $entry;
+			$criteria->descendantDelta = $delta;
+			return $criteria->find();
+		}
+		else
+		{
+			return array();
+		}
+	}
+
+	/**
 	 * Appends an entry to another.
 	 *
 	 * @param EntryModel $entry
@@ -236,27 +324,19 @@ class EntriesService extends BaseApplicationComponent
 	 */
 	public function moveEntryUnder(EntryModel $entry, EntryModel $parentEntry = null, $prepend = false)
 	{
-		$entryRecord = StructuredEntryRecord::model()->findById($entry->id);
+		Craft::requirePackage(CraftPackage::PublishPro);
 
-		if (!$entryRecord)
-		{
-			throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
-		}
+		$entryRecord = StructuredEntryRecord::model()->populateRecord($entry->getAttributes());
 
 		if ($parentEntry)
 		{
-			$parentEntryRecord = StructuredEntryRecord::model()->findById($parentEntry->id);
-
-			if (!$parentEntryRecord)
-			{
-				throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $parentEntry->id)));
-			}
-
 			// Make sure they're in the same section
-			if ($entryRecord->sectionId != $parentEntryRecord->sectionId)
+			if ($entry->sectionId != $parentEntry->sectionId)
 			{
 				throw new Exception(Craft::t('That move isn’t possible.'));
 			}
+
+			$parentEntryRecord = StructuredEntryRecord::model()->populateRecord($parentEntry->getAttributes());
 		}
 		else
 		{

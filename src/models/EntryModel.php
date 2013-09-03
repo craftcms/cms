@@ -8,7 +8,8 @@ class EntryModel extends BaseElementModel
 {
 	protected $elementType = ElementType::Entry;
 
-	private $_depth;
+	private $_ancestors;
+	private $_descendants;
 
 	const LIVE     = 'live';
 	const PENDING  = 'pending';
@@ -22,16 +23,18 @@ class EntryModel extends BaseElementModel
 	{
 		return array_merge(parent::defineAttributes(), array(
 			'sectionId'  => AttributeType::Number,
-			'parentId'   => AttributeType::Number,
 			'typeId'     => AttributeType::Number,
 			'authorId'   => AttributeType::Number,
-			'root'       => AttributeType::Bool,
+			'root'       => AttributeType::Number,
 			'lft'        => AttributeType::Number,
 			'rgt'        => AttributeType::Number,
 			'depth'      => AttributeType::Number,
 			'slug'       => AttributeType::String,
 			'postDate'   => AttributeType::DateTime,
 			'expiryDate' => AttributeType::DateTime,
+
+			// Just used for saving entries
+			'parentId'   => AttributeType::Number,
 		));
 	}
 
@@ -129,5 +132,100 @@ class EntryModel extends BaseElementModel
 	public function getCpEditUrl()
 	{
 		return UrlHelper::getCpUrl('entries/'.$this->getSection()->handle.'/'.$this->id);
+	}
+
+	/**
+	 * Returns the entry's ancestors.
+	 *
+	 * @param int|null $delta
+	 * @return array
+	 */
+	public function getAncestors($delta = null)
+	{
+		if (!isset($this->_ancestors))
+		{
+			if ($this->id)
+			{
+				$this->_ancestors = craft()->entries->getEntryAncestors($this);
+			}
+			else
+			{
+				$this->_ancestors = array();
+			}
+		}
+
+		if ($delta)
+		{
+			return array_slice($this->_ancestors, count($this->_ancestors) - $delta);
+		}
+		else
+		{
+			return $this->_ancestors;
+		}
+	}
+
+	/**
+	 * Get the entry's parent.
+	 *
+	 * @return EntryModel|null
+	 */
+	public function getParent()
+	{
+		$parent = $this->getAncestors(1);
+
+		if ($parent)
+		{
+			return $parent[0];
+		}
+	}
+
+	/**
+	 * Sets the entry's ancestors.
+	 *
+	 * @param array $ancestors
+	 */
+	public function setAncestors($ancestors)
+	{
+		$this->_ancestors = $ancestors;
+	}
+
+	/**
+	 * Returns the entry's descendants.
+	 *
+	 * @param int|null $delta
+	 * @return array
+	 */
+	public function getDescendants($delta = null)
+	{
+		if (!isset($this->_descendants))
+		{
+			if ($this->id)
+			{
+				$this->_descendants = craft()->entries->getEntryDescendants($this);
+			}
+			else
+			{
+				$this->_descendants = array();
+			}
+		}
+
+		if ($delta)
+		{
+			return array_slice($this->_descendants, 0, $delta);
+		}
+		else
+		{
+			return $this->_descendants;
+		}
+	}
+
+	/**
+	 * Sets the entry's descendants.
+	 *
+	 * @param array $descendants
+	 */
+	public function setDescendants($descendants)
+	{
+		$this->_descendants = $descendants;
 	}
 }

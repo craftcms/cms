@@ -29,7 +29,7 @@ class m130910_000002_section_types extends BaseMigration
 
 		// Add the hierarchy columns to the entries table
 		$cols = array(
-			'root'  => array('column' => ColumnType::TinyInt, 'null' => false, 'unsigned' => true),
+			'root'  => array('column' => ColumnType::Int, 'unsigned' => true),
 			'lft'   => array('column' => ColumnType::Int, 'unsigned' => true),
 			'rgt'   => array('column' => ColumnType::Int, 'unsigned' => true),
 			'depth' => array('column' => ColumnType::SmallInt, 'unsigned' => true),

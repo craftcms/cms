@@ -65,6 +65,16 @@
 				required: true
 			}) }}
 
+			{% if craft.hasPackage('PublishPro') and section.type == 'structure' and parentOptions|length > 1 %}
+				{{ forms.selectField({
+					label: "Parent Entry"|t,
+					id: 'parentId',
+					name: 'parentId',
+					options: parentOptions,
+					value: (entry.getParent() ? entry.getParent().id : null)
+				}) }}
+			{% endif %}
+
 			{% if craft.hasPackage('Users') %}
 				{% set authors = [] %}
 				{% for author in craft.users.find() %}

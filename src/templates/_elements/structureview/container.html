@@ -1,3 +1,11 @@
 <ul class="structureview">
 	{% include "_elements/structureview/elements" %}
 </ul>
+
+{% if context == 'index' and source.maxDepth is defined and source.maxDepth %}
+	{% set css %}
+		.structureview{% for i in 2 .. source.maxDepth %} ul{% endfor %} .add { display: none; }
+	{% endset %}
+
+	{% includeCss css %}
+{% endif %}

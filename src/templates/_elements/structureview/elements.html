@@ -1,4 +1,7 @@
-{% includeTranslations "Show/hide children" %}
+{% includeTranslations
+	"Show/hide children",
+	"New child"
+%}
 
 {% set depth = 1 %}
 
@@ -22,8 +25,11 @@
 		{% set indent = 8 + (depth - 1) * 35 %}
 		<div class="row" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
 			{% include "_elements/element" %}
-			{% if context == 'index' and source.sortable is defined and source.sortable %}
-				<a class="move icon" title="{{ 'Move'|t }}"></a>
+			{% if context == 'index' %}
+				{% if source.sortable is defined and source.sortable %}
+					<a class="move icon" title="{{ 'Move'|t }}"></a>
+				{% endif %}
+				<a class="add icon" title="{{ 'New Child'|t }}"></a>
 			{% endif %}
 		</div>
 

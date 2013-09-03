@@ -490,14 +490,19 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .structureview li .toggle { float: left; margin: 4px -8px 0 -12px; width: 20px; height: 20px; background-color: #fff; }
 .structureview li:not(.collapsed) > .row > .toggle { background-position: 50% -20px; }
 .structureview li.collapsed > ul { display: none; }
+.structureview li .row:after { @include clearafter; }
 
 .structureview li .element { float: left; }
-.structureview li .move { margin-top: 5px; opacity: 0; -webkit-transition: opacity linear 100ms; }
-.structureview li .row:after { @include clearafter; }
-.structureview li .row:hover > .move { opacity: 1; }
+.structureview li .icon { margin-top: 5px; opacity: 0; -webkit-transition: opacity linear 100ms; }
+.structureview li .add:before { content: '▼'; color: rgba(0,0,0,0.2); }
+.structureview li .add:not(.disabled):hover:before,
+.structureview li .add.active:before { color: $linkcolor; }
+.structureview li .row:hover > .icon,
+.structureview li.draghelper > .row .move,
+.structureview li .add.active { opacity: 1; }
 
 .structureview li.draghelper .toggle { background-color: transparent; }
-.structureview li.draghelper > .row .move { opacity: 1; }
+.structureview li.draghelper > .row .add { opacity: 0; }
 .structureview li.draghelper > .row .move:before { color: $linkcolor; }
 .structureview li.draginsertion { position: relative; margin: -2px 0 -2px 8px; padding-left: 0; height: 4px; background: $hrcolor; border-left: none; border-radius: 2px; }
 .structureview ul li.draginsertion { margin-left: 38px; }

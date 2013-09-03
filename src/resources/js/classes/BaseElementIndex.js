@@ -381,12 +381,31 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 					this.initToggle($toggle);
 				}
 
-				if (this.settings.context == 'index' && this.$source.data('sortable'))
+				if (this.settings.context == 'index')
 				{
-					this.structureDrag = new Craft.StructureDrag(this,
-						this.$source.data('move-action'),
-						this.$source.data('max-depth')
-					);
+					if (this.$source.data('sortable'))
+					{
+						this.$elementContainer.find('.add').click($.proxy(function(ev) {
+
+							var $btn = $(ev.currentTarget);
+
+							if (!$btn.data('menubtn'))
+							{
+								var elementId = $btn.parent().parent().data('id'),
+									newChildUrl = Craft.getUrl(this.$source.data('new-child-url'), 'parent='+elementId),
+									$menu = $('<div class="menu"><ul><li><a href="'+newChildUrl+'">'+Craft.t('New child')+'</a></li></ul></div>').insertAfter($btn);
+
+								var menuBtn = new Garnish.MenuBtn($btn);
+								menuBtn.showMenu();
+							}
+
+						}, this))
+
+						this.structureDrag = new Craft.StructureDrag(this,
+							this.$source.data('move-action'),
+							this.$source.data('max-depth')
+						);
+					}
 				}
 			}
 		}

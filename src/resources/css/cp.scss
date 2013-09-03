@@ -45,9 +45,9 @@ html { overflow-y: scroll; }
 #header .right .settings:before { font-size: 18px; }
 #header .right .myaccount:before { font-size: 16px; }
 
-#header h2 { float: left; margin: 0 0 0 5px; padding: 10px 0; color: #fff; }
+#header h2 { float: left; margin: 0 25px 0 5px; padding: 10px 0; color: #fff; }
 
-#nav { float: left; margin-left: 20px; }
+#nav { float: left; margin-left: -5px; }
 #nav li { float: left; height: 38px; }
 #nav li a { display: block; margin-top: 2px; padding: 4px 10px; line-height: 28px; }
 #nav li a.active { color: #fff; }

@@ -16,6 +16,70 @@ class EntriesController extends BaseController
 	{
 		$this->_prepEditEntryVariables($variables);
 
+		if (Craft::hasPackage(CraftPackage::PublishPro) && $variables['section']->type == SectionType::Structure)
+		{
+			// Override the parent?
+			$parentId = craft()->request->getParam('parent');
+
+			if ($parentId)
+			{
+				$parent = craft()->entries->getEntryById($parentId);
+
+				if ($parent)
+				{
+					$ancestors = craft()->entries->getEntryAncestors($parent);
+					$ancestors[] = $parent;
+					$variables['entry']->setAncestors($ancestors);
+				}
+			}
+
+			// Get all the possible parent options
+			$parentOptionCriteria = craft()->elements->getCriteria(ElementType::Entry);
+			$parentOptionCriteria->sectionId = $variables['section']->id;
+
+			if ($variables['section']->maxDepth)
+			{
+				$parentOptionCriteria->depth = '< '.$variables['section']->maxDepth;
+			}
+
+			if ($variables['entry']->id)
+			{
+				$idParam = array('not '.$variables['entry']->id);
+
+				$descendantCriteria = craft()->elements->getCriteria(ElementType::Entry);
+				$descendantCriteria->sectionId = $variables['section']->id;
+				$descendantCriteria->descendantOf($variables['entry']);
+				$descendantIds = $descendantCriteria->ids();
+
+				foreach ($descendantIds as $id)
+				{
+					$idParam[] = 'not '.$id;
+				}
+
+				$parentOptionCriteria->id = $idParam;
+			}
+
+			$parentOptions = $parentOptionCriteria->find();
+
+			$variables['parentOptions'] = array(array(
+				'label' => '', 'value' => '0'
+			));
+
+			foreach ($parentOptions as $parentOption)
+			{
+				$label = '';
+
+				for ($i = 1; $i < $parentOption->depth; $i++)
+				{
+					$label .= '    ';
+				}
+
+				$label .= $parentOption->title;
+
+				$variables['parentOptions'][] = array('label' => $label, 'value' => $parentOption->id);
+			}
+		}
+
 		// Page title w/ revision label
 		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
@@ -63,6 +127,14 @@ class EntriesController extends BaseController
 		{
 			// Not really necessary, but it's nice to see that section name...
 			$variables['crumbs'][] = array('label' => $variables['section']->name, 'url' => UrlHelper::getUrl('entries'));
+
+			if ($variables['section']->type == SectionType::Structure)
+			{
+				foreach ($variables['entry']->getAncestors() as $ancestor)
+				{
+					$variables['crumbs'][] = array('label' => $ancestor->title, 'url' => $ancestor->getCpEditUrl());
+				}
+			}
 		}
 
 		// Multiple entry types?
@@ -508,6 +580,12 @@ class EntriesController extends BaseController
 		if ($title !== null)
 		{
 			$entry->getContent()->title = $title;
+		}
+
+		$parentId = craft()->request->getPost('parentId');
+		if ($parentId !== null)
+		{
+			$entry->parentId = $parentId;
 		}
 
 		$fields = craft()->request->getPost('fields');

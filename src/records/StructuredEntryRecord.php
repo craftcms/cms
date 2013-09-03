@@ -12,7 +12,7 @@ class StructuredEntryRecord extends EntryRecord
 	public function behaviors()
 	{
 		return array(
-			'nestedSetBehavior' => 'app.extensions.NestedSetBehavior',
+			'nestedSet' => 'app.extensions.NestedSetBehavior',
 		);
 	}
 }

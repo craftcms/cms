@@ -209,7 +209,7 @@ class ElementsService extends BaseApplicationComponent
 
 			$quotedLocaleColumn = craft()->db->quoteColumnName('elements_i18n.locale');
 
-			if (true || count($localeIds) == 1)
+			if (count($localeIds) == 1)
 			{
 				$query->andWhere('elements_i18n.locale = :locale');
 				$query->params[':locale'] = $localeIds[0];

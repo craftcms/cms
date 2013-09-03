@@ -21,7 +21,7 @@ class EntryRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
-			'root'       => array(AttributeType::Bool),
+			'root'       => array(AttributeType::Number),
 			'lft'        => array(AttributeType::Number, 'min' => 0),
 			'rgt'        => array(AttributeType::Number, 'min' => 0),
 			'depth'      => array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt),
@@ -38,7 +38,6 @@ class EntryRecord extends BaseRecord
 		$relations = array(
 			'element' => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
 			'section' => array(static::BELONGS_TO, 'SectionRecord', 'required' => true, 'onDelete' => static::CASCADE),
-			'parent'  => array(static::BELONGS_TO, 'EntryRecord', 'id', 'onDelete' => static::CASCADE),
 			'type'    => array(static::BELONGS_TO, 'EntryTypeRecord', 'onDelete' => static::CASCADE),
 			'author'  => array(static::BELONGS_TO, 'UserRecord', 'onDelete' => static::CASCADE),
 		);

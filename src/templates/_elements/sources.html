@@ -10,6 +10,7 @@
 						{%- if source.sortable is defined and source.sortable %} data-sortable="1"{% endif %}
 						{%- if source.maxDepth is defined and source.maxDepth %} data-max-depth="{{ source.maxDepth }}"{% endif %}
 						{%- if source.moveAction is defined and source.moveAction %} data-move-action="{{ source.moveAction }}"{% endif %}
+						{%- if source.newChildUrl is defined and source.newChildUrl %} data-new-child-url="{{ source.newChildUrl }}"{% endif %}
 					{%- endif %}
 					{%- if source.data is defined -%}
 						{% for dataKey, dataVal in source.data %} data-{{ dataKey }}="{{ dataVal }}"{% endfor %}
