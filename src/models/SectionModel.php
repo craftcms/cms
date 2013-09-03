@@ -31,10 +31,21 @@ class SectionModel extends BaseModel
 			'id'       => AttributeType::Number,
 			'name'     => AttributeType::String,
 			'handle'   => AttributeType::String,
-			'hasUrls'  => AttributeType::Bool,
+			'type'     => array(AttributeType::Enum, 'values' => array(SectionType::Single, SectionType::Channel, SectionType::Structure)),
+			'hasUrls'  => array(AttributeType::Bool, 'default' => true),
 			'template' => AttributeType::String,
 			'maxDepth' => AttributeType::Number,
 		);
+	}
+
+	/**
+	 * Returns whether this is the homepage section.
+	 *
+	 * @return bool
+	 */
+	public function isHomepage()
+	{
+		return ($this->type == SectionType::Single && $this->urlFormat == '__home__');
 	}
 
 	/**

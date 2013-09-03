@@ -299,11 +299,11 @@ Garnish = {
 	 */
 	hitTest: function(x, y, elem)
 	{
-		Garnish.hitTest._$elem = $(elem),
-		Garnish.hitTest._offset = Garnish.hitTest._$elem.offset(),
-		Garnish.hitTest._x1 = Garnish.hitTest._offset.left,
-		Garnish.hitTest._y1 = Garnish.hitTest._offset.top,
-		Garnish.hitTest._x2 = Garnish.hitTest._x1 + Garnish.hitTest._$elem.outerWidth(),
+		Garnish.hitTest._$elem = $(elem);
+		Garnish.hitTest._offset = Garnish.hitTest._$elem.offset();
+		Garnish.hitTest._x1 = Garnish.hitTest._offset.left;
+		Garnish.hitTest._y1 = Garnish.hitTest._offset.top;
+		Garnish.hitTest._x2 = Garnish.hitTest._x1 + Garnish.hitTest._$elem.outerWidth();
 		Garnish.hitTest._y2 = Garnish.hitTest._y1 + Garnish.hitTest._$elem.outerHeight();
 
 		return (x >= Garnish.hitTest._x1 && x < Garnish.hitTest._x2 && y >= Garnish.hitTest._y1 && y < Garnish.hitTest._y2);
@@ -930,6 +930,30 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	 */
 	startDragging: function()
 	{
+		// Set the $draggee
+		switch (typeof this.settings.filter)
+		{
+			case 'function':
+			{
+				this.$draggee = this.settings.filter();
+				break;
+			}
+
+			case 'string':
+			{
+				this.$draggee = this.$items.filter(this.settings.filter);
+				break;
+			}
+
+			default:
+			{
+				this.$draggee = this.$targetItem;
+			}
+		}
+
+		// put the target item in the front of the list
+		this.$draggee = $([ this.$targetItem[0] ].concat(this.$draggee.not(this.$targetItem[0]).toArray()));
+
 		this.dragging = true;
 		this.onDragStart();
 	},
@@ -1023,6 +1047,7 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	 */
 	removeItems: function(items)
 	{
+		console.log('remove items');
 		items = $.makeArray(items);
 
 		for (var i = 0; i < items.length; i++)
@@ -1071,6 +1096,7 @@ Garnish.BaseDrag = Garnish.Base.extend({
 
 	defaults: {
 		handle: null,
+		filter: null,
 		axis: null,
 		ignoreButtons: true,
 
@@ -1321,9 +1347,6 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 		this.helperTargets = [];
 		this.helperPositions = [];
 
-		this.getDraggee();
-		this.draggeeIndex = $.inArray(this.$draggee[0], this.$items);
-
 		// save their display style (block/table-row) so we can re-apply it later
 		this.draggeeDisplay = this.$draggee.css('display');
 
@@ -1379,35 +1402,6 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 	},
 
 	/**
-	 * Get the draggee(s) based on the filter setting, with the clicked item listed first
-	 */
-	getDraggee: function()
-	{
-		switch (typeof this.settings.filter)
-		{
-			case 'function':
-			{
-				this.$draggee = this.settings.filter();
-				break;
-			}
-
-			case 'string':
-			{
-				this.$draggee = this.$items.filter(this.settings.filter);
-				break;
-			}
-
-			default:
-			{
-				this.$draggee = this.$targetItem;
-			}
-		}
-
-		// put the target item in the front of the list
-		this.$draggee = $([ this.$targetItem[0] ].concat(this.$draggee.not(this.$targetItem[0]).toArray()));
-	},
-
-	/**
 	 * Creates helper clones of the draggee(s)
 	 */
 	createHelpers: function()
@@ -1423,10 +1417,17 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 				margin: 0
 			});
 
-			if (typeof this.settings.helper == 'function')
-				$draggeeHelper = this.settings.helper($draggeeHelper);
-			else if (this.settings.helper)
-				$draggeeHelper = $(this.settings.helper).append($draggeeHelper);
+			if (this.settings.helper)
+			{
+				if (typeof this.settings.helper == 'function')
+				{
+					$draggeeHelper = this.settings.helper($draggeeHelper);
+				}
+				else
+				{
+					$draggeeHelper = $(this.settings.helper).append($draggeeHelper);
+				}
+			}
 
 			$draggeeHelper.appendTo(Garnish.$bod);
 
@@ -1765,7 +1766,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 			}
 		}
 
-		this.startDraggeeIndex = this.draggeeIndex;
+		this.startDraggeeIndex = $.inArray(this.$draggee[0], this.$items);
 	},
 
 	/**

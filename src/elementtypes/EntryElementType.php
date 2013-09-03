@@ -64,10 +64,21 @@ class EntryElementType extends BaseElementType
 		}
 
 		$sectionIds = array();
+		$singleSectionIds = array();
+		$sectionsByType = array();
 
 		foreach ($sections as $section)
 		{
 			$sectionIds[] = $section->id;
+
+			if ($section->type == SectionType::Single)
+			{
+				$singleSectionIds[] = $section->id;
+			}
+			else
+			{
+				$sectionsByType[$section->type][] = $section;
+			}
 		}
 
 		$sources = array(
@@ -77,16 +88,45 @@ class EntryElementType extends BaseElementType
 			)
 		);
 
-		if (Craft::hasPackage(CraftPackage::PublishPro))
+		if ($singleSectionIds)
 		{
-			foreach ($sections as $section)
-			{
-				$key = 'section:'.$section->id;
+			$sources['singles'] = array(
+				'label'    => Craft::t('Singles'),
+				'criteria' => array('sectionId' => $singleSectionIds)
+			);
+		}
 
-				$sources[$key] = array(
-					'label'    => $section->name,
-					'criteria' => array('sectionId' => $section->id)
-				);
+		$sectionTypes = array(
+			SectionType::Channel => Craft::t('Channels'),
+			SectionType::Structure => Craft::t('Structures')
+		);
+
+		foreach ($sectionTypes as $type => $heading)
+		{
+			if (!empty($sectionsByType[$type]))
+			{
+				$sources[] = array('heading' => $heading);
+
+				foreach ($sectionsByType[$type] as $section)
+				{
+					$key = 'section:'.$section->id;
+
+					$sources[$key] = array(
+						'label'        => $section->name,
+						'hasStructure' => ($type == SectionType::Structure),
+						'data'         => array('type' => $type),
+						'criteria'     => array('sectionId' => $section->id)
+					);
+
+					if ($type == SectionType::Structure)
+					{
+						$sources[$key]['hasStructure'] = true;
+						$sources[$key]['sortable'] = craft()->userSession->checkPermission('publishEntries:'.$section->id);
+						$sources[$key]['moveAction'] = 'entries/moveEntry';
+						$sources[$key]['maxDepth'] = $section->maxDepth;
+						$sources[$key]['criteria']['structured'] = true;
+					}
+				}
 			}
 		}
 
@@ -220,9 +260,10 @@ class EntryElementType extends BaseElementType
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('entries.sectionId, entries.authorId, entries.postDate, entries.expiryDate, entries_i18n.slug')
+			->addSelect('entries.sectionId, entries.authorId, entries.lft, entries.depth, entries.postDate, entries.expiryDate, entries_i18n.slug')
 			->join('entries entries', 'entries.id = elements.id')
 			->join('entries_i18n entries_i18n', 'entries_i18n.entryId = elements.id')
+			->andWhere('entries.lft != 1')
 			->andWhere('entries_i18n.locale = elements_i18n.locale');
 
 		if ($criteria->slug)
@@ -287,6 +328,12 @@ class EntryElementType extends BaseElementType
 			{
 				$query->join('sections sections', 'entries.sectionId = sections.id');
 				$query->andWhere(DbHelper::parseParam('sections.handle', $criteria->section, $query->params));
+			}
+
+			if ($criteria->structured)
+			{
+				$criteria->order = 'lft';
+				$criteria->status = null;
 			}
 		}
 

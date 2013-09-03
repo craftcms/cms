@@ -6,6 +6,8 @@ namespace Craft;
  */
 class SectionsService extends BaseApplicationComponent
 {
+	public $typeLimits;
+
 	private $_allSectionIds;
 	private $_editableSectionIds;
 
@@ -247,9 +249,25 @@ class SectionsService extends BaseApplicationComponent
 			$isNewSection = true;
 		}
 
+		// Shared attributes
 		$sectionRecord->name    = $section->name;
 		$sectionRecord->handle  = $section->handle;
-		$sectionRecord->hasUrls = $section->hasUrls;
+		$sectionRecord->type    = $section->type;
+
+		if (($isNewSection || $section->type != $oldSection->type) && !$this->canHaveMore($section->type))
+		{
+			$section->addError('type', Craft::t('You can’t add any more {type} sections.', array('type' => Craft::t(ucfirst($section->type)))));
+		}
+
+		// Type-specific attributes
+		if ($section->type == SectionType::Single)
+		{
+			$sectionRecord->hasUrls = $section->hasUrls = true;
+		}
+		else
+		{
+			$sectionRecord->hasUrls = $section->hasUrls;
+		}
 
 		if ($section->hasUrls)
 		{
@@ -260,28 +278,86 @@ class SectionsService extends BaseApplicationComponent
 			$sectionRecord->template = $section->template = null;
 		}
 
+		if ($section->type == SectionType::Structure)
+		{
+			$sectionRecord->maxDepth = $section->maxDepth;
+		}
+		else
+		{
+			$sectionRecord->maxDepth = $section->maxDepth = null;
+		}
+
 		$sectionRecord->validate();
 		$section->addErrors($sectionRecord->getErrors());
 
 		// Make sure that all of the URL formats are set properly
 		foreach ($section->getLocales() as $localeId => $sectionLocale)
 		{
-			if ($section->hasUrls)
+			if ($section->type == SectionType::Single)
 			{
 				$errorKey = 'urlFormat-'.$localeId;
 
 				if (empty($sectionLocale->urlFormat))
 				{
-					$section->addError($errorKey, Craft::t('{attribute} cannot be blank.', array('attribute' => 'URL Format')));
+					$section->addError($errorKey, Craft::t('URI cannot be blank.'));
 				}
-				else if (mb_strpos($sectionLocale->urlFormat, '{slug}') === false)
+				else if ($section)
 				{
-					$section->addError($errorKey, Craft::t('URL Format must contain “{slug}”'));
+					// Make sure no other elements are using this URI already
+					$query = craft()->db->createCommand()
+						->from('elements_i18n elements_i18n')
+						->where(
+							array('and', 'elements_i18n.locale = :locale', 'elements_i18n.uri = :uri'),
+							array(':locale' => $localeId, ':uri' => $sectionLocale->urlFormat)
+						);
+
+					if ($section->id)
+					{
+						$query->join('entries entries', 'entries.id = elements_i18n.elementId')
+							->andWhere('entries.sectionId != :sectionId', array(':sectionId' => $section->id));
+					}
+
+					$count = $query->count('elements_i18n.id');
+
+					if ($count)
+					{
+						$section->addError($errorKey, Craft::t('This URI is already in use.'));
+					}
+				}
+
+				$sectionLocale->nestedUrlFormat = null;
+			}
+			else if ($section->hasUrls)
+			{
+				$urlFormatAttributes = array('urlFormat');
+
+				if ($section->type == SectionType::Structure)
+				{
+					$urlFormatAttributes[] = 'nestedUrlFormat';
+				}
+				else
+				{
+					$sectionLocale->nestedUrlFormat = null;
+				}
+
+				foreach ($urlFormatAttributes as $urlFormatAttribute)
+				{
+					$errorKey = $urlFormatAttribute.'-'.$localeId;
+
+					if (empty($sectionLocale->$urlFormatAttribute))
+					{
+						$section->addError($errorKey, Craft::t('URL formats cannot be blank.'));
+					}
+					else if (mb_strpos($sectionLocale->$urlFormatAttribute, '{slug}') === false)
+					{
+						$section->addError($errorKey, Craft::t('URL formats must contain “{slug}”'));
+					}
 				}
 			}
 			else
 			{
 				$sectionLocale->urlFormat = null;
+				$sectionLocale->nestedUrlFormat = null;
 			}
 		}
 
@@ -324,19 +400,21 @@ class SectionsService extends BaseApplicationComponent
 						$oldLocale = $oldSectionLocales[$localeId];
 
 						// Has the URL format changed?
-						if ($locale->urlFormat != $oldLocale->urlFormat)
+						if ($locale->urlFormat != $oldLocale->urlFormat || $locale->nestedUrlFormat != $oldLocale->nestedUrlFormat)
 						{
-							craft()->db->createCommand()->update('sections_i18n',
-								array('urlFormat' => $locale->urlFormat),
-								array('id' => $oldLocale->id)
-							);
+							craft()->db->createCommand()->update('sections_i18n', array(
+								'urlFormat'       => $locale->urlFormat,
+								'nestedUrlFormat' => $locale->nestedUrlFormat
+							), array(
+								'id' => $oldLocale->id
+							));
 
 							$updateEntries = true;
 						}
 					}
 					else
 					{
-						$newLocaleData[] = array($section->id, $localeId, $locale->urlFormat);
+						$newLocaleData[] = array($section->id, $localeId, $locale->urlFormat, $locale->nestedUrlFormat);
 
 						if (!$isNewSection)
 						{
@@ -344,7 +422,7 @@ class SectionsService extends BaseApplicationComponent
 						}
 					}
 
-					if ($updateEntries && $section->hasUrls)
+					if ($updateEntries && $section->type != SectionType::Single && $section->hasUrls)
 					{
 						// This may take a while...
 						set_time_limit(120);
@@ -372,7 +450,10 @@ class SectionsService extends BaseApplicationComponent
 				}
 
 				// Insert the new locales
-				craft()->db->createCommand()->insertAll('sections_i18n', array('sectionId', 'locale', 'urlFormat'), $newLocaleData);
+				craft()->db->createCommand()->insertAll('sections_i18n',
+					array('sectionId', 'locale', 'urlFormat', 'nestedUrlFormat'),
+					$newLocaleData
+				);
 
 				if (!$isNewSection)
 				{
@@ -383,34 +464,239 @@ class SectionsService extends BaseApplicationComponent
 						craft()->db->createCommand()->delete('sections_i18n', array('id' => $oldSectionLocales[$localeId]->id));
 					}
 
+					// Get all of the entry IDs in this section
+					$sectionEntryIds = craft()->db->createCommand()
+						->select('id')
+						->from('entries')
+						->where(array('sectionId' => $section->id))
+						->queryColumn();
+
 					// Drop the old entry URIs if the section no longer has URLs
 					if (!$section->hasUrls && $oldSection->hasUrls)
 					{
-						// Clear out all the URIs
-						$entryIds = craft()->db->createCommand()
-							->select('id')
-							->from('entries')
-							->where(array('sectionId' => $section->id))
-							->queryColumn();
-
 						craft()->db->createCommand()->update('elements_i18n',
 							array('uri' => null),
-							array('in', 'elementId', $entryIds)
+							array('in', 'elementId', $sectionEntryIds)
 						);
+					}
+
+					// Drop any rows in the i18n tables that are no longer needed
+					$conditions = array('and', array('in', 'elementId', $sectionEntryIds));
+
+					if ($section->getLocales())
+					{
+						$conditions[] = array('not in', 'locale', array_keys($section->getLocales()));
+					}
+
+					craft()->db->createCommand()->delete('elements_i18n', $conditions);
+					craft()->db->createCommand()->delete('content', $conditions);
+
+					$conditions[1][1] = 'entryId';
+					craft()->db->createCommand()->delete('entries_i18n', $conditions);
+				}
+
+				// Make sure there's at least one entry type for this section
+				$entryTypeId = null;
+
+				if (!$isNewSection)
+				{
+					// Let's grab all of the entry type IDs to save ourselves a query down the road if this is a Single
+					$entryTypeIds = craft()->db->createCommand()
+						->select('id')
+						->from('entrytypes')
+						->where('sectionId = :sectionId', array(':sectionId' => $section->id))
+						->queryColumn();
+
+					if ($entryTypeIds)
+					{
+						$entryTypeId = array_shift($entryTypeIds);
 					}
 				}
 
-				// Create an entry type if this is a brand new section
-				if ($isNewSection)
+				if (!$entryTypeId)
 				{
 					$entryType = new EntryTypeModel();
-
 					$entryType->sectionId  = $section->id;
 					$entryType->name       = $section->name;
 					$entryType->handle     = $section->handle;
 					$entryType->titleLabel = Craft::t('Title');
-
 					$this->saveEntryType($entryType);
+
+					$entryTypeId = $entryType->id;
+				}
+
+				// Did the section type just change?
+				if (!$isNewSection && $oldSection->type != $section->type)
+				{
+					// Give the old section type a chance to do a little cleanup
+					switch ($oldSection->type)
+					{
+						case SectionType::Structure:
+						{
+							// Get the root node
+							$rootNodeRecord = StructuredEntryRecord::model()->roots()->findByAttributes(array(
+								'sectionId' => $section->id
+							));
+
+							// Remove all of the hierarchical data
+							craft()->db->createCommand()->update('entries', array(
+								'root'  => false,
+								'lft'   => null,
+								'rgt'   => null,
+								'depth' => null,
+							), array(
+								'sectionId' => $section->id
+							));
+
+							if ($rootNodeRecord)
+							{
+								craft()->elements->deleteElementById($rootNodeRecord->id);
+							}
+
+							break;
+						}
+					}
+				}
+
+				// Now, regardless of whether the section type changed or not,
+				// let the section type make sure everything's cool
+
+				switch ($section->type)
+				{
+					case SectionType::Single:
+					{
+						// In a nut, we want to make sure that there is one and only one Entry Type and Entry for this section.
+						// We also want to make sure the entry has rows in the i18n tables for each of the sections' locales.
+
+						$singleEntryId = null;
+
+						if (!$isNewSection)
+						{
+							// Make sure there's only one entry in this section
+							$entryIds = craft()->db->createCommand()
+								->select('id')
+								->from('entries')
+								->where('section = :sectionId', array(':sectionId' => $section->id))
+								->queryColumn();
+
+							if ($entryIds)
+							{
+								$singleEntryId = array_shift($entryIds);
+
+								// If there are any more, get rid of them
+								if ($entryIds)
+								{
+									craft()->elements->deleteElementById($entryIds);
+								}
+
+								// Make sure it's enabled and all that.
+
+								craft()->db->createCommand()->update('elements', array(
+									'enabled'    => 1,
+									'disabled'   => 0,
+								), array(
+									'id' => $singleEntryId
+								));
+
+								craft()->db->createCommand()->update('entries', array(
+									'typeId'     => $entryTypeId,
+									'authorId'   => null,
+									'postDate'   => DateTimeHelper::currentTimeForDb(),
+									'expiryDate' => null,
+								), array(
+									'id' => $singleEntryId
+								));
+							}
+
+							// Make sure there's only one entry type for this section
+							if ($entryTypeIds)
+							{
+								$this->deleteEntryTypeById($entryTypeIds);
+							}
+						}
+
+						if (!$singleEntryId)
+						{
+							// Create it, baby
+
+							craft()->db->createCommand()->insert('elements', array(
+								'type' => ElementType::Entry
+							));
+
+							$singleEntryId = craft()->db->getLastInsertID();
+
+							craft()->db->createCommand()->insert('entries', array(
+								'id'        => $singleEntryId,
+								'sectionId' => $section->id,
+								'typeId'    => $entryTypeId,
+								'postDate'  => DateTimeHelper::currentTimeForDb()
+							));
+						}
+
+						// Now make sure we've got all of the i18n rows in place.
+						foreach ($section->getLocales() as $localeId => $sectionLocale)
+						{
+							craft()->db->createCommand()->insertOrUpdate('elements_i18n', array(
+								'elementId' => $singleEntryId,
+								'locale'    => $localeId
+							), array(
+								'uri'       => $sectionLocale->urlFormat
+							));
+
+							craft()->db->createCommand()->insertOrUpdate('content', array(
+								'elementId' => $singleEntryId,
+								'locale'    => $localeId
+							), array(
+								'title'     => $section->name
+							));
+
+							craft()->db->createCommand()->insertOrUpdate('entries_i18n', array(
+								'entryId'   => $singleEntryId,
+								'locale'    => $localeId
+							), array(
+								'sectionId' => $section->id,
+								'slug'      => $section->handle
+							));
+						}
+
+						break;
+					}
+
+					case SectionType::Structure:
+					{
+						if ($isNewSection || $oldSection->type != SectionType::Structure)
+						{
+							if (!$isNewSection)
+							{
+								// Find all of the entries in this section, before creating the root node
+								$entryRecords = StructuredEntryRecord::model()->ordered()->findAllByAttributes(array(
+									'sectionId' => $section->id
+								));
+							}
+
+							// Create a root node
+							craft()->db->createCommand()->insert('elements', array(
+								'type'    => ElementType::Entry,
+								'enabled' => false
+							));
+
+							$rootNodeRecord = new StructuredEntryRecord();
+							$rootNodeRecord->id = craft()->db->getLastInsertID();
+							$rootNodeRecord->sectionId = $section->id;
+							$rootNodeRecord->saveNode();
+
+							if (!$isNewSection)
+							{
+								// Place each of the existing entries under the root node
+								foreach ($entryRecords as $entryRecord)
+								{
+									$entryRecord->appendTo($rootNodeRecord);
+								}
+							}
+						}
+
+						break;
+					}
 				}
 
 				if ($transaction !== null)
@@ -695,6 +981,57 @@ class SectionsService extends BaseApplicationComponent
 			}
 
 			throw $e;
+		}
+	}
+
+	// General stuff
+
+	/**
+	 * Returns whether a homepage section exists.
+	 *
+	 * @return bool
+	 */
+	public function doesHomepageExist()
+	{
+		$conditions = array('and', 'sections.type = :type', 'sections_i18n.urlFormat = :homeUri');
+		$params = array(':type' => SectionType::Single, ':homeUri' => '__home__');
+
+		$count = craft()->db->createCommand()
+			->from('sections sections')
+			->join('sections_i18n sections_i18n', 'sections_i18n.sectionId = sections.id')
+			->where($conditions, $params)
+			->count('sections.id');
+
+		return (bool) $count;
+	}
+
+	/**
+	 * Returns whether another section can be added of a given type.
+	 *
+	 * @param string $type
+	 * @return bool
+	 */
+	public function canHaveMore($type)
+	{
+		if (Craft::hasPackage(CraftPackage::PublishPro))
+		{
+			return true;
+		}
+		else
+		{
+			if (isset($this->typeLimits[$type]))
+			{
+				$count = craft()->db->createCommand()
+					->from('sections')
+					->where('type = :type', array(':type' => $type))
+					->count('id');
+
+				return $count < $this->typeLimits[$type];
+			}
+			else
+			{
+				return false;
+			}
 		}
 	}
 }

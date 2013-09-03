@@ -22,18 +22,22 @@
 		</tbody>
 	</table>
 
-	<div class="buttons">
-		<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/new') }}" class="btn submit add icon">{{ "New Entry Type"|t }}</a>
-	</div>
+	{% if section.type != 'single' %}
+		<div class="buttons">
+			<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/new') }}" class="btn submit add icon">{{ "New Entry Type"|t }}</a>
+		</div>
+	{% endif %}
 {% endset %}
 
 
-{% set js %}
-	new Craft.AdminTable({
-		tableSelector: '#entrytypes',
-		deleteAction: 'sections/deleteEntryType',
-		allowDeleteAll: false,
-		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all entries that use it?"|t }}',
-	});
-{% endset %}
-{% includeJs js %}
+{% if section.type != 'single' %}
+	{% set js %}
+		new Craft.AdminTable({
+			tableSelector: '#entrytypes',
+			deleteAction: 'sections/deleteEntryType',
+			allowDeleteAll: false,
+			confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all entries that use it?"|t }}',
+		});
+	{% endset %}
+	{% includeJs js %}
+{% endif %}

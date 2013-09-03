@@ -16,6 +16,28 @@ class SectionsController extends BaseController
 	}
 
 	/**
+	 * Sections index
+	 */
+	public function actionIndex(array $variables = array())
+	{
+		$sections = craft()->sections->getAllSections();
+		$urlFormats = array();
+		$names = array();
+
+		foreach ($sections as $section)
+		{
+			$urlFormats[] = $section->getUrlFormat();
+			$names[] = Craft::t($section->name);
+		}
+
+		array_multisort($urlFormats, $names, $sections);
+
+		$variables['sections'] = $sections;
+
+		$this->renderTemplate('settings/sections/index', $variables);
+	}
+
+	/**
 	 * Edit a section.
 	 *
 	 * @param array $variables
@@ -50,6 +72,42 @@ class SectionsController extends BaseController
 			$variables['title'] = Craft::t('Create a new section');
 		}
 
+		$types = array(SectionType::Single, SectionType::Channel, SectionType::Structure);
+		$variables['typeOptions'] = array();
+
+		foreach ($types as $type)
+		{
+			$allowed = (($variables['section']->id && $variables['section']->type == $type) || craft()->sections->canHaveMore($type));
+			$variables['canBe'.ucfirst($type)] = $allowed;
+
+			if ($allowed)
+			{
+				$variables['typeOptions'][$type] = Craft::t(ucfirst($type));
+			}
+		}
+
+		if (!$variables['typeOptions'])
+		{
+			throw new Exception(Craft::t('Publish Pro is required to create any additional sections.'));
+		}
+
+		if (!$variables['section']->type)
+		{
+			if ($variables['canBeChannel'])
+			{
+				$variables['section']->type = SectionType::Channel;
+			}
+			else
+			{
+				$variables['section']->type = SectionType::Single;
+			}
+		}
+
+		$variables['canBeHomepage']  = (
+			($variables['section']->id && $variables['section']->isHomepage()) ||
+			($variables['canBeSingle'] && !craft()->sections->doesHomepageExist())
+		);
+
 		$variables['crumbs'] = array(
 			array('label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')),
 			array('label' => Craft::t('Sections'), 'url' => UrlHelper::getUrl('settings/sections')),
@@ -67,16 +125,22 @@ class SectionsController extends BaseController
 
 		$section = new SectionModel();
 
-		// Set the simple stuff
+		// Shared attributes
 		$section->id         = craft()->request->getPost('sectionId');
 		$section->name       = craft()->request->getPost('name');
 		$section->handle     = craft()->request->getPost('handle');
-		$section->hasUrls    = (bool)craft()->request->getPost('hasUrls');
-		$section->template   = craft()->request->getPost('template');
+		$section->type       = craft()->request->getPost('type');
 
-		// Set the locales and URL formats
+		// Type-specific attributes
+		$allTypeSettings = craft()->request->getPost('types');
+		$typeSettings = $allTypeSettings[$section->type];
+
+		$section->hasUrls  = (isset($typeSettings['hasUrls']) ? (bool) $typeSettings['hasUrls'] : true);
+		$section->template = (isset($typeSettings['template']) ? $typeSettings['template'] : null);
+		$section->maxDepth = (isset($typeSettings['maxDepth']) ? $typeSettings['maxDepth'] : null);
+
+		// Locale-specific attributes
 		$locales = array();
-		$urlFormats = craft()->request->getPost('urlFormat');
 
 		if (Craft::hasPackage(CraftPackage::Localize))
 		{
@@ -88,11 +152,25 @@ class SectionsController extends BaseController
 			$localeIds = array($primaryLocaleId);
 		}
 
+		$isHomepage = ($section->type == SectionType::Single && $typeSettings['homepage'] == true);
+
 		foreach ($localeIds as $localeId)
 		{
-			$locales[$localeId] = SectionLocaleModel::populateModel(array(
-				'locale'    => $localeId,
-				'urlFormat' => (isset($urlFormats[$localeId]) ? $urlFormats[$localeId] : null),
+			if ($isHomepage)
+			{
+				$urlFormat = '__home__';
+				$nestedUrlFormat = null;
+			}
+			else
+			{
+				$urlFormat = (isset($typeSettings['urlFormat'][$localeId]) ? trim($typeSettings['urlFormat'][$localeId], '/') : null);
+				$nestedUrlFormat = (isset($typeSettings['nestedUrlFormat'][$localeId]) ? trim($typeSettings['nestedUrlFormat'][$localeId], '/') : null);
+			}
+
+			$locales[$localeId] = new SectionLocaleModel(array(
+				'locale'          => $localeId,
+				'urlFormat'       => $urlFormat,
+				'nestedUrlFormat' => $nestedUrlFormat,
 			));
 		}
 

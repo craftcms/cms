@@ -482,6 +482,32 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .element.removable .delete { position: absolute; right: 7px; }
 .element.removable .delete:before { color: rgba(0,0,0,0.2); }
 
+.toggle { background: url(../images/toggle.png) no-repeat 50% 4px; }
+.structureview li { padding-left: 8px; }
+.structureview ul { margin-left: -3px; }
+.structureview ul li { padding-left: 38px; background: url(../images/branch.png) no-repeat 0 0; }
+.structureview ul li:not(:last-child) { padding-left: 37px; background-position: -1px 0; border-left: 1px solid $hrcolor; }
+.structureview li .toggle { float: left; margin: 4px -8px 0 -12px; width: 20px; height: 20px; background-color: #fff; }
+.structureview li:not(.collapsed) > .row > .toggle { background-position: 50% -20px; }
+.structureview li.collapsed > ul { display: none; }
+
+.structureview li .element { float: left; }
+.structureview li .move { margin-top: 5px; opacity: 0; -webkit-transition: opacity linear 100ms; }
+.structureview li .row:after { @include clearafter; }
+.structureview li .row:hover > .move { opacity: 1; }
+
+.structureview li.draghelper .toggle { background-color: transparent; }
+.structureview li.draghelper > .row .move { opacity: 1; }
+.structureview li.draghelper > .row .move:before { color: $linkcolor; }
+.structureview li.draginsertion { position: relative; margin: -2px 0 -2px 8px; padding-left: 0; height: 4px; background: $hrcolor; border-left: none; border-radius: 2px; }
+.structureview ul li.draginsertion { margin-left: 38px; }
+.structureview .row.draghover .element { border-radius: 5px;
+	-webkit-box-shadow: inset 0 0 0 2px $hrcolor;
+	        box-shadow: inset 0 0 0 2px $hrcolor;
+}
+
+.structureview .row.droptarget { border-radius: 5px; -webkit-box-shadow: inset 0 0 0 2px $linkcolor; }
+
 .thumbsview { margin: -15px 0 0 -15px; }
 .thumbsview li { float: left; margin: 15px 0 0 15px; width: 100px; }
 
@@ -878,6 +904,10 @@ ul.errors li { color: $errorcolor; }
 	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
 	.spinner.element-spinner { background-image: url(../images/spinner_element_2x.gif); background-size: 20px; }
 	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
+
+	.structureview ul li { background-image: url(../images/branch_2x.png); background-size: 40px; }
+
+	.toggle { background-image: url(../images/toggle_2x.png); background-size: 12px; }
 
 	.progressbar.pending .progressbar-inner { background-image: url(../images/progressbar_pending_2x.png); background-size: 50px; }
 

@@ -6,7 +6,11 @@
 			<li>
 				<a data-key="{{ key }}"
 					{%- if source.hasThumbs is defined and source.hasThumbs %} data-has-thumbs="1"{% endif %}
-					{%- if source.hasStructure is defined and source.hasStructure %} data-has-structure="1"{% endif %}
+					{%- if source.hasStructure is defined and source.hasStructure %} data-has-structure="1"
+						{%- if source.sortable is defined and source.sortable %} data-sortable="1"{% endif %}
+						{%- if source.maxDepth is defined and source.maxDepth %} data-max-depth="{{ source.maxDepth }}"{% endif %}
+						{%- if source.moveAction is defined and source.moveAction %} data-move-action="{{ source.moveAction }}"{% endif %}
+					{%- endif %}
 					{%- if source.data is defined -%}
 						{% for dataKey, dataVal in source.data %} data-{{ dataKey }}="{{ dataVal }}"{% endfor %}
 					{%- endif -%}

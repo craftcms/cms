@@ -8,6 +8,8 @@ class EntryModel extends BaseElementModel
 {
 	protected $elementType = ElementType::Entry;
 
+	private $_depth;
+
 	const LIVE     = 'live';
 	const PENDING  = 'pending';
 	const EXPIRED  = 'expired';
@@ -20,8 +22,13 @@ class EntryModel extends BaseElementModel
 	{
 		return array_merge(parent::defineAttributes(), array(
 			'sectionId'  => AttributeType::Number,
+			'parentId'   => AttributeType::Number,
 			'typeId'     => AttributeType::Number,
 			'authorId'   => AttributeType::Number,
+			'root'       => AttributeType::Bool,
+			'lft'        => AttributeType::Number,
+			'rgt'        => AttributeType::Number,
+			'depth'      => AttributeType::Number,
 			'slug'       => AttributeType::String,
 			'postDate'   => AttributeType::DateTime,
 			'expiryDate' => AttributeType::DateTime,

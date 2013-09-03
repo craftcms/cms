@@ -23,8 +23,10 @@ class SectionRecord extends BaseRecord
 		return array(
 			'name'     => array(AttributeType::Name, 'required' => true),
 			'handle'   => array(AttributeType::Handle, 'required' => true),
+			'type'     => array(AttributeType::Enum, 'values' => array(SectionType::Single, SectionType::Channel, SectionType::Structure), 'default' => SectionType::Channel, 'required' => true),
 			'hasUrls'  => array(AttributeType::Bool, 'default' => true),
 			'template' => AttributeType::Template,
+			'maxDepth' => array(AttributeType::Number, 'min' => 1, 'default' => 1),
 		);
 	}
 

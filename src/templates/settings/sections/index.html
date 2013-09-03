@@ -7,8 +7,6 @@
 
 {% set docsUrl = 'http://docs.buildwithcraft.com/cp/settings/sections.html' %}
 
-{% set sections = craft.sections.getAllSections() %}
-
 {% set newSectionBtn %}
 	<div class="buttons">
 		<a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New Section"|t }}</a>
@@ -30,6 +28,7 @@
 			<thead>
 				<th scope="col">{{ "Name"|t }}</th>
 				<th scope="col">{{ "Handle"|t }}</th>
+				<th scope="col">{{ "Type"|t }}</th>
 				<th scope="col">{{ "URL Format"|t }}</th>
 				<th scope="col">{{ "Entry Types"}}</th>
 				<td class="thin"></td>
@@ -39,7 +38,14 @@
 					<tr data-id="{{ section.id }}" data-name="{{ section.name|t }}">
 						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
 						<td data-title="{{ 'Handle'|t }}"><code>{{ section.handle }}</code></td>
-						<td data-title="{{ 'URL Format'|t }}">{{ section.getUrlFormat() }}</td>
+						<td data-title="{{ 'Type'|t }}">{{ section.type|title|t }}</td>
+						<td data-title="{{ 'URL Format'|t }}">
+							{%- if section.isHomepage() -%}
+								<div data-icon="home" title="{{ 'Homepage'|t }}"></div>
+							{%- else -%}
+								{{ section.getUrlFormat() }}
+							{%- endif -%}
+						</td>
 						<td data-title="{{ 'Entry Types'|t }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes') }}">{{ "Edit entry types ({count})"|t({ count: section.getEntryTypes()|length }) }}</a></td>
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 					</tr>

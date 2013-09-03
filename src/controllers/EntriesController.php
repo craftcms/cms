@@ -241,6 +241,53 @@ class EntriesController extends BaseController
 	}
 
 	/**
+	 * Moves an entry in a structured section.
+	 *
+	 * @throws Exception
+	 */
+	public function actionMoveEntry()
+	{
+		Craft::requirePackage(CraftPackage::PublishPro);
+
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$entryId       = craft()->request->getRequiredPost('id');
+		$parentEntryId = craft()->request->getPost('parentId');
+		$prevEntryId   = craft()->request->getPost('prevId');
+
+		$entry       = craft()->entries->getEntryById($entryId);
+		$parentEntry =
+
+
+		// Make sure they have permission to be doing this
+		craft()->userSession->requirePermission('publishEntries:'.$entry->sectionId);
+
+		if ($prevEntryId)
+		{
+			$prevEntry = craft()->entries->getEntryById($prevEntryId);
+			$success = craft()->entries->moveEntryAfter($entry, $prevEntry);
+		}
+		else
+		{
+			if ($parentEntryId)
+			{
+				$parentEntry = craft()->entries->getEntryById($parentEntryId);
+			}
+			else
+			{
+				$parentEntry = null;
+			}
+
+			$success = craft()->entries->moveEntryUnder($entry, $parentEntry, true);
+		}
+
+		$this->returnJson(array(
+			'success' => $success
+		));
+	}
+
+	/**
 	 * Deletes an entry.
 	 */
 	public function actionDeleteEntry()

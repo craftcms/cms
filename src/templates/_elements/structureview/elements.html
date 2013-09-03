@@ -1,5 +1,34 @@
+{% includeTranslations "Show/hide children" %}
+
+{% set depth = 1 %}
+
 {% for element in elements %}
-	<li{% if element.id in disabledElementIds %} class="disabled"{% endif %} data-id="{{ element.id }}" data-label="{{ element }}" data-status="{{ element.getStatus() }}" style="margin-left: {{ element.depth * 20 }}px;">
-		{% include "_elements/element" %}
-	</li>
+
+	{% if element.depth > depth %}
+		<ul>
+	{% else %}
+		</li>
+
+		{% if element.depth < depth %}
+			{% for i in 1 .. depth - element.depth %}
+				</ul></li>
+			{% endfor %}
+		{% endif %}
+	{% endif %}
+
+	{% set depth = element.depth %}
+
+	<li class="{% if element.id in disabledElementIds %}disabled{% endif %} {% if viewState.collapsedElementIds is defined and element.id in viewState.collapsedElementIds %}collapsed{% endif %}" data-id="{{ element.id }}" data-label="{{ element }}" data-status="{{ element.getStatus() }}" data-depth="{{ depth }}">
+		{% set indent = 8 + (depth - 1) * 35 %}
+		<div class="row" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
+			{% include "_elements/element" %}
+			{% if context == 'index' and source.sortable is defined and source.sortable %}
+				<a class="move icon" title="{{ 'Move'|t }}"></a>
+			{% endif %}
+		</div>
+
+{% endfor %}
+
+{% for i in 2..depth %}
+	</li></ul>
 {% endfor %}

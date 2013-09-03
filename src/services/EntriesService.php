@@ -7,6 +7,23 @@ namespace Craft;
 class EntriesService extends BaseApplicationComponent
 {
 	/**
+	 * Returns an entry by its ID.
+	 *
+	 * @param int $entryId
+	 * @return EntryModel|null
+	 */
+	public function getEntryById($entryId)
+	{
+		if ($entryId)
+		{
+			$criteria = craft()->elements->getCriteria(ElementType::Entry);
+			$criteria->id = $entryId;
+			$criteria->status = null;
+			return $criteria->first();
+		}
+	}
+
+	/**
 	 * Saves an entry.
 	 *
 	 * @param EntryModel $entry
@@ -210,6 +227,92 @@ class EntriesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Appends an entry to another.
+	 *
+	 * @param EntryModel $entry
+	 * @param EntryModel|null $parentEntry
+	 * @param bool $prepend
+	 * @return bool
+	 */
+	public function moveEntryUnder(EntryModel $entry, EntryModel $parentEntry = null, $prepend = false)
+	{
+		$entryRecord = StructuredEntryRecord::model()->findById($entry->id);
+
+		if (!$entryRecord)
+		{
+			throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
+		}
+
+		if ($parentEntry)
+		{
+			$parentEntryRecord = StructuredEntryRecord::model()->findById($parentEntry->id);
+
+			if (!$parentEntryRecord)
+			{
+				throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $parentEntry->id)));
+			}
+
+			// Make sure they're in the same section
+			if ($entryRecord->sectionId != $parentEntryRecord->sectionId)
+			{
+				throw new Exception(Craft::t('That move isn’t possible.'));
+			}
+		}
+		else
+		{
+			// Parent is the root node, then
+			$parentEntryRecord = StructuredEntryRecord::model()->roots()->findByAttributes(array(
+				'sectionId' => $entryRecord->sectionId
+			));
+
+			if (!$parentEntryRecord)
+			{
+				throw new Exception('There’s no root node in this section.');
+			}
+		}
+
+		if ($prepend)
+		{
+			return $entryRecord->moveAsFirst($parentEntryRecord);
+		}
+		else
+		{
+			return $entryRecord->moveAsLast($parentEntryRecord);
+		}
+	}
+
+	/**
+	 * Moves an entry after another.
+	 * @param EntryModel $entry
+	 * @param EntryModel $prevEntry
+	 * @return bool
+	 */
+	public function moveEntryAfter($entry, $prevEntry)
+	{
+		$entryRecord = StructuredEntryRecord::model()->findById($entry->id);
+
+		if (!$entryRecord)
+		{
+			throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
+		}
+
+		$prevEntryRecord = StructuredEntryRecord::model()->findById($prevEntry->id);
+
+		if (!$prevEntryRecord)
+		{
+			throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $prevEntry->id)));
+		}
+
+		// Make sure they're in the same section
+		if ($entryRecord->sectionId != $prevEntryRecord->sectionId)
+		{
+			throw new Exception(Craft::t('That move isn’t possible.'));
+		}
+
+		return $entryRecord->moveAfter($prevEntryRecord);
+	}
+
+	/**
 	 * Fires an 'onSaveEntry' event.
 	 *
 	 * @param Event $event
@@ -280,3 +383,4 @@ class EntriesService extends BaseApplicationComponent
 		}
 	}
 }
+

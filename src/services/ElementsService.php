@@ -73,6 +73,10 @@ class ElementsService extends BaseApplicationComponent
 			{
 				$query->order($criteria->order);
 			}
+			else if ($subquery->getOrder())
+			{
+				$query->order($subquery->getOrder());
+			}
 
 			if ($criteria->offset)
 			{
@@ -205,7 +209,7 @@ class ElementsService extends BaseApplicationComponent
 
 			$quotedLocaleColumn = craft()->db->quoteColumnName('elements_i18n.locale');
 
-			if (count($localeIds) == 1)
+			if (true || count($localeIds) == 1)
 			{
 				$query->andWhere('elements_i18n.locale = :locale');
 				$query->params[':locale'] = $localeIds[0];

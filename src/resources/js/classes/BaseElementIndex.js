@@ -213,7 +213,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		return this.state.viewStates[source];
 	},
 
-	getViewState: function(key)
+	getViewState: function(key, defaultValue)
 	{
 		var viewState = this.getViewStateForSource(this.getState('source'));
 
@@ -223,7 +223,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		}
 		else
 		{
-			return null;
+			return (defaultValue !== undefined ? defaultValue : null);
 		}
 	},
 
@@ -355,9 +355,76 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			});
 		}
 
-		Craft.cp.updateResponsiveTables();
+		switch (this.getViewState('mode'))
+		{
+			case 'table':
+			{
+				Craft.cp.updateResponsiveTables();
+				break;
+			}
+			case 'structure':
+			{
+				var $parents = this.$elementContainer.find('ul').prev('.row'),
+					collapsedElementIds = this.getViewState('collapsedElementIds', []);
+
+				for (var i = 0; i < $parents.length; i++)
+				{
+					var $row = $($parents[i]),
+						$li = $row.parent(),
+						$toggle = $('<div class="toggle" title="'+Craft.t('Show/hide children')+'"/>').prependTo($row);
+
+					if ($.inArray($li.data('id'), collapsedElementIds) != -1)
+					{
+						$li.addClass('collapsed');
+					}
+
+					this.initToggle($toggle);
+				}
+
+				if (this.settings.context == 'index' && this.$source.data('sortable'))
+				{
+					this.structureDrag = new Craft.StructureDrag(this,
+						this.$source.data('move-action'),
+						this.$source.data('max-depth')
+					);
+				}
+			}
+		}
 
 		this.onUpdateElements(append);
+	},
+
+	initToggle: function($toggle)
+	{
+		$toggle.click($.proxy(function(ev) {
+
+			var $li = $(ev.currentTarget).closest('li'),
+				elementId = $li.data('id'),
+				collapsedElementIds = this.getViewState('collapsedElementIds', []),
+				viewStateKey = $.inArray(elementId, collapsedElementIds);
+
+			if ($li.hasClass('collapsed'))
+			{
+				$li.removeClass('collapsed');
+
+				if (viewStateKey != -1)
+				{
+					collapsedElementIds.splice(viewStateKey, 1);
+				}
+			}
+			else
+			{
+				$li.addClass('collapsed');
+
+				if (viewStateKey == -1)
+				{
+					collapsedElementIds.push(elementId);
+				}
+			}
+
+			this.setViewState('collapsedElementIds', collapsedElementIds);
+
+		}, this));
 	},
 
 	onUpdateElements: function(append)

@@ -204,9 +204,9 @@ abstract class BaseController extends \CController
 	/**
 	 * Respond with JSON
 	 *
-	 * @param array $var The array to JSON-encode and return
+	 * @param array|null $var The array to JSON-encode and return
 	 */
-	public function returnJson($var)
+	public function returnJson($var = array())
 	{
 		JsonHelper::sendJsonHeaders();
 		echo JsonHelper::encode($var);

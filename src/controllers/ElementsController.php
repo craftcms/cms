@@ -41,25 +41,26 @@ class ElementsController extends BaseController
 	{
 		$context = craft()->request->getParam('context');
 		$elementType = $this->_getElementType();
-		$source = craft()->request->getParam('source');
+		$sourceKey = craft()->request->getParam('source');
 		$viewState = craft()->request->getParam('viewState');
-		$disabledElementIds = craft()->request->getParam('disabledElementIds');
+		$disabledElementIds = craft()->request->getParam('disabledElementIds', array());
 
 		$baseCriteria = craft()->request->getPost('criteria');
 		$criteria = craft()->elements->getCriteria($elementType->getClassHandle(), $baseCriteria);
 
-		if ($source)
+		if ($sourceKey)
 		{
 			$sources = $elementType->getSources($context);
-			$sourceCriteria = $this->_getSourceCriteria($sources, $source);
+			$source = $this->_findSource($sources, $sourceKey);
 
-			if ($sourceCriteria !== null)
-			{
-				$criteria->setAttributes($sourceCriteria);
-			}
-			else
+			if (!$source)
 			{
 				return false;
+			}
+
+			if (!empty($source['criteria']))
+			{
+				$criteria->setAttributes($source['criteria']);
 			}
 		}
 
@@ -74,10 +75,11 @@ class ElementsController extends BaseController
 		}
 
 		$variables = array(
-			'state'              => $viewState,
-			'context'            => $context,
-			'elementType'        => new ElementTypeVariable($elementType),
-			'disabledElementIds' => $disabledElementIds,
+			'viewState'           => $viewState,
+			'context'             => $context,
+			'elementType'         => new ElementTypeVariable($elementType),
+			'source'              => (isset($source) ? $source : null),
+			'disabledElementIds'  => $disabledElementIds,
 		);
 
 		switch ($viewState['mode'])
@@ -85,7 +87,7 @@ class ElementsController extends BaseController
 			case 'table':
 			{
 				// Make sure the attribute is actually allowed
-				$tableAttributes = $elementType->defineTableAttributes($source);
+				$tableAttributes = $elementType->defineTableAttributes($sourceKey);
 
 				// Ordering by an attribute?
 				if (!empty($viewState['order']))
@@ -126,8 +128,16 @@ class ElementsController extends BaseController
 
 		$html = craft()->templates->render('_elements/'.$viewState['mode'].'view/'.$template, $variables);
 
-		$totalVisible = $criteria->offset + $criteria->limit;
-		$remainingElements = $criteria->total() - $totalVisible;
+		if ($viewState['mode'] != 'structure')
+		{
+			$totalVisible = $criteria->offset + $criteria->limit;
+			$remainingElements = $criteria->total() - $totalVisible;
+		}
+		else
+		{
+			$totalVisible = null;
+			$remainingElements = 0;
+		}
 
 		$this->returnJson(array(
 			'html'         => $html,
@@ -161,30 +171,23 @@ class ElementsController extends BaseController
 	 * Returns the criteria for a given source.
 	 *
 	 * @param array  $sources
-	 * @param string $selectedSource
+	 * @param string $sourceKey
 	 * @return array|null
 	 */
-	private function _getSourceCriteria($sources, $selectedSource)
+	private function _findSource($sources, $sourceKey)
 	{
-		if (isset($sources[$selectedSource]))
+		if (isset($sources[$sourceKey]))
 		{
-			if (isset($sources[$selectedSource]['criteria']))
-			{
-				return $sources[$selectedSource]['criteria'];
-			}
-			else
-			{
-				return array();
-			}
+			return $sources[$sourceKey];
 		}
 		else
 		{
 			// Look through any nested sources
 			foreach ($sources as $key => $source)
 			{
-				if (!empty($source['nested']) && ($nestedSourceCriteria = $this->_getSourceCriteria($source['nested'], $selectedSource)))
+				if (!empty($source['nested']) && ($nestedSource = $this->_findSource($source['nested'], $sourceKey)))
 				{
-					return $nestedSourceCriteria;
+					return $nestedSource;
 				}
 			}
 		}

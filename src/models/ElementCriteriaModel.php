@@ -43,6 +43,7 @@ class ElementCriteriaModel extends BaseModel
 			'childOf'       => AttributeType::Mixed,
 			'parentField'   => AttributeType::String,
 			'childField'    => AttributeType::String,
+			'structured'    => AttributeType::Bool,
 		);
 
 		// Mix in any custom attributes defined by the element type

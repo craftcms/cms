@@ -161,6 +161,7 @@ $cpRoutes['settings/general']                                                   
 $cpRoutes['settings/globals/new']                                                 = array('action' => 'systemSettings/editGlobalSet');
 $cpRoutes['settings/globals/(?P<globalSetId>\d+)']                                = array('action' => 'systemSettings/editGlobalSet');
 $cpRoutes['settings/plugins/(?P<pluginClass>{handle})']                           = 'settings/plugins/_settings';
+$cpRoutes['settings/sections']                                                    = array('action' => 'sections/index');
 $cpRoutes['settings/sections/new']                                                = array('action' => 'sections/editSection');
 $cpRoutes['settings/sections/(?P<sectionId>\d+)']                                 = array('action' => 'sections/editSection');
 $cpRoutes['settings/sections/(?P<sectionId>\d+)/entrytypes']                      = array('action' => 'sections/entryTypesIndex');
@@ -244,7 +245,14 @@ $components['images']['class']               = 'Craft\ImagesService';
 $components['migrations']['class']           = 'Craft\MigrationsService';
 $components['path']['class']                 = 'Craft\PathService';
 $components['relations']['class']            = 'Craft\RelationsService';
-$components['sections']['class']             = 'Craft\SectionsService';
+
+$components['sections'] = array(
+	'class' => 'Craft\SectionsService',
+	'typeLimits' => array(
+		'single'  => 5,
+		'channel' => 1
+	)
+);
 
 $components['resources']['class']            = 'Craft\ResourcesService';
 $components['resources']['dateParam']        = 'd';

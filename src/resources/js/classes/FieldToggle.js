@@ -76,7 +76,14 @@ Craft.FieldToggle = Garnish.Base.extend({
 		}
 		else
 		{
-			this._$target = $('#'+this.$toggle.attr('data-target'));
+			var targetSelector = this.$toggle.data('target');
+
+			if (!targetSelector.match(/^[#\.]/))
+			{
+				targetSelector = '#'+targetSelector;
+			}
+
+			this._$target = $(targetSelector);
 		}
 	},
 
