@@ -28,20 +28,8 @@ class HttpRequestService extends \CHttpRequest
 	{
 		parent::init();
 
-		// Get the path
-		if (craft()->config->usePathInfo())
-		{
-			$pathInfo = $this->getPathInfo();
-			$path = $pathInfo ? $pathInfo : $this->_getQueryStringPath();
-		}
-		else
-		{
-			$queryString = $this->_getQueryStringPath();
-			$path = $queryString ? $queryString : $this->getPathInfo();
-		}
-
-		// Sanitize
-		$path = $this->decodePathInfo($path);
+		// Get the normalized path.
+		$path = $this->getNormalizedPath();
 
 		// Get the path segments
 		$this->_segments = array_filter(explode('/', $path));
@@ -684,6 +672,27 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		return implode('&', $parts);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getNormalizedPath()
+	{
+		// Get the path
+		if (craft()->config->usePathInfo())
+		{
+			$pathInfo = $this->getPathInfo();
+			$path = $pathInfo ? $pathInfo : $this->_getQueryStringPath();
+		}
+		else
+		{
+			$queryString = $this->_getQueryStringPath();
+			$path = $queryString ? $queryString : $this->getPathInfo();
+		}
+
+		// Sanitize
+		return $this->decodePathInfo($path);
 	}
 
 	/**
