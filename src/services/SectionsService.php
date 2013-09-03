@@ -427,7 +427,7 @@ class SectionsService extends BaseApplicationComponent
 						// This may take a while...
 						set_time_limit(120);
 
-						// Fetch all the entries in this section
+						// Fetch all the enabled entries in this section
 						$entries = craft()->elements->getCriteria(ElementType::Entry, array(
 							'sectionId' => $section->id,
 							'locale'    => $localeId,
