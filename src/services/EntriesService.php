@@ -195,7 +195,7 @@ class EntriesService extends BaseApplicationComponent
 			}
 			else
 			{
-				$urlFormatAttribute = 'nestedUrl';
+				$urlFormatAttribute = 'urlFormat';
 			}
 
 			$urlFormat = $sectionLocales[$entry->locale]->$urlFormatAttribute;

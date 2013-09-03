@@ -100,6 +100,14 @@ class InstallService extends BaseApplicationComponent
 			if (IOHelper::fileExists($file))
 			{
 				$fileName = IOHelper::getFileName($file, false);
+
+				// Ignore StructuredEntryRecord
+				if ($fileName == 'StructuredEntryRecord')
+				{
+					Craft::log("Skipping record {$file}.", LogLevel::Warning);
+					continue;
+				}
+
 				$class = __NAMESPACE__.'\\'.$fileName;
 
 				// Ignore abstract classes and interfaces
@@ -631,6 +639,7 @@ class InstallService extends BaseApplicationComponent
 		Craft::log('Creating the News section.');
 
 		$newsSection = new SectionModel();
+		$newsSection->type     = SectionType::Channel;
 		$newsSection->name     = Craft::t('News');
 		$newsSection->handle   = 'news';
 		$newsSection->hasUrls  = true;
