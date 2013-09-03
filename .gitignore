@@ -116,3 +116,10 @@ Source/craft/app/vendor/imagine/imagine/.travis.yml
 Source/craft/app/vendor/imagine/imagine/Rakefile
 Source/craft/app/vendor/imagine/imagine/phpunit.xml.dist
 Source/craft/app/vendor/imagine/imagine/README.md
+
+Source/craft/app/vendor/mockery/mockery/.git
+Source/craft/app/vendor/mockery/mockery/.gitignore
+Source/craft/app/vendor/mockery/mockery/.travis.yml
+Source/craft/app/vendor/mockery/mockery/README.markdown
+Source/craft/app/vendor/mockery/mockery/examples
+Source/craft/app/vendor/mockery/mockery/tests
