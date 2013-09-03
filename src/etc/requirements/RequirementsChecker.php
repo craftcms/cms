@@ -125,11 +125,17 @@ class RequirementsChecker extends \CComponent
 				Craft::t('<a href="http://php.net/manual/en/book.pcre.php">PCRE</a> must be compiled to support UTF-8.')
 			),
 			new Requirement(
-				Craft::t('UTF-8 conversion support'),
-				(function_exists('iconv') && (extension_loaded('mbstring') && ini_get('mbstring.func_overload') != 1)),
+				Craft::t('Multibyte String support'),
+				(extension_loaded('mbstring') && ini_get('mbstring.func_overload') != 1),
 				true,
-				Craft::t('@@@appName@@@ requires <a href="http://php.net/manual/en/book.iconv.php">iconv</a> and the <a href="http://www.php.net/manual/en/book.mbstring.php">multibyte string extension</a> with <a href="http://php.net/manual/en/mbstring.overload.php">function overloading</a> disabled in order to run.')
+				Craft::t('@@@appName@@@ requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String extension</a> with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.')
 			),
+			new Requirement(
+				Craft::t('iconv support'),
+				function_exists('iconv'),
+				true,
+				Craft::t('@@@appName@@@ requires <a href="http://php.net/manual/en/book.iconv.php">iconv</a> in order to run.')
+			)
 		);
 	}
 
