@@ -329,7 +329,7 @@ class EntriesController extends BaseController
 				{
 					$criteria = craft()->elements->getCriteria(ElementType::Entry);
 					$criteria->id = $variables['entryId'];
-					$criteria->status = '*';
+					$criteria->status = null;
 
 					if (Craft::hasPackage(CraftPackage::Localize))
 					{
@@ -434,7 +434,7 @@ class EntriesController extends BaseController
 		{
 			$criteria = craft()->elements->getCriteria(ElementType::Entry);
 			$criteria->id = $entryId;
-			$criteria->status = '*';
+			$criteria->status = null;
 			$entry = $criteria->first();
 
 			if (!$entry)

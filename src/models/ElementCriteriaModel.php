@@ -61,18 +61,6 @@ class ElementCriteriaModel extends BaseModel
 	}
 
 	/**
-	 * Sets an attribute's value.
-	 *
-	 * @param string $name
-	 * @param mixed $value
-	 * @return bool
-	 */
-	public function setAttribute($name, $value)
-	{
-		return parent::setAttribute($name, $value);
-	}
-
-	/**
 	 * Returns the element type.
 	 *
 	 * @return BaseElementType
