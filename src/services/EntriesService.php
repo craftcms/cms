@@ -34,15 +34,31 @@ class EntriesService extends BaseApplicationComponent
 	{
 		$isNewEntry = !$entry->id;
 
-		$saveStructure = (Craft::hasPackage(CraftPackage::PublishPro) &&
+		$hasNewParent = (Craft::hasPackage(CraftPackage::PublishPro) &&
 			$entry->getSection()->type == SectionType::Structure &&
 			$entry->parentId !== null &&
 			($entry->parentId !== '0' || $entry->depth != 1) &&
 			(!$entry->getParent() || $entry->getParent()->id != $entry->parentId)
 		);
 
-		if ($saveStructure)
+		if ($hasNewParent)
 		{
+			if ($entry->parentId)
+			{
+				$parentEntry = $this->getEntryById($entry->parentId);
+
+				if (!$parentEntry)
+				{
+					throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->parentId)));
+				}
+			}
+			else
+			{
+				$parentEntry = null;
+			}
+
+			$entry->setParent($parentEntry);
+
 			$entryRecordClass = __NAMESPACE__.'\\StructuredEntryRecord';
 		}
 		else
@@ -154,12 +170,25 @@ class EntriesService extends BaseApplicationComponent
 			$elementLocaleRecord->locale = $entry->locale;
 		}
 
-		if ($section->hasUrls && $entry->enabled)
+		if ($section->type == SectionType::Single)
 		{
+			$elementLocaleRecord->uri = $sectionLocales[$entry->locale]->$urlFormatAttribute;
+		}
+		else if ($section->hasUrls && $entry->enabled)
+		{
+			if ($section->type == SectionType::Structure && $entry->parentId)
+			{
+				$urlFormatAttribute = 'nestedUrlFormat';
+			}
+			else
+			{
+				$urlFormatAttribute = 'nestedUrl';
+			}
+
+			$urlFormat = $sectionLocales[$entry->locale]->$urlFormatAttribute;
+
 			// Make sure the section's URL format is valid. This shouldn't be possible due to section validation,
 			// but it's not enforced by the DB, so anything is possible.
-			$urlFormat = $sectionLocales[$entry->locale]->urlFormat;
-
 			if (!$urlFormat || mb_strpos($urlFormat, '{slug}') === false)
 			{
 				throw new Exception(Craft::t('The section “{section}” doesn’t have a valid URL Format.', array(
@@ -206,7 +235,7 @@ class EntriesService extends BaseApplicationComponent
 			}
 
 			// Has the parent changed?
-			if ($saveStructure)
+			if ($hasNewParent)
 			{
 				if ($entry->parentId === '0')
 				{

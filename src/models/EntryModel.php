@@ -10,6 +10,7 @@ class EntryModel extends BaseElementModel
 
 	private $_ancestors;
 	private $_descendants;
+	private $_parent;
 
 	const LIVE     = 'live';
 	const PENDING  = 'pending';
@@ -165,21 +166,6 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
-	 * Get the entry's parent.
-	 *
-	 * @return EntryModel|null
-	 */
-	public function getParent()
-	{
-		$parent = $this->getAncestors(1);
-
-		if ($parent)
-		{
-			return $parent[0];
-		}
-	}
-
-	/**
 	 * Sets the entry's ancestors.
 	 *
 	 * @param array $ancestors
@@ -187,6 +173,43 @@ class EntryModel extends BaseElementModel
 	public function setAncestors($ancestors)
 	{
 		$this->_ancestors = $ancestors;
+	}
+
+	/**
+	 * Get the entry's parent.
+	 *
+	 * @return EntryModel|null
+	 */
+	public function getParent()
+	{
+		if (!isset($this->_parent))
+		{
+			$parent = $this->getAncestors(1);
+
+			if ($parent)
+			{
+				$this->_parent = $parent[0];
+			}
+			else
+			{
+				$this->_parent = false;
+			}
+		}
+
+		if ($this->_parent !== false)
+		{
+			return $this->_parent;
+		}
+	}
+
+	/**
+	 * Sets the entry's parent.
+	 *
+	 * @param EntryModel $parent
+	 */
+	public function setParent($parent)
+	{
+		$this->_parent = $parent;
 	}
 
 	/**

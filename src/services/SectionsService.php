@@ -436,7 +436,16 @@ class SectionsService extends BaseApplicationComponent
 
 						foreach ($entries as $entry)
 						{
-							$uri = craft()->templates->renderObjectTemplate($locale->urlFormat, $entry);
+							if ($section->type == SectionType::Structure && $entry->depth > 1)
+							{
+								$urlFormatAttribute = 'nestedUrlFormat';
+							}
+							else
+							{
+								$urlFormatAttribute = 'urlFormat';
+							}
+
+							$uri = craft()->templates->renderObjectTemplate($locale->$urlFormatAttribute, $entry);
 
 							if ($uri != $entry->uri)
 							{
@@ -576,7 +585,7 @@ class SectionsService extends BaseApplicationComponent
 							$entryIds = craft()->db->createCommand()
 								->select('id')
 								->from('entries')
-								->where('section = :sectionId', array(':sectionId' => $section->id))
+								->where('sectionId = :sectionId', array(':sectionId' => $section->id))
 								->queryColumn();
 
 							if ($entryIds)
@@ -593,7 +602,7 @@ class SectionsService extends BaseApplicationComponent
 
 								craft()->db->createCommand()->update('elements', array(
 									'enabled'    => 1,
-									'disabled'   => 0,
+									'archived'   => 0,
 								), array(
 									'id' => $singleEntryId
 								));
@@ -638,7 +647,7 @@ class SectionsService extends BaseApplicationComponent
 						{
 							craft()->db->createCommand()->insertOrUpdate('elements_i18n', array(
 								'elementId' => $singleEntryId,
-								'locale'    => $localeId
+								'locale'    => $localeId,
 							), array(
 								'uri'       => $sectionLocale->urlFormat
 							));
