@@ -857,12 +857,14 @@ class AssetsService extends BaseApplicationComponent
 
 			if (!$this->_includedTransformLoader)
 			{
+				$entityPlaceholderUrl = htmlspecialchars($placeholderUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 				$spinnerUrl = UrlHelper::getResourceurl('images/spinner_transform.gif');
 				$actionUrl  = UrlHelper::getActionUrl('assets/generateTransform');
 
 				craft()->templates->includeJsResource('js/TransformLoader.js');
 				craft()->templates->includeJs('new TransformLoader(' .
 					JsonHelper::encode($placeholderUrl).', ' .
+					JsonHelper::encode($entityPlaceholderUrl).', ' .
 					JsonHelper::encode($spinnerUrl).', ' .
 					JsonHelper::encode($actionUrl) .
 				');');
