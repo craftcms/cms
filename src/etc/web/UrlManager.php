@@ -206,7 +206,16 @@ class UrlManager extends \CUrlManager
 					->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
 
 				$conditions = array('and', 'elements_i18n.uri = :path', 'elements.enabled = 1', 'elements.archived = 0');
-				$params = array(':path' => $path);
+				$params = array();
+
+				if (!$path)
+				{
+					$params[':path'] = '__home__';
+				}
+				else
+				{
+					$params[':path'] = $path;
+				}
 
 				$localeIds = array_unique(array_merge(
 					array(craft()->language),

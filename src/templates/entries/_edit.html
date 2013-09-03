@@ -55,81 +55,83 @@
 			{% include "entries/_fields" %}
 		</div>
 
-		<div id="entry-settings"{% if entryType.getFieldLayout().getTabs()|length %} class="hidden"{% endif %}>
-			{{ forms.textField({
-				label: "Slug"|t,
-				id: 'slug',
-				name: 'slug',
-				value: entry.slug,
-				errors: entry.getErrors('slug'),
-				required: true
-			}) }}
-
-			{% if craft.hasPackage('PublishPro') and section.type == 'structure' and parentOptions|length > 1 %}
-				{{ forms.selectField({
-					label: "Parent Entry"|t,
-					id: 'parentId',
-					name: 'parentId',
-					options: parentOptions,
-					value: (entry.getParent() ? entry.getParent().id : null)
+		{% if section.type != 'single' %}
+			<div id="entry-settings"{% if entryType.getFieldLayout().getTabs()|length %} class="hidden"{% endif %}>
+				{{ forms.textField({
+					label: "Slug"|t,
+					id: 'slug',
+					name: 'slug',
+					value: entry.slug,
+					errors: entry.getErrors('slug'),
+					required: true
 				}) }}
-			{% endif %}
 
-			{% if craft.hasPackage('Users') %}
-				{% set authors = [] %}
-				{% for author in craft.users.find() %}
-					{% set authors = authors|merge([{ label: author.name, value: author.id }]) %}
-				{% endfor %}
-				{{ forms.selectField({
-					label: "Author"|t,
-					id: 'author',
-					name: 'author',
-					options: authors,
-					value: entry.authorId
-				}) }}
-			{% endif %}
-
-			{{ forms.dateTimeField({
-				label: "Post Date"|t,
-				instructions: "When should the entry go live? (Set automatically if left blank)"|t,
-				id: 'postDate',
-				name: 'postDate',
-				value: (entry.postDate ? entry.postDate : null),
-				errors: entry.getErrors('postDate')
-			}) }}
-
-			{{ forms.dateTimeField({
-				label: "Expiration Date"|t,
-				instructions: "When should the entry expire?"|t,
-				id: 'expiryDate',
-				name: 'expiryDate',
-				value: (entry.expiryDate ? entry.expiryDate : null),
-				errors: entry.getErrors('expiryDate')
-			}) }}
-
-			{% if user.can('publishEntries'~permissionSuffix) %}
-				{% set statusLabel -%}
-					{{ "Status:"|t }} <i>{{ entry.id ? entry.status|ucfirst|t : "Never saved"|t  }}</i>
-				{%- endset %}
-				{% set statusInput %}
-					{{ forms.checkboxField({
-						label: "Entry is enabled"|t,
-						name: 'enabled',
-						checked: entry.enabled
+				{% if craft.hasPackage('PublishPro') and section.type == 'structure' and parentOptions|length > 1 %}
+					{{ forms.selectField({
+						label: "Parent Entry"|t,
+						id: 'parentId',
+						name: 'parentId',
+						options: parentOptions,
+						value: (entry.getParent() ? entry.getParent().id : null)
 					}) }}
-				{% endset %}
-				{{ forms.field({
-					label: statusLabel,
-					instructions: "An entry is only “live” if it is enabled, has a Post Date in the past, and an Expiration Date in the future."|t
-				}, statusInput) }}
-			{% endif %}
+				{% endif %}
 
-            {% if user.can('deleteEntries'~permissionSuffix) %}
-                <input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="entries/deleteEntry"
-                    data-confirm="{{ 'Are you sure you want to delete this entry?'|t }}"
-                    data-redirect="entries">
-            {% endif %}
-		</div>
+				{% if craft.hasPackage('Users') %}
+					{% set authors = [] %}
+					{% for author in craft.users.find() %}
+						{% set authors = authors|merge([{ label: author.name, value: author.id }]) %}
+					{% endfor %}
+					{{ forms.selectField({
+						label: "Author"|t,
+						id: 'author',
+						name: 'author',
+						options: authors,
+						value: entry.authorId
+					}) }}
+				{% endif %}
+
+				{{ forms.dateTimeField({
+					label: "Post Date"|t,
+					instructions: "When should the entry go live? (Set automatically if left blank)"|t,
+					id: 'postDate',
+					name: 'postDate',
+					value: (entry.postDate ? entry.postDate : null),
+					errors: entry.getErrors('postDate')
+				}) }}
+
+				{{ forms.dateTimeField({
+					label: "Expiration Date"|t,
+					instructions: "When should the entry expire?"|t,
+					id: 'expiryDate',
+					name: 'expiryDate',
+					value: (entry.expiryDate ? entry.expiryDate : null),
+					errors: entry.getErrors('expiryDate')
+				}) }}
+
+				{% if user.can('publishEntries'~permissionSuffix) %}
+					{% set statusLabel -%}
+						{{ "Status:"|t }} <i>{{ entry.id ? entry.status|ucfirst|t : "Never saved"|t  }}</i>
+					{%- endset %}
+					{% set statusInput %}
+						{{ forms.checkboxField({
+							label: "Entry is enabled"|t,
+							name: 'enabled',
+							checked: entry.enabled
+						}) }}
+					{% endset %}
+					{{ forms.field({
+						label: statusLabel,
+						instructions: "An entry is only “live” if it is enabled, has a Post Date in the past, and an Expiration Date in the future."|t
+					}, statusInput) }}
+				{% endif %}
+
+	            {% if user.can('deleteEntries'~permissionSuffix) %}
+	                <input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="entries/deleteEntry"
+	                    data-confirm="{{ 'Are you sure you want to delete this entry?'|t }}"
+	                    data-redirect="entries">
+	            {% endif %}
+			</div>
+		{% endif %}
 
 		<hr>
 

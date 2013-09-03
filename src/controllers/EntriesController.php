@@ -526,17 +526,20 @@ class EntriesController extends BaseController
 		}
 
 		// Settings tab
-		$hasErrors = ($variables['entry']->hasErrors() && (
-			$variables['entry']->getErrors('slug') ||
-			$variables['entry']->getErrors('postDate') ||
-			$variables['entry']->getErrors('expiryDate')
-		));
+		if ($variables['section']->type != SectionType::Single)
+		{
+			$hasErrors = ($variables['entry']->hasErrors() && (
+				$variables['entry']->getErrors('slug') ||
+				$variables['entry']->getErrors('postDate') ||
+				$variables['entry']->getErrors('expiryDate')
+			));
 
-		$variables['tabs'][] = array(
-			'label' => Craft::t('Settings'),
-			'url'   => '#entry-settings',
-			'class' => ($hasErrors ? 'error' : null)
-		);
+			$variables['tabs'][] = array(
+				'label' => Craft::t('Settings'),
+				'url'   => '#entry-settings',
+				'class' => ($hasErrors ? 'error' : null)
+			);
+		}
 	}
 
 	/**

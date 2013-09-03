@@ -107,9 +107,23 @@ class EntriesService extends BaseApplicationComponent
 		}
 
 		$entryRecord->sectionId  = $entry->sectionId;
-		$entryRecord->authorId   = $entry->authorId;
 		$entryRecord->postDate   = $entry->postDate;
-		$entryRecord->expiryDate = $entry->expiryDate;
+
+		if ($section->type == SectionType::Single)
+		{
+			$entryRecord->authorId   = $entry->authorId = null;
+			$entryRecord->expiryDate = $entry->expiryDate = null;
+
+			$elementRecord->enabled  = $entry->enabled = true;
+		}
+		else
+		{
+			$entryRecord->authorId   = $entry->authorId;
+			$entryRecord->postDate   = $entry->postDate;
+			$entryRecord->expiryDate = $entry->expiryDate;
+
+			$elementRecord->enabled  = $entry->enabled;
+		}
 
 		if ($entry->enabled && !$entryRecord->postDate)
 		{
@@ -118,10 +132,9 @@ class EntriesService extends BaseApplicationComponent
 		}
 
 		$entryRecord->validate();
-		$entry->addErrors($entryRecord->getErrors());
-
-		$elementRecord->enabled = $entry->enabled;
 		$elementRecord->validate();
+
+		$entry->addErrors($entryRecord->getErrors());
 		$entry->addErrors($elementRecord->getErrors());
 
 		// Entry locale data
@@ -172,7 +185,7 @@ class EntriesService extends BaseApplicationComponent
 
 		if ($section->type == SectionType::Single)
 		{
-			$elementLocaleRecord->uri = $sectionLocales[$entry->locale]->$urlFormatAttribute;
+			$elementLocaleRecord->uri = $sectionLocales[$entry->locale]->urlFormat;
 		}
 		else if ($section->hasUrls && $entry->enabled)
 		{
