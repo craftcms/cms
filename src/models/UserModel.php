@@ -168,6 +168,23 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns the URL to the thumbnail for this user for a given size.
+	 *
+	 * @param int $size
+	 * @return false|null|string
+	 */
+	public function getThumbUrl($size = 100)
+	{
+		$url = $this->getPhotoUrl($size);
+		if (!$url)
+		{
+			$url = UrlHelper::getResourceUrl('defaultuserphoto/'.$size);
+		}
+
+		return $url;
+	}
+
+	/**
 	 * Returns whether this is the current logged-in user.
 	 *
 	 * @return bool
