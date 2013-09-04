@@ -2064,7 +2064,10 @@
 
 				// fix right placement
 				var dropdownWidth = $dropdown.width();
-				if ((keyPosition.left + dropdownWidth) > $(document).width())
+				/* BEGIN HACK! */
+				//if ((keyPosition.left + dropdownWidth) > $(document).width())
+				if ((keyPosition.left + dropdownWidth) > this.$box.outerWidth())
+				/* END HACK! */
 				{
 					keyPosition.left -= dropdownWidth;
 				}
