@@ -538,10 +538,16 @@ var CP = Garnish.Base.extend({
 	 */
 	displayNotification: function(type, message)
 	{
+		var notificationDuration = CP.notificationDuration;
+
+		if (type == 'error') {
+			notificationDuration *= 2;
+		}
+
 		$('<div class="notification '+type+'">'+message+'</div>')
 			.appendTo(this.$notificationContainer)
 			.fadeIn('fast')
-			.delay(CP.notificationDuration)
+			.delay(notificationDuration)
 			.fadeOut();
 	},
 
