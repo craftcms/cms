@@ -7,18 +7,10 @@
 
 {% set docsUrl = 'http://docs.buildwithcraft.com/cp/settings/sections.html' %}
 
-{% set newSectionBtn %}
-	<div class="buttons">
-		<a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New Section"|t }}</a>
-	</div>
-{% endset %}
-
 
 {% set content %}
 	<div id="nosections"{% if sections %} class="hidden"{% endif %}>
 		<p>{{ "No sections exist yet."|t }}</p>
-
-		{{ newSectionBtn }}
 	</div>
 
 	{% if sections|length %}
@@ -53,7 +45,7 @@
 	{% endif %}
 
 	<div id="newsectioncontainer" class="buttons{% if not craft.hasPackage('PublishPro') and sections|length >= maxSections %} hidden{% endif %}">
-		{{ newSectionBtn }}
+		<a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New Section"|t }}</a>
 	</div>
 {% endset %}
 
