@@ -6,6 +6,9 @@ namespace Craft;
  */
 class ResourcesService extends BaseApplicationComponent
 {
+
+	const DefaultUserphotoFilename = 'user.gif';
+
 	public $dateParam;
 
 	/**
@@ -79,6 +82,25 @@ class ResourcesService extends BaseApplicationComponent
 
 						return $sizedPhotoPath;
 					}
+				}
+
+				case 'defaultuserphoto':
+				{
+					if (!isset($segs[1]) || !is_numeric($segs[1]))
+					{
+						return;
+					}
+
+					$size = $segs[1];
+					$sourceFile = craft()->path->getResourcesPath().'images/'.self::DefaultUserphotoFilename;
+					$targetFolder = craft()->path->getUserPhotosPath().'__default__/';
+					IOHelper::ensureFolderExists($targetFolder);
+					$targetFile = $targetFolder.$size.'.'.IOHelper::getExtension($sourceFile);
+					craft()->images->loadImage($sourceFile)
+						->resize($size)
+						->saveAs($targetFile);
+
+					return $targetFile;
 				}
 
 				case 'tempuploads':

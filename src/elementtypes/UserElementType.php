@@ -36,7 +36,8 @@ class UserElementType extends BaseElementType
 	{
 		$sources = array(
 			'*' => array(
-				'label' => Craft::t('All users')
+				'label' => Craft::t('All users'),
+				'hasThumbs' => true
 			)
 		);
 
