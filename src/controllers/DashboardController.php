@@ -164,7 +164,10 @@ class DashboardController extends BaseController
 						// Only grab the most recent 3 sorted by timestamp.
 						for ($counter = 0; $counter <= 2; $counter++)
 						{
-							Zip::add($tempZipFile, $contents[$counter], craft()->path->getStoragePath());
+							if (isset($contents[$counter]))
+							{
+								Zip::add($tempZipFile, $contents[$counter], craft()->path->getStoragePath());
+							}
 						}
 					}
 
