@@ -47,3 +47,18 @@
 		<p>With over 60 additions and improvements, Craft 1.1 is our single biggest update yet. To see all that has changed, check out <a class="go" href="http://buildwithcraft.com/updates" target="_blank">buildwithcraft.com/updates</a></p>
 	</div>
 {% endset %}
+
+
+{% set js %}
+	if (typeof Storage !== 'undefined')
+	{
+		for (var key in localStorage)
+		{
+			if (key.substr(0, 6) == 'Craft.')
+			{
+				delete localStorage[key];
+			}
+		}
+	}
+{% endset %}
+{% includeJs %}

@@ -42,9 +42,9 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			viewStates: {}
 		};
 
-		if (typeof Storage !== 'undefined' && this.settings.id)
+		if (typeof Storage !== 'undefined')
 		{
-			this.stateStorageId = 'Craft.BaseElementIndex.'+this.settings.id;
+			this.stateStorageId = 'Craft-'+Craft.siteUid+'.BaseElementIndex.'+this.elementType+'.'+this.settings.context;
 
 			if (typeof localStorage[this.stateStorageId] != 'undefined')
 			{
@@ -726,7 +726,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 {
 	defaults: {
 		context: 'index',
-		id: null,
+		storageKey: null,
 		criteria: null,
 		disabledElementIds: [],
 		onUpdateElements: $.noop,
