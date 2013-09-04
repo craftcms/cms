@@ -57,6 +57,16 @@ class AppVariable
 	}
 
 	/**
+	 * Returns the site UID.
+	 *
+	 * @return string
+	 */
+	public function getSiteUid()
+	{
+		return Craft::getSiteUid();
+	}
+
+	/**
 	 * Returns the site language.
 	 *
 	 * @return string

@@ -274,6 +274,17 @@ class Craft extends \Yii
 	}
 
 	/**
+	 * Returns the site UID.
+	 *
+	 * @static
+	 * @return string
+	 */
+	public static function getSiteUid()
+	{
+		return static::getInfo('uid');
+	}
+
+	/**
 	 * Returns the system time zone.
 	 *
 	 * @static
