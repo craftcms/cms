@@ -48,8 +48,9 @@ class UserElementType extends BaseElementType
 				$key = 'group:'.$group->id;
 
 				$sources[$key] = array(
-					'label'    => $group->name,
-					'criteria' => array('groupId' => $group->id)
+					'label'     => $group->name,
+					'criteria'  => array('groupId' => $group->id),
+					'hasThumbs' => true
 				);
 			}
 		}

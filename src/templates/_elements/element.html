@@ -37,13 +37,15 @@
 		<div class="elementicon {{ iconClass }}"></div>
 	{% endif -%}
 
-	{% if elementType.hasStatuses -%}
-		<div class="status {{ element.getStatus() }}"></div>
-	{% endif -%}
+	<div class="label">
+		{% if elementType.hasStatuses -%}
+			<div class="status {{ element.getStatus() }}"></div>
+		{% endif -%}
 
-	{% if context == 'index' and element.getCpEditUrl() -%}
-		<a class="label" href="{{ element.getCpEditUrl() }}">{{ element }}</a>
-	{% else -%}
-		<span class="label">{{ element }}</span>
-	{% endif -%}
+		{% if context == 'index' and element.getCpEditUrl() -%}
+			<a href="{{ element.getCpEditUrl() }}">{{ element }}</a>
+		{% else -%}
+			{{ element }}
+		{% endif -%}
+	</div>
 </div>
