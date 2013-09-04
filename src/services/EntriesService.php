@@ -36,9 +36,11 @@ class EntriesService extends BaseApplicationComponent
 
 		$hasNewParent = (Craft::hasPackage(CraftPackage::PublishPro) &&
 			$entry->getSection()->type == SectionType::Structure &&
-			$entry->parentId !== null &&
-			($entry->parentId !== '0' || $entry->depth != 1) &&
-			(!$entry->getParent() || $entry->getParent()->id != $entry->parentId)
+			$isNewEntry || (
+				$entry->parentId !== null &&
+				($entry->parentId !== '0' || $entry->depth != 1) &&
+				(!$entry->getParent() || $entry->getParent()->id != $entry->parentId)
+			)
 		);
 
 		if ($hasNewParent)
@@ -250,7 +252,7 @@ class EntriesService extends BaseApplicationComponent
 			// Has the parent changed?
 			if ($hasNewParent)
 			{
-				if ($entry->parentId === '0')
+				if (!$entry->parentId)
 				{
 					$parentEntryRecord = StructuredEntryRecord::model()->roots()->findByAttributes(array(
 						'sectionId' => $section->id
