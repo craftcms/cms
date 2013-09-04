@@ -123,9 +123,12 @@ class EntriesController extends BaseController
 			array('label' => Craft::t('Entries'), 'url' => UrlHelper::getUrl('entries'))
 		);
 
-		if (Craft::hasPackage(CraftPackage::PublishPro))
+		if ($variables['section']->type == SectionType::Single)
 		{
-			// Not really necessary, but it's nice to see that section name...
+			$variables['crumbs'][] = array('label' => 'Singles', 'url' => UrlHelper::getUrl('entries'));
+		}
+		else
+		{
 			$variables['crumbs'][] = array('label' => $variables['section']->name, 'url' => UrlHelper::getUrl('entries'));
 
 			if ($variables['section']->type == SectionType::Structure)

@@ -18,9 +18,7 @@
 	<div id="nosections"{% if sections %} class="hidden"{% endif %}>
 		<p>{{ "No sections exist yet."|t }}</p>
 
-		{% if not craft.hasPackage('PublishPro') %}
-			{{ newSectionBtn }}
-		{% endif %}
+		{{ newSectionBtn }}
 	</div>
 
 	{% if sections|length %}
@@ -54,9 +52,9 @@
 		</table>
 	{% endif %}
 
-	{% if craft.hasPackage('PublishPro') %}
+	<div id="newsectioncontainer" class="buttons{% if not craft.hasPackage('PublishPro') and sections|length >= maxSections %} hidden{% endif %}">
 		{{ newSectionBtn }}
-	{% endif %}
+	</div>
 {% endset %}
 
 
@@ -64,8 +62,10 @@
 	new Craft.AdminTable({
 		tableSelector: '#sections',
 		noObjectsSelector: '#nosections',
+		newObjectBtnSelector: '#newsectioncontainer',
 		deleteAction: 'sections/deleteSection',
 		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its entries?"|t }}',
+		maxObjects: {% if not craft.hasPackage('PublishPro') %}{{ maxSections }}{% else %}null{% endif %}
 	});
 {% endset %}
 {% includeJs js %}

@@ -29,11 +29,6 @@ class SectionsService extends BaseApplicationComponent
 				->select('id')
 				->from('sections');
 
-			if (!Craft::hasPackage(CraftPackage::PublishPro))
-			{
-				$query->limit(1);
-			}
-
 			$this->_allSectionIds = $query->queryColumn();
 		}
 
@@ -75,11 +70,6 @@ class SectionsService extends BaseApplicationComponent
 		if (!$this->_fetchedAllSections)
 		{
 			$criteria = new \CDbCriteria();
-
-			if (!Craft::hasPackage(CraftPackage::PublishPro))
-			{
-				$criteria->limit = 1;
-			}
 
 			$sectionRecords = SectionRecord::model()->ordered()->findAll($criteria);
 			$this->_sectionsById = SectionModel::populateModels($sectionRecords, 'id');
@@ -427,7 +417,7 @@ class SectionsService extends BaseApplicationComponent
 						// This may take a while...
 						set_time_limit(120);
 
-						// Fetch all the entries in this section
+						// Fetch all the enabled entries in this section
 						$entries = craft()->elements->getCriteria(ElementType::Entry, array(
 							'sectionId' => $section->id,
 							'locale'    => $localeId,

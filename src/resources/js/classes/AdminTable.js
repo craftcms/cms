@@ -16,6 +16,11 @@ Craft.AdminTable = Garnish.Base.extend({
 	{
 		this.setSettings(settings, Craft.AdminTable.defaults);
 
+		if (!this.settings.allowDeleteAll)
+		{
+			this.settings.minObjects = 1;
+		}
+
 		this.$noObjects = $(this.settings.noObjectsSelector);
 		this.$table = $(this.settings.tableSelector);
 		this.$tbody  = this.$table.children('tbody');
@@ -36,6 +41,12 @@ Craft.AdminTable = Garnish.Base.extend({
 
 	addRow: function(row)
 	{
+		if (this.totalObjects >= this.settings.maxObjects)
+		{
+			// Sorry pal.
+			return;
+		}
+
 		var $row = $(row).appendTo(this.$tbody),
 			$deleteBtn = $row.find('.delete');
 
@@ -47,25 +58,31 @@ Craft.AdminTable = Garnish.Base.extend({
 		this.addListener($deleteBtn, 'click', 'deleteObject');
 		this.totalObjects++;
 
+		// Did we just add the first row?
 		if (this.totalObjects == 1)
 		{
 			this.$noObjects.addClass('hidden');
 			this.$table.show();
 		}
-		else if (this.totalObjects == 2)
+		else
 		{
 			if (this.settings.sortable)
 			{
 				this.$table.find('.move').removeClass('disabled');
 			}
 
-			if (!this.settings.allowDeleteAll)
+			if (this.totalObjects > this.settings.minObjects)
 			{
 				this.$deleteBtns.removeClass('disabled');
 			}
 		}
 
 		this.$deleteBtns = this.$deleteBtns.add($deleteBtn);
+
+		if (this.totalObjects >= this.settings.maxObjects && this.settings.newObjectBtnSelector)
+		{
+			$(this.settings.newObjectBtnSelector).addClass('hidden');
+		}
 	},
 
 	reorderObjects: function()
@@ -108,8 +125,9 @@ Craft.AdminTable = Garnish.Base.extend({
 
 	deleteObject: function(event)
 	{
-		if (!this.settings.allowDeleteAll && this.totalObjects == 1)
+		if (this.totalObjects <= this.settings.minObjects)
 		{
+			// Sorry pal.
 			return;
 		}
 
@@ -153,16 +171,21 @@ Craft.AdminTable = Garnish.Base.extend({
 		if (this.totalObjects == 1)
 		{
 			this.$table.find('.move').addClass('disabled');
-
-			if (!this.settings.allowDeleteAll)
-			{
-				this.$deleteBtns.addClass('disabled');
-			}
 		}
 		else if (this.totalObjects == 0)
 		{
 			this.$table.hide();
 			$(this.settings.noObjectsSelector).removeClass('hidden');
+		}
+
+		if (this.totalObjects <= this.settings.minObjects)
+		{
+			this.$deleteBtns.addClass('disabled');
+		}
+
+		if (this.totalObjects < this.settings.maxObjects && this.settings.newObjectBtnSelector)
+		{
+			$(this.settings.newObjectBtnSelector).removeClass('hidden');
 		}
 	}
 },
@@ -170,10 +193,13 @@ Craft.AdminTable = Garnish.Base.extend({
 	defaults: {
 		tableSelector: null,
 		noObjectsSelector: null,
+		newObjectBtnSelector: null,
 		idAttribute: 'data-id',
 		nameAttribute: 'data-name',
 		sortable: false,
 		allowDeleteAll: true,
+		minObjects: 0,
+		maxObjects: null,
 		reorderAction: null,
 		deleteAction: null,
 		reorderSuccessMessage: 'New order saved.',

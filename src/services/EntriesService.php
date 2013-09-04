@@ -393,13 +393,38 @@ class EntriesService extends BaseApplicationComponent
 			}
 		}
 
-		if ($prepend)
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
 		{
-			return $entryRecord->moveAsFirst($parentEntryRecord);
+			if ($prepend)
+			{
+				$success = $entryRecord->moveAsFirst($parentEntryRecord);
+			}
+			else
+			{
+				$success = $entryRecord->moveAsLast($parentEntryRecord);
+			}
+
+			if ($success)
+			{
+				$this->_updateEntryUris($entryRecord);
+			}
+
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
+
+			return $success;
 		}
-		else
+		catch (\Exception $e)
 		{
-			return $entryRecord->moveAsLast($parentEntryRecord);
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
 		}
 	}
 
@@ -431,7 +456,32 @@ class EntriesService extends BaseApplicationComponent
 			throw new Exception(Craft::t('That move isn’t possible.'));
 		}
 
-		return $entryRecord->moveAfter($prevEntryRecord);
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			$success = $entryRecord->moveAfter($prevEntryRecord);
+
+			if ($success)
+			{
+				$this->_updateEntryUris($entryRecord);
+			}
+
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
+
+			return $success;
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
 	}
 
 	/**
@@ -446,6 +496,69 @@ class EntriesService extends BaseApplicationComponent
 
 	// Private methods
 	// ===============
+
+	/**
+	 * Updates an entry's URIs after it was moved.
+	 *
+	 * @param StructuredEntryRecord $entryRecord
+	 */
+	private function _updateEntryUris(EntryRecord $entryRecord)
+	{
+		// Check to make sure the entry is enabled.
+		$isEntryEnabled = (bool) craft()->db->createCommand()
+			->from('elements')
+			->where(array('id' => $entryRecord->id, 'enabled' => true))
+			->count('id');
+
+		if (!$isEntryEnabled)
+		{
+			return;
+		}
+
+		$sectionRecord = SectionRecord::model()->with('locales')->findById($entryRecord->sectionId);
+
+		if ($sectionRecord->hasUrls)
+		{
+			// Get the element locale records
+			$elementLocaleRecords = ElementLocaleRecord::model()->findAllByAttributes(array(
+				'elementId' => $entryRecord->id
+			));
+
+			$sectionLocaleRecordsByLocaleId = array();
+
+			foreach ($sectionRecord->locales as $sectionLocaleRecord)
+			{
+				$sectionLocaleRecordsByLocaleId[$sectionLocaleRecord->locale] = $sectionLocaleRecord;
+			}
+
+			// Which URL format should we be using?
+			if ($entryRecord->depth == 1)
+			{
+				$urlFormatAttribute = 'urlFormat';
+			}
+			else
+			{
+				$urlFormatAttribute = 'nestedUrlFormat';
+			}
+
+			foreach ($elementLocaleRecords as $elementLocaleRecord)
+			{
+				$sectionLocaleRecord = $sectionLocaleRecordsByLocaleId[$elementLocaleRecord->locale];
+				$urlFormat = $sectionLocaleRecord->$urlFormatAttribute;
+
+				$criteria = craft()->elements->getCriteria(ElementType::Entry);
+				$criteria->id = $entryRecord->id;
+				$criteria->locale = $elementLocaleRecord->locale;
+				$entry = $criteria->first();
+
+				if ($entry)
+				{
+					$elementLocaleRecord->uri = craft()->templates->renderObjectTemplate($urlFormat, $entry);
+					$elementLocaleRecord->save();
+				}
+			}
+		}
+	}
 
 	/**
 	 * Generates an entry slug based on its title.

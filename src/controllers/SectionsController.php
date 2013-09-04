@@ -34,6 +34,17 @@ class SectionsController extends BaseController
 
 		$variables['sections'] = $sections;
 
+		// Can new sections be added?
+		if (!Craft::hasPackage(CraftPackage::PublishPro))
+		{
+			$variables['maxSections'] = 0;
+
+			foreach (craft()->sections->typeLimits as $limit)
+			{
+				$variables['maxSections'] += $limit;
+			}
+		}
+
 		$this->renderTemplate('settings/sections/index', $variables);
 	}
 
@@ -152,7 +163,7 @@ class SectionsController extends BaseController
 			$localeIds = array($primaryLocaleId);
 		}
 
-		$isHomepage = ($section->type == SectionType::Single && $typeSettings['homepage'] == true);
+		$isHomepage = ($section->type == SectionType::Single && !empty($typeSettings['homepage']));
 
 		foreach ($localeIds as $localeId)
 		{

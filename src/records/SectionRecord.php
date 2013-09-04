@@ -33,6 +33,16 @@ class SectionRecord extends BaseRecord
 	/**
 	 * @return array
 	 */
+	public function defineRelations()
+	{
+		return array(
+			'locales' => array(static::HAS_MANY, 'SectionLocaleRecord', 'sectionId'),
+		);
+	}
+
+	/**
+	 * @return array
+	 */
 	public function defineIndexes()
 	{
 		return array(
