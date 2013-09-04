@@ -83,8 +83,11 @@ var CP = Garnish.Base.extend({
 		this.onWindowScroll();
 
 		// Fade the notification out in two seconds
-		var $notifications = this.$notificationContainer.children();
-		$notifications.delay(CP.notificationDuration).fadeOut();
+		var $errorNotifications = this.$notificationContainer.children('.error'),
+			$otherNotifications = this.$notificationContainer.children(':not(.error)');
+
+		$errorNotifications.delay(CP.notificationDuration * 2).fadeOut();
+		$otherNotifications.delay(CP.notificationDuration).fadeOut();
 
 		/* HIDE */
 		// Customize Nav button
@@ -540,7 +543,8 @@ var CP = Garnish.Base.extend({
 	{
 		var notificationDuration = CP.notificationDuration;
 
-		if (type == 'error') {
+		if (type == 'error')
+		{
 			notificationDuration *= 2;
 		}
 
