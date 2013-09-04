@@ -116,7 +116,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 			}
 
 			this.modal = Craft.createElementSelectorModal(this.elementType, {
-				id: this.id,
 				sources: this.sources,
 				criteria: this.criteria,
 				multiSelect: true,

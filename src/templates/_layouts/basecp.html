@@ -22,6 +22,7 @@
 
 	<script type="text/javascript">
 		window.Craft = {
+			siteUid:         "{{ craft.app.getSiteUid()|e('js') }}",
 			baseUrl:         "{{ url()|e('js') }}",
 			baseCpUrl:       "{{ cpUrl()|e('js') }}",
 			baseSiteUrl:     "{{ siteUrl()|e('js') }}",
