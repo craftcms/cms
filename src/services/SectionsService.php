@@ -29,11 +29,6 @@ class SectionsService extends BaseApplicationComponent
 				->select('id')
 				->from('sections');
 
-			if (!Craft::hasPackage(CraftPackage::PublishPro))
-			{
-				$query->limit(1);
-			}
-
 			$this->_allSectionIds = $query->queryColumn();
 		}
 
@@ -75,11 +70,6 @@ class SectionsService extends BaseApplicationComponent
 		if (!$this->_fetchedAllSections)
 		{
 			$criteria = new \CDbCriteria();
-
-			if (!Craft::hasPackage(CraftPackage::PublishPro))
-			{
-				$criteria->limit = 1;
-			}
 
 			$sectionRecords = SectionRecord::model()->ordered()->findAll($criteria);
 			$this->_sectionsById = SectionModel::populateModels($sectionRecords, 'id');
