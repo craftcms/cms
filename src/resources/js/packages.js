@@ -55,6 +55,7 @@ Craft.PackageChooser = Garnish.Base.extend({
 	{
 		for (var pkg in this.packages)
 		{
+			// Get rid of the spinner
 			this.packages[pkg].$btnContainer.html('');
 		}
 
@@ -90,6 +91,8 @@ Craft.PackageChooser = Garnish.Base.extend({
 			pkgInfo.$badge.remove();
 			delete pkgInfo.$badge;
 		}
+
+		pkgInfo.$btnContainer.html('');
 
 		if (!pkgInfo.price)
 		{
