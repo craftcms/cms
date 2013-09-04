@@ -270,8 +270,21 @@ class Updater
 			{
 				if (IOHelper::isWritable($bak))
 				{
+					// Grab the containing folder path.
+					$containingFolder = IOHelper::getFolderName($bak, true);
+
 					Craft::log('Deleting .bak file: '.$bak, LogLevel::Info, true);
 					IOHelper::deleteFile($bak, true);
+
+					$contents = IOHelper::getFolderContents($containingFolder);
+
+					// See if the folder has anything else in it.  If it does not, might as well delete it.
+					if (is_array($contents) && count($contents) == 0)
+					{
+						Craft::log('Looks like that was the last file in the folder. Deleting folder: '.$containingFolder, LogLevel::Info, true);
+						IOHelper::deleteFolder($containingFolder);
+					}
+
 				}
 			}
 			else
