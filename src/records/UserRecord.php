@@ -21,7 +21,7 @@ class UserRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
-			'username'                   => array(AttributeType::String, 'maxLength' => 100, 'required' => true),
+			'username'                   => array(AttributeType::Handle, 'maxLength' => 100, 'required' => true),
 			'photo'                      => array(AttributeType::String, 'maxLength' => 50),
 			'firstName'                  => array(AttributeType::String, 'maxLength' => 100),
 			'lastName'                   => array(AttributeType::String, 'maxLength' => 100),
