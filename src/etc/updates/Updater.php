@@ -270,21 +270,7 @@ class Updater
 			{
 				if (IOHelper::isWritable($bak))
 				{
-					// Grab the containing folder path.
-					$containingFolder = IOHelper::getFolderName($bak, true);
-
-					Craft::log('Deleting .bak file: '.$bak, LogLevel::Info, true);
-					IOHelper::deleteFile($bak, true);
-
-					$contents = IOHelper::getFolderContents($containingFolder);
-
-					// See if the folder has anything else in it.  If it does not, might as well delete it.
-					if (is_array($contents) && count($contents) == 0)
-					{
-						Craft::log('Looks like that was the last file in the folder. Deleting folder: '.$containingFolder, LogLevel::Info, true);
-						IOHelper::deleteFolder($containingFolder);
-					}
-
+					$this->_deleteFileAndParentFolderIfEmpty($bak);
 				}
 			}
 			else
@@ -357,10 +343,9 @@ class Updater
 				}
 				else
 				{
-					if (($file = IOHelper::getFile($fullPath)) !== false)
+					if (IOHelper::fileExists($fullPath) !== false)
 					{
-						Craft::log('Deleting file: '.$file->getRealPath(), LogLevel::Info, true);
-						$file->delete();
+						$this->_deleteFileAndParentFolderIfEmpty($fullPath);
 					}
 				}
 			}
@@ -368,6 +353,27 @@ class Updater
 
 		// Clear the temp folder.
 		IOHelper::clearFolder(craft()->path->getTempPath(), true);
+	}
+
+	/**
+	 * @param $path
+	 */
+	private function _deleteFileAndParentFolderIfEmpty($path)
+	{
+		// Grab the containing folder path.
+		$containingFolder = IOHelper::getFolderName($path, true);
+
+		Craft::log('Deleting file: '.$path, LogLevel::Info, true);
+		IOHelper::deleteFile($path, true);
+
+		$contents = IOHelper::getFolderContents($containingFolder);
+
+		// See if the folder has anything else in it.  If it does not, might as well delete it.
+		if (is_array($contents) && count($contents) == 0)
+		{
+			Craft::log('Looks like that was the last file in the folder. Deleting folder: '.$containingFolder, LogLevel::Info, true);
+			IOHelper::deleteFolder($containingFolder);
+		}
 	}
 
 	/**
