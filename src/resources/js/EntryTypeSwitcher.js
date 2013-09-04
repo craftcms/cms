@@ -32,7 +32,22 @@ Craft.EntryTypeSwitcher = Garnish.Base.extend({
 				this.$fields.html(response.fieldsHtml);
 				Craft.cp.initContentTabs();
 
-				$(response.headHtml + response.footHtml).appendTo(Garnish.$bod);
+				var html = '';
+
+				if (response.headHtml)
+				{
+					html += response.headHtml;
+				}
+
+				if (response.footHtml)
+				{
+					html += response.footHtml;
+				}
+
+				if (html)
+				{
+					$(html).appendTo(Garnish.$bod);
+				}
 			}
 		}, this));
 	}
