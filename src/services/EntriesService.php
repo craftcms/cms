@@ -502,59 +502,65 @@ class EntriesService extends BaseApplicationComponent
 	 *
 	 * @param StructuredEntryRecord $entryRecord
 	 */
-	private function _updateEntryUris(EntryRecord $entryRecord)
+	private function _updateEntryUris(StructuredEntryRecord $entryRecord)
 	{
-		// Check to make sure the entry is enabled.
-		$isEntryEnabled = (bool) craft()->db->createCommand()
-			->from('elements')
-			->where(array('id' => $entryRecord->id, 'enabled' => true))
-			->count('id');
+		$descendants = $entryRecord->descendants()->findAll();
+		$entryRecords = array_merge(array($entryRecord), $descendants);
 
-		if (!$isEntryEnabled)
+		foreach ($entryRecords as $entryRecord)
 		{
-			return;
-		}
+			// Check to make sure the entry is enabled.
+			$isEntryEnabled = (bool) craft()->db->createCommand()
+				->from('elements')
+				->where(array('id' => $entryRecord->id, 'enabled' => true))
+				->count('id');
 
-		$sectionRecord = SectionRecord::model()->with('locales')->findById($entryRecord->sectionId);
-
-		if ($sectionRecord->hasUrls)
-		{
-			// Get the element locale records
-			$elementLocaleRecords = ElementLocaleRecord::model()->findAllByAttributes(array(
-				'elementId' => $entryRecord->id
-			));
-
-			$sectionLocaleRecordsByLocaleId = array();
-
-			foreach ($sectionRecord->locales as $sectionLocaleRecord)
+			if (!$isEntryEnabled)
 			{
-				$sectionLocaleRecordsByLocaleId[$sectionLocaleRecord->locale] = $sectionLocaleRecord;
+				return;
 			}
 
-			// Which URL format should we be using?
-			if ($entryRecord->depth == 1)
-			{
-				$urlFormatAttribute = 'urlFormat';
-			}
-			else
-			{
-				$urlFormatAttribute = 'nestedUrlFormat';
-			}
+			$sectionRecord = SectionRecord::model()->with('locales')->findById($entryRecord->sectionId);
 
-			foreach ($elementLocaleRecords as $elementLocaleRecord)
+			if ($sectionRecord->hasUrls)
 			{
-				$sectionLocaleRecord = $sectionLocaleRecordsByLocaleId[$elementLocaleRecord->locale];
-				$urlFormat = $sectionLocaleRecord->$urlFormatAttribute;
+				// Get the element locale records
+				$elementLocaleRecords = ElementLocaleRecord::model()->findAllByAttributes(array(
+					'elementId' => $entryRecord->id
+				));
 
-				$criteria = craft()->elements->getCriteria(ElementType::Entry);
-				$criteria->id = $entryRecord->id;
-				$criteria->locale = $elementLocaleRecord->locale;
-				$entry = $criteria->first();
+				$sectionLocaleRecordsByLocaleId = array();
 
-				if ($entry)
+				foreach ($sectionRecord->locales as $sectionLocaleRecord)
 				{
-					$elementLocaleRecord->uri = craft()->templates->renderObjectTemplate($urlFormat, $entry);
-					$elementLocaleRecord->save();
+					$sectionLocaleRecordsByLocaleId[$sectionLocaleRecord->locale] = $sectionLocaleRecord;
+				}
+
+				// Which URL format should we be using?
+				if ($entryRecord->depth == 1)
+				{
+					$urlFormatAttribute = 'urlFormat';
+				}
+				else
+				{
+					$urlFormatAttribute = 'nestedUrlFormat';
+				}
+
+				foreach ($elementLocaleRecords as $elementLocaleRecord)
+				{
+					$sectionLocaleRecord = $sectionLocaleRecordsByLocaleId[$elementLocaleRecord->locale];
+					$urlFormat = $sectionLocaleRecord->$urlFormatAttribute;
+
+					$criteria = craft()->elements->getCriteria(ElementType::Entry);
+					$criteria->id = $entryRecord->id;
+					$criteria->locale = $elementLocaleRecord->locale;
+					$entry = $criteria->first();
+
+					if ($entry)
+					{
+						$elementLocaleRecord->uri = craft()->templates->renderObjectTemplate($urlFormat, $entry);
+						$elementLocaleRecord->save();
+					}
 				}
 			}
 		}
