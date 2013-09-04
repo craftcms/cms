@@ -22,7 +22,7 @@ dl,
 blockquote,
 pre {
 	font-size: 15px;
-	line-height: 1.45em;
+	line-height: 1.5rem;
 }
 div {
 	border: 1px dashed #bbb !important;
@@ -199,3 +199,4 @@ body.redactor_editor_wym {
 .redactor_editor_wym ol li ul {
 	border: none !important;
 }
+

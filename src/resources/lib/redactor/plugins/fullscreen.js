@@ -38,16 +38,7 @@ RedactorPlugins.fullscreen = {
 			this.$box.addClass('redactor_box_fullscreen').after(this.tmpspan);
 
 			$('body, html').css('overflow', 'hidden');
-
-            // Depending on the config, the fullscreen box either goes to the end or the start of the html body.
-            if (typeof this.opts.fullscreenAppend != "undefined" && this.opts.fullscreenAppend)
-            {
-                $('body').append(this.$box);
-            }
-            else
-            {
-                $('body').prepend(this.$box);
-            }
+			$('body').prepend(this.$box);
 
 			if (this.opts.iframe) this.fullscreenIframe(html);
 
