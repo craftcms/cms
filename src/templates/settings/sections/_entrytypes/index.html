@@ -13,7 +13,7 @@
 			{% for entryType in section.getEntryTypes() %}
 				<tr data-id="{{ entryType.id }}" data-name="{{ entryType.name }}">
 					<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id) }}">{{ entryType.name }}</a></th>
-					<td data-title="{{ 'Handle'|t }}"><code>{{ section.handle }}</code></td>
+					<td data-title="{{ 'Handle'|t }}"><code>{{ entryType.handle }}</code></td>
 					{% if section.getEntryTypes() | length > 1 %}
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 					{% endif %}
