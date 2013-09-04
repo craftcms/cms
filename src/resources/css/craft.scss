@@ -482,13 +482,13 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .element.removable .delete { position: absolute; right: 7px; }
 .element.removable .delete:before { color: rgba(0,0,0,0.2); }
 
-.toggle { background: url(../images/toggle.png) no-repeat 50% 4px; }
+.toggle { width: 20px; height: 20px; background: url(../images/toggle.png) no-repeat 50% 0; }
 .structureview li { padding-left: 8px; }
 .structureview ul { margin-left: -3px; }
 .structureview ul li { padding-left: 38px; background: url(../images/branch.png) no-repeat 0 0; }
 .structureview ul li:not(:last-child) { padding-left: 37px; background-position: -1px 0; border-left: 1px solid $hrcolor; }
-.structureview li .toggle { float: left; margin: 4px -8px 0 -12px; width: 20px; height: 20px; background-color: #fff; }
-.structureview li:not(.collapsed) > .row > .toggle { background-position: 50% -20px; }
+.structureview li .toggle { float: left; margin: 4px -8px 0 -12px; background-color: #fff; }
+.structureview li:not(.collapsed) > .row > .toggle { background-position: 50% -40px; }
 .structureview li.collapsed > ul { display: none; }
 .structureview li .row:after { @include clearafter; }
 

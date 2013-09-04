@@ -5,17 +5,19 @@
 
 {% set depth = 1 %}
 
-{% for element in elements %}
+{% for i, element in elements %}
 
-	{% if element.depth > depth %}
-		<ul>
-	{% else %}
-		</li>
+	{% if i > 0 %}
+		{% if element.depth > depth %}
+			<ul>
+		{% else %}
+			</li>
 
-		{% if element.depth < depth %}
-			{% for i in 1 .. depth - element.depth %}
-				</ul></li>
-			{% endfor %}
+			{% if element.depth < depth %}
+				{% for i in 1 .. depth - element.depth %}
+					</ul></li>
+				{% endfor %}
+			{% endif %}
 		{% endif %}
 	{% endif %}
 

@@ -75,7 +75,7 @@ class EntryElementType extends BaseElementType
 			{
 				$singleSectionIds[] = $section->id;
 			}
-			else
+			else if ($section->type == SectionType::Channel || Craft::hasPackage(CraftPackage::PublishPro))
 			{
 				$sectionsByType[$section->type][] = $section;
 			}

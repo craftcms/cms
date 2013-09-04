@@ -45,6 +45,11 @@ class ElementsController extends BaseController
 		$viewState = craft()->request->getParam('viewState');
 		$disabledElementIds = craft()->request->getParam('disabledElementIds', array());
 
+		if (empty($viewState['mode']))
+		{
+			$viewState['mode'] = 'table';
+		}
+
 		$baseCriteria = craft()->request->getPost('criteria');
 		$criteria = craft()->elements->getCriteria($elementType->getClassHandle(), $baseCriteria);
 
