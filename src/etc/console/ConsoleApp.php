@@ -30,6 +30,9 @@ class ConsoleApp extends \CConsoleApplication
 		craft()->log->removeRoute('WebLogRoute');
 		craft()->log->removeRoute('ProfileLogRoute');
 
+		// Load the plugins
+		craft()->plugins->loadPlugins();
+
 		parent::init();
 	}
 

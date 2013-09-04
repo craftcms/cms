@@ -15,10 +15,10 @@ class MigrateCommand extends \MigrateCommand
 	{
 		if ($action == 'create')
 		{
-			// If the 2nd dimension is the 2nd index, then we know it's a plugin.  No need to make them specify the path.
-			if (isset($params[0][2]))
+			// If the 1nd dimension is the 1nd index, then we know it's a plugin.  No need to make them specify the path.
+			if (isset($params[0][1]))
 			{
-				$plugin = $params[0][2];
+				$plugin = $params[0][1];
 
 				$path = craft()->path->getMigrationsPath($plugin);
 
