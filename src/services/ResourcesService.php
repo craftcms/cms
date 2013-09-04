@@ -233,18 +233,15 @@ class ResourcesService extends BaseApplicationComponent
 
 			if ($lastModifiedFileDate && $lastModifiedFileDate <= $requestDate)
 			{
+				// Let the browser serve it from cache.
 				header('HTTP/1.1 304 Not Modified');
-				$fetchContent = false;
-				$content = '';
+				craft()->end();
 			}
 		}
 
-		if ($fetchContent)
-		{
-			// Note that $content may be empty -- they could be requesting a blank text file or something.
-			// It doens't matter. No need to throw a 404.
-			$content = IOHelper::getFileContents($path);
-		}
+		// Note that $content may be empty -- they could be requesting a blank text file or something.
+		// It doens't matter. No need to throw a 404.
+		$content = IOHelper::getFileContents($path);
 
 		// Normalize URLs in CSS files
 		$mimeType = IOHelper::getMimeTypeByExtension($path);
@@ -269,7 +266,8 @@ class ResourcesService extends BaseApplicationComponent
 			craft()->request->xSendFile($path);
 		}
 
-		exit(1);
+		// You shall not pass.
+		craft()->end();
 	}
 
 	/**
