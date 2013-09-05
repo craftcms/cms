@@ -487,10 +487,12 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .structureview ul { margin-left: -3px; }
 .structureview ul li { padding-left: 38px; background: url(../images/branch.png) no-repeat 0 0; }
 .structureview ul li:not(:last-child) { padding-left: 37px; background-position: -1px 0; border-left: 1px solid $hrcolor; }
-.structureview li .toggle { position: relative; z-index: 1; float: left; margin: 4px -8px 0 -12px; background-color: #fff; }
+.structureview li .toggle { position: relative; z-index: 1; float: left; margin: 4px -8px 0 -12px; }
 .structureview li:not(.collapsed) > .row > .toggle { background-position: 50% -40px; }
 .structureview li.collapsed > ul { display: none; }
 .structureview li .row:after { @include clearafter; }
+
+.elementindex .structureview li .toggle { background-color: #fff; }
 
 .structureview li .element { float: left; }
 .structureview li .icon { margin-top: 5px; opacity: 0; -webkit-transition: opacity linear 100ms; }
@@ -501,7 +503,6 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .structureview li.draghelper > .row .move,
 .structureview li .add.active { opacity: 1; }
 
-.structureview li.draghelper .toggle { background-color: transparent; }
 .structureview li.draghelper > .row .add { opacity: 0; }
 .structureview li.draghelper > .row .move:before { color: $linkcolor; }
 .structureview li.draginsertion { position: relative; margin: -2px 0 -1px 8px; padding-left: 0; height: 3px; background: $linkcolor; border-left: none; border-radius: 2px; }
@@ -684,12 +685,16 @@ ul.tree,
 .elementselectormodal .body .main .elements .tableview table tr th:last-child,
 .elementselectormodal .body .main .elements .tableview table tr td:last-child { padding-right: 30px; }
 .elementselectormodal .body .main .elements .tableview table tr:focus { outline: none; }
-.elementselectormodal .body .main .elements .tableview table tr.sel th,
-.elementselectormodal .body .main .elements .tableview table tr.sel td { background: #f5f5f5; }
 .elementselectormodal .body .main .elements .tableview table tr.disabled { opacity: 1; color: #d4d4d4; }
 .elementselectormodal .body .main .elements .tableview table tr.disabled .element { opacity: 0.25; }
 .elementselectormodal .body .main .elements .tableview table tr.disabled + tr.disabled th,
 .elementselectormodal .body .main .elements .tableview table tr.disabled + tr.disabled td { border-top-color: rgba(0,0,0,0.025); }
+
+.elementselectormodal .body .main .elements .structureview .row { margin-top: 1px; outline: none; }
+
+.elementselectormodal .body .main .elements .tableview table tr.sel th,
+.elementselectormodal .body .main .elements .tableview table tr.sel td,
+.elementselectormodal .body .main .elements .structureview .row.sel { background: #f5f5f5; }
 
 /* element editing HUD */
 .element-hud-form .buttons .spinner { position: absolute; top: 0; right: -24px; }

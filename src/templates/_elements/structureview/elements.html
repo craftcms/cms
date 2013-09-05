@@ -22,10 +22,11 @@
 	{% endif %}
 
 	{% set depth = element.depth %}
+	{% set collapsed = (viewState.collapsedElementIds is defined and element.id in viewState.collapsedElementIds) %}
 
-	<li class="{% if element.id in disabledElementIds %}disabled{% endif %} {% if viewState.collapsedElementIds is defined and element.id in viewState.collapsedElementIds %}collapsed{% endif %}" data-id="{{ element.id }}" data-label="{{ element }}" data-status="{{ element.getStatus() }}" data-depth="{{ depth }}">
+	<li{% if collapsed %} class="collapsed"{% endif %} data-depth="{{ depth }}">
 		{% set indent = 8 + (depth - 1) * 35 %}
-		<div class="row" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
+		<div class="row{% if element.id in disabledElementIds %} disabled{% endif %}" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;" data-id="{{ element.id }}" data-label="{{ element }}" data-status="{{ element.getStatus() }}">
 			{% include "_elements/element" %}
 			{% if context == 'index' %}
 				{% if source.sortable is defined and source.sortable %}

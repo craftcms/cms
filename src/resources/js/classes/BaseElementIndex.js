@@ -373,7 +373,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 						$li = $row.parent(),
 						$toggle = $('<div class="toggle" title="'+Craft.t('Show/hide children')+'"/>').prependTo($row);
 
-					if ($.inArray($li.data('id'), collapsedElementIds) != -1)
+					if ($.inArray($row.data('id'), collapsedElementIds) != -1)
 					{
 						$li.addClass('collapsed');
 					}
@@ -391,7 +391,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 							if (!$btn.data('menubtn'))
 							{
-								var elementId = $btn.parent().parent().data('id'),
+								var elementId = $btn.parent().data('id'),
 									newChildUrl = Craft.getUrl(this.$source.data('new-child-url'), 'parent='+elementId),
 									$menu = $('<div class="menu"><ul><li><a href="'+newChildUrl+'">'+Craft.t('New child')+'</a></li></ul></div>').insertAfter($btn);
 
@@ -418,7 +418,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		$toggle.click($.proxy(function(ev) {
 
 			var $li = $(ev.currentTarget).closest('li'),
-				elementId = $li.data('id'),
+				elementId = $li.children('.row').data('id'),
 				collapsedElementIds = this.getViewState('collapsedElementIds', []),
 				viewStateKey = $.inArray(elementId, collapsedElementIds);
 
@@ -654,7 +654,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 	getElementById: function(elementId)
 	{
-		return this.$elementContainer.children('[data-id='+elementId+']:first');
+		return this.$elementContainer.find('[data-id='+elementId+']:first');
 	},
 
 	enableElementsById: function(elementIds)

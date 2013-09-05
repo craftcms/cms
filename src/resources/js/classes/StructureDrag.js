@@ -353,9 +353,9 @@ Craft.StructureDrag = Garnish.Drag.extend({
 
 				// Make it real
 				var data = {
-					id:       this.$draggee.data('id'),
-					prevId:   this.$draggee.prev().data('id'),
-					parentId: this.$draggee.parent('ul').parent('li').data('id')
+					id:       this.$draggee.children('.row').data('id'),
+					prevId:   this.$draggee.prev().children('.row').data('id'),
+					parentId: this.$draggee.parent('ul').parent('li').children('.row').data('id')
 				};
 
 				Craft.postActionRequest(this.moveAction, data, function(response, textStatus) {

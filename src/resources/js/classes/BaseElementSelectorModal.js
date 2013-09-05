@@ -95,16 +95,22 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 			delete this.elementSelect;
 		}
 
-		var $trs = this.elementIndex.$elementContainer.children(':not(.disabled)');
+		if (this.elementIndex.getViewState('mode') == 'structure')
+		{
+			var $items = this.elementIndex.$elementContainer.find('.row:not(.disabled)');
+		}
+		else
+		{
+			var $items = this.elementIndex.$elementContainer.children(':not(.disabled)');
+		}
 
-		this.elementSelect = new Garnish.Select(this.elementIndex.$elementContainer, $trs, {
+		this.elementSelect = new Garnish.Select(this.elementIndex.$elementContainer, $items, {
 			multi: this.settings.multiSelect,
-			vertical: (this.elementIndex.getViewState('mode') == 'table'),
+			vertical: (this.elementIndex.getViewState('mode') != 'thumbs'),
 			onSelectionChange: $.proxy(this, 'onSelectionChange')
 		});
 
         this.elementIndex.setElementSelect(this.elementSelect);
-
     },
 
 	onSelectionChange: function()
@@ -141,18 +147,18 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 		{
 			this.elementSelect.clearMouseUpTimeout();
 
-			var $selectedRows = this.elementSelect.getSelectedItems(),
+			var $selectedItems = this.elementSelect.getSelectedItems(),
 				elements = [];
 
-			for (var i = 0; i < $selectedRows.length; i++)
+			for (var i = 0; i < $selectedItems.length; i++)
 			{
-				var $row = $($selectedRows[i]),
-					$element = $row.find('.element');
+				var $item = $($selectedItems[i]),
+					$element = $item.find('.element:first');
 
 				elements.push({
-					id: $row.data('id'),
-					label: $row.data('label'),
-					status: $row.data('status'),
+					id: $item.data('id'),
+					label: $item.data('label'),
+					status: $item.data('status'),
 					hasThumb: $element.hasClass('hasthumb'),
 					$element: $element
 				});
@@ -163,7 +169,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 
 			if (this.settings.disableOnSelect)
 			{
-				this.elementIndex.disableElements($selectedRows);
+				this.elementIndex.disableElements($selectedItems);
 			}
 		}
 	}
