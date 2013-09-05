@@ -138,6 +138,7 @@ var CP = Garnish.Base.extend({
 
 			if ($btn.attr('data-action'))
 			{
+				var oldaction = $('input[type="hidden"][name="action"]').val();
 				$('<input type="hidden" name="action" value="'+$btn.attr('data-action')+'"/>').appendTo($form);
 			}
 
@@ -146,13 +147,14 @@ var CP = Garnish.Base.extend({
 				$('<input type="hidden" name="redirect" value="'+$btn.attr('data-redirect')+'"/>').appendTo($form);
 			}
 
-            if ($btn.attr('data-confirm'))
-            {
-                if (!confirm($btn.attr('data-confirm')))
-                {
-                    return;
-                }
-            }
+			if ($btn.attr('data-confirm'))
+			{
+				if (!confirm($btn.attr('data-confirm')))
+				{
+					$('<input type="hidden" name="action" value="'+oldaction+'"/>').appendTo($form);
+					return;
+				}
+			}
 
 			$form.submit();
 		});
@@ -163,37 +165,37 @@ var CP = Garnish.Base.extend({
 			this.initAlerts();
 		}
 
-        // Make placeholders work for IE9, too.
-        $('input[type!=password], textarea').placeholder();
+		// Make placeholders work for IE9, too.
+		$('input[type!=password], textarea').placeholder();
 
-        // Listen for save shortcuts in primary forms
-        var $primaryForm = $('form[data-saveshortcut="1"]:first');
-        if ($primaryForm.length == 1)
-        {
-            this.addListener(Garnish.$doc, 'keydown', function (ev) {
-                if ((ev.metaKey || ev.ctrlKey) && ev.keyCode == Garnish.S_KEY)
-                {
-                    $primaryForm.submit();
-                    return false;
-                }
-                return true;
-            });
-        }
-    },
+		// Listen for save shortcuts in primary forms
+		var $primaryForm = $('form[data-saveshortcut="1"]:first');
+		if ($primaryForm.length == 1)
+		{
+			this.addListener(Garnish.$doc, 'keydown', function (ev) {
+				if ((ev.metaKey || ev.ctrlKey) && ev.keyCode == Garnish.S_KEY)
+				{
+					$primaryForm.submit();
+					return false;
+				}
+				return true;
+			});
+		}
+	},
 
-    setMaxSidebarHeight: function()
-    {
-    	if (this.fixedSidebar)
-    	{
-	    	this.setMaxSidebarHeight._maxHeight = this.$main.offset().top + this.$main.height() - Garnish.$win.scrollTop();
-    	}
-    	else
-    	{
-    		this.setMaxSidebarHeight._maxHeight = this.$main.height();
-    	}
+	setMaxSidebarHeight: function()
+	{
+		if (this.fixedSidebar)
+		{
+			this.setMaxSidebarHeight._maxHeight = this.$main.offset().top + this.$main.height() - Garnish.$win.scrollTop();
+		}
+		else
+		{
+			this.setMaxSidebarHeight._maxHeight = this.$main.height();
+		}
 
-    	this.$sidebar.css('max-height', this.setMaxSidebarHeight._maxHeight);
-    },
+		this.$sidebar.css('max-height', this.setMaxSidebarHeight._maxHeight);
+	},
 
 	/**
 	 * Handles stuff that should happen when the window is resized.
