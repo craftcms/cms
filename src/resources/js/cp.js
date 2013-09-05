@@ -107,6 +107,14 @@ var CP = Garnish.Base.extend({
 		{
 			var $btn = $(ev.currentTarget);
 
+			if ($btn.attr('data-confirm'))
+			{
+				if (!confirm($btn.attr('data-confirm')))
+				{
+					return;
+				}
+			}
+
 			// Is this a menu item?
 			if ($btn.data('menu'))
 			{
@@ -125,14 +133,6 @@ var CP = Garnish.Base.extend({
 			if ($btn.attr('data-redirect'))
 			{
 				$('<input type="hidden" name="redirect" value="'+$btn.attr('data-redirect')+'"/>').appendTo($form);
-			}
-
-			if ($btn.attr('data-confirm'))
-			{
-				if (!confirm($btn.attr('data-confirm')))
-				{
-					return;
-				}
 			}
 
 			$form.submit();

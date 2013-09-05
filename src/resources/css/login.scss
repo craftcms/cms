@@ -10,7 +10,7 @@ html, body { height: 100%; }
 #forgot-password:hover { color: $linkcolor; text-decoration: none; }
 p.error { margin-top: -15px; }
 .email-sent { position: absolute; z-index: 9999; top: 50%; left: 50%; margin: -33px 0 0 -142px; padding-left: 50px; width: 220px; background: #fff; }
-.email-sent:before { @include icon; display: block; position: absolute; top: 23px; left: 10px; content: 'mail'; font-size: 36px; color: $linkcolor; }
+.email-sent:before { @include icon; display: block; position: absolute; top: 17px; left: 10px; content: 'mail'; font-size: 30px; color: $linkcolor; }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
        only screen and (   -moz-min-device-pixel-ratio: 1.5),
