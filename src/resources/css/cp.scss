@@ -89,8 +89,8 @@ html { overflow-y: scroll; }
 #crumbs { margin: -35px 0 10px; font-size: 0; }
 #crumbs:after { @include clearafter; }
 #crumbs li { display: inline-block; font-size: 13px; }
-#crumbs li:after { @include icon; margin: -1px 5px 0; content: '>'; font-size: 11px; color: #ccc; }
-#crumbs li a { display: inline-block; padding: 10px 0; color: #aaa; }
+#crumbs li:after { @include icon; margin: -1px 5px 0; content: '>'; font-size: 11px; color: $mediumtextcolor; }
+#crumbs li a { display: inline-block; padding: 10px 0; color: $mediumtextcolor; }
 #crumbs li a:hover { color: $linkcolor; text-decoration: none; }
 
 /* tabs */
