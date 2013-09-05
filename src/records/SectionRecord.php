@@ -26,7 +26,7 @@ class SectionRecord extends BaseRecord
 			'type'     => array(AttributeType::Enum, 'values' => array(SectionType::Single, SectionType::Channel, SectionType::Structure), 'default' => SectionType::Channel, 'required' => true),
 			'hasUrls'  => array(AttributeType::Bool, 'default' => true),
 			'template' => AttributeType::Template,
-			'maxDepth' => array(AttributeType::Number, 'min' => 1, 'default' => 1),
+			'maxDepth' => array(AttributeType::Number, 'min' => 1),
 		);
 	}
 

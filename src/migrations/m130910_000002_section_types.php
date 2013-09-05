@@ -19,7 +19,7 @@ class m130910_000002_section_types extends BaseMigration
 		{
 			// Add the type and maxDepth columns to the sections table
 			$this->addColumnAfter('sections', 'type', array('column' => ColumnType::Enum, 'values' => array(SectionType::Single, SectionType::Channel, SectionType::Structure), 'default' => SectionType::Channel, 'null' => false), 'handle');
-			$this->addColumnAfter('sections', 'maxDepth', array('column' => ColumnType::Int, 'maxLength' => 11, 'decimals' => 0, 'default' => 1, 'unsigned' => true, 'length' => 10), 'template');
+			$this->addColumnAfter('sections', 'maxDepth', array('column' => ColumnType::Int, 'maxLength' => 11, 'decimals' => 0, 'unsigned' => true, 'length' => 10), 'template');
 
 			// Add the 'nestedUrlFormat' column to the sections_i18n table
 			$this->addColumnAfter('sections_i18n', 'nestedUrlFormat', array('column' => ColumnType::Varchar), 'urlFormat');
