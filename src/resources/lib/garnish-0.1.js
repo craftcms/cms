@@ -817,6 +817,9 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	lastMouseX: null,
 	lastMouseY: null,
 
+	scrollProperty: null,
+	scrollDir: null,
+
 	/**
 	 * Init
 	 */
@@ -885,10 +888,13 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	 */
 	onMouseMove: function(ev)
 	{
-		ev.preventDefault();
+		if (ev)
+		{
+			ev.preventDefault();
 
-		if (this.settings.axis != Garnish.Y_AXIS) this.mouseX = ev.pageX;
-		if (this.settings.axis != Garnish.X_AXIS) this.mouseY = ev.pageY;
+			if (this.settings.axis != Garnish.Y_AXIS) this.mouseX = ev.pageX;
+			if (this.settings.axis != Garnish.X_AXIS) this.mouseY = ev.pageY;
+		}
 
 		this.mouseDistX = this.mouseX - this.mousedownX;
 		this.mouseDistY = this.mouseY - this.mousedownY;
@@ -907,7 +913,104 @@ Garnish.BaseDrag = Garnish.Base.extend({
 			}
 		}
 
+		if (ev)
+		{
+			// Is the mouse up against one of the window edges?
+			this.onMouseMove._scrollProperty = null;
+
+			if (this.settings.axis != Garnish.X_AXIS)
+			{
+				// Scrolling up?
+				this.onMouseMove._winScrollTop = Garnish.$win.scrollTop();
+
+				if (this.mouseY < this.onMouseMove._winScrollTop + Garnish.BaseDrag.windowScrollTargetSize)
+				{
+					this.onMouseMove._scrollProperty = 'scrollTop';
+					this.onMouseMove._scrollDir = -1;
+				}
+				else
+				{
+					// Scrolling down?
+					this.onMouseMove._winHeight = Garnish.$win.height();
+
+					if (this.mouseY > this.onMouseMove._winScrollTop + this.onMouseMove._winHeight - Garnish.BaseDrag.windowScrollTargetSize)
+					{
+						this.onMouseMove._scrollProperty = 'scrollTop';
+						this.onMouseMove._scrollDir = 1;
+					}
+				}
+			}
+
+			if (!this.onMouseMove._scrollProperty && this.settings.axis != Garnish.Y_AXIS)
+			{
+				// Scrolling left?
+				this.onMouseMove._winScrollLeft = Garnish.$win.scrollLeft();
+
+				if (this.mouseX < this.onMouseMove._winScrollLeft + Garnish.BaseDrag.windowScrollTargetSize)
+				{
+					this.onMouseMove._scrollProperty = 'scrollLeft';
+					this.onMouseMove._scrollDir = -1;
+				}
+				else
+				{
+					// Scrolling right?
+					this.onMouseMove._winWidth = Garnish.$win.width();
+
+					if (this.mouseX > this.onMouseMove._winScrollLeft + this.onMouseMove._winWidth - Garnish.BaseDrag.windowScrollTargetSize)
+					{
+						this.onMouseMove._scrollProperty = 'scrollLeft';
+						this.onMouseMove._scrollDir = 1;
+					}
+				}
+			}
+
+			if (this.onMouseMove._scrollProperty)
+			{
+				if (!this.scrollProperty)
+				{
+					this.scrollInterval = setInterval($.proxy(this, 'scrollWindow'), 20);
+				}
+
+				this.scrollProperty = this.onMouseMove._scrollProperty;
+				this.scrollDir = this.onMouseMove._scrollDir;
+			}
+			else
+			{
+				this.cancelWindowScroll();
+			}
+		}
+
 		this.onDrag();
+	},
+
+	scrollWindow: function()
+	{
+		this.scrollWindow._currentPos = Garnish.$win[this.scrollProperty]();
+		this.scrollWindow._scrollDiff = this.scrollDir * 3;
+		Garnish.$win[this.scrollProperty](this.scrollWindow._currentPos + this.scrollWindow._scrollDiff);
+
+		if (this.scrollProperty == 'scrollTop')
+		{
+			this.mouseY -= this.scrollwindow._scrollDiff;
+		}
+		else
+		{
+			this.mouseX -= this.scrollwindow._scrollDiff;
+		}
+
+		this.onMouseMove();
+	},
+
+	cancelWindowScroll: function()
+	{
+		if (this.scrollInterval)
+		{
+			clearInterval(this.scrollInterval);
+			this.scrollInterval = null;
+		}
+
+		this.scrollProperty = null;
+		this.scrollDir = null;
 	},
 
 	/**
@@ -965,8 +1068,8 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	stopDragging: function()
 	{
 		this.dragging = false;
-
 		this.onDragStop();
+		this.cancelWindowScroll();
 	},
 
 	/**
@@ -1093,6 +1196,7 @@ Garnish.BaseDrag = Garnish.Base.extend({
 },
 {
 	minMouseDist: 1,
+	windowScrollTargetSize: 20,
 
 	defaults: {
 		handle: null,
