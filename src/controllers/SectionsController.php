@@ -148,7 +148,7 @@ class SectionsController extends BaseController
 
 		$section->hasUrls  = (isset($typeSettings['hasUrls']) ? (bool) $typeSettings['hasUrls'] : true);
 		$section->template = (isset($typeSettings['template']) ? $typeSettings['template'] : null);
-		$section->maxDepth = (isset($typeSettings['maxDepth']) ? $typeSettings['maxDepth'] : null);
+		$section->maxDepth = (!empty($typeSettings['maxDepth']) ? $typeSettings['maxDepth'] : null);
 
 		// Locale-specific attributes
 		$locales = array();
