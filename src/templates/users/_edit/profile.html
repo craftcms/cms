@@ -12,7 +12,7 @@
 	{% if craft.request.segment(1) == 'myaccount' %}
 		{% set account = user %}
 	{% elseif userId %}
-		{% set account = craft.users.status('*').id(userId).first %}
+		{% set account = craft.users.status(null).id(userId).first %}
 	{% endif %}
 	{% if not account %}{% exit 404 %}{% endif %}
 {% endif %}
