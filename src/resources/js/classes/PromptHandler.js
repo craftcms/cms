@@ -183,5 +183,5 @@ Craft.PromptHandler = Garnish.Base.extend({
     _cancelPrompt: function()
     {
         this._selectPromptChoice('cancel', true);
-    },
+    }
 });

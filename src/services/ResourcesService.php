@@ -29,7 +29,7 @@ class ResourcesService extends BaseApplicationComponent
 				case 'js':
 				{
 					// Route to js/compressed/ if useCompressedJs is enabled
-					if (craft()->config->get('useCompressedJs'))
+					if (craft()->config->get('useCompressedJs') && !craft()->request->getQuery('uncompressed'))
 					{
 						array_splice($segs, 1, 0, 'compressed');
 						$path = implode('/', $segs);

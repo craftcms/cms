@@ -264,7 +264,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		{
 			return false;
 		}
-	},
+	}
 },
 {
 	formWidth: 400

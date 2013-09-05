@@ -131,7 +131,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 			var data = {
 				search:     this.$addTagInput.val(),
 				source:     this.source,
-				excludeIds: excludeIds,
+				excludeIds: excludeIds
 			};
 
 			Craft.postActionRequest('tags/searchForTags', data, $.proxy(function(response, textStatus) {

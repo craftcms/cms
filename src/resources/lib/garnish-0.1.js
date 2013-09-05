@@ -1,9 +1,10 @@
-/*!
+/**
  * Garnish UI toolkit
  *
  * @copyright 2013 Pixel & Tonic, Inc.. All rights reserved.
  * @author    Brandon Kelly <brandon@pixelandtonic.com>
  * @version   0.1
+ * @license   THIS IS NO F.O.S.S!
  */
 (function($){
 
@@ -1047,7 +1048,6 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	 */
 	removeItems: function(items)
 	{
-		console.log('remove items');
 		items = $.makeArray(items);
 
 		for (var i = 0; i < items.length; i++)

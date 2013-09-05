@@ -47,7 +47,6 @@ Craft.Grid = Garnish.Base.extend({
 		{
 			this.totalCols = totalCols;
 			this.refreshCols();
-			this.stretchColHeights();
 			return true;
 		}
 
@@ -250,20 +249,8 @@ Craft.Grid = Garnish.Base.extend({
 		}
 
 		return tallestCol;
-	},
-
-	stretchColHeights: function()
-	{
-		return;
-		var minHeight = Garnish.$win.height() - 101,
-			tallestCol = this.getTallestCol(),
-			height = Math.max(minHeight, tallestCol.height());
-
-		for (var i = 0; i < this.cols.length; i++)
-		{
-			this.cols[i].height(height);
-		}
 	}
+
 },
 {
 	defaults: {
