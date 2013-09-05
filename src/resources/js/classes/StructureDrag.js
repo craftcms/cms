@@ -123,6 +123,11 @@ Craft.StructureDrag = Garnish.Drag.extend({
 			}
 		}
 
+		if (!this._.$closestTarget)
+		{
+			return;
+		}
+
 		// Are we hovering above the first row?
 		if (this._.closestTargetPos == 0 && this.mouseY < this._.closestTargetOffset.top + 5)
 		{
@@ -270,7 +275,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 	onDragStop: function()
 	{
 		// Are we repositioning the draggee?
-		if (this.$insertion.parent().length || this._.$closestTarget.hasClass('draghover'))
+		if (this._.$closestTarget && (this.$insertion.parent().length || this._.$closestTarget.hasClass('draghover')))
 		{
 			// Are we about to leave the draggee's original parents childless?
 			if (!this.$draggee.siblings().length)
