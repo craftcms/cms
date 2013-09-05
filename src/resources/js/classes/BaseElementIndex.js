@@ -279,6 +279,12 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.not(this.$table);
 		}
 
+		// Can't use structure view for search results
+		if (this.getViewState('mode') == 'structure' && this.$search && this.$search.val())
+		{
+			this.selectViewMode('table');
+		}
+
 		var data = this.getControllerData();
 
 		Craft.postActionRequest('elements/getElements', data, $.proxy(function(response, textStatus) {
