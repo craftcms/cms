@@ -572,30 +572,22 @@ class EntriesController extends BaseController
 			$entry = new EntryModel();
 		}
 
-		$entry->sectionId  = craft()->request->getRequiredPost('sectionId');
-		$entry->typeId     = craft()->request->getPost('typeId');
-		$entry->locale     = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocaleId());
-		$entry->id         = craft()->request->getPost('entryId');
-		$entry->authorId   = craft()->request->getPost('author', craft()->userSession->getUser()->id);
-		$entry->slug       = craft()->request->getPost('slug');
-		$entry->postDate   = (($postDate   = craft()->request->getPost('postDate'))   ? DateTime::createFromString($postDate,   craft()->timezone) : null);
+		// Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
+		$entry->sectionId  = craft()->request->getPost('sectionId', $entry->sectionId);
+		$entry->typeId     = craft()->request->getPost('typeId',    $entry->typeId);
+		$entry->locale     = craft()->request->getPost('locale',    $entry->locale);
+		$entry->authorId   = craft()->request->getPost('author',    ($entry->authorId ? $entry->authorId : craft()->userSession->getUser()->id));
+		$entry->slug       = craft()->request->getPost('slug',      $entry->slug);
+		$entry->postDate   = (($postDate   = craft()->request->getPost('postDate'))   ? DateTime::createFromString($postDate,   craft()->timezone) : $entry->postDate);
 		$entry->expiryDate = (($expiryDate = craft()->request->getPost('expiryDate')) ? DateTime::createFromString($expiryDate, craft()->timezone) : null);
-		$entry->enabled    = (bool)craft()->request->getPost('enabled');
+		$entry->enabled    = (bool) craft()->request->getPost('enabled', $entry->enabled);
 
-		$title = craft()->request->getPost('title');
-		if ($title !== null)
-		{
-			$entry->getContent()->title = $title;
-		}
-
-		$parentId = craft()->request->getPost('parentId');
-		if ($parentId !== null)
-		{
-			$entry->parentId = $parentId;
-		}
+		$entry->getContent()->title = craft()->request->getPost('title', $entry->title);
 
 		$fields = craft()->request->getPost('fields');
 		$entry->getContent()->setAttributes($fields);
+
+		$entry->parentId = craft()->request->getPost('parentId');
 
 		return $entry;
 	}

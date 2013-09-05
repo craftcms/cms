@@ -79,12 +79,6 @@ class EntriesService extends BaseApplicationComponent
 			}
 
 			$elementRecord = $entryRecord->element;
-
-			// if entry->sectionId is null and there is an entryRecord sectionId, we assume this is a front-end edit.
-			if ($entry->sectionId === null && $entryRecord->sectionId)
-			{
-				$entry->sectionId = $entryRecord->sectionId;
-			}
 		}
 		else
 		{
@@ -146,12 +140,6 @@ class EntriesService extends BaseApplicationComponent
 				'entryId' => $entry->id,
 				'locale'  => $entry->locale
 			));
-
-			// If entry->slug is null and there is an entryLocaleRecord slug, we assume this is a front-end edit.
-			if ($entry->slug === null && $entryLocaleRecord->slug)
-			{
-				$entry->slug = $entryLocaleRecord->slug;
-			}
 		}
 
 		if (empty($entryLocaleRecord))
