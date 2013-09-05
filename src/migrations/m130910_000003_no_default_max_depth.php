@@ -17,7 +17,7 @@ class m130910_000003_no_default_max_depth extends BaseMigration
 		$this->alterColumn('sections', 'maxDepth', array('column' => ColumnType::Int, 'maxLength' => 11, 'decimals' => 0, 'unsigned' => true, 'length' => 10));
 
 		// Now deal with any existing non-structure sections
-		craft()->db->createCommand()->update('sections', array('maxDepth' => null), array('type' != SectionType::Structure));
+		$this->update('sections', array('maxDepth' => null), array('type' != SectionType::Structure));
 
 		return true;
 	}
