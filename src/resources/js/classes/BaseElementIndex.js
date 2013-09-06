@@ -591,15 +591,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 	selectViewMode: function(viewMode)
 	{
-		// Make sure it's not already selected, and that the current source supports it
-		if (this.viewMode == viewMode)
-		{
-			return;
-		}
-
+		// Make sure that the current source supports it
 		if (!this.doesSourceHaveViewMode(viewMode))
 		{
-			return;
+			viewMode = 'table';
 		}
 
 		if (this.viewMode)
