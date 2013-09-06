@@ -315,6 +315,7 @@ class EntriesService extends BaseApplicationComponent
 			$criteria->sectionId = $entry->sectionId;
 			$criteria->ancestorOf = $entry;
 			$criteria->ancestorDelta = $delta;
+			$criteria->locale = $entry->locale;
 			return $criteria->find();
 		}
 		else
@@ -338,6 +339,7 @@ class EntriesService extends BaseApplicationComponent
 			$criteria->sectionId = $entry->sectionId;
 			$criteria->descendantOf = $entry;
 			$criteria->descendantDelta = $delta;
+			$criteria->locale = $entry->locale;
 			return $criteria->find();
 		}
 		else
