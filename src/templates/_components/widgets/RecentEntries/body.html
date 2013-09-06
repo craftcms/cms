@@ -1,7 +1,9 @@
 {% set params = { status: '*', limit: settings.limit } %}
 
 {% if craft.hasPackage('PublishPro') %}
-	{% set params = params|merge({ sectionId: settings.section }) %}
+	{% if settings.section != '*' %}
+		{% set params = params|merge({ sectionId: settings.section }) %}
+	{% endif %}
 {% endif %}
 
 {% set entries = craft.entries.find(params) %}
