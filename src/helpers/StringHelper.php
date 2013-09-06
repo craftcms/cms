@@ -326,9 +326,7 @@ class StringHelper
 	 */
 	public static function convertToUTF8($string)
 	{
-		$currentEncoding = mb_strtolower(mb_detect_encoding($string, mb_detect_order(), true));
-
-		if ($currentEncoding == 'utf-8')
+		if (static::isUTF8($string))
 		{
 			return \HTMLPurifier_Encoder::cleanUTF8($string);
 		}
@@ -336,12 +334,34 @@ class StringHelper
 		require_once Craft::getPathOfAlias('system.vendors.htmlpurifier').'/HTMLPurifier.standalone.php';
 
 		$config = \HTMLPurifier_Config::createDefault();
-		$config->set('Core.Encoding', $currentEncoding);
+		$config->set('Core.Encoding', static::getEncoding($string));
 
 		$string = \HTMLPurifier_Encoder::cleanUTF8($string);
 		$string = \HTMLPurifier_Encoder::convertToUTF8($string, $config, null);
 
 		return $string;
+	}
+
+	/**
+	 * Checks if the given string is UTF-8 encoded.
+	 *
+	 * @param $string The string to check.
+	 * @return bool
+	 */
+	public static function isUTF8($string)
+	{
+		return static::getEncoding($string) == 'utf-8' ? true : false;
+	}
+
+	/**
+	 * Gets the current encoding of the given string.
+	 *
+	 * @param $string
+	 * @return string
+	 */
+	public static function getEncoding($string)
+	{
+		return mb_strtolower(mb_detect_encoding($string, mb_detect_order(), true));
 	}
 
 	/**
