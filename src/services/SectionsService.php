@@ -281,7 +281,9 @@ class SectionsService extends BaseApplicationComponent
 		$section->addErrors($sectionRecord->getErrors());
 
 		// Make sure that all of the URL formats are set properly
-		foreach ($section->getLocales() as $localeId => $sectionLocale)
+		$sectionLocales = $section->getLocales();
+
+		foreach ($sectionLocales as $localeId => $sectionLocale)
 		{
 			if ($section->type == SectionType::Single)
 			{
@@ -378,12 +380,12 @@ class SectionsService extends BaseApplicationComponent
 						'sectionId' => $section->id
 					));
 					$oldSectionLocales = SectionLocaleModel::populateModels($oldSectionLocaleRecords, 'locale');
+
+					$changedLocaleIds = array();
 				}
 
-				foreach ($section->getLocales() as $localeId => $locale)
+				foreach ($sectionLocales as $localeId => $locale)
 				{
-					$updateEntries = false;
-
 					// Was this already selected?
 					if (!$isNewSection && isset($oldSectionLocales[$localeId]))
 					{
@@ -399,52 +401,12 @@ class SectionsService extends BaseApplicationComponent
 								'id' => $oldLocale->id
 							));
 
-							$updateEntries = true;
+							$changedLocaleIds[] = $localeId;
 						}
 					}
 					else
 					{
 						$newLocaleData[] = array($section->id, $localeId, $locale->urlFormat, $locale->nestedUrlFormat);
-
-						if (!$isNewSection)
-						{
-							$updateEntries = true;
-						}
-					}
-
-					if ($updateEntries && $section->type != SectionType::Single && $section->hasUrls)
-					{
-						// This may take a while...
-						set_time_limit(120);
-
-						// Fetch all the enabled entries in this section
-						$entries = craft()->elements->getCriteria(ElementType::Entry, array(
-							'sectionId' => $section->id,
-							'locale'    => $localeId,
-							'limit'     => null,
-						))->find();
-
-						foreach ($entries as $entry)
-						{
-							if ($section->type == SectionType::Structure && $entry->depth > 1)
-							{
-								$urlFormatAttribute = 'nestedUrlFormat';
-							}
-							else
-							{
-								$urlFormatAttribute = 'urlFormat';
-							}
-
-							$uri = craft()->templates->renderObjectTemplate($locale->$urlFormatAttribute, $entry);
-
-							if ($uri != $entry->uri)
-							{
-								craft()->db->createCommand()->update('elements_i18n',
-									array('uri' => $uri),
-									array('elementId' => $entry->id, 'locale' => $localeId)
-								);
-							}
-						}
 					}
 				}
 
@@ -456,42 +418,15 @@ class SectionsService extends BaseApplicationComponent
 
 				if (!$isNewSection)
 				{
-					// Drop the old ones
-					$disabledLocaleIds = array_diff(array_keys($oldSectionLocales), array_keys($section->getLocales()));
-					foreach ($disabledLocaleIds as $localeId)
+					// Drop any locales that are no longer being used,
+					// as well as the associated entry/element locale rows
+
+					$droppedLocaleIds = array_diff(array_keys($oldSectionLocales), array_keys($sectionLocales));
+
+					if ($droppedLocaleIds)
 					{
-						craft()->db->createCommand()->delete('sections_i18n', array('id' => $oldSectionLocales[$localeId]->id));
+						craft()->db->createCommand()->delete('sections_i18n', array('in', 'locale', $droppedLocaleIds));
 					}
-
-					// Get all of the entry IDs in this section
-					$sectionEntryIds = craft()->db->createCommand()
-						->select('id')
-						->from('entries')
-						->where(array('sectionId' => $section->id))
-						->queryColumn();
-
-					// Drop the old entry URIs if the section no longer has URLs
-					if (!$section->hasUrls && $oldSection->hasUrls)
-					{
-						craft()->db->createCommand()->update('elements_i18n',
-							array('uri' => null),
-							array('in', 'elementId', $sectionEntryIds)
-						);
-					}
-
-					// Drop any rows in the i18n tables that are no longer needed
-					$conditions = array('and', array('in', 'elementId', $sectionEntryIds));
-
-					if ($section->getLocales())
-					{
-						$conditions[] = array('not in', 'locale', array_keys($section->getLocales()));
-					}
-
-					craft()->db->createCommand()->delete('elements_i18n', $conditions);
-					craft()->db->createCommand()->delete('content', $conditions);
-
-					$conditions[1][1] = 'entryId';
-					craft()->db->createCommand()->delete('entries_i18n', $conditions);
 				}
 
 				// Make sure there's at least one entry type for this section
@@ -633,7 +568,7 @@ class SectionsService extends BaseApplicationComponent
 						}
 
 						// Now make sure we've got all of the i18n rows in place.
-						foreach ($section->getLocales() as $localeId => $sectionLocale)
+						foreach ($sectionLocales as $localeId => $sectionLocale)
 						{
 							craft()->db->createCommand()->insertOrUpdate('elements_i18n', array(
 								'elementId' => $singleEntryId,
@@ -695,6 +630,72 @@ class SectionsService extends BaseApplicationComponent
 						}
 
 						break;
+					}
+				}
+
+				// Finally, deal with the existing entries...
+
+				if (!$isNewSection)
+				{
+					// Get all of the entry IDs in this section
+					$entries = craft()->db->createCommand()
+						->select('id, depth')
+						->from('entries')
+						->where(array('and', array('sectionId' => $section->id), array('or', 'lft IS NULL', 'lft != 1')))
+						->order('lft')
+						->queryAll();
+
+					$entryIds = array();
+
+					foreach ($entries as $entry)
+					{
+						$entryIds[] = $entry['id'];
+					}
+
+					// Should we be deleting
+					if ($entryIds && $droppedLocaleIds)
+					{
+						craft()->db->createCommand()->delete('entries_i18n', array('and', array('in', 'entryId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
+						craft()->db->createCommand()->delete('elements_i18n', array('and', array('in', 'elementId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
+						craft()->db->createCommand()->delete('content', array('and', array('in', 'elementId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
+					}
+
+					// Are there any locales left?
+					if ($sectionLocales)
+					{
+						// Drop the old entry URIs if the section no longer has URLs
+						if (!$section->hasUrls && $oldSection->hasUrls)
+						{
+							craft()->db->createCommand()->update('elements_i18n',
+								array('uri' => null),
+								array('in', 'elementId', $entryIds)
+							);
+						}
+						else if ($section->type != SectionType::Single)
+						{
+							// Loop through each of the changed locales and update all of the entries’ slugs and URIs
+							foreach ($changedLocaleIds as $localeId)
+							{
+								$sectionLocale = $sectionLocales[$localeId];
+
+								// This may take a while...
+								set_time_limit(120);
+
+								foreach ($entries as $entry)
+								{
+									if ($section->type != SectionType::Structure || $entry['depth'] == 1)
+									{
+										$urlFormat = $sectionLocale->urlFormat;
+									}
+									else
+									{
+										$urlFormat = $sectionLocale->nestedUrlFormat;
+									}
+
+									craft()->entries->updateEntrySlugAndUri($entry['id'], $localeId, $urlFormat);
+								}
+							}
+						}
 					}
 				}
 
