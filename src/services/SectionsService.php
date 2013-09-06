@@ -813,6 +813,21 @@ class SectionsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns entry types that have a given handle.
+	 *
+	 * @param int $entryTypeHandle
+	 * @return array
+	 */
+	public function getEntryTypesByHandle($entryTypeHandle)
+	{
+		$entryTypeRecords = EntryTypeRecord::model()->findAllByAttributes(array(
+			'handle' => $entryTypeHandle
+		));
+
+		return EntryTypeModel::populateModels($entryTypeRecords);
+	}
+
+	/**
 	 * Saves an entry type.
 	 *
 	 * @param EntryTypeModel $entryType
