@@ -200,6 +200,27 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Checks for a value in GET and POST.
+	 *
+	 * @param string $name
+	 * @param null   $defaultValue
+	 * @return mixed|null
+	 */
+	public function getParam($name, $defaultValue = null)
+	{
+		if ($value = $this->getQuery($name))
+		{
+			return $value;
+		}
+		elseif ($value = $this->getPost($name))
+		{
+			return $value;
+		}
+
+		return $defaultValue;
+	}
+
+	/**
 	 * Returns the named GET parameter value, or throws an exception if it's not set
 	 *
 	 * @param $name
