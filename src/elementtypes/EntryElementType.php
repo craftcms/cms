@@ -194,6 +194,7 @@ class EntryElementType extends BaseElementType
 	public function defineCriteriaAttributes()
 	{
 		return array(
+			'type'            => AttributeType::Mixed,
 			'slug'            => AttributeType::String,
 			'sectionId'       => AttributeType::Number,
 			'authorId'        => AttributeType::Number,
@@ -270,6 +271,50 @@ class EntryElementType extends BaseElementType
 			->join('entries_i18n entries_i18n', 'entries_i18n.entryId = elements.id')
 			->andWhere(array('or', 'entries.lft IS NULL', 'entries.lft != 1'))
 			->andWhere('entries_i18n.locale = elements_i18n.locale');
+
+		if ($criteria->type)
+		{
+			$typeIds = array();
+
+			if (!is_array($criteria->type))
+			{
+				$criteria->type = array($criteria->type);
+			}
+
+			foreach ($criteria->type as $type)
+			{
+				if (is_numeric($type))
+				{
+					$typeIds[] = $type;
+				}
+				else if (is_string($type))
+				{
+					$types = craft()->sections->getEntryTypesByHandle($type);
+
+					if ($types)
+					{
+						foreach ($types as $type)
+						{
+							$typeIds[] = $type->id;
+						}
+					}
+					else
+					{
+						return false;
+					}
+				}
+				else if ($type instanceof EntryTypeModel)
+				{
+					$typeIds[] = $type->id;
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+			$query->andWhere(DbHelper::parseParam('entries.typeId', $typeIds, $query->params));
+		}
 
 		if ($criteria->slug)
 		{
