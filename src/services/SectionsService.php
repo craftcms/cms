@@ -609,13 +609,12 @@ class SectionsService extends BaseApplicationComponent
 							}
 
 							// Create a root node
-							craft()->db->createCommand()->insert('elements', array(
-								'type'    => ElementType::Entry,
-								'enabled' => false
-							));
+							$rootNodeElementRecord = new ElementRecord();
+							$rootNodeElementRecord->type = ElementType::Entry;
+							$rootNodeElementRecord->save(false);
 
 							$rootNodeRecord = new StructuredEntryRecord();
-							$rootNodeRecord->id = craft()->db->getLastInsertID();
+							$rootNodeRecord->id = $rootNodeElementRecord->id;
 							$rootNodeRecord->sectionId = $section->id;
 							$rootNodeRecord->saveNode();
 
@@ -810,6 +809,21 @@ class SectionsService extends BaseApplicationComponent
 		}
 
 		return $this->_entryTypesById[$entryTypeId];
+	}
+
+	/**
+	 * Returns entry types that have a given handle.
+	 *
+	 * @param int $entryTypeHandle
+	 * @return array
+	 */
+	public function getEntryTypesByHandle($entryTypeHandle)
+	{
+		$entryTypeRecords = EntryTypeRecord::model()->findAllByAttributes(array(
+			'handle' => $entryTypeHandle
+		));
+
+		return EntryTypeModel::populateModels($entryTypeRecords);
 	}
 
 	/**
