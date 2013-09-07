@@ -249,8 +249,9 @@ $components['relations']['class']            = 'Craft\RelationsService';
 $components['sections'] = array(
 	'class' => 'Craft\SectionsService',
 	'typeLimits' => array(
-		'single'  => 5,
-		'channel' => 1
+		'single'    => 5,
+		'channel'   => 1,
+		'structure' => 0
 	)
 );
 
