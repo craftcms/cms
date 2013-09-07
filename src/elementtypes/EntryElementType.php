@@ -153,21 +153,9 @@ class EntryElementType extends BaseElementType
 	{
 		$attributes = array();
 
-		if (Craft::hasPackage(CraftPackage::PublishPro))
+		if ($source && preg_match('/^section:(\d+)$/', $source, $match))
 		{
-			if ($source && preg_match('/^section:(\d+)$/', $source, $match))
-			{
-				$section = craft()->sections->getSectionById($match[1]);
-			}
-		}
-		else if (!$source)
-		{
-			$sections = craft()->sections->getAllSections();
-
-			if ($sections)
-			{
-				$section = $sections[0];
-			}
+			$section = craft()->sections->getSectionById($match[1]);
 		}
 
 		$attributes = array(
