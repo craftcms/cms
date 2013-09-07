@@ -238,11 +238,9 @@ class Updater
 		// If uid !== false, then it's an auto-update.
 		if ($uid !== false)
 		{
-			$unzipFolder = UpdateHelper::getUnzipFolderFromUID($uid);
-
 			// Clean-up any leftover files.
 			Craft::log('Cleaning up temp files after update.', LogLevel::Info, true);
-			$this->_cleanTempFiles($unzipFolder);
+			$this->_cleanTempFiles();
 		}
 
 		// Clear the updates cache.
@@ -259,7 +257,7 @@ class Updater
 	/**
 	 * Remove any temp files and/or folders that might have been created.
 	 */
-	private function _cleanTempFiles($unzipFolder)
+	private function _cleanTempFiles()
 	{
 		// Get rid of all the .bak files/folders.
 		$baks = IOHelper::getFolderContents(craft()->path->getAppPath(), true, ".*\.bak$");
@@ -270,7 +268,8 @@ class Updater
 			{
 				if (IOHelper::isWritable($bak))
 				{
-					$this->_deleteFileAndParentFolderIfEmpty($bak);
+					Craft::log('Deleting file: '.$bak, LogLevel::Info, true);
+					IOHelper::deleteFile($bak, true);
 				}
 			}
 			else
@@ -287,93 +286,8 @@ class Updater
 			}
 		}
 
-		// Now delete any files/folders that were marked for deletion in the manifest file.
-		$manifestData = UpdateHelper::getManifestData($unzipFolder);
-
-		if ($manifestData)
-		{
-			foreach ($manifestData as $row)
-			{
-				if (UpdateHelper::isManifestVersionInfoLine($row))
-				{
-					continue;
-				}
-
-				$rowData = explode(';', $row);
-
-				$folder = false;
-				if (UpdateHelper::isManifestLineAFolder($rowData[0]))
-				{
-					$folder = true;
-					$tempFilePath = UpdateHelper::cleanManifestFolderLine($rowData[0]);
-				}
-				else
-				{
-					$tempFilePath = $rowData[0];
-				}
-
-				$fullPath = '';
-
-				switch (trim($rowData[1]))
-				{
-					// If the file/folder was set to be deleted, there is no backup and we go ahead and remove it now.
-					case PatchManifestFileAction::Remove:
-					{
-						if ($tempFilePath == '')
-						{
-							$fullPath = IOHelper::normalizePathSeparators(craft()->path->getAppPath());
-						}
-						else
-						{
-							$fullPath = IOHelper::normalizePathSeparators(craft()->path->getAppPath().$tempFilePath);
-						}
-
-						break;
-					}
-				}
-
-				// Delete any files/folders we backed up.
-				if ($folder)
-				{
-					if (($folder = IOHelper::getFolder($fullPath)) !== false)
-					{
-						Craft::log('Deleting folder: '.$folder->getRealPath(), LogLevel::Info, true);
-						$folder->delete();
-					}
-				}
-				else
-				{
-					if (IOHelper::fileExists($fullPath) !== false)
-					{
-						$this->_deleteFileAndParentFolderIfEmpty($fullPath);
-					}
-				}
-			}
-		}
-
 		// Clear the temp folder.
 		IOHelper::clearFolder(craft()->path->getTempPath(), true);
-	}
-
-	/**
-	 * @param $path
-	 */
-	private function _deleteFileAndParentFolderIfEmpty($path)
-	{
-		// Grab the containing folder path.
-		$containingFolder = IOHelper::getFolderName($path, true);
-
-		Craft::log('Deleting file: '.$path, LogLevel::Info, true);
-		IOHelper::deleteFile($path, true);
-
-		$contents = IOHelper::getFolderContents($containingFolder);
-
-		// See if the folder has anything else in it.  If it does not, might as well delete it.
-		if (is_array($contents) && count($contents) == 0)
-		{
-			Craft::log('Looks like that was the last file in the folder. Deleting folder: '.$containingFolder, LogLevel::Info, true);
-			IOHelper::deleteFolder($containingFolder);
-		}
 	}
 
 	/**
