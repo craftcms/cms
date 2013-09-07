@@ -65,10 +65,7 @@ class EntryElementType extends BaseElementType
 
 		$sectionIds = array();
 		$singleSectionIds = array();
-		$sectionsByType = array(
-			SectionType::Channel => array(),
-			SectionType::Structure => array()
-		);
+		$sectionsByType = array();
 
 		foreach ($sections as $section)
 		{
@@ -78,7 +75,7 @@ class EntryElementType extends BaseElementType
 			{
 				$singleSectionIds[] = $section->id;
 			}
-			else if (Craft::hasPackage(CraftPackage::PublishPro) || count($sectionsByType[$section->type]) < craft()->sections->typeLimits[$section->type])
+			else
 			{
 				$sectionsByType[$section->type][] = $section;
 			}

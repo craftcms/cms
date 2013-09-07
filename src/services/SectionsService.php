@@ -72,7 +72,25 @@ class SectionsService extends BaseApplicationComponent
 			$criteria = new \CDbCriteria();
 
 			$sectionRecords = SectionRecord::model()->ordered()->findAll($criteria);
-			$this->_sectionsById = SectionModel::populateModels($sectionRecords, 'id');
+			$sections = SectionModel::populateModels($sectionRecords);
+
+			$this->_sectionsById = array();
+
+			$typeCounts = array(
+				SectionType::Single => 0,
+				SectionType::Channel => 0,
+				SectionType::Structure => 0
+			);
+
+			foreach ($sections as $section)
+			{
+				if (Craft::hasPackage(CraftPackage::PublishPro) || $typeCounts[$section->type] < $this->typeLimits[$section->type])
+				{
+					$this->_sectionsById[$section->id] = $section;
+					$typeCounts[$section->type]++;
+				}
+			}
+
 			$this->_fetchedAllSections = true;
 		}
 
