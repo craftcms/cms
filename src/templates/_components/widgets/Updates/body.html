@@ -1,12 +1,13 @@
-<p class="centeralign">
-	{% if total %}
+{% if total %}
+	<p class="centeralign">
 		{% if total == 1 %}
 			{{ "One update available!"|t }}
 		{% else %}
 			{{ "{total} updates available!"|t({ total: total }) }}
 		{% endif %}
 		<a class="go" href="{{ url('updates') }}">{{ "Go to Updates"|t }}</a>
-	{% else %}
-		{{ "You’re up-to-date!"|t }}
-	{% endif %}
-</p>
+	</p>
+{% else %}
+	<p class="centeralign">{{ "Congrats! You’re up-to-date."|t }}</p>
+	<p class="centeralign"><a class="btn" data-icon="refresh">{{ 'Check again'|t }}</a></p>
+{% endif %}
