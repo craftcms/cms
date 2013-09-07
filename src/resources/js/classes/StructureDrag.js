@@ -8,6 +8,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 	maxDepth: null,
 	draggeeDepth: null,
 
+	$helperLi: null,
 	$targets: null,
 	_: null,
 	draggeeHeight: null,
@@ -31,6 +32,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 
 	getHelper: function($helper)
 	{
+		this.$helperLi = $helper;
 		var $ul = $('<ul class="structureview draghelper"/>').append($helper);
 		$helper.css('padding-left', this.$draggee.css('padding-left'));
 		$helper.find('.move').removeAttr('title');
@@ -277,7 +279,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 		// Are we repositioning the draggee?
 		if (this._.$closestTarget && (this.$insertion.parent().length || this._.$closestTarget.hasClass('draghover')))
 		{
-			// Are we about to leave the draggee's original parents childless?
+			// Are we about to leave the draggee's original parent childless?
 			if (!this.$draggee.siblings().length)
 			{
 				var $draggeeParent = this.$draggee.parent();
@@ -348,6 +350,20 @@ Craft.StructureDrag = Garnish.Drag.extend({
 
 				if (newDepth != this.$draggee.data('depth'))
 				{
+					// Correct the helper's padding if moving to/from depth 1
+					if (this.$draggee.data('depth') == 1)
+					{
+						this.$helperLi.animate({
+							'padding-left': 38
+						}, 'fast');
+					}
+					else if (newDepth == 1)
+					{
+						this.$helperLi.animate({
+							'padding-left': 8
+						}, 'fast');
+					}
+
 					this.setDepth(this.$draggee, newDepth);
 				}
 
