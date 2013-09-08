@@ -19,7 +19,7 @@ class EntriesController extends BaseController
 		if (Craft::hasPackage(CraftPackage::PublishPro) && $variables['section']->type == SectionType::Structure)
 		{
 			// Override the parent?
-			$parentId = craft()->request->getParam('parent');
+			$parentId = craft()->request->getParam('parentId');
 
 			if ($parentId)
 			{
