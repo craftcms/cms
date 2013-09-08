@@ -36,6 +36,7 @@ class EntriesController extends BaseController
 			// Get all the possible parent options
 			$parentOptionCriteria = craft()->elements->getCriteria(ElementType::Entry);
 			$parentOptionCriteria->sectionId = $variables['section']->id;
+			$parentOptionCriteria->status = null;
 
 			if ($variables['section']->maxDepth)
 			{
@@ -48,6 +49,7 @@ class EntriesController extends BaseController
 
 				$descendantCriteria = craft()->elements->getCriteria(ElementType::Entry);
 				$descendantCriteria->sectionId = $variables['section']->id;
+				$descendantCriteria->status = null;
 				$descendantCriteria->descendantOf($variables['entry']);
 				$descendantIds = $descendantCriteria->ids();
 
