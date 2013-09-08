@@ -1,13 +1,3 @@
-{% set params = { status: '*', limit: settings.limit } %}
-
-{% if craft.hasPackage('PublishPro') %}
-	{% if settings.section != '*' %}
-		{% set params = params|merge({ sectionId: settings.section }) %}
-	{% endif %}
-{% endif %}
-
-{% set entries = craft.entries.find(params) %}
-
 <div class="container">
 	{% if entries|length %}
 		<table class="data">

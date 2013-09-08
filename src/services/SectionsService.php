@@ -25,11 +25,12 @@ class SectionsService extends BaseApplicationComponent
 	{
 		if (!isset($this->_allSectionIds))
 		{
-			$query = craft()->db->createCommand()
-				->select('id')
-				->from('sections');
+			$this->_allSectionIds = array();
 
-			$this->_allSectionIds = $query->queryColumn();
+			foreach ($this->getAllSections() as $section)
+			{
+				$this->_allSectionIds[] = $section->id;
+			}
 		}
 
 		return $this->_allSectionIds;
@@ -45,9 +46,8 @@ class SectionsService extends BaseApplicationComponent
 		if (!isset($this->_editableSectionIds))
 		{
 			$this->_editableSectionIds = array();
-			$allSectionIds = $this->getAllSectionIds();
 
-			foreach ($allSectionIds as $sectionId)
+			foreach ($this->getAllSectionIds() as $sectionId)
 			{
 				if (craft()->userSession->checkPermission('editEntries:'.$sectionId))
 				{
@@ -72,7 +72,25 @@ class SectionsService extends BaseApplicationComponent
 			$criteria = new \CDbCriteria();
 
 			$sectionRecords = SectionRecord::model()->ordered()->findAll($criteria);
-			$this->_sectionsById = SectionModel::populateModels($sectionRecords, 'id');
+			$sections = SectionModel::populateModels($sectionRecords);
+
+			$this->_sectionsById = array();
+
+			$typeCounts = array(
+				SectionType::Single => 0,
+				SectionType::Channel => 0,
+				SectionType::Structure => 0
+			);
+
+			foreach ($sections as $section)
+			{
+				if (Craft::hasPackage(CraftPackage::PublishPro) || $typeCounts[$section->type] < $this->typeLimits[$section->type])
+				{
+					$this->_sectionsById[$section->id] = $section;
+					$typeCounts[$section->type]++;
+				}
+			}
+
 			$this->_fetchedAllSections = true;
 		}
 
@@ -104,11 +122,10 @@ class SectionsService extends BaseApplicationComponent
 	 */
 	public function getEditableSections($indexBy = null)
 	{
-		$sections = $this->getAllSections();
 		$editableSectionIds = $this->getEditableSectionIds();
 		$editableSections = array();
 
-		foreach ($sections as $section)
+		foreach ($this->getAllSections() as $section)
 		{
 			if (in_array($section->id, $editableSectionIds))
 			{
@@ -323,7 +340,7 @@ class SectionsService extends BaseApplicationComponent
 			{
 				$urlFormatAttributes = array('urlFormat');
 
-				if ($section->type == SectionType::Structure)
+				if ($section->type == SectionType::Structure && $section->maxDepth != 1)
 				{
 					$urlFormatAttributes[] = 'nestedUrlFormat';
 				}

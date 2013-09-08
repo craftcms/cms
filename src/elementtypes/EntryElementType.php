@@ -75,7 +75,7 @@ class EntryElementType extends BaseElementType
 			{
 				$singleSectionIds[] = $section->id;
 			}
-			else if ($section->type == SectionType::Channel || Craft::hasPackage(CraftPackage::PublishPro))
+			else
 			{
 				$sectionsByType[$section->type][] = $section;
 			}
@@ -153,21 +153,9 @@ class EntryElementType extends BaseElementType
 	{
 		$attributes = array();
 
-		if (Craft::hasPackage(CraftPackage::PublishPro))
+		if ($source && preg_match('/^section:(\d+)$/', $source, $match))
 		{
-			if ($source && preg_match('/^section:(\d+)$/', $source, $match))
-			{
-				$section = craft()->sections->getSectionById($match[1]);
-			}
-		}
-		else if (!$source)
-		{
-			$sections = craft()->sections->getAllSections();
-
-			if ($sections)
-			{
-				$section = $sections[0];
-			}
+			$section = craft()->sections->getSectionById($match[1]);
 		}
 
 		$attributes = array(
@@ -266,7 +254,7 @@ class EntryElementType extends BaseElementType
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('entries.sectionId, entries.authorId, entries.root, entries.lft, entries.rgt, entries.depth, entries.postDate, entries.expiryDate, entries_i18n.slug')
+			->addSelect('entries.sectionId, entries.typeId, entries.authorId, entries.root, entries.lft, entries.rgt, entries.depth, entries.postDate, entries.expiryDate, entries_i18n.slug')
 			->join('entries entries', 'entries.id = elements.id')
 			->join('entries_i18n entries_i18n', 'entries_i18n.entryId = elements.id')
 			->andWhere(array('or', 'entries.lft IS NULL', 'entries.lft != 1'))
@@ -367,19 +355,19 @@ class EntryElementType extends BaseElementType
 			}
 		}
 
+		if ($criteria->sectionId)
+		{
+			$query->andWhere(DbHelper::parseParam('entries.sectionId', $criteria->sectionId, $query->params));
+		}
+
+		if ($criteria->section)
+		{
+			$query->join('sections sections', 'entries.sectionId = sections.id');
+			$query->andWhere(DbHelper::parseParam('sections.handle', $criteria->section, $query->params));
+		}
+
 		if (Craft::hasPackage(CraftPackage::PublishPro))
 		{
-			if ($criteria->sectionId)
-			{
-				$query->andWhere(DbHelper::parseParam('entries.sectionId', $criteria->sectionId, $query->params));
-			}
-
-			if ($criteria->section)
-			{
-				$query->join('sections sections', 'entries.sectionId = sections.id');
-				$query->andWhere(DbHelper::parseParam('sections.handle', $criteria->section, $query->params));
-			}
-
 			if ($criteria->ancestorOf)
 			{
 				if (!$criteria->ancestorOf instanceof EntryModel)

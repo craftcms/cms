@@ -19,7 +19,7 @@ class EntriesController extends BaseController
 		if (Craft::hasPackage(CraftPackage::PublishPro) && $variables['section']->type == SectionType::Structure)
 		{
 			// Override the parent?
-			$parentId = craft()->request->getParam('parent');
+			$parentId = craft()->request->getParam('parentId');
 
 			if ($parentId)
 			{
@@ -36,6 +36,7 @@ class EntriesController extends BaseController
 			// Get all the possible parent options
 			$parentOptionCriteria = craft()->elements->getCriteria(ElementType::Entry);
 			$parentOptionCriteria->sectionId = $variables['section']->id;
+			$parentOptionCriteria->status = null;
 
 			if ($variables['section']->maxDepth)
 			{
@@ -48,6 +49,7 @@ class EntriesController extends BaseController
 
 				$descendantCriteria = craft()->elements->getCriteria(ElementType::Entry);
 				$descendantCriteria->sectionId = $variables['section']->id;
+				$descendantCriteria->status = null;
 				$descendantCriteria->descendantOf($variables['entry']);
 				$descendantIds = $descendantCriteria->ids();
 
@@ -494,6 +496,16 @@ class EntriesController extends BaseController
 		}
 
 		// Entry type
+
+		// Override the entry type?
+		$typeId = craft()->request->getParam('typeId');
+
+		if ($typeId)
+		{
+			$variables['entry']->typeId = $typeId;
+		}
+
+		// Save the entry type locally
 		$variables['entryType'] = $variables['entry']->getType();
 
 		if (!$variables['entryType'])

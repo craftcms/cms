@@ -857,13 +857,13 @@ $.extend($.fn, {
 
 	nicetext: function()
 	{
-		/*return this.each(function()
+		return this.each(function()
 		{
 			if (!$.data(this, 'text'))
 			{
-				new Garnish.NiceText(this, {hint: this.getAttribute('placeholder')});
+				new Garnish.NiceText(this);
 			}
-		});*/
+		});
 	},
 
 	passwordinput: function()

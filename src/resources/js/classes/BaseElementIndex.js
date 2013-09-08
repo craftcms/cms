@@ -398,7 +398,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 							if (!$btn.data('menubtn'))
 							{
 								var elementId = $btn.parent().data('id'),
-									newChildUrl = Craft.getUrl(this.$source.data('new-child-url'), 'parent='+elementId),
+									newChildUrl = Craft.getUrl(this.$source.data('new-child-url'), 'parentId='+elementId),
 									$menu = $('<div class="menu"><ul><li><a href="'+newChildUrl+'">'+Craft.t('New child')+'</a></li></ul></div>').insertAfter($btn);
 
 								var menuBtn = new Garnish.MenuBtn($btn);

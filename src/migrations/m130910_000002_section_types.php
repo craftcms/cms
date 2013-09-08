@@ -27,10 +27,6 @@ class m130910_000002_section_types extends BaseMigration
 			// entries.authorId is no longer required, since Singles don't have an author
 			$this->alterColumn('entries', 'authorId', array('column' => ColumnType::Int));
 
-			// Add the parentId column to entries
-			$this->addColumnAfter('entries', 'parentId', array('column' => ColumnType::Int), 'sectionId');
-			$this->addForeignKey('entries', 'parentId', 'entries', 'id', 'CASCADE', null);
-
 			// Add the hierarchy columns to the entries table
 			$cols = array(
 				'root'  => array('column' => ColumnType::Int, 'unsigned' => true),

@@ -3586,6 +3586,7 @@ Garnish.NiceText = Garnish.Base.extend({
 
 		// replicate the textarea's text styles
 		this.$stage.css({
+			display: 'block',
 			position: 'absolute',
 			top: -9999,
 			left: -9999,
@@ -3597,10 +3598,10 @@ Garnish.NiceText = Garnish.Base.extend({
 		if (this.inputBoxSizing == 'border-box')
 		{
 			this.$stage.css({
-				'border-top-width':    this.$input.css('border-top-width'),
-				'border-right-width':  this.$input.css('border-right-width'),
-				'border-bottom-width': this.$input.css('border-bottom-width'),
-				'border-left-width':   this.$input.css('border-left-width'),
+				'border-top':          this.$input.css('border-top'),
+				'border-right':        this.$input.css('border-right'),
+				'border-bottom':       this.$input.css('border-bottom'),
+				'border-left':         this.$input.css('border-left'),
 				'padding-top':         this.$input.css('padding-top'),
 				'padding-right':       this.$input.css('padding-right'),
 				'padding-bottom':      this.$input.css('padding-bottom'),

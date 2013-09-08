@@ -23,7 +23,15 @@ class UpdatesWidget extends BaseWidget
 	 */
 	public function getBodyHtml()
 	{
-		if (craft()->updates->isUpdateInfoCached())
+		$cached = craft()->updates->isUpdateInfoCached();
+
+		if (!$cached || !craft()->updates->getTotalAvailableUpdates())
+		{
+			craft()->templates->includeJsResource('js/UpdatesWidget.js');
+			craft()->templates->includeJs('new Craft.UpdatesWidget('.$this->model->id.', '.($cached ? 'true' : 'false').');');
+		}
+
+		if ($cached)
 		{
 			return craft()->templates->render('_components/widgets/Updates/body', array(
 				'total' => craft()->updates->getTotalAvailableUpdates()
@@ -31,9 +39,6 @@ class UpdatesWidget extends BaseWidget
 		}
 		else
 		{
-			craft()->templates->includeJsResource('js/UpdatesWidget.js');
-			craft()->templates->includeJs('new Craft.UpdatesWidget('.$this->model->id.');');
-
 			return '<p class="centeralign">'.Craft::t('Checking for updates…').'</p>';
 		}
 	}

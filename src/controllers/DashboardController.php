@@ -223,7 +223,8 @@ class DashboardController extends BaseController
 	 */
 	public function actionCheckForUpdates()
 	{
-		craft()->updates->getUpdates();
+		$forceRefresh = (bool) craft()->request->getPost('forceRefresh');
+		craft()->updates->getUpdates($forceRefresh);
 
 		$this->renderTemplate('_components/widgets/Updates/body', array(
 			'total' => craft()->updates->getTotalAvailableUpdates()

@@ -35,7 +35,7 @@
 		new Craft.AdminTable({
 			tableSelector: '#entrytypes',
 			deleteAction: 'sections/deleteEntryType',
-			allowDeleteAll: false,
+			minObjects: 1,
 			confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all entries that use it?"|t }}',
 		});
 	{% endset %}

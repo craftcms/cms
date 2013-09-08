@@ -7,38 +7,28 @@
 {% set newEntrySections = [] %}
 
 {% for section in sections %}
-	{% if user.can('createEntries:'~section.id) %}
+	{% if section.type != 'single' and user.can('createEntries:'~section.id) %}
 		{% set newEntrySections = newEntrySections|merge([section]) %}
 	{% endif %}
 {% endfor %}
 
 
 {% block sidebar %}
-	{% if sections|length %}
-		{% if craft.hasPackage('PublishPro') %}
-			{% if newEntrySections|length %}
-				<div class="buttons">
-					{% if newEntrySections|length > 1 %}
-						<div class="btn submit menubtn add icon">{{ "New Entry"|t }}</div>
-						<div class="menu">
-							<ul>
-								{% for section in newEntrySections %}
-									<li><a href="{{ url('entries/'~section.handle~'/new') }}">{{ section.name|t }}</a></li>
-								{% endfor %}
-							</ul>
-						</div>
-					{% else %}
-						<a class="btn submit add icon" href="{{ url('entries/'~sections[0].handle~'/new') }}">{{ "New Entry"|t }}</a>
-					{% endif %}
+	{% if newEntrySections|length %}
+		<div class="buttons">
+			{% if newEntrySections|length > 1 %}
+				<div class="btn submit menubtn add icon">{{ "New Entry"|t }}</div>
+				<div class="menu">
+					<ul>
+						{% for section in newEntrySections %}
+							<li><a href="{{ url('entries/'~section.handle~'/new') }}">{{ section.name|t }}</a></li>
+						{% endfor %}
+					</ul>
 				</div>
+			{% else %}
+				<a class="btn submit add icon" href="{{ url('entries/'~newEntrySections[0].handle~'/new') }}">{{ "New Entry"|t }}</a>
 			{% endif %}
-		{% else %}
-			{% if user.can('createEntries:'~sections[0].id) %}
-				<div class="buttons">
-					<a class="btn submit add icon" href="{{ url('entries/'~sections[0].handle~'/new') }}">{{ "New Entry"|t }}</a>
-				</div>
-			{% endif %}
-		{% endif %}
+		</div>
 	{% endif %}
 
 	{{ parent() }}

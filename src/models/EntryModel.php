@@ -132,7 +132,10 @@ class EntryModel extends BaseElementModel
 	 */
 	public function getCpEditUrl()
 	{
-		return UrlHelper::getCpUrl('entries/'.$this->getSection()->handle.'/'.$this->id);
+		if ($this->getSection())
+		{
+			return UrlHelper::getCpUrl('entries/'.$this->getSection()->handle.'/'.$this->id);
+		}
 	}
 
 	/**
