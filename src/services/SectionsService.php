@@ -341,7 +341,7 @@ class SectionsService extends BaseApplicationComponent
 			{
 				$urlFormatAttributes = array('urlFormat');
 
-				if ($section->type == SectionType::Structure)
+				if ($section->type == SectionType::Structure && $section->maxDepth != 1)
 				{
 					$urlFormatAttributes[] = 'nestedUrlFormat';
 				}
