@@ -98,8 +98,40 @@ class RecentEntriesWidget extends BaseWidget
 		craft()->templates->includeJs($js);
 		craft()->templates->includeTranslations('by {author}');
 
+		$sectionIds = array();
+
+		foreach (craft()->sections->getEditableSections() as $section)
+		{
+			if ($section->type != SectionType::Single)
+			{
+				$sectionIds[] = $section->id;
+			}
+		}
+
+		if ($sectionIds && ($this->getSettings()->section == '*' || in_array($this->getSettings()->section, $sectionIds)))
+		{
+			$criteria = craft()->elements->getCriteria(ElementType::Entry);
+			$criteria->status = null;
+			$criteria->limit = $this->getSettings()->limit;
+
+			if ($this->getSettings()->section == '*')
+			{
+				$criteria->sectionId = $sectionIds;
+			}
+			else
+			{
+				$criteria->sectionId = $this->getSettings()->section;
+			}
+
+			$entries = $criteria->find();
+		}
+		else
+		{
+			$entries = array();
+		}
+
 		return craft()->templates->render('_components/widgets/RecentEntries/body', array(
-			'settings' => $this->getSettings()
+			'entries' => $entries
 		));
 	}
 }
