@@ -25,11 +25,12 @@ class SectionsService extends BaseApplicationComponent
 	{
 		if (!isset($this->_allSectionIds))
 		{
-			$query = craft()->db->createCommand()
-				->select('id')
-				->from('sections');
+			$this->_allSectionIds = array();
 
-			$this->_allSectionIds = $query->queryColumn();
+			foreach ($this->getAllSections() as $section)
+			{
+				$this->_allSectionIds[] = $section->id;
+			}
 		}
 
 		return $this->_allSectionIds;
@@ -45,9 +46,8 @@ class SectionsService extends BaseApplicationComponent
 		if (!isset($this->_editableSectionIds))
 		{
 			$this->_editableSectionIds = array();
-			$allSectionIds = $this->getAllSectionIds();
 
-			foreach ($allSectionIds as $sectionId)
+			foreach ($this->getAllSectionIds() as $sectionId)
 			{
 				if (craft()->userSession->checkPermission('editEntries:'.$sectionId))
 				{
@@ -122,11 +122,10 @@ class SectionsService extends BaseApplicationComponent
 	 */
 	public function getEditableSections($indexBy = null)
 	{
-		$sections = $this->getAllSections();
 		$editableSectionIds = $this->getEditableSectionIds();
 		$editableSections = array();
 
-		foreach ($sections as $section)
+		foreach ($this->getAllSections() as $section)
 		{
 			if (in_array($section->id, $editableSectionIds))
 			{
