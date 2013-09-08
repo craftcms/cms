@@ -254,7 +254,7 @@ class EntryElementType extends BaseElementType
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('entries.sectionId, entries.authorId, entries.root, entries.lft, entries.rgt, entries.depth, entries.postDate, entries.expiryDate, entries_i18n.slug')
+			->addSelect('entries.sectionId, entries.typeId, entries.authorId, entries.root, entries.lft, entries.rgt, entries.depth, entries.postDate, entries.expiryDate, entries_i18n.slug')
 			->join('entries entries', 'entries.id = elements.id')
 			->join('entries_i18n entries_i18n', 'entries_i18n.entryId = elements.id')
 			->andWhere(array('or', 'entries.lft IS NULL', 'entries.lft != 1'))
