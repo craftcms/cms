@@ -34,7 +34,7 @@ Craft.Locales = Garnish.Base.extend({
 		this.adminTable = new Craft.AdminTable({
 			tableSelector: '#locales',
 			sortable: true,
-			allowDeleteAll: false,
+			minObjects: 1,
 			reorderAction: 'localization/reorderLocales',
 			deleteAction: 'localization/deleteLocale',
 			confirmDeleteMessage: 'Are you sure you want to delete “{name}” and all its associated content?',

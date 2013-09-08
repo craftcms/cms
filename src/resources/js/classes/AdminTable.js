@@ -41,7 +41,7 @@ Craft.AdminTable = Garnish.Base.extend({
 
 	addRow: function(row)
 	{
-		if (this.totalObjects >= this.settings.maxObjects)
+		if (this.settings.maxObjects && this.totalObjects >= this.settings.maxObjects)
 		{
 			// Sorry pal.
 			return;
@@ -71,7 +71,7 @@ Craft.AdminTable = Garnish.Base.extend({
 				this.$table.find('.move').removeClass('disabled');
 			}
 
-			if (this.totalObjects > this.settings.minObjects)
+			if (this.settings.minObjects && this.totalObjects > this.settings.minObjects)
 			{
 				this.$deleteBtns.removeClass('disabled');
 			}
@@ -79,7 +79,7 @@ Craft.AdminTable = Garnish.Base.extend({
 
 		this.$deleteBtns = this.$deleteBtns.add($deleteBtn);
 
-		if (this.totalObjects >= this.settings.maxObjects && this.settings.newObjectBtnSelector)
+		if (this.settings.maxObjects && this.totalObjects >= this.settings.maxObjects && this.settings.newObjectBtnSelector)
 		{
 			$(this.settings.newObjectBtnSelector).addClass('hidden');
 		}
@@ -125,7 +125,7 @@ Craft.AdminTable = Garnish.Base.extend({
 
 	deleteObject: function(event)
 	{
-		if (this.totalObjects <= this.settings.minObjects)
+		if (this.settings.minObjects && this.totalObjects <= this.settings.minObjects)
 		{
 			// Sorry pal.
 			return;
@@ -178,12 +178,12 @@ Craft.AdminTable = Garnish.Base.extend({
 			$(this.settings.noObjectsSelector).removeClass('hidden');
 		}
 
-		if (this.totalObjects <= this.settings.minObjects)
+		if (this.settings.minObjects && this.totalObjects <= this.settings.minObjects)
 		{
 			this.$deleteBtns.addClass('disabled');
 		}
 
-		if (this.totalObjects < this.settings.maxObjects && this.settings.newObjectBtnSelector)
+		if (this.settings.maxObjects && this.totalObjects < this.settings.maxObjects && this.settings.newObjectBtnSelector)
 		{
 			$(this.settings.newObjectBtnSelector).removeClass('hidden');
 		}
