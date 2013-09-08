@@ -7,7 +7,9 @@
 			<select id="section" name="section">
 				<option value="*">{{ "All"|t }}</option>
 				{% for section in craft.sections.getAllSections() %}
-					<option value="{{ section.id }}"{% if section.id == settings.section %} selected{% endif %}>{{ section.name|t }}</option>
+					{% if section.type != 'single' %}
+						<option value="{{ section.id }}"{% if section.id == settings.section %} selected{% endif %}>{{ section.name|t }}</option>
+					{% endif %}
 				{% endfor %}
 			</select>
 		</div>
