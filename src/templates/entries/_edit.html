@@ -66,7 +66,7 @@
 					required: true
 				}) }}
 
-				{% if craft.hasPackage('PublishPro') and section.type == 'structure' and parentOptions|length > 1 %}
+				{% if section.type == 'structure' and parentOptions|length > 1 %}
 					{{ forms.selectField({
 						label: "Parent Entry"|t,
 						id: 'parentId',
@@ -168,7 +168,16 @@
 						<div class="menu">
 							<ul>
 								<li><a class="formsubmit" data-redirect="entries/{{ section.handle }}/{id}{% if craft.hasPackage('Localize') and craft.locale != localeId %}/{{ localeId }}{% endif %}">{{ "Save and continue editing"|t }}</a></li>
-								<li><a class="formsubmit" data-redirect="entries/{{ section.handle }}/new">{{ "Save and add another"|t }}</a></li>
+
+								{% set nextEntryParams = [] %}
+								{% if showEntryTypes %}
+									{% set nextEntryParams = nextEntryParams|merge(['typeId={type.id}']) %}
+								{% endif %}
+								{% if section.type == 'structure' and parentOptions|length > 1 %}
+									{% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
+								{% endif %}
+
+								<li><a class="formsubmit" data-redirect="entries/{{ section.handle }}/new{% if nextEntryParams %}?{{ nextEntryParams|join('&') }}{% endif %}">{{ "Save and add another"|t }}</a></li>
 							</ul>
 						</div>
 					</div>

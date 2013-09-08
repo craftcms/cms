@@ -496,6 +496,16 @@ class EntriesController extends BaseController
 		}
 
 		// Entry type
+
+		// Override the entry type?
+		$typeId = craft()->request->getParam('typeId');
+
+		if ($typeId)
+		{
+			$variables['entry']->typeId = $typeId;
+		}
+
+		// Save the entry type locally
 		$variables['entryType'] = $variables['entry']->getType();
 
 		if (!$variables['entryType'])
