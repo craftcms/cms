@@ -122,15 +122,20 @@ class TagsController extends BaseController
 		$this->requireAjaxRequest();
 
 		$search = craft()->request->getPost('search');
-		$source = craft()->request->getPost('source');
+		$tagSetId = craft()->request->getPost('tagSetId');
 		$excludeIds = craft()->request->getPost('excludeIds', array());
 
-		$criteria = craft()->elements->getCriteria(ElementType::Tag, array(
-			'search' => 'name:'.$search.'*',
-			'source' => $source,
-			'id'     => 'not '.implode(',', $excludeIds)
-		));
+		$notIds = array();
 
+		foreach ($excludeIds as $id)
+		{
+			$notIds[] = 'not '.$id;
+		}
+
+		$criteria = craft()->elements->getCriteria(ElementType::Tag);
+		$criteria->setId  = $tagSetId;
+		$criteria->search = 'name:'.$search.'*';
+		$criteria->id     = implode(', ', $notIds);
 		$tags = $criteria->find();
 
 		$return = array();

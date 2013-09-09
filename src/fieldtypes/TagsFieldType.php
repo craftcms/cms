@@ -42,18 +42,26 @@ class TagsFieldType extends BaseElementFieldType
 			$elements = new RelationFieldData();
 		}
 
-		$fieldVariable = new FieldsVariable();
 		$elementVariable = new ElementTypeVariable($this->getElementType());
 
-		return craft()->templates->render('_components/fieldtypes/Tags/input', array(
-			'elementType'    => $elementVariable,
-			'id'             => $id,
-			'name'           => $name,
-			'elements'       => $elements->all,
-			'source'         => $this->getSettings()->source,
-			'elementId'      => (!empty($this->element->id) ? $this->element->id : null),
-			'fieldCount'     => count($fieldVariable->getLayoutByType(ElementType::Tag)->getFields()),
-		));
+		$tagSet = $this->_getTagSet();
+
+		if ($tagSet)
+		{
+			return craft()->templates->render('_components/fieldtypes/Tags/input', array(
+				'elementType' => $elementVariable,
+				'id'          => $id,
+				'name'        => $name,
+				'elements'    => $elements->all,
+				'tagSetId'    => $this->_getTagSetId(),
+				'elementId'   => (!empty($this->element->id) ? $this->element->id : null),
+				'hasFields'   => (bool) $tagSet->getFieldLayout()->getFields(),
+			));
+		}
+		else
+		{
+			return '<p class="error">'.Craft::t('This field is not set to a valid source.').'</p>';
+		}
 	}
 
 	/**
@@ -78,11 +86,9 @@ class TagsFieldType extends BaseElementFieldType
 				$name = substr($tagId, 4);
 
 				// Last-minute check
-				$criteria = craft()->elements->getCriteria(Elementtype::Tag, array(
-					'tagsetId' => $tagSetId,
-					'search'   => 'name:'.$name
-				));
-
+				$criteria = craft()->elements->getCriteria(ElementType::Tag);
+				$criteria->setId = $tagSetId;
+				$criteria->search = 'name:'.$nam;
 				$ids = $criteria->ids();
 
 				if ($ids)
@@ -104,6 +110,22 @@ class TagsFieldType extends BaseElementFieldType
 		}
 
 		craft()->relations->saveRelations($this->model->id, $this->element->id, $tagIds);
+	}
+
+	/**
+	 * Returns the tag set associated with this field.
+	 *
+	 * @access private
+	 * @return TagSetModel|null
+	 */
+	private function _getTagSet()
+	{
+		$tagSetId = $this->_getTagSetId();
+
+		if ($tagSetId)
+		{
+			return craft()->tags->getTagSetById($tagSetId);
+		}
 	}
 
 	/**
