@@ -68,11 +68,10 @@ class AssetsController extends BaseController
 			throw new Exception(Craft::t('No asset exists with the ID “{id}”.', array('id' => $fileId)));
 		}
 
-		$elementType = craft()->elements->getElementType(ElementType::Asset);
-
 		$html = craft()->templates->render('_includes/edit_element', array(
-			'element' => $file,
-			'elementType' => new ElementTypeVariable($elementType),
+			'element'     => $file,
+			'hasTitle'    => true,
+			'fieldLayout' => craft()->fields->getLayoutByType(ElementType::Asset)
 		));
 
 		$this->returnJson(array(
