@@ -37,4 +37,14 @@ class ConfigVariable
 	{
 		return craft()->config->usePathInfo();
 	}
+
+	/**
+	 * Returns whether generated URLs should omit 'index.php'.
+	 *
+	 * @return bool
+	 */
+	public function omitScriptNameInUrls()
+	{
+		return craft()->config->omitScriptNameInUrls();
+	}
 }

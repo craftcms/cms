@@ -22,20 +22,21 @@
 
 	<script type="text/javascript">
 		window.Craft = {
-			siteUid:         "{{ craft.app.getSiteUid()|e('js') }}",
-			baseUrl:         "{{ url()|e('js') }}",
-			baseCpUrl:       "{{ cpUrl()|e('js') }}",
-			baseSiteUrl:     "{{ siteUrl()|e('js') }}",
-			actionUrl:       "{{ actionUrl()|e('js') }}",
-			resourceUrl:     "{{ resourceUrl()|e('js') }}",
-			usePathInfo:     {{ craft.config.usePathInfo() ? 'true' : 'false' }},
-			resourceTrigger: "{{ craft.config.resourceTrigger|e('js') }}",
-			actionTrigger:   "{{ craft.config.actionTrigger|e('js') }}",
-			path:            "{{ craft.request.getPath()|e('js') }}",
-			language:        "{{ craft.locale|e('js') }}",
-			packages:        {{ craft.getPackages|json_encode|raw }},
-			translations:    {{ getTranslations()|raw }},
-			maxUploadSize:   {{ craft.app.getMaxUploadSize() }}
+			siteUid:              "{{ craft.app.getSiteUid()|e('js') }}",
+			baseUrl:              "{{ url()|e('js') }}",
+			baseCpUrl:            "{{ cpUrl()|e('js') }}",
+			baseSiteUrl:          "{{ siteUrl()|e('js') }}",
+			actionUrl:            "{{ actionUrl()|e('js') }}",
+			resourceUrl:          "{{ resourceUrl()|e('js') }}",
+			omitScriptNameInUrls: {{ craft.config.omitScriptNameInUrls() ? 'true' : 'false' }},
+			usePathInfo:          {{ craft.config.usePathInfo() ? 'true' : 'false' }},
+			resourceTrigger:      "{{ craft.config.resourceTrigger|e('js') }}",
+			actionTrigger:        "{{ craft.config.actionTrigger|e('js') }}",
+			path:                 "{{ craft.request.getPath()|e('js') }}",
+			language:             "{{ craft.locale|e('js') }}",
+			packages:             {{ craft.getPackages|json_encode|raw }},
+			translations:         {{ getTranslations()|raw }},
+			maxUploadSize:        {{ craft.app.getMaxUploadSize() }}
 		};
 	</script>
 {% endblock %}

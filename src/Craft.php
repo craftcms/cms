@@ -231,11 +231,12 @@ class Craft extends \Yii
 
 			if ($storedSiteUrl)
 			{
+				// Parse it for environment variables
 				$storedSiteUrl = craft()->config->parseEnvironmentString($storedSiteUrl);
 
 				$port = craft()->request->getPort();
 
-				// If $port == 80, don't show it. If the port is already in the $storedSiteUrl, don't show it.
+				// If this is port 80, or the port is already a part of the stored site URL, don't worry about adding it.
 				// i.e. http://localhost:8888/craft
 				if ($port == 80 || mb_strpos($storedSiteUrl, ':'.$port) !== false)
 				{
@@ -246,7 +247,7 @@ class Craft extends \Yii
 					$port = ':'.$port;
 				}
 
-				static::$_siteUrl = rtrim($storedSiteUrl, '/').$port;
+				static::$_siteUrl = rtrim($storedSiteUrl, '/').$port.'/';
 			}
 			else
 			{

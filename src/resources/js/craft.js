@@ -126,7 +126,7 @@ $.extend(Craft, {
 			}
 		}
 
-		if (!Craft.usePathInfo && path)
+		if (!Craft.omitScriptNameInUrls && !Craft.usePathInfo && path)
 		{
 			// Is the p= param already set?
 			if (params && params.substr(0, 2) == 'p=')
@@ -153,7 +153,7 @@ $.extend(Craft, {
 
 		if (path)
 		{
-			url += '/'+path;
+			url = Craft.rtrim(url, '/') + '/' + path;
 		}
 
 		if (params)

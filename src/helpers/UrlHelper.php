@@ -57,7 +57,7 @@ class UrlHelper
 	public static function getCpUrl($path = '', $params = null, $protocol = '')
 	{
 		$path = trim($path, '/');
-		$path = craft()->config->get('cpTrigger').'/'.$path;
+		$path = craft()->config->get('cpTrigger').($path ? '/'.$path : '');
 
 		return static::_getUrl($path, $params, $protocol, true, false);
 	}
@@ -167,29 +167,36 @@ class UrlHelper
 			$params = ltrim($params, '&?');
 		}
 
+		$showScriptName = ($mustShowScriptName || !craft()->config->omitScriptNameInUrls());
+
 		if ($dynamicBaseUrl)
 		{
+			// Get the full URL to the current script (http://example.com/index.php)
 			$baseUrl = craft()->request->getHostInfo($protocol).craft()->urlManager->getBaseUrl();
 
-			if (!$mustShowScriptName && craft()->config->omitScriptNameInUrls())
+			// Are we omitting the script name?
+			if (!$showScriptName)
 			{
-				$baseUrl = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/'));
+				// Chop it off (http://example.com/)
+				$baseUrl = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/')+1);
 			}
 		}
 		else
 		{
 			$baseUrl = Craft::getSiteUrl($protocol);
 
-			if ($mustShowScriptName || !craft()->config->omitScriptNameInUrls())
+			// Should we be adding that script name in?
+			if ($showScriptName)
 			{
-				$baseUrl .= mb_strrichr(craft()->urlManager->getBaseUrl(), '/');
+				$dynamicBaseUrl = craft()->urlManager->getBaseUrl();
+				$baseUrl .= mb_strrichr($dynamicBaseUrl, mb_strrpos($dynamicBaseUrl, '/')+1);
 			}
 		}
 
 		// Put it all together
-		if (craft()->config->usePathInfo())
+		if (!$showScriptName || craft()->config->usePathInfo())
 		{
-			return $baseUrl.($path ? '/'.$path : '').($params ? '?'.$params : '').$anchor;
+			return ($path ? rtrim($baseUrl, '/').'/'.$path : $baseUrl).($params ? '?'.$params : '').$anchor;
 		}
 		else
 		{
