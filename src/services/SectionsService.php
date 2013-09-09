@@ -244,7 +244,7 @@ class SectionsService extends BaseApplicationComponent
 
 			if (!$sectionRecord)
 			{
-				throw new Exception(Craft::t('No section exists with the ID “{id}”', array('id' => $sectionId)));
+				throw new Exception(Craft::t('No section exists with the ID “{id}”', array('id' => $section->id)));
 			}
 
 			$isNewSection = false;
