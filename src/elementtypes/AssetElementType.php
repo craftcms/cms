@@ -34,28 +34,16 @@ class AssetElementType extends BaseElementType
 	 */
 	public function getSources($context = null)
 	{
-		if (substr($context, 0, 5) == 'path:')
+		if ($context == 'index')
 		{
-			$parts = explode(":", $context);
-
-			// If it has two parts, the other part must be folder id.
-			if (count($parts) == 2 && is_numeric($parts[1]))
-			{
-				$tree = craft()->assets->getFolderTreeByFolderId($parts[1]);
-			}
+			$sourceIds = craft()->assetSources->getViewableSourceIds();
 		}
-		else{
-			if ($context == 'index')
-			{
-				$sourceIds = craft()->assetSources->getViewableSourceIds();
-			}
-			else
-			{
-				$sourceIds = craft()->assetSources->getAllSourceIds();
-			}
-			$tree = craft()->assets->getFolderTreeBySourceIds($sourceIds);
+		else
+		{
+			$sourceIds = craft()->assetSources->getAllSourceIds();
 		}
 
+		$tree = craft()->assets->getFolderTree($sourceIds);
 		return $this->_assembleSourceList($tree);
 	}
 

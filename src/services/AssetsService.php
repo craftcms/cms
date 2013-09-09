@@ -240,58 +240,20 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Get the folder tree for Assets by source ids
+	 * Get the folder tree for Assets.
 	 *
 	 * @param $allowedSourceIds
 	 * @return array
 	 */
-	public function getFolderTreeBySourceIds($allowedSourceIds)
+	public function getFolderTree($allowedSourceIds)
 	{
 		$folders = $this->findFolders(array('sourceId' => $allowedSourceIds, 'order' => 'fullPath'));
-		$tree = $this->_getFolderTreeByFolders($folders);
-
-		$sort = array();
-		foreach ($tree as $topFolder)
-		{
-			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
-		}
-
-		array_multisort($sort, $tree);
-		return $tree;
-	}
-
-	/**
-	 * Get the folder tree for Assets by a folder id.
-	 *
-	 * @param $folderId
-	 * @return array
-	 */
-	public function getFolderTreeByFolderId($folderId)
-	{
-		$folder = $this->getFolderById($folderId);
-
-		if (is_null($folder))
-		{
-			return array();
-		}
-
-		return $this->_getFolderTreeByFolders(array($folder));
-	}
-
-	/**
-	 * Return the folder tree form a list of folders.
-	 *
-	 * @param $folders
-	 * @return array
-	 */
-	private function _getFolderTreeByFolders($folders)
-	{
 		$tree = array();
 		$referenceStore = array();
 
 		foreach ($folders as $folder)
 		{
-			if ($folder->parentId && isset($referenceStore[$folder->parentId]))
+			if ($folder->parentId)
 			{
 				$referenceStore[$folder->parentId]->addChild($folder);
 			}
@@ -303,6 +265,13 @@ class AssetsService extends BaseApplicationComponent
 			$referenceStore[$folder->id] = $folder;
 		}
 
+		$sort = array();
+		foreach ($tree as $topFolder)
+		{
+			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
+		}
+
+		array_multisort($sort, $tree);
 		return $tree;
 	}
 
