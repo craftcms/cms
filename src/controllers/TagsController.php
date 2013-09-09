@@ -192,11 +192,10 @@ class TagsController extends BaseController
 			throw new Exception(Craft::t('No tag exists with the ID “{id}”.', array('id' => $tagId)));
 		}
 
-		$elementType = craft()->elements->getElementType(ElementType::Tag);
-
 		$html = craft()->templates->render('_includes/edit_element', array(
-			'element' => $tag,
-			'elementType' => new ElementTypeVariable($elementType)
+			'element'     => $tag,
+			'hasTitle'    => false,
+			'fieldLayout' => $tag->getSet()->getFieldLayout()
 		));
 
 		$this->returnJson(array(
