@@ -276,10 +276,40 @@ class UsersController extends BaseController
 
 		if (craft()->users->activateUser($user))
 		{
-			// All users that go through account activation will need to set their password.
-			$code = craft()->users->setVerificationCodeOnUser($user);
+			// Successfully activated user, do they require a password reset or is their password empty?
+			// If so, send them through the password logic.
+			if ($user->passwordResetRequired || !$user->password)
+			{
+				// All users that go through account activation will need to set their password.
+				$code = craft()->users->setVerificationCodeOnUser($user);
 
-			$url = craft()->config->get('actionTrigger').'/users/setpassword';
+				if ($user->can('accessCp'))
+				{
+					$url = craft()->config->getSetPasswordPath($code, $id, true, 'cp');
+				}
+				else
+				{
+					$url = craft()->config->getSetPasswordPath($code, $id);
+				}
+			}
+			// Otherwise, this is a registration from the front-end of the site.
+			else
+			{
+				// Log them in.
+
+				// If the user can't access the CP, then send them to the front-end activateAccountSuccessPath.
+				if (!$user->can('accessCp'))
+				{
+
+					$url = UrlHelper::getUrl(craft()->config->get('activateAccountSuccessPath'));
+					$this->redirect($url);
+				}
+				else
+				{
+					craft()->userSession->setNotice(Craft::t('Account activated.'));
+					$this->redirectToPostedUrl();
+				}
+			}
 		}
 		else
 		{
