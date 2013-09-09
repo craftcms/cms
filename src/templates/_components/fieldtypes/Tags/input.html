@@ -22,9 +22,9 @@
 	new Craft.TagSelectInput(
 		"{{ id|e('js') }}",
 		"{{ name|e('js') }}",
-		"{{ source|e('js') }}",
+		{{ tagSetId }},
 		{{ elementId ? elementId : 'null' }},
-		{{ fieldCount }}
+		{{ hasFields ? 'true' : 'false' }}
 	);
 {% endset %}
 
