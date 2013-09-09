@@ -58,26 +58,8 @@ Craft.postActionRequest('update/getAvailableUpdates', function(response) {
 					heading += ' <span class="critical">'+Craft.t('Critical')+'</span>'
 				}
 
-				$('<h3>'+heading+'</h3>').appendTo(Craft.cp.$content);
-				var $ul = $('<ul/>').appendTo(Craft.cp.$content);
-
-				var notes = release.notes.split(/[\r\n]+/);
-
-				for (var j = 0; j < notes.length; j++)
-				{
-					var note = notes[j],
-						match = note.match(/\[(\w+)\]\s*(.+)/),
-						$li = $('<li/>').appendTo($ul);
-
-					if (match)
-					{
-						$li.addClass(match[1].toLowerCase()).html(match[2]);
-					}
-					else
-					{
-						$li.html(note);
-					}
-				}
+				$('<h2>'+heading+'</h2>').appendTo(Craft.cp.$content);
+				$('<div class="notes"/>').appendTo(Craft.cp.$content).html(release.notes);
 			}
 		}
 
@@ -92,7 +74,7 @@ Craft.postActionRequest('update/getAvailableUpdates', function(response) {
 				window.location.href = Craft.getUrl('updates/go/craft');
 			};
 
-			var $heading = $('<h2>'+Craft.t('You’ve got updates!')+'</h2>').appendTo(Craft.cp.$content),
+			var $heading = $('<h2 class="heading">'+Craft.t('You’ve got updates!')+'</h2>').appendTo(Craft.cp.$content),
 				$buttonContainer = $('<div class="buttons"/>').appendTo(Craft.cp.$content);
 
 			$('<div class="clear"/>').appendTo(Craft.cp.$content);
