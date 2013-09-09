@@ -16,6 +16,13 @@ class ElementsController extends BaseController
 		$showSources = craft()->request->getParam('sources');
 		$context = craft()->request->getParam('context');
 		$elementType = $this->_getElementType();
+
+
+		if (is_string($showSources) && substr($showSources, 0, 5) == 'path:')
+		{
+			$context = $showSources;
+		}
+
 		$sources = $elementType->getSources($context);
 
 		if (is_array($showSources))
@@ -28,6 +35,7 @@ class ElementsController extends BaseController
 				}
 			}
 		}
+
 
 		$this->renderTemplate('_elements/modalbody', array(
 			'sources'   => $sources
