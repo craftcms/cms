@@ -92,10 +92,10 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 			}, this), 1);
 		});
 
-        if (hasFields)
-        {
-            this._attachHUDEvents();
-        }
+		if (hasFields)
+		{
+			this._attachHUDEvents();
+		}
 	},
 
 	searchForTags: function()
@@ -219,27 +219,27 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 		this.searchMenu = null;
 	},
 
-    _attachHUDEvents: function ()
-    {
-        this.removeListener(this.$elements, 'dlbclick');
-        this.addListener(this.$elements, 'dblclick', $.proxy(this, '_editProperties'));
-    },
+	_attachHUDEvents: function ()
+	{
+		this.removeListener(this.$elements, 'dlbclick');
+		this.addListener(this.$elements, 'dblclick', $.proxy(this, '_editProperties'));
+	},
 
-    _editProperties: function (event)
-    {
-        var $target = $(event.currentTarget);
-        if (!$target.data('ElementEditor'))
-        {
-            var settings = {
-                elementId: $target.attr('data-id'),
-                $trigger: $target,
-                loadContentAction: 'tags/editTagContent',
-                saveContentAction: 'tags/saveTagContent'
-            };
-            $target.data('ElementEditor', new Craft.ElementEditor(settings));
-        }
+	_editProperties: function (event)
+	{
+		var $target = $(event.currentTarget);
+		if (!$target.data('ElementEditor'))
+		{
+			var settings = {
+				elementId: $target.attr('data-id'),
+				$trigger: $target,
+				loadContentAction: 'tags/editTagContent',
+				saveContentAction: 'tags/saveTagContent'
+			};
+			$target.data('ElementEditor', new Craft.ElementEditor(settings));
+		}
 
-        $target.data('ElementEditor').show();
-    }
+		$target.data('ElementEditor').show();
+	}
 
 });

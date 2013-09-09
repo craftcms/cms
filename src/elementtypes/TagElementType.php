@@ -87,7 +87,7 @@ class TagElementType extends BaseElementType
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('tags.name')
+			->addSelect('tags.setId, tags.name')
 			->join('tags tags', 'tags.id = elements.id');
 
 		if ($criteria->name)
