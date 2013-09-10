@@ -932,6 +932,44 @@ class SectionsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Reorders entry types.
+	 *
+	 * @param array $entryTypeIds
+	 * @throws \Exception
+	 * @return bool
+	 */
+	public function reorderEntryTypes($entryTypeIds)
+	{
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+
+		try
+		{
+			foreach ($entryTypeIds as $entryTypeOrder => $entryTypeId)
+			{
+				$entryTypeRecord = EntryTypeRecord::model()->findById($entryTypeId);
+				$entryTypeRecord->sortOrder = $entryTypeOrder+1;
+				$entryTypeRecord->save();
+			}
+
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Deletes an entry type(s) by its ID.
 	 *
 	 * @param int|array $entryTypeId

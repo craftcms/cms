@@ -22,6 +22,7 @@ class m130910_000001_entry_types extends BaseMigration
 				'name'          => array('column' => ColumnType::Varchar, 'null' => false),
 				'handle'        => array('column' => ColumnType::Varchar, 'null' => false),
 				'titleLabel'    => array('column' => ColumnType::Varchar),
+				'sortOrder'     => array('column' => ColumnType::TinyInt),
 			));
 			$this->createIndex('entrytypes', 'name,sectionId', true);
 			$this->createIndex('entrytypes', 'handle,sectionId', true);

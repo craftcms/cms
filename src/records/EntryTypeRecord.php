@@ -24,6 +24,7 @@ class EntryTypeRecord extends BaseRecord
 			'name'       => array(AttributeType::Name, 'required' => true),
 			'handle'     => array(AttributeType::Handle, 'required' => true),
 			'titleLabel' => array(AttributeType::String, 'default' => 'Title'),
+			'sortOrder'  => AttributeType::SortOrder,
 		);
 	}
 
@@ -46,16 +47,6 @@ class EntryTypeRecord extends BaseRecord
 		return array(
 			array('columns' => array('name', 'sectionId'), 'unique' => true),
 			array('columns' => array('handle', 'sectionId'), 'unique' => true),
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function scopes()
-	{
-		return array(
-			'ordered' => array('order' => 'name'),
 		);
 	}
 }

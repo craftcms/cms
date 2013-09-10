@@ -358,6 +358,20 @@ class SectionsController extends BaseController
 	}
 
 	/**
+	 * Reorders entry types.
+	 */
+	public function actionReorderEntryTypes()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$entryTypeIds = JsonHelper::decode(craft()->request->getRequiredPost('ids'));
+		craft()->sections->reorderEntryTypes($entryTypeIds);
+
+		$this->returnJson(array('success' => true));
+	}
+
+	/**
 	 * Deletes an entry type.
 	 */
 	public function actionDeleteEntryType()

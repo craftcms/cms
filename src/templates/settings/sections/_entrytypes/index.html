@@ -1,11 +1,15 @@
 {% extends "_layouts/cp" %}
 
+{% set entryTypes = section.getEntryTypes() %}
+{% set multiple  = (entryTypes|length > 1) %}
+
 {% set content %}
 	<table id="entrytypes" class="data collapsible">
 		<thead>
 			<th scope="col">{{ "Name"|t }}</th>
 			<th scope="col">{{ "Handle"|t }}</th>
-			{% if section.getEntryTypes() | length > 1 %}
+			{% if multiple %}
+				<td class="thin"></td>
 				<td class="thin"></td>
 			{% endif %}
 		</thead>
@@ -14,7 +18,8 @@
 				<tr data-id="{{ entryType.id }}" data-name="{{ entryType.name }}">
 					<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id) }}">{{ entryType.name }}</a></th>
 					<td data-title="{{ 'Handle'|t }}"><code>{{ entryType.handle }}</code></td>
-					{% if section.getEntryTypes() | length > 1 %}
+					{% if multiple %}
+						<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a></td>
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 					{% endif %}
 				</tr>
@@ -36,6 +41,8 @@
 			tableSelector: '#entrytypes',
 			deleteAction: 'sections/deleteEntryType',
 			minObjects: 1,
+			sortable: true,
+			reorderAction: 'sections/reorderEntryTypes',
 			confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all entries that use it?"|t }}',
 		});
 	{% endset %}
