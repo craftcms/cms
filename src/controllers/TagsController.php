@@ -29,6 +29,12 @@ class TagsController extends BaseController
 	{
 		craft()->userSession->requireAdmin();
 
+		// Breadcrumbs
+		$variables['crumbs'] = array(
+			array('label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')),
+			array('label' => Craft::t('Tags'),  'url' => UrlHelper::getUrl('settings/tags'))
+		);
+
 		if (!empty($variables['tagSetId']))
 		{
 			if (empty($variables['tagSet']))
