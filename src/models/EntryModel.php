@@ -40,6 +40,16 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns the reference string to this element.
+	 *
+	 * @return string|null
+	 */
+	public function getRef()
+	{
+		return $this->getSection()->handle.'/'.$this->slug;
+	}
+
+	/**
 	 * Returns the entry's section.
 	 *
 	 * @return SectionModel|null

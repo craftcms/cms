@@ -78,6 +78,15 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns the reference string to this element.
+	 *
+	 * @return string|null
+	 */
+	public function getRef()
+	{
+	}
+
+	/**
 	 * Returns the element's CP edit URL.
 	 *
 	 * @return string|false

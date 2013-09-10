@@ -47,6 +47,16 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns the reference string to this element.
+	 *
+	 * @return string|null
+	 */
+	public function getRef()
+	{
+		return $this->username;
+	}
+
+	/**
 	 * Returns the user's groups.
 	 *
 	 * @param string|null $indexBy
