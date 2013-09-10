@@ -124,6 +124,24 @@ class RichTextFieldType extends BaseFieldType
 			'sections' => $sections
 		)));
 
+		if ($value instanceof RichTextData)
+		{
+			$value = $value->getRawContent();
+		}
+
+		if (strpos($value, '{') !== false)
+		{
+			// Preserve the ref tags with hashes
+			// {type:id:url} => {type:id:url}#type:id
+			$value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+)\:url\})\2/', function($matches)
+			{
+				return $matches[1].$matches[2].$matches[3].'#'.$matches[4].$matches[2];
+			}, $value);
+
+			// Now parse 'em
+			$value = craft()->elements->parseRefs($value);
+		}
+
 		// Swap any <!--pagebreak-->'s with <hr>'s
 		$value = str_replace('<!--pagebreak-->', '<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />', $value);
 
@@ -157,6 +175,12 @@ class RichTextFieldType extends BaseFieldType
 				$value = preg_replace('/<(h1|h2|h3|h4|h5|h6|p|div|blockquote|pre)\s*><\/\1>/', '', $value);
 			}
 		}
+
+		// Find any element URLs and swap them with ref tags
+		$value = preg_replace_callback('/(href=|src=)([\'"])[^\2]+?#(\w+):(\d+)\2/', function($matches)
+		{
+			return $matches[1].$matches[2].'{'.$matches[3].':'.$matches[4].':url}'.$matches[2];
+		}, $value);
 
 		return $value;
 	}

@@ -32,14 +32,15 @@ config.buttonsCustom.image = {
 					this.assetSelectionModal = Craft.createElementSelectorModal('Asset', {
 						multiSelect: true,
 						criteria: { kind: 'image' },
-						onSelect: $.proxy(function(elements) {
-							if (elements.length)
+						onSelect: $.proxy(function(assets) {
+							if (assets.length)
 							{
                                 editor.selectionRestore();
-								for (var i = 0; i < elements.length; i++)
+								for (var i = 0; i < assets.length; i++)
 								{
-									var element = elements[i].$element;
-									editor.insertNode($('<img src="' + element.attr('data-url') + '" />')[0]);
+									var asset = assets[i],
+										url   = asset.url+'#asset:'+asset.id;
+									editor.insertNode($('<img src="'+url+'" />')[0]);
 									editor.sync();
 								}
 
@@ -74,14 +75,15 @@ config.buttonsCustom.link = {
 				{
 					this.entrySelectionModal = Craft.createElementSelectorModal('Entry', {
 						sources: {{sections|raw}},
-						onSelect: function(elements) {
-							if (elements.length)
+						onSelect: function(entries) {
+							if (entries.length)
 							{
                                 editor.selectionRestore();
-                                var element = elements[0];
-                                var selection = editor.getSelectionText();
-                                var title = selection.length > 0 ? selection : element.label;
-                                editor.insertNode($('<a href="' + element.$element.attr('data-url') + '">' + title + '</a>')[0]);
+                                var entry     = entries[0],
+                                	url       = entry.url+'#entry:'+entry.id,
+                                	selection = editor.getSelectionText(),
+                                	title = selection.length > 0 ? selection : entry.label;
+                                editor.insertNode($('<a href="'+url+'">'+title+'</a>')[0]);
                                 editor.sync();
                             }
                             editor.dropdownHideAll();
@@ -107,14 +109,15 @@ config.buttonsCustom.link = {
 				if (typeof this.assetLinkSelectionModal == 'undefined')
 				{
 					this.assetLinkSelectionModal = Craft.createElementSelectorModal('Asset', {
-						onSelect: function(elements) {
-							if (elements.length)
+						onSelect: function(assets) {
+							if (assets.length)
 							{
 								editor.selectionRestore();
-								var element = elements[0];
-								var selection = editor.getSelectionText();
-								var title = selection.length > 0 ? selection : element.label;
-								editor.insertNode($('<a href="' + element.$element.attr('data-url') + '">' + title + '</a>')[0]);
+								var asset     = assets[0],
+									url       = asset.url+'#asset:'+asset.id,
+									selection = editor.getSelectionText(),
+									title     = selection.length > 0 ? selection : asset.label;
+								editor.insertNode($('<a href="'+url+'">'+title+'</a>')[0]);
 								editor.sync();
 							}
 							editor.dropdownHideAll();

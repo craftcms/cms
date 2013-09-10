@@ -7,6 +7,30 @@ namespace Craft;
 class RichTextData extends \Twig_Markup
 {
 	private $_pages;
+	private $_rawContent;
+
+	/**
+	 * Constructor
+	 */
+	public function __construct($content, $charset)
+	{
+		// Save the raw content in case we need it later
+		$this->_rawContent = $content;
+
+		// Parse the ref tags
+		$content = craft()->elements->parseRefs($content);
+		parent::__construct($content, $charset);
+	}
+
+	/**
+	 * Returns the raw content, with reference tags still in-tact.
+	 *
+	 * @return string
+	 */
+	public function getRawContent()
+	{
+		return $this->_rawContent;
+	}
 
 	/**
 	 * Returns an array of the individual page contents.
