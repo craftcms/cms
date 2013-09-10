@@ -442,7 +442,8 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function parseRefs($str)
 	{
-		$parsed = preg_replace_callback('/\{(\w+)\:([\d\w\/\-]+)(?:\:([\w\d]+))?\}/', function($matches) {
+		$parsed = preg_replace_callback('/\{(\w+)\:([\d\w\/\-]+)(?:\:([\w\d]+))?\}/', function($matches)
+		{
 			$elementTypeHandle = ucfirst($matches[1]);
 			$elementType = craft()->elements->getElementType($elementTypeHandle);
 
@@ -468,19 +469,12 @@ class ElementsService extends BaseApplicationComponent
 
 			if (!$element)
 			{
-				return '';
+				return $matches[2];
 			}
 
-			if (!empty($matches[3]))
+			if (!empty($matches[3]) && isset($element->{$matches[3]}))
 			{
-				if (isset($element->{$matches[3]}))
-				{
-					return (string) $element->{$matches[3]};
-				}
-				else
-				{
-					return '';
-				}
+				return (string) $element->{$matches[3]};
 			}
 			else
 			{
