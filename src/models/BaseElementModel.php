@@ -68,6 +68,16 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns an anchor prefilled with this element's URL and title.
+	 *
+	 * @return string
+	 */
+	public function getLink()
+	{
+		return '<a href="'.$this->getUrl().'">'.$this->__toString().'</a>';
+	}
+
+	/**
 	 * Returns the element's CP edit URL.
 	 *
 	 * @return string|false

@@ -57,6 +57,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'namespace'  => $namespaceFilter,
 			'ns'         => $namespaceFilter,
 			'number'     => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatDecimal'),
+			'parseRefs'  => new \Twig_Filter_Function('\Craft\craft()->elements->parseRefs'),
 			'percentage' => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatPercentage'),
 			'replace'    => new \Twig_Filter_Method($this, 'replaceFilter'),
 			'translate'  => $translateFilter,

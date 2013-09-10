@@ -28,6 +28,7 @@ class ElementCriteriaModel extends BaseModel
 	{
 		$attributes = array(
 			'id'            => AttributeType::Number,
+			'ref'           => AttributeType::String,
 			'locale'        => AttributeType::Locale,
 			'uri'           => AttributeType::String,
 			'status'        => array(AttributeType::String, 'default' => BaseElementModel::ENABLED),

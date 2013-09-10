@@ -431,6 +431,66 @@ class ElementsService extends BaseApplicationComponent
 		return craft()->components->getComponentByTypeAndClass(ComponentType::Element, $class);
 	}
 
+	// Misc
+	// ====
+
+	/**
+	 * Parses a string for element reference tags.
+	 *
+	 * @param string $str
+	 * @return string|array
+	 */
+	public function parseRefs($str)
+	{
+		$parsed = preg_replace_callback('/\{(\w+)\:([\d\w\/\-]+)(?:\:([\w\d]+))?\}/', function($matches) {
+			$elementTypeHandle = ucfirst($matches[1]);
+			$elementType = craft()->elements->getElementType($elementTypeHandle);
+
+			if (!$elementType)
+			{
+				return $matches[0];
+			}
+
+			// See if we can find the element
+			$criteria = craft()->elements->getCriteria($elementTypeHandle);
+
+			// Searching by ID?
+			if ((int) $matches[2] == $matches[2])
+			{
+				$criteria->id = $matches[2];
+			}
+			else
+			{
+				$criteria->ref = $matches[2];
+			}
+
+			$element = $criteria->first();
+
+			if (!$element)
+			{
+				return '';
+			}
+
+			if (!empty($matches[3]))
+			{
+				if (isset($element->{$matches[3]}))
+				{
+					return (string) $element->{$matches[3]};
+				}
+				else
+				{
+					return '';
+				}
+			}
+			else
+			{
+				return (string) $element;
+			}
+		}, $str);
+
+		return $parsed;
+	}
+
 	// Private functions
 	// =================
 

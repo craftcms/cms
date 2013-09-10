@@ -260,6 +260,30 @@ class EntryElementType extends BaseElementType
 			->andWhere(array('or', 'entries.lft IS NULL', 'entries.lft != 1'))
 			->andWhere('entries_i18n.locale = elements_i18n.locale');
 
+		if ($criteria->ref)
+		{
+			$parts = explode('/', $criteria->ref);
+
+			switch (count($parts))
+			{
+				case 1:
+				{
+					$criteria->slug = $parts[0];
+					break;
+				}
+				case 2:
+				{
+					$criteria->section = $parts[0];
+					$criteria->slug = $parts[1];
+					break;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+
 		if ($criteria->type)
 		{
 			$typeIds = array();
