@@ -156,9 +156,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 					$element = $item.find('.element:first');
 
 				elements.push({
-					id: $item.data('id'),
-					label: $item.data('label'),
-					status: $item.data('status'),
+					id:       $item.data('id'),
+					label:    $item.data('label'),
+					status:   $item.data('status'),
+					url:      $element.data('url'),
 					hasThumb: $element.hasClass('hasthumb'),
 					$element: $element
 				});
