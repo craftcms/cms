@@ -101,15 +101,16 @@ class SectionModel extends BaseModel
 	/**
 	 * Returns the section's entry types.
 	 *
+	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public function getEntryTypes()
+	public function getEntryTypes($indexBy = null)
 	{
 		if (!isset($this->_entryTypes))
 		{
 			if ($this->id)
 			{
-				$this->_entryTypes = craft()->sections->getEntryTypesBySectionId($this->id, 'id');
+				$this->_entryTypes = craft()->sections->getEntryTypesBySectionId($this->id);
 			}
 			else
 			{
@@ -117,7 +118,21 @@ class SectionModel extends BaseModel
 			}
 		}
 
-		return $this->_entryTypes;
+		if (!$indexBy)
+		{
+			return $this->_entryTypes;
+		}
+		else
+		{
+			$entryTypes = array();
+
+			foreach ($this->_entryTypes as $entryType)
+			{
+				$entryTypes[$entryType->$indexBy] = $entryType;
+			}
+
+			return $entryTypes;
+		}
 	}
 
 	/**

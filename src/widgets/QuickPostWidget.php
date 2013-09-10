@@ -119,7 +119,7 @@ class QuickPostWidget extends BaseWidget
 			return '<p>'.Craft::t('No section has been selected yet.').'</p>';
 		}
 
-		$entryTypes = $section->getEntryTypes();
+		$entryTypes = $section->getEntryTypes('id');
 
 		if (!$entryTypes)
 		{

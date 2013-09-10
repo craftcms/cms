@@ -689,7 +689,7 @@ class InstallService extends BaseApplicationComponent
 		$newsLayout->setFields($newsLayoutFields);
 
 		$newsEntryTypes = $newsSection->getEntryTypes();
-		$newsEntryType = $newsEntryTypes[array_shift(array_keys($newsEntryTypes))];
+		$newsEntryType = $newsEntryTypes[0];
 		$newsEntryType->setFieldLayout($newsLayout);
 
 		if (craft()->sections->saveEntryType($newsEntryType))

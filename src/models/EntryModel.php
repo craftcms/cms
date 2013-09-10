@@ -73,7 +73,7 @@ class EntryModel extends BaseElementModel
 
 		if ($section)
 		{
-			$sectionEntryTypes = $section->getEntryTypes();
+			$sectionEntryTypes = $section->getEntryTypes('id');
 
 			if ($sectionEntryTypes)
 			{
