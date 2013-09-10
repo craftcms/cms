@@ -285,18 +285,16 @@ class UsersController extends BaseController
 
 				if ($user->can('accessCp'))
 				{
-					$url = craft()->config->getSetPasswordPath($code, $id, true, 'cp');
+					$url = craft()->config->get('actionTrigger').'/users/.'.craft()->config->getCpSetPasswordPath();
 				}
 				else
 				{
-					$url = craft()->config->getSetPasswordPath($code, $id);
+					$url = craft()->config->get('setPasswordPath');
 				}
 			}
 			// Otherwise, this is a registration from the front-end of the site.
 			else
 			{
-				// Log them in.
-
 				// If the user can't access the CP, then send them to the front-end activateAccountSuccessPath.
 				if (!$user->can('accessCp'))
 				{
