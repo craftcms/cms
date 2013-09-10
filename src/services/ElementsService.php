@@ -90,49 +90,67 @@ class ElementsService extends BaseApplicationComponent
 
 			$result = $query->queryAll();
 
-			if ($criteria->search && $scoredSearchResults)
+			if ($result)
 			{
-				$searchPositions = array();
-
-				foreach ($result as $row)
+				if ($criteria->search && $scoredSearchResults)
 				{
-					$searchPositions[] = array_search($row['id'], $filteredElementIds);
+					$searchPositions = array();
+
+					foreach ($result as $row)
+					{
+						$searchPositions[] = array_search($row['id'], $filteredElementIds);
+					}
+
+					array_multisort($searchPositions, $result);
 				}
 
-				array_multisort($searchPositions, $result);
-			}
-
-			if ($justIds)
-			{
-				foreach ($result as $row)
+				if ($justIds)
 				{
-					$elements[] = $row['id'];
+					foreach ($result as $row)
+					{
+						$elements[] = $row['id'];
+					}
 				}
-			}
-			else
-			{
-				$elementType = $criteria->getElementType();
-				$indexBy = $criteria->indexBy;
-
-				foreach ($result as $row)
+				else
 				{
-					// The locale column might be null since the element_i18n table was left-joined into the query,
-					// In that case it should be removed from the $row array so that the default value can be used.
-					if (!$row['locale'])
+					$elementType = $criteria->getElementType();
+					$indexBy = $criteria->indexBy;
+					$lastElement = null;
+
+					foreach ($result as $row)
 					{
-						unset($row['locale']);
+						// The locale column might be null since the element_i18n table was left-joined into the query,
+						// In that case it should be removed from the $row array so that the default value can be used.
+						if (!$row['locale'])
+						{
+							unset($row['locale']);
+						}
+
+						$element = $elementType->populateElementModel($row);
+
+						if ($indexBy)
+						{
+							$elements[$element->$indexBy] = $element;
+						}
+						else
+						{
+							$elements[] = $element;
+						}
+
+						if ($lastElement)
+						{
+							$lastElement->setNext($element);
+							$element->setPrev($element);
+						}
+						else
+						{
+							$element->setPrev(false);
+						}
+
+						$lastElement = $element;
 					}
 
-					$element = $elementType->populateElementModel($row);
-
-					if ($indexBy)
-					{
-						$elements[$element->$indexBy] = $element;
-					}
-					else
-					{
-						$elements[] = $element;
-					}
+					$lastElement->setNext(false);
 				}
 			}
 		}
