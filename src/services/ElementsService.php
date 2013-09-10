@@ -442,47 +442,50 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function parseRefs($str)
 	{
-		$parsed = preg_replace_callback('/\{(\w+)\:([^\:\}]+)(?:\:([^\:\}]+))?\}/', function($matches)
+		if (strpos($str, '{') !== false)
 		{
-			$elementTypeHandle = ucfirst($matches[1]);
-			$elementType = craft()->elements->getElementType($elementTypeHandle);
-
-			if (!$elementType)
+			$str = preg_replace_callback('/\{(\w+)\:([^\:\}]+)(?:\:([^\:\}]+))?\}/', function($matches)
 			{
-				return $matches[0];
-			}
+				$elementTypeHandle = ucfirst($matches[1]);
+				$elementType = craft()->elements->getElementType($elementTypeHandle);
 
-			// See if we can find the element
-			$criteria = craft()->elements->getCriteria($elementTypeHandle);
+				if (!$elementType)
+				{
+					return $matches[0];
+				}
 
-			// Searching by ID?
-			if (is_numeric($matches[2]))
-			{
-				$criteria->id = $matches[2];
-			}
-			else
-			{
-				$criteria->ref = $matches[2];
-			}
+				// See if we can find the element
+				$criteria = craft()->elements->getCriteria($elementTypeHandle);
 
-			$element = $criteria->first();
+				// Searching by ID?
+				if (is_numeric($matches[2]))
+				{
+					$criteria->id = $matches[2];
+				}
+				else
+				{
+					$criteria->ref = $matches[2];
+				}
 
-			if (!$element)
-			{
-				return $matches[2];
-			}
+				$element = $criteria->first();
 
-			if (!empty($matches[3]) && isset($element->{$matches[3]}))
-			{
-				return (string) $element->{$matches[3]};
-			}
-			else
-			{
-				return (string) $element;
-			}
-		}, $str);
+				if (!$element)
+				{
+					return $matches[2];
+				}
 
-		return $parsed;
+				if (!empty($matches[3]) && isset($element->{$matches[3]}))
+				{
+					return (string) $element->{$matches[3]};
+				}
+				else
+				{
+					return (string) $element;
+				}
+			}, $str);
+		}
+
+		return $str;
 	}
 
 	// Private functions
