@@ -456,7 +456,7 @@ class ElementsService extends BaseApplicationComponent
 			$criteria = craft()->elements->getCriteria($elementTypeHandle);
 
 			// Searching by ID?
-			if ((int) $matches[2] == $matches[2])
+			if (is_numeric($matches[2]))
 			{
 				$criteria->id = $matches[2];
 			}
