@@ -36,7 +36,14 @@
 								{{ section.getUrlFormat() }}
 							{%- endif -%}
 						</td>
-						<td data-title="{{ 'Entry Types'|t }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes') }}">{{ "Edit entry types ({count})"|t({ count: section.getEntryTypes()|length }) }}</a></td>
+						<td data-title="{{ 'Entry Types'|t }}">
+							{% if section.type == 'single' and section.getEntryTypes()|length == 1 %}
+								{% set entryType = section.getEntryTypes()[0] %}
+								<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id) }}">{{ "Edit entry type"|t }}</a>
+							{% else %}
+								<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes') }}">{{ "Edit entry types ({count})"|t({ count: section.getEntryTypes()|length }) }}</a>
+							{% endif %}
+						</td>
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 					</tr>
 				{% endfor %}
