@@ -337,10 +337,9 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if ($this->id)
 		{
-			if (!($criteria instanceof ElementCriteriaModel))
-			{
-				$criteria = craft()->elements->getCriteria($this->elementType, $criteria);
-			}
+			// Create a new criteria regardless of whether they passed in an ElementCriteriaModel
+			// so that our 'id' modification doesn't stick
+			$criteria = craft()->elements->getCriteria($this->elementType, $criteria);
 
 			$elementIds = $criteria->ids();
 			$key = array_search($this->id, $elementIds);
