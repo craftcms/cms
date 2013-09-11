@@ -498,7 +498,8 @@ class ElementsService extends BaseApplicationComponent
 				}
 				else
 				{
-					return (string) $element;
+					// Default to the URL
+					return $element->getUrl();
 				}
 			}, $str);
 		}
