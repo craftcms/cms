@@ -2593,7 +2593,7 @@ Garnish.Menu = Garnish.Base.extend({
 			topClearance = btnOffsetTop - windowScrollTop;
 
 		// Is there room for the menu below the button?
-		if (bottomClearance >= btnHeight || bottomClearance >= topClearance)
+		if (bottomClearance >= menuHeight || bottomClearance >= topClearance)
 		{
 			css.top = btnOffsetBottom;
 		}
