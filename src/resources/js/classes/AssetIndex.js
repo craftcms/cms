@@ -987,6 +987,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 		var menuOptions = [{ label: Craft.t('View file'), onClick: $.proxy(this, '_viewFile') }];
 		menuOptions.push({ label: Craft.t('Edit properties'), onClick: $.proxy(this, '_showProperties') });
 		menuOptions.push({ label: Craft.t('Rename file'), onClick: $.proxy(this, '_renameFile') });
+		menuOptions.push({ label: Craft.t('Copy reference tag'), onClick: $.proxy(this, '_copyRefTag') });
 		menuOptions.push('-');
 		menuOptions.push({ label: Craft.t('Delete file'), onClick: $.proxy(this, '_deleteFile') });
 		this._singleFileMenu = new Garnish.ContextMenu($elements, menuOptions, settings);
@@ -1091,6 +1092,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 			Craft.postActionRequest('assets/moveFile', postData, $.proxy(handleRename, this));
 		}
+	},
+
+	_copyRefTag: function(event)
+	{
+		var message = Craft.t('{ctrl}C to copy.', {
+			ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
+		});
+
+		prompt(message, '{asset:'+$(event.currentTarget).data('id')+'}');
 	},
 
 	/**
