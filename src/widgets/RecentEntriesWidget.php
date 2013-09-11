@@ -108,7 +108,9 @@ class RecentEntriesWidget extends BaseWidget
 			}
 		}
 
-		if ($sectionIds && ($this->getSettings()->section == '*' || in_array($this->getSettings()->section, $sectionIds)))
+		if (Craft::hasPackage(CraftPackage::PublishPro) && $sectionIds &&
+			($this->getSettings()->section == '*' || in_array($this->getSettings()->section, $sectionIds))
+		)
 		{
 			$criteria = craft()->elements->getCriteria(ElementType::Entry);
 			$criteria->status = null;
