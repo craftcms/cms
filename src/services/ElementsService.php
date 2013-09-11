@@ -456,7 +456,7 @@ class ElementsService extends BaseApplicationComponent
 	 * Parses a string for element reference tags.
 	 *
 	 * @param string $str
-	 * @return string|array
+	 * @return string
 	 */
 	public function parseRefs($str)
 	{
