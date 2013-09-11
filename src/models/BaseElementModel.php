@@ -374,15 +374,20 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if ($this->id)
 		{
-			// Create a new criteria regardless of whether they passed in an ElementCriteriaModel
-			// so that our 'id' modification doesn't stick
-			$criteria = craft()->elements->getCriteria($this->elementType, $criteria);
+			if (!$criteria instanceof ElementCriteriaModel)
+			{
+				$criteria = craft()->elements->getCriteria($this->elementType, $criteria);
+			}
 
 			$elementIds = $criteria->ids();
 			$key = array_search($this->id, $elementIds);
 
 			if ($key !== false && isset($elementIds[$key+$dir]))
 			{
+				// Create a new criteria regardless of whether they passed in an ElementCriteriaModel
+				// so that our 'id' modification doesn't stick
+				$criteria = craft()->elements->getCriteria($this->elementType, $criteria);
+
 				$criteria->id = $elementIds[$key+$dir];
 				return $criteria->first();
 			}

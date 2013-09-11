@@ -462,45 +462,115 @@ class ElementsService extends BaseApplicationComponent
 	{
 		if (strpos($str, '{') !== false)
 		{
+			global $refTagsByElementType;
+			$refTagsByElementType = array();
+
 			$str = preg_replace_callback('/\{(\w+)\:([^\:\}]+)(?:\:([^\:\}]+))?\}/', function($matches)
 			{
+				global $refTagsByElementType;
+
 				$elementTypeHandle = ucfirst($matches[1]);
-				$elementType = craft()->elements->getElementType($elementTypeHandle);
+				$token = '{'.StringHelper::randomString(9).'}';
 
-				if (!$elementType)
-				{
-					return $matches[0];
-				}
+				$refTagsByElementType[$elementTypeHandle][] = array('token' => $token, 'matches' => $matches);
 
-				// See if we can find the element
-				$criteria = craft()->elements->getCriteria($elementTypeHandle);
-
-				// Searching by ID?
-				if (is_numeric($matches[2]))
-				{
-					$criteria->id = $matches[2];
-				}
-				else
-				{
-					$criteria->ref = $matches[2];
-				}
-
-				$element = $criteria->first();
-
-				if (!$element)
-				{
-					return $matches[2];
-				}
-
-				if (!empty($matches[3]) && isset($element->{$matches[3]}))
-				{
-					return (string) $element->{$matches[3]};
-				}
-				else
-				{
-					return (string) $element;
-				}
+				return $token;
 			}, $str);
+
+			if ($refTagsByElementType)
+			{
+				$search = array();
+				$replace = array();
+
+				$things = array('id', 'ref');
+
+				foreach ($refTagsByElementType as $elementTypeHandle => $refTags)
+				{
+					$elementType = craft()->elements->getElementType($elementTypeHandle);
+
+					if (!$elementType)
+					{
+						// Just put the ref tags back the way they were
+						foreach ($refTags as $refTag)
+						{
+							$search[] = $refTag['token'];
+							$replace[] = $refTag['matches'][0];
+						}
+					}
+					else
+					{
+						$refTagsById = array();
+						$refTagsByRef = array();
+
+						foreach ($refTags as $refTag)
+						{
+							// Searching by ID?
+							if (is_numeric($refTag['matches'][2]))
+							{
+								$refTagsById[$refTag['matches'][2]][] = $refTag;
+							}
+							else
+							{
+								$refTagsByRef[$refTag['matches'][2]][] = $refTag;
+							}
+						}
+
+						// Things are about to get silly...
+						foreach ($things as $thing)
+						{
+							$refTagsByThing = ${'refTagsBy'.ucfirst($thing)};
+
+							if ($refTagsByThing)
+							{
+								$criteria = craft()->elements->getCriteria($elementTypeHandle);
+								$criteria->$thing = array_keys($refTagsByThing);
+								$elements = $criteria->find();
+
+								$elementsByThing = array();
+
+								foreach ($elements as $element)
+								{
+									$elementsByThing[$element->$thing] = $element;
+								}
+
+								foreach ($refTagsByThing as $thingVal => $refTags)
+								{
+									if (isset($elementsByThing[$thingVal]))
+									{
+										$element = $elementsByThing[$thingVal];
+									}
+									else
+									{
+										$element = false;
+									}
+
+									foreach($refTags as $refTag)
+									{
+										$search[] = $refTag['token'];
+
+										if ($element)
+										{
+											if (!empty($refTag['matches'][3]) && isset($element->{$refTag['matches'][3]}))
+											{
+												$replace[] = (string) $element->{$refTag['matches'][3]};
+											}
+											else
+											{
+												// Default to the URL
+												$replace[] = $element->getUrl();
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+
+				$str = str_replace($search, $replace, $str);
+			}
+
+			unset ($refTagsByElementType);
 		}
 
 		return $str;
