@@ -8,6 +8,9 @@ class ElementCriteriaModel extends BaseModel
 {
 	private $_elementType;
 
+	private $_idsCache;
+	private $_totalCache;
+
 	/**
 	 * Constructor
 	 *
@@ -62,6 +65,27 @@ class ElementCriteriaModel extends BaseModel
 	}
 
 	/**
+	 * Clears the cached values when a new attribute is set.
+	 *
+	 * @param string $name
+	 * @param mixed $value
+	 * @return bool
+	 */
+	public function setAttribute($name, $value)
+	{
+		if (parent::setAttribute($name, $value))
+		{
+			$this->_idsCache = null;
+			$this->_totalCache = null;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * Returns the element type.
 	 *
 	 * @return BaseElementType
@@ -101,7 +125,13 @@ class ElementCriteriaModel extends BaseModel
 	public function ids($attributes = null)
 	{
 		$this->setAttributes($attributes);
-		return craft()->elements->findElements($this, true);
+
+		if (!isset($this->_idsCache))
+		{
+			$this->_idsCache = craft()->elements->findElements($this, true);
+		}
+
+		return $this->_idsCache;
 	}
 
 	/**
@@ -154,6 +184,12 @@ class ElementCriteriaModel extends BaseModel
 	public function total($attributes = null)
 	{
 		$this->setAttributes($attributes);
-		return craft()->elements->getTotalElements($this);
+
+		if (!isset($this->_totalCache))
+		{
+			$this->_totalCache = craft()->elements->getTotalElements($this);
+		}
+
+		return $this->_totalCache;
 	}
 }
