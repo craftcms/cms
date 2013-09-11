@@ -177,15 +177,6 @@ class UsersController extends BaseController
 
 			if (craft()->users->changePassword($user))
 			{
-				// Log them in
-				if (!craft()->userSession->login($user->username, $newPassword))
-				{
-					$errorCode = craft()->userSession->getLoginErrorCode();
-					$errorMessage = craft()->userSession->getLoginErrorMessage($errorCode, $user->username);
-
-					Craft::log('Tried to automatically log in after a password update, but could not: '.$errorMessage, LogLevel::Warning);
-				}
-
 				// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
 				if (!$user->can('accessCp'))
 				{
