@@ -260,26 +260,49 @@ class EntryElementType extends BaseElementType
 			->andWhere(array('or', 'entries.lft IS NULL', 'entries.lft != 1'))
 			->andWhere('entries_i18n.locale = elements_i18n.locale');
 
+		$joinedSections = false;
+
 		if ($criteria->ref)
 		{
-			$parts = explode('/', $criteria->ref);
+			$refs = ArrayHelper::stringToArray($criteria->ref);
+			$conditionals = array();
 
-			switch (count($parts))
+			foreach ($refs as $ref)
 			{
-				case 1:
+				$parts = array_filter(explode('/', $ref));
+
+				if ($parts)
 				{
-					$criteria->slug = $parts[0];
-					break;
+					if (count($parts) == 1)
+					{
+						$conditionals[] = DbHelper::parseParam('entries_i18n.slug', $parts[0], $query->params);
+					}
+					else
+					{
+						if (!$joinedSections)
+						{
+							$query->join('sections sections', 'entries.sectionId = sections.id');
+							$joinedSections = true;
+						}
+
+						$conditionals[] = array('and',
+							DbHelper::parseParam('sections.handle', $parts[0], $query->params),
+							DbHelper::parseParam('entries_i18n.slug', $parts[1], $query->params)
+						);
+					}
 				}
-				case 2:
+			}
+
+			if ($conditionals)
+			{
+				if (count($conditionals) == 1)
 				{
-					$criteria->section = $parts[0];
-					$criteria->slug = $parts[1];
-					break;
+					$query->andWhere($conditionals[0]);
 				}
-				default:
+				else
 				{
-					return false;
+					array_unshift($conditionals, 'or');
+					$query->andWhere($conditionals);
 				}
 			}
 		}
@@ -386,7 +409,12 @@ class EntryElementType extends BaseElementType
 
 		if ($criteria->section)
 		{
-			$query->join('sections sections', 'entries.sectionId = sections.id');
+			if (!$joinedSections)
+			{
+				$query->join('sections sections', 'entries.sectionId = sections.id');
+				$joinedSections = true;
+			}
+
 			$query->andWhere(DbHelper::parseParam('sections.handle', $criteria->section, $query->params));
 		}
 
