@@ -22,9 +22,14 @@ return array(
 'activateAccountPath' => 'activate',
 
 /**
- * The URI Craft should redirect to when user account activation fails.  Note that this only affects front-end site requests.
+ * Deprecated.  Use 'activateAccountFailurePath' instead.
  */
 'activateFailurePath' => '',
+
+/**
+ * The URI Craft should redirect to when user account activation fails.  Note that this only affects front-end site requests.
+ */
+'activateAccountFailurePath' => '',
 
 /**
  * The URI Craft should redirect to when account activation is successful.  Note that this only affects front-end site requests.

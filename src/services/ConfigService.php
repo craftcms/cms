@@ -396,6 +396,20 @@ class ConfigService extends BaseApplicationComponent
 	}
 
 	/**
+	 * TODO: Deprecate when we remove the 'activateFailurePath' config var.
+	 */
+	public function getActivateAccountFailurePath()
+	{
+		if ($path = craft()->config->get('activateAccountFailurePath') !== '')
+		{
+			return $path;
+		}
+
+		// Check the deprecated one.
+		return craft()->config->get('activateFailurePath');
+	}
+
+	/**
 	 * Parses a string for any environment variable tags.
 	 *
 	 * @param string $str
