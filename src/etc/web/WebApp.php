@@ -11,6 +11,7 @@ namespace Craft;
  * @property ContentService              $content              The content service
  * @property DashboardService            $dashboard            The dashboard service
  * @property DbConnection                $db                   The database
+ * @property DeprecatorService           $deprecator           The deprecator service
  * @property ElementsService             $elements             The elements service
  * @property EmailMessagesService        $emailMessages        The email messages service
  * @property EmailService                $email                The email service
