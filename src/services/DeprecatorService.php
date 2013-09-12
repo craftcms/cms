@@ -50,8 +50,8 @@ class DeprecatorService extends BaseApplicationComponent
 	private function _processStackTrace($stackTrace)
 	{
 		$newStackTrace = array();
-		$class = false;
-		$template = false;
+		$foundClass = false;
+		$foundTemplate = false;
 
 		$fingerPrint = isset($stackTrace[1]) && isset($stackTrace[1]['class']) ? $stackTrace[1]['class'] : '';
 
@@ -63,40 +63,35 @@ class DeprecatorService extends BaseApplicationComponent
 			$newData['args'] = isset($data['args']) ? $data['args'] : '';
 
 			// Start to build a fingerprint.  If there is a class, use it as the start.
-			if (!$class && $fingerPrint)
+			if (!$foundClass && $fingerPrint)
 			{
-				$class = true;
+				$foundClass = true;
 			}
 
-			if (isset($data['object']) && is_a($data['object'], '\Twig_Template') && strpos($data['file'], 'compiled_templates') !== false)
+			if (isset($data['object']) && $data['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($data['object']) && strpos($data['file'], 'compiled_templates') !== false)
 			{
-				$contents = IOHelper::getFileContents($data['file'], true);
 				$newData['template'] = true;
+				$template = $data['object'];
 
-				// The 3rd elements in the array will have the original, un-compiled, template path.
-				$filePath = trim($contents[2]);
-				$filePath = ltrim($filePath, '/*');
-				$filePath = rtrim($filePath, '*/');
-				$filePath = trim($filePath);
+				// Get the original (uncompiled) template name.
+				$newData['file'] = $template->getTemplateName();
 
-				$newData['file'] = $filePath;
-
-				// Let's walk backwards from the compiled template line number to find the source line number
-				for ($counter = $data['line'] - 1; $counter >= 0; $counter--)
+				foreach ($template->getDebugInfo() as $codeLine => $templateLine)
 				{
-					if (preg_match('/\/\/ line (\d+)$/', trim($contents[$counter]), $matches))
+					if ($codeLine <= $data['line'])
 					{
-						$newData['line'] = $matches[1];
+						// Grab the original source line.
+						$newData['line'] = $templateLine;
 						break;
 					}
 				}
 
 				// Overwrite the class fingerprint with the template one.
-				if (!$template)
+				if (!$foundTemplate)
 				{
 					$fingerPrint = 'template:'.$newData['file'].':'.$newData['line'];
-					$template = true;
-					$class = false;
+					$foundTemplate = true;
+					$foundClass = false;
 				}
 			}
 			else
@@ -106,7 +101,7 @@ class DeprecatorService extends BaseApplicationComponent
 				$newData['template'] = false;
 
 				// Append the line number to our class fingerprint.
-				if ($class && $newData['line'] && isset($newData['class']) && $fingerPrint == $newData['class'])
+				if ($foundClass && $newData['line'] && isset($newData['class']) && $fingerPrint == $newData['class'])
 				{
 					$fingerPrint .= ':'.$newData['line'];
 				}
