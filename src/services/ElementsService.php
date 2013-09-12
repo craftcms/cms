@@ -561,6 +561,10 @@ class ElementsService extends BaseApplicationComponent
 												$replace[] = $element->getUrl();
 											}
 										}
+										else
+										{
+											$replace[] = $refTag['matches'][0];
+										}
 									}
 								}
 							}
