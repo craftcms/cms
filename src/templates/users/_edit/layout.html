@@ -29,6 +29,6 @@
 	{% set tabs = {
 		account: { label: "Account"|t, url: url(baseUrl) },
 		profile: { label: "Profile"|t, url: url(baseUrl~'/profile') },
-		admin: (user.can('administrateUsers') ? { label: "Admin"|t, url: url(baseUrl~'/admin') } : null)
+		admin: (currentUser.can('administrateUsers') ? { label: "Admin"|t, url: url(baseUrl~'/admin') } : null)
 	} %}
 {% endif %}
