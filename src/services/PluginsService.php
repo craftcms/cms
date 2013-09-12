@@ -490,7 +490,7 @@ class PluginsService extends BaseApplicationComponent
 			// TODO: Remove for 2.0
 			else if (method_exists($plugin, $altMethod))
 			{
-				Craft::log('The “hook” prefix on the '.get_class($plugin).'::'.$altMethod.'() method name has been deprecated. It should be renamed to '.$method.'().', LogLevel::Warning);
+				craft()->deprecator->deprecate('pluginservice_hookprefix', 'The “hook” prefix on the '.get_class($plugin).'::'.$altMethod.'() method name has been deprecated. It should be renamed to '.$method.'().', '1.1');
 				$result[$plugin->getClassHandle()] = call_user_func_array(array($plugin, $altMethod), $args);
 			}
 		}
@@ -508,7 +508,7 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function callHook($method, $args = array())
 	{
-		Craft::log('The craft()->plugins->callHook() method has been deprecated. Use craft()->plugins->call() instead.', LogLevel::Warning);
+		craft()->deprecator->deprecate('pluginservice_callhook', 'The craft()->plugins->callHook() method has been deprecated. Use craft()->plugins->call() instead.', '1.0');
 		return $this->call($method, $args);
 	}
 

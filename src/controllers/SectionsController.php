@@ -195,7 +195,7 @@ class SectionsController extends BaseController
 			// TODO: Remove for 2.0
 			if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{sectionId}') !== false)
 			{
-				Craft::log('The {sectionId} token within the ‘redirect’ param on sections/saveSection requests has been deprecated. Use {id} instead.', LogLevel::Warning);
+				craft()->deprecator->deprecate('sectionid_token_savesection', 'The {sectionId} token within the ‘redirect’ param on sections/saveSection requests has been deprecated. Use {id} instead.', '1.1');
 				$_POST['redirect'] = str_replace('{sectionId}', '{id}', $_POST['redirect']);
 			}
 
