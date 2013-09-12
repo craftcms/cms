@@ -15,7 +15,16 @@ class UsersController extends BaseController
 	{
 		if (craft()->userSession->isLoggedIn())
 		{
-			$this->redirect('');
+			if (craft()->request->isAjaxRequest())
+			{
+				$this->returnJson(array(
+					'success' => true
+				));
+			}
+			else
+			{
+				$this->redirectToPostedUrl();
+			}
 		}
 
 		$vars = array();
