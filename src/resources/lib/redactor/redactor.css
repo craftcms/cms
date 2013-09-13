@@ -30,7 +30,7 @@ body .redactor_box_fullscreen {
 
 .redactor-link-tooltip {
 	position: absolute;
-	z-index: 100;
+	z-index: 3000;
 	padding: 10px;
 	line-height: 1;
 	display: inline-block;
@@ -517,9 +517,8 @@ body .redactor_toolbar li a.redactor_btn_pre		 		{ background-position: -875px; 
 	z-index: 2004;
 	padding: 10px;
 	width: 200px;
-	border: 1px solid #ccc;
 	background-color: #fff;
-	box-shadow: 0 2px 4px #ccc;
+	box-shadow: 0 1px 5px #bbb;
 	font-size: 13px;
 	font-family: Helvetica, Arial, Verdana, Tahoma, sans-serif;
 	line-height: 21px;

@@ -1,6 +1,6 @@
 /*
-	Redactor v9.1.3
-	Updated: Sep 4, 2013
+	Redactor v9.1.4
+	Updated: Sep 10, 2013
 
 	http://imperavi.com/redactor/
 
@@ -72,7 +72,7 @@
 	}
 
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '9.1.3';
+	$.Redactor.VERSION = '9.1.4';
 	$.Redactor.opts = {
 
 			// settings
@@ -800,6 +800,7 @@
 			if ($.trim(html) === '<br>') html = '';
 
 			if (html !== '' && this.opts.tidyHtml) html = this.cleanHtml(html);
+			html = html.replace(/<br>/gi, '<br />');
 
 			// before callback
 			html = this.callback('syncBefore', false, html);
@@ -1145,6 +1146,8 @@
 		{
 			var event = e.originalEvent || e;
 			this.clipboardFilePaste = false;
+
+			if (typeof(event.clipboardData) === 'undefined') return false;
 			if (event.clipboardData.items)
 			{
 				var file = event.clipboardData.items[0].getAsFile();
@@ -2064,10 +2067,7 @@
 
 				// fix right placement
 				var dropdownWidth = $dropdown.width();
-				/* BEGIN HACK! */
-				//if ((keyPosition.left + dropdownWidth) > $(document).width())
-				if ((keyPosition.left + dropdownWidth) > this.$box.outerWidth())
-				/* END HACK! */
+				if ((keyPosition.left + dropdownWidth) > $(document).width())
 				{
 					keyPosition.left -= dropdownWidth;
 				}
@@ -4224,6 +4224,13 @@
 		{
 			var $link = $(e.target);
 			var pos = $link.offset();
+			if (this.opts.iframe)
+			{
+				var posFrame = this.$frame.offset();
+				pos.top = posFrame.top + (pos.top - $(this.document).scrollTop());
+				pos.left += posFrame.left;
+			}
+
 			var tooltip = $('<span class="redactor-link-tooltip"></span>');
 
 			var href = $link.attr('href');
