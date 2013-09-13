@@ -134,7 +134,7 @@ $.extend(Craft, {
 				var endPath = params.indexOf('&');
 				if (endPath != -1)
 				{
-					var basePath = params.substring(2, endPath-1);
+					var basePath = params.substring(2, endPath);
 					params = params.substr(endPath+1);
 				}
 				else
@@ -142,6 +142,9 @@ $.extend(Craft, {
 					var basePath = params.substr(2);
 					params = null;
 				}
+
+				// Just in case
+				basePath = Craft.rtrim(basePath);
 
 				path = basePath + (path ? '/'+path : '');
 			}
