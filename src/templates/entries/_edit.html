@@ -23,13 +23,16 @@
 {% endset %}
 
 
+{% set continueEditingUrl = 'entries/'~section.handle~'/{id}'~(craft.hasPackage('Localize') and craft.locale != localeId ? '/'~localeId : '') %}
+
+
 {% set content %}
 	{% if showPreviewBtn %}
 		<div id="previewmode-btn" class="btn" data-icon="view">{{ "Live Preview"|t }}</div>
 		<div id="previewmode-spinner" class="spinner hidden"></div>
 	{% endif %}
 
-	<form id="entry-form" method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
+	<form id="entry-form" method="post" action="" accept-charset="UTF-8" data-saveshortcut="1" data-saveshortcut-redirect="{{ continueEditingUrl }}">
 		<input type="hidden" name="sectionId" value="{{ section.id }}">
 
 		{% if entry.id %}
@@ -167,7 +170,7 @@
 						<div class="btn submit menubtn"></div>
 						<div class="menu">
 							<ul>
-								<li><a class="formsubmit" data-redirect="entries/{{ section.handle }}/{id}{% if craft.hasPackage('Localize') and craft.locale != localeId %}/{{ localeId }}{% endif %}">{{ "Save and continue editing"|t }}</a></li>
+								<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">{{ "Save and continue editing"|t }}</a></li>
 
 								{% set nextEntryParams = [] %}
 								{% if showEntryTypes %}
