@@ -227,11 +227,24 @@ class AssetsController extends BaseController
 				$transformIndexModel->inProgress = 1;
 				craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
 
-				craft()->assetTransforms->generateTransform($transformIndexModel);
+				$result = craft()->assetTransforms->generateTransform($transformIndexModel);
 
-				$transformIndexModel->inProgress = 0;
-				$transformIndexModel->fileExists = 1;
-				craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
+				if ($result)
+				{
+					$transformIndexModel->inProgress = 0;
+					$transformIndexModel->fileExists = 1;
+					craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
+					echo 'success:'.craft()->assetTransforms->getUrlforTransformByIndexId($transformId);
+					craft()->end();
+				}
+				else
+				{
+					// No source file. Throw a 404.
+					$transformIndexModel->inProgress = 0;
+					craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
+					throw new HttpException(404, Craft::t("The requested image could not be found!"));
+				}
+
 			}
 
 			echo 'success:'.craft()->assetTransforms->getUrlforTransformByIndexId($transformId);

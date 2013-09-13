@@ -705,5 +705,13 @@ class S3AssetSourceType extends BaseAssetSourceType
 		return $this->getSettings()->urlPrefix.$this->_getPathPrefix();
 	}
 
-
+	/**
+	 * Return true if the source is a remote source.
+	 *
+	 * @return bool
+	 */
+	public function isRemote()
+	{
+		return true;
+	}
 }
