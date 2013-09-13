@@ -7,27 +7,37 @@ namespace Craft;
 class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterface
 {
 	 /**
-     * Checks if a template exists.
-     *
-     * @param string $name
-     * @return bool
-     */
-    public function exists($name)
-    {
-    	return craft()->templates->doesTemplateExist($name);
-    }
+	 * Checks if a template exists.
+	 *
+	 * @param string $name
+	 * @return bool
+	 */
+	public function exists($name)
+	{
+		return craft()->templates->doesTemplateExist($name);
+	}
 
 	/**
 	 * Gets the source code of a template.
 	 *
 	 * @param  string $name The name of the template to load, or a StringTemplate object.
+	 * @throws Exception
 	 * @return string       The template source code.
 	 */
 	public function getSource($name)
 	{
 		if (is_string($name))
 		{
-			return IOHelper::getFileContents(craft()->templates->findTemplate($name));
+			$template = craft()->templates->findTemplate($name);
+
+			if (IOHelper::isReadable($template))
+			{
+				return IOHelper::getFileContents($template);
+			}
+			else
+			{
+				throw new Exception(Craft::t('Tried to read the template at {path}, but could not. Check the permissions.', array('path' => $template)));
+			}
 		}
 		else
 		{
