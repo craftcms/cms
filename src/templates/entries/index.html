@@ -7,7 +7,7 @@
 {% set newEntrySections = [] %}
 
 {% for section in sections %}
-	{% if section.type != 'single' and user.can('createEntries:'~section.id) %}
+	{% if section.type != 'single' and currentUser.can('createEntries:'~section.id) %}
 		{% set newEntrySections = newEntrySections|merge([section]) %}
 	{% endif %}
 {% endfor %}

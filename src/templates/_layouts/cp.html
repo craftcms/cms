@@ -35,7 +35,7 @@
 
 
 {% set body %}
-	{% if user.admin and craft.config.devMode %}
+	{% if currentUser.admin and craft.config.devMode %}
 		<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
 	{% endif %}
 
@@ -58,7 +58,7 @@
 	<header id="header">
 		<div class="centered">
 			<ul class="right">
-				{% if user.can('performUpdates') %}
+				{% if currentUser.can('performUpdates') %}
 					{% set totalUpdates = craft.app.getTotalAvailableUpdates() %}
 					{% if totalUpdates %}
 						{% if totalUpdates == 1 %}
@@ -74,7 +74,7 @@
 					{% endif %}
 				{% endif %}
 
-				{% if user.admin %}
+				{% if currentUser.admin %}
 					<li>
 						<a class="settings" data-icon="settings" href="{{ url('settings') }}" title="{{ 'Settings'|t }}"></a>
 					</li>
@@ -194,7 +194,7 @@
 	<ul id="footer">
 		<li>@@@appName@@@ {{ craft.app.version }}.{{ craft.app.build }}</li>
 		<li>{{ "Released on"|t }} {{ craft.app.releaseDate.localeDate }}</li>
-		{% if user.can('performUpdates') %}
+		{% if currentUser.can('performUpdates') %}
 			<li><a href="{{ url('updates') }}">{{ totalUpdates ? updateText : "Check for updates"|t }}</a></li>
 		{% endif %}
 		<li>{{ "Copyright"|t }} {{ now.year}} Pixel &amp; Tonic, Inc. {{ "All rights reserved."|t }}</li>

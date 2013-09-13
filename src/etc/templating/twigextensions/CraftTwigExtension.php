@@ -242,7 +242,11 @@ class CraftTwigExtension extends \Twig_Extension
 			$globals['siteName'] = Craft::getSiteName();
 			$globals['siteUrl'] = Craft::getSiteUrl();
 
-			$globals['user'] = craft()->userSession->getUser();
+			$globals['currentUser'] = craft()->userSession->getUser();
+
+			// Keep 'user' around so long as it's not hurting anyone.
+			// Technically deprecated, though.
+			$globals['user'] = $globals['currentUser'];
 
 			if (craft()->request->isSiteRequest())
 			{

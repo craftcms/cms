@@ -23,13 +23,16 @@
 {% endset %}
 
 
+{% set continueEditingUrl = 'entries/'~section.handle~'/{id}'~(craft.hasPackage('Localize') and craft.locale != localeId ? '/'~localeId : '') %}
+
+
 {% set content %}
 	{% if showPreviewBtn %}
 		<div id="previewmode-btn" class="btn" data-icon="view">{{ "Live Preview"|t }}</div>
 		<div id="previewmode-spinner" class="spinner hidden"></div>
 	{% endif %}
 
-	<form id="entry-form" method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
+	<form id="entry-form" method="post" action="" accept-charset="UTF-8" data-saveshortcut="1" data-saveshortcut-redirect="{{ continueEditingUrl }}">
 		<input type="hidden" name="sectionId" value="{{ section.id }}">
 
 		{% if entry.id %}
@@ -108,7 +111,7 @@
 					errors: entry.getErrors('expiryDate')
 				}) }}
 
-				{% if user.can('publishEntries'~permissionSuffix) %}
+				{% if currentUser.can('publishEntries'~permissionSuffix) %}
 					{% set statusLabel -%}
 						{{ "Status:"|t }} <i>{{ entry.id ? entry.status|ucfirst|t : "Never saved"|t  }}</i>
 					{%- endset %}
@@ -125,7 +128,7 @@
 					}, statusInput) }}
 				{% endif %}
 
-				{% if user.can('deleteEntries'~permissionSuffix) %}
+				{% if currentUser.can('deleteEntries'~permissionSuffix) %}
 					<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="entries/deleteEntry"
 						data-confirm="{{ 'Are you sure you want to delete this entry?'|t }}"
 						data-redirect="entries">
@@ -143,11 +146,11 @@
 				<input type="hidden" name="draftId" value="{{ entry.draftId }}">
 				<input type="submit" class="btn submit" value="{{ 'Save Draft'|t }}">
 
-				{% if user.can('publishEntries'~permissionSuffix) and (entry.creatorId == user.id or user.can('publishPeerEntryDrafts'~permissionSuffix)) %}
+				{% if currentUser.can('publishEntries'~permissionSuffix) and (entry.creatorId == currentUser.id or currentUser.can('publishPeerEntryDrafts'~permissionSuffix)) %}
 					<input type="button" class="btn formsubmit" value="{{ 'Publish Draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.cpEditUrl }}">
 				{% endif %}
 
-				{% if user.can('publishEntries'~permissionSuffix) and (entry.creatorId == user.id or user.can('deletePeerEntryDrafts'~permissionSuffix)) %}
+				{% if currentUser.can('publishEntries'~permissionSuffix) and (entry.creatorId == currentUser.id or currentUser.can('deletePeerEntryDrafts'~permissionSuffix)) %}
 					<input type="button" class="btn formsubmit" value="{{ 'Delete Draft'|t }}" data-action="entryRevisions/deleteDraft"
 					   data-confirm="{{ 'Are you sure you want to delete this draft?'|t }}"
 					   data-redirect="{{ entry.cpEditUrl }}"/>
@@ -157,7 +160,7 @@
 
 			{% else %}
 
-				{% if not entry.id or not entry.enabled or user.can('publishEntries'~permissionSuffix) %}
+				{% if not entry.id or not entry.enabled or currentUser.can('publishEntries'~permissionSuffix) %}
 					<input type="hidden" name="action" value="entries/saveEntry">
 					<input type="hidden" name="redirect" value="entries">
 
@@ -167,7 +170,7 @@
 						<div class="btn submit menubtn"></div>
 						<div class="menu">
 							<ul>
-								<li><a class="formsubmit" data-redirect="entries/{{ section.handle }}/{id}{% if craft.hasPackage('Localize') and craft.locale != localeId %}/{{ localeId }}{% endif %}">{{ "Save and continue editing"|t }}</a></li>
+								<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">{{ "Save and continue editing"|t }}</a></li>
 
 								{% set nextEntryParams = [] %}
 								{% if showEntryTypes %}
