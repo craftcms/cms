@@ -290,7 +290,7 @@ class EntriesController extends BaseController
 				// TODO: Remove for 2.0
 				if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{entryId}') !== false)
 				{
-					craft()->deprecator->deprecate('redirect_token_saveentry', 'The {entryId} token within the ‘redirect’ param on entries/saveEntry requests has been deprecated. Use {id} instead.', '1.1');
+					Craft::log('The {entryId} token within the ‘redirect’ param on entries/saveEntry requests has been deprecated. Use {id} instead.', LogLevel::Warning);
 					$_POST['redirect'] = str_replace('{entryId}', '{id}', $_POST['redirect']);
 				}
 

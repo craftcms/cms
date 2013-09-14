@@ -468,7 +468,7 @@ class UsersController extends BaseController
 					// TODO: Remove for 2.0
 					if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{userId}') !== false)
 					{
-						craft()->deprecator->deprecate('userid_token_saveuser', 'The {userId} token within the ‘redirect’ param on users/saveUser requests has been deprecated. Use {id} instead.', '1.1');
+						Craft::log('The {userId} token within the ‘redirect’ param on users/saveUser requests has been deprecated. Use {id} instead.', LogLevel::Warning);
 						$_POST['redirect'] = str_replace('{userId}', '{id}', $_POST['redirect']);
 					}
 

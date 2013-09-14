@@ -143,6 +143,11 @@ return array(
 'logoutPath' => 'logout',
 
 /**
+ * The maximum dimension size to use when caching images from external sources to use in transforms. Set to 0 to never cache them.
+ */
+'maxCachedCloudImageSize' => 2000,
+
+/**
  * The number of invalid login attempts Craft will allow within the specified duration before the account gets locked.
  */
 'maxInvalidLogins' => 5,

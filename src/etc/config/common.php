@@ -232,7 +232,6 @@ $components['assetIndexing']['class']        = 'Craft\AssetIndexingService';
 $components['assetSources']['class']         = 'Craft\AssetSourcesService';
 $components['content']['class']              = 'Craft\ContentService';
 $components['dashboard']['class']            = 'Craft\DashboardService';
-$components['deprecator']['class']           = 'Craft\DeprecatorService';
 $components['email']['class']                = 'Craft\EmailService';
 $components['elements']['class']             = 'Craft\ElementsService';
 $components['entries']['class']              = 'Craft\EntriesService';
