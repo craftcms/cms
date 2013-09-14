@@ -33,7 +33,7 @@ class GlobalsController extends BaseController
 			// TODO: Remove for 2.0
 			if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{setId}') !== false)
 			{
-				craft()->deprecator->deprecate('setid_token_saveset', 'The {setId} token within the ‘redirect’ param on globals/saveSet requests has been deprecated. Use {id} instead.', '1.1');
+				Craft::log('The {setId} token within the ‘redirect’ param on globals/saveSet requests has been deprecated. Use {id} instead.', LogLevel::Warning);
 				$_POST['redirect'] = str_replace('{setId}', '{id}', $_POST['redirect']);
 			}
 
