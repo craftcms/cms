@@ -318,7 +318,10 @@ $components['urlManager']['class'] = 'Craft\UrlManager';
 $components['urlManager']['cpRoutes'] = $cpRoutes;
 $components['urlManager']['pathParam'] = 'p';
 
-$components['errorHandler']['class'] = 'Craft\ErrorHandler';
+$components['errorHandler'] = array(
+	'class' => 'Craft\ErrorHandler',
+	'errorAction' => 'templates/renderError'
+);
 
 $components['fileCache']['class'] = 'Craft\FileCache';
 
