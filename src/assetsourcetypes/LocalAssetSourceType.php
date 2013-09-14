@@ -137,7 +137,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Get the file system path for upload source.
 	 *
-	 * @param BaseAssetSourceType $sourceType = null
+	 * @param BaseAssetSourceType|LocalAssetSourceType $sourceType = null
 	 * @return string
 	 */
 	private function _getSourceFileSystemPath(LocalAssetSourceType $sourceType = null)
