@@ -99,7 +99,15 @@ $.extend(Craft, {
 		}
 		else
 		{
-			params = Craft.ltrim(params, '&');
+			params = Craft.trim(params, '&?');
+		}
+
+		// Were there already any query string params in the path?
+		var qpos = path.indexOf('?');
+		if (qpos != -1)
+		{
+			params = path.substr(qpos+1)+(params ? '&'+params : '');
+			path = path.substr(0, qpos);
 		}
 
 		// Put it all together
@@ -113,17 +121,11 @@ $.extend(Craft, {
 		}
 
 		// Does the base URL already have a query string?
-		var qsMarker = url.indexOf('?');
-		if (qsMarker != '-1')
+		var qpos = url.indexOf('?');
+		if (qpos != '-1')
 		{
-			// Append params with the existing query string, and chop it off of the base URL
-			var qs = url.substr(qsMarker+1);
-			url = url.substr(0, qsMarker);
-
-			if (qs)
-			{
-				params = qs + (params ? '&'+params : '');
-			}
+			params = url.substr(qpos+1)+(params ? '&'+params : '');
+			url = url.substr(0, qpos);
 		}
 
 		if (!Craft.omitScriptNameInUrls && !Craft.usePathInfo && path)

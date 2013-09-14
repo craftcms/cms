@@ -164,7 +164,14 @@ class UrlHelper
 		}
 		else
 		{
-			$params = ltrim($params, '&?');
+			$params = trim($params, '&?');
+		}
+
+		// Were there already any query string params in the path?
+		if (($qpos = strpos($path, '?')) !== false)
+		{
+			$params = substr($path, $qpos+1).($params ? '&'.$params : '');
+			$path = substr($path, 0, $qpos);
 		}
 
 		$showScriptName = ($mustShowScriptName || !craft()->config->omitScriptNameInUrls());
@@ -196,12 +203,31 @@ class UrlHelper
 		// Put it all together
 		if (!$showScriptName || craft()->config->usePathInfo())
 		{
-			return ($path ? rtrim($baseUrl, '/').'/'.$path : $baseUrl).($params ? '?'.$params : '').$anchor;
+			if ($path)
+			{
+				$url = rtrim($baseUrl, '/').'/'.$path;
+			}
+			else
+			{
+				$url = $baseUrl;
+			}
 		}
 		else
 		{
-			$pathParam = craft()->urlManager->pathParam;
-			return $baseUrl.($path || $params ? '?'.($path ? $pathParam.'='.$path : '').($path && $params ? '&' : '').$params : '').$anchor;
+			$url = $baseUrl;
+			$params = craft()->urlManager->pathParam.'='.$path.($params ? '&'.$params : '');
 		}
+
+		if ($params)
+		{
+			$url .= '?'.$params;
+		}
+
+		if ($anchor)
+		{
+			$url .= $anchor;
+		}
+
+		return $url;
 	}
 }
