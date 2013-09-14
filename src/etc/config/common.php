@@ -1,8 +1,5 @@
 <?php
 
-Yii::setPathOfAlias('app', CRAFT_APP_PATH);
-Yii::setPathOfAlias('plugins', CRAFT_PLUGINS_PATH);
-
 // Load the deafult configs
 $generalConfig = require_once(CRAFT_APP_PATH.'etc/config/defaults/general.php');
 $dbConfig = require_once(CRAFT_APP_PATH.'etc/config/defaults/db.php');
