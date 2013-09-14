@@ -8,7 +8,7 @@
 
 {% if account is not defined %}
 	{% if craft.request.segment(1) == 'myaccount' %}
-		{% set account = user %}
+		{% set account = currentUser %}
 	{% elseif userId %}
 		{% set account = craft.users.status(null).id(userId).first %}
 	{% endif %}
@@ -63,7 +63,7 @@
 				name: 'admin',
 				checked: account.admin,
 				toggle: 'permissions',
-				disabled: (user.admin ? false : true),
+				disabled: (currentUser.admin ? false : true),
 				reverseToggle: true
 			}) }}
 		</div>

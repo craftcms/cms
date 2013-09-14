@@ -17,6 +17,24 @@ abstract class BaseController extends \CController
 	protected $allowAnonymous = false;
 
 	/**
+	 * Include any route params gathered by UrlManager as controller action params.
+	 *
+	 * @return array
+	 */
+	public function getActionParams()
+	{
+		$params = parent::getActionParams();
+		$routeParams = craft()->urlManager->getRouteParams();
+
+		if (is_array($routeParams))
+		{
+			$params = array_merge($params, $routeParams);
+		}
+
+		return $params;
+	}
+
+	/**
 	 * Returns the folder containing view files for this controller.
 	 * We're overriding this since CController's version defaults $module to craft().
 	 *

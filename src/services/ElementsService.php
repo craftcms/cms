@@ -552,13 +552,18 @@ class ElementsService extends BaseApplicationComponent
 										{
 											if (!empty($refTag['matches'][3]) && isset($element->{$refTag['matches'][3]}))
 											{
-												$replace[] = (string) $element->{$refTag['matches'][3]};
+												$value = (string) $element->{$refTag['matches'][3]};
+												$replace[] = $this->parseRefs($value);
 											}
 											else
 											{
 												// Default to the URL
 												$replace[] = $element->getUrl();
 											}
+										}
+										else
+										{
+											$replace[] = $refTag['matches'][0];
 										}
 									}
 								}

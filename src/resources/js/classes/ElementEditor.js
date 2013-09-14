@@ -47,7 +47,6 @@ Craft.ElementEditor = Garnish.Base.extend({
 
 				Craft.initUiElements($hudHtml);
 				this.addListener($hudHtml.find('form'), 'submit', $.proxy(this, '_saveElementDetails'));
-				this.addListener($hudHtml.find('.btn.submit'), 'click', function (ev) {$(ev.currentTarget).parents('form').submit();});
 				this.addListener($hudHtml.find('.btn.cancel'), 'click', $.proxy(this, 'removeHud'));
 
 
