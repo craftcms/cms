@@ -659,28 +659,36 @@ class EntriesService extends BaseApplicationComponent
 		$uniqueSlugConditions = array('and',
 			'sectionId = :sectionId',
 			'locale = :locale',
-			'slug = :slug',
-			'entryId != :entryId'
+			'slug = :slug'
 		);
 
 		$uniqueSlugParams = array(
 			':sectionId' => $entry->sectionId,
-			':locale'    => $entryLocaleRecord->locale,
-			':entryId'   => $entry->id
+			':locale'    => $entryLocaleRecord->locale
 		);
+
+		if ($entry->id)
+		{
+			$uniqueSlugConditions[] = 'entryId != :entryId';
+			$uniqueSlugParams[':entryId'] = $entry->id;
+		}
 
 		if ($urlFormat)
 		{
 			$uniqueUriConditions = array('and',
 				'locale = :locale',
-				'uri = :uri',
-				'elementId != :elementId'
+				'uri = :uri'
 			);
 
 			$uniqueUriParams = array(
-				':locale'    => $entryLocaleRecord->locale,
-				':elementId' => $entry->id
+				':locale' => $entryLocaleRecord->locale
 			);
+
+			if ($entry->id)
+			{
+				$uniqueUriConditions[] = 'elementId != :elementId';
+				$uniqueUriParams[':elementId'] = $entry->id;
+			}
 		}
 
 		for ($i = 0; $i < 100; $i++)
