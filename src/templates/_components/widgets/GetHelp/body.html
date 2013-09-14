@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 <form method="post" action="" accept-charset="UTF-8">
-	{% set fromEmail = getHelp is defined ? getHelp.fromEmail : user.email %}
+	{% set fromEmail = getHelp is defined ? getHelp.fromEmail : currentUser.email %}
 	{% if fromEmail == "support@pixelandtonic.com" %}
 		{% set fromEmail = "" %}
 	{% endif %}

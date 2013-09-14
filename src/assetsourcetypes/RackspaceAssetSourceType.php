@@ -1122,4 +1122,15 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	{
 		return rawurlencode($container).(!empty($uri) ? '/'.rawurlencode($uri) : '');
 	}
+
+	/**
+	 * Return true if the source is a remote source.
+	 *
+	 * @return bool
+	 */
+	public function isRemote()
+	{
+		return true;
+	}
+
 }

@@ -96,15 +96,22 @@ class UrlManager extends \CUrlManager
 			// Merge the route variables into the params
 			$this->_routeParams['variables'] = array_merge($this->_routeParams['variables'], $this->_routeVariables);
 
-			// Save the params in $_GET so they can get mapped to the controller action arguments
-			$_GET = array_merge($_GET, $this->_routeParams);
-
 			// Return the controller action
 			return $this->_routeAction;
 		}
 
 		// If we couldn't figure out what to do with the request, throw a 404
 		throw new HttpException(404);
+	}
+
+	/**
+	 * Returns the route params, or null if we haven't parsed the URL yet.
+	 *
+	 * @return array|null
+	 */
+	public function getRouteParams()
+	{
+		return $this->_routeParams;
 	}
 
 	/**

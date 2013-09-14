@@ -958,4 +958,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 		return;
 	}
+
+	/**
+	 * Return true if the source is a remote source.
+	 *
+	 * @return bool
+	 */
+	public function isRemote()
+	{
+		return false;
+	}
 }

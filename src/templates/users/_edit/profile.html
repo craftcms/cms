@@ -10,7 +10,7 @@
 
 {% if account is not defined %}
 	{% if craft.request.segment(1) == 'myaccount' %}
-		{% set account = user %}
+		{% set account = currentUser %}
 	{% elseif userId %}
 		{% set account = craft.users.status(null).id(userId).first %}
 	{% endif %}

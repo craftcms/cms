@@ -12,7 +12,7 @@
 {% includeJsResource 'js/account.js' %}
 
 {% if account is not defined and craft.request.segment(1) == 'myaccount' %}
-	{% set account = user %}
+	{% set account = currentUser %}
 {% endif %}
 
 
@@ -43,8 +43,8 @@
 			name: 'username',
 			value: (account is defined ? account.username : null),
 			autofocus: true,
-			required: (isNewAccount or (user.admin or account.isCurrent) ? true : false),
-			disabled: (isNewAccount or (user.admin or account.isCurrent) ? false : true),
+			required: (isNewAccount or (currentUser.admin or account.isCurrent) ? true : false),
+			disabled: (isNewAccount or (currentUser.admin or account.isCurrent) ? false : true),
 			errors: (account is defined ? account.getErrors('username') : null)
 		}) }}
 
@@ -82,7 +82,7 @@
 				errors: (account is defined ? account.getErrors('email') : null)
 			}) }}
 
-		{% elseif account.isCurrent or user.admin %}
+		{% elseif account.isCurrent or currentUser.admin %}
 
 			{% set emailInput %}
 				<table>
@@ -134,7 +134,7 @@
 				id: 'newPassword',
 			}, newPasswordInput) }}
 
-			{% if user.admin %}
+			{% if currentUser.admin %}
 				{{ forms.checkboxField({
 					label: "Require a password reset on next login"|t,
 					name: 'passwordResetRequired',

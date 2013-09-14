@@ -43,8 +43,8 @@ config.buttonsCustom.image = {
 									editor.insertNode($('<img src="'+url+'" />')[0]);
 									editor.sync();
 								}
-
-                                editor.dropdownHideAll();
+								this.observeImages();
+								editor.dropdownHideAll();
 							}
 						}, this),
                         closeOtherModals: false
