@@ -380,6 +380,16 @@ class DbHelper
 
 		$values = ArrayHelper::stringToArray($values);
 
+		if ($values[0] == 'and' || $values[0] == 'or')
+		{
+			$join = $values[0];
+			array_shift($values);
+		}
+		else
+		{
+			$join = 'or';
+		}
+
 		foreach ($values as $value)
 		{
 			$operator = '=';
@@ -431,7 +441,7 @@ class DbHelper
 		}
 		else
 		{
-			array_unshift($conditions, 'or');
+			array_unshift($conditions, $join);
 			return $conditions;
 		}
 	}
