@@ -8,11 +8,11 @@ class EtService extends BaseApplicationComponent
 {
 	const Ping              = '@@@elliottEndpointUrl@@@actions/elliott/app/ping';
 	const CheckForUpdates   = '@@@elliottEndpointUrl@@@actions/elliott/app/checkForUpdates';
-	const DownloadUpdate    = '@@@elliottEndpointUrl@@@actions/elliott/app/downloadUpdate';
 	const TransferLicense   = '@@@elliottEndpointUrl@@@actions/elliott/app/transferLicenseToCurrentDomain';
 	const GetPackageInfo    = '@@@elliottEndpointUrl@@@actions/elliott/app/getPackageInfo';
 	const PurchasePackage   = '@@@elliottEndpointUrl@@@actions/elliott/app/purchasePackage';
 	const StartPackageTrial = '@@@elliottEndpointUrl@@@actions/elliott/app/startPackageTrial';
+	const GetUpdateFileInfo = '@@@elliottEndpointUrl@@@actions/elliott/app/getUpdateFileInfo';
 
 	/**
 	 * @return EtModel|null
@@ -44,18 +44,37 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
+	 * @return \Craft\EtModel|null
+	 */
+	public function getUpdateFileInfo()
+	{
+		$et = new Et(static::GetUpdateFileInfo);
+		$etResponse = $et->phoneHome();
+
+		if ($etResponse)
+		{
+			return $etResponse->data;
+		}
+	}
+
+	/**
 	 * @param $downloadPath
+	 * @param $md5
 	 * @return bool
 	 */
-	public function downloadUpdate($downloadPath)
+	public function downloadUpdate($downloadPath, $md5)
 	{
-		$et = new Et(static::DownloadUpdate, 240);
-
 		if (IOHelper::folderExists($downloadPath))
 		{
-			$downloadPath .= StringHelper::UUID().'.zip';
+			$downloadPath .= $md5.'.zip';
 		}
 
+		$updateModel = craft()->updates->getUpdates();
+		$buildVersion = $updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild;
+
+		$path = 'http://download.buildwithcraft.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.$updateModel->app->localBuild.'/'.$md5.'.zip';
+
+		$et = new Et($path, 240);
 		$et->setDestinationFileName($downloadPath);
 
 		if (($fileName = $et->phoneHome()) !== null)

@@ -172,19 +172,7 @@ class Et
 						// Close the stream.
 						$body->close();
 
-						$fileName = IOHelper::getFileName($this->_destinationFileName, false);
-
-						// If the file name is a UUID, we know it was temporarily set and they want to use the name of the file that was on the sending server.
-						if (StringHelper::isUUID($fileName))
-						{
-							$contentDisposition = $response->getHeader('content-disposition')->toArray();
-							preg_match("/\"(.*)\"/us", $contentDisposition[0], $matches);
-							$fileName = $matches[1];
-
-							IOHelper::rename($this->_destinationFileName, IOHelper::getFolderName($this->_destinationFileName).$fileName);
-						}
-
-						return $fileName;
+						return IOHelper::getFileName($this->_destinationFileName);
 					}
 
 					$etModel = craft()->et->decodeEtModel($response->getBody());
