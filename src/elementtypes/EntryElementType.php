@@ -430,8 +430,16 @@ class EntryElementType extends BaseElementType
 				if ($criteria->ancestorOf)
 				{
 					$query->andWhere(
-						array('and', 'entries.lft < :lft', 'entries.rgt > :rgt'),
-						array(':lft' => $criteria->ancestorOf->lft, ':rgt' => $criteria->ancestorOf->rgt)
+						array('and',
+							'entries.lft < :ancestorOf_lft',
+							'entries.rgt > :ancestorOf_rgt',
+							'entries.sectionId = :ancestorOf_sectionId'
+						),
+						array(
+							':ancestorOf_lft'       => $criteria->ancestorOf->lft,
+							':ancestorOf_rgt'       => $criteria->ancestorOf->rgt,
+							':ancestorOf_sectionId' => $criteria->ancestorOf->sectionId
+						)
 					);
 
 					if ($criteria->ancestorDelta)
@@ -453,8 +461,16 @@ class EntryElementType extends BaseElementType
 				if ($criteria->descendantOf)
 				{
 					$query->andWhere(
-						array('and', 'entries.lft > :lft', 'entries.rgt < :rgt'),
-						array(':lft' => $criteria->descendantOf->lft, ':rgt' => $criteria->descendantOf->rgt)
+						array('and',
+							'entries.lft > :descendantOf_lft',
+							'entries.rgt < :descendantOf_rgt',
+							'entries.sectionId = :descendantOf_sectionId'
+						),
+						array(
+							':descendantOf_lft'       => $criteria->descendantOf->lft,
+							':descendantOf_rgt'       => $criteria->descendantOf->rgt,
+							':descendantOf_sectionId' => $criteria->descendantOf->sectionId
+						)
 					);
 
 					if ($criteria->descendantDelta)
