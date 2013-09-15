@@ -240,6 +240,29 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns all of the entry's siblings.
+	 *
+	 * @return array
+	 */
+	public function getSiblings()
+	{
+		$parent = $this->getParent();
+
+		if ($parent)
+		{
+			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria->descendantOf($parent);
+			$criteria->descendantDelta(1);
+			$criteria->id = 'not '.$this->id;
+			return $criteria->find();
+		}
+		else
+		{
+			return array();
+		}
+	}
+
+	/**
 	 * Overrides the (deprecated) BaseElementModel::getChildren() so that it returns the actual children for entries within Structure sections.
 	 *
 	 * @param mixed $field
