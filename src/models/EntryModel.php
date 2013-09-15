@@ -263,6 +263,30 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns the entry's previous sibling.
+	 *
+	 * @return EntryModel|null
+	 */
+	public function getPrevSibling()
+	{
+		$criteria = craft()->elements->getCriteria($this->elementType);
+		$criteria->prevSiblingOf($this);
+		return $criteria->first();
+	}
+
+	/**
+	 * Returns the entry's next sibling.
+	 *
+	 * @return EntryModel|null
+	 */
+	public function getNextSibling()
+	{
+		$criteria = craft()->elements->getCriteria($this->elementType);
+		$criteria->nextSiblingOf($this);
+		return $criteria->first();
+	}
+
+	/**
 	 * Overrides the (deprecated) BaseElementModel::getChildren() so that it returns the actual children for entries within Structure sections.
 	 *
 	 * @param mixed $field

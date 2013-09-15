@@ -199,6 +199,8 @@ class EntryElementType extends BaseElementType
 			'ancestorDelta'   => AttributeType::Number,
 			'descendantOf'    => AttributeType::Mixed,
 			'descendantDelta' => AttributeType::Number,
+			'prevSiblingOf'   => AttributeType::Mixed,
+			'nextSiblingOf'   => AttributeType::Mixed,
 			'depth'           => AttributeType::Number,
 		);
 	}
@@ -479,6 +481,50 @@ class EntryElementType extends BaseElementType
 							array(':depth' => $criteria->descendantOf->depth + $criteria->descendantDelta)
 						);
 					}
+				}
+			}
+
+			if ($criteria->prevSiblingOf)
+			{
+				if (!$criteria->prevSiblingOf instanceof EntryModel)
+				{
+					$criteria->prevSiblingOf = craft()->entries->getEntryById($criteria->prevSiblingOf);
+				}
+
+				if ($criteria->prevSiblingOf)
+				{
+					$query->andWhere(
+						array('and',
+							'entries.rgt = :prevSiblingOf_rgt',
+							'entries.sectionId = :prevSiblingOf_sectionId'
+						),
+						array(
+							':prevSiblingOf_rgt'       => $criteria->prevSiblingOf->lft - 1,
+							':prevSiblingOf_sectionId' => $criteria->prevSiblingOf->sectionId
+						)
+					);
+				}
+			}
+
+			if ($criteria->nextSiblingOf)
+			{
+				if (!$criteria->nextSiblingOf instanceof EntryModel)
+				{
+					$criteria->nextSiblingOf = craft()->entries->getEntryById($criteria->nextSiblingOf);
+				}
+
+				if ($criteria->nextSiblingOf)
+				{
+					$query->andWhere(
+						array('and',
+							'entries.lft = :nextSiblingOf_lft',
+							'entries.sectionId = :nextSiblingOf_sectionId'
+						),
+						array(
+							':nextSiblingOf_lft'       => $criteria->nextSiblingOf->rgt + 1,
+							':nextSiblingOf_sectionId' => $criteria->nextSiblingOf->sectionId
+						)
+					);
 				}
 			}
 
