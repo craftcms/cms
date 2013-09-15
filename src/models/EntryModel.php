@@ -226,6 +226,99 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
+	 * Overrides the (deprecated) BaseElementModel::getParents() so it only works for Channel sections, until it's removed altogether.
+	 *
+	 * @param mixed $field
+	 * @return null|ElementCriteriaModel
+	 */
+	public function getParents($field = null)
+	{
+		if ($this->getSection()->type == Sectiontype::Channel)
+		{
+			return parent::getParents($field);
+		}
+	}
+
+	/**
+	 * Returns all of the entry's siblings.
+	 *
+	 * @return array
+	 */
+	public function getSiblings()
+	{
+		if ($this->depth == 1)
+		{
+			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria->depth(1);
+			$criteria->id = 'not '.$this->id;
+			$criteria->sectionId = $this->sectionId;
+			return $criteria->find();
+		}
+		else
+		{
+			$parent = $this->getParent();
+
+			if ($parent)
+			{
+				$criteria = craft()->elements->getCriteria($this->elementType);
+				$criteria->descendantOf($parent);
+				$criteria->descendantDelta(1);
+				$criteria->id = 'not '.$this->id;
+				return $criteria->find();
+			}
+			else
+			{
+				return array();
+			}
+		}
+	}
+
+	/**
+	 * Returns the entry's previous sibling.
+	 *
+	 * @return EntryModel|null
+	 */
+	public function getPrevSibling()
+	{
+		$criteria = craft()->elements->getCriteria($this->elementType);
+		$criteria->prevSiblingOf($this);
+		return $criteria->first();
+	}
+
+	/**
+	 * Returns the entry's next sibling.
+	 *
+	 * @return EntryModel|null
+	 */
+	public function getNextSibling()
+	{
+		$criteria = craft()->elements->getCriteria($this->elementType);
+		$criteria->nextSiblingOf($this);
+		return $criteria->first();
+	}
+
+	/**
+	 * Overrides the (deprecated) BaseElementModel::getChildren() so that it returns the actual children for entries within Structure sections.
+	 *
+	 * @param mixed $field
+	 * @return array|ElementCriteriaModel
+	 */
+	public function getChildren($field = null)
+	{
+		if ($this->getSection()->type == Sectiontype::Channel)
+		{
+			return parent::getChildren($field);
+		}
+		else
+		{
+			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria->descendantOf($this);
+			$criteria->descendantDelta(1);
+			return $criteria->find();
+		}
+	}
+
+	/**
 	 * Returns the entry's descendants.
 	 *
 	 * @param int|null $delta

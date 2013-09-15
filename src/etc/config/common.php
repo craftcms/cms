@@ -1,8 +1,5 @@
 <?php
 
-Yii::setPathOfAlias('app', CRAFT_APP_PATH);
-Yii::setPathOfAlias('plugins', CRAFT_PLUGINS_PATH);
-
 // Load the deafult configs
 $generalConfig = require_once(CRAFT_APP_PATH.'etc/config/defaults/general.php');
 $dbConfig = require_once(CRAFT_APP_PATH.'etc/config/defaults/db.php');
@@ -321,7 +318,10 @@ $components['urlManager']['class'] = 'Craft\UrlManager';
 $components['urlManager']['cpRoutes'] = $cpRoutes;
 $components['urlManager']['pathParam'] = 'p';
 
-$components['errorHandler']['class'] = 'Craft\ErrorHandler';
+$components['errorHandler'] = array(
+	'class' => 'Craft\ErrorHandler',
+	'errorAction' => 'templates/renderError'
+);
 
 $components['fileCache']['class'] = 'Craft\FileCache';
 

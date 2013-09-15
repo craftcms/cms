@@ -33,6 +33,15 @@ class Updater
 	}
 
 	/**
+	 * @return array
+	 */
+	public function getUpdateFileInfo()
+	{
+		$md5 = craft()->et->getUpdateFileInfo();
+		return array('md5' => $md5);
+	}
+
+	/**
 	 * Performs environmental requirement checks before running an update.
 	 *
 	 * @throws Exception
@@ -43,17 +52,18 @@ class Updater
 	}
 
 	/**
-	 * @return array
+	 * @param $md5
 	 * @throws Exception
+	 * @return array
 	 */
-	public function processDownload()
+	public function processDownload($md5)
 	{
 		Craft::log('Starting to process the update download.', LogLevel::Info, true);
 		$tempPath = craft()->path->getTempPath();
 
 		// Download the package from ET.
 		Craft::log('Downloading patch file to '.$tempPath, LogLevel::Info, true);
-		if (($fileName = craft()->et->downloadUpdate($tempPath)) !== false)
+		if (($fileName = craft()->et->downloadUpdate($tempPath, $md5)) !== false)
 		{
 			$downloadFilePath = $tempPath.$fileName;
 		}
@@ -66,7 +76,7 @@ class Updater
 
 		// Validate the downloaded update against ET.
 		Craft::log('Validating downloaded update.', LogLevel::Info, true);
-		if (!$this->_validateUpdate($downloadFilePath))
+		if (!$this->_validateUpdate($downloadFilePath, $md5))
 		{
 			throw new Exception(Craft::t('There was a problem validating the downloaded package.'));
 		}
@@ -291,17 +301,16 @@ class Updater
 	}
 
 	/**
-	 * Validates that the downloaded file MD5 matches the name of the file (which is the MD5 from the server)
+	 * Validates that the downloaded file MD5 the MD5 of the file from Elliott
 	 *
 	 * @access private
 	 * @param $downloadFilePath
+	 * @param $sourceMD5
 	 * @return bool
 	 */
-	private function _validateUpdate($downloadFilePath)
+	private function _validateUpdate($downloadFilePath, $sourceMD5)
 	{
 		Craft::log('Validating MD5 for '.$downloadFilePath, LogLevel::Info, true);
-		$sourceMD5 = IOHelper::getFileName($downloadFilePath, false);
-
 		$localMD5 = IOHelper::getFileMD5($downloadFilePath);
 
 		if ($localMD5 === $sourceMD5)

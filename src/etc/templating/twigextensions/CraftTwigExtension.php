@@ -16,20 +16,21 @@ class CraftTwigExtension extends \Twig_Extension
 	public function getTokenParsers()
 	{
 		return array(
+			new Exit_TokenParser(),
+			new IncludeResource_TokenParser('includeCss'),
+			new IncludeResource_TokenParser('includeCssFile'),
+			new IncludeResource_TokenParser('includeCssResource'),
+			new IncludeResource_TokenParser('includeHiResCss'),
+			new IncludeResource_TokenParser('includeJs'),
+			new IncludeResource_TokenParser('includeJsFile'),
+			new IncludeResource_TokenParser('includeJsResource'),
+			new IncludeTranslations_TokenParser(),
+			new Nav_TokenParser(),
+			new Paginate_TokenParser(),
 			new Redirect_TokenParser(),
 			new RequireLogin_TokenParser(),
 			new RequirePackage_TokenParser(),
 			new RequirePermission_TokenParser(),
-			new IncludeResource_TokenParser('includeCssFile'),
-			new IncludeResource_TokenParser('includeJsFile'),
-			new IncludeResource_TokenParser('includeCssResource'),
-			new IncludeResource_TokenParser('includeJsResource'),
-			new IncludeResource_TokenParser('includeCss'),
-			new IncludeResource_TokenParser('includeHiResCss'),
-			new IncludeResource_TokenParser('includeJs'),
-			new IncludeTranslations_TokenParser(),
-			new Exit_TokenParser(),
-			new Paginate_TokenParser(),
 		);
 	}
 

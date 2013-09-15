@@ -66,15 +66,16 @@ if (($siteConfigPath = realpath(CRAFT_CONFIG_PATH)) === false || !is_dir($siteCo
 	exit('@@@appName@@@ config path "'.($siteConfigPath === false ? CRAFT_CONFIG_PATH : $siteConfigPath).'" isn&rsquo;t valid. Please make sure the folder exists and is readable by your web server process.');
 }
 
-$userConfig = require_once CRAFT_CONFIG_PATH.'general.php';
+// Load the config early so we can set YII_DEBUG based on Dev Mode before loading Yii
+$commonConfig = require CRAFT_APP_PATH.'etc/config/common.php';
 
-// Set YII_DEBUG to true if we're in devMode.
-if (isset($userConfig['devMode']) && $userConfig['devMode'] == true)
+// Set YII_DEBUG to true if we're in Dev Mode.
+if (!empty($commonConfig['components']['config']['generalConfig']['devMode']))
 {
 	define('YII_DEBUG', true);
 }
 
-// In case yiic is running
+// Load Yii, if it's not already
 if (!class_exists('Yii', false))
 {
 	require_once CRAFT_APP_PATH.'framework/yii.php';
@@ -91,10 +92,14 @@ require_once CRAFT_APP_PATH.'Craft.php';
 require_once CRAFT_APP_PATH.'etc/web/WebApp.php';
 require_once CRAFT_APP_PATH.'Info.php';
 
-$configPath = CRAFT_APP_PATH.'etc/config/main.php';
+Yii::setPathOfAlias('app', CRAFT_APP_PATH);
+Yii::setPathOfAlias('plugins', CRAFT_PLUGINS_PATH);
+
+// Load the full config
+$config = require CRAFT_APP_PATH.'etc/config/main.php';
 
 // Initialize Craft\WebApp this way so it doesn't cause a syntax error on PHP < 5.3
 $appClass = '\Craft\WebApp';
-$app = new $appClass($configPath);
+$app = new $appClass($config);
 
 $app->run();

@@ -113,6 +113,49 @@ class TemplatesController extends BaseController
 	}
 
 	/**
+	 * Renders an error template.
+	 */
+	public function actionRenderError()
+	{
+		$error = craft()->errorHandler->getError();
+		$template = (string) $error['code'];
+
+		if (craft()->request->isSiteRequest())
+		{
+			if (!craft()->templates->doesTemplateExist($template))
+			{
+				// How bout a generic error template?
+				if (craft()->templates->doesTemplateExist('error'))
+				{
+					$template = 'error';
+				}
+				else
+				{
+					// Fall back on the CP error template
+					craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+				}
+			}
+		}
+
+		try
+		{
+			$this->renderTemplate($template, $error);
+		}
+		catch (\Exception $e)
+		{
+			if (YII_DEBUG)
+			{
+				throw $e;
+			}
+			else
+			{
+				// Just output the error message
+				echo $e->getMessage();
+			}
+		}
+	}
+
+	/**
 	 * Renders a template, sets the mime type header, etc..
 	 *
 	 * @access private

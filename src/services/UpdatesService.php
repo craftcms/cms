@@ -289,16 +289,21 @@ class UpdatesService extends BaseApplicationComponent
 		{
 			$updater = new Updater();
 
+			// Make sure we still meet the requirements.
+			$updater->checkRequirements();
+
 			// No need to get the latest update info if this is a manual update.
 			if (!$manual)
 			{
 				$updater->getLatestUpdateInfo();
+				$result = $updater->getUpdateFileInfo();
+
 			}
 
-			$updater->checkRequirements();
+			$result['success'] = true;
 
 			Craft::log('Finished preparing to update '.$handle.'.', LogLevel::Info, true);
-			return array('success' => true);
+			return $result;
 		}
 		catch (\Exception $e)
 		{
@@ -307,16 +312,17 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * @param $md5
 	 * @return array
 	 */
-	public function processUpdateDownload()
+	public function processUpdateDownload($md5)
 	{
 		Craft::log('Starting to process the update download.', LogLevel::Info, true);
 
 		try
 		{
 			$updater = new Updater();
-			$result = $updater->processDownload();
+			$result = $updater->processDownload($md5);
 			$result['success'] = true;
 
 			Craft::log('Finished processing the update download.', LogLevel::Info, true);

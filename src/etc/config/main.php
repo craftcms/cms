@@ -1,9 +1,7 @@
 <?php
 
-$common = require_once(CRAFT_APP_PATH.'etc/config/common.php');
-
 return CMap::mergeArray(
-	$common,
+	$commonConfig,
 
 	array(
 		'basePath'    => CRAFT_APP_PATH,
