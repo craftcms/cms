@@ -151,10 +151,10 @@ class EntryModel extends BaseElementModel
 	/**
 	 * Returns the entry's ancestors.
 	 *
-	 * @param int|null $delta
+	 * @param int|null $dist
 	 * @return array
 	 */
-	public function getAncestors($delta = null)
+	public function getAncestors($dist = null)
 	{
 		if (!isset($this->_ancestors))
 		{
@@ -168,9 +168,9 @@ class EntryModel extends BaseElementModel
 			}
 		}
 
-		if ($delta)
+		if ($dist)
 		{
-			return array_slice($this->_ancestors, count($this->_ancestors) - $delta);
+			return array_slice($this->_ancestors, count($this->_ancestors) - $dist);
 		}
 		else
 		{
@@ -262,7 +262,7 @@ class EntryModel extends BaseElementModel
 			{
 				$criteria = craft()->elements->getCriteria($this->elementType);
 				$criteria->descendantOf($parent);
-				$criteria->descendantDelta(1);
+				$criteria->descendantDist(1);
 				$criteria->id = 'not '.$this->id;
 				return $criteria->find();
 			}
@@ -313,7 +313,7 @@ class EntryModel extends BaseElementModel
 		{
 			$criteria = craft()->elements->getCriteria($this->elementType);
 			$criteria->descendantOf($this);
-			$criteria->descendantDelta(1);
+			$criteria->descendantDist(1);
 			return $criteria->find();
 		}
 	}
@@ -321,10 +321,10 @@ class EntryModel extends BaseElementModel
 	/**
 	 * Returns the entry's descendants.
 	 *
-	 * @param int|null $delta
+	 * @param int|null $dist
 	 * @return array
 	 */
-	public function getDescendants($delta = null)
+	public function getDescendants($dist = null)
 	{
 		if (!isset($this->_descendants))
 		{
@@ -338,9 +338,9 @@ class EntryModel extends BaseElementModel
 			}
 		}
 
-		if ($delta)
+		if ($dist)
 		{
-			return array_slice($this->_descendants, 0, $delta);
+			return array_slice($this->_descendants, 0, $dist);
 		}
 		else
 		{

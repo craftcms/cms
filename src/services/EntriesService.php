@@ -377,7 +377,7 @@ class EntriesService extends BaseApplicationComponent
 			$criteria = craft()->elements->getCriteria(ElementType::Entry);
 			$criteria->sectionId = $entry->sectionId;
 			$criteria->ancestorOf = $entry;
-			$criteria->ancestorDelta = $delta;
+			$criteria->ancestorDist = $delta;
 			$criteria->locale = $entry->locale;
 			return $criteria->find();
 		}
@@ -401,7 +401,7 @@ class EntriesService extends BaseApplicationComponent
 			$criteria = craft()->elements->getCriteria(ElementType::Entry);
 			$criteria->sectionId = $entry->sectionId;
 			$criteria->descendantOf = $entry;
-			$criteria->descendantDelta = $delta;
+			$criteria->descendantDist = $delta;
 			$criteria->locale = $entry->locale;
 			return $criteria->find();
 		}

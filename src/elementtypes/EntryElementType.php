@@ -196,9 +196,9 @@ class EntryElementType extends BaseElementType
 			'status'          => array(AttributeType::String, 'default' => EntryModel::LIVE),
 			'order'           => array(AttributeType::String, 'default' => 'lft, postDate desc'),
 			'ancestorOf'      => AttributeType::Mixed,
-			'ancestorDelta'   => AttributeType::Number,
+			'ancestorDist'    => AttributeType::Number,
 			'descendantOf'    => AttributeType::Mixed,
-			'descendantDelta' => AttributeType::Number,
+			'descendantDist'  => AttributeType::Number,
 			'prevSiblingOf'   => AttributeType::Mixed,
 			'nextSiblingOf'   => AttributeType::Mixed,
 			'depth'           => AttributeType::Number,
@@ -444,10 +444,10 @@ class EntryElementType extends BaseElementType
 						)
 					);
 
-					if ($criteria->ancestorDelta)
+					if ($criteria->ancestorDist)
 					{
 						$query->andWhere('entries.depth >= :depth',
-							array(':depth' => $criteria->ancestorOf->depth - $criteria->ancestorDelta)
+							array(':depth' => $criteria->ancestorOf->depth - $criteria->ancestorDist)
 						);
 					}
 				}
@@ -475,10 +475,10 @@ class EntryElementType extends BaseElementType
 						)
 					);
 
-					if ($criteria->descendantDelta)
+					if ($criteria->descendantDist)
 					{
 						$query->andWhere('entries.depth <= :depth',
-							array(':depth' => $criteria->descendantOf->depth + $criteria->descendantDelta)
+							array(':depth' => $criteria->descendantOf->depth + $criteria->descendantDist)
 						);
 					}
 				}
