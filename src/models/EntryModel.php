@@ -246,19 +246,30 @@ class EntryModel extends BaseElementModel
 	 */
 	public function getSiblings()
 	{
-		$parent = $this->getParent();
-
-		if ($parent)
+		if ($this->depth == 1)
 		{
 			$criteria = craft()->elements->getCriteria($this->elementType);
-			$criteria->descendantOf($parent);
-			$criteria->descendantDelta(1);
+			$criteria->depth(1);
 			$criteria->id = 'not '.$this->id;
+			$criteria->sectionId = $this->sectionId;
 			return $criteria->find();
 		}
 		else
 		{
-			return array();
+			$parent = $this->getParent();
+
+			if ($parent)
+			{
+				$criteria = craft()->elements->getCriteria($this->elementType);
+				$criteria->descendantOf($parent);
+				$criteria->descendantDelta(1);
+				$criteria->id = 'not '.$this->id;
+				return $criteria->find();
+			}
+			else
+			{
+				return array();
+			}
 		}
 	}
 
