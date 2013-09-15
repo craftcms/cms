@@ -226,6 +226,20 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
+	 * Overrides the (deprecated) BaseElementModel::getParents() so it only works for Channel sections, until it's removed altogether.
+	 *
+	 * @param mixed $field
+	 * @return null|ElementCriteriaModel
+	 */
+	public function getParents($field = null)
+	{
+		if ($this->getSection()->type == Sectiontype::Channel)
+		{
+			return parent::getParents($field);
+		}
+	}
+
+	/**
 	 * Returns the entry's descendants.
 	 *
 	 * @param int|null $delta
