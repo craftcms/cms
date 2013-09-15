@@ -124,7 +124,7 @@ class ErrorHandler extends \CErrorHandler
 
 		$this->_error = $data = array(
 			'code'      => 500,
-			'type'      => get_class($exception),
+			'type'      => Craft::t('Template Syntax Error'),
 			'errorCode' => $exception->getCode(),
 			'message'   => $exception->getRawMessage(),
 			'file'      => $file,
