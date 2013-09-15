@@ -131,7 +131,7 @@ class TagsController extends BaseController
 		$tagSetId = craft()->request->getPost('tagSetId');
 		$excludeIds = craft()->request->getPost('excludeIds', array());
 
-		$notIds = array();
+		$notIds = array('and');
 
 		foreach ($excludeIds as $id)
 		{
@@ -141,7 +141,7 @@ class TagsController extends BaseController
 		$criteria = craft()->elements->getCriteria(ElementType::Tag);
 		$criteria->setId  = $tagSetId;
 		$criteria->search = 'name:'.$search.'*';
-		$criteria->id     = implode(', ', $notIds);
+		$criteria->id     = $notIds;
 		$tags = $criteria->find();
 
 		$return = array();
