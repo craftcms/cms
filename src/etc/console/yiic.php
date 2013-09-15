@@ -49,6 +49,9 @@ require_once CRAFT_APP_PATH.'Info.php';
 
 require_once(dirname(__FILE__).'/ConsoleApp.php');
 
+Yii::setPathOfAlias('app', CRAFT_APP_PATH);
+Yii::setPathOfAlias('plugins', CRAFT_PLUGINS_PATH);
+
 $app = Yii::createApplication('Craft\ConsoleApp', $configPath);
 $app->commandRunner->addCommands(Craft\Craft::getPathOfAlias('application.etc.console.commands.*'));
 
