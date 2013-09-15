@@ -252,6 +252,7 @@ class EntryModel extends BaseElementModel
 			$criteria->depth(1);
 			$criteria->id = 'not '.$this->id;
 			$criteria->sectionId = $this->sectionId;
+			$criteria->locale = $this->locale;
 			return $criteria->find();
 		}
 		else
@@ -264,6 +265,7 @@ class EntryModel extends BaseElementModel
 				$criteria->descendantOf($parent);
 				$criteria->descendantDist(1);
 				$criteria->id = 'not '.$this->id;
+				$criteria->locale = $this->locale;
 				return $criteria->find();
 			}
 			else
@@ -282,6 +284,7 @@ class EntryModel extends BaseElementModel
 	{
 		$criteria = craft()->elements->getCriteria($this->elementType);
 		$criteria->prevSiblingOf($this);
+		$criteria->locale = $this->locale;
 		return $criteria->first();
 	}
 
@@ -294,6 +297,7 @@ class EntryModel extends BaseElementModel
 	{
 		$criteria = craft()->elements->getCriteria($this->elementType);
 		$criteria->nextSiblingOf($this);
+		$criteria->locale = $this->locale;
 		return $criteria->first();
 	}
 
@@ -314,6 +318,7 @@ class EntryModel extends BaseElementModel
 			$criteria = craft()->elements->getCriteria($this->elementType);
 			$criteria->descendantOf($this);
 			$criteria->descendantDist(1);
+			$criteria->locale = $this->locale;
 			return $criteria->find();
 		}
 	}
