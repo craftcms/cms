@@ -364,54 +364,6 @@ class EntriesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns an entry's ancestors.
-	 *
-	 * @param EntryModel $entry
-	 * @param int|null $delta
-	 * @return array
-	 */
-	public function getEntryAncestors(EntryModel $entry, $delta = null)
-	{
-		if (Craft::hasPackage(CraftPackage::PublishPro) && $entry->getSection()->type == SectionType::Structure && $entry->depth > 1)
-		{
-			$criteria = craft()->elements->getCriteria(ElementType::Entry);
-			$criteria->sectionId = $entry->sectionId;
-			$criteria->ancestorOf = $entry;
-			$criteria->ancestorDist = $delta;
-			$criteria->locale = $entry->locale;
-			return $criteria->find();
-		}
-		else
-		{
-			return array();
-		}
-	}
-
-	/**
-	 * Returns an entry's descendants.
-	 *
-	 * @param EntryModel $entry
-	 * @param int|null $delta
-	 * @return array
-	 */
-	public function getEntryDescendants(EntryModel $entry, $delta = null)
-	{
-		if (Craft::hasPackage(CraftPackage::PublishPro) && $entry->getSection()->type == SectionType::Structure)
-		{
-			$criteria = craft()->elements->getCriteria(ElementType::Entry);
-			$criteria->sectionId = $entry->sectionId;
-			$criteria->descendantOf = $entry;
-			$criteria->descendantDist = $delta;
-			$criteria->locale = $entry->locale;
-			return $criteria->find();
-		}
-		else
-		{
-			return array();
-		}
-	}
-
-	/**
 	 * Appends an entry to another.
 	 *
 	 * @param EntryModel $entry

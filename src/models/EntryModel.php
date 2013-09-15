@@ -160,7 +160,10 @@ class EntryModel extends BaseElementModel
 		{
 			if ($this->id)
 			{
-				$this->_ancestors = craft()->entries->getEntryAncestors($this);
+				$criteria = craft()->elements->getCriteria($this->elementType);
+				$criteria->ancestorOf = $this;
+				$criteria->locale = $this->locale;
+				$this->_ancestors = $criteria->find();
 			}
 			else
 			{
@@ -335,7 +338,10 @@ class EntryModel extends BaseElementModel
 		{
 			if ($this->id)
 			{
-				$this->_descendants = craft()->entries->getEntryDescendants($this);
+				$criteria = craft()->elements->getCriteria($this->elementType);
+				$criteria->descendantOf = $this;
+				$criteria->locale = $this->locale;
+				$this->_descendants = $criteria->find();
 			}
 			else
 			{

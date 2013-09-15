@@ -27,7 +27,7 @@ class EntriesController extends BaseController
 
 				if ($parent)
 				{
-					$ancestors = craft()->entries->getEntryAncestors($parent);
+					$ancestors = $parent->getAncestors();
 					$ancestors[] = $parent;
 					$variables['entry']->setAncestors($ancestors);
 				}
@@ -48,7 +48,6 @@ class EntriesController extends BaseController
 				$idParam = array('and', 'not '.$variables['entry']->id);
 
 				$descendantCriteria = craft()->elements->getCriteria(ElementType::Entry);
-				$descendantCriteria->sectionId = $variables['section']->id;
 				$descendantCriteria->status = null;
 				$descendantCriteria->descendantOf($variables['entry']);
 				$descendantIds = $descendantCriteria->ids();
