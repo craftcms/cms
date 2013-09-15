@@ -240,6 +240,27 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
+	 * Overrides the (deprecated) BaseElementModel::getChildren() so that it returns the actual children for entries within Structure sections.
+	 *
+	 * @param mixed $field
+	 * @return array|ElementCriteriaModel
+	 */
+	public function getChildren($field = null)
+	{
+		if ($this->getSection()->type == Sectiontype::Channel)
+		{
+			return parent::getChildren($field);
+		}
+		else
+		{
+			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria->descendantOf($this);
+			$criteria->descendantDelta(1);
+			return $criteria->find();
+		}
+	}
+
+	/**
 	 * Returns the entry's descendants.
 	 *
 	 * @param int|null $delta
