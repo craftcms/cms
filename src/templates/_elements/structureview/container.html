@@ -1,7 +1,34 @@
+{% includeTranslations
+	"Show/hide children",
+	"New child"
+%}
+
 <ul class="structureview">
-	{% include "_elements/structureview/elements" %}
+	{% nav element in elements %}
+		{% set collapsed = (viewState.collapsedElementIds is defined and element.id in viewState.collapsedElementIds) %}
+		<li{% if collapsed %} class="collapsed"{% endif %} data-depth="{{ element.depth }}">
+			{% set indent = 8 + (element.depth - 1) * 35 %}
+			<div class="row{% if element.id in disabledElementIds %} disabled{% endif %}" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;" data-id="{{ element.id }}" data-label="{{ element }}" data-status="{{ element.getStatus() }}">
+				{% include "_elements/element" %}
+				{% if context == 'index' %}
+					{% if source.sortable is defined and source.sortable %}
+						<a class="move icon" title="{{ 'Move'|t }}"></a>
+					{% endif %}
+					<a class="add icon" title="{{ 'New Child'|t }}"></a>
+				{% endif %}
+			</div>
+
+			{% ifchildren %}
+				<ul>
+					{% children %}
+				</ul>
+			{% endifchildren %}
+		</li>
+	{% endnav %}
 </ul>
 
+
+{# Hide "Add child" menu buttons beyond the max depth #}
 {% if context == 'index' and source.maxDepth is defined and source.maxDepth %}
 	{% set css %}
 		.structureview{% for i in 2 .. source.maxDepth %} ul{% endfor %} .add { display: none; }
