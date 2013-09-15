@@ -45,7 +45,7 @@ class EntriesController extends BaseController
 
 			if ($variables['entry']->id)
 			{
-				$idParam = array('not '.$variables['entry']->id);
+				$idParam = array('and', 'not '.$variables['entry']->id);
 
 				$descendantCriteria = craft()->elements->getCriteria(ElementType::Entry);
 				$descendantCriteria->sectionId = $variables['section']->id;
