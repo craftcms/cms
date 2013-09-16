@@ -3,48 +3,21 @@
 {% includeCssResource "css/whats-new.css" %}
 
 {% set content %}
-	<h1>Welcome to Craft 1.1. Here’s what’s new.</h1>
-	<div class="feature tags">
-		<h2>Revamped tagging</h2>
+	<h1>Welcome to Craft 1.2. Here’s what’s new.</h1>
 
-		<p>Tags are no longer a sad little setting, only used by entries. They’ve been completely rethought, with maximum flexibility in mind.</p>
-
-		<ul class="bullets">
-			<li>You can create multiple sets of tags from Settings → Tags (called <a href="http://docs.buildwithcraft.com/diving-in/tag-sets.html">Tag Sets</a>).</li>
-			<li>There’s a new <a href="http://docs.buildwithcraft.com/diving-in/fields/types/tags.html">Tags field type</a> which can be used to add tags to entries, assets, users, global sets, and even other tags.</li>
-			<li>There’s a new <a href="http://docs.buildwithcraft.com/templating/reference/globals/craft.tags.html" target="_blank">craft.tags</a> template variable for accessing all of your tags from your templates.</li>
-		</ul>
-
-		<p>Note that if you had previously assigned any tags to your entries, those tags have been migrated over. However you will need to edit your sections’ Field Layouts to get the auto-created Tags field to appear in your entries’ edit pages.</p>
+	<div class="feature singles">
+		<h2>Singles</h2>
+		<p>You can now create Single sections for one-off pages like your Homepage. Each Single gets its own URL and field layout, and they show up in the Entries tab right alongside your other sections’ content. Best of all, Live Preview works with them.</p>
 	</div>
 
-	<div class="feature assets">
-		<h2>Assets improvements</h2>
-
-		<p>Assets have also seen a lot of love in this update.</p>
-
-		<ul class="bullets">
-			<li>It’s now possible to upload new assets right from your Assets fields!</li>
-			<li>You can now edit your selected assets’ content in your Assets fields by double-clicking on them.</li>
-			<li>There’s a new <a href="http://docs.buildwithcraft.com/templating/reference/globals/craft.assets.html" target="_blank">craft.assets</a> template variable for accessing all of your assets from your templates.</li>
-		</ul>
+	<div class="feature structures">
+		<h2>Structures</h2>
+		<p>You can no create Structure sections for times when you need to store entries in a particular order, or you want to store hierarchical content. Structure sections give you full control over how deep the hierarchy can go, as well as what the nested entries’ URLs should look like.</p>
 	</div>
 
-	<div class="feature config">
-		<h2>Multi-environment support</h2>
-
-		<p>We’ve added a couple key features that make running the same Craft install in multiple environments much simpler.</p>
-
-		<ul class="bullets">
-			<li>Your config files can now define global, as well as <a href="http://docs.buildwithcraft.com/diving-in/multi-environment-configs.html" target="_blank">per-environment config settings</a>.</li>
-			<li>We’ve added a new ‘environmentVariables’ <a href="http://docs.buildwithcraft.com/reference/config-settings.html" target="_blank">config setting</a> which allows you to define variables that can be accessed from your Site URL and asset sources’ URL and Path settings.</li>
-		</ul>
-	</div>
-
-	<div class="feature more">
-		<h2>Lots more!</h2>
-
-		<p>With over 60 additions and improvements, Craft 1.1 is our single biggest update yet. To see all that has changed, check out <a class="go" href="http://buildwithcraft.com/updates" target="_blank">buildwithcraft.com/updates</a></p>
+	<div class="feature entrytypes">
+		<h2>Entry Types</h2>
+		<p>Channel and Structure sections can now have more than one field layout, enabling even more flexible content structures, if your site requires it.</p>
 	</div>
 {% endset %}
 
