@@ -9,6 +9,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 	sources: null,
 	criteria: null,
 	limit: null,
+	storageKey: null,
+
 	totalElements: 0,
 	elementSelect: null,
 	elementSort: null,
@@ -19,7 +21,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 	$elements: null,
 	$addElementBtn: null,
 
-	init: function(id, name, elementType, sources, criteria, limit)
+	init: function(id, name, elementType, sources, criteria, limit, storageKey)
 	{
 		this.id = id;
 		this.name = name;
@@ -27,6 +29,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 		this.sources = sources;
 		this.criteria = criteria;
 		this.limit = limit;
+		this.storageKey = storageKey;
 
 		this.$container = $('#'+this.id);
 		this.$elementsContainer = this.$container.children('.elements');
@@ -116,6 +119,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 			}
 
 			this.modal = Craft.createElementSelectorModal(this.elementType, {
+				storageKey: (this.storageKey ? 'BaseElementSelectInput.'+this.elementType+'.'+this.storageKey : null),
 				sources: this.sources,
 				criteria: this.criteria,
 				multiSelect: true,

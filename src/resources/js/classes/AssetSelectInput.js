@@ -6,9 +6,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     requestId: 0,
     hud: null,
 
-	init: function(id, name, elementType, sources, criteria, limit)
+	init: function(id, name, elementType, sources, criteria, limit, storageKey)
 	{
-		this.base(id, name, elementType, sources, criteria, limit);
+		this.base(id, name, elementType, sources, criteria, limit, storageKey);
         this._attachHUDEvents();
 	},
 
