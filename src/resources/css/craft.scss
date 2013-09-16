@@ -260,7 +260,8 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .disabled { opacity: 0.25; cursor: default; }
 
 .btn:not(.submit):not(.noborder) { border: 1px solid #ddd; padding: 5px 10px; color: $textcolor; background-color: #fff; }
-.btn:not(.submit):not(.noborder):hover { border-color: #ccc; }
+.btn:not(.submit):not(.noborder):hover,
+.btn:not(.submit):not(.noborder).hover { border-color: #ccc; }
 .btn:not(.submit):not(.noborder):active,
 .btn:not(.submit):not(.noborder).active { border-color: rgba(0,0,0,0.2); background-color: $bgcolor; }
 
@@ -294,6 +295,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btngroup .btn[data-icon]:before { margin-right: -2px; }
 
 .btngroup .btn:hover,
+.btngroup .btn.hover,
 .btngroup .btn:active,
 .btngroup .btn.active { position: relative; z-index: 1; }
 
@@ -333,9 +335,10 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 
 /* submit buttons */
 .btn.submit { color: #fff; background-color: $submitcolor; }
-.btn.submit:hover { background-color: #bf503f; }
-.btn.submit:active,
-.btn.submit.active { background-color: #8c3b2e; }
+.btn.submit:not(.disabled):hover,
+.btn.submit:not(.disabled).hover { background-color: #bf503f; }
+.btn.submit:not(.disabled):active,
+.btn.submit:not(.disabled).active { background-color: #8c3b2e; }
 
 div.btn.submit { position: relative; overflow: hidden; }
 div.btn.submit input { position: absolute; left: 100%; }
