@@ -59,6 +59,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 					// Initialize the element index
 					this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
 						context:            'modal',
+						storageKey:         this.settings.storageKey,
 						criteria:           this.settings.criteria,
 						disabledElementIds: this.settings.disabledElementIds,
 						onUpdateElements:   $.proxy(this, 'onUpdateElements'),
@@ -95,7 +96,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 			delete this.elementSelect;
 		}
 
-		if (this.elementIndex.getViewState('mode') == 'structure')
+		if (this.elementIndex.getSelectedSourceState('mode') == 'structure')
 		{
 			var $items = this.elementIndex.$elementContainer.find('.row:not(.disabled)');
 		}
@@ -106,7 +107,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 
 		this.elementSelect = new Garnish.Select(this.elementIndex.$elementContainer, $items, {
 			multi: this.settings.multiSelect,
-			vertical: (this.elementIndex.getViewState('mode') != 'thumbs'),
+			vertical: (this.elementIndex.getSelectedSourceState('mode') != 'thumbs'),
 			onSelectionChange: $.proxy(this, 'onSelectionChange')
 		});
 
@@ -177,6 +178,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 },
 {
 	defaults: {
+		storageKey: null,
 		sources: null,
 		criteria: null,
 		multiSelect: false,

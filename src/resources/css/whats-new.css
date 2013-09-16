@@ -1,31 +1,29 @@
 #page-header { display: none; }
-#main { margin-top: 30px; }
+#main { margin-top: 30px; padding-bottom: 0; }
 
 #content { font-size: 14px; }
 #content h1 { font-size: 40px; text-align: center; }
 #content h2 { font-size: 20px; }
 
-#content .feature { margin: 0 -30px; padding: 30px 450px 30px 30px; }
-
-#content .feature:not(:last-child) {
-	-webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1), inset 0 -5px 5px -2px rgba(0,0,0,0.02);
-	        box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1), inset 0 -5px 5px -2px rgba(0,0,0,0.02);
+#content .feature { position: relative; margin: 0 -30px; padding: 50px 450px 50px 30px; min-height: 170px; overflow: hidden;
+	background: -webkit-linear-gradient(hsl(212, 8%, 100%), hsl(212, 8%, 97%));
+	background:    -moz-linear-gradient(hsl(212, 8%, 100%), hsl(212, 8%, 97%));
 }
 
-#content .feature li { margin: 5px 0; }
+#content .feature:not(.singles) {
+	-webkit-box-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+	        box-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+}
 
-#content .feature.tags { background: url(../images/whats-new/tags.png) no-repeat 100% 50%; background-size: 383px; }
-#content .feature.assets { background: url(../images/whats-new/assets.png) no-repeat 100% 100%; background-size: 395px; }
-#content .feature.config { background: url(../images/whats-new/config.png) no-repeat 100% 100%; background-size: 389px; }
-#content .feature.more { margin-bottom: -30px; border-radius: 0 0 3px 3px; }
+#content .feature:after { display: block; content: '.'; font-size: 0; border-top-left-radius: 3px; position: absolute; right: 0; bottom: 0; width: 400px; height: 220px; background: hsl(212, 8%, 92%) no-repeat 100% 100%; background-size: 400px;
+	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.15);
+	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.15);
+}
 
-#content .feature.assets,
-#content .feature.more { background-color: #e1f6ff; }
+#content .feature.singles:after { background-image: url(../images/whats-new/single.png); }
+#content .feature.structures:after { background-image: url(../images/whats-new/structure.png); }
+#content .feature.entrytypes:after { background-image: url(../images/whats-new/entrytypes.png); }
 
 @media screen and (max-width: 750px) {
-	#content .feature { padding: 30px; }
-
-	#content .feature.tags { padding-bottom: 108px; background-position: 100% 100%; }
-	#content .feature.assets { padding-bottom: 205px; }
-	#content .feature.config { padding-bottom: 230px; }
+	#content .feature { padding: 10px 10px 235px; min-height: 0; }
 }

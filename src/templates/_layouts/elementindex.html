@@ -28,8 +28,9 @@
 
 {% block initJs %}
 	Craft.createElementIndex('{{ elementTypeClass }}', $('#main'), {
-		context:  'index',
-		criteria: { status: null }
+		context:    'index',
+		storageKey: 'elementindex.{{ elementTypeClass }}',
+		criteria:   { status: null }
 	});
 {% endblock %}
 
