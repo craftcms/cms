@@ -30,7 +30,7 @@ var LoginForm = Garnish.Base.extend({
 
 		this.addListener(this.$loginNameInput, 'keypress,keyup,change,blur', 'onInputChange');
 		this.addListener(this.$passwordInput, 'keypress,keyup,change,blur', 'onInputChange');
-		this.addListener(this.$forgotPasswordLink, 'activate', 'onForgetPassword');
+		this.addListener(this.$forgotPasswordLink, 'click', 'onForgetPassword');
 		this.addListener(this.$submitBtn, 'activate', 'onSubmit');
 		this.addListener(this.$form, 'submit', 'onSubmit');
 	},
