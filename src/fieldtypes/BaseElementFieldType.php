@@ -168,7 +168,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			'jsClass'        => $this->inputJsClass,
 			'elementType'    => new ElementTypeVariable($this->getElementType()),
 			'id'             => $id,
-			'storageKey'     => $this->model->id,
+			'storageKey'     => 'field.'.$this->model->id,
 			'name'           => $name,
 			'elements'       => $elements->all,
 			'sources'        => $sources,

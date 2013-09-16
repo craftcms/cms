@@ -96,7 +96,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 			delete this.elementSelect;
 		}
 
-		if (this.elementIndex.getViewState('mode') == 'structure')
+		if (this.elementIndex.getSelectedSourceState('mode') == 'structure')
 		{
 			var $items = this.elementIndex.$elementContainer.find('.row:not(.disabled)');
 		}
@@ -107,7 +107,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 
 		this.elementSelect = new Garnish.Select(this.elementIndex.$elementContainer, $items, {
 			multi: this.settings.multiSelect,
-			vertical: (this.elementIndex.getViewState('mode') != 'thumbs'),
+			vertical: (this.elementIndex.getSelectedSourceState('mode') != 'thumbs'),
 			onSelectionChange: $.proxy(this, 'onSelectionChange')
 		});
 

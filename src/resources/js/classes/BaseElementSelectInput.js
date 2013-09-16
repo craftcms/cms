@@ -119,7 +119,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 			}
 
 			this.modal = Craft.createElementSelectorModal(this.elementType, {
-				storageKey: (this.storageKey ? 'BaseElementSelectInput.'+this.elementType+'.'+this.storageKey : null),
+				storageKey: (this.storageKey ? 'BaseElementSelectInput.'+this.storageKey : null),
 				sources: this.sources,
 				criteria: this.criteria,
 				multiSelect: true,
