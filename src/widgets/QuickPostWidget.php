@@ -47,9 +47,12 @@ class QuickPostWidget extends BaseWidget
 
 		foreach (craft()->sections->getAllSections() as $section)
 		{
-			if (craft()->userSession->checkPermission('createEntries:'.$section->id))
+			if ($section->type !== SectionType::Single)
 			{
-				$sections[] = $section;
+				if (craft()->userSession->checkPermission('createEntries:'.$section->id))
+				{
+					$sections[] = $section;
+				}
 			}
 		}
 
