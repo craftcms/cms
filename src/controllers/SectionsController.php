@@ -20,19 +20,7 @@ class SectionsController extends BaseController
 	 */
 	public function actionIndex(array $variables = array())
 	{
-		$sections = craft()->sections->getAllSections();
-		$urlFormats = array();
-		$names = array();
-
-		foreach ($sections as $section)
-		{
-			$urlFormats[] = $section->getUrlFormat();
-			$names[] = Craft::t($section->name);
-		}
-
-		array_multisort($urlFormats, $names, $sections);
-
-		$variables['sections'] = $sections;
+		$variables['sections'] = craft()->sections->getAllSections();
 
 		// Can new sections be added?
 		if (!Craft::hasPackage(CraftPackage::PublishPro))
