@@ -107,6 +107,19 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns an <img> tag based on this asset.
+	 *
+	 * @return string
+	 */
+	public function getImg()
+	{
+		if ($this->kind == 'image')
+		{
+			return '<img src="'.$this->url.'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.$this->title.'" />';
+		}
+	}
+
+	/**
 	 * @return AssetFolderModel|null
 	 */
 	public function getFolder()
