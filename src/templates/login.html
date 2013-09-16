@@ -36,10 +36,8 @@
 					'</div>' +
 
 					'<div class="buttons">' +
-						'<div id="submit" class="btn submit disabled {% if not craft.request.isSecure %}in{% endif %}secure icon">' +
-							'<span>{{ "Login"|t }}</span>' +
-							'<input type="submit">' +
-						'</div>' +
+						'<div id="ssl-icon" class="disabled"><div class="{{ craft.request.isSecure ? "secure" : "insecure" }} icon"></div></div>' +
+						'<input id="submit" class="btn submit disabled" type="submit" value="{{ "Login"|t }}">' +
 						'<div id="spinner" class="spinner hidden"></div>' +
 					'</div>' +
 				'</form>'
