@@ -517,6 +517,13 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.$source = $source.addClass('sel');
 		this.setInstanceState('selectedSource', this.sourceKey);
 
+		if (this.$search)
+		{
+			// Clear the search value without triggering the textchange event
+			this.$search.data('textchangeValue', '');
+			this.$search.val('');
+		}
+
 		this.setViewModeForNewSource();
 		this.onSelectSource();
 	},
