@@ -4,8 +4,12 @@
 Craft.BaseElementIndex = Garnish.Base.extend({
 
 	elementType: null,
-	state: null,
-	stateStorageId: null,
+
+	instanceState: null,
+	instanceStateStorageId: null,
+	sourceStates: null,
+	sourceStatesStorageId: null,
+
 	searchTimeout: null,
 	elementSelect: null,
 	sourceSelect: null,
@@ -36,19 +40,32 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.$container = $container;
 		this.setSettings(settings, Craft.BaseElementIndex.defaults);
 
-		// Set the state object
-		this.state = {
-			source: null,
-			viewStates: {}
+		// Set the state objects
+		this.instanceState = {
+			selectedSource: null
 		};
+
+		this.sourceStates = {};
 
 		if (typeof Storage !== 'undefined')
 		{
-			this.stateStorageId = 'Craft-'+Craft.siteUid+'.BaseElementIndex.'+this.elementType+'.'+this.settings.context;
-
-			if (typeof localStorage[this.stateStorageId] != 'undefined')
+			// Instance states (selected source) are stored by a custom storage key defined in the settings
+			if (this.settings.storageKey)
 			{
-				$.extend(this.state, JSON.parse(localStorage[this.stateStorageId]));
+				this.instanceStateStorageId = 'Craft-'+Craft.siteUid+'.'+this.settings.storageKey;
+
+				if (typeof localStorage[this.instanceStateStorageId] != 'undefined')
+				{
+					$.extend(this.instanceState, JSON.parse(localStorage[this.instanceStateStorageId]));
+				}
+			}
+
+			// Source states (view mode, etc.) are stored by the element type and context
+			this.sourceStatesStorageId = 'Craft-'+Craft.siteUid+'.BaseElementIndex.'+this.elementType+'.'+this.settings.context;
+
+			if (typeof localStorage[this.sourceStatesStorageId] != 'undefined')
+			{
+				$.extend(this.sourceStates, JSON.parse(localStorage[this.sourceStatesStorageId]));
 			}
 		}
 
@@ -107,7 +124,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		}
 
 		// Select the initial source
-		var source = this.getState('source');
+		var source = this.instanceState.selectedSource;
 
 		if (source)
 		{
@@ -144,7 +161,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			selectedClass:     'sel',
 			multi:             false,
 			vertical:          true,
-			onSelectionChange: $.proxy(this, 'onSourceChange')
+			onSelectionChange: $.proxy(this, 'onSourceSelectionChange')
 		});
 
 		this.addListener(this.$search, 'textchange', $.proxy(function()
@@ -164,7 +181,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		}
 	},
 
-	onSourceChange: function()
+	onSourceSelectionChange: function()
 	{
 		var sourceElement = this.$sources.filter('.sel');
 		if (sourceElement.length == 0)
@@ -176,60 +193,54 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.updateElements();
 	},
 
-	getState: function(key)
-	{
-		if (typeof this.state[key] != 'undefined')
-		{
-			return this.state[key];
-		}
-		else
-		{
-			return null;
-		}
-	},
-
-	setState: function(key, value)
+	setInstanceState: function(key, value)
 	{
 		if (typeof key == 'object')
 		{
-			$.extend(this.state, key);
+			$.extend(this.instanceState, key);
 		}
 		else
 		{
-			this.state[key] = value;
+			this.instanceState[key] = value;
 		}
 
-		this.storeState();
+		// Store it in localStorage too?
+		if (this.instanceStateStorageId)
+		{
+			localStorage[this.instanceStateStorageId] = JSON.stringify(this.instanceState);
+		}
 	},
 
-	getViewStateForSource: function(source)
+	getSourceState: function(source, key, defaultValue)
 	{
-		if (typeof this.state.viewStates[source] == 'undefined')
+		if (typeof this.sourceStates[source] == 'undefined')
 		{
 			// Set it now so any modifications to it by whoever's calling this will be stored.
-			this.state.viewStates[source] = {};
+			this.sourceStates[source] = {};
 		}
 
-		return this.state.viewStates[source];
-	},
-
-	getViewState: function(key, defaultValue)
-	{
-		var viewState = this.getViewStateForSource(this.getState('source'));
-
-		if (typeof viewState[key] != 'undefined')
+		if (typeof key == 'undefined')
 		{
-			return viewState[key];
+			return this.sourceStates[source];
+		}
+		else if (typeof this.sourceStates[source][key] != 'undefined')
+		{
+			return this.sourceStates[source][key];
 		}
 		else
 		{
-			return (defaultValue !== undefined ? defaultValue : null);
+			return (typeof defaultValue != 'undefined' ? defaultValue : null);
 		}
 	},
 
-	setViewState: function(key, value)
+	getSelectedSourceState: function(key, defaultValue)
 	{
-		var viewState = this.getViewStateForSource(this.getState('source'));
+		return this.getSourceState(this.instanceState.selectedSource, key, defaultValue);
+	},
+
+	setSelecetedSourceState: function(key, value)
+	{
+		var viewState = this.getSelectedSourceState();
 
 		if (typeof key == 'object')
 		{
@@ -240,19 +251,12 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			viewState[key] = value;
 		}
 
-		this.state.viewStates[this.getState('source')] = viewState;
-		this.storeState();
-	},
+		this.sourceStates[this.instanceState.selectedSource] = viewState;
 
-	storeState: function()
-	{
-		if (this.stateStorageId)
+		// Store it in localStorage too?
+		if (this.sourceStatesStorageId)
 		{
-			// Recreate the object to prevent old, unwanted values from getting stored
-			localStorage[this.stateStorageId] = JSON.stringify({
-				source:     this.state.source,
-				viewStates: this.state.viewStates
-			});
+			localStorage[this.sourceStatesStorageId] = JSON.stringify(this.sourceStates);
 		}
 	},
 
@@ -263,8 +267,8 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			elementType:        this.elementType,
 			criteria:           this.settings.criteria,
 			disabledElementIds: this.settings.disabledElementIds,
-			source:             this.getState('source'),
-			viewState:          this.getViewStateForSource(this.getState('source')),
+			source:             this.instanceState.selectedSource,
+			viewState:          this.getSelectedSourceState(),
 			search:             (this.$search ? this.$search.val() : null)
 		};
 	},
@@ -274,13 +278,13 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.$mainSpinner.removeClass('hidden');
 		this.removeListener(this.$scroller, 'scroll');
 
-		if (this.getViewState('mode') == 'table' && this.$table)
+		if (this.getSelectedSourceState('mode') == 'table' && this.$table)
 		{
 			Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.not(this.$table);
 		}
 
 		// Can't use structure view for search results
-		if (this.getViewState('mode') == 'structure' && this.$search && this.$search.val())
+		if (this.getSelectedSourceState('mode') == 'structure' && this.$search && this.$search.val())
 		{
 			this.selectViewMode('table');
 		}
@@ -305,7 +309,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		{
 			this.$elements.html(response.html);
 
-			if (this.getViewState('mode') == 'table')
+			if (this.getSelectedSourceState('mode') == 'table')
 			{
 				var $headers = this.$elements.find('thead:first th');
 				this.addListener($headers, 'click', 'onSortChange');
@@ -361,7 +365,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			});
 		}
 
-		switch (this.getViewState('mode'))
+		switch (this.getSelectedSourceState('mode'))
 		{
 			case 'table':
 			{
@@ -371,7 +375,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			case 'structure':
 			{
 				var $parents = this.$elementContainer.find('ul').prev('.row'),
-					collapsedElementIds = this.getViewState('collapsedElementIds', []);
+					collapsedElementIds = this.getSelectedSourceState('collapsedElementIds', []);
 
 				for (var i = 0; i < $parents.length; i++)
 				{
@@ -425,7 +429,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 			var $li = $(ev.currentTarget).closest('li'),
 				elementId = $li.children('.row').data('id'),
-				collapsedElementIds = this.getViewState('collapsedElementIds', []),
+				collapsedElementIds = this.getSelectedSourceState('collapsedElementIds', []),
 				viewStateKey = $.inArray(elementId, collapsedElementIds);
 
 			if ($li.hasClass('collapsed'))
@@ -447,7 +451,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 				}
 			}
 
-			this.setViewState('collapsedElementIds', collapsedElementIds);
+			this.setSelecetedSourceState('collapsedElementIds', collapsedElementIds);
 
 		}, this));
 	},
@@ -462,20 +466,20 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		var $th = $(ev.currentTarget),
 			attribute = $th.attr('data-attribute');
 
-		if (this.getViewState('order') == attribute)
+		if (this.getSelectedSourceState('order') == attribute)
 		{
-			if (this.getViewState('sort') == 'asc')
+			if (this.getSelectedSourceState('sort') == 'asc')
 			{
-				this.setViewState('sort', 'desc');
+				this.setSelecetedSourceState('sort', 'desc');
 			}
 			else
 			{
-				this.setViewState('sort', 'asc');
+				this.setSelecetedSourceState('sort', 'asc');
 			}
 		}
 		else
 		{
-			this.setViewState({
+			this.setSelecetedSourceState({
 				order: attribute,
 				sort: 'asc'
 			});
@@ -511,7 +515,14 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 		this.sourceKey = $source.data('key');
 		this.$source = $source.addClass('sel');
-		this.setState('source', this.sourceKey);
+		this.setInstanceState('selectedSource', this.sourceKey);
+
+		if (this.$search)
+		{
+			// Clear the search value without triggering the textchange event
+			this.$search.data('textchangeValue', '');
+			this.$search.val('');
+		}
 
 		this.setViewModeForNewSource();
 		this.onSelectSource();
@@ -520,7 +531,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	setViewModeForNewSource: function()
 	{
 		// Have they already visited this source?
-		var viewMode = this.getViewState('mode');
+		var viewMode = this.getSelectedSourceState('mode');
 
 		if (!viewMode || !this.doesSourceHaveViewMode(viewMode))
 		{
@@ -604,7 +615,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 		this.viewMode = viewMode;
 		this.viewModeBtns[this.viewMode].addClass('active');
-		this.setViewState('mode', this.viewMode);
+		this.setSelecetedSourceState('mode', this.viewMode);
 	},
 
 	rememberDisabledElementId: function(elementId)

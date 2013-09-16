@@ -923,7 +923,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 		var elementSelect = new Garnish.Select(this.$elementContainer, $children, {
 			multi: true,
-			vertical: (this.getViewState('mode') == 'table'),
+			vertical: (this.getSelectedSourceState('mode') == 'table'),
 			onSelectionChange: $.proxy(this, '_onElementSelectionChange')
 		});
 
@@ -961,7 +961,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 	_editProperties: function (event)
 	{
 		var $target = $(event.currentTarget);
-        if (this.getViewState('mode') == 'table')
+        if (this.getSelectedSourceState('mode') == 'table')
         {
             $target = $target.find('.element');
         }
@@ -1177,7 +1177,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 	_getDragHelper: function ($element)
 	{
-		var currentView = this.getViewState('mode');
+		var currentView = this.getSelectedSourceState('mode');
 		switch (currentView)
 		{
 			case 'table':
