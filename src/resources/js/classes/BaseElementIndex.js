@@ -161,7 +161,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			selectedClass:     'sel',
 			multi:             false,
 			vertical:          true,
-			onSelectionChange: $.proxy(this, 'onSourceChange')
+			onSelectionChange: $.proxy(this, 'onSourceSelectionChange')
 		});
 
 		this.addListener(this.$search, 'textchange', $.proxy(function()
@@ -181,7 +181,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		}
 	},
 
-	onSourceChange: function()
+	onSourceSelectionChange: function()
 	{
 		var sourceElement = this.$sources.filter('.sel');
 		if (sourceElement.length == 0)
