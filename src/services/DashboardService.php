@@ -209,17 +209,20 @@ class DashboardService extends BaseApplicationComponent
 
 		foreach ($sections as $section)
 		{
-			// Only add widgets for sections they have create privileges to.
-			if ($user->can('createEntries:'.$section->id))
+			if ($section->type !== SectionType::Single)
 			{
-				$widget = new WidgetModel();
-				$widget->type = 'QuickPost';
+				// Only add widgets for sections they have create privileges to.
+				if ($user->can('createEntries:'.$section->id))
+				{
+					$widget = new WidgetModel();
+					$widget->type = 'QuickPost';
 
-				$widget->settings = array(
-					'section' => $section->id
-				);
+					$widget->settings = array(
+						'section' => $section->id
+					);
 
-				$this->saveUserWidget($widget);
+					$this->saveUserWidget($widget);
+				}
 			}
 		}
 

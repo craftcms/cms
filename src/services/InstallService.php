@@ -578,9 +578,9 @@ class InstallService extends BaseApplicationComponent
 			Craft::log('Could not save the Tags field.', LogLevel::Warning);
 		}
 
-		// Homepage global set
+		// Homepage single section
 
-		Craft::log('Creating the Homepage global set.');
+		Craft::log('Creating the Homepage single section.');
 
 		$homepageLayoutFields = array(
 			array(
@@ -593,22 +593,55 @@ class InstallService extends BaseApplicationComponent
 			)
 		);
 
+		$homepageLayoutTabs = array(
+			array(
+				'name'      => Craft::t('Content'),
+				'sortOrder' => 1,
+				'fields'    => $homepageLayoutFields
+			)
+		);
+
 		$homepageLayout = new FieldLayoutModel();
-		$homepageLayout->type = ElementType::GlobalSet;
+		$homepageLayout->type = ElementType::Entry;
+		$homepageLayout->setTabs($homepageLayoutTabs);
 		$homepageLayout->setFields($homepageLayoutFields);
 
-		$homepageGlobalSet = new GlobalSetModel();
-		$homepageGlobalSet->name = Craft::t('Homepage');
-		$homepageGlobalSet->handle = 'homepage';
-		$homepageGlobalSet->setFieldLayout($homepageLayout);
+		$homepageSingleSection = new SectionModel();
+		$homepageSingleSection->name       = Craft::t('Homepage');
+		$homepageSingleSection->handle     = 'homepage';
+		$homepageSingleSection->type       = SectionType::Single;
+		$homepageSingleSection->hasUrls  = false;
+		$homepageSingleSection->template = 'index';
 
-		if (craft()->globals->saveSet($homepageGlobalSet))
+		$primaryLocaleId = craft()->i18n->getPrimarySiteLocaleId();
+		$locales[$primaryLocaleId] = new SectionLocaleModel(array(
+			'locale'          => $primaryLocaleId,
+			'urlFormat'       => '__home__',
+		));
+
+		$homepageSingleSection->setLocales($locales);
+
+		// Save it
+		if (craft()->sections->saveSection($homepageSingleSection))
 		{
-			Craft::log('Homepage global set created successfully.');
+			Craft::log('Homepage single section created successfully.');
 		}
 		else
 		{
-			Craft::log('Could not save the Homepage global set.', LogLevel::Warning);
+			Craft::log('Could not save the Homepage single section.', LogLevel::Warning);
+		}
+
+		$homepageEntryTypes = $homepageSingleSection->getEntryTypes();
+		$homepageEntryType = $homepageEntryTypes[0];
+		$homepageEntryType->setFieldLayout($homepageLayout);
+
+		if (craft()->sections->saveEntryType($homepageEntryType))
+		{
+			Craft::log('Homepage single section entry type saved successfully.');
+		}
+		else
+		{
+			Craft::log('Could not save the Homepage single section entry type.', LogLevel::Warning);
 		}
 
 		// Homepage content
@@ -619,19 +652,25 @@ class InstallService extends BaseApplicationComponent
 
 		Craft::log('Setting the Homepage content.');
 
-		$homepageGlobalSet->locale = $inputs['locale'];
-		$homepageGlobalSet->getContent()->setAttributes(array(
+		$criteria = craft()->elements->getCriteria(ElementType::Entry);
+		$criteria->sectionId = $homepageSingleSection->id;
+		$entryModel = $criteria->first();
+
+		$entryModel->locale = $inputs['locale'];
+		$entryModel->getContent()->heading = Craft::t('Welcome to {siteName}!', $vars);
+		$entryModel->getContent()->setAttributes(array(
+			'body' => '<p>'.Craft::t('It’s true, this site doesn’t have a whole lot of content yet, but don’t worry. Our web developers have just installed the CMS, and they’re setting things up for the content editors this very moment. Soon {siteName} will be an oasis of fresh perspectives, sharp analyses, and astute opinions that will keep you coming back again and again.', $vars).'</p>',
 			'heading' => Craft::t('Welcome to {siteName}!', $vars),
-			'body'    => '<p>'.Craft::t('It’s true, this site doesn’t have a whole lot of content yet, but don’t worry. Our web developers have just installed the CMS, and they’re setting things up for the content editors this very moment. Soon {siteName} will be an oasis of fresh perspectives, sharp analyses, and astute opinions that will keep you coming back again and again.', $vars).'</p>',
 		));
 
-		if (craft()->globals->saveContent($homepageGlobalSet))
+		// Save the content
+		if (craft()->entries->saveEntry($entryModel))
 		{
-			Craft::log('Homepage content set successfully.');
+			Craft::log('Homepage an entry to the Homepage single section.');
 		}
 		else
 		{
-			Craft::log('Could not set the Homepage content.', LogLevel::Warning);
+			Craft::log('Could not save an entry to the Homepage single section.', LogLevel::Warning);
 		}
 
 		// News section
@@ -688,11 +727,11 @@ class InstallService extends BaseApplicationComponent
 		$newsLayout->setTabs($newsLayoutTabs);
 		$newsLayout->setFields($newsLayoutFields);
 
-		$newsEntryTypes = $newsSection->getEntryTypes();
-		$newsEntryType = $newsEntryTypes[0];
-		$newsEntryType->setFieldLayout($newsLayout);
+		$homepageEntryTypes = $newsSection->getEntryTypes();
+		$homepageEntryType = $homepageEntryTypes[0];
+		$homepageEntryType->setFieldLayout($newsLayout);
 
-		if (craft()->sections->saveEntryType($newsEntryType))
+		if (craft()->sections->saveEntryType($homepageEntryType))
 		{
 			Craft::log('News entry type saved successfully.');
 		}
@@ -707,7 +746,7 @@ class InstallService extends BaseApplicationComponent
 
 		$newsEntry = new EntryModel();
 		$newsEntry->sectionId  = $newsSection->id;
-		$newsEntry->typeId     = $newsEntryType->id;
+		$newsEntry->typeId     = $homepageEntryType->id;
 		$newsEntry->locale     = $inputs['locale'];
 		$newsEntry->authorId   = $this->_user->id;
 		$newsEntry->enabled    = true;
