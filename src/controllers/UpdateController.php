@@ -352,7 +352,7 @@ class UpdateController extends BaseController
 			$this->returnJson(array('error' => $return['message']));
 		}
 
-		if ($oldVersion && version_compare($oldVersion, '1.1', '<'))
+		if ($oldVersion && version_compare($oldVersion, '1.2', '<'))
 		{
 			$returnUrl = UrlHelper::getUrl('whats-new');
 		}
