@@ -14,6 +14,7 @@ class HttpRequestService extends \CHttpRequest
 	private $_isResourceRequest = false;
 	private $_isActionRequest = false;
 
+	private $_checkedRequestType = false;
 	private $_actionSegments;
 	private $_isMobileBrowser;
 	private $_isMobileOrTabletBrowser;
@@ -66,8 +67,6 @@ class HttpRequestService extends \CHttpRequest
 
 		// Now that we've chopped off the admin/page segments, set the path
 		$this->_path = implode('/', $this->_segments);
-
-		$this->_checkRequestType();
 	}
 
 	/**
@@ -141,6 +140,7 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	public function isResourceRequest()
 	{
+		$this->_checkRequestType();
 		return $this->_isResourceRequest;
 	}
 
@@ -151,6 +151,7 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	public function isActionRequest()
 	{
+		$this->_checkRequestType();
 		return $this->_isActionRequest;
 	}
 
@@ -161,6 +162,7 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	public function getActionSegments()
 	{
+		$this->_checkRequestType();
 		return $this->_actionSegments;
 	}
 
@@ -731,7 +733,12 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	private function _checkRequestType()
 	{
-		$resourceTrigger = craft()->config->get('resourceTrigger');
+		if ($this->_checkedRequestType)
+		{
+			return;
+		}
+
+		$resourceTrigger = craft()->config->getResourceTrigger();
 		$actionTrigger = craft()->config->get('actionTrigger');
 		$frontEndLoginPath = trim(craft()->config->get('loginPath'), '/');
 		$frontEndLogoutPath = trim(craft()->config->get('logoutPath'), '/');
@@ -780,6 +787,8 @@ class HttpRequestService extends \CHttpRequest
 			$action = $this->decodePathInfo($action);
 			$this->_actionSegments = array_filter(explode('/', $action));
 		}
+
+		$this->_checkedRequestType = true;
 	}
 
 	/**
