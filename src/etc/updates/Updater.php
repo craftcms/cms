@@ -269,8 +269,17 @@ class Updater
 	 */
 	private function _cleanTempFiles()
 	{
+		$appPath = craft()->path->getAppPath();
+
 		// Get rid of all the .bak files/folders.
-		$baks = IOHelper::getFolderContents(craft()->path->getAppPath(), true, ".*\.bak$");
+		$baks = IOHelper::getFolderContents($appPath, true, ".*\.bak$");
+
+		// Special case for the app folder
+		$appPathBackup = rtrim($appPath, '/').'.bak/';
+		if (IOHelper::folderExists($appPathBackup))
+		{
+			$baks[] = $appPathBackup;
+		}
 
 		foreach ($baks as $bak)
 		{
