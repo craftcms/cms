@@ -223,7 +223,7 @@ return array(
 
 
 /**
- * The URI segment Craft should look for when determining if the current request should route to a resource file, either in craft/app/resources/ or a plugin’s resources/ folder.
+ * The URI segment Craft should use for resource URLs on the front end.
  */
 'resourceTrigger' => 'resources',
 

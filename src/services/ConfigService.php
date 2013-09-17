@@ -424,4 +424,21 @@ class ConfigService extends BaseApplicationComponent
 
 		return $str;
 	}
+
+	/**
+	 * Returns the CP resource trigger word.
+	 *
+	 * @return string
+	 */
+	public function getResourceTrigger()
+	{
+		if (craft()->request->isCpRequest())
+		{
+			return 'resources';
+		}
+		else
+		{
+			return $this->get('resourceTrigger');
+		}
+	}
 }
