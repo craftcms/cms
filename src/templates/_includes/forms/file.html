@@ -1,5 +1,5 @@
 <input type="file"
-	{%- if id is defined and id %} id="{{ id }}"{% endif %}
-	{%- if name is defined and name %} name="{{ name }}"{% endif %}
+	{%- if id is defined %} id="{{ id }}"{% endif %}
+	{%- if name is defined %} name="{{ name }}"{% endif %}
 	{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
 	{%- if disabled is defined and disabled %} disabled{% endif %}>

@@ -11,13 +11,13 @@
 
 {%- if type == 'password' %}<div class="passwordwrapper">{% endif -%}
 <input class="{{ class }}" type="{{ type }}"
-	{%- if id is defined and id %} id="{{ id }}"{% endif %}
-	{%- if size is defined and size %} size="{{ size }}"{% endif %}
-	{%- if name is defined and name %} name="{{ name }}"{% endif %}
-	{%- if value is defined and value %} value="{{ value }}"{% endif %}
-	{%- if maxlength is defined and maxlength %} maxlength="{{ maxlength }}"{% endif %}
+	{%- if id is defined %} id="{{ id }}"{% endif %}
+	{%- if size is defined %} size="{{ size }}"{% endif %}
+	{%- if name is defined %} name="{{ name }}"{% endif %}
+	{%- if value is defined %} value="{{ value }}"{% endif %}
+	{%- if maxlength is defined %} maxlength="{{ maxlength }}"{% endif %}
 	{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
 	{%- if autocomplete is not defined or not autocomplete %} autocomplete="off"{% endif %}
 	{%- if disabled is defined and disabled %} disabled {% endif %}
-	{%- if placeholder is defined and placeholder %} placeholder="{{ placeholder }}"{% endif %}>
+	{%- if placeholder is defined %} placeholder="{{ placeholder }}"{% endif %}>
 {%- if type == 'password' %}</div>{% endif %}
