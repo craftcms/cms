@@ -164,6 +164,11 @@
 {% endmacro %}
 
 
+{% macro radioGroupField(config) %}
+	{{ _self.field(config, _self.radioGroup(config)) }}
+{% endmacro %}
+
+
 {% macro fileField(config) %}
 	{{ _self.field(config, _self.file(config)) }}
 {% endmacro %}
