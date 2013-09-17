@@ -30,7 +30,7 @@
 			resourceUrl:          "{{ resourceUrl()|e('js') }}",
 			omitScriptNameInUrls: {{ craft.config.omitScriptNameInUrls() ? 'true' : 'false' }},
 			usePathInfo:          {{ craft.config.usePathInfo() ? 'true' : 'false' }},
-			resourceTrigger:      "{{ craft.config.resourceTrigger|e('js') }}",
+			resourceTrigger:      "{{ craft.config.resourceTrigger()|e('js') }}",
 			actionTrigger:        "{{ craft.config.actionTrigger|e('js') }}",
 			path:                 "{{ craft.request.getPath()|e('js') }}",
 			language:             "{{ craft.locale|e('js') }}",

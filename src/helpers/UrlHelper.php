@@ -89,7 +89,7 @@ class UrlHelper
 	public static function getResourceUrl($path = '', $params = null, $protocol = '')
 	{
 		$path = $origPath = trim($path, '/');
-		$path = craft()->config->get('resourceTrigger').'/'.$path;
+		$path = craft()->config->getResourceTrigger().'/'.$path;
 
 		// Add timestamp to the resource URL for caching, if Craft is not operating in dev mode
 		if ($origPath && !craft()->config->get('devMode'))

@@ -286,7 +286,7 @@ class ResourcesService extends BaseApplicationComponent
 		$url = IOHelper::getFolderName(craft()->request->getPath()).$match[3];
 
 		// Make sure this is a resource URL
-		$resourceTrigger = craft()->config->get('resourceTrigger');
+		$resourceTrigger = craft()->config->getResourceTrigger();
 		$resourceTriggerPos = mb_strpos($url, $resourceTrigger);
 		if ($resourceTriggerPos !== false)
 		{
