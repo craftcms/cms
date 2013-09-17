@@ -45,6 +45,11 @@ class AssetSourcesController extends BaseController
 			}
 		}
 
+		if (empty($variables['sourceType']))
+		{
+			$variables['sourceType'] = craft()->assetSources->populateSourceType($variables['source']);
+		}
+
 		if (Craft::hasPackage(CraftPackage::Cloud))
 		{
 			$sourceTypes = craft()->assetSources->getAllSourceTypes();

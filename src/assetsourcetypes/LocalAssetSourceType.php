@@ -54,8 +54,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	public function prepSettings($settings)
 	{
 		// Add a trailing slash to the Path and URL settings
-		$settings['path'] = rtrim($settings['path'], '/').'/';
-		$settings['url'] = rtrim($settings['url'], '/').'/';
+		$settings['path'] = !empty($settings['path']) ? rtrim($settings['path'], '/').'/' : '';
+		$settings['url'] = !empty($settings['url']) ? rtrim($settings['url'], '/').'/' : '';
 
 		return $settings;
 	}
