@@ -852,27 +852,35 @@ class AssetsService extends BaseApplicationComponent
 		}
 		else
 		{
-			// File doesn't exist yet - load the TransformLoader and set the placeholder URL flag
-			$placeholderUrl = UrlHelper::getResourceUrl('images/blank.gif');
-
-			if (!$this->_includedTransformLoader)
+			if (craft()->config->get('generateTransformsAfterPageLoad'))
 			{
-				$entityPlaceholderUrl = htmlspecialchars($placeholderUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-				$spinnerUrl = UrlHelper::getResourceurl('images/spinner_transform.gif');
-				$actionUrl  = UrlHelper::getActionUrl('assets/generateTransform');
+				// File doesn't exist yet - load the TransformLoader and set the placeholder URL flag
+				$placeholderUrl = UrlHelper::getResourceUrl('images/blank.gif');
 
-				craft()->templates->includeJsResource('js/TransformLoader.js');
-				craft()->templates->includeJs('new TransformLoader(' .
-					JsonHelper::encode($placeholderUrl).', ' .
-					JsonHelper::encode($entityPlaceholderUrl).', ' .
-					JsonHelper::encode($spinnerUrl).', ' .
-					JsonHelper::encode($actionUrl) .
-				');');
+				if (!$this->_includedTransformLoader)
+				{
+					$entityPlaceholderUrl = htmlspecialchars($placeholderUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+					$spinnerUrl = UrlHelper::getResourceurl('images/spinner_transform.gif');
+					$actionUrl  = UrlHelper::getActionUrl('assets/generateTransform');
 
-				$this->_includedTransformLoader = true;
+					craft()->templates->includeJsResource('js/TransformLoader.js');
+					craft()->templates->includeJs('new TransformLoader(' .
+						JsonHelper::encode($placeholderUrl).', ' .
+						JsonHelper::encode($entityPlaceholderUrl).', ' .
+						JsonHelper::encode($spinnerUrl).', ' .
+						JsonHelper::encode($actionUrl) .
+					');');
+
+					$this->_includedTransformLoader = true;
+				}
+
+				return $placeholderUrl.'#'.$existingTransformData->id;
 			}
-
-			return $placeholderUrl.'#'.$existingTransformData->id;
+			else
+			{
+				craft()->assetTransforms->updateTransforms($file, array($transform));
+				return craft()->assetTransforms->getUrlforTransformByFile($file, $transform);
+			}
 		}
 	}
 }
