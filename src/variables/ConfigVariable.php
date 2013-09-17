@@ -47,4 +47,21 @@ class ConfigVariable
 	{
 		return craft()->config->omitScriptNameInUrls();
 	}
+
+	/**
+	 * Returns the CP resource trigger word.
+	 *
+	 * @return string
+	 */
+	public function resourceTrigger()
+	{
+		if (craft()->request->isCpRequest())
+		{
+			return 'resources';
+		}
+		else
+		{
+			return craft()->config->get('resourceTrigger');
+		}
+	}
 }

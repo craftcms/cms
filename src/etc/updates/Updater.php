@@ -274,13 +274,6 @@ class Updater
 		// Get rid of all the .bak files/folders.
 		$baks = IOHelper::getFolderContents($appPath, true, ".*\.bak$");
 
-		// Special case for the app folder
-		$appPathBackup = rtrim($appPath, '/').'.bak/';
-		if (IOHelper::folderExists($appPathBackup))
-		{
-			$baks[] = $appPathBackup;
-		}
-
 		foreach ($baks as $bak)
 		{
 			if (IOHelper::fileExists($bak))

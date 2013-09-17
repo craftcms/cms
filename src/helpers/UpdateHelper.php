@@ -9,8 +9,8 @@ class UpdateHelper
 	private static $_manifestData;
 
 	/**
-	 * @static
 	 * @param $manifestData
+	 * @return void
 	 */
 	public static function rollBackFileChanges($manifestData)
 	{
@@ -55,6 +55,7 @@ class UpdateHelper
 
 	/**
 	 * @param $backupPath
+	 * @return void
 	 */
 	public static function rollBackDatabaseChanges($backupPath)
 	{
