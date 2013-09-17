@@ -109,13 +109,15 @@ class AssetFileModel extends BaseElementModel
 	/**
 	 * Returns an <img> tag based on this asset.
 	 *
-	 * @return string
+	 * @return \Twig_Markup|null
 	 */
 	public function getImg()
 	{
 		if ($this->kind == 'image')
 		{
-			return '<img src="'.$this->url.'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.$this->title.'" />';
+			$img = '<img src="'.$this->url.'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.$this->title.'" />';
+			$charset = craft()->templates->getTwig()->getCharset();
+			return new \Twig_Markup($img, $charset);
 		}
 	}
 
