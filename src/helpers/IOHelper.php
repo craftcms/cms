@@ -356,7 +356,7 @@ class IOHelper
 		if ($path !== '/')
 		{
 			// Use is_dir here to prevent an endless recursive loop
-			if (is_dir($path))
+			if (@is_dir($path))
 			{
 				$path = rtrim($path, '/').'/';
 			}

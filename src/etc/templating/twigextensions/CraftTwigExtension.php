@@ -143,7 +143,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 * Parses text through Markdown.
 	 *
 	 * @param string $str
-	 * @return string
+	 * @return \Twig_Markup
 	 */
 	public function markdownFilter($str)
 	{

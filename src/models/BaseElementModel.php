@@ -73,11 +73,13 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns an anchor prefilled with this element's URL and title.
 	 *
-	 * @return string
+	 * @return \Twig_Markup
 	 */
 	public function getLink()
 	{
-		return '<a href="'.$this->getUrl().'">'.$this->__toString().'</a>';
+		$link = '<a href="'.$this->getUrl().'">'.$this->__toString().'</a>';
+		$charset = craft()->templates->getTwig()->getCharset();
+		return new \Twig_Markup($link, $charset);
 	}
 
 	/**
