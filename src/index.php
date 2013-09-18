@@ -99,6 +99,11 @@ if (!class_exists('Yii', false))
 	require CRAFT_APP_PATH.'framework/yii.php';
 }
 
+// Guzzle makes use of these PHP constants, but they aren't actually defined in some compilations of PHP
+// See http://it.blog.adclick.pt/php/fixing-php-notice-use-of-undefined-constant-curlopt_timeout_ms-assumed-curlopt_timeout_ms/
+defined('CURLOPT_TIMEOUT_MS')        || define('CURLOPT_TIMEOUT_MS',        155);
+defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
+
 // Load up Composer's files
 require CRAFT_APP_PATH.'vendor/autoload.php';
 
