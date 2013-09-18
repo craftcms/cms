@@ -7,6 +7,7 @@ Craft.BaseInputGenerator = Garnish.Base.extend({
 	$target: null,
 
 	listening: null,
+	timeout: null,
 
 	init: function(source, target)
 	{
@@ -23,7 +24,7 @@ Craft.BaseInputGenerator = Garnish.Base.extend({
 
 		this.listening = true;
 
-		this.addListener(this.$source, 'textchange', 'updateTarget');
+		this.addListener(this.$source, 'textchange', 'onTextChange');
 
 		this.addListener(this.$target, 'focus', function() {
 			this.addListener(this.$target, 'textchange', 'stopListening');
@@ -44,6 +45,16 @@ Craft.BaseInputGenerator = Garnish.Base.extend({
 
 		this.removeAllListeners(this.$source);
 		this.removeAllListeners(this.$target);
+	},
+
+	onTextChange: function()
+	{
+		if (this.timeout)
+		{
+			clearTimeout(this.timeout);
+		}
+
+		this.timeout = setTimeout($.proxy(this, 'updateTarget'), 250);
 	},
 
 	updateTarget: function()
