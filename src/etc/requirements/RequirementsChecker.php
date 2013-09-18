@@ -133,7 +133,7 @@ class RequirementsChecker extends \CComponent
 			new Requirement(
 				Craft::t('iconv support'),
 				function_exists('iconv'),
-				true,
+				false,
 				Craft::t('@@@appName@@@ requires <a href="http://php.net/manual/en/book.iconv.php">iconv</a> in order to run.')
 			)
 		);
