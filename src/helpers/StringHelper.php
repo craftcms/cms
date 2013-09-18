@@ -8,6 +8,7 @@ class StringHelper
 {
 	private static $_asciiCharMap;
 	private static $_asciiPunctuation;
+	private static $_iconv;
 
 	/**
 	 * Converts an array to a string.
@@ -321,30 +322,67 @@ class StringHelper
 	/**
 	 * Attempts to convert a string to UTF-8 and clean any non-valid UTF-8 characters.
 	 *
+	 * @static
 	 * @param      $string
 	 * @return bool|string
 	 */
 	public static function convertToUTF8($string)
 	{
+		require_once Craft::getPathOfAlias('system.vendors.htmlpurifier').'/HTMLPurifier.standalone.php';
+
 		if (static::isUTF8($string))
 		{
 			return \HTMLPurifier_Encoder::cleanUTF8($string);
 		}
 
-		require_once Craft::getPathOfAlias('system.vendors.htmlpurifier').'/HTMLPurifier.standalone.php';
-
-		$config = \HTMLPurifier_Config::createDefault();
-		$config->set('Core.Encoding', static::getEncoding($string));
-
 		$string = \HTMLPurifier_Encoder::cleanUTF8($string);
-		$string = \HTMLPurifier_Encoder::convertToUTF8($string, $config, null);
+
+		if (static::checkForIconv())
+		{
+			$config = \HTMLPurifier_Config::createDefault();
+			$config->set('Core.Encoding', static::getEncoding($string));
+
+			$string = \HTMLPurifier_Encoder::convertToUTF8($string, $config, null);
+		}
 
 		return $string;
 	}
 
 	/**
+	 * Returns whether iconv is installed and not buggy.
+	 *
+	 * @static
+	 * @return bool
+	 */
+	public static function checkForIconv()
+	{
+		if (!isset(static::$_iconv))
+		{
+			static::$_iconv = false;
+
+			// Check if iconv is installed.
+			// Note we can't just use HTMLPurifier_Encode::iconvAvailable() because they don't consider iconv "installed" if it's there but "unusable".
+			if (!function_exists('iconv'))
+			{
+				Craft::log('Craft is not able to convert strings to UTF-8 because iconv is not installed.', LogLevel::Warning);
+			}
+			else if (\HTMLPurifier_Encoder::testIconvTruncateBug() != \HTMLPurifier_Encoder::ICONV_OK)
+			{
+				Craft::log('Craft is not able to convert strings to UTF-8 because you have a buggy version of iconv installed.', LogLevel::Warning);
+			}
+			else
+			{
+				static::$_iconv = true;
+			}
+		}
+
+		return static::$_iconv;
+	}
+
+	/**
 	 * Checks if the given string is UTF-8 encoded.
 	 *
+	 * @static
 	 * @param $string The string to check.
 	 * @return bool
 	 */
@@ -356,6 +394,7 @@ class StringHelper
 	/**
 	 * Gets the current encoding of the given string.
 	 *
+	 * @static
 	 * @param $string
 	 * @return string
 	 */
@@ -367,6 +406,7 @@ class StringHelper
 	/**
 	 * Get array of chars to be used for conversion.
 	 *
+	 * @static
 	 * @access private
 	 * @return array
 	 */
