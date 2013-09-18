@@ -351,6 +351,11 @@ class StringHelper
 		{
 			$string = \HTMLPurifier_Encoder::convertToUTF8($string, $config, null);
 		}
+		else
+		{
+			$encoding = static::getEncoding($string);
+			$string = mb_convert_encoding($string, 'utf-8', $encoding);
+		}
 
 		return $string;
 	}
@@ -371,11 +376,11 @@ class StringHelper
 			// Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they don't consider iconv "installed" if it's there but "unusable".
 			if (!function_exists('iconv'))
 			{
-				Craft::log('Craft is not able to convert strings to UTF-8 because iconv is not installed.', LogLevel::Warning);
+				Craft::log('iconv is not installed.  Will fallback to mbstring.', LogLevel::Warning);
 			}
 			else if (\HTMLPurifier_Encoder::testIconvTruncateBug() != \HTMLPurifier_Encoder::ICONV_OK)
 			{
-				Craft::log('Craft is not able to convert strings to UTF-8 because you have a buggy version of iconv installed.', LogLevel::Warning);
+				Craft::log('Buggy iconv installed.  Will fallback to mbstring.', LogLevel::Warning);
 			}
 			else
 			{
