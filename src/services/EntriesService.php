@@ -573,6 +573,9 @@ class EntriesService extends BaseApplicationComponent
 		// Remove HTML tags
 		$slug = preg_replace('/<(.*?)>/', '', $slug);
 
+		// Remove inner-word punctuation
+		$slug = preg_replace('/[\'"‘’“”]/', '', $slug);
+
 		// Make it lowercase
 		$slug = mb_strtolower($slug);
 
