@@ -5,14 +5,16 @@ Craft.BaseInputGenerator = Garnish.Base.extend({
 
 	$source: null,
 	$target: null,
+	settings: null,
 
 	listening: null,
 	timeout: null,
 
-	init: function(source, target)
+	init: function(source, target, settings)
 	{
 		this.$source = $(source);
 		this.$target = $(target);
+		this.setSettings(settings);
 
 		this.startListening();
 	},
