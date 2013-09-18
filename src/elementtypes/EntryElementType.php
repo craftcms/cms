@@ -160,16 +160,20 @@ class EntryElementType extends BaseElementType
 
 		$attributes = array(
 			array('label' => Craft::t('Title'), 'attribute' => 'title'),
-			array('label' => Craft::t('Slug'),  'attribute' => 'slug', 'link' => true),
 		);
 
-		if (empty($section))
+		if ($source != 'singles')
 		{
-			$attributes[] = array('label' => Craft::t('Section'), 'attribute' => 'sectionId', 'display' => '{section}');
-		}
+			$attributes[] = array('label' => Craft::t('Slug'), 'attribute' => 'slug', 'link' => true);
 
-		$attributes[] = array('label' => Craft::t('Post Date'), 'attribute' => 'postDate', 'display' => '{postDate.localeDate}');
-		$attributes[] = array('label' => Craft::t('Expiry Date'), 'attribute' => 'expiryDate', 'display' => '{expiryDate.localeDate}');
+			if (empty($section))
+			{
+				$attributes[] = array('label' => Craft::t('Section'), 'attribute' => 'sectionId', 'display' => '{section}');
+			}
+
+			$attributes[] = array('label' => Craft::t('Post Date'), 'attribute' => 'postDate', 'display' => '{postDate.localeDate}');
+			$attributes[] = array('label' => Craft::t('Expiry Date'), 'attribute' => 'expiryDate', 'display' => '{expiryDate.localeDate}');
+		}
 
 		return $attributes;
 	}
