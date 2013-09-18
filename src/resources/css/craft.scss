@@ -256,6 +256,8 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 	        box-shadow: inset 0 1px 0 rgba(0,0,0,0.05);
 }
 
+.btn.active { cursor: default; }
+
 .btn:hover { text-decoration: none; }
 .disabled { opacity: 0.25; cursor: default; }
 
