@@ -9,12 +9,12 @@
 
 <div class="{{ class }}">
 	<select
-		{%- if id is defined and id %} id="{{ id }}"{% endif %}
+		{%- if id is defined %} id="{{ id }}"{% endif %}
 		{%- if toggle is defined and toggle %} class="fieldtoggle"{% endif %}
-		{%- if name is defined and name %} name="{{ name }}"{% endif %}
+		{%- if name is defined %} name="{{ name }}"{% endif %}
 		{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
 		{%- if disabled is defined and disabled %} disabled{% endif %}
-		{%- if targetPrefix is defined and targetPrefix %} data-target-prefix="{{ targetPrefix }}"{% endif %}>
+		{%- if targetPrefix is defined %} data-target-prefix="{{ targetPrefix }}"{% endif %}>
 		{% for key, option in options %}
 			{% if option.optgroup is defined %}
 				{% if hasOptgroups %}
