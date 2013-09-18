@@ -8,6 +8,7 @@ class StringHelper
 {
 	private static $_asciiCharMap;
 	private static $_asciiPunctuation;
+	private static $_iconv;
 
 	/**
 	 * Converts an array to a string.
@@ -321,30 +322,79 @@ class StringHelper
 	/**
 	 * Attempts to convert a string to UTF-8 and clean any non-valid UTF-8 characters.
 	 *
+	 * @static
 	 * @param      $string
 	 * @return bool|string
 	 */
 	public static function convertToUTF8($string)
 	{
+		if (!class_exists('\HTMLPurifier_Encoder'))
+		{
+			require_once Craft::getPathOfAlias('system.vendors.htmlpurifier').'/HTMLPurifier.standalone.php';
+		}
+
+		// If it's already a UTF8 string, just clean and return it
 		if (static::isUTF8($string))
 		{
 			return \HTMLPurifier_Encoder::cleanUTF8($string);
 		}
 
-		require_once Craft::getPathOfAlias('system.vendors.htmlpurifier').'/HTMLPurifier.standalone.php';
-
+		// Otherwise set HTMLPurifier to the actual string encoding
 		$config = \HTMLPurifier_Config::createDefault();
 		$config->set('Core.Encoding', static::getEncoding($string));
 
+		// Clean it
 		$string = \HTMLPurifier_Encoder::cleanUTF8($string);
-		$string = \HTMLPurifier_Encoder::convertToUTF8($string, $config, null);
+
+		// Convert it to UTF8 if possible
+		if (static::checkForIconv())
+		{
+			$string = \HTMLPurifier_Encoder::convertToUTF8($string, $config, null);
+		}
+		else
+		{
+			$encoding = static::getEncoding($string);
+			$string = mb_convert_encoding($string, 'utf-8', $encoding);
+		}
 
 		return $string;
 	}
 
 	/**
+	 * Returns whether iconv is installed and not buggy.
+	 *
+	 * @static
+	 * @return bool
+	 */
+	public static function checkForIconv()
+	{
+		if (!isset(static::$_iconv))
+		{
+			static::$_iconv = false;
+
+			// Check if iconv is installed.
+			// Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they don't consider iconv "installed" if it's there but "unusable".
+			if (!function_exists('iconv'))
+			{
+				Craft::log('iconv is not installed.  Will fallback to mbstring.', LogLevel::Warning);
+			}
+			else if (\HTMLPurifier_Encoder::testIconvTruncateBug() != \HTMLPurifier_Encoder::ICONV_OK)
+			{
+				Craft::log('Buggy iconv installed.  Will fallback to mbstring.', LogLevel::Warning);
+			}
+			else
+			{
+				static::$_iconv = true;
+			}
+		}
+
+		return static::$_iconv;
+	}
+
+	/**
 	 * Checks if the given string is UTF-8 encoded.
 	 *
+	 * @static
 	 * @param $string The string to check.
 	 * @return bool
 	 */
@@ -356,6 +406,7 @@ class StringHelper
 	/**
 	 * Gets the current encoding of the given string.
 	 *
+	 * @static
 	 * @param $string
 	 * @return string
 	 */
@@ -367,6 +418,7 @@ class StringHelper
 	/**
 	 * Get array of chars to be used for conversion.
 	 *
+	 * @static
 	 * @access private
 	 * @return array
 	 */

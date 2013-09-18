@@ -6,6 +6,10 @@ if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50300)
 	exit('@@@appName@@@ requires PHP 5.3.0 or later, but you&rsquo;re running '.PHP_VERSION.'. Please talk to your host/IT department about upgrading PHP or your server.');
 }
 
+/**
+ * Quit early if this is just an omitScriptNameInUrls or usePathInfo test request
+ */
+
 // Is this a script name redirect test?
 if ((isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testScriptNameRedirect')
 	|| (isset($_SERVER['QUERY_STRING']) && strpos($_SERVER['QUERY_STRING'], 'testScriptNameRedirect') !== false))
@@ -19,79 +23,94 @@ if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testPathInfo')
 	exit('success');
 }
 
-// Define app constants
-defined('CRAFT_BASE_PATH')         || define('CRAFT_BASE_PATH', str_replace('\\', '/', realpath(dirname(__FILE__).'/../')).'/');
-defined('CRAFT_APP_PATH')          || define('CRAFT_APP_PATH',          CRAFT_BASE_PATH.'app/');
+/**
+ * Path constants and validation
+ */
+
+// We're already in the app/ folder, so let's use that as the starting point.
+defined('CRAFT_APP_PATH') || define('CRAFT_APP_PATH', str_replace('\\', '/', realpath(dirname(__FILE__)).'/'));
+
+// The app/ folder goes inside craft/ by default, so work backwards from app/
+defined('CRAFT_BASE_PATH') || define('CRAFT_BASE_PATH', realpath(CRAFT_APP_PATH.'..').'/');
+
+// Everything else should be relative from craft/ by default
 defined('CRAFT_CONFIG_PATH')       || define('CRAFT_CONFIG_PATH',       CRAFT_BASE_PATH.'config/');
 defined('CRAFT_PLUGINS_PATH')      || define('CRAFT_PLUGINS_PATH',      CRAFT_BASE_PATH.'plugins/');
 defined('CRAFT_STORAGE_PATH')      || define('CRAFT_STORAGE_PATH',      CRAFT_BASE_PATH.'storage/');
 defined('CRAFT_TEMPLATES_PATH')    || define('CRAFT_TEMPLATES_PATH',    CRAFT_BASE_PATH.'templates/');
 defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', CRAFT_BASE_PATH.'translations/');
-defined('CRAFT_ENVIRONMENT')       || define('CRAFT_ENVIRONMENT',       $_SERVER['SERVER_NAME']);
-defined('YII_TRACE_LEVEL')         || define('YII_TRACE_LEVEL', 3);
 
-// Not using is_executable here, but it's worthless.
-// Check early if storage/ is a valid folder, writable and executable.
-if (($storagePath = realpath(CRAFT_STORAGE_PATH)) === false || !is_dir($storagePath) || !is_writable($storagePath) || !@file_exists($storagePath.'/.'))
+function craft_createFolder($path)
 {
-	exit('@@@appName@@@ storage path "'.($storagePath === false ? CRAFT_STORAGE_PATH : $storagePath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
-}
-
-// Create the runtime path if it doesn't exist already
-// (code borrowed from IOHelper)
-$runtimePath = CRAFT_STORAGE_PATH.'runtime/';
-if (!is_dir($runtimePath))
-{
-	$oldumask = umask(0);
-
-	if (!mkdir($runtimePath, 0755, true))
+	// Code borrowed from IOHelper...
+	if (!is_dir($path))
 	{
-		exit('Tried to create a folder at '.$runtimePath.', but could not.');
+		$oldumask = umask(0);
+
+		if (!mkdir($path, 0755, true))
+		{
+			exit('Tried to create a folder at '.$path.', but could not.');
+		}
+
+		// Because setting permission with mkdir is a crapshoot.
+		chmod($path, 0755);
+		umask($oldumask);
 	}
-
-	// Because setting permission with mkdir is a crapshoot.
-	chmod($runtimePath, 0755);
-	umask($oldumask);
 }
 
-// Check early if storage/runtime is a valid folder and writable. !@file_exists('/.') is a workaround for the terrible is_executable().
-if (($runtimePath = realpath(CRAFT_STORAGE_PATH.'runtime/')) === false || !is_dir($runtimePath) || !is_writable($runtimePath) || !@file_exists($runtimePath.'/.'))
+function craft_ensureFolderIsReadable($path, $writableToo = false)
 {
-	exit('@@@appName@@@ runtime path "'.($runtimePath === false ? CRAFT_STORAGE_PATH.'runtime/' : $runtimePath).'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
+	$realPath = realpath($path);
+
+	// !@file_exists('/.') is a workaround for the terrible is_executable()
+	if ($realPath === false || !is_dir($realPath) || (!is_writable($realPath)) || !@file_exists($realPath.'/.'))
+	{
+		exit (($realPath !== false ? $realPath : $path).' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
+	}
 }
 
-// Check early if config is a valid folder and writable. !@file_exists('/.') is a workaround for the terrible is_executable().
-if (($siteConfigPath = realpath(CRAFT_CONFIG_PATH)) === false || !is_dir($siteConfigPath) || !@file_exists($siteConfigPath.'/.'))
-{
-	exit('@@@appName@@@ config path "'.($siteConfigPath === false ? CRAFT_CONFIG_PATH : $siteConfigPath).'" isn&rsquo;t valid. Please make sure the folder exists and is readable by your web server process.');
-}
+// Validate permissions on craft/config/ and craft/storage/
+craft_ensureFolderIsReadable(CRAFT_CONFIG_PATH);
+craft_ensureFolderIsReadable(CRAFT_STORAGE_PATH, true);
+
+// Create the craft/storage/runtime/ folder if it doesn't already exist
+craft_createFolder(CRAFT_STORAGE_PATH.'runtime/');
+craft_ensureFolderIsReadable(CRAFT_STORAGE_PATH.'runtime/', true);
+
+/**
+ * Load the config
+ */
+
+// Set the environment
+defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', $_SERVER['SERVER_NAME']);
 
 // Load the config early so we can set YII_DEBUG based on Dev Mode before loading Yii
 $commonConfig = require CRAFT_APP_PATH.'etc/config/common.php';
 
-// Set YII_DEBUG to true if we're in Dev Mode.
-if (!empty($commonConfig['components']['config']['generalConfig']['devMode']))
-{
-	define('YII_DEBUG', true);
-}
+/**
+ * Load Yii, Composer dependencies, and the app
+ */
 
 // Load Yii, if it's not already
 if (!class_exists('Yii', false))
 {
-	require_once CRAFT_APP_PATH.'framework/yii.php';
+	defined('YII_DEBUG') || define('YII_DEBUG', !empty($commonConfig['components']['config']['generalConfig']['devMode']));
+	defined('YII_TRACE_LEVEL') || define('YII_TRACE_LEVEL', 3);
+	require CRAFT_APP_PATH.'framework/yii.php';
 }
 
 // Load up Composer's files
-require_once CRAFT_APP_PATH.'vendor/autoload.php';
+require CRAFT_APP_PATH.'vendor/autoload.php';
 
 // Disable the PHP include path
 Yii::$enableIncludePath = false;
 
 // Load 'em up
-require_once CRAFT_APP_PATH.'Craft.php';
-require_once CRAFT_APP_PATH.'etc/web/WebApp.php';
-require_once CRAFT_APP_PATH.'Info.php';
+require CRAFT_APP_PATH.'Craft.php';
+require CRAFT_APP_PATH.'etc/web/WebApp.php';
+require CRAFT_APP_PATH.'Info.php';
 
+// Set some aliases for Craft::import()
 Yii::setPathOfAlias('app', CRAFT_APP_PATH);
 Yii::setPathOfAlias('plugins', CRAFT_PLUGINS_PATH);
 

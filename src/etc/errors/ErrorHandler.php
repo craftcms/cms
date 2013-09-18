@@ -146,7 +146,7 @@ class ErrorHandler extends \CErrorHandler
 		{
 			if ($this->isAjaxRequest())
 			{
-				$app->displayException($exception);
+				craft()->displayException($exception);
 			}
 			else
 			{
