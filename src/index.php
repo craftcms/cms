@@ -28,10 +28,10 @@ if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testPathInfo')
  */
 
 // We're already in the app/ folder, so let's use that as the starting point.
-defined('CRAFT_APP_PATH') || define('CRAFT_APP_PATH', str_replace('\\', '/', realpath(dirname(__FILE__).'/')));
+defined('CRAFT_APP_PATH') || define('CRAFT_APP_PATH', str_replace('\\', '/', realpath(dirname(__FILE__)).'/'));
 
 // The app/ folder goes inside craft/ by default, so work backwards from app/
-defined('CRAFT_BASE_PATH')         || define('CRAFT_BASE_PATH',         CRAFT_APP_PATH.'../');
+defined('CRAFT_BASE_PATH')         || define('CRAFT_BASE_PATH',         realpath(CRAFT_APP_PATH.'..').'/');
 
 // Everything else should be relative from craft/ by default
 defined('CRAFT_CONFIG_PATH')       || define('CRAFT_CONFIG_PATH',       CRAFT_BASE_PATH.'config/');
@@ -60,12 +60,12 @@ function craft_createFolder($path)
 
 function craft_ensureFolderIsReadable($path, $writableToo = false)
 {
-	$path = realpath($path);
+	$realPath = realpath($path);
 
 	// !@file_exists('/.') is a workaround for the terrible is_executable()
-	if ($path === false || !is_dir($path) || (!is_writable($path)) || !@file_exists($path.'/.'))
+	if ($realPath === false || !is_dir($realPath) || (!is_writable($realPath)) || !@file_exists($realPath.'/.'))
 	{
-		exit (($path !== false ? $path : $path).' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
+		exit (($realPath !== false ? $realPath : $path).' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
 	}
 }
 
