@@ -934,6 +934,13 @@ class IOHelper
 			{
 				$itemDest = $destination.str_replace($path, '', $item);
 
+				$destFolder = static::getFolderName($itemDest);
+
+				if (!static::folderExists($destFolder))
+				{
+					static::createFolder($destFolder, craft()->config->get('defaultFolderPermissions'));
+				}
+
 				if (static::fileExists($item))
 				{
 					if (!copy($item, $itemDest))
@@ -949,6 +956,7 @@ class IOHelper
 					}
 				}
 			}
+
 			if ($validate)
 			{
 				if (static::getFolderSize($path) !== static::getFolderSize($destination))
