@@ -31,7 +31,7 @@ if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testPathInfo')
 defined('CRAFT_APP_PATH') || define('CRAFT_APP_PATH', str_replace('\\', '/', realpath(dirname(__FILE__)).'/'));
 
 // The app/ folder goes inside craft/ by default, so work backwards from app/
-defined('CRAFT_BASE_PATH')         || define('CRAFT_BASE_PATH',         realpath(CRAFT_APP_PATH.'..').'/');
+defined('CRAFT_BASE_PATH') || define('CRAFT_BASE_PATH', realpath(CRAFT_APP_PATH.'..').'/');
 
 // Everything else should be relative from craft/ by default
 defined('CRAFT_CONFIG_PATH')       || define('CRAFT_CONFIG_PATH',       CRAFT_BASE_PATH.'config/');
