@@ -328,20 +328,27 @@ class StringHelper
 	 */
 	public static function convertToUTF8($string)
 	{
-		require_once Craft::getPathOfAlias('system.vendors.htmlpurifier').'/HTMLPurifier.standalone.php';
+		if (!class_exists('\HTMLPurifier_Encoder'))
+		{
+			require_once Craft::getPathOfAlias('system.vendors.htmlpurifier').'/HTMLPurifier.standalone.php';
+		}
 
+		// If it's already a UTF8 string, just clean and return it
 		if (static::isUTF8($string))
 		{
 			return \HTMLPurifier_Encoder::cleanUTF8($string);
 		}
 
+		// Otherwise set HTMLPurifier to the actual string encoding
+		$config = \HTMLPurifier_Config::createDefault();
+		$config->set('Core.Encoding', static::getEncoding($string));
+
+		// Clean it
 		$string = \HTMLPurifier_Encoder::cleanUTF8($string);
 
+		// Convert it to UTF8 if possible
 		if (static::checkForIconv())
 		{
-			$config = \HTMLPurifier_Config::createDefault();
-			$config->set('Core.Encoding', static::getEncoding($string));
-
 			$string = \HTMLPurifier_Encoder::convertToUTF8($string, $config, null);
 		}
 
@@ -361,7 +368,7 @@ class StringHelper
 			static::$_iconv = false;
 
 			// Check if iconv is installed.
-			// Note we can't just use HTMLPurifier_Encode::iconvAvailable() because they don't consider iconv "installed" if it's there but "unusable".
+			// Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they don't consider iconv "installed" if it's there but "unusable".
 			if (!function_exists('iconv'))
 			{
 				Craft::log('Craft is not able to convert strings to UTF-8 because iconv is not installed.', LogLevel::Warning);
