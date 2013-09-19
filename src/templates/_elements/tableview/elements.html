@@ -17,7 +17,7 @@
 
 						{% set url = element.getUrl() %}
 						{% if url %}
-							{% set value = '<a href="'~url~'" target="_blank">'~value~'</a>' %}
+							{% set value = '<a href="'~url~'" target="_blank" class="go">'~value~'</a>' %}
 						{% endif %}
 					{% endif %}
 				{% endif %}
