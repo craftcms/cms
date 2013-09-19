@@ -91,13 +91,10 @@
 				</li>
 			</ul>
 
-			<h2>{{ siteName }}</h2>
+			<h2><a href="{{ siteUrl }}" title="{{ 'Site Homepage'|t }}" target="_blank">{{ siteName }}</a></h2>
 
 			<nav>
 				<ul id="nav">
-					<li>
-						<a id="nav-home" data-icon="home" href="{{ siteUrl() }}" title="{{ 'Site Homepage'|t }}" target="_blank"></a>
-					</li>
 					{% set firstSeg = craft.request.segment(1) %}
 					{% if firstSeg == 'myaccount' %}{% set firstSeg = 'users' %}{% endif %}
 					{% for handle, item in craft.cp.nav %}

@@ -41,7 +41,9 @@ html { overflow-y: scroll; }
 #header .right .settings:before,
 #header .right .myaccount:before { font-size: 16px; }
 
-#header h2 { float: left; margin: 0 25px 0 5px; padding: 10px 0; color: #fff; }
+#header h2 { float: left; margin: 0 25px 0 0; }
+#header h2 a { display: block; padding: 10px 0 10px 27px; }
+#header h2 a:before { @include icon; content: 'home'; float: left; margin: -2px 0 0 -22px; font-size: 16px; line-height: 26px; }
 
 #nav { float: left; margin-left: -5px; }
 #nav li { float: left; height: 38px; }
@@ -50,8 +52,6 @@ html { overflow-y: scroll; }
 #nav li a.sel { position: relative; z-index: 1; border-radius: 3px 3px 0 0; color: $textcolor; background: $bgcolor; }
 #nav li a:not(.sel) .badge { color: #333 !important; }
 #nav li a.menubtn { line-height: 26px; }
-
-#nav li a#nav-home { font-size: 18px; line-height: 26px; }
 
 /* HIDE */
 #customize-nav-btn span { display: none; }
