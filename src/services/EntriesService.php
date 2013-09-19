@@ -199,7 +199,7 @@ class EntriesService extends BaseApplicationComponent
 				// Get the appropriate URL Format attribute based on the section type and entry depth
 				if ($section->type == SectionType::Structure && (
 					($hasNewParent && $entry->parentId) ||
-					(!$hasNewParent && $entry->depth)
+					(!$hasNewParent && $entry->depth != 1)
 				))
 				{
 					$urlFormatAttribute = 'nestedUrlFormat';
