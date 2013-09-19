@@ -160,7 +160,7 @@ class EntryElementType extends BaseElementType
 
 		$attributes = array(
 			array('label' => Craft::t('Title'), 'attribute' => 'title'),
-			array('label' => Craft::t('URL'), 'attribute' => 'uri', 'display' => '{url|deprotocol}', 'link' => true),
+			array('label' => Craft::t('URI'), 'attribute' => 'uri'),
 		);
 
 		if ($source != 'singles')

@@ -10,14 +10,19 @@
 					{% set value = renderObjectTemplate(attribute.display, element) %}
 				{% else %}
 					{% set value = attribute(element, attribute.attribute) %}
+					{% if attribute.attribute == 'uri' %}
+						{% if value == '__home__' %}
+							{% set value = '<span data-icon="home" title="'~"Homepage"|t~'"></span>' %}
+						{% endif %}
+
+						{% set url = element.getUrl() %}
+						{% if url %}
+							{% set value = '<a href="'~url~'" target="_blank">'~value~'</a>' %}
+						{% endif %}
+					{% endif %}
 				{% endif %}
-				<td data-title="{{ attribute.label }}">
-					{%- if attribute.link is defined and attribute.link and element.getUrl() -%}
-						<a href="{{ element.getUrl() }}" target="_blank">{{ value|raw }}</a>
-					{%- else -%}
-						{{ value|raw }}
-					{%- endif -%}
-				</td>
+
+				<td data-title="{{ attribute.label }}">{{ value|raw }}</td>
 			{% endif %}
 		{% endfor %}
 	</tr>

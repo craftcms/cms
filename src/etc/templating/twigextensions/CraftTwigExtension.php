@@ -48,7 +48,6 @@ class CraftTwigExtension extends \Twig_Extension
 		return array(
 			'currency'   => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatCurrency'),
 			'datetime'   => new \Twig_Filter_Function('\Craft\craft()->dateFormatter->formatDateTime'),
-			'deprotocol' => new \Twig_Filter_Method($this, 'deprotocolFilter'),
 			'filesize'	 => new \Twig_Filter_Function('\Craft\craft()->formatter->formatSize'),
 			'filter'     => new \Twig_Filter_Function('array_filter'),
 			'group'      => new \Twig_Filter_Method($this, 'groupFilter'),
@@ -67,17 +66,6 @@ class CraftTwigExtension extends \Twig_Extension
 			'ucfirst'    => new \Twig_Filter_Function('ucfirst'),
 			'without'    => new \Twig_Filter_Method($this, 'withoutFilter'),
 		);
-	}
-
-	/**
-	 * Removes the protocol (http:// or https://) from a URL.
-	 *
-	 * @param string $url
-	 * @return string
-	 */
-	public function deprotocolFilter($url)
-	{
-		return preg_replace('/^(https?:)?\/\//', '', $url);
 	}
 
 	/**
