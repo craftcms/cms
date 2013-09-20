@@ -7,7 +7,28 @@ namespace Craft;
 class FieldRecord extends BaseRecord
 {
 	public $oldHandle;
-	protected $reservedHandleWords = array('id', 'dateCreated', 'dateUpdated', 'uid', 'author', 'authorId', 'type', 'postDate', 'expiryDate', 'enabled', 'archived', 'locale', 'title', 'uri', 'url', 'handle', 'name');
+	protected $reservedHandleWords = array(
+		'archived',
+		'author',
+		'authorId',
+		'dateCreated',
+		'dateUpdated',
+		'enabled',
+		'expiryDate',
+		'handle',
+		'id',
+		'link',
+		'img',
+		'locale',
+		'name',
+		'postDate',
+		'type',
+		'uid',
+		'uri',
+		'url',
+		'ref',
+		'title',
+	);
 
 	/**
 	 * @return string
