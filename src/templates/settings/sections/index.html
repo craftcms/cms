@@ -20,7 +20,7 @@
 				<th scope="col">{{ "Handle"|t }}</th>
 				<th scope="col">{{ "Type"|t }}</th>
 				<th scope="col">{{ "URL Format"|t }}</th>
-				<th scope="col">{{ "Entry Types"}}</th>
+				<th scope="col">{{ "Entry Types"|t}}</th>
 				<td class="thin"></td>
 			</thead>
 			<tbody>
@@ -58,13 +58,21 @@
 
 
 {% set js %}
-	new Craft.AdminTable({
+	var adminTable = new Craft.AdminTable({
 		tableSelector: '#sections',
 		noObjectsSelector: '#nosections',
 		newObjectBtnSelector: '#newsectioncontainer',
 		deleteAction: 'sections/deleteSection',
 		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its entries?"|t }}',
-		maxObjects: {% if not craft.hasPackage('PublishPro') %}{{ maxSections }}{% else %}null{% endif %}
+		{% if not craft.hasPackage('PublishPro') %}maxObjects: {{ maxSections }},{% endif %}
+		onDeleteObject: function()
+		{
+			// Hide the Entries tab if that was the last one
+			if (adminTable.totalObjects == 0)
+			{
+				$('#nav-entries').remove();
+			}
+		}
 	});
 {% endset %}
 {% includeJs js %}

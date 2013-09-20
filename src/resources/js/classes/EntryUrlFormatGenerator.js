@@ -21,9 +21,13 @@ Craft.EntryUrlFormatGenerator = Craft.BaseInputGenerator.extend({
 		// Get the "words"
 		var words = Craft.filterArray(sourceVal.split(/[^a-z0-9]+/));
 
-		if (words.length)
-			return words.join('-') + '/{slug}';
+		var urlFormat = words.join('-');
 
-		return '';
+		if (urlFormat && this.settings.includeSlug)
+		{
+			urlFormat += '/{slug}';
+		}
+
+		return urlFormat;
 	}
 });

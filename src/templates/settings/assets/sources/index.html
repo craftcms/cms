@@ -39,12 +39,20 @@
 
 
 {% set js %}
-	new Craft.AdminTable({
+	var adminTable = new Craft.AdminTable({
 		tableSelector: '#sources',
 		noObjectsSelector: '#nosources',
 		sortable: true,
 		reorderAction: 'assetSources/reorderSources',
-		deleteAction: 'assetSources/deleteSource'
+		deleteAction: 'assetSources/deleteSource',
+		onDeleteObject: function()
+		{
+			// Hide the Assets tab if that was the last one
+			if (adminTable.totalObjects == 0)
+			{
+				$('#nav-assets').remove();
+			}
+		}
 	});
 {% endset %}
 {% includeJs js %}

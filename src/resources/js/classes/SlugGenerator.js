@@ -6,7 +6,10 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend({
 	generateTargetValue: function(sourceVal)
 	{
 		// Remove HTML tags
-		sourceVal = sourceVal.replace("/<(.*?)>/g", '');
+		sourceVal = sourceVal.replace(/<(.*?)>/g, '');
+
+		// Remove inner-word punctuation
+		sourceVal = sourceVal.replace(/['"‘’“”]/g, '');
 
 		// Make it lowercase
 		sourceVal = sourceVal.toLowerCase();

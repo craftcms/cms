@@ -23,7 +23,7 @@ Craft.GetHelpWidget = Garnish.Base.extend({
 		this.$fromEmail = this.$widget.find('.fromEmail:first');
 		this.$attachDebugFiles= this.$widget.find('.attachDebugFiles:nth-child(2)');
 		this.$sendBtn = this.$widget.find('.submit:first');
-		this.$spinner = this.$widget.find('.spinner:first');
+		this.$spinner = this.$widget.find('.buttons .spinner');
 		this.$error = this.$widget.find('.error:first');
 		this.$form = this.$widget.find('form:first');
 

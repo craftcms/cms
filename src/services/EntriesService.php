@@ -199,7 +199,7 @@ class EntriesService extends BaseApplicationComponent
 				// Get the appropriate URL Format attribute based on the section type and entry depth
 				if ($section->type == SectionType::Structure && (
 					($hasNewParent && $entry->parentId) ||
-					(!$hasNewParent && $entry->depth)
+					(!$hasNewParent && $entry->depth != 1)
 				))
 				{
 					$urlFormatAttribute = 'nestedUrlFormat';
@@ -572,6 +572,9 @@ class EntriesService extends BaseApplicationComponent
 	{
 		// Remove HTML tags
 		$slug = preg_replace('/<(.*?)>/', '', $slug);
+
+		// Remove inner-word punctuation
+		$slug = preg_replace('/[\'"‘’“”]/', '', $slug);
 
 		// Make it lowercase
 		$slug = mb_strtolower($slug);

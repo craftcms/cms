@@ -36,7 +36,7 @@ Craft.AdminTable = Garnish.Base.extend({
 		this.$deleteBtns = this.$table.find('.delete');
 		this.addListener(this.$deleteBtns, 'click', 'deleteObject');
 
-		this.onDeleteObject();
+		this.updateUI();
 	},
 
 	addRow: function(row)
@@ -55,34 +55,12 @@ Craft.AdminTable = Garnish.Base.extend({
 			this.sorter.addItems($row);
 		}
 
+		this.$deleteBtns = this.$deleteBtns.add($deleteBtn);
+
 		this.addListener($deleteBtn, 'click', 'deleteObject');
 		this.totalObjects++;
 
-		// Did we just add the first row?
-		if (this.totalObjects == 1)
-		{
-			this.$noObjects.addClass('hidden');
-			this.$table.show();
-		}
-		else
-		{
-			if (this.settings.sortable)
-			{
-				this.$table.find('.move').removeClass('disabled');
-			}
-
-			if (this.settings.minObjects && this.totalObjects > this.settings.minObjects)
-			{
-				this.$deleteBtns.removeClass('disabled');
-			}
-		}
-
-		this.$deleteBtns = this.$deleteBtns.add($deleteBtn);
-
-		if (this.settings.maxObjects && this.totalObjects >= this.settings.maxObjects && this.settings.newObjectBtnSelector)
-		{
-			$(this.settings.newObjectBtnSelector).addClass('hidden');
-		}
+		this.updateUI();
 	},
 
 	reorderObjects: function()
@@ -145,8 +123,8 @@ Craft.AdminTable = Garnish.Base.extend({
 					{
 						$row.remove();
 						this.totalObjects--;
-						this.onDeleteObject();
-						this.settings.onDeleteObject(id);
+						this.updateUI();
+						this.onDeleteObject(id);
 
 						Craft.cp.displayNotice(Craft.t(this.settings.deleteSuccessMessage, { name: name }));
 					}
@@ -166,26 +144,61 @@ Craft.AdminTable = Garnish.Base.extend({
 		return confirm(Craft.t(this.settings.confirmDeleteMessage, { name: name }));
 	},
 
-	onDeleteObject: function()
+	onDeleteObject: function(id)
 	{
-		if (this.totalObjects == 1)
-		{
-			this.$table.find('.move').addClass('disabled');
-		}
-		else if (this.totalObjects == 0)
+		this.settings.onDeleteObject(id);
+	},
+
+	updateUI: function()
+	{
+		// Show the "No Whatever Exists" message if there aren't any
+		if (this.totalObjects == 0)
 		{
 			this.$table.hide();
-			$(this.settings.noObjectsSelector).removeClass('hidden');
+			this.$noObjects.removeClass('hidden');
+		}
+		else
+		{
+			this.$table.show();
+			this.$noObjects.addClass('hidden');
 		}
 
+		// Disable the sort buttons if there's only one row
+		if (this.settings.sortable)
+		{
+			var $moveButtons = this.$table.find('.move');
+
+			if (this.totalObjects == 1)
+			{
+				$moveButtons.addClass('disabled');
+			}
+			else
+			{
+				$moveButtons.removeClass('disabled');
+			}
+		}
+
+		// Disable the delete buttons if we've reached the minimum objects
 		if (this.settings.minObjects && this.totalObjects <= this.settings.minObjects)
 		{
 			this.$deleteBtns.addClass('disabled');
 		}
-
-		if (this.settings.maxObjects && this.totalObjects < this.settings.maxObjects && this.settings.newObjectBtnSelector)
+		else
 		{
-			$(this.settings.newObjectBtnSelector).removeClass('hidden');
+			this.$deleteBtns.removeClass('disabled');
+		}
+
+		// Hide the New Whatever button if we've reached the maximum objects
+		if (this.settings.newObjectBtnSelector)
+		{
+			if (this.settings.maxObjects && this.totalObjects >= this.settings.maxObjects)
+			{
+				$(this.settings.newObjectBtnSelector).addClass('hidden');
+			}
+			else
+			{
+				$(this.settings.newObjectBtnSelector).removeClass('hidden');
+			}
 		}
 	}
 },

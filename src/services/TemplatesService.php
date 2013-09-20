@@ -46,6 +46,11 @@ class TemplatesService extends BaseApplicationComponent
 			$twig->addExtension(new \Twig_Extension_StringLoader());
 			$twig->addExtension(new CraftTwigExtension());
 
+			if (craft()->config->get('devMode'))
+			{
+				$twig->addExtension(new \Twig_Extension_Debug());
+			}
+
 			// Give plugins a chance to add their own Twig extensions
 
 			// All plugins may not have been loaded yet if an exception is being thrown

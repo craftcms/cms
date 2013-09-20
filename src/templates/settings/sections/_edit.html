@@ -243,9 +243,9 @@
 
 	{% for locale in craft.i18n.getSiteLocales() %}
 		{% if section.locales[locale.id] is not defined or not section.locales[locale.id].urlFormat %}
-			new Craft.HandleGenerator('#name',         '#single-urlFormat-{{ locale.id }}');
-			new Craft.EntryUrlFormatGenerator('#name', '#channel-urlFormat-{{ locale.id }}');
-			new Craft.EntryUrlFormatGenerator('#name', '#structure-urlFormat-{{ locale.id }}');
+			new Craft.EntryUrlFormatGenerator('#name', '#single-urlFormat-{{ locale.id }}');
+			new Craft.EntryUrlFormatGenerator('#name', '#channel-urlFormat-{{ locale.id }}',   { includeSlug: true });
+			new Craft.EntryUrlFormatGenerator('#name', '#structure-urlFormat-{{ locale.id }}', { includeSlug: true });
 		{% endif %}
 	{% endfor %}
 {% endset %}

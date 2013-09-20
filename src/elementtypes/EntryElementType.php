@@ -160,12 +160,11 @@ class EntryElementType extends BaseElementType
 
 		$attributes = array(
 			array('label' => Craft::t('Title'), 'attribute' => 'title'),
+			array('label' => Craft::t('URI'), 'attribute' => 'uri'),
 		);
 
 		if ($source != 'singles')
 		{
-			$attributes[] = array('label' => Craft::t('Slug'), 'attribute' => 'slug', 'link' => true);
-
 			if (empty($section))
 			{
 				$attributes[] = array('label' => Craft::t('Section'), 'attribute' => 'sectionId', 'display' => '{section}');

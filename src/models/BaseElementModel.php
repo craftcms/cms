@@ -66,7 +66,14 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if ($this->uri !== null)
 		{
-			return UrlHelper::getSiteUrl($this->uri);
+			if ($this->uri == '__home__')
+			{
+				return UrlHelper::getSiteUrl();
+			}
+			else
+			{
+				return UrlHelper::getSiteUrl($this->uri);
+			}
 		}
 	}
 

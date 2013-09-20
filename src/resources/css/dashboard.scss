@@ -23,8 +23,8 @@
 .widget:not(:last-child) { margin-bottom: 10px; }
 .col .widget { display: block; }
 
-.widget .spinner { display: none; }
-.widget.loading .spinner { display: block; float: right; margin-left: 10px; }
+.widget .spinner.body-loading { display: none; }
+.widget.loading .spinner.body-loading { display: block; float: right; margin-left: 10px; }
 .widget h2 { margin-top: 0; }
 
 .widget form + .errors { margin-top: 15px; }

@@ -107,7 +107,8 @@ a:hover { text-decoration: underline; }
 a.sel,
 li.sel a { cursor: default !important; text-decoration: none; }
 
-a.go:after { content: 'go'; font-size: 12px; margin: -2px 0 0 4px; }
+a.go:after { content: 'go'; font-size: 11px; margin: -1px 0 0 4px; color: $lighttextcolor; }
+a.go:hover:after { color: $linkcolor; }
 
 /* emphasis */
 em, i { font-style: italic; }
@@ -255,6 +256,8 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 	-webkit-box-shadow: inset 0 1px 0 rgba(0,0,0,0.05);
 	        box-shadow: inset 0 1px 0 rgba(0,0,0,0.05);
 }
+
+.btn.active { cursor: default; }
 
 .btn:hover { text-decoration: none; }
 .disabled { opacity: 0.25; cursor: default; }

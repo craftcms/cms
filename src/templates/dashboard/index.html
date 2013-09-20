@@ -16,7 +16,7 @@
 				{% set widgetType = craft.dashboard.populateWidgetType(widget) %}
 				{% if widgetType %}
 					<div id="widget{{ widget.id }}" class="widget {{ widgetType.classHandle|lower }}" data-id="{{ widget.id }}">
-						<div class="spinner"></div>
+						<div class="spinner body-loading"></div>
 						<h2>{{ widgetType.title }}</h2>
 						<div class="body">
 							{{ widgetType.getBodyHtml|raw }}
