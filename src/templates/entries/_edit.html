@@ -180,7 +180,9 @@
 									{% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
 								{% endif %}
 
-								<li><a class="formsubmit" data-redirect="entries/{{ section.handle }}/new{% if nextEntryParams %}?{{ nextEntryParams|join('&') }}{% endif %}">{{ "Save and add another"|t }}</a></li>
+								{% if section.type != 'single' %}
+									<li><a class="formsubmit" data-redirect="entries/{{ section.handle }}/new{% if nextEntryParams %}?{{ nextEntryParams|join('&') }}{% endif %}">{{ "Save and add another"|t }}</a></li>
+								{% endif %}
 							</ul>
 						</div>
 					</div>
