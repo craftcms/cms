@@ -44,10 +44,18 @@
 
 
 {% set js %}
-	new Craft.AdminTable({
+	var adminTable = new Craft.AdminTable({
 		tableSelector: '#sets',
 		noObjectsSelector: '#nosets',
 		deleteAction: 'globals/deleteSet',
+		onDeleteObject: function()
+		{
+			// Hide the Globals tab if that was the last one
+			if (adminTable.totalObjects == 0)
+			{
+				$('#nav-globals').remove();
+			}
+		}
 	});
 {% endset %}
 {% includeJs js %}
