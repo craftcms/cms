@@ -58,7 +58,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'namespace'  => $namespaceFilter,
 			'ns'         => $namespaceFilter,
 			'number'     => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatDecimal'),
-			'parseRefs'  => new \Twig_Filter_Function('\Craft\craft()->elements->parseRefs'),
+			'parseRefs'  => new \Twig_Filter_Method($this, 'parseRefsFilter'),
 			'percentage' => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatPercentage'),
 			'replace'    => new \Twig_Filter_Method($this, 'replaceFilter'),
 			'translate'  => $translateFilter,
@@ -93,6 +93,19 @@ class CraftTwigExtension extends \Twig_Extension
 		}
 
 		return $filteredArray;
+	}
+
+	/**
+	 * Parses a string for refernece tags.
+	 *
+	 * @param string $str
+	 * @return \Twig_Markup
+	 */
+	public function parseRefsFilter($str)
+	{
+		$str = craft()->elements->parseRefs($str);
+		$charset = craft()->templates->getTwig()->getCharset();
+		return new \Twig_Markup($str, $charset);
 	}
 
 	/**
