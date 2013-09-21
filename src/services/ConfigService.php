@@ -243,7 +243,7 @@ class ConfigService extends BaseApplicationComponent
 		@ini_set('memory_limit', craft()->config->get('phpMaxMemoryLimit'));
 
 		// I need more time.
-		set_time_limit(120);
+		@set_time_limit(120);
 	}
 
 	/**
