@@ -695,7 +695,7 @@ class SectionsService extends BaseApplicationComponent
 								$sectionLocale = $sectionLocales[$localeId];
 
 								// This may take a while...
-								set_time_limit(120);
+								craft()->config->maxPowerCaptain();
 
 								foreach ($entries as $entry)
 								{

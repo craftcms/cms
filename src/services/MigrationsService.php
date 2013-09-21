@@ -65,7 +65,7 @@ class MigrationsService extends BaseApplicationComponent
 			craft()->db->getSchema()->refresh();
 
 			// Set a new 2 minute time limit
-			set_time_limit(120);
+			craft()->config->maxPowerCaptain();
 
 			if ($this->migrateUp($migration, $plugin) === false)
 			{
