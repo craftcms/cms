@@ -43,7 +43,7 @@ html { overflow-y: scroll; }
 
 #header h2 { float: left; margin: 0 25px 0 0; }
 #header h2 a { display: block; padding: 10px 0 10px 27px; }
-#header h2 a:before { @include icon; content: 'home'; float: left; margin: -2px 0 0 -22px; font-size: 16px; line-height: 26px; }
+#header h2 a:before { @include icon; content: 'home'; float: left; margin: -3px 0 0 -22px; font-size: 17px; line-height: 26px; }
 
 #nav { float: left; margin-left: -5px; }
 #nav li { float: left; height: 38px; }
