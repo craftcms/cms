@@ -48,6 +48,9 @@ Craft.EntryTypeSwitcher = Garnish.Base.extend({
 				{
 					$(html).appendTo(Garnish.$bod);
 				}
+
+				// Update the slug generator with the new title input
+				slugGenerator.setNewSource('#title');
 			}
 		}, this));
 	}

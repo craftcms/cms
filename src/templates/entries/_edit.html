@@ -204,5 +204,5 @@
 
 
 {% if not entry.slug %}
-	{% includeJs "new Craft.SlugGenerator('#title', '#slug');" %}
+	{% includeJs "window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');" %}
 {% endif %}
