@@ -224,7 +224,6 @@ class ResourcesService extends BaseApplicationComponent
 		// If there is a timestamp and HTTP_IF_MODIFIED_SINCE exists, check the timestamp against requested file's last modified date.
 		// If the last modified date is less than the timestamp, return a 304 not modified and let the browser serve it from cache.
 		$timestamp = craft()->request->getParam('d', null);
-		$fetchContent = true;
 
 		if ($timestamp !== null && array_key_exists('HTTP_IF_MODIFIED_SINCE', $_SERVER))
 		{
