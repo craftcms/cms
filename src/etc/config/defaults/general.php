@@ -17,11 +17,6 @@ return array(
 'actionTrigger' => 'actions',
 
 /**
- * The URI Craft should use for user account activation. Note that this only affects front-end site requests.
- */
-'activateAccountPath' => 'activate',
-
-/**
  * Deprecated.  Use 'activateAccountFailurePath' instead.
  */
 'activateFailurePath' => '',

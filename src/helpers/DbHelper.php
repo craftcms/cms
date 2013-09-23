@@ -380,6 +380,11 @@ class DbHelper
 
 		$values = ArrayHelper::stringToArray($values);
 
+		if (!count($values))
+		{
+			return '';
+		}
+
 		if ($values[0] == 'and' || $values[0] == 'or')
 		{
 			$join = $values[0];
