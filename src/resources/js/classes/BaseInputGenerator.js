@@ -19,10 +19,25 @@ Craft.BaseInputGenerator = Garnish.Base.extend({
 		this.startListening();
 	},
 
+	setNewSource: function(source)
+	{
+		var listening = this.listening;
+		this.stopListening();
+
+		this.$source = $(source);
+
+		if (listening)
+		{
+			this.startListening();
+		}
+	},
+
 	startListening: function()
 	{
 		if (this.listening)
+		{
 			return;
+		}
 
 		this.listening = true;
 
