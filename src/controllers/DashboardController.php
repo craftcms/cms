@@ -137,19 +137,16 @@ class DashboardController extends BaseController
 
 					if (IOHelper::folderExists(craft()->path->getLogPath()))
 					{
-						// Grab the latest log file.
-						Zip::add($tempZipFile, craft()->path->getLogPath().'craft.log', craft()->path->getStoragePath());
+						// Grab it all.
+						$logFolderContents = IOHelper::getFolderContents(craft()->path->getLogPath());
 
-						// Grab the most recent rolled-over log file, if one exists.
-						if (IOHelper::fileExists(craft()->path->getLogPath().'craft.log.1'))
+						foreach ($logFolderContents as $file)
 						{
-							Zip::add($tempZipFile, craft()->path->getLogPath().'craft.log.1', craft()->path->getStoragePath());
-						}
-
-						// Grab the phperrors log file, if it exists.
-						if (IOHelper::fileExists(craft()->path->getLogPath().'phperrors.log'))
-						{
-							Zip::add($tempZipFile, craft()->path->getLogPath().'phperrors.log', craft()->path->getStoragePath());
+							// Make sure it's a file.
+							if (IOHelper::fileExists($file))
+							{
+								Zip::add($tempZipFile, $file, craft()->path->getStoragePath());
+							}
 						}
 					}
 

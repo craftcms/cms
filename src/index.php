@@ -63,9 +63,17 @@ function craft_ensureFolderIsReadable($path, $writableToo = false)
 	$realPath = realpath($path);
 
 	// !@file_exists('/.') is a workaround for the terrible is_executable()
-	if ($realPath === false || !is_dir($realPath) || (!is_writable($realPath)) || !@file_exists($realPath.'/.'))
+	if ($realPath === false || !is_dir($realPath) || !@file_exists($realPath.'/.'))
 	{
 		exit (($realPath !== false ? $realPath : $path).' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
+	}
+
+	if ($writableToo)
+	{
+		if (!is_writable($realPath))
+		{
+			exit ($realPath.' isn\'t writable by PHP. Please fix that.');
+		}
 	}
 }
 
