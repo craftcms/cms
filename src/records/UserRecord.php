@@ -86,7 +86,7 @@ class UserRecord extends BaseRecord
 		parent::validate($attributes = null, $clearErrors = true);
 
 		// Don't allow whitespace in the username.
-		if (preg_match('/(\w+)/', $this->username))
+		if (preg_match('/\s+/', $this->username, $matches))
 		{
 			$this->addError('username', Craft::t('Spaces are not allowed in the username.'));
 		}
