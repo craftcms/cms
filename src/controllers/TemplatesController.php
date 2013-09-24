@@ -133,6 +133,12 @@ class TemplatesController extends BaseController
 				{
 					// Fall back on the CP error template
 					craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+
+					// Look for the template again
+					if (!craft()->templates->doesTemplateExist($template))
+					{
+						$template = 'error';
+					}
 				}
 			}
 		}
