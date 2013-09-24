@@ -34,14 +34,7 @@ class EntriesService extends BaseApplicationComponent
 	{
 		$isNewEntry = !$entry->id;
 
-		$hasNewParent = (Craft::hasPackage(CraftPackage::PublishPro) &&
-			$entry->getSection()->type == SectionType::Structure &&
-			$isNewEntry || (
-				$entry->parentId !== null &&
-				($entry->parentId !== '0' || $entry->depth != 1) &&
-				(!$entry->getParent() || $entry->getParent()->id != $entry->parentId)
-			)
-		);
+		$hasNewParent = $this->_checkForNewParent($entry);
 
 		if ($hasNewParent)
 		{
@@ -560,6 +553,55 @@ class EntriesService extends BaseApplicationComponent
 
 	// Private methods
 	// ===============
+
+	/**
+	 * Checks if an entry was submitted with a new parent entry selected.
+	 *
+	 * @access private
+	 * @param EntryModel $entry
+	 * @return bool
+	 */
+	private function _checkForNewParent(EntryModel $entry)
+	{
+		// Make sure this is a Structure section
+		if ($entry->getSection()->type != SectionType::Structure)
+		{
+			return false;
+		}
+
+		// Is it a brand new entry?
+		if (!$entry->id)
+		{
+			return true;
+		}
+
+		// Was a parentId actually submitted?
+		if ($entry->parentId === null)
+		{
+			return false;
+		}
+
+		// Is it set to the top level now, but it hadn't been before?
+		if ($entry->parentId === '0' && $entry->depth != 1)
+		{
+			return true;
+		}
+
+		// Is it set to be under a parent now, but didn't have one before?
+		if ($entry->parentId !== '0' && $entry->depth == 1)
+		{
+			return true;
+		}
+
+		// Is the parentId set to a different entry ID than its previous parent?
+		if ($entry->parentId != $entry->getParent()->id)
+		{
+			return true;
+		}
+
+		// Must be set to the same one then
+		return false;
+	}
 
 	/**
 	 * Cleans an entry slug.
