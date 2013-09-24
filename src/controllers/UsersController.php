@@ -138,8 +138,6 @@ class UsersController extends BaseController
 				'loginName'   => $loginName,
 			));
 		}
-
-
 	}
 
 	/**
@@ -211,24 +209,44 @@ class UsersController extends BaseController
 
 			$url = craft()->config->getSetPasswordPath($code, $id, $user);
 
+			// If the user cannot access the CP
 			if (!$user->can('accessCp'))
 			{
+				// If they haven't defined a front-end set password template
 				if (!craft()->templates->doesTemplateExist(craft()->config->get('setPasswordPath')))
 				{
 					// Set PathService to use the CP templates path instead
 					craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+
+					// Render Craft's set password template on the front-end.
+					$this->renderTemplate($url, array(
+						'code' => $code,
+						'id' => $id,
+						'newUser' => ($user->password ? false : true),
+					));
+				}
+				// They cannot access the CP, but they have a front-end set password template defined.
+				// Set the route variables and let URL manager do it's thing.
+				else
+				{
+					craft()->urlManager->setRouteVariables(array(
+						'code' => $code,
+						'id' => $id,
+						'newUser' => ($user->password ? false : true),
+					));
 				}
 			}
+			// The user can access the CP, so send them to Craft's set password template in the dashboard.
 			else
 			{
 				craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
-			}
 
-			$this->renderTemplate($url, array(
-				'code' => $code,
-				'id' => $id,
-				'newUser' => ($user->password ? false : true),
-			));
+				$this->renderTemplate($url, array(
+					'code' => $code,
+					'id' => $id,
+					'newUser' => ($user->password ? false : true),
+				));
+			}
 		}
 	}
 
@@ -272,7 +290,7 @@ class UsersController extends BaseController
 
 				if ($user->can('accessCp'))
 				{
-					$url = craft()->config->get('actionTrigger').'/users/.'.craft()->config->getCpSetPasswordPath();
+					$url = craft()->config->get('actionTrigger').'/users/'.craft()->config->getCpSetPasswordPath();
 				}
 				else
 				{
