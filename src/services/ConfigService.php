@@ -299,7 +299,7 @@ class ConfigService extends BaseApplicationComponent
 			return $url;
 		}
 
-		if (craft()->request->isSecureConnection)
+		if (craft()->request->isSecureConnection())
 		{
 			$url = UrlHelper::getUrl($url, array(
 				'code' => $code, 'id' => $uid
@@ -331,7 +331,7 @@ class ConfigService extends BaseApplicationComponent
 
 			if ($full)
 			{
-				if (craft()->request->isSecureConnection)
+				if (craft()->request->isSecureConnection())
 				{
 					$url = UrlHelper::getCpUrl($url, array(
 						'code' => $code, 'id' => $uid
@@ -351,7 +351,7 @@ class ConfigService extends BaseApplicationComponent
 
 			if ($full)
 			{
-				if (craft()->request->isSecureConnection)
+				if (craft()->request->isSecureConnection())
 				{
 					$url = UrlHelper::getUrl($url, array(
 						'code' => $code, 'id' => $uid

@@ -310,7 +310,7 @@ class UsersController extends BaseController
 			}
 		}
 
-		if (craft()->request->isSecureConnection)
+		if (craft()->request->isSecureConnection())
 		{
 			$url = UrlHelper::getUrl($url, array(
 				'code' => $code, 'id' => $id

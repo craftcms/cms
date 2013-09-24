@@ -461,7 +461,7 @@ class UserSessionService extends \CWebUser
 		$cookie->httpOnly = true;
 		$cookie->expire = time() + $duration;
 
-		if (craft()->request->isSecureConnection)
+		if (craft()->request->isSecureConnection())
 		{
 			$cookie->secure = true;
 		}
