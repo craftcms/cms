@@ -135,6 +135,9 @@ class ConfigService extends BaseApplicationComponent
 					}
 					else
 					{
+						// Cache it early so the testScriptNameRedirect request isn't checking for it too
+						craft()->fileCache->set('omitScriptNameInUrls', 'n');
+
 						// Test the server for it
 						try
 						{
@@ -207,6 +210,9 @@ class ConfigService extends BaseApplicationComponent
 					}
 					else
 					{
+						// Cache it early so the testPathInfo request isn't checking for it too
+						craft()->fileCache->set('usePathInfo', 'n');
+
 						// Test the server for it
 						try
 						{
