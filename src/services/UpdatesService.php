@@ -295,7 +295,8 @@ class UpdatesService extends BaseApplicationComponent
 			// No need to get the latest update info if this is a manual update.
 			if (!$manual)
 			{
-				$updateModel = $updater->getLatestUpdateInfo();
+				$updater->getLatestUpdateInfo();
+				$updateModel = $this->getUpdates();
 				Craft::log('Updating from '.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild.' to '.$updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild.'.', LogLevel::Info, true);
 				$result = $updater->getUpdateFileInfo();
 
