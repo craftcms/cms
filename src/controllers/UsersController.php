@@ -27,8 +27,6 @@ class UsersController extends BaseController
 			}
 		}
 
-		$vars = array();
-
 		if (craft()->request->isPostRequest())
 		{
 			$loginName = craft()->request->getPost('loginName');
@@ -65,26 +63,15 @@ class UsersController extends BaseController
 				{
 					craft()->userSession->setError($errorMessage);
 
-					$vars = array(
+					craft()->urlManager->setRouteVariables(array(
 						'loginName' => $loginName,
 						'rememberMe' => $rememberMe,
 						'errorCode' => $errorCode,
 						'errorMessage' => $errorMessage,
-					);
+					));
 				}
 			}
 		}
-
-		if (craft()->request->isCpRequest())
-		{
-			$template = 'login';
-		}
-		else
-		{
-			$template = craft()->config->get('loginPath');
-		}
-
-		$this->renderTemplate($template, $vars);
 	}
 
 	/**
