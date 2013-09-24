@@ -114,7 +114,7 @@ class ConfigService extends BaseApplicationComponent
 
 			if (is_bool($configVal))
 			{
-				$this->_omitScriptNameInUrls = ($configVal == true ? 'y' : 'n');
+				$this->_omitScriptNameInUrls = ($configVal === true ? 'y' : 'n');
 			}
 			else
 			{
@@ -180,7 +180,7 @@ class ConfigService extends BaseApplicationComponent
 
 			if (is_bool($configVal))
 			{
-				$this->_usePathInfo = ($configVal == true ? 'y' : 'n');
+				$this->_usePathInfo = ($configVal === true ? 'y' : 'n');
 			}
 			else
 			{
