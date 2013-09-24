@@ -77,7 +77,7 @@
 
 	{{ textField({
 		label: "Entry Template"|t,
-		instructions: "The template to use when an entry’s URL is requested."|t,
+		instructions: (sectionType == 'single' ? "The template to use when the entry’s URL is requested."|t : "The template to use when an entry’s URL is requested."|t),
 		id: sectionType~'-template',
 		name: 'types['~sectionType~'][template]',
 		value: section.template,
