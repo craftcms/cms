@@ -107,14 +107,14 @@ class ConfigService extends BaseApplicationComponent
 	{
 		if (!isset($this->_omitScriptNameInUrls))
 		{
-			$this->_omitScriptNameInUrls = 'no';
+			$this->_omitScriptNameInUrls = 'n';
 
 			// Check if the config value has actually been set to true/false
 			$configVal = $this->get('omitScriptNameInUrls');
 
 			if (is_bool($configVal))
 			{
-				$this->_omitScriptNameInUrls = ($configVal == true ? 'yes' : 'no');
+				$this->_omitScriptNameInUrls = ($configVal == true ? 'y' : 'n');
 			}
 			else
 			{
@@ -146,7 +146,7 @@ class ConfigService extends BaseApplicationComponent
 
 							if ($response->isSuccessful() && $response->getBody(true) === 'success')
 							{
-								$this->_omitScriptNameInUrls = 'yes';
+								$this->_omitScriptNameInUrls = 'y';
 							}
 						}
 						catch (\Exception $e)
@@ -161,7 +161,7 @@ class ConfigService extends BaseApplicationComponent
 			}
 		}
 
-		return $this->_omitScriptNameInUrls == 'no' ? false : true;
+		return $this->_omitScriptNameInUrls == 'n' ? false : true;
 	}
 
 	/**
@@ -173,14 +173,14 @@ class ConfigService extends BaseApplicationComponent
 	{
 		if (!isset($this->_usePathInfo))
 		{
-			$this->_usePathInfo = 'no';
+			$this->_usePathInfo = 'n';
 
 			// Check if the config value has actually been set to true/false
 			$configVal = $this->get('usePathInfo');
 
 			if (is_bool($configVal))
 			{
-				$this->_usePathInfo = ($configVal == true ? 'yes' : 'no');
+				$this->_usePathInfo = ($configVal == true ? 'y' : 'n');
 			}
 			else
 			{
@@ -197,13 +197,13 @@ class ConfigService extends BaseApplicationComponent
 					// Added the !empty() check for nginx.
 					if (!empty($_SERVER['PATH_INFO']))
 					{
-						$this->_usePathInfo = true;
+						$this->_usePathInfo = 'y';
 					}
 					// PHP Dev Server supports path info, and doesn't support simultaneous requests,
 					// so we need to explicitly check for that.
 					else if (AppHelper::isPhpDevServer())
 					{
-						$this->_usePathInfo = true;
+						$this->_usePathInfo = 'y';
 					}
 					else
 					{
@@ -216,7 +216,7 @@ class ConfigService extends BaseApplicationComponent
 
 							if ($response->isSuccessful() && $response->getBody(true) === 'success')
 							{
-								$this->_usePathInfo = 'yes';
+								$this->_usePathInfo = 'y';
 							}
 						}
 						catch (\Exception $e)
@@ -231,7 +231,7 @@ class ConfigService extends BaseApplicationComponent
 			}
 		}
 
-		return $this->_usePathInfo == 'no' ? false : true;
+		return $this->_usePathInfo == 'n' ? false : true;
 	}
 
 	/**
