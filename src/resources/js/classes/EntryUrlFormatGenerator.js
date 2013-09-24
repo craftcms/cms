@@ -23,9 +23,9 @@ Craft.EntryUrlFormatGenerator = Craft.BaseInputGenerator.extend({
 
 		var urlFormat = words.join('-');
 
-		if (urlFormat && this.settings.includeSlug)
+		if (urlFormat && this.settings.suffix)
 		{
-			urlFormat += '/{slug}';
+			urlFormat += this.settings.suffix;
 		}
 
 		return urlFormat;
