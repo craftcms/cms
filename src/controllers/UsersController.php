@@ -23,7 +23,7 @@ class UsersController extends BaseController
 			}
 			else
 			{
-				$this->redirectToPostedUrl();
+				$this->redirect(UrlHelper::getCpUrl('dashboard'));
 			}
 		}
 
