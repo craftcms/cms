@@ -39,26 +39,32 @@ class AssetFileModel extends BaseElementModel
 	 */
 	function __get($name)
 	{
-		// Is it a transform handle?
-		$transform = craft()->assetTransforms->getTransformByHandle($name);
-
-		if ($transform)
-		{
-			// Duplicate this model and set it to that transform
-			$model = new AssetFileModel();
-
-			// Can't just use getAttributes() here because we'll get thrown into an infinite loop.
-			foreach ($this->attributeNames() as $attributeName)
-			{
-				$model->setAttribute($attributeName, parent::getAttribute($attributeName));
-			}
-
-			$model->setTransform($transform);
-			return $model;
-		}
-		else
+		// Run through the BaseModel/CModel stuff first
+		try
 		{
 			return parent::__get($name);
+		}
+		catch (\Exception $e)
+		{
+			// Is $name a transform handle?
+			$transform = craft()->assetTransforms->getTransformByHandle($name);
+			if ($transform)
+			{
+				// Duplicate this model and set it to that transform
+				$model = new AssetFileModel();
+
+				// Can't just use getAttributes() here because we'll get thrown into an infinite loop.
+				foreach ($this->attributeNames() as $attributeName)
+				{
+					$model->setAttribute($attributeName, parent::getAttribute($attributeName));
+				}
+
+				$model->setTransform($transform);
+				return $model;
+			}
+
+			// Fine, throw the exception
+			throw $e;
 		}
 	}
 
