@@ -13,7 +13,7 @@ class UsernameModel extends BaseModel
 	protected function defineAttributes()
 	{
 		return array(
-			'username' => array(AttributeType::String, 'required' => true),
+			'username' => array(AttributeType::String, 'maxLength' => 100, 'required' => true),
 		);
 	}
 }

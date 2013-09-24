@@ -25,7 +25,7 @@ class UserModel extends BaseElementModel
 	protected function defineAttributes()
 	{
 		return array_merge(parent::defineAttributes(), array(
-			'username'               => AttributeType::String,
+			'username'               => array(AttributeType::String, 'maxLength' => 100, 'required' => true),
 			'photo'                  => AttributeType::String,
 			'firstName'              => AttributeType::String,
 			'lastName'               => AttributeType::String,

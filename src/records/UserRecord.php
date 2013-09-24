@@ -21,7 +21,7 @@ class UserRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
-			'username'                   => array(AttributeType::Handle, 'maxLength' => 100, 'required' => true),
+			'username'                   => array(AttributeType::String, 'maxLength' => 100, 'required' => true),
 			'photo'                      => array(AttributeType::String, 'maxLength' => 50),
 			'firstName'                  => array(AttributeType::String, 'maxLength' => 100),
 			'lastName'                   => array(AttributeType::String, 'maxLength' => 100),
@@ -74,5 +74,21 @@ class UserRecord extends BaseRecord
 			array('columns' => array('verificationCode')),
 			array('columns' => array('uid')),
 		);
+	}
+
+	/**
+	 * @param null $attributes
+	 * @param bool $clearErrors
+	 * @return bool|void
+	 */
+	public function validate($attributes = null, $clearErrors = true)
+	{
+		parent::validate($attributes = null, $clearErrors = true);
+
+		// Don't allow whitespace in the username.
+		if (preg_match('/\s+/', $this->username, $matches))
+		{
+			$this->addError('username', Craft::t('Spaces are not allowed in the username.'));
+		}
 	}
 }
