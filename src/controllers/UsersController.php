@@ -298,7 +298,9 @@ class UsersController extends BaseController
 		}
 		else
 		{
-			if (($url = craft()->config->getActivateAccountFailurePath()) === '')
+			$url = craft()->config->getActivateAccountFailurePath();
+
+			if ($url === '')
 			{
 				// Failed to validate user and there is no custom validation failure path.  Throw an exception.
 				throw new HttpException('200', Craft::t('There was a problem activating this account.'));
