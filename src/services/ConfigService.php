@@ -161,7 +161,7 @@ class ConfigService extends BaseApplicationComponent
 			}
 		}
 
-		return $this->_omitScriptNameInUrls == 'n' ? false : true;
+		return ($this->_omitScriptNameInUrls == 'y');
 	}
 
 	/**
@@ -231,7 +231,7 @@ class ConfigService extends BaseApplicationComponent
 			}
 		}
 
-		return $this->_usePathInfo == 'n' ? false : true;
+		return ($this->_usePathInfo == 'y');
 	}
 
 	/**
