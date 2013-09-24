@@ -1,3 +1,7 @@
+{% if name is defined and name %}
+	<input type="hidden" name="{{ name }}" value="">
+{% endif -%}
+
 {% set elements = (elements is defined ? elements : []) -%}
 {% set jsClass = (jsClass is defined and jsClass ? jsClass : 'Craft.BaseElementSelectInput') -%}
 {% set sources = (sources is defined and sources ? sources : null) -%}

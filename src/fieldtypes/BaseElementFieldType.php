@@ -115,6 +115,10 @@ abstract class BaseElementFieldType extends BaseFieldType
 		{
 			$elements = craft()->relations->getElementsById($this->elementType, array_filter($value));
 		}
+		else if ($value === '')
+		{
+			$elements = array();
+		}
 		else if (isset($this->element) && $this->element->id)
 		{
 			$elements = craft()->relations->getRelatedElements($this->element->id, $this->model->id, $this->elementType);
