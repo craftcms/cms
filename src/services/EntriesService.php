@@ -594,7 +594,10 @@ class EntriesService extends BaseApplicationComponent
 		}
 
 		// Is the parentId set to a different entry ID than its previous parent?
-		if ($entry->parentId != $entry->getParent()->id)
+		$oldParent = $entry->getParent();
+		$oldParentId = ($oldParent ? $oldParent->id : null);
+
+		if ($entry->parentId != $oldParentId)
 		{
 			return true;
 		}
