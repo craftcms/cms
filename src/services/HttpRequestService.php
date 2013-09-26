@@ -621,28 +621,19 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	public function getPost($name = null, $defaultValue = null)
 	{
+		// Do they just want the whole array?
 		if (!$name)
 		{
-			$post = array();
-
-			foreach ($_POST as $key => $value)
-			{
-				$post[$key] = StringHelper::convertToUTF8($value);
-			}
-
-			return $post;
+			return $this->_utf8AllTheThings($_POST);
 		}
-		else
+
+		// Looking for a specific value?
+		if (isset($_POST[$name]))
 		{
-			if (isset($_POST[$name]))
-			{
-				return $this->_utf8AllTheThings($_POST[$name]);
-			}
-			else
-			{
-				return $defaultValue;
-			}
+			return $this->_utf8AllTheThings($_POST[$name]);
 		}
+
+		return $defaultValue;
 	}
 
 	/**
