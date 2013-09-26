@@ -33,6 +33,7 @@ To set up your OS X environment to build Craft, follow these instructions:
         # Craft Utils environment variables
         export CRAFT_REPO_PATH=/path/to/Craft
         export CRAFT_PHP_PATH=/Applications/MAMP/bin/php/php5.3.20/bin/php
+        export CRAFT_PHPINI_PATH=/Applications/MAMP/bin/php/php5.3.20/conf/php.ini
         export CRAFT_SASS_PATH=/usr/bin/sass
         export PATH=$CRAFT_REPO_PATH/Utils:$PATH
 
