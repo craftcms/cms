@@ -614,6 +614,7 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * Returns the named POST parameter value, or the entire POST array if no name is specified.
 	 * If $name is specified and the POST parameter does not exist, $defaultValue will be returned.
+	 * $name can also represent a nested param using dot syntax, e.g. getPost('fields.body')
 	 *
 	 * @param null $name The POST parameter name or null.  If $name is null, it will return the entire POST array.
 	 * @param null   $defaultValue The default parameter value is $name is not null and the POST parameter does not exist.
@@ -631,6 +632,27 @@ class HttpRequestService extends \CHttpRequest
 		if (isset($_POST[$name]))
 		{
 			return $this->_utf8AllTheThings($_POST[$name]);
+		}
+
+		// Maybe they're looking for a nested param?
+		if (strpos($name, '.') !== false)
+		{
+			$path = array_filter(explode('.', $name));
+			$param = $_POST;
+
+			foreach ($path as $step)
+			{
+				if (is_array($param) && isset($param[$step]))
+				{
+					$param = $param[$step];
+				}
+				else
+				{
+					return $defaultValue;
+				}
+			}
+
+			return $this->_utf8AllTheThings($param);
 		}
 
 		return $defaultValue;
