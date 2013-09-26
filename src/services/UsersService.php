@@ -219,6 +219,7 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->admin                 = $user->admin;
 		$userRecord->passwordResetRequired = $user->passwordResetRequired;
 		$userRecord->preferredLocale       = $user->preferredLocale;
+		$userRecord->status                = $user->status;
 
 		$userRecord->validate();
 		$user->addErrors($userRecord->getErrors());
