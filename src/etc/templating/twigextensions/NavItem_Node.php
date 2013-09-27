@@ -74,7 +74,26 @@ class NavItem_Node extends \Twig_Node
 			->write("}\n")
 			// Create the nav array for this item
 			->write("\$context['nav']['depth'] = \$_thisItemDepth;\n")
-			->write("\$context['nav']['parent'] = (isset(\$_contextsByDepth[\$_thisItemDepth-1]) ? \$_contextsByDepth[\$_thisItemDepth-1] : null);\n")
+			->write("if (isset(\$_contextsByDepth[\$_thisItemDepth-1])) {\n")
+			->indent()
+				->write("\$context['nav']['parent'] = \$_contextsByDepth[\$_thisItemDepth-1];\n")
+				// Might as well set the item's parent so long as we have it
+				->write('if (method_exists(')
+				->subcompile($this->getNode('value_target'))
+				->raw(", 'setParent')) {\n")
+				->indent()
+					->subcompile($this->getNode('value_target'), false)
+					->raw("->setParent(\$context['nav']['parent'][")
+					->string($this->getNode('value_target')->getAttribute('name'))
+					->raw("]);\n")
+				->outdent()
+				->write("}\n")
+			->outdent()
+			->write("} else {\n")
+			->indent()
+				->write("\$context['nav']['parent'] = null;\n")
+			->outdent()
+			->write("}\n")
 			// Save a reference of this item for the next iteration
 			->write("\$_contextsByDepth[\$_thisItemDepth] = \$context;\n")
 		;
