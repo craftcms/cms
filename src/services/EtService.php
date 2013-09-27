@@ -157,9 +157,9 @@ class EtService extends BaseApplicationComponent
 			if (!empty($etResponse->data['success']))
 			{
 				// Success! Let's get this sucker installed.
-				if (!Craft::hasPackage($model->package))
+				if (!craft()->hasPackage($model->package))
 				{
-					Craft::installPackage($model->package);
+					craft()->installPackage($model->package);
 				}
 
 				return true;
@@ -218,9 +218,9 @@ class EtService extends BaseApplicationComponent
 		if (!empty($etResponse->data['success']))
 		{
 			// Install the package.
-			if (!Craft::hasPackage($model->packageHandle))
+			if (!craft()->hasPackage($model->packageHandle))
 			{
-				Craft::installPackage($model->packageHandle);
+				craft()->installPackage($model->packageHandle);
 			}
 
 			return true;

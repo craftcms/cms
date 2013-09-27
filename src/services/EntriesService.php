@@ -292,7 +292,7 @@ class EntriesService extends BaseApplicationComponent
 
 					if (!$isNewEntry && $section->hasUrls)
 					{
-						if (Craft::hasPackage(CraftPackage::Localize))
+						if (craft()->hasPackage(CraftPackage::Localize))
 						{
 							// Update the other locale records too, just to be safe
 							// (who knows what the URL Format is using that could have just changed)
@@ -319,7 +319,7 @@ class EntriesService extends BaseApplicationComponent
 				craft()->search->indexElementAttributes($entry, $entry->locale);
 
 				// Save a new version
-				if (Craft::hasPackage(CraftPackage::PublishPro))
+				if (craft()->hasPackage(CraftPackage::PublishPro))
 				{
 					craft()->entryRevisions->saveVersion($entry);
 				}
@@ -366,7 +366,7 @@ class EntriesService extends BaseApplicationComponent
 	 */
 	public function moveEntryUnder(EntryModel $entry, EntryModel $parentEntry = null, $prepend = false)
 	{
-		Craft::requirePackage(CraftPackage::PublishPro);
+		craft()->requirePackage(CraftPackage::PublishPro);
 
 		$entryRecord = StructuredEntryRecord::model()->populateRecord($entry->getAttributes());
 

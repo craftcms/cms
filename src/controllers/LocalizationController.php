@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-Craft::requirePackage(CraftPackage::Localize);
+craft()->requirePackage(CraftPackage::Localize);
 
 /**
  * Handles localization actions.

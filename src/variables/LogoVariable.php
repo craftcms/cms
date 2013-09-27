@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-Craft::requirePackage(CraftPackage::Rebrand);
+craft()->requirePackage(CraftPackage::Rebrand);
 
 /**
  *

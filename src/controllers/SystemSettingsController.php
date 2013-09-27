@@ -38,7 +38,7 @@ class SystemSettingsController extends BaseController
 	{
 		if (empty($variables['info']))
 		{
-			$variables['info'] = Craft::getInfo();
+			$variables['info'] = craft()->getInfo();
 		}
 
 		// Assemble the timezone options array
@@ -93,14 +93,14 @@ class SystemSettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$info = Craft::getInfo();
+		$info = craft()->getInfo();
 
 		$info->on          = (bool) craft()->request->getPost('on');
 		$info->siteName    = craft()->request->getPost('siteName');
 		$info->siteUrl     = craft()->request->getPost('siteUrl');
 		$info->timezone    = craft()->request->getPost('timezone');
 
-		if (Craft::saveInfo($info))
+		if (craft()->saveInfo($info))
 		{
 			craft()->userSession->setNotice(Craft::t('General settings saved.'));
 			$this->redirectToPostedUrl();
@@ -265,7 +265,7 @@ class SystemSettingsController extends BaseController
 		$settings['emailAddress'] = $emailSettings->emailAddress;
 		$settings['senderName']   = $emailSettings->senderName;
 
-		if (Craft::hasPackage(CraftPackage::Rebrand))
+		if (craft()->hasPackage(CraftPackage::Rebrand))
 		{
 			$settings['template'] = craft()->request->getPost('template');
 		}

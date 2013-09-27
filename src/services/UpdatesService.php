@@ -191,13 +191,13 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function setNewCraftInfo($version, $build, $releaseDate)
 	{
-		$info = Craft::getInfo();
+		$info = craft()->getInfo();
 
 		$info->version     = $version;
 		$info->build       = $build;
 		$info->releaseDate = $releaseDate;
 
-		return Craft::saveInfo($info);
+		return craft()->saveInfo($info);
 	}
 
 	/**
@@ -559,7 +559,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isCraftDbUpdateNeeded()
 	{
-		return (CRAFT_BUILD > Craft::getBuild());
+		return (CRAFT_BUILD > craft()->getBuild());
 	}
 
 	/**
@@ -573,7 +573,7 @@ class UpdatesService extends BaseApplicationComponent
 		// Only Craft has the concept of a breakpoint, not plugins.
 		if ($this->isCraftDbUpdateNeeded())
 		{
-			return (Craft::getBuild() < CRAFT_MIN_BUILD_REQUIRED);
+			return (craft()->getBuild() < CRAFT_MIN_BUILD_REQUIRED);
 		}
 		else
 		{
@@ -589,7 +589,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isTrackValid()
 	{
-		if (($track = Craft::getTrack()) && $track != CRAFT_TRACK)
+		if (($track = craft()->getTrack()) && $track != CRAFT_TRACK)
 		{
 			return false;
 		}

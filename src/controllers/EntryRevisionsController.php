@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-Craft::requirePackage(CraftPackage::PublishPro);
+craft()->requirePackage(CraftPackage::PublishPro);
 
 /**
  *
@@ -151,7 +151,7 @@ class EntryRevisionsController extends BaseController
 		$fields = craft()->request->getPost('fields');
 		$draft->getContent()->setAttributes($fields);
 
-		if (Craft::hasPackage(CraftPackage::Users))
+		if (craft()->hasPackage(CraftPackage::Users))
 		{
 			$draft->authorId = craft()->request->getPost('author');
 		}

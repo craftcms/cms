@@ -127,14 +127,14 @@ class Updater
 
 		// Put the site into maintenance mode.
 		Craft::log('Putting the site into maintenance mode.', LogLevel::Info, true);
-		Craft::enableMaintenanceMode();
+		craft()->enableMaintenanceMode();
 
 		// Update the files.
 		Craft::log('Performing file update.', LogLevel::Info, true);
 		if (!UpdateHelper::doFileUpdate(UpdateHelper::getManifestData($unzipFolder), $unzipFolder))
 		{
 			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-			Craft::disableMaintenanceMode();
+			craft()->disableMaintenanceMode();
 
 			throw new Exception(Craft::t('There was a problem updating your files.'));
 		}
@@ -159,7 +159,7 @@ class Updater
 				}
 
 				Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-				Craft::disableMaintenanceMode();
+				craft()->disableMaintenanceMode();
 
 				throw new Exception(Craft::t('There was a problem backing up your database.'));
 			}
@@ -177,7 +177,7 @@ class Updater
 			}
 
 			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-			Craft::disableMaintenanceMode();
+			craft()->disableMaintenanceMode();
 
 			throw new Exception(Craft::t('There was a problem backing up your database.'));
 		}
@@ -200,7 +200,7 @@ class Updater
 				craft()->updates->rollbackUpdate($uid, $dbBackupPath);
 
 				Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-				Craft::disableMaintenanceMode();
+				craft()->disableMaintenanceMode();
 
 				throw new Exception(Craft::t('There was a problem updating your database.'));
 			}
@@ -225,14 +225,14 @@ class Updater
 
 			// Take the site out of maintenance mode.
 			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-			Craft::disableMaintenanceMode();
+			craft()->disableMaintenanceMode();
 		}
 		catch (\Exception $e)
 		{
 			craft()->updates->rollbackUpdate($uid, $dbBackupPath);
 
 			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-			Craft::disableMaintenanceMode();
+			craft()->disableMaintenanceMode();
 
 			throw new Exception(Craft::t('There was a problem updating your database.'));
 		}

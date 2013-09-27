@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-Craft::requirePackage(CraftPackage::Users);
+craft()->requirePackage(CraftPackage::Users);
 
 /**
  *
@@ -70,7 +70,7 @@ class UserPermissionsService extends BaseApplicationComponent
 
 		// Locales
 
-		if (Craft::hasPackage(CraftPackage::Localize))
+		if (craft()->hasPackage(CraftPackage::Localize))
 		{
 			$label = Craft::t('Locales');
 			$locales = craft()->i18n->getSiteLocales();
@@ -314,7 +314,7 @@ class UserPermissionsService extends BaseApplicationComponent
 
 		);
 
-		if (Craft::hasPackage(CraftPackage::Users))
+		if (craft()->hasPackage(CraftPackage::Users))
 		{
 			$permissions["editEntries{$suffix}"]['nested']["editPeerEntries{$suffix}"] = array(
 				'label' => Craft::t('Edit other authors’ entries'),
@@ -325,7 +325,7 @@ class UserPermissionsService extends BaseApplicationComponent
 				)
 			);
 
-			if (Craft::hasPackage(CraftPackage::PublishPro))
+			if (craft()->hasPackage(CraftPackage::PublishPro))
 			{
 				$permissions["editEntries{$suffix}"]['nested']["editPeerEntries{$suffix}"]['nested']["editPeerEntryDrafts{$suffix}"] = array(
 					'label' => Craft::t('Edit other authors’ drafts'),

@@ -68,7 +68,7 @@ class UserSessionService extends \CWebUser
 	public function getUser()
 	{
 		// Does a user appear to be logged in?
-		if (Craft::isInstalled() && $this->getState('__id') !== null)
+		if (craft()->isInstalled() && $this->getState('__id') !== null)
 		{
 			if (!isset($this->_user))
 			{

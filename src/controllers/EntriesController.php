@@ -16,7 +16,7 @@ class EntriesController extends BaseController
 	{
 		$this->_prepEditEntryVariables($variables);
 
-		if (Craft::hasPackage(CraftPackage::PublishPro) && $variables['section']->type == SectionType::Structure)
+		if (craft()->hasPackage(CraftPackage::PublishPro) && $variables['section']->type == SectionType::Structure)
 		{
 			// Override the parent?
 			$parentId = craft()->request->getParam('parentId');
@@ -82,7 +82,7 @@ class EntriesController extends BaseController
 		}
 
 		// Page title w/ revision label
-		if (Craft::hasPackage(CraftPackage::PublishPro))
+		if (craft()->hasPackage(CraftPackage::PublishPro))
 		{
 			switch ($variables['entry']->getClassHandle())
 			{
@@ -113,7 +113,7 @@ class EntriesController extends BaseController
 		{
 			$variables['title'] = $variables['entry']->title;
 
-			if (Craft::hasPackage(CraftPackage::PublishPro) && $variables['entry']->getClassHandle() != 'Entry')
+			if (craft()->hasPackage(CraftPackage::PublishPro) && $variables['entry']->getClassHandle() != 'Entry')
 			{
 				$variables['title'] .= ' <span class="hidden">('.$variables['revisionLabel'].')</span>';
 			}
@@ -323,7 +323,7 @@ class EntriesController extends BaseController
 	 */
 	public function actionMoveEntry()
 	{
-		Craft::requirePackage(CraftPackage::PublishPro);
+		craft()->requirePackage(CraftPackage::PublishPro);
 
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -408,7 +408,7 @@ class EntriesController extends BaseController
 		// Make sure the user is allowed to edit entries in this section
 		craft()->userSession->requirePermission('editEntries'.$variables['permissionSuffix']);
 
-		if (Craft::hasPackage(CraftPackage::Localize))
+		if (craft()->hasPackage(CraftPackage::Localize))
 		{
 			// Figure out which locales the user is allowed to edit in this section
 			$sectionLocaleIds = array_keys($variables['section']->getLocales());
@@ -454,7 +454,7 @@ class EntriesController extends BaseController
 					$criteria->id = $variables['entryId'];
 					$criteria->status = null;
 
-					if (Craft::hasPackage(CraftPackage::Localize))
+					if (craft()->hasPackage(CraftPackage::Localize))
 					{
 						$criteria->locale = $variables['localeId'];
 					}

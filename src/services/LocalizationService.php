@@ -90,7 +90,7 @@ class LocalizationService extends BaseApplicationComponent
 				->from('locales')
 				->order('sortOrder');
 
-			if (!Craft::hasPackage(CraftPackage::Localize))
+			if (!craft()->hasPackage(CraftPackage::Localize))
 			{
 				$query->limit(1);
 			}
@@ -157,7 +157,7 @@ class LocalizationService extends BaseApplicationComponent
 	 */
 	public function getEditableLocales()
 	{
-		if (Craft::hasPackage(CraftPackage::Localize))
+		if (craft()->hasPackage(CraftPackage::Localize))
 		{
 			$locales = $this->getSiteLocales();
 			$editableLocales = array();

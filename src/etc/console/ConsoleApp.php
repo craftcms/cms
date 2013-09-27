@@ -23,6 +23,9 @@ class ConsoleApp extends \CConsoleApplication
 
 		craft()->getComponent('log');
 
+		// Attach our Craft app behavior.
+		$this->attachBehavior('AppBehavior', new AppBehavior());
+
 		// Set our own custom runtime path.
 		$this->setRuntimePath(craft()->path->getRuntimePath());
 

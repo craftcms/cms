@@ -20,7 +20,7 @@ class InstallService extends BaseApplicationComponent
 	{
 		craft()->config->maxPowerCaptain();
 
-		if (Craft::isInstalled())
+		if (craft()->isInstalled())
 		{
 			throw new Exception(Craft::t('@@@appName@@@ is already installed.'));
 		}
@@ -66,7 +66,7 @@ class InstallService extends BaseApplicationComponent
 		}
 
 		// Craft, you are installed now.
-		Craft::setIsInstalled();
+		craft()->setIsInstalled();
 
 		$this->_populateMigrationTable();
 		$this->_addLocale($inputs['locale']);
@@ -309,7 +309,7 @@ class InstallService extends BaseApplicationComponent
 			'track'       => '@@@track@@@',
 		));
 
-		if (Craft::saveInfo($info))
+		if (craft()->saveInfo($info))
 		{
 			Craft::log('Info table populated successfully.');
 		}

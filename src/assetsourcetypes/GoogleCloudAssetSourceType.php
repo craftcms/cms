@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-Craft::requirePackage(CraftPackage::Cloud);
+craft()->requirePackage(CraftPackage::Cloud);
 
 /**
  * Google Cloud source type class

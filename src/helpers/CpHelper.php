@@ -78,7 +78,7 @@ class CpHelper
 					// Look for any unlicensed licenses
 					$unlicensedPackages = array();
 
-					foreach (Craft::getPackages() as $package)
+					foreach (craft()->getPackages() as $package)
 					{
 						if (!in_array($package, $licensedPackages))
 						{
@@ -122,7 +122,7 @@ class CpHelper
 					$nextWeek = $currentTime->add(new DateInterval('P1W'))->getTimestamp();
 
 					// See if there are any package trials that expire in less than a week
-					foreach (Craft::getPackages() as $package)
+					foreach (craft()->getPackages() as $package)
 					{
 						if (!empty($packageTrials[$package]))
 						{

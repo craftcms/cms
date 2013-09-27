@@ -351,7 +351,7 @@ class UsersController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		if (Craft::hasPackage(CraftPackage::Users))
+		if (craft()->hasPackage(CraftPackage::Users))
 		{
 			$userId = craft()->request->getPost('userId');
 
@@ -387,7 +387,7 @@ class UsersController extends BaseController
 		else
 		{
 			// Users package is required
-			Craft::requirePackage(CraftPackage::Users);
+			craft()->requirePackage(CraftPackage::Users);
 
 			// Are they already logged in?
 			if (craft()->userSession->getUser())

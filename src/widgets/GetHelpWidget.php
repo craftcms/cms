@@ -45,10 +45,10 @@ class GetHelpWidget extends BaseWidget
 			"------------------------------\n\n" .
 			'@@@appName@@@ version: ' .
 			Craft::t('{version} build {build}', array(
-				'version' => Craft::getVersion(),
-				'build'   => Craft::getBuild()
+				'version' => craft()->getVersion(),
+				'build'   => craft()->getBuild()
 			))."\n" .
-			'Packages: '.implode(', ', Craft::getPackages());
+			'Packages: '.implode(', ', craft()->getPackages());
 
 		$plugins = craft()->plugins->getPlugins();
 

@@ -13,7 +13,7 @@ class AppVariable
 	 */
 	public function getVersion()
 	{
-		return Craft::getVersion();
+		return craft()->getVersion();
 	}
 
 	/**
@@ -23,7 +23,7 @@ class AppVariable
 	 */
 	public function getBuild()
 	{
-		return Craft::getBuild();
+		return craft()->getBuild();
 	}
 
 	/**
@@ -33,7 +33,7 @@ class AppVariable
 	 */
 	public function getReleaseDate()
 	{
-		return Craft::getReleasedate();
+		return craft()->getReleaseDate();
 	}
 
 	/**
@@ -43,7 +43,7 @@ class AppVariable
 	 */
 	public function getSiteName()
 	{
-		return Craft::getSiteName();
+		return craft()->getSiteName();
 	}
 
 	/**
@@ -53,7 +53,7 @@ class AppVariable
 	 */
 	public function getSiteUrl()
 	{
-		return Craft::getSiteUrl();
+		return craft()->getSiteUrl();
 	}
 
 	/**
@@ -63,7 +63,7 @@ class AppVariable
 	 */
 	public function getSiteUid()
 	{
-		return Craft::getSiteUid();
+		return craft()->getSiteUid();
 	}
 
 	/**
@@ -83,7 +83,7 @@ class AppVariable
 	 */
 	public function isSystemOn()
 	{
-		return Craft::isSystemOn();
+		return craft()->isSystemOn();
 	}
 
 	/**

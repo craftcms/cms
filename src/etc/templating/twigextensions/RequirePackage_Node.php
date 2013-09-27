@@ -13,7 +13,7 @@ class RequirePackage_Node extends \Twig_Node
 	{
 		$compiler
 			->addDebugInfo($this)
-			->write('if (!\Craft\Craft::hasPackage(')
+			->write('if (!\Craft\craft()->hasPackage(')
 			->subcompile($this->getNode('packageName'))
 			->raw("))\n")
 			->write("{\n")

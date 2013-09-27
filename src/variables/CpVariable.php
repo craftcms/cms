@@ -30,7 +30,7 @@ class CpVariable
 			$nav['assets'] = array('name' => Craft::t('Assets'));
 		}
 
-		if (Craft::hasPackage(CraftPackage::Users) && craft()->userSession->checkPermission('editUsers'))
+		if (craft()->hasPackage(CraftPackage::Users) && craft()->userSession->checkPermission('editUsers'))
 		{
 			$nav['users'] = array('name' => Craft::t('Users'));
 		}

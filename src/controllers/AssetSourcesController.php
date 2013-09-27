@@ -50,7 +50,7 @@ class AssetSourcesController extends BaseController
 			$variables['sourceType'] = craft()->assetSources->populateSourceType($variables['source']);
 		}
 
-		if (Craft::hasPackage(CraftPackage::Cloud))
+		if (craft()->hasPackage(CraftPackage::Cloud))
 		{
 			$sourceTypes = craft()->assetSources->getAllSourceTypes();
 			$variables['sourceTypes'] = AssetSourceTypeVariable::populateVariables($sourceTypes);
@@ -80,7 +80,7 @@ class AssetSourcesController extends BaseController
 
 		$source->name = craft()->request->getPost('name');
 
-		if (Craft::hasPackage(CraftPackage::Cloud))
+		if (craft()->hasPackage(CraftPackage::Cloud))
 		{
 			$source->type = craft()->request->getPost('type');
 		}
@@ -150,7 +150,7 @@ class AssetSourcesController extends BaseController
 	public function actionGetS3Buckets()
 	{
 		craft()->userSession->requireAdmin();
-		Craft::requirePackage(CraftPackage::Cloud);
+		craft()->requirePackage(CraftPackage::Cloud);
 
 		$keyId = craft()->request->getRequiredPost('keyId');
 		$secret = craft()->request->getRequiredPost('secret');
@@ -171,7 +171,7 @@ class AssetSourcesController extends BaseController
 	public function actionGetRackspaceContainers()
 	{
 		craft()->userSession->requireAdmin();
-		Craft::requirePackage(CraftPackage::Cloud);
+		craft()->requirePackage(CraftPackage::Cloud);
 
 		$username = craft()->request->getRequiredPost('username');
 		$apiKey = craft()->request->getRequiredPost('apiKey');
@@ -199,7 +199,7 @@ class AssetSourcesController extends BaseController
 	public function actionGetGoogleCloudBuckets()
 	{
 		craft()->userSession->requireAdmin();
-		Craft::requirePackage(CraftPackage::Cloud);
+		craft()->requirePackage(CraftPackage::Cloud);
 
 		$keyId = craft()->request->getRequiredPost('keyId');
 		$secret = craft()->request->getRequiredPost('secret');

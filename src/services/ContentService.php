@@ -228,7 +228,7 @@ class ContentService extends BaseApplicationComponent
 		}
 
 		// Are we dealing with other locales as well?
-		if (Craft::hasPackage(CraftPackage::Localize))
+		if (craft()->hasPackage(CraftPackage::Localize))
 		{
 			// Get the other locales' content
 			$rows = craft()->db->createCommand()

@@ -82,7 +82,7 @@ class UserIdentity extends \CUserIdentity
 					{
 						$this->errorCode = static::ERROR_NO_CP_ACCESS;
 					}
-					else if (craft()->request->isCpRequest() && !Craft::isSystemOn() && !$user->can('accessCpWhenSystemIsOff'))
+					else if (craft()->request->isCpRequest() && !craft()->isSystemOn() && !$user->can('accessCpWhenSystemIsOff'))
 					{
 						$this->errorCode = static::ERROR_NO_CP_OFFLINE_ACCESS;
 					}

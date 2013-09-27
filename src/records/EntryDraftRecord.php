@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-Craft::requirePackage(CraftPackage::PublishPro);
+craft()->requirePackage(CraftPackage::PublishPro);
 
 /**
  * Stores entry drafts

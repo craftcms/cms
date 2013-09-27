@@ -26,7 +26,7 @@ class RecentEntriesWidget extends BaseWidget
 	 */
 	protected function defineSettings()
 	{
-		if (Craft::hasPackage(CraftPackage::PublishPro))
+		if (craft()->hasPackage(CraftPackage::PublishPro))
 		{
 			$settings['section'] = array(AttributeType::Mixed, 'default' => '*');
 		}
@@ -55,7 +55,7 @@ class RecentEntriesWidget extends BaseWidget
 	 */
 	public function getTitle()
 	{
-		if (Craft::hasPackage(CraftPackage::PublishPro))
+		if (craft()->hasPackage(CraftPackage::PublishPro))
 		{
 			$sectionId = $this->getSettings()->section;
 
@@ -82,7 +82,7 @@ class RecentEntriesWidget extends BaseWidget
 	{
 		$params = array();
 
-		if (Craft::hasPackage(CraftPackage::PublishPro))
+		if (craft()->hasPackage(CraftPackage::PublishPro))
 		{
 			$sectionId = $this->getSettings()->section;
 
@@ -108,21 +108,36 @@ class RecentEntriesWidget extends BaseWidget
 			}
 		}
 
-		if (Craft::hasPackage(CraftPackage::PublishPro) && $sectionIds &&
-			($this->getSettings()->section == '*' || in_array($this->getSettings()->section, $sectionIds))
-		)
+		$somethingToDisplay = false;
+
+		// If they have Publish Pro installed, only display the sections they are allowed to edit.
+		if (craft()->hasPackage(CraftPackage::PublishPro))
+		{
+			if ($this->getSettings()->section == '*' || in_array($this->getSettings()->section, $sectionIds))
+			{
+				$somethingToDisplay = true;
+			}
+		}
+
+		// If they don't have publish pro, OR they have publish pro and have permission to edit sections in it.
+		if (!craft()->hasPackage(CraftPackage::PublishPro) || (craft()->hasPackage(CraftPackage::PublishPro) && $somethingToDisplay))
 		{
 			$criteria = craft()->elements->getCriteria(ElementType::Entry);
 			$criteria->status = null;
 			$criteria->limit = $this->getSettings()->limit;
+			$criteria->order = 'dateCreated DESC';
 
-			if ($this->getSettings()->section == '*')
+			// Section is only defined if Publish Pro is installed.
+			if (craft()->hasPackage(CraftPackage::PublishPro))
 			{
-				$criteria->sectionId = $sectionIds;
-			}
-			else
-			{
-				$criteria->sectionId = $this->getSettings()->section;
+				if ($this->getSettings()->section == '*')
+				{
+					$criteria->sectionId = $sectionIds;
+				}
+				else
+				{
+					$criteria->sectionId = $this->getSettings()->section;
+				}
 			}
 
 			$entries = $criteria->find();

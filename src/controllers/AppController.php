@@ -163,7 +163,7 @@ class AppController extends BaseController
 		$this->requireAjaxRequest();
 
 		$package = craft()->request->getRequiredPost('package');
-		$success = Craft::installPackage($package);
+		$success = craft()->installPackage($package);
 
 		$this->returnJson(array(
 			'success' => $success
@@ -179,7 +179,7 @@ class AppController extends BaseController
 		$this->requireAjaxRequest();
 
 		$package = craft()->request->getRequiredPost('package');
-		$success = Craft::uninstallPackage($package);
+		$success = craft()->uninstallPackage($package);
 
 		$this->returnJson(array(
 			'success' => $success

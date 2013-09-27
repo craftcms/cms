@@ -423,7 +423,7 @@ class EntryElementType extends BaseElementType
 			$query->andWhere(DbHelper::parseParam('sections.handle', $criteria->section, $query->params));
 		}
 
-		if (Craft::hasPackage(CraftPackage::PublishPro))
+		if (craft()->hasPackage(CraftPackage::PublishPro))
 		{
 			if ($criteria->ancestorOf)
 			{
@@ -537,7 +537,7 @@ class EntryElementType extends BaseElementType
 			}
 		}
 
-		if (Craft::hasPackage(CraftPackage::Users))
+		if (craft()->hasPackage(CraftPackage::Users))
 		{
 			if ($criteria->authorId)
 			{

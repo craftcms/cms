@@ -190,7 +190,7 @@ class UrlHelper
 		}
 		else
 		{
-			$baseUrl = Craft::getSiteUrl($protocol);
+			$baseUrl = craft()->getSiteUrl($protocol);
 
 			// Should we be adding that script name in?
 			if ($showScriptName)

@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-Craft::requirePackage(CraftPackage::Users);
+craft()->requirePackage(CraftPackage::Users);
 
 /**
  * Handles user group tasks

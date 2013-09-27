@@ -255,7 +255,7 @@ class MigrationsService extends BaseApplicationComponent
 			}
 			else
 			{
-				$storedDate = Craft::getReleaseDate()->getTimestamp();
+				$storedDate = craft()->getReleaseDate()->getTimestamp();
 			}
 
 			while (($file = readdir($handle)) !== false)

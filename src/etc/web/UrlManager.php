@@ -205,7 +205,7 @@ class UrlManager extends \CUrlManager
 			$this->_matchedElement = false;
 			$this->_matchedElementRoute = false;
 
-			if (Craft::isInstalled() && craft()->request->isSiteRequest())
+			if (craft()->isInstalled() && craft()->request->isSiteRequest())
 			{
 				$query = craft()->db->createCommand()
 					->select('elements.id, elements.type')
@@ -296,7 +296,7 @@ class UrlManager extends \CUrlManager
 				// Merge in the package routes
 				foreach ($this->cpRoutes['pkgRoutes'] as $packageName => $packageRoutes)
 				{
-					if (Craft::hasPackage($packageName))
+					if (craft()->hasPackage($packageName))
 					{
 						$this->cpRoutes = array_merge($this->cpRoutes, $packageRoutes);
 					}

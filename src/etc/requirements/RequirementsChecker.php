@@ -257,7 +257,7 @@ class RequirementsChecker extends \CComponent
 			));
 
 		$info[] = isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : '';
-		$info[] = 'Yii v'.Craft::getYiiVersion();
+		$info[] = 'Yii v'.craft()->getYiiVersion();
 		$info[] =  \CTimestamp::formatDate(craft()->locale->getTimeFormat());;
 
 		return implode(' | ', $info);

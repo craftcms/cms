@@ -41,7 +41,7 @@ class UserElementType extends BaseElementType
 			)
 		);
 
-		if (Craft::hasPackage(CraftPackage::Users))
+		if (craft()->hasPackage(CraftPackage::Users))
 		{
 			foreach (craft()->userGroups->getAllGroups() as $group)
 			{

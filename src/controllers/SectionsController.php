@@ -23,7 +23,7 @@ class SectionsController extends BaseController
 		$variables['sections'] = craft()->sections->getAllSections();
 
 		// Can new sections be added?
-		if (!Craft::hasPackage(CraftPackage::PublishPro))
+		if (!craft()->hasPackage(CraftPackage::PublishPro))
 		{
 			$variables['maxSections'] = 0;
 
@@ -141,7 +141,7 @@ class SectionsController extends BaseController
 		// Locale-specific attributes
 		$locales = array();
 
-		if (Craft::hasPackage(CraftPackage::Localize))
+		if (craft()->hasPackage(CraftPackage::Localize))
 		{
 			$localeIds = craft()->request->getPost('locales');
 		}
