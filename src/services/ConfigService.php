@@ -406,7 +406,7 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function getActivateAccountFailurePath()
 	{
-		if ($path = craft()->config->get('activateAccountFailurePath') !== '')
+		if (($path = craft()->config->get('activateAccountFailurePath')) !== '')
 		{
 			return $path;
 		}
