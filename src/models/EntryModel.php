@@ -368,4 +368,98 @@ class EntryModel extends BaseElementModel
 	{
 		$this->_descendants = $descendants;
 	}
+
+	/**
+	 * Returns whether this entry is an ancestor of another one.
+	 *
+	 * @param EntryModel $entry
+	 * @return bool
+	 */
+	public function isAncestorOf(EntryModel $entry)
+	{
+		return ($this->lft < $entry->lft && $this->rgt > $entry->rgt);
+	}
+
+	/**
+	 * Returns whether this entry is a descendant of another one.
+	 *
+	 * @param EntryModel $entry
+	 * @return bool
+	 */
+	public function isDescendantOf(EntryModel $entry)
+	{
+		return ($this->lft > $entry->lft && $this->rgt < $entry->rgt);
+	}
+
+	/**
+	 * Returns whether this entry is a direct parent of another one.
+	 *
+	 * @param EntryModel $entry
+	 * @return bool
+	 */
+	public function isParentOf(EntryModel $entry)
+	{
+		return ($this->depth == $entry->depth - 1 && $this->isAncestorOf($entry));
+	}
+
+	/**
+	 * Returns whether this entry is a direct child of another one.
+	 *
+	 * @param EntryModel $entry
+	 * @return bool
+	 */
+	public function isChildOf(EntryModel $entry)
+	{
+		return ($this->depth == $entry->depth + 1 && $this->isDescendantOf($entry));
+	}
+
+	/**
+	 * Returns whether this entry is a sibling of another one.
+	 *
+	 * @param EntryModel $entry
+	 * @return bool
+	 */
+	public function isSiblingOf(EntryModel $entry)
+	{
+		if ($this->depth && $this->depth == $entry->depth)
+		{
+			if ($this->depth == 1 || $this->isPrevSiblingOf($entry) || $this->isNextSiblingOf($entry))
+			{
+				return true;
+			}
+			else
+			{
+				$parent = $this->getParent();
+
+				if ($parent)
+				{
+					return $entry->isDescendantOf($parent);
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns whether this entry is the direct previous sibling of another one.
+	 *
+	 * @param EntryModel $entry
+	 * @return bool
+	 */
+	public function isPrevSiblingOf(EntryModel $entry)
+	{
+		return ($this->depth == $entry->depth && $this->rgt == $entry->lft - 1);
+	}
+
+	/**
+	 * Returns whether this entry is the direct next sibling of another one.
+	 *
+	 * @param EntryModel $entry
+	 * @return bool
+	 */
+	public function isNextSiblingOf(EntryModel $entry)
+	{
+		return ($this->depth == $entry->depth && $this->lft == $entry->rgt + 1);
+	}
 }
