@@ -7,6 +7,35 @@ namespace Craft;
 class UrlHelper
 {
 	/**
+	 * Returns a URL with a specific protocol.
+	 *
+	 * @param string $url
+	 * @param string $protocol
+	 * @return string
+	 */
+	public static function getUrlWithProtocol($url, $protocol)
+	{
+		if (!$url || !$protocol)
+		{
+			return $url;
+		}
+
+		// Is the site URL protocol relative?
+		if (strncmp('//', $url, 2) === 0)
+		{
+			return $protocol.':'.$url;
+		}
+
+		// Is it root relative?
+		if (strncmp('/', $url, 1) === 0)
+		{
+			return craft()->request->getHostInfo($protocol).$url;
+		}
+
+		return preg_replace('/^https?:/', $protocol.':', $url);
+	}
+
+	/**
 	 * Returns either a CP or a site URL, depending on the request type.
 	 *
 	 * @static
