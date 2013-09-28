@@ -79,7 +79,7 @@ html { overflow-y: scroll; }
 #notifications .notification.error { background: $submitcolor; }
 
 /* page header */
-#page-header { display: block; position: relative; z-index: 1; padding: 35px 5px; overflow: hidden; text-shadow: 0 1px 0 #fff; }
+#page-header { display: block; position: relative; z-index: 1; padding: 35px 5px; overflow: hidden; }
 #page-header h1 { display: inline; line-height: 1; }
 #page-header #extra-headers { display: inline-block; position: relative; top: 5px; }
 #page-header #extra-headers > .select,
@@ -141,7 +141,7 @@ html { overflow-y: scroll; }
 
 /* footer */
 #footer { margin: 15px 0; text-align: center; font-size: 0; }
-#footer li { display: inline-block; font-size: 11px; color: $lighttextcolor; text-shadow: 0 1px 0 #fff; }
+#footer li { display: inline-block; font-size: 11px; color: $lighttextcolor; }
 #footer li:not(:last-child):after { display: inline-block; margin: 0 7px; content: '•'; }
 #footer li a { color: $lighttextcolor; text-decoration: underline; }
 
