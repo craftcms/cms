@@ -155,7 +155,7 @@ class SectionModel extends BaseModel
 			}
 			else
 			{
-				$localeId = array_unshift($localeIds);
+				$localeId = $localeIds[0];
 			}
 
 			return $locales[$localeId]->urlFormat;
