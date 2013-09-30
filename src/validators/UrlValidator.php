@@ -9,7 +9,7 @@ class UrlValidator extends \CUrlValidator
 	/**
 	 * Override the $pattern regex so that a TLD is not required, and the protocol may be relative.
 	 */
-	public $pattern = '/^(?:{schemes}:)?\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)?[^\s]*$/i';
+	public $pattern = '/^(?:(?:{schemes}:)?\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)?|\/)[^\s]*$/i';
 
 	/**
 	 * Add support for protocol-relative URLs.
@@ -24,7 +24,7 @@ class UrlValidator extends \CUrlValidator
 			return $value;
 		}
 
-		if ($this->defaultScheme !== null && strncmp($value, '//', 2) == 0)
+		if ($this->defaultScheme !== null && strncmp($value, '/', 1) === 0)
 		{
 			$this->defaultScheme = null;
 		}
