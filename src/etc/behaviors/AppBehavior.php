@@ -3,7 +3,7 @@ namespace Craft;
 
 /**
  * Class AppBehavior
- * 
+ *
  * @package Craft
  */
 class AppBehavior extends BaseBehavior
@@ -199,7 +199,7 @@ class AppBehavior extends BaseBehavior
 	}
 
 	/**
-	 * Returns the site URL.
+	 * Returns the site URL (with a trailing slash).
 	 *
 	 * @param string|null $protocol The protocol to use (http or https). If none is specified, it will default to whatever's in the Site URL setting.
 	 * @return string
@@ -210,56 +210,29 @@ class AppBehavior extends BaseBehavior
 		{
 			if (defined('CRAFT_SITE_URL'))
 			{
-				$storedSiteUrl = CRAFT_SITE_URL;
+				$siteUrl = CRAFT_SITE_URL;
 			}
 			else
 			{
-				$storedSiteUrl = $this->getInfo('siteUrl');
+				$siteUrl = $this->getInfo('siteUrl');
 			}
 
-			if ($storedSiteUrl)
+			if ($siteUrl)
 			{
 				// Parse it for environment variables
-				$storedSiteUrl = craft()->config->parseEnvironmentString($storedSiteUrl);
-
-				$port = craft()->request->getPort();
-
-				// If this is port 80, or the port is already a part of the stored site URL, don't worry about adding it.
-				// i.e. http://localhost:8888/craft
-				if ($port == 80 || mb_strpos($storedSiteUrl, ':'.$port) !== false)
-				{
-					$port = '';
-				}
-				else
-				{
-					$port = ':'.$port;
-				}
-
-				$this->_siteUrl = rtrim($storedSiteUrl, '/').$port.'/';
+				$siteUrl = craft()->config->parseEnvironmentString($siteUrl);
 			}
 			else
 			{
-				$this->_siteUrl = '';
+				// Figure it out for ourselves, then
+				$siteUrl = craft()->request->getBaseUrl(true);
 			}
+
+			// Make sure it ends in a slash
+			$this->_siteUrl = rtrim($siteUrl, '/').'/';
 		}
 
-		switch ($protocol)
-		{
-			case 'http':
-			{
-				return str_replace('https://', 'http://', $this->_siteUrl);
-			}
-
-			case 'https':
-			{
-				return str_replace('http://', 'https://', $this->_siteUrl);
-			}
-
-			default:
-			{
-				return $this->_siteUrl;
-			}
-		}
+		return UrlHelper::getUrlWithProtocol($this->_siteUrl, $protocol);
 	}
 
 	/**
