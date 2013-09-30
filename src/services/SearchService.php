@@ -244,17 +244,12 @@ class SearchService extends BaseApplicationComponent
 		{
 			// Add padding around keywords
 			$cleanKeywords = $this->_addPadding($cleanKeywords);
+		}
 
-			// Insert/update the row in searchindex
-			craft()->db->createCommand()->insertOrUpdate('searchindex', $keyColumns, array(
-				'keywords'  => $cleanKeywords
-			), false);
-		}
-		else
-		{
-			// Delete the searchindex row if it exists
-			craft()->db->createCommand()->delete('searchindex', $keyColumns);
-		}
+		// Insert/update the row in searchindex
+		craft()->db->createCommand()->insertOrUpdate('searchindex', $keyColumns, array(
+			'keywords' => $cleanKeywords
+		), false);
 	}
 
 	/**
