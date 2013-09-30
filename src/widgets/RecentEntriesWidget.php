@@ -98,15 +98,19 @@ class RecentEntriesWidget extends BaseWidget
 		craft()->templates->includeJs($js);
 		craft()->templates->includeTranslations('by {author}');
 
-		$sectionIds = array();
+		$entries = $this->_getEntries();
 
-		foreach (craft()->sections->getEditableSections() as $section)
-		{
-			if ($section->type != SectionType::Single)
-			{
-				$sectionIds[] = $section->id;
-			}
-		}
+		return craft()->templates->render('_components/widgets/RecentEntries/body', array(
+			'entries' => $entries
+		));
+	}
+
+	/**
+	 *
+	 */
+	private function _getEntries()
+	{
+		$sectionIds = $this->_getSectionIds();
 
 		$somethingToDisplay = false;
 
@@ -122,24 +126,7 @@ class RecentEntriesWidget extends BaseWidget
 		// If they don't have publish pro, OR they have publish pro and have permission to edit sections in it.
 		if (!craft()->hasPackage(CraftPackage::PublishPro) || (craft()->hasPackage(CraftPackage::PublishPro) && $somethingToDisplay))
 		{
-			$criteria = craft()->elements->getCriteria(ElementType::Entry);
-			$criteria->status = null;
-			$criteria->limit = $this->getSettings()->limit;
-			$criteria->order = 'dateCreated DESC';
-
-			// Section is only defined if Publish Pro is installed.
-			if (craft()->hasPackage(CraftPackage::PublishPro))
-			{
-				if ($this->getSettings()->section == '*')
-				{
-					$criteria->sectionId = $sectionIds;
-				}
-				else
-				{
-					$criteria->sectionId = $this->getSettings()->section;
-				}
-			}
-
+			$criteria = $this->_getCriteria($sectionIds);
 			$entries = $criteria->find();
 		}
 		else
@@ -147,8 +134,51 @@ class RecentEntriesWidget extends BaseWidget
 			$entries = array();
 		}
 
-		return craft()->templates->render('_components/widgets/RecentEntries/body', array(
-			'entries' => $entries
-		));
+		return $entries;
+	}
+
+	/**
+	 * @return array
+	 */
+	private function _getSectionIds()
+	{
+		$sectionIds = array();
+
+		foreach (craft()->sections->getEditableSections() as $section)
+		{
+			if ($section->type != SectionType::Single)
+			{
+				$sectionIds[] = $section->id;
+			}
+		}
+
+		return $sectionIds;
+	}
+
+	/**
+	 * @param $sectionIds
+	 * @return ElementCriteriaModel
+	 */
+	private function _getCriteria($sectionIds)
+	{
+		$criteria = craft()->elements->getCriteria(ElementType::Entry);
+		$criteria->status = null;
+		$criteria->limit = $this->getSettings()->limit;
+		$criteria->order = 'dateCreated DESC';
+
+		// Section is only defined if Publish Pro is installed.
+		if (craft()->hasPackage(CraftPackage::PublishPro))
+		{
+			if ($this->getSettings()->section == '*')
+			{
+				$criteria->sectionId = $sectionIds;
+			}
+			else
+			{
+				$criteria->sectionId = $this->getSettings()->section;
+			}
+		}
+
+		return $criteria;
 	}
 }
