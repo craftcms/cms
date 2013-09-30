@@ -225,8 +225,7 @@ class UrlHelper
 			// Should we be adding that script name in?
 			if ($showScriptName)
 			{
-				$scriptUrl = craft()->request->getScriptUrl();
-				$baseUrl .= mb_substr($scriptUrl, mb_strrpos($scriptUrl, '/')+1);
+				$baseUrl .= craft()->request->getScriptName();
 			}
 		}
 
