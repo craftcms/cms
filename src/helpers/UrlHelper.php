@@ -207,14 +207,15 @@ class UrlHelper
 
 		if ($dynamicBaseUrl)
 		{
-			// Get the full URL to the current script (http://example.com/index.php)
-			$baseUrl = craft()->request->getHostInfo($protocol).craft()->urlManager->getBaseUrl();
+			$baseUrl = craft()->request->getHostInfo($protocol);
 
-			// Are we omitting the script name?
-			if (!$showScriptName)
+			if ($showScriptName)
 			{
-				// Chop it off (http://example.com/)
-				$baseUrl = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/')+1);
+				$baseUrl .= craft()->request->getScriptUrl();
+			}
+			else
+			{
+				$baseUrl .= craft()->request->getBaseUrl();
 			}
 		}
 		else
@@ -224,8 +225,8 @@ class UrlHelper
 			// Should we be adding that script name in?
 			if ($showScriptName)
 			{
-				$dynamicBaseUrl = craft()->urlManager->getBaseUrl();
-				$baseUrl .= mb_strrichr($dynamicBaseUrl, mb_strrpos($dynamicBaseUrl, '/')+1);
+				$scriptUrl = craft()->request->getScriptUrl();
+				$baseUrl .= mb_substr($scriptUrl, mb_strrpos($scriptUrl, '/')+1);
 			}
 		}
 
@@ -244,7 +245,11 @@ class UrlHelper
 		else
 		{
 			$url = $baseUrl;
-			$params = craft()->urlManager->pathParam.'='.$path.($params ? '&'.$params : '');
+
+			if ($path)
+			{
+				$params = craft()->urlManager->pathParam.'='.$path.($params ? '&'.$params : '');
+			}
 		}
 
 		if ($params)
