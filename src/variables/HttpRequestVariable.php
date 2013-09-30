@@ -41,6 +41,16 @@ class HttpRequestVariable
 	}
 
 	/**
+	 * Returns the script name used to access Craft.
+	 *
+	 * @return string
+	 */
+	public function getScriptName()
+	{
+		return craft()->request->getScriptName();
+	}
+
+	/**
 	 * Returns the request's URI.
 	 *
 	 * @return mixed

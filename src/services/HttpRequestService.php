@@ -70,6 +70,17 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Returns the script name used to access Craft.
+	 *
+	 * @return string
+	 */
+	public function getScriptName()
+	{
+		$scriptUrl = $this->getScriptUrl();
+		return mb_substr($scriptUrl, mb_strrpos($scriptUrl, '/')+1);
+	}
+
+	/**
 	 * Returns the request's path, without the CP trigger segment if there is one.
 	 *
 	 * @return string
