@@ -1,3 +1,7 @@
+{% if name is defined and name %}
+	<input type="hidden" name="{{ name }}" value="">
+{% endif -%}
+
 {% set elements = (elements is defined ? elements : []) -%}
 {% set criteria = (criteria is defined and criteria ? criteria : null) -%}
 {% from "_includes/forms" import text %}
