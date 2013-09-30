@@ -28,6 +28,7 @@
 			baseSiteUrl:          "{{ siteUrl()|e('js') }}",
 			actionUrl:            "{{ actionUrl()|e('js') }}",
 			resourceUrl:          "{{ resourceUrl()|e('js') }}",
+			scriptName:           "{{ craft.request.getScriptName()|e('js') }}",
 			omitScriptNameInUrls: {{ craft.config.omitScriptNameInUrls() ? 'true' : 'false' }},
 			usePathInfo:          {{ craft.config.usePathInfo() ? 'true' : 'false' }},
 			resourceTrigger:      "{{ craft.config.resourceTrigger()|e('js') }}",

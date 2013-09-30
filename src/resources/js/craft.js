@@ -61,6 +61,11 @@ $.extend(Craft, {
 	 */
 	getUrl: function(path, params, baseUrl)
 	{
+		if (typeof path != 'string')
+		{
+			path = '';
+		}
+
 		// Return path if it appears to be an absolute URL.
 		if (path.search('://') != -1 || path.substr(0, 2) == '//')
 		{
@@ -128,32 +133,45 @@ $.extend(Craft, {
 			url = url.substr(0, qpos);
 		}
 
-		if (!Craft.omitScriptNameInUrls && !Craft.usePathInfo && path)
+		if (!Craft.omitScriptNameInUrls && path)
 		{
-			// Is the p= param already set?
-			if (params && params.substr(0, 2) == 'p=')
+			if (Craft.usePathInfo)
 			{
-				var endPath = params.indexOf('&');
-				if (endPath != -1)
+				// Make sure that the script name is in the URL
+				if (url.search(Craft.scriptName) == -1)
 				{
-					var basePath = params.substring(2, endPath);
-					params = params.substr(endPath+1);
+					url = Craft.rtrim(url, '/') + '/' + Craft.scriptName;
 				}
-				else
-				{
-					var basePath = params.substr(2);
-					params = null;
-				}
-
-				// Just in case
-				basePath = Craft.rtrim(basePath);
-
-				path = basePath + (path ? '/'+path : '');
 			}
+			else
+			{
+				// Move the path into the query string params
 
-			// Now move the path into the params
-			params = 'p='+path + (params ? '&'+params : '');
-			path = null;
+				// Is the p= param already set?
+				if (params && params.substr(0, 2) == 'p=')
+				{
+					var endPath = params.indexOf('&');
+					if (endPath != -1)
+					{
+						var basePath = params.substring(2, endPath);
+						params = params.substr(endPath+1);
+					}
+					else
+					{
+						var basePath = params.substr(2);
+						params = null;
+					}
+
+					// Just in case
+					basePath = Craft.rtrim(basePath);
+
+					path = basePath + (path ? '/'+path : '');
+				}
+
+				// Now move the path into the params
+				params = 'p='+path + (params ? '&'+params : '');
+				path = null;
+			}
 		}
 
 		if (path)
@@ -203,8 +221,7 @@ $.extend(Craft, {
 	 */
 	getResourceUrl: function(path, params)
 	{
-		path = Craft.resourceTrigger+'/'+Craft.trim(path, '/');
-		return Craft.getUrl(path, params);
+		return Craft.getUrl(path, params, Craft.resourceUrl);
 	},
 
 	/**
@@ -216,8 +233,7 @@ $.extend(Craft, {
 	 */
 	getActionUrl: function(path, params)
 	{
-		path = Craft.actionTrigger+'/'+Craft.trim(path, '/');
-		return Craft.getUrl(path, params);
+		return Craft.getUrl(path, params, Craft.actionUrl);
 	},
 
 	/**

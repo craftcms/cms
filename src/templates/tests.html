@@ -1,0 +1,10 @@
+{% extends "_layouts/cp" %}
+{% set title = "What’s new in Craft 1.2" %}
+{% includeCssResource "lib/qunit/qunit-1.12.0.css" %}
+{% includeJsResource "lib/qunit/qunit-1.12.0.js" %}
+{% includeJsResource "js/tests.js" %}
+
+{% set content %}
+	<div id="qunit"></div>
+	<div id="qunit-fixture"></div>
+{% endset %}
