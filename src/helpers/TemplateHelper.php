@@ -23,9 +23,6 @@ class TemplateHelper
 
 		$offset = $limit * ($currentPage - 1);
 
-		$path = craft()->request->getPath();
-		$pageUrlPrefix = ($path ? $path.'/' : '').craft()->config->get('pageTrigger');
-
 		$last = $offset + $limit;
 
 		if ($last > $total)
@@ -33,20 +30,17 @@ class TemplateHelper
 			$last = $total;
 		}
 
-		$info = array(
-			'first'       => $offset + 1,
-			'last'        => $last,
-			'total'       => $total,
-			'currentPage' => $currentPage,
-			'totalPages'  => $totalPages,
-			'prevUrl'     => ($currentPage > 1           ? UrlHelper::getUrl($pageUrlPrefix.($currentPage-1)) : null),
-			'nextUrl'     => ($currentPage < $totalPages ? UrlHelper::getUrl($pageUrlPrefix.($currentPage+1)) : null),
-		);
+		$paginateVariable = new PaginateVariable();
+		$paginateVariable->first = $offset + 1;
+		$paginateVariable->last = $last;
+		$paginateVariable->total = $total;
+		$paginateVariable->currentPage = $currentPage;
+		$paginateVariable->totalPages = $totalPages;
 
 		// Get the entities
 		$criteria->offset = $offset;
 		$entities = $criteria->find();
 
-		return array($info, $entities);
+		return array($paginateVariable, $entities);
 	}
 }
