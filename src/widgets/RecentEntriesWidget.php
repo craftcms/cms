@@ -178,6 +178,10 @@ class RecentEntriesWidget extends BaseWidget
 				$criteria->sectionId = $this->getSettings()->section;
 			}
 		}
+		else
+		{
+			$criteria->sectionId = $sectionIds;
+		}
 
 		return $criteria;
 	}
