@@ -181,7 +181,8 @@ class UsersController extends BaseController
 				else
 				{
 					craft()->userSession->setNotice(Craft::t('Password updated.'));
-					$this->redirectToPostedUrl();
+					$url = UrlHelper::getCpUrl('dashboard');
+					$this->redirect($url);
 				}
 			}
 			else
