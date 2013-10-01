@@ -618,11 +618,19 @@ class EntriesService extends BaseApplicationComponent
 		// Remove HTML tags
 		$slug = preg_replace('/<(.*?)>/', '', $slug);
 
-		// Remove inner-word punctuation
-		$slug = preg_replace('/[\'"‘’“”]/', '', $slug);
+		// Because there isn't a mb_preg_replace, yet.
+		if (function_exists('mb_ereg_replace'))
+		{
+			$slug = mb_ereg_replace('/[\'"‘’“”]/', '', $slug);
+		}
+		else
+		{
+			// Remove inner-word punctuation.  This pattern will match certain Chinese characters and convert them to question marks.
+			$slug = preg_replace('/[\'"‘’“”]/', '', $slug);
+		}
 
 		// Make it lowercase
-		$slug = mb_strtolower($slug);
+		$slug = mb_strtolower($slug, 'UTF-8');
 
 		// Get the "words".  Split on anything that is not a unicode letter or number.
 		// Periods are OK too.
