@@ -19,7 +19,7 @@ interface IElementType extends IComponentType
 	/**
 	 * @return bool
 	 */
-	public function isTranslatable();
+	public function isLocalized();
 
 	/**
 	 * @param string|null $context

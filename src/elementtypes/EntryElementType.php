@@ -37,11 +37,11 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type is translatable.
+	 * Returns whether this element type stores data on a per-locale basis.
 	 *
 	 * @return bool
 	 */
-	public function isTranslatable()
+	public function isLocalized()
 	{
 		return true;
 	}

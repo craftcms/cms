@@ -212,7 +212,7 @@ class ElementsService extends BaseApplicationComponent
 
 		$query->leftJoin('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
 
-		if ($elementType->isTranslatable())
+		if ($elementType->isLocalized())
 		{
 			// Locale conditions
 			if (!$criteria->locale)

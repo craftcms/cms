@@ -33,11 +33,11 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * Returns whether this element type is translatable.
+	 * Returns whether this element type stores data on a per-locale basis.
 	 *
 	 * @return bool
 	 */
-	public function isTranslatable()
+	public function isLocalized()
 	{
 		return false;
 	}
