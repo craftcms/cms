@@ -4,7 +4,7 @@
 
 {% set elements = (elements is defined ? elements : []) -%}
 {% set jsClass = (jsClass is defined and jsClass ? jsClass : 'Craft.BaseElementSelectInput') -%}
-{% set sources = (sources is defined and sources ? sources : null) -%}
+{% set sources = (sourcePath is defined and sourcePath ? sourcePath : (sources is defined and sources ? sources : null)) -%}
 {% set criteria = (criteria is defined and criteria ? criteria : null) -%}
 {% set storageKey = (storageKey is defined and storageKey ? storageKey : null) -%}
 
