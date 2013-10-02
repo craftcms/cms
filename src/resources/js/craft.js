@@ -119,6 +119,17 @@ $.extend(Craft, {
 		if (baseUrl)
 		{
 			var url = baseUrl;
+
+			if (path)
+			{
+				// Does baseUrl already contain a path?
+				var pathMatch = url.match(/[&\?]p=[^&]+/);
+				if (pathMatch)
+				{
+					url = url.replace(pathMatch[0], pathMatch[0]+'/'+path);
+					path = '';
+				}
+			}
 		}
 		else
 		{
