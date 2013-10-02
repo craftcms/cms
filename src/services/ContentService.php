@@ -29,6 +29,17 @@ class ContentService extends BaseApplicationComponent
 
 		if ($row)
 		{
+			// Rename the field column names
+			foreach ($row as $column => $value)
+			{
+				if (strncmp($column, 'field_', 6) === 0)
+				{
+					$fieldHandle = substr($column, 6);
+					$row[$fieldHandle] = $value;
+					unset($row[$column]);
+				}
+			}
+
 			return new ContentModel($row);
 		}
 	}
@@ -150,7 +161,7 @@ class ContentService extends BaseApplicationComponent
 				{
 					$handle = $field->handle;
 					$value = $content->$handle;
-					$values[$field->handle] = ModelHelper::packageAttributeValue($value, true);
+					$values['field_'.$field->handle] = ModelHelper::packageAttributeValue($value, true);
 				}
 			}
 

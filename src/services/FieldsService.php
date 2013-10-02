@@ -305,19 +305,19 @@ class FieldsService extends BaseApplicationComponent
 
 					if ($isNewField)
 					{
-						craft()->db->createCommand()->addColumn('content', $field->handle, $column);
+						craft()->db->createCommand()->addColumn('content', 'field_'.$field->handle, $column);
 					}
 					else
 					{
 						// Existing field going from a field that did not define any content attributes to one that does.
-						if (!craft()->db->schema->columnExists('content', $fieldRecord->oldHandle))
+						if (!craft()->db->schema->columnExists('content', 'field_'.$fieldRecord->oldHandle))
 						{
-							craft()->db->createCommand()->addColumn('content', $field->handle, $column);
+							craft()->db->createCommand()->addColumn('content', 'field_'.$field->handle, $column);
 						}
 						else
 						{
 							// Existing field that already had a column defined, just altering it.
-							craft()->db->createCommand()->alterColumn('content', $fieldRecord->oldHandle, $column, $field->handle);
+							craft()->db->createCommand()->alterColumn('content', 'field_'.$fieldRecord->oldHandle, $column, $field->handle);
 						}
 					}
 				}
@@ -326,9 +326,9 @@ class FieldsService extends BaseApplicationComponent
 					// Did the old field have a column we need to remove?
 					if (!$isNewField)
 					{
-						if ($fieldRecord->oldHandle && craft()->db->schema->columnExists('content', $fieldRecord->oldHandle))
+						if ($fieldRecord->oldHandle && craft()->db->schema->columnExists('content', 'field_'.$fieldRecord->oldHandle))
 						{
-							craft()->db->createCommand()->dropColumn('content', $fieldRecord->oldHandle);
+							craft()->db->createCommand()->dropColumn('content', 'field_'.$fieldRecord->oldHandle);
 						}
 					}
 				}
@@ -388,9 +388,9 @@ class FieldsService extends BaseApplicationComponent
 	public function deleteField(FieldModel $field)
 	{
 		// De we need to delete the content column?
-		if (craft()->db->schema->columnExists('content', $field->handle))
+		if (craft()->db->schema->columnExists('content', 'field_'.$field->handle))
 		{
-			craft()->db->createCommand()->dropColumn('content', $field->handle);
+			craft()->db->createCommand()->dropColumn('content', 'field_'.$field->handle);
 		}
 
 		// Delete the row in fields
