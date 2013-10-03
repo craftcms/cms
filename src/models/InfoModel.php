@@ -14,8 +14,8 @@ class InfoModel extends BaseModel
 	{
 		return array(
 			'id'          => AttributeType::Number,
-			'version'     => array(AttributeType::Version, 'required' => true),
-			'build'       => array(AttributeType::Build, 'required' => true),
+			'version'     => array(AttributeType::Char, 'required' => true),
+			'build'       => array(AttributeType::Number, 'required' => true),
 			'packages'    => array(AttributeType::Mixed, 'default' => array()),
 			'releaseDate' => array(AttributeType::DateTime, 'required' => true),
 			'siteName'    => array(AttributeType::Name, 'required' => true),
