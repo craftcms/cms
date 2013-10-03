@@ -175,7 +175,7 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	public function saveSet(GlobalSetModel $globalSet)
 	{
-		$isNewSet = empty($globalSet->id);
+		$isNewSet = !$globalSet->id;
 
 		if (!$isNewSet)
 		{
@@ -228,11 +228,16 @@ class GlobalsService extends BaseApplicationComponent
 				// Save the element record first
 				$elementRecord->save(false);
 
-				// Now that we have an element ID, save it on the other stuff
-				if (!$globalSet->id)
+				if ($isNewSet)
 				{
+					// Now that we have an element ID, save it on the other stuff
 					$globalSet->id = $elementRecord->id;
 					$globalSetRecord->id = $globalSet->id;
+
+					// Create a row in content
+					$content = new ContentModel();
+					$content->elementId = $globalSet->id;
+					craft()->content->saveContent($content, false);
 				}
 
 				$globalSetRecord->save(false);

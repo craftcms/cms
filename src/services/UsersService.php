@@ -195,7 +195,9 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function saveUser(UserModel $user)
 	{
-		if (($isNewUser = !$user->id) == false)
+		$isNewUser = !$user->id;
+
+		if (!$isNewUser)
 		{
 			$userRecord = $this->_getUserRecordById($user->id);
 
@@ -246,7 +248,7 @@ class UsersService extends BaseApplicationComponent
 
 			if ($isNewUser)
 			{
-				// Create the entry record
+				// Create the element record
 				$elementRecord = new ElementRecord();
 				$elementRecord->type = ElementType::User;
 				$elementRecord->save();
@@ -254,6 +256,11 @@ class UsersService extends BaseApplicationComponent
 				// Now that we have the entry ID, save it on everything else
 				$user->id = $elementRecord->id;
 				$userRecord->id = $elementRecord->id;
+
+				// Create a row in content
+				$content = new ContentModel();
+				$content->elementId = $user->id;
+				craft()->content->saveContent($content, false);
 			}
 
 			$userRecord->save(false);
