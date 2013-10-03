@@ -478,7 +478,6 @@ return array(
 	'No draft exists with the ID “{id}”' => 'Er bestaat geen concept met de ID “{id}”',
 	'No drafts exist right now.' => 'Momenteel zijn er geen concepten.',
 	'No element type exists by the type “{type}”.' => 'Er bestaat geen elementstype met het type “{type}”.',
-	'No element type exists with the class "{class}"' => 'Er bestaat geen elementtype met de aanduiding "{class}"',
 	'No element type exists with the class “{class}”' => 'Er bestaat geen elementtype met de aanduiding “{class}”',
 	'No entries exist yet.' => 'Er bestaan nog geen entries.',
 	'No entry exists with the ID “{id}”' => 'Er bestaat geen entry met de ID “{id}”',

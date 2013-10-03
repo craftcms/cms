@@ -476,7 +476,6 @@ return array(
 	'No draft exists with the ID “{id}”' => 'Aucun brouillon n\'existe avec l\'identifiant “{id}” ',
 	'No drafts exist right now.' => 'Il n\'existe actuellement pas de brouillon.',
 	'No element type exists by the type “{type}”.' => 'Aucun type d\'élément ne correspond au type “{type}”.',
-	'No element type exists with the class "{class}"' => 'Aucun type d\'élément n\'existe avec la classe ”{class}”.',
 	'No element type exists with the class “{class}”' => 'Aucun type d\'élément n\'existe avec la classe ”{class}”',
 	'No entries exist yet.' => 'Il n\'existe pas encore d\'entrée.',
 	'No entry exists with the ID “{id}”' => 'Aucune entrée n\'existe avec l\'identifiant “{id}”.',

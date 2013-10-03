@@ -476,7 +476,6 @@ return array(
 	'No draft exists with the ID “{id}”' => 'Non esiste nessuna bozza con l\'ID “{id}”',
 	'No drafts exist right now.' => 'Al momento non ci sono bozze.',
 	'No element type exists by the type “{type}”.' => 'Non esiste alcun genere di elemento del tipo “{type}”.',
-	'No element type exists with the class "{class}"' => 'Non esiste alcun tipo di elemento con classe ”{class}”',
 	'No element type exists with the class “{class}”' => 'Non esiste alcun tipo di elemento con classe “{class}”',
 	'No entries exist yet.' => 'Nessuna voce ancora esistente.',
 	'No entry exists with the ID “{id}”' => 'Non esistino inserimenti con l\'ID “{id}”',

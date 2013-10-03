@@ -478,7 +478,6 @@ Craft ist das CMS (Fallbearbeitungssystem), das {siteName} antreibt. Es ist eind
 	'No draft exists with the ID “{id}”' => 'Es gibt keinen Entwurf mit der ID “{id}”',
 	'No drafts exist right now.' => 'Es gibt momentan keine Entwürfe.',
 	'No element type exists by the type “{type}”.' => 'Es gibt keinen Elemententyp mit dem Namen “{type}”.',
-	'No element type exists with the class "{class}"' => 'Es gibt keinen Elemententyp mit der Klasse “{class}”',
 	'No element type exists with the class “{class}”' => 'Es gibt keinen Elemententyp mit der Klasse “{class}”',
 	'No entries exist yet.' => 'Es gibt noch keine Einträge.',
 	'No entry exists with the ID “{id}”' => 'Es gibt keinen Eintrag mit der ID “{id}”',

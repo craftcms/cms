@@ -476,7 +476,6 @@ return array(
 	'No draft exists with the ID “{id}”' => 'No draft exists with the ID “{id}”',
 	'No drafts exist right now.' => 'No drafts exist right now.',
 	'No element type exists by the type “{type}”.' => 'No element type exists by the type “{type}”.',
-	'No element type exists with the class "{class}"' => 'No element type exists with the class "{class}"',
 	'No element type exists with the class “{class}”' => 'No element type exists with the class “{class}”',
 	'No entries exist yet.' => 'No entries exist yet.',
 	'No entry exists with the ID “{id}”' => 'No entry exists with the ID “{id}”',

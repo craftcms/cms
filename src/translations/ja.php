@@ -476,7 +476,6 @@ return array(
 	'No draft exists with the ID “{id}”' => '「{id}」のIDを持つ下書きがありません。',
 	'No drafts exist right now.' => '只今、下書きがありません。',
 	'No element type exists by the type “{type}”.' => '「{type}」のタイプを持つエレメントタイプがありません。',
-	'No element type exists with the class "{class}"' => '「{class}」のクラスを持つエレメントタイプがありません。',
 	'No element type exists with the class “{class}”' => '「{class}」のクラスを持つエレメントタイプがありません。',
 	'No entries exist yet.' => 'エントリがまだありません。',
 	'No entry exists with the ID “{id}”' => '「{id}」のIDを持つエントリがありません。',
