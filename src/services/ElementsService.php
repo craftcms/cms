@@ -378,14 +378,27 @@ class ElementsService extends BaseApplicationComponent
 			$query->andWhere(DbHelper::parseParam('children.parentId', $parentIds, $query->params));
 		}
 
-		if ($elementType->modifyElementsQuery($query, $criteria) !== false)
+		// Field conditions
+		foreach ($criteria->getSupportedFieldHandles() as $fieldHandle)
 		{
-			return $query;
+			if ($criteria->$fieldHandle !== false)
+			{
+				$fieldType = craft()->fields->populateFieldType($field);
+
+				if ($fieldType->modifyElementsQuery($query, $criteria->$fieldHandle) === false)
+				{
+					return false;
+				}
+			}
 		}
-		else
+
+		// Give the element type a chance to make changes
+		if ($elementType->modifyElementsQuery($query, $criteria) === false)
 		{
 			return false;
 		}
+
+		return $query;
 	}
 
 	// Element helper functions

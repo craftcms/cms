@@ -8,6 +8,7 @@ class ElementCriteriaModel extends BaseModel
 {
 	private $_elementType;
 
+	private $_supportedFieldHandles;
 	private $_idsCache;
 	private $_totalCache;
 
@@ -54,11 +55,16 @@ class ElementCriteriaModel extends BaseModel
 		$attributes = array_merge($attributes, $elementTypeAttributes);
 
 		// Mix in the custom fields
-		$fields = craft()->fields->getAllFields();
+		$this->_supportedFieldHandles = array();
 
-		foreach ($fields as $field)
+		foreach (craft()->fields->getAllFields() as $field)
 		{
-			$attributes[$field->handle] = AttributeType::Mixed;
+			// Make sure the handle doesn't conflict with an existing attribute
+			if (!isset($attributes[$field->handle]))
+			{
+				$this->_supportedFieldHandles[] = $field->handle;
+				$attributes[$field->handle] = array(AttributeType::Mixed, 'default' => false);
+			}
 		}
 
 		return $attributes;
@@ -93,6 +99,16 @@ class ElementCriteriaModel extends BaseModel
 	public function getElementType()
 	{
 		return $this->_elementType;
+	}
+
+	/**
+	 * Returns the field handles that didn't conflict with the main attribute names.
+	 *
+	 * @return array
+	 */
+	public function getSupportedFieldHandles()
+	{
+		return $this->_supportedFieldHandles;
 	}
 
 	/**
