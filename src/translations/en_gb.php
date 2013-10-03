@@ -818,7 +818,7 @@ return array(
 	'Updating Files…' => 'Updating Files…',
 	'Upload a logo' => 'Upload a logo',
 	'Upload a photo' => 'Upload a photo',
-	'Upload failed for' => 'Upload failed for',
+	'Upload failed for {filename}' => 'Upload failed for {filename}',
 	'Upload files' => 'Upload files',
 	'Uploaded file was empty' => 'Uploaded file was empty',
 	'Use SMTP Keep Alive' => 'Use SMTP Keep Alive',

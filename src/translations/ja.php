@@ -818,7 +818,7 @@ return array(
 	'Updating Files…' => 'ファイルアップデート中…',
 	'Upload a logo' => 'ロゴをアップロードする',
 	'Upload a photo' => '写真をアップロードする',
-	'Upload failed for' => '以下の理由でアップロードに失敗しました。',
+	'Upload failed for {filename}' => '以下の理由でアップロードに失敗しました。{filename}',
 	'Upload files' => 'ファイルをアップロードする',
 	'Uploaded file was empty' => 'アップロードしたファイルは空です',
 	'Use SMTP Keep Alive' => 'SMTP Keep Aliveを利用する',

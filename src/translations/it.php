@@ -818,7 +818,7 @@ return array(
 	'Updating Files…' => 'Aggiornamento dei file in corso…',
 	'Upload a logo' => 'Carica un logo',
 	'Upload a photo' => 'Carica una foto',
-	'Upload failed for' => 'Caricamento fallito per',
+	'Upload failed for {filename}' => 'Caricamento fallito per {filename}',
 	'Upload files' => 'Carica file',
 	'Uploaded file was empty' => 'Il file caricato è vuoto',
 	'Use SMTP Keep Alive' => 'Utilizza SMTP Keep Alive',

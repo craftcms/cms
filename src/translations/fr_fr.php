@@ -818,7 +818,7 @@ return array(
 	'Updating Files…' => 'Mise à jour des fichiers…',
 	'Upload a logo' => 'Télécharger un logo',
 	'Upload a photo' => 'Télécharger une photo',
-	'Upload failed for' => 'Le téléchargement a échoué pour',
+	'Upload failed for {filename}' => 'Le téléchargement a échoué pour {filename}',
 	'Upload files' => 'Télécharger des fichiers',
 	'Uploaded file was empty' => 'Le fichier téléchargé était vide',
 	'Use SMTP Keep Alive' => 'Utiliser la fonction keep alive SMTP',

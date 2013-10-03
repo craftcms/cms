@@ -820,7 +820,7 @@ return array(
 	'Updating Files…' => 'Bestanden bijwerken…',
 	'Upload a logo' => 'Een logo uploaden',
 	'Upload a photo' => 'Een foto uploaden',
-	'Upload failed for' => 'Uploaden mislukt voor',
+	'Upload failed for {filename}' => 'Uploaden mislukt voor {filename}',
 	'Upload files' => 'Bestanden uploaden',
 	'Uploaded file was empty' => 'Geüpload bestand was leeg',
 	'Use SMTP Keep Alive' => 'Gebruik SMTP Keep Alive',

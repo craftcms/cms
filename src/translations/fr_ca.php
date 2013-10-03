@@ -819,7 +819,7 @@ return array(
 	'Updating Files…' => 'Mise à jour des fichiers…',
 	'Upload a logo' => 'Téléchargez un logo',
 	'Upload a photo' => 'Télécharger une photo',
-	'Upload failed for' => 'Échec du téléchargement de',
+	'Upload failed for {filename}' => 'Échec du téléchargement de {filename}',
 	'Upload files' => 'Télécharger les fichiers',
 	'Uploaded file was empty' => 'Le fichier téléchargé était vide',
 	'Use SMTP Keep Alive' => 'Utiliser le keep alive SMTP',

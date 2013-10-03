@@ -187,7 +187,7 @@ return array(
 	'Craft is not able to write to the “File System Path” specified for this asset source.' => 'Craft konnte nicht in dem für diese Asset-Quelle angegebenen "Datei-Systempfad" schreiben.',
 	'Craft is running in Dev Mode.' => 'Craft läuft im Entwicklermodus.',
 	'Craft is the CMS that’s powering {siteName}. It’s beautiful, powerful, flexible, and easy-to-use, and it’s made by Pixel &amp; Tonic. We can’t wait to dive in and see what it’s capable of!' => '
-Craft ist das CMS (Fallbearbeitungssystem), das {siteName} antreibt. Es ist eindrucksvoll, leistungsstark, flexibel und benutzerfreundlich und wird von Pixel &amp; Tonic gemacht. Wir sind gespannt darauf, darin einzutauchen und herauszufinden, was es alles kann! 
+Craft ist das CMS (Fallbearbeitungssystem), das {siteName} antreibt. Es ist eindrucksvoll, leistungsstark, flexibel und benutzerfreundlich und wird von Pixel &amp; Tonic gemacht. Wir sind gespannt darauf, darin einzutauchen und herauszufinden, was es alles kann!
 ',
 	'Craft is unable to determine if an update is available at this time.' => 'Craft kann im Moment nicht feststellen, ob ein Update verfügbar ist.',
 	'Craft is unable to fetch package info at this time.' => 'Craft kann die Paket-Information im Moment nicht abrufen.',
@@ -820,7 +820,7 @@ Craft ist das CMS (Fallbearbeitungssystem), das {siteName} antreibt. Es ist eind
 	'Updating Files…' => 'Dateien werden aktualisiert…',
 	'Upload a logo' => 'Ein Logo hochladen',
 	'Upload a photo' => 'Ein Foto hochladen',
-	'Upload failed for' => 'Upload fehlgeschlagen für',
+	'Upload failed for {filename}' => 'Upload fehlgeschlagen für {filename}',
 	'Upload files' => 'Dateien hochladen',
 	'Uploaded file was empty' => 'Die hochgeladene Datei war leer',
 	'Use SMTP Keep Alive' => 'SMTP Keep Alive verwenden',
