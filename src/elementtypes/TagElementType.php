@@ -88,7 +88,7 @@ class TagElementType extends BaseElementType
 	}
 
 	/**
-	 * Modifies an entries query targeting entries of this type.
+	 * Modifies an element query targeting elements of this type.
 	 *
 	 * @param DbCommand $query
 	 * @param ElementCriteriaModel $criteria
