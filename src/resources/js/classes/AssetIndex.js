@@ -1113,7 +1113,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 		var fileName = $target.attr('data-label');
 
-		if (confirm(Craft.t('Are you sure you want to delete “{file}”?', {file: fileName})))
+		if (confirm(Craft.t('Are you sure you want to delete “{name}”?', { name: fileName })))
 		{
 			if ($target.data('AssetEditor'))
 			{

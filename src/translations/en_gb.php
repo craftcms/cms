@@ -60,7 +60,7 @@ return array(
 	'Are you sure you want to delete this entry?' => 'Are you sure you want to delete this entry?',
 	'Are you sure you want to delete this group and all its fields?' => 'Are you sure you want to delete this group and all its fields?',
 	'Are you sure you want to delete this photo?' => 'Are you sure you want to delete this photo?',
-	'Are you sure you want to delete “{file}”?' => 'Are you sure you want to delete “{file}”?',
+	'Are you sure you want to delete “{name}”?' => 'Are you sure you want to delete “{name}”?',
 	'Are you sure you want to delete “{name}” and all entries that use it?' => 'Are you sure you want to delete “{name}” and all entries that use it?',
 	'Are you sure you want to delete “{name}” and all its entries?' => 'Are you sure you want to delete “{name}” and all its entries?',
 	'Are you sure you want to delete “{name}” and all its tags?' => 'Are you sure you want to delete “{name}” and all its tags?',

@@ -60,7 +60,7 @@ return array(
 	'Are you sure you want to delete this entry?' => 'Weet je zeker dat je deze post wilt verwijderen?',
 	'Are you sure you want to delete this group and all its fields?' => 'Weet je zeker dat je deze groep en bijbehorende velden wilt verwijderen?',
 	'Are you sure you want to delete this photo?' => 'Weet je zeker dat je deze foto wilt verwijderen?',
-	'Are you sure you want to delete “{file}”?' => 'Weet je zeker dat je "{file}" wilt verwijderen?',
+	'Are you sure you want to delete “{name}”?' => 'Weet je zeker dat je “{name}” wilt verwijderen?',
 	'Are you sure you want to delete “{name}” and all entries that use it?' => 'Weet u zeker dat u “{name}” wilt verwijderen en alle items die het gebruiken?',
 	'Are you sure you want to delete “{name}” and all its entries?' => 'Weet u zeker dat u “{name}” en all zijn entries wilt verwijderen?',
 	'Are you sure you want to delete “{name}” and all its tags?' => 'Weet u zeker dat u \'{name}\' wilt verwijderen en al zijn tags?',

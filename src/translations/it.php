@@ -60,7 +60,7 @@ return array(
 	'Are you sure you want to delete this entry?' => 'Sei sicuro di voler eliminare questa voce?',
 	'Are you sure you want to delete this group and all its fields?' => 'Sei sicuro di voler eliminare questo gruppo e tutti i suoi campi?',
 	'Are you sure you want to delete this photo?' => 'Sei sicuro di voler eliminare questa foto?',
-	'Are you sure you want to delete “{file}”?' => 'Sei sicuro di voler eliminare “{file}”? ',
+	'Are you sure you want to delete “{name}”?' => 'Sei sicuro di voler eliminare “{name}”? ',
 	'Are you sure you want to delete “{name}” and all entries that use it?' => 'Sei sicuro di voler cancellare “{name}” e tutte le voci che lo utilizzano?',
 	'Are you sure you want to delete “{name}” and all its entries?' => 'Sei sicuro di voler eliminare “{name}” e tutte le sue voci?',
 	'Are you sure you want to delete “{name}” and all its tags?' => 'Sei sicuro di volere eliminare “{name}” e tutte le sue tag?',

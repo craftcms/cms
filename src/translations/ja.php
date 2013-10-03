@@ -60,7 +60,7 @@ return array(
 	'Are you sure you want to delete this entry?' => 'このエントリを本当に削除しますか？',
 	'Are you sure you want to delete this group and all its fields?' => 'このグループと関連のフィールドを本当に削除しますか？',
 	'Are you sure you want to delete this photo?' => 'この写真を本当に削除しますか？',
-	'Are you sure you want to delete “{file}”?' => '「{file}」を本当に削除しますか？',
+	'Are you sure you want to delete “{name}”?' => '「{name}」を本当に削除しますか？',
 	'Are you sure you want to delete “{name}” and all entries that use it?' => '“{name}” とそれを含む全エントリーを本当に削除しますか。',
 	'Are you sure you want to delete “{name}” and all its entries?' => '本当に「{name}」と「{name}」の全てのエントリを削除しますか？',
 	'Are you sure you want to delete “{name}” and all its tags?' => '本当に “{name}”とそのすべてのタグを削除してもよろしいですか?',
