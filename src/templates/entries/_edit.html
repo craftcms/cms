@@ -128,7 +128,7 @@
 					}, statusInput) }}
 				{% endif %}
 
-				{% if currentUser.can('deleteEntries'~permissionSuffix) %}
+				{% if currentUser.can('deleteEntries'~permissionSuffix) and entry.id %}
 					<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="entries/deleteEntry"
 						data-confirm="{{ 'Are you sure you want to delete this entry?'|t }}"
 						data-redirect="entries">
