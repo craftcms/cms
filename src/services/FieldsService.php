@@ -12,6 +12,7 @@ class FieldsService extends BaseApplicationComponent
 	private $_fieldsById;
 	private $_fieldsByHandle;
 	private $_fetchedAllFields;
+	private $_fieldsWithContent;
 
 	// Groups
 	// ======
@@ -175,6 +176,31 @@ class FieldsService extends BaseApplicationComponent
 		}
 
 		return $fields;
+	}
+
+	/**
+	 * Returns all fields that have a column in the content table.
+	 *
+	 * @return array
+	 */
+	public function getFieldsWithContent()
+	{
+		if (!isset($this->_fieldsWithContent))
+		{
+			$this->_fieldsWithContent = array();
+
+			foreach ($this->getAllFields() as $field)
+			{
+				$fieldType = craft()->fields->populateFieldType($field);
+
+				if ($fieldType && $fieldType->defineContentAttribute())
+				{
+					$this->_fieldsWithContent[] = $field;
+				}
+			}
+		}
+
+		return $this->_fieldsWithContent;
 	}
 
 	/**

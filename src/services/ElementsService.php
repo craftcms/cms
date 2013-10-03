@@ -129,12 +129,14 @@ class ElementsService extends BaseApplicationComponent
 							$content->title = $row['title'];
 							unset($row['title']);
 
-							foreach ($row as $column => $value)
+							foreach (craft()->fields->getFieldsWithContent() as $field)
 							{
-								if (strncmp($column, 'field_', 6) === 0)
+								$fieldHandle = $field->handle;
+								$column = 'field_'.$fieldHandle;
+
+								if (isset($row[$column]))
 								{
-									$fieldHandle = substr($column, 6);
-									$content->$fieldHandle = $value;
+									$content->$fieldHandle = $row[$column];
 									unset($row[$column]);
 								}
 							}
@@ -227,15 +229,9 @@ class ElementsService extends BaseApplicationComponent
 		{
 			$contentCols = 'content.id AS contentId, content.locale, content.title';
 
-			foreach (craft()->fields->getAllFields() as $field)
+			foreach (craft()->fields->getFieldsWithContent() as $field)
 			{
-				$fieldType = craft()->fields->populateFieldType($field);
-
-				// Only include this value if the content table has a column for it
-				if ($fieldType && $fieldType->defineContentAttribute())
-				{
-					$contentCols .= ', content.field_'.$field->handle;
-				}
+				$contentCols .= ', content.field_'.$field->handle;
 			}
 
 			$query->addSelect($contentCols);

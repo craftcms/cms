@@ -150,19 +150,11 @@ class ContentService extends BaseApplicationComponent
 				'title'     => $content->title,
 			);
 
-			$allFields = craft()->fields->getAllFields();
-
-			foreach ($allFields as $field)
+			foreach (craft()->fields->getFieldsWithContent() as $field)
 			{
-				$fieldType = craft()->fields->populateFieldType($field);
-
-				// Only include this value if the content table has a column for it
-				if ($fieldType && $fieldType->defineContentAttribute())
-				{
-					$handle = $field->handle;
-					$value = $content->$handle;
-					$values['field_'.$field->handle] = ModelHelper::packageAttributeValue($value, true);
-				}
+				$handle = $field->handle;
+				$value = $content->$handle;
+				$values['field_'.$field->handle] = ModelHelper::packageAttributeValue($value, true);
 			}
 
 			$isNewContent = !$content->id;
