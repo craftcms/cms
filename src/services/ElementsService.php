@@ -79,12 +79,16 @@ class ElementsService extends BaseApplicationComponent
 
 			if ($criteria->order && $criteria->order != 'score')
 			{
-				// Add the "field_" prefix to any custom fields we're ordering by
-				$fieldColumnRegex = '/^(?:'.implode('|', $fieldHandles).')\b/';
 				$orderColumns = ArrayHelper::stringToArray($criteria->order);
-				foreach ($orderColumns as $i => $orderColumn)
+
+				if ($fieldHandles)
 				{
-					$orderColumns[$i] = preg_replace($fieldColumnRegex, 'field_$0', $orderColumn);
+					// Add the "field_" prefix to any custom fields we're ordering by
+					$fieldColumnRegex = '/^(?:'.implode('|', $fieldHandles).')\b/';
+					foreach ($orderColumns as $i => $orderColumn)
+					{
+						$orderColumns[$i] = preg_replace($fieldColumnRegex, 'field_$0', $orderColumn);
+					}
 				}
 
 				$query->order(implode(', ', $orderColumns));

@@ -317,7 +317,7 @@ class FieldsService extends BaseApplicationComponent
 				$fieldRecord->save(false);
 
 				// Now that we have a field ID, save it on the model
-				if (!$field->id)
+				if ($isNewField)
 				{
 					$field->id = $fieldRecord->id;
 				}
@@ -374,6 +374,12 @@ class FieldsService extends BaseApplicationComponent
 				}
 
 				throw $e;
+			}
+
+			if ($isNewField)
+			{
+				$this->_fetchedAllFields = false;
+				$this->_fieldsWithContent = null;
 			}
 
 			return true;
