@@ -123,6 +123,7 @@ class ElementsService extends BaseApplicationComponent
 						{
 							// Separate the content values from the main element attributes
 							$content = new ContentModel();
+							$content->id = $row['contentId'];
 							$content->elementId = $row['id'];
 							$content->locale = $row['locale'];
 							$content->title = $row['title'];
@@ -224,7 +225,7 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($elementType->hasContent())
 		{
-			$contentCols = 'content.locale, content.title';
+			$contentCols = 'content.id AS contentId, content.locale, content.title';
 
 			foreach (craft()->fields->getAllFields() as $field)
 			{
