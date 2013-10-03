@@ -67,7 +67,7 @@ class UpdatesVariable
 	 */
 	private function _getManualUpdateInfo($type)
 	{
-		if (craft()->updates->isCraftDbUpdateNeeded())
+		if (craft()->updates->isCraftDbMigrationNeeded())
 		{
 			return 'Craft';
 		}

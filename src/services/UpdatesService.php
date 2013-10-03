@@ -184,23 +184,6 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $version
-	 * @param $build
-	 * @param $releaseDate
-	 * @return bool
-	 */
-	public function setNewCraftInfo($version, $build, $releaseDate)
-	{
-		$info = craft()->getInfo();
-
-		$info->version     = $version;
-		$info->build       = $build;
-		$info->releaseDate = $releaseDate;
-
-		return craft()->saveInfo($info);
-	}
-
-	/**
 	 * @param BasePlugin $plugin
 	 * @return bool
 	 */
@@ -552,14 +535,13 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns if Craft needs to run a database update or not.
+	 * Returns whether a different Craft build has been uploaded.
 	 *
-	 * @access private
 	 * @return bool
 	 */
-	public function isCraftDbUpdateNeeded()
+	public function hasCraftBuildChanged()
 	{
-		return (CRAFT_BUILD > craft()->getBuild());
+		return (CRAFT_BUILD != craft()->getBuild());
 	}
 
 	/**
@@ -570,31 +552,44 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isBreakpointUpdateNeeded()
 	{
-		// Only Craft has the concept of a breakpoint, not plugins.
-		if ($this->isCraftDbUpdateNeeded())
-		{
-			return (craft()->getBuild() < CRAFT_MIN_BUILD_REQUIRED);
-		}
-		else
-		{
-			return false;
-		}
+		return (CRAFT_MIN_BUILD_REQUIRED > craft()->getBuild());
 	}
 
 	/**
-	 * Returns true if the track on the file system matches the track in the database, false otherwise.
-	 * This effectively makes sure that a user cannot change tracks while manually updating.
+	 * Returns whether the uploaded DB schema is equal to or greater than the installed schema
 	 *
 	 * @return bool
 	 */
-	public function isTrackValid()
+	public function isSchemaVersionCompatible()
 	{
-		if (($track = craft()->getTrack()) && $track != CRAFT_TRACK)
-		{
-			return false;
-		}
+		return version_compare(CRAFT_SCHEMA_VERSION, craft()->getSchemaVersion(), '>=');
+	}
 
-		return true;
+	/**
+	 * Returns whether Craft needs to run any database migrations.
+	 *
+	 * @access private
+	 * @return bool
+	 */
+	public function isCraftDbMigrationNeeded()
+	{
+		return (CRAFT_SCHEMA_VERSION > craft()->getSchemaVersion());
+	}
+
+	/**
+	 * Updates the Craft version info in the craft_info table.
+	 *
+	 * @return bool
+	 */
+	public function updateCraftVersionInfo()
+	{
+		$info = craft()->getInfo();
+		$info->version = CRAFT_VERSION;
+		$info->build = CRAFT_BUILD;
+		$info->schemaVersion = CRAFT_SCHEMA_VERSION;
+		$info->track = CRAFT_TRACK;
+		$info->releaseDate = CRAFT_RELEASE_DATE;
+		return craft()->saveInfo($info);
 	}
 
 	/**

@@ -73,6 +73,16 @@ class AppBehavior extends BaseBehavior
 	}
 
 	/**
+	 * Returns the installed Craft build.
+	 *
+	 * @return string
+	 */
+	public function getSchemaVersion()
+	{
+		return $this->getInfo('schemaVersion');
+	}
+
+	/**
 	 * Returns the installed Craft release date.
 	 *
 	 * @return string
