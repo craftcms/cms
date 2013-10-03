@@ -62,6 +62,14 @@ class ElementsService extends BaseApplicationComponent
 				// Tests are showing that listing out all of the columns here is actually slower
 				// than just doing SELECT * -- probably due to the large number of columns we need to select.
 				$query->select('*');
+
+				// Get a list of all the field handles we might be dealing with
+				$fieldHandles = array();
+
+				foreach (craft()->fields->getFieldsWithContent() as $field)
+				{
+					$fieldHandles[] = $field->handle;
+				}
 			}
 
 			$query->from('('.$subquery->getText().') AS '.craft()->db->quoteTableName('r'))
@@ -71,7 +79,15 @@ class ElementsService extends BaseApplicationComponent
 
 			if ($criteria->order && $criteria->order != 'score')
 			{
-				$query->order($criteria->order);
+				// Add the "field_" prefix to any custom fields we're ordering by
+				$fieldColumnRegex = '/^(?:'.implode('|', $fieldHandles).')\b/';
+				$orderColumns = ArrayHelper::stringToArray($criteria->order);
+				foreach ($orderColumns as $i => $orderColumn)
+				{
+					$orderColumns[$i] = preg_replace($fieldColumnRegex, 'field_$0', $orderColumn);
+				}
+
+				$query->order(implode(', ', $orderColumns));
 			}
 			else if ($subquery->getOrder())
 			{
@@ -129,15 +145,12 @@ class ElementsService extends BaseApplicationComponent
 							$content->title = $row['title'];
 							unset($row['title']);
 
-							foreach (craft()->fields->getFieldsWithContent() as $field)
+							foreach ($fieldHandles as $fieldHandle)
 							{
-								$fieldHandle = $field->handle;
-								$column = 'field_'.$fieldHandle;
-
-								if (isset($row[$column]))
+								if (isset($row['field_'.$fieldHandle]))
 								{
-									$content->$fieldHandle = $row[$column];
-									unset($row[$column]);
+									$content->$fieldHandle = $row['field_'.$fieldHandle];
+									unset($row['field_'.$fieldHandle]);
 								}
 							}
 						}
