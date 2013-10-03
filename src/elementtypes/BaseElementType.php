@@ -13,6 +13,16 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	protected $componentType = 'ElementType';
 
 	/**
+	 * Returns whether this element type has content.
+	 *
+	 * @return bool
+	 */
+	public function hasContent()
+	{
+		return false;
+	}
+
+	/**
 	 * Returns whether this element type has titles.
 	 *
 	 * @return bool

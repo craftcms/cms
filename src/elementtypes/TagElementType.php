@@ -17,6 +17,16 @@ class TagElementType extends BaseElementType
 	}
 
 	/**
+	 * Returns whether this element type has content.
+	 *
+	 * @return bool
+	 */
+	public function hasContent()
+	{
+		return true;
+	}
+
+	/**
 	 * Returns this element type's sources.
 	 *
 	 * @param string|null $context

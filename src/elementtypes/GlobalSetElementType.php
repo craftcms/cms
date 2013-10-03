@@ -17,6 +17,16 @@ class GlobalSetElementType extends BaseElementType
 	}
 
 	/**
+	 * Returns whether this element type has content.
+	 *
+	 * @return bool
+	 */
+	public function hasContent()
+	{
+		return true;
+	}
+
+	/**
 	 * Returns whether this element type stores data on a per-locale basis.
 	 *
 	 * @return bool

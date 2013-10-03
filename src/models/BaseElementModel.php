@@ -429,6 +429,16 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Sets the content for the element.
+	 *
+	 * @param ContentModel $content
+	 */
+	public function setContent(ContentModel $content)
+	{
+		$this->_content = $content;
+	}
+
+	/**
 	 * Returns the prepped content for a given field.
 	 *
 	 * @param FieldModel $field
