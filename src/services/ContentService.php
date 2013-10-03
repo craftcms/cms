@@ -86,15 +86,15 @@ class ContentService extends BaseApplicationComponent
 	 */
 	public function prepElementContentForSave(BaseElementModel $element, FieldLayoutModel $fieldLayout, $validate = true)
 	{
-		$elementTypeClass = $element->getElementType();
-		$elementType = craft()->elements->getElementType($elementTypeClass);
-
 		$content = $element->getContent();
 
 		if ($validate)
 		{
 			// Set the required fields from the layout
 			$requiredFields = array();
+
+			$elementTypeClass = $element->getElementType();
+			$elementType = craft()->elements->getElementType($elementTypeClass);
 
 			if ($elementType->hasTitles())
 			{
