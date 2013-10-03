@@ -909,7 +909,7 @@ return array(
 	'account_activation_heading' => 'account_activation_heading',
 	'account_activation_subject' => 'account_activation_subject',
 	'build {build}' => '{build} bouwen ',
-	'by {author}' => 'door {auteur}',
+	'by {author}' => 'door {author}',
 	'cURL support' => 'cURL-ondersteuning',
 	'crypt() with CRYPT_BLOWFISH enabled' => 'crypt() met CRYPT_BLOWFISH ingeschakeld',
 	'day' => 'dag',
