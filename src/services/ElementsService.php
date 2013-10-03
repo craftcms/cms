@@ -349,12 +349,12 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($criteria->dateCreated)
 		{
-			$query->andWhere(DbHelper::parseDateParam('elements.dateCreated', '=', $criteria->dateCreated, $query->params));
+			$query->andWhere(DbHelper::parseDateParam('elements.dateCreated', $criteria->dateCreated, $query->params));
 		}
 
 		if ($criteria->dateUpdated)
 		{
-			$query->andWhere(DbHelper::parseDateParam('elements.dateUpdated', '=', $criteria->dateUpdated, $query->params));
+			$query->andWhere(DbHelper::parseDateParam('elements.dateUpdated', $criteria->dateUpdated, $query->params));
 		}
 
 		if ($criteria->parentOf)
