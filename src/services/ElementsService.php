@@ -383,6 +383,7 @@ class ElementsService extends BaseApplicationComponent
 		{
 			if ($criteria->$fieldHandle !== false)
 			{
+				$field = craft()->fields->getFieldByHandle($fieldHandle);
 				$fieldType = craft()->fields->populateFieldType($field);
 
 				if ($fieldType->modifyElementsQuery($query, $criteria->$fieldHandle) === false)
