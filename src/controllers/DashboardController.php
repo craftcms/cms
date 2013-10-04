@@ -111,6 +111,11 @@ class DashboardController extends BaseController
 		$getHelpModel->message = craft()->request->getPost('message');
 		$getHelpModel->attachDebugFiles = (bool)craft()->request->getPost('attachDebugFiles');
 
+		if (craft()->request->getPost('attachAdditionalFile'))
+		{
+			$getHelpModel->attachment = \CUploadedFile::getInstance($getHelpModel, 'attachAdditionalFile');
+		}
+
 		if ($getHelpModel->validate())
 		{
 			$user = craft()->userSession->getUser();

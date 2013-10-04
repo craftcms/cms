@@ -26,10 +26,13 @@ Craft.GetHelpWidget = Garnish.Base.extend({
 		this.$spinner = this.$widget.find('.buttons .spinner');
 		this.$error = this.$widget.find('.error:first');
 		this.$form = this.$widget.find('form:first');
+		this.$attachAdditionalFile = this.$widget.find('#attachAdditionalFile:first');
 
 		this.originalBodyVal = this.$message.val();
 		this.originalFromVal = this.$fromEmail.val();
 		this.originalAttachDebugFilesVal = this.$attachDebugFiles.val();
+		this.originalAttachAdditionalFileVal = this.$attachAdditionalFile.val();
+
 
 		this.addListener(this.$sendBtn, 'activate', 'sendMessage');
 	},
@@ -45,7 +48,8 @@ Craft.GetHelpWidget = Garnish.Base.extend({
 		var data = {
 			message: this.$message.val(),
 			fromEmail: this.$fromEmail.val(),
-			attachDebugFiles: this.$attachDebugFiles.val()
+			attachDebugFiles: this.$attachDebugFiles.val(),
+			attachAdditionalFile: this.$attachAdditionalFile.val()
 		};
 
 		Craft.postActionRequest('dashboard/sendSupportRequest', data, $.proxy(function(response, textStatus) {
@@ -66,6 +70,7 @@ Craft.GetHelpWidget = Garnish.Base.extend({
 					this.$message.val(this.originalBodyVal);
 					this.$fromEmail.val(this.originalFromVal);
 					this.$attachDebugFiles.val(this.originalAttachDebugFilesVal);
+					this.$attachAdditionalFile.val(this.originalAttachAdditionalFileVal)
 					Craft.cp.displayNotice(Craft.t('Message sent successfully.'));
 				}
 				else
