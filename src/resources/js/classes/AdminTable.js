@@ -215,11 +215,11 @@ Craft.AdminTable = Garnish.Base.extend({
 		maxObjects: null,
 		reorderAction: null,
 		deleteAction: null,
-		reorderSuccessMessage: 'New order saved.',
-		reorderFailMessage: 'Couldn’t save new order.',
-		confirmDeleteMessage: 'Are you sure you want to delete “{name}”?',
-		deleteSuccessMessage: '“{name}” deleted.',
-		deleteFailMessage: 'Couldn’t delete “{name}”.',
+		reorderSuccessMessage: Craft.t('New order saved.'),
+		reorderFailMessage:    Craft.t('Couldn’t save new order.'),
+		confirmDeleteMessage:  Craft.t('Are you sure you want to delete “{name}”?'),
+		deleteSuccessMessage:  Craft.t('“{name}” deleted.'),
+		deleteFailMessage:     Craft.t('Couldn’t delete “{name}”.'),
 		onDeleteObject: $.noop
 	}
 });
