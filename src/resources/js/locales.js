@@ -37,7 +37,7 @@ Craft.Locales = Garnish.Base.extend({
 			minObjects: 1,
 			reorderAction: 'localization/reorderLocales',
 			deleteAction: 'localization/deleteLocale',
-			confirmDeleteMessage: 'Are you sure you want to delete “{name}” and all its associated content?',
+			confirmDeleteMessage: Craft.t('Are you sure you want to delete “{name}” and all its associated content?'),
 			onDeleteObject: $.proxy(function(id) {
 				var index = $.inArray(id, this.selectedLocales);
 				if (index != -1)

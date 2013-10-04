@@ -62,20 +62,20 @@ class ElementsService extends BaseApplicationComponent
 				// Tests are showing that listing out all of the columns here is actually slower
 				// than just doing SELECT * -- probably due to the large number of columns we need to select.
 				$query->select('*');
-
-				// Get a list of all the field handles we might be dealing with
-				$fieldHandles = array();
-
-				foreach (craft()->fields->getFieldsWithContent() as $field)
-				{
-					$fieldHandles[] = $field->handle;
-				}
 			}
 
 			$query->from('('.$subquery->getText().') AS '.craft()->db->quoteTableName('r'))
 			      ->group('r.id');
 
 			$query->params = $subquery->params;
+
+			// Get a list of all the field handles we might be dealing with
+			$fieldHandles = array();
+
+			foreach (craft()->fields->getFieldsWithContent() as $field)
+			{
+				$fieldHandles[] = $field->handle;
+			}
 
 			if ($criteria->order && $criteria->order != 'score')
 			{
@@ -349,12 +349,12 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($criteria->dateCreated)
 		{
-			$query->andWhere(DbHelper::parseDateParam('elements.dateCreated', '=', $criteria->dateCreated, $query->params));
+			$query->andWhere(DbHelper::parseDateParam('elements.dateCreated', $criteria->dateCreated, $query->params));
 		}
 
 		if ($criteria->dateUpdated)
 		{
-			$query->andWhere(DbHelper::parseDateParam('elements.dateUpdated', '=', $criteria->dateUpdated, $query->params));
+			$query->andWhere(DbHelper::parseDateParam('elements.dateUpdated', $criteria->dateUpdated, $query->params));
 		}
 
 		if ($criteria->parentOf)

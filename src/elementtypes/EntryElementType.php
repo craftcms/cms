@@ -373,18 +373,18 @@ class EntryElementType extends BaseElementType
 
 		if ($criteria->postDate)
 		{
-			$query->andWhere(DbHelper::parseDateParam('entries.postDate', '=', $criteria->postDate, $query->params));
+			$query->andWhere(DbHelper::parseDateParam('entries.postDate', $criteria->postDate, $query->params));
 		}
 		else
 		{
 			if ($criteria->after)
 			{
-				$query->andWhere(DbHelper::parseDateParam('entries.postDate', '>=', $criteria->after, $query->params));
+				$query->andWhere(DbHelper::parseDateParam('entries.postDate', '>='.$criteria->after, $query->params));
 			}
 
 			if ($criteria->before)
 			{
-				$query->andWhere(DbHelper::parseDateParam('entries.postDate', '<', $criteria->before, $query->params));
+				$query->andWhere(DbHelper::parseDateParam('entries.postDate', '<'.$criteria->before, $query->params));
 			}
 		}
 
