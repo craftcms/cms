@@ -565,11 +565,13 @@ class EntriesController extends BaseController
 	private function _populateEntryModel()
 	{
 		$entryId = craft()->request->getPost('entryId');
+		$locale  = craft()->request->getPost('locale');
 
 		if ($entryId)
 		{
 			$criteria = craft()->elements->getCriteria(ElementType::Entry);
 			$criteria->id = $entryId;
+			$criteria->locale = $locale;
 			$criteria->status = null;
 			$entry = $criteria->first();
 
@@ -581,12 +583,16 @@ class EntriesController extends BaseController
 		else
 		{
 			$entry = new EntryModel();
+
+			if ($locale)
+			{
+				$entry->locale = $locale;
+			}
 		}
 
 		// Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
 		$entry->sectionId  = craft()->request->getPost('sectionId', $entry->sectionId);
 		$entry->typeId     = craft()->request->getPost('typeId',    $entry->typeId);
-		$entry->locale     = craft()->request->getPost('locale',    $entry->locale);
 		$entry->authorId   = craft()->request->getPost('author',    ($entry->authorId ? $entry->authorId : craft()->userSession->getUser()->id));
 		$entry->slug       = craft()->request->getPost('slug',      $entry->slug);
 		$entry->postDate   = (($postDate   = craft()->request->getPost('postDate'))   ? DateTime::createFromString($postDate,   craft()->timezone) : $entry->postDate);

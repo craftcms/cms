@@ -143,11 +143,16 @@ class ElementsService extends BaseApplicationComponent
 						{
 							// Separate the content values from the main element attributes
 							$content = new ContentModel();
-							$content->id = $row['contentId'];
 							$content->elementId = $row['id'];
-							$content->locale = $row['locale'];
+							$content->locale = $criteria->locale;
 							$content->title = $row['title'];
 							unset($row['title']);
+
+							// Did we actually get the requested locale back?
+							if ($row['locale'] == $criteria->locale)
+							{
+								$content->id = $row['contentId'];
+							}
 
 							foreach ($fieldHandles as $fieldHandle)
 							{
@@ -234,6 +239,12 @@ class ElementsService extends BaseApplicationComponent
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
 			$criteria = $this->getCriteria('Entry', $criteria);
+		}
+
+		if (!$criteria->locale)
+		{
+			// Default to the current app target locale
+			$criteria->locale = craft()->language;
 		}
 
 		$elementType = $criteria->getElementType();
@@ -631,11 +642,6 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	private function _orderByRequestedLocale(DbCommand $query, $table, $locale)
 	{
-		if (!$locale)
-		{
-			$locale = craft()->language;
-		}
-
 		$localeIds = array_unique(array_merge(
 			array($locale),
 			craft()->i18n->getSiteLocaleIds()
