@@ -3748,9 +3748,10 @@ Garnish.PasswordInput = Garnish.Base.extend({
 	$showPasswordToggle: null,
 	showingPassword: null,
 
-	init: function(passwordInput)
+	init: function(passwordInput, settings)
 	{
 		this.$passwordInput = $(passwordInput);
+		this.settings = $.extend({}, Garnish.PasswordInput.defaults, settings);
 
 		// Is this already a password input?
 		if (this.$passwordInput.data('passwordInput'))
@@ -3836,6 +3837,8 @@ Garnish.PasswordInput = Garnish.Base.extend({
 		{
 			this.showPassword();
 		}
+
+		this.settings.onToggleInput(this.$currentInput);
 	},
 
 	onKeyDown: function(ev)
@@ -3894,6 +3897,9 @@ Garnish.PasswordInput = Garnish.Base.extend({
 	lang: {
 		Show: 'Show',
 		Hide: 'Hide'
+	},
+	defaults: {
+		onToggleInput: $.noop
 	}
 });
 
