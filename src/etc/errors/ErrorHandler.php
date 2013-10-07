@@ -135,7 +135,7 @@ class ErrorHandler extends \CErrorHandler
 
 		if (!headers_sent())
 		{
-			header("HTTP/1.0 {$data['code']} ".$this->getHttpHeader($data['code'], get_class($exception)));
+			HeaderHelper::setHeader("HTTP/1.0 {$data['code']} ".$this->getHttpHeader($data['code'], get_class($exception)));
 		}
 
 		if ($exception instanceof \CHttpException || !YII_DEBUG)
@@ -176,7 +176,7 @@ class ErrorHandler extends \CErrorHandler
 
 		if (!headers_sent())
 		{
-			header("HTTP/1.0 500} ".$this->getHttpHeader(500, get_class($exception)));
+			HeaderHelper::setHeader('HTTP/1.0 500 '.$this->getHttpHeader(500, get_class($exception)));
 		}
 
 		$this->render('error', $data);
