@@ -153,6 +153,10 @@ class ElementsService extends BaseApplicationComponent
 							{
 								$content->id = $row['contentId'];
 							}
+							else
+							{
+								$row['locale'] = $criteria->locale;
+							}
 
 							foreach ($fieldHandles as $fieldHandle)
 							{
