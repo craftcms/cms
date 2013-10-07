@@ -700,7 +700,6 @@ $.extend(Craft, {
 		$('.fieldtoggle', $container).fieldtoggle();
 		$('.lightswitch', $container).lightswitch();
 		$('.nicetext', $container).nicetext();
-		$('input.password', $container).passwordinput();
 		$('.pill', $container).pill();
 		$('.menubtn', $container).menubtn();
 	},
@@ -894,17 +893,6 @@ $.extend($.fn, {
 			if (!$.data(this, 'text'))
 			{
 				new Garnish.NiceText(this);
-			}
-		});
-	},
-
-	passwordinput: function()
-	{
-		return this.each(function()
-		{
-			if (!$.data(this, 'passwordinput'))
-			{
-				new Garnish.PasswordInput(this);
 			}
 		});
 	},
