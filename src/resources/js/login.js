@@ -30,8 +30,16 @@ var LoginForm = Garnish.Base.extend({
 		this.$spinner = $('#spinner');
 		this.$rememberMeCheckbox = $('#rememberMe');
 
-		this.addListener(this.$loginNameInput, 'keypress,keyup,change,blur', 'onInputChange');
-		this.addListener(this.$passwordInput, 'keypress,keyup,change,blur', 'onInputChange');
+		new Garnish.PasswordInput(this.$passwordInput, {
+			onToggleInput: $.proxy(function($newPasswordInput) {
+				this.removeListener(this.$passwordInput, 'textchange');
+				this.$passwordInput = $newPasswordInput;
+				this.addListener(this.$passwordInput, 'textchange', 'onInputChange');
+			}, this)
+		});
+
+		this.addListener(this.$loginNameInput, 'textchange', 'onInputChange');
+		this.addListener(this.$passwordInput, 'textchange', 'onInputChange');
 		this.addListener(this.$forgotPasswordLink, 'click', 'onForgetPassword');
 		this.addListener(this.$form, 'submit', 'onSubmit');
 
