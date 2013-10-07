@@ -753,7 +753,7 @@ class IOHelper
 
 		if (static::fileExists($path) || static::folderExists($path))
 		{
-			$success = chown($path, $owner);
+			$success = @chown($path, $owner);
 
 			if ($success && static::folderExists($path) && $recursive)
 			{
@@ -763,7 +763,7 @@ class IOHelper
 				{
 					$path = static::normalizePathSeparators($path);
 
-					if (!chown($path, $owner))
+					if (!@chown($path, $owner))
 					{
 						$success = false;
 					}
@@ -807,7 +807,7 @@ class IOHelper
 
 		if (static::fileExists($path) || static::folderExists($path))
 		{
-			$success = chgrp($path, $group);
+			$success = @chgrp($path, $group);
 
 			if ($success && static::folderExists($path) && $recursive)
 			{
@@ -817,7 +817,7 @@ class IOHelper
 				{
 					$path = static::normalizePathSeparators($path);
 
-					if (!chgrp($path, $group))
+					if (!@chgrp($path, $group))
 					{
 						$success = false;
 					}
@@ -854,7 +854,7 @@ class IOHelper
 
 		if (static::fileExists($path) || static::folderExists($path))
 		{
-			if (chmod($path, $permissions))
+			if (@chmod($path, $permissions))
 			{
 				return true;
 			}
