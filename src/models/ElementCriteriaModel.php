@@ -31,23 +31,23 @@ class ElementCriteriaModel extends BaseModel
 	protected function defineAttributes()
 	{
 		$attributes = array(
-			'id'            => AttributeType::Number,
-			'ref'           => AttributeType::String,
-			'locale'        => AttributeType::Locale,
-			'uri'           => AttributeType::String,
-			'status'        => array(AttributeType::String, 'default' => BaseElementModel::ENABLED),
 			'archived'      => AttributeType::Bool,
-			'order'         => array(AttributeType::String, 'default' => 'dateCreated desc'),
-			'offset'        => array(AttributeType::Number, 'default' => 0),
-			'limit'         => array(AttributeType::Number, 'default' => 100),
-			'indexBy'       => AttributeType::String,
-			'search'        => AttributeType::String,
+			'childField'    => AttributeType::String,
+			'childOf'       => AttributeType::Mixed,
 			'dateCreated'   => AttributeType::Mixed,
 			'dateUpdated'   => AttributeType::Mixed,
-			'parentOf'      => AttributeType::Mixed,
+			'id'            => AttributeType::Number,
+			'indexBy'       => AttributeType::String,
+			'limit'         => array(AttributeType::Number, 'default' => 100),
+			'locale'        => AttributeType::Locale,
+			'offset'        => array(AttributeType::Number, 'default' => 0),
+			'order'         => array(AttributeType::String, 'default' => 'dateCreated desc'),
 			'parentField'   => AttributeType::String,
-			'childOf'       => AttributeType::Mixed,
-			'childField'    => AttributeType::String,
+			'parentOf'      => AttributeType::Mixed,
+			'ref'           => AttributeType::String,
+			'search'        => AttributeType::String,
+			'status'        => array(AttributeType::String, 'default' => BaseElementModel::ENABLED),
+			'uri'           => AttributeType::String,
 		);
 
 		// Mix in any custom attributes defined by the element type
