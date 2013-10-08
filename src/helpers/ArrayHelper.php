@@ -97,6 +97,10 @@ class ArrayHelper
 		{
 			return $str;
 		}
+		else if ($str instanceof \ArrayObject)
+		{
+			return (array) $str;
+		}
 		else if (empty($str))
 		{
 			return array();
