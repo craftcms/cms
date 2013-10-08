@@ -9,8 +9,9 @@ class ElementCriteriaModel extends BaseModel
 	private $_elementType;
 
 	private $_supportedFieldHandles;
-	private $_idsCache;
-	private $_totalCache;
+
+	private $_cachedIds;
+	private $_cachedTotal;
 
 	/**
 	 * Constructor
@@ -82,8 +83,8 @@ class ElementCriteriaModel extends BaseModel
 	{
 		if (parent::setAttribute($name, $value))
 		{
-			$this->_idsCache = null;
-			$this->_totalCache = null;
+			$this->_cachedIds = null;
+			$this->_cachedTotal = null;
 			return true;
 		}
 		else
@@ -143,12 +144,12 @@ class ElementCriteriaModel extends BaseModel
 	{
 		$this->setAttributes($attributes);
 
-		if (!isset($this->_idsCache))
+		if (!isset($this->_cachedIds))
 		{
-			$this->_idsCache = craft()->elements->findElements($this, true);
+			$this->_cachedIds = craft()->elements->findElements($this, true);
 		}
 
-		return $this->_idsCache;
+		return $this->_cachedIds;
 	}
 
 	/**
@@ -202,11 +203,11 @@ class ElementCriteriaModel extends BaseModel
 	{
 		$this->setAttributes($attributes);
 
-		if (!isset($this->_totalCache))
+		if (!isset($this->_cachedTotal))
 		{
-			$this->_totalCache = craft()->elements->getTotalElements($this);
+			$this->_cachedTotal = craft()->elements->getTotalElements($this);
 		}
 
-		return $this->_totalCache;
+		return $this->_cachedTotal;
 	}
 }
