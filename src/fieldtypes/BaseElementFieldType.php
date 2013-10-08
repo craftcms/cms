@@ -113,7 +113,10 @@ abstract class BaseElementFieldType extends BaseFieldType
 		// or we're loading a draft/version.
 		if (is_array($value))
 		{
-			$elements = craft()->relations->getElementsById($this->elementType, array_filter($value));
+			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria->id = array_filter($value);
+			$criteria->fixedOrder = true;
+			$elements = $criteria->find();
 		}
 		else if ($value === '')
 		{

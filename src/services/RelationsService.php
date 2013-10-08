@@ -33,63 +33,6 @@ class RelationsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets elements by their ID.
-	 *
-	 * @param string $elementTypeClass
-	 * @param array $elementIds
-	 * @return array
-	 */
-	public function getElementsById($elementTypeClass, $elementIds)
-	{
-		if (!$elementIds)
-		{
-			return array();
-		}
-
-		$elementType = craft()->elements->getElementType($elementTypeClass);
-
-		if (!$elementType)
-		{
-			return array();
-		}
-
-		$criteria = craft()->elements->getCriteria($elementTypeClass, array(
-			'id'     => $elementIds,
-			'status' => null
-		));
-
-		$query = craft()->elements->buildElementsQuery($criteria);
-
-		if ($query)
-		{
-			$elements = $this->_getElementsFromQuery($elementType, $query);
-
-			// Put them into the requested order
-			$orderedElements = array();
-			$elementsById = array();
-
-			foreach ($elements as $element)
-			{
-				$elementsById[$element->id] = $element;
-			}
-
-			foreach ($elementIds as $id)
-			{
-				if (isset($elementsById[$id]))
-				{
-					$orderedElements[] = $elementsById[$id];
-				}
-			}
-
-			return $orderedElements;
-		}
-		else
-		{
-			return array();
-		}
-	}
-
-	/**
 	 * Saves the relations elements for an element field.
 	 *
 	 * @param int $fieldId
