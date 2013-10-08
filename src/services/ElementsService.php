@@ -302,6 +302,11 @@ class ElementsService extends BaseApplicationComponent
 		// The rest
 		if ($criteria->id)
 		{
+			if ($criteria->id === false)
+			{
+				return false;
+			}
+
 			$query->andWhere(DbHelper::parseParam('elements.id', $criteria->id, $query->params));
 		}
 
