@@ -642,26 +642,20 @@ class ElementsService extends BaseApplicationComponent
 	 * @access private
 	 * @param DbCommand $query
 	 * @param string $table
-	 * @param string|null $locale
+	 * @param string|null $localeId
 	 */
-	private function _orderByRequestedLocale(DbCommand $query, $table, $locale)
+	private function _orderByRequestedLocale(DbCommand $query, $table, $localeId)
 	{
-		$column = $table.'.locale';
+		$localeIds = craft()->i18n->getSiteLocaleIds();
 
-		$localeIds = array_unique(array_merge(
-			array($locale),
-			craft()->i18n->getSiteLocaleIds()
-		));
+		if (count($localeIds) > 1)
+		{
+			// Move the requested locale to the first position
+			array_unshift($localeIds, $localeId);
+			$localeIds = array_unique($localeIds);
 
-		if (count($localeIds) == 1)
-		{
-			$query->andWhere($column.' = :locale');
-			$query->params[':locale'] = $localeIds[0];
-		}
-		else
-		{
-			$query->andWhere(array('in', $column, $localeIds));
-			$query->order(craft()->db->getSchema()->orderByColumnValues($column, $localeIds));
+			// Order the results by locale
+			$query->order(craft()->db->getSchema()->orderByColumnValues($table.'.locale', $localeIds));
 		}
 	}
 
