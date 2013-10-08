@@ -104,10 +104,6 @@ class ElementsService extends BaseApplicationComponent
 
 				$query->order(implode(', ', $orderColumns));
 			}
-			else if ($subquery->getOrder())
-			{
-				$query->order($subquery->getOrder());
-			}
 
 			if ($criteria->offset)
 			{
@@ -306,6 +302,11 @@ class ElementsService extends BaseApplicationComponent
 		// The rest
 		if ($criteria->id)
 		{
+			if ($criteria->id === false)
+			{
+				return false;
+			}
+
 			$query->andWhere(DbHelper::parseParam('elements.id', $criteria->id, $query->params));
 		}
 
@@ -402,6 +403,9 @@ class ElementsService extends BaseApplicationComponent
 
 			$query->join('relations children', 'children.childId = elements.id');
 			$query->andWhere(DbHelper::parseParam('children.parentId', $parentIds, $query->params));
+
+			// Make it possible to order by the relation sort order
+			$query->addSelect('children.sortOrder');
 		}
 
 		// Field conditions
