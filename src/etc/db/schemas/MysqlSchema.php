@@ -191,6 +191,26 @@ class MysqlSchema extends \CMysqlSchema
 	}
 
 	/**
+	 * Returns the SQL for ordering results by column values.
+	 *
+	 * @param string $column
+	 * @param array $values
+	 * @return string
+	 */
+	public function orderByColumnValues($column, $values)
+	{
+		$sql = 'FIELD('.$this->quoteColumnName($column);
+
+		foreach ($values as $value)
+		{
+			$sql .= ', '.$this->getDbConnection()->quoteValue($value);
+		}
+
+		$sql .= ')';
+		return $sql;
+	}
+
+	/**
 	 * Returns all table names in the database which start with the tablePrefix.
 	 *
 	 * @access protected
