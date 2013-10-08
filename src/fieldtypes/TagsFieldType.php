@@ -30,16 +30,17 @@ class TagsFieldType extends BaseElementFieldType
 	 * Returns the field's input HTML.
 	 *
 	 * @param string $name
-	 * @param mixed  $elements
+	 * @param mixed  $criteria
 	 * @return string
 	 */
-	public function getInputHtml($name, $elements)
+	public function getInputHtml($name, $criteria)
 	{
 		$id = rtrim(preg_replace('/[\[\]]+/', '-', $name), '-');
 
-		if (!($elements instanceof RelationFieldData))
+		if (!($criteria instanceof ElementCriteriaModel))
 		{
-			$elements = new RelationFieldData();
+			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria->id = false;
 		}
 
 		$elementVariable = new ElementTypeVariable($this->getElementType());
@@ -52,7 +53,7 @@ class TagsFieldType extends BaseElementFieldType
 				'elementType' => $elementVariable,
 				'id'          => $id,
 				'name'        => $name,
-				'elements'    => $elements->all,
+				'elements'    => $criteria,
 				'tagSetId'    => $this->_getTagSetId(),
 				'elementId'   => (!empty($this->element->id) ? $this->element->id : null),
 				'hasFields'   => (bool) $tagSet->getFieldLayout()->getFields(),
