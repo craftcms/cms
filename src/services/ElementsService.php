@@ -104,10 +104,6 @@ class ElementsService extends BaseApplicationComponent
 
 				$query->order(implode(', ', $orderColumns));
 			}
-			else if ($subquery->getOrder())
-			{
-				$query->order($subquery->getOrder());
-			}
 
 			if ($criteria->offset)
 			{
