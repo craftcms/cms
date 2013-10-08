@@ -36,6 +36,7 @@ class ElementCriteriaModel extends BaseModel
 			'childOf'       => AttributeType::Mixed,
 			'dateCreated'   => AttributeType::Mixed,
 			'dateUpdated'   => AttributeType::Mixed,
+			'fixedOrder'    => AttributeType::Bool,
 			'id'            => AttributeType::Number,
 			'indexBy'       => AttributeType::String,
 			'limit'         => array(AttributeType::Number, 'default' => 100),

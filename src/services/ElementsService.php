@@ -77,7 +77,18 @@ class ElementsService extends BaseApplicationComponent
 				$fieldHandles[] = $field->handle;
 			}
 
-			if ($criteria->order && $criteria->order != 'score')
+			if ($criteria->fixedOrder)
+			{
+				$ids = ArrayHelper::stringToArray($criteria->id);
+
+				if (!$ids)
+				{
+					return array();
+				}
+
+				$query->order(craft()->db->getSchema()->orderByColumnValues('id', $ids));
+			}
+			else if ($criteria->order && $criteria->order != 'score')
 			{
 				$orderColumns = ArrayHelper::stringToArray($criteria->order);
 
