@@ -97,13 +97,17 @@ class ArrayHelper
 		{
 			return $str;
 		}
+		else if ($str instanceof \ArrayObject)
+		{
+			return (array) $str;
+		}
 		else if (empty($str))
 		{
 			return array();
 		}
 		else if (is_string($str))
 		{
-			return array_filter(array_map('trim', explode(',', $str)));
+			return array_merge(array_filter(array_map('trim', explode(',', $str))));
 		}
 		else
 		{
