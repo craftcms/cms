@@ -343,7 +343,7 @@ class FieldsService extends BaseApplicationComponent
 						else
 						{
 							// Existing field that already had a column defined, just altering it.
-							craft()->db->createCommand()->alterColumn('content', 'field_'.$fieldRecord->oldHandle, $column, $field->handle);
+							craft()->db->createCommand()->alterColumn('content', 'field_'.$fieldRecord->oldHandle, $column, 'field_'.$field->handle);
 						}
 					}
 				}
