@@ -10,6 +10,7 @@ class ElementCriteriaModel extends BaseModel
 
 	private $_supportedFieldHandles;
 
+	private $_cachedElements;
 	private $_cachedIds;
 	private $_cachedTotal;
 
@@ -83,6 +84,7 @@ class ElementCriteriaModel extends BaseModel
 	{
 		if (parent::setAttribute($name, $value))
 		{
+			$this->_cachedElements = null;
 			$this->_cachedIds = null;
 			$this->_cachedTotal = null;
 			return true;
@@ -131,7 +133,13 @@ class ElementCriteriaModel extends BaseModel
 	public function find($attributes = null)
 	{
 		$this->setAttributes($attributes);
-		return craft()->elements->findElements($this);
+
+		if (!isset($this->_cachedElements))
+		{
+			$this->_cachedElements = craft()->elements->findElements($this);
+		}
+
+		return $this->_cachedElements;
 	}
 
 	/**
