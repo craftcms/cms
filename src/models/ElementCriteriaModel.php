@@ -4,13 +4,14 @@ namespace Craft;
 /**
  * Element criteria model class
  */
-class ElementCriteriaModel extends BaseModel
+class ElementCriteriaModel extends BaseModel implements \Countable
 {
 	private $_elementType;
 
 	private $_supportedFieldHandles;
 
 	private $_cachedElements;
+	private $_cachedElementsAtOffsets;
 	private $_cachedIds;
 	private $_cachedTotal;
 
@@ -74,6 +75,109 @@ class ElementCriteriaModel extends BaseModel
 	}
 
 	/**
+	 * Returns an iterator for traversing over the elements.
+	 *
+	 * Required by the IteratorAggregate interface.
+	 *
+	 * @return \ArrayIterator
+	 */
+	public function getIterator()
+	{
+		return new \ArrayIterator($this->find());
+	}
+
+	/**
+	 * Returns whether an element exists at a given offset.
+	 *
+	 * Required by the ArrayAccess interface.
+	 *
+	 * @param mixed $offset
+	 * @return bool
+	 */
+	public function offsetExists($offset)
+	{
+		if (is_numeric($offset))
+		{
+			return ($this->findElementAtOffset($offset) !== null);
+		}
+		else
+		{
+			return parent::offsetExists($offset);
+		}
+	}
+
+	/**
+	 * Returns the element at a given offset.
+	 *
+	 * Required by the ArrayAccess interface.
+	 *
+	 * @param mixed $offset
+	 * @return mixed
+	 */
+	public function offsetGet($offset)
+	{
+		if (is_numeric($offset))
+		{
+			return $this->findElementAtOffset($offset);
+		}
+		else
+		{
+			return parent::offsetGet($offset);
+		}
+	}
+
+	/**
+	 * Sets the element at a given offset.
+	 *
+	 * Required by the ArrayAccess interface.
+	 *
+	 * @param mixed $offset
+	 * @param mixed $item
+	 */
+	public function offsetSet($offset, $item)
+	{
+		if (is_numeric($offset) && $item instanceof BaseElementModel)
+		{
+			$this->_cachedElementsAtOffsets[$offset] = $item;
+		}
+		else
+		{
+			return parent::offsetSet($offset, $item);
+		}
+	}
+
+	/**
+	 * Unsets an element at a given offset.
+	 *
+	 * Required by the ArrayAccess interface.
+	 *
+	 * @param mixed $offset
+	 */
+	public function offsetUnset($offset)
+	{
+		if (is_numeric($offset))
+		{
+			unset($this->_cachedElementsAtOffsets[$offset]);
+		}
+		else
+		{
+			return parent::offsetUnset($offset);
+		}
+	}
+
+	/**
+	 * Returns the total number of elements matched by this criteria.
+	 *
+	 * Required by the Countable interface.
+	 *
+	 * @return int
+	 */
+	public function count()
+	{
+		return $this->total();
+	}
+
+	/**
 	 * Clears the cached values when a new attribute is set.
 	 *
 	 * @param string $name
@@ -85,6 +189,7 @@ class ElementCriteriaModel extends BaseModel
 		if (parent::setAttribute($name, $value))
 		{
 			$this->_cachedElements = null;
+			$this->_cachedElementsAtOffsets = null;
 			$this->_cachedIds = null;
 			$this->_cachedTotal = null;
 			return true;
@@ -137,9 +242,74 @@ class ElementCriteriaModel extends BaseModel
 		if (!isset($this->_cachedElements))
 		{
 			$this->_cachedElements = craft()->elements->findElements($this);
+
+			// Cache 'em
+			$offset = $this->offset;
+			foreach ($this->_cachedElements as $element)
+			{
+				$this->_cachedElementsAtOffsets[$offset] = $element;
+				$offset++;
+			}
 		}
 
 		return $this->_cachedElements;
+	}
+
+	/**
+	 * Returns an element at a specific offset.
+	 *
+	 * @param int $offset
+	 * @return BaseElementModel|null
+	 */
+	public function findElementAtOffset($offset)
+	{
+		if (!isset($this->_cachedElementsAtOffsets) || !array_key_exists($offset, $this->_cachedElementsAtOffsets))
+		{
+			$criteria = new ElementCriteriaModel($this->getAttributes(), $this->_elementType);
+			$criteria->offset = $offset;
+			$criteria->limit = 1;
+			$elements = $criteria->find();
+
+			if ($elements)
+			{
+				$this->_cachedElementsAtOffsets[$offset] = $elements[0];
+			}
+			else
+			{
+				$this->_cachedElementsAtOffsets[$offset] = null;
+			}
+		}
+
+		return $this->_cachedElementsAtOffsets[$offset];
+	}
+
+	/**
+	 * Returns the first element that matches the criteria.
+	 *
+	 * @param array|null $attributes
+	 * @return BaseElementModel|null
+	 */
+	public function first($attributes = null)
+	{
+		return $this->findElementAtOffset(0);
+	}
+
+	/**
+	 * Returns the last element that matches the criteria.
+	 *
+	 * @param array|null $attributes
+	 * @return BaseElementModel|null
+	 */
+	public function last($attributes = null)
+	{
+		$this->setAttributes($attributes);
+
+		$total = $this->total();
+
+		if ($total)
+		{
+			return $this->findElementAtOffset($total-1);
+		}
 	}
 
 	/**
@@ -158,47 +328,6 @@ class ElementCriteriaModel extends BaseModel
 		}
 
 		return $this->_cachedIds;
-	}
-
-	/**
-	 * Returns the first element that matches the criteria.
-	 *
-	 * @param array|null $attributes
-	 * @return BaseElementModel|null
-	 */
-	public function first($attributes = null)
-	{
-		$this->setAttributes($attributes);
-		$this->limit = 1;
-		$elements = $this->find();
-
-		if ($elements)
-		{
-			return $elements[0];
-		}
-	}
-
-	/**
-	 * Returns the last element that matches the criteria.
-	 *
-	 * @param array|null $attributes
-	 * @return BaseElementModel|null
-	 */
-	public function last($attributes = null)
-	{
-		$this->setAttributes($attributes);
-
-		if ($order = $this->order)
-		{
-			// swap asc's and desc's
-			$order = str_ireplace('asc', 'thisisjustatemporarything', $order);
-			$order = str_ireplace('desc', 'asc', $order);
-			$order = str_ireplace('thisisjustatemporarything', 'desc', $order);
-
-			$this->order($order);
-		}
-
-		return $this->first();
 	}
 
 	/**
