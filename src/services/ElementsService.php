@@ -646,6 +646,8 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	private function _orderByRequestedLocale(DbCommand $query, $table, $locale)
 	{
+		$column = $table.'.locale';
+
 		$localeIds = array_unique(array_merge(
 			array($locale),
 			craft()->i18n->getSiteLocaleIds()
@@ -653,24 +655,13 @@ class ElementsService extends BaseApplicationComponent
 
 		if (count($localeIds) == 1)
 		{
-			$query->andWhere($table.'.locale = :locale');
+			$query->andWhere($column.' = :locale');
 			$query->params[':locale'] = $localeIds[0];
 		}
 		else
 		{
-			$quotedLocaleColumn = craft()->db->quoteColumnName($table.'.locale');
-			$quotedLocales = array();
-			$localeOrder = array();
-
-			foreach ($localeIds as $localeId)
-			{
-				$quotedLocale = craft()->db->quoteValue($localeId);
-				$quotedLocales[] = $quotedLocale;
-				$localeOrder[] = "({$quotedLocaleColumn} = {$quotedLocale}) DESC";
-			}
-
-			$query->andWhere("{$quotedLocaleColumn} IN (".implode(', ', $quotedLocales).')');
-			$query->order($localeOrder);
+			$query->andWhere(array('in', $column, $localeIds));
+			$query->order(craft()->db->getSchema()->orderByColumnValues($column, $localeIds));
 		}
 	}
 
