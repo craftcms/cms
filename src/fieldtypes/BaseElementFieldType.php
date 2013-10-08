@@ -137,6 +137,10 @@ abstract class BaseElementFieldType extends BaseFieldType
 		{
 			$criteria->limit = $this->getSettings()->limit;
 		}
+		else
+		{
+			$criteria->limit = null;
+		}
 
 		return $criteria;
 	}
