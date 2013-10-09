@@ -24,9 +24,9 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	}
 
 	/**
-	 * Gets the widget's body HTML.
+	 * Returns the widget's body HTML.
 	 *
-	 * @return string
+	 * @return string|false
 	 */
 	public function getBodyHtml()
 	{
