@@ -33,3 +33,8 @@
 
 	{{ parent() }}
 {% endblock %}
+
+
+{% if sectionHandle is defined %}
+	{% includeJs 'window.defaultSectionHandle = "'~sectionHandle~'";' %}
+{% endif %}

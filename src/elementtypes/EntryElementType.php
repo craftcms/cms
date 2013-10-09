@@ -124,7 +124,7 @@ class EntryElementType extends BaseElementType
 					$sources[$key] = array(
 						'label'        => $section->name,
 						'hasStructure' => ($type == SectionType::Structure),
-						'data'         => array('type' => $type),
+						'data'         => array('type' => $type, 'handle' => $section->handle),
 						'criteria'     => array('sectionId' => $section->id)
 					);
 

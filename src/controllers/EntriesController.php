@@ -126,11 +126,11 @@ class EntriesController extends BaseController
 
 		if ($variables['section']->type == SectionType::Single)
 		{
-			$variables['crumbs'][] = array('label' => 'Singles', 'url' => UrlHelper::getUrl('entries'));
+			$variables['crumbs'][] = array('label' => 'Singles', 'url' => UrlHelper::getUrl('entries/singles'));
 		}
 		else
 		{
-			$variables['crumbs'][] = array('label' => $variables['section']->name, 'url' => UrlHelper::getUrl('entries'));
+			$variables['crumbs'][] = array('label' => $variables['section']->name, 'url' => UrlHelper::getUrl('entries/'.$variables['section']->handle));
 
 			if ($variables['section']->type == SectionType::Structure)
 			{
