@@ -87,6 +87,16 @@ class AppVariable
 	}
 
 	/**
+	 * Returns whether the update info is cached.
+	 *
+	 * @return bool
+	 */
+	public function isUpdateInfoCached()
+	{
+		return craft()->updates->isUpdateInfoCached();
+	}
+
+	/**
 	 * Returns how many updates are available.
 	 *
 	 * @return int

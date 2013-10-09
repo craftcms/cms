@@ -16,6 +16,20 @@ class AppController extends BaseController
 	}
 
 	/**
+	 * Returns update info.
+	 */
+	public function actionCheckForUpdates()
+	{
+		$forceRefresh = (bool) craft()->request->getPost('forceRefresh');
+		craft()->updates->getUpdates($forceRefresh);
+
+		$this->returnJson(array(
+			'total'    => craft()->updates->getTotalAvailableUpdates(),
+			'critical' => craft()->updates->isCriticalUpdateAvailable()
+		));
+	}
+
+	/**
 	 * Loads any CP alerts.
 	 */
 	public function actionGetCpAlerts()
