@@ -13,9 +13,15 @@ class m131022_000002_schema_version extends BaseMigration
 	 */
 	public function safeUp()
 	{
-		$versionColumn = array('column' => ColumnType::Varchar, 'length' => 15, 'null' => false);
-		$this->alterColumn('info', 'version', $versionColumn);
-		$this->addColumnAfter('info', 'schemaVersion', $versionColumn, 'build');
+		$infoTable = $this->dbConnection->schema->getTable('{{info}}');
+
+		if ($infoTable->getColumn('schemaVersion') === null)
+		{
+			$versionColumn = array('column' => ColumnType::Varchar, 'length' => 15, 'null' => false);
+			$this->alterColumn('info', 'version', $versionColumn);
+			$this->addColumnAfter('info', 'schemaVersion', $versionColumn, 'build');
+		}
+
 		return true;
 	}
 }
