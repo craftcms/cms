@@ -17,18 +17,32 @@ class UpdatesWidget extends BaseWidget
 	}
 
 	/**
-	 * Gets the widget's body HTML.
+	 * Returns the widget's body HTML.
 	 *
-	 * @return string
+	 * @return string|false
 	 */
 	public function getBodyHtml()
 	{
+		// Make sure the user actually has permission to perform updates
+		if (!craft()->userSession->checkPermission('performUpdates'))
+		{
+			return false;
+		}
+
 		$cached = craft()->updates->isUpdateInfoCached();
 
 		if (!$cached || !craft()->updates->getTotalAvailableUpdates())
 		{
 			craft()->templates->includeJsResource('js/UpdatesWidget.js');
 			craft()->templates->includeJs('new Craft.UpdatesWidget('.$this->model->id.', '.($cached ? 'true' : 'false').');');
+
+			craft()->templates->includeTranslations(
+				'One update available!',
+				'{total} updates available!',
+				'Go to Updates',
+				'Congrats! You’re up-to-date.',
+				'Check again'
+			);
 		}
 
 		if ($cached)

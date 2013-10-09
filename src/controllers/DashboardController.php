@@ -214,17 +214,4 @@ class DashboardController extends BaseController
 			));
 		}
 	}
-
-	/**
-	 * Returns the update widget HTML.
-	 */
-	public function actionCheckForUpdates()
-	{
-		$forceRefresh = (bool) craft()->request->getPost('forceRefresh');
-		craft()->updates->getUpdates($forceRefresh);
-
-		$this->renderTemplate('_components/widgets/Updates/body', array(
-			'total' => craft()->updates->getTotalAvailableUpdates()
-		));
-	}
 }

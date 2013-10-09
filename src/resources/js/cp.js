@@ -27,6 +27,9 @@ var CP = Garnish.Base.extend({
 	$content: null,
 	$collapsibleTables: null,
 
+	waitingOnAjax: false,
+	ajaxQueue: null,
+
 	navItems: null,
 	totalNavItems: null,
 	visibleNavItems: null,
@@ -55,6 +58,8 @@ var CP = Garnish.Base.extend({
 		this.$sidebar = $('#sidebar');
 		this.$content = $('#content');
 		this.$collapsibleTables = this.$content.find('table.collapsible');
+
+		this.ajaxQueue = [];
 
 		// Set the max sidebar height
 		this.setMaxSidebarHeight();
@@ -618,13 +623,50 @@ var CP = Garnish.Base.extend({
 		}
 	},
 
+	postActionRequest: function(action, data, callback, options)
+	{
+		this.ajaxQueue.push({
+			action: action,
+			data: data,
+			callback: callback,
+			options: options
+		});
+
+		if (!this.waitingOnAjax)
+		{
+			this.postNextActionRequest();
+		}
+	},
+
+	postNextActionRequest: function()
+	{
+		this.waitingOnAjax = true;
+
+		var args = this.ajaxQueue.shift();
+
+		Craft.postActionRequest(args.action, args.data, $.proxy(function(data, textStatus, jqXHR)
+		{
+			args.callback(data, textStatus, jqXHR);
+
+			if (this.ajaxQueue.length)
+			{
+				this.postNextActionRequest();
+			}
+			else
+			{
+				this.waitingOnAjax = false;
+			}
+
+		}, this), args.options);
+	},
+
 	fetchAlerts: function()
 	{
 		var data = {
 			path: Craft.path
 		};
 
-		Craft.postActionRequest('app/getCpAlerts', data, $.proxy(this, 'displayAlerts'));
+		this.postActionRequest('app/getCpAlerts', data, $.proxy(this, 'displayAlerts'));
 	},
 
 	displayAlerts: function(alerts)
@@ -715,6 +757,40 @@ var CP = Garnish.Base.extend({
 
 			}, this));
 		}
+	},
+
+	checkForUpdates: function()
+	{
+		this.postActionRequest('app/checkForUpdates', {}, $.proxy(this, 'displayUpdateInfo'));
+	},
+
+	displayUpdateInfo: function(info)
+	{
+		if (info.total)
+		{
+			if (info.total == 1)
+			{
+				var updateText = Craft.t('1 update available');
+			}
+			else
+			{
+				var updateText = Craft.t('{num} updates available', { num: info.total });
+			}
+
+			// Header badge
+			$('<li class="updates'+(info.critical ? ' critical' : '')+'">' +
+				'<a data-icon="newstamp" href="'+Craft.getUrl('updates')+'" title="'+updateText+'">' +
+					'<span>'+info.total+'</span>' +
+				'</a>' +
+			'</li>').prependTo($('#header-actions'));
+
+			// Footer link
+			$('#footer-updates').text(updateText);
+		}
+
+		this.trigger('checkForUpdates', {
+			updateInfo: info
+		});
 	}
 },
 {
