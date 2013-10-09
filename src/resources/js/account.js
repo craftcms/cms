@@ -26,9 +26,15 @@ var AccountSettingForm = Garnish.Base.extend({
 				$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttons),
 				$submitBtn = $('<input type="submit" class="btn submit" value="'+Craft.t('Continue')+'" />').appendTo($buttons);
 
-			this.$currentPasswordInput = $('<input type="password" class="text password fullwidth"/>').appendTo($passwordWrapper).passwordinput().focus();
+			this.$currentPasswordInput = $('<input type="password" class="text password fullwidth"/>').appendTo($passwordWrapper);
 			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttons);
 			this.modal = new Garnish.Modal($form);
+
+			new Garnish.PasswordInput(this.$currentPasswordInput, {
+				onToggleInput: $.proxy(function($newPasswordInput) {
+					this.$currentPasswordInput = $newPasswordInput;
+				}, this)
+			});
 
 			this.addListener($cancelBtn, 'click', function() {
 				this.modal.hide();
@@ -44,7 +50,9 @@ var AccountSettingForm = Garnish.Base.extend({
 		// Auto-focus the password input
 		if (!Garnish.isMobileBrowser(true))
 		{
-			this.$currentPasswordInput.focus();
+			setTimeout($.proxy(function() {
+				this.$currentPasswordInput.focus();
+			}, this), 100);
 		}
 	},
 
