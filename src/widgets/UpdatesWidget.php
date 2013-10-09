@@ -23,16 +23,16 @@ class UpdatesWidget extends BaseWidget
 	}
 
 	/**
-	 * Gets the widget's body HTML.
+	 * Returns the widget's body HTML.
 	 *
-	 * @return string
+	 * @return string|false
 	 */
 	public function getBodyHtml()
 	{
-		// Todo: Remove for Craft 1.3 since this widget won't show up to begin with.
+		// Make sure the user actually has permission to perform updates
 		if (!craft()->userSession->checkPermission('performUpdates'))
 		{
-			return '<p>Sorry, you’re not allowed to perform updates.</p>';
+			return false;
 		}
 
 		$cached = craft()->updates->isUpdateInfoCached();
