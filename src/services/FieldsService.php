@@ -336,7 +336,7 @@ class FieldsService extends BaseApplicationComponent
 					else
 					{
 						// Existing field going from a field that did not define any content attributes to one that does.
-						if (!craft()->db->schema->columnExists('content', 'field_'.$fieldRecord->oldHandle))
+						if (!craft()->db->columnExists('content', 'field_'.$fieldRecord->oldHandle))
 						{
 							craft()->db->createCommand()->addColumn('content', 'field_'.$field->handle, $column);
 						}
@@ -352,7 +352,7 @@ class FieldsService extends BaseApplicationComponent
 					// Did the old field have a column we need to remove?
 					if (!$isNewField)
 					{
-						if ($fieldRecord->oldHandle && craft()->db->schema->columnExists('content', 'field_'.$fieldRecord->oldHandle))
+						if ($fieldRecord->oldHandle && craft()->db->columnExists('content', 'field_'.$fieldRecord->oldHandle))
 						{
 							craft()->db->createCommand()->dropColumn('content', 'field_'.$fieldRecord->oldHandle);
 						}
@@ -420,7 +420,7 @@ class FieldsService extends BaseApplicationComponent
 	public function deleteField(FieldModel $field)
 	{
 		// De we need to delete the content column?
-		if (craft()->db->schema->columnExists('content', 'field_'.$field->handle))
+		if (craft()->db->columnExists('content', 'field_'.$field->handle))
 		{
 			craft()->db->createCommand()->dropColumn('content', 'field_'.$field->handle);
 		}
