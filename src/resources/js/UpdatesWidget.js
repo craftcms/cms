@@ -15,16 +15,31 @@ Craft.UpdatesWidget = Garnish.Base.extend({
 
 		if (!cached)
 		{
-			this.checkForUpdates();
+			this.lookLikeWereChecking();
+
+			Craft.cp.on('checkForUpdates', $.proxy(function(ev) {
+				this.showUpdateInfo(ev.updateInfo);
+			}, this))
 		}
 	},
 
 	initBtn: function()
 	{
 		this.$btn = this.$body.find('.btn:first');
-		this.addListener(this.$btn, 'click', function() {
-			this.checkForUpdates(true);
-		});
+		this.addListener(this.$btn, 'click', $.proxy(this, 'checkForUpdates'));
+	},
+
+	lookLikeWereChecking: function()
+	{
+		this.checking = true;
+		this.$widget.addClass('loading');
+		this.$btn.addClass('disabled');
+	},
+
+	dontLookLikeWereChecking: function()
+	{
+		this.checking = false;
+		this.$widget.removeClass('loading');
 	},
 
 	checkForUpdates: function(forceRefresh)
@@ -34,32 +49,46 @@ Craft.UpdatesWidget = Garnish.Base.extend({
 			return;
 		}
 
-		this.checking = true;
-		this.$widget.addClass('loading');
-		this.$btn.addClass('disabled');
+		this.lookLikeWereChecking();
 
 		var data = {
-			forceRefresh: forceRefresh
+			forceRefresh: true
 		};
 
-		Craft.postActionRequest('dashboard/checkForUpdates', data, $.proxy(function(response, textStatus) {
+		Craft.postActionRequest('app/checkForUpdates', data, $.proxy(this, 'showUpdateInfo'));
+	},
 
-			this.checking = false;
-			this.$widget.removeClass('loading');
+	showUpdateInfo: function(info)
+	{
+		this.dontLookLikeWereChecking();
 
-			if (textStatus == 'success')
+		if (info.total)
+		{
+			if (info.total == 1)
 			{
-				this.$body.html(response);
-				this.initBtn();
+				var updateText = Craft.t('One update available!');
 			}
 			else
 			{
-				this.$body.find('p:first').text('An unknown error occurred.');
+				var updateText = Craft.t('{total} updates available!', { total: info.total });
 			}
 
-		}, this), {
-			complete: $.noop
-		});
+			this.$body.html(
+				'<p class="centeralign">' +
+					updateText +
+					' <a class="go" href="'+Craft.getUrl('updates')+'">'+Craft.t('Go to Updates')+'</a>' +
+				'</p>'
+			);
+		}
+		else
+		{
+			this.$body.html(
+				'<p class="centeralign">'+Craft.t('Congrats! You’re up-to-date.')+'</p>' +
+				'<p class="centeralign"><a class="btn" data-icon="refresh">'+Craft.t('Check again')+'</a></p>'
+			);
+
+			this.initBtn();
+		}
 	}
 });
 

@@ -2,6 +2,8 @@
 
 {% includeCssResource "css/cp.css" first %}
 {%- includeTranslations
+	"1 update available",
+	"{num} updates available",
 	"More",
 	"Attempted to get the height of a modal whose container has not been set.",
 	"Attempted to get the width of a modal whose container has not been set.",
@@ -62,28 +64,29 @@
 			</ul>
 		{% endif %}
 	{% else %}
-		{% set js %}
-			Craft.cp.fetchAlerts();
-		{% endset %}
-		{% includeJs js %}
+		{% includeJs 'Craft.cp.fetchAlerts();' %}
 	{% endif %}
 
 	<header id="header">
 		<div class="centered">
-			<ul class="right">
+			<ul id="header-actions" class="right">
 				{% if currentUser.can('performUpdates') %}
-					{% set totalUpdates = craft.app.getTotalAvailableUpdates() %}
-					{% if totalUpdates %}
-						{% if totalUpdates == 1 %}
-							{% set updateText = "1 update available"|t %}
-						{% else %}
-							{% set updateText = "{num} updates available"|t({ num: totalUpdates }) %}
+					{% if craft.app.isUpdateInfoCached() %}
+						{% set totalUpdates = craft.app.getTotalAvailableUpdates() %}
+						{% if totalUpdates %}
+							{% if totalUpdates == 1 %}
+								{% set updateText = "1 update available"|t %}
+							{% else %}
+								{% set updateText = "{num} updates available"|t({ num: totalUpdates }) %}
+							{% endif %}
+							<li class="updates{% if craft.app.isCriticalUpdateAvailable() %} critical{% endif %}">
+								<a data-icon="newstamp" href="{{ url('updates') }}" title="{{ updateText }}">
+									<span>{{ totalUpdates }}</span>
+								</a>
+							</li>
 						{% endif %}
-						<li class="updates{% if craft.app.isCriticalUpdateAvailable() %} critical{% endif %}">
-							<a data-icon="newstamp" href="{{ url('updates') }}" title="{{ updateText }}">
-								<span>{{ totalUpdates }}</span>
-							</a>
-						</li>
+					{% else %}
+						{% includeJs 'Craft.cp.checkForUpdates();' %}
 					{% endif %}
 				{% endif %}
 
@@ -205,7 +208,7 @@
 		<li>@@@appName@@@ {{ craft.app.version }}.{{ craft.app.build }}</li>
 		<li>{{ "Released on"|t }} {{ craft.app.releaseDate.localeDate }}</li>
 		{% if currentUser.can('performUpdates') %}
-			<li><a href="{{ url('updates') }}">{{ totalUpdates ? updateText : "Check for updates"|t }}</a></li>
+			<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.isUpdateInfoCached() and totalUpdates ? updateText : "Check for updates"|t }}</a></li>
 		{% endif %}
 		<li>{{ "Copyright"|t }} {{ now.year}} Pixel &amp; Tonic, Inc. {{ "All rights reserved."|t }}</li>
 	</ul>
