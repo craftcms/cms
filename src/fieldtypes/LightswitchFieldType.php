@@ -35,7 +35,7 @@ class LightswitchFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		return craft()->templates->render('_includes/forms/Lightswitch', array(
+		return craft()->templates->render('_includes/forms/lightswitch', array(
 			'name'  => $name,
 			'on'    => (bool) $value,
 		));
