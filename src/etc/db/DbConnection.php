@@ -118,13 +118,20 @@ class DbConnection extends \CDbConnection
 	/**
 	 * Checks if a column exists in a table.
 	 *
-	 * @param $table
-	 * @param $column
+	 * @param string $table
+	 * @param string $column
+	 * @param bool $refresh
 	 * @return bool
 	 */
-	public function columnExists($table, $column)
+	public function columnExists($table, $column, $refresh = null)
 	{
-		$table = $this->dbConnection->schema->getTable('{{'.$table.'}}');
+		// Default to refreshing the tables if Craft isn't installed yet
+		if ($refresh || ($refresh === null && !craft()->isInstalled()))
+		{
+			$this->getSchema()->refresh();
+		}
+
+		$table = $this->getSchema()->getTable('{{'.$table.'}}');
 
 		if ($table)
 		{
