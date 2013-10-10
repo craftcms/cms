@@ -790,7 +790,7 @@ class HttpRequestService extends \CHttpRequest
 			}
 			else if (in_array($this->_path, array($frontEndSetPasswordPath, $cpSetPasswordPath)))
 			{
-				$this->_actionSegments = array('users', 'setPassword');
+				$this->_actionSegments = array('users', 'setpassword');
 			}
 			else if (in_array($this->_path, array($frontEndLogoutPath, $cpLogoutPath)))
 			{
