@@ -8,7 +8,7 @@ class HandleValidator extends \CValidator
 {
 	public $reservedWords = array();
 
-	protected static $baseReservedWords = array('id', 'dateCreated', 'dateUpdated', 'uid', 'this', 'true', 'false', 'y', 'n', 'yes', 'no', 'classHandle', 'handle', 'name', 'attributeNames', 'attributes', 'attribute', 'rules', 'attributeLabels', 'fields', 'content', 'rawContent');
+	protected static $baseReservedWords = array('id', 'dateCreated', 'dateUpdated', 'uid', 'this', 'true', 'false', 'y', 'n', 'yes', 'no', 'classHandle', 'handle', 'name', 'attributeNames', 'attributes', 'attribute', 'rules', 'attributeLabels', 'fields', 'content', 'rawContent', 'link');
 
 	/**
 	 * @param $object
