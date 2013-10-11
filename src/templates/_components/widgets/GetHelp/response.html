@@ -1,0 +1,8 @@
+<script type="text/javascript">
+	var widget = parent.Craft.widgets[{{ widgetId }}];
+	var response = {
+		success: {{ success == true ? 1 : 0 }},
+		errors: {{ errors|raw }}
+	};
+	widget.parseResponse(response);
+</script>

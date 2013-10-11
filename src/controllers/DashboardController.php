@@ -102,19 +102,23 @@ class DashboardController extends BaseController
 	public function actionSendSupportRequest()
 	{
 		$this->requirePostRequest();
-		$this->requireAjaxRequest();
 
 		craft()->config->maxPowerCaptain();
+
+		$success = false;
+		$errors = array();
+		$widgetId = craft()->request->getPost('widgetId');
 
 		$getHelpModel = new GetHelpModel();
 		$getHelpModel->fromEmail = craft()->request->getPost('fromEmail');
 		$getHelpModel->message = craft()->request->getPost('message');
 		$getHelpModel->attachDebugFiles = (bool)craft()->request->getPost('attachDebugFiles');
 
-		if (craft()->request->getPost('attachAdditionalFile'))
+		if ($getHelpModel->attachDebugFiles)
 		{
-			$getHelpModel->attachment = \CUploadedFile::getInstance($getHelpModel, 'attachAdditionalFile');
+			$getHelpModel->attachment = \CUploadedFile::getInstanceByName('attachAdditionalFile');
 		}
+
 
 		if ($getHelpModel->validate())
 		{
@@ -204,19 +208,25 @@ class DashboardController extends BaseController
 					}
 				}
 
-				$this->returnJson(array('success' => true));
+				$success = true;
 			}
 			else
 			{
 				$hsErrors = array_filter(preg_split("/(\r\n|\n|\r)/", $hsapi->errors));
-				$this->returnJson(array('errors' => array('Support' => $hsErrors)));
+				$errors = array('Support' => $hsErrors);
 			}
 		}
 		else
 		{
-			$this->returnJson(array(
-				'errors' => $getHelpModel->getErrors(),
-			));
+			$errors = array('errors' => $getHelpModel->getErrors());
 		}
+
+		$this->renderTemplate('_components/widgets/GetHelp/response',
+			array(
+				'success' => $success,
+				'errors' => JsonHelper::encode($errors),
+				'widgetId' => $widgetId
+			)
+		);
 	}
 }
