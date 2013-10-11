@@ -30,6 +30,7 @@ config.buttonsCustom.image = {
 				if (typeof this.assetSelectionModal == 'undefined')
 				{
 					this.assetSelectionModal = Craft.createElementSelectorModal('Asset', {
+						storageKey: 'RichTextFieldType.ChooseImage',
 						multiSelect: true,
 						criteria: { kind: 'image' },
 						onSelect: $.proxy(function(assets) {
@@ -74,6 +75,7 @@ config.buttonsCustom.link = {
 				if (typeof this.entrySelectionModal == 'undefined')
 				{
 					this.entrySelectionModal = Craft.createElementSelectorModal('Entry', {
+						storageKey: 'RichTextFieldType.LinkToEntry',
 						sources: {{sections|raw}},
 						onSelect: function(entries) {
 							if (entries.length)
@@ -109,6 +111,7 @@ config.buttonsCustom.link = {
 				if (typeof this.assetLinkSelectionModal == 'undefined')
 				{
 					this.assetLinkSelectionModal = Craft.createElementSelectorModal('Asset', {
+						storageKey: 'RichTextFieldType.LinkToAsset',
 						onSelect: function(assets) {
 							if (assets.length)
 							{
