@@ -178,5 +178,14 @@ test( 'Craft.getUrl()', function() {
 	equal(Craft.getActionUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/?p=admin/actions/about&foo=1&bar=1');
 	equal(Craft.getActionUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/?p=admin/actions/about&foo=1#bar');
 
+	Craft.baseUrl = "http://craft.dev/admin";
+	Craft.baseCpUrl = "http://craft.dev/admin";
+	Craft.baseSiteUrl = "http://craft.dev/";
+	Craft.actionUrl = "http://craft.dev/index.php?p=admin/actions";
+	Craft.resourceUrl = "http://craft.dev/admin/resources";
+	Craft.omitScriptNameInUrls = true;
+	Craft.usePathInfo = false;
+
+	equal(Craft.getActionUrl('update/prepare'), 'http://craft.dev/index.php?p=admin/actions/update/prepare');
 
 });

@@ -613,11 +613,13 @@ Garnish.Base = Base.extend({
 
 	settings: null,
 
+	_eventHandlers: null,
 	_namespace: null,
 	_$listeners: null,
 
 	constructor: function()
 	{
+		this._eventHandlers = [];
 		this._namespace = '.Garnish'+Math.floor(Math.random()*1000000000);
 		this._$listeners = $();
 		this.init.apply(this, arguments);
@@ -629,6 +631,91 @@ Garnish.Base = Base.extend({
 	{
 		var baseSettings = (typeof this.settings == 'undefined' ? {} : this.settings);
 		this.settings = $.extend(baseSettings, defaults, settings);
+	},
+
+	on: function(events, data, handler)
+	{
+		if (typeof data == 'function')
+		{
+			handler = data;
+			data = {};
+		}
+
+		var events = this._normalizeEvents(events);
+
+		for (var i = 0; i < events.length; i++)
+		{
+			var ev = events[i];
+
+			this._eventHandlers.push({
+				type: ev[0],
+				namepsace: ev[1],
+				data: data,
+				handler: handler
+			});
+		}
+	},
+
+	off: function(events)
+	{
+		var events = this._normalizeEvents(events);
+
+		for (var i = 0; i < events; i++)
+		{
+			var ev = events[i];
+
+			for (var j = this._eventHandlers.length - 1; j >= 0; i--)
+			{
+				var handler = this._eventHandlers[j];
+
+				if (handler.type == ev[0] && (!ev[1] || handler.namespace == ev[1]))
+				{
+					this._eventHandlers.splice(j, 1);
+				}
+			}
+		}
+	},
+
+	trigger: function(type, data)
+	{
+		var ev = {
+			type: type,
+			target: this
+		};
+
+		if (typeof params == 'undefined')
+		{
+			params = [];
+		}
+
+		for (var i = 0; i < this._eventHandlers.length; i++)
+		{
+			var handler = this._eventHandlers[i];
+
+			if (handler.type == type)
+			{
+				var _ev = $.extend({ data: handler.data }, data, ev);
+				handler.handler(_ev)
+			}
+		}
+	},
+
+	_normalizeEvents: function(events)
+	{
+		if (typeof events == 'string')
+		{
+			events = events.split(' ');
+		}
+
+		for (var i = 0; i < events.length; i++)
+		{
+			if (typeof events[i] == 'string')
+			{
+				events[i] = events[i].split('.');
+			}
+		}
+
+		return events;
 	},
 
 	_formatEvents: function(events)
@@ -3748,9 +3835,10 @@ Garnish.PasswordInput = Garnish.Base.extend({
 	$showPasswordToggle: null,
 	showingPassword: null,
 
-	init: function(passwordInput)
+	init: function(passwordInput, settings)
 	{
 		this.$passwordInput = $(passwordInput);
+		this.settings = $.extend({}, Garnish.PasswordInput.defaults, settings);
 
 		// Is this already a password input?
 		if (this.$passwordInput.data('passwordInput'))
@@ -3836,6 +3924,8 @@ Garnish.PasswordInput = Garnish.Base.extend({
 		{
 			this.showPassword();
 		}
+
+		this.settings.onToggleInput(this.$currentInput);
 	},
 
 	onKeyDown: function(ev)
@@ -3894,6 +3984,9 @@ Garnish.PasswordInput = Garnish.Base.extend({
 	lang: {
 		Show: 'Show',
 		Hide: 'Hide'
+	},
+	defaults: {
+		onToggleInput: $.noop
 	}
 });
 

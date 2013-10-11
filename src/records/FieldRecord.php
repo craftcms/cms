@@ -11,6 +11,7 @@ class FieldRecord extends BaseRecord
 		'archived',
 		'author',
 		'authorId',
+		'children',
 		'dateCreated',
 		'dateUpdated',
 		'enabled',
@@ -21,7 +22,9 @@ class FieldRecord extends BaseRecord
 		'img',
 		'locale',
 		'name',
+		'parents',
 		'postDate',
+		'siblings',
 		'type',
 		'uid',
 		'uri',
@@ -44,9 +47,10 @@ class FieldRecord extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
+		// Field handles must be <= 58 chars so that with "field_" prepended, they're <= 64 chars (MySQL's column name limit).
 		return array(
 			'name'         => array(AttributeType::Name, 'required' => true),
-			'handle'       => array(AttributeType::Handle, 'maxLength' => 64, 'required' => true, 'reservedWords' => $this->reservedHandleWords),
+			'handle'       => array(AttributeType::Handle, 'maxLength' => 58, 'required' => true, 'reservedWords' => $this->reservedHandleWords),
 			'instructions' => array(AttributeType::String, 'column' => ColumnType::Text),
 			'translatable' => AttributeType::Bool,
 			'type'         => array(AttributeType::ClassName, 'required' => true),

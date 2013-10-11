@@ -69,13 +69,40 @@ class ElementsService extends BaseApplicationComponent
 
 			$query->params = $subquery->params;
 
-			if ($criteria->order && $criteria->order != 'score')
+			// Get a list of all the field handles we might be dealing with
+			$fieldHandles = array();
+
+			foreach (craft()->fields->getFieldsWithContent() as $field)
 			{
-				$query->order($criteria->order);
+				$fieldHandles[] = $field->handle;
 			}
-			else if ($subquery->getOrder())
+
+			if ($criteria->fixedOrder)
 			{
-				$query->order($subquery->getOrder());
+				$ids = ArrayHelper::stringToArray($criteria->id);
+
+				if (!$ids)
+				{
+					return array();
+				}
+
+				$query->order(craft()->db->getSchema()->orderByColumnValues('id', $ids));
+			}
+			else if ($criteria->order && $criteria->order != 'score')
+			{
+				$orderColumns = ArrayHelper::stringToArray($criteria->order);
+
+				if ($fieldHandles)
+				{
+					// Add the "field_" prefix to any custom fields we're ordering by
+					$fieldColumnRegex = '/^(?:'.implode('|', $fieldHandles).')\b/';
+					foreach ($orderColumns as $i => $orderColumn)
+					{
+						$orderColumns[$i] = preg_replace($fieldColumnRegex, 'field_$0', $orderColumn);
+					}
+				}
+
+				$query->order(implode(', ', $orderColumns));
 			}
 
 			if ($criteria->offset)
@@ -119,14 +146,41 @@ class ElementsService extends BaseApplicationComponent
 
 					foreach ($result as $row)
 					{
-						// The locale column might be null since the element_i18n table was left-joined into the query,
-						// In that case it should be removed from the $row array so that the default value can be used.
-						if (!$row['locale'])
+						if ($elementType->hasContent())
 						{
-							unset($row['locale']);
+							// Separate the content values from the main element attributes
+							$content = new ContentModel();
+							$content->elementId = $row['id'];
+							$content->locale = $criteria->locale;
+							$content->title = $row['title'];
+							unset($row['title']);
+
+							// Did we actually get the requested locale back?
+							if ($row['locale'] == $criteria->locale)
+							{
+								$content->id = $row['contentId'];
+							}
+							else
+							{
+								$row['locale'] = $criteria->locale;
+							}
+
+							foreach ($fieldHandles as $fieldHandle)
+							{
+								if (isset($row['field_'.$fieldHandle]))
+								{
+									$content->$fieldHandle = $row['field_'.$fieldHandle];
+									unset($row['field_'.$fieldHandle]);
+								}
+							}
 						}
 
 						$element = $elementType->populateElementModel($row);
+
+						if ($elementType->hasContent())
+						{
+							$element->setContent($content);
+						}
 
 						if ($indexBy)
 						{
@@ -198,66 +252,61 @@ class ElementsService extends BaseApplicationComponent
 			$criteria = $this->getCriteria('Entry', $criteria);
 		}
 
+		if (!$criteria->locale)
+		{
+			// Default to the current app target locale
+			$criteria->locale = craft()->language;
+		}
+
 		$elementType = $criteria->getElementType();
 
 		$query = craft()->db->createCommand()
-			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.locale, elements_i18n.uri')
+			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated')
 			->from('elements elements');
 
-		if ($elementType->hasTitles() && $criteria)
+		if ($elementType->hasContent())
 		{
-			$query->addSelect('content.title');
-			$query->join('content content', 'content.elementId = elements.id');
-		}
+			$contentCols = 'content.id AS contentId, content.locale, content.title';
 
-		$query->leftJoin('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
-
-		if ($elementType->isTranslatable())
-		{
-			// Locale conditions
-			if (!$criteria->locale)
+			foreach (craft()->fields->getFieldsWithContent() as $field)
 			{
-				$criteria->locale = craft()->language;
+				$contentCols .= ', content.field_'.$field->handle;
 			}
 
-			$localeIds = array_unique(array_merge(
-				array($criteria->locale),
-				craft()->i18n->getSiteLocaleIds()
-			));
+			$query->addSelect($contentCols);
+			$query->join('content content', 'content.elementId = elements.id');
+			$this->_orderByRequestedLocale($query, 'content', $criteria->locale);
+		}
 
-			$quotedLocaleColumn = craft()->db->quoteColumnName('elements_i18n.locale');
+		if ($elementType->isLocalized())
+		{
+			$query->addSelect('elements_i18n.uri');
+			$query->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
 
-			if (count($localeIds) == 1)
+			if (!$elementType->hasContent())
 			{
-				$query->andWhere('elements_i18n.locale = :locale');
-				$query->params[':locale'] = $localeIds[0];
+				$query->addSelect('elements_i18n.locale');
+				$this->_orderByRequestedLocale($query, 'elements_i18n', $criteria->locale);
 			}
 			else
 			{
-				$quotedLocales = array();
-				$localeOrder = array();
+				$query->andWhere('elements_i18n.locale = content.locale');
+			}
 
-				foreach ($localeIds as $localeId)
-				{
-					$quotedLocale = craft()->db->quoteValue($localeId);
-					$quotedLocales[] = $quotedLocale;
-					$localeOrder[] = "({$quotedLocaleColumn} = {$quotedLocale}) DESC";
-				}
-
-				$query->andWhere("{$quotedLocaleColumn} IN (".implode(', ', $quotedLocales).')');
-				$query->order($localeOrder);
+			if ($criteria->uri !== null)
+			{
+				$query->andWhere(DbHelper::parseParam('elements_i18n.uri', $criteria->uri, $query->params));
 			}
 		}
 
-		// The rest
+		if ($criteria->id === false)
+		{
+			return false;
+		}
+
 		if ($criteria->id)
 		{
 			$query->andWhere(DbHelper::parseParam('elements.id', $criteria->id, $query->params));
-		}
-
-		if ($criteria->uri !== null)
-		{
-			$query->andWhere(DbHelper::parseParam('elements_i18n.uri', $criteria->uri, $query->params));
 		}
 
 		if ($criteria->archived)
@@ -326,12 +375,12 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($criteria->dateCreated)
 		{
-			$query->andWhere(DbHelper::parseDateParam('elements.dateCreated', '=', $criteria->dateCreated, $query->params));
+			$query->andWhere(DbHelper::parseDateParam('elements.dateCreated', $criteria->dateCreated, $query->params));
 		}
 
 		if ($criteria->dateUpdated)
 		{
-			$query->andWhere(DbHelper::parseDateParam('elements.dateUpdated', '=', $criteria->dateUpdated, $query->params));
+			$query->andWhere(DbHelper::parseDateParam('elements.dateUpdated', $criteria->dateUpdated, $query->params));
 		}
 
 		if ($criteria->parentOf)
@@ -353,16 +402,33 @@ class ElementsService extends BaseApplicationComponent
 
 			$query->join('relations children', 'children.childId = elements.id');
 			$query->andWhere(DbHelper::parseParam('children.parentId', $parentIds, $query->params));
+
+			// Make it possible to order by the relation sort order
+			$query->addSelect('children.sortOrder');
 		}
 
-		if ($elementType->modifyElementsQuery($query, $criteria) !== false)
+		// Field conditions
+		foreach ($criteria->getSupportedFieldHandles() as $fieldHandle)
 		{
-			return $query;
+			if ($criteria->$fieldHandle !== false)
+			{
+				$field = craft()->fields->getFieldByHandle($fieldHandle);
+				$fieldType = craft()->fields->populateFieldType($field);
+
+				if ($fieldType->modifyElementsQuery($query, $criteria->$fieldHandle) === false)
+				{
+					return false;
+				}
+			}
 		}
-		else
+
+		// Give the element type a chance to make changes
+		if ($elementType->modifyElementsQuery($query, $criteria) === false)
 		{
 			return false;
 		}
+
+		return $query;
 	}
 
 	// Element helper functions
@@ -583,6 +649,29 @@ class ElementsService extends BaseApplicationComponent
 
 	// Private functions
 	// =================
+
+	/**
+	 * Adds ORDER BY's to the passed-in query to sort the requested locale up to the top.
+	 *
+	 * @access private
+	 * @param DbCommand $query
+	 * @param string $table
+	 * @param string|null $localeId
+	 */
+	private function _orderByRequestedLocale(DbCommand $query, $table, $localeId)
+	{
+		$localeIds = craft()->i18n->getSiteLocaleIds();
+
+		if (count($localeIds) > 1)
+		{
+			// Move the requested locale to the first position
+			array_unshift($localeIds, $localeId);
+			$localeIds = array_unique($localeIds);
+
+			// Order the results by locale
+			$query->order(craft()->db->getSchema()->orderByColumnValues($table.'.locale', $localeIds));
+		}
+	}
 
 	/**
 	 * Normalizes parentOf and childOf criteria params,

@@ -210,7 +210,7 @@ class Updater
 			{
 				// Setting new Craft info.
 				Craft::log('Settings new Craft release info in craft_info table.', LogLevel::Info, true);
-				if (!craft()->updates->setNewCraftInfo(CRAFT_VERSION, CRAFT_BUILD, CRAFT_RELEASE_DATE))
+				if (!craft()->updates->updateCraftVersionInfo())
 				{
 					throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the database info table.'));
 				}

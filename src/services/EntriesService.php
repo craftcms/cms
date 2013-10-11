@@ -595,7 +595,7 @@ class EntriesService extends BaseApplicationComponent
 
 		// Is the parentId set to a different entry ID than its previous parent?
 		$oldParent = $entry->getParent();
-		$oldParentId = ($oldParent ? $oldParent->id : null);
+		$oldParentId = ($oldParent ? $oldParent->id : '0');
 
 		if ($entry->parentId != $oldParentId)
 		{
@@ -616,13 +616,13 @@ class EntriesService extends BaseApplicationComponent
 	private function _cleanSlug($slug)
 	{
 		// Remove HTML tags
-		$slug = preg_replace('/<(.*?)>/', '', $slug);
+		$slug = preg_replace('/<(.*?)>/u', '', $slug);
 
-		// Remove inner-word punctuation
-		$slug = preg_replace('/[\'"‘’“”]/', '', $slug);
+		// Remove inner-word punctuation.
+		$slug = preg_replace('/[\'"‘’“”]/u', '', $slug);
 
 		// Make it lowercase
-		$slug = mb_strtolower($slug);
+		$slug = mb_strtolower($slug, 'UTF-8');
 
 		// Get the "words".  Split on anything that is not a unicode letter or number.
 		// Periods are OK too.

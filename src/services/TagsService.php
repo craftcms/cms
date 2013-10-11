@@ -324,11 +324,16 @@ class TagsService extends BaseApplicationComponent
 			// Save the element record first
 			$elementRecord->save(false);
 
-			// Now that we have an element ID, save it on the other stuff
-			if (!$tag->id)
+			if ($isNewTag)
 			{
+				// Now that we have an element ID, save it on the other stuff
 				$tag->id = $elementRecord->id;
 				$tagRecord->id = $tag->id;
+
+				// Create a row in content
+				$content = new ContentModel();
+				$content->elementId = $tag->id;
+				craft()->content->saveContent($content, false);
 			}
 
 			$tagRecord->save(false);

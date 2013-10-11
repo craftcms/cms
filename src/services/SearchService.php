@@ -341,7 +341,7 @@ class SearchService extends BaseApplicationComponent
 	 * Get the complete where clause for current tokens
 	 *
 	 * @access private
-	 * @return string
+	 * @return string|false
 	 */
 	private function _getWhereClause()
 	{
@@ -350,13 +350,27 @@ class SearchService extends BaseApplicationComponent
 		// Add the regular terms to the WHERE clause
 		if ($this->_terms)
 		{
-			$where[] = $this->_processTokens($this->_terms);
+			$condition = $this->_processTokens($this->_terms);
+
+			if ($condition === false)
+			{
+				return false;
+			}
+
+			$where[] = $condition;
 		}
 
 		// Add each group to the where clause
 		foreach ($this->_groups as $group)
 		{
-			$where[] = $this->_processTokens($group, false);
+			$condition = $this->_processTokens($group, false);
+
+			if ($condition === false)
+			{
+				return false;
+			}
+
+			$where[] = $condition;
 		}
 
 		// And combine everything with AND
@@ -369,6 +383,7 @@ class SearchService extends BaseApplicationComponent
 	 * @access private
 	 * @param array $tokens
 	 * @param string $glue
+	 * @return string|false
 	 */
 	private function _processTokens($tokens = array(), $inclusive = true)
 	{
@@ -380,6 +395,11 @@ class SearchService extends BaseApplicationComponent
 		{
 			// Get SQL and/or keywords
 			list($sql, $keywords) = $this->_getSqlFromTerm($obj);
+
+			if ($sql === false)
+			{
+				return false;
+			}
 
 			// If we have SQL, just add that
 			if ($sql)
@@ -667,15 +687,24 @@ class SearchService extends BaseApplicationComponent
 	 *
 	 * @access private
 	 * @param string $where
-	 * @return string
+	 * @return string|false
 	 */
 	private function _sqlSubSelect($where)
 	{
-		return sprintf("%s IN (SELECT %s FROM %s WHERE %s)",
-			craft()->db->quoteColumnName('elementId'),
-			craft()->db->quoteColumnName('elementId'),
-			craft()->db->quoteTableName(DbHelper::addTablePrefix('searchindex')),
-			$where
-		);
+		// FULLTEXT indexes are not used in queries with subselects, so let's do this as its own query.
+		$elementIds = craft()->db->createCommand()
+			->select('elementId')
+			->from('searchindex')
+			->where($where)
+			->queryColumn();
+
+		if ($elementIds)
+		{
+			return craft()->db->quoteColumnName('elementId').' IN ('.implode(', ', $elementIds).')';
+		}
+		else
+		{
+			return false;
+		}
 	}
 }

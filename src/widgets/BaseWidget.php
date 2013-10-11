@@ -13,6 +13,29 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	protected $componentType = 'Widget';
 
 	/**
+	 * @access protected
+	 * @var bool Whether users should be able to select more than one of this widget type.
+	 */
+	protected $multi = true;
+
+	/**
+	 * Returns whether this component should be selectable when choosing a component of this type.
+	 *
+	 * @return bool
+	 */
+	public function isSelectable()
+	{
+		if ($this->multi || !craft()->dashboard->doesUserHaveWidget($this->getClassHandle()))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * Gets the widget's title.
 	 *
 	 * @return string
@@ -24,9 +47,9 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	}
 
 	/**
-	 * Gets the widget's body HTML.
+	 * Returns the widget's body HTML.
 	 *
-	 * @return string
+	 * @return string|false
 	 */
 	public function getBodyHtml()
 	{

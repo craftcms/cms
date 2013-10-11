@@ -1,6 +1,6 @@
 {% import "_includes/forms" as forms %}
 
-<form method="post" action="" accept-charset="UTF-8">
+<form method="post" action="" accept-charset="UTF-8" enctype="multipart/form-data">
 	{% set fromEmail = getHelp is defined ? getHelp.fromEmail : currentUser.email %}
 	{% if fromEmail == "support@pixelandtonic.com" %}
 		{% set fromEmail = "" %}
@@ -27,8 +27,17 @@
 		name: 'attachDebugFiles',
 		checked: true,
 		class: 'attachDebugFiles',
-		label: "Include error logs and database backup"|t,
+		label: "Include error logs and database backup?"|t,
 	}) }}
+
+	<p>
+		{{ "Attach an additional file?"|t }}:
+
+		{{ forms.file({
+			name: 'attachAdditionalFile',
+			id: 'attachAdditionalFile',
+		}) }}
+	</p>
 
 	<div class="buttons last">
 		<input type="submit" class="btn submit" value="{{ 'Send'|t }}">

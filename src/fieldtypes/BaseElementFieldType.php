@@ -105,58 +105,69 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 * Preps the field value for use.
 	 *
 	 * @param mixed $value
-	 * @return mixed
+	 * @return ElementCriteriaModel
 	 */
 	public function prepValue($value)
 	{
+		$criteria = craft()->elements->getCriteria($this->elementType);
+
 		// $value will be an array of element IDs if there was a validation error
 		// or we're loading a draft/version.
 		if (is_array($value))
 		{
-			$elements = craft()->relations->getElementsById($this->elementType, array_filter($value));
+			$criteria->id = array_filter($value);
+			$criteria->fixedOrder = true;
 		}
 		else if ($value === '')
 		{
-			$elements = array();
+			$criteria->id = false;
 		}
 		else if (isset($this->element) && $this->element->id)
 		{
-			$elements = craft()->relations->getRelatedElements($this->element->id, $this->model->id, $this->elementType);
+			$criteria->childOf = $this->element->id;
+			$criteria->childField = $this->model->id;
+			$criteria->order = 'sortOrder';
 		}
 		else
 		{
-			$elements = array();
+			$criteria->id = false;
 		}
 
 		if ($this->allowLimit && $this->getSettings()->limit)
 		{
-			$elements = array_slice($elements, 0, $this->getSettings()->limit);
+			$criteria->limit = $this->getSettings()->limit;
+		}
+		else
+		{
+			$criteria->limit = null;
 		}
 
-		return new RelationFieldData($elements);
+		return $criteria;
 	}
 
 	/**
 	 * Returns the field's input HTML.
 	 *
 	 * @param string $name
-	 * @param mixed  $elements
+	 * @param mixed  $criteria
 	 * @return string
 	 */
-	public function getInputHtml($name, $elements)
+	public function getInputHtml($name, $criteria)
 	{
 		$id = rtrim(preg_replace('/[\[\]]+/', '-', $name), '-').'-'.StringHelper::UUID();
 
-		if (!($elements instanceof RelationFieldData))
+		if (!($criteria instanceof ElementCriteriaModel))
 		{
-			$elements = new RelationFieldData();
+			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria->id = false;
 		}
 
-		$criteria = array('status' => null);
+		$criteria->status = null;
+		$selectionCriteria = array('status' => null);
 
 		if (!empty($this->element->id))
 		{
-			$criteria['id'] = 'not '.$this->element->id;
+			$selectionCriteria['id'] = 'not '.$this->element->id;
 		}
 
 		if ($this->allowMultipleSources)
@@ -174,9 +185,9 @@ abstract class BaseElementFieldType extends BaseFieldType
 			'id'             => $id,
 			'storageKey'     => 'field.'.$this->model->id,
 			'name'           => $name,
-			'elements'       => $elements->all,
+			'elements'       => $criteria,
 			'sources'        => $sources,
-			'criteria'       => $criteria,
+			'criteria'       => $selectionCriteria,
 			'limit'          => ($this->allowLimit ? $this->getSettings()->limit : null),
 			'addButtonLabel' => $this->getAddButtonLabel(),
 		));
@@ -191,10 +202,10 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function getSearchKeywords($value)
 	{
-		$elements = $this->prepValue(null);
+		$criteria = $this->prepValue(null);
 		$titles = array();
 
-		foreach ($elements->all as $element)
+		foreach ($criteria as $element)
 		{
 			$titles[] = (string) $element;
 		}

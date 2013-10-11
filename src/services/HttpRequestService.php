@@ -369,7 +369,7 @@ class HttpRequestService extends \CHttpRequest
 		// Default to disposition to 'download'
 		if (!isset($options['forceDownload']) || $options['forceDownload'])
 		{
-			header('Content-Disposition: attachment; filename="'.$fileName.'"');
+			HeaderHelper::setDownload($fileName);
 		}
 
 		if (empty($options['mimeType']))
@@ -380,7 +380,7 @@ class HttpRequestService extends \CHttpRequest
 			}
 		}
 
-		header('Content-Type: '.$options['mimeType']);
+		HeaderHelper::setHeader(array('Content-Type' => $options['mimeType'].'; charset=utf-8'));
 
 		$fileSize = mb_strlen($content, '8bit');
 		$contentStart = 0;
@@ -388,12 +388,12 @@ class HttpRequestService extends \CHttpRequest
 
 		if (isset($_SERVER['HTTP_RANGE']))
 		{
-			header('Accept-Ranges: bytes');
+			HeaderHelper::setHeader(array('Accept-Ranges' => 'bytes'));
 
 			// Client sent us a multibyte range, can not hold this one for now
 			if (mb_strpos($_SERVER['HTTP_RANGE'], ',') !== false)
 			{
-				header("Content-Range: bytes $contentStart-$contentEnd/$fileSize");
+				HeaderHelper::setHeader(array('Content-Range' => 'bytes '.$contentStart - $contentEnd / $fileSize));
 				throw new HttpException(416, 'Requested Range Not Satisfiable');
 			}
 
@@ -427,16 +427,16 @@ class HttpRequestService extends \CHttpRequest
 
 			if ($wrongContentStart)
 			{
-				header("Content-Range: bytes $contentStart-$contentEnd/$fileSize");
+				HeaderHelper::setHeader(array('Content-Range' => 'bytes '.$contentStart - $contentEnd / $fileSize));
 				throw new HttpException(416, 'Requested Range Not Satisfiable');
 			}
 
-			header('HTTP/1.1 206 Partial Content');
-			header("Content-Range: bytes $contentStart-$contentEnd/$fileSize");
+			HeaderHelper::setHeader('HTTP/1.1 206 Partial Content');
+			HeaderHelper::setHeader(array('Content-Range' => 'bytes '.$contentStart - $contentEnd / $fileSize));
 		}
 		else
 		{
-			header('HTTP/1.1 200 OK');
+			HeaderHelper::setHeader('HTTP/1.1 200 OK');
 		}
 
 		$length = $contentEnd - $contentStart + 1; // Calculate new content length
@@ -444,27 +444,25 @@ class HttpRequestService extends \CHttpRequest
 		if (!empty($options['cache']))
 		{
 			$cacheTime = 31536000; // 1 year
-			header('Expires: '.gmdate('D, d M Y H:i:s', time() + $cacheTime).' GMT');
-			header('Pragma: cache');
-			header('Cache-Control: max-age='.$cacheTime);
+			HeaderHelper::setHeader(array('Expires' => gmdate('D, d M Y H:i:s', time() + $cacheTime).' GMT'));
+			HeaderHelper::setHeader(array('Pragma' => 'cache'));
+			HeaderHelper::setHeader(array('Cache-Control' => 'max-age='.$cacheTime));
 			$modifiedTime = IOHelper::getLastTimeModified($path);
-			header('Last-Modified: '.gmdate("D, d M Y H:i:s", $modifiedTime->getTimestamp()).' GMT');
+			HeaderHelper::setHeader(array('Last-Modified' => gmdate("D, d M Y H:i:s", $modifiedTime->getTimestamp()).' GMT'));
 		}
 		else
 		{
-			header('Pragma: public');
-			header('Expires: 0');
-			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+			HeaderHelper::setNoCache();
 		}
 
 		if (!ob_get_length())
 		{
-			header('Content-Length: '.$length);
+			HeaderHelper::setLength($length);
 		}
 
 		if ($options['mimeType'] == 'application/x-javascript' || $options['mimeType'] == 'text/css')
 		{
-			header('Vary: Accept-Encoding');
+			HeaderHelper::setHeader(array('Vary' => 'Accept-Encoding'));
 		}
 
 		$content = mb_substr($content, $contentStart, $length);

@@ -233,7 +233,7 @@ class ResourcesService extends BaseApplicationComponent
 			if ($lastModifiedFileDate && $lastModifiedFileDate <= $requestDate)
 			{
 				// Let the browser serve it from cache.
-				header('HTTP/1.1 304 Not Modified');
+				HeaderHelper::setHeader('HTTP/1.1 304 Not Modified');
 				craft()->end();
 			}
 		}

@@ -119,6 +119,17 @@ $.extend(Craft, {
 		if (baseUrl)
 		{
 			var url = baseUrl;
+
+			if (path)
+			{
+				// Does baseUrl already contain a path?
+				var pathMatch = url.match(/[&\?]p=[^&]+/);
+				if (pathMatch)
+				{
+					url = url.replace(pathMatch[0], pathMatch[0]+'/'+path);
+					path = '';
+				}
+			}
 		}
 		else
 		{
@@ -689,7 +700,6 @@ $.extend(Craft, {
 		$('.fieldtoggle', $container).fieldtoggle();
 		$('.lightswitch', $container).lightswitch();
 		$('.nicetext', $container).nicetext();
-		$('input.password', $container).passwordinput();
 		$('.pill', $container).pill();
 		$('.menubtn', $container).menubtn();
 	},
@@ -883,17 +893,6 @@ $.extend($.fn, {
 			if (!$.data(this, 'text'))
 			{
 				new Garnish.NiceText(this);
-			}
-		});
-	},
-
-	passwordinput: function()
-	{
-		return this.each(function()
-		{
-			if (!$.data(this, 'passwordinput'))
-			{
-				new Garnish.PasswordInput(this);
 			}
 		});
 	},

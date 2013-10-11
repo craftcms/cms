@@ -282,16 +282,17 @@ class InstallService extends BaseApplicationComponent
 		Craft::log('Creating the info table.');
 
 		craft()->db->createCommand()->createTable('info', array(
-			'version'     => array('column' => ColumnType::Char,     'length' => 15,    'null' => false),
-			'build'       => array('column' => ColumnType::Int,      'length' => 11,    'unsigned' => true, 'null' => false),
-			'packages'    => array('column' => ColumnType::Varchar,  'length' => 200),
-			'releaseDate' => array('column' => ColumnType::DateTime, 'null' => false),
-			'siteName'    => array('column' => ColumnType::Varchar,  'length' => 100,   'null' => false),
-			'siteUrl'     => array('column' => ColumnType::Varchar,  'length' => 255,   'null' => false),
-			'timezone'    => array('column' => ColumnType::Varchar,  'length' => 30),
-			'on'          => array('column' => ColumnType::TinyInt,  'length' => 1,     'unsigned' => true, 'default' => false, 'null' => false),
-			'maintenance' => array('column' => ColumnType::TinyInt,  'length' => 1,     'unsigned' => true, 'default' => false, 'null' => false),
-			'track'       => array('column' => ColumnType::Varchar,  'maxLength' => 40, 'required' => true),
+			'version'       => array('column' => ColumnType::Varchar,  'length' => 15,    'null' => false),
+			'build'         => array('column' => ColumnType::Int,      'length' => 11,    'unsigned' => true, 'null' => false),
+			'schemaVersion' => array('column' => ColumnType::Varchar,  'length' => 15,    'null' => false),
+			'packages'      => array('column' => ColumnType::Varchar,  'length' => 200),
+			'releaseDate'   => array('column' => ColumnType::DateTime, 'null' => false),
+			'siteName'      => array('column' => ColumnType::Varchar,  'length' => 100,   'null' => false),
+			'siteUrl'       => array('column' => ColumnType::Varchar,  'length' => 255,   'null' => false),
+			'timezone'      => array('column' => ColumnType::Varchar,  'length' => 30),
+			'on'            => array('column' => ColumnType::TinyInt,  'length' => 1,     'unsigned' => true, 'default' => false, 'null' => false),
+			'maintenance'   => array('column' => ColumnType::TinyInt,  'length' => 1,     'unsigned' => true, 'default' => false, 'null' => false),
+			'track'         => array('column' => ColumnType::Varchar,  'maxLength' => 40, 'required' => true),
 		));
 
 		Craft::log('Finished creating the info table.');
@@ -299,14 +300,15 @@ class InstallService extends BaseApplicationComponent
 		Craft::log('Populating the info table.');
 
 		$info = new InfoModel(array(
-			'version'     => CRAFT_VERSION,
-			'build'       => CRAFT_BUILD,
-			'releaseDate' => CRAFT_RELEASE_DATE,
-			'siteName'    => $inputs['siteName'],
-			'siteUrl'     => $inputs['siteUrl'],
-			'on'          => 1,
-			'maintenance' => 0,
-			'track'       => '@@@track@@@',
+			'version'       => CRAFT_VERSION,
+			'build'         => CRAFT_BUILD,
+			'schemaVersion' => CRAFT_SCHEMA_VERSION,
+			'releaseDate'   => CRAFT_RELEASE_DATE,
+			'siteName'      => $inputs['siteName'],
+			'siteUrl'       => $inputs['siteUrl'],
+			'on'            => 1,
+			'maintenance'   => 0,
+			'track'         => '@@@track@@@',
 		));
 
 		if (craft()->saveInfo($info))

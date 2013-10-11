@@ -20,7 +20,7 @@ class ContentModel extends BaseModel
 		$attributes = array(
 			'id'        => AttributeType::Number,
 			'elementId' => AttributeType::Number,
-			'locale'    => AttributeType::Locale,
+			'locale'    => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
 			'title'     => array(AttributeType::String, 'required' => $requiredTitle),
 		);
 

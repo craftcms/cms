@@ -66,14 +66,6 @@ class TemplatesController extends BaseController
 		));
 	}
 
-	/**
-	 * Renders the Invalid Track template.
-	 */
-	public function actionInvalidTrack()
-	{
-		$this->_render('_special/invalidtrack');
-	}
-
 	public function actionRequirementsCheck()
 	{
 		// Run the requirements checker

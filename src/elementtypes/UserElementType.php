@@ -17,6 +17,16 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
+	 * Returns whether this element type has content.
+	 *
+	 * @return bool
+	 */
+	public function hasContent()
+	{
+		return true;
+	}
+
+	/**
 	 * Returns whether this element type can have statuses.
 	 *
 	 * @return bool
@@ -65,8 +75,7 @@ class UserElementType extends BaseElementType
 	 */
 	public function defineSearchableAttributes()
 	{
-		return array('username', 'firstName', 'lastName', 'fullName', 'email'
-		);
+		return array('username', 'firstName', 'lastName', 'fullName', 'email');
 	}
 
 	/**
@@ -108,7 +117,7 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
-	 * Modifies an entries query targeting entries of this type.
+	 * Modifies an element query targeting elements of this type.
 	 *
 	 * @param DbCommand $query
 	 * @param ElementCriteriaModel $criteria

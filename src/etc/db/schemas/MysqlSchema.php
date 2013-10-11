@@ -191,6 +191,26 @@ class MysqlSchema extends \CMysqlSchema
 	}
 
 	/**
+	 * Returns the SQL for ordering results by column values.
+	 *
+	 * @param string $column
+	 * @param array $values
+	 * @return string
+	 */
+	public function orderByColumnValues($column, $values)
+	{
+		$sql = 'FIELD('.$this->quoteColumnName($column);
+
+		foreach ($values as $value)
+		{
+			$sql .= ', '.$this->getDbConnection()->quoteValue($value);
+		}
+
+		$sql .= ')';
+		return $sql;
+	}
+
+	/**
 	 * Returns all table names in the database which start with the tablePrefix.
 	 *
 	 * @access protected
@@ -228,39 +248,24 @@ class MysqlSchema extends \CMysqlSchema
 	 */
 	public function isInnoDbEnabled()
 	{
-		$results = craft()->db->createCommand()->setText('SHOW ENGINES')->queryAll();
-
-		foreach ($results as $result)
+		// TODO: Remove this isInstalled check after we add the ability for the updater to run requirements check *before* an update takes place.
+		if (!Craft::isInstalled())
 		{
-			if ($result['Engine'] == 'InnoDB' && $result['Support'] != 'No')
+			$results = craft()->db->createCommand()->setText('SHOW ENGINES')->queryAll();
+
+			foreach ($results as $result)
 			{
-				return true;
+				if (mb_strtolower($result['Engine']) == 'innodb' && mb_strtolower($result['Support']) != 'no')
+				{
+					return true;
+				}
 			}
+
+			return false;
 		}
-
-		return false;
-	}
-
-	/**
-	 * Checks if a column exists in a table.
-	 *
-	 * @param $table
-	 * @param $column
-	 * @return bool
-	 */
-	public function columnExists($table, $column)
-	{
-		$table = $this->dbConnection->schema->getTable('{{'.$table.'}}');
-
-		if ($table)
+		else
 		{
-			if (($column = $table->getColumn($column)) !== null)
-			{
-				return true;
-			}
+			return true;
 		}
-
-		return false;
 	}
-
 }

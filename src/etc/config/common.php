@@ -137,6 +137,7 @@ $configArray = array(
 $cpRoutes['dashboard/settings/new']               = 'dashboard/settings/_widgetsettings';
 $cpRoutes['dashboard/settings/(?P<widgetId>\d+)'] = 'dashboard/settings/_widgetsettings';
 
+$cpRoutes['entries/(?P<sectionHandle>{handle})']                  = 'entries';
 $cpRoutes['entries/(?P<sectionHandle>{handle})/new']              = array('action' => 'entries/editEntry');
 $cpRoutes['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)'] = array('action' => 'entries/editEntry');
 

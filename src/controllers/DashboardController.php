@@ -111,6 +111,11 @@ class DashboardController extends BaseController
 		$getHelpModel->message = craft()->request->getPost('message');
 		$getHelpModel->attachDebugFiles = (bool)craft()->request->getPost('attachDebugFiles');
 
+		if (craft()->request->getPost('attachAdditionalFile'))
+		{
+			$getHelpModel->attachment = \CUploadedFile::getInstance($getHelpModel, 'attachAdditionalFile');
+		}
+
 		if ($getHelpModel->validate())
 		{
 			$user = craft()->userSession->getUser();
@@ -213,18 +218,5 @@ class DashboardController extends BaseController
 				'errors' => $getHelpModel->getErrors(),
 			));
 		}
-	}
-
-	/**
-	 * Returns the update widget HTML.
-	 */
-	public function actionCheckForUpdates()
-	{
-		$forceRefresh = (bool) craft()->request->getPost('forceRefresh');
-		craft()->updates->getUpdates($forceRefresh);
-
-		$this->renderTemplate('_components/widgets/Updates/body', array(
-			'total' => craft()->updates->getTotalAvailableUpdates()
-		));
 	}
 }

@@ -15,7 +15,6 @@ class ModelHelper
 	public static $attributeTypeDefaults = array(
 		AttributeType::Mixed      => array('model' => null, 'column' => ColumnType::Text),
 		AttributeType::Bool       => array('maxLength' => 1, 'default' => false, 'required' => true, 'column' => ColumnType::TinyInt, 'unsigned' => true),
-		AttributeType::Build      => array('column' => ColumnType::Int, 'unsigned' => true),
 		AttributeType::ClassName  => array('maxLength' => 150, 'column' => ColumnType::Char),
 		AttributeType::DateTime   => array('column' => ColumnType::DateTime),
 		AttributeType::Email      => array('minLength' => 5, 'column' => ColumnType::Varchar),
@@ -27,7 +26,6 @@ class ModelHelper
 		AttributeType::SortOrder  => array('column' => ColumnType::TinyInt),
 		AttributeType::Template   => array('maxLength' => 500, 'column' => ColumnType::Varchar),
 		AttributeType::Url        => array('maxLength' => 255, 'column' => ColumnType::Varchar),
-		AttributeType::Version    => array('maxLength' => 15, 'column' => ColumnType::Char),
 	);
 
 	/**

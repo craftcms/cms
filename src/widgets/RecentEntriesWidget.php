@@ -74,9 +74,9 @@ class RecentEntriesWidget extends BaseWidget
 	}
 
 	/**
-	 * Gets the widget's body HTML.
+	 * Returns the widget's body HTML.
 	 *
-	 * @return string
+	 * @return string|false
 	 */
 	public function getBodyHtml()
 	{
@@ -124,7 +124,7 @@ class RecentEntriesWidget extends BaseWidget
 		}
 
 		// If they don't have publish pro, OR they have publish pro and have permission to edit sections in it.
-		if (!craft()->hasPackage(CraftPackage::PublishPro) || (craft()->hasPackage(CraftPackage::PublishPro) && $somethingToDisplay))
+		if ((!craft()->hasPackage(CraftPackage::PublishPro) || (craft()->hasPackage(CraftPackage::PublishPro) && $somethingToDisplay)) && count($sectionIds) > 0)
 		{
 			$criteria = $this->_getCriteria($sectionIds);
 			$entries = $criteria->find();

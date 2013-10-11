@@ -174,7 +174,7 @@ class ElementsController extends BaseController
 
 		if (!$elementType)
 		{
-			throw new Exception(Craft::t('No element type exists with the class "{class}"', array('class' => $class)));
+			throw new Exception(Craft::t('No element type exists with the class “{class}”', array('class' => $class)));
 		}
 
 		return $elementType;

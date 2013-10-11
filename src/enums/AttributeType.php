@@ -8,7 +8,6 @@ class AttributeType
 {
 	const Mixed      = 'mixed';
 	const Bool       = 'bool';
-	const Build      = 'build';
 	const ClassName  = 'classname';
 	const DateTime   = 'datetime';
 	const Email      = 'email';
@@ -23,5 +22,4 @@ class AttributeType
 	const Template   = 'template';
 	const Url        = 'url';
 	const Uri        = 'uri';
-	const Version    = 'version';
 }

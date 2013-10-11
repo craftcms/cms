@@ -124,7 +124,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		}
 
 		// Select the initial source
-		var source = this.instanceState.selectedSource;
+		var source = this.getDefaultSourceKey();
 
 		if (source)
 		{
@@ -179,6 +179,11 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		{
 			this.$search.focus();
 		}
+	},
+
+	getDefaultSourceKey: function()
+	{
+		return this.instanceState.selectedSource;
 	},
 
 	onSourceSelectionChange: function()

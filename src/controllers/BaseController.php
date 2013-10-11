@@ -78,16 +78,11 @@ abstract class BaseController extends \CController
 				// Get the template file's MIME type
 				$templateFile = craft()->templates->findTemplate($template);
 				$extension = IOHelper::getExtension($templateFile, 'html');
-				$mimeType = IOHelper::getMimeTypeByExtension('.'.$extension);
 
-				if (!$mimeType)
-				{
-					$mimeType = 'text/html';
-				}
+				HeaderHelper::setContentTypeByExtension($extension);
+				HeaderHelper::setHeader(array('charset' => 'utf-8'));
 
-				header('Content-Type: '.$mimeType.'; charset=utf-8');
-
-				if ($mimeType == 'text/html')
+				if ($extension == 'html')
 				{
 					// Are there any head/foot nodes left in the queue?
 					$headHtml = craft()->templates->getHeadHtml();

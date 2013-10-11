@@ -13,6 +13,16 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	protected $componentType = 'ElementType';
 
 	/**
+	 * Returns whether this element type has content.
+	 *
+	 * @return bool
+	 */
+	public function hasContent()
+	{
+		return false;
+	}
+
+	/**
 	 * Returns whether this element type has titles.
 	 *
 	 * @return bool
@@ -33,11 +43,11 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * Returns whether this element type is translatable.
+	 * Returns whether this element type stores data on a per-locale basis.
 	 *
 	 * @return bool
 	 */
-	public function isTranslatable()
+	public function isLocalized()
 	{
 		return false;
 	}
@@ -96,7 +106,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * Modifies an entries query targeting entries of this type.
+	 * Modifies an element query targeting elements of this type.
 	 *
 	 * @param DbCommand $query
 	 * @param ElementCriteriaModel $criteria

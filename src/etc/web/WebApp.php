@@ -152,13 +152,12 @@ class WebApp extends \CWebApplication
 		mb_http_output('UTF-8');
 		mb_detect_order('auto');
 
-		// If the track has changed, put the brakes on the request.
-		if (!$this->updates->isTrackValid())
+		// Makes sure that the uploaded files are compatible with the current DB schema
+		if (!$this->updates->isSchemaVersionCompatible())
 		{
 			if ($this->request->isCpRequest())
 			{
-				$this->runController('templates/invalidtrack');
-				$this->end();
+				throw new HttpException(200, Craft::t('Craft does not support backtracking to this version.'));
 			}
 			else
 			{
@@ -169,16 +168,22 @@ class WebApp extends \CWebApplication
 		// Set the package components
 		$this->_setPackageComponents();
 
-		// isCraftDbUpdateNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
+		// isCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
 		if (
-			$this->updates->isCraftDbUpdateNeeded() ||
+			$this->updates->isCraftDbMigrationNeeded() ||
 			(craft()->isInMaintenanceMode() && $this->request->isCpRequest()) ||
 			$this->request->getActionSegments() == array('update', 'cleanUp') ||
 			$this->request->getActionSegments() == array('update', 'rollback')
 		)
 		{
 			$this->_processUpdateLogic();
+		}
+
+		// If there's a new version, but the schema hasn't changed, just update the info table
+		if ($this->updates->hasCraftBuildChanged())
+		{
+			$this->updates->updateCraftVersionInfo();
 		}
 
 		// Make sure that the system is on, or that the user has permission to access the site/CP while the system is off
