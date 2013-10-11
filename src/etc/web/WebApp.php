@@ -756,8 +756,8 @@ class WebApp extends \CWebApplication
 		if (
 			$this->request->getActionSegments() == array('users', 'login') ||
 			$this->request->getActionSegments() == array('users', 'validate') ||
-			$this->request->getActionSegments() == array('users', 'setPassword') ||
-			$this->request->getActionSegments() == array('users', 'forgotPassword') ||
+			$this->request->getActionSegments() == array('users', 'setpassword') ||
+			$this->request->getActionSegments() == array('users', 'forgotpassword') ||
 			$this->request->getActionSegments() == array('users', 'saveUser'))
 		{
 			return true;

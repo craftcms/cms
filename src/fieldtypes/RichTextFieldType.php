@@ -192,14 +192,25 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	private function _getSectionSources()
 	{
-		$sections = craft()->sections->getAllSections();
 		$sources = array();
+		$sections = craft()->sections->getAllSections();
+		$showSingles = false;
+
 		foreach ($sections as $section)
 		{
-			if ($section->hasUrls)
+			if ($section->type == SectionType::Single)
+			{
+				$showSingles = true;
+			}
+			else if ($section->hasUrls)
 			{
 				$sources[] = 'section:' . $section->id;
 			}
+		}
+
+		if ($showSingles)
+		{
+			array_unshift($sources, 'singles');
 		}
 
 		return $sources;

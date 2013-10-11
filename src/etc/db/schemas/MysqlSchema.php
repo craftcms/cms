@@ -249,7 +249,7 @@ class MysqlSchema extends \CMysqlSchema
 	public function isInnoDbEnabled()
 	{
 		// TODO: Remove this isInstalled check after we add the ability for the updater to run requirements check *before* an update takes place.
-		if (!Craft::isInstalled())
+		if (!craft()->isInstalled())
 		{
 			$results = craft()->db->createCommand()->setText('SHOW ENGINES')->queryAll();
 

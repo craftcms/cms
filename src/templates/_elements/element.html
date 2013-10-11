@@ -25,7 +25,7 @@
 	{% endif %}
 {% endif -%}
 
-<div class="element{% if context == 'field' %} removable{% endif %}{% if thumbUrl or iconUrl %} hasicon{% endif %}" data-id="{{ element.id }}" data-url="{{ element.url }}">
+<div class="element{% if context == 'field' %} removable{% endif %}{% if context != 'index' %} unselectable{% endif %}{% if thumbUrl or iconUrl %} hasicon{% endif %}" data-id="{{ element.id }}" data-url="{{ element.url }}">
 	{% if context == 'field' -%}
 		<input type="hidden" name="{{ name }}[]" value="{{ element.id }}">
 		<a class="delete icon" title="{{ 'Remove'|t }}"></a>

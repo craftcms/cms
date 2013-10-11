@@ -132,7 +132,7 @@ var LoginForm = Garnish.Base.extend({
 			loginName: this.$loginNameInput.val()
 		};
 
-		Craft.postActionRequest('users/forgotPassword', data, $.proxy(function(response, textStatus) {
+		Craft.postActionRequest('users/forgotpassword', data, $.proxy(function(response, textStatus) {
 
 			if (textStatus == 'success')
 			{
