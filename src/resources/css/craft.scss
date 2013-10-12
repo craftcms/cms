@@ -468,7 +468,8 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .datatablesorthelper tr:last-child td { border-bottom: none !important; }
 
 /* elements */
-.element { position: relative; border: 1px solid transparent; padding: 5px 7px; cursor: default; @include unselectable; outline: none !important; }
+.element { position: relative; border: 1px solid transparent; padding: 5px 7px; cursor: default; outline: none !important; }
+.element.unselectable { @include unselectable; }
 .element .status { margin: 0 1px 0 0; }
 
 .element.hasicon { padding-left: 35px !important; }
