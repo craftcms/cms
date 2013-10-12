@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * Section element type
+ * Entry element type
  */
 class EntryElementType extends BaseElementType
 {
