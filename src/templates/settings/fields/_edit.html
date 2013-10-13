@@ -45,7 +45,7 @@
 {% endif %}
 
 
-{% set fieldTypes = craft.fields.getAllFieldTypes %}
+{% set fieldTypes = craft.fields.getAllFieldTypes() %}
 
 {% if field is defined %}
 	{% set fieldType = craft.fields.populateFieldType(field) %}
@@ -108,6 +108,7 @@
 		{{ forms.textareaField({
 			label: "Instructions"|t,
 			instructions: "Helper text to guide the author."|t,
+			id: 'instructions',
 			name: 'instructions',
 			value: (field is defined ? field.instructions : null),
 			errors: (field is defined ? field.getErrors('instructions') : null),
@@ -130,22 +131,22 @@
 			id: 'type',
 			name: 'type',
 			options: fieldTypes,
-			value: fieldType.classHandle,
+			value: fieldType.getClassHandle(),
 			errors: (isFieldTypeMissing ? ["The fieldtype class “{class}” could not be found."|t({ class: field.type })] : null),
 			toggle: true
 		}) }}
 
 		{% for _fieldType in fieldTypes %}
-			{% set isCurrent = (_fieldType.classHandle == fieldType.classHandle) %}
+			{% set isCurrent = (_fieldType.getClassHandle() == fieldType.getClassHandle()) %}
 			{% if isCurrent %}
-				{% set settings = fieldType.settingsHtml %}
+				{% set settings = fieldType.getSettingsHtml() %}
 			{% else %}
-				{% set settings = _fieldType.settingsHtml %}
+				{% set settings = _fieldType.getSettingsHtml() %}
 			{% endif %}
 
 			{% if settings %}
-				<div id="{{ _fieldType.classHandle }}"{% if not isCurrent %} class="hidden"{% endif %}>
-					{% set namespace = 'types[' ~ _fieldType.classHandle ~ ']' %}
+				<div id="{{ _fieldType.getClassHandle() }}"{% if not isCurrent %} class="hidden"{% endif %}>
+					{% set namespace = 'types[' ~ _fieldType.getClassHandle() ~ ']' %}
 					{{- settings|ns(namespace)|raw -}}
 				</div>
 			{% endif %}
