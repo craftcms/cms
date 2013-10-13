@@ -108,6 +108,7 @@
 		{{ forms.textareaField({
 			label: "Instructions"|t,
 			instructions: "Helper text to guide the author."|t,
+			id: 'instructions',
 			name: 'instructions',
 			value: (field is defined ? field.instructions : null),
 			errors: (field is defined ? field.getErrors('instructions') : null),
