@@ -2,10 +2,9 @@
 {% set title = "Update @@@appName@@@"|t %}
 
 {% set content %}
-	<p>{{ "You need to be on at least <a href=\"{minBuildURL}\">@@@appName@@@ build {minBuild}</a> before you can manually update to @@@appName@@@ {targetVersion} build {targetBuild}."|t({
-			minBuild:      minBuild,
-			minBuildURL:   minBuildURL,
+	<p>{{ "You need to be on at least @@@appName@@@ {url} before you can manually update to @@@appName@@@ {targetVersion} build {targetBuild}."|t({
+			url:           '<a href=\"'~minBuildURL~'\">build '~minBuild~'</a>',
 			targetVersion: targetVersion,
 			targetBuild:   targetBuild
-		}) }}</p>
+		})|raw }}</p>
 {% endset %}
