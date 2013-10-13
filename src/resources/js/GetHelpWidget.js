@@ -26,7 +26,7 @@
 			this.$widget = $('#widget'+widgetId);
 			this.$message = this.$widget.find('.message:first');
 			this.$fromEmail = this.$widget.find('.fromEmail:first');
-			this.$attachDebugFiles= this.$widget.find('.attachDebugFiles:nth-child(2)');
+			this.$attachDebugFiles = this.$widget.find('.attachDebugFiles:nth-child(2)');
 			this.$sendBtn = this.$widget.find('.submit:first');
 			this.$spinner = this.$widget.find('.buttons .spinner');
 			this.$error = this.$widget.find('.error:first');
@@ -52,7 +52,9 @@
 		sendMessage: function()
 		{
 			var iframeName = 'iframeWidget' + this.widgetId;
+
 			if (this.loading) return;
+
 			if (!this.$iframe)
 			{
 				this.$iframe = $('<iframe id="' + iframeName + '" name="' + iframeName + '" style="display: none" />').insertAfter(this.$form);

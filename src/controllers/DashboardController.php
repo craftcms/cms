@@ -107,18 +107,15 @@ class DashboardController extends BaseController
 
 		$success = false;
 		$errors = array();
+		$zipFile = null;
+		$tempFolder = null;
 		$widgetId = craft()->request->getPost('widgetId');
 
 		$getHelpModel = new GetHelpModel();
 		$getHelpModel->fromEmail = craft()->request->getPost('fromEmail');
 		$getHelpModel->message = craft()->request->getPost('message');
 		$getHelpModel->attachDebugFiles = (bool)craft()->request->getPost('attachDebugFiles');
-
-		if ($getHelpModel->attachDebugFiles)
-		{
-			$getHelpModel->attachment = \CUploadedFile::getInstanceByName('attachAdditionalFile');
-		}
-
+		$getHelpModel->attachment = \CUploadedFile::getInstanceByName('attachAdditionalFile');
 
 		if ($getHelpModel->validate())
 		{
@@ -141,8 +138,8 @@ class DashboardController extends BaseController
 			{
 				if ($getHelpModel->attachDebugFiles)
 				{
-					$tempZipFile = craft()->path->getTempPath().StringHelper::UUID().'.zip';
-					IOHelper::createFile($tempZipFile);
+					$zipFile = craft()->path->getTempPath().StringHelper::UUID().'.zip';
+					IOHelper::createFile($zipFile);
 
 					if (IOHelper::folderExists(craft()->path->getLogPath()))
 					{
@@ -154,7 +151,7 @@ class DashboardController extends BaseController
 							// Make sure it's a file.
 							if (IOHelper::fileExists($file))
 							{
-								Zip::add($tempZipFile, $file, craft()->path->getStoragePath());
+								Zip::add($zipFile, $file, craft()->path->getStoragePath());
 							}
 						}
 					}
@@ -172,14 +169,43 @@ class DashboardController extends BaseController
 						{
 							if (isset($contents[$counter]))
 							{
-								Zip::add($tempZipFile, $contents[$counter], craft()->path->getStoragePath());
+								Zip::add($zipFile, $contents[$counter], craft()->path->getStoragePath());
 							}
 						}
 					}
+				}
 
+				if ($getHelpModel->attachment)
+				{
+					// If we don't have a zip file yet, create one now.
+					if (!$zipFile)
+					{
+						$zipFile = craft()->path->getTempPath().StringHelper::UUID().'.zip';
+						IOHelper::createFile($zipFile);
+					}
+
+					$tempFolder = craft()->path->getTempPath().StringHelper::UUID().'/';
+
+					if (!IOHelper::folderExists($tempFolder))
+					{
+						IOHelper::createFolder($tempFolder);
+					}
+
+					$tempFile = $tempFolder.$getHelpModel->attachment->getName();
+					$getHelpModel->attachment->saveAs($tempFile);
+
+					// Make sure it actually saved.
+					if (IOHelper::fileExists($tempFile))
+					{
+						Zip::add($zipFile, $tempFile, $tempFolder);
+					}
+				}
+
+				if ($zipFile)
+				{
 					$requestParams['File1_sFilename'] = 'SupportAttachment.zip';
 					$requestParams['File1_sFileMimeType'] = 'application/zip';
-					$requestParams['File1_bFileBody'] = base64_encode(IOHelper::getFileContents($tempZipFile));
+					$requestParams['File1_bFileBody'] = base64_encode(IOHelper::getFileContents($zipFile));
 
 					// Bump the default timeout because of the attachment.
 					$hsParams['callTimeout'] = 120;
@@ -200,12 +226,18 @@ class DashboardController extends BaseController
 
 			if ($result)
 			{
-				if ($getHelpModel->attachDebugFiles)
+				if ($zipFile)
 				{
-					if (IOHelper::fileExists($tempZipFile))
+					if (IOHelper::fileExists($zipFile))
 					{
-						IOHelper::deleteFile($tempZipFile);
+						IOHelper::deleteFile($zipFile);
 					}
+				}
+
+				if ($tempFolder)
+				{
+					IOHelper::clearFolder($tempFolder);
+					IOHelper::deleteFolder($tempFolder);
 				}
 
 				$success = true;
