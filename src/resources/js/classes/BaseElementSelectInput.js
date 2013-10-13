@@ -179,7 +179,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 
 			this.$elements = this.$elements.add($newElement);
 			this.initElements($newElement);
-			this.elementSelect.selectItem($newElement);
 		}
 
 		this.totalElements += max;
