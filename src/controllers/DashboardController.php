@@ -250,7 +250,7 @@ class DashboardController extends BaseController
 		}
 		else
 		{
-			$errors = array('errors' => $getHelpModel->getErrors());
+			$errors = $getHelpModel->getErrors();
 		}
 
 		$this->renderTemplate('_components/widgets/GetHelp/response',
