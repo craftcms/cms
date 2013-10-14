@@ -61,6 +61,9 @@ class LoggingHelper
 		// Will match 'newPassword => 'secretPassword', which gets logged in the POST params during debug mode.
 		$log = preg_replace("/'newPassword' => (')(.*)('),/uim", "'newPassword' => REDACTED,", $log);
 
+		// Will match 'smtpPassword => 'secretPassword', which gets logged in the POST params during debug mode.
+		$log = preg_replace("/'smtpPassword' => (')(.*)('),/uim", "'newPassword' => REDACTED,", $log);
+
 		return $log;
 	}
 }
