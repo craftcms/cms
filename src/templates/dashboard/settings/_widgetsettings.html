@@ -43,6 +43,10 @@
 
 		{% set widgetTypes = craft.dashboard.getAllWidgetTypes() %}
 
+		{% if not widgetType.isSelectable() %}
+			{% set widgetTypes = [widgetType]|merge(widgetTypes) %}
+		{% endif %}
+
 		{{ forms.selectField({
 			first: true,
 			label: "Type",

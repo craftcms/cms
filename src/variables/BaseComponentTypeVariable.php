@@ -41,6 +41,16 @@ abstract class BaseComponentTypeVariable
 	}
 
 	/**
+	 * Returns whether this component should be selectable when choosing a component of this type.
+	 *
+	 * @return bool
+	 */
+	public function isSelectable()
+	{
+		return $this->component->isSelectable();
+	}
+
+	/**
 	 * Returns the component's name.
 	 *
 	 * @return string
