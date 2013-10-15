@@ -138,18 +138,15 @@
 
 		{% for _fieldType in fieldTypes %}
 			{% set isCurrent = (_fieldType.getClassHandle() == fieldType.getClassHandle()) %}
-			{% if isCurrent %}
-				{% set settings = fieldType.getSettingsHtml() %}
-			{% else %}
-				{% set settings = _fieldType.getSettingsHtml() %}
-			{% endif %}
-
-			{% if settings %}
-				<div id="{{ _fieldType.getClassHandle() }}"{% if not isCurrent %} class="hidden"{% endif %}>
-					{% set namespace = 'types[' ~ _fieldType.getClassHandle() ~ ']' %}
-					{{- settings|ns(namespace)|raw -}}
-				</div>
-			{% endif %}
+			<div id="{{ _fieldType.getClassHandle() }}"{% if not isCurrent %} class="hidden"{% endif %}>
+				{% namespace 'types['~_fieldType.getClassHandle()~']' %}
+					{% if isCurrent %}
+						{{ fieldType.getSettingsHtml()|raw }}
+					{% else %}
+						{{ _fieldType.getSettingsHtml()|raw }}
+					{% endif %}
+				{% endnamespace %}
+			</div>
 		{% endfor %}
 
 		<hr>
