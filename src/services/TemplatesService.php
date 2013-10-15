@@ -569,10 +569,44 @@ class TemplatesService extends BaseApplicationComponent
 		if ($otherAttributes)
 		{
 			$idNamespace = rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-');
-			$html = preg_replace('/(?<![\w\-])((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/', '$1'.$idNamespace.'-$4$3', $html);
+			$html = preg_replace('/(?<![\w\-])((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/i', '$1'.$idNamespace.'-$4$3', $html);
 		}
 
 		return $html;
+	}
+
+	/**
+	 * Namespaces an input name.
+	 *
+	 * @param string $inputName
+	 * @param string|null $namespcae
+	 * @return string
+	 */
+	public function namespaceInputName($inputName, $namespace = null)
+	{
+		if ($namespace === null)
+		{
+			$namespace = $this->getNamespace();
+		}
+
+		return preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace.'[$1]$2', $inputName);
+	}
+
+	/**
+	 * Namespaces an input ID.
+	 *
+	 * @param string $inputName
+	 * @param string|null $namespcae
+	 * @return string
+	 */
+	public function namespaceInputId($inputId, $namespace = null)
+	{
+		if ($namespace === null)
+		{
+			$namespace = $this->getNamespace();
+		}
+
+		return rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-').'-'.$inputId;
 	}
 
 	/**
