@@ -95,6 +95,8 @@ class TableFieldType extends BaseFieldType
 
 		craft()->templates->includeJsResource('js/TableFieldSettings.js');
 		craft()->templates->includeJs('new Craft.TableFieldSettings(' .
+			'"'.craft()->templates->namespaceInputName('columns').'", ' .
+			'"'.craft()->templates->namespaceInputName('defaults').'", ' .
 			JsonHelper::encode($columns).', ' .
 			JsonHelper::encode($defaults).', ' .
 			JsonHelper::encode($columnSettings) .

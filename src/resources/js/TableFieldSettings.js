@@ -1,13 +1,14 @@
 (function($) {
 
 
-var columnsTableId = 'types-Table-columns',
-	columnsTableName = 'types[Table][columns]',
-	defaultsTableId = 'types-Table-defaults',
-	defaultsTableName = 'types[Table][defaults]';
-
-
 Craft.TableFieldSettings = Garnish.Base.extend({
+
+	columnsTableName: null,
+	defaultsTableName: null,
+	columnsTableId: null,
+	defaultsTableId: null,
+	columnsTableInputPath: null,
+	defaultsTableInputPath: null,
 
 	defaults: null,
 	columnSettings: null,
@@ -15,8 +16,17 @@ Craft.TableFieldSettings = Garnish.Base.extend({
 	columnsTable: null,
 	defaultsTable: null,
 
-	init: function(columns, defaults, columnSettings)
+	init: function(columnsTableName, defaultsTableName, columns, defaults, columnSettings)
 	{
+		this.columnsTableName = columnsTableName;
+		this.defaultsTableName = defaultsTableName;
+
+		this.columnsTableId = Craft.rtrim(this.columnsTableName.replace(/[\[\]]+/g, '-'), '-');
+		this.defaultsTableId = Craft.rtrim(this.defaultsTableName.replace(/[\[\]]+/g, '-'), '-');
+
+		this.columnsTableInputPath = this.columnsTableId.split('-');
+		this.defaultsTableInputPath = this.defaultsTableId.split('-');
+
 		this.defaults = defaults;
 		this.columnSettings = columnSettings;
 
@@ -26,7 +36,7 @@ Craft.TableFieldSettings = Garnish.Base.extend({
 
 	initColumnsTable: function()
 	{
-		this.columnsTable = new Craft.EditableTable(columnsTableId, columnsTableName, this.columnSettings, {
+		this.columnsTable = new Craft.EditableTable(this.columnsTableId, this.columnsTableName, this.columnSettings, {
 			rowIdPrefix: 'col',
 			onAddRow: $.proxy(this, 'onAddColumn'),
 			onDeleteRow: $.proxy(this, 'reconstructDefaultsTable')
@@ -38,7 +48,7 @@ Craft.TableFieldSettings = Garnish.Base.extend({
 
 	initDefaultsTable: function(columns)
 	{
-		this.defaultsTable = new Craft.EditableTable(defaultsTableId, defaultsTableName, columns, {
+		this.defaultsTable = new Craft.EditableTable(this.defaultsTableId, this.defaultsTableName, columns, {
 			rowIdPrefix: 'row'
 		});
 	},
@@ -62,10 +72,22 @@ Craft.TableFieldSettings = Garnish.Base.extend({
 	{
 		var columnsTableData = Craft.expandPostArray(Garnish.getPostData(this.columnsTable.$tbody)),
 			defaultsTableData = Craft.expandPostArray(Garnish.getPostData(this.defaultsTable.$tbody)),
-			columns = columnsTableData.types.Table.columns,
-			defaults = defaultsTableData.types.Table.defaults;
+			columns = columnsTableData,
+			defaults = defaultsTableData;
 
-		var tableHtml = '<table id="'+defaultsTableId+'" class="editable shadow-box">' +
+		for (var i = 0; i < this.columnsTableInputPath.length; i++)
+		{
+			var key = this.columnsTableInputPath[i];
+			columns = columns[key];
+		}
+
+		for (var i = 0; i < this.defaultsTableInputPath.length; i++)
+		{
+			var key = this.defaultsTableInputPath[i];
+			defaults = defaults[key];
+		}
+
+		var tableHtml = '<table id="'+this.defaultsTableId+'" class="editable shadow-box">' +
 			'<thead>' +
 				'<tr>';
 
@@ -81,7 +103,7 @@ Craft.TableFieldSettings = Garnish.Base.extend({
 
 		for (var rowId in defaults)
 		{
-			tableHtml += Craft.EditableTable.getRowHtml(rowId, columns, defaultsTableName, defaults[rowId]);
+			tableHtml += Craft.EditableTable.getRowHtml(rowId, columns, this.defaultsTableName, defaults[rowId]);
 		}
 
 		tableHtml += '</tbody>' +
