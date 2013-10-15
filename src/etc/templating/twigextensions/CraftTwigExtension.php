@@ -17,6 +17,7 @@ class CraftTwigExtension extends \Twig_Extension
 	{
 		return array(
 			new Exit_TokenParser(),
+			new Header_TokenParser(),
 			new IncludeResource_TokenParser('includeCss'),
 			new IncludeResource_TokenParser('includeCssFile'),
 			new IncludeResource_TokenParser('includeCssResource'),
@@ -31,7 +32,6 @@ class CraftTwigExtension extends \Twig_Extension
 			new RequireLogin_TokenParser(),
 			new RequirePackage_TokenParser(),
 			new RequirePermission_TokenParser(),
-			new Header_TokenParser(),
 		);
 	}
 

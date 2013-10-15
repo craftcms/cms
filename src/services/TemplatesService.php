@@ -14,6 +14,8 @@ class TemplatesService extends BaseApplicationComponent
 	private $_defaultTemplateExtensions;
 	private $_indexTemplateFilenames;
 
+	private $_namespace;
+
 	private $_headHtml = array();
 	private $_footHtml = array();
 	private $_cssFiles = array();
@@ -526,15 +528,40 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns the active namespace.
+	 *
+	 * @return string
+	 */
+	public function getNamespace()
+	{
+		return $this->_namespace;
+	}
+
+	/**
+	 * Sets the active namespace.
+	 *
+	 * @param string $namespace
+	 */
+	public function setNamespace($namespace)
+	{
+		$this->_namespace = $namespace;
+	}
+
+	/**
 	 * Renames input names so they belong to a namespace.
 	 *
 	 * @param string $html The template with the inputs
-	 * @param string $namespace The namespace to make inputs belong to
+	 * @param string|null $namespace The namespace to make inputs belong to
 	 * @param bool $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to true.
 	 * @return string The template with namespaced inputs
 	 */
-	public function namespaceInputs($html, $namespace, $otherAttributes = true)
+	public function namespaceInputs($html, $namespace = null, $otherAttributes = true)
 	{
+		if ($namespace === null)
+		{
+			$namespace = $this->getNamespace();
+		}
+
 		// name= attributes
 		$html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
 
