@@ -62,8 +62,6 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 				'instructions' => Craft::t('Define the available options.'),
 				'id'           => 'options',
 				'name'         => 'options',
-				'jsId'         => 'types-'.$class.'-options',
-				'jsName'       => 'types['.$class.'][options]',
 				'addRowLabel'  => Craft::t('Add an option'),
 				'cols'         => array(
 					'label' => array(
