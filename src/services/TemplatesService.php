@@ -570,14 +570,17 @@ class TemplatesService extends BaseApplicationComponent
 			$namespace = $this->getNamespace();
 		}
 
-		// name= attributes
-		$html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
-
-		// id= and for= attributes
-		if ($otherAttributes)
+		if ($namespace)
 		{
-			$idNamespace = rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-');
-			$html = preg_replace('/(?<![\w\-])((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/i', '$1'.$idNamespace.'-$4$3', $html);
+			// name= attributes
+			$html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
+
+			// id= and for= attributes
+			if ($otherAttributes)
+			{
+				$idNamespace = rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-');
+				$html = preg_replace('/(?<![\w\-])((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/i', '$1'.$idNamespace.'-$4$3', $html);
+			}
 		}
 
 		return $html;
@@ -597,7 +600,12 @@ class TemplatesService extends BaseApplicationComponent
 			$namespace = $this->getNamespace();
 		}
 
-		return preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace.'[$1]$2', $inputName);
+		if ($namespace)
+		{
+			$inputName = preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace.'[$1]$2', $inputName);
+		}
+
+		return $inputName;
 	}
 
 	/**
@@ -614,7 +622,12 @@ class TemplatesService extends BaseApplicationComponent
 			$namespace = $this->getNamespace();
 		}
 
-		return rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-').'-'.$inputId;
+		if ($namespace)
+		{
+			$inputId = rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-').'-'.$inputId;
+		}
+
+		return $inputId;
 	}
 
 	/**
