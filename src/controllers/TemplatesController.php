@@ -143,6 +143,13 @@ class TemplatesController extends BaseController
 				}
 			}
 		}
+		else
+		{
+			if (!craft()->templates->doesTemplateExist($template))
+			{
+				$template = 'error';
+			}
+		}
 
 		try
 		{
