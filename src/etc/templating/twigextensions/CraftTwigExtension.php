@@ -26,6 +26,7 @@ class CraftTwigExtension extends \Twig_Extension
 			new IncludeResource_TokenParser('includeJsFile'),
 			new IncludeResource_TokenParser('includeJsResource'),
 			new IncludeTranslations_TokenParser(),
+			new Namespace_TokenParser(),
 			new Nav_TokenParser(),
 			new Paginate_TokenParser(),
 			new Redirect_TokenParser(),
