@@ -49,30 +49,29 @@
 				id: 'type',
 				name: 'type',
 				options: sourceTypes,
-				value: sourceType.classHandle,
+				value: sourceType.getClassHandle(),
 				toggle: true
 			}) }}
 
 			{% for _sourceType in sourceTypes %}
-				{% set isCurrent = (_sourceType.classHandle == sourceType.classHandle) %}
-				{% if isCurrent %}
-					{% set settings = sourceType.settingsHtml %}
-				{% else %}
-					{% set settings = _sourceType.settingsHtml %}
-				{% endif %}
+				{% set isCurrent = (_sourceType.getClassHandle() == sourceType.getClassHandle()) %}
 
-				{% if settings %}
-					<div id="{{ _sourceType.classHandle }}"{% if not isCurrent %} class="hidden"{% endif %}>
-						{% set namespace = 'types[' ~ _sourceType.classHandle ~ ']' %}
-						{{- settings|ns(namespace)|raw -}}
-						<hr>
-					</div>
-				{% endif %}
+				<div id="{{ _sourceType.getClassHandle() }}"{% if not isCurrent %} class="hidden"{% endif %}>
+					{% namespace 'types['~_sourceType.getClassHandle()~']' %}
+						{% if isCurrent %}
+							{{ sourceType.getSettingsHtml()|raw }}
+						{% else %}
+							{{ _sourceType.getSettingsHtml()|raw }}
+						{% endif %}
+					{% endnamespace %}
+				</div>
 			{% endfor %}
+
+			<hr>
 		{% else %}
-			{% set settings = sourceType.settingsHtml %}
-			{% set namespace = 'types[' ~ sourceType.classHandle ~ ']' %}
-			{{- settings|ns(namespace)|raw -}}
+			{% namespace 'types['~sourceType.getClassHandle()~']' %}
+				{{ sourceType.getSettingsHtml()|raw }}
+			{% endnamespace %}
 		{% endif %}
 
 		<div class="buttons">
