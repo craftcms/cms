@@ -28,6 +28,20 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
+	 * Performs any actions before a field is saved.
+	 */
+	public function onBeforeSave()
+	{
+	}
+
+	/**
+	 * Performs any actions after a field is saved.
+	 */
+	public function onAfterSave()
+	{
+	}
+
+	/**
 	 * Returns the field's input HTML.
 	 *
 	 * @param string $name
@@ -52,6 +66,13 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
+	 * Performs any additional actions after the element has been saved.
+	 */
+	public function onAfterElementSave()
+	{
+	}
+
+	/**
 	 * Returns the search keywords that should be associated with this field,
 	 * based on the prepped post data.
 	 *
@@ -61,27 +82,6 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	public function getSearchKeywords($value)
 	{
 		return StringHelper::arrayToString($value, ' ');
-	}
-
-	/**
-	 * Performs any actions before a field is saved.
-	 */
-	public function onBeforeSave()
-	{
-	}
-
-	/**
-	 * Performs any actions after a field is saved.
-	 */
-	public function onAfterSave()
-	{
-	}
-
-	/**
-	 * Performs any additional actions after the element has been saved.
-	 */
-	public function onAfterElementSave()
-	{
 	}
 
 	/**

@@ -67,7 +67,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	}
 
 	/**
-	 * Gets the settings model.
+	 * Returns the settings model.
 	 *
 	 * @access protected
 	 * @return BaseModel
