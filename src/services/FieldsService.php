@@ -9,6 +9,7 @@ class FieldsService extends BaseApplicationComponent
 	private $_groupsById;
 	private $_fetchedAllGroups = false;
 
+	private $_fieldRecordsById;
 	private $_fieldsById;
 	private $_fieldsByHandle;
 	private $_fetchedAllFields;
@@ -276,21 +277,14 @@ class FieldsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Saves a field.
+	 * Validates a field's settings.
 	 *
 	 * @param FieldModel $field
-	 * @throws \Exception
 	 * @return bool
 	 */
-	public function saveField(FieldModel $field)
+	public function validateField(FieldModel $field)
 	{
 		$fieldRecord = $this->_getFieldRecordById($field->id);
-		$isNewField = $fieldRecord->isNewRecord();
-
-		if (!$isNewField)
-		{
-			$fieldRecord->oldHandle = $fieldRecord->handle;
-		}
 
 		$fieldRecord->groupId      = $field->groupId;
 		$fieldRecord->name         = $field->name;
@@ -299,20 +293,64 @@ class FieldsService extends BaseApplicationComponent
 		$fieldRecord->translatable = $field->translatable;
 		$fieldRecord->type         = $field->type;
 
-		$fieldType = $this->populateFieldType($field);
+		// Get the field type
+		$fieldType = $field->getFieldType();
+
+		// Give the field type a chance to prep the settings from post
 		$preppedSettings = $fieldType->prepSettings($field->settings);
+
+		// Set the prepped settings on the FieldRecord, FieldModel, and the field type
 		$fieldRecord->settings = $field->settings = $preppedSettings;
 		$fieldType->setSettings($preppedSettings);
-		$fieldType->model = $field;
 
+		// Run validation
 		$recordValidates = $fieldRecord->validate();
 		$settingsValidate = $fieldType->getSettings()->validate();
 
 		if ($recordValidates && $settingsValidate)
 		{
+			return true;
+		}
+		else
+		{
+			$field->addErrors($fieldRecord->getErrors());
+			$field->addSettingErrors($fieldType->getSettings()->getErrors());
+			return false;
+		}
+	}
+
+	/**
+	 * Saves a field.
+	 *
+	 * @param FieldModel $field
+	 * @param bool $validate
+	 * @throws \Exception
+	 * @return bool
+	 */
+	public function saveField(FieldModel $field, $validate = true)
+	{
+		if (!$validate || $this->validateField($field))
+		{
+			$fieldRecord = $this->_getFieldRecordById($field->id);
+
+			$fieldRecord->groupId      = $field->groupId;
+			$fieldRecord->name         = $field->name;
+			$fieldRecord->handle       = $field->handle;
+			$fieldRecord->instructions = $field->instructions;
+			$fieldRecord->translatable = $field->translatable;
+			$fieldRecord->type         = $field->type;
+
+			$isNewField = $fieldRecord->isNewRecord();
+
+			if (!$isNewField)
+			{
+				$fieldRecord->oldHandle = $fieldRecord->handle;
+			}
+
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
+				$fieldType = $field->getFieldType();
 				$fieldType->onBeforeSave();
 				$fieldRecord->save(false);
 
@@ -386,8 +424,6 @@ class FieldsService extends BaseApplicationComponent
 		}
 		else
 		{
-			$field->addErrors($fieldRecord->getErrors());
-			$field->addSettingErrors($fieldType->getSettings()->getErrors());
 			return false;
 		}
 	}
@@ -692,7 +728,7 @@ class FieldsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets a field record by its ID or creates a new one.
+	 * Returns a field record by its ID or creates a new one.
 	 *
 	 * @access private
 	 * @param int $fieldId
@@ -702,18 +738,21 @@ class FieldsService extends BaseApplicationComponent
 	{
 		if ($fieldId)
 		{
-			$fieldRecord = FieldRecord::model()->findById($fieldId);
-
-			if (!$fieldRecord)
+			if (!isset($this->_fieldRecordsById) || !array_key_exists($fieldId, $this->_fieldRecordsById[$fieldId]))
 			{
-				throw new Exception(Craft::t('No field exists with the ID “{id}”', array('id' => $fieldId)));
+				$this->_fieldRecordsById[$fieldId] = FieldRecord::model()->findById($fieldId);
+
+				if (!$this->_fieldRecordsById[$fieldId])
+				{
+					throw new Exception(Craft::t('No field exists with the ID “{id}”', array('id' => $fieldId)));
+				}
 			}
+
+			return $this->_fieldRecordsById[$fieldId];
 		}
 		else
 		{
-			$fieldRecord = new FieldRecord();
+			return new FieldRecord();
 		}
-
-		return $fieldRecord;
 	}
 }
