@@ -340,6 +340,14 @@ class FieldsService extends BaseApplicationComponent
 			$fieldRecord->translatable = $field->translatable;
 			$fieldRecord->type         = $field->type;
 
+			// Give the field type a chance to prep the settings from post
+			$fieldType = $field->getFieldType();
+			$preppedSettings = $fieldType->prepSettings($field->settings);
+
+			// Set the prepped settings on the FieldRecord, FieldModel, and the field type
+			$fieldRecord->settings = $field->settings = $preppedSettings;
+			$fieldType->setSettings($preppedSettings);
+
 			$isNewField = $fieldRecord->isNewRecord();
 
 			if (!$isNewField)
@@ -350,7 +358,6 @@ class FieldsService extends BaseApplicationComponent
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
-				$fieldType = $field->getFieldType();
 				$fieldType->onBeforeSave();
 				$fieldRecord->save(false);
 
