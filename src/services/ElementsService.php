@@ -403,6 +403,11 @@ class ElementsService extends BaseApplicationComponent
 			$query->join('relations children', 'children.childId = elements.id');
 			$query->andWhere(DbHelper::parseParam('children.parentId', $parentIds, $query->params));
 
+			if ($fieldIds)
+			{
+				$query->andWhere(DbHelper::parseParam('children.fieldId', $fieldIds, $query->params));
+			}
+
 			// Make it possible to order by the relation sort order
 			$query->addSelect('children.sortOrder');
 		}
