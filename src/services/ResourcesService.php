@@ -75,9 +75,16 @@ class ResourcesService extends BaseApplicationComponent
 
 							IOHelper::ensureFolderExists($sizedPhotoFolder);
 
-							craft()->images->loadImage($originalPhotoPath)
-								->resize($size)
-								->saveAs($sizedPhotoPath);
+							if (IOHelper::isWritable($sizedPhotoFolder))
+							{
+								craft()->images->loadImage($originalPhotoPath)
+									->resize($size)
+									->saveAs($sizedPhotoPath);
+							}
+							else
+							{
+								Craft::log('Tried to write to target folder and could not: '.$sizedPhotoFolder, LogLevel::Error);
+							}
 						}
 
 						return $sizedPhotoPath;
@@ -95,12 +102,20 @@ class ResourcesService extends BaseApplicationComponent
 					$sourceFile = craft()->path->getResourcesPath().'images/'.self::DefaultUserphotoFilename;
 					$targetFolder = craft()->path->getUserPhotosPath().'__default__/';
 					IOHelper::ensureFolderExists($targetFolder);
-					$targetFile = $targetFolder.$size.'.'.IOHelper::getExtension($sourceFile);
-					craft()->images->loadImage($sourceFile)
-						->resize($size)
-						->saveAs($targetFile);
 
-					return $targetFile;
+					if (IOHelper::isWritable($targetFolder))
+					{
+						$targetFile = $targetFolder.$size.'.'.IOHelper::getExtension($sourceFile);
+						craft()->images->loadImage($sourceFile)
+							->resize($size)
+							->saveAs($targetFile);
+
+						return $targetFile;
+					}
+					else
+					{
+						Craft::log('Tried to write to the target folder, but could not:'.$targetFolder, LogLevel::Error);
+					}
 				}
 
 				case 'tempuploads':
