@@ -284,7 +284,7 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function validateField(FieldModel $field)
 	{
-		$fieldRecord = $this->_getFieldRecordById($field->id);
+		$fieldRecord = $this->_getFieldRecord($field);
 
 		$fieldRecord->groupId      = $field->groupId;
 		$fieldRecord->name         = $field->name;
@@ -331,7 +331,7 @@ class FieldsService extends BaseApplicationComponent
 	{
 		if (!$validate || $this->validateField($field))
 		{
-			$fieldRecord = $this->_getFieldRecordById($field->id);
+			$fieldRecord = $this->_getFieldRecord($field);
 
 			$fieldRecord->groupId      = $field->groupId;
 			$fieldRecord->name         = $field->name;
@@ -735,15 +735,17 @@ class FieldsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a field record by its ID or creates a new one.
+	 * Returns a field record for a given model.
 	 *
 	 * @access private
-	 * @param int $fieldId
+	 * @param FieldModel $field
 	 * @return FieldRecord
 	 */
-	private function _getFieldRecordById($fieldId = null)
+	private function _getFieldRecord(FieldModel $field)
 	{
-		if ($fieldId)
+		$fieldId = $field->id;
+
+		if (!$field->isNew())
 		{
 			if (!isset($this->_fieldRecordsById) || !array_key_exists($fieldId, $this->_fieldRecordsById[$fieldId]))
 			{
@@ -759,7 +761,9 @@ class FieldsService extends BaseApplicationComponent
 		}
 		else
 		{
-			return new FieldRecord();
+			$fieldRecord = new FieldRecord();
+			$fieldRecord->id = $fieldId;
+			return $fieldRecord;
 		}
 	}
 }
