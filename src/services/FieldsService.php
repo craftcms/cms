@@ -462,6 +462,8 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function deleteField(FieldModel $field)
 	{
+		$field->getFieldType()->onBeforeDelete();
+
 		// De we need to delete the content column?
 		if (craft()->db->columnExists('content', 'field_'.$field->handle))
 		{
@@ -471,7 +473,15 @@ class FieldsService extends BaseApplicationComponent
 		// Delete the row in fields
 		$affectedRows = craft()->db->createCommand()->delete('fields', array('id' => $field->id));
 
-		return (bool) $affectedRows;
+		if ($affectedRows)
+		{
+			$field->getFieldType()->onAfterDelete();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	// Layouts
