@@ -6,7 +6,6 @@ namespace Craft;
  */
 class FieldRecord extends BaseRecord
 {
-	public $oldHandle;
 	protected $reservedHandleWords = array(
 		'archived',
 		'author',
@@ -33,6 +32,37 @@ class FieldRecord extends BaseRecord
 		'status',
 		'title',
 	);
+
+	private $_oldHandle;
+
+	/**
+	 * Init
+	 */
+	public function init()
+	{
+		parent::init();
+
+		// Store the old handle in case it's ever requested.
+		$this->attachEventHandler('onAfterFind', array($this, 'storeOldHandle'));
+	}
+
+	/**
+	 * Store the old handle.
+	 */
+	public function storeOldHandle()
+	{
+		$this->_oldHandle = $this->handle;
+	}
+
+	/**
+	 * Returns the old handle.
+	 *
+	 * @return string
+	 */
+	public function getOldHandle()
+	{
+		return $this->_oldHandle;
+	}
 
 	/**
 	 * @return string

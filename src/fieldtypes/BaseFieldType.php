@@ -42,6 +42,20 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
+	 * Performs any actions before a field is deleted.
+	 */
+	public function onBeforeDelete()
+	{
+	}
+
+	/**
+	 * Performs any actions after a field is deleted.
+	 */
+	public function onAfterDelete()
+	{
+	}
+
+	/**
 	 * Returns the field's input HTML.
 	 *
 	 * @param string $name

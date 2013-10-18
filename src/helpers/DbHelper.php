@@ -356,12 +356,6 @@ class DbHelper
 	}
 
 	/**
-	 * @access private
-	 * @static
-	 */
-	private static $_operators = array('not ', '!=', '<=', '>=', '<', '>', '=');
-
-	/**
 	 * Parses a service param value to a DbCommand where condition.
 	 *
 	 * @param string $key
@@ -397,29 +391,7 @@ class DbHelper
 
 		foreach ($values as $value)
 		{
-			$operator = '=';
-
-			foreach (static::$_operators as $testOperator)
-			{
-				// Does the value start with this operator?
-				$length = mb_strlen($testOperator);
-
-				if (strncmp(mb_strtolower($value), $testOperator, $length) == 0)
-				{
-					$value = mb_substr($value, $length);
-
-					if ($testOperator == 'not ')
-					{
-						$operator = '!=';
-					}
-					else
-					{
-						$operator = $testOperator;
-					}
-
-					break;
-				}
-			}
+			$operator = static::_parseParamOperator($value);
 
 			if ($value === null)
 			{
@@ -452,40 +424,87 @@ class DbHelper
 	}
 
 	/**
-	 * Parses a date param value to a DbCommand where condition.
+	 * Normalizes date params and then sends them off to parseParam().
 	 *
 	 * @param string $key
-	 * @param string $operator
-	 * @param string|array|DateTime $dates
+	 * @param string|array|DateTime $values
 	 * @param array &$params
 	 * @return mixed
 	 */
-	public static function parseDateParam($key, $operator, $dates, &$params)
+	public static function parseDateParam($key, $values, &$params)
 	{
-		$conditions = array();
+		$normalizedValues = array();
 
-		$dates = ArrayHelper::stringToArray($dates);
+		$values = ArrayHelper::stringToArray($values);
 
-		foreach ($dates as $date)
+		if (!count($values))
 		{
-			if (!$date instanceof \DateTime)
+			return '';
+		}
+
+		if ($values[0] == 'and' || $values[0] == 'or')
+		{
+			$normalizedValues[] = $values[0];
+			array_shift($values);
+		}
+
+		foreach ($values as $value)
+		{
+			if (is_string($value))
 			{
-				$date = DateTime::createFromString($date, craft()->getTimeZone());
+				$operator = static::_parseParamOperator($value);
+			}
+			else
+			{
+				$operator = '=';
 			}
 
-			$param = ':p'.StringHelper::randomString(9);
-			$params[$param] = DateTimeHelper::formatTimeForDb($date->getTimestamp());
-			$conditions[] = $key.$operator.$param;
+			if (!$value instanceof \DateTime)
+			{
+				$value = DateTime::createFromString($value, craft()->getTimeZone());
+			}
+
+			$normalizedValues[] = $operator.DateTimeHelper::formatTimeForDb($value->getTimestamp());
 		}
 
-		if (count($conditions) == 1)
+		return static::parseParam($key, $normalizedValues, $params);
+	}
+
+	/**
+	 * @access private
+	 * @static
+	 */
+	private static $_operators = array('not ', '!=', '<=', '>=', '<', '>', '=');
+
+	/**
+	 * Extracts the operator from a DB param and returns it.
+	 *
+	 * @access private
+	 * @param string &$value
+	 * @return string
+	 */
+	private static function _parseParamOperator(&$value)
+	{
+		foreach (static::$_operators as $testOperator)
 		{
-			return $conditions[0];
+			// Does the value start with this operator?
+			$operatorLength = mb_strlen($testOperator);
+
+			if (strncmp(mb_strtolower($value), $testOperator, $operatorLength) == 0)
+			{
+				$value = mb_substr($value, $operatorLength);
+
+				if ($testOperator == 'not ')
+				{
+					return '!=';
+				}
+				else
+				{
+					return $testOperator;
+				}
+			}
 		}
-		else
-		{
-			array_unshift($conditions, 'or');
-			return $conditions;
-		}
+
+		return '=';
 	}
 }

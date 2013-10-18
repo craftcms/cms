@@ -284,7 +284,7 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function validateField(FieldModel $field)
 	{
-		$fieldRecord = $this->_getFieldRecordById($field->id);
+		$fieldRecord = $this->_getFieldRecord($field);
 
 		$fieldRecord->groupId      = $field->groupId;
 		$fieldRecord->name         = $field->name;
@@ -331,33 +331,29 @@ class FieldsService extends BaseApplicationComponent
 	{
 		if (!$validate || $this->validateField($field))
 		{
-			$fieldRecord = $this->_getFieldRecordById($field->id);
-
-			$fieldRecord->groupId      = $field->groupId;
-			$fieldRecord->name         = $field->name;
-			$fieldRecord->handle       = $field->handle;
-			$fieldRecord->instructions = $field->instructions;
-			$fieldRecord->translatable = $field->translatable;
-			$fieldRecord->type         = $field->type;
-
-			// Give the field type a chance to prep the settings from post
-			$fieldType = $field->getFieldType();
-			$preppedSettings = $fieldType->prepSettings($field->settings);
-
-			// Set the prepped settings on the FieldRecord, FieldModel, and the field type
-			$fieldRecord->settings = $field->settings = $preppedSettings;
-			$fieldType->setSettings($preppedSettings);
-
-			$isNewField = $fieldRecord->isNewRecord();
-
-			if (!$isNewField)
-			{
-				$fieldRecord->oldHandle = $fieldRecord->handle;
-			}
-
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
+				$fieldRecord = $this->_getFieldRecord($field);
+				$isNewField = $fieldRecord->isNewRecord();
+
+				$fieldRecord->groupId      = $field->groupId;
+				$fieldRecord->name         = $field->name;
+				$fieldRecord->handle       = $field->handle;
+				$fieldRecord->instructions = $field->instructions;
+				$fieldRecord->translatable = $field->translatable;
+				$fieldRecord->type         = $field->type;
+
+				// Get the field type
+				$fieldType = $field->getFieldType();
+
+				// Give the field type a chance to prep the settings from post
+				$preppedSettings = $fieldType->prepSettings($field->settings);
+
+				// Set the prepped settings on the FieldRecord, FieldModel, and the field type
+				$fieldRecord->settings = $field->settings = $preppedSettings;
+				$fieldType->setSettings($preppedSettings);
+
 				$fieldType->onBeforeSave();
 				$fieldRecord->save(false);
 
@@ -381,14 +377,14 @@ class FieldsService extends BaseApplicationComponent
 					else
 					{
 						// Existing field going from a field that did not define any content attributes to one that does.
-						if (!craft()->db->columnExists('content', 'field_'.$fieldRecord->oldHandle))
+						if (!craft()->db->columnExists('content', 'field_'.$fieldRecord->getOldHandle()))
 						{
 							craft()->db->createCommand()->addColumn('content', 'field_'.$field->handle, $column);
 						}
 						else
 						{
 							// Existing field that already had a column defined, just altering it.
-							craft()->db->createCommand()->alterColumn('content', 'field_'.$fieldRecord->oldHandle, $column, 'field_'.$field->handle);
+							craft()->db->createCommand()->alterColumn('content', 'field_'.$fieldRecord->getOldHandle(), $column, 'field_'.$field->handle);
 						}
 					}
 				}
@@ -397,9 +393,9 @@ class FieldsService extends BaseApplicationComponent
 					// Did the old field have a column we need to remove?
 					if (!$isNewField)
 					{
-						if ($fieldRecord->oldHandle && craft()->db->columnExists('content', 'field_'.$fieldRecord->oldHandle))
+						if ($fieldRecord->getOldHandle() && craft()->db->columnExists('content', 'field_'.$fieldRecord->getOldHandle()))
 						{
-							craft()->db->createCommand()->dropColumn('content', 'field_'.$fieldRecord->oldHandle);
+							craft()->db->createCommand()->dropColumn('content', 'field_'.$fieldRecord->getOldHandle());
 						}
 					}
 				}
@@ -462,6 +458,8 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function deleteField(FieldModel $field)
 	{
+		$field->getFieldType()->onBeforeDelete();
+
 		// De we need to delete the content column?
 		if (craft()->db->columnExists('content', 'field_'.$field->handle))
 		{
@@ -471,7 +469,15 @@ class FieldsService extends BaseApplicationComponent
 		// Delete the row in fields
 		$affectedRows = craft()->db->createCommand()->delete('fields', array('id' => $field->id));
 
-		return (bool) $affectedRows;
+		if ($affectedRows)
+		{
+			$field->getFieldType()->onAfterDelete();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	// Layouts
@@ -735,15 +741,17 @@ class FieldsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a field record by its ID or creates a new one.
+	 * Returns a field record for a given model.
 	 *
 	 * @access private
-	 * @param int $fieldId
+	 * @param FieldModel $field
 	 * @return FieldRecord
 	 */
-	private function _getFieldRecordById($fieldId = null)
+	private function _getFieldRecord(FieldModel $field)
 	{
-		if ($fieldId)
+		$fieldId = $field->id;
+
+		if (!$field->isNew())
 		{
 			if (!isset($this->_fieldRecordsById) || !array_key_exists($fieldId, $this->_fieldRecordsById[$fieldId]))
 			{
@@ -759,7 +767,9 @@ class FieldsService extends BaseApplicationComponent
 		}
 		else
 		{
-			return new FieldRecord();
+			$fieldRecord = new FieldRecord();
+			$fieldRecord->id = $fieldId;
+			return $fieldRecord;
 		}
 	}
 }

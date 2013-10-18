@@ -48,7 +48,7 @@
 {% set fieldTypes = craft.fields.getAllFieldTypes() %}
 
 {% if field is defined %}
-	{% set fieldType = craft.fields.populateFieldType(field) %}
+	{% set fieldType = field.getFieldType() %}
 	{% set isFieldTypeMissing = not fieldType %}
 {% else %}
 	{% set isFieldTypeMissing = false %}

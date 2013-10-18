@@ -729,11 +729,11 @@ class InstallService extends BaseApplicationComponent
 		$newsLayout->setTabs($newsLayoutTabs);
 		$newsLayout->setFields($newsLayoutFields);
 
-		$homepageEntryTypes = $newsSection->getEntryTypes();
-		$homepageEntryType = $homepageEntryTypes[0];
-		$homepageEntryType->setFieldLayout($newsLayout);
+		$newsEntryTypes = $newsSection->getEntryTypes();
+		$newsEntryType = $newsEntryTypes[0];
+		$newsEntryType->setFieldLayout($newsLayout);
 
-		if (craft()->sections->saveEntryType($homepageEntryType))
+		if (craft()->sections->saveEntryType($newsEntryType))
 		{
 			Craft::log('News entry type saved successfully.');
 		}
@@ -748,7 +748,7 @@ class InstallService extends BaseApplicationComponent
 
 		$newsEntry = new EntryModel();
 		$newsEntry->sectionId  = $newsSection->id;
-		$newsEntry->typeId     = $homepageEntryType->id;
+		$newsEntry->typeId     = $newsEntryType->id;
 		$newsEntry->locale     = $inputs['locale'];
 		$newsEntry->authorId   = $this->_user->id;
 		$newsEntry->enabled    = true;

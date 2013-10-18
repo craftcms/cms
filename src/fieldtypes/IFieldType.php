@@ -40,6 +40,14 @@ interface IFieldType extends ISavableComponentType
 
 	/**
 	 */
+	public function onBeforeDelete();
+
+	/**
+	 */
+	public function onAfterDelete();
+
+	/**
+	 */
 	public function onAfterElementSave();
 
 	/**
