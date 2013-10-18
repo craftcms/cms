@@ -337,11 +337,6 @@ class FieldsService extends BaseApplicationComponent
 				$fieldRecord = $this->_getFieldRecord($field);
 				$isNewField = $fieldRecord->isNewRecord();
 
-				if (!$isNewField)
-				{
-					$fieldRecord->oldHandle = $fieldRecord->handle;
-				}
-
 				$fieldRecord->groupId      = $field->groupId;
 				$fieldRecord->name         = $field->name;
 				$fieldRecord->handle       = $field->handle;
@@ -382,14 +377,14 @@ class FieldsService extends BaseApplicationComponent
 					else
 					{
 						// Existing field going from a field that did not define any content attributes to one that does.
-						if (!craft()->db->columnExists('content', 'field_'.$fieldRecord->oldHandle))
+						if (!craft()->db->columnExists('content', 'field_'.$fieldRecord->getOldHandle()))
 						{
 							craft()->db->createCommand()->addColumn('content', 'field_'.$field->handle, $column);
 						}
 						else
 						{
 							// Existing field that already had a column defined, just altering it.
-							craft()->db->createCommand()->alterColumn('content', 'field_'.$fieldRecord->oldHandle, $column, 'field_'.$field->handle);
+							craft()->db->createCommand()->alterColumn('content', 'field_'.$fieldRecord->getOldHandle(), $column, 'field_'.$field->handle);
 						}
 					}
 				}
@@ -398,9 +393,9 @@ class FieldsService extends BaseApplicationComponent
 					// Did the old field have a column we need to remove?
 					if (!$isNewField)
 					{
-						if ($fieldRecord->oldHandle && craft()->db->columnExists('content', 'field_'.$fieldRecord->oldHandle))
+						if ($fieldRecord->getOldHandle() && craft()->db->columnExists('content', 'field_'.$fieldRecord->getOldHandle()))
 						{
-							craft()->db->createCommand()->dropColumn('content', 'field_'.$fieldRecord->oldHandle);
+							craft()->db->createCommand()->dropColumn('content', 'field_'.$fieldRecord->getOldHandle());
 						}
 					}
 				}
