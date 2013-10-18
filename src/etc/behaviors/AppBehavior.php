@@ -246,16 +246,6 @@ class AppBehavior extends BaseBehavior
 	}
 
 	/**
-	 * Returns the system time zone.
-	 *
-	 * @return string
-	 */
-	public function getTimezone()
-	{
-		return $this->getInfo('timezone');
-	}
-
-	/**
 	 * Returns whether the system is on.
 	 *
 	 * @return bool

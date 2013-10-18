@@ -201,9 +201,9 @@ class Craft extends \Yii
 	 * @static
 	 * @return string
 	 */
-	public static function getTimezone()
+	public static function getTimeZone()
 	{
-		Craft::log('Craft::getTimezone() has been deprecated.  Use craft()->getTimezone() instead.', LogLevel::Warning);
+		Craft::log('Craft::getTimeZone() has been deprecated.  Use craft()->getTimeZone() instead.', LogLevel::Warning);
 		return craft()->getTimeZone();
 	}
 
