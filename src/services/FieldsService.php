@@ -331,33 +331,34 @@ class FieldsService extends BaseApplicationComponent
 	{
 		if (!$validate || $this->validateField($field))
 		{
-			$fieldRecord = $this->_getFieldRecord($field);
-
-			$fieldRecord->groupId      = $field->groupId;
-			$fieldRecord->name         = $field->name;
-			$fieldRecord->handle       = $field->handle;
-			$fieldRecord->instructions = $field->instructions;
-			$fieldRecord->translatable = $field->translatable;
-			$fieldRecord->type         = $field->type;
-
-			// Give the field type a chance to prep the settings from post
-			$fieldType = $field->getFieldType();
-			$preppedSettings = $fieldType->prepSettings($field->settings);
-
-			// Set the prepped settings on the FieldRecord, FieldModel, and the field type
-			$fieldRecord->settings = $field->settings = $preppedSettings;
-			$fieldType->setSettings($preppedSettings);
-
-			$isNewField = $fieldRecord->isNewRecord();
-
-			if (!$isNewField)
-			{
-				$fieldRecord->oldHandle = $fieldRecord->handle;
-			}
-
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
+				$fieldRecord = $this->_getFieldRecord($field);
+				$isNewField = $fieldRecord->isNewRecord();
+
+				if (!$isNewField)
+				{
+					$fieldRecord->oldHandle = $fieldRecord->handle;
+				}
+
+				$fieldRecord->groupId      = $field->groupId;
+				$fieldRecord->name         = $field->name;
+				$fieldRecord->handle       = $field->handle;
+				$fieldRecord->instructions = $field->instructions;
+				$fieldRecord->translatable = $field->translatable;
+				$fieldRecord->type         = $field->type;
+
+				// Get the field type
+				$fieldType = $field->getFieldType();
+
+				// Give the field type a chance to prep the settings from post
+				$preppedSettings = $fieldType->prepSettings($field->settings);
+
+				// Set the prepped settings on the FieldRecord, FieldModel, and the field type
+				$fieldRecord->settings = $field->settings = $preppedSettings;
+				$fieldType->setSettings($preppedSettings);
+
 				$fieldType->onBeforeSave();
 				$fieldRecord->save(false);
 
