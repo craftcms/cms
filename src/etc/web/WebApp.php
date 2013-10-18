@@ -541,6 +541,17 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
+	 * Returns the system time zone.  Note that this method cannot be in AppBehavior, because Yii will check
+	 * \CApplication->getTimeZone instead.
+	 *
+	 * @return string
+	 */
+	public function getTimeZone()
+	{
+		return $this->getInfo('timezone');
+	}
+
+	/**
 	 * Attaches any pending event listeners to the newly-initialized component.
 	 *
 	 * @access private

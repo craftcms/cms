@@ -461,7 +461,7 @@ class DbHelper
 
 			if (!$value instanceof \DateTime)
 			{
-				$value = DateTime::createFromString($value, craft()->getTimezone());
+				$value = DateTime::createFromString($value, craft()->getTimeZone());
 			}
 
 			$normalizedValues[] = $operator.DateTimeHelper::formatTimeForDb($value->getTimestamp());
