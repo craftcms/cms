@@ -26,6 +26,16 @@ abstract class BaseComponentModel extends BaseModel
 	}
 
 	/**
+	 * Returns whether this is a new component.
+	 *
+	 * @return bool
+	 */
+	public function isNew()
+	{
+		return (!$this->id || strncmp($this->id, 'new', 3) === 0);
+	}
+
+	/**
 	 * Returns whether there are setting errors.
 	 *
 	 * @param string|null $attribute
