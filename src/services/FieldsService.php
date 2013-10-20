@@ -11,8 +11,8 @@ class FieldsService extends BaseApplicationComponent
 
 	private $_fieldRecordsById;
 	private $_fieldsById;
-	private $_fieldsByHandle;
-	private $_fetchedAllFields;
+	private $_fieldsByContextAndHandle;
+	private $_fetchedAllFieldsInContext;
 	private $_fieldsWithContent;
 
 	// Groups
@@ -142,21 +142,30 @@ class FieldsService extends BaseApplicationComponent
 	 * Returns all fields.
 	 *
 	 * @param string|null $indexBy
+	 * @param string $context
 	 * @return array
 	 */
-	public function getAllFields($indexBy = null)
+	public function getAllFields($indexBy = null, $context = 'global')
 	{
-		if (!$this->_fetchedAllFields)
+		if (empty($this->_fetchedAllFieldsInContext[$context]))
 		{
-			$fieldRecords = FieldRecord::model()->ordered()->findAll();
-			$this->_fieldsById = FieldModel::populateModels($fieldRecords, 'id');
+			$fieldRecords = FieldRecord::model()->ordered()->findAllByAttributes(array(
+				'context' => $context
+			));
+
+			if (!isset($this->_fieldsById))
+			{
+				$this->_fieldsById = array();
+			}
+
+			$this->_fieldsById = array_merge($this->_fieldsById, FieldModel::populateModels($fieldRecords, 'id'));
 
 			foreach ($this->_fieldsById as $field)
 			{
-				$this->_fieldsByHandle[$field->handle] = $field;
+				$this->_fieldsByContextAndHandle[$context][$field->handle] = $field;
 			}
 
-			$this->_fetchedAllFields = true;
+			$this->_fetchedAllFieldsInContext[$context] = true;
 		}
 
 		if ($indexBy == 'id')
@@ -220,7 +229,7 @@ class FieldsService extends BaseApplicationComponent
 			{
 				$field = FieldModel::populateModel($fieldRecord);
 				$this->_fieldsById[$field->id] = $field;
-				$this->_fieldsByHandle[$field->handle] = $field;
+				$this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
 			}
 			else
 			{
@@ -235,29 +244,31 @@ class FieldsService extends BaseApplicationComponent
 	 * Returns a field by its handle.
 	 *
 	 * @param string $handle
+	 * @param string $context
 	 * @return FieldModel|null
 	 */
-	public function getFieldByHandle($handle)
+	public function getFieldByHandle($handle, $context = 'global')
 	{
-		if (!isset($this->_fieldsByHandle) || !array_key_exists($handle, $this->_fieldsByHandle))
+		if (!isset($this->_fieldsByContextAndHandle[$context]) || !array_key_exists($handle, $this->_fieldsByContextAndHandle[$context]))
 		{
 			$fieldRecord = FieldRecord::model()->findByAttributes(array(
-				'handle' => $handle
+				'handle'  => $handle,
+				'context' => $context
 			));
 
 			if ($fieldRecord)
 			{
 				$field = FieldModel::populateModel($fieldRecord);
 				$this->_fieldsById[$field->id] = $field;
-				$this->_fieldsByHandle[$field->handle] = $field;
+				$this->_fieldsByContextAndHandle[$context][$field->handle] = $field;
 			}
 			else
 			{
-				$this->_fieldsByHandle[$handle] = null;
+				$this->_fieldsByContextAndHandle[$context][$handle] = null;
 			}
 		}
 
-		return $this->_fieldsByHandle[$handle];
+		return $this->_fieldsByContextAndHandle[$context][$handle];
 	}
 
 	/**
@@ -289,6 +300,7 @@ class FieldsService extends BaseApplicationComponent
 		$fieldRecord->groupId      = $field->groupId;
 		$fieldRecord->name         = $field->name;
 		$fieldRecord->handle       = $field->handle;
+		$fieldRecord->context      = $field->context;
 		$fieldRecord->instructions = $field->instructions;
 		$fieldRecord->translatable = $field->translatable;
 		$fieldRecord->type         = $field->type;
@@ -340,6 +352,7 @@ class FieldsService extends BaseApplicationComponent
 				$fieldRecord->groupId      = $field->groupId;
 				$fieldRecord->name         = $field->name;
 				$fieldRecord->handle       = $field->handle;
+				$fieldRecord->context      = $field->context;
 				$fieldRecord->instructions = $field->instructions;
 				$fieldRecord->translatable = $field->translatable;
 				$fieldRecord->type         = $field->type;
@@ -419,7 +432,7 @@ class FieldsService extends BaseApplicationComponent
 
 			if ($isNewField)
 			{
-				$this->_fetchedAllFields = false;
+				$this->_fetchedAllFieldsInContextInContext[$field->context] = false;
 				$this->_fieldsWithContent = null;
 			}
 

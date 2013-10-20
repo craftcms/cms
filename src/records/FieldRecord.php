@@ -82,6 +82,7 @@ class FieldRecord extends BaseRecord
 		return array(
 			'name'         => array(AttributeType::Name, 'required' => true),
 			'handle'       => array(AttributeType::Handle, 'maxLength' => 58, 'required' => true, 'reservedWords' => $this->reservedHandleWords),
+			'context'      => array(AttributeType::String, 'default' => 'global', 'required' => true),
 			'instructions' => array(AttributeType::String, 'column' => ColumnType::Text),
 			'translatable' => AttributeType::Bool,
 			'type'         => array(AttributeType::ClassName, 'required' => true),
@@ -105,7 +106,7 @@ class FieldRecord extends BaseRecord
 	public function defineIndexes()
 	{
 		return array(
-			array('columns' => array('handle'), 'unique' => true),
+			array('columns' => array('handle', 'context'), 'unique' => true),
 		);
 	}
 
