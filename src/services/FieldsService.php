@@ -762,11 +762,11 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	private function _getFieldRecord(FieldModel $field)
 	{
-		$fieldId = $field->id;
-
 		if (!$field->isNew())
 		{
-			if (!isset($this->_fieldRecordsById) || !array_key_exists($fieldId, $this->_fieldRecordsById[$fieldId]))
+			$fieldId = $field->id;
+
+			if (!isset($this->_fieldRecordsById) || !array_key_exists($fieldId, $this->_fieldRecordsById))
 			{
 				$this->_fieldRecordsById[$fieldId] = FieldRecord::model()->findById($fieldId);
 
@@ -780,9 +780,7 @@ class FieldsService extends BaseApplicationComponent
 		}
 		else
 		{
-			$fieldRecord = new FieldRecord();
-			$fieldRecord->id = $fieldId;
-			return $fieldRecord;
+			return new FieldRecord();
 		}
 	}
 }
