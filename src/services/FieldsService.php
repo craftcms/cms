@@ -11,8 +11,8 @@ class FieldsService extends BaseApplicationComponent
 
 	private $_fieldRecordsById;
 	private $_fieldsById;
+	private $_allFieldsInContext;
 	private $_fieldsByContextAndHandle;
-	private $_fetchedAllFieldsInContext;
 	private $_fieldsWithContent;
 
 	// Groups
@@ -147,39 +147,31 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function getAllFields($indexBy = null, $context = 'global')
 	{
-		if (empty($this->_fetchedAllFieldsInContext[$context]))
+		if (!isset($this->_allFieldsInContext[$context]))
 		{
 			$fieldRecords = FieldRecord::model()->ordered()->findAllByAttributes(array(
 				'context' => $context
 			));
 
-			if (!isset($this->_fieldsById))
-			{
-				$this->_fieldsById = array();
-			}
+			$this->_allFieldsInContext[$context] = FieldModel::populateModels($fieldRecords);
 
-			$this->_fieldsById = array_merge($this->_fieldsById, FieldModel::populateModels($fieldRecords, 'id'));
-
-			foreach ($this->_fieldsById as $field)
+			// Cache them in the other arrays too
+			foreach ($this->_allFieldsInContext[$context] as $field)
 			{
+				$this->_fieldsById[$field->id] = $field;
 				$this->_fieldsByContextAndHandle[$context][$field->handle] = $field;
 			}
-
-			$this->_fetchedAllFieldsInContext[$context] = true;
 		}
 
-		if ($indexBy == 'id')
+		if (!$indexBy)
 		{
-			$fields = $this->_fieldsById;
-		}
-		else if (!$indexBy)
-		{
-			$fields = array_values($this->_fieldsById);
+			$fields = $this->_allFieldsInContext[$context];
 		}
 		else
 		{
 			$fields = array();
-			foreach ($this->_fieldsById as $field)
+
+			foreach ($this->_allFieldsInContext[$context] as $field)
 			{
 				$fields[$field->$indexBy] = $field;
 			}
@@ -191,26 +183,27 @@ class FieldsService extends BaseApplicationComponent
 	/**
 	 * Returns all fields that have a column in the content table.
 	 *
+	 * @param string $context
 	 * @return array
 	 */
-	public function getFieldsWithContent()
+	public function getFieldsWithContent($context = 'global')
 	{
-		if (!isset($this->_fieldsWithContent))
+		if (!isset($this->_fieldsWithContent[$context]))
 		{
-			$this->_fieldsWithContent = array();
+			$this->_fieldsWithContent[$context] = array();
 
-			foreach ($this->getAllFields() as $field)
+			foreach ($this->getAllFields(null, $context) as $field)
 			{
 				$fieldType = $field->getFieldType();
 
 				if ($fieldType && $fieldType->defineContentAttribute())
 				{
-					$this->_fieldsWithContent[] = $field;
+					$this->_fieldsWithContent[$context][] = $field;
 				}
 			}
 		}
 
-		return $this->_fieldsWithContent;
+		return $this->_fieldsWithContent[$context];
 	}
 
 	/**
