@@ -380,19 +380,11 @@ class TemplatesService extends BaseApplicationComponent
 		// Are there any JS files to include?
 		if (!empty($this->_jsFiles))
 		{
-			// Do it this way to be absolutely sure we're not loading the same JS file twice on the same page
-			$node = "<script type=\"text/javascript\">\n/*<![CDATA[*/\n" .
-			        "if (typeof window._jsFiles == 'undefined') window._jsFiles = [];\n" .
-			        'var files = '.JsonHelper::encode($this->_jsFiles).";\n" .
-			        "for (var i = 0; i < files.length; i++) {\n" .
-			        "\tif (typeof jQuery == 'undefined' || jQuery.inArray(files[i], window._jsFiles) == -1) {\n" .
-			        "\t\twindow._jsFiles.push(files[i]);\n" .
-			        "\t\tdocument.write('<script type=\"text/javascript\" src=\"'+files[i]+'\"><'+'/script>');\n" .
-			        "\t}\n" .
-			        "}\n" .
-			        "/*]]>*/\n</script>";
-
-			$this->includeFootHtml($node);
+			foreach($this->_jsFiles as $url)
+			{
+				$node = '<script type="text/javascript" src="'.$url.'"></script>';
+				$this->includeFootHtml($node);
+			}
 
 			$this->_jsFiles = array();
 		}
