@@ -20,8 +20,8 @@ class m131105_000003_field_contexts extends BaseMigration
 		}
 
 		// Replace the unique index on 'handle' with one on both 'handle' and 'context'
-		MigrationHelper::dropIndexIfExists('fields', 'handle', true);
-		MigrationHelper::dropIndexIfExists('fields', 'handle,context', true);
+		MigrationHelper::dropIndexIfExists('fields', array('handle'), true);
+		MigrationHelper::dropIndexIfExists('fields', array('handle', 'context'), true);
 		$this->createIndex('fields', 'handle,context', true);
 
 		return true;
