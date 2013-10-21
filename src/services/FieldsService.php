@@ -201,7 +201,7 @@ class FieldsService extends BaseApplicationComponent
 
 			foreach ($this->getAllFields() as $field)
 			{
-				$fieldType = craft()->fields->populateFieldType($field);
+				$fieldType = $field->getFieldType();
 
 				if ($fieldType && $fieldType->defineContentAttribute())
 				{
@@ -413,6 +413,18 @@ class FieldsService extends BaseApplicationComponent
 					}
 				}
 
+				if (!$isNewField)
+				{
+					// Save the old field handle on the model in case the field type needs to do something with it.
+					$field->oldHandle = $fieldRecord->getOldHandle();
+
+					unset($this->_fieldsByContextAndHandle[$field->context][$field->oldHandle]);
+				}
+
+				// Cache it
+				$this->_fieldsById[$field->id] = $field;
+				$this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
+
 				$fieldType->onAfterSave();
 
 				if ($transaction !== null)
@@ -428,12 +440,6 @@ class FieldsService extends BaseApplicationComponent
 				}
 
 				throw $e;
-			}
-
-			if ($isNewField)
-			{
-				$this->_fetchedAllFieldsInContextInContext[$field->context] = false;
-				$this->_fieldsWithContent = null;
 			}
 
 			return true;

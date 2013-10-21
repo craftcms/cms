@@ -32,6 +32,8 @@ class FieldModel extends BaseComponentModel
 			'instructions' => AttributeType::String,
 			'required'     => AttributeType::Bool,
 			'translatable' => AttributeType::Bool,
+
+			'oldHandle'    => AttributeType::String,
 		));
 	}
 
