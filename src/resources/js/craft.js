@@ -44,6 +44,17 @@ $.extend(Craft, {
 	},
 
 	/**
+	 * Formats an ID out of an input name.
+	 *
+	 * @param string inputName
+	 * @return string
+	 */
+	formatInputId: function(inputName)
+	{
+		return this.rtrim(inputName.replace(/[\[\]]+/g, '-'), '-');
+	},
+
+	/**
 	 * Returns whether a package is included in this Craft build.
 	 *
 	 * @return bool

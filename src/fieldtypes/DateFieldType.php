@@ -68,7 +68,7 @@ class DateFieldType extends BaseFieldType
 		$suffix = '-'.uniqid();
 
 		$input = craft()->templates->render('_includes/forms/date', array(
-			'id'       => rtrim(preg_replace('/[\[\]]+/', '-', $name), '-').$suffix,
+			'id'       => craft()->templates->formatInputId($name).$suffix,
 			'name'     => $name,
 			'value'    => $value
 		));
@@ -76,7 +76,7 @@ class DateFieldType extends BaseFieldType
 		if ($this->getSettings()->showTime)
 		{
 			$input .= ' '.craft()->templates->render('_includes/forms/time', array(
-				'id'       => rtrim(preg_replace('/[\[\]]+/', '-', $name), '-').$suffix,
+				'id'       => craft()->templates->formatInputId($name).$suffix,
 				'name'     => $name,
 				'value'    => $value
 			));

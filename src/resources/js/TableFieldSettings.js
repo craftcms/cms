@@ -21,8 +21,8 @@ Craft.TableFieldSettings = Garnish.Base.extend({
 		this.columnsTableName = columnsTableName;
 		this.defaultsTableName = defaultsTableName;
 
-		this.columnsTableId = Craft.rtrim(this.columnsTableName.replace(/[\[\]]+/g, '-'), '-');
-		this.defaultsTableId = Craft.rtrim(this.defaultsTableName.replace(/[\[\]]+/g, '-'), '-');
+		this.columnsTableId = Craft.formatInputId(this.columnsTableName);
+		this.defaultsTableId = Craft.formatInputId(this.defaultsTableName);
 
 		this.columnsTableInputPath = this.columnsTableId.split('-');
 		this.defaultsTableInputPath = this.defaultsTableId.split('-');

@@ -35,7 +35,7 @@ class TagsFieldType extends BaseElementFieldType
 	 */
 	public function getInputHtml($name, $criteria)
 	{
-		$id = rtrim(preg_replace('/[\[\]]+/', '-', $name), '-');
+		$id = craft()->templates->formatInputId($name);
 
 		if (!($criteria instanceof ElementCriteriaModel))
 		{

@@ -154,7 +154,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $criteria)
 	{
-		$id = rtrim(preg_replace('/[\[\]]+/', '-', $name), '-').'-'.StringHelper::UUID();
+		$id = craft()->templates->formatInputId($name).'-'.StringHelper::UUID();
 
 		if (!($criteria instanceof ElementCriteriaModel))
 		{

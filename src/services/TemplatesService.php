@@ -578,7 +578,7 @@ class TemplatesService extends BaseApplicationComponent
 			// id= and for= attributes
 			if ($otherAttributes)
 			{
-				$idNamespace = rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-');
+				$idNamespace = $this->formatInputId($namespace);
 				$html = preg_replace('/(?<![\w\-])((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/i', '$1'.$idNamespace.'-$4$3', $html);
 			}
 		}
@@ -624,10 +624,21 @@ class TemplatesService extends BaseApplicationComponent
 
 		if ($namespace)
 		{
-			$inputId = rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-').'-'.$inputId;
+			$inputId = $this->formatInputId($namespace).'-'.$inputId;
 		}
 
 		return $inputId;
+	}
+
+	/**
+	 * Formats an ID out of an input name.
+	 *
+	 * @param string $inputName
+	 * @return string
+	 */
+	public function formatInputId($inputName)
+	{
+		return rtrim(preg_replace('/[\[\]]+/', '-', $inputName), '-');
 	}
 
 	/**
