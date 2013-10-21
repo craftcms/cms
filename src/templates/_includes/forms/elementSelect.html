@@ -20,8 +20,8 @@
 
 {% set js %}
 	new {{ jsClass }}(
-		"{{ id|e('js') }}",
-		"{{ name|e('js') }}",
+		"{{ id   | namespaceInputId   | e('js') }}",
+		"{{ name | namespaceInputName | e('js') }}",
 		"{{ elementType.getClassHandle()|e('js') }}",
 		{{ sources|json_encode|raw }},
 		{{ criteria|json_encode|raw }},

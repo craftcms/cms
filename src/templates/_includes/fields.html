@@ -1,9 +1,12 @@
 {% if element is not defined %}{% set element = null %}{% endif %}
+{% if namespace is not defined %}{% set namespace = 'fields' %}{% endif %}
 
-{% for field in fields %}
-	{% include "_includes/field" with {
-		fieldId: field.fieldId,
-		required: field.required,
-		element: element
-	} only %}
-{% endfor %}
+{% namespace namespace %}
+	{% for field in fields %}
+		{% include "_includes/field" with {
+			fieldId: field.fieldId,
+			required: field.required,
+			element: element
+		} only %}
+	{% endfor %}
+{% endnamespace %}

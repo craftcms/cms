@@ -24,8 +24,8 @@
 
 {% set js %}
 	new Craft.TagSelectInput(
-		"{{ id|e('js') }}",
-		"{{ name|e('js') }}",
+		"{{ id   | namespaceInputId   | e('js') }}",
+		"{{ name | namespaceInputName | e('js') }}",
 		{{ tagSetId }},
 		{{ elementId ? elementId : 'null' }},
 		{{ hasFields ? 'true' : 'false' }}

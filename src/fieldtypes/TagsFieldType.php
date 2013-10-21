@@ -35,8 +35,6 @@ class TagsFieldType extends BaseElementFieldType
 	 */
 	public function getInputHtml($name, $criteria)
 	{
-		$id = craft()->templates->formatInputId($name);
-
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
 			$criteria = craft()->elements->getCriteria($this->elementType);
@@ -51,7 +49,7 @@ class TagsFieldType extends BaseElementFieldType
 		{
 			return craft()->templates->render('_components/fieldtypes/Tags/input', array(
 				'elementType' => $elementVariable,
-				'id'          => $id,
+				'id'          => craft()->templates->formatInputId($name),
 				'name'        => $name,
 				'elements'    => $criteria,
 				'tagSetId'    => $this->_getTagSetId(),

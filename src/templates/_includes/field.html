@@ -7,7 +7,7 @@
 {% set fieldtype = craft.fields.populateFieldType(field, element) %}
 
 {% if fieldtype %}
-	{% set input = fieldtype.getInputHtml('fields['~field.handle~']', value) %}
+	{% set input = fieldtype.getInputHtml(field.handle, value) %}
 {% else %}
 	{% set input = '<p class="error">' ~ "The fieldtype class “{class}” could not be found."|t({ class: field.type }) ~ '</p>' %}
 {% endif %}

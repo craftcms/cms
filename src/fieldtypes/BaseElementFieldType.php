@@ -154,8 +154,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $criteria)
 	{
-		$id = craft()->templates->formatInputId($name).'-'.StringHelper::UUID();
-
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
 			$criteria = craft()->elements->getCriteria($this->elementType);
@@ -182,7 +180,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		return craft()->templates->render('_includes/forms/elementSelect', array(
 			'jsClass'        => $this->inputJsClass,
 			'elementType'    => new ElementTypeVariable($this->getElementType()),
-			'id'             => $id,
+			'id'             => craft()->templates->formatInputId($name),
 			'storageKey'     => 'field.'.$this->model->id,
 			'name'           => $name,
 			'elements'       => $criteria,
