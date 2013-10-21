@@ -346,6 +346,11 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 div.btn.submit { position: relative; overflow: hidden; }
 div.btn.submit input { position: absolute; left: 100%; }
 
+/* dashed buttons */
+.btn.dashed { border: 1px dashed rgba(0,0,0,0.2) !important; background: none;
+	-webkit-box-shadow: none;
+	        box-shadow: none;
+}
 /* color buttons */
 .color { width: 30px; height: 30px; border-radius: 15px; padding: 0; background: url(../images/checkers.png); cursor: pointer; }
 .color .colorpreview { top: 0; left: 0; width: 30px; height: 30px; border-radius: 15px;
@@ -538,10 +543,6 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .elementselect:after { @include clearafter; }
 .elementselect .element,
 .elementselect .btn { float: left; margin: 0 10px 10px 0; }
-.elementselect .btn { border: 1px dashed rgba(0,0,0,0.2) !important; background: none;
-	-webkit-box-shadow: none;
-	        box-shadow: none;
-}
 .elementselect .element { z-index: 1; }
 .elementselect .caboose { float: left; }
 
