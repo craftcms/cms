@@ -40,4 +40,15 @@ class LightswitchFieldType extends BaseFieldType
 			'on'    => (bool) $value,
 		));
 	}
+
+	/**
+	 * Returns the input value as it should be saved to the database.
+	 *
+	 * @param mixed $value
+	 * @return mixed
+	 */
+	public function prepValueFromPost($value)
+	{
+		return (bool) $value;
+	}
 }
