@@ -229,7 +229,8 @@ class TagsController extends BaseController
 			throw new Exception(Craft::t('No tag exists with the ID “{id}”.', array('id' => $tagId)));
 		}
 
-		$fields = craft()->request->getPost('fields');
+		$fieldNamespace = craft()->request->getPost('fieldNamespace');
+		$fields = craft()->request->getPost($fieldNamespace);
 		$tag->getContent()->setAttributes($fields);
 
 		$success = craft()->tags->saveTagContent($tag);

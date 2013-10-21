@@ -101,7 +101,8 @@ class AssetsController extends BaseController
 		$title = craft()->request->getPost('title');
 		$file->getContent()->title = $title;
 
-		$fields = craft()->request->getPost('fields');
+		$fieldNamespace = craft()->request->getPost('fieldNamespace');
+		$fields = craft()->request->getPost($fieldNamespace);
 		$file->getContent()->setAttributes($fields);
 
 		$success = craft()->assets->saveFileContent($file);
