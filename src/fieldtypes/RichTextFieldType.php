@@ -103,26 +103,14 @@ class RichTextFieldType extends BaseFieldType
 	{
 		$this->_includeFieldResources();
 
-		// Config?
-		if ($this->getSettings()->configFile)
-		{
-			$configPath = craft()->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
-			$config = IOHelper::getFileContents($configPath);
-		}
+		$id = craft()->templates->formatInputId($name);
 
-		if (empty($config))
-		{
-			$config = '{}';
-		}
-
-		$sections = JsonHelper::encode($this->_getSectionSources());
-
-		craft()->templates->includeJs(craft()->templates->render('_components/fieldtypes/RichText/init.js', array(
-			'handle'   => $this->model->handle,
-			'config'   => $config,
-			'lang'     => static::$_inputLang,
-			'sections' => $sections
-		)));
+		craft()->templates->includeJs('new Craft.RichTextInput(' .
+			'"'.craft()->templates->namespaceInputId($id).'", ' .
+			'"'.static::$_inputLang.'", ' .
+			JsonHelper::encode($this->_getSectionSources()).', ' .
+			JsonHelper::encode($this->_getConfigJson()) .
+		');');
 
 		if ($value instanceof RichTextData)
 		{
@@ -145,7 +133,7 @@ class RichTextFieldType extends BaseFieldType
 		// Swap any <!--pagebreak-->'s with <hr>'s
 		$value = str_replace('<!--pagebreak-->', '<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />', $value);
 
-		return '<textarea name="'.$name.'" class="redactor-'.$this->model->handle.'" style="display: none">'.htmlentities($value, ENT_NOQUOTES, 'UTF-8').'</textarea>';
+		return '<textarea id="'.$id.'" name="'.$name.'" style="display: none">'.htmlentities($value, ENT_NOQUOTES, 'UTF-8').'</textarea>';
 	}
 
 	/**
@@ -217,37 +205,57 @@ class RichTextFieldType extends BaseFieldType
 	}
 
 	/**
+	 * Returns the Redactor config JSON used by this field.
+	 *
+	 * @return string
+	 */
+	private function _getConfigJson()
+	{
+		if ($this->getSettings()->configFile)
+		{
+			$configPath = craft()->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
+			$json = IOHelper::getFileContents($configPath);
+		}
+
+		if (empty($json))
+		{
+			$json = '{}';
+		}
+
+		return $json;
+	}
+
+	/**
 	 * Includes the input resources.
 	 *
 	 * @access private
 	 */
 	private function _includeFieldResources()
 	{
-		if (!static::$_includedFieldResources)
+		craft()->templates->includeCssResource('lib/redactor/redactor.css');
+		craft()->templates->includeCssResource('lib/redactor/plugins/pagebreak.css');
+
+		// Gotta use the uncompressed Redactor JS until the compressed one gets our Live Preview menu fix
+		craft()->templates->includeJsResource('lib/redactor/redactor.js');
+		//craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
+
+		craft()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
+		craft()->templates->includeJsResource('lib/redactor/plugins/pagebreak.js');
+
+		craft()->templates->includeTranslations('Insert image', 'Insert URL', 'Choose image', 'Link', 'Link to an entry', 'Link to an asset');
+
+		craft()->templates->includeJsResource('js/RichTextInput.js');
+
+		// Check to see if the Redactor has been translated into the current locale
+		if (craft()->language != craft()->sourceLanguage)
 		{
-			craft()->templates->includeCssResource('lib/redactor/redactor.css');
-			craft()->templates->includeCssResource('lib/redactor/plugins/pagebreak.css');
-
-			// Gotta use the uncompressed Redactor JS until the compressed one gets our Live Preview menu fix
-			craft()->templates->includeJsResource('lib/redactor/redactor.js');
-			//craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
-
-			craft()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
-			craft()->templates->includeJsResource('lib/redactor/plugins/pagebreak.js');
-
-			// Check to see if the Redactor has been translated into the current locale
-			if (craft()->language != craft()->sourceLanguage)
+			// First try to include the actual target locale
+			if (!$this->_includeLangFile(craft()->language))
 			{
-				// First try to include the actual target locale
-				if (!$this->_includeLangFile(craft()->language))
-				{
-					// Otherwise try to load the language (without the territory half)
-					$languageId = craft()->locale->getLanguageID(craft()->language);
-					$this->_includeLangFile($languageId);
-				}
+				// Otherwise try to load the language (without the territory half)
+				$languageId = craft()->locale->getLanguageID(craft()->language);
+				$this->_includeLangFile($languageId);
 			}
-
-			static::$_includedFieldResources = true;
 		}
 	}
 
