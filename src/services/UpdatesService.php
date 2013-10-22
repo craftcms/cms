@@ -105,12 +105,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isCriticalUpdateAvailable()
 	{
-		if ((isset($this->_updateModel) && $this->_updateModel->app->criticalUpdateAvailable))
-		{
-			return true;
-		}
-
-		return false;
+		return (!empty($this->_updateModel->app->criticalUpdateAvailable));
 	}
 
 	/**
@@ -118,12 +113,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isManualUpdateRequired()
 	{
-		if ((isset($this->_updateModel) && $this->_updateModel->app->manualUpdateRequired))
-		{
-			return true;
-		}
-
-		return false;
+		return (!empty($this->_updateModel->app->manualUpdateRequired));
 	}
 
 	/**
