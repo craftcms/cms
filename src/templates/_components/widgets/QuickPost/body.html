@@ -9,15 +9,17 @@
 		required: true
 	}) }}
 
-	{% for field in entryType.getFieldLayout().getFields() %}
-		{% if field.required or field.fieldId in settings.fields %}
-			{% include "_includes/field" with {
-				fieldId: field.fieldId,
-				required: field.required,
-				entry: null
-			} only %}
-		{% endif %}
-	{% endfor %}
+	{% namespace 'fields' %}
+		{% for field in entryType.getFieldLayout().getFields() %}
+			{% if field.required or field.fieldId in settings.fields %}
+				{% include "_includes/field" with {
+					fieldId: field.fieldId,
+					required: field.required,
+					entry: null
+				} only %}
+			{% endif %}
+		{% endfor %}
+	{% endnamespace %}
 
 	<div class="buttons">
 		<input type="submit" class="btn submit" value="{{ 'Post'|t }}">
