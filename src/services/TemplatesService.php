@@ -22,7 +22,7 @@ class TemplatesService extends BaseApplicationComponent
 	private $_jsFiles = array();
 	private $_css = array();
 	private $_hiResCss = array();
-	private $_js = array();
+	private $_jsBuffers = array(array());
 	private $_translations = array();
 
 	/**
@@ -314,7 +314,32 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function includeJs($js, $first = false)
 	{
-		ArrayHelper::prependOrAppend($this->_js, trim($js), $first);
+		$latestBuffer =& $this->_jsBuffers[count($this->_jsBuffers)-1];
+		ArrayHelper::prependOrAppend($latestBuffer, trim($js), $first);
+	}
+
+	/**
+	 * Starts a JS buffer.
+	 */
+	public function startJsBuffer()
+	{
+		$this->_jsBuffers[] = array();
+	}
+
+	/**
+	 * Clears and ends a JS buffer, returning whatever JS nodes were created while the buffer was active.
+	 *
+	 * @return string|null|false
+	 */
+	public function clearJsBuffer()
+	{
+		if (count($this->_jsBuffers) <= 1)
+		{
+			return false;
+		}
+
+		$buffer = array_pop($this->_jsBuffers);
+		return $this->_getCombinedScriptNode($buffer);
 	}
 
 	/**
@@ -390,14 +415,17 @@ class TemplatesService extends BaseApplicationComponent
 		}
 
 		// Is there any JS to include?
-		if (!empty($this->_js))
+		foreach ($this->_jsBuffers as $buffer)
 		{
-			$js = implode("\n\n", $this->_js);
-			$node = "<script type=\"text/javascript\">\n/*<![CDATA[*/\n".$js."\n/*]]>*/\n</script>";
-			$this->includeFootHtml($node);
+			$node = $this->_getCombinedScriptNode($buffer);
 
-			$this->_js = array();
+			if ($node)
+			{
+				$this->includeFootHtml($node);
+			}
 		}
+
+		$this->_jsBuffers = array(array());
 
 		if (!empty($this->_footHtml))
 		{
@@ -756,6 +784,22 @@ class TemplatesService extends BaseApplicationComponent
 			{
 				$twig->addExtension($extension);
 			}
+		}
+	}
+
+	/**
+	 * Returns a <script> node with all the JS in a given array.
+	 *
+	 * @access private
+	 * @param array $scripts
+	 * @return string|null
+	 */
+	private function _getCombinedScriptNode($scripts)
+	{
+		if ($scripts)
+		{
+			$js = implode("\n\n", $scripts);
+			return "<script type=\"text/javascript\">\n/*<![CDATA[*/\n".$js."\n/*]]>*/\n</script>";
 		}
 	}
 }
