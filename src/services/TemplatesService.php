@@ -299,6 +299,22 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Wraps some JS in a <script> tag.
+	 *
+	 * @param string|array $js
+	 * @return string
+	 */
+	public function getScriptTag($js)
+	{
+		if (is_array($js))
+		{
+			$js = $this->_combineJs($js);
+		}
+
+		return "<script type=\"text/javascript\">\n/*<![CDATA[*/\n".$js."\n/*]]>*/\n</script>";
+	}
+
+	/**
 	 * Starts a JS buffer.
 	 */
 	public function startJsBuffer()
@@ -307,11 +323,12 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Clears and ends a JS buffer, returning whatever JS nodes were created while the buffer was active.
+	 * Clears and ends a JS buffer, returning whatever JS was included while the buffer was active.
 	 *
+	 * @param bool $scriptTag
 	 * @return string|null|false
 	 */
-	public function clearJsBuffer()
+	public function clearJsBuffer($scriptTag = true)
 	{
 		if (count($this->_jsBuffers) <= 1)
 		{
@@ -319,7 +336,20 @@ class TemplatesService extends BaseApplicationComponent
 		}
 
 		$buffer = array_pop($this->_jsBuffers);
-		return $this->_getCombinedScriptNode($buffer);
+
+		if ($buffer)
+		{
+			$js = $this->_combineJs($buffer);
+
+			if ($scriptTag)
+			{
+				return $this->getScriptTag($buffer);
+			}
+			else
+			{
+				return $js;
+			}
+		}
 	}
 
 	/**
@@ -397,11 +427,9 @@ class TemplatesService extends BaseApplicationComponent
 		// Is there any JS to include?
 		foreach ($this->_jsBuffers as $buffer)
 		{
-			$node = $this->_getCombinedScriptNode($buffer);
-
-			if ($node)
+			if ($buffer)
 			{
-				$this->includeFootHtml($node);
+				$this->includeFootHtml($this->getScriptTag($buffer));
 			}
 		}
 
@@ -768,18 +796,14 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a <script> node with all the JS in a given array.
+	 * Combines the JS in a buffer.
 	 *
 	 * @access private
 	 * @param array $scripts
-	 * @return string|null
+	 * @return string
 	 */
-	private function _getCombinedScriptNode($scripts)
+	private function _combineJs($js)
 	{
-		if ($scripts)
-		{
-			$js = implode("\n\n", $scripts);
-			return "<script type=\"text/javascript\">\n/*<![CDATA[*/\n".$js."\n/*]]>*/\n</script>";
-		}
+		return implode("\n\n", $js);
 	}
 }
