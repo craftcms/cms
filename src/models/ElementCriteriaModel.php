@@ -291,6 +291,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 */
 	public function first($attributes = null)
 	{
+		$this->setAttributes($attributes);
+
 		return $this->findElementAtOffset(0);
 	}
 
