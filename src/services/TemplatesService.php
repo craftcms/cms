@@ -80,26 +80,6 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns all currently running Twig environments.
-	 *
-	 * @return array|null
-	 */
-	public function getTwigs()
-	{
-		return $this->_twigs;
-	}
-
-	/**
-	 * Sets the Twig environments.
-	 *
-	 * @param $twigs array
-	 */
-	public function setTwigs($twigs)
-	{
-		$this->_twigs = $twigs;
-	}
-
-	/**
 	 * Renders a template.
 	 *
 	 * @param  string $template The name of the template to load, or a StringTemplate object
