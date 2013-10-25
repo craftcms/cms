@@ -75,7 +75,7 @@ class TagsFieldType extends BaseElementFieldType
 			return;
 		}
 
-		$rawValue = $this->element->getRawContent($this->model->handle);
+		$rawValue = $this->element->getContent()->getAttribute($this->model->handle);
 
 		if ($rawValue !== null)
 		{

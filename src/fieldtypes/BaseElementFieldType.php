@@ -216,7 +216,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function onAfterElementSave()
 	{
-		$rawValue = $this->element->getRawContent($this->model->handle);
+		$rawValue = $this->element->getContent()->getAttribute($this->model->handle);
 
 		if ($rawValue !== null)
 		{

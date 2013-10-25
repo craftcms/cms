@@ -313,6 +313,9 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the raw content saved on this entity.
 	 *
+	 * This is now deprecated. Use getContent() to get the ContentModel instead.
+	 *
+	 * @deprecated
 	 * @param string|null $fieldHandle
 	 * @return mixed
 	 */
