@@ -17,6 +17,8 @@ class AppUpdateModel extends BaseModel
 		$attributes['latestVersion']           = AttributeType::String;
 		$attributes['latestBuild']             = AttributeType::String;
 		$attributes['latestDate']              = AttributeType::DateTime;
+		$attributes['targetVersion']           = AttributeType::String;
+		$attributes['targetBuild']             = AttributeType::String;
 		$attributes['realLatestVersion']       = AttributeType::String;
 		$attributes['realLatestBuild']         = AttributeType::String;
 		$attributes['realLatestDate']          = AttributeType::DateTime;
