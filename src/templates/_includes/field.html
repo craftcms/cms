@@ -13,10 +13,10 @@
 {% endif %}
 
 {{ forms.field({
-	label: field.name,
+	label: field.name|e,
 	required: required,
 	translatable: field.translatable,
-	instructions: field.instructions,
+	instructions: field.instructions|e,
 	id: field.handle,
 	errors: errors
 }, input)|raw }}
