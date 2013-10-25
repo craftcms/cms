@@ -7,6 +7,7 @@ namespace Craft;
 class MatrixRecordModel extends BaseElementModel
 {
 	protected $elementType = ElementType::MatrixRecord;
+	private $_owner;
 
 	/**
 	 * @access protected
@@ -32,6 +33,29 @@ class MatrixRecordModel extends BaseElementModel
 		if ($this->typeId)
 		{
 			return craft()->matrix->getRecordTypeById($this->typeId);
+		}
+	}
+
+	/**
+	 * Returns the owner.
+	 *
+	 * @return BaseElementModel|null
+	 */
+	public function getOwner()
+	{
+		if (!isset($this->_owner) && $this->ownerId)
+		{
+			$this->_owner = craft()->elements->getElementById($this->ownerId);
+
+			if (!$this->_owner)
+			{
+				$this->_owner = false;
+			}
+		}
+
+		if ($this->_owner)
+		{
+			return $this->_owner;
 		}
 	}
 
