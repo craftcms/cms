@@ -30,6 +30,51 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns an element by its ID.
+	 *
+	 * @param int $elementId
+	 * @param string|null $type
+	 * @return BaseElementModel|null
+	 */
+	public function getElementById($elementId, $elementType = null)
+	{
+		if (!$elementId)
+		{
+			return null;
+		}
+
+		if (!$elementType)
+		{
+			$elementType = $this->getElementTypeById($elementId);
+
+			if (!$elementType)
+			{
+				return null;
+			}
+		}
+
+		$criteria = $this->getCriteria($elementType);
+		$criteria->id = $elementId;
+		$criteria->status = null;
+		return $criteria->first();
+	}
+
+	/**
+	 * Returns the element type used by the element of a given ID.
+	 *
+	 * @param int $elementId
+	 * @return string|null
+	 */
+	public function getElementTypeById($elementId)
+	{
+		return craft()->db->createCommand()
+			->select('type')
+			->from('elements')
+			->where(array('id' => $elementId))
+			->queryScalar();
+	}
+
+	/**
 	 * Finds elements.
 	 *
 	 * @param mixed $criteria
