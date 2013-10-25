@@ -5,6 +5,7 @@ Craft.Updater = Garnish.Base.extend({
 
 	$graphic: null,
 	$status: null,
+	$errorDetails: null,
 	data: null,
 
 	init: function(handle, manualUpdate)
@@ -76,21 +77,28 @@ Craft.Updater = Garnish.Base.extend({
 			this.postActionRequest(response.nextAction);
 		}
 
+		if (response.errorDetails)
+		{
+			this.$errorDetails = response.errorDetails;
+		}
+
 		if (response.error)
 		{
 			this.$graphic.addClass('error');
-			this.updateStatus(response.error);
+
+			if (this.$errorDetails)
+			{
+				this.updateStatus(this.$errorDetails);
+			}
+			else
+			{
+				this.updateStatus(response.error);
+			}
 		}
 		else if (response.finished)
 		{
 			this.onFinish(response.returnUrl);
 		}
-	},
-
-	onErrorResponse: function()
-	{
-		this.showError(Craft.t('An unknown error occurred. Rolling back…'));
-		this.postActionRequest('update/rollback');
 	},
 
 	onFinish: function(returnUrl)
