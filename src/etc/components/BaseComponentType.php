@@ -53,4 +53,14 @@ abstract class BaseComponentType extends BaseApplicationComponent implements ICo
 
 		return $this->_classHandle;
 	}
+
+	/**
+	 * Returns whether this component should be selectable when choosing a component of this type.
+	 *
+	 * @return bool
+	 */
+	public function isSelectable()
+	{
+		return true;
+	}
 }
