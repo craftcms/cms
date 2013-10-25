@@ -783,12 +783,15 @@ class WebApp extends \CWebApplication
 	 */
 	private function _processRequirementsCheck()
 	{
-		$cachedAppPath = craft()->fileCache->get('appPath');
-		$appPath = $this->path->getAppPath();
-
-		if ($cachedAppPath === false || $cachedAppPath !== $appPath)
+		if ($this->request->isCpRequest())
 		{
-			$this->runController('templates/requirementscheck');
+			$cachedAppPath = craft()->fileCache->get('appPath');
+			$appPath = $this->path->getAppPath();
+
+			if ($cachedAppPath === false || $cachedAppPath !== $appPath)
+			{
+				$this->runController('templates/requirementscheck');
+			}
 		}
 	}
 
