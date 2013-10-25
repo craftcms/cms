@@ -152,8 +152,12 @@ class ElementsService extends BaseApplicationComponent
 							$content = new ContentModel();
 							$content->elementId = $row['id'];
 							$content->locale = $criteria->locale;
-							$content->title = $row['title'];
-							unset($row['title']);
+
+							if (isset($row['title']))
+							{
+								$content->title = $row['title'];
+								unset($row['title']);
+							}
 
 							// Did we actually get the requested locale back?
 							if ($row['locale'] == $criteria->locale)
@@ -266,16 +270,26 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($elementType->hasContent())
 		{
-			$contentCols = 'content.id AS contentId, content.locale, content.title';
+			$contentTable = $elementType->getContentTableForElementsQuery($criteria);
 
-			foreach (craft()->fields->getFieldsWithContent() as $field)
+			if ($contentTable)
 			{
-				$contentCols .= ', content.field_'.$field->handle;
-			}
+				$contentCols = 'content.id AS contentId, content.locale';
 
-			$query->addSelect($contentCols);
-			$query->join(craft()->content->contentTable.' content', 'content.elementId = elements.id');
-			$this->_orderByRequestedLocale($query, 'content', $criteria->locale);
+				if ($elementType->hasTitles())
+				{
+					$contentCols .= ', content.title';
+				}
+
+				foreach ($elementType->getContentFieldColumnsForElementsQuery($criteria) as $column)
+				{
+					$contentCols .= ', content.'.$column;
+				}
+
+				$query->addSelect($contentCols);
+				$query->join($contentTable.' content', 'content.elementId = elements.id');
+				$this->_orderByRequestedLocale($query, 'content', $criteria->locale);
+			}
 		}
 
 		if ($elementType->isLocalized())

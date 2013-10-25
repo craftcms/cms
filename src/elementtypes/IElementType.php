@@ -48,6 +48,18 @@ interface IElementType extends IComponentType
 	public function defineCriteriaAttributes();
 
 	/**
+	 * @param ElementCriteriaModel $criteria
+	 * @return string
+	 */
+	public function getContentTableForElementsQuery(ElementCriteriaModel $criteria);
+
+	/**
+	 * @param ElementCriteriaModel
+	 * @return array
+	 */
+	public function getContentFieldColumnsForElementsQuery(ElementCriteriaModel $criteria);
+
+	/**
 	 * @param DbCommand $query
 	 * @param string $status
 	 * @return string|false

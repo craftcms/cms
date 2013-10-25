@@ -203,7 +203,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		$criteria = $this->prepValue(null);
 		$titles = array();
 
-		foreach ($criteria as $element)
+		foreach ($criteria->find() as $element)
 		{
 			$titles[] = (string) $element;
 		}

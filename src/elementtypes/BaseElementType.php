@@ -95,6 +95,41 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
+	 * Returns the content table name that should be joined in for an elements query.
+	 *
+	 * @param ElementCriteriaModel
+	 * @return string
+	 */
+	public function getContentTableForElementsQuery(ElementCriteriaModel $criteria)
+	{
+		return 'content';
+	}
+
+	/**
+	 * Returns the field column names that should be selected from the content table.
+	 *
+	 * @param ElementCriteriaModel
+	 * @return array
+	 */
+	public function getContentFieldColumnsForElementsQuery(ElementCriteriaModel $criteria)
+	{
+		$contentService = craft()->content;
+		$columns = array();
+
+		$originalFieldContext = $contentService->fieldContext;
+		$contentService->fieldContext = 'global';
+
+		foreach (craft()->fields->getFieldsWithContent() as $field)
+		{
+			$columns[] = 'field_'.$field->handle;
+		}
+
+		$contentService->fieldContext = $originalFieldContext;
+
+		return $columns;
+	}
+
+	/**
 	 * Returns the element query condition for a custom status criteria.
 	 *
 	 * @param DbCommand $query

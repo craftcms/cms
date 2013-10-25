@@ -796,9 +796,9 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 .text input { margin: 0; padding: 0; border: none; outline: none; background: none; }
 .text.small { padding: 3px; }
 
-.input.errors .text,
-.input.errors div.redactor_box,
-.input.errors .border-box,
+.input.errors > .text,
+.input.errors > div.redactor_box,
+.input.errors > .border-box,
 .text.error { border-color: $errorcolor !important; }
 
 .texticon { position: relative; cursor: text; }

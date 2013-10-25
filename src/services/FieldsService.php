@@ -360,7 +360,7 @@ class FieldsService extends BaseApplicationComponent
 				$fieldRecord->groupId      = $field->groupId;
 				$fieldRecord->name         = $field->name;
 				$fieldRecord->handle       = $field->handle;
-				$fieldRecord->context      = $field->context;
+				$fieldRecord->context      = craft()->content->fieldContext;
 				$fieldRecord->instructions = $field->instructions;
 				$fieldRecord->translatable = $field->translatable;
 				$fieldRecord->type         = $field->type;
