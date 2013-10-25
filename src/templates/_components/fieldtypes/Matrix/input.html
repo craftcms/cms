@@ -1,0 +1,36 @@
+<input type="hidden" name="{{ name }}" value="">
+
+<div class="matrix" id="{{ id }}">
+	<div class="records">
+		{% set totalNewRecords = 0 %}
+		{% for record in records %}
+			{% set recordId = record.id %}
+			{% if not recordId %}
+				{% set totalNewRecords = totalNewRecords + 1 %}
+				{% set recordId = 'new'~totalNewRecords %}
+			{% endif %}
+
+			<div class="matrixrecord" data-id="{{ recordId }}">
+				<input type="hidden" name="{{ name }}[{{ recordId }}][type]" value="{{ record.getType() }}">
+				<div class="actions">
+					<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>
+					<a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a>
+				</div>
+				<div class="fields">
+					{% include "_includes/fields" with {
+						namespace: name~'['~recordId~'][fields]',
+						element: record,
+						fields: record.getType().getFieldLayout().getFields()
+					} %}
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+	<div class="buttons">
+		<div class="btngroup">
+			{% for recordType in recordTypes %}
+				<div class="btn{% if loop.first %} add icon{% endif %}" data-type="{{ recordType.handle }}">{{ recordType.name|t }}</div>
+			{% endfor %}
+		</div>
+	</div>
+</div>

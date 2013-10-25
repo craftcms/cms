@@ -1941,9 +1941,10 @@ Garnish.DragSort = Garnish.Drag.extend({
 		this.base();
 
 		// add the caboose?
-		if (this.settings.container && this.$caboose)
+		if (this.$caboose)
 		{
-			this.$caboose.appendTo(this.settings.container);
+			var $lastItem = $().add(this.$items).last();
+			this.$caboose.insertAfter($lastItem);
 			this.otherItems.push(this.$caboose[0]);
 			this.totalOtherItems++;
 		}

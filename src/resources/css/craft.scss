@@ -754,6 +754,7 @@ ul.tree,
 .text,
 #main div.redactor_box,
 .border-box,
+.matrix-configurator > .field > .input,
 .lightswitch { border: 1px solid #ccc;
 	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.1), 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
 	        box-shadow: inset 0 1px 1px rgba(0,0,0,0.1), 0 0 0 $blurglowcolor;    -moz-transition: border linear 100ms,         box-shadow linear 100ms;
@@ -901,6 +902,52 @@ ul.errors li { color: $errorcolor; }
 .message-container { position: absolute; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; }
 .message-container.no-access { background: rgba(50,50,50,0.9); }
 .message-container .pane { top: 50%; margin-top: -33px !important; margin-left: auto; margin-right: auto; width: 320px; }
+
+/* ----------------------------------------
+/* Matrix
+/* ----------------------------------------*/
+
+/* config */
+.matrix-configurator > .field { max-width: none; }
+.matrix-configurator > .field > .input { position: relative; padding-left: 400px; height: 500px; }
+.matrix-configurator .mc-sidebar { position: absolute; top: 0; margin: 0; border: none; width: 200px; height: 100%; background: hsla($hue, 8%, 0%, 0.03);
+	-webkit-box-shadow: inset -1px 0 0 rgba(0,0,0,0.06);
+	        box-shadow: inset -1px 0 0 rgba(0,0,0,0.06);
+}
+.matrix-configurator .mc-sidebar.record-types { left: 0; }
+.matrix-configurator .mc-sidebar.fields { left: 200px; }
+.matrix-configurator .mc-sidebar .items { margin-top: -1px; padding-top: 1px; height: 468px; overflow: auto; }
+.matrixconfigitem { position: relative; margin-top: -1px; padding: 11px 45px 10px 15px; border-bottom: 1px solid rgba(0,0,0,0.06); @include unselectable; cursor: default; }
+.matrixconfigitem.sel { background: rgba(0,0,0,0.05); }
+.matrixconfigitem.error { background: rgba(255,0,0,0.1); }
+.matrixconfigitem.sel.error { background: rgba(200,0,0,0.2); }
+.matrixconfigitem .handle { font-size: 11px; color: $mediumtextcolor; }
+.matrixconfigitem .actions { position: absolute; right: 0; width: 30px; }
+.matrixconfigitem.mci-recordtype .actions { top: 10px; }
+.matrixconfigitem.mci-field .actions { top: 20px; }
+.matrixconfigitem .actions .icon { display: block; margin-bottom: 1px; text-align: center; }
+.matrixconfigitem .actions .icon.settings:before { color: rgba(0,0,0,0.2); }
+.matrixconfigitem .actions .icon.settings.error:before { color: $errorcolor; }
+.matrixconfigitem .actions .icon.settings:not(.disabled):hover:before { color: $linkcolor; }
+.matrix-configurator .mc-sidebar .items .btn { margin: 15px; }
+
+.matrix-configurator .field-settings { position: relative; height: 100%; }
+.matrix-configurator .field-settings .items { padding: 30px; height: 408px; overflow: auto; }
+
+.matrix-configurator .mc-sidebar > .col-inner-container > .heading,
+.matrix-configurator .field-settings > .col-inner-container > .heading { margin: 0; padding: 7px 15px 6px; border-bottom: 1px solid rgba(0,0,0,0.06); @include linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.03)); }
+
+/* records */
+.matrixrecord { position: relative; margin-bottom: 4px; border-bottom: 1px solid $hrcolor; padding: 15px 16px; background: #fff;
+	-webkit-box-shadow: 0 0 3px rgba(0,0,0,0.15);
+	   -moz-box-shadow: 0 0 3px rgba(0,0,0,0.15);
+}
+.matrixrecord > .actions { position: absolute; z-index: 1; top: 5px; right: 5px; }
+.matrixrecord > .actions a { width: 15px; height: 20px; text-align: center; }
+.matrixrecord > .fields > .field { margin: 15px 0; }
+.matrix .matrixrecord:first-child { margin-top: 20px; }
+.matrix .matrixrecord:last-child { margin-bottom: 20px; }
+.matrix > .buttons { margin-top: 0; }
 
 /* ----------------------------------------
 /* IE hacks
