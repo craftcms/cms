@@ -118,7 +118,7 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .rightalign { text-align: right; }
 .centeralign { text-align: center; }
 .nowrap { white-space: nowrap; }
-.light { color: $mediumtext; font-weight: normal; }
+.light { color: $mediumtextcolor; font-weight: normal; }
 
 .required:after { content: '*'; margin: -2px 0 0 2px; font-size: 7px; color: $errorcolor; }
 
@@ -138,7 +138,7 @@ td.right { float: none; text-align: right; }
 .token { display: inline-block; border: 1px solid #c1c1c1; border-radius: 10px; padding: 0 7px 1px; font-size: 12px; line-height: 14px; color: $textcolor; text-shadow: 0 1px 1px rgba(255,255,255,0.5); background: #ddd; }
 .token[data-name='*'] { text-indent: -100px; overflow: hidden; }
 .token[data-name='*']:before { @include icon; display: block; float: left; margin: 3px 0 -1px; font-size: 9px; content: '*'; text-indent: 0; }
-.token:focus { border-color: $mediumtext; background: #aaa; outline: none; }
+.token:focus { border-color: $mediumtextcolor; background: #aaa; outline: none; }
 
 .settings-btn { display: block; width: 16px; height: 16px; background: url(../images/settings-btn.png); cursor: pointer; }
 .settings-btn.active { background-position: 0 100%; }
@@ -733,7 +733,7 @@ ul.tree,
 .menu ul li a:not(.sel):hover .light,
 .menu:not(:hover) ul li a:not(.sel).hover,
 .menu:not(:hover) ul li a:not(.sel).hover .light { color: #fff; background: $headerBgColor; }
-.menu ul li a.sel { color: $mediumtext; cursor: default; }
+.menu ul li a.sel { color: $mediumtextcolor; cursor: default; }
 
 
 .menulist { padding-left: 30px; }
@@ -781,7 +781,7 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 
 .field { position: relative; margin: 30px 0; }
 .field .heading { margin-bottom: 4px; }
-.field .instructions { margin-top: 0; font-size: 11px; color: $mediumtext; }
+.field .instructions { margin-top: 0; font-size: 11px; color: $mediumtextcolor; }
 
 /* toggles and nested fields */
 .nested-fields { margin: -30px -30px; padding: 30px 30px 0; overflow: hidden; }
