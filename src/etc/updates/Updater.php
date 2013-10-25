@@ -90,6 +90,22 @@ class Updater
 			throw new Exception(Craft::t('There was a problem unpacking the downloaded package.'));
 		}
 
+		Craft::log('Validating any new requirements from the patch file.');
+		$errors = $this->_validateNewRequirements($unzipFolder);
+
+		if (!empty($errors))
+		{
+			throw new Exception(Craft::t('Your server does not meet the following minimum requirements for @@@appName@@@ to run:<br /> {messages}', array('messages' => implode('<br />', $errors))));
+		}
+
+		// Validate that the paths in the update manifest file are all writable by Craft
+		Craft::log('Validating update manifest file paths are writable.', LogLevel::Info, true);
+		$writableErrors = $this->_validateManifestPathsWritable($unzipFolder);
+		if (count($writableErrors) > 0)
+		{
+			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to the follow paths, but can’t:<br /> {files}', array('files' => implode('<br />', $writableErrors))));
+		}
+
 		return array('uid' => $uid);
 	}
 
@@ -101,14 +117,6 @@ class Updater
 	{
 		$unzipFolder = UpdateHelper::getUnzipFolderFromUID($uid);
 
-		// Validate that the paths in the update manifest file are all writable by Craft
-		Craft::log('Validating update manifest file paths are writable.', LogLevel::Info, true);
-		$writableErrors = $this->_validateManifestPathsWritable($unzipFolder);
-		if (count($writableErrors) > 0)
-		{
-			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to the follow paths, but can’t:<br /> {files}', array('files' => implode('<br />',  $writableErrors))));
-		}
-
 		// Backup any files about to be updated.
 		Craft::log('Backing up files that are about to be updated.', LogLevel::Info, true);
 		if (!$this->_backupFiles($unzipFolder))
@@ -119,25 +127,36 @@ class Updater
 
 	/**
 	 * @param $uid
-	 * @throws Exception
+	 * @throws \Exception
 	 */
 	public function updateFiles($uid)
 	{
 		$unzipFolder = UpdateHelper::getUnzipFolderFromUID($uid);
 
-		// Put the site into maintenance mode.
-		Craft::log('Putting the site into maintenance mode.', LogLevel::Info, true);
-		craft()->enableMaintenanceMode();
-
-		// Update the files.
-		Craft::log('Performing file update.', LogLevel::Info, true);
-		if (!UpdateHelper::doFileUpdate(UpdateHelper::getManifestData($unzipFolder), $unzipFolder))
+		try
 		{
-			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
+			// Put the site into maintenance mode.
+			Craft::log('Putting the site into maintenance mode.', LogLevel::Info, true);
+			craft()->enableMaintenanceMode();
+
+			// Update the files.
+			Craft::log('Performing file update.', LogLevel::Info, true);
+			if (!UpdateHelper::doFileUpdate(UpdateHelper::getManifestData($unzipFolder), $unzipFolder))
+			{
+				Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
+				craft()->disableMaintenanceMode();
+
+				throw new Exception(Craft::t('There was a problem updating your files.'));
+			}
+		}
+		catch (\Exception $e)
+		{
+			Craft::log('There was a exception. Taking the site out of maintenance mode. Exception: '.$e->getMessage(), LogLevel::Info, true);
 			craft()->disableMaintenanceMode();
 
-			throw new Exception(Craft::t('There was a problem updating your files.'));
+			throw $e;
 		}
+
 	}
 
 	/**
@@ -245,19 +264,19 @@ class Updater
 	 */
 	public function cleanUp($uid)
 	{
+		// Clear the updates cache.
+		Craft::log('Clearing the update cache.', LogLevel::Info, true);
+		if (!craft()->updates->flushUpdateInfoFromCache())
+		{
+			throw new Exception(Craft::t('The update was performed successfully, but there was a problem invalidating the update cache.'));
+		}
+
 		// If uid !== false, then it's an auto-update.
 		if ($uid !== false)
 		{
 			// Clean-up any leftover files.
 			Craft::log('Cleaning up temp files after update.', LogLevel::Info, true);
 			$this->_cleanTempFiles();
-		}
-
-		// Clear the updates cache.
-		Craft::log('Clearing the update cache.', LogLevel::Info, true);
-		if (!craft()->updates->flushUpdateInfoFromCache())
-		{
-			throw new Exception(Craft::t('The update was performed successfully, but there was a problem invalidating the update cache.'));
 		}
 
 		Craft::log('Finished Updater.', LogLevel::Info, true);
@@ -454,5 +473,50 @@ class Updater
 		}
 
 		return true;
+	}
+
+	/**
+	 * @param $unzipFolder
+	 * @return array
+	 * @throws Exception
+	 */
+	private function _validateNewRequirements($unzipFolder)
+	{
+		$requirementsFolderPath = $unzipFolder.'app/etc/requirements/';
+		$requirementsFile = $requirementsFolderPath.'Requirements.php';
+		$errors = array();
+
+		if (!IOHelper::fileExists($requirementsFile))
+		{
+			throw new Exception('The Requirements file is required and it does not exist at '.$requirementsFile);
+		}
+
+		$tempFileName = StringHelper::UUID().'.php';
+
+		// Make a dupe of the requirements file and give it a random file name.
+		IOHelper::copyFile($requirementsFile, $requirementsFolderPath.$tempFileName);
+
+		$newTempFilePath = craft()->path->getAppPath().'etc/requirements/'.$tempFileName;
+
+		// Copy the random file name requirements to the requirements folder.  We don't want to execute any PHP from the storage folder.
+		IOHelper::copyFile($requirementsFolderPath.$tempFileName, $newTempFilePath);
+
+		$requirements = require_once($newTempFilePath);
+
+		$checker = new RequirementsChecker($requirements);
+		$checker->run();
+
+		if ($checker->getResult() == RequirementResult::Failed)
+		{
+			foreach ($checker->getRequirements() as $requirement)
+			{
+				$errors[] = $requirement->getNotes();
+			}
+		}
+
+		// Cleanup
+		IOHelper::deleteFile($newTempFilePath);
+
+		return $errors;
 	}
 }

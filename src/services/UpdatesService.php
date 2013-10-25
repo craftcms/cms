@@ -262,13 +262,12 @@ class UpdatesService extends BaseApplicationComponent
 		{
 			$updater = new Updater();
 
-			// Make sure we still meet the requirements.
+			// Make sure we still meet the existing requirements.
 			$updater->checkRequirements();
 
 			// No need to get the latest update info if this is a manual update.
 			if (!$manual)
 			{
-				$updater->getLatestUpdateInfo();
 				$updateModel = $this->getUpdates();
 				Craft::log('Updating from '.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild.' to '.$updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild.'.', LogLevel::Info, true);
 				$result = $updater->getUpdateFileInfo();
@@ -449,18 +448,16 @@ class UpdatesService extends BaseApplicationComponent
 			$this->onEndUpdate(new Event($this, array(
 				'success' => true
 			)));
-
-			return array('success' => true);
 		}
 		catch (\Exception $e)
 		{
-			return array('success' => false, 'message' => $e->getMessage());
+			Craft::log('There was an error during cleanup, but we don\'t really care: '.$e->getMessage());
 		}
 	}
 
 	/**
-	 * @param      $uid
-	 * @param bool $dbBackupPath
+	 * @param        $uid
+	 * @param  bool  $dbBackupPath
 	 * @return array
 	 */
 	public function rollbackUpdate($uid, $dbBackupPath = false)
