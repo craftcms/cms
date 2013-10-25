@@ -360,7 +360,7 @@ class FieldsService extends BaseApplicationComponent
 				$fieldRecord->groupId      = $field->groupId;
 				$fieldRecord->name         = $field->name;
 				$fieldRecord->handle       = $field->handle;
-				$fieldRecord->context      = craft()->content->fieldContext;
+				$fieldRecord->context      = $field->context;
 				$fieldRecord->instructions = $field->instructions;
 				$fieldRecord->translatable = $field->translatable;
 				$fieldRecord->type         = $field->type;
@@ -434,6 +434,8 @@ class FieldsService extends BaseApplicationComponent
 				// Cache it
 				$this->_fieldsById[$field->id] = $field;
 				$this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
+				unset($this->_allFieldsInContext[$field->context]);
+				unset($this->_fieldsWithContent[$field->context]);
 
 				$fieldType->onAfterSave();
 
