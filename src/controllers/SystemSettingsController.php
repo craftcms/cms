@@ -24,6 +24,12 @@ class SystemSettingsController extends BaseController
 		$tools = craft()->components->getComponentsByType(ComponentType::Tool);
 		ksort($tools);
 
+		// If there are no Asset sources, don't display the update Asset indexes tool.
+		if (count(craft()->assetSources->getAllSources()) == 0)
+		{
+			unset($tools['AssetIndex']);
+		}
+
 		$variables['tools'] = ToolVariable::populateVariables($tools);
 
 		$this->renderTemplate('settings/index', $variables);
