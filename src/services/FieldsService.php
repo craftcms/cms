@@ -349,10 +349,7 @@ class FieldsService extends BaseApplicationComponent
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
-				if (!$field->context)
-				{
-					$field->context = craft()->content->fieldContext;
-				}
+				$field->context = craft()->content->fieldContext;
 
 				$fieldRecord = $this->_getFieldRecord($field);
 				$isNewField = $fieldRecord->isNewRecord();
