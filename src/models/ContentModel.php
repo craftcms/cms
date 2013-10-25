@@ -26,11 +26,9 @@ class ContentModel extends BaseModel
 
 		if (craft()->isInstalled() && !craft()->isConsole())
 		{
-			$allFields = craft()->fields->getAllFields();
-
-			foreach ($allFields as $field)
+			foreach (craft()->fields->getAllFields() as $field)
 			{
-				$fieldType = craft()->fields->populateFieldType($field);
+				$fieldType = $field->getFieldType();
 
 				if ($fieldType)
 				{
@@ -117,5 +115,59 @@ class ContentModel extends BaseModel
 				$this->$fieldHandle = $value;
 			}
 		}
+	}
+
+	/**
+	 * Validates the custom fields.
+	 *
+	 * @param array|null $attributes
+	 * @param bool $clearErrors
+	 * @return bool
+	 */
+	public function validate($attributes = null, $clearErrors = true)
+	{
+		$validates = parent::validate($attributes, $clearErrors);
+
+		foreach (craft()->fields->getAllFields() as $field)
+		{
+			$handle = $field->handle;
+
+			if (is_array($attributes) && !in_array($handle, $attributes))
+			{
+				continue;
+			}
+
+			$value = $this->getAttribute($handle);
+
+			// Don't worry about blank values. Those will already be caught by required field validation.
+			if ($value)
+			{
+				$fieldType = $field->getFieldType();
+
+				if ($fieldType)
+				{
+					$errors = $fieldType->validate($value);
+
+					if ($errors !== true)
+					{
+						if (is_string($errors))
+						{
+							$this->addError($handle, $errors);
+						}
+						else if (is_array($errors))
+						{
+							foreach ($errors as $error)
+							{
+								$this->addError($handle, $error);
+							}
+						}
+
+						$validates = false;
+					}
+				}
+			}
+		}
+
+		return $validates;
 	}
 }

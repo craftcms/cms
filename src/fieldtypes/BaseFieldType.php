@@ -80,6 +80,19 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
+	 * Validates the value beyond the checks that were assumed based on the content attribute.
+	 *
+	 * Returns 'true' or any custom validation errors.
+	 *
+	 * @param mixed $value
+	 * @return true|string|array
+	 */
+	public function validate($value)
+	{
+		return true;
+	}
+
+	/**
 	 * Performs any additional actions after the element has been saved.
 	 */
 	public function onAfterElementSave()
