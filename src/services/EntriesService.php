@@ -14,13 +14,7 @@ class EntriesService extends BaseApplicationComponent
 	 */
 	public function getEntryById($entryId)
 	{
-		if ($entryId)
-		{
-			$criteria = craft()->elements->getCriteria(ElementType::Entry);
-			$criteria->id = $entryId;
-			$criteria->status = null;
-			return $criteria->first();
-		}
+		return craft()->elements->getElementById($entryId, ElementType::Entry);
 	}
 
 	/**
