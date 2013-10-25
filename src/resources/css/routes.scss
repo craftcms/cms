@@ -14,7 +14,7 @@
 .route .url:before { @include icon; margin: 0 5px 0 0; content: 'world'; }
 .route .url:after { display: block; content: '.'; text-indent: -100%; overflow: hidden; position: absolute; top: 0; right: -15px; width: 15px; height: 32px; background: url(../images/route-bg.png) no-repeat right; }
 .route .url .token { margin: 0 2px; }
-.route .template { color: #999; }
+.route .template { color: $mediumtextcolor; }
 .route .template:before { @include icon; margin: 0 5px 0 0; content: 'template'; }
 
 .route-settings { width: 450px; }
