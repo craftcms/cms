@@ -50,7 +50,9 @@ class NumberFieldType extends BaseFieldType
 	 */
 	public function defineContentAttribute()
 	{
-		return ModelHelper::getNumberAttributeConfig($this->settings->min, $this->settings->max, $this->settings->decimals);
+		$attribute = ModelHelper::getNumberAttributeConfig($this->settings->min, $this->settings->max, $this->settings->decimals);
+		$attribute['default'] = 0;
+		return $attribute;
 	}
 
 	/**
