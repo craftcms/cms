@@ -44,7 +44,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	function __toString()
 	{
-		return $this->getTitle();
+		return (string) $this->getTitle();
 	}
 
 	/**
