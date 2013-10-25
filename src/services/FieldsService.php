@@ -6,9 +6,7 @@ namespace Craft;
  */
 class FieldsService extends BaseApplicationComponent
 {
-	public $contentTable = 'content';
 	public $oldFieldColumnPrefix = 'field_';
-	public $fieldColumnPrefix = 'field_';
 
 	private $_groupsById;
 	private $_fetchedAllGroups = false;
@@ -146,11 +144,12 @@ class FieldsService extends BaseApplicationComponent
 	 * Returns all fields.
 	 *
 	 * @param string|null $indexBy
-	 * @param string $context
 	 * @return array
 	 */
-	public function getAllFields($indexBy = null, $context = 'global')
+	public function getAllFields($indexBy = null)
 	{
+		$context = craft()->content->fieldContext;
+
 		if (!isset($this->_allFieldsInContext[$context]))
 		{
 			$fieldRecords = FieldRecord::model()->ordered()->findAllByAttributes(array(
@@ -187,16 +186,17 @@ class FieldsService extends BaseApplicationComponent
 	/**
 	 * Returns all fields that have a column in the content table.
 	 *
-	 * @param string $context
 	 * @return array
 	 */
-	public function getFieldsWithContent($context = 'global')
+	public function getFieldsWithContent()
 	{
+		$context = craft()->content->fieldContext;
+
 		if (!isset($this->_fieldsWithContent[$context]))
 		{
 			$this->_fieldsWithContent[$context] = array();
 
-			foreach ($this->getAllFields(null, $context) as $field)
+			foreach ($this->getAllFields() as $field)
 			{
 				$fieldType = $field->getFieldType();
 
@@ -241,11 +241,12 @@ class FieldsService extends BaseApplicationComponent
 	 * Returns a field by its handle.
 	 *
 	 * @param string $handle
-	 * @param string $context
 	 * @return FieldModel|null
 	 */
-	public function getFieldByHandle($handle, $context = 'global')
+	public function getFieldByHandle($handle)
 	{
+		$context = craft()->content->fieldContext;
+
 		if (!isset($this->_fieldsByContextAndHandle[$context]) || !array_key_exists($handle, $this->_fieldsByContextAndHandle[$context]))
 		{
 			$fieldRecord = FieldRecord::model()->findByAttributes(array(
@@ -293,6 +294,11 @@ class FieldsService extends BaseApplicationComponent
 	public function validateField(FieldModel $field)
 	{
 		$fieldRecord = $this->_getFieldRecord($field);
+
+		if (!$field->context)
+		{
+			$field->context = craft()->content->fieldContext;
+		}
 
 		$fieldRecord->groupId      = $field->groupId;
 		$fieldRecord->name         = $field->name;
@@ -343,6 +349,11 @@ class FieldsService extends BaseApplicationComponent
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
+				if (!$field->context)
+				{
+					$field->context = craft()->content->fieldContext;
+				}
+
 				$fieldRecord = $this->_getFieldRecord($field);
 				$isNewField = $fieldRecord->isNewRecord();
 
@@ -374,6 +385,8 @@ class FieldsService extends BaseApplicationComponent
 				}
 
 				// Create/alter the content table column
+				$contentTable = craft()->content->contentTable;
+				$fieldColumnPrefix = craft()->content->fieldColumnPrefix;
 				$column = $fieldType->defineContentAttribute();
 
 				if ($column)
@@ -382,19 +395,19 @@ class FieldsService extends BaseApplicationComponent
 
 					if ($isNewField)
 					{
-						craft()->db->createCommand()->addColumn($this->contentTable, $this->fieldColumnPrefix.$field->handle, $column);
+						craft()->db->createCommand()->addColumn($contentTable, $fieldColumnPrefix.$field->handle, $column);
 					}
 					else
 					{
 						// Existing field going from a field that did not define any content attributes to one that does.
-						if (!craft()->db->columnExists($this->contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle()))
+						if (!craft()->db->columnExists($contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle()))
 						{
-							craft()->db->createCommand()->addColumn($this->contentTable, $this->fieldColumnPrefix.$field->handle, $column);
+							craft()->db->createCommand()->addColumn($contentTable, $fieldColumnPrefix.$field->handle, $column);
 						}
 						else
 						{
 							// Existing field that already had a column defined, just altering it.
-							craft()->db->createCommand()->alterColumn($this->contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle(), $column, $this->fieldColumnPrefix.$field->handle);
+							craft()->db->createCommand()->alterColumn($contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle(), $column, $fieldColumnPrefix.$field->handle);
 						}
 					}
 				}
@@ -403,9 +416,9 @@ class FieldsService extends BaseApplicationComponent
 					// Did the old field have a column we need to remove?
 					if (!$isNewField)
 					{
-						if ($fieldRecord->getOldHandle() && craft()->db->columnExists($this->contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle()))
+						if ($fieldRecord->getOldHandle() && craft()->db->columnExists($contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle()))
 						{
-							craft()->db->createCommand()->dropColumn($this->contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle());
+							craft()->db->createCommand()->dropColumn($contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle());
 						}
 					}
 				}
@@ -480,9 +493,12 @@ class FieldsService extends BaseApplicationComponent
 			$field->getFieldType()->onBeforeDelete();
 
 			// De we need to delete the content column?
-			if (craft()->db->columnExists($this->contentTable, $this->fieldColumnPrefix.$field->handle))
+			$contentTable = craft()->content->contentTable;
+			$fieldColumnPrefix = craft()->content->fieldColumnPrefix;
+
+			if (craft()->db->columnExists($contentTable, $fieldColumnPrefix.$field->handle))
 			{
-				craft()->db->createCommand()->dropColumn($this->contentTable, $this->fieldColumnPrefix.$field->handle);
+				craft()->db->createCommand()->dropColumn($contentTable, $fieldColumnPrefix.$field->handle);
 			}
 
 			// Delete the row in fields

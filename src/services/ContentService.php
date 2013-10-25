@@ -6,6 +6,10 @@ namespace Craft;
  */
 class ContentService extends BaseApplicationComponent
 {
+	public $contentTable = 'content';
+	public $fieldColumnPrefix = 'field_';
+	public $fieldContext = 'global';
+
 	/**
 	 * Returns the content model for a given element and locale.
 	 *
@@ -23,18 +27,20 @@ class ContentService extends BaseApplicationComponent
 		}
 
 		$row = craft()->db->createCommand()
-			->from('content')
+			->from($this->contentTable)
 			->where($conditions)
 			->queryRow();
 
 		if ($row)
 		{
 			// Rename the field column names
+			$fieldColumnPrefixLength = strlen($this->fieldColumnPrefix);
+
 			foreach ($row as $column => $value)
 			{
-				if (strncmp($column, 'field_', 6) === 0)
+				if (strncmp($column, $this->fieldColumnPrefix, $fieldColumnPrefixLength) === 0)
 				{
-					$fieldHandle = substr($column, 6);
+					$fieldHandle = substr($column, $fieldColumnPrefixLength);
 					$row[$fieldHandle] = $value;
 					unset($row[$column]);
 				}
@@ -147,14 +153,20 @@ class ContentService extends BaseApplicationComponent
 				'id'        => $content->id,
 				'elementId' => $content->elementId,
 				'locale'    => $content->locale,
-				'title'     => $content->title,
 			);
+
+			// If the element type has titles, than it's required and will be set.
+			// Otherwise, no need to include it (it might not even be a real column if this isn't the 'content' table).
+			if ($content->title)
+			{
+				$values['title'] = $content->title;
+			}
 
 			foreach (craft()->fields->getFieldsWithContent() as $field)
 			{
 				$handle = $field->handle;
 				$value = $content->$handle;
-				$values['field_'.$field->handle] = ModelHelper::packageAttributeValue($value, true);
+				$values[$this->fieldColumnPrefix.$field->handle] = ModelHelper::packageAttributeValue($value, true);
 			}
 
 			$isNewContent = !$content->id;
@@ -162,12 +174,12 @@ class ContentService extends BaseApplicationComponent
 			if (!$isNewContent)
 			{
 				$affectedRows = craft()->db->createCommand()
-					->update('content', $values, array('id' => $content->id));
+					->update($this->contentTable, $values, array('id' => $content->id));
 			}
 			else
 			{
 				$affectedRows = craft()->db->createCommand()
-					->insert('content', $values);
+					->insert($this->contentTable, $values);
 
 				if ($affectedRows)
 				{
@@ -235,7 +247,7 @@ class ContentService extends BaseApplicationComponent
 		{
 			// Get the other locales' content
 			$rows = craft()->db->createCommand()
-				->from('content')
+				->from($this->contentTable)
 				->where(
 					array('and', 'elementId = :elementId', 'locale != :locale'),
 					array(':elementId' => $element->id, ':locale' => $content->locale))

@@ -134,7 +134,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 		if ($this->defineContentAttribute())
 		{
 			$handle = $this->model->handle;
-			$query->andWhere(DbHelper::parseParam('content.field_'.$handle, $value, $query->params));
+			$query->andWhere(DbHelper::parseParam('content.'.craft()->content->fieldColumnPrefix.$handle, $value, $query->params));
 		}
 		else
 		{

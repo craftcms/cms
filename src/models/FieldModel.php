@@ -28,7 +28,7 @@ class FieldModel extends BaseComponentModel
 			'groupId'      => AttributeType::Number,
 			'name'         => AttributeType::String,
 			'handle'       => AttributeType::String,
-			'context'      => array(AttributeType::String, 'default' => 'global'),
+			'context'      => AttributeType::String,
 			'instructions' => AttributeType::String,
 			'required'     => AttributeType::Bool,
 			'translatable' => AttributeType::Bool,

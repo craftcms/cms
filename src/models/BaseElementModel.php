@@ -27,7 +27,6 @@ abstract class BaseElementModel extends BaseModel
 	{
 		return array(
 			'id'          => AttributeType::Number,
-			//'type'        => array(AttributeType::String, 'default' => $this->elementType),
 			'enabled'     => array(AttributeType::Bool, 'default' => true),
 			'archived'    => array(AttributeType::Bool, 'default' => false),
 			'locale'      => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
@@ -254,7 +253,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	function __isset($name)
 	{
-		if (parent::__isset($name) || craft()->fields->getFieldByHandle($name))
+		if (parent::__isset($name) || $this->getFieldByHandle($name))
 		{
 			return true;
 		}
@@ -272,7 +271,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function offsetExists($offset)
 	{
-		if (parent::offsetExists($offset) || craft()->fields->getFieldByHandle($offset))
+		if (parent::offsetExists($offset) || $this->getFieldByHandle($offset))
 		{
 			return true;
 		}
@@ -299,7 +298,8 @@ abstract class BaseElementModel extends BaseModel
 		catch (\Exception $e)
 		{
 			// Is $name a field handle?
-			$field = craft()->fields->getFieldByHandle($name);
+			$field = $this->getFieldByHandle($name);
+
 			if ($field)
 			{
 				return $this->_getPreppedContentForField($field);
@@ -415,20 +415,33 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if (!isset($this->_content))
 		{
-			if ($this->id)
-			{
-				$this->_content = craft()->content->getElementContent($this->id, $this->locale);
-			}
-
-			if (empty($this->_content))
-			{
-				$this->_content = new ContentModel();
-				$this->_content->elementId = $this->id;
-				$this->_content->locale = $this->locale;
-			}
+			$this->_content = $this->getContentModel();
 		}
 
 		return $this->_content;
+	}
+
+	/**
+	 * Returns a ContentModel to be used as this element's content.
+	 *
+	 * @access protected
+	 * @return ContentModel
+	 */
+	protected function getContentModel()
+	{
+		if ($this->id)
+		{
+			$content = craft()->content->getElementContent($this->id, $this->locale);
+		}
+
+		if (empty($content))
+		{
+			$content = new ContentModel();
+			$content->elementId = $this->id;
+			$content->locale = $this->locale;
+		}
+
+		return $content;
 	}
 
 	/**
@@ -439,6 +452,18 @@ abstract class BaseElementModel extends BaseModel
 	public function setContent(ContentModel $content)
 	{
 		$this->_content = $content;
+	}
+
+	/**
+	 * Returns the field with a given handle.
+	 *
+	 * @access protected
+	 * @param string $handle
+	 * @return FieldModel|null
+	 */
+	protected function getFieldByHandle($handle)
+	{
+		return craft()->fields->getFieldByHandle($handle);
 	}
 
 	/**

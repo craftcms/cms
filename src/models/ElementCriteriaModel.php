@@ -174,7 +174,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 */
 	public function count()
 	{
-		return $this->total();
+		return count($this->find());
 	}
 
 	/**

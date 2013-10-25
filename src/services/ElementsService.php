@@ -274,7 +274,7 @@ class ElementsService extends BaseApplicationComponent
 			}
 
 			$query->addSelect($contentCols);
-			$query->join('content content', 'content.elementId = elements.id');
+			$query->join(craft()->content->contentTable.' content', 'content.elementId = elements.id');
 			$this->_orderByRequestedLocale($query, 'content', $criteria->locale);
 		}
 

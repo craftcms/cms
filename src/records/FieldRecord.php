@@ -78,10 +78,9 @@ class FieldRecord extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		// Field handles must be <= 58 chars so that with "field_" prepended, they're <= 64 chars (MySQL's column name limit).
 		return array(
 			'name'         => array(AttributeType::Name, 'required' => true),
-			'handle'       => array(AttributeType::Handle, 'maxLength' => 58, 'required' => true, 'reservedWords' => $this->reservedHandleWords),
+			'handle'       => array(AttributeType::Handle, 'required' => true, 'reservedWords' => $this->reservedHandleWords),
 			'context'      => array(AttributeType::String, 'default' => 'global', 'required' => true),
 			'instructions' => array(AttributeType::String, 'column' => ColumnType::Text),
 			'translatable' => AttributeType::Bool,
@@ -118,5 +117,20 @@ class FieldRecord extends BaseRecord
 		return array(
 			'ordered' => array('order' => 'name'),
 		);
+	}
+
+	/**
+	 * Set the max field handle length based on the current field column prefix length.
+	 *
+	 * @return array
+	 */
+	public function getAttributeConfigs()
+	{
+		$attributeConfigs = parent::getAttributeConfigs();
+
+		// Field handles must be <= 58 chars so that with "field_" prepended, they're <= 64 chars (MySQL's column name limit).
+		$attributeConfigs['handle']['maxLength'] = 64 - strlen(craft()->content->fieldColumnPrefix);
+
+		return $attributeConfigs;
 	}
 }
