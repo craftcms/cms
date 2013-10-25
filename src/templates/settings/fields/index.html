@@ -86,7 +86,7 @@
 						</th>
 						<td data-title="{{ 'Handle'|t }}"><code>{{ field.handle }}</code></td>
 						<td data-title="{{ 'Type'|t }}">
-							{% set fieldType = craft.fields.populateFieldType(field) %}
+							{% set fieldType = field.getFieldType() %}
 							{% if fieldType %}
 								{{ fieldType.name }}
 							{% else %}

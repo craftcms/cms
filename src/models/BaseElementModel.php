@@ -463,10 +463,12 @@ abstract class BaseElementModel extends BaseModel
 				$value = null;
 			}
 
-			$fieldType = craft()->fields->populateFieldType($field, $this);
+			// Give the field type a chance to prep the value for use
+			$fieldType = $field->getFieldType();
 
 			if ($fieldType)
 			{
+				$fieldType->element = $this;
 				$value = $fieldType->prepValue($value);
 			}
 

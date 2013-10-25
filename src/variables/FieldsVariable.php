@@ -132,10 +132,11 @@ class FieldsVariable
 	 */
 	public function populateFieldType(FieldModel $field, $element = null)
 	{
-		$fieldType = craft()->fields->populateFieldType($field, $element);
+		$fieldType = $field->getFieldType();
 
 		if ($fieldType)
 		{
+			$fieldType->element = $element;
 			return new FieldTypeVariable($fieldType);
 		}
 	}

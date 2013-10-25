@@ -91,7 +91,7 @@ class SearchIndexTool extends BaseTool
 
 						foreach ($fields as $field)
 						{
-							$fieldType = craft()->fields->populateFieldType($field);
+							$fieldType = $field->getFieldType();
 
 							if ($fieldType)
 							{

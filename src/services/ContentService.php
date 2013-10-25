@@ -118,7 +118,7 @@ class ContentService extends BaseApplicationComponent
 		// Give the fieldtypes a chance to clean up the post data
 		foreach (craft()->fields->getAllFields() as $field)
 		{
-			$fieldType = craft()->fields->populateFieldType($field);
+			$fieldType = $field->getFieldType();
 
 			if ($fieldType)
 			{
@@ -216,7 +216,7 @@ class ContentService extends BaseApplicationComponent
 
 		foreach ($fields as $field)
 		{
-			$fieldType = craft()->fields->populateFieldType($field);
+			$fieldType = $field->getFieldType();
 
 			if ($fieldType)
 			{
