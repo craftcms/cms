@@ -44,6 +44,17 @@ $.extend(Craft, {
 	},
 
 	/**
+	 * Escapes some HTML.
+	 *
+	 * @param string str
+	 * @return string
+	 */
+	escapeHtml: function(str)
+	{
+		return $('<div/>').text(str).html();
+	},
+
+	/**
 	 * Formats an ID out of an input name.
 	 *
 	 * @param string inputName
