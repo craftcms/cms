@@ -121,7 +121,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 		foreach (craft()->fields->getFieldsWithContent() as $field)
 		{
-			$columns[] = 'field_'.$field->handle;
+			$columns[$field->handle] = 'field_'.$field->handle;
 		}
 
 		$contentService->fieldContext = $originalFieldContext;

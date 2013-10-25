@@ -33,18 +33,7 @@ class ContentService extends BaseApplicationComponent
 
 		if ($row)
 		{
-			// Rename the field column names
-			$fieldColumnPrefixLength = strlen($this->fieldColumnPrefix);
-
-			foreach ($row as $column => $value)
-			{
-				if (strncmp($column, $this->fieldColumnPrefix, $fieldColumnPrefixLength) === 0)
-				{
-					$fieldHandle = substr($column, $fieldColumnPrefixLength);
-					$row[$fieldHandle] = $value;
-					unset($row[$column]);
-				}
-			}
+			$row = $this->_removeColumnPrefixesFromRow($row);
 
 			return new ContentModel($row);
 		}
@@ -223,8 +212,7 @@ class ContentService extends BaseApplicationComponent
 	{
 		// Get all of the fieldtypes
 		$fields = craft()->fields->getAllFields();
-		$fieldTypes = array();
-		$fieldTypesWithDuplicateContent = array();
+		$fieldsWithDuplicateContent = array();
 
 		foreach ($fields as $field)
 		{
@@ -233,11 +221,10 @@ class ContentService extends BaseApplicationComponent
 			if ($fieldType)
 			{
 				$fieldType->element = $element;
-				$fieldTypes[] = $fieldType;
 
 				if (!$field->translatable && $fieldType->defineContentAttribute())
 				{
-					$fieldTypesWithDuplicateContent[] = $fieldType;
+					$fieldsWithDuplicateContent[$field->id] = $field;
 				}
 			}
 		}
@@ -253,13 +240,19 @@ class ContentService extends BaseApplicationComponent
 					array(':elementId' => $element->id, ':locale' => $content->locale))
 				->queryAll();
 
+			// Remove the column prefixes
+			foreach ($rows as $i => $row)
+			{
+				$rows[$i] = $this->_removeColumnPrefixesFromRow($row);
+			}
+
 			$otherContentModels = ContentModel::populateModels($rows);
 
 			if ($otherContentModels)
 			{
-				foreach ($fieldTypesWithDuplicateContent as $fieldType)
+				foreach ($fieldsWithDuplicateContent as $field)
 				{
-					$handle = $fieldType->model->handle;
+					$handle = $field->handle;
 
 					// Copy the content over!
 					foreach ($otherContentModels as $otherContentModel)
@@ -281,29 +274,38 @@ class ContentService extends BaseApplicationComponent
 
 		// Now that all of the content saved for all locales,
 		// call all fieldtypes' onAfterElementSave() functions
-		foreach ($fieldTypes as $fieldType)
+		foreach ($fields as $field)
 		{
-			$fieldType->onAfterElementSave();
+			$fieldType = $field->getFieldType();
+
+			if ($fieldType)
+			{
+				$fieldType->onAfterElementSave();
+			}
 		}
 
 		// Update the search keyword indexes
 		$searchKeywordsByLocale = array();
 
-		foreach ($fieldTypes as $fieldType)
+		foreach ($fields as $field)
 		{
-			$field = $fieldType->model;
-			$handle = $field->handle;
+			$fieldType = $field->getFieldType();
 
-			// Set the keywords for the content's locale
-			$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$handle);
-			$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
-
-			// Should we queue up the other locales' new keywords too?
-			if ($otherContentModels && in_array($fieldType, $fieldTypesWithDuplicateContent))
+			if ($fieldType)
 			{
-				foreach ($otherContentModels as $otherContentModel)
+				$handle = $field->handle;
+
+				// Set the keywords for the content's locale
+				$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$handle);
+				$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
+
+				// Should we queue up the other locales' new keywords too?
+				if ($otherContentModels && in_array($field->id, array_keys($fieldsWithDuplicateContent)))
 				{
-					$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
+					foreach ($otherContentModels as $otherContentModel)
+					{
+						$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
+					}
 				}
 			}
 		}
@@ -312,5 +314,29 @@ class ContentService extends BaseApplicationComponent
 		{
 			craft()->search->indexElementFields($element->id, $localeId, $keywords);
 		}
+	}
+
+	/**
+	 * Removes the column prefixes from a given row.
+	 *
+	 * @access private
+	 * @param array $row
+	 * @return array
+	 */
+	private function _removeColumnPrefixesFromRow($row)
+	{
+		$fieldColumnPrefixLength = strlen($this->fieldColumnPrefix);
+
+		foreach ($row as $column => $value)
+		{
+			if (strncmp($column, $this->fieldColumnPrefix, $fieldColumnPrefixLength) === 0)
+			{
+				$fieldHandle = substr($column, $fieldColumnPrefixLength);
+				$row[$fieldHandle] = $value;
+				unset($row[$column]);
+			}
+		}
+
+		return $row;
 	}
 }

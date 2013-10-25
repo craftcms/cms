@@ -447,11 +447,18 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Sets the content for the element.
 	 *
-	 * @param ContentModel $content
+	 * @param ContentModel|array $content
 	 */
-	public function setContent(ContentModel $content)
+	public function setContent($content)
 	{
-		$this->_content = $content;
+		if (is_array($content))
+		{
+			$this->getContent()->setAttributes($content);
+		}
+		else if ($content instanceof ContentModel)
+		{
+			$this->_content = $content;
+		}
 	}
 
 	/**

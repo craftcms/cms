@@ -39,7 +39,7 @@ class ElementsService extends BaseApplicationComponent
 	public function findElements($criteria = null, $justIds = false)
 	{
 		$elements = array();
-		$subquery = $this->buildElementsQuery($criteria);
+		$subquery = $this->buildElementsQuery($criteria, $fieldColumns);
 
 		if ($subquery)
 		{
@@ -69,14 +69,6 @@ class ElementsService extends BaseApplicationComponent
 
 			$query->params = $subquery->params;
 
-			// Get a list of all the field handles we might be dealing with
-			$fieldHandles = array();
-
-			foreach (craft()->fields->getFieldsWithContent() as $field)
-			{
-				$fieldHandles[] = $field->handle;
-			}
-
 			if ($criteria->fixedOrder)
 			{
 				$ids = ArrayHelper::stringToArray($criteria->id);
@@ -92,13 +84,20 @@ class ElementsService extends BaseApplicationComponent
 			{
 				$orderColumns = ArrayHelper::stringToArray($criteria->order);
 
-				if ($fieldHandles)
+				if ($fieldColumns)
 				{
-					// Add the "field_" prefix to any custom fields we're ordering by
-					$fieldColumnRegex = '/^(?:'.implode('|', $fieldHandles).')\b/';
 					foreach ($orderColumns as $i => $orderColumn)
 					{
-						$orderColumns[$i] = preg_replace($fieldColumnRegex, 'field_$0', $orderColumn);
+						// Is this column for a custom field?
+						foreach ($fieldColumns as $fieldHandle => $fieldColumn)
+						{
+							if (preg_match('/^'.$fieldHandle.'\b(.*)$/', $orderColumn, $matches))
+							{
+								// Use the field column name instead
+								$orderColumns[$i] = $fieldColumn.$matches[1];
+								break;
+							}
+						}
 					}
 				}
 
@@ -149,32 +148,35 @@ class ElementsService extends BaseApplicationComponent
 						if ($elementType->hasContent())
 						{
 							// Separate the content values from the main element attributes
-							$content = new ContentModel();
-							$content->elementId = $row['id'];
-							$content->locale = $criteria->locale;
+							$content = array();
+							$content['elementId'] = $row['id'];
+							$content['locale'] = $criteria->locale;
 
 							if (isset($row['title']))
 							{
-								$content->title = $row['title'];
+								$content['title'] = $row['title'];
 								unset($row['title']);
 							}
 
 							// Did we actually get the requested locale back?
 							if ($row['locale'] == $criteria->locale)
 							{
-								$content->id = $row['contentId'];
+								$content['id'] = $row['contentId'];
 							}
 							else
 							{
 								$row['locale'] = $criteria->locale;
 							}
 
-							foreach ($fieldHandles as $fieldHandle)
+							if ($fieldColumns)
 							{
-								if (isset($row['field_'.$fieldHandle]))
+								foreach ($fieldColumns as $fieldHandle => $fieldColumn)
 								{
-									$content->$fieldHandle = $row['field_'.$fieldHandle];
-									unset($row['field_'.$fieldHandle]);
+									if (isset($row[$fieldColumn]))
+									{
+										$content[$fieldHandle] = $row[$fieldColumn];
+										unset($row[$fieldColumn]);
+									}
 								}
 							}
 						}
@@ -247,9 +249,10 @@ class ElementsService extends BaseApplicationComponent
 	 * Returns a DbCommand instance ready to search for elements based on a given element criteria.
 	 *
 	 * @param mixed &$criteria
+	 * @param array &$fieldColumns
 	 * @return DbCommand|false
 	 */
-	public function buildElementsQuery(&$criteria = null)
+	public function buildElementsQuery(&$criteria = null, &$fieldColumns = array())
 	{
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
@@ -281,7 +284,9 @@ class ElementsService extends BaseApplicationComponent
 					$contentCols .= ', content.title';
 				}
 
-				foreach ($elementType->getContentFieldColumnsForElementsQuery($criteria) as $column)
+				$fieldColumns = $elementType->getContentFieldColumnsForElementsQuery($criteria);
+
+				foreach ($fieldColumns as $column)
 				{
 					$contentCols .= ', content.'.$column;
 				}
