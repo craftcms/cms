@@ -482,7 +482,7 @@ class Updater
 	 */
 	private function _validateNewRequirements($unzipFolder)
 	{
-		$requirementsFolderPath = $unzipFolder.'app/etc/requirements/';
+		$requirementsFolderPath = $unzipFolder.'/app/etc/requirements/';
 		$requirementsFile = $requirementsFolderPath.'Requirements.php';
 		$errors = array();
 
@@ -501,9 +501,9 @@ class Updater
 		// Copy the random file name requirements to the requirements folder.  We don't want to execute any PHP from the storage folder.
 		IOHelper::copyFile($requirementsFolderPath.$tempFileName, $newTempFilePath);
 
-		$requirements = require_once($newTempFilePath);
+		require_once($newTempFilePath);
 
-		$checker = new RequirementsChecker($requirements);
+		$checker = new RequirementsChecker();
 		$checker->run();
 
 		if ($checker->getResult() == RequirementResult::Failed)
