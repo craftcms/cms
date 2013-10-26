@@ -370,17 +370,16 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $uid
 	 * @return array
 	 */
-	public function backupDatabase($uid)
+	public function backupDatabase()
 	{
 		Craft::log('Starting to backup database.', LogLevel::Info, true);
 
 		try
 		{
 			$updater = new Updater();
-			$result = $updater->backupDatabase($uid);
+			$result = $updater->backupDatabase();
 
 			if (!$result)
 			{
@@ -400,14 +399,11 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param      $uid
 	 * @param      $handle
-	 * @param bool $dbBackupPath
-	 *
 	 * @throws Exception
 	 * @return array
 	 */
-	public function updateDatabase($uid, $handle, $dbBackupPath = false)
+	public function updateDatabase($handle)
 	{
 		Craft::log('Starting to update the database.', LogLevel::Info, true);
 
@@ -418,7 +414,7 @@ class UpdatesService extends BaseApplicationComponent
 			if ($handle == 'craft')
 			{
 				Craft::log('Craft wants to update the database.', LogLevel::Info, true);
-				$updater->updateDatabase($uid, $dbBackupPath);
+				$updater->updateDatabase();
 				Craft::log('Craft is done updating the database.', LogLevel::Info, true);
 			}
 			else
@@ -427,7 +423,7 @@ class UpdatesService extends BaseApplicationComponent
 				if ($plugin)
 				{
 					Craft::log('The plugin, '.$plugin->getName().' wants to update the database.', LogLevel::Info, true);
-					$updater->updateDatabase($uid, $dbBackupPath, $plugin);
+					$updater->updateDatabase($plugin);
 					Craft::log('The plugin, '.$plugin->getName().' is done updating the database.', LogLevel::Info, true);
 				}
 				else
@@ -469,6 +465,11 @@ class UpdatesService extends BaseApplicationComponent
 		catch (\Exception $e)
 		{
 			Craft::log('There was an error during cleanup, but we don\'t really care: '.$e->getMessage());
+
+			// Fire an 'onEndUpdate' event and pass in that it was a successful update.
+			$this->onEndUpdate(new Event($this, array(
+				'success' => true
+			)));
 		}
 	}
 
@@ -510,6 +511,10 @@ class UpdatesService extends BaseApplicationComponent
 			}
 
 			Craft::log('Finished rolling back changes.', LogLevel::Info, true);
+
+			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
+			craft()->disableMaintenanceMode();
+
 			return array('success' => true);
 		}
 		catch (\Exception $e)

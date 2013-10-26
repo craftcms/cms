@@ -67,6 +67,11 @@ Craft.Updater = Garnish.Base.extend({
 			this.data = response.data;
 		}
 
+		if (response.errorDetails)
+		{
+			this.$errorDetails = response.errorDetails;
+		}
+
 		if (response.nextStatus)
 		{
 			this.updateStatus(response.nextStatus);
@@ -75,11 +80,6 @@ Craft.Updater = Garnish.Base.extend({
 		if (response.nextAction)
 		{
 			this.postActionRequest(response.nextAction);
-		}
-
-		if (response.errorDetails)
-		{
-			this.$errorDetails = response.errorDetails;
 		}
 
 		if (response.finished)

@@ -225,7 +225,7 @@ class UpdateController extends BaseController
 		$return = craft()->updates->updateFiles($data['uid']);
 		if (!$return['success'])
 		{
-			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('Rolling Back…'), 'nextAction' => 'update/rollback'));
+			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('Error: Rolling Back…'), 'nextAction' => 'update/rollback'));
 		}
 
 		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Backing Up Database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
@@ -241,24 +241,18 @@ class UpdateController extends BaseController
 
 		$data = craft()->request->getRequiredPost('data');
 
-		if ($this->_isManualUpdate($data))
-		{
-			$uid = false;
-		}
-		else
+		if (!$this->_isManualUpdate($data))
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
 			craft()->userSession->requirePermission('performUpdates');
-
-			$uid = $data['uid'];
 		}
 
 		if (craft()->config->get('backupDbOnUpdate'))
 		{
-			$return = craft()->updates->backupDatabase($uid);
+			$return = craft()->updates->backupDatabase();
 			if (!$return['success'])
 			{
-				$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('Rolling Back…'), 'nextAction' => 'update/rollback'));
+				$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('Error: Rolling Back…'), 'nextAction' => 'update/rollback'));
 			}
 
 			if (isset($return['dbBackupPath']))
@@ -280,32 +274,26 @@ class UpdateController extends BaseController
 
 		$data = craft()->request->getRequiredPost('data');
 
-		if ($this->_isManualUpdate($data))
-		{
-			$uid = false;
-		}
-		else
+		if (!$this->_isManualUpdate($data))
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
 			craft()->userSession->requirePermission('performUpdates');
-
-			$uid = $data['uid'];
 		}
 
 		$handle = $this->_getFixedHandle($data);
 
 		if (isset($data['dbBackupPath']))
 		{
-			$return = craft()->updates->updateDatabase($uid, $handle, $data['dbBackupPath']);
+			$return = craft()->updates->updateDatabase($handle);
 		}
 		else
 		{
-			$return = craft()->updates->updateDatabase($uid, $handle);
+			$return = craft()->updates->updateDatabase($handle);
 		}
 
 		if (!$return['success'])
 		{
-			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('Rolling Back…'), 'nextAction' => 'update/rollback'));
+			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('Error: Rolling Back…'), 'nextAction' => 'update/rollback'));
 		}
 
 		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Cleaning Up…'), 'nextAction' => 'update/cleanUp', 'data' => $data));

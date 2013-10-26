@@ -95,7 +95,7 @@ class Updater
 
 		if (!empty($errors))
 		{
-			throw new Exception(Craft::t('Your server does not meet the following minimum requirements for @@@appName@@@ to run:<br /> {messages}', array('messages' => implode('<br />', $errors))));
+			throw new Exception(Craft::t('Your server does not meet the following minimum requirements for @@@appName@@@ to run:<br /><br/ > {messages}', array('messages' => implode('<br />', $errors))));
 		}
 
 		// Validate that the paths in the update manifest file are all writable by Craft
@@ -103,7 +103,7 @@ class Updater
 		$writableErrors = $this->_validateManifestPathsWritable($unzipFolder);
 		if (count($writableErrors) > 0)
 		{
-			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to the follow paths, but can’t:<br /> {files}', array('files' => implode('<br />', $writableErrors))));
+			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to the follow paths, but can’t:<br /><br /> {files}', array('files' => implode('<br />', $writableErrors))));
 		}
 
 		return array('uid' => $uid);
@@ -133,128 +133,68 @@ class Updater
 	{
 		$unzipFolder = UpdateHelper::getUnzipFolderFromUID($uid);
 
-		try
+		// Put the site into maintenance mode.
+		Craft::log('Putting the site into maintenance mode.', LogLevel::Info, true);
+		craft()->enableMaintenanceMode();
+
+		// Update the files.
+		Craft::log('Performing file update.', LogLevel::Info, true);
+		if (!UpdateHelper::doFileUpdate(UpdateHelper::getManifestData($unzipFolder), $unzipFolder))
 		{
-			// Put the site into maintenance mode.
-			Craft::log('Putting the site into maintenance mode.', LogLevel::Info, true);
-			craft()->enableMaintenanceMode();
-
-			// Update the files.
-			Craft::log('Performing file update.', LogLevel::Info, true);
-			if (!UpdateHelper::doFileUpdate(UpdateHelper::getManifestData($unzipFolder), $unzipFolder))
-			{
-				Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-				craft()->disableMaintenanceMode();
-
-				throw new Exception(Craft::t('There was a problem updating your files.'));
-			}
+			throw new Exception(Craft::t('There was a problem updating your files.'));
 		}
-		catch (\Exception $e)
-		{
-			Craft::log('There was a exception. Taking the site out of maintenance mode. Exception: '.$e->getMessage(), LogLevel::Info, true);
-			craft()->disableMaintenanceMode();
-
-			throw $e;
-		}
-
 	}
 
 	/**
-	 * @param $uid
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function backupDatabase($uid)
+	public function backupDatabase()
 	{
-		try
+		Craft::log('Starting to backup database.', LogLevel::Info, true);
+		if (($dbBackupPath = craft()->db->backup()) === false)
 		{
-			Craft::log('Starting to backup database.', LogLevel::Info, true);
-			if (($dbBackupPath = craft()->db->backup()) === false)
-			{
-				// If uid !== false, then it's an auto update.
-				if ($uid !== false)
-				{
-					UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
-				}
-
-				Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-				craft()->disableMaintenanceMode();
-
-				throw new Exception(Craft::t('There was a problem backing up your database.'));
-			}
-			else
-			{
-				return IOHelper::getFileName($dbBackupPath, false);
-			}
-		}
-		catch (\Exception $e)
-		{
-			// If uid !== false, then it's an auto update.
-			if ($uid !== false)
-			{
-				UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
-			}
-
-			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-			craft()->disableMaintenanceMode();
-
 			throw new Exception(Craft::t('There was a problem backing up your database.'));
+		}
+		else
+		{
+			return IOHelper::getFileName($dbBackupPath, false);
 		}
 	}
 
 	/**
-	 * @param      $uid
-	 * @param bool $dbBackupPath
 	 * @param null $plugin
 	 * @throws Exception
 	 */
-	public function updateDatabase($uid, $dbBackupPath = false, $plugin = null)
+	public function updateDatabase($plugin = null)
 	{
-		try
+		Craft::log('Running migrations...', LogLevel::Info, true);
+		if (!craft()->migrations->runToTop($plugin))
 		{
-			Craft::log('Running migrations...', LogLevel::Info, true);
-			if (!craft()->migrations->runToTop($plugin))
-			{
-				Craft::log('Something went wrong running a migration. :-(', LogLevel::Error);
-				craft()->updates->rollbackUpdate($uid, $dbBackupPath);
-
-				Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-				craft()->disableMaintenanceMode();
-
-				throw new Exception(Craft::t('There was a problem updating your database.'));
-			}
-
-			// If plugin is null we're looking at Craft.
-			if ($plugin === null)
-			{
-				// Setting new Craft info.
-				Craft::log('Settings new Craft release info in craft_info table.', LogLevel::Info, true);
-				if (!craft()->updates->setNewCraftInfo(CRAFT_VERSION, CRAFT_BUILD, CRAFT_RELEASE_DATE))
-				{
-					throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the database info table.'));
-				}
-			}
-			else
-			{
-				if (!craft()->updates->setNewPluginInfo($plugin))
-				{
-					throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
-				}
-			}
-
-			// Take the site out of maintenance mode.
-			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-			craft()->disableMaintenanceMode();
-		}
-		catch (\Exception $e)
-		{
-			craft()->updates->rollbackUpdate($uid, $dbBackupPath);
-
-			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-			craft()->disableMaintenanceMode();
-
 			throw new Exception(Craft::t('There was a problem updating your database.'));
 		}
+
+		// If plugin is null we're looking at Craft.
+		if ($plugin === null)
+		{
+			// Setting new Craft info.
+			Craft::log('Settings new Craft release info in craft_info table.', LogLevel::Info, true);
+			if (!craft()->updates->setNewCraftInfo(CRAFT_VERSION, CRAFT_BUILD, CRAFT_RELEASE_DATE))
+			{
+				throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the database info table.'));
+			}
+		}
+		else
+		{
+			if (!craft()->updates->setNewPluginInfo($plugin))
+			{
+				throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
+			}
+		}
+
+		// Take the site out of maintenance mode.
+		Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
+		craft()->disableMaintenanceMode();
 	}
 
 	/**
