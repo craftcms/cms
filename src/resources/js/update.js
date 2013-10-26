@@ -44,7 +44,7 @@ Craft.Updater = Garnish.Base.extend({
 			data: this.data
 		};
 
-		Craft.postActionRequest(action, data, $.proxy(function(response, textStatus) {
+		Craft.postActionRequest(action, data, $.proxy(function(response, textStatus, jqXHR) {
 
 			if (textStatus == 'success' && response.alive)
 			{
@@ -52,7 +52,7 @@ Craft.Updater = Garnish.Base.extend({
 			}
 			else
 			{
-				this.onErrorResponse();
+				this.onErrorResponse(jqXHR);
 			}
 
 		}, this), {
@@ -95,10 +95,10 @@ Craft.Updater = Garnish.Base.extend({
 		}
 	},
 
-	onErrorResponse: function(response)
+	onErrorResponse: function(jqXHR)
 	{
 		this.$graphic.addClass('error');
-		var errorText = Craft.t('An error has occurred.');
+		var errorText = Craft.t('An error has occurred.  Please contact <a href="mailto:support@buildwithcraft.com?subject=Update Failure&body=' + jqXHR.responseText + '">support@buildwithcraft.com</a>') + '<br /><p>' + jqXHR.statusText + '</p><br /><p>' + jqXHR.responseText + '</p>';
 
 		this.updateStatus(errorText);
 	},
