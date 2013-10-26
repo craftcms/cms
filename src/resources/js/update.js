@@ -95,6 +95,14 @@ Craft.Updater = Garnish.Base.extend({
 		}
 	},
 
+	onErrorResponse: function(response)
+	{
+		this.$graphic.addClass('error');
+		var errorText = Craft.t('An error has occurred.');
+
+		this.updateStatus(errorText);
+	},
+
 	onFinish: function(returnUrl, rollBack)
 	{
 		if (this.$errorDetails)
