@@ -270,13 +270,13 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		Craft::log('Preparing to update '.$handle.'.', LogLevel::Info, true);
 
-		// Fire an 'onBeginUpdate' event and pass in the type
-		$this->onBeginUpdate(new Event($this, array(
-			'type' => $manual ? 'manual' : 'auto'
-		)));
-
 		try
 		{
+			// Fire an 'onBeginUpdate' event and pass in the type
+			$this->onBeginUpdate(new Event($this, array(
+				'type' => $manual ? 'manual' : 'auto'
+			)));
+
 			$updater = new Updater();
 
 			// Make sure we still meet the existing requirements.
