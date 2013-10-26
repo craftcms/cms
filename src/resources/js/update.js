@@ -84,16 +84,31 @@ Craft.Updater = Garnish.Base.extend({
 
 		if (response.finished)
 		{
-			this.onFinish(response.returnUrl);
+			var rollBack = false;
+
+			if (response.rollBack)
+			{
+				rollBack = true;
+			}
+
+			this.onFinish(response.returnUrl, rollBack);
 		}
 	},
 
-	onFinish: function(returnUrl)
+	onFinish: function(returnUrl, rollBack)
 	{
 		if (this.$errorDetails)
 		{
 			this.$graphic.addClass('error');
-			this.updateStatus(Craft.t('Craft was unable to install this update. :(') + '<br /><p>' + this.$errorDetails + '</p>');
+			var errorText = Craft.t('Craft was unable to install this update. :(') + '<br /><p>';
+
+			if (rollBack)
+			{
+				errorText += Craft.t('The site has been restored to the state it was in before the attempted update.') + '</p><br /><p>';
+			}
+
+			errorText += this.$errorDetails + '</p>';
+			this.updateStatus(errorText);
 		}
 		else
 		{

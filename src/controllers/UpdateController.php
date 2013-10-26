@@ -384,7 +384,7 @@ class UpdateController extends BaseController
 			throw new Exception($return['message']);
 		}
 
-		$this->returnJson(array('alive' => true, 'finished' => true));
+		$this->returnJson(array('alive' => true, 'finished' => true, 'rollBack' => true));
 	}
 
 	/**
