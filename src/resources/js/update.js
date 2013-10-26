@@ -46,7 +46,7 @@ Craft.Updater = Garnish.Base.extend({
 
 		Craft.postActionRequest(action, data, $.proxy(function(response, textStatus) {
 
-			if (textStatus == 'success' && response.success)
+			if (textStatus == 'success' && response.alive)
 			{
 				this.onSuccessResponse(response);
 			}
@@ -82,20 +82,7 @@ Craft.Updater = Garnish.Base.extend({
 			this.$errorDetails = response.errorDetails;
 		}
 
-		if (response.error)
-		{
-			this.$graphic.addClass('error');
-
-			if (this.$errorDetails)
-			{
-				this.updateStatus(this.$errorDetails);
-			}
-			else
-			{
-				this.updateStatus(response.error);
-			}
-		}
-		else if (response.finished)
+		if (response.finished)
 		{
 			this.onFinish(response.returnUrl);
 		}
@@ -103,18 +90,26 @@ Craft.Updater = Garnish.Base.extend({
 
 	onFinish: function(returnUrl)
 	{
-		this.updateStatus(Craft.t('All done!'));
-		this.$graphic.addClass('success');
+		if (this.$errorDetails)
+		{
+			this.$graphic.addClass('error');
+			this.updateStatus(Craft.t('Craft was unable to install this update. :(') + '<br /><p>' + this.$errorDetails + '</p>');
+		}
+		else
+		{
+			this.updateStatus(Craft.t('All done!'));
+			this.$graphic.addClass('success');
 
-		// Redirect to the Dashboard in half a second
-		setTimeout(function() {
-			if (returnUrl) {
-				window.location = Craft.getUrl(returnUrl);
-			}
-			else {
-				window.location = Craft.getUrl('dashboard');
-			}
-		}, 500);
+			// Redirect to the Dashboard in half a second
+			setTimeout(function() {
+				if (returnUrl) {
+					window.location = Craft.getUrl(returnUrl);
+				}
+				else {
+					window.location = Craft.getUrl('dashboard');
+				}
+			}, 500);
+		}
 	}
 });
 
