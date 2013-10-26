@@ -98,7 +98,7 @@ Craft.Updater = Garnish.Base.extend({
 	onErrorResponse: function(jqXHR)
 	{
 		this.$graphic.addClass('error');
-		var errorText = Craft.t('An error has occurred.  Please contact <a href="mailto:support@buildwithcraft.com?subject=Update Failure&body=' + jqXHR.responseText + '">support@buildwithcraft.com</a>') + '<br /><p>' + jqXHR.statusText + '</p><br /><p>' + jqXHR.responseText + '</p>';
+		var errorText = Craft.t('An error has occurred.  Please contact {email}.', { email: '<a href="mailto:support@buildwithcraft.com?subject=Update+Failure&body=' + encodeURIComponent(jqXHR.responseText) + '">support@buildwithcraft.com</a>'} ) + '<br /><p>' + jqXHR.statusText + '</p><br /><p>' + jqXHR.responseText + '</p>';
 
 		this.updateStatus(errorText);
 	},
@@ -113,6 +113,10 @@ Craft.Updater = Garnish.Base.extend({
 			if (rollBack)
 			{
 				errorText += Craft.t('The site has been restored to the state it was in before the attempted update.') + '</p><br /><p>';
+			}
+			else
+			{
+				errorText += Craft.t('No files have been updated and the database has not been touched.') + '</p><br /><p>';
 			}
 
 			errorText += this.$errorDetails + '</p>';
