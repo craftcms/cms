@@ -116,11 +116,9 @@
 
 			<nav>
 				<ul id="nav">
-					{% set firstSeg = craft.request.segment(1) %}
-					{% if firstSeg == 'myaccount' %}{% set firstSeg = 'users' %}{% endif %}
-					{% for handle, item in craft.cp.nav %}
+					{% for handle, item in craft.cp.nav() %}
 						<li id="nav-{{ handle }}">
-							<a class="{% if item.hasIcon is defined and item.hasIcon %}hasicon{% endif %} {% if firstSeg == handle %}sel{% endif %}" href="{{ url(handle) }}">
+							<a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
 								{{- item.name -}}
 								{%- if item.badge is defined and item.badge -%}
 									<span class="badge">{{ item.badge }}</span>
