@@ -12,6 +12,7 @@ class GlobalsController extends BaseController
 	public function actionSaveSet()
 	{
 		$this->requirePostRequest();
+		craft()->userSession->requireAdmin();
 
 		$globalSet = new GlobalSetModel();
 
@@ -57,6 +58,7 @@ class GlobalsController extends BaseController
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
+		craft()->userSession->requireAdmin();
 
 		$globalSetId = craft()->request->getRequiredPost('id');
 
@@ -72,6 +74,10 @@ class GlobalsController extends BaseController
 		$this->requirePostRequest();
 
 		$globalSetId = craft()->request->getRequiredPost('setId');
+
+		// Make sure the user is allowed to edit this global set
+		craft()->userSession->requirePermission('editGlobalSet:'.$globalSetId);
+
 		$globalSet = craft()->globals->getSetById($globalSetId);
 
 		if (!$globalSet)
