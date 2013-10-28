@@ -76,22 +76,6 @@ class DashboardService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns whether the current user has a widget of the given type.
-	 *
-	 * @return bool
-	 */
-	public function doesUserHaveWidget($type)
-	{
-		$count = WidgetRecord::model()->countByAttributes(array(
-			'userId'  => craft()->userSession->getUser()->id,
-			'type'    => $type,
-			'enabled' => true
-		));
-
-		return (bool) $count;
-	}
-
-	/**
 	 * Returns a widget by its ID.
 	 *
 	 * @param int $id
