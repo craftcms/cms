@@ -10,16 +10,12 @@ class RequirementsChecker extends \CComponent
 	private $_result;
 	private $_serverInfo;
 
-
 	/**
-	 * @param bool $requirements
+	 *
 	 */
-	public function run($requirements = false)
+	public function run()
 	{
-		if (!$requirements)
-		{
-			$this->_requirements = Requirements::getRequirements();
-		}
+		$this->_requirements = Requirements::getRequirements();
 
 		$installResult = InstallStatus::Success;
 

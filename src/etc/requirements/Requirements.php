@@ -8,7 +8,7 @@ class Requirements
 	public static function getRequirements()
 	{
 		$requiredPhpVersion = '@@@requiredPHPVersion@@@';
-		$requiredMysqlVersion = '@@@requiredMySQLVersion';
+		$requiredMysqlVersion = '@@@requiredMySQLVersion@@@';
 
 		return array(
 			new Requirement(

@@ -148,17 +148,17 @@ class UpdateController extends BaseController
 
 		if (!$return['success'])
 		{
-			$this->returnJson(array('errorDetails' => $return['message'], 'finished' => true));
+			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'finished' => true));
 		}
 
 		if ($manual)
 		{
-			$this->returnJson(array('success' => true, 'nextStatus' => Craft::t('Backing Up Database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
+			$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Backing Up Database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
 		}
 		else
 		{
 			$data['md5'] = $return['md5'];
-			$this->returnJson(array('success' => true, 'nextStatus' => Craft::t('Downloading Update…'), 'nextAction' => 'update/processDownload', 'data' => $data));
+			$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Downloading Update…'), 'nextAction' => 'update/processDownload', 'data' => $data));
 		}
 
 	}
@@ -179,12 +179,12 @@ class UpdateController extends BaseController
 		$return = craft()->updates->processUpdateDownload($data['md5']);
 		if (!$return['success'])
 		{
-			$this->returnJson(array('errorDetails' => $return['message'], 'finished' => true));
+			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'finished' => true));
 		}
 
 		unset($return['success']);
 
-		$this->returnJson(array('success' => true, 'nextStatus' => Craft::t('Backing Up Files…'), 'nextAction' => 'update/backupFiles', 'data' => $return));
+		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Backing Up Files…'), 'nextAction' => 'update/backupFiles', 'data' => $return));
 	}
 
 	/**
@@ -203,10 +203,10 @@ class UpdateController extends BaseController
 		$return = craft()->updates->backupFiles($data['uid']);
 		if (!$return['success'])
 		{
-			$this->returnJson(array('errorDetails' => $return['message'], 'finished' => true));
+			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'finished' => true));
 		}
 
-		$this->returnJson(array('success' => true, 'nextStatus' => Craft::t('Updating Files…'), 'nextAction' => 'update/updateFiles', 'data' => $data));
+		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Updating Files…'), 'nextAction' => 'update/updateFiles', 'data' => $data));
 	}
 
 	/**
@@ -225,10 +225,10 @@ class UpdateController extends BaseController
 		$return = craft()->updates->updateFiles($data['uid']);
 		if (!$return['success'])
 		{
-			$this->returnJson(array('errorDetails' => $return['message'], 'nextStatus' => Craft::t('Rolling Back…'), 'nextAction' => 'update/rollback'));
+			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('Error: Rolling Back…'), 'nextAction' => 'update/rollback'));
 		}
 
-		$this->returnJson(array('success' => true, 'nextStatus' => Craft::t('Backing Up Database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
+		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Backing Up Database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
 	}
 
 	/**
@@ -241,24 +241,18 @@ class UpdateController extends BaseController
 
 		$data = craft()->request->getRequiredPost('data');
 
-		if ($this->_isManualUpdate($data))
-		{
-			$uid = false;
-		}
-		else
+		if (!$this->_isManualUpdate($data))
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
 			craft()->userSession->requirePermission('performUpdates');
-
-			$uid = $data['uid'];
 		}
 
 		if (craft()->config->get('backupDbOnUpdate'))
 		{
-			$return = craft()->updates->backupDatabase($uid);
+			$return = craft()->updates->backupDatabase();
 			if (!$return['success'])
 			{
-				$this->returnJson(array('errorDetails' => $return['message'], 'nextStatus' => Craft::t('Rolling Back…'), 'nextAction' => 'update/rollback'));
+				$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('Error: Rolling Back…'), 'nextAction' => 'update/rollback'));
 			}
 
 			if (isset($return['dbBackupPath']))
@@ -267,7 +261,7 @@ class UpdateController extends BaseController
 			}
 		}
 
-		$this->returnJson(array('success' => true, 'nextStatus' => Craft::t('Updating Database…'), 'nextAction' => 'update/updateDatabase', 'data' => $data));
+		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Updating Database…'), 'nextAction' => 'update/updateDatabase', 'data' => $data));
 	}
 
 	/**
@@ -280,35 +274,29 @@ class UpdateController extends BaseController
 
 		$data = craft()->request->getRequiredPost('data');
 
-		if ($this->_isManualUpdate($data))
-		{
-			$uid = false;
-		}
-		else
+		if (!$this->_isManualUpdate($data))
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
 			craft()->userSession->requirePermission('performUpdates');
-
-			$uid = $data['uid'];
 		}
 
 		$handle = $this->_getFixedHandle($data);
 
 		if (isset($data['dbBackupPath']))
 		{
-			$return = craft()->updates->updateDatabase($uid, $handle, $data['dbBackupPath']);
+			$return = craft()->updates->updateDatabase($handle);
 		}
 		else
 		{
-			$return = craft()->updates->updateDatabase($uid, $handle);
+			$return = craft()->updates->updateDatabase($handle);
 		}
 
 		if (!$return['success'])
 		{
-			$this->returnJson(array('errorDetails' => $return['message'], 'nextStatus' => Craft::t('Rolling Back…'), 'nextAction' => 'update/rollback'));
+			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('Error: Rolling Back…'), 'nextAction' => 'update/rollback'));
 		}
 
-		$this->returnJson(array('success' => true, 'nextStatus' => Craft::t('Cleaning Up…'), 'nextAction' => 'update/cleanUp', 'data' => $data));
+		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Cleaning Up…'), 'nextAction' => 'update/cleanUp', 'data' => $data));
 	}
 
 	/**
@@ -356,7 +344,7 @@ class UpdateController extends BaseController
 			$returnUrl = craft()->userSession->getReturnUrl();
 		}
 
-		$this->returnJson(array('success' => true, 'finished' => true, 'returnUrl' => $returnUrl));
+		$this->returnJson(array('alive' => true, 'finished' => true, 'returnUrl' => $returnUrl));
 	}
 
 	/**
@@ -396,7 +384,7 @@ class UpdateController extends BaseController
 			throw new Exception($return['message']);
 		}
 
-		$this->returnJson(array('success' => true, 'finished' => true));
+		$this->returnJson(array('alive' => true, 'finished' => true, 'rollBack' => true));
 	}
 
 	/**
