@@ -154,6 +154,8 @@ var RecordTypeSettingsModal = Garnish.Modal.extend({
 		this.base();
 
 		this.$form = $('<form class="modal"/>').appendTo(Garnish.$bod);
+		this.setContainer(this.$form);
+
 		this.$body = $('<div class="body"/>').appendTo(this.$form);
 		this.$nameField = $('<div class="field"/>').appendTo(this.$body);
 		this.$nameHeading = $('<div class="heading"/>').appendTo(this.$nameField);
@@ -172,9 +174,7 @@ var RecordTypeSettingsModal = Garnish.Modal.extend({
 		this.$deleteBtn = $('<a class="error left hidden" style="line-height: 30px;">'+Craft.t('Delete')+'</a>').appendTo(this.$body);
 		this.$buttons = $('<div class="buttons right" style="margin-top: 0;"/>').appendTo(this.$body);
 		this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$buttons);
-		this.$submitBtn = $('<input type="submit" class="btn submit" value="'+Craft.t('Create')+'" />').appendTo(this.$buttons);
-
-		this.setContainer(this.$form);
+		this.$submitBtn = $('<input type="submit" class="btn submit"/>').appendTo(this.$buttons);
 
 		this.handleGenerator = new Craft.HandleGenerator(this.$nameInput, this.$handleInput);
 
@@ -234,10 +234,12 @@ var RecordTypeSettingsModal = Garnish.Modal.extend({
 		if (typeof name == 'undefined')
 		{
 			this.$deleteBtn.addClass('hidden');
+			this.$submitBtn.val(Craft.t('Create'));
 		}
 		else
 		{
 			this.$deleteBtn.removeClass('hidden');
+			this.$submitBtn.val(Craft.t('Save'));
 		}
 
 		this.displayErrors('name', (errors ? errors.name : null));
