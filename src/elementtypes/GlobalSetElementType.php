@@ -37,6 +37,33 @@ class GlobalSetElementType extends BaseElementType
 	}
 
 	/**
+	 * Defines any custom element criteria attributes for this element type.
+	 *
+	 * @return array
+	 */
+	public function defineCriteriaAttributes()
+	{
+		return array(
+			'order' => array(AttributeType::String, 'default' => 'name'),
+			'setId' => AttributeType::Number,
+		);
+	}
+
+	/**
+	 * Modifies an element query targeting elements of this type.
+	 *
+	 * @param DbCommand $query
+	 * @param ElementCriteriaModel $criteria
+	 * @return mixed
+	 */
+	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
+	{
+		$query
+			->addSelect('globalsets.name, globalsets.handle, globalsets.fieldLayoutId')
+			->join('globalsets globalsets', 'globalsets.id = elements.id');
+	}
+
+	/**
 	 * Populates an element model based on a query result.
 	 *
 	 * @param array $row

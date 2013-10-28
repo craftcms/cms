@@ -8,6 +8,7 @@ class GlobalsService extends BaseApplicationComponent
 {
 	private $_allGlobalSetIds;
 	private $_editableGlobalSetIds;
+	private $_allGlobalSets;
 	private $_globalSetsById;
 
 	/**
@@ -60,24 +61,27 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	public function getAllSets($indexBy = null)
 	{
-		if (!isset($this->_globalSetsById))
+		if (!isset($this->_allGlobalSets))
 		{
-			$globalSetRecords = GlobalSetRecord::model()->with('element')->ordered()->findAll();
-			$this->_globalSetsById = GlobalSetModel::populateModels($globalSetRecords, 'id');
+			$criteria = craft()->elements->getCriteria(ElementType::GlobalSet);
+			$this->_allGlobalSets = $criteria->find();
+
+			// Index them by ID
+			foreach ($this->_allGlobalSets as $globalSet)
+			{
+				$this->_globalSetsById[$globalSet->id] = $globalSet;
+			}
 		}
 
-		if ($indexBy == 'id')
+		if (!$indexBy)
 		{
-			$globalSets = $this->_globalSetsById;
-		}
-		else if (!$indexBy)
-		{
-			$globalSets = array_values($this->_globalSetsById);
+			return $this->_allGlobalSets;
 		}
 		else
 		{
 			$globalSets = array();
-			foreach ($this->_globalSetsById as $globalSet)
+
+			foreach ($this->_allGlobalSets as $globalSet)
 			{
 				$globalSets[$globalSet->$indexBy] = $globalSet;
 			}
@@ -90,10 +94,9 @@ class GlobalsService extends BaseApplicationComponent
 	 * Returns all global sets that are editable by the current user.
 	 *
 	 * @param string|null $indexBy
-	 * @param string|null $localeid
 	 * @return array
 	 */
-	public function getEditableSets($indexBy = null, $localeId = null)
+	public function getEditableSets($indexBy = null)
 	{
 		$globalSets = $this->getAllSets();
 		$editableGlobalSetIds = $this->getEditableSetIds();
@@ -103,10 +106,6 @@ class GlobalsService extends BaseApplicationComponent
 		{
 			if (in_array($globalSet->id, $editableGlobalSetIds))
 			{
-				// Clone the model with the requested locale
-				$globalSet = new GlobalSetModel($globalSet->getAttributes());
-				$globalSet->locale = $localeId;
-
 				if ($indexBy)
 				{
 					$editableGlobalSets[$globalSet->$indexBy] = $globalSet;
@@ -149,21 +148,15 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	public function getSetById($globalSetId)
 	{
-		if (!isset($this->_globalSetsById) || !array_key_exists($globalSetId, $this->_globalSetsById))
+		if (!isset($this->_allGlobalSets))
 		{
-			$globalSetRecord = GlobalSetRecord::model()->findById($globalSetId);
-
-			if ($globalSetRecord)
-			{
-				$this->_globalSetsById[$globalSetId] = GlobalSetModel::populateModel($globalSetRecord);
-			}
-			else
-			{
-				$this->_globalSetsById[$globalSetId] = null;
-			}
+			$this->getAllSets();
 		}
 
-		return $this->_globalSetsById[$globalSetId];
+		if (isset($this->_globalSetsById[$globalSetId]))
+		{
+			return $this->_globalSetsById[$globalSetId];
+		}
 	}
 
 	/**
@@ -324,6 +317,20 @@ class GlobalsService extends BaseApplicationComponent
 	{
 		if (craft()->content->saveElementContent($globalSet, $globalSet->getFieldLayout()))
 		{
+			// Create the elements_i18n row if it doesn't exist
+			$elementLocaleRecord = ElementLocaleRecord::model()->findByAttributes(array(
+				'elementId' => $globalSet->id,
+				'locale'    => $globalSet->locale
+			));
+
+			if (!$elementLocaleRecord)
+			{
+				$elementLocaleRecord = new ElementLocaleRecord();
+				$elementLocaleRecord->elementId = $globalSet->id;
+				$elementLocaleRecord->locale    = $globalSet->locale;
+				$elementLocaleRecord->save();
+			}
+
 			// Fire an 'onSaveGlobalContent' event
 			$this->onSaveGlobalContent(new Event($this, array(
 				'globalSet' => $globalSet
