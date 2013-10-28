@@ -8,18 +8,9 @@ Craft.RichTextInput = Garnish.Base.extend({
 
 	id: null,
 
-	init: function(id, lang, sectionSources, configJson)
+	init: function(id, lang, sectionSources, config)
 	{
 		this.id = id;
-
-		try
-		{
-			var config = JSON.parse(configJson);
-		}
-		catch (error)
-		{
-			var config = {};
-		}
 
 		config.lang = lang;
 

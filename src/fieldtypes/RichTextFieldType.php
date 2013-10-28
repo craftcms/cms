@@ -109,7 +109,7 @@ class RichTextFieldType extends BaseFieldType
 			'"'.craft()->templates->namespaceInputId($id).'", ' .
 			'"'.static::$_inputLang.'", ' .
 			JsonHelper::encode($this->_getSectionSources()).', ' .
-			JsonHelper::encode($this->_getConfigJson()) .
+			$this->_getConfigJs() .
 		');');
 
 		if ($value instanceof RichTextData)
@@ -205,24 +205,24 @@ class RichTextFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the Redactor config JSON used by this field.
+	 * Returns the Redactor config JS used by this field.
 	 *
 	 * @return string
 	 */
-	private function _getConfigJson()
+	private function _getConfigJs()
 	{
 		if ($this->getSettings()->configFile)
 		{
 			$configPath = craft()->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
-			$json = IOHelper::getFileContents($configPath);
+			$js = IOHelper::getFileContents($configPath);
 		}
 
-		if (empty($json))
+		if (empty($js))
 		{
-			$json = '{}';
+			$js = '{}';
 		}
 
-		return $json;
+		return $js;
 	}
 
 	/**
