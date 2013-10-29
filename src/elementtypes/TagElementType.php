@@ -68,7 +68,7 @@ class TagElementType extends BaseElementType
 	public function defineTableAttributes($source = null)
 	{
 		return array(
-			array('label' => Craft::t('Name'), 'attribute' => 'name'),
+			'name' => Craft::t('Name'),
 		);
 	}
 

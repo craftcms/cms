@@ -25,6 +25,16 @@ class TemplatesService extends BaseApplicationComponent
 	private $_jsBuffers = array(array());
 	private $_translations = array();
 
+	private $_hooks;
+
+	/**
+	 * Init
+	 */
+	public function init()
+	{
+		$this->hook('cp.elements.element', array($this, '_getCpElementHtml'));
+	}
+
 	/**
 	 * Gets the Twig instance.
 	 *
@@ -670,6 +680,39 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Registers a function for a template hook.
+	 *
+	 * @param string $hook
+	 * @param mixed $method
+	 */
+	public function hook($hook, $method)
+	{
+		$this->_hooks[$hook][] = $method;
+	}
+
+	/**
+	 * Invokes a template hook.
+	 *
+	 * @param string $hook
+	 * @param array &$context
+	 * @return string
+	 */
+	public function invokeHook($hook, &$context)
+	{
+		$return = '';
+
+		if (isset($this->_hooks[$hook]))
+		{
+			foreach ($this->_hooks[$hook] as $method)
+			{
+				$return .= call_user_func($method, $context);
+			}
+		}
+
+		return $return;
+	}
+
+	/**
 	 * Returns the Twig environment options
 	 *
 	 * @access private
@@ -805,5 +848,117 @@ class TemplatesService extends BaseApplicationComponent
 	private function _combineJs($js)
 	{
 		return implode("\n\n", $js);
+	}
+
+	/**
+	 * Returns the HTML for an element in the CP.
+	 *
+	 * @param array &$context
+	 * @return string
+	 */
+	private function _getCpElementHtml(&$context)
+	{
+		if (!isset($context['element']))
+		{
+			return;
+		}
+
+		if (!isset($context['context']))
+		{
+			$context['context'] = 'index';
+		}
+
+		if (!isset($context['viewMode']))
+		{
+			$context['viewMode'] = 'table';
+		}
+
+		$thumbClass = 'elementthumb'.$context['element']->id;
+		$iconClass = 'elementicon'.$context['element']->id;
+
+		if ($context['viewMode'] == 'thumbs')
+		{
+			$thumbSize = 100;
+			$iconSize = 90;
+			$thumbSelectorPrefix = '.thumbsview ';
+		}
+		else
+		{
+			$thumbSize = 30;
+			$iconSize = 20;
+			$thumbSelectorPrefix = '';
+		}
+
+		$thumbUrl = $context['element']->getThumbUrl($thumbSize);
+
+		if ($thumbUrl)
+		{
+			$this->includeCss($thumbSelectorPrefix.'.'.$thumbClass.' { background-image: url('.$thumbUrl.'); }');
+			$this->includeHiResCss($thumbSelectorPrefix.'.'.$thumbClass.' { background-image: url('.$context['element']->getThumbUrl($thumbSize * 2).'); background-size: '.$thumbSize.'px; }');
+		}
+		else
+		{
+			$iconUrl = $context['element']->getIconUrl($iconSize);
+
+			if ($iconUrl)
+			{
+				$this->includeCss($thumbSelectorPrefix.'.'.$iconClass.' { background-image: url('.$iconUrl.'); }');
+				$this->includeHiResCss($thumbSelectorPrefix.'.'.$iconClass.' { background-image: url('.$context['element']->getThumbUrl($iconSize * 2).'); background-size: '.$iconSize.'px; }');
+			}
+		}
+
+		$html = '<div class="element';
+
+		if ($context['context'] == 'field')
+		{
+			$html .= ' removable';
+		}
+
+		if ($context['context'] != 'index')
+		{
+			$html .= ' unselectable';
+		}
+
+		if ($thumbUrl || $iconUrl)
+		{
+			$html .= ' hasicon';
+		}
+
+		$html .= '" data-id="'.$context['element']->id.'" data-url="'.$context['element']->getUrl().'">';
+
+		if ($context['context'] == 'field' && isset($context['name']))
+		{
+			$html .= '<input type="hidden" name="'.$context['name'].'[]" value="'.$context['element']->id.'">';
+			$html .= '<a class="delete icon" title="'.Craft::t('Remove').'"></a> ';
+		}
+
+		if ($thumbUrl)
+		{
+			$html .= '<div class="elementicon elementthumb '.$thumbClass.'"></div> ';
+		}
+		else if ($iconUrl)
+		{
+			$html .= '<div class="elementicon '.$iconClass.'"></div> ';
+		}
+
+		$html .= '<div class="label">';
+
+		if (isset($context['elementType']) && $context['elementType']->hasStatuses())
+		{
+			$html .= '<div class="status '.$context['element']->getStatus().'"></div> ';
+		}
+
+		if ($context['context'] == 'index' && ($cpEditUrl = $context['element']->getCpEditUrl()))
+		{
+			$html .= '<a href="'.$cpEditUrl.'">'.$context['element'].'</a>';
+		}
+		else
+		{
+			$html .= $context['element'];
+		}
+
+		$html .= '</div></div>';
+
+		return $html;
 	}
 }

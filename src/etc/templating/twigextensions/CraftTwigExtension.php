@@ -18,6 +18,7 @@ class CraftTwigExtension extends \Twig_Extension
 		return array(
 			new Exit_TokenParser(),
 			new Header_TokenParser(),
+			new Hook_TokenParser(),
 			new IncludeResource_TokenParser('includeCss'),
 			new IncludeResource_TokenParser('includeCssFile'),
 			new IncludeResource_TokenParser('includeCssResource'),

@@ -37,4 +37,15 @@ class ElementTypeVariable extends BaseComponentTypeVariable
 		return $this->component->hasTitles();
 	}
 
+	/**
+	 * Returns the table view HTML for a given attribute.
+	 *
+	 * @param BaseElementModel $element
+	 * @param string $attribute
+	 * @return string
+	 */
+	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	{
+		return $this->component->getTableAttributeHtml($element, $attribute);
+	}
 }
