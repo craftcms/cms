@@ -928,8 +928,8 @@ class TemplatesService extends BaseApplicationComponent
 
 		if ($context['context'] == 'field' && isset($context['name']))
 		{
-			$html .= '<input type="hidden" name="'.$context['name'].'[]" value="'.$elemnet->id.'">';
-			$html .= '<a class="delete icon" title="'.Craft::t('Remove').'</a> ';
+			$html .= '<input type="hidden" name="'.$context['name'].'[]" value="'.$context['element']->id.'">';
+			$html .= '<a class="delete icon" title="'.Craft::t('Remove').'"></a> ';
 		}
 
 		if ($thumbUrl)
