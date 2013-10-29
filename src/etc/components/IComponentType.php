@@ -15,9 +15,4 @@ interface IComponentType
 	 * @return string
 	 */
 	public function getClassHandle();
-
-	/**
-	 * @return bool
-	 */
-	public function isSelectable();
 }

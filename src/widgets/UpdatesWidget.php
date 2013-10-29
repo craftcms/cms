@@ -7,12 +7,6 @@ namespace Craft;
 class UpdatesWidget extends BaseWidget
 {
 	/**
-	 * @access protected
-	 * @var bool Whether users should be able to select more than one of this widget type.
-	 */
-	protected $multi = false;
-
-	/**
 	 * Returns the type of widget this is.
 	 *
 	 * @return string

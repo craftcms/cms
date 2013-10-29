@@ -175,7 +175,7 @@ class ComponentsService extends BaseApplicationComponent
 				$class = IOHelper::getFileName($file, false);
 				$component = $this->initializeComponent($class, $this->types[$type]['instanceof']);
 
-				if ($component && $component->isSelectable())
+				if ($component)
 				{
 					// Save it
 					$classHandle = $component->getClassHandle();
