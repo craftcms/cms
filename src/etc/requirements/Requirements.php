@@ -129,7 +129,7 @@ class Requirements
 			),
 			new Requirement(
 				Craft::t('Disk space'),
-				disk_free_space(CRAFT_BASE_PATH) > 20971520,
+				@disk_free_space(CRAFT_BASE_PATH) > 20971520,
 				true,
 				Craft::t('@@@appName@@@ required at least 20MB of free disk space in order to run.')
 			),
