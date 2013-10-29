@@ -85,6 +85,58 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
+	 * Returns the table view HTML for a given attribute.
+	 *
+	 * @param BaseElementModel $element
+	 * @param string $attribute
+	 * @return string
+	 */
+	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	{
+		switch ($attribute)
+		{
+			case 'uri':
+			{
+				$url = $element->getUrl();
+
+				if ($url)
+				{
+					$value = $element->uri;
+
+					if ($value == '__home__')
+					{
+						$value = '<span data-icon="home" title="'.Craft::t('Homepage').'"></span>';
+					}
+
+					return '<a href="'.$url.'" target="_blank" class="go">'.$value.'</a>';
+				}
+				else
+				{
+					return '';
+				}
+			}
+			case 'dateCreated':
+			case 'dateUpdated':
+			{
+				$date = $element->$attribute;
+
+				if ($date)
+				{
+					return $date->localeDate();
+				}
+				else
+				{
+					return '';
+				}
+			}
+			default:
+			{
+				return $element->$attribute;
+			}
+		}
+	}
+
+	/**
 	 * Defines any custom element criteria attributes for this element type.
 	 *
 	 * @return array

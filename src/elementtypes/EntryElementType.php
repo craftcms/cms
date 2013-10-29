@@ -161,30 +161,66 @@ class EntryElementType extends BaseElementType
 	 */
 	public function defineTableAttributes($source = null)
 	{
-		$attributes = array();
-
 		if ($source && preg_match('/^section:(\d+)$/', $source, $match))
 		{
 			$section = craft()->sections->getSectionById($match[1]);
 		}
 
 		$attributes = array(
-			array('label' => Craft::t('Title'), 'attribute' => 'title'),
-			array('label' => Craft::t('URI'), 'attribute' => 'uri'),
+			'title' => Craft::t('Title'),
+			'uri'   => Craft::t('URI'),
 		);
 
 		if ($source != 'singles')
 		{
 			if (empty($section))
 			{
-				$attributes[] = array('label' => Craft::t('Section'), 'attribute' => 'sectionId', 'display' => '{section}');
+				$attributes['sectionId'] = Craft::t('Section');
 			}
 
-			$attributes[] = array('label' => Craft::t('Post Date'), 'attribute' => 'postDate', 'display' => '{postDate.localeDate}');
-			$attributes[] = array('label' => Craft::t('Expiry Date'), 'attribute' => 'expiryDate', 'display' => '{expiryDate.localeDate}');
+			$attributes['postDate']   = Craft::t('Post Date');
+			$attributes['expiryDate'] = Craft::t('Expiry Date');
 		}
 
 		return $attributes;
+	}
+
+	/**
+	 * Returns the table view HTML for a given attribute.
+	 *
+	 * @param BaseElementModel $element
+	 * @param string $attribute
+	 * @return string
+	 */
+	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	{
+		switch ($attribute)
+		{
+			case 'sectionId':
+			{
+				return $element->getSection()->name;
+			}
+
+			case 'postDate':
+			case 'expiryDate':
+			{
+				$date = $element->$attribute;
+
+				if ($date)
+				{
+					return $date->localeDate();
+				}
+				else
+				{
+					return '';
+				}
+			}
+
+			default:
+			{
+				return parent::getTableAttributeHtml($element, $attribute);
+			}
+		}
 	}
 
 	/**
