@@ -25,6 +25,8 @@ class TemplatesService extends BaseApplicationComponent
 	private $_jsBuffers = array(array());
 	private $_translations = array();
 
+	private $_hooks;
+
 	/**
 	 * Gets the Twig instance.
 	 *
@@ -667,6 +669,39 @@ class TemplatesService extends BaseApplicationComponent
 	public function formatInputId($inputName)
 	{
 		return rtrim(preg_replace('/[\[\]]+/', '-', $inputName), '-');
+	}
+
+	/**
+	 * Registers a function for a template hook.
+	 *
+	 * @param string $hook
+	 * @param mixed $method
+	 */
+	public function hook($hook, $method)
+	{
+		$this->_hooks[$hook][] = $method;
+	}
+
+	/**
+	 * Invokes a template hook.
+	 *
+	 * @param string $hook
+	 * @param array &$context
+	 * @return string
+	 */
+	public function invokeHook($hook, &$context)
+	{
+		$return = '';
+
+		if (isset($this->_hooks[$hook]))
+		{
+			foreach ($this->_hooks[$hook] as $method)
+			{
+				$return .= call_user_func($method, $context);
+			}
+		}
+
+		return $return;
 	}
 
 	/**
