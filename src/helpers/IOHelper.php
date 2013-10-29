@@ -118,6 +118,51 @@ class IOHelper
 	}
 
 	/**
+	 * If the path exists on the file system, will return the paths of any folders that are contained within it.
+	 *
+	 * @param  string  $path           The folder path to check
+	 * @param  bool    $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+	 * @return array|bool
+	 */
+	public static function getFolders($path, $suppressErrors = false)
+	{
+		$path = static::normalizePathSeparators($path, $suppressErrors);
+
+		if (static::folderExists($path, $suppressErrors))
+		{
+			$folders = $suppressErrors ? @glob($path.'*', GLOB_ONLYDIR) : glob($path.'*', GLOB_ONLYDIR);
+
+			foreach ($folders as $key => $folder)
+			{
+				$folders[$key] = static::normalizePathSeparators($folder, $suppressErrors);
+			}
+
+			return $folders;
+		}
+
+		return false;
+	}
+
+	/**
+	 * If the path exists on the file system, will return the paths of any files that are contained within it.
+	 *
+	 * @param  string  $path           The folder path to check
+	 * @param  bool    $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+	 * @return array|bool
+	 */
+	public static function getFiles($path, $suppressErrors = false)
+	{
+		$path = static::normalizePathSeparators($path, $suppressErrors);
+
+		if (static::folderExists($path, $suppressErrors))
+		{
+			return $suppressErrors ? @glob($path.'*.*') : glob($path.'*');
+		}
+
+		return false;
+	}
+
+	/**
 	 * Returns the real filesystem path of the given path.
 	 *
 	 * @static

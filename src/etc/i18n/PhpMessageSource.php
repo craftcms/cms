@@ -28,16 +28,49 @@ class PhpMessageSource extends \CPhpMessageSource
 		{
 			$this->_translations[$language] = array();
 
-			$paths[] = craft()->path->getCpTranslationsPath();
-			$paths[] = craft()->path->getSiteTranslationsPath();
-
-			foreach ($paths as $path)
+			// Let's see if this is a two-parter.
+			$parts = explode('_', $language);
+			$languageCode = false;
+			if (count($parts) > 0)
 			{
-				$file = $path.$language.'.php';
+				$languageCode = $parts[0];
+			}
 
-				if (IOHelper::fileExists($file))
+			// Check the craft/app/translations for the original language first.
+			$paths[] = craft()->path->getCpTranslationsPath().$language.'.php';
+			if ($languageCode)
+			{
+				// Check the craft/app/translations folder for the language code fallback.
+				$paths[] = craft()->path->getCpTranslationsPath().$languageCode.'.php';
+			}
+
+			// Check the craft/translations folder for the original language.
+			$paths[] = craft()->path->getSiteTranslationsPath().$language.'.php';
+
+			if ($languageCode)
+			{
+				// Check the craft/translations folder for the language code fallback.
+				$paths[] = craft()->path->getSiteTranslationsPath().$languageCode.'.php';
+			}
+
+			// Let's see if plugins have anything to contribute. Don't use PluginService, but go straight to the file system. Who cares if they are disabled.
+			$pluginPaths = IOHelper::getFolders(craft()->path->getPluginsPath());
+			foreach ($pluginPaths as $pluginPath)
+			{
+				$paths[] = $pluginPath.'translations/'.$language.'.php';
+				if ($languageCode)
 				{
-					$translations = include($file);
+					$paths[] = $pluginPath.'translations/'.$languageCode.'.php';
+				}
+			}
+
+			// Now loop through all fo the paths and see if any of these files exists.
+			foreach ($paths as $filePath)
+			{
+				if (IOHelper::fileExists($filePath))
+				{
+					// Load it up.
+					$translations = include($filePath);
 
 					if (is_array($translations))
 					{
