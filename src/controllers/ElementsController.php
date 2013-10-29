@@ -52,6 +52,7 @@ class ElementsController extends BaseController
 
 		$baseCriteria = craft()->request->getPost('criteria');
 		$criteria = craft()->elements->getCriteria($elementType->getClassHandle(), $baseCriteria);
+		$criteria->limit = 50;
 
 		if ($sourceKey)
 		{
@@ -80,7 +81,7 @@ class ElementsController extends BaseController
 		}
 
 		$variables = array(
-			'viewState'           => $viewState,
+			'viewMode'            => $viewState['mode'],
 			'context'             => $context,
 			'elementType'         => new ElementTypeVariable($elementType),
 			'source'              => (isset($source) ? $source : null),
@@ -102,6 +103,8 @@ class ElementsController extends BaseController
 						if ($attribute['attribute'] == $viewState['order'])
 						{
 							$criteria->order = $viewState['order'].' '.$viewState['sort'];
+							$variables['order'] = $viewState['order'];
+							$variables['sort'] = $viewState['sort'];
 							break;
 						}
 					}
