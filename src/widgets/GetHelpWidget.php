@@ -74,4 +74,18 @@ class GetHelpWidget extends BaseWidget
 			'message' => $message
 		));
 	}
+
+	/**
+	 * @return bool
+	 */
+	public function isSelectable()
+	{
+		// Only admins get the Get Help widget.
+		if (parent::isSelectable() && craft()->userSession->isAdmin())
+		{
+			return true;
+		}
+
+		return false;
+	}
 }
