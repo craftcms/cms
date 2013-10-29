@@ -83,7 +83,7 @@ class Requirements
 			),
 			new Requirement(
 				Craft::t('MySQL InnoDB support'),
-				$this->_isInnoDbEnabled(),
+				static::_isInnoDbEnabled(),
 				true,
 				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('@@@appName@@@ requires the MySQL InnoDB storage engine to run.')
