@@ -381,8 +381,7 @@ class DbHelper
 
 		if ($values[0] == 'and' || $values[0] == 'or')
 		{
-			$join = $values[0];
-			array_shift($values);
+			$join = array_shift($values);
 		}
 		else
 		{
