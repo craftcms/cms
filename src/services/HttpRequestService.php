@@ -762,9 +762,9 @@ class HttpRequestService extends \CHttpRequest
 
 		$resourceTrigger = craft()->config->getResourceTrigger();
 		$actionTrigger = craft()->config->get('actionTrigger');
-		$frontEndLoginPath = trim(craft()->config->get('loginPath'), '/');
-		$frontEndLogoutPath = trim(craft()->config->get('logoutPath'), '/');
-		$frontEndSetPasswordPath = trim(craft()->config->get('setPasswordPath'), '/');
+		$frontEndLoginPath = trim(craft()->config->getLocalized('loginPath'), '/');
+		$frontEndLogoutPath = trim(craft()->config->getLocalized('logoutPath'), '/');
+		$frontEndSetPasswordPath = trim(craft()->config->getLocalized('setPasswordPath'), '/');
 		$cpLoginPath = craft()->config->getCpLoginPath();
 		$cpLogoutPath = craft()->config->getCpLogoutPath();
 		$cpSetPasswordPath = craft()->config->getCpSetPasswordPath();

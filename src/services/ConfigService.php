@@ -58,6 +58,35 @@ class ConfigService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns a localized config setting value.
+	 *
+	 * @param string $item
+	 * @return mixed
+	 */
+	public function getLocalized($item)
+	{
+		$value = $this->get($item);
+
+		if (is_array($value))
+		{
+			if (isset($value[craft()->language]))
+			{
+				return $value[craft()->language];
+			}
+			else if ($value)
+			{
+				// Just return the first value
+				$keys = array_keys($value);
+				return $value[$keys[0]];
+			}
+		}
+		else
+		{
+			return $value;
+		}
+	}
+
+	/**
 	 * Get a DB config item
 	 *
 	 * @param      $item
@@ -261,7 +290,7 @@ class ConfigService extends BaseApplicationComponent
 	{
 		if (craft()->request->isSiteRequest())
 		{
-			return craft()->config->get('loginPath');
+			return $this->getLocalized('loginPath');
 		}
 
 		return $this->getCpLoginPath();
@@ -276,7 +305,7 @@ class ConfigService extends BaseApplicationComponent
 	{
 		if (craft()->request->isSiteRequest())
 		{
-			return craft()->config->get('logoutPath');
+			return $this->getLocalized('logoutPath');
 		}
 
 		return $this->getCpLogoutPath();
@@ -347,7 +376,7 @@ class ConfigService extends BaseApplicationComponent
 		}
 		else
 		{
-			$url = craft()->config->get('setPasswordPath');
+			$url = $this->getLocalized('setPasswordPath');
 
 			if ($full)
 			{
@@ -406,7 +435,7 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function getActivateAccountFailurePath()
 	{
-		if (($path = craft()->config->get('activateAccountFailurePath')) !== '')
+		if (($path = $this->getLocalized('activateAccountFailurePath')) !== '')
 		{
 			return $path;
 		}

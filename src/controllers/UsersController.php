@@ -187,7 +187,7 @@ class UsersController extends BaseController
 				if (!$user->can('accessCp'))
 				{
 					// No password reset required and they have permissions to access the CP, so send them to the login page.
-					$url = UrlHelper::getUrl(craft()->config->get('setPasswordSuccessPath'));
+					$url = UrlHelper::getUrl(craft()->config->getLocalized('setPasswordSuccessPath'));
 					$this->redirect($url);
 				}
 				else
@@ -229,7 +229,7 @@ class UsersController extends BaseController
 				craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
 
 				// If they haven't defined a front-end set password template
-				if (!craft()->templates->doesTemplateExist(craft()->config->get('setPasswordPath')))
+				if (!craft()->templates->doesTemplateExist(craft()->config->getLocalized('setPasswordPath')))
 				{
 					// Set PathService to use the CP templates path instead
 					craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
@@ -299,7 +299,7 @@ class UsersController extends BaseController
 				}
 				else
 				{
-					$url = craft()->config->get('setPasswordPath');
+					$url = craft()->config->getLocalized('setPasswordPath');
 				}
 			}
 			// Otherwise, this is a registration from the front-end of the site.
@@ -309,7 +309,7 @@ class UsersController extends BaseController
 				if (!$user->can('accessCp'))
 				{
 
-					$url = UrlHelper::getUrl(craft()->config->get('activateAccountSuccessPath'));
+					$url = UrlHelper::getUrl(craft()->config->getLocalized('activateAccountSuccessPath'));
 					$this->redirect($url);
 				}
 				else
