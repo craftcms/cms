@@ -124,8 +124,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		}
 		else if (isset($this->element) && $this->element->id)
 		{
-			$criteria->childOf = $this->element->id;
-			$criteria->childField = $this->model->id;
+			$criteria->relatedTo = array('sourceElement' => $this->element->id, 'field' => $this->model->id);
 			$criteria->order = 'sortOrder';
 		}
 		else

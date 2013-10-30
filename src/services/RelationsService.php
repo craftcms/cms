@@ -10,14 +10,14 @@ class RelationsService extends BaseApplicationComponent
 	 * Saves the relations elements for an element field.
 	 *
 	 * @param int $fieldId
-	 * @param int $parentId
-	 * @param array $childIds
+	 * @param int $sourceId
+	 * @param array $targetIds
 	 * @throws \Exception
 	 */
-	public function saveRelations($fieldId, $parentId, $childIds)
+	public function saveRelations($fieldId, $sourceId, $targetIds)
 	{
 		// Prevent duplicate child IDs.
-		$childIds = array_unique($childIds);
+		$targetIds = array_unique($targetIds);
 
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
@@ -25,19 +25,19 @@ class RelationsService extends BaseApplicationComponent
 			// Delete the existing relations
 			craft()->db->createCommand()->delete('relations', array(
 				'fieldId'  => $fieldId,
-				'parentId' => $parentId
+				'sourceId' => $sourceId
 			));
 
-			if ($childIds)
+			if ($targetIds)
 			{
 				$values = array();
 
-				foreach ($childIds as $sortOrder => $childId)
+				foreach ($targetIds as $sortOrder => $targetId)
 				{
-					$values[] = array($fieldId, $parentId, $childId, $sortOrder+1);
+					$values[] = array($fieldId, $sourceId, $targetId, $sortOrder+1);
 				}
 
-				$columns = array('fieldId', 'parentId', 'childId', 'sortOrder');
+				$columns = array('fieldId', 'sourceId', 'targetId', 'sortOrder');
 				craft()->db->createCommand()->insertAll('relations', $columns, $values);
 			}
 

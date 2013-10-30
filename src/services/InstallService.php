@@ -202,15 +202,15 @@ class InstallService extends BaseApplicationComponent
 
 		craft()->db->createCommand()->createTable('relations', array(
 			'fieldId'   => array('column' => ColumnType::Int, 'null' => false),
-			'parentId'  => array('column' => ColumnType::Int, 'null' => false),
-			'childId'   => array('column' => ColumnType::Int, 'null' => false),
+			'sourceId'  => array('column' => ColumnType::Int, 'null' => false),
+			'targetId'  => array('column' => ColumnType::Int, 'null' => false),
 			'sortOrder' => array('column' => ColumnType::TinyInt),
 		));
 
-		craft()->db->createCommand()->createIndex('relations', 'fieldId,parentId,childId', true);
+		craft()->db->createCommand()->createIndex('relations', 'fieldId,sourceId,targetId', true);
 		craft()->db->createCommand()->addForeignKey('relations', 'fieldId', 'fields', 'id', 'CASCADE');
-		craft()->db->createCommand()->addForeignKey('relations', 'parentId', 'elements', 'id', 'CASCADE');
-		craft()->db->createCommand()->addForeignKey('relations', 'childId', 'elements', 'id', 'CASCADE');
+		craft()->db->createCommand()->addForeignKey('relations', 'sourceId', 'elements', 'id', 'CASCADE');
+		craft()->db->createCommand()->addForeignKey('relations', 'targetId', 'elements', 'id', 'CASCADE');
 
 		Craft::log('Finished creating the relations table.');
 	}
