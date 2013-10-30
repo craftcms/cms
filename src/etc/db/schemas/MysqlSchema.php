@@ -222,6 +222,26 @@ class MysqlSchema extends \CMysqlSchema
 	}
 
 	/**
+	 * Checks to see if the MySQL InnoDB storage engine is installed and enabled.
+	 *
+	 * @return bool
+	 */
+	public function isInnoDbEnabled()
+	{
+		$results = craft()->db->createCommand()->setText('SHOW ENGINES')->queryAll();
+
+		foreach ($results as $result)
+		{
+			if (mb_strtolower($result['Engine']) == 'innodb' && mb_strtolower($result['Support']) != 'no')
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Checks if a column exists in a table.
 	 *
 	 * @param $table

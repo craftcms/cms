@@ -83,7 +83,7 @@ class Requirements
 			),
 			new Requirement(
 				Craft::t('MySQL InnoDB support'),
-				static::_isInnoDbEnabled(),
+				craft()->db->getSchema()->isInnoDbEnabled(),
 				true,
 				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('@@@appName@@@ requires the MySQL InnoDB storage engine to run.')
@@ -163,26 +163,5 @@ class Requirements
 		}
 
 		return '';
-	}
-
-	/**
-	 * Checks to see if the MySQL InnoDB storage engine is installed and enabled.
-	 *
-	 * @access private
-	 * @return bool
-	 */
-	private function _isInnoDbEnabled()
-	{
-		$results = craft()->db->createCommand()->setText('SHOW ENGINES')->queryAll();
-
-		foreach ($results as $result)
-		{
-			if (mb_strtolower($result['Engine']) == 'innodb' && mb_strtolower($result['Support']) != 'no')
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 }
