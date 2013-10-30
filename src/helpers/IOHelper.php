@@ -36,7 +36,7 @@ class IOHelper
 			{
 				foreach ($files as $file)
 				{
-					$file = static::normalizePathSeparators($file, $suppressErrors);
+					$file = static::normalizePathSeparators($file);
 
 					if ($suppressErrors ? @is_file($file) : is_file($file))
 					{
@@ -172,7 +172,7 @@ class IOHelper
 	 */
 	public static function getRealPath($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 		$path = $suppressErrors ? @realpath($path) : realpath($path);
 
 		if ($suppressErrors ? @is_dir($path) : is_dir($path))
@@ -193,7 +193,7 @@ class IOHelper
 	 */
 	public static function isReadable($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 		return $suppressErrors ? @is_readable($path) : is_readable($path);
 	}
 
@@ -209,7 +209,7 @@ class IOHelper
 	 */
 	public static function isWritable($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::folderExists($path, $suppressErrors))
 		{
@@ -247,7 +247,7 @@ class IOHelper
 	 */
 	public static function getFileName($path, $includeExtension = true, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if ($includeExtension)
 		{
@@ -270,11 +270,11 @@ class IOHelper
 	 */
 	public static function getFolderName($path, $fullPath = true, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if ($fullPath)
 		{
-			$folder = static::normalizePathSeparators($suppressErrors ? @pathinfo($path, PATHINFO_DIRNAME) : pathinfo($path, PATHINFO_DIRNAME), $suppressErrors);
+			$folder = static::normalizePathSeparators($suppressErrors ? @pathinfo($path, PATHINFO_DIRNAME) : pathinfo($path, PATHINFO_DIRNAME));
 
 			// normalizePathSeparators() only enforces the trailing slash for known directories
 			// so let's be sure that it'll be there.
@@ -303,7 +303,7 @@ class IOHelper
 	 */
 	public static function getExtension($path, $default = null, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 		$extension = mb_strtolower($suppressErrors ? @pathinfo($path, PATHINFO_EXTENSION) : pathinfo($path, PATHINFO_EXTENSION));
 
 		if ($extension)
@@ -350,7 +350,7 @@ class IOHelper
 	 */
 	public static function getLastTimeModified($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path, $suppressErrors) || static::folderExists($path, $suppressErrors))
 		{
@@ -371,7 +371,7 @@ class IOHelper
 	 */
 	public static function getFileSize($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path, $suppressErrors))
 		{
@@ -391,7 +391,7 @@ class IOHelper
 	 */
 	public static function getFolderSize($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::folderExists($path, $suppressErrors))
 		{
@@ -406,10 +406,9 @@ class IOHelper
 	 *
 	 * @static
 	 * @param  string $path           The path to normalize.
-	 * @param  bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
 	 * @return string                 The normalized path.
 	 */
-	public static function normalizePathSeparators($path, $suppressErrors = true)
+	public static function normalizePathSeparators($path)
 	{
 		$path = str_replace('\\', '/', $path);
 		$path = str_replace('//', '/', $path);
@@ -418,7 +417,8 @@ class IOHelper
 		if ($path !== '/')
 		{
 			// Use is_dir here to prevent an endless recursive loop
-			if ($suppressErrors ? @is_dir($path) : is_dir($path))
+			// Always suppress errors here because of of openbase_dir, too.
+			if (@is_dir($path))
 			{
 				$path = rtrim($path, '/').'/';
 			}
@@ -437,7 +437,7 @@ class IOHelper
 	 */
 	public static function isFileEmpty($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if ((static::fileExists($path, $suppressErrors) && static::getFileSize($path, $suppressErrors) == 0))
 		{
@@ -457,7 +457,7 @@ class IOHelper
 	 */
 	public static function isFolderEmpty($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if ((static::folderExists($path, $suppressErrors) && static::getFolderSize($path, $suppressErrors) == 0))
 		{
@@ -478,7 +478,7 @@ class IOHelper
 	 */
 	public static function getOwner($path, $getName = true, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path, $suppressErrors) || static::folderExists($path, $suppressErrors))
 		{
@@ -509,7 +509,7 @@ class IOHelper
 	 */
 	public static function getGroup($path, $getName = true, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path, $suppressErrors) || static::folderExists($path, $suppressErrors))
 		{
@@ -539,7 +539,7 @@ class IOHelper
 	 */
 	public static function getPermissions($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path, $suppressErrors) || static::folderExists($path, $suppressErrors))
 		{
@@ -561,7 +561,7 @@ class IOHelper
 	 */
 	public static function getFolderContents($path, $recursive = true, $filter = null, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::folderExists($path, $suppressErrors) && static::isReadable($path, $suppressErrors))
 		{
@@ -588,7 +588,7 @@ class IOHelper
 	 */
 	public static function getFileContents($path, $array = false, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path, $suppressErrors) && static::isReadable($path, $suppressErrors))
 		{
@@ -625,7 +625,7 @@ class IOHelper
 	 */
 	public static function createFile($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (!static::fileExists($path, $suppressErrors))
 		{
@@ -658,7 +658,7 @@ class IOHelper
 			$permissions = craft()->config->get('defaultFolderPermissions');
 		}
 
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (!static::folderExists($path, $suppressErrors))
 		{
@@ -694,7 +694,7 @@ class IOHelper
 	 */
 	public static function writeToFile($path, $contents, $autoCreate = true, $append = false, $noFileLock = null, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (!static::fileExists($path, $suppressErrors) && $autoCreate)
 		{
@@ -816,7 +816,7 @@ class IOHelper
 	 */
 	public static function changeOwner($path, $owner, $recursive = false, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (posix_getpwnam($owner) == false xor (is_numeric($owner) && posix_getpwuid($owner)== false))
 		{
@@ -834,7 +834,7 @@ class IOHelper
 
 				foreach ($contents as $path)
 				{
-					$path = static::normalizePathSeparators($path, $suppressErrors);
+					$path = static::normalizePathSeparators($path);
 
 					if ($suppressErrors ? !@chown($path, $owner) : chown($path, $owner))
 					{
@@ -871,7 +871,7 @@ class IOHelper
 	 */
 	public static function changeGroup($path, $group, $recursive = false, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (posix_getgrnam($group) == false xor (is_numeric($group) && posix_getgrgid($group) == false))
 		{
@@ -889,7 +889,7 @@ class IOHelper
 
 				foreach ($contents as $path)
 				{
-					$path = static::normalizePathSeparators($path, $suppressErrors);
+					$path = static::normalizePathSeparators($path);
 
 					if ($suppressErrors ? !@chgrp($path, $group) : chgrp($path, $group))
 					{
@@ -925,7 +925,7 @@ class IOHelper
 	 */
 	public static function changePermissions($path, $permissions, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path, $suppressErrors) || static::folderExists($path, $suppressErrors))
 		{
@@ -955,7 +955,7 @@ class IOHelper
 	 */
 	public static function copyFile($path, $destination, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path, $suppressErrors))
 		{
@@ -1001,7 +1001,7 @@ class IOHelper
 	 */
 	public static function copyFolder($path, $destination, $validate = false, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::folderExists($path, $suppressErrors))
 		{
@@ -1063,7 +1063,7 @@ class IOHelper
 	 */
 	public static function rename($path, $newName, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path, $suppressErrors) || static::folderExists($path, $suppressErrors))
 		{
@@ -1112,7 +1112,7 @@ class IOHelper
 	 */
 	public static function clearFile($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path, $suppressErrors))
 		{
@@ -1144,7 +1144,7 @@ class IOHelper
 	 */
 	public static function clearFolder($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::folderExists($path, $suppressErrors))
 		{
@@ -1152,7 +1152,7 @@ class IOHelper
 
 			foreach ($folderContents as $item)
 			{
-				$item = static::normalizePathSeparators($item, $suppressErrors);
+				$item = static::normalizePathSeparators($item);
 
 				if (static::fileExists($item, $suppressErrors))
 				{
@@ -1184,7 +1184,7 @@ class IOHelper
 	 */
 	public static function deleteFile($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path, $suppressErrors))
 		{
@@ -1222,7 +1222,7 @@ class IOHelper
 	 */
 	public static function deleteFolder($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::folderExists($path, $suppressErrors))
 		{
@@ -1264,7 +1264,7 @@ class IOHelper
 	 */
 	public static function getFileMD5($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path, $suppressErrors) && static::isReadable($path, $suppressErrors))
 		{
@@ -1500,7 +1500,7 @@ class IOHelper
 
 		foreach (static::getFolderContents($path, $suppressErrors) as $item)
 		{
-			$item = static::normalizePathSeparators($item, $suppressErrors);
+			$item = static::normalizePathSeparators($item);
 
 			if (static::fileExists($item, $suppressErrors))
 			{
@@ -1524,7 +1524,7 @@ class IOHelper
 	{
 		$descendants = array();
 
-		$path = static::normalizePathSeparators(static::getRealPath($path, $suppressErrors), $suppressErrors);
+		$path = static::normalizePathSeparators(static::getRealPath($path, $suppressErrors));
 
 		if ($filter !== null)
 		{
@@ -1551,11 +1551,11 @@ class IOHelper
 				{
 					if (static::fileExists($contents[$key], $suppressErrors))
 					{
-						$descendants[] = static::normalizePathSeparators($contents[$key], $suppressErrors);
+						$descendants[] = static::normalizePathSeparators($contents[$key]);
 					}
 					elseif (static::folderExists($contents[$key], $suppressErrors))
 					{
-						$descendants[] = static::normalizePathSeparators($contents[$key], $suppressErrors);
+						$descendants[] = static::normalizePathSeparators($contents[$key]);
 					}
 				}
 
