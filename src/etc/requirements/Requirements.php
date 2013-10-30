@@ -127,6 +127,12 @@ class Requirements
 				false,
 				Craft::t('@@@appName@@@ requires <a href="http://php.net/manual/en/book.iconv.php">iconv</a> in order to run.')
 			),
+			new Requirement(
+				Craft::t('Disk space'),
+				@disk_free_space(CRAFT_BASE_PATH) > 20971520,
+				true,
+				Craft::t('@@@appName@@@ required at least 20MB of free disk space in order to run.')
+			),
 		);
 	}
 
