@@ -450,7 +450,10 @@ class Updater
 		{
 			foreach ($checker->getRequirements() as $requirement)
 			{
-				$errors[] = $requirement->getNotes();
+				if ($requirement->getResult() == RequirementResult::Failed)
+				{
+					$errors[] = $requirement->getNotes();
+				}
 			}
 		}
 

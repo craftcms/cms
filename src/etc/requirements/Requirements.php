@@ -76,7 +76,7 @@ class Requirements
 			),
 			new Requirement(
 				Craft::t('MySQL version'),
-				version_compare(craft()->db->serverVersion, $requiredMysqlVersion, ">="),
+				version_compare(craft()->db->getServerVersion(), $requiredMysqlVersion, ">="),
 				true,
 				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('MySQL {version} or higher is required to run @@@appName@@@.', array('version' => $requiredMysqlVersion))
@@ -126,12 +126,6 @@ class Requirements
 				function_exists('iconv'),
 				false,
 				Craft::t('@@@appName@@@ requires <a href="http://php.net/manual/en/book.iconv.php">iconv</a> in order to run.')
-			),
-			new Requirement(
-				Craft::t('Disk space'),
-				@disk_free_space(CRAFT_BASE_PATH) > 20971520,
-				true,
-				Craft::t('@@@appName@@@ required at least 20MB of free disk space in order to run.')
 			),
 		);
 	}
