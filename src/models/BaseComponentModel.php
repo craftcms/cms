@@ -20,7 +20,7 @@ abstract class BaseComponentModel extends BaseModel
 	{
 		return array(
 			'id'       => AttributeType::Number,
-			'type'     => AttributeType::String,
+			'type'     => array(AttributeType::String),
 			'settings' => AttributeType::Mixed,
 		);
 	}
