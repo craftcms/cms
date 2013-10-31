@@ -187,6 +187,12 @@ var RecordTypeSettingsModal = Garnish.Modal.extend({
 	{
 		ev.preventDefault();
 
+		// Prevent multi form submits with the return key
+		if (!this.visible)
+		{
+			return;
+		}
+
 		if (this.handleGenerator.listening)
 		{
 			// Give the handle a chance to catch up with the input
@@ -571,7 +577,9 @@ Field = Garnish.Base.extend({
 
 		if (!Garnish.isMobileBrowser())
 		{
-			this.$nameInput.focus();
+			setTimeout($.proxy(function() {
+				this.$nameInput.focus()
+			}, this), 100);
 		}
 	},
 

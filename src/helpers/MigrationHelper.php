@@ -113,17 +113,15 @@ class MigrationHelper
 
 		// Temporarily drop any FKs and indexes that include this column
 		$columnFks = array();
-		$columnIndexs = array();
+		$columnIndexes = array();
 		$otherTableFks = array();
 
+		// Drop all the FKs because any one of them might be relying on an index we're about to drop
 		foreach ($table->fks as $fk)
 		{
 			$key = array_search($oldName, $fk->columns);
-			if ($key !== false)
-			{
-				$columnFks[] = array($fk, $key);
-				static::_dropForeignKey($fk);
-			}
+			$columnFks[] = array($fk, $key);
+			static::_dropForeignKey($fk);
 		}
 
 		foreach ($table->indexes as $index)
@@ -172,7 +170,12 @@ class MigrationHelper
 		foreach ($columnFks as $fkData)
 		{
 			list($fk, $key) = $fkData;
-			$fk->columns[$key] = $newName;
+
+			if ($key !== false)
+			{
+				$fk->columns[$key] = $newName;
+			}
+
 			static::_restoreForeignKey($fk);
 		}
 	}

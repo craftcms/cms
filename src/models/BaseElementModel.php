@@ -209,6 +209,7 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.
 	 *
+	 * @deprecated
 	 * @param mixed $field
 	 * @return ElementCriteriaModel
 	 */
@@ -223,6 +224,7 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns a new ElementCriteriaModel prepped to return this element's same-type parents.
 	 *
+	 * @deprecated
 	 * @param mixed $field
 	 * @return ElementCriteriaModel
 	 */
