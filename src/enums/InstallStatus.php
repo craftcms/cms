@@ -7,6 +7,6 @@ namespace Craft;
 class InstallStatus
 {
 	const Success = 'success';
-	const Failure = 'failure';
+	const Failure = 'failed';
 	const Warning = 'warning';
 }
