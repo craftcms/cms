@@ -81,7 +81,7 @@ class TemplatesController extends BaseController
 		$reqCheck = new RequirementsChecker();
 		$reqCheck->run();
 
-		if ($reqCheck->getResult() == InstallStatus::Failure)
+		if ($reqCheck->getResult() == InstallStatus::Failed)
 		{
 			// Coming from Updater.php
 			if (craft()->request->isAjaxRequest())
