@@ -62,17 +62,17 @@ class Requirements
 			),
 			new Requirement(
 				Craft::t('Mcrypt extension'),
-				extension_loaded("mcrypt"),
-				false,
+				extension_loaded('mcrypt'),
+				true,
 				'<a href="http://www.yiiframework.com/doc/api/CSecurityManager">CSecurityManager</a>',
 				Craft::t('<a href="http://php.net/manual/en/book.mcrypt.php">Mcrypt</a> is required.')
 			),
 			new Requirement(
-				Craft::t('GD extension with FreeType support'),
-				extension_loaded('gd'),
+				Craft::t('GD extension with FreeType support or Imagick extension'),
+				extension_loaded('gd') || extension_loaded('imagick'),
 				true,
 				'Assets',
-				'<a href="http://php.net/manual/en/book.image.php">GD</a> is required.'
+				'<a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/class.imagick.php">Imagick</a> is required.'
 			),
 			new Requirement(
 				Craft::t('MySQL version'),
