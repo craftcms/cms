@@ -450,7 +450,7 @@ class Updater
 		{
 			foreach ($checker->getRequirements() as $requirement)
 			{
-				if ($requirement->getResult() == RequirementResult::Failed)
+				if ($requirement->getResult() == InstallStatus::Failed)
 				{
 					$errors[] = $requirement->getNotes();
 				}

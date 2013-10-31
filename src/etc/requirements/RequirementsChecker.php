@@ -23,7 +23,7 @@ class RequirementsChecker extends \CComponent
 		{
 			if ($requirement->getResult() == RequirementResult::Failed)
 			{
-				$installResult = InstallStatus::Failure;
+				$installResult = InstallStatus::Failed;
 				break;
 			}
 			else if ($requirement->getResult() == RequirementResult::Warning)
