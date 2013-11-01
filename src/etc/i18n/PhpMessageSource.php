@@ -55,12 +55,16 @@ class PhpMessageSource extends \CPhpMessageSource
 
 			// Let's see if plugins have anything to contribute. Don't use PluginService, but go straight to the file system. Who cares if they are disabled.
 			$pluginPaths = IOHelper::getFolders(craft()->path->getPluginsPath());
-			foreach ($pluginPaths as $pluginPath)
+
+			if ($pluginPaths)
 			{
-				$paths[] = $pluginPath.'translations/'.$language.'.php';
-				if ($languageCode)
+				foreach ($pluginPaths as $pluginPath)
 				{
-					$paths[] = $pluginPath.'translations/'.$languageCode.'.php';
+					$paths[] = $pluginPath.'translations/'.$language.'.php';
+					if ($languageCode)
+					{
+						$paths[] = $pluginPath.'translations/'.$languageCode.'.php';
+					}
 				}
 			}
 
