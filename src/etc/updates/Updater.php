@@ -434,7 +434,7 @@ class Updater
 		// Make sure we can write to craft/app/requirements
 		if (!IOHelper::isWritable(craft()->path->getAppPath().'etc/requirements/'))
 		{
-			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to your craft/app/requirements folder and cannot. Please check your <a href="http://buildwithcraft.com/docs/updating#one-click-updating">permissions</a>.'));
+			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to your craft/app/etc/requirements folder and cannot. Please check your <a href="http://buildwithcraft.com/docs/updating#one-click-updating">permissions</a>.'));
 		}
 
 		$tempFileName = StringHelper::UUID().'.php';
