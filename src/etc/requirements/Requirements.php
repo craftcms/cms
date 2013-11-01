@@ -62,17 +62,17 @@ class Requirements
 			),
 			new Requirement(
 				Craft::t('Mcrypt extension'),
-				extension_loaded("mcrypt"),
-				false,
+				extension_loaded('mcrypt'),
+				true,
 				'<a href="http://www.yiiframework.com/doc/api/CSecurityManager">CSecurityManager</a>',
 				Craft::t('<a href="http://php.net/manual/en/book.mcrypt.php">Mcrypt</a> is required.')
 			),
 			new Requirement(
-				Craft::t('GD extension with FreeType support'),
-				extension_loaded('gd'),
+				Craft::t('GD extension with FreeType support or Imagick extension'),
+				extension_loaded('gd') || extension_loaded('imagick'),
 				true,
 				'Assets',
-				'<a href="http://php.net/manual/en/book.image.php">GD</a> is required.'
+				'<a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/class.imagick.php">Imagick</a> is required.'
 			),
 			new Requirement(
 				Craft::t('MySQL version'),
@@ -83,7 +83,7 @@ class Requirements
 			),
 			new Requirement(
 				Craft::t('MySQL InnoDB support'),
-				craft()->db->getSchema()->isInnoDbEnabled(),
+				static::_isInnoDbEnabled(),
 				true,
 				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('@@@appName@@@ requires the MySQL InnoDB storage engine to run.')
@@ -127,6 +127,12 @@ class Requirements
 				false,
 				Craft::t('@@@appName@@@ requires <a href="http://php.net/manual/en/book.iconv.php">iconv</a> in order to run.')
 			),
+			new Requirement(
+				Craft::t('Disk space'),
+				@disk_free_space(CRAFT_BASE_PATH) > 20971520,
+				true,
+				Craft::t('@@@appName@@@ required at least 20MB of free disk space in order to run.')
+			),
 		);
 	}
 
@@ -163,5 +169,26 @@ class Requirements
 		}
 
 		return '';
+	}
+
+	/**
+	 * Checks to see if the MySQL InnoDB storage engine is installed and enabled.
+	 *
+	 * @access private
+	 * @return bool
+	 */
+	private function _isInnoDbEnabled()
+	{
+		$results = craft()->db->createCommand()->setText('SHOW ENGINES')->queryAll();
+
+		foreach ($results as $result)
+		{
+			if (mb_strtolower($result['Engine']) == 'innodb' && mb_strtolower($result['Support']) != 'no')
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
