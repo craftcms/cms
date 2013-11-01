@@ -390,22 +390,15 @@ class FieldsService extends BaseApplicationComponent
 				{
 					$column = ModelHelper::normalizeAttributeConfig($column);
 
-					if ($isNewField)
+					if (!craft()->db->columnExists($contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle()))
 					{
+						// Adding it for the first time if it's a new field, or previously the field didn't need a content column.
 						craft()->db->createCommand()->addColumn($contentTable, $fieldColumnPrefix.$field->handle, $column);
 					}
 					else
 					{
-						// Existing field going from a field that did not define any content attributes to one that does.
-						if (!craft()->db->columnExists($contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle()))
-						{
-							craft()->db->createCommand()->addColumn($contentTable, $fieldColumnPrefix.$field->handle, $column);
-						}
-						else
-						{
-							// Existing field that already had a column defined, just altering it.
-							craft()->db->createCommand()->alterColumn($contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle(), $column, $fieldColumnPrefix.$field->handle);
-						}
+						// Existing field that already had a column defined, just altering it.
+						craft()->db->createCommand()->alterColumn($contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle(), $column, $fieldColumnPrefix.$field->handle);
 					}
 				}
 				else
