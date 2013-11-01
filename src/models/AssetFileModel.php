@@ -59,6 +59,7 @@ class AssetFileModel extends BaseElementModel
 					$model->setAttribute($attributeName, parent::getAttribute($attributeName));
 				}
 
+				$model->setContent($this->getContent());
 				$model->setTransform($transform);
 				return $model;
 			}

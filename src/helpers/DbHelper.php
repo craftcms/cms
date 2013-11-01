@@ -405,7 +405,15 @@ class DbHelper
 			}
 			else
 			{
-				$param = ':p'.StringHelper::randomString(9);
+				// Find a unique param name
+				$paramKey = ':'.str_replace('.', '', $key);
+				$i = 1;
+				while (isset($params[$paramKey.$i]))
+				{
+					$i++;
+				}
+
+				$param = $paramKey.$i;
 				$params[$param] = trim($value);
 				$conditions[] = $key.$operator.$param;
 			}

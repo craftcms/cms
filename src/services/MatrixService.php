@@ -156,7 +156,8 @@ class MatrixService extends BaseApplicationComponent
 
 				if (!$isNewRecordType)
 				{
-					$oldRecordType = MatrixRecordTypeModel::populateModel($recordTypeRecord);
+					$oldRecordTypeRecord = MatrixRecordTypeRecord::model()->findById($recordType->id);
+					$oldRecordType = MatrixRecordTypeModel::populateModel($oldRecordTypeRecord);
 
 					$oldFieldsById = array();
 
