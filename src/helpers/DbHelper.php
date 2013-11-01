@@ -406,14 +406,14 @@ class DbHelper
 			else
 			{
 				// Find a unique param name
-				$paramKey = str_replace('.', '', $key);
+				$paramKey = ':'.str_replace('.', '', $key);
 				$i = 1;
 				while (isset($params[$paramKey.$i]))
 				{
 					$i++;
 				}
 
-				$param = ':'.$paramKey.$i;
+				$param = $paramKey.$i;
 				$params[$param] = trim($value);
 				$conditions[] = $key.$operator.$param;
 			}
