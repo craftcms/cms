@@ -60,57 +60,36 @@ class MatrixRecordModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the field with a given handle.
+	 * Returns the name of the table this element's content is stored in.
 	 *
 	 * @access protected
-	 * @param string $handle
-	 * @return FieldModel|null
+	 * @return string
 	 */
-	protected function getFieldByHandle($handle)
+	protected function getContentTable()
 	{
-		$originalFieldContext = craft()->content->fieldContext;
-		craft()->content->fieldContext = 'matrixRecordType:'.$this->typeId;
-
-		$field = craft()->fields->getFieldByHandle($handle);
-
-		craft()->content->fieldContext = $originalFieldContext;
-
-		return $field;
+		$matrixField = craft()->fields->getFieldById($this->fieldId);
+		return craft()->matrix->getContentTableName($matrixField);
 	}
 
 	/**
-	 * Returns a ContentModel to be used as this element's content.
+	 * Returns the field column prefix this element's content uses.
 	 *
 	 * @access protected
-	 * @return ContentModel
+	 * @return string
 	 */
-	protected function getContentModel()
+	protected function getFieldColumnPrefix()
 	{
-		$recordType = $this->getType();
+		return 'field_'.$this->getType()->handle.'_';
+	}
 
-		if ($recordType)
-		{
-			$originalContentTable = craft()->content->contentTable;
-			$matrixField = craft()->fields->getFieldById($this->fieldId);
-			craft()->content->contentTable = craft()->matrix->getContentTableName($matrixField);
-
-			$originalFieldContentPrefix = craft()->content->fieldColumnPrefix;
-			craft()->content->fieldColumnPrefix = 'field_'.$recordType->handle.'_';
-
-			$originalFieldContext = craft()->content->fieldContext;
-			craft()->content->fieldContext = 'matrixRecordType:'.$recordType->id;
-
-			$content = parent::getContentModel();
-
-			craft()->content->contentTable = $originalContentTable;
-			craft()->content->fieldColumnPrefix = $originalFieldContentPrefix;
-			craft()->content->fieldContext = $originalFieldContext;
-		}
-		else
-		{
-			$content = parent::getContentModel();
-		}
-
-		return $content;
+	/**
+	 * Returns the field context this element's content uses.
+	 *
+	 * @access protected
+	 * @return string
+	 */
+	protected function getFieldContext()
+	{
+		return 'matrixRecordType:'.$this->typeId;
 	}
 }
