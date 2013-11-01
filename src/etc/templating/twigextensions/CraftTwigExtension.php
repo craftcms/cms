@@ -55,6 +55,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'filesize'	         => new \Twig_Filter_Function('\Craft\craft()->formatter->formatSize'),
 			'filter'             => new \Twig_Filter_Function('array_filter'),
 			'group'              => new \Twig_Filter_Method($this, 'groupFilter'),
+			'indexOf'            => new \Twig_Filter_Method($this, 'indexOfFilter'),
 			'intersect'          => new \Twig_Filter_Function('array_intersect'),
 			'lcfirst'            => new \Twig_Filter_Function('lcfirst'),
 			'markdown'           => $markdownFilter,
@@ -156,6 +157,47 @@ class CraftTwigExtension extends \Twig_Extension
 		}
 
 		return $groups;
+	}
+
+	/**
+	 * Returns the index of an item in a string or array, or -1 if it cannot be found.
+	 *
+	 * @param mixed $haystack
+	 * @param mixed $needle
+	 * @return int
+	 */
+	public function indexOfFilter($haystack, $needle)
+	{
+		if (is_string($haystack))
+		{
+			$index = strpos($haystack, $needle);
+		}
+		else if (is_array($haystack))
+		{
+			$index = array_search($needle, $haystack);
+		}
+		else if (is_object($haystack) && $haystack instanceof \IteratorAggregate)
+		{
+			$index = false;
+
+			foreach ($haystack as $i => $item)
+			{
+				if ($item == $needle)
+				{
+					$index = $i;
+					break;
+				}
+			}
+		}
+
+		if ($index !== false)
+		{
+			return $index;
+		}
+		else
+		{
+			return -1;
+		}
 	}
 
 	/**
