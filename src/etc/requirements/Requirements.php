@@ -71,7 +71,7 @@ class Requirements
 				Craft::t('GD extension with FreeType support or Imagick extension'),
 				extension_loaded('gd') || extension_loaded('imagick'),
 				true,
-				'Assets',
+				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				'<a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/class.imagick.php">Imagick</a> is required.'
 			),
 			new Requirement(
@@ -113,25 +113,22 @@ class Requirements
 				Craft::t('PCRE UTF-8 support'),
 				preg_match('/./u', 'Ü') === 1,
 				true,
+				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('<a href="http://php.net/manual/en/book.pcre.php">PCRE</a> must be compiled to support UTF-8.')
 			),
 			new Requirement(
 				Craft::t('Multibyte String support'),
 				(extension_loaded('mbstring') && ini_get('mbstring.func_overload') != 1),
 				true,
+				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('@@@appName@@@ requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String extension</a> with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.')
 			),
 			new Requirement(
 				Craft::t('iconv support'),
 				function_exists('iconv'),
 				false,
+				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('@@@appName@@@ requires <a href="http://php.net/manual/en/book.iconv.php">iconv</a> in order to run.')
-			),
-			new Requirement(
-				Craft::t('Disk space'),
-				@disk_free_space(CRAFT_BASE_PATH) > 20971520,
-				true,
-				Craft::t('@@@appName@@@ required at least 20MB of free disk space in order to run.')
 			),
 		);
 	}

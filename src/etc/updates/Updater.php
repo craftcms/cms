@@ -458,7 +458,7 @@ class Updater
 			{
 				if ($requirement->getResult() == InstallStatus::Failed)
 				{
-					Craft::log('Requirement failed: '.$requirement->getNotes(), LogLevel::Error, true);
+					Craft::log('Requirement "'.$requirement->getName().'" failed with the message: '.$requirement->getNotes(), LogLevel::Error, true);
 					$errors[] = $requirement->getNotes();
 				}
 			}
