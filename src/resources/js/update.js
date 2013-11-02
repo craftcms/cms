@@ -98,7 +98,7 @@ Craft.Updater = Garnish.Base.extend({
 	onErrorResponse: function(jqXHR)
 	{
 		this.$graphic.addClass('error');
-		var errorText = Craft.t('An error has occurred.  Please contact {email}.', { email: '<a href="mailto:support@buildwithcraft.com?subject=Update+Failure&body=' + encodeURIComponent(jqXHR.responseText) + '">support@buildwithcraft.com</a>'} ) + '<br /><p>' + jqXHR.statusText + '</p><br /><p>' + jqXHR.responseText + '</p>';
+		var errorText = Craft.t('An error has occurred.  Please contact {email} and be sure to include the error message.', { email: '<a href="mailto:support@buildwithcraft.com?subject=Craft+Update+Failure">support@buildwithcraft.com</a>'} ) + '<br /><p>' + jqXHR.statusText + '</p><br /><p>' + jqXHR.responseText + '</p>';
 
 		this.updateStatus(errorText);
 	},
