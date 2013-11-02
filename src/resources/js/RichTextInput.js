@@ -46,7 +46,7 @@ Craft.RichTextInput = Garnish.Base.extend({
 								storageKey: 'RichTextFieldType.ChooseImage',
 								multiSelect: true,
 								criteria: { kind: 'image' },
-								onSelect: $.proxy(function(assets)
+								onSelect: $.proxy(function(assets, transform)
 								{
 									if (assets.length)
 									{
@@ -55,6 +55,12 @@ Craft.RichTextInput = Garnish.Base.extend({
 										{
 											var asset = assets[i],
 												url   = asset.url+'#asset:'+asset.id;
+
+											if (transform)
+											{
+												url += ':'+transform;
+											}
+
 											editor.insertNode($('<img src="'+url+'" />')[0]);
 											editor.sync();
 										}
@@ -62,7 +68,8 @@ Craft.RichTextInput = Garnish.Base.extend({
 										editor.dropdownHideAll();
 									}
 								}, this),
-		                        closeOtherModals: false
+								closeOtherModals: false,
+								canSelectImageTransforms: true
 							});
 						}
 						else
@@ -143,7 +150,8 @@ Craft.RichTextInput = Garnish.Base.extend({
 									}
 									editor.dropdownHideAll();
 								},
-								closeOtherModals: false
+								closeOtherModals: false,
+								canSelectImageTransforms: true
 							});
 						}
 						else
