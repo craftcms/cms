@@ -70,4 +70,22 @@ class NumberFieldType extends BaseFieldType
 			'size'  => 5
 		));
 	}
+
+	/**
+	 * Returns the input value as it should be saved to the database.
+	 *
+	 * @param mixed $data
+	 * @return mixed
+	 */
+	public function prepValueFromPost($data)
+	{
+		if ($data === '')
+		{
+			return '0';
+		}
+		else
+		{
+			return $data;
+		}
+	}
 }
