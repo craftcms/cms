@@ -458,6 +458,7 @@ class Updater
 			{
 				if ($requirement->getResult() == InstallStatus::Failed)
 				{
+					Craft::log('Requirement failed: '.$requirement->getNotes(), LogLevel::Error, true);
 					$errors[] = $requirement->getNotes();
 				}
 			}
