@@ -31,6 +31,12 @@ class m131105_000008_add_values_for_unknown_asset_kinds extends BaseMigration
 			Craft::log('No assets found with unknown kind.', LogLevel::Info, true);
 		}
 
+		Craft::log('Changing kind column to varchar, maxLength 50, required and a default of unknown', LogLevel::Info, true);
+		$this->alterColumn('assetfiles', 'kind', array('column' => ColumnType::Varchar, 'maxLength' => 50, 'required' => true, 'default' => 'unknown'));
+
+		Craft::log('Fixing any truncated illustrators.', LogLevel::Info, true);
+		$this->update('assetfiles', array('kind' => 'illustrator'), array('kind' => 'illustrato'));
+
 		return true;
 	}
 }
