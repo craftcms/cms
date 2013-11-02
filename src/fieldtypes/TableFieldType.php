@@ -169,13 +169,12 @@ class TableFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Preps the post data before it's saved to the database.
+	 * Returns the input value as it should be saved to the database.
 	 *
-	 * @access protected
 	 * @param mixed $value
 	 * @return mixed
 	 */
-	protected function prepPostData($value)
+	public function prepValueFromPost($value)
 	{
 		if (is_array($value))
 		{

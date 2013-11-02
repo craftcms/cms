@@ -3,7 +3,6 @@ namespace Craft;
 
 /**
  * Handles asset tasks
- * TODO: Permissions?
  */
 class AssetsController extends BaseController
 {
@@ -176,6 +175,8 @@ class AssetsController extends BaseController
 	 */
 	public function actionMoveFile()
 	{
+		$this->requireLogin();
+
 		$fileIds = craft()->request->getRequiredPost('fileId');
 		$folderId = craft()->request->getRequiredPost('folderId');
 		$fileName = craft()->request->getPost('fileName');
@@ -190,6 +191,8 @@ class AssetsController extends BaseController
 	 */
 	public function actionMoveFolder()
 	{
+		$this->requireLogin();
+
 		$folderId = craft()->request->getRequiredPost('folderId');
 		$parentId = craft()->request->getRequiredPost('parentId');
 		$action = craft()->request->getPost('action');
@@ -207,9 +210,21 @@ class AssetsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$transformId = craft()->request->getRequiredPost('transformId');
+		$transformId = craft()->request->getPost('transformId');
 
-		$transformIndexModel = craft()->assetTransforms->getTransformIndexModelById($transformId);
+		// If transform Id was not passed in, see if file id and handle were.
+		if (empty($transformId))
+		{
+			$fileId = craft()->request->getPost('fileId');
+			$handle = craft()->request->getPost('handle');
+			$fileModel = craft()->assets->getFileById($fileId);
+			$transformIndexModel = craft()->assetTransforms->getTransformIndex($fileModel, $handle);
+			$transformId = $transformIndexModel->id;
+		}
+		else
+		{
+			$transformIndexModel = craft()->assetTransforms->getTransformIndexModelById($transformId);
+		}
 
 		if (!$transformIndexModel)
 		{
@@ -251,6 +266,22 @@ class AssetsController extends BaseController
 			echo 'success:'.craft()->assetTransforms->getUrlforTransformByIndexId($transformId);
 			craft()->end();
 		}
+	}
+
+	/**
+	 * Get information about available transforms.
+	 */
+	public function actionGetTransformInfo()
+	{
+		$this->requireAjaxRequest();
+		$transforms = craft()->assetTransforms->getAllTransforms();
+		$output = array();
+		foreach ($transforms as $handle => $transform)
+		{
+			$output[] = (object) array('id' => $transform->id, 'handle' => $handle, 'name' => $transform->name);
+		}
+
+		$this->returnJson($output);
 	}
 }
 

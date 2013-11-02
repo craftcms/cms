@@ -428,7 +428,13 @@ class Updater
 
 		if (!IOHelper::fileExists($requirementsFile))
 		{
-			throw new Exception('The Requirements file is required and it does not exist at '.$requirementsFile);
+			throw new Exception(Craft::t('The Requirements file is required and it does not exist at {path}.', array('path' => $requirementsFile)));
+		}
+
+		// Make sure we can write to craft/app/requirements
+		if (!IOHelper::isWritable(craft()->path->getAppPath().'etc/requirements/'))
+		{
+			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to your craft/app/etc/requirements folder and cannot. Please check your <a href="http://buildwithcraft.com/docs/updating#one-click-updating">permissions</a>.'));
 		}
 
 		$tempFileName = StringHelper::UUID().'.php';
@@ -452,6 +458,7 @@ class Updater
 			{
 				if ($requirement->getResult() == InstallStatus::Failed)
 				{
+					Craft::log('Requirement "'.$requirement->getName().'" failed with the message: '.$requirement->getNotes(), LogLevel::Error, true);
 					$errors[] = $requirement->getNotes();
 				}
 			}

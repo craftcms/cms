@@ -11,6 +11,23 @@ class AssetFileModel extends BaseElementModel
 	private $_transform;
 
 	/**
+	 * Use the entry's title as its string representation.
+	 *
+	 * @return string
+	 */
+	function __toString()
+	{
+		if (isset($this->_transform))
+		{
+			return $this->getUrl();
+		}
+		else
+		{
+			return parent::__toString();
+		}
+	}
+
+	/**
 	 * Checks if an attribute value is set.
 	 *
 	 * @param string $name
@@ -59,6 +76,7 @@ class AssetFileModel extends BaseElementModel
 					$model->setAttribute($attributeName, parent::getAttribute($attributeName));
 				}
 
+				$model->setContent($this->getContent());
 				$model->setTransform($transform);
 				return $model;
 			}

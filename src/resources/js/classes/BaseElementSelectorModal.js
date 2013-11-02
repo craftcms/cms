@@ -16,6 +16,9 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 	$search: null,
 	$elements: null,
 	$tbody: null,
+	$buttons: null,
+	$cancelBtn: null,
+	$selectBtn: null,
 
 	init: function(elementType, settings)
 	{
@@ -25,17 +28,17 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 		// Build the modal
 		var $container = $('<div class="modal elementselectormodal"></div>').appendTo(Garnish.$bod),
 			$body = $('<div class="body"><div class="spinner big"></div></div>').appendTo($container),
-			$footer = $('<div class="footer"/>').appendTo($container),
-			$buttons = $('<div class="buttons rightalign"/>').appendTo($footer),
-			$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttons),
-			$selectBtn = $('<div class="btn disabled submit">'+Craft.t('Select')+'</div>').appendTo($buttons);
+			$footer = $('<div class="footer"/>').appendTo($container);
 
 		this.base($container, settings);
 
-		this.$body = $body;
-		this.$selectBtn = $selectBtn;
+		this.$buttons = $('<div class="buttons rightalign"/>').appendTo($footer);
+		this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$buttons);
+		this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('Select')+'</div>').appendTo(this.$buttons);
 
-		this.addListener($cancelBtn, 'activate', 'cancel');
+		this.$body = $body;
+
+		this.addListener(this.$cancelBtn, 'activate', 'cancel');
 		this.addListener(this.$selectBtn, 'activate', 'selectElements');
 	},
 
@@ -147,33 +150,45 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 		if (this.elementIndex && this.elementSelect && this.elementSelect.totalSelected)
 		{
 			this.elementSelect.clearMouseUpTimeout();
+			this.hide();
 
 			var $selectedItems = this.elementSelect.getSelectedItems(),
-				elements = [];
+				elementInfo = this.getElementInfo($selectedItems);
 
-			for (var i = 0; i < $selectedItems.length; i++)
-			{
-				var $item = $($selectedItems[i]),
-					$element = $item.find('.element:first');
-
-				elements.push({
-					id:       $item.data('id'),
-					label:    $item.data('label'),
-					status:   $item.data('status'),
-					url:      $element.data('url'),
-					hasThumb: $element.hasClass('hasthumb'),
-					$element: $element
-				});
-			}
-
-			this.hide();
-			this.settings.onSelect(elements);
+			this.onSelect(elementInfo);
 
 			if (this.settings.disableOnSelect)
 			{
-				this.elementIndex.disableElements($selectedItems);
+				this.elementIndex.disableElements(this.elementSelect.getSelectedItems());
 			}
 		}
+	},
+
+	getElementInfo: function($selectedItems)
+	{
+		var info = [];
+
+		for (var i = 0; i < $selectedItems.length; i++)
+		{
+			var $item = $($selectedItems[i]),
+				$element = $item.find('.element:first');
+
+			info.push({
+				id:       $item.data('id'),
+				label:    $item.data('label'),
+				status:   $item.data('status'),
+				url:      $element.data('url'),
+				hasThumb: $element.hasClass('hasthumb'),
+				$element: $element
+			});
+		}
+
+		return info;
+	},
+
+	onSelect: function(elementInfo)
+	{
+		this.settings.onSelect(elementInfo);
 	}
 },
 {

@@ -156,8 +156,8 @@ $cpRoutes['settings/fields/(?P<groupId>\d+)']                                   
 $cpRoutes['settings/fields/new']                                                  = 'settings/fields/_edit';
 $cpRoutes['settings/fields/edit/(?P<fieldId>\d+)']                                = 'settings/fields/_edit';
 $cpRoutes['settings/general']                                                     = array('action' => 'systemSettings/generalSettings');
-$cpRoutes['settings/globals/new']                                                 = array('action' => 'systemSettings/editContent');
-$cpRoutes['settings/globals/(?P<globalSetId>\d+)']                                = array('action' => 'systemSettings/editContent');
+$cpRoutes['settings/globals/new']                                                 = array('action' => 'systemSettings/editGlobalSet');
+$cpRoutes['settings/globals/(?P<globalSetId>\d+)']                                = array('action' => 'systemSettings/editGlobalSet');
 $cpRoutes['settings/plugins/(?P<pluginClass>{handle})']                           = 'settings/plugins/_settings';
 $cpRoutes['settings/sections']                                                    = array('action' => 'sections/index');
 $cpRoutes['settings/sections/new']                                                = array('action' => 'sections/editSection');

@@ -919,7 +919,11 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= ' unselectable';
 		}
 
-		if ($thumbUrl || $iconUrl)
+		if ($thumbUrl)
+		{
+			$html .= ' hasthumb';
+		}
+		else if ($iconUrl)
 		{
 			$html .= ' hasicon';
 		}
@@ -934,7 +938,7 @@ class TemplatesService extends BaseApplicationComponent
 
 		if ($thumbUrl)
 		{
-			$html .= '<div class="elementicon elementthumb '.$thumbClass.'"></div> ';
+			$html .= '<div class="elementthumb '.$thumbClass.'"></div> ';
 		}
 		else if ($iconUrl)
 		{

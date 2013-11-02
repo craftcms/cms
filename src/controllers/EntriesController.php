@@ -233,16 +233,21 @@ class EntriesController extends BaseController
 		craft()->setLanguage(craft()->request->getPost('locale'));
 
 		$entry = $this->_populateEntryModel();
-
-		if (!$entry->postDate)
-		{
-			$entry->postDate = new DateTime();
-		}
+		$type = $entry->getType();
 
 		$section = $entry->getSection();
 
-		if ($section)
+		if ($section && $type)
 		{
+			if (!$entry->postDate)
+			{
+				$entry->postDate = new DateTime();
+			}
+
+			craft()->content->prepElementContentForSave($entry, $type->getFieldLayout(), false);
+
+			craft()->templates->getTwig()->disableStrictVariables();
+
 			$this->renderTemplate($section->template, array(
 				'entry' => $entry
 			));
