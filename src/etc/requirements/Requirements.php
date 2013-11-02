@@ -130,13 +130,6 @@ class Requirements
 				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('@@@appName@@@ requires <a href="http://php.net/manual/en/book.iconv.php">iconv</a> in order to run.')
 			),
-			new Requirement(
-				Craft::t('Disk space'),
-				@disk_free_space(CRAFT_BASE_PATH) > 20971520,
-				true,
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
-				Craft::t('@@@appName@@@ requires at least 20MB of free disk space in order to run.')
-			),
 		);
 	}
 
