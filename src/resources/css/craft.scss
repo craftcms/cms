@@ -537,7 +537,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .thumbsview li { float: left; margin: 15px 0 0 15px; width: 100px; }
 
 .thumbsview .element { padding: 105px 0 5px !important; }
-.thumbsview .element .elementicon { width: 100px; height: 100px; }
+.thumbsview .element .elementthumb { width: 100px; height: 100px; }
 .thumbsview .element .label { text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* element select fields */
