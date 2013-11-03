@@ -387,13 +387,27 @@ class MatrixService extends BaseApplicationComponent
 					}
 				}
 
-				// Get the old record types
+				// Delete the old record types first,
+				// in case there's a handle conflict with one of the new ones
 				$oldRecordTypes = $this->getRecordTypesByFieldId($matrixField->id);
 				$oldRecordTypesById = array();
 
 				foreach ($oldRecordTypes as $recordType)
 				{
 					$oldRecordTypesById[$recordType->id] = $recordType;
+				}
+
+				foreach ($settings->getRecordTypes() as $recordType)
+				{
+					if (!$recordType->isNew())
+					{
+						unset($oldRecordTypesById[$recordType->id]);
+					}
+				}
+
+				foreach ($oldRecordTypesById as $recordType)
+				{
+					$this->deleteRecordType($recordType);
 				}
 
 				// Save the new ones
@@ -404,21 +418,10 @@ class MatrixService extends BaseApplicationComponent
 
 				foreach ($settings->getRecordTypes() as $recordType)
 				{
-					if (!$recordType->isNew())
-					{
-						unset($oldRecordTypesById[$recordType->id]);
-					}
-
 					$sortOrder++;
 					$recordType->fieldId = $matrixField->id;
 					$recordType->sortOrder = $sortOrder;
 					$this->saveRecordType($recordType, false);
-				}
-
-				// Delete all of the record types that are no longer needed
-				foreach ($oldRecordTypesById as $recordType)
-				{
-					$this->deleteRecordType($recordType);
 				}
 
 				craft()->content->contentTable = $originalContentTable;
