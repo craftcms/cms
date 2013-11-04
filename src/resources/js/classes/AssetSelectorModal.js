@@ -108,7 +108,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend({
 		{
 			this.$selectTransformBtn.removeClass('disabled');
 		}
-		else
+		else if (this.$selectTransformBtn)
 		{
 			this.$selectTransformBtn.addClass('disabled');
 		}
