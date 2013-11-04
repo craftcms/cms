@@ -53,17 +53,21 @@ class PhpMessageSource extends \CPhpMessageSource
 				$paths[] = craft()->path->getSiteTranslationsPath().$languageCode.'.php';
 			}
 
-			// Let's see if plugins have anything to contribute. Don't use PluginService, but go straight to the file system. Who cares if they are disabled.
-			$pluginPaths = IOHelper::getFolders(craft()->path->getPluginsPath());
-
-			if ($pluginPaths)
+			// Only add in plugins if we're installed and not in maintenance mode (during an update).
+			if (craft()->isInstalled() && !craft()->isInMainetnanceMode())
 			{
-				foreach ($pluginPaths as $pluginPath)
+				// Let's see if plugins have anything to contribute. Don't use PluginService, but go straight to the file system. Who cares if they are disabled.
+				$pluginPaths = IOHelper::getFolders(craft()->path->getPluginsPath());
+
+				if ($pluginPaths)
 				{
-					$paths[] = $pluginPath.'translations/'.$language.'.php';
-					if ($languageCode)
+					foreach ($pluginPaths as $pluginPath)
 					{
-						$paths[] = $pluginPath.'translations/'.$languageCode.'.php';
+						$paths[] = $pluginPath.'translations/'.$language.'.php';
+						if ($languageCode)
+						{
+							$paths[] = $pluginPath.'translations/'.$languageCode.'.php';
+						}
 					}
 				}
 			}
