@@ -579,7 +579,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		if (is_null($this->_assetTransforms))
 		{
 			$this->_assetTransforms = array();
-			$models = AssetTransformModel::populateModels(AssetTransformRecord::model()->findAll());
+			$models = AssetTransformModel::populateModels(AssetTransformRecord::model()->ordered()->findAll());
 
 			foreach ($models as $model)
 			{
