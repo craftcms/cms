@@ -169,6 +169,9 @@ $cpRoutes['settings/tags']                                                      
 $cpRoutes['settings/tags/new']                                                    = array('action' => 'tags/editTagSet');
 $cpRoutes['settings/tags/(?P<tagSetId>\d+)']                                      = array('action' => 'tags/editTagSet');
 
+$cpRoutes['utils/phpinfo']                                                        = array('action' => 'utils/getPHPInfo');
+$cpRoutes['utils/logviewer(/(?P<currentLogFileName>[A-Za-z0-9\.]+))?']             = array('action' => 'utils/getLogs');
+
 $cpRoutes['settings/packages'] = array(
 	'params' => array(
 		'variables' => array(
