@@ -1,14 +1,1 @@
-{% extends "_layouts/cp" %}
-{% set title = "Utilities"|t %}
-
-{% set content %}
-	<h2>{{ "Utilities"|t }}</h2>
-
-	<ul>
-		<li><a href="{{ url('utils/phpinfo') }}">{{ "PHP Info"|t }}</a></li>
-		<li><a href="{{ url('utils/logviewer') }}">{{ "Log Viewer"|t }}</li>
-		<li><a href="{{ url('utils/database') }}">{{ "Database"|t }}</li>
-		<li><a href="{{ url('utils/requirements') }}">{{ "Requirements"|t }}</li>
-	</ul>
-
-{% endset %}
+{% redirect "utils/phpinfo" %}

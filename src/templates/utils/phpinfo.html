@@ -1,24 +1,15 @@
-{% extends "_layouts/cp" %}
-{% set title = "PHP Info"|t %}
-
-{% set crumbs = [
-	{ label: "Utilities"|t, url: url('utils') }
-] %}
+{% extends "utils/_layout" %}
 
 {% set content %}
-	<h2>{{ "PHP Info"|t }}</h2>
-
-	<table class="data">
-		{% for section, data in phpInfo %}
-			<tr>
-				<td colspan="2" bgcolor="#a9a9a9">{{ section }}</td>
-			</tr>
+	{% for section, data in phpInfo %}
+		<h2>{{ section }}</h2>
+		<table class="data">
 			{% for setting, value in data %}
 				<tr>
-					<td width="15%">{{ setting }}</td>
-					<td>{{ value }}</td>
+					<th class="light" width="300">{{ setting|raw }}</th>
+					<td style="word-break: break-word;">{{ value|raw }}</td>
 				</tr>
 			{% endfor %}
-		{% endfor %}
-	</table>
+		</table>
+	{% endfor %}
 {% endset %}

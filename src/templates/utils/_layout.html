@@ -1,0 +1,13 @@
+{% extends "_layouts/cp" %}
+{% set title = "Utilities"|t %}
+
+{% if not currentUser.admin %}
+	{% exit 404 %}
+{% endif %}
+
+{% set tabs = {
+	phpinfo:      { label: "PHP Info"|t,     url: url('utils/phpinfo') },
+	logviewer:    { label: "Log Viewer"|t,   url: url('utils/logviewer') }
+} %}
+
+{% set selectedTab = craft.request.getSegment(2) %}
