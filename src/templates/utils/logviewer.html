@@ -14,11 +14,9 @@
 
 		{% if currentLogFileName == 'phperrors.log' %}
 
-			{% for messageRow in logEntry.message %}
-				<tr>
-					<td>{{ messageRow }}</td>
-				</tr>
-			{% endfor %}
+			<div>
+				{{ logEntry.message }}
+			</div>
 
 		{% else %}
 
@@ -38,26 +36,34 @@
 			<table class="data">
 				{# If these are set, we know it's a devMode log entry #}
 				{% if logEntry.get or logEntry.post %}
-					<tr>
-						<td valign="top">{% if logEntry.get %}$_GET{% else %}$_POST{% endif %}</td>
-						<td>
-							<table class="data">
-								{% if logEntry.get %}
+					{% if logEntry.get %}
+						<tr>
+							<td valign="top">$_GET</td>
+							<td>
+								<table class="data">
 									{% for getRow in logEntry.get %}
 										<tr>
 											<td>{{ getRow }}</td>
 										</tr>
 									{% endfor %}
-								{% else %}
+								</table>
+							</td>
+						</tr>
+					{% endif %}
+					{% if logEntry.post %}
+						<tr>
+							<td valign="top">$_POST</td>
+							<td>
+								<table class="data">
 									{% for postRow in logEntry.post %}
 										<tr>
 											<td>{{ postRow }}</td>
 										</tr>
 									{% endfor %}
-								{% endif %}
-							</table>
-						</td>
-					</tr>
+								</table>
+							</td>
+						</tr>
+					{% endif %}
 					<tr>
 						<td valign="top">Cookie</td>
 						<td>
@@ -110,17 +116,11 @@
 				{% else %}
 					{# non-devMode log entry #}
 					<tr>
-						<td valign="top">Message</td>
-						<td>
-							<table class="data">
-								<tr>
-									<td>{{ logEntry.message }}</td>
-								</tr>
-							</table>
-						</td>
+						<th class="light">Message</th>
+						<td>{{ logEntry.message }}</td>
 					</tr>
 				{% endif %}
-			</div>
+			</table>
 
 		{% endif %}
 

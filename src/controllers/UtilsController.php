@@ -152,25 +152,42 @@ class UtilsController extends BaseController
 						// Find a few new markers
 						$rowContents[0] = mb_substr($rowContents[0], $stop + 2);
 						$cookieStart = array_search('$_COOKIE=array (', $rowContents);
+						$sessionStart = array_search('$_SESSION=array (', $rowContents);
+						$serverStart = array_search('$_SERVER=array (', $rowContents);
 
-						// If we found the cookie section we know this is a devMode log.
-						if ($cookieStart)
+						// If we found any of these, we know this is a devMode log.
+						if ($cookieStart || $sessionStart || $serverStart)
 						{
-							$cookieStart += 1;
+							$cookieStart = $cookieStart ? $cookieStart + 1 : $cookieStart;
+							$sessionStart = $sessionStart ? $sessionStart + 1 : $sessionStart;
+							$serverStart = $serverStart ? $serverStart + 1 : $serverStart;
 
-							$sessionStart = array_search('$_SESSION=array (', $rowContents) + 1;
-							$serverStart = array_search('$_SERVER=array (', $rowContents) + 1;
+							if (!$cookieStart)
+							{
+								if (!$sessionStart)
+								{
+									$start = $serverStart;
+								}
+								else
+								{
+									$start = $sessionStart;
+								}
+							}
+							else
+							{
+								$start = $cookieStart;
+							}
 
 							// Check to see if it's GET or POST
 							if (mb_substr($rowContents[0], 0, 5) == '$_GET')
 							{
 								// Grab GET
-								$logEntryModel->get = $this->_cleanUpArray(array_slice($rowContents, 1, $cookieStart - 4));
+								$logEntryModel->get = $this->_cleanUpArray(array_slice($rowContents, 1, $start - 4));
 							}
 							else if (mb_substr($rowContents[0], 0, 6) == '$_POST')
 							{
 								// Grab POST
-								$logEntryModel->post = $this->_cleanUpArray(array_slice($rowContents, 1, $cookieStart - 4));
+								$logEntryModel->post = $this->_cleanUpArray(array_slice($rowContents, 1, $start - 4));
 							}
 
 							// We need to do a little more work to find out what element profiling info starts on.
@@ -187,8 +204,25 @@ class UtilsController extends BaseController
 							}
 
 							// Grab the cookie, session and server sections.
-							$logEntryModel->cookie = $this->_cleanUpArray(array_slice($rowContents, $cookieStart, $sessionStart - $cookieStart - 3));
-							$logEntryModel->session = $this->_cleanUpArray(array_slice($rowContents, $sessionStart, $serverStart - $sessionStart - 3));
+							if ($cookieStart)
+							{
+								if (!$sessionStart)
+								{
+									$start = $serverStart;
+								}
+								else
+								{
+									$start = $sessionStart;
+								}
+
+								$logEntryModel->cookie = $this->_cleanUpArray(array_slice($rowContents, $cookieStart, $start - $cookieStart - 3));
+							}
+
+							if ($sessionStart)
+							{
+								$logEntryModel->session = $this->_cleanUpArray(array_slice($rowContents, $sessionStart, $serverStart - $sessionStart - 3));
+							}
+
 							$logEntryModel->server = $this->_cleanUpArray(array_slice($rowContents, $serverStart, $profileStart - $serverStart - 3));
 
 							// We can't just grab the profile info, we need to do some extra processing on it.
@@ -219,7 +253,7 @@ class UtilsController extends BaseController
 						else
 						{
 							// This is a non-devMode log entry.
-							$logEntryModel->message = $rowContents;
+							$logEntryModel->message = $rowContents[0];
 						}
 
 						// And save the log entry.
@@ -233,7 +267,7 @@ class UtilsController extends BaseController
 				{
 					$logEntry = new LogEntryModel();
 					$contents = IOHelper::getFileContents(craft()->path->getLogPath().$currentLogFileName);
-					$contents = preg_replace("\n", '<br />', $contents);
+					$contents = str_replace("\n", "<br />", $contents);
 					$logEntry->message = $contents;
 
 					$logEntries[] = $logEntry;
