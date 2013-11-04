@@ -1,0 +1,135 @@
+{% extends "_layouts/cp" %}
+{% set title = "Log Viewer"|t %}
+
+{% set crumbs = [
+	{ label: "Utilities"|t, url: url('utils') }
+] %}
+
+{% set content %}
+	<h2>{{ "Log Viewer"|t }}</h2>
+
+	<table class="data">
+		<tr>
+			{% for logFileName in logFileNames %}
+				{% if logFileName == currentLogFileName %}
+					<td>{{ logFileName }}</td>
+				{% else %}
+					<td><a href="{{ url('utils/logviewer/' ~ logFileName) }}">{{ logFileName }}</a></td>
+				{% endif %}
+			{% endfor %}
+		</tr>
+	</table>
+
+	<table class="data">
+		{% for logEntry in logEntries %}
+			<tr>
+				<table class="data">
+					{% if currentLogFileName == 'phperrors.log' %}
+						{% for messageRow in logEntry.message %}
+							<tr>
+								<td>{{ messageRow }}</td>
+							</tr>
+						{% endfor %}
+					{% else %}
+						<tr>
+							<td valign="top">Date/Time</td>
+							<td>{{ logEntry.dateTime }}</td>
+						</tr>
+						<tr>
+							<td valign="top">Level</td>
+							<td>{{ logEntry.level }}</td>
+						</tr>
+						<tr>
+							<td valign="top">Category</td>
+							<td>{{ logEntry.category }}</td>
+						</tr>
+						{# If these are set, we know it's a devMode log entry #}
+						{% if logEntry.get or logEntry.post %}
+							<tr>
+								<td valign="top">{% if logEntry.get %}$_GET{% else %}$_POST{% endif %}</td>
+								<td>
+									<table class="data">
+										{% if logEntry.get %}
+											{% for getRow in logEntry.get %}
+												<tr>
+													<td>{{ getRow }}</td>
+												</tr>
+											{% endfor %}
+										{% else %}
+											{% for postRow in logEntry.post %}
+												<tr>
+													<td>{{ postRow }}</td>
+												</tr>
+											{% endfor %}
+										{% endif %}
+									</table>
+								</td>
+							</tr>
+							<tr>
+								<td valign="top">Cookie</td>
+								<td>
+									<table class="data">
+										{% for cookieRow in logEntry.cookie %}
+											<tr>
+												<td>{{ cookieRow }}</td>
+											</tr>
+										{% endfor %}
+									</table>
+								</td>
+							</tr>
+							<tr>
+								<td valign="top">Session</td>
+								<td>
+									<table class="data">
+										{% for sessionRow in logEntry.session %}
+											<tr>
+												<td>{{ sessionRow }}</td>
+											</tr>
+										{% endfor %}
+									</table>
+								</td>
+							</tr>
+							<tr>
+								<td valign="top">Server</td>
+								<td>
+									<table class="data">
+										{% for serverRow in logEntry.server %}
+											<tr>
+												<td>{{ serverRow }}</td>
+											</tr>
+										{% endfor %}
+									</table>
+								</td>
+							</tr>
+							<tr>
+								<td valign="top">Profile</td>
+								<td>
+									{% for profileEntry in logEntry.profile %}
+										<table class="data">
+											{% for profileRow in profileEntry %}
+												<tr><td {% if loop.index != 1 %} style="padding-left: 20px;"{% endif %}>{{ profileRow }}</td></tr>
+											{% endfor %}
+										</table>
+									{% endfor %}
+									</table>
+								</td>
+							</tr>
+						{% else %}
+							{# non-devMode log entry #}
+							<tr>
+								<td valign="top">Message</td>
+								<td>
+									<table class="data">
+										<tr>
+											<td>{{ logEntry.message }}</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						{% endif %}
+					{% endif %}
+				</table>
+			</tr>
+		{% endfor %}
+	</table>
+{% endset %}
