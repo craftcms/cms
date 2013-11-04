@@ -429,7 +429,8 @@ table.data tbody tr:last-child th,
 table.data tbody tr:last-child td { border-bottom: 1px dotted $hrcolor; }
 table.data thead + tbody tr:first-child th,
 table.data thead + tbody tr:first-child td { border-top-style: solid; }
-table.data thead th { font-weight: bold; white-space: nowrap; }
+table.data th { font-weight: bold; }
+table.data thead th { white-space: nowrap; }
 table.data td.timestamp { text-align: right; vertical-align: bottom; white-space: nowrap; color: $lighttextcolor; }
 table.data td form { height: 22px; }
 table.data td .btngroup { display: inline; }
