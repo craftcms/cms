@@ -269,11 +269,23 @@ class EntriesController extends BaseController
 		{
 			// Make sure the user is allowed to create entries in this section
 			craft()->userSession->requirePermission('createEntries:'.$entry->sectionId);
+
+			// Make sure the user is allowed to publish entries in this section, or that this is disabled
+			if ($entry->enabled && !craft()->userSession->checkPermission('publishEntries:'.$entry->sectionId))
+			{
+				$entry->enabled = false;
+			}
 		}
 		else
 		{
 			// Make sure the user is allowed to edit entries in this section
 			craft()->userSession->requirePermission('editEntries:'.$entry->sectionId);
+
+			if ($entry->enabled)
+			{
+				// Make sure the user is allowed to edit live entries in this section
+				craft()->userSession->requirePermission('publishEntries:'.$entry->sectionId);
+			}
 		}
 
 		if (craft()->entries->saveEntry($entry))
