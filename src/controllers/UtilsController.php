@@ -296,12 +296,17 @@ class UtilsController extends BaseController
 
 	/**
 	 * @param $arrayToClean
+	 * @return array
 	 */
 	private function _cleanUpArray($arrayToClean)
 	{
-		foreach ($arrayToClean as $key => $rowToClean)
+		$arrayToClean = implode(' ', $arrayToClean);
+		$arrayToClean = '$arrayToClean = array('.$arrayToClean.');';
+		eval($arrayToClean);
+
+		foreach ($arrayToClean as $key => $item)
 		{
-			$arrayToClean[$key] = rtrim(trim($rowToClean), ',');
+			$arrayToClean[$key] = var_export($item, true);
 		}
 
 		return $arrayToClean;
