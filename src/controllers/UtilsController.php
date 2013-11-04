@@ -304,7 +304,7 @@ class UtilsController extends BaseController
 	private function _cleanUpArray($arrayToClean)
 	{
 		$arrayToClean = implode(' ', $arrayToClean);
-		$arrayToClean = '$arrayToClean = array('.$arrayToClean.');';
+		$arrayToClean = '$arrayToClean = array('.str_replace('REDACTED', '"REDACTED"', $arrayToClean).');';
 		eval($arrayToClean);
 
 		foreach ($arrayToClean as $key => $item)
