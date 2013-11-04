@@ -13,6 +13,9 @@ class UtilsController extends BaseController
 	{
 		// Only admins.
 		craft()->userSession->requireAdmin();
+
+		// Give 'er all we've got.
+		craft()->config->maxPowerCaptain();
 	}
 
 	/**
