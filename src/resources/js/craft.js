@@ -270,6 +270,16 @@ $.extend(Craft, {
 	},
 
 	/**
+	 * Redirects the window to a given URL.
+	 *
+	 * @param string url
+	 */
+	redirectTo: function(url)
+	{
+		document.location.href = this.getUrl(url);
+	},
+
+	/**
 	 * Posts an action request to the server.
 	 *
 	 * @param string action
