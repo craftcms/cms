@@ -2,10 +2,19 @@
 namespace Craft;
 
 /**
- * Handles utility related tastks.
+ * Handles utility related tasks.
  */
 class UtilsController extends BaseController
 {
+	/**
+	 *
+	 */
+	public function init()
+	{
+		// Only admins.
+		craft()->userSession->requireAdmin();
+	}
+
 	/**
 	 * @return array|mixed|string
 	 */
@@ -94,6 +103,9 @@ class UtilsController extends BaseController
 		$this->renderTemplate('utils/phpinfo', array('phpInfo' => $phpInfo));
 	}
 
+	/**
+	 * @param array $variables
+	 */
 	public function actionGetLogs(array $variables = array())
 	{
 		if (IOHelper::folderExists(craft()->path->getLogPath()))
@@ -184,7 +196,8 @@ class UtilsController extends BaseController
 								// Grab GET
 								$logEntryModel->get = $this->_cleanUpArray(array_slice($rowContents, 1, $start - 4));
 							}
-							else if (mb_substr($rowContents[0], 0, 6) == '$_POST')
+
+							if (mb_substr($rowContents[0], 0, 6) == '$_POST')
 							{
 								// Grab POST
 								$logEntryModel->post = $this->_cleanUpArray(array_slice($rowContents, 1, $start - 4));
@@ -223,7 +236,7 @@ class UtilsController extends BaseController
 								$logEntryModel->session = $this->_cleanUpArray(array_slice($rowContents, $sessionStart, $serverStart - $sessionStart - 3));
 							}
 
-							$logEntryModel->server = $this->_cleanUpArray(array_slice($rowContents, $serverStart, $profileStart - $serverStart - 3));
+							$logEntryModel->server = $this->_cleanUpArray(array_slice($rowContents, $serverStart, $profileStart - $serverStart - 1));
 
 							// We can't just grab the profile info, we need to do some extra processing on it.
 							$tempProfile = array_slice($rowContents, $profileStart);
