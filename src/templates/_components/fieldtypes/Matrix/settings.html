@@ -1,26 +1,26 @@
 {% import "_includes/forms" as forms %}
 
 
-{% set recordTypeInput %}
-	<div class="mc-sidebar record-types">
+{% set blockTypeInput %}
+	<div class="mc-sidebar block-types">
 		<div class="col-inner-container">
 			<div class="heading">
-				<h5>{{ "Record Types"|t }}</h5>
+				<h5>{{ "Block Types"|t }}</h5>
 			</div>
 			<div class="items">
-				{% for recordType in recordTypes %}
-					<div class="matrixconfigitem mci-recordtype{% if recordType.hasFieldErrors %} error{% endif %}" data-id="{{ recordType.id }}"{% if recordType.hasErrors() %} data-errors="{{ recordType.getErrors() | json_encode }}"{% endif %}>
-						<div class="name">{% if recordType.name %}{{ recordType.name }}{% else %}&nbsp;{% endif %}</div>
-						<div class="handle code">{% if recordType.handle %}{{ recordType.handle }}{% else %}&nbsp;{% endif %}</div>
+				{% for blockType in blockTypes %}
+					<div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockType.id }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
+						<div class="name">{% if blockType.name %}{{ blockType.name }}{% else %}&nbsp;{% endif %}</div>
+						<div class="handle code">{% if blockType.handle %}{{ blockType.handle }}{% else %}&nbsp;{% endif %}</div>
 						<div class="actions">
 							<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>
-							<a class="settings icon{% if recordType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t }}" role="button"></a>
+							<a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t }}" role="button"></a>
 						</div>
-						<input class="hidden" name="recordTypes[{{ recordType.id }}][name]" value="{{ recordType.name }}">
-						<input class="hidden" name="recordTypes[{{ recordType.id }}][handle]" value="{{ recordType.handle }}">
+						<input class="hidden" name="blockTypes[{{ blockType.id }}][name]" value="{{ blockType.name }}">
+						<input class="hidden" name="blockTypes[{{ blockType.id }}][handle]" value="{{ blockType.handle }}">
 					</div>
 				{% endfor %}
-				<div class="btn add icon">{{ "New record type"|t }}</div>
+				<div class="btn add icon">{{ "New block type"|t }}</div>
 			</div>
 		</div>
 	</div>
@@ -30,9 +30,9 @@
 				<h5>{{ "Fields"|t }}</h5>
 			</div>
 			<div class="items">
-				{% for recordType in recordTypes %}
-					<div data-id="{{ recordType.id }}" class="hidden">
-						{% for field in recordType.getFields() %}
+				{% for blockType in blockTypes %}
+					<div data-id="{{ blockType.id }}" class="hidden">
+						{% for field in blockType.getFields() %}
 							<div class="matrixconfigitem mci-field{% if field.hasErrors() %} error{% endif %}" data-id="{{ field.id }}">
 								<div class="name{% if field.required %} required{% endif %}">{{ field.name }}&nbsp;</div>
 								<div class="handle code">{{ field.handle }}&nbsp;</div>
@@ -53,15 +53,15 @@
 				<h5>{{ "Field Settings"|t }}</h5>
 			</div>
 			<div class="items">
-				{% for recordType in recordTypes %}
-					<div data-id="{{ recordType.id }}">
-						{% for field in recordType.getFields() %}
+				{% for blockType in blockTypes %}
+					<div data-id="{{ blockType.id }}">
+						{% for field in blockType.getFields() %}
 							{% set fieldId = field.id %}
 							<div data-id="{{ fieldId }}" class="hidden">
 								{{ forms.textField({
 									label: "Name"|t,
 									id: fieldId~'-name',
-									name: 'recordTypes['~recordType.id~'][fields]['~fieldId~'][name]',
+									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][name]',
 									value: field.name,
 									errors: field.getErrors('name'),
 									required: true,
@@ -73,7 +73,7 @@
 									label: "Handle"|t,
 									id: fieldId~'-handle',
 									class: 'code',
-									name: 'recordTypes['~recordType.id~'][fields]['~fieldId~'][handle]',
+									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][handle]',
 									maxlength: 64,
 									value: field.handle,
 									errors: field.getErrors('handle'),
@@ -82,14 +82,14 @@
 
 								{{ forms.checkboxField({
 									label: "This field is required"|t,
-									name: 'recordTypes['~recordType.id~'][fields]['~fieldId~'][required]',
+									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][required]',
 									checked: field.required
 								}) }}
 
 								{% if craft.hasPackage('Localize') %}
 									{{ forms.checkboxField({
 										label: "This field is translatable"|t,
-										name: 'recordTypes['~recordType.id~'][fields]['~fieldId~'][translatable]',
+										name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][translatable]',
 										checked: field.translatable
 									}) }}
 								{% endif %}
@@ -107,7 +107,7 @@
 									label: "Field Type"|t,
 									instructions: (field.isNew() ? null : '<span class="error">'~"Careful—changing this may result in data loss."|t~'</span>'),
 									id: fieldId~'-type',
-									name: 'recordTypes['~recordType.id~'][fields]['~fieldId~'][type]',
+									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][type]',
 									options: fieldTypes,
 									value: fieldType.getClassHandle(),
 									errors: (isFieldTypeMissing ? ["The fieldtype class “{class}” could not be found."|t({ class: field.type })] : null),
@@ -115,7 +115,7 @@
 
 								<div class="fieldtype-settings">
 									<div>
-										{% namespace 'recordTypes['~recordType.id~'][fields]['~fieldId~'][typesettings]' %}
+										{% namespace 'blockTypes['~blockType.id~'][fields]['~fieldId~'][typesettings]' %}
 											{{ fieldType.getSettingsHtml()|raw  }}
 										{% endnamespace %}
 									</div>
@@ -136,7 +136,7 @@
 <div class="matrix-configurator">
 	{{ forms.field({
 		label: "Configuration"|t,
-		instructions: "Define the types of records that can be created within this Matrix field, as well as the fields each record type is made up of."|t,
+		instructions: "Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of."|t,
 		name: 'config'
-	}, recordTypeInput) }}
+	}, blockTypeInput) }}
 </div>

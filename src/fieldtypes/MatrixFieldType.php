@@ -42,9 +42,9 @@ class MatrixFieldType extends BaseFieldType
 		craft()->templates->includeJs('new Craft.MatrixConfigurator('.JsonHelper::encode($fieldTypeInfo).', "'.craft()->templates->getNamespace().'");');
 
 		craft()->templates->includeTranslations(
-			'What this record type will be called in the CP.',
-			'How you’ll refer to this record type in the templates.',
-			'Are you sure you want to delete this record type?',
+			'What this block type will be called in the CP.',
+			'How you’ll refer to this block type in the templates.',
+			'Are you sure you want to delete this block type?',
 			'This field is required',
 			'This field is translatable',
 			'Field Type',
@@ -59,7 +59,7 @@ class MatrixFieldType extends BaseFieldType
 		}
 
 		return craft()->templates->render('_components/fieldtypes/Matrix/settings', array(
-			'recordTypes' => $this->getSettings()->getRecordTypes(),
+			'blockTypes' => $this->getSettings()->getBlockTypes(),
 			'fieldTypes'  => $fieldTypeOptions
 		));
 	}
@@ -78,22 +78,22 @@ class MatrixFieldType extends BaseFieldType
 		}
 
 		$matrixSettings = new MatrixSettingsModel($this->model);
-		$recordTypes = array();
+		$blockTypes = array();
 
-		if (!empty($settings['recordTypes']))
+		if (!empty($settings['blockTypes']))
 		{
-			foreach ($settings['recordTypes'] as $recordTypeId => $recordTypeSettings)
+			foreach ($settings['blockTypes'] as $blockTypeId => $blockTypeSettings)
 			{
-				$recordType = new MatrixRecordTypeModel();
-				$recordType->id     = $recordTypeId;
-				$recordType->name   = $recordTypeSettings['name'];
-				$recordType->handle = $recordTypeSettings['handle'];
+				$blockType = new MatrixBlockTypeModel();
+				$blockType->id     = $blockTypeId;
+				$blockType->name   = $blockTypeSettings['name'];
+				$blockType->handle = $blockTypeSettings['handle'];
 
 				$fields = array();
 
-				if (!empty($recordTypeSettings['fields']))
+				if (!empty($blockTypeSettings['fields']))
 				{
-					foreach ($recordTypeSettings['fields'] as $fieldId => $fieldSettings)
+					foreach ($blockTypeSettings['fields'] as $fieldId => $fieldSettings)
 					{
 						$field = new FieldModel();
 						$field->id           = $fieldId;
@@ -112,12 +112,12 @@ class MatrixFieldType extends BaseFieldType
 					}
 				}
 
-				$recordType->setFields($fields);
-				$recordTypes[] = $recordType;
+				$blockType->setFields($fields);
+				$blockTypes[] = $blockType;
 			}
 		}
 
-		$matrixSettings->setRecordTypes($recordTypes);
+		$matrixSettings->setBlockTypes($blockTypes);
 		return $matrixSettings;
 	}
 
@@ -145,7 +145,7 @@ class MatrixFieldType extends BaseFieldType
 	 */
 	public function prepValue($value)
 	{
-		// $value will be an array of record data or an empty string if there was a validation error
+		// $value will be an array of block data or an empty string if there was a validation error
 		// or we're loading a draft/version.
 		if (is_array($value))
 		{
@@ -157,7 +157,7 @@ class MatrixFieldType extends BaseFieldType
 		}
 		else
 		{
-			$criteria = craft()->elements->getCriteria(ElementType::MatrixRecord);
+			$criteria = craft()->elements->getCriteria(ElementType::MatrixBlock);
 
 			// Existing element?
 			if (!empty($this->element->id))
@@ -187,21 +187,21 @@ class MatrixFieldType extends BaseFieldType
 	{
 		$id = craft()->templates->formatInputId($name);
 
-		// Get the record types data
-		$recordTypeInfo = $this->_getRecordTypeInfoForInput($name);
+		// Get the block types data
+		$blockTypeInfo = $this->_getBlockTypeInfoForInput($name);
 
 		craft()->templates->includeJsResource('js/MatrixInput.js');
 		craft()->templates->includeJs('new Craft.MatrixInput(' .
 			'"'.craft()->templates->namespaceInputId($id).'", ' .
-			JsonHelper::encode($recordTypeInfo).', ' .
+			JsonHelper::encode($blockTypeInfo).', ' .
 			'"'.craft()->templates->namespaceInputName($name).'"' .
 		');');
 
 		return craft()->templates->render('_components/fieldtypes/Matrix/input', array(
 			'id' => $id,
 			'name' => $name,
-			'recordTypes' => $this->getSettings()->getRecordTypes(),
-			'records' => $value
+			'blockTypes' => $this->getSettings()->getBlockTypes(),
+			'blocks' => $value
 		));
 	}
 
@@ -213,45 +213,45 @@ class MatrixFieldType extends BaseFieldType
 	 */
 	public function prepValueFromPost($data)
 	{
-		// Get the possible record types for this field
-		$recordTypes = craft()->matrix->getRecordTypesByFieldId($this->model->id, 'handle');
+		// Get the possible block types for this field
+		$blockTypes = craft()->matrix->getBlockTypesByFieldId($this->model->id, 'handle');
 
 		if (!is_array($data))
 		{
 			return array();
 		}
 
-		// Get the old records that are still around
+		// Get the old blocks that are still around
 		if (!empty($this->element->id))
 		{
 			$ownerId = $this->element->id;
 
 			$ids = array();
 
-			foreach (array_keys($data) as $recordId)
+			foreach (array_keys($data) as $blockId)
 			{
-				if (is_numeric($recordId))
+				if (is_numeric($blockId))
 				{
-					$ids[] = $recordId;
+					$ids[] = $blockId;
 				}
 			}
 
 			if ($ids)
 			{
-				$criteria = craft()->elements->getCriteria(ElementType::MatrixRecord);
+				$criteria = craft()->elements->getCriteria(ElementType::MatrixBlock);
 				$criteria->fieldId = $this->model->id;
 				$criteria->ownerId = $ownerId;
 				$criteria->id = $ids;
 				$criteria->limit = null;
 				$criteria->locale = $this->element->locale;
-				$oldRecords = $criteria->find();
+				$oldBlocks = $criteria->find();
 
 				// Index them by ID
-				$oldRecordsById = array();
+				$oldBlocksById = array();
 
-				foreach ($oldRecords as $oldRecord)
+				foreach ($oldBlocks as $oldBlock)
 				{
-					$oldRecordsById[$oldRecord->id] = $oldRecord;
+					$oldBlocksById[$oldBlock->id] = $oldBlock;
 				}
 			}
 		}
@@ -260,48 +260,48 @@ class MatrixFieldType extends BaseFieldType
 			$ownerId = null;
 		}
 
-		$records = array();
+		$blocks = array();
 		$sortOrder = 0;
 
-		foreach ($data as $recordId => $recordData)
+		foreach ($data as $blockId => $blockData)
 		{
-			$recordType = $recordTypes[$recordData['type']];
+			$blockType = $blockTypes[$blockData['type']];
 
 			// Is this new?
-			if (strncmp($recordId, 'new', 3) === 0)
+			if (strncmp($blockId, 'new', 3) === 0)
 			{
-				$record = new MatrixRecordModel();
-				$record->fieldId = $this->model->id;
-				$record->typeId  = $recordType->id;
-				$record->ownerId = $ownerId;
-				$record->locale  = $this->element->locale;
+				$block = new MatrixBlockModel();
+				$block->fieldId = $this->model->id;
+				$block->typeId  = $blockType->id;
+				$block->ownerId = $ownerId;
+				$block->locale  = $this->element->locale;
 			}
 			else
 			{
-				if (!isset($oldRecordsById[$recordId]))
+				if (!isset($oldBlocksById[$blockId]))
 				{
-					throw new Exception(Craft::t('No record exists with the ID “{recordId}” on the element with the ID “{ownerId}” for the field with the ID “{fieldId}”.', array(
-						'recordId' => $recordId,
-						'ownerId'  => $ownerId,
-						'fieldId'  => $this->model->id
+					throw new Exception(Craft::t('No block exists with the ID “{blockId}” on the element with the ID “{ownerId}” for the field with the ID “{fieldId}”.', array(
+						'blockId' => $blockId,
+						'ownerId' => $ownerId,
+						'fieldId' => $this->model->id
 					)));
 				}
 
-				$record = $oldRecordsById[$recordId];
+				$block = $oldBlocksById[$blockId];
 			}
 
-			if (isset($recordData['fields']))
+			if (isset($blockData['fields']))
 			{
-				$record->getContent()->setAttributes($recordData['fields']);
+				$block->getContent()->setAttributes($blockData['fields']);
 			}
 
 			$sortOrder++;
-			$record->sortOrder = $sortOrder;
+			$block->sortOrder = $sortOrder;
 
-			$records[] = $record;
+			$blocks[] = $block;
 		}
 
-		return $records;
+		return $blocks;
 	}
 
 	/**
@@ -309,16 +309,16 @@ class MatrixFieldType extends BaseFieldType
 	 *
 	 * Returns 'true' or any custom validation errors.
 	 *
-	 * @param array $records
+	 * @param array $blocks
 	 * @return true|string|array
 	 */
-	public function validate($records)
+	public function validate($blocks)
 	{
 		$validates = true;
 
-		foreach ($records as $record)
+		foreach ($blocks as $block)
 		{
-			if (!craft()->matrix->validateRecord($record))
+			if (!craft()->matrix->validateBlock($block))
 			{
 				$validates = false;
 			}
@@ -339,8 +339,8 @@ class MatrixFieldType extends BaseFieldType
 	 */
 	public function onAfterElementSave()
 	{
-		$records = $this->element->getContent()->getAttribute($this->model->handle);
-		craft()->matrix->saveField($this->model, $this->element->id, $records);
+		$blocks = $this->element->getContent()->getAttribute($this->model->handle);
+		craft()->matrix->saveField($this->model, $this->element->id, $blocks);
 	}
 
 	/**
@@ -364,7 +364,7 @@ class MatrixFieldType extends BaseFieldType
 		$fieldTypes = array();
 
 		$originalNamespace = craft()->templates->getNamespace();
-		$namespace = craft()->templates->namespaceInputName('recordTypes[__RECORD_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
+		$namespace = craft()->templates->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
 		craft()->templates->setNamespace($namespace);
 
 		foreach (craft()->fields->getAllFieldTypes() as $fieldType)
@@ -401,26 +401,26 @@ class MatrixFieldType extends BaseFieldType
 	 * @param string $name
 	 * @return array
 	 */
-	private function _getRecordTypeInfoForInput($name)
+	private function _getBlockTypeInfoForInput($name)
 	{
-		$recordTypes = array();
+		$blockTypes = array();
 
 		$originalNamespace = craft()->templates->getNamespace();
-		$namespace = craft()->templates->namespaceInputName($name.'[__RECORD__][fields]', $originalNamespace);
+		$namespace = craft()->templates->namespaceInputName($name.'[__BLOCK__][fields]', $originalNamespace);
 		craft()->templates->setNamespace($namespace);
 
-		foreach ($this->getSettings()->getRecordTypes() as $recordType)
+		foreach ($this->getSettings()->getBlockTypes() as $blockType)
 		{
 			craft()->templates->startJsBuffer();
 
 			$bodyHtml = craft()->templates->namespaceInputs(craft()->templates->render('_includes/fields', array(
 				'namespace' => null,
-				'fields' => $recordType->getFieldLayout()->getFields()
+				'fields' => $blockType->getFieldLayout()->getFields()
 			)));
 
 			$footHtml = craft()->templates->clearJsBuffer();
 
-			$recordTypes[$recordType->handle] = array(
+			$blockTypes[$blockType->handle] = array(
 				'bodyHtml' => $bodyHtml,
 				'footHtml' => $footHtml,
 			);
@@ -428,6 +428,6 @@ class MatrixFieldType extends BaseFieldType
 
 		craft()->templates->setNamespace($originalNamespace);
 
-		return $recordTypes;
+		return $blockTypes;
 	}
 }

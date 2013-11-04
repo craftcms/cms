@@ -6,8 +6,8 @@ namespace Craft;
  */
 class ElementsService extends BaseApplicationComponent
 {
-	private $_joinSourceMatrixRecords;
-	private $_joinTargetMatrixRecords;
+	private $_joinSourceMatrixBlocks;
+	private $_joinTargetMatrixBlocks;
 	private $_joinSources;
 	private $_joinTargets;
 
@@ -478,8 +478,8 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($criteria->relatedTo)
 		{
-			$this->_joinSourceMatrixRecords = false;
-			$this->_joinTargetMatrixRecords = false;
+			$this->_joinSourceMatrixBlocks = false;
+			$this->_joinTargetMatrixBlocks = false;
 			$this->_joinSources = false;
 			$this->_joinTargets = false;
 
@@ -494,18 +494,18 @@ class ElementsService extends BaseApplicationComponent
 
 			// If there's only one relation criteria and it's specifically for grabbing target elements,
 			// allow the query to order by the relation sort order
-			if ($this->_joinSources && !$this->_joinTargets && !$this->_joinSourceMatrixRecords && !$this->_joinTargetMatrixRecords)
+			if ($this->_joinSources && !$this->_joinTargets && !$this->_joinSourceMatrixBlocks && !$this->_joinTargetMatrixBlocks)
 			{
 				$query->addSelect('sources.sortOrder');
 			}
 
-			if ($this->_joinSourceMatrixRecords)
+			if ($this->_joinSourceMatrixBlocks)
 			{
-				$query->leftJoin('matrixrecords source_matrixrecords', 'source_matrixrecords.ownerId = elements.id');
-				$query->leftJoin('relations matrixrecord_targets', 'matrixrecord_targets.sourceId = source_matrixrecords.id');
+				$query->leftJoin('matrixblocks source_matrixblocks', 'source_matrixblocks.ownerId = elements.id');
+				$query->leftJoin('relations matrixblock_targets', 'matrixblock_targets.sourceId = source_matrixblocks.id');
 			}
 
-			if ($this->_joinTargetMatrixRecords)
+			if ($this->_joinTargetMatrixBlocks)
 			{
 				$this->_joinSources = true;
 			}
@@ -514,9 +514,9 @@ class ElementsService extends BaseApplicationComponent
 			{
 				$query->leftJoin('relations sources', 'sources.targetId = elements.id');
 
-				if ($this->_joinTargetMatrixRecords)
+				if ($this->_joinTargetMatrixBlocks)
 				{
-					$query->leftJoin('matrixrecords target_matrixrecords', 'target_matrixrecords.id = sources.sourceId');
+					$query->leftJoin('matrixblocks target_matrixblocks', 'target_matrixblocks.id = sources.sourceId');
 				}
 			}
 
@@ -954,28 +954,28 @@ class ElementsService extends BaseApplicationComponent
 				// Is this a Matrix field?
 				if ($fieldModel->type == 'Matrix')
 				{
-					$recordTypeFieldIds = array();
+					$blockTypeFieldIds = array();
 
-					// Searching by a specific record type field?
+					// Searching by a specific block type field?
 					if (isset($fieldHandleParts[1]))
 					{
-						// There could be more than one record type field with this handle,
-						// so we must loop through all of the record types on this Matrix field
-						$recordTypes = craft()->matrix->getRecordTypesByFieldId($fieldModel->id);
+						// There could be more than one block type field with this handle,
+						// so we must loop through all of the block types on this Matrix field
+						$blockTypes = craft()->matrix->getBlockTypesByFieldId($fieldModel->id);
 
-						foreach ($recordTypes as $recordType)
+						foreach ($blockTypes as $blockType)
 						{
-							foreach ($recordType->getFields() as $recordTypeField)
+							foreach ($blockType->getFields() as $blockTypeField)
 							{
-								if ($recordTypeField->handle == $fieldHandleParts[1])
+								if ($blockTypeField->handle == $fieldHandleParts[1])
 								{
-									$recordTypeFieldIds[] = $recordTypeField->id;
+									$blockTypeFieldIds[] = $blockTypeField->id;
 									break;
 								}
 							}
 						}
 
-						if (!$recordTypeFieldIds)
+						if (!$blockTypeFieldIds)
 						{
 							continue;
 						}
@@ -983,30 +983,30 @@ class ElementsService extends BaseApplicationComponent
 
 					if (isset($relCriteria['sourceElement']))
 					{
-						$this->_joinTargetMatrixRecords = true;
+						$this->_joinTargetMatrixBlocks = true;
 
 						$condition = array('and',
-							DbHelper::parseParam('target_matrixrecords.ownerId', $relElementIds, $query->params),
-							'target_matrixrecords.fieldId = '.$fieldModel->id
+							DbHelper::parseParam('target_matrixblocks.ownerId', $relElementIds, $query->params),
+							'target_matrixblocks.fieldId = '.$fieldModel->id
 						);
 
-						if ($recordTypeFieldIds)
+						if ($blockTypeFieldIds)
 						{
-							$condition[] = DbHelper::parseParam('sources.fieldId', $recordTypeFieldIds, $query->params);
+							$condition[] = DbHelper::parseParam('sources.fieldId', $blockTypeFieldIds, $query->params);
 						}
 					}
 					else
 					{
-						$this->_joinSourceMatrixRecords = true;
+						$this->_joinSourceMatrixBlocks = true;
 
 						$condition = array('and',
-							DbHelper::parseParam('matrixrecord_targets.targetId', $relElementIds, $query->params),
-							'source_matrixrecords.fieldId = '.$fieldModel->id
+							DbHelper::parseParam('matrixblock_targets.targetId', $relElementIds, $query->params),
+							'source_matrixblocks.fieldId = '.$fieldModel->id
 						);
 
-						if ($recordTypeFieldIds)
+						if ($blockTypeFieldIds)
 						{
-							$condition[] = DbHelper::parseParam('matrixrecord_targets.fieldId', $recordTypeFieldIds, $query->params);
+							$condition[] = DbHelper::parseParam('matrixblock_targets.fieldId', $blockTypeFieldIds, $query->params);
 						}
 					}
 

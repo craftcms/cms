@@ -916,7 +916,7 @@ ul.errors li { color: $errorcolor; }
 	-webkit-box-shadow: inset -1px 0 0 rgba(0,0,0,0.06);
 	        box-shadow: inset -1px 0 0 rgba(0,0,0,0.06);
 }
-.matrix-configurator .mc-sidebar.record-types { left: 0; }
+.matrix-configurator .mc-sidebar.block-types { left: 0; }
 .matrix-configurator .mc-sidebar.fields { left: 200px; }
 .matrix-configurator .mc-sidebar .items { margin-top: -1px; padding-top: 1px; height: 468px; overflow: auto; }
 .matrixconfigitem { position: relative; margin-top: -1px; padding: 11px 45px 10px 15px; border-bottom: 1px solid rgba(0,0,0,0.06); @include unselectable; cursor: default; }
@@ -925,7 +925,7 @@ ul.errors li { color: $errorcolor; }
 .matrixconfigitem.sel.error { background: rgba(200,0,0,0.2); }
 .matrixconfigitem .handle { font-size: 11px; color: $mediumtextcolor; }
 .matrixconfigitem .actions { position: absolute; right: 0; width: 30px; }
-.matrixconfigitem.mci-recordtype .actions { top: 10px; }
+.matrixconfigitem.mci-blocktype .actions { top: 10px; }
 .matrixconfigitem.mci-field .actions { top: 20px; }
 .matrixconfigitem .actions .icon { display: block; margin-bottom: 1px; text-align: center; }
 .matrixconfigitem .actions .icon.settings:before { color: rgba(0,0,0,0.2); }
@@ -939,16 +939,16 @@ ul.errors li { color: $errorcolor; }
 .matrix-configurator .mc-sidebar > .col-inner-container > .heading,
 .matrix-configurator .field-settings > .col-inner-container > .heading { margin: 0; padding: 7px 15px 6px; border-bottom: 1px solid rgba(0,0,0,0.06); @include linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.03)); }
 
-/* records */
-.matrixrecord { position: relative; margin-bottom: 4px; border-bottom: 1px solid $hrcolor; padding: 15px 16px; background: #fff;
+/* blocks */
+.matrixblock { position: relative; margin-bottom: 4px; border-bottom: 1px solid $hrcolor; padding: 15px 16px; background: #fff;
 	-webkit-box-shadow: 0 0 3px rgba(0,0,0,0.15);
 	   -moz-box-shadow: 0 0 3px rgba(0,0,0,0.15);
 }
-.matrixrecord > .actions { position: absolute; z-index: 1; top: 5px; right: 5px; }
-.matrixrecord > .actions a { width: 15px; height: 20px; text-align: center; }
-.matrixrecord > .fields > .field { margin: 15px 0; }
-.matrix .matrixrecord:first-child { margin-top: 20px; }
-.matrix .matrixrecord:last-child { margin-bottom: 20px; }
+.matrixblock > .actions { position: absolute; z-index: 1; top: 5px; right: 5px; }
+.matrixblock > .actions a { width: 15px; height: 20px; text-align: center; }
+.matrixblock > .fields > .field { margin: 15px 0; }
+.matrix .matrixblock:first-child { margin-top: 20px; }
+.matrix .matrixblock:last-child { margin-bottom: 20px; }
 .matrix > .buttons { margin-top: 0; }
 
 /* ----------------------------------------

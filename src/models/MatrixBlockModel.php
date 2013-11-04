@@ -2,11 +2,11 @@
 namespace Craft;
 
 /**
- * Matrix record model class
+ * Matrix block model class
  */
-class MatrixRecordModel extends BaseElementModel
+class MatrixBlockModel extends BaseElementModel
 {
-	protected $elementType = ElementType::MatrixRecord;
+	protected $elementType = ElementType::MatrixBlock;
 	private $_owner;
 
 	/**
@@ -24,15 +24,15 @@ class MatrixRecordModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the record type.
+	 * Returns the block type.
 	 *
-	 * @return MatrixRecordTypeModel|null
+	 * @return MatrixBlockTypeModel|null
 	 */
 	public function getType()
 	{
 		if ($this->typeId)
 		{
-			return craft()->matrix->getRecordTypeById($this->typeId);
+			return craft()->matrix->getBlockTypeById($this->typeId);
 		}
 	}
 
@@ -90,6 +90,6 @@ class MatrixRecordModel extends BaseElementModel
 	 */
 	protected function getFieldContext()
 	{
-		return 'matrixRecordType:'.$this->typeId;
+		return 'matrixBlockType:'.$this->typeId;
 	}
 }

@@ -2,16 +2,16 @@
 namespace Craft;
 
 /**
- * Stores matrix record types
+ * Stores Matrix block types
  */
-class MatrixRecordTypeRecord extends BaseRecord
+class MatrixBlockTypeRecord extends BaseRecord
 {
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
-		return 'matrixrecordtypes';
+		return 'matrixblocktypes';
 	}
 
 	/**

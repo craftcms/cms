@@ -13,21 +13,21 @@ Craft.MatrixConfigurator = Garnish.Base.extend({
 
 	$container: null,
 
-	$recordTypesColumnContainer: null,
+	$blockTypesColumnContainer: null,
 	$fieldsColumnContainer: null,
 	$fieldSettingsColumnContainer: null,
 
-	$recordTypeItemsContainer: null,
+	$blockTypeItemsContainer: null,
 	$fieldItemsContainer: null,
 	$fieldSettingItemsContainer: null,
 
-	$newRecordTypeBtn: null,
+	$newBlockTypeBtn: null,
 	$newFieldBtn: null,
 
-	recordTypes: null,
-	selectedRecordType: null,
-	recordTypeSort: null,
-	totalNewRecordTypes: 0,
+	blockTypes: null,
+	selectedBlockType: null,
+	blockTypeSort: null,
+	totalNewBlockTypes: 0,
 
 	init: function(fieldTypeInfo, inputNamePrefix)
 	{
@@ -38,46 +38,46 @@ Craft.MatrixConfigurator = Garnish.Base.extend({
 
 		this.$container = $('.matrix-configurator:first .input:first');
 
-		this.$recordTypesColumnContainer = this.$container.children('.record-types').children();
+		this.$blockTypesColumnContainer = this.$container.children('.block-types').children();
 		this.$fieldsColumnContainer = this.$container.children('.fields').children();
 		this.$fieldSettingsColumnContainer = this.$container.children('.field-settings').children();
 
-		this.$recordTypeItemsContainer = this.$recordTypesColumnContainer.children('.items');
+		this.$blockTypeItemsContainer = this.$blockTypesColumnContainer.children('.items');
 		this.$fieldItemsContainer = this.$fieldsColumnContainer.children('.items');
 		this.$fieldSettingItemsContainer = this.$fieldSettingsColumnContainer.children('.items');
 
-		this.$newRecordTypeBtn = this.$recordTypeItemsContainer.children('.btn');
+		this.$newBlockTypeBtn = this.$blockTypeItemsContainer.children('.btn');
 		this.$newFieldBtn = this.$fieldItemsContainer.children('.btn');
 
-		// Find the existing record types
-		this.recordTypes = {};
+		// Find the existing block types
+		this.blockTypes = {};
 
-		var $recordTypeItems = this.$recordTypeItemsContainer.children('.matrixconfigitem');
+		var $blockTypeItems = this.$blockTypeItemsContainer.children('.matrixconfigitem');
 
-		for (var i = 0; i < $recordTypeItems.length; i++)
+		for (var i = 0; i < $blockTypeItems.length; i++)
 		{
-			var $item = $($recordTypeItems[i]),
+			var $item = $($blockTypeItems[i]),
 				id = $item.data('id');
 
-			this.recordTypes[id] = new RecordType(this, $item);
+			this.blockTypes[id] = new BlockType(this, $item);
 
-			// Is this a new record type?
+			// Is this a new block type?
 			var newMatch = (typeof id == 'string' && id.match(/new(\d+)/));
 
-			if (newMatch && newMatch[1] > this.totalNewRecordTypes)
+			if (newMatch && newMatch[1] > this.totalNewBlockTypes)
 			{
-				this.totalNewRecordTypes = parseInt(newMatch[1]);
+				this.totalNewBlockTypes = parseInt(newMatch[1]);
 			}
 		}
 
-		this.recordTypeSort = new Garnish.DragSort($recordTypeItems, {
+		this.blockTypeSort = new Garnish.DragSort($blockTypeItems, {
 			caboose: '<div/>',
 			handle: '.move',
 			axis: 'y'
 		});
 
-		this.addListener(this.$newRecordTypeBtn, 'click', 'addRecordType');
-		this.addListener(this.$newFieldBtn, 'click', 'addFieldToSelectedRecordType');
+		this.addListener(this.$newBlockTypeBtn, 'click', 'addBlockType');
+		this.addListener(this.$newFieldBtn, 'click', 'addFieldToSelectedBlockType');
 	},
 
 	getFieldTypeInfo: function(type)
@@ -91,63 +91,63 @@ Craft.MatrixConfigurator = Garnish.Base.extend({
 		}
 	},
 
-	addRecordType: function()
+	addBlockType: function()
 	{
-		var recordTypeSettingsModal = this.getRecordTypeSettingsModal();
+		var blockTypeSettingsModal = this.getBlockTypeSettingsModal();
 
-		this.recordTypeSettingsModal.show();
+		this.blockTypeSettingsModal.show();
 
-		this.recordTypeSettingsModal.onSubmit = $.proxy(function(name, handle)
+		this.blockTypeSettingsModal.onSubmit = $.proxy(function(name, handle)
 		{
-			this.totalNewRecordTypes++;
-			var id = 'new'+this.totalNewRecordTypes;
+			this.totalNewBlockTypes++;
+			var id = 'new'+this.totalNewBlockTypes;
 
 			var $item = $(
-				'<div class="matrixconfigitem mci-recordtype" data-id="'+id+'">' +
+				'<div class="matrixconfigitem mci-blocktype" data-id="'+id+'">' +
 					'<div class="name"></div>' +
 					'<div class="handle code"></div>' +
 					'<div class="actions">' +
 						'<a class="move icon" title="'+Craft.t('Reorder')+'"></a>' +
 						'<a class="settings icon" title="'+Craft.t('Settings')+'"></a>' +
 					'</div>' +
-					'<input class="hidden" name="types[Matrix][recordTypes]['+id+'][name]">' +
-					'<input class="hidden" name="types[Matrix][recordTypes]['+id+'][handle]">' +
+					'<input class="hidden" name="types[Matrix][blockTypes]['+id+'][name]">' +
+					'<input class="hidden" name="types[Matrix][blockTypes]['+id+'][handle]">' +
 				'</div>'
-			).insertBefore(this.$newRecordTypeBtn);
+			).insertBefore(this.$newBlockTypeBtn);
 
-			this.recordTypes[id] = new RecordType(this, $item);
-			this.recordTypes[id].applySettings(name, handle);
-			this.recordTypes[id].select();
-			this.recordTypes[id].addField();
+			this.blockTypes[id] = new BlockType(this, $item);
+			this.blockTypes[id].applySettings(name, handle);
+			this.blockTypes[id].select();
+			this.blockTypes[id].addField();
 
-			this.recordTypeSort.addItems($item);
+			this.blockTypeSort.addItems($item);
 		}, this);
 	},
 
-	addFieldToSelectedRecordType: function()
+	addFieldToSelectedBlockType: function()
 	{
-		if (this.selectedRecordType)
+		if (this.selectedBlockType)
 		{
-			this.selectedRecordType.addField();
+			this.selectedBlockType.addField();
 		}
 	},
 
-	getRecordTypeSettingsModal: function()
+	getBlockTypeSettingsModal: function()
 	{
-		if (!this.recordTypeSettingsModal)
+		if (!this.blockTypeSettingsModal)
 		{
-			this.recordTypeSettingsModal = new RecordTypeSettingsModal();
+			this.blockTypeSettingsModal = new BlockTypeSettingsModal();
 		}
 
-		return this.recordTypeSettingsModal;
+		return this.blockTypeSettingsModal;
 	}
 });
 
 
 /**
- * Record type settings modal class
+ * Block type settings modal class
  */
-var RecordTypeSettingsModal = Garnish.Modal.extend({
+var BlockTypeSettingsModal = Garnish.Modal.extend({
 
 	init: function()
 	{
@@ -159,17 +159,17 @@ var RecordTypeSettingsModal = Garnish.Modal.extend({
 		this.$body = $('<div class="body"/>').appendTo(this.$form);
 		this.$nameField = $('<div class="field"/>').appendTo(this.$body);
 		this.$nameHeading = $('<div class="heading"/>').appendTo(this.$nameField);
-		this.$nameLabel = $('<label for="new-record-type-name">'+Craft.t('Name')+'</label>').appendTo(this.$nameHeading);
-		this.$nameInstructions = $('<p class="instructions">'+Craft.t('What this record type will be called in the CP.')+'</p>').appendTo(this.$nameHeading);
+		this.$nameLabel = $('<label for="new-block-type-name">'+Craft.t('Name')+'</label>').appendTo(this.$nameHeading);
+		this.$nameInstructions = $('<p class="instructions">'+Craft.t('What this block type will be called in the CP.')+'</p>').appendTo(this.$nameHeading);
 		this.$nameInputContainer = $('<div class="input"/>').appendTo(this.$nameField);
-		this.$nameInput = $('<input type="text" class="text fullwidth" id="new-record-type-name"/>').appendTo(this.$nameInputContainer);
+		this.$nameInput = $('<input type="text" class="text fullwidth" id="new-block-type-name"/>').appendTo(this.$nameInputContainer);
 		this.$nameErrorList = $('<ul class="errors"/>').appendTo(this.$nameInputContainer).hide();
 		this.$handleField = $('<div class="field"/>').appendTo(this.$body);
 		this.$handleHeading = $('<div class="heading"/>').appendTo(this.$handleField);
-		this.$handleLabel = $('<label for="new-record-type-handle">'+Craft.t('Handle')+'</label>').appendTo(this.$handleHeading);
-		this.$handleInstructions = $('<p class="instructions">'+Craft.t('How you’ll refer to this record type in the templates.')+'</p>').appendTo(this.$handleHeading);
+		this.$handleLabel = $('<label for="new-block-type-handle">'+Craft.t('Handle')+'</label>').appendTo(this.$handleHeading);
+		this.$handleInstructions = $('<p class="instructions">'+Craft.t('How you’ll refer to this block type in the templates.')+'</p>').appendTo(this.$handleHeading);
 		this.$handleInputContainer = $('<div class="input"/>').appendTo(this.$handleField);
-		this.$handleInput = $('<input type="text" class="text fullwidth code" id="new-record-type-handle"/>').appendTo(this.$handleInputContainer);
+		this.$handleInput = $('<input type="text" class="text fullwidth code" id="new-block-type-handle"/>').appendTo(this.$handleInputContainer);
 		this.$handleErrorList = $('<ul class="errors"/>').appendTo(this.$handleInputContainer).hide();
 		this.$deleteBtn = $('<a class="error left hidden" style="line-height: 30px;">'+Craft.t('Delete')+'</a>').appendTo(this.$body);
 		this.$buttons = $('<div class="buttons right" style="margin-top: 0;"/>').appendTo(this.$body);
@@ -216,7 +216,7 @@ var RecordTypeSettingsModal = Garnish.Modal.extend({
 
 	onDeleteClick: function()
 	{
-		if (confirm(Craft.t('Are you sure you want to delete this record type?')))
+		if (confirm(Craft.t('Are you sure you want to delete this block type?')))
 		{
 			this.hide();
 			this.onDelete();
@@ -289,9 +289,9 @@ var RecordTypeSettingsModal = Garnish.Modal.extend({
 
 
 /**
- * Record type class
+ * Block type class
  */
-var RecordType = Garnish.Base.extend({
+var BlockType = Garnish.Base.extend({
 
 	configurator: null,
 	id: null,
@@ -322,8 +322,8 @@ var RecordType = Garnish.Base.extend({
 		this.id = this.$item.data('id');
 		this.errors = this.$item.data('errors');
 
-		this.inputNamePrefix = this.configurator.inputNamePrefix+'[recordTypes]['+this.id+']';
-		this.inputIdPrefix = this.configurator.inputIdPrefix+'-recordTypes-'+this.id;
+		this.inputNamePrefix = this.configurator.inputNamePrefix+'[blockTypes]['+this.id+']';
+		this.inputIdPrefix = this.configurator.inputIdPrefix+'-blockTypes-'+this.id;
 
 		this.$nameLabel = this.$item.children('.name');
 		this.$handleLabel = this.$item.children('.handle');
@@ -391,20 +391,20 @@ var RecordType = Garnish.Base.extend({
 
 	select: function()
 	{
-		if (this.configurator.selectedRecordType == this)
+		if (this.configurator.selectedBlockType == this)
 		{
 			return;
 		}
 
-		if (this.configurator.selectedRecordType)
+		if (this.configurator.selectedBlockType)
 		{
-			this.configurator.selectedRecordType.deselect();
+			this.configurator.selectedBlockType.deselect();
 		}
 
 		this.configurator.$fieldsColumnContainer.removeClass('hidden');
 		this.$fieldItemsContainer.removeClass('hidden');
 		this.$item.addClass('sel');
-		this.configurator.selectedRecordType = this;
+		this.configurator.selectedBlockType = this;
 	},
 
 	deselect: function()
@@ -413,7 +413,7 @@ var RecordType = Garnish.Base.extend({
 		this.configurator.$fieldsColumnContainer.addClass('hidden');
 		this.$fieldItemsContainer.addClass('hidden');
 		this.$fieldSettingsContainer.addClass('hidden');
-		this.configurator.selectedRecordType = null;
+		this.configurator.selectedBlockType = null;
 
 		if (this.selectedField)
 		{
@@ -423,10 +423,10 @@ var RecordType = Garnish.Base.extend({
 
 	showSettings: function()
 	{
-		var recordTypeSettingsModal = this.configurator.getRecordTypeSettingsModal();
-		recordTypeSettingsModal.show(this.$nameHiddenInput.val(), this.$handleHiddenInput.val(), this.errors);
-		recordTypeSettingsModal.onSubmit = $.proxy(this, 'applySettings');
-		recordTypeSettingsModal.onDelete = $.proxy(this, 'delete');
+		var blockTypeSettingsModal = this.configurator.getBlockTypeSettingsModal();
+		blockTypeSettingsModal.show(this.$nameHiddenInput.val(), this.$handleHiddenInput.val(), this.errors);
+		blockTypeSettingsModal.onSubmit = $.proxy(this, 'applySettings');
+		blockTypeSettingsModal.onDelete = $.proxy(this, 'delete');
 	},
 
 	applySettings: function(name, handle)
@@ -471,8 +471,8 @@ var RecordType = Garnish.Base.extend({
 		this.$fieldItemsContainer.remove();
 		this.$fieldSettingsContainer.remove();
 
-		this.configurator.recordTypes[this.id] = null;
-		delete this.configurator.recordTypes[this.id];
+		this.configurator.blockTypes[this.id] = null;
+		delete this.configurator.blockTypes[this.id];
 	}
 
 });
@@ -481,7 +481,7 @@ var RecordType = Garnish.Base.extend({
 Field = Garnish.Base.extend({
 
 	configurator: null,
-	recordType: null,
+	blockType: null,
 	id: null,
 
 	inputNamePrefix: null,
@@ -502,15 +502,15 @@ Field = Garnish.Base.extend({
 	$typeSettingsContainer: null,
 	$deleteBtn: null,
 
-	init: function(configurator, recordType, $item)
+	init: function(configurator, blockType, $item)
 	{
 		this.configurator = configurator;
-		this.recordType = recordType;
+		this.blockType = blockType;
 		this.$item = $item;
 		this.id = this.$item.data('id');
 
-		this.inputNamePrefix = this.recordType.inputNamePrefix+'[fields]['+this.id+']';
-		this.inputIdPrefix = this.recordType.inputIdPrefix+'-fields-'+this.id;
+		this.inputNamePrefix = this.blockType.inputNamePrefix+'[fields]['+this.id+']';
+		this.inputIdPrefix = this.blockType.inputIdPrefix+'-fields-'+this.id;
 
 		this.initializedFieldTypeSettings = {};
 
@@ -518,13 +518,13 @@ Field = Garnish.Base.extend({
 		this.$handleLabel = this.$item.children('.handle');
 
 		// Find the field settings container if it exists, otherwise create it
-		this.$fieldSettingsContainer = this.recordType.$fieldSettingsContainer.children('[data-id="'+this.id+'"]:first');
+		this.$fieldSettingsContainer = this.blockType.$fieldSettingsContainer.children('[data-id="'+this.id+'"]:first');
 
 		var isNew = (!this.$fieldSettingsContainer.length);
 
 		if (isNew)
 		{
-			this.$fieldSettingsContainer = $(this.getDefaultFieldSettingsHtml()).appendTo(this.recordType.$fieldSettingsContainer);
+			this.$fieldSettingsContainer = $(this.getDefaultFieldSettingsHtml()).appendTo(this.blockType.$fieldSettingsContainer);
 		}
 
 		this.$nameInput = this.$fieldSettingsContainer.find('input[name$="[name]"]:first');
@@ -559,21 +559,21 @@ Field = Garnish.Base.extend({
 
 	select: function()
 	{
-		if (this.recordType.selectedField == this)
+		if (this.blockType.selectedField == this)
 		{
 			return;
 		}
 
-		if (this.recordType.selectedField)
+		if (this.blockType.selectedField)
 		{
-			this.recordType.selectedField.deselect();
+			this.blockType.selectedField.deselect();
 		}
 
 		this.configurator.$fieldSettingsColumnContainer.removeClass('hidden');
-		this.recordType.$fieldSettingsContainer.removeClass('hidden');
+		this.blockType.$fieldSettingsContainer.removeClass('hidden');
 		this.$fieldSettingsContainer.removeClass('hidden');
 		this.$item.addClass('sel');
-		this.recordType.selectedField = this;
+		this.blockType.selectedField = this;
 
 		if (!Garnish.isMobileBrowser())
 		{
@@ -587,9 +587,9 @@ Field = Garnish.Base.extend({
 	{
 		this.$item.removeClass('sel');
 		this.configurator.$fieldSettingsColumnContainer.addClass('hidden');
-		this.recordType.$fieldSettingsContainer.addClass('hidden');
+		this.blockType.$fieldSettingsContainer.addClass('hidden');
 		this.$fieldSettingsContainer.addClass('hidden');
-		this.recordType.selectedField = null;
+		this.blockType.selectedField = null;
 	},
 
 	updateNameLabel: function()
@@ -658,7 +658,7 @@ Field = Garnish.Base.extend({
 	{
 		if (typeof html == 'string')
 		{
-			html = html.replace(/__RECORD_TYPE__/g, this.recordType.id);
+			html = html.replace(/__BLOCK_TYPE__/g, this.blockType.id);
 			html = html.replace(/__FIELD__/g, this.id);
 		}
 		else
@@ -756,8 +756,8 @@ Field = Garnish.Base.extend({
 		this.$item.remove();
 		this.$fieldSettingsContainer.remove();
 
-		this.recordType.fields[this.id] = null;
-		delete this.recordType.fields[this.id];
+		this.blockType.fields[this.id] = null;
+		delete this.blockType.fields[this.id];
 	}
 
 });

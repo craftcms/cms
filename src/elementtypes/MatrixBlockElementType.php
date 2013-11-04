@@ -2,9 +2,9 @@
 namespace Craft;
 
 /**
- * Matrix record element type
+ * Matrix block element type
  */
-class MatrixRecordElementType extends BaseElementType
+class MatrixBlockElementType extends BaseElementType
 {
 	/**
 	 * Returns the element type name.
@@ -13,7 +13,7 @@ class MatrixRecordElementType extends BaseElementType
 	 */
 	public function getName()
 	{
-		return Craft::t('Matrix Records');
+		return Craft::t('Matrix Blocks');
 	}
 
 	/**
@@ -80,11 +80,11 @@ class MatrixRecordElementType extends BaseElementType
 	{
 		$columns = array();
 
-		foreach (craft()->matrix->getRecordTypesByFieldId($criteria->fieldId) as $recordType)
+		foreach (craft()->matrix->getBlockTypesByFieldId($criteria->fieldId) as $blockType)
 		{
-			$fieldColumnPrefix = 'field_'.$recordType->handle.'_';
+			$fieldColumnPrefix = 'field_'.$blockType->handle.'_';
 
-			foreach ($recordType->getFields() as $field)
+			foreach ($blockType->getFields() as $field)
 			{
 				$fieldType = $field->getFieldType();
 
@@ -108,23 +108,23 @@ class MatrixRecordElementType extends BaseElementType
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('matrixrecords.fieldId, matrixrecords.ownerId, matrixrecords.typeId, matrixrecords.sortOrder')
-			->join('matrixrecords matrixrecords', 'matrixrecords.id = elements.id');
+			->addSelect('matrixblocks.fieldId, matrixblocks.ownerId, matrixblocks.typeId, matrixblocks.sortOrder')
+			->join('matrixblocks matrixblocks', 'matrixblocks.id = elements.id');
 
 		if ($criteria->fieldId)
 		{
-			$query->andWhere(DbHelper::parseParam('matrixrecords.fieldId', $criteria->fieldId, $query->params));
+			$query->andWhere(DbHelper::parseParam('matrixblocks.fieldId', $criteria->fieldId, $query->params));
 		}
 
 		if ($criteria->ownerId)
 		{
-			$query->andWhere(DbHelper::parseParam('matrixrecords.ownerId', $criteria->ownerId, $query->params));
+			$query->andWhere(DbHelper::parseParam('matrixblocks.ownerId', $criteria->ownerId, $query->params));
 		}
 
 		if ($criteria->type)
 		{
-			$query->join('matrixrecordtypes matrixrecordtypes', 'matrixrecordtypes.id = matrixrecords.typeId');
-			$query->andWhere(DbHelper::parseParam('matrixrecordtypes.handle', $criteria->type, $query->params));
+			$query->join('matrixblocktypes matrixblocktypes', 'matrixblocktypes.id = matrixblocks.typeId');
+			$query->andWhere(DbHelper::parseParam('matrixblocktypes.handle', $criteria->type, $query->params));
 		}
 	}
 
@@ -136,6 +136,6 @@ class MatrixRecordElementType extends BaseElementType
 	 */
 	public function populateElementModel($row)
 	{
-		return MatrixRecordModel::populateModel($row);
+		return MatrixBlockModel::populateModel($row);
 	}
 }

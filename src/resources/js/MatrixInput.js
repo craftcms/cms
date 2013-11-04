@@ -7,73 +7,73 @@
 Craft.MatrixInput = Garnish.Base.extend({
 
 	id: null,
-	recordTypeInfo: null,
+	blockTypeInfo: null,
 
 	inputNamePrefix: null,
 	inputIdPrefix: null,
 
 	$container: null,
-	$recordContainer: null,
-	$newRecordBtns: null,
+	$blockContainer: null,
+	$newBlockBtns: null,
 
-	recordSort: null,
-	totalNewRecords: 0,
+	blockSort: null,
+	totalNewBlocks: 0,
 
-	init: function(id, recordTypeInfo, inputNamePrefix)
+	init: function(id, blockTypeInfo, inputNamePrefix)
 	{
 		this.id = id
-		this.recordTypeInfo = recordTypeInfo;
+		this.blockTypeInfo = blockTypeInfo;
 
 		this.inputNamePrefix = inputNamePrefix;
 		this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
 
 		this.$container = $('#'+this.id);
-		this.$recordContainer = this.$container.children('.records');
-		this.$newRecordBtns = this.$container.children('.buttons').find('.btn');
+		this.$blockContainer = this.$container.children('.blocks');
+		this.$newBlockBtns = this.$container.children('.buttons').find('.btn');
 
-		this.recordSort = new Garnish.DragSort({
+		this.blockSort = new Garnish.DragSort({
 			caboose: '<div/>',
 			handle: '> .actions > .move',
 			axis: 'y',
 			helperOpacity: 0.9
 		});
 
-		var $records = this.$recordContainer.children();
+		var $blocks = this.$blockContainer.children();
 
-		for (var i = 0; i < $records.length; i++)
+		for (var i = 0; i < $blocks.length; i++)
 		{
-			var $record = $($records[i]),
-				id = $record.data('id');
+			var $block = $($blocks[i]),
+				id = $block.data('id');
 
-			// Is this a new record?
+			// Is this a new block?
 			var newMatch = (typeof id == 'string' && id.match(/new(\d+)/));
 
-			if (newMatch && newMatch[1] > this.totalNewRecords)
+			if (newMatch && newMatch[1] > this.totalNewBlocks)
 			{
-				this.totalNewRecords = parseInt(newMatch[1]);
+				this.totalNewBlocks = parseInt(newMatch[1]);
 			}
 
-			this.initRecord($record);
+			this.initBlock($block);
 		}
 
-		this.addListener(this.$newRecordBtns, 'click', function(ev)
+		this.addListener(this.$newBlockBtns, 'click', function(ev)
 		{
 			var type = $(ev.target).data('type');
-			this.addRecord(type);
+			this.addBlock(type);
 		});
 	},
 
-	initRecord: function($record)
+	initBlock: function($block)
 	{
-		this.recordSort.addItems($record);
+		this.blockSort.addItems($block);
 
-		this.addListener($record.find('> .actions > .delete'), 'click', function() {
+		this.addListener($block.find('> .actions > .delete'), 'click', function() {
 
-			if ($record.is(':only-child'))
+			if ($block.is(':only-child'))
 			{
 				var marginBottomDiff = -16;
 			}
-			else if ($record.is(':last-child'))
+			else if ($block.is(':last-child'))
 			{
 				var marginBottomDiff = 16;
 			}
@@ -82,38 +82,38 @@ Craft.MatrixInput = Garnish.Base.extend({
 				var marginBottomDiff = 0;
 			}
 
-			$record.animate({
+			$block.animate({
 				opacity: 0,
-				'margin-bottom': -($record.outerHeight()-marginBottomDiff)
+				'margin-bottom': -($block.outerHeight()-marginBottomDiff)
 			}, 'fast', function() {
-				$record.remove();
+				$block.remove();
 			});
 		});
 	},
 
-	addRecord: function(type)
+	addBlock: function(type)
 	{
-		this.totalNewRecords++;
+		this.totalNewBlocks++;
 
-		var id = 'new'+this.totalNewRecords;
+		var id = 'new'+this.totalNewBlocks;
 
-		var $record = $(
-			'<div class="matrixrecord" data-id="'+id+'">' +
+		var $block = $(
+			'<div class="matrixblock" data-id="'+id+'">' +
 				'<input type="hidden" name="'+this.inputNamePrefix+'['+id+'][type]" value="'+type+'"/>' +
 				'<div class="actions">' +
 					'<a class="move icon" title="'+Craft.t('Reorder')+'" role="button"></a> ' +
 					'<a class="delete icon" title="'+Craft.t('Delete')+'" role="button"></a>' +
 				'</div>' +
 			'</div>'
-		).appendTo(this.$recordContainer);
+		).appendTo(this.$blockContainer);
 
-		var $fieldsContainer = $('<div class="fields"/>').appendTo($record),
-			bodyHtml = this.getParsedRecordHtml(this.recordTypeInfo[type].bodyHtml, id),
-			footHtml = this.getParsedRecordHtml(this.recordTypeInfo[type].footHtml, id);
+		var $fieldsContainer = $('<div class="fields"/>').appendTo($block),
+			bodyHtml = this.getParsedBlockHtml(this.blockTypeInfo[type].bodyHtml, id),
+			footHtml = this.getParsedBlockHtml(this.blockTypeInfo[type].footHtml, id);
 
 		$(bodyHtml).appendTo($fieldsContainer);
 
-		if ($record.is(':only-child'))
+		if ($block.is(':only-child'))
 		{
 			var marginBottomDiff = -16;
 		}
@@ -122,26 +122,26 @@ Craft.MatrixInput = Garnish.Base.extend({
 			var marginBottomDiff = 20;
 		}
 
-		$record.css({
+		$block.css({
 			opacity: 0,
-			'margin-bottom': -($record.outerHeight()-marginBottomDiff)
+			'margin-bottom': -($block.outerHeight()-marginBottomDiff)
 		}).animate({
 			opacity: 1,
 			'margin-bottom': 20
 		}, 'fast', $.proxy(function()
 		{
-			$record.css('margin-bottom', '');
+			$block.css('margin-bottom', '');
 			$('body').append(footHtml);
 			Craft.initUiElements($fieldsContainer);
-			this.initRecord($record);
+			this.initBlock($block);
 		}, this));
 	},
 
-	getParsedRecordHtml: function(html, id)
+	getParsedBlockHtml: function(html, id)
 	{
 		if (typeof html == 'string')
 		{
-			return html.replace(/__RECORD__/g, id);
+			return html.replace(/__BLOCK__/g, id);
 		}
 		else
 		{

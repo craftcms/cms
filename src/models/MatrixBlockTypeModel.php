@@ -2,16 +2,16 @@
 namespace Craft;
 
 /**
- * Matrix record type model class
+ * Matrix block type model class
  */
-class MatrixRecordTypeModel extends BaseModel
+class MatrixBlockTypeModel extends BaseModel
 {
 	public $hasFieldErrors = false;
 
 	private $_fields;
 
 	/**
-	 * Use the record type handle as the string representation.
+	 * Use the block type handle as the string representation.
 	 *
 	 * @return string
 	 */
@@ -26,7 +26,7 @@ class MatrixRecordTypeModel extends BaseModel
 	public function behaviors()
 	{
 		return array(
-			'fieldLayout' => new FieldLayoutBehavior(ElementType::MatrixRecord),
+			'fieldLayout' => new FieldLayoutBehavior(ElementType::MatrixBlock),
 		);
 	}
 
@@ -57,7 +57,7 @@ class MatrixRecordTypeModel extends BaseModel
 	}
 
 	/**
-	 * Returns the fields associated with this record type.
+	 * Returns the fields associated with this block type.
 	 *
 	 * @return array
 	 */
@@ -81,7 +81,7 @@ class MatrixRecordTypeModel extends BaseModel
 	}
 
 	/*
-	 * Sets the fields associated with this record type.
+	 * Sets the fields associated with this block type.
 	 *
 	 * @param array $fields
 	 */

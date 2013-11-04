@@ -2,12 +2,12 @@
 namespace Craft;
 
 /**
- * Matrix record model class
+ * Matrix block model class
  */
 class MatrixSettingsModel extends BaseModel
 {
 	private $_matrixField;
-	private $_recordTypes;
+	private $_blockTypes;
 
 	/**
 	 * Constructor
@@ -30,39 +30,39 @@ class MatrixSettingsModel extends BaseModel
 	}
 
 	/**
-	 * Returns the record types.
+	 * Returns the block types.
 	 *
 	 * @return array
 	 */
-	public function getRecordTypes()
+	public function getBlockTypes()
 	{
-		if (!isset($this->_recordTypes))
+		if (!isset($this->_blockTypes))
 		{
 			if (!empty($this->_matrixField->id))
 			{
-				$this->_recordTypes = craft()->matrix->getRecordTypesByFieldId($this->_matrixField->id);
+				$this->_blockTypes = craft()->matrix->getBlockTypesByFieldId($this->_matrixField->id);
 			}
 			else
 			{
-				$this->_recordTypes = array();
+				$this->_blockTypes = array();
 			}
 		}
 
-		return $this->_recordTypes;
+		return $this->_blockTypes;
 	}
 
 	/**
-	 * Sets the record types.
+	 * Sets the block types.
 	 *
-	 * @param array $recordTypes
+	 * @param array $blockTypes
 	 */
-	public function setRecordTypes($recordTypes)
+	public function setBlockTypes($blockTypes)
 	{
-		$this->_recordTypes = $recordTypes;
+		$this->_blockTypes = $blockTypes;
 	}
 
 	/**
-	 * Validates the record type settings.
+	 * Validates the block type settings.
 	 *
 	 * @param array|null $attributes
 	 * @param bool $clearErrors

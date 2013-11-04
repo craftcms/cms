@@ -1,26 +1,26 @@
 <input type="hidden" name="{{ name }}" value="">
 
 <div class="matrix" id="{{ id }}">
-	<div class="records">
-		{% set totalNewRecords = 0 %}
-		{% for record in records %}
-			{% set recordId = record.id %}
-			{% if not recordId %}
-				{% set totalNewRecords = totalNewRecords + 1 %}
-				{% set recordId = 'new'~totalNewRecords %}
+	<div class="blocks">
+		{% set totalNewBlocks = 0 %}
+		{% for block in blocks %}
+			{% set blockId = block.id %}
+			{% if not blockId %}
+				{% set totalNewBlocks = totalNewBlocks + 1 %}
+				{% set blockId = 'new'~totalNewBlocks %}
 			{% endif %}
 
-			<div class="matrixrecord" data-id="{{ recordId }}">
-				<input type="hidden" name="{{ name }}[{{ recordId }}][type]" value="{{ record.getType() }}">
+			<div class="matrixblock" data-id="{{ blockId }}">
+				<input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
 				<div class="actions">
 					<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>
 					<a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a>
 				</div>
 				<div class="fields">
 					{% include "_includes/fields" with {
-						namespace: name~'['~recordId~'][fields]',
-						element: record,
-						fields: record.getType().getFieldLayout().getFields()
+						namespace: name~'['~blockId~'][fields]',
+						element: block,
+						fields: block.getType().getFieldLayout().getFields()
 					} %}
 				</div>
 			</div>
@@ -28,8 +28,8 @@
 	</div>
 	<div class="buttons">
 		<div class="btngroup">
-			{% for recordType in recordTypes %}
-				<div class="btn{% if loop.first %} add icon{% endif %}" data-type="{{ recordType.handle }}">{{ recordType.name|t }}</div>
+			{% for blockType in blockTypes %}
+				<div class="btn{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}">{{ blockType.name|t }}</div>
 			{% endfor %}
 		</div>
 	</div>
