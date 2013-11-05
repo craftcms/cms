@@ -82,7 +82,7 @@ abstract class BaseController extends \CController
 				HeaderHelper::setContentTypeByExtension($extension);
 				HeaderHelper::setHeader(array('charset' => 'utf-8'));
 
-				if ($extension == 'html')
+				if ($extension == 'html' || $extension == 'twig')
 				{
 					// Are there any head/foot nodes left in the queue?
 					$headHtml = craft()->templates->getHeadHtml();
@@ -111,6 +111,12 @@ abstract class BaseController extends \CController
 							$output .= $footHtml;
 						}
 					}
+				}
+				else
+				{
+					// If this is a non-HTML, non-Twig request, remove the extra logging information.
+					craft()->log->removeRoute('WebLogRoute');
+					craft()->log->removeRoute('ProfileLogRoute');
 				}
 
 				// Output to the browser!
