@@ -20,7 +20,7 @@
 
 {%- set js %}
 
-	var $timePicker = $('#{{ id }}');
+	var $timePicker = $('#{{ id|namespaceInputId|e('js') }}');
 	$timePicker.timepicker({
 		timeFormat: '{{ craft.i18n.timepickerJsFormat }}',
 		closeOnWindowScroll: false

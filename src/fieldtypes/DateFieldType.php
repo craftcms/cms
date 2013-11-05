@@ -65,21 +65,17 @@ class DateFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		$suffix = '-'.uniqid();
-
-		$input = craft()->templates->render('_includes/forms/date', array(
-			'id'       => craft()->templates->formatInputId($name).$suffix,
+		$variables = array(
+			'id'       => craft()->templates->formatInputId($name),
 			'name'     => $name,
 			'value'    => $value
-		));
+		);
+
+		$input = craft()->templates->render('_includes/forms/date', $variables);
 
 		if ($this->getSettings()->showTime)
 		{
-			$input .= ' '.craft()->templates->render('_includes/forms/time', array(
-				'id'       => craft()->templates->formatInputId($name).$suffix,
-				'name'     => $name,
-				'value'    => $value
-			));
+			$input .= ' '.craft()->templates->render('_includes/forms/time', $variables);
 		}
 
 		return $input;
