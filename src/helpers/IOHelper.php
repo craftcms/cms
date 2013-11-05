@@ -132,12 +132,15 @@ class IOHelper
 		{
 			$folders = $suppressErrors ? @glob($path.'*', GLOB_ONLYDIR) : glob($path.'*', GLOB_ONLYDIR);
 
-			foreach ($folders as $key => $folder)
+			if ($folders)
 			{
-				$folders[$key] = static::normalizePathSeparators($folder, $suppressErrors);
-			}
+				foreach ($folders as $key => $folder)
+				{
+					$folders[$key] = static::normalizePathSeparators($folder, $suppressErrors);
+				}
 
-			return $folders;
+				return $folders;
+			}
 		}
 
 		return false;
