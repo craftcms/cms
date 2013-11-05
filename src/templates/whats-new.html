@@ -22,7 +22,7 @@
 	{
 		for (var key in localStorage)
 		{
-			if (key.substr(0, 5) == 'Craft')
+			if (key.substr(0, 5) == 'Craft' && key.substr(5, 1) != '-')
 			{
 				delete localStorage[key];
 			}
