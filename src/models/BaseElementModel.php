@@ -404,7 +404,7 @@ abstract class BaseElementModel extends BaseModel
 				$contentService->fieldContext = $originalFieldContext;
 			}
 
-			if (empty($content))
+			if (empty($this->_content))
 			{
 				$this->_content = $this->createContentModel();
 			}
