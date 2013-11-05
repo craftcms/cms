@@ -21,7 +21,7 @@ class EntriesService extends BaseApplicationComponent
 	 * Saves an entry.
 	 *
 	 * @param EntryModel $entry
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function saveEntry(EntryModel $entry)
