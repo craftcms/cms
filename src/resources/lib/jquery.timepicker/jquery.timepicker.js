@@ -1,5 +1,5 @@
 /************************
-jquery-timepicker v1.2.7
+jquery-timepicker v1.2.9
 http://jonthornton.github.com/jquery-timepicker/
 
 requires jQuery 1.7+
@@ -154,7 +154,11 @@ requires jQuery 1.7+
 				list.scrollTop(0);
 			}
 
-			_attachCloseHandler(settings);
+			// attach close handlers
+			$('body').on('touchstart.ui-timepicker mousedown.ui-timepicker', _closeHandler);
+			if (settings.closeOnWindowScroll) {
+				$(window).on('scroll.ui-timepicker', _closeHandler);
+			}
 
 			self.trigger('showTimepicker');
 		},
@@ -325,12 +329,17 @@ requires jQuery 1.7+
 			end += _ONE_DAY;
 		}
 
+		if (end === _ONE_DAY-1 && settings.timeFormat.indexOf('H') !== -1) {
+			// show a 24:00 option when using military time
+			end = _ONE_DAY;
+		}
+
 		var dr = settings.disableTimeRanges;
 		var drCur = 0;
 		var drLen = dr.length;
 
 		for (var i=start; i <= end; i += settings.step*60) {
-			var timeInt = i%_ONE_DAY;
+			var timeInt = i;
 
 			var row = $('<li />');
 			row.data('time', timeInt);
@@ -397,18 +406,6 @@ requires jQuery 1.7+
 	function _generateBaseDate()
 	{
 		return new Date(1970, 1, 1, 0, 0, 0);
-	}
-
-	function _attachCloseHandler(settings)
-	{
-		if ('ontouchstart' in document) {
-			$('body').on('touchstart.ui-timepicker', _closeHandler);
-		} else {
-			$('body').on('mousedown.ui-timepicker', _closeHandler);
-			if (settings.closeOnWindowScroll) {
-				$(window).on('scroll.ui-timepicker', _closeHandler);
-			}
-		}
 	}
 
 	// event handler to decide whether to close timepicker
@@ -659,7 +656,7 @@ requires jQuery 1.7+
 
 	function _screenInput(e, self)
 	{
-		return !self.data('timepicker-settings').disableTextInput || e.ctrlKey || e.altKey || e.metaKey || (e.keyCode != 2 && e.keyCode < 46);
+		return !self.data('timepicker-settings').disableTextInput || e.ctrlKey || e.altKey || e.metaKey || (e.keyCode != 2 && e.keyCode != 8 && e.keyCode < 46);
 	}
 
 	/*
@@ -806,6 +803,7 @@ requires jQuery 1.7+
 
 				case 'H':
 					hour = time.getHours();
+					if (seconds === _ONE_DAY) hour = 24;
 					output += (hour > 9) ? hour : '0'+hour;
 					break;
 
