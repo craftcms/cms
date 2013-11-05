@@ -54,7 +54,7 @@ class PhpMessageSource extends \CPhpMessageSource
 			}
 
 			// Only add in plugins if we're installed and not in maintenance mode (during an update).
-			if (craft()->isInstalled() && !craft()->isInMainetnanceMode())
+			if (craft()->isInstalled() && !craft()->isInMaintenanceMode())
 			{
 				// Let's see if plugins have anything to contribute. Don't use PluginService, but go straight to the file system. Who cares if they are disabled.
 				$pluginPaths = IOHelper::getFolders(craft()->path->getPluginsPath());
