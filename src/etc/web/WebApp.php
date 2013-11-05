@@ -89,17 +89,9 @@ class WebApp extends \CWebApplication
 		// Attach our own custom Logger
 		Craft::setLogger(new Logger());
 
-		// If we're not in devMode or this is a resource request, we're going to remove some logging routes.
-		if (!$this->config->get('devMode') || ($resourceRequest = $this->request->isResourceRequest()) == true)
+		// If we're not in devMode, we're going to remove some logging routes.
+		if (!$this->config->get('devMode'))
 		{
-			// If it's a resource request, we don't want any logging routes, including craft.log
-			// If it's not a resource request, we'll keep the FileLogRoute around.
-			if ($resourceRequest)
-			{
-				$this->log->removeRoute('FileLogRoute');
-			}
-
-			// Don't need either of these if not in devMode or it's a resource request.
 			$this->log->removeRoute('WebLogRoute');
 			$this->log->removeRoute('ProfileLogRoute');
 		}
@@ -586,6 +578,9 @@ class WebApp extends \CWebApplication
 	{
 		if ($this->request->isResourceRequest())
 		{
+			// Don't want to log anything on a resource request.
+			$this->log->removeRoute('FileLogRoute');
+
 			// Get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($this->request->getSegments()), 1);
 			$path = implode('/', $segs);
