@@ -30,7 +30,7 @@ var LoginForm = Garnish.Base.extend({
 		this.$spinner = $('#spinner');
 		this.$rememberMeCheckbox = $('#rememberMe');
 
-		new Garnish.PasswordInput(this.$passwordInput, {
+		new Craft.PasswordInput(this.$passwordInput, {
 			onToggleInput: $.proxy(function($newPasswordInput) {
 				this.removeListener(this.$passwordInput, 'textchange');
 				this.$passwordInput = $newPasswordInput;

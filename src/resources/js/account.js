@@ -30,7 +30,7 @@ var AccountSettingForm = Garnish.Base.extend({
 			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttons);
 			this.modal = new Garnish.Modal($form);
 
-			new Garnish.PasswordInput(this.$currentPasswordInput, {
+			new Craft.PasswordInput(this.$currentPasswordInput, {
 				onToggleInput: $.proxy(function($newPasswordInput) {
 					this.$currentPasswordInput = $newPasswordInput;
 				}, this)

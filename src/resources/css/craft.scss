@@ -814,8 +814,8 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 
 .passwordwrapper { position: relative; }
 .passwordwrapper .password { width: 100%; }
-.passwordwrapper .password-toggle { display: block; position: absolute; top: 7px; right: 0; width: 44px; text-align: center; }
-.password { padding-right: 44px; }
+.passwordwrapper .password-toggle { display: block; position: absolute; top: 7px; right: 7px; text-right: right; }
+.password { padding-right: 5em; }
 .password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
 .datewrapper { display: inline-block; position: relative; width: 8.5em; }

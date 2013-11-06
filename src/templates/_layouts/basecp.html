@@ -9,6 +9,8 @@
 {%- includeJsResource 'lib/jquery-2.0.3'~(craft.config.useCompressedJs ? '.min' : '')~'.js' first %}
 {%- includeJsResource 'lib/xregexp-all'~(craft.config.useCompressedJs ? '-min' : '')~'.js' %}
 
+{%- includeTranslations "Show", "Hide" %}
+
 {% block body %}
 	{{ body }}
 
