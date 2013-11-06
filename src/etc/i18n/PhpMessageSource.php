@@ -14,7 +14,7 @@ class PhpMessageSource extends \CPhpMessageSource
 	 * Loads the message translation for the specified language and category.
 	 *
 	 * @param string $category the message category
-	 * @param string $language the target language
+	 * @param string $language the target locale
 	 * @return array the loaded messages
 	 */
 	protected function loadMessages($category, $language)
@@ -28,61 +28,57 @@ class PhpMessageSource extends \CPhpMessageSource
 		{
 			$this->_translations[$language] = array();
 
-			// Let's see if this is a two-parter.
-			$parts = explode('_', $language);
-			$languageCode = false;
-			if (count($parts) > 0)
-			{
-				$languageCode = $parts[0];
-			}
-
-			// Check the craft/app/translations for the original language first.
-			$paths[] = craft()->path->getCpTranslationsPath().$language.'.php';
-			if ($languageCode)
-			{
-				// Check the craft/app/translations folder for the language code fallback.
-				$paths[] = craft()->path->getCpTranslationsPath().$languageCode.'.php';
-			}
-
-			// Check the craft/translations folder for the original language.
-			$paths[] = craft()->path->getSiteTranslationsPath().$language.'.php';
-
-			if ($languageCode)
-			{
-				// Check the craft/translations folder for the language code fallback.
-				$paths[] = craft()->path->getSiteTranslationsPath().$languageCode.'.php';
-			}
-
-			// Only add in plugins if we're installed and not in maintenance mode (during an update).
+			// Plugin translations get added first so they always lose out for conflicts
 			if (craft()->isInstalled() && !craft()->isInMaintenanceMode())
 			{
-				// Let's see if plugins have anything to contribute. Don't use PluginService, but go straight to the file system. Who cares if they are disabled.
+				// Don't use PluginService, but go straight to the file system. Who cares if they are disabled.
 				$pluginPaths = IOHelper::getFolders(craft()->path->getPluginsPath());
 
 				if ($pluginPaths)
 				{
 					foreach ($pluginPaths as $pluginPath)
 					{
-						$paths[] = $pluginPath.'translations/'.$language.'.php';
-						if ($languageCode)
-						{
-							$paths[] = $pluginPath.'translations/'.$languageCode.'.php';
-						}
+						$paths[] = $pluginPath.'translations/';
 					}
 				}
 			}
 
-			// Now loop through all fo the paths and see if any of these files exists.
-			foreach ($paths as $filePath)
-			{
-				if (IOHelper::fileExists($filePath))
-				{
-					// Load it up.
-					$translations = include($filePath);
+			// Craft's translations are up next
+			$paths[] = craft()->path->getCpTranslationsPath();
 
-					if (is_array($translations))
+			// Site translations take the highest precidence, so they get added last
+			$paths[] = craft()->path->getSiteTranslationsPath();
+
+			// Look for translation file from least to most specific.
+			// So nl.php gets loaded before nl_nl.php, for example.
+			$translationFiles = array();
+			$parts = explode('_', $language);
+			$totalParts = count($parts);
+
+			for ($i = 1; $i <= $totalParts; $i++)
+			{
+				$translationFiles[] = implode('_', array_slice($parts, 0, $i));
+			}
+
+			// Now loop through all of the paths and translation files and import the ones that exist
+			foreach ($paths as $folderPath)
+			{
+				if (IOHelper::folderExists($folderPath))
+				{
+					foreach ($translationFiles as $file)
 					{
-						$this->_translations[$language] = array_merge($this->_translations[$language], $translations);
+						$path = $folderPath.$file.'.php';
+
+						if (IOHelper::fileExists($path))
+						{
+							// Load it up.
+							$translations = include($path);
+
+							if (is_array($translations))
+							{
+								$this->_translations[$language] = array_merge($this->_translations[$language], $translations);
+							}
+						}
 					}
 				}
 			}
