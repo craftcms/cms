@@ -29,6 +29,7 @@ class FieldRecord extends BaseRecord
 		'uri',
 		'url',
 		'ref',
+		'size',
 		'status',
 		'title',
 	);
