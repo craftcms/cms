@@ -235,9 +235,7 @@ class EntriesController extends BaseController
 		$entry = $this->_populateEntryModel();
 		$type = $entry->getType();
 
-		$section = $entry->getSection();
-
-		if ($section && $type)
+		if ($type)
 		{
 			if (!$entry->postDate)
 			{

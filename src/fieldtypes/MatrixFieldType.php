@@ -221,6 +221,8 @@ class MatrixFieldType extends BaseFieldType
 			return array();
 		}
 
+		$oldBlocksById = array();
+
 		// Get the old blocks that are still around
 		if (!empty($this->element->id))
 		{
@@ -230,7 +232,7 @@ class MatrixFieldType extends BaseFieldType
 
 			foreach (array_keys($data) as $blockId)
 			{
-				if (is_numeric($blockId))
+				if (is_numeric($blockId) && $blockId != 0)
 				{
 					$ids[] = $blockId;
 				}
@@ -247,8 +249,6 @@ class MatrixFieldType extends BaseFieldType
 				$oldBlocks = $criteria->find();
 
 				// Index them by ID
-				$oldBlocksById = array();
-
 				foreach ($oldBlocks as $oldBlock)
 				{
 					$oldBlocksById[$oldBlock->id] = $oldBlock;
@@ -265,10 +265,15 @@ class MatrixFieldType extends BaseFieldType
 
 		foreach ($data as $blockId => $blockData)
 		{
+			if (!isset($blockData['type']) || !isset($blockTypes[$blockData['type']]))
+			{
+				continue;
+			}
+
 			$blockType = $blockTypes[$blockData['type']];
 
-			// Is this new?
-			if (strncmp($blockId, 'new', 3) === 0)
+			// Is this new? (Or has it been deleted?)
+			if (strncmp($blockId, 'new', 3) === 0 || !isset($oldBlocksById[$blockId]))
 			{
 				$block = new MatrixBlockModel();
 				$block->fieldId = $this->model->id;
@@ -278,15 +283,6 @@ class MatrixFieldType extends BaseFieldType
 			}
 			else
 			{
-				if (!isset($oldBlocksById[$blockId]))
-				{
-					throw new Exception(Craft::t('No block exists with the ID “{blockId}” on the element with the ID “{ownerId}” for the field with the ID “{fieldId}”.', array(
-						'blockId' => $blockId,
-						'ownerId' => $ownerId,
-						'fieldId' => $this->model->id
-					)));
-				}
-
 				$block = $oldBlocksById[$blockId];
 			}
 

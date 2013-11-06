@@ -23,6 +23,20 @@ class UpdatesWidget extends BaseWidget
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function isSelectable()
+	{
+		// Gotta have update permission to get this widget
+		if (parent::isSelectable() && craft()->userSession->checkPermission('performUpdates'))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Returns the widget's body HTML.
 	 *
 	 * @return string|false

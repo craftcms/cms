@@ -6,7 +6,7 @@ craft()->requirePackage(CraftPackage::PublishPro);
 /**
  *
  */
-class EntryVersionModel extends EntryModel
+class EntryVersionModel extends BaseEntryRevisionModel
 {
 	/**
 	 * @access protected
@@ -14,14 +14,11 @@ class EntryVersionModel extends EntryModel
 	 */
 	protected function defineAttributes()
 	{
-		$attributes = parent::defineAttributes();
-
-		$attributes['versionId'] = AttributeType::Number;
-		$attributes['creatorId'] = AttributeType::Number;
-		$attributes['notes'] = AttributeType::String;
-		$attributes['dateCreated'] = AttributeType::DateTime;
-
-		return $attributes;
+		return array_merge(parent::defineAttributes(), array(
+			'versionId'   => AttributeType::Number,
+			'notes'       => AttributeType::String,
+			'dateCreated' => AttributeType::DateTime,
+		));
 	}
 
 	/**
@@ -54,19 +51,9 @@ class EntryVersionModel extends EntryModel
 
 		if ($fieldContent)
 		{
-			$version->getContent()->setValuesByFieldId($fieldContent);
+			$version->setContentFromRevision($fieldContent);
 		}
 
 		return $version;
-	}
-
-	/**
-	 * Returns the version's creator.
-	 *
-	 * @return UserModel|null
-	 */
-	public function getCreator()
-	{
-		return craft()->users->getUserById($this->creatorId);
 	}
 }
