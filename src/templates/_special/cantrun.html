@@ -5,7 +5,7 @@
 {% set content %}
 	<h2>{{ title }} :(</h2>
 
-	{% if reqCheck.result == 'failure' %}
+	{% if reqCheck.result == 'failed' %}
 		<p>{{ "Your server doesn’t meet the following requirements to run Craft:"|t }}</p>
 
 		<ul class="bullets">
