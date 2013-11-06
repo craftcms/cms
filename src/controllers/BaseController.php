@@ -79,10 +79,15 @@ abstract class BaseController extends \CController
 				$templateFile = craft()->templates->findTemplate($template);
 				$extension = IOHelper::getExtension($templateFile, 'html');
 
+				if ($extension == 'twig')
+				{
+					$extension = 'html';
+				}
+
 				HeaderHelper::setContentTypeByExtension($extension);
 				HeaderHelper::setHeader(array('charset' => 'utf-8'));
 
-				if ($extension == 'html' || $extension == 'twig')
+				if ($extension == 'html')
 				{
 					// Are there any head/foot nodes left in the queue?
 					$headHtml = craft()->templates->getHeadHtml();
