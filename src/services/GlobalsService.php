@@ -227,6 +227,12 @@ class GlobalsService extends BaseApplicationComponent
 					$globalSet->id = $elementRecord->id;
 					$globalSetRecord->id = $globalSet->id;
 
+					// Create a new row in elements_i18n
+					$elementLocaleRecord = new ElementLocaleRecord();
+					$elementLocaleRecord->elementId = $globalSet->id;
+					$elementLocaleRecord->locale    = $globalSet->locale;
+					$elementLocaleRecord->save();
+
 					// Create a row in content
 					$content = new ContentModel();
 					$content->elementId = $globalSet->id;
