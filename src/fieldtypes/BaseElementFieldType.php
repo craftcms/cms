@@ -115,7 +115,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		// or we're loading a draft/version.
 		if (is_array($value))
 		{
-			$criteria->id = array_filter($value);
+			$criteria->id = array_values(array_filter($value));
 			$criteria->fixedOrder = true;
 		}
 		else if ($value === '')
