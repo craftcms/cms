@@ -169,28 +169,38 @@ class UtilsController extends BaseController
 						$cookieStart = array_search('$_COOKIE=array (', $rowContents);
 						$sessionStart = array_search('$_SESSION=array (', $rowContents);
 						$serverStart = array_search('$_SERVER=array (', $rowContents);
+						$postStart = array_search('$_POST=array (', $rowContents);
 
 						// If we found any of these, we know this is a devMode log.
-						if ($cookieStart || $sessionStart || $serverStart)
+						if ($cookieStart || $sessionStart || $serverStart || $postStart)
 						{
 							$cookieStart = $cookieStart ? $cookieStart + 1 : $cookieStart;
 							$sessionStart = $sessionStart ? $sessionStart + 1 : $sessionStart;
 							$serverStart = $serverStart ? $serverStart + 1 : $serverStart;
+							$postStart = $postStart ? $postStart + 1 : $postStart;
 
-							if (!$cookieStart)
+
+							if (!$postStart)
 							{
-								if (!$sessionStart)
+								if (!$cookieStart)
 								{
-									$start = $serverStart;
+									if (!$sessionStart)
+									{
+										$start = $serverStart;
+									}
+									else
+									{
+										$start = $sessionStart;
+									}
 								}
 								else
 								{
-									$start = $sessionStart;
+									$start = $cookieStart;
 								}
 							}
 							else
 							{
-								$start = $cookieStart;
+								$start = $postStart;
 							}
 
 							// Check to see if it's GET or POST
