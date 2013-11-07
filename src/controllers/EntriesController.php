@@ -233,9 +233,10 @@ class EntriesController extends BaseController
 		craft()->setLanguage(craft()->request->getPost('locale'));
 
 		$entry = $this->_populateEntryModel();
+		$section = $entry->getSection();
 		$type = $entry->getType();
 
-		if ($type)
+		if ($section && $type)
 		{
 			if (!$entry->postDate)
 			{
