@@ -43,5 +43,14 @@
 				<div class="btn{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}">{{ blockType.name|t }}</div>
 			{% endfor %}
 		</div>
+
+		<div class="btn add menubtn hidden">{{ "Add a block"|t }}</div>
+		<div class="menu">
+			<ul>
+				{% for blockType in blockTypes %}
+					<li><a data-type="{{ blockType.handle }}">{{ blockType.name|t }}</a></li>
+				{% endfor %}
+			</ul>
+		</div>
 	</div>
 </div>

@@ -15,7 +15,9 @@ Craft.MatrixInput = Garnish.Base.extend({
 
 	$container: null,
 	$blockContainer: null,
-	$newBlockBtns: null,
+	$newBlockBtnContainer: null,
+	$newBlockBtnGroup: null,
+	$newBlockBtnGroupBtns: null,
 
 	blockSort: null,
 	totalNewBlocks: 0,
@@ -25,6 +27,18 @@ Craft.MatrixInput = Garnish.Base.extend({
 		this.id = id
 		this.blockTypes = blockTypes;
 
+		this.inputNamePrefix = inputNamePrefix;
+		this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
+
+		this.$container = $('#'+this.id);
+		this.$blockContainer = this.$container.children('.blocks');
+		this.$newBlockBtnContainer = this.$container.children('.buttons');
+		this.$newBlockBtnGroup = this.$newBlockBtnContainer.children('.btngroup');
+		this.$newBlockBtnGroupBtns = this.$newBlockBtnGroup.children('.btn');
+		this.$newBlockMenuBtn = this.$newBlockBtnContainer.children('.menubtn');
+
+		this.setNewBlockBtn();
+
 		this.blockTypesByHandle = {};
 
 		for (var i = 0; i < this.blockTypes.length; i++)
@@ -32,13 +46,6 @@ Craft.MatrixInput = Garnish.Base.extend({
 			var blockType = this.blockTypes[i];
 			this.blockTypesByHandle[blockType.handle] = blockType;
 		}
-
-		this.inputNamePrefix = inputNamePrefix;
-		this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
-
-		this.$container = $('#'+this.id);
-		this.$blockContainer = this.$container.children('.blocks');
-		this.$newBlockBtns = this.$container.children('.buttons').find('.btn');
 
 		var $blocks = this.$blockContainer.children();
 
@@ -65,11 +72,36 @@ Craft.MatrixInput = Garnish.Base.extend({
 			new MatrixBlock(this, $block);
 		}
 
-		this.addListener(this.$newBlockBtns, 'click', function(ev)
+		this.addListener(this.$newBlockBtnGroupBtns, 'click', function(ev)
 		{
 			var type = $(ev.target).data('type');
 			this.addBlock(type);
 		});
+
+		new Garnish.MenuBtn(this.$newBlockMenuBtn,
+		{
+			onOptionSelect: $.proxy(function(option)
+			{
+				var type = $(option).data('type');
+				this.addBlock(type);
+			}, this)
+		});
+
+		this.addListener(Garnish.$win, 'resize', 'setNewBlockBtn');
+	},
+
+	setNewBlockBtn: function()
+	{
+		if (this.$newBlockBtnGroup.removeClass('hidden').width() > this.$container.width())
+		{
+			this.$newBlockBtnGroup.addClass('hidden');
+			this.$newBlockMenuBtn.removeClass('hidden');
+		}
+		else
+		{
+			this.$newBlockBtnGroup.removeClass('hidden');
+			this.$newBlockMenuBtn.addClass('hidden');
+		}
 	},
 
 	addBlock: function(type, $insertBefore)

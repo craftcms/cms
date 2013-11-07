@@ -953,7 +953,7 @@ ul.errors li { color: $errorcolor; }
 .matrixblock > .fields > .field { margin: 15px 0; }
 .matrix .matrixblock:first-child { margin-top: 20px; }
 .matrix .matrixblock:last-child { margin-bottom: 20px; }
-.matrix > .buttons { margin-top: 0; }
+.matrix > .buttons { margin-top: 0; height: 30px; overflow: hidden; }
 
 /* ----------------------------------------
 /* IE hacks

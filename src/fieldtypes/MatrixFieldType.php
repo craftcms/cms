@@ -197,7 +197,7 @@ class MatrixFieldType extends BaseFieldType
 			'"'.craft()->templates->namespaceInputName($name).'"' .
 		');');
 
-		craft()->templates->includeTranslations('Actions', 'Add {type} above');
+		craft()->templates->includeTranslations('Actions', 'Add {type} above', 'Add a block');
 
 		return craft()->templates->render('_components/fieldtypes/Matrix/input', array(
 			'id' => $id,
