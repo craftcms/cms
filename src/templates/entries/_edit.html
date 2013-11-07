@@ -23,7 +23,7 @@
 {% endset %}
 
 
-{% set continueEditingUrl = 'entries/'~section.handle~'/{id}'~(craft.hasPackage('Localize') and craft.locale != localeId ? '/'~localeId : '') %}
+{% set continueEditingUrl = 'entries/'~section.handle~'/{id}'~(draftId is defined ? '/drafts/'~draftId : '')~(craft.locale != localeId ? '/'~localeId : '') %}
 
 
 {% set content %}
