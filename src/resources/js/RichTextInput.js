@@ -163,12 +163,12 @@ Craft.RichTextInput = Garnish.Base.extend({
 				},
 				link:
 				{
-					title: lang.link_insert,
+					title: Craft.t('Insert link'),
 					func:  'linkShow'
 				},
 				unlink:
 				{
-					title: lang.unlink,
+					title: Craft.t('Unlink'),
 					exec:  'unlink'
 				}
 			}
