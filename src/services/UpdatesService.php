@@ -565,7 +565,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isCraftDbMigrationNeeded()
 	{
-		return (CRAFT_SCHEMA_VERSION > craft()->getSchemaVersion());
+		return version_compare(CRAFT_SCHEMA_VERSION, craft()->getSchemaVersion(), '>');
 	}
 
 	/**
