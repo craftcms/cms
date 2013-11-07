@@ -354,10 +354,8 @@ class ResourcesService extends BaseApplicationComponent
 
 		// Determine the closest source size
 		$sourceSizes = array(
-			array('size' => 28, 'extSize' => 4, 'extY' => 20),
-			array('size' => 56, 'extSize' => 8, 'extY' => 40),
-			array('size' => 178, 'extSize' => 30, 'extY' => 142),
-			array('size' => 350, 'extSize' => 60, 'extY' => 280)
+			array('size' => 40,  'extSize' => 7,  'extY' => 32),
+			array('size' => 350, 'extSize' => 60, 'extY' => 280),
 		);
 
 		foreach ($sourceSizes as $sourceSize)
