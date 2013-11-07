@@ -59,8 +59,9 @@ class ContentService extends BaseApplicationComponent
 
 		$content = $this->prepElementContentForSave($element, $fieldLayout, $validate);
 
-		if ($this->saveContent($content, $validate))
+		if ($this->validateElementContent($element, $fieldLayout))
 		{
+			$this->saveContent($content);
 			$this->postSaveOperations($element, $content);
 			return true;
 		}
@@ -95,101 +96,146 @@ class ContentService extends BaseApplicationComponent
 			{
 				$requiredFields[] = 'title';
 			}
+		}
 
-			foreach ($fieldLayout->getFields() as $field)
+		foreach ($fieldLayout->getFields() as $fieldLayoutField)
+		{
+			if ($setRequiredFields && $fieldLayoutField->required)
 			{
-				if ($field->required)
-				{
-					$requiredFields[] = $field->fieldId;
-				}
+				$requiredFields[] = $fieldLayoutField->fieldId;
 			}
 
-			if ($requiredFields)
+			$field = $fieldLayoutField->getField();
+
+			if ($field)
 			{
-				$content->setRequiredFields($requiredFields);
+				$fieldType = $field->getFieldType();
+
+				if ($fieldType)
+				{
+					$fieldType->element = $element;
+
+					$handle = $field->handle;
+					$content->$handle = $fieldType->prepValueFromPost($content->$handle);
+				}
 			}
 		}
 
-		// Give the fieldtypes a chance to clean up the post data
-		foreach (craft()->fields->getAllFields() as $field)
+		if ($setRequiredFields && $requiredFields)
 		{
-			$fieldType = $field->getFieldType();
-
-			if ($fieldType)
-			{
-				$fieldType->element = $element;
-
-				$handle = $field->handle;
-				$content->$handle = $fieldType->prepValueFromPost($content->$handle);
-			}
+			$content->setRequiredFields($requiredFields);
 		}
 
 		return $content;
 	}
 
 	/**
-	 * Saves a content model to the database.
+	 * Validates some content with a given field layout.
 	 *
-	 * @param ContentModel $content
-	 * @param bool         $validate Whether to call the model's validate() function first.
+	 * @param BaseElementModel $element
+	 * @param FieldLayoutModel $fieldLayout
 	 * @return bool
 	 */
-	public function saveContent(ContentModel $content, $validate = true)
+	public function validateElementContent(BaseElementModel $element, FieldLayoutModel $fieldLayout)
 	{
-		if (!$validate || $content->validate())
+		$content = $element->getContent();
+
+		// Set the required fields from the layout
+		$fieldHandles = array();
+		$requiredFields = array();
+
+		$elementTypeClass = $element->getElementType();
+		$elementType = craft()->elements->getElementType($elementTypeClass);
+
+		if ($elementType->hasTitles())
 		{
-			$values = array(
-				'id'        => $content->id,
-				'elementId' => $content->elementId,
-				'locale'    => $content->locale,
-			);
+			$requiredFields[] = 'title';
+		}
 
-			// If the element type has titles, than it's required and will be set.
-			// Otherwise, no need to include it (it might not even be a real column if this isn't the 'content' table).
-			if ($content->title)
+		foreach ($fieldLayout->getFields() as $fieldLayoutField)
+		{
+			$field = $fieldLayoutField->getField();
+
+			if ($field)
 			{
-				$values['title'] = $content->title;
-			}
+				$fieldHandles[] = $field->handle;
 
-			foreach (craft()->fields->getFieldsWithContent() as $field)
-			{
-				$handle = $field->handle;
-				$value = $content->$handle;
-				$values[$this->fieldColumnPrefix.$field->handle] = ModelHelper::packageAttributeValue($value, true);
-			}
-
-			$isNewContent = !$content->id;
-
-			if (!$isNewContent)
-			{
-				$affectedRows = craft()->db->createCommand()
-					->update($this->contentTable, $values, array('id' => $content->id));
-			}
-			else
-			{
-				$affectedRows = craft()->db->createCommand()
-					->insert($this->contentTable, $values);
-
-				if ($affectedRows)
+				if ($fieldLayoutField->required)
 				{
-					// Set the new ID
-					$content->id = craft()->db->getLastInsertID();
+					$requiredFields[] = $field->id;
 				}
-			}
-
-			if ($affectedRows)
-			{
-				// Fire an 'onSaveContent' event
-				$this->onSaveContent(new Event($this, array(
-					'content'      => $content,
-					'isNewContent' => $isNewContent
-				)));
-
-				return true;
 			}
 		}
 
-		return false;
+		if ($requiredFields)
+		{
+			$content->setRequiredFields($requiredFields);
+		}
+
+		return $content->validate($fieldHandles);
+	}
+
+	/**
+	 * Saves a content model to the database.
+	 *
+	 * @param ContentModel $content
+	 * @return bool
+	 */
+	public function saveContent(ContentModel $content)
+	{
+		$values = array(
+			'id'        => $content->id,
+			'elementId' => $content->elementId,
+			'locale'    => $content->locale,
+		);
+
+		// If the element type has titles, than it's required and will be set.
+		// Otherwise, no need to include it (it might not even be a real column if this isn't the 'content' table).
+		if ($content->title)
+		{
+			$values['title'] = $content->title;
+		}
+
+		foreach (craft()->fields->getFieldsWithContent() as $field)
+		{
+			$handle = $field->handle;
+			$value = $content->$handle;
+			$values[$this->fieldColumnPrefix.$field->handle] = ModelHelper::packageAttributeValue($value, true);
+		}
+
+		$isNewContent = !$content->id;
+
+		if (!$isNewContent)
+		{
+			$affectedRows = craft()->db->createCommand()
+				->update($this->contentTable, $values, array('id' => $content->id));
+		}
+		else
+		{
+			$affectedRows = craft()->db->createCommand()
+				->insert($this->contentTable, $values);
+
+			if ($affectedRows)
+			{
+				// Set the new ID
+				$content->id = craft()->db->getLastInsertID();
+			}
+		}
+
+		if ($affectedRows)
+		{
+			// Fire an 'onSaveContent' event
+			$this->onSaveContent(new Event($this, array(
+				'content'      => $content,
+				'isNewContent' => $isNewContent
+			)));
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -263,7 +309,7 @@ class ContentService extends BaseApplicationComponent
 
 				foreach ($otherContentModels as $otherContentModel)
 				{
-					$this->saveContent($otherContentModel, false);
+					$this->saveContent($otherContentModel);
 				}
 			}
 		}

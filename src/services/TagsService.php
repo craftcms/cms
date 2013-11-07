@@ -333,7 +333,7 @@ class TagsService extends BaseApplicationComponent
 				// Create a row in content
 				$content = new ContentModel();
 				$content->elementId = $tag->id;
-				craft()->content->saveContent($content, false);
+				craft()->content->saveContent($content);
 			}
 
 			$tagRecord->save(false);

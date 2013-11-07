@@ -553,9 +553,13 @@ class MatrixService extends BaseApplicationComponent
 		craft()->content->fieldContext = 'matrixBlockType:'.$block->typeId;
 
 		$fieldLayout = $block->getType()->getFieldLayout();
-		$content = craft()->content->prepElementContentForSave($block, $fieldLayout);
-		$content->validate();
-		$block->addErrors($content->getErrors());
+
+		craft()->content->prepElementContentForSave($block, $fieldLayout);
+
+		if (!craft()->content->validateElementContent($block, $fieldLayout))
+		{
+			$block->addErrors($block->getContent()->getErrors());
+		}
 
 		craft()->content->fieldContext = $originalFieldContext;
 
