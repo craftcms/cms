@@ -351,6 +351,31 @@ abstract class BaseModel extends \CModel
 	}
 
 	/**
+	 * We override the parent method so we can log any attributes that failed validation.
+	 *
+	 * @param null $attributes
+	 * @param bool $clearErrors
+	 * @return bool
+	 */
+	public function validate($attributes = null, $clearErrors = true)
+	{
+		if (parent::validate($attributes, $clearErrors))
+		{
+			return true;
+		}
+
+		foreach ($this->getErrors() as $attribute => $errorMessages)
+		{
+			foreach ($errorMessages as $errorMessage)
+			{
+				Craft::log(get_class($this).'->'.$attribute.' failed validation: '.$errorMessage, LogLevel::Warning);
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Populates a new model instance with a given set of attributes.
 	 *
 	 * @static
