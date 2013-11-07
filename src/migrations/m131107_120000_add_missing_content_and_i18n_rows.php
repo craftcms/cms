@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m131106_000000_add_missing_content_and_i18n_rows extends BaseMigration
+class m131107_120000_add_missing_content_and_i18n_rows extends BaseMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
