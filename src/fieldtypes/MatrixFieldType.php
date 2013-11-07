@@ -55,7 +55,11 @@ class MatrixFieldType extends BaseFieldType
 
 		foreach (craft()->fields->getAllFieldTypes() as $fieldType)
 		{
-			$fieldTypeOptions[] = array('label' => $fieldType->getName(), 'value' => $fieldType->getClassHandle());
+			// No Matrix-Inception, sorry buddy.
+			if ($fieldType->getClassHandle() != 'Matrix')
+			{
+				$fieldTypeOptions[] = array('label' => $fieldType->getName(), 'value' => $fieldType->getClassHandle());
+			}
 		}
 
 		return craft()->templates->render('_components/fieldtypes/Matrix/settings', array(
