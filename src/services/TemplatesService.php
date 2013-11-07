@@ -903,7 +903,7 @@ class TemplatesService extends BaseApplicationComponent
 			if ($iconUrl)
 			{
 				$this->includeCss($thumbSelectorPrefix.'.'.$iconClass.' { background-image: url('.$iconUrl.'); }');
-				$this->includeHiResCss($thumbSelectorPrefix.'.'.$iconClass.' { background-image: url('.$context['element']->getThumbUrl($iconSize * 2).'); background-size: '.$iconSize.'px; }');
+				$this->includeHiResCss($thumbSelectorPrefix.'.'.$iconClass.' { background-image: url('.$context['element']->getIconUrl($iconSize * 2).'); background-size: '.$iconSize.'px; }');
 			}
 		}
 
