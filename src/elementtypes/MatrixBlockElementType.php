@@ -90,7 +90,7 @@ class MatrixBlockElementType extends BaseElementType
 
 				if ($fieldType && $fieldType->defineContentAttribute())
 				{
-					$columns[$field->handle] = $fieldColumnPrefix.$field->handle;
+					$columns[] = array('handle' => $field->handle, 'column' => $fieldColumnPrefix.$field->handle);
 				}
 			}
 		}

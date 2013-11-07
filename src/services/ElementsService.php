@@ -139,13 +139,13 @@ class ElementsService extends BaseApplicationComponent
 					foreach ($orderColumns as $i => $orderColumn)
 					{
 						// Is this column for a custom field?
-						foreach ($fieldColumns as $fieldHandle => $fieldColumn)
+						foreach ($fieldColumns as $column)
 						{
-							if (preg_match('/^'.$fieldHandle.'\b(.*)$/', $orderColumn, $matches))
+							if (preg_match('/^'.$column['handle'].'\b(.*)$/', $orderColumn, $matches))
 							{
 								// Use the field column name instead
-								$orderColumns[$i] = $fieldColumn.$matches[1];
-								break;
+								$orderColumns[$i] = $column['column'].$matches[1];
+								// Don't break from the loop though because there could be more than one column that uses this handle!
 							}
 						}
 					}
@@ -220,12 +220,12 @@ class ElementsService extends BaseApplicationComponent
 
 							if ($fieldColumns)
 							{
-								foreach ($fieldColumns as $fieldHandle => $fieldColumn)
+								foreach ($fieldColumns as $column)
 								{
-									if (isset($row[$fieldColumn]))
+									if (isset($row[$column['column']]))
 									{
-										$content[$fieldHandle] = $row[$fieldColumn];
-										unset($row[$fieldColumn]);
+										$content[$column['handle']] = $row[$column['column']];
+										unset($row[$column['column']]);
 									}
 								}
 							}
@@ -338,7 +338,7 @@ class ElementsService extends BaseApplicationComponent
 
 				foreach ($fieldColumns as $column)
 				{
-					$contentCols .= ', content.'.$column;
+					$contentCols .= ', content.'.$column['column'];
 				}
 
 				$query->addSelect($contentCols);
