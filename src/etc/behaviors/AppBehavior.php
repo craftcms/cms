@@ -27,7 +27,7 @@ class AppBehavior extends BaseBehavior
 			try
 			{
 				// First check to see if DbConnection has even been initialized, yet.
-				if (craft()->getComponent('db', false))
+				if (craft()->getComponent('db'))
 				{
 					// If the db config isn't valid, then we'll assume it's not installed.
 					if (!craft()->db->isDbConnectionValid())
