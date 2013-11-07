@@ -120,35 +120,7 @@ Craft.MatrixInput = Garnish.Base.extend({
 
 		$(bodyHtml).appendTo($fieldsContainer);
 
-
-		if ($block.is(':only-child'))
-		{
-			var marginBottomDiff = -16;
-		}
-		else if ($block.is(':last-child'))
-		{
-			var marginBottomDiff = 16;
-		}
-		else
-		{
-			var marginBottomDiff = 0;
-		}
-
-
-
-		/*if ($block.is(':only-child'))
-		{
-			var marginBottomDiff = -16;
-		}
-		else
-		{
-			var marginBottomDiff = 20;
-		}*/
-
-		$block.css({
-			opacity: 0,
-			'margin-bottom': -($block.outerHeight()-marginBottomDiff)
-		}).animate({
+		$block.css(this.getHiddenBlockCss($block)).animate({
 			opacity: 1,
 			'margin-bottom': ($block.is(':last-child') ? 20: 0),
 		}, 'fast', $.proxy(function()
@@ -159,6 +131,25 @@ Craft.MatrixInput = Garnish.Base.extend({
 			new MatrixBlock(this, $block);
 			this.blockSort.addItems($block);
 		}, this));
+	},
+
+	getHiddenBlockCss: function($block)
+	{
+		var marginBottom = -($block.outerHeight());
+
+		if ($block.is(':only-child'))
+		{
+			marginBottom -= 16;
+		}
+		else if ($block.is(':last-child'))
+		{
+			marginBottom += 16;
+		}
+
+		return {
+			opacity: 0,
+			marginBottom: marginBottom
+		};
 	},
 
 	getParsedBlockHtml: function(html, id)
@@ -208,23 +199,7 @@ var MatrixBlock = Garnish.Base.extend({
 
 	selfDestruct: function()
 	{
-		if (this.$block.is(':only-child'))
-		{
-			var marginBottomDiff = -16;
-		}
-		else if (this.$block.is(':last-child'))
-		{
-			var marginBottomDiff = 16;
-		}
-		else
-		{
-			var marginBottomDiff = 0;
-		}
-
-		this.$block.animate({
-			opacity: 0,
-			'margin-bottom': -(this.$block.outerHeight()-marginBottomDiff)
-		}, 'fast', $.proxy(function() {
+		this.$block.animate(this.matrix.getHiddenBlockCss(this.$block), 'fast', $.proxy(function() {
 			this.$block.remove();
 		}, this));
 	}
