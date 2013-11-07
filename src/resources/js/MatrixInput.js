@@ -154,7 +154,7 @@ Craft.MatrixInput = Garnish.Base.extend({
 
 		$block.css(this.getHiddenBlockCss($block)).animate({
 			opacity: 1,
-			'margin-bottom': ($block.is(':last-child') ? 20: 0),
+			marginBottom: ($block.is(':last-child') ? 20 : 0),
 		}, 'fast', $.proxy(function()
 		{
 			$block.css('margin-bottom', '');
