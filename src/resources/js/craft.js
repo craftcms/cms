@@ -944,9 +944,11 @@ $.extend($.fn, {
 	{
 		return this.each(function()
 		{
-			if (!$.data(this, 'menubtn'))
+			var $btn = $(this);
+
+			if (!$btn.data('menubtn') && $btn.next().hasClass('menu'))
 			{
-				new Garnish.MenuBtn(this);
+				new Garnish.MenuBtn($btn);
 			}
 		});
 	}
