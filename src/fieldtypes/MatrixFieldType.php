@@ -338,6 +338,12 @@ class MatrixFieldType extends BaseFieldType
 	public function onAfterElementSave()
 	{
 		$blocks = $this->element->getContent()->getAttribute($this->model->handle);
+
+		if (!is_array($blocks))
+		{
+			$blocks = array();
+		}
+
 		craft()->matrix->saveField($this->model, $this->element->id, $blocks);
 	}
 
