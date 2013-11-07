@@ -82,7 +82,7 @@ Craft.MatrixInput = Garnish.Base.extend({
 			'<div class="matrixblock" data-id="'+id+'">' +
 				'<input type="hidden" name="'+this.inputNamePrefix+'['+id+'][type]" value="'+type+'"/>' +
 				'<div class="actions">' +
-					'<a class="settings icon menubtn" title="'+Craft.t('Actions')+'" role="button"></a>' +
+					'<a class="settings icon menubtn" title="'+Craft.t('Actions')+'" role="button"></a> ' +
 					'<div class="menu">' +
 						'<ul>';
 
