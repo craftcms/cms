@@ -426,7 +426,7 @@ var BlockType = Garnish.Base.extend({
 		var blockTypeSettingsModal = this.configurator.getBlockTypeSettingsModal();
 		blockTypeSettingsModal.show(this.$nameHiddenInput.val(), this.$handleHiddenInput.val(), this.errors);
 		blockTypeSettingsModal.onSubmit = $.proxy(this, 'applySettings');
-		blockTypeSettingsModal.onDelete = $.proxy(this, 'delete');
+		blockTypeSettingsModal.onDelete = $.proxy(this, 'selfDestruct');
 	},
 
 	applySettings: function(name, handle)
@@ -464,7 +464,7 @@ var BlockType = Garnish.Base.extend({
 		this.fieldSort.addItems($item);
 	},
 
-	delete: function()
+	selfDestruct: function()
 	{
 		this.deselect();
 		this.$item.remove();
@@ -746,11 +746,11 @@ Field = Garnish.Base.extend({
 	{
 		if (confirm(Craft.t('Are you sure you want to delete this field?')))
 		{
-			this.delete();
+			this.selfDestruct();
 		}
 	},
 
-	delete: function()
+	selfDestruct: function()
 	{
 		this.deselect();
 		this.$item.remove();
