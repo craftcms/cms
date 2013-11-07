@@ -14,7 +14,7 @@
 				<input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
 				<div class="actions">
 					<a class="settings icon menubtn" title="{{ 'Actions'|t }}" role="button"></a>
-					<div class="menu">
+					<div class="menu" data-align="right">
 						<ul>
 							{% for blockType in blockTypes %}
 								<li><a data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t({ type: blockType.name|t }) }}</a></li>
