@@ -284,7 +284,7 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Prepares Hi-res targetted CSS for inclusion in the template.
+	 * Prepares Hi-res targeted CSS for inclusion in the template.
 	 *
 	 * @param string    $css
 	 * @param bool|null $first
@@ -628,7 +628,7 @@ class TemplatesService extends BaseApplicationComponent
 	 * Namespaces an input name.
 	 *
 	 * @param string $inputName
-	 * @param string|null $namespcae
+	 * @param null   $namespace
 	 * @return string
 	 */
 	public function namespaceInputName($inputName, $namespace = null)
@@ -649,8 +649,8 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Namespaces an input ID.
 	 *
-	 * @param string $inputName
-	 * @param string|null $namespcae
+	 * @param      $inputId
+	 * @param null $namespace
 	 * @return string
 	 */
 	public function namespaceInputId($inputId, $namespace = null)
@@ -841,8 +841,8 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Combines the JS in a buffer.
 	 *
-	 * @access private
-	 * @param array $scripts
+	 * @access   private
+	 * @param $js
 	 * @return string
 	 */
 	private function _combineJs($js)
