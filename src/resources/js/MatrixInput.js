@@ -7,7 +7,8 @@
 Craft.MatrixInput = Garnish.Base.extend({
 
 	id: null,
-	blockTypeInfo: null,
+	blockTypes: null,
+	blockTypesByHandle: null,
 
 	inputNamePrefix: null,
 	inputIdPrefix: null,
@@ -19,10 +20,18 @@ Craft.MatrixInput = Garnish.Base.extend({
 	blockSort: null,
 	totalNewBlocks: 0,
 
-	init: function(id, blockTypeInfo, inputNamePrefix)
+	init: function(id, blockTypes, inputNamePrefix)
 	{
 		this.id = id
-		this.blockTypeInfo = blockTypeInfo;
+		this.blockTypes = blockTypes;
+
+		this.blockTypesByHandle = {};
+
+		for (var i = 0; i < this.blockTypes.length; i++)
+		{
+			var blockType = this.blockTypes[i];
+			this.blockTypesByHandle[blockType.handle] = blockType;
+		}
 
 		this.inputNamePrefix = inputNamePrefix;
 		this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
@@ -31,14 +40,14 @@ Craft.MatrixInput = Garnish.Base.extend({
 		this.$blockContainer = this.$container.children('.blocks');
 		this.$newBlockBtns = this.$container.children('.buttons').find('.btn');
 
-		this.blockSort = new Garnish.DragSort({
+		var $blocks = this.$blockContainer.children();
+
+		this.blockSort = new Garnish.DragSort($blocks, {
 			caboose: '<div/>',
 			handle: '> .actions > .move',
 			axis: 'y',
 			helperOpacity: 0.9
 		});
-
-		var $blocks = this.$blockContainer.children();
 
 		for (var i = 0; i < $blocks.length; i++)
 		{
@@ -53,7 +62,7 @@ Craft.MatrixInput = Garnish.Base.extend({
 				this.totalNewBlocks = parseInt(newMatch[1]);
 			}
 
-			this.initBlock($block);
+			new MatrixBlock(this, $block);
 		}
 
 		this.addListener(this.$newBlockBtns, 'click', function(ev)
@@ -63,77 +72,92 @@ Craft.MatrixInput = Garnish.Base.extend({
 		});
 	},
 
-	initBlock: function($block)
-	{
-		this.blockSort.addItems($block);
-
-		this.addListener($block.find('> .actions > .delete'), 'click', function() {
-
-			if ($block.is(':only-child'))
-			{
-				var marginBottomDiff = -16;
-			}
-			else if ($block.is(':last-child'))
-			{
-				var marginBottomDiff = 16;
-			}
-			else
-			{
-				var marginBottomDiff = 0;
-			}
-
-			$block.animate({
-				opacity: 0,
-				'margin-bottom': -($block.outerHeight()-marginBottomDiff)
-			}, 'fast', function() {
-				$block.remove();
-			});
-		});
-	},
-
-	addBlock: function(type)
+	addBlock: function(type, $insertBefore)
 	{
 		this.totalNewBlocks++;
 
 		var id = 'new'+this.totalNewBlocks;
 
-		var $block = $(
+		var html =
 			'<div class="matrixblock" data-id="'+id+'">' +
 				'<input type="hidden" name="'+this.inputNamePrefix+'['+id+'][type]" value="'+type+'"/>' +
 				'<div class="actions">' +
+					'<a class="settings icon menubtn" title="'+Craft.t('Actions')+'" role="button"></a>' +
+					'<div class="menu">' +
+						'<ul>';
+
+		for (var i = 0; i < this.blockTypes.length; i++)
+		{
+			var blockType = this.blockTypes[i];
+			html += '<li><a data-action="add" data-type="'+blockType.handle+'">'+Craft.t('Add {type} above', { type: blockType.name })+'</a></li>';
+		}
+
+		html +=
+						'</ul>' +
+						'<hr/>' +
+						'<ul>' +
+							'<li><a data-action="delete">'+Craft.t('Delete')+'</a></li>' +
+						'</ul>' +
+					'</div>' +
 					'<a class="move icon" title="'+Craft.t('Reorder')+'" role="button"></a> ' +
-					'<a class="delete icon" title="'+Craft.t('Delete')+'" role="button"></a>' +
 				'</div>' +
-			'</div>'
-		).appendTo(this.$blockContainer);
+			'</div>';
+
+		var $block = $(html);
+
+		if ($insertBefore)
+		{
+			$block.insertBefore($insertBefore);
+		}
+		else
+		{
+			$block.appendTo(this.$blockContainer);
+		}
 
 		var $fieldsContainer = $('<div class="fields"/>').appendTo($block),
-			bodyHtml = this.getParsedBlockHtml(this.blockTypeInfo[type].bodyHtml, id),
-			footHtml = this.getParsedBlockHtml(this.blockTypeInfo[type].footHtml, id);
+			bodyHtml = this.getParsedBlockHtml(this.blockTypesByHandle[type].bodyHtml, id),
+			footHtml = this.getParsedBlockHtml(this.blockTypesByHandle[type].footHtml, id);
 
 		$(bodyHtml).appendTo($fieldsContainer);
 
+
 		if ($block.is(':only-child'))
+		{
+			var marginBottomDiff = -16;
+		}
+		else if ($block.is(':last-child'))
+		{
+			var marginBottomDiff = 16;
+		}
+		else
+		{
+			var marginBottomDiff = 0;
+		}
+
+
+
+		/*if ($block.is(':only-child'))
 		{
 			var marginBottomDiff = -16;
 		}
 		else
 		{
 			var marginBottomDiff = 20;
-		}
+		}*/
 
 		$block.css({
 			opacity: 0,
 			'margin-bottom': -($block.outerHeight()-marginBottomDiff)
 		}).animate({
 			opacity: 1,
-			'margin-bottom': 20
+			'margin-bottom': ($block.is(':last-child') ? 20: 0),
 		}, 'fast', $.proxy(function()
 		{
 			$block.css('margin-bottom', '');
 			$('body').append(footHtml);
 			Craft.initUiElements($fieldsContainer);
-			this.initBlock($block);
+			new MatrixBlock(this, $block);
+			this.blockSort.addItems($block);
 		}, this));
 	},
 
@@ -147,6 +171,62 @@ Craft.MatrixInput = Garnish.Base.extend({
 		{
 			return '';
 		}
+	}
+});
+
+
+var MatrixBlock = Garnish.Base.extend({
+
+	matrix: null,
+	$block: null,
+
+	init: function(matrix, $block)
+	{
+		this.matrix = matrix;
+		this.$block = $block;
+
+		var $menuBtn = this.$block.find('> .actions > .settings'),
+			menuBtn = new Garnish.MenuBtn($menuBtn);
+
+		menuBtn.menu.settings.onOptionSelect = $.proxy(this, 'onMenuOptionSelect');
+	},
+
+	onMenuOptionSelect: function(option)
+	{
+		var $option = $(option);
+
+		if ($option.data('action') == 'add')
+		{
+			var type = $option.data('type');
+			this.matrix.addBlock(type, this.$block);
+		}
+		else
+		{
+			this.selfDestruct();
+		}
+	},
+
+	selfDestruct: function()
+	{
+		if (this.$block.is(':only-child'))
+		{
+			var marginBottomDiff = -16;
+		}
+		else if (this.$block.is(':last-child'))
+		{
+			var marginBottomDiff = 16;
+		}
+		else
+		{
+			var marginBottomDiff = 0;
+		}
+
+		this.$block.animate({
+			opacity: 0,
+			'margin-bottom': -(this.$block.outerHeight()-marginBottomDiff)
+		}, 'fast', $.proxy(function() {
+			this.$block.remove();
+		}, this));
 	}
 });
 

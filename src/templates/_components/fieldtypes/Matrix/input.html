@@ -13,8 +13,19 @@
 			<div class="matrixblock" data-id="{{ blockId }}">
 				<input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
 				<div class="actions">
+					<a class="settings icon menubtn" title="{{ 'Actions'|t }}" role="button"></a>
+					<div class="menu">
+						<ul>
+							{% for blockType in blockTypes %}
+								<li><a data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t({ type: blockType.name|t }) }}</a></li>
+							{% endfor %}
+						</ul>
+						<hr>
+						<ul>
+							<li><a data-action="delete">{{ "Delete"|t }}</a></li>
+						</ul>
+					</div>
 					<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>
-					<a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a>
 				</div>
 				<div class="fields">
 					{% include "_includes/fields" with {

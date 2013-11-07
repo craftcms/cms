@@ -197,6 +197,8 @@ class MatrixFieldType extends BaseFieldType
 			'"'.craft()->templates->namespaceInputName($name).'"' .
 		');');
 
+		craft()->templates->includeTranslations('Actions', 'Add {type} above');
+
 		return craft()->templates->render('_components/fieldtypes/Matrix/input', array(
 			'id' => $id,
 			'name' => $name,
@@ -416,7 +418,9 @@ class MatrixFieldType extends BaseFieldType
 
 			$footHtml = craft()->templates->clearJsBuffer();
 
-			$blockTypes[$blockType->handle] = array(
+			$blockTypes[] = array(
+				'handle'   => $blockType->handle,
+				'name'     => Craft::t($blockType->name),
 				'bodyHtml' => $bodyHtml,
 				'footHtml' => $footHtml,
 			);

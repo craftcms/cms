@@ -738,7 +738,7 @@ ul.tree,
 .menu:not(:hover) ul li a:not(.sel).hover,
 .menu:not(:hover) ul li a:not(.sel).hover .light { color: #fff; background: $headerBgColor; }
 .menu ul li a.sel { color: $mediumtextcolor; cursor: default; }
-
+.menu hr { margin: 5px -15px; }
 
 .menulist { padding-left: 30px; }
 .menulist h2 { margin: 10px 0 3px; }
@@ -946,8 +946,10 @@ ul.errors li { color: $errorcolor; }
 	-webkit-box-shadow: 0 0 3px rgba(0,0,0,0.15);
 	   -moz-box-shadow: 0 0 3px rgba(0,0,0,0.15);
 }
-.matrixblock > .actions { position: absolute; z-index: 1; top: 5px; right: 5px; }
-.matrixblock > .actions a { width: 15px; height: 20px; text-align: center; }
+.matrixblock > .actions { position: absolute; z-index: 1; top: 5px; right: 5px; cursor: default; }
+.matrixblock > .actions a { padding: 0; margin-right: 2px; width: 15px; height: 20px; text-align: center; color: rgba(0,0,0,0.2) }
+.matrixblock > .actions a:hover { width: 15px; height: 20px; text-align: center; color: $linkcolor; }
+.matrixblock > .actions a.settings:after { margin-left: 3px; }
 .matrixblock > .fields > .field { margin: 15px 0; }
 .matrix .matrixblock:first-child { margin-top: 20px; }
 .matrix .matrixblock:last-child { margin-bottom: 20px; }
