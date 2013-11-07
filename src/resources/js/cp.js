@@ -163,6 +163,9 @@ var CP = Garnish.Base.extend({
 				{
 					ev.preventDefault();
 
+					// Give other stuff on the page a chance to prepare
+					this.trigger('beforeSaveShortcut');
+
 					if ($primaryForm.data('saveshortcut-redirect'))
 					{
 						$('<input type="hidden" name="redirect" value="'+$primaryForm.data('saveshortcut-redirect')+'"/>').appendTo($primaryForm);
