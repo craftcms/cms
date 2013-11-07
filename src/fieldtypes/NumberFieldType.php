@@ -81,7 +81,7 @@ class NumberFieldType extends BaseFieldType
 	{
 		if ($data === '')
 		{
-			return '0';
+			return 0;
 		}
 		else
 		{

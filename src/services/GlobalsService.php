@@ -236,7 +236,7 @@ class GlobalsService extends BaseApplicationComponent
 					// Create a row in content
 					$content = new ContentModel();
 					$content->elementId = $globalSet->id;
-					craft()->content->saveContent($content, false);
+					craft()->content->saveContent($content);
 				}
 
 				$globalSetRecord->save(false);
