@@ -76,14 +76,14 @@ class ContentService extends BaseApplicationComponent
 	 *
 	 * @param BaseElementModel $element
 	 * @param FieldLayoutModel $fieldLayout
-	 * @param bool             $validate
+	 * @param bool             $setRequiredFields
 	 * @return ContentModel
 	 */
-	public function prepElementContentForSave(BaseElementModel $element, FieldLayoutModel $fieldLayout, $validate = true)
+	public function prepElementContentForSave(BaseElementModel $element, FieldLayoutModel $fieldLayout, $setRequiredFields = true)
 	{
 		$content = $element->getContent();
 
-		if ($validate)
+		if ($setRequiredFields)
 		{
 			// Set the required fields from the layout
 			$requiredFields = array();
