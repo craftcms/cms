@@ -104,6 +104,27 @@ class ErrorHandler extends \CErrorHandler
 	}
 
 	/**
+	 * Handles a PHP error.
+	 *
+	 * @param \CErrorEvent $event the PHP error event
+	 */
+	protected function handleError($event)
+	{
+		$trace = debug_backtrace();
+
+		// Was this triggered by a Twig template directly?
+		if (isset($trace[3]['object']) && $trace[3]['object'] instanceof \Twig_Template)
+		{
+			$exception = new \Twig_Error($event->message);
+			$this->handleTwigSyntaxError($exception);
+		}
+		else
+		{
+			parent::handleError($event);
+		}
+	}
+
+	/**
 	 * Handles Twig syntax errors.
 	 *
 	 * @access protected
