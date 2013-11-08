@@ -115,7 +115,7 @@ class ErrorHandler extends \CErrorHandler
 		// Was this triggered by a Twig template directly?
 		if (isset($trace[3]['object']) && $trace[3]['object'] instanceof \Twig_Template)
 		{
-			$exception = new \Twig_Error($event->message);
+			$exception = new \Twig_Error_Runtime($event->message);
 			$this->handleTwigSyntaxError($exception);
 		}
 		else
@@ -145,7 +145,7 @@ class ErrorHandler extends \CErrorHandler
 
 		$this->_error = $data = array(
 			'code'      => 500,
-			'type'      => Craft::t('Template Syntax Error'),
+			'type'      => Craft::t('Template Error'),
 			'errorCode' => $exception->getCode(),
 			'message'   => $exception->getRawMessage(),
 			'file'      => $file,
