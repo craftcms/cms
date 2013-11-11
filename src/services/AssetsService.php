@@ -464,7 +464,7 @@ class AssetsService extends BaseApplicationComponent
 			$folders[] = $folder;
 		}
 
-		return $folder;
+		return $folders;
 	}
 
 	/**
