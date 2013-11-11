@@ -278,7 +278,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 		$versionRecord = new EntryVersionRecord();
 		$versionRecord->entryId = $entry->id;
 		$versionRecord->sectionId = $entry->sectionId;
-		$versionRecord->creatorId = craft()->userSession->getUser()->id;
+		$versionRecord->creatorId = craft()->userSession->getUser() ? craft()->userSession->getUser()->id : $entry->authorId;
 		$versionRecord->locale = $entry->locale;
 		$versionRecord->data = $this->_getRevisionData($entry);
 		return $versionRecord->save();
