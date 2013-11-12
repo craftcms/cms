@@ -118,15 +118,12 @@ class AssetsService extends BaseApplicationComponent
 
 		if ($fileRecord->save())
 		{
-			if (!$file->id)
-			{
-				// Save the ID on the model now that we have it
-				$file->id = $fileRecord->id;
+			// Save the ID on the model now that we have it
+			$file->id = $fileRecord->id;
 
-				// Give it a default title based on the file name
-				$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
-				$this->saveFileContent($file, false);
-			}
+			// Give it a default title based on the file name
+			$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
+			$this->saveFileContent($file, false);
 
 			// Update the search index
 			craft()->search->indexElementAttributes($file);
@@ -464,7 +461,7 @@ class AssetsService extends BaseApplicationComponent
 			$folders[] = $folder;
 		}
 
-		return $folder;
+		return $folders;
 	}
 
 	/**
