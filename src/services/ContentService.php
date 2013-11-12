@@ -326,6 +326,7 @@ class ContentService extends BaseApplicationComponent
 
 			if ($fieldType)
 			{
+				$fieldType->element = $element;
 				$fieldType->onAfterElementSave();
 			}
 		}
@@ -339,6 +340,7 @@ class ContentService extends BaseApplicationComponent
 
 			if ($fieldType)
 			{
+				$fieldType->element = $element;
 				$handle = $field->handle;
 
 				// Set the keywords for the content's locale
