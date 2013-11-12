@@ -337,6 +337,49 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
+	 * Returns the search keywords that should be associated with this field,
+	 * based on the prepped post data.
+	 *
+	 * @param mixed $value
+	 * @return string
+	 */
+	public function getSearchKeywords($value)
+	{
+		$criteria = $this->prepValue(null);
+		$keywords = array();
+		$contentService = craft()->content;
+
+		foreach ($criteria->find() as $block)
+		{
+			$originalContentTable      = $contentService->contentTable;
+			$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+			$originalFieldContext      = $contentService->fieldContext;
+
+			$contentService->contentTable      = $block->getContentTable();
+			$contentService->fieldColumnPrefix = $block->getFieldColumnPrefix();
+			$contentService->fieldContext      = $block->getFieldContext();
+
+			foreach (craft()->fields->getAllFields() as $field)
+			{
+				$fieldType = $field->getFieldType();
+
+				if ($fieldType)
+				{
+					$fieldType->element = $block;
+					$handle = $field->handle;
+					$keywords[] = $fieldType->getSearchKeywords($block->$handle);
+				}
+			}
+
+			$contentService->contentTable      = $originalContentTable;
+			$contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+			$contentService->fieldContext      = $originalFieldContext;
+		}
+
+		return parent::getSearchKeywords($keywords);
+	}
+
+	/**
 	 * Performs any additional actions after the element has been saved.
 	 */
 	public function onAfterElementSave()
