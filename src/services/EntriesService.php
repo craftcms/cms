@@ -535,7 +535,7 @@ class EntriesService extends BaseApplicationComponent
 		$oldSlug = $entryLocaleRecord->slug;
 		$oldUri = $elementLocaleRecord->uri;
 
-		$this->_setUniqueSlugAndUri($entry, $urlFormat, $entryLocaleRecord, $elementLocaleRecord);
+		$this->_setUniqueSlugAndUri($entry, $urlFormat, $entryLocaleRecord, $elementLocaleRecord, false);
 
 		if ($entryLocaleRecord->slug != $oldSlug)
 		{
@@ -651,8 +651,9 @@ class EntriesService extends BaseApplicationComponent
 	 * @param string $urlFormat;
 	 * @param EntryLocaleRecord $entryLocaleRecord
 	 * @param ElementLocaleRecord $elementLocaleRecord
+	 * @param bool $isNewEntry
 	 */
-	private function _setUniqueSlugAndUri(EntryModel $entry, $urlFormat, EntryLocaleRecord $entryLocaleRecord, ElementLocaleRecord $elementLocaleRecord)
+	private function _setUniqueSlugAndUri(EntryModel $entry, $urlFormat, EntryLocaleRecord $entryLocaleRecord, ElementLocaleRecord $elementLocaleRecord, $isNewEntry)
 	{
 		if (!$entry->slug)
 		{
@@ -677,7 +678,7 @@ class EntriesService extends BaseApplicationComponent
 			':locale'    => $entryLocaleRecord->locale
 		);
 
-		if ($entry->id)
+		if (!$isNewEntry)
 		{
 			$uniqueSlugConditions[] = 'entryId != :entryId';
 			$uniqueSlugParams[':entryId'] = $entry->id;
@@ -694,7 +695,7 @@ class EntriesService extends BaseApplicationComponent
 				':locale' => $entryLocaleRecord->locale
 			);
 
-			if ($entry->id)
+			if (!$isNewEntry)
 			{
 				$uniqueUriConditions[] = 'elementId != :elementId';
 				$uniqueUriParams[':elementId'] = $entry->id;
