@@ -12,7 +12,6 @@ class FileLogRoute extends \CFileLogRoute
 	public function init()
 	{
 		$this->setLogPath(craft()->path->getLogPath());
-		$this->setLogFile('craft.log');
 
 		$this->levels = craft()->config->get('devMode') ? '' : 'error,warning';
 		$this->filter = craft()->config->get('devMode') ? 'CLogFilter' : null;
@@ -27,7 +26,7 @@ class FileLogRoute extends \CFileLogRoute
 	 */
 	protected function processLogs($logs)
 	{
-		$text = '';
+		$types = array();
 
 		foreach ($logs as $log)
 		{
@@ -36,53 +35,66 @@ class FileLogRoute extends \CFileLogRoute
 			$category = $log[2];
 			$time = $log[3];
 			$force = (isset($log[4]) && $log[4] == true) ? true : false;
+			$plugin = isset($log[5]) ? mb_strtolower($log[5]) : 'craft';
 
-			$text .= $this->formatLogMessageWithForce($message, $level, $category, $time, $force);
-		}
-
-		$text .= PHP_EOL.'******************************************************************************************************'.PHP_EOL;
-
-		$logFile = IOHelper::normalizePathSeparators($this->getLogPath().'/'.$this->getLogFile());
-
-		$lock = craft()->config->get('useLockWhenWritingToFile') === true;
-
-		$fp = @fopen($logFile, 'a');
-
-		if ($lock)
-		{
-			@flock($fp, LOCK_EX);
-		}
-
-		if (IOHelper::getFileSize($logFile) > $this->getMaxFileSize() * 1024)
-		{
-			$this->rotateFiles();
-
-			if ($lock)
+			if (isset($types[$plugin]))
 			{
-				@flock($fp, LOCK_UN);
-			}
-
-			@fclose($fp);
-
-			if ($lock)
-			{
-				IOHelper::writeToFile($logFile, $text, false, true, false);
+				$types[$plugin] .= $this->formatLogMessageWithForce($message, $level, $category, $time, $force, $plugin);
 			}
 			else
 			{
-				IOHelper::writeToFile($logFile, $text, false, true, true);
+				$types[$plugin] = $this->formatLogMessageWithForce($message, $level, $category, $time, $force, $plugin);
 			}
 		}
-		else
+
+		foreach ($types as $plugin => $text)
 		{
-			@fwrite($fp, $text);
+			$types[$plugin] .= PHP_EOL.'******************************************************************************************************'.PHP_EOL;
+
+			$this->setLogFile($plugin.'.log');
+
+			$logFile = IOHelper::normalizePathSeparators($this->getLogPath().'/'.$this->getLogFile());
+
+			$lock = craft()->config->get('useLockWhenWritingToFile') === true;
+
+			$fp = @fopen($logFile, 'a');
 
 			if ($lock)
 			{
-				@flock($fp, LOCK_UN);
+				@flock($fp, LOCK_EX);
 			}
 
-			@fclose($fp);
+			if (IOHelper::getFileSize($logFile) > $this->getMaxFileSize() * 1024)
+			{
+				$this->rotateFiles();
+
+				if ($lock)
+				{
+					@flock($fp, LOCK_UN);
+				}
+
+				@fclose($fp);
+
+				if ($lock)
+				{
+					IOHelper::writeToFile($logFile, $text, false, true, false);
+				}
+				else
+				{
+					IOHelper::writeToFile($logFile, $text, false, true, true);
+				}
+			}
+			else
+			{
+				@fwrite($fp, $text);
+
+				if ($lock)
+				{
+					@flock($fp, LOCK_UN);
+				}
+
+				@fclose($fp);
+			}
 		}
 	}
 

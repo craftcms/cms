@@ -8,14 +8,20 @@ class Logger extends \CLogger
 	 * Logs a message.
 	 * Messages logged by this method may be retrieved back via {@link getLogs}.
 	 *
-	 * @param string $message  The mssage to be logged
+	 * @param string $message  The message to be logged
 	 * @param string $level    The level of the message (e.g. 'Trace', 'Warning', 'Error'). It is case-insensitive.
 	 * @param bool   $force    Whether for force the message to be logged regardless of category or level
 	 * @param string $category The category of the message (e.g. 'system.web'). It is case-insensitive.
+	 * @param string $plugin   The plugin handle that made the log call.  If null, will be set to 'craft'. Use for determining which log file to write to.
 	 */
-	public function log($message, $level = 'info', $force = false, $category = 'application')
+	public function log($message, $level = 'info', $force = false, $category = 'application', $plugin = null)
 	{
-		$this->_logs[] = array($message, $level, $category, microtime(true), $force);
+		if (!$plugin)
+		{
+			$plugin = 'craft';
+		}
+
+		$this->_logs[] = array($message, $level, $category, microtime(true), $force, $plugin);
 		$this->_logCount++;
 
 		if ($this->autoFlush > 0 && $this->_logCount >= $this->autoFlush && !$this->_processing)

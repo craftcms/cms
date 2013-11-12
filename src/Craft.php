@@ -414,8 +414,9 @@ class Craft extends \Yii
 	 * @param string $level    level of the message (e.g. 'trace', 'warning', 'error'). It is case-insensitive.
 	 * @param bool   $force    Whether to force the message to be logged regardless of the level or category.
 	 * @param string $category category of the message (e.g. 'system.web'). It is case-insensitive.
+	 * @param string $plugin   The plugin handle that made the log call.  If null, will be set to 'craft'. Use for determining which log file to write to.
 	 */
-	public static function log($msg, $level = LogLevel::Info, $force = false, $category = 'application')
+	public static function log($msg, $level = LogLevel::Info, $force = false, $category = 'application', $plugin = null)
 	{
 		if ((YII_DEBUG && YII_TRACE_LEVEL > 0 && $level !== LogLevel::Profile) || $force)
 		{
@@ -441,7 +442,12 @@ class Craft extends \Yii
 			echo $msg."\n";
 		}
 
-		static::getLogger()->log($msg, $level, $force, $category);
+		if (!$plugin)
+		{
+			$plugin = 'craft';
+		}
+
+		static::getLogger()->log($msg, $level, $force, $category, $plugin);
 	}
 
 	/**
