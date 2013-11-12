@@ -135,7 +135,7 @@ abstract class BasePlugin extends BaseSavableComponentType
 	 * @param bool   $force
 	 * @param string $category
 	 */
-	public static function log($msg, $level = LogLevel::Info, $force = false, $category = 'plugin')
+	public static function log($msg, $level = LogLevel::Info, $force = false)
 	{
 		$plugin = get_called_class();
 
@@ -149,6 +149,6 @@ abstract class BasePlugin extends BaseSavableComponentType
 		// Remove the trailing 'Plugin'.
 		$plugin = str_replace('Plugin', '', $plugin);
 
-		Craft::log($msg, $level, $force, $category, strtolower($plugin));
+		Craft::log($msg, $level, $force, 'plugin', strtolower($plugin));
 	}
 }
