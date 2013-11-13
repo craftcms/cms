@@ -84,6 +84,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Stores a file.
 	 *
 	 * @param AssetFileModel $file
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function storeFile(AssetFileModel $file)
@@ -118,12 +119,15 @@ class AssetsService extends BaseApplicationComponent
 
 		if ($fileRecord->save())
 		{
-			// Save the ID on the model now that we have it
-			$file->id = $fileRecord->id;
+			if (!$file->id)
+			{
+				// Save the ID on the model now that we have it
+				$file->id = $fileRecord->id;
 
-			// Give it a default title based on the file name
-			$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
-			$this->saveFileContent($file, false);
+				// Give it a default title based on the file name
+				$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
+				$this->saveFileContent($file, false);
+			}
 
 			// Update the search index
 			craft()->search->indexElementAttributes($file);
@@ -532,7 +536,7 @@ class AssetsService extends BaseApplicationComponent
 			$whereConditions[] = DbHelper::parseParam('f.sourceId', $criteria->sourceId, $whereParams);
 		}
 
- 		if ($criteria->parentId)
+		if ($criteria->parentId)
 		{
 			// Set parentId to null if we're looking for folders with no parents.
 			if ($criteria->parentId == FolderCriteriaModel::AssetsNoParent)
