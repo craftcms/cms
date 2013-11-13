@@ -604,6 +604,8 @@ class MatrixService extends BaseApplicationComponent
 					$elementRecord->type = ElementType::MatrixBlock;
 				}
 
+				$elementRecord->enabled = $block->enabled;
+
 				if (empty($elementLocaleRecord))
 				{
 					$elementLocaleRecord = new ElementLocaleRecord();

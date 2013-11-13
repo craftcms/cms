@@ -50,6 +50,7 @@ Craft.LightSwitch = Garnish.Base.extend({
 	{
 		this.$innerContainer.stop().animate({marginLeft: 0}, 'fast');
 		this.$input.val('y');
+		this.$outerContainer.addClass('on');
 		this.on = true;
 		this.settings.onChange();
 
@@ -66,6 +67,7 @@ Craft.LightSwitch = Garnish.Base.extend({
 	{
 		this.$innerContainer.stop().animate({marginLeft: Craft.LightSwitch.offMargin}, 'fast');
 		this.$input.val('');
+		this.$outerContainer.removeClass('on');
 		this.on = false;
 		this.settings.onChange();
 
