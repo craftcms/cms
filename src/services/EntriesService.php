@@ -215,29 +215,37 @@ class EntriesService extends BaseApplicationComponent
 			{
 				$urlFormat = null;
 			}
+		}
 
+		if (!$entry->hasErrors())
+		{
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
 				// Save the element record first
 				$elementRecord->save(false);
 
-				// Save the element id on the entry model, in case {id} is in the url format
-				$entry->id = $elementRecord->id;
+				if ($isNewEntry)
+				{
+					// Save the element id on the entry model, in case {id} is in the url format
+					$entry->id = $elementRecord->id;
+				}
 
-				// Set a unique slug and URI
-				$this->_setUniqueSlugAndUri($entry, $urlFormat, $entryLocaleRecord, $elementLocaleRecord, $isNewEntry);
+				if ($section->type != SectionType::Single)
+				{
+					// Set a unique slug and URI
+					$this->_setUniqueSlugAndUri($entry, $urlFormat, $entryLocaleRecord, $elementLocaleRecord, $isNewEntry);
 
-				// Validate them
-				$entryLocaleRecord->validate();
-				$entry->addErrors($entryLocaleRecord->getErrors());
+					// Validate them
+					$entryLocaleRecord->validate();
+					$entry->addErrors($entryLocaleRecord->getErrors());
 
-				$elementLocaleRecord->validate();
-				$entry->addErrors($elementLocaleRecord->getErrors());
+					$elementLocaleRecord->validate();
+					$entry->addErrors($elementLocaleRecord->getErrors());
+				}
 
 				if (!$entry->hasErrors())
 				{
-
 					// Now that we have an element ID, save it on the other stuff
 					if ($isNewEntry)
 					{
@@ -347,7 +355,10 @@ class EntriesService extends BaseApplicationComponent
 						$transaction->rollback();
 					}
 
-					$entry->id = null;
+					if ($isNewEntry)
+					{
+						$entry->id = null;
+					}
 
 					return false;
 				}
