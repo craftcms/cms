@@ -121,6 +121,7 @@ Craft.MatrixInput = Garnish.Base.extend({
 				'<input type="hidden" name="'+this.inputNamePrefix+'['+id+'][type]" value="'+type+'"/>' +
 				'<input type="hidden" name="'+this.inputNamePrefix+'['+id+'][enabled]" value="1"/>' +
 				'<div class="actions">' +
+					'<div class="status off" title="'+Craft.t('Disabled')+'"></div>' +
 					'<a class="settings icon menubtn" title="'+Craft.t('Actions')+'" role="button"></a> ' +
 					'<div class="menu padded">' +
 						'<ul>' +

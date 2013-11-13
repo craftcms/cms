@@ -201,7 +201,7 @@ class MatrixFieldType extends BaseFieldType
 			'"'.craft()->templates->namespaceInputName($name).'"' .
 		');');
 
-		craft()->templates->includeTranslations('Actions', 'Add {type} above', 'Add a block');
+		craft()->templates->includeTranslations('Disabled', 'Actions', 'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above', 'Add a block');
 
 		if ($value instanceof ElementCriteriaModel)
 		{
