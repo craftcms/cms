@@ -48,7 +48,7 @@ Craft.MatrixInput = Garnish.Base.extend({
 		}
 
 		var $blocks = this.$blockContainer.children(),
-			collapsedBlocks = Craft.MatrixInput.getCollaspedBlockIds();
+			collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds();
 
 		this.blockSort = new Garnish.DragSort($blocks, {
 			caboose: '<div/>',
@@ -223,7 +223,7 @@ Craft.MatrixInput = Garnish.Base.extend({
 {
 	collapsedBlockStorageKey: 'Craft-'+Craft.siteUid+'.MatrixInput.collapsedBlocks',
 
-	getCollaspedBlockIds: function()
+	getCollapsedBlockIds: function()
 	{
 		if (typeof localStorage[Craft.MatrixInput.collapsedBlockStorageKey] != 'undefined')
 		{
@@ -398,7 +398,7 @@ var MatrixBlock = Garnish.Base.extend({
 		// Remember that?
 		if (this.id && typeof Storage !== 'undefined')
 		{
-			var collapsedBlocks = Craft.MatrixInput.getCollaspedBlockIds();
+			var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds();
 
 			if ($.inArray(''+this.id, collapsedBlocks) == -1)
 			{
@@ -440,7 +440,7 @@ var MatrixBlock = Garnish.Base.extend({
 		// Remember that?
 		if (this.id && typeof Storage !== 'undefined')
 		{
-			var collapsedBlocks = Craft.MatrixInput.getCollaspedBlockIds(),
+			var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds(),
 				collapsedBlocksIndex = $.inArray(''+this.id, collapsedBlocks);
 
 			if (collapsedBlocksIndex != -1)
