@@ -205,6 +205,7 @@ class MatrixFieldType extends BaseFieldType
 
 		if ($value instanceof ElementCriteriaModel)
 		{
+			$value->limit = null;
 			$value->status = null;
 		}
 
