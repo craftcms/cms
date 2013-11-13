@@ -48,6 +48,7 @@ class ContentService extends BaseApplicationComponent
 	 * @param BaseElementModel $element
 	 * @param FieldLayoutModel $fieldLayout
 	 * @param bool             $validate
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function saveElementContent(BaseElementModel $element, FieldLayoutModel $fieldLayout, $validate = true)
@@ -141,7 +142,7 @@ class ContentService extends BaseApplicationComponent
 		$content = $element->getContent();
 
 		// Set the required fields from the layout
-		$fieldHandles = array();
+		$attributesToValidate = array('id', 'elementId', 'locale');
 		$requiredFields = array();
 
 		$elementTypeClass = $element->getElementType();
@@ -150,6 +151,7 @@ class ContentService extends BaseApplicationComponent
 		if ($elementType->hasTitles())
 		{
 			$requiredFields[] = 'title';
+			$attributesToValidate[] = 'title';
 		}
 
 		foreach ($fieldLayout->getFields() as $fieldLayoutField)
@@ -158,7 +160,7 @@ class ContentService extends BaseApplicationComponent
 
 			if ($field)
 			{
-				$fieldHandles[] = $field->handle;
+				$attributesToValidate[] = $field->handle;
 
 				if ($fieldLayoutField->required)
 				{
@@ -172,7 +174,7 @@ class ContentService extends BaseApplicationComponent
 			$content->setRequiredFields($requiredFields);
 		}
 
-		return $content->validate($fieldHandles);
+		return $content->validate($attributesToValidate);
 	}
 
 	/**
