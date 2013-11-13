@@ -216,127 +216,139 @@ class EntriesService extends BaseApplicationComponent
 				$urlFormat = null;
 			}
 
-			// Set a unique slug and URI
-			$this->_setUniqueSlugAndUri($entry, $urlFormat, $entryLocaleRecord, $elementLocaleRecord);
-
-			// Validate them
-			$entryLocaleRecord->validate();
-			$entry->addErrors($entryLocaleRecord->getErrors());
-
-			$elementLocaleRecord->validate();
-			$entry->addErrors($elementLocaleRecord->getErrors());
-		}
-
-		if (!$entry->hasErrors())
-		{
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
 				// Save the element record first
 				$elementRecord->save(false);
 
-				// Now that we have an element ID, save it on the other stuff
-				if (!$entry->id)
-				{
-					$entry->id = $elementRecord->id;
-					$entryRecord->id = $entry->id;
-				}
+				// Save the element id on the entry model, in case {id} is in the url format
+				$entry->id = $elementRecord->id;
 
-				// Has the parent changed?
-				if ($hasNewParent)
-				{
-					if (!$entry->parentId)
-					{
-						$parentEntryRecord = StructuredEntryRecord::model()->roots()->findByAttributes(array(
-							'sectionId' => $section->id
-						));
-					}
-					else
-					{
-						$parentEntryRecord = StructuredEntryRecord::model()->findById($entry->parentId);
-					}
+				// Set a unique slug and URI
+				$this->_setUniqueSlugAndUri($entry, $urlFormat, $entryLocaleRecord, $elementLocaleRecord, $isNewEntry);
 
+				// Validate them
+				$entryLocaleRecord->validate();
+				$entry->addErrors($entryLocaleRecord->getErrors());
+
+				$elementLocaleRecord->validate();
+				$entry->addErrors($elementLocaleRecord->getErrors());
+
+				if (!$entry->hasErrors())
+				{
+
+					// Now that we have an element ID, save it on the other stuff
 					if ($isNewEntry)
 					{
-						$entryRecord->appendTo($parentEntryRecord);
-					}
-					else
-					{
-						$entryRecord->moveAsLast($parentEntryRecord);
+						$entryRecord->id = $entry->id;
 					}
 
-					$entryRecord->detachBehavior('nestedSet');
-
-					$entry->root  = $entryRecord->root;
-					$entry->lft   = $entryRecord->lft;
-					$entry->rgt   = $entryRecord->rgt;
-					$entry->depth = $entryRecord->depth;
-				}
-
-				// Save everything!
-				$entryRecord->save(false);
-
-				$entry->getContent()->elementId = $entry->id;
-				craft()->content->saveContent($entry->getContent());
-
-				if ($section->type != SectionType::Single)
-				{
-					// Save the locale records
-					$entryLocaleRecord->entryId = $entry->id;
-					$elementLocaleRecord->elementId = $entry->id;
-
-					$entryLocaleRecord->save(false);
-					$elementLocaleRecord->save(false);
-
-					if (!$isNewEntry && $section->hasUrls)
+					// Has the parent changed?
+					if ($hasNewParent)
 					{
-						if (craft()->hasPackage(CraftPackage::Localize))
+						if (!$entry->parentId)
 						{
-							// Update the other locale records too, just to be safe
-							// (who knows what the URL Format is using that could have just changed)
-							foreach ($sectionLocales as $sectionLocale)
-							{
-								if ($sectionLocale->locale == $entry->locale)
-								{
-									continue;
-								}
+							$parentEntryRecord = StructuredEntryRecord::model()->roots()->findByAttributes(array(
+								'sectionId' => $section->id
+							));
+						}
+						else
+						{
+							$parentEntryRecord = StructuredEntryRecord::model()->findById($entry->parentId);
+						}
 
-								$this->updateEntrySlugAndUri($entry->id, $sectionLocale->locale, $sectionLocale->$urlFormatAttribute);
+						if ($isNewEntry)
+						{
+							$entryRecord->appendTo($parentEntryRecord);
+						}
+						else
+						{
+							$entryRecord->moveAsLast($parentEntryRecord);
+						}
+
+						$entryRecord->detachBehavior('nestedSet');
+
+						$entry->root  = $entryRecord->root;
+						$entry->lft   = $entryRecord->lft;
+						$entry->rgt   = $entryRecord->rgt;
+						$entry->depth = $entryRecord->depth;
+					}
+
+					// Save everything!
+					$entryRecord->save(false);
+
+					$entry->getContent()->elementId = $entry->id;
+					craft()->content->saveContent($entry->getContent());
+
+					if ($section->type != SectionType::Single)
+					{
+						// Save the locale records
+						$entryLocaleRecord->entryId = $entry->id;
+						$elementLocaleRecord->elementId = $entry->id;
+
+						$entryLocaleRecord->save(false);
+						$elementLocaleRecord->save(false);
+
+						if (!$isNewEntry && $section->hasUrls)
+						{
+							if (craft()->hasPackage(CraftPackage::Localize))
+							{
+								// Update the other locale records too, just to be safe
+								// (who knows what the URL Format is using that could have just changed)
+								foreach ($sectionLocales as $sectionLocale)
+								{
+									if ($sectionLocale->locale == $entry->locale)
+									{
+										continue;
+									}
+
+									$this->updateEntrySlugAndUri($entry->id, $sectionLocale->locale, $sectionLocale->$urlFormatAttribute);
+								}
+							}
+
+							if ($section->type == SectionType::Structure)
+							{
+								// Update the entry's descendants, who may be using this entry's URI in their own URIs
+								$this->_updateDescendantSlugsAndUris($entry->id, false);
 							}
 						}
-
-						if ($section->type == SectionType::Structure)
-						{
-							// Update the entry's descendants, who may be using this entry's URI in their own URIs
-							$this->_updateDescendantSlugsAndUris($entry->id, false);
-						}
 					}
+
+					// Update the search index
+					craft()->search->indexElementAttributes($entry, $entry->locale);
+
+					// Save a new version
+					if (craft()->hasPackage(CraftPackage::PublishPro))
+					{
+						craft()->entryRevisions->saveVersion($entry);
+					}
+
+					// Perform some post-save operations
+					craft()->content->postSaveOperations($entry, $entry->getContent());
+
+					// Fire an 'onSaveEntry' event
+					$this->onSaveEntry(new Event($this, array(
+						'entry'      => $entry,
+						'isNewEntry' => $isNewEntry
+					)));
+
+					if ($transaction !== null)
+					{
+						$transaction->commit();
+					}
+
+					return true;
 				}
-
-				// Update the search index
-				craft()->search->indexElementAttributes($entry, $entry->locale);
-
-				// Save a new version
-				if (craft()->hasPackage(CraftPackage::PublishPro))
+				else
 				{
-					craft()->entryRevisions->saveVersion($entry);
+					if ($transaction !== null)
+					{
+						$transaction->rollback();
+					}
+
+					return false;
 				}
-
-				// Perform some post-save operations
-				craft()->content->postSaveOperations($entry, $entry->getContent());
-
-				// Fire an 'onSaveEntry' event
-				$this->onSaveEntry(new Event($this, array(
-					'entry'      => $entry,
-					'isNewEntry' => $isNewEntry
-				)));
-
-				if ($transaction !== null)
-				{
-					$transaction->commit();
-				}
-
-				return true;
 			}
 			catch (\Exception $e)
 			{
@@ -523,7 +535,7 @@ class EntriesService extends BaseApplicationComponent
 		$oldSlug = $entryLocaleRecord->slug;
 		$oldUri = $elementLocaleRecord->uri;
 
-		$this->_setUniqueSlugAndUri($entry, $urlFormat, $entryLocaleRecord, $elementLocaleRecord);
+		$this->_setUniqueSlugAndUri($entry, $urlFormat, $entryLocaleRecord, $elementLocaleRecord, false);
 
 		if ($entryLocaleRecord->slug != $oldSlug)
 		{
@@ -639,8 +651,9 @@ class EntriesService extends BaseApplicationComponent
 	 * @param string $urlFormat;
 	 * @param EntryLocaleRecord $entryLocaleRecord
 	 * @param ElementLocaleRecord $elementLocaleRecord
+	 * @param bool $isNewEntry
 	 */
-	private function _setUniqueSlugAndUri(EntryModel $entry, $urlFormat, EntryLocaleRecord $entryLocaleRecord, ElementLocaleRecord $elementLocaleRecord)
+	private function _setUniqueSlugAndUri(EntryModel $entry, $urlFormat, EntryLocaleRecord $entryLocaleRecord, ElementLocaleRecord $elementLocaleRecord, $isNewEntry)
 	{
 		if (!$entry->slug)
 		{
@@ -665,7 +678,7 @@ class EntriesService extends BaseApplicationComponent
 			':locale'    => $entryLocaleRecord->locale
 		);
 
-		if ($entry->id)
+		if (!$isNewEntry)
 		{
 			$uniqueSlugConditions[] = 'entryId != :entryId';
 			$uniqueSlugParams[':entryId'] = $entry->id;
@@ -682,7 +695,7 @@ class EntriesService extends BaseApplicationComponent
 				':locale' => $entryLocaleRecord->locale
 			);
 
-			if ($entry->id)
+			if (!$isNewEntry)
 			{
 				$uniqueUriConditions[] = 'elementId != :elementId';
 				$uniqueUriParams[':elementId'] = $entry->id;
