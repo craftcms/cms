@@ -206,6 +206,8 @@ class EntriesController extends BaseController
 
 		$this->_prepEditEntryVariables($variables);
 
+		craft()->content->prepElementContentForSave($variables['entry'], $variables['entryType']->getFieldLayout(), false);
+
 		$tabsHtml = '<ul>';
 
 		foreach ($variables['tabs'] as $tabId => $tab)
