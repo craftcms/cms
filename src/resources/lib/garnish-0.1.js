@@ -2690,10 +2690,6 @@ Garnish.Menu = Garnish.Base.extend({
 
 	setPositionRelativeToButton: function()
 	{
-		var css = {
-			minWidth: (btnWidth - 32)
-		};
-
 		var windowHeight = Garnish.$win.height(),
 			windowScrollTop = Garnish.$win.scrollTop(),
 
@@ -2707,6 +2703,10 @@ Garnish.Menu = Garnish.Base.extend({
 
 			bottomClearance = windowHeight + windowScrollTop - btnOffsetBottom,
 			topClearance = btnOffsetTop - windowScrollTop;
+
+		var css = {
+			minWidth: btnWidth - (this.$container.outerWidth() - this.$container.width())
+		};
 
 		// Is there room for the menu below the button?
 		if (bottomClearance >= menuHeight || bottomClearance >= topClearance)
@@ -2722,7 +2722,7 @@ Garnish.Menu = Garnish.Base.extend({
 		{
 			case 'right':
 			{
-				css.right = 1 + Garnish.$win.width() - (btnOffset.left + btnWidth);
+				css.right = Garnish.$win.width() - (btnOffset.left + btnWidth);
 				break;
 			}
 			case 'center':
@@ -2732,7 +2732,7 @@ Garnish.Menu = Garnish.Base.extend({
 			}
 			default:
 			{
-				css.left = 1 + btnOffset.left;
+				css.left = btnOffset.left;
 			}
 		}
 
