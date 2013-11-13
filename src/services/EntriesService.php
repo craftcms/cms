@@ -737,22 +737,26 @@ class EntriesService extends BaseApplicationComponent
 						// See how much over we are.
 						$overage = strlen($testUri) - 255;
 
-						// If overage >= 255, we're screwed.  Let's blow things up.
-						if (strlen($overage) >= 255)
+						// Do we have anything left to chop off?
+						if (strlen($overage) > strlen($entry->slug) - strlen('-'.$i))
 						{
+							// Chop off the overage amount from the slug
+							$testSlug = $entry->slug;
+							$testSlug = substr($testSlug, 0, strlen($testSlug) - $overage);
+
+							// Update the slug
+							$entry->slug = $testSlug;
+
+							// Let's try this again.
+							$i -= 1;
+							continue;
+
+						}
+						else
+						{
+							// We're screwed, blow things up.
 							throw new Exception(Craft::t('The maximum length of a URI is 255 characters.'));
 						}
-
-						// Chop off the overage amount from the slug
-						$testSlug = $entry->slug;
-						$testSlug = substr($testSlug, 0, strlen($testSlug) - $overage);
-
-						// Update the slug
-						$entry->slug = $testSlug;
-
-						// Let's try this again.
-						$i -= 1;
-						continue;
 					}
 
 					$uniqueUriParams[':uri'] = $testUri;
