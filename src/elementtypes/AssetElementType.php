@@ -77,6 +77,7 @@ class AssetElementType extends BaseElementType
 	{
 		return array(
 			'title'        => Craft::t('Title'),
+			'filename'     => Craft::t('Filename'),
 			'size'         => Craft::t('Size'),
 			'dateModified' => Craft::t('Date Modified'),
 		);
