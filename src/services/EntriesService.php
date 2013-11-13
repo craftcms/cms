@@ -347,6 +347,8 @@ class EntriesService extends BaseApplicationComponent
 						$transaction->rollback();
 					}
 
+					$entry->id = null;
+
 					return false;
 				}
 			}
@@ -724,11 +726,35 @@ class EntriesService extends BaseApplicationComponent
 				if ($urlFormat)
 				{
 					// Great, the slug is unique. Is the URI?
-
 					$originalSlug = $entry->slug;
 					$entry->slug = $testSlug;
 
 					$testUri = craft()->templates->renderObjectTemplate($urlFormat, $entry);
+
+					// Make sure we're not over our max length.
+					if (strlen($testUri) > 255)
+					{
+						// See how much over we are.
+						$overage = strlen($testUri) - 255;
+
+						// If overage >= 255, we're screwed.  Let's blow things up.
+						if (strlen($overage) >= 255)
+						{
+							throw new Exception(Craft::t('The maximum length of a URI is 255 characters.'));
+						}
+
+						// Chop off the overage amount from the slug
+						$testSlug = $entry->slug;
+						$testSlug = substr($testSlug, 0, strlen($testSlug) - $overage);
+
+						// Update the slug
+						$entry->slug = $testSlug;
+
+						// Let's try this again.
+						$i -= 1;
+						continue;
+					}
+
 					$uniqueUriParams[':uri'] = $testUri;
 
 					$totalElements = craft()->db->createCommand()

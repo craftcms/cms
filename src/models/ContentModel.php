@@ -21,7 +21,7 @@ class ContentModel extends BaseModel
 			'id'        => AttributeType::Number,
 			'elementId' => AttributeType::Number,
 			'locale'    => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
-			'title'     => array(AttributeType::String, 'required' => $requiredTitle),
+			'title'     => array(AttributeType::String, 'required' => $requiredTitle, 'maxLength' => 255),
 		);
 
 		if (craft()->isInstalled() && !craft()->isConsole())
