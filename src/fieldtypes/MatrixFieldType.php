@@ -201,7 +201,12 @@ class MatrixFieldType extends BaseFieldType
 			'"'.craft()->templates->namespaceInputName($name).'"' .
 		');');
 
-		craft()->templates->includeTranslations('Actions', 'Add {type} above', 'Add a block');
+		craft()->templates->includeTranslations('Disabled', 'Actions', 'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above', 'Add a block');
+
+		if ($value instanceof ElementCriteriaModel)
+		{
+			$value->status = null;
+		}
 
 		return craft()->templates->render('_components/fieldtypes/Matrix/input', array(
 			'id' => $id,
@@ -251,6 +256,7 @@ class MatrixFieldType extends BaseFieldType
 				$criteria->ownerId = $ownerId;
 				$criteria->id = $ids;
 				$criteria->limit = null;
+				$criteria->status = null;
 				$criteria->locale = $this->element->locale;
 				$oldBlocks = $criteria->find();
 
@@ -291,6 +297,8 @@ class MatrixFieldType extends BaseFieldType
 			{
 				$block = $oldBlocksById[$blockId];
 			}
+
+			$block->enabled = (isset($blockData['enabled']) ? (bool) $blockData['enabled'] : true);
 
 			if (isset($blockData['fields']))
 			{

@@ -520,7 +520,7 @@ $.extend(Craft, {
 	ltrim: function(str, chars)
 	{
 		if (!str) return str;
-		if (chars === undefined) chars = ' ';
+		if (chars === undefined) chars = ' \t\n\r\0\x0B';
 		var re = new RegExp('^['+Craft.escapeChars(chars)+']+');
 		return str.replace(re, '');
 	},
@@ -535,7 +535,7 @@ $.extend(Craft, {
 	rtrim: function(str, chars)
 	{
 		if (!str) return str;
-		if (chars === undefined) chars = ' ';
+		if (chars === undefined) chars = ' \t\n\r\0\x0B';
 		var re = new RegExp('['+Craft.escapeChars(chars)+']+$');
 		return str.replace(re, '');
 	},

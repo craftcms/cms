@@ -5,15 +5,13 @@
 
 <div class="btn menubtn">{{ revisionLabel }}</div>
 
-<div class="menu menulist">
+<div class="menu padded">
 	<ul>
 		<li><a{% if entry.classHandle == 'Entry' %} class="sel"{% endif %} href="{{ entry.cpEditUrl }}">{{ "Current"|t }}</a></li>
 	</ul>
 
-	<h2>{{ "Drafts"|t }}</h2>
-	{% if not drafts %}
-		<span class="light">{{ "No drafts exist right now."|t }}</span>
-	{% else %}
+	{% if drafts %}
+		<hr>
 		<ul>
 			{% for draft in drafts %}
 				<li><a{% if entry.classHandle == 'EntryDraft' and draft.draftId == draftId %} class="sel"{% endif %} href="{{ entry.cpEditUrl }}/drafts/{{ draft.draftId }}">
@@ -26,11 +24,8 @@
 		</ul>
 	{% endif %}
 
-	<h2>{{ "Versions"|t }}</h2>
-
-	{% if not versions %}
-		<span class="light">{{ "No versions exist yet."|t }}</span>
-	{% else %}
+	{% if versions %}
+		<hr>
 		<ul>
 			{% for version in versions %}
 				<li><a{% if entry.classHandle == 'EntryVersion' and version.versionId == versionId %} class="sel"{% endif %} href="{{ entry.cpEditUrl }}/versions/{{ version.versionId }}">
