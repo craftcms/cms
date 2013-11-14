@@ -225,7 +225,7 @@ Craft.MatrixInput = Garnish.Base.extend({
 
 	getCollapsedBlockIds: function()
 	{
-		if (typeof localStorage[Craft.MatrixInput.collapsedBlockStorageKey] != 'undefined')
+		if (typeof localStorage[Craft.MatrixInput.collapsedBlockStorageKey] == 'string')
 		{
 			return Craft.filterArray(localStorage[Craft.MatrixInput.collapsedBlockStorageKey].split(','));
 		}
