@@ -6,10 +6,10 @@ namespace Craft;
  */
 class ElementsService extends BaseApplicationComponent
 {
-	private $_joinSourceMatrixBlocks;
-	private $_joinTargetMatrixBlocks;
-	private $_joinSources;
-	private $_joinTargets;
+	private $_joinSourceMatrixBlocksCount;
+	private $_joinTargetMatrixBlocksCount;
+	private $_joinSourcesCount;
+	private $_joinTargetsCount;
 
 	// Finding Elements
 	// ================
@@ -478,10 +478,10 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($criteria->relatedTo)
 		{
-			$this->_joinSourceMatrixBlocks = false;
-			$this->_joinTargetMatrixBlocks = false;
-			$this->_joinSources = false;
-			$this->_joinTargets = false;
+			$this->_joinSourceMatrixBlocksCount = 0;
+			$this->_joinTargetMatrixBlocksCount = 0;
+			$this->_joinSourcesCount = 0;
+			$this->_joinTargetsCount = 0;
 
 			$relConditions = $this->_parseRelationParam($criteria->relatedTo, $query);
 
@@ -494,35 +494,9 @@ class ElementsService extends BaseApplicationComponent
 
 			// If there's only one relation criteria and it's specifically for grabbing target elements,
 			// allow the query to order by the relation sort order
-			if ($this->_joinSources && !$this->_joinTargets && !$this->_joinSourceMatrixBlocks && !$this->_joinTargetMatrixBlocks)
+			if ($this->_joinSourcesCount == 1 && !$this->_joinTargetsCount && !$this->_joinSourceMatrixBlocksCount && !$this->_joinTargetMatrixBlocksCount)
 			{
-				$query->addSelect('sources.sortOrder');
-			}
-
-			if ($this->_joinSourceMatrixBlocks)
-			{
-				$query->leftJoin('matrixblocks source_matrixblocks', 'source_matrixblocks.ownerId = elements.id');
-				$query->leftJoin('relations matrixblock_targets', 'matrixblock_targets.sourceId = source_matrixblocks.id');
-			}
-
-			if ($this->_joinTargetMatrixBlocks)
-			{
-				$this->_joinSources = true;
-			}
-
-			if ($this->_joinSources)
-			{
-				$query->leftJoin('relations sources', 'sources.targetId = elements.id');
-
-				if ($this->_joinTargetMatrixBlocks)
-				{
-					$query->leftJoin('matrixblocks target_matrixblocks', 'target_matrixblocks.id = sources.sourceId');
-				}
-			}
-
-			if ($this->_joinTargets)
-			{
-				$query->join('relations targets', 'targets.sourceId = elements.id');
+				$query->addSelect('sources1.sortOrder');
 			}
 		}
 
@@ -983,30 +957,42 @@ class ElementsService extends BaseApplicationComponent
 
 					if (isset($relCriteria['sourceElement']))
 					{
-						$this->_joinTargetMatrixBlocks = true;
+						$this->_joinSourcesCount++;
+						$this->_joinTargetMatrixBlocksCount++;
+
+						$sourcesAlias            = 'sources'.$this->_joinSourcesCount;
+						$targetMatrixBlocksAlias = 'target_matrixblocks'.$this->_joinTargetMatrixBlocksCount;
+
+						$query->leftJoin('relations '.$sourcesAlias, $sourcesAlias.'.targetId = elements.id');
+						$query->leftJoin('matrixblocks '.$targetMatrixBlocksAlias, $targetMatrixBlocksAlias.'.id = '.$sourcesAlias.'.sourceId');
 
 						$condition = array('and',
-							DbHelper::parseParam('target_matrixblocks.ownerId', $relElementIds, $query->params),
-							'target_matrixblocks.fieldId = '.$fieldModel->id
+							DbHelper::parseParam($targetMatrixBlocksAlias.'.ownerId', $relElementIds, $query->params),
+							$targetMatrixBlocksAlias.'.fieldId = '.$fieldModel->id
 						);
 
 						if ($blockTypeFieldIds)
 						{
-							$condition[] = DbHelper::parseParam('sources.fieldId', $blockTypeFieldIds, $query->params);
+							$condition[] = DbHelper::parseParam($sourcesAlias.'.fieldId', $blockTypeFieldIds, $query->params);
 						}
 					}
 					else
 					{
-						$this->_joinSourceMatrixBlocks = true;
+						$this->_joinSourceMatrixBlocksCount++;
+						$sourceMatrixBlocksAlias = 'source_matrixblocks'.$this->_joinSourceMatrixBlocksCount;
+						$matrixBlockTargetsAlias = 'matrixblock_targets'.$this->_joinSourceMatrixBlocksCount;
+
+						$query->leftJoin('matrixblocks '.$sourceMatrixBlocksAlias, $sourceMatrixBlocksAlias.'.ownerId = elements.id');
+						$query->leftJoin('relations '.$matrixBlockTargetsAlias, $matrixBlockTargetsAlias.'.sourceId = '.$sourceMatrixBlocksAlias.'.id');
 
 						$condition = array('and',
-							DbHelper::parseParam('matrixblock_targets.targetId', $relElementIds, $query->params),
-							'source_matrixblocks.fieldId = '.$fieldModel->id
+							DbHelper::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds, $query->params),
+							$sourceMatrixBlocksAlias.'.fieldId = '.$fieldModel->id
 						);
 
 						if ($blockTypeFieldIds)
 						{
-							$condition[] = DbHelper::parseParam('matrixblock_targets.fieldId', $blockTypeFieldIds, $query->params);
+							$condition[] = DbHelper::parseParam($matrixBlockTargetsAlias.'.fieldId', $blockTypeFieldIds, $query->params);
 						}
 					}
 
@@ -1025,22 +1011,25 @@ class ElementsService extends BaseApplicationComponent
 		{
 			if (isset($relCriteria['sourceElement']))
 			{
-				$this->_joinSources = true;
-				$relTable = 'sources';
-				$relColumn = 'sourceId';
+				$this->_joinSourcesCount++;
+				$relTableAlias = 'sources'.$this->_joinSourcesCount;
+				$relConditionColumn = 'sourceId';
+				$relElementColumn = 'targetId';
 			}
 			else if (isset($relCriteria['targetElement']))
 			{
-				$this->_joinTargets = true;
-				$relTable = 'targets';
-				$relColumn = 'targetId';
+				$this->_joinTargetsCount++;
+				$relTableAlias = 'targets'.$this->_joinTargetsCount;
+				$relConditionColumn = 'targetId';
+				$relElementColumn = 'sourceId';
 			}
 
-			$condition = DbHelper::parseParam($relTable.'.'.$relColumn, $relElementIds, $query->params);
+			$query->leftJoin('relations '.$relTableAlias, $relTableAlias.'.'.$relElementColumn.' = elements.id');
+			$condition = DbHelper::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds, $query->params);
 
 			if ($normalFieldIds)
 			{
-				$condition = array('and', $condition, DbHelper::parseParam($relTable.'.fieldId', $normalFieldIds, $query->params));
+				$condition = array('and', $condition, DbHelper::parseParam($relTableAlias.'.fieldId', $normalFieldIds, $query->params));
 			}
 
 			$conditions[] = $condition;
