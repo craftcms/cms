@@ -13,7 +13,7 @@ class m131108_000000_drop_sized_icons extends BaseMigration
 	 */
 	public function safeUp()
 	{
-		IOHelper::clearFolder(craft()->path->getAssetsIconsPath());
+		IOHelper::clearFolder(craft()->path->getAssetsIconsPath(), true);
 
 		return true;
 	}
