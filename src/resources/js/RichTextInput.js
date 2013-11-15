@@ -175,7 +175,20 @@ Craft.RichTextInput = Garnish.Base.extend({
 		}
 
 		// Initialize Redactor
-		$('#'+this.id).redactor(config);
+		var $textarea = $('#'+this.id);
+		$textarea.redactor(config);
+		var redactor = $textarea.data('redactor');
+
+		if (typeof redactor.fullscreen != 'undefined' && typeof redactor.toggleFullscreen == 'function')
+		{
+			Craft.cp.on('beforeSaveShortcut', function()
+			{
+				if (redactor.fullscreen)
+				{
+					redactor.toggleFullscreen();
+				}
+			});
+		}
 	}
 });
 
