@@ -960,6 +960,7 @@ ul.errors li { color: $errorcolor; }
 .matrixblock > .actions a:hover { width: 15px; height: 20px; text-align: center; color: $linkcolor; }
 .matrixblock > .actions a.settings:after { margin-left: 3px; }
 .matrixblock > .fields > .field { margin: 15px 0; }
+.matrixblock > .fields > .field > .input { @include selectable; }
 .matrixblock > .preview { position: absolute; bottom: 6px; left: 0; padding: 0 55px 0 10px; height: 18px; width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: $mediumtextcolor; cursor: default;
 	-webkit-box-sizing: border-box;
 	   -moz-box-sizing: border-box;

@@ -27,6 +27,8 @@ class TemplatesService extends BaseApplicationComponent
 
 	private $_hooks;
 
+	private $_textareaMarkers;
+
 	/**
 	 * Init
 	 */
@@ -610,6 +612,10 @@ class TemplatesService extends BaseApplicationComponent
 
 		if ($namespace)
 		{
+			// Protect the textarea content
+			$this->_textareaMarkers = array();
+			$html = preg_replace_callback('/(<textarea\b[^>]*>)(.+?)(<\/textarea>)/is', array($this, '_createTextareaMarker'), $html);
+
 			// name= attributes
 			$html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
 
@@ -619,6 +625,9 @@ class TemplatesService extends BaseApplicationComponent
 				$idNamespace = $this->formatInputId($namespace);
 				$html = preg_replace('/(?<![\w\-])((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/i', '$1'.$idNamespace.'-$4$3', $html);
 			}
+
+			// Bring back the textarea content
+			$html = str_replace(array_keys($this->_textareaMarkers), array_values($this->_textareaMarkers), $html);
 		}
 
 		return $html;
@@ -836,6 +845,20 @@ class TemplatesService extends BaseApplicationComponent
 				$twig->addExtension($extension);
 			}
 		}
+	}
+
+	/**
+	 * Replaces textarea contents with a marker.
+	 *
+	 * @access private
+	 * @param array $matches
+	 * @return string
+	 */
+	private function _createTextareaMarker($matches)
+	{
+		$marker = '{marker:'.StringHelper::randomString().'}';
+		$this->_textareaMarkers[$marker] = $matches[2];
+		return $matches[1].$marker.$matches[3];
 	}
 
 	/**
