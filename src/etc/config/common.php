@@ -61,7 +61,6 @@ function processConnectionString($dbConfig)
 	{
 		return strtolower('mysql:host='.normalizeDbHostname($dbConfig['server']).';dbname=').$dbConfig['database'].strtolower(';port='.$dbConfig['port'].';');
 	}
-
 }
 
 // Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
