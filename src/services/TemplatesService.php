@@ -614,7 +614,7 @@ class TemplatesService extends BaseApplicationComponent
 		{
 			// Protect the textarea content
 			$this->_textareaMarkers = array();
-			$html = preg_replace_callback('/(<textarea\b[^>]*>)(.+?)(<\/textarea>)/is', array($this, '_createTextareaMarker'), $html);
+			$html = preg_replace_callback('/(<textarea\b[^>]*>)(.*?)(<\/textarea>)/is', array($this, '_createTextareaMarker'), $html);
 
 			// name= attributes
 			$html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
