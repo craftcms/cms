@@ -714,7 +714,7 @@ class TemplatesService extends BaseApplicationComponent
 		{
 			foreach ($this->_hooks[$hook] as $method)
 			{
-				$return .= call_user_func($method, $context);
+				$return .= call_user_func_array($method, array(&$context));
 			}
 		}
 
