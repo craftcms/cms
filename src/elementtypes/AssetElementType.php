@@ -94,6 +94,11 @@ class AssetElementType extends BaseElementType
 	{
 		switch ($attribute)
 		{
+			case 'filename':
+			{
+				return '<span style="word-break: break-word;">'.$element->filename.'</span>';
+			}
+
 			case 'size':
 			{
 				if ($element->size)
