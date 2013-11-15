@@ -250,9 +250,10 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 *
 	 * @param int $entryId
 	 * @param string $localeId
+	 * @param int|null $limit
 	 * @return array
 	 */
-	public function getVersionsByEntryId($entryId, $localeId)
+	public function getVersionsByEntryId($entryId, $localeId, $limit = -1)
 	{
 		if (!$localeId)
 		{
@@ -262,6 +263,9 @@ class EntryRevisionsService extends BaseApplicationComponent
 		$versionRecords = EntryVersionRecord::model()->findAllByAttributes(array(
 			'entryId' => $entryId,
 			'locale'  => $localeId,
+		), array(
+			'limit' => $limit,
+			'order' => 'dateCreated desc'
 		));
 
 		return EntryVersionModel::populateModels($versionRecords, 'versionId');
