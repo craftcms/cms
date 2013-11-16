@@ -71,6 +71,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'translate'          => $translateFilter,
 			't'                  => $translateFilter,
 			'ucfirst'            => new \Twig_Filter_Function('ucfirst'),
+			'ucwords'            => new \Twig_Filter_Function('ucwords'),
 			'without'            => new \Twig_Filter_Method($this, 'withoutFilter'),
 		);
 	}
