@@ -19,5 +19,6 @@
 	{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
 	{%- if autocomplete is not defined or not autocomplete %} autocomplete="off"{% endif %}
 	{%- if disabled is defined and disabled %} disabled {% endif %}
+	{%- if readonly is defined and readonly %} readonly {% endif %}
 	{%- if placeholder is defined %} placeholder="{{ placeholder }}"{% endif %}>
 {%- if type == 'password' %}</div>{% endif %}
