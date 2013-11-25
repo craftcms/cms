@@ -53,9 +53,13 @@ class AssetElementType extends BaseElementType
 			{
 				$tree = craft()->assets->getFolderTreeByFolderId($parts[1]);
 			}
+			else
+			{
+				return false;
+			}
 		}
 		else{
-			if ($context == 'index')
+			if (in_array($context, array('modal', 'index')))
 			{
 				$sourceIds = craft()->assetSources->getViewableSourceIds();
 			}
