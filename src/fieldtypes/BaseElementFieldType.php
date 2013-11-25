@@ -115,7 +115,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		// or we're loading a draft/version.
 		if (is_array($value))
 		{
-			$criteria->id = array_filter($value);
+			$criteria->id = array_values(array_filter($value));
 			$criteria->fixedOrder = true;
 		}
 		else if ($value === '')
@@ -124,8 +124,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		}
 		else if (isset($this->element) && $this->element->id)
 		{
-			$criteria->childOf = $this->element->id;
-			$criteria->childField = $this->model->id;
+			$criteria->relatedTo = array('sourceElement' => $this->element->id, 'field' => $this->model->id);
 			$criteria->order = 'sortOrder';
 		}
 		else
@@ -154,8 +153,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $criteria)
 	{
-		$id = rtrim(preg_replace('/[\[\]]+/', '-', $name), '-').'-'.StringHelper::UUID();
-
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
 			$criteria = craft()->elements->getCriteria($this->elementType);
@@ -182,7 +179,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		return craft()->templates->render('_includes/forms/elementSelect', array(
 			'jsClass'        => $this->inputJsClass,
 			'elementType'    => new ElementTypeVariable($this->getElementType()),
-			'id'             => $id,
+			'id'             => craft()->templates->formatInputId($name),
 			'storageKey'     => 'field.'.$this->model->id,
 			'name'           => $name,
 			'elements'       => $criteria,
@@ -205,7 +202,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		$criteria = $this->prepValue(null);
 		$titles = array();
 
-		foreach ($criteria as $element)
+		foreach ($criteria->find() as $element)
 		{
 			$titles[] = (string) $element;
 		}
@@ -218,7 +215,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function onAfterElementSave()
 	{
-		$rawValue = $this->element->getRawContent($this->model->handle);
+		$rawValue = $this->element->getContent()->getAttribute($this->model->handle);
 
 		if ($rawValue !== null)
 		{

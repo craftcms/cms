@@ -24,7 +24,7 @@ class GetHelpModel extends BaseModel
 	{
 		// maxSize is 3MB
 		return array (
-			array('attachment', 'file', 'types' => 'zip, gif, png, jpg, jpeg, tiff, txt, log', 'maxSize' => 3145728, 'allowEmpty' => true),
+			array('attachment', 'file', 'maxSize' => 3145728, 'allowEmpty' => true),
 		);
 	}
 }

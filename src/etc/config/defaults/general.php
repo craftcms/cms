@@ -23,11 +23,15 @@ return array(
 
 /**
  * The URI Craft should redirect to when user account activation fails.  Note that this only affects front-end site requests.
+ *
+ * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale basis.
  */
 'activateAccountFailurePath' => '',
 
 /**
  * The URI Craft should redirect to when account activation is successful.  Note that this only affects front-end site requests.
+ *
+ * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale basis.
  */
 'activateAccountSuccessPath' => '',
 
@@ -133,12 +137,16 @@ return array(
 'invalidLoginWindowDuration' => 'PT1H',
 
 /**
- *  The URI Craft should use for user login.  Note that this only affects front-end site requests.
+ * The URI Craft should use for user login.  Note that this only affects front-end site requests.
+ *
+ * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale basis.
  */
 'loginPath' => 'login',
 
 /**
  * The URI Craft should use for user logout.  Note that this only affects front-end site requests.
+ *
+ * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale basis.
  */
 'logoutPath' => 'logout',
 
@@ -234,11 +242,15 @@ return array(
 
 /**
  * The URI Craft should use for user password resetting. Note that this only affects front-end site requests.
+ *
+ * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale basis.
  */
 'setPasswordPath' => 'setpassword',
 
 /**
  * The URI Craft should use upon successfully setting a users’s password. Note that this only affects front-end site requests..
+ *
+ * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale basis.
  */
 'setPasswordSuccessPath' => '',
 

@@ -105,12 +105,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isCriticalUpdateAvailable()
 	{
-		if ((isset($this->_updateModel) && $this->_updateModel->app->criticalUpdateAvailable))
-		{
-			return true;
-		}
-
-		return false;
+		return (!empty($this->_updateModel->app->criticalUpdateAvailable));
 	}
 
 	/**
@@ -118,12 +113,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isManualUpdateRequired()
 	{
-		if ((isset($this->_updateModel) && $this->_updateModel->app->manualUpdateRequired))
-		{
-			return true;
-		}
-
-		return false;
+		return (!empty($this->_updateModel->app->manualUpdateRequired));
 	}
 
 	/**
@@ -263,22 +253,21 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		Craft::log('Preparing to update '.$handle.'.', LogLevel::Info, true);
 
-		// Fire an 'onBeginUpdate' event and pass in the type
-		$this->onBeginUpdate(new Event($this, array(
-			'type' => $manual ? 'manual' : 'auto'
-		)));
-
 		try
 		{
+			// Fire an 'onBeginUpdate' event and pass in the type
+			$this->onBeginUpdate(new Event($this, array(
+				'type' => $manual ? 'manual' : 'auto'
+			)));
+
 			$updater = new Updater();
 
-			// Make sure we still meet the requirements.
+			// Make sure we still meet the existing requirements.
 			$updater->checkRequirements();
 
 			// No need to get the latest update info if this is a manual update.
 			if (!$manual)
 			{
-				$updater->getLatestUpdateInfo();
 				$updateModel = $this->getUpdates();
 				Craft::log('Updating from '.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild.' to '.$updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild.'.', LogLevel::Info, true);
 				$result = $updater->getUpdateFileInfo();
@@ -364,17 +353,16 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $uid
 	 * @return array
 	 */
-	public function backupDatabase($uid)
+	public function backupDatabase()
 	{
 		Craft::log('Starting to backup database.', LogLevel::Info, true);
 
 		try
 		{
 			$updater = new Updater();
-			$result = $updater->backupDatabase($uid);
+			$result = $updater->backupDatabase();
 
 			if (!$result)
 			{
@@ -394,14 +382,11 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param      $uid
 	 * @param      $handle
-	 * @param bool $dbBackupPath
-	 *
 	 * @throws Exception
 	 * @return array
 	 */
-	public function updateDatabase($uid, $handle, $dbBackupPath = false)
+	public function updateDatabase($handle)
 	{
 		Craft::log('Starting to update the database.', LogLevel::Info, true);
 
@@ -412,7 +397,7 @@ class UpdatesService extends BaseApplicationComponent
 			if ($handle == 'craft')
 			{
 				Craft::log('Craft wants to update the database.', LogLevel::Info, true);
-				$updater->updateDatabase($uid, $dbBackupPath);
+				$updater->updateDatabase();
 				Craft::log('Craft is done updating the database.', LogLevel::Info, true);
 			}
 			else
@@ -421,7 +406,7 @@ class UpdatesService extends BaseApplicationComponent
 				if ($plugin)
 				{
 					Craft::log('The plugin, '.$plugin->getName().' wants to update the database.', LogLevel::Info, true);
-					$updater->updateDatabase($uid, $dbBackupPath, $plugin);
+					$updater->updateDatabase($plugin);
 					Craft::log('The plugin, '.$plugin->getName().' is done updating the database.', LogLevel::Info, true);
 				}
 				else
@@ -459,18 +444,21 @@ class UpdatesService extends BaseApplicationComponent
 			$this->onEndUpdate(new Event($this, array(
 				'success' => true
 			)));
-
-			return array('success' => true);
 		}
 		catch (\Exception $e)
 		{
-			return array('success' => false, 'message' => $e->getMessage());
+			Craft::log('There was an error during cleanup, but we don\'t really care: '.$e->getMessage());
+
+			// Fire an 'onEndUpdate' event and pass in that it was a successful update.
+			$this->onEndUpdate(new Event($this, array(
+				'success' => true
+			)));
 		}
 	}
 
 	/**
-	 * @param      $uid
-	 * @param bool $dbBackupPath
+	 * @param        $uid
+	 * @param  bool  $dbBackupPath
 	 * @return array
 	 */
 	public function rollbackUpdate($uid, $dbBackupPath = false)
@@ -506,6 +494,10 @@ class UpdatesService extends BaseApplicationComponent
 			}
 
 			Craft::log('Finished rolling back changes.', LogLevel::Info, true);
+
+			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
+			craft()->disableMaintenanceMode();
+
 			return array('success' => true);
 		}
 		catch (\Exception $e)
@@ -573,7 +565,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isCraftDbMigrationNeeded()
 	{
-		return (CRAFT_SCHEMA_VERSION > craft()->getSchemaVersion());
+		return version_compare(CRAFT_SCHEMA_VERSION, craft()->getSchemaVersion(), '>');
 	}
 
 	/**

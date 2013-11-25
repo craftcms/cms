@@ -9,7 +9,7 @@
 }
 #packages .package .badge.installed { background: $successcolor; }
 #packages .package .badge.trial { background: $noticecolor; }
-#packages .package .badge.uninstalled { background: #999; }
+#packages .package .badge.uninstalled { background: $mediumtextcolor; }
 #packages .package .badge.unlicensed { background: $errorcolor; }
 #packages .package h2 { margin-top: 0; float: left; }
 

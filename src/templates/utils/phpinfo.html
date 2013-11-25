@@ -1,0 +1,15 @@
+{% extends "utils/_layout" %}
+
+{% set content %}
+	{% for section, data in phpInfo %}
+		<h2>{{ section }}</h2>
+		<table class="data">
+			{% for setting, value in data %}
+				<tr>
+					<th class="light" width="300">{{ setting|raw }}</th>
+					<td style="word-break: break-word;">{{ value|raw }}</td>
+				</tr>
+			{% endfor %}
+		</table>
+	{% endfor %}
+{% endset %}

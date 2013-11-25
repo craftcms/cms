@@ -235,9 +235,16 @@ class StringHelper
 		$strlen = mb_strlen($str);
 		$asciiCharMap = static::getAsciiCharMap();
 
-		for ($c = 0; $c < $strlen; $c++)
+		// If this looks funky, it's because mb_strlen is garbage.
+		// For example, it returns 6 for this string: "ü.png"
+		for ($counter = 0; $counter < $strlen; $counter++)
 		{
-			$char = $str[$c];
+			if (!isset($str[$counter]))
+			{
+				break;
+			}
+
+			$char = $str[$counter];
 			$ascii = ord($char);
 
 			if ($ascii >= 32 && $ascii < 128)
@@ -247,6 +254,10 @@ class StringHelper
 			else if (isset($asciiCharMap[$ascii]))
 			{
 				$asciiStr .= $asciiCharMap[$ascii];
+			}
+			else
+			{
+				$strlen++;
 			}
 		}
 

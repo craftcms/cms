@@ -22,7 +22,7 @@ class Paginate_Node extends \Twig_Node
 			->raw(') = \Craft\TemplateHelper::paginateCriteria(')
 			->subcompile($this->getNode('criteria'))
 			->raw(");\n")
-			->subcompile($this->getNode('body'))
+			->subcompile($this->getNode('body'), false)
 			->write('unset($context[\'paginate\'], ')
 			->subcompile($this->getNode('entitiesTarget'))
 			->raw(");\n");

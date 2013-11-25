@@ -22,7 +22,7 @@ class AssetFileRecord extends BaseRecord
 	{
 		return array(
 			'filename'		=> array(AttributeType::String, 'required' => true),
-			'kind'			=> array(AttributeType::String, 'maxLength' => 10, 'column' => ColumnType::Char),
+			'kind'			=> array('column' => ColumnType::Varchar, 'maxLength' => 50, 'required' => true, 'default' => 'unknown'),
 			'width'			=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt),
 			'height'		=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt),
 			'size'			=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::Int),

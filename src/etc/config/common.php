@@ -141,7 +141,7 @@ $cpRoutes['entries/(?P<sectionHandle>{handle})']                  = 'entries';
 $cpRoutes['entries/(?P<sectionHandle>{handle})/new']              = array('action' => 'entries/editEntry');
 $cpRoutes['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)'] = array('action' => 'entries/editEntry');
 
-$cpRoutes['globals/(?P<globalSetHandle>{handle})'] = 'globals';
+$cpRoutes['globals/(?P<globalSetHandle>{handle})']                = array('action' => 'globals/editContent');
 
 $cpRoutes['updates/go/(?P<handle>[^/]*)'] = 'updates/_go';
 
@@ -168,6 +168,9 @@ $cpRoutes['settings/sections/(?P<sectionId>\d+)/entrytypes/(?P<entryTypeId>\d+)'
 $cpRoutes['settings/tags']                                                        = array('action' => 'tags/index');
 $cpRoutes['settings/tags/new']                                                    = array('action' => 'tags/editTagSet');
 $cpRoutes['settings/tags/(?P<tagSetId>\d+)']                                      = array('action' => 'tags/editTagSet');
+
+$cpRoutes['utils/phpinfo']                                                        = array('action' => 'utils/getPHPInfo');
+$cpRoutes['utils/logviewer(/(?P<currentLogFileName>[A-Za-z0-9\.]+))?']             = array('action' => 'utils/getLogs');
 
 $cpRoutes['settings/packages'] = array(
 	'params' => array(
@@ -198,7 +201,7 @@ $cpRoutes['myaccount'] = 'users/_edit/account';
 // Lanugage package routes
 $cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/(?P<localeId>\w+)'] = array('action' => 'entries/editEntry');
 $cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/new/(?P<localeId>\w+)']              = array('action' => 'entries/editEntry');
-$cpRoutes['pkgRoutes']['Localize']['globals/(?P<localeId>\w+)/(?P<globalSetHandle>{handle})']                = 'globals';
+$cpRoutes['pkgRoutes']['Localize']['globals/(?P<localeId>\w+)/(?P<globalSetHandle>{handle})']                = array('action' => 'globals/editContent');
 
 // Publish Pro package routes
 $cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/drafts/(?P<draftId>\d+)']     = array('action' => 'entries/editEntry');
@@ -240,6 +243,7 @@ $components['fieldTypes']['class']           = 'Craft\FieldTypesService';
 $components['globals']['class']              = 'Craft\GlobalsService';
 $components['install']['class']              = 'Craft\InstallService';
 $components['images']['class']               = 'Craft\ImagesService';
+$components['matrix']['class']               = 'Craft\MatrixService';
 $components['migrations']['class']           = 'Craft\MigrationsService';
 $components['path']['class']                 = 'Craft\PathService';
 $components['relations']['class']            = 'Craft\RelationsService';

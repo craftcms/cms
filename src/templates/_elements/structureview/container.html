@@ -3,7 +3,9 @@
 	"New child"
 %}
 
-<ul class="structureview">
+{% set uniqueClass = 'structureview'~random() %}
+
+<ul class="structureview {{ uniqueClass }}">
 	{% nav element in elements %}
 		{% set collapsed = (viewState.collapsedElementIds is defined and element.id in viewState.collapsedElementIds) %}
 		<li{% if collapsed %} class="collapsed"{% endif %} data-depth="{{ element.depth }}">
@@ -31,7 +33,7 @@
 {# Hide "Add child" menu buttons beyond the max depth #}
 {% if context == 'index' and source.maxDepth is defined and source.maxDepth %}
 	{% set css %}
-		.structureview{% for i in 2 .. source.maxDepth if source.maxDepth >= 2 %} ul{% endfor %} .add { display: none; }
+		.{{ uniqueClass }}{% for i in 2 .. source.maxDepth if source.maxDepth >= 2 %} ul{% endfor %} .add { display: none; }
 	{% endset %}
 
 	{% includeCss css %}

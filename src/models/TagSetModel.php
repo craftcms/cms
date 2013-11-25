@@ -36,7 +36,7 @@ class TagSetModel extends BaseModel
 	public function behaviors()
 	{
 		return array(
-			'fieldLayout' => new FieldLayoutBehavior(),
+			'fieldLayout' => new FieldLayoutBehavior(ElementType::Tag),
 		);
 	}
 }

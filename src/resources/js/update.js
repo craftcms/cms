@@ -5,6 +5,7 @@ Craft.Updater = Garnish.Base.extend({
 
 	$graphic: null,
 	$status: null,
+	$errorDetails: null,
 	data: null,
 
 	init: function(handle, manualUpdate)
@@ -43,15 +44,15 @@ Craft.Updater = Garnish.Base.extend({
 			data: this.data
 		};
 
-		Craft.postActionRequest(action, data, $.proxy(function(response, textStatus) {
+		Craft.postActionRequest(action, data, $.proxy(function(response, textStatus, jqXHR) {
 
-			if (textStatus == 'success' && response.success)
+			if (textStatus == 'success' && response.alive)
 			{
 				this.onSuccessResponse(response);
 			}
 			else
 			{
-				this.onErrorResponse();
+				this.onErrorResponse(jqXHR);
 			}
 
 		}, this), {
@@ -66,6 +67,11 @@ Craft.Updater = Garnish.Base.extend({
 			this.data = response.data;
 		}
 
+		if (response.errorDetails)
+		{
+			this.$errorDetails = response.errorDetails;
+		}
+
 		if (response.nextStatus)
 		{
 			this.updateStatus(response.nextStatus);
@@ -76,37 +82,61 @@ Craft.Updater = Garnish.Base.extend({
 			this.postActionRequest(response.nextAction);
 		}
 
-		if (response.error)
+		if (response.finished)
+		{
+			var rollBack = false;
+
+			if (response.rollBack)
+			{
+				rollBack = true;
+			}
+
+			this.onFinish(response.returnUrl, rollBack);
+		}
+	},
+
+	onErrorResponse: function(jqXHR)
+	{
+		this.$graphic.addClass('error');
+		var errorText = Craft.t('An error has occurred.  Please contact {email} and be sure to include the error message.', { email: '<a href="mailto:support@buildwithcraft.com?subject=Craft+Update+Failure">support@buildwithcraft.com</a>'} ) + '<br /><p>' + jqXHR.statusText + '</p><br /><p>' + jqXHR.responseText + '</p>';
+
+		this.updateStatus(errorText);
+	},
+
+	onFinish: function(returnUrl, rollBack)
+	{
+		if (this.$errorDetails)
 		{
 			this.$graphic.addClass('error');
-			this.updateStatus(response.error);
+			var errorText = Craft.t('Craft was unable to install this update. :(') + '<br /><p>';
+
+			if (rollBack)
+			{
+				errorText += Craft.t('The site has been restored to the state it was in before the attempted update.') + '</p><br /><p>';
+			}
+			else
+			{
+				errorText += Craft.t('No files have been updated and the database has not been touched.') + '</p><br /><p>';
+			}
+
+			errorText += this.$errorDetails + '</p>';
+			this.updateStatus(errorText);
 		}
-		else if (response.finished)
+		else
 		{
-			this.onFinish(response.returnUrl);
+			this.updateStatus(Craft.t('All done!'));
+			this.$graphic.addClass('success');
+
+			// Redirect to the Dashboard in half a second
+			setTimeout(function() {
+				if (returnUrl) {
+					window.location = Craft.getUrl(returnUrl);
+				}
+				else {
+					window.location = Craft.getUrl('dashboard');
+				}
+			}, 500);
 		}
-	},
-
-	onErrorResponse: function()
-	{
-		this.showError(Craft.t('An unknown error occurred. Rolling back…'));
-		this.postActionRequest('update/rollback');
-	},
-
-	onFinish: function(returnUrl)
-	{
-		this.updateStatus(Craft.t('All done!'));
-		this.$graphic.addClass('success');
-
-		// Redirect to the Dashboard in half a second
-		setTimeout(function() {
-			if (returnUrl) {
-				window.location = Craft.getUrl(returnUrl);
-			}
-			else {
-				window.location = Craft.getUrl('dashboard');
-			}
-		}, 500);
 	}
 });
 

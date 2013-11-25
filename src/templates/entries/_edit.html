@@ -23,7 +23,7 @@
 {% endset %}
 
 
-{% set continueEditingUrl = 'entries/'~section.handle~'/{id}'~(craft.hasPackage('Localize') and craft.locale != localeId ? '/'~localeId : '') %}
+{% set continueEditingUrl = 'entries/'~section.handle~'/{id}'~(draftId is defined ? '/drafts/'~draftId : '')~(craft.locale != localeId ? '/'~localeId : '') %}
 
 
 {% set content %}
@@ -81,7 +81,7 @@
 
 				{% if craft.hasPackage('Users') %}
 					{% set authors = [] %}
-					{% for author in craft.users.find() %}
+					{% for author in craft.users.find({limit: null}) %}
 						{% set authors = authors|merge([{ label: author.name, value: author.id }]) %}
 					{% endfor %}
 					{{ forms.selectField({
@@ -95,7 +95,7 @@
 
 				{{ forms.dateTimeField({
 					label: "Post Date"|t,
-					instructions: "When should the entry go live? (Set automatically if left blank)"|t,
+					instructions: "When should the entry go live? (Set automatically if left blank and the entry is enabled)"|t,
 					id: 'postDate',
 					name: 'postDate',
 					value: (entry.postDate ? entry.postDate : null),

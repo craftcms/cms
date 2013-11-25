@@ -50,7 +50,9 @@ class NumberFieldType extends BaseFieldType
 	 */
 	public function defineContentAttribute()
 	{
-		return ModelHelper::getNumberAttributeConfig($this->settings->min, $this->settings->max, $this->settings->decimals);
+		$attribute = ModelHelper::getNumberAttributeConfig($this->settings->min, $this->settings->max, $this->settings->decimals);
+		$attribute['default'] = 0;
+		return $attribute;
 	}
 
 	/**
@@ -67,5 +69,23 @@ class NumberFieldType extends BaseFieldType
 			'value' => $value,
 			'size'  => 5
 		));
+	}
+
+	/**
+	 * Returns the input value as it should be saved to the database.
+	 *
+	 * @param mixed $data
+	 * @return mixed
+	 */
+	public function prepValueFromPost($data)
+	{
+		if ($data === '')
+		{
+			return 0;
+		}
+		else
+		{
+			return $data;
+		}
 	}
 }

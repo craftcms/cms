@@ -44,8 +44,8 @@
 {% if initJs is not defined or initJs %}
 	{% set js %}
 		new Craft.EditableTable(
-			"{{ (jsId is defined   ? jsId   : id)   | e('js') }}",
-			"{{ (jsName is defined ? jsName : name) | e('js') }}",
+			"{{ id   | namespaceInputId   | e('js') }}",
+			"{{ name | namespaceInputName | e('js') }}",
 			{{ cols|json_encode|raw }});
 	{% endset %}
 

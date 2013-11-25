@@ -61,6 +61,7 @@ class TemplatesController extends BaseController
 	{
 		$this->_render('_special/breakpointupdate', array(
 			'minBuild'      => CRAFT_MIN_BUILD_REQUIRED,
+			'minBuildURL'   => CRAFT_MIN_BUILD_URL,
 			'targetVersion' => CRAFT_VERSION,
 			'targetBuild'   => CRAFT_BUILD
 		));
@@ -72,7 +73,7 @@ class TemplatesController extends BaseController
 		$reqCheck = new RequirementsChecker();
 		$reqCheck->run();
 
-		if ($reqCheck->getResult() == InstallStatus::Failure)
+		if ($reqCheck->getResult() == InstallStatus::Failed)
 		{
 			// Coming from Updater.php
 			if (craft()->request->isAjaxRequest())
@@ -132,6 +133,13 @@ class TemplatesController extends BaseController
 						$template = 'error';
 					}
 				}
+			}
+		}
+		else
+		{
+			if (!craft()->templates->doesTemplateExist($template))
+			{
+				$template = 'error';
 			}
 		}
 

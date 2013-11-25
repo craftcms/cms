@@ -20,9 +20,11 @@ class CpVariable
 			$nav['entries'] = array('name' => Craft::t('Entries'));
 		}
 
-		if (craft()->globals->getTotalEditableSets())
+		$globals = craft()->globals->getEditableSets();
+
+		if ($globals)
 		{
-			$nav['globals'] = array('name' => Craft::t('Globals'));
+			$nav['globals'] = array('name' => Craft::t('Globals'), 'url' => 'globals/'.$globals[0]->handle);
 		}
 
 		if (craft()->assetSources->getTotalViewableSources())
@@ -47,6 +49,27 @@ class CpVariable
 					$lcHandle = mb_strtolower($plugin->getClassHandle());
 					$nav[$lcHandle] = array('name' => $plugin->getName());
 				}
+			}
+		}
+
+		$firstSegment = craft()->request->getSegment(1);
+
+		if ($firstSegment == 'myaccount')
+		{
+			$firstSegment = 'users';
+		}
+
+		foreach ($nav as $handle => &$item)
+		{
+			$item['sel'] = ($handle == $firstSegment);
+
+			if (isset($item['url']))
+			{
+				$item['url'] = UrlHelper::getUrl($item['url']);
+			}
+			else
+			{
+				$item['url'] = UrlHelper::getUrl($handle);
 			}
 		}
 

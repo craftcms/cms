@@ -65,37 +65,33 @@ class DateFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		$suffix = '-'.uniqid();
-
-		$input = craft()->templates->render('_includes/forms/date', array(
-			'id'       => rtrim(preg_replace('/[\[\]]+/', '-', $name), '-').$suffix,
+		$variables = array(
+			'id'       => craft()->templates->formatInputId($name),
 			'name'     => $name,
 			'value'    => $value
-		));
+		);
+
+		$input = craft()->templates->render('_includes/forms/date', $variables);
 
 		if ($this->getSettings()->showTime)
 		{
-			$input .= ' '.craft()->templates->render('_includes/forms/time', array(
-				'id'       => rtrim(preg_replace('/[\[\]]+/', '-', $name), '-').$suffix,
-				'name'     => $name,
-				'value'    => $value
-			));
+			$input .= ' '.craft()->templates->render('_includes/forms/time', $variables);
 		}
 
 		return $input;
 	}
 
 	/**
-	 * Get the posted time and adjust it for timezones.
+	 * Returns the input value as it should be saved to the database.
 	 *
 	 * @param mixed $value
-	 * @return DateTime
+	 * @return mixed
 	 */
-	protected function prepPostData($value)
+	public function prepValueFromPost($value)
 	{
 		if ($value)
 		{
-			// Ugly?  Yes.  Yes it is.
+			// Ugly? Yes. Yes it is.
 			$timeString = $value->format(DateTime::MYSQL_DATETIME, DateTime::UTC);
 			return DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $timeString, craft()->getTimeZone());
 		}
@@ -125,6 +121,6 @@ class DateFieldType extends BaseFieldType
 	public function modifyElementsQuery(DbCommand $query, $value)
 	{
 		$handle = $this->model->handle;
-		$query->andWhere(DbHelper::parseDateParam('content.field_'.$handle, $value, $query->params));
+		$query->andWhere(DbHelper::parseDateParam('content.'.craft()->content->fieldColumnPrefix.$handle, $value, $query->params));
 	}
 }

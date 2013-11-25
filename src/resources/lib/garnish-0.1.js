@@ -1511,6 +1511,8 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 	helperPositions: null,
 	helperLagIncrement: null,
 	updateHelperPosInterval: null,
+	draggeeMouseOffsetX: null,
+	draggeeMouseOffsetY: null,
 
 	/**
 	 * init
@@ -1577,6 +1579,11 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 		// keep the helpers following the cursor, with a little lag to smooth it out
 		this.helperLagIncrement = this.helpers.length == 1 ? 0 : Garnish.Drag.helperLagIncrementDividend / (this.helpers.length-1);
 		this.updateHelperPosInterval = setInterval($.proxy(this, 'updateHelperPos'), Garnish.Drag.updateHelperPosInterval);
+
+		// Capture the mouse offset
+		var offset = this.$draggee.offset();
+		this.draggeeMouseOffsetX = this.mouseX - (offset.left + this.$draggee.outerWidth() / 2);
+		this.draggeeMouseOffsetY = this.mouseY - (offset.top + this.$draggee.outerHeight() / 2);
 
 		this.base();
 	},
@@ -1893,6 +1900,8 @@ Garnish.DragSort = Garnish.Drag.extend({
 	$caboose: null,
 	startDraggeeIndex: null,
 	closestItem: null,
+	draggeeMidpointX: null,
+	draggeeMidpointY: null,
 
 	/**
 	 * Constructor
@@ -1932,9 +1941,10 @@ Garnish.DragSort = Garnish.Drag.extend({
 		this.base();
 
 		// add the caboose?
-		if (this.settings.container && this.$caboose)
+		if (this.$caboose)
 		{
-			this.$caboose.appendTo(this.settings.container);
+			var $lastItem = $().add(this.$items).last();
+			this.$caboose.insertAfter($lastItem);
 			this.otherItems.push(this.$caboose[0]);
 			this.totalOtherItems++;
 		}
@@ -1984,16 +1994,23 @@ Garnish.DragSort = Garnish.Drag.extend({
 	 */
 	setMidpoints: function()
 	{
-		for (var i = 0; i < this.totalOtherItems; i++)
+		for (var i = 0; i < this.$items.length; i++)
 		{
-			var $item = $(this.otherItems[i]),
-				offset = $item.offset();
-
-			$item.data('midpoint', {
-				left: offset.left + $item.outerWidth() / 2,
-				top:  offset.top + $item.outerHeight() / 2
-			});
+			this.setMidpoint(this.$items[i]);
 		}
+
+		this.setMidpoint(this.$caboose);
+	},
+
+	setMidpoint: function(item)
+	{
+		var $item = $(item),
+			offset = $item.offset();
+
+		$item.data('midpoint', {
+			left: offset.left + $item.outerWidth() / 2,
+			top:  offset.top + $item.outerHeight() / 2
+		});
 	},
 
 	/**
@@ -2001,6 +2018,9 @@ Garnish.DragSort = Garnish.Drag.extend({
 	 */
 	onDrag: function()
 	{
+		this.draggeeMidpointX = this.mouseX - this.draggeeMouseOffsetX;
+		this.draggeeMidpointY = this.mouseY - this.draggeeMouseOffsetY;
+
 		// if there's a container set, make sure that we're hovering over it
 		if (this.$heightedContainer && !Garnish.hitTest(this.mouseX, this.mouseY, this.$heightedContainer))
 		{
@@ -2017,7 +2037,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 		else
 		{
 			// is there a new closest item?
-			if (this.closestItem != (this.closestItem = this.getClosestItem()))
+			if (this.closestItem != (this.closestItem = this.getClosestItem()) && this.closestItem != this.$draggee[0])
 			{
 				this.onInsertionPointChange();
 			}
@@ -2031,23 +2051,33 @@ Garnish.DragSort = Garnish.Drag.extend({
 	 */
 	getClosestItem: function()
 	{
-		this.getClosestItem._closestItem = null;
-		this.getClosestItem._closestItemMouseDiff = null;
+		this.getClosestItem._closestItem = this.$draggee[0];
+		this.getClosestItem._midpoint = this.$draggee.data('midpoint');
+		this.getClosestItem._closestItemMouseDiff = Garnish.getDist(this.getClosestItem._midpoint.left, this.getClosestItem._midpoint.top, this.draggeeMidpointX, this.draggeeMidpointY);
 
 		for (this.getClosestItem._i = 0; this.getClosestItem._i < this.totalOtherItems; this.getClosestItem._i++)
 		{
-			this.getClosestItem._$item = $(this.otherItems[this.getClosestItem._i]);
-			this.getClosestItem._midpoint = this.getClosestItem._$item.data('midpoint');
-			this.getClosestItem._mouseDiff = Garnish.getDist(this.getClosestItem._midpoint.left, this.getClosestItem._midpoint.top, this.mouseX, this.mouseY);
+			this.testForClosestItem(this.otherItems[this.getClosestItem._i]);
+		}
 
-			if (this.getClosestItem._closestItem === null || this.getClosestItem._mouseDiff < this.getClosestItem._closestItemMouseDiff)
+		return this.getClosestItem._closestItem;
+	},
+
+	testForClosestItem: function(item)
+	{
+		this.getClosestItem._$item = $(item);
+		this.getClosestItem._midpoint = this.getClosestItem._$item.data('midpoint');
+
+		if (this.getClosestItem._midpoint.top >= this.draggeeMidpointY || this.getClosestItem._midpoint.left >= this.draggeeMidpointX)
+		{
+			this.getClosestItem._mouseDiff = Garnish.getDist(this.getClosestItem._midpoint.left, this.getClosestItem._midpoint.top, this.draggeeMidpointX, this.draggeeMidpointY);
+
+			if (this.getClosestItem._mouseDiff < this.getClosestItem._closestItemMouseDiff)
 			{
 				this.getClosestItem._closestItem = this.getClosestItem._$item[0];
 				this.getClosestItem._closestItemMouseDiff = this.getClosestItem._mouseDiff;
 			}
 		}
-
-		return this.getClosestItem._closestItem;
 	},
 
 	/**
@@ -2065,6 +2095,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 			}
 		}
 
+		this.setMidpoints();
 		this.settings.onInsertionPointChange();
 	},
 
@@ -2725,6 +2756,8 @@ Garnish.Menu = Garnish.Base.extend({
 		this.$container.fadeOut('fast');
 
 		Garnish.escManager.unregister(this);
+
+		this.trigger('hide');
 	},
 
 	selectOption: function(ev)
@@ -2775,6 +2808,8 @@ Garnish.MenuBtn = Garnish.Base.extend({
 			onOptionSelect: $.proxy(this, 'onOptionSelect')
 		});
 
+		this.menu.on('hide', $.proxy(this, 'onMenuHide'));
+
 		this.addListener(this.$btn, 'mousedown', 'onMouseDown');
 	},
 
@@ -2816,6 +2851,10 @@ Garnish.MenuBtn = Garnish.Base.extend({
 	hideMenu: function()
 	{
 		this.menu.hide();
+	},
+
+	onMenuHide: function()
+	{
 		this.$btn.removeClass('active');
 		this.showingMenu = false;
 
@@ -3819,174 +3858,6 @@ Garnish.NiceText = Garnish.Base.extend({
 	defaults: {
 		autoHeight:     true,
 		onHeightChange: $.noop
-	}
-});
-
-
-/**
- * Password Input
- */
-Garnish.PasswordInput = Garnish.Base.extend({
-
-	$passwordInput: null,
-	$textInput: null,
-	$currentInput: null,
-
-	$showPasswordToggle: null,
-	showingPassword: null,
-
-	init: function(passwordInput, settings)
-	{
-		this.$passwordInput = $(passwordInput);
-		this.settings = $.extend({}, Garnish.PasswordInput.defaults, settings);
-
-		// Is this already a password input?
-		if (this.$passwordInput.data('passwordInput'))
-		{
-			Garnish.log('Double-instantiating a password input on an element');
-			this.$passwordInput.data('passwordInput').destroy();
-		}
-
-		this.$passwordInput.data('passwordInput', this);
-
-		this.$showPasswordToggle = $('<a/>').hide();
-		this.$showPasswordToggle.addClass('password-toggle');
-		this.$showPasswordToggle.insertAfter(this.$passwordInput);
-		this.addListener(this.$showPasswordToggle, 'mousedown', 'onToggleMouseDown');
-		this.hidePassword();
-	},
-
-	setCurrentInput: function($input)
-	{
-		if (this.$currentInput)
-		{
-			// Swap the inputs, while preventing the focus animation
-			$input.addClass('focus');
-			this.$currentInput.replaceWith($input);
-			$input.focus();
-			$input.removeClass('focus');
-
-			// Restore the input value
-			$input.val(this.$currentInput.val());
-		}
-
-		this.$currentInput = $input;
-
-		this.addListener(this.$currentInput, 'keypress,keyup,change,blur', 'onInputChange');
-	},
-
-	updateToggleLabel: function(label)
-	{
-		this.$showPasswordToggle.text(label);
-	},
-
-	showPassword: function()
-	{
-		if (this.showingPassword)
-		{
-			return;
-		}
-
-		if (!this.$textInput)
-		{
-			this.$textInput = this.$passwordInput.clone(true);
-			this.$textInput.attr('type', 'text');
-		}
-
-		this.setCurrentInput(this.$textInput);
-		this.updateToggleLabel(Garnish.PasswordInput.lang.Hide);
-		this.showingPassword = true;
-	},
-
-	hidePassword: function()
-	{
-		// showingPassword could be null, which is acceptable
-		if (this.showingPassword === false)
-		{
-			return;
-		}
-
-		this.setCurrentInput(this.$passwordInput);
-		this.updateToggleLabel(Garnish.PasswordInput.lang.Show);
-		this.showingPassword = false;
-
-		// Alt key temporarily shows the password
-		this.addListener(this.$passwordInput, 'keydown', 'onKeyDown');
-	},
-
-	togglePassword: function()
-	{
-		if (this.showingPassword)
-		{
-			this.hidePassword();
-		}
-		else
-		{
-			this.showPassword();
-		}
-
-		this.settings.onToggleInput(this.$currentInput);
-	},
-
-	onKeyDown: function(ev)
-	{
-		if (ev.keyCode == Garnish.ALT_KEY && this.$currentInput.val())
-		{
-			this.showPassword();
-			this.$showPasswordToggle.hide();
-			this.addListener(this.$textInput, 'keyup', 'onKeyUp');
-		}
-	},
-
-	onKeyUp: function(ev)
-	{
-		ev.preventDefault();
-
-		if (ev.keyCode == Garnish.ALT_KEY)
-		{
-			this.hidePassword();
-			this.$showPasswordToggle.show();
-		}
-	},
-
-	onInputChange: function()
-	{
-		if (this.$currentInput.val())
-		{
-			this.$showPasswordToggle.show();
-		}
-		else
-		{
-			this.$showPasswordToggle.hide();
-		}
-	},
-
-	onToggleMouseDown: function(ev)
-	{
-		// Prevent focus change
-		ev.preventDefault();
-
-		if (this.$currentInput[0].setSelectionRange)
-		{
-			var selectionStart = this.$currentInput[0].selectionStart,
-				selectionEnd   = this.$currentInput[0].selectionEnd;
-		}
-
-		this.togglePassword();
-
-		if (this.$currentInput[0].setSelectionRange)
-		{
-			this.$currentInput[0].setSelectionRange(selectionStart, selectionEnd);
-		}
-	}
-},
-{
-	lang: {
-		Show: 'Show',
-		Hide: 'Hide'
-	},
-	defaults: {
-		onToggleInput: $.noop
 	}
 });
 

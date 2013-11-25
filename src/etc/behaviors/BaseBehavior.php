@@ -6,4 +6,5 @@ namespace Craft;
  */
 class BaseBehavior extends \CBehavior
 {
+	
 }

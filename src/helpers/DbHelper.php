@@ -381,8 +381,7 @@ class DbHelper
 
 		if ($values[0] == 'and' || $values[0] == 'or')
 		{
-			$join = $values[0];
-			array_shift($values);
+			$join = array_shift($values);
 		}
 		else
 		{
@@ -406,7 +405,15 @@ class DbHelper
 			}
 			else
 			{
-				$param = ':p'.StringHelper::randomString(9);
+				// Find a unique param name
+				$paramKey = ':'.str_replace('.', '', $key);
+				$i = 1;
+				while (isset($params[$paramKey.$i]))
+				{
+					$i++;
+				}
+
+				$param = $paramKey.$i;
 				$params[$param] = trim($value);
 				$conditions[] = $key.$operator.$param;
 			}
@@ -461,7 +468,7 @@ class DbHelper
 
 			if (!$value instanceof \DateTime)
 			{
-				$value = DateTime::createFromString($value, craft()->getTimezone());
+				$value = DateTime::createFromString($value, craft()->getTimeZone());
 			}
 
 			$normalizedValues[] = $operator.DateTimeHelper::formatTimeForDb($value->getTimestamp());

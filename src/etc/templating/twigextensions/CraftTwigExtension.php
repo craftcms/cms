@@ -17,6 +17,8 @@ class CraftTwigExtension extends \Twig_Extension
 	{
 		return array(
 			new Exit_TokenParser(),
+			new Header_TokenParser(),
+			new Hook_TokenParser(),
 			new IncludeResource_TokenParser('includeCss'),
 			new IncludeResource_TokenParser('includeCssFile'),
 			new IncludeResource_TokenParser('includeCssResource'),
@@ -25,13 +27,14 @@ class CraftTwigExtension extends \Twig_Extension
 			new IncludeResource_TokenParser('includeJsFile'),
 			new IncludeResource_TokenParser('includeJsResource'),
 			new IncludeTranslations_TokenParser(),
+			new Namespace_TokenParser(),
 			new Nav_TokenParser(),
 			new Paginate_TokenParser(),
 			new Redirect_TokenParser(),
 			new RequireLogin_TokenParser(),
 			new RequirePackage_TokenParser(),
 			new RequirePermission_TokenParser(),
-			new Header_TokenParser(),
+			new Switch_TokenParser(),
 		);
 	}
 
@@ -47,25 +50,29 @@ class CraftTwigExtension extends \Twig_Extension
 		$markdownFilter = new \Twig_Filter_Method($this, 'markdownFilter');
 
 		return array(
-			'currency'   => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatCurrency'),
-			'datetime'   => new \Twig_Filter_Function('\Craft\craft()->dateFormatter->formatDateTime'),
-			'filesize'	 => new \Twig_Filter_Function('\Craft\craft()->formatter->formatSize'),
-			'filter'     => new \Twig_Filter_Function('array_filter'),
-			'group'      => new \Twig_Filter_Method($this, 'groupFilter'),
-			'intersect'  => new \Twig_Filter_Function('array_intersect'),
-			'lcfirst'    => new \Twig_Filter_Function('lcfirst'),
-			'markdown'   => $markdownFilter,
-			'md'         => $markdownFilter,
-			'namespace'  => $namespaceFilter,
-			'ns'         => $namespaceFilter,
-			'number'     => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatDecimal'),
-			'parseRefs'  => new \Twig_Filter_Method($this, 'parseRefsFilter'),
-			'percentage' => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatPercentage'),
-			'replace'    => new \Twig_Filter_Method($this, 'replaceFilter'),
-			'translate'  => $translateFilter,
-			't'          => $translateFilter,
-			'ucfirst'    => new \Twig_Filter_Function('ucfirst'),
-			'without'    => new \Twig_Filter_Method($this, 'withoutFilter'),
+			'currency'           => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatCurrency'),
+			'datetime'           => new \Twig_Filter_Function('\Craft\craft()->dateFormatter->formatDateTime'),
+			'filesize'	         => new \Twig_Filter_Function('\Craft\craft()->formatter->formatSize'),
+			'filter'             => new \Twig_Filter_Function('array_filter'),
+			'group'              => new \Twig_Filter_Method($this, 'groupFilter'),
+			'indexOf'            => new \Twig_Filter_Method($this, 'indexOfFilter'),
+			'intersect'          => new \Twig_Filter_Function('array_intersect'),
+			'lcfirst'            => new \Twig_Filter_Function('lcfirst'),
+			'markdown'           => $markdownFilter,
+			'md'                 => $markdownFilter,
+			'namespace'          => $namespaceFilter,
+			'ns'                 => $namespaceFilter,
+			'namespaceInputName' => new \Twig_Filter_Function('\Craft\craft()->templates->namespaceInputName'),
+			'namespaceInputId'   => new \Twig_Filter_Function('\Craft\craft()->templates->namespaceInputId'),
+			'number'             => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatDecimal'),
+			'parseRefs'          => new \Twig_Filter_Method($this, 'parseRefsFilter'),
+			'percentage'         => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatPercentage'),
+			'replace'            => new \Twig_Filter_Method($this, 'replaceFilter'),
+			'translate'          => $translateFilter,
+			't'                  => $translateFilter,
+			'ucfirst'            => new \Twig_Filter_Function('ucfirst'),
+			'ucwords'            => new \Twig_Filter_Function('ucwords'),
+			'without'            => new \Twig_Filter_Method($this, 'withoutFilter'),
 		);
 	}
 
@@ -151,6 +158,47 @@ class CraftTwigExtension extends \Twig_Extension
 		}
 
 		return $groups;
+	}
+
+	/**
+	 * Returns the index of an item in a string or array, or -1 if it cannot be found.
+	 *
+	 * @param mixed $haystack
+	 * @param mixed $needle
+	 * @return int
+	 */
+	public function indexOfFilter($haystack, $needle)
+	{
+		if (is_string($haystack))
+		{
+			$index = strpos($haystack, $needle);
+		}
+		else if (is_array($haystack))
+		{
+			$index = array_search($needle, $haystack);
+		}
+		else if (is_object($haystack) && $haystack instanceof \IteratorAggregate)
+		{
+			$index = false;
+
+			foreach ($haystack as $i => $item)
+			{
+				if ($item == $needle)
+				{
+					$index = $i;
+					break;
+				}
+			}
+		}
+
+		if ($index !== false)
+		{
+			return $index;
+		}
+		else
+		{
+			return -1;
+		}
 	}
 
 	/**
@@ -252,7 +300,7 @@ class CraftTwigExtension extends \Twig_Extension
 		$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->getLoginPath());
 		$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->getLogoutPath());
 
-		if (craft()->isInstalled())
+		if (craft()->isInstalled() && !craft()->updates->isCraftDbMigrationNeeded())
 		{
 			$globals['siteName'] = craft()->getSiteName();
 			$globals['siteUrl'] = craft()->getSiteUrl();
@@ -267,7 +315,6 @@ class CraftTwigExtension extends \Twig_Extension
 			{
 				foreach (craft()->globals->getAllSets() as $globalSet)
 				{
-					$globalSet->locale = craft()->language;
 					$globals[$globalSet->handle] = $globalSet;
 				}
 			}

@@ -6,6 +6,7 @@ namespace Craft;
  */
 class AssetsService extends BaseApplicationComponent
 {
+	private $_foldersById;
 	private $_includedTransformLoader = false;
 
 	/**
@@ -183,38 +184,6 @@ class AssetsService extends BaseApplicationComponent
 	// -------------------------------------------
 
 	/**
-	 * Populates a folder model.
-	 *
-	 * @param array|AssetFolderRecord $attributes
-	 * @return AssetFolderModel
-	 */
-	public function populateFolder($attributes)
-	{
-		$folder = AssetFolderModel::populateModel($attributes);
-		return $folder;
-	}
-
-	/**
-	 * Mass-populates folder models.
-	 *
-	 * @param array  $data
-	 * @param string $index
-	 * @return array
-	 */
-	public function populateFolders($data, $index = 'id')
-	{
-		$folders = array();
-
-		foreach ($data as $attributes)
-		{
-			$folder = $this->populateFolder($attributes);
-			$folders[$folder->$index] = $folder;
-		}
-
-		return $folders;
-	}
-
-	/**
 	 * Store a folder by model and return the id
 	 * @param AssetFolderModel $folderModel
 	 * @return mixed
@@ -242,7 +211,7 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Get the folder tree for Assets by source ids
 	 *
-	 * @param $allowedSourceIds
+	 * @param $sourceId
 	 * @return array
 	 */
 	public function getFolderTreeBySourceIds($allowedSourceIds)
@@ -433,14 +402,21 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function getFolderById($folderId)
 	{
-		$folderRecord = AssetFolderRecord::model()->findById($folderId);
-
-		if ($folderRecord)
+		if (!isset($this->_foldersById) || !array_key_exists($folderId, $this->_foldersById))
 		{
-			return $this->populateFolder($folderRecord);
+			$folderRecord = AssetFolderRecord::model()->findById($folderId);
+
+			if ($folderRecord)
+			{
+				$this->_foldersById[$folderId] = AssetFolderModel::populateModel($folderRecord);
+			}
+			else
+			{
+				$this->_foldersById[$folderId] = null;
+			}
 		}
 
-		return null;
+		return $this->_foldersById[$folderId];
 	}
 
 	/**
@@ -478,8 +454,16 @@ class AssetsService extends BaseApplicationComponent
 		}
 
 		$result = $query->queryAll();
+		$folders = array();
 
-		return $this->populateFolders($result);
+		foreach ($result as $row)
+		{
+			$folder = AssetFolderModel::populateModel($row);
+			$this->_foldersById[$folder->id] = $folder;
+			$folders[] = $folder;
+		}
+
+		return $folders;
 	}
 
 	/**
@@ -488,7 +472,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param AssetFolderModel $folderModel
 	 * @return array
 	 */
-	public function getAllChildFolders(AssetFolderModel $folderModel)
+	public function getAllDescendantFolders(AssetFolderModel $folderModel)
 	{
 		$query = craft()->db->createCommand()
 			->select('f.*')
@@ -496,7 +480,17 @@ class AssetsService extends BaseApplicationComponent
 			->where(array('like', 'fullPath', $folderModel->fullPath.'%'))
 			->andWhere('sourceId = :sourceId', array(':sourceId' => $folderModel->sourceId));
 
-		return $this->populateFolders($query->queryAll());
+		$result = $query->queryAll();
+		$folders = array();
+
+		foreach ($result as $row)
+		{
+			$folder = AssetFolderModel::populateModel($row);
+			$this->_foldersById[$folder->id] = $folder;
+			$folders[] = $folder;
+		}
+
+		return $folder;
 	}
 
 	/**

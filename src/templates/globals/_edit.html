@@ -1,0 +1,46 @@
+{% extends "_layouts/cp" %}
+{% set title = "Globals"|t %}
+
+
+{% if craft.hasPackage('Localize') %}
+	{% set extraPageHeaderHtml %}
+		<div class="select">
+			<select onchange="document.location.href='{{ url('globals/{locale}/'~globalSetHandle) }}'.replace('{locale}', this.value);">
+				{% for locale in craft.i18n.getEditableLocales() %}
+					<option value="{{ locale.id }}"{% if locale.id == localeId %} selected{% endif %}>{{ locale.name }}</option>
+				{% endfor %}
+			</select>
+		</div>
+	{% endset %}
+{% endif %}
+
+
+{% set sidebar %}
+	<nav>
+		<ul>
+			{% for theGlobalSet in globalSets %}
+				<li><a{% if theGlobalSet.handle == globalSetHandle %} class="sel"{% endif %} href="{{ theGlobalSet.cpEditUrl }}">{{ theGlobalSet.name|t }}</a></li>
+			{% endfor %}
+		</ul>
+	</nav>
+{% endset %}
+
+
+{% set content %}
+	<form method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
+		<input type="hidden" name="action" value="globals/saveContent">
+		<input type="hidden" name="setId" value="{{ globalSet.id }}">
+		<input type="hidden" name="locale" value="{{ localeId }}">
+
+		<div>
+			{% include "_includes/fields" with {
+			    fields: globalSet.getFieldLayout().getFields(),
+			    element: globalSet
+			} only %}
+		</div>
+
+		<div class="buttons">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+{% endset %}

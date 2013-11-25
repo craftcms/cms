@@ -15,7 +15,7 @@ h1 span.draft span { display: none; }
 #previewmode-editor header { margin: 0 -30px 30px; padding: 15px 30px 14px; border-bottom: 1px solid #ddd; }
 #previewmode-editor header .btn { float: right; }
 #previewmode-editor header h1 { margin: 0; font-size: 25px; line-height: 30px; color: #333; }
-#previewmode-editor .field:last-child { margin-bottom: 30px !important; }
+#previewmode-editor > .field:last-child { margin-bottom: 30px !important; }
 
 #previewmode-iframe-container { z-index: 2; left: 100%; }
 #previewmode-iframe { width: 100%; height: 100%; }

@@ -79,6 +79,11 @@ abstract class BaseController extends \CController
 				$templateFile = craft()->templates->findTemplate($template);
 				$extension = IOHelper::getExtension($templateFile, 'html');
 
+				if ($extension == 'twig')
+				{
+					$extension = 'html';
+				}
+
 				HeaderHelper::setContentTypeByExtension($extension);
 				HeaderHelper::setHeader(array('charset' => 'utf-8'));
 
@@ -111,6 +116,12 @@ abstract class BaseController extends \CController
 							$output .= $footHtml;
 						}
 					}
+				}
+				else
+				{
+					// If this is a non-HTML, non-Twig request, remove the extra logging information.
+					craft()->log->removeRoute('WebLogRoute');
+					craft()->log->removeRoute('ProfileLogRoute');
 				}
 
 				// Output to the browser!

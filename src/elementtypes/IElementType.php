@@ -43,9 +43,28 @@ interface IElementType extends IComponentType
 	public function defineTableAttributes($source = null);
 
 	/**
+	 * @param BaseElementModel $element
+	 * @param string $attribute
+	 * @return string
+	 */
+	public function getTableAttributeHtml(BaseElementModel $element, $attribute);
+
+	/**
 	 * @return array
 	 */
 	public function defineCriteriaAttributes();
+
+	/**
+	 * @param ElementCriteriaModel $criteria
+	 * @return string
+	 */
+	public function getContentTableForElementsQuery(ElementCriteriaModel $criteria);
+
+	/**
+	 * @param ElementCriteriaModel
+	 * @return array
+	 */
+	public function getContentFieldColumnsForElementsQuery(ElementCriteriaModel $criteria);
 
 	/**
 	 * @param DbCommand $query

@@ -78,6 +78,7 @@ class DashboardService extends BaseApplicationComponent
 	/**
 	 * Returns whether the current user has a widget of the given type.
 	 *
+	 * @param $type
 	 * @return bool
 	 */
 	public function doesUserHaveWidget($type)
@@ -88,7 +89,7 @@ class DashboardService extends BaseApplicationComponent
 			'enabled' => true
 		));
 
-		return (bool) $count;
+		return (bool)$count;
 	}
 
 	/**

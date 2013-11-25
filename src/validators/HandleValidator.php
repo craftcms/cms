@@ -6,6 +6,8 @@ namespace Craft;
  */
 class HandleValidator extends \CValidator
 {
+	public static $handlePattern = '[a-zA-Z][a-zA-Z0-9_]*';
+
 	public $reservedWords = array();
 
 	protected static $baseReservedWords = array('id', 'dateCreated', 'dateUpdated', 'uid', 'this', 'true', 'false', 'y', 'n', 'yes', 'no', 'classHandle', 'handle', 'name', 'attributeNames', 'attributes', 'attribute', 'rules', 'attributeLabels', 'fields', 'content', 'rawContent');
@@ -32,7 +34,7 @@ class HandleValidator extends \CValidator
 			}
 			else
 			{
-				if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $handle))
+				if (!preg_match('/^'.static::$handlePattern.'$/', $handle))
 				{
 					$altMessage = Craft::t('“{handle}” isn’t a valid handle.', array('handle' => $handle));
 					$message = $this->message !== null ? $this->message : $altMessage;

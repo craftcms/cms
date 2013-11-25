@@ -154,11 +154,13 @@ abstract class BaseModel extends \CModel
 	/**
 	 * Defines this model's attributes.
 	 *
-	 * @abstract
 	 * @access protected
 	 * @return array
 	 */
-	abstract protected function defineAttributes();
+	protected function defineAttributes()
+	{
+		return array();
+	}
 
 	/**
 	 * Returns this model's normalized attribute configs.
@@ -346,6 +348,31 @@ abstract class BaseModel extends \CModel
 	public function attributeLabels()
 	{
 		return ModelHelper::getAttributeLabels($this);
+	}
+
+	/**
+	 * We override the parent method so we can log any attributes that failed validation.
+	 *
+	 * @param null $attributes
+	 * @param bool $clearErrors
+	 * @return bool
+	 */
+	public function validate($attributes = null, $clearErrors = true)
+	{
+		if (parent::validate($attributes, $clearErrors))
+		{
+			return true;
+		}
+
+		foreach ($this->getErrors() as $attribute => $errorMessages)
+		{
+			foreach ($errorMessages as $errorMessage)
+			{
+				Craft::log(get_class($this).'->'.$attribute.' failed validation: '.$errorMessage, LogLevel::Warning);
+			}
+		}
+
+		return false;
 	}
 
 	/**

@@ -37,6 +37,7 @@ class EntriesController extends BaseController
 			$parentOptionCriteria = craft()->elements->getCriteria(ElementType::Entry);
 			$parentOptionCriteria->sectionId = $variables['section']->id;
 			$parentOptionCriteria->status = null;
+			$parentOptionCriteria->limit = null;
 
 			if ($variables['section']->maxDepth)
 			{
@@ -232,16 +233,20 @@ class EntriesController extends BaseController
 		craft()->setLanguage(craft()->request->getPost('locale'));
 
 		$entry = $this->_populateEntryModel();
-
-		if (!$entry->postDate)
-		{
-			$entry->postDate = new DateTime();
-		}
-
 		$section = $entry->getSection();
+		$type = $entry->getType();
 
-		if ($section)
+		if ($section && $type)
 		{
+			if (!$entry->postDate)
+			{
+				$entry->postDate = new DateTime();
+			}
+
+			craft()->content->prepElementContentForSave($entry, $type->getFieldLayout(), false);
+
+			craft()->templates->getTwig()->disableStrictVariables();
+
 			$this->renderTemplate($section->template, array(
 				'entry' => $entry
 			));
@@ -263,11 +268,23 @@ class EntriesController extends BaseController
 		{
 			// Make sure the user is allowed to create entries in this section
 			craft()->userSession->requirePermission('createEntries:'.$entry->sectionId);
+
+			// Make sure the user is allowed to publish entries in this section, or that this is disabled
+			if ($entry->enabled && !craft()->userSession->checkPermission('publishEntries:'.$entry->sectionId))
+			{
+				$entry->enabled = false;
+			}
 		}
 		else
 		{
 			// Make sure the user is allowed to edit entries in this section
 			craft()->userSession->requirePermission('editEntries:'.$entry->sectionId);
+
+			if ($entry->enabled)
+			{
+				// Make sure the user is allowed to edit live entries in this section
+				craft()->userSession->requirePermission('publishEntries:'.$entry->sectionId);
+			}
 		}
 
 		if (craft()->entries->saveEntry($entry))

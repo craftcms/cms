@@ -14,14 +14,26 @@ class TemplatesService extends BaseApplicationComponent
 	private $_defaultTemplateExtensions;
 	private $_indexTemplateFilenames;
 
+	private $_namespace;
+
 	private $_headHtml = array();
 	private $_footHtml = array();
 	private $_cssFiles = array();
 	private $_jsFiles = array();
 	private $_css = array();
 	private $_hiResCss = array();
-	private $_js = array();
+	private $_jsBuffers = array(array());
 	private $_translations = array();
+
+	private $_hooks;
+
+	/**
+	 * Init
+	 */
+	public function init()
+	{
+		$this->hook('cp.elements.element', array($this, '_getCpElementHtml'));
+	}
 
 	/**
 	 * Gets the Twig instance.
@@ -272,7 +284,7 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Prepares Hi-res targetted CSS for inclusion in the template.
+	 * Prepares Hi-res targeted CSS for inclusion in the template.
 	 *
 	 * @param string    $css
 	 * @param bool|null $first
@@ -292,7 +304,62 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function includeJs($js, $first = false)
 	{
-		ArrayHelper::prependOrAppend($this->_js, trim($js), $first);
+		$latestBuffer =& $this->_jsBuffers[count($this->_jsBuffers)-1];
+		ArrayHelper::prependOrAppend($latestBuffer, trim($js), $first);
+	}
+
+	/**
+	 * Wraps some JS in a <script> tag.
+	 *
+	 * @param string|array $js
+	 * @return string
+	 */
+	public function getScriptTag($js)
+	{
+		if (is_array($js))
+		{
+			$js = $this->_combineJs($js);
+		}
+
+		return "<script type=\"text/javascript\">\n/*<![CDATA[*/\n".$js."\n/*]]>*/\n</script>";
+	}
+
+	/**
+	 * Starts a JS buffer.
+	 */
+	public function startJsBuffer()
+	{
+		$this->_jsBuffers[] = array();
+	}
+
+	/**
+	 * Clears and ends a JS buffer, returning whatever JS was included while the buffer was active.
+	 *
+	 * @param bool $scriptTag
+	 * @return string|null|false
+	 */
+	public function clearJsBuffer($scriptTag = true)
+	{
+		if (count($this->_jsBuffers) <= 1)
+		{
+			return false;
+		}
+
+		$buffer = array_pop($this->_jsBuffers);
+
+		if ($buffer)
+		{
+			$js = $this->_combineJs($buffer);
+
+			if ($scriptTag)
+			{
+				return $this->getScriptTag($buffer);
+			}
+			else
+			{
+				return $js;
+			}
+		}
 	}
 
 	/**
@@ -368,14 +435,15 @@ class TemplatesService extends BaseApplicationComponent
 		}
 
 		// Is there any JS to include?
-		if (!empty($this->_js))
+		foreach ($this->_jsBuffers as $buffer)
 		{
-			$js = implode("\n\n", $this->_js);
-			$node = "<script type=\"text/javascript\">\n/*<![CDATA[*/\n".$js."\n/*]]>*/\n</script>";
-			$this->includeFootHtml($node);
-
-			$this->_js = array();
+			if ($buffer)
+			{
+				$this->includeFootHtml($this->getScriptTag($buffer));
+			}
 		}
+
+		$this->_jsBuffers = array(array());
 
 		if (!empty($this->_footHtml))
 		{
@@ -506,26 +574,142 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns the active namespace.
+	 *
+	 * @return string
+	 */
+	public function getNamespace()
+	{
+		return $this->_namespace;
+	}
+
+	/**
+	 * Sets the active namespace.
+	 *
+	 * @param string $namespace
+	 */
+	public function setNamespace($namespace)
+	{
+		$this->_namespace = $namespace;
+	}
+
+	/**
 	 * Renames input names so they belong to a namespace.
 	 *
 	 * @param string $html The template with the inputs
-	 * @param string $namespace The namespace to make inputs belong to
+	 * @param string|null $namespace The namespace to make inputs belong to
 	 * @param bool $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to true.
 	 * @return string The template with namespaced inputs
 	 */
-	public function namespaceInputs($html, $namespace, $otherAttributes = true)
+	public function namespaceInputs($html, $namespace = null, $otherAttributes = true)
 	{
-		// name= attributes
-		$html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
-
-		// id= and for= attributes
-		if ($otherAttributes)
+		if ($namespace === null)
 		{
-			$idNamespace = rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-');
-			$html = preg_replace('/(?<![\w\-])((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/', '$1'.$idNamespace.'-$4$3', $html);
+			$namespace = $this->getNamespace();
+		}
+
+		if ($namespace)
+		{
+			// name= attributes
+			$html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
+
+			// id= and for= attributes
+			if ($otherAttributes)
+			{
+				$idNamespace = $this->formatInputId($namespace);
+				$html = preg_replace('/(?<![\w\-])((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/i', '$1'.$idNamespace.'-$4$3', $html);
+			}
 		}
 
 		return $html;
+	}
+
+	/**
+	 * Namespaces an input name.
+	 *
+	 * @param string $inputName
+	 * @param null   $namespace
+	 * @return string
+	 */
+	public function namespaceInputName($inputName, $namespace = null)
+	{
+		if ($namespace === null)
+		{
+			$namespace = $this->getNamespace();
+		}
+
+		if ($namespace)
+		{
+			$inputName = preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace.'[$1]$2', $inputName);
+		}
+
+		return $inputName;
+	}
+
+	/**
+	 * Namespaces an input ID.
+	 *
+	 * @param      $inputId
+	 * @param null $namespace
+	 * @return string
+	 */
+	public function namespaceInputId($inputId, $namespace = null)
+	{
+		if ($namespace === null)
+		{
+			$namespace = $this->getNamespace();
+		}
+
+		if ($namespace)
+		{
+			$inputId = $this->formatInputId($namespace).'-'.$inputId;
+		}
+
+		return $inputId;
+	}
+
+	/**
+	 * Formats an ID out of an input name.
+	 *
+	 * @param string $inputName
+	 * @return string
+	 */
+	public function formatInputId($inputName)
+	{
+		return rtrim(preg_replace('/[\[\]]+/', '-', $inputName), '-');
+	}
+
+	/**
+	 * Registers a function for a template hook.
+	 *
+	 * @param string $hook
+	 * @param mixed $method
+	 */
+	public function hook($hook, $method)
+	{
+		$this->_hooks[$hook][] = $method;
+	}
+
+	/**
+	 * Invokes a template hook.
+	 *
+	 * @param string $hook
+	 * @param array &$context
+	 * @return string
+	 */
+	public function invokeHook($hook, &$context)
+	{
+		$return = '';
+
+		if (isset($this->_hooks[$hook]))
+		{
+			foreach ($this->_hooks[$hook] as $method)
+			{
+				$return .= call_user_func($method, $context);
+			}
+		}
+
+		return $return;
 	}
 
 	/**
@@ -652,5 +836,133 @@ class TemplatesService extends BaseApplicationComponent
 				$twig->addExtension($extension);
 			}
 		}
+	}
+
+	/**
+	 * Combines the JS in a buffer.
+	 *
+	 * @access   private
+	 * @param $js
+	 * @return string
+	 */
+	private function _combineJs($js)
+	{
+		return implode("\n\n", $js);
+	}
+
+	/**
+	 * Returns the HTML for an element in the CP.
+	 *
+	 * @param array &$context
+	 * @return string
+	 */
+	private function _getCpElementHtml(&$context)
+	{
+		if (!isset($context['element']))
+		{
+			return;
+		}
+
+		if (!isset($context['context']))
+		{
+			$context['context'] = 'index';
+		}
+
+		if (!isset($context['viewMode']))
+		{
+			$context['viewMode'] = 'table';
+		}
+
+		$thumbClass = 'elementthumb'.$context['element']->id;
+		$iconClass = 'elementicon'.$context['element']->id;
+
+		if ($context['viewMode'] == 'thumbs')
+		{
+			$thumbSize = 100;
+			$iconSize = 90;
+			$thumbSelectorPrefix = '.thumbsview ';
+		}
+		else
+		{
+			$thumbSize = 30;
+			$iconSize = 20;
+			$thumbSelectorPrefix = '';
+		}
+
+		$thumbUrl = $context['element']->getThumbUrl($thumbSize);
+
+		if ($thumbUrl)
+		{
+			$this->includeCss($thumbSelectorPrefix.'.'.$thumbClass.' { background-image: url('.$thumbUrl.'); }');
+			$this->includeHiResCss($thumbSelectorPrefix.'.'.$thumbClass.' { background-image: url('.$context['element']->getThumbUrl($thumbSize * 2).'); background-size: '.$thumbSize.'px; }');
+		}
+		else
+		{
+			$iconUrl = $context['element']->getIconUrl($iconSize);
+
+			if ($iconUrl)
+			{
+				$this->includeCss($thumbSelectorPrefix.'.'.$iconClass.' { background-image: url('.$iconUrl.'); }');
+				$this->includeHiResCss($thumbSelectorPrefix.'.'.$iconClass.' { background-image: url('.$context['element']->getIconUrl($iconSize * 2).'); background-size: '.$iconSize.'px; }');
+			}
+		}
+
+		$html = '<div class="element';
+
+		if ($context['context'] == 'field')
+		{
+			$html .= ' removable';
+		}
+
+		if ($context['context'] != 'index')
+		{
+			$html .= ' unselectable';
+		}
+
+		if ($thumbUrl)
+		{
+			$html .= ' hasthumb';
+		}
+		else if ($iconUrl)
+		{
+			$html .= ' hasicon';
+		}
+
+		$html .= '" data-id="'.$context['element']->id.'" data-url="'.$context['element']->getUrl().'">';
+
+		if ($context['context'] == 'field' && isset($context['name']))
+		{
+			$html .= '<input type="hidden" name="'.$context['name'].'[]" value="'.$context['element']->id.'">';
+			$html .= '<a class="delete icon" title="'.Craft::t('Remove').'"></a> ';
+		}
+
+		if ($thumbUrl)
+		{
+			$html .= '<div class="elementthumb '.$thumbClass.'"></div> ';
+		}
+		else if ($iconUrl)
+		{
+			$html .= '<div class="elementicon '.$iconClass.'"></div> ';
+		}
+
+		$html .= '<div class="label">';
+
+		if (isset($context['elementType']) && $context['elementType']->hasStatuses())
+		{
+			$html .= '<div class="status '.$context['element']->getStatus().'"></div> ';
+		}
+
+		if ($context['context'] == 'index' && ($cpEditUrl = $context['element']->getCpEditUrl()))
+		{
+			$html .= '<a href="'.$cpEditUrl.'">'.$context['element'].'</a>';
+		}
+		else
+		{
+			$html .= $context['element'];
+		}
+
+		$html .= '</div></div>';
+
+		return $html;
 	}
 }

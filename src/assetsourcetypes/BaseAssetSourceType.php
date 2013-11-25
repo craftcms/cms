@@ -759,7 +759,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$newFullPath = $this->_getParentFullPath($folder->fullPath).$newName.'/';
 
 		// Find all folders with affected fullPaths and update them.
-		$folders = craft()->assets->getAllChildFolders($folder);
+		$folders = craft()->assets->getAllDescendantFolders($folder);
 		foreach ($folders as $folderModel)
 		{
 			$folderModel->fullPath = preg_replace('#^'.$oldFullPath.'#', $newFullPath, $folderModel->fullPath);
@@ -820,7 +820,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$response->setDataItem('changedFolderIds', $mirroringData['changedFolderIds']);
 
 		$criteria = craft()->elements->getCriteria(ElementType::Asset);
-		$criteria->folderId = array_keys(craft()->assets->getAllChildFolders($folder));
+		$criteria->folderId = array_keys(craft()->assets->getAllDescendantFolders($folder));
 		$files = $criteria->find();
 
 		$transferList = array();

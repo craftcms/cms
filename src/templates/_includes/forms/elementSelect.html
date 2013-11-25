@@ -15,13 +15,13 @@
 		{% endfor %}
 	</div>
 
-	<div class="btn add icon">{{ addButtonLabel }}</div>
+	<div class="btn add icon dashed">{{ addButtonLabel }}</div>
 </div>
 
 {% set js %}
 	new {{ jsClass }}(
-		"{{ id|e('js') }}",
-		"{{ name|e('js') }}",
+		"{{ id   | namespaceInputId   | e('js') }}",
+		"{{ name | namespaceInputName | e('js') }}",
 		"{{ elementType.getClassHandle()|e('js') }}",
 		{{ sources|json_encode|raw }},
 		{{ criteria|json_encode|raw }},

@@ -35,8 +35,6 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	{
 		$attributes = array(
 			'archived'      => AttributeType::Bool,
-			'childField'    => AttributeType::String,
-			'childOf'       => AttributeType::Mixed,
 			'dateCreated'   => AttributeType::Mixed,
 			'dateUpdated'   => AttributeType::Mixed,
 			'fixedOrder'    => AttributeType::Bool,
@@ -46,12 +44,17 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 			'locale'        => AttributeType::Locale,
 			'offset'        => array(AttributeType::Number, 'default' => 0),
 			'order'         => array(AttributeType::String, 'default' => 'dateCreated desc'),
-			'parentField'   => AttributeType::String,
-			'parentOf'      => AttributeType::Mixed,
+			'relatedTo'     => AttributeType::Mixed,
 			'ref'           => AttributeType::String,
 			'search'        => AttributeType::String,
 			'status'        => array(AttributeType::String, 'default' => BaseElementModel::ENABLED),
 			'uri'           => AttributeType::String,
+
+			// Deprecated
+			'childField'    => AttributeType::String,
+			'childOf'       => AttributeType::Mixed,
+			'parentField'   => AttributeType::String,
+			'parentOf'      => AttributeType::Mixed,
 		);
 
 		// Mix in any custom attributes defined by the element type
@@ -174,7 +177,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 */
 	public function count()
 	{
-		return $this->total();
+		return count($this->find());
 	}
 
 	/**
@@ -291,6 +294,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 */
 	public function first($attributes = null)
 	{
+		$this->setAttributes($attributes);
+
 		return $this->findElementAtOffset(0);
 	}
 

@@ -6,6 +6,11 @@ namespace Craft;
  */
 class ElementsService extends BaseApplicationComponent
 {
+	private $_joinSourceMatrixBlocks;
+	private $_joinTargetMatrixBlocks;
+	private $_joinSources;
+	private $_joinTargets;
+
 	// Finding Elements
 	// ================
 
@@ -30,6 +35,51 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns an element by its ID.
+	 *
+	 * @param int $elementId
+	 * @param string|null $type
+	 * @return BaseElementModel|null
+	 */
+	public function getElementById($elementId, $elementType = null)
+	{
+		if (!$elementId)
+		{
+			return null;
+		}
+
+		if (!$elementType)
+		{
+			$elementType = $this->getElementTypeById($elementId);
+
+			if (!$elementType)
+			{
+				return null;
+			}
+		}
+
+		$criteria = $this->getCriteria($elementType);
+		$criteria->id = $elementId;
+		$criteria->status = null;
+		return $criteria->first();
+	}
+
+	/**
+	 * Returns the element type used by the element of a given ID.
+	 *
+	 * @param int $elementId
+	 * @return string|null
+	 */
+	public function getElementTypeById($elementId)
+	{
+		return craft()->db->createCommand()
+			->select('type')
+			->from('elements')
+			->where(array('id' => $elementId))
+			->queryScalar();
+	}
+
+	/**
 	 * Finds elements.
 	 *
 	 * @param mixed $criteria
@@ -39,7 +89,7 @@ class ElementsService extends BaseApplicationComponent
 	public function findElements($criteria = null, $justIds = false)
 	{
 		$elements = array();
-		$subquery = $this->buildElementsQuery($criteria);
+		$subquery = $this->buildElementsQuery($criteria, $fieldColumns);
 
 		if ($subquery)
 		{
@@ -69,14 +119,6 @@ class ElementsService extends BaseApplicationComponent
 
 			$query->params = $subquery->params;
 
-			// Get a list of all the field handles we might be dealing with
-			$fieldHandles = array();
-
-			foreach (craft()->fields->getFieldsWithContent() as $field)
-			{
-				$fieldHandles[] = $field->handle;
-			}
-
 			if ($criteria->fixedOrder)
 			{
 				$ids = ArrayHelper::stringToArray($criteria->id);
@@ -92,13 +134,20 @@ class ElementsService extends BaseApplicationComponent
 			{
 				$orderColumns = ArrayHelper::stringToArray($criteria->order);
 
-				if ($fieldHandles)
+				if ($fieldColumns)
 				{
-					// Add the "field_" prefix to any custom fields we're ordering by
-					$fieldColumnRegex = '/^(?:'.implode('|', $fieldHandles).')\b/';
 					foreach ($orderColumns as $i => $orderColumn)
 					{
-						$orderColumns[$i] = preg_replace($fieldColumnRegex, 'field_$0', $orderColumn);
+						// Is this column for a custom field?
+						foreach ($fieldColumns as $column)
+						{
+							if (preg_match('/^'.$column['handle'].'\b(.*)$/', $orderColumn, $matches))
+							{
+								// Use the field column name instead
+								$orderColumns[$i] = $column['column'].$matches[1];
+								// Don't break from the loop though because there could be more than one column that uses this handle!
+							}
+						}
 					}
 				}
 
@@ -149,28 +198,35 @@ class ElementsService extends BaseApplicationComponent
 						if ($elementType->hasContent())
 						{
 							// Separate the content values from the main element attributes
-							$content = new ContentModel();
-							$content->elementId = $row['id'];
-							$content->locale = $criteria->locale;
-							$content->title = $row['title'];
-							unset($row['title']);
+							$content = array();
+							$content['elementId'] = $row['id'];
+							$content['locale'] = $criteria->locale;
+
+							if (isset($row['title']))
+							{
+								$content['title'] = $row['title'];
+								unset($row['title']);
+							}
 
 							// Did we actually get the requested locale back?
 							if ($row['locale'] == $criteria->locale)
 							{
-								$content->id = $row['contentId'];
+								$content['id'] = $row['contentId'];
 							}
 							else
 							{
 								$row['locale'] = $criteria->locale;
 							}
 
-							foreach ($fieldHandles as $fieldHandle)
+							if ($fieldColumns)
 							{
-								if (isset($row['field_'.$fieldHandle]))
+								foreach ($fieldColumns as $column)
 								{
-									$content->$fieldHandle = $row['field_'.$fieldHandle];
-									unset($row['field_'.$fieldHandle]);
+									if (isset($row[$column['column']]))
+									{
+										$content[$column['handle']] = $row[$column['column']];
+										unset($row[$column['column']]);
+									}
 								}
 							}
 						}
@@ -243,9 +299,10 @@ class ElementsService extends BaseApplicationComponent
 	 * Returns a DbCommand instance ready to search for elements based on a given element criteria.
 	 *
 	 * @param mixed &$criteria
+	 * @param array &$fieldColumns
 	 * @return DbCommand|false
 	 */
-	public function buildElementsQuery(&$criteria = null)
+	public function buildElementsQuery(&$criteria = null, &$fieldColumns = array())
 	{
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
@@ -266,16 +323,28 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($elementType->hasContent())
 		{
-			$contentCols = 'content.id AS contentId, content.locale, content.title';
+			$contentTable = $elementType->getContentTableForElementsQuery($criteria);
 
-			foreach (craft()->fields->getFieldsWithContent() as $field)
+			if ($contentTable)
 			{
-				$contentCols .= ', content.field_'.$field->handle;
-			}
+				$contentCols = 'content.id AS contentId, content.locale';
 
-			$query->addSelect($contentCols);
-			$query->join('content content', 'content.elementId = elements.id');
-			$this->_orderByRequestedLocale($query, 'content', $criteria->locale);
+				if ($elementType->hasTitles())
+				{
+					$contentCols .= ', content.title';
+				}
+
+				$fieldColumns = $elementType->getContentFieldColumnsForElementsQuery($criteria);
+
+				foreach ($fieldColumns as $column)
+				{
+					$contentCols .= ', content.'.$column['column'];
+				}
+
+				$query->addSelect($contentCols);
+				$query->join($contentTable.' content', 'content.elementId = elements.id');
+				$this->_orderByRequestedLocale($query, 'content', $criteria->locale);
+			}
 		}
 
 		if ($elementType->isLocalized())
@@ -383,29 +452,80 @@ class ElementsService extends BaseApplicationComponent
 			$query->andWhere(DbHelper::parseDateParam('elements.dateUpdated', $criteria->dateUpdated, $query->params));
 		}
 
-		if ($criteria->parentOf)
+		// Relational params
+
+		// Convert the old childOf and parentOf params to the relatedTo param
+		// childOf(element)  => relatedTo({ source: element })
+		// parentOf(element) => relatedTo({ target: element })
+		if (!$criteria->relatedTo && ($criteria->childOf || $criteria->parentOf))
 		{
-			list($childIds, $fieldIds) = $this->_normalizeRelationParams($criteria->parentOf, $criteria->parentField);
-
-			$query->join('relations parents', 'parents.parentId = elements.id');
-			$query->andWhere(DbHelper::parseParam('parents.childId', $childIds, $query->params));
-
-			if ($fieldIds)
+			if ($criteria->childOf && $criteria->parentOf)
 			{
-				$query->andWhere(DbHelper::parseParam('parents.fieldId', $fieldIds, $query->params));
+				$criteria->relatedTo = array('and',
+					array('sourceElement' => $criteria->childOf, 'field' => $criteria->childField),
+					array('targetElement' => $criteria->parentOf, 'field' => $criteria->parentField)
+				);
+			}
+			else if ($criteria->childOf)
+			{
+				$criteria->relatedTo = array('sourceElement' => $criteria->childOf, 'field' => $criteria->childField);
+			}
+			else
+			{
+				$criteria->relatedTo = array('targetElement' => $criteria->parentOf, 'field' => $criteria->parentField);
 			}
 		}
 
-		if ($criteria->childOf)
+		if ($criteria->relatedTo)
 		{
-			list($parentIds, $fieldIds) = $this->_normalizeRelationParams($criteria->childOf, $criteria->childField);
+			$this->_joinSourceMatrixBlocks = false;
+			$this->_joinTargetMatrixBlocks = false;
+			$this->_joinSources = false;
+			$this->_joinTargets = false;
 
-			$query->join('relations children', 'children.childId = elements.id');
-			$query->andWhere(DbHelper::parseParam('children.parentId', $parentIds, $query->params));
+			$relConditions = $this->_parseRelationParam($criteria->relatedTo, $query);
 
-			// Make it possible to order by the relation sort order
-			$query->addSelect('children.sortOrder');
+			if ($relConditions === false)
+			{
+				return false;
+			}
+
+			$query->andWhere($relConditions);
+
+			// If there's only one relation criteria and it's specifically for grabbing target elements,
+			// allow the query to order by the relation sort order
+			if ($this->_joinSources && !$this->_joinTargets && !$this->_joinSourceMatrixBlocks && !$this->_joinTargetMatrixBlocks)
+			{
+				$query->addSelect('sources.sortOrder');
+			}
+
+			if ($this->_joinSourceMatrixBlocks)
+			{
+				$query->leftJoin('matrixblocks source_matrixblocks', 'source_matrixblocks.ownerId = elements.id');
+				$query->leftJoin('relations matrixblock_targets', 'matrixblock_targets.sourceId = source_matrixblocks.id');
+			}
+
+			if ($this->_joinTargetMatrixBlocks)
+			{
+				$this->_joinSources = true;
+			}
+
+			if ($this->_joinSources)
+			{
+				$query->leftJoin('relations sources', 'sources.targetId = elements.id');
+
+				if ($this->_joinTargetMatrixBlocks)
+				{
+					$query->leftJoin('matrixblocks target_matrixblocks', 'target_matrixblocks.id = sources.sourceId');
+				}
+			}
+
+			if ($this->_joinTargets)
+			{
+				$query->join('relations targets', 'targets.sourceId = elements.id');
+			}
 		}
+
 
 		// Field conditions
 		foreach ($criteria->getSupportedFieldHandles() as $fieldHandle)
@@ -413,7 +533,7 @@ class ElementsService extends BaseApplicationComponent
 			if ($criteria->$fieldHandle !== false)
 			{
 				$field = craft()->fields->getFieldByHandle($fieldHandle);
-				$fieldType = craft()->fields->populateFieldType($field);
+				$fieldType = $field->getFieldType();
 
 				if ($fieldType->modifyElementsQuery($query, $criteria->$fieldHandle) === false)
 				{
@@ -674,59 +794,274 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Normalizes parentOf and childOf criteria params,
-	 * allowing them to be set to ElementCriteriaModel's,
-	 * and swapping them with their IDs.
+	 * Parses a relatedTo criteria param and returns the condition(s) or 'false' if there's an issue.
 	 *
-	 * @param mixed $elements
-	 * @param mixed $fields
-	 * @return array
+	 * @access private
+	 * @param mixed $relatedTo
+	 * @param DbCommand $query
+	 * @return mixed
 	 */
-	private function _normalizeRelationParams($elements, $fields)
+	private function _parseRelationParam($relatedTo, DbCommand $query)
 	{
-		$elementIds = array();
-		$fieldIds = array();
+		// Ensure the criteria is an array
+		$relatedTo = ArrayHelper::stringToArray($relatedTo);
 
-		// Normalize the element(s)
-		$elements = ArrayHelper::stringToArray($elements);
-
-		foreach ($elements as $element)
+		if (isset($relatedTo['element']) || isset($relatedTo['sourceElement']) || isset($relatedTo['targetElement']))
 		{
-			if (is_numeric($element) && intval($element) == $element)
+			$relatedTo = array($relatedTo);
+		}
+
+		$conditions = array();
+
+		if ($relatedTo[0] == 'and' || $relatedTo[0] == 'or')
+		{
+			$glue = array_shift($relatedTo);
+		}
+		else
+		{
+			$glue = 'or';
+		}
+
+		foreach ($relatedTo as $relCriteria)
+		{
+			$condition = $this->_subparseRelationParam($relCriteria, $query);
+
+			if ($condition)
 			{
-				$elementIds[] = $element;
+				$conditions[] = $condition;
 			}
-			else if ($element instanceof BaseElementModel)
+			else if ($glue == 'or')
 			{
-				$elementIds[] = $element->id;
+				continue;
 			}
-			else if ($element instanceof ElementCriteriaModel)
+			else
 			{
-				$elementIds = array_merge($elementIds, $element->ids());
+				return false;
 			}
 		}
 
-		// Normalize the field(s)
-		$fields = ArrayHelper::stringToArray($fields);
-
-		foreach ($fields as $field)
+		if ($conditions)
 		{
-			if (is_numeric($field) && intval($field) == $field)
+			if (count($conditions) == 1)
 			{
-				$fieldIds[] = $field;
+				return $conditions[0];
 			}
-			else if (is_string($field))
+			else
 			{
-				$fieldModel = craft()->fields->getFieldByHandle($field);
+				array_unshift($conditions, $glue);
+				return $conditions;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
 
-				if ($fieldModel)
+	/**
+	 * Parses a part of a relatedTo criteria param and returns the condition or 'false' if there's an issue.
+	 *
+	 * @access private
+	 * @param mixed $relCriteria
+	 * @param DbCommand $query
+	 * @return mixed
+	 */
+	private function _subparseRelationParam($relCriteria, DbCommand $query)
+	{
+		if (!is_array($relCriteria))
+		{
+			$relCriteria = array('element' => $relCriteria);
+		}
+
+		// Get the element IDs, wherever they are
+		$relElementIds = array();
+
+		foreach (array('element', 'sourceElement', 'targetElement') as $elementParam)
+		{
+			if (isset($relCriteria[$elementParam]))
+			{
+				$elements = ArrayHelper::stringToArray($relCriteria[$elementParam]);
+
+				foreach ($elements as $element)
 				{
-					$fieldIds[] = $fieldModel->id;
+					if (is_numeric($element))
+					{
+						$relElementIds[] = $element;
+					}
+					else if ($element instanceof BaseElementModel)
+					{
+						$relElementIds[] = $element->id;
+					}
+					else if ($element instanceof ElementCriteriaModel)
+					{
+						$relElementIds = array_merge($relElementIds, $element->ids());
+					}
+				}
+
+				break;
+			}
+		}
+
+		if (!$relElementIds)
+		{
+			return false;
+		}
+
+		// Going both ways?
+		if (isset($relCriteria['element']))
+		{
+			if (!isset($relCriteria['field']))
+			{
+				$relCriteria['field'] = null;
+			}
+
+			return $this->_parseRelationParam(array('or',
+				array('sourceElement' => $relElementIds, 'field' => $relCriteria['field']),
+				array('targetElement' => $relElementIds, 'field' => $relCriteria['field'])
+			), $query);
+		}
+
+		$conditions = array();
+		$normalFieldIds = array();
+
+		if (!empty($relCriteria['field']))
+		{
+			// Loop through all of the fields in this rel critelia,
+			// create the Matrix-specific conditions right away
+			// and save the normal field IDs for later
+			$fields = ArrayHelper::stringToArray($relCriteria['field']);
+
+			foreach ($fields as $field)
+			{
+				$fieldModel = null;
+
+				if (is_numeric($field))
+				{
+					$fieldHandleParts = null;
+					$fieldModel = craft()->fields->getFieldById($field);
+				}
+				else
+				{
+					$fieldHandleParts = explode('.', $field);
+					$fieldModel = craft()->fields->getFieldByHandle($fieldHandleParts[0]);
+				}
+
+				if (!$fieldModel)
+				{
+					continue;
+				}
+
+				// Is this a Matrix field?
+				if ($fieldModel->type == 'Matrix')
+				{
+					$blockTypeFieldIds = array();
+
+					// Searching by a specific block type field?
+					if (isset($fieldHandleParts[1]))
+					{
+						// There could be more than one block type field with this handle,
+						// so we must loop through all of the block types on this Matrix field
+						$blockTypes = craft()->matrix->getBlockTypesByFieldId($fieldModel->id);
+
+						foreach ($blockTypes as $blockType)
+						{
+							foreach ($blockType->getFields() as $blockTypeField)
+							{
+								if ($blockTypeField->handle == $fieldHandleParts[1])
+								{
+									$blockTypeFieldIds[] = $blockTypeField->id;
+									break;
+								}
+							}
+						}
+
+						if (!$blockTypeFieldIds)
+						{
+							continue;
+						}
+					}
+
+					if (isset($relCriteria['sourceElement']))
+					{
+						$this->_joinTargetMatrixBlocks = true;
+
+						$condition = array('and',
+							DbHelper::parseParam('target_matrixblocks.ownerId', $relElementIds, $query->params),
+							'target_matrixblocks.fieldId = '.$fieldModel->id
+						);
+
+						if ($blockTypeFieldIds)
+						{
+							$condition[] = DbHelper::parseParam('sources.fieldId', $blockTypeFieldIds, $query->params);
+						}
+					}
+					else
+					{
+						$this->_joinSourceMatrixBlocks = true;
+
+						$condition = array('and',
+							DbHelper::parseParam('matrixblock_targets.targetId', $relElementIds, $query->params),
+							'source_matrixblocks.fieldId = '.$fieldModel->id
+						);
+
+						if ($blockTypeFieldIds)
+						{
+							$condition[] = DbHelper::parseParam('matrixblock_targets.fieldId', $blockTypeFieldIds, $query->params);
+						}
+					}
+
+					$conditions[] = $condition;
+				}
+				else
+				{
+					$normalFieldIds[] = $fieldModel->id;
 				}
 			}
 		}
 
-		return array($elementIds, $fieldIds);
+		// If there were no fields, or there are some non-Matrix fields, add the normal relation condition
+		// (Basically, run this code if the rel criteria wasn't exclusively for Matrix.)
+		if (empty($relCriteria['field']) || $normalFieldIds)
+		{
+			if (isset($relCriteria['sourceElement']))
+			{
+				$this->_joinSources = true;
+				$relTable = 'sources';
+				$relColumn = 'sourceId';
+			}
+			else if (isset($relCriteria['targetElement']))
+			{
+				$this->_joinTargets = true;
+				$relTable = 'targets';
+				$relColumn = 'targetId';
+			}
+
+			$condition = DbHelper::parseParam($relTable.'.'.$relColumn, $relElementIds, $query->params);
+
+			if ($normalFieldIds)
+			{
+				$condition = array('and', $condition, DbHelper::parseParam($relTable.'.fieldId', $normalFieldIds, $query->params));
+			}
+
+			$conditions[] = $condition;
+		}
+
+		if ($conditions)
+		{
+			if (count($conditions) == 1)
+			{
+				return $conditions[0];
+			}
+			else
+			{
+				array_unshift($conditions, 'or');
+				return $conditions;
+			}
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**

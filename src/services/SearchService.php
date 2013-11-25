@@ -545,7 +545,7 @@ class SearchService extends BaseApplicationComponent
 			// Support for attribute:* syntax to just check if something has *any* keyword value
 			if ($term->subLeft)
 			{
-				$sql = $this->_sqlWhere('keywords', 'LIKE', '%');
+				$sql = $this->_sqlWhere('keywords', '!=', '');
 			}
 		}
 

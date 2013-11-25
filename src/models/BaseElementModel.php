@@ -27,7 +27,6 @@ abstract class BaseElementModel extends BaseModel
 	{
 		return array(
 			'id'          => AttributeType::Number,
-			//'type'        => array(AttributeType::String, 'default' => $this->elementType),
 			'enabled'     => array(AttributeType::Bool, 'default' => true),
 			'archived'    => array(AttributeType::Bool, 'default' => false),
 			'locale'      => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
@@ -44,7 +43,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	function __toString()
 	{
-		return $this->getTitle();
+		return (string) $this->getTitle();
 	}
 
 	/**
@@ -210,6 +209,7 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.
 	 *
+	 * @deprecated
 	 * @param mixed $field
 	 * @return ElementCriteriaModel
 	 */
@@ -224,6 +224,7 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns a new ElementCriteriaModel prepped to return this element's same-type parents.
 	 *
+	 * @deprecated
 	 * @param mixed $field
 	 * @return ElementCriteriaModel
 	 */
@@ -254,7 +255,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	function __isset($name)
 	{
-		if (parent::__isset($name) || craft()->fields->getFieldByHandle($name))
+		if (parent::__isset($name) || $this->getFieldByHandle($name))
 		{
 			return true;
 		}
@@ -272,7 +273,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function offsetExists($offset)
 	{
-		if (parent::offsetExists($offset) || craft()->fields->getFieldByHandle($offset))
+		if (parent::offsetExists($offset) || $this->getFieldByHandle($offset))
 		{
 			return true;
 		}
@@ -299,7 +300,8 @@ abstract class BaseElementModel extends BaseModel
 		catch (\Exception $e)
 		{
 			// Is $name a field handle?
-			$field = craft()->fields->getFieldByHandle($name);
+			$field = $this->getFieldByHandle($name);
+
 			if ($field)
 			{
 				return $this->_getPreppedContentForField($field);
@@ -313,6 +315,9 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the raw content saved on this entity.
 	 *
+	 * This is now deprecated. Use getContent() to get the ContentModel instead.
+	 *
+	 * @deprecated
 	 * @param string|null $fieldHandle
 	 * @return mixed
 	 */
@@ -372,6 +377,148 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns the content for the element.
+	 *
+	 * @return ContentModel
+	 */
+	public function getContent()
+	{
+		if (!isset($this->_content))
+		{
+			if ($this->id)
+			{
+				$contentService = craft()->content;
+
+				$originalContentTable      = $contentService->contentTable;
+				$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+				$originalFieldContext      = $contentService->fieldContext;
+
+				$contentService->contentTable      = $this->getContentTable();
+				$contentService->fieldColumnPrefix = $this->getFieldColumnPrefix();
+				$contentService->fieldContext      = $this->getFieldContext();
+
+				$this->_content = $contentService->getElementContent($this->id, $this->locale);
+
+				$contentService->contentTable = $originalContentTable;
+				$contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+				$contentService->fieldContext = $originalFieldContext;
+			}
+
+			if (empty($this->_content))
+			{
+				$this->_content = $this->createContentModel();
+			}
+		}
+
+		return $this->_content;
+	}
+
+	/**
+	 * Sets the content for the element.
+	 *
+	 * @param ContentModel|array $content
+	 */
+	public function setContent($content)
+	{
+		if (is_array($content))
+		{
+			if (!isset($this->_content))
+			{
+				$this->_content = $this->createContentModel();
+			}
+
+			$this->_content->setAttributes($content);
+		}
+		else if ($content instanceof ContentModel)
+		{
+			$this->_content = $content;
+		}
+	}
+
+	/**
+	 * Returns the field with a given handle.
+	 *
+	 * @access protected
+	 * @param string $handle
+	 * @return FieldModel|null
+	 */
+	protected function getFieldByHandle($handle)
+	{
+		$contentService = craft()->content;
+
+		$originalFieldContext = $contentService->fieldContext;
+		$contentService->fieldContext = $this->getFieldContext();
+
+		$field = craft()->fields->getFieldByHandle($handle);
+
+		$contentService->fieldContext = $originalFieldContext;
+
+		return $field;
+	}
+
+	/**
+	 * Creates a content model for this element.
+	 *
+	 * @access protected
+	 * @return ContentModel
+	 */
+	protected function createContentModel()
+	{
+		$contentService = craft()->content;
+
+		$originalContentTable      = $contentService->contentTable;
+		$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+		$originalFieldContext      = $contentService->fieldContext;
+
+		$contentService->contentTable      = $this->getContentTable();
+		$contentService->fieldColumnPrefix = $this->getFieldColumnPrefix();
+		$contentService->fieldContext      = $this->getFieldContext();
+
+		$content = new ContentModel();
+		$content->elementId = $this->id;
+		$content->locale = $this->locale;
+
+		$contentService->contentTable = $originalContentTable;
+		$contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+		$contentService->fieldContext = $originalFieldContext;
+
+		return $content;
+	}
+
+	/**
+	 * Returns the name of the table this element's content is stored in.
+	 *
+	 * @access protected
+	 * @return string
+	 */
+	protected function getContentTable()
+	{
+		return craft()->content->contentTable;
+	}
+
+	/**
+	 * Returns the field column prefix this element's content uses.
+	 *
+	 * @access protected
+	 * @return string
+	 */
+	protected function getFieldColumnPrefix()
+	{
+		return craft()->content->fieldColumnPrefix;
+	}
+
+	/**
+	 * Returns the field context this element's content uses.
+	 *
+	 * @access protected
+	 * @return string
+	 */
+	protected function getFieldContext()
+	{
+		return craft()->content->fieldContext;
+	}
+
+	/**
 	 * Returns an element right before/after this one, from a given set of criteria.
 	 *
 	 * @access private
@@ -404,41 +551,6 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Returns the content for the element.
-	 *
-	 * @return ContentModel
-	 */
-	public function getContent()
-	{
-		if (!isset($this->_content))
-		{
-			if ($this->id)
-			{
-				$this->_content = craft()->content->getElementContent($this->id, $this->locale);
-			}
-
-			if (empty($this->_content))
-			{
-				$this->_content = new ContentModel();
-				$this->_content->elementId = $this->id;
-				$this->_content->locale = $this->locale;
-			}
-		}
-
-		return $this->_content;
-	}
-
-	/**
-	 * Sets the content for the element.
-	 *
-	 * @param ContentModel $content
-	 */
-	public function setContent(ContentModel $content)
-	{
-		$this->_content = $content;
-	}
-
-	/**
 	 * Returns the prepped content for a given field.
 	 *
 	 * @param FieldModel $field
@@ -460,10 +572,12 @@ abstract class BaseElementModel extends BaseModel
 				$value = null;
 			}
 
-			$fieldType = craft()->fields->populateFieldType($field, $this);
+			// Give the field type a chance to prep the value for use
+			$fieldType = $field->getFieldType();
 
 			if ($fieldType)
 			{
+				$fieldType->element = $this;
 				$value = $fieldType->prepValue($value);
 			}
 

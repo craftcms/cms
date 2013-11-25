@@ -44,6 +44,28 @@ $.extend(Craft, {
 	},
 
 	/**
+	 * Escapes some HTML.
+	 *
+	 * @param string str
+	 * @return string
+	 */
+	escapeHtml: function(str)
+	{
+		return $('<div/>').text(str).html();
+	},
+
+	/**
+	 * Formats an ID out of an input name.
+	 *
+	 * @param string inputName
+	 * @return string
+	 */
+	formatInputId: function(inputName)
+	{
+		return this.rtrim(inputName.replace(/[\[\]]+/g, '-'), '-');
+	},
+
+	/**
 	 * Returns whether a package is included in this Craft build.
 	 *
 	 * @return bool
@@ -245,6 +267,16 @@ $.extend(Craft, {
 	getActionUrl: function(path, params)
 	{
 		return Craft.getUrl(path, params, Craft.actionUrl);
+	},
+
+	/**
+	 * Redirects the window to a given URL.
+	 *
+	 * @param string url
+	 */
+	redirectTo: function(url)
+	{
+		document.location.href = this.getUrl(url);
 	},
 
 	/**
@@ -912,9 +944,11 @@ $.extend($.fn, {
 	{
 		return this.each(function()
 		{
-			if (!$.data(this, 'menubtn'))
+			var $btn = $(this);
+
+			if (!$btn.data('menubtn') && $btn.next().hasClass('menu'))
 			{
-				new Garnish.MenuBtn(this);
+				new Garnish.MenuBtn($btn);
 			}
 		});
 	}

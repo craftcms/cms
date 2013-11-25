@@ -103,26 +103,14 @@ class RichTextFieldType extends BaseFieldType
 	{
 		$this->_includeFieldResources();
 
-		// Config?
-		if ($this->getSettings()->configFile)
-		{
-			$configPath = craft()->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
-			$config = IOHelper::getFileContents($configPath);
-		}
+		$id = craft()->templates->formatInputId($name);
 
-		if (empty($config))
-		{
-			$config = '{}';
-		}
-
-		$sections = JsonHelper::encode($this->_getSectionSources());
-
-		craft()->templates->includeJs(craft()->templates->render('_components/fieldtypes/RichText/init.js', array(
-			'handle'   => $this->model->handle,
-			'config'   => $config,
-			'lang'     => static::$_inputLang,
-			'sections' => $sections
-		)));
+		craft()->templates->includeJs('new Craft.RichTextInput(' .
+			'"'.craft()->templates->namespaceInputId($id).'", ' .
+			'"'.static::$_inputLang.'", ' .
+			JsonHelper::encode($this->_getSectionSources()).', ' .
+			$this->_getConfigJs() .
+		');');
 
 		if ($value instanceof RichTextData)
 		{
@@ -133,7 +121,7 @@ class RichTextFieldType extends BaseFieldType
 		{
 			// Preserve the ref tags with hashes
 			// {type:id:url} => {type:id:url}#type:id
-			$value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+)\:url\})\2/', function($matches)
+			$value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.HandleValidator::$handlePattern.')\})\2/', function($matches)
 			{
 				return $matches[1].$matches[2].$matches[3].'#'.$matches[4].$matches[2];
 			}, $value);
@@ -145,17 +133,16 @@ class RichTextFieldType extends BaseFieldType
 		// Swap any <!--pagebreak-->'s with <hr>'s
 		$value = str_replace('<!--pagebreak-->', '<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />', $value);
 
-		return '<textarea name="'.$name.'" class="redactor-'.$this->model->handle.'" style="display: none">'.htmlentities($value, ENT_NOQUOTES, 'UTF-8').'</textarea>';
+		return '<textarea id="'.$id.'" name="'.$name.'" style="display: none">'.htmlentities($value, ENT_NOQUOTES, 'UTF-8').'</textarea>';
 	}
 
 	/**
-	 * Preps the post data before it's saved to the database.
+	 * Returns the input value as it should be saved to the database.
 	 *
-	 * @access protected
 	 * @param mixed $value
 	 * @return mixed
 	 */
-	protected function prepPostData($value)
+	public function prepValueFromPost($value)
 	{
 		if ($value)
 		{
@@ -177,9 +164,9 @@ class RichTextFieldType extends BaseFieldType
 		}
 
 		// Find any element URLs and swap them with ref tags
-		$value = preg_replace_callback('/(href=|src=)([\'"])[^\'"]+?#(\w+):(\d+)\2/', function($matches)
+		$value = preg_replace_callback('/(href=|src=)([\'"])[^\'"]+?#(\w+):(\d+)(:'.HandleValidator::$handlePattern.')?\2/', function($matches)
 		{
-			return $matches[1].$matches[2].'{'.$matches[3].':'.$matches[4].':url}'.$matches[2];
+			return $matches[1].$matches[2].'{'.$matches[3].':'.$matches[4].(!empty($matches[5]) ? $matches[5] : ':url').'}'.$matches[2];
 		}, $value);
 
 		return $value;
@@ -192,17 +179,49 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	private function _getSectionSources()
 	{
-		$sections = craft()->sections->getAllSections();
 		$sources = array();
+		$sections = craft()->sections->getAllSections();
+		$showSingles = false;
+
 		foreach ($sections as $section)
 		{
-			if ($section->hasUrls)
+			if ($section->type == SectionType::Single)
+			{
+				$showSingles = true;
+			}
+			else if ($section->hasUrls)
 			{
 				$sources[] = 'section:' . $section->id;
 			}
 		}
 
+		if ($showSingles)
+		{
+			array_unshift($sources, 'singles');
+		}
+
 		return $sources;
+	}
+
+	/**
+	 * Returns the Redactor config JS used by this field.
+	 *
+	 * @return string
+	 */
+	private function _getConfigJs()
+	{
+		if ($this->getSettings()->configFile)
+		{
+			$configPath = craft()->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
+			$js = IOHelper::getFileContents($configPath);
+		}
+
+		if (empty($js))
+		{
+			$js = '{}';
+		}
+
+		return $js;
 	}
 
 	/**
@@ -212,31 +231,30 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	private function _includeFieldResources()
 	{
-		if (!static::$_includedFieldResources)
+		craft()->templates->includeCssResource('lib/redactor/redactor.css');
+		craft()->templates->includeCssResource('lib/redactor/plugins/pagebreak.css');
+
+		// Gotta use the uncompressed Redactor JS until the compressed one gets our Live Preview menu fix
+		craft()->templates->includeJsResource('lib/redactor/redactor.js');
+		//craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
+
+		craft()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
+		craft()->templates->includeJsResource('lib/redactor/plugins/pagebreak.js');
+
+		craft()->templates->includeTranslations('Insert image', 'Insert URL', 'Choose image', 'Link', 'Link to an entry', 'Insert link', 'Unlink', 'Link to an asset');
+
+		craft()->templates->includeJsResource('js/RichTextInput.js');
+
+		// Check to see if the Redactor has been translated into the current locale
+		if (craft()->language != craft()->sourceLanguage)
 		{
-			craft()->templates->includeCssResource('lib/redactor/redactor.css');
-			craft()->templates->includeCssResource('lib/redactor/plugins/pagebreak.css');
-
-			// Gotta use the uncompressed Redactor JS until the compressed one gets our Live Preview menu fix
-			craft()->templates->includeJsResource('lib/redactor/redactor.js');
-			//craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
-
-			craft()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
-			craft()->templates->includeJsResource('lib/redactor/plugins/pagebreak.js');
-
-			// Check to see if the Redactor has been translated into the current locale
-			if (craft()->language != craft()->sourceLanguage)
+			// First try to include the actual target locale
+			if (!$this->_includeLangFile(craft()->language))
 			{
-				// First try to include the actual target locale
-				if (!$this->_includeLangFile(craft()->language))
-				{
-					// Otherwise try to load the language (without the territory half)
-					$languageId = craft()->locale->getLanguageID(craft()->language);
-					$this->_includeLangFile($languageId);
-				}
+				// Otherwise try to load the language (without the territory half)
+				$languageId = craft()->locale->getLanguageID(craft()->language);
+				$this->_includeLangFile($languageId);
 			}
-
-			static::$_includedFieldResources = true;
 		}
 	}
 

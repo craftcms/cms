@@ -11,16 +11,18 @@
 	"Attempted to position a modal whose container has not been set.",
 	"Are you sure you want to transfer your license to this domain?",
 	"License transferred.",
-	"Save",
-	"Cancel",
-	"Remove",
-	"Delete",
-	"Show",
-	"Hide",
-	"Close",
-	"Done",
-	"Reorder",
 	"An unknown error occurred.",
+	"Cancel",
+	"Close",
+	"Create",
+	"Done",
+	"Delete",
+	"Handle",
+	"Name",
+	"Remove",
+	"Reorder",
+	"Save",
+	"Settings",
 	"New order saved.",
 	"Couldn’t save new order.",
 	"Are you sure you want to delete “{name}”?",
@@ -38,7 +40,9 @@
 	"Rename folder",
 	"Delete folder",
 	"Enter the name of the folder",
-	"Really delete folder “{folder}”?"
+	"Really delete folder “{folder}”?",
+	"Upload files",
+	"Select Transform"
 -%}
 
 {% if sidebar is not defined %}
@@ -111,11 +115,9 @@
 
 			<nav>
 				<ul id="nav">
-					{% set firstSeg = craft.request.segment(1) %}
-					{% if firstSeg == 'myaccount' %}{% set firstSeg = 'users' %}{% endif %}
-					{% for handle, item in craft.cp.nav %}
+					{% for handle, item in craft.cp.nav() %}
 						<li id="nav-{{ handle }}">
-							<a class="{% if item.hasIcon is defined and item.hasIcon %}hasicon{% endif %} {% if firstSeg == handle %}sel{% endif %}" href="{{ url(handle) }}">
+							<a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
 								{{- item.name -}}
 								{%- if item.badge is defined and item.badge -%}
 									<span class="badge">{{ item.badge }}</span>

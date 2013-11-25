@@ -95,6 +95,8 @@ class TableFieldType extends BaseFieldType
 
 		craft()->templates->includeJsResource('js/TableFieldSettings.js');
 		craft()->templates->includeJs('new Craft.TableFieldSettings(' .
+			'"'.craft()->templates->namespaceInputName('columns').'", ' .
+			'"'.craft()->templates->namespaceInputName('defaults').'", ' .
 			JsonHelper::encode($columns).', ' .
 			JsonHelper::encode($defaults).', ' .
 			JsonHelper::encode($columnSettings) .
@@ -153,7 +155,7 @@ class TableFieldType extends BaseFieldType
 				}
 			}
 
-			$id = rtrim(preg_replace('/[\[\]]+/', '-', $name), '-');
+			$id = craft()->templates->formatInputId($name);
 
 			$input .= craft()->templates->render('_includes/forms/editableTable', array(
 				'id'   => $id,
@@ -167,13 +169,12 @@ class TableFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Preps the post data before it's saved to the database.
+	 * Returns the input value as it should be saved to the database.
 	 *
-	 * @access protected
 	 * @param mixed $value
 	 * @return mixed
 	 */
-	protected function prepPostData($value)
+	public function prepValueFromPost($value)
 	{
 		if (is_array($value))
 		{

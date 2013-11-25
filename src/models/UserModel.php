@@ -340,4 +340,20 @@ class UserModel extends BaseElementModel
 
 		return $user;
 	}
+
+	/**
+	 * @param null $attributes
+	 * @param bool $clearErrors
+	 * @return bool|void
+	 */
+	public function validate($attributes = null, $clearErrors = true)
+	{
+		// Don't allow whitespace in the username.
+		if (preg_match('/\s+/', $this->username))
+		{
+			$this->addError('username', Craft::t('Spaces are not allowed in the username.'));
+		}
+
+		return parent::validate($attributes, false);
+	}
 }

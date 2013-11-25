@@ -59,6 +59,14 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		}
 
 		this.addListener(this.$btn, 'click', 'togglePreviewMode');
+
+		Craft.cp.on('beforeSaveShortcut', $.proxy(function()
+		{
+			if (this.inPreviewMode)
+			{
+				this.moveFieldsBack();
+			}
+		}, this));
 	},
 
 	togglePreviewMode: function()
@@ -94,7 +102,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		// Move all the fields into the editor rather than copying them
 		// so any JS that's referencing the elements won't break.
 		this.fields = [];
-		var $fields = this.$form.find('.field').not($('#entry-settings').find('.field'));
+		var $fields = $('#fields > .field, #fields > div > div > .field');
 
 		for (var i= 0; i < $fields.length; i++)
 		{
@@ -175,18 +183,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			clearInterval(this.updateIframeInterval);
 		}
 
-		for (var i = 0; i < this.fields.length; i++)
-		{
-			var field = this.fields[i];
-			field.$newClone = field.$field.clone();
-
-			// It's important that the actual field is added to the DOM *after* the clone,
-			// so any radio buttons in the field get deselected from the clone rather than the actual field.
-			this.$fieldPlaceholder.insertAfter(field.$field);
-			field.$field.detach();
-			this.$fieldPlaceholder.replaceWith(field.$newClone);
-			field.$clone.replaceWith(field.$field);
-		}
+		this.moveFieldsBack();
 
 		var windowWidth = Garnish.$win.width();
 
@@ -209,6 +206,22 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		}, this));
 
 		this.inPreviewMode = false;
+	},
+
+	moveFieldsBack: function()
+	{
+		for (var i = 0; i < this.fields.length; i++)
+		{
+			var field = this.fields[i];
+			field.$newClone = field.$field.clone();
+
+			// It's important that the actual field is added to the DOM *after* the clone,
+			// so any radio buttons in the field get deselected from the clone rather than the actual field.
+			this.$fieldPlaceholder.insertAfter(field.$field);
+			field.$field.detach();
+			this.$fieldPlaceholder.replaceWith(field.$newClone);
+			field.$clone.replaceWith(field.$field);
+		}
 	},
 
 	setIframeWidth: function()

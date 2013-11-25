@@ -1,0 +1,79 @@
+{% extends "utils/_layout" %}
+
+{% import "_includes/forms" as forms %}
+
+{% macro table(heading, data) %}
+	{% if data %}
+		<h3>{{ heading }}</h3>
+		<table class="data">
+			{% for key, value in data %}
+				<tr>
+					<th class="light" width="300">{{ key|raw }}</th>
+					<td style="word-break: break-word;">{{ value|nl2br|raw }}</td>
+				</tr>
+			{% endfor %}
+		</table>
+	{% endif %}
+{% endmacro %}
+
+{% from _self import table %}
+
+{% set content %}
+
+	<div class="field">
+		<select onchange="Craft.redirectTo('utils/logviewer/'+this.value);">
+			{% for fileName in logFileNames %}
+				<option{% if fileName == currentLogFileName %} selected{% endif %}>{{ fileName }}</option>
+			{% endfor %}
+		</select>
+	</div>
+
+	{% for logEntry in logEntries %}
+
+		{% if currentLogFileName == 'phperrors.log' %}
+
+			<div>
+				{{ logEntry.message|raw }}
+			</div>
+
+		{% else %}
+
+			<h2>{{ logEntry.dateTime }}</h2>
+
+			<table class="data">
+				<tr>
+					<th class="light" width="300">Level</th>
+					<td>{{ logEntry.level }}</td>
+				</tr>
+				<tr>
+					<th class="light" width="300">Category</th>
+					<td>{{ logEntry.category }}</td>
+				</tr>
+				{% if logEntry.message %}
+					<tr>
+						<th class="light" width="300">Message</th>
+						<td>{{ logEntry.message }}</td>
+					</tr>
+				{% endif %}
+			</table>
+
+			{{ table('Get Variables', logEntry.get) }}
+			{{ table('Post Variables', logEntry.post) }}
+			{{ table('Cookies', logEntry.cookie) }}
+			{{ table('Session Data', logEntry.session) }}
+			{{ table('Server Variables', logEntry.server) }}
+
+			{% if logEntry.profile %}
+				<h3>Profile</h3>
+				<ol>
+					{% for step in logEntry.profile %}
+						<li>{{ step|join('<br>')|raw }}</li>
+					{% endfor %}
+				</ol>
+			{% endif %}
+
+		{% endif %}
+
+	{% endfor %}
+
+{% endset %}

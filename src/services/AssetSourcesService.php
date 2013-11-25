@@ -6,86 +6,16 @@ namespace Craft;
  */
 class AssetSourcesService extends BaseApplicationComponent
 {
-	private $_allSourceId;
+	private $_allSourceIds;
 	private $_viewableSourceIds;
-	private $_sourcesByIds;
+	private $_viewableSources;
+	private $_sourcesById;
+	private $_fetchedAllSources = false;
+
+	/* Source Types */
 
 	/**
-	 * Returns all of the source IDs.
-	 *
-	 * @return array
-	 */
-	public function getAllSourceIds()
-	{
-		if (!isset($this->_allSourceId))
-		{
-			$this->_allSourceId = craft()->db->createCommand()
-				->select('id')
-				->from('assetsources')
-				->queryColumn();
-		}
-
-		return $this->_allSourceId;
-	}
-
-	/**
-	 * Returns all of the source IDs that are editable by the current user.
-	 *
-	 * @return array
-	 */
-	public function getViewableSourceIds()
-	{
-		if (!isset($this->_viewableSourceIds))
-		{
-			$this->_viewableSourceIds = array();
-			$allSourceIds = $this->getAllSourceIds();
-
-			foreach ($allSourceIds as $sourceId)
-			{
-				if (craft()->userSession->checkPermission('viewAssetSource:'.$sourceId))
-				{
-					$this->_viewableSourceIds[] = $sourceId;
-				}
-			}
-		}
-
-		return $this->_viewableSourceIds;
-	}
-
-	/**
-	 * Gets all asset source that are viewable by the current user.
-	 *
-	 * @param string|null $indexBy
-	 * @return array
-	 */
-	public function getViewableSources($indexBy = null)
-	{
-		$viewableSourceIds = $this->getViewableSourceIds();
-		$sources = $this->getAllSources('id');
-		$viewableSources = array();
-
-		foreach ($viewableSourceIds as $sourceId)
-		{
-			if (isset($sources[$sourceId]))
-			{
-				$source = $sources[$sourceId];
-
-				if ($indexBy)
-				{
-					$viewableSources[$source->$indexBy] = $source;
-				}
-				else
-				{
-					$viewableSources[] = $source;
-				}
-			}
-		}
-
-		return $viewableSources;
-	}
-
-	/**
-	 * Returns all installed source types.
+	 * Returns all available source types.
 	 *
 	 * @return array
 	 */
@@ -102,27 +32,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets the total number of Asset sources
-	 *
-	 * @return int
-	 */
-	public function getTotalSources()
-	{
-		return count($this->getAllSourceIds());
-	}
-
-	/**
-	 * Gets the total number of sources that are viewable by the current user.
-	 *
-	 * @return int
-	 */
-	public function getTotalViewableSources()
-	{
-		return count($this->getViewableSourceIds());
-	}
-
-	/**
-	 * Gets an asset source type.
+	 * Returns an asset source type by its class handle.
 	 *
 	 * @param string $class
 	 * @return BaseAssetSourceType|null
@@ -133,7 +43,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Populates an asset source type.
+	 * Populates an asset source type with a given source.
 	 *
 	 * @param AssetSourceModel $source
 	 * @return BaseAssetSourceType|null
@@ -144,57 +54,8 @@ class AssetSourcesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns all asset sources.
+	 * Returns a source type by a given source ID.
 	 *
-	 * @param string|null $indexBy
-	 * @return array
-	 */
-	public function getAllSources($indexBy = null)
-	{
-		if (!isset($this->_sourcesByIds))
-		{
-			$sourceRecords = AssetSourceRecord::model()->ordered()->findAll();
-			$this->_sourcesByIds = AssetSourceModel::populateModels($sourceRecords, $indexBy);
-		}
-
-		if ($indexBy == 'id')
-		{
-			$sources = $this->_sourcesByIds;
-		}
-		else if (!$indexBy)
-		{
-			$sources = array_values($this->_sourcesByIds);
-		}
-		else
-		{
-			$sources = array();
-			foreach ($this->_sourcesByIds as $source)
-			{
-				$sources[$source->$indexBy] = $source;
-			}
-		}
-
-		return $sources;
-	}
-
-	/**
-	 * Gets an asset source by its ID.
-	 *
-	 * @param int $sourceId
-	 * @return AssetSourceModel|null
-	 */
-	public function getSourceById($sourceId)
-	{
-		$sourceRecord = AssetSourceRecord::model()->findById($sourceId);
-
-		if ($sourceRecord)
-		{
-			return AssetSourceModel::populateModel($sourceRecord);
-		}
-	}
-
-	/**
-	 * Returns a source type by source id
 	 * @param $sourceId
 	 * @return BaseAssetSourceType
 	 */
@@ -202,7 +63,178 @@ class AssetSourcesService extends BaseApplicationComponent
 	{
 		$source = $this->getSourceById($sourceId);
 		return $this->populateSourceType($source);
+	}
 
+	/* Sources */
+
+	/**
+	 * Returns all of the source IDs.
+	 *
+	 * @return array
+	 */
+	public function getAllSourceIds()
+	{
+		if (!isset($this->_allSourceIds))
+		{
+			if ($this->_fetchedAllSources)
+			{
+				$this->_allSourceIds = array_keys($this->getAllSources('id'));
+			}
+			else
+			{
+				$this->_allSourceIds = craft()->db->createCommand()
+					->select('id')
+					->from('assetsources')
+					->queryColumn();
+			}
+		}
+
+		return $this->_allSourceIds;
+	}
+
+	/**
+	 * Returns all source IDs that are viewable by the current user.
+	 *
+	 * @return array
+	 */
+	public function getViewableSourceIds()
+	{
+		if (!isset($this->_viewableSourceIds))
+		{
+			$this->_viewableSourceIds = array();
+
+			foreach ($this->getAllSourceIds() as $sourceId)
+			{
+				if (craft()->userSession->checkPermission('viewAssetSource:'.$sourceId))
+				{
+					$this->_viewableSourceIds[] = $sourceId;
+				}
+			}
+		}
+
+		return $this->_viewableSourceIds;
+	}
+
+	/**
+	 * Returns all sources that are viewable by the current user.
+	 *
+	 * @param string|null $indexBy
+	 * @return array
+	 */
+	public function getViewableSources($indexBy = null)
+	{
+		if (!isset($this->_viewableSources))
+		{
+			$this->_viewableSources = array();
+
+			foreach ($this->getAllSources() as $source)
+			{
+				if (craft()->userSession->checkPermission('viewAssetSource:'.$source->id))
+				{
+					$this->_viewableSources[] = $source;
+				}
+			}
+		}
+
+		if (!$indexBy)
+		{
+			return $this->_viewableSources;
+		}
+		else
+		{
+			$sources = array();
+
+			foreach ($this->_viewableSources as $source)
+			{
+				$sources[$source->$indexBy] = $source;
+			}
+
+			return $sources;
+		}
+	}
+
+	/**
+	 * Returns the total number of sources
+	 *
+	 * @return int
+	 */
+	public function getTotalSources()
+	{
+		return count($this->getAllSourceIds());
+	}
+
+	/**
+	 * Returns the total number of sources that are viewable by the current user.
+	 *
+	 * @return int
+	 */
+	public function getTotalViewableSources()
+	{
+		return count($this->getViewableSourceIds());
+	}
+
+	/**
+	 * Returns all sources.
+	 *
+	 * @param string|null $indexBy
+	 * @return array
+	 */
+	public function getAllSources($indexBy = null)
+	{
+		if (!$this->_fetchedAllSources)
+		{
+			$sourceRecords = AssetSourceRecord::model()->ordered()->findAll();
+			$this->_sourcesById = AssetSourceModel::populateModels($sourceRecords, 'id');
+			$this->_fetchedAllSources = true;
+		}
+
+		if ($indexBy == 'id')
+		{
+			return $this->_sourcesById;
+		}
+		else if (!$indexBy)
+		{
+			return array_values($this->_sourcesById);
+		}
+		else
+		{
+			$sources = array();
+
+			foreach ($this->_sourcesById as $source)
+			{
+				$sources[$source->$indexBy] = $source;
+			}
+
+			return $sources;
+		}
+	}
+
+	/**
+	 * Returns a source by its ID.
+	 *
+	 * @param int $sourceId
+	 * @return AssetSourceModel|null
+	 */
+	public function getSourceById($sourceId)
+	{
+		if (!$this->_fetchedAllSources && !isset($this->_sourcesById) || !array_key_exists($sourceId, $this->_sourcesById))
+		{
+			$sourceRecord = AssetSourceRecord::model()->findById($sourceId);
+
+			if ($sourceRecord)
+			{
+				$this->_sourcesById[$sourceId] = AssetSourceModel::populateModel($sourceRecord);
+			}
+			else
+			{
+				$this->_sourcesById = null;
+			}
+		}
+
+		if (!empty($this->_sourcesById[$sourceId]))
+		{
+			return $this->_sourcesById[$sourceId];
+		}
 	}
 
 	/**

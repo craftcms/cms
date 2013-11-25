@@ -6,6 +6,10 @@ namespace Craft;
  */
 class ContentService extends BaseApplicationComponent
 {
+	public $contentTable = 'content';
+	public $fieldColumnPrefix = 'field_';
+	public $fieldContext = 'global';
+
 	/**
 	 * Returns the content model for a given element and locale.
 	 *
@@ -23,22 +27,13 @@ class ContentService extends BaseApplicationComponent
 		}
 
 		$row = craft()->db->createCommand()
-			->from('content')
+			->from($this->contentTable)
 			->where($conditions)
 			->queryRow();
 
 		if ($row)
 		{
-			// Rename the field column names
-			foreach ($row as $column => $value)
-			{
-				if (strncmp($column, 'field_', 6) === 0)
-				{
-					$fieldHandle = substr($column, 6);
-					$row[$fieldHandle] = $value;
-					unset($row[$column]);
-				}
-			}
+			$row = $this->_removeColumnPrefixesFromRow($row);
 
 			return new ContentModel($row);
 		}
@@ -64,8 +59,9 @@ class ContentService extends BaseApplicationComponent
 
 		$content = $this->prepElementContentForSave($element, $fieldLayout, $validate);
 
-		if ($this->saveContent($content))
+		if ($this->validateElementContent($element, $fieldLayout))
 		{
+			$this->saveContent($content);
 			$this->postSaveOperations($element, $content);
 			return true;
 		}
@@ -81,14 +77,14 @@ class ContentService extends BaseApplicationComponent
 	 *
 	 * @param BaseElementModel $element
 	 * @param FieldLayoutModel $fieldLayout
-	 * @param bool             $validate
+	 * @param bool             $setRequiredFields
 	 * @return ContentModel
 	 */
-	public function prepElementContentForSave(BaseElementModel $element, FieldLayoutModel $fieldLayout, $validate = true)
+	public function prepElementContentForSave(BaseElementModel $element, FieldLayoutModel $fieldLayout, $setRequiredFields = true)
 	{
 		$content = $element->getContent();
 
-		if ($validate)
+		if ($setRequiredFields)
 		{
 			// Set the required fields from the layout
 			$requiredFields = array();
@@ -100,95 +96,146 @@ class ContentService extends BaseApplicationComponent
 			{
 				$requiredFields[] = 'title';
 			}
+		}
 
-			foreach ($fieldLayout->getFields() as $field)
+		foreach ($fieldLayout->getFields() as $fieldLayoutField)
+		{
+			if ($setRequiredFields && $fieldLayoutField->required)
 			{
-				if ($field->required)
-				{
-					$requiredFields[] = $field->fieldId;
-				}
+				$requiredFields[] = $fieldLayoutField->fieldId;
 			}
 
-			if ($requiredFields)
+			$field = $fieldLayoutField->getField();
+
+			if ($field)
 			{
-				$content->setRequiredFields($requiredFields);
+				$fieldType = $field->getFieldType();
+
+				if ($fieldType)
+				{
+					$fieldType->element = $element;
+
+					$handle = $field->handle;
+					$content->$handle = $fieldType->prepValueFromPost($content->$handle);
+				}
 			}
 		}
 
-		// Give the fieldtypes a chance to clean up the post data
-		foreach (craft()->fields->getAllFields() as $field)
+		if ($setRequiredFields && $requiredFields)
 		{
-			$fieldType = craft()->fields->populateFieldType($field);
-
-			if ($fieldType)
-			{
-				$fieldType->element = $element;
-
-				$handle = $field->handle;
-				$content->$handle = $fieldType->prepValueFromPost($content->$handle);
-			}
+			$content->setRequiredFields($requiredFields);
 		}
 
 		return $content;
 	}
 
 	/**
-	 * Saves a content model to the database.
+	 * Validates some content with a given field layout.
 	 *
-	 * @param ContentModel $content
-	 * @param bool         $validate Whether to call the model's validate() function first.
+	 * @param BaseElementModel $element
+	 * @param FieldLayoutModel $fieldLayout
 	 * @return bool
 	 */
-	public function saveContent(ContentModel $content, $validate = true)
+	public function validateElementContent(BaseElementModel $element, FieldLayoutModel $fieldLayout)
 	{
-		if (!$validate || $content->validate())
+		$content = $element->getContent();
+
+		// Set the required fields from the layout
+		$fieldHandles = array();
+		$requiredFields = array();
+
+		$elementTypeClass = $element->getElementType();
+		$elementType = craft()->elements->getElementType($elementTypeClass);
+
+		if ($elementType->hasTitles())
 		{
-			$values = array(
-				'id'        => $content->id,
-				'elementId' => $content->elementId,
-				'locale'    => $content->locale,
-				'title'     => $content->title,
-			);
+			$requiredFields[] = 'title';
+		}
 
-			foreach (craft()->fields->getFieldsWithContent() as $field)
+		foreach ($fieldLayout->getFields() as $fieldLayoutField)
+		{
+			$field = $fieldLayoutField->getField();
+
+			if ($field)
 			{
-				$handle = $field->handle;
-				$value = $content->$handle;
-				$values['field_'.$field->handle] = ModelHelper::packageAttributeValue($value, true);
-			}
+				$fieldHandles[] = $field->handle;
 
-			$isNewContent = !$content->id;
-
-			if (!$isNewContent)
-			{
-				$affectedRows = craft()->db->createCommand()
-					->update('content', $values, array('id' => $content->id));
-			}
-			else
-			{
-				$affectedRows = craft()->db->createCommand()
-					->insert('content', $values);
-
-				if ($affectedRows)
+				if ($fieldLayoutField->required)
 				{
-					// Set the new ID
-					$content->id = craft()->db->getLastInsertID();
+					$requiredFields[] = $field->id;
 				}
-			}
-
-			if ($affectedRows)
-			{
-				// Fire an 'onSaveContent' event
-				$this->onSaveContent(new Event($this, array(
-					'content'      => $content,
-					'isNewContent' => $isNewContent
-				)));
-
-				return true;
 			}
 		}
 
-		return false;
+		if ($requiredFields)
+		{
+			$content->setRequiredFields($requiredFields);
+		}
+
+		return $content->validate($fieldHandles);
+	}
+
+	/**
+	 * Saves a content model to the database.
+	 *
+	 * @param ContentModel $content
+	 * @return bool
+	 */
+	public function saveContent(ContentModel $content)
+	{
+		$values = array(
+			'id'        => $content->id,
+			'elementId' => $content->elementId,
+			'locale'    => $content->locale,
+		);
+
+		// If the element type has titles, than it's required and will be set.
+		// Otherwise, no need to include it (it might not even be a real column if this isn't the 'content' table).
+		if ($content->title)
+		{
+			$values['title'] = $content->title;
+		}
+
+		foreach (craft()->fields->getFieldsWithContent() as $field)
+		{
+			$handle = $field->handle;
+			$value = $content->$handle;
+			$values[$this->fieldColumnPrefix.$field->handle] = ModelHelper::packageAttributeValue($value, true);
+		}
+
+		$isNewContent = !$content->id;
+
+		if (!$isNewContent)
+		{
+			$affectedRows = craft()->db->createCommand()
+				->update($this->contentTable, $values, array('id' => $content->id));
+		}
+		else
+		{
+			$affectedRows = craft()->db->createCommand()
+				->insert($this->contentTable, $values);
+
+			if ($affectedRows)
+			{
+				// Set the new ID
+				$content->id = craft()->db->getLastInsertID();
+			}
+		}
+
+		if ($affectedRows)
+		{
+			// Fire an 'onSaveContent' event
+			$this->onSaveContent(new Event($this, array(
+				'content'      => $content,
+				'isNewContent' => $isNewContent
+			)));
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -211,21 +258,19 @@ class ContentService extends BaseApplicationComponent
 	{
 		// Get all of the fieldtypes
 		$fields = craft()->fields->getAllFields();
-		$fieldTypes = array();
-		$fieldTypesWithDuplicateContent = array();
+		$fieldsWithDuplicateContent = array();
 
 		foreach ($fields as $field)
 		{
-			$fieldType = craft()->fields->populateFieldType($field);
+			$fieldType = $field->getFieldType();
 
 			if ($fieldType)
 			{
 				$fieldType->element = $element;
-				$fieldTypes[] = $fieldType;
 
 				if (!$field->translatable && $fieldType->defineContentAttribute())
 				{
-					$fieldTypesWithDuplicateContent[] = $fieldType;
+					$fieldsWithDuplicateContent[$field->id] = $field;
 				}
 			}
 		}
@@ -235,19 +280,25 @@ class ContentService extends BaseApplicationComponent
 		{
 			// Get the other locales' content
 			$rows = craft()->db->createCommand()
-				->from('content')
+				->from($this->contentTable)
 				->where(
 					array('and', 'elementId = :elementId', 'locale != :locale'),
 					array(':elementId' => $element->id, ':locale' => $content->locale))
 				->queryAll();
 
+			// Remove the column prefixes
+			foreach ($rows as $i => $row)
+			{
+				$rows[$i] = $this->_removeColumnPrefixesFromRow($row);
+			}
+
 			$otherContentModels = ContentModel::populateModels($rows);
 
 			if ($otherContentModels)
 			{
-				foreach ($fieldTypesWithDuplicateContent as $fieldType)
+				foreach ($fieldsWithDuplicateContent as $field)
 				{
-					$handle = $fieldType->model->handle;
+					$handle = $field->handle;
 
 					// Copy the content over!
 					foreach ($otherContentModels as $otherContentModel)
@@ -258,7 +309,7 @@ class ContentService extends BaseApplicationComponent
 
 				foreach ($otherContentModels as $otherContentModel)
 				{
-					$this->saveContent($otherContentModel, false);
+					$this->saveContent($otherContentModel);
 				}
 			}
 		}
@@ -269,29 +320,38 @@ class ContentService extends BaseApplicationComponent
 
 		// Now that all of the content saved for all locales,
 		// call all fieldtypes' onAfterElementSave() functions
-		foreach ($fieldTypes as $fieldType)
+		foreach ($fields as $field)
 		{
-			$fieldType->onAfterElementSave();
+			$fieldType = $field->getFieldType();
+
+			if ($fieldType)
+			{
+				$fieldType->onAfterElementSave();
+			}
 		}
 
 		// Update the search keyword indexes
 		$searchKeywordsByLocale = array();
 
-		foreach ($fieldTypes as $fieldType)
+		foreach ($fields as $field)
 		{
-			$field = $fieldType->model;
-			$handle = $field->handle;
+			$fieldType = $field->getFieldType();
 
-			// Set the keywords for the content's locale
-			$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$handle);
-			$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
-
-			// Should we queue up the other locales' new keywords too?
-			if ($otherContentModels && in_array($fieldType, $fieldTypesWithDuplicateContent))
+			if ($fieldType)
 			{
-				foreach ($otherContentModels as $otherContentModel)
+				$handle = $field->handle;
+
+				// Set the keywords for the content's locale
+				$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$handle);
+				$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
+
+				// Should we queue up the other locales' new keywords too?
+				if ($otherContentModels && in_array($field->id, array_keys($fieldsWithDuplicateContent)))
 				{
-					$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
+					foreach ($otherContentModels as $otherContentModel)
+					{
+						$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
+					}
 				}
 			}
 		}
@@ -300,5 +360,29 @@ class ContentService extends BaseApplicationComponent
 		{
 			craft()->search->indexElementFields($element->id, $localeId, $keywords);
 		}
+	}
+
+	/**
+	 * Removes the column prefixes from a given row.
+	 *
+	 * @access private
+	 * @param array $row
+	 * @return array
+	 */
+	private function _removeColumnPrefixesFromRow($row)
+	{
+		$fieldColumnPrefixLength = strlen($this->fieldColumnPrefix);
+
+		foreach ($row as $column => $value)
+		{
+			if (strncmp($column, $this->fieldColumnPrefix, $fieldColumnPrefixLength) === 0)
+			{
+				$fieldHandle = substr($column, $fieldColumnPrefixLength);
+				$row[$fieldHandle] = $value;
+				unset($row[$column]);
+			}
+		}
+
+		return $row;
 	}
 }

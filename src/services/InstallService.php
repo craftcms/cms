@@ -202,15 +202,15 @@ class InstallService extends BaseApplicationComponent
 
 		craft()->db->createCommand()->createTable('relations', array(
 			'fieldId'   => array('column' => ColumnType::Int, 'null' => false),
-			'parentId'  => array('column' => ColumnType::Int, 'null' => false),
-			'childId'   => array('column' => ColumnType::Int, 'null' => false),
+			'sourceId'  => array('column' => ColumnType::Int, 'null' => false),
+			'targetId'  => array('column' => ColumnType::Int, 'null' => false),
 			'sortOrder' => array('column' => ColumnType::TinyInt),
 		));
 
-		craft()->db->createCommand()->createIndex('relations', 'fieldId,parentId,childId', true);
+		craft()->db->createCommand()->createIndex('relations', 'fieldId,sourceId,targetId', true);
 		craft()->db->createCommand()->addForeignKey('relations', 'fieldId', 'fields', 'id', 'CASCADE');
-		craft()->db->createCommand()->addForeignKey('relations', 'parentId', 'elements', 'id', 'CASCADE');
-		craft()->db->createCommand()->addForeignKey('relations', 'childId', 'elements', 'id', 'CASCADE');
+		craft()->db->createCommand()->addForeignKey('relations', 'sourceId', 'elements', 'id', 'CASCADE');
+		craft()->db->createCommand()->addForeignKey('relations', 'targetId', 'elements', 'id', 'CASCADE');
 
 		Craft::log('Finished creating the relations table.');
 	}
@@ -729,11 +729,11 @@ class InstallService extends BaseApplicationComponent
 		$newsLayout->setTabs($newsLayoutTabs);
 		$newsLayout->setFields($newsLayoutFields);
 
-		$homepageEntryTypes = $newsSection->getEntryTypes();
-		$homepageEntryType = $homepageEntryTypes[0];
-		$homepageEntryType->setFieldLayout($newsLayout);
+		$newsEntryTypes = $newsSection->getEntryTypes();
+		$newsEntryType = $newsEntryTypes[0];
+		$newsEntryType->setFieldLayout($newsLayout);
 
-		if (craft()->sections->saveEntryType($homepageEntryType))
+		if (craft()->sections->saveEntryType($newsEntryType))
 		{
 			Craft::log('News entry type saved successfully.');
 		}
@@ -748,7 +748,7 @@ class InstallService extends BaseApplicationComponent
 
 		$newsEntry = new EntryModel();
 		$newsEntry->sectionId  = $newsSection->id;
-		$newsEntry->typeId     = $homepageEntryType->id;
+		$newsEntry->typeId     = $newsEntryType->id;
 		$newsEntry->locale     = $inputs['locale'];
 		$newsEntry->authorId   = $this->_user->id;
 		$newsEntry->enabled    = true;

@@ -89,17 +89,9 @@ class WebApp extends \CWebApplication
 		// Attach our own custom Logger
 		Craft::setLogger(new Logger());
 
-		// If we're not in devMode or this is a resource request, we're going to remove some logging routes.
-		if (!$this->config->get('devMode') || ($resourceRequest = $this->request->isResourceRequest()) == true)
+		// If we're not in devMode, we're going to remove some logging routes.
+		if (!$this->config->get('devMode'))
 		{
-			// If it's a resource request, we don't want any logging routes, including craft.log
-			// If it's not a resource request, we'll keep the FileLogRoute around.
-			if ($resourceRequest)
-			{
-				$this->log->removeRoute('FileLogRoute');
-			}
-
-			// Don't need either of these if not in devMode or it's a resource request.
 			$this->log->removeRoute('WebLogRoute');
 			$this->log->removeRoute('ProfileLogRoute');
 		}
@@ -541,6 +533,17 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
+	 * Returns the system time zone.  Note that this method cannot be in AppBehavior, because Yii will check
+	 * \CApplication->getTimeZone instead.
+	 *
+	 * @return string
+	 */
+	public function getTimeZone()
+	{
+		return $this->getInfo('timezone');
+	}
+
+	/**
 	 * Attaches any pending event listeners to the newly-initialized component.
 	 *
 	 * @access private
@@ -575,6 +578,9 @@ class WebApp extends \CWebApplication
 	{
 		if ($this->request->isResourceRequest())
 		{
+			// Don't want to log anything on a resource request.
+			$this->log->removeRoute('FileLogRoute');
+
 			// Get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($this->request->getSegments()), 1);
 			$path = implode('/', $segs);
@@ -756,8 +762,8 @@ class WebApp extends \CWebApplication
 		if (
 			$this->request->getActionSegments() == array('users', 'login') ||
 			$this->request->getActionSegments() == array('users', 'validate') ||
-			$this->request->getActionSegments() == array('users', 'setPassword') ||
-			$this->request->getActionSegments() == array('users', 'forgotPassword') ||
+			$this->request->getActionSegments() == array('users', 'setpassword') ||
+			$this->request->getActionSegments() == array('users', 'forgotpassword') ||
 			$this->request->getActionSegments() == array('users', 'saveUser'))
 		{
 			return true;
@@ -772,12 +778,15 @@ class WebApp extends \CWebApplication
 	 */
 	private function _processRequirementsCheck()
 	{
-		$cachedAppPath = craft()->fileCache->get('appPath');
-		$appPath = $this->path->getAppPath();
-
-		if ($cachedAppPath === false || $cachedAppPath !== $appPath)
+		if ($this->request->isCpRequest())
 		{
-			$this->runController('templates/requirementscheck');
+			$cachedAppPath = craft()->fileCache->get('appPath');
+			$appPath = $this->path->getAppPath();
+
+			if ($cachedAppPath === false || $cachedAppPath !== $appPath)
+			{
+				$this->runController('templates/requirementscheck');
+			}
 		}
 	}
 
@@ -826,6 +835,9 @@ class WebApp extends \CWebApplication
 		}
 		else
 		{
+			// Use our own error template in case the custom 503 template comes with any SQL queries we're not ready for
+			craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+
 			throw new HttpException(503);
 		}
 

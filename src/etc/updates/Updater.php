@@ -90,6 +90,22 @@ class Updater
 			throw new Exception(Craft::t('There was a problem unpacking the downloaded package.'));
 		}
 
+		Craft::log('Validating any new requirements from the patch file.');
+		$errors = $this->_validateNewRequirements($unzipFolder);
+
+		if (!empty($errors))
+		{
+			throw new Exception(Craft::t('Your server does not meet the following minimum requirements for @@@appName@@@ to run:<br /><br/ > {messages}', array('messages' => implode('<br />', $errors))));
+		}
+
+		// Validate that the paths in the update manifest file are all writable by Craft
+		Craft::log('Validating update manifest file paths are writable.', LogLevel::Info, true);
+		$writableErrors = $this->_validateManifestPathsWritable($unzipFolder);
+		if (count($writableErrors) > 0)
+		{
+			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to the follow paths, but can’t:<br /><br /> {files}', array('files' => implode('<br />', $writableErrors))));
+		}
+
 		return array('uid' => $uid);
 	}
 
@@ -101,14 +117,6 @@ class Updater
 	{
 		$unzipFolder = UpdateHelper::getUnzipFolderFromUID($uid);
 
-		// Validate that the paths in the update manifest file are all writable by Craft
-		Craft::log('Validating update manifest file paths are writable.', LogLevel::Info, true);
-		$writableErrors = $this->_validateManifestPathsWritable($unzipFolder);
-		if (count($writableErrors) > 0)
-		{
-			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to the follow paths, but can’t:<br /> {files}', array('files' => implode('<br />',  $writableErrors))));
-		}
-
 		// Backup any files about to be updated.
 		Craft::log('Backing up files that are about to be updated.', LogLevel::Info, true);
 		if (!$this->_backupFiles($unzipFolder))
@@ -119,7 +127,7 @@ class Updater
 
 	/**
 	 * @param $uid
-	 * @throws Exception
+	 * @throws \Exception
 	 */
 	public function updateFiles($uid)
 	{
@@ -133,109 +141,60 @@ class Updater
 		Craft::log('Performing file update.', LogLevel::Info, true);
 		if (!UpdateHelper::doFileUpdate(UpdateHelper::getManifestData($unzipFolder), $unzipFolder))
 		{
-			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-			craft()->disableMaintenanceMode();
-
 			throw new Exception(Craft::t('There was a problem updating your files.'));
 		}
 	}
 
 	/**
-	 * @param $uid
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function backupDatabase($uid)
+	public function backupDatabase()
 	{
-		try
+		Craft::log('Starting to backup database.', LogLevel::Info, true);
+		if (($dbBackupPath = craft()->db->backup()) === false)
 		{
-			Craft::log('Starting to backup database.', LogLevel::Info, true);
-			if (($dbBackupPath = craft()->db->backup()) === false)
-			{
-				// If uid !== false, then it's an auto update.
-				if ($uid !== false)
-				{
-					UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
-				}
-
-				Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-				craft()->disableMaintenanceMode();
-
-				throw new Exception(Craft::t('There was a problem backing up your database.'));
-			}
-			else
-			{
-				return IOHelper::getFileName($dbBackupPath, false);
-			}
-		}
-		catch (\Exception $e)
-		{
-			// If uid !== false, then it's an auto update.
-			if ($uid !== false)
-			{
-				UpdateHelper::rollBackFileChanges(UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid)));
-			}
-
-			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-			craft()->disableMaintenanceMode();
-
 			throw new Exception(Craft::t('There was a problem backing up your database.'));
+		}
+		else
+		{
+			return IOHelper::getFileName($dbBackupPath, false);
 		}
 	}
 
 	/**
-	 * @param      $uid
-	 * @param bool $dbBackupPath
 	 * @param null $plugin
 	 * @throws Exception
 	 */
-	public function updateDatabase($uid, $dbBackupPath = false, $plugin = null)
+	public function updateDatabase($plugin = null)
 	{
-		try
+		Craft::log('Running migrations...', LogLevel::Info, true);
+		if (!craft()->migrations->runToTop($plugin))
 		{
-			Craft::log('Running migrations...', LogLevel::Info, true);
-			if (!craft()->migrations->runToTop($plugin))
-			{
-				Craft::log('Something went wrong running a migration. :-(', LogLevel::Error);
-				craft()->updates->rollbackUpdate($uid, $dbBackupPath);
-
-				Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-				craft()->disableMaintenanceMode();
-
-				throw new Exception(Craft::t('There was a problem updating your database.'));
-			}
-
-			// If plugin is null we're looking at Craft.
-			if ($plugin === null)
-			{
-				// Setting new Craft info.
-				Craft::log('Settings new Craft release info in craft_info table.', LogLevel::Info, true);
-				if (!craft()->updates->updateCraftVersionInfo())
-				{
-					throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the database info table.'));
-				}
-			}
-			else
-			{
-				if (!craft()->updates->setNewPluginInfo($plugin))
-				{
-					throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
-				}
-			}
-
-			// Take the site out of maintenance mode.
-			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-			craft()->disableMaintenanceMode();
-		}
-		catch (\Exception $e)
-		{
-			craft()->updates->rollbackUpdate($uid, $dbBackupPath);
-
-			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
-			craft()->disableMaintenanceMode();
-
 			throw new Exception(Craft::t('There was a problem updating your database.'));
 		}
+
+		// If plugin is null we're looking at Craft.
+		if ($plugin === null)
+		{
+			// Setting new Craft info.
+			Craft::log('Settings new Craft release info in craft_info table.', LogLevel::Info, true);
+			if (!craft()->updates->updateCraftVersionInfo())
+			{
+				throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the database info table.'));
+			}
+		}
+		else
+		{
+			if (!craft()->updates->setNewPluginInfo($plugin))
+			{
+				throw new Exception(Craft::t('The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
+			}
+		}
+
+		// Take the site out of maintenance mode.
+		Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
+		craft()->disableMaintenanceMode();
 	}
 
 	/**
@@ -245,19 +204,19 @@ class Updater
 	 */
 	public function cleanUp($uid)
 	{
+		// Clear the updates cache.
+		Craft::log('Clearing the update cache.', LogLevel::Info, true);
+		if (!craft()->updates->flushUpdateInfoFromCache())
+		{
+			throw new Exception(Craft::t('The update was performed successfully, but there was a problem invalidating the update cache.'));
+		}
+
 		// If uid !== false, then it's an auto-update.
 		if ($uid !== false)
 		{
 			// Clean-up any leftover files.
 			Craft::log('Cleaning up temp files after update.', LogLevel::Info, true);
 			$this->_cleanTempFiles();
-		}
-
-		// Clear the updates cache.
-		Craft::log('Clearing the update cache.', LogLevel::Info, true);
-		if (!craft()->updates->flushUpdateInfoFromCache())
-		{
-			throw new Exception(Craft::t('The update was performed successfully, but there was a problem invalidating the update cache.'));
 		}
 
 		Craft::log('Finished Updater.', LogLevel::Info, true);
@@ -454,5 +413,60 @@ class Updater
 		}
 
 		return true;
+	}
+
+	/**
+	 * @param $unzipFolder
+	 * @return array
+	 * @throws Exception
+	 */
+	private function _validateNewRequirements($unzipFolder)
+	{
+		$requirementsFolderPath = $unzipFolder.'/app/etc/requirements/';
+		$requirementsFile = $requirementsFolderPath.'Requirements.php';
+		$errors = array();
+
+		if (!IOHelper::fileExists($requirementsFile))
+		{
+			throw new Exception(Craft::t('The Requirements file is required and it does not exist at {path}.', array('path' => $requirementsFile)));
+		}
+
+		// Make sure we can write to craft/app/requirements
+		if (!IOHelper::isWritable(craft()->path->getAppPath().'etc/requirements/'))
+		{
+			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to your craft/app/etc/requirements folder and cannot. Please check your <a href="http://buildwithcraft.com/docs/updating#one-click-updating">permissions</a>.'));
+		}
+
+		$tempFileName = StringHelper::UUID().'.php';
+
+		// Make a dupe of the requirements file and give it a random file name.
+		IOHelper::copyFile($requirementsFile, $requirementsFolderPath.$tempFileName);
+
+		$newTempFilePath = craft()->path->getAppPath().'etc/requirements/'.$tempFileName;
+
+		// Copy the random file name requirements to the requirements folder.  We don't want to execute any PHP from the storage folder.
+		IOHelper::copyFile($requirementsFolderPath.$tempFileName, $newTempFilePath);
+
+		require_once($newTempFilePath);
+
+		$checker = new RequirementsChecker();
+		$checker->run();
+
+		if ($checker->getResult() == RequirementResult::Failed)
+		{
+			foreach ($checker->getRequirements() as $requirement)
+			{
+				if ($requirement->getResult() == InstallStatus::Failed)
+				{
+					Craft::log('Requirement "'.$requirement->getName().'" failed with the message: '.$requirement->getNotes(), LogLevel::Error, true);
+					$errors[] = $requirement->getNotes();
+				}
+			}
+		}
+
+		// Cleanup
+		IOHelper::deleteFile($newTempFilePath);
+
+		return $errors;
 	}
 }

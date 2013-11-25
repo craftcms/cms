@@ -118,7 +118,7 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .rightalign { text-align: right; }
 .centeralign { text-align: center; }
 .nowrap { white-space: nowrap; }
-.light { color: #999; font-weight: normal; }
+.light { color: $mediumtextcolor; font-weight: normal; }
 
 .required:after { content: '*'; margin: -2px 0 0 2px; font-size: 7px; color: $errorcolor; }
 
@@ -138,7 +138,7 @@ td.right { float: none; text-align: right; }
 .token { display: inline-block; border: 1px solid #c1c1c1; border-radius: 10px; padding: 0 7px 1px; font-size: 12px; line-height: 14px; color: $textcolor; text-shadow: 0 1px 1px rgba(255,255,255,0.5); background: #ddd; }
 .token[data-name='*'] { text-indent: -100px; overflow: hidden; }
 .token[data-name='*']:before { @include icon; display: block; float: left; margin: 3px 0 -1px; font-size: 9px; content: '*'; text-indent: 0; }
-.token:focus { border-color: #999; background: #aaa; outline: none; }
+.token:focus { border-color: $mediumtextcolor; background: #aaa; outline: none; }
 
 .settings-btn { display: block; width: 16px; height: 16px; background: url(../images/settings-btn.png); cursor: pointer; }
 .settings-btn.active { background-position: 0 100%; }
@@ -346,6 +346,11 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 div.btn.submit { position: relative; overflow: hidden; }
 div.btn.submit input { position: absolute; left: 100%; }
 
+/* dashed buttons */
+.btn.dashed { border: 1px dashed rgba(0,0,0,0.2) !important; background: none;
+	-webkit-box-shadow: none;
+	        box-shadow: none;
+}
 /* color buttons */
 .color { width: 30px; height: 30px; border-radius: 15px; padding: 0; background: url(../images/checkers.png); cursor: pointer; }
 .color .colorpreview { top: 0; left: 0; width: 30px; height: 30px; border-radius: 15px;
@@ -424,7 +429,8 @@ table.data tbody tr:last-child th,
 table.data tbody tr:last-child td { border-bottom: 1px dotted $hrcolor; }
 table.data thead + tbody tr:first-child th,
 table.data thead + tbody tr:first-child td { border-top-style: solid; }
-table.data thead th { font-weight: bold; white-space: nowrap; }
+table.data th { font-weight: bold; }
+table.data thead th { white-space: nowrap; }
 table.data td.timestamp { text-align: right; vertical-align: bottom; white-space: nowrap; color: $lighttextcolor; }
 table.data td form { height: 22px; }
 table.data td .btngroup { display: inline; }
@@ -468,12 +474,15 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .datatablesorthelper tr:last-child td { border-bottom: none !important; }
 
 /* elements */
-.element { position: relative; border: 1px solid transparent; padding: 5px 7px; cursor: default; @include unselectable; outline: none !important; }
+.element { position: relative; border: 1px solid transparent; padding: 5px 7px; cursor: default; outline: none !important; }
+.element.unselectable { @include unselectable; }
 .element .status { margin: 0 1px 0 0; }
 
+.element.hasthumb,
 .element.hasicon { padding-left: 35px !important; }
+.element.hasthumb .elementthumb,
 .element.hasicon .elementicon { position: absolute; top: -1px; left: -1px; width: 30px; height: 30px; background-repeat: no-repeat; background-position: 50% 50%; }
-.element.hasicon .elementthumb { border-radius: 3px;
+.element.hasthumb .elementthumb { border-radius: 3px;
 	/* Firefox/Win has an issue with inset 0 0 0 1px box shadows on elements < ~50px */
 	-webkit-box-shadow: inset 0 0 1px 1px rgba(0,0,0,0.1);
 	        box-shadow: inset 0 0 1px 1px rgba(0,0,0,0.1);
@@ -529,6 +538,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .thumbsview li { float: left; margin: 15px 0 0 15px; width: 100px; }
 
 .thumbsview .element { padding: 105px 0 5px !important; }
+.thumbsview .element .elementthumb,
 .thumbsview .element .elementicon { width: 100px; height: 100px; }
 .thumbsview .element .label { text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -537,10 +547,6 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .elementselect:after { @include clearafter; }
 .elementselect .element,
 .elementselect .btn { float: left; margin: 0 10px 10px 0; }
-.elementselect .btn { border: 1px dashed rgba(0,0,0,0.2) !important; background: none;
-	-webkit-box-shadow: none;
-	        box-shadow: none;
-}
 .elementselect .element { z-index: 1; }
 .elementselect .caboose { float: left; }
 
@@ -731,8 +737,8 @@ ul.tree,
 .menu ul li a:not(.sel):hover .light,
 .menu:not(:hover) ul li a:not(.sel).hover,
 .menu:not(:hover) ul li a:not(.sel).hover .light { color: #fff; background: $headerBgColor; }
-.menu ul li a.sel { color: #999; cursor: default; }
-
+.menu ul li a.sel { color: $mediumtextcolor; cursor: default; }
+.menu hr { margin: 5px -15px; }
 
 .menulist { padding-left: 30px; }
 .menulist h2 { margin: 10px 0 3px; }
@@ -752,6 +758,7 @@ ul.tree,
 .text,
 #main div.redactor_box,
 .border-box,
+.matrix-configurator > .field > .input,
 .lightswitch { border: 1px solid #ccc;
 	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.1), 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
 	        box-shadow: inset 0 1px 1px rgba(0,0,0,0.1), 0 0 0 $blurglowcolor;    -moz-transition: border linear 100ms,         box-shadow linear 100ms;
@@ -779,7 +786,7 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 
 .field { position: relative; margin: 30px 0; }
 .field .heading { margin-bottom: 4px; }
-.field .instructions { margin-top: 0; font-size: 11px; color: #999; }
+.field .instructions { margin-top: 0; font-size: 11px; color: $mediumtextcolor; }
 
 /* toggles and nested fields */
 .nested-fields { margin: -30px -30px; padding: 30px 30px 0; overflow: hidden; }
@@ -794,9 +801,9 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 .text input { margin: 0; padding: 0; border: none; outline: none; background: none; }
 .text.small { padding: 3px; }
 
-.input.errors .text,
-.input.errors div.redactor_box,
-.input.errors .border-box,
+.input.errors > .text,
+.input.errors > div.redactor_box,
+.input.errors > .border-box,
 .text.error { border-color: $errorcolor !important; }
 
 .texticon { position: relative; cursor: text; }
@@ -808,8 +815,8 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 
 .passwordwrapper { position: relative; }
 .passwordwrapper .password { width: 100%; }
-.passwordwrapper .password-toggle { display: block; position: absolute; top: 7px; right: 0; width: 44px; text-align: center; }
-.password { padding-right: 44px; }
+.passwordwrapper .password-toggle { display: block; position: absolute; top: 7px; right: 7px; text-right: right; }
+.password { padding-right: 5em; }
 .password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
 .datewrapper { display: inline-block; position: relative; width: 8.5em; }
@@ -899,6 +906,54 @@ ul.errors li { color: $errorcolor; }
 .message-container { position: absolute; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; }
 .message-container.no-access { background: rgba(50,50,50,0.9); }
 .message-container .pane { top: 50%; margin-top: -33px !important; margin-left: auto; margin-right: auto; width: 320px; }
+
+/* ----------------------------------------
+/* Matrix
+/* ----------------------------------------*/
+
+/* config */
+.matrix-configurator > .field { max-width: none; }
+.matrix-configurator > .field > .input { position: relative; padding-left: 400px; height: 500px; }
+.matrix-configurator .mc-sidebar { position: absolute; top: 0; margin: 0; border: none; width: 200px; height: 100%; background: hsla($hue, 8%, 0%, 0.03);
+	-webkit-box-shadow: inset -1px 0 0 rgba(0,0,0,0.06);
+	        box-shadow: inset -1px 0 0 rgba(0,0,0,0.06);
+}
+.matrix-configurator .mc-sidebar.block-types { left: 0; }
+.matrix-configurator .mc-sidebar.fields { left: 200px; }
+.matrix-configurator .mc-sidebar .items { margin-top: -1px; padding-top: 1px; height: 468px; overflow: auto; }
+.matrixconfigitem { position: relative; margin-top: -1px; padding: 11px 45px 10px 15px; border-bottom: 1px solid rgba(0,0,0,0.06); @include unselectable; cursor: default; }
+.matrixconfigitem.sel { background: rgba(0,0,0,0.05); }
+.matrixconfigitem.error { background: rgba(255,0,0,0.1); }
+.matrixconfigitem.sel.error { background: rgba(200,0,0,0.2); }
+.matrixconfigitem .handle { font-size: 11px; color: $mediumtextcolor; }
+.matrixconfigitem .actions { position: absolute; right: 0; width: 30px; }
+.matrixconfigitem.mci-blocktype .actions { top: 10px; }
+.matrixconfigitem.mci-field .actions { top: 20px; }
+.matrixconfigitem .actions .icon { display: block; margin-bottom: 1px; text-align: center; }
+.matrixconfigitem .actions .icon.settings:before { color: rgba(0,0,0,0.2); }
+.matrixconfigitem .actions .icon.settings.error:before { color: $errorcolor; }
+.matrixconfigitem .actions .icon.settings:not(.disabled):hover:before { color: $linkcolor; }
+.matrix-configurator .mc-sidebar .items .btn { margin: 15px; }
+
+.matrix-configurator .field-settings { position: relative; height: 100%; }
+.matrix-configurator .field-settings .items { padding: 30px; height: 408px; overflow: auto; }
+
+.matrix-configurator .mc-sidebar > .col-inner-container > .heading,
+.matrix-configurator .field-settings > .col-inner-container > .heading { margin: 0; padding: 7px 15px 6px; border-bottom: 1px solid rgba(0,0,0,0.06); @include linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.03)); }
+
+/* blocks */
+.matrixblock { position: relative; margin-bottom: 4px; border-bottom: 1px solid $hrcolor; padding: 15px 16px; background: #fff;
+	-webkit-box-shadow: 0 0 3px rgba(0,0,0,0.15);
+	   -moz-box-shadow: 0 0 3px rgba(0,0,0,0.15);
+}
+.matrixblock > .actions { position: absolute; z-index: 1; top: 5px; right: 5px; cursor: default; }
+.matrixblock > .actions a { padding: 0; margin-right: 2px; width: 15px; height: 20px; text-align: center; color: rgba(0,0,0,0.2) }
+.matrixblock > .actions a:hover { width: 15px; height: 20px; text-align: center; color: $linkcolor; }
+.matrixblock > .actions a.settings:after { margin-left: 3px; }
+.matrixblock > .fields > .field { margin: 15px 0; }
+.matrix .matrixblock:first-child { margin-top: 20px; }
+.matrix .matrixblock:last-child { margin-bottom: 20px; }
+.matrix > .buttons { margin-top: 0; height: 30px; overflow: hidden; }
 
 /* ----------------------------------------
 /* IE hacks

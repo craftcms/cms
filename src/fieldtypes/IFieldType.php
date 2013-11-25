@@ -26,6 +26,12 @@ interface IFieldType extends ISavableComponentType
 
 	/**
 	 * @param mixed $value
+	 * @return true|string|array
+	 */
+	public function validate($value);
+
+	/**
+	 * @param mixed $value
 	 * @return string
 	 */
 	public function getSearchKeywords($value);
@@ -37,6 +43,14 @@ interface IFieldType extends ISavableComponentType
 	/**
 	 */
 	public function onAfterSave();
+
+	/**
+	 */
+	public function onBeforeDelete();
+
+	/**
+	 */
+	public function onAfterDelete();
 
 	/**
 	 */

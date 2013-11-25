@@ -1,8 +1,10 @@
 {% from "_includes/forms" import textField %}
+{% set fieldNamespace = 'fields'~random() %}
 
 <div class="element-hud-form">
 	<form id="element-fields">
 		<input type="hidden" name="elementId" value="{{ element.id }}">
+		<input type="hidden" name="fieldNamespace" value="{{ fieldNamespace }}">
 		<div>
 			{% if hasTitle %}
 				{{ textField({
@@ -18,6 +20,7 @@
 			{% endif %}
 
 			{% include "_includes/fields" with {
+				namespace: fieldNamespace,
 				fields: fieldLayout.getFields(),
 				element: element
 			} only %}

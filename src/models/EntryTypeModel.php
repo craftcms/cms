@@ -38,7 +38,7 @@ class EntryTypeModel extends BaseModel
 	public function behaviors()
 	{
 		return array(
-			'fieldLayout' => new FieldLayoutBehavior(),
+			'fieldLayout' => new FieldLayoutBehavior(ElementType::Entry),
 		);
 	}
 }

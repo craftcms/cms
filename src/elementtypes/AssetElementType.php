@@ -88,10 +88,54 @@ class AssetElementType extends BaseElementType
 	public function defineTableAttributes($source = null)
 	{
 		return array(
-			array('label' => Craft::t('Title'),         'attribute' => 'title'),
-			array('label' => Craft::t('Size'),          'attribute' => 'size',         'display' => '{size|filesize}'),
-			array('label' => Craft::t('Date Modified'), 'attribute' => 'dateModified', 'display' => '{dateModified.localeDate}'),
+			'title'        => Craft::t('Title'),
+			'size'         => Craft::t('Size'),
+			'dateModified' => Craft::t('Date Modified'),
 		);
+	}
+
+	/**
+	 * Returns the table view HTML for a given attribute.
+	 *
+	 * @param BaseElementModel $element
+	 * @param string $attribute
+	 * @return string
+	 */
+	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	{
+		switch ($attribute)
+		{
+			case 'size':
+			{
+				if ($element->size)
+				{
+					return craft()->formatter->formatSize($element->size);
+				}
+				else
+				{
+					return '';
+				}
+			}
+
+			case 'dateModified':
+			{
+				$date = $element->$attribute;
+
+				if ($date)
+				{
+					return $date->localeDate();
+				}
+				else
+				{
+					return '';
+				}
+			}
+
+			default:
+			{
+				return parent::getTableAttributeHtml($element, $attribute);
+			}
+		}
 	}
 
 	/**

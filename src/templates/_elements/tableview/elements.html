@@ -1,28 +1,12 @@
 {% for element in elements %}
 	<tr{% if element.id in disabledElementIds %} class="disabled"{% endif %} data-id="{{ element.id }}" data-label="{{ element }}" data-status="{{ element.getStatus() }}">
-		{% for attribute in attributes %}
+		{% for attribute, label in attributes %}
 			{% if loop.index == 1 %}
-				<td scope="row" data-title="{{ attribute.label }}">
+				<td scope="row" data-title="{{ label }}">
 					{% include "_elements/element" %}
 				</td>
 			{% else %}
-				{% if attribute.display is defined %}
-					{% set value = renderObjectTemplate(attribute.display, element) %}
-				{% else %}
-					{% set value = attribute(element, attribute.attribute) %}
-					{% if attribute.attribute == 'uri' %}
-						{% if value == '__home__' %}
-							{% set value = '<span data-icon="home" title="'~"Homepage"|t~'"></span>' %}
-						{% endif %}
-
-						{% set url = element.getUrl() %}
-						{% if url %}
-							{% set value = '<a href="'~url~'" target="_blank" class="go">'~value~'</a>' %}
-						{% endif %}
-					{% endif %}
-				{% endif %}
-
-				<td data-title="{{ attribute.label }}">{{ value|raw }}</td>
+				<td data-title="{{ label }}">{{ elementType.getTableAttributeHtml(element, attribute)|raw }}</td>
 			{% endif %}
 		{% endfor %}
 	</tr>

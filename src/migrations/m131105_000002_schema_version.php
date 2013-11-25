@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m131022_000002_schema_version extends BaseMigration
+class m131105_000002_schema_version extends BaseMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.

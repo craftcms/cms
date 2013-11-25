@@ -80,6 +80,7 @@ Craft.BaseInputGenerator = Garnish.Base.extend({
 			targetVal = this.generateTargetValue(sourceVal);
 
 		this.$target.val(targetVal);
+		this.$target.trigger('textchange');
 	},
 
 	generateTargetValue: function(sourceVal)

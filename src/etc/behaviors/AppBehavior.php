@@ -26,8 +26,16 @@ class AppBehavior extends BaseBehavior
 		{
 			try
 			{
-				// If the db config isn't valid, then we'll assume it's not installed.
-				if (!craft()->db->isDbConnectionValid())
+				// First check to see if DbConnection has even been initialized, yet.
+				if (craft()->getComponent('db'))
+				{
+					// If the db config isn't valid, then we'll assume it's not installed.
+					if (!craft()->db->isDbConnectionValid())
+					{
+						return false;
+					}
+				}
+				else
 				{
 					return false;
 				}
@@ -253,16 +261,6 @@ class AppBehavior extends BaseBehavior
 	public function getSiteUid()
 	{
 		return $this->getInfo('uid');
-	}
-
-	/**
-	 * Returns the system time zone.
-	 *
-	 * @return string
-	 */
-	public function getTimezone()
-	{
-		return $this->getInfo('timezone');
 	}
 
 	/**

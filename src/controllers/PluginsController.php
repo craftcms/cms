@@ -111,7 +111,7 @@ class PluginsController extends BaseController
 		{
 			$plugin->setSettings($settings);
 
-			craft()->userSession->setError(Craft::t(Craft::t('Couldn’t save plugin settings.')));
+			craft()->userSession->setError(Craft::t('Couldn’t save plugin settings.'));
 
 			// Send the plugin back to the template
 			craft()->urlManager->setRouteVariables(array(

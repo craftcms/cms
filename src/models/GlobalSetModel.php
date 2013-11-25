@@ -39,7 +39,7 @@ class GlobalSetModel extends BaseElementModel
 	public function behaviors()
 	{
 		return array(
-			'fieldLayout' => new FieldLayoutBehavior(),
+			'fieldLayout' => new FieldLayoutBehavior(ElementType::GlobalSet),
 		);
 	}
 

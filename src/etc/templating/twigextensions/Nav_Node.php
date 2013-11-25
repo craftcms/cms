@@ -41,8 +41,8 @@ class Nav_Node extends \Twig_Node_For
 						->indent()
 							// Temporarily set the context to the element at this depth
 							->write("\$context = \$_contextsByDepth[\$_i];\n")
-							->subcompile($this->navItemNode->getNode('lower_body'))
-							->subcompile($this->navItemNode->getNode('outdent'))
+							->subcompile($this->navItemNode->getNode('lower_body'), false)
+							->subcompile($this->navItemNode->getNode('outdent'), false)
 						->outdent()
 						->write("}\n")
 					->outdent()
@@ -51,7 +51,7 @@ class Nav_Node extends \Twig_Node_For
 				->write("}\n")
 				// Close out the last item
 				->write("\$context = \$_contextsByDepth[\$_firstItemDepth];\n")
-				->subcompile($this->navItemNode->getNode('lower_body'))
+				->subcompile($this->navItemNode->getNode('lower_body'), false)
 				// Set the context back
 				->write("\$context = \$_tmpContext;\n")
 				// Unset out variables

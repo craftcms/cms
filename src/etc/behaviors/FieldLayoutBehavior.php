@@ -7,6 +7,15 @@ namespace Craft;
 class FieldLayoutBehavior extends BaseBehavior
 {
 	private $_fieldLayout;
+	private $_elementType;
+
+	/**
+	 * Constructor
+	 */
+	public function __construct($elementType)
+	{
+		$this->_elementType = $elementType;
+	}
 
 	/**
 	 * Returns the section's field layout.
@@ -25,7 +34,7 @@ class FieldLayoutBehavior extends BaseBehavior
 			if (empty($this->_fieldLayout))
 			{
 				$this->_fieldLayout = new FieldLayoutModel();
-				$this->_fieldLayout->type = ElementType::Entry;
+				$this->_fieldLayout->type = $this->_elementType;
 			}
 		}
 

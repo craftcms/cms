@@ -5,7 +5,7 @@
 {% set content %}
 	<h2>{{ title }} :(</h2>
 
-	{% if reqCheck.result == 'failure' %}
+	{% if reqCheck.result == 'failed' %}
 		<p>{{ "Your server doesn’t meet the following requirements to run Craft:"|t }}</p>
 
 		<ul class="bullets">
@@ -17,19 +17,6 @@
 		</ul>
 
 		<p>{{ "Please talk to your host/IT department about upgrading your server."|t }}</p>
-    {% endif %}
-
-	{% if reqCheck.errorFolders | length %}
-		<p>{{ "Craft needs to be able to write to the following folders, but can’t:"|t }}</p>
-
-		<ul class="bullets">
-			{% for errorFolder in reqCheck.errorFolders %}
-				<li>{{ errorFolder }}</li>
-			{% endfor %}
-		</ul>
-
-		<p>{{ "Please make these folders writable and try again."|t }}</p>
 	{% endif %}
-
 
 {% endset %}

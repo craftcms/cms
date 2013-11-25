@@ -18,11 +18,21 @@ abstract class BaseComponentModel extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		$attributes['id'] = array(AttributeType::Number);
-		$attributes['type'] = array(AttributeType::String);
-		$attributes['settings'] = array(AttributeType::Mixed);
+		return array(
+			'id'       => AttributeType::Number,
+			'type'     => array(AttributeType::String),
+			'settings' => AttributeType::Mixed,
+		);
+	}
 
-		return $attributes;
+	/**
+	 * Returns whether this is a new component.
+	 *
+	 * @return bool
+	 */
+	public function isNew()
+	{
+		return (!$this->id || strncmp($this->id, 'new', 3) === 0);
 	}
 
 	/**

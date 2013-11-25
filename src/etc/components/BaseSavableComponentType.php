@@ -35,13 +35,20 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	/**
 	 * Sets the setting values.
 	 *
-	 * @param array $values
+	 * @param array|BaseModel $values
 	 */
 	public function setSettings($values)
 	{
 		if ($values)
 		{
-			$this->getSettings()->setAttributes($values);
+			if ($values instanceof BaseModel)
+			{
+				$this->_settings = $values;
+			}
+			else
+			{
+				$this->getSettings()->setAttributes($values);
+			}
 		}
 	}
 
@@ -67,7 +74,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	}
 
 	/**
-	 * Gets the settings model.
+	 * Returns the settings model.
 	 *
 	 * @access protected
 	 * @return BaseModel
