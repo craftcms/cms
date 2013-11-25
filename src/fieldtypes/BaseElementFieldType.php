@@ -149,9 +149,10 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 *
 	 * @param string $name
 	 * @param mixed  $criteria
+	 * @param array $variables additional variables for the template
 	 * @return string
 	 */
-	public function getInputHtml($name, $criteria)
+	public function getInputHtml($name, $criteria, $variables = array())
 	{
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
@@ -176,7 +177,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			$sources = array($this->getSettings()->source);
 		}
 
-		return craft()->templates->render('_includes/forms/elementSelect', array(
+		$templateVariables = array(
 			'jsClass'        => $this->inputJsClass,
 			'elementType'    => new ElementTypeVariable($this->getElementType()),
 			'id'             => craft()->templates->formatInputId($name),
@@ -187,7 +188,11 @@ abstract class BaseElementFieldType extends BaseFieldType
 			'criteria'       => $selectionCriteria,
 			'limit'          => ($this->allowLimit ? $this->getSettings()->limit : null),
 			'addButtonLabel' => $this->getAddButtonLabel(),
-		));
+		);
+
+		$templateVariables = array_merge($templateVariables, $variables);
+
+		return craft()->templates->render('_includes/forms/elementSelect', $templateVariables);
 	}
 
 	/**

@@ -88,39 +88,16 @@ class AssetsFieldType extends BaseElementFieldType
 	 * Returns the field's input HTML.
 	 *
 	 * @param string $name
-	 * @param mixed  $elements
+	 * @param mixed  $criteria
 	 * @return string
 	 */
-	public function getInputHtml($name, $elements)
+	public function getInputHtml($name, $criteria)
 	{
-		$id = rtrim(preg_replace('/[\[\]]+/', '-', $name), '-').'-'.StringHelper::UUID();
-
-		if (!($elements instanceof RelationFieldData))
-		{
-			$elements = new RelationFieldData();
-		}
-
-		$criteria = array('status' => null);
-
-		if (!empty($this->element->id))
-		{
-			$criteria['id'] = 'not '.$this->element->id;
-		}
-
+		// Look for the single folder setting
 		$settings = $this->getSettings();
-		if ($this->allowMultipleSources)
-		{
-			$sources = $settings->sources;
-		}
-		else
-		{
-			$sources = array($settings->source);
-		}
-
-		// Look for the sourcePath
 		if (isset($settings->sourcePath) && !empty($settings->sourcePath))
 		{
-			// It must sturt with a folder or a source.
+			// It must start with a folder or a source.
 			$sourcePath = $settings->sourcePath;
 			if (preg_match('/^\{((folder|source):[0-9]+)\}/', $sourcePath, $matches))
 			{
@@ -178,7 +155,7 @@ class AssetsFieldType extends BaseElementFieldType
 									$response = craft()->assets->createFolder($currentFolder->id, $part);
 									if ($response->isError() || $response->isConflict())
 									{
-										// 99% of the time this will happen because a folder exists on the source, so let's just insert it into DB.
+										// If folder doesn't exits in DB, but we can't create it, it probably exists on the server.
 										$newFolder = new AssetFolderModel(
 											array(
 												'parentId' => $currentFolder->id,
@@ -207,28 +184,24 @@ class AssetsFieldType extends BaseElementFieldType
 				}
 				else
 				{
-					// Hash the path for new entries. This ensure that all unsaved entries
-					// with fields with identical sourcepath settings will resolve to the same temp folder.
-					$sourcePath = 'path:draft:'.sha1($sourcePath);
+					// New entry, so we default to User's upload folder
+					$sourcePath = 'path:user';
 				}
 			}
 		}
 		else
 		{
-			$sourcePath = '';
+			$sourcePath = null;
 		}
 
-		return craft()->templates->render('_includes/forms/elementSelect', array(
-			'jsClass'        => $this->inputJsClass,
-			'elementType'    => new ElementTypeVariable($this->getElementType()),
-			'id'             => $id,
-			'name'           => $name,
-			'elements'       => $elements->all,
-			'sources'        => $sources,
-			'sourcePath'     => $sourcePath,
-			'criteria'       => $criteria,
-			'limit'          => ($this->allowLimit ? $this->getSettings()->limit : null),
-			'addButtonLabel' => $this->getAddButtonLabel(),
-		));
+		$variables = array();
+
+		// If we have a source path, override the source variable
+		if ($sourcePath)
+		{
+			$variables['sources'] = $sourcePath;
+		}
+
+		return parent::getInputHtml($name, $criteria, $variables);
 	}
 }
