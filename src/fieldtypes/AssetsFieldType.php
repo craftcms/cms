@@ -117,7 +117,7 @@ class AssetsFieldType extends BaseElementFieldType
 					// Do we have the folder?
 					if (empty($folder))
 					{
-						$sources = array('*');
+						throw new Exception (Craft::t("Cannot find the target folder."));
 					}
 					else
 					{
@@ -132,8 +132,8 @@ class AssetsFieldType extends BaseElementFieldType
 						}
 
 						// Let's see if the folder already exists.
-						$criteria = array('sourceId' => $sourceId, 'fullPath' => $folder->fullPath . $sourcePath);
-						$existingFolder = craft()->assets->findFolder($criteria);
+						$folderCriteria = array('sourceId' => $sourceId, 'fullPath' => $folder->fullPath . $sourcePath);
+						$existingFolder = craft()->assets->findFolder($folderCriteria);
 
 						// No dice, go over each folder in the path and create it if it's missing.
 						if (!$existingFolder)
@@ -148,8 +148,8 @@ class AssetsFieldType extends BaseElementFieldType
 								{
 									continue;
 								}
-								$criteria = array('parentId' => $currentFolder->id, 'name' => $part);
-								$existingFolder = craft()->assets->findFolder($criteria);
+								$folderCriteria = array('parentId' => $currentFolder->id, 'name' => $part);
+								$existingFolder = craft()->assets->findFolder($folderCriteria);
 								if (!$existingFolder)
 								{
 									$response = craft()->assets->createFolder($currentFolder->id, $part);
