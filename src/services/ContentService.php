@@ -60,7 +60,7 @@ class ContentService extends BaseApplicationComponent
 
 		$content = $this->prepElementContentForSave($element, $fieldLayout, $validate);
 
-		if ($this->validateElementContent($element, $fieldLayout))
+		if (!$validate || $this->validateElementContent($element, $fieldLayout))
 		{
 			$this->saveContent($content);
 			$this->postSaveOperations($element, $content);
