@@ -31,16 +31,21 @@
 			{% for entryType in section.getEntryTypes() %}
 				{% set entryTypeOptions = entryTypeOptions|merge([{ label: entryType.name|t, value: entryType.id }]) %}
 			{% endfor %}
-			{{ forms.selectField({
-				label: "Entry Type"|t,
-				instructions: "Which type of entries do you want to publish?"|t,
-				id: 'entryType',
-				name: 'sections['~section.id~'][entryType]',
-				options: entryTypeOptions,
-				value: settings.entryType,
-				toggle: true,
-				targetPrefix: 'section'~section.id~'-type'
-			}) }}
+
+			{% if entryTypeOptions|length == 1 %}
+				<input type="hidden" name="sections[{{ section.id }}][entryType]" value="{{ settings.entryType }}" />
+			{% else %}
+				{{ forms.selectField({
+					label: "Entry Type"|t,
+					instructions: "Which type of entries do you want to publish?"|t,
+					id: 'entryType',
+					name: 'sections['~section.id~'][entryType]',
+					options: entryTypeOptions,
+					value: settings.entryType,
+					toggle: true,
+					targetPrefix: 'section'~section.id~'-type'
+				}) }}
+			{% endif %}
 
 			{% set fieldsInput %}
 				{% for entryType in section.getEntryTypes() %}
