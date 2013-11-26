@@ -617,7 +617,12 @@ class EntriesService extends BaseApplicationComponent
 		}
 
 		// Is the parentId set to a different entry ID than its previous parent?
-		$oldParent = $entry->getParent();
+		$criteria = craft()->elements->getCriteria(ElementType::Entry);
+		$criteria->ancestorOf = $entry;
+		$criteria->ancestorDist = 1;
+		$criteria->status = null;
+
+		$oldParent = $criteria->first();
 		$oldParentId = ($oldParent ? $oldParent->id : '0');
 
 		if ($entry->parentId != $oldParentId)
