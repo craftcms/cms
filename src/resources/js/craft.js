@@ -55,6 +55,34 @@ $.extend(Craft, {
 	},
 
 	/**
+	 * Encodes a URI copmonent. Mirrors PHP's rawurlencode().
+	 *
+	 * @param string str
+	 * @return string
+	 * @see http://stackoverflow.com/questions/1734250/what-is-the-equivalent-of-javascripts-encodeuricomponent-in-php
+	 */
+	encodeUriComponent: function(str)
+	{
+		str = encodeURIComponent(str);
+
+		var differences = {
+			'!': '%21',
+			'*': '%2A',
+			"'": '%27',
+			'(': '%28',
+			')': '%29'
+		};
+
+		for (var chr in differences)
+		{
+			var re = new RegExp('\\'+chr, 'g');
+			str = str.replace(re, differences[chr]);
+		}
+
+		return str;
+	},
+
+	/**
 	 * Formats an ID out of an input name.
 	 *
 	 * @param string inputName
@@ -520,7 +548,7 @@ $.extend(Craft, {
 	ltrim: function(str, chars)
 	{
 		if (!str) return str;
-		if (chars === undefined) chars = ' ';
+		if (chars === undefined) chars = ' \t\n\r\0\x0B';
 		var re = new RegExp('^['+Craft.escapeChars(chars)+']+');
 		return str.replace(re, '');
 	},
@@ -535,7 +563,7 @@ $.extend(Craft, {
 	rtrim: function(str, chars)
 	{
 		if (!str) return str;
-		if (chars === undefined) chars = ' ';
+		if (chars === undefined) chars = ' \t\n\r\0\x0B';
 		var re = new RegExp('['+Craft.escapeChars(chars)+']+$');
 		return str.replace(re, '');
 	},

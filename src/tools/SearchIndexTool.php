@@ -65,46 +65,81 @@ class SearchIndexTool extends BaseTool
 					'status' => null
 				));
 
-				$query = craft()->elements->buildElementsQuery($criteria)->queryAll();
+				$result = craft()->elements->buildElementsQuery($criteria, $fieldColumns)->queryAll();
 
-				if ($query)
+				if ($result)
 				{
-					$fields = craft()->fields->getAllFields();
+					$contentService = craft()->content;
 
-					foreach ($query as $row)
+					foreach ($result as $row)
 					{
-						// The locale column might be null since the element_i18n table was left-joined into the query,
-						// In that case it should be removed from the $row array so that the default value can be used.
-						if (!$row['locale'])
+						if ($elementType->hasContent())
 						{
-							unset($row['locale']);
+							// Separate the content values from the main element attributes
+							$content = array();
+							$content['id']        = $row['contentId'];
+							$content['elementId'] = $row['id'];
+							$content['locale']    = $row['locale'];
+
+							if (isset($row['title']))
+							{
+								$content['title'] = $row['title'];
+								unset($row['title']);
+							}
+
+							if ($fieldColumns)
+							{
+								foreach ($fieldColumns as $column)
+								{
+									if (isset($row[$column['column']]))
+									{
+										$content[$column['handle']] = $row[$column['column']];
+										unset($row[$column['column']]);
+									}
+								}
+							}
 						}
 
-						// Populate the actual element model
 						$element = $elementType->populateElementModel($row);
 
 						// Index the basic element attributes
 						craft()->search->indexElementAttributes($element, $element->locale);
 
-						// Index the content keywords
-						$searchKeywords = array();
-
-						foreach ($fields as $field)
+						if ($elementType->hasContent())
 						{
-							$fieldType = $field->getFieldType();
+							$originalContentTable      = $contentService->contentTable;
+							$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+							$originalFieldContext      = $contentService->fieldContext;
 
-							if ($fieldType)
+							$contentService->contentTable      = $element->getContentTable();
+							$contentService->fieldColumnPrefix = $element->getFieldColumnPrefix();
+							$contentService->fieldContext      = $element->getFieldContext();
+
+							$element->setContent($content);
+
+							$searchKeywords = array();
+
+							foreach (craft()->fields->getAllFields() as $field)
 							{
-								$fieldType->element = $element;
+								$fieldType = $field->getFieldType();
 
-								// Get the field's search keywords
-								$handle = $field->handle;
-								$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$handle);
-								$searchKeywords[$field->id] = $fieldSearchKeywords;
+								if ($fieldType)
+								{
+									$fieldType->element = $element;
+									$handle = $field->handle;
+
+									// Set the keywords for the content's locale
+									$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$handle);
+									$searchKeywords[$field->id] = $fieldSearchKeywords;
+								}
 							}
-						}
 
-						craft()->search->indexElementFields($element->id, $element->locale, $searchKeywords);
+							craft()->search->indexElementFields($element->id, $element->locale, $searchKeywords);
+
+							$contentService->contentTable      = $originalContentTable;
+							$contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+							$contentService->fieldContext      = $originalFieldContext;
+						}
 					}
 				}
 			}

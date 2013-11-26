@@ -85,57 +85,61 @@ class PluginsService extends BaseApplicationComponent
 	{
 		if (!$this->_pluginsLoaded && !$this->_loadingPlugins)
 		{
-			// Prevent this function from getting called twice.
-			$this->_loadingPlugins = true;
-
-			// Find all of the enabled plugins
-			$rows = craft()->db->createCommand()
-				->select('id, class, version, settings, installDate')
-				->from('plugins')
-				->where('enabled=1')
-				->queryAll();
-
-			$names = array();
-
-			foreach ($rows as $row)
+			if (craft()->isInstalled())
 			{
-				$plugin = $this->_getPlugin($row['class']);
+				// Prevent this function from getting called twice.
+				$this->_loadingPlugins = true;
 
-				if ($plugin)
+				// Find all of the enabled plugins
+				$rows = craft()->db->createCommand()
+					->select('id, class, version, settings, installDate')
+					->from('plugins')
+					->where('enabled=1')
+					->queryAll();
+
+				$names = array();
+
+				foreach ($rows as $row)
 				{
-					// Clean it up a bit
-					$row['settings'] = JsonHelper::decode($row['settings']);
-					$row['installDate'] = DateTime::createFromString($row['installDate']);
+					$plugin = $this->_getPlugin($row['class']);
 
-					$this->_enabledPluginInfo[$row['class']] = $row;
+					if ($plugin)
+					{
+						// Clean it up a bit
+						$row['settings'] = JsonHelper::decode($row['settings']);
+						$row['installDate'] = DateTime::createFromString($row['installDate']);
 
-					$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
-					$this->_plugins[$lcPluginHandle] = $plugin;
-					$this->_enabledPlugins[$lcPluginHandle] = $plugin;
-					$names[] = $plugin->getName();
+						$this->_enabledPluginInfo[$row['class']] = $row;
 
-					$plugin->setSettings($row['settings']);
+						$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
+						$this->_plugins[$lcPluginHandle] = $plugin;
+						$this->_enabledPlugins[$lcPluginHandle] = $plugin;
+						$names[] = $plugin->getName();
 
-					$plugin->isInstalled = true;
-					$plugin->isEnabled = true;
+						$plugin->setSettings($row['settings']);
 
-					$this->_importPluginComponents($plugin);
-					$this->_registerPluginServices($plugin->getClassHandle());
+						$plugin->isInstalled = true;
+						$plugin->isEnabled = true;
+
+						$this->_importPluginComponents($plugin);
+						$this->_registerPluginServices($plugin->getClassHandle());
+					}
 				}
-			}
 
-			// Sort plugins by name
-			array_multisort($names, $this->_enabledPlugins);
+				// Sort plugins by name
+				array_multisort($names, $this->_enabledPlugins);
 
-			// Now that all of the components have been imported,
-			// initialize all the plugins
-			foreach ($this->_enabledPlugins as $plugin)
-			{
-				$plugin->init();
+				// Now that all of the components have been imported,
+				// initialize all the plugins
+				foreach ($this->_enabledPlugins as $plugin)
+				{
+					$plugin->init();
+				}
+
+				$this->_loadingPlugins = false;
 			}
 
 			$this->_pluginsLoaded = true;
-			$this->_loadingPlugins = false;
 
 			// Fire an 'onLoadPlugins' event
 			$this->onLoadPlugins(new Event($this));

@@ -382,23 +382,27 @@ class FieldsService extends BaseApplicationComponent
 				}
 
 				// Create/alter the content table column
+				$columnType = $fieldType->defineContentAttribute();
+
 				$contentTable = craft()->content->contentTable;
-				$fieldColumnPrefix = craft()->content->fieldColumnPrefix;
-				$column = $fieldType->defineContentAttribute();
+				$oldColumnName = $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle();
+				$newColumnName = craft()->content->fieldColumnPrefix.$field->handle;
 
-				if ($column)
+				if ($columnType)
 				{
-					$column = ModelHelper::normalizeAttributeConfig($column);
+					$columnType = ModelHelper::normalizeAttributeConfig($columnType);
 
-					if (!craft()->db->columnExists($contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle()))
+					if (craft()->db->columnExists($contentTable, $oldColumnName))
 					{
-						// Adding it for the first time if it's a new field, or previously the field didn't need a content column.
-						craft()->db->createCommand()->addColumn($contentTable, $fieldColumnPrefix.$field->handle, $column);
+						craft()->db->createCommand()->alterColumn($contentTable, $oldColumnName, $columnType, $newColumnName);
+					}
+					else if (craft()->db->columnExists($contentTable, $newColumnName))
+					{
+						craft()->db->createCommand()->alterColumn($contentTable, $newColumnName, $columnType);
 					}
 					else
 					{
-						// Existing field that already had a column defined, just altering it.
-						craft()->db->createCommand()->alterColumn($contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle(), $column, $fieldColumnPrefix.$field->handle);
+						craft()->db->createCommand()->addColumn($contentTable, $newColumnName, $columnType);
 					}
 				}
 				else
@@ -406,9 +410,9 @@ class FieldsService extends BaseApplicationComponent
 					// Did the old field have a column we need to remove?
 					if (!$isNewField)
 					{
-						if ($fieldRecord->getOldHandle() && craft()->db->columnExists($contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle()))
+						if ($fieldRecord->getOldHandle() && craft()->db->columnExists($contentTable, $oldColumnName))
 						{
-							craft()->db->createCommand()->dropColumn($contentTable, $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle());
+							craft()->db->createCommand()->dropColumn($contentTable, $oldColumnName);
 						}
 					}
 				}

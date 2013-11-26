@@ -39,7 +39,7 @@ class DropdownFieldType extends BaseOptionsFieldType
 		$options = $this->getOptions();
 
 		// If this is a new entry, look for a default option
-		if ($this->isFresh())
+		if ($value === null && $this->isFresh())
 		{
 			foreach ($options as $option)
 			{
