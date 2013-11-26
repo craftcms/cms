@@ -90,7 +90,7 @@ class TagsFieldType extends BaseElementFieldType
 					// Last-minute check
 					$criteria = craft()->elements->getCriteria(ElementType::Tag);
 					$criteria->setId = $tagSetId;
-					$criteria->search = 'name:'.$name;
+					$criteria->search = 'name::'.$name;
 					$ids = $criteria->ids();
 
 					if ($ids)
