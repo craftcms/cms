@@ -70,12 +70,20 @@
 				}) }}
 
 				{% if section.type == 'structure' and parentOptions|length > 1 %}
+					{% set parentId = null %}
+					{% if entry.id %}
+						{% set parent = craft.entries.ancestorOf(entry).ancestorDist(1).status(null).first() %}
+						{% if parent %}
+							{% set parentId = parent.id %}
+						{% endif %}
+					{% endif %}
+
 					{{ forms.selectField({
 						label: "Parent Entry"|t,
 						id: 'parentId',
 						name: 'parentId',
 						options: parentOptions,
-						value: (entry.getParent() ? entry.getParent().id : null)
+						value: parentId
 					}) }}
 				{% endif %}
 
