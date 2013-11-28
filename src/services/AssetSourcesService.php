@@ -43,6 +43,49 @@ class AssetSourcesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Get the Temp source type.
+	 *
+	 * @return BaseAssetSourceType
+	 * @throws Exception
+	 */
+	public function getTempSourceType()
+	{
+		$allSources = $this->getAllSources();
+		$existingId = false;
+
+		// A quick check if it exists
+		foreach ($allSources as $source)
+		{
+			if ($source->type == "Temp")
+			{
+				$existingId = $source->id;
+			}
+		}
+
+		if ($existingId)
+		{
+			$sourceType = $this->getSourceTypeById($existingId);
+		}
+		else
+		{
+			// Create it for the first time
+			$source = new AssetSourceModel();
+			$source->name = 'Assets Temporary Source';
+			$source->type = 'Temp';
+			$source->settings = array('path' => craft()->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempassets/'));
+			if (!$this->saveSource($source))
+			{
+				throw new Exception (Craft::t("Can't create a Temporary Source."));
+			}
+			$sourceType = $this->getSourceTypeById($source->id);
+			craft()->assetIndexing->ensureTopFolder($source);
+		}
+
+
+		return $sourceType;
+	}
+
+	/**
 	 * Populates an asset source type with a given source.
 	 *
 	 * @param AssetSourceModel $source
@@ -84,6 +127,7 @@ class AssetSourcesService extends BaseApplicationComponent
 			{
 				$this->_allSourceIds = craft()->db->createCommand()
 					->select('id')
+					->where('type <> "Temp"')
 					->from('assetsources')
 					->queryColumn();
 			}

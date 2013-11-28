@@ -211,7 +211,7 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Get the folder tree for Assets by source ids
 	 *
-	 * @param $sourceId
+	 * @param $allowedSourceIds
 	 * @return array
 	 */
 	public function getFolderTreeBySourceIds($allowedSourceIds)
@@ -227,6 +227,46 @@ class AssetsService extends BaseApplicationComponent
 
 		array_multisort($sort, $tree);
 		return $tree;
+	}
+
+	/**
+	 * Get the users Folder model.
+	 *
+	 * @param UserModel $userModel
+	 * @return AssetFolderModel|null
+	 * @throws Exception
+	 */
+	public function getUserFolder(UserModel $userModel)
+	{
+		$source = craft()->assetSources->getTempSourceType();
+		$sourceTopFolder = craft()->assets->findFolder(array('sourceId' => $source->model->id, 'parentId' => FolderCriteriaModel::AssetsNoParent));
+
+		// Super unlikely, but would be very awkward if this happened without any contingency plans in place.
+		if (!$sourceTopFolder)
+		{
+			craft()->assetIndexing->ensureTopFolder(new AssetSourceModel($source->model));
+			$sourceTopFolder = craft()->assets->findFolder(array('sourceId' => $source->model->id, 'parentId' => FolderCriteriaModel::AssetsNoParent));
+		}
+
+		$folderName = $userModel->username;
+		$folderCriteria = new FolderCriteriaModel(array(
+			'sourceId' => $source->model->id,
+			'name' => $folderName,
+			'parentId' => $sourceTopFolder->id
+		));
+
+		$folder = $this->findFolder($folderCriteria);
+		if (!$folder)
+		{
+			$folder = new AssetFolderModel();
+			$folder->sourceId = $source->model->id;
+			$folder->parentId = $sourceTopFolder->id;
+			$folder->name = $folderName;
+			$folder->id = $this->storeFolder($folder);
+		}
+		$folder->name = Craft::t('My uploads');
+
+		return $folder;
 	}
 
 	/**
@@ -752,6 +792,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param $folderId
 	 * @param string $filename if this is a rename operation
 	 * @param array $actions actions to take in case of a conflict.
+	 * @return bool|AssetOperationResponseModel
 	 */
 	public function moveFiles($fileIds, $folderId, $filename = '', $actions = array())
 	{
@@ -841,7 +882,7 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	* Delete a folder record by id.
 	*
-	* @param $fileId
+	* @param $folderId
 	* @return bool
 	*/
 	public function deleteFolderRecord($folderId)
@@ -858,8 +899,6 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function getUrlForFile(AssetFileModel $file, $transform = null)
 	{
-		$returnPlaceholder = false;
-
 		if (!$transform || !in_array(IOHelper::getExtension($file->filename), ImageHelper::getAcceptedExtensions()))
 		{
 			$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);

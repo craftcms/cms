@@ -1,5 +1,6 @@
 <?php
 namespace Craft;
+use Mockery\CountValidator\Exception;
 
 /**
  * Asset element type
@@ -48,17 +49,32 @@ class AssetElementType extends BaseElementType
 		{
 			$parts = explode(":", $context);
 
-			// If it has two parts, the other part must be folder id.
+			// If it has two parts, the other part is either a folder id.
 			if (count($parts) == 2 && is_numeric($parts[1]))
 			{
 				$tree = craft()->assets->getFolderTreeByFolderId($parts[1]);
 			}
+			// Or a special case
 			else
 			{
-				return false;
+				switch ($parts[1])
+				{
+					case 'user':
+					{
+						$userModel = craft()->userSession->getUser();
+						$tree = array(craft()->assets->getUserFolder($userModel));
+						break;
+					}
+
+					default:
+					{
+						return false;
+					}
+				}
 			}
 		}
-		else{
+		else
+		{
 			if (in_array($context, array('modal', 'index')))
 			{
 				$sourceIds = craft()->assetSources->getViewableSourceIds();

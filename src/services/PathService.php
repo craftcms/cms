@@ -109,6 +109,16 @@ class PathService extends BaseApplicationComponent
 	/**
 	 * @return string
 	 */
+	public function getAssetsTempSourcePath()
+	{
+		$path = $this->getAssetsPath().'tempSource/';
+		IOHelper::ensureFolderExists($path);
+		return $path;
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getAssetsImageSourcePath()
 	{
 		$path = $this->getAssetsPath() . 'sources/';
