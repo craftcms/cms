@@ -264,7 +264,7 @@ class AssetsFieldType extends BaseElementFieldType
 		{
 			$handle = $this->model->handle;
 			$filesToMove = $this->element->getContent()->{$handle};
-			if (count($filesToMove))
+			if (is_array($filesToMove) && count($filesToMove))
 			{
 				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->sourcePath);
 
