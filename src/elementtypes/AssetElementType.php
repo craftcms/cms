@@ -1,6 +1,5 @@
 <?php
 namespace Craft;
-use Mockery\CountValidator\Exception;
 
 /**
  * Asset element type
@@ -45,48 +44,37 @@ class AssetElementType extends BaseElementType
 	 */
 	public function getSources($context = null)
 	{
-		if (substr($context, 0, 5) == 'path:')
+		if (in_array($context, array('modal', 'index')))
 		{
-			$parts = explode(":", $context);
-
-			// If it has two parts, the other part is either a folder id.
-			if (count($parts) == 2 && is_numeric($parts[1]))
-			{
-				$tree = craft()->assets->getFolderTreeByFolderId($parts[1]);
-			}
-			// Or a special case
-			else
-			{
-				switch ($parts[1])
-				{
-					case 'user':
-					{
-						$userModel = craft()->userSession->getUser();
-						$tree = array(craft()->assets->getUserFolder($userModel));
-						break;
-					}
-
-					default:
-					{
-						return false;
-					}
-				}
-			}
+			$sourceIds = craft()->assetSources->getViewableSourceIds();
 		}
 		else
 		{
-			if (in_array($context, array('modal', 'index')))
-			{
-				$sourceIds = craft()->assetSources->getViewableSourceIds();
-			}
-			else
-			{
-				$sourceIds = craft()->assetSources->getAllSourceIds();
-			}
-			$tree = craft()->assets->getFolderTreeBySourceIds($sourceIds);
+			$sourceIds = craft()->assetSources->getAllSourceIds();
 		}
+		$tree = craft()->assets->getFolderTreeBySourceIds($sourceIds);
 
 		return $this->_assembleSourceList($tree);
+	}
+
+	/**
+	 * Resolve a single source, that's set to something specific.
+	 *
+	 * @param $source
+	 * @return array|false
+	 */
+	public function resolveSingleSource($source)
+	{
+		if (preg_match('/folder:([0-9]+)/', $source, $matches))
+		{
+			$tree = craft()->assets->getFolderTreeByFolderId($matches[1]);
+			$tree[0]->name = Craft::t('Files');
+			return $this->_assembleSourceList($tree);
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**

@@ -43,49 +43,6 @@ class AssetSourcesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Get the Temp source type.
-	 *
-	 * @return BaseAssetSourceType
-	 * @throws Exception
-	 */
-	public function getTempSourceType()
-	{
-		$allSources = $this->getAllSources();
-		$existingId = false;
-
-		// A quick check if it exists
-		foreach ($allSources as $source)
-		{
-			if ($source->type == "Temp")
-			{
-				$existingId = $source->id;
-			}
-		}
-
-		if ($existingId)
-		{
-			$sourceType = $this->getSourceTypeById($existingId);
-		}
-		else
-		{
-			// Create it for the first time
-			$source = new AssetSourceModel();
-			$source->name = 'Assets Temporary Source';
-			$source->type = 'Temp';
-			$source->settings = array('path' => craft()->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempassets/'));
-			if (!$this->saveSource($source))
-			{
-				throw new Exception (Craft::t("Can't create a Temporary Source."));
-			}
-			$sourceType = $this->getSourceTypeById($source->id);
-			craft()->assetIndexing->ensureTopFolder($source);
-		}
-
-
-		return $sourceType;
-	}
-
-	/**
 	 * Populates an asset source type with a given source.
 	 *
 	 * @param AssetSourceModel $source
@@ -104,6 +61,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function getSourceTypeById($sourceId)
 	{
+
 		$source = $this->getSourceById($sourceId);
 		return $this->populateSourceType($source);
 	}
@@ -261,23 +219,36 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function getSourceById($sourceId)
 	{
-		if (!$this->_fetchedAllSources && !isset($this->_sourcesById) || !array_key_exists($sourceId, $this->_sourcesById))
+		// Temporary source?
+		if (is_null($sourceId))
 		{
-			$sourceRecord = AssetSourceRecord::model()->findById($sourceId);
-
-			if ($sourceRecord)
-			{
-				$this->_sourcesById[$sourceId] = AssetSourceModel::populateModel($sourceRecord);
-			}
-			else
-			{
-				$this->_sourcesById = null;
-			}
+			$source = new AssetSourceModel();
+			$source->id = $sourceId;
+			$source->name = TempAssetSourceType::sourceName;
+			$source->type = TempAssetSourceType::sourceType;
+			$source->settings = array('path' => craft()->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempuploads/'));
+			return $source;
 		}
-
-		if (!empty($this->_sourcesById[$sourceId]))
+		else
 		{
-			return $this->_sourcesById[$sourceId];
+			if (!$this->_fetchedAllSources && !isset($this->_sourcesById) || !array_key_exists($sourceId, $this->_sourcesById))
+			{
+				$sourceRecord = AssetSourceRecord::model()->findById($sourceId);
+
+				if ($sourceRecord)
+				{
+					$this->_sourcesById[$sourceId] = AssetSourceModel::populateModel($sourceRecord);
+				}
+				else
+				{
+					$this->_sourcesById = null;
+				}
+			}
+
+			if (!empty($this->_sourcesById[$sourceId]))
+			{
+				return $this->_sourcesById[$sourceId];
+			}
 		}
 	}
 

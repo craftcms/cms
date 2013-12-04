@@ -238,19 +238,18 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function getUserFolder(UserModel $userModel)
 	{
-		$source = craft()->assetSources->getTempSourceType();
-		$sourceTopFolder = craft()->assets->findFolder(array('sourceId' => $source->model->id, 'parentId' => FolderCriteriaModel::AssetsNoParent));
+		$sourceTopFolder = craft()->assets->findFolder(array('sourceId' => FolderCriteriaModel::AssetsNoSource, 'parentId' => FolderCriteriaModel::AssetsNoParent));
 
 		// Super unlikely, but would be very awkward if this happened without any contingency plans in place.
 		if (!$sourceTopFolder)
 		{
-			craft()->assetIndexing->ensureTopFolder(new AssetSourceModel($source->model));
-			$sourceTopFolder = craft()->assets->findFolder(array('sourceId' => $source->model->id, 'parentId' => FolderCriteriaModel::AssetsNoParent));
+			$sourceTopFolder = new AssetFolderModel();
+			$sourceTopFolder->name = TempAssetSourceType::sourceName;
+			$sourceTopFolder->id = $this->storeFolder($sourceTopFolder);
 		}
 
-		$folderName = $userModel->username;
+		$folderName = 'user_' . $userModel->id;
 		$folderCriteria = new FolderCriteriaModel(array(
-			'sourceId' => $source->model->id,
 			'name' => $folderName,
 			'parentId' => $sourceTopFolder->id
 		));
@@ -259,12 +258,10 @@ class AssetsService extends BaseApplicationComponent
 		if (!$folder)
 		{
 			$folder = new AssetFolderModel();
-			$folder->sourceId = $source->model->id;
 			$folder->parentId = $sourceTopFolder->id;
 			$folder->name = $folderName;
 			$folder->id = $this->storeFolder($folder);
 		}
-		$folder->name = Craft::t('My uploads');
 
 		return $folder;
 	}
@@ -598,6 +595,12 @@ class AssetsService extends BaseApplicationComponent
 
 		if ($criteria->sourceId)
 		{
+			// Set sourceId to null if we're looking for folders with no source.
+			if ($criteria->sourceId == FolderCriteriaModel::AssetsNoSource)
+			{
+				$criteria->sourceId = array(null);
+			}
+
 			$whereConditions[] = DbHelper::parseParam('f.sourceId', $criteria->sourceId, $whereParams);
 		}
 
@@ -788,13 +791,13 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Move or rename files.
 	 *
-	 * @param $fileIds
+	 * @param array $fileIds
 	 * @param $folderId
-	 * @param string $filename if this is a rename operation
+	 * @param array $filenames if this is a rename operation
 	 * @param array $actions actions to take in case of a conflict.
 	 * @return bool|AssetOperationResponseModel
 	 */
-	public function moveFiles($fileIds, $folderId, $filename = '', $actions = array())
+	public function moveFiles($fileIds, $folderId, $filenames = array(), $actions = array())
 	{
 		if (!is_array($fileIds))
 		{
@@ -806,6 +809,11 @@ class AssetsService extends BaseApplicationComponent
 			$actions = array($actions);
 		}
 
+		if (!is_array($filenames))
+		{
+			$filenames = array($filenames);
+		}
+
 		$results = array();
 
 		$response = new AssetOperationResponseModel();
@@ -815,6 +823,8 @@ class AssetsService extends BaseApplicationComponent
 			$file = $this->getFileById($fileId);
 
 			// If this is not a rename operation, then the filename remains the original
+			$filename = isset($filenames[$i]) ? $filenames[$i] : '';
+
 			if (empty($filename))
 			{
 				$filename = $file->filename;

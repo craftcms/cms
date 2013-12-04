@@ -64,6 +64,17 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
+	 * Resolve a single source, that's set to something specific.
+	 *
+	 * @param $source
+	 * @return array|false
+	 */
+	public function resolveSingleSource($source)
+	{
+		return false;
+	}
+
+	/**
 	 * Defines which model attributes should be searchable.
 	 *
 	 * @return array

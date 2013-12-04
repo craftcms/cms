@@ -33,7 +33,7 @@ class AssetFolderRecord extends BaseRecord
 	{
 		return array(
 			'parent' => array(static::BELONGS_TO, 'AssetFolderRecord', 'onDelete' => static::CASCADE),
-			'source' => array(static::BELONGS_TO, 'AssetSourceRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'source' => array(static::BELONGS_TO, 'AssetSourceRecord', 'onDelete' => static::CASCADE),
 		);
 	}
 

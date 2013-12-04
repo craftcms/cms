@@ -11,6 +11,7 @@ class FolderCriteriaModel extends BaseModel
 	 * Has no parent folders.
 	 */
 	const AssetsNoParent = -1;
+	const AssetsNoSource = -2;
 
 	/**
 	 * @access protected

@@ -35,7 +35,15 @@ class ElementsController extends BaseController
 				}
 			}
 		}
-
+		else
+		{
+			// Maybe we were asked for a specific point in a source?
+			$singleSource = $elementType->resolveSingleSource($showSources);
+			if ($singleSource)
+			{
+				$sources = $singleSource;
+			}
+		}
 
 		$this->renderTemplate('_elements/modalbody', array(
 			'sources'   => $sources
@@ -66,6 +74,16 @@ class ElementsController extends BaseController
 		{
 			$sources = $elementType->getSources($context);
 			$source = $this->_findSource($sources, $sourceKey);
+
+			// If this failed, maybe this is a specific point in a source?
+			if (!$source)
+			{
+				$source = $elementType->resolveSingleSource($sourceKey);
+				if (is_array($source))
+				{
+					$source = reset($source);
+				}
+			}
 
 			if (!$source)
 			{

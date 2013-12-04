@@ -1361,7 +1361,7 @@ class IOHelper
 	 * Makes sure a folder exists. If it does not - creates one with write permissions
 	 *
 	 * @static
-	 * @param       $folderPath     The path to the folder.
+	 * @param  string $folderPath The path to the folder.
 	 * @param  bool $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
 	 * @return void
 	 */

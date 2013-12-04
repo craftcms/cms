@@ -90,6 +90,7 @@ class AssetsFieldType extends BaseElementFieldType
 	 * @param string $name
 	 * @param mixed  $criteria
 	 * @return string
+	 * @throws Exception
 	 */
 	public function getInputHtml($name, $criteria)
 	{
@@ -104,88 +105,30 @@ class AssetsFieldType extends BaseElementFieldType
 				// Is this a saved entry and can the path be resolved then?
 				if ($this->element->id)
 				{
-					$parts = explode(":", $matches[1]);
-					if ($parts[0] == 'folder')
-					{
-						$folder = craft()->assets->getFolderById($parts[1]);
-					}
-					else
-					{
-						$folder = craft()->assets->findFolder(array('sourceId' => $parts[1], 'parentId' => FolderCriteriaModel::AssetsNoParent));
-					}
-
-					// Do we have the folder?
-					if (empty($folder))
-					{
-						throw new Exception (Craft::t("Cannot find the target folder."));
-					}
-					else
-					{
-						$sourceId = $folder->sourceId;
-
-						// Prepare the path by parsing tokens and normalizing slashes.
-						$sourcePath = trim(str_replace('{'.$matches[1].'}', '', $sourcePath), '/');
-						$sourcePath = craft()->templates->renderObjectTemplate($sourcePath, $this->element);
-						if (strlen($sourcePath))
-						{
-							$sourcePath = $sourcePath.'/';
-						}
-
-						// Let's see if the folder already exists.
-						$folderCriteria = array('sourceId' => $sourceId, 'fullPath' => $folder->fullPath . $sourcePath);
-						$existingFolder = craft()->assets->findFolder($folderCriteria);
-
-						// No dice, go over each folder in the path and create it if it's missing.
-						if (!$existingFolder)
-						{
-							$parts = explode('/', $sourcePath);
-
-							// Now make sure that every folder in the path exists.
-							$currentFolder = $folder;
-							foreach ($parts as $part)
-							{
-								if (empty($part))
-								{
-									continue;
-								}
-								$folderCriteria = array('parentId' => $currentFolder->id, 'name' => $part);
-								$existingFolder = craft()->assets->findFolder($folderCriteria);
-								if (!$existingFolder)
-								{
-									$response = craft()->assets->createFolder($currentFolder->id, $part);
-									if ($response->isError() || $response->isConflict())
-									{
-										// If folder doesn't exits in DB, but we can't create it, it probably exists on the server.
-										$newFolder = new AssetFolderModel(
-											array(
-												'parentId' => $currentFolder->id,
-												'name'     => $part,
-												'sourceId' => $sourceId,
-												'fullPath' => ltrim($currentFolder->fullPath.'/'.$part, '/')
-											)
-										);
-										$folderId = craft()->assets->storeFolder($newFolder);
-									}
-									else
-									{
-										$folderId = $response->getDataItem('folderId');
-									}
-									$existingFolder = craft()->assets->getFolderById($folderId);
-								}
-								$currentFolder = $existingFolder;
-							}
-						}
-						else
-						{
-							$currentFolder = $existingFolder;
-						}
-					}
-					$sourcePath = 'path:'.$currentFolder->id;
+					$sourcePath = 'folder:'.$this->_resolveSourcePathToFolderId($sourcePath);
 				}
 				else
 				{
-					// New entry, so we default to User's upload folder
-					$sourcePath = 'path:user';
+					// New entry, so we default to User's upload folder for this field
+					$userModel = craft()->userSession->getUser();
+					if (!$userModel)
+					{
+						throw new Exception(Craft::t("To use this Field, user must be logged in!"));
+					}
+
+					$userFolder = craft()->assets->getUserFolder($userModel);
+
+					$folderName = 'field_' . $this->model->id;
+					$elementFolder = craft()->assets->findFolder(array('parentId' => $userFolder->id, 'name' => $folderName));
+					if (!($elementFolder))
+					{
+						$folderId = $this->_createSubFolder($userFolder, $folderName);
+					}
+					else
+					{
+						$folderId = $elementFolder->id;
+					}
+					$sourcePath = 'folder:'.$folderId;
 				}
 			}
 		}
@@ -203,5 +146,134 @@ class AssetsFieldType extends BaseElementFieldType
 		}
 
 		return parent::getInputHtml($name, $criteria, $variables);
+	}
+
+	/**
+	 * Resolve a source path to it's folder ID by the source path and the matched source beginning.
+	 *
+	 * @param $sourcePath
+	 * @return mixed
+	 * @throws Exception
+	 */
+	private function _resolveSourcePathToFolderId($sourcePath)
+	{
+		preg_match('/^\{((folder|source):[0-9]+)\}/', $sourcePath, $matches);
+		$parts = explode(":", $matches[1]);
+		if ($parts[0] == 'folder')
+		{
+			$folder = craft()->assets->getFolderById($parts[1]);
+		}
+		else
+		{
+			$folder = craft()->assets->findFolder(array('sourceId' => $parts[1], 'parentId' => FolderCriteriaModel::AssetsNoParent));
+		}
+
+		// Do we have the folder?
+		if (empty($folder))
+		{
+			throw new Exception (Craft::t("Cannot find the target folder."));
+		}
+		else
+		{
+			$sourceId = $folder->sourceId;
+
+			// Prepare the path by parsing tokens and normalizing slashes.
+			$sourcePath = trim(str_replace('{'.$matches[1].'}', '', $sourcePath), '/');
+			$sourcePath = craft()->templates->renderObjectTemplate($sourcePath, $this->element);
+			if (strlen($sourcePath))
+			{
+				$sourcePath = $sourcePath.'/';
+			}
+
+			// Let's see if the folder already exists.
+			$folderCriteria = array('sourceId' => $sourceId, 'fullPath' => $folder->fullPath . $sourcePath);
+			$existingFolder = craft()->assets->findFolder($folderCriteria);
+
+			// No dice, go over each folder in the path and create it if it's missing.
+			if (!$existingFolder)
+			{
+				$parts = explode('/', $sourcePath);
+
+				// Now make sure that every folder in the path exists.
+				$currentFolder = $folder;
+				foreach ($parts as $part)
+				{
+					if (empty($part))
+					{
+						continue;
+					}
+					$folderCriteria = array('parentId' => $currentFolder->id, 'name' => $part);
+					$existingFolder = craft()->assets->findFolder($folderCriteria);
+					if (!$existingFolder)
+					{
+						$folderId = $this->_createSubFolder($currentFolder, $part);
+						$existingFolder = craft()->assets->getFolderById($folderId);
+					}
+					$currentFolder = $existingFolder;
+				}
+			}
+			else
+			{
+				$currentFolder = $existingFolder;
+			}
+		}
+
+		return $currentFolder->id;
+	}
+
+	/**
+	 * Create a subfolder in a folder by it's name.
+	 *
+	 * @param $currentFolder
+	 * @param $folderName
+	 * @return mixed|null
+	 */
+	private function _createSubFolder($currentFolder, $folderName)
+	{
+		$response = craft()->assets->createFolder($currentFolder->id, $folderName);
+
+		if ($response->isError() || $response->isConflict())
+		{
+			// If folder doesn't exist in DB, but we can't create it, it probably exists on the server.
+			$newFolder = new AssetFolderModel(
+				array(
+					'parentId' => $currentFolder->id,
+					'name' => $folderName,
+					'sourceId' => $currentFolder->sourceId,
+					'fullPath' => trim($currentFolder->fullPath . '/' . $folderName, '/') . '/'
+				)
+			);
+			$folderId = craft()->assets->storeFolder($newFolder);
+			return $folderId;
+		}
+		else
+		{
+
+			$folderId = $response->getDataItem('folderId');
+			return $folderId;
+		}
+	}
+
+	/**
+	 * For all new entries, if the field is using a single folder setting, move the uploaded files.
+	 */
+	public function onAfterElementSave()
+	{
+		$settings = $this->getSettings();
+		if (isset($settings->sourcePath) && !empty($settings->sourcePath))
+		{
+			$handle = $this->model->handle;
+			$filesToMove = $this->element->getContent()->{$handle};
+			if (count($filesToMove))
+			{
+				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->sourcePath);
+
+				// Resolve conflicts by keeping both
+				$actions = array_fill(0, count($filesToMove), AssetsHelper::ActionKeepBoth);
+				craft()->assets->moveFiles($filesToMove, $targetFolderId, '', $actions);
+
+			}
+		}
+		parent::onAfterElementSave();
 	}
 }

@@ -140,7 +140,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * @param BaseAssetSourceType|LocalAssetSourceType $sourceType = null
 	 * @return string
 	 */
-	private function _getSourceFileSystemPath(LocalAssetSourceType $sourceType = null)
+	protected function _getSourceFileSystemPath(LocalAssetSourceType $sourceType = null)
 	{
 		$path = is_null($sourceType) ? $this->getBasePath() : $sourceType->getBasePath();
 		$path = IOHelper::getRealPath($path);
