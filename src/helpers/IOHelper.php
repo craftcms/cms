@@ -29,7 +29,7 @@ class IOHelper
 		else if ($caseInsensitive)
 		{
 			$folder = static::getFolderName($path, true, $suppressErrors);
-			$files = static::getFolderContents($folder, false, null, $suppressErrors);
+			$files = static::getFolderContents($folder, false, null, false, $suppressErrors);
 			$lcaseFileName = mb_strtolower($path);
 
 			if (is_array($files) && count($files) > 0)
@@ -556,13 +556,14 @@ class IOHelper
 	 * Returns the contents of a folder as an array of file and folder paths, or false if the folder does not exist or is not readable.
 	 *
 	 * @static
-	 * @param  string     $path           The path to test.
-	 * @param  bool       $recursive      Whether to do a recursive folder search.
-	 * @param  bool       $filter         The filter to use when performing the search.
-	 * @param  bool       $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
-	 * @return array|bool                 An array of file and folder paths, or false if the folder does not exist or is not readable.
+	 * @param  string     $path               The path to test.
+	 * @param  bool       $recursive          Whether to do a recursive folder search.
+	 * @param  bool       $filter             The filter to use when performing the search.
+	 * @param  bool       $includeHiddenFiles Whether to include hidden files (that start with a .) in the results.
+	 * @param  bool       $suppressErrors     Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+	 * @return array|bool                     An array of file and folder paths, or false if the folder does not exist or is not readable.
 	 */
-	public static function getFolderContents($path, $recursive = true, $filter = null, $suppressErrors = false)
+	public static function getFolderContents($path, $recursive = true, $filter = null, $includeHiddenFiles = false, $suppressErrors = false)
 	{
 		$path = static::normalizePathSeparators($path);
 
@@ -833,7 +834,7 @@ class IOHelper
 
 			if ($success && static::folderExists($path, $suppressErrors) && $recursive)
 			{
-				$contents = static::getFolderContents($path, true, null, $suppressErrors);
+				$contents = static::getFolderContents($path, true, null, false, $suppressErrors);
 
 				foreach ($contents as $path)
 				{
@@ -888,7 +889,7 @@ class IOHelper
 
 			if ($success && static::folderExists($path, $suppressErrors) && $recursive)
 			{
-				$contents = static::getFolderContents($path, true, null, $suppressErrors);
+				$contents = static::getFolderContents($path, true, null, false, $suppressErrors);
 
 				foreach ($contents as $path)
 				{
@@ -1008,7 +1009,7 @@ class IOHelper
 
 		if (static::folderExists($path, $suppressErrors))
 		{
-			$folderContents = static::getFolderContents($path, true, null, $suppressErrors);
+			$folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
 
 			foreach ($folderContents as $item)
 			{
@@ -1151,7 +1152,7 @@ class IOHelper
 
 		if (static::folderExists($path, $suppressErrors))
 		{
-			$folderContents = static::getFolderContents($path, true, null, $suppressErrors);
+			$folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
 
 			foreach ($folderContents as $item)
 			{
@@ -1508,7 +1509,7 @@ class IOHelper
 	{
 		$size = 0;
 
-		foreach (static::getFolderContents($path, $suppressErrors) as $item)
+		foreach (static::getFolderContents($path, true, null, true, $suppressErrors) as $item)
 		{
 			$item = static::normalizePathSeparators($item);
 
@@ -1522,7 +1523,6 @@ class IOHelper
 	}
 
 	/**
-	 *
 	 * @static
 	 * @param        $path
 	 * @param  bool  $recursive
