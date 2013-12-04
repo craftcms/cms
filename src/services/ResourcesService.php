@@ -137,28 +137,8 @@ class ResourcesService extends BaseApplicationComponent
 						return false;
 					}
 
-					$sourceType = craft()->assetSources->getSourceTypeById($fileModel->sourceId);
-
 					$size = $segs[2];
-
-					$thumbFolder = craft()->path->getAssetsThumbsPath().$size.'/';
-					IOHelper::ensureFolderExists($thumbFolder);
-
-					$thumbPath = $thumbFolder.$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
-
-					if (!IOHelper::fileExists($thumbPath))
-					{
-						$sourcePath = $sourceType->getImageSourcePath($fileModel);
-						if (!IOHelper::fileExists($sourcePath))
-						{
-							return false;
-						}
-						craft()->images->loadImage($sourcePath)
-							->scaleAndCrop($size, $size)
-							->saveAs($thumbPath);
-					}
-
-					return $thumbPath;
+					return craft()->assetTransforms->getThumbServerPath($fileModel, $size);
 				}
 
 				case 'icons':

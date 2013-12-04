@@ -587,4 +587,61 @@ class AssetTransformsService extends BaseApplicationComponent
 			}
 		}
 	}
+
+	/**
+	 * Get a thumb server path by file model and size.
+	 *
+	 * @param $fileModel
+	 * @param $size
+	 * @return bool|string
+	 */
+	public function getThumbServerPath($fileModel, $size)
+	{
+		$sourceType = craft()->assetSources->getSourceTypeById($fileModel->sourceId);
+
+		$thumbFolder = craft()->path->getAssetsThumbsPath().$size.'/';
+		IOHelper::ensureFolderExists($thumbFolder);
+
+		$thumbPath = $thumbFolder.$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
+
+		if (!IOHelper::fileExists($thumbPath))
+		{
+			$imageSource = $sourceType->getImageSourcePath($fileModel);
+			$deleteSource = false;
+
+			if (!IOHelper::fileExists($imageSource) && !$sourceType->isRemote())
+			{
+				return false;
+			}
+			elseif ($sourceType->isRemote())
+			{
+				$localCopy = $sourceType->getLocalCopy($fileModel);
+				$maxCachedImageSize = craft()->config->get("maxCachedCloudImageSize");
+
+
+				// Resize if constrained by maxCachedImageSizes setting
+				if (is_numeric($maxCachedImageSize) && $maxCachedImageSize > 0)
+				{
+					craft()->images->loadImage($localCopy)->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->saveAs($imageSource);
+				}
+				// Mark for deletion, since the maxCachedImageSizes setting is either invalid or set to 0.
+				else
+				{
+					IOHelper::move($localCopy, $imageSource);
+					$deleteSource = true;
+				}
+			}
+
+			craft()->images->loadImage($imageSource)
+				->scaleAndCrop($size, $size)
+				->saveAs($thumbPath);
+
+			if ($deleteSource)
+			{
+				IOHelper::deleteFile($imageSource);
+			}
+		}
+
+		return $thumbPath;
+	}
 }
