@@ -41,10 +41,13 @@ class m131122_000000_add_missing_content_and_i18n_rows extends BaseMigration
 
 			foreach ($elementIds as $elementId)
 			{
-				$rows[] = array($elementId, $locale);
-			}
+				craft()->config->maxPowerCaptain();
 
-			craft()->db->createCommand()->insertAll($table, array('elementId', 'locale'), $rows);
+				$this->insert($table, array(
+					'elementId' => $elementId,
+					'locale'    => $locale
+				));
+			}
 		}
 	}
 
@@ -65,10 +68,13 @@ class m131122_000000_add_missing_content_and_i18n_rows extends BaseMigration
 
 			foreach ($missingLocales as $locale)
 			{
-				$rows[] = array($locale['elementId'], $locale['locale']);
-			}
+				craft()->config->maxPowerCaptain();
 
-			craft()->db->createCommand()->insertAll($table2, array('elementId', 'locale'), $rows);
+				$this->insert($table2, array(
+					'elementId' => $locale['elementId'],
+					'locale'    => $locale['locale']
+				));
+			}
 		}
 	}
 }

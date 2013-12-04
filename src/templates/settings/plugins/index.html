@@ -31,7 +31,7 @@
 							{% endif %}
 							<span class="light">{{ plugin.version }}</span>
 						</th>
-						<td data-title="{{ 'Developer'|t }}"><a{% if plugin.developerUrl %} href="{{ plugin.developerUrl }}"{% endif %}>{{ plugin.developer }}</a></td>
+						<td data-title="{{ 'Developer'|t }}"><a{% if plugin.developerUrl %} href="{{ plugin.developerUrl }}" target="_blank"{% endif %}>{{ plugin.developer }}</a></td>
 						<td data-title="{{ 'Status'|t }}">
 							<form action="" method="post" accept-charset="UTF-8">
 								<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">

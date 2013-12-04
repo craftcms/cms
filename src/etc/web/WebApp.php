@@ -181,6 +181,8 @@ class WebApp extends \CWebApplication
 		// Make sure that the system is on, or that the user has permission to access the site/CP while the system is off
 		if (craft()->isSystemOn() ||
 			($this->request->isActionRequest() && $this->request->getActionSegments() == array('users', 'login')) ||
+			($this->request->isActionRequest() && $this->request->isCpRequest() && $this->request->getActionSegments() == array('users', 'forgotpassword')) ||
+			($this->request->isActionRequest() && $this->request->isCpRequest() && $this->request->getActionSegments() == array('users', 'setpassword')) ||
 			($this->request->isSiteRequest() && $this->userSession->checkPermission('accessSiteWhenSystemIsOff')) ||
 			($this->request->isCpRequest()) && $this->userSession->checkPermission('accessCpWhenSystemIsOff')
 		)
