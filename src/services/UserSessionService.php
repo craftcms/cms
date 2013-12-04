@@ -38,7 +38,7 @@ class UserSessionService extends \CWebUser
 	/**
 	 *
 	 */
-	function __construct()
+	public function init()
 	{
 		// Let's set our own state key prefix. Leaving identical to CWebUser for the key so people won't get logged out when updating.
 		$this->setStateKeyPrefix(md5('Yii.Craft\UserSessionService.'.craft()->getId()));
@@ -56,8 +56,11 @@ class UserSessionService extends \CWebUser
 			{
 				// No soup for you!
 				$this->logout(false);
+				return;
 			}
 		}
+
+		parent::init();
 	}
 
 	/**
