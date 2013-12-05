@@ -379,24 +379,27 @@ class InstallService extends BaseApplicationComponent
 		$migrationsFolder = craft()->path->getAppPath().'migrations/';
 		$migrationFiles = IOHelper::getFolderContents($migrationsFolder, false, "(m(\d{6}_\d{6})_.*?)\.php");
 
-		foreach ($migrationFiles as $file)
+		if ($migrationFiles)
 		{
-			if (IOHelper::fileExists($file))
+			foreach ($migrationFiles as $file)
 			{
-				$migration = new MigrationRecord();
-				$migration->version = IOHelper::getFileName($file, false);
-				$migration->applyTime = DateTimeHelper::currentUTCDateTime();
+				if (IOHelper::fileExists($file))
+				{
+					$migration = new MigrationRecord();
+					$migration->version = IOHelper::getFileName($file, false);
+					$migration->applyTime = DateTimeHelper::currentUTCDateTime();
 
-				$migrations[] = $migration;
+					$migrations[] = $migration;
+				}
 			}
-		}
 
-		foreach ($migrations as $migration)
-		{
-			if (!$migration->save())
+			foreach ($migrations as $migration)
 			{
-				Craft::log('Could not populate the migration table.', LogLevel::Error);
-				throw new Exception(Craft::t('There was a problem saving to the migrations table:').$this->_getFlattenedErrors($migration->getErrors()));
+				if (!$migration->save())
+				{
+					Craft::log('Could not populate the migration table.', LogLevel::Error);
+					throw new Exception(Craft::t('There was a problem saving to the migrations table:').$this->_getFlattenedErrors($migration->getErrors()));
+				}
 			}
 		}
 

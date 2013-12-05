@@ -705,24 +705,27 @@ class PluginsService extends BaseApplicationComponent
 			$migrations = array();
 			$migrationFiles = IOHelper::getFolderContents($migrationsFolder, false, "(m(\d{6}_\d{6})_.*?)\.php");
 
-			foreach ($migrationFiles as $file)
+			if ($migrationFiles)
 			{
-				if (IOHelper::fileExists($file))
+				foreach ($migrationFiles as $file)
 				{
-					$migration = new MigrationRecord();
-					$migration->version = IOHelper::getFileName($file, false);
-					$migration->applyTime = DateTimeHelper::currentUTCDateTime();
-					$migration->pluginId = $pluginId;
+					if (IOHelper::fileExists($file))
+					{
+						$migration = new MigrationRecord();
+						$migration->version = IOHelper::getFileName($file, false);
+						$migration->applyTime = DateTimeHelper::currentUTCDateTime();
+						$migration->pluginId = $pluginId;
 
-					$migrations[] = $migration;
+						$migrations[] = $migration;
+					}
 				}
-			}
 
-			foreach ($migrations as $migration)
-			{
-				if (!$migration->save())
+				foreach ($migrations as $migration)
 				{
-					throw new Exception(Craft::t('There was a problem saving to the migrations table: ').$this->_getFlattenedErrors($migration->getErrors()));
+					if (!$migration->save())
+					{
+						throw new Exception(Craft::t('There was a problem saving to the migrations table: ').$this->_getFlattenedErrors($migration->getErrors()));
+					}
 				}
 			}
 		}
