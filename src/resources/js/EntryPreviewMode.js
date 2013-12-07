@@ -122,7 +122,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			});
 		}
 
-		this.trigger('moveFieldsIntoEditor');
+		Garnish.$win.trigger('resize');
 
 		if (this.updateIframe())
 		{
@@ -225,7 +225,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			field.$clone.replaceWith(field.$field);
 		}
 
-		this.trigger('moveFieldsBack');
+		Garnish.$win.trigger('resize');
 	},
 
 	setIframeWidth: function()

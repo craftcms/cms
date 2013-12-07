@@ -94,13 +94,6 @@ Craft.MatrixInput = Garnish.Base.extend({
 		});
 
 		this.addListener(Garnish.$win, 'resize', 'setNewBlockBtn');
-
-		if (typeof Craft.entryPreviewMode != 'undefined')
-		{
-			Craft.entryPreviewMode.on('moveFieldsIntoEditor moveFieldsBack', $.proxy(function() {
-				this.setNewBlockBtn();
-			}, this));
-		}
 	},
 
 	setNewBlockBtn: function()
