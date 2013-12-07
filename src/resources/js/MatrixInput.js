@@ -336,7 +336,7 @@ var MatrixBlock = Garnish.Base.extend({
 				}
 				else
 				{
-					var value = Garnish.getInputPostVal($input);
+					var value = Craft.getText(Garnish.getInputPostVal($input));
 				}
 
 				if (value instanceof Array)
