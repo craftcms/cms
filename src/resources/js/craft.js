@@ -55,6 +55,17 @@ $.extend(Craft, {
 	},
 
 	/**
+	 * Returns the text in a string that might contain HTML tags.
+	 *
+	 * @param string str
+	 * @return string
+	 */
+	getText: function(str)
+	{
+		return $('<div/>').html(str).text();
+	},
+
+	/**
 	 * Encodes a URI copmonent. Mirrors PHP's rawurlencode().
 	 *
 	 * @param string str
