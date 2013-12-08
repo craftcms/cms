@@ -29,6 +29,8 @@ class AssetTransformIndexModel extends BaseModel
 			'fileExists'   => AttributeType::Bool,
 			'inProgress'   => AttributeType::Bool,
 			'dateIndexed'  => AttributeType::DateTime,
+			'dateUpdated'  => AttributeType::DateTime,
+			'dateCreated'  => AttributeType::DateTime,
 		);
 	}
 }
