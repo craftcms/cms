@@ -419,6 +419,18 @@ class PluginsService extends BaseApplicationComponent
 			$this->_enabledPlugins[$lcPluginHandle] = $plugin;
 			$this->_importPluginComponents($plugin);
 			$this->_registerPluginServices($plugin->getClassHandle());
+
+			$pluginRow = craft()->db->createCommand()
+				->select('id')
+				->from('plugins')
+				->where('class=:class', array('class' => $plugin->getClassHandle()))
+				->queryRow();
+
+			$pluginId = $pluginRow['id'];
+		}
+		else
+		{
+			$pluginId = $this->_enabledPluginInfo[$handle]['id'];
 		}
 
 		$plugin->onBeforeUninstall();
@@ -432,7 +444,7 @@ class PluginsService extends BaseApplicationComponent
 			craft()->db->createCommand()->delete('plugins', array('class' => $handle));
 
 			// Remove any migrations.
-			craft()->db->createCommand()->delete('migrations', array('pluginId' => $this->_enabledPluginInfo[$handle]->id));
+			craft()->db->createCommand()->delete('migrations', array('pluginId' => $pluginId));
 
 			if ($transaction !== null)
 			{
