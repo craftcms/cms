@@ -233,8 +233,18 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		this.$iframeContainer.width(Garnish.$win.width()-Craft.EntryPreviewMode.formWidth);
 	},
 
-	updateIframe: function()
+	updateIframe: function(force)
 	{
+		if (force)
+		{
+			this.lastPostData = null;
+		}
+
+		if (!this.inPreviewMode)
+		{
+			return false;
+		}
+
 		if (this.loading)
 		{
 			this.checkAgain = true;
