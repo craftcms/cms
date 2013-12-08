@@ -37,8 +37,8 @@ class m131206_000000_add_migrations_to_db extends BaseMigration
 				{
 					$migrationName = IOHelper::getFileName($file, false);
 
-					// Skip this one.
-					if ($migrationName == 'm131206_000000_add_migrations_to_db')
+					// Skip this one and the next one.
+					if ($migrationName == 'm131206_000000_add_migrations_to_db' || $migrationName == 'm131209_000000_remove_recent_transform_indexes')
 					{
 						continue;
 					}
