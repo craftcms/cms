@@ -160,14 +160,14 @@ var BlockTypeSettingsModal = Garnish.Modal.extend({
 		this.$nameField = $('<div class="field"/>').appendTo(this.$body);
 		this.$nameHeading = $('<div class="heading"/>').appendTo(this.$nameField);
 		this.$nameLabel = $('<label for="new-block-type-name">'+Craft.t('Name')+'</label>').appendTo(this.$nameHeading);
-		this.$nameInstructions = $('<p class="instructions">'+Craft.t('What this block type will be called in the CP.')+'</p>').appendTo(this.$nameHeading);
+		this.$nameInstructions = $('<div class="instructions"><p>'+Craft.t('What this block type will be called in the CP.')+'</p></div>').appendTo(this.$nameHeading);
 		this.$nameInputContainer = $('<div class="input"/>').appendTo(this.$nameField);
 		this.$nameInput = $('<input type="text" class="text fullwidth" id="new-block-type-name"/>').appendTo(this.$nameInputContainer);
 		this.$nameErrorList = $('<ul class="errors"/>').appendTo(this.$nameInputContainer).hide();
 		this.$handleField = $('<div class="field"/>').appendTo(this.$body);
 		this.$handleHeading = $('<div class="heading"/>').appendTo(this.$handleField);
 		this.$handleLabel = $('<label for="new-block-type-handle">'+Craft.t('Handle')+'</label>').appendTo(this.$handleHeading);
-		this.$handleInstructions = $('<p class="instructions">'+Craft.t('How you’ll refer to this block type in the templates.')+'</p>').appendTo(this.$handleHeading);
+		this.$handleInstructions = $('<div class="instructions"><p>'+Craft.t('How you’ll refer to this block type in the templates.')+'</p></div>').appendTo(this.$handleHeading);
 		this.$handleInputContainer = $('<div class="input"/>').appendTo(this.$handleField);
 		this.$handleInput = $('<input type="text" class="text fullwidth code" id="new-block-type-handle"/>').appendTo(this.$handleInputContainer);
 		this.$handleErrorList = $('<ul class="errors"/>').appendTo(this.$handleInputContainer).hide();
