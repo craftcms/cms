@@ -18,21 +18,6 @@ class EntriesController extends BaseController
 
 		if (craft()->hasPackage(CraftPackage::PublishPro) && $variables['section']->type == SectionType::Structure)
 		{
-			// Override the parent?
-			$parentId = craft()->request->getParam('parentId');
-
-			if ($parentId)
-			{
-				$parent = craft()->entries->getEntryById($parentId);
-
-				if ($parent)
-				{
-					$ancestors = $parent->getAncestors();
-					$ancestors[] = $parent;
-					$variables['entry']->setAncestors($ancestors);
-				}
-			}
-
 			// Get all the possible parent options
 			$parentOptionCriteria = craft()->elements->getCriteria(ElementType::Entry);
 			$parentOptionCriteria->sectionId = $variables['section']->id;
@@ -49,8 +34,8 @@ class EntriesController extends BaseController
 				$idParam = array('and', 'not '.$variables['entry']->id);
 
 				$descendantCriteria = craft()->elements->getCriteria(ElementType::Entry);
-				$descendantCriteria->status = null;
 				$descendantCriteria->descendantOf($variables['entry']);
+				$descendantCriteria->status = null;
 				$descendantIds = $descendantCriteria->ids();
 
 				foreach ($descendantIds as $id)
@@ -79,6 +64,23 @@ class EntriesController extends BaseController
 				$label .= $parentOption->title;
 
 				$variables['parentOptions'][] = array('label' => $label, 'value' => $parentOption->id);
+			}
+
+			// Get the initially selected parent
+			$variables['parentId'] = craft()->request->getParam('parentId');
+
+			if ($variables['parentId'] === null && $variables['entry']->id)
+			{
+				$parentIdCriteria = craft()->elements->getCriteria(ElementType::Entry);
+				$parentIdCriteria->ancestorOf =$variables['entry'];
+				$parentIdCriteria->ancestorDist = 1;
+				$parentIdCriteria->status = null;
+				$parentIds = $parentIdCriteria->ids();
+
+				if ($parentIds)
+				{
+					$variables['parentId'] = $parentIds[0];
+				}
 			}
 		}
 
@@ -185,7 +187,7 @@ class EntriesController extends BaseController
 			if ($templateExists)
 			{
 				craft()->templates->includeJsResource('js/EntryPreviewMode.js');
-				craft()->templates->includeJs('new Craft.EntryPreviewMode('.JsonHelper::encode($variables['entry']->getUrl()).', "'.$variables['entry']->locale.'");');
+				craft()->templates->includeJs('Craft.entryPreviewMode = new Craft.EntryPreviewMode('.JsonHelper::encode($variables['entry']->getUrl()).', "'.$variables['entry']->locale.'");');
 				$variables['showPreviewBtn'] = true;
 			}
 		}
@@ -395,7 +397,7 @@ class EntriesController extends BaseController
 
 		$entryId = $entry->id;
 
-		craft()->elements->deleteElementById($entryId);
+		craft()->entries->deleteEntryById($entryId);
 
 		$this->redirectToPostedUrl();
 	}

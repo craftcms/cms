@@ -378,6 +378,12 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			$fileList[$file->name] = true;
 		}
 
+		// Double-check
+		if (!isset($fileList[$fileName]))
+		{
+			return $fileName;
+		}
+
 		$fileNameParts = explode(".", $fileName);
 		$extension = array_pop($fileNameParts);
 

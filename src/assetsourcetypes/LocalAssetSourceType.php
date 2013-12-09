@@ -264,6 +264,12 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			$existingFiles[IOHelper::getFileName($file)] = true;
 		}
 
+		// Double-check
+		if (!isset($existingFiles[$fileName]))
+		{
+			return $fileName;
+		}
+
 		$fileParts = explode(".", $fileName);
 		$extension = array_pop($fileParts);
 		$fileName = join(".", $fileParts);

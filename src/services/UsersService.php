@@ -600,13 +600,15 @@ class UsersService extends BaseApplicationComponent
 			)));
 
 			// Grab the entry IDs that were authored by this user so we can delete them too.
-			$entryIds = craft()->db->createCommand()
-				->select('id')
-				->from('entries')
-				->where(array('authorId' => $user->id))
-				->queryColumn();
+			$criteria = craft()->elements->getCriteria(ElementType::Entry);
+			$criteria->authorId = $user->id;
+			$criteria->limit = null;
+			$entries = $criteria->find();
 
-			craft()->elements->deleteElementById($entryIds);
+			if ($entries)
+			{
+				craft()->entries->deleteEntry($entries);
+			}
 
 			// Delete the user
 			$success = craft()->elements->deleteElementById($user->id);
@@ -614,20 +616,6 @@ class UsersService extends BaseApplicationComponent
 			if ($transaction !== null)
 			{
 				$transaction->commit();
-			}
-
-			if ($success)
-			{
-				// Fire an 'onDeleteUser' event
-				$this->onDeleteUser(new Event($this, array(
-					'user' => $user
-				)));
-
-				return true;
-			}
-			else
-			{
-				return false;
 			}
 		}
 		catch (\Exception $e)
@@ -638,6 +626,20 @@ class UsersService extends BaseApplicationComponent
 			}
 
 			throw $e;
+		}
+
+		if ($success)
+		{
+			// Fire an 'onDeleteUser' event
+			$this->onDeleteUser(new Event($this, array(
+				'user' => $user
+			)));
+
+			return true;
+		}
+		else
+		{
+			return false;
 		}
 	}
 

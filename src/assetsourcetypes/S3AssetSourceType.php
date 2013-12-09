@@ -389,6 +389,12 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$this->_prepareForRequests();
 		$fileList = $this->_s3->getBucket($this->getSettings()->bucket, $this->_getPathPrefix().$folder->fullPath);
 
+		// Double-check
+		if (!isset($fileList[$this->_getPathPrefix().$folder->fullPath . $fileName]))
+		{
+			return $fileName;
+		}
+
 		$fileNameParts = explode(".", $fileName);
 		$extension = array_pop($fileNameParts);
 

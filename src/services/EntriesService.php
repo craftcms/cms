@@ -561,6 +561,103 @@ class EntriesService extends BaseApplicationComponent
 		}
 	}
 
+	/**
+	 * Deletes an entry(s).
+	 *
+	 * @param EntryModel|array $entries
+	 * @return bool
+	 */
+	public function deleteEntry($entries)
+	{
+		if (!$entries)
+		{
+			return false;
+		}
+
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			if (!is_array($entries))
+			{
+				$entries = array($entries);
+			}
+
+			$entryIds = array();
+
+			foreach ($entries as $entry)
+			{
+				// Fire an 'onBeforeDeleteEntry' event
+				$this->onBeforeDeleteEntry(new Event($this, array(
+					'entry' => $entry
+				)));
+
+				$entryIds[] = $entry->id;
+			}
+
+			// Delete 'em
+			$success = craft()->elements->deleteElementById($entryIds);
+
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+
+		if ($success)
+		{
+			foreach ($entries as $entry)
+			{
+				// Fire an 'onDeleteEntry' event
+				$this->onDeleteEntry(new Event($this, array(
+					'entry' => $entry
+				)));
+			}
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Deletes an entry(s) by its ID.
+	 *
+	 * @param int|array $entryId
+	 * @return bool
+	 */
+	public function deleteEntryById($entryId)
+	{
+		if (!$entryId)
+		{
+			return false;
+		}
+
+		$criteria = craft()->elements->getCriteria(ElementType::Entry);
+		$criteria->id = $entryId;
+		$criteria->limit = null;
+		$entries = $criteria->find();
+
+		if ($entries)
+		{
+			return $this->deleteEntry($entries);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 	// Events
 	// ======
 
@@ -572,6 +669,26 @@ class EntriesService extends BaseApplicationComponent
 	public function onSaveEntry(Event $event)
 	{
 		$this->raiseEvent('onSaveEntry', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeDeleteEntry' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeDeleteEntry(Event $event)
+	{
+		$this->raiseEvent('onBeforeDeleteEntry', $event);
+	}
+
+	/**
+	 * Fires an 'onDeleteEntry' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onDeleteEntry(Event $event)
+	{
+		$this->raiseEvent('onDeleteEntry', $event);
 	}
 
 	// Private methods
