@@ -231,41 +231,46 @@ class AssetsController extends BaseController
 			throw new Exception(Craft::t('No asset image transform exists with the ID “{id}”', array('id' => $transformId)));
 		}
 
+		// Make sure we're not in the middle of working on this transform from a separete request
 		if ($transformIndexModel->inProgress)
 		{
-			echo 'working';
-			craft()->end();
-		}
-		else
-		{
-			if (!$transformIndexModel->fileExists)
+			// If it's been > 30 seconds, give up on that one
+			$time = new DateTime();
+
+			if ($time->getTimestamp() - $transformIndexModel->dateUpdated->getTimestamp() < 30)
 			{
-				$transformIndexModel->inProgress = 1;
+				echo 'working';
+				craft()->end();
+			}
+		}
+
+		if (!$transformIndexModel->fileExists)
+		{
+			$transformIndexModel->inProgress = 1;
+			craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
+
+			$result = craft()->assetTransforms->generateTransform($transformIndexModel);
+
+			if ($result)
+			{
+				$transformIndexModel->inProgress = 0;
+				$transformIndexModel->fileExists = 1;
 				craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
-
-				$result = craft()->assetTransforms->generateTransform($transformIndexModel);
-
-				if ($result)
-				{
-					$transformIndexModel->inProgress = 0;
-					$transformIndexModel->fileExists = 1;
-					craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
-					echo 'success:'.craft()->assetTransforms->getUrlforTransformByIndexId($transformId);
-					craft()->end();
-				}
-				else
-				{
-					// No source file. Throw a 404.
-					$transformIndexModel->inProgress = 0;
-					craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
-					throw new HttpException(404, Craft::t("The requested image could not be found!"));
-				}
-
+				echo 'success:'.craft()->assetTransforms->getUrlforTransformByIndexId($transformId);
+				craft()->end();
+			}
+			else
+			{
+				// No source file. Throw a 404.
+				$transformIndexModel->inProgress = 0;
+				craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
+				throw new HttpException(404, Craft::t("The requested image could not be found!"));
 			}
 
-			echo 'success:'.craft()->assetTransforms->getUrlforTransformByIndexId($transformId);
-			craft()->end();
 		}
+
+		echo 'success:'.craft()->assetTransforms->getUrlforTransformByIndexId($transformId);
+		craft()->end();
 	}
 
 	/**

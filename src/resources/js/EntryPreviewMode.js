@@ -122,6 +122,8 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			});
 		}
 
+		Garnish.$win.trigger('resize');
+
 		if (this.updateIframe())
 		{
 			this.$spinner.removeClass('hidden');
@@ -222,6 +224,8 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			this.$fieldPlaceholder.replaceWith(field.$newClone);
 			field.$clone.replaceWith(field.$field);
 		}
+
+		Garnish.$win.trigger('resize');
 	},
 
 	setIframeWidth: function()
@@ -229,8 +233,18 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		this.$iframeContainer.width(Garnish.$win.width()-Craft.EntryPreviewMode.formWidth);
 	},
 
-	updateIframe: function()
+	updateIframe: function(force)
 	{
+		if (force)
+		{
+			this.lastPostData = null;
+		}
+
+		if (!this.inPreviewMode)
+		{
+			return false;
+		}
+
 		if (this.loading)
 		{
 			this.checkAgain = true;

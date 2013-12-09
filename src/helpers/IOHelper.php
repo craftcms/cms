@@ -569,7 +569,7 @@ class IOHelper
 
 		if (static::folderExists($path, $suppressErrors) && static::isReadable($path, $suppressErrors))
 		{
-			if (($contents = static::_folderContents($path, $recursive, $filter, $suppressErrors)) !== false)
+			if (($contents = static::_folderContents($path, $recursive, $filter, $includeHiddenFiles, $suppressErrors)) !== false)
 			{
 				return $contents;
 			}
@@ -1527,10 +1527,11 @@ class IOHelper
 	 * @param        $path
 	 * @param  bool  $recursive
 	 * @param  null  $filter
+	 * @param  bool  $includeHiddenFiles
 	 * @param  bool  $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
 	 * @return array
 	 */
-	private static function _folderContents($path, $recursive = false, $filter = null, $suppressErrors = false)
+	private static function _folderContents($path, $recursive = false, $filter = null, $includeHiddenFiles = false, $suppressErrors = false)
 	{
 		$descendants = array();
 
@@ -1551,10 +1552,18 @@ class IOHelper
 				$fullItem = $path.$item;
 				$contents[$key] = $fullItem;
 
-				// If it's hidden or a path specifier, skip it.
-				if (isset($item[0]) && $item[0] == '.')
+				if ($item == '.' || $item == '..')
 				{
 					continue;
+				}
+
+				if (!$includeHiddenFiles)
+				{
+					// If it's hidden, skip it.
+					if (isset($item[0]) && $item[0] == '.')
+					{
+						continue;
+					}
 				}
 
 				if (static::_filterPassed($contents[$key], $filter))
@@ -1571,7 +1580,7 @@ class IOHelper
 
 				if (static::folderExists($contents[$key], $suppressErrors) && $recursive)
 				{
-					$descendants = array_merge($descendants, static::_folderContents($contents[$key], $recursive, $filter, $suppressErrors));
+					$descendants = array_merge($descendants, static::_folderContents($contents[$key], $recursive, $filter, $includeHiddenFiles, $suppressErrors));
 				}
 			}
 		}
