@@ -160,7 +160,7 @@ class AssetFileModel extends BaseElementModel
 	{
 		return craft()->assetSources->getSourceById($this->sourceId);
 	}
-	
+
 	/**
 	 * Sets the transform.
 	 *
