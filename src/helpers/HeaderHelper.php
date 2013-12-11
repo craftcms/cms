@@ -134,7 +134,7 @@ class HeaderHelper
 	 * @param string $key
 	 * @return void
 	 */
-	public function removeHeader($key)
+	public static function removeHeader($key)
 	{
 		if (isset(static::$_header[$key]))
 		{

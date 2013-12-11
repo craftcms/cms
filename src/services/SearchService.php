@@ -441,7 +441,7 @@ class SearchService extends BaseApplicationComponent
 	 * Generates a piece of WHERE clause for fallback (LIKE) search from search term
 	 *
 	 * @access private
-	 * @param object SearchQueryTerm
+	 * @param  SearchQueryTerm $term
 	 * @return array
 	 */
 	private function _getSqlFromTerm(SearchQueryTerm $term)
@@ -552,7 +552,10 @@ class SearchService extends BaseApplicationComponent
 		// If we have a where clause in the subselect, add the keyword bit to it
 		if ($subSelect && $sql)
 		{
-			$sql = $this->_sqlSubSelect($subSelect.' AND '.$sql);
+			if (($tempSql = $this->_sqlSubSelect($subSelect.' AND '.$sql)))
+			{
+				$sql = $tempSql;
+			}
 		}
 
 		return array($sql, $keywords);

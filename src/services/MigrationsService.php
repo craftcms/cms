@@ -248,16 +248,6 @@ class MigrationsService extends BaseApplicationComponent
 
 			$handle = opendir($migrationPath);
 
-			if ($plugin)
-			{
-				$pluginInfo = craft()->plugins->getPluginInfo($plugin);
-				$storedDate = $pluginInfo['installDate']->getTimestamp();
-			}
-			else
-			{
-				$storedDate = craft()->getReleaseDate()->getTimestamp();
-			}
-
 			while (($file = readdir($handle)) !== false)
 			{
 				if ($file[0] === '.')
@@ -276,13 +266,7 @@ class MigrationsService extends BaseApplicationComponent
 
 				if (preg_match('/^m(\d\d)(\d\d)(\d\d)_(\d\d)(\d\d)(\d\d)_\w+\.php$/', $file, $matches))
 				{
-					// Check the migration timestamp against the Craft release date
-					$time = strtotime('20'.$matches[1].'-'.$matches[2].'-'.$matches[3].' '.$matches[4].':'.$matches[5].':'.$matches[6]);
-
-					if ($time > $storedDate)
-					{
-						$migrations[] = $class;
-					}
+					$migrations[] = $class;
 				}
 			}
 
