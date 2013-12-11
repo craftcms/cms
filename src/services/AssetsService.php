@@ -910,8 +910,6 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function getUrlForFile(AssetFileModel $file, $transform = null)
 	{
-		$returnPlaceholder = false;
-
 		if (!$transform || !ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename)))
 		{
 			$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
