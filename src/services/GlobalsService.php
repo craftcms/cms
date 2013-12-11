@@ -236,7 +236,8 @@ class GlobalsService extends BaseApplicationComponent
 					// Create a row in content
 					$content = new ContentModel();
 					$content->elementId = $globalSet->id;
-					craft()->content->saveContent($content);
+					$globalSet->setContent($content);
+					craft()->content->saveContent($globalSet, false);
 				}
 
 				$globalSetRecord->save(false);
@@ -321,7 +322,7 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	public function saveContent(GlobalSetModel $globalSet)
 	{
-		if (craft()->content->saveElementContent($globalSet, $globalSet->getFieldLayout()))
+		if (craft()->content->saveContent($globalSet))
 		{
 			// Create the elements_i18n row if it doesn't exist
 			$elementLocaleRecord = ElementLocaleRecord::model()->findByAttributes(array(

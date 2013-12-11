@@ -561,9 +561,7 @@ class MatrixService extends BaseApplicationComponent
 
 		$fieldLayout = $block->getType()->getFieldLayout();
 
-		craft()->content->prepElementContentForSave($block, $fieldLayout);
-
-		if (!craft()->content->validateElementContent($block, $fieldLayout))
+		if (!craft()->content->validateContent($block))
 		{
 			$block->addErrors($block->getContent()->getErrors());
 		}
@@ -637,8 +635,7 @@ class MatrixService extends BaseApplicationComponent
 				$originalFieldColumnPrefix = craft()->content->fieldColumnPrefix;
 				craft()->content->fieldColumnPrefix = 'field_'.$block->getType()->handle.'_';
 
-				craft()->content->saveContent($block->getContent());
-				craft()->content->postSaveOperations($block, $block->getContent());
+				craft()->content->saveContent($block, false);
 
 				craft()->content->fieldContext = $originalFieldContext;
 				craft()->content->fieldColumnPrefix = $originalFieldColumnPrefix;

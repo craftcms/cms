@@ -40,6 +40,21 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns the field layout used by this element.
+	 *
+	 * @return FieldLayoutModel|null
+	 */
+	public function getFieldLayout()
+	{
+		$entryType = $this->getType();
+
+		if ($entryType)
+		{
+			return $entryType->getFieldLayout();
+		}
+	}
+
+	/**
 	 * Returns the reference string to this element.
 	 *
 	 * @return string|null

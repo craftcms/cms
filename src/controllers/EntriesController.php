@@ -208,8 +208,6 @@ class EntriesController extends BaseController
 
 		$this->_prepEditEntryVariables($variables);
 
-		craft()->content->prepElementContentForSave($variables['entry'], $variables['entryType']->getFieldLayout(), false);
-
 		$tabsHtml = '<ul>';
 
 		foreach ($variables['tabs'] as $tabId => $tab)
@@ -246,8 +244,6 @@ class EntriesController extends BaseController
 			{
 				$entry->postDate = new DateTime();
 			}
-
-			craft()->content->prepElementContentForSave($entry, $type->getFieldLayout(), false);
 
 			craft()->templates->getTwig()->disableStrictVariables();
 
@@ -623,7 +619,7 @@ class EntriesController extends BaseController
 		$entry->getContent()->title = craft()->request->getPost('title', $entry->title);
 
 		$fields = craft()->request->getPost('fields');
-		$entry->getContent()->setAttributes($fields);
+		$entry->setContentFromPost($fields);
 
 		$entry->parentId = craft()->request->getPost('parentId');
 

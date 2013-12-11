@@ -24,6 +24,21 @@ class MatrixBlockModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns the field layout used by this element.
+	 *
+	 * @return FieldLayoutModel|null
+	 */
+	public function getFieldLayout()
+	{
+		$blockType = $this->getType();
+
+		if ($blockType)
+		{
+			return $blockType->getFieldLayout();
+		}
+	}
+
+	/**
 	 * Returns the block type.
 	 *
 	 * @return MatrixBlockTypeModel|null

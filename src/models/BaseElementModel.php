@@ -91,6 +91,16 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns the field layout used by this element.
+	 *
+	 * @return FieldLayoutModel|null
+	 */
+	public function getFieldLayout()
+	{
+		return craft()->fields->getLayoutByType($this->elementType);
+	}
+
+	/**
 	 * Returns the element's full URL.
 	 *
 	 * @return string
@@ -432,6 +442,52 @@ abstract class BaseElementModel extends BaseModel
 		else if ($content instanceof ContentModel)
 		{
 			$this->_content = $content;
+		}
+	}
+
+	/**
+	 * Sets the content from post data, calling prepValueFromPost() on the field types.
+	 *
+	 * @param array $content
+	 */
+	public function setContentFromPost($content)
+	{
+		$fieldLayout = $this->getFieldLayout();
+
+		if ($fieldLayout)
+		{
+			if (!isset($this->_content))
+			{
+				$this->_content = $this->createContentModel();
+			}
+
+			foreach ($fieldLayout->getFields() as $fieldLayoutField)
+			{
+				$field = $fieldLayoutField->getField();
+
+				if ($field)
+				{
+					$handle = $field->handle;
+
+					if (isset($content[$handle]))
+					{
+						$this->_content->$handle = $content[$handle];
+					}
+					else
+					{
+						$this->_content->$handle = null;
+					}
+
+					// Give the field type a chance to make changes
+					$fieldType = $field->getFieldType();
+
+					if ($fieldType)
+					{
+						$fieldType->element = $this;
+						$this->_content->$handle = $fieldType->prepValueFromPost($this->_content->$handle);
+					}
+				}
+			}
 		}
 	}
 

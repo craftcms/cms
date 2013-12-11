@@ -260,7 +260,8 @@ class UsersService extends BaseApplicationComponent
 				// Create a row in content
 				$content = new ContentModel();
 				$content->elementId = $user->id;
-				craft()->content->saveContent($content);
+				$user->setContent($content);
+				craft()->content->saveContent($user, false);
 			}
 
 			$userRecord->save(false);
@@ -320,9 +321,7 @@ class UsersService extends BaseApplicationComponent
 	{
 		craft()->requirePackage(CraftPackage::Users);
 
-		$fieldLayout = craft()->fields->getLayoutByType(ElementType::User);
-
-		if (craft()->content->saveElementContent($user, $fieldLayout))
+		if (craft()->content->saveContent($user))
 		{
 			// Fire an 'onSaveProfile' event
 			$this->onSaveProfile(new Event($this, array(
