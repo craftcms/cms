@@ -37,6 +37,40 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Populates a new model instance with a given set of attributes.
+	 *
+	 * @static
+	 * @param mixed $values
+	 * @return BaseModel
+	 */
+	public static function populateModel($values)
+	{
+		// Strip out the element record attributes if this is getting called from a child class
+		// based on an Active Record result eager-loaded with the ElementRecord
+		if (isset($values['element']))
+		{
+			$elementAttributes = $values['element'];
+			unset($values['element']);
+		}
+
+		$model = parent::populateModel($values);
+
+		// Now set those ElementRecord attributes
+		if (isset($elementAttributes))
+		{
+			if (isset($elementAttributes['i18n']))
+			{
+				$model->setAttributes($elementAttributes['i18n']);
+				unset($elementAttributes['i18n']);
+			}
+
+			$model->setAttributes($elementAttributes);
+		}
+
+		return $model;
+	}
+
+	/**
 	 * Use the entry's title as its string representation.
 	 *
 	 * @return string
@@ -340,40 +374,6 @@ abstract class BaseElementModel extends BaseModel
 		{
 			return $content;
 		}
-	}
-
-	/**
-	 * Populates a new model instance with a given set of attributes.
-	 *
-	 * @static
-	 * @param mixed $values
-	 * @return BaseModel
-	 */
-	public static function populateModel($values)
-	{
-		// Strip out the element record attributes if this is getting called from a child class
-		// based on an Active Record result eager-loaded with the ElementRecord
-		if (isset($values['element']))
-		{
-			$elementAttributes = $values['element'];
-			unset($values['element']);
-		}
-
-		$model = parent::populateModel($values);
-
-		// Now set those ElementRecord attributes
-		if (isset($elementAttributes))
-		{
-			if (isset($elementAttributes['i18n']))
-			{
-				$model->setAttributes($elementAttributes['i18n']);
-				unset($elementAttributes['i18n']);
-			}
-
-			$model->setAttributes($elementAttributes);
-		}
-
-		return $model;
 	}
 
 	/**
