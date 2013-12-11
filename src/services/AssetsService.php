@@ -84,6 +84,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Stores a file.
 	 *
 	 * @param AssetFileModel $file
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function storeFile(AssetFileModel $file)
@@ -527,7 +528,7 @@ class AssetsService extends BaseApplicationComponent
 			$folders[] = $folder;
 		}
 
-		return $folder;
+		return $folders;
 	}
 
 	/**
@@ -604,7 +605,7 @@ class AssetsService extends BaseApplicationComponent
 			$whereConditions[] = DbHelper::parseParam('f.sourceId', $criteria->sourceId, $whereParams);
 		}
 
- 		if ($criteria->parentId)
+		if ($criteria->parentId)
 		{
 			// Set parentId to null if we're looking for folders with no parents.
 			if ($criteria->parentId == FolderCriteriaModel::AssetsNoParent)
@@ -909,7 +910,9 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function getUrlForFile(AssetFileModel $file, $transform = null)
 	{
-		if (!$transform || !in_array(IOHelper::getExtension($file->filename), ImageHelper::getAcceptedExtensions()))
+		$returnPlaceholder = false;
+
+		if (!$transform || !ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename)))
 		{
 			$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 			$base = $sourceType->getBaseUrl();

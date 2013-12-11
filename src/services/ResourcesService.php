@@ -183,6 +183,7 @@ class ResourcesService extends BaseApplicationComponent
 		}
 
 		// Maybe a plugin wants to do something custom with this URL
+		craft()->plugins->loadPlugins();
 		$pluginPaths = craft()->plugins->call('getResourcePath', array($path));
 		foreach ($pluginPaths as $path)
 		{

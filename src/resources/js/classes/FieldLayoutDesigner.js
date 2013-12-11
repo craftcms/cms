@@ -150,7 +150,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
 		if (newName && newName != oldName)
 		{
 			$labelSpan.text(newName);
-			$tab.find('.id-input').attr('name', 'fieldLayout['+encodeURIComponent(newName)+'][]');
+			$tab.find('.id-input').attr('name', 'fieldLayout['+Craft.encodeUriComponent(newName)+'][]');
 		}
 	},
 
@@ -587,7 +587,7 @@ Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
 			for (var i = 0; i < $fields.length; i++)
 			{
 				var $field = $($fields[i]);
-				$field.append('<input class="id-input" type="hidden" name="fieldLayout['+encodeURIComponent(tabName)+'][]" value="'+$field.data('id')+'">');
+				$field.append('<input class="id-input" type="hidden" name="fieldLayout['+Craft.encodeUriComponent(tabName)+'][]" value="'+$field.data('id')+'">');
 			}
 
 			this.designer.fieldDrag.addItems($fields);
@@ -684,7 +684,7 @@ Craft.FieldLayoutDesigner.FieldDrag = Craft.FieldLayoutDesigner.BaseDrag.extend(
 		{
 			// Find the field's new tab name
 			var tabName = this.$insertion.parent().parent().find('.tab span').text(),
-				inputName = 'fieldLayout['+encodeURIComponent(tabName)+'][]';
+				inputName = 'fieldLayout['+Craft.encodeUriComponent(tabName)+'][]';
 
 			if (this.draggingUnusedItem)
 			{

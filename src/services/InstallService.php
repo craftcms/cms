@@ -49,6 +49,8 @@ class InstallService extends BaseApplicationComponent
 			$this->_createAssetTransformIndexTable();
 			$this->_createRackspaceAccessTable();
 
+			$this->_populateMigrationTable();
+
 			Craft::log('Committing the transaction.');
 			if ($transaction !== null)
 			{
@@ -68,7 +70,6 @@ class InstallService extends BaseApplicationComponent
 		// Craft, you are installed now.
 		craft()->setIsInstalled();
 
-		$this->_populateMigrationTable();
 		$this->_addLocale($inputs['locale']);
 		$this->_addUser($inputs);
 
@@ -361,25 +362,48 @@ class InstallService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Populates the migrations table with the base migration.
+	 * Populates the migrations table with the base migration plus any existing ones from app/migrations.
 	 *
 	 * @throws Exception
 	 */
 	private function _populateMigrationTable()
 	{
+		$migrations = array();
+
+		// Add the base one.
 		$migration = new MigrationRecord();
 		$migration->version = craft()->migrations->getBaseMigration();
 		$migration->applyTime = DateTimeHelper::currentUTCDateTime();
+		$migrations[] = $migration;
 
-		if ($migration->save())
+		$migrationsFolder = craft()->path->getAppPath().'migrations/';
+		$migrationFiles = IOHelper::getFolderContents($migrationsFolder, false, "(m(\d{6}_\d{6})_.*?)\.php");
+
+		if ($migrationFiles)
 		{
-			Craft::log('Migration table populated successfully.');
+			foreach ($migrationFiles as $file)
+			{
+				if (IOHelper::fileExists($file))
+				{
+					$migration = new MigrationRecord();
+					$migration->version = IOHelper::getFileName($file, false);
+					$migration->applyTime = DateTimeHelper::currentUTCDateTime();
+
+					$migrations[] = $migration;
+				}
+			}
+
+			foreach ($migrations as $migration)
+			{
+				if (!$migration->save())
+				{
+					Craft::log('Could not populate the migration table.', LogLevel::Error);
+					throw new Exception(Craft::t('There was a problem saving to the migrations table:').$this->_getFlattenedErrors($migration->getErrors()));
+				}
+			}
 		}
-		else
-		{
-			Craft::log('Could not populate the migration table.', LogLevel::Error);
-			throw new Exception(Craft::t('There was a problem saving to the migrations table:').$this->_getFlattenedErrors($migration->getErrors()));
-		}
+
+		Craft::log('Migration table populated successfully.');
 	}
 
 	/**

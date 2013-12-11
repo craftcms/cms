@@ -97,6 +97,7 @@ class AssetElementType extends BaseElementType
 	{
 		return array(
 			'title'        => Craft::t('Title'),
+			'filename'     => Craft::t('Filename'),
 			'size'         => Craft::t('Size'),
 			'dateModified' => Craft::t('Date Modified'),
 		);
@@ -113,6 +114,11 @@ class AssetElementType extends BaseElementType
 	{
 		switch ($attribute)
 		{
+			case 'filename':
+			{
+				return '<span style="word-break: break-word;">'.$element->filename.'</span>';
+			}
+
 			case 'size':
 			{
 				if ($element->size)

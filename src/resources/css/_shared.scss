@@ -30,6 +30,12 @@ $noticecolor: #5286d9;
 	    -ms-user-select: none;
 }
 
+@mixin selectable {
+	-webkit-user-select: text;
+	   -moz-user-select: text;
+	    -ms-user-select: text;
+}
+
 @mixin icon {
 	font-family: 'Craft';
 	speak: none;

@@ -165,11 +165,11 @@ class EmailService extends BaseApplicationComponent
 		// Add a reply to (if any).  Make sure it’s set before setting From, because email is dumb.
 		if (!empty($emailModel->replyTo))
 		{
-			$email->AddReplyTo($emailModel->replyTo);
+			$email->addReplyTo($emailModel->replyTo);
 		}
 
 		// Set the "from" information.
-		$email->SetFrom($emailModel->fromEmail, $emailModel->fromName);
+		$email->setFrom($emailModel->fromEmail, $emailModel->fromName);
 
 		// Check which protocol we need to use.
 		switch ($emailSettings['protocol'])
@@ -204,30 +204,30 @@ class EmailService extends BaseApplicationComponent
 
 			case EmailerType::Sendmail:
 			{
-				$email->IsSendmail();
+				$email->isSendmail();
 				break;
 			}
 
 			case EmailerType::Php:
 			{
-				$email->IsMail();
+				$email->isMail();
 				break;
 			}
 
 			default:
 			{
-				$email->IsMail();
+				$email->isMail();
 			}
 		}
 
 		// If they have the test email config var set to something, use it instead of the supplied email.
 		if (($testToEmail = craft()->config->get('testToEmailAddress')) != '')
 		{
-			$email->AddAddress($testToEmail, 'Test Email');
+			$email->addAddress($testToEmail, 'Test Email');
 		}
 		else
 		{
-			$email->AddAddress($user->email, $user->getFullName());
+			$email->addAddress($user->email, $user->getFullName());
 		}
 
 		// Add any BCC's
@@ -240,7 +240,7 @@ class EmailService extends BaseApplicationComponent
 					$bccEmail = $bcc['email'];
 
 					$bccName = !empty($bcc['name']) ? $bcc['name'] : '';
-					$email->AddBcc($bccEmail, $bccName);
+					$email->addBCC($bccEmail, $bccName);
 				}
 			}
 		}
@@ -255,7 +255,7 @@ class EmailService extends BaseApplicationComponent
 					$ccEmail = $cc['email'];
 
 					$ccName = !empty($cc['name']) ? $cc['name'] : '';
-					$email->AddCc($ccEmail, $ccName);
+					$email->addCC($ccEmail, $ccName);
 				}
 			}
 		}
@@ -271,7 +271,7 @@ class EmailService extends BaseApplicationComponent
 		{
 			foreach ($emailModel->stringAttachments as $stringAttachment)
 			{
-				$email->AddStringAttachment($stringAttachment['string'], $stringAttachment['fileName'], $stringAttachment['encoding'], $stringAttachment['type']);
+				$email->addStringAttachment($stringAttachment['string'], $stringAttachment['fileName'], $stringAttachment['encoding'], $stringAttachment['type']);
 			}
 		}
 
@@ -280,7 +280,7 @@ class EmailService extends BaseApplicationComponent
 		{
 			foreach ($emailModel->attachments as $attachment)
 			{
-				$email->AddAttachment($attachment['path'], $attachment['name'], $attachment['encoding'], $attachment['type']);
+				$email->addAttachment($attachment['path'], $attachment['name'], $attachment['encoding'], $attachment['type']);
 			}
 		}
 
@@ -292,14 +292,14 @@ class EmailService extends BaseApplicationComponent
 		if ($emailModel->htmlBody)
 		{
 			$renderedHtmlBody = craft()->templates->renderString($emailModel->htmlBody, $variables);
-			$email->MsgHTML($renderedHtmlBody);
+			$email->msgHTML($renderedHtmlBody);
 			$email->AltBody = craft()->templates->renderString($emailModel->body, $variables);
 		}
 		else
 		{
 			// They didn't provide an htmlBody, so markdown the body.
 			$renderedHtmlBody = craft()->templates->renderString(StringHelper::parseMarkdown($emailModel->body), $variables);
-			$email->MsgHTML($renderedHtmlBody);
+			$email->msgHTML($renderedHtmlBody);
 			$email->AltBody = craft()->templates->renderString($emailModel->body, $variables);
 		}
 
@@ -318,7 +318,7 @@ class EmailService extends BaseApplicationComponent
 	 */
 	private function _setSmtpSettings(&$email, $emailSettings)
 	{
-		$email->IsSmtp();
+		$email->isSMTP();
 
 		if (isset($emailSettings['smtpAuth']) && $emailSettings['smtpAuth'] == 1)
 		{

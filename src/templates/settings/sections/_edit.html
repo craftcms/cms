@@ -249,8 +249,10 @@
 		{% endif %}
 	{% endfor %}
 
-	new Craft.EntryUrlFormatGenerator('#name', '#single-template');
-	new Craft.EntryUrlFormatGenerator('#name', '#channel-template',   { suffix: '/_entry' });
-	new Craft.EntryUrlFormatGenerator('#name', '#structure-template', { suffix: '/_entry' });
+	{% if brandNewSection %}
+		new Craft.EntryUrlFormatGenerator('#name', '#single-template');
+		new Craft.EntryUrlFormatGenerator('#name', '#channel-template',   { suffix: '/_entry' });
+		new Craft.EntryUrlFormatGenerator('#name', '#structure-template', { suffix: '/_entry' });
+	{% endif %}
 {% endset %}
 {% includeJs js %}

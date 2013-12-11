@@ -30,6 +30,24 @@ function mergeConfigs(&$baseConfig, $customConfig)
 	}
 }
 
+/**
+ * Returns the correct connection string depending on whether a unixSocket is specific or not in the db config.
+ *
+ * @param $dbConfig
+ * @return string
+ */
+function processConnectionString($dbConfig)
+{
+	if (!empty($dbConfig['unixSocket']))
+	{
+		return strtolower('mysql:unix_socket='.$dbConfig['unixSocket'].';dbname=').$dbConfig['database'].';';
+	}
+	else
+	{
+		return strtolower('mysql:host='.$dbConfig['server'].';dbname=').$dbConfig['database'].strtolower(';port='.$dbConfig['port'].';');
+	}
+}
+
 // Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
 if (file_exists(CRAFT_CONFIG_PATH.'general.php'))
 {
@@ -100,7 +118,7 @@ $configArray = array(
 	'components' => array(
 
 		'db' => array(
-			'connectionString'  => strtolower('mysql:host='.$dbConfig['server'].';dbname=').$dbConfig['database'].strtolower(';port='.$dbConfig['port'].';'),
+			'connectionString'  => processConnectionString($dbConfig),
 			'emulatePrepare'    => true,
 			'username'          => $dbConfig['user'],
 			'password'          => $dbConfig['password'],

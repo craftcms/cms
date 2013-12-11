@@ -72,6 +72,13 @@ Craft.ElementEditor = Garnish.Base.extend({
 					{
 						// Update the title
 						this.$trigger.find('.label').text(response.title);
+
+						// Update Live Preview
+						if (typeof Craft.entryPreviewMode != 'undefined')
+						{
+							Craft.entryPreviewMode.updateIframe(true);
+						}
+
 						this.removeHud();
 					}
 					else

@@ -23,7 +23,7 @@
 {% endset %}
 
 
-{% set continueEditingUrl = 'entries/'~section.handle~'/{id}'~(draftId is defined ? '/drafts/'~draftId : '')~(craft.locale != localeId ? '/'~localeId : '') %}
+{% set continueEditingUrl = 'entries/'~section.handle~'/{id}'~(draftId is defined ? '/drafts/'~draftId : '')~(craft.hasPackage('Localize') and craft.locale != localeId ? '/'~localeId : '') %}
 
 
 {% set content %}
@@ -75,7 +75,7 @@
 						id: 'parentId',
 						name: 'parentId',
 						options: parentOptions,
-						value: (entry.getParent() ? entry.getParent().id : null)
+						value: parentId
 					}) }}
 				{% endif %}
 

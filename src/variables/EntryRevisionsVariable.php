@@ -72,7 +72,7 @@ class EntryRevisionsVariable
 	 */
 	public function getVersionsByEntryId($entryId, $localeId)
 	{
-		return craft()->entryRevisions->getVersionsByEntryId($entryId, $localeId);
+		return craft()->entryRevisions->getVersionsByEntryId($entryId, $localeId, 10);
 	}
 
 	/**

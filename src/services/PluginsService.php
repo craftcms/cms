@@ -85,57 +85,61 @@ class PluginsService extends BaseApplicationComponent
 	{
 		if (!$this->_pluginsLoaded && !$this->_loadingPlugins)
 		{
-			// Prevent this function from getting called twice.
-			$this->_loadingPlugins = true;
-
-			// Find all of the enabled plugins
-			$rows = craft()->db->createCommand()
-				->select('id, class, version, settings, installDate')
-				->from('plugins')
-				->where('enabled=1')
-				->queryAll();
-
-			$names = array();
-
-			foreach ($rows as $row)
+			if (craft()->isInstalled())
 			{
-				$plugin = $this->_getPlugin($row['class']);
+				// Prevent this function from getting called twice.
+				$this->_loadingPlugins = true;
 
-				if ($plugin)
+				// Find all of the enabled plugins
+				$rows = craft()->db->createCommand()
+					->select('id, class, version, settings, installDate')
+					->from('plugins')
+					->where('enabled=1')
+					->queryAll();
+
+				$names = array();
+
+				foreach ($rows as $row)
 				{
-					// Clean it up a bit
-					$row['settings'] = JsonHelper::decode($row['settings']);
-					$row['installDate'] = DateTime::createFromString($row['installDate']);
+					$plugin = $this->_getPlugin($row['class']);
 
-					$this->_enabledPluginInfo[$row['class']] = $row;
+					if ($plugin)
+					{
+						// Clean it up a bit
+						$row['settings'] = JsonHelper::decode($row['settings']);
+						$row['installDate'] = DateTime::createFromString($row['installDate']);
 
-					$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
-					$this->_plugins[$lcPluginHandle] = $plugin;
-					$this->_enabledPlugins[$lcPluginHandle] = $plugin;
-					$names[] = $plugin->getName();
+						$this->_enabledPluginInfo[$row['class']] = $row;
 
-					$plugin->setSettings($row['settings']);
+						$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
+						$this->_plugins[$lcPluginHandle] = $plugin;
+						$this->_enabledPlugins[$lcPluginHandle] = $plugin;
+						$names[] = $plugin->getName();
 
-					$plugin->isInstalled = true;
-					$plugin->isEnabled = true;
+						$plugin->setSettings($row['settings']);
 
-					$this->_importPluginComponents($plugin);
-					$this->_registerPluginServices($plugin->getClassHandle());
+						$plugin->isInstalled = true;
+						$plugin->isEnabled = true;
+
+						$this->_importPluginComponents($plugin);
+						$this->_registerPluginServices($plugin->getClassHandle());
+					}
 				}
-			}
 
-			// Sort plugins by name
-			array_multisort($names, $this->_enabledPlugins);
+				// Sort plugins by name
+				array_multisort($names, $this->_enabledPlugins);
 
-			// Now that all of the components have been imported,
-			// initialize all the plugins
-			foreach ($this->_enabledPlugins as $plugin)
-			{
-				$plugin->init();
+				// Now that all of the components have been imported,
+				// initialize all the plugins
+				foreach ($this->_enabledPlugins as $plugin)
+				{
+					$plugin->init();
+				}
+
+				$this->_loadingPlugins = false;
 			}
 
 			$this->_pluginsLoaded = true;
-			$this->_loadingPlugins = false;
 
 			// Fire an 'onLoadPlugins' event
 			$this->onLoadPlugins(new Event($this));
@@ -360,6 +364,7 @@ class PluginsService extends BaseApplicationComponent
 			$plugin->isEnabled = true;
 			$this->_enabledPlugins[$lcPluginHandle] = $plugin;
 
+			$this->_savePluginMigrations(craft()->db->getLastInsertID(), $plugin->getClassHandle());
 			$this->_importPluginComponents($plugin);
 			$this->_registerPluginServices($plugin->getClassHandle());
 			$plugin->createTables();
@@ -414,6 +419,18 @@ class PluginsService extends BaseApplicationComponent
 			$this->_enabledPlugins[$lcPluginHandle] = $plugin;
 			$this->_importPluginComponents($plugin);
 			$this->_registerPluginServices($plugin->getClassHandle());
+
+			$pluginRow = craft()->db->createCommand()
+				->select('id')
+				->from('plugins')
+				->where('class=:class', array('class' => $plugin->getClassHandle()))
+				->queryRow();
+
+			$pluginId = $pluginRow['id'];
+		}
+		else
+		{
+			$pluginId = $this->_enabledPluginInfo[$handle]['id'];
 		}
 
 		$plugin->onBeforeUninstall();
@@ -424,10 +441,14 @@ class PluginsService extends BaseApplicationComponent
 			$plugin->dropTables();
 
 			// Remove the row from the database.
-			craft()->db->createCommand()->delete('plugins', array('class' => $plugin->getClassHandle()));
+			craft()->db->createCommand()->delete('plugins', array('class' => $handle));
+
+			// Remove any migrations.
+			craft()->db->createCommand()->delete('migrations', array('pluginId' => $pluginId));
 
 			if ($transaction !== null)
 			{
+				// Let's commit to this.
 				$transaction->commit();
 			}
 		}
@@ -444,6 +465,8 @@ class PluginsService extends BaseApplicationComponent
 		$plugin->isEnabled = false;
 		$plugin->isInstalled = false;
 		unset($this->_enabledPlugins[$lcPluginHandle]);
+		unset($this->_plugins[$lcPluginHandle]);
+		unset($this->_enabledPluginInfo[$handle]);
 
 		return true;
 	}
@@ -679,6 +702,48 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * If the plugin already had a migrations folder with migrations in it, let's save them in the db.
+	 *
+	 * @param $pluginId
+	 * @param $pluginHandle
+	 * @throws Exception
+	 */
+	private function _savePluginMigrations($pluginId, $pluginHandle)
+	{
+		$migrationsFolder = craft()->path->getPluginsPath().strtolower($pluginHandle).'/migrations/';
+
+		if (IOHelper::folderExists($migrationsFolder))
+		{
+			$migrations = array();
+			$migrationFiles = IOHelper::getFolderContents($migrationsFolder, false, "(m(\d{6}_\d{6})_.*?)\.php");
+
+			if ($migrationFiles)
+			{
+				foreach ($migrationFiles as $file)
+				{
+					if (IOHelper::fileExists($file))
+					{
+						$migration = new MigrationRecord();
+						$migration->version = IOHelper::getFileName($file, false);
+						$migration->applyTime = DateTimeHelper::currentUTCDateTime();
+						$migration->pluginId = $pluginId;
+
+						$migrations[] = $migration;
+					}
+				}
+
+				foreach ($migrations as $migration)
+				{
+					if (!$migration->save())
+					{
+						throw new Exception(Craft::t('There was a problem saving to the migrations table: ').$this->_getFlattenedErrors($migration->getErrors()));
+					}
+				}
+			}
+		}
+	}
+
+	/**
 	 * Registers any services provided by a plugin.
 	 *
 	 * @access private
@@ -780,5 +845,24 @@ class PluginsService extends BaseApplicationComponent
 		}
 
 		return false;
+	}
+
+	/**
+	 * Get a flattened list of model errors
+	 *
+	 * @access private
+	 * @param array $errors
+	 * @return string
+	 */
+	private function _getFlattenedErrors($errors)
+	{
+		$return = '';
+
+		foreach ($errors as $attribute => $attributeErrors)
+		{
+			$return .= "\n - ".implode("\n - ", $attributeErrors);
+		}
+
+		return $return;
 	}
 }

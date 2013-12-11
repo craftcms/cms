@@ -352,7 +352,7 @@ var CP = Garnish.Base.extend({
 								$list = $elem.children();
 
 							this.$altSidebarNavBtn = $('<div class="btn menubtn">'+selectedText+'</div>').appendTo(this.$altSidebar);
-							this.$altSidebarNavMenu = $('<div class="menu menulist"/>').appendTo(this.$altSidebar);
+							this.$altSidebarNavMenu = $('<div class="menu padded"/>').appendTo(this.$altSidebar);
 
 							$list.appendTo(this.$altSidebarNavMenu);
 							new Garnish.MenuBtn(this.$altSidebarNavBtn);

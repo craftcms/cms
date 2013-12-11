@@ -27,6 +27,8 @@ class TemplatesService extends BaseApplicationComponent
 
 	private $_hooks;
 
+	private $_textareaMarkers;
+
 	/**
 	 * Init
 	 */
@@ -62,6 +64,10 @@ class TemplatesService extends BaseApplicationComponent
 			{
 				$twig->addExtension(new \Twig_Extension_Debug());
 			}
+
+			// Set our timezone
+			$timezone = craft()->getTimeZone();
+			$twig->getExtension('core')->setTimezone($timezone);
 
 			// Give plugins a chance to add their own Twig extensions
 
@@ -610,6 +616,10 @@ class TemplatesService extends BaseApplicationComponent
 
 		if ($namespace)
 		{
+			// Protect the textarea content
+			$this->_textareaMarkers = array();
+			$html = preg_replace_callback('/(<textarea\b[^>]*>)(.*?)(<\/textarea>)/is', array($this, '_createTextareaMarker'), $html);
+
 			// name= attributes
 			$html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
 
@@ -619,6 +629,9 @@ class TemplatesService extends BaseApplicationComponent
 				$idNamespace = $this->formatInputId($namespace);
 				$html = preg_replace('/(?<![\w\-])((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/i', '$1'.$idNamespace.'-$4$3', $html);
 			}
+
+			// Bring back the textarea content
+			$html = str_replace(array_keys($this->_textareaMarkers), array_values($this->_textareaMarkers), $html);
 		}
 
 		return $html;
@@ -705,7 +718,7 @@ class TemplatesService extends BaseApplicationComponent
 		{
 			foreach ($this->_hooks[$hook] as $method)
 			{
-				$return .= call_user_func($method, $context);
+				$return .= call_user_func_array($method, array(&$context));
 			}
 		}
 
@@ -839,6 +852,20 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Replaces textarea contents with a marker.
+	 *
+	 * @access private
+	 * @param array $matches
+	 * @return string
+	 */
+	private function _createTextareaMarker($matches)
+	{
+		$marker = '{marker:'.StringHelper::randomString().'}';
+		$this->_textareaMarkers[$marker] = $matches[2];
+		return $matches[1].$marker.$matches[3];
+	}
+
+	/**
 	 * Combines the JS in a buffer.
 	 *
 	 * @access   private
@@ -954,7 +981,7 @@ class TemplatesService extends BaseApplicationComponent
 
 		if ($context['context'] == 'index' && ($cpEditUrl = $context['element']->getCpEditUrl()))
 		{
-			$html .= '<a href="'.$cpEditUrl.'">'.$context['element'].'</a>';
+			$html .= '<a href="'.$cpEditUrl.'">'.HtmlHelper::encode($context['element']).'</a>';
 		}
 		else
 		{

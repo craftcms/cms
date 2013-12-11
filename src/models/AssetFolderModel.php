@@ -61,6 +61,19 @@ class AssetFolderModel extends BaseModel
 	}
 
 	/**
+	 * @return AssetFolderModel|null
+	 */
+	public function getParent()
+	{
+		if (!$this->parentId)
+		{
+			return null;
+		}
+
+		return craft()->assets->getFolderById($this->parentId);
+	}
+
+	/**
 	 * Add a child folder manually.
 	 *
 	 * @param AssetFolderModel $folder

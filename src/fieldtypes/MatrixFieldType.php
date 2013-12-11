@@ -201,7 +201,13 @@ class MatrixFieldType extends BaseFieldType
 			'"'.craft()->templates->namespaceInputName($name).'"' .
 		');');
 
-		craft()->templates->includeTranslations('Actions', 'Add {type} above', 'Add a block');
+		craft()->templates->includeTranslations('Disabled', 'Actions', 'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above', 'Add a block');
+
+		if ($value instanceof ElementCriteriaModel)
+		{
+			$value->limit = null;
+			$value->status = null;
+		}
 
 		return craft()->templates->render('_components/fieldtypes/Matrix/input', array(
 			'id' => $id,
@@ -251,6 +257,7 @@ class MatrixFieldType extends BaseFieldType
 				$criteria->ownerId = $ownerId;
 				$criteria->id = $ids;
 				$criteria->limit = null;
+				$criteria->status = null;
 				$criteria->locale = $this->element->locale;
 				$oldBlocks = $criteria->find();
 
@@ -291,6 +298,8 @@ class MatrixFieldType extends BaseFieldType
 			{
 				$block = $oldBlocksById[$blockId];
 			}
+
+			$block->enabled = (isset($blockData['enabled']) ? (bool) $blockData['enabled'] : true);
 
 			if (isset($blockData['fields']))
 			{
@@ -334,6 +343,49 @@ class MatrixFieldType extends BaseFieldType
 		{
 			return true;
 		}
+	}
+
+	/**
+	 * Returns the search keywords that should be associated with this field,
+	 * based on the prepped post data.
+	 *
+	 * @param mixed $value
+	 * @return string
+	 */
+	public function getSearchKeywords($value)
+	{
+		$criteria = $this->prepValue(null);
+		$keywords = array();
+		$contentService = craft()->content;
+
+		foreach ($criteria->find() as $block)
+		{
+			$originalContentTable      = $contentService->contentTable;
+			$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+			$originalFieldContext      = $contentService->fieldContext;
+
+			$contentService->contentTable      = $block->getContentTable();
+			$contentService->fieldColumnPrefix = $block->getFieldColumnPrefix();
+			$contentService->fieldContext      = $block->getFieldContext();
+
+			foreach (craft()->fields->getAllFields() as $field)
+			{
+				$fieldType = $field->getFieldType();
+
+				if ($fieldType)
+				{
+					$fieldType->element = $block;
+					$handle = $field->handle;
+					$keywords[] = $fieldType->getSearchKeywords($block->$handle);
+				}
+			}
+
+			$contentService->contentTable      = $originalContentTable;
+			$contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+			$contentService->fieldContext      = $originalFieldContext;
+		}
+
+		return parent::getSearchKeywords($keywords);
 	}
 
 	/**

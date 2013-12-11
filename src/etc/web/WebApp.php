@@ -181,6 +181,8 @@ class WebApp extends \CWebApplication
 		// Make sure that the system is on, or that the user has permission to access the site/CP while the system is off
 		if (craft()->isSystemOn() ||
 			($this->request->isActionRequest() && $this->request->getActionSegments() == array('users', 'login')) ||
+			($this->request->isActionRequest() && $this->request->isCpRequest() && $this->request->getActionSegments() == array('users', 'forgotpassword')) ||
+			($this->request->isActionRequest() && $this->request->isCpRequest() && $this->request->getActionSegments() == array('users', 'setpassword')) ||
 			($this->request->isSiteRequest() && $this->userSession->checkPermission('accessSiteWhenSystemIsOff')) ||
 			($this->request->isCpRequest()) && $this->userSession->checkPermission('accessCpWhenSystemIsOff')
 		)
@@ -778,7 +780,21 @@ class WebApp extends \CWebApplication
 	 */
 	private function _processRequirementsCheck()
 	{
-		if ($this->request->isCpRequest())
+		// See if we're in the middle of an update.
+		$update = false;
+
+		if ($this->request->getSegment(1) == 'updates' && $this->request->getSegment(2) == 'go')
+		{
+			$update = true;
+		}
+
+		if (($data = $this->request->getPost('data', null)) !== null && isset($data['handle']))
+		{
+			$update = true;
+		}
+
+		// Only run for CP requests and if we're not in the middle of an update.
+		if ($this->request->isCpRequest() && !$update)
 		{
 			$cachedAppPath = craft()->fileCache->get('appPath');
 			$appPath = $this->path->getAppPath();
@@ -790,6 +806,9 @@ class WebApp extends \CWebApplication
 		}
 	}
 
+	/**
+	 * @throws HttpException
+	 */
 	private function _processUpdateLogic()
 	{
 		// Let all non-action CP requests through.

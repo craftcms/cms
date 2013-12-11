@@ -41,7 +41,7 @@ class MultiSelectFieldType extends BaseOptionsFieldType
 		$options = $this->getOptions();
 
 		// If this is a new entry, look for any default options
-		if ($this->isFresh())
+		if ($values === null && $this->isFresh())
 		{
 			$values = array();
 
