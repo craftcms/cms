@@ -153,7 +153,7 @@
 	<div class="field checkbox{% if config.first is defined and config.first %} first{% endif %}"{% if config.id is defined and config.id %} id="{{ config.id }}-field"{% endif %}>
 		{{ _self.checkbox(config) }}
 		{% if config.instructions is defined and config.instructions %}
-			<p class="instructions">{{ config.instructions|raw }}</p>
+			<div class="instructions">{{ config.instructions|md }}</div>
 		{% endif %}
 	</div>
 {% endmacro %}
