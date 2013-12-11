@@ -154,6 +154,14 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
+	 * @return AssetSourceModel|null
+	 */
+	public function getSource()
+	{
+		return craft()->assetSources->getSourceById($this->sourceId);
+	}
+
+	/**
 	 * Sets the transform.
 	 *
 	 * @param mixed $transform

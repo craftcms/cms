@@ -199,9 +199,8 @@ class TagsController extends BaseController
 		}
 
 		$html = craft()->templates->render('_includes/edit_element', array(
-			'element'     => $tag,
-			'hasTitle'    => false,
-			'fieldLayout' => $tag->getSet()->getFieldLayout()
+			'element'  => $tag,
+			'hasTitle' => false
 		));
 
 		$this->returnJson(array(
@@ -231,7 +230,7 @@ class TagsController extends BaseController
 
 		$fieldNamespace = craft()->request->getPost('fieldNamespace');
 		$fields = craft()->request->getPost($fieldNamespace);
-		$tag->getContent()->setAttributes($fields);
+		$tag->setContentFromPost($fields);
 
 		$success = craft()->tags->saveTagContent($tag);
 

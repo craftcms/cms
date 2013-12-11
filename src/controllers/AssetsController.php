@@ -68,9 +68,8 @@ class AssetsController extends BaseController
 		}
 
 		$html = craft()->templates->render('_includes/edit_element', array(
-			'element'     => $file,
-			'hasTitle'    => true,
-			'fieldLayout' => craft()->fields->getLayoutByType(ElementType::Asset)
+			'element'  => $file,
+			'hasTitle' => true
 		));
 
 		$this->returnJson(array(
@@ -102,7 +101,7 @@ class AssetsController extends BaseController
 
 		$fieldNamespace = craft()->request->getPost('fieldNamespace');
 		$fields = craft()->request->getPost($fieldNamespace);
-		$file->getContent()->setAttributes($fields);
+		$file->setContentFromPost($fields);
 
 		$success = craft()->assets->saveFileContent($file);
 

@@ -133,9 +133,7 @@ class EntriesService extends BaseApplicationComponent
 
 		$fieldLayout = $entryType->getFieldLayout();
 
-		craft()->content->prepElementContentForSave($entry, $fieldLayout);
-
-		if (!craft()->content->validateElementContent($entry, $fieldLayout))
+		if (!craft()->content->validateContent($entry))
 		{
 			$entry->addErrors($entry->getContent()->getErrors());
 		}
@@ -287,7 +285,7 @@ class EntriesService extends BaseApplicationComponent
 					$entryRecord->save(false);
 
 					$entry->getContent()->elementId = $entry->id;
-					craft()->content->saveContent($entry->getContent());
+					craft()->content->saveContent($entry, false);
 
 					if ($section->type != SectionType::Single)
 					{
@@ -331,9 +329,6 @@ class EntriesService extends BaseApplicationComponent
 					{
 						craft()->entryRevisions->saveVersion($entry);
 					}
-
-					// Perform some post-save operations
-					craft()->content->postSaveOperations($entry, $entry->getContent());
 
 					// Fire an 'onSaveEntry' event
 					$this->onSaveEntry(new Event($this, array(

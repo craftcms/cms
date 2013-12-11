@@ -163,7 +163,7 @@ class GlobalsController extends BaseController
 		}
 
 		$fields = craft()->request->getPost('fields');
-		$globalSet->getContent()->setAttributes($fields);
+		$globalSet->setContentFromPost($fields);
 
 		if (craft()->globals->saveContent($globalSet))
 		{

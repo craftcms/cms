@@ -44,6 +44,16 @@ class GlobalSetModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns the field layout used by this element.
+	 *
+	 * @return FieldLayoutModel|null
+	 */
+	public function getFieldLayout()
+	{
+		return $this->asa('fieldLayout')->getFieldLayout();
+	}
+
+	/**
 	 * Returns the element's CP edit URL.
 	 *
 	 * @return string|false

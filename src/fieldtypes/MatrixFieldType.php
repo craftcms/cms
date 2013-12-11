@@ -303,7 +303,7 @@ class MatrixFieldType extends BaseFieldType
 
 			if (isset($blockData['fields']))
 			{
-				$block->getContent()->setAttributes($blockData['fields']);
+				$block->setContentFromPost($blockData['fields']);
 			}
 
 			$sortOrder++;
