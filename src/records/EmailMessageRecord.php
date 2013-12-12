@@ -33,6 +33,16 @@ class EmailMessageRecord extends BaseRecord
 	/**
 	 * @return array
 	 */
+	public function defineRelations()
+	{
+		return array(
+			'locale'  => array(static::BELONGS_TO, 'LocaleRecord', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE),
+		);
+	}
+
+	/**
+	 * @return array
+	 */
 	public function defineIndexes()
 	{
 		return array(
