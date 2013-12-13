@@ -131,8 +131,6 @@ class EntriesService extends BaseApplicationComponent
 		// Set the typeId attribute on the model in case it hasn't been set
 		$entry->typeId = $entryRecord->typeId = $entryType->id;
 
-		$fieldLayout = $entryType->getFieldLayout();
-
 		if (!craft()->content->validateContent($entry))
 		{
 			$entry->addErrors($entry->getContent()->getErrors());

@@ -577,6 +577,7 @@ class EntriesController extends BaseController
 	 * Populates an EntryModel with post data.
 	 *
 	 * @access private
+	 * @throws Exception
 	 * @return EntryModel
 	 */
 	private function _populateEntryModel()
