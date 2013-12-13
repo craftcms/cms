@@ -31,6 +31,21 @@ class TagModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns the field layout used by this element.
+	 *
+	 * @return FieldLayoutModel|null
+	 */
+	public function getFieldLayout()
+	{
+		$tagSet = $this->getSet();
+
+		if ($tagSet)
+		{
+			return $tagSet->getFieldLayout();
+		}
+	}
+
+	/**
 	 * Returns the tag's set.
 	 *
 	 * @return TagSetModel|null

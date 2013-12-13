@@ -21,7 +21,7 @@
 
 			{% include "_includes/fields" with {
 				namespace: fieldNamespace,
-				fields: fieldLayout.getFields(),
+				fields: element.getFieldLayout().getFields(),
 				element: element
 			} only %}
 		</div>

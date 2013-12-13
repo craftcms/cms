@@ -37,6 +37,40 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Populates a new model instance with a given set of attributes.
+	 *
+	 * @static
+	 * @param mixed $values
+	 * @return BaseModel
+	 */
+	public static function populateModel($values)
+	{
+		// Strip out the element record attributes if this is getting called from a child class
+		// based on an Active Record result eager-loaded with the ElementRecord
+		if (isset($values['element']))
+		{
+			$elementAttributes = $values['element'];
+			unset($values['element']);
+		}
+
+		$model = parent::populateModel($values);
+
+		// Now set those ElementRecord attributes
+		if (isset($elementAttributes))
+		{
+			if (isset($elementAttributes['i18n']))
+			{
+				$model->setAttributes($elementAttributes['i18n']);
+				unset($elementAttributes['i18n']);
+			}
+
+			$model->setAttributes($elementAttributes);
+		}
+
+		return $model;
+	}
+
+	/**
 	 * Use the entry's title as its string representation.
 	 *
 	 * @return string
@@ -54,6 +88,16 @@ abstract class BaseElementModel extends BaseModel
 	public function getElementType()
 	{
 		return $this->elementType;
+	}
+
+	/**
+	 * Returns the field layout used by this element.
+	 *
+	 * @return FieldLayoutModel|null
+	 */
+	public function getFieldLayout()
+	{
+		return craft()->fields->getLayoutByType($this->elementType);
 	}
 
 	/**
@@ -343,40 +387,6 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Populates a new model instance with a given set of attributes.
-	 *
-	 * @static
-	 * @param mixed $values
-	 * @return BaseModel
-	 */
-	public static function populateModel($values)
-	{
-		// Strip out the element record attributes if this is getting called from a child class
-		// based on an Active Record result eager-loaded with the ElementRecord
-		if (isset($values['element']))
-		{
-			$elementAttributes = $values['element'];
-			unset($values['element']);
-		}
-
-		$model = parent::populateModel($values);
-
-		// Now set those ElementRecord attributes
-		if (isset($elementAttributes))
-		{
-			if (isset($elementAttributes['i18n']))
-			{
-				$model->setAttributes($elementAttributes['i18n']);
-				unset($elementAttributes['i18n']);
-			}
-
-			$model->setAttributes($elementAttributes);
-		}
-
-		return $model;
-	}
-
-	/**
 	 * Returns the content for the element.
 	 *
 	 * @return ContentModel
@@ -432,6 +442,52 @@ abstract class BaseElementModel extends BaseModel
 		else if ($content instanceof ContentModel)
 		{
 			$this->_content = $content;
+		}
+	}
+
+	/**
+	 * Sets the content from post data, calling prepValueFromPost() on the field types.
+	 *
+	 * @param array $content
+	 */
+	public function setContentFromPost($content)
+	{
+		$fieldLayout = $this->getFieldLayout();
+
+		if ($fieldLayout)
+		{
+			if (!isset($this->_content))
+			{
+				$this->_content = $this->createContentModel();
+			}
+
+			foreach ($fieldLayout->getFields() as $fieldLayoutField)
+			{
+				$field = $fieldLayoutField->getField();
+
+				if ($field)
+				{
+					$handle = $field->handle;
+
+					if (isset($content[$handle]))
+					{
+						$this->_content->$handle = $content[$handle];
+					}
+					else
+					{
+						$this->_content->$handle = null;
+					}
+
+					// Give the field type a chance to make changes
+					$fieldType = $field->getFieldType();
+
+					if ($fieldType)
+					{
+						$fieldType->element = $this;
+						$this->_content->$handle = $fieldType->prepValueFromPost($this->_content->$handle);
+					}
+				}
+			}
 		}
 	}
 

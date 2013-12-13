@@ -40,14 +40,7 @@ class BaseEntryRevisionModel extends EntryModel
 		}
 
 		// Set the values and prep them
-		$this->getContent()->setAttributes($contentByFieldHandles);
-
-		$type = $this->getType();
-
-		if ($type)
-		{
-			craft()->content->prepElementContentForSave($this, $type->getFieldLayout(), false);
-		}
+		$this->setContentFromPost($contentByFieldHandles);
 	}
 
 	/**

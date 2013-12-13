@@ -532,7 +532,7 @@ class UsersController extends BaseController
 		}
 
 		$fields = craft()->request->getPost('fields');
-		$user->getContent()->setAttributes($fields);
+		$user->setContentFromPost($fields);
 
 		if (craft()->users->saveProfile($user))
 		{

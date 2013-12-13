@@ -151,8 +151,7 @@ class AssetsService extends BaseApplicationComponent
 	public function saveFileContent(AssetFileModel $file, $validate = true)
 	{
 		// TODO: translation support
-		$fieldLayout = craft()->fields->getLayoutByType(ElementType::Asset);
-		if (craft()->content->saveElementContent($file, $fieldLayout, $validate))
+		if (craft()->content->saveContent($file, $validate))
 		{
 			// Update the search index since the title may have just changed
 			craft()->search->indexElementAttributes($file);

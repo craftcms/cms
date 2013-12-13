@@ -333,7 +333,8 @@ class TagsService extends BaseApplicationComponent
 				// Create a row in content
 				$content = new ContentModel();
 				$content->elementId = $tag->id;
-				craft()->content->saveContent($content);
+				$tag->setContent($content);
+				craft()->content->saveContent($tag, false);
 			}
 
 			$tagRecord->save(false);
@@ -392,8 +393,7 @@ class TagsService extends BaseApplicationComponent
 	public function saveTagContent(TagModel $tag)
 	{
 		// TODO: translation support
-		$fieldLayout = craft()->fields->getLayoutByType(ElementType::Tag);
-		if (craft()->content->saveElementContent($tag, $fieldLayout))
+		if (craft()->content->saveContent($tag))
 		{
 			// Fire an 'onSaveTagContent' event
 			$this->onSaveTagContent(new Event($this, array(
