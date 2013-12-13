@@ -263,20 +263,49 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$filePath = AssetsHelper::getTempFilePath(IOHelper::getExtension($fileName));
 		$uploader->file->save($filePath);
 
+		$response = $this->insertFileByPath($filePath, $folder, $fileName);
+
+		IOHelper::deleteFile($filePath);
+
+		// Prevent sensitive information leak. Just in case.
+		$response->deleteDataItem('filePath');
+
+		return $response;
+	}
+
+	/**
+	 * Insert a file into a folder by it's local path.
+	 *
+	 * @param $localFilePath
+	 * @param AssetFolderModel $folder
+	 * @param $fileName
+	 * @param bool $preventConflicts if set to true, will ensure that a conflict is not encountered by checking the file name prior insertion.
+	 * @return AssetOperationResponseModel
+	 */
+	public function insertFileByPath($localFilePath, AssetFolderModel $folder, $fileName, $preventConflicts = false)
+	{
 		// We hate Javascript and PHP in our image files.
-		if (IOHelper::getFileKind(IOHelper::getExtension($filePath)) == 'image' && ImageHelper::isImageManipulatable(IOHelper::getExtension($filePath)))
+		if (IOHelper::getFileKind(IOHelper::getExtension($localFilePath)) == 'image' && ImageHelper::isImageManipulatable(IOHelper::getExtension($localFilePath)))
 		{
-			craft()->images->cleanImage($filePath);
+			craft()->images->cleanImage($localFilePath);
 		}
 
-		$response = $this->_insertFileInFolder($folder, $filePath, $fileName);
-
-		// Naming conflict. create a new file and ask the user what to do with it
-		if ($response->isConflict())
+		if ($preventConflicts)
 		{
 			$newFileName = $this->_getNameReplacement($folder, $fileName);
-			$conflictResponse = $response;
-			$response = $this->_insertFileInFolder($folder, $filePath, $newFileName);
+			$response = $this->_insertFileInFolder($folder, $localFilePath, $newFileName);
+		}
+		else
+		{
+			$response = $this->_insertFileInFolder($folder, $localFilePath, $fileName);
+
+			// Naming conflict. create a new file and ask the user what to do with it
+			if ($response->isConflict())
+			{
+				$newFileName = $this->_getNameReplacement($folder, $fileName);
+				$conflictResponse = $response;
+				$response = $this->_insertFileInFolder($folder, $localFilePath, $newFileName);
+			}
 		}
 
 		if ($response->isSuccess())
@@ -288,12 +317,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			$fileModel->folderId = $folder->id;
 			$fileModel->filename = IOHelper::getFileName($filename);
 			$fileModel->kind = IOHelper::getFileKind(IOHelper::getExtension($filename));
-			$fileModel->size = filesize($filePath);
-			$fileModel->dateModified = IOHelper::getLastTimeModified($filePath);
+			$fileModel->size = filesize($localFilePath);
+			$fileModel->dateModified = IOHelper::getLastTimeModified($localFilePath);
 
 			if ($fileModel->kind == 'image')
 			{
-				list ($width, $height) = getimagesize($filePath);
+				list ($width, $height) = getimagesize($localFilePath);
 				$fileModel->width = $width;
 				$fileModel->height = $height;
 			}
@@ -303,7 +332,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			if (!$this->isSourceLocal() && $fileModel->kind == 'image')
 			{
 				// Store copy locally for all sorts of operations.
-				IOHelper::copyFile($filePath, craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename));
+				IOHelper::copyFile($localFilePath, craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename));
 			}
 
 			// Check if we stored a conflict response originally - send that back then.
@@ -314,11 +343,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			$response->setDataItem('fileId', $fileModel->id);
 		}
-
-		IOHelper::deleteFile($filePath);
-
-		// Prevent sensitive information leak. Just in case.
-		$response->deleteDataItem('filePath');
 
 		return $response;
 	}

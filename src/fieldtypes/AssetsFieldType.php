@@ -38,7 +38,9 @@ class AssetsFieldType extends BaseElementFieldType
 	protected function defineSettings()
 	{
 		$settings = parent::defineSettings();
-		$settings['sourcePath'] = AttributeType::String;
+		$settings['singleFolderPath'] = AttributeType::String;
+		$settings['defaultUploadPath'] = AttributeType::String;
+		$settings['useSingleFolder'] = AttributeType::Bool;
 
 		return $settings;
 	}
@@ -51,9 +53,19 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	public function prepSettings($settings)
 	{
-		if (!(isset($settings['useSourcePath']) && $settings['useSourcePath']))
+		if (!(isset($settings['singleFolderPath']) && $settings['singleFolderPath']))
 		{
-			$settings['sourcePath'] = '';
+			$settings['singleFolderPath'] = '';
+		}
+
+		if (!(isset($settings['defaultUploadPath']) && $settings['defaultUploadPath']))
+		{
+			$settings['defaultUploadPath'] = '';
+		}
+
+		if (!(isset($settings['useSingleFolder']) && $settings['useSingleFolder']))
+		{
+			$settings['useSingleFolder'] = 0;
 		}
 		return $settings;
 	}
@@ -96,7 +108,7 @@ class AssetsFieldType extends BaseElementFieldType
 	{
 		// Look for the single folder setting
 		$settings = $this->getSettings();
-		if (isset($settings->sourcePath) && !empty($settings->sourcePath))
+		if (!empty($settings->sourcePath) && !empty($settings->userSingleFolder))
 		{
 			// It must start with a folder or a source.
 			$sourcePath = $settings->sourcePath;
@@ -260,20 +272,101 @@ class AssetsFieldType extends BaseElementFieldType
 	public function onAfterElementSave()
 	{
 		$settings = $this->getSettings();
-		if (isset($settings->sourcePath) && !empty($settings->sourcePath))
+
+		$handle = $this->model->handle;
+
+		// See if we have uploaded file(s).
+		if (!empty($_FILES['fields']['name'][$handle]))
 		{
-			$handle = $this->model->handle;
+			// Normalize the uploaded files, so that we always have an array to parse.
+			$uploadedFiles = array();
+
+			if (!is_array($_FILES['fields']['name'][$handle]) && IOHelper::fileExists($_FILES['fields']['tmp_name'][$handle]) && $_FILES['fields']['size'][$handle])
+			{
+				$uploadedFiles[] = array(
+					'name' => $_FILES['fields']['name'][$handle],
+					'tmp_name' => $_FILES['fields']['tmp_name'][$handle]
+				);
+			}
+			else
+			{
+				foreach ($_FILES['fields']['name'][$handle] as $index => $name)
+				{
+					if (IOHelper::fileExists($_FILES['fields']['tmp_name'][$handle][$index]) && $_FILES['fields']['size'][$handle][$index])
+					{
+						$uploadedFiles[] = array(
+							'name' => $name,
+							'tmp_name' => $_FILES['fields']['tmp_name'][$handle][$index]
+						);
+					}
+				}
+			}
+
+			$fileIds = array();
+
+			if (count($uploadedFiles))
+			{
+				if ($settings->useSingleFolder)
+				{
+					$targetFolderId = $this->_resolveSourcePathToFolderId($settings->singleFolderPath);
+				}
+				else
+				{
+					if ($settings->defaultUploadPath)
+					{
+						$targetFolderId = $this->_resolveSourcePathToFolderId($settings->defaultUploadPath);
+					}
+					else
+					{
+						$sources = $settings->sources;
+						if (!is_array($sources))
+						{
+							$sourceIds = craft()->assetSources->getViewableSourceIds();
+							if ($sourceIds)
+							{
+								$sourceId = reset($sourceIds);
+								$targetFolder = craft()->assets->findFolder(array('sourceId' => $sourceId, 'parentId' => FolderCriteriaModel::AssetsNoParent));
+								if ($targetFolder)
+								{
+									$targetFolderId = $targetFolder->id;
+								}
+							}
+						}
+						else
+						{
+							$targetFolder = reset($sources);
+							list ($bogus, $targetFolderId) = explode(":", $targetFolder);
+						}
+					}
+				}
+
+				if (!empty($targetFolderId))
+				{
+					foreach ($uploadedFiles as $file)
+					{
+						$tempPath = AssetsHelper::getTempFilePath($file['name']);
+						move_uploaded_file($file['tmp_name'], $tempPath);
+						$fileIds[] = craft()->assets->insertFileByLocalPath($tempPath, $file['name'], $targetFolderId);
+					}
+					$this->element->getContent()->{$handle} = $fileIds;
+
+				}
+			}
+		}
+		// No uploaded files, just good old-fashioned Assets field
+		else
+		{
 			$filesToMove = $this->element->getContent()->{$handle};
 			if (is_array($filesToMove) && count($filesToMove))
 			{
-				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->sourcePath);
+				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->singleFolderPath);
 
-				// Resolve conflicts by keeping both
+				// Resolve all conflicts by keeping both
 				$actions = array_fill(0, count($filesToMove), AssetsHelper::ActionKeepBoth);
 				craft()->assets->moveFiles($filesToMove, $targetFolderId, '', $actions);
-
 			}
 		}
+
 		parent::onAfterElementSave();
 	}
 }

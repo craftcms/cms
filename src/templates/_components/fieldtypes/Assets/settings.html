@@ -5,11 +5,11 @@
 	{{
 		forms.checkboxField({
 		label: "Restrict uploads to a single folder?"|t,
-		id: 'useSourcePath-toggle',
-		name: 'useSourcePath',
-		class: 'use-source-path-cb',
+		id: 'useSingleFolder-toggle',
+		name: 'useSingleFolder',
+		class: 'use-single-folder-cb',
 		value: 1,
-		checked: settings.sourcePath
+		checked: settings.useSingleFolder
 	}) }}
 
 	<div class="source-selection">
@@ -34,14 +34,25 @@
 		{% endif %}
 	</div>
 
+	<div class="default-folder">
+		{{ forms.textField({
+			label: "Upload Location"|t,
+			instructions: "This is where files will be placed by default when you drag files directly onto the Assets field, or submit files to the field from the front end. It must start with {folder:x} or {source:x}. If left blank, the first assets source will be used."|t({ type: type|lower }),
+			id: 'defaultUploadPath',
+			name: 'defaultUploadPath',
+			value: settings.defaultUploadPath,
+			errors: settings.getErrors('defaultUploadPath')
+		}) }}
+	</div>
+
 	<div class="single-folder">
 		{{ forms.textField({
-			label: "Single folder path"|t,
-			instructions: "Must start with {folder:x} or {source:x}."|t({ type: type|lower }),
-			id: 'sourcePath',
-			name: 'sourcePath',
-			value: settings.sourcePath,
-			errors: settings.getErrors('sourcePath')
+			label: "Single Folder Path"|t,
+			instructions: "This is where files will be placed by default when you drag files directly onto the Assets field, or submit files to the field from the front end. It must start with {folder:x} or {source:x}."|t({ type: type|lower }),
+			id: 'singleFolderPath',
+			name: 'singleFolderPath',
+			value: settings.singleFolderPath,
+			errors: settings.getErrors('singleFolderPath')
 		}) }}
 	</div>
 
@@ -50,20 +61,22 @@
 		{
 			if (elem.prop('checked'))
 			{
-				$('.source-selection').hide();
+				$('.source-selection, .default-folder').hide();
 				$('.single-folder').show();
 			}
 			else
 			{
-				$('.source-selection').show();
+				$('.source-selection, .default-folder').show();
 				$('.single-folder').hide();
 			}
 		};
 
-		var element = $('.use-source-path-cb');
+		var element = $('.use-single-folder-cb');
+
 		element.on('click', function (ev) {
 			displayAssetSettings($(ev.currentTarget));
  		});
+
 		displayAssetSettings(element);
 
 	{% endset %}

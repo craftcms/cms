@@ -675,6 +675,26 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Inserts a file from a local path into a folder and returns the resultinf file id.
+	 *
+	 * @param $localPath
+	 * @param $fileName
+	 * @param $folderId
+	 * @return bool|null
+	 */
+	public function insertFileByLocalPath($localPath, $fileName, $folderId)
+	{
+		$folder = $this->getFolderById($folderId);
+		if (!$folder)
+		{
+			return false;
+		}
+		$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
+		$response = $source->insertFileByPath($localPath, $folder, $fileName, true);
+		return $response->getDataItem('fileId');
+	}
+
+	/**
 	 * Flag a file merge in progress.
 	 */
 	private function _startMergeProcess()
