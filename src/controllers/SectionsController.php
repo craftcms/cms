@@ -134,9 +134,9 @@ class SectionsController extends BaseController
 		$allTypeSettings = craft()->request->getPost('types');
 		$typeSettings = $allTypeSettings[$section->type];
 
-		$section->hasUrls  = (isset($typeSettings['hasUrls']) ? (bool) $typeSettings['hasUrls'] : true);
-		$section->template = (isset($typeSettings['template']) ? $typeSettings['template'] : null);
-		$section->maxDepth = (!empty($typeSettings['maxDepth']) ? $typeSettings['maxDepth'] : null);
+		$section->hasUrls   = (isset($typeSettings['hasUrls']) ? (bool) $typeSettings['hasUrls'] : true);
+		$section->template  = (isset($typeSettings['template']) ? $typeSettings['template'] : null);
+		$section->maxLevels = (!empty($typeSettings['maxLevels']) ? $typeSettings['maxLevels'] : null);
 
 		// Locale-specific attributes
 		$locales = array();

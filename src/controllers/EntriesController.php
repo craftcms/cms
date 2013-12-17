@@ -24,9 +24,9 @@ class EntriesController extends BaseController
 			$parentOptionCriteria->status = null;
 			$parentOptionCriteria->limit = null;
 
-			if ($variables['section']->maxDepth)
+			if ($variables['section']->maxLevels)
 			{
-				$parentOptionCriteria->depth = '< '.$variables['section']->maxDepth;
+				$parentOptionCriteria->level = '< '.$variables['section']->maxLevels;
 			}
 
 			if ($variables['entry']->id)
@@ -56,7 +56,7 @@ class EntriesController extends BaseController
 			{
 				$label = '';
 
-				for ($i = 1; $i < $parentOption->depth; $i++)
+				for ($i = 1; $i < $parentOption->level; $i++)
 				{
 					$label .= '    ';
 				}

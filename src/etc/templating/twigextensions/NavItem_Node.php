@@ -19,20 +19,20 @@ class NavItem_Node extends \Twig_Node
 	public function compile(\Twig_Compiler $compiler)
 	{
 		$compiler
-			// Get this item's depth
-			->write('$_thisItemDepth = (int)$this->getAttribute(')
+			// Get this item's level
+			->write('$_thisItemLevel = (int)$this->getAttribute(')
 			->subcompile($this->getNode('value_target'))
-			->raw(", 'depth', array(), Twig_TemplateInterface::ANY_CALL, false, true);\n")
+			->raw(", 'level', array(), Twig_TemplateInterface::ANY_CALL, false, true);\n")
 			// Was there a previous item?
 			->write("if (isset(\$context['nav'])) {\n")
 			->indent()
 				// Temporarily set the context to the previous one
 				->write("\$_tmpContext = \$context;\n")
-				->write("\$context = \$_contextsByDepth[\$context['nav']['depth']];\n")
-				// Does this one have a greater depth than the last one?
-				->write("if (\$_thisItemDepth > \$context['nav']['depth']) {\n")
+				->write("\$context = \$_contextsByLevel[\$context['nav']['level']];\n")
+				// Does this one have a greater level than the last one?
+				->write("if (\$_thisItemLevel > \$context['nav']['level']) {\n")
 				->indent()
-					->write("for (\$_i = \$context['nav']['depth']; \$_i < \$_thisItemDepth; \$_i++) {\n")
+					->write("for (\$_i = \$context['nav']['level']; \$_i < \$_thisItemLevel; \$_i++) {\n")
 					->indent()
 						->subcompile($this->getNode('indent'), false)
 					->outdent()
@@ -41,19 +41,19 @@ class NavItem_Node extends \Twig_Node
 				->write("} else {\n")
 				->indent()
 					->subcompile($this->getNode('lower_body'), false)
-					// Does this one have a lower depth than the last one?
-					->write("if (\$_thisItemDepth < \$context['nav']['depth']) {\n")
+					// Does this one have a lower level than the last one?
+					->write("if (\$_thisItemLevel < \$context['nav']['level']) {\n")
 					->indent()
-						->write("for (\$_i = \$context['nav']['depth']-1; \$_i >= \$_thisItemDepth; \$_i--) {\n")
+						->write("for (\$_i = \$context['nav']['level']-1; \$_i >= \$_thisItemLevel; \$_i--) {\n")
 						->indent()
-							// Did we output an item at that depth?
-							->write("if (isset(\$_contextsByDepth[\$_i])) {\n")
+							// Did we output an item at that level?
+							->write("if (isset(\$_contextsByLevel[\$_i])) {\n")
 							->indent()
-								// Temporarily set the context to the element at this depth
-								->write("\$context = \$_contextsByDepth[\$_i];\n")
+								// Temporarily set the context to the element at this level
+								->write("\$context = \$_contextsByLevel[\$_i];\n")
 								->subcompile($this->getNode('outdent'), false)
 								->subcompile($this->getNode('lower_body'), false)
-								->write("unset(\$_contextsByDepth[\$_i]);\n")
+								->write("unset(\$_contextsByLevel[\$_i]);\n")
 							->outdent()
 							->write("}\n")
 						->outdent()
@@ -68,15 +68,15 @@ class NavItem_Node extends \Twig_Node
 			->outdent()
 			->write("} else {\n")
 			->indent()
-				// This is the first item so save its depth
-				->write("\$_firstItemDepth = \$_thisItemDepth;\n")
+				// This is the first item so save its level
+				->write("\$_firstItemLevel = \$_thisItemLevel;\n")
 			->outdent()
 			->write("}\n")
 			// Create the nav array for this item
-			->write("\$context['nav']['depth'] = \$_thisItemDepth;\n")
-			->write("if (isset(\$_contextsByDepth[\$_thisItemDepth-1])) {\n")
+			->write("\$context['nav']['level'] = \$_thisItemLevel;\n")
+			->write("if (isset(\$_contextsByLevel[\$_thisItemLevel-1])) {\n")
 			->indent()
-				->write("\$context['nav']['parent'] = \$_contextsByDepth[\$_thisItemDepth-1];\n")
+				->write("\$context['nav']['parent'] = \$_contextsByLevel[\$_thisItemLevel-1];\n")
 				// Might as well set the item's parent so long as we have it
 				->write('if (method_exists(')
 				->subcompile($this->getNode('value_target'))
@@ -95,7 +95,7 @@ class NavItem_Node extends \Twig_Node
 			->outdent()
 			->write("}\n")
 			// Save a reference of this item for the next iteration
-			->write("\$_contextsByDepth[\$_thisItemDepth] = \$context;\n")
+			->write("\$_contextsByLevel[\$_thisItemLevel] = \$context;\n")
 		;
 	}
 }

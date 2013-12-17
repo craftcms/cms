@@ -183,10 +183,10 @@ class EntriesService extends BaseApplicationComponent
 			// Set a slug that ensures the URI will be unique across all elements
 			if ($section->hasUrls && $entry->slug)
 			{
-				// Get the appropriate URL Format attribute based on the section type and entry depth
+				// Get the appropriate URL Format attribute based on the section type and entry level
 				if ($section->type == SectionType::Structure && (
 					($hasNewParent && $entry->parentId) ||
-					(!$hasNewParent && $entry->depth != 1)
+					(!$hasNewParent && $entry->level != 1)
 				))
 				{
 					$urlFormatAttribute = 'nestedUrlFormat';
@@ -276,7 +276,7 @@ class EntriesService extends BaseApplicationComponent
 						$entry->root  = $entryRecord->root;
 						$entry->lft   = $entryRecord->lft;
 						$entry->rgt   = $entryRecord->rgt;
-						$entry->depth = $entryRecord->depth;
+						$entry->level = $entryRecord->level;
 					}
 
 					// Save everything!
@@ -715,13 +715,13 @@ class EntriesService extends BaseApplicationComponent
 		}
 
 		// Is it set to the top level now, but it hadn't been before?
-		if ($entry->parentId === '0' && $entry->depth != 1)
+		if ($entry->parentId === '0' && $entry->level != 1)
 		{
 			return true;
 		}
 
 		// Is it set to be under a parent now, but didn't have one before?
-		if ($entry->parentId !== '0' && $entry->depth == 1)
+		if ($entry->parentId !== '0' && $entry->level == 1)
 		{
 			return true;
 		}
@@ -946,7 +946,7 @@ class EntriesService extends BaseApplicationComponent
 			{
 				if ($sectionRecord->hasUrls)
 				{
-					if ($descendantEntryRecord->depth == 1)
+					if ($descendantEntryRecord->level == 1)
 					{
 						$urlFormat = $sectionLocaleRecord->urlFormat;
 					}

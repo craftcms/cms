@@ -24,7 +24,7 @@ class EntryRecord extends BaseRecord
 			'root'       => array(AttributeType::Number),
 			'lft'        => array(AttributeType::Number, 'min' => 0),
 			'rgt'        => array(AttributeType::Number, 'min' => 0),
-			'depth'      => array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt),
+			'level'      => array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt),
 			'postDate'   => AttributeType::DateTime,
 			'expiryDate' => AttributeType::DateTime,
 		);
@@ -61,7 +61,7 @@ class EntryRecord extends BaseRecord
 			array('columns' => array('root')),
 			array('columns' => array('lft')),
 			array('columns' => array('rgt')),
-			array('columns' => array('depth')),
+			array('columns' => array('level')),
 			array('columns' => array('postDate')),
 			array('columns' => array('expiryDate')),
 		);
