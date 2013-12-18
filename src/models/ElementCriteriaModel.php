@@ -47,6 +47,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 			'relatedTo'     => AttributeType::Mixed,
 			'ref'           => AttributeType::String,
 			'search'        => AttributeType::String,
+			'slug'          => AttributeType::String,
 			'status'        => array(AttributeType::String, 'default' => BaseElementModel::ENABLED),
 			'uri'           => AttributeType::String,
 

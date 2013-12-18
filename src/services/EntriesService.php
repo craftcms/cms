@@ -145,22 +145,10 @@ class EntriesService extends BaseApplicationComponent
 			// Get the entry/element locale records
 			if ($entry->id)
 			{
-				$entryLocaleRecord = EntryLocaleRecord::model()->findByAttributes(array(
-					'entryId' => $entry->id,
-					'locale'  => $entry->locale
-				));
-
 				$elementLocaleRecord = ElementLocaleRecord::model()->findByAttributes(array(
 					'elementId' => $entry->id,
 					'locale'    => $entry->locale
 				));
-			}
-
-			if (empty($entryLocaleRecord))
-			{
-				$entryLocaleRecord = new EntryLocaleRecord();
-				$entryLocaleRecord->sectionId = $entry->sectionId;
-				$entryLocaleRecord->locale    = $entry->locale;
 			}
 
 			if (empty($elementLocaleRecord))
@@ -177,7 +165,7 @@ class EntriesService extends BaseApplicationComponent
 
 			$entry->slug = $this->_cleanSlug($entry->slug);
 
-			$entryLocaleRecord->slug = null;
+			$elementLocaleRecord->slug = null;
 			$elementLocaleRecord->uri = null;
 
 			// Set a slug that ensures the URI will be unique across all elements
@@ -230,12 +218,10 @@ class EntriesService extends BaseApplicationComponent
 				if ($section->type != SectionType::Single)
 				{
 					// Set a unique slug and URI
-					$this->_setUniqueSlugAndUri($entry, $urlFormat, $entryLocaleRecord, $elementLocaleRecord, $isNewEntry);
-
-					// Validate them
-					$entryLocaleRecord->validate();
-					$entry->addErrors($entryLocaleRecord->getErrors());
-
+					ElementHelper::setUniqueUri($entry, $urlFormat);
+					$elementLocaleRecord->slugIsRequired = true;
+					$elementLocaleRecord->slug = $entry->slug;
+					$elementLocaleRecord->uri  = $entry->uri;
 					$elementLocaleRecord->validate();
 					$entry->addErrors($elementLocaleRecord->getErrors());
 				}
@@ -287,11 +273,8 @@ class EntriesService extends BaseApplicationComponent
 
 					if ($section->type != SectionType::Single)
 					{
-						// Save the locale records
-						$entryLocaleRecord->entryId = $entry->id;
+						// Save the locale record
 						$elementLocaleRecord->elementId = $entry->id;
-
-						$entryLocaleRecord->save(false);
 						$elementLocaleRecord->save(false);
 
 						if (!$isNewEntry && $section->hasUrls)
@@ -509,22 +492,6 @@ class EntriesService extends BaseApplicationComponent
 	 */
 	public function updateEntrySlugAndUri($entryId, $localeId, $urlFormat)
 	{
-		$entryLocaleRecord = EntryLocaleRecord::model()->findByAttributes(array(
-			'entryId' => $entryId,
-			'locale'  => $localeId
-		));
-
-		$elementLocaleRecord = ElementLocaleRecord::model()->findByAttributes(array(
-			'elementId' => $entryId,
-			'locale'    => $localeId
-		));
-
-		if (!$entryLocaleRecord || !$elementLocaleRecord)
-		{
-			// Entry hasn't been saved in this locale yet.
-			return;
-		}
-
 		// Get the actual entry model
 		$criteria = craft()->elements->getCriteria(ElementType::Entry);
 		$criteria->id = $entryId;
@@ -538,18 +505,20 @@ class EntriesService extends BaseApplicationComponent
 			return;
 		}
 
-		$oldSlug = $entryLocaleRecord->slug;
-		$oldUri = $elementLocaleRecord->uri;
+		$oldSlug = $entry->slug;
+		$oldUri  = $entry->uri;
 
-		$this->_setUniqueSlugAndUri($entry, $urlFormat, $entryLocaleRecord, $elementLocaleRecord, false);
+		ElementHelper::setUniqueUri($entry, $urlFormat);
 
-		if ($entryLocaleRecord->slug != $oldSlug)
+		if ($entry->slug != $oldSlug || $entry->uri != $oldUri)
 		{
-			$entryLocaleRecord->save(false);
-		}
+			$elementLocaleRecord = ElementLocaleRecord::model()->findByAttributes(array(
+				'elementId' => $entryId,
+				'locale'    => $localeId
+			));
 
-		if ($elementLocaleRecord->uri != $oldUri)
-		{
+			$elementLocaleRecord->slug = $entry->slug;
+			$elementLocaleRecord->uri  = $entry->uri;
 			$elementLocaleRecord->save(false);
 		}
 	}
@@ -769,151 +738,6 @@ class EntriesService extends BaseApplicationComponent
 		$slug = implode('-', $words);
 
 		return $slug;
-	}
-
-	/**
-	 * Sets a unique slug and URI on entry locale rows.
-	 *
-	 * @access private
-	 * @param EntryModel $entry
-	 * @param string $urlFormat;
-	 * @param EntryLocaleRecord $entryLocaleRecord
-	 * @param ElementLocaleRecord $elementLocaleRecord
-	 * @param bool $isNewEntry
-	 */
-	private function _setUniqueSlugAndUri(EntryModel $entry, $urlFormat, EntryLocaleRecord $entryLocaleRecord, ElementLocaleRecord $elementLocaleRecord, $isNewEntry)
-	{
-		if (!$entry->slug)
-		{
-			// Just make sure it doesn't have a URI.
-			if ($elementLocaleRecord->uri)
-			{
-				$elementLocaleRecord->uri = null;
-			}
-
-			return;
-		}
-
-		// Find a unique slug for this section/locale
-		$uniqueSlugConditions = array('and',
-			'sectionId = :sectionId',
-			'locale = :locale',
-			'slug = :slug'
-		);
-
-		$uniqueSlugParams = array(
-			':sectionId' => $entry->sectionId,
-			':locale'    => $entryLocaleRecord->locale
-		);
-
-		if (!$isNewEntry)
-		{
-			$uniqueSlugConditions[] = 'entryId != :entryId';
-			$uniqueSlugParams[':entryId'] = $entry->id;
-		}
-
-		if ($urlFormat)
-		{
-			$uniqueUriConditions = array('and',
-				'locale = :locale',
-				'uri = :uri'
-			);
-
-			$uniqueUriParams = array(
-				':locale' => $entryLocaleRecord->locale
-			);
-
-			if (!$isNewEntry)
-			{
-				$uniqueUriConditions[] = 'elementId != :elementId';
-				$uniqueUriParams[':elementId'] = $entry->id;
-			}
-		}
-
-		for ($i = 0; $i < 100; $i++)
-		{
-			$testSlug = $entry->slug;
-
-			if ($i > 0)
-			{
-				$testSlug .= '-'.$i;
-			}
-
-			$uniqueSlugParams[':slug'] = $testSlug;
-
-			$totalEntries = craft()->db->createCommand()
-				->select('count(id)')
-				->from('entries_i18n')
-				->where($uniqueSlugConditions, $uniqueSlugParams)
-				->queryScalar();
-
-			if ($totalEntries == 0)
-			{
-				if ($urlFormat)
-				{
-					// Great, the slug is unique. Is the URI?
-					$originalSlug = $entry->slug;
-					$entry->slug = $testSlug;
-
-					$testUri = craft()->templates->renderObjectTemplate($urlFormat, $entry);
-
-					// Make sure we're not over our max length.
-					if (strlen($testUri) > 255)
-					{
-						// See how much over we are.
-						$overage = strlen($testUri) - 255;
-
-						// Do we have anything left to chop off?
-						if (strlen($overage) > strlen($entry->slug) - strlen('-'.$i))
-						{
-							// Chop off the overage amount from the slug
-							$testSlug = $entry->slug;
-							$testSlug = substr($testSlug, 0, strlen($testSlug) - $overage);
-
-							// Update the slug
-							$entry->slug = $testSlug;
-
-							// Let's try this again.
-							$i -= 1;
-							continue;
-
-						}
-						else
-						{
-							// We're screwed, blow things up.
-							throw new Exception(Craft::t('The maximum length of a URI is 255 characters.'));
-						}
-					}
-
-					$uniqueUriParams[':uri'] = $testUri;
-
-					$totalElements = craft()->db->createCommand()
-						->select('count(id)')
-						->from('elements_i18n')
-						->where($uniqueUriConditions, $uniqueUriParams)
-						->queryScalar();
-
-					if ($totalElements ==  0)
-					{
-						// OMG!
-						$entryLocaleRecord->slug = $testSlug;
-						$elementLocaleRecord->uri = $testUri;
-						return;
-					}
-					else
-					{
-						$entry->slug = $originalSlug;
-					}
-				}
-				else
-				{
-					$entry->slug = $testSlug;
-					$entryLocaleRecord->slug = $testSlug;
-					$elementLocaleRecord->uri = null;
-					return;
-				}
-			}
-		}
 	}
 
 	/**

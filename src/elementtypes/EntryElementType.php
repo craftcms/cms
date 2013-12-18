@@ -144,16 +144,6 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Defines which model attributes should be searchable.
-	 *
-	 * @return array
-	 */
-	public function defineSearchableAttributes()
-	{
-		return array('slug');
-	}
-
-	/**
 	 * Returns the attributes that can be shown/sorted by in table views.
 	 *
 	 * @param string|null $source
@@ -249,7 +239,6 @@ class EntryElementType extends BaseElementType
 			'prevSiblingOf'   => AttributeType::Mixed,
 			'section'         => AttributeType::Mixed,
 			'sectionId'       => AttributeType::Number,
-			'slug'            => AttributeType::String,
 			'status'          => array(AttributeType::String, 'default' => EntryModel::LIVE),
 			'type'            => AttributeType::Mixed,
 		);
@@ -306,11 +295,9 @@ class EntryElementType extends BaseElementType
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('entries.sectionId, entries.typeId, entries.authorId, entries.root, entries.lft, entries.rgt, entries.level, entries.postDate, entries.expiryDate, entries_i18n.slug')
+			->addSelect('entries.sectionId, entries.typeId, entries.authorId, entries.root, entries.lft, entries.rgt, entries.level, entries.postDate, entries.expiryDate')
 			->join('entries entries', 'entries.id = elements.id')
-			->join('entries_i18n entries_i18n', 'entries_i18n.entryId = elements.id')
-			->andWhere(array('or', 'entries.lft IS NULL', 'entries.lft != 1'))
-			->andWhere('entries_i18n.locale = elements_i18n.locale');
+			->andWhere(array('or', 'entries.lft IS NULL', 'entries.lft != 1'));
 
 		$joinedSections = false;
 
@@ -327,7 +314,7 @@ class EntryElementType extends BaseElementType
 				{
 					if (count($parts) == 1)
 					{
-						$conditionals[] = DbHelper::parseParam('entries_i18n.slug', $parts[0], $query->params);
+						$conditionals[] = DbHelper::parseParam('elements_i18n.slug', $parts[0], $query->params);
 					}
 					else
 					{
@@ -339,7 +326,7 @@ class EntryElementType extends BaseElementType
 
 						$conditionals[] = array('and',
 							DbHelper::parseParam('sections.handle', $parts[0], $query->params),
-							DbHelper::parseParam('entries_i18n.slug', $parts[1], $query->params)
+							DbHelper::parseParam('elements_i18n.slug', $parts[1], $query->params)
 						);
 					}
 				}
@@ -401,11 +388,6 @@ class EntryElementType extends BaseElementType
 			}
 
 			$query->andWhere(DbHelper::parseParam('entries.typeId', $typeIds, $query->params));
-		}
-
-		if ($criteria->slug)
-		{
-			$query->andWhere(DbHelper::parseParam('entries_i18n.slug', $criteria->slug, $query->params));
 		}
 
 		if ($criteria->postDate)

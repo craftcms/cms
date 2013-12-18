@@ -30,7 +30,6 @@ class EntryModel extends BaseElementModel
 			'lft'        => AttributeType::Number,
 			'rgt'        => AttributeType::Number,
 			'level'      => AttributeType::Number,
-			'slug'       => AttributeType::String,
 			'postDate'   => AttributeType::DateTime,
 			'expiryDate' => AttributeType::DateTime,
 

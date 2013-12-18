@@ -30,6 +30,7 @@ abstract class BaseElementModel extends BaseModel
 			'enabled'     => array(AttributeType::Bool, 'default' => true),
 			'archived'    => array(AttributeType::Bool, 'default' => false),
 			'locale'      => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
+			'slug'        => AttributeType::String,
 			'uri'         => AttributeType::String,
 			'dateCreated' => AttributeType::DateTime,
 			'dateUpdated' => AttributeType::DateTime,
