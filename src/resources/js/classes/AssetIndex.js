@@ -840,7 +840,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 		var finalCallback = $.proxy(function()
 		{
-			this.setIndexBusy();
+			this.setIndexAvailable();
 			this.progressBar.hideProgressBar();
 			this.updateElements();
 		}, this);
@@ -877,6 +877,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 		}, this);
 
+		this.progressBar.showProgressBar();
 		doFollowup(returnData, 0, finalCallback);
 	},
 
