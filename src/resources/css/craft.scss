@@ -516,6 +516,8 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 
 .elementindex .structureview li .toggle { background-color: #fff; }
 
+.elementindex .main { position: relative; }
+
 .structureview li .element { float: left; }
 .structureview li .icon { margin-top: 5px; opacity: 0; -webkit-transition: opacity linear 100ms; }
 .structureview li .add:before { content: '▼'; color: rgba(0,0,0,0.2); }
@@ -610,7 +612,7 @@ ul.tree,
 /*  Progress bar
 /* ----------------------------------------*/
 
-.progressbar { border-radius: 6px; border: 2px solid $textcolor; padding: 2px; }
+.progressbar { border-radius: 6px; border: 2px solid $textcolor; padding: 2px; position: absolute; left: 30%; width: 40%; }
 .progressbar-inner { border-radius: 2px; height: 4px; background: $textcolor; }
 .progressbar:not(.pending) .progressbar-inner {
 	-webkit-transition: width linear 50ms;
@@ -840,6 +842,11 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 
 /* Assets related */
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
+.btn .progress-shade{ background: rgba(255,255,255,0.8); width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none;}
+
+.btn.uploading { position: relative;}
+.btn.uploading .progress-shade{ display: block;}
+
 
 /* Prompts */
 .modal.prompt-modal .buttons .btn { margin: 5px; }

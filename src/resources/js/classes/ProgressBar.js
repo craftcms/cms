@@ -3,8 +3,8 @@
  */
 Craft.ProgressBar = Garnish.Base.extend({
 
-    $uploadProgress: null,
-    $uploadProgressBar: null,
+    $progressBar: null,
+    $innerProgressBar: null,
 
     _itemCount: 0,
     _processedItemCount: 0,
@@ -12,8 +12,8 @@ Craft.ProgressBar = Garnish.Base.extend({
 
     init: function($element)
     {
-        this.$uploadProgress = $element;
-        this.$uploadProgressBar = $('.assets-pb-bar', this.$uploadProgress);
+		this.$progressBar = $('<div class="progressbar pending hidden"/>').appendTo($element);
+		this.$innerProgressBar = $('<div class="progressbar-inner"/>').appendTo(this.$progressBar);
 
         this.resetProgressBar();
     },
@@ -23,10 +23,14 @@ Craft.ProgressBar = Garnish.Base.extend({
      */
     resetProgressBar: function ()
     {
-        // Set it to 1 so that 0 is not 100%
-        this.setItemCount(1);
+		// Since setting the progress percentage implies that there is progress to be shown
+		// It removes the pending class - we must add it back.
+		this.setProgressPercentage(100);
+		this.$progressBar.addClass('pending');
+
+		// Reset all the counters
+		this.setItemCount(1);
         this.setProcessedItemCount(0);
-        this.updateProgressBar();
 
     },
 
@@ -35,14 +39,14 @@ Craft.ProgressBar = Garnish.Base.extend({
      */
     hideProgressBar: function ()
     {
-        this.$uploadProgress.fadeTo('fast', 0.01, $.proxy(function() {
-            this.$uploadProgress.addClass('hidden').fadeTo(1, 1, function () {});
+        this.$progressBar.fadeTo('fast', 0.01, $.proxy(function() {
+            this.$progressBar.addClass('hidden').fadeTo(1, 1, function () {});
         }, this));
     },
 
     showProgressBar: function ()
     {
-        this.$uploadProgress.removeClass('hidden');
+        this.$progressBar.removeClass('hidden');
     },
 
     setItemCount: function (count)
@@ -77,6 +81,7 @@ Craft.ProgressBar = Garnish.Base.extend({
 
     setProgressPercentage: function (percentage)
     {
-        this.$uploadProgressBar.width(percentage + '%');
+		this.$progressBar.removeClass('pending');
+		this.$innerProgressBar.width(percentage + '%');
     }
 });

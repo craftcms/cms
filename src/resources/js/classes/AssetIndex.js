@@ -697,13 +697,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			this.$uploadButton = $('<div class="assets-upload"></div>').prependTo(this.$buttons);
 		}
 
-		if (!this.$progressBar)
-		{
-			this.$progressBar = $('<div class="assets-uploadprogress hidden"><div class="assets-progressbar"><div class="assets-pb-bar"></div></div></div>').appendTo(this.$main);
-		}
-
 		this.promptHandler = new Craft.PromptHandler();
-		this.progressBar = new Craft.ProgressBar(this.$progressBar);
+		this.progressBar = new Craft.ProgressBar(this.$main, true);
+		this.progressBar.$progressBar.css({
+			top: '20%'
+		});
+
 
 		var uploaderCallbacks = {
 			onSubmit:     $.proxy(this, '_onUploadSubmit'),

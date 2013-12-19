@@ -29,14 +29,6 @@
 #main .files.thumbs ul li .thumb { background-repeat: no-repeat; background-position: 50% 50%; }
 #main .files.thumbs ul li .filename, ul.assets-tv-drag li .filename {  margin-top: 7px; font-size: 11px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; }
 
-/*-- upload status --*/
-.assets-uploadprogress { position: absolute; top: 36px; left: 0; width: 100%; background: rgba(250,250,250,0.8); }
-.assets-uploadprogress .assets-progressbar { position: absolute; top: 145px; left: 50%; margin-left: -100px; padding: 2px; width: 192px; height: 6px; border: 2px solid $headerBgColor; background: #fafafa;
-  border-radius: 7px; -webkit-border-radius: 7px; -moz-border-radius: 7px;
-  -webkit-box-shadow: 0 0 20px 20px #fafafa; }
-.assets-uploadprogress .assets-progressbar .assets-pb-bar { width: 0; height: 6px; background: $headerBgColor;
-  border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; }
-
 /*-- uploader --*/
 
 .assets-upload { height: 31px; }

@@ -5,7 +5,7 @@ Craft.Tool = Garnish.Base.extend({
 
 	$trigger: null,
 	$form: null,
-	$progressBar: null,
+	$innerProgressBar: null,
 	$innerProgressBar: null,
 
 	toolClass: null,
@@ -58,14 +58,13 @@ Craft.Tool = Garnish.Base.extend({
 	{
 		ev.preventDefault();
 
-		if (!this.$progressBar)
+		if (!this.progressBar)
 		{
-			this.$progressBar = $('<div class="progressbar pending"/>').appendTo(this.hud.$body);
-			this.$innerProgressBar = $('<div class="progressbar-inner"/>').appendTo(this.$progressBar);
+			this.progressBar = new Craft.ProgressBar(this.hud.$body);
 		}
 		else
 		{
-			this.$progressBar.addClass('pending');
+			this.progressBar.resetProgressBar();
 		}
 
 		this.totalActions = 1;
@@ -75,15 +74,17 @@ Craft.Tool = Garnish.Base.extend({
 		this.loadingActions = 0;
 		this.currentBatchQueue = [];
 
-		this.$progressBar.css({
+
+		this.progressBar.$progressBar.css({
 			top: Math.round(this.hud.$body.outerHeight() / 2) - 6
-		});
+		})
+			.removeClass('hidden');
 
 		this.$form.stop().animate({
 			left: -200
 		}, 'fast');
 
-		this.$progressBar.stop().animate({
+		this.progressBar.$progressBar.stop().animate({
 			left: 30
 		}, 'fast', $.proxy(function() {
 
@@ -100,10 +101,8 @@ Craft.Tool = Garnish.Base.extend({
 
 	updateProgressBar: function()
 	{
-		this.$progressBar.removeClass('pending');
-
-		var width = (100 * this.completedActions / this.totalActions)+'%';
-		this.$innerProgressBar.width(width);
+		var width = (100 * this.completedActions / this.totalActions);
+		this.progressBar.setProgressPercentage(width);
 	},
 
 	loadAction: function(data)
@@ -232,7 +231,7 @@ Craft.Tool = Garnish.Base.extend({
 			top: Math.round(this.hud.$body.outerHeight() / 2) - 30
 		});
 
-		this.$progressBar.animate({
+		this.progressBar.animate({
 			left: -170
 		}, 'fast');
 
