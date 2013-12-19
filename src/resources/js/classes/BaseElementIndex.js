@@ -733,11 +733,13 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	setIndexBusy: function() {
 		this.$mainSpinner.removeClass('hidden');
 		this.isIndexBusy = true;
+		this.$elements.fadeTo('fast', 0.5);
 	},
 
 	setIndexAvailable: function() {
 		this.$mainSpinner.addClass('hidden');
 		this.isIndexBusy = false;
+		this.$elements.fadeTo('fast', 1);
 	}
 },
 {
