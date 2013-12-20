@@ -458,7 +458,7 @@ abstract class BaseElementModel extends BaseModel
 		{
 			if (!isset($this->_content))
 			{
-				$this->_content = $this->createContentModel();
+				$this->_content = $this->getContent();
 			}
 
 			foreach ($fieldLayout->getFields() as $fieldLayoutField)

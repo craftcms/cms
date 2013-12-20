@@ -214,7 +214,7 @@ $cpRoutes['settings/routes'] = array(
 	)
 );
 
-$cpRoutes['myaccount'] = 'users/_edit/account';
+$cpRoutes['myaccount'] = array('action' => 'users/editUser');
 
 // Lanugage package routes
 $cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/(?P<localeId>\w+)'] = array('action' => 'entries/editEntry');
@@ -226,15 +226,9 @@ $cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<en
 $cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/versions/(?P<versionId>\d+)'] = array('action' => 'entries/editEntry');
 
 // Users package routes
-$cpRoutes['pkgRoutes']['Users']['myaccount/profile']             = 'users/_edit/profile';
-$cpRoutes['pkgRoutes']['Users']['myaccount/info']                = 'users/_edit/info';
-$cpRoutes['pkgRoutes']['Users']['myaccount/admin']               = 'users/_edit/admin';
-
-$cpRoutes['pkgRoutes']['Users']['users/new']                     = 'users/_edit/account';
-$cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)']         = 'users/_edit/account';
-$cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)/profile'] = 'users/_edit/profile';
-$cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)/admin']   = 'users/_edit/admin';
-$cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)/info']    = 'users/_edit/info';
+$cpRoutes['pkgRoutes']['Users']['myaccount']             = array('action' => 'users/editUser');
+$cpRoutes['pkgRoutes']['Users']['users/new']             = array('action' => 'users/editUser');
+$cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)'] = array('action' => 'users/editUser');
 
 $cpRoutes['pkgRoutes']['Users']['settings/users']                         = 'settings/users/groups';
 $cpRoutes['pkgRoutes']['Users']['settings/users/groups/new']              = 'settings/users/groups/_settings';

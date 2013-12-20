@@ -189,8 +189,8 @@ class UsersService extends BaseApplicationComponent
 	/**
 	 * Saves a user, or registers a new one.
 	 *
-	 * @param UserModel $user
-	 * @throws Exception
+	 * @param  UserModel $user
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function saveUser(UserModel $user)
@@ -226,6 +226,15 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->validate();
 		$user->addErrors($userRecord->getErrors());
 
+		if (craft()->hasPackage(CraftPackage::Users))
+		{
+			// Validate any content.
+			if (!craft()->content->validateContent($user))
+			{
+				$user->addErrors($user->getContent()->getErrors());
+			}
+		}
+
 		// If newPassword is set at all, even to an empty string, validate & set it.
 		if ($user->newPassword !== null)
 		{
@@ -234,81 +243,105 @@ class UsersService extends BaseApplicationComponent
 
 		if (!$user->hasErrors())
 		{
-			if ($user->verificationRequired)
+			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+
+			try
 			{
-				$userRecord->status = $user->status = UserStatus::Pending;
-				$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
-			}
-
-			// Fire an 'onBeforeSaveUser' event
-			$this->onBeforeSaveUser(new Event($this, array(
-				'user'      => $user,
-				'isNewUser' => $isNewUser
-			)));
-
-			if ($isNewUser)
-			{
-				// Create the element record
-				$elementRecord = new ElementRecord();
-				$elementRecord->type = ElementType::User;
-				$elementRecord->save();
-
-				// Now that we have the entry ID, save it on everything else
-				$user->id = $elementRecord->id;
-				$userRecord->id = $elementRecord->id;
-
-				// Create a row in content
-				$content = new ContentModel();
-				$content->elementId = $user->id;
-				$user->setContent($content);
-				craft()->content->saveContent($user, false);
-			}
-
-			$userRecord->save(false);
-
-			if (!$isNewUser)
-			{
-				// Has the username changed?
-				if ($user->username != $oldUsername)
+				if ($user->verificationRequired)
 				{
-					// Rename the user's photo directory
-					$oldFolder = craft()->path->getUserPhotosPath().$oldUsername;
-					$newFolder = craft()->path->getUserPhotosPath().$user->username;
+					$userRecord->status = $user->status = UserStatus::Pending;
+					$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
+				}
 
-					if (IOHelper::folderExists($newFolder))
-					{
-						IOHelper::deleteFolder($newFolder);
-					}
+				// Fire an 'onBeforeSaveUser' event
+				$this->onBeforeSaveUser(new Event($this, array(
+					'user'      => $user,
+					'isNewUser' => $isNewUser
+				)));
 
-					if (IOHelper::folderExists($oldFolder))
+				if ($isNewUser)
+				{
+					// Create the element record
+					$elementRecord = new ElementRecord();
+					$elementRecord->type = ElementType::User;
+					$elementRecord->save();
+
+					// Now that we have the entry ID, save it on everything else
+					$user->id = $elementRecord->id;
+					$userRecord->id = $elementRecord->id;
+					$user->getContent()->elementId = $elementRecord->id;
+				}
+
+				$userRecord->save(false);
+
+				// Call save content regardless if the Users package is installed or not.
+				if (!craft()->content->saveContent($user, false))
+				{
+					throw new Exception(Craft::t('There was a problem saving content on the user.'));
+				}
+
+				if (!$isNewUser)
+				{
+					// Has the username changed?
+					if ($user->username != $oldUsername)
 					{
-						IOHelper::rename($oldFolder, $newFolder);
+						// Rename the user's photo directory
+						$oldFolder = craft()->path->getUserPhotosPath().$oldUsername;
+						$newFolder = craft()->path->getUserPhotosPath().$user->username;
+
+						if (IOHelper::folderExists($newFolder))
+						{
+							IOHelper::deleteFolder($newFolder);
+						}
+
+						if (IOHelper::folderExists($oldFolder))
+						{
+							IOHelper::rename($oldFolder, $newFolder);
+						}
 					}
 				}
+
+				// Update the search index
+				craft()->search->indexElementAttributes($user);
+
+				if ($isNewUser && $user->verificationRequired)
+				{
+					craft()->email->sendEmailByKey($user, 'account_activation', array(
+						'link' => new \Twig_Markup(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+					));
+				}
+
+				// Fire an 'onSaveUser' event
+				$this->onSaveUser(new Event($this, array(
+					'user'      => $user,
+					'isNewUser' => $isNewUser
+				)));
+
+				// Deprecated, but keep it here for now.
+				$this->onSaveProfile(new Event($this, array(
+					'user' => $user
+				)));
+
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
+
+				return true;
 			}
-
-			// Update the search index
-			craft()->search->indexElementAttributes($user);
-
-			if ($isNewUser && $user->verificationRequired)
+			catch (\Exception $e)
 			{
-				craft()->email->sendEmailByKey($user, 'account_activation', array(
-					'link' => new \Twig_Markup(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
-				));
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
+
+				throw $e;
 			}
-
-			// Fire an 'onSaveUser' event
-			$this->onSaveUser(new Event($this, array(
-				'user'      => $user,
-				'isNewUser' => $isNewUser
-			)));
-
-			return true;
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
+
 	}
 
 	/**
@@ -319,21 +352,8 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function saveProfile(UserModel $user)
 	{
-		craft()->requirePackage(CraftPackage::Users);
-
-		if (craft()->content->saveContent($user))
-		{
-			// Fire an 'onSaveProfile' event
-			$this->onSaveProfile(new Event($this, array(
-				'user' => $user
-			)));
-
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		Craft::log('UsersService->saveProfile() has been deprecated. Use UsersService->saveUser() instead.');
+		return $this->saveUser($user);
 	}
 
 	/**
@@ -343,6 +363,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function onSaveProfile(Event $event)
 	{
+		Craft::log('onSaveProfile has been deprecated and will be removed. saveUser handles saving profile fields, now.', LogLevel::Warning);
 		$this->raiseEvent('onSaveProfile', $event);
 	}
 
