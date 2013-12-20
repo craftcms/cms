@@ -418,7 +418,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 						this.structureDrag = new Craft.StructureDrag(this,
 							this.$source.data('move-action'),
-							this.$source.data('max-depth')
+							this.$source.data('max-levels')
 						);
 					}
 				}

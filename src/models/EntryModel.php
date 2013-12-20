@@ -29,8 +29,7 @@ class EntryModel extends BaseElementModel
 			'root'       => AttributeType::Number,
 			'lft'        => AttributeType::Number,
 			'rgt'        => AttributeType::Number,
-			'depth'      => AttributeType::Number,
-			'slug'       => AttributeType::String,
+			'level'      => AttributeType::Number,
 			'postDate'   => AttributeType::DateTime,
 			'expiryDate' => AttributeType::DateTime,
 
@@ -164,6 +163,17 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns the entry's level (formerly "depth").
+	 *
+	 * @return int|null
+	 * @deprecated Deprecated since 1.4
+	 */
+	public function depth()
+	{
+		return $this->level;
+	}
+
+	/**
 	 * Returns the entry's ancestors.
 	 *
 	 * @param int|null $dist
@@ -264,10 +274,10 @@ class EntryModel extends BaseElementModel
 	 */
 	public function getSiblings()
 	{
-		if ($this->depth == 1)
+		if ($this->level == 1)
 		{
 			$criteria = craft()->elements->getCriteria($this->elementType);
-			$criteria->depth(1);
+			$criteria->level = 1;
 			$criteria->id = 'not '.$this->id;
 			$criteria->sectionId = $this->sectionId;
 			$criteria->locale = $this->locale;
@@ -414,7 +424,7 @@ class EntryModel extends BaseElementModel
 	 */
 	public function isParentOf(EntryModel $entry)
 	{
-		return ($this->depth == $entry->depth - 1 && $this->isAncestorOf($entry));
+		return ($this->level == $entry->level - 1 && $this->isAncestorOf($entry));
 	}
 
 	/**
@@ -425,7 +435,7 @@ class EntryModel extends BaseElementModel
 	 */
 	public function isChildOf(EntryModel $entry)
 	{
-		return ($this->depth == $entry->depth + 1 && $this->isDescendantOf($entry));
+		return ($this->level == $entry->level + 1 && $this->isDescendantOf($entry));
 	}
 
 	/**
@@ -436,9 +446,9 @@ class EntryModel extends BaseElementModel
 	 */
 	public function isSiblingOf(EntryModel $entry)
 	{
-		if ($this->depth && $this->depth == $entry->depth)
+		if ($this->level && $this->level == $entry->level)
 		{
-			if ($this->depth == 1 || $this->isPrevSiblingOf($entry) || $this->isNextSiblingOf($entry))
+			if ($this->level == 1 || $this->isPrevSiblingOf($entry) || $this->isNextSiblingOf($entry))
 			{
 				return true;
 			}
@@ -464,7 +474,7 @@ class EntryModel extends BaseElementModel
 	 */
 	public function isPrevSiblingOf(EntryModel $entry)
 	{
-		return ($this->depth == $entry->depth && $this->rgt == $entry->lft - 1);
+		return ($this->level == $entry->level && $this->rgt == $entry->lft - 1);
 	}
 
 	/**
@@ -475,6 +485,6 @@ class EntryModel extends BaseElementModel
 	 */
 	public function isNextSiblingOf(EntryModel $entry)
 	{
-		return ($this->depth == $entry->depth && $this->lft == $entry->rgt + 1);
+		return ($this->level == $entry->level && $this->lft == $entry->rgt + 1);
 	}
 }

@@ -287,11 +287,11 @@ class SectionsService extends BaseApplicationComponent
 
 		if ($section->type == SectionType::Structure)
 		{
-			$sectionRecord->maxDepth = $section->maxDepth;
+			$sectionRecord->maxLevels = $section->maxLevels;
 		}
 		else
 		{
-			$sectionRecord->maxDepth = $section->maxDepth = null;
+			$sectionRecord->maxLevels = $section->maxLevels = null;
 		}
 
 		$sectionRecord->validate();
@@ -340,7 +340,7 @@ class SectionsService extends BaseApplicationComponent
 			{
 				$urlFormatAttributes = array('urlFormat');
 
-				if ($section->type == SectionType::Structure && $section->maxDepth != 1)
+				if ($section->type == SectionType::Structure && $section->maxLevels != 1)
 				{
 					$urlFormatAttributes[] = 'nestedUrlFormat';
 				}
@@ -494,7 +494,7 @@ class SectionsService extends BaseApplicationComponent
 								'root'  => false,
 								'lft'   => null,
 								'rgt'   => null,
-								'depth' => null,
+								'level' => null,
 							), array(
 								'sectionId' => $section->id
 							));
@@ -655,7 +655,7 @@ class SectionsService extends BaseApplicationComponent
 				{
 					// Get all of the entry IDs in this section
 					$entries = craft()->db->createCommand()
-						->select('id, depth')
+						->select('id, level')
 						->from('entries')
 						->where(array('and', array('sectionId' => $section->id), array('or', 'lft IS NULL', 'lft != 1')))
 						->order('lft')
@@ -699,7 +699,7 @@ class SectionsService extends BaseApplicationComponent
 
 								foreach ($entries as $entry)
 								{
-									if ($section->type != SectionType::Structure || $entry['depth'] == 1)
+									if ($section->type != SectionType::Structure || $entry['level'] == 1)
 									{
 										$urlFormat = $sectionLocale->urlFormat;
 									}

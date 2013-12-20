@@ -349,7 +349,7 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($elementType->isLocalized())
 		{
-			$query->addSelect('elements_i18n.uri');
+			$query->addSelect('elements_i18n.slug, elements_i18n.uri');
 			$query->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
 
 			if (!$elementType->hasContent())
@@ -360,6 +360,11 @@ class ElementsService extends BaseApplicationComponent
 			else
 			{
 				$query->andWhere('elements_i18n.locale = content.locale');
+			}
+
+			if ($criteria->slug)
+			{
+				$query->andWhere(DbHelper::parseParam('elements_i18n.slug', $criteria->slug, $query->params));
 			}
 
 			if ($criteria->uri !== null)
