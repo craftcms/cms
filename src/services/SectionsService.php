@@ -591,6 +591,7 @@ class SectionsService extends BaseApplicationComponent
 								'elementId' => $singleEntryId,
 								'locale'    => $localeId,
 							), array(
+								'slug'      => $section->handle,
 								'uri'       => $sectionLocale->urlFormat
 							));
 
@@ -599,14 +600,6 @@ class SectionsService extends BaseApplicationComponent
 								'locale'    => $localeId
 							), array(
 								'title'     => $section->name
-							));
-
-							craft()->db->createCommand()->insertOrUpdate('entries_i18n', array(
-								'entryId'   => $singleEntryId,
-								'locale'    => $localeId
-							), array(
-								'sectionId' => $section->id,
-								'slug'      => $section->handle
 							));
 						}
 
@@ -671,7 +664,6 @@ class SectionsService extends BaseApplicationComponent
 					// Should we be deleting
 					if ($entryIds && $droppedLocaleIds)
 					{
-						craft()->db->createCommand()->delete('entries_i18n', array('and', array('in', 'entryId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
 						craft()->db->createCommand()->delete('elements_i18n', array('and', array('in', 'elementId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
 						craft()->db->createCommand()->delete('content', array('and', array('in', 'elementId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
 					}
