@@ -809,7 +809,7 @@ class UsersController extends BaseController
 				{
 					IOHelper::clearFolder(craft()->path->getTempUploadsPath().'userphotos/'.$user->username);
 
-					$html = craft()->templates->render('users/_edit/_userphoto',
+					$html = craft()->templates->render('users/_userphoto',
 						array(
 							'account' => $user
 						)
@@ -852,7 +852,7 @@ class UsersController extends BaseController
 		// Since Model still believes it has an image, we make sure that it does not so anymore when it reaches the template.
 		$user->photo = null;
 
-		$html = craft()->templates->render('users/_edit/_userphoto',
+		$html = craft()->templates->render('users/_userphoto',
 			array(
 				'account' => $user
 			)
