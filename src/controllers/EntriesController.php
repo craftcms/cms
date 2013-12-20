@@ -197,6 +197,9 @@ class EntriesController extends BaseController
 		$this->renderTemplate('entries/_edit', $variables);
 	}
 
+	/**
+	 *
+	 */
 	public function actionSwitchEntryType()
 	{
 		$this->requirePostRequest();
@@ -403,6 +406,8 @@ class EntriesController extends BaseController
 	 *
 	 * @access private
 	 * @param array &$variables
+	 * @throws HttpException
+	 * @throws Exception
 	 */
 	private function _prepEditEntryVariables(&$variables)
 	{
