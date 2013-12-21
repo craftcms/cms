@@ -6,6 +6,53 @@ namespace Craft;
  */
 class ImagesService extends BaseApplicationComponent
 {
+	private $_isGd = null;
+
+	/**
+	 * Returns whether image manipulations will be performed using GD or not.
+	 *
+	 * @return bool|null
+	 */
+	public function isGd()
+	{
+		if ($this->_isGd === null)
+		{
+			if (extension_loaded('imagick'))
+			{
+				// Taken from Imagick\Imagine() constructor.
+				$imagick = new \Imagick();
+				$v = $imagick->getVersion();
+				list($version, $year, $month, $day, $q, $website) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
+
+				// Update this if Imagine updates theirs.
+				if (version_compare('6.2.9', $version) <= 0)
+				{
+					$this->_isGd = false;
+				}
+				else
+				{
+					$this->_isGd = true;
+				}
+			}
+			else
+			{
+				$this->_isGd = true;
+			}
+		}
+
+		return $this->_isGd;
+	}
+
+	/**
+	 * Returns whether image manipulations will be performed using Imagick or not.
+	 *
+	 * @return bool
+	 */
+	public function isImagick()
+	{
+		return !$this->isGd();
+	}
+
 	/**
 	 * Loads an image from a file system path.
 	 *

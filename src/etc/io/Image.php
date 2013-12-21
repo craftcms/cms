@@ -12,27 +12,17 @@ class Image
 	private $_instance;
 	private $_width;
 	private $_height;
-	private $_isGd;
 
 	function __construct()
 	{
-		if (extension_loaded('imagick'))
+		if (craft()->images->isGd())
 		{
-			// Taken from Imagick\Imagine() constructor.
-			$imagick = new \Imagick();
-			$v = $imagick->getVersion();
-			list($version, $year, $month, $day, $q, $website) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
-
-			// Update this if Imagine updates theirs.
-			if (version_compare('6.2.9', $version) <= 0)
-			{
-				$this->_instance = new \Imagine\Imagick\Imagine();
-			}
-				$this->_isGd = false;
+			$this->_instance = new \Imagine\Gd\Imagine();
 		}
-
-		$this->_instance = new \Imagine\Gd\Imagine();
-		$this->_isGd = true;
+		else
+		{
+			$this->_instance = new \Imagine\Imagick\Imagine();
+		}
 	}
 
 	/**
@@ -338,7 +328,7 @@ class Image
 	 */
 	private function _getResizeFilter()
 	{
-		return ($this->_isGd ? \Imagine\Image\ImageInterface::FILTER_UNDEFINED : \Imagine\Image\ImageInterface::FILTER_LANCZOS);
+		return (craft()->images->isGd() ? \Imagine\Image\ImageInterface::FILTER_UNDEFINED : \Imagine\Image\ImageInterface::FILTER_LANCZOS);
 	}
 
 	/**
