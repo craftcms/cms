@@ -204,7 +204,7 @@ class HttpRequestVariable
 
 	/**
 	 * Returns the page number if this is a paginated request.
-	 * 
+	 *
 	 * @return int
 	 */
 	public function getPageNum()
