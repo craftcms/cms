@@ -201,4 +201,14 @@ class HttpRequestVariable
 	{
 		return craft()->request->isMobileBrowser($detectTablets);
 	}
+
+	/**
+	 * Returns the page number if this is a paginated request.
+	 *
+	 * @return int
+	 */
+	public function getPageNum()
+	{
+		return craft()->request->getPageNum();
+	}
 }

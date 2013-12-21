@@ -87,7 +87,7 @@ class UserElementType extends BaseElementType
 	public function defineTableAttributes($source = null)
 	{
 		return array(
-			'username'      => Craft::t('Name'),
+			'username'      => Craft::t('Username'),
 			'email'         => Craft::t('Email'),
 			'dateCreated'   => Craft::t('Join Date'),
 			'lastLoginDate' => Craft::t('Last Login'),
