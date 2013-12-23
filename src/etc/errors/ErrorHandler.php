@@ -188,7 +188,7 @@ class ErrorHandler extends \CErrorHandler
 			'code'      => 'error',
 			'type'      => get_class($exception),
 			'errorCode' => null,
-			'message'   => Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.'),
+			'message'   => $exception->getMessage(),
 			'file'      => null,
 			'line'      => null,
 			'trace'     => '',
