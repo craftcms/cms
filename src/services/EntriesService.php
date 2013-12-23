@@ -47,18 +47,12 @@ class EntriesService extends BaseApplicationComponent
 			}
 
 			$entry->setParent($parentEntry);
-
-			$entryRecordClass = __NAMESPACE__.'\\StructuredEntryRecord';
-		}
-		else
-		{
-			$entryRecordClass = __NAMESPACE__.'\\EntryRecord';
 		}
 
 		// Entry data
 		if (!$isNewEntry)
 		{
-			$entryRecord = $entryRecordClass::model()->with('element')->findById($entry->id);
+			$entryRecord = EntryRecord::model()->with('element')->findById($entry->id);
 
 			if (!$entryRecord)
 			{
@@ -69,7 +63,7 @@ class EntriesService extends BaseApplicationComponent
 		}
 		else
 		{
-			$entryRecord = new $entryRecordClass();
+			$entryRecord = new EntryRecord();
 
 			$elementRecord = new ElementRecord();
 			$elementRecord->type = ElementType::Entry;
@@ -234,40 +228,23 @@ class EntriesService extends BaseApplicationComponent
 						$entryRecord->id = $entry->id;
 					}
 
+					// Save the actual entry row
+					$entryRecord->save(false);
+
 					// Has the parent changed?
 					if ($hasNewParent)
 					{
 						if (!$entry->parentId)
 						{
-							$parentEntryRecord = StructuredEntryRecord::model()->roots()->findByAttributes(array(
-								'sectionId' => $section->id
-							));
+							craft()->structures->appendToRoot($section->structureId, $entry);
 						}
 						else
 						{
-							$parentEntryRecord = StructuredEntryRecord::model()->findById($entry->parentId);
+							craft()->structures->append($section->structureId, $entry, $parentEntry);
 						}
-
-						if ($isNewEntry)
-						{
-							$entryRecord->appendTo($parentEntryRecord);
-						}
-						else
-						{
-							$entryRecord->moveAsLast($parentEntryRecord);
-						}
-
-						$entryRecord->detachBehavior('nestedSet');
-
-						$entry->root  = $entryRecord->root;
-						$entry->lft   = $entryRecord->lft;
-						$entry->rgt   = $entryRecord->rgt;
-						$entry->level = $entryRecord->level;
 					}
 
-					// Save everything!
-					$entryRecord->save(false);
-
+					// Save the content
 					$entry->getContent()->elementId = $entry->id;
 					craft()->content->saveContent($entry, false);
 
@@ -279,25 +256,12 @@ class EntriesService extends BaseApplicationComponent
 
 						if (!$isNewEntry && $section->hasUrls)
 						{
-							if (craft()->hasPackage(CraftPackage::Localize))
-							{
-								// Update the other locale records too, just to be safe
-								// (who knows what the URL Format is using that could have just changed)
-								foreach ($sectionLocales as $sectionLocale)
-								{
-									if ($sectionLocale->locale == $entry->locale)
-									{
-										continue;
-									}
-
-									$this->updateEntrySlugAndUri($entry->id, $sectionLocale->locale, $sectionLocale->$urlFormatAttribute);
-								}
-							}
+							craft()->elements->updateElementSlugAndUriInOtherLocales($entry);
 
 							if ($section->type == SectionType::Structure)
 							{
 								// Update the entry's descendants, who may be using this entry's URI in their own URIs
-								$this->_updateDescendantSlugsAndUris($entry->id, false);
+								craft()->elements->updateDescendantSlugsAndUris($entry);
 							}
 						}
 					}
@@ -352,174 +316,6 @@ class EntriesService extends BaseApplicationComponent
 		else
 		{
 			return false;
-		}
-	}
-
-	/**
-	 * Appends an entry to another.
-	 *
-	 * @param EntryModel $entry
-	 * @param EntryModel|null $parentEntry
-	 * @param bool $prepend
-	 * @return bool
-	 */
-	public function moveEntryUnder(EntryModel $entry, EntryModel $parentEntry = null, $prepend = false)
-	{
-		craft()->requirePackage(CraftPackage::PublishPro);
-
-		$entryRecord = StructuredEntryRecord::model()->populateRecord($entry->getAttributes());
-
-		if ($parentEntry)
-		{
-			// Make sure they're in the same section
-			if ($entry->sectionId != $parentEntry->sectionId)
-			{
-				throw new Exception(Craft::t('That move isn’t possible.'));
-			}
-
-			$parentEntryRecord = StructuredEntryRecord::model()->populateRecord($parentEntry->getAttributes());
-		}
-		else
-		{
-			// Parent is the root node, then
-			$parentEntryRecord = StructuredEntryRecord::model()->roots()->findByAttributes(array(
-				'sectionId' => $entryRecord->sectionId
-			));
-
-			if (!$parentEntryRecord)
-			{
-				throw new Exception('There’s no root node in this section.');
-			}
-		}
-
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-		try
-		{
-			if ($prepend)
-			{
-				$success = $entryRecord->moveAsFirst($parentEntryRecord);
-			}
-			else
-			{
-				$success = $entryRecord->moveAsLast($parentEntryRecord);
-			}
-
-			if ($success)
-			{
-				$this->_updateDescendantSlugsAndUris($entry->id);
-			}
-
-			if ($transaction !== null)
-			{
-				$transaction->commit();
-			}
-
-			return $success;
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
-			}
-
-			throw $e;
-		}
-	}
-
-	/**
-	 * Moves an entry after another.
-	 * @param EntryModel $entry
-	 * @param EntryModel $prevEntry
-	 * @return bool
-	 */
-	public function moveEntryAfter($entry, $prevEntry)
-	{
-		$entryRecord = StructuredEntryRecord::model()->findById($entry->id);
-
-		if (!$entryRecord)
-		{
-			throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
-		}
-
-		$prevEntryRecord = StructuredEntryRecord::model()->findById($prevEntry->id);
-
-		if (!$prevEntryRecord)
-		{
-			throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $prevEntry->id)));
-		}
-
-		// Make sure they're in the same section
-		if ($entryRecord->sectionId != $prevEntryRecord->sectionId)
-		{
-			throw new Exception(Craft::t('That move isn’t possible.'));
-		}
-
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-		try
-		{
-			$success = $entryRecord->moveAfter($prevEntryRecord);
-
-			if ($success)
-			{
-				$this->_updateDescendantSlugsAndUris($entry->id);
-			}
-
-			if ($transaction !== null)
-			{
-				$transaction->commit();
-			}
-
-			return $success;
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
-			}
-
-			throw $e;
-		}
-	}
-
-	/**
-	 * Updates an entry's slug and URI for a given locale with a given URL format.
-	 *
-	 * @param int $entryId
-	 * @param string $localeId
-	 * @param string|null $urlFormat
-	 */
-	public function updateEntrySlugAndUri($entryId, $localeId, $urlFormat)
-	{
-		// Get the actual entry model
-		$criteria = craft()->elements->getCriteria(ElementType::Entry);
-		$criteria->id = $entryId;
-		$criteria->locale = $localeId;
-		$criteria->status = null;
-		$entry = $criteria->first();
-
-		if (!$entry)
-		{
-			// WTF?
-			return;
-		}
-
-		$oldSlug = $entry->slug;
-		$oldUri  = $entry->uri;
-
-		ElementHelper::setUniqueUri($entry, $urlFormat);
-
-		if ($entry->slug != $oldSlug || $entry->uri != $oldUri)
-		{
-			$elementLocaleRecord = ElementLocaleRecord::model()->findByAttributes(array(
-				'elementId' => $entryId,
-				'locale'    => $localeId
-			));
-
-			$elementLocaleRecord->slug = $entry->slug;
-			$elementLocaleRecord->uri  = $entry->uri;
-			$elementLocaleRecord->save(false);
 		}
 	}
 
@@ -738,54 +534,5 @@ class EntriesService extends BaseApplicationComponent
 		$slug = implode('-', $words);
 
 		return $slug;
-	}
-
-	/**
-	 * Updates an entry’s descendants’ slugs and URIs.
-	 *
-	 * @access private
-	 * @param int $parentEntryId
-	 * @param bool $updateParent
-	 */
-	private function _updateDescendantSlugsAndUris($parentEntryId, $updateParent = true)
-	{
-		$parentEntryRecord = StructuredEntryRecord::model()->with('section', 'section.locales')->findById($parentEntryId);
-
-		if (!$parentEntryRecord)
-		{
-			throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $parentEntryId)));
-		}
-
-		$sectionRecord = $parentEntryRecord->section;
-		$descendantEntryRecords = $parentEntryRecord->descendants()->with('element')->findAll();
-
-		if ($updateParent)
-		{
-			array_unshift($descendantEntryRecords, $parentEntryRecord);
-		}
-
-		foreach ($descendantEntryRecords as $descendantEntryRecord)
-		{
-			foreach ($sectionRecord->locales as $sectionLocaleRecord)
-			{
-				if ($sectionRecord->hasUrls)
-				{
-					if ($descendantEntryRecord->level == 1)
-					{
-						$urlFormat = $sectionLocaleRecord->urlFormat;
-					}
-					else
-					{
-						$urlFormat = $sectionLocaleRecord->nestedUrlFormat;
-					}
-				}
-				else
-				{
-					$urlFormat = null;
-				}
-
-				$this->updateEntrySlugAndUri($descendantEntryRecord->id, $sectionLocaleRecord->locale, $urlFormat);
-			}
-		}
 	}
 }

@@ -34,6 +34,11 @@ abstract class BaseElementModel extends BaseModel
 			'uri'         => AttributeType::String,
 			'dateCreated' => AttributeType::DateTime,
 			'dateUpdated' => AttributeType::DateTime,
+
+			'root'        => AttributeType::Number,
+			'lft'         => AttributeType::Number,
+			'rgt'         => AttributeType::Number,
+			'level'       => AttributeType::Number,
 		);
 	}
 
@@ -99,6 +104,15 @@ abstract class BaseElementModel extends BaseModel
 	public function getFieldLayout()
 	{
 		return craft()->fields->getLayoutByType($this->elementType);
+	}
+
+	/**
+	 * Returns the URL format used to generate this element's URL.
+	 *
+	 * @return string|null
+	 */
+	public function getUrlFormat()
+	{
 	}
 
 	/**

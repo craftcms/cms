@@ -26,10 +26,6 @@ class EntryModel extends BaseElementModel
 			'sectionId'  => AttributeType::Number,
 			'typeId'     => AttributeType::Number,
 			'authorId'   => AttributeType::Number,
-			'root'       => AttributeType::Number,
-			'lft'        => AttributeType::Number,
-			'rgt'        => AttributeType::Number,
-			'level'      => AttributeType::Number,
 			'postDate'   => AttributeType::DateTime,
 			'expiryDate' => AttributeType::DateTime,
 
@@ -50,6 +46,33 @@ class EntryModel extends BaseElementModel
 		if ($entryType)
 		{
 			return $entryType->getFieldLayout();
+		}
+	}
+
+	/**
+	 * Returns the URL format used to generate this element's URL.
+	 *
+	 * @return string|null
+	 */
+	public function getUrlFormat()
+	{
+		$section = $this->getSection();
+
+		if ($section && $section->hasUrls)
+		{
+			$sectionLocales = $section->getLocales();
+
+			if (isset($sectionLocales[$this->locale]))
+			{
+				if ($this->level > 1)
+				{
+					return $sectionLocales[$this->locale]->nestedUrlFormat;
+				}
+				else
+				{
+					return $sectionLocales[$this->locale]->urlFormat;
+				}
+			}
 		}
 	}
 
@@ -246,11 +269,20 @@ class EntryModel extends BaseElementModel
 	/**
 	 * Sets the entry's parent.
 	 *
-	 * @param EntryModel $parent
+	 * @param EntryModel|null $parent
 	 */
 	public function setParent($parent)
 	{
 		$this->_parent = $parent;
+
+		if ($parent)
+		{
+			$this->level = $parent->level + 1;
+		}
+		else
+		{
+			$this->level = 1;
+		}
 	}
 
 	/**

@@ -259,7 +259,12 @@ $components['matrix']['class']               = 'Craft\MatrixService';
 $components['migrations']['class']           = 'Craft\MigrationsService';
 $components['path']['class']                 = 'Craft\PathService';
 $components['relations']['class']            = 'Craft\RelationsService';
-
+$components['resources'] = array(
+	'class'     => 'Craft\ResourcesService',
+	'dateParam' => 'd',
+);
+$components['routes']['class']               = 'Craft\RoutesService';
+$components['search']['class']               = 'Craft\SearchService';
 $components['sections'] = array(
 	'class' => 'Craft\SectionsService',
 	'typeLimits' => array(
@@ -268,18 +273,12 @@ $components['sections'] = array(
 		'structure' => 0
 	)
 );
-
-$components['resources']['class']            = 'Craft\ResourcesService';
-$components['resources']['dateParam']        = 'd';
-
-$components['routes']['class']               = 'Craft\RoutesService';
-$components['search']['class']               = 'Craft\SearchService';
 $components['security']['class']             = 'Craft\SecurityService';
+$components['structures']['class']           = 'Craft\StructuresService';
 $components['systemSettings']['class']       = 'Craft\SystemSettingsService';
 $components['tags']['class']                 = 'Craft\TagsService';
 $components['templates']['class']            = 'Craft\TemplatesService';
 $components['updates']['class']              = 'Craft\UpdatesService';
-
 $components['components'] = array(
 	'class' => 'Craft\ComponentsService',
 	'types' => array(
@@ -290,7 +289,6 @@ $components['components'] = array(
 		'widget'      => array('subfolder' => 'widgets',          'suffix' => 'Widget',          'instanceof' => 'IWidget'),
 	)
 );
-
 $components['plugins'] = array(
 	'class' => 'Craft\PluginsService',
 	'componentTypes' => array(

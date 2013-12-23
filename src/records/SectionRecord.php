@@ -26,7 +26,6 @@ class SectionRecord extends BaseRecord
 			'type'      => array(AttributeType::Enum, 'values' => array(SectionType::Single, SectionType::Channel, SectionType::Structure), 'default' => SectionType::Channel, 'required' => true),
 			'hasUrls'   => array(AttributeType::Bool, 'default' => true),
 			'template'  => AttributeType::Template,
-			'maxLevels' => array(AttributeType::Number, 'min' => 1),
 		);
 	}
 
@@ -36,7 +35,8 @@ class SectionRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'locales' => array(static::HAS_MANY, 'SectionLocaleRecord', 'sectionId'),
+			'locales'   => array(static::HAS_MANY, 'SectionLocaleRecord', 'sectionId'),
+			'structure' => array(static::BELONGS_TO, 'StructureRecord', 'onDelete' => static::SET_NULL),
 		);
 	}
 

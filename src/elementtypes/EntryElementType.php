@@ -222,21 +222,13 @@ class EntryElementType extends BaseElementType
 	{
 		return array(
 			'after'           => AttributeType::Mixed,
-			'ancestorDist'    => AttributeType::Number,
-			'ancestorOf'      => AttributeType::Mixed,
 			'authorGroup'     => AttributeType::String,
 			'authorGroupId'   => AttributeType::Number,
 			'authorId'        => AttributeType::Number,
 			'before'          => AttributeType::Mixed,
-			'depth'           => AttributeType::Number,
-			'level'           => AttributeType::Number,
-			'descendantDist'  => AttributeType::Number,
-			'descendantOf'    => AttributeType::Mixed,
 			'editable'        => AttributeType::Bool,
-			'nextSiblingOf'   => AttributeType::Mixed,
 			'order'           => array(AttributeType::String, 'default' => 'lft, postDate desc'),
 			'postDate'        => AttributeType::Mixed,
-			'prevSiblingOf'   => AttributeType::Mixed,
 			'section'         => AttributeType::Mixed,
 			'sectionId'       => AttributeType::Number,
 			'status'          => array(AttributeType::String, 'default' => EntryModel::LIVE),
@@ -295,11 +287,11 @@ class EntryElementType extends BaseElementType
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('entries.sectionId, entries.typeId, entries.authorId, entries.root, entries.lft, entries.rgt, entries.level, entries.postDate, entries.expiryDate')
+			->addSelect('entries.sectionId, entries.typeId, entries.authorId, entries.postDate, entries.expiryDate')
 			->join('entries entries', 'entries.id = elements.id')
-			->andWhere(array('or', 'entries.lft IS NULL', 'entries.lft != 1'));
-
-		$joinedSections = false;
+			->join('sections sections', 'sections.id = entries.sectionId')
+			->leftJoin('structures structures', 'structures.id = sections.structureId')
+			->leftJoin('structureelements structureelements', array('and', 'structureelements.structureId = structures.id', 'structureelements.elementId = entries.id'));
 
 		if ($criteria->ref)
 		{
@@ -318,12 +310,6 @@ class EntryElementType extends BaseElementType
 					}
 					else
 					{
-						if (!$joinedSections)
-						{
-							$query->join('sections sections', 'entries.sectionId = sections.id');
-							$joinedSections = true;
-						}
-
 						$conditionals[] = array('and',
 							DbHelper::parseParam('sections.handle', $parts[0], $query->params),
 							DbHelper::parseParam('elements_i18n.slug', $parts[1], $query->params)
@@ -443,129 +429,7 @@ class EntryElementType extends BaseElementType
 
 		if ($criteria->section)
 		{
-			if (!$joinedSections)
-			{
-				$query->join('sections sections', 'entries.sectionId = sections.id');
-				$joinedSections = true;
-			}
-
 			$query->andWhere(DbHelper::parseParam('sections.handle', $criteria->section, $query->params));
-		}
-
-		if (craft()->hasPackage(CraftPackage::PublishPro))
-		{
-			if ($criteria->ancestorOf)
-			{
-				if (!$criteria->ancestorOf instanceof EntryModel)
-				{
-					$criteria->ancestorOf = craft()->entries->getEntryById($criteria->ancestorOf);
-				}
-
-				if ($criteria->ancestorOf)
-				{
-					$query->andWhere(
-						array('and',
-							'entries.lft < :ancestorOf_lft',
-							'entries.rgt > :ancestorOf_rgt',
-							'entries.sectionId = :ancestorOf_sectionId'
-						),
-						array(
-							':ancestorOf_lft'       => $criteria->ancestorOf->lft,
-							':ancestorOf_rgt'       => $criteria->ancestorOf->rgt,
-							':ancestorOf_sectionId' => $criteria->ancestorOf->sectionId
-						)
-					);
-
-					if ($criteria->ancestorDist)
-					{
-						$query->andWhere('entries.level >= :level',
-							array(':level' => $criteria->ancestorOf->level - $criteria->ancestorDist)
-						);
-					}
-				}
-			}
-
-			if ($criteria->descendantOf)
-			{
-				if (!$criteria->descendantOf instanceof EntryModel)
-				{
-					$criteria->descendantOf = craft()->entries->getEntryById($criteria->descendantOf);
-				}
-
-				if ($criteria->descendantOf)
-				{
-					$query->andWhere(
-						array('and',
-							'entries.lft > :descendantOf_lft',
-							'entries.rgt < :descendantOf_rgt',
-							'entries.sectionId = :descendantOf_sectionId'
-						),
-						array(
-							':descendantOf_lft'       => $criteria->descendantOf->lft,
-							':descendantOf_rgt'       => $criteria->descendantOf->rgt,
-							':descendantOf_sectionId' => $criteria->descendantOf->sectionId
-						)
-					);
-
-					if ($criteria->descendantDist)
-					{
-						$query->andWhere('entries.level <= :level',
-							array(':level' => $criteria->descendantOf->level + $criteria->descendantDist)
-						);
-					}
-				}
-			}
-
-			if ($criteria->prevSiblingOf)
-			{
-				if (!$criteria->prevSiblingOf instanceof EntryModel)
-				{
-					$criteria->prevSiblingOf = craft()->entries->getEntryById($criteria->prevSiblingOf);
-				}
-
-				if ($criteria->prevSiblingOf)
-				{
-					$query->andWhere(
-						array('and',
-							'entries.rgt = :prevSiblingOf_rgt',
-							'entries.sectionId = :prevSiblingOf_sectionId'
-						),
-						array(
-							':prevSiblingOf_rgt'       => $criteria->prevSiblingOf->lft - 1,
-							':prevSiblingOf_sectionId' => $criteria->prevSiblingOf->sectionId
-						)
-					);
-				}
-			}
-
-			if ($criteria->nextSiblingOf)
-			{
-				if (!$criteria->nextSiblingOf instanceof EntryModel)
-				{
-					$criteria->nextSiblingOf = craft()->entries->getEntryById($criteria->nextSiblingOf);
-				}
-
-				if ($criteria->nextSiblingOf)
-				{
-					$query->andWhere(
-						array('and',
-							'entries.lft = :nextSiblingOf_lft',
-							'entries.sectionId = :nextSiblingOf_sectionId'
-						),
-						array(
-							':nextSiblingOf_lft'       => $criteria->nextSiblingOf->rgt + 1,
-							':nextSiblingOf_sectionId' => $criteria->nextSiblingOf->sectionId
-						)
-					);
-				}
-			}
-
-			if ($criteria->level || $criteria->depth)
-			{
-				// 'depth' is deprecated; use 'level' instead.
-				$level = ($criteria->level ? $criteria->level : $criteria->depth);
-				$query->andWhere(DbHelper::parseParam('entries.level', $level, $query->params));
-			}
 		}
 
 		if (craft()->hasPackage(CraftPackage::Users))

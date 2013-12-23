@@ -527,6 +527,124 @@ class ElementsService extends BaseApplicationComponent
 			return false;
 		}
 
+		if ($query->isJoined('structureelements'))
+		{
+			$query->addSelect('structureelements.root, structureelements.lft, structureelements.rgt, structureelements.level');
+
+			if ($criteria->ancestorOf)
+			{
+				if (!$criteria->ancestorOf instanceof BaseElementModel)
+				{
+					$criteria->ancestorOf = craft()->elements->getElementById($criteria->ancestorOf, $elementType->getClassHandle());
+				}
+
+				if ($criteria->ancestorOf)
+				{
+					$query->andWhere(
+						array('and',
+							'structureelements.lft < :ancestorOf_lft',
+							'structureelements.rgt > :ancestorOf_rgt',
+							'structureelements.root = :ancestorOf_root'
+						),
+						array(
+							':ancestorOf_lft'  => $criteria->ancestorOf->lft,
+							':ancestorOf_rgt'  => $criteria->ancestorOf->rgt,
+							':ancestorOf_root' => $criteria->ancestorOf->root
+						)
+					);
+
+					if ($criteria->ancestorDist)
+					{
+						$query->andWhere('structureelements.level >= :level',
+							array(':level' => $criteria->ancestorOf->level - $criteria->ancestorDist)
+						);
+					}
+				}
+			}
+
+			if ($criteria->descendantOf)
+			{
+				if (!$criteria->descendantOf instanceof BaseElementModel)
+				{
+					$criteria->descendantOf = craft()->elements->getElementById($criteria->descendantOf, $elementType->getClassHandle());
+				}
+
+				if ($criteria->descendantOf)
+				{
+					$query->andWhere(
+						array('and',
+							'structureelements.lft > :descendantOf_lft',
+							'structureelements.rgt < :descendantOf_rgt',
+							'structureelements.root = :descendantOf_root'
+						),
+						array(
+							':descendantOf_lft'  => $criteria->descendantOf->lft,
+							':descendantOf_rgt'  => $criteria->descendantOf->rgt,
+							':descendantOf_root' => $criteria->descendantOf->root
+						)
+					);
+
+					if ($criteria->descendantDist)
+					{
+						$query->andWhere('structureelements.level <= :level',
+							array(':level' => $criteria->descendantOf->level + $criteria->descendantDist)
+						);
+					}
+				}
+			}
+
+			if ($criteria->prevSiblingOf)
+			{
+				if (!$criteria->prevSiblingOf instanceof BaseElementModel)
+				{
+					$criteria->prevSiblingOf = craft()->elements->getElementById($criteria->prevSiblingOf, $elementType->getClassHandle());
+				}
+
+				if ($criteria->prevSiblingOf)
+				{
+					$query->andWhere(
+						array('and',
+							'structureelements.rgt = :prevSiblingOf_rgt',
+							'structureelements.root = :prevSiblingOf_root'
+						),
+						array(
+							':prevSiblingOf_rgt'  => $criteria->prevSiblingOf->lft - 1,
+							':prevSiblingOf_root' => $criteria->prevSiblingOf->root
+						)
+					);
+				}
+			}
+
+			if ($criteria->nextSiblingOf)
+			{
+				if (!$criteria->nextSiblingOf instanceof BaseElementModel)
+				{
+					$criteria->nextSiblingOf = craft()->elements->getElementById($criteria->nextSiblingOf, $elementType->getClassHandle());
+				}
+
+				if ($criteria->nextSiblingOf)
+				{
+					$query->andWhere(
+						array('and',
+							'structureelements.lft = :nextSiblingOf_lft',
+							'structureelements.root = :nextSiblingOf_root'
+						),
+						array(
+							':nextSiblingOf_lft'  => $criteria->nextSiblingOf->rgt + 1,
+							':nextSiblingOf_root' => $criteria->nextSiblingOf->root
+						)
+					);
+				}
+			}
+
+			if ($criteria->level || $criteria->depth)
+			{
+				// 'depth' is deprecated; use 'level' instead.
+				$level = ($criteria->level ? $criteria->level : $criteria->depth);
+				$query->andWhere(DbHelper::parseParam('structureelements.level', $level, $query->params));
+			}
+		}
+
 		return $query;
 	}
 
@@ -547,6 +665,83 @@ class ElementsService extends BaseApplicationComponent
 			->from('elements_i18n')
 			->where(array('elementId' => $elementId, 'locale' => $localeId))
 			->queryScalar();
+	}
+
+	/**
+	 * Updates an element's slug and URI, along with any descendants.
+	 *
+	 * @param BaseElementModel $element
+	 * @param bool $updateOtherLocales
+	 * @param bool $updateDescendants
+	 */
+	public function updateElementSlugAndUri(BaseElementModel $element, $updateOtherLocales = true, $updateDescendants = true)
+	{
+		ElementHelper::setUniqueUri($element);
+
+		craft()->db->createCommand()->update('elements_i18n', array(
+			'slug' => $element->slug,
+			'uri'  => $element->uri
+		), array(
+			'elementId' => $element->id,
+			'locale'    => $element->locale
+		));
+
+		if ($updateOtherLocales)
+		{
+			$this->updateElementSlugAndUriInOtherLocales($element);
+		}
+
+		if ($updateDescendants)
+		{
+			$this->updateDescendantSlugsAndUris($element);
+		}
+	}
+
+	/**
+	 * Updates an element's slug and URI, for any locales besides the given one.
+	 *
+	 * @param BaseElementModel $element
+	 */
+	public function updateElementSlugAndUriInOtherLocales(BaseElementModel $element)
+	{
+		foreach (craft()->i18n->getSiteLocaleIds() as $localeId)
+		{
+			if ($localeId == $element->locale)
+			{
+				continue;
+			}
+
+			$criteria = $this->getCriteria($element->getElementType());
+			$criteria->id = $element->id;
+			$criteria->locale = $localeId;
+			$criteria->status = null;
+			$elementInOtherLocale = $criteria->first();
+
+			// todo: replace the getContent()->id check with the 'strictLocale' param once it's added
+			if ($elementInOtherLocale && $elementInOtherLocale->getContent()->id)
+			{
+				$this->updateElementSlugAndUri($elementInOtherLocale, false, false);
+			}
+		}
+	}
+
+	/**
+	 * Updates an element's descendants' slugs and URIs.
+	 *
+	 * @param BaseElementModel $element
+	 */
+	public function updateDescendantSlugsAndUris(BaseElementModel $element)
+	{
+		$criteria = $this->getCriteria($element->getElementType());
+		$criteria->descendantOf = $element;
+		$criteria->descendantDist = 1;
+		$criteria->status = null;
+		$children = $criteria->find();
+
+		foreach ($children as $child)
+		{
+			$this->updateElementSlugAndUri($child);
+		}
 	}
 
 	/**
