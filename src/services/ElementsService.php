@@ -550,20 +550,6 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the localization record for a given element and locale.
-	 *
-	 * @param int $elementId
-	 * @param string $locale
-	 */
-	public function getElementLocaleRecord($elementId, $localeId)
-	{
-		return ElementLocaleRecord::model()->findByAttributes(array(
-			'elementId' => $elementId,
-			'locale'  => $localeId
-		));
-	}
-
-	/**
 	 * Deletes an element(s) by its ID(s).
 	 *
 	 * @param int|array $elementId
