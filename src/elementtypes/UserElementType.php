@@ -88,6 +88,8 @@ class UserElementType extends BaseElementType
 	{
 		return array(
 			'username'      => Craft::t('Username'),
+			'firstName'     => Craft::t('First Name'),
+			'lastName'      => Craft::t('Last Name'),
 			'email'         => Craft::t('Email'),
 			'dateCreated'   => Craft::t('Join Date'),
 			'lastLoginDate' => Craft::t('Last Login'),
