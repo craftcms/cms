@@ -19,7 +19,9 @@
 		<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
 		<input type="hidden" name="redirect" value="settings/plugins">
 
-		{{ plugin.settingsHtml|ns('settings', false)|raw }}
+		{% namespace 'settings' %}
+			{{ plugin.getSettingsHtml()|raw }}
+		{% endnamespace %}
 
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
