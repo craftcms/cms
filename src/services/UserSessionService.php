@@ -558,10 +558,12 @@ class UserSessionService extends \CWebUser
 				$this->_checkUserAgentString($currentUserAgent, $savedUserAgent);
 
 				// Bump the expiration time.
-				$cookie->expire = time() + $data[3];
+				$expiration = time() + $data[3];
+				$cookie->expire = $expiration;
 				$cookies->add($cookie->name, $cookie);
 
 				$this->authTimeout = $data[3];
+				$this->setState(static::AUTH_TIMEOUT_VAR, $expiration);
 			}
 		}
 		else
