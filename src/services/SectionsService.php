@@ -716,6 +716,18 @@ class SectionsService extends BaseApplicationComponent
 
 			craft()->elements->deleteElementById($entryIds);
 
+			// Delete the structure, if there is one
+			$structureId = craft()->db->createCommand()
+				->select('structureId')
+				->from('sections')
+				->where(array('id' => $sectionId))
+				->queryScalar();
+
+			if ($structureId)
+			{
+				craft()->structures->deleteStructureById($structureId);
+			}
+
 			// Delete the section.
 			$affectedRows = craft()->db->createCommand()->delete('sections', array('id' => $sectionId));
 
