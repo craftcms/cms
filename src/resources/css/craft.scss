@@ -899,6 +899,7 @@ body .redactor_editor ol { list-style-type: decimal; }
 }
 
 /* timepicker */
+.ui-timepicker-wrapper { z-index: 1; }
 .ui-timepicker-list { margin-left: 1px; overflow-y: auto; width: 8em; height: 210px; z-index: 10001; }
 .ui-timepicker-list li { padding: 2px 0 2px 25px; white-space: nowrap; cursor: pointer; }
 .ui-timepicker-list li:hover { background: $linkcolor; color: #fff; }
