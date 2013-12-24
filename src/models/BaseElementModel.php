@@ -174,7 +174,7 @@ abstract class BaseElementModel extends BaseModel
 	 * @param mixed $criteria
 	 * @return ElementCriteriaModel|null
 	 */
-	public function getPrev($criteria = null)
+	public function getPrev($criteria = false)
 	{
 		if ($criteria !== false || !isset($this->_prevElement))
 		{

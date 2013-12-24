@@ -250,7 +250,7 @@ class ElementsService extends BaseApplicationComponent
 						if ($lastElement)
 						{
 							$lastElement->setNext($element);
-							$element->setPrev($element);
+							$element->setPrev($lastElement);
 						}
 						else
 						{
