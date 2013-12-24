@@ -352,30 +352,26 @@ class EntriesController extends BaseController
 		$parentEntryId = craft()->request->getPost('parentId');
 		$prevEntryId   = craft()->request->getPost('prevId');
 
-		$entry       = craft()->entries->getEntryById($entryId);
-		$parentEntry =
-
+		$entry = craft()->entries->getEntryById($entryId);
 
 		// Make sure they have permission to be doing this
 		craft()->userSession->requirePermission('publishEntries:'.$entry->sectionId);
 
+		$section = $entry->getSection();
+
 		if ($prevEntryId)
 		{
 			$prevEntry = craft()->entries->getEntryById($prevEntryId);
-			$success = craft()->entries->moveEntryAfter($entry, $prevEntry);
+			$success = craft()->structures->moveAfter($section->structureId, $entry, $prevEntry, 'auto', $section->hasUrls);
+		}
+		else if ($parentEntryId)
+		{
+			$parentEntry = craft()->entries->getEntryById($parentEntryId);
+			$success = craft()->structures->prepend($section->structureId, $entry, $parentEntry, 'auto', $section->hasUrls);
 		}
 		else
 		{
-			if ($parentEntryId)
-			{
-				$parentEntry = craft()->entries->getEntryById($parentEntryId);
-			}
-			else
-			{
-				$parentEntry = null;
-			}
-
-			$success = craft()->entries->moveEntryUnder($entry, $parentEntry, true);
+			$success = craft()->structures->appendToRoot($section->structureId, $entry, 'auto', $section->hasUrls);
 		}
 
 		$this->returnJson(array(

@@ -12,10 +12,11 @@ class ElementHelper
 	 *
 	 * @static
 	 * @param BaseElementModel $element
-	 * @param string $urlFormat
 	 */
-	public static function setUniqueUri(BaseElementModel $element, $urlFormat)
+	public static function setUniqueUri(BaseElementModel $element)
 	{
+		$urlFormat = $element->getUrlFormat();
+
 		if (!$element->slug || !$urlFormat)
 		{
 			$element->uri  = null;
