@@ -8,6 +8,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 	elementType: null,
 	sources: null,
 	criteria: null,
+	disabledElementIds: null,
 	limit: null,
 	storageKey: null,
 
@@ -21,13 +22,14 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 	$elements: null,
 	$addElementBtn: null,
 
-	init: function(id, name, elementType, sources, criteria, limit, storageKey)
+	init: function(id, name, elementType, sources, criteria, disabledElementIds, limit, storageKey)
 	{
 		this.id = id;
 		this.name = name;
 		this.elementType = elementType;
 		this.sources = sources;
 		this.criteria = criteria;
+		this.disabledElementIds = disabledElementIds;
 		this.limit = limit;
 		this.storageKey = storageKey;
 
@@ -110,12 +112,19 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 
 		if (!this.modal)
 		{
-			var selectedElementIds = [];
+			if (this.disabledElementIds)
+			{
+				var disabledElementIds = this.disabledElementIds.slice(0);
+			}
+			else
+			{
+				var disabledElementIds = [];
+			}
 
 			for (var i = 0; i < this.$elements.length; i++)
 			{
 				var $element = $(this.$elements[i]);
-				selectedElementIds.push($element.data('id'));
+				disabledElementIds.push($element.data('id'));
 			}
 
 			this.modal = Craft.createElementSelectorModal(this.elementType, {
@@ -124,7 +133,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 				criteria: this.criteria,
 				multiSelect: true,
 				disableOnSelect: true,
-				disabledElementIds: selectedElementIds,
+				disabledElementIds: disabledElementIds,
 				onSelect: $.proxy(this, 'selectElements')
 			});
 		}

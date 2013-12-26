@@ -242,7 +242,7 @@ class SearchService extends BaseApplicationComponent
 			'locale'    => $localeId
 		);
 
-		if ($cleanKeywords)
+		if ($cleanKeywords !== null && $cleanKeywords !== false && $cleanKeywords !== '')
 		{
 			// Add padding around keywords
 			$cleanKeywords = $this->_addPadding($cleanKeywords);
@@ -485,11 +485,11 @@ class SearchService extends BaseApplicationComponent
 		}
 
 		// Sanatize term
-		if ($term->term)
+		if ($term->term !== null)
 		{
 			$keywords = $this->_normalizeTerm($term->term);
 
-			if ($keywords)
+			if ($keywords !== false && $keywords !== null)
 			{
 				// Create fulltext clause from term
 				if ($this->_isFulltextTerm($keywords) && !$term->subLeft && !$term->exact && !$term->exclude)

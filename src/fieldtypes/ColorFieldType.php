@@ -36,6 +36,7 @@ class ColorFieldType extends BaseFieldType
 	public function getInputHtml($name, $value)
 	{
 		return craft()->templates->render('_includes/forms/color', array(
+			'id'    => craft()->templates->formatInputId($name),
 			'name'  => $name,
 			'value' => $value,
 		));

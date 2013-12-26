@@ -43,9 +43,9 @@ class Nav_TokenParser extends \Twig_TokenParser
 		$stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
 		$upperBody = $this->parser->subparse(array($this, 'decideNavFork'));
-	    $lowerBody = null;
-	    $indent = null;
-	    $outdent = null;
+	    $lowerBody = new \Twig_Node();
+	    $indent = new \Twig_Node();
+	    $outdent = new \Twig_Node();
 
 	    $nextValue = $stream->next()->getValue();
 

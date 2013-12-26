@@ -167,13 +167,13 @@ class MatrixFieldType extends BaseFieldType
 			if (!empty($this->element->id))
 			{
 				$criteria->ownerId = $this->element->id;
-				$criteria->fieldId = $this->model->id;
 			}
 			else
 			{
 				$criteria->id = false;
 			}
 
+			$criteria->fieldId = $this->model->id;
 			$criteria->locale = $this->element->locale;
 
 			return $criteria;
