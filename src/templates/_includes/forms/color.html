@@ -3,8 +3,7 @@
 	(class is defined and class ? class : null)
 ]|filter|join(' ') %}
 
-<input class="{{ class }}" type="color"
-	{%- if id is defined %} id="{{ id }}"{% endif %}
+<input class="{{ class }}" type="color" id="{{ id }}"
 	{%- if name is defined %} name="{{ name }}"{% endif %}
 	{%- if value is defined %} value="{{ value }}"{% endif %}
 	{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
@@ -12,3 +11,4 @@
 
 {%- includeJsResource "lib/colorpicker/js/colorpicker.js" -%}
 {%- includeCssResource "lib/colorpicker/css/colorpicker.css" -%}
+{%- includeJs 'new Craft.ColorPicker("'~(id|namespaceInputId)~'");' %}
