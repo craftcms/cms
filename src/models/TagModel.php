@@ -57,4 +57,28 @@ class TagModel extends BaseElementModel
 			return craft()->tags->getTagGroupById($this->groupId);
 		}
 	}
+
+	// Deprecated functions
+
+	/**
+	 * Returns the tag group's ID.
+	 *
+	 * @return int|null
+	 * @deprecated Deprecated since 1.4
+	 */
+	public function setId()
+	{
+		return $this->groupId;
+	}
+
+	/**
+	 * Returns the tag's group.
+	 *
+	 * @return TagGroupModel|null
+	 * @deprecated Deprecated since 1.4
+	 */
+	public function getSet()
+	{
+		return $this->getGroup();
+	}
 }
