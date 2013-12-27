@@ -197,7 +197,12 @@ class SectionsService extends BaseApplicationComponent
 			'handle' => $sectionHandle
 		));
 
-		return $this->_populateSectionFromRecord($sectionRecord);
+		if ($sectionRecord)
+		{
+			$section = $this->_populateSectionFromRecord($sectionRecord);
+			$this->_sectionsById[$section->id] = $section;
+			return $section;
+		}
 	}
 
 	/**
