@@ -101,14 +101,6 @@ class InstallService extends BaseApplicationComponent
 			if (IOHelper::fileExists($file))
 			{
 				$fileName = IOHelper::getFileName($file, false);
-
-				// Ignore StructuredEntryRecord
-				if ($fileName == 'StructuredEntryRecord')
-				{
-					Craft::log("Skipping record {$file}.", LogLevel::Warning);
-					continue;
-				}
-
 				$class = __NAMESPACE__.'\\'.$fileName;
 
 				// Ignore abstract classes and interfaces
