@@ -48,13 +48,13 @@ class TagsFieldType extends BaseElementFieldType
 		if ($tagSet)
 		{
 			return craft()->templates->render('_components/fieldtypes/Tags/input', array(
-				'elementType' => $elementVariable,
-				'id'          => craft()->templates->formatInputId($name),
-				'name'        => $name,
-				'elements'    => $criteria,
-				'tagSetId'    => $this->_getTagSetId(),
-				'elementId'   => (!empty($this->element->id) ? $this->element->id : null),
-				'hasFields'   => (bool) $tagSet->getFieldLayout()->getFields(),
+				'elementType'     => $elementVariable,
+				'id'              => craft()->templates->formatInputId($name),
+				'name'            => $name,
+				'elements'        => $criteria,
+				'tagSetId'        => $this->_getTagSetId(),
+				'sourceElementId' => (isset($this->element->id) ? $this->element->id : null),
+				'hasFields'       => (bool) $tagSet->getFieldLayout()->getFields(),
 			));
 		}
 		else

@@ -6,7 +6,7 @@
 {% set jsClass = (jsClass is defined and jsClass ? jsClass : 'Craft.BaseElementSelectInput') -%}
 {% set sources = (sources is defined and sources ? sources : null) -%}
 {% set criteria = (criteria is defined and criteria ? criteria : null) -%}
-{% set disabledElementIds = (disabledElementIds is defined and disabledElementIds ? disabledElementIds : null) -%}
+{% set sourceElementId = (sourceElementId is defined and sourceElementId ? sourceElementId : null) -%}
 {% set storageKey = (storageKey is defined and storageKey ? storageKey : null) -%}
 
 <div id="{{ id }}" class="elementselect">
@@ -26,8 +26,8 @@
 		"{{ elementType.getClassHandle()|e('js') }}",
 		{{ sources|json_encode|raw }},
 		{{ criteria|json_encode|raw }},
-		{{ disabledElementIds|json_encode|raw }},
-		{{ limit ? limit : 'null' }},
+		{{ sourceElementId ?: 'null' }},
+		{{ limit ?: 'null' }},
 		"{{ storageKey|e('js') }}"
 	);
 {% endset %}

@@ -161,12 +161,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 		$criteria->status = null;
 		$selectionCriteria = array('status' => null);
-		$disabledElementIds = array();
-
-		if (!empty($this->element->id))
-		{
-			$disabledElementIds[] = $this->element->id;
-		}
 
 		if ($this->allowMultipleSources)
 		{
@@ -186,7 +180,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			'elements'           => $criteria,
 			'sources'            => $sources,
 			'criteria'           => $selectionCriteria,
-			'disabledElementIds' => $disabledElementIds,
+			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
 			'limit'              => ($this->allowLimit ? $this->getSettings()->limit : null),
 			'addButtonLabel'     => $this->getAddButtonLabel(),
 		));
