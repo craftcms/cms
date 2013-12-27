@@ -6,6 +6,9 @@ namespace Craft;
  */
 class SectionLocaleModel extends BaseModel
 {
+	public $urlFormatIsRequired = false;
+	public $nestedUrlFormatIsRequired = false;
+
 	/**
 	 * @access protected
 	 * @return array
@@ -16,8 +19,30 @@ class SectionLocaleModel extends BaseModel
 			'id'              => AttributeType::Number,
 			'sectionId'       => AttributeType::Number,
 			'locale'          => AttributeType::Locale,
-			'urlFormat'       => AttributeType::String,
-			'nestedUrlFormat' => AttributeType::String,
+			'urlFormat'       => array(AttributeType::UrlFormat, 'label' => 'URL Format'),
+			'nestedUrlFormat' => array(AttributeType::UrlFormat, 'label' => 'URL Format'),
 		);
+	}
+
+	/**
+	 * Returns this model's validation rules.
+	 *
+	 * @return array
+	 */
+	public function rules()
+	{
+		$rules = parent::rules();
+
+		if ($this->urlFormatIsRequired)
+		{
+			$rules[] = array('urlFormat', 'required');
+		}
+
+		if ($this->nestedUrlFormatIsRequired)
+		{
+			$rules[] = array('nestedUrlFormat', 'required');
+		}
+
+		return $rules;
 	}
 }

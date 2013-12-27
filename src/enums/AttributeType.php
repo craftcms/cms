@@ -21,5 +21,6 @@ class AttributeType
 	const String     = 'string';
 	const Template   = 'template';
 	const Url        = 'url';
+	const UrlFormat  = 'urlformat';
 	const Uri        = 'uri';
 }

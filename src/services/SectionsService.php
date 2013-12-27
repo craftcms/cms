@@ -322,27 +322,23 @@ class SectionsService extends BaseApplicationComponent
 			else if ($section->hasUrls)
 			{
 				$urlFormatAttributes = array('urlFormat');
+				$sectionLocale->urlFormatIsRequired = true;
 
 				if ($section->type == SectionType::Structure && $section->maxLevels != 1)
 				{
 					$urlFormatAttributes[] = 'nestedUrlFormat';
+					$sectionLocale->nestedUrlFormatIsRequired = true;
 				}
 				else
 				{
 					$sectionLocale->nestedUrlFormat = null;
 				}
 
-				foreach ($urlFormatAttributes as $urlFormatAttribute)
+				foreach ($urlFormatAttributes as $attribute)
 				{
-					$errorKey = $urlFormatAttribute.'-'.$localeId;
-
-					if (empty($sectionLocale->$urlFormatAttribute))
+					if (!$sectionLocale->validate(array($attribute)))
 					{
-						$section->addError($errorKey, Craft::t('URL formats cannot be blank.'));
-					}
-					else if (mb_strpos($sectionLocale->$urlFormatAttribute, '{slug}') === false)
-					{
-						$section->addError($errorKey, Craft::t('URL formats must contain “{slug}”'));
+						$section->addError($attribute.'-'.$localeId, $sectionLocale->getError($attribute));
 					}
 				}
 			}
