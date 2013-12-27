@@ -469,14 +469,8 @@ class ModelHelper
 		{
 			if (isset($config['label']))
 			{
-				$label = $config['label'];
+				$labels[$name] = Craft::t($config['label']);
 			}
-			else
-			{
-				$label = $model->generateAttributeLabel($name);
-			}
-
-			$labels[$name] = Craft::t($label);
 		}
 
 		return $labels;
