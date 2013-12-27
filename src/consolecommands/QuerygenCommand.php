@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * Query generator console command
  */
-class QuerygenCommand extends \CConsoleCommand
+class QuerygenCommand extends BaseCommand
 {
 	public $defaultAction = 'all';
 
