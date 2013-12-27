@@ -81,7 +81,7 @@ class SectionsService extends BaseApplicationComponent
 
 			foreach ($sectionRecords as $sectionRecord)
 			{
-				if (craft()->hasPackage(CraftPackage::PublishPro) || $typeCounts[$section->type] < $this->typeLimits[$section->type])
+				if (craft()->hasPackage(CraftPackage::PublishPro) || $typeCounts[$sectionRecord->type] < $this->typeLimits[$sectionRecord->type])
 				{
 					$section = $this->_populateSectionFromRecord($sectionRecord);
 					$this->_sectionsById[$section->id] = $section;
@@ -810,7 +810,7 @@ class SectionsService extends BaseApplicationComponent
 
 			if (!$entryTypeRecord)
 			{
-				throw new Exception(Craft::t('No entry type exists with the ID “{id}”', array('id' => $entryTypeId)));
+				throw new Exception(Craft::t('No entry type exists with the ID “{id}”', array('id' => $entryType->id)));
 			}
 
 			$isNewEntryType = false;
