@@ -1071,7 +1071,7 @@ class SectionsService extends BaseApplicationComponent
 	// Private methods
 
 	/**
-	 * Populates a SectionModle with attributes from a SectionRecord.
+	 * Populates a SectionModel with attributes from a SectionRecord.
 	 *
 	 * @access private
 	 * @param SectionRecord|null
