@@ -239,8 +239,8 @@ class SectionsService extends BaseApplicationComponent
 				throw new Exception(Craft::t('No section exists with the ID “{id}”', array('id' => $section->id)));
 			}
 
-			$isNewSection = false;
 			$oldSection = $this->_populateSectionFromRecord($sectionRecord);
+			$isNewSection = false;
 		}
 		else
 		{
