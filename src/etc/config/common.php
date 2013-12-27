@@ -184,8 +184,8 @@ $cpRoutes['settings/sections/(?P<sectionId>\d+)/entrytypes']                    
 $cpRoutes['settings/sections/(?P<sectionId>\d+)/entrytypes/new']                  = array('action' => 'sections/editEntryType');
 $cpRoutes['settings/sections/(?P<sectionId>\d+)/entrytypes/(?P<entryTypeId>\d+)'] = array('action' => 'sections/editEntryType');
 $cpRoutes['settings/tags']                                                        = array('action' => 'tags/index');
-$cpRoutes['settings/tags/new']                                                    = array('action' => 'tags/editTagSet');
-$cpRoutes['settings/tags/(?P<tagSetId>\d+)']                                      = array('action' => 'tags/editTagSet');
+$cpRoutes['settings/tags/new']                                                    = array('action' => 'tags/editTagGroup');
+$cpRoutes['settings/tags/(?P<tagGroupId>\d+)']                                    = array('action' => 'tags/editTagGroup');
 
 $cpRoutes['utils/phpinfo']                                                        = array('action' => 'utils/getPHPInfo');
 $cpRoutes['utils/logviewer(/(?P<currentLogFileName>[A-Za-z0-9\.]+))?']             = array('action' => 'utils/getLogs');

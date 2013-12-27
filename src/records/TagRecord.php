@@ -32,7 +32,7 @@ class TagRecord extends BaseRecord
 	{
 		return array(
 			'element' => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
-			'set'     => array(static::BELONGS_TO, 'TagSetRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'group'   => array(static::BELONGS_TO, 'TagGroupRecord', 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 
@@ -42,7 +42,7 @@ class TagRecord extends BaseRecord
 	public function defineIndexes()
 	{
 		return array(
-			array('columns' => array('setId', 'name'), 'unique' => true),
+			array('columns' => array('groupId', 'name'), 'unique' => true),
 		);
 	}
 }

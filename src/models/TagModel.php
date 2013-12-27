@@ -25,8 +25,8 @@ class TagModel extends BaseElementModel
 	protected function defineAttributes()
 	{
 		return array_merge(parent::defineAttributes(), array(
-			'setId' => AttributeType::Number,
-			'name'  => AttributeType::String,
+			'groupId' => AttributeType::Number,
+			'name'    => AttributeType::String,
 		));
 	}
 
@@ -37,24 +37,24 @@ class TagModel extends BaseElementModel
 	 */
 	public function getFieldLayout()
 	{
-		$tagSet = $this->getSet();
+		$tagGroup = $this->getGroup();
 
-		if ($tagSet)
+		if ($tagGroup)
 		{
-			return $tagSet->getFieldLayout();
+			return $tagGroup->getFieldLayout();
 		}
 	}
 
 	/**
-	 * Returns the tag's set.
+	 * Returns the tag's group.
 	 *
-	 * @return TagSetModel|null
+	 * @return TagGroupModel|null
 	 */
-	public function getSet()
+	public function getGroup()
 	{
-		if ($this->setId)
+		if ($this->groupId)
 		{
-			return craft()->tags->getTagSetById($this->setId);
+			return craft()->tags->getTagGroupById($this->groupId);
 		}
 	}
 }

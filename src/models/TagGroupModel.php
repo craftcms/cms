@@ -2,12 +2,12 @@
 namespace Craft;
 
 /**
- * Tag set model
+ * Tag group model
  */
-class TagSetModel extends BaseModel
+class TagGroupModel extends BaseModel
 {
 	/**
-	 * Use the translated tag set's name as the string representation.
+	 * Use the translated tag group's name as the string representation.
 	 *
 	 * @return string
 	 */
