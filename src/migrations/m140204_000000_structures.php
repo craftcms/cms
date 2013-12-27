@@ -15,7 +15,7 @@ class m140204_000000_structures extends BaseMigration
 	{
 		if (!craft()->db->tableExists('structures'))
 		{
-			Craft::log('Creating the structures table.');
+			Craft::log('Creating the structures table.', LogLevel::Info, true);
 
 			$this->createTable('structures', array(
 				'maxLevels' => array('maxLength' => 6, 'decimals' => 0, 'column' => ColumnType::SmallInt, 'unsigned' => true),
@@ -24,7 +24,7 @@ class m140204_000000_structures extends BaseMigration
 
 		if (!craft()->db->tableExists('structureelements'))
 		{
-			Craft::log('Creating the structureelements table.');
+			Craft::log('Creating the structureelements table.', LogLevel::Info, true);
 
 			$this->createTable('structureelements', array(
 				'structureId' => array('column' => ColumnType::Int, 'null' => false),
@@ -46,7 +46,7 @@ class m140204_000000_structures extends BaseMigration
 
 		if (!craft()->db->columnExists('sections', 'structureId'))
 		{
-			Craft::log('Adding the sections.structureId column.');
+			Craft::log('Adding the sections.structureId column.', LogLevel::Info, true);
 
 			$this->addColumnAfter('sections', 'structureId', array('column' => ColumnType::Int), 'id');
 			$this->addForeignKey('sections', 'structureId', 'structures', 'id', 'SET NULL', null);
@@ -54,7 +54,7 @@ class m140204_000000_structures extends BaseMigration
 
 		if (craft()->db->columnExists('sections', 'maxDepth'))
 		{
-			Craft::log('Creating structures for existing sections.');
+			Craft::log('Creating structures for existing sections.', LogLevel::Info, true);
 
 			$structureSections = craft()->db->createCommand()
 				->select('id, structureId, maxDepth')
@@ -117,7 +117,7 @@ class m140204_000000_structures extends BaseMigration
 
 			if ($structuresBySectionId)
 			{
-				Craft::log('Moving entry hierarchy into the structureelements table.');
+				Craft::log('Moving entry hierarchy into the structureelements table.', LogLevel::Info, true);
 
 				$entries = craft()->db->createCommand()
 					->select('id, sectionId, root, lft, rgt, depth')
@@ -142,7 +142,7 @@ class m140204_000000_structures extends BaseMigration
 					));
 				}
 
-				Craft::log('Deleting the old root elements.');
+				Craft::log('Deleting the old root elements.', LogLevel::Info, true);
 
 				foreach ($structuresBySectionId as $structure)
 				{
@@ -152,34 +152,34 @@ class m140204_000000_structures extends BaseMigration
 				}
 			}
 
-			Craft::log('Dropping the sections.maxDepth column.');
+			Craft::log('Dropping the sections.maxDepth column.', LogLevel::Info, true);
 			$this->dropColumn('sections', 'maxDepth');
 		}
 
 		if (craft()->db->columnExists('entries', 'root'))
 		{
-			Craft::log('Dropping the entries.root column.');
+			Craft::log('Dropping the entries.root column.', LogLevel::Info, true);
 			$this->dropIndex('entries', 'root');
 			$this->dropColumn('entries', 'root');
 		}
 
 		if (craft()->db->columnExists('entries', 'lft'))
 		{
-			Craft::log('Dropping the entries.lft column.');
+			Craft::log('Dropping the entries.lft column.', LogLevel::Info, true);
 			$this->dropIndex('entries', 'lft');
 			$this->dropColumn('entries', 'lft');
 		}
 
 		if (craft()->db->columnExists('entries', 'rgt'))
 		{
-			Craft::log('Dropping the entries.rgt column.');
+			Craft::log('Dropping the entries.rgt column.', LogLevel::Info, true);
 			$this->dropIndex('entries', 'rgt');
 			$this->dropColumn('entries', 'rgt');
 		}
 
 		if (craft()->db->columnExists('entries', 'depth'))
 		{
-			Craft::log('Dropping the entries.depth column.');
+			Craft::log('Dropping the entries.depth column.', LogLevel::Info, true);
 			$this->dropIndex('entries', 'depth');
 			$this->dropColumn('entries', 'depth');
 		}
