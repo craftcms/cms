@@ -19,7 +19,7 @@ class m140204_000000_structures extends BaseMigration
 
 			$this->createTable('structures', array(
 				'maxLevels' => array('maxLength' => 6, 'decimals' => 0, 'column' => ColumnType::SmallInt, 'unsigned' => true),
-			), null, true);
+			));
 		}
 
 		if (!craft()->db->tableExists('structureelements'))
@@ -33,7 +33,7 @@ class m140204_000000_structures extends BaseMigration
 				'lft'         => array('decimals' => 0, 'column' => ColumnType::Int,      'unsigned' => true, 'length' => 10, 'null' => false),
 				'rgt'         => array('decimals' => 0, 'column' => ColumnType::Int,      'unsigned' => true, 'length' => 10, 'null' => false),
 				'level'       => array('decimals' => 0, 'column' => ColumnType::SmallInt, 'unsigned' => true, 'length' => 6,  'null' => false),
-			), null, true);
+			));
 
 			$this->createIndex('structureelements', 'structureId,elementId', true);
 			$this->createIndex('structureelements', 'root');
