@@ -131,12 +131,9 @@ class SectionsController extends BaseController
 		$section->type       = craft()->request->getPost('type');
 
 		// Type-specific attributes
-		$allTypeSettings = craft()->request->getPost('types');
-		$typeSettings = $allTypeSettings[$section->type];
-
-		$section->hasUrls   = (isset($typeSettings['hasUrls']) ? (bool) $typeSettings['hasUrls'] : true);
-		$section->template  = (isset($typeSettings['template']) ? $typeSettings['template'] : null);
-		$section->maxLevels = (!empty($typeSettings['maxLevels']) ? $typeSettings['maxLevels'] : null);
+		$section->hasUrls    = (bool) craft()->request->getPost('types.'.$section->type.'.hasUrls', true);
+		$section->template   = craft()->request->getPost('types.'.$section->type.'.template');
+		$section->maxLevels  = craft()->request->getPost('types.'.$section->type.'.maxLevels');
 
 		// Locale-specific attributes
 		$locales = array();
@@ -151,19 +148,19 @@ class SectionsController extends BaseController
 			$localeIds = array($primaryLocaleId);
 		}
 
-		$isHomepage = ($section->type == SectionType::Single && !empty($typeSettings['homepage']));
+		$isHomepage = ($section->type == SectionType::Single && craft()->request->getPost('types.'.$section->type.'.homepage'));
 
 		foreach ($localeIds as $localeId)
 		{
 			if ($isHomepage)
 			{
-				$urlFormat = '__home__';
+				$urlFormat       = '__home__';
 				$nestedUrlFormat = null;
 			}
 			else
 			{
-				$urlFormat = (isset($typeSettings['urlFormat'][$localeId]) ? trim($typeSettings['urlFormat'][$localeId], '/') : null);
-				$nestedUrlFormat = (isset($typeSettings['nestedUrlFormat'][$localeId]) ? trim($typeSettings['nestedUrlFormat'][$localeId], '/') : null);
+				$urlFormat       = craft()->request->getPost('types.'.$section->type.'.urlFormat.'.$localeId);
+				$nestedUrlFormat = craft()->request->getPost('types.'.$section->type.'.nestedUrlFormat.'.$localeId);
 			}
 
 			$locales[$localeId] = new SectionLocaleModel(array(
