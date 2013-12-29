@@ -7,6 +7,11 @@ namespace Craft;
 class UrlFormatValidator extends \CValidator
 {
 	/**
+	 * @var bool Whether we should ensure that "{slug}" is used within the URL format.
+	 */
+	public $requireSlug = true;
+
+	/**
 	 * @param $object
 	 * @param $attribute
 	 */
@@ -16,12 +21,19 @@ class UrlFormatValidator extends \CValidator
 
 		if ($urlFormat)
 		{
-			$element = (object) array('slug' => StringHelper::randomString());
-			$uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
+			// Remove any leading or trailing slashes
+			$urlFormat = trim($urlFormat, '/');
+			$object->$attribute = $urlFormat;
 
-			if (strpos($uri, $element->slug) === false)
+			if ($this->requireSlug)
 			{
-				$this->addError($object, $attribute, Craft::t('{attribute} must contain “{slug}”'));
+				$element = (object) array('slug' => StringHelper::randomString());
+				$uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
+
+				if (strpos($uri, $element->slug) === false)
+				{
+					$this->addError($object, $attribute, Craft::t('{attribute} must contain “{slug}”'));
+				}
 			}
 		}
 	}
