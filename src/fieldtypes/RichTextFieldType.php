@@ -151,9 +151,9 @@ class RichTextFieldType extends BaseFieldType
 
 			if ($this->getSettings()->cleanupHtml)
 			{
-				// Remove <span>s
-				$value = preg_replace('/<span[^>]*>/', '', $value);
-				$value = str_replace('</span>', '', $value);
+				// Remove <span> and <font> tags
+				$value = preg_replace('/<(?:span|font)\b[^>]*>/', '', $value);
+				$value = preg_replace('/<\/(?:span|font)>/', '', $value);
 
 				// Remove inline styles
 				$value = preg_replace('/(<(?:h1|h2|h3|h4|h5|h6|p|div|blockquote|pre|strong|em|b|i|u|a)\b[^>]*)\s+style="[^"]*"/', '$1', $value);
