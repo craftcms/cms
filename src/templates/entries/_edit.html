@@ -80,15 +80,11 @@
 				{% endif %}
 
 				{% if craft.hasPackage('Users') %}
-					{% set authors = [] %}
-					{% for author in craft.users.find({limit: null}) %}
-						{% set authors = authors|merge([{ label: author.name, value: author.id }]) %}
-					{% endfor %}
 					{{ forms.selectField({
 						label: "Author"|t,
 						id: 'author',
 						name: 'author',
-						options: authors,
+						options: authorOptions,
 						value: entry.authorId
 					}) }}
 				{% endif %}
