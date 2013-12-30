@@ -149,6 +149,7 @@ class UserElementType extends BaseElementType
 	{
 		return array(
 			'admin'          => AttributeType::Bool,
+			'can'            => AttributeType::String,
 			'email'          => AttributeType::Email,
 			'firstName'      => AttributeType::String,
 			'group'          => AttributeType::Mixed,
@@ -178,6 +179,24 @@ class UserElementType extends BaseElementType
 		if ($criteria->admin)
 		{
 			$query->andWhere(DbHelper::parseParam('users.admin', $criteria->admin, $query->params));
+		}
+
+		if ($criteria->can)
+		{
+			$query->leftJoin('userpermissions_users opt1_userpermissions_users', 'opt1_userpermissions_users.userId = users.id');
+			$query->leftJoin('userpermissions opt1_userpermissions', 'opt1_userpermissions.id = opt1_userpermissions_users.permissionId');
+
+			$query->leftJoin('usergroups_users opt2_usergroups_users', 'opt2_usergroups_users.userId = users.id');
+			$query->leftJoin('userpermissions_usergroups opt2_userpermissions_usergroups', 'opt2_userpermissions_usergroups.groupId = opt2_usergroups_users.groupId');
+			$query->leftJoin('userpermissions opt2_userpermissions', 'opt2_userpermissions.id = opt2_userpermissions_usergroups.permissionId');
+
+			$query->andWhere(array('or',
+				'users.admin = 1',
+				'opt1_userpermissions.name = :permission',
+				'opt2_userpermissions.name = :permission',
+			), array(
+				':permission' => $criteria->can
+			));
 		}
 
 		if ($criteria->groupId)
