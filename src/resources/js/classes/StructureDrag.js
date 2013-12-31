@@ -3,7 +3,7 @@
  */
 Craft.StructureDrag = Garnish.Drag.extend({
 
-	elementIndex: null,
+	structure: null,
 	moveAction: null,
 	maxLevels: null,
 	draggeeLevel: null,
@@ -13,16 +13,16 @@ Craft.StructureDrag = Garnish.Drag.extend({
 	_: null,
 	draggeeHeight: null,
 
-	init: function(elementIndex, moveAction, maxLevels)
+	init: function(structure, moveAction, maxLevels)
 	{
-		this.elementIndex = elementIndex;
+		this.structure = structure;
 		this.moveAction = moveAction;
 		this.maxLevels = maxLevels;
 
 		this.$insertion = $('<li class="draginsertion"/>');
 		this._ = {};
 
-		var $items = this.elementIndex.$elementContainer.find('li');
+		var $items = this.structure.$container.find('li');
 
 		this.base($items, {
 			handle: '.element:first, .move:first',
@@ -44,7 +44,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 		this.$targets = $();
 
 		// Recursively find each of the targets, in the order they appear to be in
-		this.findTargets(this.elementIndex.$elementContainer);
+		this.findTargets(this.structure.$container);
 
 		// How deep does the rabbit hole go?
 		this.draggeeLevel = 0;
@@ -133,7 +133,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 		// Are we hovering above the first row?
 		if (this._.closestTargetPos == 0 && this.mouseY < this._.closestTargetOffset.top + 5)
 		{
-			this.$insertion.prependTo(this.elementIndex.$elementContainer);
+			this.$insertion.prependTo(this.structure.$container);
 		}
 		else
 		{
@@ -222,7 +222,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 				{
 					// Determine which <li> to position the insertion after
 					this._.draggeeX = this.mouseX - this.targetItemMouseDiffX;
-					this._.$parentLis = this._.$closestTarget.parentsUntil(this.elementIndex.$elementContainer, 'li');
+					this._.$parentLis = this._.$closestTarget.parentsUntil(this.structure.$container, 'li');
 					this._.$closestParentLi = null;
 					this._.closestParentLiXDiff = null;
 					this._.closestParentLevel = null;
@@ -315,7 +315,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 					if (!$ul.length)
 					{
 						var $toggle = $('<div class="toggle" title="'+Craft.t('Show/hide children')+'"/>').prependTo(this._.$closestTarget);
-						this.elementIndex.initToggle($toggle);
+						this.structure.initToggle($toggle);
 
 						$ul = $('<ul>').appendTo(this._.$closestTargetLi);
 					}
@@ -346,7 +346,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 				}
 
 				// Has the level changed?
-				var newLevel = this.$draggee.parentsUntil(this.elementIndex.$elementContainer, 'li').length + 1;
+				var newLevel = this.$draggee.parentsUntil(this.structure.$container, 'li').length + 1;
 
 				if (newLevel != this.$draggee.data('level'))
 				{

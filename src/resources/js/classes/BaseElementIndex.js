@@ -363,86 +363,17 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			}
 			case 'structure':
 			{
-				var $parents = this.$elementContainer.find('ul').prev('.row'),
-					collapsedElementIds = this.getSelectedSourceState('collapsedElementIds', []);
-
-				for (var i = 0; i < $parents.length; i++)
-				{
-					var $row = $($parents[i]),
-						$li = $row.parent(),
-						$toggle = $('<div class="toggle" title="'+Craft.t('Show/hide children')+'"/>').prependTo($row);
-
-					if ($.inArray($row.data('id'), collapsedElementIds) != -1)
-					{
-						$li.addClass('collapsed');
-					}
-
-					this.initToggle($toggle);
-				}
-
-				if (this.settings.context == 'index')
-				{
-					if (this.$source.data('sortable'))
-					{
-						this.$elementContainer.find('.add').click($.proxy(function(ev) {
-
-							var $btn = $(ev.currentTarget);
-
-							if (!$btn.data('menubtn'))
-							{
-								var elementId = $btn.parent().data('id'),
-									newChildUrl = Craft.getUrl(this.$source.data('new-child-url'), 'parentId='+elementId),
-									$menu = $('<div class="menu"><ul><li><a href="'+newChildUrl+'">'+Craft.t('New child')+'</a></li></ul></div>').insertAfter($btn);
-
-								var menuBtn = new Garnish.MenuBtn($btn);
-								menuBtn.showMenu();
-							}
-
-						}, this))
-
-						this.structureDrag = new Craft.StructureDrag(this,
-							this.$source.data('move-action'),
-							this.$source.data('max-levels')
-						);
-					}
-				}
+				new Craft.Structure(this.$elementContainer, {
+					storageKey:  this.sourceStatesStorageKey+'.'+this.instanceState.selectedSource+'.Structure',
+					sortable:    (this.settings.context == 'index' && this.$source.data('sortable')),
+					newChildUrl: this.$source.data('new-child-url'),
+					moveAction:  this.$source.data('move-action'),
+					maxLevels:   this.$source.data('max-levels')
+				});
 			}
 		}
 
 		this.onUpdateElements(append);
-	},
-
-	initToggle: function($toggle)
-	{
-		$toggle.click($.proxy(function(ev) {
-
-			var $li = $(ev.currentTarget).closest('li'),
-				elementId = $li.children('.row').data('id'),
-				collapsedElementIds = this.getSelectedSourceState('collapsedElementIds', []),
-				viewStateKey = $.inArray(elementId, collapsedElementIds);
-
-			if ($li.hasClass('collapsed'))
-			{
-				$li.removeClass('collapsed');
-
-				if (viewStateKey != -1)
-				{
-					collapsedElementIds.splice(viewStateKey, 1);
-				}
-			}
-			else
-			{
-				$li.addClass('collapsed');
-
-				if (viewStateKey == -1)
-				{
-					collapsedElementIds.push(elementId);
-				}
-			}
-
-			this.setSelecetedSourceState('collapsedElementIds', collapsedElementIds);
-
-		}, this));
 	},
 
 	onUpdateElements: function(append)
