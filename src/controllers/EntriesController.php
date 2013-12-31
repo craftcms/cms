@@ -16,6 +16,55 @@ class EntriesController extends BaseController
 	{
 		$this->_prepEditEntryVariables($variables);
 
+		if (craft()->hasPackage(CraftPackage::Users) && $variables['section']->type != SectionType::Single)
+		{
+			// Get all the possible authors
+			$currentUser = craft()->userSession->getUser();
+			$excludeAuthorIds = 'not '.$currentUser->id;
+
+			if ($variables['entry']->authorId && $variables['entry']->authorId != $currentUser->id)
+			{
+				$excludeAuthorIds = array($excludeAuthorIds, $variables['entry']->authorId);
+			}
+
+			$authorOptionCriteria = craft()->elements->getCriteria(ElementType::User);
+			$authorOptionCriteria->can = 'createEntries:'.$variables['section']->id;
+			$authorOptionCriteria->id = $excludeAuthorIds;
+			$authorOptions = $authorOptionCriteria->find();
+
+			// List the current author first
+			if ($variables['entry']->authorId && $variables['entry']->authorId != $currentUser->id)
+			{
+				$currentAuthor = craft()->users->getUserById($variables['entry']->authorId);
+
+				if ($currentAuthor)
+				{
+					array_unshift($authorOptions, $currentAuthor);
+				}
+			}
+
+			// Then the current user
+			if (!$variables['entry']->authorId || $variables['entry']->authorId == $currentUser->id)
+			{
+				array_unshift($authorOptions, $currentUser);
+			}
+
+			$variables['authorOptions'] = array();
+
+			foreach ($authorOptions as $authorOption)
+			{
+				$authorLabel = $authorOption->username;
+				$authorFullName = $authorOption->getFullName();
+
+				if ($authorFullName)
+				{
+					$authorLabel .= ' ('.$authorFullName.')';
+				}
+
+				$variables['authorOptions'][] = array('label' => $authorLabel, 'value' => $authorOption->id);
+			}
+		}
+
 		if (craft()->hasPackage(CraftPackage::PublishPro) && $variables['section']->type == SectionType::Structure)
 		{
 			// Get all the possible parent options

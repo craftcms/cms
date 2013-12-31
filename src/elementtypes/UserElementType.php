@@ -150,17 +150,18 @@ class UserElementType extends BaseElementType
 	public function defineCriteriaAttributes()
 	{
 		return array(
-			'groupId'        => AttributeType::Number,
-			'group'          => AttributeType::Mixed,
-			'username'       => AttributeType::String,
-			'firstName'      => AttributeType::String,
-			'lastName'       => AttributeType::String,
-			'email'          => AttributeType::Email,
 			'admin'          => AttributeType::Bool,
-			'status'         => array(AttributeType::Enum, 'values' => array(UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived), 'default' => UserStatus::Active),
+			'can'            => AttributeType::String,
+			'email'          => AttributeType::Email,
+			'firstName'      => AttributeType::String,
+			'group'          => AttributeType::Mixed,
+			'groupId'        => AttributeType::Number,
+			'lastName'       => AttributeType::String,
 			'lastLoginDate'  => AttributeType::DateTime,
 			'order'          => array(AttributeType::String, 'default' => 'username asc'),
 			'preferredLocale'=> AttributeType::String,
+			'status'         => array(AttributeType::Enum, 'values' => array(UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived), 'default' => UserStatus::Active),
+			'username'       => AttributeType::String,
 		);
 	}
 
@@ -177,16 +178,39 @@ class UserElementType extends BaseElementType
 			->addSelect('users.username, users.photo, users.firstName, users.lastName, users.email, users.admin, users.status, users.lastLoginDate, users.lockoutDate, users.preferredLocale')
 			->join('users users', 'users.id = elements.id');
 
+		if ($criteria->admin)
+		{
+			$query->andWhere(DbHelper::parseParam('users.admin', $criteria->admin, $query->params));
+		}
+
+		if ($criteria->can)
+		{
+			$query->leftJoin('userpermissions_users opt1_userpermissions_users', 'opt1_userpermissions_users.userId = users.id');
+			$query->leftJoin('userpermissions opt1_userpermissions', 'opt1_userpermissions.id = opt1_userpermissions_users.permissionId');
+
+			$query->leftJoin('usergroups_users opt2_usergroups_users', 'opt2_usergroups_users.userId = users.id');
+			$query->leftJoin('userpermissions_usergroups opt2_userpermissions_usergroups', 'opt2_userpermissions_usergroups.groupId = opt2_usergroups_users.groupId');
+			$query->leftJoin('userpermissions opt2_userpermissions', 'opt2_userpermissions.id = opt2_userpermissions_usergroups.permissionId');
+
+			$query->andWhere(array('or',
+				'users.admin = 1',
+				'opt1_userpermissions.name = :permission',
+				'opt2_userpermissions.name = :permission',
+			), array(
+				':permission' => $criteria->can
+			));
+		}
+
 		if ($criteria->groupId)
 		{
-			$query->join('usergroups_users usergroups_users', 'users.id = usergroups_users.userId');
+			$query->join('usergroups_users usergroups_users', 'usergroups_users.userId = users.id');
 			$query->andWhere(DbHelper::parseParam('usergroups_users.groupId', $criteria->groupId, $query->params));
 		}
 
 		if ($criteria->group)
 		{
-			$query->join('usergroups_users usergroups_users', 'users.id = usergroups_users.userId');
-			$query->join('usergroups usergroups', 'usergroups_users.groupId = usergroups.id');
+			$query->join('usergroups_users usergroups_users', 'usergroups_users.userId = users.id');
+			$query->join('usergroups usergroups', 'usergroups.id = usergroups_users.groupId');
 			$query->andWhere(DbHelper::parseParam('usergroups.handle', $criteria->group, $query->params));
 		}
 
