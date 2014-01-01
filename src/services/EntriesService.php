@@ -161,38 +161,6 @@ class EntriesService extends BaseApplicationComponent
 
 			$elementLocaleRecord->slug = null;
 			$elementLocaleRecord->uri = null;
-
-			// Set a slug that ensures the URI will be unique across all elements
-			if ($section->hasUrls && $entry->slug)
-			{
-				// Get the appropriate URL Format attribute based on the section type and entry level
-				if ($section->type == SectionType::Structure && (
-					($hasNewParent && $entry->parentId) ||
-					(!$hasNewParent && $entry->level != 1)
-				))
-				{
-					$urlFormatAttribute = 'nestedUrlFormat';
-				}
-				else
-				{
-					$urlFormatAttribute = 'urlFormat';
-				}
-
-				$urlFormat = $sectionLocales[$entry->locale]->$urlFormatAttribute;
-
-				// Make sure the section's URL format is valid. This shouldn't be possible due to section validation,
-				// but it's not enforced by the DB, so anything is possible.
-				if (!$urlFormat || mb_strpos($urlFormat, '{slug}') === false)
-				{
-					throw new Exception(Craft::t('The section “{section}” doesn’t have a valid URL Format.', array(
-						'section' => Craft::t($section->name)
-					)));
-				}
-			}
-			else
-			{
-				$urlFormat = null;
-			}
 		}
 
 		if (!$entry->hasErrors())
@@ -212,7 +180,7 @@ class EntriesService extends BaseApplicationComponent
 				if ($section->type != SectionType::Single)
 				{
 					// Set a unique slug and URI
-					ElementHelper::setUniqueUri($entry, $urlFormat);
+					ElementHelper::setUniqueUri($entry);
 					$elementLocaleRecord->slugIsRequired = true;
 					$elementLocaleRecord->slug = $entry->slug;
 					$elementLocaleRecord->uri  = $entry->uri;
