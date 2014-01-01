@@ -130,39 +130,6 @@ class EntriesService extends BaseApplicationComponent
 			$entry->addErrors($entry->getContent()->getErrors());
 		}
 
-		// Only worry about entry and element locale stuff if it's a channel or structure section
-		// since singles already have all of the locale records they'll ever need
-		// and that data never gets changed, outside of when the section is edited.
-
-		if ($section->type != SectionType::Single)
-		{
-			// Get the entry/element locale records
-			if ($entry->id)
-			{
-				$elementLocaleRecord = ElementLocaleRecord::model()->findByAttributes(array(
-					'elementId' => $entry->id,
-					'locale'    => $entry->locale
-				));
-			}
-
-			if (empty($elementLocaleRecord))
-			{
-				$elementLocaleRecord = new ElementLocaleRecord();
-				$elementLocaleRecord->locale = $entry->locale;
-			}
-
-			if (!$entry->slug)
-			{
-				// Use the title as a starting point
-				$entry->slug = $entry->title;
-			}
-
-			ElementHelper::setValidSlug($entry);
-
-			$elementLocaleRecord->slug = null;
-			$elementLocaleRecord->uri = null;
-		}
-
 		if (!$entry->hasErrors())
 		{
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
@@ -177,10 +144,30 @@ class EntriesService extends BaseApplicationComponent
 					$entry->id = $elementRecord->id;
 				}
 
+				// Only worry about entry and element locale stuff if it's a channel or structure section
+				// since singles already have all of the locale records they'll ever need
+				// and that data never gets changed, outside of when the section is edited.
+
 				if ($section->type != SectionType::Single)
 				{
 					// Set a unique slug and URI
+					ElementHelper::setValidSlug($entry);
 					ElementHelper::setUniqueUri($entry);
+
+					if (!$isNewEntry)
+					{
+						$elementLocaleRecord = ElementLocaleRecord::model()->findByAttributes(array(
+							'elementId' => $entry->id,
+							'locale'    => $entry->locale
+						));
+					}
+
+					if (empty($elementLocaleRecord))
+					{
+						$elementLocaleRecord = new ElementLocaleRecord();
+						$elementLocaleRecord->locale = $entry->locale;
+					}
+
 					$elementLocaleRecord->slugIsRequired = true;
 					$elementLocaleRecord->slug = $entry->slug;
 					$elementLocaleRecord->uri  = $entry->uri;

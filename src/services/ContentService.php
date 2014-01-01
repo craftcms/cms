@@ -160,23 +160,21 @@ class ContentService extends BaseApplicationComponent
 
 		if (!$isNewContent)
 		{
-			$affectedRows = craft()->db->createCommand()
-				->update($this->contentTable, $values, array('id' => $content->id));
+			$affectedRows = craft()->db->createCommand()->update($this->contentTable, $values, array('id' => $content->id));
 		}
 		else
 		{
-			$affectedRows = craft()->db->createCommand()
-				->insert($this->contentTable, $values);
-
-			if ($affectedRows)
-			{
-				// Set the new ID
-				$content->id = craft()->db->getLastInsertID();
-			}
+			$affectedRows = craft()->db->createCommand()->insert($this->contentTable, $values);
 		}
 
 		if ($affectedRows)
 		{
+			if ($isNewContent)
+			{
+				// Set the new ID
+				$content->id = craft()->db->getLastInsertID();
+			}
+
 			// Fire an 'onSaveContent' event
 			$this->onSaveContent(new Event($this, array(
 				'content'      => $content,

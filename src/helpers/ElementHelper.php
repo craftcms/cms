@@ -14,8 +14,15 @@ class ElementHelper
 	 */
 	public static function setValidSlug(BaseElementModel $element)
 	{
+		$slug = $element->slug;
+
+		if (!$slug)
+		{
+			$slug = $element->title;
+		}
+
 		// Remove HTML tags
-		$slug = preg_replace('/<(.*?)>/u', '', $element->slug);
+		$slug = preg_replace('/<(.*?)>/u', '', $slug);
 
 		// Remove inner-word punctuation.
 		$slug = preg_replace('/[\'"‘’“”]/u', '', $slug);
