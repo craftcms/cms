@@ -7,6 +7,32 @@ namespace Craft;
 class ElementHelper
 {
 	/**
+	 * Sets a valid slug on a given element.
+	 *
+	 * @static
+	 * @param BaseElementModel $element
+	 */
+	public static function setValidSlug(BaseElementModel $element)
+	{
+		// Remove HTML tags
+		$slug = preg_replace('/<(.*?)>/u', '', $element->slug);
+
+		// Remove inner-word punctuation.
+		$slug = preg_replace('/[\'"‘’“”]/u', '', $slug);
+
+		// Make it lowercase
+		$slug = mb_strtolower($slug, 'UTF-8');
+
+		// Get the "words".  Split on anything that is not a unicode letter or number.
+		// Periods are OK too.
+		preg_match_all('/[\p{L}\p{N}\.]+/u', $slug, $words);
+		$words = ArrayHelper::filterEmptyStringsFromArray($words[0]);
+		$slug = implode('-', $words);
+
+		$element->slug = $slug;
+	}
+
+	/**
 	 * Sets the URI on an element using a given URL format,
 	 * tweaking its slug if necessary to ensure it's unique.
 	 *

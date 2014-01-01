@@ -157,7 +157,7 @@ class EntriesService extends BaseApplicationComponent
 				$entry->slug = $entry->title;
 			}
 
-			$entry->slug = $this->_cleanSlug($entry->slug);
+			ElementHelper::setValidSlug($entry);
 
 			$elementLocaleRecord->slug = null;
 			$elementLocaleRecord->uri = null;
@@ -507,32 +507,5 @@ class EntriesService extends BaseApplicationComponent
 
 		// Must be set to the same one then
 		return false;
-	}
-
-	/**
-	 * Cleans an entry slug.
-	 *
-	 * @access private
-	 * @param string $slug
-	 * @return string
-	 */
-	private function _cleanSlug($slug)
-	{
-		// Remove HTML tags
-		$slug = preg_replace('/<(.*?)>/u', '', $slug);
-
-		// Remove inner-word punctuation.
-		$slug = preg_replace('/[\'"‘’“”]/u', '', $slug);
-
-		// Make it lowercase
-		$slug = mb_strtolower($slug, 'UTF-8');
-
-		// Get the "words".  Split on anything that is not a unicode letter or number.
-		// Periods are OK too.
-		preg_match_all('/[\p{L}\p{N}\.]+/u', $slug, $words);
-		$words = ArrayHelper::filterEmptyStringsFromArray($words[0]);
-		$slug = implode('-', $words);
-
-		return $slug;
 	}
 }
