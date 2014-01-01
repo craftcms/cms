@@ -398,9 +398,8 @@ class DbHelper
 			}
 
 			$operator = static::_parseParamOperator($value);
-			$lcValue = strtolower($value);
 
-			if ($lcValue == 'empty')
+			if (strtolower($value) == 'empty')
 			{
 				if ($operator == '=')
 				{
