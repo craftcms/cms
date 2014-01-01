@@ -379,7 +379,9 @@ class DbHelper
 			return '';
 		}
 
-		if ($values[0] == 'and' || $values[0] == 'or')
+		$firstVal = strtolower($values[0]);
+
+		if ($firstVal == 'and' || $firstVal == 'or')
 		{
 			$join = array_shift($values);
 		}
