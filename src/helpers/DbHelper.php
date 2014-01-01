@@ -392,17 +392,23 @@ class DbHelper
 
 		foreach ($values as $value)
 		{
-			$operator = static::_parseParamOperator($value);
-
 			if ($value === null)
+			{
+				$value = 'empty';
+			}
+
+			$operator = static::_parseParamOperator($value);
+			$lcValue = strtolower($value);
+
+			if ($lcValue == 'empty')
 			{
 				if ($operator == '=')
 				{
-					$conditions[] = $key.' is null';
+					$conditions[] = array('or', $key.' is null', $key.' = ""');
 				}
-				else if ($operator == '!=')
+				else
 				{
-					$conditions[] = $key.' is not null';
+					$conditions[] = array('and', $key.' is not null', $key.' != ""');
 				}
 			}
 			else
