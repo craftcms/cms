@@ -315,7 +315,12 @@ class ElementsService extends BaseApplicationComponent
 
 			if ($contentTable)
 			{
-				$contentCols = 'content.id AS contentId, content.title';
+				$contentCols = 'content.id AS contentId';
+
+				if ($elementType->hasTitles())
+				{
+					$contentCols .= ', content.title';
+				}
 
 				$fieldColumns = $elementType->getContentFieldColumnsForElementsQuery($criteria);
 
