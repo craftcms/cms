@@ -93,10 +93,11 @@ class ContentService extends BaseApplicationComponent
 	 *
 	 * @param BaseElementModel $element
 	 * @param bool             $validate
+	 * @param bool             $updateOtherLocales
 	 * @throws Exception
 	 * @return bool
 	 */
-	public function saveContent(BaseElementModel $element, $validate = true)
+	public function saveContent(BaseElementModel $element, $validate = true, $updateOtherLocales = true)
 	{
 		if (!$element->id)
 		{
@@ -108,7 +109,7 @@ class ContentService extends BaseApplicationComponent
 			$content = $element->getContent();
 
 			$this->_saveContentRow($content);
-			$this->_postSaveOperations($element, $content);
+			$this->_postSaveOperations($element, $content, $updateOtherLocales);
 			return true;
 		}
 		else
@@ -244,9 +245,15 @@ class ContentService extends BaseApplicationComponent
 	 * @access private
 	 * @param BaseElementModel $element
 	 * @param ContentModel     $content
+	 * @param bool             $updateOtherLocales
 	 */
-	private function _postSaveOperations(BaseElementModel $element, ContentModel $content)
+	private function _postSaveOperations(BaseElementModel $element, ContentModel $content, $updateOtherLocales)
 	{
+		if ($updateOtherLocales && !craft()->hasPackage(CraftPackage::Localize))
+		{
+			$updateOtherLocales = false;
+		}
+
 		$fieldLayout = $element->getFieldLayout();
 
 		// Copy the non-trasnlatable field values over to the other locales
@@ -274,38 +281,41 @@ class ContentService extends BaseApplicationComponent
 				}
 			}
 
-			// Get the other locales' content
-			$rows = craft()->db->createCommand()
-				->from($this->contentTable)
-				->where(
-					array('and', 'elementId = :elementId', 'locale != :locale'),
-					array(':elementId' => $element->id, ':locale' => $content->locale))
-				->queryAll();
-
-			// Remove the column prefixes
-			foreach ($rows as $i => $row)
+			if ($updateOtherLocales)
 			{
-				$rows[$i] = $this->_removeColumnPrefixesFromRow($row);
-			}
+				// Get the other locales' content
+				$rows = craft()->db->createCommand()
+					->from($this->contentTable)
+					->where(
+						array('and', 'elementId = :elementId', 'locale != :locale'),
+						array(':elementId' => $element->id, ':locale' => $content->locale))
+					->queryAll();
 
-			$otherContentModels = ContentModel::populateModels($rows);
-
-			if ($fieldsWithDuplicateContent && $otherContentModels)
-			{
-				// Copy the dupliacte content over to the other locases
-				foreach ($fieldsWithDuplicateContent as $field)
+				// Remove the column prefixes
+				foreach ($rows as $i => $row)
 				{
-					$handle = $field->handle;
+					$rows[$i] = $this->_removeColumnPrefixesFromRow($row);
+				}
+
+				$otherContentModels = ContentModel::populateModels($rows);
+
+				if ($fieldsWithDuplicateContent && $otherContentModels)
+				{
+					// Copy the dupliacte content over to the other locases
+					foreach ($fieldsWithDuplicateContent as $field)
+					{
+						$handle = $field->handle;
+
+						foreach ($otherContentModels as $otherContentModel)
+						{
+							$otherContentModel->$handle = $content->$handle;
+						}
+					}
 
 					foreach ($otherContentModels as $otherContentModel)
 					{
-						$otherContentModel->$handle = $content->$handle;
+						$this->_saveContentRow($otherContentModel);
 					}
-				}
-
-				foreach ($otherContentModels as $otherContentModel)
-				{
-					$this->_saveContentRow($otherContentModel);
 				}
 			}
 		}
@@ -339,7 +349,7 @@ class ContentService extends BaseApplicationComponent
 						$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
 
 						// Should we queue up the other locales' new keywords too?
-						if (craft()->hasPackage(CraftPackage::Localize))
+						if ($updateOtherLocales)
 						{
 							if ($otherContentModels && in_array($field->id, array_keys($fieldsWithDuplicateContent)))
 							{
