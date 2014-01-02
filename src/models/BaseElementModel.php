@@ -107,6 +107,15 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns the locale IDs this element is available in.
+	 *
+	 * @return array|null
+	 */
+	public function getLocales()
+	{
+	}
+
+	/**
 	 * Returns the URL format used to generate this element's URL.
 	 *
 	 * @return string|null

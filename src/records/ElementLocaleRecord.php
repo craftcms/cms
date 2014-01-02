@@ -6,8 +6,6 @@ namespace Craft;
  */
 class ElementLocaleRecord extends BaseRecord
 {
-	public $slugIsRequired = false;
-
 	/**
 	 * @return string
 	 */
@@ -49,22 +47,5 @@ class ElementLocaleRecord extends BaseRecord
 			array('columns' => array('elementId', 'locale'), 'unique' => true),
 			array('columns' => array('uri', 'locale'), 'unique' => true),
 		);
-	}
-
-	/**
-	 * Returns this model's validation rules.
-	 *
-	 * @return array
-	 */
-	public function rules()
-	{
-		$rules = parent::rules();
-
-		if ($this->slugIsRequired)
-		{
-			$rules[] = array('slug', 'required');
-		}
-
-		return $rules;
 	}
 }

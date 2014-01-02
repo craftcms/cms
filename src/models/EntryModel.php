@@ -50,6 +50,21 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns the locale IDs this element is available in.
+	 *
+	 * @return array|null
+	 */
+	public function getLocales()
+	{
+		$section = $this->getSection();
+
+		if ($section)
+		{
+			return array_keys($section->getLocales());
+		}
+	}
+
+	/**
 	 * Returns the URL format used to generate this element's URL.
 	 *
 	 * @return string|null
@@ -58,7 +73,7 @@ class EntryModel extends BaseElementModel
 	{
 		$section = $this->getSection();
 
-		if ($section && $section->hasUrls)
+		if ($section && $section->type != SectionType::Single && $section->hasUrls)
 		{
 			$sectionLocales = $section->getLocales();
 

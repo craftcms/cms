@@ -648,9 +648,6 @@ class ElementsService extends BaseApplicationComponent
 		return $query;
 	}
 
-	// Element helper functions
-	// ========================
-
 	/**
 	 * Returns an element's URI for a given locale.
 	 *
@@ -665,6 +662,216 @@ class ElementsService extends BaseApplicationComponent
 			->from('elements_i18n')
 			->where(array('elementId' => $elementId, 'locale' => $localeId))
 			->queryScalar();
+	}
+
+	// Saving Elements
+	// ===============
+
+	/**
+	 * Saves an element.
+	 *
+	 * @param BaseElementModel $element
+	 * @return bool
+	 */
+	public function saveElement(BaseElementModel $element)
+	{
+		$elementType = $this->getElementType($element->getElementType());
+
+		// Validate the content first
+		if ($elementType->hasContent())
+		{
+			if (!craft()->content->validateContent($element))
+			{
+				$element->addErrors($element->getContent()->getErrors());
+				return false;
+			}
+		}
+
+		// Get the element record
+		$isNewElement = !$element->id;
+
+		if (!$isNewElement)
+		{
+			$elementRecord = ElementRecord::model()->findByAttributes(array(
+				'id'   => $element->id,
+				'type' => $element->getElementType()
+			));
+
+			if (!$elementRecord)
+			{
+				throw new Exception(Craft::t('No element exists with the ID “{id}”', array('id' => $element->id)));
+			}
+		}
+		else
+		{
+			$elementRecord = new ElementRecord();
+			$elementRecord->type = $element->getElementType();
+		}
+
+		// Set the attributes
+		$elementRecord->enabled = (bool) $element->enabled;
+		$elementRecord->archived = (bool) $element->archived;
+
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			// Save the element record first
+			$success = $elementRecord->save(false);
+
+			if ($success)
+			{
+				if ($isNewElement)
+				{
+					// Save the element id on the element model, in case {id} is in the URL format
+					$element->id = $elementRecord->id;
+
+					if ($elementType->hasContent())
+					{
+						$element->getContent()->elementId = $element->id;
+					}
+				}
+
+				// Save the content
+				if ($elementType->hasContent())
+				{
+					craft()->content->saveContent($element, false);
+				}
+
+				// Update the search index
+				craft()->search->indexElementAttributes($element);
+
+				// Update the locale records and content
+
+				// For new elements, we'll need to create all of these.
+				// For existing elements, only worry about it if they have a URL, which may have just changed if it uses {dateUpdated}, etc..
+
+				if ($elementType->isLocalized() && ($isNewElement || $element->getUrlFormat()))
+				{
+					$localeRecords = array();
+
+					if (!$isNewElement)
+					{
+						$existingLocaleRecords = ElementLocaleRecord::model()->findAllByAttributes(array(
+							'elementId' => $element->id
+						));
+
+						foreach ($existingLocaleRecords as $record)
+						{
+							$localeRecords[$record->locale] = $record;
+						}
+					}
+
+					$originalLocaleId = $element->locale;
+
+					if ($elementType->hasContent())
+					{
+						$originalContent = $element->getContent();
+					}
+
+					foreach ($element->getLocales() as $localeId)
+					{
+						// Set the locale and its content on the element
+						$element->locale = $localeId;
+
+						if ($elementType->hasContent())
+						{
+							if ($localeId == $originalLocaleId)
+							{
+								$content = $originalContent;
+							}
+							else
+							{
+								$content = null;
+
+								if (!$isNewElement)
+								{
+									// Do we already have a content row for this locale?
+									$content = craft()->content->getContent($element);
+								}
+
+								if (!$content)
+								{
+									$content = craft()->content->createContent($element);
+									$content->setAttributes($originalContent->getAttributes());
+									$content->id = null;
+									$content->locale = $localeId;
+								}
+							}
+
+							$element->setContent($content);
+
+							if (!$content->id)
+							{
+								craft()->content->saveContent($element, false, false);
+							}
+						}
+
+						// Set a valid/unique slug and URI
+						ElementHelper::setValidSlug($element);
+						ElementHelper::setUniqueUri($element);
+
+						if (isset($localeRecords[$localeId]))
+						{
+							$localeRecord = $localeRecords[$localeId];
+						}
+						else
+						{
+							$localeRecord = new ElementLocaleRecord();
+							$localeRecord->elementId = $element->id;
+							$localeRecord->locale = $element->locale;
+						}
+
+						$localeRecord->slug = $element->slug;
+						$localeRecord->uri  = $element->uri;
+
+						$success = $localeRecord->save();
+
+						if (!$success)
+						{
+							// Don't bother with any of the other locales
+							break;
+						}
+					}
+
+					$element->locale = $originalLocaleId;
+					$element->setContent($originalContent);
+				}
+			}
+
+			if ($transaction !== null)
+			{
+				if ($success)
+				{
+					$transaction->commit();
+				}
+				else
+				{
+					$transaction->rollback();
+				}
+			}
+
+			if (!$success && $isNewElement)
+			{
+				$element->id = null;
+
+				if ($elementType->hasContent())
+				{
+					$element->getContent()->id = null;
+					$element->getContent()->elementId = null;
+				}
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+
+		return $success;
 	}
 
 	/**

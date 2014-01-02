@@ -49,26 +49,22 @@ class EntriesService extends BaseApplicationComponent
 			$entry->setParent($parentEntry);
 		}
 
-		// Entry data
+		// Get the entry record
 		if (!$isNewEntry)
 		{
-			$entryRecord = EntryRecord::model()->with('element')->findById($entry->id);
+			$entryRecord = EntryRecord::model()->findById($entry->id);
 
 			if (!$entryRecord)
 			{
 				throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
 			}
-
-			$elementRecord = $entryRecord->element;
 		}
 		else
 		{
 			$entryRecord = new EntryRecord();
-
-			$elementRecord = new ElementRecord();
-			$elementRecord->type = ElementType::Entry;
 		}
 
+		// Get the section
 		$section = craft()->sections->getSectionById($entry->sectionId);
 
 		if (!$section)
@@ -76,6 +72,7 @@ class EntriesService extends BaseApplicationComponent
 			throw new Exception(Craft::t('No section exists with the ID “{id}”', array('id' => $entry->sectionId)));
 		}
 
+		// Verify that the section is available in this locale
 		$sectionLocales = $section->getLocales();
 
 		if (!isset($sectionLocales[$entry->locale]))
@@ -83,23 +80,21 @@ class EntriesService extends BaseApplicationComponent
 			throw new Exception(Craft::t('The section “{section}” is not enabled for the locale {locale}', array('section' => $section->name, 'locale' => $entry->locale)));
 		}
 
+		// Set the entry data
 		$entryRecord->sectionId  = $entry->sectionId;
-		$entryRecord->postDate   = $entry->postDate;
 
 		if ($section->type == SectionType::Single)
 		{
 			$entryRecord->authorId   = $entry->authorId = null;
 			$entryRecord->expiryDate = $entry->expiryDate = null;
-
-			$elementRecord->enabled  = $entry->enabled = true;
+			$entry->enabled = true;
 		}
 		else
 		{
 			$entryRecord->authorId   = $entry->authorId;
 			$entryRecord->postDate   = $entry->postDate;
 			$entryRecord->expiryDate = $entry->expiryDate;
-
-			$elementRecord->enabled  = $entry->enabled;
+			$entryRecord->typeId     = $entry->getType()->id;
 		}
 
 		if ($entry->enabled && !$entryRecord->postDate)
@@ -109,73 +104,15 @@ class EntriesService extends BaseApplicationComponent
 		}
 
 		$entryRecord->validate();
-		$elementRecord->validate();
-
 		$entry->addErrors($entryRecord->getErrors());
-		$entry->addErrors($elementRecord->getErrors());
-
-		// Entry content
-		$entryType = $entry->getType();
-
-		if (!$entryType)
-		{
-			throw new Exception(Craft::t('No entry types are available for this entry.'));
-		}
-
-		// Set the typeId attribute on the model in case it hasn't been set
-		$entry->typeId = $entryRecord->typeId = $entryType->id;
-
-		if (!craft()->content->validateContent($entry))
-		{
-			$entry->addErrors($entry->getContent()->getErrors());
-		}
 
 		if (!$entry->hasErrors())
 		{
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
-				// Save the element record first
-				$elementRecord->save(false);
-
-				if ($isNewEntry)
-				{
-					// Save the element id on the entry model, in case {id} is in the url format
-					$entry->id = $elementRecord->id;
-				}
-
-				// Only worry about entry and element locale stuff if it's a channel or structure section
-				// since singles already have all of the locale records they'll ever need
-				// and that data never gets changed, outside of when the section is edited.
-
-				if ($section->type != SectionType::Single)
-				{
-					// Set a unique slug and URI
-					ElementHelper::setValidSlug($entry);
-					ElementHelper::setUniqueUri($entry);
-
-					if (!$isNewEntry)
-					{
-						$elementLocaleRecord = ElementLocaleRecord::model()->findByAttributes(array(
-							'elementId' => $entry->id,
-							'locale'    => $entry->locale
-						));
-					}
-
-					if (empty($elementLocaleRecord))
-					{
-						$elementLocaleRecord = new ElementLocaleRecord();
-						$elementLocaleRecord->locale = $entry->locale;
-					}
-
-					$elementLocaleRecord->slugIsRequired = true;
-					$elementLocaleRecord->slug = $entry->slug;
-					$elementLocaleRecord->uri  = $entry->uri;
-					$elementLocaleRecord->validate();
-					$entry->addErrors($elementLocaleRecord->getErrors());
-				}
-
-				if (!$entry->hasErrors())
+				// Save the element
+				if (craft()->elements->saveElement($entry))
 				{
 					// Now that we have an element ID, save it on the other stuff
 					if ($isNewEntry)
@@ -186,43 +123,24 @@ class EntriesService extends BaseApplicationComponent
 					// Save the actual entry row
 					$entryRecord->save(false);
 
-					// Has the parent changed?
-					if ($hasNewParent)
+					if ($section->type == SectionType::Structure)
 					{
-						if (!$entry->parentId)
+						// Has the parent changed?
+						if ($hasNewParent)
 						{
-							craft()->structures->appendToRoot($section->structureId, $entry);
-						}
-						else
-						{
-							craft()->structures->append($section->structureId, $entry, $parentEntry);
-						}
-					}
-
-					// Save the content
-					$entry->getContent()->elementId = $entry->id;
-					craft()->content->saveContent($entry, false);
-
-					if ($section->type != SectionType::Single)
-					{
-						// Save the locale record
-						$elementLocaleRecord->elementId = $entry->id;
-						$elementLocaleRecord->save(false);
-
-						if (!$isNewEntry && $section->hasUrls)
-						{
-							craft()->elements->updateElementSlugAndUriInOtherLocales($entry);
-
-							if ($section->type == SectionType::Structure)
+							if (!$entry->parentId)
 							{
-								// Update the entry's descendants, who may be using this entry's URI in their own URIs
-								craft()->elements->updateDescendantSlugsAndUris($entry);
+								craft()->structures->appendToRoot($section->structureId, $entry);
+							}
+							else
+							{
+								craft()->structures->append($section->structureId, $entry, $parentEntry);
 							}
 						}
-					}
 
-					// Update the search index
-					craft()->search->indexElementAttributes($entry, $entry->locale);
+						// Update the entry's descendants, who may be using this entry's URI in their own URIs
+						craft()->elements->updateDescendantSlugsAndUris($entry);
+					}
 
 					// Save a new version
 					if (craft()->hasPackage(CraftPackage::PublishPro))
