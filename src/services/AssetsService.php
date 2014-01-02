@@ -89,7 +89,9 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function storeFile(AssetFileModel $file)
 	{
-		if ($file->id)
+		$isNewFile = !$file->id;
+
+		if (!$isNewFile)
 		{
 			$fileRecord = AssetFileRecord::model()->findById($file->id);
 
@@ -100,12 +102,7 @@ class AssetsService extends BaseApplicationComponent
 		}
 		else
 		{
-			$elementRecord = new ElementRecord();
-			$elementRecord->type = ElementType::Asset;
-			$elementRecord->enabled = 1;
-			$elementRecord->save();
 			$fileRecord = new AssetFileRecord();
-			$fileRecord->id = $elementRecord->id;
 		}
 
 		$fileRecord->sourceId     = $file->sourceId;
@@ -117,28 +114,52 @@ class AssetsService extends BaseApplicationComponent
 		$fileRecord->height       = $file->height;
 		$fileRecord->dateModified = $file->dateModified;
 
-		if ($fileRecord->save())
+		$fileRecord->validate();
+		$file->addErrors($fileRecord->getErrors());
+
+		if (!$file->hasErrors())
 		{
-			if (!$file->id)
+			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+			try
 			{
-				// Save the ID on the model now that we have it
-				$file->id = $fileRecord->id;
+				if ($isNewFile && !$file->getContent()->title)
+				{
+					// Give it a default title based on the file name
+					$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
+				}
 
-				// Give it a default title based on the file name
-				$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
-				$this->saveFileContent($file, false);
+				// Save the element
+				if (craft()->elements->saveElement($file, false))
+				{
+					// Now that we have an element ID, save it on the other stuff
+					if ($isNewFile)
+					{
+						$fileRecord->id = $file->id;
+					}
+
+					// Save the file row
+					$fileRecord->save(false);
+
+					if ($transaction !== null)
+					{
+						$transaction->commit();
+					}
+
+					return true;
+				}
 			}
+			catch (\Exception $e)
+			{
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
 
-			// Update the search index
-			craft()->search->indexElementAttributes($file);
+				throw $e;
+			}
+		}
 
-			return true;
-		}
-		else
-		{
-			$file->addErrors($fileRecord->getErrors());
-			return false;
-		}
+		return false;
 	}
 
 	/**
