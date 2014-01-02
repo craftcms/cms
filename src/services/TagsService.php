@@ -287,27 +287,16 @@ class TagsService extends BaseApplicationComponent
 		// Tag data
 		if (!$isNewTag)
 		{
-			$tagRecord = TagRecord::model()->with('element')->findById($tag->id);
+			$tagRecord = TagRecord::model()->findById($tag->id);
 
 			if (!$tagRecord)
 			{
 				throw new Exception(Craft::t('No tag exists with the ID “{id}”', array('id' => $tag->id)));
 			}
-
-			$elementRecord = $tagRecord->element;
-
-			// If tag->groupId is null and there is an tagRecord groupId, we assume this is a front-end edit.
-			if ($tag->groupId === null && $tagRecord->groupId)
-			{
-				$tag->groupId = $tagRecord->groupId;
-			}
 		}
 		else
 		{
 			$tagRecord = new TagRecord();
-
-			$elementRecord = new ElementRecord();
-			$elementRecord->type = ElementType::Tag;
 		}
 
 		$tagRecord->groupId = $tag->groupId;
@@ -316,44 +305,47 @@ class TagsService extends BaseApplicationComponent
 		$tagRecord->validate();
 		$tag->addErrors($tagRecord->getErrors());
 
-		$elementRecord->validate();
-		$tag->addErrors($elementRecord->getErrors());
-
 		if (!$tag->hasErrors())
 		{
-			// Save the element record first
-			$elementRecord->save(false);
-
-			if ($isNewTag)
+			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+			try
 			{
-				// Now that we have an element ID, save it on the other stuff
-				$tag->id = $elementRecord->id;
-				$tagRecord->id = $tag->id;
+				if (craft()->elements->saveElement($tag, false))
+				{
+					// Now that we have an element ID, save it on the other stuff
+					if ($isNewTag)
+					{
+						$tagRecord->id = $tag->id;
+					}
 
-				// Create a row in content
-				$content = new ContentModel();
-				$content->elementId = $tag->id;
-				$tag->setContent($content);
-				craft()->content->saveContent($tag, false);
+					$tagRecord->save(false);
+
+					// Fire an 'onSaveTag' event
+					$this->onSaveTag(new Event($this, array(
+						'tag'      => $tag,
+						'isNewTag' => $isNewTag
+					)));
+
+					if ($transaction !== null)
+					{
+						$transaction->commit();
+					}
+
+					return true;
+				}
 			}
+			catch (\Exception $e)
+			{
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
 
-			$tagRecord->save(false);
-
-			// Update the search index
-			craft()->search->indexElementAttributes($tag, $tag->locale);
-
-			// Fire an 'onSaveTag' event
-			$this->onSaveTag(new Event($this, array(
-				'tag'      => $tag,
-				'isNewTag' => $isNewTag
-			)));
-
-			return true;
+				throw $e;
+			}
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
