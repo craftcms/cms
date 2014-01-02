@@ -207,6 +207,7 @@ class ElementsService extends BaseApplicationComponent
 							}
 						}
 
+						$row['locale'] = $criteria->locale;
 						$element = $elementType->populateElementModel($row);
 
 						if ($elementType->hasContent())
