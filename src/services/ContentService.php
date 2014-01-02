@@ -99,10 +99,10 @@ class ContentService extends BaseApplicationComponent
 			throw new Exception(Craft::t('Cannot save the content of an unsaved element.'));
 		}
 
+		$content = $element->getContent();
+
 		if (!$validate || $this->validateContent($element))
 		{
-			$content = $element->getContent();
-
 			$this->_saveContentRow($content);
 			$this->_postSaveOperations($element, $content, $updateOtherLocales);
 			return true;
