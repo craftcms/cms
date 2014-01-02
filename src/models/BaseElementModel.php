@@ -410,26 +410,9 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if (!isset($this->_content))
 		{
-			if ($this->id)
-			{
-				$contentService = craft()->content;
+			$this->_content = craft()->content->getContent($this);
 
-				$originalContentTable      = $contentService->contentTable;
-				$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-				$originalFieldContext      = $contentService->fieldContext;
-
-				$contentService->contentTable      = $this->getContentTable();
-				$contentService->fieldColumnPrefix = $this->getFieldColumnPrefix();
-				$contentService->fieldContext      = $this->getFieldContext();
-
-				$this->_content = $contentService->getElementContent($this->id, $this->locale);
-
-				$contentService->contentTable = $originalContentTable;
-				$contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-				$contentService->fieldContext = $originalFieldContext;
-			}
-
-			if (empty($this->_content))
+			if (!$this->_content)
 			{
 				$this->_content = $this->createContentModel();
 			}

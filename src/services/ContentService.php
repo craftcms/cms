@@ -13,13 +13,23 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Returns the content model for a given element and locale.
 	 *
-	 * @param int $elementId
-	 * @param string|null $localeId
+	 * @param BaseElementModel $elementId
 	 * @return ContentModel|null
 	 */
-	public function getElementContent($elementId, $localeId = null)
+	public function getContent(BaseElementModel $element)
 	{
-		$conditions = array('elementId' => $elementId);
+		if (!$element->id || !$element->locale)
+		{
+			return;
+		}
+
+		$originalContentTable      = $this->contentTable;
+		$originalFieldColumnPrefix = $this->fieldColumnPrefix;
+		$originalFieldContext      = $this->fieldContext;
+
+		$this->contentTable        = $element->getContentTable();
+		$this->fieldColumnPrefix   = $element->getFieldColumnPrefix();
+		$this->fieldContext        = $element->getFieldContext();
 
 		if ($localeId)
 		{
@@ -28,15 +38,27 @@ class ContentService extends BaseApplicationComponent
 
 		$row = craft()->db->createCommand()
 			->from($this->contentTable)
-			->where($conditions)
+			->where(array(
+				'elementId' => $element->id,
+				'locale'    => $element->locale
+			))
 			->queryRow();
 
 		if ($row)
 		{
 			$row = $this->_removeColumnPrefixesFromRow($row);
-
-			return new ContentModel($row);
+			$content = new ContentModel($row);
 		}
+		else
+		{
+			$content = null;
+		}
+
+		$this->contentTable        = $originalContentTable;
+		$this->fieldColumnPrefix   = $originalFieldColumnPrefix;
+		$this->fieldContext        = $originalFieldContext;
+
+		return $content;
 	}
 
 	/**
