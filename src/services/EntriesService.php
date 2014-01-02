@@ -167,13 +167,6 @@ class EntriesService extends BaseApplicationComponent
 					{
 						$transaction->rollback();
 					}
-
-					if ($isNewEntry)
-					{
-						$entry->id = null;
-					}
-
-					return false;
 				}
 			}
 			catch (\Exception $e)
@@ -186,10 +179,8 @@ class EntriesService extends BaseApplicationComponent
 				throw $e;
 			}
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
