@@ -89,35 +89,22 @@ class ElementsService extends BaseApplicationComponent
 	public function findElements($criteria = null, $justIds = false)
 	{
 		$elements = array();
-		$subquery = $this->buildElementsQuery($criteria, $fieldColumns);
+		$query = $this->buildElementsQuery($criteria, $fieldColumns);
 
-		if ($subquery)
+		if ($query)
 		{
 			if ($criteria->search)
 			{
-				$elementIds = $this->_getElementIdsFromQuery($subquery);
+				$elementIds = $this->_getElementIdsFromQuery($query);
 				$scoredSearchResults = ($criteria->order == 'score');
 				$filteredElementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, $scoredSearchResults);
-				$subquery->andWhere(array('in', 'elements.id', $filteredElementIds));
+				$query->andWhere(array('in', 'elements.id', $filteredElementIds));
 			}
-
-			$query = craft()->db->createCommand();
 
 			if ($justIds)
 			{
 				$query->select('r.id');
 			}
-			else
-			{
-				// Tests are showing that listing out all of the columns here is actually slower
-				// than just doing SELECT * -- probably due to the large number of columns we need to select.
-				$query->select('*');
-			}
-
-			$query->from('('.$subquery->getText().') AS '.craft()->db->quoteTableName('r'))
-			      ->group('r.id');
-
-			$query->params = $subquery->params;
 
 			if ($criteria->fixedOrder)
 			{
@@ -198,25 +185,14 @@ class ElementsService extends BaseApplicationComponent
 						if ($elementType->hasContent())
 						{
 							// Separate the content values from the main element attributes
-							$content = array();
-							$content['elementId'] = $row['id'];
-							$content['locale'] = $criteria->locale;
+							$content = array(
+								'id'        => (isset($row['contentId']) ? $row['contentId'] : null),
+								'elementId' => $row['id'],
+								'locale'    => $criteria->locale,
+								'title'     => (isset($row['title']) ? $row['title'] : null)
+							);
 
-							if (isset($row['title']))
-							{
-								$content['title'] = $row['title'];
-								unset($row['title']);
-							}
-
-							// Did we actually get the requested locale back?
-							if ($row['locale'] == $criteria->locale)
-							{
-								$content['id'] = $row['contentId'];
-							}
-							else
-							{
-								$row['locale'] = $criteria->locale;
-							}
+							unset($row['title']);
 
 							if ($fieldColumns)
 							{
@@ -276,11 +252,11 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function getTotalElements($criteria = null)
 	{
-		$subquery = $this->buildElementsQuery($criteria);
+		$query = $this->buildElementsQuery($criteria);
 
-		if ($subquery)
+		if ($query)
 		{
-			$elementIds = $this->_getElementIdsFromQuery($subquery);
+			$elementIds = $this->_getElementIdsFromQuery($query);
 
 			if ($criteria->search)
 			{
@@ -309,17 +285,29 @@ class ElementsService extends BaseApplicationComponent
 			$criteria = $this->getCriteria('Entry', $criteria);
 		}
 
-		if (!$criteria->locale)
-		{
-			// Default to the current app target locale
-			$criteria->locale = craft()->language;
-		}
-
 		$elementType = $criteria->getElementType();
 
+		if (!$criteria->locale)
+		{
+			if ($elementType->isLocalized())
+			{
+				// Default to the current app target locale
+				$criteria->locale = craft()->language;
+			}
+			else
+			{
+				// Default to the primary site locale
+				$criteria->locale = craft()->i18n->getPrimarySiteLocaleId();
+			}
+		}
+
+		// Set up the query
+
 		$query = craft()->db->createCommand()
-			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated')
-			->from('elements elements');
+			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri')
+			->from('elements elements')
+			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
+			->where('elements_i18n.locale = :locale', array(':locale' => $criteria->locale));
 
 		if ($elementType->hasContent())
 		{
@@ -327,12 +315,7 @@ class ElementsService extends BaseApplicationComponent
 
 			if ($contentTable)
 			{
-				$contentCols = 'content.id AS contentId, content.locale';
-
-				if ($elementType->hasTitles())
-				{
-					$contentCols .= ', content.title';
-				}
+				$contentCols = 'content.id AS contentId, content.title';
 
 				$fieldColumns = $elementType->getContentFieldColumnsForElementsQuery($criteria);
 
@@ -343,35 +326,11 @@ class ElementsService extends BaseApplicationComponent
 
 				$query->addSelect($contentCols);
 				$query->join($contentTable.' content', 'content.elementId = elements.id');
-				$this->_orderByRequestedLocale($query, 'content', $criteria->locale);
+				$query->andWhere('content.locale = :locale');
 			}
 		}
 
-		if ($elementType->isLocalized())
-		{
-			$query->addSelect('elements_i18n.slug, elements_i18n.uri');
-			$query->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
-
-			if (!$elementType->hasContent())
-			{
-				$query->addSelect('elements_i18n.locale');
-				$this->_orderByRequestedLocale($query, 'elements_i18n', $criteria->locale);
-			}
-			else
-			{
-				$query->andWhere('elements_i18n.locale = content.locale');
-			}
-
-			if ($criteria->slug)
-			{
-				$query->andWhere(DbHelper::parseParam('elements_i18n.slug', $criteria->slug, $query->params));
-			}
-
-			if ($criteria->uri !== null)
-			{
-				$query->andWhere(DbHelper::parseParam('elements_i18n.uri', $criteria->uri, $query->params));
-			}
-		}
+		// Basic element params
 
 		if ($criteria->id === false)
 		{
@@ -457,6 +416,18 @@ class ElementsService extends BaseApplicationComponent
 			$query->andWhere(DbHelper::parseDateParam('elements.dateUpdated', $criteria->dateUpdated, $query->params));
 		}
 
+		// i18n params
+
+		if ($criteria->slug)
+		{
+			$query->andWhere(DbHelper::parseParam('elements_i18n.slug', $criteria->slug, $query->params));
+		}
+
+		if ($criteria->uri !== null)
+		{
+			$query->andWhere(DbHelper::parseParam('elements_i18n.uri', $criteria->uri, $query->params));
+		}
+
 		// Relational params
 
 		// Convert the old childOf and parentOf params to the relatedTo param
@@ -505,8 +476,8 @@ class ElementsService extends BaseApplicationComponent
 			}
 		}
 
+		// Field params
 
-		// Field conditions
 		foreach ($criteria->getSupportedFieldHandles() as $fieldHandle)
 		{
 			if ($criteria->$fieldHandle !== false)
@@ -522,10 +493,13 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// Give the element type a chance to make changes
+
 		if ($elementType->modifyElementsQuery($query, $criteria) === false)
 		{
 			return false;
 		}
+
+		// Structure params
 
 		if ($query->isJoined('structureelements'))
 		{
@@ -743,7 +717,7 @@ class ElementsService extends BaseApplicationComponent
 				// For new elements, we'll need to create all of these.
 				// For existing elements, only worry about it if they have a URL, which may have just changed if it uses {dateUpdated}, etc..
 
-				if ($elementType->isLocalized() && ($isNewElement || $element->getUrlFormat()))
+				if ($isNewElement || $element->getUrlFormat())
 				{
 					$localeRecords = array();
 
@@ -1134,29 +1108,6 @@ class ElementsService extends BaseApplicationComponent
 
 	// Private functions
 	// =================
-
-	/**
-	 * Adds ORDER BY's to the passed-in query to sort the requested locale up to the top.
-	 *
-	 * @access private
-	 * @param DbCommand $query
-	 * @param string $table
-	 * @param string|null $localeId
-	 */
-	private function _orderByRequestedLocale(DbCommand $query, $table, $localeId)
-	{
-		$localeIds = craft()->i18n->getSiteLocaleIds();
-
-		if (count($localeIds) > 1)
-		{
-			// Move the requested locale to the first position
-			array_unshift($localeIds, $localeId);
-			$localeIds = array_unique($localeIds);
-
-			// Order the results by locale
-			$query->order(craft()->db->getSchema()->orderByColumnValues($table.'.locale', $localeIds));
-		}
-	}
 
 	/**
 	 * Parses a relatedTo criteria param and returns the condition(s) or 'false' if there's an issue.
