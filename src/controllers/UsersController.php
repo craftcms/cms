@@ -490,6 +490,8 @@ class UsersController extends BaseController
 	{
 		$this->requirePostRequest();
 
+		$isCurrentUser = false;
+
 		if (craft()->hasPackage(CraftPackage::Users))
 		{
 			$userId = craft()->request->getPost('userId');
@@ -505,13 +507,18 @@ class UsersController extends BaseController
 			$userId = craft()->userSession->getUser()->id;
 		}
 
+		if (($currentUser = craft()->userSession->getUser()) !== null && $userId == $currentUser->id)
+		{
+			$isCurrentUser = true;
+		}
+
 		$publicRegistration = false;
 		$canRegisterUsers = false;
 
 		// Are we editing an existing user?
 		if ($userId)
 		{
-			if ($userId != craft()->userSession->getUser()->id)
+			if (!$isCurrentUser)
 			{
 				craft()->userSession->requirePermission('editUsers');
 			}
@@ -521,6 +528,12 @@ class UsersController extends BaseController
 			if (!$user)
 			{
 				throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+			}
+
+			if ($user->id !== $userId)
+			{
+				// Users package is required
+				craft()->requirePackage(CraftPackage::Users);
 			}
 		}
 		else
@@ -535,13 +548,11 @@ class UsersController extends BaseController
 				craft()->userSession->requirePermission('registerUsers');
 				$canRegisterUsers = true;
 			}
-			else
+
+			// Is public registration enabled?
+			if (craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
 			{
-				// Is public registration enabled?
-				if (craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
-				{
-					$publicRegistration = true;
-				}
+				$publicRegistration = true;
 			}
 
 			// If there is no public registration and the current user can't register users, complain loudly.
@@ -620,11 +631,10 @@ class UsersController extends BaseController
 			{
 				if (craft()->users->saveUser($user))
 				{
-					// If it's a front-end registration, there may not be a logged in user.
 					if (($currentUser = craft()->userSession->getUser()))
 					{
 						// Save any user groups
-						if ($currentUser->can('administrateUsers'))
+						if ($currentUser->can('administrateUsers') && craft()->hasPackage(CraftPackage::Users))
 						{
 							// Save any user groups
 							$groupIds = craft()->request->getPost('groups');

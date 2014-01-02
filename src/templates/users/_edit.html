@@ -48,7 +48,12 @@
 		{% if account is defined %}
 			<form id="userform" method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
 					<input type="hidden" name="action" value="users/saveUser">
-					<input type="hidden" name="redirect" value="users">
+					<input type="hidden" name="action" value="users/saveUser">
+					{% if craft.hasPackage("Users") %}
+						<input type="hidden" name="redirect" value="users">
+					{% else %}
+						<input type="hidden" name="redirect" value="myaccount">
+					{% endif %}
 
 				{% if not isNewAccount %}
 					<input type="hidden" name="userId" value="{{ account.id }}">
