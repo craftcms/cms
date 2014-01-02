@@ -172,7 +172,7 @@ class GlobalsService extends BaseApplicationComponent
 
 		if (!$isNewSet)
 		{
-			$globalSetRecord = GlobalSetRecord::model()->with('element')->findById($globalSet->id);
+			$globalSetRecord = GlobalSetRecord::model()->findById($globalSet->id);
 
 			if (!$globalSetRecord)
 			{
@@ -180,7 +180,6 @@ class GlobalsService extends BaseApplicationComponent
 			}
 
 			$oldSet = GlobalSetModel::populateModel($globalSetRecord);
-			$elementRecord = $globalSetRecord->element;
 		}
 		else
 		{
