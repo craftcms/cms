@@ -671,20 +671,18 @@ class ElementsService extends BaseApplicationComponent
 	 * Saves an element.
 	 *
 	 * @param BaseElementModel $element
+	 * @param bool             $validateContent
 	 * @return bool
 	 */
-	public function saveElement(BaseElementModel $element)
+	public function saveElement(BaseElementModel $element, $validateContent = true)
 	{
 		$elementType = $this->getElementType($element->getElementType());
 
 		// Validate the content first
-		if ($elementType->hasContent())
+		if ($validateContent && $elementType->hasContent() && !craft()->content->validateContent($element))
 		{
-			if (!craft()->content->validateContent($element))
-			{
-				$element->addErrors($element->getContent()->getErrors());
-				return false;
-			}
+			$element->addErrors($element->getContent()->getErrors());
+			return false;
 		}
 
 		// Get the element record
