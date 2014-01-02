@@ -52,16 +52,11 @@ class EntryModel extends BaseElementModel
 	/**
 	 * Returns the locale IDs this element is available in.
 	 *
-	 * @return array|null
+	 * @return array
 	 */
 	public function getLocales()
 	{
-		$section = $this->getSection();
-
-		if ($section)
-		{
-			return array_keys($section->getLocales());
-		}
+		return array_keys($this->getSection()->getLocales());
 	}
 
 	/**

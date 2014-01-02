@@ -109,10 +109,18 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the locale IDs this element is available in.
 	 *
-	 * @return array|null
+	 * @return array
 	 */
 	public function getLocales()
 	{
+		if (craft()->elements->getElementType($this->elementType)->isLocalized())
+		{
+			return craft()->i18n->getSiteLocaleIds();
+		}
+		else
+		{
+			return array(craft()->i18n->getPrimarySiteLocaleId());
+		}
 	}
 
 	/**
