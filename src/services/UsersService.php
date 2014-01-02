@@ -349,6 +349,7 @@ class UsersService extends BaseApplicationComponent
 	 *
 	 * @param UserModel $user
 	 * @return bool
+	 * @deprecated Deprecated since 1.4
 	 */
 	public function saveProfile(UserModel $user)
 	{
@@ -360,6 +361,7 @@ class UsersService extends BaseApplicationComponent
 	 * Fires an 'onSaveProfile' event.
 	 *
 	 * @param Event $event
+	 * @deprecated Deprecated since 1.4
 	 */
 	public function onSaveProfile(Event $event)
 	{
