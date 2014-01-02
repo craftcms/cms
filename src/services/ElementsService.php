@@ -103,7 +103,7 @@ class ElementsService extends BaseApplicationComponent
 
 			if ($justIds)
 			{
-				$query->select('r.id');
+				$query->select('elements.id');
 			}
 
 			if ($criteria->fixedOrder)
