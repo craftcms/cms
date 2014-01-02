@@ -244,7 +244,6 @@ class UsersService extends BaseApplicationComponent
 		if (!$user->hasErrors())
 		{
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-
 			try
 			{
 				if ($user->verificationRequired)
@@ -259,75 +258,62 @@ class UsersService extends BaseApplicationComponent
 					'isNewUser' => $isNewUser
 				)));
 
-				if ($isNewUser)
+				if (craft()->elements->saveElement($user, false))
 				{
-					// Create the element record
-					$elementRecord = new ElementRecord();
-					$elementRecord->type = ElementType::User;
-					$elementRecord->save();
-
-					// Now that we have the entry ID, save it on everything else
-					$user->id = $elementRecord->id;
-					$userRecord->id = $elementRecord->id;
-					$user->getContent()->elementId = $elementRecord->id;
-				}
-
-				$userRecord->save(false);
-
-				// Call save content regardless if the Users package is installed or not.
-				if (!craft()->content->saveContent($user, false))
-				{
-					throw new Exception(Craft::t('There was a problem saving content on the user.'));
-				}
-
-				if (!$isNewUser)
-				{
-					// Has the username changed?
-					if ($user->username != $oldUsername)
+					// Now that we have an element ID, save it on the other stuff
+					if ($isNewUser)
 					{
-						// Rename the user's photo directory
-						$oldFolder = craft()->path->getUserPhotosPath().$oldUsername;
-						$newFolder = craft()->path->getUserPhotosPath().$user->username;
+						$userRecord->id = $user->id;
+					}
 
-						if (IOHelper::folderExists($newFolder))
-						{
-							IOHelper::deleteFolder($newFolder);
-						}
+					$userRecord->save(false);
 
-						if (IOHelper::folderExists($oldFolder))
+					if ($isNewUser && $user->verificationRequired)
+					{
+						craft()->email->sendEmailByKey($user, 'account_activation', array(
+							'link' => new \Twig_Markup(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+						));
+					}
+
+					if (!$isNewUser)
+					{
+						// Has the username changed?
+						if ($user->username != $oldUsername)
 						{
-							IOHelper::rename($oldFolder, $newFolder);
+							// Rename the user's photo directory
+							$oldFolder = craft()->path->getUserPhotosPath().$oldUsername;
+							$newFolder = craft()->path->getUserPhotosPath().$user->username;
+
+							if (IOHelper::folderExists($newFolder))
+							{
+								IOHelper::deleteFolder($newFolder);
+							}
+
+							if (IOHelper::folderExists($oldFolder))
+							{
+								IOHelper::rename($oldFolder, $newFolder);
+							}
 						}
 					}
+
+					// Fire an 'onSaveUser' event
+					$this->onSaveUser(new Event($this, array(
+						'user'      => $user,
+						'isNewUser' => $isNewUser
+					)));
+
+					// Deprecated, but keep it here for now.
+					$this->onSaveProfile(new Event($this, array(
+						'user' => $user
+					)));
+
+					if ($transaction !== null)
+					{
+						$transaction->commit();
+					}
+
+					return true;
 				}
-
-				// Update the search index
-				craft()->search->indexElementAttributes($user);
-
-				if ($isNewUser && $user->verificationRequired)
-				{
-					craft()->email->sendEmailByKey($user, 'account_activation', array(
-						'link' => new \Twig_Markup(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
-					));
-				}
-
-				// Fire an 'onSaveUser' event
-				$this->onSaveUser(new Event($this, array(
-					'user'      => $user,
-					'isNewUser' => $isNewUser
-				)));
-
-				// Deprecated, but keep it here for now.
-				$this->onSaveProfile(new Event($this, array(
-					'user' => $user
-				)));
-
-				if ($transaction !== null)
-				{
-					$transaction->commit();
-				}
-
-				return true;
 			}
 			catch (\Exception $e)
 			{
@@ -341,7 +327,6 @@ class UsersService extends BaseApplicationComponent
 		}
 
 		return false;
-
 	}
 
 	/**
