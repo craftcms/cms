@@ -31,11 +31,6 @@ class ContentService extends BaseApplicationComponent
 		$this->fieldColumnPrefix   = $element->getFieldColumnPrefix();
 		$this->fieldContext        = $element->getFieldContext();
 
-		if ($localeId)
-		{
-			$conditions['locale'] = $localeId;
-		}
-
 		$row = craft()->db->createCommand()
 			->from($this->contentTable)
 			->where(array(
