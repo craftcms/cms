@@ -11,7 +11,7 @@ class ContentService extends BaseApplicationComponent
 	public $fieldContext = 'global';
 
 	/**
-	 * Returns the content model for a given element and locale.
+	 * Returns the content model for a given element.
 	 *
 	 * @param BaseElementModel $elementId
 	 * @return ContentModel|null
@@ -53,6 +53,33 @@ class ContentService extends BaseApplicationComponent
 		{
 			$content = null;
 		}
+
+		$this->contentTable        = $originalContentTable;
+		$this->fieldColumnPrefix   = $originalFieldColumnPrefix;
+		$this->fieldContext        = $originalFieldContext;
+
+		return $content;
+	}
+
+	/**
+	 * Creates a new content model for a given element.
+	 *
+	 * @param BaseElementModel $element
+	 * @return ContentModel
+	 */
+	public function createContent(BaseElementModel $element)
+	{
+		$originalContentTable      = $this->contentTable;
+		$originalFieldColumnPrefix = $this->fieldColumnPrefix;
+		$originalFieldContext      = $this->fieldContext;
+
+		$this->contentTable        = $element->getContentTable();
+		$this->fieldColumnPrefix   = $element->getFieldColumnPrefix();
+		$this->fieldContext        = $element->getFieldContext();
+
+		$content = new ContentModel();
+		$content->elementId = $element->id;
+		$content->locale = $element->locale;
 
 		$this->contentTable        = $originalContentTable;
 		$this->fieldColumnPrefix   = $originalFieldColumnPrefix;

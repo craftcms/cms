@@ -414,7 +414,7 @@ abstract class BaseElementModel extends BaseModel
 
 			if (!$this->_content)
 			{
-				$this->_content = $this->createContentModel();
+				$this->_content = craft()->content->createContent($this);
 			}
 		}
 
@@ -432,7 +432,7 @@ abstract class BaseElementModel extends BaseModel
 		{
 			if (!isset($this->_content))
 			{
-				$this->_content = $this->createContentModel();
+				$this->_content = craft()->content->createContent($this);
 			}
 
 			$this->_content->setAttributes($content);
@@ -538,35 +538,6 @@ abstract class BaseElementModel extends BaseModel
 		$contentService->fieldContext = $originalFieldContext;
 
 		return $field;
-	}
-
-	/**
-	 * Creates a content model for this element.
-	 *
-	 * @access protected
-	 * @return ContentModel
-	 */
-	protected function createContentModel()
-	{
-		$contentService = craft()->content;
-
-		$originalContentTable      = $contentService->contentTable;
-		$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-		$originalFieldContext      = $contentService->fieldContext;
-
-		$contentService->contentTable      = $this->getContentTable();
-		$contentService->fieldColumnPrefix = $this->getFieldColumnPrefix();
-		$contentService->fieldContext      = $this->getFieldContext();
-
-		$content = new ContentModel();
-		$content->elementId = $this->id;
-		$content->locale = $this->locale;
-
-		$contentService->contentTable = $originalContentTable;
-		$contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-		$contentService->fieldContext = $originalFieldContext;
-
-		return $content;
 	}
 
 	/**
