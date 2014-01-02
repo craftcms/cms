@@ -99,19 +99,33 @@ class ContentService extends BaseApplicationComponent
 			throw new Exception(Craft::t('Cannot save the content of an unsaved element.'));
 		}
 
+		$originalContentTable      = $this->contentTable;
+		$originalFieldColumnPrefix = $this->fieldColumnPrefix;
+		$originalFieldContext      = $this->fieldContext;
+
+		$this->contentTable        = $element->getContentTable();
+		$this->fieldColumnPrefix   = $element->getFieldColumnPrefix();
+		$this->fieldContext        = $element->getFieldContext();
+
 		$content = $element->getContent();
 
 		if (!$validate || $this->validateContent($element))
 		{
 			$this->_saveContentRow($content);
 			$this->_postSaveOperations($element, $content, $updateOtherLocales);
-			return true;
+			$success = true;
 		}
 		else
 		{
 			$element->addErrors($content->getErrors());
-			return false;
+			$success = false;
 		}
+
+		$this->contentTable        = $originalContentTable;
+		$this->fieldColumnPrefix   = $originalFieldColumnPrefix;
+		$this->fieldContext        = $originalFieldContext;
+
+		return $success;
 	}
 
 	/**
