@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m140204_000001_elements_i18n_slug extends BaseMigration
+class m140204_000001_elements_i18n_tweaks extends BaseMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
@@ -21,6 +21,8 @@ class m140204_000001_elements_i18n_slug extends BaseMigration
 
 		if (craft()->db->tableExists('entries_i18n'))
 		{
+			Craft::log('Copying the slugs from entries_i18n into elements_i18n.', LogLevel::Info, true);
+
 			$rows = craft()->db->createCommand()
 				->select('entryId, locale, slug')
 				->from('entries_i18n')
@@ -36,8 +38,20 @@ class m140204_000001_elements_i18n_slug extends BaseMigration
 				));
 			}
 
+			Craft::log('Dropping the entries_i18n table.');
 			$this->dropTable('entries_i18n');
 		}
+
+		if (!craft()->db->columnExists('elements_i18n', 'enabled'))
+		{
+			Craft::log('Creating an elements_i18n.enabled column.', LogLevel::Info, true);
+			$this->addColumnAfter('elements_i18n', 'enabled', array('column' => ColumnType::Bool, 'default' => true), 'uri');
+		}
+
+		MigrationHelper::dropIndexIfExists('elements_i18n', array('slug', 'locale'));
+		MigrationHelper::dropIndexIfExists('elements_i18n', array('enabled'));
+		$this->createIndex('elements_i18n', 'slug,locale');
+		$this->createIndex('elements_i18n', 'enabled');
 
 		return true;
 	}
