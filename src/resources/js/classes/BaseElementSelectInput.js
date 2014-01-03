@@ -125,7 +125,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 				multiSelect: true,
 				disableOnSelect: true,
 				disabledElementIds: selectedElementIds,
-				onSelect: $.proxy(this, 'selectElements')
+				onSelect: $.proxy(this, 'selectElements'),
+				onHide: $.proxy(this, 'onHide')
 			});
 		}
 		else
@@ -187,5 +188,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 		{
 			this.$addElementBtn.addClass('disabled');
 		}
+	},
+
+	onHide: function ()
+	{
+
 	}
+
 });

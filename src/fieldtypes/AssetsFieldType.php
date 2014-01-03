@@ -19,6 +19,12 @@ class AssetsFieldType extends BaseElementFieldType
 	protected $inputJsClass = 'Craft.AssetSelectInput';
 
 	/**
+	 * Template to use for field rendering
+	 * @var string
+	 */
+	protected $inputTemplate = '_components/fieldtypes/Assets/input';
+
+	/**
 	 * Returns the label for the "Add" button.
 	 *
 	 * @access protected
@@ -157,7 +163,126 @@ class AssetsFieldType extends BaseElementFieldType
 			$variables['sources'] = $sourcePath;
 		}
 
+
+		craft()->templates->includeJsResource('lib/fileupload/jquery.ui.widget.js');
+		craft()->templates->includeJsResource('lib/fileupload/jquery.fileupload.js');
 		return parent::getInputHtml($name, $criteria, $variables);
+	}
+
+	/**
+	 * For all new entries, if the field is using a single folder setting, move the uploaded files.
+	 */
+	public function onAfterElementSave()
+	{
+		$handle = $this->model->handle;
+
+		// See if we have uploaded file(s).
+		if (!empty($_FILES['fields']['name'][$handle]))
+		{
+			// Normalize the uploaded files, so that we always have an array to parse.
+			$uploadedFiles = array();
+
+			if (!is_array($_FILES['fields']['name'][$handle]) && IOHelper::fileExists($_FILES['fields']['tmp_name'][$handle]) && $_FILES['fields']['size'][$handle])
+			{
+				$uploadedFiles[] = array(
+					'name' => $_FILES['fields']['name'][$handle],
+					'tmp_name' => $_FILES['fields']['tmp_name'][$handle]
+				);
+			}
+			else
+			{
+				foreach ($_FILES['fields']['name'][$handle] as $index => $name)
+				{
+					if (IOHelper::fileExists($_FILES['fields']['tmp_name'][$handle][$index]) && $_FILES['fields']['size'][$handle][$index])
+					{
+						$uploadedFiles[] = array(
+							'name' => $name,
+							'tmp_name' => $_FILES['fields']['tmp_name'][$handle][$index]
+						);
+					}
+				}
+			}
+
+			$fileIds = array();
+
+			if (count($uploadedFiles))
+			{
+				$targetFolderId = $this->resolveSourcePath();
+
+				if (!empty($targetFolderId))
+				{
+					foreach ($uploadedFiles as $file)
+					{
+						$tempPath = AssetsHelper::getTempFilePath($file['name']);
+						move_uploaded_file($file['tmp_name'], $tempPath);
+						$fileIds[] = craft()->assets->insertFileByLocalPath($tempPath, $file['name'], $targetFolderId);
+					}
+					$this->element->getContent()->{$handle} = $fileIds;
+
+				}
+			}
+		}
+		// No uploaded files, just good old-fashioned Assets field
+		else
+		{
+			$filesToMove = $this->element->getContent()->{$handle};
+			if (is_array($filesToMove) && count($filesToMove))
+			{
+				$targetFolderId = $this->_resolveSourcePathToFolderId($this->getSettings()->singleFolderPath);
+
+				// Resolve all conflicts by keeping both
+				$actions = array_fill(0, count($filesToMove), AssetsHelper::ActionKeepBoth);
+				craft()->assets->moveFiles($filesToMove, $targetFolderId, '', $actions);
+			}
+		}
+
+		parent::onAfterElementSave();
+	}
+
+	/**
+	 * Resolve source path for uploading for this field.
+	 *
+	 * @return mixed|null
+	 */
+	public function resolveSourcePath()
+	{
+		$targetFolderId = null;
+		$settings = $this->getSettings();
+		if ($settings->useSingleFolder)
+		{
+			$targetFolderId = $this->_resolveSourcePathToFolderId($settings->singleFolderPath);
+		}
+		else
+		{
+			if ($this->getSettings()->defaultUploadPath)
+			{
+				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->defaultUploadPath);
+			}
+			else
+			{
+				$sources = $settings->sources;
+				if (!is_array($sources))
+				{
+					$sourceIds = craft()->assetSources->getViewableSourceIds();
+					if ($sourceIds)
+					{
+						$sourceId = reset($sourceIds);
+						$targetFolder = craft()->assets->findFolder(array('sourceId' => $sourceId, 'parentId' => FolderCriteriaModel::AssetsNoParent));
+						if ($targetFolder)
+						{
+							$targetFolderId = $targetFolder->id;
+						}
+					}
+				}
+				else
+				{
+					$targetFolder = reset($sources);
+					list ($bogus, $targetFolderId) = explode(":", $targetFolder);
+				}
+			}
+		}
+
+		return $targetFolderId;
 	}
 
 	/**
@@ -266,107 +391,4 @@ class AssetsFieldType extends BaseElementFieldType
 		}
 	}
 
-	/**
-	 * For all new entries, if the field is using a single folder setting, move the uploaded files.
-	 */
-	public function onAfterElementSave()
-	{
-		$settings = $this->getSettings();
-
-		$handle = $this->model->handle;
-
-		// See if we have uploaded file(s).
-		if (!empty($_FILES['fields']['name'][$handle]))
-		{
-			// Normalize the uploaded files, so that we always have an array to parse.
-			$uploadedFiles = array();
-
-			if (!is_array($_FILES['fields']['name'][$handle]) && IOHelper::fileExists($_FILES['fields']['tmp_name'][$handle]) && $_FILES['fields']['size'][$handle])
-			{
-				$uploadedFiles[] = array(
-					'name' => $_FILES['fields']['name'][$handle],
-					'tmp_name' => $_FILES['fields']['tmp_name'][$handle]
-				);
-			}
-			else
-			{
-				foreach ($_FILES['fields']['name'][$handle] as $index => $name)
-				{
-					if (IOHelper::fileExists($_FILES['fields']['tmp_name'][$handle][$index]) && $_FILES['fields']['size'][$handle][$index])
-					{
-						$uploadedFiles[] = array(
-							'name' => $name,
-							'tmp_name' => $_FILES['fields']['tmp_name'][$handle][$index]
-						);
-					}
-				}
-			}
-
-			$fileIds = array();
-
-			if (count($uploadedFiles))
-			{
-				if ($settings->useSingleFolder)
-				{
-					$targetFolderId = $this->_resolveSourcePathToFolderId($settings->singleFolderPath);
-				}
-				else
-				{
-					if ($settings->defaultUploadPath)
-					{
-						$targetFolderId = $this->_resolveSourcePathToFolderId($settings->defaultUploadPath);
-					}
-					else
-					{
-						$sources = $settings->sources;
-						if (!is_array($sources))
-						{
-							$sourceIds = craft()->assetSources->getViewableSourceIds();
-							if ($sourceIds)
-							{
-								$sourceId = reset($sourceIds);
-								$targetFolder = craft()->assets->findFolder(array('sourceId' => $sourceId, 'parentId' => FolderCriteriaModel::AssetsNoParent));
-								if ($targetFolder)
-								{
-									$targetFolderId = $targetFolder->id;
-								}
-							}
-						}
-						else
-						{
-							$targetFolder = reset($sources);
-							list ($bogus, $targetFolderId) = explode(":", $targetFolder);
-						}
-					}
-				}
-
-				if (!empty($targetFolderId))
-				{
-					foreach ($uploadedFiles as $file)
-					{
-						$tempPath = AssetsHelper::getTempFilePath($file['name']);
-						move_uploaded_file($file['tmp_name'], $tempPath);
-						$fileIds[] = craft()->assets->insertFileByLocalPath($tempPath, $file['name'], $targetFolderId);
-					}
-					$this->element->getContent()->{$handle} = $fileIds;
-
-				}
-			}
-		}
-		// No uploaded files, just good old-fashioned Assets field
-		else
-		{
-			$filesToMove = $this->element->getContent()->{$handle};
-			if (is_array($filesToMove) && count($filesToMove))
-			{
-				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->singleFolderPath);
-
-				// Resolve all conflicts by keeping both
-				$actions = array_fill(0, count($filesToMove), AssetsHelper::ActionKeepBoth);
-				craft()->assets->moveFiles($filesToMove, $targetFolderId, '', $actions);
-			}
-		}
-
-		parent::onAfterElementSave();
-	}
 }

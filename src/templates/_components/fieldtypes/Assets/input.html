@@ -1,0 +1,34 @@
+{% if name is defined and name %}
+	<input type="hidden" name="{{ name }}" value="">
+{% endif -%}
+
+{% set elements = (elements is defined ? elements : []) -%}
+{% set jsClass = (jsClass is defined and jsClass ? jsClass : 'Craft.BaseElementSelectInput') -%}
+{% set sources = (sources is defined and sources ? sources : null) -%}
+{% set criteria = (criteria is defined and criteria ? criteria : null) -%}
+{% set storageKey = (storageKey is defined and storageKey ? storageKey : null) -%}
+
+<div id="{{ id }}" class="elementselect">
+	<div class="elements">
+		{% for element in elements %}
+			{% include "_elements/element" with { context: 'field' } %}
+		{% endfor %}
+	</div>
+
+	<div class="btn add icon dashed">{{ addButtonLabel }}</div>
+</div>
+
+{% set js %}
+	new {{ jsClass }}(
+		"{{ id   | namespaceInputId   | e('js') }}",
+		"{{ name | namespaceInputName | e('js') }}",
+		"{{ elementType.getClassHandle()|e('js') }}",
+		{{ sources|json_encode|raw }},
+		{{ criteria|json_encode|raw }},
+		{{ limit ? limit : 'null' }},
+		"{{ storageKey|e('js') }}",
+		{{ fieldId }}
+	);
+{% endset %}
+
+{% includeJs js %}

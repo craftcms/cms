@@ -142,7 +142,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 	cancel: function()
 	{
 		this.hide();
-		this.settings.onCancel();
 	},
 
 	selectElements: function()

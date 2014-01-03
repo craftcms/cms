@@ -51,6 +51,53 @@ class AssetsController extends BaseController
 	}
 
 	/**
+	 * Uploads a file directly to a field for an entry.
+	 *
+	 * @throws Exception
+	 */
+	public function actionExpressUpload()
+	{
+
+		$this->requireAjaxRequest();
+		$fieldId = craft()->request->getPost('fieldId', 0);
+		$entryId = craft()->request->getPost('entryId', 0);
+
+		if (empty($_FILES['files']) || !isset($_FILES['files']['error'][0]) || $_FILES['files']['error'][0] != 0)
+		{
+			throw new Exception(Craft::t('The upload failed.'));
+		}
+
+		/**
+		 * @var AssetsFieldType
+		 */
+		$field = craft()->fields->populateFieldType(craft()->fields->getFieldById($fieldId));
+
+		if (!($field instanceof AssetsFieldType))
+		{
+			throw new Exception(Craft::t('That is not an Assets field.'));
+		}
+
+		if ($entryId)
+		{
+			$field->element = craft()->elements->getElementById($entryId);
+		}
+		else
+		{
+			$field->element = new EntryModel();
+		}
+
+		$targetFolderId = $field->resolveSourcePath();
+
+
+		$fileName = $_FILES['files']['name'][0];
+		$fileLocation = AssetsHelper::getTempFilePath(pathinfo($fileName, PATHINFO_EXTENSION));
+		move_uploaded_file($_FILES['files']['tmp_name'][0], $fileLocation);
+
+		$fileId = craft()->assets->insertFileByLocalPath($fileLocation, $fileName, $targetFolderId);
+		$this->returnJson(array($fileId));
+	}
+
+	/**
 	 * View a file's content.
 	 */
 	public function actionEditFileContent()

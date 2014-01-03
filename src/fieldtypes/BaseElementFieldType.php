@@ -31,6 +31,12 @@ abstract class BaseElementFieldType extends BaseFieldType
 	protected $allowLimit = true;
 
 	/**
+	 * Template to use for field rendering
+	 * @var string
+	 */
+	protected $inputTemplate = '_includes/forms/elementSelect';
+
+	/**
 	 * Returns the type of field this is.
 	 *
 	 * @return string
@@ -181,6 +187,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			'jsClass'        => $this->inputJsClass,
 			'elementType'    => new ElementTypeVariable($this->getElementType()),
 			'id'             => craft()->templates->formatInputId($name),
+			'fieldId'        => $this->model->id,
 			'storageKey'     => 'field.'.$this->model->id,
 			'name'           => $name,
 			'elements'       => $criteria,
@@ -192,7 +199,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 		$templateVariables = array_merge($templateVariables, $variables);
 
-		return craft()->templates->render('_includes/forms/elementSelect', $templateVariables);
+		return craft()->templates->render($this->inputTemplate, $templateVariables);
 	}
 
 	/**

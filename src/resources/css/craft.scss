@@ -648,6 +648,10 @@ ul.tree,
 	to { background-position: -50px; }
 }
 
+.elementselect .progress-shade{ background: rgba(255,255,255,0.8); width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none;}
+.elementselect.uploading { position: relative;}
+.elementselect.uploading .progress-shade{ display: block; z-index: 2;}
+
 /* ----------------------------------------
 /*  Modals
 /* ----------------------------------------*/
@@ -842,11 +846,6 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 
 /* Assets related */
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
-.btn .progress-shade{ background: rgba(255,255,255,0.8); width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none;}
-
-.btn.uploading { position: relative;}
-.btn.uploading .progress-shade{ display: block;}
-
 
 /* Prompts */
 .modal.prompt-modal .buttons .btn { margin: 5px; }
