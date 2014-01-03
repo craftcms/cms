@@ -130,8 +130,6 @@ class m140204_000000_structures extends BaseMigration
 
 				foreach ($entries as $entry)
 				{
-					craft()->config->maxPowerCaptain();
-
 					$this->insert('structureelements', array(
 						'structureId' => $structuresBySectionId[$entry['sectionId']]['id'],
 						'elementId'   => $entry['id'],

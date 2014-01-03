@@ -230,6 +230,9 @@ class SectionsService extends BaseApplicationComponent
 	 */
 	public function saveSection(SectionModel $section)
 	{
+		// This might take a while
+		craft()->config->maxPowerCaptain();
+
 		if ($section->id)
 		{
 			$sectionRecord = SectionRecord::model()->with('structure')->findById($section->id);
@@ -589,8 +592,6 @@ class SectionsService extends BaseApplicationComponent
 
 							do
 							{
-								craft()->config->maxPowerCaptain();
-
 								$criteria = craft()->elements->getCriteria(ElementType::Entry);
 								$criteria->sectionId = $section->id;
 								$criteria->status = null;
@@ -646,8 +647,6 @@ class SectionsService extends BaseApplicationComponent
 						{
 							foreach ($entryIds as $entryId)
 							{
-								craft()->config->maxPowerCaptain();
-
 								// Loop through each of the changed locales and update all of the entries’ slugs and URIs
 								foreach ($changedLocaleIds as $localeId)
 								{

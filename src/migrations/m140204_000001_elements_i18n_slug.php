@@ -28,8 +28,6 @@ class m140204_000001_elements_i18n_slug extends BaseMigration
 
 			foreach ($rows as $row)
 			{
-				craft()->config->maxPowerCaptain();
-
 				$this->update('elements_i18n', array(
 					'slug' => $row['slug']
 				), array(
