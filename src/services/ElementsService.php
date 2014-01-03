@@ -720,100 +720,94 @@ class ElementsService extends BaseApplicationComponent
 
 				// Update the locale records and content
 
-				// For new elements, we'll need to create all of these.
-				// For existing elements, only worry about it if they have a URL, which may have just changed if it uses {dateUpdated}, etc..
+				$localeRecords = array();
 
-				if ($isNewElement || $element->getUrlFormat())
+				if (!$isNewElement)
 				{
-					$localeRecords = array();
+					$existingLocaleRecords = ElementLocaleRecord::model()->findAllByAttributes(array(
+						'elementId' => $element->id
+					));
 
-					if (!$isNewElement)
+					foreach ($existingLocaleRecords as $record)
 					{
-						$existingLocaleRecords = ElementLocaleRecord::model()->findAllByAttributes(array(
-							'elementId' => $element->id
-						));
-
-						foreach ($existingLocaleRecords as $record)
-						{
-							$localeRecords[$record->locale] = $record;
-						}
+						$localeRecords[$record->locale] = $record;
 					}
+				}
 
-					$originalLocaleId = $element->locale;
+				$originalLocaleId = $element->locale;
+
+				if ($elementType->hasContent())
+				{
+					$originalContent = $element->getContent();
+				}
+
+				foreach ($element->getLocales() as $localeId)
+				{
+					// Set the locale and its content on the element
+					$element->locale = $localeId;
 
 					if ($elementType->hasContent())
 					{
-						$originalContent = $element->getContent();
-					}
-
-					foreach ($element->getLocales() as $localeId)
-					{
-						// Set the locale and its content on the element
-						$element->locale = $localeId;
-
-						if ($elementType->hasContent())
+						if ($localeId == $originalLocaleId)
 						{
-							if ($localeId == $originalLocaleId)
-							{
-								$content = $originalContent;
-							}
-							else
-							{
-								$content = null;
-
-								if (!$isNewElement)
-								{
-									// Do we already have a content row for this locale?
-									$content = craft()->content->getContent($element);
-								}
-
-								if (!$content)
-								{
-									$content = craft()->content->createContent($element);
-									$content->setAttributes($originalContent->getAttributes());
-									$content->id = null;
-									$content->locale = $localeId;
-								}
-							}
-
-							$element->setContent($content);
-
-							if (!$content->id)
-							{
-								craft()->content->saveContent($element, false, false);
-							}
-						}
-
-						// Set a valid/unique slug and URI
-						ElementHelper::setValidSlug($element);
-						ElementHelper::setUniqueUri($element);
-
-						if (isset($localeRecords[$localeId]))
-						{
-							$localeRecord = $localeRecords[$localeId];
+							$content = $originalContent;
 						}
 						else
 						{
-							$localeRecord = new ElementLocaleRecord();
-							$localeRecord->elementId = $element->id;
-							$localeRecord->locale = $element->locale;
+							$content = null;
+
+							if (!$isNewElement)
+							{
+								// Do we already have a content row for this locale?
+								$content = craft()->content->getContent($element);
+							}
+
+							if (!$content)
+							{
+								$content = craft()->content->createContent($element);
+								$content->setAttributes($originalContent->getAttributes());
+								$content->id = null;
+								$content->locale = $localeId;
+							}
 						}
 
-						$localeRecord->slug = $element->slug;
-						$localeRecord->uri  = $element->uri;
+						$element->setContent($content);
 
-						$success = $localeRecord->save();
-
-						if (!$success)
+						if (!$content->id)
 						{
-							// Don't bother with any of the other locales
-							break;
+							craft()->content->saveContent($element, false, false);
 						}
 					}
 
-					$element->locale = $originalLocaleId;
-					$element->setContent($originalContent);
+					// Set a valid/unique slug and URI
+					ElementHelper::setValidSlug($element);
+					ElementHelper::setUniqueUri($element);
+
+					if (isset($localeRecords[$localeId]))
+					{
+						$localeRecord = $localeRecords[$localeId];
+					}
+					else
+					{
+						$localeRecord = new ElementLocaleRecord();
+						$localeRecord->elementId = $element->id;
+						$localeRecord->locale = $element->locale;
+					}
+
+					$localeRecord->slug = $element->slug;
+					$localeRecord->uri  = $element->uri;
+
+					$success = $localeRecord->save();
+
+					if (!$success)
+					{
+						// Don't bother with any of the other locales
+						break;
+					}
 				}
+
+				$element->locale = $originalLocaleId;
+				$element->setContent($originalContent);
 			}
 
 			if ($transaction !== null)
@@ -927,6 +921,41 @@ class ElementsService extends BaseApplicationComponent
 		{
 			$this->updateElementSlugAndUri($child);
 		}
+	}
+
+	/**
+	 * Resaves all of the elements matching the given criteria.
+	 * Useful for patching missing locale rows, etc.
+	 *
+	 * @param ElementCriteriaModel $criteria
+	 */
+	public function resaveElements(ElementCriteriaModel $criteria)
+	{
+		// This might take a while
+		craft()->config->maxPowerCaptain();
+		ignore_user_abort(true);
+
+		// Just to be safe...
+		$criteria->locale = craft()->i18n->getPrimarySiteLocaleId();
+		$criteria->status = null;
+		$criteria->order = 'dateCreated asc';
+
+		// Do this in batches so we don't hit the memory limit
+		$criteria->offset = 0;
+		$criteria->limit = 25;
+
+		do
+		{
+			$batchElements = $criteria->find();
+
+			foreach ($batchElements as $element)
+			{
+				$this->saveElement($element);
+			}
+
+			$criteria->offset += 25;
+		}
+		while ($batchElements);
 	}
 
 	/**
