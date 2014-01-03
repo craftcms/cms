@@ -47,6 +47,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 			'level'          => AttributeType::Number,
 			'limit'          => array(AttributeType::Number, 'default' => 100),
 			'locale'         => AttributeType::Locale,
+			'localeStatus'   => array(AttributeType::Enum, 'values' => array('enabled', 'disabled'), 'default' => 'enabled'),
 			'nextSiblingOf'  => AttributeType::Mixed,
 			'offset'         => array(AttributeType::Number, 'default' => 0),
 			'order'          => array(AttributeType::String, 'default' => 'dateCreated desc'),

@@ -429,9 +429,15 @@ class ElementsService extends BaseApplicationComponent
 			$query->andWhere(DbHelper::parseParam('elements_i18n.slug', $criteria->slug, $query->params));
 		}
 
-		if ($criteria->uri !== null)
+		if ($criteria->uri)
 		{
 			$query->andWhere(DbHelper::parseParam('elements_i18n.uri', $criteria->uri, $query->params));
+		}
+
+		if ($criteria->localeStatus)
+		{
+			$localeEnabled = ($criteria->localeStatus == 'enabled');
+			$query->andWhere(array('elements_i18n.enabled' => $localeEnabled));
 		}
 
 		// Relational params
