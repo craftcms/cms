@@ -5,6 +5,7 @@ Craft.Locales = Garnish.Base.extend({
 
 	$addLocaleField: null,
 	$addLocaleInput: null,
+	$addLocaleSpinner: null,
 	$resultsSheet: null,
 	$resultsList: null,
 	$activeLocale: null,
@@ -30,6 +31,7 @@ Craft.Locales = Garnish.Base.extend({
 
 		this.$addLocaleField = $('#addlocale');
 		this.$addLocaleInput = $('#addlocaleinput');
+		this.$addLocaleSpinner = this.$addLocaleField.find('.spinner');
 
 		this.adminTable = new Craft.AdminTable({
 			tableSelector: '#locales',
@@ -243,9 +245,15 @@ Craft.Locales = Garnish.Base.extend({
 			var $activeLocale = this.$activeLocale;
 		}
 
+		this.hideResultsSheet();
+		this.$addLocaleInput.val(this.$activeLocale.text()).prop('disabled', true);
+		this.$addLocaleSpinner.removeClass('hidden');
+
 		var id = $activeLocale.attr('data-id');
 
 		Craft.postActionRequest('localization/addLocale', { id: id }, $.proxy(function(response, textStatus) {
+
+			this.$addLocaleSpinner.addClass('hidden');
 
 			if (textStatus == 'success')
 			{
@@ -261,7 +269,7 @@ Craft.Locales = Garnish.Base.extend({
 					this.adminTable.addRow($tr);
 
 					this.selectedLocales.push(id);
-					this.$addLocaleInput.val('').trigger('keydown');
+					this.$addLocaleInput.val('').prop('disabled', false).trigger('keydown');
 					this.checkInputVal();
 
 					Craft.cp.displayNotice(Craft.t('New locale added.'));

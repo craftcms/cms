@@ -217,13 +217,13 @@
 				</div>
 
 				{{ forms.textField({
-					label: "Max Entry Depth"|t,
-					instructions: "The maximum depth entries can go. Leave blank if you don’t care."|t,
-					id: 'structure-maxDepth',
-					name: 'types[structure][maxDepth]',
-					value: section.maxDepth,
+					label: "Max Levels"|t,
+					instructions: "The maximum number of levels this section can have. Leave blank if you don’t care."|t,
+					id: 'structure-maxLevels',
+					name: 'types[structure][maxLevels]',
+					value: section.maxLevels,
 					size: 5,
-					errors: section.getErrors('maxDepth')
+					errors: section.getErrors('maxLevels')
 				}) }}
 
 			</div>

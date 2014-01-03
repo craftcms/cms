@@ -5,8 +5,8 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 
 	id: null,
 	name: null,
-	tagSetId: null,
-	elementId: null,
+	tagGroupId: null,
+	sourceElementId: null,
 	elementSort: null,
 	searchTimeout: null,
 	menu: null,
@@ -17,12 +17,12 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 	$addTagInput: null,
 	$spinner: null,
 
-	init: function(id, name, tagSetId, elementId, hasFields)
+	init: function(id, name, tagGroupId, sourceElementId, hasFields)
 	{
 		this.id = id;
 		this.name = name;
-		this.tagSetId = tagSetId;
-		this.elementId = elementId;
+		this.tagGroupId = tagGroupId;
+		this.sourceElementId = sourceElementId;
 
 		this.$container = $('#'+this.id);
 		this.$elementsContainer = this.$container.children('.elements');
@@ -123,14 +123,14 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 				}
 			}
 
-			if (this.elementId)
+			if (this.sourceElementId)
 			{
-				excludeIds.push(this.elementId);
+				excludeIds.push(this.sourceElementId);
 			}
 
 			var data = {
 				search:     this.$addTagInput.val(),
-				tagSetId:   this.tagSetId,
+				tagGroupId: this.tagGroupId,
 				excludeIds: excludeIds
 			};
 

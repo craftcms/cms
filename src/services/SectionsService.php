@@ -69,10 +69,7 @@ class SectionsService extends BaseApplicationComponent
 	{
 		if (!$this->_fetchedAllSections)
 		{
-			$criteria = new \CDbCriteria();
-
-			$sectionRecords = SectionRecord::model()->ordered()->findAll($criteria);
-			$sections = SectionModel::populateModels($sectionRecords);
+			$sectionRecords = SectionRecord::model()->ordered()->with('structure')->findAll();
 
 			$this->_sectionsById = array();
 
@@ -82,10 +79,11 @@ class SectionsService extends BaseApplicationComponent
 				SectionType::Structure => 0
 			);
 
-			foreach ($sections as $section)
+			foreach ($sectionRecords as $sectionRecord)
 			{
-				if (craft()->hasPackage(CraftPackage::PublishPro) || $typeCounts[$section->type] < $this->typeLimits[$section->type])
+				if (craft()->hasPackage(CraftPackage::PublishPro) || $typeCounts[$sectionRecord->type] < $this->typeLimits[$sectionRecord->type])
 				{
+					$section = $this->_populateSectionFromRecord($sectionRecord);
 					$this->_sectionsById[$section->id] = $section;
 					$typeCounts[$section->type]++;
 				}
@@ -177,16 +175,8 @@ class SectionsService extends BaseApplicationComponent
 			(!isset($this->_sectionsById) || !array_key_exists($sectionId, $this->_sectionsById))
 		)
 		{
-			$sectionRecord = SectionRecord::model()->findById($sectionId);
-
-			if ($sectionRecord)
-			{
-				$this->_sectionsById[$sectionId] = SectionModel::populateModel($sectionRecord);
-			}
-			else
-			{
-				$this->_sectionsById[$sectionId] = null;
-			}
+			$sectionRecord = SectionRecord::model()->with('structure')->findById($sectionId);
+			$this->_sectionsById[$sectionId] = $this->_populateSectionFromRecord($sectionRecord);
 		}
 
 		if (isset($this->_sectionsById[$sectionId]))
@@ -203,13 +193,15 @@ class SectionsService extends BaseApplicationComponent
 	 */
 	public function getSectionByHandle($sectionHandle)
 	{
-		$sectionRecord = SectionRecord::model()->findByAttributes(array(
+		$sectionRecord = SectionRecord::model()->with('structure')->findByAttributes(array(
 			'handle' => $sectionHandle
 		));
 
 		if ($sectionRecord)
 		{
-			return SectionModel::populateModel($sectionRecord);
+			$section = $this->_populateSectionFromRecord($sectionRecord);
+			$this->_sectionsById[$section->id] = $section;
+			return $section;
 		}
 	}
 
@@ -238,17 +230,20 @@ class SectionsService extends BaseApplicationComponent
 	 */
 	public function saveSection(SectionModel $section)
 	{
+		// This might take a while
+		craft()->config->maxPowerCaptain();
+
 		if ($section->id)
 		{
-			$sectionRecord = SectionRecord::model()->findById($section->id);
+			$sectionRecord = SectionRecord::model()->with('structure')->findById($section->id);
 
 			if (!$sectionRecord)
 			{
 				throw new Exception(Craft::t('No section exists with the ID “{id}”', array('id' => $section->id)));
 			}
 
+			$oldSection = $this->_populateSectionFromRecord($sectionRecord);
 			$isNewSection = false;
-			$oldSection = SectionModel::populateModel($sectionRecord);
 		}
 		else
 		{
@@ -283,15 +278,6 @@ class SectionsService extends BaseApplicationComponent
 		else
 		{
 			$sectionRecord->template = $section->template = null;
-		}
-
-		if ($section->type == SectionType::Structure)
-		{
-			$sectionRecord->maxDepth = $section->maxDepth;
-		}
-		else
-		{
-			$sectionRecord->maxDepth = $section->maxDepth = null;
 		}
 
 		$sectionRecord->validate();
@@ -339,27 +325,23 @@ class SectionsService extends BaseApplicationComponent
 			else if ($section->hasUrls)
 			{
 				$urlFormatAttributes = array('urlFormat');
+				$sectionLocale->urlFormatIsRequired = true;
 
-				if ($section->type == SectionType::Structure && $section->maxDepth != 1)
+				if ($section->type == SectionType::Structure && $section->maxLevels != 1)
 				{
 					$urlFormatAttributes[] = 'nestedUrlFormat';
+					$sectionLocale->nestedUrlFormatIsRequired = true;
 				}
 				else
 				{
 					$sectionLocale->nestedUrlFormat = null;
 				}
 
-				foreach ($urlFormatAttributes as $urlFormatAttribute)
+				foreach ($urlFormatAttributes as $attribute)
 				{
-					$errorKey = $urlFormatAttribute.'-'.$localeId;
-
-					if (empty($sectionLocale->$urlFormatAttribute))
+					if (!$sectionLocale->validate(array($attribute)))
 					{
-						$section->addError($errorKey, Craft::t('URL formats cannot be blank.'));
-					}
-					else if (mb_strpos($sectionLocale->$urlFormatAttribute, '{slug}') === false)
-					{
-						$section->addError($errorKey, Craft::t('URL formats must contain “{slug}”'));
+						$section->addError($attribute.'-'.$localeId, $sectionLocale->getError($attribute));
 					}
 				}
 			}
@@ -375,6 +357,33 @@ class SectionsService extends BaseApplicationComponent
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
+				// Do we need to create a structure?
+				if ($section->type == SectionType::Structure)
+				{
+					if (!$isNewSection && $oldSection->type == SectionType::Structure)
+					{
+						$structure = craft()->structures->getStructureById($oldSection->structureId);
+						$isNewStructure = false;
+					}
+
+					if (empty($structure))
+					{
+						$structure = new StructureModel();
+						$isNewStructure = true;
+					}
+
+					$structure->maxLevels = $section->maxLevels;
+					craft()->structures->saveStructure($structure);
+					$sectionRecord->structureId = $structure->id;
+					$section->structureId = $structure->id;
+				}
+				else if (!$isNewSection && $oldSection->structureId)
+				{
+					// Delete the old one
+					craft()->structures->deleteStructureById($oldSection->structureId);
+					$sectionRecord->structureId = null;
+				}
+
 				$sectionRecord->save(false);
 
 				// Now that we have a section ID, save it on the model
@@ -397,8 +406,6 @@ class SectionsService extends BaseApplicationComponent
 						'sectionId' => $section->id
 					));
 					$oldSectionLocales = SectionLocaleModel::populateModels($oldSectionLocaleRecords, 'locale');
-
-					$changedLocaleIds = array();
 				}
 
 				foreach ($sectionLocales as $localeId => $locale)
@@ -417,8 +424,6 @@ class SectionsService extends BaseApplicationComponent
 							), array(
 								'id' => $oldLocale->id
 							));
-
-							$changedLocaleIds[] = $localeId;
 						}
 					}
 					else
@@ -474,39 +479,6 @@ class SectionsService extends BaseApplicationComponent
 					$this->saveEntryType($entryType);
 
 					$entryTypeId = $entryType->id;
-				}
-
-				// Did the section type just change?
-				if (!$isNewSection && $oldSection->type != $section->type)
-				{
-					// Give the old section type a chance to do a little cleanup
-					switch ($oldSection->type)
-					{
-						case SectionType::Structure:
-						{
-							// Get the root node
-							$rootNodeRecord = StructuredEntryRecord::model()->roots()->findByAttributes(array(
-								'sectionId' => $section->id
-							));
-
-							// Remove all of the hierarchical data
-							craft()->db->createCommand()->update('entries', array(
-								'root'  => false,
-								'lft'   => null,
-								'rgt'   => null,
-								'depth' => null,
-							), array(
-								'sectionId' => $section->id
-							));
-
-							if ($rootNodeRecord)
-							{
-								craft()->elements->deleteElementById($rootNodeRecord->id);
-							}
-
-							break;
-						}
-					}
 				}
 
 				// Now, regardless of whether the section type changed or not,
@@ -591,6 +563,7 @@ class SectionsService extends BaseApplicationComponent
 								'elementId' => $singleEntryId,
 								'locale'    => $localeId,
 							), array(
+								'slug'      => $section->handle,
 								'uri'       => $sectionLocale->urlFormat
 							));
 
@@ -600,14 +573,6 @@ class SectionsService extends BaseApplicationComponent
 							), array(
 								'title'     => $section->name
 							));
-
-							craft()->db->createCommand()->insertOrUpdate('entries_i18n', array(
-								'entryId'   => $singleEntryId,
-								'locale'    => $localeId
-							), array(
-								'sectionId' => $section->id,
-								'slug'      => $section->handle
-							));
 						}
 
 						break;
@@ -615,34 +580,27 @@ class SectionsService extends BaseApplicationComponent
 
 					case SectionType::Structure:
 					{
-						if ($isNewSection || $oldSection->type != SectionType::Structure)
+						if (!$isNewSection && $isNewStructure)
 						{
-							if (!$isNewSection)
+							// Add all of the entries to the structure
+							$criteria = craft()->elements->getCriteria(ElementType::Entry);
+							$criteria->sectionId = $section->id;
+							$criteria->status = null;
+							$criteria->order = 'postDate';
+							$criteria->limit = 25;
+
+							do
 							{
-								// Find all of the entries in this section, before creating the root node
-								$entryRecords = StructuredEntryRecord::model()->ordered()->findAllByAttributes(array(
-									'sectionId' => $section->id
-								));
-							}
+								$batchEntries = $criteria->find();
 
-							// Create a root node
-							$rootNodeElementRecord = new ElementRecord();
-							$rootNodeElementRecord->type = ElementType::Entry;
-							$rootNodeElementRecord->save(false);
-
-							$rootNodeRecord = new StructuredEntryRecord();
-							$rootNodeRecord->id = $rootNodeElementRecord->id;
-							$rootNodeRecord->sectionId = $section->id;
-							$rootNodeRecord->saveNode();
-
-							if (!$isNewSection)
-							{
-								// Place each of the existing entries under the root node
-								foreach ($entryRecords as $entryRecord)
+								foreach ($batchEntries as $entry)
 								{
-									$entryRecord->appendTo($rootNodeRecord);
+									craft()->structures->appendToRoot($section->structureId, $entry, 'insert');
 								}
+
+								$criteria->offset += 25;
 							}
+							while ($batchEntries);
 						}
 
 						break;
@@ -654,65 +612,21 @@ class SectionsService extends BaseApplicationComponent
 				if (!$isNewSection)
 				{
 					// Get all of the entry IDs in this section
-					$entries = craft()->db->createCommand()
-						->select('id, depth')
-						->from('entries')
-						->where(array('and', array('sectionId' => $section->id), array('or', 'lft IS NULL', 'lft != 1')))
-						->order('lft')
-						->queryAll();
+					$criteria = craft()->elements->getCriteria(ElementType::Entry);
+					$criteria->sectionId = $section->id;
+					$criteria->status = null;
+					$criteria->limit = null;
+					$entryIds = $criteria->ids();
 
-					$entryIds = array();
-
-					foreach ($entries as $entry)
-					{
-						$entryIds[] = $entry['id'];
-					}
-
-					// Should we be deleting
+					// Drop the locale rows we no longer need
 					if ($entryIds && $droppedLocaleIds)
 					{
-						craft()->db->createCommand()->delete('entries_i18n', array('and', array('in', 'entryId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
 						craft()->db->createCommand()->delete('elements_i18n', array('and', array('in', 'elementId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
 						craft()->db->createCommand()->delete('content', array('and', array('in', 'elementId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
 					}
 
-					// Are there any locales left?
-					if ($sectionLocales)
-					{
-						// Drop the old entry URIs if the section no longer has URLs
-						if (!$section->hasUrls && $oldSection->hasUrls)
-						{
-							craft()->db->createCommand()->update('elements_i18n',
-								array('uri' => null),
-								array('in', 'elementId', $entryIds)
-							);
-						}
-						else if ($section->type != SectionType::Single)
-						{
-							// Loop through each of the changed locales and update all of the entries’ slugs and URIs
-							foreach ($changedLocaleIds as $localeId)
-							{
-								$sectionLocale = $sectionLocales[$localeId];
-
-								// This may take a while...
-								craft()->config->maxPowerCaptain();
-
-								foreach ($entries as $entry)
-								{
-									if ($section->type != SectionType::Structure || $entry['depth'] == 1)
-									{
-										$urlFormat = $sectionLocale->urlFormat;
-									}
-									else
-									{
-										$urlFormat = $sectionLocale->nestedUrlFormat;
-									}
-
-									craft()->entries->updateEntrySlugAndUri($entry['id'], $localeId, $urlFormat);
-								}
-							}
-						}
-					}
+					// Save all of the entries
+					craft()->elements->resaveElements($criteria);
 				}
 
 				if ($transaction !== null)
@@ -763,6 +677,18 @@ class SectionsService extends BaseApplicationComponent
 				->queryColumn();
 
 			craft()->elements->deleteElementById($entryIds);
+
+			// Delete the structure, if there is one
+			$structureId = craft()->db->createCommand()
+				->select('structureId')
+				->from('sections')
+				->where(array('id' => $sectionId))
+				->queryScalar();
+
+			if ($structureId)
+			{
+				craft()->structures->deleteStructureById($structureId);
+			}
 
 			// Delete the section.
 			$affectedRows = craft()->db->createCommand()->delete('sections', array('id' => $sectionId));
@@ -858,7 +784,7 @@ class SectionsService extends BaseApplicationComponent
 
 			if (!$entryTypeRecord)
 			{
-				throw new Exception(Craft::t('No entry type exists with the ID “{id}”', array('id' => $entryTypeId)));
+				throw new Exception(Craft::t('No entry type exists with the ID “{id}”', array('id' => $entryType->id)));
 			}
 
 			$isNewEntryType = false;
@@ -1102,5 +1028,31 @@ class SectionsService extends BaseApplicationComponent
 				return false;
 			}
 		}
+	}
+
+	// Private methods
+
+	/**
+	 * Populates a SectionModel with attributes from a SectionRecord.
+	 *
+	 * @access private
+	 * @param SectionRecord|null
+	 * @return SectionModel|null
+	 */
+	private function _populateSectionFromRecord($sectionRecord)
+	{
+		if (!$sectionRecord)
+		{
+			return null;
+		}
+
+		$section = SectionModel::populateModel($sectionRecord);
+
+		if ($sectionRecord->structure)
+		{
+			$section->maxLevels = $sectionRecord->structure->maxLevels;
+		}
+
+		return $section;
 	}
 }

@@ -8,8 +8,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     hud: null,
 	fieldId: 0,
 
-	init: function(id, name, elementType, sources, criteria, limit, storageKey, fieldId)
+	init: function(id, name, elementType, sources, criteria, sourceElementId, limit, storageKey)
 	{
+		this.base(id, name, elementType, sources, criteria, sourceElementId, limit, storageKey);
 		this.base(id, name, elementType, sources, criteria, limit, storageKey);
 		this.fieldId = fieldId;
         this._attachHUDEvents();

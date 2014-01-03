@@ -6,189 +6,189 @@ namespace Craft;
  */
 class TagsService extends BaseApplicationComponent
 {
-	private $_allTagSetIds;
-	private $_tagSetsById;
-	private $_fetchedAllTagSets = false;
+	private $_allTagGroupIds;
+	private $_tagGroupsById;
+	private $_fetchedAllTagGroups = false;
 
-	// Tag sets
+	// Tag groups
 
 	/**
-	 * Returns all of the set IDs.
+	 * Returns all of the group IDs.
 	 *
 	 * @return array
 	 */
-	public function getAllTagSetIds()
+	public function getAllTagGroupIds()
 	{
-		if (!isset($this->_allTagSetIds))
+		if (!isset($this->_allTagGroupIds))
 		{
-			if ($this->_fetchedAllTagSets)
+			if ($this->_fetchedAllTagGroups)
 			{
-				$this->_allTagSetIds = array_keys($this->_tagSetsById);
+				$this->_allTagGroupIds = array_keys($this->_tagGroupsById);
 			}
 			else
 			{
-				$this->_allTagSetIds = craft()->db->createCommand()
+				$this->_allTagGroupIds = craft()->db->createCommand()
 					->select('id')
-					->from('tagsets')
+					->from('taggroups')
 					->queryColumn();
 			}
 		}
 
-		return $this->_allTagSetIds;
+		return $this->_allTagGroupIds;
 	}
 
 	/**
-	 * Returns all tag sets.
+	 * Returns all tag groups.
 	 *
 	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public function getAllTagSets($indexBy = null)
+	public function getAllTagGroups($indexBy = null)
 	{
-		if (!$this->_fetchedAllTagSets)
+		if (!$this->_fetchedAllTagGroups)
 		{
-			$tagSetRecords = TagSetRecord::model()->ordered()->findAll();
-			$this->_tagSetsById = TagSetModel::populateModels($tagSetRecords, 'id');
-			$this->_fetchedAllTagSets = true;
+			$tagGroupRecords = TagGroupRecord::model()->ordered()->findAll();
+			$this->_tagGroupsById = TagGroupModel::populateModels($tagGroupRecords, 'id');
+			$this->_fetchedAllTagGroups = true;
 		}
 
 		if ($indexBy == 'id')
 		{
-			return $this->_tagSetsById;
+			return $this->_tagGroupsById;
 		}
 		else if (!$indexBy)
 		{
-			return array_values($this->_tagSetsById);
+			return array_values($this->_tagGroupsById);
 		}
 		else
 		{
-			$tagSets = array();
+			$tagGroups = array();
 
-			foreach ($this->_tagSetsById as $set)
+			foreach ($this->_tagGroupsById as $group)
 			{
-				$tagSets[$set->$indexBy] = $set;
+				$tagGroups[$group->$indexBy] = $group;
 			}
 
-			return $tagSets;
+			return $tagGroups;
 		}
 	}
 
 	/**
-	 * Gets the total number of tag sets.
+	 * Gets the total number of tag groups.
 	 *
 	 * @return int
 	 */
-	public function getTotalTagSets()
+	public function getTotalTagGroups()
 	{
-		return count($this->getAllTagSetIds());
+		return count($this->getAllTagGroupIds());
 	}
 
 	/**
-	 * Returns a set by its ID.
+	 * Returns a group by its ID.
 	 *
-	 * @param $setId
-	 * @return TagSetModel|null
+	 * @param $groupId
+	 * @return TagGroupModel|null
 	 */
-	public function getTagSetById($setId)
+	public function getTagGroupById($groupId)
 	{
-		if (!isset($this->_tagSetsById) || !array_key_exists($setId, $this->_tagSetsById))
+		if (!isset($this->_tagGroupsById) || !array_key_exists($groupId, $this->_tagGroupsById))
 		{
-			$setRecord = TagSetRecord::model()->findById($setId);
+			$groupRecord = TagGroupRecord::model()->findById($groupId);
 
-			if ($setRecord)
+			if ($groupRecord)
 			{
-				$this->_tagSetsById[$setId] = TagSetModel::populateModel($setRecord);
+				$this->_tagGroupsById[$groupId] = TagGroupModel::populateModel($groupRecord);
 			}
 			else
 			{
-				$this->_tagSetsById[$setId] = null;
+				$this->_tagGroupsById[$groupId] = null;
 			}
 		}
 
-		return $this->_tagSetsById[$setId];
+		return $this->_tagGroupsById[$groupId];
 	}
 
 	/**
-	 * Gets a set by its handle.
+	 * Gets a group by its handle.
 	 *
-	 * @param string $setHandle
-	 * @return TagSetModel|null
+	 * @param string $groupHandle
+	 * @return TagGroupModel|null
 	 */
-	public function getTagSetByHandle($setHandle)
+	public function getTagGroupByHandle($groupHandle)
 	{
-		$setRecord = TagSetRecord::model()->findByAttributes(array(
-			'handle' => $setHandle
+		$groupRecord = TagGroupRecord::model()->findByAttributes(array(
+			'handle' => $groupHandle
 		));
 
-		if ($setRecord)
+		if ($groupRecord)
 		{
-			return TagSetModel::populateModel($setRecord);
+			return TagGroupModel::populateModel($groupRecord);
 		}
 	}
 
 	/**
-	 * Saves a tag set.
+	 * Saves a tag group.
 	 *
-	 * @param TagSetModel $tagSet
+	 * @param TagGroupModel $tagGroup
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function saveTagSet(TagSetModel $tagSet)
+	public function saveTagGroup(TagGroupModel $tagGroup)
 	{
-		if ($tagSet->id)
+		if ($tagGroup->id)
 		{
-			$tagSetRecord = TagSetRecord::model()->findById($tagSet->id);
+			$tagGroupRecord = TagGroupRecord::model()->findById($tagGroup->id);
 
-			if (!$tagSetRecord)
+			if (!$tagGroupRecord)
 			{
-				throw new Exception(Craft::t('No tag set exists with the ID “{id}”', array('id' => $tagSet->id)));
+				throw new Exception(Craft::t('No tag group exists with the ID “{id}”', array('id' => $tagGroup->id)));
 			}
 
-			$oldTagSet = TagSetModel::populateModel($tagSetRecord);
-			$isNewTagSet = false;
+			$oldTagGroup = TagGroupModel::populateModel($tagGroupRecord);
+			$isNewTagGroup = false;
 		}
 		else
 		{
-			$tagSetRecord = new TagSetRecord();
-			$isNewTagSet = true;
+			$tagGroupRecord = new TagGroupRecord();
+			$isNewTagGroup = true;
 		}
 
-		$tagSetRecord->name       = $tagSet->name;
-		$tagSetRecord->handle     = $tagSet->handle;
+		$tagGroupRecord->name       = $tagGroup->name;
+		$tagGroupRecord->handle     = $tagGroup->handle;
 
-		$tagSetRecord->validate();
-		$tagSet->addErrors($tagSetRecord->getErrors());
+		$tagGroupRecord->validate();
+		$tagGroup->addErrors($tagGroupRecord->getErrors());
 
-		if (!$tagSet->hasErrors())
+		if (!$tagGroup->hasErrors())
 		{
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
-				if (!$isNewTagSet && $oldTagSet->fieldLayoutId)
+				if (!$isNewTagGroup && $oldTagGroup->fieldLayoutId)
 				{
 					// Drop the old field layout
-					craft()->fields->deleteLayoutById($oldTagSet->fieldLayoutId);
+					craft()->fields->deleteLayoutById($oldTagGroup->fieldLayoutId);
 				}
 
 				// Save the new one
-				$fieldLayout = $tagSet->getFieldLayout();
+				$fieldLayout = $tagGroup->getFieldLayout();
 				craft()->fields->saveLayout($fieldLayout, false);
 
-				// Update the tag set record/model with the new layout ID
-				$tagSet->fieldLayoutId = $fieldLayout->id;
-				$tagSetRecord->fieldLayoutId = $fieldLayout->id;
+				// Update the tag group record/model with the new layout ID
+				$tagGroup->fieldLayoutId = $fieldLayout->id;
+				$tagGroupRecord->fieldLayoutId = $fieldLayout->id;
 
 				// Save it!
-				$tagSetRecord->save(false);
+				$tagGroupRecord->save(false);
 
-				// Now that we have a tag set ID, save it on the model
-				if (!$tagSet->id)
+				// Now that we have a tag group ID, save it on the model
+				if (!$tagGroup->id)
 				{
-					$tagSet->id = $tagSetRecord->id;
+					$tagGroup->id = $tagGroupRecord->id;
 				}
 
-				// Might as well update our cache of the tag set while we have it.
-				$this->_tagSetsById[$tagSet->id] = $tagSet;
+				// Might as well update our cache of the tag group while we have it.
+				$this->_tagGroupsById[$tagGroup->id] = $tagGroup;
 
 				if ($transaction !== null)
 				{
@@ -214,15 +214,15 @@ class TagsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Deletes a tag set by its ID.
+	 * Deletes a tag group by its ID.
 	 *
-	 * @param int $tagSetId
+	 * @param int $tagGroupId
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function deleteTagSetById($tagSetId)
+	public function deleteTagGroupById($tagGroupId)
 	{
-		if (!$tagSetId)
+		if (!$tagGroupId)
 		{
 			return false;
 		}
@@ -233,8 +233,8 @@ class TagsService extends BaseApplicationComponent
 			// Delete the field layout
 			$fieldLayoutId = craft()->db->createCommand()
 				->select('fieldLayoutId')
-				->from('tagsets')
-				->where(array('id' => $tagSetId))
+				->from('taggroups')
+				->where(array('id' => $tagGroupId))
 				->queryScalar();
 
 			if ($fieldLayoutId)
@@ -246,12 +246,12 @@ class TagsService extends BaseApplicationComponent
 			$tagIds = craft()->db->createCommand()
 				->select('id')
 				->from('tags')
-				->where(array('setId' => $tagSetId))
+				->where(array('groupId' => $tagGroupId))
 				->queryColumn();
 
 			craft()->elements->deleteElementById($tagIds);
 
-			$affectedRows = craft()->db->createCommand()->delete('tagsets', array('id' => $tagSetId));
+			$affectedRows = craft()->db->createCommand()->delete('taggroups', array('id' => $tagGroupId));
 
 			if ($transaction !== null)
 			{
@@ -287,73 +287,65 @@ class TagsService extends BaseApplicationComponent
 		// Tag data
 		if (!$isNewTag)
 		{
-			$tagRecord = TagRecord::model()->with('element')->findById($tag->id);
+			$tagRecord = TagRecord::model()->findById($tag->id);
 
 			if (!$tagRecord)
 			{
 				throw new Exception(Craft::t('No tag exists with the ID “{id}”', array('id' => $tag->id)));
 			}
-
-			$elementRecord = $tagRecord->element;
-
-			// If tag->setId is null and there is an tagRecord setId, we assume this is a front-end edit.
-			if ($tag->setId === null && $tagRecord->setId)
-			{
-				$tag->setId = $tagRecord->setId;
-			}
 		}
 		else
 		{
 			$tagRecord = new TagRecord();
-
-			$elementRecord = new ElementRecord();
-			$elementRecord->type = ElementType::Tag;
 		}
 
-		$tagRecord->setId = $tag->setId;
+		$tagRecord->groupId = $tag->groupId;
 		$tagRecord->name = $tag->name;
 
 		$tagRecord->validate();
 		$tag->addErrors($tagRecord->getErrors());
 
-		$elementRecord->validate();
-		$tag->addErrors($elementRecord->getErrors());
-
 		if (!$tag->hasErrors())
 		{
-			// Save the element record first
-			$elementRecord->save(false);
-
-			if ($isNewTag)
+			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+			try
 			{
-				// Now that we have an element ID, save it on the other stuff
-				$tag->id = $elementRecord->id;
-				$tagRecord->id = $tag->id;
+				if (craft()->elements->saveElement($tag, false))
+				{
+					// Now that we have an element ID, save it on the other stuff
+					if ($isNewTag)
+					{
+						$tagRecord->id = $tag->id;
+					}
 
-				// Create a row in content
-				$content = new ContentModel();
-				$content->elementId = $tag->id;
-				$tag->setContent($content);
-				craft()->content->saveContent($tag, false);
+					$tagRecord->save(false);
+
+					// Fire an 'onSaveTag' event
+					$this->onSaveTag(new Event($this, array(
+						'tag'      => $tag,
+						'isNewTag' => $isNewTag
+					)));
+
+					if ($transaction !== null)
+					{
+						$transaction->commit();
+					}
+
+					return true;
+				}
 			}
+			catch (\Exception $e)
+			{
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
 
-			$tagRecord->save(false);
-
-			// Update the search index
-			craft()->search->indexElementAttributes($tag, $tag->locale);
-
-			// Fire an 'onSaveTag' event
-			$this->onSaveTag(new Event($this, array(
-				'tag'      => $tag,
-				'isNewTag' => $isNewTag
-			)));
-
-			return true;
+				throw $e;
+			}
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
 
 	/**

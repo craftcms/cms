@@ -184,8 +184,8 @@ $cpRoutes['settings/sections/(?P<sectionId>\d+)/entrytypes']                    
 $cpRoutes['settings/sections/(?P<sectionId>\d+)/entrytypes/new']                  = array('action' => 'sections/editEntryType');
 $cpRoutes['settings/sections/(?P<sectionId>\d+)/entrytypes/(?P<entryTypeId>\d+)'] = array('action' => 'sections/editEntryType');
 $cpRoutes['settings/tags']                                                        = array('action' => 'tags/index');
-$cpRoutes['settings/tags/new']                                                    = array('action' => 'tags/editTagSet');
-$cpRoutes['settings/tags/(?P<tagSetId>\d+)']                                      = array('action' => 'tags/editTagSet');
+$cpRoutes['settings/tags/new']                                                    = array('action' => 'tags/editTagGroup');
+$cpRoutes['settings/tags/(?P<tagGroupId>\d+)']                                    = array('action' => 'tags/editTagGroup');
 
 $cpRoutes['utils/phpinfo']                                                        = array('action' => 'utils/getPHPInfo');
 $cpRoutes['utils/logviewer(/(?P<currentLogFileName>[A-Za-z0-9\.]+))?']             = array('action' => 'utils/getLogs');
@@ -214,7 +214,7 @@ $cpRoutes['settings/routes'] = array(
 	)
 );
 
-$cpRoutes['myaccount'] = 'users/_edit/account';
+$cpRoutes['myaccount'] = array('action' => 'users/editUser');
 
 // Lanugage package routes
 $cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/(?P<localeId>\w+)'] = array('action' => 'entries/editEntry');
@@ -226,15 +226,9 @@ $cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<en
 $cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/versions/(?P<versionId>\d+)'] = array('action' => 'entries/editEntry');
 
 // Users package routes
-$cpRoutes['pkgRoutes']['Users']['myaccount/profile']             = 'users/_edit/profile';
-$cpRoutes['pkgRoutes']['Users']['myaccount/info']                = 'users/_edit/info';
-$cpRoutes['pkgRoutes']['Users']['myaccount/admin']               = 'users/_edit/admin';
-
-$cpRoutes['pkgRoutes']['Users']['users/new']                     = 'users/_edit/account';
-$cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)']         = 'users/_edit/account';
-$cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)/profile'] = 'users/_edit/profile';
-$cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)/admin']   = 'users/_edit/admin';
-$cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)/info']    = 'users/_edit/info';
+$cpRoutes['pkgRoutes']['Users']['myaccount']             = array('action' => 'users/editUser');
+$cpRoutes['pkgRoutes']['Users']['users/new']             = array('action' => 'users/editUser');
+$cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)'] = array('action' => 'users/editUser');
 
 $cpRoutes['pkgRoutes']['Users']['settings/users']                         = 'settings/users/groups';
 $cpRoutes['pkgRoutes']['Users']['settings/users/groups/new']              = 'settings/users/groups/_settings';
@@ -265,7 +259,12 @@ $components['matrix']['class']               = 'Craft\MatrixService';
 $components['migrations']['class']           = 'Craft\MigrationsService';
 $components['path']['class']                 = 'Craft\PathService';
 $components['relations']['class']            = 'Craft\RelationsService';
-
+$components['resources'] = array(
+	'class'     => 'Craft\ResourcesService',
+	'dateParam' => 'd',
+);
+$components['routes']['class']               = 'Craft\RoutesService';
+$components['search']['class']               = 'Craft\SearchService';
 $components['sections'] = array(
 	'class' => 'Craft\SectionsService',
 	'typeLimits' => array(
@@ -274,18 +273,12 @@ $components['sections'] = array(
 		'structure' => 0
 	)
 );
-
-$components['resources']['class']            = 'Craft\ResourcesService';
-$components['resources']['dateParam']        = 'd';
-
-$components['routes']['class']               = 'Craft\RoutesService';
-$components['search']['class']               = 'Craft\SearchService';
 $components['security']['class']             = 'Craft\SecurityService';
+$components['structures']['class']           = 'Craft\StructuresService';
 $components['systemSettings']['class']       = 'Craft\SystemSettingsService';
 $components['tags']['class']                 = 'Craft\TagsService';
 $components['templates']['class']            = 'Craft\TemplatesService';
 $components['updates']['class']              = 'Craft\UpdatesService';
-
 $components['components'] = array(
 	'class' => 'Craft\ComponentsService',
 	'types' => array(
@@ -296,7 +289,6 @@ $components['components'] = array(
 		'widget'      => array('subfolder' => 'widgets',          'suffix' => 'Widget',          'instanceof' => 'IWidget'),
 	)
 );
-
 $components['plugins'] = array(
 	'class' => 'Craft\PluginsService',
 	'componentTypes' => array(

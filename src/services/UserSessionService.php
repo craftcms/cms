@@ -40,25 +40,16 @@ class UserSessionService extends \CWebUser
 	 */
 	public function init()
 	{
+		craft()->getSession()->open();
+
 		// Let's set our own state key prefix. Leaving identical to CWebUser for the key so people won't get logged out when updating.
 		$this->setStateKeyPrefix(md5('Yii.Craft\UserSessionService.'.craft()->getId()));
 
-		// If the identity cookie is missing we assume it has expired.  We need to kill the PHP session information as early
-		// as possible in the request if the session duration is set to be anything greater than 0.
-		$cookies = craft()->request->getCookies();
-		$cookie = $cookies->itemAt($this->getStateKeyPrefix());
+		$rememberMe = craft()->request->getCookie('rememberMe') !== null ? true : false;
+		$seconds = $this->_getSessionDuration($rememberMe);
+		$this->authTimeout = $seconds;
 
-		// If there is no cookie, then assume it has expired
-		if (!$cookie)
-		{
-			// If session duration is set to 0, then the session will be over when the browser is closed.
-			if ($this->_getSessionDuration(false) > 0)
-			{
-				// No soup for you!
-				$this->logout(false);
-				return;
-			}
-		}
+		$this->updateAuthStatus();
 
 		parent::init();
 	}
@@ -287,9 +278,28 @@ class UserSessionService extends \CWebUser
 					$this->saveCookie('username', $username, $expire->getTimestamp());
 				}
 
+				// If there is a remember me cookie, but $rememberMe is false, they logged in with an unchecked remember me box, so let's remove the cookie.
+				if (craft()->request->getCookie('rememberMe') !== null && !$rememberMe)
+				{
+					craft()->request->deleteCookie('rememberMe');
+				}
+
+				if ($rememberMe)
+				{
+					$rememberMeSessionDuration = craft()->config->get('rememberedUserSessionDuration');
+					if ($rememberMeSessionDuration)
+					{
+						$interval = new DateInterval($rememberMeSessionDuration);
+						$expire = new DateTime();
+						$expire->add($interval);
+
+						// Save the username cookie.
+						$this->saveCookie('rememberMe', true, $expire->getTimestamp());
+					}
+				}
+
 				// Get how long this session is supposed to last.
 				$seconds = $this->_getSessionDuration($rememberMe);
-				$this->authTimeout = $seconds;
 
 				$id = $this->_identity->getId();
 				$states = $this->_identity->getPersistentStates();
@@ -558,22 +568,12 @@ class UserSessionService extends \CWebUser
 				$this->_checkUserAgentString($currentUserAgent, $savedUserAgent);
 
 				// Bump the expiration time.
-				$cookie->expire = time() + $data[3];
+				$expiration = time() + $data[3];
+				$cookie->expire = $expiration;
 				$cookies->add($cookie->name, $cookie);
 
 				$this->authTimeout = $data[3];
-			}
-		}
-		else
-		{
-			// If session duration is set to 0, then the session will be over when the browser is closed.
-			if ($this->_getSessionDuration(false) > 0)
-			{
-				// If they are not a guest, they still have a valid PHP session, but at this point their identity cookie has expired, so let's kill it all.
-				if (!$this->isGuest())
-				{
-					$this->logout(false);
-				}
+				$this->setState(static::AUTH_TIMEOUT_VAR, $expiration);
 			}
 		}
 	}
@@ -670,18 +670,6 @@ class UserSessionService extends \CWebUser
 			{
 				Craft::log('Tried to restore session from a cookie, but it appears we the data in the cookie is invalid.', LogLevel::Error);
 				$this->logout();
-			}
-		}
-		else
-		{
-			// If session duration is set to 0, then the session will be over when the browser is closed.
-			if ($this->_getSessionDuration(false) > 0)
-			{
-				// If they are not a guest, they still have a valid PHP session, but at this point their identity cookie has expired, so let's kill it all.
-				if (!$this->isGuest())
-				{
-					$this->logout(false);
-				}
 			}
 		}
 	}
@@ -796,7 +784,7 @@ class UserSessionService extends \CWebUser
 		}
 		else
 		{
-			$seconds = 0;
+			$seconds = null;
 		}
 
 		return $seconds;

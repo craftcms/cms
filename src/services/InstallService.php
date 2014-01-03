@@ -101,14 +101,6 @@ class InstallService extends BaseApplicationComponent
 			if (IOHelper::fileExists($file))
 			{
 				$fileName = IOHelper::getFileName($file, false);
-
-				// Ignore StructuredEntryRecord
-				if ($fileName == 'StructuredEntryRecord')
-				{
-					Craft::log("Skipping record {$file}.", LogLevel::Warning);
-					continue;
-				}
-
 				$class = __NAMESPACE__.'\\'.$fileName;
 
 				// Ignore abstract classes and interfaces
@@ -505,22 +497,22 @@ class InstallService extends BaseApplicationComponent
 	 */
 	private function _createDefaultContent($inputs)
 	{
-		// Default tag set
+		// Default tag group
 
-		Craft::log('Creating the Default tag set.');
+		Craft::log('Creating the Default tag group.');
 
-		$tagSet = new TagSetModel();
-		$tagSet->name   = Craft::t('Default');
-		$tagSet->handle = 'default';
+		$tagGroup = new TagGroupModel();
+		$tagGroup->name   = Craft::t('Default');
+		$tagGroup->handle = 'default';
 
 		// Save it
-		if (craft()->tags->saveTagSet($tagSet))
+		if (craft()->tags->saveTagGroup($tagGroup))
 		{
-			Craft::log('Default tag set created successfully.');
+			Craft::log('Default tag group created successfully.');
 		}
 		else
 		{
-			Craft::log('Could not save the Default tag set.', LogLevel::Warning);
+			Craft::log('Could not save the Default tag group.', LogLevel::Warning);
 		}
 
 		// Default field group
@@ -592,7 +584,7 @@ class InstallService extends BaseApplicationComponent
 		$tagsField->handle       = 'tags';
 		$tagsField->type         = 'Tags';
 		$tagsField->settings = array(
-			'source' => 'tagset:'.$tagSet->id
+			'source' => 'taggroup:'.$tagGroup->id
 		);
 
 		if (craft()->fields->saveField($tagsField))

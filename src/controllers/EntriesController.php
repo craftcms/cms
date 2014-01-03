@@ -16,6 +16,55 @@ class EntriesController extends BaseController
 	{
 		$this->_prepEditEntryVariables($variables);
 
+		if (craft()->hasPackage(CraftPackage::Users) && $variables['section']->type != SectionType::Single)
+		{
+			// Get all the possible authors
+			$currentUser = craft()->userSession->getUser();
+			$excludeAuthorIds = 'not '.$currentUser->id;
+
+			if ($variables['entry']->authorId && $variables['entry']->authorId != $currentUser->id)
+			{
+				$excludeAuthorIds = array($excludeAuthorIds, $variables['entry']->authorId);
+			}
+
+			$authorOptionCriteria = craft()->elements->getCriteria(ElementType::User);
+			$authorOptionCriteria->can = 'createEntries:'.$variables['section']->id;
+			$authorOptionCriteria->id = $excludeAuthorIds;
+			$authorOptions = $authorOptionCriteria->find();
+
+			// List the current author first
+			if ($variables['entry']->authorId && $variables['entry']->authorId != $currentUser->id)
+			{
+				$currentAuthor = craft()->users->getUserById($variables['entry']->authorId);
+
+				if ($currentAuthor)
+				{
+					array_unshift($authorOptions, $currentAuthor);
+				}
+			}
+
+			// Then the current user
+			if (!$variables['entry']->authorId || $variables['entry']->authorId == $currentUser->id)
+			{
+				array_unshift($authorOptions, $currentUser);
+			}
+
+			$variables['authorOptions'] = array();
+
+			foreach ($authorOptions as $authorOption)
+			{
+				$authorLabel = $authorOption->username;
+				$authorFullName = $authorOption->getFullName();
+
+				if ($authorFullName)
+				{
+					$authorLabel .= ' ('.$authorFullName.')';
+				}
+
+				$variables['authorOptions'][] = array('label' => $authorLabel, 'value' => $authorOption->id);
+			}
+		}
+
 		if (craft()->hasPackage(CraftPackage::PublishPro) && $variables['section']->type == SectionType::Structure)
 		{
 			// Get all the possible parent options
@@ -24,9 +73,9 @@ class EntriesController extends BaseController
 			$parentOptionCriteria->status = null;
 			$parentOptionCriteria->limit = null;
 
-			if ($variables['section']->maxDepth)
+			if ($variables['section']->maxLevels)
 			{
-				$parentOptionCriteria->depth = '< '.$variables['section']->maxDepth;
+				$parentOptionCriteria->level = '< '.$variables['section']->maxLevels;
 			}
 
 			if ($variables['entry']->id)
@@ -56,7 +105,7 @@ class EntriesController extends BaseController
 			{
 				$label = '';
 
-				for ($i = 1; $i < $parentOption->depth; $i++)
+				for ($i = 1; $i < $parentOption->level; $i++)
 				{
 					$label .= '    ';
 				}
@@ -197,6 +246,9 @@ class EntriesController extends BaseController
 		$this->renderTemplate('entries/_edit', $variables);
 	}
 
+	/**
+	 *
+	 */
 	public function actionSwitchEntryType()
 	{
 		$this->requirePostRequest();
@@ -349,30 +401,26 @@ class EntriesController extends BaseController
 		$parentEntryId = craft()->request->getPost('parentId');
 		$prevEntryId   = craft()->request->getPost('prevId');
 
-		$entry       = craft()->entries->getEntryById($entryId);
-		$parentEntry =
-
+		$entry = craft()->entries->getEntryById($entryId);
 
 		// Make sure they have permission to be doing this
 		craft()->userSession->requirePermission('publishEntries:'.$entry->sectionId);
 
+		$section = $entry->getSection();
+
 		if ($prevEntryId)
 		{
 			$prevEntry = craft()->entries->getEntryById($prevEntryId);
-			$success = craft()->entries->moveEntryAfter($entry, $prevEntry);
+			$success = craft()->structures->moveAfter($section->structureId, $entry, $prevEntry, 'auto', $section->hasUrls);
+		}
+		else if ($parentEntryId)
+		{
+			$parentEntry = craft()->entries->getEntryById($parentEntryId);
+			$success = craft()->structures->prepend($section->structureId, $entry, $parentEntry, 'auto', $section->hasUrls);
 		}
 		else
 		{
-			if ($parentEntryId)
-			{
-				$parentEntry = craft()->entries->getEntryById($parentEntryId);
-			}
-			else
-			{
-				$parentEntry = null;
-			}
-
-			$success = craft()->entries->moveEntryUnder($entry, $parentEntry, true);
+			$success = craft()->structures->appendToRoot($section->structureId, $entry, 'auto', $section->hasUrls);
 		}
 
 		$this->returnJson(array(
@@ -403,6 +451,8 @@ class EntriesController extends BaseController
 	 *
 	 * @access private
 	 * @param array &$variables
+	 * @throws HttpException
+	 * @throws Exception
 	 */
 	private function _prepEditEntryVariables(&$variables)
 	{

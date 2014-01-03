@@ -3,8 +3,10 @@
 {% extends "_layouts/cp" %}
 {% set title = "Content Locales"|t %}
 
-{% includeJsResource "js/locales.js" %}
 {% import "_includes/forms" as forms %}
+
+{% includeJsResource "js/locales.js" %}
+{% includeCssResource "css/locales.css" %}
 
 {% includeTranslations
 	"Are you sure you want to delete “{name}” and all its associated content?",
@@ -44,11 +46,14 @@
 		</div>
 
 		<div id="addlocale" class="field">
-			{{ forms.text({
-                placeholder: "Add a new locale…"|t,
-				id: 'addlocaleinput',
-				autocomplete: false
-			}) }}
+			<div class="texticon add icon">
+				{{ forms.text({
+	                placeholder: "Add a new locale…"|t,
+					id: 'addlocaleinput',
+					autocomplete: false
+				}) }}
+				<div class="spinner hidden"></div>
+			</div>
 		</div>
 	</form>
 {% endset %}

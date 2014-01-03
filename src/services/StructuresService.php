@@ -1,0 +1,304 @@
+<?php
+namespace Craft;
+
+/**
+ *
+ */
+class StructuresService extends BaseApplicationComponent
+{
+	private $_rootElementRecordsByStructureId;
+
+	// Structure CRUD
+
+	/**
+	 * Returns a structure by its ID.
+	 *
+	 * @param int $structureId
+	 * @return StructureModel|null
+	 */
+	public function getStructureById($structureId)
+	{
+		$structureRecord = StructureRecord::model()->findById($structureId);
+
+		if ($structureRecord)
+		{
+			return StructureModel::populateModel($structureRecord);
+		}
+	}
+
+	/**
+	 * Saves a structure
+	 *
+	 * @param StructureModel $structure
+	 * @return bool
+	 */
+	public function saveStructure(StructureModel $structure)
+	{
+		if ($structure->id)
+		{
+			$structureRecord = StructureRecord::model()->findById($structure->id);
+
+			if (!$structureRecord)
+			{
+				throw new Exception(Craft::t('No structure exists with the ID “{id}”', array('id' => $structure->id)));
+			}
+		}
+		else
+		{
+			$structureRecord = new StructureRecord();
+		}
+
+		$structureRecord->maxLevels = $structure->maxLevels;
+
+		$success = $structureRecord->save();
+
+		if ($success)
+		{
+			$structure->id = $structureRecord->id;
+		}
+		else
+		{
+			$structure->addErrors($structureRecord->getErrors());
+		}
+
+		return $success;
+	}
+
+	/**
+	 * Deletes a structure by its ID.
+	 *
+	 * @param int $structureId
+	 * @return bool
+	 */
+	public function deleteStructureById($structureId)
+	{
+		if (!$structureId)
+		{
+			return false;
+		}
+
+		$affectedRows = craft()->db->createCommand()->delete('structures', array(
+			'id' => $structureId
+		));
+
+		return (bool) $affectedRows;
+	}
+
+	// Moving elements around
+
+	/**
+	 * Prepends an element to another wihin a given structure.
+	 *
+	 * @param int              $structureId
+	 * @param BaseElementModel $element
+	 * @param BaseElementModel $parentElement
+	 * @param string           $mode Whether this is an "insert", "update", or "auto".
+	 * @param bool             $updateSlugAndUri
+	 * @return bool
+	 */
+	public function prepend($structureId, BaseElementModel $element, BaseElementModel $parentElement, $mode = 'auto', $updateSlugAndUri = false)
+	{
+		$parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
+		return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', 'moveAsFirst', $mode, $updateSlugAndUri);
+	}
+
+	/**
+	 * Appends an element to another wihin a given structure.
+	 *
+	 * @param int              $structureId
+	 * @param BaseElementModel $element
+	 * @param BaseElementModel $parentElement
+	 * @param string           $mode Whether this is an "insert", "update", or "auto".
+	 * @param bool             $updateSlugAndUri
+	 * @return bool
+	 */
+	public function append($structureId, BaseElementModel $element, BaseElementModel $parentElement, $mode = 'auto', $updateSlugAndUri = false)
+	{
+		$parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
+		return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', 'moveAsLast', $mode, $updateSlugAndUri);
+	}
+
+	/**
+	 * Prepends an element to the root of a given structure.
+	 *
+	 * @param int              $structureId
+	 * @param BaseElementModel $element
+	 * @param string           $mode Whether this is an "insert", "update", or "auto".
+	 * @param bool             $updateSlugAndUri
+	 * @return bool
+	 */
+	public function prependToRoot($structureId, BaseElementModel $element, $mode = 'auto', $updateSlugAndUri = false)
+	{
+		$parentElementRecord = $this->_getRootElementRecord($structureId);
+		return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', 'moveAsFirst', $mode, $updateSlugAndUri);
+	}
+
+	/**
+	 * Appends an element to the root of a given structure.
+	 *
+	 * @param int              $structureId
+	 * @param BaseElementModel $element
+	 * @param string           $mode Whether this is an "insert", "update", or "auto".
+	 * @param bool             $updateSlugAndUri
+	 * @return bool
+	 */
+	public function appendToRoot($structureId, BaseElementModel $element, $mode = 'auto', $updateSlugAndUri = false)
+	{
+		$parentElementRecord = $this->_getRootElementRecord($structureId);
+		return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', 'moveAsLast', $mode, $updateSlugAndUri);
+	}
+
+	/**
+	 * Moves an element before another within a given structure.
+	 *
+	 * @param int              $structureId
+	 * @param BaseElementModel $element
+	 * @param BaseElementModel $nextElement
+	 * @param string           $mode Whether this is an "insert", "update", or "auto".
+	 * @param bool             $updateSlugAndUri
+	 * @return bool
+	 */
+	public function moveBefore($structureId, BaseElementModel $element, BaseElementModel $nextElement, $mode = 'auto', $updateSlugAndUri = false)
+	{
+		$nextElementRecord = $this->_getElementRecord($structureId, $nextElement);
+		return $this->_doIt($structureId, $element, $nextElementRecord, 'insertBefore', 'moveBefore', $mode, $updateSlugAndUri);
+	}
+
+	/**
+	 * Moves an element after another within a given structure.
+	 *
+	 * @param int              $structureId
+	 * @param BaseElementModel $element
+	 * @param BaseElementModel $prevElement
+	 * @param string           $mode Whether this is an "insert", "update", or "auto".
+	 * @param bool             $updateSlugAndUri
+	 * @return bool
+	 */
+	public function moveAfter($structureId, BaseElementModel $element, BaseElementModel $prevElement, $mode = 'auto', $updateSlugAndUri = false)
+	{
+		$prevElementRecord = $this->_getElementRecord($structureId, $prevElement);
+		return $this->_doIt($structureId, $element, $prevElementRecord, 'insertAfter', 'moveAfter', $mode, $updateSlugAndUri);
+	}
+
+	// Private methods
+
+	/**
+	 * Returns a structure element record from given structure and element IDs.
+	 *
+	 * @access private
+	 * @param int $structureId
+	 * @param BaseElementModel $element
+	 * @return StructureElementRecord|null
+	 */
+	private function _getElementRecord($structureId, BaseElementModel $element)
+	{
+		$elementId = $element->id;
+
+		if ($elementId)
+		{
+			return StructureElementRecord::model()->findByAttributes(array(
+				'structureId' => $structureId,
+				'elementId'   => $elementId
+			));
+		}
+	}
+
+	/**
+	 * Returns the root node for a given structure ID, or creates one if it doesn't exist.
+	 *
+	 * @access private
+	 * @param int $structureId
+	 * @return StructureElementRecord
+	 */
+	private function _getRootElementRecord($structureId)
+	{
+		if (!isset($this->_rootElementRecordsByStructureId[$structureId]))
+		{
+			$elementRecord = StructureElementRecord::model()->roots()->findByAttributes(array(
+				'structureId' => $structureId
+			));
+
+			if (!$elementRecord)
+			{
+				// Create it
+				$elementRecord = new StructureElementRecord();
+				$elementRecord->structureId = $structureId;
+				$elementRecord->saveNode();
+			}
+
+			$this->_rootElementRecordsByStructureId[$structureId] = $elementRecord;
+		}
+
+		return $this->_rootElementRecordsByStructureId[$structureId];
+	}
+
+	/**
+	 * Updates a BaseElementModel with the new structure attributes from a StructureElementRecord.
+	 *
+	 * @access private
+	 * @param int                    $structureId
+	 * @param BaseElementModel       $element
+	 * @param StructureElementRecord $targetElementRecord
+	 * @param string                 $insertAction
+	 * @param string                 $updateAction
+	 * @param string                 $mode
+	 * @param bool                   $updateSlugAndUri
+	 * @return bool
+	 */
+	private function _doIt($structureId, BaseElementModel $element, StructureElementRecord $targetElementRecord, $insertAction, $updateAction, $mode, $updateSlugAndUri)
+	{
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			if ($mode != 'insert')
+			{
+				$elementRecord = $this->_getElementRecord($structureId, $element);
+
+				if ($elementRecord)
+				{
+					$action = $updateAction;
+				}
+			}
+
+			if (empty($elementRecord))
+			{
+				$elementRecord = new StructureElementRecord();
+				$elementRecord->structureId = $structureId;
+				$elementRecord->elementId   = $element->id;
+
+				$action = $insertAction;
+			}
+
+			$success = $elementRecord->$action($targetElementRecord);
+
+			if ($success)
+			{
+				$element->root  = $elementRecord->root;
+				$element->lft   = $elementRecord->lft;
+				$element->rgt   = $elementRecord->rgt;
+				$element->level = $elementRecord->level;
+
+				if ($updateSlugAndUri)
+				{
+					craft()->elements->updateElementSlugAndUri($element);
+				}
+
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+
+		return $success;
+	}
+}

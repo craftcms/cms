@@ -30,9 +30,15 @@ abstract class BaseElementModel extends BaseModel
 			'enabled'     => array(AttributeType::Bool, 'default' => true),
 			'archived'    => array(AttributeType::Bool, 'default' => false),
 			'locale'      => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
+			'slug'        => AttributeType::String,
 			'uri'         => AttributeType::String,
 			'dateCreated' => AttributeType::DateTime,
 			'dateUpdated' => AttributeType::DateTime,
+
+			'root'        => AttributeType::Number,
+			'lft'         => AttributeType::Number,
+			'rgt'         => AttributeType::Number,
+			'level'       => AttributeType::Number,
 		);
 	}
 
@@ -98,6 +104,32 @@ abstract class BaseElementModel extends BaseModel
 	public function getFieldLayout()
 	{
 		return craft()->fields->getLayoutByType($this->elementType);
+	}
+
+	/**
+	 * Returns the locale IDs this element is available in.
+	 *
+	 * @return array
+	 */
+	public function getLocales()
+	{
+		if (craft()->elements->getElementType($this->elementType)->isLocalized())
+		{
+			return craft()->i18n->getSiteLocaleIds();
+		}
+		else
+		{
+			return array(craft()->i18n->getPrimarySiteLocaleId());
+		}
+	}
+
+	/**
+	 * Returns the URL format used to generate this element's URL.
+	 *
+	 * @return string|null
+	 */
+	public function getUrlFormat()
+	{
 	}
 
 	/**
@@ -218,7 +250,7 @@ abstract class BaseElementModel extends BaseModel
 	 * @param mixed $criteria
 	 * @return ElementCriteriaModel|null
 	 */
-	public function getPrev($criteria = null)
+	public function getPrev($criteria = false)
 	{
 		if ($criteria !== false || !isset($this->_prevElement))
 		{
@@ -395,28 +427,11 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if (!isset($this->_content))
 		{
-			if ($this->id)
+			$this->_content = craft()->content->getContent($this);
+
+			if (!$this->_content)
 			{
-				$contentService = craft()->content;
-
-				$originalContentTable      = $contentService->contentTable;
-				$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-				$originalFieldContext      = $contentService->fieldContext;
-
-				$contentService->contentTable      = $this->getContentTable();
-				$contentService->fieldColumnPrefix = $this->getFieldColumnPrefix();
-				$contentService->fieldContext      = $this->getFieldContext();
-
-				$this->_content = $contentService->getElementContent($this->id, $this->locale);
-
-				$contentService->contentTable = $originalContentTable;
-				$contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-				$contentService->fieldContext = $originalFieldContext;
-			}
-
-			if (empty($this->_content))
-			{
-				$this->_content = $this->createContentModel();
+				$this->_content = craft()->content->createContent($this);
 			}
 		}
 
@@ -434,7 +449,7 @@ abstract class BaseElementModel extends BaseModel
 		{
 			if (!isset($this->_content))
 			{
-				$this->_content = $this->createContentModel();
+				$this->_content = craft()->content->createContent($this);
 			}
 
 			$this->_content->setAttributes($content);
@@ -458,7 +473,7 @@ abstract class BaseElementModel extends BaseModel
 		{
 			if (!isset($this->_content))
 			{
-				$this->_content = $this->createContentModel();
+				$this->_content = $this->getContent();
 			}
 
 			foreach ($fieldLayout->getFields() as $fieldLayoutField)
@@ -540,35 +555,6 @@ abstract class BaseElementModel extends BaseModel
 		$contentService->fieldContext = $originalFieldContext;
 
 		return $field;
-	}
-
-	/**
-	 * Creates a content model for this element.
-	 *
-	 * @access protected
-	 * @return ContentModel
-	 */
-	protected function createContentModel()
-	{
-		$contentService = craft()->content;
-
-		$originalContentTable      = $contentService->contentTable;
-		$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-		$originalFieldContext      = $contentService->fieldContext;
-
-		$contentService->contentTable      = $this->getContentTable();
-		$contentService->fieldColumnPrefix = $this->getFieldColumnPrefix();
-		$contentService->fieldContext      = $this->getFieldContext();
-
-		$content = new ContentModel();
-		$content->elementId = $this->id;
-		$content->locale = $this->locale;
-
-		$contentService->contentTable = $originalContentTable;
-		$contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-		$contentService->fieldContext = $originalFieldContext;
-
-		return $content;
 	}
 
 	/**

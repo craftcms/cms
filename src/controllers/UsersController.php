@@ -350,11 +350,147 @@ class UsersController extends BaseController
 	}
 
 	/**
+	 * @param array $variables
+	 * @throws HttpException
+	 */
+	public function actionEditUser(array $variables = array())
+	{
+		if (craft()->hasPackage(CraftPackage::Users))
+		{
+			$variables['selectedTab'] = 'account';
+		}
+		else
+		{
+			$variables['title'] = Craft::t('My Account');
+		}
+
+		$userId = (isset($variables['userId']) ? $variables['userId'] : null);
+
+		// This will be set if there was a validation error.
+		if (!isset($variables['account']))
+		{
+			// Looking at myaccount.
+			if (!$userId && craft()->request->getSegment(1) == 'myaccount')
+			{
+				$variables['account'] = craft()->userSession->getUser();
+			}
+			else
+			{
+				// Get the requested user.
+				$variables['account'] = craft()->users->getUserById($userId);
+
+				// Couldn't find a user
+				if (!$variables['account'])
+				{
+					// Looks like we're creating a new user.
+					if (craft()->hasPackage(CraftPackage::Users))
+					{
+						$variables['account'] = new UserModel();
+					}
+					else
+					{
+						// Nada.
+						throw new HttpException(404);
+					}
+				}
+			}
+		}
+
+		// Havea a valid user.
+		if ($variables['account'])
+		{
+			// It's an existing user.
+			if ($variables['account']->id)
+			{
+				if ($variables['account']->isCurrent())
+				{
+					$variables['title'] = Craft::t('My Account');
+				}
+				else
+				{
+					craft()->userSession->requirePermission('editUsers');
+
+					$variables['title'] = Craft::t("{user}’s Account", array('user' => $variables['account']->name));
+				}
+			}
+			else
+			{
+				// New user, make sure we can register.
+				craft()->userSession->requirePermission('registerUsers');
+
+				$variables['title'] = Craft::t("Register a new user");
+			}
+		}
+
+		// Show tabs if they have the Users package installed.
+		if (craft()->hasPackage(CraftPackage::Users))
+		{
+			$variables['tabs'] = array(
+				'account' => array(
+					'label' => Craft::t('Account'),
+					'url'   => '#account',
+				),
+				'profile' => array(
+					'label' => Craft::t('Profile'),
+					'url'   => '#profile',
+				),
+			);
+
+			// If they can administrate users, show the admin tab.
+			if (craft()->userSession->getUser()->can('administrateUsers'))
+			{
+				$variables['tabs']['perms'] = array(
+					'label' => Craft::t('Permissions'),
+					'url'   => '#perms',
+				);
+
+				if ($variables['account']->id)
+				{
+					$variables['tabs']['admin'] = array(
+						'label' => Craft::t('Admin'),
+						'url'   => '#admin',
+					);
+				}
+
+			}
+		}
+
+		// Ugly.  But Users don't have a real fieldlayout/tabs.
+		$accountFields = array('username', 'firstName', 'lastName', 'email', 'newPassword', 'passwordResetRequired', 'preferredLocale');
+
+		if ($variables['account']->hasErrors())
+		{
+			$errors = $variables['account']->getErrors();
+
+			foreach ($errors as $attribute => $error)
+			{
+				if (in_array($attribute, $accountFields))
+				{
+					$variables['tabs']['account']['class'] = 'error';
+				}
+				else
+				{
+					$variables['tabs']['profile']['class'] = 'error';
+				}
+			}
+		}
+
+		$variables['isNewAccount'] = (!$variables['account'] || !$variables['account']->id);
+
+		craft()->templates->includeCssResource('css/account.css');
+		craft()->templates->includeJsResource('js/account.js');
+
+		$this->renderTemplate('users/_edit', $variables);
+	}
+
+	/**
 	 * Registers a new user, or saves an existing user's account settings.
 	 */
 	public function actionSaveUser()
 	{
 		$this->requirePostRequest();
+
+		$isCurrentUser = false;
 
 		if (craft()->hasPackage(CraftPackage::Users))
 		{
@@ -371,13 +507,18 @@ class UsersController extends BaseController
 			$userId = craft()->userSession->getUser()->id;
 		}
 
+		if (($currentUser = craft()->userSession->getUser()) !== null && $userId == $currentUser->id)
+		{
+			$isCurrentUser = true;
+		}
+
 		$publicRegistration = false;
 		$canRegisterUsers = false;
 
 		// Are we editing an existing user?
 		if ($userId)
 		{
-			if ($userId != craft()->userSession->getUser()->id)
+			if (!$isCurrentUser)
 			{
 				craft()->userSession->requirePermission('editUsers');
 			}
@@ -387,6 +528,12 @@ class UsersController extends BaseController
 			if (!$user)
 			{
 				throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+			}
+
+			if ($user->id !== $userId)
+			{
+				// Users package is required
+				craft()->requirePackage(CraftPackage::Users);
 			}
 		}
 		else
@@ -401,13 +548,11 @@ class UsersController extends BaseController
 				craft()->userSession->requirePermission('registerUsers');
 				$canRegisterUsers = true;
 			}
-			else
+
+			// Is public registration enabled?
+			if (craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
 			{
-				// Is public registration enabled?
-				if (craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
-				{
-					$publicRegistration = true;
-				}
+				$publicRegistration = true;
 			}
 
 			// If there is no public registration and the current user can't register users, complain loudly.
@@ -433,11 +578,11 @@ class UsersController extends BaseController
 
 		if ($valid)
 		{
-			$userName = craft()->request->getPost('username');
+			$userName = craft()->request->getPost('username', $user->username);
 
 			if (!$userId)
 			{
-				$user->email = craft()->request->getPost('email');
+				$user->email = craft()->request->getPost('email', $user->email);
 
 				// If it is a new user, grab the password from post.
 				if (!$userId && !craft()->request->isCpRequest())
@@ -450,9 +595,9 @@ class UsersController extends BaseController
 			$userName = $userName == null ? $user->email : $userName;
 
 			$user->username = $userName;
-			$user->firstName       = craft()->request->getPost('firstName');
-			$user->lastName        = craft()->request->getPost('lastName');
-			$user->preferredLocale = craft()->request->getPost('preferredLocale');
+			$user->firstName       = craft()->request->getPost('firstName', $user->firstName);
+			$user->lastName        = craft()->request->getPost('lastName', $user->lastName);
+			$user->preferredLocale = craft()->request->getPost('preferredLocale', $user->preferredLocale);
 
 			// If it's a new user, set the verificationRequired bit.
 			if (!$user->id)
@@ -466,10 +611,50 @@ class UsersController extends BaseController
 				$user->passwordResetRequired = (bool)craft()->request->getPost('passwordResetRequired');
 			}
 
+			// If they have the Users package installed, grab any profile information from POST
+			if (craft()->hasPackage(CraftPackage::Users))
+			{
+				$fields = craft()->request->getPost('fields');
+				if ($fields)
+				{
+					$user->setContentFromPost($fields);
+				}
+			}
+
+			// Only admins can toggle admin settings
+			if (craft()->userSession->isAdmin())
+			{
+				$user->admin = (bool)craft()->request->getPost('admin');
+			}
+
 			try
 			{
 				if (craft()->users->saveUser($user))
 				{
+					if (($currentUser = craft()->userSession->getUser()))
+					{
+						// Save any user groups
+						if ($currentUser->can('administrateUsers') && craft()->hasPackage(CraftPackage::Users))
+						{
+							// Save any user groups
+							$groupIds = craft()->request->getPost('groups');
+							craft()->userGroups->assignUserToGroups($user->id, $groupIds);
+
+							// Save any user permissions
+							if ($user->admin)
+							{
+								$permissions = array();
+							}
+							else
+							{
+								$permissions = craft()->request->getPost('permissions');
+							}
+
+							craft()->userPermissions->saveUserPermissions($user->id, $permissions);
+						}
+					}
+
+					// if public registration is enabled, assign to a default group (if any).
 					if ($publicRegistration)
 					{
 						$this->_assignDefaultGroupToUser($user->id);
@@ -511,43 +696,13 @@ class UsersController extends BaseController
 	}
 
 	/**
+	 * TODO: Deprecated.
 	 * Saves a user's profile.
 	 */
 	public function actionSaveProfile()
 	{
-		$this->requirePostRequest();
-
-		$userId = craft()->request->getRequiredPost('userId');
-
-		if ($userId != craft()->userSession->getUser()->id)
-		{
-			craft()->userSession->requirePermission('editUsers');
-		}
-
-		$user = craft()->users->getUserById($userId);
-
-		if (!$user)
-		{
-			throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
-		}
-
-		$fields = craft()->request->getPost('fields');
-		$user->setContentFromPost($fields);
-
-		if (craft()->users->saveProfile($user))
-		{
-			craft()->userSession->setNotice(Craft::t('Profile saved.'));
-			$this->redirectToPostedUrl();
-		}
-		else
-		{
-			craft()->userSession->setError(Craft::t('Couldn’t save profile.'));
-		}
-
-		// Send the account back to the template
-		craft()->urlManager->setRouteVariables(array(
-			'account' => $user,
-		));
+		Craft::log('UsersController->actionSaveProfile() has been deprecated. Use UsersController->actionSaveUser() instead.');
+		$this->actionSaveUser();
 	}
 
 	/**
@@ -664,7 +819,7 @@ class UsersController extends BaseController
 				{
 					IOHelper::clearFolder(craft()->path->getTempUploadsPath().'userphotos/'.$user->username);
 
-					$html = craft()->templates->render('users/_edit/_userphoto',
+					$html = craft()->templates->render('users/_userphoto',
 						array(
 							'account' => $user
 						)
@@ -707,65 +862,13 @@ class UsersController extends BaseController
 		// Since Model still believes it has an image, we make sure that it does not so anymore when it reaches the template.
 		$user->photo = null;
 
-		$html = craft()->templates->render('users/_edit/_userphoto',
+		$html = craft()->templates->render('users/_userphoto',
 			array(
 				'account' => $user
 			)
 		);
 
 		$this->returnJson(array('html' => $html));
-	}
-
-	/**
-	 * Saves a user's admin settings.
-	 */
-	public function actionSaveUserGroups()
-	{
-		$this->requirePostRequest();
-		craft()->userSession->requirePermission('administrateUsers');
-
-		$userId = craft()->request->getRequiredPost('userId');
-		$groupIds = craft()->request->getPost('groups');
-
-		craft()->userGroups->assignUserToGroups($userId, $groupIds);
-
-		craft()->userSession->setNotice(Craft::t('User groups saved.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Saves a user's admin settings.
-	 */
-	public function actionSaveUserPermissions()
-	{
-		$this->requirePostRequest();
-		craft()->userSession->requirePermission('administrateUsers');
-
-		$userId = craft()->request->getRequiredPost('userId');
-		$user = craft()->users->getUserById($userId);
-
-		// Only admins can toggle admin settings
-		if (craft()->userSession->isAdmin())
-		{
-			$user->admin = (bool)craft()->request->getPost('admin');
-		}
-
-		craft()->users->saveUser($user);
-
-		// Update the user permissions
-		if ($user->admin)
-		{
-			$permissions = array();
-		}
-		else
-		{
-			$permissions = craft()->request->getPost('permissions');
-		}
-
-		craft()->userPermissions->saveUserPermissions($userId, $permissions);
-
-		craft()->userSession->setNotice(Craft::t('Permissions saved.'));
-		$this->redirectToPostedUrl();
 	}
 
 	/**

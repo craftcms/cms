@@ -6,19 +6,19 @@
 
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
-		<input type="hidden" name="action" value="tags/saveTagSet">
+		<input type="hidden" name="action" value="tags/saveTagGroup">
 		<input type="hidden" name="redirect" value="settings/tags">
-		{% if tagSet.id %}<input type="hidden" name="tagSetId" value="{{ tagSet.id }}">{% endif %}
+		{% if tagGroup.id %}<input type="hidden" name="tagGroupId" value="{{ tagGroup.id }}">{% endif %}
 
-		<div id="tagset-settings">
+		<div id="taggroup-settings">
 			{{ forms.textField({
 				first: true,
 				label: "Name"|t,
-				instructions: "What this tag set will be called in the CP."|t,
+				instructions: "What this tag group will be called in the CP."|t,
 				id: 'name',
 				name: 'name',
-				value: tagSet.name,
-				errors: tagSet.getErrors('name'),
+				value: tagGroup.name,
+				errors: tagGroup.getErrors('name'),
 				autofocus: true,
 				required: true,
 				translatable: true
@@ -26,19 +26,19 @@
 
 			{{ forms.textField({
 				label: "Handle"|t,
-				instructions: "How you’ll refer to this tag set in the templates."|t,
+				instructions: "How you’ll refer to this tag group in the templates."|t,
 				id: 'handle',
 				class: 'code',
 				name: 'handle',
-				value: tagSet.handle,
-				errors: tagSet.getErrors('handle'),
+				value: tagGroup.handle,
+				errors: tagGroup.getErrors('handle'),
 				required: true
 			}) }}
 		</div>
 
-		<div id="tagset-fieldlayout" class="hidden">
+		<div id="taggroup-fieldlayout" class="hidden">
 			{% include "_includes/fieldlayoutdesigner" with {
-				fieldLayout: tagSet.getFieldLayout(),
+				fieldLayout: tagGroup.getFieldLayout(),
 				customizableTabs: false
 			} only %}
 		</div>
@@ -52,7 +52,7 @@
 {% endset %}
 
 
-{% if not tagSet.handle %}
+{% if not tagGroup.handle %}
 	{% set js %}
 		new Craft.HandleGenerator('#name', '#handle');
 	{% endset %}

@@ -15,7 +15,7 @@ class UserModel extends BaseElementModel
 	 */
 	function __toString()
 	{
-		return $this->getName();
+		return $this->username;
 	}
 
 	/**

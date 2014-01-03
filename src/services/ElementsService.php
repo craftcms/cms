@@ -89,35 +89,22 @@ class ElementsService extends BaseApplicationComponent
 	public function findElements($criteria = null, $justIds = false)
 	{
 		$elements = array();
-		$subquery = $this->buildElementsQuery($criteria, $fieldColumns);
+		$query = $this->buildElementsQuery($criteria, $fieldColumns);
 
-		if ($subquery)
+		if ($query)
 		{
 			if ($criteria->search)
 			{
-				$elementIds = $this->_getElementIdsFromQuery($subquery);
+				$elementIds = $this->_getElementIdsFromQuery($query);
 				$scoredSearchResults = ($criteria->order == 'score');
 				$filteredElementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, $scoredSearchResults);
-				$subquery->andWhere(array('in', 'elements.id', $filteredElementIds));
+				$query->andWhere(array('in', 'elements.id', $filteredElementIds));
 			}
-
-			$query = craft()->db->createCommand();
 
 			if ($justIds)
 			{
-				$query->select('r.id');
+				$query->select('elements.id');
 			}
-			else
-			{
-				// Tests are showing that listing out all of the columns here is actually slower
-				// than just doing SELECT * -- probably due to the large number of columns we need to select.
-				$query->select('*');
-			}
-
-			$query->from('('.$subquery->getText().') AS '.craft()->db->quoteTableName('r'))
-			      ->group('r.id');
-
-			$query->params = $subquery->params;
 
 			if ($criteria->fixedOrder)
 			{
@@ -198,25 +185,14 @@ class ElementsService extends BaseApplicationComponent
 						if ($elementType->hasContent())
 						{
 							// Separate the content values from the main element attributes
-							$content = array();
-							$content['elementId'] = $row['id'];
-							$content['locale'] = $criteria->locale;
+							$content = array(
+								'id'        => (isset($row['contentId']) ? $row['contentId'] : null),
+								'elementId' => $row['id'],
+								'locale'    => $criteria->locale,
+								'title'     => (isset($row['title']) ? $row['title'] : null)
+							);
 
-							if (isset($row['title']))
-							{
-								$content['title'] = $row['title'];
-								unset($row['title']);
-							}
-
-							// Did we actually get the requested locale back?
-							if ($row['locale'] == $criteria->locale)
-							{
-								$content['id'] = $row['contentId'];
-							}
-							else
-							{
-								$row['locale'] = $criteria->locale;
-							}
+							unset($row['title']);
 
 							if ($fieldColumns)
 							{
@@ -231,6 +207,7 @@ class ElementsService extends BaseApplicationComponent
 							}
 						}
 
+						$row['locale'] = $criteria->locale;
 						$element = $elementType->populateElementModel($row);
 
 						if ($elementType->hasContent())
@@ -250,7 +227,7 @@ class ElementsService extends BaseApplicationComponent
 						if ($lastElement)
 						{
 							$lastElement->setNext($element);
-							$element->setPrev($element);
+							$element->setPrev($lastElement);
 						}
 						else
 						{
@@ -276,11 +253,11 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function getTotalElements($criteria = null)
 	{
-		$subquery = $this->buildElementsQuery($criteria);
+		$query = $this->buildElementsQuery($criteria);
 
-		if ($subquery)
+		if ($query)
 		{
-			$elementIds = $this->_getElementIdsFromQuery($subquery);
+			$elementIds = $this->_getElementIdsFromQuery($query);
 
 			if ($criteria->search)
 			{
@@ -309,17 +286,29 @@ class ElementsService extends BaseApplicationComponent
 			$criteria = $this->getCriteria('Entry', $criteria);
 		}
 
-		if (!$criteria->locale)
-		{
-			// Default to the current app target locale
-			$criteria->locale = craft()->language;
-		}
-
 		$elementType = $criteria->getElementType();
 
+		if (!$criteria->locale)
+		{
+			if ($elementType->isLocalized())
+			{
+				// Default to the current app target locale
+				$criteria->locale = craft()->language;
+			}
+			else
+			{
+				// Default to the primary site locale
+				$criteria->locale = craft()->i18n->getPrimarySiteLocaleId();
+			}
+		}
+
+		// Set up the query
+
 		$query = craft()->db->createCommand()
-			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated')
-			->from('elements elements');
+			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri')
+			->from('elements elements')
+			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
+			->where('elements_i18n.locale = :locale', array(':locale' => $criteria->locale));
 
 		if ($elementType->hasContent())
 		{
@@ -327,7 +316,7 @@ class ElementsService extends BaseApplicationComponent
 
 			if ($contentTable)
 			{
-				$contentCols = 'content.id AS contentId, content.locale';
+				$contentCols = 'content.id AS contentId';
 
 				if ($elementType->hasTitles())
 				{
@@ -343,30 +332,11 @@ class ElementsService extends BaseApplicationComponent
 
 				$query->addSelect($contentCols);
 				$query->join($contentTable.' content', 'content.elementId = elements.id');
-				$this->_orderByRequestedLocale($query, 'content', $criteria->locale);
+				$query->andWhere('content.locale = :locale');
 			}
 		}
 
-		if ($elementType->isLocalized())
-		{
-			$query->addSelect('elements_i18n.uri');
-			$query->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
-
-			if (!$elementType->hasContent())
-			{
-				$query->addSelect('elements_i18n.locale');
-				$this->_orderByRequestedLocale($query, 'elements_i18n', $criteria->locale);
-			}
-			else
-			{
-				$query->andWhere('elements_i18n.locale = content.locale');
-			}
-
-			if ($criteria->uri !== null)
-			{
-				$query->andWhere(DbHelper::parseParam('elements_i18n.uri', $criteria->uri, $query->params));
-			}
-		}
+		// Basic element params
 
 		if ($criteria->id === false)
 		{
@@ -452,6 +422,18 @@ class ElementsService extends BaseApplicationComponent
 			$query->andWhere(DbHelper::parseDateParam('elements.dateUpdated', $criteria->dateUpdated, $query->params));
 		}
 
+		// i18n params
+
+		if ($criteria->slug)
+		{
+			$query->andWhere(DbHelper::parseParam('elements_i18n.slug', $criteria->slug, $query->params));
+		}
+
+		if ($criteria->uri !== null)
+		{
+			$query->andWhere(DbHelper::parseParam('elements_i18n.uri', $criteria->uri, $query->params));
+		}
+
 		// Relational params
 
 		// Convert the old childOf and parentOf params to the relatedTo param
@@ -500,8 +482,8 @@ class ElementsService extends BaseApplicationComponent
 			}
 		}
 
+		// Field params
 
-		// Field conditions
 		foreach ($criteria->getSupportedFieldHandles() as $fieldHandle)
 		{
 			if ($criteria->$fieldHandle !== false)
@@ -517,16 +499,134 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// Give the element type a chance to make changes
+
 		if ($elementType->modifyElementsQuery($query, $criteria) === false)
 		{
 			return false;
 		}
 
+		// Structure params
+
+		if ($query->isJoined('structureelements'))
+		{
+			$query->addSelect('structureelements.root, structureelements.lft, structureelements.rgt, structureelements.level');
+
+			if ($criteria->ancestorOf)
+			{
+				if (!$criteria->ancestorOf instanceof BaseElementModel)
+				{
+					$criteria->ancestorOf = craft()->elements->getElementById($criteria->ancestorOf, $elementType->getClassHandle());
+				}
+
+				if ($criteria->ancestorOf)
+				{
+					$query->andWhere(
+						array('and',
+							'structureelements.lft < :ancestorOf_lft',
+							'structureelements.rgt > :ancestorOf_rgt',
+							'structureelements.root = :ancestorOf_root'
+						),
+						array(
+							':ancestorOf_lft'  => $criteria->ancestorOf->lft,
+							':ancestorOf_rgt'  => $criteria->ancestorOf->rgt,
+							':ancestorOf_root' => $criteria->ancestorOf->root
+						)
+					);
+
+					if ($criteria->ancestorDist)
+					{
+						$query->andWhere('structureelements.level >= :level',
+							array(':level' => $criteria->ancestorOf->level - $criteria->ancestorDist)
+						);
+					}
+				}
+			}
+
+			if ($criteria->descendantOf)
+			{
+				if (!$criteria->descendantOf instanceof BaseElementModel)
+				{
+					$criteria->descendantOf = craft()->elements->getElementById($criteria->descendantOf, $elementType->getClassHandle());
+				}
+
+				if ($criteria->descendantOf)
+				{
+					$query->andWhere(
+						array('and',
+							'structureelements.lft > :descendantOf_lft',
+							'structureelements.rgt < :descendantOf_rgt',
+							'structureelements.root = :descendantOf_root'
+						),
+						array(
+							':descendantOf_lft'  => $criteria->descendantOf->lft,
+							':descendantOf_rgt'  => $criteria->descendantOf->rgt,
+							':descendantOf_root' => $criteria->descendantOf->root
+						)
+					);
+
+					if ($criteria->descendantDist)
+					{
+						$query->andWhere('structureelements.level <= :level',
+							array(':level' => $criteria->descendantOf->level + $criteria->descendantDist)
+						);
+					}
+				}
+			}
+
+			if ($criteria->prevSiblingOf)
+			{
+				if (!$criteria->prevSiblingOf instanceof BaseElementModel)
+				{
+					$criteria->prevSiblingOf = craft()->elements->getElementById($criteria->prevSiblingOf, $elementType->getClassHandle());
+				}
+
+				if ($criteria->prevSiblingOf)
+				{
+					$query->andWhere(
+						array('and',
+							'structureelements.rgt = :prevSiblingOf_rgt',
+							'structureelements.root = :prevSiblingOf_root'
+						),
+						array(
+							':prevSiblingOf_rgt'  => $criteria->prevSiblingOf->lft - 1,
+							':prevSiblingOf_root' => $criteria->prevSiblingOf->root
+						)
+					);
+				}
+			}
+
+			if ($criteria->nextSiblingOf)
+			{
+				if (!$criteria->nextSiblingOf instanceof BaseElementModel)
+				{
+					$criteria->nextSiblingOf = craft()->elements->getElementById($criteria->nextSiblingOf, $elementType->getClassHandle());
+				}
+
+				if ($criteria->nextSiblingOf)
+				{
+					$query->andWhere(
+						array('and',
+							'structureelements.lft = :nextSiblingOf_lft',
+							'structureelements.root = :nextSiblingOf_root'
+						),
+						array(
+							':nextSiblingOf_lft'  => $criteria->nextSiblingOf->rgt + 1,
+							':nextSiblingOf_root' => $criteria->nextSiblingOf->root
+						)
+					);
+				}
+			}
+
+			if ($criteria->level || $criteria->depth)
+			{
+				// 'depth' is deprecated; use 'level' instead.
+				$level = ($criteria->level ? $criteria->level : $criteria->depth);
+				$query->andWhere(DbHelper::parseParam('structureelements.level', $level, $query->params));
+			}
+		}
+
 		return $query;
 	}
-
-	// Element helper functions
-	// ========================
 
 	/**
 	 * Returns an element's URI for a given locale.
@@ -544,18 +644,318 @@ class ElementsService extends BaseApplicationComponent
 			->queryScalar();
 	}
 
+	// Saving Elements
+	// ===============
+
 	/**
-	 * Returns the localization record for a given element and locale.
+	 * Saves an element.
 	 *
-	 * @param int $elementId
-	 * @param string $locale
+	 * @param BaseElementModel $element
+	 * @param bool             $validateContent
+	 * @return bool
 	 */
-	public function getElementLocaleRecord($elementId, $localeId)
+	public function saveElement(BaseElementModel $element, $validateContent = true)
 	{
-		return ElementLocaleRecord::model()->findByAttributes(array(
-			'elementId' => $elementId,
-			'locale'  => $localeId
+		$elementType = $this->getElementType($element->getElementType());
+
+		// Validate the content first
+		if ($validateContent && $elementType->hasContent() && !craft()->content->validateContent($element))
+		{
+			$element->addErrors($element->getContent()->getErrors());
+			return false;
+		}
+
+		// Get the element record
+		$isNewElement = !$element->id;
+
+		if (!$isNewElement)
+		{
+			$elementRecord = ElementRecord::model()->findByAttributes(array(
+				'id'   => $element->id,
+				'type' => $element->getElementType()
+			));
+
+			if (!$elementRecord)
+			{
+				throw new Exception(Craft::t('No element exists with the ID “{id}”', array('id' => $element->id)));
+			}
+		}
+		else
+		{
+			$elementRecord = new ElementRecord();
+			$elementRecord->type = $element->getElementType();
+		}
+
+		// Set the attributes
+		$elementRecord->enabled = (bool) $element->enabled;
+		$elementRecord->archived = (bool) $element->archived;
+
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			// Save the element record first
+			$success = $elementRecord->save(false);
+
+			if ($success)
+			{
+				if ($isNewElement)
+				{
+					// Save the element id on the element model, in case {id} is in the URL format
+					$element->id = $elementRecord->id;
+
+					if ($elementType->hasContent())
+					{
+						$element->getContent()->elementId = $element->id;
+					}
+				}
+
+				// Save the content
+				if ($elementType->hasContent())
+				{
+					craft()->content->saveContent($element, false);
+				}
+
+				// Update the search index
+				craft()->search->indexElementAttributes($element);
+
+				// Update the locale records and content
+
+				$localeRecords = array();
+
+				if (!$isNewElement)
+				{
+					$existingLocaleRecords = ElementLocaleRecord::model()->findAllByAttributes(array(
+						'elementId' => $element->id
+					));
+
+					foreach ($existingLocaleRecords as $record)
+					{
+						$localeRecords[$record->locale] = $record;
+					}
+				}
+
+				$originalLocaleId = $element->locale;
+
+				if ($elementType->hasContent())
+				{
+					$originalContent = $element->getContent();
+				}
+
+				foreach ($element->getLocales() as $localeId)
+				{
+					// Set the locale and its content on the element
+					$element->locale = $localeId;
+
+					if ($elementType->hasContent())
+					{
+						if ($localeId == $originalLocaleId)
+						{
+							$content = $originalContent;
+						}
+						else
+						{
+							$content = null;
+
+							if (!$isNewElement)
+							{
+								// Do we already have a content row for this locale?
+								$content = craft()->content->getContent($element);
+							}
+
+							if (!$content)
+							{
+								$content = craft()->content->createContent($element);
+								$content->setAttributes($originalContent->getAttributes());
+								$content->id = null;
+								$content->locale = $localeId;
+							}
+						}
+
+						$element->setContent($content);
+
+						if (!$content->id)
+						{
+							craft()->content->saveContent($element, false, false);
+						}
+					}
+
+					// Set a valid/unique slug and URI
+					ElementHelper::setValidSlug($element);
+					ElementHelper::setUniqueUri($element);
+
+					if (isset($localeRecords[$localeId]))
+					{
+						$localeRecord = $localeRecords[$localeId];
+					}
+					else
+					{
+						$localeRecord = new ElementLocaleRecord();
+						$localeRecord->elementId = $element->id;
+						$localeRecord->locale = $element->locale;
+					}
+
+					$localeRecord->slug = $element->slug;
+					$localeRecord->uri  = $element->uri;
+
+					$success = $localeRecord->save();
+
+					if (!$success)
+					{
+						// Don't bother with any of the other locales
+						break;
+					}
+				}
+
+				$element->locale = $originalLocaleId;
+				$element->setContent($originalContent);
+			}
+
+			if ($transaction !== null)
+			{
+				if ($success)
+				{
+					$transaction->commit();
+				}
+				else
+				{
+					$transaction->rollback();
+				}
+			}
+
+			if (!$success && $isNewElement)
+			{
+				$element->id = null;
+
+				if ($elementType->hasContent())
+				{
+					$element->getContent()->id = null;
+					$element->getContent()->elementId = null;
+				}
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+
+		return $success;
+	}
+
+	/**
+	 * Updates an element's slug and URI, along with any descendants.
+	 *
+	 * @param BaseElementModel $element
+	 * @param bool $updateOtherLocales
+	 * @param bool $updateDescendants
+	 */
+	public function updateElementSlugAndUri(BaseElementModel $element, $updateOtherLocales = true, $updateDescendants = true)
+	{
+		ElementHelper::setUniqueUri($element);
+
+		craft()->db->createCommand()->update('elements_i18n', array(
+			'slug' => $element->slug,
+			'uri'  => $element->uri
+		), array(
+			'elementId' => $element->id,
+			'locale'    => $element->locale
 		));
+
+		if ($updateOtherLocales)
+		{
+			$this->updateElementSlugAndUriInOtherLocales($element);
+		}
+
+		if ($updateDescendants)
+		{
+			$this->updateDescendantSlugsAndUris($element);
+		}
+	}
+
+	/**
+	 * Updates an element's slug and URI, for any locales besides the given one.
+	 *
+	 * @param BaseElementModel $element
+	 */
+	public function updateElementSlugAndUriInOtherLocales(BaseElementModel $element)
+	{
+		foreach (craft()->i18n->getSiteLocaleIds() as $localeId)
+		{
+			if ($localeId == $element->locale)
+			{
+				continue;
+			}
+
+			$criteria = $this->getCriteria($element->getElementType());
+			$criteria->id = $element->id;
+			$criteria->locale = $localeId;
+			$criteria->status = null;
+			$elementInOtherLocale = $criteria->first();
+
+			// todo: replace the getContent()->id check with the 'strictLocale' param once it's added
+			if ($elementInOtherLocale && $elementInOtherLocale->getContent()->id)
+			{
+				$this->updateElementSlugAndUri($elementInOtherLocale, false, false);
+			}
+		}
+	}
+
+	/**
+	 * Updates an element's descendants' slugs and URIs.
+	 *
+	 * @param BaseElementModel $element
+	 */
+	public function updateDescendantSlugsAndUris(BaseElementModel $element)
+	{
+		$criteria = $this->getCriteria($element->getElementType());
+		$criteria->descendantOf = $element;
+		$criteria->descendantDist = 1;
+		$criteria->status = null;
+		$children = $criteria->find();
+
+		foreach ($children as $child)
+		{
+			$this->updateElementSlugAndUri($child);
+		}
+	}
+
+	/**
+	 * Resaves all of the elements matching the given criteria.
+	 * Useful for patching missing locale rows, etc.
+	 *
+	 * @param ElementCriteriaModel $criteria
+	 */
+	public function resaveElements(ElementCriteriaModel $criteria)
+	{
+		// This might take a while
+		craft()->config->maxPowerCaptain();
+		ignore_user_abort(true);
+
+		// Just to be safe...
+		$criteria->locale = craft()->i18n->getPrimarySiteLocaleId();
+		$criteria->status = null;
+		$criteria->order = 'dateCreated asc';
+
+		// Do this in batches so we don't hit the memory limit
+		$criteria->offset = 0;
+		$criteria->limit = 25;
+
+		do
+		{
+			$batchElements = $criteria->find();
+
+			foreach ($batchElements as $element)
+			{
+				$this->saveElement($element);
+			}
+
+			$criteria->offset += 25;
+		}
+		while ($batchElements);
 	}
 
 	/**
@@ -743,29 +1143,6 @@ class ElementsService extends BaseApplicationComponent
 
 	// Private functions
 	// =================
-
-	/**
-	 * Adds ORDER BY's to the passed-in query to sort the requested locale up to the top.
-	 *
-	 * @access private
-	 * @param DbCommand $query
-	 * @param string $table
-	 * @param string|null $localeId
-	 */
-	private function _orderByRequestedLocale(DbCommand $query, $table, $localeId)
-	{
-		$localeIds = craft()->i18n->getSiteLocaleIds();
-
-		if (count($localeIds) > 1)
-		{
-			// Move the requested locale to the first position
-			array_unshift($localeIds, $localeId);
-			$localeIds = array_unique($localeIds);
-
-			// Order the results by locale
-			$query->order(craft()->db->getSchema()->orderByColumnValues($table.'.locale', $localeIds));
-		}
-	}
 
 	/**
 	 * Parses a relatedTo criteria param and returns the condition(s) or 'false' if there's an issue.

@@ -583,66 +583,32 @@ class MatrixService extends BaseApplicationComponent
 	{
 		if (!$validate || $this->validateBlock($block))
 		{
+			$blockRecord = $this->_getBlockRecord($block);
+			$isNewBlock = $blockRecord->isNewRecord();
+
+			$blockRecord->fieldId   = $block->fieldId;
+			$blockRecord->ownerId   = $block->ownerId;
+			$blockRecord->typeId    = $block->typeId;
+			$blockRecord->sortOrder = $block->sortOrder;
+
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
-				$blockRecord = $this->_getBlockRecord($block);
-				$isNewBlock = $blockRecord->isNewRecord();
-
-				$blockRecord->fieldId   = $block->fieldId;
-				$blockRecord->ownerId   = $block->ownerId;
-				$blockRecord->typeId    = $block->typeId;
-				$blockRecord->sortOrder = $block->sortOrder;
-
-				if (!$isNewBlock)
+				if (craft()->elements->saveElement($block, false))
 				{
-					$elementRecord = $blockRecord->element;
+					if ($isNewBlock)
+					{
+						$blockRecord->id = $block->id;
+					}
 
-					$elementLocaleRecord = ElementLocaleRecord::model()->findByAttributes(array(
-						'elementId' => $block->id,
-						'locale'    => $block->locale
-					));
-				}
-				else
-				{
-					$elementRecord = new ElementRecord();
-					$elementRecord->type = ElementType::MatrixBlock;
-				}
+					$blockRecord->save(false);
 
-				$elementRecord->enabled = $block->enabled;
+					if ($transaction !== null)
+					{
+						$transaction->commit();
+					}
 
-				if (empty($elementLocaleRecord))
-				{
-					$elementLocaleRecord = new ElementLocaleRecord();
-					$elementLocaleRecord->locale = $block->locale;
-				}
-
-				// Save the element block first
-				$elementRecord->save(false);
-
-				// Now that we have an element ID, save it on the other stuff
-				$block->id = $elementRecord->id;
-				$blockRecord->id = $block->id;
-				$elementLocaleRecord->elementId = $block->id;
-				$block->getContent()->elementId = $block->id;
-
-				$blockRecord->save(false);
-				$elementLocaleRecord->save(false);
-
-				$originalFieldContext = craft()->content->fieldContext;
-				craft()->content->fieldContext = 'matrixBlockType:'.$block->typeId;
-
-				$originalFieldColumnPrefix = craft()->content->fieldColumnPrefix;
-				craft()->content->fieldColumnPrefix = 'field_'.$block->getType()->handle.'_';
-
-				craft()->content->saveContent($block, false);
-
-				craft()->content->fieldContext = $originalFieldContext;
-				craft()->content->fieldColumnPrefix = $originalFieldColumnPrefix;
-
-				if ($transaction !== null)
-				{
-					$transaction->commit();
+					return true;
 				}
 			}
 			catch (\Exception $e)
@@ -654,13 +620,9 @@ class MatrixService extends BaseApplicationComponent
 
 				throw $e;
 			}
+		}
 
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return false;
 	}
 
 	/**

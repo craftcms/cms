@@ -4,14 +4,14 @@ namespace Craft;
 /**
  *
  */
-class TagSetRecord extends BaseRecord
+class TagGroupRecord extends BaseRecord
 {
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
-		return 'tagsets';
+		return 'taggroups';
 	}
 
 	/**

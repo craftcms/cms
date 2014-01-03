@@ -4,6 +4,8 @@
 
 {% set elements = (elements is defined ? elements : []) -%}
 {% set criteria = (criteria is defined and criteria ? criteria : null) -%}
+{% set sourceElementId = (sourceElementId is defined and sourceElementId ? sourceElementId : null) -%}
+
 {% from "_includes/forms" import text %}
 
 <div id="{{ id }}" class="elementselect tagselect">
@@ -26,8 +28,8 @@
 	new Craft.TagSelectInput(
 		"{{ id   | namespaceInputId   | e('js') }}",
 		"{{ name | namespaceInputName | e('js') }}",
-		{{ tagSetId }},
-		{{ elementId ? elementId : 'null' }},
+		{{ tagGroupId }},
+		{{ sourceElementId ?: 'null' }},
 		{{ hasFields ? 'true' : 'false' }}
 	);
 {% endset %}

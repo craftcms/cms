@@ -89,9 +89,9 @@ class ErrorHandler extends \CErrorHandler
 		}
 
 		// Special handling for Twig syntax errors
-		if ($exception instanceof \Twig_Error_Syntax)
+		if ($exception instanceof \Twig_Error)
 		{
-			$this->handleTwigSyntaxError($exception);
+			$this->handleTwigError($exception);
 		}
 		else if ($exception instanceof DbConnectException)
 		{
@@ -116,7 +116,7 @@ class ErrorHandler extends \CErrorHandler
 		if (isset($trace[3]['object']) && $trace[3]['object'] instanceof \Twig_Template)
 		{
 			$exception = new \Twig_Error_Runtime($event->message);
-			$this->handleTwigSyntaxError($exception);
+			$this->handleTwigError($exception);
 		}
 		else
 		{
@@ -130,7 +130,7 @@ class ErrorHandler extends \CErrorHandler
 	 * @access protected
 	 * @param \Twig_Error $exception
 	 */
-	protected function handleTwigSyntaxError(\Twig_Error $exception)
+	protected function handleTwigError(\Twig_Error $exception)
 	{
 		$templateFile = $exception->getTemplateFile();
 
@@ -188,7 +188,7 @@ class ErrorHandler extends \CErrorHandler
 			'code'      => 'error',
 			'type'      => get_class($exception),
 			'errorCode' => null,
-			'message'   => Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.'),
+			'message'   => $exception->getMessage(),
 			'file'      => null,
 			'line'      => null,
 			'trace'     => '',

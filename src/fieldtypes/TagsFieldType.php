@@ -6,7 +6,7 @@ namespace Craft;
  */
 class TagsFieldType extends BaseElementFieldType
 {
-	private $_tagSetId;
+	private $_tagGroupId;
 
 	/**
 	 * @access protected
@@ -43,18 +43,18 @@ class TagsFieldType extends BaseElementFieldType
 
 		$elementVariable = new ElementTypeVariable($this->getElementType());
 
-		$tagSet = $this->_getTagSet();
+		$tagGroup = $this->_getTagGroup();
 
-		if ($tagSet)
+		if ($tagGroup)
 		{
 			return craft()->templates->render('_components/fieldtypes/Tags/input', array(
-				'elementType' => $elementVariable,
-				'id'          => craft()->templates->formatInputId($name),
-				'name'        => $name,
-				'elements'    => $criteria,
-				'tagSetId'    => $this->_getTagSetId(),
-				'elementId'   => (!empty($this->element->id) ? $this->element->id : null),
-				'hasFields'   => (bool) $tagSet->getFieldLayout()->getFields(),
+				'elementType'     => $elementVariable,
+				'id'              => craft()->templates->formatInputId($name),
+				'name'            => $name,
+				'elements'        => $criteria,
+				'tagGroupId'      => $this->_getTagGroupId(),
+				'sourceElementId' => (isset($this->element->id) ? $this->element->id : null),
+				'hasFields'       => (bool) $tagGroup->getFieldLayout()->getFields(),
 			));
 		}
 		else
@@ -68,9 +68,9 @@ class TagsFieldType extends BaseElementFieldType
 	 */
 	public function onAfterElementSave()
 	{
-		$tagSetId = $this->_getTagSetId();
+		$tagGroupId = $this->_getTagGroupId();
 
-		if ($tagSetId === false)
+		if ($tagGroupId === false)
 		{
 			return;
 		}
@@ -89,7 +89,7 @@ class TagsFieldType extends BaseElementFieldType
 
 					// Last-minute check
 					$criteria = craft()->elements->getCriteria(ElementType::Tag);
-					$criteria->setId = $tagSetId;
+					$criteria->groupId = $tagGroupId;
 					$criteria->search = 'name::'.$name;
 					$ids = $criteria->ids();
 
@@ -100,7 +100,7 @@ class TagsFieldType extends BaseElementFieldType
 					else
 					{
 						$tag = new TagModel();
-						$tag->setId = $tagSetId;
+						$tag->groupId = $tagGroupId;
 						$tag->name = $name;
 
 						if (craft()->tags->saveTag($tag))
@@ -116,43 +116,43 @@ class TagsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Returns the tag set associated with this field.
+	 * Returns the tag group associated with this field.
 	 *
 	 * @access private
-	 * @return TagSetModel|null
+	 * @return TagGroupModel|null
 	 */
-	private function _getTagSet()
+	private function _getTagGroup()
 	{
-		$tagSetId = $this->_getTagSetId();
+		$tagGroupId = $this->_getTagGroupId();
 
-		if ($tagSetId)
+		if ($tagGroupId)
 		{
-			return craft()->tags->getTagSetById($tagSetId);
+			return craft()->tags->getTagGroupById($tagGroupId);
 		}
 	}
 
 	/**
-	 * Returns the tag set ID this field is associated with.
+	 * Returns the tag group ID this field is associated with.
 	 *
 	 * @access private
 	 * @return int|false
 	 */
-	private function _getTagSetId()
+	private function _getTagGroupId()
 	{
-		if (!isset($this->_tagSetId))
+		if (!isset($this->_tagGroupId))
 		{
 			$source = $this->getSettings()->source;
 
-			if (strncmp($source, 'tagset:', 7) == 0)
+			if (strncmp($source, 'taggroup:', 9) == 0)
 			{
-				$this->_tagSetId = (int) mb_substr($source, 7);
+				$this->_tagGroupId = (int) mb_substr($source, 9);
 			}
 			else
 			{
-				$this->_tagSetId = false;
+				$this->_tagGroupId = false;
 			}
 		}
 
-		return $this->_tagSetId;
+		return $this->_tagGroupId;
 	}
 }

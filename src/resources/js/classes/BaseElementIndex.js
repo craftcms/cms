@@ -6,9 +6,8 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	elementType: null,
 
 	instanceState: null,
-	instanceStateStorageId: null,
 	sourceStates: null,
-	sourceStatesStorageId: null,
+	sourceStatesStorageKey: null,
 
 	searchTimeout: null,
 	elementSelect: null,
@@ -47,27 +46,15 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 		this.sourceStates = {};
 
-		if (typeof Storage !== 'undefined')
+		// Instance states (selected source) are stored by a custom storage key defined in the settings
+		if (this.settings.storageKey)
 		{
-			// Instance states (selected source) are stored by a custom storage key defined in the settings
-			if (this.settings.storageKey)
-			{
-				this.instanceStateStorageId = 'Craft-'+Craft.siteUid+'.'+this.settings.storageKey;
-
-				if (typeof localStorage[this.instanceStateStorageId] != 'undefined')
-				{
-					$.extend(this.instanceState, JSON.parse(localStorage[this.instanceStateStorageId]));
-				}
-			}
-
-			// Source states (view mode, etc.) are stored by the element type and context
-			this.sourceStatesStorageId = 'Craft-'+Craft.siteUid+'.BaseElementIndex.'+this.elementType+'.'+this.settings.context;
-
-			if (typeof localStorage[this.sourceStatesStorageId] != 'undefined')
-			{
-				$.extend(this.sourceStates, JSON.parse(localStorage[this.sourceStatesStorageId]));
-			}
+			$.extend(this.instanceState, Craft.getLocalStorage(this.settings.storageKey), {});
 		}
+
+		// Source states (view mode, etc.) are stored by the element type and context
+		this.sourceStatesStorageKey = 'BaseElementIndex.'+this.elementType+'.'+this.settings.context;
+		$.extend(this.sourceStates, Craft.getLocalStorage(this.sourceStatesStorageKey, {}));
 
 		// Find the DOM elements
 		this.$main = this.$container.find('.main');
@@ -210,9 +197,9 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		}
 
 		// Store it in localStorage too?
-		if (this.instanceStateStorageId)
+		if (this.settings.storageKey)
 		{
-			localStorage[this.instanceStateStorageId] = JSON.stringify(this.instanceState);
+			Craft.setLocalStorage(this.settings.storageKey, this.instanceState);
 		}
 	},
 
@@ -258,11 +245,8 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 		this.sourceStates[this.instanceState.selectedSource] = viewState;
 
-		// Store it in localStorage too?
-		if (this.sourceStatesStorageId)
-		{
-			localStorage[this.sourceStatesStorageId] = JSON.stringify(this.sourceStates);
-		}
+		// Store it in localStorage too
+		Craft.setLocalStorage(this.sourceStatesStorageKey, this.sourceStates);
 	},
 
 	getControllerData: function()
@@ -379,86 +363,17 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			}
 			case 'structure':
 			{
-				var $parents = this.$elementContainer.find('ul').prev('.row'),
-					collapsedElementIds = this.getSelectedSourceState('collapsedElementIds', []);
-
-				for (var i = 0; i < $parents.length; i++)
-				{
-					var $row = $($parents[i]),
-						$li = $row.parent(),
-						$toggle = $('<div class="toggle" title="'+Craft.t('Show/hide children')+'"/>').prependTo($row);
-
-					if ($.inArray($row.data('id'), collapsedElementIds) != -1)
-					{
-						$li.addClass('collapsed');
-					}
-
-					this.initToggle($toggle);
-				}
-
-				if (this.settings.context == 'index')
-				{
-					if (this.$source.data('sortable'))
-					{
-						this.$elementContainer.find('.add').click($.proxy(function(ev) {
-
-							var $btn = $(ev.currentTarget);
-
-							if (!$btn.data('menubtn'))
-							{
-								var elementId = $btn.parent().data('id'),
-									newChildUrl = Craft.getUrl(this.$source.data('new-child-url'), 'parentId='+elementId),
-									$menu = $('<div class="menu"><ul><li><a href="'+newChildUrl+'">'+Craft.t('New child')+'</a></li></ul></div>').insertAfter($btn);
-
-								var menuBtn = new Garnish.MenuBtn($btn);
-								menuBtn.showMenu();
-							}
-
-						}, this))
-
-						this.structureDrag = new Craft.StructureDrag(this,
-							this.$source.data('move-action'),
-							this.$source.data('max-depth')
-						);
-					}
-				}
+				new Craft.Structure(this.$elementContainer, {
+					storageKey:  this.sourceStatesStorageKey+'.'+this.instanceState.selectedSource+'.Structure',
+					sortable:    (this.settings.context == 'index' && this.$source.data('sortable')),
+					newChildUrl: this.$source.data('new-child-url'),
+					moveAction:  this.$source.data('move-action'),
+					maxLevels:   this.$source.data('max-levels')
+				});
 			}
 		}
 
 		this.onUpdateElements(append);
-	},
-
-	initToggle: function($toggle)
-	{
-		$toggle.click($.proxy(function(ev) {
-
-			var $li = $(ev.currentTarget).closest('li'),
-				elementId = $li.children('.row').data('id'),
-				collapsedElementIds = this.getSelectedSourceState('collapsedElementIds', []),
-				viewStateKey = $.inArray(elementId, collapsedElementIds);
-
-			if ($li.hasClass('collapsed'))
-			{
-				$li.removeClass('collapsed');
-
-				if (viewStateKey != -1)
-				{
-					collapsedElementIds.splice(viewStateKey, 1);
-				}
-			}
-			else
-			{
-				$li.addClass('collapsed');
-
-				if (viewStateKey == -1)
-				{
-					collapsedElementIds.push(elementId);
-				}
-			}
-
-			this.setSelecetedSourceState('collapsedElementIds', collapsedElementIds);
-
-		}, this));
 	},
 
 	onUpdateElements: function(append)

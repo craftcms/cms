@@ -133,7 +133,6 @@ abstract class BasePlugin extends BaseSavableComponentType
 	 * @param        $msg
 	 * @param string $level
 	 * @param bool   $force
-	 * @param string $category
 	 */
 	public static function log($msg, $level = LogLevel::Info, $force = false)
 	{

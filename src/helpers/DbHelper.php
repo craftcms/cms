@@ -379,7 +379,9 @@ class DbHelper
 			return '';
 		}
 
-		if ($values[0] == 'and' || $values[0] == 'or')
+		$firstVal = strtolower($values[0]);
+
+		if ($firstVal == 'and' || $firstVal == 'or')
 		{
 			$join = array_shift($values);
 		}
@@ -390,17 +392,22 @@ class DbHelper
 
 		foreach ($values as $value)
 		{
+			if ($value === null)
+			{
+				$value = 'empty';
+			}
+
 			$operator = static::_parseParamOperator($value);
 
-			if ($value === null)
+			if (strtolower($value) == 'empty')
 			{
 				if ($operator == '=')
 				{
-					$conditions[] = $key.' is null';
+					$conditions[] = array('or', $key.' is null', $key.' = ""');
 				}
-				else if ($operator == '!=')
+				else
 				{
-					$conditions[] = $key.' is not null';
+					$conditions[] = array('and', $key.' is not null', $key.' != ""');
 				}
 			}
 			else

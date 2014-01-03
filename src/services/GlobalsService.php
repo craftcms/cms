@@ -172,7 +172,7 @@ class GlobalsService extends BaseApplicationComponent
 
 		if (!$isNewSet)
 		{
-			$globalSetRecord = GlobalSetRecord::model()->with('element')->findById($globalSet->id);
+			$globalSetRecord = GlobalSetRecord::model()->findById($globalSet->id);
 
 			if (!$globalSetRecord)
 			{
@@ -180,71 +180,53 @@ class GlobalsService extends BaseApplicationComponent
 			}
 
 			$oldSet = GlobalSetModel::populateModel($globalSetRecord);
-			$elementRecord = $globalSetRecord->element;
 		}
 		else
 		{
 			$globalSetRecord = new GlobalSetRecord();
-
-			$elementRecord = new ElementRecord();
-			$elementRecord->type = ElementType::GlobalSet;
 		}
 
 		$globalSetRecord->name   = $globalSet->name;
 		$globalSetRecord->handle = $globalSet->handle;
+
 		$globalSetRecord->validate();
 		$globalSet->addErrors($globalSetRecord->getErrors());
-
-		$elementRecord->enabled = $globalSet->enabled;
-		$elementRecord->validate();
-		$globalSet->addErrors($elementRecord->getErrors());
 
 		if (!$globalSet->hasErrors())
 		{
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
-				if (!$isNewSet && $oldSet->fieldLayoutId)
-				{
-					// Drop the old field layout
-					craft()->fields->deleteLayoutById($oldSet->fieldLayoutId);
-				}
-
-				// Save the new one
-				$fieldLayout = $globalSet->getFieldLayout();
-				craft()->fields->saveLayout($fieldLayout, false);
-
-				// Update the set record/model with the new layout ID
-				$globalSet->fieldLayoutId = $fieldLayout->id;
-				$globalSetRecord->fieldLayoutId = $fieldLayout->id;
-
-				// Save the element record first
-				$elementRecord->save(false);
-
-				if ($isNewSet)
+				if (craft()->elements->saveElement($globalSet, false))
 				{
 					// Now that we have an element ID, save it on the other stuff
-					$globalSet->id = $elementRecord->id;
-					$globalSetRecord->id = $globalSet->id;
+					if ($isNewSet)
+					{
+						$globalSetRecord->id = $globalSet->id;
+					}
 
-					// Create a new row in elements_i18n
-					$elementLocaleRecord = new ElementLocaleRecord();
-					$elementLocaleRecord->elementId = $globalSet->id;
-					$elementLocaleRecord->locale    = $globalSet->locale;
-					$elementLocaleRecord->save();
+					if (!$isNewSet && $oldSet->fieldLayoutId)
+					{
+						// Drop the old field layout
+						craft()->fields->deleteLayoutById($oldSet->fieldLayoutId);
+					}
 
-					// Create a row in content
-					$content = new ContentModel();
-					$content->elementId = $globalSet->id;
-					$globalSet->setContent($content);
-					craft()->content->saveContent($globalSet, false);
-				}
+					// Save the new one
+					$fieldLayout = $globalSet->getFieldLayout();
+					craft()->fields->saveLayout($fieldLayout, false);
 
-				$globalSetRecord->save(false);
+					// Update the set record/model with the new layout ID
+					$globalSet->fieldLayoutId = $fieldLayout->id;
+					$globalSetRecord->fieldLayoutId = $fieldLayout->id;
 
-				if ($transaction !== null)
-				{
-					$transaction->commit();
+					$globalSetRecord->save(false);
+
+					if ($transaction !== null)
+					{
+						$transaction->commit();
+					}
+
+					return true;
 				}
 			}
 			catch (\Exception $e)
@@ -256,13 +238,9 @@ class GlobalsService extends BaseApplicationComponent
 
 				throw $e;
 			}
+		}
 
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return false;
 	}
 
 	/**
@@ -324,19 +302,8 @@ class GlobalsService extends BaseApplicationComponent
 	{
 		if (craft()->content->saveContent($globalSet))
 		{
-			// Create the elements_i18n row if it doesn't exist
-			$elementLocaleRecord = ElementLocaleRecord::model()->findByAttributes(array(
-				'elementId' => $globalSet->id,
-				'locale'    => $globalSet->locale
-			));
-
-			if (!$elementLocaleRecord)
-			{
-				$elementLocaleRecord = new ElementLocaleRecord();
-				$elementLocaleRecord->elementId = $globalSet->id;
-				$elementLocaleRecord->locale    = $globalSet->locale;
-				$elementLocaleRecord->save();
-			}
+			// Update the search index since the title may have just changed
+			craft()->search->indexElementAttributes($globalSet);
 
 			// Fire an 'onSaveGlobalContent' event
 			$this->onSaveGlobalContent(new Event($this, array(

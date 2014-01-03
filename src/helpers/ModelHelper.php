@@ -216,6 +216,7 @@ class ModelHelper
 		$requiredAttributes = array();
 		$emailAttributes = array();
 		$urlAttributes = array();
+		$urlFormatAttributes = array();
 		$uriAttributes = array();
 		$strictLengthAttributes = array();
 		$minLengthAttributes = array();
@@ -239,7 +240,7 @@ class ModelHelper
 					break;
 				}
 
-				case Attributetype::Enum:
+				case AttributeType::Enum:
 				{
 					$rules[] = array($name, 'in', 'range' => ArrayHelper::stringToArray($config['values']));
 					break;
@@ -283,6 +284,12 @@ class ModelHelper
 				case AttributeType::Url:
 				{
 					$urlAttributes[] = $name;
+					break;
+				}
+
+				case AttributeType::UrlFormat:
+				{
+					$urlFormatAttributes[] = $name;
 					break;
 				}
 
@@ -420,6 +427,11 @@ class ModelHelper
 			$rules[] = array(implode(',', $urlAttributes), 'Craft\UrlValidator', 'defaultScheme' => 'http');
 		}
 
+		if ($urlFormatAttributes)
+		{
+			$rules[] = array(implode(',', $urlFormatAttributes), 'Craft\UrlFormatValidator');
+		}
+
 		if ($uriAttributes)
 		{
 			$rules[] = array(implode(',', $uriAttributes), 'Craft\UriValidator');
@@ -469,14 +481,8 @@ class ModelHelper
 		{
 			if (isset($config['label']))
 			{
-				$label = $config['label'];
+				$labels[$name] = Craft::t($config['label']);
 			}
-			else
-			{
-				$label = $model->generateAttributeLabel($name);
-			}
-
-			$labels[$name] = Craft::t($label);
 		}
 
 		return $labels;

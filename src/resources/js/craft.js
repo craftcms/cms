@@ -851,6 +851,41 @@ $.extend(Craft, {
 		}
 
 		return new func(elementType, settings);
+	},
+
+	/**
+	 * Retrieves a value from localStorage if it exists.
+	 *
+	 * @param string key
+	 * @param mixed defaultValue
+	 */
+	getLocalStorage: function(key, defaultValue)
+	{
+		key = 'Craft-'+Craft.siteUid+'.'+key;
+
+		if (typeof localStorage != 'undefined' && typeof localStorage[key] != 'undefined')
+		{
+			return JSON.parse(localStorage[key]);
+		}
+		else
+		{
+			return defaultValue;
+		}
+	},
+
+	/**
+	 * Saves a value to localStorage.
+	 *
+	 * @param string key
+	 * @param mixed value
+	 */
+	setLocalStorage: function(key, value)
+	{
+		if (typeof localStorage != 'undefined')
+		{
+			key = 'Craft-'+Craft.siteUid+'.'+key;
+			localStorage[key] = JSON.stringify(value);
+		}
 	}
 });
 

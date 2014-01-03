@@ -29,6 +29,9 @@ class MigrationsService extends BaseApplicationComponent
 	 */
 	public function runToTop($plugin = null)
 	{
+		// This might take a while
+		craft()->config->maxPowerCaptain();
+
 		if (($migrations = $this->getNewMigrations($plugin)) === array())
 		{
 			if ($plugin)
@@ -63,9 +66,6 @@ class MigrationsService extends BaseApplicationComponent
 		{
 			// Refresh the DB cache
 			craft()->db->getSchema()->refresh();
-
-			// Set a new 2 minute time limit
-			craft()->config->maxPowerCaptain();
 
 			if ($this->migrateUp($migration, $plugin) === false)
 			{

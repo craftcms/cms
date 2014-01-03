@@ -169,11 +169,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 		$criteria->status = null;
 		$selectionCriteria = array('status' => null);
 
-		if (!empty($this->element->id))
-		{
-			$selectionCriteria['id'] = 'not '.$this->element->id;
-		}
-
 		if ($this->allowMultipleSources)
 		{
 			$sources = $this->getSettings()->sources;

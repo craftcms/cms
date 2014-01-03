@@ -11,32 +11,76 @@ class ContentService extends BaseApplicationComponent
 	public $fieldContext = 'global';
 
 	/**
-	 * Returns the content model for a given element and locale.
+	 * Returns the content model for a given element.
 	 *
-	 * @param int $elementId
-	 * @param string|null $localeId
+	 * @param BaseElementModel $elementId
 	 * @return ContentModel|null
 	 */
-	public function getElementContent($elementId, $localeId = null)
+	public function getContent(BaseElementModel $element)
 	{
-		$conditions = array('elementId' => $elementId);
-
-		if ($localeId)
+		if (!$element->id || !$element->locale)
 		{
-			$conditions['locale'] = $localeId;
+			return;
 		}
+
+		$originalContentTable      = $this->contentTable;
+		$originalFieldColumnPrefix = $this->fieldColumnPrefix;
+		$originalFieldContext      = $this->fieldContext;
+
+		$this->contentTable        = $element->getContentTable();
+		$this->fieldColumnPrefix   = $element->getFieldColumnPrefix();
+		$this->fieldContext        = $element->getFieldContext();
 
 		$row = craft()->db->createCommand()
 			->from($this->contentTable)
-			->where($conditions)
+			->where(array(
+				'elementId' => $element->id,
+				'locale'    => $element->locale
+			))
 			->queryRow();
 
 		if ($row)
 		{
 			$row = $this->_removeColumnPrefixesFromRow($row);
-
-			return new ContentModel($row);
+			$content = new ContentModel($row);
 		}
+		else
+		{
+			$content = null;
+		}
+
+		$this->contentTable        = $originalContentTable;
+		$this->fieldColumnPrefix   = $originalFieldColumnPrefix;
+		$this->fieldContext        = $originalFieldContext;
+
+		return $content;
+	}
+
+	/**
+	 * Creates a new content model for a given element.
+	 *
+	 * @param BaseElementModel $element
+	 * @return ContentModel
+	 */
+	public function createContent(BaseElementModel $element)
+	{
+		$originalContentTable      = $this->contentTable;
+		$originalFieldColumnPrefix = $this->fieldColumnPrefix;
+		$originalFieldContext      = $this->fieldContext;
+
+		$this->contentTable        = $element->getContentTable();
+		$this->fieldColumnPrefix   = $element->getFieldColumnPrefix();
+		$this->fieldContext        = $element->getFieldContext();
+
+		$content = new ContentModel();
+		$content->elementId = $element->id;
+		$content->locale = $element->locale;
+
+		$this->contentTable        = $originalContentTable;
+		$this->fieldColumnPrefix   = $originalFieldColumnPrefix;
+		$this->fieldContext        = $originalFieldContext;
+
+		return $content;
 	}
 
 	/**
@@ -44,29 +88,44 @@ class ContentService extends BaseApplicationComponent
 	 *
 	 * @param BaseElementModel $element
 	 * @param bool             $validate
+	 * @param bool             $updateOtherLocales
 	 * @throws Exception
 	 * @return bool
 	 */
-	public function saveContent(BaseElementModel $element, $validate = true)
+	public function saveContent(BaseElementModel $element, $validate = true, $updateOtherLocales = true)
 	{
 		if (!$element->id)
 		{
 			throw new Exception(Craft::t('Cannot save the content of an unsaved element.'));
 		}
 
+		$originalContentTable      = $this->contentTable;
+		$originalFieldColumnPrefix = $this->fieldColumnPrefix;
+		$originalFieldContext      = $this->fieldContext;
+
+		$this->contentTable        = $element->getContentTable();
+		$this->fieldColumnPrefix   = $element->getFieldColumnPrefix();
+		$this->fieldContext        = $element->getFieldContext();
+
+		$content = $element->getContent();
+
 		if (!$validate || $this->validateContent($element))
 		{
-			$content = $element->getContent();
-
 			$this->_saveContentRow($content);
-			$this->_postSaveOperations($element, $content);
-			return true;
+			$this->_postSaveOperations($element, $content, $updateOtherLocales);
+			$success = true;
 		}
 		else
 		{
 			$element->addErrors($content->getErrors());
-			return false;
+			$success = false;
 		}
+
+		$this->contentTable        = $originalContentTable;
+		$this->fieldColumnPrefix   = $originalFieldColumnPrefix;
+		$this->fieldContext        = $originalFieldContext;
+
+		return $success;
 	}
 
 	/**
@@ -160,23 +219,21 @@ class ContentService extends BaseApplicationComponent
 
 		if (!$isNewContent)
 		{
-			$affectedRows = craft()->db->createCommand()
-				->update($this->contentTable, $values, array('id' => $content->id));
+			$affectedRows = craft()->db->createCommand()->update($this->contentTable, $values, array('id' => $content->id));
 		}
 		else
 		{
-			$affectedRows = craft()->db->createCommand()
-				->insert($this->contentTable, $values);
-
-			if ($affectedRows)
-			{
-				// Set the new ID
-				$content->id = craft()->db->getLastInsertID();
-			}
+			$affectedRows = craft()->db->createCommand()->insert($this->contentTable, $values);
 		}
 
 		if ($affectedRows)
 		{
+			if ($isNewContent)
+			{
+				// Set the new ID
+				$content->id = craft()->db->getLastInsertID();
+			}
+
 			// Fire an 'onSaveContent' event
 			$this->onSaveContent(new Event($this, array(
 				'content'      => $content,
@@ -197,9 +254,15 @@ class ContentService extends BaseApplicationComponent
 	 * @access private
 	 * @param BaseElementModel $element
 	 * @param ContentModel     $content
+	 * @param bool             $updateOtherLocales
 	 */
-	private function _postSaveOperations(BaseElementModel $element, ContentModel $content)
+	private function _postSaveOperations(BaseElementModel $element, ContentModel $content, $updateOtherLocales)
 	{
+		if ($updateOtherLocales && !craft()->hasPackage(CraftPackage::Localize))
+		{
+			$updateOtherLocales = false;
+		}
+
 		$fieldLayout = $element->getFieldLayout();
 
 		// Copy the non-trasnlatable field values over to the other locales
@@ -227,38 +290,41 @@ class ContentService extends BaseApplicationComponent
 				}
 			}
 
-			// Get the other locales' content
-			$rows = craft()->db->createCommand()
-				->from($this->contentTable)
-				->where(
-					array('and', 'elementId = :elementId', 'locale != :locale'),
-					array(':elementId' => $element->id, ':locale' => $content->locale))
-				->queryAll();
-
-			// Remove the column prefixes
-			foreach ($rows as $i => $row)
+			if ($updateOtherLocales)
 			{
-				$rows[$i] = $this->_removeColumnPrefixesFromRow($row);
-			}
+				// Get the other locales' content
+				$rows = craft()->db->createCommand()
+					->from($this->contentTable)
+					->where(
+						array('and', 'elementId = :elementId', 'locale != :locale'),
+						array(':elementId' => $element->id, ':locale' => $content->locale))
+					->queryAll();
 
-			$otherContentModels = ContentModel::populateModels($rows);
-
-			if ($fieldsWithDuplicateContent && $otherContentModels)
-			{
-				// Copy the dupliacte content over to the other locases
-				foreach ($fieldsWithDuplicateContent as $field)
+				// Remove the column prefixes
+				foreach ($rows as $i => $row)
 				{
-					$handle = $field->handle;
+					$rows[$i] = $this->_removeColumnPrefixesFromRow($row);
+				}
+
+				$otherContentModels = ContentModel::populateModels($rows);
+
+				if ($fieldsWithDuplicateContent && $otherContentModels)
+				{
+					// Copy the dupliacte content over to the other locases
+					foreach ($fieldsWithDuplicateContent as $field)
+					{
+						$handle = $field->handle;
+
+						foreach ($otherContentModels as $otherContentModel)
+						{
+							$otherContentModel->$handle = $content->$handle;
+						}
+					}
 
 					foreach ($otherContentModels as $otherContentModel)
 					{
-						$otherContentModel->$handle = $content->$handle;
+						$this->_saveContentRow($otherContentModel);
 					}
-				}
-
-				foreach ($otherContentModels as $otherContentModel)
-				{
-					$this->_saveContentRow($otherContentModel);
 				}
 			}
 		}
@@ -292,7 +358,7 @@ class ContentService extends BaseApplicationComponent
 						$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
 
 						// Should we queue up the other locales' new keywords too?
-						if (craft()->hasPackage(CraftPackage::Localize))
+						if ($updateOtherLocales)
 						{
 							if ($otherContentModels && in_array($field->id, array_keys($fieldsWithDuplicateContent)))
 							{

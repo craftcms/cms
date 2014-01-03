@@ -3,26 +3,26 @@
  */
 Craft.StructureDrag = Garnish.Drag.extend({
 
-	elementIndex: null,
+	structure: null,
 	moveAction: null,
-	maxDepth: null,
-	draggeeDepth: null,
+	maxLevels: null,
+	draggeeLevel: null,
 
 	$helperLi: null,
 	$targets: null,
 	_: null,
 	draggeeHeight: null,
 
-	init: function(elementIndex, moveAction, maxDepth)
+	init: function(structure, moveAction, maxLevels)
 	{
-		this.elementIndex = elementIndex;
+		this.structure = structure;
 		this.moveAction = moveAction;
-		this.maxDepth = maxDepth;
+		this.maxLevels = maxLevels;
 
 		this.$insertion = $('<li class="draginsertion"/>');
 		this._ = {};
 
-		var $items = this.elementIndex.$elementContainer.find('li');
+		var $items = this.structure.$container.find('li');
 
 		this.base($items, {
 			handle: '.element:first, .move:first',
@@ -44,13 +44,13 @@ Craft.StructureDrag = Garnish.Drag.extend({
 		this.$targets = $();
 
 		// Recursively find each of the targets, in the order they appear to be in
-		this.findTargets(this.elementIndex.$elementContainer);
+		this.findTargets(this.structure.$container);
 
 		// How deep does the rabbit hole go?
-		this.draggeeDepth = 0;
+		this.draggeeLevel = 0;
 		var $level = this.$draggee;
 		do {
-			this.draggeeDepth++;
+			this.draggeeLevel++;
 			$level = $level.find('> ul > li');
 		} while($level.length);
 
@@ -133,41 +133,41 @@ Craft.StructureDrag = Garnish.Drag.extend({
 		// Are we hovering above the first row?
 		if (this._.closestTargetPos == 0 && this.mouseY < this._.closestTargetOffset.top + 5)
 		{
-			this.$insertion.prependTo(this.elementIndex.$elementContainer);
+			this.$insertion.prependTo(this.structure.$container);
 		}
 		else
 		{
 			this._.$closestTargetLi = this._.$closestTarget.parent();
-			this._.closestTargetDepth = this._.$closestTargetLi.data('depth');
+			this._.closestTargetLevel = this._.$closestTargetLi.data('level');
 
 			// Is there a next row?
 			if (this._.closestTargetPos < this.$targets.length - 1)
 			{
 				this._.$nextTargetLi = $(this.$targets[this._.closestTargetPos+1]).parent();
-				this._.nextTargetDepth = this._.$nextTargetLi.data('depth');
+				this._.nextTargetLevel = this._.$nextTargetLi.data('level');
 			}
 			else
 			{
 				this._.$nextTargetLi = null;
-				this._.nextTargetDepth = null;
+				this._.nextTargetLevel = null;
 			}
 
 			// Are we hovering between this row and the next one?
 			this._.hoveringBetweenRows = (this.mouseY >= this._.closestTargetOffset.top + this._.closestTargetHeight - 5);
 
 			/**
-			 * Scenario 1: Both rows have the same depth.
+			 * Scenario 1: Both rows have the same level.
 			 *
 			 *     * Row 1
 			 *     ----------------------
 			 *     * Row 2
 			 */
 
-			if (this._.$nextTargetLi && this._.nextTargetDepth == this._.closestTargetDepth)
+			if (this._.$nextTargetLi && this._.nextTargetLevel == this._.closestTargetLevel)
 			{
 				if (this._.hoveringBetweenRows)
 				{
-					if (!this.maxDepth || this.maxDepth >= (this._.closestTargetDepth + this.draggeeDepth - 1))
+					if (!this.maxLevels || this.maxLevels >= (this._.closestTargetLevel + this.draggeeLevel - 1))
 					{
 						// Position the insertion after the closest target
 						this.$insertion.insertAfter(this._.$closestTargetLi);
@@ -176,7 +176,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 				}
 				else
 				{
-					if (!this.maxDepth || this.maxDepth >= (this._.closestTargetDepth + this.draggeeDepth))
+					if (!this.maxLevels || this.maxLevels >= (this._.closestTargetLevel + this.draggeeLevel))
 					{
 						this._.$closestTarget.addClass('draghover');
 					}
@@ -191,9 +191,9 @@ Craft.StructureDrag = Garnish.Drag.extend({
 			 *         * Row 2
 			 */
 
-			else if (this._.$nextTargetLi && this._.nextTargetDepth > this._.closestTargetDepth)
+			else if (this._.$nextTargetLi && this._.nextTargetLevel > this._.closestTargetLevel)
 			{
-				if (!this.maxDepth || this.maxDepth >= (this._.nextTargetDepth + this.draggeeDepth - 1))
+				if (!this.maxLevels || this.maxLevels >= (this._.nextTargetLevel + this.draggeeLevel - 1))
 				{
 					if (this._.hoveringBetweenRows)
 					{
@@ -222,27 +222,27 @@ Craft.StructureDrag = Garnish.Drag.extend({
 				{
 					// Determine which <li> to position the insertion after
 					this._.draggeeX = this.mouseX - this.targetItemMouseDiffX;
-					this._.$parentLis = this._.$closestTarget.parentsUntil(this.elementIndex.$elementContainer, 'li');
+					this._.$parentLis = this._.$closestTarget.parentsUntil(this.structure.$container, 'li');
 					this._.$closestParentLi = null;
 					this._.closestParentLiXDiff = null;
-					this._.closestParentDepth = null;
+					this._.closestParentLevel = null;
 
 					for (this._.i = 0; this._.i < this._.$parentLis.length; this._.i++)
 					{
 						this._.$parentLi = $(this._.$parentLis[this._.i]);
 						this._.parentLiXDiff = Math.abs(this._.$parentLi.offset().left - this._.draggeeX);
-						this._.parentDepth = this._.$parentLi.data('depth');
+						this._.parentLevel = this._.$parentLi.data('level');
 
-						if ((!this.maxDepth || this.maxDepth >= (this._.parentDepth + this.draggeeDepth - 1)) && (
+						if ((!this.maxLevels || this.maxLevels >= (this._.parentLevel + this.draggeeLevel - 1)) && (
 							!this._.$closestParentLi || (
 								this._.parentLiXDiff < this._.closestParentLiXDiff &&
-								(!this._.$nextTargetLi || this._.parentDepth >= this._.nextTargetDepth)
+								(!this._.$nextTargetLi || this._.parentLevel >= this._.nextTargetLevel)
 							)
 						))
 						{
 							this._.$closestParentLi = this._.$parentLi;
 							this._.closestParentLiXDiff = this._.parentLiXDiff;
-							this._.closestParentDepth = this._.parentDepth;
+							this._.closestParentLevel = this._.parentLevel;
 						}
 					}
 
@@ -253,7 +253,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 				}
 				else
 				{
-					if (!this.maxDepth || this.maxDepth >= (this._.closestTargetDepth + this.draggeeDepth))
+					if (!this.maxLevels || this.maxLevels >= (this._.closestTargetLevel + this.draggeeLevel))
 					{
 						this._.$closestTarget.addClass('draghover');
 					}
@@ -315,7 +315,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 					if (!$ul.length)
 					{
 						var $toggle = $('<div class="toggle" title="'+Craft.t('Show/hide children')+'"/>').prependTo(this._.$closestTarget);
-						this.elementIndex.initToggle($toggle);
+						this.structure.initToggle($toggle);
 
 						$ul = $('<ul>').appendTo(this._.$closestTargetLi);
 					}
@@ -345,26 +345,26 @@ Craft.StructureDrag = Garnish.Drag.extend({
 					$draggeeParent.remove();
 				}
 
-				// Has the depth changed?
-				var newDepth = this.$draggee.parentsUntil(this.elementIndex.$elementContainer, 'li').length + 1;
+				// Has the level changed?
+				var newLevel = this.$draggee.parentsUntil(this.structure.$container, 'li').length + 1;
 
-				if (newDepth != this.$draggee.data('depth'))
+				if (newLevel != this.$draggee.data('level'))
 				{
-					// Correct the helper's padding if moving to/from depth 1
-					if (this.$draggee.data('depth') == 1)
+					// Correct the helper's padding if moving to/from level 1
+					if (this.$draggee.data('level') == 1)
 					{
 						this.$helperLi.animate({
 							'padding-left': 38
 						}, 'fast');
 					}
-					else if (newDepth == 1)
+					else if (newLevel == 1)
 					{
 						this.$helperLi.animate({
 							'padding-left': 8
 						}, 'fast');
 					}
 
-					this.setDepth(this.$draggee, newDepth);
+					this.setLevel(this.$draggee, newLevel);
 				}
 
 				// Make it real
@@ -386,7 +386,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 		}
 
 		// Animate things back into place
-		this.$draggee.removeClass('hidden').animate({
+		this.$draggee.stop().removeClass('hidden').animate({
 			height: this.draggeeHeight
 		}, 'fast', $.proxy(function() {
 			this.$draggee.css('height', 'auto');
@@ -397,11 +397,11 @@ Craft.StructureDrag = Garnish.Drag.extend({
 		this.base();
 	},
 
-	setDepth: function($li, depth)
+	setLevel: function($li, level)
 	{
-		$li.data('depth', depth);
+		$li.data('level', level);
 
-		var indent = 8 + (depth - 1) * 35;
+		var indent = 8 + (level - 1) * 35;
 		this.$draggee.children('.row').css({
 			'margin-left':  '-'+indent+'px',
 			'padding-left': indent+'px'
@@ -411,7 +411,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 
 		for (var i = 0; i < $childLis.length; i++)
 		{
-			this.setDepth($($childLis[i]), depth+1);
+			this.setLevel($($childLis[i]), level+1);
 		}
 	}
 
