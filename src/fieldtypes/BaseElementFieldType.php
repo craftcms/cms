@@ -179,17 +179,18 @@ abstract class BaseElementFieldType extends BaseFieldType
 		}
 
 		$templateVariables = array(
-			'jsClass'        => $this->inputJsClass,
-			'elementType'    => new ElementTypeVariable($this->getElementType()),
-			'id'             => craft()->templates->formatInputId($name),
-			'fieldId'        => $this->model->id,
-			'storageKey'     => 'field.'.$this->model->id,
-			'name'           => $name,
-			'elements'       => $criteria,
-			'sources'        => $sources,
-			'criteria'       => $selectionCriteria,
-			'limit'          => ($this->allowLimit ? $this->getSettings()->limit : null),
-			'addButtonLabel' => $this->getAddButtonLabel(),
+			'jsClass'            => $this->inputJsClass,
+			'elementType'        => new ElementTypeVariable($this->getElementType()),
+			'id'                 => craft()->templates->formatInputId($name),
+			'fieldId'            => $this->model->id,
+			'storageKey'         => 'field.'.$this->model->id,
+			'name'               => $name,
+			'elements'           => $criteria,
+			'sources'            => $sources,
+			'criteria'           => $selectionCriteria,
+			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
+			'limit'              => ($this->allowLimit ? $this->getSettings()->limit : null),
+			'addButtonLabel'     => $this->getAddButtonLabel(),
 		);
 
 		$templateVariables = array_merge($templateVariables, $variables);
