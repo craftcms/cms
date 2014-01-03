@@ -406,8 +406,6 @@ class SectionsService extends BaseApplicationComponent
 						'sectionId' => $section->id
 					));
 					$oldSectionLocales = SectionLocaleModel::populateModels($oldSectionLocaleRecords, 'locale');
-
-					$changedLocaleIds = array();
 				}
 
 				foreach ($sectionLocales as $localeId => $locale)
@@ -426,8 +424,6 @@ class SectionsService extends BaseApplicationComponent
 							), array(
 								'id' => $oldLocale->id
 							));
-
-							$changedLocaleIds[] = $localeId;
 						}
 					}
 					else
@@ -622,46 +618,15 @@ class SectionsService extends BaseApplicationComponent
 					$criteria->limit = null;
 					$entryIds = $criteria->ids();
 
-					// Should we be deleting
+					// Drop the locale rows we no longer need
 					if ($entryIds && $droppedLocaleIds)
 					{
 						craft()->db->createCommand()->delete('elements_i18n', array('and', array('in', 'elementId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
 						craft()->db->createCommand()->delete('content', array('and', array('in', 'elementId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
 					}
 
-					// Are there any locales left?
-					if ($sectionLocales)
-					{
-						// Drop the old entry URIs if the section no longer has URLs
-						if (!$section->hasUrls && $oldSection->hasUrls)
-						{
-							craft()->db->createCommand()->update('elements_i18n',
-								array('uri' => null),
-								array('in', 'elementId', $entryIds)
-							);
-						}
-						else if ($section->type != SectionType::Single && $changedLocaleIds)
-						{
-							foreach ($entryIds as $entryId)
-							{
-								// Loop through each of the changed locales and update all of the entries’ slugs and URIs
-								foreach ($changedLocaleIds as $localeId)
-								{
-									$criteria = craft()->elements->getCriteria(ElementType::Entry);
-									$criteria->id = $entryId;
-									$criteria->locale = $localeId;
-									$criteria->status = null;
-									$entry = $criteria->first();
-
-									// todo: replace the getContent()->id check with the 'strictLocale' param once it's added
-									if ($entry && $entry->getContent()->id)
-									{
-										craft()->elements->updateElementSlugAndUri($entry, false, false);
-									}
-								}
-							}
-						}
-					}
+					// Save all of the entries
+					craft()->elements->resaveElements($criteria);
 				}
 
 				if ($transaction !== null)
