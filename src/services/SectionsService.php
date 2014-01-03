@@ -587,17 +587,14 @@ class SectionsService extends BaseApplicationComponent
 						if (!$isNewSection && $isNewStructure)
 						{
 							// Add all of the entries to the structure
-							$offset = 0;
-							$batchSize = 25;
+							$criteria = craft()->elements->getCriteria(ElementType::Entry);
+							$criteria->sectionId = $section->id;
+							$criteria->status = null;
+							$criteria->order = 'postDate';
+							$criteria->limit = 25;
 
 							do
 							{
-								$criteria = craft()->elements->getCriteria(ElementType::Entry);
-								$criteria->sectionId = $section->id;
-								$criteria->status = null;
-								$criteria->order('postDate');
-								$criteria->offset = $offset;
-								$criteria->limit = $batchSize;
 								$batchEntries = $criteria->find();
 
 								foreach ($batchEntries as $entry)
@@ -605,7 +602,7 @@ class SectionsService extends BaseApplicationComponent
 									craft()->structures->appendToRoot($section->structureId, $entry, 'insert');
 								}
 
-								$offset += $batchSize;
+								$criteria->offset += 25;
 							}
 							while ($batchEntries);
 						}
