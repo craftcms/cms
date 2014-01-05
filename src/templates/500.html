@@ -1,7 +1,7 @@
 {% extends "_layouts/message" %}
 {% set title = "Internal Server Error"|t %}
 
-{% set content %}
+{% block message %}
 	<h2>{{ title }}</h2>
 	<p>{{ "An error occurred while processing your request."|t }}</p>
-{% endset %}
+{% endblock %}

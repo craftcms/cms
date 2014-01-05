@@ -10,7 +10,7 @@
 
 {% set username = (craft.config.rememberUsernameDuration ? craft.session.rememberedUsername : '') %}
 
-{% set body %}
+{% block body %}
     <script type="text/javascript">
 		var cookieTest = 'CraftCookieTest='+Math.floor(Math.random() * 1000000);
 		document.cookie = cookieTest;
@@ -66,4 +66,4 @@
 			);
 		}
 	</script>
-{% endset %}
+{% endblock %}

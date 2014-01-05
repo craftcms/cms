@@ -53,7 +53,7 @@
 {% set hasHelp = (docsUrl is defined and docsUrl is not empty) %}
 
 
-{% set body %}
+{% block body %}
 	{% if currentUser.admin and craft.config.devMode %}
 		<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
 	{% endif %}
@@ -214,4 +214,4 @@
 		{% endif %}
 		<li>{{ "Copyright"|t }} {{ now.year}} Pixel &amp; Tonic, Inc. {{ "All rights reserved."|t }}</li>
 	</ul>
-{% endset %}
+{% endblock %}
