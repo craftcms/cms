@@ -5,8 +5,12 @@ Craft.Grid = Garnish.Base.extend({
 	$items: null,
 	items: null,
 	totalCols: null,
-	cols: null,
-	colWidth: null,
+	colPctWidth: null,
+
+	layouts: null,
+	itemMinColspans: null,
+	itemMaxColspans: null,
+	itemHeights: null,
 
 	init: function(container, settings)
 	{
@@ -14,7 +18,16 @@ Craft.Grid = Garnish.Base.extend({
 
 		this.setSettings(settings, Craft.Grid.defaults);
 
+		// Attribute setting overrides
+		if (this.$container.data('item-selector'))     this.settings.itemSelector = this.$container.data('item-selector');
+		if (this.$container.data('min-col-width'))     this.settings.minColWidth = parseInt(this.$container.data('min-col-width'));
+		if (this.$container.data('percentage-widths')) this.settings.percentageWidths = !!this.$container.data('percentage-widths');
+		if (this.$container.data('fill-mode'))         this.settings.fillMode = this.$container.data('fill-mode');
+		if (this.$container.data('col-class'))         this.settings.colClass = this.$container.data('col-class');
+		if (this.$container.data('snap-to-grid'))      this.settings.snapToGrid = !!this.$container.data('snap-to-grid');
+
 		this.$items = this.$container.children(this.settings.itemSelector);
+		this.setItems();
 
 		this.setCols();
 
@@ -25,13 +38,25 @@ Craft.Grid = Garnish.Base.extend({
 	addItems: function(items)
 	{
 		this.$items = $().add(this.$items.add(items));
+		this.setItems();
 		this.refreshCols();
 	},
 
 	removeItems: function(items)
 	{
 		this.$items = $().add(this.$items.not(items));
+		this.setItems();
 		this.refreshCols();
+	},
+
+	setItems: function()
+	{
+		this.items = [];
+
+		for (var i = 0; i < this.$items.length; i++)
+		{
+			this.items.push($(this.$items[i]));
+		}
 	},
 
 	setCols: function()
@@ -59,15 +84,15 @@ Craft.Grid = Garnish.Base.extend({
 		{
 			var itemIndex = 0;
 
-			while (itemIndex < this.$items.length)
+			while (itemIndex < this.items.length)
 			{
 				// Append the next X items and figure out which one is the tallest
 				var tallestItemHeight = -1,
 					colIndex = 0;
 
-				for (var i = itemIndex; (i < itemIndex + this.totalCols && i < this.$items.length); i++)
+				for (var i = itemIndex; (i < itemIndex + this.totalCols && i < this.items.length); i++)
 				{
-					var itemHeight = $(this.$items[i]).height('auto').height();
+					var itemHeight = this.items[i].height('auto').height();
 					if (itemHeight > tallestItemHeight)
 					{
 						tallestItemHeight = itemHeight;
@@ -87,9 +112,9 @@ Craft.Grid = Garnish.Base.extend({
 				}
 
 				// Now set their heights to the tallest one
-				for (var i = itemIndex; (i < itemIndex + this.totalCols && i < this.$items.length); i++)
+				for (var i = itemIndex; (i < itemIndex + this.totalCols && i < this.items.length); i++)
 				{
-					$(this.$items[i]).height(tallestItemHeight);
+					this.items[i].height(tallestItemHeight);
 				}
 
 				// set the itemIndex pointer to the next one up
@@ -98,264 +123,205 @@ Craft.Grid = Garnish.Base.extend({
 		}
 		else
 		{
-			// Detach the items before we remove the columns so they keep their events
-			for (var i = 0; i < this.$items.length; i++)
-			{
-				$(this.$items[i]).detach();
-			}
-
-			// Delete the old columns
-			if (this.cols)
-			{
-				for (var i = 0; i < this.cols.length; i++)
-				{
-					this.cols[i].remove();
-				}
-			}
-
-			// Create the new columns
-			this.cols = [];
-
 			if (this.settings.percentageWidths)
 			{
-				this.colWidth = Math.floor(100 / this.totalCols) + '%';
-			}
-			else
-			{
-				this.colWidth = this.settings.minColWidth + 'px';
+				this.colPctWidth = (100 / this.totalCols);
 			}
 
-			var actualTotalCols = Math.min(this.totalCols, this.$items.length);
-			for (var i = 0; i < actualTotalCols; i++)
-			{
-				this.cols[i] = new Craft.Grid.Col(this, i);
-			}
+			// The setup
 
-			// Place the items
-			if (this.cols.length == 1)
+			this.layouts = [];
+			this.itemMinColspans = [];
+			this.itemMaxColspans = [];
+			this.itemHeights = [];
+
+			for (var i = 0; i < this.items.length; i++)
 			{
-				for (var i = 0; i < this.$items.length; i++)
+				var $item = this.items[i].show();
+
+				this.itemMinColspans[i] = ($item.data('colspan') ? $item.data('colspan') : ($item.data('min-colspan') ? $item.data('min-colspan') : 1)),
+				this.itemMaxColspans[i] = ($item.data('colspan') ? $item.data('colspan') : ($item.data('max-colspan') ? $item.data('max-colspan') : this.totalCols));
+
+				if (this.itemMinColspans[i] > this.totalCols) this.itemMinColspans[i] = this.totalCols;
+				if (this.itemMaxColspans[i] > this.totalCols) this.itemMaxColspans[i] = this.totalCols;
+
+				this.itemHeights[i] = [];
+
+				for (var j = this.itemMinColspans[i]; j <= this.itemMaxColspans[i]; j++)
 				{
-					this.cols[0].append(this.$items[i]);
-
-					if (this.settings.snapToGrid)
-					{
-						var height = $(this.$items[i]).height('auto').height(),
-							remainder = height % this.settings.snapToGrid;
-
-						if (remainder)
-						{
-							$(this.$items[i]).height(height + this.settings.snapToGrid - remainder);
-						}
-					}
+					// Get the height for this colspan
+					$item.width(this.getItemWidth(j));
+					this.itemHeights[i][j] = $item.outerHeight();
 				}
 			}
-			else
+
+			// Find all the possible layouts
+
+			var colHeights = [];
+
+			for (var i = 0; i < this.totalCols; i++)
 			{
-				switch (this.settings.fillMode)
+				colHeights.push(0);
+			}
+
+			this.createLayouts(0, [], [], colHeights, 0);
+
+			// Now find the layout that looks the best.
+			// We'll determine that by first finding all of the layouts that have the lowest overall height,
+			// and of those, find the one with the least empty space
+
+			// Find the layout(s) with the least overall height
+			var layoutHeights = [];
+
+			for (var i = 0; i < this.layouts.length; i++)
+			{
+				layoutHeights.push(Math.max.apply(null, this.layouts[i].colHeights));
+			}
+
+			var shortestHeight = Math.min.apply(null, layoutHeights),
+				shortestLayouts = [],
+				emptySpaces = [];
+
+			for (var i = 0; i < layoutHeights.length; i++)
+			{
+				if (layoutHeights[i] == shortestHeight)
 				{
-					case 'top':
+					shortestLayouts.push(this.layouts[i]);
+
+					// Now get its total empty space, including any trailing empty space
+					var emptySpace = this.layouts[i].emptySpace;
+
+					for (var j = 0; j < this.totalCols; j++)
 					{
-						// Add each item one at a time to the shortest column
-						for (var i = 0; i < this.$items.length; i++)
-						{
-							this.getShortestCol().append(this.$items[i]);
-						}
-
-						break;
+						emptySpace += (shortestHeight - this.layouts[i].colHeights[j]);
 					}
-					case 'ltr':
-					{
-						// First get the total height of the items
-						this.itemHeights = [];
-						this.ltrScenarios = [];
-						this.totalItemHeight = 0;
 
-						for (var i = 0; i < this.$items.length; i++)
-						{
-							this.cols[0].append(this.$items[i]);
-							this.itemHeights[i] = $(this.$items[i]).height();
-							this.totalItemHeight += this.itemHeights[i];
-							$(this.$items[i]).detach();
-						}
-
-						this.avgColHeight = this.totalItemHeight / this.cols.length;
-
-						// Get all the possible scenarios
-						this.ltrScenarios.push(
-							new Craft.Grid.LtrScenario(this, 0, 0, [[]], 0)
-						);
-
-						// Find the scenario with the shortest tallest column
-						var shortestScenario = this.ltrScenarios[0];
-
-						for (var i = 1; i < this.ltrScenarios.length; i++)
-						{
-							if (this.ltrScenarios[i].tallestColHeight < shortestScenario.tallestColHeight)
-							{
-								shortestScenario = this.ltrScenarios[i];
-							}
-						}
-
-						// Lay out the items
-						for (var i = 0; i < shortestScenario.placements.length; i++)
-						{
-							for (var j = 0; j < shortestScenario.placements[i].length; j++)
-							{
-								this.cols[i].append(this.$items[shortestScenario.placements[i][j]]);
-							}
-						}
-
-						break;
-					}
+					emptySpaces.push(emptySpace);
 				}
 			}
-		}
-	},
 
-	getShortestCol: function()
-	{
-		var shortestCol, shortestColHeight;
+			// And the layout with the least empty space is...
+			var layout = shortestLayouts[$.inArray(Math.min.apply(null, emptySpaces), emptySpaces)];
 
-		for (var i = 0; i < this.cols.length; i++)
-		{
-			var col = this.cols[i],
-				colHeight = this.cols[i].height();
+			// Now let's place the items
+			var colHeights = [];
 
-			if (typeof shortestCol == 'undefined' || colHeight < shortestColHeight)
+			for (var i = 0; i < this.totalCols; i++)
 			{
-				shortestCol = col;
-				shortestColHeight = colHeight;
+				colHeights.push(0);
 			}
-		}
 
-		return shortestCol;
-	},
-
-	getTallestCol: function()
-	{
-		var tallestCol, tallestColHeight;
-
-		for (var i = 0; i < this.cols.length; i++)
-		{
-			var col = this.cols[i],
-				colHeight = this.cols[i].height();
-
-			if (typeof tallestCol == 'undefined' || colHeight > tallestColHeight)
+			for (var i = 0; i < this.items.length; i++)
 			{
-				tallestCol = col;
-				tallestColHeight = colHeight;
+				var endingCol = layout.positions[i] + layout.colspans[i] - 1,
+					affectedColHeights = [];
+
+				for (var col = layout.positions[i]; col <= endingCol; col++)
+				{
+					affectedColHeights.push(colHeights[col]);
+				}
+
+				var top = Math.max.apply(null, affectedColHeights);
+
+				this.items[i].css({
+					left: this.getItemWidth(layout.positions[i]),
+					top: top,
+					width: this.getItemWidth(layout.colspans[i])
+				});
+
+				// Now add the new heights to those columns
+				for (var col = layout.positions[i]; col <= endingCol; col++)
+				{
+					colHeights[col] = top + this.itemHeights[i][layout.colspans[i]];
+				}
 			}
+
+			// Set the container height
+			this.$container.css({
+				height: Math.max.apply(null, colHeights)
+			});
 		}
-
-		return tallestCol;
-	}
-
-},
-{
-	defaults: {
-		itemSelector: ':visible',
-		minColWidth: 325,
-		percentageWidths: true,
-		fillMode: 'grid',
-		snapToGrid: null
-	}
-});
-
-
-Craft.Grid.Col = Garnish.Base.extend({
-
-	grid: null,
-	index: null,
-
-	$outerContainer: null,
-	$innerContainer: null,
-
-	init: function(grid, index)
-	{
-		this.grid = grid;
-		this.index = index;
-
-		this.$outerContainer = $('<div class="col" style="width: '+this.grid.colWidth+'"/>').appendTo(this.grid.$container);
-		this.$innerContainer = $('<div class="col-inner">').appendTo(this.$outerContainer);
 	},
 
-	height: function(height)
+	getItemWidth: function(colspan)
 	{
-		if (typeof height != 'undefined')
+		if (this.settings.percentageWidths)
 		{
-			this.$innerContainer.height(height);
+			return (this.colPctWidth * colspan) + '%';
 		}
 		else
 		{
-			this.$innerContainer.height('auto');
-			return this.$outerContainer.height();
+			return (this.settings.minColWidth * colspan) + 'px';
 		}
 	},
 
-	append: function(item)
+	createLayouts: function(item, prevPositions, prevColspans, prevColHeights, prevEmptySpace)
 	{
-		this.$innerContainer.append(item);
-	},
+		var maxPosition = this.totalCols - this.itemMinColspans[item];
 
-	remove: function()
-	{
-		this.$outerContainer.remove();
-	}
-
-});
-
-
-Craft.Grid.LtrScenario = Garnish.Base.extend({
-
-	placements: null,
-	tallestColHeight: null,
-
-	init: function(grid, itemIndex, colIndex, placements, tallestColHeight)
-	{
-		this.placements = placements;
-		this.tallestColHeight = tallestColHeight;
-
-		var runningColHeight = 0;
-
-		for (itemIndex; itemIndex < grid.$items.length; itemIndex++)
+		// Loop through all possible positions
+		for (var position = 0; position <= maxPosition; position++)
 		{
-			var hypotheticalColHeight = runningColHeight + grid.itemHeights[itemIndex];
+			var positions = prevPositions.slice(0);
+			positions.push(position);
 
-			// If there's enough room for this item, add it and move on
-			if (hypotheticalColHeight <= grid.avgColHeight || colIndex == grid.cols.length-1)
+			// Loop through all possible colspans at this position
+			var maxColspan = Math.min(this.itemMaxColspans[item], this.totalCols - position);
+
+			for (var colspan = this.itemMinColspans[item]; colspan <= maxColspan; colspan++)
 			{
-				this.placements[colIndex].push(itemIndex);
-				runningColHeight += grid.itemHeights[itemIndex];
-				this.checkColHeight(hypotheticalColHeight);
+				var colspans = prevColspans.slice(0),
+					colHeights = prevColHeights.slice(0),
+					emptySpace = prevEmptySpace;
+
+				colspans.push(colspan);
+
+				// Bump the col height for each of the columns this placement lives on
+
+				// First find the tallest column
+				var endingCol = position + colspan - 1,
+					affectedColHeights = [];
+
+				for (var col = position; col <= endingCol; col++)
+				{
+					affectedColHeights.push(colHeights[col]);
+				}
+
+				var tallestColHeight = Math.max.apply(null, affectedColHeights);
+
+				// Now add the new heights to those columns
+				for (var col = position; col <= endingCol; col++)
+				{
+					emptySpace += tallestColHeight - colHeights[col];
+					colHeights[col] = tallestColHeight + this.itemHeights[item][colspan];
+				}
+
+				// If this is the last item, create the layout
+				if (item == this.items.length-1)
+				{
+					this.layouts.push({
+						positions: positions,
+						colspans: colspans,
+						colHeights: colHeights,
+						emptySpace: emptySpace
+					});
+				}
+				else
+				{
+					// Dive deeper
+					this.createLayouts(item+1, positions, colspans, colHeights, emptySpace);
+				}
 			}
-			else
-			{
-				this.placements[colIndex+1] = [];
-
-				// Create an alternate scenario where the item stays in this column
-				var altPlacements = $.extend(true, [], this.placements);
-				altPlacements[colIndex].push(itemIndex);
-				var altTallestColHeight = Math.max(this.tallestColHeight, hypotheticalColHeight);
-				grid.ltrScenarios.push(
-					new Craft.Grid.LtrScenario(grid, itemIndex+1, colIndex+1, altPlacements, altTallestColHeight)
-				);
-
-				// As for this scenario, move it to the next column
-				colIndex++;
-				this.placements[colIndex].push(itemIndex);
-				this.checkColHeight(grid.itemHeights[itemIndex]);
-				runningColHeight = grid.itemHeights[itemIndex];
-			}
-		}
-	},
-
-	checkColHeight: function(colHeight)
-	{
-		if (colHeight > this.tallestColHeight)
-		{
-			this.tallestColHeight = colHeight;
 		}
 	}
-
+},
+{
+	defaults: {
+		itemSelector: '.item',
+		minColWidth: 300,
+		percentageWidths: true,
+		fillMode: 'top',
+		colClass: 'col',
+		snapToGrid: null
+	}
 });

@@ -622,12 +622,6 @@ class EntriesController extends BaseController
 				$variables['entry']->getErrors('postDate') ||
 				$variables['entry']->getErrors('expiryDate')
 			));
-
-			$variables['tabs'][] = array(
-				'label' => Craft::t('Settings'),
-				'url'   => '#entry-settings',
-				'class' => ($hasErrors ? 'error' : null)
-			);
 		}
 	}
 

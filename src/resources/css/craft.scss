@@ -181,39 +181,11 @@ td.right { float: none; text-align: right; }
 /*  Panes
 /* ----------------------------------------*/
 
-.pane { position: relative; margin: 30px 0; padding: 15px; background: #fff;
-	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 5px 20px -5px rgba(0,0,0,0.2);
-	        box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 5px 20px -5px rgba(0,0,0,0.2);
+.pane { @include pane; position: relative; margin: 20px 0; padding: 30px; border-radius: 3px;
+	-webkit-box-sizing: border-box;
+	   -moz-box-sizing: border-box;
+	        box-sizing: border-box;
 }
-
-.pane h2 { margin-bottom: 15px; border-bottom: none; }
-.pane h2 + .actions { margin-top: -44px; }
-h3 + .pane { margin-top: 15px; }
-
-/* admin panes */
-.adminpane { padding: 1px 0; }
-.adminpane .list { float: left; padding: 14px 15px; border-right: 1px solid #d6d6d6; width: 170px; min-height: 200px; }
-.adminpane .list ul { margin-bottom: 15px; }
-.adminpane .settings { margin-left: 200px; border-left: 1px solid #d6d6d6; padding: 14px 15px; }
-.adminpane .settings .buttons:not(:first-child) { margin-top: 15px; border-top: 1px solid #d6d6d6; padding-top: 15px; }
-.adminpane .settings .buttons:first-child { margin-top: 0; }
-
-/* ----------------------------------------
-/*  Grids
-/* ----------------------------------------*/
-
-.grid { margin: 30px -15px; }
-.grid:after { @include clearafter; }
-.grid .col { float: left; }
-.grid .col .col-inner { margin: 0 15px; }
-
-.grid .col75 { width: 75%; }
-.grid .col66 { width: 66.66%; }
-.grid .col66:last-child { width: 66.67%; }
-.grid .col50 { width: 50%; }
-.grid .col33 { width: 33.33%; }
-.grid .col33:last-child { width: 33.34%; }
-.grid .col25 { width: 25%; }
 
 /* ----------------------------------------
 /*  Icon lists
@@ -765,9 +737,11 @@ ul.tree,
 #main div.redactor_box,
 .border-box,
 .matrix-configurator > .field > .input,
-.lightswitch { border: 1px solid #ccc;
-	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.1), 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
-	        box-shadow: inset 0 1px 1px rgba(0,0,0,0.1), 0 0 0 $blurglowcolor;    -moz-transition: border linear 100ms,         box-shadow linear 100ms;
+.lightswitch { border: none; border-radius: 2px;
+	-webkit-box-shadow: 0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0);
+	        box-shadow: 0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0);
+	-webkit-transition: -webkit-box-shadow linear 100ms;
+	   -moz-transition: box-shadow linear 100ms;
 }
 
 .text.focus,
@@ -775,8 +749,8 @@ ul.tree,
 .border-box:focus,
 .border-box.focus,
 .lightswitch:focus { border-color: $focusglowcolor; outline: none;
-	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.1), 0 0 5px $focusglowcolor;
-	        box-shadow: inset 0 1px 1px rgba(0,0,0,0.1), 0 0 5px $focusglowcolor;
+	-webkit-box-shadow: 0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5);
+	        box-shadow: 0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5);
 }
 
 input.text,

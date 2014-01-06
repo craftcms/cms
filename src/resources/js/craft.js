@@ -767,6 +767,7 @@ $.extend(Craft, {
 	 */
 	initUiElements: function($container)
 	{
+		$('.grid', $container).grid();
 		$('.checkbox-select', $container).checkboxselect();
 		$('.fieldtoggle', $container).fieldtoggle();
 		$('.lightswitch', $container).lightswitch();
@@ -927,6 +928,17 @@ $.extend($.fn, {
 			{
 				$elem.attr('tabindex', '0');
 			}
+		});
+	},
+
+	/**
+	 * Sets the element as the container of a grid.
+	 */
+	grid: function()
+	{
+		return this.each(function()
+		{
+			new Craft.Grid(this);
 		});
 	},
 
