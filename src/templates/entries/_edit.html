@@ -1,10 +1,6 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
-{% includeTranslations
-	"Live Preview"
-%}
-
 {% set extraPageHeaderHtml %}
 	{% if craft.hasPackage('Localize') %}
 		<div class="select">
@@ -21,9 +17,6 @@
 		{% include "entries/_revisions" %}
 	{% endif %}
 {% endset %}
-
-
-{% set continueEditingUrl = 'entries/'~section.handle~'/{id}'~(draftId is defined ? '/drafts/'~draftId : '')~(craft.hasPackage('Localize') and craft.locale != localeId ? '/'~localeId : '') %}
 
 
 {% set content %}
