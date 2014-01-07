@@ -766,7 +766,7 @@ Garnish.Base = Base.extend({
 		this._$listeners = this._$listeners.add(elem);
 
 		// Prep for activate event?
-		if (events.search(/\bactivate\b/) != -1 && !$elem.data('activatable'))
+		if (events.search(/\bactivate\b/) != -1 && !$elem.data('garnish-activatable'))
 		{
 			var activateNamespace = this._namespace+'-activate';
 
@@ -824,7 +824,7 @@ Garnish.Base = Base.extend({
 				$elem.removeAttr('tabindex');
 			}
 
-			$elem.data('activatable', true);
+			$elem.data('garnish-activatable', true);
 		}
 
 		// Prep for chanegtext event?
@@ -834,9 +834,9 @@ Garnish.Base = Base.extend({
 			for (var i = 0; i < $elem.length; i++)
 			{
 				var _$elem = $($elem[i]);
-				_$elem.data('textchangeValue', _$elem.val());
+				_$elem.data('garnish-textchangeValue', _$elem.val());
 
-				if (!_$elem.data('textchangeable'))
+				if (!_$elem.data('garnish-textchangeable'))
 				{
 					var textchangeNamespace = this._namespace+'-textchange',
 						events = 'keypress'+textchangeNamespace +
@@ -849,15 +849,92 @@ Garnish.Base = Base.extend({
 						var _$elem = $(ev.currentTarget),
 							val = _$elem.val();
 
-						if (val != _$elem.data('textchangeValue'))
+						if (val != _$elem.data('garnish-textchangeValue'))
 						{
-							_$elem.data('textchangeValue', val);
+							_$elem.data('garnish-textchangeValue', val);
 							_$elem.trigger('textchange');
 						}
 					});
 
-					_$elem.data('textchangeable', true);
+					_$elem.data('garnish-textchangeable', true);
 				}
+			}
+		}
+
+		// Prep for resize event?
+		if (events.search(/\bresize\b/) != -1)
+		{
+			// Resize detection technique adapted from http://www.backalleycoder.com/2013/03/18/cross-browser-event-based-element-resize-detection/ -- thanks!
+			for (var i = 0; i < $elem.length; i++)
+			{
+				(function(elem)
+				{
+					if (elem == window)
+					{
+						return;
+					}
+
+					var _$elem = $(elem)
+					var resize = 'onresize' in elem;
+
+					if (!resize && !_$elem.data('garnish-resizable'))
+					{
+						var sensor = document.createElement('div');
+							sensor.innerHTML = '<div><div></div></div><div><div></div></div>';
+
+						$(sensor).add($('> div', sensor)).css({
+							position: 'absolute',
+							top: 0,
+							left: 0,
+							width: '100%',
+							height: '100%',
+							overflow: 'hidden',
+							'z-index': -1
+						});
+
+						_$elem.data('garnish-resizable', true);
+
+						var x = 0, y = 0,
+							first = sensor.firstElementChild.firstChild,
+							last = sensor.lastElementChild.firstChild,
+							matchFlow = function(ev)
+							{
+								var change = false,
+								width = elem.offsetWidth;
+								if (x != width)
+								{
+									first.style.width = width - 1 + 'px';
+									last.style.width = width + 1 + 'px';
+									change = true;
+									x = width;
+								}
+								var height = elem.offsetHeight;
+								if (y != height)
+								{
+									first.style.height = height - 1 + 'px';
+									last.style.height = height + 1 + 'px';
+									change = true;
+									y = height;
+								}
+								if (change && ev.currentTarget != elem)
+								{
+									$(elem).trigger('resize');
+								}
+							};
+
+						if (getComputedStyle(elem).position == 'static')
+						{
+							elem.style.position = 'relative';
+						}
+
+						addFlowListener(sensor, 'over', matchFlow);
+						addFlowListener(sensor, 'under', matchFlow);
+						addFlowListener(sensor.firstElementChild, 'over', matchFlow);
+						addFlowListener(sensor.lastElementChild, 'under', matchFlow);
+						elem.appendChild(sensor);
+						matchFlow({});
+					}
+				})($elem[i]);
 			}
 		}
 	},
@@ -878,6 +955,26 @@ Garnish.Base = Base.extend({
 		this.removeAllListeners(this._$listeners);
 	}
 });
+
+/**
+ * Used by our resize detection script
+ */
+function addFlowListener(elem, type, func)
+{
+	var flow = type == 'over';
+
+	elem.addEventListener('OverflowEvent' in window ? 'overflowchanged' : type + 'flow', function(ev)
+	{
+		if (ev.type == (type + 'flow') ||
+		((ev.orient == 0 && ev.horizontalOverflow == flow) ||
+		(ev.orient == 1 && ev.verticalOverflow == flow) ||
+		(ev.orient == 2 && ev.horizontalOverflow == flow && ev.verticalOverflow == flow)))
+		{
+			ev.flow = type;
+			return func.call(this, ev);
+		}
+	}, false);
+};
 
 
 /**

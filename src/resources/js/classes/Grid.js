@@ -8,6 +8,7 @@ Craft.Grid = Garnish.Base.extend({
 	colPctWidth: null,
 
 	layouts: null,
+	layout: null,
 	itemMinColspans: null,
 	itemMaxColspans: null,
 	itemHeights: null,
@@ -28,7 +29,6 @@ Craft.Grid = Garnish.Base.extend({
 
 		this.$items = this.$container.children(this.settings.itemSelector);
 		this.setItems();
-
 		this.setCols();
 
 		// Adjust them when the window resizes
@@ -123,6 +123,8 @@ Craft.Grid = Garnish.Base.extend({
 		}
 		else
 		{
+			this.removeListener(this.$items, 'resize');
+
 			if (this.settings.percentageWidths)
 			{
 				this.colPctWidth = (100 / this.totalCols);
@@ -150,7 +152,7 @@ Craft.Grid = Garnish.Base.extend({
 				for (var j = this.itemMinColspans[i]; j <= this.itemMaxColspans[i]; j++)
 				{
 					// Get the height for this colspan
-					$item.width(this.getItemWidth(j));
+					$item.css('width', this.getItemWidth(j));
 					this.itemHeights[i][j] = $item.outerHeight();
 				}
 			}
@@ -201,45 +203,13 @@ Craft.Grid = Garnish.Base.extend({
 			}
 
 			// And the layout with the least empty space is...
-			var layout = shortestLayouts[$.inArray(Math.min.apply(null, emptySpaces), emptySpaces)];
+			this.layout = shortestLayouts[$.inArray(Math.min.apply(null, emptySpaces), emptySpaces)];
 
-			// Now let's place the items
-			var colHeights = [];
+			// Now position the items
+			this.positionItems();
 
-			for (var i = 0; i < this.totalCols; i++)
-			{
-				colHeights.push(0);
-			}
-
-			for (var i = 0; i < this.items.length; i++)
-			{
-				var endingCol = layout.positions[i] + layout.colspans[i] - 1,
-					affectedColHeights = [];
-
-				for (var col = layout.positions[i]; col <= endingCol; col++)
-				{
-					affectedColHeights.push(colHeights[col]);
-				}
-
-				var top = Math.max.apply(null, affectedColHeights);
-
-				this.items[i].css({
-					left: this.getItemWidth(layout.positions[i]),
-					top: top,
-					width: this.getItemWidth(layout.colspans[i])
-				});
-
-				// Now add the new heights to those columns
-				for (var col = layout.positions[i]; col <= endingCol; col++)
-				{
-					colHeights[col] = top + this.itemHeights[i][layout.colspans[i]];
-				}
-			}
-
-			// Set the container height
-			this.$container.css({
-				height: Math.max.apply(null, colHeights)
-			});
+			// Update the positions as the items' heigthts change
+			this.addListener(this.$items, 'resize', 'onItemResize');
 		}
 	},
 
@@ -311,6 +281,64 @@ Craft.Grid = Garnish.Base.extend({
 					// Dive deeper
 					this.createLayouts(item+1, positions, colspans, colHeights, emptySpace);
 				}
+			}
+		}
+	},
+
+	positionItems: function()
+	{
+		console.log('positionItems');
+		var colHeights = [];
+
+		for (var i = 0; i < this.totalCols; i++)
+		{
+			colHeights.push(0);
+		}
+
+		for (var i = 0; i < this.items.length; i++)
+		{
+			var endingCol = this.layout.positions[i] + this.layout.colspans[i] - 1,
+				affectedColHeights = [];
+
+			for (var col = this.layout.positions[i]; col <= endingCol; col++)
+			{
+				affectedColHeights.push(colHeights[col]);
+			}
+
+			var top = Math.max.apply(null, affectedColHeights);
+
+			this.items[i].css({
+				left: this.getItemWidth(this.layout.positions[i]),
+				top: top,
+				width: this.getItemWidth(this.layout.colspans[i])
+			});
+
+			// Now add the new heights to those columns
+			for (var col = this.layout.positions[i]; col <= endingCol; col++)
+			{
+				colHeights[col] = top + this.itemHeights[i][this.layout.colspans[i]];
+			}
+		}
+
+		// Set the container height
+		this.$container.css({
+			height: Math.max.apply(null, colHeights)
+		});
+	},
+
+	onItemResize: function(ev)
+	{
+		var item = $.inArray(ev.target, this.$items);
+
+		if (item != -1)
+		{
+			// Update the height and reposition the items
+			var newHeight = this.items[item].outerHeight();
+
+			if (newHeight != this.itemHeights[item][this.layout.colspans[item]])
+			{
+				this.itemHeights[item][this.layout.colspans[item]] = newHeight;
+				this.positionItems();
 			}
 		}
 	}
