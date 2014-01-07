@@ -109,6 +109,7 @@ a:hover { text-decoration: underline; }
 a.sel,
 li.sel a { cursor: default !important; text-decoration: none; }
 
+a.go { white-space: nowrap; }
 a.go:after { content: 'go'; font-size: 11px; margin: -1px 0 0 4px; color: $lighttextcolor; }
 a.go:hover:after { color: $linkcolor; }
 
@@ -181,7 +182,7 @@ td.right { float: none; text-align: right; }
 /*  Panes
 /* ----------------------------------------*/
 
-.pane { @include pane; position: relative; margin: 20px 0; padding: 30px; border-radius: 3px;
+.pane { @include pane; position: relative; margin: 20px 0; padding: 20px; border-radius: 3px;
 	-webkit-box-sizing: border-box;
 	   -moz-box-sizing: border-box;
 	        box-sizing: border-box;
@@ -799,13 +800,13 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 .password { padding-right: 5em; }
 .password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
-.datewrapper { display: inline-block; position: relative; width: 8.5em; }
-.datewrapper:before { position: absolute; top: 8px; left: 9px; content: 'date'; color: $lighttextcolor; }
-.datewrapper .text { padding-left: 27px; width: 100%; }
+.datewrapper { display: inline-block; position: relative; width: 8em; }
+.datewrapper:before { position: absolute; top: 8px; left: 7px; content: 'date'; color: $lighttextcolor; }
+.datewrapper .text { padding-left: 20px; width: 100%; }
 
-.timewrapper { display: inline-block; position: relative; width: 8em; }
-.timewrapper:before { position: absolute; top: 9px; left: 8px; content: 'time'; color: $lighttextcolor; }
-.timewrapper .text { padding-left: 24px; width: 100%; }
+.timewrapper { display: inline-block; position: relative; width: 6.5em; }
+.timewrapper:before { position: absolute; top: 10px; left: 7px; font-size: 11px; content: 'time'; color: $lighttextcolor; }
+.timewrapper .text { padding-left: 20px; width: 100%; }
 
 ::-webkit-input-placeholder { color: $lighttextcolor; }
 :-moz-placeholder { color: $lighttextcolor; }
