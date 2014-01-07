@@ -694,7 +694,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 		if (!this.$uploadButton)
 		{
-			this.$uploadButton = $('<div class="assets-upload"></div>').prependTo(this.$buttons);
+			this.$uploadButton = $('<div class="assets-upload"><div class="assets-qq-uploader"><a href="javascript:;" class="btn submit assets-qq-upload-button" data-icon="↑" style="position: relative; overflow: hidden; direction: ltr; " role="button">' + Craft.t('Upload files') + '</a></div></div>').prependTo(this.$buttons);
 		}
 
 		this.promptHandler = new Craft.PromptHandler();

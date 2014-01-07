@@ -169,17 +169,9 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 
 		for (var i = 0; i < $selectedItems.length; i++)
 		{
-			var $item = $($selectedItems[i]),
-				$element = $item.find('.element:first');
+			var $item = $($selectedItems[i]);
 
-			info.push({
-				id:       $item.data('id'),
-				label:    $item.data('label'),
-				status:   $item.data('status'),
-				url:      $element.data('url'),
-				hasThumb: $element.hasClass('hasthumb'),
-				$element: $element
-			});
+			info.push(Craft.getElementInfo($item));
 		}
 
 		return info;

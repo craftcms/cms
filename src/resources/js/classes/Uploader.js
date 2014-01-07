@@ -9,8 +9,8 @@ Craft.Uploader = Garnish.Base.extend({
     {
 
         settings = $.extend(this.defaultSettings, settings);
-        settings.element = $element[0];
-        this.uploader = new qqUploader.FileUploader(settings);
+        settings.button = $element[0];
+        this.uploader = new qqUploader.FileUploaderBasic(settings);
     },
 
     /**
@@ -34,10 +34,8 @@ Craft.Uploader = Garnish.Base.extend({
     defaultSettings: {
         action:       Craft.actionUrl + '/assets/uploadFile',
         template:     '<div class="assets-qq-uploader">'
-            +   '<div class="assets-qq-upload-drop-area"></div>'
             +   '<a href="javascript:;" class="btn submit assets-qq-upload-button" data-icon="↑" style="position: relative; overflow: hidden; direction: ltr; " role="button">' + Craft.t('Upload files') + '</a>'
-            +   '<ul class="assets-qq-upload-list hidden"></ul>'
-            + '</div>',
+            +   '</div>',
 
         fileTemplate: '<li>'
             +   '<span class="assets-qq-upload-file"></span>'

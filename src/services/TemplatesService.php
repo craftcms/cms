@@ -955,7 +955,7 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= ' hasicon';
 		}
 
-		$html .= '" data-id="'.$context['element']->id.'" data-url="'.$context['element']->getUrl().'">';
+		$html .= '" data-status="'.$context['element']->getStatus().'" data-label="'.$context['element'].'" data-id="'.$context['element']->id.'" data-url="'.$context['element']->getUrl().'">';
 
 		if ($context['context'] == 'field' && isset($context['name']))
 		{

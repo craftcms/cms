@@ -81,7 +81,14 @@ Craft.ProgressBar = Garnish.Base.extend({
 
     setProgressPercentage: function (percentage)
     {
-		this.$progressBar.removeClass('pending');
+		if (percentage != 100)
+		{
+			this.$progressBar.removeClass('pending');
+		}
+		else
+		{
+			this.$progressBar.addClass('pending');
+		}
 		this.$innerProgressBar.width(percentage + '%');
     }
 });

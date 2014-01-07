@@ -94,7 +94,12 @@ class AssetsController extends BaseController
 		move_uploaded_file($_FILES['files']['tmp_name'][0], $fileLocation);
 
 		$fileId = craft()->assets->insertFileByLocalPath($fileLocation, $fileName, $targetFolderId);
-		$this->returnJson(array($fileId));
+
+		// Render and return
+		$element = craft()->elements->getElementById($fileId);
+		$html = craft()->templates->render('_elements/element', array('element' => $element));
+		$css = craft()->templates->getHeadHtml();
+		$this->returnJson(array('html' => $html, 'css' => $css));
 	}
 
 	/**
