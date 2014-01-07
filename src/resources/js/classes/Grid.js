@@ -334,7 +334,7 @@ Craft.Grid = Garnish.Base.extend({
 {
 	defaults: {
 		itemSelector: '.item',
-		minColWidth: 300,
+		minColWidth: 256,
 		percentageWidths: true,
 		fillMode: 'top',
 		colClass: 'col',
