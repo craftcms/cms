@@ -14,7 +14,7 @@ html { overflow-y: scroll; }
 #alerts li:before { @include icon; margin: -1px 3px 0 0; content: 'alert'; font-size: 16px; }
 #alerts li a { color: $errorcolor; text-decoration: underline; white-space: nowrap; }
 
-.container { margin: 0 auto; max-width: 1280px;
+.container { margin: 0 auto; max-width: 1200px;
 	-webkit-box-sizing: border-box;
 	   -moz-box-sizing: border-box;
 	        box-sizing: border-box;
