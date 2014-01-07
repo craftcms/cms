@@ -29,10 +29,10 @@ Craft.Grid = Garnish.Base.extend({
 
 		this.$items = this.$container.children(this.settings.itemSelector);
 		this.setItems();
-		this.setCols();
+		this.refreshCols();
 
 		// Adjust them when the window resizes
-		this.addListener(Garnish.$win, 'resize', 'setCols');
+		this.addListener(Garnish.$win, 'resize', 'refreshCols');
 	},
 
 	addItems: function(items)
@@ -59,27 +59,15 @@ Craft.Grid = Garnish.Base.extend({
 		}
 	},
 
-	setCols: function()
-	{
-		var totalCols = Math.floor(this.$container.width() / this.settings.minColWidth);
-
-		if (totalCols == 0)
-		{
-			totalCols = 1;
-		}
-
-		if (totalCols !== this.totalCols)
-		{
-			this.totalCols = totalCols;
-			this.refreshCols();
-			return true;
-		}
-
-		return false;
-	},
-
 	refreshCols: function()
 	{
+		this.totalCols = Math.floor(this.$container.width() / this.settings.minColWidth);
+
+		if (this.totalCols == 0)
+		{
+			this.totalCols = 1;
+		}
+
 		if (this.settings.fillMode == 'grid')
 		{
 			var itemIndex = 0;
