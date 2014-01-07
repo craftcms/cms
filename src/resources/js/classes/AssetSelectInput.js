@@ -4,8 +4,8 @@
 
 Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 
-    requestId: 0,
-    hud: null,
+	requestId: 0,
+	hud: null,
 	fieldId: 0,
 
 	init: function(id, name, elementType, sources, criteria, sourceElementId, limit, storageKey, fieldId)
@@ -16,40 +16,40 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 		this._attachDragEvents();
 	},
 
-    selectElements: function (elements)
-    {
+	selectElements: function (elements)
+	{
 		console.log(elements);
-        this.base(elements);
-        this._attachHUDEvents();
-    },
+		this.base(elements);
+		this._attachHUDEvents();
+	},
 
 	onHide: function ()
 	{
 		console.log('canceling, sir');
 	},
 
-    _attachHUDEvents: function ()
-    {
-        this.removeListener(this.$elements, 'dlbclick');
-        this.addListener(this.$elements, 'dblclick', $.proxy(this, '_editProperties'));
-    },
+	_attachHUDEvents: function ()
+	{
+		this.removeListener(this.$elements, 'dlbclick');
+		this.addListener(this.$elements, 'dblclick', $.proxy(this, '_editProperties'));
+	},
 
-    _editProperties: function (event)
-    {
-        var $target = $(event.currentTarget);
-        if (!$target.data('ElementEditor'))
-        {
-            var settings = {
-                elementId: $target.attr('data-id'),
-                $trigger: $target,
-                loadContentAction: 'assets/editFileContent',
-                saveContentAction: 'assets/saveFileContent'
-            };
-            $target.data('ElementEditor', new Craft.ElementEditor(settings));
-        }
+	_editProperties: function (event)
+	{
+		var $target = $(event.currentTarget);
+		if (!$target.data('ElementEditor'))
+		{
+			var settings = {
+				elementId: $target.attr('data-id'),
+				$trigger: $target,
+				loadContentAction: 'assets/editFileContent',
+				saveContentAction: 'assets/saveFileContent'
+			};
+			$target.data('ElementEditor', new Craft.ElementEditor(settings));
+		}
 
-        $target.data('ElementEditor').show();
-    },
+		$target.data('ElementEditor').show();
+	},
 
 	_attachDragEvents: function ()
 	{
