@@ -19,14 +19,6 @@ Craft.Grid = Garnish.Base.extend({
 
 		this.setSettings(settings, Craft.Grid.defaults);
 
-		// Attribute setting overrides
-		if (this.$container.data('item-selector'))     this.settings.itemSelector = this.$container.data('item-selector');
-		if (this.$container.data('min-col-width'))     this.settings.minColWidth = parseInt(this.$container.data('min-col-width'));
-		if (this.$container.data('percentage-widths')) this.settings.percentageWidths = !!this.$container.data('percentage-widths');
-		if (this.$container.data('fill-mode'))         this.settings.fillMode = this.$container.data('fill-mode');
-		if (this.$container.data('col-class'))         this.settings.colClass = this.$container.data('col-class');
-		if (this.$container.data('snap-to-grid'))      this.settings.snapToGrid = !!this.$container.data('snap-to-grid');
-
 		this.$items = this.$container.children(this.settings.itemSelector);
 		this.setItems();
 		this.refreshCols();
@@ -275,7 +267,6 @@ Craft.Grid = Garnish.Base.extend({
 
 	positionItems: function()
 	{
-		console.log('positionItems');
 		var colHeights = [];
 
 		for (var i = 0; i < this.totalCols; i++)
