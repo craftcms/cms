@@ -880,7 +880,8 @@ Garnish.Base = Base.extend({
 					if (!resize && !_$elem.data('garnish-resizable'))
 					{
 						var sensor = document.createElement('div');
-							sensor.innerHTML = '<div><div></div></div><div><div></div></div>';
+						sensor.className = 'resize-sensor';
+						sensor.innerHTML = '<div class="resize-overflow"><div></div></div><div class="resize-underflow"><div></div></div>';
 
 						$(sensor).add($('> div', sensor)).css({
 							position: 'absolute',
@@ -931,7 +932,7 @@ Garnish.Base = Base.extend({
 						addFlowListener(sensor, 'under', matchFlow);
 						addFlowListener(sensor.firstElementChild, 'over', matchFlow);
 						addFlowListener(sensor.lastElementChild, 'under', matchFlow);
-						elem.appendChild(sensor);
+						_$elem.prepend(sensor);
 						matchFlow({});
 					}
 				})($elem[i]);

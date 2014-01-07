@@ -150,6 +150,8 @@ html { overflow-y: scroll; }
 	        box-sizing: border-box;
 }
 
+.grid > .item > .resize-sensor + .pane { margin-top: 0; }
+
 
 /* footer */
 #footer { margin: 15px 0; text-align: center; font-size: 0; }
