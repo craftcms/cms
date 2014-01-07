@@ -182,7 +182,7 @@ td.right { float: none; text-align: right; }
 /*  Panes
 /* ----------------------------------------*/
 
-.pane { @include pane; position: relative; margin: 20px 0; padding: 20px; border-radius: 3px;
+.pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: 3px;
 	-webkit-box-sizing: border-box;
 	   -moz-box-sizing: border-box;
 	        box-sizing: border-box;
