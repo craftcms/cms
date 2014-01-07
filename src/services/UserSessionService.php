@@ -307,6 +307,11 @@ class UserSessionService extends \CWebUser
 				// Run any before login logic.
 				if ($this->beforeLogin($id, $states, false))
 				{
+					// Fire an 'onBeforeLogin' event
+					$this->onBeforeLogin(new Event($this, array(
+						'username'      => $usernameModel->username,
+					)));
+
 					$this->changeIdentity($id, $this->_identity->getName(), $states);
 
 					if ($seconds > 0)
@@ -333,6 +338,11 @@ class UserSessionService extends \CWebUser
 								);
 
 								$this->saveCookie('', $data, $seconds);
+
+								// Fire an 'onLogin' event
+								$this->onLogin(new Event($this, array(
+									'username'      => $usernameModel->username,
+								)));
 							}
 							else
 							{
@@ -527,6 +537,26 @@ class UserSessionService extends \CWebUser
 				}
 			}
 		}
+	}
+
+	/**
+	 * Fires an 'onBeforeLogin' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeLogin(Event $event)
+	{
+		$this->raiseEvent('onBeforeLogin', $event);
+	}
+
+	/**
+	 * Fires an 'onLogin' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onLogin(Event $event)
+	{
+		$this->raiseEvent('onLogin', $event);
 	}
 
 	/**
