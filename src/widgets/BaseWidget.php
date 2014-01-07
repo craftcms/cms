@@ -36,7 +36,7 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	}
 
 	/**
-	 * Gets the widget's title.
+	 * Returns the widget's title.
 	 *
 	 * @return string
 	 */
