@@ -23,8 +23,8 @@ Craft.Grid = Garnish.Base.extend({
 		this.setItems();
 		this.refreshCols();
 
-		// Adjust them when the window resizes
-		this.addListener(Garnish.$win, 'resize', 'refreshCols');
+		// Adjust them when the container is resized
+		this.addListener(this.$container, 'resize', 'refreshCols');
 	},
 
 	addItems: function(items)
