@@ -177,16 +177,12 @@
 			<main id="content" role="main">
 				{% block content %}
 					{% if content is defined %}
-						<div class="grid">
-							<div class="item">
-								<div class="pane">
-									{% if tabs is defined and tabs %}
-										{% include "_includes/tabs" %}
-									{% endif %}
+						<div class="pane">
+							{% if tabs is defined and tabs %}
+								{% include "_includes/tabs" %}
+							{% endif %}
 
-									{{ content }}
-								</div>
-							</div>
+							{{ content }}
 						</div>
 					{% endif %}
 				{% endblock %}
