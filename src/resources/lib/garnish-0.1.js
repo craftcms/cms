@@ -879,6 +879,13 @@ Garnish.Base = Base.extend({
 
 					if (!resize && !_$elem.data('garnish-resizable'))
 					{
+						// The element must be relative, absolute, or fixed
+						if (getComputedStyle(elem).position == 'static')
+						{
+							elem.style.position = 'relative';
+						}
+
+						// Create the sensor div
 						var sensor = document.createElement('div');
 						sensor.className = 'resize-sensor';
 						sensor.innerHTML = '<div class="resize-overflow"><div></div></div><div class="resize-underflow"><div></div></div>';
@@ -893,47 +900,36 @@ Garnish.Base = Base.extend({
 							'z-index': -1
 						});
 
+						_$elem.prepend(sensor);
+
 						_$elem.data('garnish-resizable', true);
 
-						var x = 0, y = 0,
+						var width = elem.offsetWidth,
+							height = elem.offsetHeight,
 							first = sensor.firstElementChild.firstChild,
 							last = sensor.lastElementChild.firstChild,
 							matchFlow = function(ev)
 							{
-								var change = false,
-								width = elem.offsetWidth;
-								if (x != width)
+								if ((width != (width = elem.offsetWidth)) || (height != (height = elem.offsetHeight)))
 								{
-									first.style.width = width - 1 + 'px';
-									last.style.width = width + 1 + 'px';
-									change = true;
-									x = width;
-								}
-								var height = elem.offsetHeight;
-								if (y != height)
-								{
-									first.style.height = height - 1 + 'px';
-									last.style.height = height + 1 + 'px';
-									change = true;
-									y = height;
-								}
-								if (change && ev.currentTarget != elem)
-								{
+									updateSensor();
 									$(elem).trigger('resize');
 								}
+							},
+							updateSensor = function()
+							{
+								first.style.width = width - 1 + 'px';
+								first.style.height = height - 1 + 'px';
+								last.style.width = width + 1 + 'px';
+								last.style.height = height + 1 + 'px';
 							};
 
-						if (getComputedStyle(elem).position == 'static')
-						{
-							elem.style.position = 'relative';
-						}
+						updateSensor();
 
 						addFlowListener(sensor, 'over', matchFlow);
 						addFlowListener(sensor, 'under', matchFlow);
 						addFlowListener(sensor.firstElementChild, 'over', matchFlow);
 						addFlowListener(sensor.lastElementChild, 'under', matchFlow);
-						_$elem.prepend(sensor);
-						matchFlow({});
 					}
 				})($elem[i]);
 			}

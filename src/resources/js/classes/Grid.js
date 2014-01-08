@@ -307,6 +307,9 @@ Craft.Grid = Garnish.Base.extend({
 
 	onItemResize: function(ev)
 	{
+		// Prevent this from bubbling up to the container, which has its own resize listener
+		ev.stopPropagation();
+
 		var item = $.inArray(ev.target, this.$items);
 
 		if (item != -1)
