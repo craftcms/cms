@@ -2,7 +2,13 @@
 
 @import "shared";
 
-#loading { margin-top: 210px !important; text-align: center; }
+#graphic { display: block; margin: 200px auto 0; }
+#graphic.error { background-image: url(../images/error.png); }
+#graphic.success { background-image: url(../images/success.png); }
+
+#status { margin: 20px auto 250px; text-align: center; font-size: 16px; line-height: 20px; color: #666; }
+
+
 
 #content h2.heading { float: left; margin: 0; padding: 6px 0; }
 #content .buttons { float: right; margin: 0; }

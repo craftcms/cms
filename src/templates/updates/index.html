@@ -6,7 +6,7 @@
 {% includeJsResource "js/updates.js" %}
 {% includeTranslations
 	"You’ve got updates!",
-	"No system updates are available.",
+	"You’re all up-to-date!",
 	"build {build}",
 	"Critical",
 	"Update",
@@ -25,9 +25,7 @@
 %}
 
 
-{% set content %}
-	<div id="loading">
-		<div class="spinner big"></div>
-		<p>{{ "Checking for updates…"|t }}</p>
-	</div>
-{% endset %}
+{% block content %}
+	<div id="graphic" class="spinner big"></div>
+	<div id="status">{{ "Checking for updates…"|t }}</div>
+{% endblock %}
