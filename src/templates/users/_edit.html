@@ -65,8 +65,6 @@
 				{% endif %}
 
 				<div id="account">
-					{% set selectedTab = 'account' %}
-
 					{{ forms.textField({
 						first: true,
 						label: "Username"|t,
@@ -79,26 +77,24 @@
 						errors: (account is defined ? account.getErrors('username') : null)
 					}) }}
 
-					<div class="field">
-						<div class="grid">
-							<div class="col col50"><div class="col-inner">
-								{{ forms.textField({
-									label: "First Name"|t,
-									id: 'firstName',
-									name: 'firstName',
-									value: (account is defined ? account.firstName : null),
-									errors: (account is defined ? account.getErrors('firstName') : null)
-								}) }}
-							</div></div>
-							<div class="col col50"><div class="col-inner">
-								{{ forms.textField({
-									label: "Last Name"|t,
-									id: 'lastName',
-									name: 'lastName',
-									value: (account is defined ? account.lastName : null),
-									errors: (account is defined ? account.getErrors('lastName') : null)
-								}) }}
-							</div></div>
+					<div class="grid" data-cols="2">
+						<div class="item" data-colspan="1">
+							{{ forms.textField({
+								label: "First Name"|t,
+								id: 'firstName',
+								name: 'firstName',
+								value: (account is defined ? account.firstName : null),
+								errors: (account is defined ? account.getErrors('firstName') : null)
+							}) }}
+						</div>
+						<div class="item" data-colspan="1">
+							{{ forms.textField({
+								label: "Last Name"|t,
+								id: 'lastName',
+								name: 'lastName',
+								value: (account is defined ? account.lastName : null),
+								errors: (account is defined ? account.getErrors('lastName') : null)
+							}) }}
 						</div>
 					</div>
 
@@ -201,8 +197,6 @@
 
 				{% if craft.hasPackage("Users") %}
 					<div id="profile" class="hidden">
-						{% set selectedTab = 'profile' %}
-
 						{% if not isNewAccount %}
 							{{ forms.field({
 								label: "Photo"|t
@@ -223,8 +217,6 @@
 
 				{% if craft.hasPackage("Users") and currentUser.can('administrateUsers') %}
 					<div id="perms" class="hidden">
-						{% set selectedTab = 'perms' %}
-
 						<h2>{{ "User Groups"|t }}</h2>
 
 						{% set allGroups = craft.userGroups.getAllGroups() %}
@@ -278,8 +270,6 @@
 
 			{% if craft.hasPackage("Users") and currentUser.can('administrateUsers') and not isNewAccount %}
 				<div id="admin" class="hidden">
-					{% set selectedTab = 'admin' %}
-
 					<form method="post" action="" accept-charset="UTF-8">
 						<input type="hidden" name="userId" value="{{ account.id }}">
 

@@ -19,20 +19,12 @@ Craft.Grid = Garnish.Base.extend({
 
 		this.setSettings(settings, Craft.Grid.defaults);
 
-		// Attribute setting overrides
-		if (this.$container.data('item-selector'))     this.settings.itemSelector = this.$container.data('item-selector');
-		if (this.$container.data('min-col-width'))     this.settings.minColWidth = parseInt(this.$container.data('min-col-width'));
-		if (this.$container.data('percentage-widths')) this.settings.percentageWidths = !!this.$container.data('percentage-widths');
-		if (this.$container.data('fill-mode'))         this.settings.fillMode = this.$container.data('fill-mode');
-		if (this.$container.data('col-class'))         this.settings.colClass = this.$container.data('col-class');
-		if (this.$container.data('snap-to-grid'))      this.settings.snapToGrid = !!this.$container.data('snap-to-grid');
-
 		this.$items = this.$container.children(this.settings.itemSelector);
 		this.setItems();
 		this.refreshCols();
 
-		// Adjust them when the window resizes
-		this.addListener(Garnish.$win, 'resize', 'refreshCols');
+		// Adjust them when the container is resized
+		this.addListener(this.$container, 'resize', 'refreshCols');
 	},
 
 	addItems: function(items)
@@ -61,7 +53,14 @@ Craft.Grid = Garnish.Base.extend({
 
 	refreshCols: function()
 	{
-		this.totalCols = Math.floor(this.$container.width() / this.settings.minColWidth);
+		if (this.settings.cols)
+		{
+			this.totalCols = this.settings.cols;
+		}
+		else
+		{
+			this.totalCols = Math.floor(this.$container.width() / this.settings.minColWidth);
+		}
 
 		if (this.totalCols == 0)
 		{
@@ -275,7 +274,6 @@ Craft.Grid = Garnish.Base.extend({
 
 	positionItems: function()
 	{
-		console.log('positionItems');
 		var colHeights = [];
 
 		for (var i = 0; i < this.totalCols; i++)
@@ -316,6 +314,9 @@ Craft.Grid = Garnish.Base.extend({
 
 	onItemResize: function(ev)
 	{
+		// Prevent this from bubbling up to the container, which has its own resize listener
+		ev.stopPropagation();
+
 		var item = $.inArray(ev.target, this.$items);
 
 		if (item != -1)
@@ -334,6 +335,7 @@ Craft.Grid = Garnish.Base.extend({
 {
 	defaults: {
 		itemSelector: '.item',
+		cols: null,
 		minColWidth: 256,
 		percentageWidths: true,
 		fillMode: 'top',
