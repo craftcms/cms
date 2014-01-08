@@ -558,8 +558,8 @@ class UsersController extends BaseController
 				$publicRegistration = true;
 			}
 
-			// If there is no public registration or the current user can't register users, complain loudly.
-			if (!$publicRegistration || !$canRegisterUsers)
+			// If there is no public registration and it's a site request, or the current user can't register users, complain loudly.
+			if ((!$publicRegistration && craft()->request->isSiteRequest()) || !$canRegisterUsers)
 			{
 				// Sorry pal.
 				throw new HttpException(403);
