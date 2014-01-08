@@ -38,9 +38,14 @@
 		</div>
 	{% endif %}
 
-	{% if isNewAccount %}
-		<p class="field">{{ 'Note: new users must validate their account via email. Please ensure your <a href="{url}">email settings</a> are valid.'|t({ url: url('settings/email') })|raw }}</p>
-	{% endif %}
+	<p class="field">
+		{% if isNewAccount %}
+			{{ 'Note: New users must validate their account via email.' }}
+		{% else %}
+			{{ 'Note: If the email address changes, the new address will need to be re-validated.' }}
+		{% endif %}
+		{{ 'Please ensure your <a href="{url}">email settings</a> are valid.'|t({ url: url('settings/email') })|raw }}
+	</p>
 {% endset %}
 
 {% set content %}

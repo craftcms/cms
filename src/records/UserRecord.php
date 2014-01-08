@@ -38,6 +38,7 @@ class UserRecord extends BaseRecord
 			'lockoutDate'                => array(AttributeType::DateTime),
 			'verificationCode'           => array(AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char),
 			'verificationCodeIssuedDate' => array(AttributeType::DateTime),
+			'unverifiedEmail'            => array(AttributeType::Email),
 			'passwordResetRequired'      => array(AttributeType::Bool),
 			'lastPasswordChangeDate'     => array(AttributeType::DateTime),
 		);

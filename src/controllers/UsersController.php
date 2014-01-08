@@ -162,7 +162,7 @@ class UsersController extends BaseController
 	{
 		if (craft()->userSession->isLoggedIn())
 		{
-			$this->redirect('');
+			craft()->userSession->logout();
 		}
 
 		if (craft()->request->isPostRequest())
@@ -186,7 +186,6 @@ class UsersController extends BaseController
 				// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
 				if (!$user->can('accessCp'))
 				{
-					// No password reset required and they have permissions to access the CP, so send them to the login page.
 					$url = UrlHelper::getUrl(craft()->config->getLocalized('setPasswordSuccessPath'));
 					$this->redirect($url);
 				}
@@ -217,7 +216,7 @@ class UsersController extends BaseController
 
 			if (!$user)
 			{
-				throw new HttpException(404);
+				throw new HttpException('200', Craft::t('Invalid verification code.'));
 			}
 
 			$url = craft()->config->getSetPasswordPath($code, $id, $user);
@@ -263,16 +262,11 @@ class UsersController extends BaseController
 	 */
 	public function actionValidate()
 	{
-		if (craft()->userSession->isLoggedIn())
-		{
-			$this->redirect('');
-		}
-
 		$code = craft()->request->getRequiredQuery('code');
 		$id = craft()->request->getRequiredQuery('id');
-		$user = craft()->users->getUserByVerificationCodeAndUid($code, $id);
+		$userToValidate = craft()->users->getUserByVerificationCodeAndUid($code, $id);
 
-		if (!$user)
+		if (!$userToValidate)
 		{
 			if (($url = craft()->config->getActivateAccountFailurePath()) != '')
 			{
@@ -284,16 +278,25 @@ class UsersController extends BaseController
 			}
 		}
 
-		if (craft()->users->activateUser($user))
+		// If the current user is logged in
+		if (($currentUser = craft()->userSession->getUser()) !== null)
 		{
-			// Successfully activated user, do they require a password reset or is their password empty?
-			// If so, send them through the password logic.
-			if ($user->passwordResetRequired || !$user->password)
+			// If they are validating an account that doesn't belong to them, log them out of their current account.
+			if ($currentUser->id !== $userToValidate->id)
+			{
+				craft()->userSession->logout();
+			}
+		}
+
+		if (craft()->users->activateUser($userToValidate))
+		{
+			// Successfully activated user, do they require a password reset or is their password empty? If so, send them through the password logic.
+			if ($userToValidate->passwordResetRequired || !$userToValidate->password)
 			{
 				// All users that go through account activation will need to set their password.
-				$code = craft()->users->setVerificationCodeOnUser($user);
+				$code = craft()->users->setVerificationCodeOnUser($userToValidate);
 
-				if ($user->can('accessCp'))
+				if ($userToValidate->can('accessCp'))
 				{
 					$url = craft()->config->get('actionTrigger').'/users/'.craft()->config->getCpSetPasswordPath();
 				}
@@ -302,11 +305,10 @@ class UsersController extends BaseController
 					$url = craft()->config->getLocalized('setPasswordPath');
 				}
 			}
-			// Otherwise, this is a registration from the front-end of the site.
 			else
 			{
 				// If the user can't access the CP, then send them to the front-end activateAccountSuccessPath.
-				if (!$user->can('accessCp'))
+				if (!$userToValidate->can('accessCp'))
 				{
 
 					$url = UrlHelper::getUrl(craft()->config->getLocalized('activateAccountSuccessPath'));
@@ -315,7 +317,7 @@ class UsersController extends BaseController
 				else
 				{
 					craft()->userSession->setNotice(Craft::t('Account activated.'));
-					$this->redirectToPostedUrl();
+					$this->redirect(UrlHelper::getCpUrl('dashboard'));
 				}
 			}
 		}
@@ -518,11 +520,6 @@ class UsersController extends BaseController
 		// Are we editing an existing user?
 		if ($userId)
 		{
-			if (!$isCurrentUser)
-			{
-				craft()->userSession->requirePermission('editUsers');
-			}
-
 			$user = craft()->users->getUserById($userId);
 
 			if (!$user)
@@ -530,10 +527,16 @@ class UsersController extends BaseController
 				throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
 			}
 
+			// If these are different, the Users package is required.
 			if ($user->id !== $userId)
 			{
 				// Users package is required
 				craft()->requirePackage(CraftPackage::Users);
+			}
+
+			if (!$isCurrentUser)
+			{
+				craft()->userSession->requirePermission('editUsers');
 			}
 		}
 		else
@@ -555,8 +558,8 @@ class UsersController extends BaseController
 				$publicRegistration = true;
 			}
 
-			// If there is no public registration and the current user can't register users, complain loudly.
-			if (!$publicRegistration && !$canRegisterUsers)
+			// If there is no public registration or the current user can't register users, complain loudly.
+			if (!$publicRegistration || !$canRegisterUsers)
 			{
 				// Sorry pal.
 				throw new HttpException(403);
@@ -605,8 +608,8 @@ class UsersController extends BaseController
 				$user->verificationRequired = true;
 			}
 
-			// Only admins can require users to reset their passwords
-			if (craft()->userSession->isAdmin())
+			// Only admins can require users to reset their passwords and only from the CP
+			if (craft()->userSession->isAdmin() && craft()->request->isCpRequest())
 			{
 				$user->passwordResetRequired = (bool)craft()->request->getPost('passwordResetRequired');
 			}
@@ -621,8 +624,8 @@ class UsersController extends BaseController
 				}
 			}
 
-			// Only admins can toggle admin settings
-			if (craft()->userSession->isAdmin())
+			// Only admins can toggle admin settings, and only allow from the CP and if the Users package is installed
+			if (craft()->userSession->isAdmin() && craft()->request->isCpRequest() && craft()->hasPackage(CraftPackage::Users))
 			{
 				$user->admin = (bool)craft()->request->getPost('admin');
 			}
@@ -1091,7 +1094,7 @@ class UsersController extends BaseController
 						}
 						else
 						{
-							$user->email = $email;
+							$user->unverifiedEmail = $email;
 						}
 					}
 					else

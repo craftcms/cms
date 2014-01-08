@@ -222,6 +222,7 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->passwordResetRequired = $user->passwordResetRequired;
 		$userRecord->preferredLocale       = $user->preferredLocale;
 		$userRecord->status                = $user->status;
+		$userRecord->unverifiedEmail       = $user->unverifiedEmail;
 
 		$userRecord->validate();
 		$user->addErrors($userRecord->getErrors());
@@ -246,9 +247,15 @@ class UsersService extends BaseApplicationComponent
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
-				if ($user->verificationRequired)
+				// If we're going through account verification in whatever form
+				if ($user->verificationRequired || $user->unverifiedEmail)
 				{
-					$userRecord->status = $user->status = UserStatus::Pending;
+					// If they aren't just changing their existing email address, reset their account status
+					if (!$user->unverifiedEmail)
+					{
+						$userRecord->status = $user->status = UserStatus::Pending;
+					}
+
 					$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 				}
 
@@ -268,8 +275,15 @@ class UsersService extends BaseApplicationComponent
 
 					$userRecord->save(false);
 
-					if ($isNewUser && $user->verificationRequired)
+					if (($isNewUser && $user->verificationRequired) || ($user->status == UserStatus::Active && $user->unverifiedEmail))
 					{
+						// We've already saved the record to the database, so for the sake of sendEmailByKey and unverifiedEmail, let's make sure
+						// the email gets sent to the right address.
+						if ($user->unverifiedEmail)
+						{
+							$user->email = $user->unverifiedEmail;
+						}
+
 						craft()->email->sendEmailByKey($user, 'account_activation', array(
 							'link' => new \Twig_Markup(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
 						));
@@ -548,6 +562,13 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->verificationCode = null;
 		$userRecord->verificationCodeIssuedDate = null;
 		$userRecord->lockoutDate = null;
+
+		// If they have an unverified email address, now is the time to set it to their primary email address
+		if ($user->unverifiedEmail)
+		{
+			$userRecord->email = $user->unverifiedEmail;
+			$userRecord->unverifiedEmail = null;
+		}
 
 		return $userRecord->save();
 	}
