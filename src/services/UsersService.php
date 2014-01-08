@@ -247,16 +247,16 @@ class UsersService extends BaseApplicationComponent
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
-				// If we're going through account verification in whatever form
+				// If we're going through account verification, in whatever form
 				if ($user->verificationRequired || $user->unverifiedEmail)
 				{
-					// If they aren't just changing their existing email address, reset their account status
-					if (!$user->unverifiedEmail)
-					{
-						$userRecord->status = $user->status = UserStatus::Pending;
-					}
-
 					$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
+				}
+
+				// If this is a new user, set their status to pending.
+				if ($isNewUser)
+				{
+					$userRecord->status = $user->status = UserStatus::Pending;
 				}
 
 				// Fire an 'onBeforeSaveUser' event
@@ -275,6 +275,7 @@ class UsersService extends BaseApplicationComponent
 
 					$userRecord->save(false);
 
+					// If this is a new user and verification is required or the user is active and the unverifiedEmail column has a value
 					if (($isNewUser && $user->verificationRequired) || ($user->status == UserStatus::Active && $user->unverifiedEmail))
 					{
 						// We've already saved the record to the database, so for the sake of sendEmailByKey and unverifiedEmail, let's make sure

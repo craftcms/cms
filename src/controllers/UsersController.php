@@ -602,10 +602,18 @@ class UsersController extends BaseController
 			$user->lastName        = craft()->request->getPost('lastName', $user->lastName);
 			$user->preferredLocale = craft()->request->getPost('preferredLocale', $user->preferredLocale);
 
-			// If it's a new user, set the verificationRequired bit.
-			if (!$user->id)
+			// If it's a new user
+			if (!$userId)
 			{
-				$user->verificationRequired = true;
+				// If the Users package is installed and you're an admin, you get the choice of requiring email verification
+				if (craft()->hasPackage(CraftPackage::Users) && craft()->userSession->isAdmin())
+				{
+					$user->verificationRequired = (bool)craft()->request->getPost('verificationRequired');;
+				}
+				else
+				{
+					$user->verificationRequired = true;
+				}
 			}
 
 			// Only admins can require users to reset their passwords and only from the CP
