@@ -14,7 +14,7 @@ html { overflow-y: scroll; }
 #alerts li:before { @include icon; margin: -1px 3px 0 0; content: 'alert'; font-size: 16px; }
 #alerts li a { color: $errorcolor; text-decoration: underline; white-space: nowrap; }
 
-.container { margin: 0 auto; padding: 0 7px; max-width: 1266px;
+.container { margin: 0 auto; padding: 0 7px; max-width: 1280px;
 	-webkit-box-sizing: border-box;
 	   -moz-box-sizing: border-box;
 	        box-sizing: border-box;
@@ -27,7 +27,7 @@ html { overflow-y: scroll; }
 #header a:hover,
 #header a.active { color: #fff; text-decoration: none; }
 
-#header .right { float: right; height: 38px; }
+#header .right { float: right; margin-right: -7px; height: 38px; }
 #header .right > li { float: left; }
 #header .right a { display: block; padding: 0 7px; line-height: 36px; }
 #header .right a.menubtn:after { margin-left: 4px; }
@@ -141,7 +141,7 @@ html { overflow-y: scroll; }
 #main #content { display: block; }
 
 /* grids */
-.grid { position: relative; margin: 23px 7px; }
+.grid { position: relative; margin: 23px -7px; }
 .grid:after { @include clearafter; }
 .grid > .item { display: none; position: absolute; padding: 7px;
 	-webkit-box-sizing: border-box;
