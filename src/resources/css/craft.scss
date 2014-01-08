@@ -624,7 +624,7 @@ ul.tree,
 /* ----------------------------------------*/
 
 .modal,
-.hud { background: #fff;
+.hud { border-radius: 3px; background: #fff;
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px rgba(0,0,0,0.25);
 	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px rgba(0,0,0,0.25);
 }
@@ -700,7 +700,7 @@ ul.tree,
 
 .menu,
 .ui-datepicker,
-.ui-timepicker-list { z-index: 9999; background: #fff; @include unselectable;
+.ui-timepicker-list { z-index: 9999; border-radius: 3px; background: #fff; @include unselectable;
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5);
 	        box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5);
 }
@@ -831,6 +831,9 @@ body .redactor_dropdown { z-index: 9998 !important; }
 body .redactor_editor ul { list-style-type: disc; }
 body .redactor_editor ol { list-style-type: decimal; }
 
+body .redactor_editor,
+body .redactor_editor:focus { background: none !important; }
+
 /**
  * Selects
  *
@@ -841,19 +844,26 @@ body .redactor_editor ol { list-style-type: decimal; }
 {
 	.select,
 	.select select { border-radius: 3px; }
-	.select { display: inline-block; position: relative; background: #fff; }
-	.select:before { @include icon; position: absolute; top: 10px; right: 9px; font-size: 10px; content: '▼'; @include unselectable; }
-	.select select { position: relative; border: 1px solid #ddd; padding: 7px 22px 7px 10px; font-size: 13px; color: $textcolor; background: none;
-		-webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; -webkit-appearance: none;
-		        box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 0 0 $blurglowcolor;    -moz-transition: border linear 100ms,         box-shadow linear 100ms;    -moz-appearance: none;
+	.select { display: inline-block; position: relative;
+		background: -webkit-linear-gradient(#fff, hsl($hue, 5%, 98%));
+		background:         linear-gradient(#fff, hsl($hue, 5%, 98%));
+		-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px rgba(0,0,0,0.07);
+		        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px rgba(0,0,0,0.07);
+	}
+	.select:after { @include icon; position: absolute; top: 10px; right: 9px; font-size: 10px; content: '▼'; @include unselectable; }
+	.select select { position: relative; border: 0; padding: 7px 22px 7px 10px; font-size: 13px; color: $textcolor; background: none;
+		-webkit-box-shadow: 0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0);;
+		        box-shadow: 0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0);;
+		-webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
+		-webkit-appearance: none;
 	}
 	.select:hover select:not(:focus) { border-color: #ccc; }
 	.select select:focus { border-color: $focusglowcolor; outline: none;
-		-webkit-box-shadow: inset 0 0 1px $focusglowcolor, 0 0 5px $focusglowcolor;
-		        box-shadow: inset 0 0 1px $focusglowcolor, 0 0 5px $focusglowcolor;
+		-webkit-box-shadow: 0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5);
+		        box-shadow: 0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5);
 	}
 
-	.select.small:before { top: 3px; }
+	.select.small:after { top: 3px; }
 	.select.small select { padding-top: 4px; padding-bottom: 4px; font-size: 11px; }
 }
 

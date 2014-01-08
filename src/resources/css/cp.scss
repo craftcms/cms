@@ -14,7 +14,7 @@ html { overflow-y: scroll; }
 #alerts li:before { @include icon; margin: -1px 3px 0 0; content: 'alert'; font-size: 16px; }
 #alerts li a { color: $errorcolor; text-decoration: underline; white-space: nowrap; }
 
-.container { margin: 0 auto; max-width: 1280px;
+.container { margin: 0 auto; padding: 0 7px; max-width: 1280px;
 	-webkit-box-sizing: border-box;
 	   -moz-box-sizing: border-box;
 	        box-sizing: border-box;
@@ -23,12 +23,11 @@ html { overflow-y: scroll; }
 /* header */
 #header { position: relative; padding-top: 7px; max-height: 76px; overflow: hidden; background: $headerBgColor; }
 #header:after { @include clearafter; }
-#header .container { padding: 0 7px; }
 #header a { color: hsl($hue, 5%, 85%); -webkit-transition: color linear 100ms; }
 #header a:hover,
 #header a.active { color: #fff; text-decoration: none; }
 
-#header .right { float: right; height: 38px; }
+#header .right { float: right; margin-right: -7px; height: 38px; }
 #header .right > li { float: left; }
 #header .right a { display: block; padding: 0 7px; line-height: 36px; }
 #header .right a.menubtn:after { margin-left: 4px; }
@@ -77,7 +76,7 @@ html { overflow-y: scroll; }
 #notifications .notification.error { background: $submitcolor; }
 
 /* page header */
-#page-header { display: block; position: relative; z-index: 1; padding: 35px 7px; overflow: hidden; }
+#page-header { display: block; position: relative; z-index: 1; padding: 35px 0; overflow: hidden; }
 #page-header h1 { display: inline; line-height: 1; }
 #page-header #extra-headers { display: inline-block; position: relative; top: 5px; }
 #page-header #extra-headers > .select,
@@ -142,8 +141,7 @@ html { overflow-y: scroll; }
 #main #content { display: block; }
 
 /* grids */
-.grid { position: relative; margin: 30px 0; }
-.pane .grid { margin: 23px -7px; }
+.grid { position: relative; margin: 23px -7px; }
 .grid:after { @include clearafter; }
 .grid > .item { display: none; position: absolute; padding: 7px;
 	-webkit-box-sizing: border-box;
