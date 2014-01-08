@@ -142,7 +142,8 @@ html { overflow-y: scroll; }
 #main #content { display: block; }
 
 /* grids */
-.grid { position: relative; margin: 20px 0; }
+.grid { position: relative; margin: 30px 0; }
+.pane .grid { margin: 23px -7px; }
 .grid:after { @include clearafter; }
 .grid > .item { display: none; position: absolute; padding: 7px;
 	-webkit-box-sizing: border-box;
@@ -150,7 +151,8 @@ html { overflow-y: scroll; }
 	        box-sizing: border-box;
 }
 
-.grid > .item > .resize-sensor + .pane { margin-top: 0; }
+.grid > .item > .resize-sensor + .pane,
+.grid > .item > .resize-sensor + .field { margin-top: 0; }
 
 
 /* footer */
