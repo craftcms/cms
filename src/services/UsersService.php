@@ -253,8 +253,8 @@ class UsersService extends BaseApplicationComponent
 					$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 				}
 
-				// If this is a new user, set their status to pending.
-				if ($isNewUser)
+				// If this is a new user and they don't already have a status, set their status to pending.
+				if ($isNewUser && !$userRecord->status)
 				{
 					$userRecord->status = $user->status = UserStatus::Pending;
 				}
