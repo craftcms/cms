@@ -231,7 +231,7 @@ Craft.Tool = Garnish.Base.extend({
 			top: Math.round(this.hud.$body.outerHeight() / 2) - 30
 		});
 
-		this.progressBar.animate({
+		this.progressBar.$progressBar.animate({
 			left: -170
 		}, 'fast');
 
