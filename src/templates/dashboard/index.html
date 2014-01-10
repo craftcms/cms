@@ -8,7 +8,7 @@
 {% endset %}
 
 
-{% block content %}
+{% block main %}
 	<div class="grid">
 		{% for widget in craft.dashboard.getUserWidgets %}
 			{% set widgetType = craft.dashboard.populateWidgetType(widget) %}

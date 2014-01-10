@@ -57,7 +57,7 @@ Craft.UpdateInfo = Garnish.Base.extend({
 
 	showAvailableUpdates: function()
 	{
-		this.$container = $('<div/>').appendTo(Craft.cp.$content).hide();
+		this.$container = $('<div/>').appendTo(Craft.cp.$main).hide();
 
 		var $headerPane = $('<div class="pane clearafter"/>').appendTo(this.$container),
 			$heading = $('<h2 class="heading">'+Craft.t('You’ve got updates!')+'</h2>').appendTo($headerPane),

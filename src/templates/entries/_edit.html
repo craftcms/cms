@@ -19,7 +19,7 @@
 {% endset %}
 
 
-{% block content %}
+{% block main %}
 	<form id="entry-form" method="post" action="" accept-charset="UTF-8" data-saveshortcut="1" data-saveshortcut-redirect="{{ continueEditingUrl }}">
 		<input type="hidden" name="sectionId" value="{{ section.id }}">
 		{% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}

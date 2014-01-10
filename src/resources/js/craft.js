@@ -774,6 +774,7 @@ $.extend(Craft, {
 		$('.nicetext', $container).nicetext();
 		$('.pill', $container).pill();
 		$('.menubtn', $container).menubtn();
+		$('.pane.has-sidebar', $container).sidebarpane();
 	},
 
 	_elementIndexClasses: {},
@@ -1047,6 +1048,14 @@ $.extend($.fn, {
 			{
 				new Garnish.MenuBtn($btn);
 			}
+		});
+	},
+
+	sidebarpane: function()
+	{
+		return this.each(function()
+		{
+			new Craft.SidebarPane(this);
 		});
 	}
 });

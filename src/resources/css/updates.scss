@@ -2,21 +2,21 @@
 
 @import "shared";
 
-#graphic { display: block; margin: 200px auto 0; }
-#graphic.error { background-image: url(../images/error.png); }
-#graphic.success { background-image: url(../images/success.png); }
+#main #graphic { display: block; margin: 200px auto 0; }
+#main #graphic.error { background-image: url(../images/error.png); }
+#main #graphic.success { background-image: url(../images/success.png); }
 
-#status { margin: 20px auto 250px; text-align: center; font-size: 16px; line-height: 20px; color: #666; }
+#main #status { margin: 20px auto 250px; text-align: center; font-size: 16px; line-height: 20px; color: #666; }
 
 
 
-#content h2.heading { float: left; margin: 0; padding: 6px 0; }
-#content .buttons { float: right; margin: 0; }
-#content hr { clear: both; margin: 30px -30px; }
-#content .critical { margin-left: 5px; border-radius: 2px; padding: 2px 5px; font-weight: normal; color: #fff; background: #d6301a; }
+#main h2.heading { float: left; margin: 0; padding: 6px 0; }
+#main .buttons { float: right; margin: 0; }
+#main hr { clear: both; margin: 30px -30px; }
+#main .critical { margin-left: 5px; border-radius: 2px; padding: 2px 5px; font-weight: normal; color: #fff; background: #d6301a; }
 
-#content ul li { padding: 3px 0 3px 25px; }
-#content ul li:before { @include icon; float: left; margin: 1px 0 1px -23px; font-size: 16px; }
-#content ul li.added:before { content: 'wand'; color: $noticecolor; }
-#content ul li.improved:before { content: 'brush'; }
-#content ul li.fixed:before { content: 'screwdriver'; color: $submitcolor; }
+#main ul li { padding: 3px 0 3px 25px; }
+#main ul li:before { @include icon; float: left; margin: 1px 0 1px -23px; font-size: 16px; }
+#main ul li.added:before { content: 'wand'; color: $noticecolor; }
+#main ul li.improved:before { content: 'brush'; }
+#main ul li.fixed:before { content: 'screwdriver'; color: $submitcolor; }

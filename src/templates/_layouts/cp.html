@@ -45,11 +45,6 @@
 	"Select Transform"
 -%}
 
-{% if sidebar is not defined %}
-	{% set sidebar = block('sidebar')|trim %}
-{% endif %}
-{% set hasSidebar = (sidebar is not empty) %}
-
 {% set hasHelp = (docsUrl is defined and docsUrl is not empty) %}
 
 
@@ -167,31 +162,32 @@
 			<div class="clear"></div>
 		</header>
 
-		<div id="main" class="{% if hasSidebar %}has-sidebar{% endif %} {% if hasHelp %}has-help{% endif %}">
-			{% if hasSidebar %}
-				<div id="sidebar" class="sidebar">
-					{{ sidebar|raw }}
-				</div>
-			{% endif %}
+		<main id="main" role="main">
+			{% block main %}
+				{% set sidebar = sidebar is defined ? sidebar : block('sidebar')|trim %}
+				{% set hasSidebar = (sidebar is not empty) %}
 
-			<main id="content" role="main">
-				{% block content %}
-					{% if content is defined %}
-						<div class="pane">
-							{% if tabs is defined and tabs %}
-								{% include "_includes/tabs" %}
-							{% endif %}
-
-							{{ content }}
+				<div class="pane{% if hasSidebar %} has-sidebar{% endif %}">
+					{% if hasSidebar %}
+						<div id="sidebar" class="sidebar">
+							{{ sidebar|raw }}
 						</div>
 					{% endif %}
-				{% endblock %}
 
-				{% if hasHelp %}
-					<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
-				{% endif %}
-			</main>
-		</div>
+					{% if tabs is defined and tabs %}
+						{% include "_includes/tabs" %}
+					{% endif %}
+
+					<div id="content"{% if hasHelp %} class="has-help"{% endif %}>
+						{% block content %}
+							{{ content is defined ? content }}
+						{% endblock %}
+
+						{% if hasHelp %}<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>{% endif %}
+					</div>
+				</div>
+			{% endblock %}
+		</main>
 
 		<ul id="footer">
 			<li>@@@appName@@@ {{ craft.app.version }}.{{ craft.app.build }}</li>

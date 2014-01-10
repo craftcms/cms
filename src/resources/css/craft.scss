@@ -179,6 +179,28 @@ td.right { float: none; text-align: right; }
 .footer .right li + li { margin-left: 10px; }
 
 /* ----------------------------------------
+/*  Sidebars
+/* ----------------------------------------*/
+
+.sidebar { position: absolute; top: 0; left: 0; padding: 24px; width: 170px; overflow: auto; }
+.sidebar .heading { position: relative; margin: 15px 0 2px -24px; padding: 0 24px; }
+.sidebar .heading:after { display: block; position: absolute; bottom: 7px; left: 0; content: '.'; text-indent: -200px; overflow: hidden; width: 100%; height: 1px; border-top: 1px solid $hrcolor; }
+.sidebar .heading span { display: inline-block; position: relative; z-index: 1; padding: 0 5px; margin: 0 -5px; text-transform: uppercase; color: $lighttextcolor; font-size: 11px; font-weight: bold; background: #fff; }
+
+.sidebar nav { margin-left: -24px; padding-left: 24px; width: 170px; overflow: auto; }
+.sidebar nav li { position: relative; }
+.sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; @include unselectable; outline: none; }
+.sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
+.sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $headerBgColor; cursor: default; }
+
+.sidebar nav li .toggle { position: absolute; top: 3px; left: -20px; }
+.sidebar nav li.expanded > .toggle { background-position: 50% -40px; }
+.sidebar nav li a.sel + .toggle { background-position: 0 -20px; }
+.sidebar nav li.expanded > a.sel + .toggle { background-position: 0 -60px; }
+.sidebar nav li ul { margin-left: 20px; display: none; }
+.sidebar nav li.expanded > ul { display: block; }
+
+/* ----------------------------------------
 /*  Panes
 /* ----------------------------------------*/
 
@@ -187,6 +209,14 @@ td.right { float: none; text-align: right; }
 	   -moz-box-sizing: border-box;
 	        box-sizing: border-box;
 }
+
+.pane.has-sidebar { padding-left: 218px; }
+.pane.has-sidebar .sidebar.fixed { margin-top: 0; margin-bottom: 0; position: fixed; top: 0; }
+
+/*#content #sidebar-alt { margin-bottom: 30px; }
+#content #sidebar-alt:after { @include clearafter; }
+#content #sidebar-alt > .buttons,
+#content #sidebar-alt > .menubtn { float: left; margin: 0 10px 0 0; }*/
 
 /* ----------------------------------------
 /*  Icon lists
@@ -639,8 +669,8 @@ ul.tree,
 .hud .tip-bottom { bottom: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_bottom.png); }
 
 .modal > .header,
-.modal > .footer { position: relative; padding: 15px 30px; }
-.modal > .body { padding: 30px; }
+.modal > .footer { position: relative; padding: 14px 24px; }
+.modal > .body { padding: 24px; }
 .modal > .body:after { @include clearafter; }
 .modal > .header {
     -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.1);
@@ -662,21 +692,21 @@ ul.tree,
 
 /* element selector modals */
 .elementselectormodal { margin-left: -350px; width: 705px; @include unselectable; }
-.elementselectormodal .body { position: relative; height: 350px; padding-left: 230px; }
+.elementselectormodal .body { position: relative; height: 350px; padding-left: 218px; }
 .elementselectormodal .body .spinner.big { position: absolute; top: 205px; left: 350px; margin: -24px 0 0 -24px; }
 
-.elementselectormodal .body .sidebar { margin: -30px 0 -30px -230px; padding: 30px 0 30px 30px; border-right: 1px solid #e5e5e5; height: 350px; overflow: auto; }
+.elementselectormodal .body .sidebar { padding-right: 0; border-right: 1px solid #e5e5e5; height: 350px; overflow: auto; }
 
-.elementselectormodal .body .main { margin: -30px; padding: 30px; height: 350px; overflow: auto; }
+.elementselectormodal .body .main { margin: -24px; padding: 24px; height: 350px; overflow: auto; }
 
-.elementselectormodal .body .main .elements .tableview { margin: 0 -30px; }
+.elementselectormodal .body .main .elements .tableview { margin: 0 -24px; }
 .elementselectormodal .body .main .elements .tableview table .element { display: inline-block; }
 .elementselectormodal .body .main .elements .tableview table tr th,
 .elementselectormodal .body .main .elements .tableview table tr td { padding-top: 4px; padding-bottom: 4px; cursor: default;}
 .elementselectormodal .body .main .elements .tableview table tr th:first-child,
-.elementselectormodal .body .main .elements .tableview table tr td:first-child { padding-left: 30px; }
+.elementselectormodal .body .main .elements .tableview table tr td:first-child { padding-left: 24px; }
 .elementselectormodal .body .main .elements .tableview table tr th:last-child,
-.elementselectormodal .body .main .elements .tableview table tr td:last-child { padding-right: 30px; }
+.elementselectormodal .body .main .elements .tableview table tr td:last-child { padding-right: 24px; }
 .elementselectormodal .body .main .elements .tableview table tr:focus { outline: none; }
 .elementselectormodal .body .main .elements .tableview table tr.disabled { opacity: 1; color: #d4d4d4; }
 .elementselectormodal .body .main .elements .tableview table tr.disabled .element { opacity: 0.25; }

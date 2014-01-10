@@ -886,11 +886,12 @@ Garnish.Base = Base.extend({
 						}
 
 						// Create the sensor div
-						var sensor = document.createElement('div');
-						sensor.className = 'resize-sensor';
-						sensor.innerHTML = '<div class="resize-overflow"><div></div></div><div class="resize-underflow"><div></div></div>';
+						var $sensor = $('<div class="resize-sensor">' +
+							'<div class="resize-overflow"><div></div></div>' +
+							'<div class="resize-underflow"><div></div></div>' +
+						'</div>').prependTo(_$elem);
 
-						$(sensor).add($('> div', sensor)).css({
+						$sensor.add($sensor.children()).css({
 							position: 'absolute',
 							top: 0,
 							left: 0,
@@ -900,14 +901,14 @@ Garnish.Base = Base.extend({
 							'z-index': -1
 						});
 
-						_$elem.prepend(sensor);
+						$sensor.next().addClass('first');
 
 						_$elem.data('garnish-resizable', true);
 
 						var width = elem.offsetWidth,
 							height = elem.offsetHeight,
-							first = sensor.firstElementChild.firstChild,
-							last = sensor.lastElementChild.firstChild,
+							first = $sensor[0].firstElementChild.firstChild,
+							last = $sensor[0].lastElementChild.firstChild,
 							matchFlow = function(ev)
 							{
 								if ((width != (width = elem.offsetWidth)) || (height != (height = elem.offsetHeight)))
@@ -926,10 +927,10 @@ Garnish.Base = Base.extend({
 
 						updateSensor();
 
-						addFlowListener(sensor, 'over', matchFlow);
-						addFlowListener(sensor, 'under', matchFlow);
-						addFlowListener(sensor.firstElementChild, 'over', matchFlow);
-						addFlowListener(sensor.lastElementChild, 'under', matchFlow);
+						addFlowListener($sensor[0], 'over', matchFlow);
+						addFlowListener($sensor[0], 'under', matchFlow);
+						addFlowListener($sensor[0].firstElementChild, 'over', matchFlow);
+						addFlowListener($sensor[0].lastElementChild, 'under', matchFlow);
 					}
 				})($elem[i]);
 			}

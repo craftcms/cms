@@ -106,39 +106,11 @@ html { overflow-y: scroll; }
 .pane .tabs li a:not(.sel):hover { color: $linkcolor; }
 .pane .tabs li .tab.sel { @include pane; }
 
-/* main */
-#main { position: relative; }
-#main.has-sidebar { padding-left: 230px; }
-#main.has-help { padding-bottom: 60px; }
-#main.has-help #help { position: absolute; bottom: 17px; right: 17px; font-size: 26px; }
-#main:after { @include clearafter; }
-
-.sidebar { position: absolute; margin: -30px 0 -30px -230px; padding: 30px 0 30px 30px; width: 170px; overflow: auto; }
-.sidebar .heading { position: relative; margin: 15px 0 2px -30px; padding: 0 30px; }
-.sidebar .heading:after { display: block; position: absolute; bottom: 7px; left: 0; content: '.'; text-indent: -200px; overflow: hidden; width: 100%; height: 1px; border-top: 1px solid $hrcolor; }
-.sidebar .heading span { display: inline-block; position: relative; z-index: 1; padding: 0 5px; margin: 0 -5px; text-transform: uppercase; color: $lighttextcolor; font-size: 11px; font-weight: bold; background: #fff; }
-
-.sidebar nav { margin-left: -30px; padding-left: 30px; width: 170px; overflow: auto; }
-.sidebar nav li { position: relative; }
-.sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; @include unselectable; outline: none; }
-.sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
-.sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $headerBgColor; cursor: default; }
-
-.sidebar nav li .toggle { position: absolute; top: 3px; left: -20px; }
-.sidebar nav li.expanded > .toggle { background-position: 50% -40px; }
-.sidebar nav li a.sel + .toggle { background-position: 0 -20px; }
-.sidebar nav li.expanded > a.sel + .toggle { background-position: 0 -60px; }
-.sidebar nav li ul { margin-left: 20px; display: none; }
-.sidebar nav li.expanded > ul { display: block; }
-
-#main #sidebar.fixed { margin-top: 0; margin-bottom: 0; position: fixed; top: 0; }
-
-#main #sidebar-alt { margin-bottom: 30px; }
-#main #sidebar-alt:after { @include clearafter; }
-#main #sidebar-alt > .buttons,
-#main #sidebar-alt > .menubtn { float: left; margin: 0 10px 0 0; }
-
-#main #content { display: block; }
+/* content */
+#content { position: relative; }
+#content.has-help { padding-bottom: 60px; }
+#content.has-help #help { position: absolute; bottom: 17px; right: 17px; font-size: 26px; }
+#content:after { @include clearafter; }
 
 /* grids */
 .grid { position: relative; margin: 23px -7px; }
@@ -148,10 +120,6 @@ html { overflow-y: scroll; }
 	   -moz-box-sizing: border-box;
 	        box-sizing: border-box;
 }
-
-.grid > .item > .resize-sensor + .pane,
-.grid > .item > .resize-sensor + .field { margin-top: 0; }
-
 
 /* footer */
 #footer { margin: 15px 0; text-align: center; font-size: 0; }
