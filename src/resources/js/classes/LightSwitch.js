@@ -48,7 +48,8 @@ Craft.LightSwitch = Garnish.Base.extend({
 
 	turnOn: function()
 	{
-		this.$innerContainer.stop().animate({marginLeft: 0}, Craft.LightSwitch.animationDuration);
+		this.$outerContainer.addClass('dragging');
+		this.$innerContainer.stop().animate({marginLeft: 0}, Craft.LightSwitch.animationDuration, $.proxy(this, '_onSettle'));
 		this.$input.val('1');
 		this.$outerContainer.addClass('on');
 		this.on = true;
@@ -65,7 +66,8 @@ Craft.LightSwitch = Garnish.Base.extend({
 
 	turnOff: function()
 	{
-		this.$innerContainer.stop().animate({marginLeft: Craft.LightSwitch.offMargin}, Craft.LightSwitch.animationDuration);
+		this.$outerContainer.addClass('dragging');
+		this.$innerContainer.stop().animate({marginLeft: Craft.LightSwitch.offMargin}, Craft.LightSwitch.animationDuration, $.proxy(this, '_onSettle'));
 		this.$input.val('');
 		this.$outerContainer.removeClass('on');
 		this.on = false;
@@ -77,9 +79,13 @@ Craft.LightSwitch = Garnish.Base.extend({
 	toggle: function(event)
 	{
 		if (!this.on)
+		{
 			this.turnOn();
+		}
 		else
+		{
 			this.turnOff();
+		}
 	},
 
 	_onMouseDown: function()
@@ -122,6 +128,7 @@ Craft.LightSwitch = Garnish.Base.extend({
 
 	_onDragStart: function()
 	{
+		this.$outerContainer.addClass('dragging');
 		this.dragStartMargin = this._getMargin();
 	},
 
@@ -138,8 +145,6 @@ Craft.LightSwitch = Garnish.Base.extend({
 			margin = 0;
 		}
 
-		console.log(this.dragStartMargin, this.dragger.mouseDistX, Craft.LightSwitch.offMargin, margin);
-
 		this.$innerContainer.css('marginLeft', margin);
 	},
 
@@ -147,10 +152,19 @@ Craft.LightSwitch = Garnish.Base.extend({
 	{
 		var margin = this._getMargin();
 
-		if (margin > -16)
+		if (margin > (Craft.LightSwitch.offMargin / 2))
+		{
 			this.turnOn();
+		}
 		else
+		{
 			this.turnOff();
+		}
+	},
+
+	_onSettle: function()
+	{
+		this.$outerContainer.removeClass('dragging');
 	},
 
 	destroy: function()
