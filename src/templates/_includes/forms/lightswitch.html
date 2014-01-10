@@ -6,7 +6,7 @@
 		<div class="handle"></div>
 		<div class="label off"></div>
 	</div>
-	<input type="hidden"
-		{%- if name is defined %} name="{{ name }}" {% endif -%}
-		value="{{ on ? '1' }}">
+	{% if name is defined -%}
+		<input type="hidden" name="{{ name }}" value="{{ on ? '1' }}">
+	{%- endif %}
 </div>
