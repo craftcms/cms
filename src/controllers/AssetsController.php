@@ -38,7 +38,7 @@ class AssetsController extends BaseController
 	public function actionUploadFile()
 	{
 		$this->requireAjaxRequest();
-		$folderId = craft()->request->getQuery('folderId');
+		$folderId = craft()->request->getPost('folderId');
 
 		// Conflict resolution data
 		$userResponse = craft()->request->getPost('userResponse');

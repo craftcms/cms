@@ -7,6 +7,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 	requestId: 0,
 	hud: null,
 	fieldId: 0,
+	uploader: null,
+	progressBar: null,
 
 	init: function(id, name, elementType, sources, criteria, sourceElementId, limit, storageKey, fieldId)
 	{
@@ -53,60 +55,34 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 
 	_attachDragEvents: function ()
 	{
-		var elem = this.$container;
 
-		var progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').appendTo(elem));
-		progressBar.$progressBar.css({
-			top: Math.round(elem.outerHeight() / 2) - 6
-		});
-
-		$(document).bind('drop dragover', function (e) {
-			e.preventDefault();
+		this.progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').appendTo(this.$container));
+		this.progressBar.$progressBar.css({
+			top: Math.round(this.$container.outerHeight() / 2) - 6
 		});
 
 		var options = {
 			url: Craft.getActionUrl('assets/expressUpload'),
-			dropZone: elem,
-			pasteZone: null,
-			fileInput: null,
+			dropZone: this.$container,
 			formData: {
 				fieldId: this.fieldId,
 				entryId: $('input[name=entryId]').val()
-			},
-			autoUpload: true,
-			sequentialUploads: true
+			}
 		};
 
-		var _this = this;
-		elem.fileupload(options)
-			.bind('fileuploadstart', function (event)
-			{
-				elem.addClass('uploading');
-				progressBar.resetProgressBar();
-				progressBar.showProgressBar();
-			})
-			.bind('fileuploadprogressall', function (event, data)
-			{
-				var progress = parseInt(data.loaded / data.total * 100, 10);
-				progressBar.setProgressPercentage(progress);
-			})
-			.bind('fileuploaddone', function (event, data)
-			{
-				var html = $(data.result.html);
-				$('head').append(data.result.css);
+		options.events = {};
+		options.events.fileuploadstart = $.proxy(this, '_onUploadStart');
+		options.events.fileuploadprogressall = $.proxy(this, '_onUploadProgress');
+		options.events.fileuploaddone = $.proxy(this, '_onUploadComplete');
 
-				_this.selectUploadedFile(Craft.getElementInfo(html));
-
-				// Last file
-				if ($(this).fileupload('active') == 1)
-				{
-					progressBar.hideProgressBar();
-					elem.removeClass('uploading');
-				}
-			});
-
+		this.uploader = new Craft.Uploader(this.$container, options);
 	},
 
+	/**
+	 * Add the freshly uploaded file to the input field.
+	 *
+	 * @param element
+	 */
 	selectUploadedFile: function(element)
 	{
 		// Check if we're able to add new elements
@@ -143,5 +119,54 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 		{
 			this.$addElementBtn.addClass('disabled');
 		}
+	},
+
+	/**
+	 * On upload start.
+	 *
+	 * @param event
+	 * @private
+	 */
+	_onUploadStart: function (event)
+	{
+		this.$container.addClass('uploading');
+		this.progressBar.resetProgressBar();
+		this.progressBar.showProgressBar();
+	},
+
+	/**
+	 * On upload progress.
+	 *
+	 * @param event
+	 * @param data
+	 * @private
+	 */
+	_onUploadProgress: function (event, data)
+	{
+		var progress = parseInt(data.loaded / data.total * 100, 10);
+		this.progressBar.setProgressPercentage(progress);
+	},
+
+	/**
+	 * On a file being uploaded.
+	 *
+	 * @param event
+	 * @param data
+	 * @private
+	 */
+	_onUploadComplete: function (event, data)
+	{
+		var html = $(data.result.html);
+		$('head').append(data.result.css);
+
+		this.selectUploadedFile(Craft.getElementInfo(html));
+
+		// Last file
+		if (this.uploader.isLastUpload())
+		{
+			this.progressBar.hideProgressBar();
+			this.$container.removeClass('uploading');
+		}
 	}
+
 });

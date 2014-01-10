@@ -241,15 +241,15 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	public function uploadFile($folder)
 	{
 		// Upload the file and drop it in the temporary folder
-		$uploader = new \qqFileUploader();
+		$file = $_FILES['assets-upload'];
 
 		// Make sure a file was uploaded
-		if (! $uploader->file)
+		if (empty($file['name']))
 		{
 			throw new Exception(Craft::t('No file was uploaded'));
 		}
 
-		$size = $uploader->file->getSize();
+		$size = $file['size'];
 
 		// Make sure the file isn't empty
 		if (!$size)
@@ -257,11 +257,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			throw new Exception(Craft::t('Uploaded file was empty'));
 		}
 
-		$fileName = IOHelper::cleanFilename($uploader->file->getName());
+		$fileName = IOHelper::cleanFilename($file['name']);
 
 		// Save the file to a temp location and pass this on to the source type implementation
 		$filePath = AssetsHelper::getTempFilePath(IOHelper::getExtension($fileName));
-		$uploader->file->save($filePath);
+		move_uploaded_file($file['tmp_name'], $filePath);
 
 		$response = $this->insertFileByPath($filePath, $folder, $fileName);
 

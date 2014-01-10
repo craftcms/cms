@@ -694,7 +694,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 		if (!this.$uploadButton)
 		{
-			this.$uploadButton = $('<div class="assets-upload"><div class="assets-qq-uploader"><a href="javascript:;" class="btn submit assets-qq-upload-button" data-icon="↑" style="position: relative; overflow: hidden; direction: ltr; " role="button">' + Craft.t('Upload files') + '</a></div></div>').prependTo(this.$buttons);
+			this.$uploadButton = $('<div class="assets-upload"><div class="assets-uploader"><a href="javascript:;" class="btn submit assets-upload-button" data-icon="↑" style="position: relative; overflow: hidden; direction: ltr; " role="button">' + Craft.t('Upload files') + '</a></div></div>').prependTo(this.$buttons);
+			this.$uploadInput = $('<input type="file" multiple="multiple" name="assets-upload" id="assets-upload" />').hide().prependTo(this.$buttons);
 		}
 
 		this.promptHandler = new Craft.PromptHandler();
@@ -703,14 +704,24 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			top: '20%'
 		});
 
-
-		var uploaderCallbacks = {
-			onSubmit:     $.proxy(this, '_onUploadSubmit'),
-			onProgress:   $.proxy(this, '_onUploadProgress'),
-			onComplete:   $.proxy(this, '_onUploadComplete')
+		var options = {
+			url: Craft.getActionUrl('assets/uploadFile'),
+			fileInput: this.$uploadInput
 		};
 
-		this.uploader = new Craft.Uploader (this.$uploadButton, uploaderCallbacks);
+		options.events = {
+			fileuploadstart:       $.proxy(this, '_onUploadStart'),
+			fileuploadprogressall: $.proxy(this, '_onUploadProgress'),
+			fileuploaddone:        $.proxy(this, '_onUploadComplete')
+		};
+
+		this.uploader = new Craft.Uploader (this.$uploadButton, options);
+		this.$uploadButton.on('click', $.proxy(function () {
+			if (!this.isIndexBusy)
+			{
+				this.$uploadInput.click();
+			}
+		}, this));
 
 		this.base();
 	},
@@ -733,62 +744,33 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 	 * @param id
 	 * @private
 	 */
-	_onUploadSubmit: function(id) {
-		// prepare an upload batch
-		if (! this.uploader.getInProgress()) {
+	_onUploadStart: function(event) {
+		this.setIndexBusy();
 
-			this.setIndexBusy();
-
-			// Initial values
-			this.progressBar.resetProgressBar();
-			this.progressBar.showProgressBar();
-			this._uploadFileProgress = {};
-			this._uploadedFileIds = [];
-			this._uploadTotalFiles = 1;
-		}
-		else
-		{
-			this._uploadTotalFiles++;
-		}
-
-		// Prepare tracking
-		this._uploadFileProgress[id] = 0;
-
+		// Initial values
+		this.progressBar.resetProgressBar();
+		this.progressBar.showProgressBar();
 	},
 
 	/**
 	 * Update uploaded byte count.
 	 */
-	_onUploadProgress: function(id, fileName, loaded, total) {
-		this._uploadFileProgress[id] = loaded / total;
-		this._updateUploadProgress();
-	},
-
-	/**
-	 * Update Progress Bar.
-	 */
-	_updateUploadProgress: function() {
-		var totalPercent = 0;
-
-		for (var id in this._uploadFileProgress) {
-			totalPercent += this._uploadFileProgress[id];
-		}
-
-		var width = Math.round(100 * totalPercent / this._uploadTotalFiles) + '%';
-		this.progressBar.setProgressPercentage(width);
+	_onUploadProgress: function(event, data) {
+		var progress = parseInt(data.loaded / data.total * 100, 10);
+		this.progressBar.setProgressPercentage(progress);
 	},
 
 	/**
 	 * On Upload Complete.
 	 */
-	_onUploadComplete: function(id, fileName, response) {
-		this._uploadFileProgress[id] = 1;
-		this._updateUploadProgress();
+	_onUploadComplete: function(event, data) {
+		var response = data.result;
+		var fileName = data.files[0].name;
+
 		var doReload = true;
 
 		if (response.success || response.prompt) {
 
-			// TODO respect the select settings regarding limits
 			// Add the uploaded file to the selected ones, if appropriate
 			this._uploadedFileIds.push(response.fileId);
 
@@ -805,7 +787,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 		}
 
 		// for the last file, display prompts, if any. If not - just update the element view.
-		if (! this.uploader.getInProgress()) {
+		if (this.uploader.isLastUpload()) {
 
 			this.setIndexAvailable();
 			this.progressBar.hideProgressBar();
