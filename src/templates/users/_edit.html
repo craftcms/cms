@@ -356,8 +356,7 @@
 							{% endif %}
 
 							{% if currentUser.admin and not account.isCurrent %}
-								<input type="button" class="btn small formsubmit" value="{{ 'Login as user'|t }}" data-action="users/impersonate"
-									   data-confirm="{{ 'Are you sure you want to login as this user?'|t }}">
+								<input type="button" class="btn small formsubmit" value="{{ 'Login as user'|t }}" data-action="users/impersonate">
 							{% endif %}
 						{% endif %}
 					</form>
