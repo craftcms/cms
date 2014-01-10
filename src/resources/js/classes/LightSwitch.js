@@ -160,7 +160,7 @@ Craft.LightSwitch = Garnish.Base.extend({
 	}
 
 }, {
-	offMargin: -8,
+	offMargin: -9,
 	defaults: {
 		onChange: $.noop
 	}
