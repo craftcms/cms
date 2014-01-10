@@ -48,7 +48,7 @@ Craft.LightSwitch = Garnish.Base.extend({
 
 	turnOn: function()
 	{
-		this.$innerContainer.stop().animate({marginLeft: 0}, 'fast');
+		this.$innerContainer.stop().animate({marginLeft: 0}, Craft.LightSwitch.animationDuration);
 		this.$input.val('1');
 		this.$outerContainer.addClass('on');
 		this.on = true;
@@ -58,20 +58,20 @@ Craft.LightSwitch = Garnish.Base.extend({
 		this.$toggleTarget.height('auto');
 		var height = this.$toggleTarget.height();
 		this.$toggleTarget.height(0);
-		this.$toggleTarget.stop().animate({height: height}, 'fast', $.proxy(function() {
+		this.$toggleTarget.stop().animate({height: height}, Craft.LightSwitch.animationDuration, $.proxy(function() {
 			this.$toggleTarget.height('auto');
 		}, this));
 	},
 
 	turnOff: function()
 	{
-		this.$innerContainer.stop().animate({marginLeft: Craft.LightSwitch.offMargin}, 'fast');
+		this.$innerContainer.stop().animate({marginLeft: Craft.LightSwitch.offMargin}, Craft.LightSwitch.animationDuration);
 		this.$input.val('');
 		this.$outerContainer.removeClass('on');
 		this.on = false;
 		this.settings.onChange();
 
-		this.$toggleTarget.stop().animate({height: 0}, 'fast');
+		this.$toggleTarget.stop().animate({height: 0}, Craft.LightSwitch.animationDuration);
 	},
 
 	toggle: function(event)
@@ -161,6 +161,7 @@ Craft.LightSwitch = Garnish.Base.extend({
 
 }, {
 	offMargin: -9,
+	animationDuration: 100,
 	defaults: {
 		onChange: $.noop
 	}
