@@ -304,15 +304,20 @@ class UserSessionService extends \CWebUser
 				$id = $this->_identity->getId();
 				$states = $this->_identity->getPersistentStates();
 
+				// Fire an 'onBeforeLogin' event
+				$this->onBeforeLogin(new Event($this, array(
+					'username'      => $usernameModel->username,
+				)));
+
 				// Run any before login logic.
 				if ($this->beforeLogin($id, $states, false))
 				{
-					// Fire an 'onBeforeLogin' event
-					$this->onBeforeLogin(new Event($this, array(
+					$this->changeIdentity($id, $this->_identity->getName(), $states);
+
+					// Fire an 'onLogin' event
+					$this->onLogin(new Event($this, array(
 						'username'      => $usernameModel->username,
 					)));
-
-					$this->changeIdentity($id, $this->_identity->getName(), $states);
 
 					if ($seconds > 0)
 					{
@@ -338,11 +343,6 @@ class UserSessionService extends \CWebUser
 								);
 
 								$this->saveCookie('', $data, $seconds);
-
-								// Fire an 'onLogin' event
-								$this->onLogin(new Event($this, array(
-									'username'      => $usernameModel->username,
-								)));
 							}
 							else
 							{
@@ -367,6 +367,56 @@ class UserSessionService extends \CWebUser
 		}
 
 		Craft::log($username.' tried to log in unsuccessfully.', LogLevel::Warning);
+		return false;
+	}
+
+	/**
+	 * Logs a user in for impersonation.
+	 *
+	 * @param \IUserIdentity $userId
+	 * @throws Exception
+	 * @return bool
+	 */
+	public function impersonate($userId)
+	{
+		$userModel = craft()->users->getUserById($userId);
+
+		if (!$userModel)
+		{
+			throw new Exception(Craft::t('Could not find a user with Id of {userId}.', array('{userId}' => $userId)));
+		}
+
+		$this->_identity = new UserIdentity($userModel->username, null);
+		$this->_identity->logUserIn($userModel);
+
+		$id = $this->_identity->getId();
+		$states = $this->_identity->getPersistentStates();
+
+		// Run any before login logic.
+		if ($this->beforeLogin($id, $states, false))
+		{
+			// Fire an 'onBeforeLogin' event
+			$this->onBeforeLogin(new Event($this, array(
+				'username'      => $userModel->username,
+			)));
+
+			$this->changeIdentity($id, $this->_identity->getName(), $states);
+
+			// Fire an 'onLogin' event
+			$this->onLogin(new Event($this, array(
+				'username'      => $userModel->username,
+			)));
+
+			$this->_sessionRestoredFromCookie = false;
+			$this->_userRow = null;
+
+			// Run any after login logic.
+			$this->afterLogin(false);
+
+			return !$this->getIsGuest();
+		}
+
+		Craft::log($userModel->username.' tried to log in unsuccessfully.', LogLevel::Warning);
 		return false;
 	}
 

@@ -87,6 +87,29 @@ class UsersController extends BaseController
 	}
 
 	/**
+	 * Logs a user in for impersonation.  Requires you to be an administrator.
+	 */
+	public function actionImpersonate()
+	{
+		$this->requireLogin();
+		$this->requireAdmin();
+		$this->requirePostRequest();
+
+		$userId = craft()->request->getPost('userId');
+
+		if (craft()->userSession->impersonate($userId))
+		{
+			craft()->userSession->setNotice(Craft::t('Logged in.'));
+			$this->redirect(UrlHelper::getCpUrl('dashboard'));
+		}
+		else
+		{
+			craft()->userSession->setError(Craft::t('There was a problem impersonating this user.'));
+			Craft::log(craft()->userSession->getUser()->username.' tried to impersonate userId: '.$userId.' but something went wrong.', LogLevel::Error);
+		}
+	}
+
+	/**
 	 *
 	 */
 	public function actionLogout()
