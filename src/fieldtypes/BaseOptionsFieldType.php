@@ -137,13 +137,15 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 			$value = new SingleOptionFieldData($label, $value, true);
 		}
 
-		$value->options = array();
+		$options = array();
 
 		foreach ($this->getOptions() as $option)
 		{
 			$selected = in_array($option['value'], $selectedValues);
-			$value->options[] = new OptionData($option['label'], $option['value'], $selected);
+			$options[] = new OptionData($option['label'], $option['value'], $selected);
 		}
+
+		$value->setOptions($options);
 
 		return $value;
 	}
