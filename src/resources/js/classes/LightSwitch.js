@@ -28,7 +28,7 @@ Craft.LightSwitch = Garnish.Base.extend({
 
 		this.setSettings(settings, Craft.LightSwitch.defaults);
 
-		this.$innerContainer = this.$outerContainer.find('.container:first');
+		this.$innerContainer = this.$outerContainer.find('.lightswitch-container:first');
 		this.$input = this.$outerContainer.find('input:first');
 		this.$toggleTarget = $(this.$outerContainer.attr('data-toggle'));
 
@@ -130,9 +130,15 @@ Craft.LightSwitch = Garnish.Base.extend({
 		var margin = this.dragStartMargin + this.dragger.mouseDistX;
 
 		if (margin < Craft.LightSwitch.offMargin)
+		{
 			margin = Craft.LightSwitch.offMargin;
+		}
 		else if (margin > 0)
+		{
 			margin = 0;
+		}
+
+		console.log(this.dragStartMargin, this.dragger.mouseDistX, Craft.LightSwitch.offMargin, margin);
 
 		this.$innerContainer.css('marginLeft', margin);
 	},
@@ -154,8 +160,8 @@ Craft.LightSwitch = Garnish.Base.extend({
 	}
 
 }, {
-	offMargin: -50,
+	offMargin: -8,
 	defaults: {
-		onChange: function(){}
+		onChange: $.noop
 	}
 });
