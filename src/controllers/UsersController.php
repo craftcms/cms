@@ -100,7 +100,15 @@ class UsersController extends BaseController
 		if (craft()->userSession->impersonate($userId))
 		{
 			craft()->userSession->setNotice(Craft::t('Logged in.'));
-			$this->redirect(UrlHelper::getCpUrl('dashboard'));
+
+			if (craft()->userSession->getUser()->can('accessCp'))
+			{
+				$this->redirect(UrlHelper::getCpUrl('dashboard'));
+			}
+			else
+			{
+				$this->redirect(UrlHelper::getSiteUrl(''));
+			}
 		}
 		else
 		{
