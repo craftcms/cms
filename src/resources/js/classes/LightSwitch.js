@@ -49,7 +49,7 @@ Craft.LightSwitch = Garnish.Base.extend({
 	turnOn: function()
 	{
 		this.$innerContainer.stop().animate({marginLeft: 0}, 'fast');
-		this.$input.val('on');
+		this.$input.val('1');
 		this.$outerContainer.addClass('on');
 		this.on = true;
 		this.settings.onChange();
