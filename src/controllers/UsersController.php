@@ -712,7 +712,7 @@ class UsersController extends BaseController
 	{
 		$this->requireAjaxRequest();
 		craft()->userSession->requireLogin();
-		$userId = craft()->request->getRequiredQuery('userId');
+		$userId = craft()->request->getRequiredPost('userId');
 
 		if ($userId != craft()->userSession->getUser()->id)
 		{
@@ -720,12 +720,12 @@ class UsersController extends BaseController
 		}
 
 		// Upload the file and drop it in the temporary folder
-		$uploader = new \qqFileUploader();
+		$file = $_FILES['image-upload'];
 
 		try
 		{
 			// Make sure a file was uploaded
-			if ($uploader->file && $uploader->file->getSize())
+			if (!empty($file['name']) && !empty($file['size'])  )
 			{
 				$user = craft()->users->getUserById($userId);
 
@@ -734,9 +734,9 @@ class UsersController extends BaseController
 				IOHelper::clearFolder($folderPath);
 
 				IOHelper::ensureFolderExists($folderPath);
-				$fileName = IOHelper::cleanFilename($uploader->file->getName());
+				$fileName = IOHelper::cleanFilename($file['name']);
 
-				$uploader->file->save($folderPath.$fileName);
+				move_uploaded_file($file['tmp_name'], $folderPath.$fileName);
 
 				// Test if we will be able to perform image actions on this image
 				if (!craft()->images->setMemoryForImage($folderPath.$fileName))

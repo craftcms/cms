@@ -84,64 +84,66 @@ Craft.ImageHandler = Garnish.Base.extend({
 
 		var _this = this;
 
+
 		var element = settings.uploadButton;
+		var $uploadInput = $('<input type="file" name="image-upload" id="image-upload" />').hide().insertBefore(element);
+
 		var options = {
+			url: Craft.getActionUrl(this.settings.uploadAction),
+			fileInput: $uploadInput,
+
 			element:    this.settings.uploadButton[0],
 			action:     Craft.actionUrl + '/' + this.settings.uploadAction,
-			params:     this.settings.postParameters,
-			multiple:   false,
-			onComplete: function(fileId, fileName, response)
-			{
+			formData:   this.settings.postParameters,
+			events:     {
+				fileuploaddone: $.proxy(function (event, data) {
+					var response = data.result;
 
-				if (Craft.ImageUpload.$modalContainerDiv == null)
-				{
-					Craft.ImageUpload.$modalContainerDiv = $('<div class="modal"></div>').addClass(settings.modalClass).appendTo(Garnish.$bod);
-				}
-
-				if (response.html)
-				{
-					Craft.ImageUpload.$modalContainerDiv.empty().append(response.html);
-
-					if (!this.modal)
+					if (Craft.ImageUpload.$modalContainerDiv == null)
 					{
-						this.modal = new Craft.ImageModal(Craft.ImageUpload.$modalContainerDiv, {
-							postParameters: settings.postParameters,
-							cropAction:     settings.cropAction
-						});
-
-						this.modal.imageHandler = _this;
-					}
-					else
-					{
-						this.modal.show();
+						Craft.ImageUpload.$modalContainerDiv = $('<div class="modal"></div>').addClass(settings.modalClass).appendTo(Garnish.$bod);
 					}
 
-					this.modal.bindButtons();
-					this.modal.addListener(this.modal.$saveBtn, 'click', 'saveImage');
-					this.modal.addListener(this.modal.$cancelBtn, 'click', 'cancel');
-
-					this.modal.removeListener(Garnish.Modal.$shade, 'click');
-
-					setTimeout($.proxy(function()
+					if (response.html)
 					{
-						Craft.ImageUpload.$modalContainerDiv.find('img').load($.proxy(function()
+						Craft.ImageUpload.$modalContainerDiv.empty().append(response.html);
+
+						if (!this.modal)
 						{
-							var profileTool = new Craft.ImageAreaTool(settings.areaToolOptions);
-							profileTool.showArea(this.modal);
-						}, this));
-					}, this), 1);
-				}
-			},
-			allowedExtensions: ['jpg', 'jpeg', 'gif', 'png'],
-			template: '<div class="QqUploader-uploader"><div class="QqUploader-upload-drop-area" style="display: none; "><span></span></div><div class="QqUploader-upload-button" style="position: relative; overflow: hidden; direction: ltr; ">' +
-				element.text() +
-				'<input type="file" name="file" style="position: absolute; right: 0px; top: 0px; font-family: Arial; font-size: 118px; margin: 0px; padding: 0px; cursor: pointer; opacity: 0; "></div><ul class="QqUploader-upload-list"></ul></div>'
+							this.modal = new Craft.ImageModal(Craft.ImageUpload.$modalContainerDiv, {
+								postParameters: settings.postParameters,
+								cropAction:     settings.cropAction
+							});
 
+							this.modal.imageHandler = _this;
+						}
+						else
+						{
+							this.modal.show();
+						}
+
+						this.modal.bindButtons();
+						this.modal.addListener(this.modal.$saveBtn, 'click', 'saveImage');
+						this.modal.addListener(this.modal.$cancelBtn, 'click', 'cancel');
+
+						this.modal.removeListener(Garnish.Modal.$shade, 'click');
+
+						setTimeout($.proxy(function()
+						{
+							Craft.ImageUpload.$modalContainerDiv.find('img').load($.proxy(function()
+							{
+								var profileTool = new Craft.ImageAreaTool(settings.areaToolOptions);
+								profileTool.showArea(this.modal);
+							}, this));
+						}, this), 1);
+					}
+				}, this)
+			},
+			acceptFileTypes: /(jpg|jpeg|gif|png)/
 		};
 
-		options.sizeLimit = Craft.maxUploadSize;
+		this.uploader = new Craft.Uploader(element, options);
 
-		this.uploader = new qqUploader.FileUploader(options);
 
 		$(settings.deleteButton).click(function()
 		{
@@ -159,6 +161,11 @@ Craft.ImageHandler = Garnish.Base.extend({
 
 			}
 		});
+		$(settings.uploadButton).on('click', function (event)
+		{
+			$(this).prev('input[type=file]').click();
+		});
+
 	},
 
 	onImageSave: function(data)

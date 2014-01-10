@@ -1,5 +1,6 @@
 {% requirePackage 'Users' %}
 
+
 <div class="user-photo" data-user="{{ account.id }}">
 	<div class="current-photo" style="background-image: url({{ account.photo ? account.photoUrl : resourceUrl('images/user.gif') }});"></div>
 	<div class="user-photo-controls">

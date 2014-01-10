@@ -59,6 +59,7 @@ Craft.Uploader = Garnish.Base.extend({
 		fileInput: null,
 		autoUpload: true,
 		sequentialUploads: true,
+		maxFileSize: Craft.maxUploadSize,
 		events: {}
 	}
 });
