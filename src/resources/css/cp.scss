@@ -92,7 +92,7 @@ html { overflow-y: scroll; }
 
 /* tabs */
 .tabs:after { @include clearafter; }
-.tabs .tab { display: block; padding: 8px 10px; color: #777; }
+.tabs .tab { display: block; padding: 7px 10px; color: #777; }
 .tabs .tab:hover { text-decoration: none; color: $linkcolor; }
 .tabs .tab.sel { border-radius: 3px 3px 0 0; color: $textcolor; cursor: default; }
 

@@ -130,6 +130,9 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .left { float: left; }
 .right { float: right; }
 
+th,
+td { text-align: left; vertical-align: middle; }
+
 th.right,
 td.right { float: none; text-align: right; }
 
@@ -267,11 +270,17 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btn:hover { text-decoration: none; }
 .disabled { opacity: 0.25; cursor: default; }
 
-.btn:not(.submit):not(.noborder) { border: 1px solid #ddd; padding: 5px 10px; color: $textcolor; background-color: #fff; }
-.btn:not(.submit):not(.noborder):hover,
-.btn:not(.submit):not(.noborder).hover { border-color: #ccc; }
+.btn:not(.submit):not(.noborder) { color: $textcolor;
+	background: -webkit-linear-gradient(#fff, hsl($hue, 5%, 98%));
+	background:         linear-gradient(#fff, hsl($hue, 5%, 98%));
+	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+}
 .btn:not(.submit):not(.noborder):active,
-.btn:not(.submit):not(.noborder).active { border-color: rgba(0,0,0,0.2); background-color: $bgcolor; }
+.btn:not(.submit):not(.noborder).active {
+	background: -webkit-linear-gradient(hsl($hue, 5%, 90%), hsl($hue, 5%, 92%));
+	background:         linear-gradient(hsl($hue, 5%, 90%), hsl($hue, 5%, 92%));
+}
 
 .btngroup,
 .btn,
@@ -352,9 +361,9 @@ div.btn.submit { position: relative; overflow: hidden; }
 div.btn.submit input { position: absolute; left: 100%; }
 
 /* dashed buttons */
-.btn.dashed { border: 1px dashed rgba(0,0,0,0.2) !important; background: none;
-	-webkit-box-shadow: none;
-	        box-shadow: none;
+.btn.dashed { border: 1px dashed rgba(0,0,0,0.2) !important; background: none !important;
+	-webkit-box-shadow: none !important;
+	        box-shadow: none !important;
 }
 /* color buttons */
 .color { width: 30px; height: 30px; border-radius: 15px; padding: 0; background: url(../images/checkers.png); cursor: pointer; }
@@ -376,24 +385,28 @@ div.btn.submit input { position: absolute; left: 100%; }
 .colorpicker { z-index: 2; }
 
 /* switch */
-.lightswitch { position: relative; border: none !important; width: 80px; height: 30px; overflow: hidden; cursor: pointer; @include unselectable; overflow: hidden; }
-.lightswitch:after { display: block; position: absolute; z-index: 1; top: 0; left: 0; width: 100%; height: 100%; content: '.'; text-indent: -100%;
-	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
-	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
+.lightswitch { position: relative; border: none !important; border-radius: 9px; width: 27px; height: 18px; overflow: hidden; cursor: pointer; @include unselectable; overflow: hidden;
+	-webkit-box-shadow: 0 0 0 1px hsla(205, 100%, 60%, 0), 0 0 2px hsla(205, 100%, 60%, 0);
+	        box-shadow: 0 0 0 1px hsla(205, 100%, 60%, 0), 0 0 2px hsla(205, 100%, 60%, 0);
+	-webkit-transition: -webkit-box-shadow linear 100ms;
+	   -moz-transition:         box-shadow linear 100ms;
 }
-.lightswitch:focus:after {
-	-webkit-box-shadow: inset 0 0 0 1px $focusglowcolor;
-	        box-shadow: inset 0 0 0 1px $focusglowcolor;
+.lightswitch:focus { outline: none;
+	-webkit-box-shadow: 0 0 0 1px hsla(205, 100%, 60%, 0.5), 0 0 2px hsl(205, 100%, 60%);
+	        box-shadow: 0 0 0 1px hsla(205, 100%, 60%, 0.5), 0 0 2px hsl(205, 100%, 60%);
 }
-
-.lightswitch .lightswitch-container { margin-left: -50px; width: 130px; }
+.lightswitch .lightswitch-container { margin-left: -9px; width: 36px; }
 .lightswitch.on .lightswitch-container { margin-left: 0; }
 
-.lightswitch .label { float: left; padding: 0 5px; width: 40px; height: 30px; line-height: 30px; text-align: center; text-transform: uppercase; }
-.lightswitch .label.on { color: #fff; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background-color: hsl(203, 79%, 50%); }
-.lightswitch .handle { position: relative; float: left; padding: 0; width: 30px; height: 30px; @include linear-gradient(#e5e5e5, #fff);
-	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
-	        box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
+.lightswitch .label { float: left; width: 18px; height: 18px;
+	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+}
+.lightswitch .label.on { border-radius: 9px 0 0 9px; background: $successcolor; }
+.lightswitch .label.off { border-radius: 0 9px 9px 0; background: hsl($hue, 5%, 65%); }
+.lightswitch .handle { position: relative; float: left; border-radius: 9px; margin: 0 -9px; width: 18px; height: 18px; @include linear-gradient(#fff, hsl($hue, 5%, 98%));
+	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.1);
+	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.1);
 }
 
 /* action buttons */
@@ -429,7 +442,7 @@ table.data td:not(:first-child) { padding-left: 10px; }
 table.data thead th,
 table.data thead td { padding-top: 4px; padding-bottom: 4px; cursor: default; }
 table.data tbody th,
-table.data tbody td { padding-top: 7px; padding-bottom: 7px; text-align: left; vertical-align: middle; border-top: 1px dotted $hrcolor; }
+table.data tbody td { padding-top: 7px; padding-bottom: 7px; border-top: 1px dotted $hrcolor; }
 table.data tbody tr:last-child th,
 table.data tbody tr:last-child td { border-bottom: 1px dotted $hrcolor; }
 table.data thead + tbody tr:first-child th,
@@ -767,19 +780,17 @@ ul.tree,
 .text,
 #main div.redactor_box,
 .border-box,
-.matrix-configurator > .field > .input,
-.lightswitch { border: none; border-radius: 2px;
+.matrix-configurator > .field > .input { border: none; border-radius: 2px;
 	-webkit-box-shadow: 0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0);
 	        box-shadow: 0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0);
 	-webkit-transition: -webkit-box-shadow linear 100ms;
-	   -moz-transition: box-shadow linear 100ms;
+	   -moz-transition:         box-shadow linear 100ms;
 }
 
 .text.focus,
 .text:focus,
 .border-box:focus,
-.border-box.focus,
-.lightswitch:focus { border-color: $focusglowcolor; outline: none;
+.border-box.focus { border-color: $focusglowcolor; outline: none;
 	-webkit-box-shadow: 0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5);
 	        box-shadow: 0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5);
 }
@@ -795,7 +806,7 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 	-webkit-appearance: none;
 }
 
-.field { position: relative; margin: 30px 0; }
+.field { position: relative; margin: 24px 0; }
 .field .heading { margin-bottom: 4px; }
 .field .instructions { font-size: 11px; color: $mediumtextcolor; }
 
