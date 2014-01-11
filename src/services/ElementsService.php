@@ -923,8 +923,7 @@ class ElementsService extends BaseApplicationComponent
 			$criteria->localeEnabled = null;
 			$elementInOtherLocale = $criteria->first();
 
-			// todo: replace the getContent()->id check with the 'strictLocale' param once it's added
-			if ($elementInOtherLocale && $elementInOtherLocale->getContent()->id)
+			if ($elementInOtherLocale)
 			{
 				$this->updateElementSlugAndUri($elementInOtherLocale, false, false);
 			}
