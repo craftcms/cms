@@ -66,7 +66,7 @@ class SearchIndexTool extends BaseTool
 					'localeEnabled' => null,
 				));
 
-				$result = craft()->elements->buildElementsQuery($criteria, $fieldColumns)->queryAll();
+				$result = craft()->elements->buildElementsQuery($criteria, $contentTable, $fieldColumns)->queryAll();
 
 				if ($result)
 				{

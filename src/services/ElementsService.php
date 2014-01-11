@@ -90,7 +90,7 @@ class ElementsService extends BaseApplicationComponent
 	public function findElements($criteria = null, $justIds = false)
 	{
 		$elements = array();
-		$query = $this->buildElementsQuery($criteria, $fieldColumns);
+		$query = $this->buildElementsQuery($criteria, $contentTable, $fieldColumns);
 
 		if ($query)
 		{
@@ -183,7 +183,7 @@ class ElementsService extends BaseApplicationComponent
 
 					foreach ($result as $row)
 					{
-						if ($elementType->hasContent())
+						if ($contentTable)
 						{
 							// Separate the content values from the main element attributes
 							$content = array(
@@ -211,7 +211,7 @@ class ElementsService extends BaseApplicationComponent
 						$row['locale'] = $criteria->locale;
 						$element = $elementType->populateElementModel($row);
 
-						if ($elementType->hasContent())
+						if ($contentTable)
 						{
 							$element->setContent($content);
 						}
@@ -277,10 +277,11 @@ class ElementsService extends BaseApplicationComponent
 	 * Returns a DbCommand instance ready to search for elements based on a given element criteria.
 	 *
 	 * @param mixed &$criteria
-	 * @param array &$fieldColumns
+	 * @param null  &$contentTable
+	 * @param null  &$fieldColumns
 	 * @return DbCommand|false
 	 */
-	public function buildElementsQuery(&$criteria = null, &$fieldColumns = array())
+	public function buildElementsQuery(&$criteria = null, &$contentTable = null, &$fieldColumns = null)
 	{
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
