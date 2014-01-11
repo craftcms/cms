@@ -112,7 +112,19 @@ class ContentService extends BaseApplicationComponent
 		if (!$validate || $this->validateContent($element))
 		{
 			$this->_saveContentRow($content);
-			$this->_postSaveOperations($element, $content, $updateOtherLocales);
+
+			$fieldLayout = $element->getFieldLayout();
+
+			if ($fieldLayout)
+			{
+				if ($updateOtherLocales && craft()->hasPackage(CraftPackage::Localize))
+				{
+					$this->_duplicateNonTranslatableFieldValues($element, $content, $fieldLayout, $nonTranslatableFields, $otherContentModels);
+				}
+
+				$this->_updateSearchIndexes($element, $content, $fieldLayout, $nonTranslatableFields, $otherContentModels);
+			}
+
 			$success = true;
 		}
 		else
@@ -249,124 +261,105 @@ class ContentService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Performs post-save element operations, such as calling all fieldtypes' onAfterElementSave() methods.
+	 * Copies the new values of any non-translatable fields across the element's other locales.
 	 *
 	 * @access private
 	 * @param BaseElementModel $element
 	 * @param ContentModel     $content
-	 * @param bool             $updateOtherLocales
+	 * @param FieldLayoutModel $fieldLayout
+	 * @param array            &$nonTranslatableFields
+	 * @param array            &$otherContentModels
+	 * @param
 	 */
-	private function _postSaveOperations(BaseElementModel $element, ContentModel $content, $updateOtherLocales)
+	private function _duplicateNonTranslatableFieldValues(BaseElementModel $element, ContentModel $content, FieldLayoutModel $fieldLayout, &$nonTranslatableFields, &$otherContentModels)
 	{
-		if ($updateOtherLocales && !craft()->hasPackage(CraftPackage::Localize))
+		// Get all of the non-translatable fields
+		$nonTranslatableFields = array();
+
+		foreach ($fieldLayout->getFields() as $fieldLayoutField)
 		{
-			$updateOtherLocales = false;
-		}
+			$field = $fieldLayoutField->getField();
 
-		$fieldLayout = $element->getFieldLayout();
-
-		// Copy the non-trasnlatable field values over to the other locales
-
-		if (craft()->hasPackage(CraftPackage::Localize))
-		{
-			// Get all of the non-translatable fields
-			$nonTranslatableFields = array();
-
-			if ($fieldLayout)
+			if ($field && !$field->translatable)
 			{
-				foreach ($fieldLayout->getFields() as $fieldLayoutField)
+				$fieldType = $field->getFieldType();
+
+				if ($fieldType && $fieldType->defineContentAttribute())
 				{
-					$field = $fieldLayoutField->getField();
-
-					if ($field && !$field->translatable)
-					{
-						$fieldType = $field->getFieldType();
-
-						if ($fieldType && $fieldType->defineContentAttribute())
-						{
-							$nonTranslatableFields[$field->id] = $field;
-						}
-					}
-				}
-			}
-
-			if ($updateOtherLocales)
-			{
-				// Get the other locales' content
-				$rows = craft()->db->createCommand()
-					->from($this->contentTable)
-					->where(
-						array('and', 'elementId = :elementId', 'locale != :locale'),
-						array(':elementId' => $element->id, ':locale' => $content->locale))
-					->queryAll();
-
-				// Remove the column prefixes
-				foreach ($rows as $i => $row)
-				{
-					$rows[$i] = $this->_removeColumnPrefixesFromRow($row);
-				}
-
-				$otherContentModels = ContentModel::populateModels($rows);
-
-				if ($nonTranslatableFields && $otherContentModels)
-				{
-					// Copy the dupliacte content over to the other locales
-					foreach ($nonTranslatableFields as $field)
-					{
-						$handle = $field->handle;
-
-						foreach ($otherContentModels as $otherContentModel)
-						{
-							$otherContentModel->$handle = $content->$handle;
-						}
-					}
-
-					foreach ($otherContentModels as $otherContentModel)
-					{
-						$this->_saveContentRow($otherContentModel);
-					}
+					$nonTranslatableFields[$field->id] = $field;
 				}
 			}
 		}
 
-		// Call all fieldtypes' onAfterElementSave() functions now that all of the content saved for all locales
-		// and also update the search indexes
+		if ($nonTranslatableFields)
+		{
+			// Get the other locales' content
+			$rows = craft()->db->createCommand()
+				->from($this->contentTable)
+				->where(
+					array('and', 'elementId = :elementId', 'locale != :locale'),
+					array(':elementId' => $element->id, ':locale' => $content->locale))
+				->queryAll();
 
+			// Remove the column prefixes
+			foreach ($rows as $i => $row)
+			{
+				$rows[$i] = $this->_removeColumnPrefixesFromRow($row);
+			}
+
+			$otherContentModels = ContentModel::populateModels($rows);
+
+			foreach ($otherContentModels as $otherContentModel)
+			{
+				foreach ($nonTranslatableFields as $field)
+				{
+					$handle = $field->handle;
+					$otherContentModel->$handle = $content->$handle;
+				}
+
+				$this->_saveContentRow($otherContentModel);
+			}
+		}
+	}
+
+	/**
+	 * Updates the search indexes based on the new content values.
+	 *
+	 * @access private
+	 * @param BaseElementModel $element
+	 * @param ContentModel     $content
+	 * @param FieldLayoutModel $fieldLayout
+	 * @param array|null       &$nonTranslatableFields
+	 * @param array|null       &$otherContentModels
+	 */
+	private function _updateSearchIndexes(BaseElementModel $element, ContentModel $content, FieldLayoutModel $fieldLayout, &$nonTranslatableFields = null, &$otherContentModels = null)
+	{
 		$searchKeywordsByLocale = array();
 
-		if ($fieldLayout)
+		foreach ($fieldLayout->getFields() as $fieldLayoutField)
 		{
-			foreach ($fieldLayout->getFields() as $fieldLayoutField)
+			$field = $fieldLayoutField->getField();
+
+			if ($field)
 			{
-				$field = $fieldLayoutField->getField();
+				$fieldType = $field->getFieldType();
 
-				if ($field && !$field->translatable)
+				if ($fieldType)
 				{
-					$fieldType = $field->getFieldType();
+					$fieldType->element = $element;
 
-					if ($fieldType)
+					$handle = $field->handle;
+
+					// Set the keywords for the content's locale
+					$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$handle);
+					$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
+
+					// Should we queue up the other locales' new keywords too?
+					if (isset($nonTranslatableFields[$field->id]))
 					{
-						$fieldType->element = $element;
-
-						// Call onAfterElementSave()
-						$fieldType->onAfterElementSave();
-
-						$handle = $field->handle;
-
-						// Set the keywords for the content's locale
-						$fieldSearchKeywords = $fieldType->getSearchKeywords($content->$handle);
-						$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
-
-						// Should we queue up the other locales' new keywords too?
-						if ($updateOtherLocales)
+						foreach ($otherContentModels as $otherContentModel)
 						{
-							if ($otherContentModels && in_array($field->id, array_keys($nonTranslatableFields)))
-							{
-								foreach ($otherContentModels as $otherContentModel)
-								{
-									$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
-								}
-							}
+							$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
 						}
 					}
 				}

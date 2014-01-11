@@ -758,12 +758,13 @@ class ElementsService extends BaseApplicationComponent
 					}
 				}
 
-				$submittedLocaleId = $element->locale;
-				$submittedSlug     = $element->slug;
+				$mainLocaleId = $element->locale;
+				$mainSlug     = $element->slug;
+				$mainUri      = $element->uri;
 
 				if ($elementType->hasContent())
 				{
-					$submittedContent = $element->getContent();
+					$mainContent = $element->getContent();
 				}
 
 				foreach ($element->getLocales() as $localeId)
@@ -782,21 +783,21 @@ class ElementsService extends BaseApplicationComponent
 					// Set the locale and its content on the element
 					$element->locale = $localeId;
 
-					if ($localeRecord->id && $localeRecord->locale != $submittedLocaleId)
+					if ($localeRecord->id && $localeRecord->locale != $mainLocaleId)
 					{
 						// Keep the original slug
 						$element->slug = $localeRecord->slug;
 					}
 					else
 					{
-						$element->slug = $submittedSlug;
+						$element->slug = $mainSlug;
 					}
 
 					if ($elementType->hasContent())
 					{
-						if ($localeId == $submittedLocaleId)
+						if ($localeId == $mainLocaleId)
 						{
-							$content = $submittedContent;
+							$content = $mainContent;
 						}
 						else
 						{
@@ -811,7 +812,7 @@ class ElementsService extends BaseApplicationComponent
 							if (!$content)
 							{
 								$content = craft()->content->createContent($element);
-								$content->setAttributes($submittedContent->getAttributes());
+								$content->setAttributes($mainContent->getAttributes());
 								$content->id = null;
 								$content->locale = $localeId;
 							}
@@ -832,7 +833,7 @@ class ElementsService extends BaseApplicationComponent
 					$localeRecord->slug = $element->slug;
 					$localeRecord->uri  = $element->uri;
 
-					if ($localeId == $submittedLocaleId)
+					if ($localeId == $mainLocaleId)
 					{
 						$localeRecord->enabled = (bool) $element->localeEnabled;
 					}
@@ -844,10 +845,45 @@ class ElementsService extends BaseApplicationComponent
 						// Don't bother with any of the other locales
 						break;
 					}
+
+					if ($localeId == $mainLocaleId)
+					{
+						// Remember the saved slug and URI
+						$mainSlug = $element->slug;
+						$mainUri  = $element->uri;
+					}
 				}
 
-				$element->locale = $submittedLocaleId;
-				$element->setContent($submittedContent);
+				if ($success)
+				{
+					// Bring everything back to this locale
+					$element->locale = $mainLocaleId;
+					$element->slug   = $mainSlug;
+					$element->uri    = $mainUri;
+					$element->setContent($mainContent);
+
+					// Call the field types' onAfterElementSave() methods
+					$fieldLayout = $element->getFieldLayout();
+
+					if ($fieldLayout)
+					{
+						foreach ($fieldLayout->getFields() as $fieldLayoutField)
+						{
+							$field = $fieldLayoutField->getField();
+
+							if ($field)
+							{
+								$fieldType = $field->getFieldType();
+
+								if ($fieldType)
+								{
+									$fieldType->element = $element;
+									$fieldType->onAfterElementSave();
+								}
+							}
+						}
+					}
+				}
 			}
 
 			if ($transaction !== null)

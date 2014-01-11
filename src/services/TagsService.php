@@ -385,7 +385,7 @@ class TagsService extends BaseApplicationComponent
 	public function saveTagContent(TagModel $tag)
 	{
 		// TODO: translation support
-		if (craft()->content->saveContent($tag))
+		if (craft()->elements->saveElement($tag))
 		{
 			// Fire an 'onSaveTagContent' event
 			$this->onSaveTagContent(new Event($this, array(

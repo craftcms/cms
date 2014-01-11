@@ -172,11 +172,8 @@ class AssetsService extends BaseApplicationComponent
 	public function saveFileContent(AssetFileModel $file, $validate = true)
 	{
 		// TODO: translation support
-		if (craft()->content->saveContent($file, $validate))
+		if (craft()->elements->saveElement($file, $validate))
 		{
-			// Update the search index since the title may have just changed
-			craft()->search->indexElementAttributes($file);
-
 			// Fire an 'onSaveFileContent' event
 			$this->onSaveFileContent(new Event($this, array(
 				'file' => $file
