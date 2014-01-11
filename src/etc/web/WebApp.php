@@ -76,6 +76,9 @@ class WebApp extends \CWebApplication
 			Craft::import($alias);
 		}
 
+		// So we can try to translate Yii framework strings
+		craft()->coreMessages->attachEventHandler('onMissingTranslation', array('Craft\LocalizationHelper', 'findMissingTranslation'));
+
 		// Initialize HttpRequestService and LogRouter right away
 		$this->getComponent('request');
 		$this->getComponent('log');
