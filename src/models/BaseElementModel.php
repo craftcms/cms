@@ -217,7 +217,7 @@ abstract class BaseElementModel extends BaseModel
 		{
 			return static::ARCHIVED;
 		}
-		else if (!$this->enabled)
+		else if (!$this->enabled || !$this->localeEnabled)
 		{
 			return static::DISABLED;
 		}
