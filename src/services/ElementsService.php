@@ -733,7 +733,7 @@ class ElementsService extends BaseApplicationComponent
 				// Save the content
 				if ($elementType->hasContent())
 				{
-					craft()->content->saveContent($element, false);
+					craft()->content->saveContent($element, false, (bool) $element->id);
 				}
 
 				// Update the search index
