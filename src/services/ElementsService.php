@@ -854,14 +854,14 @@ class ElementsService extends BaseApplicationComponent
 					}
 				}
 
+				// Bring everything back to this locale
+				$element->locale = $mainLocaleId;
+				$element->slug   = $mainSlug;
+				$element->uri    = $mainUri;
+				$element->setContent($mainContent);
+
 				if ($success)
 				{
-					// Bring everything back to this locale
-					$element->locale = $mainLocaleId;
-					$element->slug   = $mainSlug;
-					$element->uri    = $mainUri;
-					$element->setContent($mainContent);
-
 					// Call the field types' onAfterElementSave() methods
 					$fieldLayout = $element->getFieldLayout();
 
