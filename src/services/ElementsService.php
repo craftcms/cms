@@ -741,6 +741,9 @@ class ElementsService extends BaseApplicationComponent
 
 				// Update the locale records and content
 
+				// We're saving all of the element's locales here to ensure that they all exist
+				// and to update the URI in the event that the URL format includes some value that just changed
+
 				$localeRecords = array();
 
 				if (!$isNewElement)
@@ -755,23 +758,45 @@ class ElementsService extends BaseApplicationComponent
 					}
 				}
 
-				$originalLocaleId = $element->locale;
+				$submittedLocaleId = $element->locale;
+				$submittedSlug     = $element->slug;
 
 				if ($elementType->hasContent())
 				{
-					$originalContent = $element->getContent();
+					$submittedContent = $element->getContent();
 				}
 
 				foreach ($element->getLocales() as $localeId)
 				{
+					if (isset($localeRecords[$localeId]))
+					{
+						$localeRecord = $localeRecords[$localeId];
+					}
+					else
+					{
+						$localeRecord = new ElementLocaleRecord();
+						$localeRecord->elementId = $element->id;
+						$localeRecord->locale    = $localeId;
+					}
+
 					// Set the locale and its content on the element
 					$element->locale = $localeId;
 
+					if ($localeRecord->id && $localeRecord->locale != $submittedLocaleId)
+					{
+						// Keep the original slug
+						$element->slug = $localeRecord->slug;
+					}
+					else
+					{
+						$element->slug = $submittedSlug;
+					}
+
 					if ($elementType->hasContent())
 					{
-						if ($localeId == $originalLocaleId)
+						if ($localeId == $submittedLocaleId)
 						{
-							$content = $originalContent;
+							$content = $submittedContent;
 						}
 						else
 						{
@@ -786,7 +811,7 @@ class ElementsService extends BaseApplicationComponent
 							if (!$content)
 							{
 								$content = craft()->content->createContent($element);
-								$content->setAttributes($originalContent->getAttributes());
+								$content->setAttributes($submittedContent->getAttributes());
 								$content->id = null;
 								$content->locale = $localeId;
 							}
@@ -804,21 +829,10 @@ class ElementsService extends BaseApplicationComponent
 					ElementHelper::setValidSlug($element);
 					ElementHelper::setUniqueUri($element);
 
-					if (isset($localeRecords[$localeId]))
-					{
-						$localeRecord = $localeRecords[$localeId];
-					}
-					else
-					{
-						$localeRecord = new ElementLocaleRecord();
-						$localeRecord->elementId = $element->id;
-						$localeRecord->locale = $element->locale;
-					}
-
 					$localeRecord->slug = $element->slug;
 					$localeRecord->uri  = $element->uri;
 
-					if ($localeId == $originalLocaleId)
+					if ($localeId == $submittedLocaleId)
 					{
 						$localeRecord->enabled = (bool) $element->localeEnabled;
 					}
@@ -832,8 +846,8 @@ class ElementsService extends BaseApplicationComponent
 					}
 				}
 
-				$element->locale = $originalLocaleId;
-				$element->setContent($originalContent);
+				$element->locale = $submittedLocaleId;
+				$element->setContent($submittedContent);
 			}
 
 			if ($transaction !== null)
