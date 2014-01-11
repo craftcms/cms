@@ -978,7 +978,7 @@ class ElementsService extends BaseApplicationComponent
 
 			foreach ($batchElements as $element)
 			{
-				$this->saveElement($element);
+				$this->saveElement($element, false);
 			}
 
 			$criteria->offset += 25;
