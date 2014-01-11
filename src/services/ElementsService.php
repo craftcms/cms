@@ -222,7 +222,7 @@ class ElementsService extends BaseApplicationComponent
 							{
 								foreach ($fieldColumns as $column)
 								{
-									if (isset($row[$column['column']]))
+									if (!empty($row[$column['column']]))
 									{
 										$content[$column['handle']] = $row[$column['column']];
 										unset($row[$column['column']]);
