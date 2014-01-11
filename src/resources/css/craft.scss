@@ -626,7 +626,9 @@ ul.tree,
 
 .status.off,
 .status.suspended,
-.status.expired { background-position: 0 -20px; } /* red */
+.status.expired,
+.status.disabled { background-position: 0 -20px; } /* red */
+.status.disabled { opacity: 1; }
 
 /* ----------------------------------------
 /*  Progress bar

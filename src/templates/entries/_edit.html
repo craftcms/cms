@@ -46,7 +46,7 @@
 									}) }}
 								{%- else -%}
 									<a href="{{ url('entries/'~section.handle~'/'~craft.request.getSegment(3))~'/'~_localeId }}">{{ localeName }}</a>
-									<div class="status {{ _localeId in enabledLocales ? 'on' : 'off' }}"></div>
+									<div class="status {{ _localeId in enabledLocales ? 'enabled' : 'disabled' }}"></div>
 								{%- endif -%}
 							</li>
 						{% endfor %}
