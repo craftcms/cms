@@ -260,7 +260,7 @@ class EntriesController extends BaseController
 		// Set the "Continue Editing" URL
 		$variables['continueEditingUrl'] = 'entries/'.$variables['section']->handle.'/{id}' .
 			(isset($variables['draftId']) ? '/drafts/'.$variables['draftId'] : '') .
-			(Craft::hasPackage(CraftPackage::Localize) && craft()->getLanguage() != $variables['localeId'] ? '/'.$variables['localeId'] : '');
+			(craft()->hasPackage(CraftPackage::Localize) && craft()->getLanguage() != $variables['localeId'] ? '/'.$variables['localeId'] : '');
 
 		// Include translations
 		craft()->templates->includeTranslations('Live Preview');
