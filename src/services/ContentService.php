@@ -270,7 +270,7 @@ class ContentService extends BaseApplicationComponent
 		if (craft()->hasPackage(CraftPackage::Localize))
 		{
 			// Get all of the non-translatable fields
-			$fieldsWithDuplicateContent = array();
+			$nonTranslatableFields = array();
 
 			if ($fieldLayout)
 			{
@@ -284,7 +284,7 @@ class ContentService extends BaseApplicationComponent
 
 						if ($fieldType && $fieldType->defineContentAttribute())
 						{
-							$fieldsWithDuplicateContent[$field->id] = $field;
+							$nonTranslatableFields[$field->id] = $field;
 						}
 					}
 				}
@@ -308,10 +308,10 @@ class ContentService extends BaseApplicationComponent
 
 				$otherContentModels = ContentModel::populateModels($rows);
 
-				if ($fieldsWithDuplicateContent && $otherContentModels)
+				if ($nonTranslatableFields && $otherContentModels)
 				{
 					// Copy the dupliacte content over to the other locales
-					foreach ($fieldsWithDuplicateContent as $field)
+					foreach ($nonTranslatableFields as $field)
 					{
 						$handle = $field->handle;
 
@@ -360,7 +360,7 @@ class ContentService extends BaseApplicationComponent
 						// Should we queue up the other locales' new keywords too?
 						if ($updateOtherLocales)
 						{
-							if ($otherContentModels && in_array($field->id, array_keys($fieldsWithDuplicateContent)))
+							if ($otherContentModels && in_array($field->id, array_keys($nonTranslatableFields)))
 							{
 								foreach ($otherContentModels as $otherContentModel)
 								{
