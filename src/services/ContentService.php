@@ -310,7 +310,7 @@ class ContentService extends BaseApplicationComponent
 
 				if ($fieldsWithDuplicateContent && $otherContentModels)
 				{
-					// Copy the dupliacte content over to the other locases
+					// Copy the dupliacte content over to the other locales
 					foreach ($fieldsWithDuplicateContent as $field)
 					{
 						$handle = $field->handle;
