@@ -46,6 +46,8 @@ Craft.MatrixConfigurator = Garnish.Base.extend({
 		this.$fieldItemsContainer = this.$fieldsColumnContainer.children('.items');
 		this.$fieldSettingItemsContainer = this.$fieldSettingsColumnContainer.children('.items');
 
+		this.setContainerHeight();
+
 		this.$newBlockTypeBtn = this.$blockTypeItemsContainer.children('.btn');
 		this.$newFieldBtn = this.$fieldItemsContainer.children('.btn');
 
@@ -78,6 +80,16 @@ Craft.MatrixConfigurator = Garnish.Base.extend({
 
 		this.addListener(this.$newBlockTypeBtn, 'click', 'addBlockType');
 		this.addListener(this.$newFieldBtn, 'click', 'addFieldToSelectedBlockType');
+
+		this.addListener(this.$blockTypesColumnContainer, 'resize', 'setContainerHeight');
+		this.addListener(this.$fieldsColumnContainer, 'resize', 'setContainerHeight');
+		this.addListener(this.$fieldSettingsColumnContainer, 'resize', 'setContainerHeight');
+	},
+
+	setContainerHeight: function()
+	{
+		var maxColHeight = Math.max(this.$blockTypesColumnContainer.height(), this.$fieldsColumnContainer.height(), this.$fieldSettingsColumnContainer.height(), 400);
+		this.$container.height(maxColHeight);
 	},
 
 	getFieldTypeInfo: function(type)

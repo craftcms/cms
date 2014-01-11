@@ -909,10 +909,16 @@ Garnish.Base = Base.extend({
 							height = elem.offsetHeight,
 							first = $sensor[0].firstElementChild.firstChild,
 							last = $sensor[0].lastElementChild.firstChild,
-							matchFlow = function(ev)
+							hasSizeChanged = function()
 							{
-								if ((width != (width = elem.offsetWidth)) || (height != (height = elem.offsetHeight)))
+								return (width != elem.offsetWidth || (height != elem.offsetHeight));
+							},
+							onSizeChange = function(ev)
+							{
+								if (hasSizeChanged())
 								{
+									width = elem.offsetWidth;
+									height = elem.offsetHeight;
 									updateSensor();
 									$(elem).trigger('resize');
 								}
@@ -925,12 +931,26 @@ Garnish.Base = Base.extend({
 								last.style.height = height + 1 + 'px';
 							};
 
-						updateSensor();
+						if (width && height)
+						{
+							updateSensor();
+						}
+						else
+						{
+							var interval = setInterval(function()
+							{
+								if (hasSizeChanged())
+								{
+									clearInterval(interval);
+									onSizeChange();
+								}
+							}, 250);
+						}
 
-						addFlowListener($sensor[0], 'over', matchFlow);
-						addFlowListener($sensor[0], 'under', matchFlow);
-						addFlowListener($sensor[0].firstElementChild, 'over', matchFlow);
-						addFlowListener($sensor[0].lastElementChild, 'under', matchFlow);
+						addFlowListener($sensor[0], 'over', onSizeChange);
+						addFlowListener($sensor[0], 'under', onSizeChange);
+						addFlowListener($sensor[0].firstElementChild, 'over', onSizeChange);
+						addFlowListener($sensor[0].lastElementChild, 'under', onSizeChange);
 					}
 				})($elem[i]);
 			}

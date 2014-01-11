@@ -954,20 +954,20 @@ ul.errors li { color: $errorcolor; }
 
 /* config */
 .matrix-configurator > .field { max-width: none; }
-.matrix-configurator > .field > .input { position: relative; padding-left: 400px; height: 500px; }
+.matrix-configurator > .field > .input { position: relative; padding-left: 400px; overflow: hidden; }
 .matrix-configurator .mc-sidebar { position: absolute; top: 0; margin: 0; border: none; width: 200px; height: 100%; background: hsla($hue, 8%, 0%, 0.03);
 	-webkit-box-shadow: inset -1px 0 0 rgba(0,0,0,0.06);
 	        box-shadow: inset -1px 0 0 rgba(0,0,0,0.06);
 }
 .matrix-configurator .mc-sidebar.block-types { left: 0; }
 .matrix-configurator .mc-sidebar.fields { left: 200px; }
-.matrix-configurator .mc-sidebar .items { margin-top: -1px; padding-top: 1px; height: 468px; overflow: auto; }
+.matrix-configurator .mc-sidebar .items { margin-top: -1px; padding-top: 1px; }
 .matrixconfigitem { position: relative; margin-top: -1px; padding: 11px 45px 10px 15px; border-bottom: 1px solid rgba(0,0,0,0.06); @include unselectable; cursor: default; }
 .matrixconfigitem.sel { background: rgba(0,0,0,0.05); }
 .matrixconfigitem.error { background: rgba(255,0,0,0.1); }
 .matrixconfigitem.sel.error { background: rgba(200,0,0,0.2); }
 .matrixconfigitem .handle { font-size: 11px; color: $mediumtextcolor; }
-.matrixconfigitem .actions { position: absolute; right: 0; width: 30px; }
+.matrixconfigitem .actions { position: absolute; right: 0; width: 24px; }
 .matrixconfigitem.mci-blocktype .actions { top: 10px; }
 .matrixconfigitem.mci-field .actions { top: 20px; }
 .matrixconfigitem .actions .icon { display: block; margin-bottom: 1px; text-align: center; }
@@ -977,7 +977,7 @@ ul.errors li { color: $errorcolor; }
 .matrix-configurator .mc-sidebar .items .btn { margin: 15px; }
 
 .matrix-configurator .field-settings { position: relative; height: 100%; }
-.matrix-configurator .field-settings .items { padding: 30px; height: 408px; overflow: auto; }
+.matrix-configurator .field-settings .items { padding: 24px; }
 
 .matrix-configurator .mc-sidebar > .col-inner-container > .heading,
 .matrix-configurator .field-settings > .col-inner-container > .heading { margin: 0; padding: 7px 15px 6px; border-bottom: 1px solid rgba(0,0,0,0.06); @include linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.03)); }
