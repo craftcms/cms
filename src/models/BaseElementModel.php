@@ -26,19 +26,20 @@ abstract class BaseElementModel extends BaseModel
 	protected function defineAttributes()
 	{
 		return array(
-			'id'          => AttributeType::Number,
-			'enabled'     => array(AttributeType::Bool, 'default' => true),
-			'archived'    => array(AttributeType::Bool, 'default' => false),
-			'locale'      => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
-			'slug'        => AttributeType::String,
-			'uri'         => AttributeType::String,
-			'dateCreated' => AttributeType::DateTime,
-			'dateUpdated' => AttributeType::DateTime,
+			'id'            => AttributeType::Number,
+			'enabled'       => array(AttributeType::Bool, 'default' => true),
+			'archived'      => array(AttributeType::Bool, 'default' => false),
+			'locale'        => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
+			'localeEnabled' => array(AttributeType::Bool, 'default' => true),
+			'slug'          => AttributeType::String,
+			'uri'           => AttributeType::String,
+			'dateCreated'   => AttributeType::DateTime,
+			'dateUpdated'   => AttributeType::DateTime,
 
-			'root'        => AttributeType::Number,
-			'lft'         => AttributeType::Number,
-			'rgt'         => AttributeType::Number,
-			'level'       => AttributeType::Number,
+			'root'          => AttributeType::Number,
+			'lft'           => AttributeType::Number,
+			'rgt'           => AttributeType::Number,
+			'level'         => AttributeType::Number,
 		);
 	}
 

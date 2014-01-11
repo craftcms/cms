@@ -61,6 +61,7 @@ class ElementsService extends BaseApplicationComponent
 		$criteria = $this->getCriteria($elementType);
 		$criteria->id = $elementId;
 		$criteria->status = null;
+		$criteria->localeEnabled = null;
 		return $criteria->first();
 	}
 
@@ -305,7 +306,7 @@ class ElementsService extends BaseApplicationComponent
 		// Set up the query
 
 		$query = craft()->db->createCommand()
-			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri')
+			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri, elements_i18n.enabled AS localeEnabled')
 			->from('elements elements')
 			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
 			->where('elements_i18n.locale = :locale', array(':locale' => $criteria->locale));
@@ -649,6 +650,21 @@ class ElementsService extends BaseApplicationComponent
 			->queryScalar();
 	}
 
+	/**
+	 * Returns the locales that a given element is enabled in.
+	 *
+	 * @param int $elementId
+	 * @return array
+	 */
+	public function getEnabledLocalesForElement($elementId)
+	{
+		return craft()->db->createCommand()
+			->select('locale')
+			->from('elements_i18n')
+			->where(array('elementId' => $elementId, 'enabled' => 1))
+			->queryColumn();
+	}
+
 	// Saving Elements
 	// ===============
 
@@ -802,6 +818,11 @@ class ElementsService extends BaseApplicationComponent
 					$localeRecord->slug = $element->slug;
 					$localeRecord->uri  = $element->uri;
 
+					if ($localeId == $originalLocaleId)
+					{
+						$localeRecord->enabled = (bool) $element->localeEnabled;
+					}
+
 					$success = $localeRecord->save();
 
 					if (!$success)
@@ -899,6 +920,7 @@ class ElementsService extends BaseApplicationComponent
 			$criteria->id = $element->id;
 			$criteria->locale = $localeId;
 			$criteria->status = null;
+			$criteria->localeEnabled = null;
 			$elementInOtherLocale = $criteria->first();
 
 			// todo: replace the getContent()->id check with the 'strictLocale' param once it's added
@@ -920,6 +942,7 @@ class ElementsService extends BaseApplicationComponent
 		$criteria->descendantOf = $element;
 		$criteria->descendantDist = 1;
 		$criteria->status = null;
+		$criteria->localeEnabled = null;
 		$children = $criteria->find();
 
 		foreach ($children as $child)
@@ -943,6 +966,7 @@ class ElementsService extends BaseApplicationComponent
 		// Just to be safe...
 		$criteria->locale = craft()->i18n->getPrimarySiteLocaleId();
 		$criteria->status = null;
+		$criteria->localeEnabled = null;
 		$criteria->order = 'dateCreated asc';
 
 		// Do this in batches so we don't hit the memory limit

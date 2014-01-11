@@ -2,16 +2,7 @@
 {% import "_includes/forms" as forms %}
 
 {% set extraPageHeaderHtml %}
-	{% if craft.hasPackage('Localize') %}
-		<div class="select">
-			<select onchange="document.location.href='{{ url('entries/'~section.handle~'/'~craft.request.getSegment(3))~'/{locale}' }}'.replace('{locale}', this.value);">
-				{% for sectionLocale in section.getLocales() %}
-					{% set locale = craft.i18n.getLocaleById(sectionLocale.locale) %}
-					<option value="{{ locale.id }}"{% if locale.id == localeId %} selected{% endif %}>{{ locale.name }}</option>
-				{% endfor %}
-			</select>
-		</div>
-	{% endif %}
+
 
 	{% if entry.id and craft.hasPackage('PublishPro') %}
 		{% include "entries/_revisions" %}
@@ -34,12 +25,35 @@
 			</div><!--/item-->
 
 			<div class="item" data-colspan="1">
-				<div id="meta" class="pane">
 
-					{% if showPreviewBtn %}
-						<div id="previewmode-btn" class="btn" data-icon="view">{{ "Live Preview"|t }}</div>
+				{% if showPreviewBtn %}
+					<div id="previewmode-btn" class="btn big" data-icon="view">
+						{{ "Live Preview"|t }}
 						<div id="previewmode-spinner" class="spinner hidden"></div>
-					{% endif %}
+					</div>
+				{% endif %}
+
+				{% if craft.hasPackage('Localize') and section.getLocales() | length > 1 %}
+					<ul id="locales" class="pane">
+						{% for _localeId in localeIds %}
+							{% set localeName = craft.i18n.getLocaleById(_localeId).name %}
+							<li{% if _localeId == localeId %} class="sel"{% endif %}>
+								{%- if _localeId == localeId -%}
+									{{ localeName }}
+									{{ forms.lightswitch({
+										name: 'localeEnabled',
+										on:   entry.localeEnabled
+									}) }}
+								{%- else -%}
+									<a href="{{ url('entries/'~section.handle~'/'~craft.request.getSegment(3))~'/'~_localeId }}">{{ localeName }}</a>
+									<div class="status {{ _localeId in enabledLocales ? 'on' : 'off' }}"></div>
+								{%- endif -%}
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+
+				<div id="settings" class="pane">
 
 					{% if showEntryTypes %}
 						{{ forms.selectField({
@@ -85,7 +99,6 @@
 
 							{{ forms.dateTimeField({
 								label: "Post Date"|t,
-								instructions: "When should the entry go live? (Set automatically if left blank and the entry is enabled)"|t,
 								id: 'postDate',
 								name: 'postDate',
 								value: (entry.postDate ? entry.postDate : null),
@@ -94,7 +107,6 @@
 
 							{{ forms.dateTimeField({
 								label: "Expiration Date"|t,
-								instructions: "When should the entry expire?"|t,
 								id: 'expiryDate',
 								name: 'expiryDate',
 								value: (entry.expiryDate ? entry.expiryDate : null),

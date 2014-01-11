@@ -160,7 +160,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 		}
 
 		$criteria->status = null;
-		$selectionCriteria = array('status' => null);
+		$criteria->localeEnabled = null;
+		$selectionCriteria = array('status' => null, 'localeEnabled' => null);
 
 		if ($this->allowMultipleSources)
 		{

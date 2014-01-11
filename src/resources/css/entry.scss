@@ -5,8 +5,21 @@
 span.draft { margin-top: -4px; display: inline-block; border: 2px solid #bbb; border-radius: 4px; padding: 0 4px; height: 16px; vertical-align: middle; font-size: 11px; line-height: 16px; text-transform: uppercase; font-weight: bold; color: $textcolor; }
 h1 span.draft span { display: none; }
 
-#previewmode-btn { float: right; margin-bottom: 30px; }
-#previewmode-spinner { position: absolute; top: 30px; right: 6px; }
+#locales { padding: 0 0 0 24px; }
+#locales li { position: relative; padding: 7px 45px 7px 0; }
+#locales li + li { border-top: 1px solid $hrcolor; }
+#locales li.sel { color: $mediumtextcolor; cursor: default; }
+#locales li.sel:before { float: left; margin: 3px 0 0 -16px; font-size: 11px; color: $mediumtextcolor !important; @include icon; content: '√'; }
+#locales li a { color: $textcolor; }
+#locales li a:hover { color: $linkcolor; cursor: pointer; }
+#locales li .lightswitch { position: absolute; top: 50%; right: 9px; margin-top: -9px; }
+#locales li .status { display: block; position: absolute; top: 50%; right: 16px; margin: -5px 0 0 0; }
+
+#settings .select,
+#settings .select select { width: 100%; }
+
+#previewmode-btn { display: block; position: relative; }
+#previewmode-spinner { position: absolute; top: 3px; right: 7px; }
 
 #previewmode-editor,
 #previewmode-iframe-container { position: fixed; top: 0; height: 100%; background: #fff; background-clip: padding-box; }

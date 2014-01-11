@@ -207,6 +207,7 @@ class MatrixFieldType extends BaseFieldType
 		{
 			$value->limit = null;
 			$value->status = null;
+			$value->localeEnabled = null;
 		}
 
 		return craft()->templates->render('_components/fieldtypes/Matrix/input', array(
@@ -258,6 +259,7 @@ class MatrixFieldType extends BaseFieldType
 				$criteria->id = $ids;
 				$criteria->limit = null;
 				$criteria->status = null;
+				$criteria->localeEnabled = null;
 				$criteria->locale = $this->element->locale;
 				$oldBlocks = $criteria->find();
 

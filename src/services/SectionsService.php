@@ -586,6 +586,7 @@ class SectionsService extends BaseApplicationComponent
 							$criteria = craft()->elements->getCriteria(ElementType::Entry);
 							$criteria->sectionId = $section->id;
 							$criteria->status = null;
+							$criteria->localeEnabled = null;
 							$criteria->order = 'postDate';
 							$criteria->limit = 25;
 
@@ -615,6 +616,7 @@ class SectionsService extends BaseApplicationComponent
 					$criteria = craft()->elements->getCriteria(ElementType::Entry);
 					$criteria->sectionId = $section->id;
 					$criteria->status = null;
+					$criteria->localeEnabled = null;
 					$criteria->limit = null;
 					$entryIds = $criteria->ids();
 

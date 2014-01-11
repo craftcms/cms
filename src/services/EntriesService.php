@@ -360,6 +360,7 @@ class EntriesService extends BaseApplicationComponent
 		$criteria->ancestorOf = $entry;
 		$criteria->ancestorDist = 1;
 		$criteria->status = null;
+		$criteria->localeEnabled = null;
 
 		$oldParent = $criteria->first();
 		$oldParentId = ($oldParent ? $oldParent->id : '0');

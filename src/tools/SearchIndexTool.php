@@ -62,7 +62,8 @@ class SearchIndexTool extends BaseTool
 			{
 				$criteria = craft()->elements->getCriteria($params['type'], array(
 					'id' => $params['id'],
-					'status' => null
+					'status' => null,
+					'localeEnabled' => null,
 				));
 
 				$result = craft()->elements->buildElementsQuery($criteria, $fieldColumns)->queryAll();

@@ -71,6 +71,7 @@ class EntriesController extends BaseController
 			$parentOptionCriteria = craft()->elements->getCriteria(ElementType::Entry);
 			$parentOptionCriteria->sectionId = $variables['section']->id;
 			$parentOptionCriteria->status = null;
+			$parentOptionCriteria->localeEnabled = null;
 			$parentOptionCriteria->limit = null;
 
 			if ($variables['section']->maxLevels)
@@ -85,6 +86,7 @@ class EntriesController extends BaseController
 				$descendantCriteria = craft()->elements->getCriteria(ElementType::Entry);
 				$descendantCriteria->descendantOf($variables['entry']);
 				$descendantCriteria->status = null;
+				$descendantCriteria->localeEnabled = null;
 				$descendantIds = $descendantCriteria->ids();
 
 				foreach ($descendantIds as $id)
@@ -124,12 +126,26 @@ class EntriesController extends BaseController
 				$parentIdCriteria->ancestorOf =$variables['entry'];
 				$parentIdCriteria->ancestorDist = 1;
 				$parentIdCriteria->status = null;
+				$parentIdCriteria->localeEnabled = null;
 				$parentIds = $parentIdCriteria->ids();
 
 				if ($parentIds)
 				{
 					$variables['parentId'] = $parentIds[0];
 				}
+			}
+		}
+
+		// Get the enabled locales
+		if (craft()->hasPackage(CraftPackage::Localize))
+		{
+			if ($variables['entry']->id)
+			{
+				$variables['enabledLocales'] = craft()->elements->getEnabledLocalesForElement($variables['entry']->id);
+			}
+			else
+			{
+				$variables['enabledLocales'] = array_merge($variables['localeIds']);
 			}
 		}
 
@@ -485,26 +501,34 @@ class EntriesController extends BaseController
 
 		if (craft()->hasPackage(CraftPackage::Localize))
 		{
-			// Figure out which locales the user is allowed to edit in this section
+			// Only use the locales that the user has access to
 			$sectionLocaleIds = array_keys($variables['section']->getLocales());
 			$editableLocaleIds = craft()->i18n->getEditableLocaleIds();
-			$editableSectionLocaleIds = array_intersect($sectionLocaleIds, $editableLocaleIds);
+			$variables['localeIds'] = array_intersect($sectionLocaleIds, $editableLocaleIds);
+		}
+		else
+		{
+			$variables['localeIds'] = array(craft()->i18n->getPrimarySiteLocaleId());
+		}
 
-			if (!$editableSectionLocaleIds)
+		if (!$variables['localeIds'])
+		{
+			throw new HttpException(404);
+		}
+
+		if (empty($variables['localeId']))
+		{
+			$variables['localeId'] = craft()->language;
+
+			if (!in_array($variables['localeId'], $variables['localeIds']))
 			{
-				throw new HttpException(404);
+				$variables['localeId'] = $variables['localeIds'][0];
 			}
-
-			if (empty($variables['localeId']))
-			{
-				$variables['localeId'] = craft()->language;
-
-				if (!in_array($variables['localeId'], $editableSectionLocaleIds))
-				{
-					$variables['localeId'] = $editableSectionLocaleIds[0];
-				}
-			}
-			else if (!in_array($variables['localeId'], $editableSectionLocaleIds))
+		}
+		else
+		{
+			// Make sure they were requesting a valid locale
+			if (!in_array($variables['localeId'], $variables['localeIds']))
 			{
 				throw new HttpException(404);
 			}
@@ -528,12 +552,8 @@ class EntriesController extends BaseController
 					$criteria = craft()->elements->getCriteria(ElementType::Entry);
 					$criteria->id = $variables['entryId'];
 					$criteria->status = null;
-
-					if (craft()->hasPackage(CraftPackage::Localize))
-					{
-						$criteria->locale = $variables['localeId'];
-					}
-
+					$criteria->localeEnabled = null;
+					$criteria->locale = $variables['localeId'];
 					$variables['entry'] = $criteria->first();
 				}
 
@@ -643,6 +663,7 @@ class EntriesController extends BaseController
 			$criteria->id = $entryId;
 			$criteria->locale = $locale;
 			$criteria->status = null;
+			$criteria->localeEnabled = null;
 			$entry = $criteria->first();
 
 			if (!$entry)
@@ -661,13 +682,14 @@ class EntriesController extends BaseController
 		}
 
 		// Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-		$entry->sectionId  = craft()->request->getPost('sectionId', $entry->sectionId);
-		$entry->typeId     = craft()->request->getPost('typeId',    $entry->typeId);
-		$entry->authorId   = craft()->request->getPost('author',    ($entry->authorId ? $entry->authorId : craft()->userSession->getUser()->id));
-		$entry->slug       = craft()->request->getPost('slug',      $entry->slug);
-		$entry->postDate   = (($postDate   = craft()->request->getPost('postDate'))   ? DateTime::createFromString($postDate,   craft()->timezone) : $entry->postDate);
-		$entry->expiryDate = (($expiryDate = craft()->request->getPost('expiryDate')) ? DateTime::createFromString($expiryDate, craft()->timezone) : null);
-		$entry->enabled    = (bool) craft()->request->getPost('enabled', $entry->enabled);
+		$entry->sectionId     = craft()->request->getPost('sectionId', $entry->sectionId);
+		$entry->typeId        = craft()->request->getPost('typeId',    $entry->typeId);
+		$entry->authorId      = craft()->request->getPost('author',    ($entry->authorId ? $entry->authorId : craft()->userSession->getUser()->id));
+		$entry->slug          = craft()->request->getPost('slug',      $entry->slug);
+		$entry->postDate      = (($postDate   = craft()->request->getPost('postDate'))   ? DateTime::createFromString($postDate,   craft()->timezone) : $entry->postDate);
+		$entry->expiryDate    = (($expiryDate = craft()->request->getPost('expiryDate')) ? DateTime::createFromString($expiryDate, craft()->timezone) : null);
+		$entry->enabled       = (bool) craft()->request->getPost('enabled', $entry->enabled);
+		$entry->localeEnabled = (bool) craft()->request->getPost('localeEnabled', $entry->localeEnabled);
 
 		$entry->getContent()->title = craft()->request->getPost('title', $entry->title);
 
