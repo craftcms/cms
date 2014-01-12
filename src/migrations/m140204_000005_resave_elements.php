@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m140204_000004_resave_elements extends BaseMigration
+class m140204_000005_resave_elements extends BaseMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
