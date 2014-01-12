@@ -768,7 +768,14 @@ class ElementsService extends BaseApplicationComponent
 					$mainContent = $element->getContent();
 				}
 
-				foreach ($element->getLocales() as $localeId)
+				$localeIds = $element->getLocales();
+
+				if (!$localeIds)
+				{
+					throw new Exception('All elements must have at least one locale associated with them.');
+				}
+
+				foreach ($localeIds as $localeId)
 				{
 					if (isset($localeRecords[$localeId]))
 					{
