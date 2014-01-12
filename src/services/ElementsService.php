@@ -870,6 +870,28 @@ class ElementsService extends BaseApplicationComponent
 
 				if ($success)
 				{
+					if (!$isNewElement)
+					{
+						// Delete the rows that don't need to be there anymore
+
+						craft()->db->createCommand()->delete('elements_i18n', array('and',
+							'elementId = :elementId',
+							array('not in', 'locale', $localeIds)
+						), array(
+							':elementId' => $element->id
+						));
+
+						if ($elementType->hasContent())
+						{
+							craft()->db->createCommand()->delete($element->getContentTable(), array('and',
+								'elementId = :elementId',
+								array('not in', 'locale', $localeIds)
+							), array(
+								':elementId' => $element->id
+							));
+						}
+					}
+
 					// Call the field types' onAfterElementSave() methods
 					$fieldLayout = $element->getFieldLayout();
 
