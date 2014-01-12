@@ -987,7 +987,7 @@ ul.errors li { color: $errorcolor; }
 .matrixblock > .actions a.settings:after { margin-left: 3px; }
 .matrixblock > .fields > .field { margin: 15px 0; }
 .matrixblock > .fields > .field > .input { @include selectable; }
-.matrixblock > .preview { position: absolute; bottom: 6px; left: 0; padding: 0 55px 0 10px; height: 18px; width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: $mediumtextcolor; cursor: default;
+.matrixblock > .preview { position: absolute; bottom: 5px; left: 0; padding: 0 55px 0 10px; height: 18px; width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: $mediumtextcolor; cursor: default;
 	-webkit-box-sizing: border-box;
 	   -moz-box-sizing: border-box;
 	        box-sizing: border-box;
