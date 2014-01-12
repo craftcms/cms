@@ -974,7 +974,7 @@ ul.errors li { color: $errorcolor; }
 .matrix-configurator .field-settings > .col-inner-container > .heading { margin: 0; padding: 7px 14px 6px; border-bottom: 1px solid rgba(0,0,0,0.06); @include linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.03)); }
 
 /* blocks */
-.matrixblock { position: relative; margin: 14px 0; padding: 14px; background: #fff; @include unselectable;
+.matrixblock { position: relative; margin: 14px 0; padding: 14px; border-radius: 2px; background: #fff; @include unselectable;
 	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
 	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
 }
