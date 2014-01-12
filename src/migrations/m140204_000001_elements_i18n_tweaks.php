@@ -48,6 +48,7 @@ class m140204_000001_elements_i18n_tweaks extends BaseMigration
 			$this->addColumnAfter('elements_i18n', 'enabled', array('column' => ColumnType::Bool, 'default' => true), 'uri');
 		}
 
+		MigrationHelper::refresh();
 		MigrationHelper::dropIndexIfExists('elements_i18n', array('slug', 'locale'));
 		MigrationHelper::dropIndexIfExists('elements_i18n', array('enabled'));
 		$this->createIndex('elements_i18n', 'slug,locale');
