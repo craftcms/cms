@@ -116,7 +116,7 @@ class ElementsService extends BaseApplicationComponent
 					return array();
 				}
 
-				$query->order(craft()->db->getSchema()->orderByColumnValues('id', $ids));
+				$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $ids));
 			}
 			else if ($criteria->order && $criteria->order != 'score')
 			{
