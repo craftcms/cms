@@ -6,8 +6,6 @@ namespace Craft;
  */
 class DbHelper
 {
-	const EMPTY = ':empty:';
-
 	/**
 	 * Default column configs
 	 *
@@ -396,12 +394,12 @@ class DbHelper
 		{
 			if ($value === null)
 			{
-				$value = static::EMPTY;
+				$value = ':empty:';
 			}
 
 			$operator = static::_parseParamOperator($value);
 
-			if (strtolower($value) == static::EMPTY)
+			if (strtolower($value) == ':empty:')
 			{
 				if ($operator == '=')
 				{
