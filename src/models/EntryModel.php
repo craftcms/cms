@@ -8,8 +8,6 @@ class EntryModel extends BaseElementModel
 {
 	protected $elementType = ElementType::Entry;
 
-	private $_ancestors;
-	private $_descendants;
 	private $_parent;
 
 	const LIVE     = 'live';
@@ -156,39 +154,18 @@ class EntryModel extends BaseElementModel
 	 */
 	public function getAncestors($dist = null)
 	{
-		if (!isset($this->_ancestors))
+		if ($this->id)
 		{
-			if ($this->id)
-			{
-				$criteria = craft()->elements->getCriteria($this->elementType);
-				$criteria->ancestorOf = $this;
-				$criteria->locale = $this->locale;
-				$this->_ancestors = $criteria->find();
-			}
-			else
-			{
-				$this->_ancestors = array();
-			}
-		}
-
-		if ($dist)
-		{
-			return array_slice($this->_ancestors, count($this->_ancestors) - $dist);
+			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria->ancestorOf = $this;
+			$criteria->ancestorDist = $dist;
+			$criteria->locale = $this->locale;
+			return $criteria->find();
 		}
 		else
 		{
-			return $this->_ancestors;
+			return array();
 		}
-	}
-
-	/**
-	 * Sets the entry's ancestors.
-	 *
-	 * @param array $ancestors
-	 */
-	public function setAncestors($ancestors)
-	{
-		$this->_ancestors = $ancestors;
 	}
 
 	/**
@@ -249,32 +226,39 @@ class EntryModel extends BaseElementModel
 	 */
 	public function getSiblings()
 	{
-		if ($this->depth == 1)
+		if ($this->id)
 		{
-			$criteria = craft()->elements->getCriteria($this->elementType);
-			$criteria->depth(1);
-			$criteria->id = 'not '.$this->id;
-			$criteria->sectionId = $this->sectionId;
-			$criteria->locale = $this->locale;
-			return $criteria->find();
-		}
-		else
-		{
-			$parent = $this->getParent();
-
-			if ($parent)
+			if ($this->depth == 1)
 			{
 				$criteria = craft()->elements->getCriteria($this->elementType);
-				$criteria->descendantOf($parent);
-				$criteria->descendantDist(1);
+				$criteria->depth(1);
 				$criteria->id = 'not '.$this->id;
+				$criteria->sectionId = $this->sectionId;
 				$criteria->locale = $this->locale;
 				return $criteria->find();
 			}
 			else
 			{
-				return array();
+				$parent = $this->getParent();
+
+				if ($parent)
+				{
+					$criteria = craft()->elements->getCriteria($this->elementType);
+					$criteria->descendantOf = $parent;
+					$criteria->descendantDist = 1;
+					$criteria->id = 'not '.$this->id;
+					$criteria->locale = $this->locale;
+					return $criteria->find();
+				}
+				else
+				{
+					return array();
+				}
 			}
+		}
+		else
+		{
+			return array();
 		}
 	}
 
@@ -285,10 +269,13 @@ class EntryModel extends BaseElementModel
 	 */
 	public function getPrevSibling()
 	{
-		$criteria = craft()->elements->getCriteria($this->elementType);
-		$criteria->prevSiblingOf($this);
-		$criteria->locale = $this->locale;
-		return $criteria->first();
+		if ($this->id)
+		{
+			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria->prevSiblingOf = $this;
+			$criteria->locale = $this->locale;
+			return $criteria->first();
+		}
 	}
 
 	/**
@@ -298,10 +285,13 @@ class EntryModel extends BaseElementModel
 	 */
 	public function getNextSibling()
 	{
-		$criteria = craft()->elements->getCriteria($this->elementType);
-		$criteria->nextSiblingOf($this);
-		$criteria->locale = $this->locale;
-		return $criteria->first();
+		if ($this->id)
+		{
+			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria->nextSiblingOf = $this;
+			$criteria->locale = $this->locale;
+			return $criteria->first();
+		}
 	}
 
 	/**
@@ -318,11 +308,7 @@ class EntryModel extends BaseElementModel
 		}
 		else
 		{
-			$criteria = craft()->elements->getCriteria($this->elementType);
-			$criteria->descendantOf($this);
-			$criteria->descendantDist(1);
-			$criteria->locale = $this->locale;
-			return $criteria->find();
+			return $this->getDescendants(1);
 		}
 	}
 
@@ -334,39 +320,18 @@ class EntryModel extends BaseElementModel
 	 */
 	public function getDescendants($dist = null)
 	{
-		if (!isset($this->_descendants))
+		if ($this->id)
 		{
-			if ($this->id)
-			{
-				$criteria = craft()->elements->getCriteria($this->elementType);
-				$criteria->descendantOf = $this;
-				$criteria->locale = $this->locale;
-				$this->_descendants = $criteria->find();
-			}
-			else
-			{
-				$this->_descendants = array();
-			}
-		}
-
-		if ($dist)
-		{
-			return array_slice($this->_descendants, 0, $dist);
+			$criteria = craft()->elements->getCriteria(ElementType::Entry);
+			$criteria->descendantOf = $this;
+			$criteria->descendantDist = $dist;
+			$criteria->locale = $this->locale;
+			return $criteria->find();
 		}
 		else
 		{
-			return $this->_descendants;
+			return array();
 		}
-	}
-
-	/**
-	 * Sets the entry's descendants.
-	 *
-	 * @param array $descendants
-	 */
-	public function setDescendants($descendants)
-	{
-		$this->_descendants = $descendants;
 	}
 
 	/**
