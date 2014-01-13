@@ -5,7 +5,6 @@ Craft.PackageChooser = Garnish.Base.extend({
 
 	settings: null,
 	$container: null,
-	grid: null,
 	packages: null,
 	clearCcModalTimeout: null,
 
@@ -21,21 +20,15 @@ Craft.PackageChooser = Garnish.Base.extend({
 	{
 		this.setSettings(settings);
 
-		this.$container = $('#packages');
-
-		// Set up the package grid
-		this.grid = new Craft.Grid(this.$container, {
-			minColWidth:      175,
-			percentageWidths: false,
-			fillMode:         'grid'
-		});
+		this.$container = $('#packages'),
+			$packages = this.$container.children().children();
 
 		// Find each of the packages
 		this.packages = {};
 
-		for (var i = 0; i < this.grid.$items.length; i++)
+		for (var i = 0; i < $packages.length; i++)
 		{
-			var $pkgContainer = $(this.grid.$items[i]),
+			var $pkgContainer = $($packages[i]),
 				$pkgHeading   = $pkgContainer.find('h2:first'),
 				pkg           = $pkgContainer.data('package');
 
