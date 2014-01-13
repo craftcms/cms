@@ -19,7 +19,7 @@
 #packages .package .buttons .btn { margin-top: 4px; font-weight: bold; }
 #packages .package .buttons .btn.buy { float: left; color: $successcolor; }
 #packages .package .buttons .btn.buy del { color: $textcolor; font-weight: bold; }
-#packages .package .buttons .btn.buy span { display: inline-block; margin: 0 0 2px 8px; border-left: 1px solid #eaeaea; padding-left: 8px; line-height: 19px; }
+#packages .package .buttons .btn.buy span { display: inline-block; margin: 0 0 2px 8px; border-left: 1px solid rgba(0,0,0,0.1); padding-left: 8px; line-height: 19px; }
 #packages .package .buttons .btn.settings { float: right; }
 
 p.light sup { margin-right: 2px; }
