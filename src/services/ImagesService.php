@@ -70,22 +70,27 @@ class ImagesService extends BaseApplicationComponent
 
 	/**
 	 * Determines if there is enough memory to process this image.  Adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155.
+	 * Will first attempt to do it with available memory. If that fails will bump the memory to phpMaxMemoryLimit, then try again.
 	 *
-	 * @param $filename
+	 * @param      $filePath The path to the image file.
+	 * @param bool $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
 	 * @return bool
 	 */
-	public function checkMemoryForImage($filename)
+	public function checkMemoryForImage($filePath, $toTheMax = false)
 	{
 		if (!function_exists('memory_get_usage'))
 		{
 			return false;
 		}
 
-		// Turn it up to 11.
-		craft()->config->maxPowerCaptain();
+		if ($toTheMax)
+		{
+			// Turn it up to 11.
+			craft()->config->maxPowerCaptain();
+		}
 
 		// Find out how much memory this image is going to need.
-		$imageInfo = getimagesize($filename);
+		$imageInfo = getimagesize($filePath);
 		$MB = 1048576;
 		$K64 = 65536;
 		$tweakFactor = 1.7;
@@ -101,6 +106,12 @@ class ImagesService extends BaseApplicationComponent
 			return true;
 		}
 
+		if (!$toTheMax)
+		{
+			return $this->checkMemoryForImage($filePath, true);
+		}
+
+		// Oh well, we tried.
 		return false;
 	}
 
