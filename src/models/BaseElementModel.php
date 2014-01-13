@@ -10,7 +10,6 @@ abstract class BaseElementModel extends BaseModel
 
 	private $_content;
 	private $_preppedContent;
-	private $_tags;
 
 	private $_nextElement;
 	private $_prevElement;
