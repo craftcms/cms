@@ -9,34 +9,6 @@ class SystemSettingsService extends BaseApplicationComponent
 	private $_settings;
 
 	/**
-	 * Returns a SystemSettings record by its category.
-	 *
-	 * @access private
-	 * @param string $category
-	 * @return mixed The SystemSettings record or false
-	 */
-	private function _getSettings($category)
-	{
-		if (!isset($this->_settings[$category]))
-		{
-			$settings = SystemSettingsRecord::model()->findByAttributes(array(
-				'category' => $category
-			));
-
-			if ($settings)
-			{
-				$this->_settings[$category] = $settings;
-			}
-			else
-			{
-				$this->_settings[$category] = false;
-			}
-		}
-
-		return $this->_settings[$category];
-	}
-
-	/**
 	 * Returns the system settings for a category.
 	 *
 	 * @param string $category
@@ -138,5 +110,33 @@ class SystemSettingsService extends BaseApplicationComponent
 		$record->save();
 
 		return !$record->hasErrors();
+	}
+
+	/**
+	 * Returns a SystemSettings record by its category.
+	 *
+	 * @access private
+	 * @param string $category
+	 * @return mixed The SystemSettings record or false
+	 */
+	private function _getSettings($category)
+	{
+		if (!isset($this->_settings[$category]))
+		{
+			$settings = SystemSettingsRecord::model()->findByAttributes(array(
+				'category' => $category
+			));
+
+			if ($settings)
+			{
+				$this->_settings[$category] = $settings;
+			}
+			else
+			{
+				$this->_settings[$category] = false;
+			}
+		}
+
+		return $this->_settings[$category];
 	}
 }
