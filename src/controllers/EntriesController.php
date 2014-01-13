@@ -84,7 +84,7 @@ class EntriesController extends BaseController
 				$idParam = array('and', 'not '.$variables['entry']->id);
 
 				$descendantCriteria = craft()->elements->getCriteria(ElementType::Entry);
-				$descendantCriteria->descendantOf($variables['entry']);
+				$descendantCriteria->descendantOf = $variables['entry'];
 				$descendantCriteria->status = null;
 				$descendantCriteria->localeEnabled = null;
 				$descendantIds = $descendantCriteria->ids();

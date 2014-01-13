@@ -14,6 +14,14 @@ abstract class BaseElementModel extends BaseModel
 	private $_nextElement;
 	private $_prevElement;
 
+	private $_parent;
+	private $_prevSibling;
+	private $_nextSibling;
+	private $_ancestorsCriteria;
+	private $_descendantsCriteria;
+	private $_childrenCriteria;
+	private $_siblingsCriteria;
+
 	const ENABLED  = 'enabled';
 	const DISABLED = 'disabled';
 	const ARCHIVED = 'archived';
@@ -77,7 +85,7 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Use the entry's title as its string representation.
+	 * Use the element's title as its string representation.
 	 *
 	 * @return string
 	 */
@@ -283,33 +291,273 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.
+	 * Get the element's parent.
 	 *
-	 * @deprecated
-	 * @param mixed $field
+	 * @return ElementModel|null
+	 */
+	public function getParent()
+	{
+		if (!isset($this->_parent))
+		{
+			$parent = $this->getAncestors(1)->status(null)->localeEnabled(null)->first();
+
+			if ($parent)
+			{
+				$this->_parent = $parent;
+			}
+			else
+			{
+				$this->_parent = false;
+			}
+		}
+
+		if ($this->_parent !== false)
+		{
+			return $this->_parent;
+		}
+	}
+
+	/**
+	 * Sets the element's parent.
+	 *
+	 * @param ElementModel|null $parent
+	 */
+	public function setParent($parent)
+	{
+		$this->_parent = $parent;
+
+		if ($parent)
+		{
+			$this->level = $parent->level + 1;
+		}
+		else
+		{
+			$this->level = 1;
+		}
+	}
+
+	/**
+	 * Returns the element's ancestors.
+	 *
+	 * @param int|null $dist
+	 * @return ElementCriteriaModel
+	 */
+	public function getAncestors($dist = null)
+	{
+		if (!isset($this->_ancestorsCriteria))
+		{
+			$this->_ancestorsCriteria = craft()->elements->getCriteria($this->elementType);
+			$this->_ancestorsCriteria->ancestorOf = $this;
+			$this->_ancestorsCriteria->locale     = $this->locale;
+		}
+
+		if ($dist)
+		{
+			return $this->_ancestorsCriteria->ancestorDist($dist);
+		}
+		else
+		{
+			return $this->_ancestorsCriteria;
+		}
+	}
+
+	/**
+	 * Returns the element's descendants.
+	 *
+	 * @param int|null $dist
+	 * @return ElementCriteriaModel
+	 */
+	public function getDescendants($dist = null)
+	{
+		if (!isset($this->_descendantsCriteria))
+		{
+			$this->_descendantsCriteria = craft()->elements->getCriteria($this->elementType);
+			$this->_descendantsCriteria->descendantOf = $this;
+			$this->_descendantsCriteria->locale       = $this->locale;
+		}
+
+		if ($dist)
+		{
+			return $this->_descendantsCriteria->descendantDist($dist);
+		}
+		else
+		{
+			return $this->_descendantsCriteria;
+		}
+	}
+
+	/**
+	 * Returns the element's children.
+	 *
+	 * @param mixed $field If this function is being used in the deprecated relationship-focussed way, $field defines which field (if any) to limit the relationships by.
 	 * @return ElementCriteriaModel
 	 */
 	public function getChildren($field = null)
 	{
-		$criteria = craft()->elements->getCriteria($this->elementType);
-		$criteria->childOf($this);
-		$criteria->childField($field);
-		return $criteria;
+		// Maintain support for the deprecated relationship-focussed getChildren() function for the element types that were around before Craft 1.3
+		if (
+			($this->elementType == ElementType::Entry && $this->getSection()->type == SectionType::Channel) ||
+			in_array($this->elementType, array(ElementType::Asset, ElementType::GlobalSet, ElementType::Tag, ElementType::User))
+		)
+		{
+			return $this->_getRelChildren($field);
+		}
+		else
+		{
+			if (!isset($this->_childrenCriteria))
+			{
+				$this->_childrenCriteria = $this->getDescendants(1);
+			}
+
+			return $this->_childrenCriteria;
+		}
 	}
 
 	/**
-	 * Returns a new ElementCriteriaModel prepped to return this element's same-type parents.
+	 * Returns all of the element's siblings.
 	 *
-	 * @deprecated
-	 * @param mixed $field
 	 * @return ElementCriteriaModel
 	 */
-	public function getParents($field = null)
+	public function getSiblings()
 	{
-		$criteria = craft()->elements->getCriteria($this->elementType);
-		$criteria->parentOf($this);
-		$criteria->parentField($field);
-		return $criteria;
+		if (!isset($this->_siblingsCriteria))
+		{
+			$this->_siblingsCriteria = craft()->elements->getCriteria($this->elementType);
+			$this->_siblingsCriteria->siblingOf = $this;
+			$this->_siblingsCriteria->locale    = $this->locale;
+		}
+
+		return $this->_siblingsCriteria;
+	}
+
+	/**
+	 * Returns the element's previous sibling.
+	 *
+	 * @return ElementModel|null
+	 */
+	public function getPrevSibling()
+	{
+		if (!isset($this->_prevSibling))
+		{
+			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria->prevSiblingOf = $this;
+			$criteria->locale        = $this->locale;
+			$this->_prevSibling = $criteria->first();
+		}
+
+		return $this->_prevSibling;
+	}
+
+	/**
+	 * Returns the element's next sibling.
+	 *
+	 * @return ElementModel|null
+	 */
+	public function getNextSibling()
+	{
+		if (!isset($this->_nextSibling))
+		{
+			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria->nextSiblingOf = $this;
+			$criteria->locale        = $this->locale;
+			$this->_nextSibling = $criteria->first();
+		}
+
+		return $this->_nextSibling;
+	}
+
+	/**
+	 * Returns whether this element is an ancestor of another one.
+	 *
+	 * @param ElementModel $element
+	 * @return bool
+	 */
+	public function isAncestorOf(ElementModel $element)
+	{
+		return ($this->root == $element->root && $this->lft < $element->lft && $this->rgt > $element->rgt);
+	}
+
+	/**
+	 * Returns whether this element is a descendant of another one.
+	 *
+	 * @param ElementModel $element
+	 * @return bool
+	 */
+	public function isDescendantOf(ElementModel $element)
+	{
+		return ($this->root == $element->root && $this->lft > $element->lft && $this->rgt < $element->rgt);
+	}
+
+	/**
+	 * Returns whether this element is a direct parent of another one.
+	 *
+	 * @param ElementModel $element
+	 * @return bool
+	 */
+	public function isParentOf(ElementModel $element)
+	{
+		return ($this->root == $element->root && $this->level == $element->level - 1 && $this->isAncestorOf($element));
+	}
+
+	/**
+	 * Returns whether this element is a direct child of another one.
+	 *
+	 * @param ElementModel $element
+	 * @return bool
+	 */
+	public function isChildOf(ElementModel $element)
+	{
+		return ($this->root == $element->root && $this->level == $element->level + 1 && $this->isDescendantOf($element));
+	}
+
+	/**
+	 * Returns whether this element is a sibling of another one.
+	 *
+	 * @param ElementModel $element
+	 * @return bool
+	 */
+	public function isSiblingOf(ElementModel $element)
+	{
+		if ($this->root == $element->root && $this->level && $this->level == $element->level)
+		{
+			if ($this->level == 1 || $this->isPrevSiblingOf($element) || $this->isNextSiblingOf($element))
+			{
+				return true;
+			}
+			else
+			{
+				$parent = $this->getParent();
+
+				if ($parent)
+				{
+					return $element->isDescendantOf($parent);
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns whether this element is the direct previous sibling of another one.
+	 *
+	 * @param ElementModel $element
+	 * @return bool
+	 */
+	public function isPrevSiblingOf(ElementModel $element)
+	{
+		return ($this->root == $element->root && $this->level == $element->level && $this->rgt == $element->lft - 1);
+	}
+
+	/**
+	 * Returns whether this element is the direct next sibling of another one.
+	 *
+	 * @param ElementModel $element
+	 * @return bool
+	 */
+	public function isNextSiblingOf(ElementModel $element)
+	{
+		return ($this->root == $element->root && $this->level == $element->level && $this->lft == $element->rgt + 1);
 	}
 
 	/**
@@ -535,6 +783,41 @@ abstract class BaseElementModel extends BaseModel
 	{
 		return craft()->content->fieldContext;
 	}
+
+	// Deprecated methods
+
+	/**
+	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.
+	 *
+	 * @access private (Use the public getChildren() instead.)
+	 * @param mixed $field
+	 * @return ElementCriteriaModel
+	 * @deprecated Deprecated since 1.3
+	 */
+	private function _getRelChildren($field = null)
+	{
+		$criteria = craft()->elements->getCriteria($this->elementType);
+		$criteria->childOf    = $this;
+		$criteria->childField = $field;
+		return $criteria;
+	}
+
+	/**
+	 * Returns a new ElementCriteriaModel prepped to return this element's same-type parents.
+	 *
+	 * @param mixed $field
+	 * @return ElementCriteriaModel
+	 * @deprecated Deprecated since 1.3
+	 */
+	public function getParents($field = null)
+	{
+		$criteria = craft()->elements->getCriteria($this->elementType);
+		$criteria->parentOf    = $this;
+		$criteria->parentField = $field;
+		return $criteria;
+	}
+
+	// Protected and private methods
 
 	/**
 	 * Returns the field with a given handle.

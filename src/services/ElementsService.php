@@ -542,8 +542,8 @@ class ElementsService extends BaseApplicationComponent
 
 					if ($criteria->ancestorDist)
 					{
-						$query->andWhere('structureelements.level >= :level',
-							array(':level' => $criteria->ancestorOf->level - $criteria->ancestorDist)
+						$query->andWhere('structureelements.level >= :ancestorOf_level',
+							array(':ancestorOf_level' => $criteria->ancestorOf->level - $criteria->ancestorDist)
 						);
 					}
 				}
@@ -573,9 +573,56 @@ class ElementsService extends BaseApplicationComponent
 
 					if ($criteria->descendantDist)
 					{
-						$query->andWhere('structureelements.level <= :level',
-							array(':level' => $criteria->descendantOf->level + $criteria->descendantDist)
+						$query->andWhere('structureelements.level <= :descendantOf_level',
+							array(':descendantOf_level' => $criteria->descendantOf->level + $criteria->descendantDist)
 						);
+					}
+				}
+			}
+
+			if ($criteria->siblingOf)
+			{
+				if (!$criteria->siblingOf instanceof BaseElementModel)
+				{
+					$criteria->siblingOf = craft()->elements->getElementById($criteria->siblingOf, $elementType->getClassHandle());
+				}
+
+				if ($criteria->siblingOf)
+				{
+					$query->andWhere(
+						array('and',
+							'structureelements.level = :siblingOf_level',
+							'structureelements.root = :siblingOf_root',
+							'structureelements.elementId != :siblingOf_elementId'
+						),
+						array(
+							':siblingOf_level'     => $criteria->siblingOf->level,
+							':siblingOf_root'      => $criteria->siblingOf->root,
+							':siblingOf_elementId' => $criteria->siblingOf->id
+						)
+					);
+
+					if ($criteria->siblingOf->level != 1)
+					{
+						$parent = $criteria->siblingOf->getParent();
+
+						if ($parent)
+						{
+							$query->andWhere(
+								array('and',
+									'structureelements.lft > :siblingOf_lft',
+									'structureelements.rgt < :siblingOf_rgt'
+								),
+								array(
+									':siblingOf_lft'  => $parent->lft,
+									':siblingOf_rgt'  => $parent->rgt
+								)
+							);
+						}
+						else
+						{
+							return false;
+						}
 					}
 				}
 			}

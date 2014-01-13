@@ -55,6 +55,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 			'relatedTo'      => AttributeType::Mixed,
 			'ref'            => AttributeType::String,
 			'search'         => AttributeType::String,
+			'siblingOf'      => AttributeType::Mixed,
 			'slug'           => AttributeType::String,
 			'status'         => array(AttributeType::String, 'default' => BaseElementModel::ENABLED),
 			'uri'            => AttributeType::String,
@@ -361,5 +362,16 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 		}
 
 		return $this->_cachedTotal;
+	}
+
+	/**
+	 * Returns a copy of this model.
+	 *
+	 * @return BaseModel
+	 */
+	public function copy()
+	{
+		$class = get_class($this);
+		return new $class($this->getAttributes(), $this->_elementType);
 	}
 }
