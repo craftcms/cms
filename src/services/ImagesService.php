@@ -63,19 +63,28 @@ class ImagesService extends BaseApplicationComponent
 	public function loadImage($path)
 	{
 		$image = new Image();
-		$this->setMemoryForImage($path);
+		$this->checkMemoryForImage($path);
 		$image->loadImage($path);
 		return $image;
 	}
 
 	/**
-	 * Sets the memory needed for an image file. Adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155.
+	 * Determines if there is enough memory to process this image.  Adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155.
 	 *
 	 * @param $filename
 	 * @return bool
 	 */
-	public function setMemoryForImage($filename)
+	public function checkMemoryForImage($filename)
 	{
+		if (!function_exists('memory_get_usage'))
+		{
+			return false;
+		}
+
+		// Turn it up to 11.
+		craft()->config->maxPowerCaptain();
+
+		// Find out how much memory this image is going to need.
 		$imageInfo = getimagesize($filename);
 		$MB = 1048576;
 		$K64 = 65536;
@@ -87,20 +96,12 @@ class ImagesService extends BaseApplicationComponent
 		$memoryLimitMB = (int)ini_get('memory_limit');
 		$memoryLimit = $memoryLimitMB * $MB;
 
-		if (function_exists('memory_get_usage'))
+		if (memory_get_usage() + $memoryNeeded < $memoryLimit)
 		{
-			if (memory_get_usage() + $memoryNeeded > $memoryLimit)
-			{
-				$newLimit = $memoryLimitMB + ceil((memory_get_usage() + $memoryNeeded - $memoryLimit) / $MB);
-				return (bool)ini_set( 'memory_limit', $newLimit.'M' );
-			}
-
 			return true;
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
 
 	/**

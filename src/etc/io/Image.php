@@ -65,7 +65,7 @@ class Image
 			throw new Exception(Craft::t('No file exists at the path “{path}”', array('path' => $path)));
 		}
 
-		if (!craft()->images->setMemoryForImage($path))
+		if (!craft()->images->checkMemoryForImage($path))
 		{
 			throw new Exception(Craft::t("Not enough memory available to perform this image operation."));
 		}
