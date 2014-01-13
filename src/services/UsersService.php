@@ -253,10 +253,10 @@ class UsersService extends BaseApplicationComponent
 					$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 				}
 
-				// If this is a new user and they don't already have a status, set their status to pending.
-				if ($isNewUser && !$userRecord->status)
+				// Set a default status of pending, if one wasn't supplied.
+				if (!$user->status)
 				{
-					$userRecord->status = $user->status = UserStatus::Pending;
+					$user->status = UserStatus::Pending;
 				}
 
 				// Fire an 'onBeforeSaveUser' event
@@ -998,6 +998,7 @@ class UsersService extends BaseApplicationComponent
 
 			$userRecord->password = $user->password = $hash;
 			$userRecord->status = $user->status = UserStatus::Active;
+
 			$userRecord->invalidLoginWindowStart = null;
 			$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
 			$userRecord->verificationCode = null;

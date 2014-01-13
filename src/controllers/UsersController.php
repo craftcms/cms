@@ -546,6 +546,7 @@ class UsersController extends BaseController
 		}
 
 		$publicRegistration = false;
+		$requirePublicEmailValidation = true;
 		$canRegisterUsers = false;
 
 		// Are we editing an existing user?
@@ -587,6 +588,12 @@ class UsersController extends BaseController
 			if (craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
 			{
 				$publicRegistration = true;
+			}
+
+			// Is public email validation required?
+			if (craft()->systemSettings->getSetting('users', 'requireEmailVerification', true) !== 1)
+			{
+				$requirePublicEmailValidation = false;
 			}
 
 			// If there is no public registration and it's a site request, or the current user can't register users, complain loudly.
@@ -636,14 +643,24 @@ class UsersController extends BaseController
 			// If it's a new user
 			if (!$userId)
 			{
-				// If the Users package is installed and you're an admin, you get the choice of requiring email verification
-				if (craft()->hasPackage(CraftPackage::Users) && craft()->userSession->isAdmin())
+				if (craft()->request->isSiteRequest() && craft()->hasPackage(CraftPackage::Users) && $requirePublicEmailValidation)
 				{
-					$user->verificationRequired = (bool)craft()->request->getPost('verificationRequired');;
+					$user->verificationRequired = true;
+					$user->status = UserStatus::Pending;
 				}
 				else
 				{
-					$user->verificationRequired = true;
+					// If the Users package is installed and you're an admin, you get the choice of requiring email verification
+					if (craft()->hasPackage(CraftPackage::Users) && craft()->userSession->isAdmin())
+					{
+						$user->verificationRequired = (bool)craft()->request->getPost('verificationRequired');;
+						$user->status = $user->verificationRequired ? UserStatus::Pending : UserStatus::Active;
+					}
+					else
+					{
+						$user->verificationRequired = true;
+						$user->status = UserStatus::Pending;
+					}
 				}
 			}
 

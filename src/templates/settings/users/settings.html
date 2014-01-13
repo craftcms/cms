@@ -25,10 +25,10 @@
 				label: "Allow public registration?"|t,
 				name: 'allowPublicRegistration',
 				checked: (settings.allowPublicRegistration is defined ? settings.allowPublicRegistration : false),
-				toggle: 'defaultGroup'
+				toggle: 'publicRegistrationSettings'
 			}) }}
 
-			<div id="defaultGroup"{% if settings.allowPublicRegistration is not defined or not settings.allowPublicRegistration %} class="hidden"{% endif %}>
+			<div id="publicRegistrationSettings"{% if settings.allowPublicRegistration is not defined or not settings.allowPublicRegistration %} class="hidden"{% endif %}>
 				{% set groups = [{ label: "None"|t, value: '' }] %}
 				{% for group in craft.userGroups.getAllGroups() %}
 					{% set groups = groups|merge([{ label: group.name, value: group.id }]) %}
@@ -40,6 +40,13 @@
 					name: 'defaultGroup',
 					options: groups,
 					value: (settings.defaultGroup is defined ? settings.defaultGroup : null)
+				}) }}
+
+				{{ forms.checkboxField({
+					label: "Require Email Verification?"|t,
+					instructions: "If this is checked, all publicly-registered members will be required to verify their account via email."|t,
+					name: 'requireEmailVerification',
+					checked: (settings.requireEmailVerification is defined ? settings.requireEmailVerification : true),
 				}) }}
 			</div>
 
