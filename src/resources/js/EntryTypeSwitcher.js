@@ -31,6 +31,7 @@ Craft.EntryTypeSwitcher = Garnish.Base.extend({
 				Craft.cp.$contentTabsContainer.html(response.tabsHtml);
 				this.$fields.html(response.fieldsHtml);
 				Craft.cp.initContentTabs();
+				Craft.initUiElements(this.$fields);
 
 				var html = '';
 
