@@ -586,10 +586,11 @@ class MatrixService extends BaseApplicationComponent
 			$blockRecord = $this->_getBlockRecord($block);
 			$isNewBlock = $blockRecord->isNewRecord();
 
-			$blockRecord->fieldId   = $block->fieldId;
-			$blockRecord->ownerId   = $block->ownerId;
-			$blockRecord->typeId    = $block->typeId;
-			$blockRecord->sortOrder = $block->sortOrder;
+			$blockRecord->fieldId     = $block->fieldId;
+			$blockRecord->ownerId     = $block->ownerId;
+			$blockRecord->ownerLocale = $block->ownerLocale;
+			$blockRecord->typeId      = $block->typeId;
+			$blockRecord->sortOrder   = $block->sortOrder;
 
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
@@ -628,26 +629,33 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Saves a Matrix field.
 	 *
-	 * @param FieldModel $matrixField
-	 * @param int        $ownerId
-	 * @param array      $blocks
+	 * @param MatrixFieldType $fieldType
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function saveField(FieldModel $matrixField, $ownerId, $blocks)
+	public function saveField(MatrixFieldType $fieldType)
 	{
+		$owner = $fieldType->element;
+		$field = $fieldType->model;
+		$blocks = $owner->getContent()->getAttribute($field->handle);
+
+		if (!is_array($blocks))
+		{
+			$blocks = array();
+		}
+
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
-			$originalContentTable = craft()->content->contentTable;
-			craft()->content->contentTable = $this->getContentTableName($matrixField);
+			// First thing's first. Let's make sure that the blocks for this field/owner respect the field's translation setting
+			$this->_applyFieldTranslationSetting($owner, $field, $blocks);
 
 			$blockIds = array();
 
 			foreach ($blocks as $block)
 			{
-				// The owner ID might not have been set yet
-				$block->ownerId = $ownerId;
+				$block->ownerId = $owner->id;
+				$block->ownerLocale = ($field->translatable ? $owner->locale : null);
 
 				$this->saveBlock($block, false);
 
@@ -655,22 +663,30 @@ class MatrixService extends BaseApplicationComponent
 			}
 
 			// Get the IDs of blocks that are row deleted
+			$deletedBlockConditions = array('and',
+				'ownerId = :ownerId',
+				'fieldId = :fieldId',
+				array('not in', 'id', $blockIds)
+			);
+
+			$deletedBlockParams = array(
+				':ownerId' => $owner->id,
+				':fieldId' => $field->id
+			);
+
+			if ($field->translatable)
+			{
+				$deletedBlockConditions[] = 'ownerLocale  = :ownerLocale';
+				$deletedBlockParams[':ownerLocale'] = $owner->locale;
+			}
+
 			$deletedBlockIds = craft()->db->createCommand()
 				->select('id')
 				->from('matrixblocks')
-				->where(array('and',
-					'ownerId = :ownerId',
-					'fieldId = :fieldId',
-					array('not in', 'id', $blockIds)
-				), array(
-					':ownerId' => $ownerId,
-					':fieldId' => $matrixField->id
-				))
+				->where($deletedBlockConditions, $deletedBlockParams)
 				->queryColumn();
 
 			craft()->elements->deleteElementById($deletedBlockIds);
-
-			craft()->content->contentTable = $originalContentTable;
 
 			if ($transaction !== null)
 			{
@@ -802,5 +818,105 @@ class MatrixService extends BaseApplicationComponent
 		craft()->db->createCommand()->createIndex($name, 'elementId,locale', true);
 		craft()->db->createCommand()->addForeignKey($name, 'elementId', 'elements', 'id', 'CASCADE', null);
 		craft()->db->createCommand()->addForeignKey($name, 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
+	}
+
+	/**
+	 * Applies the field's translation setting to a set of blocks.
+	 *
+	 * @access private
+	 * @param BaseElementModel $owner
+	 * @param FieldModel       $field
+	 * @param array            $blocks
+	 */
+	private function _applyFieldTranslationSetting($owner, $field, $blocks)
+	{
+		// Does it look like any work is needed here?
+		$applyNewTranslationSetting = false;
+
+		foreach ($blocks as $block)
+		{
+			if ($block->id && (
+				($field->translatable && !$block->ownerLocale) ||
+				(!$field->translatable && $block->ownerLocale)
+			))
+			{
+				$applyNewTranslationSetting = true;
+				break;
+			}
+		}
+
+		if ($applyNewTranslationSetting)
+		{
+			// Get all of the blocks for this field/owner that use the other locales,
+			// whose ownerLocale attribute is set incorrectly
+			$blocksInOtherLocales = array();
+
+			$criteria = craft()->elements->getCriteria(ElementType::MatrixBlock);
+			$criteria->fieldId = $field->id;
+			$criteria->ownerId = $owner->id;
+			$criteria->status = null;
+			$criteria->localeEnabled = null;
+			$criteria->limit = null;
+
+			if ($field->translatable)
+			{
+				$criteria->ownerLocale = ':empty:';
+			}
+
+			foreach (craft()->i18n->getSiteLocaleIds() as $localeId)
+			{
+				if ($localeId == $owner->locale)
+				{
+					continue;
+				}
+
+				$criteria->locale = $localeId;
+
+				if (!$field->translatable)
+				{
+					$criteria->ownerLocale = $localeId;
+				}
+
+				$blocksInOtherLocale = $criteria->find();
+
+				if ($blocksInOtherLocale)
+				{
+					$blocksInOtherLocales[$localeId] = $blocksInOtherLocale;
+				}
+			}
+
+			if ($blocksInOtherLocales)
+			{
+				if ($field->translatable)
+				{
+					// Resave all of those blocks as their own things
+					foreach ($blocksInOtherLocales as $localeId => $blocksInOtherLocale)
+					{
+						foreach ($blocksInOtherLocale as $blockInOtherLocale)
+						{
+							$blockInOtherLocale->id = null;
+							$blockInOtherLocale->getContent()->id = null;
+							$blockInOtherLocale->ownerLocale = $localeId;
+							$this->saveBlock($blockInOtherLocale, false);
+						}
+					}
+				}
+				else
+				{
+					// Delete all of these blocks
+					$blockIdsToDelete = array();
+
+					foreach ($blocksInOtherLocales as $localeId => $blocksInOtherLocale)
+					{
+						foreach ($blocksInOtherLocale as $blockInOtherLocale)
+						{
+							$blockIdsToDelete[] = $blockInOtherLocale->id;
+						}
+					}
+
+					craft()->elements->deleteElementById($blockIdsToDelete);
+				}
+			}
+		}
 	}
 }

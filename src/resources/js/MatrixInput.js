@@ -167,18 +167,9 @@ Craft.MatrixInput = Garnish.Base.extend({
 
 		$(bodyHtml).appendTo($fieldsContainer);
 
-		if ($block.is(':last-child'))
-		{
-			var marginBottom = 20;
-		}
-		else
-		{
-			var marginBottom = 0;
-		}
-
 		$block.css(this.getHiddenBlockCss($block)).animate({
 			opacity: 1,
-			marginBottom: marginBottom
+			'margin-bottom': 14
 		}, 'fast', $.proxy(function()
 		{
 			$block.css('margin-bottom', '');
@@ -195,11 +186,8 @@ Craft.MatrixInput = Garnish.Base.extend({
 
 		if ($block.is(':only-child'))
 		{
-			marginBottom -= 16;
-		}
-		else if ($block.is(':last-child'))
-		{
-			marginBottom += 16;
+			// Without this block, there would only be a 4px gap between the field heading and the Add Block buttons
+			marginBottom -= 10;
 		}
 
 		return {

@@ -72,25 +72,21 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 .nav ul li a.sel { color: #2c2c2c; }
 
 /* headings */
-h1 { margin-bottom: 30px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 30px; line-height: 1; color: $submitcolor; }
-h2 { margin: 15px 0; font-size: 15px; font-weight: bold; line-height: 1.2; }
-h3 { margin: 15px 0; font-weight: bold; line-height: 1.2; }
+h1 { margin-bottom: 24px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 30px; line-height: 1; color: $submitcolor; }
+h2 { margin: 14px 0; font-size: 15px; font-weight: bold; line-height: 1.2; }
+h3 { margin: 14px 0; font-weight: bold; line-height: 1.2; }
 
 h2[data-icon]:before { margin: -4px 6px 0 0; font-size: 19px; }
 
-/* sections */
-section { margin: 30px 0 30px 30px; }
-section > h2 { margin-left: -30px; }
-
 /* horizontal rule */
-hr { margin: 30px -30px; border: none; border-top: 1px solid $hrcolor; height: 0; color: transparent; }
+hr { margin: 24px -24px; border: none; border-top: 1px solid $hrcolor; height: 0; color: transparent; }
 
 /* paragraphs */
 p { margin: 1em 0; }
 
 sup { vertical-align: super; font-size: smaller; }
 
-.indent { margin-left: 15px; }
+.indent { margin-left: 14px; }
 
 /* lists */
 .bullets { padding-left: 40px; list-style-type: square; }
@@ -186,7 +182,7 @@ td.right { float: none; text-align: right; }
 /* ----------------------------------------*/
 
 .sidebar { position: absolute; top: 0; left: 0; padding: 24px; width: 170px; overflow: auto; }
-.sidebar .heading { position: relative; margin: 15px 0 2px -24px; padding: 0 24px; }
+.sidebar .heading { position: relative; margin: 14px 0 2px -24px; padding: 0 24px; }
 .sidebar .heading:after { display: block; position: absolute; bottom: 7px; left: 0; content: '.'; text-indent: -200px; overflow: hidden; width: 100%; height: 1px; border-top: 1px solid $hrcolor; }
 .sidebar .heading span { display: inline-block; position: relative; z-index: 1; padding: 0 5px; margin: 0 -5px; text-transform: uppercase; color: $lighttextcolor; font-size: 11px; font-weight: bold; background: #fff; }
 
@@ -237,10 +233,10 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 /*  Buttons
 /* ----------------------------------------*/
 
-.toolbar { position: relative; margin: 30px 0; height: 30px; }
+.toolbar { position: relative; margin: 24px 0; height: 30px; }
 .toolbar .spinner { position: absolute; top: 0; right: -24px; }
 .toolbar table { width: 100%; }
-.toolbar table td:not(:first-child) { padding-left: 15px; }
+.toolbar table td:not(:first-child) { padding-left: 14px; }
 
 .buttons { position: relative; margin: 30px 0 30px -4px; }
 .buttons:after { @include clearafter; }
@@ -345,7 +341,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 
 /* big buttons */
 .btngroup.big .btn,
-.btn.big { padding: 0 15px; font-size: 14px; line-height: 36px; }
+.btn.big { padding: 0 14px; font-size: 14px; line-height: 36px; }
 .btn.big[data-icon]:before { margin-left: -2px; }
 .btngroup.big,
 .btngroup.big input.btn,
@@ -421,11 +417,6 @@ div.btn.submit input { position: absolute; left: 100%; }
 .actions > li + li { margin-left: 10px; }
 h1 + .actions { margin-top: -100px; }
 h2 + .actions { margin-top: -54px; }
-
-/* pagination */
-.paginate { margin: -15px 0 30px; padding-bottom: 15px; border-bottom: 1px dotted #dbdbdb; text-align: right; }
-.paginate p { display: inline; padding-top: 7px; }
-.paginate .btngroup { margin-left: 15px; }
 
 /* ----------------------------------------
 /*  Tables
@@ -558,8 +549,8 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 
 .structureview .row.droptarget { border-radius: 5px; -webkit-box-shadow: inset 0 0 0 2px $linkcolor; }
 
-.thumbsview { margin: -15px 0 0 -15px; }
-.thumbsview li { float: left; margin: 15px 0 0 15px; width: 100px; }
+.thumbsview { margin: -14px 0 0 -14px; }
+.thumbsview li { float: left; margin: 14px 0 0 14px; width: 100px; }
 
 .thumbsview .element { padding: 105px 0 5px !important; }
 .thumbsview .element .elementthumb,
@@ -682,7 +673,7 @@ ul.tree,
 
 .modal { position: fixed; z-index: 9998; top: 50%; left: 50%; margin-left: -200px; width: 400px; overflow: hidden; }
 .hud { position: absolute; z-index: 9997; display: none; top: 0; }
-.hud .body { position: relative; padding: 30px; overflow: hidden; }
+.hud .body { position: relative; padding: 24px; overflow: hidden; }
 .hud .tip { position: absolute; background: no-repeat 0 0; }
 .hud .tip-left { left: -15px; width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
 .hud .tip-top { top: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_top.png); }
@@ -756,21 +747,21 @@ ul.tree,
 	        box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5);
 }
 
-.menu { display: none; position: absolute; padding: 5px 15px; }
+.menu { display: none; position: absolute; padding: 4px 14px; }
 .menu ul li + li { margin-top: 3px; }
-.menu ul li a { display: block !important; margin: 0 -15px; padding: 4px 15px; font-size: 12px; color: $textcolor; text-decoration: none; }
+.menu ul li a { display: block !important; margin: 0 -14px; padding: 3px 14px; font-size: 12px; color: $textcolor; text-decoration: none; }
 .menu ul li a:not(.sel):hover,
 .menu ul li a:not(.sel):hover .light,
 .menu:not(:hover) ul li a:not(.sel).hover,
 .menu:not(:hover) ul li a:not(.sel).hover .light { color: #fff; background: $headerBgColor; }
 .menu ul li a.sel { color: $mediumtextcolor; cursor: default; }
-.menu hr { margin: 5px -15px; }
+.menu hr { margin: 5px -14px; }
 
-.menu.padded { padding-left: 30px; }
+.menu.padded { padding-left: 24px; }
 .menu.padded h2 { margin: 10px 0 3px; }
 .menu.padded hr { margin-left: 0; }
 .menu.padded ul li + li { margin-top: 0; }
-.menu.padded ul li a { margin-left: -30px; padding: 3px 15px 3px 30px; }
+.menu.padded ul li a { margin-left: -24px; padding-left: 24px; }
 .menu.padded ul li a[data-icon]:before,
 .menu.padded ul li a.icon:before,
 .menu.padded ul li a.sel:before { float: left; margin: 3px 0 0 -17px; font-size: 11px; color: $mediumtextcolor !important; }
@@ -819,9 +810,9 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 .field .instructions { font-size: 11px; color: $mediumtextcolor; }
 
 /* toggles and nested fields */
-.nested-fields { margin: -30px -30px; padding: 30px 30px 0; overflow: hidden; }
+.nested-fields { margin: -24px; padding: 24px 24px 0; overflow: hidden; }
 .nested-fields.hidden { display: block; height: 0; }
-.nested-fields > .field:last-child { padding-bottom: 30px; }
+.nested-fields > .field:last-child { padding-bottom: 24px; }
 
 /* checkbox */
 .checkbox + .checkbox { margin-top: 3px; }
@@ -962,7 +953,7 @@ ul.errors li { color: $errorcolor; }
 .matrix-configurator .mc-sidebar.block-types { left: 0; }
 .matrix-configurator .mc-sidebar.fields { left: 200px; }
 .matrix-configurator .mc-sidebar .items { margin-top: -1px; padding-top: 1px; }
-.matrixconfigitem { position: relative; margin-top: -1px; padding: 11px 45px 10px 15px; border-bottom: 1px solid rgba(0,0,0,0.06); @include unselectable; cursor: default; }
+.matrixconfigitem { position: relative; margin-top: -1px; padding: 11px 45px 10px 14px; border-bottom: 1px solid rgba(0,0,0,0.06); @include unselectable; cursor: default; }
 .matrixconfigitem.sel { background: rgba(0,0,0,0.05); }
 .matrixconfigitem.error { background: rgba(255,0,0,0.1); }
 .matrixconfigitem.sel.error { background: rgba(200,0,0,0.2); }
@@ -974,18 +965,18 @@ ul.errors li { color: $errorcolor; }
 .matrixconfigitem .actions .icon.settings:before { color: rgba(0,0,0,0.2); }
 .matrixconfigitem .actions .icon.settings.error:before { color: $errorcolor; }
 .matrixconfigitem .actions .icon.settings:not(.disabled):hover:before { color: $linkcolor; }
-.matrix-configurator .mc-sidebar .items .btn { margin: 15px; }
+.matrix-configurator .mc-sidebar .items .btn { margin: 14px; }
 
 .matrix-configurator .field-settings { position: relative; height: 100%; }
 .matrix-configurator .field-settings .items { padding: 24px; }
 
 .matrix-configurator .mc-sidebar > .col-inner-container > .heading,
-.matrix-configurator .field-settings > .col-inner-container > .heading { margin: 0; padding: 7px 15px 6px; border-bottom: 1px solid rgba(0,0,0,0.06); @include linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.03)); }
+.matrix-configurator .field-settings > .col-inner-container > .heading { margin: 0; padding: 7px 14px 6px; border-bottom: 1px solid rgba(0,0,0,0.06); @include linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.03)); }
 
 /* blocks */
-.matrixblock { position: relative; margin-bottom: 4px; border-bottom: 1px solid $hrcolor; padding: 15px 16px; background: #fff; @include unselectable;
-	-webkit-box-shadow: 0 0 3px rgba(0,0,0,0.2);
-	   -moz-box-shadow: 0 0 3px rgba(0,0,0,0.2);
+.matrixblock { position: relative; margin: 14px 0; padding: 14px; border-radius: 2px; background: #fff; @include unselectable;
+	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
 }
 .matrixblock.disabled { opacity: 1; }
 .matrixblock > .actions > .status.off { display: none; }
@@ -996,15 +987,13 @@ ul.errors li { color: $errorcolor; }
 .matrixblock > .actions a.settings:after { margin-left: 3px; }
 .matrixblock > .fields > .field { margin: 15px 0; }
 .matrixblock > .fields > .field > .input { @include selectable; }
-.matrixblock > .preview { position: absolute; bottom: 6px; left: 0; padding: 0 55px 0 10px; height: 18px; width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: $mediumtextcolor; cursor: default;
+.matrixblock > .preview { position: absolute; bottom: 5px; left: 0; padding: 0 55px 0 10px; height: 18px; width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: $mediumtextcolor; cursor: default;
 	-webkit-box-sizing: border-box;
 	   -moz-box-sizing: border-box;
 	        box-sizing: border-box;
 }
 .matrixblock.disabled > .preview { padding-right: 75px; }
 .matrixblock > .preview span { opacity: 0.5; }
-.matrix .matrixblock:first-child { margin-top: 20px; }
-.matrix .matrixblock:last-child { margin-bottom: 20px; }
 .matrix > .buttons { margin-top: 0; height: 30px; overflow: hidden; }
 
 /* ----------------------------------------

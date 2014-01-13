@@ -21,6 +21,7 @@ class MatrixBlockRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
+			'ownerLocale' => AttributeType::Locale,
 			'sortOrder' => AttributeType::SortOrder,
 		);
 	}
@@ -31,10 +32,11 @@ class MatrixBlockRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'element' => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
-			'owner'   => array(static::BELONGS_TO, 'ElementRecord', 'required' => true, 'onDelete' => static::CASCADE),
-			'field'   => array(static::BELONGS_TO, 'FieldRecord', 'required' => true, 'onDelete' => static::CASCADE),
-			'type'    => array(static::BELONGS_TO, 'MatrixBlockTypeRecord', 'onDelete' => static::CASCADE),
+			'element'     => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
+			'owner'       => array(static::BELONGS_TO, 'ElementRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'ownerLocale' => array(static::BELONGS_TO, 'LocaleRecord', 'locale', 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE),
+			'field'       => array(static::BELONGS_TO, 'FieldRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'type'        => array(static::BELONGS_TO, 'MatrixBlockTypeRecord', 'onDelete' => static::CASCADE),
 		);
 	}
 

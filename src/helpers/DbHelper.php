@@ -394,12 +394,16 @@ class DbHelper
 		{
 			if ($value === null)
 			{
-				$value = 'empty';
+				$value = ':empty:';
+			}
+			else if (strtolower($value) == ':notempty:')
+			{
+				$value = 'not :empty:';
 			}
 
 			$operator = static::_parseParamOperator($value);
 
-			if (strtolower($value) == 'empty')
+			if (strtolower($value) == ':empty:')
 			{
 				if ($operator == '=')
 				{
