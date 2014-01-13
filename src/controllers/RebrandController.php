@@ -33,7 +33,7 @@ class RebrandController extends BaseController
 				$uploader->file->save($folderPath.$fileName);
 
 				// Test if we will be able to perform image actions on this image
-				if (!craft()->images->setMemoryForImage($folderPath.$fileName))
+				if (!craft()->images->checkMemoryForImage($folderPath.$fileName))
 				{
 					IOHelper::deleteFile($folderPath.$fileName);
 					$this->returnErrorJson(Craft::t('The uploaded image is too large'));
@@ -95,7 +95,7 @@ class RebrandController extends BaseController
 
 			$imagePath = craft()->path->getTempUploadsPath().$source;
 
-			if (IOHelper::fileExists($imagePath) && craft()->images->setMemoryForImage($imagePath))
+			if (IOHelper::fileExists($imagePath) && craft()->images->checkMemoryForImage($imagePath))
 			{
 				$targetPath = craft()->path->getStoragePath().'logo/';
 
