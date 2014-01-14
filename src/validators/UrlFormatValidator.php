@@ -27,10 +27,7 @@ class UrlFormatValidator extends \CValidator
 
 			if ($this->requireSlug)
 			{
-				$element = (object) array('slug' => StringHelper::randomString());
-				$uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
-
-				if (strpos($uri, $element->slug) === false)
+				if (!ElementHelper::doesUrlFormatHaveSlugTag($urlFormat))
 				{
 					$this->addError($object, $attribute, Craft::t('{attribute} must contain “{slug}”'));
 				}

@@ -135,4 +135,17 @@ class ElementHelper
 
 		throw new Exception(Craft::t('Could not find a unique URI for this element.'));
 	}
+
+	/**
+	 * Returns whether a given URL format has a proper {slug} tag.
+	 *
+	 * @static
+	 * @param string $urlFormat
+	 */
+	public static function doesUrlFormatHaveSlugTag($urlFormat)
+	{
+		$element = (object) array('slug' => StringHelper::randomString());
+		$uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
+		return (strpos($uri, $element->slug) !== false);
+	}
 }
