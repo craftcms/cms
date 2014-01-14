@@ -64,7 +64,7 @@ class EntryModel extends BaseElementModel
 	{
 		$section = $this->getSection();
 
-		if ($section && $section->type != SectionType::Single && $section->hasUrls)
+		if ($section && $section->hasUrls)
 		{
 			$sectionLocales = $section->getLocales();
 
