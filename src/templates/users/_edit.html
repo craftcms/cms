@@ -94,12 +94,21 @@
 
 						{{ forms.textField({
 							label: "Email"|t,
+							instructions: (not currentUser.admin ? 'A verification email will be sent automatically.'),
 							id: 'email',
 							name: 'email',
 							value: (account is defined ? account.email : null),
 							required: true,
 							errors: (account is defined ? account.getErrors('email') : null)
 						}) }}
+
+						{% if currentUser.admin %}
+							{{ forms.checkboxField({
+								label: "Send a verification email?"|t,
+								name: 'verificationRequired',
+								checked: true
+							}) }}
+						{% endif %}
 
 					{% elseif account.isCurrent or currentUser.admin %}
 
@@ -126,6 +135,7 @@
 
 						{{ forms.field({
 							label: "Email"|t,
+							instructions: (not currentUser.admin ? 'New email addresses must be verified before taking effect.'),
 							id: 'email',
 						}, emailInput) }}
 
@@ -183,28 +193,7 @@
 						}, localeInput) }}
 					{% endif %}
 
-					{% if isNewAccount %}
-						{% if craft.hasPackage("Users") and currentUser.admin %}
-							{{ forms.checkboxField({
-								label: "Require email validation"|t,
-								name: 'verificationRequired',
-								checked: true
-							}) }}
-						{% endif %}
-					{% endif %}
-
 					{{ saveUserButtons }}
-
-					<p class="field">
-						{% if isNewAccount %}
-							{{ 'Note: New users must validate their account via email.' }}  {{ 'Please ensure your <a href="{url}">email settings</a> are valid.'|t({ url: url('settings/email') })|raw }}
-						{% else %}
-							{% if account.isCurrent or currentUser.admin %}
-								{{ 'Note: If the email address changes, the new address will need to be re-validated.' }}  {{ 'Please ensure your <a href="{url}">email settings</a> are valid.'|t({ url: url('settings/email') })|raw }}
-							{% endif %}
-						{% endif %}
-					</p>
-
 				</div>
 
 				{% if craft.hasPackage("Users") %}
