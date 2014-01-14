@@ -50,9 +50,17 @@ class ElementHelper
 	{
 		$urlFormat = $element->getUrlFormat();
 
-		if (!$element->slug || !$urlFormat)
+		// No URL format, no URI.
+		if (!$urlFormat)
 		{
 			$element->uri  = null;
+			return;
+		}
+
+		// No slug, or a URL format with no {slug}, just parse the URL format and get on with our lives
+		if (!$element->slug || !static::doesUrlFormatHaveSlugTag($urlFormat))
+		{
+			$element->uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
 			return;
 		}
 
