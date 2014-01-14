@@ -1144,12 +1144,13 @@ class UsersController extends BaseController
 				{
 					if ($this->_validateCurrentPassword($password))
 					{
-						if (!$email)
+						if (craft()->userSession->isAdmin())
 						{
-							$user->addError('email', Craft::t('Email address is required.'));
+							$user->email = $email;
 						}
 						else
 						{
+							// They'll need to be verifying that
 							$user->unverifiedEmail = $email;
 						}
 					}
