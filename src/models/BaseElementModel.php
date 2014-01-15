@@ -293,7 +293,7 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Get the element's parent.
 	 *
-	 * @return ElementModel|null
+	 * @return BaseElementModel|null
 	 */
 	public function getParent()
 	{
@@ -320,7 +320,7 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Sets the element's parent.
 	 *
-	 * @param ElementModel|null $parent
+	 * @param BaseElementModel|null $parent
 	 */
 	public function setParent($parent)
 	{
@@ -433,7 +433,7 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the element's previous sibling.
 	 *
-	 * @return ElementModel|null
+	 * @return BaseElementModel|null
 	 */
 	public function getPrevSibling()
 	{
@@ -451,7 +451,7 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the element's next sibling.
 	 *
-	 * @return ElementModel|null
+	 * @return BaseElementModel|null
 	 */
 	public function getNextSibling()
 	{
@@ -469,10 +469,10 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns whether this element is an ancestor of another one.
 	 *
-	 * @param ElementModel $element
+	 * @param BaseElementModel $element
 	 * @return bool
 	 */
-	public function isAncestorOf(ElementModel $element)
+	public function isAncestorOf(BaseElementModel $element)
 	{
 		return ($this->root == $element->root && $this->lft < $element->lft && $this->rgt > $element->rgt);
 	}
@@ -480,10 +480,10 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns whether this element is a descendant of another one.
 	 *
-	 * @param ElementModel $element
+	 * @param BaseElementModel $element
 	 * @return bool
 	 */
-	public function isDescendantOf(ElementModel $element)
+	public function isDescendantOf(BaseElementModel $element)
 	{
 		return ($this->root == $element->root && $this->lft > $element->lft && $this->rgt < $element->rgt);
 	}
@@ -491,10 +491,10 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns whether this element is a direct parent of another one.
 	 *
-	 * @param ElementModel $element
+	 * @param BaseElementModel $element
 	 * @return bool
 	 */
-	public function isParentOf(ElementModel $element)
+	public function isParentOf(BaseElementModel $element)
 	{
 		return ($this->root == $element->root && $this->level == $element->level - 1 && $this->isAncestorOf($element));
 	}
@@ -502,10 +502,10 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns whether this element is a direct child of another one.
 	 *
-	 * @param ElementModel $element
+	 * @param BaseElementModel $element
 	 * @return bool
 	 */
-	public function isChildOf(ElementModel $element)
+	public function isChildOf(BaseElementModel $element)
 	{
 		return ($this->root == $element->root && $this->level == $element->level + 1 && $this->isDescendantOf($element));
 	}
@@ -513,10 +513,10 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns whether this element is a sibling of another one.
 	 *
-	 * @param ElementModel $element
+	 * @param BaseElementModel $element
 	 * @return bool
 	 */
-	public function isSiblingOf(ElementModel $element)
+	public function isSiblingOf(BaseElementModel $element)
 	{
 		if ($this->root == $element->root && $this->level && $this->level == $element->level)
 		{
@@ -541,10 +541,10 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns whether this element is the direct previous sibling of another one.
 	 *
-	 * @param ElementModel $element
+	 * @param BaseElementModel $element
 	 * @return bool
 	 */
-	public function isPrevSiblingOf(ElementModel $element)
+	public function isPrevSiblingOf(BaseElementModel $element)
 	{
 		return ($this->root == $element->root && $this->level == $element->level && $this->rgt == $element->lft - 1);
 	}
@@ -552,10 +552,10 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns whether this element is the direct next sibling of another one.
 	 *
-	 * @param ElementModel $element
+	 * @param BaseElementModel $element
 	 * @return bool
 	 */
-	public function isNextSiblingOf(ElementModel $element)
+	public function isNextSiblingOf(BaseElementModel $element)
 	{
 		return ($this->root == $element->root && $this->level == $element->level && $this->lft == $element->rgt + 1);
 	}
