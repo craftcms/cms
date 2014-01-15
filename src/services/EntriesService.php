@@ -282,9 +282,10 @@ class EntriesService extends BaseApplicationComponent
 						$entry->rgt   = $entryRecord->rgt;
 						$entry->depth = $entryRecord->depth;
 					}
-
-					// Save everything!
-					$entryRecord->save(false);
+					else
+					{
+						$entryRecord->save(false);
+					}
 
 					$entry->getContent()->elementId = $entry->id;
 					craft()->content->saveContent($entry->getContent());
