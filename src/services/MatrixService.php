@@ -639,6 +639,11 @@ class MatrixService extends BaseApplicationComponent
 		$field = $fieldType->model;
 		$blocks = $owner->getContent()->getAttribute($field->handle);
 
+		if ($blocks === null)
+		{
+			return true;
+		}
+
 		if (!is_array($blocks))
 		{
 			$blocks = array();
