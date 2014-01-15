@@ -69,7 +69,7 @@ class m140204_000007_delete_the_deleted_files extends BaseMigration
 			}
 			else
 			{
-				Craft::log('File: '.$fullPath.' does not exist.  Good.', LogLevel::Info, true);
+				Craft::log('File: '.$fileToDelete.' does not exist.  Good.', LogLevel::Info, true);
 			}
 		}
 
