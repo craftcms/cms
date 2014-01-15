@@ -53,20 +53,20 @@
 					</ul>
 				{% endif %}
 
-				<div id="settings" class="pane">
+				{% if section.type != 'single' %}
+					<div id="settings" class="pane">
 
-					{% if showEntryTypes %}
-						{{ forms.selectField({
-							label: "Entry Type"|t,
-							id: 'entryType',
-							name: 'typeId',
-							value: entryType.id,
-							options: entryTypeOptions,
-							first: true
-						}) }}
-					{% endif %}
+						{% if showEntryTypes %}
+							{{ forms.selectField({
+								label: "Entry Type"|t,
+								id: 'entryType',
+								name: 'typeId',
+								value: entryType.id,
+								options: entryTypeOptions,
+								first: true
+							}) }}
+						{% endif %}
 
-					{% if section.type != 'single' %}
 						<div id="entry-settings">
 							{{ forms.textField({
 								label: "Slug"|t,
@@ -136,8 +136,8 @@
 									data-redirect="entries">
 							{% endif %}
 						</div>
-					{% endif %}
-				</div>
+					</div>
+				{% endif %}
 			</div><!--/item-->
 		</div>
 
