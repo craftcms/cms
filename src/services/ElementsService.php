@@ -639,14 +639,17 @@ class ElementsService extends BaseApplicationComponent
 				{
 					$query->andWhere(
 						array('and',
-							'structureelements.rgt = :prevSiblingOf_rgt',
+							'structureelements.rgt < :prevSiblingOf_rgt',
 							'structureelements.root = :prevSiblingOf_root'
 						),
 						array(
-							':prevSiblingOf_rgt'  => $criteria->prevSiblingOf->lft - 1,
+							':prevSiblingOf_rgt'  => $criteria->prevSiblingOf->lft,
 							':prevSiblingOf_root' => $criteria->prevSiblingOf->root
 						)
 					);
+
+					$query->order('structureelements.rgt desc');
+					$query->limit(1);
 				}
 			}
 
@@ -661,14 +664,17 @@ class ElementsService extends BaseApplicationComponent
 				{
 					$query->andWhere(
 						array('and',
-							'structureelements.lft = :nextSiblingOf_lft',
+							'structureelements.lft > :nextSiblingOf_lft',
 							'structureelements.root = :nextSiblingOf_root'
 						),
 						array(
-							':nextSiblingOf_lft'  => $criteria->nextSiblingOf->rgt + 1,
+							':nextSiblingOf_lft'  => $criteria->nextSiblingOf->rgt,
 							':nextSiblingOf_root' => $criteria->nextSiblingOf->root
 						)
 					);
+
+					$query->order('structureelements.lft asc');
+					$query->limit(1);
 				}
 			}
 
