@@ -10,8 +10,6 @@ class Image
 	private $_image;
 	private $_extension;
 	private $_instance;
-	private $_width;
-	private $_height;
 
 	function __construct()
 	{
@@ -26,21 +24,20 @@ class Image
 	}
 
 	/**
-	 * TODO?
 	 * @return int
 	 */
 	public function getWidth()
 	{
-		return $this->_width;
+		return $this->_image->getSize()->getWidth();
+
 	}
 
 	/**
-	 * TODO?
 	 * @return int
 	 */
 	public function getHeight()
 	{
-		return $this->_height;
+		return $this->_image->getSize()->getHeight();
 	}
 
 	/**
@@ -79,8 +76,6 @@ class Image
 		$this->_image = $this->_instance->open($path);
 		$this->_extension = IOHelper::getExtension($path);
 		$this->_imageSourcePath = $path;
-		$this->_width = $this->_image->getSize()->getWidth();
-		$this->_height = $this->_image->getSize()->getHeight();
 
 		return $this;
 	}
