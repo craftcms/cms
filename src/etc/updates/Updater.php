@@ -214,9 +214,11 @@ class Updater
 		// If uid !== false, then it's an auto-update.
 		if ($uid !== false)
 		{
+			$unzipFolder = UpdateHelper::getUnzipFolderFromUID($uid);
+
 			// Clean-up any leftover files.
 			Craft::log('Cleaning up temp files after update.', LogLevel::Info, true);
-			$this->_cleanTempFiles();
+			$this->_cleanTempFiles($unzipFolder);
 		}
 
 		Craft::log('Finished Updater.', LogLevel::Info, true);
@@ -226,32 +228,62 @@ class Updater
 	/**
 	 * Remove any temp files and/or folders that might have been created.
 	 */
-	private function _cleanTempFiles()
+	private function _cleanTempFiles($unzipFolder)
 	{
 		$appPath = craft()->path->getAppPath();
 
 		// Get rid of all the .bak files/folders.
-		$baks = IOHelper::getFolderContents($appPath, true, ".*\.bak$");
+		$filesToDelete = IOHelper::getFolderContents($appPath, true, ".*\.bak$");
 
-		foreach ($baks as $bak)
+		// Now delete any files/folders that were marked for deletion in the manifest file.
+		$manifestData = UpdateHelper::getManifestData($unzipFolder);
+
+		if ($manifestData)
 		{
-			if (IOHelper::fileExists($bak))
+			foreach ($manifestData as $row)
 			{
-				if (IOHelper::isWritable($bak))
+				if (UpdateHelper::isManifestVersionInfoLine($row))
 				{
-					Craft::log('Deleting file: '.$bak, LogLevel::Info, true);
-					IOHelper::deleteFile($bak, true);
+					continue;
+				}
+
+				$rowData = explode(';', $row);
+
+				if ($rowData[1] == PatchManifestFileAction::Remove)
+				{
+					if (UpdateHelper::isManifestLineAFolder($rowData[0]))
+					{
+						$tempFilePath = UpdateHelper::cleanManifestFolderLine($rowData[0]);
+					}
+					else
+					{
+						$tempFilePath = $rowData[0];
+					}
+
+					$filesToDelete[] = $appPath.$tempFilePath;
 				}
 			}
-			else
+
+			foreach ($filesToDelete as $fileToDelete)
 			{
-				if (IOHelper::folderExists($bak))
+				if (IOHelper::fileExists($fileToDelete))
 				{
-					if (IOHelper::isWritable($bak))
+					if (IOHelper::isWritable($fileToDelete))
 					{
-						Craft::log('Deleting .bak folder:'.$bak, LogLevel::Info, true);
-						IOHelper::clearFolder($bak, true);
-						IOHelper::deleteFolder($bak, true);
+						Craft::log('Deleting file: '.$fileToDelete, LogLevel::Info, true);
+						IOHelper::deleteFile($fileToDelete, true);
+					}
+				}
+				else
+				{
+					if (IOHelper::folderExists($fileToDelete))
+					{
+						if (IOHelper::isWritable($fileToDelete))
+						{
+							Craft::log('Deleting .bak folder:'.$fileToDelete, LogLevel::Info, true);
+							IOHelper::clearFolder($fileToDelete, true);
+							IOHelper::deleteFolder($fileToDelete, true);
+						}
 					}
 				}
 			}
