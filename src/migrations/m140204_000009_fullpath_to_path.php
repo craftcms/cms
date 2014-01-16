@@ -14,8 +14,15 @@ class m140204_000009_fullpath_to_path extends BaseMigration
 	public function safeUp()
 	{
 		Craft::log('Converting fullPath to path in table assetfolders.', LogLevel::Info, true);
-		$this->renameColumn('assetfolders', 'fullPath', 'path');
-		Craft::log('Succesfully converted fullPath to path in table assetfolders.', LogLevel::Info, true);
+		if (craft()->db->columnExists('assetfolders', 'fullPath'))
+		{
+			$this->renameColumn('assetfolders', 'fullPath', 'path');
+			Craft::log('Succesfully converted fullPath to path in table assetfolders.', LogLevel::Info, true);
+		}
+		else
+		{
+			Craft::log('Column already converted.', LogLevel::Info, true);
+		}
 
 		return true;
 	}
