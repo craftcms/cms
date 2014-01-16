@@ -49,7 +49,7 @@ class FileLogRoute extends \CFileLogRoute
 
 		foreach ($types as $plugin => $text)
 		{
-			$types[$plugin] .= PHP_EOL.'******************************************************************************************************'.PHP_EOL;
+			$text .= PHP_EOL.'******************************************************************************************************'.PHP_EOL;
 
 			$this->setLogFile($plugin.'.log');
 
