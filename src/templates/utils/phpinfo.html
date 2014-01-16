@@ -7,7 +7,17 @@
 			{% for setting, value in data %}
 				<tr>
 					<th class="light" width="300">{{ setting|raw }}</th>
-					<td style="word-break: break-word;">{{ value|raw }}</td>
+					<td style="word-break: break-word;">
+						{% if value is iterable %}
+							<ul>
+								{% for x in value %}
+									<li>{{ x|raw }}</li>
+								{% endfor %}
+							</ul>
+						{% else %}
+							{{ value|raw }}
+						{% endif %}
+					</td>
 				</tr>
 			{% endfor %}
 		</table>
