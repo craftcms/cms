@@ -463,7 +463,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	protected function _ensureFolderByFulPath($fullPath)
 	{
 		$parameters = new FolderCriteriaModel(array(
-			'fullPath' => $fullPath,
+			'path' => $fullPath,
 			'sourceId' => $this->model->id
 		));
 
@@ -478,12 +478,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			if (empty($parts))
 			{
 				// Looking for a top level folder, apparently.
-				$parameters->fullPath = "";
+				$parameters->path = "";
 				$parameters->parentId = FolderCriteriaModel::AssetsNoParent;
 			}
 			else
 			{
-				$parameters->fullPath = join('/', $parts) . '/';
+				$parameters->path = join('/', $parts) . '/';
 			}
 
 			// Look up the parent folder
@@ -501,7 +501,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			$folderModel->sourceId = $this->model->id;
 			$folderModel->parentId = $parentId;
 			$folderModel->name = $folderName;
-			$folderModel->fullPath = $fullPath;
+			$folderModel->path = $fullPath;
 
 			return craft()->assets->storeFolder($folderModel);
 		}
@@ -530,7 +530,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		{
 			if (!isset($folderList[$folderModel->id]))
 			{
-				$missingFolders[$folderModel->id] = $this->model->name . '/' . $folderModel->fullPath;
+				$missingFolders[$folderModel->id] = $this->model->name . '/' . $folderModel->path;
 			}
 		}
 
@@ -563,7 +563,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			$parentFolder = craft()->assets->findFolder(array(
 				'sourceId' => $this->model->id,
-				'fullPath' => $searchFullPath,
+				'path' => $searchFullPath,
 				'parentId' => $parentId
 			));
 
@@ -715,7 +715,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$newFolder->sourceId = $parentFolder->sourceId;
 		$newFolder->parentId = $parentFolder->id;
 		$newFolder->name = $folderName;
-		$newFolder->fullPath = $parentFolder->fullPath.$folderName.'/';
+		$newFolder->path = $parentFolder->path.$folderName.'/';
 
 		$folderId = craft()->assets->storeFolder($newFolder);
 
@@ -755,20 +755,20 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			throw new Exception(Craft::t("Cannot rename folder “{folder}”!", array('folder' => $folder->name)));
 		}
 
-		$oldFullPath = $folder->fullPath;
-		$newFullPath = $this->_getParentFullPath($folder->fullPath).$newName.'/';
+		$oldFullPath = $folder->path;
+		$newFullPath = $this->_getParentFullPath($folder->path).$newName.'/';
 
 		// Find all folders with affected fullPaths and update them.
 		$folders = craft()->assets->getAllDescendantFolders($folder);
 		foreach ($folders as $folderModel)
 		{
-			$folderModel->fullPath = preg_replace('#^'.$oldFullPath.'#', $newFullPath, $folderModel->fullPath);
+			$folderModel->path = preg_replace('#^'.$oldFullPath.'#', $newFullPath, $folderModel->path);
 			craft()->assets->storeFolder($folderModel);
 		}
 
 		// Now change the affected folder
 		$folder->name = $newName;
-		$folder->fullPath = $newFullPath;
+		$folder->path = $newFullPath;
 		craft()->assets->storeFolder($folder);
 
 		// All set, Scotty!

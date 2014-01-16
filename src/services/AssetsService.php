@@ -220,7 +220,7 @@ class AssetsService extends BaseApplicationComponent
 		$record->parentId = $folderModel->parentId;
 		$record->sourceId = $folderModel->sourceId;
 		$record->name = $folderModel->name;
-		$record->fullPath = $folderModel->fullPath;
+		$record->path = $folderModel->path;
 		$record->save();
 
 		return $record->id;
@@ -239,7 +239,7 @@ class AssetsService extends BaseApplicationComponent
 			$sourceId = array($sourceId);
 		}
 
-		$folders = $this->findFolders(array('sourceId' => $sourceId, 'order' => 'fullPath'));
+		$folders = $this->findFolders(array('sourceId' => $sourceId, 'order' => 'path'));
 		$tree = array();
 		$referenceStore = array();
 
@@ -469,7 +469,7 @@ class AssetsService extends BaseApplicationComponent
 		$query = craft()->db->createCommand()
 			->select('f.*')
 			->from('assetfolders AS f')
-			->where(array('like', 'fullPath', $folderModel->fullPath.'%'))
+			->where(array('like', 'path', $folderModel->path.'%'))
 			->andWhere('sourceId = :sourceId', array(':sourceId' => $folderModel->sourceId));
 
 		$result = $query->queryAll();
@@ -568,9 +568,9 @@ class AssetsService extends BaseApplicationComponent
 			$whereConditions[] = DbHelper::parseParam('f.name', $criteria->name, $whereParams);
 		}
 
-		if (!is_null($criteria->fullPath))
+		if (!is_null($criteria->path))
 		{
-			$whereConditions[] = DbHelper::parseParam('f.fullPath', $criteria->fullPath, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('f.path', $criteria->path, $whereParams);
 		}
 
 		if (count($whereConditions) == 1)
@@ -856,7 +856,7 @@ class AssetsService extends BaseApplicationComponent
 		{
 			$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 			$base = $sourceType->getBaseUrl();
-			return $base.$file->getFolder()->fullPath.$file->filename;
+			return $base.$file->getFolder()->path.$file->filename;
 		}
 
 		// Get the transform index model

@@ -206,7 +206,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
-		$targetFolder = $this->_getSourceFileSystemPath() . $folder->fullPath;
+		$targetFolder = $this->_getSourceFileSystemPath() . $folder->path;
 
 		// Make sure the folder exists.
 		if (!IOHelper::folderExists($targetFolder))
@@ -256,7 +256,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
-		$fileList = IOHelper::getFolderContents($this->_getSourceFileSystemPath() . $folder->fullPath, false);
+		$fileList = IOHelper::getFolderContents($this->_getSourceFileSystemPath() . $folder->path, false);
 		$existingFiles = array();
 
 		foreach ($fileList as $file)
@@ -343,7 +343,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			$transformLocation = '_'.ltrim($transformLocation, '_');
 		}
 
-		$targetFolder = $this->_getSourceFileSystemPath().$fileModel->getFolder()->fullPath;
+		$targetFolder = $this->_getSourceFileSystemPath().$fileModel->getFolder()->path;
 		$targetFolder .= !empty($transformLocation) ? $transformLocation.'/': '';
 
 		return $targetFolder.$fileModel->filename;
@@ -375,7 +375,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		$folder = $file->getFolder();
 		$fileSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
-		return $this->_getSourceFileSystemPath($fileSourceType).$folder->fullPath.$file->filename;
+		return $this->_getSourceFileSystemPath($fileSourceType).$folder->path.$file->filename;
 	}
 
 	/**
@@ -387,7 +387,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
-		IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->fullPath.$filename);
+		IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->path.$filename);
 	}
 
 	/**
@@ -402,7 +402,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		$folder = $file->getFolder();
 		foreach ($transformLocations as $location)
 		{
-			IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->fullPath.$location.'/'.$file->filename);
+			IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->path.$location.'/'.$file->filename);
 		}
 	}
 
@@ -422,7 +422,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			$fileName = $file->filename;
 		}
 
-		$newServerPath = $this->_getSourceFileSystemPath().$targetFolder->fullPath.$fileName;
+		$newServerPath = $this->_getSourceFileSystemPath().$targetFolder->path.$fileName;
 
 		$conflictingRecord = craft()->assets->findFile(array(
 			'folderId' => $targetFolder->id,
@@ -449,8 +449,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 			// Move transforms
 			$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
-			$baseFromPath = $this->_getSourceFileSystemPath().$file->getFolder()->fullPath;
-			$baseToPath = $this->_getSourceFileSystemPath().$targetFolder->fullPath;
+			$baseFromPath = $this->_getSourceFileSystemPath().$file->getFolder()->path;
+			$baseToPath = $this->_getSourceFileSystemPath().$targetFolder->path;
 
 			foreach ($transforms as $location)
 			{
@@ -477,7 +477,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
 	{
-		return IOHelper::folderExists($this->_getSourceFileSystemPath() . $parentFolder->fullPath . $folderName);
+		return IOHelper::folderExists($this->_getSourceFileSystemPath() . $parentFolder->path . $folderName);
 	}
 
 	/**
@@ -489,11 +489,11 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
-		if (!IOHelper::isWritable($this->_getSourceFileSystemPath() . $parentFolder->fullPath))
+		if (!IOHelper::isWritable($this->_getSourceFileSystemPath() . $parentFolder->path))
 		{
 			return false;
 		}
-		return IOHelper::createFolder($this->_getSourceFileSystemPath() . $parentFolder->fullPath . $folderName, IOHelper::getWritableFolderPermissions());
+		return IOHelper::createFolder($this->_getSourceFileSystemPath() . $parentFolder->path . $folderName, IOHelper::getWritableFolderPermissions());
 	}
 
 	/**
@@ -505,9 +505,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
 	{
-		$newFullPath = $this->_getParentFullPath($folder->fullPath).$newName.'/';
+		$newFullPath = $this->_getParentFullPath($folder->path).$newName.'/';
 
-		return IOHelper::rename($this->_getSourceFileSystemPath().$folder->fullPath, $this->_getSourceFileSystemPath().$newFullPath);
+		return IOHelper::rename($this->_getSourceFileSystemPath().$folder->path, $this->_getSourceFileSystemPath().$newFullPath);
 	}
 
 	/**
@@ -518,7 +518,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
-		return IOHelper::deleteFolder($this->_getSourceFileSystemPath().$parentFolder->fullPath.$folderName);
+		return IOHelper::deleteFolder($this->_getSourceFileSystemPath().$parentFolder->path.$folderName);
 	}
 
 	/**
@@ -543,7 +543,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	public function copyTransform(AssetFileModel $file, $source, $target)
 	{
 		$fileFolder = $file->getFolder();
-		$basePath = $this->_getSourceFileSystemPath().$fileFolder->fullPath;
+		$basePath = $this->_getSourceFileSystemPath().$fileFolder->path;
 		IOHelper::copyFile($basePath.$source.'/'.$file->filename, $basePath.$target.'/'.$file->filename);
 	}
 

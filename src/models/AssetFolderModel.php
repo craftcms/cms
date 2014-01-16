@@ -33,7 +33,7 @@ class AssetFolderModel extends BaseModel
 			'parentId' => AttributeType::Number,
 			'sourceId' => AttributeType::Number,
 			'name'     => AttributeType::String,
-			'fullPath' => AttributeType::String,
+			'path'     => AttributeType::String,
 		);
 	}
 

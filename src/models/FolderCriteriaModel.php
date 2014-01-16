@@ -23,7 +23,7 @@ class FolderCriteriaModel extends BaseModel
 			'parentId' => array(AttributeType::Number, 'default' => false),
 			'sourceId' => AttributeType::Number,
 			'name'     => AttributeType::String,
-			'fullPath' => AttributeType::String,
+			'path'     => AttributeType::String,
 			'order'    => array(AttributeType::String, 'default' => 'name asc'),
 			'offset'   => AttributeType::Number,
 			'limit'    => AttributeType::Number,
