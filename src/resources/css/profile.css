@@ -5,7 +5,11 @@ div.user-photo div.current-photo { float: left; width: 100px; height: 100px; bac
 	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
 	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
 }
-div.user-photo div.user-photo-controls { margin-left: 115px; }
+div.user-photo div.user-photo-controls { margin-left: 115px; position: relative;}
+
+div.user-photo-controls .progress-shade{ background: rgba(255,255,255,0.8); width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none;}
+div.user-photo-controls.uploading .progress-shade{ display: block;}
+
 div.user-photo div.user-photo-controls .upload-photo ul { display: none; }
 div.user-photo div.user-photo-controls .QqUploader-uploader { display: inline-block;}
 

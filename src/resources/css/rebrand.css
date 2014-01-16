@@ -1,9 +1,10 @@
-.cp-logo .current-logo { float: left; width: 100px; height: 100px; background: no-repeat;
+.cp-logo .current-logo { width: 100px; height: 100px; background: no-repeat;
 	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
 	     box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
 }
-.cp-logo .logo-controls { margin-left: 115px; }
-.cp-logo .logo-controls .upload-logo ul { display: none; }
-.cp-logo .logo-controls .QqUploader-uploader { display: inline-block;}
+.cp-logo .logo-controls { margin-top: 10px; float: none; position: relative;}
+
+div.logo-controls .progress-shade{ background: rgba(255,255,255,0.8); width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none;}
+div.logo-controls.uploading .progress-shade{ display: block;}
 
 .logo-modal { width: 500px; }

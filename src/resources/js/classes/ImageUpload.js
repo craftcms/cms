@@ -77,6 +77,8 @@ Craft.ImageUpload = Garnish.Base.extend({
 Craft.ImageHandler = Garnish.Base.extend({
 
 	modal: null,
+	progressBar: null,
+	$container: null,
 
 	init: function(settings)
 	{
@@ -84,9 +86,15 @@ Craft.ImageHandler = Garnish.Base.extend({
 
 		var _this = this;
 
-
 		var element = settings.uploadButton;
 		var $uploadInput = $('<input type="file" name="image-upload" id="image-upload" />').hide().insertBefore(element);
+
+		this.progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').insertBefore(element));
+		this.progressBar.$progressBar.css({
+			top: Math.round(element.outerHeight() / 2) - 6
+		});
+
+		this.$container = element.parent();
 
 		var options = {
 			url: Craft.getActionUrl(this.settings.uploadAction),
@@ -96,7 +104,20 @@ Craft.ImageHandler = Garnish.Base.extend({
 			action:     Craft.actionUrl + '/' + this.settings.uploadAction,
 			formData:   this.settings.postParameters,
 			events:     {
+				fileuploadstart: $.proxy(function () {
+					this.$container.addClass('uploading');
+					this.progressBar.resetProgressBar();
+					this.progressBar.showProgressBar();
+				}, this),
+				fileuploadprogressall: $.proxy(function (data) {
+					var progress = parseInt(data.loaded / data.total * 100, 10);
+					this.progressBar.setProgressPercentage(progress);
+				}, this),
 				fileuploaddone: $.proxy(function (event, data) {
+
+					this.progressBar.hideProgressBar();
+					this.$container.removeClass('uploading');
+
 					var response = data.result;
 
 					if (Craft.ImageUpload.$modalContainerDiv == null)
@@ -163,7 +184,7 @@ Craft.ImageHandler = Garnish.Base.extend({
 		});
 		$(settings.uploadButton).on('click', function (event)
 		{
-			$(this).prev('input[type=file]').click();
+			$(this).siblings('input[type=file]').click();
 		});
 
 	},
