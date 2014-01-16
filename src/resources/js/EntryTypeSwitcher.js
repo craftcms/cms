@@ -12,7 +12,7 @@ Craft.EntryTypeSwitcher = Garnish.Base.extend({
 	{
 		this.$form = $('#entry-form');
 		this.$typeSelect = $('#entryType');
-		this.$spinner = $('<div class="spinner hidden" style="margin-left: 5px;"/>').insertAfter(this.$typeSelect.parent());
+		this.$spinner = $('<div class="spinner hidden" style="position: absolute; margin-left: 2px;"/>').insertAfter(this.$typeSelect.parent());
 		this.$fields = $('#fields');
 
 		this.addListener(this.$typeSelect, 'change', 'onTypeChange');
@@ -28,8 +28,7 @@ Craft.EntryTypeSwitcher = Garnish.Base.extend({
 			if (textStatus == 'success')
 			{
 				Craft.cp.deselectContentTab();
-				Craft.cp.$contentTabsContainer.html(response.tabsHtml);
-				this.$fields.html(response.fieldsHtml);
+				this.$fields.html(response.paneHtml);
 				Craft.cp.initContentTabs();
 				Craft.initUiElements(this.$fields);
 

@@ -284,20 +284,13 @@ class EntriesController extends BaseController
 
 		$this->_prepEditEntryVariables($variables);
 
-		$tabsHtml = '<ul>';
-
-		foreach ($variables['tabs'] as $tabId => $tab)
-		{
-			$tabsHtml .= '<li><a id="tab-'.$tabId.'" class="tab'.(isset($tab['class']) ? ' '.$tab['class'] : '').'" href="'.$tab['url'].'">'.$tab['label'].'</a></li>';
-		}
-
-		$tabsHtml .= '</ul>';
+		$paneHtml = craft()->templates->render('_includes/tabs', $variables) .
+			craft()->templates->render('entries/_fields', $variables);
 
 		$this->returnJson(array(
-			'tabsHtml'   => $tabsHtml,
-			'fieldsHtml' => craft()->templates->render('entries/_fields', $variables),
-			'headHtml'   => craft()->templates->getHeadHtml(),
-			'footHtml'   => craft()->templates->getFootHtml(),
+			'paneHtml' => $paneHtml,
+			'headHtml' => craft()->templates->getHeadHtml(),
+			'footHtml' => craft()->templates->getFootHtml(),
 		));
 	}
 
