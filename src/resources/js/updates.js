@@ -12,8 +12,12 @@ Craft.UpdateInfo = Garnish.Base.extend({
 	$licenseSubmitBtn: null,
 	licenseSubmitAction: null,
 
-	init: function()
+	allowAutoUpdates: null,
+
+	init: function(allowAutoUpdates)
 	{
+		this.allowAutoUpdates = allowAutoUpdates;
+
 		var $graphic = $('#graphic'),
 			$status = $('#status');
 
@@ -70,39 +74,45 @@ Craft.UpdateInfo = Garnish.Base.extend({
 		}
 		else
 		{
-			var $btnGroup = $('<div class="btngroup"/>').appendTo($buttonContainer),
-				$updateBtn = $('<div class="btn submit">'+Craft.t('Update')+'</div>').appendTo($btnGroup),
-				$menuBtn = $('<div class="btn submit menubtn"/>').appendTo($btnGroup),
-				$menu = $('<div class="menu" data-align="right"/>').appendTo($btnGroup),
-				$menuUl = $('<ul/>').appendTo($menu),
-				$downloadLi = $('<li/>').appendTo($menuUl);
-
-			this.$downloadBtn = $('<a>'+Craft.t('Download')+'</a>').appendTo($downloadLi);
-
-			new Garnish.MenuBtn($menuBtn);
-		}
-
-		// Has the license been updated?
-		if (this.appUpdateInfo.licenseUpdated)
-		{
-			this.addListener(this.$downloadBtn, 'click', 'showLicenseForm');
-
-			if (!this.appUpdateInfo.manualUpdateRequired)
+			if (this.allowAutoUpdates)
 			{
-				this.addListener($updateBtn, 'click', 'showLicenseForm');
-			}
-		}
-		else
-		{
-			this.addListener(this.$downloadBtn, 'click', 'downloadThat');
+				var $btnGroup = $('<div class="btngroup"/>').appendTo($buttonContainer),
+					$updateBtn = $('<div class="btn submit">'+Craft.t('Update')+'</div>').appendTo($btnGroup),
+					$menuBtn = $('<div class="btn submit menubtn"/>').appendTo($btnGroup),
+					$menu = $('<div class="menu" data-align="right"/>').appendTo($btnGroup),
+					$menuUl = $('<ul/>').appendTo($menu),
+					$downloadLi = $('<li/>').appendTo($menuUl);
 
-			if (!this.appUpdateInfo.manualUpdateRequired)
-			{
-				this.addListener($updateBtn, 'click', 'autoUpdateThat');
+				this.$downloadBtn = $('<a>'+Craft.t('Download')+'</a>').appendTo($downloadLi);
+
+				new Garnish.MenuBtn($menuBtn);
 			}
 		}
 
-		this.showReleases(this.appUpdateInfo.releases, '@@@appName@@@');
+		if (this.allowAutoUpdates)
+		{
+			// Has the license been updated?
+			if (this.appUpdateInfo.licenseUpdated)
+			{
+				this.addListener(this.$downloadBtn, 'click', 'showLicenseForm');
+
+				if (!this.appUpdateInfo.manualUpdateRequired)
+				{
+					this.addListener($updateBtn, 'click', 'showLicenseForm');
+				}
+			}
+			else
+			{
+				this.addListener(this.$downloadBtn, 'click', 'downloadThat');
+
+				if (!this.appUpdateInfo.manualUpdateRequired)
+				{
+					this.addListener($updateBtn, 'click', 'autoUpdateThat');
+				}
+			}
+		}
+
+		this.showReleases(this.appUpdateInfo.releases, 'Craft');
 		this.$container.fadeIn('fast');
 	},
 
@@ -194,9 +204,5 @@ Craft.UpdateInfo = Garnish.Base.extend({
 		window.location.href = Craft.getUrl('updates/go/craft');
 	}
 });
-
-
-new Craft.UpdateInfo();
-
 
 })(jQuery);

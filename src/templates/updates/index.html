@@ -4,6 +4,7 @@
 {% set title = "Updates"|t %}
 {% includeCssResource "css/updates.css" %}
 {% includeJsResource "js/updates.js" %}
+{% includeJs 'new Craft.UpdateInfo(' ~ craft.config.allowAutoUpdates ~');' %}
 {% includeTranslations
 	"You’ve got updates!",
 	"You’re all up-to-date!",

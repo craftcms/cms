@@ -138,6 +138,11 @@ class UpdateController extends BaseController
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
 			craft()->userSession->requirePermission('performUpdates');
+
+			if (!craft()->config->get('allowAutoUpdates'))
+			{
+				$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
+			}
 		}
 		else
 		{
@@ -174,6 +179,11 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
+		if (!craft()->config->get('allowAutoUpdates'))
+		{
+			$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
+		}
+
 		$data = craft()->request->getRequiredPost('data');
 
 		$return = craft()->updates->processUpdateDownload($data['md5']);
@@ -198,6 +208,11 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
+		if (!craft()->config->get('allowAutoUpdates'))
+		{
+			$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
+		}
+
 		$data = craft()->request->getRequiredPost('data');
 
 		$return = craft()->updates->backupFiles($data['uid']);
@@ -219,6 +234,11 @@ class UpdateController extends BaseController
 
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
+
+		if (!craft()->config->get('allowAutoUpdates'))
+		{
+			$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
+		}
 
 		$data = craft()->request->getRequiredPost('data');
 
@@ -245,6 +265,11 @@ class UpdateController extends BaseController
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
 			craft()->userSession->requirePermission('performUpdates');
+
+			if (!craft()->config->get('allowAutoUpdates'))
+			{
+				$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
+			}
 		}
 
 		if (craft()->config->get('backupDbOnUpdate'))
@@ -278,6 +303,11 @@ class UpdateController extends BaseController
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
 			craft()->userSession->requirePermission('performUpdates');
+
+			if (!craft()->config->get('allowAutoUpdates'))
+			{
+				$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
+			}
 		}
 
 		$handle = $this->_getFixedHandle($data);
@@ -317,6 +347,11 @@ class UpdateController extends BaseController
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
 			craft()->userSession->requirePermission('performUpdates');
+
+			if (!craft()->config->get('allowAutoUpdates'))
+			{
+				$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
+			}
 
 			$uid = $data['uid'];
 		}
@@ -365,6 +400,11 @@ class UpdateController extends BaseController
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
 			craft()->userSession->requirePermission('performUpdates');
+
+			if (!craft()->config->get('allowAutoUpdates'))
+			{
+				$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
+			}
 
 			$uid = $data['uid'];
 		}
