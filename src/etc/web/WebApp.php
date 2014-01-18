@@ -40,6 +40,7 @@ namespace Craft;
  * @property UserGroupsService           $userGroups           The user groups service
  * @property UserPermissionsService      $userPermissions      The user permission service
  * @property UserSessionService          $userSession          The user session service
+ * @property UsersService                $users                The users service
  */
 class WebApp extends \CWebApplication
 {
