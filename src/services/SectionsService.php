@@ -280,6 +280,8 @@ class SectionsService extends BaseApplicationComponent
 			$sectionRecord->template = $section->template = null;
 		}
 
+		$sectionRecord->defaultAuthorId = $section->defaultAuthorId ? $section->defaultAuthorId : null;
+
 		$sectionRecord->validate();
 		$section->addErrors($sectionRecord->getErrors());
 

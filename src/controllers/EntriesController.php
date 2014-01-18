@@ -6,6 +6,8 @@ namespace Craft;
  */
 class EntriesController extends BaseController
 {
+	protected $allowAnonymous = array('actionSaveEntry');
+
 	/**
 	 * Edit an entry.
 	 *
@@ -335,8 +337,12 @@ class EntriesController extends BaseController
 
 		if (!$entry->id)
 		{
-			// Make sure the user is allowed to create entries in this section
-			craft()->userSession->requirePermission('createEntries:'.$entry->sectionId);
+			// If there is a logged in user, make sure they have create entry permissions.
+			if (craft()->userSession->isLoggedIn())
+			{
+				// Make sure the user is allowed to create entries in this section
+				craft()->userSession->requirePermission('createEntries:'.$entry->sectionId);
+			}
 
 			// Make sure the user is allowed to publish entries in this section, or that this is disabled
 			if ($entry->enabled && !craft()->userSession->checkPermission('publishEntries:'.$entry->sectionId))
@@ -677,8 +683,46 @@ class EntriesController extends BaseController
 		// Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
 		$entry->sectionId     = craft()->request->getPost('sectionId', $entry->sectionId);
 		$entry->typeId        = craft()->request->getPost('typeId',    $entry->typeId);
-		$entry->authorId      = craft()->request->getPost('author',    ($entry->authorId ? $entry->authorId : craft()->userSession->getUser()->id));
-		$entry->slug          = craft()->request->getPost('slug',      $entry->slug);
+
+		// Check for the author in POST first.
+		$authorId = craft()->request->getPost('author');
+		if (!$authorId)
+		{
+			// If the entry has an existing authorId, use that.
+			if ($entry->authorId)
+			{
+				$authorId = $entry->authorId;
+			}
+			else
+			{
+				// If the there is a currently logged in user, use their authorId.
+				if (craft()->userSession->isLoggedIn())
+				{
+					$authorId = craft()->userSession->getUser()->id;
+				}
+				else
+				{
+					// Maybe anonymous entry creation is enabled for this section?
+					if (!$entryId && $entry->sectionId)
+					{
+						$section = craft()->sections->getSectionById($entry->sectionId);
+						if ($section->defaultAuthorId)
+						{
+							// We found a defaultAuthor
+							$defaultAuthor = craft()->users->getUserById($section->defaultAuthorId);
+							$authorId = $defaultAuthor->id;
+						}
+						else
+						{
+							throw new HttpException(403);
+						}
+					}
+				}
+			}
+		}
+
+		$entry->authorId      = $authorId;
+		$entry->slug          = craft()->request->getPost('slug', $entry->slug);
 		$entry->postDate      = (($postDate   = craft()->request->getPost('postDate'))   ? DateTime::createFromString($postDate,   craft()->timezone) : $entry->postDate);
 		$entry->expiryDate    = (($expiryDate = craft()->request->getPost('expiryDate')) ? DateTime::createFromString($expiryDate, craft()->timezone) : null);
 		$entry->enabled       = (bool) craft()->request->getPost('enabled', $entry->enabled);

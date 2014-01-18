@@ -229,6 +229,25 @@
 			</div>
 		{% endif %}
 
+		<div class="field">
+			{{ forms.checkboxField({
+				first: true,
+				label: "Allow anonymous submissions?"|t,
+				name: 'allowAnonymousSubmissions',
+				checked: (section.defaultAuthorId is defined and section.defaultAuthorId is not empty ? true : false),
+				toggle: 'defaultAuthor'
+			}) }}
+
+			<div id="defaultAuthor"{% if section.defaultAuthorId is not defined or not section.defaultAuthorId %} class="hidden"{% endif %}>
+				{{ forms.selectField({
+					label: "Default Author"|t,
+					instructions: "Choose an author that all anonymous entries can be assigned to upon submission."|t,
+					name: 'defaultAuthor',
+					options: authorOptions,
+					value: (section.defaultAuthorId is defined and section.defaultAuthorId is not empty ? section.defaultAuthorId : null)
+				}) }}
+			</div>
+		</div>
 		<hr>
 
 		<div class="buttons">
