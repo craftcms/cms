@@ -111,6 +111,12 @@ abstract class BaseElementFieldType extends BaseFieldType
 	{
 		$criteria = craft()->elements->getCriteria($this->elementType);
 
+		if ($this->element)
+		{
+			// Grab elements in the same locale as this one
+			$criteria->locale = $this->element->locale;
+		}
+
 		// $value will be an array of element IDs if there was a validation error
 		// or we're loading a draft/version.
 		if (is_array($value))
@@ -124,7 +130,11 @@ abstract class BaseElementFieldType extends BaseFieldType
 		}
 		else if (isset($this->element) && $this->element->id)
 		{
-			$criteria->relatedTo = array('sourceElement' => $this->element->id, 'field' => $this->model->id);
+			$criteria->relatedTo = array(
+				'sourceElement' => $this->element->id,
+				'field'         => $this->model->id
+			);
+
 			$criteria->order = 'sortOrder';
 		}
 		else
@@ -161,7 +171,11 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 		$criteria->status = null;
 		$criteria->localeEnabled = null;
-		$selectionCriteria = array('status' => null, 'localeEnabled' => null);
+		$selectionCriteria = array(
+			'locale'        => $this->element->locale,
+			'status'        => null,
+			'localeEnabled' => null
+		);
 
 		if ($this->allowMultipleSources)
 		{
@@ -212,13 +226,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function onAfterElementSave()
 	{
-		$rawValue = $this->element->getContent()->getAttribute($this->model->handle);
-
-		if ($rawValue !== null)
-		{
-			$elementIds = is_array($rawValue) ? array_filter($rawValue) : array();
-			craft()->relations->saveRelations($this->model->id, $this->element->id, $elementIds);
-		}
+		craft()->relations->saveField($this);
 	}
 
 	/**

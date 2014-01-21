@@ -388,6 +388,11 @@ var CP = Garnish.Base.extend({
 
 	updateResponsiveTables: function()
 	{
+		if (!Garnish.isMobileBrowser())
+		{
+			return;
+		}
+
 		this.updateResponsiveTables._contentWidth = this.$content.width();
 
 		for (this.updateResponsiveTables._i = 0; this.updateResponsiveTables._i < this.$collapsibleTables.length; this.updateResponsiveTables._i++)

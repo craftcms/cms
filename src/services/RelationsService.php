@@ -7,37 +7,66 @@ namespace Craft;
 class RelationsService extends BaseApplicationComponent
 {
 	/**
-	 * Saves the relations elements for an element field.
+	 * Saves a relation field.
 	 *
-	 * @param int $fieldId
-	 * @param int $sourceId
-	 * @param array $targetIds
+	 * @param BaseElementFieldType $fieldType
 	 * @throws \Exception
+	 * @return bool
 	 */
-	public function saveRelations($fieldId, $sourceId, $targetIds)
+	public function saveField(BaseElementFieldType $fieldType)
 	{
-		// Prevent duplicate child IDs.
+		$source = $fieldType->element;
+		$field = $fieldType->model;
+		$targetIds = $source->getContent()->getAttribute($field->handle);
+
+		if ($targetIds === null)
+		{
+			return true;
+		}
+
+		if (!is_array($targetIds))
+		{
+			$targetIds = array();
+		}
+
+		// Prevent duplicate target IDs.
 		$targetIds = array_unique($targetIds);
 
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
 			// Delete the existing relations
-			craft()->db->createCommand()->delete('relations', array(
-				'fieldId'  => $fieldId,
-				'sourceId' => $sourceId
-			));
+			$oldRelationConditions = array('and', 'fieldId = :fieldId', 'sourceId = :sourceId');
+			$oldRelationParams = array(':fieldId' => $field->id, ':sourceId' => $source->id);
 
+			if ($field->translatable)
+			{
+				$oldRelationConditions[] = array('or', 'sourceLocale is null', 'sourceLocale = :sourceLocale');
+				$oldRelationParams[':sourceLocale'] = $source->locale;
+			}
+
+			craft()->db->createCommand()->delete('relations', $oldRelationConditions, $oldRelationParams);
+
+			// Add the new ones
 			if ($targetIds)
 			{
 				$values = array();
 
-				foreach ($targetIds as $sortOrder => $targetId)
+				if ($field->translatable)
 				{
-					$values[] = array($fieldId, $sourceId, $targetId, $sortOrder+1);
+					$sourceLocale = $source->locale;
+				}
+				else
+				{
+					$sourceLocale = null;
 				}
 
-				$columns = array('fieldId', 'sourceId', 'targetId', 'sortOrder');
+				foreach ($targetIds as $sortOrder => $targetId)
+				{
+					$values[] = array($field->id, $source->id, $sourceLocale, $targetId, $sortOrder+1);
+				}
+
+				$columns = array('fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder');
 				craft()->db->createCommand()->insertAll('relations', $columns, $values);
 			}
 

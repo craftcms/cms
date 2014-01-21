@@ -290,18 +290,15 @@ class ElementsService extends BaseApplicationComponent
 
 		$elementType = $criteria->getElementType();
 
-		if (!$criteria->locale)
+		if (!$elementType->isLocalized())
 		{
-			if ($elementType->isLocalized())
-			{
-				// Default to the current app target locale
-				$criteria->locale = craft()->language;
-			}
-			else
-			{
-				// Default to the primary site locale
-				$criteria->locale = craft()->i18n->getPrimarySiteLocaleId();
-			}
+			// The criteria *must* be set to the primary locale
+			$criteria->locale = craft()->i18n->getPrimarySiteLocaleId();
+		}
+		else if (!$criteria->locale)
+		{
+			// Default to the current app locale
+			$criteria->locale = craft()->language;
 		}
 
 		// Set up the query
@@ -449,21 +446,19 @@ class ElementsService extends BaseApplicationComponent
 		// parentOf(element) => relatedTo({ target: element })
 		if (!$criteria->relatedTo && ($criteria->childOf || $criteria->parentOf))
 		{
-			if ($criteria->childOf && $criteria->parentOf)
+			$relatedTo = array('and');
+
+			if ($criteria->childOf)
 			{
-				$criteria->relatedTo = array('and',
-					array('sourceElement' => $criteria->childOf, 'field' => $criteria->childField),
-					array('targetElement' => $criteria->parentOf, 'field' => $criteria->parentField)
-				);
+				$relatedTo[] = array('sourceElement' => $criteria->childOf, 'field' => $criteria->childField);
 			}
-			else if ($criteria->childOf)
+
+			if ($criteria->parentOf)
 			{
-				$criteria->relatedTo = array('sourceElement' => $criteria->childOf, 'field' => $criteria->childField);
+				$relatedTo[] = array('targetElement' => $criteria->parentOf, 'field' => $criteria->parentField);
 			}
-			else
-			{
-				$criteria->relatedTo = array('targetElement' => $criteria->parentOf, 'field' => $criteria->parentField);
-			}
+
+			$criteria->relatedTo = $relatedTo;
 		}
 
 		if ($criteria->relatedTo)
@@ -1502,7 +1497,7 @@ class ElementsService extends BaseApplicationComponent
 						$sourcesAlias            = 'sources'.$this->_joinSourcesCount;
 						$targetMatrixBlocksAlias = 'target_matrixblocks'.$this->_joinTargetMatrixBlocksCount;
 
-						$query->leftJoin('relations '.$sourcesAlias, $sourcesAlias.'.targetId = elements.id');
+						$query->leftJoin('relations '.$sourcesAlias, array('and', $sourcesAlias.'.targetId = elements.id', array('or', $sourceAlias.'.sourceLocale is null', $sourceAlias.'.sourceLocale = :locale')));
 						$query->leftJoin('matrixblocks '.$targetMatrixBlocksAlias, $targetMatrixBlocksAlias.'.id = '.$sourcesAlias.'.sourceId');
 
 						$condition = array('and',
@@ -1522,7 +1517,7 @@ class ElementsService extends BaseApplicationComponent
 						$matrixBlockTargetsAlias = 'matrixblock_targets'.$this->_joinSourceMatrixBlocksCount;
 
 						$query->leftJoin('matrixblocks '.$sourceMatrixBlocksAlias, $sourceMatrixBlocksAlias.'.ownerId = elements.id');
-						$query->leftJoin('relations '.$matrixBlockTargetsAlias, $matrixBlockTargetsAlias.'.sourceId = '.$sourceMatrixBlocksAlias.'.id');
+						$query->leftJoin('relations '.$matrixBlockTargetsAlias, array('and', $matrixBlockTargetsAlias.'.sourceId = '.$sourceMatrixBlocksAlias.'.id', array('or', $matrixBlockTargetsAlias.'.sourceLocale is null', $matrixBlockTargetsAlias.'.sourceLocale = :locale')));
 
 						$condition = array('and',
 							DbHelper::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds, $query->params),
@@ -1563,7 +1558,7 @@ class ElementsService extends BaseApplicationComponent
 				$relElementColumn = 'sourceId';
 			}
 
-			$query->leftJoin('relations '.$relTableAlias, $relTableAlias.'.'.$relElementColumn.' = elements.id');
+			$query->leftJoin('relations '.$relTableAlias, array('and', $relTableAlias.'.'.$relElementColumn.' = elements.id', array('or', $relTableAlias.'.sourceLocale is null', $relTableAlias.'.sourceLocale = :locale')));
 			$condition = DbHelper::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds, $query->params);
 
 			if ($normalFieldIds)
