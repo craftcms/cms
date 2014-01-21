@@ -129,6 +129,7 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->username              = $user->username;
 		$userRecord->firstName             = $user->firstName;
 		$userRecord->lastName              = $user->lastName;
+		$userRecord->photo                 = $user->photo;
 		$userRecord->email                 = $user->email;
 		$userRecord->admin                 = $user->admin;
 		$userRecord->passwordResetRequired = $user->passwordResetRequired;
@@ -298,16 +299,13 @@ class UsersService extends BaseApplicationComponent
 	/**
 	 * Crop and save a user's photo by coordinates for a given user model.
 	 *
-	 * @param $source
-	 * @param $x1
-	 * @param $x2
-	 * @param $y1
-	 * @param $y2
+	 * @param $fileName
+	 * @param Image $image
 	 * @param UserModel $user
 	 * @return bool
 	 * @throws \Exception
 	 */
-	public function cropAndSaveUserPhoto($source, $x1, $x2, $y1, $y2, UserModel $user)
+	public function saveUserPhoto($fileName, Image $image, UserModel $user)
 	{
 		$userPhotoFolder = craft()->path->getUserPhotosPath().$user->username.'/';
 		$targetFolder = $userPhotoFolder.'original/';
@@ -315,22 +313,18 @@ class UsersService extends BaseApplicationComponent
 		IOHelper::ensureFolderExists($userPhotoFolder);
 		IOHelper::ensureFolderExists($targetFolder);
 
-		$filename = IOHelper::getFileName($source);
-		$targetPath = $targetFolder . $filename;
+		$targetPath = $targetFolder . $fileName;
 
-
-		$image = craft()->images->loadImage($source);
-		$image->crop($x1, $x2, $y1, $y2);
 		$result = $image->saveAs($targetPath);
 
 		if ($result)
 		{
 			IOHelper::changePermissions($targetPath, IOHelper::getWritableFilePermissions());
 			$record = UserRecord::model()->findById($user->id);
-			$record->photo = $filename;
+			$record->photo = $fileName;
 			$record->save();
 
-			$user->photo = $filename;
+			$user->photo = $fileName;
 
 			return true;
 		}
