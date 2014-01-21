@@ -383,7 +383,7 @@ div.btn.submit input { position: absolute; left: 100%; }
 .colorpicker { z-index: 2; }
 
 /* switch */
-.lightswitch { position: relative; border: none !important; border-radius: 9px; width: 27px; height: 18px; overflow: hidden; cursor: pointer; @include unselectable; overflow: hidden;
+.lightswitch { position: relative; display: inline-block; border: none !important; border-radius: 9px; width: 27px; height: 18px; overflow: hidden; cursor: pointer; @include unselectable; overflow: hidden;
 	-webkit-box-shadow: 0 0 0 1px hsla(205, 100%, 60%, 0), 0 0 2px hsla(205, 100%, 60%, 0);
 	        box-shadow: 0 0 0 1px hsla(205, 100%, 60%, 0), 0 0 2px hsla(205, 100%, 60%, 0);
 	-webkit-transition: -webkit-box-shadow linear 100ms;
