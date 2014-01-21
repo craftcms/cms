@@ -449,21 +449,19 @@ class ElementsService extends BaseApplicationComponent
 		// parentOf(element) => relatedTo({ target: element })
 		if (!$criteria->relatedTo && ($criteria->childOf || $criteria->parentOf))
 		{
-			if ($criteria->childOf && $criteria->parentOf)
+			$relatedTo = array('and');
+
+			if ($criteria->childOf)
 			{
-				$criteria->relatedTo = array('and',
-					array('sourceElement' => $criteria->childOf, 'field' => $criteria->childField),
-					array('targetElement' => $criteria->parentOf, 'field' => $criteria->parentField)
-				);
+				$relatedTo[] = array('sourceElement' => $criteria->childOf, 'field' => $criteria->childField);
 			}
-			else if ($criteria->childOf)
+
+			if ($criteria->parentOf)
 			{
-				$criteria->relatedTo = array('sourceElement' => $criteria->childOf, 'field' => $criteria->childField);
+				$relatedTo[] = array('targetElement' => $criteria->parentOf, 'field' => $criteria->parentField);
 			}
-			else
-			{
-				$criteria->relatedTo = array('targetElement' => $criteria->parentOf, 'field' => $criteria->parentField);
-			}
+
+			$criteria->relatedTo = $relatedTo;
 		}
 
 		if ($criteria->relatedTo)
