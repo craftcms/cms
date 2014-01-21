@@ -50,22 +50,24 @@ class UserSessionVariable
 	/**
 	 * Returns all flash data for the user.
 	 *
+	 * @param bool $delete
 	 * @return array
 	 */
-	public function getFlashes()
+	public function getFlashes($delete = true)
 	{
-		return craft()->userSession->getFlashes();
+		return craft()->userSession->getFlashes($delete);
 	}
 
 	/**
 	 * Returns a flash message by a given key.
 	 *
 	 * @param string $key
-	 * @param mixed
+	 * @param mixed  $defaultValue
+	 * @param bool   $delete
 	 */
-	public function getFlash($key, $defaultValue = null)
+	public function getFlash($key, $defaultValue = null, $delete = true)
 	{
-		return craft()->userSession->getFlash($key, $defaultValue);
+		return craft()->userSession->getFlash($key, $defaultValue, $delete);
 	}
 
 	/**
