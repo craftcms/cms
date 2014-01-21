@@ -12,7 +12,7 @@
 	{% if sources|length %}
 		{% set sortable  = (sources|length > 1) %}
 
-		<table id="sources" class="data collapsible">
+		<table id="sources" class="data fullwidth collapsible">
 			<thead>
 				<th scope="col">{{ "Name"|t }}</th>
 				{% if craft.hasPackage('Cloud') %}<th scope="col">{{ "Type"|t }}</th>{% endif %}

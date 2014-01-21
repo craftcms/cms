@@ -3,7 +3,7 @@
 {% set content %}
 	{% for section, data in phpInfo %}
 		<h2>{{ section }}</h2>
-		<table class="data">
+		<table class="data fullwidth">
 			{% for setting, value in data %}
 				<tr>
 					<th class="light" width="300">{{ setting|raw }}</th>

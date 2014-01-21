@@ -5,7 +5,7 @@
 {% macro table(heading, data) %}
 	{% if data %}
 		<h3>{{ heading }}</h3>
-		<table class="data">
+		<table class="data fullwidth">
 			{% for key, value in data %}
 				<tr>
 					<th class="light" width="300">{{ key|raw }}</th>
@@ -40,7 +40,7 @@
 
 			<h2>{{ logEntry.dateTime }}</h2>
 
-			<table class="data">
+			<table class="data fullwidth">
 				<tr>
 					<th class="light" width="300">Level</th>
 					<td>{{ logEntry.level }}</td>

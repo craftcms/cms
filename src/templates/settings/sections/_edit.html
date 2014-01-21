@@ -23,7 +23,7 @@
 
 {% macro urlFormatInput(sectionType, brandNewSection, section) %}
 	{% if craft.hasPackage('Localize') or sectionType == 'structure' %}
-		<table class="data">
+		<table class="data fullwidth">
 			{% if sectionType == 'structure' %}
 				<thead>
 					{% if craft.hasPackage('Localize') %}

@@ -18,7 +18,7 @@
 	</p>
 
 	{% if widgets|length %}
-		<table id="widgets" class="data collapsible">
+		<table id="widgets" class="data fullwidth collapsible">
 			<tbody>
 				{% for widget in widgets %}
 					{% set widgetType = craft.dashboard.populateWidgetType(widget) %}

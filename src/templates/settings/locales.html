@@ -31,7 +31,7 @@
 		<h2>{{ "Which locales does your content target?"|t }}</h2>
 
 		<div class="field">
-			<table id="locales" class="data collapsible">
+			<table id="locales" class="data fullwidth collapsible">
 				<tbody>
 					{% for locale in craft.i18n.getSiteLocales() %}
 						<tr data-id="{{ locale.id }}" data-name="{{ locale.name }}">
