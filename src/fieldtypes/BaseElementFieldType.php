@@ -226,13 +226,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function onAfterElementSave()
 	{
-		$rawValue = $this->element->getContent()->getAttribute($this->model->handle);
-
-		if ($rawValue !== null)
-		{
-			$elementIds = is_array($rawValue) ? array_filter($rawValue) : array();
-			craft()->relations->saveRelations($this->model->id, $this->element->id, $elementIds);
-		}
+		craft()->relations->saveField($this);
 	}
 
 	/**

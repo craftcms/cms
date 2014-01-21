@@ -1497,7 +1497,7 @@ class ElementsService extends BaseApplicationComponent
 						$sourcesAlias            = 'sources'.$this->_joinSourcesCount;
 						$targetMatrixBlocksAlias = 'target_matrixblocks'.$this->_joinTargetMatrixBlocksCount;
 
-						$query->leftJoin('relations '.$sourcesAlias, $sourcesAlias.'.targetId = elements.id');
+						$query->leftJoin('relations '.$sourcesAlias, array('and', $sourcesAlias.'.targetId = elements.id', array('or', $sourceAlias.'.sourceLocale is null', $sourceAlias.'.sourceLocale = :locale')));
 						$query->leftJoin('matrixblocks '.$targetMatrixBlocksAlias, $targetMatrixBlocksAlias.'.id = '.$sourcesAlias.'.sourceId');
 
 						$condition = array('and',
@@ -1517,7 +1517,7 @@ class ElementsService extends BaseApplicationComponent
 						$matrixBlockTargetsAlias = 'matrixblock_targets'.$this->_joinSourceMatrixBlocksCount;
 
 						$query->leftJoin('matrixblocks '.$sourceMatrixBlocksAlias, $sourceMatrixBlocksAlias.'.ownerId = elements.id');
-						$query->leftJoin('relations '.$matrixBlockTargetsAlias, $matrixBlockTargetsAlias.'.sourceId = '.$sourceMatrixBlocksAlias.'.id');
+						$query->leftJoin('relations '.$matrixBlockTargetsAlias, array('and', $matrixBlockTargetsAlias.'.sourceId = '.$sourceMatrixBlocksAlias.'.id', array('or', $matrixBlockTargetsAlias.'.sourceLocale is null', $matrixBlockTargetsAlias.'.sourceLocale = :locale')));
 
 						$condition = array('and',
 							DbHelper::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds, $query->params),
@@ -1558,7 +1558,7 @@ class ElementsService extends BaseApplicationComponent
 				$relElementColumn = 'sourceId';
 			}
 
-			$query->leftJoin('relations '.$relTableAlias, $relTableAlias.'.'.$relElementColumn.' = elements.id');
+			$query->leftJoin('relations '.$relTableAlias, array('and', $relTableAlias.'.'.$relElementColumn.' = elements.id', array('or', $relTableAlias.'.sourceLocale is null', $relTableAlias.'.sourceLocale = :locale')));
 			$condition = DbHelper::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds, $query->params);
 
 			if ($normalFieldIds)
