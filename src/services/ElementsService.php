@@ -290,18 +290,15 @@ class ElementsService extends BaseApplicationComponent
 
 		$elementType = $criteria->getElementType();
 
-		if (!$criteria->locale)
+		if (!$elementType->isLocalized())
 		{
-			if ($elementType->isLocalized())
-			{
-				// Default to the current app target locale
-				$criteria->locale = craft()->language;
-			}
-			else
-			{
-				// Default to the primary site locale
-				$criteria->locale = craft()->i18n->getPrimarySiteLocaleId();
-			}
+			// The criteria *must* be set to the primary locale
+			$criteria->locale = craft()->i18n->getPrimarySiteLocaleId();
+		}
+		else if (!$criteria->locale)
+		{
+			// Default to the current app locale
+			$criteria->locale = craft()->language;
 		}
 
 		// Set up the query
