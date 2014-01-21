@@ -171,11 +171,16 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 		$criteria->status = null;
 		$criteria->localeEnabled = null;
+
 		$selectionCriteria = array(
-			'locale'        => $this->element->locale,
 			'status'        => null,
 			'localeEnabled' => null
 		);
+
+		if (isset($this->element))
+		{
+			$selectionCriteria['locale'] = $this->element->locale;
+		}
 
 		if ($this->allowMultipleSources)
 		{
