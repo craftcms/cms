@@ -678,6 +678,28 @@ class UsersController extends BaseController
 				{
 					$user->setContentFromPost($fields);
 				}
+
+				if (craft()->request->getPost('deleteUserPhoto'))
+				{
+					craft()->users->deleteUserPhoto($user);
+					$user->photo = null;
+				}
+				elseif (!empty($_FILES['userPhoto']['name']) && IOHelper::fileExists($_FILES['userPhoto']['tmp_name']))
+				{
+					craft()->users->deleteUserPhoto($user);
+					$image = craft()->images->loadImage($_FILES['userPhoto']['tmp_name']);
+					$imageWidth = $image->getWidth();
+					$imageHeight = $image->getHeight();
+
+					$dimension = min($imageWidth, $imageHeight);
+					$horizontalMargin = ($imageWidth - $dimension) / 2;
+					$verticalMargin = ($imageHeight - $dimension) / 2;
+					$image->crop($horizontalMargin, $imageWidth - $horizontalMargin, $verticalMargin, $imageHeight - $verticalMargin);
+
+					craft()->users->saveUserPhoto($_FILES['userPhoto']['name'], $image, $user);
+
+					IOHelper::deleteFile($_FILES['userPhoto']['tmp_name']);
+				}
 			}
 
 			// Only admins can toggle admin settings, and only allow from the CP and if the Users package is installed
@@ -874,7 +896,10 @@ class UsersController extends BaseController
 			{
 				craft()->users->deleteUserPhoto($user);
 
-				if (craft()->users->cropAndSaveUserPhoto($imagePath, $x1, $x2, $y1, $y2, $user))
+				$image = craft()->images->loadImage($imagePath);
+				$image->crop($x1, $x2, $y1, $y2);
+
+				if (craft()->users->saveUserPhoto(IOHelper::getFileName($imagePath), $image, $user))
 				{
 					IOHelper::clearFolder(craft()->path->getTempUploadsPath().'userphotos/'.$user->username);
 
@@ -914,12 +939,8 @@ class UsersController extends BaseController
 		$user = craft()->users->getUserById($userId);
 		craft()->users->deleteUserPhoto($user);
 
-		$record = UserRecord::model()->findById($user->id);
-		$record->photo = null;
-		$record->save();
-
-		// Since Model still believes it has an image, we make sure that it does not so anymore when it reaches the template.
 		$user->photo = null;
+		craft()->users->saveUser($user);
 
 		$html = craft()->templates->render('users/_userphoto',
 			array(
