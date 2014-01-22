@@ -576,14 +576,6 @@ class UsersController extends BaseController
 			// Users package is required
 			craft()->requirePackage(CraftPackage::Users);
 
-			// Are they already logged in?
-			if (craft()->userSession->getUser())
-			{
-				// Make sure they have permission to register users, regardless of if public registration is enabled or not.
-				craft()->userSession->requirePermission('registerUsers');
-				$canRegisterUsers = true;
-			}
-
 			// Is public registration enabled?
 			if (craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
 			{
@@ -594,6 +586,22 @@ class UsersController extends BaseController
 			if (craft()->systemSettings->getSetting('users', 'requireEmailVerification', true) !== 1)
 			{
 				$requirePublicEmailValidation = false;
+			}
+
+			// Are they already logged in?  If so, check and see if they have registerUsers permissions.
+			if (craft()->userSession->getUser())
+			{
+				// Make sure they have permission to register users, regardless of if public registration is enabled or not.
+				craft()->userSession->requirePermission('registerUsers');
+				$canRegisterUsers = true;
+			}
+			else
+			{
+				// Not logged in, but it's a site request and public registration is enabled
+				if (craft()->request->isSiteRequest() && $publicRegistration)
+				{
+					$canRegisterUsers = true;
+				}
 			}
 
 			// If there is no public registration and it's a site request, or the current user can't register users, complain loudly.
@@ -678,28 +686,6 @@ class UsersController extends BaseController
 				{
 					$user->setContentFromPost($fields);
 				}
-
-				if (craft()->request->getPost('deleteUserPhoto'))
-				{
-					craft()->users->deleteUserPhoto($user);
-					$user->photo = null;
-				}
-				elseif (!empty($_FILES['userPhoto']['name']) && IOHelper::fileExists($_FILES['userPhoto']['tmp_name']))
-				{
-					craft()->users->deleteUserPhoto($user);
-					$image = craft()->images->loadImage($_FILES['userPhoto']['tmp_name']);
-					$imageWidth = $image->getWidth();
-					$imageHeight = $image->getHeight();
-
-					$dimension = min($imageWidth, $imageHeight);
-					$horizontalMargin = ($imageWidth - $dimension) / 2;
-					$verticalMargin = ($imageHeight - $dimension) / 2;
-					$image->crop($horizontalMargin, $imageWidth - $horizontalMargin, $verticalMargin, $imageHeight - $verticalMargin);
-
-					craft()->users->saveUserPhoto($_FILES['userPhoto']['name'], $image, $user);
-
-					IOHelper::deleteFile($_FILES['userPhoto']['tmp_name']);
-				}
 			}
 
 			// Only admins can toggle admin settings, and only allow from the CP and if the Users package is installed
@@ -712,6 +698,29 @@ class UsersController extends BaseController
 			{
 				if (craft()->users->saveUser($user))
 				{
+					// Now that we have a record saved, let's process any user photos.
+					if (craft()->request->getPost('deleteUserPhoto'))
+					{
+						craft()->users->deleteUserPhoto($user);
+						$user->photo = null;
+					}
+					elseif ($userPhoto = \CUploadedFile::getInstanceByName('userPhoto'))
+					{
+						craft()->users->deleteUserPhoto($user);
+						$image = craft()->images->loadImage($userPhoto->getTempName());
+						$imageWidth = $image->getWidth();
+						$imageHeight = $image->getHeight();
+
+						$dimension = min($imageWidth, $imageHeight);
+						$horizontalMargin = ($imageWidth - $dimension) / 2;
+						$verticalMargin = ($imageHeight - $dimension) / 2;
+						$image->crop($horizontalMargin, $imageWidth - $horizontalMargin, $verticalMargin, $imageHeight - $verticalMargin);
+
+						craft()->users->saveUserPhoto($userPhoto->getName(), $image, $user);
+
+						IOHelper::deleteFile($userPhoto->getTempName());
+					}
+
 					if (($currentUser = craft()->userSession->getUser()))
 					{
 						// Save any user groups
