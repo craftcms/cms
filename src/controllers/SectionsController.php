@@ -163,10 +163,10 @@ class SectionsController extends BaseController
 		$section->maxLevels  = craft()->request->getPost('types.'.$section->type.'.maxLevels');
 
 		// Are we allowing anonymous front-end submissions?
-		if ((bool) craft()->request->getPost('allowAnonymousSubmissions', false))
+		if (craft()->request->getPost('types.'.$section->type.'.allowAnonymousSubmissions'))
 		{
 			// Was a default author specified for this section?
-			$defaultAuthorId = craft()->request->getPost('defaultAuthor');
+			$defaultAuthorId = craft()->request->getPost('types.'.$section->type.'.defaultAuthor');
 
 			if ($defaultAuthorId)
 			{

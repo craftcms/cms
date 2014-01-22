@@ -85,7 +85,31 @@
 	}) }}
 {% endmacro %}
 
-{% from _self import urlFormatInput, hasUrlsField, templateField %}
+{% macro anonymousSubmissionsFields(sectionType, section, authorOptions) %}
+	{% from "_includes/forms" import checkboxField, selectField %}
+
+	{{ checkboxField({
+		first: true,
+		label: "Allow anonymous submissions?"|t,
+		id: sectionType~'-allowAnonymousSubmissions',
+		name: 'types['~sectionType~'][allowAnonymousSubmissions]',
+		checked: (section.defaultAuthorId is not empty),
+		toggle: sectionType~'-default-author-setting'
+	}) }}
+
+	<div id="{{ sectionType }}-default-author-setting"{% if not section.defaultAuthorId %} class="hidden"{% endif %}>
+		{{ selectField({
+			label: "Default Author"|t,
+			instructions: "Choose the default author that anonymously-submitted entries should be assigned to."|t,
+			id: sectionType~'-defaultAuthor',
+			name: 'types['~sectionType~'][defaultAuthor]',
+			options: authorOptions,
+			value: section.defaultAuthorId
+		}) }}
+	</div>
+{% endmacro %}
+
+{% from _self import urlFormatInput, hasUrlsField, templateField, anonymousSubmissionsFields %}
 
 
 {% set content %}
@@ -161,8 +185,6 @@
 			}, localesInput) }}
 		{% endif %}
 
-		<hr>
-
 		{{ forms.selectField({
 			label: "Section Type"|t,
 			instructions: "What type of section is this?"|t ~ (section.id ? '<br><span class="error">'~"Careful—changing this may result in data loss."|t~'</span>' : ''),
@@ -174,6 +196,8 @@
 			targetPrefix: 'type-',
 			errors: section.getErrors('type')
 		}) }}
+
+		<hr>
 
 		{% if canBeSingle %}
 			<div id="type-single"{% if section.type != 'single' %} class="hidden"{% endif %}>
@@ -221,6 +245,10 @@
 					{{ templateField('channel', section) }}
 				</div>
 
+				<hr>
+
+				{{ anonymousSubmissionsFields('channel', section, authorOptions) }}
+
 			</div>
 		{% endif %}
 
@@ -245,28 +273,13 @@
 					errors: section.getErrors('maxLevels')
 				}) }}
 
+				<hr>
+
+				{{ anonymousSubmissionsFields('structure', section, authorOptions) }}
+
 			</div>
 		{% endif %}
 
-		<div class="field">
-			{{ forms.checkboxField({
-				first: true,
-				label: "Allow anonymous submissions?"|t,
-				name: 'allowAnonymousSubmissions',
-				checked: (section.defaultAuthorId is defined and section.defaultAuthorId is not empty ? true : false),
-				toggle: 'defaultAuthor'
-			}) }}
-
-			<div id="defaultAuthor"{% if section.defaultAuthorId is not defined or not section.defaultAuthorId %} class="hidden"{% endif %}>
-				{{ forms.selectField({
-					label: "Default Author"|t,
-					instructions: "Choose an author that all anonymous entries can be assigned to upon submission."|t,
-					name: 'defaultAuthor',
-					options: authorOptions,
-					value: (section.defaultAuthorId is defined and section.defaultAuthorId is not empty ? section.defaultAuthorId : null)
-				}) }}
-			</div>
-		</div>
 		<hr>
 
 		<div class="buttons">
