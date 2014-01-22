@@ -173,6 +173,11 @@ class ElementsService extends BaseApplicationComponent
 					foreach ($result as $row)
 					{
 						$elements[] = $row['id'];
+
+						// Fire an 'onPopulateElement' event
+						$this->onPopulateElement(new Event($this, array(
+							'row'      => $row,
+						)));
 					}
 				}
 				else
@@ -236,6 +241,11 @@ class ElementsService extends BaseApplicationComponent
 						}
 
 						$lastElement = $element;
+
+						// Fire an 'onPopulateElement' event
+						$this->onPopulateElement(new Event($this, array(
+							'row'      => $row,
+						)));
 					}
 
 					$lastElement->setNext(false);
@@ -723,6 +733,8 @@ class ElementsService extends BaseApplicationComponent
 	 *
 	 * @param BaseElementModel $element
 	 * @param bool             $validateContent
+	 * @throws Exception
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function saveElement(BaseElementModel $element, $validateContent = true)
@@ -1312,6 +1324,16 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		return $str;
+	}
+
+	/**
+	 * Fires an 'onPopulateElement' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onPopulateElement(Event $event)
+	{
+		$this->raiseEvent('onPopulateElement', $event);
 	}
 
 	// Private functions
