@@ -35,7 +35,7 @@
 			{% endif %}
 			<tbody>
 				{% for locale in craft.i18n.getSiteLocales() %}
-					<tr class="urlFormatRow-{{ locale.id }}{% if craft.hasPackage('Localize') and not brandNewSection and section.locales[locale.id] is not defined %} hidden{% endif %}">
+					<tr class="for-locale-{{ locale.id }}{% if craft.hasPackage('Localize') and not brandNewSection and section.locales[locale.id] is not defined %} hidden{% endif %}">
 						{% if craft.hasPackage('Localize') %}
 							<th class="thin nowrap">{{ locale.id }}</th>
 						{% endif %}
@@ -120,22 +120,44 @@
 
 		{% if craft.hasPackage('Localize') %}
 			{% set localesInput %}
-				{% for locale in craft.i18n.getSiteLocales() %}
-					<div>
-						{{ forms.checkbox({
-							label: locale.name~' ('~locale.id~')',
-							name: 'locales[]',
-							value: locale.id,
-							checked: (brandNewSection or section.locales[locale.id] is defined),
-							toggle: '.urlFormatRow-'~locale.id
-						}) }}
-					</div>
-				{% endfor %}
+				<table class="data" style="width: auto;">
+					<thead>
+						<tr>
+							<td></td>
+							<th scope="col">{{ "Locale"|t }}</th>
+							<th scope="col">{{ "Default Status"|t }}</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for locale in craft.i18n.getSiteLocales() %}
+							{% set localeSelected = (brandNewSection or section.locales[locale.id] is defined) %}
+							<tr>
+								<td>
+									{{ forms.checkbox({
+										id: 'locale-'~locale.id,
+										name: 'locales[]',
+										value: locale.id,
+										checked: localeSelected,
+										toggle: '.for-locale-'~locale.id
+									}) }}
+								</td>
+								<td><label for="locale-{{ locale.id }}">{{ locale.name }} ({{ locale.id }})</label></td>
+								<td class="centeralign">
+									<div class="for-locale-{{ locale.id }}{% if not localeSelected %} hidden{% endif %}">
+										{{ forms.lightswitch({
+											name: 'defaultLocaleStatuses['~locale.id~']',
+											on:   (brandNewSection or not section.locales[locale.id] is defined or section.locales[locale.id].enabledByDefault)
+										}) }}
+									</div>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
 			{% endset %}
 
 			{{ forms.field({
-				label: "Locales"|t,
-				instructions: "Which locales should this section be enabled in?"|t
+				label: "Which locales should entries in this section target?"|t
 			}, localesInput) }}
 		{% endif %}
 
@@ -164,7 +186,7 @@
 						checked: section.isHomepage(),
 						toggle: 'single-uri-container',
 						reverseToggle: true
-					})}}
+					}) }}
 				{% endif %}
 
 				<div id="single-uri-container"{% if section.isHomepage() %} class="hidden"{% endif %}>

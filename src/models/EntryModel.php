@@ -52,7 +52,14 @@ class EntryModel extends BaseElementModel
 	 */
 	public function getLocales()
 	{
-		return array_keys($this->getSection()->getLocales());
+		$locales = array();
+
+		foreach ($this->getSection()->getLocales() as $locale)
+		{
+			$locales[$locale->locale] = array('enabledByDefault' => $locale->enabledByDefault);
+		}
+
+		return $locales;
 	}
 
 	/**

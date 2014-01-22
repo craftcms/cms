@@ -389,6 +389,7 @@ div.btn.submit input { position: absolute; left: 100%; }
 	-webkit-transition: -webkit-box-shadow linear 100ms;
 	   -moz-transition:         box-shadow linear 100ms;
 }
+table .lightswitch { display: inline-block; margin-bottom: -5px; }
 .lightswitch:focus { outline: none;
 	-webkit-box-shadow: 0 0 0 1px hsla(205, 100%, 60%, 0.5), 0 0 2px hsl(205, 100%, 60%);
 	        box-shadow: 0 0 0 1px hsla(205, 100%, 60%, 0.5), 0 0 2px hsl(205, 100%, 60%);

@@ -817,15 +817,29 @@ class ElementsService extends BaseApplicationComponent
 					$mainContent = $element->getContent();
 				}
 
-				$localeIds = $element->getLocales();
+				$locales = $element->getLocales();
+				$localeIds = array();
 
-				if (!$localeIds)
+				if (!$locales)
 				{
 					throw new Exception('All elements must have at least one locale associated with them.');
 				}
 
-				foreach ($localeIds as $localeId)
+				foreach ($locales as $localeId => $localeInfo)
 				{
+					if (is_numeric($localeId) && is_string($localeInfo))
+					{
+						$localeId = $localeInfo;
+						$localeInfo = array();
+					}
+
+					$localeIds[] = $localeId;
+
+					if (!isset($localeInfo['enabledByDefault']))
+					{
+						$localeInfo['enabledByDefault'] = true;
+					}
+
 					if (isset($localeRecords[$localeId]))
 					{
 						$localeRecord = $localeRecords[$localeId];
@@ -833,8 +847,10 @@ class ElementsService extends BaseApplicationComponent
 					else
 					{
 						$localeRecord = new ElementLocaleRecord();
+
 						$localeRecord->elementId = $element->id;
 						$localeRecord->locale    = $localeId;
+						$localeRecord->enabled   = $localeInfo['enabledByDefault'];
 					}
 
 					// Set the locale and its content on the element
