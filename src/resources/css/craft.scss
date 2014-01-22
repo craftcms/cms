@@ -326,10 +326,9 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .menubtn:not(.submit):not(.noborder):after { margin-top: -1px; }
 
 /* spinner */
-.spinner { display: inline-block; vertical-align: bottom; width: 20px; background: url(../images/spinner.gif) no-repeat 50% 50%; }
+.spinner { display: inline-block; vertical-align: bottom; @include spinner; }
 .spinner.big { width: 48px; height: 48px; background: url(../images/spinner_big.gif) no-repeat 50% 50%; }
 .btn + .spinner { margin-left: 7px; }
-.spinner.element-spinner { background-image: url(../images/spinner_element.gif); }
 
 /* small buttons */
 .btngroup.small .btn,
@@ -513,10 +512,18 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 	        box-shadow: inset 0 0 1px 1px rgba(0,0,0,0.2);
 }
 
-.element.removable { padding-right: 27px; }
+.element.removable,
+.element.loading { padding-right: 27px; }
+
 .element.removable .delete { position: absolute; right: 7px; }
 .element.removable .delete:before { color: rgba(0,0,0,0.2); }
 
+.element.loading:after { content: '.'; font-size: 0; position: absolute; top: 0; right: 3px; @include spinner; height: 30px; }
+.element.loading.sel:after { background-image: url(../images/spinner_element.gif); }
+.element.loading.removable .delete { display: none; }
+
+
+/* structure view */
 .toggle { width: 20px; height: 20px; background: url(../images/toggle.png) no-repeat 50% 0; }
 .structureview li { padding-left: 8px; }
 .structureview ul { margin-left: -3px; }
@@ -1020,8 +1027,9 @@ ul.errors li { color: $errorcolor; }
 	.status { background-image: url(../images/status_2x.png); background-size: 10px 40px; }
 
 	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
-	.spinner.element-spinner { background-image: url(../images/spinner_element_2x.gif); background-size: 20px; }
 	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
+
+	.element.loading.sel:after { background-image: url(../images/spinner_element_2x.gif); background-size: 20px; }
 
 	.structureview ul li { background-image: url(../images/branch_2x.png); background-size: 40px; }
 
