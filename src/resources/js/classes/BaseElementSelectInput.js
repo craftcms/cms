@@ -73,33 +73,37 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 
 		$elements.find('.delete').on('click', $.proxy(function(ev)
 		{
-			var $element = $(ev.currentTarget).closest('.element');
-
-			this.$elements = this.$elements.not($element);
-			this.elementSelect.removeItems($element);
-
-			if (this.modal)
-			{
-				this.modal.elementIndex.enableElementsById($element.data('id'));
-			}
-
-			this.totalElements--;
-
-			if (this.$addElementBtn)
-			{
-				this.$addElementBtn.removeClass('disabled');
-			}
-
-			$element.css('z-index', 0);
-
-			$element.animate({
-				marginLeft: -($element.outerWidth() + parseInt($element.css('margin-right'))),
-				opacity: -1 // double speed!
-			}, 'fast', function() {
-				$element.remove();
-			});
-
+			this.removeElement($(ev.currentTarget).closest('.element'));
 		}, this));
+	},
+
+	removeElement: function(element)
+	{
+		var $element = $(element);
+
+		this.$elements = this.$elements.not($element);
+		this.elementSelect.removeItems($element);
+
+		if (this.modal && $element.data('id'))
+		{
+			this.modal.elementIndex.enableElementsById($element.data('id'));
+		}
+
+		this.totalElements--;
+
+		if (this.$addElementBtn)
+		{
+			this.$addElementBtn.removeClass('disabled');
+		}
+
+		$element.css('z-index', 0);
+
+		$element.animate({
+			marginLeft: -($element.outerWidth() + parseInt($element.css('margin-right'))),
+			opacity: -1 // double speed!
+		}, 'fast', function() {
+			$element.remove();
+		});
 	},
 
 	showModal: function()
