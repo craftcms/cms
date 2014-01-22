@@ -152,32 +152,27 @@ class ElementsService extends BaseApplicationComponent
 				$query->limit($criteria->limit);
 			}
 
-			$result = $query->queryAll();
+			$results = $query->queryAll();
 
-			if ($result)
+			if ($results)
 			{
 				if ($criteria->search && $scoredSearchResults)
 				{
 					$searchPositions = array();
 
-					foreach ($result as $row)
+					foreach ($results as $result)
 					{
-						$searchPositions[] = array_search($row['id'], $filteredElementIds);
+						$searchPositions[] = array_search($result['id'], $filteredElementIds);
 					}
 
-					array_multisort($searchPositions, $result);
+					array_multisort($searchPositions, $results);
 				}
 
 				if ($justIds)
 				{
-					foreach ($result as $row)
+					foreach ($results as $result)
 					{
-						$elements[] = $row['id'];
-
-						// Fire an 'onPopulateElement' event
-						$this->onPopulateElement(new Event($this, array(
-							'row'      => $row,
-						)));
+						$elements[] = $result['id'];
 					}
 				}
 				else
@@ -186,35 +181,38 @@ class ElementsService extends BaseApplicationComponent
 					$indexBy = $criteria->indexBy;
 					$lastElement = null;
 
-					foreach ($result as $row)
+					foreach ($results as $result)
 					{
+						// Make a copy to pass to the onPopulateElement event
+						$originalResult = array_merge($result);
+
 						if ($contentTable)
 						{
 							// Separate the content values from the main element attributes
 							$content = array(
-								'id'        => (isset($row['contentId']) ? $row['contentId'] : null),
-								'elementId' => $row['id'],
+								'id'        => (isset($result['contentId']) ? $result['contentId'] : null),
+								'elementId' => $result['id'],
 								'locale'    => $criteria->locale,
-								'title'     => (isset($row['title']) ? $row['title'] : null)
+								'title'     => (isset($result['title']) ? $result['title'] : null)
 							);
 
-							unset($row['title']);
+							unset($result['title']);
 
 							if ($fieldColumns)
 							{
 								foreach ($fieldColumns as $column)
 								{
-									if (!empty($row[$column['column']]))
+									if (!empty($result[$column['column']]))
 									{
-										$content[$column['handle']] = $row[$column['column']];
-										unset($row[$column['column']]);
+										$content[$column['handle']] = $result[$column['column']];
+										unset($result[$column['column']]);
 									}
 								}
 							}
 						}
 
-						$row['locale'] = $criteria->locale;
-						$element = $elementType->populateElementModel($row);
+						$result['locale'] = $criteria->locale;
+						$element = $elementType->populateElementModel($result);
 
 						if ($contentTable)
 						{
@@ -244,7 +242,8 @@ class ElementsService extends BaseApplicationComponent
 
 						// Fire an 'onPopulateElement' event
 						$this->onPopulateElement(new Event($this, array(
-							'row'      => $row,
+							'element' => $element,
+							'result'  => $originalResult
 						)));
 					}
 
