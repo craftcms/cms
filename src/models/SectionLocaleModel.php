@@ -16,11 +16,12 @@ class SectionLocaleModel extends BaseModel
 	protected function defineAttributes()
 	{
 		return array(
-			'id'              => AttributeType::Number,
-			'sectionId'       => AttributeType::Number,
-			'locale'          => AttributeType::Locale,
-			'urlFormat'       => array(AttributeType::UrlFormat, 'label' => 'URL Format'),
-			'nestedUrlFormat' => array(AttributeType::UrlFormat, 'label' => 'URL Format'),
+			'id'               => AttributeType::Number,
+			'sectionId'        => AttributeType::Number,
+			'locale'           => AttributeType::Locale,
+			'enabledByDefault' => array(AttributeType::Bool, 'default' => true),
+			'urlFormat'        => array(AttributeType::UrlFormat, 'label' => 'URL Format'),
+			'nestedUrlFormat'  => array(AttributeType::UrlFormat, 'label' => 'URL Format'),
 		);
 	}
 

@@ -417,12 +417,13 @@ class SectionsService extends BaseApplicationComponent
 					{
 						$oldLocale = $oldSectionLocales[$localeId];
 
-						// Has the URL format changed?
-						if ($locale->urlFormat != $oldLocale->urlFormat || $locale->nestedUrlFormat != $oldLocale->nestedUrlFormat)
+						// Has anything changed?
+						if ($locale->enabledByDefault != $oldLocale->enabledByDefault || $locale->urlFormat != $oldLocale->urlFormat || $locale->nestedUrlFormat != $oldLocale->nestedUrlFormat)
 						{
 							craft()->db->createCommand()->update('sections_i18n', array(
-								'urlFormat'       => $locale->urlFormat,
-								'nestedUrlFormat' => $locale->nestedUrlFormat
+								'enabledByDefault' => (int) $locale->enabledByDefault,
+								'urlFormat'        => $locale->urlFormat,
+								'nestedUrlFormat'  => $locale->nestedUrlFormat
 							), array(
 								'id' => $oldLocale->id
 							));
@@ -430,13 +431,13 @@ class SectionsService extends BaseApplicationComponent
 					}
 					else
 					{
-						$newLocaleData[] = array($section->id, $localeId, $locale->urlFormat, $locale->nestedUrlFormat);
+						$newLocaleData[] = array($section->id, $localeId, (int) $locale->enabledByDefault, $locale->urlFormat, $locale->nestedUrlFormat);
 					}
 				}
 
 				// Insert the new locales
 				craft()->db->createCommand()->insertAll('sections_i18n',
-					array('sectionId', 'locale', 'urlFormat', 'nestedUrlFormat'),
+					array('sectionId', 'locale', 'enabledByDefault', 'urlFormat', 'nestedUrlFormat'),
 					$newLocaleData
 				);
 

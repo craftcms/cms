@@ -212,9 +212,10 @@ class SectionsController extends BaseController
 			}
 
 			$locales[$localeId] = new SectionLocaleModel(array(
-				'locale'          => $localeId,
-				'urlFormat'       => $urlFormat,
-				'nestedUrlFormat' => $nestedUrlFormat,
+				'locale'           => $localeId,
+				'enabledByDefault' => (bool) craft()->request->getPost('defaultLocaleStatuses.'.$localeId),
+				'urlFormat'        => $urlFormat,
+				'nestedUrlFormat'  => $nestedUrlFormat,
 			));
 		}
 

@@ -147,7 +147,15 @@ class EntriesController extends BaseController
 			}
 			else
 			{
-				$variables['enabledLocales'] = array_merge($variables['localeIds']);
+				$variables['enabledLocales'] = array();
+
+				foreach ($variables['section']->getLocales() as $locale)
+				{
+					if ($locale->enabledByDefault)
+					{
+						$variables['enabledLocales'][] = $locale->locale;
+					}
+				}
 			}
 		}
 
