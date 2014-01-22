@@ -212,6 +212,33 @@ class TagsController extends BaseController
 	}
 
 	/**
+	 * Creates a new tag.
+	 */
+	public function actionCreateTag()
+	{
+		$this->requireLogin();
+		$this->requireAjaxRequest();
+
+		$tag = new TagModel();
+		$tag->groupId = craft()->request->getRequiredPost('groupId');
+		$tag->name = craft()->request->getRequiredPost('name');
+
+		if (craft()->tags->saveTag($tag))
+		{
+			$this->returnJson(array(
+				'success' => true,
+				'id'      => $tag->id
+			));
+		}
+		else
+		{
+			$this->returnJson(array(
+				'success' => false
+			));
+		}
+	}
+
+	/**
 	 * Saves a tag's content.
 	 */
 	public function actionSaveTagContent()
