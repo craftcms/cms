@@ -699,7 +699,8 @@ class UsersController extends BaseController
 				if (craft()->users->saveUser($user))
 				{
 					// Now that we have a record saved, let's process any user photos.
-					if (craft()->request->getPost('deleteUserPhoto'))
+					$deleteUserPhoto = craft()->request->getPost('deleteUserPhoto');
+					if (!empty($deleteUserPhoto))
 					{
 						craft()->users->deleteUserPhoto($user);
 						$user->photo = null;
