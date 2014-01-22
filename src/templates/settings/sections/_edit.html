@@ -203,18 +203,20 @@
 			</div>
 		{% endif %}
 
+		{% set urlFormatParams = {
+			label: "Entry URL Format"|t,
+			instructions: "What the entry URLs should look like. You can include tags that output entry properties, such as {ex1} or {ex2}."|t({ ex1: '<code>{slug}</code>', ex2: '<code>{postDate|date("Y")}</code>' }),
+			required: true,
+			errors: section.getErrors('urlFormat')
+		} %}
+
 		{% if canBeChannel %}
 			<div id="type-channel"{% if section.type != 'channel' %} class="hidden"{% endif %}>
 
 				{{ hasUrlsField('channel', section) }}
 
 				<div id="channel-url-settings" class="nested-fields{% if not section.hasUrls %} hidden{% endif %}">
-					{{ forms.field({
-						label: "Entry URL Format"|t,
-						instructions: "What the entry URLs should look like. <code>{slug}</code> is required, but it can also include any entry properties, e.g. <code>{postDate.year}</code>."|t,
-						required: true,
-						errors: section.getErrors('urlFormat')
-					}, urlFormatInput('channel', brandNewSection, section)) }}
+					{{ forms.field(urlFormatParams, urlFormatInput('channel', brandNewSection, section)) }}
 
 					{{ templateField('channel', section) }}
 				</div>
@@ -228,12 +230,7 @@
 				{{ hasUrlsField('structure', section) }}
 
 				<div id="structure-url-settings" class="nested-fields{% if not section.hasUrls %} hidden{% endif %}">
-					{{ forms.field({
-						label: "Entry URL Formats"|t,
-						instructions: "What the entry URLs should look like. <code>{slug}</code> is required, but it can also include any entry properties, e.g. <code>{postDate.year}</code>."|t,
-						required: true,
-						errors: section.getErrors('urlFormat')
-					}, urlFormatInput('structure', brandNewSection, section)) }}
+					{{ forms.field(urlFormatParams, urlFormatInput('structure', brandNewSection, section)) }}
 
 					{{ templateField('structure', section) }}
 				</div>

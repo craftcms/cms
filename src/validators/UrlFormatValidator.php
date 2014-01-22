@@ -9,7 +9,7 @@ class UrlFormatValidator extends \CValidator
 	/**
 	 * @var bool Whether we should ensure that "{slug}" is used within the URL format.
 	 */
-	public $requireSlug = true;
+	public $requireSlug = false;
 
 	/**
 	 * @param $object

@@ -2792,51 +2792,51 @@ Garnish.Menu = Garnish.Base.extend({
 		this.addListener(this.$options, 'click', 'selectOption');
 	},
 
-	setPositionRelativeToButton: function()
+	setPositionRelativeToTrigger: function()
 	{
 		var windowHeight = Garnish.$win.height(),
 			windowScrollTop = Garnish.$win.scrollTop(),
 
-			btnOffset = this.$trigger.offset(),
-			btnWidth = this.$trigger.outerWidth(),
-			btnHeight = this.$trigger.outerHeight(),
-			btnOffsetBottom = btnOffset.top + btnHeight,
-			btnOffsetTop = btnOffset.top,
+			triggerOffset = this.$trigger.offset(),
+			triggerWidth = this.$trigger.outerWidth(),
+			triggerHeight = this.$trigger.outerHeight(),
+			triggerOffsetBottom = triggerOffset.top + triggerHeight,
+			triggerOffsetTop = triggerOffset.top,
 
 			menuHeight = this.$container.outerHeight(),
 
-			bottomClearance = windowHeight + windowScrollTop - btnOffsetBottom,
-			topClearance = btnOffsetTop - windowScrollTop;
+			bottomClearance = windowHeight + windowScrollTop - triggerOffsetBottom,
+			topClearance = triggerOffsetTop - windowScrollTop;
 
 		var css = {
-			minWidth: btnWidth - (this.$container.outerWidth() - this.$container.width())
+			minWidth: triggerWidth - (this.$container.outerWidth() - this.$container.width())
 		};
 
-		// Is there room for the menu below the button?
+		// Is there room for the menu below the trigger?
 		if (bottomClearance >= menuHeight || bottomClearance >= topClearance)
 		{
-			css.top = btnOffsetBottom;
+			css.top = triggerOffsetBottom;
 		}
 		else
 		{
-			css.top = btnOffsetTop - menuHeight;
+			css.top = triggerOffsetTop - menuHeight;
 		}
 
 		switch (this.$container.data('align'))
 		{
 			case 'right':
 			{
-				css.right = Garnish.$win.width() - (btnOffset.left + btnWidth);
+				css.right = Garnish.$win.width() - (triggerOffset.left + triggerWidth);
 				break;
 			}
 			case 'center':
 			{
-				css.left = Math.round((btnOffset.left + btnWidth / 2) - (this.$container.outerWidth() / 2));
+				css.left = Math.round((triggerOffset.left + triggerWidth / 2) - (this.$container.outerWidth() / 2));
 				break;
 			}
 			default:
 			{
-				css.left = btnOffset.left;
+				css.left = triggerOffset.left;
 			}
 		}
 
@@ -2847,7 +2847,7 @@ Garnish.Menu = Garnish.Base.extend({
 	{
 		if (this.$trigger)
 		{
-			this.setPositionRelativeToButton();
+			this.setPositionRelativeToTrigger();
 		}
 
 		this.$container.fadeIn(50);
