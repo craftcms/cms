@@ -240,7 +240,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function uploadFile($folder)
 	{
-		$this->_checkPermissions('uploadToAssetSource');
+		$this->checkPermissions('uploadToAssetSource');
 
 		// Upload the file and drop it in the temporary folder
 		$uploader = new \qqFileUploader();
@@ -336,7 +336,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function transferFileIntoSource($localCopy, AssetFolderModel $folder, AssetFileModel $file, $action)
 	{
-		$this->_checkPermissions('uploadToAssetSource');
+		$this->checkPermissions('uploadToAssetSource');
 
 		$filename = IOHelper::cleanFilename($file->filename);
 
@@ -407,8 +407,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			return $response->setSuccess();
 		}
 
-		$this->_checkPermissions('uploadToAssetSource');
-		$this->_checkPermissions('removeFromAssetSource');
+		$this->checkPermissions('uploadToAssetSource');
+		$this->checkPermissions('removeFromAssetSource');
 
 		// If this is a revisited conflict, perform the appropriate actions
 		if (!empty($action))
@@ -610,8 +610,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function replaceFile(AssetFileModel $oldFile, AssetFileModel $replaceWith)
 	{
-		$this->_checkPermissions('uploadToAssetSource');
-		$this->_checkPermissions('removeFromAssetSource');
+		$this->checkPermissions('uploadToAssetSource');
+		$this->checkPermissions('removeFromAssetSource');
 
 		if ($oldFile->kind == 'image')
 		{
@@ -667,7 +667,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function deleteFile(AssetFileModel $file)
 	{
-		$this->_checkPermissions('removeFromAssetSource');
+		$this->checkPermissions('removeFromAssetSource');
 
 		// Delete all the created images, such as transforms, thumbnails
 		$this->deleteCreatedImages($file);
@@ -708,7 +708,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function createFolder(AssetFolderModel $parentFolder, $folderName)
 	{
-		$this->_checkPermissions('createSubfoldersInAssetSource');
+		$this->checkPermissions('createSubfoldersInAssetSource');
 
 		$folderName = IOHelper::cleanFilename($folderName);
 
@@ -749,8 +749,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function renameFolder(AssetFolderModel $folder, $newName)
 	{
-		$this->_checkPermissions('createSubfoldersInAssetSource');
-		$this->_checkPermissions('removeFromAssetSource');
+		$this->checkPermissions('createSubfoldersInAssetSource');
+		$this->checkPermissions('removeFromAssetSource');
 
 		$parentFolder = craft()->assets->getFolderById($folder->parentId);
 
@@ -800,8 +800,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function moveFolder(AssetFolderModel $folder, AssetFolderModel $newParentFolder, $overwriteTarget = false)
 	{
-		$this->_checkPermissions('createSubfoldersInAssetSource');
-		$this->_checkPermissions('removeFromAssetSource');
+		$this->checkPermissions('createSubfoldersInAssetSource');
+
+		$folderSource = craft()->assetSources->getSourceTypeById($folder->sourceId);
+		$folderSource->checkPermissions('removeFromAssetSource');
 
 		$response = new AssetOperationResponseModel();
 		if ($folder->id == $newParentFolder->id)
@@ -899,7 +901,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function deleteFolder(AssetFolderModel $folder)
 	{
-		$this->_checkPermissions('removeFromAssetSource');
+		$this->checkPermissions('removeFromAssetSource');
 
 		// Get rid of children files
 		$criteria = craft()->elements->getCriteria(ElementType::Asset);
@@ -996,7 +998,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param $permission
 	 * @throws Exception
 	 */
-	protected function _checkPermissions($permission)
+	public function checkPermissions($permission)
 	{
 		if (!craft()->userSession->checkPermission($permission.':'.$this->model->id))
 		{

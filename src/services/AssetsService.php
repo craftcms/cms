@@ -341,16 +341,23 @@ class AssetsService extends BaseApplicationComponent
 		$folder = $this->getFolderById($folderId);
 		$newParentFolder = $this->getFolderById($newParentId);
 
-
-		if (!($folder && $newParentFolder))
+		try
+		{
+			if (!($folder && $newParentFolder))
+			{
+				$response = new AssetOperationResponseModel();
+				$response->setError(Craft::t("Error moving folder - either source or target folders cannot be found"));
+			}
+			else
+			{
+				$newSourceType = craft()->assetSources->getSourceTypeById($newParentFolder->sourceId);
+				$response = $newSourceType->moveFolder($folder, $newParentFolder, !empty($action));
+			}
+		}
+		catch (Exception $exception)
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setError(Craft::t("Error moving folder - either source or target folders cannot be found"));
-		}
-		else
-		{
-			$newSourceType = craft()->assetSources->getSourceTypeById($newParentFolder->sourceId);
-			$response = $newSourceType->moveFolder($folder, $newParentFolder, !empty($action));
+			$response->setError($exception->getMessage());
 		}
 
 		return $response;
