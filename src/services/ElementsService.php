@@ -1534,7 +1534,7 @@ class ElementsService extends BaseApplicationComponent
 						$sourcesAlias            = 'sources'.$this->_joinSourcesCount;
 						$targetMatrixBlocksAlias = 'target_matrixblocks'.$this->_joinTargetMatrixBlocksCount;
 
-						$query->leftJoin('relations '.$sourcesAlias, array('and', $sourcesAlias.'.targetId = elements.id', array('or', $sourceAlias.'.sourceLocale is null', $sourceAlias.'.sourceLocale = :locale')));
+						$query->leftJoin('relations '.$sourcesAlias, array('and', $sourcesAlias.'.targetId = elements.id', array('or', $sourcesAlias.'.sourceLocale is null', $sourcesAlias.'.sourceLocale = :locale')));
 						$query->leftJoin('matrixblocks '.$targetMatrixBlocksAlias, $targetMatrixBlocksAlias.'.id = '.$sourcesAlias.'.sourceId');
 
 						$condition = array('and',
