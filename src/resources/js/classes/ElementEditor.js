@@ -8,7 +8,6 @@ Craft.ElementEditor = Garnish.Base.extend({
 		elementId: 0,
 		requestId: 0,
 		$trigger: null,
-		$spinner: null,
 
 		init: function(settings)
 		{
