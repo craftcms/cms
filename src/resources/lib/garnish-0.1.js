@@ -2317,13 +2317,36 @@ Garnish.escManager = new Garnish.EscManager();
  */
 Garnish.HUD = Garnish.Base.extend({
 
+	$trigger: null,
+	$hud: null,
+	$tip: null,
+	$body: null,
+	$shade: null,
+
+	windowWidth: null,
+	windowHeight: null,
+	windowScrollLeft: null,
+	windowScrollTop: null,
+
+	triggerWidth: null,
+	triggerHeight: null,
+	triggerOffset: null,
+
+	width: null,
+	height: null,
+
+	position: null,
+
 	/**
 	 * Constructor
 	 */
 	init: function(trigger, bodyContents, settings) {
 
 		this.$trigger = $(trigger);
+
 		this.setSettings(settings, Garnish.HUD.defaults);
+		this.on('show', this.settings.onShow);
+		this.on('hide', this.settings.onHide);
 
 		if (typeof Garnish.HUD.activeHUDs == "undefined")
 		{
@@ -2344,7 +2367,12 @@ Garnish.HUD = Garnish.Base.extend({
 	/**
 	 * Show
 	 */
-	show: function(ev) {
+	show: function(ev)
+	{
+		if (ev && ev.stopPropagation)
+		{
+			ev.stopPropagation();
+		}
 
 		if (this.showing)
 		{
@@ -2358,114 +2386,26 @@ Garnish.HUD = Garnish.Base.extend({
 			}
 		}
 
+		// Prevent the browser from jumping
 		this.$hud.css('top', Garnish.$win.scrollTop());
+
 		this.$hud.show();
-
-		// -------------------------------------------
-		//  Get all relevant dimensions, lengths, etc
-		// -------------------------------------------
-
-		this.windowWidth = Garnish.$win.width();
-		this.windowHeight = Garnish.$win.height();
-
-		this.windowScrollLeft = Garnish.$win.scrollLeft();
-		this.windowScrollTop = Garnish.$win.scrollTop();
-
-		// get the trigger element's dimensions
-		this.triggerWidth = this.$trigger.outerWidth();
-		this.triggerHeight = this.$trigger.outerHeight();
-
-		// get the offsets for each side of the trigger element
-		this.triggerOffset = this.$trigger.offset();
-		this.triggerOffsetRight = this.triggerOffset.left + this.triggerWidth;
-		this.triggerOffsetBottom = this.triggerOffset.top + this.triggerHeight;
-		this.triggerOffsetLeft = this.triggerOffset.left;
-		this.triggerOffsetTop = this.triggerOffset.top;
-
-		// get the HUD dimensions
-		this.width = this.$hud.outerWidth();
-		this.height = this.$hud.outerHeight();
-
-		// get the minimum horizontal/vertical clearance needed to fit the HUD
-		this.minHorizontalClearance = this.width + this.settings.triggerSpacing + this.settings.windowSpacing;
-		this.minVerticalClearance = this.height + this.settings.triggerSpacing + this.settings.windowSpacing;
-
-		// find the actual available right/bottom/left/top clearances
-		this.rightClearance = this.windowWidth + this.windowScrollLeft - this.triggerOffsetRight;
-		this.bottomClearance = this.windowHeight + this.windowScrollTop - this.triggerOffsetBottom;
-		this.leftClearance = this.triggerOffsetLeft - this.windowScrollLeft;
-		this.topClearance = this.triggerOffsetTop - this.windowScrollTop;
-
-		// -------------------------------------------
-		//  Where are we putting it?
-		//   - Ideally, we'll be able to find a place to put this where it's not overlapping the trigger at all.
-		//     If we can't find that, either put it to the right or below the trigger, depending on which has the most room.
-		// -------------------------------------------
-
-		// below?
-		if (this.bottomClearance >= this.minVerticalClearance)
-		{
-			var top = this.triggerOffsetBottom + this.settings.triggerSpacing;
-			this.$hud.css('top', top);
-			this._setLeftPos();
-			this._setTipClass('top');
-		}
-		// above?
-		else if (this.topClearance >= this.minVerticalClearance)
-		{
-			var top = this.triggerOffsetTop - (this.height + this.settings.triggerSpacing);
-			this.$hud.css('top', top);
-			this._setLeftPos();
-			this._setTipClass('bottom');
-		}
-		// to the right?
-		else if (this.rightClearance >= this.minHorizontalClearance)
-		{
-			var left = this.triggerOffsetRight + this.settings.triggerSpacing;
-			this.$hud.css('left', left);
-			this._setTopPos();
-			this._setTipClass('left');
-		}
-		// to the left?
-		else if (this.leftClearance >= this.minHorizontalClearance)
-		{
-			var left = this.triggerOffsetLeft - (this.width + this.settings.triggerSpacing);
-			this.$hud.css('left', left);
-			this._setTopPos();
-			this._setTipClass('right');
-		}
-		// ok, which one comes the closest -- right or bottom?
-		else
-		{
-			var rightClearanceDiff = this.minHorizontalClearance - this.rightClearance,
-				bottomClearanceDiff = this.minVerticalClearance - this.bottomClearance;
-
-			if (rightClearanceDiff >= bottomClearanceDiff)
-			{
-				var left = this.windowWidth - (this.width + this.settings.windowSpacing),
-					minLeft = this.triggerOffsetLeft + this.settings.triggerSpacing;
-				if (left < minLeft) left = minLeft;
-				this.$hud.css('left', left);
-				this._setTopPos();
-				this._setTipClass('left');
-			}
-			else
-			{
-				var top = this.windowHeight - (this.height + this.settings.windowSpacing),
-					minTop = this.triggerOffsetTop + this.settings.triggerSpacing;
-				if (top < minTop) top = minTop;
-				this.$hud.css('top', top);
-				this._setLeftPos();
-				this._setTipClass('top');
-			}
-		}
-
-		if (ev && ev.stopPropagation)
-		{
-			ev.stopPropagation();
-		}
+		this.determineBestPosition();
+		this.setPosition();
 
 		this.$shade.show();
+
+		this.showing = true;
+		Garnish.HUD.activeHUDs[this._namespace] = this;
+
+		Garnish.escManager.register(this, 'hide');
+
+		this.addListener(Garnish.$win, 'resize', function()
+		{
+			this.updateElementProperties();
+			this.setPosition();
+		});
+
 		this.addListener(this.$shade, 'click', 'hide');
 
 		if (this.settings.closeBtn)
@@ -2473,71 +2413,126 @@ Garnish.HUD = Garnish.Base.extend({
 			this.addListener(this.settings.closeBtn, 'activate', 'hide');
 		}
 
-		this.showing = true;
-		Garnish.HUD.activeHUDs[this._namespace] = this;
-
-		Garnish.escManager.register(this, 'hide');
-
-		// onShow callback
-		this.settings.onShow();
+		this.onShow();
 	},
 
-	/**
-	 * Set Top
-	 */
-	_setTopPos: function()
+	onShow: function()
 	{
-		var maxTop = (this.windowHeight + this.windowScrollTop) - (this.height + this.settings.windowSpacing),
-			minTop = (this.windowScrollTop + this.settings.windowSpacing),
-
-			triggerCenter = this.triggerOffsetTop + Math.round(this.triggerHeight / 2),
-			top = triggerCenter - Math.round(this.height / 2);
-
-		// adjust top position as needed
-		if (top > maxTop) top = maxTop;
-		if (top < minTop) top = minTop;
-
-		this.$hud.css('top', top);
-
-		// set the tip's top position
-		var tipTop = (triggerCenter - top) - (this.settings.tipWidth / 2);
-		this.$tip.css({ top: tipTop, left: '' });
+		this.trigger('show');
 	},
 
-	/**
-	 * Set Left
-	 */
-	_setLeftPos: function()
+	updateElementProperties: function()
 	{
-		var maxLeft = (this.windowWidth + this.windowScrollLeft) - (this.width + this.settings.windowSpacing),
-			minLeft = (this.windowScrollLeft + this.settings.windowSpacing),
+		this.windowWidth = Garnish.$win.width();
+		this.windowHeight = Garnish.$win.height();
 
-			triggerCenter = this.triggerOffsetLeft + Math.round(this.triggerWidth / 2),
-			left = triggerCenter - Math.round(this.width / 2);
+		this.windowScrollLeft = Garnish.$win.scrollLeft();
+		this.windowScrollTop = Garnish.$win.scrollTop();
 
-		// adjust left position as needed
-		if (left > maxLeft) left = maxLeft;
-		if (left < minLeft) left = minLeft;
+		// get the trigger's dimensions
+		this.triggerWidth = this.$trigger.outerWidth();
+		this.triggerHeight = this.$trigger.outerHeight();
 
-		this.$hud.css('left', left);
+		// get the offsets for each side of the trigger element
+		this.triggerOffset = this.$trigger.offset();
+		this.triggerOffset.right = this.triggerOffset.left + this.triggerWidth;
+		this.triggerOffset.bottom = this.triggerOffset.top + this.triggerHeight;
 
-		// set the tip's left position
-		var tipLeft = (triggerCenter - left) - (this.settings.tipWidth / 2);
-		this.$tip.css({ left: tipLeft, top: '' });
+		// get the HUD dimensions
+		this.width = this.$hud.outerWidth();
+		this.height = this.$hud.outerHeight();
 	},
 
-	/**
-	 * Set Tip Class
-	 */
-	_setTipClass: function(c)
+	determineBestPosition: function()
 	{
+		// Get the window sizez and trigger offset
+		this.updateElementProperties();
+
+		// get the minimum horizontal/vertical clearance needed to fit the HUD
+		this.minHorizontalClearance = this.width + this.settings.triggerSpacing + this.settings.windowSpacing;
+		this.minVerticalClearance = this.height + this.settings.triggerSpacing + this.settings.windowSpacing;
+
+		// find the actual available top/right/bottom/left clearances
+		var clearances = [
+			this.triggerOffset.top - this.windowScrollTop,                        // top
+			this.windowWidth + this.windowScrollLeft - this.triggerOffset.right,  // right
+			this.windowHeight + this.windowScrollTop - this.triggerOffset.bottom, // bottom
+			this.triggerOffset.left - this.windowScrollLeft                       // left
+		];
+
+		// Figure out which one is the biggest
+		var biggestClearance = Math.max.apply(null, clearances),
+			biggestClearanceIndex = $.inArray(biggestClearance, clearances);
+
+		this.position = Garnish.HUD.positions[biggestClearanceIndex];
+
+		// Update the tip class
 		if (this.tipClass)
 		{
 			this.$tip.removeClass(this.tipClass);
 		}
 
-		this.tipClass = this.settings.tipClass+'-'+c;
+		this.tipClass = this.settings.tipClass+'-'+Garnish.HUD.tipClasses[biggestClearanceIndex];
 		this.$tip.addClass(this.tipClass);
+	},
+
+	setPosition: function()
+	{
+		if (this.position == 'top' || this.position == 'bottom')
+		{
+			// Center the HUD horizontally
+			var maxLeft = (this.windowWidth + this.windowScrollLeft) - (this.width + this.settings.windowSpacing),
+				minLeft = (this.windowScrollLeft + this.settings.windowSpacing),
+				triggerCenter = this.triggerOffset.left + Math.round(this.triggerWidth / 2),
+				left = triggerCenter - Math.round(this.width / 2);
+
+			if (left > maxLeft) left = maxLeft;
+			if (left < minLeft) left = minLeft;
+
+			this.$hud.css('left', left);
+
+			var tipLeft = (triggerCenter - left) - (this.settings.tipWidth / 2);
+			this.$tip.css({ left: tipLeft, top: '' });
+
+			if (this.position == 'top')
+			{
+				var top = this.triggerOffset.top - (this.height + this.settings.triggerSpacing);
+				this.$hud.css('top', top);
+			}
+			else
+			{
+				var top = this.triggerOffset.bottom + this.settings.triggerSpacing;
+				this.$hud.css('top', top);
+			}
+		}
+		else
+		{
+			// Center the HUD vertically
+			var maxTop = (this.windowHeight + this.windowScrollTop) - (this.height + this.settings.windowSpacing),
+				minTop = (this.windowScrollTop + this.settings.windowSpacing),
+				triggerCenter = this.triggerOffset.top + Math.round(this.triggerHeight / 2),
+				top = triggerCenter - Math.round(this.height / 2);
+
+			if (top > maxTop) top = maxTop;
+			if (top < minTop) top = minTop;
+
+			this.$hud.css('top', top);
+
+			var tipTop = (triggerCenter - top) - (this.settings.tipWidth / 2);
+			this.$tip.css({ top: tipTop, left: '' });
+
+
+			if (this.position == 'left')
+			{
+				var left = this.triggerOffset.left - (this.width + this.settings.triggerSpacing);
+				this.$hud.css('left', left);
+			}
+			else
+			{
+				var left = this.triggerOffset.right + this.settings.triggerSpacing;
+				this.$hud.css('left', left);
+			}
+		}
 	},
 
 	/**
@@ -2553,11 +2548,18 @@ Garnish.HUD = Garnish.Base.extend({
 
 		Garnish.escManager.unregister(this);
 
-		// onHide callback
-		this.settings.onHide();
+		this.onHide();
+	},
+
+	onHide: function()
+	{
+		this.trigger('hide');
 	}
 },
 {
+	positions: ['top', 'right', 'bottom', 'left'],
+	tipClasses: ['bottom', 'left', 'top', 'right'],
+
 	defaults: {
 		hudClass: 'hud',
 		tipClass: 'tip',
