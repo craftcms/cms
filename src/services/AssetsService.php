@@ -784,6 +784,13 @@ class AssetsService extends BaseApplicationComponent
 			$folder = $this->getFolderById($folderId);
 			$newSourceType = craft()->assetSources->getSourceTypeById($folder->sourceId);
 
+			// Make sure that we're allowed to move this file
+			if (!craft()->userSession->checkPermission('removeFromAssetSource:'.$originalSourceType->model->id)
+				|| !craft()->userSession->checkPermission('uploadToAssetSource:'.$newSourceType->model->id))
+			{
+				throw new Exception(Craft::t("You don't have the required permissions for this operation."));
+			}
+
 			if ($originalSourceType && $newSourceType)
 			{
 				if ( !$response = $newSourceType->moveFileInsideSource($originalSourceType, $file, $folder, $filename, $actions[$i]))

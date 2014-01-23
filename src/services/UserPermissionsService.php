@@ -379,7 +379,18 @@ class UserPermissionsService extends BaseApplicationComponent
 		foreach ($assetSources as $source)
 		{
 			$permissions['viewAssetSource:'.$source->id] = array(
-				'label' => Craft::t('View source “{title}”', array('title' => $source->name))
+				'label' => Craft::t('View source “{title}”', array('title' => $source->name)),
+				'nested' => array(
+					'uploadToAssetSource:'.$source->id => array(
+						'label' => Craft::t('Upload to source “{title}”', array('title' => $source->name)),
+					),
+					'createSubfoldersInAssetSource:'.$source->id => array(
+						'label' => Craft::t('Create folders in source “{title}”', array('title' => $source->name)),
+					),
+					'removeFromAssetSource:'.$source->id => array(
+						'label' => Craft::t('Remove assets from source “{title}”', array('title' => $source->name)),
+					)
+				)
 			);
 		}
 

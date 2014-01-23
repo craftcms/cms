@@ -240,6 +240,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function uploadFile($folder)
 	{
+		$this->_checkPermissions('uploadToAssetSource');
+
 		// Upload the file and drop it in the temporary folder
 		$uploader = new \qqFileUploader();
 
@@ -334,6 +336,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function transferFileIntoSource($localCopy, AssetFolderModel $folder, AssetFileModel $file, $action)
 	{
+		$this->_checkPermissions('uploadToAssetSource');
+
 		$filename = IOHelper::cleanFilename($file->filename);
 
 		if (!empty($action))
@@ -402,6 +406,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			$response = new AssetOperationResponseModel();
 			return $response->setSuccess();
 		}
+
+		$this->_checkPermissions('uploadToAssetSource');
+		$this->_checkPermissions('removeFromAssetSource');
 
 		// If this is a revisited conflict, perform the appropriate actions
 		if (!empty($action))
@@ -603,6 +610,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function replaceFile(AssetFileModel $oldFile, AssetFileModel $replaceWith)
 	{
+		$this->_checkPermissions('uploadToAssetSource');
+		$this->_checkPermissions('removeFromAssetSource');
 
 		if ($oldFile->kind == 'image')
 		{
@@ -658,6 +667,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function deleteFile(AssetFileModel $file)
 	{
+		$this->_checkPermissions('removeFromAssetSource');
+
 		// Delete all the created images, such as transforms, thumbnails
 		$this->deleteCreatedImages($file);
 		craft()->assetTransforms->deleteTransformRecordsByFileId($file->id);
@@ -697,6 +708,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function createFolder(AssetFolderModel $parentFolder, $folderName)
 	{
+		$this->_checkPermissions('createSubfoldersInAssetSource');
+
 		$folderName = IOHelper::cleanFilename($folderName);
 
 		// If folder exists in DB or physically, bail out
@@ -736,6 +749,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function renameFolder(AssetFolderModel $folder, $newName)
 	{
+		$this->_checkPermissions('createSubfoldersInAssetSource');
+		$this->_checkPermissions('removeFromAssetSource');
+
 		$parentFolder = craft()->assets->getFolderById($folder->parentId);
 
 		if (!$parentFolder)
@@ -784,6 +800,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function moveFolder(AssetFolderModel $folder, AssetFolderModel $newParentFolder, $overwriteTarget = false)
 	{
+		$this->_checkPermissions('createSubfoldersInAssetSource');
+		$this->_checkPermissions('removeFromAssetSource');
+
 		$response = new AssetOperationResponseModel();
 		if ($folder->id == $newParentFolder->id)
 		{
@@ -880,6 +899,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function deleteFolder(AssetFolderModel $folder)
 	{
+		$this->_checkPermissions('removeFromAssetSource');
+
 		// Get rid of children files
 		$criteria = craft()->elements->getCriteria(ElementType::Asset);
 		$criteria->folderId = $folder->id;
@@ -967,5 +988,19 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	public function isRemote()
 	{
 		return false;
+	}
+
+	/**
+	 * Checks for specified permissions.
+	 *
+	 * @param $permission
+	 * @throws Exception
+	 */
+	protected function _checkPermissions($permission)
+	{
+		if (!craft()->userSession->checkPermission($permission.':'.$this->model->id))
+		{
+			throw new Exception(Craft::t("You don't have the required permissions for this operation."));
+		}
 	}
 }
