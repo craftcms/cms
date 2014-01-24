@@ -4,8 +4,6 @@ namespace Craft;
 
 class HeaderHelper
 {
-	private static $_header = array();
-
 	/**
 	 * @param $extension
 	 * @throws Exception
@@ -129,17 +127,48 @@ class HeaderHelper
 	}
 
 	/**
-	 * Removes a already defined header
+	 * Removes a header by key.
 	 *
-	 * @param string $key
-	 * @return void
+	 * @param $key
 	 */
 	public static function removeHeader($key)
 	{
-		if (isset(static::$_header[$key]))
+		header_remove($key);
+	}
+
+	/**
+	 * Checks whether a header is currently set or not.
+	 *
+	 * @param $key
+	 * @return bool
+	 */
+	public static function isHeaderSet($key)
+	{
+		// Grab existing headers.
+		$currentHeaders = headers_list();
+		$exists = false;
+
+		foreach ($currentHeaders as $currentHeader)
 		{
-			unset(static::$_header[$key]);
+			// See if the existing header is in the "key: value" format.
+			if (strpos($currentHeader, ':') !== false)
+			{
+				$currentParts = explode(':', $currentHeader);
+				$currentKey = trim($currentParts[0]);
+			}
+			else
+			{
+				$currentKey = false;
+			}
+
+			if ($key == $currentKey)
+			{
+				$exists = true;
+				break;
+			}
 		}
+
+		return $exists;
 	}
 
 	/**
