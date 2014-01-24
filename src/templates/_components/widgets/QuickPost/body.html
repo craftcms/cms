@@ -13,7 +13,7 @@
 		{% for field in entryType.getFieldLayout().getFields() %}
 			{% if field.required or field.fieldId in settings.fields %}
 				{% include "_includes/field" with {
-					fieldId: field.fieldId,
+					field: field.getField(),
 					required: field.required,
 					entry: null
 				} only %}

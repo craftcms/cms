@@ -4,7 +4,7 @@
 {% namespace namespace %}
 	{% for field in fields %}
 		{% include "_includes/field" with {
-			fieldId: field.fieldId,
+			field: field.getField(),
 			required: field.required,
 			element: element
 		} only %}

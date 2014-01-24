@@ -1,5 +1,5 @@
 {% import "_includes/forms" as forms %}
-{% set field = craft.fields.getFieldById(fieldId) %}
+
 {% if element is not defined %}{% set element = null %}{% endif %}
 
 {% set value = (element ? attribute(element, field.handle) : null) %}
