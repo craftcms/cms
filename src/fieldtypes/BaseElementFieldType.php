@@ -132,6 +132,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		{
 			$criteria->relatedTo = array(
 				'sourceElement' => $this->element->id,
+				'sourceLocale'  => $this->element->locale,
 				'field'         => $this->model->id
 			);
 
