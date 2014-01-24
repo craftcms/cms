@@ -32,13 +32,11 @@ RedactorPlugins.fullscreen = {
 
 			this.fsheight = this.$editor.height();
 
+			if (this.opts.maxHeight) this.$editor.css('max-height', '');
 			if (this.opts.iframe) html = this.get();
 
-			this.tmpspan = $('<span></span>');
-			this.$box.addClass('redactor_box_fullscreen').after(this.tmpspan);
-
+			this.$box.addClass('redactor_box_fullscreen');
 			$('body, html').css('overflow', 'hidden');
-			$('body').prepend(this.$box);
 
 			if (this.opts.iframe) this.fullscreenIframe(html);
 
@@ -62,13 +60,13 @@ RedactorPlugins.fullscreen = {
 			this.$box.removeClass('redactor_box_fullscreen').css({ width: 'auto', height: 'auto' });
 
 			if (this.opts.iframe) html = this.$editor.html();
-			this.tmpspan.after(this.$box).remove();
 
 			if (this.opts.iframe) this.fullscreenIframe(html);
 			else this.sync();
 
 			var height = this.fsheight;
 			if (this.opts.autoresize) height = 'auto';
+			if (this.opts.maxHeight) this.$editor.css('max-height', this.opts.maxHeight);
 
 			if (this.opts.toolbarExternal)
 			{
@@ -90,10 +88,8 @@ RedactorPlugins.fullscreen = {
 	},
 	fullscreenIframe: function(html)
 	{
-		this.$editor = this.$frame.contents().find('body').attr({
-			'contenteditable': true,
-			'dir': this.opts.direction
-		});
+		this.$editor = this.$frame.contents().find('body');
+		this.$editor.attr({ 'contenteditable': true, 'dir': this.opts.direction });
 
 		// set document & window
 		if (this.$editor[0])

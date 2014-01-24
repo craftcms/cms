@@ -172,11 +172,8 @@ class AssetsService extends BaseApplicationComponent
 	public function saveFileContent(AssetFileModel $file, $validate = true)
 	{
 		// TODO: translation support
-		if (craft()->content->saveContent($file, $validate))
+		if (craft()->elements->saveElement($file, $validate))
 		{
-			// Update the search index since the title may have just changed
-			craft()->search->indexElementAttributes($file);
-
 			// Fire an 'onSaveFileContent' event
 			$this->onSaveFileContent(new Event($this, array(
 				'file' => $file
@@ -223,7 +220,7 @@ class AssetsService extends BaseApplicationComponent
 		$record->parentId = $folderModel->parentId;
 		$record->sourceId = $folderModel->sourceId;
 		$record->name = $folderModel->name;
-		$record->fullPath = $folderModel->fullPath;
+		$record->path = $folderModel->path;
 		$record->save();
 
 		return $record->id;
@@ -330,6 +327,13 @@ class AssetsService extends BaseApplicationComponent
 			$referenceStore[$folder->id] = $folder;
 		}
 
+		$sort = array();
+		foreach ($tree as $topFolder)
+		{
+			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
+		}
+
+		array_multisort($sort, $tree);
 		return $tree;
 	}
 
@@ -407,16 +411,23 @@ class AssetsService extends BaseApplicationComponent
 		$folder = $this->getFolderById($folderId);
 		$newParentFolder = $this->getFolderById($newParentId);
 
-
-		if (!($folder && $newParentFolder))
+		try
+		{
+			if (!($folder && $newParentFolder))
+			{
+				$response = new AssetOperationResponseModel();
+				$response->setError(Craft::t("Error moving folder - either source or target folders cannot be found"));
+			}
+			else
+			{
+				$newSourceType = craft()->assetSources->getSourceTypeById($newParentFolder->sourceId);
+				$response = $newSourceType->moveFolder($folder, $newParentFolder, !empty($action));
+			}
+		}
+		catch (Exception $exception)
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setError(Craft::t("Error moving folder - either source or target folders cannot be found"));
-		}
-		else
-		{
-			$newSourceType = craft()->assetSources->getSourceTypeById($newParentFolder->sourceId);
-			$response = $newSourceType->moveFolder($folder, $newParentFolder, !empty($action));
+			$response->setError($exception->getMessage());
 		}
 
 		return $response;
@@ -535,7 +546,7 @@ class AssetsService extends BaseApplicationComponent
 		$query = craft()->db->createCommand()
 			->select('f.*')
 			->from('assetfolders AS f')
-			->where(array('like', 'fullPath', $folderModel->fullPath.'%'))
+			->where(array('like', 'path', $folderModel->path.'%'))
 			->andWhere('sourceId = :sourceId', array(':sourceId' => $folderModel->sourceId));
 
 		$result = $query->queryAll();
@@ -545,7 +556,7 @@ class AssetsService extends BaseApplicationComponent
 		{
 			$folder = AssetFolderModel::populateModel($row);
 			$this->_foldersById[$folder->id] = $folder;
-			$folders[] = $folder;
+			$folders[$folder->id] = $folder;
 		}
 
 		return $folders;
@@ -640,9 +651,9 @@ class AssetsService extends BaseApplicationComponent
 			$whereConditions[] = DbHelper::parseParam('f.name', $criteria->name, $whereParams);
 		}
 
-		if (!is_null($criteria->fullPath))
+		if (!is_null($criteria->path))
 		{
-			$whereConditions[] = DbHelper::parseParam('f.fullPath', $criteria->fullPath, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('f.path', $criteria->path, $whereParams);
 		}
 
 		if (count($whereConditions) == 1)
@@ -837,6 +848,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param array $filenames if this is a rename operation
 	 * @param array $actions actions to take in case of a conflict.
 	 * @return bool|AssetOperationResponseModel
+	 * @throws Exception
 	 */
 	public function moveFiles($fileIds, $folderId, $filenames = array(), $actions = array())
 	{
@@ -883,6 +895,13 @@ class AssetsService extends BaseApplicationComponent
 			$originalSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 			$folder = $this->getFolderById($folderId);
 			$newSourceType = craft()->assetSources->getSourceTypeById($folder->sourceId);
+
+			// Make sure that we're allowed to move this file
+			if (!craft()->userSession->checkPermission('removeFromAssetSource:'.$originalSourceType->model->id)
+				|| !craft()->userSession->checkPermission('uploadToAssetSource:'.$newSourceType->model->id))
+			{
+				throw new Exception(Craft::t("You don't have the required permissions for this operation."));
+			}
 
 			if ($originalSourceType && $newSourceType)
 			{
@@ -954,7 +973,7 @@ class AssetsService extends BaseApplicationComponent
 		{
 			$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 			$base = $sourceType->getBaseUrl();
-			return $base.$file->getFolder()->fullPath.$file->filename;
+			return $base.$file->getFolder()->path.$file->filename;
 		}
 
 		// Get the transform index model

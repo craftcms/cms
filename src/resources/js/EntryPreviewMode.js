@@ -58,7 +58,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 			this.basePostData[$input.attr('name')] = $input.val();
 		}
 
-		this.addListener(this.$btn, 'click', 'togglePreviewMode');
+		this.addListener(this.$btn, 'activate', 'togglePreviewMode');
 
 		Craft.cp.on('beforeSaveShortcut', $.proxy(function()
 		{

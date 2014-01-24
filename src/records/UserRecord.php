@@ -38,6 +38,7 @@ class UserRecord extends BaseRecord
 			'lockoutDate'                => array(AttributeType::DateTime),
 			'verificationCode'           => array(AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char),
 			'verificationCodeIssuedDate' => array(AttributeType::DateTime),
+			'unverifiedEmail'            => array(AttributeType::Email),
 			'passwordResetRequired'      => array(AttributeType::Bool),
 			'lastPasswordChangeDate'     => array(AttributeType::DateTime),
 		);
@@ -58,7 +59,8 @@ class UserRecord extends BaseRecord
 			$relations['groups']  = array(static::MANY_MANY, 'UserGroupRecord', 'usergroups_users(userId, groupId)');
 		}
 
-		$relations['sessions'] = array(static::HAS_MANY, 'SessionRecord', 'userId');
+		$relations['sessions']              = array(static::HAS_MANY, 'SessionRecord', 'userId');
+		$relations['defaultSectionsAuthor'] = array(static::HAS_MANY, 'SectionRecord', 'userId');
 
 		return $relations;
 	}

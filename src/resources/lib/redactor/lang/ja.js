@@ -65,10 +65,10 @@ $.Redactor.opts.langs['ja'] = {
 	fullscreen: '全画面',
 	deleted: '打消し',
 	anchor: 'アンカー',
-	link_new_tab: 'Open link in new tab',
-	underline: 'Underline',
-	alignment: 'Alignment',
-	filename: 'Name (optional)',
-	edit: 'Edit'
+	link_new_tab: '新しいタブでリンクを開く',
+	underline: 'アンダーライン',
+	alignment: '行揃え',
+	filename: '名前（オプション）',
+	edit: '編集'
 };
 })( jQuery );

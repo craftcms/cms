@@ -41,12 +41,9 @@
 		</div>
 	{% endif %}
 
-	{% if isNewAccount %}
-		<p class="field">{{ 'Note: new users must validate their account via email. Please ensure your <a href="{url}">email settings</a> are valid.'|t({ url: url('settings/email') })|raw }}</p>
-	{% endif %}
 {% endset %}
 
-{% block content %}
+{% set content %}
 	<div>
 		{% if account is defined %}
 			<form id="userform" method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
@@ -63,8 +60,6 @@
 				{% endif %}
 
 				<div id="account">
-					{% set selectedTab = 'account' %}
-
 					{{ forms.textField({
 						first: true,
 						label: "Username"|t,
@@ -77,26 +72,24 @@
 						errors: (account is defined ? account.getErrors('username') : null)
 					}) }}
 
-					<div class="field">
-						<div class="grid">
-							<div class="col col50"><div class="col-inner">
-								{{ forms.textField({
-									label: "First Name"|t,
-									id: 'firstName',
-									name: 'firstName',
-									value: (account is defined ? account.firstName : null),
-									errors: (account is defined ? account.getErrors('firstName') : null)
-								}) }}
-							</div></div>
-							<div class="col col50"><div class="col-inner">
-								{{ forms.textField({
-									label: "Last Name"|t,
-									id: 'lastName',
-									name: 'lastName',
-									value: (account is defined ? account.lastName : null),
-									errors: (account is defined ? account.getErrors('lastName') : null)
-								}) }}
-							</div></div>
+					<div class="grid" data-cols="2">
+						<div class="item" data-colspan="1">
+							{{ forms.textField({
+								label: "First Name"|t,
+								id: 'firstName',
+								name: 'firstName',
+								value: (account is defined ? account.firstName : null),
+								errors: (account is defined ? account.getErrors('firstName') : null)
+							}) }}
+						</div>
+						<div class="item" data-colspan="1">
+							{{ forms.textField({
+								label: "Last Name"|t,
+								id: 'lastName',
+								name: 'lastName',
+								value: (account is defined ? account.lastName : null),
+								errors: (account is defined ? account.getErrors('lastName') : null)
+							}) }}
 						</div>
 					</div>
 
@@ -104,12 +97,21 @@
 
 						{{ forms.textField({
 							label: "Email"|t,
+							instructions: (not currentUser.admin ? 'A verification email will be sent automatically.'),
 							id: 'email',
 							name: 'email',
 							value: (account is defined ? account.email : null),
 							required: true,
 							errors: (account is defined ? account.getErrors('email') : null)
 						}) }}
+
+						{% if currentUser.admin %}
+							{{ forms.checkboxField({
+								label: "Send a verification email?"|t,
+								name: 'verificationRequired',
+								checked: true
+							}) }}
+						{% endif %}
 
 					{% elseif account.isCurrent or currentUser.admin %}
 
@@ -136,6 +138,7 @@
 
 						{{ forms.field({
 							label: "Email"|t,
+							instructions: (not currentUser.admin ? 'New email addresses must be verified before taking effect.'),
 							id: 'email',
 						}, emailInput) }}
 
@@ -194,13 +197,10 @@
 					{% endif %}
 
 					{{ saveUserButtons }}
-
 				</div>
 
 				{% if craft.hasPackage("Users") %}
 					<div id="profile" class="hidden">
-						{% set selectedTab = 'profile' %}
-
 						{% if not isNewAccount %}
 							{{ forms.field({
 								label: "Photo"|t
@@ -221,8 +221,6 @@
 
 				{% if craft.hasPackage("Users") and currentUser.can('administrateUsers') %}
 					<div id="perms" class="hidden">
-						{% set selectedTab = 'perms' %}
-
 						<h2>{{ "User Groups"|t }}</h2>
 
 						{% set allGroups = craft.userGroups.getAllGroups() %}
@@ -276,14 +274,12 @@
 
 			{% if craft.hasPackage("Users") and currentUser.can('administrateUsers') and not isNewAccount %}
 				<div id="admin" class="hidden">
-					{% set selectedTab = 'admin' %}
-
 					<form method="post" action="" accept-charset="UTF-8">
 						<input type="hidden" name="userId" value="{{ account.id }}">
 
 						<h2>{{ "User Info"|t }}</h2>
 
-						<table class="data">
+						<table class="data fullwidth">
 							<tbody>
 								<tr>
 									<th class="nowrap">{{ "Account Status"|t }}</th>
@@ -350,6 +346,10 @@
 									   data-confirm="{{ 'Are you sure you want to delete this account and all associated content?'|t }}"
 									   data-redirect="users/">
 							{% endif %}
+
+							{% if currentUser.admin and not account.isCurrent %}
+								<input type="button" class="btn small formsubmit" value="{{ 'Login as user'|t }}" data-action="users/impersonate">
+							{% endif %}
 						{% endif %}
 					</form>
 
@@ -357,4 +357,4 @@
 			{% endif %}
 		{% endif %}
 	</div>
-{% endblock %}
+{% endset %}

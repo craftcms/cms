@@ -17,6 +17,16 @@ class WidgetTypeVariable extends BaseComponentTypeVariable
 	}
 
 	/**
+	 * Returns the widget's colspan.
+	 *
+	 * @return int
+	 */
+	public function getColspan()
+	{
+		return $this->component->getColspan();
+	}
+
+	/**
 	 * Returns the widget's body HTML.
 	 *
 	 * @return string|false

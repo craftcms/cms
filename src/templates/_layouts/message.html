@@ -3,13 +3,15 @@
 {% block body %}
 	<div class="message-container">
 		<div id="message" class="pane">
-			{{ content }}
+			{% block message %}{% endblock %}
 		</div>
-
-		<script type="text/javascript">
-			var message = document.getElementById('message'),
-				margin = -Math.round(message.offsetHeight / 2);
-			message.setAttribute('style', 'margin-top: '+margin+'px !important;');
-		</script>
 	</div>
+{% endblock %}
+
+{% block foot %}
+	<script type="text/javascript">
+		var message = document.getElementById('message'),
+			margin = -Math.round(message.offsetHeight / 2);
+		message.setAttribute('style', 'margin-top: '+margin+'px !important;');
+	</script>
 {% endblock %}

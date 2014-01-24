@@ -300,11 +300,8 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	public function saveContent(GlobalSetModel $globalSet)
 	{
-		if (craft()->content->saveContent($globalSet))
+		if (craft()->elements->saveElement($globalSet))
 		{
-			// Update the search index since the title may have just changed
-			craft()->search->indexElementAttributes($globalSet);
-
 			// Fire an 'onSaveGlobalContent' event
 			$this->onSaveGlobalContent(new Event($this, array(
 				'globalSet' => $globalSet

@@ -13,6 +13,8 @@ class m131212_000001_add_missing_fk_to_emailmessages extends BaseMigration
 	 */
 	public function safeUp()
 	{
+		MigrationHelper::refresh();
+
 		Craft::log('Dropping FK if it exists.', LogLevel::Info, true);
 		MigrationHelper::dropForeignKeyIfExists('emailmessages', array('locale'));
 

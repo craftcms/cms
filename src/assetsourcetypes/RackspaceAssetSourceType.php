@@ -272,7 +272,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			throw new Exception(Craft::t('This file type is not allowed'));
 		}
 
-		$uriPath = $this->_getPathPrefix().$folder->fullPath.$fileName;
+		$uriPath = $this->_getPathPrefix().$folder->path.$fileName;
 
 
 
@@ -321,7 +321,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	public function getTimeTransformModified(AssetFileModel $fileModel, $transformLocation)
 	{
 		$folder = $fileModel->getFolder();
-		$path = $this->_getPathPrefix().$folder->fullPath.$transformLocation.'/'.$fileModel->filename;
+		$path = $this->_getPathPrefix().$folder->path.$transformLocation.'/'.$fileModel->filename;
 
 		$fileInfo = $this->_getObjectInfo($path);
 
@@ -344,7 +344,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
 	{
 
-		$targetFile = $this->_getPathPrefix().$fileModel->getFolder()->fullPath.'_'.ltrim($handle, '_').'/'.$fileModel->filename;
+		$targetFile = $this->_getPathPrefix().$fileModel->getFolder()->path.'_'.ltrim($handle, '_').'/'.$fileModel->filename;
 
 		// Upload file
 		try
@@ -368,7 +368,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
 
-		$prefix = $this->_getPathPrefix().$folder->fullPath;
+		$prefix = $this->_getPathPrefix().$folder->path;
 
 		$files = $this->_getFileList($prefix);
 
@@ -390,7 +390,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$fileNameStart = join(".", $fileNameParts) . '_';
 		$index = 1;
 
-		while ( isset($fileList[$this->_getPathPrefix().$folder->fullPath . $fileNameStart . $index . '.' . $extension]))
+		while ( isset($fileList[$this->_getPathPrefix().$folder->path . $fileNameStart . $index . '.' . $extension]))
 		{
 			$index++;
 		}
@@ -423,7 +423,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	private function _getRackspacePath(AssetFileModel $file)
 	{
 		$folder = $file->getFolder();
-		return $this->_getPathPrefix().$folder->fullPath.$file->filename;
+		return $this->_getPathPrefix().$folder->path.$file->filename;
 	}
 
 	/**
@@ -435,7 +435,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
-		$uriPath = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix() . $folder->fullPath . $filename);
+		$uriPath = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix() . $folder->path . $filename);
 
 		$this->_deleteObject($uriPath);
 
@@ -454,7 +454,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		foreach ($transforms as $location)
 		{
-			$this->_deleteObject($this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().$folder->fullPath.$location.'/'.$file->filename));
+			$this->_deleteObject($this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().$folder->path.$location.'/'.$file->filename));
 		}
 	}
 
@@ -474,7 +474,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			$fileName = $file->filename;
 		}
 
-		$newServerPath = $this->_getPathPrefix().$targetFolder->fullPath.$fileName;
+		$newServerPath = $this->_getPathPrefix().$targetFolder->path.$fileName;
 
 		$conflictingRecord = craft()->assets->findFile(array(
 			'folderId' => $targetFolder->id,
@@ -498,7 +498,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$originatingSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 		$originatingSettings = $originatingSourceType->getSettings();
 
-		$sourceUri = $this->_prepareRequestURI($originatingSettings->container, $originatingSettings->subfolder.$sourceFolder->fullPath.$file);
+		$sourceUri = $this->_prepareRequestURI($originatingSettings->container, $originatingSettings->subfolder.$sourceFolder->path.$file);
 		$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $newServerPath);
 
 		$this->_copyFile($sourceUri, $targetUri);
@@ -511,8 +511,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			// Move transforms
 			$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
 
-			$baseFromPath = $originatingSettings->subfolder.$sourceFolder->fullPath;
-			$baseToPath = $this->_getPathPrefix().$targetFolder->fullPath;
+			$baseFromPath = $originatingSettings->subfolder.$sourceFolder->path;
+			$baseToPath = $this->_getPathPrefix().$targetFolder->path;
 
 			foreach ($transforms as $location)
 			{
@@ -539,7 +539,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
 	{
-		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$parentFolder->fullPath.$folderName);
+		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$parentFolder->path.$folderName);
 
 	}
 
@@ -557,7 +557,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			'Content-length: 0'
 		);
 
-		$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().$parentFolder->fullPath.$folderName);
+		$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().$parentFolder->path.$folderName);
 
 		$this->_doAuthenticatedRequest(static::RackspaceStorageOperation,  $targetUri, 'PUT', $headers);
 		return true;
@@ -572,9 +572,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
 	{
-		$newFullPath = $this->_getPathPrefix().$this->_getParentFullPath($folder->fullPath).$newName.'/';
+		$newFullPath = $this->_getPathPrefix().$this->_getParentFullPath($folder->path).$newName.'/';
 
-		$objectList = $this->_getFileList($this->_getPathPrefix().$folder->fullPath);
+		$objectList = $this->_getFileList($this->_getPathPrefix().$folder->path);
 		$filesToMove = array();
 		foreach ($objectList as $object)
 		{
@@ -585,7 +585,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		foreach ($filesToMove as $file)
 		{
-			$filePath = mb_substr($file->name, mb_strlen($this->_getPathPrefix().$folder->fullPath));
+			$filePath = mb_substr($file->name, mb_strlen($this->_getPathPrefix().$folder->path));
 
 			$sourceUri = $this->_prepareRequestURI($this->getSettings()->container, $file->name);
 			$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $newFullPath.$filePath);
@@ -594,7 +594,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		}
 
 		// This may or may not exist.
-		$this->_deleteObject($this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().rtrim($folder->fullPath, '/')));
+		$this->_deleteObject($this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().rtrim($folder->path, '/')));
 
 		return TRUE;
 	}
@@ -610,14 +610,14 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	{
 
 		$container = $this->getSettings()->container;
-		$objectsToDelete = $this->_getFileList($this->_getPathPrefix().$parentFolder->fullPath.$folderName);
+		$objectsToDelete = $this->_getFileList($this->_getPathPrefix().$parentFolder->path.$folderName);
 
 		foreach ($objectsToDelete as $file)
 		{
 			$this->_deleteObject($this->_prepareRequestURI($container, $file->name));
 		}
 
-		$this->_deleteObject($this->_prepareRequestURI($container, $this->_getPathPrefix().$parentFolder->fullPath.$folderName));
+		$this->_deleteObject($this->_prepareRequestURI($container, $this->_getPathPrefix().$parentFolder->path.$folderName));
 
 		return true;
 	}
@@ -654,7 +654,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	public function copyTransform(AssetFileModel $file, $source, $target)
 	{
 		$container = $this->getSettings()->container;
-		$basePath = $this->_getPathPrefix().$file->getFolder()->fullPath;
+		$basePath = $this->_getPathPrefix().$file->getFolder()->path;
 
 		$sourceUri = $this->_prepareRequestURI($container, $basePath.$source.'/'.$file->filename);
 		$targetUri = $this->_prepareRequestURI($container, $basePath.$target.'/'.$file->filename);
@@ -691,7 +691,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	public function transformExists(AssetFileModel $file, $location)
 	{
-		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$file->getFolder()->fullPath.$location.'/'.$file->filename);
+		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$file->getFolder()->path.$location.'/'.$file->filename);
 	}
 
 	/**
@@ -1102,7 +1102,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _purgeCachedSourceFile(AssetFolderModel $folder, $filename)
 	{
-		$uriPath = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix() . $folder->fullPath . $filename);
+		$uriPath = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix() . $folder->path . $filename);
 		$this->_purgeObject($uriPath);
 	}
 

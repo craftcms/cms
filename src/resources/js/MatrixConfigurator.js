@@ -46,6 +46,8 @@ Craft.MatrixConfigurator = Garnish.Base.extend({
 		this.$fieldItemsContainer = this.$fieldsColumnContainer.children('.items');
 		this.$fieldSettingItemsContainer = this.$fieldSettingsColumnContainer.children('.items');
 
+		this.setContainerHeight();
+
 		this.$newBlockTypeBtn = this.$blockTypeItemsContainer.children('.btn');
 		this.$newFieldBtn = this.$fieldItemsContainer.children('.btn');
 
@@ -78,6 +80,16 @@ Craft.MatrixConfigurator = Garnish.Base.extend({
 
 		this.addListener(this.$newBlockTypeBtn, 'click', 'addBlockType');
 		this.addListener(this.$newFieldBtn, 'click', 'addFieldToSelectedBlockType');
+
+		this.addListener(this.$blockTypesColumnContainer, 'resize', 'setContainerHeight');
+		this.addListener(this.$fieldsColumnContainer, 'resize', 'setContainerHeight');
+		this.addListener(this.$fieldSettingsColumnContainer, 'resize', 'setContainerHeight');
+	},
+
+	setContainerHeight: function()
+	{
+		var maxColHeight = Math.max(this.$blockTypesColumnContainer.height(), this.$fieldsColumnContainer.height(), this.$fieldSettingsColumnContainer.height(), 400);
+		this.$container.height(maxColHeight);
 	},
 
 	getFieldTypeInfo: function(type)
@@ -401,7 +413,7 @@ var BlockType = Garnish.Base.extend({
 			this.configurator.selectedBlockType.deselect();
 		}
 
-		this.configurator.$fieldsColumnContainer.removeClass('hidden');
+		this.configurator.$fieldsColumnContainer.removeClass('hidden').trigger('resize');
 		this.$fieldItemsContainer.removeClass('hidden');
 		this.$item.addClass('sel');
 		this.configurator.selectedBlockType = this;
@@ -410,7 +422,7 @@ var BlockType = Garnish.Base.extend({
 	deselect: function()
 	{
 		this.$item.removeClass('sel');
-		this.configurator.$fieldsColumnContainer.addClass('hidden');
+		this.configurator.$fieldsColumnContainer.addClass('hidden').trigger('resize');
 		this.$fieldItemsContainer.addClass('hidden');
 		this.$fieldSettingsContainer.addClass('hidden');
 		this.configurator.selectedBlockType = null;
@@ -569,7 +581,7 @@ Field = Garnish.Base.extend({
 			this.blockType.selectedField.deselect();
 		}
 
-		this.configurator.$fieldSettingsColumnContainer.removeClass('hidden');
+		this.configurator.$fieldSettingsColumnContainer.removeClass('hidden').trigger('resize');
 		this.blockType.$fieldSettingsContainer.removeClass('hidden');
 		this.$fieldSettingsContainer.removeClass('hidden');
 		this.$item.addClass('sel');
@@ -586,7 +598,7 @@ Field = Garnish.Base.extend({
 	deselect: function()
 	{
 		this.$item.removeClass('sel');
-		this.configurator.$fieldSettingsColumnContainer.addClass('hidden');
+		this.configurator.$fieldSettingsColumnContainer.addClass('hidden').trigger('resize');
 		this.blockType.$fieldSettingsContainer.addClass('hidden');
 		this.$fieldSettingsContainer.addClass('hidden');
 		this.blockType.selectedField = null;

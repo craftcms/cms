@@ -63,20 +63,34 @@ class ImagesService extends BaseApplicationComponent
 	public function loadImage($path)
 	{
 		$image = new Image();
-		$this->setMemoryForImage($path);
+		$this->checkMemoryForImage($path);
 		$image->loadImage($path);
 		return $image;
 	}
 
 	/**
-	 * Sets the memory needed for an image file. Adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155.
+	 * Determines if there is enough memory to process this image.  Adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155.
+	 * Will first attempt to do it with available memory. If that fails will bump the memory to phpMaxMemoryLimit, then try again.
 	 *
-	 * @param $filename
+	 * @param string $filePath The path to the image file.
+	 * @param bool $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
 	 * @return bool
 	 */
-	public function setMemoryForImage($filename)
+	public function checkMemoryForImage($filePath, $toTheMax = false)
 	{
-		$imageInfo = getimagesize($filename);
+		if (!function_exists('memory_get_usage'))
+		{
+			return false;
+		}
+
+		if ($toTheMax)
+		{
+			// Turn it up to 11.
+			craft()->config->maxPowerCaptain();
+		}
+
+		// Find out how much memory this image is going to need.
+		$imageInfo = getimagesize($filePath);
 		$MB = 1048576;
 		$K64 = 65536;
 		$tweakFactor = 1.7;
@@ -87,20 +101,18 @@ class ImagesService extends BaseApplicationComponent
 		$memoryLimitMB = (int)ini_get('memory_limit');
 		$memoryLimit = $memoryLimitMB * $MB;
 
-		if (function_exists('memory_get_usage'))
+		if (memory_get_usage() + $memoryNeeded < $memoryLimit)
 		{
-			if (memory_get_usage() + $memoryNeeded > $memoryLimit)
-			{
-				$newLimit = $memoryLimitMB + ceil((memory_get_usage() + $memoryNeeded - $memoryLimit) / $MB);
-				return (bool)ini_set( 'memory_limit', $newLimit.'M' );
-			}
-
 			return true;
 		}
-		else
+
+		if (!$toTheMax)
 		{
-			return false;
+			return $this->checkMemoryForImage($filePath, true);
 		}
+
+		// Oh well, we tried.
+		return false;
 	}
 
 	/**

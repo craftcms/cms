@@ -106,9 +106,10 @@ class UserPermissionsService extends BaseApplicationComponent
 
 		$assetSources = craft()->assetSources->getAllSources();
 
-		if ($assetSources)
+		foreach ($assetSources as $source)
 		{
-			$permissions[Craft::t('Asset Sources')] = $this->_getAssetSourcePermissions($assetSources);
+			$label = Craft::t('Asset Source - {source}', array('source' => Craft::t($source->name)));
+			$permissions[$label] = $this->_getAssetSourcePermissions($source->id);
 		}
 
 		// Plugins
@@ -310,8 +311,6 @@ class UserPermissionsService extends BaseApplicationComponent
 			"deleteEntries{$suffix}" => array(
 				'label' => Craft::t('Delete entries')
 			),
-
-
 		);
 
 		if (craft()->hasPackage(CraftPackage::Users))
@@ -369,21 +368,29 @@ class UserPermissionsService extends BaseApplicationComponent
 	 * Returns the array source permissions.
 	 *
 	 * @access private
-	 * @param array $assetSources
+	 * @param int $sourceId
 	 * @return array
 	 */
-	private function _getAssetSourcePermissions($assetSources)
+	private function _getAssetSourcePermissions($sourceId)
 	{
-		$permissions = array();
+		$suffix = ':'.$sourceId;
 
-		foreach ($assetSources as $source)
-		{
-			$permissions['viewAssetSource:'.$source->id] = array(
-				'label' => Craft::t('View source “{title}”', array('title' => $source->name))
-			);
-		}
-
-		return $permissions;
+		return array(
+			"viewAssetSource{$suffix}" => array(
+				'label' => Craft::t('View source'),
+				'nested' => array(
+					"uploadToAssetSource{$suffix}" => array(
+						'label' => Craft::t('Upload files'),
+					),
+					"createSubfoldersInAssetSource{$suffix}" => array(
+						'label' => Craft::t('Create subfolders'),
+					),
+					"removeFromAssetSource{$suffix}" => array(
+						'label' => Craft::t('Remove files'),
+					)
+				)
+			)
+		);
 	}
 
 	/**

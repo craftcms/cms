@@ -4,12 +4,6 @@
 
 html { overflow-y: scroll; }
 
-#tabs li .tab.sel,
-#main {
-	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
-	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
-}
-
 /* dev mode */
 #devmode { width: 100%; height: 5px; background: $headerBgColor url(../images/devmode.png) repeat-x 50% 0; cursor: help; }
 
@@ -20,7 +14,11 @@ html { overflow-y: scroll; }
 #alerts li:before { @include icon; margin: -1px 3px 0 0; content: 'alert'; font-size: 16px; }
 #alerts li a { color: $errorcolor; text-decoration: underline; white-space: nowrap; }
 
-.centered { margin: 0 auto; max-width: 1051px; padding: 0 10px; }
+.container { margin: 0 auto; padding: 0 7px; max-width: 1280px;
+	-webkit-box-sizing: border-box;
+	   -moz-box-sizing: border-box;
+	        box-sizing: border-box;
+}
 
 /* header */
 #header { position: relative; padding-top: 7px; max-height: 76px; overflow: hidden; background: $headerBgColor; }
@@ -29,7 +27,7 @@ html { overflow-y: scroll; }
 #header a:hover,
 #header a.active { color: #fff; text-decoration: none; }
 
-#header .right { float: right; height: 38px; }
+#header .right { float: right; margin-right: -7px; height: 38px; }
 #header .right > li { float: left; }
 #header .right a { display: block; padding: 0 7px; line-height: 36px; }
 #header .right a.menubtn:after { margin-left: 4px; }
@@ -42,8 +40,7 @@ html { overflow-y: scroll; }
 #header .right .myaccount:before { font-size: 16px; }
 
 #header h2 { float: left; margin: 0 25px 0 0; }
-#header h2 a { display: block; padding: 10px 0 10px 27px; }
-#header h2 a:before { @include icon; content: 'home'; float: left; margin: -3px 0 0 -22px; font-size: 17px; line-height: 26px; }
+#header h2 a { display: block; padding: 10px 0; }
 
 #nav { float: left; margin-left: -5px; }
 #nav li { float: left; height: 38px; }
@@ -79,7 +76,7 @@ html { overflow-y: scroll; }
 #notifications .notification.error { background: $submitcolor; }
 
 /* page header */
-#page-header { display: block; position: relative; z-index: 1; padding: 35px 5px; overflow: hidden; }
+#page-header { display: block; position: relative; z-index: 1; padding: 35px 0; overflow: hidden; }
 #page-header h1 { display: inline; line-height: 1; }
 #page-header #extra-headers { display: inline-block; position: relative; top: 5px; }
 #page-header #extra-headers > .select,
@@ -95,58 +92,40 @@ html { overflow-y: scroll; }
 
 /* tabs */
 .tabs:after { @include clearafter; }
-.tabs .tab { display: block; padding: 8px 10px; color: #777; }
+.tabs .tab { display: block; padding: 7px 10px; color: #777; }
 .tabs .tab:hover { text-decoration: none; color: $linkcolor; }
-.tabs .tab.sel { border-radius: 3px 3px 0 0; color: #000; cursor: default; }
+.tabs .tab.sel { border-radius: 3px 3px 0 0; color: $textcolor; cursor: default; }
 
-#tabs { margin: 35px 0 -35px 15px; font-size: 0; }
-#tabs li { display: inline-block; font-size: 13px; }
-#tabs li a { color: #555; }
-#tabs li a:not(.sel):hover { color: $linkcolor; }
-#tabs li .tab.sel { background: #fff; }
+.pane .tabs { margin: -24px -24px 24px; padding: 4px 14px 0; border-radius: 3px 3px 0 0; font-size: 0; overflow: hidden;
+	@include linear-gradient(hsl($hue, 8%, 97%), hsl($hue, 8%, 96%));
+	-webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,0.05);
+	        box-shadow: inset 0 -1px 0 rgba(0,0,0,0.05);
+}
+.pane .tabs li { display: inline-block; font-size: 13px; }
+.pane .tabs li a { color: #555; }
+.pane .tabs li a:not(.sel):hover { color: $linkcolor; }
+.pane .tabs li .tab.sel { @include pane; }
 
-/* main */
-#main { position: relative; padding: 30px; max-width: 991px; min-height: 500px; background: #fff; }
-#main.has-sidebar { padding-left: 230px; max-width: 791px; }
-#main.has-help { padding-bottom: 60px; min-height: 470px; }
-#main.has-help #help { position: absolute; bottom: 17px; right: 17px; font-size: 26px; }
-#main:after { @include clearafter; }
+/* content */
+#content { position: relative; }
+#content.has-help { padding-bottom: 60px; }
+#content.has-help #help { position: absolute; bottom: 17px; right: 17px; font-size: 26px; }
+#content:after { @include clearafter; }
 
-.sidebar { position: absolute; margin: -30px 0 -30px -230px; padding: 30px 0 30px 30px; width: 170px; overflow: auto; }
-.sidebar .heading { position: relative; margin: 15px 0 2px -30px; padding: 0 30px; }
-.sidebar .heading:after { display: block; position: absolute; bottom: 7px; left: 0; content: '.'; text-indent: -200px; overflow: hidden; width: 100%; height: 1px; border-top: 1px solid $hrcolor; }
-.sidebar .heading span { display: inline-block; position: relative; z-index: 1; padding: 0 5px; margin: 0 -5px; text-transform: uppercase; color: $lighttextcolor; font-size: 11px; font-weight: bold; background: #fff; }
-
-.sidebar nav { margin-left: -30px; padding-left: 30px; width: 170px; overflow: auto; }
-.sidebar nav li { position: relative; }
-.sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; @include unselectable; outline: none; }
-.sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
-.sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $headerBgColor; cursor: default; }
-
-.sidebar nav li .toggle { position: absolute; top: 3px; left: -20px; }
-.sidebar nav li.expanded > .toggle { background-position: 50% -40px; }
-.sidebar nav li a.sel + .toggle { background-position: 0 -20px; }
-.sidebar nav li.expanded > a.sel + .toggle { background-position: 0 -60px; }
-.sidebar nav li ul { margin-left: 20px; display: none; }
-.sidebar nav li.expanded > ul { display: block; }
-
-#main #sidebar.fixed { margin-top: 0; margin-bottom: 0; position: fixed; top: 0; }
-
-#main #sidebar-alt { margin-bottom: 30px; }
-#main #sidebar-alt:after { @include clearafter; }
-#main #sidebar-alt > .buttons,
-#main #sidebar-alt > .menubtn { float: left; margin: 0 10px 0 0; }
-
-#main #content { display: block; }
+/* grids */
+.grid { position: relative; margin: 23px -7px; }
+.grid:after { @include clearafter; }
+.grid > .item { display: none; position: absolute; padding: 7px;
+	-webkit-box-sizing: border-box;
+	   -moz-box-sizing: border-box;
+	        box-sizing: border-box;
+}
 
 /* footer */
 #footer { margin: 15px 0; text-align: center; font-size: 0; }
 #footer li { display: inline-block; font-size: 11px; color: $lighttextcolor; }
 #footer li:not(:last-child):after { display: inline-block; margin: 0 7px; content: '•'; }
 #footer li a { color: $lighttextcolor; text-decoration: underline; }
-
-/* max widths for readability */
-.field { max-width: 600px; }
 
 /* field layout forms */
 

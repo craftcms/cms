@@ -8,7 +8,6 @@ Craft.ElementEditor = Garnish.Base.extend({
 		elementId: 0,
 		requestId: 0,
 		$trigger: null,
-		$spinner: null,
 
 		init: function(settings)
 		{
@@ -92,32 +91,12 @@ Craft.ElementEditor = Garnish.Base.extend({
 		_showSpinner: function ()
 		{
 			this.removeHud();
-
-            this.$trigger.find('.delete').addClass('hidden');
-
-            // If the removable class is present, then treat this as an Input Field.
-            if (this.$trigger.hasClass('removable'))
-            {
-                this.$trigger.removeClass('removable').data('elementInputField', true);
-            }
-
-			this.$trigger.find('.label').css('padding-right', '20px');
-			this.$trigger.find('.label').after('<div class="spinner element-spinner" style="position: absolute; right: 2px; bottom: -1px;"></div>');
+			this.$trigger.addClass('loading');
 		},
 
 		_hideSpinner: function ()
 		{
-            this.$trigger.find('.delete').removeClass('hidden');
-			this.$trigger.find('.label').removeClass('spinner element-spinner inline').html(this.$trigger.find('.label nobr').html());
-
-            if (this.$trigger.data('elementInputField'))
-            {
-                this.$trigger.addClass('removable');
-            }
-
-			this.$trigger.find('.label').css('padding-right', '0');
-			this.$trigger.find('.label').siblings('.spinner').remove();
-
+			this.$trigger.removeClass('loading');
 		},
 
 		removeHud: function ()

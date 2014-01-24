@@ -98,8 +98,7 @@ Craft.Structure = Garnish.Base.extend({
 			}
 
 		}, this));
-	},
-
+	}
 },
 {
 	defaults: {

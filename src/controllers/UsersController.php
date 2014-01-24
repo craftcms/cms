@@ -87,6 +87,37 @@ class UsersController extends BaseController
 	}
 
 	/**
+	 * Logs a user in for impersonation.  Requires you to be an administrator.
+	 */
+	public function actionImpersonate()
+	{
+		$this->requireLogin();
+		$this->requireAdmin();
+		$this->requirePostRequest();
+
+		$userId = craft()->request->getPost('userId');
+
+		if (craft()->userSession->impersonate($userId))
+		{
+			craft()->userSession->setNotice(Craft::t('Logged in.'));
+
+			if (craft()->userSession->getUser()->can('accessCp'))
+			{
+				$this->redirect(UrlHelper::getCpUrl('dashboard'));
+			}
+			else
+			{
+				$this->redirect(UrlHelper::getSiteUrl(''));
+			}
+		}
+		else
+		{
+			craft()->userSession->setError(Craft::t('There was a problem impersonating this user.'));
+			Craft::log(craft()->userSession->getUser()->username.' tried to impersonate userId: '.$userId.' but something went wrong.', LogLevel::Error);
+		}
+	}
+
+	/**
 	 *
 	 */
 	public function actionLogout()
@@ -162,7 +193,7 @@ class UsersController extends BaseController
 	{
 		if (craft()->userSession->isLoggedIn())
 		{
-			$this->redirect('');
+			craft()->userSession->logout();
 		}
 
 		if (craft()->request->isPostRequest())
@@ -186,7 +217,6 @@ class UsersController extends BaseController
 				// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
 				if (!$user->can('accessCp'))
 				{
-					// No password reset required and they have permissions to access the CP, so send them to the login page.
 					$url = UrlHelper::getUrl(craft()->config->getLocalized('setPasswordSuccessPath'));
 					$this->redirect($url);
 				}
@@ -217,7 +247,7 @@ class UsersController extends BaseController
 
 			if (!$user)
 			{
-				throw new HttpException(404);
+				throw new HttpException('200', Craft::t('Invalid verification code.'));
 			}
 
 			$url = craft()->config->getSetPasswordPath($code, $id, $user);
@@ -263,16 +293,11 @@ class UsersController extends BaseController
 	 */
 	public function actionValidate()
 	{
-		if (craft()->userSession->isLoggedIn())
-		{
-			$this->redirect('');
-		}
-
 		$code = craft()->request->getRequiredQuery('code');
 		$id = craft()->request->getRequiredQuery('id');
-		$user = craft()->users->getUserByVerificationCodeAndUid($code, $id);
+		$userToValidate = craft()->users->getUserByVerificationCodeAndUid($code, $id);
 
-		if (!$user)
+		if (!$userToValidate)
 		{
 			if (($url = craft()->config->getActivateAccountFailurePath()) != '')
 			{
@@ -284,16 +309,25 @@ class UsersController extends BaseController
 			}
 		}
 
-		if (craft()->users->activateUser($user))
+		// If the current user is logged in
+		if (($currentUser = craft()->userSession->getUser()) !== null)
 		{
-			// Successfully activated user, do they require a password reset or is their password empty?
-			// If so, send them through the password logic.
-			if ($user->passwordResetRequired || !$user->password)
+			// If they are validating an account that doesn't belong to them, log them out of their current account.
+			if ($currentUser->id !== $userToValidate->id)
+			{
+				craft()->userSession->logout();
+			}
+		}
+
+		if (craft()->users->activateUser($userToValidate))
+		{
+			// Successfully activated user, do they require a password reset or is their password empty? If so, send them through the password logic.
+			if ($userToValidate->passwordResetRequired || !$userToValidate->password)
 			{
 				// All users that go through account activation will need to set their password.
-				$code = craft()->users->setVerificationCodeOnUser($user);
+				$code = craft()->users->setVerificationCodeOnUser($userToValidate);
 
-				if ($user->can('accessCp'))
+				if ($userToValidate->can('accessCp'))
 				{
 					$url = craft()->config->get('actionTrigger').'/users/'.craft()->config->getCpSetPasswordPath();
 				}
@@ -302,11 +336,10 @@ class UsersController extends BaseController
 					$url = craft()->config->getLocalized('setPasswordPath');
 				}
 			}
-			// Otherwise, this is a registration from the front-end of the site.
 			else
 			{
 				// If the user can't access the CP, then send them to the front-end activateAccountSuccessPath.
-				if (!$user->can('accessCp'))
+				if (!$userToValidate->can('accessCp'))
 				{
 
 					$url = UrlHelper::getUrl(craft()->config->getLocalized('activateAccountSuccessPath'));
@@ -315,7 +348,7 @@ class UsersController extends BaseController
 				else
 				{
 					craft()->userSession->setNotice(Craft::t('Account activated.'));
-					$this->redirectToPostedUrl();
+					$this->redirect(UrlHelper::getCpUrl('dashboard'));
 				}
 			}
 		}
@@ -513,16 +546,12 @@ class UsersController extends BaseController
 		}
 
 		$publicRegistration = false;
+		$requirePublicEmailValidation = true;
 		$canRegisterUsers = false;
 
 		// Are we editing an existing user?
 		if ($userId)
 		{
-			if (!$isCurrentUser)
-			{
-				craft()->userSession->requirePermission('editUsers');
-			}
-
 			$user = craft()->users->getUserById($userId);
 
 			if (!$user)
@@ -530,10 +559,16 @@ class UsersController extends BaseController
 				throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
 			}
 
+			// If these are different, the Users package is required.
 			if ($user->id !== $userId)
 			{
 				// Users package is required
 				craft()->requirePackage(CraftPackage::Users);
+			}
+
+			if (!$isCurrentUser)
+			{
+				craft()->userSession->requirePermission('editUsers');
 			}
 		}
 		else
@@ -541,22 +576,36 @@ class UsersController extends BaseController
 			// Users package is required
 			craft()->requirePackage(CraftPackage::Users);
 
-			// Are they already logged in?
-			if (craft()->userSession->getUser())
-			{
-				// Make sure they have permission to register users, regardless of if public registration is enabled or not.
-				craft()->userSession->requirePermission('registerUsers');
-				$canRegisterUsers = true;
-			}
-
 			// Is public registration enabled?
 			if (craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
 			{
 				$publicRegistration = true;
 			}
 
-			// If there is no public registration and the current user can't register users, complain loudly.
-			if (!$publicRegistration && !$canRegisterUsers)
+			// Is public email validation required?
+			if (craft()->systemSettings->getSetting('users', 'requireEmailVerification', true) !== 1)
+			{
+				$requirePublicEmailValidation = false;
+			}
+
+			// Are they already logged in?  If so, check and see if they have registerUsers permissions.
+			if (craft()->userSession->getUser())
+			{
+				// Make sure they have permission to register users, regardless of if public registration is enabled or not.
+				craft()->userSession->requirePermission('registerUsers');
+				$canRegisterUsers = true;
+			}
+			else
+			{
+				// Not logged in, but it's a site request and public registration is enabled
+				if (craft()->request->isSiteRequest() && $publicRegistration)
+				{
+					$canRegisterUsers = true;
+				}
+			}
+
+			// If there is no public registration and it's a site request, or the current user can't register users, complain loudly.
+			if ((!$publicRegistration && craft()->request->isSiteRequest()) || !$canRegisterUsers)
 			{
 				// Sorry pal.
 				throw new HttpException(403);
@@ -599,14 +648,32 @@ class UsersController extends BaseController
 			$user->lastName        = craft()->request->getPost('lastName', $user->lastName);
 			$user->preferredLocale = craft()->request->getPost('preferredLocale', $user->preferredLocale);
 
-			// If it's a new user, set the verificationRequired bit.
-			if (!$user->id)
+			// If it's a new user
+			if (!$userId)
 			{
-				$user->verificationRequired = true;
+				if (craft()->request->isSiteRequest() && craft()->hasPackage(CraftPackage::Users) && $requirePublicEmailValidation)
+				{
+					$user->verificationRequired = true;
+					$user->status = UserStatus::Pending;
+				}
+				else
+				{
+					// If the Users package is installed and you're an admin, you get the choice of requiring email verification
+					if (craft()->hasPackage(CraftPackage::Users) && craft()->userSession->isAdmin())
+					{
+						$user->verificationRequired = (bool)craft()->request->getPost('verificationRequired');;
+						$user->status = $user->verificationRequired ? UserStatus::Pending : UserStatus::Active;
+					}
+					else
+					{
+						$user->verificationRequired = true;
+						$user->status = UserStatus::Pending;
+					}
+				}
 			}
 
-			// Only admins can require users to reset their passwords
-			if (craft()->userSession->isAdmin())
+			// Only admins can require users to reset their passwords and only from the CP
+			if (craft()->userSession->isAdmin() && craft()->request->isCpRequest())
 			{
 				$user->passwordResetRequired = (bool)craft()->request->getPost('passwordResetRequired');
 			}
@@ -621,8 +688,8 @@ class UsersController extends BaseController
 				}
 			}
 
-			// Only admins can toggle admin settings
-			if (craft()->userSession->isAdmin())
+			// Only admins can toggle admin settings, and only allow from the CP and if the Users package is installed
+			if (craft()->userSession->isAdmin() && craft()->request->isCpRequest() && craft()->hasPackage(CraftPackage::Users))
 			{
 				$user->admin = (bool)craft()->request->getPost('admin');
 			}
@@ -631,6 +698,30 @@ class UsersController extends BaseController
 			{
 				if (craft()->users->saveUser($user))
 				{
+					// Now that we have a record saved, let's process any user photos.
+					$deleteUserPhoto = craft()->request->getPost('deleteUserPhoto');
+					if (!empty($deleteUserPhoto))
+					{
+						craft()->users->deleteUserPhoto($user);
+						$user->photo = null;
+					}
+					elseif ($userPhoto = \CUploadedFile::getInstanceByName('userPhoto'))
+					{
+						craft()->users->deleteUserPhoto($user);
+						$image = craft()->images->loadImage($userPhoto->getTempName());
+						$imageWidth = $image->getWidth();
+						$imageHeight = $image->getHeight();
+
+						$dimension = min($imageWidth, $imageHeight);
+						$horizontalMargin = ($imageWidth - $dimension) / 2;
+						$verticalMargin = ($imageHeight - $dimension) / 2;
+						$image->crop($horizontalMargin, $imageWidth - $horizontalMargin, $verticalMargin, $imageHeight - $verticalMargin);
+
+						craft()->users->saveUserPhoto($userPhoto->getName(), $image, $user);
+
+						IOHelper::deleteFile($userPhoto->getTempName());
+					}
+
 					if (($currentUser = craft()->userSession->getUser()))
 					{
 						// Save any user groups
@@ -739,7 +830,7 @@ class UsersController extends BaseController
 				move_uploaded_file($file['tmp_name'], $folderPath.$fileName);
 
 				// Test if we will be able to perform image actions on this image
-				if (!craft()->images->setMemoryForImage($folderPath.$fileName))
+				if (!craft()->images->checkMemoryForImage($folderPath.$fileName))
 				{
 					IOHelper::deleteFile($folderPath.$fileName);
 					$this->returnErrorJson(Craft::t('The uploaded image is too large'));
@@ -811,11 +902,14 @@ class UsersController extends BaseController
 			// make sure that this is this user's file
 			$imagePath = craft()->path->getTempUploadsPath().'userphotos/'.$user->username.'/'.$source;
 
-			if (IOHelper::fileExists($imagePath) && craft()->images->setMemoryForImage($imagePath))
+			if (IOHelper::fileExists($imagePath) && craft()->images->checkMemoryForImage($imagePath))
 			{
 				craft()->users->deleteUserPhoto($user);
 
-				if (craft()->users->cropAndSaveUserPhoto($imagePath, $x1, $x2, $y1, $y2, $user))
+				$image = craft()->images->loadImage($imagePath);
+				$image->crop($x1, $x2, $y1, $y2);
+
+				if (craft()->users->saveUserPhoto(IOHelper::getFileName($imagePath), $image, $user))
 				{
 					IOHelper::clearFolder(craft()->path->getTempUploadsPath().'userphotos/'.$user->username);
 
@@ -855,12 +949,8 @@ class UsersController extends BaseController
 		$user = craft()->users->getUserById($userId);
 		craft()->users->deleteUserPhoto($user);
 
-		$record = UserRecord::model()->findById($user->id);
-		$record->photo = null;
-		$record->save();
-
-		// Since Model still believes it has an image, we make sure that it does not so anymore when it reaches the template.
 		$user->photo = null;
+		craft()->users->saveUser($user);
 
 		$html = craft()->templates->render('users/_userphoto',
 			array(
@@ -1085,13 +1175,14 @@ class UsersController extends BaseController
 				{
 					if ($this->_validateCurrentPassword($password))
 					{
-						if (!$email)
+						if (craft()->userSession->isAdmin())
 						{
-							$user->addError('email', Craft::t('Email address is required.'));
+							$user->email = $email;
 						}
 						else
 						{
-							$user->email = $email;
+							// They'll need to be verifying that
+							$user->unverifiedEmail = $email;
 						}
 					}
 					else

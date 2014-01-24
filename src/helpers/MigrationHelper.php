@@ -13,6 +13,17 @@ class MigrationHelper
 	private static $_fkRefActions = 'RESTRICT|CASCADE|NO ACTION|SET DEFAULT|SET NULL';
 
 	/**
+	 * Refreshes our record of everything.
+	 *
+	 * @static
+	 */
+	public static function refresh()
+	{
+		static::$_tables = null;
+		craft()->db->getSchema()->refresh();
+	}
+
+	/**
 	 * Drops a foreign key if it exists.
 	 *
 	 * @static

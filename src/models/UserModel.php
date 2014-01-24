@@ -41,6 +41,7 @@ class UserModel extends BaseElementModel
 			'passwordResetRequired'  => AttributeType::Bool,
 			'lastPasswordChangeDate' => AttributeType::DateTime,
 			'verificationRequired'   => AttributeType::Bool,
+			'unverifiedEmail'        => AttributeType::Email,
 			'newPassword'            => AttributeType::String,
 			'currentPassword'        => AttributeType::String,
 		));

@@ -50,9 +50,17 @@ class ElementHelper
 	{
 		$urlFormat = $element->getUrlFormat();
 
-		if (!$element->slug || !$urlFormat)
+		// No URL format, no URI.
+		if (!$urlFormat)
 		{
 			$element->uri  = null;
+			return;
+		}
+
+		// No slug, or a URL format with no {slug}, just parse the URL format and get on with our lives
+		if (!$element->slug || !static::doesUrlFormatHaveSlugTag($urlFormat))
+		{
+			$element->uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
 			return;
 		}
 
@@ -134,5 +142,18 @@ class ElementHelper
 		}
 
 		throw new Exception(Craft::t('Could not find a unique URI for this element.'));
+	}
+
+	/**
+	 * Returns whether a given URL format has a proper {slug} tag.
+	 *
+	 * @static
+	 * @param string $urlFormat
+	 */
+	public static function doesUrlFormatHaveSlugTag($urlFormat)
+	{
+		$element = (object) array('slug' => StringHelper::randomString());
+		$uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
+		return (strpos($uri, $element->slug) !== false);
 	}
 }

@@ -13,10 +13,10 @@
 	"No files have been updated and the database has not been touched."
 %}
 
-{% set body %}
+{% block body %}
 	<div id="graphic" class="spinner big"></div>
 	<div id="status">{{ "Preparing to update…"|t }}</div>
-{% endset %}
+{% endblock %}
 
 
 {% set js %}

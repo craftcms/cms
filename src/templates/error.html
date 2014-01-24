@@ -1,7 +1,7 @@
 {% extends "_layouts/message" %}
 {% set title = "Oops!"|t %}
 
-{% set content %}
+{% block message %}
 	<h2>{{ title }}</h2>
 	<p>{{ message }}</p>
-{% endset %}
+{% endblock %}

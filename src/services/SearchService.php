@@ -382,9 +382,9 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Generates partial WHERE clause for search from given tokens
 	 *
-	 * @access private
+	 * @access   private
 	 * @param array $tokens
-	 * @param string $glue
+	 * @param bool  $inclusive
 	 * @return string|false
 	 */
 	private function _processTokens($tokens = array(), $inclusive = true)
@@ -398,7 +398,7 @@ class SearchService extends BaseApplicationComponent
 			// Get SQL and/or keywords
 			list($sql, $keywords) = $this->_getSqlFromTerm($obj);
 
-			if ($sql === false)
+			if ($sql === false && $inclusive)
 			{
 				return false;
 			}
@@ -554,10 +554,7 @@ class SearchService extends BaseApplicationComponent
 		// If we have a where clause in the subselect, add the keyword bit to it
 		if ($subSelect && $sql)
 		{
-			if (($tempSql = $this->_sqlSubSelect($subSelect.' AND '.$sql)))
-			{
-				$sql = $tempSql;
-			}
+			$sql = $this->_sqlSubSelect($subSelect.' AND '.$sql);
 		}
 
 		return array($sql, $keywords);

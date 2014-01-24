@@ -31,91 +31,95 @@
 {% set localeData = craft.i18n.getLocaleData() %}
 
 
-{% set content %}
-	<div id="packages" class="clearafter">
-
-		<div class="pane package" data-package="PublishPro">
-			<div class="info">
-				<h2>{{ "Publish Pro"|t }}</h2>
-				<ul>
-					<li>{{ "Structure sections"|t }}</li>
-					<li>{{ "Unlimited Single sections"|t }}</li>
-					<li>{{ "Unlimited Channel sections"|t }}</li>
-					<li>{{ "Entry drafts and versioning"|t }}</li>
-					<li>{{ "Section user permissions"|t }}*</li>
-				</ul>
-			</div>
-			<div class="buttons">
-				<div class="spinner"></div>
-			</div>
-		</div>
-
-		<div class="pane package" data-package="Users">
-			<div class="info">
-				<h2>{{ "Users"|t }}</h2>
-				<ul>
-					<li>{{ "Multiple user accounts"|t }}</li>
-					<li>{{ "User permissions"|t }}</li>
-					<li>{{ "User groups"|t }}</li>
-					<li>{{ "Public user registration"|t }}</li>
-				</ul>
-			</div>
-			<div class="buttons">
-				<div class="spinner"></div>
+{% block main %}
+	<div id="packages" class="grid">
+		<div class="item" data-colspan="1">
+			<div class="pane package" data-package="PublishPro">
+				<div class="info">
+					<h2>{{ "Publish Pro"|t }}</h2>
+					<ul>
+						<li>{{ "Structure sections"|t }}</li>
+						<li>{{ "Unlimited Single sections"|t }}</li>
+						<li>{{ "Unlimited Channel sections"|t }}</li>
+						<li>{{ "Entry drafts and versioning"|t }}</li>
+						<li>{{ "Section user permissions"|t }}*</li>
+					</ul>
+				</div>
+				<div class="buttons">
+					<div class="spinner"></div>
+				</div>
 			</div>
 		</div>
-
-		<div class="pane package" data-package="Cloud">
-			<div class="info">
-				<h2>{{ "Cloud"|t }}</h2>
-				<ul>
-					<li>{{ "Amazon S3 support"|t }}</li>
-					<li>{{ "Rackspace Cloud Files support"|t }}</li>
-					<li>{{ "Google Cloud Storage support"|t }}</li>
-				</ul>
-			</div>
-			<div class="buttons">
-				<div class="spinner"></div>
-			</div>
-		</div>
-
-		<div class="pane package" data-package="Rebrand">
-			<div class="info">
-				<h2>{{ "Rebrand"|t }}</h2>
-				<ul>
-					<li>{{ "Custom login screen logo"|t }}</li>
-					<li>{{ "Custom email notifications"|t }}</li>
-				</ul>
-			</div>
-			<div class="buttons">
-				<div class="spinner"></div>
+		<div class="item" data-colspan="1">
+			<div class="pane package" data-package="Users">
+				<div class="info">
+					<h2>{{ "Users"|t }}</h2>
+					<ul>
+						<li>{{ "Multiple user accounts"|t }}</li>
+						<li>{{ "User permissions"|t }}</li>
+						<li>{{ "User groups"|t }}</li>
+						<li>{{ "Public user registration"|t }}</li>
+					</ul>
+				</div>
+				<div class="buttons">
+					<div class="spinner"></div>
+				</div>
 			</div>
 		</div>
-
-		<div class="pane package" data-package="Localize">
-			<div class="info">
-				<h2>{{ "Localize"|t }}</h2>
-				<ul>
-					<li>{{ "Entry translations"|t }}</li>
-					<li>{{ "Global Set translations"|t }}</li>
-					<li>{{ "Asset translations" }}**</li>
-					<li>{{ "Email message translations"|t }}*</li>
-					<li>{{ "Section-locale targeting"|t }}*</li>
-					<li>{{ "Locale user permissions"|t }}*</li>
-				</ul>
-			</div>
-			<div class="buttons">
-				<div class="spinner"></div>
+		<div class="item" data-colspan="1">
+			<div class="pane package" data-package="Cloud">
+				<div class="info">
+					<h2>{{ "Cloud"|t }}</h2>
+					<ul>
+						<li>{{ "Amazon S3 support"|t }}</li>
+						<li>{{ "Rackspace Cloud Files support"|t }}</li>
+						<li>{{ "Google Cloud Storage support"|t }}</li>
+					</ul>
+				</div>
+				<div class="buttons">
+					<div class="spinner"></div>
+				</div>
 			</div>
 		</div>
-
+		<div class="item" data-colspan="1">
+			<div class="pane package" data-package="Rebrand">
+				<div class="info">
+					<h2>{{ "Rebrand"|t }}</h2>
+					<ul>
+						<li>{{ "Custom login screen logo"|t }}</li>
+						<li>{{ "Custom email notifications"|t }}</li>
+					</ul>
+				</div>
+				<div class="buttons">
+					<div class="spinner"></div>
+				</div>
+			</div>
+		</div>
+		<div class="item" data-colspan="1">
+			<div class="pane package" data-package="Localize">
+				<div class="info">
+					<h2>{{ "Localize"|t }}</h2>
+					<ul>
+						<li>{{ "Entry translations"|t }}</li>
+						<li>{{ "Global Set translations"|t }}</li>
+						<li>{{ "Asset translations" }}**</li>
+						<li>{{ "Email message translations"|t }}*</li>
+						<li>{{ "Section-locale targeting"|t }}*</li>
+						<li>{{ "Locale user permissions"|t }}*</li>
+					</ul>
+				</div>
+				<div class="buttons">
+					<div class="spinner"></div>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<p class="light">
 		*{{ "Requires a separate package purchase"|t }}<br>
 		**{{ "Coming soon"|t }}
 	</p>
-{% endset %}
+{% endblock %}
 
 {% set modalHtml -%}
 	<form id="ccmodal" class="modal">

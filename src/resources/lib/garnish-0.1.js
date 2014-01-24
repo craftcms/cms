@@ -766,7 +766,7 @@ Garnish.Base = Base.extend({
 		this._$listeners = this._$listeners.add(elem);
 
 		// Prep for activate event?
-		if (events.search(/\bactivate\b/) != -1 && !$elem.data('activatable'))
+		if (events.search(/\bactivate\b/) != -1 && !$elem.data('garnish-activatable'))
 		{
 			var activateNamespace = this._namespace+'-activate';
 
@@ -824,7 +824,7 @@ Garnish.Base = Base.extend({
 				$elem.removeAttr('tabindex');
 			}
 
-			$elem.data('activatable', true);
+			$elem.data('garnish-activatable', true);
 		}
 
 		// Prep for chanegtext event?
@@ -834,9 +834,9 @@ Garnish.Base = Base.extend({
 			for (var i = 0; i < $elem.length; i++)
 			{
 				var _$elem = $($elem[i]);
-				_$elem.data('textchangeValue', _$elem.val());
+				_$elem.data('garnish-textchangeValue', _$elem.val());
 
-				if (!_$elem.data('textchangeable'))
+				if (!_$elem.data('garnish-textchangeable'))
 				{
 					var textchangeNamespace = this._namespace+'-textchange',
 						events = 'keypress'+textchangeNamespace +
@@ -849,15 +849,99 @@ Garnish.Base = Base.extend({
 						var _$elem = $(ev.currentTarget),
 							val = _$elem.val();
 
-						if (val != _$elem.data('textchangeValue'))
+						if (val != _$elem.data('garnish-textchangeValue'))
 						{
-							_$elem.data('textchangeValue', val);
+							_$elem.data('garnish-textchangeValue', val);
 							_$elem.trigger('textchange');
 						}
 					});
 
-					_$elem.data('textchangeable', true);
+					_$elem.data('garnish-textchangeable', true);
 				}
+			}
+		}
+
+		// Prep for resize event?
+		if (events.search(/\bresize\b/) != -1)
+		{
+			// Resize detection technique adapted from http://www.backalleycoder.com/2013/03/18/cross-browser-event-based-element-resize-detection/ -- thanks!
+			for (var i = 0; i < $elem.length; i++)
+			{
+				(function(elem)
+				{
+					if (elem == window)
+					{
+						return;
+					}
+
+					var _$elem = $(elem)
+					var resize = 'onresize' in elem;
+
+					if (!resize && !_$elem.data('garnish-resizable'))
+					{
+						// The element must be relative, absolute, or fixed
+						if (getComputedStyle(elem).position == 'static')
+						{
+							elem.style.position = 'relative';
+						}
+
+						// Create the sensor div
+						var $sensor = $('<div class="resize-sensor">' +
+							'<div class="resize-overflow"><div></div></div>' +
+							'<div class="resize-underflow"><div></div></div>' +
+						'</div>').prependTo(_$elem);
+
+						$sensor.add($sensor.children()).css({
+							position: 'absolute',
+							top: 0,
+							left: 0,
+							width: '100%',
+							height: '100%',
+							overflow: 'hidden',
+							'z-index': -1
+						});
+
+						$sensor.next().addClass('first');
+
+						_$elem.data('garnish-resizable', true);
+
+						var width = elem.offsetWidth,
+							height = elem.offsetHeight,
+							first = $sensor[0].firstElementChild.firstChild,
+							last = $sensor[0].lastElementChild.firstChild,
+
+							onSizeChange = function(ev)
+							{
+								if (width != elem.offsetWidth || height != elem.offsetHeight)
+								{
+									width = elem.offsetWidth;
+									height = elem.offsetHeight;
+
+									updateSensor();
+
+									if (!ev || ev.type != 'resize')
+									{
+										_$elem.trigger('resize');
+									}
+								}
+							},
+							updateSensor = function()
+							{
+								first.style.width = width - 1 + 'px';
+								first.style.height = height - 1 + 'px';
+								last.style.width = width + 1 + 'px';
+								last.style.height = height + 1 + 'px';
+							};
+
+						updateSensor();
+						_$elem.on('resize', onSizeChange);
+
+						addFlowListener($sensor[0], 'over', onSizeChange);
+						addFlowListener($sensor[0], 'under', onSizeChange);
+						addFlowListener($sensor[0].firstElementChild, 'over', onSizeChange);
+						addFlowListener($sensor[0].lastElementChild, 'under', onSizeChange);
+					}
+				})($elem[i]);
 			}
 		}
 	},
@@ -878,6 +962,26 @@ Garnish.Base = Base.extend({
 		this.removeAllListeners(this._$listeners);
 	}
 });
+
+/**
+ * Used by our resize detection script
+ */
+function addFlowListener(elem, type, func)
+{
+	var flow = type == 'over';
+
+	elem.addEventListener('OverflowEvent' in window ? 'overflowchanged' : type + 'flow', function(ev)
+	{
+		if (ev.type == (type + 'flow') ||
+		((ev.orient == 0 && ev.horizontalOverflow == flow) ||
+		(ev.orient == 1 && ev.verticalOverflow == flow) ||
+		(ev.orient == 2 && ev.horizontalOverflow == flow && ev.verticalOverflow == flow)))
+		{
+			ev.flow = type;
+			return func.call(this, ev);
+		}
+	}, false);
+};
 
 
 /**
@@ -2213,13 +2317,36 @@ Garnish.escManager = new Garnish.EscManager();
  */
 Garnish.HUD = Garnish.Base.extend({
 
+	$trigger: null,
+	$hud: null,
+	$tip: null,
+	$body: null,
+	$shade: null,
+
+	windowWidth: null,
+	windowHeight: null,
+	windowScrollLeft: null,
+	windowScrollTop: null,
+
+	triggerWidth: null,
+	triggerHeight: null,
+	triggerOffset: null,
+
+	width: null,
+	height: null,
+
+	position: null,
+
 	/**
 	 * Constructor
 	 */
 	init: function(trigger, bodyContents, settings) {
 
 		this.$trigger = $(trigger);
+
 		this.setSettings(settings, Garnish.HUD.defaults);
+		this.on('show', this.settings.onShow);
+		this.on('hide', this.settings.onHide);
 
 		if (typeof Garnish.HUD.activeHUDs == "undefined")
 		{
@@ -2240,7 +2367,12 @@ Garnish.HUD = Garnish.Base.extend({
 	/**
 	 * Show
 	 */
-	show: function(ev) {
+	show: function(ev)
+	{
+		if (ev && ev.stopPropagation)
+		{
+			ev.stopPropagation();
+		}
 
 		if (this.showing)
 		{
@@ -2254,114 +2386,26 @@ Garnish.HUD = Garnish.Base.extend({
 			}
 		}
 
+		// Prevent the browser from jumping
 		this.$hud.css('top', Garnish.$win.scrollTop());
+
 		this.$hud.show();
-
-		// -------------------------------------------
-		//  Get all relevant dimensions, lengths, etc
-		// -------------------------------------------
-
-		this.windowWidth = Garnish.$win.width();
-		this.windowHeight = Garnish.$win.height();
-
-		this.windowScrollLeft = Garnish.$win.scrollLeft();
-		this.windowScrollTop = Garnish.$win.scrollTop();
-
-		// get the trigger element's dimensions
-		this.triggerWidth = this.$trigger.outerWidth();
-		this.triggerHeight = this.$trigger.outerHeight();
-
-		// get the offsets for each side of the trigger element
-		this.triggerOffset = this.$trigger.offset();
-		this.triggerOffsetRight = this.triggerOffset.left + this.triggerWidth;
-		this.triggerOffsetBottom = this.triggerOffset.top + this.triggerHeight;
-		this.triggerOffsetLeft = this.triggerOffset.left;
-		this.triggerOffsetTop = this.triggerOffset.top;
-
-		// get the HUD dimensions
-		this.width = this.$hud.outerWidth();
-		this.height = this.$hud.outerHeight();
-
-		// get the minimum horizontal/vertical clearance needed to fit the HUD
-		this.minHorizontalClearance = this.width + this.settings.triggerSpacing + this.settings.windowSpacing;
-		this.minVerticalClearance = this.height + this.settings.triggerSpacing + this.settings.windowSpacing;
-
-		// find the actual available right/bottom/left/top clearances
-		this.rightClearance = this.windowWidth + this.windowScrollLeft - this.triggerOffsetRight;
-		this.bottomClearance = this.windowHeight + this.windowScrollTop - this.triggerOffsetBottom;
-		this.leftClearance = this.triggerOffsetLeft - this.windowScrollLeft;
-		this.topClearance = this.triggerOffsetTop - this.windowScrollTop;
-
-		// -------------------------------------------
-		//  Where are we putting it?
-		//   - Ideally, we'll be able to find a place to put this where it's not overlapping the trigger at all.
-		//     If we can't find that, either put it to the right or below the trigger, depending on which has the most room.
-		// -------------------------------------------
-
-		// below?
-		if (this.bottomClearance >= this.minVerticalClearance)
-		{
-			var top = this.triggerOffsetBottom + this.settings.triggerSpacing;
-			this.$hud.css('top', top);
-			this._setLeftPos();
-			this._setTipClass('top');
-		}
-		// above?
-		else if (this.topClearance >= this.minVerticalClearance)
-		{
-			var top = this.triggerOffsetTop - (this.height + this.settings.triggerSpacing);
-			this.$hud.css('top', top);
-			this._setLeftPos();
-			this._setTipClass('bottom');
-		}
-		// to the right?
-		else if (this.rightClearance >= this.minHorizontalClearance)
-		{
-			var left = this.triggerOffsetRight + this.settings.triggerSpacing;
-			this.$hud.css('left', left);
-			this._setTopPos();
-			this._setTipClass('left');
-		}
-		// to the left?
-		else if (this.leftClearance >= this.minHorizontalClearance)
-		{
-			var left = this.triggerOffsetLeft - (this.width + this.settings.triggerSpacing);
-			this.$hud.css('left', left);
-			this._setTopPos();
-			this._setTipClass('right');
-		}
-		// ok, which one comes the closest -- right or bottom?
-		else
-		{
-			var rightClearanceDiff = this.minHorizontalClearance - this.rightClearance,
-				bottomClearanceDiff = this.minVerticalClearance - this.bottomClearance;
-
-			if (rightClearanceDiff >= bottomClearanceDiff)
-			{
-				var left = this.windowWidth - (this.width + this.settings.windowSpacing),
-					minLeft = this.triggerOffsetLeft + this.settings.triggerSpacing;
-				if (left < minLeft) left = minLeft;
-				this.$hud.css('left', left);
-				this._setTopPos();
-				this._setTipClass('left');
-			}
-			else
-			{
-				var top = this.windowHeight - (this.height + this.settings.windowSpacing),
-					minTop = this.triggerOffsetTop + this.settings.triggerSpacing;
-				if (top < minTop) top = minTop;
-				this.$hud.css('top', top);
-				this._setLeftPos();
-				this._setTipClass('top');
-			}
-		}
-
-		if (ev && ev.stopPropagation)
-		{
-			ev.stopPropagation();
-		}
+		this.determineBestPosition();
+		this.setPosition();
 
 		this.$shade.show();
+
+		this.showing = true;
+		Garnish.HUD.activeHUDs[this._namespace] = this;
+
+		Garnish.escManager.register(this, 'hide');
+
+		this.addListener(Garnish.$win, 'resize', function()
+		{
+			this.updateElementProperties();
+			this.setPosition();
+		});
+
 		this.addListener(this.$shade, 'click', 'hide');
 
 		if (this.settings.closeBtn)
@@ -2369,71 +2413,126 @@ Garnish.HUD = Garnish.Base.extend({
 			this.addListener(this.settings.closeBtn, 'activate', 'hide');
 		}
 
-		this.showing = true;
-		Garnish.HUD.activeHUDs[this._namespace] = this;
-
-		Garnish.escManager.register(this, 'hide');
-
-		// onShow callback
-		this.settings.onShow();
+		this.onShow();
 	},
 
-	/**
-	 * Set Top
-	 */
-	_setTopPos: function()
+	onShow: function()
 	{
-		var maxTop = (this.windowHeight + this.windowScrollTop) - (this.height + this.settings.windowSpacing),
-			minTop = (this.windowScrollTop + this.settings.windowSpacing),
-
-			triggerCenter = this.triggerOffsetTop + Math.round(this.triggerHeight / 2),
-			top = triggerCenter - Math.round(this.height / 2);
-
-		// adjust top position as needed
-		if (top > maxTop) top = maxTop;
-		if (top < minTop) top = minTop;
-
-		this.$hud.css('top', top);
-
-		// set the tip's top position
-		var tipTop = (triggerCenter - top) - (this.settings.tipWidth / 2);
-		this.$tip.css({ top: tipTop, left: '' });
+		this.trigger('show');
 	},
 
-	/**
-	 * Set Left
-	 */
-	_setLeftPos: function()
+	updateElementProperties: function()
 	{
-		var maxLeft = (this.windowWidth + this.windowScrollLeft) - (this.width + this.settings.windowSpacing),
-			minLeft = (this.windowScrollLeft + this.settings.windowSpacing),
+		this.windowWidth = Garnish.$win.width();
+		this.windowHeight = Garnish.$win.height();
 
-			triggerCenter = this.triggerOffsetLeft + Math.round(this.triggerWidth / 2),
-			left = triggerCenter - Math.round(this.width / 2);
+		this.windowScrollLeft = Garnish.$win.scrollLeft();
+		this.windowScrollTop = Garnish.$win.scrollTop();
 
-		// adjust left position as needed
-		if (left > maxLeft) left = maxLeft;
-		if (left < minLeft) left = minLeft;
+		// get the trigger's dimensions
+		this.triggerWidth = this.$trigger.outerWidth();
+		this.triggerHeight = this.$trigger.outerHeight();
 
-		this.$hud.css('left', left);
+		// get the offsets for each side of the trigger element
+		this.triggerOffset = this.$trigger.offset();
+		this.triggerOffset.right = this.triggerOffset.left + this.triggerWidth;
+		this.triggerOffset.bottom = this.triggerOffset.top + this.triggerHeight;
 
-		// set the tip's left position
-		var tipLeft = (triggerCenter - left) - (this.settings.tipWidth / 2);
-		this.$tip.css({ left: tipLeft, top: '' });
+		// get the HUD dimensions
+		this.width = this.$hud.outerWidth();
+		this.height = this.$hud.outerHeight();
 	},
 
-	/**
-	 * Set Tip Class
-	 */
-	_setTipClass: function(c)
+	determineBestPosition: function()
 	{
+		// Get the window sizez and trigger offset
+		this.updateElementProperties();
+
+		// get the minimum horizontal/vertical clearance needed to fit the HUD
+		this.minHorizontalClearance = this.width + this.settings.triggerSpacing + this.settings.windowSpacing;
+		this.minVerticalClearance = this.height + this.settings.triggerSpacing + this.settings.windowSpacing;
+
+		// find the actual available top/right/bottom/left clearances
+		var clearances = [
+			this.triggerOffset.top - this.windowScrollTop,                        // top
+			this.windowWidth + this.windowScrollLeft - this.triggerOffset.right,  // right
+			this.windowHeight + this.windowScrollTop - this.triggerOffset.bottom, // bottom
+			this.triggerOffset.left - this.windowScrollLeft                       // left
+		];
+
+		// Figure out which one is the biggest
+		var biggestClearance = Math.max.apply(null, clearances),
+			biggestClearanceIndex = $.inArray(biggestClearance, clearances);
+
+		this.position = Garnish.HUD.positions[biggestClearanceIndex];
+
+		// Update the tip class
 		if (this.tipClass)
 		{
 			this.$tip.removeClass(this.tipClass);
 		}
 
-		this.tipClass = this.settings.tipClass+'-'+c;
+		this.tipClass = this.settings.tipClass+'-'+Garnish.HUD.tipClasses[biggestClearanceIndex];
 		this.$tip.addClass(this.tipClass);
+	},
+
+	setPosition: function()
+	{
+		if (this.position == 'top' || this.position == 'bottom')
+		{
+			// Center the HUD horizontally
+			var maxLeft = (this.windowWidth + this.windowScrollLeft) - (this.width + this.settings.windowSpacing),
+				minLeft = (this.windowScrollLeft + this.settings.windowSpacing),
+				triggerCenter = this.triggerOffset.left + Math.round(this.triggerWidth / 2),
+				left = triggerCenter - Math.round(this.width / 2);
+
+			if (left > maxLeft) left = maxLeft;
+			if (left < minLeft) left = minLeft;
+
+			this.$hud.css('left', left);
+
+			var tipLeft = (triggerCenter - left) - (this.settings.tipWidth / 2);
+			this.$tip.css({ left: tipLeft, top: '' });
+
+			if (this.position == 'top')
+			{
+				var top = this.triggerOffset.top - (this.height + this.settings.triggerSpacing);
+				this.$hud.css('top', top);
+			}
+			else
+			{
+				var top = this.triggerOffset.bottom + this.settings.triggerSpacing;
+				this.$hud.css('top', top);
+			}
+		}
+		else
+		{
+			// Center the HUD vertically
+			var maxTop = (this.windowHeight + this.windowScrollTop) - (this.height + this.settings.windowSpacing),
+				minTop = (this.windowScrollTop + this.settings.windowSpacing),
+				triggerCenter = this.triggerOffset.top + Math.round(this.triggerHeight / 2),
+				top = triggerCenter - Math.round(this.height / 2);
+
+			if (top > maxTop) top = maxTop;
+			if (top < minTop) top = minTop;
+
+			this.$hud.css('top', top);
+
+			var tipTop = (triggerCenter - top) - (this.settings.tipWidth / 2);
+			this.$tip.css({ top: tipTop, left: '' });
+
+
+			if (this.position == 'left')
+			{
+				var left = this.triggerOffset.left - (this.width + this.settings.triggerSpacing);
+				this.$hud.css('left', left);
+			}
+			else
+			{
+				var left = this.triggerOffset.right + this.settings.triggerSpacing;
+				this.$hud.css('left', left);
+			}
+		}
 	},
 
 	/**
@@ -2449,11 +2548,18 @@ Garnish.HUD = Garnish.Base.extend({
 
 		Garnish.escManager.unregister(this);
 
-		// onHide callback
-		this.settings.onHide();
+		this.onHide();
+	},
+
+	onHide: function()
+	{
+		this.trigger('hide');
 	}
 },
 {
+	positions: ['top', 'right', 'bottom', 'left'],
+	tipClasses: ['bottom', 'left', 'top', 'right'],
+
 	defaults: {
 		hudClass: 'hud',
 		tipClass: 'tip',
@@ -2688,51 +2794,51 @@ Garnish.Menu = Garnish.Base.extend({
 		this.addListener(this.$options, 'click', 'selectOption');
 	},
 
-	setPositionRelativeToButton: function()
+	setPositionRelativeToTrigger: function()
 	{
 		var windowHeight = Garnish.$win.height(),
 			windowScrollTop = Garnish.$win.scrollTop(),
 
-			btnOffset = this.$trigger.offset(),
-			btnWidth = this.$trigger.outerWidth(),
-			btnHeight = this.$trigger.outerHeight(),
-			btnOffsetBottom = btnOffset.top + btnHeight,
-			btnOffsetTop = btnOffset.top,
+			triggerOffset = this.$trigger.offset(),
+			triggerWidth = this.$trigger.outerWidth(),
+			triggerHeight = this.$trigger.outerHeight(),
+			triggerOffsetBottom = triggerOffset.top + triggerHeight,
+			triggerOffsetTop = triggerOffset.top,
 
 			menuHeight = this.$container.outerHeight(),
 
-			bottomClearance = windowHeight + windowScrollTop - btnOffsetBottom,
-			topClearance = btnOffsetTop - windowScrollTop;
+			bottomClearance = windowHeight + windowScrollTop - triggerOffsetBottom,
+			topClearance = triggerOffsetTop - windowScrollTop;
 
 		var css = {
-			minWidth: btnWidth - (this.$container.outerWidth() - this.$container.width())
+			minWidth: triggerWidth - (this.$container.outerWidth() - this.$container.width())
 		};
 
-		// Is there room for the menu below the button?
+		// Is there room for the menu below the trigger?
 		if (bottomClearance >= menuHeight || bottomClearance >= topClearance)
 		{
-			css.top = btnOffsetBottom;
+			css.top = triggerOffsetBottom;
 		}
 		else
 		{
-			css.top = btnOffsetTop - menuHeight;
+			css.top = triggerOffsetTop - menuHeight;
 		}
 
 		switch (this.$container.data('align'))
 		{
 			case 'right':
 			{
-				css.right = Garnish.$win.width() - (btnOffset.left + btnWidth);
+				css.right = Garnish.$win.width() - (triggerOffset.left + triggerWidth);
 				break;
 			}
 			case 'center':
 			{
-				css.left = Math.round((btnOffset.left + btnWidth / 2) - (this.$container.outerWidth() / 2));
+				css.left = Math.round((triggerOffset.left + triggerWidth / 2) - (this.$container.outerWidth() / 2));
 				break;
 			}
 			default:
 			{
-				css.left = btnOffset.left;
+				css.left = triggerOffset.left;
 			}
 		}
 
@@ -2743,7 +2849,7 @@ Garnish.Menu = Garnish.Base.extend({
 	{
 		if (this.$trigger)
 		{
-			this.setPositionRelativeToButton();
+			this.setPositionRelativeToTrigger();
 		}
 
 		this.$container.fadeIn(50);

@@ -1,15 +1,17 @@
-{% from "_includes/forms" import textField %}
+{% if section.type != 'single' %}
+	{% from "_includes/forms" import textField %}
 
-{{ textField({
-	label: entryType.titleLabel|t,
-	id: 'title',
-	name: 'title',
-	value: entry.title,
-	errors: entry.getErrors('title'),
-	first: (showEntryTypes ? false : true),
-	autofocus: true,
-	required: true
-}) }}
+	{{ textField({
+		label: entryType.titleLabel|t,
+		id: 'title',
+		name: 'title',
+		value: entry.title,
+		errors: entry.getErrors('title'),
+		first: (showEntryTypes ? false : true),
+		autofocus: true,
+		required: true
+	}) }}
+{% endif %}
 
 <div>
 	{% for tab in entryType.getFieldLayout().getTabs() %}

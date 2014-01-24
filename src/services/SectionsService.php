@@ -280,6 +280,8 @@ class SectionsService extends BaseApplicationComponent
 			$sectionRecord->template = $section->template = null;
 		}
 
+		$sectionRecord->defaultAuthorId = $section->defaultAuthorId ? $section->defaultAuthorId : null;
+
 		$sectionRecord->validate();
 		$section->addErrors($sectionRecord->getErrors());
 
@@ -415,12 +417,13 @@ class SectionsService extends BaseApplicationComponent
 					{
 						$oldLocale = $oldSectionLocales[$localeId];
 
-						// Has the URL format changed?
-						if ($locale->urlFormat != $oldLocale->urlFormat || $locale->nestedUrlFormat != $oldLocale->nestedUrlFormat)
+						// Has anything changed?
+						if ($locale->enabledByDefault != $oldLocale->enabledByDefault || $locale->urlFormat != $oldLocale->urlFormat || $locale->nestedUrlFormat != $oldLocale->nestedUrlFormat)
 						{
 							craft()->db->createCommand()->update('sections_i18n', array(
-								'urlFormat'       => $locale->urlFormat,
-								'nestedUrlFormat' => $locale->nestedUrlFormat
+								'enabledByDefault' => (int) $locale->enabledByDefault,
+								'urlFormat'        => $locale->urlFormat,
+								'nestedUrlFormat'  => $locale->nestedUrlFormat
 							), array(
 								'id' => $oldLocale->id
 							));
@@ -428,13 +431,13 @@ class SectionsService extends BaseApplicationComponent
 					}
 					else
 					{
-						$newLocaleData[] = array($section->id, $localeId, $locale->urlFormat, $locale->nestedUrlFormat);
+						$newLocaleData[] = array($section->id, $localeId, (int) $locale->enabledByDefault, $locale->urlFormat, $locale->nestedUrlFormat);
 					}
 				}
 
 				// Insert the new locales
 				craft()->db->createCommand()->insertAll('sections_i18n',
-					array('sectionId', 'locale', 'urlFormat', 'nestedUrlFormat'),
+					array('sectionId', 'locale', 'enabledByDefault', 'urlFormat', 'nestedUrlFormat'),
 					$newLocaleData
 				);
 
@@ -586,6 +589,7 @@ class SectionsService extends BaseApplicationComponent
 							$criteria = craft()->elements->getCriteria(ElementType::Entry);
 							$criteria->sectionId = $section->id;
 							$criteria->status = null;
+							$criteria->localeEnabled = null;
 							$criteria->order = 'postDate';
 							$criteria->limit = 25;
 
@@ -615,6 +619,7 @@ class SectionsService extends BaseApplicationComponent
 					$criteria = craft()->elements->getCriteria(ElementType::Entry);
 					$criteria->sectionId = $section->id;
 					$criteria->status = null;
+					$criteria->localeEnabled = null;
 					$criteria->limit = null;
 					$entryIds = $criteria->ids();
 
