@@ -165,93 +165,68 @@ class UsersController extends BaseController
 			$this->redirect('');
 		}
 
+		$code = craft()->request->getRequiredParam('code');
+		$id = craft()->request->getRequiredParam('id');
+		$user = craft()->users->getUserByVerificationCodeAndUid($code, $id);
+		$url = craft()->config->getSetPasswordPath($code, $id, $user);
+
+		if (!$user)
+		{
+			throw new HttpException('200', Craft::t('Invalid verification code.'));
+		}
+
 		if (craft()->request->isPostRequest())
 		{
-			$this->requirePostRequest();
-
-			$code = craft()->request->getRequiredPost('code');
-			$id = craft()->request->getRequiredPost('id');
-			$user = craft()->users->getUserByVerificationCodeAndUid($code, $id);
-
-			if (!$user)
-			{
-				throw new HttpException('200', Craft::t('Invalid verification code.'));
-			}
-
 			$newPassword = craft()->request->getRequiredPost('newPassword');
-			$user->newPassword = $newPassword;
 
-			if (craft()->users->changePassword($user))
+			$passwordModel = new PasswordModel();
+			$passwordModel->password = $newPassword;
+
+			if ($passwordModel->validate())
 			{
-				// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
-				if (!$user->can('accessCp'))
+				$user->newPassword = $newPassword;
+
+				if (craft()->users->changePassword($user))
 				{
-					// No password reset required and they have permissions to access the CP, so send them to the login page.
-					$url = UrlHelper::getUrl(craft()->config->getLocalized('setPasswordSuccessPath'));
-					$this->redirect($url);
-				}
-				else
-				{
-					craft()->userSession->setNotice(Craft::t('Password updated.'));
-					$url = UrlHelper::getCpUrl('dashboard');
-					$this->redirect($url);
+					// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
+					if (!$user->can('accessCp'))
+					{
+						$url = UrlHelper::getSiteUrl(craft()->config->getLocalized('setPasswordSuccessPath'));
+						$this->redirect($url);
+					}
+					else
+					{
+						craft()->userSession->setNotice(Craft::t('Password updated.'));
+						$url = UrlHelper::getCpUrl('dashboard');
+						$this->redirect($url);
+					}
 				}
 			}
-			else
-			{
-				craft()->userSession->setNotice(Craft::t('Couldn’t update password.'));
 
-				// Send the data back to the template
-				craft()->urlManager->setRouteVariables(array(
-					'errors' => $user->getErrors('newPassword'),
-					'code'   => $code,
-					'id'     => $id
-				));
-			}
+			craft()->userSession->setNotice(Craft::t('Couldn’t update password.'));
+
+			$this->_processSetPasswordPath($user);
+
+			$errors = array();
+			$errors = array_merge($errors, $user->getErrors('newPassword'));
+			$errors = array_merge($errors, $passwordModel->getErrors('password'));
+
+			$this->renderTemplate($url, array(
+				'errors' => $errors,
+				'code' => $code,
+				'id' => $id,
+				'newUser' => ($user->password ? false : true),
+			));
 		}
 		else
 		{
-			$code = craft()->request->getQuery('code');
-			$id = craft()->request->getQuery('id');
-			$user = craft()->users->getUserByVerificationCodeAndUid($code, $id);
+			$this->_processSetPasswordPath($user);
 
-			if (!$user)
-			{
-				throw new HttpException(404);
-			}
-
-			$url = craft()->config->getSetPasswordPath($code, $id, $user);
-
-			// If the user cannot access the CP
-			if (!$user->can('accessCp'))
-			{
-				// Make sure we're looking at the front-end templates path to start with.
-				craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
-
-				// If they haven't defined a front-end set password template
-				if (!craft()->templates->doesTemplateExist(craft()->config->getLocalized('setPasswordPath')))
-				{
-					// Set PathService to use the CP templates path instead
-					craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
-				}
-
-				$this->renderTemplate($url, array(
-					'code' => $code,
-					'id' => $id,
-					'newUser' => ($user->password ? false : true),
-				));
-			}
-			// The user can access the CP, so send them to Craft's set password template in the dashboard.
-			else
-			{
-				craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
-
-				$this->renderTemplate($url, array(
-					'code' => $code,
-					'id' => $id,
-					'newUser' => ($user->password ? false : true),
-				));
-			}
+			$this->renderTemplate($url, array(
+				'code' => $code,
+				'id' => $id,
+				'newUser' => ($user->password ? false : true),
+			));
 		}
 	}
 
@@ -925,6 +900,31 @@ class UsersController extends BaseController
 		}
 
 		$this->returnErrorJson(Craft::t('Invalid password.'));
+	}
+
+	/**
+	 * @param $user
+	 */
+	private function _processSetPasswordPath($user)
+	{
+		// If the user cannot access the CP
+		if (!$user->can('accessCp'))
+		{
+			// Make sure we're looking at the front-end templates path to start with.
+			craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
+
+			// If they haven't defined a front-end set password template
+			if (!craft()->templates->doesTemplateExist(craft()->config->getLocalized('setPasswordPath')))
+			{
+				// Set PathService to use the CP templates path instead
+				craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+			}
+		}
+		// The user can access the CP, so send them to Craft's set password template in the dashboard.
+		else
+		{
+			craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+		}
 	}
 
 	/**
