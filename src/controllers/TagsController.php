@@ -139,9 +139,9 @@ class TagsController extends BaseController
 		}
 
 		$criteria = craft()->elements->getCriteria(ElementType::Tag);
-		$criteria->groupId  = $tagGroupId;
-		$criteria->search = 'name:'.$search.'*';
-		$criteria->id     = $notIds;
+		$criteria->groupId = $tagGroupId;
+		$criteria->search  = 'name:'.implode('* name:', preg_split('/\s+/', $search)).'*';
+		$criteria->id      = $notIds;
 		$tags = $criteria->find();
 
 		$return = array();
