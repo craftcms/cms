@@ -182,36 +182,6 @@ class TagsController extends BaseController
 	}
 
 	/**
-	 * Edits a tag's content.
-	 */
-	public function actionEditTagContent()
-	{
-		$this->requireLogin();
-		$this->requireAjaxRequest();
-
-		$requestId = craft()->request->getPost('requestId', 0);
-		$tagId = craft()->request->getRequiredPost('elementId');
-		$tag = craft()->tags->getTagById($tagId);
-
-		if (!$tag)
-		{
-			throw new Exception(Craft::t('No tag exists with the ID “{id}”.', array('id' => $tagId)));
-		}
-
-		$html = craft()->templates->render('_includes/edit_element', array(
-			'element'  => $tag,
-			'hasTitle' => false
-		));
-
-		$this->returnJson(array(
-			'requestId' => $requestId,
-			'headHtml' => craft()->templates->getHeadHtml(),
-			'bodyHtml' => $html,
-			'footHtml' => craft()->templates->getFootHtml(),
-		));
-	}
-
-	/**
 	 * Creates a new tag.
 	 */
 	public function actionCreateTag()
@@ -236,34 +206,5 @@ class TagsController extends BaseController
 				'success' => false
 			));
 		}
-	}
-
-	/**
-	 * Saves a tag's content.
-	 */
-	public function actionSaveTagContent()
-	{
-		$this->requireLogin();
-		$this->requireAjaxRequest();
-
-		$tagId = craft()->request->getRequiredPost('elementId');
-
-		$tag = craft()->tags->getTagById($tagId);
-
-		if (!$tag)
-		{
-			throw new Exception(Craft::t('No tag exists with the ID “{id}”.', array('id' => $tagId)));
-		}
-
-		$fieldNamespace = craft()->request->getPost('fieldNamespace');
-		$fields = craft()->request->getPost($fieldNamespace);
-		$tag->setContentFromPost($fields);
-
-		$success = craft()->tags->saveTagContent($tag);
-
-		$this->returnJson(array(
-			'success' => true,
-			'title'   => (string) $tag
-		));
 	}
 }

@@ -326,6 +326,11 @@ class TagsService extends BaseApplicationComponent
 						'isNewTag' => $isNewTag
 					)));
 
+					// Fire an 'onSaveTagContent' event (deprecated)
+					$this->onSaveTagContent(new Event($this, array(
+						'tag' => $tag
+					)));
+
 					if ($transaction !== null)
 					{
 						$transaction->commit();
@@ -376,30 +381,6 @@ class TagsService extends BaseApplicationComponent
 		return $criteria->first();
 	}
 
-	/**
-	 * Saves a tag's content.
-	 *
-	 * @param TagModel $tag
-	 * @return bool
-	 */
-	public function saveTagContent(TagModel $tag)
-	{
-		// TODO: translation support
-		if (craft()->elements->saveElement($tag))
-		{
-			// Fire an 'onSaveTagContent' event
-			$this->onSaveTagContent(new Event($this, array(
-				'tag' => $tag
-			)));
-
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
 	// Events
 
 	/**
@@ -416,6 +397,7 @@ class TagsService extends BaseApplicationComponent
 	 * Fires an 'onSaveTagContent' event.
 	 *
 	 * @param Event $event
+	 * @deprecated Deprecated since 1.4
 	 */
 	public function onSaveTagContent(Event $event)
 	{

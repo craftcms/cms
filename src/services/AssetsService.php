@@ -81,7 +81,7 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Stores a file.
+	 * Saves the record for an asset.
 	 *
 	 * @param AssetFileModel $file
 	 * @throws Exception
@@ -140,6 +140,16 @@ class AssetsService extends BaseApplicationComponent
 					// Save the file row
 					$fileRecord->save(false);
 
+					// Fire an 'onSaveAsset' event
+					$this->onSaveAsset(new Event($this, array(
+						'asset' => $file
+					)));
+
+					// Fire an 'onSaveFileContent' event (deprecated)
+					$this->onSaveFileContent(new Event($this, array(
+						'file' => $file
+					)));
+
 					if ($transaction !== null)
 					{
 						$transaction->commit();
@@ -163,34 +173,20 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Saves a file's content.
+	 * Fires an 'onSaveAsset' event.
 	 *
-	 * @param AssetFileModel $file
-	 * @param bool           $validate
-	 * @return bool
+	 * @param Event $event
 	 */
-	public function saveFileContent(AssetFileModel $file, $validate = true)
+	public function onSaveAsset(Event $event)
 	{
-		// TODO: translation support
-		if (craft()->elements->saveElement($file, $validate))
-		{
-			// Fire an 'onSaveFileContent' event
-			$this->onSaveFileContent(new Event($this, array(
-				'file' => $file
-			)));
-
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		$this->raiseEvent('onSaveAsset', $event);
 	}
 
 	/**
 	 * Fires an 'onSaveFileContent' event.
 	 *
 	 * @param Event $event
+	 * @deprecated Deprecated since 1.4
 	 */
 	public function onSaveFileContent(Event $event)
 	{
