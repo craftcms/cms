@@ -972,14 +972,14 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= '<div class="elementicon '.$iconClass.'"></div> ';
 		}
 
-		$html .= '<div class="label">';
-
 		if (isset($context['elementType']) && $context['elementType']->hasStatuses())
 		{
-			$html .= '<div class="status '.$context['element']->getStatus().'"></div> ';
+			$html .= '<div class="status '.$context['element']->getStatus().'"></div>';
 		}
 
-		if ($context['context'] == 'index' && ($cpEditUrl = $context['element']->getCpEditUrl()))
+		$html .= '<div class="label">';
+
+		if ($context['context'] == 'index' && $isEditable && ($cpEditUrl = $context['element']->getCpEditUrl()))
 		{
 			$html .= '<a href="'.$cpEditUrl.'">'.HtmlHelper::encode($context['element']).'</a>';
 		}
