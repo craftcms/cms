@@ -40,9 +40,7 @@ Craft.Tool = Garnish.Base.extend({
 				'</div>');
 
 			this.hud = new Garnish.HUD(this.$trigger, this.$form, {
-				hudClass: 'hud toolhud',
-				triggerSpacing: 10,
-				tipWidth: 30
+				hudClass: 'hud toolhud'
 			});
 
 			Craft.initUiElements(this.$form);
