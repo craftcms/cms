@@ -462,7 +462,7 @@ class AssetsService extends BaseApplicationComponent
 		{
 			$folder = AssetFolderModel::populateModel($row);
 			$this->_foldersById[$folder->id] = $folder;
-			$folders[] = $folder;
+			$folders[$folder->id] = $folder;
 		}
 
 		return $folders;
