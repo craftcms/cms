@@ -212,6 +212,32 @@ class AssetElementType extends BaseElementType
 	}
 
 	/**
+	 * Returns the HTML for an editor HUD for the given element.
+	 *
+	 * @param BaseElementModel $element
+	 * @return string
+	 */
+	public function getEditorHtml(BaseElementModel $element)
+	{
+		$html = craft()->templates->renderMacro('_includes/forms', 'textField', array(
+			array(
+				'label'     => Craft::t('Title'),
+				'id'        => 'title',
+				'name'      => 'title',
+				'value'     => $element->title,
+				'errors'    => $element->getErrors('title'),
+				'first'     => true,
+				'autofocus' => true,
+				'required'  => true
+			)
+		));
+
+		$html .= parent::getEditorHtml($element);
+
+		return $html;
+	}
+
+	/**
 	 * Transforms an asset folder tree into a source list.
 	 *
 	 * @access private
