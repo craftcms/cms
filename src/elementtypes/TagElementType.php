@@ -142,4 +142,47 @@ class TagElementType extends BaseElementType
 	{
 		return TagModel::populateModel($row);
 	}
+
+	/**
+	 * Returns the HTML for an editor HUD for the given element.
+	 *
+	 * @param BaseElementModel $element
+	 * @return string
+	 */
+	public function getEditorHtml(BaseElementModel $element)
+	{
+		$html = craft()->templates->renderMacro('_includes/forms', 'textField', array(
+			array(
+				'label'     => Craft::t('Name'),
+				'id'        => 'name',
+				'name'      => 'name',
+				'value'     => $element->name,
+				'errors'    => $element->getErrors('name'),
+				'first'     => true,
+				'autofocus' => true,
+				'required'  => true
+			)
+		));
+
+		$html .= parent::getEditorHtml($element);
+
+		return $html;
+	}
+
+	/**
+	 * Saves a given element.
+	 *
+	 * @param BaseElementModel $element
+	 * @param array $params
+	 * @return bool
+	 */
+	public function saveElement(BaseElementModel $element, $params)
+	{
+		if (isset($params['name']))
+		{
+			$element->name = $params['name'];
+		}
+
+		return craft()->tags->saveTag($element);
+	}
 }

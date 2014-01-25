@@ -300,7 +300,23 @@ class TagsService extends BaseApplicationComponent
 		}
 
 		$tagRecord->groupId = $tag->groupId;
-		$tagRecord->name = $tag->name;
+
+		// See if we can find another tag with tha same name
+		$criteria = craft()->elements->getCriteria(ElementType::Tag);
+		$criteria->groupId = $tag->groupId;
+		$criteria->search  = 'name::"'.$tag->name.'"';
+		$criteria->id      = ($isNewTag ? null : 'not '.$tag->id);
+		$matchingTag = $criteria->first();
+
+		if ($matchingTag)
+		{
+			// The name needs to be 100% identical for validation to take care of this.
+			$tagRecord->name = $matchingTag->name;
+		}
+		else
+		{
+			$tagRecord->name = $tag->name;
+		}
 
 		$tagRecord->validate();
 		$tag->addErrors($tagRecord->getErrors());
