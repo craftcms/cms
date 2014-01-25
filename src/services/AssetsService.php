@@ -751,7 +751,10 @@ class AssetsService extends BaseApplicationComponent
 	 * @param $folderId
 	 * @param string $filename if this is a rename operation
 	 * @param array $actions actions to take in case of a conflict.
+	 * @return bool|AssetOperationResponseModel
+	 * @throws Exception
 	 */
+
 	public function moveFiles($fileIds, $folderId, $filename = '', $actions = array())
 	{
 		if (!is_array($fileIds))
