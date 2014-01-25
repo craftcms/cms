@@ -469,6 +469,23 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
+	 * Returns the HTML for an editor HUD for the given element.
+	 *
+	 * @param BaseElementModel $element
+	 * @return string
+	 */
+	public function getEditorHtml(BaseElementModel $element)
+	{
+		$html = craft()->templates->render('entries/_titlefield', array(
+			'entry' => $element
+		));
+
+		$html .= parent::getEditorHtml($element);
+
+		return $html;
+	}
+
+	/**
 	 * Routes the request when the URI matches an element.
 	 *
 	 * @param BaseElementModel
