@@ -519,6 +519,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .element.removable .delete:before { color: rgba(0,0,0,0.2); }
 
 .element.loading:after { content: '.'; font-size: 0; position: absolute; top: 0; right: 3px; @include spinner; height: 30px; }
+.sel .element.loading:after,
 .element.loading.sel:after { background-image: url(../images/spinner_element.gif); }
 .element.loading.removable .delete { display: none; }
 
@@ -1026,6 +1027,7 @@ ul.errors li { color: $errorcolor; }
 	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
 	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
 
+	.sel .element.loading:after,
 	.element.loading.sel:after { background-image: url(../images/spinner_element_2x.gif); background-size: 20px; }
 
 	.structureview ul li { background-image: url(../images/branch_2x.png); background-size: 40px; }
