@@ -31,6 +31,16 @@ class TagModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns whether the current user can edit the element.
+	 *
+	 * @return bool
+	 */
+	public function isEditable()
+	{
+		return true;
+	}
+
+	/**
 	 * Returns the field layout used by this element.
 	 *
 	 * @return FieldLayoutModel|null

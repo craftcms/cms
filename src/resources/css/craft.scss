@@ -697,6 +697,11 @@ ul.tree,
 .modal-shade.dark { background: rgba(0,0,0,0.75); }
 .hud-shade { display: none; position: fixed; top: 0; left: 0; z-index: 9997; width: 100%; height: 100%; background: none; }
 
+/* element editor HUDs */
+.hud .body .elementeditor { margin: -25px; padding: 25px; max-width: 400px; max-height: 400px; overflow: auto; }
+.hud .body .elementeditor > .buttons .btn { position: relative; }
+.hud .body .elementeditor > .buttons .spinner { position: absolute; right: -22px; margin: 0; }
+
 /* crop image modals */
 .image-chooser img { display: block; }
 

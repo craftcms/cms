@@ -132,6 +132,16 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns whether the current user can edit the element.
+	 *
+	 * @return bool
+	 */
+	public function isEditable()
+	{
+		return craft()->userSession->checkPermission('uploadToAssetSource:'.$this->sourceId);
+	}
+
+	/**
 	 * Returns an <img> tag based on this asset.
 	 *
 	 * @return \Twig_Markup|null

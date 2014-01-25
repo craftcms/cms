@@ -3,73 +3,85 @@
  */
 Craft.ElementEditor = Garnish.Base.extend({
 
+	$element: null,
+
+	$form: null,
+	$fieldsContainer: null,
+	$buttonsContainer: null,
+	$cancelBtn: null,
+	$saveBtn: null,
+	$spinner: null,
+
 	hud: null,
-	elementId: 0,
-	requestId: 0,
-	$trigger: null,
 
-	init: function(settings)
+	init: function($element)
 	{
-		this.setSettings(settings, Craft.ElementEditor.defaults);
+		this.$element = $element;
 
-		this.elementId = this.settings.elementId;
-		this.$trigger = this.settings.$trigger;
-	},
+		this.$element.addClass('loading');
 
-	show: function ()
-	{
-		var params = {
-			requestId: ++this.requestId,
-			elementId: this.elementId
+		var data = {
+			elementId: $element.data('id')
 		};
 
-		this._showSpinner();
+		Craft.postActionRequest('elements/getEditorHtml', data, $.proxy(this, 'showHud'));
+	},
 
-		// Create a new HUD
-		Craft.postActionRequest(this.settings.loadContentAction, params, $.proxy(function(data, textStatus) {
+	showHud: function(response, textStatus)
+	{
+		this.$element.removeClass('loading');
 
-			this._hideSpinner();
+		if (textStatus == 'success')
+		{
+			this.$form = $('<form class="elementeditor"/>');
+			this.$fieldsContainer = $('<div/>').appendTo(this.$form);
 
-			if (textStatus != 'success' || data.requestId != this.requestId) {
-				return;
-			}
+			this.setFieldsHtml(response.html);
 
-			$hudHtml = $('<div/>').html((data.headHtml ? data.headHtml : '') + (data.bodyHtml ? data.bodyHtml : '') + (data.footHtml ? data.footHtml : ''));
+			this.$buttonsContainer = $('<div class="buttons right"/>').appendTo(this.$form);
+			this.$spinner = $('<div class="spinner hidden"/>').appendTo(this.$buttonsContainer);
+			this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$buttonsContainer);
+			this.$saveBtn = $('<input class="btn submit" type="submit" value="'+Craft.t('Save')+'"/>').appendTo(this.$buttonsContainer);
 
-			this.hud = new Garnish.HUD(this.$trigger, $hudHtml, {
-				hudClass: 'hud contenthud',
-				triggerSpacing: 10,
-				tipWidth: 30,
+			this.hud = new Garnish.HUD(this.$element, this.$form, {
 				closeOtherHUDs: false
 			});
 
-			Craft.initUiElements($hudHtml);
-			this.addListener($hudHtml.find('form'), 'submit', $.proxy(this, '_saveElementDetails'));
-			this.addListener($hudHtml.find('.btn.cancel'), 'click', $.proxy(this, 'removeHud'));
+			this.hud.on('hide', $.proxy(function() {
+				delete this.hud;
+			}, this));
 
-
-		}, this));
+			this.addListener(this.$form, 'submit', 'saveElement');
+			this.addListener(this.$cancelBtn, 'click', function() {
+				this.hud.hide()
+			});
+		}
 	},
 
-	_saveElementDetails: function (event)
+	setFieldsHtml: function(html)
 	{
-		event.preventDefault();
+		this.$fieldsContainer.html(html)
+		Craft.initUiElements(this.$fieldsContainer);
+	},
 
-		this.hud.$body.find('.spinner').removeClass('hidden');
+	saveElement: function(ev)
+	{
+		ev.preventDefault();
 
-		$form = $(event.currentTarget);
-		var params = $form.serialize();
+		this.$spinner.removeClass('hidden');
 
-		Craft.postActionRequest(this.settings.saveContentAction, params, $.proxy(function(response, textStatus)
+		var data = this.$form.serialize();
+
+		Craft.postActionRequest('elements/saveElement', data, $.proxy(function(response, textStatus)
 		{
-			this.hud.$body.find('.spinner').addClass('hidden');
+			this.$spinner.addClass('hidden');
 
 			if (textStatus == 'success')
 			{
 				if (textStatus == 'success' && response.success)
 				{
-					// Update the title
-					this.$trigger.find('.label').text(response.title);
+					// Update the label
+					this.$element.find('.label').text(response.newLabel);
 
 					// Update Live Preview
 					if (typeof Craft.entryPreviewMode != 'undefined')
@@ -77,41 +89,20 @@ Craft.ElementEditor = Garnish.Base.extend({
 						Craft.entryPreviewMode.updateIframe(true);
 					}
 
-					this.removeHud();
+					this.closeHud();
 				}
 				else
 				{
+					this.setFieldsHtml(response.html);
 					Garnish.shake(this.hud.$hud);
 				}
 			}
 		}, this));
 	},
 
-	_showSpinner: function ()
+	closeHud: function()
 	{
-		this.removeHud();
-		this.$trigger.addClass('loading');
-	},
-
-	_hideSpinner: function ()
-	{
-		this.$trigger.removeClass('loading');
-	},
-
-	removeHud: function ()
-	{
-		if (this.hud !== null)
-		{
-			this.hud.hide();
-			delete this.hud;
-		}
-	}
-},
-{
-	defaults: {
-		elementId: null,
-		$trigger: null,
-		loadContentAction: null,
-		saveContentAction: null
+		this.hud.hide();
+		delete this.hud;
 	}
 });

@@ -960,24 +960,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 	_editProperties: function (event)
 	{
-		var $target = $(event.currentTarget);
+		var $element = $(event.currentTarget);
+
         if (this.getSelectedSourceState('mode') == 'table')
         {
-            $target = $target.find('.element');
+            $element = $element.find('.element');
         }
 
-		if (!$target.data('ElementEditor'))
-		{
-			var settings = {
-				elementId: $target.attr('data-id'),
-				$trigger: $target,
-				loadContentAction: 'assets/editFileContent',
-				saveContentAction: 'assets/saveFileContent'
-			};
-			$target.data('ElementEditor', new Craft.ElementEditor(settings));
-		}
-
-		$target.data('ElementEditor').show();
+		new Craft.ElementEditor($element);
 	},
 
 	_createElementContextMenus: function ($elements)

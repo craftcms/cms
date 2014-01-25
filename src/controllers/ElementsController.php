@@ -147,6 +147,78 @@ class ElementsController extends BaseController
 	}
 
 	/**
+	 * Returns the HTML for an element editor HUD.
+	 */
+	public function actionGetEditorHtml()
+	{
+		$this->requireAjaxRequest();
+
+		$elementId = craft()->request->getRequiredPost('elementId');
+		$element = craft()->elements->getElementById($elementId);
+
+		if (!$element || !$element->isEditable())
+		{
+			throw new HttpException(403);
+		}
+
+		return $this->_returnEditorHtml($element);
+	}
+
+	/**
+	 * Saves an element.
+	 */
+	public function actionSaveElement()
+	{
+		$this->requireAjaxRequest();
+
+		$elementId = craft()->request->getRequiredPost('elementId');
+		$elementTypeClass = craft()->elements->getElementTypeById($elementId);
+
+		$criteria = craft()->elements->getCriteria($elementTypeClass);
+		$criteria->id = $elementId;
+		$criteria->locale = craft()->request->getRequiredPost('locale');
+		$criteria->status = null;
+		$criteria->localeEnabled = null;
+		$element = $criteria->first();
+
+		if (!$element || !ElementHelper::isElementEditable($element))
+		{
+			throw new HttpException(403);
+		}
+
+		$namespace = craft()->request->getRequiredPost('namespace');
+		$params = craft()->request->getPost($namespace);
+
+		if (isset($params['title']))
+		{
+			$element->getContent()->title = $params['title'];
+			unset($params['title']);
+		}
+
+		if (isset($params['fields']))
+		{
+			$fields = $params['fields'];
+			$element->setContentFromPost($fields);
+			unset($params['fields']);
+		}
+
+		// Now save it
+		$elementType = craft()->elements->getElementType($element->elementType);
+
+		if ($elementType->saveElement($element, $params))
+		{
+			$this->returnJson(array(
+				'success'  => true,
+				'newLabel' => (string) $element
+			));
+		}
+		else
+		{
+			$this->_returnEditorHtml($element);
+		}
+	}
+
+	/**
 	 * Returns the element type based on the posted element type class.
 	 *
 	 * @access private
@@ -194,4 +266,37 @@ class ElementsController extends BaseController
 		return null;
 	}
 
+	/**
+	 * Returns the editor HTML for a given element.
+	 *
+	 * @access private
+	 * @param BaseElementModel $element
+	 */
+	private function _returnEditorHtml(BaseElementModel $element)
+	{
+		$localeIds = ElementHelper::getEditableLocaleIdsForElement($element);
+
+		if (!$localeIds)
+		{
+			throw new HttpException(403);
+		}
+
+		$elementType = craft()->elements->getElementType($element->elementType);
+
+		$namespace = 'editor_'.StringHelper::randomString(10);
+		craft()->templates->setNamespace($namespace);
+
+		$html = '<input type="hidden" name="namespace" value="'.$namespace.'">' .
+			'<input type="hidden" name="elementId" value="'.$element->id.'">' .
+			'<input type="hidden" name="locale" value="'.$element->locale.'">' .
+			'<div>' .
+			craft()->templates->namespaceInputs($elementType->getEditorHtml($element)) .
+			'</div>' .
+			craft()->templates->getHeadHtml() .
+			craft()->templates->getFootHtml();
+
+		$this->returnJson(array(
+			'html' => $html
+		));
+	}
 }

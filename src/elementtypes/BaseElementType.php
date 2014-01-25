@@ -214,6 +214,53 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
+	 * Returns the HTML for an editor HUD for the given element.
+	 *
+	 * @param BaseElementModel $element
+	 * @return string
+	 */
+	public function getEditorHtml(BaseElementModel $element)
+	{
+		$html = '';
+
+		$fieldLayout = $element->getFieldLayout();
+
+		if ($fieldLayout)
+		{
+			$originalNamespace = craft()->templates->getNamespace();
+			$namespace = craft()->templates->namespaceInputName('fields', $originalNamespace);
+			craft()->templates->setNamespace($namespace);
+
+			foreach ($fieldLayout->getFields() as $fieldLayoutField)
+			{
+				$fieldHtml = craft()->templates->render('_includes/field', array(
+					'element'  => $element,
+					'field'    => $fieldLayoutField->getField(),
+					'required' => $fieldLayoutField->required
+				));
+
+				$html .= craft()->templates->namespaceInputs($fieldHtml, 'fields');
+			}
+
+			craft()->templates->setNamespace($originalNamespace);
+		}
+
+		return $html;
+	}
+
+	/**
+	 * Saves a given element.
+	 *
+	 * @param BaseElementModel $element
+	 * @param array $params
+	 * @return bool
+	 */
+	public function saveElement(BaseElementModel $element, $params)
+	{
+		return craft()->elements->saveElement($element);
+	}
+
+	/**
 	 * Routes the request when the URI matches an element.
 	 *
 	 * @param BaseElementModel

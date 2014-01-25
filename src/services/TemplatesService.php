@@ -955,7 +955,16 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= ' hasicon';
 		}
 
-		$html .= '" data-id="'.$context['element']->id.'" data-url="'.$context['element']->getUrl().'">';
+		$html .= '" data-id="'.$context['element']->id.'" data-url="'.$context['element']->getUrl().'"';
+
+		$isEditable = ElementHelper::isElementEditable($context['element']);
+
+		if ($isEditable)
+		{
+			$html .= ' data-editable="1"';
+		}
+
+		$html .= '>';
 
 		if ($context['context'] == 'field' && isset($context['name']))
 		{

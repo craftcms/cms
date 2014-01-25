@@ -186,6 +186,16 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns whether the current user can edit the element.
+	 *
+	 * @return bool
+	 */
+	public function isEditable()
+	{
+		return craft()->userSession->checkPermission('publishEntries:'.$this->sectionId);
+	}
+
+	/**
 	 * Returns the element's CP edit URL.
 	 *
 	 * @return string|false

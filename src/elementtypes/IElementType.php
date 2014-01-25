@@ -87,6 +87,19 @@ interface IElementType extends IComponentType
 	public function populateElementModel($row);
 
 	/**
+	 * @param BaseElementModel $element
+	 * @return string
+	 */
+	public function getEditorHtml(BaseElementModel $element);
+
+	/**
+	 * @param BaseElementModel $element
+	 * @param array $params
+	 * @return bool
+	 */
+	public function saveElement(BaseElementModel $element, $params);
+
+	/**
 	 * @param BaseElementModel
 	 * @return mixed
 	 */
