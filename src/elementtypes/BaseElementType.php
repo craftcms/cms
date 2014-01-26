@@ -33,21 +33,21 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * Returns whether this element type can have statuses.
-	 *
-	 * @return bool
-	 */
-	public function hasStatuses()
-	{
-		return false;
-	}
-
-	/**
 	 * Returns whether this element type stores data on a per-locale basis.
 	 *
 	 * @return bool
 	 */
 	public function isLocalized()
+	{
+		return false;
+	}
+
+	/**
+	 * Returns whether this element type can have statuses.
+	 *
+	 * @return bool
+	 */
+	public function hasStatuses()
 	{
 		return false;
 	}

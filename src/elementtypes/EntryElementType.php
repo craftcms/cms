@@ -37,21 +37,21 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type can have statuses.
-	 *
-	 * @return bool
-	 */
-	public function hasStatuses()
-	{
-		return true;
-	}
-
-	/**
 	 * Returns whether this element type stores data on a per-locale basis.
 	 *
 	 * @return bool
 	 */
 	public function isLocalized()
+	{
+		return true;
+	}
+
+	/**
+	 * Returns whether this element type can have statuses.
+	 *
+	 * @return bool
+	 */
+	public function hasStatuses()
 	{
 		return true;
 	}

@@ -19,12 +19,12 @@ interface IElementType extends IComponentType
 	/**
 	 * @return bool
 	 */
-	public function hasStatuses();
+	public function isLocalized();
 
 	/**
 	 * @return bool
 	 */
-	public function isLocalized();
+	public function hasStatuses();
 
 	/**
 	 * @param string|null $context
