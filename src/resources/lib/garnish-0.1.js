@@ -2359,6 +2359,11 @@ Garnish.HUD = Garnish.Base.extend({
 		this.$tip = $('<div class="'+this.settings.tipClass+'" />').appendTo(this.$hud);
 		this.$body = $('<div class="'+this.settings.bodyClass+'" />').appendTo(this.$hud).append(bodyContents);
 
+		if (this.$body.find('.hud-footer').length)
+		{
+			this.$hud.addClass('has-footer');
+		}
+
 		this.$shade = $('<div class="hud-shade"/>').insertBefore(this.$hud);
 
 		this.show();
