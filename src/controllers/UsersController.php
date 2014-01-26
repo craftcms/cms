@@ -781,6 +781,14 @@ class UsersController extends BaseController
 			$this->_noUserExists($userId);
 		}
 
+		// Even if you have administrateUsers permissions, only and admin should be able to unlock another admin.
+		$currentUser = craft()->userSession->getUser();
+
+		if ($user->admin && !$currentUser->admin)
+		{
+			throw new HttpException(403);
+		}
+
 		craft()->users->unlockUser($user);
 
 		craft()->userSession->setNotice(Craft::t('User activated.'));
@@ -803,6 +811,14 @@ class UsersController extends BaseController
 			$this->_noUserExists($userId);
 		}
 
+		// Even if you have administrateUsers permissions, only and admin should be able to suspend another admin.
+		$currentUser = craft()->userSession->getUser();
+
+		if ($user->admin && !$currentUser->admin)
+		{
+			throw new HttpException(403);
+		}
+
 		craft()->users->suspendUser($user);
 
 		craft()->userSession->setNotice(Craft::t('User suspended.'));
@@ -815,6 +831,8 @@ class UsersController extends BaseController
 	public function actionDeleteUser()
 	{
 		$this->requirePostRequest();
+		$this->requireLogin();
+
 		craft()->userSession->requirePermission('deleteUsers');
 
 		$userId = craft()->request->getRequiredPost('userId');
@@ -823,6 +841,14 @@ class UsersController extends BaseController
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
+		}
+
+		// Even if you have deleteUser permissions, only and admin should be able to delete another admin.
+		$currentUser = craft()->userSession->getUser();
+
+		if ($user->admin && !$currentUser->admin)
+		{
+			throw new HttpException(403);
 		}
 
 		craft()->users->deleteUser($user);
@@ -846,6 +872,14 @@ class UsersController extends BaseController
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
+		}
+
+		// Even if you have administrateUsers permissions, only and admin should be able to unsuspend another admin.
+		$currentUser = craft()->userSession->getUser();
+
+		if ($user->admin && !$currentUser->admin)
+		{
+			throw new HttpException(403);
 		}
 
 		craft()->users->unsuspendUser($user);
