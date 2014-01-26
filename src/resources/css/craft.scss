@@ -238,7 +238,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .toolbar table { width: 100%; }
 .toolbar table td:not(:first-child) { padding-left: 14px; }
 
-.buttons { position: relative; margin: 30px 0 30px -4px; }
+.buttons { position: relative; margin: 24px 0; }
 .buttons:after { @include clearafter; }
 .buttons.rightalign { float: right; }
 .buttons .btn,
