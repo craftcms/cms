@@ -27,6 +27,16 @@ class TagElementType extends BaseElementType
 	}
 
 	/**
+	 * Returns whether this element type stores data on a per-locale basis.
+	 *
+	 * @return bool
+	 */
+	public function isLocalized()
+	{
+		return true;
+	}
+
+	/**
 	 * Returns this element type's sources.
 	 *
 	 * @param string|null $context
