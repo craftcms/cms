@@ -710,9 +710,15 @@ ul.tree,
 .hud-shade { display: none; position: fixed; top: 0; left: 0; z-index: 9997; width: 100%; height: 100%; background: none; }
 
 /* element editor HUDs */
-.hud .body .elementeditor { margin: -25px; padding: 25px; max-width: 400px; max-height: 400px; overflow: auto; }
-.hud .body .elementeditor > .buttons .btn { position: relative; }
-.hud .body .elementeditor > .buttons .spinner { position: absolute; right: -22px; margin: 0; }
+.hud .elementeditor { padding: 0; }
+.hud .elementeditor .hud-header,
+.hud .elementeditor .hud-footer { margin: 0; padding: 7px 24px; }
+.hud .elementeditor .hud-header { text-align: center; }
+.hud .elementeditor .hud-header .spinner { margin: -1px -25px -1px 5px; }
+.hud .elementeditor > form > .fields { max-width: 400px; max-height: 300px; padding: 24px; overflow: auto; }
+.hud .elementeditor .hud-footer .spinner { position: absolute; right: 2px; margin: 0; }
+.hud .elementeditor .hud-footer .buttons { margin: 0; }
+.hud .elementeditor .hud-footer .buttons .btn { position: relative; }
 
 /* crop image modals */
 .image-chooser img { display: block; }

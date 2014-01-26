@@ -154,14 +154,24 @@ class ElementsController extends BaseController
 		$this->requireAjaxRequest();
 
 		$elementId = craft()->request->getRequiredPost('elementId');
-		$element = craft()->elements->getElementById($elementId);
+		$localeId = craft()->request->getPost('locale');
+		$elementTypeClass = craft()->elements->getElementTypeById($elementId);
+
+		$criteria = craft()->elements->getCriteria($elementTypeClass);
+		$criteria->id = $elementId;
+		$criteria->locale = $localeId;
+		$criteria->status = null;
+		$criteria->localeEnabled = null;
+		$element = $criteria->first();
 
 		if (!$element || !$element->isEditable())
 		{
 			throw new HttpException(403);
 		}
 
-		return $this->_returnEditorHtml($element);
+		$includeLocales = (bool) craft()->request->getPost('includeLocales', false);
+
+		return $this->_returnEditorHtml($element, $includeLocales);
 	}
 
 	/**
@@ -172,11 +182,12 @@ class ElementsController extends BaseController
 		$this->requireAjaxRequest();
 
 		$elementId = craft()->request->getRequiredPost('elementId');
+		$localeId = craft()->request->getRequiredPost('locale');
 		$elementTypeClass = craft()->elements->getElementTypeById($elementId);
 
 		$criteria = craft()->elements->getCriteria($elementTypeClass);
 		$criteria->id = $elementId;
-		$criteria->locale = craft()->request->getRequiredPost('locale');
+		$criteria->locale = $localeId;
 		$criteria->status = null;
 		$criteria->localeEnabled = null;
 		$element = $criteria->first();
@@ -214,7 +225,7 @@ class ElementsController extends BaseController
 		}
 		else
 		{
-			$this->_returnEditorHtml($element);
+			$this->_returnEditorHtml($element, false);
 		}
 	}
 
@@ -271,8 +282,9 @@ class ElementsController extends BaseController
 	 *
 	 * @access private
 	 * @param BaseElementModel $element
+	 * @param bool             $includeLocales
 	 */
-	private function _returnEditorHtml(BaseElementModel $element)
+	private function _returnEditorHtml(BaseElementModel $element, $includeLocales)
 	{
 		$localeIds = ElementHelper::getEditableLocaleIdsForElement($element);
 
@@ -281,12 +293,36 @@ class ElementsController extends BaseController
 			throw new HttpException(403);
 		}
 
+		if ($includeLocales)
+		{
+			if (count($localeIds) > 1)
+			{
+				$response['locales'] = array();
+
+				foreach ($localeIds as $localeId)
+				{
+					$locale = craft()->i18n->getLocaleById($localeId);
+
+					$response['locales'][] = array(
+						'id'   => $localeId,
+						'name' => $locale->getName()
+					);
+				}
+			}
+			else
+			{
+				$response['locales'] = null;
+			}
+		}
+
+		$response['locale'] = $element->locale;
+
 		$elementType = craft()->elements->getElementType($element->elementType);
 
 		$namespace = 'editor_'.StringHelper::randomString(10);
 		craft()->templates->setNamespace($namespace);
 
-		$html = '<input type="hidden" name="namespace" value="'.$namespace.'">' .
+		$response['html'] = '<input type="hidden" name="namespace" value="'.$namespace.'">' .
 			'<input type="hidden" name="elementId" value="'.$element->id.'">' .
 			'<input type="hidden" name="locale" value="'.$element->locale.'">' .
 			'<div>' .
@@ -295,8 +331,6 @@ class ElementsController extends BaseController
 			craft()->templates->getHeadHtml() .
 			craft()->templates->getFootHtml();
 
-		$this->returnJson(array(
-			'html' => $html
-		));
+		$this->returnJson($response);
 	}
 }

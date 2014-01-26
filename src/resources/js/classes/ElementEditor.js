@@ -4,24 +4,31 @@
 Craft.ElementEditor = Garnish.Base.extend({
 
 	$element: null,
+	elementId: null,
+	locale: null,
 
 	$form: null,
 	$fieldsContainer: null,
-	$buttonsContainer: null,
 	$cancelBtn: null,
 	$saveBtn: null,
 	$spinner: null,
+
+	$localeSelect: null,
+	$localeSpinner: null,
 
 	hud: null,
 
 	init: function($element)
 	{
 		this.$element = $element;
+		this.elementId = $element.data('id');
 
 		this.$element.addClass('loading');
 
 		var data = {
-			elementId: $element.data('id')
+			elementId:      this.elementId,
+			locale:         this.$element.data('locale'),
+			includeLocales: true
 		};
 
 		Craft.postActionRequest('elements/getEditorHtml', data, $.proxy(this, 'showHud'));
@@ -33,17 +40,44 @@ Craft.ElementEditor = Garnish.Base.extend({
 
 		if (textStatus == 'success')
 		{
-			this.$form = $('<form class="elementeditor"/>');
-			this.$fieldsContainer = $('<div/>').appendTo(this.$form);
+			var $hudContents = $();
 
-			this.setFieldsHtml(response.html);
+			if (response.locales)
+			{
+				var $localesContainer = $('<div class="hud-header"/>'),
+					$localeSelectContainer = $('<div class="select"/>').appendTo($localesContainer);
 
-			this.$buttonsContainer = $('<div class="buttons right"/>').appendTo(this.$form);
-			this.$spinner = $('<div class="spinner hidden"/>').appendTo(this.$buttonsContainer);
-			this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$buttonsContainer);
-			this.$saveBtn = $('<input class="btn submit" type="submit" value="'+Craft.t('Save')+'"/>').appendTo(this.$buttonsContainer);
+				this.$localeSelect = $('<select/>').appendTo($localeSelectContainer);
+				this.$localeSpinner = $('<div class="spinner hidden"/>').appendTo($localesContainer);
 
-			this.hud = new Garnish.HUD(this.$element, this.$form, {
+				for (var i = 0; i < response.locales.length; i++)
+				{
+					var locale = response.locales[i];
+					$('<option value="'+locale.id+'"'+(locale.id == response.locale ? ' selected="selected"' : '')+'>'+locale.name+'</option>').appendTo(this.$localeSelect);
+				}
+
+				this.addListener(this.$localeSelect, 'change', 'switchLocale');
+
+				$hudContents = $hudContents.add($localesContainer);
+			}
+
+			this.$form = $('<form/>');
+			this.$fieldsContainer = $('<div class="fields"/>').appendTo(this.$form);
+
+			this.updateForm(response);
+
+			var $buttonsOuterContainer = $('<div class="hud-footer"/>').appendTo(this.$form);
+
+			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsOuterContainer);
+
+			var $buttonsContainer = $('<div class="buttons right"/>').appendTo($buttonsOuterContainer);
+			this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttonsContainer);
+			this.$saveBtn = $('<input class="btn submit" type="submit" value="'+Craft.t('Save')+'"/>').appendTo($buttonsContainer);
+
+			$hudContents = $hudContents.add(this.$form);
+
+			this.hud = new Garnish.HUD(this.$element, $hudContents, {
+				bodyClass: 'body elementeditor',
 				closeOtherHUDs: false
 			});
 
@@ -58,9 +92,42 @@ Craft.ElementEditor = Garnish.Base.extend({
 		}
 	},
 
-	setFieldsHtml: function(html)
+	switchLocale: function()
 	{
-		this.$fieldsContainer.html(html)
+		var newLocale = this.$localeSelect.val();
+
+		if (newLocale == this.locale)
+		{
+			return;
+		}
+
+		this.$localeSpinner.removeClass('hidden');
+
+		var data = {
+			elementId: this.elementId,
+			locale:    newLocale
+		};
+
+		Craft.postActionRequest('elements/getEditorHtml', data, $.proxy(function(response, textStatus)
+		{
+			this.$localeSpinner.addClass('hidden');
+
+			if (textStatus == 'success')
+			{
+				this.updateForm(response);
+			}
+			else
+			{
+				this.$localeSelect.val(this.locale);
+			}
+		}, this));
+	},
+
+	updateForm: function(response)
+	{
+		this.locale = response.locale;
+
+		this.$fieldsContainer.html(response.html)
 		Craft.initUiElements(this.$fieldsContainer);
 	},
 
@@ -80,8 +147,11 @@ Craft.ElementEditor = Garnish.Base.extend({
 			{
 				if (textStatus == 'success' && response.success)
 				{
-					// Update the label
-					this.$element.find('.label').text(response.newLabel);
+					if (this.locale == this.$element.data('locale'))
+					{
+						// Update the label
+						this.$element.find('.label').text(response.newLabel);
+					}
 
 					// Update Live Preview
 					if (typeof Craft.entryPreviewMode != 'undefined')
@@ -93,7 +163,7 @@ Craft.ElementEditor = Garnish.Base.extend({
 				}
 				else
 				{
-					this.setFieldsHtml(response.html);
+					this.updateForm(response);
 					Garnish.shake(this.hud.$hud);
 				}
 			}
