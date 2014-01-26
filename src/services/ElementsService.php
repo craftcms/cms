@@ -386,6 +386,7 @@ class ElementsService extends BaseApplicationComponent
 						case BaseElementModel::DISABLED:
 						{
 							$statusConditions[] = 'elements.enabled = 0';
+							break;
 						}
 
 						default:
