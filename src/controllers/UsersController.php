@@ -587,7 +587,7 @@ class UsersController extends BaseController
 		if (craft()->userSession->isAdmin() || $user->isCurrent())
 		{
 			// Validate stuff.
-			$valid = $this->_validateSensitiveFields($userId, $user, $publicRegistration || $canRegisterUsers);
+			$valid = $this->_validateSensitiveFields($user, $publicRegistration || $canRegisterUsers);
 		}
 		else
 		{
@@ -598,12 +598,12 @@ class UsersController extends BaseController
 		{
 			$userName = craft()->request->getPost('username', $user->username);
 
-			if (!$userId)
+			if (!$user->id)
 			{
 				$user->email = craft()->request->getPost('email', $user->email);
 
 				// If it is a new user, grab the password from post.
-				if (!$userId && !craft()->request->isCpRequest())
+				if (!craft()->request->isCpRequest())
 				{
 					$user->newPassword = craft()->request->getPost('password');
 				}
@@ -618,7 +618,7 @@ class UsersController extends BaseController
 			$user->preferredLocale = craft()->request->getPost('preferredLocale', $user->preferredLocale);
 
 			// If it's a new user
-			if (!$userId)
+			if (!$user->id)
 			{
 				if (craft()->request->isSiteRequest() && craft()->hasPackage(CraftPackage::Users) && $requirePublicEmailValidation)
 				{
@@ -1186,18 +1186,18 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * @param $userId
-	 * @param $user
-	 * @param $publicRegistration
+	 * @access private
+	 * @param UserModel $user
+	 * @param bool $publicRegistration
 	 * @return bool
 	 */
-	private function _validateSensitiveFields($userId, UserModel $user, $publicRegistration)
+	private function _validateSensitiveFields(UserModel $user, $publicRegistration)
 	{
 		$email = craft()->request->getPost('email');
 		$password = craft()->request->getPost('password');
 
 		// If this is an existing user
-		if ($userId)
+		if ($user->id)
 		{
 			// If the user changed their email, make sure they have validated with their password.
 			if ($email && $email != $user->email)
