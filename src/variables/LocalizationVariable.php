@@ -27,6 +27,16 @@ class LocalizationVariable
 	}
 
 	/**
+	 * Returns the current locale.
+	 *
+	 * @return LocaleModel
+	 */
+	public function getCurrentLocale()
+	{
+		return craft()->i18n->getLocaleById(craft()->language);
+	}
+
+	/**
 	 * Returns a locale by its ID.
 	 *
 	 * @param string $localeId

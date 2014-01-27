@@ -24,6 +24,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	statusMenu: null,
 	status: null,
 
+	$localeMenuBtn: null,
+	localeMenu: null,
+	locale: null,
+
 	$viewModeBtnTd: null,
 	$viewModeBtnContainer: null,
 	viewModeBtns: null,
@@ -67,6 +71,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.$main = this.$container.find('.main');
 		this.$toolbar = this.$container.find('.toolbar:first');
 		this.$statusMenuBtn = this.$toolbar.find('.statusmenubtn:first');
+		this.$localeMenuBtn = this.$toolbar.find('.localemenubtn:first');
 		this.$search = this.$toolbar.find('.search:first input:first');
 		this.$mainSpinner = this.$toolbar.find('.spinner:first');
 		this.$loadingMoreSpinner = this.$container.find('.spinner.loadingmore')
@@ -164,6 +169,13 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		{
 			this.statusMenu = this.$statusMenuBtn.menubtn().data('menubtn').menu;
 			this.statusMenu.on('optionselect', $.proxy(this, 'onStatusChange'));
+		}
+
+		// Locale changes
+		if (this.$localeMenuBtn.length)
+		{
+			this.localeMenu = this.$localeMenuBtn.menubtn().data('menubtn').menu;
+			this.localeMenu.on('optionselect', $.proxy(this, 'onLocaleChange'));
 		}
 
 		this.addListener(this.$search, 'textchange', $.proxy(function()
@@ -269,7 +281,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		return {
 			context:            this.settings.context,
 			elementType:        this.elementType,
-			criteria:           $.extend({}, this.settings.criteria, { status: this.status }),
+			criteria:           $.extend({ status: this.status, locale: this.locale }, this.settings.criteria),
 			disabledElementIds: this.settings.disabledElementIds,
 			source:             this.instanceState.selectedSource,
 			status:             this.status,
@@ -402,6 +414,16 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		this.$statusMenuBtn.html($option.html());
 
 		this.status = $option.data('status');
+		this.updateElements();
+	},
+
+	onLocaleChange: function(ev)
+	{
+		this.localeMenu.$options.removeClass('sel');
+		var $option = $(ev.selectedOption).addClass('sel');
+		this.$localeMenuBtn.html($option.html());
+
+		this.locale = $option.data('locale');
 		this.updateElements();
 	},
 

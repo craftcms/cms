@@ -23,6 +23,19 @@
 						</div>
 					</td>
 				{% endif %}
+				{% if context is defined and context == 'index' and craft.hasPackage('Localize') and elementType.isLocalized() %}
+					{% set currentLocale = craft.i18n.getCurrentLocale() %}
+					<td class="thin">
+						<div class="btn menubtn localemenubtn">{{ currentLocale.getName() }}</div>
+						<div class="menu padded">
+							<ul>
+								{% for locale in craft.i18n.getSiteLocales() if user.can('editLocale:'~locale.getId()) %}
+									<li><a{% if locale.getId() == currentLocale.getid() %} class="sel"{% endif %} data-locale="{{ locale.getId() }}">{{ locale.getName() }}</a></li>
+								{% endfor %}
+							</ul>
+						</div>
+					</td>
+				{% endif %}
 				<td>
 					<div class="texticon search icon">
 						{{ text({
