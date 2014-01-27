@@ -9,7 +9,7 @@ h1 span.draft span { display: none; }
 #locales li { position: relative; padding: 7px 45px 7px 0; }
 #locales li + li { border-top: 1px solid $hrcolor; }
 #locales li.sel { color: $mediumtextcolor; cursor: default; }
-#locales li.sel:before { float: left; margin: 3px 0 0 -16px; font-size: 11px; color: $mediumtextcolor !important; @include icon; content: '√'; }
+#locales li.sel:before { float: left; margin: 3px 0 0 -16px; font-size: 11px; color: $mediumtextcolor !important; @include icon; content: 'check'; }
 #locales li a { color: $textcolor; }
 #locales li a:hover { color: $linkcolor; cursor: pointer; }
 #locales li .lightswitch { position: absolute; top: 50%; right: 9px; margin-top: -9px; }

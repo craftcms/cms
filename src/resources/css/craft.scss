@@ -787,7 +787,7 @@ ul.tree,
 .menu.padded ul li a[data-icon]:before,
 .menu.padded ul li a.icon:before,
 .menu.padded ul li a.sel:before { float: left; margin: 3px 0 0 -17px; font-size: 11px; color: $mediumtextcolor !important; }
-.menu.padded ul li a.sel:before { content: '√'; }
+.menu.padded ul li a.sel:before { content: 'check'; }
 
 /* tag select fields */
 .tagselect .add { position: relative; z-index: 1; display: inline-block; width: 12em; }

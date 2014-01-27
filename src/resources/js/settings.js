@@ -223,7 +223,7 @@ Craft.Tool = Garnish.Base.extend({
 	{
 		if (!this.$allDone)
 		{
-			this.$allDone = $('<div class="alldone" data-icon="√" />').appendTo(this.hud.$body);
+			this.$allDone = $('<div class="alldone" data-icon="done" />').appendTo(this.hud.$body);
 		}
 
 		this.$allDone.css({
