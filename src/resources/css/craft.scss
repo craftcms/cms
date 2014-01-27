@@ -234,7 +234,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 /* ----------------------------------------*/
 
 .toolbar { position: relative; margin: 24px 0; height: 30px; }
-.toolbar .spinner { position: absolute; top: 0; right: -24px; }
+.toolbar .spinner { position: absolute; top: 0; right: -22px; }
 .toolbar table { width: 100%; }
 .toolbar table td:not(:first-child) { padding-left: 14px; }
 .toolbar table td > .btn { display: block; }
