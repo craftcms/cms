@@ -580,7 +580,7 @@ class UsersController extends BaseController
 
 				if ($passwordModel->validate())
 				{
-					$user->newPassword = $password;
+					$user->newPassword = $newPassword;
 				}
 				else
 				{
@@ -608,7 +608,7 @@ class UsersController extends BaseController
 			}
 		}
 
-
+		// Set the normal attributes
 		$user->username        = craft()->request->getPost('username', ($user->username ? $user->username : $user->email));
 		$user->firstName       = craft()->request->getPost('firstName', $user->firstName);
 		$user->lastName        = craft()->request->getPost('lastName', $user->lastName);
