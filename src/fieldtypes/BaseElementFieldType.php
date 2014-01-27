@@ -174,7 +174,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 		$criteria->localeEnabled = null;
 
 		$selectionCriteria = array(
-			'status'        => null,
 			'localeEnabled' => null
 		);
 

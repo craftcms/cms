@@ -18,11 +18,17 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	$scroller: null,
 	$toolbar: null,
 	$search: null,
+	$mainSpinner: null,
+
+	$statusMenuBtn: null,
+	statusMenu: null,
+	status: null,
+
 	$viewModeBtnTd: null,
 	$viewModeBtnContainer: null,
 	viewModeBtns: null,
 	viewMode: null,
-	$mainSpinner: null,
+
 	$loadingMoreSpinner: null,
 	$sidebar: null,
 	$sources: null,
@@ -32,6 +38,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	$elements: null,
 	$table: null,
 	$elementContainer: null,
+
 
 	init: function(elementType, $container, settings)
 	{
@@ -59,6 +66,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		// Find the DOM elements
 		this.$main = this.$container.find('.main');
 		this.$toolbar = this.$container.find('.toolbar:first');
+		this.$statusMenuBtn = this.$toolbar.find('.statusmenubtn:first');
 		this.$search = this.$toolbar.find('.search:first input:first');
 		this.$mainSpinner = this.$toolbar.find('.spinner:first');
 		this.$loadingMoreSpinner = this.$container.find('.spinner.loadingmore')
@@ -150,6 +158,13 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			vertical:          true,
 			onSelectionChange: $.proxy(this, 'onSourceSelectionChange')
 		});
+
+		// Status changes
+		if (this.$statusMenuBtn.length)
+		{
+			this.statusMenu = this.$statusMenuBtn.menubtn().data('menubtn').menu;
+			this.statusMenu.on('optionselect', $.proxy(this, 'onStatusChange'));
+		}
 
 		this.addListener(this.$search, 'textchange', $.proxy(function()
 		{
@@ -254,9 +269,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		return {
 			context:            this.settings.context,
 			elementType:        this.elementType,
-			criteria:           this.settings.criteria,
+			criteria:           $.extend({}, this.settings.criteria, { status: this.status }),
 			disabledElementIds: this.settings.disabledElementIds,
 			source:             this.instanceState.selectedSource,
+			status:             this.status,
 			viewState:          this.getSelectedSourceState(),
 			search:             (this.$search ? this.$search.val() : null)
 		};
@@ -377,6 +393,16 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 	onUpdateElements: function(append)
 	{
 		this.settings.onUpdateElements(append);
+	},
+
+	onStatusChange: function(ev)
+	{
+		this.statusMenu.$options.removeClass('sel');
+		var $option = $(ev.selectedOption).addClass('sel');
+		this.$statusMenuBtn.html($option.html());
+
+		this.status = $option.data('status');
+		this.updateElements();
 	},
 
 	onSortChange: function(ev)

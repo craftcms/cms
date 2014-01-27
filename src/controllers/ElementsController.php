@@ -30,7 +30,8 @@ class ElementsController extends BaseController
 		}
 
 		$this->renderTemplate('_elements/modalbody', array(
-			'sources'   => $sources
+			'elementType' => $elementType,
+			'sources'     => $sources
 		));
 	}
 

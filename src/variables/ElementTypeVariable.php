@@ -17,6 +17,16 @@ class ElementTypeVariable extends BaseComponentTypeVariable
 	}
 
 	/**
+	 * Returns all of the possible statuses that elements of this type may have.
+	 *
+	 * @return array|null
+	 */
+	public function getStatuses()
+	{
+		return $this->component->getStatuses();
+	}
+
+	/**
 	 * Return a key/label list of the element type's sources.
 	 *
 	 * @param string|null $context

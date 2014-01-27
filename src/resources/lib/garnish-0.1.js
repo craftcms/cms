@@ -2891,6 +2891,7 @@ Garnish.Menu = Garnish.Base.extend({
 	selectOption: function(ev)
 	{
 		this.settings.onOptionSelect(ev.currentTarget);
+		this.trigger('optionselect', { selectedOption: ev.currentTarget });
 		this.hide();
 	}
 
