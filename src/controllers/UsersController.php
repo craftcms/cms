@@ -196,92 +196,68 @@ class UsersController extends BaseController
 			craft()->userSession->logout();
 		}
 
+		$code = craft()->request->getRequiredParam('code');
+		$id = craft()->request->getRequiredParam('id');
+		$user = craft()->users->getUserByVerificationCodeAndUid($code, $id);
+		$url = craft()->config->getSetPasswordPath($code, $id, $user);
+
+		if (!$user)
+		{
+			throw new HttpException('200', Craft::t('Invalid verification code.'));
+		}
+
 		if (craft()->request->isPostRequest())
 		{
-			$this->requirePostRequest();
-
-			$code = craft()->request->getRequiredPost('code');
-			$id = craft()->request->getRequiredPost('id');
-			$user = craft()->users->getUserByVerificationCodeAndUid($code, $id);
-
-			if (!$user)
-			{
-				throw new HttpException('200', Craft::t('Invalid verification code.'));
-			}
-
 			$newPassword = craft()->request->getRequiredPost('newPassword');
-			$user->newPassword = $newPassword;
 
-			if (craft()->users->changePassword($user))
+			$passwordModel = new PasswordModel();
+			$passwordModel->password = $newPassword;
+
+			if ($passwordModel->validate())
 			{
-				// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
-				if (!$user->can('accessCp'))
+				$user->newPassword = $newPassword;
+
+				if (craft()->users->changePassword($user))
 				{
-					$url = UrlHelper::getUrl(craft()->config->getLocalized('setPasswordSuccessPath'));
-					$this->redirect($url);
-				}
-				else
-				{
-					craft()->userSession->setNotice(Craft::t('Password updated.'));
-					$url = UrlHelper::getCpUrl('dashboard');
-					$this->redirect($url);
+					// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
+					if (!$user->can('accessCp'))
+					{
+						$url = UrlHelper::getSiteUrl(craft()->config->getLocalized('setPasswordSuccessPath'));
+						$this->redirect($url);
+					}
+					else
+					{
+						craft()->userSession->setNotice(Craft::t('Password updated.'));
+						$url = UrlHelper::getCpUrl('dashboard');
+						$this->redirect($url);
+					}
 				}
 			}
-			else
-			{
-				craft()->userSession->setNotice(Craft::t('Couldn’t update password.'));
 
-				// Send the data back to the template
-				craft()->urlManager->setRouteVariables(array(
-					'errors' => $user->getErrors('newPassword'),
-					'code'   => $code,
-					'id'     => $id
-				));
-			}
+			craft()->userSession->setNotice(Craft::t('Couldn’t update password.'));
+
+			$this->_processSetPasswordPath($user);
+
+			$errors = array();
+			$errors = array_merge($errors, $user->getErrors('newPassword'));
+			$errors = array_merge($errors, $passwordModel->getErrors('password'));
+
+			$this->renderTemplate($url, array(
+				'errors' => $errors,
+				'code' => $code,
+				'id' => $id,
+				'newUser' => ($user->password ? false : true),
+			));
 		}
 		else
 		{
-			$code = craft()->request->getQuery('code');
-			$id = craft()->request->getQuery('id');
-			$user = craft()->users->getUserByVerificationCodeAndUid($code, $id);
+			$this->_processSetPasswordPath($user);
 
-			if (!$user)
-			{
-				throw new HttpException('200', Craft::t('Invalid verification code.'));
-			}
-
-			$url = craft()->config->getSetPasswordPath($code, $id, $user);
-
-			// If the user cannot access the CP
-			if (!$user->can('accessCp'))
-			{
-				// Make sure we're looking at the front-end templates path to start with.
-				craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
-
-				// If they haven't defined a front-end set password template
-				if (!craft()->templates->doesTemplateExist(craft()->config->getLocalized('setPasswordPath')))
-				{
-					// Set PathService to use the CP templates path instead
-					craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
-				}
-
-				$this->renderTemplate($url, array(
-					'code' => $code,
-					'id' => $id,
-					'newUser' => ($user->password ? false : true),
-				));
-			}
-			// The user can access the CP, so send them to Craft's set password template in the dashboard.
-			else
-			{
-				craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
-
-				$this->renderTemplate($url, array(
-					'code' => $code,
-					'id' => $id,
-					'newUser' => ($user->password ? false : true),
-				));
-			}
+			$this->renderTemplate($url, array(
+				'code' => $code,
+				'id' => $id,
+				'newUser' => ($user->password ? false : true),
+			));
 		}
 	}
 
@@ -989,6 +965,7 @@ class UsersController extends BaseController
 	public function actionUnlockUser()
 	{
 		$this->requirePostRequest();
+		$this->requireLogin();
 		craft()->userSession->requirePermission('administrateUsers');
 
 		$userId = craft()->request->getRequiredPost('userId');
@@ -997,6 +974,14 @@ class UsersController extends BaseController
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
+		}
+
+		// Even if you have administrateUsers permissions, only and admin should be able to unlock another admin.
+		$currentUser = craft()->userSession->getUser();
+
+		if ($user->admin && !$currentUser->admin)
+		{
+			throw new HttpException(403);
 		}
 
 		craft()->users->unlockUser($user);
@@ -1011,6 +996,7 @@ class UsersController extends BaseController
 	public function actionSuspendUser()
 	{
 		$this->requirePostRequest();
+		$this->requireLogin();
 		craft()->userSession->requirePermission('administrateUsers');
 
 		$userId = craft()->request->getRequiredPost('userId');
@@ -1019,6 +1005,14 @@ class UsersController extends BaseController
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
+		}
+
+		// Even if you have administrateUsers permissions, only and admin should be able to suspend another admin.
+		$currentUser = craft()->userSession->getUser();
+
+		if ($user->admin && !$currentUser->admin)
+		{
+			throw new HttpException(403);
 		}
 
 		craft()->users->suspendUser($user);
@@ -1033,6 +1027,8 @@ class UsersController extends BaseController
 	public function actionDeleteUser()
 	{
 		$this->requirePostRequest();
+		$this->requireLogin();
+
 		craft()->userSession->requirePermission('deleteUsers');
 
 		$userId = craft()->request->getRequiredPost('userId');
@@ -1041,6 +1037,14 @@ class UsersController extends BaseController
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
+		}
+
+		// Even if you have deleteUser permissions, only and admin should be able to delete another admin.
+		$currentUser = craft()->userSession->getUser();
+
+		if ($user->admin && !$currentUser->admin)
+		{
+			throw new HttpException(403);
 		}
 
 		craft()->users->deleteUser($user);
@@ -1056,6 +1060,7 @@ class UsersController extends BaseController
 	public function actionUnsuspendUser()
 	{
 		$this->requirePostRequest();
+		$this->requireLogin();
 		craft()->userSession->requirePermission('administrateUsers');
 
 		$userId = craft()->request->getRequiredPost('userId');
@@ -1064,6 +1069,14 @@ class UsersController extends BaseController
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
+		}
+
+		// Even if you have administrateUsers permissions, only and admin should be able to unsuspend another admin.
+		$currentUser = craft()->userSession->getUser();
+
+		if ($user->admin && !$currentUser->admin)
+		{
+			throw new HttpException(403);
 		}
 
 		craft()->users->unsuspendUser($user);
@@ -1118,6 +1131,31 @@ class UsersController extends BaseController
 		}
 
 		$this->returnErrorJson(Craft::t('Invalid password.'));
+	}
+
+	/**
+	 * @param $user
+	 */
+	private function _processSetPasswordPath($user)
+	{
+		// If the user cannot access the CP
+		if (!$user->can('accessCp'))
+		{
+			// Make sure we're looking at the front-end templates path to start with.
+			craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
+
+			// If they haven't defined a front-end set password template
+			if (!craft()->templates->doesTemplateExist(craft()->config->getLocalized('setPasswordPath')))
+			{
+				// Set PathService to use the CP templates path instead
+				craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+			}
+		}
+		// The user can access the CP, so send them to Craft's set password template in the dashboard.
+		else
+		{
+			craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+		}
 	}
 
 	/**
