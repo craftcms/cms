@@ -237,6 +237,8 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .toolbar .spinner { position: absolute; top: 0; right: -24px; }
 .toolbar table { width: 100%; }
 .toolbar table td:not(:first-child) { padding-left: 14px; }
+.toolbar table td > .btn { display: block; }
+.toolbar table td > .btngroup { float: none; }
 
 .buttons { position: relative; margin: 24px 0; }
 .buttons:after { @include clearafter; }
@@ -401,7 +403,7 @@ table .lightswitch { display: inline-block; margin-bottom: -5px; }
 	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
 }
 .lightswitch .label.on { border-radius: 9px 0 0 9px; background: $successcolor; }
-.lightswitch .label.off { border-radius: 0 9px 9px 0; background: $errorcolor; }
+.lightswitch .label.off { border-radius: 0 9px 9px 0; background: $bgcolor; }
 
 .lightswitch:not(.dragging).on .label.off,
 .lightswitch:not(.dragging):not(.on) .label.on { visibility: hidden; }
@@ -615,8 +617,7 @@ ul.tree,
 
 .status.off,
 .status.suspended,
-.status.expired,
-.status.disabled { background-position: 0 -20px; } /* red */
+.status.expired { background-position: 0 -20px; } /* red */
 .status.disabled { opacity: 1; }
 
 /* ----------------------------------------
