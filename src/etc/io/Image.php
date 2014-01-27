@@ -13,14 +13,14 @@ class Image
 
 	function __construct()
 	{
-		//if (craft()->images->isGd())
-		//{
-		//    $this->_instance = new \Imagine\Gd\Imagine();
-		//}
-		//else
-		//{
+		if (craft()->images->isGd())
+		{
+			$this->_instance = new \Imagine\Gd\Imagine();
+		}
+		else
+		{
 			$this->_instance = new \Imagine\Imagick\Imagine();
-		//}
+		}
 	}
 
 	/**
