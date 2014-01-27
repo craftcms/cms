@@ -268,6 +268,7 @@ class EntryElementType extends BaseElementType
 			{
 				return array('and',
 					'elements.enabled = 1',
+					'elements_i18n.enabled = 1',
 					"entries.postDate <= '{$currentTimeDb}'",
 					array('or', 'entries.expiryDate is null', "entries.expiryDate > '{$currentTimeDb}'")
 				);
@@ -277,6 +278,7 @@ class EntryElementType extends BaseElementType
 			{
 				return array('and',
 					'elements.enabled = 1',
+					'elements_i18n.enabled = 1',
 					"entries.postDate > '{$currentTimeDb}'"
 				);
 			}
@@ -285,6 +287,7 @@ class EntryElementType extends BaseElementType
 			{
 				return array('and',
 					'elements.enabled = 1',
+					'elements_i18n.enabled = 1',
 					'entries.expiryDate is not null',
 					"entries.expiryDate <= '{$currentTimeDb}'"
 				);
