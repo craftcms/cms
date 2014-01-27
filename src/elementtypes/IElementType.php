@@ -27,6 +27,11 @@ interface IElementType extends IComponentType
 	public function hasStatuses();
 
 	/**
+	 * @return array|null
+	 */
+	public function getStatuses();
+
+	/**
 	 * @param string|null $context
 	 * @return array
 	 */

@@ -57,6 +57,21 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
+	 * Returns all of the possible statuses that elements of this type may have.
+	 *
+	 * @return array|null
+	 */
+	public function getStatuses()
+	{
+		return array(
+			EntryModel::LIVE => Craft::t('Live'),
+			EntryModel::PENDING => Craft::t('Pending'),
+			EntryModel::EXPIRED => Craft::t('Expired'),
+			BaseElementModel::DISABLED => Craft::t('Disabled')
+		);
+	}
+
+	/**
 	 * Returns this element type's sources.
 	 *
 	 * @param string|null $context

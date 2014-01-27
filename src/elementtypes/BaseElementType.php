@@ -53,6 +53,19 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
+	 * Returns all of the possible statuses that elements of this type may have.
+	 *
+	 * @return array|null
+	 */
+	public function getStatuses()
+	{
+		return array(
+			BaseElementModel::ENABLED => Craft::t('Enabled'),
+			BaseElementModel::DISABLED => Craft::t('Disabled')
+		);
+	}
+
+	/**
 	 * Returns this element type's sources.
 	 *
 	 * @param string|null $context
