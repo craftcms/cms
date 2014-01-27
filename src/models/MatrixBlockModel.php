@@ -96,6 +96,16 @@ class MatrixBlockModel extends BaseElementModel
 	}
 
 	/**
+	 * Sets the owner
+	 *
+	 * @param BaseElementModel
+	 */
+	public function setOwner(BaseElementModel $owner)
+	{
+		$this->_owner = $owner;
+	}
+
+	/**
 	 * Returns the name of the table this element's content is stored in.
 	 *
 	 * @return string

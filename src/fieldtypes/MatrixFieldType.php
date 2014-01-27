@@ -301,6 +301,7 @@ class MatrixFieldType extends BaseFieldType
 				$block = $oldBlocksById[$blockId];
 			}
 
+			$block->setOwner($this->element);
 			$block->enabled = (isset($blockData['enabled']) ? (bool) $blockData['enabled'] : true);
 
 			if (isset($blockData['fields']))
