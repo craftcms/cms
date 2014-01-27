@@ -56,13 +56,25 @@ class LocaleModel extends BaseApplicationComponent
 				{
 					// Try grabbling the language and territory separately...
 					$name = $localeData->getLanguage($this->_id);
+
 					if ($name)
 					{
 						$territory = $localeData->getTerritory($this->_id);
+
 						if ($territory)
 						{
 							$name .= ' - '.$territory;
 						}
+					}
+					else if ($targetLocaleId != 'en')
+					{
+						// Fall back on English
+						return $this->getName('en');
+					}
+					else
+					{
+						// Use the locale ID as a last result
+						return $this->_id;
 					}
 				}
 			}
