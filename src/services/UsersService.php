@@ -346,6 +346,10 @@ class UsersService extends BaseApplicationComponent
 		{
 			IOHelper::deleteFolder($folder);
 		}
+
+		$record = UserRecord::model()->findById($user->id);
+		$record->photo = null;
+		$record->save();
 	}
 
 	/**
