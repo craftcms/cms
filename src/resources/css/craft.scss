@@ -855,7 +855,7 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 .input.errors > .text,
 .input.errors > div.redactor_box,
 .input.errors > .border-box,
-.text.error { border-color: $errorcolor !important; }
+.text.error { border: 1px solid $errorcolor !important; }
 
 .texticon { position: relative; cursor: text; }
 .texticon:before { position: absolute; top: 9px; left: 9px; color: $lighttextcolor; }
