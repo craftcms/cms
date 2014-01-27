@@ -674,52 +674,8 @@ class UsersController extends BaseController
 			{
 				if (craft()->users->saveUser($user))
 				{
-					// Now that we have a record saved, let's process any user photos.
-					$deleteUserPhoto = craft()->request->getPost('deleteUserPhoto');
-					if (!empty($deleteUserPhoto))
-					{
-						craft()->users->deleteUserPhoto($user);
-						$user->photo = null;
-					}
-					elseif ($userPhoto = \CUploadedFile::getInstanceByName('userPhoto'))
-					{
-						craft()->users->deleteUserPhoto($user);
-						$image = craft()->images->loadImage($userPhoto->getTempName());
-						$imageWidth = $image->getWidth();
-						$imageHeight = $image->getHeight();
-
-						$dimension = min($imageWidth, $imageHeight);
-						$horizontalMargin = ($imageWidth - $dimension) / 2;
-						$verticalMargin = ($imageHeight - $dimension) / 2;
-						$image->crop($horizontalMargin, $imageWidth - $horizontalMargin, $verticalMargin, $imageHeight - $verticalMargin);
-
-						craft()->users->saveUserPhoto($userPhoto->getName(), $image, $user);
-
-						IOHelper::deleteFile($userPhoto->getTempName());
-					}
-
-					if (($currentUser = craft()->userSession->getUser()))
-					{
-						// Save any user groups
-						if ($currentUser->can('administrateUsers') && craft()->hasPackage(CraftPackage::Users))
-						{
-							// Save any user groups
-							$groupIds = craft()->request->getPost('groups');
-							craft()->userGroups->assignUserToGroups($user->id, $groupIds);
-
-							// Save any user permissions
-							if ($user->admin)
-							{
-								$permissions = array();
-							}
-							else
-							{
-								$permissions = craft()->request->getPost('permissions');
-							}
-
-							craft()->userPermissions->saveUserPermissions($user->id, $permissions);
-						}
-					}
+					$this->_processUserPhoto($user);
+					$this->_processUserGroupsPermissions($user);
 
 					// if public registration is enabled, assign to a default group (if any).
 					if ($publicRegistration)
@@ -1308,6 +1264,65 @@ class UsersController extends BaseController
 		if ($defaultGroup)
 		{
 			craft()->userGroups->assignUserToGroups($userId, array($defaultGroup));
+		}
+	}
+
+	/**
+	 * @param $user
+	 */
+	private function _processUserPhoto($user)
+	{
+		// Now that we have a record saved, let's process any user photos.
+		$deleteUserPhoto = craft()->request->getPost('deleteUserPhoto');
+		if (!empty($deleteUserPhoto))
+		{
+			craft()->users->deleteUserPhoto($user);
+			$user->photo = null;
+		}
+		elseif ($userPhoto = \CUploadedFile::getInstanceByName('userPhoto'))
+		{
+			craft()->users->deleteUserPhoto($user);
+			$image = craft()->images->loadImage($userPhoto->getTempName());
+			$imageWidth = $image->getWidth();
+			$imageHeight = $image->getHeight();
+
+			$dimension = min($imageWidth, $imageHeight);
+			$horizontalMargin = ($imageWidth - $dimension) / 2;
+			$verticalMargin = ($imageHeight - $dimension) / 2;
+			$image->crop($horizontalMargin, $imageWidth - $horizontalMargin, $verticalMargin, $imageHeight - $verticalMargin);
+
+			craft()->users->saveUserPhoto($userPhoto->getName(), $image, $user);
+
+			IOHelper::deleteFile($userPhoto->getTempName());
+		}
+	}
+
+	/**
+	 * @param $user
+	 */
+	private function _processUserGroupsPermissions($user)
+	{
+		if (($currentUser = craft()->userSession->getUser()))
+		{
+			// Save any user groups
+			if ($currentUser->can('administrateUsers') && craft()->hasPackage(CraftPackage::Users))
+			{
+				// Save any user groups
+				$groupIds = craft()->request->getPost('groups');
+				craft()->userGroups->assignUserToGroups($user->id, $groupIds);
+
+				// Save any user permissions
+				if ($user->admin)
+				{
+					$permissions = array();
+				}
+				else
+				{
+					$permissions = craft()->request->getPost('permissions');
+				}
+
+				craft()->userPermissions->saveUserPermissions($user->id, $permissions);
+			}
 		}
 	}
 }
