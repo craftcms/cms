@@ -535,13 +535,6 @@ class UsersController extends BaseController
 				throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
 			}
 
-			// If these are different, the Users package is required.
-			if ($user->id !== $userId)
-			{
-				// Users package is required
-				craft()->requirePackage(CraftPackage::Users);
-			}
-
 			if (!$isCurrentUser)
 			{
 				craft()->userSession->requirePermission('editUsers');
