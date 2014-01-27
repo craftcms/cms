@@ -55,7 +55,7 @@ class MatrixBlockModel extends BaseElementModel
 		}
 		else
 		{
-			return craft()->i18n->getSiteLocaleIds();
+			return $this->getOwner()->getLocales();
 		}
 	}
 
