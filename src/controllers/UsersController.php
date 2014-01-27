@@ -771,6 +771,7 @@ class UsersController extends BaseController
 	public function actionUnlockUser()
 	{
 		$this->requirePostRequest();
+		$this->requireLogin();
 		craft()->userSession->requirePermission('administrateUsers');
 
 		$userId = craft()->request->getRequiredPost('userId');
@@ -801,6 +802,7 @@ class UsersController extends BaseController
 	public function actionSuspendUser()
 	{
 		$this->requirePostRequest();
+		$this->requireLogin();
 		craft()->userSession->requirePermission('administrateUsers');
 
 		$userId = craft()->request->getRequiredPost('userId');
@@ -864,6 +866,7 @@ class UsersController extends BaseController
 	public function actionUnsuspendUser()
 	{
 		$this->requirePostRequest();
+		$this->requireLogin();
 		craft()->userSession->requirePermission('administrateUsers');
 
 		$userId = craft()->request->getRequiredPost('userId');
