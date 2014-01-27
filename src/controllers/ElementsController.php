@@ -221,7 +221,7 @@ class ElementsController extends BaseController
 		{
 			$this->returnJson(array(
 				'success'  => true,
-				'newLabel' => (string) $element
+				'newTitle' => (string) $element
 			));
 		}
 		else

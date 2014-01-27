@@ -150,7 +150,7 @@ Craft.ElementEditor = Garnish.Base.extend({
 					if (this.locale == this.$element.data('locale'))
 					{
 						// Update the label
-						this.$element.find('.label').text(response.newLabel);
+						this.$element.find('.title').text(response.newTitle);
 					}
 
 					// Update Live Preview

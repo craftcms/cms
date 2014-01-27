@@ -914,7 +914,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 	_initElementSelect: function ($children)
 	{
-
 		if (typeof this.elementSelect == "object" && this.elementSelect != null)
 		{
 			this.elementSelect.destroy();
@@ -960,13 +959,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 	_editProperties: function (event)
 	{
-		var $element = $(event.currentTarget);
-
-        if (this.getSelectedSourceState('mode') == 'table')
-        {
-            $element = $element.find('.element');
-        }
-
+		var $element = $(event.currentTarget).find('.element');
 		new Craft.ElementEditor($element);
 	},
 
