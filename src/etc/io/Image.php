@@ -1,9 +1,6 @@
 <?php
 namespace Craft;
 
-/**
- * Image
- */
 class Image
 {
 	private $_imageSourcePath;
@@ -12,17 +9,18 @@ class Image
 	private $_instance;
 	private $_width;
 	private $_height;
+	private $_isAnimatedGif = false;
 
 	function __construct()
 	{
-		if (craft()->images->isGd())
-		{
-			$this->_instance = new \Imagine\Gd\Imagine();
-		}
-		else
-		{
+		//if (craft()->images->isGd())
+		//{
+		//    $this->_instance = new \Imagine\Gd\Imagine();
+		//}
+		//else
+		//{
 			$this->_instance = new \Imagine\Imagick\Imagine();
-		}
+		//}
 	}
 
 	/**
@@ -82,6 +80,14 @@ class Image
 		$this->_width = $this->_image->getSize()->getWidth();
 		$this->_height = $this->_image->getSize()->getHeight();
 
+		if ($this->_extension == 'gif')
+		{
+			if ($this->_image->layers())
+			{
+				$this->_isAnimatedGif = true;
+			}
+		}
+
 		return $this;
 	}
 
@@ -99,7 +105,18 @@ class Image
 		$width = $x2 - $x1;
 		$height = $y2 - $y1;
 
-		$this->_image->crop(new \Imagine\Image\Point($x1, $y1), new \Imagine\Image\Box($width, $height));
+		if ($this->_isAnimatedGif)
+		{
+			foreach ($this->_image->layers() as $offset => $layer)
+			{
+				$croppedLayer = $layer->crop(new \Imagine\Image\Point($x1, $y1), new \Imagine\Image\Box($width, $height));
+				$this->_image->layers()->set($offset, $croppedLayer);
+			}
+		}
+		else
+		{
+			$this->_image->crop(new \Imagine\Image\Point($x1, $y1), new \Imagine\Image\Box($width, $height));
+		}
 
 		return $this;
 	}
@@ -227,7 +244,19 @@ class Image
 	public function resize($targetWidth, $targetHeight = null)
 	{
 		$this->_normalizeDimensions($targetWidth, $targetHeight);
-		$this->_image->resize(new \Imagine\Image\Box($targetWidth, $targetHeight), $this->_getResizeFilter());
+
+		if ($this->_isAnimatedGif)
+		{
+			foreach ($this->_image->layers() as $offset => $layer)
+			{
+				$resizedLayer = $layer->resize(new \Imagine\Image\Box($targetWidth, $targetHeight), $this->_getResizeFilter());
+				$this->_image->layers()->set($offset, $resizedLayer);
+			}
+		}
+		else
+		{
+			$this->_image->resize(new \Imagine\Image\Box($targetWidth, $targetHeight), $this->_getResizeFilter());
+		}
 
 		return $this;
 	}
@@ -242,7 +271,8 @@ class Image
 	public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
 	{
 		$extension = $this->getExtension();
-		$options = $this->_getSaveOptions();
+
+		$options = $this->_getSaveOptions(false);
 
 		if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality)
 		{
@@ -332,7 +362,7 @@ class Image
 	}
 
 	/**
-	 * @param null $quality
+	 * @param null       $quality
 	 * @return array
 	 */
 	private function _getSaveOptions($quality = null)
@@ -349,7 +379,7 @@ class Image
 
 			case 'gif':
 			{
-				return array('flatten' => false);
+				return array('animated' => $this->_isAnimatedGif);
 			}
 
 			case 'png':
