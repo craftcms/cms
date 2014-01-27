@@ -161,7 +161,7 @@ class UsersService extends BaseApplicationComponent
 			try
 			{
 				// If we're going through account verification, in whatever form
-				if ($user->verificationRequired || $user->unverifiedEmail)
+				if ($user->unverifiedEmail)
 				{
 					$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 				}
@@ -188,19 +188,24 @@ class UsersService extends BaseApplicationComponent
 
 					$userRecord->save(false);
 
-					// If this is a new user and verification is required or the user is active and the unverifiedEmail column has a value
-					if (($isNewUser && $user->verificationRequired) || ($user->status == UserStatus::Active && $user->unverifiedEmail))
+					if ($user->unverifiedEmail)
 					{
-						// We've already saved the record to the database, so for the sake of sendEmailByKey and unverifiedEmail, let's make sure
-						// the email gets sent to the right address.
-						if ($user->unverifiedEmail)
+						// Temporarily set the unverified email on the UserModel so the verification email goes to the right place
+						$originalEmail = $user->email;
+						$user->email = $user->unverifiedEmail;
+
+						try
 						{
-							$user->email = $user->unverifiedEmail;
+							craft()->email->sendEmailByKey($user, 'account_activation', array(
+								'link' => new \Twig_Markup(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+							));
+						}
+						catch (\phpmailerException $e)
+						{
+							craft()->userSession->setError(Craft::t('User saved, but couldn’t send verification email. Check your email settings.'));
 						}
 
-						craft()->email->sendEmailByKey($user, 'account_activation', array(
-							'link' => new \Twig_Markup(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
-						));
+						$user->email = $originalEmail;
 					}
 
 					if (!$isNewUser)
@@ -349,6 +354,7 @@ class UsersService extends BaseApplicationComponent
 
 		$record = UserRecord::model()->findById($user->id);
 		$record->photo = null;
+		$user->photo = null;
 		$record->save();
 	}
 

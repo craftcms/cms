@@ -465,7 +465,7 @@ class UsersController extends BaseController
 		}
 
 		// Ugly.  But Users don't have a real fieldlayout/tabs.
-		$accountFields = array('username', 'firstName', 'lastName', 'email', 'newPassword', 'passwordResetRequired', 'preferredLocale');
+		$accountFields = array('username', 'firstName', 'lastName', 'email', 'password', 'newPassword', 'currentPassword', 'passwordResetRequired', 'preferredLocale');
 
 		if ($variables['account']->hasErrors())
 		{
@@ -499,31 +499,10 @@ class UsersController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$isCurrentUser = false;
+		$currentUser = craft()->userSession->getUser();
+		$thisIsPublicRegistration = false;
 
-		if (craft()->hasPackage(CraftPackage::Users))
-		{
-			$userId = craft()->request->getPost('userId');
-
-			if ($userId)
-			{
-				craft()->userSession->requireLogin();
-			}
-		}
-		else
-		{
-			craft()->userSession->requireLogin();
-			$userId = craft()->userSession->getUser()->id;
-		}
-
-		if (($currentUser = craft()->userSession->getUser()) !== null && $userId == $currentUser->id)
-		{
-			$isCurrentUser = true;
-		}
-
-		$publicRegistration = false;
-		$requirePublicEmailValidation = true;
-		$canRegisterUsers = false;
+		$userId = craft()->request->getPost('userId');
 
 		// Are we editing an existing user?
 		if ($userId)
@@ -535,217 +514,206 @@ class UsersController extends BaseController
 				throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
 			}
 
-			if (!$isCurrentUser)
+			if (!$user->isCurrent())
 			{
+				// Make sure they have permission to edit other users
 				craft()->userSession->requirePermission('editUsers');
 			}
 		}
 		else
 		{
-			// Users package is required
+			// Make sure the Users package is installed, since that's required for having multiple user accounts
 			craft()->requirePackage(CraftPackage::Users);
 
-			// Is public registration enabled?
-			if (craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
+			// Is someone logged in?
+			if ($currentUser)
 			{
-				$publicRegistration = true;
-			}
-
-			// Is public email validation required?
-			if (craft()->systemSettings->getSetting('users', 'requireEmailVerification', true) !== 1)
-			{
-				$requirePublicEmailValidation = false;
-			}
-
-			// Are they already logged in?  If so, check and see if they have registerUsers permissions.
-			if (craft()->userSession->getUser())
-			{
-				// Make sure they have permission to register users, regardless of if public registration is enabled or not.
+				// Make sure they have permission to register users
 				craft()->userSession->requirePermission('registerUsers');
-				$canRegisterUsers = true;
 			}
 			else
 			{
-				// Not logged in, but it's a site request and public registration is enabled
-				if (craft()->request->isSiteRequest() && $publicRegistration)
+				// Make sure public registration is allowed
+				if (!craft()->systemSettings->getSetting('users', 'allowPublicRegistration'))
 				{
-					$canRegisterUsers = true;
+					throw new HttpException(403);
 				}
-			}
 
-			// If there is no public registration and it's a site request, or the current user can't register users, complain loudly.
-			if ((!$publicRegistration && craft()->request->isSiteRequest()) || !$canRegisterUsers)
-			{
-				// Sorry pal.
-				throw new HttpException(403);
+				$thisIsPublicRegistration = true;
 			}
 
 			$user = new UserModel();
 		}
 
-		// Can only change sensitive fields if you are an admin or this is your account.
-		if (craft()->userSession->isAdmin() || $user->isCurrent())
+		// Should we check for a new email and password?
+		if ($thisIsPublicRegistration || $user->isCurrent() || craft()->userSession->isAdmin())
 		{
-			// Validate stuff.
-			$valid = $this->_validateSensitiveFields($user, $publicRegistration || $canRegisterUsers);
-		}
-		else
-		{
-			$valid = true;
-		}
+			$newEmail    = craft()->request->getPost('email');
+			$newPassword = craft()->request->getPost($thisIsPublicRegistration ? 'password' : 'newPassword');
 
-		if ($valid)
-		{
-			$userName = craft()->request->getPost('username', $user->username);
-
-			if (!$user->id)
+			if ($user->id && $user->email == $newEmail)
 			{
-				$user->email = craft()->request->getPost('email', $user->email);
+				$newEmail = null;
+			}
 
-				// If it is a new user, grab the password from post.
-				if (!craft()->request->isCpRequest())
+			// You must pass your current password to change these fields for an existing user
+			if ($user->id && ($newEmail || $newPassword))
+			{
+				// Make sure the correct current password has been submitted
+				$currentPassword = craft()->request->getPost('password');
+				$currentHashedPassword = $currentUser->password;
+
+				if (!craft()->users->validatePassword($currentHashedPassword, $currentPassword))
 				{
-					$user->newPassword = craft()->request->getPost('password');
+					Craft::log('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
+					$user->addError('currentPassword', Craft::t('Incorrect current password.'));
+
+					// We'll let the script keep executing in case we find any other validation errors...
 				}
 			}
 
-			// If no username was provided, set it to the email.
-			$userName = $userName == null ? $user->email : $userName;
-
-			$user->username = $userName;
-			$user->firstName       = craft()->request->getPost('firstName', $user->firstName);
-			$user->lastName        = craft()->request->getPost('lastName', $user->lastName);
-			$user->preferredLocale = craft()->request->getPost('preferredLocale', $user->preferredLocale);
-
-			// If it's a new user
-			if (!$user->id)
+			if ($newPassword)
 			{
-				if (craft()->request->isSiteRequest() && craft()->hasPackage(CraftPackage::Users) && $requirePublicEmailValidation)
+				// Make sure it's valid
+				$passwordModel = new PasswordModel();
+				$passwordModel->password = $newPassword;
+
+				if ($passwordModel->validate())
 				{
-					$user->verificationRequired = true;
-					$user->status = UserStatus::Pending;
+					$user->newPassword = $password;
 				}
 				else
 				{
-					// If the Users package is installed and you're an admin, you get the choice of requiring email verification
-					if (craft()->hasPackage(CraftPackage::Users) && craft()->userSession->isAdmin())
+					$user->addError('password', $passwordModel->getError('password'));
+				}
+			}
+
+			if ($newEmail)
+			{
+				// Does that email need to be verified?
+				if (craft()->systemSettings->getSetting('users', 'requireEmailVerification') && (!craft()->userSession->isAdmin() || craft()->request->getPost('verificationRequired')))
+				{
+					$user->unverifiedEmail = $newEmail;
+
+					if (!$user->id)
 					{
-						$user->verificationRequired = (bool)craft()->request->getPost('verificationRequired');;
-						$user->status = $user->verificationRequired ? UserStatus::Pending : UserStatus::Active;
+						// Set it as the main email too
+						$user->email = $newEmail;
+					}
+				}
+				else
+				{
+					$user->email = $newEmail;
+				}
+			}
+		}
+
+
+		$user->username        = craft()->request->getPost('username', ($user->username ? $user->username : $user->email));
+		$user->firstName       = craft()->request->getPost('firstName', $user->firstName);
+		$user->lastName        = craft()->request->getPost('lastName', $user->lastName);
+		$user->preferredLocale = craft()->request->getPost('preferredLocale', $user->preferredLocale);
+
+		if (!$user->id)
+		{
+			if ($user->unverifiedEmail)
+			{
+				$user->status = UserStatus::Pending;
+			}
+			else
+			{
+				$user->status = UserStatus::Active;
+			}
+		}
+
+		// There are some things only admins can change
+		if (craft()->userSession->isAdmin())
+		{
+			$user->passwordResetRequired = (bool) craft()->request->getPost('passwordResetRequired');
+			$user->admin = (bool) craft()->request->getPost('admin');
+		}
+
+		// If the Users package is installed, grab any profile content from post
+		if (craft()->hasPackage(CraftPackage::Users))
+		{
+			$fields = craft()->request->getPost('fields');
+
+			if ($fields)
+			{
+				$user->setContentFromPost($fields);
+			}
+		}
+
+		// Validate and save!
+		if ($user->validate(null, false) && craft()->users->saveUser($user))
+		{
+			// Delete their photo?
+			if (craft()->request->getPost('deleteUserPhoto'))
+			{
+				craft()->users->deleteUserPhoto($user);
+			}
+
+			// Did they upload a new one?
+			if ($userPhoto = \CUploadedFile::getInstanceByName('userPhoto'))
+			{
+				craft()->users->deleteUserPhoto($user);
+				$image = craft()->images->loadImage($userPhoto->getTempName());
+				$imageWidth = $image->getWidth();
+				$imageHeight = $image->getHeight();
+
+				$dimension = min($imageWidth, $imageHeight);
+				$horizontalMargin = ($imageWidth - $dimension) / 2;
+				$verticalMargin = ($imageHeight - $dimension) / 2;
+				$image->crop($horizontalMargin, $imageWidth - $horizontalMargin, $verticalMargin, $imageHeight - $verticalMargin);
+
+				craft()->users->saveUserPhoto($userPhoto->getName(), $image, $user);
+
+				IOHelper::deleteFile($userPhoto->getTempName());
+			}
+
+			if ($currentUser)
+			{
+				// Save any user groups
+				if (craft()->hasPackage(CraftPackage::Users) && $currentUser->can('administrateUsers'))
+				{
+					// Save any user groups
+					$groupIds = craft()->request->getPost('groups');
+					craft()->userGroups->assignUserToGroups($user->id, $groupIds);
+
+					// Save any user permissions
+					if ($user->admin)
+					{
+						$permissions = array();
 					}
 					else
 					{
-						$user->verificationRequired = true;
-						$user->status = UserStatus::Pending;
+						$permissions = craft()->request->getPost('permissions');
 					}
+
+					craft()->userPermissions->saveUserPermissions($user->id, $permissions);
 				}
 			}
 
-			// Only admins can require users to reset their passwords and only from the CP
-			if (craft()->userSession->isAdmin() && craft()->request->isCpRequest())
+			if ($thisIsPublicRegistration)
 			{
-				$user->passwordResetRequired = (bool)craft()->request->getPost('passwordResetRequired');
+				// Assign them to the default user group
+				$this->_assignDefaultGroupToUser($user->id);
 			}
 
-			// If they have the Users package installed, grab any profile information from POST
-			if (craft()->hasPackage(CraftPackage::Users))
+			craft()->userSession->setNotice(Craft::t('User saved.'));
+
+			// TODO: Remove for 2.0
+			if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{userId}') !== false)
 			{
-				$fields = craft()->request->getPost('fields');
-				if ($fields)
-				{
-					$user->setContentFromPost($fields);
-				}
+				Craft::log('The {userId} token within the ‘redirect’ param on users/saveUser requests has been deprecated. Use {id} instead.', LogLevel::Warning);
+				$_POST['redirect'] = str_replace('{userId}', '{id}', $_POST['redirect']);
 			}
 
-			// Only admins can toggle admin settings, and only allow from the CP and if the Users package is installed
-			if (craft()->userSession->isAdmin() && craft()->request->isCpRequest() && craft()->hasPackage(CraftPackage::Users))
-			{
-				$user->admin = (bool)craft()->request->getPost('admin');
-			}
-
-			try
-			{
-				if (craft()->users->saveUser($user))
-				{
-					// Now that we have a record saved, let's process any user photos.
-					$deleteUserPhoto = craft()->request->getPost('deleteUserPhoto');
-					if (!empty($deleteUserPhoto))
-					{
-						craft()->users->deleteUserPhoto($user);
-						$user->photo = null;
-					}
-					elseif ($userPhoto = \CUploadedFile::getInstanceByName('userPhoto'))
-					{
-						craft()->users->deleteUserPhoto($user);
-						$image = craft()->images->loadImage($userPhoto->getTempName());
-						$imageWidth = $image->getWidth();
-						$imageHeight = $image->getHeight();
-
-						$dimension = min($imageWidth, $imageHeight);
-						$horizontalMargin = ($imageWidth - $dimension) / 2;
-						$verticalMargin = ($imageHeight - $dimension) / 2;
-						$image->crop($horizontalMargin, $imageWidth - $horizontalMargin, $verticalMargin, $imageHeight - $verticalMargin);
-
-						craft()->users->saveUserPhoto($userPhoto->getName(), $image, $user);
-
-						IOHelper::deleteFile($userPhoto->getTempName());
-					}
-
-					if (($currentUser = craft()->userSession->getUser()))
-					{
-						// Save any user groups
-						if ($currentUser->can('administrateUsers') && craft()->hasPackage(CraftPackage::Users))
-						{
-							// Save any user groups
-							$groupIds = craft()->request->getPost('groups');
-							craft()->userGroups->assignUserToGroups($user->id, $groupIds);
-
-							// Save any user permissions
-							if ($user->admin)
-							{
-								$permissions = array();
-							}
-							else
-							{
-								$permissions = craft()->request->getPost('permissions');
-							}
-
-							craft()->userPermissions->saveUserPermissions($user->id, $permissions);
-						}
-					}
-
-					// if public registration is enabled, assign to a default group (if any).
-					if ($publicRegistration)
-					{
-						$this->_assignDefaultGroupToUser($user->id);
-					}
-
-					craft()->userSession->setNotice(Craft::t('User saved.'));
-
-					// TODO: Remove for 2.0
-					if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{userId}') !== false)
-					{
-						Craft::log('The {userId} token within the ‘redirect’ param on users/saveUser requests has been deprecated. Use {id} instead.', LogLevel::Warning);
-						$_POST['redirect'] = str_replace('{userId}', '{id}', $_POST['redirect']);
-					}
-
-					$this->redirectToPostedUrl($user);
-				}
-				else
-				{
-					craft()->userSession->setError(Craft::t('Couldn’t save user.'));
-				}
-			}
-			catch (\phpmailerException $e)
-			{
-				craft()->userSession->setError(Craft::t('Registered user, but couldn’t send activation email. Check your email settings.'));
-
-				// Still assign the default group
-				if (($publicRegistration || $canRegisterUsers) && !craft()->request->isCpRequest())
-				{
-					$this->_assignDefaultGroupToUser($user->id);
-				}
-			}
+			$this->redirectToPostedUrl($user);
+		}
+		else
+		{
+			craft()->userSession->setError(Craft::t('Couldn’t save user.'));
 		}
 
 		// Send the account back to the template
@@ -1161,132 +1129,6 @@ class UsersController extends BaseController
 	private function _noUserExists($userId)
 	{
 		throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
-	}
-
-	/**
-	 * @param $password
-	 * @return bool
-	 */
-	private function _validateCurrentPassword($password)
-	{
-		if ($password)
-		{
-			$user = craft()->userSession->getUser();
-
-			if ($user)
-			{
-				if (craft()->users->validatePassword($user->password, $password))
-				{
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * @access private
-	 * @param UserModel $user
-	 * @param bool $publicRegistration
-	 * @return bool
-	 */
-	private function _validateSensitiveFields(UserModel $user, $publicRegistration)
-	{
-		$email = craft()->request->getPost('email');
-		$password = craft()->request->getPost('password');
-
-		// If this is an existing user
-		if ($user->id)
-		{
-			// If the user changed their email, make sure they have validated with their password.
-			if ($email && $email != $user->email)
-			{
-				if ($password)
-				{
-					if ($this->_validateCurrentPassword($password))
-					{
-						if (craft()->userSession->isAdmin())
-						{
-							$user->email = $email;
-						}
-						else
-						{
-							// They'll need to be verifying that
-							$user->unverifiedEmail = $email;
-						}
-					}
-					else
-					{
-						Craft::log('Tried to change password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
-						$user->addError('currentPassword', Craft::t('Incorrect current password.'));
-					}
-				}
-				else
-				{
-					Craft::log('Tried to change the email for userId: '.$user->id.', but the did not supply the existing password.', LogLevel::Warning);
-					$user->addError('currentPassword', Craft::t('You must supply your existing password.'));
-				}
-			}
-		}
-
-		// If public registration is enabled, make sure it's a new user before we set the password.
-		if ($publicRegistration && !$user->id && !craft()->request->isCpRequest())
-		{
-			$password = (string)craft()->request->getPost('password');
-
-			// Validate the password.
-			$passwordModel = new PasswordModel();
-			$passwordModel->password = $password;
-
-			if ($passwordModel->validate())
-			{
-				$user->password = $password;
-			}
-			else
-			{
-				$user->addError('password', $passwordModel->getError('password'));
-			}
-		}
-		else
-		{
-			// Only an existing logged-in user or admins can change passwords.
-			if (craft()->userSession->isAdmin() || $user->isCurrent())
-			{
-				$newPassword = craft()->request->getPost('newPassword');
-
-				// Only actually validate/set it if these are not empty
-				if ($newPassword && $password)
-				{
-					if ($this->_validateCurrentPassword($password))
-					{
-						$newPasswordModel = new PasswordModel();
-						$newPasswordModel->password = $newPassword;
-
-						if ($newPasswordModel->validate())
-						{
-							$user->newPassword = (string)$newPassword;
-						}
-						else
-						{
-							$user->addError('newPassword', $newPasswordModel->getError('password'));
-						}
-					}
-					else
-					{
-						$user->addError('currentPassword', Craft::t('Incorrect current password.'));
-						Craft::log('Tried to change password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
-					}
-				}
-				else if ($newPassword && !$password)
-				{
-					$user->addError('currentPassword', Craft::t('You must supply your existing password.'));
-					Craft::log('Tried to change password for userId: '.$user->id.', but the did not supply the existing password.', LogLevel::Warning);
-				}
-			}
-		}
-
-		return !$user->hasErrors();
 	}
 
 	/**
