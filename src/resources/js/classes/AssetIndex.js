@@ -885,7 +885,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			var item = null;
 			for (var i = 0; i < this._uploadedFileIds.length; i++)
 			{
-				item = this.$main.find('[data-id=' + this._uploadedFileIds[i] + ']:first');
+				item = this.$main.find('[data-id=' + this._uploadedFileIds[i] + ']:first').parent();
+				if (this.getSelectedSourceState('mode') == 'table')
+				{
+					item = item.parent();
+				}
+
 				this.elementSelect.selectItem(item);
 			}
 
