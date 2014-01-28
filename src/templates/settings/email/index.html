@@ -37,7 +37,7 @@
 			instructions: "The email address @@@appName@@@ will use when sending email."|t,
 			id: 'emailAddress',
 			name: 'emailAddress',
-			value: (settings.emailAddress is defined ? settings.emailAddress : null),
+			value: settings.emailAddress,
 			autofocus: true,
 			required: true,
 			errors: (freshSettings ? null : settings.getErrors('emailAddress'))
@@ -48,7 +48,7 @@
 			instructions: "The “From” name @@@appName@@@ will use when sending email."|t,
 			id: 'senderName',
 			name: 'senderName',
-			value: (settings.senderName is defined ? settings.senderName : null),
+			value: settings.senderName,
 			required: true,
 			errors: (freshSettings ? null : settings.getErrors('senderName'))
 		}) }}
@@ -59,7 +59,7 @@
 				instructions: "The template @@@appName@@@ will use for HTML emails"|t,
 				id: 'template',
 				name: 'template',
-				value: (settings.template is defined ? settings.template : null),
+				value: settings.template,
 				errors: (freshSettings ? null : settings.getErrors('template'))
 			}) }}
 		{% endif %}
@@ -72,7 +72,7 @@
 			id: 'protocol',
 			name: 'protocol',
 			options: { php: "PHP Mail"|t, sendmail: "Sendmail"|t, smtp: "SMTP"|t, pop: "POP"|t, gmail: "Gmail"|t },
-			value: (settings.protocol is defined ? settings.protocol : null)
+			value: settings.protocol
 		}) }}
 
 		<div id="hidden-fields" class="hidden">
@@ -80,23 +80,23 @@
 				label: "Username"|t,
 				id: 'username',
 				name: 'username',
-				value: (settings.username is defined ? settings.username : null),
-				errors: (settings.username is defined and settings.protocol != 'Smtp' ? (freshSettings ? null : settings.getErrors('username')) : null)
+				value: settings.username,
+				errors: (settings.protocol != 'Smtp' ? (freshSettings ? null : settings.getErrors('username')) : null)
 			}) }}
 
 			{{ forms.passwordField({
 				label: "Password"|t,
 				id: 'password',
 				name: 'password',
-				value: (settings.password is defined ? settings.password : null),
-				errors: (settings.protocol is defined and settings.protocol != 'Smtp' ? (freshSettings ? null : settings.getErrors('password')) : null)
+				value: settings.password,
+				errors: (settings.protocol != 'Smtp' ? (freshSettings ? null : settings.getErrors('password')) : null)
 			}) }}
 
 			{{ forms.textField({
 				label: "Port"|t,
 				id: 'port',
 				name: 'port',
-				value: (settings.port is defined and settings.port ? settings.port : 25),
+				value: settings.port,
 				size: 4,
 				errors: (freshSettings ? null : settings.getErrors('port'))
 			}) }}
@@ -105,7 +105,7 @@
 				label: "Host Name"|t,
 				id: 'host',
 				name: 'host',
-				value: (settings.host is defined ? settings.host : null),
+				value: settings.host,
 				errors: (freshSettings ? null : settings.getErrors('host'))
 			}) }}
 
@@ -113,7 +113,7 @@
 				label: "Timeout"|t,
 				id: 'timeout',
 				name: 'timeout',
-				value: (settings.timeout is defined and settings.timeout ? settings.timeout : 30),
+				value: settings.timeout,
 				size: 2,
 				errors: (freshSettings ? null : settings.getErrors('timeout'))
 			}) }}
@@ -122,32 +122,32 @@
 				label: "Use SMTP Keep Alive"|t,
 				id: 'smtpKeepAlive',
 				name: 'smtpKeepAlive',
-				checked: (settings.smtpKeepAlive is defined ? settings.smtpKeepAlive : false)
+				checked: settings.smtpKeepAlive
 			}) }}
 
 			{{ forms.checkboxField({
 				label: "Use SMTP authentication"|t,
 				id: 'smtpAuth',
 				name: 'smtpAuth',
-				checked: (settings.smtpAuth is defined ? settings.smtpAuth : false),
+				checked: settings.smtpAuth,
 				toggle: 'smtpAuthCredentials-field'
 			}) }}
 
-			<div id="smtpAuthCredentials-field" class="nested-fields{% if settings.smtpAuth is not defined or not settings.smtpAuth %} hidden{% endif %}">
+			<div id="smtpAuthCredentials-field" class="nested-fields{% if not settings.smtpAuth %} hidden{% endif %}">
 				{{ forms.textField({
 					label: "Username"|t,
 					id: 'smtp-username',
 					name: 'smtpUsername',
-					value: (settings.username is defined ? settings.username : null),
-					errors: (settings.protocol is defined and settings.protocol == 'Smtp' ? (freshSettings ? null : settings.getErrors('username')) : null)
+					value: settings.username,
+					errors: (settings.protocol == 'Smtp' ? (freshSettings ? null : settings.getErrors('username')) : null)
 				}) }}
 
 				{{ forms.passwordField({
 					label: "Password"|t,
 					id: 'smtpPassword',
 					name: 'smtpPassword',
-					value: (settings.password is defined ? settings.password : null),
-					errors: (settings.protocol is defined and settings.protocol == 'Smtp' ? (freshSettings ? null : settings.getErrors('password')) : null)
+					value: settings.password,
+					errors: (settings.protocol == 'Smtp' ? (freshSettings ? null : settings.getErrors('password')) : null)
 				}) }}
 			</div>
 
@@ -157,7 +157,7 @@
 				name: 'smtpSecureTransportType',
 				options: { none: "None"|t, ssl: "SSL"|t, tls: "TLS"|t },
 				default: 'none',
-				value: (settings.smtpSecureTransportType is defined ? settings.smtpSecureTransportType : null)
+				value: settings.smtpSecureTransportType
 			}) }}
 		</div>
 

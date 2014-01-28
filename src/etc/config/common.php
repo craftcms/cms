@@ -275,7 +275,30 @@ $components['sections'] = array(
 );
 $components['security']['class']             = 'Craft\SecurityService';
 $components['structures']['class']           = 'Craft\StructuresService';
-$components['systemSettings']['class']       = 'Craft\SystemSettingsService';
+$components['systemSettings'] = array(
+	'class' => 'Craft\SystemSettingsService',
+	'defaults' => array(
+		'users' => array(
+			'requireEmailVerification' => true,
+			'allowPublicRegistration' => false,
+			'defaultGroup' => null,
+		),
+		'email' => array(
+			'emailAddress' => null,
+			'senderName' => null,
+			'template' => null,
+			'protocol' => null,
+			'username' => null,
+			'password' => null,
+			'port' => 25,
+			'host' => null,
+			'timeout' => 30,
+			'smtpKeepAlive' => false,
+			'smtpAuth' => false,
+			'smtpSecureTransportType' => 'none',
+		)
+	)
+);
 $components['tags']['class']                 = 'Craft\TagsService';
 $components['templates']['class']            = 'Craft\TemplatesService';
 $components['updates']['class']              = 'Craft\UpdatesService';

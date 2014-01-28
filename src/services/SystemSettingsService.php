@@ -6,7 +6,9 @@ namespace Craft;
  */
 class SystemSettingsService extends BaseApplicationComponent
 {
-	private $_settings;
+	public $defaults;
+
+	private $_settingsRecords;
 
 	/**
 	 * Returns the system settings for a category.
@@ -16,16 +18,23 @@ class SystemSettingsService extends BaseApplicationComponent
 	 */
 	public function getSettings($category)
 	{
-		$settings = $this->_getSettings($category);
+		$record = $this->_getSettingsRecord($category);
 
-		if ($settings)
+		if ($record && is_array($record->settings))
 		{
-			return $settings->settings;
+			$settings = $record->settings;
 		}
 		else
 		{
-			return array();
+			$settings = array();
 		}
+
+		if (isset($this->defaults[$category]))
+		{
+			$settings = array_merge($this->defaults[$category], $settings);
+		}
+
+		return $settings;
 	}
 
 	/**
@@ -37,12 +46,13 @@ class SystemSettingsService extends BaseApplicationComponent
 	public function getCategoryTimeUpdated($category)
 	{
 		// Ensure fresh data.
-		unset($this->_settings[$category]);
+		unset($this->_settingsRecords[$category]);
 
-		$settings = $this->_getSettings($category);
-		if ($settings)
+		$record = $this->_getSettingsRecord($category);
+
+		if ($record)
 		{
-			return $settings->dateUpdated;
+			return $record->dateUpdated;
 		}
 		else
 		{
@@ -56,20 +66,15 @@ class SystemSettingsService extends BaseApplicationComponent
 	 *
 	 * @param string $category
 	 * @param string $key
-	 * @param mixed $default
 	 * @return mixed
 	 */
-	public function getSetting($category, $key, $default = null)
+	public function getSetting($category, $key)
 	{
 		$settings = $this->getSettings($category);
 
 		if (isset($settings[$key]))
 		{
 			return $settings[$key];
-		}
-		else
-		{
-			return $default;
 		}
 	}
 
@@ -82,7 +87,7 @@ class SystemSettingsService extends BaseApplicationComponent
 	 */
 	public function saveSettings($category, $settings = null)
 	{
-		$record = $this->_getSettings($category);
+		$record = $this->_getSettingsRecord($category);
 
 		if (!$record)
 		{
@@ -95,13 +100,13 @@ class SystemSettingsService extends BaseApplicationComponent
 			// Create a new SystemSettings record, and save a reference to it
 			$record = new SystemSettingsRecord();
 			$record->category = $category;
-			$this->_settings[$category] = $record;
+			$this->_settingsRecords[$category] = $record;
 		}
 		else if (!$settings)
 		{
 			// Delete the record
 			$record->delete();
-			$this->_settings[$category] = false;
+			$this->_settingsRecords[$category] = false;
 
 			return true;
 		}
@@ -119,24 +124,24 @@ class SystemSettingsService extends BaseApplicationComponent
 	 * @param string $category
 	 * @return mixed The SystemSettings record or false
 	 */
-	private function _getSettings($category)
+	private function _getSettingsRecord($category)
 	{
-		if (!isset($this->_settings[$category]))
+		if (!isset($this->_settingsRecords[$category]))
 		{
-			$settings = SystemSettingsRecord::model()->findByAttributes(array(
+			$record = SystemSettingsRecord::model()->findByAttributes(array(
 				'category' => $category
 			));
 
-			if ($settings)
+			if ($record)
 			{
-				$this->_settings[$category] = $settings;
+				$this->_settingsRecords[$category] = $record;
 			}
 			else
 			{
-				$this->_settings[$category] = false;
+				$this->_settingsRecords[$category] = false;
 			}
 		}
 
-		return $this->_settings[$category];
+		return $this->_settingsRecords[$category];
 	}
 }

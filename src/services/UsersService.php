@@ -859,7 +859,7 @@ class UsersService extends BaseApplicationComponent
 		else
 		{
 			// If it's a new user AND we allow public registration, set it on the 'password' field and not 'newpassword'.
-			if (!$user->id && craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
+			if (!$user->id && craft()->systemSettings->getSetting('users', 'allowPublicRegistration'))
 			{
 				$user->addErrors(array(
 					'password' => $passwordModel->getErrors('password')
