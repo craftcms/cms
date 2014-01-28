@@ -546,10 +546,10 @@ class UsersController extends BaseController
 		}
 
 		// Should we check for a new email and password?
-		if ($thisIsPublicRegistration || $user->isCurrent() || craft()->userSession->isAdmin())
+		if (!$user->id || $user->isCurrent() || craft()->userSession->isAdmin())
 		{
 			$newEmail    = craft()->request->getPost('email');
-			$newPassword = craft()->request->getPost($thisIsPublicRegistration ? 'password' : 'newPassword');
+			$newPassword = craft()->request->getPost($user->id ? 'newPassword' : 'password');
 
 			if ($user->id && $user->email == $newEmail)
 			{
