@@ -114,16 +114,16 @@ class AssetsFieldType extends BaseElementFieldType
 	{
 		// Look for the single folder setting
 		$settings = $this->getSettings();
-		if (!empty($settings->sourcePath) && !empty($settings->userSingleFolder))
+		if (!empty($settings->singleFolderPath) && !empty($settings->useSingleFolder))
 		{
 			// It must start with a folder or a source.
-			$sourcePath = $settings->sourcePath;
-			if (preg_match('/^\{((folder|source):[0-9]+)\}/', $sourcePath, $matches))
+			$folderPath = $settings->singleFolderPath;
+			if (preg_match('/^\{((folder|source):[0-9]+)\}/', $folderPath, $matches))
 			{
 				// Is this a saved entry and can the path be resolved then?
 				if ($this->element->id)
 				{
-					$sourcePath = 'folder:'.$this->_resolveSourcePathToFolderId($sourcePath);
+					$folderPath = 'folder:'.$this->_resolveSourcePathToFolderId($folderPath);
 				}
 				else
 				{
@@ -146,21 +146,22 @@ class AssetsFieldType extends BaseElementFieldType
 					{
 						$folderId = $elementFolder->id;
 					}
-					$sourcePath = 'folder:'.$folderId;
+					IOHelper::ensureFolderExists(craft()->path->getAssetsTempSourcePath().$folderName);
+					$folderPath = 'folder:'.$folderId;
 				}
 			}
 		}
 		else
 		{
-			$sourcePath = null;
+			$folderPath = null;
 		}
 
 		$variables = array();
 
 		// If we have a source path, override the source variable
-		if ($sourcePath)
+		if ($folderPath)
 		{
-			$variables['sources'] = $sourcePath;
+			$variables['sources'] = $folderPath;
 		}
 
 
@@ -323,7 +324,7 @@ class AssetsFieldType extends BaseElementFieldType
 			}
 
 			// Let's see if the folder already exists.
-			$folderCriteria = array('sourceId' => $sourceId, 'fullPath' => $folder->fullPath . $sourcePath);
+			$folderCriteria = array('sourceId' => $sourceId, 'path' => $folder->path . $sourcePath);
 			$existingFolder = craft()->assets->findFolder($folderCriteria);
 
 			// No dice, go over each folder in the path and create it if it's missing.
@@ -377,7 +378,7 @@ class AssetsFieldType extends BaseElementFieldType
 					'parentId' => $currentFolder->id,
 					'name' => $folderName,
 					'sourceId' => $currentFolder->sourceId,
-					'fullPath' => trim($currentFolder->fullPath . '/' . $folderName, '/') . '/'
+					'path' => trim($currentFolder->path . '/' . $folderName, '/') . '/'
 				)
 			);
 			$folderId = craft()->assets->storeFolder($newFolder);
