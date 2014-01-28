@@ -137,6 +137,7 @@ class DashboardService extends BaseApplicationComponent
 				$maxSortOrder = craft()->db->createCommand()
 					->select('max(sortOrder)')
 					->from('widgets')
+					->where(array('userId' => craft()->userSession->getUser()->id))
 					->queryScalar();
 
 				$widgetRecord->sortOrder = $maxSortOrder + 1;

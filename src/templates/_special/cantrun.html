@@ -1,8 +1,7 @@
 {% extends "_layouts/message" %}
 {% set title = "Can’t run @@@appName@@@"|t %}
 
-
-{% set content %}
+{% block message %}
 	<h2>{{ title }} :(</h2>
 
 	{% if reqCheck.result == 'failed' %}
@@ -18,5 +17,4 @@
 
 		<p>{{ "Please talk to your host/IT department about upgrading your server."|t }}</p>
 	{% endif %}
-
-{% endset %}
+{% endblock %}

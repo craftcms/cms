@@ -1,15 +1,13 @@
 <?php
 namespace Craft;
 
-/**
- * Image
- */
 class Image
 {
 	private $_imageSourcePath;
 	private $_image;
 	private $_extension;
 	private $_instance;
+	private $_isAnimatedGif = false;
 
 	function __construct()
 	{
@@ -62,7 +60,7 @@ class Image
 			throw new Exception(Craft::t('No file exists at the path “{path}”', array('path' => $path)));
 		}
 
-		if (!craft()->images->setMemoryForImage($path))
+		if (!craft()->images->checkMemoryForImage($path))
 		{
 			throw new Exception(Craft::t("Not enough memory available to perform this image operation."));
 		}
@@ -76,6 +74,14 @@ class Image
 		$this->_image = $this->_instance->open($path);
 		$this->_extension = IOHelper::getExtension($path);
 		$this->_imageSourcePath = $path;
+
+		if ($this->_extension == 'gif')
+		{
+			if ($this->_image->layers())
+			{
+				$this->_isAnimatedGif = true;
+			}
+		}
 
 		return $this;
 	}
@@ -94,7 +100,18 @@ class Image
 		$width = $x2 - $x1;
 		$height = $y2 - $y1;
 
-		$this->_image->crop(new \Imagine\Image\Point($x1, $y1), new \Imagine\Image\Box($width, $height));
+		if ($this->_isAnimatedGif)
+		{
+			foreach ($this->_image->layers() as $offset => $layer)
+			{
+				$croppedLayer = $layer->crop(new \Imagine\Image\Point($x1, $y1), new \Imagine\Image\Box($width, $height));
+				$this->_image->layers()->set($offset, $croppedLayer);
+			}
+		}
+		else
+		{
+			$this->_image->crop(new \Imagine\Image\Point($x1, $y1), new \Imagine\Image\Box($width, $height));
+		}
 
 		return $this;
 	}
@@ -222,7 +239,19 @@ class Image
 	public function resize($targetWidth, $targetHeight = null)
 	{
 		$this->_normalizeDimensions($targetWidth, $targetHeight);
-		$this->_image->resize(new \Imagine\Image\Box($targetWidth, $targetHeight), $this->_getResizeFilter());
+
+		if ($this->_isAnimatedGif)
+		{
+			foreach ($this->_image->layers() as $offset => $layer)
+			{
+				$resizedLayer = $layer->resize(new \Imagine\Image\Box($targetWidth, $targetHeight), $this->_getResizeFilter());
+				$this->_image->layers()->set($offset, $resizedLayer);
+			}
+		}
+		else
+		{
+			$this->_image->resize(new \Imagine\Image\Box($targetWidth, $targetHeight), $this->_getResizeFilter());
+		}
 
 		return $this;
 	}
@@ -237,7 +266,8 @@ class Image
 	public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
 	{
 		$extension = $this->getExtension();
-		$options = $this->_getSaveOptions();
+
+		$options = $this->_getSaveOptions(false);
 
 		if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality)
 		{
@@ -327,7 +357,7 @@ class Image
 	}
 
 	/**
-	 * @param null $quality
+	 * @param null       $quality
 	 * @return array
 	 */
 	private function _getSaveOptions($quality = null)
@@ -344,7 +374,7 @@ class Image
 
 			case 'gif':
 			{
-				return array('flatten' => false);
+				return array('animated' => $this->_isAnimatedGif);
 			}
 
 			case 'png':

@@ -10,6 +10,7 @@ class ElementsService extends BaseApplicationComponent
 	private $_joinTargetMatrixBlocksCount;
 	private $_joinSourcesCount;
 	private $_joinTargetsCount;
+	private $_sourceLocaleParamCount;
 
 	// Finding Elements
 	// ================
@@ -61,6 +62,7 @@ class ElementsService extends BaseApplicationComponent
 		$criteria = $this->getCriteria($elementType);
 		$criteria->id = $elementId;
 		$criteria->status = null;
+		$criteria->localeEnabled = null;
 		return $criteria->first();
 	}
 
@@ -89,7 +91,7 @@ class ElementsService extends BaseApplicationComponent
 	public function findElements($criteria = null, $justIds = false)
 	{
 		$elements = array();
-		$query = $this->buildElementsQuery($criteria, $fieldColumns);
+		$query = $this->buildElementsQuery($criteria, $contentTable, $fieldColumns);
 
 		if ($query)
 		{
@@ -115,7 +117,7 @@ class ElementsService extends BaseApplicationComponent
 					return array();
 				}
 
-				$query->order(craft()->db->getSchema()->orderByColumnValues('id', $ids));
+				$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $ids));
 			}
 			else if ($criteria->order && $criteria->order != 'score')
 			{
@@ -151,27 +153,27 @@ class ElementsService extends BaseApplicationComponent
 				$query->limit($criteria->limit);
 			}
 
-			$result = $query->queryAll();
+			$results = $query->queryAll();
 
-			if ($result)
+			if ($results)
 			{
 				if ($criteria->search && $scoredSearchResults)
 				{
 					$searchPositions = array();
 
-					foreach ($result as $row)
+					foreach ($results as $result)
 					{
-						$searchPositions[] = array_search($row['id'], $filteredElementIds);
+						$searchPositions[] = array_search($result['id'], $filteredElementIds);
 					}
 
-					array_multisort($searchPositions, $result);
+					array_multisort($searchPositions, $results);
 				}
 
 				if ($justIds)
 				{
-					foreach ($result as $row)
+					foreach ($results as $result)
 					{
-						$elements[] = $row['id'];
+						$elements[] = $result['id'];
 					}
 				}
 				else
@@ -180,37 +182,40 @@ class ElementsService extends BaseApplicationComponent
 					$indexBy = $criteria->indexBy;
 					$lastElement = null;
 
-					foreach ($result as $row)
+					foreach ($results as $result)
 					{
-						if ($elementType->hasContent())
+						// Make a copy to pass to the onPopulateElement event
+						$originalResult = array_merge($result);
+
+						if ($contentTable)
 						{
 							// Separate the content values from the main element attributes
 							$content = array(
-								'id'        => (isset($row['contentId']) ? $row['contentId'] : null),
-								'elementId' => $row['id'],
+								'id'        => (isset($result['contentId']) ? $result['contentId'] : null),
+								'elementId' => $result['id'],
 								'locale'    => $criteria->locale,
-								'title'     => (isset($row['title']) ? $row['title'] : null)
+								'title'     => (isset($result['title']) ? $result['title'] : null)
 							);
 
-							unset($row['title']);
+							unset($result['title']);
 
 							if ($fieldColumns)
 							{
 								foreach ($fieldColumns as $column)
 								{
-									if (isset($row[$column['column']]))
+									if (!empty($result[$column['column']]))
 									{
-										$content[$column['handle']] = $row[$column['column']];
-										unset($row[$column['column']]);
+										$content[$column['handle']] = $result[$column['column']];
+										unset($result[$column['column']]);
 									}
 								}
 							}
 						}
 
-						$row['locale'] = $criteria->locale;
-						$element = $elementType->populateElementModel($row);
+						$result['locale'] = $criteria->locale;
+						$element = $elementType->populateElementModel($result);
 
-						if ($elementType->hasContent())
+						if ($contentTable)
 						{
 							$element->setContent($content);
 						}
@@ -235,6 +240,12 @@ class ElementsService extends BaseApplicationComponent
 						}
 
 						$lastElement = $element;
+
+						// Fire an 'onPopulateElement' event
+						$this->onPopulateElement(new Event($this, array(
+							'element' => $element,
+							'result'  => $originalResult
+						)));
 					}
 
 					$lastElement->setNext(false);
@@ -276,10 +287,11 @@ class ElementsService extends BaseApplicationComponent
 	 * Returns a DbCommand instance ready to search for elements based on a given element criteria.
 	 *
 	 * @param mixed &$criteria
-	 * @param array &$fieldColumns
+	 * @param null  &$contentTable
+	 * @param null  &$fieldColumns
 	 * @return DbCommand|false
 	 */
-	public function buildElementsQuery(&$criteria = null, &$fieldColumns = array())
+	public function buildElementsQuery(&$criteria = null, &$contentTable = null, &$fieldColumns = null)
 	{
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
@@ -288,27 +300,25 @@ class ElementsService extends BaseApplicationComponent
 
 		$elementType = $criteria->getElementType();
 
-		if (!$criteria->locale)
+		if (!$elementType->isLocalized())
 		{
-			if ($elementType->isLocalized())
-			{
-				// Default to the current app target locale
-				$criteria->locale = craft()->language;
-			}
-			else
-			{
-				// Default to the primary site locale
-				$criteria->locale = craft()->i18n->getPrimarySiteLocaleId();
-			}
+			// The criteria *must* be set to the primary locale
+			$criteria->locale = craft()->i18n->getPrimarySiteLocaleId();
+		}
+		else if (!$criteria->locale)
+		{
+			// Default to the current app locale
+			$criteria->locale = craft()->language;
 		}
 
 		// Set up the query
 
 		$query = craft()->db->createCommand()
-			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri')
+			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri, elements_i18n.enabled AS localeEnabled')
 			->from('elements elements')
 			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
-			->where('elements_i18n.locale = :locale', array(':locale' => $criteria->locale));
+			->where('elements_i18n.locale = :locale', array(':locale' => $criteria->locale))
+			->group('elements.id');
 
 		if ($elementType->hasContent())
 		{
@@ -365,22 +375,19 @@ class ElementsService extends BaseApplicationComponent
 				{
 					$status = mb_strtolower($status);
 
-					switch ($status)
+					// Is this a supported status?
+					if (in_array($status, array_keys($elementType->getStatuses())))
 					{
-						case BaseElementModel::ENABLED:
+						if ($status == BaseElementModel::ENABLED)
 						{
 							$statusConditions[] = 'elements.enabled = 1';
-							break;
 						}
-
-						case BaseElementModel::DISABLED:
+						else if ($status == BaseElementModel::DISABLED)
 						{
 							$statusConditions[] = 'elements.enabled = 0';
 						}
-
-						default:
+						else
 						{
-							// Maybe the element type supports another status?
 							$elementStatusCondition = $elementType->getElementQueryStatusCondition($query, $status);
 
 							if ($elementStatusCondition)
@@ -429,9 +436,14 @@ class ElementsService extends BaseApplicationComponent
 			$query->andWhere(DbHelper::parseParam('elements_i18n.slug', $criteria->slug, $query->params));
 		}
 
-		if ($criteria->uri !== null)
+		if ($criteria->uri)
 		{
 			$query->andWhere(DbHelper::parseParam('elements_i18n.uri', $criteria->uri, $query->params));
+		}
+
+		if ($criteria->localeEnabled)
+		{
+			$query->andWhere('elements_i18n.enabled = 1');
 		}
 
 		// Relational params
@@ -441,21 +453,19 @@ class ElementsService extends BaseApplicationComponent
 		// parentOf(element) => relatedTo({ target: element })
 		if (!$criteria->relatedTo && ($criteria->childOf || $criteria->parentOf))
 		{
-			if ($criteria->childOf && $criteria->parentOf)
+			$relatedTo = array('and');
+
+			if ($criteria->childOf)
 			{
-				$criteria->relatedTo = array('and',
-					array('sourceElement' => $criteria->childOf, 'field' => $criteria->childField),
-					array('targetElement' => $criteria->parentOf, 'field' => $criteria->parentField)
-				);
+				$relatedTo[] = array('sourceElement' => $criteria->childOf, 'field' => $criteria->childField);
 			}
-			else if ($criteria->childOf)
+
+			if ($criteria->parentOf)
 			{
-				$criteria->relatedTo = array('sourceElement' => $criteria->childOf, 'field' => $criteria->childField);
+				$relatedTo[] = array('targetElement' => $criteria->parentOf, 'field' => $criteria->parentField);
 			}
-			else
-			{
-				$criteria->relatedTo = array('targetElement' => $criteria->parentOf, 'field' => $criteria->parentField);
-			}
+
+			$criteria->relatedTo = $relatedTo;
 		}
 
 		if ($criteria->relatedTo)
@@ -464,6 +474,7 @@ class ElementsService extends BaseApplicationComponent
 			$this->_joinTargetMatrixBlocksCount = 0;
 			$this->_joinSourcesCount = 0;
 			$this->_joinTargetsCount = 0;
+			$this->_sourceLocaleParamCount = 0;
 
 			$relConditions = $this->_parseRelationParam($criteria->relatedTo, $query);
 
@@ -535,8 +546,8 @@ class ElementsService extends BaseApplicationComponent
 
 					if ($criteria->ancestorDist)
 					{
-						$query->andWhere('structureelements.level >= :level',
-							array(':level' => $criteria->ancestorOf->level - $criteria->ancestorDist)
+						$query->andWhere('structureelements.level >= :ancestorOf_level',
+							array(':ancestorOf_level' => $criteria->ancestorOf->level - $criteria->ancestorDist)
 						);
 					}
 				}
@@ -566,9 +577,56 @@ class ElementsService extends BaseApplicationComponent
 
 					if ($criteria->descendantDist)
 					{
-						$query->andWhere('structureelements.level <= :level',
-							array(':level' => $criteria->descendantOf->level + $criteria->descendantDist)
+						$query->andWhere('structureelements.level <= :descendantOf_level',
+							array(':descendantOf_level' => $criteria->descendantOf->level + $criteria->descendantDist)
 						);
+					}
+				}
+			}
+
+			if ($criteria->siblingOf)
+			{
+				if (!$criteria->siblingOf instanceof BaseElementModel)
+				{
+					$criteria->siblingOf = craft()->elements->getElementById($criteria->siblingOf, $elementType->getClassHandle());
+				}
+
+				if ($criteria->siblingOf)
+				{
+					$query->andWhere(
+						array('and',
+							'structureelements.level = :siblingOf_level',
+							'structureelements.root = :siblingOf_root',
+							'structureelements.elementId != :siblingOf_elementId'
+						),
+						array(
+							':siblingOf_level'     => $criteria->siblingOf->level,
+							':siblingOf_root'      => $criteria->siblingOf->root,
+							':siblingOf_elementId' => $criteria->siblingOf->id
+						)
+					);
+
+					if ($criteria->siblingOf->level != 1)
+					{
+						$parent = $criteria->siblingOf->getParent();
+
+						if ($parent)
+						{
+							$query->andWhere(
+								array('and',
+									'structureelements.lft > :siblingOf_lft',
+									'structureelements.rgt < :siblingOf_rgt'
+								),
+								array(
+									':siblingOf_lft'  => $parent->lft,
+									':siblingOf_rgt'  => $parent->rgt
+								)
+							);
+						}
+						else
+						{
+							return false;
+						}
 					}
 				}
 			}
@@ -584,14 +642,17 @@ class ElementsService extends BaseApplicationComponent
 				{
 					$query->andWhere(
 						array('and',
-							'structureelements.rgt = :prevSiblingOf_rgt',
+							'structureelements.rgt < :prevSiblingOf_rgt',
 							'structureelements.root = :prevSiblingOf_root'
 						),
 						array(
-							':prevSiblingOf_rgt'  => $criteria->prevSiblingOf->lft - 1,
+							':prevSiblingOf_rgt'  => $criteria->prevSiblingOf->lft,
 							':prevSiblingOf_root' => $criteria->prevSiblingOf->root
 						)
 					);
+
+					$query->order('structureelements.rgt desc');
+					$query->limit(1);
 				}
 			}
 
@@ -606,14 +667,17 @@ class ElementsService extends BaseApplicationComponent
 				{
 					$query->andWhere(
 						array('and',
-							'structureelements.lft = :nextSiblingOf_lft',
+							'structureelements.lft > :nextSiblingOf_lft',
 							'structureelements.root = :nextSiblingOf_root'
 						),
 						array(
-							':nextSiblingOf_lft'  => $criteria->nextSiblingOf->rgt + 1,
+							':nextSiblingOf_lft'  => $criteria->nextSiblingOf->rgt,
 							':nextSiblingOf_root' => $criteria->nextSiblingOf->root
 						)
 					);
+
+					$query->order('structureelements.lft asc');
+					$query->limit(1);
 				}
 			}
 
@@ -644,6 +708,21 @@ class ElementsService extends BaseApplicationComponent
 			->queryScalar();
 	}
 
+	/**
+	 * Returns the locales that a given element is enabled in.
+	 *
+	 * @param int $elementId
+	 * @return array
+	 */
+	public function getEnabledLocalesForElement($elementId)
+	{
+		return craft()->db->createCommand()
+			->select('locale')
+			->from('elements_i18n')
+			->where(array('elementId' => $elementId, 'enabled' => 1))
+			->queryColumn();
+	}
+
 	// Saving Elements
 	// ===============
 
@@ -652,6 +731,8 @@ class ElementsService extends BaseApplicationComponent
 	 *
 	 * @param BaseElementModel $element
 	 * @param bool             $validateContent
+	 * @throws Exception
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function saveElement(BaseElementModel $element, $validateContent = true)
@@ -712,13 +793,16 @@ class ElementsService extends BaseApplicationComponent
 				// Save the content
 				if ($elementType->hasContent())
 				{
-					craft()->content->saveContent($element, false);
+					craft()->content->saveContent($element, false, (bool) $element->id);
 				}
 
 				// Update the search index
 				craft()->search->indexElementAttributes($element);
 
 				// Update the locale records and content
+
+				// We're saving all of the element's locales here to ensure that they all exist
+				// and to update the URI in the event that the URL format includes some value that just changed
 
 				$localeRecords = array();
 
@@ -734,23 +818,69 @@ class ElementsService extends BaseApplicationComponent
 					}
 				}
 
-				$originalLocaleId = $element->locale;
+				$mainLocaleId = $element->locale;
+				$mainSlug     = $element->slug;
+				$mainUri      = $element->uri;
 
 				if ($elementType->hasContent())
 				{
-					$originalContent = $element->getContent();
+					$mainContent = $element->getContent();
 				}
 
-				foreach ($element->getLocales() as $localeId)
+				$locales = $element->getLocales();
+				$localeIds = array();
+
+				if (!$locales)
 				{
+					throw new Exception('All elements must have at least one locale associated with them.');
+				}
+
+				foreach ($locales as $localeId => $localeInfo)
+				{
+					if (is_numeric($localeId) && is_string($localeInfo))
+					{
+						$localeId = $localeInfo;
+						$localeInfo = array();
+					}
+
+					$localeIds[] = $localeId;
+
+					if (!isset($localeInfo['enabledByDefault']))
+					{
+						$localeInfo['enabledByDefault'] = true;
+					}
+
+					if (isset($localeRecords[$localeId]))
+					{
+						$localeRecord = $localeRecords[$localeId];
+					}
+					else
+					{
+						$localeRecord = new ElementLocaleRecord();
+
+						$localeRecord->elementId = $element->id;
+						$localeRecord->locale    = $localeId;
+						$localeRecord->enabled   = $localeInfo['enabledByDefault'];
+					}
+
 					// Set the locale and its content on the element
 					$element->locale = $localeId;
 
+					if ($localeRecord->id && $localeRecord->locale != $mainLocaleId)
+					{
+						// Keep the original slug
+						$element->slug = $localeRecord->slug;
+					}
+					else
+					{
+						$element->slug = $mainSlug;
+					}
+
 					if ($elementType->hasContent())
 					{
-						if ($localeId == $originalLocaleId)
+						if ($localeId == $mainLocaleId)
 						{
-							$content = $originalContent;
+							$content = $mainContent;
 						}
 						else
 						{
@@ -765,7 +895,7 @@ class ElementsService extends BaseApplicationComponent
 							if (!$content)
 							{
 								$content = craft()->content->createContent($element);
-								$content->setAttributes($originalContent->getAttributes());
+								$content->setAttributes($mainContent->getAttributes());
 								$content->id = null;
 								$content->locale = $localeId;
 							}
@@ -783,19 +913,13 @@ class ElementsService extends BaseApplicationComponent
 					ElementHelper::setValidSlug($element);
 					ElementHelper::setUniqueUri($element);
 
-					if (isset($localeRecords[$localeId]))
-					{
-						$localeRecord = $localeRecords[$localeId];
-					}
-					else
-					{
-						$localeRecord = new ElementLocaleRecord();
-						$localeRecord->elementId = $element->id;
-						$localeRecord->locale = $element->locale;
-					}
-
 					$localeRecord->slug = $element->slug;
 					$localeRecord->uri  = $element->uri;
+
+					if ($localeId == $mainLocaleId)
+					{
+						$localeRecord->enabled = (bool) $element->localeEnabled;
+					}
 
 					$success = $localeRecord->save();
 
@@ -804,10 +928,67 @@ class ElementsService extends BaseApplicationComponent
 						// Don't bother with any of the other locales
 						break;
 					}
+
+					if ($localeId == $mainLocaleId)
+					{
+						// Remember the saved slug and URI
+						$mainSlug = $element->slug;
+						$mainUri  = $element->uri;
+					}
 				}
 
-				$element->locale = $originalLocaleId;
-				$element->setContent($originalContent);
+				// Bring everything back to this locale
+				$element->locale = $mainLocaleId;
+				$element->slug   = $mainSlug;
+				$element->uri    = $mainUri;
+				$element->setContent($mainContent);
+
+				if ($success)
+				{
+					if (!$isNewElement)
+					{
+						// Delete the rows that don't need to be there anymore
+
+						craft()->db->createCommand()->delete('elements_i18n', array('and',
+							'elementId = :elementId',
+							array('not in', 'locale', $localeIds)
+						), array(
+							':elementId' => $element->id
+						));
+
+						if ($elementType->hasContent())
+						{
+							craft()->db->createCommand()->delete($element->getContentTable(), array('and',
+								'elementId = :elementId',
+								array('not in', 'locale', $localeIds)
+							), array(
+								':elementId' => $element->id
+							));
+						}
+					}
+
+					// Call the field types' onAfterElementSave() methods
+					$fieldLayout = $element->getFieldLayout();
+
+					if ($fieldLayout)
+					{
+						foreach ($fieldLayout->getFields() as $fieldLayoutField)
+						{
+							$field = $fieldLayoutField->getField();
+
+							if ($field)
+							{
+								$fieldType = $field->getFieldType();
+
+								if ($fieldType)
+								{
+									$fieldType->element = $element;
+									$fieldType->onAfterElementSave();
+								}
+							}
+						}
+					}
+				}
 			}
 
 			if ($transaction !== null)
@@ -894,10 +1075,10 @@ class ElementsService extends BaseApplicationComponent
 			$criteria->id = $element->id;
 			$criteria->locale = $localeId;
 			$criteria->status = null;
+			$criteria->localeEnabled = null;
 			$elementInOtherLocale = $criteria->first();
 
-			// todo: replace the getContent()->id check with the 'strictLocale' param once it's added
-			if ($elementInOtherLocale && $elementInOtherLocale->getContent()->id)
+			if ($elementInOtherLocale)
 			{
 				$this->updateElementSlugAndUri($elementInOtherLocale, false, false);
 			}
@@ -915,6 +1096,7 @@ class ElementsService extends BaseApplicationComponent
 		$criteria->descendantOf = $element;
 		$criteria->descendantDist = 1;
 		$criteria->status = null;
+		$criteria->localeEnabled = null;
 		$children = $criteria->find();
 
 		foreach ($children as $child)
@@ -938,6 +1120,7 @@ class ElementsService extends BaseApplicationComponent
 		// Just to be safe...
 		$criteria->locale = craft()->i18n->getPrimarySiteLocaleId();
 		$criteria->status = null;
+		$criteria->localeEnabled = null;
 		$criteria->order = 'dateCreated asc';
 
 		// Do this in batches so we don't hit the memory limit
@@ -950,7 +1133,7 @@ class ElementsService extends BaseApplicationComponent
 
 			foreach ($batchElements as $element)
 			{
-				$this->saveElement($element);
+				$this->saveElement($element, false);
 			}
 
 			$criteria->offset += 25;
@@ -1139,6 +1322,16 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		return $str;
+	}
+
+	/**
+	 * Fires an 'onPopulateElement' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onPopulateElement(Event $event)
+	{
+		$this->raiseEvent('onPopulateElement', $event);
 	}
 
 	// Private functions
@@ -1340,7 +1533,19 @@ class ElementsService extends BaseApplicationComponent
 						$sourcesAlias            = 'sources'.$this->_joinSourcesCount;
 						$targetMatrixBlocksAlias = 'target_matrixblocks'.$this->_joinTargetMatrixBlocksCount;
 
-						$query->leftJoin('relations '.$sourcesAlias, $sourcesAlias.'.targetId = elements.id');
+						$relationsJoinConditions = array('and', $sourcesAlias.'.targetId = elements.id');
+						$relationsJoinParams = array();
+
+						if (!empty($relCriteria['sourceLocale']))
+						{
+							$this->_sourceLocaleParamCount++;
+							$sourceLocaleParam = ':sourceLocale'.$this->_sourceLocaleParamCount;
+
+							$relationsJoinConditions[] = array('or', $sourcesAlias.'.sourceLocale is null', $sourcesAlias.'.sourceLocale = '.$sourceLocaleParam);
+							$relationsJoinParams[$sourceLocaleParam] = $relCriteria['sourceLocale'];
+						}
+
+						$query->leftJoin('relations '.$sourcesAlias, $relationsJoinConditions, $relationsJoinParams);
 						$query->leftJoin('matrixblocks '.$targetMatrixBlocksAlias, $targetMatrixBlocksAlias.'.id = '.$sourcesAlias.'.sourceId');
 
 						$condition = array('and',
@@ -1359,8 +1564,20 @@ class ElementsService extends BaseApplicationComponent
 						$sourceMatrixBlocksAlias = 'source_matrixblocks'.$this->_joinSourceMatrixBlocksCount;
 						$matrixBlockTargetsAlias = 'matrixblock_targets'.$this->_joinSourceMatrixBlocksCount;
 
+						$relationsJoinConditions = array('and', $matrixBlockTargetsAlias.'.sourceId = '.$sourceMatrixBlocksAlias.'.id');
+						$relationsJoinParams = array();
+
+						if (!empty($relCriteria['sourceLocale']))
+						{
+							$this->_sourceLocaleParamCount++;
+							$sourceLocaleParam = ':sourceLocale'.$this->_sourceLocaleParamCount;
+
+							$relationsJoinConditions[] = array('or', $matrixBlockTargetsAlias.'.sourceLocale is null', $matrixBlockTargetsAlias.'.sourceLocale = '.$sourceLocaleParam);
+							$relationsJoinParams[$sourceLocaleParam] = $relCriteria['sourceLocale'];
+						}
+
 						$query->leftJoin('matrixblocks '.$sourceMatrixBlocksAlias, $sourceMatrixBlocksAlias.'.ownerId = elements.id');
-						$query->leftJoin('relations '.$matrixBlockTargetsAlias, $matrixBlockTargetsAlias.'.sourceId = '.$sourceMatrixBlocksAlias.'.id');
+						$query->leftJoin('relations '.$matrixBlockTargetsAlias, $relationsJoinConditions, $relationsJoinParams);
 
 						$condition = array('and',
 							DbHelper::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds, $query->params),
@@ -1401,7 +1618,19 @@ class ElementsService extends BaseApplicationComponent
 				$relElementColumn = 'sourceId';
 			}
 
-			$query->leftJoin('relations '.$relTableAlias, $relTableAlias.'.'.$relElementColumn.' = elements.id');
+			$relationsJoinConditions = array('and', $relTableAlias.'.'.$relElementColumn.' = elements.id');
+			$relationsJoinParams = array();
+
+			if (!empty($relCriteria['sourceLocale']))
+			{
+				$this->_sourceLocaleParamCount++;
+				$sourceLocaleParam = ':sourceLocale'.$this->_sourceLocaleParamCount;
+
+				$relationsJoinConditions[] = array('or', $relTableAlias.'.sourceLocale is null', $relTableAlias.'.sourceLocale = '.$sourceLocaleParam);
+				$relationsJoinParams[$sourceLocaleParam] = $relCriteria['sourceLocale'];
+			}
+
+			$query->leftJoin('relations '.$relTableAlias, $relationsJoinConditions, $relationsJoinParams);
 			$condition = DbHelper::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds, $query->params);
 
 			if ($normalFieldIds)

@@ -17,7 +17,7 @@ body .redactor_box_fullscreen {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 2000;
+    z-index: 1000000;
     overflow: hidden;
     width: 100%;
 }
@@ -164,7 +164,8 @@ body .redactor_box_fullscreen {
 	margin-bottom: 15px !important;
 }
 .redactor_editor blockquote {
-	margin-left: 3em !important;
+	margin-left: 1.5em !important;
+	padding-left: 0 !important;
 	color: #777;
 	font-style: italic !important;
 }
@@ -215,7 +216,6 @@ body .redactor_box_fullscreen {
   border: 0;
   border-top: 1px solid #ccc;
 }
-
 .redactor_editor h1,
 .redactor_editor h2,
 .redactor_editor h3,

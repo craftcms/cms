@@ -72,16 +72,18 @@ abstract class BaseModel extends \CModel
 	{
 		if (in_array($name, $this->attributeNames()))
 		{
+			$copy = $this->copy();
+
 			if (count($arguments) == 1)
 			{
-				$this->setAttribute($name, $arguments[0]);
+				$copy->setAttribute($name, $arguments[0]);
 			}
 			else
 			{
-				$this->setAttribute($name, $arguments);
+				$copy->setAttribute($name, $arguments);
 			}
 
-			return $this;
+			return $copy;
 		}
 		else
 		{
@@ -373,6 +375,17 @@ abstract class BaseModel extends \CModel
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns a copy of this model.
+	 *
+	 * @return BaseModel
+	 */
+	public function copy()
+	{
+		$class = get_class($this);
+		return new $class($this->getAttributes());
 	}
 
 	/**

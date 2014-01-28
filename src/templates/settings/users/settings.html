@@ -10,9 +10,6 @@
 
 {% if settings is not defined %}
 	{% set settings = craft.systemSettings.users %}
-	{% set freshSettings = true %}
-{% else %}
-	{% set freshSettings = false %}
 {% endif %}
 
 
@@ -21,14 +18,21 @@
 		<input type="hidden" name="action" value="userSettings/saveUserSettings">
 
 			{{ forms.checkboxField({
+				label: "Verify email addresses?"|t,
+				instructions: "Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)"|t,
+				name: 'requireEmailVerification',
+				checked: settings.requireEmailVerification,
+			}) }}
+
+			{{ forms.checkboxField({
 				first: true,
 				label: "Allow public registration?"|t,
 				name: 'allowPublicRegistration',
-				checked: (settings.allowPublicRegistration is defined ? settings.allowPublicRegistration : false),
-				toggle: 'defaultGroup'
+				checked: settings.allowPublicRegistration,
+				toggle: 'publicRegistrationSettings'
 			}) }}
 
-			<div id="defaultGroup"{% if settings.allowPublicRegistration is not defined or not settings.allowPublicRegistration %} class="hidden"{% endif %}>
+			<div id="publicRegistrationSettings"{% if not settings.allowPublicRegistration %} class="hidden"{% endif %}>
 				{% set groups = [{ label: "None"|t, value: '' }] %}
 				{% for group in craft.userGroups.getAllGroups() %}
 					{% set groups = groups|merge([{ label: group.name, value: group.id }]) %}
@@ -39,7 +43,7 @@
 					instructions: "Choose a user group that publicly-registered members will be added to by default."|t,
 					name: 'defaultGroup',
 					options: groups,
-					value: (settings.defaultGroup is defined ? settings.defaultGroup : null)
+					value: settings.defaultGroup
 				}) }}
 			</div>
 

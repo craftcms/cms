@@ -1,141 +1,178 @@
 /**
  * Element editor
  */
-var x;
 Craft.ElementEditor = Garnish.Base.extend({
 
-		hud: null,
-		elementId: 0,
-		requestId: 0,
-		$trigger: null,
-		$spinner: null,
+	$element: null,
+	elementId: null,
+	locale: null,
 
-		init: function(settings)
-		{
-			this.setSettings(settings, Craft.ElementEditor.defaults);
+	$form: null,
+	$fieldsContainer: null,
+	$cancelBtn: null,
+	$saveBtn: null,
+	$spinner: null,
 
-			this.elementId = this.settings.elementId;
-			this.$trigger = this.settings.$trigger;
-		},
+	$localeSelect: null,
+	$localeSpinner: null,
 
-		show: function ()
-		{
-			var params = {
-				requestId: ++this.requestId,
-				elementId: this.elementId
-			};
+	hud: null,
 
-			this._showSpinner();
-
-			// Create a new HUD
-			Craft.postActionRequest(this.settings.loadContentAction, params, $.proxy(function(data, textStatus) {
-
-				this._hideSpinner();
-
-				if (textStatus != 'success' || data.requestId != this.requestId) {
-					return;
-				}
-
-				$hudHtml = $('<div/>').html((data.headHtml ? data.headHtml : '') + (data.bodyHtml ? data.bodyHtml : '') + (data.footHtml ? data.footHtml : ''));
-
-				this.hud = new Garnish.HUD(this.$trigger, $hudHtml, {
-					hudClass: 'hud contenthud',
-					triggerSpacing: 10,
-					tipWidth: 30,
-					closeOtherHUDs: false
-				});
-
-				Craft.initUiElements($hudHtml);
-				this.addListener($hudHtml.find('form'), 'submit', $.proxy(this, '_saveElementDetails'));
-				this.addListener($hudHtml.find('.btn.cancel'), 'click', $.proxy(this, 'removeHud'));
-
-
-			}, this));
-		},
-
-		_saveElementDetails: function (event)
-		{
-			event.preventDefault();
-
-			this.hud.$body.find('.spinner').removeClass('hidden');
-
-			$form = $(event.currentTarget);
-			var params = $form.serialize();
-
-			Craft.postActionRequest(this.settings.saveContentAction, params, $.proxy(function(response, textStatus)
-			{
-				this.hud.$body.find('.spinner').addClass('hidden');
-
-				if (textStatus == 'success')
-				{
-					if (textStatus == 'success' && response.success)
-					{
-						// Update the title
-						this.$trigger.find('.label').text(response.title);
-
-						// Update Live Preview
-						if (typeof Craft.entryPreviewMode != 'undefined')
-						{
-							Craft.entryPreviewMode.updateIframe(true);
-						}
-
-						this.removeHud();
-					}
-					else
-					{
-						Garnish.shake(this.hud.$hud);
-					}
-				}
-			}, this));
-		},
-
-		_showSpinner: function ()
-		{
-			this.removeHud();
-
-            this.$trigger.find('.delete').addClass('hidden');
-
-            // If the removable class is present, then treat this as an Input Field.
-            if (this.$trigger.hasClass('removable'))
-            {
-                this.$trigger.removeClass('removable').data('elementInputField', true);
-            }
-
-			this.$trigger.find('.label').css('padding-right', '20px');
-			this.$trigger.find('.label').after('<div class="spinner element-spinner" style="position: absolute; right: 2px; bottom: -1px;"></div>');
-		},
-
-		_hideSpinner: function ()
-		{
-            this.$trigger.find('.delete').removeClass('hidden');
-			this.$trigger.find('.label').removeClass('spinner element-spinner inline').html(this.$trigger.find('.label nobr').html());
-
-            if (this.$trigger.data('elementInputField'))
-            {
-                this.$trigger.addClass('removable');
-            }
-
-			this.$trigger.find('.label').css('padding-right', '0');
-			this.$trigger.find('.label').siblings('.spinner').remove();
-
-		},
-
-		removeHud: function ()
-		{
-			if (this.hud !== null)
-			{
-				this.hud.hide();
-				delete this.hud;
-			}
-		}
-
-	},
+	init: function($element)
 	{
-		defaults: {
-			elementId: null,
-			$trigger: null,
-			loadContentAction: null,
-			saveContentAction: null
+		this.$element = $element;
+		this.elementId = $element.data('id');
+
+		this.$element.addClass('loading');
+
+		var data = {
+			elementId:      this.elementId,
+			locale:         this.$element.data('locale'),
+			includeLocales: true
+		};
+
+		Craft.postActionRequest('elements/getEditorHtml', data, $.proxy(this, 'showHud'));
+	},
+
+	showHud: function(response, textStatus)
+	{
+		this.$element.removeClass('loading');
+
+		if (textStatus == 'success')
+		{
+			var $hudContents = $();
+
+			if (response.locales)
+			{
+				var $localesContainer = $('<div class="hud-header"/>'),
+					$localeSelectContainer = $('<div class="select"/>').appendTo($localesContainer);
+
+				this.$localeSelect = $('<select/>').appendTo($localeSelectContainer);
+				this.$localeSpinner = $('<div class="spinner hidden"/>').appendTo($localesContainer);
+
+				for (var i = 0; i < response.locales.length; i++)
+				{
+					var locale = response.locales[i];
+					$('<option value="'+locale.id+'"'+(locale.id == response.locale ? ' selected="selected"' : '')+'>'+locale.name+'</option>').appendTo(this.$localeSelect);
+				}
+
+				this.addListener(this.$localeSelect, 'change', 'switchLocale');
+
+				$hudContents = $hudContents.add($localesContainer);
+			}
+
+			this.$form = $('<form/>');
+			this.$fieldsContainer = $('<div class="fields"/>').appendTo(this.$form);
+
+			this.updateForm(response);
+
+			var $buttonsOuterContainer = $('<div class="hud-footer"/>').appendTo(this.$form);
+
+			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsOuterContainer);
+
+			var $buttonsContainer = $('<div class="buttons right"/>').appendTo($buttonsOuterContainer);
+			this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttonsContainer);
+			this.$saveBtn = $('<input class="btn submit" type="submit" value="'+Craft.t('Save')+'"/>').appendTo($buttonsContainer);
+
+			$hudContents = $hudContents.add(this.$form);
+
+			this.hud = new Garnish.HUD(this.$element, $hudContents, {
+				bodyClass: 'body elementeditor',
+				closeOtherHUDs: false
+			});
+
+			this.hud.on('hide', $.proxy(function() {
+				delete this.hud;
+			}, this));
+
+			this.addListener(this.$form, 'submit', 'saveElement');
+			this.addListener(this.$cancelBtn, 'click', function() {
+				this.hud.hide()
+			});
 		}
+	},
+
+	switchLocale: function()
+	{
+		var newLocale = this.$localeSelect.val();
+
+		if (newLocale == this.locale)
+		{
+			return;
+		}
+
+		this.$localeSpinner.removeClass('hidden');
+
+		var data = {
+			elementId: this.elementId,
+			locale:    newLocale
+		};
+
+		Craft.postActionRequest('elements/getEditorHtml', data, $.proxy(function(response, textStatus)
+		{
+			this.$localeSpinner.addClass('hidden');
+
+			if (textStatus == 'success')
+			{
+				this.updateForm(response);
+			}
+			else
+			{
+				this.$localeSelect.val(this.locale);
+			}
+		}, this));
+	},
+
+	updateForm: function(response)
+	{
+		this.locale = response.locale;
+
+		this.$fieldsContainer.html(response.html)
+		Craft.initUiElements(this.$fieldsContainer);
+	},
+
+	saveElement: function(ev)
+	{
+		ev.preventDefault();
+
+		this.$spinner.removeClass('hidden');
+
+		var data = this.$form.serialize();
+
+		Craft.postActionRequest('elements/saveElement', data, $.proxy(function(response, textStatus)
+		{
+			this.$spinner.addClass('hidden');
+
+			if (textStatus == 'success')
+			{
+				if (textStatus == 'success' && response.success)
+				{
+					if (this.locale == this.$element.data('locale'))
+					{
+						// Update the label
+						this.$element.find('.title').text(response.newTitle);
+					}
+
+					// Update Live Preview
+					if (typeof Craft.entryPreviewMode != 'undefined')
+					{
+						Craft.entryPreviewMode.updateIframe(true);
+					}
+
+					this.closeHud();
+				}
+				else
+				{
+					this.updateForm(response);
+					Garnish.shake(this.hud.$hud);
+				}
+			}
+		}, this));
+	},
+
+	closeHud: function()
+	{
+		this.hud.hide();
+		delete this.hud;
 	}
-);
+});

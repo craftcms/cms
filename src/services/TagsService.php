@@ -300,7 +300,23 @@ class TagsService extends BaseApplicationComponent
 		}
 
 		$tagRecord->groupId = $tag->groupId;
-		$tagRecord->name = $tag->name;
+
+		// See if we can find another tag with tha same name
+		$criteria = craft()->elements->getCriteria(ElementType::Tag);
+		$criteria->groupId = $tag->groupId;
+		$criteria->search  = 'name::"'.$tag->name.'"';
+		$criteria->id      = ($isNewTag ? null : 'not '.$tag->id);
+		$matchingTag = $criteria->first();
+
+		if ($matchingTag)
+		{
+			// The name needs to be 100% identical for validation to take care of this.
+			$tagRecord->name = $matchingTag->name;
+		}
+		else
+		{
+			$tagRecord->name = $tag->name;
+		}
 
 		$tagRecord->validate();
 		$tag->addErrors($tagRecord->getErrors());
@@ -324,6 +340,11 @@ class TagsService extends BaseApplicationComponent
 					$this->onSaveTag(new Event($this, array(
 						'tag'      => $tag,
 						'isNewTag' => $isNewTag
+					)));
+
+					// Fire an 'onSaveTagContent' event (deprecated)
+					$this->onSaveTagContent(new Event($this, array(
+						'tag' => $tag
 					)));
 
 					if ($transaction !== null)
@@ -376,30 +397,6 @@ class TagsService extends BaseApplicationComponent
 		return $criteria->first();
 	}
 
-	/**
-	 * Saves a tag's content.
-	 *
-	 * @param TagModel $tag
-	 * @return bool
-	 */
-	public function saveTagContent(TagModel $tag)
-	{
-		// TODO: translation support
-		if (craft()->content->saveContent($tag))
-		{
-			// Fire an 'onSaveTagContent' event
-			$this->onSaveTagContent(new Event($this, array(
-				'tag' => $tag
-			)));
-
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
 	// Events
 
 	/**
@@ -416,6 +413,7 @@ class TagsService extends BaseApplicationComponent
 	 * Fires an 'onSaveTagContent' event.
 	 *
 	 * @param Event $event
+	 * @deprecated Deprecated since 1.4
 	 */
 	public function onSaveTagContent(Event $event)
 	{

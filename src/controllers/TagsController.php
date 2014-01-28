@@ -139,9 +139,9 @@ class TagsController extends BaseController
 		}
 
 		$criteria = craft()->elements->getCriteria(ElementType::Tag);
-		$criteria->groupId  = $tagGroupId;
-		$criteria->search = 'name:'.$search.'*';
-		$criteria->id     = $notIds;
+		$criteria->groupId = $tagGroupId;
+		$criteria->search  = 'name:'.implode('* name:', preg_split('/\s+/', $search)).'*';
+		$criteria->id      = $notIds;
 		$tags = $criteria->find();
 
 		$return = array();
@@ -182,61 +182,29 @@ class TagsController extends BaseController
 	}
 
 	/**
-	 * Edits a tag's content.
+	 * Creates a new tag.
 	 */
-	public function actionEditTagContent()
+	public function actionCreateTag()
 	{
 		$this->requireLogin();
 		$this->requireAjaxRequest();
 
-		$requestId = craft()->request->getPost('requestId', 0);
-		$tagId = craft()->request->getRequiredPost('elementId');
-		$tag = craft()->tags->getTagById($tagId);
+		$tag = new TagModel();
+		$tag->groupId = craft()->request->getRequiredPost('groupId');
+		$tag->name = craft()->request->getRequiredPost('name');
 
-		if (!$tag)
+		if (craft()->tags->saveTag($tag))
 		{
-			throw new Exception(Craft::t('No tag exists with the ID “{id}”.', array('id' => $tagId)));
+			$this->returnJson(array(
+				'success' => true,
+				'id'      => $tag->id
+			));
 		}
-
-		$html = craft()->templates->render('_includes/edit_element', array(
-			'element'  => $tag,
-			'hasTitle' => false
-		));
-
-		$this->returnJson(array(
-			'requestId' => $requestId,
-			'headHtml' => craft()->templates->getHeadHtml(),
-			'bodyHtml' => $html,
-			'footHtml' => craft()->templates->getFootHtml(),
-		));
-	}
-
-	/**
-	 * Saves a tag's content.
-	 */
-	public function actionSaveTagContent()
-	{
-		$this->requireLogin();
-		$this->requireAjaxRequest();
-
-		$tagId = craft()->request->getRequiredPost('elementId');
-
-		$tag = craft()->tags->getTagById($tagId);
-
-		if (!$tag)
+		else
 		{
-			throw new Exception(Craft::t('No tag exists with the ID “{id}”.', array('id' => $tagId)));
+			$this->returnJson(array(
+				'success' => false
+			));
 		}
-
-		$fieldNamespace = craft()->request->getPost('fieldNamespace');
-		$fields = craft()->request->getPost($fieldNamespace);
-		$tag->setContentFromPost($fields);
-
-		$success = craft()->tags->saveTagContent($tag);
-
-		$this->returnJson(array(
-			'success' => true,
-			'title'   => (string) $tag
-		));
 	}
 }

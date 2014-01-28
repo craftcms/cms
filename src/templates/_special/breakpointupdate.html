@@ -1,10 +1,10 @@
 {% extends "_layouts/message" %}
 {% set title = "Update @@@appName@@@"|t %}
 
-{% set content %}
+{% block message %}
 	<p>{{ "You need to be on at least @@@appName@@@ {url} before you can manually update to @@@appName@@@ {targetVersion} build {targetBuild}."|t({
 			url:           '<a href=\"'~minBuildURL~'\">build '~minBuild~'</a>',
 			targetVersion: targetVersion,
 			targetBuild:   targetBuild
 		})|raw }}</p>
-{% endset %}
+{% endblock %}

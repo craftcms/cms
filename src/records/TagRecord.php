@@ -42,7 +42,7 @@ class TagRecord extends BaseRecord
 	public function defineIndexes()
 	{
 		return array(
-			array('columns' => array('groupId', 'name'), 'unique' => true),
+			array('columns' => array('name', 'groupId'), 'unique' => true),
 		);
 	}
 }

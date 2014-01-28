@@ -4,9 +4,10 @@
 {% set title = "Updates"|t %}
 {% includeCssResource "css/updates.css" %}
 {% includeJsResource "js/updates.js" %}
+{% includeJs 'new Craft.UpdateInfo(' ~ craft.config.allowAutoUpdates ~');' %}
 {% includeTranslations
 	"You’ve got updates!",
-	"No system updates are available.",
+	"You’re all up-to-date!",
 	"build {build}",
 	"Critical",
 	"Update",
@@ -25,9 +26,7 @@
 %}
 
 
-{% set content %}
-	<div id="loading">
-		<div class="spinner big"></div>
-		<p>{{ "Checking for updates…"|t }}</p>
-	</div>
-{% endset %}
+{% block main %}
+	<div id="graphic" class="spinner big"></div>
+	<div id="status">{{ "Checking for updates…"|t }}</div>
+{% endblock %}

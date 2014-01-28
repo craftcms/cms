@@ -376,6 +376,13 @@ class DateTime extends \DateTime
 				if ($interval->s) $spec .= $interval->s.'S';
 			}
 
+			// If $spec is P at this point, the interval was less than a second.
+			// Accuracy be damned.
+			if ($spec === 'P')
+			{
+				$spec = 'PT0S';
+			}
+
 			$newInterval = new DateInterval($spec);
 			$newInterval->invert = $interval->invert;
 

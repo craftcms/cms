@@ -50,9 +50,17 @@ class ElementHelper
 	{
 		$urlFormat = $element->getUrlFormat();
 
-		if (!$element->slug || !$urlFormat)
+		// No URL format, no URI.
+		if (!$urlFormat)
 		{
 			$element->uri  = null;
+			return;
+		}
+
+		// No slug, or a URL format with no {slug}, just parse the URL format and get on with our lives
+		if (!$element->slug || !static::doesUrlFormatHaveSlugTag($urlFormat))
+		{
+			$element->uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
 			return;
 		}
 
@@ -134,5 +142,88 @@ class ElementHelper
 		}
 
 		throw new Exception(Craft::t('Could not find a unique URI for this element.'));
+	}
+
+	/**
+	 * Returns whether a given URL format has a proper {slug} tag.
+	 *
+	 * @static
+	 * @param string $urlFormat
+	 */
+	public static function doesUrlFormatHaveSlugTag($urlFormat)
+	{
+		$element = (object) array('slug' => StringHelper::randomString());
+		$uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
+		return (strpos($uri, $element->slug) !== false);
+	}
+
+	/**
+	 * Returns whether the given element is editable by the current user, taking user locale permissions into account.
+	 *
+	 * @param BaseElementModel $element
+	 * @return bool
+	 */
+	public static function isElementEditable(BaseElementModel $element)
+	{
+		if ($element->isEditable())
+		{
+			if (Craft::hasPackage(CraftPackage::Localize))
+			{
+				foreach ($element->getLocales() as $localeId => $localeInfo)
+				{
+					if (is_numeric($localeId) && is_string($localeInfo))
+					{
+						$localeId = $localeInfo;
+					}
+
+					if (craft()->userSession->checkPermission('editLocale:'.$localeId))
+					{
+						return true;
+					}
+				}
+			}
+			else
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns the editable locale IDs for a given element, taking user locale permissions into account.
+	 *
+	 * @param BaseElementModel $element
+	 * @return array
+	 */
+	public static function getEditableLocaleIdsForElement(BaseElementModel $element)
+	{
+		$localeIds = array();
+
+		if ($element->isEditable())
+		{
+			if (Craft::hasPackage(CraftPackage::Localize))
+			{
+				foreach ($element->getLocales() as $localeId => $localeInfo)
+				{
+					if (is_numeric($localeId) && is_string($localeInfo))
+					{
+						$localeId = $localeInfo;
+					}
+
+					if (craft()->userSession->checkPermission('editLocale:'.$localeId))
+					{
+						$localeIds[] = $localeId;
+					}
+				}
+			}
+			else
+			{
+				$localeIds[] = craft()->i18n->getPrimarySiteLocaleId();
+			}
+		}
+
+		return $localeIds;
 	}
 }

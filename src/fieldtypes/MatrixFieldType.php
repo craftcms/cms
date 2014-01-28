@@ -207,6 +207,7 @@ class MatrixFieldType extends BaseFieldType
 		{
 			$value->limit = null;
 			$value->status = null;
+			$value->localeEnabled = null;
 		}
 
 		return craft()->templates->render('_components/fieldtypes/Matrix/input', array(
@@ -258,6 +259,7 @@ class MatrixFieldType extends BaseFieldType
 				$criteria->id = $ids;
 				$criteria->limit = null;
 				$criteria->status = null;
+				$criteria->localeEnabled = null;
 				$criteria->locale = $this->element->locale;
 				$oldBlocks = $criteria->find();
 
@@ -299,6 +301,7 @@ class MatrixFieldType extends BaseFieldType
 				$block = $oldBlocksById[$blockId];
 			}
 
+			$block->setOwner($this->element);
 			$block->enabled = (isset($blockData['enabled']) ? (bool) $blockData['enabled'] : true);
 
 			if (isset($blockData['fields']))
@@ -393,14 +396,7 @@ class MatrixFieldType extends BaseFieldType
 	 */
 	public function onAfterElementSave()
 	{
-		$blocks = $this->element->getContent()->getAttribute($this->model->handle);
-
-		if (!is_array($blocks))
-		{
-			$blocks = array();
-		}
-
-		craft()->matrix->saveField($this->model, $this->element->id, $blocks);
+		craft()->matrix->saveField($this);
 	}
 
 	/**

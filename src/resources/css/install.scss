@@ -48,6 +48,8 @@ input.hidden { position: absolute; top: 100px; }
 #welcome .buttons,
 #installing .buttons { position: static; margin: 0; text-align: center; }
 #installing .buttons .btn { margin: 0; float: none; }
+#siteform .select,
+#siteform .select select { width: 100%; }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
 	   only screen and (   -moz-min-device-pixel-ratio: 1.5),

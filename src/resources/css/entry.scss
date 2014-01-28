@@ -5,17 +5,30 @@
 span.draft { margin-top: -4px; display: inline-block; border: 2px solid #bbb; border-radius: 4px; padding: 0 4px; height: 16px; vertical-align: middle; font-size: 11px; line-height: 16px; text-transform: uppercase; font-weight: bold; color: $textcolor; }
 h1 span.draft span { display: none; }
 
-#previewmode-btn { float: right; margin-bottom: 30px; }
-#previewmode-spinner { position: absolute; top: 30px; right: 6px; }
+#locales { padding: 0 0 0 24px; }
+#locales li { position: relative; padding: 7px 45px 7px 0; }
+#locales li + li { border-top: 1px solid $hrcolor; }
+#locales li.sel { color: $mediumtextcolor; cursor: default; }
+#locales li.sel:before { float: left; margin: 3px 0 0 -16px; font-size: 11px; color: $mediumtextcolor !important; @include icon; content: 'check'; }
+#locales li a { color: $textcolor; }
+#locales li a:hover { color: $linkcolor; cursor: pointer; }
+#locales li .lightswitch { position: absolute; top: 50%; right: 9px; margin-top: -9px; }
+#locales li .status { display: block; position: absolute; top: 50%; right: 16px; margin: -5px 0 0 0; }
+
+#settings .select,
+#settings .select select { width: 100%; }
+
+#previewmode-btn { display: block; position: relative; }
+#previewmode-spinner { position: absolute; top: 3px; right: 7px; }
 
 #previewmode-editor,
 #previewmode-iframe-container { position: fixed; top: 0; height: 100%; background: #fff; background-clip: padding-box; }
 
 #previewmode-editor { z-index: 3; left: -400px; padding: 0 30px; width: 340px; overflow: auto; border-right: 1px solid rgba(0,0,0,0.1); }
-#previewmode-editor header { margin: 0 -30px 30px; padding: 15px 30px 14px; border-bottom: 1px solid #ddd; }
+#previewmode-editor header { margin: 0 -24px 24px; padding: 14px 24px 13px; border-bottom: 1px solid #ddd; }
 #previewmode-editor header .btn { float: right; }
 #previewmode-editor header h1 { margin: 0; font-size: 25px; line-height: 30px; color: #333; }
-#previewmode-editor > .field:last-child { margin-bottom: 30px !important; }
+#previewmode-editor > .field:last-child { margin-bottom: 24px !important; }
 
 #previewmode-iframe-container { z-index: 2; left: 100%; }
 #previewmode-iframe { width: 100%; height: 100%; }

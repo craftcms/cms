@@ -103,67 +103,6 @@ class AssetsController extends BaseController
 	}
 
 	/**
-	 * View a file's content.
-	 */
-	public function actionEditFileContent()
-	{
-		$this->requireLogin();
-		$this->requireAjaxRequest();
-
-		$requestId = craft()->request->getPost('requestId', 0);
-		$fileId = craft()->request->getRequiredPost('elementId');
-		$file = craft()->assets->getFileById($fileId);
-
-		if (!$file)
-		{
-			throw new Exception(Craft::t('No asset exists with the ID “{id}”.', array('id' => $fileId)));
-		}
-
-		$html = craft()->templates->render('_includes/edit_element', array(
-			'element'  => $file,
-			'hasTitle' => true
-		));
-
-		$this->returnJson(array(
-			'requestId' => $requestId,
-			'headHtml' => craft()->templates->getHeadHtml(),
-			'bodyHtml' => $html,
-			'footHtml' => craft()->templates->getFootHtml(),
-		));
-	}
-
-	/**
-	 * Save a file's content.
-	 */
-	public function actionSaveFileContent()
-	{
-		$this->requireLogin();
-		$this->requireAjaxRequest();
-
-		$fileId = craft()->request->getRequiredPost('elementId');
-		$file = craft()->assets->getFileById($fileId);
-
-		if (!$file)
-		{
-			throw new Exception(Craft::t('No asset exists with the ID “{id}”.', array('id' => $fileId)));
-		}
-
-		$title = craft()->request->getPost('title');
-		$file->getContent()->title = $title;
-
-		$fieldNamespace = craft()->request->getPost('fieldNamespace');
-		$fields = craft()->request->getPost($fieldNamespace);
-		$file->setContentFromPost($fields);
-
-		$success = craft()->assets->saveFileContent($file);
-
-		$this->returnJson(array(
-			'success' => $success,
-			'title'   => $title
-		));
-	}
-
-	/**
 	 * Create a folder.
 	 */
 	public function actionCreateFolder()

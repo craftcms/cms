@@ -21,9 +21,10 @@ class ElementLocaleRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
-			'locale' => array(AttributeType::Locale, 'required' => true),
-			'slug'   => array(AttributeType::String),
-			'uri'    => array(AttributeType::Uri, 'label' => 'URI'),
+			'locale'  => array(AttributeType::Locale, 'required' => true),
+			'slug'    => array(AttributeType::String),
+			'uri'     => array(AttributeType::Uri, 'label' => 'URI'),
+			'enabled' => array(AttributeType::Bool, 'default' => true),
 		);
 	}
 
@@ -45,7 +46,9 @@ class ElementLocaleRecord extends BaseRecord
 	{
 		return array(
 			array('columns' => array('elementId', 'locale'), 'unique' => true),
+			array('columns' => array('slug', 'locale')),
 			array('columns' => array('uri', 'locale'), 'unique' => true),
+			array('columns' => array('enabled')),
 		);
 	}
 }

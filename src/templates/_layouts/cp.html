@@ -45,15 +45,10 @@
 	"Select Transform"
 -%}
 
-{% if sidebar is not defined %}
-	{% set sidebar = block('sidebar')|trim %}
-{% endif %}
-{% set hasSidebar = (sidebar is not empty) %}
-
 {% set hasHelp = (docsUrl is defined and docsUrl is not empty) %}
 
 
-{% set body %}
+{% block body %}
 	{% if currentUser.admin and craft.config.devMode %}
 		<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
 	{% endif %}
@@ -72,7 +67,7 @@
 	{% endif %}
 
 	<header id="header">
-		<div class="centered">
+		<div class="container">
 			<ul id="header-actions" class="right">
 				{% if currentUser.can('performUpdates') %}
 					{% if craft.app.isUpdateInfoCached() %}
@@ -111,7 +106,7 @@
 				</li>
 			</ul>
 
-			<h2><a href="{{ siteUrl }}" title="{{ 'Site Homepage'|t }}" target="_blank">{{ siteName }}</a></h2>
+			<h2><a href="{{ siteUrl }}" title="{{ 'Site Homepage'|t }}" target="_blank">{{ siteName|t }}</a></h2>
 
 			<nav>
 				<ul id="nav">
@@ -133,7 +128,7 @@
 		</div>
 	</header>
 
-	<div class="centered">
+	<div class="container">
 		<div id="notifications-wrapper">
 			<div id="notifications">
 				{% for type, message in craft.session.flashes %}
@@ -165,53 +160,42 @@
 			{% endif %}
 
 			<div class="clear"></div>
-
-			{% if tabs is defined and tabs %}
-				<nav id="tabs" class="tabs">
-					<ul>
-						{% for tabId, tab in tabs %}
-							{% if tab %}
-								{% set tabIsSelected = ((selectedTab is not defined and loop.first) or (selectedTab is defined and selectedTab == tabId)) -%}
-
-								{% if tabIsSelected and title != tab.label %}
-									{% set title = title~' - '~tab.label %}
-								{% endif -%}
-
-								<li><a id="tab-{{ tabId }}" class="tab{% if tabIsSelected %} sel{% endif %}{% if tab.class is defined %} {{ tab.class }}{% endif %}" href="{{ tab.url }}">{{ tab.label }}</a></li>
-							{% endif %}
-						{% endfor %}
-					</ul>
-				</nav>
-			{% endif %}
 		</header>
-	</div>
 
-	<div id="main" class="centered {% if hasSidebar %}has-sidebar{% endif %} {% if hasHelp %}has-help{% endif %}">
-		{% if hasSidebar %}
-			<div id="sidebar" class="sidebar">
-				{{ sidebar|raw }}
-			</div>
-		{% endif %}
+		<main id="main" role="main">
+			{% block main %}
+				{% set sidebar = sidebar is defined ? sidebar : block('sidebar')|trim %}
+				{% set hasSidebar = (sidebar is not empty) %}
 
-		<main id="content" role="main">
-			{% block content %}
-				{% if content is defined %}
-					{{ content }}
-				{% endif %}
+				<div class="pane{% if hasSidebar %} has-sidebar{% endif %}">
+					{% if hasSidebar %}
+						<div id="sidebar" class="sidebar">
+							{{ sidebar|raw }}
+						</div>
+					{% endif %}
+
+					{% if tabs is defined and tabs %}
+						{% include "_includes/tabs" %}
+					{% endif %}
+
+					<div id="content"{% if hasHelp %} class="has-help"{% endif %}>
+						{% block content %}
+							{{ content is defined ? content }}
+						{% endblock %}
+
+						{% if hasHelp %}<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>{% endif %}
+					</div>
+				</div>
 			{% endblock %}
-
-			{% if hasHelp %}
-				<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
-			{% endif %}
 		</main>
-	</div>
 
-	<ul id="footer">
-		<li>@@@appName@@@ {{ craft.app.version }}.{{ craft.app.build }}</li>
-		<li>{{ "Released on"|t }} {{ craft.app.releaseDate.localeDate }}</li>
-		{% if currentUser.can('performUpdates') %}
-			<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.isUpdateInfoCached() and totalUpdates ? updateText : "Check for updates"|t }}</a></li>
-		{% endif %}
-		<li>{{ "Copyright"|t }} {{ now.year}} Pixel &amp; Tonic, Inc. {{ "All rights reserved."|t }}</li>
-	</ul>
-{% endset %}
+		<ul id="footer">
+			<li>@@@appName@@@ {{ craft.app.version }}.{{ craft.app.build }}</li>
+			<li>{{ "Released on"|t }} {{ craft.app.releaseDate.localeDate }}</li>
+			{% if currentUser.can('performUpdates') %}
+				<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.isUpdateInfoCached() and totalUpdates ? updateText : "Check for updates"|t }}</a></li>
+			{% endif %}
+			<li>{{ "Copyright"|t }} {{ now.year}} Pixel &amp; Tonic, Inc. {{ "All rights reserved."|t }}</li>
+		</ul>
+	</div>
+{% endblock %}

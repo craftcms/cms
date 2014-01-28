@@ -163,6 +163,7 @@ class RecentEntriesWidget extends BaseWidget
 	{
 		$criteria = craft()->elements->getCriteria(ElementType::Entry);
 		$criteria->status = null;
+		$criteria->localeEnabled = null;
 		$criteria->limit = $this->getSettings()->limit;
 		$criteria->order = 'dateCreated DESC';
 

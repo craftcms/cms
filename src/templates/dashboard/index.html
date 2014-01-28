@@ -1,7 +1,6 @@
 {% extends "_layouts/cp" %}
 {% set title = "Dashboard"|t %}
 {% includeCssResource "css/dashboard.css" %}
-{% includeJsResource "js/dashboard.js" %}
 
 
 {% set extraPageHeaderHtml %}
@@ -9,22 +8,22 @@
 {% endset %}
 
 
-{% set content %}
-	<div class="widgets">
-		<div id="widgets" class="grid">
-			{% for widget in craft.dashboard.getUserWidgets %}
-				{% set widgetType = craft.dashboard.populateWidgetType(widget) %}
-				{% if widgetType %}
-					{% set body = widgetType.getBodyHtml() %}
-					{% if body is not sameas(false) %}
-						<div id="widget{{ widget.id }}" class="widget {{ widgetType.classHandle|lower }}" data-id="{{ widget.id }}">
+{% block main %}
+	<div class="grid">
+		{% for widget in craft.dashboard.getUserWidgets %}
+			{% set widgetType = craft.dashboard.populateWidgetType(widget) %}
+			{% if widgetType %}
+				{% set body = widgetType.getBodyHtml() %}
+				{% if body is not sameas(false) %}
+					<div class="item" data-colspan="{{ widgetType.getColspan() }}">
+						<div id="widget{{ widget.id }}" class="pane widget {{ widgetType.classHandle|lower }}" data-id="{{ widget.id }}">
 							<div class="spinner body-loading"></div>
 							<h2>{{ widgetType.title }}</h2>
 							<div class="body">{{ body|raw }}</div>
 						</div>
-					{% endif %}
+					</div>
 				{% endif %}
-			{% endfor %}
-		</div>
+			{% endif %}
+		{% endfor %}
 	</div>
-{% endset %}
+{% endblock %}

@@ -52,6 +52,7 @@ class AssetFileModel extends BaseElementModel
 	 * Magic getter
 	 *
 	 * @param string $name
+	 * @throws \Exception
 	 * @return mixed
 	 */
 	function __get($name)
@@ -128,6 +129,16 @@ class AssetFileModel extends BaseElementModel
 		{
 			return parent::getAttribute($name, $flattenValue);
 		}
+	}
+
+	/**
+	 * Returns whether the current user can edit the element.
+	 *
+	 * @return bool
+	 */
+	public function isEditable()
+	{
+		return craft()->userSession->checkPermission('uploadToAssetSource:'.$this->sourceId);
 	}
 
 	/**
@@ -255,6 +266,14 @@ class AssetFileModel extends BaseElementModel
 	public function getExtension()
 	{
 		return IOHelper::getExtension($this->filename);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getMimeType()
+	{
+		return IOHelper::getMimeType($this->filename);
 	}
 
 	/**

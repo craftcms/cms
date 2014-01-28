@@ -1,5 +1,5 @@
 {% import "_includes/forms" as forms %}
-{% set field = craft.fields.getFieldById(fieldId) %}
+
 {% if element is not defined %}{% set element = null %}{% endif %}
 
 {% set value = (element ? attribute(element, field.handle) : null) %}
@@ -16,7 +16,7 @@
 	label: field.name|e,
 	required: required,
 	translatable: field.translatable,
-	instructions: field.instructions|e,
+	instructions: field.instructions,
 	id: field.handle,
 	errors: errors
 }, input)|raw }}

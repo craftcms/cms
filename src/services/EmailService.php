@@ -122,6 +122,8 @@ class EmailService extends BaseApplicationComponent
 	 */
 	public function sendTestEmail($settings)
 	{
+		$originalSettings = $this->_settings;
+
 		$this->_settings = $settings;
 
 		$user = craft()->userSession->getUser();
@@ -137,7 +139,11 @@ class EmailService extends BaseApplicationComponent
 			$newSettings[$key] = $value;
 		}
 
-		return $this->sendEmailByKey($user, 'test_email', array('settings' => $newSettings));
+		$success = $this->sendEmailByKey($user, 'test_email', array('settings' => $newSettings));
+
+		$this->_settings = $originalSettings;
+
+		return $success;
 	}
 
 	/**

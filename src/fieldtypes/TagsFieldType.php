@@ -54,64 +54,11 @@ class TagsFieldType extends BaseElementFieldType
 				'elements'        => $criteria,
 				'tagGroupId'      => $this->_getTagGroupId(),
 				'sourceElementId' => (isset($this->element->id) ? $this->element->id : null),
-				'hasFields'       => (bool) $tagGroup->getFieldLayout()->getFields(),
 			));
 		}
 		else
 		{
 			return '<p class="error">'.Craft::t('This field is not set to a valid source.').'</p>';
-		}
-	}
-
-	/**
-	 * Performs any additional actions after the element has been saved.
-	 */
-	public function onAfterElementSave()
-	{
-		$tagGroupId = $this->_getTagGroupId();
-
-		if ($tagGroupId === false)
-		{
-			return;
-		}
-
-		$rawValue = $this->element->getContent()->getAttribute($this->model->handle);
-
-		if ($rawValue !== null)
-		{
-			$tagIds = is_array($rawValue) ? array_filter($rawValue) : array();
-
-			foreach ($tagIds as $i => $tagId)
-			{
-				if (strncmp($tagId, 'new:', 4) == 0)
-				{
-					$name = mb_substr($tagId, 4);
-
-					// Last-minute check
-					$criteria = craft()->elements->getCriteria(ElementType::Tag);
-					$criteria->groupId = $tagGroupId;
-					$criteria->search = 'name::'.$name;
-					$ids = $criteria->ids();
-
-					if ($ids)
-					{
-						$tagIds[$i] = $ids[0];
-					}
-					else
-					{
-						$tag = new TagModel();
-						$tag->groupId = $tagGroupId;
-						$tag->name = $name;
-
-						if (craft()->tags->saveTag($tag))
-						{
-							$tagIds[$i] = $tag->id;
-						}
-					}
-				}
-			}
-
-			craft()->relations->saveRelations($this->model->id, $this->element->id, $tagIds);
 		}
 	}
 

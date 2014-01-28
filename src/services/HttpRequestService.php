@@ -192,45 +192,17 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
+	 * Returns the named GET parameter value, or the entire GET array if no name is specified.
+	 * If $name is specified and the GET parameter does not exist, $defaultValue will be returned.
+	 * $name can also represent a nested param using dot syntax, e.g. getQuery('fields.body')
 	 *
-	 * @param $name
-	 * @throws HttpException
+	 * @param string|null $name
+	 * @param mixed       $defaultValue
 	 * @return mixed
 	 */
-	public function getRequiredParam($name)
+	public function getQuery($name = null, $defaultValue = null)
 	{
-		$value = $this->getParam($name);
-
-		if ($value !== null)
-		{
-			return $value;
-		}
-		else
-		{
-			throw new HttpException(400, Craft::t('Param “{name}” doesn’t exist.', array('name' => $name)));
-		}
-	}
-
-	/**
-	 * Checks for a value in GET and POST.
-	 *
-	 * @param string $name
-	 * @param null   $defaultValue
-	 * @return mixed|null
-	 */
-	public function getParam($name, $defaultValue = null)
-	{
-		if ($value = $this->getQuery($name))
-		{
-			return $value;
-		}
-		elseif ($value = $this->getPost($name))
-		{
-			return $value;
-		}
-
-		return $defaultValue;
+		return $this->_getParam($name, $defaultValue, $_GET);
 	}
 
 	/**
@@ -255,6 +227,20 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Returns the named POST parameter value, or the entire POST array if no name is specified.
+	 * If $name is specified and the POST parameter does not exist, $defaultValue will be returned.
+	 * $name can also represent a nested param using dot syntax, e.g. getPost('fields.body')
+	 *
+	 * @param string|null $name
+	 * @param mixed       $defaultValue
+	 * @return mixed
+	 */
+	public function getPost($name = null, $defaultValue = null)
+	{
+		return $this->_getParam($name, $defaultValue, $_POST);
+	}
+
+	/**
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
 	 *
 	 * @param $name
@@ -272,6 +258,48 @@ class HttpRequestService extends \CHttpRequest
 		else
 		{
 			throw new HttpException(400, Craft::t('POST param “{name}” doesn’t exist.', array('name' => $name)));
+		}
+	}
+
+	/**
+	 * Checks for a value in GET and POST.
+	 *
+	 * @param string $name
+	 * @param null   $defaultValue
+	 * @return mixed|null
+	 */
+	public function getParam($name, $defaultValue = null)
+	{
+		if (($value = $this->getQuery($name)) !== null)
+		{
+			return $value;
+		}
+		else if (($value = $this->getPost($name)) !== null)
+		{
+			return $value;
+		}
+
+		return $defaultValue;
+	}
+
+	/**
+	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
+	 *
+	 * @param $name
+	 * @throws HttpException
+	 * @return mixed
+	 */
+	public function getRequiredParam($name)
+	{
+		$value = $this->getParam($name);
+
+		if ($value !== null)
+		{
+			return $value;
+		}
+		else
+		{
+			throw new HttpException(400, Craft::t('Param “{name}” doesn’t exist.', array('name' => $name)));
 		}
 	}
 
@@ -467,7 +495,7 @@ class HttpRequestService extends \CHttpRequest
 
 		$content = mb_substr($content, $contentStart, $length);
 
-		if($terminate)
+		if ($terminate)
 		{
 			// clean up the application first because the file downloading could take long time
 			// which may cause timeout of some resources (such as DB connection)
@@ -598,15 +626,15 @@ class HttpRequestService extends \CHttpRequest
 			{
 				$this->_ipAddress = $_SERVER['HTTP_CLIENT_IP'];
 			}
-			elseif (isset($_SERVER['REMOTE_ADDR']))
+			else if (isset($_SERVER['REMOTE_ADDR']))
 			{
 				$this->_ipAddress = $_SERVER['REMOTE_ADDR'];
 			}
-			elseif(isset($_SERVER['HTTP_CLIENT_IP']))
+			else if (isset($_SERVER['HTTP_CLIENT_IP']))
 			{
 				$this->_ipAddress = $_SERVER['HTTP_CLIENT_IP'];
 			}
-			elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+			else if (isset($_SERVER['HTTP_X_FORWARDED_FOR']))
 			{
 				$this->_ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
 			}
@@ -631,72 +659,6 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		return IOHelper::normalizePathSeparators($pathInfo);
-	}
-
-	/**
-	 * Returns the named POST parameter value, or the entire POST array if no name is specified.
-	 * If $name is specified and the POST parameter does not exist, $defaultValue will be returned.
-	 * $name can also represent a nested param using dot syntax, e.g. getPost('fields.body')
-	 *
-	 * @param null $name The POST parameter name or null.  If $name is null, it will return the entire POST array.
-	 * @param null   $defaultValue The default parameter value is $name is not null and the POST parameter does not exist.
-	 * @return mixed|null
-	 */
-	public function getPost($name = null, $defaultValue = null)
-	{
-		// Do they just want the whole array?
-		if (!$name)
-		{
-			return $this->_utf8AllTheThings($_POST);
-		}
-
-		// Looking for a specific value?
-		if (isset($_POST[$name]))
-		{
-			return $this->_utf8AllTheThings($_POST[$name]);
-		}
-
-		// Maybe they're looking for a nested param?
-		if (strpos($name, '.') !== false)
-		{
-			$path = array_filter(explode('.', $name));
-			$param = $_POST;
-
-			foreach ($path as $step)
-			{
-				if (is_array($param) && isset($param[$step]))
-				{
-					$param = $param[$step];
-				}
-				else
-				{
-					return $defaultValue;
-				}
-			}
-
-			return $this->_utf8AllTheThings($param);
-		}
-
-		return $defaultValue;
-	}
-
-	/**
-	 * Returns the named GET parameter value. If the GET parameter does not exist, the second parameter to this method will be returned.
-	 *
-	 * @param string $name the GET parameter name
-	 * @param mixed $defaultValue the default parameter value if the GET parameter does not exist.
-	 * @return mixed the GET parameter value
-	 */
-	public function getQuery($name, $defaultValue = null)
-	{
-		if (isset($_GET[$name]))
-		{
-			return StringHelper::convertToUTF8($_GET[$name]);
-		}
-		else
-		{
-			return $defaultValue;
-		}
 	}
 
 	/**
@@ -824,6 +786,53 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		$this->_checkedRequestType = true;
+	}
+
+	/**
+	 * Returns a param value from GET or POST data.
+	 *
+	 * @access private
+	 * @param string|null $name
+	 * @param mixed       $defaultValue
+	 * @param array       $data
+	 * @return mixed
+	 */
+	private function _getParam($name, $defaultValue, $data)
+	{
+		// Do they just want the whole array?
+		if (!$name)
+		{
+			return $this->_utf8AllTheThings($data);
+		}
+
+		// Looking for a specific value?
+		if (isset($data[$name]))
+		{
+			return $this->_utf8AllTheThings($data[$name]);
+		}
+
+		// Maybe they're looking for a nested param?
+		if (strpos($name, '.') !== false)
+		{
+			$path = array_filter(explode('.', $name));
+			$param = $data;
+
+			foreach ($path as $step)
+			{
+				if (is_array($param) && isset($param[$step]))
+				{
+					$param = $param[$step];
+				}
+				else
+				{
+					return $defaultValue;
+				}
+			}
+
+			return $this->_utf8AllTheThings($param);
+		}
+
+		return $defaultValue;
 	}
 
 	/**

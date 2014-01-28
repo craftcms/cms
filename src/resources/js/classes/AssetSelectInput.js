@@ -14,43 +14,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 	{
 		this.base(id, name, elementType, sources, criteria, sourceElementId, limit, storageKey);
 		this.fieldId = fieldId;
-		this._attachHUDEvents();
 		this._attachDragEvents();
-	},
-
-	selectElements: function (elements)
-	{
-		console.log(elements);
-		this.base(elements);
-		this._attachHUDEvents();
-	},
-
-	onHide: function ()
-	{
-		console.log('canceling, sir');
-	},
-
-	_attachHUDEvents: function ()
-	{
-		this.removeListener(this.$elements, 'dlbclick');
-		this.addListener(this.$elements, 'dblclick', $.proxy(this, '_editProperties'));
-	},
-
-	_editProperties: function (event)
-	{
-		var $target = $(event.currentTarget);
-		if (!$target.data('ElementEditor'))
-		{
-			var settings = {
-				elementId: $target.attr('data-id'),
-				$trigger: $target,
-				loadContentAction: 'assets/editFileContent',
-				saveContentAction: 'assets/saveFileContent'
-			};
-			$target.data('ElementEditor', new Craft.ElementEditor(settings));
-		}
-
-		$target.data('ElementEditor').show();
 	},
 
 	_attachDragEvents: function ()

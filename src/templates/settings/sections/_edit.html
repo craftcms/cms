@@ -23,7 +23,7 @@
 
 {% macro urlFormatInput(sectionType, brandNewSection, section) %}
 	{% if craft.hasPackage('Localize') or sectionType == 'structure' %}
-		<table class="data">
+		<table class="data fullwidth">
 			{% if sectionType == 'structure' %}
 				<thead>
 					{% if craft.hasPackage('Localize') %}
@@ -35,7 +35,7 @@
 			{% endif %}
 			<tbody>
 				{% for locale in craft.i18n.getSiteLocales() %}
-					<tr class="urlFormatRow-{{ locale.id }}{% if craft.hasPackage('Localize') and not brandNewSection and section.locales[locale.id] is not defined %} hidden{% endif %}">
+					<tr class="for-locale-{{ locale.id }}{% if craft.hasPackage('Localize') and not brandNewSection and section.locales[locale.id] is not defined %} hidden{% endif %}">
 						{% if craft.hasPackage('Localize') %}
 							<th class="thin nowrap">{{ locale.id }}</th>
 						{% endif %}
@@ -85,7 +85,31 @@
 	}) }}
 {% endmacro %}
 
-{% from _self import urlFormatInput, hasUrlsField, templateField %}
+{% macro anonymousSubmissionsFields(sectionType, section, authorOptions) %}
+	{% from "_includes/forms" import checkboxField, selectField %}
+
+	{{ checkboxField({
+		first: true,
+		label: "Allow anonymous submissions?"|t,
+		id: sectionType~'-allowAnonymousSubmissions',
+		name: 'types['~sectionType~'][allowAnonymousSubmissions]',
+		checked: (section.defaultAuthorId is not empty),
+		toggle: sectionType~'-default-author-setting'
+	}) }}
+
+	<div id="{{ sectionType }}-default-author-setting"{% if not section.defaultAuthorId %} class="hidden"{% endif %}>
+		{{ selectField({
+			label: "Default Author"|t,
+			instructions: "Choose the default author that anonymously-submitted entries should be assigned to."|t,
+			id: sectionType~'-defaultAuthor',
+			name: 'types['~sectionType~'][defaultAuthor]',
+			options: authorOptions,
+			value: section.defaultAuthorId
+		}) }}
+	</div>
+{% endmacro %}
+
+{% from _self import urlFormatInput, hasUrlsField, templateField, anonymousSubmissionsFields %}
 
 
 {% set content %}
@@ -120,26 +144,46 @@
 
 		{% if craft.hasPackage('Localize') %}
 			{% set localesInput %}
-				{% for locale in craft.i18n.getSiteLocales() %}
-					<div>
-						{{ forms.checkbox({
-							label: locale.name~' ('~locale.id~')',
-							name: 'locales[]',
-							value: locale.id,
-							checked: (brandNewSection or section.locales[locale.id] is defined),
-							toggle: '.urlFormatRow-'~locale.id
-						}) }}
-					</div>
-				{% endfor %}
+				<table class="data" style="width: auto;">
+					<thead>
+						<tr>
+							<td></td>
+							<th scope="col">{{ "Locale"|t }}</th>
+							<th scope="col">{{ "Default Status"|t }}</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for locale in craft.i18n.getSiteLocales() %}
+							{% set localeSelected = (brandNewSection or section.locales[locale.id] is defined) %}
+							<tr>
+								<td>
+									{{ forms.checkbox({
+										id: 'locale-'~locale.id,
+										name: 'locales[]',
+										value: locale.id,
+										checked: localeSelected,
+										toggle: '.for-locale-'~locale.id
+									}) }}
+								</td>
+								<td><label for="locale-{{ locale.id }}">{{ locale.name }} ({{ locale.id }})</label></td>
+								<td class="centeralign">
+									<div class="for-locale-{{ locale.id }}{% if not localeSelected %} hidden{% endif %}">
+										{{ forms.lightswitch({
+											name: 'defaultLocaleStatuses['~locale.id~']',
+											on:   (brandNewSection or not section.locales[locale.id] is defined or section.locales[locale.id].enabledByDefault)
+										}) }}
+									</div>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
 			{% endset %}
 
 			{{ forms.field({
-				label: "Locales"|t,
-				instructions: "Which locales should this section be enabled in?"|t
+				label: "Which locales should entries in this section target?"|t
 			}, localesInput) }}
 		{% endif %}
-
-		<hr>
 
 		{{ forms.selectField({
 			label: "Section Type"|t,
@@ -153,6 +197,8 @@
 			errors: section.getErrors('type')
 		}) }}
 
+		<hr>
+
 		{% if canBeSingle %}
 			<div id="type-single"{% if section.type != 'single' %} class="hidden"{% endif %}>
 
@@ -164,7 +210,7 @@
 						checked: section.isHomepage(),
 						toggle: 'single-uri-container',
 						reverseToggle: true
-					})}}
+					}) }}
 				{% endif %}
 
 				<div id="single-uri-container"{% if section.isHomepage() %} class="hidden"{% endif %}>
@@ -181,21 +227,27 @@
 			</div>
 		{% endif %}
 
+		{% set urlFormatParams = {
+			label: "Entry URL Format"|t,
+			instructions: "What the entry URLs should look like. You can include tags that output entry properties, such as {ex1} or {ex2}."|t({ ex1: '<code>{slug}</code>', ex2: '<code>{postDate|date("Y")}</code>' }),
+			required: true,
+			errors: section.getErrors('urlFormat')
+		} %}
+
 		{% if canBeChannel %}
 			<div id="type-channel"{% if section.type != 'channel' %} class="hidden"{% endif %}>
 
 				{{ hasUrlsField('channel', section) }}
 
 				<div id="channel-url-settings" class="nested-fields{% if not section.hasUrls %} hidden{% endif %}">
-					{{ forms.field({
-						label: "Entry URL Format"|t,
-						instructions: "What the entry URLs should look like. <code>{slug}</code> is required, but it can also include any entry properties, e.g. <code>{postDate.year}</code>."|t,
-						required: true,
-						errors: section.getErrors('urlFormat')
-					}, urlFormatInput('channel', brandNewSection, section)) }}
+					{{ forms.field(urlFormatParams, urlFormatInput('channel', brandNewSection, section)) }}
 
 					{{ templateField('channel', section) }}
 				</div>
+
+				<hr>
+
+				{{ anonymousSubmissionsFields('channel', section, authorOptions) }}
 
 			</div>
 		{% endif %}
@@ -206,12 +258,7 @@
 				{{ hasUrlsField('structure', section) }}
 
 				<div id="structure-url-settings" class="nested-fields{% if not section.hasUrls %} hidden{% endif %}">
-					{{ forms.field({
-						label: "Entry URL Formats"|t,
-						instructions: "What the entry URLs should look like. <code>{slug}</code> is required, but it can also include any entry properties, e.g. <code>{postDate.year}</code>."|t,
-						required: true,
-						errors: section.getErrors('urlFormat')
-					}, urlFormatInput('structure', brandNewSection, section)) }}
+					{{ forms.field(urlFormatParams, urlFormatInput('structure', brandNewSection, section)) }}
 
 					{{ templateField('structure', section) }}
 				</div>
@@ -225,6 +272,10 @@
 					size: 5,
 					errors: section.getErrors('maxLevels')
 				}) }}
+
+				<hr>
+
+				{{ anonymousSubmissionsFields('structure', section, authorOptions) }}
 
 			</div>
 		{% endif %}

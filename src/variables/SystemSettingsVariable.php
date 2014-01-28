@@ -27,17 +27,4 @@ class SystemSettingsVariable
 	{
 		return craft()->systemSettings->getSettings($category);
 	}
-
-	/**
-	 * Returns an individual system setting.
-	 *
-	 * @param string $category
-	 * @param string $key
-	 * @param mixed $default
-	 * @return mixed
-	 */
-	public function getSetting($category, $key, $default = null)
-	{
-		return craft()->systemSettings->getSetting($category, $key, $default);
-	}
 }

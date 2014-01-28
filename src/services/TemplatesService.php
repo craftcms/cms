@@ -955,7 +955,16 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= ' hasicon';
 		}
 
-		$html .= '" data-status="'.$context['element']->getStatus().'" data-label="'.$context['element'].'" data-id="'.$context['element']->id.'" data-url="'.$context['element']->getUrl().'">';
+		$html .= '" data-id="'.$context['element']->id.'" data-locale="'.$context['element']->locale.'" data-status="'.$context['element']->getStatus().'" data-label="'.$context['element'].'" data-url="'.$context['element']->getUrl().'"';
+
+		$isEditable = ElementHelper::isElementEditable($context['element']);
+
+		if ($isEditable)
+		{
+			$html .= ' data-editable="1"';
+		}
+
+		$html .= '>';
 
 		if ($context['context'] == 'field' && isset($context['name']))
 		{
@@ -976,8 +985,10 @@ class TemplatesService extends BaseApplicationComponent
 
 		if (isset($context['elementType']) && $context['elementType']->hasStatuses())
 		{
-			$html .= '<div class="status '.$context['element']->getStatus().'"></div> ';
+			$html .= '<span class="status '.$context['element']->getStatus().'"></span>';
 		}
+
+		$html .= '<span class="title">';
 
 		if ($context['context'] == 'index' && ($cpEditUrl = $context['element']->getCpEditUrl()))
 		{
@@ -988,7 +999,7 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= $context['element'];
 		}
 
-		$html .= '</div></div>';
+		$html .= '</span></div></div>';
 
 		return $html;
 	}

@@ -31,7 +31,7 @@ Craft.RecentEntriesWidget = Garnish.Base.extend({
 		if (!this.hasEntries)
 		{
 			// Create the table first
-			var $table = $('<table class="data"/>').prependTo(this.$container);
+			var $table = $('<table class="data fullwidth"/>').prependTo(this.$container);
 			this.$tbody = $('<tbody/>').appendTo($table);
 		}
 

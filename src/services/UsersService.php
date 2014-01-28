@@ -99,94 +99,6 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Finds users.
-	 *
-	 * @param UserCriteria|null $criteria
-	 * @return array
-	 */
-	public function findUsers(UserCriteria $criteria = null)
-	{
-		if (!$criteria)
-		{
-			$criteria = new UserCriteria();
-		}
-
-		$query = craft()->db->createCommand()
-			->select('u.*')
-			->from('users u');
-
-		$this->_applyUserConditions($query, $criteria);
-
-		if ($criteria->order)
-		{
-			$query->order($criteria->order);
-		}
-
-		if ($criteria->offset)
-		{
-			$query->offset($criteria->offset);
-		}
-
-		if ($criteria->limit)
-		{
-			$query->limit($criteria->limit);
-		}
-
-		$result = $query->queryAll();
-		return UserModel::populateModels($result, $criteria->indexBy);
-	}
-
-	/**
-	 * Finds a user.
-	 *
-	 * @param UserCriteria|null $criteria
-	 * @return array
-	 */
-	public function findUser(UserCriteria $criteria = null)
-	{
-		if (!$criteria)
-		{
-			$criteria = new UserCriteria();
-		}
-
-		$query = craft()->db->createCommand()
-			->select('u.*')
-			->from('users u');
-
-		$this->_applyUserConditions($query, $criteria);
-
-		$result = $query->queryRow();
-
-		if ($result)
-		{
-			return UserModel::populateModel($result);
-		}
-	}
-
-	/**
-	 * Gets the total number of users.
-	 *
-	 * @param array $criteria
-	 * @return int
-	 * @return int
-	 */
-	public function getTotalUsers($criteria = array())
-	{
-		if (!$criteria)
-		{
-			$criteria = new UserCriteria();
-		}
-
-		$query = craft()->db->createCommand()
-			->select('count(u.id)')
-			->from('users u');
-
-		$this->_applyUserConditions($query, $criteria);
-
-		return (int)$query->queryScalar();
-	}
-
-	/**
 	 * Saves a user, or registers a new one.
 	 *
 	 * @param  UserModel $user
@@ -217,11 +129,13 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->username              = $user->username;
 		$userRecord->firstName             = $user->firstName;
 		$userRecord->lastName              = $user->lastName;
+		$userRecord->photo                 = $user->photo;
 		$userRecord->email                 = $user->email;
 		$userRecord->admin                 = $user->admin;
 		$userRecord->passwordResetRequired = $user->passwordResetRequired;
 		$userRecord->preferredLocale       = $user->preferredLocale;
 		$userRecord->status                = $user->status;
+		$userRecord->unverifiedEmail       = $user->unverifiedEmail;
 
 		$userRecord->validate();
 		$user->addErrors($userRecord->getErrors());
@@ -246,10 +160,16 @@ class UsersService extends BaseApplicationComponent
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
-				if ($user->verificationRequired)
+				// If we're going through account verification, in whatever form
+				if ($user->unverifiedEmail)
 				{
-					$userRecord->status = $user->status = UserStatus::Pending;
 					$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
+				}
+
+				// Set a default status of pending, if one wasn't supplied.
+				if (!$user->status)
+				{
+					$user->status = UserStatus::Pending;
 				}
 
 				// Fire an 'onBeforeSaveUser' event
@@ -268,11 +188,24 @@ class UsersService extends BaseApplicationComponent
 
 					$userRecord->save(false);
 
-					if ($isNewUser && $user->verificationRequired)
+					if ($user->unverifiedEmail)
 					{
-						craft()->email->sendEmailByKey($user, 'account_activation', array(
-							'link' => new \Twig_Markup(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
-						));
+						// Temporarily set the unverified email on the UserModel so the verification email goes to the right place
+						$originalEmail = $user->email;
+						$user->email = $user->unverifiedEmail;
+
+						try
+						{
+							craft()->email->sendEmailByKey($user, 'account_activation', array(
+								'link' => new \Twig_Markup(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+							));
+						}
+						catch (\phpmailerException $e)
+						{
+							craft()->userSession->setError(Craft::t('User saved, but couldn’t send verification email. Check your email settings.'));
+						}
+
+						$user->email = $originalEmail;
 					}
 
 					if (!$isNewUser)
@@ -371,16 +304,13 @@ class UsersService extends BaseApplicationComponent
 	/**
 	 * Crop and save a user's photo by coordinates for a given user model.
 	 *
-	 * @param $source
-	 * @param $x1
-	 * @param $x2
-	 * @param $y1
-	 * @param $y2
+	 * @param $fileName
+	 * @param Image $image
 	 * @param UserModel $user
 	 * @return bool
 	 * @throws \Exception
 	 */
-	public function cropAndSaveUserPhoto($source, $x1, $x2, $y1, $y2, UserModel $user)
+	public function saveUserPhoto($fileName, Image $image, UserModel $user)
 	{
 		$userPhotoFolder = craft()->path->getUserPhotosPath().$user->username.'/';
 		$targetFolder = $userPhotoFolder.'original/';
@@ -388,22 +318,18 @@ class UsersService extends BaseApplicationComponent
 		IOHelper::ensureFolderExists($userPhotoFolder);
 		IOHelper::ensureFolderExists($targetFolder);
 
-		$filename = IOHelper::getFileName($source);
-		$targetPath = $targetFolder . $filename;
+		$targetPath = $targetFolder . $fileName;
 
-
-		$image = craft()->images->loadImage($source);
-		$image->crop($x1, $x2, $y1, $y2);
 		$result = $image->saveAs($targetPath);
 
 		if ($result)
 		{
 			IOHelper::changePermissions($targetPath, IOHelper::getWritableFilePermissions());
 			$record = UserRecord::model()->findById($user->id);
-			$record->photo = $filename;
+			$record->photo = $fileName;
 			$record->save();
 
-			$user->photo = $filename;
+			$user->photo = $fileName;
 
 			return true;
 		}
@@ -425,6 +351,11 @@ class UsersService extends BaseApplicationComponent
 		{
 			IOHelper::deleteFolder($folder);
 		}
+
+		$record = UserRecord::model()->findById($user->id);
+		$record->photo = null;
+		$user->photo = null;
+		$record->save();
 	}
 
 	/**
@@ -548,6 +479,13 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->verificationCode = null;
 		$userRecord->verificationCodeIssuedDate = null;
 		$userRecord->lockoutDate = null;
+
+		// If they have an unverified email address, now is the time to set it to their primary email address
+		if ($user->unverifiedEmail)
+		{
+			$userRecord->email = $user->unverifiedEmail;
+			$userRecord->unverifiedEmail = null;
+		}
 
 		return $userRecord->save();
 	}
@@ -844,82 +782,6 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Applies WHERE conditions to a DbCommand query for users.
-	 *
-	 * @access private
-	 * @param  DbCommand $query
-	 * @param            $criteria
-	 * @return void
-	 */
-	private function _applyUserConditions($query, $criteria)
-	{
-		$whereConditions = array();
-		$whereParams = array();
-
-		if ($criteria->id)
-		{
-			$whereConditions[] = DbHelper::parseParam('u.id', $criteria->id, $whereParams);
-		}
-
-		if ($criteria->groupId || $criteria->group)
-		{
-			$query->join('usergroups_users gu', 'gu.userId = u.id');
-
-			if ($criteria->groupId)
-			{
-				$whereConditions[] = DbHelper::parseParam('gu.groupId', $criteria->groupId, $whereParams);
-			}
-
-			if ($criteria->group)
-			{
-				$query->join('usergroups g', 'g.id = gu.groupId');
-				$whereConditions[] = DbHelper::parseParam('g.handle', $criteria->group, $whereParams);
-			}
-		}
-
-		if ($criteria->username)
-		{
-			$whereConditions[] = DbHelper::parseParam('u.username', $criteria->username, $whereParams);
-		}
-
-		if ($criteria->firstName)
-		{
-			$whereConditions[] = DbHelper::parseParam('u.firstName', $criteria->firstName, $whereParams);
-		}
-
-		if ($criteria->lastName)
-		{
-			$whereConditions[] = DbHelper::parseParam('u.lastName', $criteria->lastName, $whereParams);
-		}
-
-		if ($criteria->email)
-		{
-			$whereConditions[] = DbHelper::parseParam('u.email', $criteria->email, $whereParams);
-		}
-
-		if ($criteria->admin)
-		{
-			$whereConditions[] = DbHelper::parseParam('u.admin', 1, $whereParams);
-		}
-
-		if ($criteria->status)
-		{
-			$whereConditions[] = DbHelper::parseParam('u.status', $criteria->status, $whereParams);
-		}
-
-		if ($criteria->lastLoginDate)
-		{
-			$whereConditions[] = DbHelper::parseParam('u.lastLoginDate', $criteria->lastLoginDate, $whereParams);
-		}
-
-		if ($whereConditions)
-		{
-			array_unshift($whereConditions, 'and');
-			$query->where($whereConditions, $whereParams);
-		}
-	}
-
-	/**
 	 * Sets a user record up for a new verification code without saving it.
 	 *
 	 * @access private
@@ -976,6 +838,7 @@ class UsersService extends BaseApplicationComponent
 
 			$userRecord->password = $user->password = $hash;
 			$userRecord->status = $user->status = UserStatus::Active;
+
 			$userRecord->invalidLoginWindowStart = null;
 			$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
 			$userRecord->verificationCode = null;
@@ -996,7 +859,7 @@ class UsersService extends BaseApplicationComponent
 		else
 		{
 			// If it's a new user AND we allow public registration, set it on the 'password' field and not 'newpassword'.
-			if (!$user->id && craft()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
+			if (!$user->id && craft()->systemSettings->getSetting('users', 'allowPublicRegistration'))
 			{
 				$user->addErrors(array(
 					'password' => $passwordModel->getErrors('password')

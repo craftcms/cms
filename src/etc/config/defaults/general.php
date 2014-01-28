@@ -36,6 +36,11 @@ return array(
 'activateAccountSuccessPath' => '',
 
 /**
+ * Whether or not to allow auto-updating in Craft. Does not affect manual updates.
+ */
+'allowAutoUpdates' => true,
+
+/**
  * A list of file extensions that Craft will allow when a user is uploading files.
  */
 'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,mid,mov,mp3,mp4,m4a,m4v,mpc,mpeg,mpg,ods,odt,ogg,pdf,png,ppt,pptx,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,svg,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vsd,wav,webm,wma,wmv,xls,xlsx,zip',
@@ -195,6 +200,11 @@ return array(
  * The maximum amount of memory Craft will try to reserve during memory intensive operations such as zipping, unzipping and updating.
  */
 'phpMaxMemoryLimit' => '256M',
+
+/**
+ * The template path segment prefix that should be used to identify "private" templates -- templates that aren't directly accessible via a matching URL.
+ */
+'privateTemplateTrigger' => '_',
 
 /**
  * The amount of time Craft will remember a username and pre-populate it on the CP login page.

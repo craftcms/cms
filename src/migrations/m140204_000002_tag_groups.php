@@ -13,6 +13,8 @@ class m140204_000002_tag_groups extends BaseMigration
 	 */
 	public function safeUp()
 	{
+		MigrationHelper::refresh();
+
 		if (craft()->db->tableExists('tagsets'))
 		{
 			Craft::log('Renaming the tagsets table to taggroups.', LogLevel::Info, true);

@@ -37,6 +37,16 @@ class AssetElementType extends BaseElementType
 	}
 
 	/**
+	 * Returns whether this element type stores data on a per-locale basis.
+	 *
+	 * @return bool
+	 */
+	public function isLocalized()
+	{
+		return true;
+	}
+
+	/**
 	 * Returns this element type's sources.
 	 *
 	 * @param string|null $context
@@ -229,6 +239,32 @@ class AssetElementType extends BaseElementType
 	public function populateElementModel($row)
 	{
 		return AssetFileModel::populateModel($row);
+	}
+
+	/**
+	 * Returns the HTML for an editor HUD for the given element.
+	 *
+	 * @param BaseElementModel $element
+	 * @return string
+	 */
+	public function getEditorHtml(BaseElementModel $element)
+	{
+		$html = craft()->templates->renderMacro('_includes/forms', 'textField', array(
+			array(
+				'label'     => Craft::t('Title'),
+				'id'        => 'title',
+				'name'      => 'title',
+				'value'     => $element->title,
+				'errors'    => $element->getErrors('title'),
+				'first'     => true,
+				'autofocus' => true,
+				'required'  => true
+			)
+		));
+
+		$html .= parent::getEditorHtml($element);
+
+		return $html;
 	}
 
 	/**

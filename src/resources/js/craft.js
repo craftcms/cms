@@ -767,12 +767,14 @@ $.extend(Craft, {
 	 */
 	initUiElements: function($container)
 	{
+		$('.grid', $container).grid();
 		$('.checkbox-select', $container).checkboxselect();
 		$('.fieldtoggle', $container).fieldtoggle();
 		$('.lightswitch', $container).lightswitch();
 		$('.nicetext', $container).nicetext();
 		$('.pill', $container).pill();
 		$('.menubtn', $container).menubtn();
+		$('.pane.has-sidebar', $container).sidebarpane();
 	},
 
 	_elementIndexClasses: {},
@@ -958,6 +960,28 @@ $.extend($.fn, {
 	},
 
 	/**
+	 * Sets the element as the container of a grid.
+	 */
+	grid: function()
+	{
+		return this.each(function()
+		{
+			var $container = $(this),
+				settings = {};
+
+			if ($container.data('item-selector'))     settings.itemSelector = $container.data('item-selector');
+			if ($container.data('cols'))              settings.cols = parseInt($container.data('cols'));
+			if ($container.data('min-col-width'))     settings.minColWidth = parseInt($container.data('min-col-width'));
+			if ($container.data('percentage-widths')) settings.percentageWidths = !!$container.data('percentage-widths');
+			if ($container.data('fill-mode'))         settings.fillMode = $container.data('fill-mode');
+			if ($container.data('col-class'))         settings.colClass = $container.data('col-class');
+			if ($container.data('snap-to-grid'))      settings.snapToGrid = !!$container.data('snap-to-grid');
+
+			new Craft.Grid(this, settings);
+		});
+	},
+
+	/**
 	 * Sets the element as a container for a checkbox select.
 	 */
 	checkboxselect: function()
@@ -1051,6 +1075,14 @@ $.extend($.fn, {
 			{
 				new Garnish.MenuBtn($btn);
 			}
+		});
+	},
+
+	sidebarpane: function()
+	{
+		return this.each(function()
+		{
+			new Craft.SidebarPane(this);
 		});
 	}
 });

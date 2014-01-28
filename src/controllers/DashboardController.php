@@ -16,13 +16,7 @@ class DashboardController extends BaseController
 		$widget = new WidgetModel();
 		$widget->id = craft()->request->getPost('widgetId');
 		$widget->type = craft()->request->getRequiredPost('type');
-
-		$typeSettings = craft()->request->getPost('types');
-
-		if (isset($typeSettings[$widget->type]))
-		{
-			$widget->settings = $typeSettings[$widget->type];
-		}
+		$widget->settings = craft()->request->getPost('types.'.$widget->type);
 
 		// Did it save?
 		if (craft()->dashboard->saveUserWidget($widget))

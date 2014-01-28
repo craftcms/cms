@@ -37,6 +37,22 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
+	 * Returns all of the possible statuses that elements of this type may have.
+	 *
+	 * @return array|null
+	 */
+	public function getStatuses()
+	{
+		return array(
+			UserStatus::Active    => Craft::t('Active'),
+			UserStatus::Pending   => Craft::t('Pending'),
+			UserStatus::Locked    => Craft::t('Locked'),
+			UserStatus::Suspended => Craft::t('Suspended'),
+			UserStatus::Archived  => Craft::t('Archived')
+		);
+	}
+
+	/**
 	 * Returns this element type's sources.
 	 *
 	 * @param string|null $context
@@ -166,6 +182,18 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
+	 * Returns the element query condition for a custom status criteria.
+	 *
+	 * @param DbCommand $query
+	 * @param string $status
+	 * @return string|false
+	 */
+	public function getElementQueryStatusCondition(DbCommand $query, $status)
+	{
+		return 'users.status = "'.$status.'"';
+	}
+
+	/**
 	 * Modifies an element query targeting elements of this type.
 	 *
 	 * @param DbCommand $query
@@ -237,11 +265,6 @@ class UserElementType extends BaseElementType
 		if ($criteria->preferredLocale)
 		{
 			$query->andWhere(DbHelper::parseParam('users.preferredLocale', $criteria->preferredLocale, $query->params));
-		}
-
-		if ($criteria->status)
-		{
-			$query->andWhere(DbHelper::parseParam('users.status', $criteria->status, $query->params));
 		}
 	}
 

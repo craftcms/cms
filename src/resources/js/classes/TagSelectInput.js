@@ -9,7 +9,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 	sourceElementId: null,
 	elementSort: null,
 	searchTimeout: null,
-	menu: null,
+	searchMenu: null,
 
 	$container: null,
 	$elementsContainer: null,
@@ -17,7 +17,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 	$addTagInput: null,
 	$spinner: null,
 
-	init: function(id, name, tagGroupId, sourceElementId, hasFields)
+	init: function(id, name, tagGroupId, sourceElementId)
 	{
 		this.id = id;
 		this.name = name;
@@ -91,11 +91,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 				}
 			}, this), 1);
 		});
-
-		if (hasFields)
-		{
-			this._attachHUDEvents();
-		}
 	},
 
 	searchForTags: function()
@@ -134,8 +129,8 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 				excludeIds: excludeIds
 			};
 
-			Craft.postActionRequest('tags/searchForTags', data, $.proxy(function(response, textStatus) {
-
+			Craft.postActionRequest('tags/searchForTags', data, $.proxy(function(response, textStatus)
+			{
 				this.$spinner.addClass('hidden');
 
 				if (textStatus == 'success')
@@ -146,13 +141,13 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 					if (!response.exactMatch)
 					{
 						var $li = $('<li/>').appendTo($ul);
-						$('<a class="hover"/>').appendTo($li).text(data.search);
+						$('<a class="hover" data-icon="+"/>').appendTo($li).text(data.search);
 					}
 
 					for (var i = 0; i < response.tags.length; i++)
 					{
 						var $li = $('<li/>').appendTo($ul),
-							$a = $('<a/>').appendTo($li).text(response.tags[i].name).data('id', response.tags[i].id);
+							$a = $('<a data-icon="tag"/>').appendTo($li).text(response.tags[i].name).data('id', response.tags[i].id);
 
 						if (response.exactMatch && i == 0)
 						{
@@ -178,23 +173,15 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 
 	selectTag: function(option)
 	{
-		var $option = $(option);
+		var $option = $(option),
+			id = $option.data('id'),
+			name = $option.text();
 
-		var $element = $('<div class="element removable"/>').appendTo(this.$elementsContainer),
-			$input = $('<input type="hidden" name="'+this.name+'[]"/>').appendTo($element)
-
-		if ($option.data('id'))
-		{
-			$element.data('id', $option.data('id'));
-			$input.val($option.data('id'));
-		}
-		else
-		{
-			$input.val('new:'+$option.text());
-		}
+		var $element = $('<div class="element removable" data-id="'+id+'" data-editable="1"/>').appendTo(this.$elementsContainer),
+			$input = $('<input type="hidden" name="'+this.name+'[]" value="'+id+'"/>').appendTo($element)
 
 		$('<a class="delete icon" title="'+Craft.t('Remove')+'"></a>').appendTo($element);
-		$('<span class="label">'+$option.text()+'</span>').appendTo($element);
+		$('<span class="label">'+name+'</span>').appendTo($element);
 
 		var margin = -($element.outerWidth()+10);
 		this.$addTagInput.css('margin-left', margin+'px');
@@ -210,6 +197,38 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 		this.killSearchMenu();
 		this.$addTagInput.val('');
 		this.$addTagInput.focus();
+
+		if (!id)
+		{
+			// We need to create the tag first
+			$element.addClass('loading disabled');
+
+			var data = {
+				groupId: this.tagGroupId,
+				name: name
+			};
+
+			Craft.postActionRequest('tags/createTag', data, $.proxy(function(response, textStatus)
+			{
+				if (textStatus == 'success' && response.success)
+				{
+					$element.attr('data-id', response.id);
+					$input.val(response.id);
+
+					$element.removeClass('loading disabled');
+				}
+				else
+				{
+					this.removeElement($element);
+
+					if (textStatus == 'success')
+					{
+						// Some sort of validation error that still resulted in  a 200 response. Shouldn't be possible though.
+						Craft.cp.displayError(Craft.t('An unknown error occurred.'));
+					}
+				}
+			}, this));
+		}
 	},
 
 	killSearchMenu: function()
@@ -217,29 +236,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 		this.searchMenu.hide();
 		this.searchMenu.destroy();
 		this.searchMenu = null;
-	},
-
-	_attachHUDEvents: function ()
-	{
-		this.removeListener(this.$elements, 'dlbclick');
-		this.addListener(this.$elements, 'dblclick', $.proxy(this, '_editProperties'));
-	},
-
-	_editProperties: function (event)
-	{
-		var $target = $(event.currentTarget);
-		if (!$target.data('ElementEditor'))
-		{
-			var settings = {
-				elementId: $target.attr('data-id'),
-				$trigger: $target,
-				loadContentAction: 'tags/editTagContent',
-				saveContentAction: 'tags/saveTagContent'
-			};
-			$target.data('ElementEditor', new Craft.ElementEditor(settings));
-		}
-
-		$target.data('ElementEditor').show();
 	}
 
 });

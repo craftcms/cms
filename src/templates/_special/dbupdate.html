@@ -1,7 +1,7 @@
 {% extends "_layouts/message" %}
 {% set title = "Update @@@appName@@@"|t %}
 
-{% set content %}
+{% block message %}
 	{% set handle = craft.updates.getManualUpdateHandle() %}
 
 	{% if handle is null %}
@@ -16,4 +16,4 @@
 		<a class="btn submit" href="{{ url('manualupdate/' ~ handle|lower) }}">{{ "Finish up"|t }}</a>
 	</div>
 
-{% endset %}
+{% endblock %}

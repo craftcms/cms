@@ -2,26 +2,7 @@
 
 @import "shared";
 
-#main { padding: 0; max-width: 1051px; -webkit-box-shadow: none; box-shadow: none; background: none; }
-
-.widget { overflow: hidden;
-	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
-	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
-}
-
 .widget.quickpost { overflow: visible; }
-
-/* dashboard */
-.widgets { position: relative; }
-.widgets #widgets { margin: 0; }
-.widgets .col .col-inner { margin: 0; }
-.widgets .col:not(:first-child) .col-inner { margin-left: 5px; }
-.widgets .col:not(:last-child) .col-inner { margin-right: 5px; }
-
-.widget { display: none; padding: 30px; background: #fff; }
-
-.widget:not(:last-child) { margin-bottom: 10px; }
-.col .widget { display: block; }
 
 .widget .spinner.body-loading { display: none; }
 .widget.loading .spinner.body-loading { display: block; float: right; margin-left: 10px; }

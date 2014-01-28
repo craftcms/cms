@@ -240,6 +240,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function uploadFile($folder)
 	{
+		$this->checkPermissions('uploadToAssetSource');
+
 		// Upload the file and drop it in the temporary folder
 		$file = $_FILES['assets-upload'];
 
@@ -358,6 +360,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function transferFileIntoSource($localCopy, AssetFolderModel $folder, AssetFileModel $file, $action)
 	{
+		$this->checkPermissions('uploadToAssetSource');
+
 		$filename = IOHelper::cleanFilename($file->filename);
 
 		if (!empty($action))
@@ -427,6 +431,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			return $response->setSuccess();
 		}
 
+		$this->checkPermissions('uploadToAssetSource');
+		$this->checkPermissions('removeFromAssetSource');
+
 		// If this is a revisited conflict, perform the appropriate actions
 		if (!empty($action))
 		{
@@ -487,7 +494,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	protected function _ensureFolderByFulPath($fullPath)
 	{
 		$parameters = new FolderCriteriaModel(array(
-			'fullPath' => $fullPath,
+			'path' => $fullPath,
 			'sourceId' => $this->model->id
 		));
 
@@ -502,12 +509,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			if (empty($parts))
 			{
 				// Looking for a top level folder, apparently.
-				$parameters->fullPath = "";
+				$parameters->path = "";
 				$parameters->parentId = FolderCriteriaModel::AssetsNoParent;
 			}
 			else
 			{
-				$parameters->fullPath = join('/', $parts) . '/';
+				$parameters->path = join('/', $parts) . '/';
 			}
 
 			// Look up the parent folder
@@ -525,7 +532,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			$folderModel->sourceId = $this->model->id;
 			$folderModel->parentId = $parentId;
 			$folderModel->name = $folderName;
-			$folderModel->fullPath = $fullPath;
+			$folderModel->path = $fullPath;
 
 			return craft()->assets->storeFolder($folderModel);
 		}
@@ -554,7 +561,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		{
 			if (!isset($folderList[$folderModel->id]))
 			{
-				$missingFolders[$folderModel->id] = $this->model->name . '/' . $folderModel->fullPath;
+				$missingFolders[$folderModel->id] = $this->model->name . '/' . $folderModel->path;
 			}
 		}
 
@@ -587,7 +594,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			$parentFolder = craft()->assets->findFolder(array(
 				'sourceId' => $this->model->id,
-				'fullPath' => $searchFullPath,
+				'path' => $searchFullPath,
 				'parentId' => $parentId
 			));
 
@@ -627,6 +634,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function replaceFile(AssetFileModel $oldFile, AssetFileModel $replaceWith)
 	{
+		$this->checkPermissions('uploadToAssetSource');
+		$this->checkPermissions('removeFromAssetSource');
 
 		if ($oldFile->kind == 'image')
 		{
@@ -682,6 +691,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function deleteFile(AssetFileModel $file)
 	{
+		$this->checkPermissions('removeFromAssetSource');
+
 		// Delete all the created images, such as transforms, thumbnails
 		$this->deleteCreatedImages($file);
 		craft()->assetTransforms->deleteTransformRecordsByFileId($file->id);
@@ -721,6 +732,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function createFolder(AssetFolderModel $parentFolder, $folderName)
 	{
+		$this->checkPermissions('createSubfoldersInAssetSource');
+
 		$folderName = IOHelper::cleanFilename($folderName);
 
 		// If folder exists in DB or physically, bail out
@@ -739,7 +752,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$newFolder->sourceId = $parentFolder->sourceId;
 		$newFolder->parentId = $parentFolder->id;
 		$newFolder->name = $folderName;
-		$newFolder->fullPath = $parentFolder->fullPath.$folderName.'/';
+		$newFolder->path = $parentFolder->path.$folderName.'/';
 
 		$folderId = craft()->assets->storeFolder($newFolder);
 
@@ -760,6 +773,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function renameFolder(AssetFolderModel $folder, $newName)
 	{
+		$this->checkPermissions('createSubfoldersInAssetSource');
+		$this->checkPermissions('removeFromAssetSource');
+
 		$parentFolder = craft()->assets->getFolderById($folder->parentId);
 
 		if (!$parentFolder)
@@ -779,20 +795,20 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			throw new Exception(Craft::t("Cannot rename folder “{folder}”!", array('folder' => $folder->name)));
 		}
 
-		$oldFullPath = $folder->fullPath;
-		$newFullPath = $this->_getParentFullPath($folder->fullPath).$newName.'/';
+		$oldFullPath = $folder->path;
+		$newFullPath = $this->_getParentFullPath($folder->path).$newName.'/';
 
 		// Find all folders with affected fullPaths and update them.
 		$folders = craft()->assets->getAllDescendantFolders($folder);
 		foreach ($folders as $folderModel)
 		{
-			$folderModel->fullPath = preg_replace('#^'.$oldFullPath.'#', $newFullPath, $folderModel->fullPath);
+			$folderModel->path = preg_replace('#^'.$oldFullPath.'#', $newFullPath, $folderModel->path);
 			craft()->assets->storeFolder($folderModel);
 		}
 
 		// Now change the affected folder
 		$folder->name = $newName;
-		$folder->fullPath = $newFullPath;
+		$folder->path = $newFullPath;
 		craft()->assets->storeFolder($folder);
 
 		// All set, Scotty!
@@ -808,6 +824,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function moveFolder(AssetFolderModel $folder, AssetFolderModel $newParentFolder, $overwriteTarget = false)
 	{
+		$this->checkPermissions('createSubfoldersInAssetSource');
+
+		$folderSource = craft()->assetSources->getSourceTypeById($folder->sourceId);
+		$folderSource->checkPermissions('removeFromAssetSource');
+
 		$response = new AssetOperationResponseModel();
 		if ($folder->id == $newParentFolder->id)
 		{
@@ -904,6 +925,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function deleteFolder(AssetFolderModel $folder)
 	{
+		$this->checkPermissions('removeFromAssetSource');
+
 		// Get rid of children files
 		$criteria = craft()->elements->getCriteria(ElementType::Asset);
 		$criteria->folderId = $folder->id;
@@ -991,5 +1014,19 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	public function isRemote()
 	{
 		return false;
+	}
+
+	/**
+	 * Checks for specified permissions.
+	 *
+	 * @param $permission
+	 * @throws Exception
+	 */
+	public function checkPermissions($permission)
+	{
+		if (!craft()->userSession->checkPermission($permission.':'.$this->model->id))
+		{
+			throw new Exception(Craft::t("You don't have the required permissions for this operation."));
+		}
 	}
 }
