@@ -647,51 +647,11 @@ class UsersController extends BaseController
 		// Validate and save!
 		if ($user->validate(null, false) && craft()->users->saveUser($user))
 		{
-			// Delete their photo?
-			if (craft()->request->getPost('deleteUserPhoto'))
-			{
-				craft()->users->deleteUserPhoto($user);
-			}
-
-			// Did they upload a new one?
-			if ($userPhoto = \CUploadedFile::getInstanceByName('userPhoto'))
-			{
-				craft()->users->deleteUserPhoto($user);
-				$image = craft()->images->loadImage($userPhoto->getTempName());
-				$imageWidth = $image->getWidth();
-				$imageHeight = $image->getHeight();
-
-				$dimension = min($imageWidth, $imageHeight);
-				$horizontalMargin = ($imageWidth - $dimension) / 2;
-				$verticalMargin = ($imageHeight - $dimension) / 2;
-				$image->crop($horizontalMargin, $imageWidth - $horizontalMargin, $verticalMargin, $imageHeight - $verticalMargin);
-
-				craft()->users->saveUserPhoto($userPhoto->getName(), $image, $user);
-
-				IOHelper::deleteFile($userPhoto->getTempName());
-			}
+			$this->_processUserPhoto($user);
 
 			if ($currentUser)
 			{
-				// Save any user groups
-				if (craft()->hasPackage(CraftPackage::Users) && $currentUser->can('administrateUsers'))
-				{
-					// Save any user groups
-					$groupIds = craft()->request->getPost('groups');
-					craft()->userGroups->assignUserToGroups($user->id, $groupIds);
-
-					// Save any user permissions
-					if ($user->admin)
-					{
-						$permissions = array();
-					}
-					else
-					{
-						$permissions = craft()->request->getPost('permissions');
-					}
-
-					craft()->userPermissions->saveUserPermissions($user->id, $permissions);
-				}
+				$this->_processUserGroupsPermissions($user, $currentUser);
 			}
 
 			if ($thisIsPublicRegistration)
@@ -1143,6 +1103,59 @@ class UsersController extends BaseController
 		if ($defaultGroup)
 		{
 			craft()->userGroups->assignUserToGroups($userId, array($defaultGroup));
+		}
+	}
+
+	/**
+	 * @param $user
+	 */
+	private function _processUserPhoto($user)
+	{
+		// Delete their photo?
+		if (craft()->request->getPost('deleteUserPhoto'))
+		{
+			craft()->users->deleteUserPhoto($user);
+		}
+
+		// Did they upload a new one?
+		if ($userPhoto = \CUploadedFile::getInstanceByName('userPhoto'))
+		{
+			craft()->users->deleteUserPhoto($user);
+			$image = craft()->images->loadImage($userPhoto->getTempName());
+			$imageWidth = $image->getWidth();
+			$imageHeight = $image->getHeight();
+
+			$dimension = min($imageWidth, $imageHeight);
+			$horizontalMargin = ($imageWidth - $dimension) / 2;
+			$verticalMargin = ($imageHeight - $dimension) / 2;
+			$image->crop($horizontalMargin, $imageWidth - $horizontalMargin, $verticalMargin, $imageHeight - $verticalMargin);
+
+			craft()->users->saveUserPhoto($userPhoto->getName(), $image, $user);
+
+			IOHelper::deleteFile($userPhoto->getTempName());
+		}
+	}
+
+	public function _processUserGroupsPermissions($user, $currentUser)
+	{
+		// Save any user groups
+		if (craft()->hasPackage(CraftPackage::Users) && $currentUser->can('administrateUsers'))
+		{
+			// Save any user groups
+			$groupIds = craft()->request->getPost('groups');
+			craft()->userGroups->assignUserToGroups($user->id, $groupIds);
+
+			// Save any user permissions
+			if ($user->admin)
+			{
+				$permissions = array();
+			}
+			else
+			{
+				$permissions = craft()->request->getPost('permissions');
+			}
+
+			craft()->userPermissions->saveUserPermissions($user->id, $permissions);
 		}
 	}
 }
