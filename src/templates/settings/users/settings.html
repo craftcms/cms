@@ -21,6 +21,13 @@
 		<input type="hidden" name="action" value="userSettings/saveUserSettings">
 
 			{{ forms.checkboxField({
+				label: "Verify email addresses?"|t,
+				instructions: "Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)"|t,
+				name: 'requireEmailVerification',
+				checked: (settings.requireEmailVerification is defined ? settings.requireEmailVerification : true),
+			}) }}
+
+			{{ forms.checkboxField({
 				first: true,
 				label: "Allow public registration?"|t,
 				name: 'allowPublicRegistration',
@@ -40,13 +47,6 @@
 					name: 'defaultGroup',
 					options: groups,
 					value: (settings.defaultGroup is defined ? settings.defaultGroup : null)
-				}) }}
-
-				{{ forms.checkboxField({
-					label: "Require Email Verification?"|t,
-					instructions: "If this is checked, all publicly-registered members will be required to verify their account via email."|t,
-					name: 'requireEmailVerification',
-					checked: (settings.requireEmailVerification is defined ? settings.requireEmailVerification : true),
 				}) }}
 			</div>
 
