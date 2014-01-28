@@ -43,11 +43,12 @@ class UserElementType extends BaseElementType
 	 */
 	public function getStatuses()
 	{
-		return array('locked',
-			'suspended' => Craft::t('Suspended'),
-			'pending' => Craft::t('Pending'),
-			'active' => Craft::t('Active'),
-			'archived' => Craft::t('Archived')
+		return array(
+			UserStatus::Active    => Craft::t('Active'),
+			UserStatus::Pending   => Craft::t('Pending'),
+			UserStatus::Locked    => Craft::t('Locked'),
+			UserStatus::Suspended => Craft::t('Suspended'),
+			UserStatus::Archived  => Craft::t('Archived')
 		);
 	}
 
