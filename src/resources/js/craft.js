@@ -907,7 +907,7 @@ $.extend(Craft, {
 
 		info = {
 			id:       $element.data('id'),
-			label:    $element.data('label'),
+			label:    $element.find('.title').text(),
 			status:   $element.data('status'),
 			url:      $element.data('url'),
 			hasThumb: $element.hasClass('hasthumb'),
