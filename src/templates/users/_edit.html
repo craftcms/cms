@@ -209,7 +209,6 @@
 							<hr>
 						{% endif %}
 
-						{% set userFields = craft.systemSettings.userFields %}
 						{% include "_includes/fields" with {
 							fields: craft.fields.getLayoutByType('User').getFields(),
 							element: account
