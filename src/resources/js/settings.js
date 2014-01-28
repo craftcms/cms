@@ -40,9 +40,7 @@ Craft.Tool = Garnish.Base.extend({
 				'</div>');
 
 			this.hud = new Garnish.HUD(this.$trigger, this.$form, {
-				hudClass: 'hud toolhud',
-				triggerSpacing: 10,
-				tipWidth: 30
+				hudClass: 'hud toolhud'
 			});
 
 			Craft.initUiElements(this.$form);
@@ -224,7 +222,7 @@ Craft.Tool = Garnish.Base.extend({
 	{
 		if (!this.$allDone)
 		{
-			this.$allDone = $('<div class="alldone" data-icon="√" />').appendTo(this.hud.$body);
+			this.$allDone = $('<div class="alldone" data-icon="done" />').appendTo(this.hud.$body);
 		}
 
 		this.$allDone.css({

@@ -64,9 +64,9 @@ class UserSettingsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAdmin();
 
+		$settings['requireEmailVerification'] = (bool) craft()->request->getPost('requireEmailVerification');
 		$settings['allowPublicRegistration'] = (bool) craft()->request->getPost('allowPublicRegistration');
 		$settings['defaultGroup'] = craft()->request->getPost('defaultGroup');
-		$settings['requireEmailVerification'] = (bool) craft()->request->getPost('requireEmailVerification');
 
 		if (craft()->systemSettings->saveSettings('users', $settings))
 		{

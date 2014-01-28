@@ -6,7 +6,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 	id: null,
 	name: null,
 	tagGroupId: null,
-	tagGroupHasFields: false,
 	sourceElementId: null,
 	elementSort: null,
 	searchTimeout: null,
@@ -18,12 +17,11 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 	$addTagInput: null,
 	$spinner: null,
 
-	init: function(id, name, tagGroupId, sourceElementId, tagGroupHasFields)
+	init: function(id, name, tagGroupId, sourceElementId)
 	{
 		this.id = id;
 		this.name = name;
 		this.tagGroupId = tagGroupId;
-		this.tagGroupHasFields = tagGroupHasFields;
 		this.sourceElementId = sourceElementId;
 
 		this.$container = $('#'+this.id);
@@ -93,8 +91,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 				}
 			}, this), 1);
 		});
-
-		this._attachHUDEvents(this.$elements);
 	},
 
 	searchForTags: function()
@@ -181,7 +177,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 			id = $option.data('id'),
 			name = $option.text();
 
-		var $element = $('<div class="element removable" data-id="'+id+'"/>').appendTo(this.$elementsContainer),
+		var $element = $('<div class="element removable" data-id="'+id+'" data-editable="1"/>').appendTo(this.$elementsContainer),
 			$input = $('<input type="hidden" name="'+this.name+'[]" value="'+id+'"/>').appendTo($element)
 
 		$('<a class="delete icon" title="'+Craft.t('Remove')+'"></a>').appendTo($element);
@@ -202,11 +198,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 		this.$addTagInput.val('');
 		this.$addTagInput.focus();
 
-		if (id)
-		{
-			this._attachHUDEvents($element);
-		}
-		else
+		if (!id)
 		{
 			// We need to create the tag first
 			$element.addClass('loading disabled');
@@ -220,12 +212,10 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 			{
 				if (textStatus == 'success' && response.success)
 				{
-					$element.removeClass('loading disabled');
-
 					$element.attr('data-id', response.id);
 					$input.val(response.id);
 
-					this._attachHUDEvents($element);
+					$element.removeClass('loading disabled');
 				}
 				else
 				{
@@ -246,32 +236,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 		this.searchMenu.hide();
 		this.searchMenu.destroy();
 		this.searchMenu = null;
-	},
-
-	_attachHUDEvents: function($elements)
-	{
-		if (this.tagGroupHasFields)
-		{
-			this.removeListener($elements, 'dlbclick');
-			this.addListener($elements, 'dblclick', $.proxy(this, '_editProperties'));
-		}
-	},
-
-	_editProperties: function (event)
-	{
-		var $target = $(event.currentTarget);
-		if (!$target.data('ElementEditor'))
-		{
-			var settings = {
-				elementId: $target.attr('data-id'),
-				$trigger: $target,
-				loadContentAction: 'tags/editTagContent',
-				saveContentAction: 'tags/saveTagContent'
-			};
-			$target.data('ElementEditor', new Craft.ElementEditor(settings));
-		}
-
-		$target.data('ElementEditor').show();
 	}
 
 });

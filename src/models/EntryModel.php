@@ -186,6 +186,16 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns whether the current user can edit the element.
+	 *
+	 * @return bool
+	 */
+	public function isEditable()
+	{
+		return craft()->userSession->checkPermission('publishEntries:'.$this->sectionId);
+	}
+
+	/**
 	 * Returns the element's CP edit URL.
 	 *
 	 * @return string|false
@@ -194,7 +204,14 @@ class EntryModel extends BaseElementModel
 	{
 		if ($this->getSection())
 		{
-			return UrlHelper::getCpUrl('entries/'.$this->getSection()->handle.'/'.$this->id);
+			$url = UrlHelper::getCpUrl('entries/'.$this->getSection()->handle.'/'.$this->id);
+
+			if (Craft::hasPackage(CraftPackage::Localize) && $this->locale != craft()->language)
+			{
+				$url .= '/'.$this->locale;
+			}
+
+			return $url;
 		}
 	}
 

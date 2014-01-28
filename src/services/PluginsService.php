@@ -211,7 +211,6 @@ class PluginsService extends BaseApplicationComponent
 			if (!isset($this->_allPlugins))
 			{
 				$this->_allPlugins = array();
-				$paths = array();
 
 				// Find all of the plugins in the plugins folder
 				$pluginsPath = craft()->path->getPluginsPath();
@@ -224,26 +223,27 @@ class PluginsService extends BaseApplicationComponent
 						// Make sure it's actually a folder.
 						if (IOHelper::folderExists($pluginFolderContent))
 						{
-							$paths = array_merge($paths, IOHelper::getFolderContents($pluginFolderContent, false, ".*Plugin\.php"));
-						}
-					}
+							$pluginFolderContent = IOHelper::normalizePathSeparators($pluginFolderContent);
+							$pluginFolderName = mb_strtolower(IOHelper::getFolderName($pluginFolderContent, false));
+							$pluginFilePath = IOHelper::getFolderContents($pluginFolderContent, false, ".*Plugin\.php");
 
-					if (is_array($paths) && count($paths) > 0)
-					{
-						foreach ($paths as $path)
-						{
-							$path = IOHelper::normalizePathSeparators($path);
-							$fileName = IOHelper::getFileName($path, false);
-
-							// Chop off the "Plugin" suffix
-							$handle = mb_substr($fileName, 0, mb_strlen($fileName) - 6);
-
-							$plugin = $this->getPlugin($handle, false);
-
-							if ($plugin)
+							if (is_array($pluginFilePath) && count($pluginFilePath) > 0)
 							{
-								$this->_allPlugins[mb_strtolower($handle)] = $plugin;
-								$names[] = $plugin->getName();
+								$pluginFileName = IOHelper::getFileName($pluginFilePath[0], false);
+
+								// Chop off the "Plugin" suffix
+								$handle = mb_substr($pluginFileName, 0, mb_strlen($pluginFileName) - 6);
+
+								if (mb_strtolower($handle) === mb_strtolower($pluginFolderName))
+								{
+									$plugin = $this->getPlugin($handle, false);
+
+									if ($plugin)
+									{
+										$this->_allPlugins[mb_strtolower($handle)] = $plugin;
+										$names[] = $plugin->getName();
+									}
+								}
 							}
 						}
 					}

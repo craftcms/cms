@@ -2,6 +2,7 @@
 
 {% set elementTypeClass = elementType %}
 {% set elementType = craft.elements.getElementType(elementTypeClass) %}
+{% set context = 'index' %}
 
 {% if not elementType %}
 	{% exit 404 %}
@@ -28,9 +29,9 @@
 
 {% block initJs %}
 	Craft.createElementIndex('{{ elementTypeClass }}', $('#main'), {
-		context:    'index',
+		context:    '{{ context }}',
 		storageKey: 'elementindex.{{ elementTypeClass }}',
-		criteria:   { status: null, localeEnabled: null }
+		criteria:   { localeEnabled: null }
 	});
 {% endblock %}
 

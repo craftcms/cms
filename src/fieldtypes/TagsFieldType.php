@@ -54,7 +54,6 @@ class TagsFieldType extends BaseElementFieldType
 				'elements'        => $criteria,
 				'tagGroupId'      => $this->_getTagGroupId(),
 				'sourceElementId' => (isset($this->element->id) ? $this->element->id : null),
-				'hasFields'       => (bool) $tagGroup->getFieldLayout()->getFields(),
 			));
 		}
 		else

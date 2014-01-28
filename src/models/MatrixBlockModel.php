@@ -55,7 +55,7 @@ class MatrixBlockModel extends BaseElementModel
 		}
 		else
 		{
-			return craft()->i18n->getSiteLocaleIds();
+			return $this->getOwner()->getLocales();
 		}
 	}
 
@@ -93,6 +93,16 @@ class MatrixBlockModel extends BaseElementModel
 		{
 			return $this->_owner;
 		}
+	}
+
+	/**
+	 * Sets the owner
+	 *
+	 * @param BaseElementModel
+	 */
+	public function setOwner(BaseElementModel $owner)
+	{
+		$this->_owner = $owner;
 	}
 
 	/**

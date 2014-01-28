@@ -13,7 +13,7 @@
 
 #packages ul { clear: left; }
 #packages ul li { margin-left: 18px; }
-#packages ul li:before { @include icon; content: '√'; float: left; margin: 3px 0 0 -17px; font-size: 10px; }
+#packages ul li:before { @include icon; content: 'check'; float: left; margin: 3px 0 0 -17px; font-size: 10px; }
 
 #packages .package .buttons { margin: 24px -24px -24px !important; border-radius: 0 0 3px 3px; padding: 11px 15px 15px; border-top: 1px solid $hrcolor; min-height: 31px; background: #fcfcfc; }
 #packages .package .buttons .btn { margin-top: 4px; font-weight: bold; }

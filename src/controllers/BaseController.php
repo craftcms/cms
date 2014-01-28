@@ -84,7 +84,12 @@ abstract class BaseController extends \CController
 					$extension = 'html';
 				}
 
-				HeaderHelper::setContentTypeByExtension($extension);
+				// If Content-Type is set already, presumably the template set it with the {% header %} tag.
+				if (!HeaderHelper::isHeaderSet('Content-Type'))
+				{
+					HeaderHelper::setContentTypeByExtension($extension);
+				}
+
 				HeaderHelper::setHeader(array('charset' => 'utf-8'));
 
 				if ($extension == 'html')

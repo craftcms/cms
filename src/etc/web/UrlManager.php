@@ -385,7 +385,7 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * Returns whether the current path is "public" (no segments that start with underscores).
+	 * Returns whether the current path is "public" (no segments that start with the privateTemplateTrigger).
 	 *
 	 * @access private
 	 * @return bool
@@ -394,9 +394,12 @@ class UrlManager extends \CUrlManager
 	{
 		if (!craft()->request->isAjaxRequest())
 		{
+			$trigger = craft()->config->get('privateTemplateTrigger');
+			$length = strlen($trigger);
+
 			foreach (craft()->request->getSegments() as $requestPathSeg)
 			{
-				if (isset($requestPathSeg[0]) && $requestPathSeg[0] == '_')
+				if (strncmp($requestPathSeg, $trigger, $length) === 0)
 				{
 					return false;
 				}

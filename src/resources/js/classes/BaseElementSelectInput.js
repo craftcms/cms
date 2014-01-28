@@ -75,6 +75,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 		{
 			this.removeElement($(ev.currentTarget).closest('.element'));
 		}, this));
+
+		this.addListener($elements, 'dblclick', 'showEditorHud');
 	},
 
 	removeElement: function(element)
@@ -200,9 +202,14 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 		}
 	},
 
-	onHide: function ()
+	showEditorHud: function(ev)
 	{
+		var $element = $(ev.currentTarget);
 
+		if ($element.data('editable') && !$element.hasClass('disabled') && !$element.hasClass('loading'))
+		{
+			new Craft.ElementEditor($element);
+		}
 	}
 
 });

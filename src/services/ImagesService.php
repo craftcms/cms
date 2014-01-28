@@ -63,7 +63,6 @@ class ImagesService extends BaseApplicationComponent
 	public function loadImage($path)
 	{
 		$image = new Image();
-		$this->checkMemoryForImage($path);
 		$image->loadImage($path);
 		return $image;
 	}
@@ -123,7 +122,6 @@ class ImagesService extends BaseApplicationComponent
 	 */
 	public function cleanImage($filePath)
 	{
-		$image = new Image();
-		return $image->loadImage($filePath)->saveAs($filePath, true);
+		return $this->loadImage($filePath)->saveAs($filePath, true);
 	}
 }

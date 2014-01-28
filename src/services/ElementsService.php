@@ -375,22 +375,19 @@ class ElementsService extends BaseApplicationComponent
 				{
 					$status = mb_strtolower($status);
 
-					switch ($status)
+					// Is this a supported status?
+					if (in_array($status, array_keys($elementType->getStatuses())))
 					{
-						case BaseElementModel::ENABLED:
+						if ($status == BaseElementModel::ENABLED)
 						{
 							$statusConditions[] = 'elements.enabled = 1';
-							break;
 						}
-
-						case BaseElementModel::DISABLED:
+						else if ($status == BaseElementModel::DISABLED)
 						{
 							$statusConditions[] = 'elements.enabled = 0';
 						}
-
-						default:
+						else
 						{
-							// Maybe the element type supports another status?
 							$elementStatusCondition = $elementType->getElementQueryStatusCondition($query, $status);
 
 							if ($elementStatusCondition)

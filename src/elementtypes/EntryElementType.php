@@ -37,6 +37,16 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
+	 * Returns whether this element type stores data on a per-locale basis.
+	 *
+	 * @return bool
+	 */
+	public function isLocalized()
+	{
+		return true;
+	}
+
+	/**
 	 * Returns whether this element type can have statuses.
 	 *
 	 * @return bool
@@ -47,13 +57,18 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type stores data on a per-locale basis.
+	 * Returns all of the possible statuses that elements of this type may have.
 	 *
-	 * @return bool
+	 * @return array|null
 	 */
-	public function isLocalized()
+	public function getStatuses()
 	{
-		return true;
+		return array(
+			EntryModel::LIVE => Craft::t('Live'),
+			EntryModel::PENDING => Craft::t('Pending'),
+			EntryModel::EXPIRED => Craft::t('Expired'),
+			BaseElementModel::DISABLED => Craft::t('Disabled')
+		);
 	}
 
 	/**
@@ -253,6 +268,7 @@ class EntryElementType extends BaseElementType
 			{
 				return array('and',
 					'elements.enabled = 1',
+					'elements_i18n.enabled = 1',
 					"entries.postDate <= '{$currentTimeDb}'",
 					array('or', 'entries.expiryDate is null', "entries.expiryDate > '{$currentTimeDb}'")
 				);
@@ -262,6 +278,7 @@ class EntryElementType extends BaseElementType
 			{
 				return array('and',
 					'elements.enabled = 1',
+					'elements_i18n.enabled = 1',
 					"entries.postDate > '{$currentTimeDb}'"
 				);
 			}
@@ -270,6 +287,7 @@ class EntryElementType extends BaseElementType
 			{
 				return array('and',
 					'elements.enabled = 1',
+					'elements_i18n.enabled = 1',
 					'entries.expiryDate is not null',
 					"entries.expiryDate <= '{$currentTimeDb}'"
 				);
@@ -466,6 +484,23 @@ class EntryElementType extends BaseElementType
 	public function populateElementModel($row)
 	{
 		return EntryModel::populateModel($row);
+	}
+
+	/**
+	 * Returns the HTML for an editor HUD for the given element.
+	 *
+	 * @param BaseElementModel $element
+	 * @return string
+	 */
+	public function getEditorHtml(BaseElementModel $element)
+	{
+		$html = craft()->templates->render('entries/_titlefield', array(
+			'entry' => $element
+		));
+
+		$html .= parent::getEditorHtml($element);
+
+		return $html;
 	}
 
 	/**

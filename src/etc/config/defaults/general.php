@@ -202,6 +202,11 @@ return array(
 'phpMaxMemoryLimit' => '256M',
 
 /**
+ * The template path segment prefix that should be used to identify "private" templates -- templates that aren't directly accessible via a matching URL.
+ */
+'privateTemplateTrigger' => '_',
+
+/**
  * The amount of time Craft will remember a username and pre-populate it on the CP login page.
  *
  * Set to '0' to disable this feature altogether.

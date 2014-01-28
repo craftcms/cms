@@ -128,11 +128,7 @@ Craft.UpdateInfo = Garnish.Base.extend({
 
 			this.$licenseSubmitBtn = $('<input class="btn submit" type="submit"/>').appendTo($form);
 
-			this.licenseHud = new Garnish.HUD(originalEvent.currentTarget, $form, {
-				hudClass: 'hud',
-				triggerSpacing: 20,
-				tipWidth: 30
-			});
+			this.licenseHud = new Garnish.HUD(originalEvent.currentTarget, $form);
 
 			this.addListener($form, 'submit', function(ev)
 			{

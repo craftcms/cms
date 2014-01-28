@@ -33,6 +33,16 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
+	 * Returns whether this element type stores data on a per-locale basis.
+	 *
+	 * @return bool
+	 */
+	public function isLocalized()
+	{
+		return false;
+	}
+
+	/**
 	 * Returns whether this element type can have statuses.
 	 *
 	 * @return bool
@@ -43,13 +53,16 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * Returns whether this element type stores data on a per-locale basis.
+	 * Returns all of the possible statuses that elements of this type may have.
 	 *
-	 * @return bool
+	 * @return array|null
 	 */
-	public function isLocalized()
+	public function getStatuses()
 	{
-		return false;
+		return array(
+			BaseElementModel::ENABLED => Craft::t('Enabled'),
+			BaseElementModel::DISABLED => Craft::t('Disabled')
+		);
 	}
 
 	/**
@@ -222,6 +235,53 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 */
 	public function populateElementModel($row)
 	{
+	}
+
+	/**
+	 * Returns the HTML for an editor HUD for the given element.
+	 *
+	 * @param BaseElementModel $element
+	 * @return string
+	 */
+	public function getEditorHtml(BaseElementModel $element)
+	{
+		$html = '';
+
+		$fieldLayout = $element->getFieldLayout();
+
+		if ($fieldLayout)
+		{
+			$originalNamespace = craft()->templates->getNamespace();
+			$namespace = craft()->templates->namespaceInputName('fields', $originalNamespace);
+			craft()->templates->setNamespace($namespace);
+
+			foreach ($fieldLayout->getFields() as $fieldLayoutField)
+			{
+				$fieldHtml = craft()->templates->render('_includes/field', array(
+					'element'  => $element,
+					'field'    => $fieldLayoutField->getField(),
+					'required' => $fieldLayoutField->required
+				));
+
+				$html .= craft()->templates->namespaceInputs($fieldHtml, 'fields');
+			}
+
+			craft()->templates->setNamespace($originalNamespace);
+		}
+
+		return $html;
+	}
+
+	/**
+	 * Saves a given element.
+	 *
+	 * @param BaseElementModel $element
+	 * @param array $params
+	 * @return bool
+	 */
+	public function saveElement(BaseElementModel $element, $params)
+	{
+		return craft()->elements->saveElement($element);
 	}
 
 	/**

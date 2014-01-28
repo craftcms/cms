@@ -156,4 +156,74 @@ class ElementHelper
 		$uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
 		return (strpos($uri, $element->slug) !== false);
 	}
+
+	/**
+	 * Returns whether the given element is editable by the current user, taking user locale permissions into account.
+	 *
+	 * @param BaseElementModel $element
+	 * @return bool
+	 */
+	public static function isElementEditable(BaseElementModel $element)
+	{
+		if ($element->isEditable())
+		{
+			if (Craft::hasPackage(CraftPackage::Localize))
+			{
+				foreach ($element->getLocales() as $localeId => $localeInfo)
+				{
+					if (is_numeric($localeId) && is_string($localeInfo))
+					{
+						$localeId = $localeInfo;
+					}
+
+					if (craft()->userSession->checkPermission('editLocale:'.$localeId))
+					{
+						return true;
+					}
+				}
+			}
+			else
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns the editable locale IDs for a given element, taking user locale permissions into account.
+	 *
+	 * @param BaseElementModel $element
+	 * @return array
+	 */
+	public static function getEditableLocaleIdsForElement(BaseElementModel $element)
+	{
+		$localeIds = array();
+
+		if ($element->isEditable())
+		{
+			if (Craft::hasPackage(CraftPackage::Localize))
+			{
+				foreach ($element->getLocales() as $localeId => $localeInfo)
+				{
+					if (is_numeric($localeId) && is_string($localeInfo))
+					{
+						$localeId = $localeInfo;
+					}
+
+					if (craft()->userSession->checkPermission('editLocale:'.$localeId))
+					{
+						$localeIds[] = $localeId;
+					}
+				}
+			}
+			else
+			{
+				$localeIds[] = craft()->i18n->getPrimarySiteLocaleId();
+			}
+		}
+
+		return $localeIds;
+	}
 }

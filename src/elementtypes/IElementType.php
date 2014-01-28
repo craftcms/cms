@@ -19,12 +19,17 @@ interface IElementType extends IComponentType
 	/**
 	 * @return bool
 	 */
-	public function hasStatuses();
+	public function isLocalized();
 
 	/**
 	 * @return bool
 	 */
-	public function isLocalized();
+	public function hasStatuses();
+
+	/**
+	 * @return array|null
+	 */
+	public function getStatuses();
 
 	/**
 	 * @param string|null $context
@@ -85,6 +90,19 @@ interface IElementType extends IComponentType
 	 * @return BaseModel
 	 */
 	public function populateElementModel($row);
+
+	/**
+	 * @param BaseElementModel $element
+	 * @return string
+	 */
+	public function getEditorHtml(BaseElementModel $element);
+
+	/**
+	 * @param BaseElementModel $element
+	 * @param array $params
+	 * @return bool
+	 */
+	public function saveElement(BaseElementModel $element, $params);
 
 	/**
 	 * @param BaseElementModel

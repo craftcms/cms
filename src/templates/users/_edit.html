@@ -43,6 +43,9 @@
 
 {% endset %}
 
+{% set requireEmailVerification = craft.systemSettings.users.requireEmailVerification %}
+
+
 {% set content %}
 	<div>
 		{% if account is defined %}
@@ -97,7 +100,7 @@
 
 						{{ forms.textField({
 							label: "Email"|t,
-							instructions: (not currentUser.admin ? 'A verification email will be sent automatically.'),
+							instructions: (requireEmailVerification and not currentUser.admin ? 'A verification email will be sent automatically.'),
 							id: 'email',
 							name: 'email',
 							value: (account is defined ? account.email : null),
@@ -105,7 +108,7 @@
 							errors: (account is defined ? account.getErrors('email') : null)
 						}) }}
 
-						{% if currentUser.admin %}
+						{% if requireEmailVerification and currentUser.admin %}
 							{{ forms.checkboxField({
 								label: "Send a verification email?"|t,
 								name: 'verificationRequired',
@@ -138,7 +141,7 @@
 
 						{{ forms.field({
 							label: "Email"|t,
-							instructions: (not currentUser.admin ? 'New email addresses must be verified before taking effect.'),
+							instructions: (requireEmailVerification and not currentUser.admin ? 'New email addresses must be verified before taking effect.'),
 							id: 'email',
 						}, emailInput) }}
 
@@ -184,7 +187,7 @@
 									{% set userLocale = account is defined and account.preferredLocale ? account.preferredLocale : (account is defined and account.isCurrent ? craft.locale : allSiteLocales[0]) %}
 
 									{% for locale in allSiteLocales %}
-										<option value="{{ locale.id }}" {% if locale.id == userLocale %}selected{% endif %}>{{ locale.nativeName }}</option>
+										<option value="{{ locale.id }}" {% if locale.id == userLocale %}selected{% endif %}>{{ locale.getName() }}</option>
 									{% endfor %}
 								</select>
 							</div>
@@ -209,7 +212,6 @@
 							<hr>
 						{% endif %}
 
-						{% set userFields = craft.systemSettings.userFields %}
 						{% include "_includes/fields" with {
 							fields: craft.fields.getLayoutByType('User').getFields(),
 							element: account
@@ -335,20 +337,16 @@
 						</table>
 
 						{% if not account.isCurrent %}
-							<hr>
+							{% if not account.admin or currentUser.admin %}
+								<hr>
 
-							{% if account.status != 'suspended' %}
-								<input type="button" class="btn small formsubmit" value="{{ 'Suspend'|t }}" data-action="users/suspendUser">
-							{% endif %}
+								{% if account.status != 'suspended' %}
+									<input type="button" class="btn small formsubmit" value="{{ 'Suspend'|t }}" data-action="users/suspendUser">
+								{% endif %}
 
-							{% if currentUser.can('deleteUsers') %}
 								<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="users/deleteUser"
 									   data-confirm="{{ 'Are you sure you want to delete this account and all associated content?'|t }}"
 									   data-redirect="users/">
-							{% endif %}
-
-							{% if currentUser.admin and not account.isCurrent %}
-								<input type="button" class="btn small formsubmit" value="{{ 'Login as user'|t }}" data-action="users/impersonate">
 							{% endif %}
 						{% endif %}
 					</form>

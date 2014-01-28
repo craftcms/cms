@@ -1,0 +1,12 @@
+{% from "_includes/forms" import textField %}
+
+{{ textField({
+	label: entry.getType().titleLabel|t,
+	id: 'title',
+	name: 'title',
+	value: entry.title,
+	errors: entry.getErrors('title'),
+	first: true,
+	autofocus: true,
+	required: true
+}) }}
