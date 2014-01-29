@@ -737,7 +737,7 @@ ul.tree,
 
 .elementselectormodal .body .sidebar { padding-right: 0; border-right: 1px solid #e5e5e5; height: 350px; overflow: auto; }
 
-.elementselectormodal .body .main { margin: -24px; padding: 24px; height: 350px; overflow: auto; }
+.elementselectormodal .body .main { margin: -24px; padding: 24px; height: 350px; overflow: auto; position: relative; }
 
 .elementselectormodal .body .main .elements .tableview { margin: 0 -24px; }
 .elementselectormodal .body .main .elements .tableview table .element { display: inline-block; }
