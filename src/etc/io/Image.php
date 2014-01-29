@@ -77,7 +77,7 @@ class Image
 
 		if ($this->_extension == 'gif')
 		{
-			if ($this->_image->layers())
+			if (!craft()->images->isGd() && $this->_image->layers())
 			{
 				$this->_isAnimatedGif = true;
 			}
