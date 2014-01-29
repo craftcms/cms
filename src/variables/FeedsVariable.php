@@ -17,13 +17,12 @@ class FeedsVariable
 
 		// Prevent everyone from having to use the |raw filter when outputting the title and content
 		$rawProperties = array('title', 'content', 'summary');
-		$charset = craft()->templates->getTwig()->getCharset();
 
 		foreach ($items as &$item)
 		{
 			foreach ($rawProperties as $prop)
 			{
-				$item[$prop] = new \Twig_Markup($item[$prop], $charset);
+				$item[$prop] = TemplateHelper::getRaw($item[$prop]);
 			}
 		}
 
