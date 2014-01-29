@@ -225,6 +225,8 @@
 						{% set allGroups = craft.userGroups.getAllGroups() %}
 						{% set userGroups = account.getGroups('id') %}
 
+						<input type="hidden" name="groups" value="">
+
 						{% if allGroups %}
 							<ul>
 								{% for group in allGroups %}
@@ -246,6 +248,8 @@
 						<hr>
 
 						<h2>{{ "Permissions"|t }}</h2>
+
+						<input type="hidden" name="permissions" value="">
 
 						<div class="field">
 							{{ forms.checkbox({

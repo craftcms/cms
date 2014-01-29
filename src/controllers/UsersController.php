@@ -1144,7 +1144,7 @@ class UsersController extends BaseController
 			// Save any user groups
 			$groupIds = craft()->request->getPost('groups');
 
-			if ($groupIds)
+			if ($groupIds !== null)
 			{
 				craft()->userGroups->assignUserToGroups($user->id, $groupIds);
 			}
@@ -1156,7 +1156,7 @@ class UsersController extends BaseController
 			}
 			else
 			{
-				$permissions = craft()->request->getPost('permissions', null);
+				$permissions = craft()->request->getPost('permissions');
 			}
 
 			if ($permissions !== null)
