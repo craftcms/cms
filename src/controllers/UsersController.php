@@ -1143,7 +1143,11 @@ class UsersController extends BaseController
 		{
 			// Save any user groups
 			$groupIds = craft()->request->getPost('groups');
-			craft()->userGroups->assignUserToGroups($user->id, $groupIds);
+
+			if ($groupIds)
+			{
+				craft()->userGroups->assignUserToGroups($user->id, $groupIds);
+			}
 
 			// Save any user permissions
 			if ($user->admin)
@@ -1152,10 +1156,13 @@ class UsersController extends BaseController
 			}
 			else
 			{
-				$permissions = craft()->request->getPost('permissions');
+				$permissions = craft()->request->getPost('permissions', null);
 			}
 
-			craft()->userPermissions->saveUserPermissions($user->id, $permissions);
+			if ($permissions !== null)
+			{
+				craft()->userPermissions->saveUserPermissions($user->id, $permissions);
+			}
 		}
 	}
 }
