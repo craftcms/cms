@@ -318,6 +318,14 @@ class AssetsFieldType extends BaseElementFieldType
 			// Prepare the path by parsing tokens and normalizing slashes.
 			$sourcePath = trim(str_replace('{'.$matches[1].'}', '', $sourcePath), '/');
 			$sourcePath = craft()->templates->renderObjectTemplate($sourcePath, $this->element);
+			$pathParts = explode("/", $sourcePath);
+			foreach ($pathParts as &$part)
+			{
+				$part = IOHelper::cleanFilename($part);
+			}
+
+			$sourcePath = join("/", $pathParts);
+
 			if (strlen($sourcePath))
 			{
 				$sourcePath = $sourcePath.'/';
