@@ -629,8 +629,8 @@ class UsersController extends BaseController
 		// There are some things only admins can change
 		if (craft()->userSession->isAdmin())
 		{
-			$user->passwordResetRequired = (bool) craft()->request->getPost('passwordResetRequired');
-			$user->admin = (bool) craft()->request->getPost('admin');
+			$user->passwordResetRequired = (bool) craft()->request->getPost('passwordResetRequired', $user->passwordResetRequired);
+			$user->admin = (bool) craft()->request->getPost('admin', $user->admin);
 		}
 
 		// If the Users package is installed, grab any profile content from post
@@ -1143,7 +1143,11 @@ class UsersController extends BaseController
 		{
 			// Save any user groups
 			$groupIds = craft()->request->getPost('groups');
-			craft()->userGroups->assignUserToGroups($user->id, $groupIds);
+
+			if ($groupIds !== null)
+			{
+				craft()->userGroups->assignUserToGroups($user->id, $groupIds);
+			}
 
 			// Save any user permissions
 			if ($user->admin)
@@ -1155,7 +1159,10 @@ class UsersController extends BaseController
 				$permissions = craft()->request->getPost('permissions');
 			}
 
-			craft()->userPermissions->saveUserPermissions($user->id, $permissions);
+			if ($permissions !== null)
+			{
+				craft()->userPermissions->saveUserPermissions($user->id, $permissions);
+			}
 		}
 	}
 }

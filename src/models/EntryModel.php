@@ -206,7 +206,7 @@ class EntryModel extends BaseElementModel
 		{
 			$url = UrlHelper::getCpUrl('entries/'.$this->getSection()->handle.'/'.$this->id);
 
-			if (Craft::hasPackage(CraftPackage::Localize) && $this->locale != craft()->language)
+			if (craft()->hasPackage(CraftPackage::Localize) && $this->locale != craft()->language)
 			{
 				$url .= '/'.$this->locale;
 			}

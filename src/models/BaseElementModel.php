@@ -168,8 +168,7 @@ abstract class BaseElementModel extends BaseModel
 	public function getLink()
 	{
 		$link = '<a href="'.$this->getUrl().'">'.$this->__toString().'</a>';
-		$charset = craft()->templates->getTwig()->getCharset();
-		return new \Twig_Markup($link, $charset);
+		return TemplateHelper::getRaw($link);
 	}
 
 	/**

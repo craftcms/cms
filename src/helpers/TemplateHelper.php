@@ -43,4 +43,16 @@ class TemplateHelper
 
 		return array($paginateVariable, $entities);
 	}
+
+	/**
+	 * Returns a string wrapped in a \Twig_Markup object
+	 *
+	 * @param $value
+	 * @return \Twig_Markup
+	 */
+	public static function getRaw($value)
+	{
+		$charset = craft()->templates->getTwig()->getCharset();
+		return new \Twig_Markup($value, $charset);
+	}
 }
