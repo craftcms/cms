@@ -2,15 +2,14 @@
 
 {% if sources %}
 
-	{{
-		forms.checkboxField({
+	{{ forms.checkboxField({
 		label: "Restrict uploads to a single folder?"|t,
 		id: 'useSingleFolder-toggle',
 		name: 'useSingleFolder',
 		class: 'use-single-folder-cb',
 		value: 1,
 		checked: settings.useSingleFolder
-	}) }}
+	})}}
 
 	<div class="source-selection">
 		{% if allowMultipleSources %}
@@ -56,33 +55,7 @@
 		}) }}
 	</div>
 
-	{% set js %}
-		displayAssetSettings = function (elem)
-		{
-			if (elem.prop('checked'))
-			{
-				$('.source-selection, .default-folder').hide();
-				$('.single-folder').show();
-			}
-			else
-			{
-				$('.source-selection, .default-folder').show();
-				$('.single-folder').hide();
-			}
-		};
-
-		var element = $('.use-single-folder-cb');
-
-		element.on('click', function (ev) {
-			displayAssetSettings($(ev.currentTarget));
- 		});
-
-		displayAssetSettings(element);
-
-	{% endset %}
-
-	{% includeJs js %}
-{% else %}
+	{% else %}
 	{{ forms.field({
 		label: (allowMultipleSources ? "Sources"|t : "Source"|t)
 	}, '<p class="error">' ~ "No sources exist yet."|t ~ '</p>') }}
@@ -100,3 +73,49 @@
 	}) }}
 {% endif %}
 
+{{ forms.checkbox({
+	label: "Restrict allowed file types?"|t,
+	class: 'restrictFiles',
+	id: '',
+	name: 'restrictFiles',
+	value: 1,
+	checked: settings.restrictFiles,
+	toggle: 'restrict-allowed-types'
+})}}
+
+<div id="restrict-allowed-types" {% if not settings.restrictFiles %}class="hidden"{% endif %}>
+	{{ forms.checkboxSelectField({
+		label: "Select the file types that are allowed"|t,
+		id: 'allowedKinds',
+		name: 'allowedKinds',
+		options: fileKinds,
+		values: settings.allowedKinds,
+	})}}
+</div>
+
+{% set js %}
+	displayAssetSettings = function (elem)
+	{
+		if (elem.prop('checked'))
+		{
+			$('.source-selection, .default-folder').hide();
+			$('.single-folder').show();
+		}
+		else
+		{
+			$('.source-selection, .default-folder').show();
+			$('.single-folder').hide();
+		}
+	};
+
+	var element = $('.use-single-folder-cb');
+
+	element.on('click', function (ev) {
+		displayAssetSettings($(ev.currentTarget));
+	});
+
+	displayAssetSettings(element);
+
+{% endset %}
+
+{% includeJs js %}

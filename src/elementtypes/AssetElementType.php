@@ -173,7 +173,7 @@ class AssetElementType extends BaseElementType
 			'sourceId' => AttributeType::Number,
 			'folderId' => AttributeType::Number,
 			'filename' => AttributeType::String,
-			'kind'     => AttributeType::String,
+			'kind'     => AttributeType::Mixed,
 			'width'    => AttributeType::Number,
 			'height'   => AttributeType::Number,
 			'size'     => AttributeType::Number,
@@ -211,7 +211,15 @@ class AssetElementType extends BaseElementType
 
 		if ($criteria->kind)
 		{
-			$query->andWhere(DbHelper::parseParam('assetfiles.kind', $criteria->kind, $query->params));
+			if (is_array($criteria->kind))
+			{
+				$query->andWhere(DbHelper::parseParam('assetfiles.kind', array_merge(array('or'), $criteria->kind), $query->params));
+			}
+			else
+			{
+				$query->andWhere(DbHelper::parseParam('assetfiles.kind', $criteria->kind, $query->params));
+			}
+
 		}
 
 		if ($criteria->width)

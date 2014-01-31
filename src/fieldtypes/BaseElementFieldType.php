@@ -188,6 +188,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		{
 			$selectionCriteria['locale'] = $this->element->locale;
 		}
+		$selectionCriteria = array_merge($selectionCriteria, $this->getSelectionCriteria());
 
 		if ($this->allowMultipleSources)
 		{
@@ -276,5 +277,15 @@ abstract class BaseElementFieldType extends BaseFieldType
 		}
 
 		return $elementType;
+	}
+
+	/**
+	 * Add additional selection criteria
+	 *
+	 * @return array
+	 */
+	protected function getSelectionCriteria()
+	{
+		return array();
 	}
 }

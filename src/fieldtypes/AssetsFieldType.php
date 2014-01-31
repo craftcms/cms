@@ -47,6 +47,8 @@ class AssetsFieldType extends BaseElementFieldType
 		$settings['singleFolderPath'] = AttributeType::String;
 		$settings['defaultUploadPath'] = AttributeType::String;
 		$settings['useSingleFolder'] = AttributeType::Bool;
+		$settings['restrictFiles'] = AttributeType::Bool;
+		$settings['allowedKinds'] = AttributeType::Mixed;
 
 		return $settings;
 	}
@@ -93,12 +95,14 @@ class AssetsFieldType extends BaseElementFieldType
 			}
 		}
 
+		$kinds = array_keys(IOHelper::getFileKinds());
 		return craft()->templates->render('_components/fieldtypes/Assets/settings', array(
 			'allowMultipleSources' => $this->allowMultipleSources,
 			'allowLimit'           => $this->allowLimit,
 			'sources'              => $sources,
 			'settings'             => $this->getSettings(),
-			'type'                 => $this->getName()
+			'type'                 => $this->getName(),
+			'fileKinds'            => array_combine($kinds, $kinds)
 		));
 	}
 
@@ -167,6 +171,7 @@ class AssetsFieldType extends BaseElementFieldType
 
 		craft()->templates->includeJsResource('lib/fileupload/jquery.ui.widget.js');
 		craft()->templates->includeJsResource('lib/fileupload/jquery.fileupload.js');
+
 		return parent::getInputHtml($name, $criteria, $variables);
 	}
 
@@ -399,5 +404,23 @@ class AssetsFieldType extends BaseElementFieldType
 			return $folderId;
 		}
 	}
+
+	/**
+	 * Add additional selection criteria
+	 *
+	 * @return array
+	 */
+	protected function getSelectionCriteria()
+	{
+		$settings = $this->getSettings();
+		$allowedKinds = array();
+		if (isset($settings->restrictFiles) && !empty($settings->restrictFiles) && !empty($settings->allowedKinds))
+		{
+			$allowedKinds = $settings->allowedKinds;
+		}
+
+		return array('kind' => $allowedKinds);
+	}
+
 
 }
