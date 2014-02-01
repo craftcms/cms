@@ -222,9 +222,13 @@ class SectionsService extends BaseApplicationComponent
 	 */
 	public function getSectionLocales($sectionId, $indexBy = null)
 	{
-		$records = SectionLocaleRecord::model()->findAllByAttributes(array(
-			'sectionId' => $sectionId
-		));
+		$records = craft()->db->createCommand()
+							->select('*')
+							->from('sections_i18n sections_i18n')
+							->join('locales locales', 'locales.locale = sections_i18n.locale')
+							->where('sections_i18n.sectionId = :sectionId', array(':sectionId' => $sectionId))
+							->order('locales.sortOrder')
+							->queryAll();
 
 		return SectionLocaleModel::populateModels($records, $indexBy);
 	}
