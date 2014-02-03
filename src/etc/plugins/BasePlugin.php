@@ -16,6 +16,16 @@ abstract class BasePlugin extends BaseSavableComponentType
 	protected $componentType = 'Plugin';
 
 	/**
+	 * Returns the plugin's source language
+	 *
+	 * @return string
+	 */
+	public function getSourceLanguage()
+	{
+		return craft()->sourceLanguage;
+	}
+
+	/**
 	 * Returns the plugin’s version.
 	 *
 	 * @abstract
