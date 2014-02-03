@@ -131,6 +131,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 			this.progressBar.hideProgressBar();
 			this.$container.removeClass('uploading');
 		}
+
+		// The current HTML view is not valid anymore - force a refresh.
+		this.modal.elementIndex = null;
 	}
 
 });
