@@ -151,8 +151,7 @@ class AssetFileModel extends BaseElementModel
 		if ($this->kind == 'image')
 		{
 			$img = '<img src="'.$this->url.'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.$this->title.'" />';
-			$charset = craft()->templates->getTwig()->getCharset();
-			return new \Twig_Markup($img, $charset);
+			return TemplateHelper::getRaw($img);
 		}
 	}
 

@@ -112,8 +112,7 @@ class CraftTwigExtension extends \Twig_Extension
 	public function parseRefsFilter($str)
 	{
 		$str = craft()->elements->parseRefs($str);
-		$charset = craft()->templates->getTwig()->getCharset();
-		return new \Twig_Markup($str, $charset);
+		return TemplateHelper::getRaw($str);
 	}
 
 	/**
@@ -210,8 +209,7 @@ class CraftTwigExtension extends \Twig_Extension
 	public function markdownFilter($str)
 	{
 		$html = StringHelper::parseMarkdown($str);
-		$charset = craft()->templates->getTwig()->getCharset();
-		return new \Twig_Markup($html, $charset);
+		return TemplateHelper::getRaw($html);
 	}
 
 	/**
@@ -248,7 +246,7 @@ class CraftTwigExtension extends \Twig_Extension
 	public function getHeadHtmlFunction()
 	{
 		$html = craft()->templates->getHeadHtml();
-		return $this->getTwigMarkup($html);
+		return TemplateHelper::getRaw($html);
 	}
 
 	/**
@@ -259,7 +257,7 @@ class CraftTwigExtension extends \Twig_Extension
 	public function getFootHtmlFunction()
 	{
 		$html = craft()->templates->getFootHtml();
-		return $this->getTwigMarkup($html);
+		return TemplateHelper::getRaw($html);
 	}
 
 	/**
@@ -337,18 +335,5 @@ class CraftTwigExtension extends \Twig_Extension
 	public function getName()
 	{
 		return 'craft';
-	}
-
-	/**
-	 * Returns a string wrapped in a Twig_Markup object.
-	 *
-	 * @access private
-	 * @param string $str
-	 * @return \Twig_Markup
-	 */
-	private function getTwigMarkup($str)
-	{
-		$charset = craft()->templates->getTwig()->getCharset();
-		return new \Twig_Markup($str, $charset);
 	}
 }
