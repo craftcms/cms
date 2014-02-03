@@ -197,7 +197,7 @@ class UsersService extends BaseApplicationComponent
 						try
 						{
 							craft()->email->sendEmailByKey($user, 'account_activation', array(
-								'link' => new \Twig_Markup(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+								'link' => TemplateHelper::getRaw(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid)),
 							));
 						}
 						catch (\phpmailerException $e)

@@ -138,22 +138,19 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 					var $menu = $('<div class="menu tagmenu"/>').appendTo(Garnish.$bod),
 						$ul = $('<ul/>').appendTo($menu);
 
+					for (var i = 0; i < response.tags.length; i++)
+					{
+						var $li = $('<li/>').appendTo($ul);
+						$('<a data-icon="tag"/>').appendTo($li).text(response.tags[i].name).data('id', response.tags[i].id);
+					}
+
 					if (!response.exactMatch)
 					{
 						var $li = $('<li/>').appendTo($ul);
-						$('<a class="hover" data-icon="+"/>').appendTo($li).text(data.search);
+						$('<a data-icon="+"/>').appendTo($li).text(data.search);
 					}
 
-					for (var i = 0; i < response.tags.length; i++)
-					{
-						var $li = $('<li/>').appendTo($ul),
-							$a = $('<a data-icon="tag"/>').appendTo($li).text(response.tags[i].name).data('id', response.tags[i].id);
-
-						if (response.exactMatch && i == 0)
-						{
-							$a.addClass('hover');
-						}
-					}
+					$ul.find('> li:first-child > a').addClass('hover');
 
 					this.searchMenu = new Garnish.Menu($menu, {
 						attachToElement: this.$addTagInput,
