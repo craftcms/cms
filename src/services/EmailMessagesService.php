@@ -8,6 +8,8 @@ craft()->requirePackage(CraftPackage::Rebrand);
  */
 class EmailMessagesService extends BaseApplicationComponent
 {
+	private $_messageKeysAndSourceLocales;
+
 	/**
 	 * Returns all of the system email messages.
 	 *
@@ -36,15 +38,7 @@ class EmailMessagesService extends BaseApplicationComponent
 		// Now assemble the whole list of messages
 		$messages = array();
 
-		$keys = array('account_activation', 'verify_new_email', 'forgot_password');
-
-		// Give plugins a chance to add additional messages
-		foreach (craft()->plugins->call('registerEmailMessages') as $pluginKeys)
-		{
-			$keys = array_merge($keys, $pluginKeys);
-		}
-
-		foreach ($keys as $key)
+		foreach ($this->_getAllMessageKeys() as $key)
 		{
 			$message = new RebrandEmailModel();
 			$message->key = $key;
@@ -59,8 +53,8 @@ class EmailMessagesService extends BaseApplicationComponent
 			else
 			{
 				// Default to whatever's in the translation file
-				$message->subject  = Craft::t($key.'_subject', null, null, 'en_us');
-				$message->body     = Craft::t($key.'_body', null, null, 'en_us');
+				$message->subject  = $this->_translateMessageString($key, 'subject', $localeId);
+				$message->body     = $this->_translateMessageString($key, 'body', $localeId);
 			}
 
 			$messages[] = $message;
@@ -120,6 +114,94 @@ class EmailMessagesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns all email message keys.
+	 *
+	 * @access private
+	 * @return array
+	 */
+	private function _getAllMessageKeys()
+	{
+		$this->_setAllMessageKeysAndLocales();
+
+		return array_keys($this->_messageKeysAndSourceLocales);
+	}
+
+	/**
+	 * Returns the source locale for a message by its key.
+	 *
+	 * @access private
+	 * @param string $key
+	 * @return string|null
+	 */
+	private function _getMessageSourceLocaleByKey($key)
+	{
+		$this->_setAllMessageKeysAndLocales();
+
+		if (isset($this->_messageKeysAndSourceLocales[$key]))
+		{
+			return $this->_messageKeysAndSourceLocales[$key];
+		}
+	}
+
+	/**
+	 * Sets all of the email message keys and source locales.
+	 *
+	 * @access private
+	 */
+	private function _setAllMessageKeysAndLocales()
+	{
+		if (!isset($this->_messageKeysAndSourceLocales))
+		{
+			$craftSourceLocale = craft()->sourceLanguage;
+
+			$this->_messageKeysAndSourceLocales = array(
+				'account_activation' => $craftSourceLocale,
+				'verify_new_email'   => $craftSourceLocale,
+				'forgot_password'    => $craftSourceLocale,
+			);
+
+			// Give plugins a chance to add additional messages
+			foreach (craft()->plugins->call('registerEmailMessages') as $pluginHandle => $pluginKeys)
+			{
+				$pluginSourceLocale = craft()->plugins->getPlugin($pluginHandle)->getSourceLanguage();
+
+				foreach ($pluginKeys as $key)
+				{
+					$this->_messageKeysAndSourceLocales[$key] = $pluginSourceLocale;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Translates an email message string.
+	 *
+	 * @access private
+	 * @param string $key
+	 * @param string $part
+	 * @param string $localeId
+	 */
+	private function _translateMessageString($key, $part, $localeId)
+	{
+		$combinedKey = $key.'_'.$part;
+
+		$t = Craft::t($combinedKey, null, null, $localeId);
+
+		// If a translation couldn't be found, default to the message's source locale
+		if ($t == $combinedKey)
+		{
+			$sourceLocale = $this->_getMessageSourceLocaleByKey($key);
+
+			if ($sourceLocale)
+			{
+				$t = Craft::t($combinedKey, null, null, $sourceLocale);
+			}
+		}
+
+		return $t;
+	}
+
+	/**
 	 * Gets a message record by its key.
 	 *
 	 * @access private
@@ -144,8 +226,8 @@ class EmailMessagesService extends BaseApplicationComponent
 			$record = new EmailMessageRecord();
 			$record->key = $key;
 			$record->locale   = $localeId;
-			$record->subject  = Craft::t($key.'_subject', null, null, 'en_us');
-			$record->body     = Craft::t($key.'_body', null, null, 'en_us');
+			$record->subject  = $this->_translateMessageString($key, 'subject', $localeId);
+			$record->body     = $this->_translateMessageString($key, 'body', $localeId);
 		}
 
 		return $record;
