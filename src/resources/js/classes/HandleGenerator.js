@@ -8,6 +8,9 @@ Craft.HandleGenerator = Craft.BaseInputGenerator.extend({
 		// Remove HTML tags
 		var handle = sourceVal.replace("/<(.*?)>/g", '');
 
+		// Remove inner-word punctuation
+		handle = handle.replace(/['"‘’“”\[\]\(\)\{\}:]/g, '');
+
 		// Make it lowercase
 		handle = handle.toLowerCase();
 

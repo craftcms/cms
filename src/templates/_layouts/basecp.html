@@ -35,7 +35,6 @@
 			actionTrigger:        "{{ craft.config.actionTrigger|e('js') }}",
 			path:                 "{{ craft.request.getPath()|e('js') }}",
 			language:             "{{ craft.locale|e('js') }}",
-			localeGroupSymbol:    "{{ craft.i18n.getLocaleData().getNumberSymbol('group') }}",
 			packages:             {{ craft.getPackages|json_encode|raw }},
 			translations:         {{ getTranslations()|raw }},
 			maxUploadSize:        {{ craft.app.getMaxUploadSize() }}

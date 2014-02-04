@@ -326,6 +326,12 @@ class TagsService extends BaseApplicationComponent
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
+				// Fire an 'onBeforeSaveTag' event
+				$this->onBeforeSaveTag(new Event($this, array(
+					'tag'      => $tag,
+					'isNewTag' => $isNewTag
+				)));
+
 				if (craft()->elements->saveElement($tag, false))
 				{
 					// Now that we have an element ID, save it on the other stuff
@@ -398,6 +404,16 @@ class TagsService extends BaseApplicationComponent
 	}
 
 	// Events
+
+	/**
+	 * Fires an 'onBeforeSaveTag' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeSaveTag(Event $event)
+	{
+		$this->raiseEvent('onBeforeSaveTag', $event);
+	}
 
 	/**
 	 * Fires an 'onSaveTag' event.
