@@ -32,7 +32,8 @@ class LocaleNumberValidator extends \CNumberValidator
 		else
 		{
 			// For decimals, convert from a locale specific format to a normalized one before we check validity.
-			$value = LocalizationHelper::normalizeNumber($value);
+			$value = $object->$attribute = LocalizationHelper::normalizeNumber($value);
+
 			if (!preg_match($this->numberPattern, "$value"))
 			{
 				$message = $this->message !== null ? $this->message : Craft::t('“{attribute}” must be a number.');
