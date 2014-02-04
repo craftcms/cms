@@ -203,11 +203,18 @@ class ElementsService extends BaseApplicationComponent
 							{
 								foreach ($fieldColumns as $column)
 								{
-									if (!empty($result[$column['column']]))
+									// Account for results where multiple fields have the same handle, but from different columns
+									// e.g. two Matrix block types that each have a field with the same handle
+
+									$colName = $column['column'];
+									$fieldHandle = $column['handle'];
+
+									if (!isset($content[$fieldHandle]) || (empty($content[$fieldHandle]) && !empty($result[$colName])))
 									{
-										$content[$column['handle']] = $result[$column['column']];
-										unset($result[$column['column']]);
+										$content[$fieldHandle] = $result[$colName];
 									}
+
+									unset($result[$colName]);
 								}
 							}
 						}
