@@ -486,7 +486,7 @@ class EntriesController extends BaseController
 			// Figure out which locales the user is allowed to edit in this section
 			$sectionLocaleIds = array_keys($variables['section']->getLocales());
 			$editableLocaleIds = craft()->i18n->getEditableLocaleIds();
-			$editableSectionLocaleIds = array_intersect($sectionLocaleIds, $editableLocaleIds);
+			$editableSectionLocaleIds = array_merge(array_intersect($sectionLocaleIds, $editableLocaleIds));
 
 			if (!$editableSectionLocaleIds)
 			{
