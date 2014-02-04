@@ -25,7 +25,7 @@ class ElementHelper
 		$slug = preg_replace('/<(.*?)>/u', '', $slug);
 
 		// Remove inner-word punctuation.
-		$slug = preg_replace('/[\'"‘’“”]/u', '', $slug);
+		$slug = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $slug);
 
 		// Make it lowercase
 		$slug = mb_strtolower($slug, 'UTF-8');
