@@ -1,6 +1,6 @@
 {%- set class = [
 	(class is defined ? class : null),
-	(toggle is defined and toggle ? 'fieldtoggle' : null)
+	((toggle is defined and toggle is not empty) or (reverseToggle is defined and reverseToggle is not empty) ? 'fieldtoggle' : null)
 ]|filter|join(' ') %}
 
 {%- set value = (value is defined ? value : 1) -%}
@@ -18,6 +18,6 @@
 		{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
 		{%- if disabled is defined and disabled %} disabled{% endif %}
 		{%- if toggle is defined %} data-target="{{ toggle }}"{% endif %}
-		{%- if reverseToggle is defined and reverseToggle %} data-reverse-toggle="y"{% endif %}>
+		{%- if reverseToggle is defined %} data-reverse-target="{{ reverseToggle }}"{% endif %}>
 	{% if label is defined %}{{ label|raw }}{% endif %}
 </label>

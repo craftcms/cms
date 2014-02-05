@@ -111,6 +111,12 @@ class EntriesService extends BaseApplicationComponent
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
+				// Fire an 'onBeforeSaveEntry' event
+				$this->onBeforeSaveEntry(new Event($this, array(
+					'entry'      => $entry,
+					'isNewEntry' => $isNewEntry
+				)));
+
 				// Save the element
 				if (craft()->elements->saveElement($entry))
 				{
@@ -282,6 +288,16 @@ class EntriesService extends BaseApplicationComponent
 
 	// Events
 	// ======
+
+	/**
+	 * Fires an 'onBeforeSaveEntry' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeSaveEntry(Event $event)
+	{
+		$this->raiseEvent('onBeforeSaveEntry', $event);
+	}
 
 	/**
 	 * Fires an 'onSaveEntry' event.

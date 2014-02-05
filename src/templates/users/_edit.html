@@ -255,9 +255,8 @@
 								label: '<strong>' ~ "Admin"|t ~ '</strong>',
 								name: 'admin',
 								checked: account.admin,
-								toggle: 'permissions',
-								disabled: (currentUser.admin ? false : true),
-								reverseToggle: true
+								reverseToggle: 'permissions',
+								disabled: (currentUser.admin ? false : true)
 							}) }}
 						</div>
 

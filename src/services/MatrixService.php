@@ -537,6 +537,17 @@ class MatrixService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns a block by its ID.
+	 *
+	 * @param int $blockId
+	 * @return MatrixBlockModel|null
+	 */
+	public function getBlockById($blockId)
+	{
+		return craft()->elements->getElementById($blockId, ElementType::MatrixBlock);
+	}
+
+	/**
 	 * Validates a block.
 	 *
 	 * @param MatrixBlockModel $block
