@@ -17,14 +17,14 @@
 		{% if craft.hasPackage('Localize') %}<input type="hidden" name="locale" value="{{ localeId }}">{% endif %}
 
 		<div class="grid first">
-			<div class="item" data-min-colspan="2">
+			<div class="item" data-position="left" data-min-colspan="2" data-max-colspan="3">
 				<div id="fields" class="pane">
 					{% include "_includes/tabs" %}
 					{% include "entries/_fields" %}
 				</div>
 			</div><!--/item-->
 
-			<div class="item" data-colspan="1">
+			<div class="item" data-position="right" data-colspan="1">
 
 				{% if showPreviewBtn %}
 					<div id="previewmode-btn" class="btn big" data-icon="view">
@@ -139,10 +139,8 @@
 					</div>
 				{% endif %}
 			</div><!--/item-->
-		</div>
 
-		<div class="grid">
-			<div class="item" data-colspan="1">
+			<div class="item" data-position="left" data-colspan="1">
 				{% if entry.id and entry.classHandle == 'EntryDraft' %}
 
 					<input type="hidden" name="action" value="entryRevisions/saveDraft">

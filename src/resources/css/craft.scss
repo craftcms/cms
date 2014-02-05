@@ -873,13 +873,18 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 .password { padding-right: 5em; }
 .password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
-.datewrapper { display: inline-block; position: relative; width: 8em; }
-.datewrapper:before { position: absolute; top: 8px; left: 7px; content: 'date'; color: $lighttextcolor; }
-.datewrapper .text { padding-left: 20px; width: 100%; }
+.datewrapper,
+.timewrapper { display: inline-block; position: relative; }
+.datewrapper:before,
+.timewrapper:before { position: absolute; color: $lighttextcolor; }
+.datewrapper .text,
+.timewrapper .text { padding-left: 22px; width: 100%; }
 
-.timewrapper { display: inline-block; position: relative; width: 6.5em; }
-.timewrapper:before { position: absolute; top: 10px; left: 7px; font-size: 11px; content: 'time'; color: $lighttextcolor; }
-.timewrapper .text { padding-left: 20px; width: 100%; }
+.datewrapper { width: 8em; }
+.datewrapper:before { top: 8px; left: 7px; content: 'date'; }
+
+.timewrapper { width: 7em; }
+.timewrapper:before { top: 10px; left: 7px; font-size: 11px; content: 'time'; }
 
 ::-webkit-input-placeholder { color: $lighttextcolor; }
 :-moz-placeholder { color: $lighttextcolor; }
