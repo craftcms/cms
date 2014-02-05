@@ -40,5 +40,13 @@
 			translations:         {{ getTranslations()|raw }},
 			maxUploadSize:        {{ craft.app.getMaxUploadSize() }}
 		};
+
+		window.Craft.fileKinds = {};
+		{% for kind, extensions in craft.app.fileKinds %}
+			window.Craft.fileKinds.{{ kind }} = [];
+			{% for extension in extensions %}
+				window.Craft.fileKinds.{{ kind }}.push("{{ extension }}");
+			{% endfor %}
+		{% endfor %}
 	</script>
 {% endblock %}

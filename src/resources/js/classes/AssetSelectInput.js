@@ -34,6 +34,11 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 			}
 		};
 
+		if (typeof this.criteria.kind != "undefined")
+		{
+			options.allowedKinds = this.criteria.kind;
+		}
+
 		options.events = {};
 		options.events.fileuploadstart = $.proxy(this, '_onUploadStart');
 		options.events.fileuploadprogressall = $.proxy(this, '_onUploadProgress');
@@ -133,7 +138,10 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 		}
 
 		// The current HTML view is not valid anymore - force a refresh.
-		this.modal.elementIndex = null;
+		if (this.modal)
+		{
+			this.modal.elementIndex = null;
+		}
 	}
 
 });

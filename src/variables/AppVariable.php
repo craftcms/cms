@@ -131,4 +131,14 @@ class AppVariable
 		// Convert MB to B and return
 		return $uploadMb * 1048576; // 1024 x 1024 = 1048576
 	}
+
+	/**
+	 * Returns a list of file kinds.
+	 *
+	 * @return array
+	 */
+	public function getFileKinds()
+	{
+		return IOHelper::getFileKinds();
+	}
 }
