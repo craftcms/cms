@@ -4,10 +4,12 @@
 Craft.FieldToggle = Garnish.Base.extend({
 
 	$toggle: null,
-	reverse: null,
 	targetPrefix: null,
+	targetSelector: null,
+	reverseTargetSelector: null,
 
 	_$target: null,
+	_$reverseTarget: null,
 	type: null,
 
 	init: function(toggle)
@@ -24,13 +26,28 @@ Craft.FieldToggle = Garnish.Base.extend({
 		this.$toggle.data('fieldtoggle', this);
 
 		this.type = this.getType();
-		this.reverse = !!this.$toggle.attr('data-reverse-toggle');
 
 		if (this.type == 'select')
 		{
 			this.targetPrefix = (this.$toggle.attr('data-target-prefix') || '');
-			this.findTarget();
 		}
+		else
+		{
+			this.targetSelector = this.$toggle.data('target');
+			this.reverseTargetSelector = this.$toggle.data('reverse-target');
+
+			if (this.targetSelector && !this.targetSelector.match(/^[#\.]/))
+			{
+				this.targetSelector = '#'+this.targetSelector;
+			}
+
+			if (this.reverseTargetSelector && !this.reverseTargetSelector.match(/^[#\.]/))
+			{
+				this.reverseTargetSelector = '#'+this.reverseTargetSelector;
+			}
+		}
+
+		this.findTargets();
 
 		if (this.type == 'link')
 		{
@@ -58,17 +75,7 @@ Craft.FieldToggle = Garnish.Base.extend({
 		}
 	},
 
-	getTarget: function()
-	{
-		if (!this._$target)
-		{
-			this.findTarget();
-		}
-
-		return this._$target;
-	},
-
-	findTarget: function()
+	findTargets: function()
 	{
 		if (this.type == 'select')
 		{
@@ -76,14 +83,15 @@ Craft.FieldToggle = Garnish.Base.extend({
 		}
 		else
 		{
-			var targetSelector = this.$toggle.data('target');
-
-			if (!targetSelector.match(/^[#\.]/))
+			if (this.targetSelector)
 			{
-				targetSelector = '#'+targetSelector;
+				this._$target = $(this.targetSelector);
 			}
 
-			this._$target = $(targetSelector);
+			if (this.reverseTargetSelector)
+			{
+				this._$reverseTarget = $(this.reverseTargetSelector);
+			}
 		}
 	},
 
@@ -96,9 +104,9 @@ Craft.FieldToggle = Garnish.Base.extend({
 	{
 		if (this.type == 'select')
 		{
-			this.hideTarget();
-			this.findTarget();
-			this.showTarget();
+			this.hideTarget(this._$target);
+			this.findTargets();
+			this.showTarget(this._$target);
 		}
 		else
 		{
@@ -111,27 +119,24 @@ Craft.FieldToggle = Garnish.Base.extend({
 				var show = !!this.getToggleVal();
 			}
 
-			if (this.reverse)
-			{
-				show = !show;
-			}
-
 			if (show)
 			{
-				this.showTarget();
+				this.showTarget(this._$target);
+				this.hideTarget(this._$reverseTarget);
 			}
 			else
 			{
-				this.hideTarget();
+				this.hideTarget(this._$target);
+				this.showTarget(this._$reverseTarget);
 			}
 		}
 	},
 
-	showTarget: function()
+	showTarget: function($target)
 	{
-		if (this.getTarget().length)
+		if ($target && $target.length)
 		{
-			this.getTarget().removeClass('hidden');
+			$target.removeClass('hidden');
 
 			if (this.type != 'select')
 			{
@@ -141,24 +146,23 @@ Craft.FieldToggle = Garnish.Base.extend({
 					this.$toggle.addClass('expanded');
 				}
 
-				var $target = this.getTarget();
 				$target.height('auto');
 				var height = $target.height();
 				$target.height(0);
-				$target.stop().animate({height: height}, 'fast', $.proxy(function() {
+				$target.stop().animate({height: height}, 'fast', function() {
 					$target.height('auto');
-				}, this));
+				});
 			}
 		}
 	},
 
-	hideTarget: function()
+	hideTarget: function($target)
 	{
-		if (this.getTarget().length)
+		if ($target && $target.length)
 		{
 			if (this.type == 'select')
 			{
-				this.getTarget().addClass('hidden');
+				$target.addClass('hidden');
 			}
 			else
 			{
@@ -168,9 +172,9 @@ Craft.FieldToggle = Garnish.Base.extend({
 					this.$toggle.addClass('collapsed');
 				}
 
-				this.getTarget().stop().animate({height: 0}, 'fast', $.proxy(function() {
-					this.getTarget().addClass('hidden');
-				}, this));
+				$target.stop().animate({height: 0}, 'fast', function() {
+					$target.addClass('hidden');
+				});
 			}
 		}
 	}

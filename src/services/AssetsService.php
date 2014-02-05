@@ -128,6 +128,12 @@ class AssetsService extends BaseApplicationComponent
 					$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
 				}
 
+				// Fire an 'onBeforeSaveAsset' event
+				$this->onBeforeSaveAsset(new Event($this, array(
+					'asset'      => $file,
+					'isNewAsset' => $isNewFile
+				)));
+
 				// Save the element
 				if (craft()->elements->saveElement($file, false))
 				{
@@ -139,6 +145,11 @@ class AssetsService extends BaseApplicationComponent
 
 					// Save the file row
 					$fileRecord->save(false);
+
+					// Fire an 'onSaveAsset' event
+					$this->onSaveAsset(new Event($this, array(
+						'asset' => $file
+					)));
 
 					if ($transaction !== null)
 					{
@@ -185,6 +196,26 @@ class AssetsService extends BaseApplicationComponent
 		{
 			return false;
 		}
+	}
+
+	/**
+	 * Fires an 'onBeforeSaveAsset' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeSaveAsset(Event $event)
+	{
+		$this->raiseEvent('onBeforeSaveAsset', $event);
+	}
+
+	/**
+	 * Fires an 'onSaveAsset' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onSaveAsset(Event $event)
+	{
+		$this->raiseEvent('onSaveAsset', $event);
 	}
 
 	/**

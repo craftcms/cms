@@ -511,7 +511,7 @@ class EntriesController extends BaseController
 			// Only use the locales that the user has access to
 			$sectionLocaleIds = array_keys($variables['section']->getLocales());
 			$editableLocaleIds = craft()->i18n->getEditableLocaleIds();
-			$variables['localeIds'] = array_intersect($sectionLocaleIds, $editableLocaleIds);
+			$variables['localeIds'] = array_merge(array_intersect($sectionLocaleIds, $editableLocaleIds));
 		}
 		else
 		{

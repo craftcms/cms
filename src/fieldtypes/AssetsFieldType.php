@@ -97,12 +97,10 @@ class AssetsFieldType extends BaseElementFieldType
 
 		$kinds = array_keys(IOHelper::getFileKinds());
 		return craft()->templates->render('_components/fieldtypes/Assets/settings', array(
-			'allowMultipleSources' => $this->allowMultipleSources,
-			'allowLimit'           => $this->allowLimit,
-			'sources'              => $sources,
-			'settings'             => $this->getSettings(),
-			'type'                 => $this->getName(),
-			'fileKinds'            => array_combine($kinds, $kinds)
+			'sources'   => $sources,
+			'settings'  => $this->getSettings(),
+			'type'      => $this->getName(),
+			'fileKinds' => array_combine($kinds, $kinds)
 		));
 	}
 
