@@ -101,14 +101,12 @@ Craft.Uploader = Garnish.Base.extend({
 				this._rejectedFiles.push('"' + file.name + '"');
 			}
 
-			if (data.originalFiles.length > 1)
+			if (++this._fileCounter == data.originalFiles.length)
 			{
-				if (++this._fileCounter == data.originalFiles.length)
-				{
-					this._fileCounter = 0;
-					this.processErrorMessages();
-				}
+				this._fileCounter = 0;
+				this.processErrorMessages();
 			}
+
 		}, this));
 	},
 
