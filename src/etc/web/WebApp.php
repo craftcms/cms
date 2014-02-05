@@ -58,6 +58,7 @@ class WebApp extends \CWebApplication
 	 */
 	public $componentAliases;
 
+	private $_language;
 	private $_templatePath;
 	private $_packageComponents;
 	private $_pendingEvents;
@@ -104,6 +105,31 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
+	 * Returns the target application language.
+	 *
+	 * @return string
+	 */
+	public function getLanguage()
+	{
+		if (!isset($this->_language))
+		{
+			$this->setLanguage($this->_getTargetLanguage());
+		}
+
+		return $this->_language;
+	}
+
+	/**
+	 * Sets the target application language.
+	 *
+	 * @param string $language
+	 */
+	public function setLanguage($language)
+	{
+		$this->_language = $language;
+	}
+
+	/**
 	 * Returns the localization data for a given locale.
 	 *
 	 * @param string $localeId
@@ -135,9 +161,6 @@ class WebApp extends \CWebApplication
 		{
 			throw new HttpException(503);
 		}
-
-		// Set the target language
-		$this->setLanguage($this->_getTargetLanguage());
 
 		// Check if the app path has changed.  If so, run the requirements check again.
 		$this->_processRequirementsCheck();
