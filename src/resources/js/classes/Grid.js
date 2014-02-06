@@ -25,7 +25,7 @@ Craft.Grid = Garnish.Base.extend({
 
 		this.setSettings(settings, Craft.Grid.defaults);
 
-		if (this.settings.percentageWidths)
+		if (this.settings.mode == 'pct')
 		{
 			this.sizeUnit = '%';
 		}
@@ -130,7 +130,7 @@ Craft.Grid = Garnish.Base.extend({
 		{
 			this.removeListener(this.$items, 'resize');
 
-			if (this.settings.percentageWidths)
+			if (this.settings.mode == 'pct')
 			{
 				this.colPctWidth = (100 / this.totalCols);
 			}
@@ -261,7 +261,7 @@ Craft.Grid = Garnish.Base.extend({
 
 			this.leftPadding = this.getItemWidth(totalEmptyCols) / 2;
 
-			if (!this.settings.percentageWidths)
+			if (this.settings.mode == 'fixed')
 			{
 				this.leftPadding += (this.$container.width() - (this.settings.minColWidth * this.totalCols)) / 2;
 			}
@@ -276,7 +276,7 @@ Craft.Grid = Garnish.Base.extend({
 
 	getItemWidth: function(colspan)
 	{
-		if (this.settings.percentageWidths)
+		if (this.settings.mode == 'pct')
 		{
 			return (this.colPctWidth * colspan);
 		}
@@ -419,7 +419,7 @@ Craft.Grid = Garnish.Base.extend({
 		itemSelector: '.item',
 		cols: null,
 		minColWidth: (Garnish.isMobileBrowser(true) ? 252 : 320),
-		percentageWidths: false,
+		mode: 'fixed',
 		fillMode: 'top',
 		colClass: 'col',
 		snapToGrid: null
