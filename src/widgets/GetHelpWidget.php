@@ -46,33 +46,7 @@ class GetHelpWidget extends BaseWidget
 		craft()->templates->includeJsResource('js/GetHelpWidget.js');
 		craft()->templates->includeTranslations('Message sent successfully.', 'Couldn’t send support request.');
 
-
-		$message = "Enter your message here.\n\n" .
-			"------------------------------\n\n" .
-			'@@@appName@@@ version: ' .
-			Craft::t('{version} build {build}', array(
-				'version' => craft()->getVersion(),
-				'build'   => craft()->getBuild()
-			))."\n" .
-			'Packages: '.implode(', ', craft()->getPackages());
-
-		$plugins = craft()->plugins->getPlugins();
-
-		if ($plugins)
-		{
-			$pluginNames = array();
-
-			foreach ($plugins as $plugin)
-			{
-				$pluginNames[] = $plugin->getName().' ('.$plugin->getDeveloper().')';
-			}
-
-			$message .= "\nPlugins: ".implode(', ', $pluginNames);
-		}
-
-		return craft()->templates->render('_components/widgets/GetHelp/body', array(
-			'message' => $message
-		));
+		return craft()->templates->render('_components/widgets/GetHelp/body');
 	}
 
 	/**
