@@ -109,6 +109,16 @@ a.go { white-space: nowrap; }
 a.go:after { content: 'go'; font-size: 11px; margin: -1px 0 0 4px; color: $lighttextcolor; }
 a.go:hover:after { color: $linkcolor; }
 
+/* toggles */
+.toggle,
+a.fieldtoggle:before { width: 20px; height: 20px; background: url(../images/toggle.png) no-repeat 50% 0; }
+
+.toggle.expanded,
+a.fieldtoggle.expanded:before { background-position: 50% -40px; }
+
+a.fieldtoggle { display: block; position: relative; margin: 14px 0; padding-left: 12px; color: $textcolor; text-decoration: none; }
+a.fieldtoggle:before { content: '.'; font-size: 0; display: block; position: absolute; top: -2px; left: -6px; }
+
 /* emphasis */
 em, i { font-style: italic; }
 strong, b, i em { font-weight: bold; font-family: sans-serif; }
@@ -531,7 +541,6 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 
 
 /* structure view */
-.toggle { width: 20px; height: 20px; background: url(../images/toggle.png) no-repeat 50% 0; }
 .structureview li { padding-left: 8px; }
 .structureview ul { margin-left: -3px; }
 .structureview ul li { padding-left: 38px; background: url(../images/branch.png) no-repeat 0 0; }
@@ -1065,6 +1074,7 @@ ul.errors li { color: $errorcolor; }
 
 	.structureview ul li { background-image: url(../images/branch_2x.png); background-size: 40px; }
 
+	a.fieldtoggle:before,
 	.toggle { background-image: url(../images/toggle_2x.png); background-size: 12px; }
 
 	.progressbar.pending .progressbar-inner { background-image: url(../images/progressbar_pending_2x.png); background-size: 50px; }
