@@ -149,14 +149,33 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if ($this->uri !== null)
 		{
+			$useLocaleSiteUrl = (
+				($this->locale != craft()->language) &&
+				($localeSiteUrl = craft()->config->getLocalized('siteUrl', $this->locale))
+			);
+
+			if ($useLocaleSiteUrl)
+			{
+				// Temporarily set Craft to use this element's locale's site URL
+				$siteUrl = craft()->getSiteUrl();
+				craft()->setSiteUrl($localeSiteUrl);
+			}
+
 			if ($this->uri == '__home__')
 			{
-				return UrlHelper::getSiteUrl();
+				$url = UrlHelper::getSiteUrl();
 			}
 			else
 			{
-				return UrlHelper::getSiteUrl($this->uri);
+				$url = UrlHelper::getSiteUrl($this->uri);
 			}
+
+			if ($useLocaleSiteUrl)
+			{
+				craft()->setSiteUrl($siteUrl);
+			}
+
+			return $url;
 		}
 	}
 
