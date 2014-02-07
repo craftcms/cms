@@ -255,7 +255,7 @@ class ResourcesService extends BaseApplicationComponent
 		}
 
 		// Note that $content may be empty -- they could be requesting a blank text file or something.
-		// It doens't matter. No need to throw a 404.
+		// It doesn't matter. No need to throw a 404.
 		$content = IOHelper::getFileContents($path);
 
 		// Normalize URLs in CSS files
