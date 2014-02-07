@@ -254,6 +254,16 @@ class AppBehavior extends BaseBehavior
 	}
 
 	/**
+	 * Sets the site URL, while ensuring that the given URL ends with a trailing slash.
+	 *
+	 * @param string $siteUrl
+	 */
+	public function setSiteUrl($siteUrl)
+	{
+		$this->_siteUrl = rtrim($siteUrl, '/').'/';
+	}
+
+	/**
 	 * Returns the site UID.
 	 *
 	 * @return string
