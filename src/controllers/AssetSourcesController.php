@@ -56,7 +56,29 @@ class AssetSourcesController extends BaseController
 			$variables['sourceTypes'] = AssetSourceTypeVariable::populateVariables($sourceTypes);
 		}
 
-		$this->renderTemplate('settings/assets/sources/_settings', $variables);
+		$variables['isNewSource'] = !$variables['source']->id;
+
+		if ($variables['isNewSource'])
+		{
+			$variables['title'] = Craft::t('Create a new asset source');
+		}
+		else
+		{
+			$variables['title'] = $variables['source']->name;
+		}
+
+		$variables['crumbs'] = array(
+			array('label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')),
+			array('label' => Craft::t('Assets'),   'url' => UrlHelper::getUrl('settings/assets')),
+			array('label' => Craft::t('Sources'),  'url' => UrlHelper::getUrl('settings/assets')),
+		);
+
+		$variables['tabs'] = array(
+			'settings'    => array('label' => Craft::t('Settings'),     'url' => '#assetsource-settings'),
+			'fieldlayout' => array('label' => Craft::t('Field Layout'), 'url' => '#assetsource-fieldlayout'),
+		);
+
+		$this->renderTemplate('settings/assets/sources/_edit', $variables);
 	}
 
 	/**
@@ -95,6 +117,11 @@ class AssetSourcesController extends BaseController
 
 			$source->settings = array_merge($source->settings, $typeSettings[$source->type]);
 		}
+
+		// Set the field layout
+		$fieldLayout = craft()->fields->assembleLayoutFromPost(false);
+		$fieldLayout->type = ElementType::Asset;
+		$source->setFieldLayout($fieldLayout);
 
 		// Did it save?
 		if (craft()->assetSources->saveSource($source))

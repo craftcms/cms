@@ -132,6 +132,20 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
+	 * Return the file's field layout.
+	 * @return FieldLayoutModel|null
+	 */
+	public function getFieldLayout()
+	{
+		$source = $this->getSource();
+
+		if ($source)
+		{
+			return $source->getFieldLayout();
+		}
+	}
+
+	/**
 	 * Returns whether the current user can edit the element.
 	 *
 	 * @return bool

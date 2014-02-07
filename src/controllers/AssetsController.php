@@ -9,30 +9,6 @@ class AssetsController extends BaseController
 	protected $allowAnonymous = array('actionGenerateTransform');
 
 	/**
-	 * Saves the asset field layout.
-	 */
-	public function actionSaveFieldLayout()
-	{
-		$this->requirePostRequest();
-		craft()->userSession->requireAdmin();
-
-		// Set the field layout
-		$fieldLayout = craft()->fields->assembleLayoutFromPost(false);
-		$fieldLayout->type = ElementType::Asset;
-		craft()->fields->deleteLayoutsByType(ElementType::Asset);
-
-		if (craft()->fields->saveLayout($fieldLayout, false))
-		{
-			craft()->userSession->setNotice(Craft::t('Asset fields saved.'));
-			$this->redirectToPostedUrl();
-		}
-		else
-		{
-			craft()->userSession->setError(Craft::t('Couldn’t save asset fields.'));
-		}
-	}
-
-	/**
 	 * Upload a file
 	 */
 	public function actionUploadFile()

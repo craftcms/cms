@@ -8,6 +8,8 @@ namespace Craft;
  */
 class AssetSourceModel extends BaseComponentModel
 {
+	private $_sourceType;
+
 	/**
 	 * Use the translated source name as the string representation.
 	 *
@@ -29,23 +31,43 @@ class AssetSourceModel extends BaseComponentModel
 		$attributes['name'] = AttributeType::String;
 		$attributes['type']['default'] = 'Local';
 		$attributes['sortOrder'] = AttributeType::String;
+		$attributes['fieldLayoutId'] = AttributeType::Number;
 
 		return $attributes;
 	}
 
 	/**
-	 * Return the SourceType's name.
-	 *
-	 * @return string
+	 * @return array
 	 */
-	public function getSourceTypeName()
+	public function behaviors()
 	{
-		$sourceType =  craft()->assetSources->populateSourceType($this);
-		if ($sourceType)
-		{
-			return $sourceType->getName();
-		}
-		return "";
+		return array(
+			'fieldLayout' => new FieldLayoutBehavior(ElementType::Entry),
+		);
 	}
 
+	/**
+	 * Returns the source type this source is using.
+	 *
+	 * @return BaseAssetSourceType|null
+	 */
+	public function getSourceType()
+	{
+		if (!isset($this->_sourceType))
+		{
+			$this->_sourceType = craft()->assetSources->populateSourceType($this);
+
+			// Might not actually exist
+			if (!$this->_sourceType)
+			{
+				$this->_sourceType = false;
+			}
+		}
+
+		// Return 'null' instead of 'false' if it doesn't exist
+		if ($this->_sourceType)
+		{
+			return $this->_sourceType;
+		}
+	}
 }

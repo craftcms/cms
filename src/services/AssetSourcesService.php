@@ -246,8 +246,17 @@ class AssetSourcesService extends BaseApplicationComponent
 	public function saveSource(AssetSourceModel $source)
 	{
 		$sourceRecord = $this->_getSourceRecordById($source->id);
+
+		$isNewSource = $sourceRecord->isNewRecord();
+
+		if (!$isNewSource)
+		{
+			$oldSource = AssetSourceModel::populateModel($sourceRecord);
+		}
+
 		$sourceRecord->name = $source->name;
 		$sourceRecord->type = $source->type;
+		$sourceRecord->fieldLayoutId = $source->fieldLayoutId;
 
 		$sourceType = $this->populateSourceType($source);
 		$processedSettings = $sourceType->prepSettings($source->settings);
@@ -261,36 +270,71 @@ class AssetSourcesService extends BaseApplicationComponent
 
 		if ($recordValidates && $settingsValidate && empty($sourceErrors))
 		{
-			$isNewSource = $sourceRecord->isNewRecord();
-
-			if ($isNewSource)
+			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+			try
 			{
-				$maxSortOrder = craft()->db->createCommand()
-					->select('max(sortOrder)')
-					->from('assetsources')
-					->queryScalar();
-
-				$sourceRecord->sortOrder = $maxSortOrder + 1;
-			}
-			else
-			{
-				$topFolder = craft()->assets->findFolder(array('sourceId' => $source->id, 'parentId' => FolderCriteriaModel::AssetsNoParent));
-				if ($topFolder->name != $source->name)
+				if ($isNewSource)
 				{
-					$topFolder->name = $source->name;
-					craft()->assets->storeFolder($topFolder);
+					// Set the sort order
+					$maxSortOrder = craft()->db->createCommand()
+						->select('max(sortOrder)')
+						->from('assetsources')
+						->queryScalar();
+
+					$sourceRecord->sortOrder = $maxSortOrder + 1;
+				}
+
+				if (!$isNewSource && $oldSource->fieldLayoutId)
+				{
+					// Drop the old field layout
+					craft()->fields->deleteLayoutById($oldSource->fieldLayoutId);
+				}
+
+				// Save the new one
+				$fieldLayout = $source->getFieldLayout();
+				craft()->fields->saveLayout($fieldLayout, false);
+
+				// Update the source record/model with the new layout ID
+				$source->fieldLayoutId = $fieldLayout->id;
+				$sourceRecord->fieldLayoutId = $fieldLayout->id;
+
+				// Save the source
+				$sourceRecord->save(false);
+
+				if ($isNewSource)
+				{
+					// Now that we have a source ID, save it on the model
+					$source->id = $sourceRecord->id;
+				}
+				else
+				{
+					// Update the top folder's name with the source's new name
+					$topFolder = craft()->assets->findFolder(array('sourceId' => $source->id, 'parentId' => FolderCriteriaModel::AssetsNoParent));
+
+					if ($topFolder->name != $source->name)
+					{
+						$topFolder->name = $source->name;
+						craft()->assets->storeFolder($topFolder);
+					}
+				}
+
+				craft()->assetIndexing->ensureTopFolder($source);
+
+				if ($transaction !== null)
+				{
+					$transaction->commit();
 				}
 			}
-
-			$sourceRecord->save(false);
-
-			// Now that we have a source ID, save it on the model
-			if (!$source->id)
+			catch (\Exception $e)
 			{
-				$source->id = $sourceRecord->id;
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
+
+				throw $e;
 			}
 
-			craft()->assetIndexing->ensureTopFolder($source);
 			return true;
 		}
 		else
