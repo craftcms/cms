@@ -117,13 +117,14 @@ class UrlHelper
 	 */
 	public static function getResourceUrl($path = '', $params = null, $protocol = '')
 	{
-		$path = $origPath = trim($path, '/');
-		$path = craft()->config->getResourceTrigger().'/'.$path;
+		$path = trim($path, '/');
 
-		// Add timestamp to the resource URL for caching, if Craft is not operating in dev mode
-		if ($origPath && !craft()->config->get('devMode'))
+		if ($path)
 		{
-			$realPath = craft()->resources->getResourcePath($origPath);
+			// If we've served this resource before, we should have a cached copy of the server path already.
+			// Use that to get its timestamp, and add timestamp to the resource URL so ResourcesService sends it with a Pragma: Cache header.
+
+			$realPath = craft()->resources->getCachedResourcePath($path);
 
 			if ($realPath)
 			{
@@ -138,7 +139,7 @@ class UrlHelper
 			}
 		}
 
-		return static::getUrl($path, $params, $protocol);
+		return static::getUrl(craft()->config->getResourceTrigger().'/'.$path, $params, $protocol);
 	}
 
 	/**
