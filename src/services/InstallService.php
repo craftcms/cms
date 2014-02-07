@@ -392,7 +392,7 @@ class InstallService extends BaseApplicationComponent
 				if (!$migration->save())
 				{
 					Craft::log('Could not populate the migration table.', LogLevel::Error);
-					throw new Exception(Craft::t('There was a problem saving to the migrations table:').$this->_getFlattenedErrors($migration->getErrors()));
+					throw new Exception(Craft::t('There was a problem saving to the migrations table: ').$this->_getFlattenedErrors($migration->getErrors()));
 				}
 			}
 		}
