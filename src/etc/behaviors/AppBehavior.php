@@ -226,28 +226,33 @@ class AppBehavior extends BaseBehavior
 	{
 		if (!isset($this->_siteUrl))
 		{
-			if (defined('CRAFT_SITE_URL'))
+			// Start by checking the config
+			$siteUrl = craft()->config->getLocalized('siteUrl');
+
+			if (!$siteUrl)
 			{
-				$siteUrl = CRAFT_SITE_URL;
-			}
-			else
-			{
-				$siteUrl = $this->getInfo('siteUrl');
+				if (defined('CRAFT_SITE_URL'))
+				{
+					$siteUrl = CRAFT_SITE_URL;
+				}
+				else
+				{
+					$siteUrl = $this->getInfo('siteUrl');
+				}
+
+				if ($siteUrl)
+				{
+					// Parse it for environment variables
+					$siteUrl = craft()->config->parseEnvironmentString($siteUrl);
+				}
+				else
+				{
+					// Figure it out for ourselves, then
+					$siteUrl = craft()->request->getBaseUrl(true);
+				}
 			}
 
-			if ($siteUrl)
-			{
-				// Parse it for environment variables
-				$siteUrl = craft()->config->parseEnvironmentString($siteUrl);
-			}
-			else
-			{
-				// Figure it out for ourselves, then
-				$siteUrl = craft()->request->getBaseUrl(true);
-			}
-
-			// Make sure it ends in a slash
-			$this->_siteUrl = rtrim($siteUrl, '/').'/';
+			$this->setSiteUrl($siteUrl);
 		}
 
 		return UrlHelper::getUrlWithProtocol($this->_siteUrl, $protocol);

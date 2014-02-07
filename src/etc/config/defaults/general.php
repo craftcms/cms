@@ -270,6 +270,13 @@ return array(
 'siteRoutesSource' => 'db',
 
 /**
+ * The base URL to the site. If this is set, Craft will use it instead of the site URL defined in Settings > General.
+ *
+ * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale basis.
+ */
+'siteUrl' => null,
+
+/**
  * Configures Craft to send all system emails to a single email address, for testing purposes.
  */
 'testToEmailAddress' => '',
