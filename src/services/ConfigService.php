@@ -6,8 +6,6 @@ namespace Craft;
  */
 class ConfigService extends BaseApplicationComponent
 {
-	private $_environmentVariables;
-
 	/**
 	 * The general configuration names and values as defined in craft/app/etc/config and craft/config
 	 *
@@ -453,25 +451,6 @@ class ConfigService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the environment-spceific variables.
-	 *
-	 * @return array
-	 */
-	public function getEnvironmentVariables()
-	{
-		if (!isset($this->_environmentVariables))
-		{
-			$this->_environmentVariables = array_merge(
-				array('siteUrl' => craft()->getSiteUrl()),
-				$this->get('environmentVariables')
-			);
-		}
-
-		return $this->_environmentVariables;
-	}
-
-
-	/**
 	 * Parses a string for any environment variable tags.
 	 *
 	 * @param string $str
@@ -479,7 +458,7 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function parseEnvironmentString($str)
 	{
-		foreach ($this->getEnvironmentVariables() as $key => $value)
+		foreach ($this->get('environmentVariables') as $key => $value)
 		{
 			$str = str_replace('{'.$key.'}', $value, $str);
 		}
