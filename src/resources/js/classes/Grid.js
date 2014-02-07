@@ -71,6 +71,11 @@ Craft.Grid = Garnish.Base.extend({
 
 	refreshCols: function()
 	{
+		if (!this.items.length)
+		{
+			return;
+		}
+
 		if (this.settings.cols)
 		{
 			this.totalCols = this.settings.cols;
