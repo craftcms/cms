@@ -13,18 +13,19 @@ class GetHelpModel extends BaseModel
 	protected function defineAttributes()
 	{
 		return array(
-			'fromEmail'        => array(AttributeType::Email, 'required' => true),
+			'fromEmail'        => array(AttributeType::Email, 'required' => true, 'label' => 'Your Email'),
 			'message'          => array(AttributeType::String, 'required' => true),
-			'attachDebugFiles' => array(AttributeType::Bool),
-			'attachment'       => array(AttributeType::Mixed),
+			'attachLogs'       => AttributeType::Bool,
+			'attachDbBackup'   => AttributeType::Bool,
+			'attachment'       => AttributeType::Mixed,
 		);
 	}
 
 	public function rules()
 	{
 		// maxSize is 3MB
-		return array (
+		return array_merge(parent::rules(), array(
 			array('attachment', 'file', 'maxSize' => 3145728, 'allowEmpty' => true),
-		);
+		));
 	}
 }
