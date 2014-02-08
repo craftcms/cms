@@ -15,11 +15,16 @@ class ResourcesService extends BaseApplicationComponent
 	 * Returns the cached file system path for a given resource, if we have it.
 	 *
 	 * @param string $path
-	 * @return string|false
+	 * @return string|null
 	 */
 	public function getCachedResourcePath($path)
 	{
-		return craft()->fileCache->get('resourcePath:'.$path);
+		$realPath = craft()->fileCache->get('resourcePath:'.$path);
+
+		if ($realPath && IOHelper::fileExists($realPath))
+		{
+			return $realPath;
+		}
 	}
 
 	/**
