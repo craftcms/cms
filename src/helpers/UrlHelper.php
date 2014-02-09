@@ -126,7 +126,7 @@ class UrlHelper
 
 			$realPath = craft()->resources->getCachedResourcePath($path);
 
-			if ($realPath)
+			if ($realPath && IOHelper::fileExists($realPath))
 			{
 				if (!is_array($params))
 				{
