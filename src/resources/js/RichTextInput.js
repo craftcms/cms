@@ -8,19 +8,19 @@ Craft.RichTextInput = Garnish.Base.extend({
 
 	id: null,
 
-	init: function(id, lang, sectionSources, config)
+	init: function(id, sectionSources, elementLocale, redactorConfig, redactorLang)
 	{
 		this.id = id;
 
-		config.lang = lang;
+		redactorConfig.lang = redactorLang;
 
 		// Replace the image and link menu with slight modifications.
-		if (typeof config.buttonsCustom == 'undefined')
+		if (typeof redactorConfig.buttonsCustom == 'undefined')
 		{
-			config.buttonsCustom = {};
+			redactorConfig.buttonsCustom = {};
 		}
 
-		config.buttonsCustom.image =
+		redactorConfig.buttonsCustom.image =
 		{
 			title: Craft.t('Insert image'),
 			dropdown:
@@ -45,7 +45,7 @@ Craft.RichTextInput = Garnish.Base.extend({
 							this.assetSelectionModal = Craft.createElementSelectorModal('Asset', {
 								storageKey: 'RichTextFieldType.ChooseImage',
 								multiSelect: true,
-								criteria: { kind: 'image' },
+								criteria: { locale: elementLocale, kind: 'image' },
 								onSelect: $.proxy(function(assets, transform)
 								{
 									if (assets.length)
@@ -82,7 +82,7 @@ Craft.RichTextInput = Garnish.Base.extend({
 			}
 		};
 
-		config.buttonsCustom.link =
+		redactorConfig.buttonsCustom.link =
 		{
 			title: Craft.t('Link'),
 			dropdown:
@@ -100,6 +100,7 @@ Craft.RichTextInput = Garnish.Base.extend({
 							this.entrySelectionModal = Craft.createElementSelectorModal('Entry', {
 								storageKey: 'RichTextFieldType.LinkToEntry',
 								sources: sectionSources,
+								criteria: { locale: elementLocale },
 								onSelect: function(entries)
 								{
 									if (entries.length)
@@ -136,6 +137,7 @@ Craft.RichTextInput = Garnish.Base.extend({
 						{
 							this.assetLinkSelectionModal = Craft.createElementSelectorModal('Asset', {
 								storageKey: 'RichTextFieldType.LinkToAsset',
+								criteria: { locale: elementLocale },
 								onSelect: function(assets)
 								{
 									if (assets.length)
@@ -176,7 +178,7 @@ Craft.RichTextInput = Garnish.Base.extend({
 
 		// Initialize Redactor
 		var $textarea = $('#'+this.id);
-		$textarea.redactor(config);
+		$textarea.redactor(redactorConfig);
 		var redactor = $textarea.data('redactor');
 
 		if (typeof redactor.fullscreen != 'undefined' && typeof redactor.toggleFullscreen == 'function')
