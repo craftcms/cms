@@ -969,13 +969,13 @@ $.extend($.fn, {
 			var $container = $(this),
 				settings = {};
 
-			if ($container.data('item-selector'))     settings.itemSelector = $container.data('item-selector');
-			if ($container.data('cols'))              settings.cols = parseInt($container.data('cols'));
-			if ($container.data('min-col-width'))     settings.minColWidth = parseInt($container.data('min-col-width'));
-			if ($container.data('percentage-widths')) settings.percentageWidths = !!$container.data('percentage-widths');
-			if ($container.data('fill-mode'))         settings.fillMode = $container.data('fill-mode');
-			if ($container.data('col-class'))         settings.colClass = $container.data('col-class');
-			if ($container.data('snap-to-grid'))      settings.snapToGrid = !!$container.data('snap-to-grid');
+			if ($container.data('item-selector')) settings.itemSelector = $container.data('item-selector');
+			if ($container.data('cols'))          settings.cols = parseInt($container.data('cols'));
+			if ($container.data('min-col-width')) settings.minColWidth = parseInt($container.data('min-col-width'));
+			if ($container.data('mode'))          settings.mode = $container.data('mode');
+			if ($container.data('fill-mode'))     settings.fillMode = $container.data('fill-mode');
+			if ($container.data('col-class'))     settings.colClass = $container.data('col-class');
+			if ($container.data('snap-to-grid'))  settings.snapToGrid = !!$container.data('snap-to-grid');
 
 			new Craft.Grid(this, settings);
 		});

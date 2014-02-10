@@ -1,5 +1,31 @@
 {% import "_includes/forms" as forms %}
 
+{% macro uploadLocationInput(name, settings, sourceOptions) %}
+	{% from "_includes/forms" import select, text %}
+	<table class="inputs fullwidth">
+		<tr>
+			<td class="thin">
+				{{ select({
+					id: name~'Source',
+					name: name~'Source',
+					options: sourceOptions,
+					value: settings[name~'Source'],
+				}) }}
+			</td>
+			<td>
+				{{ text({
+					id: name~'Subpath',
+					name: name~'Subpath',
+					value: settings[name~'Subpath'],
+					placeholder: "path/to/subfolder"|t
+				}) }}
+			</td>
+		</tr>
+	</table>
+{% endmacro %}
+
+{% from _self import uploadLocationInput %}
+
 {{ forms.checkboxField({
 	label: "Restrict uploads to a single folder?"|t,
 	id: 'useSingleFolder-toggle',
@@ -12,13 +38,13 @@
 }) }}
 
 <div id="multi-folder-settings"{% if settings.useSingleFolder %} class="hidden"{% endif %}>
-	{% if sources %}
+	{% if sourceOptions %}
 		{{ forms.checkboxSelectField({
 			label: "Sources"|t,
 			instructions: "Which sources do you want to select {type} from?"|t({ type: type|lower }),
 			id: 'sources',
 			name: 'sources',
-			options: sources,
+			options: sourceOptions,
 			values: settings.sources
 		})}}
 	{% else %}
@@ -27,25 +53,20 @@
 		}, '<p class="error">' ~ "No sources exist yet."|t ~ '</p>') }}
 	{% endif %}
 
-	{{ forms.textField({
-		label: "Upload Location"|t,
-		instructions: "This is where files will be placed by default when you drag files directly onto the Assets field, or submit files to the field from the front end. It must start with {folder:x} or {source:x}. If left blank, the first assets source will be used."|t({ type: type|lower }),
-		id: 'defaultUploadPath',
-		name: 'defaultUploadPath',
-		value: settings.defaultUploadPath,
-		errors: settings.getErrors('defaultUploadPath')
-	}) }}
+
+	{{ forms.field({
+		label: "Default Upload Location"|t,
+		instructions: "Where should files be uploaded when they are dragged directly onto the field, or uploaded from the front end?"|t ~' '~ "Note that the subfolder path can contain variables like <code>{slug}</code> or <code>{author.username}</code>."|t,
+		errors: settings.getErrors('defaultUploadLocationSubpath')
+	}, uploadLocationInput('defaultUploadLocation', settings, sourceOptions)) }}
 </div>
 
 <div id="single-folder-settings"{% if not settings.useSingleFolder %} class="hidden"{% endif %}>
-	{{ forms.textField({
-		label: "Single Folder Path"|t,
-		instructions: "This is where files will be placed by default when you drag files directly onto the Assets field, or submit files to the field from the front end. It must start with {folder:x} or {source:x}."|t({ type: type|lower }),
-		id: 'singleFolderPath',
-		name: 'singleFolderPath',
-		value: settings.singleFolderPath,
-		errors: settings.getErrors('singleFolderPath')
-	}) }}
+	{{ forms.field({
+		label: "Upload Location"|t,
+		instructions: "Note that the subfolder path can contain variables like <code>{slug}</code> or <code>{author.username}</code>."|t,
+		errors: settings.getErrors('singleUploadLocationSubpath')
+	}, uploadLocationInput('singleUploadLocation', settings, sourceOptions)) }}
 </div>
 
 {{ forms.textField({

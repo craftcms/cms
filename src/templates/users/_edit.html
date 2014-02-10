@@ -51,7 +51,6 @@
 		{% if account is defined %}
 			<form id="userform" method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
 					<input type="hidden" name="action" value="users/saveUser">
-					<input type="hidden" name="action" value="users/saveUser">
 					{% if craft.hasPackage("Users") %}
 						<input type="hidden" name="redirect" value="users">
 					{% else %}
@@ -75,7 +74,7 @@
 						errors: (account is defined ? account.getErrors('username') : null)
 					}) }}
 
-					<div class="grid" data-cols="2">
+					<div class="grid" data-cols="2" data-mode="pct">
 						<div class="item" data-colspan="1">
 							{{ forms.textField({
 								label: "First Name"|t,

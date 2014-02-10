@@ -12,6 +12,38 @@ class ResourcesService extends BaseApplicationComponent
 	public $dateParam;
 
 	/**
+	 * Returns the cached file system path for a given resource, if we have it.
+	 *
+	 * @param string $path
+	 * @return string|null
+	 */
+	public function getCachedResourcePath($path)
+	{
+		$realPath = craft()->fileCache->get('resourcePath:'.$path);
+
+		if ($realPath && IOHelper::fileExists($realPath))
+		{
+			return $realPath;
+		}
+	}
+
+	/**
+	 * Caches a file system path for a given resource.
+	 *
+	 * @param string $path
+	 * @param string $realPath
+	 */
+	public function cacheResourcePath($path, $realPath)
+	{
+		if (!$realPath)
+		{
+			$realPath = ':(';
+		}
+
+		craft()->fileCache->set('resourcePath:'.$path, $realPath);
+	}
+
+	/**
 	 * Resolves a resource path to the actual file system path, or returns false if the resource cannot be found.
 	 *
 	 * @param string $path
@@ -210,21 +242,43 @@ class ResourcesService extends BaseApplicationComponent
 			throw new HttpException(403);
 		}
 
-		$path = $this->getResourcePath($path);
+		$cachedPath = $this->getCachedResourcePath($path);
 
-		if ($path === false || !IOHelper::fileExists($path))
+		if ($cachedPath)
+		{
+			if ($cachedPath == ':(')
+			{
+				// 404
+				$realPath = false;
+			}
+			else
+			{
+				// We've got it already
+				$realPath = $cachedPath;
+			}
+		}
+		else
+		{
+			// We don't have a cache of the file system path, so let's get it
+			$realPath = $this->getResourcePath($path);
+
+			// Now cache it
+			$this->cacheResourcePath($path, $realPath);
+		}
+
+		if ($realPath === false || !IOHelper::fileExists($realPath))
 		{
 			throw new HttpException(404);
 		}
 
 		// If there is a timestamp and HTTP_IF_MODIFIED_SINCE exists, check the timestamp against requested file's last modified date.
 		// If the last modified date is less than the timestamp, return a 304 not modified and let the browser serve it from cache.
-		$timestamp = craft()->request->getParam('d', null);
+		$timestamp = craft()->request->getParam($this->dateParam, null);
 
 		if ($timestamp !== null && array_key_exists('HTTP_IF_MODIFIED_SINCE', $_SERVER))
 		{
 			$requestDate = DateTime::createFromFormat('U', $timestamp);
-			$lastModifiedFileDate = IOHelper::getLastTimeModified($path);
+			$lastModifiedFileDate = IOHelper::getLastTimeModified($realPath);
 
 			if ($lastModifiedFileDate && $lastModifiedFileDate <= $requestDate)
 			{
@@ -236,10 +290,10 @@ class ResourcesService extends BaseApplicationComponent
 
 		// Note that $content may be empty -- they could be requesting a blank text file or something.
 		// It doens't matter. No need to throw a 404.
-		$content = IOHelper::getFileContents($path);
+		$content = IOHelper::getFileContents($realPath);
 
 		// Normalize URLs in CSS files
-		$mimeType = IOHelper::getMimeTypeByExtension($path);
+		$mimeType = IOHelper::getMimeTypeByExtension($realPath);
 		if (mb_strpos($mimeType, 'css') !== false)
 		{
 			$content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', array(&$this, '_normalizeCssUrl'), $content);
@@ -254,11 +308,11 @@ class ResourcesService extends BaseApplicationComponent
 				$options['cache'] = true;
 			}
 
-			craft()->request->sendFile($path, $content, $options);
+			craft()->request->sendFile($realPath, $content, $options);
 		}
 		else
 		{
-			craft()->request->xSendFile($path);
+			craft()->request->xSendFile($realPath);
 		}
 
 		// You shall not pass.

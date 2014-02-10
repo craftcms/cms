@@ -61,17 +61,23 @@ class ConfigService extends BaseApplicationComponent
 	 * Returns a localized config setting value.
 	 *
 	 * @param string $item
+	 * @param string|null $localeId
 	 * @return mixed
 	 */
-	public function getLocalized($item)
+	public function getLocalized($item, $localeId = null)
 	{
 		$value = $this->get($item);
 
 		if (is_array($value))
 		{
-			if (isset($value[craft()->language]))
+			if (!$localeId)
 			{
-				return $value[craft()->language];
+				$localeId = craft()->language;
+			}
+
+			if (isset($value[$localeId]))
+			{
+				return $value[$localeId];
 			}
 			else if ($value)
 			{

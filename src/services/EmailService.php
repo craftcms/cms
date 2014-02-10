@@ -236,6 +236,15 @@ class EmailService extends BaseApplicationComponent
 			$email->addAddress($user->email, $user->getFullName());
 		}
 
+		// Add any custom headers
+		if (!empty($emailModel->customHeaders))
+		{
+			foreach ($emailModel->customHeaders as $headerName => $headerValue)
+			{
+				$email->addCustomHeader($headerName, $headerValue);
+			}
+		}
+
 		// Add any BCC's
 		if (!empty($emailModel->bcc))
 		{

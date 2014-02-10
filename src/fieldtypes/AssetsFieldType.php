@@ -43,39 +43,15 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	protected function defineSettings()
 	{
-		$settings = parent::defineSettings();
-		$settings['singleFolderPath'] = AttributeType::String;
-		$settings['defaultUploadPath'] = AttributeType::String;
-		$settings['useSingleFolder'] = AttributeType::Bool;
-		$settings['restrictFiles'] = AttributeType::Bool;
-		$settings['allowedKinds'] = AttributeType::Mixed;
-
-		return $settings;
-	}
-
-	/**
-	 * Preps the settings before they're saved to the database.
-	 *
-	 * @param array $settings
-	 * @return array
-	 */
-	public function prepSettings($settings)
-	{
-		if (!(isset($settings['singleFolderPath']) && $settings['singleFolderPath']))
-		{
-			$settings['singleFolderPath'] = '';
-		}
-
-		if (!(isset($settings['defaultUploadPath']) && $settings['defaultUploadPath']))
-		{
-			$settings['defaultUploadPath'] = '';
-		}
-
-		if (!(isset($settings['useSingleFolder']) && $settings['useSingleFolder']))
-		{
-			$settings['useSingleFolder'] = 0;
-		}
-		return $settings;
+		return array_merge(parent::defineSettings(), array(
+			'useSingleFolder'              => AttributeType::Bool,
+			'defaultUploadLocationSource'  => AttributeType::Number,
+			'defaultUploadLocationSubpath' => AttributeType::String,
+			'singleUploadLocationSource'   => AttributeType::Number,
+			'singleUploadLocationSubpath'  => AttributeType::String,
+			'restrictFiles'                => AttributeType::Bool,
+			'allowedKinds'                 => AttributeType::Mixed,
+		));
 	}
 
 	/**
@@ -85,21 +61,18 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		$sources = array();
+		$sourceOptions = array();
 
-		foreach ($this->getElementType()->getSources() as $key => $source)
+		foreach (craft()->assetSources->getAllSources() as $source)
 		{
-			if (!isset($source['heading']))
-			{
-				$sources[] = array('label' => $source['label'], 'value' => $key);
-			}
+			$sourceOptions[] = array('label' => $source->name, 'value' => $source->id);
 		}
 
 		$kinds = array_keys(IOHelper::getFileKinds());
 		return craft()->templates->render('_components/fieldtypes/Assets/settings', array(
-			'sources'   => $sources,
-			'settings'  => $this->getSettings(),
-			'type'      => $this->getName(),
+			'sourceOptions' => $sourceOptions,
+			'settings'      => $this->getSettings(),
+			'type'          => $this->getName(),
 			'fileKinds' => array_combine($kinds, $kinds)
 		));
 	}
@@ -116,41 +89,40 @@ class AssetsFieldType extends BaseElementFieldType
 	{
 		// Look for the single folder setting
 		$settings = $this->getSettings();
-		if (!empty($settings->singleFolderPath) && !empty($settings->useSingleFolder))
+
+		if ($settings->useSingleFolder)
 		{
-			// It must start with a folder or a source.
-			$folderPath = $settings->singleFolderPath;
-			if (preg_match('/^\{((folder|source):[0-9]+)\}/', $folderPath, $matches))
+			// Is this a saved element and can the path be resolved then?
+			if ($this->element->id)
 			{
-				// Is this a saved entry and can the path be resolved then?
-				if ($this->element->id)
+				$folderPath = 'folder:'.$this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
+			}
+			else
+			{
+				// New element, so we default to User's upload folder for this field
+				$userModel = craft()->userSession->getUser();
+
+				if (!$userModel)
 				{
-					$folderPath = 'folder:'.$this->_resolveSourcePathToFolderId($folderPath);
+					throw new Exception(Craft::t("To use this Field, user must be logged in!"));
+				}
+
+				$userFolder = craft()->assets->getUserFolder($userModel);
+
+				$folderName = 'field_' . $this->model->id;
+				$elementFolder = craft()->assets->findFolder(array('parentId' => $userFolder->id, 'name' => $folderName));
+
+				if (!$elementFolder)
+				{
+					$folderId = $this->_createSubFolder($userFolder, $folderName);
 				}
 				else
 				{
-					// New entry, so we default to User's upload folder for this field
-					$userModel = craft()->userSession->getUser();
-					if (!$userModel)
-					{
-						throw new Exception(Craft::t("To use this Field, user must be logged in!"));
-					}
-
-					$userFolder = craft()->assets->getUserFolder($userModel);
-
-					$folderName = 'field_' . $this->model->id;
-					$elementFolder = craft()->assets->findFolder(array('parentId' => $userFolder->id, 'name' => $folderName));
-					if (!($elementFolder))
-					{
-						$folderId = $this->_createSubFolder($userFolder, $folderName);
-					}
-					else
-					{
-						$folderId = $elementFolder->id;
-					}
-					IOHelper::ensureFolderExists(craft()->path->getAssetsTempSourcePath().$folderName);
-					$folderPath = 'folder:'.$folderId;
+					$folderId = $elementFolder->id;
 				}
+
+				IOHelper::ensureFolderExists(craft()->path->getAssetsTempSourcePath().$folderName);
+				$folderPath = 'folder:'.$folderId;
 			}
 		}
 		else
@@ -166,7 +138,6 @@ class AssetsFieldType extends BaseElementFieldType
 			$variables['sources'] = $folderPath;
 		}
 
-
 		craft()->templates->includeJsResource('lib/fileupload/jquery.ui.widget.js');
 		craft()->templates->includeJsResource('lib/fileupload/jquery.fileupload.js');
 
@@ -174,7 +145,7 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * For all new entries, if the field is using a single folder setting, move the uploaded files.
+	 * For all new elements, if the field is using a single folder setting, move the uploaded files.
 	 */
 	public function onAfterElementSave()
 	{
@@ -232,7 +203,9 @@ class AssetsFieldType extends BaseElementFieldType
 			$filesToMove = $this->element->getContent()->{$handle};
 			if (is_array($filesToMove) && count($filesToMove))
 			{
-				$targetFolderId = $this->_resolveSourcePathToFolderId($this->getSettings()->singleFolderPath);
+				$settings = $this->getSettings();
+
+				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
 
 				// Resolve all conflicts by keeping both
 				$actions = array_fill(0, count($filesToMove), AssetsHelper::ActionKeepBoth);
@@ -252,26 +225,31 @@ class AssetsFieldType extends BaseElementFieldType
 	{
 		$targetFolderId = null;
 		$settings = $this->getSettings();
+
 		if ($settings->useSingleFolder)
 		{
-			$targetFolderId = $this->_resolveSourcePathToFolderId($settings->singleFolderPath);
+			$targetFolderId = $this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
 		}
 		else
 		{
-			if ($this->getSettings()->defaultUploadPath)
+			// Make sure the field has been saved since this setting was added
+			if ($this->getSettings()->defaultUploadLocationSource)
 			{
-				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->defaultUploadPath);
+				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->defaultUploadLocationSource, $settings->defaultUploadLocationSubpath);
 			}
 			else
 			{
 				$sources = $settings->sources;
+
 				if (!is_array($sources))
 				{
 					$sourceIds = craft()->assetSources->getViewableSourceIds();
+
 					if ($sourceIds)
 					{
 						$sourceId = reset($sourceIds);
 						$targetFolder = craft()->assets->findFolder(array('sourceId' => $sourceId, 'parentId' => FolderCriteriaModel::AssetsNoParent));
+
 						if ($targetFolder)
 						{
 							$targetFolderId = $targetFolder->id;
@@ -292,79 +270,71 @@ class AssetsFieldType extends BaseElementFieldType
 	/**
 	 * Resolve a source path to it's folder ID by the source path and the matched source beginning.
 	 *
-	 * @param $sourcePath
+	 * @param int $sourceId
+	 * @param string $subpath
 	 * @return mixed
 	 * @throws Exception
 	 */
-	private function _resolveSourcePathToFolderId($sourcePath)
+	private function _resolveSourcePathToFolderId($sourceId, $subpath)
 	{
-		preg_match('/^\{((folder|source):[0-9]+)\}/', $sourcePath, $matches);
-		$parts = explode(":", $matches[1]);
-		if ($parts[0] == 'folder')
-		{
-			$folder = craft()->assets->getFolderById($parts[1]);
-		}
-		else
-		{
-			$folder = craft()->assets->findFolder(array('sourceId' => $parts[1], 'parentId' => FolderCriteriaModel::AssetsNoParent));
-		}
+		$folder = craft()->assets->findFolder(array(
+			'sourceId' => $sourceId,
+			'parentId' => FolderCriteriaModel::AssetsNoParent
+		));
 
 		// Do we have the folder?
 		if (empty($folder))
 		{
 			throw new Exception (Craft::t("Cannot find the target folder."));
 		}
-		else
+
+		// Prepare the path by parsing tokens and normalizing slashes.
+		$subpath = trim($subpath, '/');
+		$subpath = craft()->templates->renderObjectTemplate($subpath, $this->element);
+		$pathParts = explode('/', $subpath);
+
+		foreach ($pathParts as &$part)
 		{
-			$sourceId = $folder->sourceId;
+			$part = IOHelper::cleanFilename($part);
+		}
 
-			// Prepare the path by parsing tokens and normalizing slashes.
-			$sourcePath = trim(str_replace('{'.$matches[1].'}', '', $sourcePath), '/');
-			$sourcePath = craft()->templates->renderObjectTemplate($sourcePath, $this->element);
-			$pathParts = explode("/", $sourcePath);
-			foreach ($pathParts as &$part)
+		$subpath = join('/', $pathParts);
+
+		if (strlen($subpath))
+		{
+			$subpath = $subpath.'/';
+		}
+
+		// Let's see if the folder already exists.
+		$folderCriteria = array('sourceId' => $sourceId, 'path' => $folder->path . $subpath);
+		$existingFolder = craft()->assets->findFolder($folderCriteria);
+
+		// No dice, go over each folder in the path and create it if it's missing.
+		if (!$existingFolder)
+		{
+			$parts = explode('/', $subpath);
+
+			// Now make sure that every folder in the path exists.
+			$currentFolder = $folder;
+			foreach ($parts as $part)
 			{
-				$part = IOHelper::cleanFilename($part);
-			}
-
-			$sourcePath = join("/", $pathParts);
-
-			if (strlen($sourcePath))
-			{
-				$sourcePath = $sourcePath.'/';
-			}
-
-			// Let's see if the folder already exists.
-			$folderCriteria = array('sourceId' => $sourceId, 'path' => $folder->path . $sourcePath);
-			$existingFolder = craft()->assets->findFolder($folderCriteria);
-
-			// No dice, go over each folder in the path and create it if it's missing.
-			if (!$existingFolder)
-			{
-				$parts = explode('/', $sourcePath);
-
-				// Now make sure that every folder in the path exists.
-				$currentFolder = $folder;
-				foreach ($parts as $part)
+				if (empty($part))
 				{
-					if (empty($part))
-					{
-						continue;
-					}
-					$folderCriteria = array('parentId' => $currentFolder->id, 'name' => $part);
-					$existingFolder = craft()->assets->findFolder($folderCriteria);
-					if (!$existingFolder)
-					{
-						$folderId = $this->_createSubFolder($currentFolder, $part);
-						$existingFolder = craft()->assets->getFolderById($folderId);
-					}
-					$currentFolder = $existingFolder;
+					continue;
 				}
-			}
-			else
-			{
+				$folderCriteria = array('parentId' => $currentFolder->id, 'name' => $part);
+				$existingFolder = craft()->assets->findFolder($folderCriteria);
+				if (!$existingFolder)
+				{
+					$folderId = $this->_createSubFolder($currentFolder, $part);
+					$existingFolder = craft()->assets->getFolderById($folderId);
+				}
 				$currentFolder = $existingFolder;
 			}
+		}
+		else
+		{
+			$currentFolder = $existingFolder;
 		}
 
 		return $currentFolder->id;

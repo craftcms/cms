@@ -15,7 +15,7 @@ Craft.RecentEntriesWidget = Garnish.Base.extend({
 		this.params = params;
 		this.$widget = $('#widget'+widgetId);
 		this.$body = this.$widget.find('.body:first');
-		this.$container = this.$widget.find('.container:first');
+		this.$container = this.$widget.find('.recententries-container:first');
 		this.$tbody = this.$container.find('tbody:first');
 		this.hasEntries = !!this.$tbody.length;
 

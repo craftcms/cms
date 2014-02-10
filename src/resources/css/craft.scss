@@ -109,6 +109,16 @@ a.go { white-space: nowrap; }
 a.go:after { content: 'go'; font-size: 11px; margin: -1px 0 0 4px; color: $lighttextcolor; }
 a.go:hover:after { color: $linkcolor; }
 
+/* toggles */
+.toggle,
+a.fieldtoggle:before { width: 20px; height: 20px; background: url(../images/toggle.png) no-repeat 50% 0; }
+
+.toggle.expanded,
+a.fieldtoggle.expanded:before { background-position: 50% -40px; }
+
+a.fieldtoggle { display: block; position: relative; margin: 14px 0; padding-left: 12px; color: $textcolor; text-decoration: none; }
+a.fieldtoggle:before { content: '.'; font-size: 0; display: block; position: absolute; top: -2px; left: -6px; }
+
 /* emphasis */
 em, i { font-style: italic; }
 strong, b, i em { font-weight: bold; font-family: sans-serif; }
@@ -235,10 +245,10 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 
 .toolbar { position: relative; margin: 24px 0; height: 30px; }
 .toolbar .spinner { position: absolute; top: 0; right: -22px; }
-.toolbar table { width: 100%; }
-.toolbar table td:not(:first-child) { padding-left: 14px; }
-.toolbar table td > .btn { display: block; }
-.toolbar table td > .btngroup { float: none; }
+
+table.inputs td:not(:first-child) { padding-left: 14px; }
+table.inputs td > .btn { display: block; }
+table.inputs td > .btngroup { float: none; }
 
 .buttons { position: relative; margin: 24px 0; }
 .buttons:after { @include clearafter; }
@@ -531,7 +541,6 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 
 
 /* structure view */
-.toggle { width: 20px; height: 20px; background: url(../images/toggle.png) no-repeat 50% 0; }
 .structureview li { padding-left: 8px; }
 .structureview ul { margin-left: -3px; }
 .structureview ul li { padding-left: 38px; background: url(../images/branch.png) no-repeat 0 0; }
@@ -879,13 +888,18 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 .password { padding-right: 5em; }
 .password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
-.datewrapper { display: inline-block; position: relative; width: 8em; }
-.datewrapper:before { position: absolute; top: 8px; left: 7px; content: 'date'; color: $lighttextcolor; }
-.datewrapper .text { padding-left: 20px; width: 100%; }
+.datewrapper,
+.timewrapper { display: inline-block; position: relative; }
+.datewrapper:before,
+.timewrapper:before { position: absolute; color: $lighttextcolor; }
+.datewrapper .text,
+.timewrapper .text { padding-left: 22px; width: 100%; }
 
-.timewrapper { display: inline-block; position: relative; width: 6.5em; }
-.timewrapper:before { position: absolute; top: 10px; left: 7px; font-size: 11px; content: 'time'; color: $lighttextcolor; }
-.timewrapper .text { padding-left: 20px; width: 100%; }
+.datewrapper { width: 8em; }
+.datewrapper:before { top: 8px; left: 7px; content: 'date'; }
+
+.timewrapper { width: 7em; }
+.timewrapper:before { top: 10px; left: 7px; font-size: 11px; content: 'time'; }
 
 ::-webkit-input-placeholder { color: $lighttextcolor; }
 :-moz-placeholder { color: $lighttextcolor; }
@@ -1066,6 +1080,7 @@ ul.errors li { color: $errorcolor; }
 
 	.structureview ul li { background-image: url(../images/branch_2x.png); background-size: 40px; }
 
+	a.fieldtoggle:before,
 	.toggle { background-image: url(../images/toggle_2x.png); background-size: 12px; }
 
 	.progressbar.pending .progressbar-inner { background-image: url(../images/progressbar_pending_2x.png); background-size: 50px; }

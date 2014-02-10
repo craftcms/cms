@@ -2,42 +2,49 @@
 
 <form method="post" action="" accept-charset="UTF-8" enctype="multipart/form-data">
 	{% set fromEmail = getHelp is defined ? getHelp.fromEmail : currentUser.email %}
-	{% if fromEmail == "support@pixelandtonic.com" %}
+	{% if fromEmail == "support@pixelandtonic.com" or fromEmail == "support@buildwithcraft.com" %}
 		{% set fromEmail = "" %}
 	{% endif %}
 
 	{{ forms.textField({
-		label: "From Email"|t,
+		label: "Your Email"|t,
+		class: 'fromEmail',
 		name: 'fromEmail',
 		value: fromEmail,
-		class: 'fromEmail',
-		errors: getHelp is defined ? getHelp.getErrors('fromEmail') : '',
-		required: true,
+		errors: getHelp is defined ? getHelp.getErrors('fromEmail') : ''
 	}) }}
 
-	{{ forms.textarea({
+	{{ forms.textareaField({
 		label: "Message"|t,
+		class: 'message',
 		name: 'message',
-		class: 'message nicetext',
-		rows: 10,
-		value: message
+		placeholder: "Tell us about your problems."|t,
+		rows: 4
 	}) }}
 
-	{{ forms.checkbox({
-		name: 'attachDebugFiles',
-		checked: true,
-		class: 'attachDebugFiles',
-		label: "Include error logs and database backup?"|t,
-	}) }}
+	<a class="fieldtoggle" data-target="gethelp-more">{{ "More"|t }}</a>
 
-	<p>
-		{{ "Attach an additional file?"|t }}:
-
-		{{ forms.file({
-			name: 'attachAdditionalFile',
-			id: 'attachAdditionalFile',
+	<div id="gethelp-more" class="hidden">
+		{{ forms.checkboxField({
+			label: "Attach error logs?"|t,
+			class: 'attachLogs',
+			name: 'attachLogs',
+			checked: true
 		}) }}
-	</p>
+
+		{{ forms.checkboxField({
+			label: "Attach a database backup?"|t,
+			class: 'attachDbBackup',
+			name: 'attachDbBackup',
+			checked: craft.config.backupDbOnUpdate,
+		}) }}
+
+		{{ forms.fileField({
+			label: "Attach an additional file?"|t,
+			class: 'attachAdditionalFile',
+			name: 'attachAdditionalFile',
+		}) }}
+	</div>
 
 	<div class="buttons last">
 		<input type="submit" class="btn submit" value="{{ 'Send'|t }}">
