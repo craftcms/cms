@@ -392,6 +392,9 @@ class FieldsService extends BaseApplicationComponent
 				{
 					$columnType = ModelHelper::normalizeAttributeConfig($columnType);
 
+					// Make sure we're working with the latest data in the case of a renamed field.
+					craft()->db->schema->refresh();
+
 					if (craft()->db->columnExists($contentTable, $oldColumnName))
 					{
 						craft()->db->createCommand()->alterColumn($contentTable, $oldColumnName, $columnType, $newColumnName);
