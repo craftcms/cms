@@ -392,6 +392,9 @@ class FieldsService extends BaseApplicationComponent
 				{
 					$columnType = ModelHelper::normalizeAttributeConfig($columnType);
 
+					// Make sure we're working with the latest data in the case of a renamed field.
+					craft()->db->schema->refresh();
+
 					if (craft()->db->columnExists($contentTable, $oldColumnName))
 					{
 						craft()->db->createCommand()->alterColumn($contentTable, $oldColumnName, $columnType, $newColumnName);
@@ -479,6 +482,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Deletes a field.
 	 *
 	 * @param FieldModel $field
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function deleteField(FieldModel $field)
@@ -486,7 +490,12 @@ class FieldsService extends BaseApplicationComponent
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
-			$field->getFieldType()->onBeforeDelete();
+			$fieldType = $field->getFieldType();
+
+			if ($fieldType)
+			{
+				$field->getFieldType()->onBeforeDelete();
+			}
 
 			// De we need to delete the content column?
 			$contentTable = craft()->content->contentTable;
@@ -502,7 +511,10 @@ class FieldsService extends BaseApplicationComponent
 
 			if ($affectedRows)
 			{
-				$field->getFieldType()->onAfterDelete();
+				if ($fieldType)
+				{
+					$field->getFieldType()->onAfterDelete();
+				}
 			}
 
 			if ($transaction !== null)

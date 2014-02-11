@@ -114,7 +114,10 @@ class UserModel extends BaseElementModel
 	 */
 	public function getFullName()
 	{
-		return $this->firstName . ($this->firstName && $this->lastName ? ' ' : '') . $this->lastName;
+		$firstName = trim($this->firstName);
+		$lastName = trim($this->lastName);
+
+		return $firstName . ($firstName && $lastName ? ' ' : '') . $lastName;
 	}
 
 	/**
@@ -143,9 +146,9 @@ class UserModel extends BaseElementModel
 	 */
 	public function getFriendlyName()
 	{
-		if ($this->firstName)
+		if ($firstName = trim($this->firstName))
 		{
-			return $this->firstName;
+			return $firstName;
 		}
 		else
 		{

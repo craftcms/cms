@@ -190,7 +190,7 @@ class SearchService extends BaseApplicationComponent
 			}
 
 			// Sort found elementIds by score
-			asort($this->_results);
+			arsort($this->_results);
 
 			// Store entry ids in return value
 			$elementIds = array_keys($this->_results);
