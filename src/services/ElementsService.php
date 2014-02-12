@@ -1149,28 +1149,66 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Deletes an element(s) by its ID(s).
 	 *
-	 * @param int|array $elementId
+	 * @param int|array $elementIds
 	 * @return bool
 	 */
-	public function deleteElementById($elementId)
+	public function deleteElementById($elementIds)
 	{
-		if (!$elementId)
+		if (!$elementIds)
 		{
 			return false;
 		}
 
-		if (is_array($elementId))
+		if (!is_array($elementIds))
 		{
-			$condition = array('in', 'id', $elementId);
-		}
-		else
-		{
-			$condition = array('id' => $elementId);
+			$elementIds = array($elementIds);
 		}
 
-		$affectedRows = craft()->db->createCommand()->delete('elements', $condition);
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			// First delete any structure nodes with these elements, so NestedSetBehavior can do its thing.
+			// We need to go one-by-one in case one of theme deletes the record of another in the process.
+			foreach ($elementIds as $elementId)
+			{
+				$records = StructureElementRecord::model()->findAllByAttributes(array(
+					'elementId' => $elementId
+				));
 
-		return (bool) $affectedRows;
+				foreach ($records as $record)
+				{
+					$record->deleteNode();
+				}
+			}
+
+			// Now delete the rows in the elements table
+			if (count($elementIds) == 1)
+			{
+				$condition = array('id' => $elementIds[0]);
+			}
+			else
+			{
+				$condition = array('in', 'id', $elementIds);
+			}
+
+			$affectedRows = craft()->db->createCommand()->delete('elements', $condition);
+
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
+
+			return (bool) $affectedRows;
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
 	}
 
 	// Element types
