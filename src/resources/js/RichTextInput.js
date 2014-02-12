@@ -189,6 +189,15 @@ Craft.RichTextInput = Garnish.Base.extend({
 				}
 			});
 		}
+
+		if (typeof Craft.entryPreviewMode != 'undefined')
+		{
+			// There's a UI glitch if Redactor is in Code view when Live Preview is shown/hidden
+			Craft.entryPreviewMode.on('beforeShowPreviewMode beforeHidePreviewMode', function()
+			{
+				redactor.toggleVisual();
+			})
+		}
 	}
 });
 
