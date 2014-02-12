@@ -85,7 +85,7 @@ class NumberFieldType extends BaseFieldType
 		}
 		else
 		{
-			return $data;
+			return LocalizationHelper::normalizeNumber($data);
 		}
 	}
 }

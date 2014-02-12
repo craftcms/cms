@@ -18,13 +18,16 @@ class LocalizationHelper
 	 */
 	public static function normalizeNumber($number)
 	{
-		$language = craft()->language;
-		$languageData = craft()->i18n->getLocaleData($language);
-		$decimalSymbol = $languageData->getNumberSymbol('decimal');
-		$groupSymbol = $languageData->getNumberSymbol('group');
+		if (is_string($number))
+		{
+			$language = craft()->language;
+			$languageData = craft()->i18n->getLocaleData($language);
+			$decimalSymbol = $languageData->getNumberSymbol('decimal');
+			$groupSymbol = $languageData->getNumberSymbol('group');
 
-		$number = str_replace($groupSymbol, '', $number);
-		$number = str_replace($decimalSymbol, '.', $number);
+			$number = str_replace($groupSymbol, '', $number);
+			$number = str_replace($decimalSymbol, '.', $number);
+		}
 
 		return $number;
 	}
