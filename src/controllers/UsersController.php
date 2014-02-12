@@ -445,22 +445,13 @@ class UsersController extends BaseController
 				),
 			);
 
-			// If they can administrate users, show the admin tab.
-			if (craft()->userSession->getUser()->can('administrateUsers'))
+			// If they can assign user groups and permissions, show the Permissions tab
+			if (craft()->userSession->getUser()->can('assignUserPermissions'))
 			{
 				$variables['tabs']['perms'] = array(
 					'label' => Craft::t('Permissions'),
 					'url'   => '#perms',
 				);
-
-				if ($variables['account']->id)
-				{
-					$variables['tabs']['admin'] = array(
-						'label' => Craft::t('Admin'),
-						'url'   => '#admin',
-					);
-				}
-
 			}
 		}
 
@@ -864,7 +855,7 @@ class UsersController extends BaseController
 	public function actionSendActivationEmail()
 	{
 		$this->requirePostRequest();
-		craft()->userSession->requirePermission('administrateUsers');
+		craft()->userSession->requirePermission('editUsers');
 
 		$userId = craft()->request->getRequiredPost('userId');
 		$user = craft()->users->getUserById($userId);
