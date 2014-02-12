@@ -472,7 +472,14 @@ class EntriesController extends BaseController
 
 		$entryId = $entry->id;
 
-		craft()->entries->deleteEntryById($entryId);
+		if (craft()->entries->deleteEntryById($entryId))
+		{
+			craft()->userSession->setNotice(Craft::t('Entry deleted.'));
+		}
+		else
+		{
+			craft()->userSession->setError(Craft::t('Couldn’t delete entry.'));
+		}
 
 		$this->redirectToPostedUrl();
 	}
