@@ -191,8 +191,8 @@ class EntriesService extends BaseApplicationComponent
 
 	/**
 	 * Deletes an entry(s).
-	 *
 	 * @param EntryModel|array $entries
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function deleteEntry($entries)
@@ -274,6 +274,8 @@ class EntriesService extends BaseApplicationComponent
 		$criteria = craft()->elements->getCriteria(ElementType::Entry);
 		$criteria->id = $entryId;
 		$criteria->limit = null;
+		$criteria->status = null;
+		$criteria->localeEnabled = false;
 		$entries = $criteria->find();
 
 		if ($entries)
