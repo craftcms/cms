@@ -83,6 +83,11 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 
 	showPreviewMode: function()
 	{
+		if (this.inPreviewMode)
+		{
+			return;
+		}
+
 		$(document.activeElement).blur();
 
 		if (!this.$editor)
@@ -175,6 +180,11 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 
 	hidePreviewMode: function()
 	{
+		if (!this.inPreviewMode)
+		{
+			return;
+		}
+
 		$('html').removeClass('noscroll');
 
 		this.removeListener(Garnish.$win, 'resize');
