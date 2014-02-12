@@ -544,17 +544,16 @@ class EntryElementType extends BaseElementType
 				{
 					$query->andWhere(
 						array('and',
-							'entries.rgt < :prevSiblingOf_rgt',
+							'entries.depth = :prevSiblingOf_depth',
+							'entries.rgt = :prevSiblingOf_rgt',
 							'entries.sectionId = :prevSiblingOf_sectionId'
 						),
 						array(
-							':prevSiblingOf_rgt'       => $criteria->prevSiblingOf->lft,
+							':prevSiblingOf_depth'     => $criteria->prevSiblingOf->depth,
+							':prevSiblingOf_rgt'       => $criteria->prevSiblingOf->lft - 1,
 							':prevSiblingOf_sectionId' => $criteria->prevSiblingOf->sectionId
 						)
 					);
-
-					$query->order('entries.rgt desc');
-					$query->limit(1);
 				}
 			}
 
@@ -569,17 +568,16 @@ class EntryElementType extends BaseElementType
 				{
 					$query->andWhere(
 						array('and',
-							'entries.lft > :nextSiblingOf_lft',
+							'entries.depth = :nextSiblingOf_depth',
+							'entries.lft = :nextSiblingOf_lft',
 							'entries.sectionId = :nextSiblingOf_sectionId'
 						),
 						array(
-							':nextSiblingOf_lft'       => $criteria->nextSiblingOf->rgt,
+							':nextSiblingOf_depth'     => $criteria->nextSiblingOf->depth,
+							':nextSiblingOf_lft'       => $criteria->nextSiblingOf->rgt + 1,
 							':nextSiblingOf_sectionId' => $criteria->nextSiblingOf->sectionId
 						)
 					);
-
-					$query->order('entries.lft asc');
-					$query->limit(1);
 				}
 			}
 
