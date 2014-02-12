@@ -1139,7 +1139,7 @@ class UsersController extends BaseController
 	public function _processUserGroupsPermissions($user, $currentUser)
 	{
 		// Save any user groups
-		if (craft()->hasPackage(CraftPackage::Users) && $currentUser->can('administrateUsers'))
+		if (craft()->hasPackage(CraftPackage::Users) && $currentUser->can('assignUserPermissions'))
 		{
 			// Save any user groups
 			$groupIds = craft()->request->getPost('groups');
