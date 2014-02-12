@@ -75,6 +75,8 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 h1 { margin-bottom: 24px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 30px; line-height: 1; color: $submitcolor; }
 h2 { margin: 14px 0; font-size: 15px; font-weight: bold; line-height: 1.2; }
 h3 { margin: 14px 0; font-weight: bold; line-height: 1.2; }
+h4 { margin: 14px 0; font-weight: bold; line-height: 1.2; color: $mediumtextcolor; }
+h5 { margin: 14px 0 3px; line-height: 1.2; color: $mediumtextcolor; }
 
 h2[data-icon]:before { margin: -4px 6px 0 0; font-size: 19px; }
 
@@ -83,6 +85,8 @@ hr { margin: 24px -24px; border: none; border-top: 1px solid $hrcolor; height: 0
 
 /* paragraphs */
 p { margin: 1em 0; }
+
+h5 + p { margin-top: 0; }
 
 sup { vertical-align: super; font-size: smaller; }
 

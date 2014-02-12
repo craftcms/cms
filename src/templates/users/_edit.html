@@ -6,7 +6,7 @@
 
 {% import "_includes/forms" as forms %}
 
-{% if craft.hasPackage("Users") %}
+{% if craft.hasPackage('Users') %}
 	{% includeTranslations
 		"Are you sure you want to delete this photo?"
 	%}
@@ -23,7 +23,7 @@
 
 {% set saveUserButtons %}
 
-	{% if not currentUser.can('registerUsers') or not craft.hasPackage("Users") %}
+	{% if not currentUser.can('registerUsers') or not craft.hasPackage('Users') %}
 		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 	{% else %}
 		<div class="btngroup">
@@ -43,20 +43,22 @@
 {% set requireEmailVerification = craft.systemSettings.users.requireEmailVerification %}
 
 
-{% set content %}
-	<div>
-		{% if account is defined %}
-			<form id="userform" method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
-					<input type="hidden" name="action" value="users/saveUser">
-					{% if craft.hasPackage("Users") %}
-						<input type="hidden" name="redirect" value="users">
-					{% else %}
-						<input type="hidden" name="redirect" value="myaccount">
-					{% endif %}
+{% block main %}
+	<div class="grid">
+		<div class="item" data-position="left" data-max-colspan="3">
+			<form id="userform" class="pane" method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
+				<input type="hidden" name="action" value="users/saveUser">
+				{% if craft.hasPackage('Users') %}
+					<input type="hidden" name="redirect" value="users">
+				{% else %}
+					<input type="hidden" name="redirect" value="myaccount">
+				{% endif %}
 
 				{% if not isNewAccount %}
 					<input type="hidden" name="userId" value="{{ account.id }}">
 				{% endif %}
+
+				{% include "_includes/tabs" %}
 
 				<div id="account">
 					{{ forms.textField({
@@ -115,7 +117,7 @@
 					{% elseif account.isCurrent or currentUser.admin %}
 
 						{% set emailInput %}
-							<table>
+							<table class="fullwidth inputs">
 								<tr>
 									<td>
 										{{ forms.text({
@@ -142,7 +144,7 @@
 						}, emailInput) }}
 
 						{% set newPasswordInput %}
-							<table>
+							<table class="fullwidth inputs">
 								<tr>
 									<td>
 										{{ forms.password({
@@ -198,7 +200,7 @@
 					{{ saveUserButtons }}
 				</div>
 
-				{% if craft.hasPackage("Users") %}
+				{% if craft.hasPackage('Users') %}
 					<div id="profile" class="hidden">
 						{% if not isNewAccount %}
 							{{ forms.field({
@@ -217,7 +219,7 @@
 					</div>
 				{% endif %}
 
-				{% if craft.hasPackage("Users") and currentUser.can('administrateUsers') %}
+				{% if craft.hasPackage('Users') and currentUser.can('assignUserPermissions') %}
 					<div id="perms" class="hidden">
 						<h2>{{ "User Groups"|t }}</h2>
 
@@ -248,17 +250,16 @@
 
 						<h2>{{ "Permissions"|t }}</h2>
 
-						<input type="hidden" name="permissions" value="">
-
-						<div class="field">
-							{{ forms.checkbox({
+						{% if currentUser.admin %}
+							{{ forms.checkboxField({
 								label: '<strong>' ~ "Admin"|t ~ '</strong>',
 								name: 'admin',
 								checked: account.admin,
-								reverseToggle: 'permissions',
-								disabled: (currentUser.admin ? false : true)
+								reverseToggle: 'permissions'
 							}) }}
-						</div>
+						{% endif %}
+
+						<input type="hidden" name="permissions" value="">
 
 						<div id="permissions" class="field{% if account.admin %} hidden{% endif %}">
 							{% include "_includes/permissions" with {
@@ -272,90 +273,71 @@
 					</div>
 				{% endif %}
 			</form>
+		</div><!--/item-->
 
-			{% if craft.hasPackage("Users") and currentUser.can('administrateUsers') and not isNewAccount %}
-				<div id="admin" class="hidden">
-					<form method="post" action="" accept-charset="UTF-8">
-						<input type="hidden" name="userId" value="{{ account.id }}">
+		{% if craft.hasPackage('Users') and not isNewAccount %}
+			<div class="item" data-position="right" data-colspan="1">
+				<form class="pane" method="post" action="" accept-charset="UTF-8">
+					<input type="hidden" name="userId" value="{{ account.id }}">
 
-						<h2>{{ "User Info"|t }}</h2>
+					<h5 class="first">{{ "Account Status"|t }}</h5>
+					<p>
+						<span class="status {{ account.status }}"></span>
+						{% if account.status == 'pending' %}
+							{{ "Unverified"|t }} 
+							<input type="button" class="btn small formsubmit" value="{{ 'Resend verification email'|t }}" data-action="users/sendActivationEmail">
+						{% elseif account.status == 'locked' %}
+							{{ "Locked"|t }} 
+							{% if currentUser.can('administrateUsers') %}<input type="button" class="btn small formsubmit" value="{{ 'Unlock'|t }}" data-action="users/unlockUser">{% endif %}
+						{% elseif account.status == 'suspended' %}
+							{{ "Suspended"|t }} 
+							{% if currentUser.can('administrateUsers') %}<input type="submit" class="btn small formsubmit" value="{{ 'Unsuspend'|t }}" data-action="users/unsuspendUser">{% endif %}
+						{% else %}
+							{{ "Active"|t }}
+						{% endif %}
+					</p>
 
-						<table class="data fullwidth">
-							<tbody>
-								<tr>
-									<th class="nowrap">{{ "Account Status"|t }}</th>
-									<td>
-										<div class="status {{ account.status }}"></div>
-
-										{% if account.status == 'pending' %}
-											{{ "Unverified"|t }} 
-											<input type="button" class="btn small formsubmit" value="{{ 'Resend Email'|t }}" data-action="users/sendActivationEmail">
-										{% elseif account.status == 'locked' %}
-											{{ "Locked"|t }} 
-											<input type="button" class="btn small formsubmit" value="{{ 'Unlock'|t }}" data-action="users/unlockUser">
-										{% elseif account.status == 'suspended' %}
-											{{ "Suspended"|t }} 
-											<input type="submit" class="btn small formsubmit" value="{{ 'Unsuspend'|t }}" data-action="users/unsuspendUser">
-										{% else %}
-											{{ "Active"|t }}
-										{% endif %}
-									</td>
-								</tr>
-								{% if account.status == 'locked' and craft.config.cooldownDuration %}
-									<tr>
-										<th class="nowrap">{{ "Cooldown Time Remaining"|t }}</th>
-										<td>{{ account.remainingCooldownTime.humanDuration }}</td>
-									</tr>
-								{% endif %}
-								<tr>
-									<th class="nowrap">{{ "Registration Date"|t }}</th>
-									<td>{{ account.dateCreated.nice }}</td>
-								</tr>
-								{% if account.status != 'pending' %}
-									<tr>
-										<th class="nowrap">{{ "Last Login Date"|t }}</th>
-										<td>{% if account.lastLoginDate %}{{ account.lastLoginDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</td>
-									</tr>
-
-									<tr>
-										<th class="nowrap">{{ "Last Invalid Login Date"|t }}</th>
-										<td>{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</td>
-									</tr>
-
-									<tr>
-										<th class="nowrap">{{ "Last Password Change Date"|t }}</th>
-										<td>{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</td>
-									</tr>
-
-									<tr>
-										<th class="nowrap">{{ "Invalid Login Count"|t }}</th>
-										<td>{% if account.invalidLoginCount %}{{ account.invalidLoginCount }}{% else %}0{% endif %}</td>
-									</tr>
-								{% endif %}
-							</tbody>
-						</table>
-
-						{% if not account.isCurrent %}
-							<hr>
-
-							{% if account.status != 'suspended' %}
-									<input type="button" class="btn small formsubmit" value="{{ 'Suspend'|t }}" data-action="users/suspendUser">
-							{% endif %}
-
-							{% if currentUser.can('deleteUsers') %}
-									<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="users/deleteUser"
-											   data-confirm="{{ 'Are you sure you want to delete this account and all associated content?'|t }}"
-											   data-redirect="users/">
-							{% endif %}
-
-							{% if currentUser.admin and not account.isCurrent %}
-									<input type="button" class="btn small formsubmit" value="{{ 'Login as user'|t }}" data-action="users/impersonate">
-							{% endif %}
+					{% if account.status == 'locked' and craft.config.cooldownDuration %}
+						<h5>{{ "Cooldown Time Remaining"|t }}</h5>
+						<p>{{ account.remainingCooldownTime.humanDuration }}</p>
 					{% endif %}
-					</form>
 
-				</div>
-			{% endif %}
+					<h5>{{ "Registration Date"|t }}</h5>
+					<p>{{ account.dateCreated.nice }}</p>
+
+					{% if account.status != 'pending' %}
+						<h5>{{ "Last Login Date"|t }}</h5>
+						<p>{% if account.lastLoginDate %}{{ account.lastLoginDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</p>
+
+						<h5>{{ "Last Invalid Login Date"|t }}</h5>
+						<p>{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</p>
+
+						<h5>{{ "Last Password Change Date"|t }}</h5>
+						<p>{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</p>
+
+						<h5>{{ "Invalid Login Count"|t }}</h5>
+						<p>{% if account.invalidLoginCount %}{{ account.invalidLoginCount }}{% else %}0{% endif %}</p>
+					{% endif %}
+				</form>
+
+				{% if not account.isCurrent and (currentUser.can('deleteUsers') or currentUser.can('administrateUsers')) %}
+					<form class="pane" method="post" action="" accept-charset="UTF-8">
+						{% if currentUser.can('administrateUsers') and account.status != 'suspended' %}
+							<input type="button" class="btn small formsubmit" value="{{ 'Suspend'|t }}" data-action="users/suspendUser">
+						{% endif %}
+
+						{% if currentUser.can('deleteUsers') %}
+							<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="users/deleteUser"
+									   data-confirm="{{ 'Are you sure you want to delete this account and all associated content?'|t }}"
+									   data-redirect="users/">
+						{% endif %}
+
+						{% if currentUser.admin and not account.isCurrent %}
+							<input type="button" class="btn small formsubmit" value="{{ 'Login as user'|t }}" data-action="users/impersonate">
+						{% endif %}
+					</form>
+				{% endif %}
+			</div><!--/item-->
 		{% endif %}
 	</div>
-{% endset %}
+{% endblock %}
