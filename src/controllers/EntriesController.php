@@ -449,7 +449,7 @@ class EntriesController extends BaseController
 
 		$entryId = $entry->id;
 
-		craft()->elements->deleteElementById($entryId);
+		craft()->entries->deleteEntryById($entryId);
 
 		$this->redirectToPostedUrl();
 	}
