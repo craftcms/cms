@@ -40,9 +40,10 @@ class ElementsService extends BaseApplicationComponent
 	 *
 	 * @param int $elementId
 	 * @param string|null $type
+	 * @param string|null $localeId
 	 * @return BaseElementModel|null
 	 */
-	public function getElementById($elementId, $elementType = null)
+	public function getElementById($elementId, $elementType = null, $localeId = null)
 	{
 		if (!$elementId)
 		{
@@ -61,6 +62,7 @@ class ElementsService extends BaseApplicationComponent
 
 		$criteria = $this->getCriteria($elementType);
 		$criteria->id = $elementId;
+		$criteria->locale = $localeId;
 		$criteria->status = null;
 		$criteria->localeEnabled = null;
 		return $criteria->first();
