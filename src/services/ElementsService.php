@@ -1078,12 +1078,7 @@ class ElementsService extends BaseApplicationComponent
 				continue;
 			}
 
-			$criteria = $this->getCriteria($element->getElementType());
-			$criteria->id = $element->id;
-			$criteria->locale = $localeId;
-			$criteria->status = null;
-			$criteria->localeEnabled = null;
-			$elementInOtherLocale = $criteria->first();
+			$elementInOtherLocale = $this->getElementById($element->id, $element->getElementType(), $localeId);
 
 			if ($elementInOtherLocale)
 			{

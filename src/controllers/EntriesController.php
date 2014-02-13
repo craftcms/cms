@@ -563,12 +563,7 @@ class EntriesController extends BaseController
 				}
 				else
 				{
-					$criteria = craft()->elements->getCriteria(ElementType::Entry);
-					$criteria->id = $variables['entryId'];
-					$criteria->status = null;
-					$criteria->localeEnabled = null;
-					$criteria->locale = $variables['localeId'];
-					$variables['entry'] = $criteria->first();
+					$variables['entry'] = craft()->entries->getEntryById($variables['entryId'], $variables['localeId']);
 				}
 
 				if (!$variables['entry'])
@@ -673,12 +668,7 @@ class EntriesController extends BaseController
 
 		if ($entryId)
 		{
-			$criteria = craft()->elements->getCriteria(ElementType::Entry);
-			$criteria->id = $entryId;
-			$criteria->locale = $localeId;
-			$criteria->status = null;
-			$criteria->localeEnabled = null;
-			$entry = $criteria->first();
+			$entry = craft()->entries->getEntryById($entryId, $localeId);
 
 			if (!$entry)
 			{

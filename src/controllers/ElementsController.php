@@ -157,13 +157,7 @@ class ElementsController extends BaseController
 		$elementId = craft()->request->getRequiredPost('elementId');
 		$localeId = craft()->request->getPost('locale');
 		$elementTypeClass = craft()->elements->getElementTypeById($elementId);
-
-		$criteria = craft()->elements->getCriteria($elementTypeClass);
-		$criteria->id = $elementId;
-		$criteria->locale = $localeId;
-		$criteria->status = null;
-		$criteria->localeEnabled = null;
-		$element = $criteria->first();
+		$element = craft()->elements->getElementById($elementId, $elementTypeClass, $localeId);
 
 		if (!$element || !$element->isEditable())
 		{
@@ -185,13 +179,7 @@ class ElementsController extends BaseController
 		$elementId = craft()->request->getRequiredPost('elementId');
 		$localeId = craft()->request->getRequiredPost('locale');
 		$elementTypeClass = craft()->elements->getElementTypeById($elementId);
-
-		$criteria = craft()->elements->getCriteria($elementTypeClass);
-		$criteria->id = $elementId;
-		$criteria->locale = $localeId;
-		$criteria->status = null;
-		$criteria->localeEnabled = null;
-		$element = $criteria->first();
+		$element = craft()->elements->getElementById($elementId, $elementTypeClass, $localeId);
 
 		if (!$element || !ElementHelper::isElementEditable($element))
 		{
