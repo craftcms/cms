@@ -10,11 +10,12 @@ class EntriesService extends BaseApplicationComponent
 	 * Returns an entry by its ID.
 	 *
 	 * @param int $entryId
+	 * @param string|null $localeId
 	 * @return EntryModel|null
 	 */
-	public function getEntryById($entryId)
+	public function getEntryById($entryId, $localeId = null)
 	{
-		return craft()->elements->getElementById($entryId, ElementType::Entry);
+		return craft()->elements->getElementById($entryId, ElementType::Entry, $localeId);
 	}
 
 	/**

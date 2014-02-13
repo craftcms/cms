@@ -62,81 +62,71 @@
 								id: 'entryType',
 								name: 'typeId',
 								value: entryType.id,
-								options: entryTypeOptions,
-								first: true
+								options: entryTypeOptions
 							}) }}
 						{% endif %}
 
-						<div id="entry-settings">
-							{{ forms.textField({
-								label: "Slug"|t,
-								id: 'slug',
-								name: 'slug',
-								value: entry.slug,
-								errors: entry.getErrors('slug'),
-								required: true
+						{{ forms.textField({
+							label: "Slug"|t,
+							id: 'slug',
+							name: 'slug',
+							value: entry.slug,
+							errors: entry.getErrors('slug'),
+							required: true
+						}) }}
+
+						{% if section.type == 'structure' and parentOptions|length > 1 %}
+							{{ forms.selectField({
+								label: "Parent Entry"|t,
+								id: 'parentId',
+								name: 'parentId',
+								options: parentOptions,
+								value: parentId
 							}) }}
+						{% endif %}
 
-							{% if section.type == 'structure' and parentOptions|length > 1 %}
-								{{ forms.selectField({
-									label: "Parent Entry"|t,
-									id: 'parentId',
-									name: 'parentId',
-									options: parentOptions,
-									value: parentId
-								}) }}
-							{% endif %}
-
-							{% if craft.hasPackage('Users') %}
-								{{ forms.selectField({
-									label: "Author"|t,
-									id: 'author',
-									name: 'author',
-									options: authorOptions,
-									value: entry.authorId
-								}) }}
-							{% endif %}
-
-							{{ forms.dateTimeField({
-								label: "Post Date"|t,
-								id: 'postDate',
-								name: 'postDate',
-								value: (entry.postDate ? entry.postDate : null),
-								errors: entry.getErrors('postDate')
+						{% if craft.hasPackage('Users') %}
+							{{ forms.selectField({
+								label: "Author"|t,
+								id: 'author',
+								name: 'author',
+								options: authorOptions,
+								value: entry.authorId
 							}) }}
+						{% endif %}
 
-							{{ forms.dateTimeField({
-								label: "Expiration Date"|t,
-								id: 'expiryDate',
-								name: 'expiryDate',
-								value: (entry.expiryDate ? entry.expiryDate : null),
-								errors: entry.getErrors('expiryDate')
+						{{ forms.dateTimeField({
+							label: "Post Date"|t,
+							id: 'postDate',
+							name: 'postDate',
+							value: (entry.postDate ? entry.postDate : null),
+							errors: entry.getErrors('postDate')
+						}) }}
+
+						{{ forms.dateTimeField({
+							label: "Expiration Date"|t,
+							id: 'expiryDate',
+							name: 'expiryDate',
+							value: (entry.expiryDate ? entry.expiryDate : null),
+							errors: entry.getErrors('expiryDate')
+						}) }}
+
+						{% if currentUser.can('publishEntries'~permissionSuffix) %}
+							{{ forms.lightswitchField({
+								label: "Status"|t,
+								name: 'enabled',
+								on: entry.enabled
 							}) }}
+						{% endif %}
+					</div><!--/pane-->
 
-							{% if currentUser.can('publishEntries'~permissionSuffix) %}
-								{% set statusLabel -%}
-									{{ "Status:"|t }} <i>{{ entry.id ? entry.status|ucfirst|t : "Never saved"|t  }}</i>
-								{%- endset %}
-								{% set statusInput %}
-									{{ forms.checkboxField({
-										label: "Entry is enabled"|t,
-										name: 'enabled',
-										checked: entry.enabled
-									}) }}
-								{% endset %}
-								{{ forms.field({
-									label: statusLabel,
-									instructions: "An entry is only “live” if it is enabled, has a Post Date in the past, and an Expiration Date in the future."|t
-								}, statusInput) }}
-							{% endif %}
-
-							{% if currentUser.can('deleteEntries'~permissionSuffix) and entry.id %}
-								<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="entries/deleteEntry"
-									data-confirm="{{ 'Are you sure you want to delete this entry?'|t }}"
-									data-redirect="entries">
-							{% endif %}
+					{% if currentUser.can('deleteEntries'~permissionSuffix) and entry.id %}
+						<div class="pane">
+							<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="entries/deleteEntry"
+								data-confirm="{{ 'Are you sure you want to delete this entry?'|t }}"
+								data-redirect="entries">
 						</div>
-					</div>
+					{% endif %}
 				{% endif %}
 			</div><!--/item-->
 

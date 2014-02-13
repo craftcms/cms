@@ -40,9 +40,10 @@ class ElementsService extends BaseApplicationComponent
 	 *
 	 * @param int $elementId
 	 * @param string|null $type
+	 * @param string|null $localeId
 	 * @return BaseElementModel|null
 	 */
-	public function getElementById($elementId, $elementType = null)
+	public function getElementById($elementId, $elementType = null, $localeId = null)
 	{
 		if (!$elementId)
 		{
@@ -61,6 +62,7 @@ class ElementsService extends BaseApplicationComponent
 
 		$criteria = $this->getCriteria($elementType);
 		$criteria->id = $elementId;
+		$criteria->locale = $localeId;
 		$criteria->status = null;
 		$criteria->localeEnabled = null;
 		return $criteria->first();
@@ -649,17 +651,16 @@ class ElementsService extends BaseApplicationComponent
 				{
 					$query->andWhere(
 						array('and',
-							'structureelements.rgt < :prevSiblingOf_rgt',
+							'structureelements.level = :prevSiblingOf_level',
+							'structureelements.rgt = :prevSiblingOf_rgt',
 							'structureelements.root = :prevSiblingOf_root'
 						),
 						array(
-							':prevSiblingOf_rgt'  => $criteria->prevSiblingOf->lft,
-							':prevSiblingOf_root' => $criteria->prevSiblingOf->root
+							':prevSiblingOf_level' => $criteria->prevSiblingOf->level,
+							':prevSiblingOf_rgt'   => $criteria->prevSiblingOf->lft - 1,
+							':prevSiblingOf_root'  => $criteria->prevSiblingOf->root
 						)
 					);
-
-					$query->order('structureelements.rgt desc');
-					$query->limit(1);
 				}
 			}
 
@@ -674,17 +675,16 @@ class ElementsService extends BaseApplicationComponent
 				{
 					$query->andWhere(
 						array('and',
-							'structureelements.lft > :nextSiblingOf_lft',
+							'structureelements.level = :nextSiblingOf_level',
+							'structureelements.lft = :nextSiblingOf_lft',
 							'structureelements.root = :nextSiblingOf_root'
 						),
 						array(
-							':nextSiblingOf_lft'  => $criteria->nextSiblingOf->rgt,
-							':nextSiblingOf_root' => $criteria->nextSiblingOf->root
+							':nextSiblingOf_level' => $criteria->nextSiblingOf->level,
+							':nextSiblingOf_lft'   => $criteria->nextSiblingOf->rgt + 1,
+							':nextSiblingOf_root'  => $criteria->nextSiblingOf->root
 						)
 					);
-
-					$query->order('structureelements.lft asc');
-					$query->limit(1);
 				}
 			}
 
@@ -1078,12 +1078,7 @@ class ElementsService extends BaseApplicationComponent
 				continue;
 			}
 
-			$criteria = $this->getCriteria($element->getElementType());
-			$criteria->id = $element->id;
-			$criteria->locale = $localeId;
-			$criteria->status = null;
-			$criteria->localeEnabled = null;
-			$elementInOtherLocale = $criteria->first();
+			$elementInOtherLocale = $this->getElementById($element->id, $element->getElementType(), $localeId);
 
 			if ($elementInOtherLocale)
 			{
@@ -1151,28 +1146,66 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Deletes an element(s) by its ID(s).
 	 *
-	 * @param int|array $elementId
+	 * @param int|array $elementIds
 	 * @return bool
 	 */
-	public function deleteElementById($elementId)
+	public function deleteElementById($elementIds)
 	{
-		if (!$elementId)
+		if (!$elementIds)
 		{
 			return false;
 		}
 
-		if (is_array($elementId))
+		if (!is_array($elementIds))
 		{
-			$condition = array('in', 'id', $elementId);
-		}
-		else
-		{
-			$condition = array('id' => $elementId);
+			$elementIds = array($elementIds);
 		}
 
-		$affectedRows = craft()->db->createCommand()->delete('elements', $condition);
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			// First delete any structure nodes with these elements, so NestedSetBehavior can do its thing.
+			// We need to go one-by-one in case one of theme deletes the record of another in the process.
+			foreach ($elementIds as $elementId)
+			{
+				$records = StructureElementRecord::model()->findAllByAttributes(array(
+					'elementId' => $elementId
+				));
 
-		return (bool) $affectedRows;
+				foreach ($records as $record)
+				{
+					$record->deleteNode();
+				}
+			}
+
+			// Now delete the rows in the elements table
+			if (count($elementIds) == 1)
+			{
+				$condition = array('id' => $elementIds[0]);
+			}
+			else
+			{
+				$condition = array('in', 'id', $elementIds);
+			}
+
+			$affectedRows = craft()->db->createCommand()->delete('elements', $condition);
+
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
+
+			return (bool) $affectedRows;
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
 	}
 
 	// Element types

@@ -574,8 +574,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function isPrevSiblingOf(BaseElementModel $element)
 	{
-		$prevSibling = $element->getPrevSibling();
-		return ($prevSibling && $this->id == $prevSibling->id);
+		return ($this->root == $element->root && $this->level == $element->level && $this->rgt == $element->lft - 1);
 	}
 
 	/**
@@ -586,8 +585,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function isNextSiblingOf(BaseElementModel $element)
 	{
-		$nextSibling = $element->getNextSibling();
-		return ($nextSibling && $this->id == $nextSibling->id);
+		return ($this->root == $element->root && $this->level == $element->level && $this->lft == $element->rgt + 1);
 	}
 
 	/**

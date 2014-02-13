@@ -60,7 +60,7 @@ class EntriesController extends BaseController
 
 				if ($authorFullName)
 				{
-					$authorLabel .= ' ('.$authorFullName.')';
+					$authorLabel .= ' - '.$authorFullName;
 				}
 
 				$variables['authorOptions'][] = array('label' => $authorLabel, 'value' => $authorOption->id);
@@ -563,12 +563,7 @@ class EntriesController extends BaseController
 				}
 				else
 				{
-					$criteria = craft()->elements->getCriteria(ElementType::Entry);
-					$criteria->id = $variables['entryId'];
-					$criteria->status = null;
-					$criteria->localeEnabled = null;
-					$criteria->locale = $variables['localeId'];
-					$variables['entry'] = $criteria->first();
+					$variables['entry'] = craft()->entries->getEntryById($variables['entryId'], $variables['localeId']);
 				}
 
 				if (!$variables['entry'])
@@ -669,16 +664,11 @@ class EntriesController extends BaseController
 	private function _populateEntryModel()
 	{
 		$entryId = craft()->request->getPost('entryId');
-		$locale  = craft()->request->getPost('locale');
+		$localeId = craft()->request->getPost('locale');
 
 		if ($entryId)
 		{
-			$criteria = craft()->elements->getCriteria(ElementType::Entry);
-			$criteria->id = $entryId;
-			$criteria->locale = $locale;
-			$criteria->status = null;
-			$criteria->localeEnabled = null;
-			$entry = $criteria->first();
+			$entry = craft()->entries->getEntryById($entryId, $localeId);
 
 			if (!$entry)
 			{
@@ -689,9 +679,9 @@ class EntriesController extends BaseController
 		{
 			$entry = new EntryModel();
 
-			if ($locale)
+			if ($localeId)
 			{
-				$entry->locale = $locale;
+				$entry->locale = $localeId;
 			}
 		}
 
