@@ -6,12 +6,18 @@ Craft.Uploader = Garnish.Base.extend({
     uploader: null,
 	allowedKinds: null,
 	_rejectedFiles: [],
-
+	$element: null,
 	_extensionList: null,
 	_fileCounter: 0,
 
     init: function($element, settings)
     {
+		this._rejectedFiles = [];
+		this.$element = $element;
+		this.allowedKinds = null;
+		this._extensionList = null;
+		this._fileCounter = 0;
+
         settings = $.extend({}, this.defaultSettings, settings);
 
 		var events = settings.events;
@@ -75,6 +81,9 @@ Craft.Uploader = Garnish.Base.extend({
 	 */
 	onFileAdd: function (e, data)
 	{
+		e.stopPropagation();
+		console.log(this._rejectedFiles, this.$element);
+
 		if (!this._extensionList)
 		{
 			this._extensionList = [];
@@ -108,10 +117,14 @@ Craft.Uploader = Garnish.Base.extend({
 			}
 
 		}, this));
+
+		return true;
 	},
 
 	processErrorMessages: function ()
 	{
+		console.log(this._rejectedFiles, this.$element);
+
 		if (this._rejectedFiles.length)
 		{
 			if (this._rejectedFiles.length == 1)
@@ -130,7 +143,7 @@ Craft.Uploader = Garnish.Base.extend({
 	},
 
     defaultSettings: {
-        dropzone: null,
+        dropZone: null,
 		pasteZone: null,
 		fileInput: null,
 		autoUpload: true,
