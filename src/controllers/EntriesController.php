@@ -669,13 +669,13 @@ class EntriesController extends BaseController
 	private function _populateEntryModel()
 	{
 		$entryId = craft()->request->getPost('entryId');
-		$locale  = craft()->request->getPost('locale');
+		$localeId = craft()->request->getPost('locale');
 
 		if ($entryId)
 		{
 			$criteria = craft()->elements->getCriteria(ElementType::Entry);
 			$criteria->id = $entryId;
-			$criteria->locale = $locale;
+			$criteria->locale = $localeId;
 			$criteria->status = null;
 			$criteria->localeEnabled = null;
 			$entry = $criteria->first();
@@ -689,9 +689,9 @@ class EntriesController extends BaseController
 		{
 			$entry = new EntryModel();
 
-			if ($locale)
+			if ($localeId)
 			{
-				$entry->locale = $locale;
+				$entry->locale = $localeId;
 			}
 		}
 
