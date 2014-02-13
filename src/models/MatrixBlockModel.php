@@ -81,7 +81,7 @@ class MatrixBlockModel extends BaseElementModel
 	{
 		if (!isset($this->_owner) && $this->ownerId)
 		{
-			$this->_owner = craft()->elements->getElementById($this->ownerId);
+			$this->_owner = craft()->elements->getElementById($this->ownerId, null, $this->locale);
 
 			if (!$this->_owner)
 			{
