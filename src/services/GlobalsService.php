@@ -143,19 +143,27 @@ class GlobalsService extends BaseApplicationComponent
 	/**
 	 * Returns a global set by its ID.
 	 *
-	 * @param $globalSetId
+	 * @param int $globalSetId
+	 * @param string|null $localeId
 	 * @return GlobalSetModel|null
 	 */
-	public function getSetById($globalSetId)
+	public function getSetById($globalSetId, $localeId = null)
 	{
-		if (!isset($this->_allGlobalSets))
+		if (!$localeId || $localeId == craft()->language)
 		{
-			$this->getAllSets();
-		}
+			if (!isset($this->_allGlobalSets))
+			{
+				$this->getAllSets();
+			}
 
-		if (isset($this->_globalSetsById[$globalSetId]))
+			if (isset($this->_globalSetsById[$globalSetId]))
+			{
+				return $this->_globalSetsById[$globalSetId];
+			}
+		}
+		else
 		{
-			return $this->_globalSetsById[$globalSetId];
+			return craft()->elements->getElementById($globalSetId, ElementType::GlobalSet, $localeId);
 		}
 	}
 
