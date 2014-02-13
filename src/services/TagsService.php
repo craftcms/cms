@@ -282,7 +282,7 @@ class TagsService extends BaseApplicationComponent
 	 */
 	public function getTagById($tagId, $localeId)
 	{
-		return craft()->elements->getElementById($entryId, ElementType::Tag, $localeId);
+		return craft()->elements->getElementById($tagId, ElementType::Tag, $localeId);
 	}
 
 	/**
