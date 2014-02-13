@@ -1002,7 +1002,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 		if (!craft()->userSession->checkPermission($permission.':'.$this->model->id))
 		{
-			throw new Exception(Craft::t("You don't have the required permissions for this operation."));
+			throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
 		}
 	}
 }
