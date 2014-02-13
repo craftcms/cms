@@ -60,7 +60,7 @@ class EntriesController extends BaseController
 
 				if ($authorFullName)
 				{
-					$authorLabel .= ' ('.$authorFullName.')';
+					$authorLabel .= ' - '.$authorFullName;
 				}
 
 				$variables['authorOptions'][] = array('label' => $authorLabel, 'value' => $authorOption->id);
