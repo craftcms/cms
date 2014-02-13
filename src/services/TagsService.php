@@ -274,6 +274,18 @@ class TagsService extends BaseApplicationComponent
 	// Tags
 
 	/**
+	 * Returns a tag by its ID.
+	 *
+	 * @param int $tagId
+	 * @param string|null $localeId
+	 * @return TagModel|null
+	 */
+	public function getTagById($tagId, $localeId)
+	{
+		return craft()->elements->getElementById($entryId, ElementType::Tag, $localeId);
+	}
+
+	/**
 	 * Saves a tag.
 	 *
 	 * @param TagModel $tag
@@ -373,34 +385,6 @@ class TagsService extends BaseApplicationComponent
 		}
 
 		return false;
-	}
-
-	/**
-	 * Returns a tag by its ID.
-	 *
-	 * @param $tagId
-	 * @return TagModel|null
-	 */
-	public function getTagById($tagId)
-	{
-		return $this->findTag(array(
-			'id' => $tagId
-		));
-	}
-
-	/**
-	 * Finds the first tag that matches the given criteria.
-	 *
-	 * @param mixed $criteria
-	 * @return TagModel|null
-	 */
-	public function findTag($criteria = null)
-	{
-		if (!($criteria instanceof ElementCriteriaModel))
-		{
-			$criteria = craft()->elements->getCriteria(ElementType::Tag, $criteria);
-		}
-		return $criteria->first();
 	}
 
 	// Events
