@@ -178,8 +178,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			// For each file, prepare array data.
 			for (var i = 0; i < this._fileDrag.$draggee.length; i++)
 			{
-				var originalFileId = this._fileDrag.$draggee[i].getAttribute('data-id'),
-					fileName = $(this._fileDrag.$draggee[i]).find('[data-url]').attr('data-url').split('/').pop();
+				var originalFileId = Craft.getElementInfo(this._fileDrag.$draggee[i]).id,
+					fileName = Craft.getElementInfo(this._fileDrag.$draggee[i]).url.split('/').pop();
 
 				originalFileIds.push(originalFileId);
 				newFileNames.push(fileName);
@@ -929,7 +929,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 		this._selectedFileIds = [];
 		for (var i = 0; i < selected.length; i++)
 		{
-			this._selectedFileIds[i] = $(selected[i]).attr('data-id');
+			this._selectedFileIds[i] = Craft.getElementInfo(selected[i]).id;
 		}
 	},
 
@@ -1008,7 +1008,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 	_viewFile: function (event)
 	{
-		window.open($(event.currentTarget).find('[data-url]').attr('data-url'));
+		window.open(Craft.getElementInfo(event.currentTarget).url);
 	},
 
 	/**
@@ -1017,8 +1017,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 	_renameFile: function(event)
 	{
 		var $target = $(event.currentTarget);
-		var fileId = $target.attr('data-id'),
-			oldName = $target.find('[data-url]').attr('data-url').split('/').pop(),
+		var fileId = Craft.getElementInfo($target).id,
+			oldName = Craft.getElementInfo($target).url.pop(),
 			newName = prompt(Craft.t("Rename file"), oldName);
 
 		if (newName && newName != oldName)
@@ -1085,9 +1085,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 	_deleteFile: function (event) {
 
 		var $target = $(event.currentTarget);
-		var fileId = $target.attr('data-id');
+		var fileId = Craft.getElementInfo($target).id;
 
-		var fileTitle = $target.find('.title').text();
+		var fileTitle = Craft.getElementInfo($target).label;
 
 		if (confirm(Craft.t('Are you sure you want to delete “{name}”?', { name: fileTitle })))
 		{
@@ -1445,6 +1445,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			parentFolder.parent().removeClass('expanded');
 		}
 	}
+
 });
 
 // Register it!

@@ -194,11 +194,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	protected function _getUserPromptOptions($fileName)
 	{
 		return (object) array(
-			'message' => Craft::t('File “{file}” already exists at target location', array('file' => $fileName)),
+			'message' => Craft::t('File “{file}” already exists at target location.', array('file' => $fileName)),
 			'choices' => array(
-				array('value' => AssetsHelper::ActionKeepBoth, 'title' => Craft::t('Rename the new file and keep both')),
-				array('value' => AssetsHelper::ActionReplace, 'title' => Craft::t('Replace the existing file')),
-				array('value' => AssetsHelper::ActionCancel, 'title' => Craft::t('Keep the original file'))
+				array('value' => AssetsHelper::ActionKeepBoth, 'title' => Craft::t('Keep both')),
+				array('value' => AssetsHelper::ActionReplace, 'title' => Craft::t('Replace it')),
+				array('value' => AssetsHelper::ActionCancel, 'title' => Craft::t('Cancel'))
 			)
 		);
 	}
@@ -351,6 +351,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 	/**
 	 * Transfer a file into the source.
+	 * TODO: Refactor this and moveFileInsideSource method - a lot of duplicate code.
 	 *
 	 * @param string $localCopy
 	 * @param AssetFolderModel $folder
@@ -370,10 +371,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			{
 				case AssetsHelper::ActionReplace:
 				{
-					$fileToDelete = craft()->assets->findFile(array('folderId' => $folder->id, 'filename' => $filename));
-					if ($fileToDelete)
+					$fileToReplace = craft()->assets->findFile(array('folderId' => $folder->id, 'filename' => $filename));
+					if ($fileToReplace)
 					{
-						$this->deleteFile($fileToDelete);
+						$this->mergeFile($file, $fileToReplace);
 					}
 					else
 					{
@@ -434,6 +435,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$this->checkPermissions('uploadToAssetSource');
 		$this->checkPermissions('removeFromAssetSource');
 
+		$mergeFiles = false;
+
 		// If this is a revisited conflict, perform the appropriate actions
 		if (!empty($action))
 		{
@@ -441,11 +444,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			{
 				case AssetsHelper::ActionReplace:
 				{
-					$fileToDelete = craft()->assets->findFile(array('folderId' => $targetFolder->id, 'filename' => $filename));
-					if ($fileToDelete)
+					$fileToReplace = craft()->assets->findFile(array('folderId' => $targetFolder->id, 'filename' => $filename));
+					if ($fileToReplace)
 					{
-						$this->deleteFile($fileToDelete);
+						$this->mergeFile($file, $fileToReplace);
 						$this->_purgeCachedSourceFile($targetFolder, $filename);
+						$mergeFiles = true;
 					}
 					else
 					{
@@ -470,10 +474,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		}
 		else
 		{
-			$overwrite = false;
+			$overwrite = false || $mergeFiles;
 		}
 
 		$response = $this->_moveSourceFile($file, $targetFolder, $filename, $overwrite);
+
 		if ($response->isSuccess())
 		{
 			$file->folderId = $targetFolder->id;
@@ -693,6 +698,46 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 		$this->checkPermissions('removeFromAssetSource');
 
+		$this->_deleteTransformData($file);
+
+		// Delete DB record and the file itself.
+		craft()->elements->deleteElementById($file->id);
+
+		$this->_deleteSourceFile($file->getFolder(), $file->filename);
+
+		$response = new AssetOperationResponseModel();
+		return $response->setSuccess();
+	}
+
+	/**
+	 * Merge a file.
+	 *
+	 * @param AssetFileModel $sourceFile file being merged
+	 * @param AssetFileModel $targetFile file that is being merged into
+	 * @return AssetOperationResponseModel
+	 */
+	public function mergeFile(AssetFileModel $sourceFile, AssetFileModel $targetFile)
+	{
+		$this->checkPermissions('removeFromAssetSource');
+
+		$this->_deleteTransformData($targetFile);
+
+		// Delete DB record and the file itself.
+		craft()->elements->mergeElementsByIds($targetFile->id, $sourceFile->id);
+
+		$this->_deleteSourceFile($targetFile->getFolder(), $targetFile->filename);
+
+		$response = new AssetOperationResponseModel();
+		return $response->setSuccess();
+	}
+
+	/**
+	 * Delete transform-related data for file.
+	 *
+	 * @param AssetFileModel $file
+	 */
+	protected function _deleteTransformData(AssetFileModel $file)
+	{
 		// Delete all the created images, such as transforms, thumbnails
 		$this->deleteCreatedImages($file);
 		craft()->assetTransforms->deleteTransformRecordsByFileId($file->id);
@@ -702,13 +747,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		{
 			IOHelper::deleteFile($filePath);
 		}
-
-		// Delete DB record and the file itself.
-		craft()->elements->deleteElementById($file->id);
-		$this->_deleteSourceFile($file->getFolder(), $file->filename);
-
-		$response = new AssetOperationResponseModel();
-		return $response->setSuccess();
 	}
 
 	/**
@@ -1026,7 +1064,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 		if (!craft()->userSession->checkPermission($permission.':'.$this->model->id))
 		{
-			throw new Exception(Craft::t("You don't have the required permissions for this operation."));
+			throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
 		}
 	}
 }

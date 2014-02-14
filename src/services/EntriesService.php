@@ -10,11 +10,12 @@ class EntriesService extends BaseApplicationComponent
 	 * Returns an entry by its ID.
 	 *
 	 * @param int $entryId
+	 * @param string|null $localeId
 	 * @return EntryModel|null
 	 */
-	public function getEntryById($entryId)
+	public function getEntryById($entryId, $localeId = null)
 	{
-		return craft()->elements->getElementById($entryId, ElementType::Entry);
+		return craft()->elements->getElementById($entryId, ElementType::Entry, $localeId);
 	}
 
 	/**
@@ -191,8 +192,8 @@ class EntriesService extends BaseApplicationComponent
 
 	/**
 	 * Deletes an entry(s).
-	 *
 	 * @param EntryModel|array $entries
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function deleteEntry($entries)
@@ -274,6 +275,8 @@ class EntriesService extends BaseApplicationComponent
 		$criteria = craft()->elements->getCriteria(ElementType::Entry);
 		$criteria->id = $entryId;
 		$criteria->limit = null;
+		$criteria->status = null;
+		$criteria->localeEnabled = false;
 		$entries = $criteria->find();
 
 		if ($entries)

@@ -260,7 +260,7 @@ class ModelHelper
 
 				case AttributeType::Number:
 				{
-					$rule = array($name, 'Craft\LocaleNumberValidator');
+					$rule = array($name, 'numerical');
 
 					if ($config['min'] !== null)
 					{

@@ -75,6 +75,8 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 h1 { margin-bottom: 24px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 30px; line-height: 1; color: $submitcolor; }
 h2 { margin: 14px 0; font-size: 15px; font-weight: bold; line-height: 1.2; }
 h3 { margin: 14px 0; font-weight: bold; line-height: 1.2; }
+h4 { margin: 14px 0; font-weight: bold; line-height: 1.2; color: $mediumtextcolor; }
+h5 { margin: 14px 0 3px; line-height: 1.2; color: $mediumtextcolor; }
 
 h2[data-icon]:before { margin: -4px 6px 0 0; font-size: 19px; }
 
@@ -83,6 +85,8 @@ hr { margin: 24px -24px; border: none; border-top: 1px solid $hrcolor; height: 0
 
 /* paragraphs */
 p { margin: 1em 0; }
+
+h5 + p { margin-top: 0; }
 
 sup { vertical-align: super; font-size: smaller; }
 
@@ -539,41 +543,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .element.loading.sel:after { background-image: url(../images/spinner_element.gif); }
 .element.loading.removable .delete { display: none; }
 
-
-/* structure view */
-.structureview li { padding-left: 8px; }
-.structureview ul { margin-left: -3px; }
-.structureview ul li { padding-left: 38px; background: url(../images/branch.png) no-repeat 0 0; }
-.structureview ul li:not(:last-child) { padding-left: 37px; background-position: -1px 0; border-left: 1px solid $hrcolor; }
-.structureview li .toggle { position: relative; z-index: 1; float: left; margin: 4px -8px 0 -12px; }
-.structureview li:not(.collapsed) > .row > .toggle { background-position: 50% -40px; }
-.structureview li.collapsed > ul { display: none; }
-.structureview li .row:after { @include clearafter; }
-
-.elementindex .structureview li .toggle { background-color: #fff; }
-
-.elementindex .main { position: relative; }
-
-.structureview li .element { float: left; }
-.structureview li .icon { margin-top: 5px; opacity: 0; -webkit-transition: opacity linear 100ms; }
-.structureview li .add:before { content: '▼'; color: rgba(0,0,0,0.2); }
-.structureview li .add:not(.disabled):hover:before,
-.structureview li .add.active:before { color: $linkcolor; }
-.structureview li .row:hover > .icon,
-.structureview li.draghelper > .row .move,
-.structureview li .add.active { opacity: 1; }
-
-.structureview li.draghelper > .row .add { opacity: 0; }
-.structureview li.draghelper > .row .move:before { color: $linkcolor; }
-.structureview li.draginsertion { position: relative; margin: -1px 0 -1px 8px; padding-left: 0; height: 2px; background: $linkcolor; border-left: none; border-radius: 1px; }
-.structureview ul li.draginsertion { margin-left: 38px; }
-.structureview .row.draghover .element { z-index: 2; border-radius: 15px;
-	-webkit-box-shadow: inset 0 0 0 2px $linkcolor;
-	        box-shadow: inset 0 0 0 2px $linkcolor;
-}
-
-.structureview .row.droptarget { border-radius: 5px; -webkit-box-shadow: inset 0 0 0 2px $linkcolor; }
-
+/* thumbs views */
 .thumbsview { margin: -14px 0 0 -14px; }
 .thumbsview li { float: left; margin: 14px 0 0 14px; width: 100px; }
 
@@ -581,6 +551,39 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .thumbsview .element .elementthumb,
 .thumbsview .element .elementicon { width: 100px; height: 100px; }
 .thumbsview .element .label { display: block; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* structures */
+.structure li { padding-left: 8px; }
+.structure ul { margin-left: -3px; }
+.structure ul li { padding-left: 38px; background: url(../images/branch.png) no-repeat 0 0; }
+.structure ul li:not(:last-child) { padding-left: 37px; background-position: -1px 0; border-left: 1px solid $hrcolor; }
+.structure li .toggle { position: relative; z-index: 1; float: left; margin: 4px -8px 0 -12px; }
+.structure li:not(.collapsed) > .row > .toggle { background-position: 50% -40px; }
+.structure li.collapsed > ul { display: none; }
+.structure li .row:after { @include clearafter; }
+
+.elementindex .structure li .toggle { background-color: #fff; }
+
+.structure li .element { float: left; }
+.structure li .icon { margin-top: 5px; opacity: 0; -webkit-transition: opacity linear 100ms; }
+.structure li .add { padding: 0 5px; }
+.structure li .add:before { content: '▼'; color: rgba(0,0,0,0.2); }
+.structure li .add:not(.disabled):hover:before,
+.structure li .add.active:before { color: $linkcolor; }
+.structure li .row:hover > .icon,
+.structure li.draghelper > .row .move,
+.structure li .add.active { opacity: 1; }
+
+.structure li.draghelper > .row .add { opacity: 0; }
+.structure li.draghelper > .row .move:before { color: $linkcolor; }
+.structure li.draginsertion { position: relative; margin: -1px 0 -1px 8px; padding-left: 0; height: 2px; background: $linkcolor; border-left: none; border-radius: 1px; }
+.structure ul li.draginsertion { margin-left: 38px; }
+.structure .row.draghover .element { z-index: 2; border-radius: 15px;
+	-webkit-box-shadow: inset 0 0 0 2px $linkcolor;
+	        box-shadow: inset 0 0 0 2px $linkcolor;
+}
+
+.structure .row.droptarget { border-radius: 5px; -webkit-box-shadow: inset 0 0 0 2px $linkcolor; }
 
 /* element select fields */
 .elementselect { margin-bottom: -10px; }
@@ -638,7 +641,7 @@ ul.tree,
 /*  Progress bar
 /* ----------------------------------------*/
 
-.progressbar { border-radius: 6px; border: 2px solid $textcolor; padding: 2px; position: absolute; left: 20%; width: 60%; }
+.progressbar { border-radius: 6px; border: 2px solid $textcolor; padding: 2px; }
 .progressbar-inner { border-radius: 2px; height: 4px; background: $textcolor; }
 .progressbar:not(.pending) .progressbar-inner {
 	-webkit-transition: width linear 50ms;
@@ -673,10 +676,6 @@ ul.tree,
 	from { background-position: 0; }
 	to { background-position: -50px; }
 }
-
-.elementselect .progress-shade{ background: rgba(255,255,255,0.8); width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none;}
-.elementselect.uploading { position: relative;}
-.elementselect.uploading .progress-shade{ display: block; z-index: 2;}
 
 /* ----------------------------------------
 /*  Modals
@@ -749,7 +748,7 @@ ul.tree,
 
 .elementselectormodal .body .sidebar { padding-right: 0; border-right: 1px solid #e5e5e5; height: 350px; overflow: auto; }
 
-.elementselectormodal .body .main { margin: -24px; padding: 24px; height: 350px; overflow: auto; position: relative; }
+.elementselectormodal .body .main { margin: -24px; padding: 24px; height: 350px; overflow: auto; }
 
 .elementselectormodal .body .main .elements .tableview { margin: 0 -24px; }
 .elementselectormodal .body .main .elements .tableview table .element { display: inline-block; }
@@ -765,11 +764,11 @@ ul.tree,
 .elementselectormodal .body .main .elements .tableview table tr.disabled + tr.disabled th,
 .elementselectormodal .body .main .elements .tableview table tr.disabled + tr.disabled td { border-top-color: rgba(0,0,0,0.025); }
 
-.elementselectormodal .body .main .elements .structureview .row { margin-top: 1px; outline: none; }
+.elementselectormodal .body .main .elements .structure .row { margin-top: 1px; outline: none; }
 
 .elementselectormodal .body .main .elements .tableview table tr.sel th,
 .elementselectormodal .body .main .elements .tableview table tr.sel td,
-.elementselectormodal .body .main .elements .structureview .row.sel { background: #f5f5f5; }
+.elementselectormodal .body .main .elements .structure .row.sel { background: #f5f5f5; }
 
 /* element editing HUD */
 .element-hud-form .buttons .spinner { position: absolute; top: 0; right: -24px; }
@@ -908,9 +907,6 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 
 /* Assets related */
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
-
-/* Prompts */
-.modal.prompt-modal .buttons .btn { margin: 5px; }
 
 /* redactor */
 body .redactor_box { padding: 0 5px; }
@@ -1078,7 +1074,7 @@ ul.errors li { color: $errorcolor; }
 	.sel .element.loading:after,
 	.element.loading.sel:after { background-image: url(../images/spinner_element_2x.gif); background-size: 20px; }
 
-	.structureview ul li { background-image: url(../images/branch_2x.png); background-size: 40px; }
+	.structure ul li { background-image: url(../images/branch_2x.png); background-size: 40px; }
 
 	a.fieldtoggle:before,
 	.toggle { background-image: url(../images/toggle_2x.png); background-size: 12px; }

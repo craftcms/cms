@@ -571,6 +571,7 @@ var CP = Garnish.Base.extend({
 
 		$('<div class="notification '+type+'">'+message+'</div>')
 			.appendTo(this.$notificationContainer)
+			.hide()
 			.fadeIn('fast')
 			.delay(notificationDuration)
 			.fadeOut();

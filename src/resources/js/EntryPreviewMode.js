@@ -83,6 +83,13 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 
 	showPreviewMode: function()
 	{
+		if (this.inPreviewMode)
+		{
+			return;
+		}
+
+		this.trigger('beforeShowPreviewMode');
+
 		$(document.activeElement).blur();
 
 		if (!this.$editor)
@@ -139,6 +146,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		}
 
 		this.inPreviewMode = true;
+		this.trigger('showPreviewMode');
 	},
 
 	slideIn: function()
@@ -175,6 +183,13 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 
 	hidePreviewMode: function()
 	{
+		if (!this.inPreviewMode)
+		{
+			return;
+		}
+
+		this.trigger('beforeHidePreviewMode');
+
 		$('html').removeClass('noscroll');
 
 		this.removeListener(Garnish.$win, 'resize');
@@ -208,6 +223,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend({
 		}, this));
 
 		this.inPreviewMode = false;
+		this.trigger('hidePreviewMode');
 	},
 
 	moveFieldsBack: function()

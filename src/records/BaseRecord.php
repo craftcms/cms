@@ -394,14 +394,25 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * @param        $id
-	 * @param string $condition
-	 * @param array  $params
+	 * @param mixed $id
+	 * @param mixed $condition
+	 * @param array $params
 	 * @return \CActiveRecord
 	 */
 	public function findById($id, $condition = '', $params = array())
 	{
 		return $this->findByPk($id, $condition, $params);
+	}
+
+	/**
+	 * @param mixed $id
+	 * @param mixed $condition
+	 * @param array $params
+	 * @return \CActiveRecord[]
+	 */
+	public function findAllById($id, $condition = '', $params = array())
+	{
+		return $this->findAllByPk($id, $condition, $params);
 	}
 
 	// CModel and CActiveRecord methods

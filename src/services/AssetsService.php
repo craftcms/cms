@@ -84,7 +84,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Stores a file.
 	 *
 	 * @param AssetFileModel $file
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function storeFile(AssetFileModel $file)
@@ -931,7 +931,7 @@ class AssetsService extends BaseApplicationComponent
 			if (!craft()->userSession->checkPermission('removeFromAssetSource:'.$originalSourceType->model->id)
 				|| !craft()->userSession->checkPermission('uploadToAssetSource:'.$newSourceType->model->id))
 			{
-				throw new Exception(Craft::t("You don't have the required permissions for this operation."));
+				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
 			}
 
 			if ($originalSourceType && $newSourceType)

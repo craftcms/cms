@@ -153,10 +153,7 @@ class GlobalsController extends BaseController
 			craft()->userSession->requirePermission('editLocale:'.$localeId);
 		}
 
-		$criteria = craft()->elements->getCriteria(ElementType::GlobalSet);
-		$criteria->id = $globalSetId;
-		$criteria->locale = $localeId;
-		$globalSet = $criteria->first();
+		$globalSet = craft()->globals->getSetById($globalSetId, $localeId);
 
 		if (!$globalSet)
 		{

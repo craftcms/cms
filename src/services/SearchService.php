@@ -190,7 +190,7 @@ class SearchService extends BaseApplicationComponent
 			}
 
 			// Sort found elementIds by score
-			asort($this->_results);
+			arsort($this->_results);
 
 			// Store entry ids in return value
 			$elementIds = array_keys($this->_results);
@@ -526,15 +526,22 @@ class SearchService extends BaseApplicationComponent
 					if ($term->exact)
 					{
 						// Create exact clause from term
-						$operator = $term->exclude ? '!=' : '=';
-						$keywords = $this->_addPadding($keywords);
+						if ($term->subLeft || $term->subRight)
+						{
+							$operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
+							$keywords = ($term->subLeft ? '%' : ' ') . $keywords . ($term->subRight ? '%' : ' ');
+						}
+						else
+						{
+							$operator = $term->exclude ? '!=' : '=';
+							$keywords = $this->_addPadding($keywords);
+						}
 					}
 					else
 					{
 						// Create LIKE clause from term
 						$operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
-						$keywords = ($term->subLeft ? '%' : '% ') . $keywords;
-						$keywords .= $term->subRight ? '%' : ' %';
+						$keywords = ($term->subLeft ? '%' : '% ') . $keywords . ($term->subRight ? '%' : ' %');
 					}
 
 					// Generate the SQL
