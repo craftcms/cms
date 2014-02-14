@@ -1,5 +1,5 @@
 {% for element in elements %}
-	<li{% if element.id in disabledElementIds %} class="disabled"{% endif %}">
+	<li{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
 		{% include "_elements/element" %}
 	</li>
 {% endfor %}
