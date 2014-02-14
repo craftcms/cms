@@ -336,7 +336,7 @@ return array(
 	'Fields' => 'Fields',
 	'File System Path' => 'File System Path',
 	'File caches' => 'File caches',
-	'File “{file}” already exists at target location' => 'File “{file}” already exists at target location',
+	'File “{file}” already exists at target location.' => 'File “{file}” already exists at target location.',
 	'Filename' => 'Filename',
 	'Finish up' => 'Finish up',
 	'First Name' => 'First Name',

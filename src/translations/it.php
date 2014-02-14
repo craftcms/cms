@@ -336,7 +336,7 @@ return array(
 	'Fields' => 'Campi',
 	'File System Path' => 'Percorso del file system',
 	'File caches' => 'Cache dei file',
-	'File “{file}” already exists at target location' => 'Il file “{file}” esiste già nella posizione indicata',
+	'File “{file}” already exists at target location.' => 'Il file “{file}” esiste già nella posizione indicata',
 	'Filename' => 'Nome del file',
 	'Finish up' => 'Termina',
 	'First Name' => 'Nome',
