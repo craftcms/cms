@@ -196,9 +196,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		return (object) array(
 			'message' => Craft::t('File “{file}” already exists at target location.', array('file' => $fileName)),
 			'choices' => array(
-				array('value' => AssetsHelper::ActionKeepBoth, 'title' => Craft::t('Rename the new file and keep both')),
-				array('value' => AssetsHelper::ActionReplace, 'title' => Craft::t('Replace the existing file')),
-				array('value' => AssetsHelper::ActionCancel, 'title' => Craft::t('Keep the original file'))
+				array('value' => AssetsHelper::ActionKeepBoth, 'title' => Craft::t('Keep both')),
+				array('value' => AssetsHelper::ActionReplace, 'title' => Craft::t('Replace it')),
+				array('value' => AssetsHelper::ActionCancel, 'title' => Craft::t('Cancel'))
 			)
 		);
 	}

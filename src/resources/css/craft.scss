@@ -908,9 +908,6 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 /* Assets related */
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
 
-/* Prompts */
-.modal.prompt-modal .buttons .btn { margin: 5px; }
-
 /* redactor */
 body .redactor_box { padding: 0 5px; }
 body .redactor_box .redactor_toolbar { padding-top: 2px !important; background: none; border-bottom: 1px dotted $hrcolor; }

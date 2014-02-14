@@ -147,7 +147,7 @@ Craft.PromptHandler = Garnish.Base.extend({
                 this._selectPromptChoice(choice, applyToRemaining);
             });
 
-            this.$promptButtons.append($btn).append('<br />');
+            this.$promptButtons.append($btn);
         }
 
         if (itemsToGo)
