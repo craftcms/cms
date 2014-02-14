@@ -1,35 +1,9 @@
-{% set uniqueClass = 'structureview'~random() %}
-
-<ul class="structureview {{ uniqueClass }}">
-	{% nav element in elements %}
-		{% set collapsed = (viewState.collapsedElementIds is defined and element.id in viewState.collapsedElementIds) %}
-		<li{% if collapsed %} class="collapsed"{% endif %} data-level="{{ element.level }}">
-			{% set indent = 8 + (element.level - 1) * 35 %}
-			<div class="row{% if element.id in disabledElementIds %} disabled{% endif %}" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;" data-id="{{ element.id }}" data-label="{{ element }}" data-status="{{ element.getStatus() }}">
-				{% include "_elements/element" %}
-				{% if context == 'index' %}
-					{% if source.sortable is defined and source.sortable %}
-						<a class="move icon" title="{{ 'Move'|t }}"></a>
-					{% endif %}
-					<a class="add icon" title="{{ 'New Child'|t }}"></a>
-				{% endif %}
-			</div>
-
-			{% ifchildren %}
-				<ul>
-					{% children %}
-				</ul>
-			{% endifchildren %}
-		</li>
-	{% endnav %}
-</ul>
-
-
-{# Hide "Add child" menu buttons beyond the max level #}
-{% if context == 'index' and source.maxLevels is defined and source.maxLevels %}
-	{% set css %}
-		.{{ uniqueClass }}{% for i in 2 .. source.maxLevels if source.maxLevels >= 2 %} ul{% endfor %} .add { display: none; }
-	{% endset %}
-
-	{% includeCss css %}
-{% endif %}
+{% include "_elements/structure" with {
+	context:             context,
+	elements:            elements,
+	disabledElementIds:  disabledElementIds,
+	collapsedElementIds: (viewState.collapsedElementIds is defined ? viewState.collapsedElementIds : []),
+	sortable:            (context == 'index' and source.sortable is defined ? source.sortable : false),
+	showNewChildMenus:   (context == 'index'),
+	maxLevels:           (context == 'index' and source.maxLevels is defined ? source.maxLevels : null)
+} only %}
