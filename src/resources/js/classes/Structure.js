@@ -35,7 +35,7 @@ Craft.Structure = Garnish.Base.extend({
 				$li = $row.parent(),
 				$toggle = $('<div class="toggle" title="'+Craft.t('Show/hide children')+'"/>').prependTo($row);
 
-			if ($.inArray($row.data('id'), this.state.collapsedElementIds) != -1)
+			if ($.inArray($row.children('.element').data('id'), this.state.collapsedElementIds) != -1)
 			{
 				$li.addClass('collapsed');
 			}
@@ -51,7 +51,7 @@ Craft.Structure = Garnish.Base.extend({
 
 				if (!$btn.data('menubtn'))
 				{
-					var elementId = $btn.parent().data('id'),
+					var elementId = $btn.parent().children('.element').data('id'),
 						newChildUrl = Craft.getUrl(this.settings.newChildUrl, 'parentId='+elementId),
 						$menu = $('<div class="menu"><ul><li><a href="'+newChildUrl+'">'+Craft.t('New child')+'</a></li></ul></div>').insertAfter($btn);
 
@@ -70,7 +70,7 @@ Craft.Structure = Garnish.Base.extend({
 		$toggle.click($.proxy(function(ev) {
 
 			var $li = $(ev.currentTarget).closest('li'),
-				elementId = $li.children('.row').data('id'),
+				elementId = $li.children('.row').children('.element').data('id'),
 				viewStateKey = $.inArray(elementId, this.state.collapsedElementIds);
 
 			if ($li.hasClass('collapsed'))

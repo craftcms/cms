@@ -1144,6 +1144,97 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Merges two elements together.
+	 *
+	 * @param int $mergedElementId
+	 * @param int $prevailingElementId
+	 * @return bool
+	 */
+	public function mergeElementsByIds($mergedElementId, $prevailingElementId)
+	{
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			// Update any relations that point to the merged element
+			$relations = craft()->db->createCommand()
+				->select('id, fieldId, sourceId, sourceLocale')
+				->from('relations')
+				->where(array('targetId' => $mergedElementId))
+				->queryAll();
+
+			foreach ($relations as $relation)
+			{
+				// Make sure the persisting element isn't already selected in the same field
+				$persistingElementIsRelatedToo = (bool) craft()->db->createCommand()
+					->from('relations')
+					->where(array(
+						'fieldId'      => $relation['fieldId'],
+						'sourceId'     => $relation['sourceId'],
+						'sourceLocale' => $relation['sourceLocale'],
+						'targetId'     => $prevailingElementId
+					))
+					->count('id');
+
+				if (!$persistingElementIsRelatedToo)
+				{
+					craft()->db->createCommand()->update('relations', array(
+						'targetId' => $prevailingElementId
+					), array(
+						'id' => $relation['id']
+					));
+				}
+			}
+
+			// Update any structures that the merged element is in
+			$structureElements = craft()->db->createCommand()
+				->select('id, structureId')
+				->from('structureelements')
+				->where(array('elementId' => $mergedElementId))
+				->queryAll();
+
+			foreach ($structureElements as $structureElement)
+			{
+				// Make sure the persisting element isn't already a part of that structure
+				$persistingElementIsInStructureToo = (bool) craft()->db->createCommand()
+					->from('structureElements')
+					->where(array(
+						'structureId' => $structureElement['structureId'],
+						'elementId' => $prevailingElementId
+					))
+					->count('id');
+
+				if (!$persistingElementIsInStructureToo)
+				{
+					craft()->db->createCommand()->update('relations', array(
+						'elementId' => $prevailingElementId
+					), array(
+						'id' => $structureElement['id']
+					));
+				}
+			}
+
+			// Now delete the merged element
+			$success = $this->deleteElementById($mergedElementId);
+
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
+
+			return $success;
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+	}
+
+	/**
 	 * Deletes an element(s) by its ID(s).
 	 *
 	 * @param int|array $elementIds
