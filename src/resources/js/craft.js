@@ -888,6 +888,33 @@ $.extend(Craft, {
 			key = 'Craft-'+Craft.siteUid+'.'+key;
 			localStorage[key] = JSON.stringify(value);
 		}
+	},
+
+	/**
+	 * Returns element information from it's HTML.
+	 *
+	 * @param element
+	 * @returns object
+	 */
+	getElementInfo: function(element)
+	{
+		var $element = $(element);
+
+		if (!$element.hasClass('element'))
+		{
+			$element = $element.find('.element:first');
+		}
+
+		info = {
+			id:       $element.data('id'),
+			label:    $element.data('label'),
+			status:   $element.data('status'),
+			url:      $element.data('url'),
+			hasThumb: $element.hasClass('hasthumb'),
+			$element: $element
+		};
+
+		return info;
 	}
 });
 

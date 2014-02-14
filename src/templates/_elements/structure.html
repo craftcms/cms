@@ -6,7 +6,7 @@
 	{% nav element in elements %}
 		<li{% if element.id in collapsedElementIds %} class="collapsed"{% endif %} data-level="{{ element.level }}">
 			{% set indent = 8 + (element.level - 1) * 35 %}
-			<div class="row{% if element.id in disabledElementIds %} disabled{% endif %}" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;" data-id="{{ element.id }}" data-label="{{ element }}" data-status="{{ element.getStatus() }}">
+			<div class="row{% if element.id in disabledElementIds %} disabled{% endif %}" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
 				{%- spaceless %}
 					{% include "_elements/element" %}
 

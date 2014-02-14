@@ -955,7 +955,7 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= ' hasicon';
 		}
 
-		$html .= '" data-id="'.$context['element']->id.'" data-locale="'.$context['element']->locale.'" data-url="'.$context['element']->getUrl().'"';
+		$html .= '" data-id="'.$context['element']->id.'" data-locale="'.$context['element']->locale.'" data-status="'.$context['element']->getStatus().'" data-label="'.$context['element'].'" data-url="'.$context['element']->getUrl().'"';
 
 		$isEditable = ElementHelper::isElementEditable($context['element']);
 
@@ -983,7 +983,16 @@ class TemplatesService extends BaseApplicationComponent
 
 		$html .= '<div class="label">';
 
-		if (isset($context['elementType']) && $context['elementType']->hasStatuses())
+		if (isset($context['elementType']))
+		{
+			$elementType = $context['elementType'];
+		}
+		else
+		{
+			$elementType = craft()->elements->getElementType($context['element']->getElementType());
+		}
+
+		if ($elementType->hasStatuses())
 		{
 			$html .= '<span class="status '.$context['element']->getStatus().'"></span>';
 		}
