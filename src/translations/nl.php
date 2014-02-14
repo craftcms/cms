@@ -336,7 +336,7 @@ return array(
 	'Fields' => 'Velden',
 	'File System Path' => 'Bestandssysteem-pad',
 	'File caches' => 'Bestandscaches',
-	'File “{file}” already exists at target location' => 'Bestand “{file}” bestaat al in de doel-locatie',
+	'File “{file}” already exists at target location.' => 'Bestand “{file}” bestaat al in de doel-locatie',
 	'Filename' => 'Bestandsnaam',
 	'Finish up' => 'Voltooien',
 	'First Name' => 'Voornaam',

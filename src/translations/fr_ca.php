@@ -336,7 +336,7 @@ return array(
 	'Fields' => 'Champs',
 	'File System Path' => 'Chemin du système de fichier',
 	'File caches' => 'Fichier de mémoire cache',
-	'File “{file}” already exists at target location' => 'Le fichier “{file}” existe déjà dans l\'emplacement cible.',
+	'File “{file}” already exists at target location.' => 'Le fichier “{file}” existe déjà dans l\'emplacement cible.',
 	'Filename' => 'Nom de fichier',
 	'Finish up' => 'Finissez',
 	'First Name' => 'Prénom',
