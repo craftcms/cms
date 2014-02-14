@@ -84,7 +84,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Saves the record for an asset.
 	 *
 	 * @param AssetFileModel $file
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function storeFile(AssetFileModel $file)

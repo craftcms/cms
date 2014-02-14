@@ -905,7 +905,7 @@ $.extend(Craft, {
 			$element = $element.find('.element:first');
 		}
 
-		info = {
+		var info = {
 			id:       $element.data('id'),
 			label:    $element.data('label'),
 			status:   $element.data('status'),
