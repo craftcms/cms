@@ -336,7 +336,7 @@ return array(
 	'Fields' => 'Felder',
 	'File System Path' => 'Verzeichnis des Dateisystems',
 	'File caches' => 'Datei-Zwischenspeicher',
-	'File “{file}” already exists at target location' => 'Die Datei “{file}” existiert in dem angegebenen Pfad bereits.',
+	'File “{file}” already exists at target location.' => 'Die Datei “{file}” existiert in dem angegebenen Pfad bereits.',
 	'Filename' => 'Dateiname',
 	'Finish up' => 'Vervollständigen',
 	'First Name' => 'Vorname',

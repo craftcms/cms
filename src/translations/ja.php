@@ -336,7 +336,7 @@ return array(
 	'Fields' => 'フィールド',
 	'File System Path' => 'ファイルシステムのパス',
 	'File caches' => 'ファイルのキャッシュ',
-	'File “{file}” already exists at target location' => '目的先に「{file}」というファイルはすでに存在しています',
+	'File “{file}” already exists at target location.' => '目的先に「{file}」というファイルはすでに存在しています',
 	'Filename' => 'ファイルネーム',
 	'Finish up' => '終了にする',
 	'First Name' => 'ファーストネーム',
