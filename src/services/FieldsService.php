@@ -17,6 +17,9 @@ class FieldsService extends BaseApplicationComponent
 	private $_fieldsByContextAndHandle;
 	private $_fieldsWithContent;
 
+	private static $_fieldsTable = 'fields';
+	private static $_fieldColumns = 'id, groupId, name, handle, context, instructions, translatable, type, settings';
+
 	// Groups
 	// ======
 
@@ -153,21 +156,17 @@ class FieldsService extends BaseApplicationComponent
 		if (!isset($this->_allFieldsInContext[$context]))
 		{
 			$results = craft()->db->createCommand()
-				->select('id, groupId, name, handle, context, instructions, translatable, type, settings')
-				->from('fields')
+				->select(static::$_fieldColumns)
+				->from(static::$_fieldsTable)
 				->where('context = :context', array(':context' => $context))
+				->order('name')
 				->queryAll();
 
 			$this->_allFieldsInContext[$context] = array();
 
 			foreach ($results as $result)
 			{
-				if ($result['settings'])
-				{
-					$result['settings'] = JsonHelper::decode($result['settings']);
-				}
-
-				$field = new FieldModel($result);
+				$field = $this->_populateField($result);
 
 				$this->_allFieldsInContext[$context][] = $field;
 				$this->_fieldsById[$field->id] = $field;
@@ -229,11 +228,16 @@ class FieldsService extends BaseApplicationComponent
 	{
 		if (!isset($this->_fieldsById) || !array_key_exists($fieldId, $this->_fieldsById))
 		{
-			$fieldRecord = FieldRecord::model()->findById($fieldId);
+			$result = craft()->db->createCommand()
+				->select(static::$_fieldColumns)
+				->from(static::$_fieldsTable)
+				->where('id = :id', array(':id' => $fieldId))
+				->queryRow();
 
-			if ($fieldRecord)
+			if ($result)
 			{
-				$field = FieldModel::populateModel($fieldRecord);
+				$field = $this->_populateField($result);
+
 				$this->_fieldsById[$field->id] = $field;
 				$this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
 			}
@@ -258,14 +262,15 @@ class FieldsService extends BaseApplicationComponent
 
 		if (!isset($this->_fieldsByContextAndHandle[$context]) || !array_key_exists($handle, $this->_fieldsByContextAndHandle[$context]))
 		{
-			$fieldRecord = FieldRecord::model()->findByAttributes(array(
-				'handle'  => $handle,
-				'context' => $context
-			));
+			$result = craft()->db->createCommand()
+				->select(static::$_fieldColumns)
+				->from(static::$_fieldsTable)
+				->where(array('and', 'handle = :handle', 'context = :context'), array(':handle' => $handle, ':context' => $context))
+				->queryRow();
 
-			if ($fieldRecord)
+			if ($result)
 			{
-				$field = FieldModel::populateModel($fieldRecord);
+				$field = $this->_populateField($result);
 				$this->_fieldsById[$field->id] = $field;
 				$this->_fieldsByContextAndHandle[$context][$field->handle] = $field;
 			}
@@ -287,11 +292,30 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function getFieldsByGroupId($groupId, $indexBy = null)
 	{
-		$fieldRecords = FieldRecord::model()->ordered()->findAllByAttributes(array(
-			'groupId' => $groupId,
-		));
+		$results = craft()->db->createCommand()
+			->select(static::$_fieldColumns)
+			->from(static::$_fieldsTable)
+			->where('groupId = :groupId', array(':groupId' => $groupId))
+			->order('name')
+			->queryAll();
 
-		return FieldModel::populateModels($fieldRecords, $indexBy);
+		$fields = array();
+
+		foreach ($results as $result)
+		{
+			$field = $this->_populateField($result);
+
+			if ($indexBy)
+			{
+				$fields[$field->$indexBy] = $field;
+			}
+			else
+			{
+				$fields[] = $field;
+			}
+		}
+
+		return $fields;
 	}
 
 	/**
@@ -776,6 +800,23 @@ class FieldsService extends BaseApplicationComponent
 
 	// Private methods
 	// ===============
+
+	/**
+	 * Populates a field from its DB result.
+	 *
+	 * @access private
+	 * @param array $result
+	 * @return FieldModel
+	 */
+	private function _populateField($result)
+	{
+		if ($result['settings'])
+		{
+			$result['settings'] = JsonHelper::decode($result['settings']);
+		}
+
+		return new FieldModel($result);
+	}
 
 	/**
 	 * Gets a field group record or creates a new one.
