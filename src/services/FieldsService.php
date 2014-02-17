@@ -17,9 +17,6 @@ class FieldsService extends BaseApplicationComponent
 	private $_fieldsByContextAndHandle;
 	private $_fieldsWithContent;
 
-	private static $_fieldsTable = 'fields';
-	private static $_fieldColumns = 'id, groupId, name, handle, context, instructions, translatable, type, settings';
-
 	// Groups
 	// ======
 
@@ -155,9 +152,7 @@ class FieldsService extends BaseApplicationComponent
 
 		if (!isset($this->_allFieldsInContext[$context]))
 		{
-			$results = craft()->db->createCommand()
-				->select(static::$_fieldColumns)
-				->from(static::$_fieldsTable)
+			$results = $this->_createFieldQuery()
 				->where('context = :context', array(':context' => $context))
 				->order('name')
 				->queryAll();
@@ -228,9 +223,7 @@ class FieldsService extends BaseApplicationComponent
 	{
 		if (!isset($this->_fieldsById) || !array_key_exists($fieldId, $this->_fieldsById))
 		{
-			$result = craft()->db->createCommand()
-				->select(static::$_fieldColumns)
-				->from(static::$_fieldsTable)
+			$result = $this->_createFieldQuery()
 				->where('id = :id', array(':id' => $fieldId))
 				->queryRow();
 
@@ -262,9 +255,7 @@ class FieldsService extends BaseApplicationComponent
 
 		if (!isset($this->_fieldsByContextAndHandle[$context]) || !array_key_exists($handle, $this->_fieldsByContextAndHandle[$context]))
 		{
-			$result = craft()->db->createCommand()
-				->select(static::$_fieldColumns)
-				->from(static::$_fieldsTable)
+			$result = $this->_createFieldQuery()
 				->where(array('and', 'handle = :handle', 'context = :context'), array(':handle' => $handle, ':context' => $context))
 				->queryRow();
 
@@ -292,9 +283,7 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function getFieldsByGroupId($groupId, $indexBy = null)
 	{
-		$results = craft()->db->createCommand()
-			->select(static::$_fieldColumns)
-			->from(static::$_fieldsTable)
+		$results = $this->_createFieldQuery()
 			->where('groupId = :groupId', array(':groupId' => $groupId))
 			->order('name')
 			->queryAll();
@@ -800,6 +789,18 @@ class FieldsService extends BaseApplicationComponent
 
 	// Private methods
 	// ===============
+
+	/**
+	 * Returns a DbCommand object prepped for retrieving fields.
+	 *
+	 * @return DbCommand
+	 */
+	private function _createFieldQuery()
+	{
+		return craft()->db->createCommand()
+			->select('id, groupId, name, handle, context, instructions, translatable, type, settings')
+			->from('fields');
+	}
 
 	/**
 	 * Populates a field from its DB result.
