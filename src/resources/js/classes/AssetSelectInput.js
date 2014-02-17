@@ -21,9 +21,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 	{
 
 		this.progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').appendTo(this.$container));
-		this.progressBar.$progressBar.css({
-			top: Math.round(this.$container.outerHeight() / 2) - 6
-		});
 
 		var options = {
 			url: Craft.getActionUrl('assets/expressUpload'),
@@ -98,6 +95,11 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 	 */
 	_onUploadStart: function (event)
 	{
+
+		this.progressBar.$progressBar.css({
+			top: Math.round(this.$container.outerHeight() / 2) - 6
+		});
+
 		this.$container.addClass('uploading');
 		this.progressBar.resetProgressBar();
 		this.progressBar.showProgressBar();
