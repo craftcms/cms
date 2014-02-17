@@ -101,7 +101,7 @@ Craft.Uploader = Garnish.Base.extend({
 			var file = data.files[0];
 			var matches = file.name.match(/\.([a-z0-4_]+)$/i);
 			var fileExtension = matches[1];
-			if ($.inArray(fileExtension, this._extensionList) > -1)
+			if ($.inArray(fileExtension.toLowerCase(), this._extensionList) > -1)
 			{
 				data.submit();
 			}
@@ -123,8 +123,6 @@ Craft.Uploader = Garnish.Base.extend({
 
 	processErrorMessages: function ()
 	{
-		console.log(this._rejectedFiles, this.$element);
-
 		if (this._rejectedFiles.length)
 		{
 			if (this._rejectedFiles.length == 1)
