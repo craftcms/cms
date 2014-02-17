@@ -641,7 +641,8 @@ ul.tree,
 /*  Progress bar
 /* ----------------------------------------*/
 
-.progressbar { border-radius: 6px; border: 2px solid $textcolor; padding: 2px; }
+.progressbar { border-radius: 6px; border: 2px solid $textcolor; padding: 2px; position: absolute; left: 20%; width: 60%; }
+
 .progressbar-inner { border-radius: 2px; height: 4px; background: $textcolor; }
 .progressbar:not(.pending) .progressbar-inner {
 	-webkit-transition: width linear 50ms;
@@ -676,6 +677,10 @@ ul.tree,
 	from { background-position: 0; }
 	to { background-position: -50px; }
 }
+
+.elementselect .progress-shade{ background: rgba(255,255,255,0.8); width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none;}
+.elementselect.uploading { position: relative;}
+.elementselect.uploading .progress-shade{ display: block; z-index: 2;}
 
 /* ----------------------------------------
 /*  Modals
