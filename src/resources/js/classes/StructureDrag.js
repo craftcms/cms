@@ -4,7 +4,6 @@
 Craft.StructureDrag = Garnish.Drag.extend({
 
 	structure: null,
-	moveAction: null,
 	maxLevels: null,
 	draggeeLevel: null,
 
@@ -13,10 +12,9 @@ Craft.StructureDrag = Garnish.Drag.extend({
 	_: null,
 	draggeeHeight: null,
 
-	init: function(structure, moveAction, maxLevels)
+	init: function(structure, maxLevels)
 	{
 		this.structure = structure;
-		this.moveAction = moveAction;
 		this.maxLevels = maxLevels;
 
 		this.$insertion = $('<li class="draginsertion"/>');
@@ -63,7 +61,8 @@ Craft.StructureDrag = Garnish.Drag.extend({
 		}, this));
 		this.base();
 
-		this.addListener(Garnish.$doc, 'keydown', function(ev) {
+		this.addListener(Garnish.$doc, 'keydown', function(ev)
+		{
 			if (ev.keyCode == Garnish.ESC_KEY)
 			{
 				this.cancelDrag();
@@ -360,7 +359,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 					else if (newLevel == 1)
 					{
 						this.$helperLi.animate({
-							'padding-left': 8
+							'padding-left': Craft.Structure.baseIndent
 						}, 'fast');
 					}
 
@@ -369,12 +368,13 @@ Craft.StructureDrag = Garnish.Drag.extend({
 
 				// Make it real
 				var data = {
-					id:       this.$draggee.children('.row').children('.element').data('id'),
-					prevId:   this.$draggee.prev().children('.row').children('.element').data('id'),
-					parentId: this.$draggee.parent('ul').parent('li').children('.row').children('.element').data('id')
+					structureId: this.structure.id,
+					elementId:   this.$draggee.children('.row').children('.element').data('id'),
+					prevId:      this.$draggee.prev().children('.row').children('.element').data('id'),
+					parentId:    this.$draggee.parent('ul').parent('li').children('.row').children('.element').data('id')
 				};
 
-				Craft.postActionRequest(this.moveAction, data, function(response, textStatus) {
+				Craft.postActionRequest('structures/moveElement', data, function(response, textStatus) {
 
 					if (textStatus == 'success')
 					{
@@ -401,7 +401,8 @@ Craft.StructureDrag = Garnish.Drag.extend({
 	{
 		$li.data('level', level);
 
-		var indent = 8 + (level - 1) * 35;
+		var indent = this.structure.getIndent(level);
+
 		this.$draggee.children('.row').css({
 			'margin-left':  '-'+indent+'px',
 			'padding-left': indent+'px'

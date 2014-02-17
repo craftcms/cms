@@ -347,6 +347,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		}
 
 		$('head').append(response.headHtml);
+		Garnish.$bod.append(response.footHtml);
 
 		// More?
 		if (response.more)
@@ -380,23 +381,9 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 			});
 		}
 
-		switch (this.getSelectedSourceState('mode'))
+		if (this.getSelectedSourceState('mode') == 'table')
 		{
-			case 'table':
-			{
-				Craft.cp.updateResponsiveTables();
-				break;
-			}
-			case 'structure':
-			{
-				new Craft.Structure(this.$elementContainer, {
-					storageKey:  this.sourceStatesStorageKey+'.'+this.instanceState.selectedSource+'.Structure',
-					sortable:    (this.settings.context == 'index' && this.$source.data('sortable')),
-					newChildUrl: this.$source.data('new-child-url'),
-					moveAction:  this.$source.data('move-action'),
-					maxLevels:   this.$source.data('max-levels')
-				});
-			}
+			Craft.cp.updateResponsiveTables();
 		}
 
 		this.onUpdateElements(append);

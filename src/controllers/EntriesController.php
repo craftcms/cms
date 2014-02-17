@@ -417,49 +417,6 @@ class EntriesController extends BaseController
 	}
 
 	/**
-	 * Moves an entry in a structured section.
-	 *
-	 * @throws Exception
-	 */
-	public function actionMoveEntry()
-	{
-		craft()->requirePackage(CraftPackage::PublishPro);
-
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
-
-		$entryId       = craft()->request->getRequiredPost('id');
-		$parentEntryId = craft()->request->getPost('parentId');
-		$prevEntryId   = craft()->request->getPost('prevId');
-
-		$entry = craft()->entries->getEntryById($entryId);
-
-		// Make sure they have permission to be doing this
-		craft()->userSession->requirePermission('publishEntries:'.$entry->sectionId);
-
-		$section = $entry->getSection();
-
-		if ($prevEntryId)
-		{
-			$prevEntry = craft()->entries->getEntryById($prevEntryId);
-			$success = craft()->structures->moveAfter($section->structureId, $entry, $prevEntry, 'auto', $section->hasUrls);
-		}
-		else if ($parentEntryId)
-		{
-			$parentEntry = craft()->entries->getEntryById($parentEntryId);
-			$success = craft()->structures->prepend($section->structureId, $entry, $parentEntry, 'auto', $section->hasUrls);
-		}
-		else
-		{
-			$success = craft()->structures->appendToRoot($section->structureId, $entry, 'auto', $section->hasUrls);
-		}
-
-		$this->returnJson(array(
-			'success' => $success
-		));
-	}
-
-	/**
 	 * Deletes an entry.
 	 */
 	public function actionDeleteEntry()

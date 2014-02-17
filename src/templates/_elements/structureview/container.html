@@ -3,7 +3,8 @@
 	elements:            elements,
 	disabledElementIds:  disabledElementIds,
 	collapsedElementIds: (viewState.collapsedElementIds is defined ? viewState.collapsedElementIds : []),
-	sortable:            (context == 'index' and source.sortable is defined ? source.sortable : false),
-	showNewChildMenus:   (context == 'index'),
-	maxLevels:           (context == 'index' and source.maxLevels is defined ? source.maxLevels : null)
+	structure:           structure,
+	sortable:            (context == 'index'),
+	newChildUrl:         (context == 'index' and source.newChildUrl is defined ? source.newChildUrl : null),
+	maxLevels:           (context == 'index' and source.maxLevels is defined ? source.maxLevels : null),
 } only %}

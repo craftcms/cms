@@ -915,6 +915,19 @@ $.extend(Craft, {
 		};
 
 		return info;
+	},
+
+	/**
+	 * Shows an element editor HUD.
+	 *
+	 * @param object $element
+	 */
+	showElementEditor: function($element)
+	{
+		if ($element.data('editable') && !$element.hasClass('disabled') && !$element.hasClass('loading'))
+		{
+			new Craft.ElementEditor($element);
+		}
 	}
 });
 

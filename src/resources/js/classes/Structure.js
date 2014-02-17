@@ -3,6 +3,8 @@
  */
 Craft.Structure = Garnish.Base.extend({
 
+	id: null,
+
 	$container: null,
 	state: null,
 	structureDrag: null,
@@ -10,10 +12,20 @@ Craft.Structure = Garnish.Base.extend({
 	/**
 	 * Init
 	 */
-	init: function(container, settings)
+	init: function(id, container, settings)
 	{
+		this.id = id;
 		this.$container = $(container);
 		this.setSettings(settings, Craft.Structure.defaults);
+
+		// Is this already a structure?
+		if (this.$container.data('structure'))
+		{
+			Garnish.log('Double-instantiating a structure on an element');
+			this.$container.data('structure').destroy();
+		}
+
+		this.$container.data('structure', this);
 
 		this.state = {};
 
@@ -45,23 +57,12 @@ Craft.Structure = Garnish.Base.extend({
 
 		if (this.settings.sortable)
 		{
-			this.$container.find('.add').click($.proxy(function(ev)
-			{
-				var $btn = $(ev.currentTarget);
+			this.structureDrag = new Craft.StructureDrag(this, this.settings.maxLevels);
+		}
 
-				if (!$btn.data('menubtn'))
-				{
-					var elementId = $btn.parent().children('.element').data('id'),
-						newChildUrl = Craft.getUrl(this.settings.newChildUrl, 'parentId='+elementId),
-						$menu = $('<div class="menu"><ul><li><a href="'+newChildUrl+'">'+Craft.t('New child')+'</a></li></ul></div>').insertAfter($btn);
-
-					var menuBtn = new Garnish.MenuBtn($btn);
-					menuBtn.showMenu();
-				}
-
-			}, this));
-
-			this.structureDrag = new Craft.StructureDrag(this, this.settings.moveAction, this.settings.maxLevels);
+		if (this.settings.newChildUrl)
+		{
+			this.initNewChildMenus(this.$container.find('.add'));
 		}
 	},
 
@@ -98,14 +99,64 @@ Craft.Structure = Garnish.Base.extend({
 			}
 
 		}, this));
+	},
+
+	initNewChildMenus: function($addBtns)
+	{
+		this.addListener($addBtns, 'click', 'onNewChildMenuClick');
+	},
+
+	onNewChildMenuClick: function(ev)
+	{
+		var $btn = $(ev.currentTarget);
+
+		if (!$btn.data('menubtn'))
+		{
+			var elementId = $btn.parent().children('.element').data('id'),
+				newChildUrl = Craft.getUrl(this.settings.newChildUrl, 'parentId='+elementId),
+				$menu = $('<div class="menu"><ul><li><a href="'+newChildUrl+'">'+Craft.t('New child')+'</a></li></ul></div>').insertAfter($btn);
+
+			var menuBtn = new Garnish.MenuBtn($btn);
+			menuBtn.showMenu();
+		}
+	},
+
+	getIndent: function(level)
+	{
+		return Craft.Structure.baseIndent + (level-1) * Craft.Structure.nestedIndent;
+	},
+
+	addElement: function($element)
+	{
+		var $li = $('<li data-level="1"/>').appendTo(this.$container),
+			$row = $('<div class="row" style="margin-left: -'+Craft.Structure.baseIndent+'px; padding-left: '+Craft.Structure.baseIndent+'px;">').appendTo($li);
+
+		$row.append($element);
+
+		if (this.settings.sortable)
+		{
+			$row.append('<a class="move icon" title="'+Craft.t('Move')+'"></a>');
+			this.structureDrag.addItems($li);
+		}
+
+		if (this.settings.newChildUrl)
+		{
+			var $addBtn = $('<a class="add icon" title="'+Craft.t('New Child')+'"></a>').appendTo($row);
+			this.initNewChildMenus($addBtn);
+		}
+
+		$row.css('margin-bottom', -30);
+		$row.animate({ 'margin-bottom': 0 }, 'fast');
 	}
 },
 {
+	baseIndent: 8,
+	nestedIndent: 35,
+
 	defaults: {
 		storageKey:  null,
 		sortable:    false,
 		newChildUrl: null,
-		moveAction:  null,
 		maxLevels:   null
 	}
 });

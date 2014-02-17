@@ -137,19 +137,15 @@ class EntryElementType extends BaseElementType
 					$key = 'section:'.$section->id;
 
 					$sources[$key] = array(
-						'label'        => $section->name,
-						'hasStructure' => ($type == SectionType::Structure),
-						'data'         => array('type' => $type, 'handle' => $section->handle),
-						'criteria'     => array('sectionId' => $section->id)
+						'label'    => $section->name,
+						'data'     => array('type' => $type, 'handle' => $section->handle),
+						'criteria' => array('sectionId' => $section->id)
 					);
 
 					if ($type == SectionType::Structure)
 					{
-						$sources[$key]['hasStructure'] = true;
-						$sources[$key]['sortable']     = craft()->userSession->checkPermission('publishEntries:'.$section->id);
-						$sources[$key]['moveAction']   = 'entries/moveEntry';
-						$sources[$key]['maxLevels']    = $section->maxLevels;
-						$sources[$key]['newChildUrl']  = 'entries/'.$section->handle.'/new';
+						$sources[$key]['structureId'] = $section->structureId;
+						$sources[$key]['newChildUrl'] = 'entries/'.$section->handle.'/new';
 					}
 				}
 			}
