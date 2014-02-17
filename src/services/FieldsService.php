@@ -152,15 +152,24 @@ class FieldsService extends BaseApplicationComponent
 
 		if (!isset($this->_allFieldsInContext[$context]))
 		{
-			$fieldRecords = FieldRecord::model()->ordered()->findAllByAttributes(array(
-				'context' => $context
-			));
+			$results = craft()->db->createCommand()
+				->select('id, groupId, name, handle, context, instructions, translatable, type, settings')
+				->from('fields')
+				->where('context = :context', array(':context' => $context))
+				->queryAll();
 
-			$this->_allFieldsInContext[$context] = FieldModel::populateModels($fieldRecords);
+			$this->_allFieldsInContext[$context] = array();
 
-			// Cache them in the other arrays too
-			foreach ($this->_allFieldsInContext[$context] as $field)
+			foreach ($results as $result)
 			{
+				if ($result['settings'])
+				{
+					$result['settings'] = JsonHelper::decode($result['settings']);
+				}
+
+				$field = new FieldModel($result);
+
+				$this->_allFieldsInContext[$context][] = $field;
 				$this->_fieldsById[$field->id] = $field;
 				$this->_fieldsByContextAndHandle[$context][$field->handle] = $field;
 			}
