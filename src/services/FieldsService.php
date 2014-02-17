@@ -154,7 +154,6 @@ class FieldsService extends BaseApplicationComponent
 		{
 			$results = $this->_createFieldQuery()
 				->where('context = :context', array(':context' => $context))
-				->order('name')
 				->queryAll();
 
 			$this->_allFieldsInContext[$context] = array();
@@ -285,7 +284,6 @@ class FieldsService extends BaseApplicationComponent
 	{
 		$results = $this->_createFieldQuery()
 			->where('groupId = :groupId', array(':groupId' => $groupId))
-			->order('name')
 			->queryAll();
 
 		$fields = array();
@@ -799,7 +797,8 @@ class FieldsService extends BaseApplicationComponent
 	{
 		return craft()->db->createCommand()
 			->select('id, groupId, name, handle, context, instructions, translatable, type, settings')
-			->from('fields');
+			->from('fields')
+			->order('name');
 	}
 
 	/**
