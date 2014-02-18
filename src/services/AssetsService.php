@@ -414,16 +414,20 @@ class AssetsService extends BaseApplicationComponent
 	{
 		if (!isset($this->_foldersById) || !array_key_exists($folderId, $this->_foldersById))
 		{
-			$folderRecord = AssetFolderRecord::model()->findById($folderId);
+			$result = $this->_createFolderQuery()
+				->where('id = :id', array(':id' => $folderId))
+				->queryRow();
 
-			if ($folderRecord)
+			if ($result)
 			{
-				$this->_foldersById[$folderId] = AssetFolderModel::populateModel($folderRecord);
+				$folder = new AssetFolderModel($result);
 			}
 			else
 			{
-				$this->_foldersById[$folderId] = null;
+				$folder = null;
 			}
+
+			$this->_foldersById[$folderId] = $folder;
 		}
 
 		return $this->_foldersById[$folderId];
@@ -641,7 +645,6 @@ class AssetsService extends BaseApplicationComponent
 	 * @return bool|AssetOperationResponseModel
 	 * @throws Exception
 	 */
-
 	public function moveFiles($fileIds, $folderId, $filename = '', $actions = array())
 	{
 		if (!is_array($fileIds))
@@ -702,6 +705,18 @@ class AssetsService extends BaseApplicationComponent
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Returns a DbCommand object prepped for retrieving sources.
+	 *
+	 * @return DbCommand
+	 */
+	private function _createFolderQuery()
+	{
+		return craft()->db->createCommand()
+			->select('id, parentId, sourceId, name, path')
+			->from('assetfolders');
 	}
 
 	/**
