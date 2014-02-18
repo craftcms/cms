@@ -744,7 +744,7 @@ class MatrixService extends BaseApplicationComponent
 	// Private methods
 
 	/**
-	 * Returns a DbCommand object prepped for retrieving sources.
+	 * Returns a DbCommand object prepped for retrieving block types.
 	 *
 	 * @return DbCommand
 	 */

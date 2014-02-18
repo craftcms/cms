@@ -708,7 +708,7 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a DbCommand object prepped for retrieving sources.
+	 * Returns a DbCommand object prepped for retrieving assets.
 	 *
 	 * @return DbCommand
 	 */
