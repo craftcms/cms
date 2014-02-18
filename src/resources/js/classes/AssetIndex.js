@@ -189,6 +189,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			if (originalFileIds.length)
 			{
 				this.setIndexBusy();
+
+				this._positionProgressBar();
 				this.progressBar.resetProgressBar();
 				this.progressBar.setItemCount(originalFileIds.length);
 				this.progressBar.showProgressBar();
@@ -339,6 +341,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 				folderIds.reverse();
 
 				this.setIndexBusy();
+				this._positionProgressBar();
 				this.progressBar.resetProgressBar();
 				this.progressBar.setItemCount(folderIds.length);
 				this.progressBar.showProgressBar();
@@ -700,9 +703,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 		this.promptHandler = new Craft.PromptHandler();
 		this.progressBar = new Craft.ProgressBar(this.$main, true);
-		this.progressBar.$progressBar.css({
-			top: '20%'
-		});
 
 		var options = {
 			url: Craft.getActionUrl('assets/uploadFile'),
@@ -754,6 +754,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 		this.setIndexBusy();
 
 		// Initial values
+		this._positionProgressBar();
 		this.progressBar.resetProgressBar();
 		this.progressBar.showProgressBar();
 	},
@@ -1444,6 +1445,21 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			parentFolder.siblings('.toggle').remove();
 			parentFolder.parent().removeClass('expanded');
 		}
+	},
+
+	_positionProgressBar: function ()
+	{
+		var $container = this.progressBar.$progressBar.parents('#content');
+
+		var containerTop = $container.offset().top;
+		var scrollTop = Garnish.$doc.scrollTop();
+		var diff = scrollTop - containerTop;
+		var windowHeight = Garnish.$win.height();
+
+		this.progressBar.$progressBar.css({
+			top: (windowHeight / 2) - 6 + diff
+		});
+
 	}
 
 });
