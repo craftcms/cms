@@ -763,53 +763,6 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a DbCommand object prepped for retrieving assets.
-	 *
-	 * @return DbCommand
-	 */
-	private function _createFolderQuery()
-	{
-		return craft()->db->createCommand()
-			->select('id, parentId, sourceId, name, path')
-			->from('assetfolders');
-	}
-
-	/**
-	 * Return the folder tree form a list of folders.
-	 *
-	 * @param $folders
-	 * @return array
-	 */
-	private function _getFolderTreeByFolders($folders)
-	{
-		$tree = array();
-		$referenceStore = array();
-
-		foreach ($folders as $folder)
-		{
-			if ($folder->parentId && isset($referenceStore[$folder->parentId]))
-			{
-				$referenceStore[$folder->parentId]->addChild($folder);
-			}
-			else
-			{
-				$tree[] = $folder;
-			}
-
-			$referenceStore[$folder->id] = $folder;
-		}
-
-		$sort = array();
-		foreach ($tree as $topFolder)
-		{
-			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
-		}
-
-		array_multisort($sort, $tree);
-		return $tree;
-	}
-
-	/**
 	* Delete a folder record by id.
 	*
 	* @param $fileId
@@ -881,6 +834,53 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	// Private methods
+
+	/**
+	 * Returns a DbCommand object prepped for retrieving assets.
+	 *
+	 * @return DbCommand
+	 */
+	private function _createFolderQuery()
+	{
+		return craft()->db->createCommand()
+			->select('id, parentId, sourceId, name, path')
+			->from('assetfolders');
+	}
+
+	/**
+	 * Return the folder tree form a list of folders.
+	 *
+	 * @param $folders
+	 * @return array
+	 */
+	private function _getFolderTreeByFolders($folders)
+	{
+		$tree = array();
+		$referenceStore = array();
+
+		foreach ($folders as $folder)
+		{
+			if ($folder->parentId && isset($referenceStore[$folder->parentId]))
+			{
+				$referenceStore[$folder->parentId]->addChild($folder);
+			}
+			else
+			{
+				$tree[] = $folder;
+			}
+
+			$referenceStore[$folder->id] = $folder;
+		}
+
+		$sort = array();
+		foreach ($tree as $topFolder)
+		{
+			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
+		}
+
+		array_multisort($sort, $tree);
+		return $tree;
+	}
 
 	/**
 	 * Applies WHERE conditions to a DbCommand query for folders.
