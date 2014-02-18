@@ -82,16 +82,19 @@ Craft.Uploader = Garnish.Base.extend({
 	onFileAdd: function (e, data)
 	{
 		e.stopPropagation();
-		console.log(this._rejectedFiles, this.$element);
 
 		if (!this._extensionList)
 		{
 			this._extensionList = [];
-			for (var kind in this.allowedKinds)
+
+			for (var i = 0; i < this.allowedKinds.length; i++)
 			{
-				for (var ext in Craft.fileKinds[this.allowedKinds[kind]])
+				var allowedKind = this.allowedKinds[i];
+
+				for (var j = 0; j < Craft.fileKinds[allowedKind].length; j++)
 				{
-					this._extensionList.push(Craft.fileKinds[this.allowedKinds[kind]][ext]);
+					var ext = Craft.fileKinds[allowedKind][j];
+					this._extensionList.push(ext);
 				}
 			}
 		}
