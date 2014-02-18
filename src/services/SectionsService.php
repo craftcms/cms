@@ -1064,7 +1064,7 @@ class SectionsService extends BaseApplicationComponent
 	// Private methods
 
 	/**
-	 * Returns a DbCommand object prepped for retrieving fields.
+	 * Returns a DbCommand object prepped for retrieving sections.
 	 *
 	 * @return DbCommand
 	 */
