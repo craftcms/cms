@@ -39,13 +39,12 @@ class AssetsService extends BaseApplicationComponent
 	 * Returns a file by its ID.
 	 *
 	 * @param $fileId
+	 * @param string|null $localeId
 	 * @return AssetFileModel|null
 	 */
-	public function getFileById($fileId)
+	public function getFileById($fileId, $localeId = null)
 	{
-		return $this->findFile(array(
-			'id' => $fileId
-		));
+		return craft()->elements->getElementById($fileId, ElementType::Asset, $localeId);
 	}
 
 	/**
