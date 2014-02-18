@@ -69,6 +69,28 @@
 	}, uploadLocationInput('singleUploadLocation', settings, sourceOptions)) }}
 </div>
 
+{{ forms.checkboxField({
+	label: "Restrict allowed file types?"|t,
+	class: 'restrictFiles',
+	id: '',
+	name: 'restrictFiles',
+	value: 1,
+	checked: settings.restrictFiles,
+	toggle: 'restrict-allowed-types'
+}) }}
+
+<div id="restrict-allowed-types" {% if not settings.restrictFiles %}class="hidden indent"{% endif %}>
+	{% for option in fileKindOptions %}
+		{{ forms.checkboxField({
+			label: option.label,
+			id: 'allowedKinds-'~option.value,
+			name: 'allowedKinds[]',
+			value: option.value,
+			checked: (option.value in settings.allowedKinds)
+		}) }}
+	{% endfor %}
+</div>
+
 {{ forms.textField({
 	label: "Limit"|t,
 	instructions: "Limit the number of selectable {type}."|t({ type: type|lower }),
@@ -78,23 +100,3 @@
 	size: 2,
 	errors: settings.getErrors('limit')
 }) }}
-
-{{ forms.checkbox({
-	label: "Restrict allowed file types?"|t,
-	class: 'restrictFiles',
-	id: '',
-	name: 'restrictFiles',
-	value: 1,
-	checked: settings.restrictFiles,
-	toggle: 'restrict-allowed-types'
-})}}
-
-<div id="restrict-allowed-types" {% if not settings.restrictFiles %}class="hidden"{% endif %}>
-	{{ forms.checkboxSelectField({
-		label: "Select the file types that are allowed"|t,
-		id: 'allowedKinds',
-		name: 'allowedKinds',
-		options: fileKinds,
-		values: settings.allowedKinds,
-	})}}
-</div>

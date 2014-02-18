@@ -68,12 +68,18 @@ class AssetsFieldType extends BaseElementFieldType
 			$sourceOptions[] = array('label' => $source->name, 'value' => $source->id);
 		}
 
-		$kinds = array_keys(IOHelper::getFileKinds());
+		$fileKindOptions = array();
+
+		foreach (IOHelper::getFileKinds() as $value => $kind)
+		{
+			$fileKindOptions[] = array('value' => $value, 'label' => $kind['label']);
+		}
+
 		return craft()->templates->render('_components/fieldtypes/Assets/settings', array(
-			'sourceOptions' => $sourceOptions,
-			'settings'      => $this->getSettings(),
-			'type'          => $this->getName(),
-			'fileKinds' => array_combine($kinds, $kinds)
+			'sourceOptions'   => $sourceOptions,
+			'settings'        => $this->getSettings(),
+			'type'            => $this->getName(),
+			'fileKindOptions' => $fileKindOptions,
 		));
 	}
 

@@ -41,9 +41,9 @@
 		};
 
 		window.Craft.fileKinds = {};
-		{% for kind, extensions in craft.app.fileKinds %}
+		{% for kind, info in craft.app.getFileKinds() %}
 			window.Craft.fileKinds.{{ kind }} = [];
-			{% for extension in extensions %}
+			{% for extension in info.extensions %}
 				window.Craft.fileKinds.{{ kind }}.push("{{ extension }}");
 			{% endfor %}
 		{% endfor %}
