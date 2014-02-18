@@ -1,8 +1,11 @@
 {% set disabledElementIds = disabledElementIds is defined ? disabledElementIds : [] %}
 {% set collapsedElementIds = collapsedElementIds is defined ? collapsedElementIds : [] %}
-{% set uniqueClass = 'structureview'~random() %}
+{% set sortable = (sortable is defined and sortable and structure.isSortable()) %}
+{% set newChildUrl = newChildUrl is defined ? newChildUrl : null %}
+{% set maxLevels = maxLevels is defined ? maxLevels : null %}
+{% set id = 'structure-'~structure.id~'-'~random() %}
 
-<ul class="structure {{ uniqueClass }}">
+<ul id="{{ id }}" class="structure">
 	{% nav element in elements %}
 		<li{% if element.id in collapsedElementIds %} class="collapsed"{% endif %} data-level="{{ element.level }}">
 			{% set indent = 8 + (element.level - 1) * 35 %}
@@ -10,11 +13,11 @@
 				{%- spaceless %}
 					{% include "_elements/element" %}
 
-					{% if sortable is defined and sortable %}
+					{% if sortable %}
 						<a class="move icon" title="{{ 'Move'|t }}"></a>
 					{% endif %}
 
-					{% if showNewChildMenus is defined and showNewChildMenus %}
+					{% if newChildUrl %}
 						<a class="add icon" title="{{ 'New Child'|t }}"></a>
 					{% endif %}
 				{% endspaceless -%}
@@ -30,10 +33,19 @@
 </ul>
 
 {# Hide "Add child" menu buttons beyond the max level #}
-{% if maxLevels is defined and maxLevels %}
+{% if maxLevels %}
 	{% set css %}
-		.{{ uniqueClass }}{% for i in 2 .. maxLevels if maxLevels >= 2 %} ul{% endfor %} .add { display: none; }
+		#{{ id }}{% for i in 2 .. maxLevels if maxLevels >= 2 %} ul{% endfor %} .add { display: none; }
 	{% endset %}
 
 	{% includeCss css %}
 {% endif %}
+
+{% set js %}
+	new Craft.Structure({{ structure.id }}, '#{{ id }}', {
+		sortable:    {{ sortable ? 'true' : 'false' }},
+		newChildUrl: {{ newChildUrl ? newChildUrl|json_encode|raw : 'null' }},
+		maxLevels:   {{ maxLevels ?: 'null' }}
+	});
+{% endset %}
+{% includeJs js first %}

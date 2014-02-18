@@ -135,6 +135,8 @@ class ElementsController extends BaseController
 
 			case 'structure':
 			{
+				$variables['structure'] = craft()->structures->getStructureById($source['structureId']);
+
 				$criteria->limit = null;
 				$criteria->offset = null;
 			}
@@ -168,6 +170,7 @@ class ElementsController extends BaseController
 		$this->returnJson(array(
 			'html'         => $html,
 			'headHtml'     => craft()->templates->getHeadHtml(),
+			'footHtml'     => craft()->templates->getFootHtml(),
 			'totalVisible' => $totalVisible,
 			'more'         => ($remainingElements > 0),
 		));

@@ -21,7 +21,8 @@ class StructureRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
-			'maxLevels' => array(AttributeType::Number, 'min' => 1, 'column' => ColumnType::SmallInt),
+			'maxLevels'      => array(AttributeType::Number, 'min' => 1, 'column' => ColumnType::SmallInt),
+			'movePermission' => AttributeType::String,
 		);
 	}
 

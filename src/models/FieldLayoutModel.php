@@ -30,7 +30,14 @@ class FieldLayoutModel extends BaseModel
 	{
 		if (!isset($this->_tabs))
 		{
-			return array();
+			if ($this->id)
+			{
+				$this->_tabs = craft()->fields->getLayoutTabsById($this->id);
+			}
+			else
+			{
+				$this->_tabs = array();
+			}
 		}
 
 		return $this->_tabs;
@@ -45,7 +52,14 @@ class FieldLayoutModel extends BaseModel
 	{
 		if (!isset($this->_fields))
 		{
-			return array();
+			if ($this->id)
+			{
+				$this->_fields = craft()->fields->getLayoutFieldsById($this->id);
+			}
+			else
+			{
+				$this->_fields = array();
+			}
 		}
 
 		return $this->_fields;
@@ -58,7 +72,18 @@ class FieldLayoutModel extends BaseModel
 	 */
 	public function setTabs($tabs)
 	{
-		$this->_tabs = FieldLayoutTabModel::populateModels($tabs);
+		$this->_tabs = array();
+
+		foreach ($tabs as $tab)
+		{
+			if (is_array($tab))
+			{
+				$tab = new FieldLayoutTabModel($tab);
+			}
+
+			$tab->setLayout($this);
+			$this->_tabs[] = $tab;
+		}
 	}
 
 	/**
@@ -68,42 +93,17 @@ class FieldLayoutModel extends BaseModel
 	 */
 	public function setFields($fields)
 	{
-		$this->_fields = FieldLayoutFieldModel::populateModels($fields, 'fieldId');
-	}
+		$this->_fields = array();
 
-	/**
-	 * Populates a new model instance with a given set of attributes.
-	 *
-	 * @static
-	 * @param mixed $values
-	 * @return BaseModel
-	 */
-	public static function populateModel($values)
-	{
-		if (isset($values['tabs']))
+		foreach ($fields as $field)
 		{
-			$tabs = $values['tabs'];
-			unset($values['tabs']);
+			if (is_array($field))
+			{
+				$field = new FieldLayoutFieldModel($field);
+			}
+
+			$field->setLayout($this);
+			$this->_fields[] = $field;
 		}
-
-		if (isset($values['fields']))
-		{
-			$fields = $values['fields'];
-			unset($values['fields']);
-		}
-
-		$model = parent::populateModel($values);
-
-		if (isset($tabs))
-		{
-			$model->setTabs($tabs);
-		}
-
-		if (isset($fields))
-		{
-			$model->setFields($fields);
-		}
-
-		return $model;
 	}
 }

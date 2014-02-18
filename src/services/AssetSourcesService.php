@@ -61,7 +61,6 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function getSourceTypeById($sourceId)
 	{
-
 		$source = $this->getSourceById($sourceId);
 		return $this->populateSourceType($source);
 	}
@@ -79,13 +78,12 @@ class AssetSourcesService extends BaseApplicationComponent
 		{
 			if ($this->_fetchedAllSources)
 			{
-				$this->_allSourceIds = array_keys($this->getAllSources('id'));
+				$this->_allSourceIds = array_keys($this->_sourcesById);
 			}
 			else
 			{
 				$this->_allSourceIds = craft()->db->createCommand()
 					->select('id')
-					->where('type <> "Temp"')
 					->from('assetsources')
 					->queryColumn();
 			}
@@ -185,8 +183,16 @@ class AssetSourcesService extends BaseApplicationComponent
 	{
 		if (!$this->_fetchedAllSources)
 		{
-			$sourceRecords = AssetSourceRecord::model()->ordered()->findAll();
-			$this->_sourcesById = AssetSourceModel::populateModels($sourceRecords, 'id');
+			$this->_sourcesById = array();
+
+			$results = $this->_createSourceQuery()->queryAll();
+
+			foreach ($results as $result)
+			{
+				$source = $this->_populateSource($result);
+				$this->_sourcesById[$source->id] = $source;
+			}
+
 			$this->_fetchedAllSources = true;
 		}
 
@@ -219,36 +225,31 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function getSourceById($sourceId)
 	{
-		// Temporary source?
-		if (is_null($sourceId))
+		// If we've already fetched all sources we can save ourselves a trip to the DB
+		// for source IDs that don't exist
+		if (!$this->_fetchedAllSources &&
+			(!isset($this->_sourcesById) || !array_key_exists($sourceId, $this->_sourcesById))
+		)
 		{
-			$source = new AssetSourceModel();
-			$source->id = $sourceId;
-			$source->name = TempAssetSourceType::sourceName;
-			$source->type = TempAssetSourceType::sourceType;
-			$source->settings = array('path' => craft()->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempuploads/'));
-			return $source;
+			$result = $this->_createSourceQuery()
+				->where('id = :id', array(':id' => $sourceId))
+				->queryRow();
+
+			if ($result)
+			{
+				$source = $this->_populateSource($result);
+			}
+			else
+			{
+				$source = null;
+			}
+
+			$this->_sourcesById[$sourceId] = $source;
 		}
-		else
+
+		if (!empty($this->_sourcesById[$sourceId]))
 		{
-			if (!$this->_fetchedAllSources && !isset($this->_sourcesById) || !array_key_exists($sourceId, $this->_sourcesById))
-			{
-				$sourceRecord = AssetSourceRecord::model()->findById($sourceId);
-
-				if ($sourceRecord)
-				{
-					$this->_sourcesById[$sourceId] = AssetSourceModel::populateModel($sourceRecord);
-				}
-				else
-				{
-					$this->_sourcesById = null;
-				}
-			}
-
-			if (!empty($this->_sourcesById[$sourceId]))
-			{
-				return $this->_sourcesById[$sourceId];
-			}
+			return $this->_sourcesById[$sourceId];
 		}
 	}
 
@@ -447,6 +448,38 @@ class AssetSourcesService extends BaseApplicationComponent
 		}
 	}
 
+	// Private methods
+
+	/**
+	 * Returns a DbCommand object prepped for retrieving sources.
+	 *
+	 * @return DbCommand
+	 */
+	private function _createSourceQuery()
+	{
+		return craft()->db->createCommand()
+			->select('id, fieldLayoutId, name, type, settings, sortOrder')
+			->from('assetsources')
+			->order('sortOrder');
+	}
+
+	/**
+	 * Populates a source from its DB result.
+	 *
+	 * @access private
+	 * @param array $result
+	 * @return AssetSourceModel
+	 */
+	private function _populateSource($result)
+	{
+		if ($result['settings'])
+		{
+			$result['settings'] = JsonHelper::decode($result['settings']);
+		}
+
+		return new AssetSourceModel($result);
+	}
+
 	/**
 	 * Gets a source's record.
 	 *
@@ -462,7 +495,7 @@ class AssetSourcesService extends BaseApplicationComponent
 
 			if (!$sourceRecord)
 			{
-				$this->_noSourceExists($sourceId);
+				throw new Exception(Craft::t('No source exists with the ID “{id}”', array('id' => $sourceId)));
 			}
 		}
 		else
@@ -471,17 +504,5 @@ class AssetSourcesService extends BaseApplicationComponent
 		}
 
 		return $sourceRecord;
-	}
-
-	/**
-	 * Throws a "No source exists" exception.
-	 *
-	 * @access private
-	 * @param int $sourceId
-	 * @throws Exception
-	 */
-	private function _noSourceExists($sourceId)
-	{
-		throw new Exception(Craft::t('No source exists with the ID “{id}”', array('id' => $sourceId)));
 	}
 }

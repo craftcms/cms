@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m140204_000000_structures extends BaseMigration
+class m140401_000000_structures extends BaseMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
@@ -18,8 +18,28 @@ class m140204_000000_structures extends BaseMigration
 			Craft::log('Creating the structures table.', LogLevel::Info, true);
 
 			$this->createTable('structures', array(
-				'maxLevels' => array('maxLength' => 6, 'decimals' => 0, 'column' => ColumnType::SmallInt, 'unsigned' => true),
+				'maxLevels'      => array('maxLength' => 6, 'decimals' => 0, 'column' => ColumnType::SmallInt, 'unsigned' => true),
+				'movePermission' => array('column' => ColumnType::Varchar),
 			));
+		}
+		else if (!craft()->db->columnExists('structures', 'movePermission'))
+		{
+			$this->addColumnAfter('structures', 'movePermission', array('column' => ColumnType::Varchar), 'maxLevels');
+
+			$structureSections = craft()->db->createCommand()
+				->select('id, structureId')
+				->from('sections')
+				->where('type="structure"')
+				->queryAll();
+
+			foreach ($structureSections as $section)
+			{
+				$this->update('structures', array(
+					'movePermission' => 'publishEntries:'.$section['id']
+				), array(
+					'id' => $section['structureId']
+				));
+			}
 		}
 
 		if (!craft()->db->tableExists('structureelements'))
