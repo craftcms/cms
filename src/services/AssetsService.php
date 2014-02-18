@@ -549,59 +549,6 @@ class AssetsService extends BaseApplicationComponent
 		return (int)$query->queryScalar();
 	}
 
-	/**
-	 * Applies WHERE conditions to a DbCommand query for folders.
-	 *
-	 * @access private
-	 * @param DbCommand $query
-	 * @param FolderCriteriaModel $criteria
-	 */
-	private function _applyFolderConditions($query, FolderCriteriaModel $criteria)
-	{
-		$whereConditions = array();
-		$whereParams = array();
-
-		if ($criteria->id)
-		{
-			$whereConditions[] = DbHelper::parseParam('f.id', $criteria->id, $whereParams);
-		}
-
-		if ($criteria->sourceId)
-		{
-			$whereConditions[] = DbHelper::parseParam('f.sourceId', $criteria->sourceId, $whereParams);
-		}
-
-		if ($criteria->parentId)
-		{
-			// Set parentId to null if we're looking for folders with no parents.
-			if ($criteria->parentId == FolderCriteriaModel::AssetsNoParent)
-			{
-				$criteria->parentId = null;
-			}
-			$whereConditions[] = DbHelper::parseParam('f.parentId', array($criteria->parentId), $whereParams);
-		}
-
-		if ($criteria->name)
-		{
-			$whereConditions[] = DbHelper::parseParam('f.name', $criteria->name, $whereParams);
-		}
-
-		if (!is_null($criteria->path))
-		{
-			$whereConditions[] = DbHelper::parseParam('f.path', $criteria->path, $whereParams);
-		}
-
-		if (count($whereConditions) == 1)
-		{
-			$query->where($whereConditions[0], $whereParams);
-		}
-		else
-		{
-			array_unshift($whereConditions, 'and');
-			$query->where($whereConditions, $whereParams);
-		}
-	}
-
 	// -------------------------------------------
 	//  File and folder managing
 	// -------------------------------------------
@@ -642,22 +589,6 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Flag a file merge in progress.
-	 */
-	private function _startMergeProcess()
-	{
-		$this->_mergeInProgress = true;
-	}
-
-	/**
-	 * Flag a file merge no longer in progress.
-	 */
-	private function _finishMergeProcess()
-	{
-		$this->_mergeInProgress = false;
-	}
-
-	/**
 	 * Returns true, if a file is in the process os being merged.
 	 *
 	 * @return bool
@@ -665,61 +596,6 @@ class AssetsService extends BaseApplicationComponent
 	public function isMergeInProgress()
 	{
 		return $this->_mergeInProgress;
-	}
-
-	/**
-	 * Merge a conflicting uploaded file.
-	 *
-	 * @param string $userResponse User response to conflict
-	 * @param string $responseInfo Additional information about the chosen action
-	 * @param string $fileName The filename that is in the conflict
-	 * @return array|string
-	 */
-	private function _mergeUploadedFiles($userResponse, $responseInfo, $fileName)
-	{
-		list ($folderId, $createdFileId) = explode(":", $responseInfo);
-
-		$folder = $this->getFolderById($folderId);
-		$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
-
-		$fileId = null;
-
-		switch ($userResponse)
-		{
-			case AssetsHelper::ActionReplace:
-			{
-				// Replace the actual file
-				$targetFile = $this->findFile(array(
-					'folderId' => $folderId,
-					'filename' => $fileName
-				));
-
-				$replaceWith = $this->getFileById($createdFileId);
-
-				$source->replaceFile($targetFile, $replaceWith);
-				$fileId = $targetFile->id;
-			}
-			// Falling through to delete the file
-			case AssetsHelper::ActionCancel:
-			{
-				$this->deleteFiles($createdFileId);
-				break;
-			}
-			default:
-			{
-				$fileId = $createdFileId;
-				break;
-			}
-		}
-
-		$response = new AssetOperationResponseModel();
-		$response->setSuccess();
-		if ($fileId)
-		{
-			$response->setDataItem('fileId', $fileId);
-		}
-
-		return $response;
 	}
 
 	/**
@@ -829,36 +705,6 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Move a file between sources.
-	 *
-	 * @param BaseAssetSourceType $originalSource
-	 * @param BaseAssetSourceType $newSource
-	 * @param AssetFileModel $file
-	 * @param AssetFolderModel $folder
-	 * @param string $action
-	 * @return AssetOperationResponseModel
-	 */
-	private function _moveFileBetweenSources(BaseAssetSourceType $originalSource, BaseAssetSourceType $newSource, AssetFileModel $file, AssetFolderModel $folder, $action = '')
-	{
-		$localCopy = $originalSource->getLocalCopy($file);
-
-		// File model will be updated in the process, but we need the old data in order to finalize the transfer.
-		$oldFileModel = clone $file;
-
-		$response = $newSource->transferFileIntoSource($localCopy, $folder, $file, $action);
-		if ($response->isSuccess())
-		{
-			// Use the previous data to clean up
-			$originalSource->deleteCreatedImages($oldFileModel);
-			$originalSource->finalizeTransfer($oldFileModel);
-			craft()->assetTransforms->deleteTransformRecordsByFileId($oldFileModel);
-			IOHelper::deleteFile($localCopy);
-		}
-
-		return $response;
-	}
-
-	/**
 	* Delete a folder record by id.
 	*
 	* @param $fileId
@@ -928,4 +774,161 @@ class AssetsService extends BaseApplicationComponent
 			}
 		}
 	}
+
+	// Private methods
+
+	/**
+	 * Applies WHERE conditions to a DbCommand query for folders.
+	 *
+	 * @access private
+	 * @param DbCommand $query
+	 * @param FolderCriteriaModel $criteria
+	 */
+	private function _applyFolderConditions($query, FolderCriteriaModel $criteria)
+	{
+		$whereConditions = array();
+		$whereParams = array();
+
+		if ($criteria->id)
+		{
+			$whereConditions[] = DbHelper::parseParam('f.id', $criteria->id, $whereParams);
+		}
+
+		if ($criteria->sourceId)
+		{
+			$whereConditions[] = DbHelper::parseParam('f.sourceId', $criteria->sourceId, $whereParams);
+		}
+
+		if ($criteria->parentId)
+		{
+			// Set parentId to null if we're looking for folders with no parents.
+			if ($criteria->parentId == FolderCriteriaModel::AssetsNoParent)
+			{
+				$criteria->parentId = null;
+			}
+			$whereConditions[] = DbHelper::parseParam('f.parentId', array($criteria->parentId), $whereParams);
+		}
+
+		if ($criteria->name)
+		{
+			$whereConditions[] = DbHelper::parseParam('f.name', $criteria->name, $whereParams);
+		}
+
+		if (!is_null($criteria->path))
+		{
+			$whereConditions[] = DbHelper::parseParam('f.path', $criteria->path, $whereParams);
+		}
+
+		if (count($whereConditions) == 1)
+		{
+			$query->where($whereConditions[0], $whereParams);
+		}
+		else
+		{
+			array_unshift($whereConditions, 'and');
+			$query->where($whereConditions, $whereParams);
+		}
+	}
+
+	/**
+	 * Flag a file merge in progress.
+	 */
+	private function _startMergeProcess()
+	{
+		$this->_mergeInProgress = true;
+	}
+
+	/**
+	 * Flag a file merge no longer in progress.
+	 */
+	private function _finishMergeProcess()
+	{
+		$this->_mergeInProgress = false;
+	}
+
+	/**
+	 * Merge a conflicting uploaded file.
+	 *
+	 * @param string $userResponse User response to conflict
+	 * @param string $responseInfo Additional information about the chosen action
+	 * @param string $fileName The filename that is in the conflict
+	 * @return array|string
+	 */
+	private function _mergeUploadedFiles($userResponse, $responseInfo, $fileName)
+	{
+		list ($folderId, $createdFileId) = explode(":", $responseInfo);
+
+		$folder = $this->getFolderById($folderId);
+		$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
+
+		$fileId = null;
+
+		switch ($userResponse)
+		{
+			case AssetsHelper::ActionReplace:
+			{
+				// Replace the actual file
+				$targetFile = $this->findFile(array(
+					'folderId' => $folderId,
+					'filename' => $fileName
+				));
+
+				$replaceWith = $this->getFileById($createdFileId);
+
+				$source->replaceFile($targetFile, $replaceWith);
+				$fileId = $targetFile->id;
+			}
+			// Falling through to delete the file
+			case AssetsHelper::ActionCancel:
+			{
+				$this->deleteFiles($createdFileId);
+				break;
+			}
+			default:
+			{
+				$fileId = $createdFileId;
+				break;
+			}
+		}
+
+		$response = new AssetOperationResponseModel();
+		$response->setSuccess();
+		if ($fileId)
+		{
+			$response->setDataItem('fileId', $fileId);
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Move a file between sources.
+	 *
+	 * @param BaseAssetSourceType $originalSource
+	 * @param BaseAssetSourceType $newSource
+	 * @param AssetFileModel $file
+	 * @param AssetFolderModel $folder
+	 * @param string $action
+	 * @return AssetOperationResponseModel
+	 */
+	private function _moveFileBetweenSources(BaseAssetSourceType $originalSource, BaseAssetSourceType $newSource, AssetFileModel $file, AssetFolderModel $folder, $action = '')
+	{
+		$localCopy = $originalSource->getLocalCopy($file);
+
+		// File model will be updated in the process, but we need the old data in order to finalize the transfer.
+		$oldFileModel = clone $file;
+
+		$response = $newSource->transferFileIntoSource($localCopy, $folder, $file, $action);
+		if ($response->isSuccess())
+		{
+			// Use the previous data to clean up
+			$originalSource->deleteCreatedImages($oldFileModel);
+			$originalSource->finalizeTransfer($oldFileModel);
+			craft()->assetTransforms->deleteTransformRecordsByFileId($oldFileModel);
+			IOHelper::deleteFile($localCopy);
+		}
+
+		return $response;
+	}
+
 }
