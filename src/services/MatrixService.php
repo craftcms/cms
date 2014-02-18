@@ -939,16 +939,52 @@ class MatrixService extends BaseApplicationComponent
 			{
 				if ($field->translatable)
 				{
-					// Resave all of those blocks as their own things
+					$newBlockIds = array();
+
+					// Duplicate the other-locale blocks so each locale has their own unique set of blocks
 					foreach ($blocksInOtherLocales as $localeId => $blocksInOtherLocale)
 					{
 						foreach ($blocksInOtherLocale as $blockInOtherLocale)
 						{
+							$originalBlockId = $blockInOtherLocale->id;
+
 							$blockInOtherLocale->id = null;
 							$blockInOtherLocale->getContent()->id = null;
 							$blockInOtherLocale->ownerLocale = $localeId;
 							$this->saveBlock($blockInOtherLocale, false);
+
+							$newBlockIds[$originalBlockId][$localeId] = $blockInOtherLocale->id;
 						}
+					}
+
+					// Duplicate the relations, too
+					// First by getting all of the existing relations for the original blocks
+					$relations = craft()->db->createCommand()
+						->select('fieldId, sourceId, sourceLocale, targetId, sortOrder')
+						->from('relations')
+						->where(array('in', 'sourceId', array_keys($newBlockIds)))
+						->queryAll();
+
+					if ($relations)
+					{
+						// Now duplicate each one for the other locales' new blocks
+						$rows = array();
+
+						foreach ($relations as $relation)
+						{
+							$originalBlockId = $relation['sourceId'];
+
+							// Just to be safe...
+							if (isset($newBlockIds[$originalBlockId]))
+							{
+								foreach ($newBlockIds[$originalBlockId] as $localeId => $newBlockId)
+								{
+									$rows[] = array($relation['fieldId'], $newBlockId, $relation['sourceLocale'], $relation['targetId'], $relation['sortOrder']);
+								}
+							}
+						}
+
+						craft()->db->createCommand()->insertAll('relations', array('fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder'), $rows);
 					}
 				}
 				else
