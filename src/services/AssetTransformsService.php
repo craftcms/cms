@@ -9,7 +9,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * @var array of AssetTransformModel
 	 */
-	private $_assetTransforms = null;
+	private $_assetTransforms;
 
 	/**
 	 * Returns all named asset transforms.
@@ -596,6 +596,19 @@ class AssetTransformsService extends BaseApplicationComponent
 	// Private methods
 
 	/**
+	 * Returns a DbCommand object prepped for retrieving transforms.
+	 *
+	 * @return DbCommand
+	 */
+	private function _createTransformQuery()
+	{
+		return craft()->db->createCommand()
+			->select('id, name, handle, mode, position, height, width, dimensionChangeTime')
+			->from('assettransforms')
+			->order('name');
+	}
+
+	/**
 	 * Get a trasnform's location folder.
 	 *
 	 * @param AssetTransformModel $transform
@@ -611,14 +624,16 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	private function _loadAssetTransforms()
 	{
-		if (is_null($this->_assetTransforms))
+		if (!isset($this->_assetTransforms))
 		{
 			$this->_assetTransforms = array();
-			$models = AssetTransformModel::populateModels(AssetTransformRecord::model()->ordered()->findAll());
 
-			foreach ($models as $model)
+			$results = $this->_createTransformQuery()->queryAll();
+
+			foreach ($results as $result)
 			{
-				$this->_assetTransforms[$model->handle] = $model;
+				$transform = new AssetTransformModel($result);
+				$this->_assetTransforms[$transform->handle] = $transform;
 			}
 		}
 	}
