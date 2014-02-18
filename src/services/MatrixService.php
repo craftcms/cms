@@ -7,6 +7,8 @@ namespace Craft;
 class MatrixService extends BaseApplicationComponent
 {
 	private $_blockTypesById;
+	private $_blockTypesByFieldId;
+	private $_fetchedAllBlockTypesForFieldId;
 	private $_blockTypeRecordsById;
 	private $_blockRecordsById;
 	private $_uniqueBlockTypeAndFieldHandles;
@@ -21,26 +23,38 @@ class MatrixService extends BaseApplicationComponent
 	 */
 	public function getBlockTypesByFieldId($fieldId, $indexBy = null)
 	{
-		$blockTypeRecords = MatrixBlockTypeRecord::model()->ordered()->findAllByAttributes(array(
-			'fieldId' => $fieldId
-		));
+		if (empty($this->_fetchedAllBlockTypesForFieldId[$fieldId]))
+		{
+			$this->_blockTypesByFieldId[$fieldId] = array();
 
-		$blockTypes = MatrixBlockTypeModel::populateModels($blockTypeRecords);
+			$results = $this->_createBlockTypeQuery()
+				->where('fieldId = :fieldId', array(':fieldId' => $fieldId))
+				->queryAll();
+
+			foreach ($results as $result)
+			{
+				$blockType = new MatrixBlockTypeModel($result);
+				$this->_blockTypesById[$blockType->id] = $blockType;
+				$this->_blockTypesByFieldId[$fieldId][] = $blockType;
+			}
+
+			$this->_fetchedAllBlockTypesForFieldId[$fieldId] = true;
+		}
 
 		if (!$indexBy)
 		{
-			return $blockTypes;
+			return $this->_blockTypesByFieldId[$fieldId];
 		}
 		else
 		{
-			$indexedBlockTypes = array();
+			$blockTypes = array();
 
-			foreach ($blockTypes as $blockType)
+			foreach ($this->_blockTypesByFieldId[$fieldId] as $blockType)
 			{
-				$indexedBlockTypes[$blockType->$indexBy] = $blockType;
+				$blockTypes[$blockType->$indexBy] = $blockType;
 			}
 
-			return $indexedBlockTypes;
+			return $blockTypes;
 		}
 	}
 
@@ -54,16 +68,20 @@ class MatrixService extends BaseApplicationComponent
 	{
 		if (!isset($this->_blockTypesById) || !array_key_exists($blockTypeId, $this->_blockTypesById))
 		{
-			$blockTypeRecord = MatrixBlockTypeRecord::model()->findById($blockTypeId);
+			$result = $this->_createBlockTypeQuery()
+				->where('id = :id', array(':id' => $blockTypeId))
+				->queryRow();
 
-			if ($blockTypeRecord)
+			if ($result)
 			{
-				$this->_blockTypesById[$blockTypeId] = MatrixBlockTypeModel::populateModel($blockTypeRecord);
+				$blockType = new MatrixBlockTypeModel($result);
 			}
 			else
 			{
-				$this->_blockTypesById[$blockTypeId] = null;
+				$blockType = null;
 			}
+
+			$this->_blockTypesById[$blockTypeId] = $blockType;
 		}
 
 		return $this->_blockTypesById[$blockTypeId];
@@ -721,6 +739,21 @@ class MatrixService extends BaseApplicationComponent
 		}
 
 		return true;
+	}
+
+	// Private methods
+
+	/**
+	 * Returns a DbCommand object prepped for retrieving sources.
+	 *
+	 * @return DbCommand
+	 */
+	private function _createBlockTypeQuery()
+	{
+		return craft()->db->createCommand()
+			->select('id, fieldId, fieldLayoutId, name, handle, sortOrder')
+			->from('matrixblocktypes')
+			->order('sortOrder');
 	}
 
 	/**
