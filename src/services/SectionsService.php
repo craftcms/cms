@@ -1076,21 +1076,4 @@ class SectionsService extends BaseApplicationComponent
 			->from('sections sections')
 			->order('name');
 	}
-
-	/**
-	 * Populates a field from its DB result.
-	 *
-	 * @access private
-	 * @param array $result
-	 * @return FieldModel
-	 */
-	private function _populateField($result)
-	{
-		if ($result['settings'])
-		{
-			$result['settings'] = JsonHelper::decode($result['settings']);
-		}
-
-		return new FieldModel($result);
-	}
 }
