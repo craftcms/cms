@@ -6,6 +6,7 @@ namespace Craft;
  */
 class FieldLayoutTabModel extends BaseModel
 {
+	private $_layout;
 	private $_fields;
 
 	/**
@@ -16,9 +17,45 @@ class FieldLayoutTabModel extends BaseModel
 	{
 		return array(
 			'id'        => AttributeType::Number,
+			'layoutId'  => AttributeType::Number,
 			'name'      => AttributeType::Name,
 			'sortOrder' => AttributeType::SortOrder,
 		);
+	}
+
+	/**
+	 * Returns the tab's layout.
+	 *
+	 * @return FieldLayoutModel|null
+	 */
+	public function getLayout()
+	{
+		if (!isset($this->_layout))
+		{
+			if ($this->layoutId)
+			{
+				$this->_layout = craft()->fields->getLayoutById($this->layoutId);
+			}
+			else
+			{
+				$this->_layout = false;
+			}
+		}
+
+		if ($this->_layout)
+		{
+			return $this->_layout;
+		}
+	}
+
+	/**
+	 * Sets the tab's layout.
+	 *
+	 * @param FieldLayoutModel $layout
+	 */
+	public function setLayout(FieldLayoutModel $layout)
+	{
+		$this->_layout = $layout;
 	}
 
 	/**
@@ -30,7 +67,22 @@ class FieldLayoutTabModel extends BaseModel
 	{
 		if (!isset($this->_fields))
 		{
-			return array();
+			$this->_fields = array();
+
+			$layout = $this->getLayout();
+
+			if ($layout)
+			{
+				$fields = $layout->getFields();
+
+				foreach ($fields as $field)
+				{
+					if ($field->tabId == $this->id)
+					{
+						$this->_fields[] = $field;
+					}
+				}
+			}
 		}
 
 		return $this->_fields;
@@ -43,31 +95,16 @@ class FieldLayoutTabModel extends BaseModel
 	 */
 	public function setFields($fields)
 	{
-		$this->_fields = FieldLayoutFieldModel::populateModels($fields, 'fieldId');
-	}
+		$this->_fields = array();
 
-	/**
-	 * Populates a new model instance with a given set of attributes.
-	 *
-	 * @static
-	 * @param mixed $values
-	 * @return BaseModel
-	 */
-	public static function populateModel($values)
-	{
-		if (isset($values['fields']))
+		foreach ($fields as $field)
 		{
-			$fields = $values['fields'];
-			unset($values['fields']);
+			if (is_array($field))
+			{
+				$field = new FieldLayoutFieldModel($field);
+			}
+
+			$this->_fields[] = $field;
 		}
-
-		$model = parent::populateModel($values);
-
-		if (isset($fields))
-		{
-			$model->setFields($fields);
-		}
-
-		return $model;
 	}
 }
