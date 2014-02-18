@@ -6,21 +6,51 @@ namespace Craft;
  */
 class AssetTransformsService extends BaseApplicationComponent
 {
-	/**
-	 * @var array of AssetTransformModel
-	 */
-	private $_assetTransforms;
+	private $_transformsByHandle;
+	private $_fetchedAllTransforms = false;
 
 	/**
 	 * Returns all named asset transforms.
 	 *
-	 * @return array|null
+	 * @param string|null $indexBy
+	 * @return array
 	 */
-	public function getAllTransforms()
+	public function getAllTransforms($indexBy = null)
 	{
-		$this->_loadAssetTransforms();
+		if (!$this->_fetchedAllTransforms)
+		{
+			$results = $this->_createTransformQuery()->queryAll();
 
-		return $this->_assetTransforms;
+			$this->_transformsByHandle = array();
+
+			foreach ($results as $result)
+			{
+				$transform = new AssetTransformModel($result);
+				$this->_transformsByHandle[$transform->handle] = $transform;
+			}
+
+			$this->_fetchedAllTransforms = true;
+		}
+
+		if ($indexBy == 'handle')
+		{
+			$transforms = $this->_transformsByHandle;
+		}
+		else if (!$indexBy)
+		{
+			$transforms = array_values($this->_transformsByHandle);
+		}
+		else
+		{
+			$transforms = array();
+
+			foreach ($this->_transformsByHandle as $transform)
+			{
+				$transforms[$transform->$indexBy] = $transform;
+			}
+		}
+
+		return $transforms;
 	}
 
 	/**
@@ -31,14 +61,32 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	public function getTransformByHandle($handle)
 	{
-		$this->_loadAssetTransforms();
-
-		if (isset($this->_assetTransforms[$handle]))
+		// If we've already fetched all transforms we can save ourselves a trip to the DB
+		// for transform handles that don't exist
+		if (!$this->_fetchedAllTransforms &&
+			(!isset($this->_transformsByHandle) || !array_key_exists($handle, $this->_transformsByHandle))
+		)
 		{
-			return $this->_assetTransforms[$handle];
+			$result = $this->_createTransformQuery()
+				->where('handle = :handle', array(':handle' => $handle))
+				->queryRow();
+
+			if ($result)
+			{
+				$transform = new AssetTransformModel($result);
+			}
+			else
+			{
+				$transform = null;
+			}
+
+			$this->_transformsByHandle[$handle] = $transform;
 		}
 
-		return null;
+		if (isset($this->_transformsByHandle[$handle]))
+		{
+			return $this->_transformsByHandle[$handle];
+		}
 	}
 
 
@@ -63,8 +111,6 @@ class AssetTransformsService extends BaseApplicationComponent
 		{
 			$transformRecord = new AssetTransformRecord();
 		}
-
-		$transformRecord = $this->_getTransformRecordById($transform->id, $transform->handle);
 
 		$transformRecord->name = $transform->name;
 		$transformRecord->handle = $transform->handle;
@@ -617,24 +663,5 @@ class AssetTransformsService extends BaseApplicationComponent
 	private function _getTransformLocation(AssetTransformModel $transform)
 	{
 		return $transform->isNamedTransform() ? '_'.$transform->handle : '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').'_'.$transform->mode.'_'.$transform->position;
-	}
-
-	/**
-	 * @return array
-	 */
-	private function _loadAssetTransforms()
-	{
-		if (!isset($this->_assetTransforms))
-		{
-			$this->_assetTransforms = array();
-
-			$results = $this->_createTransformQuery()->queryAll();
-
-			foreach ($results as $result)
-			{
-				$transform = new AssetTransformModel($result);
-				$this->_assetTransforms[$transform->handle] = $transform;
-			}
-		}
 	}
 }

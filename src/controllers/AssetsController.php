@@ -195,9 +195,9 @@ class AssetsController extends BaseController
 		$this->requireAjaxRequest();
 		$transforms = craft()->assetTransforms->getAllTransforms();
 		$output = array();
-		foreach ($transforms as $handle => $transform)
+		foreach ($transforms as $transform)
 		{
-			$output[] = (object) array('id' => $transform->id, 'handle' => $handle, 'name' => $transform->name);
+			$output[] = (object) array('id' => $transform->id, 'handle' => $transform->handle, 'name' => $transform->name);
 		}
 
 		$this->returnJson($output);
