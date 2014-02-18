@@ -238,35 +238,15 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Get the folder tree for a given asset source(s).
+	 * Get the folder tree for Assets by source ids
 	 *
-	 * @param $sourceId
+	 * @param $allowedSourceIds
 	 * @return array
 	 */
-	public function getFolderTree($sourceId)
+	public function getFolderTreeBySourceIds($allowedSourceIds)
 	{
-		if (!is_array($sourceId))
-		{
-			$sourceId = array($sourceId);
-		}
-
-		$folders = $this->findFolders(array('sourceId' => $sourceId, 'order' => 'path'));
-		$tree = array();
-		$referenceStore = array();
-
-		foreach ($folders as $folder)
-		{
-			if ($folder->parentId)
-			{
-				$referenceStore[$folder->parentId]->addChild($folder);
-			}
-			else
-			{
-				$tree[] = $folder;
-			}
-
-			$referenceStore[$folder->id] = $folder;
-		}
+		$folders = $this->findFolders(array('sourceId' => $allowedSourceIds, 'order' => 'path'));
+		$tree = $this->_getFolderTreeByFolders($folders);
 
 		$sort = array();
 		foreach ($tree as $topFolder)
@@ -276,6 +256,61 @@ class AssetsService extends BaseApplicationComponent
 
 		array_multisort($sort, $tree);
 		return $tree;
+	}
+
+	/**
+	 * Get the users Folder model.
+	 *
+	 * @param UserModel $userModel
+	 * @return AssetFolderModel|null
+	 * @throws Exception
+	 */
+	public function getUserFolder(UserModel $userModel)
+	{
+		$sourceTopFolder = craft()->assets->findFolder(array('sourceId' => FolderCriteriaModel::AssetsNoSource, 'parentId' => FolderCriteriaModel::AssetsNoParent));
+
+		// Super unlikely, but would be very awkward if this happened without any contingency plans in place.
+		if (!$sourceTopFolder)
+		{
+			$sourceTopFolder = new AssetFolderModel();
+			$sourceTopFolder->name = TempAssetSourceType::sourceName;
+			$sourceTopFolder->id = $this->storeFolder($sourceTopFolder);
+		}
+
+		$folderName = 'user_' . $userModel->id;
+		$folderCriteria = new FolderCriteriaModel(array(
+			'name' => $folderName,
+			'parentId' => $sourceTopFolder->id
+		));
+
+		$folder = $this->findFolder($folderCriteria);
+		if (!$folder)
+		{
+			$folder = new AssetFolderModel();
+			$folder->parentId = $sourceTopFolder->id;
+			$folder->name = $folderName;
+			$folder->id = $this->storeFolder($folder);
+		}
+
+		return $folder;
+	}
+
+	/**
+	 * Get the folder tree for Assets by a folder id.
+	 *
+	 * @param $folderId
+	 * @return array
+	 */
+	public function getFolderTreeByFolderId($folderId)
+	{
+		$folder = $this->getFolderById($folderId);
+
+		if (is_null($folder))
+		{
+			return array();
+		}
+
+		return $this->_getFolderTreeByFolders(array($folder));
 	}
 
 	/**
@@ -593,6 +628,26 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Inserts a file from a local path into a folder and returns the resultinf file id.
+	 *
+	 * @param $localPath
+	 * @param $fileName
+	 * @param $folderId
+	 * @return bool|null
+	 */
+	public function insertFileByLocalPath($localPath, $fileName, $folderId)
+	{
+		$folder = $this->getFolderById($folderId);
+		if (!$folder)
+		{
+			return false;
+		}
+		$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
+		$response = $source->insertFileByPath($localPath, $folder, $fileName, true);
+		return $response->getDataItem('fileId');
+	}
+
+	/**
 	 * Returns true, if a file is in the process os being merged.
 	 *
 	 * @return bool
@@ -717,6 +772,41 @@ class AssetsService extends BaseApplicationComponent
 		return craft()->db->createCommand()
 			->select('id, parentId, sourceId, name, path')
 			->from('assetfolders');
+	}
+
+	/**
+	 * Return the folder tree form a list of folders.
+	 *
+	 * @param $folders
+	 * @return array
+	 */
+	private function _getFolderTreeByFolders($folders)
+	{
+		$tree = array();
+		$referenceStore = array();
+
+		foreach ($folders as $folder)
+		{
+			if ($folder->parentId && isset($referenceStore[$folder->parentId]))
+			{
+				$referenceStore[$folder->parentId]->addChild($folder);
+			}
+			else
+			{
+				$tree[] = $folder;
+			}
+
+			$referenceStore[$folder->id] = $folder;
+		}
+
+		$sort = array();
+		foreach ($tree as $topFolder)
+		{
+			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
+		}
+
+		array_multisort($sort, $tree);
+		return $tree;
 	}
 
 	/**
