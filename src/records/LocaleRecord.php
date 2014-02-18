@@ -33,4 +33,14 @@ class LocaleRecord extends BaseRecord
 			'sortOrder' => AttributeType::SortOrder,
 		);
 	}
+
+	/**
+	 * @return array
+	 */
+	public function defineIndexes()
+	{
+		return array(
+			array('columns' => array('sortOrder')),
+		);
+	}
 }
