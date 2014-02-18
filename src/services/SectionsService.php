@@ -69,7 +69,8 @@ class SectionsService extends BaseApplicationComponent
 	{
 		if (!$this->_fetchedAllSections)
 		{
-			$sectionRecords = SectionRecord::model()->ordered()->with('structure')->findAll();
+			$results = $this->_createSectionQuery()
+				->queryAll();
 
 			$this->_sectionsById = array();
 
@@ -79,13 +80,15 @@ class SectionsService extends BaseApplicationComponent
 				SectionType::Structure => 0
 			);
 
-			foreach ($sectionRecords as $sectionRecord)
+			foreach ($results as $result)
 			{
-				if (craft()->hasPackage(CraftPackage::PublishPro) || $typeCounts[$sectionRecord->type] < $this->typeLimits[$sectionRecord->type])
+				$type = $result['type'];
+
+				if (craft()->hasPackage(CraftPackage::PublishPro) || $typeCounts[$type] < $this->typeLimits[$type])
 				{
-					$section = $this->_populateSectionFromRecord($sectionRecord);
+					$section = new SectionModel($result);
 					$this->_sectionsById[$section->id] = $section;
-					$typeCounts[$section->type]++;
+					$typeCounts[$type]++;
 				}
 			}
 
@@ -175,8 +178,20 @@ class SectionsService extends BaseApplicationComponent
 			(!isset($this->_sectionsById) || !array_key_exists($sectionId, $this->_sectionsById))
 		)
 		{
-			$sectionRecord = SectionRecord::model()->with('structure')->findById($sectionId);
-			$this->_sectionsById[$sectionId] = $this->_populateSectionFromRecord($sectionRecord);
+			$result = $this->_createSectionQuery()
+				->where('sections.id = :sectionId', array(':sectionId' => $sectionId))
+				->queryRow();
+
+			if ($result)
+			{
+				$section = new SectionModel($result);
+			}
+			else
+			{
+				$section = null;
+			}
+
+			$this->_sectionsById[$sectionId] = $section;
 		}
 
 		if (isset($this->_sectionsById[$sectionId]))
@@ -193,13 +208,13 @@ class SectionsService extends BaseApplicationComponent
 	 */
 	public function getSectionByHandle($sectionHandle)
 	{
-		$sectionRecord = SectionRecord::model()->with('structure')->findByAttributes(array(
-			'handle' => $sectionHandle
-		));
+		$result = $this->_createSectionQuery()
+			->where('sections.handle = :sectionHandle', array(':sectionHandle' => $sectionHandle))
+			->queryRow();
 
-		if ($sectionRecord)
+		if ($result)
 		{
-			$section = $this->_populateSectionFromRecord($sectionRecord);
+			$section = new SectionModel($result);
 			$this->_sectionsById[$section->id] = $section;
 			return $section;
 		}
@@ -246,7 +261,7 @@ class SectionsService extends BaseApplicationComponent
 				throw new Exception(Craft::t('No section exists with the ID “{id}”', array('id' => $section->id)));
 			}
 
-			$oldSection = $this->_populateSectionFromRecord($sectionRecord);
+			$oldSection = SectionModel::populateModel($sectionRecord);
 			$isNewSection = false;
 		}
 		else
@@ -1049,26 +1064,33 @@ class SectionsService extends BaseApplicationComponent
 	// Private methods
 
 	/**
-	 * Populates a SectionModel with attributes from a SectionRecord.
+	 * Returns a DbCommand object prepped for retrieving fields.
+	 *
+	 * @return DbCommand
+	 */
+	private function _createSectionQuery()
+	{
+		return craft()->db->createCommand()
+			->select('sections.id, sections.structureId, sections.defaultAuthorId, sections.name, sections.handle, sections.type, sections.hasUrls, sections.template, structures.maxLevels')
+			->leftJoin('structures structures', 'structures.id = sections.structureId')
+			->from('sections sections')
+			->order('name');
+	}
+
+	/**
+	 * Populates a field from its DB result.
 	 *
 	 * @access private
-	 * @param SectionRecord|null
-	 * @return SectionModel|null
+	 * @param array $result
+	 * @return FieldModel
 	 */
-	private function _populateSectionFromRecord($sectionRecord)
+	private function _populateField($result)
 	{
-		if (!$sectionRecord)
+		if ($result['settings'])
 		{
-			return null;
+			$result['settings'] = JsonHelper::decode($result['settings']);
 		}
 
-		$section = SectionModel::populateModel($sectionRecord);
-
-		if ($sectionRecord->structure)
-		{
-			$section->maxLevels = $sectionRecord->structure->maxLevels;
-		}
-
-		return $section;
+		return new FieldModel($result);
 	}
 }
