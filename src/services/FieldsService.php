@@ -30,8 +30,16 @@ class FieldsService extends BaseApplicationComponent
 	{
 		if (!$this->_fetchedAllGroups)
 		{
-			$groupRecords = FieldGroupRecord::model()->ordered()->findAll();
-			$this->_groupsById = FieldGroupModel::populateModels($groupRecords, 'id');
+			$this->_groupsById = array();
+
+			$results = $this->_createGroupQuery()->queryAll();
+
+			foreach ($results as $result)
+			{
+				$group = new FieldGroupModel($result);
+				$this->_groupsById[$group->id] = $group;
+			}
+
 			$this->_fetchedAllGroups = true;
 		}
 
@@ -46,6 +54,7 @@ class FieldsService extends BaseApplicationComponent
 		else
 		{
 			$groups = array();
+
 			foreach ($this->_groupsById as $group)
 			{
 				$groups[$group->$indexBy] = $group;
@@ -65,16 +74,20 @@ class FieldsService extends BaseApplicationComponent
 	{
 		if (!isset($this->_groupsById) || !array_key_exists($groupId, $this->_groupsById))
 		{
-			$groupRecord = FieldGroupRecord::model()->findById($groupId);
+			$result = $this->_createGroupQuery()
+				->where('id = :id', array(':id' => $groupId))
+				->queryRow();
 
-			if ($groupRecord)
+			if ($result)
 			{
-				$this->_groupsById[$groupId] = FieldGroupModel::populateModel($groupRecord);
+				$group = new FieldGroupModel($result);
 			}
 			else
 			{
-				$this->_groupsById[$groupId] = null;
+				$group = null;
 			}
+
+			$this->_groupsById[$groupId] = $group;
 		}
 
 		return $this->_groupsById[$groupId];
@@ -787,6 +800,19 @@ class FieldsService extends BaseApplicationComponent
 
 	// Private methods
 	// ===============
+
+	/**
+	 * Returns a DbCommand object prepped for retrieving groups.
+	 *
+	 * @return DbCommand
+	 */
+	private function _createGroupQuery()
+	{
+		return craft()->db->createCommand()
+			->select('id, name')
+			->from('fieldgroups')
+			->order('name');
+	}
 
 	/**
 	 * Returns a DbCommand object prepped for retrieving fields.
