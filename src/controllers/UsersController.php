@@ -405,30 +405,28 @@ class UsersController extends BaseController
 			}
 		}
 
-		// Havea a valid user.
-		if ($variables['account'])
-		{
-			// It's an existing user.
-			if ($variables['account']->id)
-			{
-				if ($variables['account']->isCurrent())
-				{
-					$variables['title'] = Craft::t('My Account');
-				}
-				else
-				{
-					craft()->userSession->requirePermission('editUsers');
+		$variables['isNewAccount'] = !$variables['account']->id;
 
-					$variables['title'] = Craft::t("{user}’s Account", array('user' => $variables['account']->name));
-				}
+		// Set the appropriate page title
+		if (!$variables['isNewAccount'])
+		{
+			if ($variables['account']->isCurrent())
+			{
+				$variables['title'] = Craft::t('My Account');
 			}
 			else
 			{
-				// New user, make sure we can register.
-				craft()->userSession->requirePermission('registerUsers');
+				craft()->userSession->requirePermission('editUsers');
 
-				$variables['title'] = Craft::t("Register a new user");
+				$variables['title'] = Craft::t("{user}’s Account", array('user' => $variables['account']->name));
 			}
+		}
+		else
+		{
+			// New user, make sure we can register.
+			craft()->userSession->requirePermission('registerUsers');
+
+			$variables['title'] = Craft::t("Register a new user");
 		}
 
 		// Show tabs if they have the Users package installed.
@@ -474,8 +472,6 @@ class UsersController extends BaseController
 				}
 			}
 		}
-
-		$variables['isNewAccount'] = (!$variables['account'] || !$variables['account']->id);
 
 		craft()->templates->includeCssResource('css/account.css');
 		craft()->templates->includeJsResource('js/account.js');
