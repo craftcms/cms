@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m140204_000007_delete_the_deleted_files extends BaseMigration
+class m140401_000000_delete_the_deleted_files extends BaseMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.

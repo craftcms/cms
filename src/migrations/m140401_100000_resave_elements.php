@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m140204_000012_resave_elements extends BaseMigration
+class m140401_100000_resave_elements extends BaseMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
@@ -13,6 +13,12 @@ class m140204_000012_resave_elements extends BaseMigration
 	 */
 	public function safeUp()
 	{
+		// No need to torture the Dev track guys again
+		if (craft()->migrations->hasRun('m140204_000012_resave_elements'))
+		{
+			return true;
+		}
+
 		Craft::log('Making sure everyone has a row in elements_18n, first.', LogLevel::Info, true);
 
 		// Find all of the elements that don't have a row in this table yet

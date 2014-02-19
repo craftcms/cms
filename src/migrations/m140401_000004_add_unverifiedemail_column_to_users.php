@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m140204_000003_add_unverifiedemail_column_to_users extends BaseMigration
+class m140401_000004_add_unverifiedemail_column_to_users extends BaseMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
