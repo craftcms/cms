@@ -630,7 +630,7 @@ class FieldsService extends BaseApplicationComponent
 			}
 			else
 			{
-				$layout = null;
+				$layout = new FieldLayoutModel();
 			}
 
 			$this->_layoutsByType[$type] = $layout;
