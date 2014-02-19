@@ -50,6 +50,19 @@ class LocaleData extends \CLocale
 	}
 
 	/**
+	 * @return NumberFormatter
+	 */
+	public function getNumberFormatter()
+	{
+		if ($this->_numberFormatter === null)
+		{
+			$this->_numberFormatter = new NumberFormatter($this);
+		}
+
+		return $this->_numberFormatter;
+	}
+
+	/**
 	 * @return DateFormatter
 	 */
 	public function getDateFormatter()
