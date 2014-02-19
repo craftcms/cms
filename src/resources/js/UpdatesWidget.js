@@ -89,6 +89,9 @@ Craft.UpdatesWidget = Garnish.Base.extend({
 
 			this.initBtn();
 		}
+
+		// Update the CP header badge
+		Craft.cp.displayUpdateInfo(info);
 	}
 });
 

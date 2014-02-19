@@ -775,6 +775,9 @@ var CP = Garnish.Base.extend({
 
 	displayUpdateInfo: function(info)
 	{
+		// Remove the existing header badge, if any
+		$('#header-actions > li.updates').remove();
+
 		if (info.total)
 		{
 			if (info.total == 1)

@@ -39,22 +39,33 @@ Craft.UpdateInfo = Garnish.Base.extend({
 				$graphic.addClass('error');
 				$status.text(error);
 			}
-			else if (!(response.app && response.app.releases && response.app.releases.length))
-			{
-				$graphic.addClass('success');
-				$status.text(Craft.t('You’re all up-to-date!'));
-			}
 			else
 			{
-				$graphic.fadeOut('fast');
-				$status.fadeOut('fast', $.proxy(function()
-				{
-					$graphic.remove();
-					$status.remove();
+				var info = {
+					total: (response.app && response.app.releases ? response.app.releases.length : 0),
+					critical: (response.app && response.criticalUpdateAvailable)
+				};
 
-					this.appUpdateInfo = response.app;
-					this.showAvailableUpdates();
-				}, this));
+				if (!info.total)
+				{
+					$graphic.addClass('success');
+					$status.text(Craft.t('You’re all up-to-date!'));
+				}
+				else
+				{
+					$graphic.fadeOut('fast');
+					$status.fadeOut('fast', $.proxy(function()
+					{
+						$graphic.remove();
+						$status.remove();
+
+						this.appUpdateInfo = response.app;
+						this.showAvailableUpdates();
+					}, this));
+				}
+
+				// Update the CP header badge
+				Craft.cp.displayUpdateInfo(info);
 			}
 		}, this));
 	},
