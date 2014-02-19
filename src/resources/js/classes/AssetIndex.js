@@ -1077,7 +1077,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 			ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
 		});
 
-		prompt(message, '{asset:'+$(event.currentTarget).data('id')+'}');
+		prompt(message, '{asset:'+Craft.getElementInfo($(event.currentTarget)).id+'}');
 	},
 
 	/**
