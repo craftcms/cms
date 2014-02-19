@@ -383,25 +383,25 @@ class UsersController extends BaseController
 			{
 				$variables['account'] = craft()->userSession->getUser();
 			}
-			else
+			else if ($userId)
 			{
 				// Get the requested user.
 				$variables['account'] = craft()->users->getUserById($userId);
 
-				// Couldn't find a user
 				if (!$variables['account'])
 				{
-					// Looks like we're creating a new user.
-					if (craft()->hasPackage(CraftPackage::Users))
-					{
-						$variables['account'] = new UserModel();
-					}
-					else
-					{
-						// Nada.
-						throw new HttpException(404);
-					}
+					throw new HttpException(404);
 				}
+			}
+			else if (craft()->hasPackage(CraftPackage::Users))
+			{
+				// Registering a new user
+				$variables['account'] = new UserModel();
+			}
+			else
+			{
+				// Nada.
+				throw new HttpException(404);
 			}
 		}
 
