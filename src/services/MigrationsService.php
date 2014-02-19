@@ -182,31 +182,7 @@ class MigrationsService extends BaseApplicationComponent
 	 */
 	public function getMigrationHistory($plugin = null, $limit = null)
 	{
-		if ($plugin === 'all')
-		{
-			$query = craft()->db->createCommand()
-				->select('version, applyTime')
-				->from($this->_migrationTable)
-				->order('version DESC');
-		}
-		else if ($plugin)
-		{
-			$pluginInfo = craft()->plugins->getPluginInfo($plugin);
-
-			$query = craft()->db->createCommand()
-				->select('version, applyTime')
-				->from($this->_migrationTable)
-				->where('pluginId = :pluginId', array(':pluginId' => $pluginInfo['id']))
-				->order('version DESC');
-		}
-		else
-		{
-			$query = craft()->db->createCommand()
-				->select('version, applyTime')
-				->from($this->_migrationTable)
-				->where('pluginId IS NULL')
-				->order('version DESC');
-		}
+		$query = $this->_createMigrationQuery($plugin);
 
 		if ($limit !== null)
 		{
@@ -223,6 +199,20 @@ class MigrationsService extends BaseApplicationComponent
 		}
 
 		return $migrations;
+	}
+
+	/**
+	 * Returns whether a given migration has been run.
+	 *
+	 * @param string $version
+	 * @param string|null $plugin
+	 * @return bool
+	 */
+	public function hasRun($version, $plugin = null)
+	{
+		return (bool) $this->_createMigrationQuery($plugin)
+			->andWhere('version = :version', array(':version' => $version))
+			->count('id');
 	}
 
 	/**
@@ -312,5 +302,35 @@ class MigrationsService extends BaseApplicationComponent
 	public function getTemplate()
 	{
 		return file_get_contents(Craft::getPathOfAlias('app.etc.updates.migrationtemplate').'.php');
+	}
+
+	/**
+	 * Returns a DbCommand object prepped for retrieving migrations.
+	 *
+	 * @access private
+	 * @param string|null $plugin
+	 * @return DbCommand
+	 */
+	private function _createMigrationQuery($plugin = null)
+	{
+		$query = craft()->db->createCommand()
+			->select('version, applyTime')
+			->from($this->_migrationTable)
+			->order('version desc');
+
+		if ($plugin)
+		{
+			if ($plugin != 'all')
+			{
+				$pluginInfo = craft()->plugins->getPluginInfo($plugin);
+				$query->where('pluginId = :pluginId', array(':pluginId' => $pluginInfo['id']));
+			}
+		}
+		else
+		{
+			$query->where('pluginId is null');
+		}
+
+		return $query;
 	}
 }
