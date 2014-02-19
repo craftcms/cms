@@ -436,12 +436,17 @@ class UsersController extends BaseController
 				'account' => array(
 					'label' => Craft::t('Account'),
 					'url'   => '#account',
-				),
-				'profile' => array(
+				)
+			);
+
+			// No need to show the Profile tab if it's a new user (can't have an avatar yet) and there's no user fields
+			if (!$variables['isNewAccount'] || $variables['account']->getFieldLayout()->getFields())
+			{
+				$variables['tabs']['profile'] = array(
 					'label' => Craft::t('Profile'),
 					'url'   => '#profile',
-				),
-			);
+				);
+			}
 
 			// If they can assign user groups and permissions, show the Permissions tab
 			if (craft()->userSession->getUser()->can('assignUserPermissions'))
