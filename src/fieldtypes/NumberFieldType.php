@@ -66,7 +66,7 @@ class NumberFieldType extends BaseFieldType
 	{
 		return craft()->templates->render('_includes/forms/text', array(
 			'name'  => $name,
-			'value' => craft()->numberFormatter->formatDecimal($value),
+			'value' => craft()->numberFormatter->formatDecimal($value, false),
 			'size'  => 5
 		));
 	}
