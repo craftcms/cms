@@ -79,7 +79,7 @@ class TagsFieldType extends BaseElementFieldType
 
 		if ($rawValue !== null)
 		{
-			$tagIds = is_array($rawValue) ? array_filter($rawValue) : array();
+			$tagIds = is_array($rawValue) ? array_unique(array_filter($rawValue)) : array();
 
 			foreach ($tagIds as $i => $tagId)
 			{
@@ -90,7 +90,7 @@ class TagsFieldType extends BaseElementFieldType
 					// Last-minute check
 					$criteria = craft()->elements->getCriteria(ElementType::Tag);
 					$criteria->setId = $tagSetId;
-					$criteria->search = 'name::'.$name;
+					$criteria->search = 'name::"'.$name.'"';
 					$ids = $criteria->ids();
 
 					if ($ids)
