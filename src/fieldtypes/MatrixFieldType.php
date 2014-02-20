@@ -309,6 +309,14 @@ class MatrixFieldType extends BaseFieldType
 				$block->setContentFromPost($blockData['fields']);
 			}
 
+			// Set the content post location on the block if we can
+			$ownerContentPostLocation = $this->element->getContentPostLocation();
+
+			if ($ownerContentPostLocation)
+			{
+				$block->setContentPostLocation("{$ownerContentPostLocation}.{$this->model->handle}.{$blockId}.fields");
+			}
+
 			$sortOrder++;
 			$block->sortOrder = $sortOrder;
 
