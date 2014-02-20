@@ -1449,7 +1449,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
 	_positionProgressBar: function ()
 	{
-		var $container = this.progressBar.$progressBar.parents('#content');
+		var $container = $();
+		if (this.settings.context == 'index')
+		{
+			$container = this.progressBar.$progressBar.parents('#content');
+		}
+		else
+		{
+			$container = this.progressBar.$progressBar.parents('.main');
+		}
 
 		var containerTop = $container.offset().top;
 		var scrollTop = Garnish.$doc.scrollTop();
