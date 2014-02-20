@@ -628,12 +628,7 @@ class UsersController extends BaseController
 		// If the Users package is installed, grab any profile content from post
 		if (craft()->hasPackage(CraftPackage::Users))
 		{
-			$fields = craft()->request->getPost('fields');
-
-			if ($fields)
-			{
-				$user->setContentFromPost($fields);
-			}
+			$user->setContentFromPost('fields');
 		}
 
 		// Validate and save!

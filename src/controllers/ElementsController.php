@@ -225,6 +225,9 @@ class ElementsController extends BaseController
 			unset($params['fields']);
 		}
 
+		// Either way, at least tell the element where its content comes from
+		$element->setContentPostLocation($namespace.'.fields');
+
 		// Now save it
 		$elementType = craft()->elements->getElementType($element->elementType);
 

@@ -8,6 +8,7 @@ abstract class BaseElementModel extends BaseModel
 {
 	protected $elementType;
 
+	private $_contentPostLocation;
 	private $_content;
 	private $_preppedContent;
 
@@ -739,10 +740,19 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Sets the content from post data, calling prepValueFromPost() on the field types.
 	 *
-	 * @param array $content
+	 * @param array|string $content
 	 */
 	public function setContentFromPost($content)
 	{
+		if (is_string($content))
+		{
+			// Keep track of where the post data is coming from,
+			// in case any field types need to know where to look in $_FILES
+			$this->setContentPostLocation($content);
+
+			$content = craft()->request->getPost($content, array());
+		}
+
 		$fieldLayout = $this->getFieldLayout();
 
 		if ($fieldLayout)
@@ -780,6 +790,26 @@ abstract class BaseElementModel extends BaseModel
 				}
 			}
 		}
+	}
+
+	/**
+	 * Returns the location in POST that the content was pulled from.
+	 *
+	 * @return string|null
+	 */
+	public function getContentPostLocation()
+	{
+		return $this->_contentPostLocation;
+	}
+
+	/**
+	 * Sets the location in POST that the content was pulled from.
+	 *
+	 * @return string|null
+	 */
+	public function setContentPostLocation($contentPostLocation)
+	{
+		$this->_contentPostLocation = $contentPostLocation;
 	}
 
 	/**
