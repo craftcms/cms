@@ -156,6 +156,24 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
+	 * Returns the location in POST that this field's content was pulled from.
+	 *
+	 * @return string|null
+	 */
+	protected function getContentPostLocation()
+	{
+		if (isset($this->element) && isset($this->model))
+		{
+			$elementContentPostLocation = $this->element->getContentPostLocation();
+
+			if ($elementContentPostLocation)
+			{
+				return $elementContentPostLocation.'.'.$this->model->handle;
+			}
+		}
+	}
+
+	/**
 	 * Returns whether this is the first time the element's content has been edited.
 	 *
 	 * @access protected
