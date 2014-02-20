@@ -221,7 +221,7 @@ class AssetsFieldType extends BaseElementFieldType
 			}
 		}
 		// No uploaded files, just good old-fashioned Assets field
-		else
+		else if (!empty($this->getSettings()->useSingleFolder))
 		{
 			$filesToMove = $this->element->getContent()->{$handle};
 			if (is_array($filesToMove) && count($filesToMove))
