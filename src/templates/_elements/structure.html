@@ -2,7 +2,6 @@
 {% set collapsedElementIds = collapsedElementIds is defined ? collapsedElementIds : [] %}
 {% set sortable = (sortable is defined and sortable and structure.isSortable()) %}
 {% set newChildUrl = newChildUrl is defined ? newChildUrl : null %}
-{% set maxLevels = maxLevels is defined ? maxLevels : null %}
 {% set id = 'structure-'~structure.id~'-'~random() %}
 
 <ul id="{{ id }}" class="structure">
@@ -33,9 +32,9 @@
 </ul>
 
 {# Hide "Add child" menu buttons beyond the max level #}
-{% if maxLevels %}
+{% if structure.maxLevels %}
 	{% set css %}
-		#{{ id }}{% for i in 2 .. maxLevels if maxLevels >= 2 %} ul{% endfor %} .add { display: none; }
+		#{{ id }}{% for i in 2 .. structure.maxLevels if structure.maxLevels >= 2 %} ul{% endfor %} .add { display: none; }
 	{% endset %}
 
 	{% includeCss css %}
@@ -45,7 +44,7 @@
 	new Craft.Structure({{ structure.id }}, '#{{ id }}', {
 		sortable:    {{ sortable ? 'true' : 'false' }},
 		newChildUrl: {{ newChildUrl ? newChildUrl|json_encode|raw : 'null' }},
-		maxLevels:   {{ maxLevels ?: 'null' }}
+		maxLevels:   {{ structure.maxLevels ?: 'null' }}
 	});
 {% endset %}
 {% includeJs js first %}
