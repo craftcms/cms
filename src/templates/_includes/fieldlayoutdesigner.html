@@ -71,7 +71,7 @@
 		{% for group in groups %}
 			{% set totalUnselected = 0 %}
 			{% for field in group.fields %}
-				{% if not fieldLayout or field.id not in fieldLayout.getFields()|keys %}
+				{% if not fieldLayout or field.id not in fieldLayout.getFieldIds() %}
 					{% set totalUnselected = totalUnselected + 1 %}
 				{% endif %}
 			{% endfor %}
@@ -82,7 +82,7 @@
 				</div>
 				<div class="fld-tabcontent">
 					{% for field in group.fields %}
-						{% set selected = fieldLayout and field.id in fieldLayout.getFields()|keys %}
+						{% set selected = fieldLayout and field.id in fieldLayout.getFieldIds() %}
 						<div class="fld-field unused{% if selected %} hidden{% endif %}" data-id="{{ field.id }}">
 							<span>{{ field.name }}</span>
 						</div>
