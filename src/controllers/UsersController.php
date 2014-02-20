@@ -1105,7 +1105,7 @@ class UsersController extends BaseController
 		}
 
 		// Did they upload a new one?
-		if ($userPhoto = \CUploadedFile::getInstanceByName('userPhoto'))
+		if ($userPhoto = UploadedFile::getInstanceByName('userPhoto'))
 		{
 			craft()->users->deleteUserPhoto($user);
 			$image = craft()->images->loadImage($userPhoto->getTempName());

@@ -110,7 +110,7 @@ class DashboardController extends BaseController
 		$getHelpModel->message = trim(craft()->request->getPost('message'));
 		$getHelpModel->attachLogs = (bool) craft()->request->getPost('attachLogs');
 		$getHelpModel->attachDbBackup = (bool) craft()->request->getPost('attachDbBackup');
-		$getHelpModel->attachment = \CUploadedFile::getInstanceByName('attachAdditionalFile');
+		$getHelpModel->attachment = UploadedFile::getInstanceByName('attachAdditionalFile');
 
 		if ($getHelpModel->validate())
 		{
