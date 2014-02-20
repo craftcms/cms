@@ -757,10 +757,8 @@ abstract class BaseElementModel extends BaseModel
 
 		if ($fieldLayout)
 		{
-			if (!isset($this->_content))
-			{
-				$this->_content = $this->getContent();
-			}
+			// Make sure $this->_content is set
+			$this->getContent();
 
 			foreach ($fieldLayout->getFields() as $fieldLayoutField)
 			{
