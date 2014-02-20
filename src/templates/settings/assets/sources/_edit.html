@@ -52,8 +52,6 @@
 						{% endnamespace %}
 					</div>
 				{% endfor %}
-
-				<hr>
 			{% else %}
 				{% namespace 'types['~sourceType.getClassHandle()~']' %}
 					{{ sourceType.getSettingsHtml()|raw }}

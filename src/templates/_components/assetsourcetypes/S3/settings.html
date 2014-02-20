@@ -1,61 +1,75 @@
 {% requirePackage('Cloud') %}
 
-{% from "_includes/forms" import textField, selectField%}
+{% import "_includes/forms" as forms %}
 
-{{ textField({
+{{ forms.textField({
 	label: "Access Key ID"|t,
 	id: 'keyId',
 	name: 'keyId',
 	value: settings.keyId,
 	errors: settings.getErrors('keyId'),
-    class: 's3-key-id',
+	class: 's3-key-id',
 	required: true
 }) }}
 
-{{ textField({
+{{ forms.textField({
 	label: "Secret Access Key"|t,
 	id: 'secret',
 	name: 'secret',
 	value: settings.secret,
 	errors: settings.getErrors('secret'),
-    class: 's3-secret-key',
+	class: 's3-secret-key',
 	required: true
 }) }}
 
-<div class="btn refresh-buckets">{{ "Refresh bucket list"|t }}</div>
+{% set bucketInput %}
+	<table class="inputs">
+		<tr>
+			<td>
+				{{ forms.select({
+					id: 'bucket',
+					name: 'bucket',
+					options: { (settings.bucket): settings.bucket },
+					value: settings.bucket,
+					disabled: true,
+					class: 's3-bucket-select'
+				}) }}
+			</td>
+			<td>
+				<div class="btn s3-refresh-buckets">{{ "Refresh"|t }}</div>
+			</td>
+			<td>
+				<div class="spinner hidden"></div>
+			</td>
+		</tr>
+	</table>
+{% endset %}
 
-{{ selectField({
-    label: "Bucket",
-    instructions: "Choose a bucket to use"|t,
-    id: 'bucket',
-    name: 'bucket',
-    options: { (settings.bucket): settings.bucket},
-    value: settings.bucket,
-    disabled: true,
-    class: "bucket-select"
+{{ forms.field({
+	label: "Bucket"|t,
+	id: 'bucket'
+}, bucketInput) }}
+
+{{ forms.textField({
+	label: "Subfolder"|t,
+	instructions: "If you want to use a bucket’s subfolder as a Source, specify the path to use here."|t,
+	id: 'subfolder',
+	name: 'subfolder',
+	value: settings.subfolder,
+	errors: settings.getErrors('subfolder'),
+	required: false,
+	placeholder: 'path/to/subfolder'
 }) }}
 
-{{ textField({
-    label: "Subfolder"|t,
-    instructions: "If you want to use a bucket’s subfolder as a Source, specify the path to use here."|t,
-    id: 'subfolder',
-    name: 'subfolder',
-    value: settings.subfolder,
-    errors: settings.getErrors('subfolder'),
-    required: false,
-    class: "subfolder",
-    placeholder: 'path/to/folder'
+{{ forms.textField({
+	label: "URL Prefix "|t,
+	instructions: "If you have set up a CNAME record pointing to this bucket, you can enter it here. Otherwise leave this setting alone."|t,
+	id: 'urlPrefix',
+	name: 'urlPrefix',
+	value: settings.urlPrefix,
+	errors: settings.getErrors('url_prefix'),
+	required: true,
+	class: 's3-url-prefix'
 }) }}
 
-{{ textField({
-    label: "URL Prefix "|t,
-    instructions: "If you have set up a CNAME record pointing to this bucket, you can enter it here. Otherwise leave this setting alone."|t,
-    id: 'urlPrefix',
-    name: 'urlPrefix',
-    value: settings.urlPrefix,
-    errors: settings.getErrors('url_prefix'),
-    required: true,
-    class: "url-prefix"
-}) }}
-
-<input type="hidden" name="location" class="bucket-location" value="{{ settings.location }}">
+<input type="hidden" name="location" class="s3-bucket-location" value="{{ settings.location }}">
