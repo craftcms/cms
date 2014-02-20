@@ -17,12 +17,6 @@ class ElementsController extends BaseController
 		$context = craft()->request->getParam('context');
 		$elementType = $this->_getElementType();
 
-
-		if (is_string($showSources) && substr($showSources, 0, 5) == 'path:')
-		{
-			$context = $showSources;
-		}
-
 		$sources = $elementType->getSources($context);
 
 		if (is_array($showSources))
