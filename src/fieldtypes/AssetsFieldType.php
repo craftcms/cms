@@ -175,54 +175,35 @@ class AssetsFieldType extends BaseElementFieldType
 		$handle = $this->model->handle;
 
 		// See if we have uploaded file(s).
-		if (!empty($_FILES['fields']['name'][$handle]))
+		$contentPostLocation = $this->getContentPostLocation();
+
+		if ($contentPostLocation)
 		{
-			// Normalize the uploaded files, so that we always have an array to parse.
-			$uploadedFiles = array();
+			$uploadedFiles = UploadedFile::getInstancesByName($contentPostLocation);
 
-			if (!is_array($_FILES['fields']['name'][$handle]) && IOHelper::fileExists($_FILES['fields']['tmp_name'][$handle]) && $_FILES['fields']['size'][$handle])
+			if ($uploadedFiles)
 			{
-				$uploadedFiles[] = array(
-					'name' => $_FILES['fields']['name'][$handle],
-					'tmp_name' => $_FILES['fields']['tmp_name'][$handle]
-				);
-			}
-			else
-			{
-				foreach ($_FILES['fields']['name'][$handle] as $index => $name)
-				{
-					if (IOHelper::fileExists($_FILES['fields']['tmp_name'][$handle][$index]) && $_FILES['fields']['size'][$handle][$index])
-					{
-						$uploadedFiles[] = array(
-							'name' => $name,
-							'tmp_name' => $_FILES['fields']['tmp_name'][$handle][$index]
-						);
-					}
-				}
-			}
+				$fileIds = array();
 
-			$fileIds = array();
-
-			if (count($uploadedFiles))
-			{
 				$targetFolderId = $this->resolveSourcePath();
 
 				if (!empty($targetFolderId))
 				{
 					foreach ($uploadedFiles as $file)
 					{
-						$tempPath = AssetsHelper::getTempFilePath($file['name']);
-						move_uploaded_file($file['tmp_name'], $tempPath);
-						$fileIds[] = craft()->assets->insertFileByLocalPath($tempPath, $file['name'], $targetFolderId);
+						$tempPath = AssetsHelper::getTempFilePath($file->getName());
+						move_uploaded_file($file->getTempName(), $tempPath);
+						$fileIds[] = craft()->assets->insertFileByLocalPath($tempPath, $file->getName(), $targetFolderId);
 					}
-					$this->element->getContent()->{$handle} = $fileIds;
 
+					$this->element->getContent()->{$handle} = $fileIds;
 				}
 			}
 		}
-		// No uploaded files, just good old-fashioned Assets field
-		else if (!empty($this->getSettings()->useSingleFolder))
+
+		if (empty($uploadedFiles) && !$this->getSettings()->useSingleFolder)
 		{
+			// No uploaded files, just good old-fashioned Assets field
 			$filesToMove = $this->element->getContent()->{$handle};
 			if (is_array($filesToMove) && count($filesToMove))
 			{
