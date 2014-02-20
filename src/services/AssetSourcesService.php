@@ -225,31 +225,44 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function getSourceById($sourceId)
 	{
-		// If we've already fetched all sources we can save ourselves a trip to the DB
-		// for source IDs that don't exist
-		if (!$this->_fetchedAllSources &&
-			(!isset($this->_sourcesById) || !array_key_exists($sourceId, $this->_sourcesById))
-		)
+		// Temporary source?
+		if (is_null($sourceId))
 		{
-			$result = $this->_createSourceQuery()
-				->where('id = :id', array(':id' => $sourceId))
-				->queryRow();
-
-			if ($result)
-			{
-				$source = $this->_populateSource($result);
-			}
-			else
-			{
-				$source = null;
-			}
-
-			$this->_sourcesById[$sourceId] = $source;
+			$source = new AssetSourceModel();
+			$source->id = $sourceId;
+			$source->name = TempAssetSourceType::sourceName;
+			$source->type = TempAssetSourceType::sourceType;
+			$source->settings = array('path' => craft()->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempuploads/'));
+			return $source;
 		}
-
-		if (!empty($this->_sourcesById[$sourceId]))
+		else
 		{
-			return $this->_sourcesById[$sourceId];
+			// If we've already fetched all sources we can save ourselves a trip to the DB
+			// for source IDs that don't exist
+			if (!$this->_fetchedAllSources &&
+				(!isset($this->_sourcesById) || !array_key_exists($sourceId, $this->_sourcesById))
+			)
+			{
+				$result = $this->_createSourceQuery()
+					->where('id = :id', array(':id' => $sourceId))
+					->queryRow();
+
+				if ($result)
+				{
+					$source = $this->_populateSource($result);
+				}
+				else
+				{
+					$source = null;
+				}
+
+				$this->_sourcesById[$sourceId] = $source;
+			}
+
+			if (!empty($this->_sourcesById[$sourceId]))
+			{
+				return $this->_sourcesById[$sourceId];
+			}
 		}
 	}
 
