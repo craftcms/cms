@@ -143,6 +143,23 @@ class AssetsFieldType extends BaseElementFieldType
 		{
 			$variables['sources'] = $folderPath;
 		}
+		// If it's a list of source IDs, we need to convert them to their folder counterparts
+		elseif (is_array($settings->sources))
+		{
+			$sources = array();
+			foreach ($settings->sources as $source)
+			{
+				if (is_numeric($source))
+				{
+					$folder = craft()->assets->findFolder(array(
+						'sourceId' => $source,
+						'parentId' => FolderCriteriaModel::AssetsNoParent
+					));
+					$sources[] = 'folder:'.$folder->id;
+				}
+			}
+			$variables['sources'] = $sources;
+		}
 
 		craft()->templates->includeJsResource('lib/fileupload/jquery.ui.widget.js');
 		craft()->templates->includeJsResource('lib/fileupload/jquery.fileupload.js');
