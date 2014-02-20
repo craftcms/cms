@@ -33,18 +33,8 @@ Craft.FieldToggle = Garnish.Base.extend({
 		}
 		else
 		{
-			this.targetSelector = this.$toggle.data('target');
-			this.reverseTargetSelector = this.$toggle.data('reverse-target');
-
-			if (this.targetSelector && !this.targetSelector.match(/^[#\.]/))
-			{
-				this.targetSelector = '#'+this.targetSelector;
-			}
-
-			if (this.reverseTargetSelector && !this.reverseTargetSelector.match(/^[#\.]/))
-			{
-				this.reverseTargetSelector = '#'+this.reverseTargetSelector;
-			}
+			this.targetSelector = this.normalizeTargetSelector(this.$toggle.data('target'));
+			this.reverseTargetSelector = this.normalizeTargetSelector(this.$toggle.data('reverse-target'));
 		}
 
 		this.findTargets();
@@ -57,6 +47,16 @@ Craft.FieldToggle = Garnish.Base.extend({
 		{
 			this.addListener(this.$toggle, 'change', 'onToggleChange');
 		}
+	},
+
+	normalizeTargetSelector: function(selector)
+	{
+		if (selector && !selector.match(/^[#\.]/))
+		{
+			selector = '#'+selector;
+		}
+
+		return selector;
 	},
 
 	getType: function()
@@ -79,7 +79,7 @@ Craft.FieldToggle = Garnish.Base.extend({
 	{
 		if (this.type == 'select')
 		{
-			this._$target = $('#'+this.targetPrefix+this.getToggleVal());
+			this._$target = $(this.normalizeTargetSelector(this.targetPrefix+this.getToggleVal()));
 		}
 		else
 		{
