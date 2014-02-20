@@ -66,6 +66,23 @@ class FieldLayoutModel extends BaseModel
 	}
 
 	/**
+	 * Returns the layout's fields' IDs.
+	 *
+	 * @return array
+	 */
+	public function getFieldIds()
+	{
+		$ids = array();
+
+		foreach ($this->getFields() as $field)
+		{
+			$ids[] = $field->fieldId;
+		}
+
+		return $ids;
+	}
+
+	/**
 	 * Sets the layout's tabs.
 	 *
 	 * @param array $tabs
