@@ -13,29 +13,22 @@ class ElementsController extends BaseController
 	{
 		$this->requireAjaxRequest();
 
-		$showSources = craft()->request->getParam('sources');
+		$sourceKeys = craft()->request->getParam('sources');
 		$context = craft()->request->getParam('context');
 		$elementType = $this->_getElementType();
 
-		$sources = $elementType->getSources($context);
+		$sources = array();
 
-		if (is_array($showSources))
+		if (is_array($sourceKeys))
 		{
-			foreach (array_keys($sources) as $source)
+			foreach ($sourceKeys as $key)
 			{
-				if (!in_array($source, $showSources))
+				$source = $elementType->getSource($key, $context);
+
+				if ($source)
 				{
-					unset($sources[$source]);
+					$sources[$key] = $source;
 				}
-			}
-		}
-		else
-		{
-			// Maybe we were asked for a specific point in a source?
-			$singleSource = $elementType->resolveSingleSource($showSources);
-			if ($singleSource)
-			{
-				$sources = $singleSource;
 			}
 		}
 
@@ -68,7 +61,7 @@ class ElementsController extends BaseController
 		if ($sourceKey)
 		{
 			$sources = $elementType->getSources($context);
-			$source = $this->_findSource($sources, $sourceKey);
+			$source = $elementType->getSource($sourceKey, $context);
 
 			// If this failed, maybe this is a specific point in a source?
 			if (!$source)
@@ -262,34 +255,6 @@ class ElementsController extends BaseController
 		}
 
 		return $elementType;
-	}
-
-	/**
-	 * Returns the criteria for a given source.
-	 *
-	 * @param array  $sources
-	 * @param string $sourceKey
-	 * @return array|null
-	 */
-	private function _findSource($sources, $sourceKey)
-	{
-		if (isset($sources[$sourceKey]))
-		{
-			return $sources[$sourceKey];
-		}
-		else
-		{
-			// Look through any nested sources
-			foreach ($sources as $key => $source)
-			{
-				if (!empty($source['nested']) && ($nestedSource = $this->_findSource($source['nested'], $sourceKey)))
-				{
-					return $nestedSource;
-				}
-			}
-		}
-
-		return null;
 	}
 
 	/**

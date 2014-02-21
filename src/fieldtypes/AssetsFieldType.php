@@ -248,7 +248,7 @@ class AssetsFieldType extends BaseElementFieldType
 				$folderPath = 'folder:'.$folderId;
 			}
 
-			return $folderPath;
+			return array($folderPath);
 		}
 
 		$sources = array();
