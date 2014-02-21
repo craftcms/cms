@@ -447,7 +447,6 @@ class UpdateController extends BaseController
 	 */
 	private function _getFixedHandle($data)
 	{
-
 		if (!isset($data['handle']))
 		{
 			return 'craft';

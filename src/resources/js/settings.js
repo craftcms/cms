@@ -1,8 +1,8 @@
 (function($) {
 
 
-Craft.Tool = Garnish.Base.extend({
-
+Craft.Tool = Garnish.Base.extend(
+{
 	$trigger: null,
 	$form: null,
 	$innerProgressBar: null,
@@ -84,8 +84,8 @@ Craft.Tool = Garnish.Base.extend({
 
 		this.progressBar.$progressBar.stop().animate({
 			left: 30
-		}, 'fast', $.proxy(function() {
-
+		}, 'fast', $.proxy(function()
+		{
 			var postData = Garnish.getPostData(this.$form),
 				params = Craft.expandPostArray(postData);
 			params.start = true;

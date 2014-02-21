@@ -1,8 +1,8 @@
 /**
  * Input Generator
  */
-Craft.BaseInputGenerator = Garnish.Base.extend({
-
+Craft.BaseInputGenerator = Garnish.Base.extend(
+{
 	$source: null,
 	$target: null,
 	settings: null,

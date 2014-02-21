@@ -1,8 +1,8 @@
 (function($) {
 
 
-Craft.TableFieldSettings = Garnish.Base.extend({
-
+Craft.TableFieldSettings = Garnish.Base.extend(
+{
 	columnsTableName: null,
 	defaultsTableName: null,
 	columnsTableId: null,

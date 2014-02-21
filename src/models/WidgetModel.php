@@ -8,5 +8,4 @@ namespace Craft;
  */
 class WidgetModel extends BaseComponentModel
 {
-
 }

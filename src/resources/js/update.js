@@ -1,8 +1,8 @@
 (function($) {
 
 
-Craft.Updater = Garnish.Base.extend({
-
+Craft.Updater = Garnish.Base.extend(
+{
 	$graphic: null,
 	$status: null,
 	$errorDetails: null,
@@ -44,8 +44,8 @@ Craft.Updater = Garnish.Base.extend({
 			data: this.data
 		};
 
-		Craft.postActionRequest(action, data, $.proxy(function(response, textStatus, jqXHR) {
-
+		Craft.postActionRequest(action, data, $.proxy(function(response, textStatus, jqXHR)
+		{
 			if (textStatus == 'success' && response.alive)
 			{
 				this.onSuccessResponse(response);

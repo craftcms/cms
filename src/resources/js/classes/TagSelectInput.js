@@ -1,8 +1,8 @@
 /**
  * Tag select input
  */
-Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
-
+Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
+{
 	id: null,
 	name: null,
 	tagGroupId: null,

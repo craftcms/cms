@@ -1,8 +1,8 @@
 /**
  * Handle Generator
  */
-Craft.HandleGenerator = Craft.BaseInputGenerator.extend({
-
+Craft.HandleGenerator = Craft.BaseInputGenerator.extend(
+{
 	generateTargetValue: function(sourceVal)
 	{
 		// Remove HTML tags

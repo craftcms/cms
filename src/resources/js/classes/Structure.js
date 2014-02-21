@@ -1,8 +1,8 @@
 /**
  * Structure class
  */
-Craft.Structure = Garnish.Base.extend({
-
+Craft.Structure = Garnish.Base.extend(
+{
 	id: null,
 
 	$container: null,
@@ -68,8 +68,8 @@ Craft.Structure = Garnish.Base.extend({
 
 	initToggle: function($toggle)
 	{
-		$toggle.click($.proxy(function(ev) {
-
+		$toggle.click($.proxy(function(ev)
+		{
 			var $li = $(ev.currentTarget).closest('li'),
 				elementId = $li.children('.row').children('.element').data('id'),
 				viewStateKey = $.inArray(elementId, this.state.collapsedElementIds);

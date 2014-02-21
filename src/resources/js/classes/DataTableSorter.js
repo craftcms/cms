@@ -1,8 +1,8 @@
 /**
  * DataTableSorter
  */
-Craft.DataTableSorter = Garnish.DragSort.extend({
-
+Craft.DataTableSorter = Garnish.DragSort.extend(
+{
 	$table: null,
 
 	init: function(table, settings)

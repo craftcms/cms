@@ -1,8 +1,8 @@
 (function($) {
 
 
-Craft.EntryPreviewMode = Garnish.Base.extend({
-
+Craft.EntryPreviewMode = Garnish.Base.extend(
+{
 	$form: null,
 	$btn: null,
 	$spinner: null,

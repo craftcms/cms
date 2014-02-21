@@ -1,14 +1,13 @@
 /**
  * File Manager.
  */
-Craft.ProgressBar = Garnish.Base.extend({
-
+Craft.ProgressBar = Garnish.Base.extend(
+{
     $progressBar: null,
     $innerProgressBar: null,
 
     _itemCount: 0,
     _processedItemCount: 0,
-
 
     init: function($element)
     {
@@ -21,7 +20,7 @@ Craft.ProgressBar = Garnish.Base.extend({
     /**
      * Reset the progress bar
      */
-    resetProgressBar: function ()
+    resetProgressBar: function()
     {
 		// Since setting the progress percentage implies that there is progress to be shown
 		// It removes the pending class - we must add it back.
@@ -31,45 +30,44 @@ Craft.ProgressBar = Garnish.Base.extend({
 		// Reset all the counters
 		this.setItemCount(1);
         this.setProcessedItemCount(0);
-
     },
 
     /**
      * Fade to invisible, hide it using a class and reset opacity to visible
      */
-    hideProgressBar: function ()
+    hideProgressBar: function()
     {
         this.$progressBar.fadeTo('fast', 0.01, $.proxy(function() {
-            this.$progressBar.addClass('hidden').fadeTo(1, 1, function () {});
+            this.$progressBar.addClass('hidden').fadeTo(1, 1, $.noop);
         }, this));
     },
 
-    showProgressBar: function ()
+    showProgressBar: function()
     {
         this.$progressBar.removeClass('hidden');
     },
 
-    setItemCount: function (count)
+    setItemCount: function(count)
     {
         this._itemCount = count;
     },
 
-    incrementItemCount: function (count)
+    incrementItemCount: function(count)
     {
         this._itemCount += count;
     },
 
-    setProcessedItemCount: function (count)
+    setProcessedItemCount: function(count)
     {
         this._processedItemCount = count;
     },
 
-    incrementProcessedItemCount: function (count)
+    incrementProcessedItemCount: function(count)
     {
         this._processedItemCount += count;
     },
 
-    updateProgressBar: function ()
+    updateProgressBar: function()
     {
         // Only fools would allow accidental division by zero.
         this._itemCount = Math.max(this._itemCount, 1);
@@ -79,7 +77,7 @@ Craft.ProgressBar = Garnish.Base.extend({
         this.setProgressPercentage(width);
     },
 
-    setProgressPercentage: function (percentage)
+    setProgressPercentage: function(percentage)
     {
 		if (percentage != 100)
 		{

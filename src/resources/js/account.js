@@ -1,8 +1,8 @@
 (function($) {
 
 
-var AccountSettingForm = Garnish.Base.extend({
-
+var AccountSettingForm = Garnish.Base.extend(
+{
 	$lockBtns: null,
 	$currentPasswordInput: null,
 	$spinner: null,
@@ -70,8 +70,8 @@ var AccountSettingForm = Garnish.Base.extend({
 				password: password
 			};
 
-			Craft.postActionRequest('users/verifyPassword', data, $.proxy(function(response, textStatus) {
-
+			Craft.postActionRequest('users/verifyPassword', data, $.proxy(function(response, textStatus)
+			{
 				this.$spinner.addClass('hidden');
 
 				if (textStatus == 'success')

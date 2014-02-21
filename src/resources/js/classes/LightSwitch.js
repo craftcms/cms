@@ -1,8 +1,8 @@
 /**
  * Light Switch
  */
-Craft.LightSwitch = Garnish.Base.extend({
-
+Craft.LightSwitch = Garnish.Base.extend(
+{
 	settings: null,
 	$outerContainer: null,
 	$innerContainer: null,

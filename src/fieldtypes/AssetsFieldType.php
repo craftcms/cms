@@ -371,7 +371,6 @@ class AssetsFieldType extends BaseElementFieldType
 		}
 		else
 		{
-
 			$folderId = $response->getDataItem('folderId');
 			return $folderId;
 		}

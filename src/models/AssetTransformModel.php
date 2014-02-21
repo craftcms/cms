@@ -6,7 +6,6 @@ namespace Craft;
  */
 class AssetTransformModel extends BaseModel
 {
-
 	/**
 	 * Use the folder name as the string representation.
 	 *

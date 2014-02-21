@@ -3,8 +3,8 @@ if (typeof Craft == 'undefined')
 	Craft = {};
 }
 
-$.extend(Craft, {
-
+$.extend(Craft,
+{
 	navHeight: 48,
 
 	/**
@@ -936,8 +936,8 @@ $.extend(Craft, {
 //  Custom jQuery plugins
 // -------------------------------------------
 
-$.extend($.fn, {
-
+$.extend($.fn,
+{
 	/**
 	 * Disables elements by adding a .disabled class and preventing them from receiving focus.
 	 */

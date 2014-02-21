@@ -1,8 +1,8 @@
 /**
  * Element index class
  */
-Craft.BaseElementIndex = Garnish.Base.extend({
-
+Craft.BaseElementIndex = Garnish.Base.extend(
+{
 	elementType: null,
 
 	instanceState: null,
@@ -308,8 +308,8 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
 		var data = this.getControllerData();
 
-		Craft.postActionRequest('elements/getElements', data, $.proxy(function(response, textStatus) {
-
+		Craft.postActionRequest('elements/getElements', data, $.proxy(function(response, textStatus)
+		{
 			this.$mainSpinner.addClass('hidden');
 
 			if (textStatus == 'success')
@@ -367,8 +367,8 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 					var data = this.getControllerData();
 					data.offset = this.totalVisible;
 
-					Craft.postActionRequest('elements/getElements', data, $.proxy(function(response, textStatus) {
-
+					Craft.postActionRequest('elements/getElements', data, $.proxy(function(response, textStatus)
+					{
 						this.$loadingMoreSpinner.addClass('hidden');
 
 						if (textStatus == 'success')

@@ -6,5 +6,4 @@ namespace Craft;
  */
 class Event extends \CEvent
 {
-
 }

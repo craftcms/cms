@@ -6,7 +6,6 @@ namespace Craft;
  */
 class AssetOperationResponseModel extends BaseModel
 {
-
 	const StatusError = 'error';
 	const StatusSuccess = 'success';
 	const StatusConflict = 'conflict';

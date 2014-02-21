@@ -239,7 +239,6 @@ class AssetFileModel extends BaseElementModel
 	 */
 	public function getIconUrl($size = 125)
 	{
-
 		if ($this->hasThumb())
 		{
 			return false;

@@ -1,8 +1,8 @@
 /**
  * Oh what a privilege it is to be a web developer.
  */
-Craft.SidebarPane = Garnish.Base.extend({
-
+Craft.SidebarPane = Garnish.Base.extend(
+{
 	$pane: null,
 	$sidebar: null,
 	$content: null,

@@ -2,8 +2,8 @@
  * Element Select input
  */
 
-Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
-
+Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
+{
 	requestId: 0,
 	hud: null,
 	fieldId: 0,
@@ -17,9 +17,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 		this._attachDragEvents();
 	},
 
-	_attachDragEvents: function ()
+	_attachDragEvents: function()
 	{
-
 		this.progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').appendTo(this.$container));
 
 		var options = {
@@ -93,9 +92,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 	 * @param event
 	 * @private
 	 */
-	_onUploadStart: function (event)
+	_onUploadStart: function(event)
 	{
-
 		this.progressBar.$progressBar.css({
 			top: Math.round(this.$container.outerHeight() / 2) - 6
 		});
@@ -112,7 +110,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 	 * @param data
 	 * @private
 	 */
-	_onUploadProgress: function (event, data)
+	_onUploadProgress: function(event, data)
 	{
 		var progress = parseInt(data.loaded / data.total * 100, 10);
 		this.progressBar.setProgressPercentage(progress);
@@ -125,7 +123,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 	 * @param data
 	 * @private
 	 */
-	_onUploadComplete: function (event, data)
+	_onUploadComplete: function(event, data)
 	{
 		var html = $(data.result.html);
 		$('head').append(data.result.css);

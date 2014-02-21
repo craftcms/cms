@@ -1,8 +1,8 @@
 /**
  * Editable table class
  */
-Craft.EditableTable = Garnish.Base.extend({
-
+Craft.EditableTable = Garnish.Base.extend(
+{
 	id: null,
 	baseName: null,
 	columns: null,
@@ -150,8 +150,8 @@ Craft.EditableTable = Garnish.Base.extend({
 /**
  * Editable table row class
  */
-Craft.EditableTable.Row = Garnish.Base.extend({
-
+Craft.EditableTable.Row = Garnish.Base.extend(
+{
 	table: null,
 	id: null,
 	niceTexts: null,

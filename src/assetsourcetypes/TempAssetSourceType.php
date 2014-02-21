@@ -6,7 +6,6 @@ namespace Craft;
  */
 class TempAssetSourceType extends LocalAssetSourceType
 {
-
 	protected $_isSourceLocal = true;
 
 	const sourceName = "Temporary source";

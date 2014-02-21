@@ -1,8 +1,8 @@
 /**
  * Entry index class
  */
-Craft.EntryIndex = Craft.BaseElementIndex.extend({
-
+Craft.EntryIndex = Craft.BaseElementIndex.extend(
+{
 	getDefaultSourceKey: function()
 	{
 		if (this.settings.context == 'index' && typeof defaultSectionHandle != 'undefined')

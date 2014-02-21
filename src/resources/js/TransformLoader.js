@@ -15,8 +15,8 @@ TransformLoader = function(placeholderUrl, entityPlaceholderUrl, spinnerUrl, gen
 };
 
 
-TransformLoader.prototype = {
-
+TransformLoader.prototype =
+{
 	bind: function(func, args)
 	{
 		var obj = this;

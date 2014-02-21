@@ -20,11 +20,13 @@
 			}
 		},
 
-		onImageSave: function (response) {
+		onImageSave: function(response)
+		{
 			refreshImage(response);
 		},
 
-		onImageDelete: function (response) {
+		onImageDelete: function(response)
+		{
 			refreshImage(response);
 		}
 

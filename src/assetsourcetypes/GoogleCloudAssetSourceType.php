@@ -8,7 +8,6 @@ craft()->requirePackage(CraftPackage::Cloud);
  */
 class GoogleCloudAssetSourceType extends BaseAssetSourceType
 {
-
 	/**
 	 * @var string
 	 */
@@ -130,7 +129,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		$prefix = $this->_getPathPrefix();
 		$fileList = $this->_googleCloud->getBucket($settings->bucket, $prefix);
 
-		$fileList = array_filter($fileList, function ($value) {
+		$fileList = array_filter($fileList, function($value)
+		{
 			$path = $value['name'];
 
 			$segments = explode('/', $path);
@@ -539,7 +539,6 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
 	{
-
 		$this->_prepareForRequests();
 		return (bool) $this->_googleCloud->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$parentFolder->path.$folderName);
 
@@ -567,7 +566,6 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
 	{
-
 		$newFullPath = $this->_getPathPrefix().$this->_getParentFullPath($folder->path).$newName.'/';
 
 		$this->_prepareForRequests();

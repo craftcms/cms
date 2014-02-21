@@ -1,8 +1,8 @@
 /**
  * Admin table class
  */
-Craft.AdminTable = Garnish.Base.extend({
-
+Craft.AdminTable = Garnish.Base.extend(
+{
 	settings: null,
 	totalObjects: null,
 	sorter: null,
@@ -84,8 +84,8 @@ Craft.AdminTable = Garnish.Base.extend({
 			ids: JSON.stringify(ids)
 		};
 
-		Craft.postActionRequest(this.settings.reorderAction, data, $.proxy(function(response, textStatus) {
-
+		Craft.postActionRequest(this.settings.reorderAction, data, $.proxy(function(response, textStatus)
+		{
 			if (textStatus == 'success')
 			{
 				if (response.success)
@@ -115,8 +115,8 @@ Craft.AdminTable = Garnish.Base.extend({
 
 		if (this.confirmDeleteObject($row))
 		{
-			Craft.postActionRequest(this.settings.deleteAction, { id: id }, $.proxy(function(response, textStatus) {
-
+			Craft.postActionRequest(this.settings.deleteAction, { id: id }, $.proxy(function(response, textStatus)
+			{
 				if (textStatus == 'success')
 				{
 					if (response.success)

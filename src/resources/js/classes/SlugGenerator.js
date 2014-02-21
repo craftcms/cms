@@ -1,8 +1,8 @@
 /**
  * Slug Generator
  */
-Craft.SlugGenerator = Craft.BaseInputGenerator.extend({
-
+Craft.SlugGenerator = Craft.BaseInputGenerator.extend(
+{
 	generateTargetValue: function(sourceVal)
 	{
 		// Remove HTML tags

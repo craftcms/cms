@@ -59,8 +59,8 @@
 {% endset %}
 
 {% set js %}
-	new Craft.Locales({
-
+	new Craft.Locales(
+	{
 		{%- for locale in craft.i18n.getAllLocales() %}
 			{%- if not loop.first %},{% endif -%}
 			'{{ locale.id }}': '{{ locale.name }}'

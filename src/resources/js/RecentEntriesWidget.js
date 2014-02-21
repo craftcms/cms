@@ -1,8 +1,8 @@
 (function($) {
 
 
-Craft.RecentEntriesWidget = Garnish.Base.extend({
-
+Craft.RecentEntriesWidget = Garnish.Base.extend(
+{
 	params: null,
 	$widget: null,
 	$body: null,

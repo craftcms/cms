@@ -147,7 +147,6 @@ class AssetIndexTool extends BaseTool
 				// Is this the last source to finish up?
 				if (craft()->httpSession->get('assetsTotalSourcesToIndex', 0) <= craft()->httpSession->get('assetsTotalSourcesIndexed', 0))
 				{
-
 					$sourceIds = craft()->httpSession->get('assetsSourcesBeingIndexed', array());
 					$missingFiles = craft()->assetIndexing->getMissingFiles($sourceIds, $params['sessionId']);
 					$missingFolders = craft()->httpSession->get('assetsMissingFolders', array());
@@ -173,7 +172,6 @@ class AssetIndexTool extends BaseTool
 		}
 		else if (!empty($params['finish']))
 		{
-
 			if (!empty($params['deleteFile']) && is_array($params['deleteFile']))
 			{
 				craft()->assetIndexing->removeObsoleteFileRecords($params['deleteFile']);

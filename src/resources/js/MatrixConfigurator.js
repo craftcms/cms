@@ -4,8 +4,8 @@
 /**
  * Matrix configurator class
  */
-Craft.MatrixConfigurator = Garnish.Base.extend({
-
+Craft.MatrixConfigurator = Garnish.Base.extend(
+{
 	fieldTypeInfo: null,
 
 	inputNamePrefix: null,
@@ -159,8 +159,8 @@ Craft.MatrixConfigurator = Garnish.Base.extend({
 /**
  * Block type settings modal class
  */
-var BlockTypeSettingsModal = Garnish.Modal.extend({
-
+var BlockTypeSettingsModal = Garnish.Modal.extend(
+{
 	init: function()
 	{
 		this.base();
@@ -303,8 +303,8 @@ var BlockTypeSettingsModal = Garnish.Modal.extend({
 /**
  * Block type class
  */
-var BlockType = Garnish.Base.extend({
-
+var BlockType = Garnish.Base.extend(
+{
 	configurator: null,
 	id: null,
 	errors: null,
@@ -490,8 +490,8 @@ var BlockType = Garnish.Base.extend({
 });
 
 
-Field = Garnish.Base.extend({
-
+Field = Garnish.Base.extend(
+{
 	configurator: null,
 	blockType: null,
 	id: null,

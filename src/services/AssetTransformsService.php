@@ -236,12 +236,9 @@ class AssetTransformsService extends BaseApplicationComponent
 
 					default:
 					{
-
 						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height, true, $transform->position)->saveAs($targetFile);
 						break;
-
 					}
-
 				}
 
 				clearstatcache(true, $targetFile);

@@ -6,7 +6,6 @@ namespace Craft;
  */
 class AssetFolderModel extends BaseModel
 {
-
 	/**
 	 * @var array
 	 */

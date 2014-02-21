@@ -1,8 +1,8 @@
 (function($) {
 
 
-var CP = Garnish.Base.extend({
-
+var CP = Garnish.Base.extend(
+{
 	$alerts: null,
 	$header: null,
 	$nav: null,
@@ -713,8 +713,8 @@ var CP = Garnish.Base.extend({
 
 				if (confirm(Craft.t('Are you sure you want to transfer your license to this domain?')))
 				{
-					Craft.postActionRequest('app/transferLicenseToCurrentDomain', $.proxy(function(response, textStatus) {
-
+					Craft.postActionRequest('app/transferLicenseToCurrentDomain', $.proxy(function(response, textStatus)
+					{
 						if (textStatus == 'success')
 						{
 							if (response.success)
@@ -748,8 +748,8 @@ var CP = Garnish.Base.extend({
 					message: $link.prop('className').substr(5)
 				};
 
-				Craft.postActionRequest('app/shunCpAlert', data, $.proxy(function(response, textStatus) {
-
+				Craft.postActionRequest('app/shunCpAlert', data, $.proxy(function(response, textStatus)
+				{
 					if (textStatus == 'success')
 					{
 						if (response.success)

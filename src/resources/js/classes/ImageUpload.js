@@ -24,8 +24,8 @@
 /**
  * Image Upload tool.
  */
-Craft.ImageUpload = Garnish.Base.extend({
-
+Craft.ImageUpload = Garnish.Base.extend(
+{
 	_imageHandler: null,
 
 	init: function(settings)
@@ -74,8 +74,8 @@ Craft.ImageUpload = Garnish.Base.extend({
 });
 
 
-Craft.ImageHandler = Garnish.Base.extend({
-
+Craft.ImageHandler = Garnish.Base.extend(
+{
 	modal: null,
 	progressBar: null,
 	$container: null,
@@ -104,17 +104,19 @@ Craft.ImageHandler = Garnish.Base.extend({
 			action:     Craft.actionUrl + '/' + this.settings.uploadAction,
 			formData:   this.settings.postParameters,
 			events:     {
-				fileuploadstart: $.proxy(function () {
+				fileuploadstart: $.proxy(function()
+				{
 					this.$container.addClass('uploading');
 					this.progressBar.resetProgressBar();
 					this.progressBar.showProgressBar();
 				}, this),
-				fileuploadprogressall: $.proxy(function (data) {
+				fileuploadprogressall: $.proxy(function(data)
+				{
 					var progress = parseInt(data.loaded / data.total * 100, 10);
 					this.progressBar.setProgressPercentage(progress);
 				}, this),
-				fileuploaddone: $.proxy(function (event, data) {
-
+				fileuploaddone: $.proxy(function(event, data)
+				{
 					this.progressBar.hideProgressBar();
 					this.$container.removeClass('uploading');
 
@@ -171,8 +173,8 @@ Craft.ImageHandler = Garnish.Base.extend({
 			if (confirm(settings.deleteMessage))
 			{
 				$(this).parent().append('<div class="blocking-modal"></div>');
-				Craft.postActionRequest(settings.deleteAction, settings.postParameters, $.proxy(function(response, textStatus) {
-
+				Craft.postActionRequest(settings.deleteAction, settings.postParameters, $.proxy(function(response, textStatus)
+				{
 					if (textStatus == 'success')
 					{
 						_this.onImageDelete.apply(_this, [response]);
@@ -182,7 +184,7 @@ Craft.ImageHandler = Garnish.Base.extend({
 
 			}
 		});
-		$(settings.uploadButton).on('click', function (event)
+		$(settings.uploadButton).on('click', function(event)
 		{
 			$(this).siblings('input[type=file]').click();
 		});
@@ -201,8 +203,8 @@ Craft.ImageHandler = Garnish.Base.extend({
 });
 
 
-Craft.ImageModal = Garnish.Modal.extend({
-
+Craft.ImageModal = Garnish.Modal.extend(
+{
 	$container: null,
 	$saveBtn: null,
 	$cancelBtn: null,
@@ -237,7 +239,6 @@ Craft.ImageModal = Garnish.Modal.extend({
 
 	saveImage: function()
 	{
-
 		var selection = this.areaSelect.getSelection();
 		var params = {
 			x1: Math.round(selection.x1 / this.factor),
@@ -249,8 +250,8 @@ Craft.ImageModal = Garnish.Modal.extend({
 
 		params = $.extend(this._postParameters, params);
 
-		Craft.postActionRequest(this._cropAction, params, $.proxy(function(response, textStatus) {
-
+		Craft.postActionRequest(this._cropAction, params, $.proxy(function(response, textStatus)
+		{
 			if (textStatus == 'success')
 			{
 				if (response.error)
@@ -280,8 +281,8 @@ Craft.ImageModal = Garnish.Modal.extend({
 });
 
 
-Craft.ImageAreaTool = Garnish.Base.extend({
-
+Craft.ImageAreaTool = Garnish.Base.extend(
+{
 	$container: null,
 
 	init: function(settings)

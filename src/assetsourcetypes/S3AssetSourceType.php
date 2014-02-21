@@ -8,7 +8,6 @@ craft()->requirePackage(CraftPackage::Cloud);
  */
 class S3AssetSourceType extends BaseAssetSourceType
 {
-
 	/**
 	 * A list of predefined endpoints.
 	 *
@@ -153,7 +152,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$prefix = $this->_getPathPrefix();
 		$fileList = $this->_s3->getBucket($settings->bucket, $prefix);
 
-		$fileList = array_filter($fileList, function ($value) {
+		$fileList = array_filter($fileList, function($value)
+		{
 			$path = $value['name'];
 
 			$segments = explode('/', $path);
@@ -562,7 +562,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
 	{
-
 		$this->_prepareForRequests();
 		return (bool) $this->_s3->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$parentFolder->path.$folderName);
 
@@ -590,7 +589,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
 	{
-
 		$newFullPath = $this->_getPathPrefix().$this->_getParentFullPath($folder->path).$newName.'/';
 
 		$this->_prepareForRequests();

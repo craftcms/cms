@@ -1,8 +1,8 @@
 (function($) {
 
 
-var Routes = Garnish.Base.extend({
-
+var Routes = Garnish.Base.extend(
+{
 	tokens: null,
 	routes: null,
 	$container: null,
@@ -47,8 +47,8 @@ var Routes = Garnish.Base.extend({
 			data['routeIds['+i+']'] = $($routes[i]).attr('data-id');
 		}
 
-		Craft.postActionRequest('routes/updateRouteOrder', data, $.proxy(function(response, textStatus) {
-
+		Craft.postActionRequest('routes/updateRouteOrder', data, $.proxy(function(response, textStatus)
+		{
 			if (textStatus == 'success')
 			{
 				if (response.success)
@@ -72,8 +72,8 @@ var Routes = Garnish.Base.extend({
 });
 
 
-var Route = Garnish.Base.extend({
-
+var Route = Garnish.Base.extend(
+{
 	$container: null,
 	id: null,
 	$url: null,
@@ -119,8 +119,8 @@ var Route = Garnish.Base.extend({
 });
 
 
-var RouteSettingsModal = Garnish.Modal.extend({
-
+var RouteSettingsModal = Garnish.Modal.extend(
+{
 	route: null,
 	$heading: null,
 	$urlInput: null,
@@ -333,8 +333,8 @@ var RouteSettingsModal = Garnish.Modal.extend({
 		this.$saveBtn.addClass('active');
 		this.$spinner.show();
 
-		Craft.postActionRequest('routes/saveRoute', data, $.proxy(function(response, textStatus) {
-
+		Craft.postActionRequest('routes/saveRoute', data, $.proxy(function(response, textStatus)
+		{
 			this.$saveBtn.removeClass('active');
 			this.$spinner.hide();
 			this.loading = false;

@@ -1,8 +1,8 @@
 (function($) {
 
 
-var EmailMessages = Garnish.Base.extend({
-
+var EmailMessages = Garnish.Base.extend(
+{
 	messages: null,
 
 	init: function()
@@ -22,8 +22,8 @@ var EmailMessages = Garnish.Base.extend({
 });
 
 
-var Message = Garnish.Base.extend({
-
+var Message = Garnish.Base.extend(
+{
 	$container: null,
 	key: null,
 	$subject: null,
@@ -64,8 +64,8 @@ var Message = Garnish.Base.extend({
 });
 
 
-var MessageSettingsModal = Garnish.Modal.extend({
-
+var MessageSettingsModal = Garnish.Modal.extend(
+{
 	message: null,
 
 	$localeSelect: null,
@@ -167,8 +167,8 @@ var MessageSettingsModal = Garnish.Modal.extend({
 		this.$saveBtn.addClass('active');
 		this.$spinner.show();
 
-		Craft.postActionRequest('emailMessages/saveMessage', data, $.proxy(function(response, textStatus) {
-
+		Craft.postActionRequest('emailMessages/saveMessage', data, $.proxy(function(response, textStatus)
+		{
 			this.$saveBtn.removeClass('active');
 			this.$spinner.hide();
 			this.loading = false;

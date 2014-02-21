@@ -1,8 +1,8 @@
 /**
  * Element editor
  */
-Craft.ElementEditor = Garnish.Base.extend({
-
+Craft.ElementEditor = Garnish.Base.extend(
+{
 	$element: null,
 	elementId: null,
 	locale: null,

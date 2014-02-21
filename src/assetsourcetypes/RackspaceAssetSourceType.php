@@ -8,7 +8,6 @@ craft()->requirePackage(CraftPackage::Cloud);
  */
 class RackspaceAssetSourceType extends BaseAssetSourceType
 {
-
 	const RackspaceUSAuthHost = 'https://identity.api.rackspacecloud.com/v1.0';
 	const RackspaceUKAuthHost = 'https://lon.identity.api.rackspacecloud.com/v1.0';
 
@@ -74,7 +73,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	public function getContainerList()
 	{
-
 		$response = $this->_doAuthenticatedRequest(static::RackspaceCDNOperation, '?format=json');
 
 		$extractedResponse = static::_extractRequestResponse($response);
@@ -119,7 +117,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			return array('error' => $exception->getMessage());
 		}
 
-		$fileList = array_filter($fileList, function ($value) {
+		$fileList = array_filter($fileList, function($value)
+		{
 			$path = $value->name;
 
 			$segments = explode('/', $path);
@@ -343,7 +342,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	*/
 	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
 	{
-
 		$targetFile = $this->_getPathPrefix().$fileModel->getFolder()->path.'_'.ltrim($handle, '_').'/'.$fileModel->filename;
 
 		// Upload file
@@ -367,7 +365,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
-
 		$prefix = $this->_getPathPrefix().$folder->path;
 
 		$files = $this->_getFileList($prefix);
@@ -516,7 +513,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 			foreach ($transforms as $location)
 			{
-
 				$sourceUri = $this->_prepareRequestURI($originatingSettings->container, $baseFromPath.$location.'/'.$file->filename);
 				$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $baseToPath.$location.'/'.$fileName);
 				$this->_copyFile($sourceUri, $targetUri);
@@ -608,7 +604,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
-
 		$container = $this->getSettings()->container;
 		$objectsToDelete = $this->_getFileList($this->_getPathPrefix().$parentFolder->path.$folderName);
 
@@ -807,7 +802,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	private function _getObjectInfo($path)
 	{
-
 		$target = $this->_prepareRequestURI($this->getSettings()->container, $path);
 		$response = $this->_doAuthenticatedRequest(static::RackspaceStorageOperation, $target, 'HEAD');
 
@@ -1029,7 +1023,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	public function _uploadFile($targetUri, $sourceFile)
 	{
-
 		$fileSize = IOHelper::getFileSize($sourceFile);
 		$fp = fopen($sourceFile, "r");
 

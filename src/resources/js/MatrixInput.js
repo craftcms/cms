@@ -4,8 +4,8 @@
 /**
  * Matrix input class
  */
-Craft.MatrixInput = Garnish.Base.extend({
-
+Craft.MatrixInput = Garnish.Base.extend(
+{
 	id: null,
 	blockTypes: null,
 	blockTypesByHandle: null,
@@ -230,8 +230,8 @@ Craft.MatrixInput = Garnish.Base.extend({
 });
 
 
-var MatrixBlock = Garnish.Base.extend({
-
+var MatrixBlock = Garnish.Base.extend(
+{
 	matrix: null,
 	$container: null,
 	$fieldsContainer: null,

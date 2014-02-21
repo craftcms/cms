@@ -317,7 +317,6 @@ class UsersController extends BaseController
 				// If the user can't access the CP, then send them to the front-end activateAccountSuccessPath.
 				if (!$userToValidate->can('accessCp'))
 				{
-
 					$url = UrlHelper::getUrl(craft()->config->getLocalized('activateAccountSuccessPath'));
 					$this->redirect($url);
 				}

@@ -1,8 +1,8 @@
 /**
  * Password Input
  */
-Craft.PasswordInput = Garnish.Base.extend({
-
+Craft.PasswordInput = Garnish.Base.extend(
+{
 	$passwordInput: null,
 	$textInput: null,
 	$currentInput: null,

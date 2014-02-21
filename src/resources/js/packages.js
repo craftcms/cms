@@ -1,8 +1,8 @@
 (function($) {
 
 
-Craft.PackageChooser = Garnish.Base.extend({
-
+Craft.PackageChooser = Garnish.Base.extend(
+{
 	settings: null,
 	$container: null,
 	packages: null,
@@ -407,8 +407,8 @@ Craft.PackageChooser = Garnish.Base.extend({
 				'package': pkg
 			};
 
-			Craft.postActionRequest('app/beginPackageTrial', data, $.proxy(function(response, textStatus) {
-
+			Craft.postActionRequest('app/beginPackageTrial', data, $.proxy(function(response, textStatus)
+			{
 				if (textStatus == 'success')
 				{
 					if (response.success)
@@ -450,8 +450,8 @@ Craft.PackageChooser = Garnish.Base.extend({
 			'package': pkg
 		};
 
-		Craft.postActionRequest('app/'+action+'Package', data, $.proxy(function(response, textStatus) {
-
+		Craft.postActionRequest('app/'+action+'Package', data, $.proxy(function(response, textStatus)
+		{
 			if (textStatus == 'success')
 			{
 				if (response.success)

@@ -6,7 +6,6 @@ namespace Craft;
  */
 class FolderCriteriaModel extends BaseModel
 {
-
 	/**
 	 * Has no parent folders.
 	 */

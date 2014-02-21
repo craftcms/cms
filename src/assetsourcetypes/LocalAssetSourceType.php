@@ -6,7 +6,6 @@ namespace Craft;
  */
 class LocalAssetSourceType extends BaseAssetSourceType
 {
-
 	protected $_isSourceLocal = true;
 
 	/**
@@ -83,7 +82,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		if ($fileList && is_array($fileList) && count($fileList) > 0)
 		{
-			$fileList = array_filter($fileList, function ($value) use ($localPath)
+			$fileList = array_filter($fileList, function($value) use ($localPath)
 			{
 				$path = mb_substr($value, mb_strlen($localPath));
 				$segments = explode('/', $path);

@@ -1,8 +1,8 @@
 /**
  * Asset selector modal class
  */
-Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend({
-
+Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
+{
 	$selectTransformBtn: null,
 	$transformSpinner: null,
 	_selectedTransform: null,

@@ -1,5 +1,5 @@
-Craft.FieldLayoutDesigner = Garnish.Base.extend({
-
+Craft.FieldLayoutDesigner = Garnish.Base.extend(
+{
 	$container: null,
 	$tabContainer: null,
 	$unusedFieldContainer: null,
@@ -268,8 +268,8 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
 });
 
 
-Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
-
+Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend(
+{
 	designer: null,
 	$insertion: null,
 	showingInsertion: false,
@@ -516,8 +516,8 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
 });
 
 
-Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
-
+Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend(
+{
 	itemSelector: '> div.fld-tab',
 	addToTabGrid: true,
 
@@ -615,8 +615,8 @@ Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
 });
 
 
-Craft.FieldLayoutDesigner.FieldDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
-
+Craft.FieldLayoutDesigner.FieldDrag = Craft.FieldLayoutDesigner.BaseDrag.extend(
+{
 	itemSelector: '> div.fld-tab .fld-field',
 
 	/**

@@ -1,5 +1,5 @@
-test( 'Craft.getUrl()', function() {
-
+test( 'Craft.getUrl()', function()
+{
 	// Setup for a site with path info
 	Craft.baseUrl = 'http://craft.dev/admin';
 	Craft.baseCpUrl = 'http://craft.dev/admin';

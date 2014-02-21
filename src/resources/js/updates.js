@@ -1,8 +1,8 @@
 (function($) {
 
 
-Craft.UpdateInfo = Garnish.Base.extend({
-
+Craft.UpdateInfo = Garnish.Base.extend(
+{
 	appUpdateInfo: null,
 
 	$container: null,

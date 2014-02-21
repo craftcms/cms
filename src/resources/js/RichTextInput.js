@@ -4,8 +4,8 @@
 /**
  * Rich Text input class
  */
-Craft.RichTextInput = Garnish.Base.extend({
-
+Craft.RichTextInput = Garnish.Base.extend(
+{
 	id: null,
 
 	init: function(id, sectionSources, elementLocale, redactorConfig, redactorLang)

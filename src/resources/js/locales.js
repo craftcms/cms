@@ -1,8 +1,8 @@
 (function($) {
 
 
-Craft.Locales = Garnish.Base.extend({
-
+Craft.Locales = Garnish.Base.extend(
+{
 	$addLocaleField: null,
 	$addLocaleInput: null,
 	$addLocaleSpinner: null,
@@ -251,8 +251,8 @@ Craft.Locales = Garnish.Base.extend({
 
 		var id = $activeLocale.attr('data-id');
 
-		Craft.postActionRequest('localization/addLocale', { id: id }, $.proxy(function(response, textStatus) {
-
+		Craft.postActionRequest('localization/addLocale', { id: id }, $.proxy(function(response, textStatus)
+		{
 			this.$addLocaleSpinner.addClass('hidden');
 
 			if (textStatus == 'success')

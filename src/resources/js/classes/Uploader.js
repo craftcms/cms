@@ -1,8 +1,8 @@
 /**
  * File Manager.
  */
-Craft.Uploader = Garnish.Base.extend({
-
+Craft.Uploader = Garnish.Base.extend(
+{
     uploader: null,
 	allowedKinds: null,
 	_rejectedFiles: [],
@@ -38,7 +38,8 @@ Craft.Uploader = Garnish.Base.extend({
 
 		if (settings.dropZone != null)
 		{
-			$(document).bind('drop dragover', function (e) {
+			$(document).bind('drop dragover', function(e)
+			{
 				e.preventDefault();
 			});
 		}
@@ -53,7 +54,7 @@ Craft.Uploader = Garnish.Base.extend({
      * Set uploader parameters
      * @param paramObject
      */
-    setParams: function (paramObject)
+    setParams: function(paramObject)
     {
         this.uploader.fileupload('option', {formData: paramObject});
     },
@@ -62,7 +63,7 @@ Craft.Uploader = Garnish.Base.extend({
      * Get the number of uploads in progress
      * @returns {*}
      */
-    getInProgress: function ()
+    getInProgress: function()
     {
         return this.uploader.fileupload('active');
     },
@@ -71,7 +72,7 @@ Craft.Uploader = Garnish.Base.extend({
 	 * Return true, if this is the last upload
 	 * @returns {boolean}
 	 */
-	isLastUpload: function ()
+	isLastUpload: function()
 	{
 		return this.getInProgress() == 1;
 	},
@@ -79,7 +80,7 @@ Craft.Uploader = Garnish.Base.extend({
 	/**
 	 * Called on file add
 	 */
-	onFileAdd: function (e, data)
+	onFileAdd: function(e, data)
 	{
 		e.stopPropagation();
 
@@ -99,7 +100,7 @@ Craft.Uploader = Garnish.Base.extend({
 			}
 		}
 
-		data.process().done($.proxy(function ()
+		data.process().done($.proxy(function()
 		{
 			var file = data.files[0];
 			var matches = file.name.match(/\.([a-z0-4_]+)$/i);
@@ -124,7 +125,7 @@ Craft.Uploader = Garnish.Base.extend({
 		return true;
 	},
 
-	processErrorMessages: function ()
+	processErrorMessages: function()
 	{
 		if (this._rejectedFiles.length)
 		{

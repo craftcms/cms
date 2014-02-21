@@ -1,8 +1,8 @@
 /**
  * Handle Generator
  */
-Craft.EntryUrlFormatGenerator = Craft.BaseInputGenerator.extend({
-
+Craft.EntryUrlFormatGenerator = Craft.BaseInputGenerator.extend(
+{
 	generateTargetValue: function(sourceVal)
 	{
 		// Remove HTML tags

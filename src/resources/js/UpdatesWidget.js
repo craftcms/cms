@@ -1,7 +1,7 @@
 (function($) {
 
-Craft.UpdatesWidget = Garnish.Base.extend({
-
+Craft.UpdatesWidget = Garnish.Base.extend(
+{
 	$widget: null,
 	$body: null,
 	$btn: null,

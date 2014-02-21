@@ -1,5 +1,5 @@
-Craft.FeedWidget = Garnish.Base.extend({
-
+Craft.FeedWidget = Garnish.Base.extend(
+{
 	$widget: null,
 
 	init: function(widgetId, url, limit)
@@ -12,8 +12,8 @@ Craft.FeedWidget = Garnish.Base.extend({
 			limit: limit
 		};
 
-		Craft.postActionRequest('dashboard/getFeedItems', data, $.proxy(function(response, textStatus) {
-
+		Craft.postActionRequest('dashboard/getFeedItems', data, $.proxy(function(response, textStatus)
+		{
 			this.$widget.removeClass('loading');
 
 			if (textStatus == 'success')

@@ -1,8 +1,8 @@
 (function($) {
 
 
-Craft.EntryTypeSwitcher = Garnish.Base.extend({
-
+Craft.EntryTypeSwitcher = Garnish.Base.extend(
+{
 	$form: null,
 	$typeSelect: null,
 	$spinner: null,

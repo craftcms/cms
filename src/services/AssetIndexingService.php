@@ -6,7 +6,6 @@ namespace Craft;
  */
 class AssetIndexingService extends BaseApplicationComponent
 {
-
 	/**
 	 * Returns a unique indexing session id.
 	 *

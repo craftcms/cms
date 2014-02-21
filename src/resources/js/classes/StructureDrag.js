@@ -1,8 +1,8 @@
 /**
  * Structure drag class
  */
-Craft.StructureDrag = Garnish.Drag.extend({
-
+Craft.StructureDrag = Garnish.Drag.extend(
+{
 	structure: null,
 	maxLevels: null,
 	draggeeLevel: null,
@@ -374,8 +374,8 @@ Craft.StructureDrag = Garnish.Drag.extend({
 					parentId:    this.$draggee.parent('ul').parent('li').children('.row').children('.element').data('id')
 				};
 
-				Craft.postActionRequest('structures/moveElement', data, function(response, textStatus) {
-
+				Craft.postActionRequest('structures/moveElement', data, function(response, textStatus)
+				{
 					if (textStatus == 'success')
 					{
 						Craft.cp.displayNotice(Craft.t('New order saved.'));

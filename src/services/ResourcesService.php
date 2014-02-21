@@ -6,7 +6,6 @@ namespace Craft;
  */
 class ResourcesService extends BaseApplicationComponent
 {
-
 	const DefaultUserphotoFilename = 'user.gif';
 
 	public $dateParam;

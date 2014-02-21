@@ -21,7 +21,7 @@ Craft.PromptHandler = Garnish.Base.extend({
 
     },
 
-    resetPrompts: function ()
+    resetPrompts: function()
     {
         this._prompts = [];
         this._promptBatchCallback = $.noop;
@@ -29,17 +29,17 @@ Craft.PromptHandler = Garnish.Base.extend({
         this._promptBatchNum = 0;
     },
 
-    addPrompt: function (prompt)
+    addPrompt: function(prompt)
     {
         this._prompts.push(prompt);
     },
 
-    getPromptCount: function ()
+    getPromptCount: function()
     {
         return this._prompts.length;
     },
 
-    showBatchPrompts: function (callback)
+    showBatchPrompts: function(callback)
     {
         this._promptBatchCallback = callback;
         this._promptBatchReturnData = [];

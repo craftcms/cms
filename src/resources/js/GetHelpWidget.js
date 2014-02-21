@@ -1,8 +1,8 @@
 (function($) {
 
 
-	Craft.GetHelpWidget = Garnish.Base.extend({
-
+	Craft.GetHelpWidget = Garnish.Base.extend(
+	{
 		widgetId: 0,
 		loading: false,
 

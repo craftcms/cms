@@ -33,7 +33,6 @@ class AssetsController extends BaseController
 	 */
 	public function actionExpressUpload()
 	{
-
 		$this->requireAjaxRequest();
 		$fieldId = craft()->request->getPost('fieldId', 0);
 		$entryId = craft()->request->getPost('entryId', 0);

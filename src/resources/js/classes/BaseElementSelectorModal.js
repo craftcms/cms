@@ -1,8 +1,8 @@
 /**
  * Element selector modal class
  */
-Craft.BaseElementSelectorModal = Garnish.Modal.extend({
-
+Craft.BaseElementSelectorModal = Garnish.Modal.extend(
+{
 	elementType: null,
 	elementIndex: null,
 	elementSelect: null,
@@ -53,8 +53,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 				sources:     this.settings.sources
 			};
 
-			Craft.postActionRequest('elements/getModalBody', data, $.proxy(function(response, textStatus) {
-
+			Craft.postActionRequest('elements/getModalBody', data, $.proxy(function(response, textStatus)
+			{
 				if (textStatus == 'success')
 				{
 					this.$body.html(response);

@@ -1,5 +1,5 @@
-Craft.Grid = Garnish.Base.extend({
-
+Craft.Grid = Garnish.Base.extend(
+{
 	$container: null,
 
 	$items: null,

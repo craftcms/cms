@@ -1,7 +1,7 @@
 (function($) {
 
-Craft.Installer = Garnish.Base.extend({
-
+Craft.Installer = Garnish.Base.extend(
+{
 	$bg: null,
 	$screens: null,
 	$currentScreen: null,
@@ -59,8 +59,8 @@ Craft.Installer = Garnish.Base.extend({
 
 	showInstallScreen: function()
 	{
-		this.showScreen(3, $.proxy(function() {
-
+		this.showScreen(3, $.proxy(function()
+		{
 			var inputs = ['username', 'email', 'password', 'siteName', 'siteUrl', 'locale'];
 
 			var data = {};
@@ -172,8 +172,8 @@ Craft.Installer = Garnish.Base.extend({
 			data[input] = Garnish.getInputPostVal($input);
 		}
 
-		Craft.postActionRequest(action, data, $.proxy(function(response, textStatus) {
-
+		Craft.postActionRequest(action, data, $.proxy(function(response, textStatus)
+		{
 			this.loading = false;
 			$submitBtn.removeClass('sel loading');
 
