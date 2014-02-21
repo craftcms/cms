@@ -99,7 +99,7 @@ class AssetsFieldType extends BaseElementFieldType
 		if ($settings->useSingleFolder)
 		{
 			// Is this a saved element and can the path be resolved then?
-			if ($this->element->id)
+			if (!empty($this->element->id))
 			{
 				$folderPath = 'folder:'.$this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
 			}
