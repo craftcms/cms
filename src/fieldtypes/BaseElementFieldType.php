@@ -166,10 +166,9 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 *
 	 * @param string $name
 	 * @param mixed  $criteria
-	 * @param array $variables additional variables for the template
 	 * @return string
 	 */
-	public function getInputHtml($name, $criteria, $variables = array())
+	public function getInputHtml($name, $criteria)
 	{
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
@@ -180,26 +179,15 @@ abstract class BaseElementFieldType extends BaseFieldType
 		$criteria->status = null;
 		$criteria->localeEnabled = null;
 
-		$selectionCriteria = array(
-			'localeEnabled' => null
-		);
+		$selectionCriteria = $this->getInputSelectionCriteria();
+		$selectionCriteria['localeEnabled'] = null;
 
 		if (isset($this->element))
 		{
 			$selectionCriteria['locale'] = $this->element->locale;
 		}
-		$selectionCriteria = array_merge($selectionCriteria, $this->getSelectionCriteria());
 
-		if ($this->allowMultipleSources)
-		{
-			$sources = $this->getSettings()->sources;
-		}
-		else
-		{
-			$sources = array($this->getSettings()->source);
-		}
-
-		$templateVariables = array(
+		$variables = array(
 			'jsClass'            => $this->inputJsClass,
 			'elementType'        => new ElementTypeVariable($this->getElementType()),
 			'id'                 => craft()->templates->formatInputId($name),
@@ -207,16 +195,14 @@ abstract class BaseElementFieldType extends BaseFieldType
 			'storageKey'         => 'field.'.$this->model->id,
 			'name'               => $name,
 			'elements'           => $criteria,
-			'sources'            => $sources,
+			'sources'            => $this->getInputSources(),
 			'criteria'           => $selectionCriteria,
 			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
 			'limit'              => ($this->allowLimit ? $this->getSettings()->limit : null),
 			'addButtonLabel'     => $this->getAddButtonLabel(),
 		);
 
-		$templateVariables = array_merge($templateVariables, $variables);
-
-		return craft()->templates->render($this->inputTemplate, $templateVariables);
+		return craft()->templates->render($this->inputTemplate, $variables);
 	}
 
 	/**
@@ -280,11 +266,30 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Add additional selection criteria
+	 * Returns an array of the source keys the field should be able to select elements from.
 	 *
+	 * @access protected
 	 * @return array
 	 */
-	protected function getSelectionCriteria()
+	protected function getInputSources()
+	{
+		if ($this->allowMultipleSources)
+		{
+			$sources = $this->getSettings()->sources;
+		}
+		else
+		{
+			$sources = array($this->getSettings()->source);
+		}
+	}
+
+	/**
+	 * Returns any additional criteria parameters limiting which elements the field should be able to select.
+	 *
+	 * @access protected
+	 * @return array
+	 */
+	protected function getInputSelectionCriteria()
 	{
 		return array();
 	}
