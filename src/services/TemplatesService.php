@@ -145,6 +145,12 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function renderObjectTemplate($template, $object)
 	{
+		// If there are no dynamic tags, just return the template
+		if (strpos($template, '{') === false)
+		{
+			return $template;
+		}
+
 		// Get a Twig instance with the String template loader
 		$twig = $this->getTwig('Twig_Loader_String');
 
