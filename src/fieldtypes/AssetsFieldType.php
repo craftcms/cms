@@ -201,7 +201,7 @@ class AssetsFieldType extends BaseElementFieldType
 			}
 		}
 
-		if (empty($uploadedFiles) && !$this->getSettings()->useSingleFolder)
+		if (empty($uploadedFiles) && $this->getSettings()->useSingleFolder)
 		{
 			// No uploaded files, just good old-fashioned Assets field
 			$filesToMove = $this->element->getContent()->{$handle};
