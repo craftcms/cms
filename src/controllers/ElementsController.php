@@ -17,10 +17,10 @@ class ElementsController extends BaseController
 		$context = craft()->request->getParam('context');
 		$elementType = $this->_getElementType();
 
-		$sources = array();
-
 		if (is_array($sourceKeys))
 		{
+			$sources = array();
+
 			foreach ($sourceKeys as $key)
 			{
 				$source = $elementType->getSource($key, $context);
@@ -30,6 +30,10 @@ class ElementsController extends BaseController
 					$sources[$key] = $source;
 				}
 			}
+		}
+		else
+		{
+			$sources = $elementType->getSources($context);
 		}
 
 		$this->renderTemplate('_elements/modalbody', array(
