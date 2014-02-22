@@ -23,15 +23,22 @@ class ConfigService extends BaseApplicationComponent
 	private $_cacheDuration;
 	private $_omitScriptNameInUrls;
 	private $_usePathInfo;
+	private $_loadedConfigFiles = array();
 
 	/**
 	 * Returns a config item value, or null if it doesn't exist.
 	 *
 	 * @param string $item
+	 * @param string $file
 	 * @return mixed
 	 */
-	public function get($item)
+	public function get($item, $file = 'general')
 	{
+		if (!isset($this->_loadedConfigFiles[$file]))
+		{
+			$this->_loadConfigFile($file);
+		}
+
 		// If we're looking for devMode and we it looks like we're on the installer and it's a CP request, pretend like devMode is turned on.
 		if (!craft()->isConsole() && $item == 'devMode' && craft()->request->getSegment(1) == 'install' && craft()->request->isCpRequest())
 		{
@@ -39,9 +46,9 @@ class ConfigService extends BaseApplicationComponent
 		}
 		else
 		{
-			if (isset($this->generalConfig[$item]))
+			if (isset($this->_loadedConfigFiles[$file][$item]))
 			{
-				return $this->generalConfig[$item];
+				return $this->_loadedConfigFiles[$file][$item];
 			}
 		}
 	}
@@ -50,11 +57,17 @@ class ConfigService extends BaseApplicationComponent
 	 * Sets a config item value.
 	 *
 	 * @param string $item
-	 * @param mixed $value
+	 * @param mixed  $value
+	 * @param string $file
 	 */
-	public function set($item, $value)
+	public function set($item, $value, $file = 'general')
 	{
-		$this->generalConfig[$item] = $value;
+		if (!isset($this->_loadedConfigFiles[$file]))
+		{
+			$this->_loadConfigFile($file);
+		}
+
+		$this->_loadedConfigFiles[$file][$item] = $value;
 	}
 
 	/**
@@ -64,9 +77,9 @@ class ConfigService extends BaseApplicationComponent
 	 * @param string|null $localeId
 	 * @return mixed
 	 */
-	public function getLocalized($item, $localeId = null)
+	public function getLocalized($item, $localeId = null, $file = 'general')
 	{
-		$value = $this->get($item);
+		$value = $this->get($item, $file);
 
 		if (is_array($value))
 		{
@@ -480,6 +493,71 @@ class ConfigService extends BaseApplicationComponent
 		else
 		{
 			return $this->get('resourceTrigger');
+		}
+	}
+
+	/**
+	 * @param $file
+	 */
+	private function _loadConfigFile($file)
+	{
+		$defaultsPath = CRAFT_APP_PATH.'etc/config/defaults/'.$file.'.php';
+		if (IOHelper::fileExists($defaultsPath))
+		{
+			$defaultsConfig = @require_once($defaultsPath);
+		}
+
+		// Little extra logic for the general config file.
+		if ($file == ConfigFile::General)
+		{
+			// Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
+			if (file_exists(CRAFT_CONFIG_PATH.'general.php'))
+			{
+				if (is_array($customConfig = @include(CRAFT_CONFIG_PATH.'general.php')))
+				{
+					$this->_mergeConfigs($defaultsConfig, $customConfig);
+				}
+			}
+			else if (file_exists(CRAFT_CONFIG_PATH.'blocks.php'))
+			{
+				// Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
+				if (is_array($customConfig = require_once(CRAFT_CONFIG_PATH.'blocks.php')))
+				{
+					$this->_mergeConfigs($defaultsConfig, $customConfig);
+				}
+				else if (isset($blocksConfig))
+				{
+					$defaultsConfig = array_merge($defaultsConfig, $blocksConfig);
+					unset($blocksConfig);
+				}
+			}
+		}
+
+		$this->_loadedConfigFiles[$file] = $defaultsConfig;
+	}
+
+	/**
+	 * Merges a base config array with a custom config array, taking environment-specific configs into account.
+	 *
+	 * @param array &$baseConfig
+	 * @param array $customConfig
+	 */
+	private function _mergeConfigs(&$baseConfig, $customConfig)
+	{
+		// Is this a multi-environment config?
+		if (array_key_exists('*', $customConfig))
+		{
+			foreach ($customConfig as $env => $envConfig)
+			{
+				if ($env == '*' || strpos(CRAFT_ENVIRONMENT, $env) !== false)
+				{
+					$baseConfig = array_merge($baseConfig, $envConfig);
+				}
+			}
+		}
+		else
+		{
+			$baseConfig = array_merge($baseConfig, $customConfig);
 		}
 	}
 }

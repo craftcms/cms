@@ -112,7 +112,7 @@ class DbBackup
 	{
 		Craft::log('Nuking DB');
 
-		$databaseName = craft()->config->getDbItem('database');
+		$databaseName = craft()->config->get('database', ConfigFile::Db);
 
 		$sql = 'SET FOREIGN_KEY_CHECKS = 0;'.PHP_EOL.PHP_EOL;
 

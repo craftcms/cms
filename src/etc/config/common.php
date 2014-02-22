@@ -1,106 +1,11 @@
 <?php
 
-// Load the deafult configs
-$generalConfig = require_once(CRAFT_APP_PATH.'etc/config/defaults/general.php');
-$dbConfig = require_once(CRAFT_APP_PATH.'etc/config/defaults/db.php');
-
-/**
- * Merges a base config array with a custom config array,
- * taking environment-specific configs into account.
- *
- * @param array &$baseConfig
- * @param array $customConfig
- */
-function mergeConfigs(&$baseConfig, $customConfig)
-{
-	// Is this a multi-environment config?
-	if (array_key_exists('*', $customConfig))
-	{
-		foreach ($customConfig as $env => $envConfig)
-		{
-			if ($env == '*' || strpos(CRAFT_ENVIRONMENT, $env) !== false)
-			{
-				$baseConfig = array_merge($baseConfig, $envConfig);
-			}
-		}
-	}
-	else
-	{
-		$baseConfig = array_merge($baseConfig, $customConfig);
-	}
-}
-
-/**
- * Returns the correct connection string depending on whether a unixSocket is specific or not in the db config.
- *
- * @param $dbConfig
- * @return string
- */
-function processConnectionString($dbConfig)
-{
-	if (!empty($dbConfig['unixSocket']))
-	{
-		return strtolower('mysql:unix_socket='.$dbConfig['unixSocket'].';dbname=').$dbConfig['database'].';';
-	}
-	else
-	{
-		return strtolower('mysql:host='.$dbConfig['server'].';dbname=').$dbConfig['database'].strtolower(';port='.$dbConfig['port'].';');
-	}
-}
-
-// Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
-if (file_exists(CRAFT_CONFIG_PATH.'general.php'))
-{
-	if (is_array($customGeneralConfig = @include(CRAFT_CONFIG_PATH.'general.php')))
-	{
-		mergeConfigs($generalConfig, $customGeneralConfig);
-	}
-}
-else if (file_exists(CRAFT_CONFIG_PATH.'blocks.php'))
-{
-	// Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
-	if (is_array($customGeneralConfig = require_once(CRAFT_CONFIG_PATH.'blocks.php')))
-	{
-		mergeConfigs($generalConfig, $customGeneralConfig);
-	}
-	else if (isset($blocksConfig))
-	{
-		$generalConfig = array_merge($generalConfig, $blocksConfig);
-		unset($blocksConfig);
-	}
-}
-
-// Originally db.php defined a $dbConfig variable.
-if (is_array($customDbConfig = require_once(CRAFT_CONFIG_PATH.'db.php')))
-{
-	mergeConfigs($dbConfig, $customDbConfig);
-}
-
-if ($generalConfig['devMode'] == true)
-{
-	error_reporting(E_ALL & ~E_STRICT);
-	ini_set('display_errors', 1);
-}
-else
-{
-	error_reporting(0);
-	ini_set('display_errors', 0);
-}
+// Initially set it here.  WebApp->init() will check devMode and override appropriately.
+error_reporting(E_ALL & ~E_STRICT);
+ini_set('display_errors', 1);
 
 ini_set('log_errors', 1);
 ini_set('error_log', CRAFT_STORAGE_PATH.'runtime/logs/phperrors.log');
-
-// Table prefixes cannot be longer than 5 characters
-$tablePrefix = rtrim($dbConfig['tablePrefix'], '_');
-if ($tablePrefix)
-{
-	if (strlen($tablePrefix) > 5)
-	{
-		$tablePrefix = substr($tablePrefix, 0, 5);
-	}
-
-	$tablePrefix .= '_';
-}
 
 $configArray = array(
 
@@ -118,20 +23,12 @@ $configArray = array(
 	'components' => array(
 
 		'db' => array(
-			'connectionString'  => processConnectionString($dbConfig),
-			'emulatePrepare'    => true,
-			'username'          => $dbConfig['user'],
-			'password'          => $dbConfig['password'],
-			'charset'           => $dbConfig['charset'],
-			'tablePrefix'       => $tablePrefix,
 			'driverMap'         => array('mysql' => 'Craft\MysqlSchema'),
 			'class'             => 'Craft\DbConnection',
 		),
 
 		'config' => array(
 			'class'         => 'Craft\ConfigService',
-			'generalConfig' => $generalConfig,
-			'dbConfig'      => $dbConfig,
 		),
 
 		'i18n' => array(
@@ -327,12 +224,8 @@ $components['plugins'] = array(
 	)
 );
 
-// Plugins: This is for experimental use only.
-// The Element Type API is likely to change before this config setting is removed.
-if (!empty($generalConfig['enablePluginElementTypes']))
-{
-	$components['plugins']['componentTypes']['element'] = array('subfolder' => 'elementtypes', 'suffix' => 'ElementType', 'instanceof' => 'IElementType');
-}
+// Enable element types
+$components['plugins']['componentTypes']['element'] = array('subfolder' => 'elementtypes', 'suffix' => 'ElementType', 'instanceof' => 'IElementType');
 
 // Publish Pro package components
 $components['pkgComponents']['PublishPro']['entryRevisions']['class'] = 'Craft\EntryRevisionsService';

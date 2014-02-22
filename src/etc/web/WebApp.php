@@ -19,6 +19,7 @@ namespace Craft;
  * @property EtService                   $et                   The E.T. service
  * @property FeedsService                $feeds                The feeds service
  * @property FieldsService               $fields               The fields service
+ * @property FileCache                   $fileCache            File caching
  * @property GlobalsService              $globals              The globals service
  * @property HttpRequestService          $request              The request service
  * @property HttpSessionService          $httpSession          The HTTP session service
@@ -76,6 +77,17 @@ class WebApp extends \CWebApplication
 		foreach ($this->componentAliases as $alias)
 		{
 			Craft::import($alias);
+		}
+
+		if ($this->config->get('devMode') == true)
+		{
+			error_reporting(E_ALL & ~E_STRICT);
+			ini_set('display_errors', 1);
+		}
+		else
+		{
+			error_reporting(0);
+			ini_set('display_errors', 0);
 		}
 
 		// So we can try to translate Yii framework strings
@@ -900,12 +912,12 @@ class WebApp extends \CWebApplication
 	{
 		$messages = array();
 
-		$databaseServerName = craft()->config->getDbItem('server');
-		$databaseAuthName = craft()->config->getDbItem('user');
-		$databaseName = craft()->config->getDbItem('database');
-		$databasePort = craft()->config->getDbItem('port');
-		$databaseCharset = craft()->config->getDbItem('charset');
-		$databaseCollation = craft()->config->getDbItem('collation');
+		$databaseServerName = craft()->config->get('server', ConfigFile::Db);
+		$databaseAuthName = craft()->config->get('user', ConfigFile::Db);
+		$databaseName = craft()->config->get('database', ConfigFile::Db);
+		$databasePort = craft()->config->get('port', ConfigFile::Db);
+		$databaseCharset = craft()->config->get('charset', ConfigFile::Db);
+		$databaseCollation = craft()->config->get('collation', ConfigFile::Db);
 
 		if (StringHelper::isNullOrEmpty($databaseServerName))
 		{
