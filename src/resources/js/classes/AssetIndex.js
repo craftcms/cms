@@ -3,8 +3,8 @@
  */
 Craft.AssetIndex = Craft.BaseElementIndex.extend(
 {
-	$buttons: null,
 	$uploadButton: null,
+	$uploadInput: null,
 	$progressBar: null,
 	$folders: null,
 	$previouslySelectedFolder: null,
@@ -690,15 +690,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 */
 	onAfterHtmlInit: function()
 	{
-		if (!this.$buttons)
-		{
-			this.$buttons = $('<div class="buttons"></div>').prependTo(this.$sidebar);
-		}
-
 		if (!this.$uploadButton)
 		{
-			this.$uploadButton = $('<div class="assets-upload"><div class="assets-uploader"><a href="javascript:;" class="btn submit assets-upload-button" data-icon="↑" style="position: relative; overflow: hidden; direction: ltr; " role="button">' + Craft.t('Upload files') + '</a></div></div>').prependTo(this.$buttons);
-			var $uploadInput = $('<input type="file" multiple="multiple" name="assets-upload" id="assets-upload" />').hide().prependTo(this.$buttons);
+			this.$uploadButton = $('<div class="btn submit assets-upload-button" data-icon="↑" style="position: relative; overflow: hidden; direction: ltr; " role="button">' + Craft.t('Upload files') + '</div>');
+			this.addButton(this.$uploadButton);
+
+			this.$uploadInput = $('<input type="file" multiple="multiple" name="assets-upload" />').hide().insertBefore(this.$uploadButton);
 		}
 
 		this.promptHandler = new Craft.PromptHandler();
@@ -706,7 +703,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 		var options = {
 			url: Craft.getActionUrl('assets/uploadFile'),
-			fileInput: $uploadInput
+			fileInput: this.$uploadInput
 		};
 
 		options.events = {
@@ -720,13 +717,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			options.allowedKinds = this.settings.criteria.kind;
 		}
 
-
 		this.uploader = new Craft.Uploader (this.$uploadButton, options);
 		this.$uploadButton.on('click', $.proxy(function()
 		{
 			if (!this.isIndexBusy)
 			{
-				this.$buttons.find('input[type=file]').click();
+				this.$uploadInput.trigger('click');
 			}
 		}, this));
 

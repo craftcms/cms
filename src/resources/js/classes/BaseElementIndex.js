@@ -35,6 +35,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	$loadingMoreSpinner: null,
 	$sidebar: null,
+	showingSidebar: null,
 	$sources: null,
 	sourceKey: null,
 	$source: null,
@@ -79,6 +80,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$sources = this.$sidebar.find('nav a');
 		this.$sourceToggles = this.$sidebar.find('.toggle');
 		this.$elements = this.$container.find('.elements:first');
+
+		this.showingSidebar = (this.$sidebar.length && !this.$sidebar.hasClass('hidden'));
 
 		// View Mode buttons
 		this.viewModeBtns = {};
@@ -667,6 +670,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.elementSelect = obj;
 	},
 
+	addButton: function($button)
+	{
+		if (this.showingSidebar)
+		{
+			$('<div class="buttons"/>').prependTo(this.$sidebar).append($button);
+		}
+		else
+		{
+			$('<td class="thin"/>').prependTo(this.$toolbar.find('tr:first')).append($button);
+		}
+	},
+
 	addCallback: function(currentCallback, newCallback)
 	{
 		return $.proxy(function() {
@@ -678,13 +693,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}, this);
 	},
 
-	setIndexBusy: function() {
+	setIndexBusy: function()
+	{
 		this.$mainSpinner.removeClass('hidden');
 		this.isIndexBusy = true;
 		this.$elements.fadeTo('fast', 0.5);
 	},
 
-	setIndexAvailable: function() {
+	setIndexAvailable: function()
+	{
 		this.$mainSpinner.addClass('hidden');
 		this.isIndexBusy = false;
 		this.$elements.fadeTo('fast', 1);

@@ -748,7 +748,8 @@ ul.tree,
 
 /* element selector modals */
 .elementselectormodal { margin-left: -350px; width: 705px; @include unselectable; }
-.elementselectormodal .body { position: relative; height: 350px; padding-left: 218px; }
+.elementselectormodal .body { position: relative; height: 350px; }
+.elementselectormodal .body.has-sidebar { padding-left: 218px; }
 .elementselectormodal .body .spinner.big { position: absolute; top: 205px; left: 350px; margin: -24px 0 0 -24px; }
 
 .elementselectormodal .body .sidebar { padding-right: 0; border-right: 1px solid #e5e5e5; height: 350px; overflow: auto; }

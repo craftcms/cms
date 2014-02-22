@@ -59,6 +59,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 				{
 					this.$body.html(response);
 
+					if (this.$body.has('.sidebar:not(.hidden)').length)
+					{
+						this.$body.addClass('has-sidebar');
+					}
+
 					// Initialize the element index
 					this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
 						context:            'modal',
