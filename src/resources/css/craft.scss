@@ -444,7 +444,7 @@ h2 + .actions { margin-top: -54px; }
 table thead th { font-weight: bold; text-align: left; vertical-align: top; font-size: 11px; line-height: 1.2; color: rgba(0,0,0,0.5); }
 table thead th.ordered { padding-right: 26px; background: $bgcolor url(../images/listview_sort.png) no-repeat 100% -4px;
 	-webkit-box-shadow: inset 0 1px 5px rgba(0,0,0,0.1);
-	   -moz-box-shadow: inset 0 1px 5px rgba(0,0,0,0.1);
+	        box-shadow: inset 0 1px 5px rgba(0,0,0,0.1);
 }
 table thead th.ordered.desc { background-position: 100% -35px; }
 table thead th.ordered:first-child { padding-left: 10px; }
