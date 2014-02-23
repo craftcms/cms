@@ -243,7 +243,7 @@ class SearchService extends BaseApplicationComponent
 		if ($cleanKeywords !== null && $cleanKeywords !== false && $cleanKeywords !== '')
 		{
 			// Add padding around keywords
-			$cleanKeywords = $this->_addPadding($cleanKeywords);
+			$cleanKeywords = ' '.$cleanKeywords.' ';
 		}
 
 		// Insert/update the row in searchindex
@@ -574,18 +574,6 @@ class SearchService extends BaseApplicationComponent
 		}
 
 		return $terms[$term];
-	}
-
-	/**
-	 * Add padding to keywords for storing in the DB.
-	 *
-	 * @access private
-	 * @param string $keywords
-	 * @return string
-	 */
-	private function _addPadding($keywords)
-	{
-		return " {$keywords} ";
 	}
 
 	/**
