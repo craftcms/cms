@@ -524,16 +524,8 @@ class SearchService extends BaseApplicationComponent
 					if ($term->exact)
 					{
 						// Create exact clause from term
-						if ($term->subLeft || $term->subRight)
-						{
-							$operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
-							$keywords = ($term->subLeft ? '%' : ' ') . $keywords . ($term->subRight ? '%' : ' ');
-						}
-						else
-						{
-							$operator = $term->exclude ? '!=' : '=';
-							$keywords = $this->_addPadding($keywords);
-						}
+						$operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
+						$keywords = ($term->subLeft ? '%' : ' ') . $keywords . ($term->subRight ? '%' : ' ');
 					}
 					else
 					{
