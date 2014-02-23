@@ -331,9 +331,25 @@ class TagsService extends BaseApplicationComponent
 				$tagRecord->id = $tag->id;
 
 				// Create a row in content
+
+				// This might be happening within a Matrix field
+				$contentService = craft()->content;
+
+				$originalContentTable      = $contentService->contentTable;
+				$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+				$originalFieldContext      = $contentService->fieldContext;
+
+				$contentService->contentTable      = 'content';
+				$contentService->fieldColumnPrefix = 'field_';
+				$contentService->fieldContext      = 'global';
+
 				$content = new ContentModel();
 				$content->elementId = $tag->id;
-				craft()->content->saveContent($content);
+				$contentService->saveContent($content);
+
+				$contentService->contentTable      = $originalContentTable;
+				$contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+				$contentService->fieldContext      = $originalFieldContext;
 			}
 
 			$tagRecord->save(false);
