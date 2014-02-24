@@ -674,7 +674,8 @@ class EntriesController extends BaseController
 
 		$entry->getContent()->title = craft()->request->getPost('title', $entry->title);
 
-		$fields = craft()->request->getPost('fields');
+		$fieldsLocation = craft()->request->getParam('fieldsLocation', 'fields');
+		$fields = craft()->request->getPost($fieldsLocation);
 		$entry->getContent()->setAttributes($fields);
 
 		$entry->parentId = craft()->request->getPost('parentId');
