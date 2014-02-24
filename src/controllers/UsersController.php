@@ -323,7 +323,15 @@ class UsersController extends BaseController
 				else
 				{
 					craft()->userSession->setNotice(Craft::t('Account activated.'));
-					$this->redirect(UrlHelper::getCpUrl('dashboard'));
+
+					if (craft()->request->getPost('redirect'))
+					{
+						$this->redirectToPostedUrl();
+					}
+					else
+					{
+						$this->redirect(UrlHelper::getCpUrl());
+					}
 				}
 			}
 		}
