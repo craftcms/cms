@@ -1,15 +1,19 @@
 {% import "_includes/forms" as forms %}
+{% set fieldNamespace = 'fields'~random() %}
 
 
 <form method="post" action="" accept-charset="UTF-8">
+	<input type="hidden" name="fieldsLocation" value="{{ fieldNamespace }}">
+
 	{{ forms.textField({
 		label: entryType.titleLabel|t,
 		id: 'title',
 		name: 'title',
-		required: true
+		required: true,
+		first: true
 	}) }}
 
-	{% namespace 'fields' %}
+	{% namespace fieldNamespace %}
 		{% for field in entryType.getFieldLayout().getFields() %}
 			{% if field.required or field.fieldId in settings.fields %}
 				{% include "_includes/field" with {
