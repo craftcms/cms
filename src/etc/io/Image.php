@@ -307,6 +307,9 @@ class Image
 	 */
 	private function _autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $maxQuality, $step = 0)
 	{
+		// Give ourselves some extra time.
+		@set_time_limit(30);
+
 		if ($step == 0)
 		{
 			$tempFileName = IOHelper::getFolderName($tempFileName).IOHelper::getFileName($tempFileName, false).'-temp.'.$extension;
@@ -324,8 +327,8 @@ class Image
 		$this->_image->save($tempFileName, $this->_getSaveOptions($midQuality));
 		$newFileSize = IOHelper::getFileSize($tempFileName);
 
-		// If we're on step 10 or we're within our acceptable range threshold, let's use the current image.
-		if ($step == 10 || abs(1 - $originalSize / $newFileSize) < $acceptableRange)
+		// If we're on step 10 OR we're within our acceptable range threshold OR midQuality = maxQuality (1 == 1), let's use the current image.
+		if ($step == 10 || abs(1 - $originalSize / $newFileSize) < $acceptableRange || $midQuality == $maxQuality)
 		{
 			clearstatcache();
 
