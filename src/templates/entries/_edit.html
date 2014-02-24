@@ -180,13 +180,13 @@
 						</div>
 
 						{% if entry.id and craft.hasPackage('PublishPro') %}
-							<input type="button" class="btn formsubmit" value="{{ 'Save as Draft'|t }}" data-action="entryRevisions/saveDraft" data-redirect="{{ entry.cpEditUrl }}/drafts/{draftId}">
+							<input type="button" class="btn formsubmit" value="{{ 'Save as a draft'|t }}" data-action="entryRevisions/saveDraft" data-redirect="{{ entry.cpEditUrl }}/drafts/{draftId}">
 						{% endif %}
 					{% else %}
 						{% if craft.hasPackage('PublishPro') %}
 							<input type="hidden" name="action" value="entryRevisions/saveDraft">
 							<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{draftId}">
-							<input type="submit" class="btn submit" value="{{ 'Save as Draft'|t }}">
+							<input type="submit" class="btn submit" value="{{ 'Save as a draft'|t }}">
 						{% endif %}
 					{% endif %}
 				{% endif %}
