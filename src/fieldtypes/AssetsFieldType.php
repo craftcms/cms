@@ -207,6 +207,7 @@ class AssetsFieldType extends BaseElementFieldType
 	 *
 	 * @access protected
 	 * @return array
+	 * @throws Exception
 	 */
 	protected function getInputSources()
 	{
