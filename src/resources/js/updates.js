@@ -42,7 +42,7 @@ Craft.UpdateInfo = Garnish.Base.extend(
 			else
 			{
 				var info = {
-					total: (response.app && response.app.releases ? 1 : 0),
+					total: (response.app && response.app.releases && response.app.releases.length ? 1 : 0),
 					critical: (response.app && response.criticalUpdateAvailable)
 				};
 
