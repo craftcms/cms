@@ -125,11 +125,6 @@ return array(
 'environmentVariables' => array(),
 
 /**
- * If set to true, Craft will lazy-load transforms upon page load. If set to false, Craft will generate transforms when it's aware of it being requested.
- */
-'generateTransformsAfterPageLoad' => true,
-
-/**
  *The template filenames Craft will look for within a directory to represent the directory’s “index” template when matching a template path to a file on the front end.
  */
 'indexTemplateFilenames' => array('index'),
