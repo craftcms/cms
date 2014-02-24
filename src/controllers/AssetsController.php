@@ -196,24 +196,24 @@ class AssetsController extends BaseController
 		// Make sure we're not in the middle of working on this transform from a separete request
 		if ($transformIndexModel->inProgress)
 		{
-			$safety = 0;
-
-			while ($safety < 100)
+			for ($safety = 0; $safety < 100; $safety++)
 			{
+				// Wait a second!
 				sleep(1);
+				ini_set('max_execution_time', 120);
+
 				$transformIndexModel = craft()->assetTransforms->getTransformIndexModelById($transformId);
 
-				ini_set('max_execution_time', 120);
-				// Seems like it's being worked on right now.
+				// Is it being worked on right now?
 				if ($transformIndexModel->inProgress)
 				{
+					// Make sure it hasn't been working for more than 30 seconds. Otherwise give up on the other request.
 					$time = new DateTime();
+
 					if ($time->getTimestamp() - $transformIndexModel->dateUpdated->getTimestamp() < 30)
 					{
-						$safety++;
 						continue;
 					}
-					// More than 30 seconds? Let's just create it ourselves.
 					else
 					{
 						$transformIndexModel->dateUpdated = new DateTime();
@@ -223,6 +223,7 @@ class AssetsController extends BaseController
 				}
 				else
 				{
+					// Must be done now!
 					break;
 				}
 			}
