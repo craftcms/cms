@@ -770,7 +770,14 @@ var CP = Garnish.Base.extend(
 
 	checkForUpdates: function()
 	{
-		this.postActionRequest('app/checkForUpdates', {}, $.proxy(this, 'displayUpdateInfo'));
+		this.postActionRequest('app/checkForUpdates', {}, $.proxy(function(info)
+		{
+			this.displayUpdateInfo(info);
+
+			this.trigger('checkForUpdates', {
+				updateInfo: info
+			});
+		}, this));
 	},
 
 	displayUpdateInfo: function(info)
@@ -799,10 +806,6 @@ var CP = Garnish.Base.extend(
 			// Footer link
 			$('#footer-updates').text(updateText);
 		}
-
-		this.trigger('checkForUpdates', {
-			updateInfo: info
-		});
 	}
 },
 {
