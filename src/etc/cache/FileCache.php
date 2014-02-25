@@ -15,7 +15,7 @@ class FileCache extends \CFileCache
 	public function init()
 	{
 		parent::init();
-		$this->setGCProbability(100);
+		$this->setGCProbability(craft()->config->get('gcProbability'));
 	}
 
 	/**
