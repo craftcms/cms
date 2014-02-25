@@ -762,7 +762,7 @@ return array(
 	'The template to use when the entry’s URL is requested.' => '入力URLを求めるときに使用するテンプレート。',
 	'The text that will be shown if the field doesn’t have a value.' => 'フィールドの値がないとき表示するテキスト',
 	'The transform “{handle}” cannot be found!' => 'トランスフォーム“{handle}” が見つかりません!!',
-	'The update can’t be installed. :( {message}' => '最新版をインストールできませんでした。:( {message}',
+	'The update can’t be installed :( {message}' => '最新版をインストールできませんでした :( {message}',
 	'The update was performed successfully, but there was a problem invalidating the update cache.' => 'アップデートは成功しましたが、アップデートのキャッシュの確認には問題がありました。',
 	'The update was performed successfully, but there was a problem setting the new info in the database info table.' => 'アップデートは成功しましたが、新しい情報をdatabase info tableに設定することに関して問題がありました。',
 	'The update was performed successfully, but there was a problem setting the new info in the plugins table.' => 'アップデートは成功しましたが、新しい情報をプラグインのテーブルに設定することに関して問題がありました。',

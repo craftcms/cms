@@ -108,7 +108,7 @@ Craft.Updater = Garnish.Base.extend(
 		if (this.$errorDetails)
 		{
 			this.$graphic.addClass('error');
-			var errorText = Craft.t('Craft was unable to install this update. :(') + '<br /><p>';
+			var errorText = Craft.t('Craft was unable to install this update :(') + '<br /><p>';
 
 			if (rollBack)
 			{
