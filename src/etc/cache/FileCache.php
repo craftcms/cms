@@ -10,15 +10,6 @@ class FileCache extends \CFileCache
 	private $_originalKey;
 
 	/**
-	 *
-	 */
-	public function init()
-	{
-		parent::init();
-		$this->setGCProbability(craft()->config->get('gcProbability'));
-	}
-
-	/**
 	 * Stores a value identified by a key into cache.
 	 * If the cache already contains such a key, the existing value and expiration time will be replaced with the new ones.
 	 *
