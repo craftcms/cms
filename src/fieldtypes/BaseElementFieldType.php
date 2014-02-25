@@ -281,6 +281,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 		{
 			$sources = array($this->getSettings()->source);
 		}
+
+		return $sources;
 	}
 
 	/**

@@ -130,67 +130,69 @@
 				{% endif %}
 			</div><!--/item-->
 
-			<div class="item" data-position="left" data-colspan="1">
-				{% if entry.id and entry.classHandle == 'EntryDraft' %}
+			{% if entry.classHandle != 'EntryVersion' %}
+				<div class="item" data-position="left" data-colspan="1">
+					<div class="buttons">
+						{% if entry.id and entry.classHandle == 'EntryDraft' %}
 
-					<input type="hidden" name="action" value="entryRevisions/saveDraft">
-					<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{{ entry.draftId }}">
-					<input type="hidden" name="draftId" value="{{ entry.draftId }}">
-					<input type="submit" class="btn submit" value="{{ 'Save Draft'|t }}">
-
-					{% if currentUser.can('publishEntries'~permissionSuffix) and (entry.creatorId == currentUser.id or currentUser.can('publishPeerEntryDrafts'~permissionSuffix)) %}
-						<input type="button" class="btn formsubmit" value="{{ 'Publish Draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.cpEditUrl }}">
-					{% endif %}
-
-					{% if currentUser.can('publishEntries'~permissionSuffix) and (entry.creatorId == currentUser.id or currentUser.can('deletePeerEntryDrafts'~permissionSuffix)) %}
-						<input type="button" class="btn formsubmit" value="{{ 'Delete Draft'|t }}" data-action="entryRevisions/deleteDraft"
-						   data-confirm="{{ 'Are you sure you want to delete this draft?'|t }}"
-						   data-redirect="{{ entry.cpEditUrl }}"/>
-					{% endif %}
-				{% elseif entry.id and entry.classHandle == 'EntryVersion' %}
-
-
-				{% else %}
-
-					{% if not entry.id or not entry.enabled or currentUser.can('publishEntries'~permissionSuffix) %}
-						<input type="hidden" name="action" value="entries/saveEntry">
-						<input type="hidden" name="redirect" value="entries">
-
-						<div class="btngroup">
-							<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
-
-							<div class="btn submit menubtn"></div>
-							<div class="menu">
-								<ul>
-									<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">{{ "Save and continue editing"|t }}</a></li>
-
-									{% set nextEntryParams = [] %}
-									{% if showEntryTypes %}
-										{% set nextEntryParams = nextEntryParams|merge(['typeId={type.id}']) %}
-									{% endif %}
-									{% if section.type == 'structure' and parentOptions|length > 1 %}
-										{% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
-									{% endif %}
-
-									{% if section.type != 'single' %}
-										<li><a class="formsubmit" data-redirect="entries/{{ section.handle }}/new{% if nextEntryParams %}?{{ nextEntryParams|join('&') }}{% endif %}">{{ "Save and add another"|t }}</a></li>
-									{% endif %}
-								</ul>
-							</div>
-						</div>
-
-						{% if entry.id and craft.hasPackage('PublishPro') %}
-							<input type="button" class="btn formsubmit" value="{{ 'Save as Draft'|t }}" data-action="entryRevisions/saveDraft" data-redirect="{{ entry.cpEditUrl }}/drafts/{draftId}">
-						{% endif %}
-					{% else %}
-						{% if craft.hasPackage('PublishPro') %}
 							<input type="hidden" name="action" value="entryRevisions/saveDraft">
-							<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{draftId}">
-							<input type="submit" class="btn submit" value="{{ 'Save as Draft'|t }}">
+							<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{{ entry.draftId }}">
+							<input type="hidden" name="draftId" value="{{ entry.draftId }}">
+							<input type="submit" class="btn submit first" value="{{ 'Save draft'|t }}">
+
+							{% if currentUser.can('publishEntries'~permissionSuffix) and (entry.creatorId == currentUser.id or currentUser.can('publishPeerEntryDrafts'~permissionSuffix)) %}
+								<input type="button" class="btn formsubmit" value="{{ 'Publish draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.cpEditUrl }}">
+							{% endif %}
+
+							{% if currentUser.can('publishEntries'~permissionSuffix) and (entry.creatorId == currentUser.id or currentUser.can('deletePeerEntryDrafts'~permissionSuffix)) %}
+								<input type="button" class="btn formsubmit" value="{{ 'Delete draft'|t }}" data-action="entryRevisions/deleteDraft"
+								   data-confirm="{{ 'Are you sure you want to delete this draft?'|t }}"
+								   data-redirect="{{ entry.cpEditUrl }}"/>
+							{% endif %}
+
+						{% else %}
+
+							{% if not entry.id or not entry.enabled or currentUser.can('publishEntries'~permissionSuffix) %}
+								<input type="hidden" name="action" value="entries/saveEntry">
+								<input type="hidden" name="redirect" value="entries">
+
+								<div class="btngroup first">
+									<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+
+									<div class="btn submit menubtn"></div>
+									<div class="menu">
+										<ul>
+											<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">{{ "Save and continue editing"|t }}</a></li>
+
+											{% set nextEntryParams = [] %}
+											{% if showEntryTypes %}
+												{% set nextEntryParams = nextEntryParams|merge(['typeId={type.id}']) %}
+											{% endif %}
+											{% if section.type == 'structure' and parentOptions|length > 1 %}
+												{% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
+											{% endif %}
+
+											{% if section.type != 'single' %}
+												<li><a class="formsubmit" data-redirect="entries/{{ section.handle }}/new{% if nextEntryParams %}?{{ nextEntryParams|join('&') }}{% endif %}">{{ "Save and add another"|t }}</a></li>
+											{% endif %}
+										</ul>
+									</div>
+								</div>
+
+								{% if entry.id and craft.hasPackage('PublishPro') %}
+									<input type="button" class="btn formsubmit" value="{{ 'Save as a draft'|t }}" data-action="entryRevisions/saveDraft" data-redirect="{{ entry.cpEditUrl }}/drafts/{draftId}">
+								{% endif %}
+							{% else %}
+								{% if craft.hasPackage('PublishPro') %}
+									<input type="hidden" name="action" value="entryRevisions/saveDraft">
+									<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{draftId}">
+									<input type="submit" class="btn submit first" value="{{ 'Save as a draft'|t }}">
+								{% endif %}
+							{% endif %}
 						{% endif %}
-					{% endif %}
-				{% endif %}
-			</div><!--/item-->
+					</div>
+				</div><!--/item-->
+			{% endif %}
 		</div><!--/grid-->
 	</form>
 {% endblock %}

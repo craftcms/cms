@@ -261,6 +261,8 @@ table.inputs td > .btngroup { float: none; }
 .buttons .btngroup { float: left; margin-left: 5px; }
 .buttons .btn:first-child,
 .buttons .btngroup:first-child,
+.buttons .btn.first,
+.buttons .btngroup.first,
 .buttons .btngroup .btn { margin-left: 0; }
 .buttons .btngroup .btn { float: none; }
 .buttons .btn + .btn { margin-left: 5px; }
