@@ -12,7 +12,7 @@ class AppBehavior extends BaseBehavior
 	private $_info;
 	private $_siteName;
 	private $_siteUrl;
-
+	private $_isDbConfigValid = false;
 	private $_packageList = array('Users', 'PublishPro', 'Localize', 'Cloud', 'Rebrand');
 
 	/**
@@ -390,17 +390,63 @@ class AppBehavior extends BaseBehavior
 	}
 
 	/**
-	 * Turns the system on or off.
+	 * Make sure the basics are in place in the db connection file before we actually try to connect later on.
 	 *
-	 * @access private
-	 * @param bool $value
-	 * @return bool
+	 * @throws DbConnectException
 	 */
-	private function _setSystemStatus($value)
+	public function validateDbConfigFile()
 	{
-		$info = $this->getInfo();
-		$info->on = $value;
-		return $this->saveInfo($info);
+		if ($this->_isDbConfigValid === null)
+		{
+			$messages = array();
+
+			$databaseServerName = craft()->config->getDbItem('server');
+			$databaseAuthName = craft()->config->getDbItem('user');
+			$databaseName = craft()->config->getDbItem('database');
+			$databasePort = craft()->config->getDbItem('port');
+			$databaseCharset = craft()->config->getDbItem('charset');
+			$databaseCollation = craft()->config->getDbItem('collation');
+
+			if (StringHelper::isNullOrEmpty($databaseServerName))
+			{
+				$messages[] = Craft::t('The database server name isn’t set in your db config file.');
+			}
+
+			if (StringHelper::isNullOrEmpty($databaseAuthName))
+			{
+				$messages[] = Craft::t('The database user name isn’t set in your db config file.');
+			}
+
+			if (StringHelper::isNullOrEmpty($databaseName))
+			{
+				$messages[] = Craft::t('The database name isn’t set in your db config file.');
+			}
+
+			if (StringHelper::isNullOrEmpty($databasePort))
+			{
+				$messages[] = Craft::t('The database port isn’t set in your db config file.');
+			}
+
+			if (StringHelper::isNullOrEmpty($databaseCharset))
+			{
+				$messages[] = Craft::t('The database charset isn’t set in your db config file.');
+			}
+
+			if (StringHelper::isNullOrEmpty($databaseCollation))
+			{
+				$messages[] = Craft::t('The database collation isn’t set in your db config file.');
+			}
+
+			if (!empty($messages))
+			{
+				$this->_isDbConfigValid = false;
+				throw new DbConnectException(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
+			}
+
+			$this->_isDbConfigValid = true;
+		}
+
+		return $this->_isDbConfigValid;
 	}
 
 	/**
