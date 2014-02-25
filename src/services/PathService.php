@@ -316,7 +316,13 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getCachePath()
 	{
-		$path = $this->getRuntimePath().'cache/';
+		$path = craft()->config->get('cachePath', ConfigFile::FileCache);
+
+		if (!$path)
+		{
+			$path = $this->getRuntimePath().'cache/';
+		}
+
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
