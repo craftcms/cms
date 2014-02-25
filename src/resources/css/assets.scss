@@ -9,7 +9,6 @@
 .assets-page-loading .folder-contents{ padding-bottom: 30px; background: url('../images/spinner.gif') no-repeat center bottom; }
 .thumb-wrapper { border: 5px solid #fff; background: url(../images/checkers.png) 0 0;
                  -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);
-                    -moz-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);
                          box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);}
 .icon-wrapper { border: 5px solid #fff;}
 
@@ -28,11 +27,6 @@
 #main .files.thumbs ul li { float: left; margin: 1px 0 0 1px; width: 110px; height: 128px; text-align: center; padding: 9px; }
 #main .files.thumbs ul li .thumb { background-repeat: no-repeat; background-position: 50% 50%; }
 #main .files.thumbs ul li .filename, ul.assets-tv-drag li .filename {  margin-top: 7px; font-size: 11px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; }
-
-/*-- uploader --*/
-
-.assets-upload { height: 31px; }
-#main .assets .spinner{ float: right;  }
 
 /*-- prompts --*/
 .assets-btn.btn{

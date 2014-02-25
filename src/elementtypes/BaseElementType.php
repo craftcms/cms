@@ -12,6 +12,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 */
 	protected $componentType = 'ElementType';
 
+	private $_sourcesByContext;
+
 	/**
 	 * Returns whether this element type has content.
 	 *
@@ -77,14 +79,22 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * Resolve a single source, that's set to something specific.
+	 * Returns a source by its key and context.
 	 *
-	 * @param $source
-	 * @return array|false
+	 * @param string $key
+	 * @param string|null $context
+	 * @return array|null
 	 */
-	public function resolveSingleSource($source)
+	public function getSource($key, $context)
 	{
-		return false;
+		$contextKey = ($context ? $context : '*');
+
+		if (!isset($this->_sourcesByContext[$contextKey]))
+		{
+			$this->_sourcesByContext[$contextKey] = $this->getSources($context);
+		}
+
+		return $this->_findSource($key, $this->_sourcesByContext[$contextKey]);
 	}
 
 	/**
@@ -295,5 +305,31 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	public function routeRequestForMatchedElement(BaseElementModel $element)
 	{
 		return false;
+	}
+
+	/**
+	 * Finds a source by its key, even if it's nested.
+	 *
+	 * @param array  $sources
+	 * @param string $key
+	 * @return array|null
+	 */
+	private function _findSource($key, $sources)
+	{
+		if (isset($sources[$key]))
+		{
+			return $sources[$key];
+		}
+		else
+		{
+			// Look through any nested sources
+			foreach ($sources as $key => $source)
+			{
+				if (!empty($source['nested']) && ($nestedSource = $this->_findSource($key, $source['nested'])))
+				{
+					return $nestedSource;
+				}
+			}
+		}
 	}
 }

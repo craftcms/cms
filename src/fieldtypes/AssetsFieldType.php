@@ -89,82 +89,13 @@ class AssetsFieldType extends BaseElementFieldType
 	 * @param string $name
 	 * @param mixed  $criteria
 	 * @return string
-	 * @throws Exception
 	 */
 	public function getInputHtml($name, $criteria)
 	{
-		// Look for the single folder setting
-		$settings = $this->getSettings();
-
-		if ($settings->useSingleFolder)
-		{
-			// If there's no dynamic tags in the subpath, or if the element has already been saved, we con use the real folder
-			if (!empty($this->element->id) || strpos($settings->singleUploadLocationSubpath, '{') === false)
-			{
-				$folderPath = 'folder:'.$this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
-			}
-			else
-			{
-				// New element, so we default to User's upload folder for this field
-				$userModel = craft()->userSession->getUser();
-
-				if (!$userModel)
-				{
-					throw new Exception(Craft::t("To use this Field, user must be logged in!"));
-				}
-
-				$userFolder = craft()->assets->getUserFolder($userModel);
-
-				$folderName = 'field_' . $this->model->id;
-				$elementFolder = craft()->assets->findFolder(array('parentId' => $userFolder->id, 'name' => $folderName));
-
-				if (!$elementFolder)
-				{
-					$folderId = $this->_createSubFolder($userFolder, $folderName);
-				}
-				else
-				{
-					$folderId = $elementFolder->id;
-				}
-
-				IOHelper::ensureFolderExists(craft()->path->getAssetsTempSourcePath().$folderName);
-				$folderPath = 'folder:'.$folderId;
-			}
-		}
-		else
-		{
-			$folderPath = null;
-		}
-
-		$variables = array();
-
-		// If we have a source path, override the source variable
-		if ($folderPath)
-		{
-			$variables['sources'] = $folderPath;
-		}
-		// If it's a list of source IDs, we need to convert them to their folder counterparts
-		elseif (is_array($settings->sources))
-		{
-			$sources = array();
-			foreach ($settings->sources as $source)
-			{
-				if (is_numeric($source))
-				{
-					$folder = craft()->assets->findFolder(array(
-						'sourceId' => $source,
-						'parentId' => FolderCriteriaModel::AssetsNoParent
-					));
-					$sources[] = 'folder:'.$folder->id;
-				}
-			}
-			$variables['sources'] = $sources;
-		}
-
 		craft()->templates->includeJsResource('lib/fileupload/jquery.ui.widget.js');
 		craft()->templates->includeJsResource('lib/fileupload/jquery.fileupload.js');
 
-		return parent::getInputHtml($name, $criteria, $variables);
+		return parent::getInputHtml($name, $criteria);
 	}
 
 	/**
@@ -272,8 +203,100 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
+	 * Returns an array of the source keys the field should be able to select elements from.
+	 *
+	 * @access protected
+	 * @return array
+	 * @throws Exception
+	 */
+	protected function getInputSources()
+	{
+		// Look for the single folder setting
+		$settings = $this->getSettings();
+
+		if ($settings->useSingleFolder)
+		{
+			// If there's no dynamic tags in the subpath, or if the element has already been saved, we con use the real folder
+			if (!empty($this->element->id) || strpos($settings->singleUploadLocationSubpath, '{') === false)
+			{
+				$folderPath = 'folder:'.$this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
+			}
+			else
+			{
+				// New element, so we default to User's upload folder for this field
+				$userModel = craft()->userSession->getUser();
+
+				if (!$userModel)
+				{
+					throw new Exception(Craft::t("To use this Field, user must be logged in!"));
+				}
+
+				$userFolder = craft()->assets->getUserFolder($userModel);
+
+				$folderName = 'field_' . $this->model->id;
+				$elementFolder = craft()->assets->findFolder(array('parentId' => $userFolder->id, 'name' => $folderName));
+
+				if (!$elementFolder)
+				{
+					$folderId = $this->_createSubFolder($userFolder, $folderName);
+				}
+				else
+				{
+					$folderId = $elementFolder->id;
+				}
+
+				IOHelper::ensureFolderExists(craft()->path->getAssetsTempSourcePath().$folderName);
+				$folderPath = 'folder:'.$folderId;
+			}
+
+			return array($folderPath);
+		}
+
+		$sources = array();
+
+		// If it's a list of source IDs, we need to convert them to their folder counterparts
+		if (is_array($settings->sources))
+		{
+			foreach ($settings->sources as $source)
+			{
+				if (is_numeric($source))
+				{
+					$folder = craft()->assets->findFolder(array(
+						'sourceId' => $source,
+						'parentId' => FolderCriteriaModel::AssetsNoParent
+					));
+
+					$sources[] = 'folder:'.$folder->id;
+				}
+			}
+		}
+
+		return $sources;
+	}
+
+	/**
+	 * Returns any additional criteria parameters limiting which elements the field should be able to select.
+	 *
+	 * @access protected
+	 * @return array
+	 */
+	protected function getInputSelectionCriteria()
+	{
+		$settings = $this->getSettings();
+		$allowedKinds = array();
+
+		if (isset($settings->restrictFiles) && !empty($settings->restrictFiles) && !empty($settings->allowedKinds))
+		{
+			$allowedKinds = $settings->allowedKinds;
+		}
+
+		return array('kind' => $allowedKinds);
+	}
+
+	/**
 	 * Resolve a source path to it's folder ID by the source path and the matched source beginning.
 	 *
+	 * @access private
 	 * @param int $sourceId
 	 * @param string $subpath
 	 * @return mixed
@@ -347,6 +370,7 @@ class AssetsFieldType extends BaseElementFieldType
 	/**
 	 * Create a subfolder in a folder by it's name.
 	 *
+	 * @access private
 	 * @param $currentFolder
 	 * @param $folderName
 	 * @return mixed|null
@@ -375,23 +399,4 @@ class AssetsFieldType extends BaseElementFieldType
 			return $folderId;
 		}
 	}
-
-	/**
-	 * Add additional selection criteria
-	 *
-	 * @return array
-	 */
-	protected function getSelectionCriteria()
-	{
-		$settings = $this->getSettings();
-		$allowedKinds = array();
-		if (isset($settings->restrictFiles) && !empty($settings->restrictFiles) && !empty($settings->allowedKinds))
-		{
-			$allowedKinds = $settings->allowedKinds;
-		}
-
-		return array('kind' => $allowedKinds);
-	}
-
-
 }

@@ -35,6 +35,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	$loadingMoreSpinner: null,
 	$sidebar: null,
+	showingSidebar: null,
 	$sources: null,
 	sourceKey: null,
 	$source: null,
@@ -79,6 +80,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$sources = this.$sidebar.find('nav a');
 		this.$sourceToggles = this.$sidebar.find('.toggle');
 		this.$elements = this.$container.find('.elements:first');
+
+		this.showingSidebar = (this.$sidebar.length && !this.$sidebar.hasClass('hidden'));
 
 		// View Mode buttons
 		this.viewModeBtns = {};
@@ -325,6 +328,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		if (!append)
 		{
 			this.$elements.html(response.html);
+			this.$scroller.scrollTop(0);
 
 			if (this.getSelectedSourceState('mode') == 'table')
 			{
@@ -356,10 +360,25 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 			this.addListener(this.$scroller, 'scroll', function()
 			{
-				if (
-					(this.$scroller[0] == Garnish.$win[0] && ( Garnish.$win.innerHeight() + Garnish.$bod.scrollTop() >= Garnish.$bod.height() )) ||
-					(this.$scroller.prop('scrollHeight') - this.$scroller.scrollTop() == this.$scroller.outerHeight())
-				)
+				if (this.$scroller[0] == Garnish.$win[0])
+				{
+					var winHeight = Garnish.$win.innerHeight(),
+						bodScrollTop = Garnish.$bod.scrollTop(),
+						bodHeight = Garnish.$bod.height();
+
+					var loadMore = (winHeight + bodScrollTop >= bodHeight);
+				}
+				else
+				{
+					var containerScrollHeight = this.$scroller.prop('scrollHeight'),
+						containerScrollTop = this.$scroller.scrollTop(),
+						containerHeight = this.$scroller.outerHeight();
+
+					var loadMore = (containerScrollHeight - containerScrollTop == containerHeight);
+
+				}
+
+				if (loadMore)
 				{
 					this.$loadingMoreSpinner.removeClass('hidden');
 					this.removeListener(this.$scroller, 'scroll');
@@ -667,6 +686,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.elementSelect = obj;
 	},
 
+	addButton: function($button)
+	{
+		if (this.showingSidebar)
+		{
+			$('<div class="buttons"/>').prependTo(this.$sidebar).append($button);
+		}
+		else
+		{
+			$('<td class="thin"/>').prependTo(this.$toolbar.find('tr:first')).append($button);
+		}
+	},
+
 	addCallback: function(currentCallback, newCallback)
 	{
 		return $.proxy(function() {
@@ -678,13 +709,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}, this);
 	},
 
-	setIndexBusy: function() {
+	setIndexBusy: function()
+	{
 		this.$mainSpinner.removeClass('hidden');
 		this.isIndexBusy = true;
 		this.$elements.fadeTo('fast', 0.5);
 	},
 
-	setIndexAvailable: function() {
+	setIndexAvailable: function()
+	{
 		this.$mainSpinner.addClass('hidden');
 		this.isIndexBusy = false;
 		this.$elements.fadeTo('fast', 1);

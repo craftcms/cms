@@ -217,7 +217,7 @@ return array(
 	'Craft requires the MySQL InnoDB storage engine to run.' => 'Craft heeft de MySQL InnoDB storage engine nodig.',
 	'Craft requires the PDO extension to operate.' => 'Craft heeft de PDO-extensie nodig.',
 	'Craft requires the PDO_MYSQL driver to operate.' => 'Craft heeft de PDO_MYSQL driver nodig.',
-	'Craft was unable to install this update. :(' => 'Craft was niet in staat om deze update te installeren. :(',
+	'Craft was unable to install this update :(' => 'Craft was niet in staat om deze update te installeren :(',
 	'Craft: a nice alternative to Word, if you’re making a website.' => 'Craft: een leuk alternatief voor Word, voor als u een website maakt.',
 	'Craft’s <a href="http://buildwithcraft.com/license" target="_blank">Terms and Conditions</a> have changed.' => 'De algemene voorwaarden<a href="http://buildwithcraft.com/license" target="_blank"> van Craft</a> zijn veranderd.',
 	'Create' => 'Creëer',

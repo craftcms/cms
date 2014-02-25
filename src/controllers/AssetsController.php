@@ -172,10 +172,7 @@ class AssetsController extends BaseController
 	 */
 	public function actionGenerateTransform()
 	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
-
-		$transformId = craft()->request->getPost('transformId');
+		$transformId = craft()->request->getQuery('transformId');
 
 		// If transform Id was not passed in, see if file id and handle were.
 		if (empty($transformId))
@@ -199,13 +196,36 @@ class AssetsController extends BaseController
 		// Make sure we're not in the middle of working on this transform from a separete request
 		if ($transformIndexModel->inProgress)
 		{
-			// If it's been > 30 seconds, give up on that one
-			$time = new DateTime();
-
-			if ($time->getTimestamp() - $transformIndexModel->dateUpdated->getTimestamp() < 30)
+			for ($safety = 0; $safety < 100; $safety++)
 			{
-				echo 'working';
-				craft()->end();
+				// Wait a second!
+				sleep(1);
+				ini_set('max_execution_time', 120);
+
+				$transformIndexModel = craft()->assetTransforms->getTransformIndexModelById($transformId);
+
+				// Is it being worked on right now?
+				if ($transformIndexModel->inProgress)
+				{
+					// Make sure it hasn't been working for more than 30 seconds. Otherwise give up on the other request.
+					$time = new DateTime();
+
+					if ($time->getTimestamp() - $transformIndexModel->dateUpdated->getTimestamp() < 30)
+					{
+						continue;
+					}
+					else
+					{
+						$transformIndexModel->dateUpdated = new DateTime();
+						craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
+						break;
+					}
+				}
+				else
+				{
+					// Must be done now!
+					break;
+				}
 			}
 		}
 
@@ -221,7 +241,7 @@ class AssetsController extends BaseController
 				$transformIndexModel->inProgress = 0;
 				$transformIndexModel->fileExists = 1;
 				craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
-				echo 'success:'.craft()->assetTransforms->getUrlforTransformByIndexId($transformId);
+				$this->redirect(craft()->assetTransforms->getUrlforTransformByIndexId($transformId), true, 302);
 				craft()->end();
 			}
 			else
@@ -234,8 +254,7 @@ class AssetsController extends BaseController
 
 		}
 
-		echo 'success:'.craft()->assetTransforms->getUrlforTransformByIndexId($transformId);
-		craft()->end();
+		$this->redirect(craft()->assetTransforms->getUrlforTransformByIndexId($transformId), true, 302);
 	}
 
 	/**

@@ -68,23 +68,25 @@ class AssetElementType extends BaseElementType
 	}
 
 	/**
-	 * Resolve a single source, that's set to something specific.
+	 * Returns a source by its key and context.
 	 *
-	 * @param $source
-	 * @return array|false
+	 * @param string $key
+	 * @param string|null $context
+	 * @return array|null
 	 */
-	public function resolveSingleSource($source)
+	public function getSource($key, $context)
 	{
-		if (preg_match('/folder:([0-9]+)/', $source, $matches))
+		if (preg_match('/folder:(\d+)/', $key, $matches))
 		{
-			$tree = craft()->assets->getFolderTreeByFolderId($matches[1]);
-			$tree[0]->name = Craft::t('Files');
-			return $this->_assembleSourceList($tree);
+			$folder = craft()->assets->getFolderById($matches[1]);
+
+			if ($folder)
+			{
+				return $this->_assembleSourceInfoForFolder($folder, false);
+			}
 		}
-		else
-		{
-			return false;
-		}
+
+		return parent::getSource($key, $context);
 	}
 
 	/**
@@ -280,25 +282,42 @@ class AssetElementType extends BaseElementType
 	 *
 	 * @access private
 	 * @param array $folders
-	 * @param bool  $nested
+	 * @param bool  $includeNestedFolders
 	 * @return array
 	 */
-	private function _assembleSourceList($folders, $nested = false)
+	private function _assembleSourceList($folders, $includeNestedFolders = true)
 	{
 		$sources = array();
 
 		foreach ($folders as $folder)
 		{
-			$key = 'folder:'.$folder->id;
-
-			$sources[$key] = array(
-				'label'     => $folder->name,
-				'hasThumbs' => true,
-				'criteria'  => array('folderId' => $folder->id),
-				'nested'    => $this->_assembleSourceList($folder->getChildren())
-			);
+			$sources['folder:'.$folder->id] = $this->_assembleSourceInfoForFolder($folder, $includeNestedFolders);
 		}
 
 		return $sources;
+	}
+
+	/**
+	 * Transforms an AssetFolderModel into a source info array.
+	 *
+	 * @access private
+	 * @param AssetFolderModel $folder
+	 * @param bool $includeNestedFolders
+	 * @return array
+	 */
+	private function _assembleSourceInfoForFolder(AssetFolderModel $folder, $includeNestedFolders = true)
+	{
+		$source = array(
+			'label'     => $folder->name,
+			'hasThumbs' => true,
+			'criteria'  => array('folderId' => $folder->id),
+		);
+
+		if ($includeNestedFolders)
+		{
+			$source['nested'] = $this->_assembleSourceList($folder->getChildren(), true);
+		}
+
+		return $source;
 	}
 }

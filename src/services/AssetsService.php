@@ -782,8 +782,6 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function getUrlForFile(AssetFileModel $file, $transform = null)
 	{
-		$returnPlaceholder = false;
-
 		if (!$transform || !ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename)))
 		{
 			$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
@@ -801,35 +799,7 @@ class AssetsService extends BaseApplicationComponent
 		}
 		else
 		{
-			if (craft()->config->get('generateTransformsAfterPageLoad'))
-			{
-				// File doesn't exist yet - load the TransformLoader and set the placeholder URL flag
-				$placeholderUrl = UrlHelper::getResourceUrl('images/blank.gif');
-
-				if (!$this->_includedTransformLoader)
-				{
-					$entityPlaceholderUrl = htmlspecialchars($placeholderUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-					$spinnerUrl = UrlHelper::getResourceurl('images/spinner_transform.gif');
-					$actionUrl  = UrlHelper::getActionUrl('assets/generateTransform');
-
-					craft()->templates->includeJsResource('js/TransformLoader.js');
-					craft()->templates->includeJs('new TransformLoader(' .
-						JsonHelper::encode($placeholderUrl).', ' .
-						JsonHelper::encode($entityPlaceholderUrl).', ' .
-						JsonHelper::encode($spinnerUrl).', ' .
-						JsonHelper::encode($actionUrl) .
-					');');
-
-					$this->_includedTransformLoader = true;
-				}
-
-				return $placeholderUrl.'#'.$existingTransformData->id;
-			}
-			else
-			{
-				craft()->assetTransforms->updateTransforms($file, array($transform));
-				return craft()->assetTransforms->getUrlforTransformByFile($file, $transform);
-			}
+			return UrlHelper::getActionUrl('assets/generateTransform', array('transformId' => $existingTransformData->id));
 		}
 	}
 
