@@ -79,8 +79,15 @@ class ClearCachesTool extends BaseTool
 			{
 				if (md5($allFolder) == $folder)
 				{
-					IOHelper::clearFolder($allFolder, true);
-					break;
+					if ($allFolder == 'dataCache')
+					{
+						craft()->cache->flush();
+					}
+					else
+					{
+						IOHelper::clearFolder($allFolder, true);
+						break;
+					}
 				}
 			}
 		}
@@ -98,7 +105,8 @@ class ClearCachesTool extends BaseTool
 		$runtimePath = craft()->path->getRuntimePath();
 
 		$folders = array(
-			$obfuscate ? md5($runtimePath.'cache') : $runtimePath.'cache'                           => Craft::t('File caches'),
+			$obfuscate ? md5('dataCache') : 'dataCache'                                             => Craft::t('Data cache'),
+			$obfuscate ? md5($runtimePath.'cache') : $runtimePath.'cache'                           => Craft::t('RSS cache'),
 			$obfuscate ? md5($runtimePath.'assets') : $runtimePath.'assets'                         => Craft::t('Asset thumbs'),
 			$obfuscate ? md5($runtimePath.'compiled_templates') : $runtimePath.'compiled_templates' => Craft::t('Compiled templates'),
 			$obfuscate ? md5($runtimePath.'temp') : $runtimePath.'temp'                             => Craft::t('Temp files'),
