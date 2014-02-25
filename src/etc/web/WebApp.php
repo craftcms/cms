@@ -181,13 +181,25 @@ class WebApp extends \CWebApplication
 			$this->updates->updateCraftVersionInfo();
 		}
 
-		// Make sure that the system is on, or that the user has permission to access the site/CP while the system is off
+		// Make sure that the system is on...
 		if (craft()->isSystemOn() ||
-			($this->request->isActionRequest() && $this->request->getActionSegments() == array('users', 'login')) ||
-			($this->request->isActionRequest() && $this->request->isCpRequest() && $this->request->getActionSegments() == array('users', 'forgotpassword')) ||
-			($this->request->isActionRequest() && $this->request->isCpRequest() && $this->request->getActionSegments() == array('users', 'setpassword')) ||
-			($this->request->isSiteRequest() && $this->userSession->checkPermission('accessSiteWhenSystemIsOff')) ||
-			($this->request->isCpRequest()) && $this->userSession->checkPermission('accessCpWhenSystemIsOff')
+			// ...or it's a CP request...
+			($this->request->isCpRequest() && (
+				// ...and the user has permission to access the CP when the site is off
+				$this->userSession->checkPermission('accessCpWhenSystemIsOff') ||
+				// ...or they're accessing the Login, Forgot Password, Set Password, or Validation pages
+				(($actionSegs = $this->request->getActionSegments()) && (
+					$actionSegs == array('users', 'login') ||
+					$actionSegs == array('users', 'forgotpassword') ||
+					$actionSegs == array('users', 'setpassword') ||
+					$actionSegs == array('users', 'validate')
+				))
+			)) ||
+			// ...or it's a site request...
+			($this->request->isSiteRequest() && (
+				// ...and the user has permission to access the site when it's off
+				$this->userSession->checkPermission('accessSiteWhenSystemIsOff')
+			))
 		)
 		{
 			// Load the plugins
