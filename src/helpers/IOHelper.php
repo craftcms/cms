@@ -1071,6 +1071,12 @@ class IOHelper
 
 		if (static::fileExists($path, $suppressErrors) || static::folderExists($path, $suppressErrors))
 		{
+			// If we're renaming a file and there is no extension on the new name, default to the old extension
+			if (static::fileExists($path, $suppressErrors) && !static::getExtension($newName, null, $suppressErrors))
+			{
+				$newName .= '.'.static::getExtension($path, null, $suppressErrors);
+			}
+
 			if (static::isWritable($path, $suppressErrors))
 			{
 				if ($suppressErrors ? @rename($path, $newName) : rename($path, $newName))

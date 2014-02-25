@@ -726,6 +726,12 @@ class AssetsService extends BaseApplicationComponent
 				$filename = $file->filename;
 			}
 
+			// If the new file does not have an extension, give it the old file extension.
+			if (!IOHelper::getExtension($filename))
+			{
+				$filename .= '.'.$file->getExtension();
+			}
+
 			$filename = IOHelper::cleanFilename($filename);
 
 			if ($folderId == $file->folderId && ($filename == $file->filename))
