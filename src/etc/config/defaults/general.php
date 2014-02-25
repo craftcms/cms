@@ -71,6 +71,13 @@ return array(
 'cacheDuration' => 'P1D',
 
 /**
+ * The caching method that Craft should use.  Valid values are 'apc', 'db', 'eaccelerator', 'file', 'memcache', 'redis', 'wincache', 'xcache', and 'zenddata',
+ *
+ * Defaults to 'file'
+ */
+'cacheMethod' => 'file',
+
+/**
  * The amount of time a user must wait before re-attempting to log in after their account is locked due to too many failed login attempts.
  *
  * Set to '0' to keep the account locked indefinitely, requiring an admin to manually unlock the account.
