@@ -313,6 +313,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 		if (!append)
 		{
 			this.$elements.html(response.html);
+			this.$scroller.scrollTop(0);
 
 			if (this.getSelectedSourceState('mode') == 'table')
 			{
