@@ -21,13 +21,17 @@ class AssetsController extends BaseController
 		$responseInfo = craft()->request->getPost('additionalInfo');
 		$fileName = craft()->request->getPost('fileName');
 
-		try
+		// For a conflict resolution, the folder ID is no longer there and no file is actually being uploaded
+		if (!empty($folderId) && empty($userResponse))
 		{
-			craft()->assets->checkPermissionByFolderIds($folderId, 'uploadToAssetSource');
-		}
-		catch (Exception $e)
-		{
-			$this->returnErrorJson($e->getMessage());
+			try
+			{
+				craft()->assets->checkPermissionByFolderIds($folderId, 'uploadToAssetSource');
+			}
+			catch (Exception $e)
+			{
+				$this->returnErrorJson($e->getMessage());
+			}
 		}
 
 		$response = craft()->assets->uploadFile($folderId, $userResponse, $responseInfo, $fileName);
