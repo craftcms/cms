@@ -21,6 +21,15 @@ class AssetsController extends BaseController
 		$responseInfo = craft()->request->getPost('additionalInfo');
 		$fileName = craft()->request->getPost('fileName');
 
+		try
+		{
+			craft()->assets->checkPermissionByFolderIds($folderId, 'uploadToAssetSource');
+		}
+		catch (Exception $e)
+		{
+			$this->returnErrorJson($e->getMessage());
+		}
+
 		$response = craft()->assets->uploadFile($folderId, $userResponse, $responseInfo, $fileName);
 
 		$this->returnJson($response->getResponseData());
@@ -63,6 +72,14 @@ class AssetsController extends BaseController
 
 		$targetFolderId = $field->resolveSourcePath();
 
+		try
+		{
+			craft()->assets->checkPermissionByFolderIds($targetFolderId, 'uploadToAssetSource');
+		}
+		catch (Exception $e)
+		{
+			$this->returnErrorJson($e->getMessage());
+		}
 
 		$fileName = $_FILES['files']['name'][0];
 		$fileLocation = AssetsHelper::getTempFilePath(pathinfo($fileName, PATHINFO_EXTENSION));
@@ -87,6 +104,15 @@ class AssetsController extends BaseController
 		$parentId = craft()->request->getRequiredPost('parentId');
 		$folderName = craft()->request->getRequiredPost('folderName');
 
+		try
+		{
+			craft()->assets->checkPermissionByFolderIds($parentId, 'createSubfoldersInAssetSource');
+		}
+		catch (Exception $e)
+		{
+			$this->returnErrorJson($e->getMessage());
+		}
+
 		$response = craft()->assets->createFolder($parentId, $folderName);
 
 		$this->returnJson($response->getResponseData());
@@ -101,6 +127,15 @@ class AssetsController extends BaseController
 		$this->requireAjaxRequest();
 		$folderId = craft()->request->getRequiredPost('folderId');
 		$response = craft()->assets->deleteFolderById($folderId);
+
+		try
+		{
+			craft()->assets->checkPermissionByFolderIds($folderId, 'removeFromAssetSource');
+		}
+		catch (Exception $e)
+		{
+			$this->returnErrorJson($e->getMessage());
+		}
 
 		$this->returnJson($response->getResponseData());
 
@@ -117,6 +152,16 @@ class AssetsController extends BaseController
 		$folderId = craft()->request->getRequiredPost('folderId');
 		$newName = craft()->request->getRequiredPost('newName');
 
+		try
+		{
+			craft()->assets->checkPermissionByFolderIds($folderId, 'removeFromAssetSource');
+			craft()->assets->checkPermissionByFolderIds($folderId, 'createSubfoldersInAssetSource');
+		}
+		catch (Exception $e)
+		{
+			$this->returnErrorJson($e->getMessage());
+		}
+
 		$response = craft()->assets->renameFolder($folderId, $newName);
 
 		$this->returnJson($response->getResponseData());
@@ -130,6 +175,15 @@ class AssetsController extends BaseController
 		$this->requireLogin();
 		$this->requireAjaxRequest();
 		$fileIds = craft()->request->getRequiredPost('fileId');
+
+		try
+		{
+			craft()->assets->checkPermissionByFileIds($fileIds, 'removeFromAssetSource');
+		}
+		catch (Exception $e)
+		{
+			$this->returnErrorJson($e->getMessage());
+		}
 
 		$response = craft()->assets->deleteFiles($fileIds);
 		$this->returnJson($response->getResponseData());
@@ -147,6 +201,16 @@ class AssetsController extends BaseController
 		$fileName = craft()->request->getPost('fileName');
 		$actions = craft()->request->getPost('action');
 
+		try
+		{
+			craft()->assets->checkPermissionByFileIds($fileIds, 'removeFromAssetSource');
+			craft()->assets->checkPermissionByFolderIds($folderId, 'uploadToAssetSource');
+		}
+		catch (Exception $e)
+		{
+			$this->returnErrorJson($e->getMessage());
+		}
+
 		$response = craft()->assets->moveFiles($fileIds, $folderId, $fileName, $actions);
 		$this->returnJson($response->getResponseData());
 	}
@@ -161,6 +225,17 @@ class AssetsController extends BaseController
 		$folderId = craft()->request->getRequiredPost('folderId');
 		$parentId = craft()->request->getRequiredPost('parentId');
 		$action = craft()->request->getPost('action');
+
+		try
+		{
+			craft()->assets->checkPermissionByFolderIds($folderId, 'removeFromAssetSource');
+			craft()->assets->checkPermissionByFolderIds($parentId, 'uploadToAssetSource');
+			craft()->assets->checkPermissionByFolderIds($parentId, 'createSubfoldersInAssetSource');
+		}
+		catch (Exception $e)
+		{
+			$this->returnErrorJson($e->getMessage());
+		}
 
 		$response = craft()->assets->moveFolder($folderId, $parentId, $action);
 
