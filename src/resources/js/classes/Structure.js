@@ -147,37 +147,6 @@ Craft.Structure = Garnish.Base.extend(
 
 		$row.css('margin-bottom', -30);
 		$row.animate({ 'margin-bottom': 0 }, 'fast');
-	},
-
-	removeElement: function($element)
-	{
-		var $li = $element.parent().parent();
-
-		if (this.settings.sortable)
-		{
-			this.structureDrag.removeItems($li);
-		}
-
-		if (!$li.siblings().length)
-		{
-			var $parentUl = $li.parent();
-		}
-
-		$li.css('visibility', 'hidden').animate({ marginBottom: -$li.height() }, 'fast', $.proxy(function()
-		{
-			$element.remove();
-
-			if (typeof $parentUl != 'undefined')
-			{
-				this._removeUl($parentUl);
-			}
-		}, this));
-	},
-
-	_removeUl: function($ul)
-	{
-		$ul.siblings('.row').children('.toggle').remove();
-		$ul.remove();
 	}
 },
 {

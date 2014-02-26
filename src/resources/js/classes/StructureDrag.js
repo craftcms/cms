@@ -340,7 +340,8 @@ Craft.StructureDrag = Garnish.Drag.extend(
 				// Now deal with the now-childless parent
 				if ($draggeeParent)
 				{
-					this.structure._removeUl($draggeeParent);
+					$draggeeParent.siblings('.row').children('.toggle').remove();
+					$draggeeParent.remove();
 				}
 
 				// Has the level changed?

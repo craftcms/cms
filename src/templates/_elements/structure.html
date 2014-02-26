@@ -12,15 +12,13 @@
 				{%- spaceless %}
 					{% include "_elements/element" %}
 
-					{% block actions %}
-						{% if sortable %}
-							<a class="move icon" title="{{ 'Move'|t }}"></a>
-						{% endif %}
+					{% if sortable %}
+						<a class="move icon" title="{{ 'Move'|t }}"></a>
+					{% endif %}
 
-						{% if newChildUrl %}
-							<a class="add icon" title="{{ 'New Child'|t }}"></a>
-						{% endif %}
-					{% endblock %}
+					{% if newChildUrl %}
+						<a class="add icon" title="{{ 'New Child'|t }}"></a>
+					{% endif %}
 				{% endspaceless -%}
 			</div>
 

@@ -567,7 +567,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .elementindex .structure li .toggle { background-color: #fff; }
 
 .structure li .element { float: left; }
-.structure li .icon { margin: 5px 5px 0 0; opacity: 0; -webkit-transition: opacity linear 100ms; }
+.structure li .icon { margin-top: 5px; opacity: 0; -webkit-transition: opacity linear 100ms; }
 .structure li .add { padding: 0 5px; }
 .structure li .add:before { content: '▼'; color: rgba(0,0,0,0.2); }
 .structure li .add:not(.disabled):hover:before,

@@ -215,19 +215,6 @@ class EntriesService extends BaseApplicationComponent
 
 			foreach ($entries as $entry)
 			{
-				$section = $entry->getSection();
-
-				if ($section->type == SectionType::Structure)
-				{
-					// First let's move the entry's children up a level, so this doesn't mess up the structure
-					$children = $entry->getChildren()->status(null)->localeEnabled(false)->limit(null)->find();
-
-					foreach ($children as $child)
-					{
-						craft()->structures->moveBefore($section->structureId, $child, $entry, 'update', true);
-					}
-				}
-
 				// Fire an 'onBeforeDeleteEntry' event
 				$this->onBeforeDeleteEntry(new Event($this, array(
 					'entry' => $entry

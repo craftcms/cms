@@ -722,7 +722,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			if (!this.isIndexBusy)
 			{
-				this.$uploadButton.parent().find('input[name=assets-upload]').click();
+				this.$uploadInput.trigger('click');
 			}
 		}, this));
 

@@ -21,9 +21,6 @@ class ConsoleApp extends \CConsoleApplication
 			Craft::import($alias);
 		}
 
-		// So we can try to translate Yii framework strings
-		craft()->coreMessages->attachEventHandler('onMissingTranslation', array('Craft\LocalizationHelper', 'findMissingTranslation'));
-
 		craft()->getComponent('log');
 
 		// Attach our Craft app behavior.
@@ -32,18 +29,12 @@ class ConsoleApp extends \CConsoleApplication
 		// Set our own custom runtime path.
 		$this->setRuntimePath(craft()->path->getRuntimePath());
 
-		// Attach our own custom Logger
-		Craft::setLogger(new Logger());
-
 		// No need for these.
 		craft()->log->removeRoute('WebLogRoute');
 		craft()->log->removeRoute('ProfileLogRoute');
 
 		// Load the plugins
 		craft()->plugins->loadPlugins();
-
-		// Validate some basics on the database configuration file.
-		craft()->validateDbConfigFile();
 
 		// Call parent::init before the plugin console command logic so craft()->commandRunner will be available to us.
 		parent::init();
@@ -56,27 +47,6 @@ class ConsoleApp extends \CConsoleApplication
 				craft()->commandRunner->addCommands(rtrim($commandsPath, '/'));
 			}
 		}
-	}
-
-	/**
-	 * Attaches an event listener, or remembers it for later if the component has not been initialized yet.
-	 *
-	 * @param string $event
-	 * @param mixed  $handler
-	 */
-	public function on($event, $handler)
-	{
-		list($componentId, $eventName) = explode('.', $event, 2);
-
-		$component = $this->getComponent($componentId);
-
-		// Normalize the event name
-		if (strncmp($eventName, 'on', 2) !== 0)
-		{
-			$eventName = 'on'.ucfirst($eventName);
-		}
-
-		$component->$eventName = $handler;
 	}
 
 	/**

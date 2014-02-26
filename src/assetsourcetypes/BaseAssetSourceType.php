@@ -240,6 +240,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function uploadFile($folder)
 	{
+		$this->checkPermissions('uploadToAssetSource');
+
 		// Upload the file and drop it in the temporary folder
 		$file = $_FILES['assets-upload'];
 
@@ -359,6 +361,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function transferFileIntoSource($localCopy, AssetFolderModel $folder, AssetFileModel $file, $action)
 	{
+		$this->checkPermissions('uploadToAssetSource');
+
 		$filename = IOHelper::cleanFilename($file->filename);
 
 		if (!empty($action))
@@ -427,6 +431,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			$response = new AssetOperationResponseModel();
 			return $response->setSuccess();
 		}
+
+		$this->checkPermissions('uploadToAssetSource');
+		$this->checkPermissions('removeFromAssetSource');
 
 		$mergeFiles = false;
 
@@ -632,6 +639,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function replaceFile(AssetFileModel $oldFile, AssetFileModel $replaceWith)
 	{
+		$this->checkPermissions('uploadToAssetSource');
+		$this->checkPermissions('removeFromAssetSource');
+
 		if ($oldFile->kind == 'image')
 		{
 			$this->_deleteGeneratedThumbnails($oldFile);
@@ -686,6 +696,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function deleteFile(AssetFileModel $file)
 	{
+		$this->checkPermissions('removeFromAssetSource');
+
 		$this->_deleteTransformData($file);
 
 		// Delete DB record and the file itself.
@@ -706,6 +718,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function mergeFile(AssetFileModel $sourceFile, AssetFileModel $targetFile)
 	{
+		$this->checkPermissions('removeFromAssetSource');
+
 		$this->_deleteTransformData($targetFile);
 
 		// Delete DB record and the file itself.
@@ -756,6 +770,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function createFolder(AssetFolderModel $parentFolder, $folderName)
 	{
+		$this->checkPermissions('createSubfoldersInAssetSource');
+
 		$folderName = IOHelper::cleanFilename($folderName);
 
 		// If folder exists in DB or physically, bail out
@@ -795,6 +811,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function renameFolder(AssetFolderModel $folder, $newName)
 	{
+		$this->checkPermissions('createSubfoldersInAssetSource');
+		$this->checkPermissions('removeFromAssetSource');
+
 		$parentFolder = craft()->assets->getFolderById($folder->parentId);
 
 		if (!$parentFolder)
@@ -843,6 +862,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function moveFolder(AssetFolderModel $folder, AssetFolderModel $newParentFolder, $overwriteTarget = false)
 	{
+		$this->checkPermissions('createSubfoldersInAssetSource');
+
+		$folderSource = craft()->assetSources->getSourceTypeById($folder->sourceId);
+		$folderSource->checkPermissions('removeFromAssetSource');
 
 		$response = new AssetOperationResponseModel();
 		if ($folder->id == $newParentFolder->id)
@@ -940,6 +963,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function deleteFolder(AssetFolderModel $folder)
 	{
+		$this->checkPermissions('removeFromAssetSource');
+
 		// Get rid of children files
 		$criteria = craft()->elements->getCriteria(ElementType::Asset);
 		$criteria->folderId = $folder->id;
@@ -1027,5 +1052,19 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	public function isRemote()
 	{
 		return false;
+	}
+
+	/**
+	 * Checks for specified permissions.
+	 *
+	 * @param $permission
+	 * @throws Exception
+	 */
+	public function checkPermissions($permission)
+	{
+		if (!craft()->userSession->checkPermission($permission.':'.$this->model->id))
+		{
+			throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
+		}
 	}
 }
