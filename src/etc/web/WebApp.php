@@ -97,6 +97,9 @@ class WebApp extends \CWebApplication
 		$this->getComponent('request');
 		$this->getComponent('log');
 
+		// Choose and init a caching driver.
+		$this->_processCacheComponent();
+
 		// Attach our Craft app behavior.
 		$this->attachBehavior('AppBehavior', new AppBehavior());
 
@@ -955,5 +958,87 @@ class WebApp extends \CWebApplication
 		}
 
 		$this->_isDbConfigValid = true;
+	}
+
+	/**
+	 * Sets the correct caching drivers on craft()->cache based on what's in craft()->config->get('cacheMethod')
+	 */
+	private function _processCacheComponent()
+	{
+		$component = array();
+
+		switch ($this->config->get('cacheMethod'))
+		{
+			case CacheMethod::APC:
+			{
+				$component['class'] = 'Craft\ApcCache';
+				break;
+			}
+
+			case CacheMethod::Db:
+			{
+				$component['class'] = 'Craft\DbCache';
+				$component['gcProbability'] = craft()->config->get('gcProbability', ConfigFile::DbCache);
+				$component['cacheTableName'] = craft()->db->getNormalizedTablePrefix().craft()->config->get('cacheTableName', ConfigFile::DbCache);;
+				$component['autoCreateCacheTable'] = true;
+				break;
+			}
+
+			case CacheMethod::EAccelerator:
+			{
+				$component['class'] = 'Craft\EAcceleratorCache';
+				break;
+			}
+
+			case CacheMethod::File:
+			{
+				$component['class'] = 'Craft\FileCache';
+				$component['cachePath'] = craft()->config->get('cachePath', ConfigFile::FileCache);
+				$component['gcProbability'] = craft()->config->get('gcProbability', ConfigFile::FileCache);
+				break;
+			}
+
+			case CacheMethod::MemCache:
+			{
+				$component['class'] = 'Craft\MemCache';
+				$component['servers'] = craft()->config->get('servers', ConfigFile::Memcache);
+				$component['useMemcached'] = craft()->config->get('useMemcached', ConfigFile::Memcache);
+				break;
+			}
+
+			case CacheMethod::Redis:
+			{
+				$component['class'] = 'Craft\RedisCache';
+				$component['hostname'] = craft()->config->get('hosename', ConfigFile::RedisCache);
+				$component['post'] = craft()->config->get('port', ConfigFile::RedisCache);
+				$component['password'] = craft()->config->get('password', ConfigFile::RedisCache);
+				$component['database'] = craft()->config->get('database', ConfigFile::RedisCache);
+				$component['timeout'] = craft()->config->get('timeout', ConfigFile::RedisCache);
+				break;
+			}
+
+			case CacheMethod::WinCache:
+			{
+				$component['class'] = 'Craft\WinCache';
+				break;
+			}
+
+			case CacheMethod::XCache:
+			{
+				$component['class'] = 'Craft\XCache';
+				break;
+			}
+
+			case CacheMethod::ZendData:
+			{
+				$component['class'] = 'Craft\ZendDataCache';
+				break;
+			}
+		}
+
+		if (!empty($component))
+		{
+			$this->setComponent('cache', $component);
+		}
 	}
 }
