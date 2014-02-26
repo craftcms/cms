@@ -20,7 +20,7 @@ class DbConnection extends \CDbConnection
 			$this->username         = craft()->config->get('user', ConfigFile::Db);
 			$this->password         = craft()->config->get('password', ConfigFile::Db);
 			$this->charset          = craft()->config->get('charset', ConfigFile::Db);
-			$this->tablePrefix      = $this->_getNormalizedTablePrefix();
+			$this->tablePrefix      = $this->getNormalizedTablePrefix();
 
 			parent::init();
 		}
@@ -160,6 +160,26 @@ class DbConnection extends \CDbConnection
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getNormalizedTablePrefix()
+	{
+		// Table prefixes cannot be longer than 5 characters
+		$tablePrefix = rtrim(craft()->config->get('tablePrefix', ConfigFile::Db), '_');
+		if ($tablePrefix)
+		{
+			if (strlen($tablePrefix) > 5)
+			{
+				$tablePrefix = substr($tablePrefix, 0, 5);
+			}
+
+			$tablePrefix .= '_';
+
+			return $tablePrefix;
+		}
+	}
+
+	/**
 	 * Returns the correct connection string depending on whether a unixSocket is specific or not in the db config.
 	 *
 	 * @return string
@@ -174,26 +194,6 @@ class DbConnection extends \CDbConnection
 		else
 		{
 			return strtolower('mysql:host='.craft()->config->get('server', ConfigFile::Db).';dbname=').craft()->config->get('database', ConfigFile::Db).strtolower(';port='.craft()->config->get('port', ConfigFile::Db).';');
-		}
-	}
-
-	/**
-	 * @return string
-	 */
-	private function _getNormalizedTablePrefix()
-	{
-		// Table prefixes cannot be longer than 5 characters
-		$tablePrefix = rtrim(craft()->config->get('tablePrefix', ConfigFile::Db), '_');
-		if ($tablePrefix)
-		{
-			if (strlen($tablePrefix) > 5)
-			{
-				$tablePrefix = substr($tablePrefix, 0, 5);
-			}
-
-			$tablePrefix .= '_';
-
-			return $tablePrefix;
 		}
 	}
 }
