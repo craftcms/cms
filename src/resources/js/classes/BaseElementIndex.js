@@ -363,10 +363,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				if (this.$scroller[0] == Garnish.$win[0])
 				{
 					var winHeight = Garnish.$win.innerHeight(),
-						bodScrollTop = Garnish.$bod.scrollTop(),
+						winScrollTop = Garnish.$win.scrollTop(),
 						bodHeight = Garnish.$bod.height();
 
-					var loadMore = (winHeight + bodScrollTop >= bodHeight);
+					var loadMore = (winHeight + winScrollTop >= bodHeight);
 				}
 				else
 				{
