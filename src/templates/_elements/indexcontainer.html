@@ -6,11 +6,15 @@
 	"Display as thumbnails"
 %}
 
+{% set context = context is defined ? context : 'index' %}
+{% set showStatusMenu = (showStatusMenu is defined and showStatusMenu != 'auto' ? showStatusMenu : elementType.hasStatuses()) %}
+{% set showLocaleMenu = (showLocaleMenu is defined and showLocaleMenu != 'auto' ? showLocaleMenu : (context == 'index' and craft.hasPackage('Localize') and elementType.isLocalized())) %}
+
 <div class="main">
 	<div class="toolbar">
 		<table class="inputs fullwidth">
 			<tr>
-				{% if elementType.hasStatuses() %}
+				{% if showStatusMenu %}
 					<td class="thin">
 						<div class="btn menubtn statusmenubtn"><span class="status"></span>{{ "Any"|t }}</div>
 						<div class="menu padded">
@@ -23,7 +27,7 @@
 						</div>
 					</td>
 				{% endif %}
-				{% if context is defined and context == 'index' and craft.hasPackage('Localize') and elementType.isLocalized() %}
+				{% if showLocaleMenu %}
 					{% set currentLocale = craft.i18n.getCurrentLocale() %}
 					<td class="thin">
 						<div class="btn menubtn localemenubtn">{{ currentLocale.getName() }}</div>
