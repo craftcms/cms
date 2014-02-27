@@ -63,7 +63,7 @@ class WebApp extends \CWebApplication
 	private $_templatePath;
 	private $_packageComponents;
 	private $_pendingEvents;
-	private $_isDbConfigValid = false;
+
 
 	/**
 	 * Processes resource requests before anything else has a chance to initialize.
@@ -166,7 +166,7 @@ class WebApp extends \CWebApplication
 		$this->_processResourceRequest();
 
 		// Validate some basics on the database configuration file.
-		$this->_validateDbConfigFile();
+		craft()->validateDbConfigFile();
 
 		// Process install requests
 		$this->_processInstallRequest();
@@ -220,13 +220,25 @@ class WebApp extends \CWebApplication
 			$this->updates->updateCraftVersionInfo();
 		}
 
-		// Make sure that the system is on, or that the user has permission to access the site/CP while the system is off
+		// Make sure that the system is on...
 		if (craft()->isSystemOn() ||
-			($this->request->isActionRequest() && $this->request->getActionSegments() == array('users', 'login')) ||
-			($this->request->isActionRequest() && $this->request->isCpRequest() && $this->request->getActionSegments() == array('users', 'forgotpassword')) ||
-			($this->request->isActionRequest() && $this->request->isCpRequest() && $this->request->getActionSegments() == array('users', 'setpassword')) ||
-			($this->request->isSiteRequest() && $this->userSession->checkPermission('accessSiteWhenSystemIsOff')) ||
-			($this->request->isCpRequest()) && $this->userSession->checkPermission('accessCpWhenSystemIsOff')
+			// ...or it's a CP request...
+			($this->request->isCpRequest() && (
+				// ...and the user has permission to access the CP when the site is off
+				$this->userSession->checkPermission('accessCpWhenSystemIsOff') ||
+				// ...or they're accessing the Login, Forgot Password, Set Password, or Validation pages
+				(($actionSegs = $this->request->getActionSegments()) && (
+					$actionSegs == array('users', 'login') ||
+					$actionSegs == array('users', 'forgotpassword') ||
+					$actionSegs == array('users', 'setpassword') ||
+					$actionSegs == array('users', 'validate')
+				))
+			)) ||
+			// ...or it's a site request...
+			($this->request->isSiteRequest() && (
+				// ...and the user has permission to access the site when it's off
+				$this->userSession->checkPermission('accessSiteWhenSystemIsOff')
+			))
 		)
 		{
 			// Load the plugins
@@ -495,6 +507,9 @@ class WebApp extends \CWebApplication
 
 	/**
 	 * Sets the application components.
+	 *
+	 * @param      $components
+	 * @param bool $merge
 	 */
 	public function setComponents($components, $merge = true)
 	{
@@ -566,14 +581,6 @@ class WebApp extends \CWebApplication
 	{
 		parent::setComponent($id, $component, $merge);
 		$this->_attachEventListeners($id);
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isDbConfigValid()
-	{
-		return $this->_isDbConfigValid;
 	}
 
 	/**
@@ -904,141 +911,5 @@ class WebApp extends \CWebApplication
 
 		// YOU SHALL NOT PASS
 		$this->end();
-	}
-
-	/**
-	 * Make sure the basics are in place in the db connection file before we actually try to connect later on.
-	 *
-	 * @throws DbConnectException
-	 */
-	private function _validateDbConfigFile()
-	{
-		$messages = array();
-
-		$databaseServerName = craft()->config->get('server', ConfigFile::Db);
-		$databaseAuthName = craft()->config->get('user', ConfigFile::Db);
-		$databaseName = craft()->config->get('database', ConfigFile::Db);
-		$databasePort = craft()->config->get('port', ConfigFile::Db);
-		$databaseCharset = craft()->config->get('charset', ConfigFile::Db);
-		$databaseCollation = craft()->config->get('collation', ConfigFile::Db);
-
-		if (StringHelper::isNullOrEmpty($databaseServerName))
-		{
-			$messages[] = Craft::t('The database server name isn’t set in your db config file.');
-		}
-
-		if (StringHelper::isNullOrEmpty($databaseAuthName))
-		{
-			$messages[] = Craft::t('The database user name isn’t set in your db config file.');
-		}
-
-		if (StringHelper::isNullOrEmpty($databaseName))
-		{
-			$messages[] = Craft::t('The database name isn’t set in your db config file.');
-		}
-
-		if (StringHelper::isNullOrEmpty($databasePort))
-		{
-			$messages[] = Craft::t('The database port isn’t set in your db config file.');
-		}
-
-		if (StringHelper::isNullOrEmpty($databaseCharset))
-		{
-			$messages[] = Craft::t('The database charset isn’t set in your db config file.');
-		}
-
-		if (StringHelper::isNullOrEmpty($databaseCollation))
-		{
-			$messages[] = Craft::t('The database collation isn’t set in your db config file.');
-		}
-
-		if (!empty($messages))
-		{
-			throw new DbConnectException(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
-		}
-
-		$this->_isDbConfigValid = true;
-	}
-
-	/**
-	 * Sets the correct caching drivers on craft()->cache based on what's in craft()->config->get('cacheMethod')
-	 */
-	private function _processCacheComponent()
-	{
-		$component = array();
-
-		switch ($this->config->get('cacheMethod'))
-		{
-			case CacheMethod::APC:
-			{
-				$component['class'] = 'Craft\ApcCache';
-				break;
-			}
-
-			case CacheMethod::Db:
-			{
-				$component['class'] = 'Craft\DbCache';
-				$component['gcProbability'] = craft()->config->get('gcProbability', ConfigFile::DbCache);
-				$component['cacheTableName'] = craft()->db->getNormalizedTablePrefix().craft()->config->get('cacheTableName', ConfigFile::DbCache);;
-				$component['autoCreateCacheTable'] = true;
-				break;
-			}
-
-			case CacheMethod::EAccelerator:
-			{
-				$component['class'] = 'Craft\EAcceleratorCache';
-				break;
-			}
-
-			case CacheMethod::File:
-			{
-				$component['class'] = 'Craft\FileCache';
-				$component['cachePath'] = craft()->config->get('cachePath', ConfigFile::FileCache);
-				$component['gcProbability'] = craft()->config->get('gcProbability', ConfigFile::FileCache);
-				break;
-			}
-
-			case CacheMethod::MemCache:
-			{
-				$component['class'] = 'Craft\MemCache';
-				$component['servers'] = craft()->config->get('servers', ConfigFile::Memcache);
-				$component['useMemcached'] = craft()->config->get('useMemcached', ConfigFile::Memcache);
-				break;
-			}
-
-			case CacheMethod::Redis:
-			{
-				$component['class'] = 'Craft\RedisCache';
-				$component['hostname'] = craft()->config->get('hosename', ConfigFile::RedisCache);
-				$component['post'] = craft()->config->get('port', ConfigFile::RedisCache);
-				$component['password'] = craft()->config->get('password', ConfigFile::RedisCache);
-				$component['database'] = craft()->config->get('database', ConfigFile::RedisCache);
-				$component['timeout'] = craft()->config->get('timeout', ConfigFile::RedisCache);
-				break;
-			}
-
-			case CacheMethod::WinCache:
-			{
-				$component['class'] = 'Craft\WinCache';
-				break;
-			}
-
-			case CacheMethod::XCache:
-			{
-				$component['class'] = 'Craft\XCache';
-				break;
-			}
-
-			case CacheMethod::ZendData:
-			{
-				$component['class'] = 'Craft\ZendDataCache';
-				break;
-			}
-		}
-
-		if (!empty($component))
-		{
-			$this->setComponent('cache', $component);
-		}
 	}
 }

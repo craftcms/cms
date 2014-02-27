@@ -628,6 +628,7 @@ var CP = Garnish.Base.extend(
 			this.selectedTab = $tab.attr('href');
 			this.tabs[this.selectedTab].$target.removeClass('hidden');
 
+			Garnish.$win.trigger('resize');
 			//this.setMaxSidebarHeight();
 		}
 	},

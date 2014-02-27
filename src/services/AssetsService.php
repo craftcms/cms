@@ -726,6 +726,12 @@ class AssetsService extends BaseApplicationComponent
 				$filename = $file->filename;
 			}
 
+			// If the new file does not have an extension, give it the old file extension.
+			if (!IOHelper::getExtension($filename))
+			{
+				$filename .= '.'.$file->getExtension();
+			}
+
 			$filename = IOHelper::cleanFilename($filename);
 
 			if ($folderId == $file->folderId && ($filename == $file->filename))
@@ -738,13 +744,6 @@ class AssetsService extends BaseApplicationComponent
 			$originalSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 			$folder = $this->getFolderById($folderId);
 			$newSourceType = craft()->assetSources->getSourceTypeById($folder->sourceId);
-
-			// Make sure that we're allowed to move this file
-			if (!craft()->userSession->checkPermission('removeFromAssetSource:'.$originalSourceType->model->id)
-				|| !craft()->userSession->checkPermission('uploadToAssetSource:'.$newSourceType->model->id))
-			{
-				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
-			}
 
 			if ($originalSourceType && $newSourceType)
 			{
@@ -765,7 +764,7 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	* Delete a folder record by id.
 	*
-	* @param $fileId
+	* @param $folderId
 	* @return bool
 	*/
 	public function deleteFolderRecord($folderId)
@@ -1004,6 +1003,62 @@ class AssetsService extends BaseApplicationComponent
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Check for a permission on a source by a folder id or an array of folder ids.
+	 *
+	 * @param $folderIds
+	 * @param $permission
+	 * @throws Exception
+	 */
+	public function checkPermissionByFolderIds($folderIds, $permission)
+	{
+		if (!is_array($folderIds))
+		{
+			$folderIds = array($folderIds);
+		}
+		foreach ($folderIds as $folderId)
+		{
+			$folderModel = $this->getFolderById($folderId);
+			if (!$folderModel)
+			{
+				throw new Exception(Craft::t('That folder does not seem to exist anymore. Re-index the Assets source and try again.'));
+			}
+
+			if(!craft()->userSession->checkPermission($permission.':'.$folderModel->sourceId))
+			{
+				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
+			}
+		}
+	}
+
+	/**
+	 * Check for a permission on a source by a file id or an array of file ids.
+	 *
+	 * @param $fileIds
+	 * @param $permission
+	 * @throws Exception
+	 */
+	public function checkPermissionByFileIds($fileIds, $permission)
+	{
+		if (!is_array($fileIds))
+		{
+			$fileIds = array($fileIds);
+		}
+		foreach ($fileIds as $fileId)
+		{
+			$fileModel = $this->getFileById($fileId);
+			if (!$fileModel)
+			{
+				throw new Exception(Craft::t('That file does not seem to exist anymore. Re-index the Assets source and try again.'));
+			}
+			if(!craft()->userSession->checkPermission($permission.':'.$fileModel->sourceId))
+			{
+				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
+			}
+		}
+
 	}
 
 }
