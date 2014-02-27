@@ -2,7 +2,7 @@
 	context:             context,
 	elements:            elements,
 	disabledElementIds:  disabledElementIds,
-	collapsedElementIds: (viewState.collapsedElementIds is defined ? viewState.collapsedElementIds : []),
+	collapsedElementIds: collapsedElementIds,
 	structure:           structure,
 	sortable:            (context == 'index'),
 	newChildUrl:         (context == 'index' and source.newChildUrl is defined ? source.newChildUrl : null),
