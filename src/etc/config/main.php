@@ -12,9 +12,5 @@ return CMap::mergeArray(
 		'import' => array(
 			'application.lib.*',
 		),
-
-		'params' => array(
-			'generalConfig'        => $generalConfig,
-		),
 	)
 );
