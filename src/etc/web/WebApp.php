@@ -63,6 +63,7 @@ class WebApp extends \CWebApplication
 	private $_templatePath;
 	private $_packageComponents;
 	private $_pendingEvents;
+	private $_isDbConnectionValid = false;
 
 
 	/**
@@ -117,42 +118,6 @@ class WebApp extends \CWebApplication
 		}
 
 		parent::init();
-	}
-
-	/**
-	 * Returns the target application language.
-	 *
-	 * @return string
-	 */
-	public function getLanguage()
-	{
-		if (!isset($this->_language))
-		{
-			$this->setLanguage($this->_getTargetLanguage());
-		}
-
-		return $this->_language;
-	}
-
-	/**
-	 * Sets the target application language.
-	 *
-	 * @param string $language
-	 */
-	public function setLanguage($language)
-	{
-		$this->_language = $language;
-	}
-
-	/**
-	 * Returns the localization data for a given locale.
-	 *
-	 * @param string $localeId
-	 * @return LocaleData
-	 */
-	public function getLocale($localeId = null)
-	{
-		return craft()->i18n->getLocaleData($localeId);
 	}
 
 	/**
@@ -294,6 +259,62 @@ class WebApp extends \CWebApplication
 				$this->runController('templates/offline');
 			}
 		}
+	}
+
+	/**
+	 * Don't even think of moving this check into DbConnection->init().
+	 *
+	 * @return bool
+	 */
+	public function getIsDbConnectionValid()
+	{
+		return $this->_isDbConnectionValid;
+	}
+
+	/**
+	 * Don't even think of moving this check into DbConnection->init().
+	 *
+	 * @param $value
+	 */
+	public function setIsDbConnectionValid($value)
+	{
+		$this->_isDbConnectionValid = $value;
+	}
+
+	/**
+	 * Returns the target application language.
+	 *
+	 * @return string
+	 */
+	public function getLanguage()
+	{
+		if (!isset($this->_language))
+		{
+			$this->setLanguage($this->_getTargetLanguage());
+		}
+
+		return $this->_language;
+	}
+
+	/**
+	 * Sets the target application language.
+	 *
+	 * @param string $language
+	 */
+	public function setLanguage($language)
+	{
+		$this->_language = $language;
+	}
+
+	/**
+	 * Returns the localization data for a given locale.
+	 *
+	 * @param string $localeId
+	 * @return LocaleData
+	 */
+	public function getLocale($localeId = null)
+	{
+		return craft()->i18n->getLocaleData($localeId);
 	}
 
 	/**
@@ -595,6 +616,31 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
+	 * Tries to find a match between the browser's preferred locales and the locales Craft has been translated into.
+	 *
+	 * @return string
+	 */
+	public function getTranslatedBrowserLanguage()
+	{
+		$browserLanguages = $this->request->getBrowserLanguages();
+
+		if ($browserLanguages)
+		{
+			$appLocaleIds = $this->i18n->getAppLocaleIds();
+
+			foreach ($browserLanguages as $language)
+			{
+				if (in_array($language, $appLocaleIds))
+				{
+					return $language;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Attaches any pending event listeners to the newly-initialized component.
 	 *
 	 * @access private
@@ -766,26 +812,12 @@ class WebApp extends \CWebApplication
 		}
 		else
 		{
-			// Just try to find a match between the browser's preferred locales
-			// and the locales Craft has been translated into.
-
-			$browserLanguages = $this->request->getBrowserLanguages();
-
-			if ($browserLanguages)
+			// See if we have the CP translated in one of the user's browsers preferred language(s)
+			if (!$this->getTranslatedBrowserLanguage())
 			{
-				$appLocaleIds = $this->i18n->getAppLocaleIds();
-
-				foreach ($browserLanguages as $language)
-				{
-					if (in_array($language, $appLocaleIds))
-					{
-						return $language;
-					}
-				}
+				// Default to the source language.
+				return $this->sourceLanguage;
 			}
-
-			// Default to the source language.
-			return $this->sourceLanguage;
 		}
 	}
 
@@ -911,5 +943,87 @@ class WebApp extends \CWebApplication
 
 		// YOU SHALL NOT PASS
 		$this->end();
+	}
+
+	/**
+	 * Sets the correct caching drivers on craft()->cache based on what's in craft()->config->get('cacheMethod')
+	 */
+	private function _processCacheComponent()
+	{
+		$component = array();
+
+		switch ($this->config->get('cacheMethod'))
+		{
+			case CacheMethod::APC:
+			{
+				$component['class'] = 'Craft\ApcCache';
+				break;
+			}
+
+			case CacheMethod::Db:
+			{
+				$component['class'] = 'Craft\DbCache';
+				$component['gcProbability'] = craft()->config->get('gcProbability', ConfigFile::DbCache);
+				$component['cacheTableName'] = craft()->db->getNormalizedTablePrefix().craft()->config->get('cacheTableName', ConfigFile::DbCache);;
+				$component['autoCreateCacheTable'] = true;
+				break;
+			}
+
+			case CacheMethod::EAccelerator:
+			{
+				$component['class'] = 'Craft\EAcceleratorCache';
+				break;
+			}
+
+			case CacheMethod::File:
+			{
+				$component['class'] = 'Craft\FileCache';
+				$component['cachePath'] = craft()->config->get('cachePath', ConfigFile::FileCache);
+				$component['gcProbability'] = craft()->config->get('gcProbability', ConfigFile::FileCache);
+				break;
+			}
+
+			case CacheMethod::MemCache:
+			{
+				$component['class'] = 'Craft\MemCache';
+				$component['servers'] = craft()->config->get('servers', ConfigFile::Memcache);
+				$component['useMemcached'] = craft()->config->get('useMemcached', ConfigFile::Memcache);
+				break;
+			}
+
+			case CacheMethod::Redis:
+			{
+				$component['class'] = 'Craft\RedisCache';
+				$component['hostname'] = craft()->config->get('hosename', ConfigFile::RedisCache);
+				$component['post'] = craft()->config->get('port', ConfigFile::RedisCache);
+				$component['password'] = craft()->config->get('password', ConfigFile::RedisCache);
+				$component['database'] = craft()->config->get('database', ConfigFile::RedisCache);
+				$component['timeout'] = craft()->config->get('timeout', ConfigFile::RedisCache);
+				break;
+			}
+
+			case CacheMethod::WinCache:
+			{
+				$component['class'] = 'Craft\WinCache';
+				break;
+			}
+
+			case CacheMethod::XCache:
+			{
+				$component['class'] = 'Craft\XCache';
+				break;
+			}
+
+			case CacheMethod::ZendData:
+			{
+				$component['class'] = 'Craft\ZendDataCache';
+				break;
+			}
+		}
+
+		if (!empty($component))
+		{
+			$this->setComponent('cache', $component);
+		}
 	}
 }

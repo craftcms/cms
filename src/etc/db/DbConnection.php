@@ -6,8 +6,6 @@ namespace Craft;
  */
 class DbConnection extends \CDbConnection
 {
-	private $_isDbConnectionValid = false;
-
 	/**
 	 *
 	 */
@@ -60,7 +58,7 @@ class DbConnection extends \CDbConnection
 			throw new DbConnectException(Craft::t('{errors}', array('errors' => implode('<br />', $messages))));
 		}
 
-		$this->_isDbConnectionValid = true;
+		craft()->setIsDbConnectionValid(true);
 
 		// Now that we've validated the config and connection, set extra db logging if devMode is enabled.
 		if (craft()->config->get('devMode'))
