@@ -38,6 +38,13 @@ interface IElementType extends IComponentType
 	public function getSources($context = null);
 
 	/**
+	 * @param string $key
+	 * @param string|null $context
+	 * @return array|null
+	 */
+	public function getSource($key, $context);
+
+	/**
 	 * @return array
 	 */
 	public function defineSearchableAttributes();
