@@ -50,6 +50,16 @@ interface IElementType extends IComponentType
 	public function defineSearchableAttributes();
 
 	/**
+	 * @param ElementCriteriaModel $criteria
+	 * @param array $disabledElementIds
+	 * @param array $viewState
+	 * @param string|null $sourceKey
+	 * @param string|null $context
+	 * @return string
+	 */
+	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context);
+
+	/**
 	 * @return array
 	 */
 	public function defineTableAttributes($source = null);

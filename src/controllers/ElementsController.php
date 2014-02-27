@@ -65,18 +65,7 @@ class ElementsController extends BaseController
 
 		if ($sourceKey)
 		{
-			$sources = $elementType->getSources($context);
 			$source = $elementType->getSource($sourceKey, $context);
-
-			// If this failed, maybe this is a specific point in a source?
-			if (!$source)
-			{
-				$source = $elementType->resolveSingleSource($sourceKey);
-				if (is_array($source))
-				{
-					$source = reset($source);
-				}
-			}
 
 			if (!$source)
 			{
@@ -87,6 +76,10 @@ class ElementsController extends BaseController
 			{
 				$criteria->setAttributes($source['criteria']);
 			}
+		}
+		else
+		{
+			$source = null;
 		}
 
 		if ($search = craft()->request->getParam('search'))
@@ -99,64 +92,17 @@ class ElementsController extends BaseController
 			$criteria->offset = $offset;
 		}
 
-		$variables = array(
-			'viewMode'            => $viewState['mode'],
-			'context'             => $context,
-			'elementType'         => new ElementTypeVariable($elementType),
-			'source'              => (isset($source) ? $source : null),
-			'disabledElementIds'  => $disabledElementIds,
-		);
+		$html = $elementType->getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context);
 
-		switch ($viewState['mode'])
+		$totalVisible = $criteria->offset + count($criteria);
+
+		if ($criteria->limit)
 		{
-			case 'table':
-			{
-				// Make sure the attribute is actually allowed
-				$variables['attributes'] = $elementType->defineTableAttributes($sourceKey);
-
-				// Ordering by an attribute?
-				if (!empty($viewState['order']) && in_array($viewState['order'], array_keys($variables['attributes'])))
-				{
-					$criteria->order = $viewState['order'].' '.$viewState['sort'];
-					$variables['order'] = $viewState['order'];
-					$variables['sort'] = $viewState['sort'];
-				}
-
-				break;
-			}
-
-			case 'structure':
-			{
-				$variables['structure'] = craft()->structures->getStructureById($source['structureId']);
-
-				$criteria->limit = null;
-				$criteria->offset = null;
-			}
-		}
-
-		// Find the elements!
-		$variables['elements'] = $criteria->find();
-
-		if (!$criteria->offset)
-		{
-			$template = 'container';
+			$more = ($criteria->total() > $totalVisible);
 		}
 		else
 		{
-			$template = 'elements';
-		}
-
-		$html = craft()->templates->render('_elements/'.$viewState['mode'].'view/'.$template, $variables);
-
-		if ($viewState['mode'] != 'structure')
-		{
-			$totalVisible = $criteria->offset + $criteria->limit;
-			$remainingElements = $criteria->total() - $totalVisible;
-		}
-		else
-		{
-			$totalVisible = null;
-			$remainingElements = 0;
+			$more = false;
 		}
 
 		$this->returnJson(array(
@@ -164,7 +110,7 @@ class ElementsController extends BaseController
 			'headHtml'     => craft()->templates->getHeadHtml(),
 			'footHtml'     => craft()->templates->getFootHtml(),
 			'totalVisible' => $totalVisible,
-			'more'         => ($remainingElements > 0),
+			'more'         => $more,
 		));
 	}
 
