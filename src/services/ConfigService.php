@@ -6,20 +6,6 @@ namespace Craft;
  */
 class ConfigService extends BaseApplicationComponent
 {
-	/**
-	 * The general configuration names and values as defined in craft/app/etc/config and craft/config
-	 *
-	 * @var
-	 */
-	public $generalConfig;
-
-	/**
-	 * The database configuration names and values as defined in craft/app/etc/config and craft/config
-	 *
-	 * @var
-	 */
-	public $dbConfig;
-
 	private $_cacheDuration;
 	private $_omitScriptNameInUrls;
 	private $_usePathInfo;
@@ -502,6 +488,7 @@ class ConfigService extends BaseApplicationComponent
 	private function _loadConfigFile($file)
 	{
 		$defaultsPath = CRAFT_APP_PATH.'etc/config/defaults/'.$file.'.php';
+
 		if (IOHelper::fileExists($defaultsPath))
 		{
 			$defaultsConfig = @require_once($defaultsPath);
