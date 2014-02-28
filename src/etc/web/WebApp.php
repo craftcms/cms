@@ -813,11 +813,15 @@ class WebApp extends \CWebApplication
 		else
 		{
 			// See if we have the CP translated in one of the user's browsers preferred language(s)
-			if (!$this->getTranslatedBrowserLanguage())
+			$language = $this->getTranslatedBrowserLanguage();
+
+			// Default to the source language.
+			if (!$language)
 			{
-				// Default to the source language.
-				return $this->sourceLanguage;
+				$language = $this->sourceLanguage;
 			}
+
+			return $language;
 		}
 	}
 
