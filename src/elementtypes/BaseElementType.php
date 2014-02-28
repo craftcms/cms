@@ -154,6 +154,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 				$variables['structure']           = craft()->structures->getStructureById($source['structureId']);
 				$variables['collapsedElementIds'] = isset($viewState['collapsedElementIds']) ? $viewState['collapsedElementIds'] : array();
+				$variables['newChildUrl']         = (isset($source['newChildUrl']) ? $source['newChildUrl'] : null);
 
 				$criteria->offset = 0;
 				$criteria->limit = null;
