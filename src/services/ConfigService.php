@@ -532,6 +532,17 @@ class ConfigService extends BaseApplicationComponent
 				}
 			}
 		}
+		else
+		{
+			$customConfigPath = CRAFT_CONFIG_PATH.$file.'.php';
+			if (IOHelper::fileExists($customConfigPath))
+			{
+				if (is_array($customConfig = @include($customConfigPath)))
+				{
+					$this->_mergeConfigs($defaultsConfig, $customConfig);
+				}
+			}
+		}
 
 		$this->_loadedConfigFiles[$file] = $defaultsConfig;
 	}
