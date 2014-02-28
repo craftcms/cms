@@ -14,6 +14,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 	private $_sourcesByContext;
 
+	// Basic info methods
+
 	/**
 	 * Returns whether this element type has content.
 	 *
@@ -107,6 +109,65 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 		return array();
 	}
 
+	// Element index methods
+
+	/**
+	 * Returns the element index HTML.
+	 *
+	 * @param ElementCriteriaModel $criteria
+	 * @param array $disabledElementIds
+	 * @param array $viewState
+	 * @param string|null $sourceKey
+	 * @param string|null $context
+	 * @return string
+	 */
+	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context)
+	{
+		$variables = array(
+			'viewMode'            => $viewState['mode'],
+			'context'             => $context,
+			'elementType'         => new ElementTypeVariable($this),
+			'disabledElementIds'  => $disabledElementIds,
+		);
+
+		switch ($viewState['mode'])
+		{
+			case 'table':
+			{
+				// Make sure the attribute is actually allowed
+				$variables['attributes'] = $this->defineTableAttributes($sourceKey);
+
+				// Ordering by an attribute?
+				if (!empty($viewState['order']) && in_array($viewState['order'], array_keys($variables['attributes'])))
+				{
+					$criteria->order = $viewState['order'].' '.$viewState['sort'];
+					$variables['order'] = $viewState['order'];
+					$variables['sort'] = $viewState['sort'];
+				}
+
+				break;
+			}
+
+			case 'structure':
+			{
+				$source = $this->getSource($sourceKey, $context);
+
+				$variables['structure']           = craft()->structures->getStructureById($source['structureId']);
+				$variables['collapsedElementIds'] = isset($viewState['collapsedElementIds']) ? $viewState['collapsedElementIds'] : array();
+
+				$criteria->offset = 0;
+				$criteria->limit = null;
+
+				break;
+			}
+		}
+
+		$variables['elements'] = $criteria->find();
+
+		$template = '_elements/'.$viewState['mode'].'view/'.(!$criteria->offset ? 'container' : 'elements');
+		return craft()->templates->render($template, $variables);
+	}
+
 	/**
 	 * Returns the attributes that can be shown/sorted by in table views.
 	 *
@@ -180,6 +241,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 		return array();
 	}
 
+	// Methods for customizing the content table...
+
 	/**
 	 * Returns the content table name that should be joined in for an elements query.
 	 *
@@ -215,6 +278,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 		return $columns;
 	}
 
+	// Methods for customizing ElementCriteriaModel's for this element type...
+
 	/**
 	 * Returns the element query condition for a custom status criteria.
 	 *
@@ -236,6 +301,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 	}
+
+	// Element methods
 
 	/**
 	 * Populates an element model based on a query result.
@@ -306,6 +373,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	{
 		return false;
 	}
+
+	// Private methods
 
 	/**
 	 * Finds a source by its key, even if it's nested.

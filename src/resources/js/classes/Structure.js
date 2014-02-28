@@ -165,7 +165,7 @@ Craft.Structure = Garnish.Base.extend(
 
 		$li.css('visibility', 'hidden').animate({ marginBottom: -$li.height() }, 'fast', $.proxy(function()
 		{
-			$element.remove();
+			$li.remove();
 
 			if (typeof $parentUl != 'undefined')
 			{

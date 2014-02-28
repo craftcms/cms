@@ -254,7 +254,7 @@ table.inputs td:not(:first-child) { padding-left: 14px; }
 table.inputs td > .btn { display: block; }
 table.inputs td > .btngroup { float: none; }
 
-.buttons { position: relative; margin: 24px 0; }
+.buttons { position: relative; margin: 24px 0; min-height: 30px; }
 .buttons:after { @include clearafter; }
 .buttons.rightalign { float: right; }
 .buttons .btn,
@@ -509,7 +509,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .datatablesorthelper tr:last-child td { border-bottom: none !important; }
 
 /* elements */
-.element { position: relative; border: 1px solid transparent; padding: 5px 7px; cursor: default; outline: none !important; }
+.element { display: inline-block; position: relative; border: 1px solid transparent; padding: 5px 7px; cursor: default; outline: none !important; }
 .element.unselectable { @include unselectable; }
 
 .element .label { display: inline-block; }
@@ -549,12 +549,13 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .thumbsview { margin: -14px 0 0 -14px; }
 .thumbsview li { float: left; margin: 14px 0 0 14px; width: 100px; }
 
-.thumbsview .element { padding: 105px 0 5px !important; }
+.thumbsview .element { display: block; padding: 105px 0 5px !important; }
 .thumbsview .element .elementthumb,
 .thumbsview .element .elementicon { width: 100px; height: 100px; }
 .thumbsview .element .label { display: block; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* structures */
+.structure { position: relative; z-index: 1; }
 .structure li { padding-left: 8px; }
 .structure ul { margin-left: -3px; }
 .structure ul li { padding-left: 38px; background: url(../images/branch.png) no-repeat 0 0; }

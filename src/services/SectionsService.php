@@ -476,7 +476,10 @@ class SectionsService extends BaseApplicationComponent
 
 					if ($droppedLocaleIds)
 					{
-						craft()->db->createCommand()->delete('sections_i18n', array('in', 'locale', $droppedLocaleIds));
+						craft()->db->createCommand()->delete('sections_i18n',
+							array('and', 'sectionId = :sectionId', array('in', 'locale', $droppedLocaleIds)),
+							array(':sectionId' => $section->id)
+						);
 					}
 				}
 

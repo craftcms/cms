@@ -35,9 +35,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	$loadingMoreSpinner: null,
 	$sidebar: null,
+	$sidebarButtonContainer: null,
 	showingSidebar: null,
 	$sources: null,
 	sourceKey: null,
+	sourceViewModes: null,
 	$source: null,
 	$sourceToggles: null,
 	$elements: null,
@@ -77,37 +79,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$mainSpinner = this.$toolbar.find('.spinner:first');
 		this.$loadingMoreSpinner = this.$container.find('.spinner.loadingmore')
 		this.$sidebar = this.$container.find('.sidebar:first');
+		this.$sidebarButtonContainer = this.$sidebar.children('.buttons');
 		this.$sources = this.$sidebar.find('nav a');
 		this.$sourceToggles = this.$sidebar.find('.toggle');
 		this.$elements = this.$container.find('.elements:first');
 
-		this.showingSidebar = (this.$sidebar.length && !this.$sidebar.hasClass('hidden'));
-
-		// View Mode buttons
-		this.viewModeBtns = {};
-		this.$viewModeBtnTd = this.$toolbar.find('.viewbtns:first');
-		this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(this.$viewModeBtnTd);
-
-		var viewModes = [
-			{ mode: 'table',     title: Craft.t('Display in a table'),     icon: 'list' },
-			{ mode: 'structure', title: Craft.t('Display hierarchically'), icon: 'structure' },
-			{ mode: 'thumbs',    title: Craft.t('Display as thumbnails'),  icon: 'grid' }
-		];
-
-		for (var i = 0; i < viewModes.length; i++)
+		if (!this.$sidebarButtonContainer.length)
 		{
-			var viewMode = viewModes[i],
-				$viewModeBtn = $('<div class="btn" title="'+viewMode.title+'" data-icon="'+viewMode.icon+'" data-view="'+viewMode.mode+'" role="button"/>')
-
-			this.viewModeBtns[viewMode.mode] = $viewModeBtn;
-
-			this.addListener($viewModeBtn, 'click', { mode: viewMode.mode }, function(ev) {
-				this.selectViewMode(ev.data.mode);
-				this.updateElements();
-			});
+			this.$sidebarButtonContainer = $('<div class="buttons"/>').prependTo(this.$sidebar);
 		}
 
-		this.viewModeBtns.table.appendTo(this.$viewModeBtnContainer);
+		this.showingSidebar = (this.$sidebar.length && !this.$sidebar.hasClass('hidden'));
+
+		this.$viewModeBtnTd = this.$toolbar.find('.viewbtns:first');
+		this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(this.$viewModeBtnTd);
 
 		// No source, no party.
 		if (this.$sources.length == 0)
@@ -304,9 +289,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 
 		// Can't use structure view for search results
-		if (this.getSelectedSourceState('mode') == 'structure' && this.$search && this.$search.val())
+		if (this.$search && this.$search.val())
 		{
-			this.selectViewMode('table');
+			if (this.getSelectedSourceState('mode') == 'structure')
+			{
+				this.selectViewMode('table', true);
+			}
+		}
+		else if (this.getSelectedSourceState('mode') == 'table' && !this.doesSourceHaveViewMode('table'))
+		{
+			this.selectViewMode(this.sourceViewModes[0].mode, true);
 		}
 
 		var data = this.getControllerData();
@@ -336,14 +328,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				this.addListener($headers, 'click', 'onSortChange');
 
 				this.$table = this.$elements.find('table:first');
-				this.$elementContainer = this.$table.find('tbody:first');
-
 				Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.add(this.$table);
 			}
-			else
-			{
-				this.$elementContainer = this.$elements.children('ul');
-			}
+
+			this.$elementContainer = this.getElementContainer();
 		}
 		else
 		{
@@ -406,6 +394,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 
 		this.onUpdateElements(append);
+	},
+
+	getElementContainer: function()
+	{
+		if (this.getSelectedSourceState('mode') == 'table')
+		{
+			return this.$table.find('tbody:first');
+		}
+		else
+		{
+			return this.$elements.children('ul');
+		}
 	},
 
 	onUpdateElements: function(append)
@@ -496,19 +496,52 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			this.$search.val('');
 		}
 
-		this.setViewModeForNewSource();
-		this.onSelectSource();
-	},
+		// View mode buttons
 
-	setViewModeForNewSource: function()
-	{
-		// Have they already visited this source?
+		// Clear out any previous view mode data
+		this.$viewModeBtnContainer.empty();
+		this.viewModeBtns = {};
+		this.viewMode = null;
+
+		// Get the new list of view modes
+		this.sourceViewModes = this.getViewModesForSource();
+
+		// Create the buttons if there's more than one mode available to this source
+		if (this.sourceViewModes.length > 1)
+		{
+			this.$viewModeBtnTd.removeClass('hidden');
+
+			for (var i = 0; i < this.sourceViewModes.length; i++)
+			{
+				var viewMode = this.sourceViewModes[i];
+
+				var $viewModeBtn = $('<div data-view="'+viewMode.mode+'" role="button"' +
+					' class="btn'+(typeof viewMode.className != 'undefined' ? ' '+viewMode.className : '')+'"' +
+					' title="'+viewMode.title+'"' +
+					(typeof viewMode.icon != 'undefined' ? ' data-icon="'+viewMode.icon+'"' : '') +
+					'/>'
+				).appendTo(this.$viewModeBtnContainer);
+
+				this.viewModeBtns[viewMode.mode] = $viewModeBtn;
+
+				this.addListener($viewModeBtn, 'click', { mode: viewMode.mode }, function(ev) {
+					this.selectViewMode(ev.data.mode);
+					this.updateElements();
+				});
+			}
+		}
+		else
+		{
+			this.$viewModeBtnTd.addClass('hidden');
+		}
+
+		// Figure out which mode we should start with
 		var viewMode = this.getSelectedSourceState('mode');
 
 		if (!viewMode || !this.doesSourceHaveViewMode(viewMode))
 		{
 			// Default to structure view if the source has it
-			if (this.doesSourceHaveViewMode('structure'))
+			if (this.$source.data('has-structure'))
 			{
 				viewMode = 'structure';
 			}
@@ -517,44 +550,35 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			{
 				viewMode = this.viewMode;
 			}
-			// Fine, use table view
+			// Just use the first one
 			else
 			{
-				viewMode = 'table';
+				viewMode = this.sourceViewModes[0].mode;
 			}
 		}
 
 		this.selectViewMode(viewMode);
 
-		// Should we be showing the buttons?
-		var showViewModeBtns = false;
+		this.onSelectSource();
+	},
 
-		for (var viewMode in this.viewModeBtns)
+	getViewModesForSource: function()
+	{
+		var viewModes = [
+			{ mode: 'table', title: Craft.t('Display in a table'), icon: 'list' }
+		];
+
+		if (this.$source.data('has-structure'))
 		{
-			if (viewMode == 'table')
-			{
-				continue;
-			}
-
-			if (this.doesSourceHaveViewMode(viewMode))
-			{
-				this.viewModeBtns[viewMode].appendTo(this.$viewModeBtnContainer);
-				showViewModeBtns = true;
-			}
-			else
-			{
-				this.viewModeBtns[viewMode].detach();
-			}
+			viewModes.push({ mode: 'structure', title: Craft.t('Display hierarchically'), icon: 'structure' });
 		}
 
-		if (showViewModeBtns)
+		if (this.$source.data('has-thumbs'))
 		{
-			this.$viewModeBtnTd.removeClass('hidden');
+			viewModes.push({ mode: 'thumbs', title: Craft.t('Display as thumbnails'), icon: 'grid' });
 		}
-		else
-		{
-			this.$viewModeBtnTd.addClass('hidden');
-		}
+
+		return viewModes;
 	},
 
 	onSelectSource: function()
@@ -569,25 +593,44 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	doesSourceHaveViewMode: function(viewMode)
 	{
-		return (viewMode == 'table' || this.$source.data('has-'+viewMode));
-	},
-
-	selectViewMode: function(viewMode)
-	{
-		// Make sure that the current source supports it
-		if (!this.doesSourceHaveViewMode(viewMode))
+		for (var i = 0; i < this.sourceViewModes.length; i++)
 		{
-			viewMode = 'table';
+			if (this.sourceViewModes[i].mode == viewMode)
+			{
+				return true;
+			}
 		}
 
-		if (this.viewMode)
+		return false;
+	},
+
+	selectViewMode: function(viewMode, force)
+	{
+		// Make sure that the current source supports it
+		if (!force && !this.doesSourceHaveViewMode(viewMode))
+		{
+			viewMode = this.sourceViewModes[0].mode;
+		}
+
+		// Has anything changed?
+		if (viewMode == this.viewMode)
+		{
+			return;
+		}
+
+		// Deselect the previous view mode
+		if (this.viewMode && typeof this.viewModeBtns[this.viewMode] != 'undefined')
 		{
 			this.viewModeBtns[this.viewMode].removeClass('active');
 		}
 
 		this.viewMode = viewMode;
-		this.viewModeBtns[this.viewMode].addClass('active');
 		this.setSelecetedSourceState('mode', this.viewMode);
+
+		if (typeof this.viewModeBtns[this.viewMode] != 'undefined')
+		{
+			this.viewModeBtns[this.viewMode].addClass('active');
+		}
 	},
 
 	rememberDisabledElementId: function(elementId)
@@ -690,7 +733,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		if (this.showingSidebar)
 		{
-			$('<div class="buttons"/>').prependTo(this.$sidebar).append($button);
+			this.$sidebarButtonContainer.append($button);
 		}
 		else
 		{
