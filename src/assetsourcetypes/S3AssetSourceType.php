@@ -430,12 +430,13 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * Get a file's S3 path.
 	 *
 	 * @param AssetFileModel $file
+	 * @param $settings source settings to use
 	 * @return string
 	 */
-	private function _getS3Path(AssetFileModel $file)
+	private function _getS3Path(AssetFileModel $file, $settings = null)
 	{
 		$folder = $file->getFolder();
-		return $this->_getPathPrefix().$folder->path.$file->filename;
+		return $this->_getPathPrefix($settings).$folder->path.$file->filename;
 	}
 
 	/**
@@ -522,7 +523,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 			return $response->setError(Craft::t("Could not save the file"));
 		}
 
-		@$this->_s3->deleteObject($sourceBucket, $this->_getS3Path($file));
+		@$this->_s3->deleteObject($sourceBucket, $this->_getS3Path($file, $originatingSettings));
 
 		if ($file->kind == 'image')
 		{
