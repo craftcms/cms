@@ -43,7 +43,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 			'limit'         => array(AttributeType::Number, 'default' => 100),
 			'locale'        => AttributeType::Locale,
 			'offset'        => array(AttributeType::Number, 'default' => 0),
-			'order'         => array(AttributeType::String, 'default' => 'dateCreated desc'),
+			'order'         => array(AttributeType::String, 'default' => 'elements.dateCreated desc'),
 			'relatedTo'     => AttributeType::Mixed,
 			'ref'           => AttributeType::String,
 			'search'        => AttributeType::String,
