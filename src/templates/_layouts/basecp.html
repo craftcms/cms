@@ -37,7 +37,8 @@
 			language:             "{{ craft.locale|e('js') }}",
 			packages:             {{ craft.getPackages|json_encode|raw }},
 			translations:         {{ getTranslations()|raw }},
-			maxUploadSize:        {{ craft.app.getMaxUploadSize() }}
+			maxUploadSize:        {{ craft.app.getMaxUploadSize() }},
+			slugWordSeparator:    "{{ craft.config.slugWordSeparator|e('js') }}"
 		};
 
 		window.Craft.fileKinds = {};
