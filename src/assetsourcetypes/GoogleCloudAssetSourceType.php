@@ -398,7 +398,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		$location = AssetsHelper::getTempFilePath($file->getExtension());
 
 		$this->_prepareForRequests();
-		$this->_googleCloud->getObject($this->getSettings()->bucket, $this->_getS3Path($file), $location);
+		$this->_googleCloud->getObject($this->getSettings()->bucket, $this->_getGCPath($file), $location);
 
 		return $location;
 	}
@@ -407,12 +407,13 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Get a file's S3 path.
 	 *
 	 * @param AssetFileModel $file
+	 * @param $settings source settings to use
 	 * @return string
 	 */
-	private function _getS3Path(AssetFileModel $file)
+	private function _getGCPath(AssetFileModel $file, $settings = null)
 	{
 		$folder = $file->getFolder();
-		return $this->_getPathPrefix().$folder->path.$file->filename;
+		return $this->_getPathPrefix($settings).$folder->path.$file->filename;
 	}
 
 	/**
@@ -499,7 +500,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 			return $response->setError(Craft::t("Could not save the file"));
 		}
 
-		@$this->_googleCloud->deleteObject($sourceBucket, $this->_getS3Path($file));
+		@$this->_googleCloud->deleteObject($sourceBucket, $this->_getGCPath($file, $originatingSettings));
 
 		if ($file->kind == 'image')
 		{
