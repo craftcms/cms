@@ -87,7 +87,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * @param string|null $context
 	 * @return array|null
 	 */
-	public function getSource($key, $context)
+	public function getSource($key, $context = null)
 	{
 		$contextKey = ($context ? $context : '*');
 
