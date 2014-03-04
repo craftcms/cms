@@ -50,4 +50,12 @@ class DbCache extends \CDbCache
 
 		return parent::add($id, $value, $expire, $dependency);
 	}
+
+	/**
+	 * @return DbConnection
+	 */
+	public function getDbConnection()
+	{
+		return craft()->db;
+	}
 }
