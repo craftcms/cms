@@ -83,6 +83,12 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 		{
 			this.$addElementBtn.addClass('disabled');
 		}
+
+		if (this.modal)
+		{
+			this.modal.elementIndex.rememberDisabledElementId(element.id);
+		}
+
 	},
 
 	/**
