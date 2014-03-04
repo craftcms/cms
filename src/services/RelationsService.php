@@ -7,23 +7,16 @@ namespace Craft;
 class RelationsService extends BaseApplicationComponent
 {
 	/**
-	 * Saves a relation field.
+	 * Saves some relations for a field.
 	 *
-	 * @param BaseElementFieldType $fieldType
+	 * @param FieldModel $field
+	 * @param BaseElementModel $source
+	 * @param array $targetIds
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function saveField(BaseElementFieldType $fieldType)
+	public function saveRelations(FieldModel $field, BaseElementModel $source, $targetIds)
 	{
-		$source = $fieldType->element;
-		$field = $fieldType->model;
-		$targetIds = $source->getContent()->getAttribute($field->handle);
-
-		if ($targetIds === null)
-		{
-			return true;
-		}
-
 		if (!is_array($targetIds))
 		{
 			$targetIds = array();
