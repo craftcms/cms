@@ -170,38 +170,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $criteria)
 	{
-		if (!($criteria instanceof ElementCriteriaModel))
-		{
-			$criteria = craft()->elements->getCriteria($this->elementType);
-			$criteria->id = false;
-		}
-
-		$criteria->status = null;
-		$criteria->localeEnabled = null;
-
-		$selectionCriteria = $this->getInputSelectionCriteria();
-		$selectionCriteria['localeEnabled'] = null;
-
-		if (isset($this->element))
-		{
-			$selectionCriteria['locale'] = $this->element->locale;
-		}
-
-		$variables = array(
-			'jsClass'            => $this->inputJsClass,
-			'elementType'        => new ElementTypeVariable($this->getElementType()),
-			'id'                 => craft()->templates->formatInputId($name),
-			'fieldId'            => $this->model->id,
-			'storageKey'         => 'field.'.$this->model->id,
-			'name'               => $name,
-			'elements'           => $criteria,
-			'sources'            => $this->getInputSources(),
-			'criteria'           => $selectionCriteria,
-			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
-			'limit'              => ($this->allowLimit ? $this->getSettings()->limit : null),
-			'addButtonLabel'     => $this->getAddButtonLabel(),
-		);
-
+		$variables = $this->getInputTemplateVariables($name, $criteria);
 		return craft()->templates->render($this->inputTemplate, $variables);
 	}
 
@@ -263,6 +232,49 @@ abstract class BaseElementFieldType extends BaseFieldType
 		}
 
 		return $elementType;
+	}
+
+	/**
+	 * Returns an array of variables that should be passed to the input template.
+	 *
+	 * @access protected
+	 * @param string $name
+	 * @param mixed  $criteria
+	 * @return array
+	 */
+	protected function getInputTemplateVariables($name, $criteria)
+	{
+		if (!($criteria instanceof ElementCriteriaModel))
+		{
+			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria->id = false;
+		}
+
+		$criteria->status = null;
+		$criteria->localeEnabled = null;
+
+		$selectionCriteria = $this->getInputSelectionCriteria();
+		$selectionCriteria['localeEnabled'] = null;
+
+		if (isset($this->element))
+		{
+			$selectionCriteria['locale'] = $this->element->locale;
+		}
+
+		return array(
+			'jsClass'            => $this->inputJsClass,
+			'elementType'        => new ElementTypeVariable($this->getElementType()),
+			'id'                 => craft()->templates->formatInputId($name),
+			'fieldId'            => $this->model->id,
+			'storageKey'         => 'field.'.$this->model->id,
+			'name'               => $name,
+			'elements'           => $criteria,
+			'sources'            => $this->getInputSources(),
+			'criteria'           => $selectionCriteria,
+			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
+			'limit'              => ($this->allowLimit ? $this->getSettings()->limit : null),
+			'addButtonLabel'     => $this->getAddButtonLabel(),
+		);
 	}
 
 	/**
