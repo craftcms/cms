@@ -10,9 +10,9 @@
 			{% set indent = 8 + (element.level - 1) * 35 %}
 			<div class="row{% if element.id in disabledElementIds %} disabled{% endif %}" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
 				{%- spaceless %}
-					{% include "_elements/element" %}
+					{% block element %}
+						{% include "_elements/element" %}
 
-					{% block actions %}
 						{% if sortable %}
 							<a class="move icon" title="{{ 'Move'|t }}"></a>
 						{% endif %}
@@ -43,7 +43,8 @@
 {% endif %}
 
 {% set js %}
-	new Craft.Structure({{ structure.id }}, '#{{ id }}', {
+	new Craft.Structure({{ structure.id }}, '#{{ id|namespaceInputId }}', {
+		storageKey:  {{ (storageKey is defined ? storageKey|json_encode : '"Structure.'~structure.id~'"')|raw }},
 		sortable:    {{ sortable ? 'true' : 'false' }},
 		newChildUrl: {{ newChildUrl ? newChildUrl|json_encode|raw : 'null' }},
 		maxLevels:   {{ structure.maxLevels ?: 'null' }}
