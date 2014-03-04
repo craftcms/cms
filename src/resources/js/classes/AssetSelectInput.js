@@ -1,7 +1,6 @@
 /**
- * Element Select input
+ * Asset Select input
  */
-
 Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 {
 	requestId: 0,

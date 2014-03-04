@@ -42,7 +42,7 @@ interface IElementType extends IComponentType
 	 * @param string|null $context
 	 * @return array|null
 	 */
-	public function getSource($key, $context);
+	public function getSource($key, $context = null);
 
 	/**
 	 * @return array

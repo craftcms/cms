@@ -559,7 +559,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .structure li { padding-left: 8px; }
 .structure ul { margin-left: -3px; }
 .structure ul li { padding-left: 38px; background: url(../images/branch.png) no-repeat 0 0; }
-.structure ul li:not(:last-child) { padding-left: 37px; background-position: -1px 0; border-left: 1px solid $hrcolor; }
+.structure ul li:not(:last-child):not(.last) { padding-left: 37px; background-position: -1px 0; border-left: 1px solid $hrcolor; }
 .structure li .toggle { position: relative; z-index: 1; float: left; margin: 4px -8px 0 -12px; }
 .structure li:not(.collapsed) > .row > .toggle { background-position: 50% -40px; }
 .structure li.collapsed > ul { display: none; }
@@ -576,6 +576,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .structure li .row:hover > .icon,
 .structure li.draghelper > .row .move,
 .structure li .add.active { opacity: 1; }
+.structure li .checkbox { float: left; margin: 7px 0 0 7px; }
 
 .structure li.draghelper > .row .add { opacity: 0; }
 .structure li.draghelper > .row .move:before { color: $linkcolor; }
@@ -871,7 +872,6 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 .nested-fields > .field:last-child { padding-bottom: 24px; }
 
 /* checkbox */
-.checkbox + .checkbox { margin-top: 3px; }
 .field.checkbox + .field.checkbox { margin-top: -22px; }
 
 .text { padding: 6px 7px; background: #fff; }
