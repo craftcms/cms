@@ -780,24 +780,27 @@ class WebApp extends \CWebApplication
 				// Is it set to "auto"?
 				if ($locale == 'auto')
 				{
-					// If the user is logged in *and* has a primary language set, use that
-					$user = $this->userSession->getUser();
-
-					if ($user && $user->preferredLocale)
+					if (($userSession = $this->getComponent('userSession', false)) != false)
 					{
-						return $user->preferredLocale;
-					}
+						// If the user is logged in *and* has a primary language set, use that
+						$user = $userSession->getUser();
 
-					// Otherwise check if the browser's preferred language matches any of the site locales
-					$browserLanguages = $this->request->getBrowserLanguages();
-
-					if ($browserLanguages)
-					{
-						foreach ($browserLanguages as $language)
+						if ($user && $user->preferredLocale)
 						{
-							if (in_array($language, $siteLocaleIds))
+							return $user->preferredLocale;
+						}
+
+						// Otherwise check if the browser's preferred language matches any of the site locales
+						$browserLanguages = $this->request->getBrowserLanguages();
+
+						if ($browserLanguages)
+						{
+							foreach ($browserLanguages as $language)
 							{
-								return $language;
+								if (in_array($language, $siteLocaleIds))
+								{
+									return $language;
+								}
 							}
 						}
 					}
@@ -884,7 +887,7 @@ class WebApp extends \CWebApplication
 		// Only run for CP requests and if we're not in the middle of an update.
 		if ($this->request->isCpRequest() && !$update)
 		{
-			$cachedAppPath = craft()->fileCache->get('appPath');
+			$cachedAppPath = craft()->cache->get('appPath');
 			$appPath = $this->path->getAppPath();
 
 			if ($cachedAppPath === false || $cachedAppPath !== $appPath)
