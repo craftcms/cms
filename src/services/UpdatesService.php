@@ -53,7 +53,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isUpdateInfoCached()
 	{
-		return (isset($this->_updateModel) || craft()->fileCache->get('updateinfo') !== false);
+		return (isset($this->_updateModel) || craft()->cache->get('updateinfo') !== false);
 	}
 
 	/**
@@ -129,7 +129,7 @@ class UpdatesService extends BaseApplicationComponent
 			if (!$forceRefresh)
 			{
 				// get the update info from the cache if it's there
-				$updateModel = craft()->fileCache->get('updateinfo');
+				$updateModel = craft()->cache->get('updateinfo');
 			}
 
 			// fetch it if it wasn't cached, or if we're forcing a refresh
@@ -148,7 +148,7 @@ class UpdatesService extends BaseApplicationComponent
 					$updateModel = $etModel->data;
 
 					// cache it and set it to expire according to config
-					craft()->fileCache->set('updateinfo', $updateModel);
+					craft()->cache->set('updateinfo', $updateModel);
 				}
 			}
 

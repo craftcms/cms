@@ -50,7 +50,7 @@ class DbConnection extends \CDbConnection
 		catch (\Exception $e)
 		{
 			Craft::log($e->getMessage(), LogLevel::Error);
-			$messages[] = $messages[] = Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.');
+			$messages[] = Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.');
 		}
 
 		if (!empty($messages))

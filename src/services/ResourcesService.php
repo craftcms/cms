@@ -18,7 +18,7 @@ class ResourcesService extends BaseApplicationComponent
 	 */
 	public function getCachedResourcePath($path)
 	{
-		$realPath = craft()->fileCache->get('resourcePath:'.$path);
+		$realPath = craft()->cache->get('resourcePath:'.$path);
 
 		if ($realPath && IOHelper::fileExists($realPath))
 		{
@@ -39,7 +39,7 @@ class ResourcesService extends BaseApplicationComponent
 			$realPath = ':(';
 		}
 
-		craft()->fileCache->set('resourcePath:'.$path, $realPath);
+		craft()->cache->set('resourcePath:'.$path, $realPath);
 	}
 
 	/**

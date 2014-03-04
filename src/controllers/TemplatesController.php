@@ -101,7 +101,7 @@ class TemplatesController extends BaseController
 		else
 		{
 			// Cache the app path.
-			craft()->fileCache->set('appPath', craft()->path->getAppPath());
+			craft()->cache->set('appPath', craft()->path->getAppPath());
 		}
 	}
 

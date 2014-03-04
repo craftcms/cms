@@ -258,7 +258,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function getLicenseKeyStatus()
 	{
-		return craft()->fileCache->get('licenseKeyStatus');
+		return craft()->cache->get('licenseKeyStatus');
 	}
 
 	/**
@@ -268,7 +268,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function getPackageTrials()
 	{
-		return craft()->fileCache->get('packageTrials');
+		return craft()->cache->get('packageTrials');
 	}
 
 	/**
@@ -278,7 +278,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function getLicensedDomain()
 	{
-		return craft()->fileCache->get('licensedDomain');
+		return craft()->cache->get('licensedDomain');
 	}
 
 	/**
@@ -288,7 +288,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function getLicensedPackages()
 	{
-		return craft()->fileCache->get('licensedPackages');
+		return craft()->cache->get('licensedPackages');
 	}
 
 	/**

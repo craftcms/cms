@@ -179,7 +179,7 @@ class ConfigService extends BaseApplicationComponent
 			else
 			{
 				// Check if it's cached
-				$cachedVal = craft()->fileCache->get('omitScriptNameInUrls');
+				$cachedVal = craft()->cache->get('omitScriptNameInUrls');
 
 				if ($cachedVal !== false)
 				{
@@ -196,7 +196,7 @@ class ConfigService extends BaseApplicationComponent
 					else
 					{
 						// Cache it early so the testScriptNameRedirect request isn't checking for it too
-						craft()->fileCache->set('omitScriptNameInUrls', 'n');
+						craft()->cache->set('omitScriptNameInUrls', 'n');
 
 						// Test the server for it
 						try
@@ -219,7 +219,7 @@ class ConfigService extends BaseApplicationComponent
 					}
 
 					// Cache it
-					craft()->fileCache->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls);
+					craft()->cache->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls);
 				}
 			}
 		}
@@ -248,7 +248,7 @@ class ConfigService extends BaseApplicationComponent
 			else
 			{
 				// Check if it's cached
-				$cachedVal = craft()->fileCache->get('usePathInfo');
+				$cachedVal = craft()->cache->get('usePathInfo');
 
 				if ($cachedVal !== false)
 				{
@@ -271,7 +271,7 @@ class ConfigService extends BaseApplicationComponent
 					else
 					{
 						// Cache it early so the testPathInfo request isn't checking for it too
-						craft()->fileCache->set('usePathInfo', 'n');
+						craft()->cache->set('usePathInfo', 'n');
 
 						// Test the server for it
 						try
@@ -292,7 +292,7 @@ class ConfigService extends BaseApplicationComponent
 					}
 
 					// Cache it
-					craft()->fileCache->set('usePathInfo', $this->_usePathInfo);
+					craft()->cache->set('usePathInfo', $this->_usePathInfo);
 				}
 			}
 		}
