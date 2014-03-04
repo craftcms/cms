@@ -10,6 +10,19 @@ class FileCache extends \CFileCache
 	private $_originalKey;
 
 	/**
+	 * Override so we can set a custom file cache path.
+	 */
+	public function init()
+	{
+		if (!$this->cachePath)
+		{
+			$this->cachePath = craft()->path->getCachePath();
+		}
+
+		parent::init();
+	}
+
+	/**
 	 * Stores a value identified by a key into cache.
 	 * If the cache already contains such a key, the existing value and expiration time will be replaced with the new ones.
 	 *
