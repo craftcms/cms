@@ -20,7 +20,7 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend(
 
 		if (words.length)
 		{
-			return words.join('-');
+			return words.join(Craft.slugWordSeparator);
 		}
 		else
 		{

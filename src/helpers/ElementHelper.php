@@ -31,10 +31,10 @@ class ElementHelper
 		$slug = mb_strtolower($slug, 'UTF-8');
 
 		// Get the "words".  Split on anything that is not a unicode letter or number.
-		// Periods are OK too.
-		preg_match_all('/[\p{L}\p{N}\.]+/u', $slug, $words);
+		// Periods, underscores and hyphens get a pass.
+		preg_match_all('/[\p{L}\p{N}\._-]+/u', $slug, $words);
 		$words = ArrayHelper::filterEmptyStringsFromArray($words[0]);
-		$slug = implode('-', $words);
+		$slug = implode(craft()->config->get('slugWordSeparator'), $words);
 
 		$element->slug = $slug;
 	}
@@ -45,6 +45,7 @@ class ElementHelper
 	 *
 	 * @static
 	 * @param BaseElementModel $element
+	 * @throws Exception
 	 */
 	public static function setUniqueUri(BaseElementModel $element)
 	{
@@ -79,13 +80,15 @@ class ElementHelper
 			$uniqueUriParams[':elementId'] = $element->id;
 		}
 
+		$slugWordSeparator = craft()->config->get('slugWordSeparator');
+
 		for ($i = 0; $i < 100; $i++)
 		{
 			$testSlug = $element->slug;
 
 			if ($i > 0)
 			{
-				$testSlug .= '-'.$i;
+				$testSlug .= $slugWordSeparator.$i;
 			}
 
 			$originalSlug = $element->slug;
@@ -100,7 +103,7 @@ class ElementHelper
 				$overage = strlen($testUri) - 255;
 
 				// Do we have anything left to chop off?
-				if (strlen($overage) > strlen($element->slug) - strlen('-'.$i))
+				if (strlen($overage) > strlen($element->slug) - strlen($slugWordSeparator.$i))
 				{
 					// Chop off the overage amount from the slug
 					$testSlug = $element->slug;
@@ -149,6 +152,7 @@ class ElementHelper
 	 *
 	 * @static
 	 * @param string $urlFormat
+	 * @return bool
 	 */
 	public static function doesUrlFormatHaveSlugTag($urlFormat)
 	{

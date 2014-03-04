@@ -50,7 +50,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 			'localeEnabled'  => array(AttributeType::Bool, 'default' => true),
 			'nextSiblingOf'  => AttributeType::Mixed,
 			'offset'         => array(AttributeType::Number, 'default' => 0),
-			'order'          => array(AttributeType::String, 'default' => 'dateCreated desc'),
+			'order'          => array(AttributeType::String, 'default' => 'elements.dateCreated desc'),
 			'prevSiblingOf'  => AttributeType::Mixed,
 			'relatedTo'      => AttributeType::Mixed,
 			'ref'            => AttributeType::String,

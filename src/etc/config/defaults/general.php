@@ -279,6 +279,11 @@ return array(
 'siteUrl' => null,
 
 /**
+ * The character(s) that should be used to separate words in slugs.
+ */
+'slugWordSeparator' => '-',
+
+/**
  * Configures Craft to send all system emails to a single email address, for testing purposes.
  */
 'testToEmailAddress' => '',

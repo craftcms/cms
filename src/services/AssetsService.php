@@ -702,6 +702,11 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function moveFiles($fileIds, $folderId, $filename = '', $actions = array())
 	{
+		if ($filename && is_array($fileIds) && count($fileIds) > 1)
+		{
+			throw new Exception(Craft::t("It's not possible to rename multiple files!"));
+		}
+
 		if (!is_array($fileIds))
 		{
 			$fileIds = array($fileIds);
@@ -721,7 +726,7 @@ class AssetsService extends BaseApplicationComponent
 			$file = $this->getFileById($fileId);
 
 			// If this is not a rename operation, then the filename remains the original
-			if (empty($filename))
+			if (count($fileIds) > 1 || empty($filename))
 			{
 				$filename = $file->filename;
 			}
