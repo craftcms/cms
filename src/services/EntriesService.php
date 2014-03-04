@@ -784,8 +784,8 @@ class EntriesService extends BaseApplicationComponent
 		$slug = mb_strtolower($slug, 'UTF-8');
 
 		// Get the "words".  Split on anything that is not a unicode letter or number.
-		// Periods are OK too.
-		preg_match_all('/[\p{L}\p{N}\.]+/u', $slug, $words);
+		// Periods, underscores and dashes get a pass.
+		preg_match_all('/[\p{L}\p{N}\._-]+/u', $slug, $words);
 		$words = ArrayHelper::filterEmptyStringsFromArray($words[0]);
 		$slug = implode('-', $words);
 
