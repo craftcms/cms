@@ -126,4 +126,10 @@ interface IElementType extends IComponentType
 	 * @return mixed
 	 */
 	public function routeRequestForMatchedElement(BaseElementModel $element);
+
+	/**
+	 * @param BaseElementModel $element
+	 * @param int $structureId
+	 */
+	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId);
 }

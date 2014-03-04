@@ -375,6 +375,16 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 		return false;
 	}
 
+	/**
+	 * Performs actions after an element has been moved within a structure.
+	 *
+	 * @param BaseElementModel $element
+	 * @param int $structureId
+	 */
+	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
+	{
+	}
+
 	// Private methods
 
 	/**
