@@ -32,7 +32,7 @@ class ConfigService extends BaseApplicationComponent
 		}
 		else
 		{
-			if (isset($this->_loadedConfigFiles[$file][$item]))
+			if ($this->exists($item, $file))
 			{
 				return $this->_loadedConfigFiles[$file][$item];
 			}
@@ -59,8 +59,9 @@ class ConfigService extends BaseApplicationComponent
 	/**
 	 * Returns a localized config setting value.
 	 *
-	 * @param string $item
+	 * @param string      $item
 	 * @param string|null $localeId
+	 * @param string      $file
 	 * @return mixed
 	 */
 	public function getLocalized($item, $localeId = null, $file = 'general')
@@ -92,6 +93,7 @@ class ConfigService extends BaseApplicationComponent
 	}
 
 	/**
+	 * TODO: Deprecate
 	 * Get a DB config item
 	 *
 	 * @param      $item
@@ -100,12 +102,36 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function getDbItem($item, $default = null)
 	{
-		if (isset($this->dbConfig[$item]))
+		Craft::log('craft()->config->getDbItem(item) is deprecated. Use craft()->config->get(item, ConfigFile::Db) instead.', LogLevel::Warning);
+
+		if ($value = craft()->config->get($item, Config::Db))
 		{
-			return $this->dbConfig[$item];
+			return $value;
 		}
 
 		return $default;
+	}
+
+	/**
+	 * Checks if a key exists for a given config file.
+	 *
+	 * @param        $item
+	 * @param string $file
+	 * @return bool
+	 */
+	public function exists($item, $file = 'general')
+	{
+		if (!isset($this->_loadedConfigFiles[$file]))
+		{
+			$this->_loadConfigFile($file);
+		}
+
+		if (isset($this->_loadedConfigFiles[$file][$item]))
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
