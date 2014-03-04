@@ -102,8 +102,6 @@ $commonConfig = require CRAFT_APP_PATH.'etc/config/common.php';
 // Load Yii, if it's not already
 if (!class_exists('Yii', false))
 {
-	defined('YII_DEBUG') || define('YII_DEBUG', !empty($commonConfig['components']['config']['generalConfig']['devMode']));
-	defined('YII_TRACE_LEVEL') || define('YII_TRACE_LEVEL', 3);
 	require CRAFT_APP_PATH.'framework/yii.php';
 }
 
