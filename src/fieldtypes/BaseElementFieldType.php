@@ -108,6 +108,40 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
+	 * Validates the value beyond the checks that were assumed based on the content attribute.
+	 *
+	 * Returns 'true' or any custom validation errors.
+	 *
+	 * @param array $value
+	 * @return true|string|array
+	 */
+	public function validate($value)
+	{
+		$errors = array();
+
+		if ($this->allowLimit && ($limit = $this->getSettings()->limit) && is_array($value) && count($value) > $limit)
+		{
+			if ($limit == 1)
+			{
+				$errors[] = Craft::t('There can’t be more than one selection.');
+			}
+			else
+			{
+				$errors[] = Craft::t('There can’t be more than {limit} selections.', array('limit' => $limit));
+			}
+		}
+
+		if ($errors)
+		{
+			return $errors;
+		}
+		else
+		{
+			return true;
+		}
+	}
+
+	/**
 	 * Preps the field value for use.
 	 *
 	 * @param mixed $value
