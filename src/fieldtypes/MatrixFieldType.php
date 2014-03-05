@@ -364,7 +364,14 @@ class MatrixFieldType extends BaseFieldType
 
 		if ($maxBlocks && count($blocks) > $maxBlocks)
 		{
-			$errors[] = Craft::t('There can’t be more than {max} blocks.', array('max' => $maxBlocks));
+			if ($maxBlocks == 1)
+			{
+				$errors[] = Craft::t('There can’t be more than one block.');
+			}
+			else
+			{
+				$errors[] = Craft::t('There can’t be more than {max} blocks.', array('max' => $maxBlocks));
+			}
 		}
 
 		if ($errors)
