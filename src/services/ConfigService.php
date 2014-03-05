@@ -509,11 +509,19 @@ class ConfigService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $file
+	 * @param $name
 	 */
-	private function _loadConfigFile($file)
+	private function _loadConfigFile($name)
 	{
-		$defaultsPath = CRAFT_APP_PATH.'etc/config/defaults/'.$file.'.php';
+		// Is this a valid Craft config file?
+		if (ConfigFile::isValidName($name))
+		{
+			$defaultsPath = CRAFT_APP_PATH.'etc/config/defaults/'.$name.'.php';
+		}
+		else
+		{
+			$defaultsPath = CRAFT_PLUGINS_PATH.$name.'config.php';
+		}
 
 		if (IOHelper::fileExists($defaultsPath))
 		{
@@ -521,7 +529,7 @@ class ConfigService extends BaseApplicationComponent
 		}
 
 		// Little extra logic for the general config file.
-		if ($file == ConfigFile::General)
+		if ($name == ConfigFile::General)
 		{
 			// Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
 			if (file_exists(CRAFT_CONFIG_PATH.'general.php'))
@@ -547,7 +555,7 @@ class ConfigService extends BaseApplicationComponent
 		}
 		else
 		{
-			$customConfigPath = CRAFT_CONFIG_PATH.$file.'.php';
+			$customConfigPath = CRAFT_CONFIG_PATH.$name.'.php';
 			if (IOHelper::fileExists($customConfigPath))
 			{
 				if (is_array($customConfig = @include($customConfigPath)))
@@ -557,7 +565,7 @@ class ConfigService extends BaseApplicationComponent
 			}
 		}
 
-		$this->_loadedConfigFiles[$file] = $defaultsConfig;
+		$this->_loadedConfigFiles[$name] = $defaultsConfig;
 	}
 
 	/**
