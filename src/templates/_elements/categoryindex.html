@@ -1,0 +1,30 @@
+{% from "_includes/forms" import text %}
+
+<div class="nocats light{% if elements %} hidden{% endif %}">
+	<p>{{ "No categories exist yet."|t }}</p>
+</div>
+
+{% embed "_elements/structure" with {
+	context:             context,
+	elements:            elements,
+	collapsedElementIds: collapsedElementIds,
+	structure:           structure,
+	sortable:            true
+} only %}
+
+	{% block element %}
+		{{ parent() }}
+		<a class="delete icon" title="{{ 'Delete'|t }}"></a>
+	{% endblock %}
+
+{% endembed %}
+
+<form class="add-category-form" data-group-id="{{ groupId }}">
+	<div class="texticon add icon">
+		{{ text({
+			placeholder: "Add a category"|t
+		}) }}
+		<div class="spinner hidden"></div>
+	</div>
+	<input type="submit" class="btn submit" value="{{ 'Add'|t }}">
+</form>

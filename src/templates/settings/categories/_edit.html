@@ -1,0 +1,151 @@
+{% extends "_layouts/cp" %}
+
+{% set docsUrl = 'http://buildwithcraft.com/docs/categories' %}
+
+{% macro urlFormatText(locale, categoryGroup, name, value) %}
+	{% from "_includes/forms" import text, errorList %}
+	{% set errors = categoryGroup.getErrors(name~'-'~locale.id) %}
+
+	<div class="input{% if errors %} errors{% endif %}">
+		{{ text({
+			id: name~'-'~locale.id,
+			class: 'code',
+			name: name~'['~locale.id~']',
+			value: (value != '__home__' ? value : null),
+			errors: errors
+		}) }}
+	</div>
+
+	{{ errorList(errors) }}
+{% endmacro %}
+
+{% import "_includes/forms" as forms %}
+{% from _self import urlFormatText %}
+
+{% set content %}
+	<form method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
+		<input type="hidden" name="action" value="categories/saveGroup">
+		<input type="hidden" name="redirect" value="settings/categories">
+		{% if categoryGroup.id %}<input type="hidden" name="groupId" value="{{ categoryGroup.id }}">{% endif %}
+
+		<div id="categorygroup-settings">
+			{{ forms.textField({
+				first: true,
+				label: "Name"|t,
+				instructions: "What this category group will be called in the CP."|t,
+				id: 'name',
+				name: 'name',
+				value: categoryGroup.name,
+				errors: categoryGroup.getErrors('name'),
+				autofocus: true,
+				required: true,
+				translatable: true
+			}) }}
+
+			{{ forms.textField({
+				label: "Handle"|t,
+				instructions: "How you’ll refer to this category group in the templates."|t,
+				id: 'handle',
+				class: 'code',
+				name: 'handle',
+				value: categoryGroup.handle,
+				errors: categoryGroup.getErrors('handle'),
+				required: true
+			}) }}
+
+			<hr>
+
+			{{ forms.checkboxField({
+				label: "Categories in this group have their own URLs"|t,
+				id: 'hasUrls',
+				name: 'hasUrls',
+				checked: categoryGroup.hasUrls,
+				toggle: 'url-settings'
+			}) }}
+
+			<div id="url-settings" class="nested-fields{% if not categoryGroup.hasUrls %} hidden{% endif %}">
+				{% set urlFormatInput %}
+					<table class="data fullwidth">
+						<thead>
+							{% if craft.hasPackage('Localize') %}
+								<th></th>
+							{% endif %}
+							<th scope="col">{{ "Top-Level Categories"|t }}</th>
+							<th scope="col">{{ "Nested Categories"|t }}</th>
+						</thead>
+						<tbody>
+							{% for locale in craft.i18n.getSiteLocales() %}
+								<tr>
+									{% if craft.hasPackage('Localize') %}
+										<th class="thin nowrap">{{ locale.id }}</th>
+									{% endif %}
+									<td>
+										{% set value = (categoryGroup.locales[locale.id] is defined ? categoryGroup.locales[locale.id].urlFormat : null) %}
+										{{ _self.urlFormatText(locale, categoryGroup, 'urlFormat', value) }}
+									</td>
+									<td>
+										{% set value = (categoryGroup.locales[locale.id] is defined ? categoryGroup.locales[locale.id].nestedUrlFormat : '{parent.uri}/{slug}') %}
+										{{ _self.urlFormatText(locale, categoryGroup, 'nestedUrlFormat', value) }}
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				{% endset %}
+
+				{{ forms.field({
+					label: "Category URL Formats"|t,
+					instructions: "What the category URLs should look like. <code>{slug}</code> is required, but it can also include any category properties."|t,
+					required: true,
+					errors: categoryGroup.getErrors('urlFormat')
+				}, urlFormatInput) }}
+
+				{{ forms.textField({
+					label: "Category Template"|t,
+					instructions: "The template to use when a category’s URL is requested."|t,
+					id: 'template',
+					name: 'template',
+					value: categoryGroup.template,
+					errors: categoryGroup.getErrors('template')
+				}) }}
+
+				{{ forms.textField({
+					label: "Max Levels"|t,
+					instructions: "The maximum number of levels this category group can have. Leave blank if you don’t care."|t,
+					id: 'maxLevels',
+					name: 'maxLevels',
+					value: categoryGroup.maxLevels,
+					size: 5,
+					errors: categoryGroup.getErrors('maxLevels')
+				}) }}
+			</div>
+		</div>
+
+		<div id="categorygroup-fieldlayout" class="hidden">
+			{% include "_includes/fieldlayoutdesigner" with {
+				fieldLayout: categoryGroup.getFieldLayout(),
+				customizableTabs: false
+			} only %}
+		</div>
+
+		<hr>
+
+		<div class="buttons">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+{% endset %}
+
+
+{% if not categoryGroup.handle %}
+	{% set js %}
+		new Craft.HandleGenerator('#name', '#handle');
+
+		{% for locale in craft.i18n.getSiteLocales() %}
+			{% if categoryGroup.locales[locale.id] is not defined or not categoryGroup.locales[locale.id].urlFormat %}
+				new Craft.EntryUrlFormatGenerator('#name', '#urlFormat-{{ locale.id }}', { suffix: '/{slug}' });
+			{% endif %}
+		{% endfor %}
+	{% endset %}
+	{% includeJs js %}
+{% endif %}

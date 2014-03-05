@@ -1,0 +1,51 @@
+{% extends "_layouts/cp" %}
+{% set title = "Category Groups"|t %}
+
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
+
+{% set docsUrl = 'http://buildwithcraft.com/docs/categories' %}
+
+
+{% set content %}
+	<div id="nocategorygroups"{% if categoryGroups|length %} class="hidden"{% endif %}>
+		<p>{{ "No category groups exist yet."|t }}</p>
+	</div>
+
+	{% if categoryGroups|length %}
+		<table id="categorygroups" class="data collapsible">
+			<thead>
+				<th scope="col">{{ "Name"|t }}</th>
+				<th scope="col">{{ "Handle"|t }}</th>
+				<td></td>
+				<td class="thin"></td>
+			</thead>
+			<tbody>
+				{% for group in categoryGroups %}
+					<tr data-id="{{ group.id }}" data-name="{{ group.name|t }}">
+						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/categories/' ~ group.id) }}">{{ group.name|t }}</a></th>
+						<td data-title="{{ 'Handle'|t }}"><code>{{ group.handle }}</code></td>
+						<td><a href="{{ url('categories/'~group.handle) }}">{{ "Edit Categories"|t }}</a></td>
+						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+
+	<div class="buttons">
+		<a href="{{ url('settings/categories/new') }}" class="btn submit add icon">{{ "New Category Group"|t }}</a>
+	</div>
+{% endset %}
+
+
+{% set js %}
+	new Craft.AdminTable({
+		tableSelector: '#categorygroups',
+		noObjectsSelector: '#nocategorygroups',
+		deleteAction: 'categories/deleteCategoryGroup',
+		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its categories?"|t }}',
+	});
+{% endset %}
+{% includeJs js %}

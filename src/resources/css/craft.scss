@@ -1054,6 +1054,14 @@ ul.errors li { color: $errorcolor; }
 .matrixblock > .preview span { opacity: 0.5; }
 .matrix > .buttons { margin-top: 0; height: 30px; overflow: hidden; }
 
+/* categories */
+.add-category-form { margin-top: 24px; }
+.add-category-form .texticon { width: 200px; float: left; margin-right: 5px; }
+.add-category-form .texticon .text { padding-right: 30px; }
+.add-category-form .texticon .spinner { position: absolute; top: 0; right: 5px; }
+
+.categoriesfield .structure ul { margin-left: 12px; }
+
 /* ----------------------------------------
 /* IE hacks
 /* ----------------------------------------*/
