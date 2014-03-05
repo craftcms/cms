@@ -19,7 +19,13 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 
 	initElements: function($elements)
 	{
-		this.addListener($elements.siblings('.checkbox'), 'change', 'onCheckboxChange');
+		this.initCheckboxes($elements.siblings('.checkbox'));
+	},
+
+	initCheckboxes: function($checkboxes)
+	{
+		this.removeListener($checkboxes, 'change');
+		this.addListener($checkboxes, 'change', 'onCheckboxChange');
 	},
 
 	onCheckboxChange: function(ev)
@@ -42,12 +48,15 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 	{
 		var $li = $('#'+this.id+'-category-'+elementInfo.id),
 			$parentLis = $li.parentsUntil(this.$elementsContainer, 'li'),
+			$allLis = $li.add($parentLis),
+			$checkboxes = $allLis.children('.row').find('.checkbox')
 			$element = $li.children('.row').find('.element');
 
 		// Make sure all parent elements are visible and checked
-		$li.add($parentLis)
-			.removeClass('hidden')
-			.children('.row').find('.checkbox').prop('checked', true);
+		$allLis.removeClass('hidden');
+		$checkboxes.prop('checked', true);
+
+		this.initCheckboxes($checkboxes);
 
 		return $element;
 	},
