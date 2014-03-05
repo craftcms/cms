@@ -4,7 +4,7 @@ namespace Craft;
 /**
  *
  */
-class ConfigFile
+abstract class ConfigFile extends BaseEnum
 {
 	const FileCache    = 'filecache';
 	const General      = 'general';

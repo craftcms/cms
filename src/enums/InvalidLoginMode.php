@@ -4,7 +4,7 @@ namespace Craft;
 /**
  *
  */
-class InvalidLoginMode
+abstract class InvalidLoginMode extends BaseEnum
 {
 	const Cooldown          = 'cooldown';
 	const Lockout           = 'lockout';

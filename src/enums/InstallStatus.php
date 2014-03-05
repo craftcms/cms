@@ -4,7 +4,7 @@ namespace Craft;
 /**
  *
  */
-class InstallStatus
+abstract class InstallStatus extends BaseEnum
 {
 	const Success = 'success';
 	const Failed  = 'failed';
