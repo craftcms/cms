@@ -63,8 +63,8 @@ class MatrixFieldType extends BaseFieldType
 		}
 
 		return craft()->templates->render('_components/fieldtypes/Matrix/settings', array(
-			'blockTypes' => $this->getSettings()->getBlockTypes(),
-			'fieldTypes'  => $fieldTypeOptions
+			'settings'   => $this->getSettings(),
+			'fieldTypes' => $fieldTypeOptions
 		));
 	}
 
@@ -122,6 +122,12 @@ class MatrixFieldType extends BaseFieldType
 		}
 
 		$matrixSettings->setBlockTypes($blockTypes);
+
+		if (!empty($settings['maxBlocks']))
+		{
+			$matrixSettings->maxBlocks = $settings['maxBlocks'];
+		}
+
 		return $matrixSettings;
 	}
 
@@ -190,6 +196,7 @@ class MatrixFieldType extends BaseFieldType
 	public function getInputHtml($name, $value)
 	{
 		$id = craft()->templates->formatInputId($name);
+		$settings = $this->getSettings();
 
 		// Get the block types data
 		$blockTypeInfo = $this->_getBlockTypeInfoForInput($name);
@@ -198,7 +205,8 @@ class MatrixFieldType extends BaseFieldType
 		craft()->templates->includeJs('new Craft.MatrixInput(' .
 			'"'.craft()->templates->namespaceInputId($id).'", ' .
 			JsonHelper::encode($blockTypeInfo).', ' .
-			'"'.craft()->templates->namespaceInputName($name).'"' .
+			'"'.craft()->templates->namespaceInputName($name).'", ' .
+			($settings->maxBlocks ? $settings->maxBlocks : 'null') .
 		');');
 
 		craft()->templates->includeTranslations('Disabled', 'Actions', 'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above', 'Add a block');
@@ -213,7 +221,7 @@ class MatrixFieldType extends BaseFieldType
 		return craft()->templates->render('_components/fieldtypes/Matrix/input', array(
 			'id' => $id,
 			'name' => $name,
-			'blockTypes' => $this->getSettings()->getBlockTypes(),
+			'blockTypes' => $settings->getBlockTypes(),
 			'blocks' => $value
 		));
 	}
@@ -336,19 +344,32 @@ class MatrixFieldType extends BaseFieldType
 	 */
 	public function validate($blocks)
 	{
-		$validates = true;
+		$errors = array();
+		$blocksValidate = true;
 
 		foreach ($blocks as $block)
 		{
 			if (!craft()->matrix->validateBlock($block))
 			{
-				$validates = false;
+				$blocksValidate = false;
 			}
 		}
 
-		if (!$validates)
+		if (!$blocksValidate)
 		{
-			return Craft::t('Correct the errors listed above.');
+			$errors[] = Craft::t('Correct the errors listed above.');
+		}
+
+		$maxBlocks = $this->getSettings()->maxBlocks;
+
+		if ($maxBlocks && count($blocks) > $maxBlocks)
+		{
+			$errors[] = Craft::t('There can’t be more than {max} blocks.', array('max' => $maxBlocks));
+		}
+
+		if ($errors)
+		{
+			return $errors;
 		}
 		else
 		{

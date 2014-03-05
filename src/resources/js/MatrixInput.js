@@ -9,33 +9,33 @@ Craft.MatrixInput = Garnish.Base.extend(
 	id: null,
 	blockTypes: null,
 	blockTypesByHandle: null,
-
 	inputNamePrefix: null,
 	inputIdPrefix: null,
+	maxBlocks: null,
 
 	$container: null,
 	$blockContainer: null,
-	$newBlockBtnContainer: null,
-	$newBlockBtnGroup: null,
-	$newBlockBtnGroupBtns: null,
+	$addBlockBtnContainer: null,
+	$addBlockBtnGroup: null,
+	$addBlockBtnGroupBtns: null,
 
 	blockSort: null,
 	totalNewBlocks: 0,
 
-	init: function(id, blockTypes, inputNamePrefix)
+	init: function(id, blockTypes, inputNamePrefix, maxBlocks)
 	{
 		this.id = id
 		this.blockTypes = blockTypes;
-
 		this.inputNamePrefix = inputNamePrefix;
 		this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
+		this.maxBlocks = maxBlocks;
 
 		this.$container = $('#'+this.id);
 		this.$blockContainer = this.$container.children('.blocks');
-		this.$newBlockBtnContainer = this.$container.children('.buttons');
-		this.$newBlockBtnGroup = this.$newBlockBtnContainer.children('.btngroup');
-		this.$newBlockBtnGroupBtns = this.$newBlockBtnGroup.children('.btn');
-		this.$newBlockMenuBtn = this.$newBlockBtnContainer.children('.menubtn');
+		this.$addBlockBtnContainer = this.$container.children('.buttons');
+		this.$addBlockBtnGroup = this.$addBlockBtnContainer.children('.btngroup');
+		this.$addBlockBtnGroupBtns = this.$addBlockBtnGroup.children('.btn');
+		this.$addBlockMenuBtn = this.$addBlockBtnContainer.children('.menubtn');
 
 		this.setNewBlockBtn();
 
@@ -78,13 +78,13 @@ Craft.MatrixInput = Garnish.Base.extend(
 			}
 		}
 
-		this.addListener(this.$newBlockBtnGroupBtns, 'click', function(ev)
+		this.addListener(this.$addBlockBtnGroupBtns, 'click', function(ev)
 		{
 			var type = $(ev.target).data('type');
 			this.addBlock(type);
 		});
 
-		new Garnish.MenuBtn(this.$newBlockMenuBtn,
+		new Garnish.MenuBtn(this.$addBlockMenuBtn,
 		{
 			onOptionSelect: $.proxy(function(option)
 			{
@@ -93,25 +93,51 @@ Craft.MatrixInput = Garnish.Base.extend(
 			}, this)
 		});
 
+		this.updateAddBlockBtn();
+
 		this.addListener(this.$container, 'resize', 'setNewBlockBtn');
 	},
 
 	setNewBlockBtn: function()
 	{
-		if (this.$newBlockBtnGroup.removeClass('hidden').width() > this.$container.width())
+		if (this.$addBlockBtnGroup.removeClass('hidden').width() > this.$container.width())
 		{
-			this.$newBlockBtnGroup.addClass('hidden');
-			this.$newBlockMenuBtn.removeClass('hidden');
+			this.$addBlockBtnGroup.addClass('hidden');
+			this.$addBlockMenuBtn.removeClass('hidden');
 		}
 		else
 		{
-			this.$newBlockBtnGroup.removeClass('hidden');
-			this.$newBlockMenuBtn.addClass('hidden');
+			this.$addBlockBtnGroup.removeClass('hidden');
+			this.$addBlockMenuBtn.addClass('hidden');
+		}
+	},
+
+	canAddMoreBlocks: function()
+	{
+		return (!this.maxBlocks || this.$blockContainer.children().length < this.maxBlocks);
+	},
+
+	updateAddBlockBtn: function()
+	{
+		if (this.canAddMoreBlocks())
+		{
+			this.$addBlockBtnGroup.removeClass('disabled');
+			this.$addBlockMenuBtn.removeClass('disabled');
+		}
+		else
+		{
+			this.$addBlockBtnGroup.addClass('disabled');
+			this.$addBlockMenuBtn.addClass('disabled');
 		}
 	},
 
 	addBlock: function(type, $insertBefore)
 	{
+		if (!this.canAddMoreBlocks())
+		{
+			return;
+		}
+
 		this.totalNewBlocks++;
 
 		var id = 'new'+this.totalNewBlocks;
@@ -177,6 +203,7 @@ Craft.MatrixInput = Garnish.Base.extend(
 			Craft.initUiElements($fieldsContainer);
 			new MatrixBlock(this, $block);
 			this.blockSort.addItems($block);
+			this.updateAddBlockBtn();
 		}, this));
 	},
 
@@ -514,8 +541,10 @@ var MatrixBlock = Garnish.Base.extend(
 
 	selfDestruct: function()
 	{
-		this.$container.animate(this.matrix.getHiddenBlockCss(this.$container), 'fast', $.proxy(function() {
+		this.$container.animate(this.matrix.getHiddenBlockCss(this.$container), 'fast', $.proxy(function()
+		{
 			this.$container.remove();
+			this.matrix.updateAddBlockBtn();
 		}, this));
 	}
 });
