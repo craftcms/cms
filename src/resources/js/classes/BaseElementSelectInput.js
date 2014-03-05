@@ -276,7 +276,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 		// Make a couple tweaks
 		$element.addClass('removable');
-		$element.prepend('<input type="hidden" name="'+this.name+'[]" value="'+element.id+'">' +
+		$element.prepend('<input type="hidden" name="'+this.name+'[]" value="'+elementInfo.id+'">' +
 			'<a class="delete icon" title="'+Craft.t('Remove')+'"></a>');
 
 		$element.appendTo(this.$elementsContainer);
