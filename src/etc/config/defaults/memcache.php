@@ -14,40 +14,42 @@ return array(
 	 * An array of memcache servers to use.
 	 */
 	'servers' => array(
-		/**
-		 * A memcache server hostname or IP address.
-		 */
-		'host' => 'localhost',
+		array(
+			/**
+			 * A memcache server hostname or IP address.
+			 */
+			'host' => 'localhost',
 
-		/**
-		 * Whether or not to use a persistent connection.
-		 */
-		'persistent' => true,
+			/**
+			 * Whether or not to use a persistent connection.
+			 */
+			'persistent' => true,
 
-		/**
-		 * The memcache server port.
-		 */
-		'port' => 11211,
+			/**
+			 * The memcache server port.
+			 */
+			'port' => 11211,
 
-		/**
-		 * How often a failed server will be retried (in seconds).
-		 */
-		'retryInterval' => 15,
+			/**
+			 * How often a failed server will be retried (in seconds).
+			 */
+			'retryInterval' => 15,
 
-		/**
-		 * If the server should be flagged as online upon a failure.
-		 */
-		'status' => true,
+			/**
+			 * If the server should be flagged as online upon a failure.
+			 */
+			'status' => true,
 
-		/**
-		 * The value in seconds which will be used for connecting to the server.
-		 */
-		'timeout' => 15,
+			/**
+			 * The value in seconds which will be used for connecting to the server.
+			 */
+			'timeout' => 15,
 
-		/**
-		 * Probability of using this server among all servers.
-		 */
-		'weight' => 1,
+			/**
+			 * Probability of using this server among all servers.
+			 */
+			'weight' => 1,
+		),
 	),
 
 	/**
