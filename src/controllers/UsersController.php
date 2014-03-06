@@ -464,6 +464,10 @@ class UsersController extends BaseController
 				);
 			}
 		}
+		else
+		{
+			$variables['tabs'] = array();
+		}
 
 		// Ugly.  But Users don't have a real fieldlayout/tabs.
 		$accountFields = array('username', 'firstName', 'lastName', 'email', 'password', 'newPassword', 'currentPassword', 'passwordResetRequired', 'preferredLocale');
