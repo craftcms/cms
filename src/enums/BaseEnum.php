@@ -2,10 +2,20 @@
 
 namespace Craft;
 
+/**
+ * Class BaseEnum
+ *
+ * @package Craft
+ */
 abstract class BaseEnum
 {
 	private static $_constants = null;
 
+	/**
+	 * @param      $name
+	 * @param bool $strict
+	 * @return bool
+	 */
 	public static function isValidName($name, $strict = false)
 	{
 		$constants = static::_getConstants();
@@ -19,20 +29,29 @@ abstract class BaseEnum
 		return in_array(strtolower($name), $keys);
 	}
 
+	/**
+	 * @param      $value
+	 * @param bool $strict
+	 * @return bool
+	 */
 	public static function isValidValue($value, $strict = false)
 	{
 		$values = array_values(static::_getConstants());
 		return in_array($value, $values, $strict);
 	}
 
+	/**
+	 * @return null
+	 */
 	private static function _getConstants()
 	{
-		if (static::$_constants === null)
+		// static:: chokes PHP here because PHP sucks.
+		if (self::$_constants === null)
 		{
-			$reflect = new ReflectionClass(get_called_class());
-			static::$_constants = $reflect->getConstants();
+			$reflect = new \ReflectionClass(get_called_class());
+			self::$_constants = $reflect->getConstants();
 		}
 
-		return static::$_constants;
+		return self::$_constants;
 	}
 } 
