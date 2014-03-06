@@ -602,29 +602,15 @@ class InstallService extends BaseApplicationComponent
 
 		Craft::log('Creating the Homepage single section.');
 
-		$homepageLayoutFields = array(
+		$homepageLayout = craft()->fields->assembleLayout(
 			array(
-				'fieldId'   => $headingField->id,
-				'sortOrder' => 1
+				Craft::t('Content') => array($headingField->id, $bodyField->id)
 			),
-			array(
-				'fieldId'   => $bodyField->id,
-				'sortOrder' => 2
-			)
+			array($headingField->id, $bodyField->id),
+			true
 		);
 
-		$homepageLayoutTabs = array(
-			array(
-				'name'      => Craft::t('Content'),
-				'sortOrder' => 1,
-				'fields'    => $homepageLayoutFields
-			)
-		);
-
-		$homepageLayout = new FieldLayoutModel();
 		$homepageLayout->type = ElementType::Entry;
-		$homepageLayout->setTabs($homepageLayoutTabs);
-		$homepageLayout->setFields($homepageLayoutFields);
 
 		$homepageSingleSection = new SectionModel();
 		$homepageSingleSection->name       = Craft::t('Homepage');
@@ -722,30 +708,15 @@ class InstallService extends BaseApplicationComponent
 
 		Craft::log('Saving the News entry type.');
 
-		$newsLayoutFields = array(
+		$newsLayout = craft()->fields->assembleLayout(
 			array(
-				'fieldId'   => $bodyField->id,
-				'required'  => true,
-				'sortOrder' => 1
+				Craft::t('Content') => array($bodyField->id, $tagsField->id),
 			),
-			array(
-				'fieldId'   => $tagsField->id,
-				'sortOrder' => 2
-			),
+			array($bodyField->id),
+			true
 		);
 
-		$newsLayoutTabs = array(
-			array(
-				'name'      => Craft::t('Content'),
-				'sortOrder' => 1,
-				'fields'    => $newsLayoutFields
-			)
-		);
-
-		$newsLayout = new FieldLayoutModel();
 		$newsLayout->type = ElementType::Entry;
-		$newsLayout->setTabs($newsLayoutTabs);
-		$newsLayout->setFields($newsLayoutFields);
 
 		$newsEntryTypes = $newsSection->getEntryTypes();
 		$newsEntryType = $newsEntryTypes[0];
