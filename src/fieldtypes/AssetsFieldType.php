@@ -25,6 +25,20 @@ class AssetsFieldType extends BaseElementFieldType
 	protected $inputTemplate = '_components/fieldtypes/Assets/input';
 
 	/**
+	 * Uploaded files that failed validation.
+	 *
+	 * @var array
+	 */
+	private $_failedFiles = array();
+
+	/**
+	 * Allowed extension list.
+	 *
+	 * @var null
+	 */
+	static $_allowedExtensions = array();
+
+	/**
 	 * Returns the label for the "Add" button.
 	 *
 	 * @access protected
@@ -99,25 +113,50 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * For all new elements, if the field is using a single folder setting, move the uploaded files.
+	 * Returns the input value as it should be saved to the database.
+	 *
+	 * @param mixed $value
+	 * @return mixed
 	 */
-	public function onAfterElementSave()
+	public function prepValueFromPost($value)
 	{
-		$handle = $this->model->handle;
-
 		// See if we have uploaded file(s).
 		$contentPostLocation = $this->getContentPostLocation();
 
 		if ($contentPostLocation)
 		{
 			$uploadedFiles = UploadedFile::getInstancesByName($contentPostLocation);
-
-			if ($uploadedFiles)
+			if (!empty($uploadedFiles))
 			{
+				// See if we have to validate against fileKinds
+				$settings = $this->getSettings();
+				if (isset($settings->restrictFiles) && !empty($settings->restrictFiles) && !empty($settings->allowedKinds))
+				{
+					$allowedExtensions = static::_getAllowedExtensions($settings->allowedKinds);
+
+					$failedFiles = array();
+					foreach ($uploadedFiles as $uploadedFile)
+					{
+						$extension = IOHelper::getExtension($uploadedFile->getName());
+						if (!in_array($extension, $allowedExtensions))
+						{
+							$failedFiles[] = $uploadedFile;
+						}
+					}
+
+					// If any files failed the validation, make a note of it.
+					if (!empty($failedFiles))
+					{
+						$this->_failedFiles = $failedFiles;
+						return true;
+					}
+				}
+
+				// If we got here either there are no restrictions or all files are valid
+				// So let's turn them into Assets
 				$fileIds = array();
 
 				$targetFolderId = $this->resolveSourcePath();
-
 				if (!empty($targetFolderId))
 				{
 					foreach ($uploadedFiles as $file)
@@ -126,14 +165,24 @@ class AssetsFieldType extends BaseElementFieldType
 						move_uploaded_file($file->getTempName(), $tempPath);
 						$fileIds[] = craft()->assets->insertFileByLocalPath($tempPath, $file->getName(), $targetFolderId);
 					}
-
-					$this->element->getContent()->{$handle} = $fileIds;
+					return $fileIds;
 				}
 			}
 		}
 
-		if (empty($uploadedFiles) && $this->getSettings()->useSingleFolder)
+		return parent::prepValueFromPost($value);
+	}
+
+
+	/**
+	 * Handle file moves between folders for dynamic single folder settings.
+	 */
+	public function onAfterElementSave()
+	{
+		if ($this->getSettings()->useSingleFolder)
 		{
+			$handle = $this->model->handle;
+
 			// No uploaded files, just good old-fashioned Assets field
 			$filesToMove = $this->element->getContent()->{$handle};
 			if (is_array($filesToMove) && count($filesToMove))
@@ -149,6 +198,54 @@ class AssetsFieldType extends BaseElementFieldType
 		}
 
 		parent::onAfterElementSave();
+	}
+
+	/**
+	 * Validates the value.
+	 *
+	 * Returns 'true' or any custom validation errors.
+	 *
+	 * @param array $value
+	 * @return true|string|array
+	 */
+	public function validate($value)
+	{
+		$errors = parent::validate($value);
+
+		if (!is_array($errors))
+		{
+			$errors = array();
+		}
+
+		$settings = $this->getSettings();
+
+		// Check if this field restricts files and if files are passed at all.
+		if (isset($settings->restrictFiles) && !empty($settings->restrictFiles) && !empty($settings->allowedKinds) && is_array($value) && !empty($value))
+		{
+			$allowedExtensions = static::_getAllowedExtensions($settings->allowedKinds);
+			foreach ($value as $fileId)
+			{
+				$file = craft()->assets->getFileById($fileId);
+				if ($file && !in_array(IOHelper::getExtension($file->filename), $allowedExtensions))
+				{
+					$errors[] = Craft::t('"{filename}" is not allowed in this field.', array('filename' => $file->filename));
+				}
+			}
+		}
+
+		foreach ($this->_failedFiles as $file)
+		{
+			$errors[] = Craft::t('"{filename}" is not allowed in this field.', array('filename' => $file->getName()));
+		}
+
+		if ($errors)
+		{
+			return $errors;
+		}
+		else
+		{
+			return true;
+		}
 	}
 
 	/**
@@ -399,4 +496,34 @@ class AssetsFieldType extends BaseElementFieldType
 			return $folderId;
 		}
 	}
+
+	/**
+	 * Get a list of allowed extensions for a list of file kinds.
+	 *
+	 * @param array $allowedKinds
+	 * @return array
+	 */
+	private function _getAllowedExtensions($allowedKinds)
+	{
+		if (!is_array($allowedKinds))
+		{
+			return array();
+		}
+
+		// Cache in case several fields use the same settings.
+		$key = implode("|", $allowedKinds);
+		if (empty(static::$_allowedExtensions[$key]))
+		{
+			static::$_allowedExtensions[$key] = array();
+			$allKinds = IOHelper::getFileKinds();
+			foreach ($allowedKinds as $allowedKind)
+			{
+				static::$_allowedExtensions[$key] += $allKinds[$allowedKind]['extensions'];
+			}
+
+		}
+
+		return static::$_allowedExtensions[$key];
+	}
+
 }
