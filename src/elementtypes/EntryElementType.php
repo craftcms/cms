@@ -531,4 +531,21 @@ class EntryElementType extends BaseElementType
 
 		return false;
 	}
+
+	/**
+	 * Performs actions after an element has been moved within a structure.
+	 *
+	 * @param BaseElementModel $element
+	 * @param int $structureId
+	 */
+	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
+	{
+		// Was the entry moved within its section's structure?
+		$section = $element->getSection();
+
+		if ($section->type == SectionType::Structure && $section->structureId == $structureId)
+		{
+			craft()->elements->updateElementSlugAndUri($element);
+		}
+	}
 }

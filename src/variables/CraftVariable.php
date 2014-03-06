@@ -102,6 +102,15 @@ class CraftVariable
 	}
 
 	/**
+	 * @param array|null $criteria
+	 * @return ElementCriteriaModel
+	 */
+	public function categories($criteria = null)
+	{
+		return craft()->elements->getCriteria(ElementType::Category, $criteria);
+	}
+
+	/**
 	 * @return ConfigVariable
 	 */
 	public function config()

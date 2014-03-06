@@ -8,7 +8,7 @@
 
 {% set context = context is defined ? context : 'index' %}
 {% set showStatusMenu = (showStatusMenu is defined and showStatusMenu != 'auto' ? showStatusMenu : elementType.hasStatuses()) %}
-{% set showLocaleMenu = (showLocaleMenu is defined and showLocaleMenu != 'auto' ? showLocaleMenu : (context == 'index' and craft.hasPackage('Localize') and elementType.isLocalized())) %}
+{% set showLocaleMenu = (craft.hasPackage('Localize') and context == 'index' ? (showLocaleMenu is defined and showLocaleMenu != 'auto' ? showLocaleMenu : elementType.isLocalized()) : false) %}
 
 <div class="main">
 	<div class="toolbar">

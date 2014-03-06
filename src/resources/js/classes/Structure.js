@@ -71,7 +71,7 @@ Craft.Structure = Garnish.Base.extend(
 		$toggle.click($.proxy(function(ev)
 		{
 			var $li = $(ev.currentTarget).closest('li'),
-				elementId = $li.children('.row').children('.element').data('id'),
+				elementId = $li.children('.row').find('.element:first').data('id'),
 				viewStateKey = $.inArray(elementId, this.state.collapsedElementIds);
 
 			if ($li.hasClass('collapsed'))

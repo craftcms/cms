@@ -8,7 +8,7 @@
 				<h5>{{ "Block Types"|t }}</h5>
 			</div>
 			<div class="items">
-				{% for blockType in blockTypes %}
+				{% for blockType in settings.getBlockTypes() %}
 					<div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockType.id }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
 						<div class="name">{% if blockType.name %}{{ blockType.name }}{% else %}&nbsp;{% endif %}</div>
 						<div class="handle code">{% if blockType.handle %}{{ blockType.handle }}{% else %}&nbsp;{% endif %}</div>
@@ -30,7 +30,7 @@
 				<h5>{{ "Fields"|t }}</h5>
 			</div>
 			<div class="items">
-				{% for blockType in blockTypes %}
+				{% for blockType in settings.getBlockTypes() %}
 					<div data-id="{{ blockType.id }}" class="hidden">
 						{% for field in blockType.getFields() %}
 							<div class="matrixconfigitem mci-field{% if field.hasErrors() %} error{% endif %}" data-id="{{ field.id }}">
@@ -53,7 +53,7 @@
 				<h5>{{ "Field Settings"|t }}</h5>
 			</div>
 			<div class="items">
-				{% for blockType in blockTypes %}
+				{% for blockType in settings.getBlockTypes() %}
 					<div data-id="{{ blockType.id }}">
 						{% for field in blockType.getFields() %}
 							{% set fieldId = field.id %}
@@ -140,3 +140,13 @@
 		name: 'config'
 	}, blockTypeInput) }}
 </div>
+
+{{ forms.textField({
+	label: "Max Blocks"|t,
+	instructions: "The maximum number of blocks the field is allowed to have."|t,
+	id: 'maxBlocks',
+	name: 'maxBlocks',
+	value: settings.maxBlocks,
+	size: 3,
+	errors: settings.getErrors('maxBlocks')
+}) }}

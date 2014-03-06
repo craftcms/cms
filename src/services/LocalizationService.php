@@ -223,6 +223,25 @@ class LocalizationService extends BaseApplicationComponent
 		{
 			$this->_siteLocales[] = new LocaleModel($localeId);
 
+			// Add this locale to each of the category groups
+			$categoryLocales = craft()->db->createCommand()
+				->select('groupId, urlFormat, nestedUrlFormat')
+				->from('categorygroups_i18n')
+				->where('locale = :locale', array(':locale' => $this->getPrimarySiteLocaleId()))
+				->queryAll();
+
+			if ($categoryLocales)
+			{
+				$newCategoryLocales = array();
+
+				foreach ($categoryLocales as $categoryLocale)
+				{
+					$newCategoryLocales[] = array($categoryLocale['groupId'], $localeId, $categoryLocale['urlFormat'], $categoryLocale['nestedUrlFormat']);
+				}
+
+				craft()->db->createCommand()->insertAll('categorygroups_i18n', array('groupId', 'locale', 'urlFormat', 'nestedUrlFormat'), $newCategoryLocales);
+			}
+
 			// Resave all of the localizable elements
 			foreach (craft()->elements->getAllElementTypes() as $elementType)
 			{

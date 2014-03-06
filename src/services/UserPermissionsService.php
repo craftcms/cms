@@ -105,6 +105,15 @@ class UserPermissionsService extends BaseApplicationComponent
 			$permissions[Craft::t('Global Sets')] = $this->_getGlobalSetPermissions($globalSets);
 		}
 
+		// Categories
+
+		$categoryGroups = craft()->categories->getAllGroups();
+
+		if ($categoryGroups)
+		{
+			$permissions[Craft::t('Categories')] = $this->_getCategoryGroupPermissions($categoryGroups);
+		}
+
 		// Asset sources
 
 		$assetSources = craft()->assetSources->getAllSources();
@@ -361,6 +370,27 @@ class UserPermissionsService extends BaseApplicationComponent
 		{
 			$permissions['editGlobalSet:'.$globalSet->id] = array(
 				'label' => Craft::t('Edit “{title}”', array('title' => $globalSet->name))
+			);
+		}
+
+		return $permissions;
+	}
+
+	/**
+	 * Returns the category permissions.
+	 *
+	 * @access private
+	 * @param array $globalSets
+	 * @return array
+	 */
+	private function _getCategoryGroupPermissions($groups)
+	{
+		$permissions = array();
+
+		foreach ($groups as $group)
+		{
+			$permissions['editCategories:'.$group->id] = array(
+				'label' => Craft::t('Edit “{title}”', array('title' => $group->name))
 			);
 		}
 

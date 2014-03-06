@@ -1,7 +1,6 @@
 /**
- * Element Select input
+ * Asset Select input
  */
-
 Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 {
 	requestId: 0,
@@ -84,6 +83,12 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 		{
 			this.$addElementBtn.addClass('disabled');
 		}
+
+		if (this.modal)
+		{
+			this.modal.elementIndex.rememberDisabledElementId(element.id);
+		}
+
 	},
 
 	/**

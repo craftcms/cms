@@ -93,13 +93,12 @@ class StructuresService extends BaseApplicationComponent
 	 * @param BaseElementModel $element
 	 * @param BaseElementModel $parentElement
 	 * @param string           $mode Whether this is an "insert", "update", or "auto".
-	 * @param bool             $updateSlugAndUri
 	 * @return bool
 	 */
-	public function prepend($structureId, BaseElementModel $element, BaseElementModel $parentElement, $mode = 'auto', $updateSlugAndUri = false)
+	public function prepend($structureId, BaseElementModel $element, BaseElementModel $parentElement, $mode = 'auto')
 	{
 		$parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
-		return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', 'moveAsFirst', $mode, $updateSlugAndUri);
+		return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', 'moveAsFirst', $mode);
 	}
 
 	/**
@@ -109,13 +108,12 @@ class StructuresService extends BaseApplicationComponent
 	 * @param BaseElementModel $element
 	 * @param BaseElementModel $parentElement
 	 * @param string           $mode Whether this is an "insert", "update", or "auto".
-	 * @param bool             $updateSlugAndUri
 	 * @return bool
 	 */
-	public function append($structureId, BaseElementModel $element, BaseElementModel $parentElement, $mode = 'auto', $updateSlugAndUri = false)
+	public function append($structureId, BaseElementModel $element, BaseElementModel $parentElement, $mode = 'auto')
 	{
 		$parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
-		return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', 'moveAsLast', $mode, $updateSlugAndUri);
+		return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', 'moveAsLast', $mode);
 	}
 
 	/**
@@ -124,13 +122,12 @@ class StructuresService extends BaseApplicationComponent
 	 * @param int              $structureId
 	 * @param BaseElementModel $element
 	 * @param string           $mode Whether this is an "insert", "update", or "auto".
-	 * @param bool             $updateSlugAndUri
 	 * @return bool
 	 */
-	public function prependToRoot($structureId, BaseElementModel $element, $mode = 'auto', $updateSlugAndUri = false)
+	public function prependToRoot($structureId, BaseElementModel $element, $mode = 'auto')
 	{
 		$parentElementRecord = $this->_getRootElementRecord($structureId);
-		return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', 'moveAsFirst', $mode, $updateSlugAndUri);
+		return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', 'moveAsFirst', $mode);
 	}
 
 	/**
@@ -139,13 +136,12 @@ class StructuresService extends BaseApplicationComponent
 	 * @param int              $structureId
 	 * @param BaseElementModel $element
 	 * @param string           $mode Whether this is an "insert", "update", or "auto".
-	 * @param bool             $updateSlugAndUri
 	 * @return bool
 	 */
-	public function appendToRoot($structureId, BaseElementModel $element, $mode = 'auto', $updateSlugAndUri = false)
+	public function appendToRoot($structureId, BaseElementModel $element, $mode = 'auto')
 	{
 		$parentElementRecord = $this->_getRootElementRecord($structureId);
-		return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', 'moveAsLast', $mode, $updateSlugAndUri);
+		return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', 'moveAsLast', $mode);
 	}
 
 	/**
@@ -155,13 +151,12 @@ class StructuresService extends BaseApplicationComponent
 	 * @param BaseElementModel $element
 	 * @param BaseElementModel $nextElement
 	 * @param string           $mode Whether this is an "insert", "update", or "auto".
-	 * @param bool             $updateSlugAndUri
 	 * @return bool
 	 */
-	public function moveBefore($structureId, BaseElementModel $element, BaseElementModel $nextElement, $mode = 'auto', $updateSlugAndUri = false)
+	public function moveBefore($structureId, BaseElementModel $element, BaseElementModel $nextElement, $mode = 'auto')
 	{
 		$nextElementRecord = $this->_getElementRecord($structureId, $nextElement);
-		return $this->_doIt($structureId, $element, $nextElementRecord, 'insertBefore', 'moveBefore', $mode, $updateSlugAndUri);
+		return $this->_doIt($structureId, $element, $nextElementRecord, 'insertBefore', 'moveBefore', $mode);
 	}
 
 	/**
@@ -171,13 +166,12 @@ class StructuresService extends BaseApplicationComponent
 	 * @param BaseElementModel $element
 	 * @param BaseElementModel $prevElement
 	 * @param string           $mode Whether this is an "insert", "update", or "auto".
-	 * @param bool             $updateSlugAndUri
 	 * @return bool
 	 */
-	public function moveAfter($structureId, BaseElementModel $element, BaseElementModel $prevElement, $mode = 'auto', $updateSlugAndUri = false)
+	public function moveAfter($structureId, BaseElementModel $element, BaseElementModel $prevElement, $mode = 'auto')
 	{
 		$prevElementRecord = $this->_getElementRecord($structureId, $prevElement);
-		return $this->_doIt($structureId, $element, $prevElementRecord, 'insertAfter', 'moveAfter', $mode, $updateSlugAndUri);
+		return $this->_doIt($structureId, $element, $prevElementRecord, 'insertAfter', 'moveAfter', $mode);
 	}
 
 	// Private methods
@@ -242,10 +236,9 @@ class StructuresService extends BaseApplicationComponent
 	 * @param string                 $insertAction
 	 * @param string                 $updateAction
 	 * @param string                 $mode
-	 * @param bool                   $updateSlugAndUri
 	 * @return bool
 	 */
-	private function _doIt($structureId, BaseElementModel $element, StructureElementRecord $targetElementRecord, $insertAction, $updateAction, $mode, $updateSlugAndUri)
+	private function _doIt($structureId, BaseElementModel $element, StructureElementRecord $targetElementRecord, $insertAction, $updateAction, $mode)
 	{
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
@@ -278,10 +271,10 @@ class StructuresService extends BaseApplicationComponent
 				$element->rgt   = $elementRecord->rgt;
 				$element->level = $elementRecord->level;
 
-				if ($updateSlugAndUri)
-				{
-					craft()->elements->updateElementSlugAndUri($element);
-				}
+				// Tell the element type about it
+				$elementType = craft()->elements->getElementType($element->getElementType());
+				$elementType->onAfterMoveElementInStructure($element, $structureId);
+				//craft()->elements->updateElementSlugAndUri($element);
 
 				if ($transaction !== null)
 				{

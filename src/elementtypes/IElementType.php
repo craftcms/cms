@@ -42,7 +42,7 @@ interface IElementType extends IComponentType
 	 * @param string|null $context
 	 * @return array|null
 	 */
-	public function getSource($key, $context);
+	public function getSource($key, $context = null);
 
 	/**
 	 * @return array
@@ -126,4 +126,10 @@ interface IElementType extends IComponentType
 	 * @return mixed
 	 */
 	public function routeRequestForMatchedElement(BaseElementModel $element);
+
+	/**
+	 * @param BaseElementModel $element
+	 * @param int $structureId
+	 */
+	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId);
 }

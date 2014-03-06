@@ -1,0 +1,45 @@
+<div id="{{ id }}" class="categoriesfield">
+
+	<ul class="elements structure">
+		{% nav category in categories %}
+			{% set selected = (category.id in selectedCategoryIds) %}
+			<li id="{{ id }}-category-{{ category.id }}"{% if not selected %} class="hidden"{% endif %}>
+				{% set indent = (category.level - 1) * 35 %}
+				<div class="row" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
+					{%- spaceless %}
+						{% include "_includes/forms/checkbox" with {
+							label: include('_elements/element', { element: category }, with_context = false),
+							value: category.id,
+							id: id~'-'~category.id,
+							name: name~'[]',
+							checked: selected
+						} only %}
+					{% endspaceless -%}
+				</div>
+
+				{% ifchildren %}
+					<ul>
+						{% children %}
+					</ul>
+				{% endifchildren %}
+			</li>
+		{% endnav %}
+	</ul>
+
+	<div class="btn add icon dashed">{{ "Add a category"|t }}</div>
+</div>
+
+{% set js %}
+	new {{ jsClass }}(
+		"{{ id   | namespaceInputId   | e('js') }}",
+		"{{ name | namespaceInputName | e('js') }}",
+		"{{ elementType.getClassHandle()|e('js') }}",
+		{{ sources|json_encode|raw }},
+		{{ criteria|json_encode|raw }},
+		{{ sourceElementId ?: 'null' }},
+		{{ limit ?: 'null' }},
+		"{{ storageKey|e('js') }}"
+	);
+{% endset %}
+
+{% includeJs js %}

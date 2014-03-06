@@ -87,7 +87,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * @param string|null $context
 	 * @return array|null
 	 */
-	public function getSource($key, $context)
+	public function getSource($key, $context = null)
 	{
 		$contextKey = ($context ? $context : '*');
 
@@ -373,6 +373,16 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	public function routeRequestForMatchedElement(BaseElementModel $element)
 	{
 		return false;
+	}
+
+	/**
+	 * Performs actions after an element has been moved within a structure.
+	 *
+	 * @param BaseElementModel $element
+	 * @param int $structureId
+	 */
+	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
+	{
 	}
 
 	// Private methods

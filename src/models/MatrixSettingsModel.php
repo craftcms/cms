@@ -20,6 +20,19 @@ class MatrixSettingsModel extends BaseModel
 	}
 
 	/**
+	 * Defines this model's attributes.
+	 *
+	 * @access protected
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'maxBlocks' => AttributeType::Number,
+		);
+	}
+
+	/**
 	 * Returns the field associated with this.
 	 *
 	 * @return FieldModel

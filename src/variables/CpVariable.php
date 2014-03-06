@@ -27,6 +27,11 @@ class CpVariable
 			$nav['globals'] = array('name' => Craft::t('Globals'), 'url' => 'globals/'.$globals[0]->handle);
 		}
 
+		if (craft()->categories->getEditableGroupIds())
+		{
+			$nav['categories'] = array('name' => Craft::t('Categories'));
+		}
+
 		if (craft()->assetSources->getTotalViewableSources())
 		{
 			$nav['assets'] = array('name' => Craft::t('Assets'));

@@ -49,6 +49,8 @@ $configArray = array(
 //  CP routes
 // -------------------------------------------
 
+$cpRoutes['categories/(?P<groupHandle>{handle})'] = 'categories';
+
 $cpRoutes['dashboard/settings/new']               = 'dashboard/settings/_widgetsettings';
 $cpRoutes['dashboard/settings/(?P<widgetId>\d+)'] = 'dashboard/settings/_widgetsettings';
 
@@ -67,6 +69,9 @@ $cpRoutes['settings/assets/sources/(?P<sourceId>\d+)']                          
 $cpRoutes['settings/assets/transforms']                                           = array('action' => 'assetTransforms/transformIndex');
 $cpRoutes['settings/assets/transforms/new']                                       = array('action' => 'assetTransforms/editTransform');
 $cpRoutes['settings/assets/transforms/(?P<handle>{handle})']                      = array('action' => 'assetTransforms/editTransform');
+$cpRoutes['settings/categories']                                                  = array('action' => 'categories/groupIndex');
+$cpRoutes['settings/categories/new']                                              = array('action' => 'categories/editCategoryGroup');
+$cpRoutes['settings/categories/(?P<groupId>\d+)']                                 = array('action' => 'categories/editCategoryGroup');
 $cpRoutes['settings/fields/(?P<groupId>\d+)']                                     = 'settings/fields';
 $cpRoutes['settings/fields/new']                                                  = 'settings/fields/_edit';
 $cpRoutes['settings/fields/edit/(?P<fieldId>\d+)']                                = 'settings/fields/_edit';
@@ -140,6 +145,7 @@ $components['assets']['class']               = 'Craft\AssetsService';
 $components['assetTransforms']['class']      = 'Craft\AssetTransformsService';
 $components['assetIndexing']['class']        = 'Craft\AssetIndexingService';
 $components['assetSources']['class']         = 'Craft\AssetSourcesService';
+$components['categories']['class']           = 'Craft\CategoriesService';
 $components['content']['class']              = 'Craft\ContentService';
 $components['dashboard']['class']            = 'Craft\DashboardService';
 $components['email']['class']                = 'Craft\EmailService';

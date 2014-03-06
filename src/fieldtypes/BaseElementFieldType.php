@@ -108,6 +108,40 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
+	 * Validates the value beyond the checks that were assumed based on the content attribute.
+	 *
+	 * Returns 'true' or any custom validation errors.
+	 *
+	 * @param array $value
+	 * @return true|string|array
+	 */
+	public function validate($value)
+	{
+		$errors = array();
+
+		if ($this->allowLimit && ($limit = $this->getSettings()->limit) && is_array($value) && count($value) > $limit)
+		{
+			if ($limit == 1)
+			{
+				$errors[] = Craft::t('There can’t be more than one selection.');
+			}
+			else
+			{
+				$errors[] = Craft::t('There can’t be more than {limit} selections.', array('limit' => $limit));
+			}
+		}
+
+		if ($errors)
+		{
+			return $errors;
+		}
+		else
+		{
+			return true;
+		}
+	}
+
+	/**
 	 * Preps the field value for use.
 	 *
 	 * @param mixed $value
@@ -170,38 +204,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $criteria)
 	{
-		if (!($criteria instanceof ElementCriteriaModel))
-		{
-			$criteria = craft()->elements->getCriteria($this->elementType);
-			$criteria->id = false;
-		}
-
-		$criteria->status = null;
-		$criteria->localeEnabled = null;
-
-		$selectionCriteria = $this->getInputSelectionCriteria();
-		$selectionCriteria['localeEnabled'] = null;
-
-		if (isset($this->element))
-		{
-			$selectionCriteria['locale'] = $this->element->locale;
-		}
-
-		$variables = array(
-			'jsClass'            => $this->inputJsClass,
-			'elementType'        => new ElementTypeVariable($this->getElementType()),
-			'id'                 => craft()->templates->formatInputId($name),
-			'fieldId'            => $this->model->id,
-			'storageKey'         => 'field.'.$this->model->id,
-			'name'               => $name,
-			'elements'           => $criteria,
-			'sources'            => $this->getInputSources(),
-			'criteria'           => $selectionCriteria,
-			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
-			'limit'              => ($this->allowLimit ? $this->getSettings()->limit : null),
-			'addButtonLabel'     => $this->getAddButtonLabel(),
-		);
-
+		$variables = $this->getInputTemplateVariables($name, $criteria);
 		return craft()->templates->render($this->inputTemplate, $variables);
 	}
 
@@ -230,7 +233,12 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function onAfterElementSave()
 	{
-		craft()->relations->saveField($this);
+		$targetIds = $this->element->getContent()->getAttribute($this->model->handle);
+
+		if ($targetIds !== null)
+		{
+			craft()->relations->saveRelations($this->model, $this->element, $targetIds);
+		}
 	}
 
 	/**
@@ -263,6 +271,49 @@ abstract class BaseElementFieldType extends BaseFieldType
 		}
 
 		return $elementType;
+	}
+
+	/**
+	 * Returns an array of variables that should be passed to the input template.
+	 *
+	 * @access protected
+	 * @param string $name
+	 * @param mixed  $criteria
+	 * @return array
+	 */
+	protected function getInputTemplateVariables($name, $criteria)
+	{
+		if (!($criteria instanceof ElementCriteriaModel))
+		{
+			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria->id = false;
+		}
+
+		$criteria->status = null;
+		$criteria->localeEnabled = null;
+
+		$selectionCriteria = $this->getInputSelectionCriteria();
+		$selectionCriteria['localeEnabled'] = null;
+
+		if (isset($this->element))
+		{
+			$selectionCriteria['locale'] = $this->element->locale;
+		}
+
+		return array(
+			'jsClass'            => $this->inputJsClass,
+			'elementType'        => new ElementTypeVariable($this->getElementType()),
+			'id'                 => craft()->templates->formatInputId($name),
+			'fieldId'            => $this->model->id,
+			'storageKey'         => 'field.'.$this->model->id,
+			'name'               => $name,
+			'elements'           => $criteria,
+			'sources'            => $this->getInputSources(),
+			'criteria'           => $selectionCriteria,
+			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
+			'limit'              => ($this->allowLimit ? $this->getSettings()->limit : null),
+			'addButtonLabel'     => $this->getAddButtonLabel(),
+		);
 	}
 
 	/**
