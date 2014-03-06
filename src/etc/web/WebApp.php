@@ -80,20 +80,6 @@ class WebApp extends \CWebApplication
 			Craft::import($alias);
 		}
 
-		if ($this->config->get('devMode') == true)
-		{
-			error_reporting(E_ALL & ~E_STRICT);
-			ini_set('display_errors', 1);
-			defined('YII_DEBUG') || define('YII_DEBUG', true);
-			defined('YII_TRACE_LEVEL') || define('YII_TRACE_LEVEL', 3);
-		}
-		else
-		{
-			error_reporting(0);
-			ini_set('display_errors', 0);
-			defined('YII_DEBUG') || define('YII_DEBUG', false);
-		}
-
 		// So we can try to translate Yii framework strings
 		craft()->coreMessages->attachEventHandler('onMissingTranslation', array('Craft\LocalizationHelper', 'findMissingTranslation'));
 
