@@ -770,20 +770,18 @@ abstract class BaseElementModel extends BaseModel
 
 					if (isset($content[$handle]))
 					{
-						$this->_content->$handle = $content[$handle];
-					}
-					else
-					{
-						$this->_content->$handle = null;
-					}
+						$value = $content[$handle];
 
-					// Give the field type a chance to make changes
-					$fieldType = $field->getFieldType();
+						// Give the field type a chance to make changes
+						$fieldType = $field->getFieldType();
 
-					if ($fieldType)
-					{
-						$fieldType->element = $this;
-						$this->_content->$handle = $fieldType->prepValueFromPost($this->_content->$handle);
+						if ($fieldType)
+						{
+							$fieldType->element = $this;
+							$value = $fieldType->prepValueFromPost($value);
+						}
+
+						$this->_content->$handle = $value;
 					}
 				}
 			}
