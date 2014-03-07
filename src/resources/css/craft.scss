@@ -110,7 +110,7 @@ a.sel,
 li.sel a { cursor: default !important; text-decoration: none; }
 
 a.go { white-space: nowrap; }
-a.go:after { content: 'go'; font-size: 11px; margin: -1px 0 0 4px; color: $lighttextcolor; }
+a.go:after { content: 'go'; font-size: 11px; margin-top: -1px; padding-left: 4px; color: $lighttextcolor; }
 a.go:hover:after { color: $linkcolor; }
 
 /* toggles */
