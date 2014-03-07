@@ -21,8 +21,20 @@ class ElementHelper
 			$slug = $element->title;
 		}
 
+		$element->slug = static::createSlug($slug);
+	}
+
+	/**
+	 * Creates a slug based on a given string.
+	 *
+	 * @static
+	 * @param string $str
+	 * @return string
+	 */
+	public static function createSlug($str)
+	{
 		// Remove HTML tags
-		$slug = preg_replace('/<(.*?)>/u', '', $slug);
+		$slug = preg_replace('/<(.*?)>/u', '', $str);
 
 		// Remove inner-word punctuation.
 		$slug = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $slug);
@@ -36,7 +48,7 @@ class ElementHelper
 		$words = ArrayHelper::filterEmptyStringsFromArray($words[0]);
 		$slug = implode(craft()->config->get('slugWordSeparator'), $words);
 
-		$element->slug = $slug;
+		return $slug;
 	}
 
 	/**
