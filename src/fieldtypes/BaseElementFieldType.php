@@ -37,6 +37,12 @@ abstract class BaseElementFieldType extends BaseFieldType
 	protected $inputTemplate = '_includes/forms/elementSelect';
 
 	/**
+	 * @access protected
+	 * @var bool $sortable Whether the elements have a custom sort order.
+	 */
+	protected $sortable = true;
+
+	/**
 	 * Returns the type of field this is.
 	 *
 	 * @return string
@@ -176,7 +182,10 @@ abstract class BaseElementFieldType extends BaseFieldType
 				'field'         => $this->model->id
 			);
 
-			$criteria->order = 'sortOrder';
+			if ($this->sortable)
+			{
+				$criteria->order = 'sortOrder';
+			}
 		}
 		else
 		{

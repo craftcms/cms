@@ -31,6 +31,12 @@ class CategoriesFieldType extends BaseElementFieldType
 	protected $inputTemplate = '_components/fieldtypes/Categories/input';
 
 	/**
+	 * @access protected
+	 * @var bool $sortable Whether the elements have a custom sort order.
+	 */
+	protected $sortable = false;
+
+	/**
 	 * Performs any additional actions after the element has been saved.
 	 */
 	public function onAfterElementSave()

@@ -680,6 +680,19 @@ class FieldsService extends BaseApplicationComponent
 		$postedFieldLayout = craft()->request->getPost('fieldLayout', array());
 		$requiredFields = craft()->request->getPost('requiredFields', array());
 
+		return $this->assembleLayout($postedFieldLayout, $requiredFields, $createTabs);
+	}
+
+	/**
+	 * Assembles a field layout.
+	 *
+	 * @param array $postedFieldLayout
+	 * @param array|null $requiredFields
+	 * @param bool $createTabs
+	 * @return FieldLayoutModel
+	 */
+	public function assembleLayout($postedFieldLayout, $requiredFields, $createTabs = true)
+	{
 		$tabs = array();
 		$fields = array();
 

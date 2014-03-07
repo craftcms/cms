@@ -23,12 +23,15 @@ class PaginateVariable
 		{
 			$path = craft()->request->getPath();
 
-			if ($path)
+			if ($page != 1)
 			{
-				$path .= '/';
-			}
+				if ($path)
+				{
+					$path .= '/';
+				}
 
-			$path .= craft()->config->get('pageTrigger').$page;
+				$path .= craft()->config->get('pageTrigger').$page;
+			}
 
 			return UrlHelper::getUrl($path);
 		}
