@@ -338,7 +338,7 @@ class AssetSourcesService extends BaseApplicationComponent
 				else
 				{
 					// Update the top folder's name with the source's new name
-					$topFolder = craft()->assets->findFolder(array('sourceId' => $source->id, 'parentId' => FolderCriteriaModel::AssetsNoParent));
+					$topFolder = craft()->assets->findFolder(array('sourceId' => $source->id, 'parentId' => ':empty:'));
 
 					if ($topFolder->name != $source->name)
 					{
