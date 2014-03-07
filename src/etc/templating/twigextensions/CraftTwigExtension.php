@@ -16,6 +16,7 @@ class CraftTwigExtension extends \Twig_Extension
 	public function getTokenParsers()
 	{
 		return array(
+			new Cache_TokenParser(),
 			new Exit_TokenParser(),
 			new Header_TokenParser(),
 			new Hook_TokenParser(),
@@ -335,5 +336,15 @@ class CraftTwigExtension extends \Twig_Extension
 	public function getName()
 	{
 		return 'craft';
+	}
+
+	/**
+	 * Returns the Craft caching strategy for Twig.
+	 *
+	 * @return CraftCacheStrategy
+	 */
+	public function getCacheStrategy()
+    {
+		return new CraftCacheStrategy();
 	}
 }
