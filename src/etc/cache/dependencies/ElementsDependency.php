@@ -1,9 +1,10 @@
 <?php
+namespace Craft;
 
 /**
  * Class ElementDependency
  */
-class ElementsDependency extends CCacheDependency
+class ElementsDependency extends \CCacheDependency
 {
 	private $_elements = null;
 

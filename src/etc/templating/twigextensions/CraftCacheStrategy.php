@@ -55,6 +55,8 @@ class CraftCacheStrategy
 				throw new Exception(Craft::t('The supplied entry is must be an EntryModel.'));
 			}
 
+			$this->_elementDependencies[] = $params['entry'];
+
 			$key .= $this->hashElement($params['entry']);
 		}
 
@@ -72,6 +74,8 @@ class CraftCacheStrategy
 					throw new Exception(Craft::t('Elements of the array passed to entries must be EntryModel objects.'));
 				}
 
+				$this->_elementDependencies[] = $entry;
+
 				$key .= $this->hashElement($entry);
 			}
 		}
@@ -82,6 +86,8 @@ class CraftCacheStrategy
 			{
 				throw new Exception(Craft::t('The supplied user is invalid, must be a UserModel.'));
 			}
+
+			$this->_elementDependencies[] = $params['user'];
 
 			$key .= $this->hashElement($params['user']);
 		}
@@ -133,11 +139,11 @@ class CraftCacheStrategy
 
 		if (count($this->_elementDependencies) > 0)
 		{
-			craft()->cache->set($hashedKey, 0, new \ElementsDependency($this->_elementDependencies));
+			craft()->cache->set($hashedKey,$cacheValue, 0, new ElementsDependency($this->_elementDependencies));
 		}
 		else
 		{
-			craft()->cache->set($hashedKey, 0);
+			craft()->cache->set($hashedKey, $cacheValue, 0);
 		}
 	}
 
@@ -152,6 +158,11 @@ class CraftCacheStrategy
 			return false;
 		}
 
-		return craft()->cache->get($hashedKey);
+		$cacheValueModel = craft()->cache->get($hashedKey);
+
+		if ($cacheValueModel)
+		{
+			return $cacheValueModel->value;
+		}
 	}
 }
