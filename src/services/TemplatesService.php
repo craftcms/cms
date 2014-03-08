@@ -755,8 +755,9 @@ class TemplatesService extends BaseApplicationComponent
 		if (!isset($this->_twigOptions))
 		{
 			$this->_twigOptions = array(
-				'cache'       => craft()->path->getCompiledTemplatesPath(),
-				'auto_reload' => true,
+				'base_template_class' => '\Craft\BaseTemplate',
+				'cache'               => craft()->path->getCompiledTemplatesPath(),
+				'auto_reload'         => true,
 			);
 
 			if (craft()->config->get('devMode'))
