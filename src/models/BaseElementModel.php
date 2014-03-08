@@ -9,6 +9,7 @@ abstract class BaseElementModel extends BaseModel
 	protected $elementType;
 
 	private $_contentPostLocation;
+	private $_rawPostContent;
 	private $_content;
 	private $_preppedContent;
 
@@ -753,6 +754,11 @@ abstract class BaseElementModel extends BaseModel
 			$content = craft()->request->getPost($content, array());
 		}
 
+		if (!isset($this->_rawPostContent))
+		{
+			$this->_rawPostContent = array();
+		}
+
 		$fieldLayout = $this->getFieldLayout();
 
 		if ($fieldLayout)
@@ -770,23 +776,38 @@ abstract class BaseElementModel extends BaseModel
 
 					if (isset($content[$handle]))
 					{
-						$this->_content->$handle = $content[$handle];
-					}
-					else
-					{
-						$this->_content->$handle = null;
-					}
+						$value = $this->_rawPostContent[$handle] = $content[$handle];
 
-					// Give the field type a chance to make changes
-					$fieldType = $field->getFieldType();
+						// Give the field type a chance to make changes
+						$fieldType = $field->getFieldType();
 
-					if ($fieldType)
-					{
-						$fieldType->element = $this;
-						$this->_content->$handle = $fieldType->prepValueFromPost($this->_content->$handle);
+						if ($fieldType)
+						{
+							$fieldType->element = $this;
+							$value = $fieldType->prepValueFromPost($value);
+						}
+
+						$this->_content->$handle = $value;
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * Returns the raw content from the post data, before it was passed through prepValueFromPost().
+	 *
+	 * @return array
+	 */
+	public function getContentFromPost()
+	{
+		if (isset($this->_rawPostContent))
+		{
+			return $this->_rawPostContent;
+		}
+		else
+		{
+			return array();
 		}
 	}
 
