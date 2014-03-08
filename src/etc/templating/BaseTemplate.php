@@ -22,7 +22,7 @@ abstract class BaseTemplate extends \Twig_Template
 	 */
 	protected function getAttribute($object, $item, array $arguments = array(), $type = \Twig_Template::ANY_CALL, $isDefinedTest = false, $ignoreStrictCheck = false)
 	{
-		if ($object instanceof BaseElementModel)
+		if (is_object($object) && $object instanceof BaseElementModel)
 		{
 			$this->_includeElementInTemplateCaches($object);
 		}
