@@ -667,6 +667,20 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Gets an attribute's value.
+	 *
+	 * @param string $name
+	 * @param bool $flattenValue
+	 * @return mixed
+	 */
+	public function getAttribute($name, $flattenValue = false)
+	{
+		$this->includeInTemplateCaches();
+
+		return parent::getAttribute($name, $flattenValue);
+	}
+
+	/**
 	 * Returns the raw content saved on this entity.
 	 *
 	 * This is now deprecated. Use getContent() to get the ContentModel instead.
@@ -918,6 +932,28 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Includes this element in any active template caches.
+	 *
+	 * @access protected
+	 */
+	protected function includeInTemplateCaches()
+	{
+		// Get the ID without creating an infinite loop
+		$id = parent::getAttribute('id');
+
+		if ($id)
+		{
+			// Don't initialize the CacheService if we don't have to
+			$cacheService = craft()->getComponent('dummyCache', false);
+
+			if ($cacheService)
+			{
+				$cacheService->includeElementInTemplateCaches($id);
+			}
+		}
+	}
+
+	/**
 	 * Returns an element right before/after this one, from a given set of criteria.
 	 *
 	 * @access private
@@ -957,6 +993,8 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	private function _getPreppedContentForField(FieldModel $field)
 	{
+		$this->includeInTemplateCaches();
+
 		if (!isset($this->_preppedContent) || !array_key_exists($field->handle, $this->_preppedContent))
 		{
 			$content = $this->getContent();
