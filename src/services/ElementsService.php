@@ -989,7 +989,7 @@ class ElementsService extends BaseApplicationComponent
 				// Finally, delete any caches involving this element
 				if (!$isNewElement)
 				{
-					craft()->dummyCache->deleteCachesWithElement($element->id);
+					craft()->templateCache->deleteCachesWithElement($element->id);
 				}
 			}
 
@@ -1049,7 +1049,7 @@ class ElementsService extends BaseApplicationComponent
 		));
 
 		// Delete any caches involving this element
-		craft()->dummyCache->deleteCachesWithElement($element->id);
+		craft()->templateCache->deleteCachesWithElement($element->id);
 
 		if ($updateOtherLocales)
 		{
@@ -1267,7 +1267,7 @@ class ElementsService extends BaseApplicationComponent
 				}
 
 				// Also delete any caches involving this element
-				craft()->dummyCache->deleteCachesWithElement($elementId);
+				craft()->templateCache->deleteCachesWithElement($elementId);
 			}
 
 			// Now delete the rows in the elements table

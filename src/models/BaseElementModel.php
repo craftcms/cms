@@ -944,7 +944,7 @@ abstract class BaseElementModel extends BaseModel
 		if ($id)
 		{
 			// Don't initialize the CacheService if we don't have to
-			$cacheService = craft()->getComponent('dummyCache', false);
+			$cacheService = craft()->getComponent('templateCache', false);
 
 			if ($cacheService)
 			{

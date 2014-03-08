@@ -140,8 +140,6 @@ $cpRoutes['pkgRoutes']['Users']['settings/users/groups/(?P<groupId>\d+)'] = 'set
 //  Component config
 // -------------------------------------------
 
-$components['dummyCache']['class']           = 'Craft\DummyCacheService';
-
 $components['users']['class']                = 'Craft\UsersService';
 $components['assets']['class']               = 'Craft\AssetsService';
 $components['assetTransforms']['class']      = 'Craft\AssetTransformsService';
@@ -205,6 +203,7 @@ $components['systemSettings'] = array(
 	)
 );
 $components['tags']['class']                 = 'Craft\TagsService';
+$components['templateCache']['class']        = 'Craft\TemplateCacheService';
 $components['templates']['class']            = 'Craft\TemplatesService';
 $components['updates']['class']              = 'Craft\UpdatesService';
 $components['components'] = array(

@@ -24,7 +24,7 @@ class Cache_Node extends \Twig_Node
 
 		$compiler
 			->addDebugInfo($this)
-			->write("\$cacheService = \Craft\craft()->dummyCache;\n");
+			->write("\$cacheService = \Craft\craft()->templateCache;\n");
 
 		if ($ignoreConditions)
 		{

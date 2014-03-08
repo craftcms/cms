@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-class DummyCacheService extends BaseApplicationComponent
+class TemplateCacheService extends BaseApplicationComponent
 {
 	private static $_templateCachesTable = 'templatecaches';
 	private static $_templateCacheElementsTable = 'templatecacheelements';
