@@ -18,17 +18,17 @@ class TemplateCacheService extends BaseApplicationComponent
 	 */
 	public function getTemplateCache($key, $global)
 	{
-		$conditions = array('and', 'expiryDate > :now', 'cacheKey = :key');
+		$conditions = array('and', 'expiryDate > :now', 'cacheKey = :key', 'locale = :locale');
+
 		$params = array(
-			':now' => DateTimeHelper::currentTimeForDb(),
-			':key' => $key
+			':now'    => DateTimeHelper::currentTimeForDb(),
+			':key'    => $key,
+			':locale' => craft()->language
 		);
 
 		if (!$global)
 		{
-			$conditions[] = 'locale = :locale';
 			$conditions[] = 'path = :path';
-			$params[':locale'] = craft()->language;
 			$params[':path'] = $this->_getPath();
 		}
 
@@ -103,7 +103,7 @@ class TemplateCacheService extends BaseApplicationComponent
 		{
 			craft()->db->createCommand()->insert(static::$_templateCachesTable, array(
 				'cacheKey'   => $key,
-				'locale'     => ($global ? null : craft()->language),
+				'locale'     => craft()->language,
 				'path'       => ($global ? null : $this->_getPath()),
 				'expiryDate' => DateTimeHelper::formatTimeForDb($expiration),
 				'body'       => $body

@@ -277,7 +277,7 @@ class InstallService extends BaseApplicationComponent
 
 		craft()->db->createCommand()->createTable('templatecaches', array(
 			'cacheKey'   => array('column' => ColumnType::Varchar, 'length' => 36, 'null' => false),
-			'locale'     => array('column' => ColumnType::Locale),
+			'locale'     => array('column' => ColumnType::Locale, 'null' => false),
 			'path'       => array('column' => ColumnType::Varchar),
 			'expiryDate' => array('column' => ColumnType::DateTime, 'null' => false),
 			'body'       => array('column' => ColumnType::MediumText, 'null' => false),
