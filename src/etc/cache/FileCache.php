@@ -34,11 +34,6 @@ class FileCache extends \CFileCache
 	 */
 	public function set($id, $value, $expire = null, $dependency = null)
 	{
-		if ($expire === null)
-		{
-			$expire = craft()->config->getCacheDuration();
-		}
-
 		$this->_originalKey = $id;
 
 		return parent::set($id, $value, $expire, $dependency);
@@ -56,11 +51,6 @@ class FileCache extends \CFileCache
 	 */
 	public function add($id, $value, $expire = null, $dependency = null)
 	{
-		if ($expire === null)
-		{
-			$expire = craft()->config->getCacheDuration();
-		}
-
 		$this->_originalKey = $id;
 
 		return parent::add($id, $value, $expire, $dependency);
