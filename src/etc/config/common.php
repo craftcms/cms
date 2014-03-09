@@ -204,6 +204,7 @@ $components['systemSettings'] = array(
 	)
 );
 $components['tags']['class']                 = 'Craft\TagsService';
+$components['templateCache']['class']        = 'Craft\TemplateCacheService';
 $components['templates']['class']            = 'Craft\TemplatesService';
 $components['updates']['class']              = 'Craft\UpdatesService';
 $components['components'] = array(

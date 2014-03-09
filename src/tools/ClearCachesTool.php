@@ -33,9 +33,12 @@ class ClearCachesTool extends BaseTool
 	 */
 	public function getOptionsHtml()
 	{
+		$caches = $this->_getFolders();
+		$caches['templateCaches'] = Craft::t('Template Caches');
+
 		return craft()->templates->render('_includes/forms/checkboxSelect', array(
-			'name'    => 'folders',
-			'options' => $this->_getFolders()
+			'name'    => 'caches',
+			'options' => $caches
 		));
 	}
 
@@ -57,18 +60,28 @@ class ClearCachesTool extends BaseTool
 	 */
 	public function performAction($params = array())
 	{
-		if (!isset($params['folders']))
+		if (!isset($params['caches']))
 		{
 			return;
 		}
 
-		if ($params['folders'] == '*')
+		$allFolderKeys = array_keys($this->_getFolders());
+
+		if ($params['caches'] == '*')
 		{
-			$folders = array_keys($this->_getFolders());
+			$folders = $allFolderKeys;
 		}
 		else
 		{
-			$folders = $params['folders'];
+			$folders = array();
+
+			foreach ($params['caches'] as $cacheKey)
+			{
+				if (in_array($cacheKey, $allFolderKeys))
+				{
+					$folders[] = $cacheKey;
+				}
+			}
 		}
 
 		$allFolders = array_keys($this->_getFolders(false));
@@ -90,6 +103,11 @@ class ClearCachesTool extends BaseTool
 					}
 				}
 			}
+		}
+
+		if ($params['caches'] == '*' || in_array('templateCaches', $params['caches']))
+		{
+			craft()->templateCache->deleteAllCaches();
 		}
 	}
 

@@ -44,6 +44,7 @@ class InstallService extends BaseApplicationComponent
 			$this->_createRelationsTable();
 			$this->_createShunnedMessagesTable();
 			$this->_createSearchIndexTable();
+			$this->_createTemplateCacheTables();
 			$this->_createAndPopulateInfoTable($inputs);
 
 			$this->_createAssetTransformIndexTable();
@@ -263,6 +264,38 @@ class InstallService extends BaseApplicationComponent
 		)->execute();
 
 		Craft::log('Finished creating the searchindex table.');
+	}
+
+	/**
+	 * Creates the templatecaches and templatecacheelements tables.
+	 *
+	 * @access private
+	 */
+	private function _createTemplateCacheTables()
+	{
+		Craft::log('Creating the templatecaches table.');
+
+		craft()->db->createCommand()->createTable('templatecaches', array(
+			'cacheKey' => array('column' => ColumnType::Varchar, 'length' => 36, 'null' => false),
+			'uri'      => array('column' => ColumnType::Varchar),
+			'expires'  => array('column' => ColumnType::DateTime, 'null' => false),
+			'body'     => array('column' => ColumnType::MediumText, 'null' => false),
+		), null, true, false);
+
+		craft()->db->createCommand()->createIndex('templatecaches', 'expires,cacheKey,uri');
+
+		Craft::log('Finished creating the templatecaches table.');
+		Craft::log('Creating the templatecacheelements table.');
+
+		craft()->db->createCommand()->createTable('templatecacheelements', array(
+			'cacheId'   => array('column' => ColumnType::Int, 'null' => false),
+			'elementId' => array('column' => ColumnType::Int, 'null' => false),
+		), null, false, false);
+
+		craft()->db->createCommand()->addForeignKey('templatecacheelements', 'cacheId', 'templatecaches', 'id', 'CASCADE', null);
+		craft()->db->createCommand()->addForeignKey('templatecacheelements', 'elementId', 'elements', 'id', 'CASCADE', null);
+
+		Craft::log('Finished creating the templatecacheelements table.');
 	}
 
 	/**

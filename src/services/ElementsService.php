@@ -985,6 +985,12 @@ class ElementsService extends BaseApplicationComponent
 						}
 					}
 				}
+
+				// Finally, delete any caches involving this element
+				if (!$isNewElement)
+				{
+					craft()->templateCache->deleteCachesWithElement($element->id);
+				}
 			}
 
 			if ($transaction !== null)
@@ -1041,6 +1047,9 @@ class ElementsService extends BaseApplicationComponent
 			'elementId' => $element->id,
 			'locale'    => $element->locale
 		));
+
+		// Delete any caches involving this element
+		craft()->templateCache->deleteCachesWithElement($element->id);
 
 		if ($updateOtherLocales)
 		{
@@ -1256,6 +1265,9 @@ class ElementsService extends BaseApplicationComponent
 				{
 					$record->deleteNode();
 				}
+
+				// Also delete any caches involving this element
+				craft()->templateCache->deleteCachesWithElement($elementId);
 			}
 
 			// Now delete the rows in the elements table

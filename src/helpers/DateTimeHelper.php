@@ -44,16 +44,29 @@ class DateTimeHelper
 	{
 		// Eventually this will accept a database parameter and format the timestamp for the given database date/time datatype.
 		// For now, it's MySQL only.
+
 		if ($timeStamp)
 		{
-			$dt = new DateTime('@'.$timeStamp);
+			if ($timeStamp instanceof \DateTime)
+			{
+				$dt = $timeStamp;
+			}
+			else if (static::isValidTimeStamp($timeStamp))
+			{
+				$dt = new DateTime('@'.$timeStamp);
+			}
+			else
+			{
+				$dt = new DateTime($timeStamp);
+			}
 		}
 		else
 		{
 			$dt = new DateTime();
 		}
 
-		return $dt->format(DateTime::MYSQL_DATETIME, DateTime::UTC);
+		$dt->setTimezone(new \DateTimeZone(DateTime::UTC));
+		return $dt->format(DateTime::MYSQL_DATETIME);
 	}
 
 	/**

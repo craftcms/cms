@@ -536,24 +536,37 @@ class TemplatesService extends BaseApplicationComponent
 		// Normalize the template name
 		$name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')), '/');
 
+		// Get the latest template base path
+		$templatesPath = craft()->path->getTemplatesPath();
+
+		$key = $templatesPath.':'.$name;
+
 		// Is this template path already cached?
-		if (isset($this->_templatePaths[$name]))
+		if (isset($this->_templatePaths[$key]))
 		{
-			return $this->_templatePaths[$name];
+			return $this->_templatePaths[$key];
 		}
 
 		// Validate the template name
 		$this->_validateTemplateName($name);
 
-		// Check if the template exists in the main templates path
+		// Look for the template in the main templates folder
+		$basePaths = array();
 
-		// Set the view path
-		//  - We need to set this for each template request, in case it was changed to a plugin's template path
-		$basePath = craft()->path->getTemplatesPath();
-
-		if (($path = $this->_findTemplate($basePath.$name)) !== null)
+		// Should we be looking for a localized version of the template?
+		if (craft()->request->isSiteRequest() && IOHelper::folderExists($templatesPath.craft()->language))
 		{
-			return $this->_templatePaths[$name] = $path;
+			$basePaths[] = $templatesPath.craft()->language.'/';
+		}
+
+		$basePaths[] = $templatesPath;
+
+		foreach ($basePaths as $basePath)
+		{
+			if (($path = $this->_findTemplate($basePath.$name)) !== null)
+			{
+				return $this->_templatePaths[$key] = $path;
+			}
 		}
 
 		// Otherwise maybe it's a plugin template?
@@ -577,7 +590,7 @@ class TemplatesService extends BaseApplicationComponent
 
 				if (($path = $this->_findTemplate($basePath.$tempName)) !== null)
 				{
-					return $this->_templatePaths[$name] = $path;
+					return $this->_templatePaths[$key] = $path;
 				}
 			}
 		}
@@ -742,8 +755,9 @@ class TemplatesService extends BaseApplicationComponent
 		if (!isset($this->_twigOptions))
 		{
 			$this->_twigOptions = array(
-				'cache'       => craft()->path->getCompiledTemplatesPath(),
-				'auto_reload' => true,
+				'base_template_class' => '\Craft\BaseTemplate',
+				'cache'               => craft()->path->getCompiledTemplatesPath(),
+				'auto_reload'         => true,
 			);
 
 			if (craft()->config->get('devMode'))

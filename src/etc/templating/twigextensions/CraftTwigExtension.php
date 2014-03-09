@@ -337,14 +337,4 @@ class CraftTwigExtension extends \Twig_Extension
 	{
 		return 'craft';
 	}
-
-	/**
-	 * Returns the Craft caching strategy for Twig.
-	 *
-	 * @return CraftCacheStrategy
-	 */
-	public function getCacheStrategy()
-    {
-		return new CraftCacheStrategy();
-	}
 }
