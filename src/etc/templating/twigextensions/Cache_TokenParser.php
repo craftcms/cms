@@ -47,7 +47,7 @@ class Cache_TokenParser extends \Twig_TokenParser
 		{
 			$stream->next();
 			$attributes['durationNum'] = $stream->expect(\Twig_Token::NUMBER_TYPE)->getValue();
-			$attributes['durationUnit'] = $stream->expect(\Twig_Token::NAME_TYPE, array('sec','secs','second','seconds','min','mins','minute','minutes','hour','hours','day','days','fortnight','fortnights','forthnight','forthnights','month','months','year','years','weeks'))->getValue();
+			$attributes['durationUnit'] = $stream->expect(\Twig_Token::NAME_TYPE, array('sec','secs','second','seconds','min','mins','minute','minutes','hour','hours','day','days','fortnight','fortnights','forthnight','forthnights','month','months','year','years','week','weeks'))->getValue();
 		}
 		else if ($stream->test(\Twig_Token::NAME_TYPE, 'until'))
 		{

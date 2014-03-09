@@ -81,6 +81,22 @@ class Cache_Node extends \Twig_Node
 
 		if ($durationNum)
 		{
+			// So silly that PHP doesn't support "+1 week"
+			// http://www.php.net/manual/en/datetime.formats.relative.php
+
+			if ($durationUnit == 'week')
+			{
+				if ($durationNum == 1)
+				{
+					$durationNum = 7;
+					$durationUnit = 'days';
+				}
+				else
+				{
+					$durationUnit = 'weeks';
+				}
+			}
+
 			$compiler->raw("'+{$durationNum} {$durationUnit}'");
 		}
 		else
