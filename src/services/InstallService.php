@@ -276,13 +276,15 @@ class InstallService extends BaseApplicationComponent
 		Craft::log('Creating the templatecaches table.');
 
 		craft()->db->createCommand()->createTable('templatecaches', array(
-			'cacheKey' => array('column' => ColumnType::Varchar, 'length' => 36, 'null' => false),
-			'uri'      => array('column' => ColumnType::Varchar),
-			'expires'  => array('column' => ColumnType::DateTime, 'null' => false),
-			'body'     => array('column' => ColumnType::MediumText, 'null' => false),
+			'cacheKey'   => array('column' => ColumnType::Varchar, 'length' => 36, 'null' => false),
+			'locale'     => array('column' => ColumnType::Locale),
+			'path'       => array('column' => ColumnType::Varchar),
+			'expiryDate' => array('column' => ColumnType::DateTime, 'null' => false),
+			'body'       => array('column' => ColumnType::MediumText, 'null' => false),
 		), null, true, false);
 
-		craft()->db->createCommand()->createIndex('templatecaches', 'expires,cacheKey,uri');
+		craft()->db->createCommand()->createIndex('templatecaches', 'expiryDate,cacheKey,locale,path');
+		craft()->db->createCommand()->addForeignKey('templatecaches', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
 
 		Craft::log('Finished creating the templatecaches table.');
 		Craft::log('Creating the templatecacheelements table.');

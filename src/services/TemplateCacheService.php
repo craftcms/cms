@@ -6,6 +6,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	private static $_templateCachesTable = 'templatecaches';
 	private static $_templateCacheElementsTable = 'templatecacheelements';
 
+	private $_path;
 	private $_cacheElementIds;
 
 	/**
@@ -17,7 +18,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	 */
 	public function getTemplateCache($key, $global)
 	{
-		$conditions = array('and', 'expires > :now', 'cacheKey = :key');
+		$conditions = array('and', 'expiryDate > :now', 'cacheKey = :key');
 		$params = array(
 			':now' => DateTimeHelper::currentTimeForDb(),
 			':key' => $key
@@ -25,8 +26,10 @@ class TemplateCacheService extends BaseApplicationComponent
 
 		if (!$global)
 		{
-			$conditions[] = 'uri = :path';
-			$params[':path'] = craft()->request->getPath();
+			$conditions[] = 'locale = :locale';
+			$conditions[] = 'path = :path';
+			$params[':locale'] = craft()->language;
+			$params[':path'] = $this->_getPath();
 		}
 
 		return craft()->db->createCommand()
@@ -99,10 +102,11 @@ class TemplateCacheService extends BaseApplicationComponent
 		try
 		{
 			craft()->db->createCommand()->insert(static::$_templateCachesTable, array(
-				'cacheKey' => $key,
-				'uri'      => ($global ? null : craft()->request->getPath()),
-				'expires'  => DateTimeHelper::formatTimeForDb($expiration),
-				'body'     => $body
+				'cacheKey'   => $key,
+				'locale'     => ($global ? null : craft()->language),
+				'path'       => ($global ? null : $this->_getPath()),
+				'expiryDate' => DateTimeHelper::formatTimeForDb($expiration),
+				'body'       => $body
 			), false);
 
 			$cacheId = craft()->db->getLastInsertID();
@@ -162,5 +166,30 @@ class TemplateCacheService extends BaseApplicationComponent
 	public function deleteAllCaches()
 	{
 		craft()->db->createCommand()->delete(static::$_templateCachesTable);
+	}
+
+	/**
+	 * Returns the current request path, including a "site:" or "cp:" prefix.
+	 *
+	 * @access private
+	 * @return string
+	 */
+	private function _getPath()
+	{
+		if (!isset($this->_path))
+		{
+			if (craft()->request->isCpRequest())
+			{
+				$this->_path = 'cp:';
+			}
+			else
+			{
+				$this->_path = 'site:';
+			}
+
+			$this->_path .= craft()->request->getPath();
+		}
+
+		return $this->_path;
 	}
 }
