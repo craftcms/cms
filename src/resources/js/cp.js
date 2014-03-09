@@ -18,7 +18,6 @@ var CP = Garnish.Base.extend(
 
 	$notificationWrapper: null,
 	$notificationContainer: null,
-	$contentTabsContainer: null,
 	$main: null,
 	$content: null,
 	//$sidebar: null,
@@ -39,9 +38,6 @@ var CP = Garnish.Base.extend(
 
 	fixedNotifications: false,
 	//fixedSidebar: false,
-
-	tabs: null,
-	selectedTab: null,
 
 	init: function()
 	{
@@ -98,14 +94,6 @@ var CP = Garnish.Base.extend(
 		// Customize Nav button
 		this.addListener(this.$customizeNavBtn, 'click', 'showCustomizeNavModal');
 		/* end HIDE */
-
-		// Tabs
-		this.initContentTabs();
-
-		if (document.location.hash && typeof this.tabs[document.location.hash] != 'undefined')
-		{
-			this.tabs[document.location.hash].$tab.trigger('click');
-		}
 
 		// Secondary form submit buttons
 		this.addListener($('.formsubmit'), 'activate', function(ev)
@@ -175,45 +163,6 @@ var CP = Garnish.Base.extend(
 				}
 				return true;
 			});
-		}
-	},
-
-	initContentTabs: function()
-	{
-		this.$contentTabsContainer = $('#tabs');
-		this.tabs = {};
-		this.selectedTab = null;
-
-		var $tabs = this.$contentTabsContainer.find('a');
-
-		if ($tabs.length)
-		{
-			// Find the tabs that link to a div on the page
-			for (var i = 0; i < $tabs.length; i++)
-			{
-				var $tab = $($tabs[i]),
-					href = $tab.attr('href');
-
-				if (href && href.charAt(0) == '#')
-				{
-					this.tabs[href] = {
-						$tab: $tab,
-						$target: $(href)
-					};
-
-					this.addListener($tab, 'activate', 'selectContentTab');
-				}
-
-				if (!this.selectedTab && $tab.hasClass('sel'))
-				{
-					this.selectedTab = href;
-				}
-			}
-
-			if (!this.selectedTab)
-			{
-				$($tabs[0]).trigger('activate');
-			}
 		}
 	},
 
@@ -600,37 +549,6 @@ var CP = Garnish.Base.extend(
 		}
 
 		this.displayNotification('error', message);
-	},
-
-	/**
-	 * Deselects the current content tab.
-	 */
-	deselectContentTab: function()
-	{
-		if (this.selectedTab)
-		{
-			this.tabs[this.selectedTab].$tab.removeClass('sel');
-			this.tabs[this.selectedTab].$target.addClass('hidden');
-		}
-	},
-
-	/**
-	 * Selects a content tab.
-	 */
-	selectContentTab: function(ev)
-	{
-		if (!this.selectedTab || ev.currentTarget != this.tabs[this.selectedTab].$tab[0])
-		{
-			// Hide the selected tab
-			this.deselectContentTab();
-
-			var $tab = $(ev.currentTarget).addClass('sel');
-			this.selectedTab = $tab.attr('href');
-			this.tabs[this.selectedTab].$target.removeClass('hidden');
-
-			Garnish.$win.trigger('resize');
-			//this.setMaxSidebarHeight();
-		}
 	},
 
 	postActionRequest: function(action, data, callback, options)

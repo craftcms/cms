@@ -52,8 +52,6 @@
 	"Cancel"
 -%}
 
-{% set hasHelp = (docsUrl is defined and docsUrl is not empty) %}
-
 
 {% block body %}
 	{% if currentUser.admin and craft.config.devMode %}
@@ -173,26 +171,29 @@
 			{% block main %}
 				{% set sidebar = sidebar is defined ? sidebar : block('sidebar')|trim %}
 				{% set hasSidebar = (sidebar is not empty) %}
+				{% set hasHelp = (docsUrl is defined and docsUrl is not empty) %}
 
 				<div class="grid">
 					<div class="item">
-						<div class="pane{% if hasSidebar %} has-sidebar{% endif %}">
-							{% if hasSidebar %}
-								<div id="sidebar" class="sidebar">
-									{{ sidebar|raw }}
-								</div>
-							{% endif %}
-
+						<div class="pane">
 							{% if tabs is defined and tabs %}
 								{% include "_includes/tabs" %}
 							{% endif %}
 
-							<div id="content"{% if hasHelp %} class="has-help"{% endif %}>
+							<div id="content" class="content{% if hasSidebar %} has-sidebar{% endif %}{% if hasHelp %} has-help{% endif %}">
+								{% if hasSidebar %}
+									<div id="sidebar" class="sidebar">
+										{{ sidebar|raw }}
+									</div>
+								{% endif %}
+
 								{% block content %}
 									{{ content is defined ? content }}
 								{% endblock %}
 
-								{% if hasHelp %}<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>{% endif %}
+								{% if hasHelp %}
+									<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
+								{% endif %}
 							</div>
 						</div>
 					</div>
