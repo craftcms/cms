@@ -424,7 +424,7 @@ Craft.Grid = Garnish.Base.extend(
 		itemSelector: '.item',
 		cols: null,
 		minColWidth: (Garnish.isMobileBrowser(true) ? 252 : 320),
-		mode: 'fixed',
+		mode: 'pct',
 		fillMode: 'top',
 		colClass: 'col',
 		snapToGrid: null
