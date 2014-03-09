@@ -1,7 +1,8 @@
 <?php
 
 return CMap::mergeArray(
-	$commonConfig,
+
+	require CRAFT_APP_PATH.'etc/config/common.php',
 
 	array(
 		'basePath'    => CRAFT_APP_PATH,
@@ -11,10 +12,6 @@ return CMap::mergeArray(
 		// autoloading model and component classes
 		'import' => array(
 			'application.lib.*',
-		),
-
-		'params' => array(
-			'generalConfig'        => $generalConfig,
 		),
 	)
 );

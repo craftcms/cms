@@ -667,6 +667,18 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Gets an attribute's value.
+	 *
+	 * @param string $name
+	 * @param bool $flattenValue
+	 * @return mixed
+	 */
+	public function getAttribute($name, $flattenValue = false)
+	{
+		return parent::getAttribute($name, $flattenValue);
+	}
+
+	/**
 	 * Returns the raw content saved on this entity.
 	 *
 	 * This is now deprecated. Use getContent() to get the ContentModel instead.

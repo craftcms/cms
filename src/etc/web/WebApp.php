@@ -19,6 +19,7 @@ namespace Craft;
  * @property EtService                   $et                   The E.T. service
  * @property FeedsService                $feeds                The feeds service
  * @property FieldsService               $fields               The fields service
+ * @property FileCache                   $fileCache            File caching
  * @property GlobalsService              $globals              The globals service
  * @property HttpRequestService          $request              The request service
  * @property HttpSessionService          $httpSession          The HTTP session service
@@ -62,6 +63,7 @@ class WebApp extends \CWebApplication
 	private $_templatePath;
 	private $_packageComponents;
 	private $_pendingEvents;
+	private $_isDbConnectionValid = false;
 
 
 	/**
@@ -102,42 +104,6 @@ class WebApp extends \CWebApplication
 		}
 
 		parent::init();
-	}
-
-	/**
-	 * Returns the target application language.
-	 *
-	 * @return string
-	 */
-	public function getLanguage()
-	{
-		if (!isset($this->_language))
-		{
-			$this->setLanguage($this->_getTargetLanguage());
-		}
-
-		return $this->_language;
-	}
-
-	/**
-	 * Sets the target application language.
-	 *
-	 * @param string $language
-	 */
-	public function setLanguage($language)
-	{
-		$this->_language = $language;
-	}
-
-	/**
-	 * Returns the localization data for a given locale.
-	 *
-	 * @param string $localeId
-	 * @return LocaleData
-	 */
-	public function getLocale($localeId = null)
-	{
-		return craft()->i18n->getLocaleData($localeId);
 	}
 
 	/**
@@ -279,6 +245,62 @@ class WebApp extends \CWebApplication
 				$this->runController('templates/offline');
 			}
 		}
+	}
+
+	/**
+	 * Don't even think of moving this check into DbConnection->init().
+	 *
+	 * @return bool
+	 */
+	public function getIsDbConnectionValid()
+	{
+		return $this->_isDbConnectionValid;
+	}
+
+	/**
+	 * Don't even think of moving this check into DbConnection->init().
+	 *
+	 * @param $value
+	 */
+	public function setIsDbConnectionValid($value)
+	{
+		$this->_isDbConnectionValid = $value;
+	}
+
+	/**
+	 * Returns the target application language.
+	 *
+	 * @return string
+	 */
+	public function getLanguage()
+	{
+		if (!isset($this->_language))
+		{
+			$this->setLanguage($this->_getTargetLanguage());
+		}
+
+		return $this->_language;
+	}
+
+	/**
+	 * Sets the target application language.
+	 *
+	 * @param string $language
+	 */
+	public function setLanguage($language)
+	{
+		$this->_language = $language;
+	}
+
+	/**
+	 * Returns the localization data for a given locale.
+	 *
+	 * @param string $localeId
+	 * @return LocaleData
+	 */
+	public function getLocale($localeId = null)
+	{
+		return craft()->i18n->getLocaleData($localeId);
 	}
 
 	/**
@@ -549,7 +571,6 @@ class WebApp extends \CWebApplication
 		if (!$component && $createIfNull)
 		{
 			$component = parent::getComponent($id, true);
-
 			$this->_attachEventListeners($id);
 		}
 
@@ -578,6 +599,31 @@ class WebApp extends \CWebApplication
 	public function getTimeZone()
 	{
 		return $this->getInfo('timezone');
+	}
+
+	/**
+	 * Tries to find a match between the browser's preferred locales and the locales Craft has been translated into.
+	 *
+	 * @return string
+	 */
+	public function getTranslatedBrowserLanguage()
+	{
+		$browserLanguages = $this->request->getBrowserLanguages();
+
+		if ($browserLanguages)
+		{
+			$appLocaleIds = $this->i18n->getAppLocaleIds();
+
+			foreach ($browserLanguages as $language)
+			{
+				if (in_array($language, $appLocaleIds))
+				{
+					return $language;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -717,24 +763,27 @@ class WebApp extends \CWebApplication
 				// Is it set to "auto"?
 				if ($locale == 'auto')
 				{
-					// If the user is logged in *and* has a primary language set, use that
-					$user = $this->userSession->getUser();
-
-					if ($user && $user->preferredLocale)
+					if (($userSession = $this->getComponent('userSession', false)) != false)
 					{
-						return $user->preferredLocale;
-					}
+						// If the user is logged in *and* has a primary language set, use that
+						$user = $userSession->getUser();
 
-					// Otherwise check if the browser's preferred language matches any of the site locales
-					$browserLanguages = $this->request->getBrowserLanguages();
-
-					if ($browserLanguages)
-					{
-						foreach ($browserLanguages as $language)
+						if ($user && $user->preferredLocale)
 						{
-							if (in_array($language, $siteLocaleIds))
+							return $user->preferredLocale;
+						}
+
+						// Otherwise check if the browser's preferred language matches any of the site locales
+						$browserLanguages = $this->request->getBrowserLanguages();
+
+						if ($browserLanguages)
+						{
+							foreach ($browserLanguages as $language)
 							{
-								return $language;
+								if (in_array($language, $siteLocaleIds))
+								{
+									return $language;
+								}
 							}
 						}
 					}
@@ -752,26 +801,16 @@ class WebApp extends \CWebApplication
 		}
 		else
 		{
-			// Just try to find a match between the browser's preferred locales
-			// and the locales Craft has been translated into.
-
-			$browserLanguages = $this->request->getBrowserLanguages();
-
-			if ($browserLanguages)
-			{
-				$appLocaleIds = $this->i18n->getAppLocaleIds();
-
-				foreach ($browserLanguages as $language)
-				{
-					if (in_array($language, $appLocaleIds))
-					{
-						return $language;
-					}
-				}
-			}
+			// See if we have the CP translated in one of the user's browsers preferred language(s)
+			$language = $this->getTranslatedBrowserLanguage();
 
 			// Default to the source language.
-			return $this->sourceLanguage;
+			if (!$language)
+			{
+				$language = $this->sourceLanguage;
+			}
+
+			return $language;
 		}
 	}
 
@@ -831,7 +870,7 @@ class WebApp extends \CWebApplication
 		// Only run for CP requests and if we're not in the middle of an update.
 		if ($this->request->isCpRequest() && !$update)
 		{
-			$cachedAppPath = craft()->fileCache->get('appPath');
+			$cachedAppPath = craft()->cache->get('appPath');
 			$appPath = $this->path->getAppPath();
 
 			if ($cachedAppPath === false || $cachedAppPath !== $appPath)
@@ -897,5 +936,13 @@ class WebApp extends \CWebApplication
 
 		// YOU SHALL NOT PASS
 		$this->end();
+	}
+
+	/**
+	 * Sets the correct caching drivers on craft()->cache based on what's in craft()->config->get('cacheMethod')
+	 */
+	private function _processCacheComponent()
+	{
+
 	}
 }

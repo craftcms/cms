@@ -6,8 +6,6 @@ namespace Craft;
  */
 class DbConnection extends \CDbConnection
 {
-	private $_isDbConnectionValid = false;
-
 	/**
 	 *
 	 */
@@ -15,6 +13,13 @@ class DbConnection extends \CDbConnection
 	{
 		try
 		{
+			$this->connectionString = $this->_processConnectionString();
+			$this->emulatePrepare   = true;
+			$this->username         = craft()->config->get('user', ConfigFile::Db);
+			$this->password         = craft()->config->get('password', ConfigFile::Db);
+			$this->charset          = craft()->config->get('charset', ConfigFile::Db);
+			$this->tablePrefix      = $this->getNormalizedTablePrefix();
+
 			parent::init();
 		}
 		// Most likely missing PDO in general or the specific database PDO driver.
@@ -45,7 +50,7 @@ class DbConnection extends \CDbConnection
 		catch (\Exception $e)
 		{
 			Craft::log($e->getMessage(), LogLevel::Error);
-			$messages[] = $messages[] = Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.');
+			$messages[] = Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.');
 		}
 
 		if (!empty($messages))
@@ -53,7 +58,7 @@ class DbConnection extends \CDbConnection
 			throw new DbConnectException(Craft::t('{errors}', array('errors' => implode('<br />', $messages))));
 		}
 
-		$this->_isDbConnectionValid = true;
+		craft()->setIsDbConnectionValid(true);
 
 		// Now that we've validated the config and connection, set extra db logging if devMode is enabled.
 		if (craft()->config->get('devMode'))
@@ -150,5 +155,43 @@ class DbConnection extends \CDbConnection
 	public function isDbConnectionValid()
 	{
 		return $this->_isDbConnectionValid;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getNormalizedTablePrefix()
+	{
+		// Table prefixes cannot be longer than 5 characters
+		$tablePrefix = rtrim(craft()->config->get('tablePrefix', ConfigFile::Db), '_');
+		if ($tablePrefix)
+		{
+			if (strlen($tablePrefix) > 5)
+			{
+				$tablePrefix = substr($tablePrefix, 0, 5);
+			}
+
+			$tablePrefix .= '_';
+
+			return $tablePrefix;
+		}
+	}
+
+	/**
+	 * Returns the correct connection string depending on whether a unixSocket is specific or not in the db config.
+	 *
+	 * @return string
+	 */
+	private function _processConnectionString()
+	{
+		$unixSocket = craft()->config->get('unixSocket', ConfigFile::Db);
+		if (!empty($unixSocket))
+		{
+			return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').craft()->config->get('database', ConfigFile::Db).';';
+		}
+		else
+		{
+			return strtolower('mysql:host='.craft()->config->get('server', ConfigFile::Db).';dbname=').craft()->config->get('database', ConfigFile::Db).strtolower(';port='.craft()->config->get('port', ConfigFile::Db).';');
+		}
 	}
 }

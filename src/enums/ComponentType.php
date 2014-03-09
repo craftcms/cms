@@ -4,7 +4,7 @@ namespace Craft;
 /**
  *
  */
-class ComponentType
+abstract class ComponentType extends BaseEnum
 {
 	const AssetSource = 'assetSource';
 	const Element     = 'element';

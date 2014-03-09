@@ -397,6 +397,13 @@ class Craft extends \Yii
 			}
 		}
 
+		// If this isn't set, presumably we can't connect to the database.
+		if (!craft()->getIsDbConnectionValid())
+		{
+			$source = 'en_us';
+			$language = craft()->getTranslatedBrowserLanguage();
+		}
+
 		$translation = parent::t($category, (string)$message, $normalizedVariables, $source, $language);
 		if (craft()->config->get('translationDebugOutput'))
 		{

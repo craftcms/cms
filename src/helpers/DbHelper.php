@@ -80,8 +80,8 @@ class DbHelper
 		{
 			$config['column'] = ColumnType::Char;
 			$config['maxLength'] = 12;
-			$config['charset'] = craft()->config->getDbItem('charset');
-			$config['collation'] = craft()->config->getDbItem('collation');
+			$config['charset'] = craft()->config->get('charset', ConfigFile::Db);
+			$config['collation'] = craft()->config->get('collation', ConfigFile::Db);
 		}
 		else if (isset(static::$columnTypeDefaults[$config['column']]))
 		{
