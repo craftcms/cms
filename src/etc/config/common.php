@@ -162,6 +162,7 @@ $components['matrix']['class']               = 'Craft\MatrixService';
 $components['migrations']['class']           = 'Craft\MigrationsService';
 $components['path']['class']                 = 'Craft\PathService';
 $components['relations']['class']            = 'Craft\RelationsService';
+$components['cache']['class']                = 'Craft\CacheService';
 $components['resources'] = array(
 	'class'     => 'Craft\ResourcesService',
 	'dateParam' => 'd',
