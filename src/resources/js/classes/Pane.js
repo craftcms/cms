@@ -228,7 +228,7 @@ Craft.Pane = Garnish.Base.extend(
 
 	updateSidebarStyles: function()
 	{
-		if (this.showingSidebar)
+		if (this.showingSidebar || this.peekingSidebar)
 		{
 			this.updateSidebarStyles._styles = {};
 
