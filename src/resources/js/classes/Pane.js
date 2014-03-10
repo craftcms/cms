@@ -6,10 +6,13 @@ Craft.Pane = Garnish.Base.extend(
 	$pane: null,
 	$content: null,
 	$sidebar: null,
+	$sidebarBtn: null,
 
 	tabs: null,
 	selectedTab: null,
 	hasSidebar: null,
+	showingSidebar: null,
+	peekingSidebar: null,
 
 	init: function(pane)
 	{
@@ -77,6 +80,12 @@ Craft.Pane = Garnish.Base.extend(
 
 			if ($target.hasClass('content'))
 			{
+				if (this.hasSidebar)
+				{
+					this.removeListener(this.$content, 'resize');
+					this.removeListener(this.$sidebar, 'resize');
+				}
+
 				this.$content = $target;
 				this.initContent();
 			}
@@ -105,13 +114,94 @@ Craft.Pane = Garnish.Base.extend(
 		{
 			this.$sidebar = this.$content.children('.sidebar');
 
-			this.updateContentSize();
-			this.addListener(this.$sidebar, 'resize', 'updateContentSize');
+			this.showingSidebar = true;
+			this.updateResponsiveSidebar();
+			this.addListener(this.$content, 'resize', 'updateResponsiveSidebar');
+
+			this.setMinContentSizeForSidebar();
+			this.addListener(this.$sidebar, 'resize', 'setMinContentSizeForSidebar');
 		}
 	},
 
-	updateContentSize: function()
+	updateResponsiveSidebar: function()
 	{
-		this.$content.css('min-height', this.$sidebar.outerHeight());
+		if (this.$content.width() + parseInt(this.$content.css('margin-left')) < Craft.Pane.minContentWidthForSidebar)
+		{
+			if (this.showingSidebar)
+			{
+				this.hideSidebar();
+			}
+		}
+		else
+		{
+			if (!this.showingSidebar)
+			{
+				this.showSidebar();
+			}
+		}
+	},
+
+	hideSidebar: function()
+	{
+		this.$content.addClass('hiding-sidebar');
+
+		this.$sidebarBtn = $('<a class="show-sidebar" title="'+Craft.t('Show sidebar')+'"></a>').appendTo(this.$content);
+		this.addListener(this.$sidebarBtn, 'click', 'togglePeekingSidebar');
+
+		this.showingSidebar = false;
+		this.setMinContentSizeForSidebar();
+	},
+
+	togglePeekingSidebar: function()
+	{
+		if (this.peekingSidebar)
+		{
+			this.$content.animate({ left: 0 }, 'fast');
+			this.$sidebarBtn.removeClass('showing').attr('title', Craft.t('Show sidebar'));
+			this.peekingSidebar = false;
+
+			this.removeListener(this.$sidebar, 'click');
+		}
+		else
+		{
+			this.$content.animate({ left: 194 }, 'fast');
+			this.$sidebarBtn.addClass('showing').attr('title', Craft.t('Hide sidebar'));
+			this.peekingSidebar = true;
+
+			this.addListener(this.$sidebar, 'click', $.proxy(function(ev)
+			{
+				if (ev.target.nodeName == 'A')
+				{
+					this.togglePeekingSidebar();
+				}
+			}, this))
+		}
+
+		this.setMinContentSizeForSidebar();
+	},
+
+	showSidebar: function()
+	{
+		this.$content.removeClass('hiding-sidebar');
+		this.$sidebarBtn.remove();
+		this.showingSidebar = true;
+		this.setMinContentSizeForSidebar();
+	},
+
+	setMinContentSizeForSidebar: function()
+	{
+		if (this.showingSidebar || this.peekingSidebar)
+		{
+			var minHeight = this.$sidebar.height();
+		}
+		else
+		{
+			var minHeight = 0;
+		}
+
+		this.$content.css('min-height', minHeight);
 	}
+},
+{
+	minContentWidthForSidebar: 514 // 320 + 194
 });
