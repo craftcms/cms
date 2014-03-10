@@ -82,7 +82,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 			if (!isset($attributes[$field->handle]))
 			{
 				$this->_supportedFieldHandles[] = $field->handle;
-				$attributes[$field->handle] = array(AttributeType::Mixed, 'default' => false);
+				$attributes[$field->handle] = array(AttributeType::Mixed);
 			}
 		}
 

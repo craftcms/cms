@@ -491,15 +491,15 @@ class ElementsService extends BaseApplicationComponent
 			}
 		}
 
-		// Field params
+		// Give field types a chance to make changes
 
 		foreach ($criteria->getSupportedFieldHandles() as $fieldHandle)
 		{
-			if ($criteria->$fieldHandle !== false)
-			{
-				$field = craft()->fields->getFieldByHandle($fieldHandle);
-				$fieldType = $field->getFieldType();
+			$field = craft()->fields->getFieldByHandle($fieldHandle);
+			$fieldType = $field->getFieldType();
 
+			if ($fieldType)
+			{
 				if ($fieldType->modifyElementsQuery($query, $criteria->$fieldHandle) === false)
 				{
 					return false;

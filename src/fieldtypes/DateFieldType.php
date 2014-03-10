@@ -120,7 +120,10 @@ class DateFieldType extends BaseFieldType
 	 */
 	public function modifyElementsQuery(DbCommand $query, $value)
 	{
-		$handle = $this->model->handle;
-		$query->andWhere(DbHelper::parseDateParam('content.'.craft()->content->fieldColumnPrefix.$handle, $value, $query->params));
+		if ($value !== null)
+		{
+			$handle = $this->model->handle;
+			$query->andWhere(DbHelper::parseDateParam('content.'.craft()->content->fieldColumnPrefix.$handle, $value, $query->params));
+		}
 	}
 }
