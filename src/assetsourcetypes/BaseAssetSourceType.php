@@ -508,7 +508,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			{
 				// Looking for a top level folder, apparently.
 				$parameters->path = "";
-				$parameters->parentId = FolderCriteriaModel::AssetsNoParent;
+				$parameters->parentId = ':empty:';
 			}
 			else
 			{
@@ -519,7 +519,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			$parentFolder = craft()->assets->findFolder($parameters);
 			if (is_null($parentFolder))
 			{
-				$parentId = FolderCriteriaModel::AssetsNoParent;
+				$parentId = ':empty:';
 			}
 			else
 			{
@@ -583,7 +583,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			if (empty($searchFullPath))
 			{
-				$parentId = FolderCriteriaModel::AssetsNoParent;
+				$parentId = ':empty:';
 			}
 			else
 			{

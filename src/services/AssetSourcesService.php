@@ -232,7 +232,7 @@ class AssetSourcesService extends BaseApplicationComponent
 			$source->id = $sourceId;
 			$source->name = TempAssetSourceType::sourceName;
 			$source->type = TempAssetSourceType::sourceType;
-			$source->settings = array('path' => craft()->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempuploads/'));
+			$source->settings = array('path' => craft()->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempassets') . '/');
 			return $source;
 		}
 		else
@@ -338,7 +338,7 @@ class AssetSourcesService extends BaseApplicationComponent
 				else
 				{
 					// Update the top folder's name with the source's new name
-					$topFolder = craft()->assets->findFolder(array('sourceId' => $source->id, 'parentId' => FolderCriteriaModel::AssetsNoParent));
+					$topFolder = craft()->assets->findFolder(array('sourceId' => $source->id, 'parentId' => ':empty:'));
 
 					if ($topFolder->name != $source->name)
 					{

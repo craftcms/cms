@@ -267,7 +267,7 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function getUserFolder(UserModel $userModel)
 	{
-		$sourceTopFolder = craft()->assets->findFolder(array('sourceId' => FolderCriteriaModel::AssetsNoSource, 'parentId' => FolderCriteriaModel::AssetsNoParent));
+		$sourceTopFolder = craft()->assets->findFolder(array('sourceId' => ':empty:', 'parentId' => ':empty:'));
 
 		// Super unlikely, but would be very awkward if this happened without any contingency plans in place.
 		if (!$sourceTopFolder)
@@ -880,12 +880,7 @@ class AssetsService extends BaseApplicationComponent
 
 		if ($criteria->parentId)
 		{
-			// Set parentId to null if we're looking for folders with no parents.
-			if ($criteria->parentId == FolderCriteriaModel::AssetsNoParent)
-			{
-				$criteria->parentId = null;
-			}
-			$whereConditions[] = DbHelper::parseParam('f.parentId', array($criteria->parentId), $whereParams);
+			$whereConditions[] = DbHelper::parseParam('f.parentId', $criteria->parentId, $whereParams);
 		}
 
 		if ($criteria->name)

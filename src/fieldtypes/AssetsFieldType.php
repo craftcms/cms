@@ -156,7 +156,8 @@ class AssetsFieldType extends BaseElementFieldType
 				// So let's turn them into Assets
 				$fileIds = array();
 
-				$targetFolderId = $this->resolveSourcePath();
+
+				$targetFolderId = $this->_determineUploadFolderId($settings);
 				if (!empty($targetFolderId))
 				{
 					foreach ($uploadedFiles as $file)
@@ -280,7 +281,7 @@ class AssetsFieldType extends BaseElementFieldType
 					if ($sourceIds)
 					{
 						$sourceId = reset($sourceIds);
-						$targetFolder = craft()->assets->findFolder(array('sourceId' => $sourceId, 'parentId' => FolderCriteriaModel::AssetsNoParent));
+						$targetFolder = craft()->assets->findFolder(array('sourceId' => $sourceId, 'parentId' => ':empty:'));
 
 						if ($targetFolder)
 						{
@@ -313,38 +314,7 @@ class AssetsFieldType extends BaseElementFieldType
 
 		if ($settings->useSingleFolder)
 		{
-			// If there's no dynamic tags in the subpath, or if the element has already been saved, we con use the real folder
-			if (!empty($this->element->id) || strpos($settings->singleUploadLocationSubpath, '{') === false)
-			{
-				$folderPath = 'folder:'.$this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
-			}
-			else
-			{
-				// New element, so we default to User's upload folder for this field
-				$userModel = craft()->userSession->getUser();
-
-				if (!$userModel)
-				{
-					throw new Exception(Craft::t("To use this Field, user must be logged in!"));
-				}
-
-				$userFolder = craft()->assets->getUserFolder($userModel);
-
-				$folderName = 'field_' . $this->model->id;
-				$elementFolder = craft()->assets->findFolder(array('parentId' => $userFolder->id, 'name' => $folderName));
-
-				if (!$elementFolder)
-				{
-					$folderId = $this->_createSubFolder($userFolder, $folderName);
-				}
-				else
-				{
-					$folderId = $elementFolder->id;
-				}
-
-				IOHelper::ensureFolderExists(craft()->path->getAssetsTempSourcePath().$folderName);
-				$folderPath = 'folder:'.$folderId;
-			}
+			$folderPath = 'folder:'.$this->_determineUploadFolderId($settings);
 
 			return array($folderPath);
 		}
@@ -360,7 +330,7 @@ class AssetsFieldType extends BaseElementFieldType
 				{
 					$folder = craft()->assets->findFolder(array(
 						'sourceId' => $source,
-						'parentId' => FolderCriteriaModel::AssetsNoParent
+						'parentId' => ':empty:'
 					));
 
 					$sources[] = 'folder:'.$folder->id;
@@ -403,7 +373,7 @@ class AssetsFieldType extends BaseElementFieldType
 	{
 		$folder = craft()->assets->findFolder(array(
 			'sourceId' => $sourceId,
-			'parentId' => FolderCriteriaModel::AssetsNoParent
+			'parentId' => ':empty:'
 		));
 
 		// Do we have the folder?
@@ -526,4 +496,47 @@ class AssetsFieldType extends BaseElementFieldType
 		return static::$_allowedExtensions[$key];
 	}
 
+	/**
+	 * Determine an upload folder id by looking at the settings and whether Element this field belongs to is new or not.
+	 *
+	 * @param $settings
+	 * @return mixed|null
+	 * @throws Exception
+	 */
+	private function _determineUploadFolderId($settings)
+	{
+		// If there's no dynamic tags in the subpath, or if the element has already been saved, we con use the real folder
+		if (!empty($this->element->id) || strpos($settings->singleUploadLocationSubpath, '{') === false)
+		{
+			$folderId = $this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
+		}
+		else
+		{
+			// New element, so we default to User's upload folder for this field
+			$userModel = craft()->userSession->getUser();
+
+			if (!$userModel)
+			{
+				throw new Exception(Craft::t("To use this Field, user must be logged in!"));
+			}
+
+			$userFolder = craft()->assets->getUserFolder($userModel);
+
+			$folderName = 'field_' . $this->model->id;
+			$elementFolder = craft()->assets->findFolder(array('parentId' => $userFolder->id, 'name' => $folderName));
+
+			if (!$elementFolder)
+			{
+				$folderId = $this->_createSubFolder($userFolder, $folderName);
+			}
+			else
+			{
+				$folderId = $elementFolder->id;
+			}
+
+			IOHelper::ensureFolderExists(craft()->path->getAssetsTempSourcePath().$folderName);
+		}
+
+		return $folderId;
+	}
 }

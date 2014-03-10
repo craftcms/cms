@@ -155,6 +155,12 @@ class ResourcesService extends BaseApplicationComponent
 					return craft()->path->getTempUploadsPath().implode('/', $segs);
 				}
 
+				case 'tempassets':
+				{
+					array_shift($segs);
+					return craft()->path->getAssetsTempSourcePath().implode('/', $segs);
+				}
+
 				case 'assetthumbs':
 				{
 					if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !is_numeric($segs[2]))
