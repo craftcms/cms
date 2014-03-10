@@ -56,7 +56,7 @@ $noticecolor: #5286d9;
 	text-align: center;
 	font-style: normal;
 	vertical-align: middle;
-	word-wrap: normal;
+	word-wrap: normal !important;
 	@include unselectable;
 }
 
