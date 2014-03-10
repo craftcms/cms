@@ -12,9 +12,10 @@ class FeedsService extends BaseApplicationComponent
 	 * @param string|array $url
 	 * @param int          $limit
 	 * @param int          $offset
+	 * @param null         $cacheDuration Any valid PHP time format http://www.php.net/manual/en/datetime.formats.time.php
 	 * @return array
 	 */
-	public function getFeedItems($url, $limit = 0, $offset = 0)
+	public function getFeedItems($url, $limit = 0, $offset = 0, $cacheDuration = null)
 	{
 		$items = array();
 
@@ -24,14 +25,22 @@ class FeedsService extends BaseApplicationComponent
 			return $items;
 		}
 
+		if (!$cacheDuration)
+		{
+			$cacheDuration = craft()->config->getCacheDuration();
+		}
+		else
+		{
+			$cacheDuration = DateTimeHelper::timeFormatToSeconds($cacheDuration);
+		}
+
 		$feed = new \SimplePie();
 		$feed->set_feed_url($url);
 		$feed->set_cache_location(craft()->path->getCachePath());
-		$feed->set_cache_duration(craft()->config->getCacheDuration());
+		$feed->set_cache_duration($cacheDuration);
 		$feed->init();
-		//$feed->handle_content_type();
 
-		foreach ($feed->get_items(0, $limit) as $item)
+		foreach ($feed->get_items($offset, $limit) as $item)
 		{
 			$date = $item->get_date('U');
 			$dateUpdated = $item->get_updated_date('U');
