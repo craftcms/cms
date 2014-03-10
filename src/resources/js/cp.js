@@ -20,10 +20,6 @@ var CP = Garnish.Base.extend(
 	$notificationContainer: null,
 	$main: null,
 	$content: null,
-	//$sidebar: null,
-	//$altSidebar: null,
-	//$altSidebarNavBtn: null,
-	//$altSidebarNavMenu: null,
 	$collapsibleTables: null,
 
 	waitingOnAjax: false,
@@ -34,10 +30,8 @@ var CP = Garnish.Base.extend(
 	visibleNavItems: null,
 	totalNavWidth: null,
 	showingOverflowNavMenu: false,
-	//showingSidebar: true,
 
 	fixedNotifications: false,
-	//fixedSidebar: false,
 
 	init: function()
 	{
@@ -52,13 +46,9 @@ var CP = Garnish.Base.extend(
 		this.$notificationContainer = $('#notifications');
 		this.$main = $('#main');
 		this.$content = $('#content');
-		//this.$sidebar = $('#sidebar');
 		this.$collapsibleTables = this.$content.find('table.collapsible');
 
 		this.ajaxQueue = [];
-
-		// Set the max sidebar height
-		//this.setMaxSidebarHeight();
 
 		// Find all the nav items
 		this.navItems = [];
@@ -80,8 +70,8 @@ var CP = Garnish.Base.extend(
 		this.addListener(Garnish.$win, 'resize', 'onWindowResize');
 		this.onWindowResize();
 
-		this.addListener(Garnish.$win, 'scroll', 'onWindowScroll');
-		this.onWindowScroll();
+		this.addListener(Garnish.$win, 'scroll', 'updateFixedNotifications');
+		this.updateFixedNotifications();
 
 		// Fade the notification out in two seconds
 		var $errorNotifications = this.$notificationContainer.children('.error'),
@@ -166,20 +156,6 @@ var CP = Garnish.Base.extend(
 		}
 	},
 
-	/*setMaxSidebarHeight: function()
-	{
-		if (this.fixedSidebar)
-		{
-			this.setMaxSidebarHeight._maxHeight = this.$main.offset().top + this.$main.height() - Garnish.$win.scrollTop();
-		}
-		else
-		{
-			this.setMaxSidebarHeight._maxHeight = this.$main.height();
-		}
-
-		this.$sidebar.css('max-height', this.setMaxSidebarHeight._maxHeight);
-	},*/
-
 	/**
 	 * Handles stuff that should happen when the window is resized.
 	 */
@@ -191,14 +167,8 @@ var CP = Garnish.Base.extend(
 		// Update the responsive nav
 		this.updateResponsiveNav();
 
-		// Update the responsive sidebar
-		//this.updateResponsiveSidebar();
-
 		// Update any responsive tables
 		this.updateResponsiveTables();
-
-		// Reset the max sidebar height
-		//this.setMaxSidebarHeight();
 	},
 
 	updateResponsiveNav: function()
@@ -266,74 +236,6 @@ var CP = Garnish.Base.extend(
 			}
 		}
 	},
-
-	/**
-	 * Updates the responsive sidebar
-	 */
-	/*updateResponsiveSidebar: function()
-	{
-		if (!this.$sidebar.length)
-		{
-			return;
-		}
-
-		if (this.onWindowResize._cpWidth < CP.minSidebarWidth)
-		{
-			if (this.showingSidebar)
-			{
-				this.makeSidebarUnfixed();
-				this.$main.removeClass(CP.hasSidebarClass);
-
-				if (!this.$altSidebar)
-				{
-					this.$altSidebar = $('<div id="sidebar-alt"/>').insertAfter(this.$sidebar);
-
-					var $sidebarChildren = this.$sidebar.children();
-
-					for (var i = 0; i < $sidebarChildren.length; i++)
-					{
-						var $elem = $($sidebarChildren[i]).clone(true);
-
-						if ($elem.prop('nodeName') == 'NAV')
-						{
-							// Create a menu instead
-							var selectedText = $elem.find('.sel:first').text(),
-								$list = $elem.children();
-
-							this.$altSidebarNavBtn = $('<div class="btn menubtn">'+selectedText+'</div>').appendTo(this.$altSidebar);
-							this.$altSidebarNavMenu = $('<div class="menu padded"/>').appendTo(this.$altSidebar);
-
-							$list.appendTo(this.$altSidebarNavMenu);
-							new Garnish.MenuBtn(this.$altSidebarNavBtn);
-							$elem.detach();
-						}
-						else
-						{
-							$elem.appendTo(this.$altSidebar);
-						}
-					}
-				}
-				else
-				{
-					this.$altSidebar.show();
-				}
-
-				this.$sidebar.hide();
-				this.showingSidebar = false;
-			}
-		}
-		else
-		{
-			if (!this.showingSidebar)
-			{
-				this.$main.addClass(CP.hasSidebarClass);
-				this.$altSidebar.hide();
-				this.$sidebar.show();
-				this.showingSidebar = true;
-				this.updateFixedSidebar();
-			}
-		}
-	},*/
 
 	updateResponsiveTables: function()
 	{
@@ -432,22 +334,11 @@ var CP = Garnish.Base.extend(
 	},
 	/* end HIDE */
 
-	/**
-	 * Handle stuff that should happen when the window scrolls.
-	 */
-	onWindowScroll: function()
-	{
-		this.onWindowScroll._scrollTop = Garnish.$win.scrollTop();
-
-		this.updateFixedNotifications();
-		//this.updateFixedSidebar();
-	},
-
 	updateFixedNotifications: function()
 	{
-		this.onWindowScroll._headerHeight = this.$header.height();
+		this.updateFixedNotifications._headerHeight = this.$header.height();
 
-		if (this.onWindowScroll._scrollTop > this.onWindowScroll._headerHeight)
+		if (Garnish.$win.scrollTop() > this.updateFixedNotifications._headerHeight)
 		{
 			if (!this.fixedNotifications)
 			{
@@ -464,44 +355,6 @@ var CP = Garnish.Base.extend(
 			}
 		}
 	},
-
-	/*updateFixedSidebar: function()
-	{
-		if (this.showingSidebar && this.$sidebar.length)
-		{
-			// Determine if we've scrolled passed the top of the sidebar,
-			// which conveniently is the same as #main
-
-			if (this.onWindowScroll._scrollTop > this.$main.offset().top)
-			{
-				this.makeSidebarFixed();
-				this.setMaxSidebarHeight();
-			}
-			else
-			{
-				this.makeSidebarUnfixed();
-			}
-		}
-	},
-
-	/*makeSidebarFixed: function()
-	{
-		if (!this.fixedSidebar)
-		{
-			this.$sidebar.addClass('fixed');
-			this.fixedSidebar = true;
-		}
-	},
-
-	makeSidebarUnfixed: function()
-	{
-		if (this.fixedSidebar)
-		{
-			this.$sidebar.removeClass('fixed');
-			this.fixedSidebar = false;
-			this.setMaxSidebarHeight();
-		}
-	},*/
 
 	/**
 	 * Dispays a notification.
@@ -731,8 +584,6 @@ var CP = Garnish.Base.extend(
 	maxWidth: 1051, //1024,
 	navHeight: 38,
 	baseNavWidth: 30,
-	//minSidebarWidth: 768,
-	//hasSidebarClass: 'has-sidebar',
 	notificationDuration: 2000
 });
 
