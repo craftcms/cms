@@ -786,21 +786,32 @@ abstract class BaseElementModel extends BaseModel
 				{
 					$handle = $field->handle;
 
+					// Do we have any post data for this field?
 					if (isset($content[$handle]))
 					{
 						$value = $this->_rawPostContent[$handle] = $content[$handle];
-
-						// Give the field type a chance to make changes
-						$fieldType = $field->getFieldType();
-
-						if ($fieldType)
-						{
-							$fieldType->element = $this;
-							$value = $fieldType->prepValueFromPost($value);
-						}
-
-						$this->_content->$handle = $value;
 					}
+					// Were any files uploaded for this field?
+					else if (!empty($this->_contentPostLocation) && UploadedFile::getInstancesByName($this->_contentPostLocation.'.'.$handle))
+					{
+						$value = null;
+					}
+					else
+					{
+						// No data was submitted so just skip this field
+						continue;
+					}
+
+					// Give the field type a chance to make changes
+					$fieldType = $field->getFieldType();
+
+					if ($fieldType)
+					{
+						$fieldType->element = $this;
+						$value = $fieldType->prepValueFromPost($value);
+					}
+
+					$this->_content->$handle = $value;
 				}
 			}
 		}
