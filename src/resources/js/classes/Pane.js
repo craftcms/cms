@@ -13,6 +13,7 @@ Craft.Pane = Garnish.Base.extend(
 	hasSidebar: null,
 	showingSidebar: null,
 	peekingSidebar: null,
+	fixedSidebar: null,
 
 	init: function(pane)
 	{
@@ -84,6 +85,7 @@ Craft.Pane = Garnish.Base.extend(
 				{
 					this.removeListener(this.$content, 'resize');
 					this.removeListener(this.$sidebar, 'resize');
+					this.removeListener(Garnish.$win, 'scroll resize');
 				}
 
 				this.$content = $target;
@@ -116,10 +118,17 @@ Craft.Pane = Garnish.Base.extend(
 
 			this.showingSidebar = true;
 			this.updateResponsiveSidebar();
-			this.addListener(this.$content, 'resize', 'updateResponsiveSidebar');
+			this.addListener(this.$content, 'resize', function()
+			{
+				this.updateResponsiveSidebar();
+				this.updateSidebarStyles();
+			});
 
-			this.setMinContentSizeForSidebar();
 			this.addListener(this.$sidebar, 'resize', 'setMinContentSizeForSidebar');
+			this.setMinContentSizeForSidebar();
+
+			this.addListener(Garnish.$win, 'scroll resize', 'updateSidebarStyles');
+			this.updateSidebarStyles();
 		}
 	},
 
@@ -141,6 +150,19 @@ Craft.Pane = Garnish.Base.extend(
 		}
 	},
 
+	showSidebar: function()
+	{
+		this.$content.removeClass('hiding-sidebar');
+		this.$sidebarBtn.remove();
+		this.showingSidebar = true;
+		this.setMinContentSizeForSidebar();
+
+		if (this.peekingSidebar)
+		{
+			this.stopPeeking();
+		}
+	},
+
 	hideSidebar: function()
 	{
 		this.$content.addClass('hiding-sidebar');
@@ -156,50 +178,89 @@ Craft.Pane = Garnish.Base.extend(
 	{
 		if (this.peekingSidebar)
 		{
-			this.$content.animate({ left: 0 }, 'fast');
-			this.$sidebarBtn.removeClass('showing').attr('title', Craft.t('Show sidebar'));
-			this.peekingSidebar = false;
-
-			this.removeListener(this.$sidebar, 'click');
+			this.stopPeeking();
 		}
 		else
 		{
-			this.$content.animate({ left: 194 }, 'fast');
-			this.$sidebarBtn.addClass('showing').attr('title', Craft.t('Hide sidebar'));
-			this.peekingSidebar = true;
-
-			this.addListener(this.$sidebar, 'click', $.proxy(function(ev)
-			{
-				if (ev.target.nodeName == 'A')
-				{
-					this.togglePeekingSidebar();
-				}
-			}, this))
+			this.startPeeking();
 		}
 
 		this.setMinContentSizeForSidebar();
 	},
 
-	showSidebar: function()
+	startPeeking: function()
 	{
-		this.$content.removeClass('hiding-sidebar');
-		this.$sidebarBtn.remove();
-		this.showingSidebar = true;
-		this.setMinContentSizeForSidebar();
+		this.$content.animate({ left: 194 }, 'fast');
+		this.$sidebarBtn.addClass('showing').attr('title', Craft.t('Hide sidebar'));
+		this.peekingSidebar = true;
+
+		this.addListener(this.$sidebar, 'click', $.proxy(function(ev)
+		{
+			if (ev.target.nodeName == 'A')
+			{
+				this.togglePeekingSidebar();
+			}
+		}, this))
+	},
+
+	stopPeeking: function()
+	{
+		this.$content.animate({ left: 0 }, 'fast');
+		this.$sidebarBtn.removeClass('showing').attr('title', Craft.t('Show sidebar'));
+		this.peekingSidebar = false;
+
+		this.removeListener(this.$sidebar, 'click');
 	},
 
 	setMinContentSizeForSidebar: function()
 	{
 		if (this.showingSidebar || this.peekingSidebar)
 		{
-			var minHeight = this.$sidebar.height();
+			this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight') - 48;
 		}
 		else
 		{
-			var minHeight = 0;
+			this.setMinContentSizeForSidebar._minHeight = 0;
 		}
 
-		this.$content.css('min-height', minHeight);
+		this.$content.css('min-height', this.setMinContentSizeForSidebar._minHeight);
+	},
+
+	updateSidebarStyles: function()
+	{
+		if (this.showingSidebar)
+		{
+			this.updateSidebarStyles._styles = {};
+
+			this.updateSidebarStyles._scrollTop = Garnish.$win.scrollTop();
+			this.updateSidebarStyles._contentOffset = this.$content.offset().top;
+			this.updateSidebarStyles._contentHeight = this.$content.height() - 24;
+			this.updateSidebarStyles._windowHeight = Garnish.$win.height();
+
+			// Have we scrolled passed the top of the content div?
+			if (this.updateSidebarStyles._scrollTop > this.updateSidebarStyles._contentOffset - 24)
+			{
+				// Set the top position to the difference
+				this.updateSidebarStyles._styles.top = this.updateSidebarStyles._scrollTop - this.updateSidebarStyles._contentOffset;
+			}
+			else
+			{
+				this.updateSidebarStyles._styles.top = -24;
+			}
+
+			// Now figure out how tall the sidebar can be
+			this.updateSidebarStyles._styles.maxHeight = Math.min(this.updateSidebarStyles._contentHeight - this.updateSidebarStyles._styles.top, this.updateSidebarStyles._windowHeight - 48);
+
+			// The sidebar should be at least 100px tall if possible
+			if (this.updateSidebarStyles._styles.top != 0 && this.updateSidebarStyles._styles.maxHeight < 100)
+			{
+				this.updateSidebarStyles.newTop = Math.max(0, this.updateSidebarStyles._styles.top - (100 - this.updateSidebarStyles._styles.maxHeight));
+				this.updateSidebarStyles._styles.maxHeight += this.updateSidebarStyles._styles.top - this.updateSidebarStyles.newTop;
+				this.updateSidebarStyles._styles.top = this.updateSidebarStyles.newTop;
+			}
+
+			this.$sidebar.css(this.updateSidebarStyles._styles);
+		}
 	}
 },
 {
