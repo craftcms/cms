@@ -208,3 +208,8 @@ $fldGuideColor: #f4f3fb;
 	#devmode { background-image: url(../images/devmode_2x.png); background-size: 40px; }
 	.fieldlayoutform { background-image: url(../images/fieldlayoutform-bg_2x.png); background-size: 30px 30px; }
 }
+
+@media only screen and (max-width: 320px) {
+	.container { padding-left: 10px; padding-right: 10px; }
+	#nav { margin-left: -10px; }
+}
