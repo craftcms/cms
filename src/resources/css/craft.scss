@@ -769,7 +769,7 @@ ul.tree,
 .elementselectormodal .body { position: relative; height: 350px; }
 .elementselectormodal .body .spinner.big { position: absolute; top: 205px; left: 350px; margin: -24px 0 0 -24px; }
 
-.elementselectormodal .body .sidebar { padding-right: 0; border-right: 1px solid #e5e5e5; height: 350px; overflow: auto; }
+.elementselectormodal .body .sidebar { top: 0; padding-right: 0; border-right: 1px solid #e5e5e5; height: 350px; overflow: auto; }
 
 .elementselectormodal .body .main { margin: -24px; padding: 24px; height: 350px; overflow: auto; position: relative; }
 
