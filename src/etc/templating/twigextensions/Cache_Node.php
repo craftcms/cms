@@ -36,7 +36,7 @@ class Cache_Node extends \Twig_Node
 				->indent();
 		}
 
-		$compiler->write("\$body{$n} = \$cacheService->getTemplateCache('{$key}', {$global});\n");
+		$compiler->write("\$cacheBody{$n} = \$cacheService->getTemplateCache('{$key}', {$global});\n");
 
 		if ($ignoreConditions)
 		{
@@ -46,7 +46,7 @@ class Cache_Node extends \Twig_Node
 		}
 
 		$compiler
-			->write("if (empty(\$body{$n})) {\n")
+			->write("if (empty(\$cacheBody{$n})) {\n")
 			->indent();
 
 		if ($ignoreConditions)
@@ -68,7 +68,7 @@ class Cache_Node extends \Twig_Node
 		$compiler
 			->write("ob_start();\n")
 			->subcompile($this->getNode('body'))
-			->write("\$body{$n} = ob_get_clean();\n");
+			->write("\$cacheBody{$n} = ob_get_clean();\n");
 
 		if ($ignoreConditions)
 		{
@@ -99,7 +99,7 @@ class Cache_Node extends \Twig_Node
 			$compiler->raw('null');
 		}
 
-		$compiler->raw(", \$body{$n});\n");
+		$compiler->raw(", \$cacheBody{$n});\n");
 
 		if ($ignoreConditions)
 		{
@@ -111,6 +111,6 @@ class Cache_Node extends \Twig_Node
 		$compiler
 			->outdent()
 			->write("}\n")
-			->write("echo \$body{$n};\n");
+			->write("echo \$cacheBody{$n};\n");
 	}
 }

@@ -1,16 +1,12 @@
 <?php
 namespace Craft;
 
-/**
- * Class TemplateCacheService
- *
- * @package Craft
- */
 class TemplateCacheService extends BaseApplicationComponent
 {
 	private static $_templateCachesTable = 'templatecaches';
 	private static $_templateCacheElementsTable = 'templatecacheelements';
 
+	private $_path;
 	private $_cacheElementIds;
 
 	/**
@@ -22,16 +18,18 @@ class TemplateCacheService extends BaseApplicationComponent
 	 */
 	public function getTemplateCache($key, $global)
 	{
-		$conditions = array('and', 'expires > :now', 'cacheKey = :key');
+		$conditions = array('and', 'expiryDate > :now', 'cacheKey = :key', 'locale = :locale');
+
 		$params = array(
-			':now' => DateTimeHelper::currentTimeForDb(),
-			':key' => $key
+			':now'    => DateTimeHelper::currentTimeForDb(),
+			':key'    => $key,
+			':locale' => craft()->language
 		);
 
 		if (!$global)
 		{
-			$conditions[] = 'uri = :path';
-			$params[':path'] = craft()->request->getPath();
+			$conditions[] = 'path = :path';
+			$params[':path'] = $this->_getPath();
 		}
 
 		return craft()->db->createCommand()
@@ -78,7 +76,6 @@ class TemplateCacheService extends BaseApplicationComponent
 	 * @param string|null $duration
 	 * @param mixed|null  $expiration
 	 * @param string      $body
-	 * @throws \Exception
 	 */
 	public function endTemplateCache($key, $global, $duration, $expiration, $body)
 	{
@@ -105,10 +102,11 @@ class TemplateCacheService extends BaseApplicationComponent
 		try
 		{
 			craft()->db->createCommand()->insert(static::$_templateCachesTable, array(
-				'cacheKey' => $key,
-				'uri'      => ($global ? null : craft()->request->getPath()),
-				'expires'  => DateTimeHelper::formatTimeForDb($expiration),
-				'body'     => $body
+				'cacheKey'   => $key,
+				'locale'     => craft()->language,
+				'path'       => ($global ? null : $this->_getPath()),
+				'expiryDate' => DateTimeHelper::formatTimeForDb($expiration),
+				'body'       => $body
 			), false);
 
 			$cacheId = craft()->db->getLastInsertID();
@@ -168,5 +166,30 @@ class TemplateCacheService extends BaseApplicationComponent
 	public function deleteAllCaches()
 	{
 		craft()->db->createCommand()->delete(static::$_templateCachesTable);
+	}
+
+	/**
+	 * Returns the current request path, including a "site:" or "cp:" prefix.
+	 *
+	 * @access private
+	 * @return string
+	 */
+	private function _getPath()
+	{
+		if (!isset($this->_path))
+		{
+			if (craft()->request->isCpRequest())
+			{
+				$this->_path = 'cp:';
+			}
+			else
+			{
+				$this->_path = 'site:';
+			}
+
+			$this->_path .= craft()->request->getPath();
+		}
+
+		return $this->_path;
 	}
 }

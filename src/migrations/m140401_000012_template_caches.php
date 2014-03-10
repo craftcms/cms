@@ -18,13 +18,15 @@ class m140401_000012_template_caches extends BaseMigration
 			Craft::log('Creating the templatecaches table.', LogLevel::Info, true);
 
 			$this->createTable('templatecaches', array(
-				'cacheKey' => array('column' => ColumnType::Varchar, 'length' => 36, 'null' => false),
-				'uri'      => array('column' => ColumnType::Varchar),
-				'expires'  => array('column' => ColumnType::DateTime, 'null' => false),
-				'body'     => array('column' => ColumnType::MediumText, 'null' => false),
+				'cacheKey'   => array('column' => ColumnType::Varchar, 'length' => 36, 'null' => false),
+				'locale'     => array('column' => ColumnType::Locale, 'null' => false),
+				'path'       => array('column' => ColumnType::Varchar),
+				'expiryDate' => array('column' => ColumnType::DateTime, 'null' => false),
+				'body'       => array('column' => ColumnType::MediumText, 'null' => false),
 			), null, true, false);
 
-			$this->createIndex('templatecaches', 'expires,cacheKey,uri');
+			$this->createIndex('templatecaches', 'expiryDate,cacheKey,locale,path');
+			$this->addForeignKey('templatecaches', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
 		}
 
 		if (!craft()->db->tableExists('templatecacheelements'))
