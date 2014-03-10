@@ -4,7 +4,7 @@ namespace Craft;
 /**
  *
  */
-class EmailerType
+abstract class EmailerType extends BaseEnum
 {
 	const Php      = 'php';
 	const Sendmail = 'sendmail';

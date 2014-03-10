@@ -1,7 +1,9 @@
-<div class="sidebar{% if not showSidebar %} hidden{% endif %}">
-	<nav>
-		{% include "_elements/sources" %}
-	</nav>
-</div>
+<div class="content{% if showSidebar %} has-sidebar{% endif %}">
+	<div class="sidebar{% if not showSidebar %} hidden{% endif %}">
+		<nav>
+			{% include "_elements/sources" %}
+		</nav>
+	</div>
 
-{% include "_elements/indexcontainer" %}
+	{% include "_elements/indexcontainer" %}
+</div>

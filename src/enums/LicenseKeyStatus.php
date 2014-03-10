@@ -4,7 +4,7 @@ namespace Craft;
 /**
  *
  */
-class LicenseKeyStatus
+abstract class LicenseKeyStatus extends BaseEnum
 {
 	// Valid Key
 	const Valid = 'Valid';

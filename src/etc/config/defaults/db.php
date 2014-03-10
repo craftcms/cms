@@ -11,50 +11,49 @@
 
 return array(
 
-/**
- * The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
- */
-'server' => 'localhost',
+	/**
+	 * The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
+	 */
+	'server' => 'localhost',
 
-/**
- * The database server port.
- */
-'port' => '3306',
+	/**
+	 * The database server port.
+	 */
+	'port' => '3306',
 
-/**
- * The database username to connect with.
- */
-'user' => 'root',
+	/**
+	 * The database username to connect with.
+	 */
+	'user' => 'root',
 
-/**
- * The database password to connect with.
- */
-'password' => '',
+	/**
+	 * The database password to connect with.
+	 */
+	'password' => '',
 
-/**
- * The name of the database to select.
- */
-'database' => '',
+	/**
+	 * The name of the database to select.
+	 */
+	'database' => '',
 
-/**
- * The prefix to use when naming tables. This can be no more than 5 characters.
- */
-'tablePrefix' => 'craft',
+	/**
+	 * The prefix to use when naming tables. This can be no more than 5 characters.
+	 */
+	'tablePrefix' => 'craft',
 
-/**
- * The charset to use when creating tables.
- */
-'charset' => 'utf8',
+	/**
+	 * The charset to use when creating tables.
+	 */
+	'charset' => 'utf8',
 
-/**
- * The collation to use when creating tables.
- */
-'collation' => 'utf8_unicode_ci',
+	/**
+	 * The collation to use when creating tables.
+	 */
+	'collation' => 'utf8_unicode_ci',
 
-/**
- * If this is set, then the CLI connection string (used for yiic) will connect to the Unix socket, instead of the server and port.
- * If this is specified, then 'server' and 'port' settings are ignored.
- */
-'unixSocket' => '',
-
+	/**
+	 * If this is set, then the CLI connection string (used for yiic) will connect to the Unix socket, instead of the server and port.
+	 * If this is specified, then 'server' and 'port' settings are ignored.
+	 */
+	'unixSocket' => '',
 );

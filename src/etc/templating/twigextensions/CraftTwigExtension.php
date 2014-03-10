@@ -16,6 +16,7 @@ class CraftTwigExtension extends \Twig_Extension
 	public function getTokenParsers()
 	{
 		return array(
+			new Cache_TokenParser(),
 			new Exit_TokenParser(),
 			new Header_TokenParser(),
 			new Hook_TokenParser(),

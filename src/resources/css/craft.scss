@@ -110,7 +110,7 @@ a.sel,
 li.sel a { cursor: default !important; text-decoration: none; }
 
 a.go { white-space: nowrap; }
-a.go:after { content: 'go'; font-size: 11px; margin: -1px 0 0 4px; color: $lighttextcolor; }
+a.go:after { content: 'go'; font-size: 11px; margin-top: -1px; padding-left: 4px; color: $lighttextcolor; }
 a.go:hover:after { color: $linkcolor; }
 
 /* toggles */
@@ -192,44 +192,56 @@ td.right { float: none; text-align: right; }
 .footer .right li + li { margin-left: 10px; }
 
 /* ----------------------------------------
-/*  Sidebars
-/* ----------------------------------------*/
-
-.sidebar { position: absolute; top: 0; left: 0; padding: 24px; width: 170px; overflow: auto; }
-.sidebar .heading { position: relative; margin: 14px 0 2px -24px; padding: 0 24px; }
-.sidebar .heading:after { display: block; position: absolute; bottom: 7px; left: 0; content: '.'; text-indent: -200px; overflow: hidden; width: 100%; height: 1px; border-top: 1px solid $hrcolor; }
-.sidebar .heading span { display: inline-block; position: relative; z-index: 1; padding: 0 5px; margin: 0 -5px; text-transform: uppercase; color: $lighttextcolor; font-size: 11px; font-weight: bold; background: #fff; }
-
-.sidebar nav { margin-left: -24px; padding-left: 24px; width: 170px; overflow: auto; }
-.sidebar nav li { position: relative; }
-.sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; @include unselectable; outline: none; }
-.sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
-.sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $headerBgColor; cursor: default; }
-
-.sidebar nav li .toggle { position: absolute; top: 3px; left: -20px; }
-.sidebar nav li.expanded > .toggle { background-position: 50% -40px; }
-.sidebar nav li a.sel + .toggle { background-position: 0 -20px; }
-.sidebar nav li.expanded > a.sel + .toggle { background-position: 0 -60px; }
-.sidebar nav li ul { margin-left: 20px; display: none; }
-.sidebar nav li.expanded > ul { display: block; }
-
-/* ----------------------------------------
 /*  Panes
 /* ----------------------------------------*/
 
-.pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: 3px;
+.pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: 3px; word-wrap: break-word; overflow: hidden;
 	-webkit-box-sizing: border-box;
 	   -moz-box-sizing: border-box;
 	        box-sizing: border-box;
 }
 
-.pane.has-sidebar { padding-left: 218px; }
-.pane.has-sidebar .sidebar.fixed { margin-top: 0; margin-bottom: 0; position: fixed; top: 0; }
+/* ----------------------------------------
+/*  Content
+/* ----------------------------------------*/
 
-/*#content #sidebar-alt { margin-bottom: 30px; }
-#content #sidebar-alt:after { @include clearafter; }
-#content #sidebar-alt > .buttons,
-#content #sidebar-alt > .menubtn { float: left; margin: 0 10px 0 0; }*/
+.content { position: relative; }
+.content:after { @include clearafter; }
+
+/* sidebar */
+.content.has-sidebar:not(.hiding-sidebar) { margin-left: 194px; }
+.content.has-sidebar:not(.hiding-sidebar) .show-sidebar { display: none; }
+
+.content.has-sidebar .show-sidebar { position: absolute; top: -24px; left: -24px;  color: $lighttextcolor;
+	-webkit-transition: color linear 100ms;
+	   -moz-transition: color linear 100ms;
+}
+.content.has-sidebar .show-sidebar:hover { color: $linkcolor; }
+.content.has-sidebar .show-sidebar:before { @include icon; width: 41px; line-height: 24px; content: 'menu→'; }
+.content.has-sidebar .show-sidebar.showing:before { content: 'menu←'; }
+
+.content.has-sidebar .sidebar { position: absolute; top: -24px; left: -218px; padding: 24px; width: 170px; overflow: auto; }
+
+.content.has-sidebar .sidebar .heading { position: relative; margin: 14px 0 2px -24px; padding: 0 24px; }
+.content.has-sidebar .sidebar .heading:after { display: block; position: absolute; bottom: 7px; left: 0; content: '.'; text-indent: -200px; overflow: hidden; width: 100%; height: 1px; border-top: 1px solid $hrcolor; }
+.content.has-sidebar .sidebar .heading span { display: inline-block; position: relative; z-index: 1; padding: 0 5px; margin: 0 -5px; text-transform: uppercase; color: $lighttextcolor; font-size: 11px; font-weight: bold; background: #fff; }
+
+.content.has-sidebar .sidebar nav { margin-left: -24px; padding-left: 24px; width: 170px; overflow: auto; }
+.content.has-sidebar .sidebar nav li { position: relative; }
+.content.has-sidebar .sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; @include unselectable; outline: none; }
+.content.has-sidebar .sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
+.content.has-sidebar .sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $headerBgColor; cursor: default; }
+
+.content.has-sidebar .sidebar nav li .toggle { position: absolute; top: 3px; left: -20px; }
+.content.has-sidebar .sidebar nav li.expanded > .toggle { background-position: 50% -40px; }
+.content.has-sidebar .sidebar nav li a.sel + .toggle { background-position: 0 -20px; }
+.content.has-sidebar .sidebar nav li.expanded > a.sel + .toggle { background-position: 0 -60px; }
+.content.has-sidebar .sidebar nav li ul { margin-left: 20px; display: none; }
+.content.has-sidebar .sidebar nav li.expanded > ul { display: block; }
+
+/* help */
+.content.has-help { padding-bottom: 60px; }
+.content.has-help .help { position: absolute; bottom: 17px; right: 17px; font-size: 26px; }
 
 /* ----------------------------------------
 /*  Icon lists
@@ -755,7 +767,6 @@ ul.tree,
 /* element selector modals */
 .elementselectormodal { margin-left: -350px; width: 705px; @include unselectable; }
 .elementselectormodal .body { position: relative; height: 350px; }
-.elementselectormodal .body.has-sidebar { padding-left: 218px; }
 .elementselectormodal .body .spinner.big { position: absolute; top: 205px; left: 350px; margin: -24px 0 0 -24px; }
 
 .elementselectormodal .body .sidebar { padding-right: 0; border-right: 1px solid #e5e5e5; height: 350px; overflow: auto; }

@@ -721,7 +721,7 @@ class IOHelper
 		if (static::isWritable($path, $suppressErrors))
 		{
 			// We haven't cached file lock information yet and this is not a noFileLock request.
-			if (($useFileLock = craft()->fileCache->get('useWriteFileLock')) === false && !$noFileLock)
+			if (($useFileLock = craft()->cache->get('useWriteFileLock')) === false && !$noFileLock)
 			{
 				// For file systems that don't support file locking... LOOKING AT YOU NFS!!!
 				set_error_handler(array(new IOHelper(), 'handleError'));
@@ -736,7 +736,7 @@ class IOHelper
 
 						// Cache the file lock info to use LOCK_EX for 2 months.
 						Craft::log('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.', LogLevel::Info, true);
-						craft()->fileCache->set('useWriteFileLock', 'yes', 5184000);
+						craft()->cache->set('useWriteFileLock', 'yes', 5184000);
 						return true;
 					}
 					else
@@ -747,7 +747,7 @@ class IOHelper
 						{
 							// Cache the file lock info to not use LOCK_EX for 2 months.
 							Craft::log('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', LogLevel::Info, true);
-							craft()->fileCache->set('useWriteFileLock', 'no', 5184000);
+							craft()->cache->set('useWriteFileLock', 'no', 5184000);
 							return true;
 						}
 					}
@@ -763,7 +763,7 @@ class IOHelper
 					{
 						// Cache the file lock info to not use LOCK_EX for 2 months.
 						Craft::log('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', LogLevel::Info, true);
-						craft()->fileCache->set('useWriteFileLock', 'no', 5184000);
+						craft()->cache->set('useWriteFileLock', 'no', 5184000);
 						return true;
 					}
 				}

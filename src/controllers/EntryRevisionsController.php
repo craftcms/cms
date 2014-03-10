@@ -148,8 +148,8 @@ class EntryRevisionsController extends BaseController
 
 		$draft->getContent()->title = craft()->request->getPost('title');
 
-		$fields = craft()->request->getPost('fields');
-		$draft->getContent()->setAttributes($fields);
+		$fieldsLocation = craft()->request->getParam('fieldsLocation', 'fields');
+		$draft->setContentFromPost($fieldsLocation);
 
 		if (craft()->hasPackage(CraftPackage::Users))
 		{

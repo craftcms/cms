@@ -4,7 +4,7 @@ namespace Craft;
 /**
  *
  */
-class PluginVersionUpdateStatus
+abstract class PluginVersionUpdateStatus extends BaseEnum
 {
 	const UpToDate = 'UpToDate';
 	const UpdateAvailable = 'UpdateAvailable';

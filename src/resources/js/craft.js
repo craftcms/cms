@@ -768,13 +768,13 @@ $.extend(Craft,
 	initUiElements: function($container)
 	{
 		$('.grid', $container).grid();
+		$('.pane', $container).pane();
 		$('.checkbox-select', $container).checkboxselect();
 		$('.fieldtoggle', $container).fieldtoggle();
 		$('.lightswitch', $container).lightswitch();
 		$('.nicetext', $container).nicetext();
 		$('.pill', $container).pill();
 		$('.menubtn', $container).menubtn();
-		$('.pane.has-sidebar', $container).sidebarpane();
 	},
 
 	_elementIndexClasses: {},
@@ -994,6 +994,14 @@ $.extend($.fn,
 		});
 	},
 
+	pane: function()
+	{
+		return this.each(function()
+		{
+			new Craft.Pane(this);
+		});
+	},
+
 	/**
 	 * Sets the element as a container for a checkbox select.
 	 */
@@ -1088,14 +1096,6 @@ $.extend($.fn,
 			{
 				new Garnish.MenuBtn($btn);
 			}
-		});
-	},
-
-	sidebarpane: function()
-	{
-		return this.each(function()
-		{
-			new Craft.SidebarPane(this);
 		});
 	}
 });

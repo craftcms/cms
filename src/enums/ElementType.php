@@ -4,7 +4,7 @@ namespace Craft;
 /**
  *
  */
-class ElementType
+abstract class ElementType extends BaseEnum
 {
 	const Asset       = 'Asset';
 	const Category    = 'Category';

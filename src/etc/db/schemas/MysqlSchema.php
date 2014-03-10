@@ -160,7 +160,7 @@ class MysqlSchema extends \CMysqlSchema
 	public function createTable($table, $columns, $options = null, $engine = 'InnoDb')
 	{
 		$cols = array();
-		$options = 'ENGINE='.$engine.' DEFAULT CHARSET='.craft()->config->getDbItem('charset').' COLLATE='.craft()->config->getDbItem('collation').($options ? ' '.$options : '');
+		$options = 'ENGINE='.$engine.' DEFAULT CHARSET='.craft()->config->get('charset', ConfigFile::Db).' COLLATE='.craft()->config->get('collation', ConfigFile::Db).($options ? ' '.$options : '');
 
 		foreach ($columns as $name => $type)
 		{

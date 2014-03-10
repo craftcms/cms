@@ -6,32 +6,25 @@ namespace Craft;
  */
 class ConfigService extends BaseApplicationComponent
 {
-	/**
-	 * The general configuration names and values as defined in craft/app/etc/config and craft/config
-	 *
-	 * @var
-	 */
-	public $generalConfig;
-
-	/**
-	 * The database configuration names and values as defined in craft/app/etc/config and craft/config
-	 *
-	 * @var
-	 */
-	public $dbConfig;
-
 	private $_cacheDuration;
 	private $_omitScriptNameInUrls;
 	private $_usePathInfo;
+	private $_loadedConfigFiles = array();
 
 	/**
 	 * Returns a config item value, or null if it doesn't exist.
 	 *
 	 * @param string $item
+	 * @param string $file
 	 * @return mixed
 	 */
-	public function get($item)
+	public function get($item, $file = 'general')
 	{
+		if (!isset($this->_loadedConfigFiles[$file]))
+		{
+			$this->_loadConfigFile($file);
+		}
+
 		// If we're looking for devMode and we it looks like we're on the installer and it's a CP request, pretend like devMode is turned on.
 		if (!craft()->isConsole() && $item == 'devMode' && craft()->request->getSegment(1) == 'install' && craft()->request->isCpRequest())
 		{
@@ -39,9 +32,9 @@ class ConfigService extends BaseApplicationComponent
 		}
 		else
 		{
-			if (isset($this->generalConfig[$item]))
+			if ($this->exists($item, $file))
 			{
-				return $this->generalConfig[$item];
+				return $this->_loadedConfigFiles[$file][$item];
 			}
 		}
 	}
@@ -50,23 +43,30 @@ class ConfigService extends BaseApplicationComponent
 	 * Sets a config item value.
 	 *
 	 * @param string $item
-	 * @param mixed $value
+	 * @param mixed  $value
+	 * @param string $file
 	 */
-	public function set($item, $value)
+	public function set($item, $value, $file = 'general')
 	{
-		$this->generalConfig[$item] = $value;
+		if (!isset($this->_loadedConfigFiles[$file]))
+		{
+			$this->_loadConfigFile($file);
+		}
+
+		$this->_loadedConfigFiles[$file][$item] = $value;
 	}
 
 	/**
 	 * Returns a localized config setting value.
 	 *
-	 * @param string $item
+	 * @param string      $item
 	 * @param string|null $localeId
+	 * @param string      $file
 	 * @return mixed
 	 */
-	public function getLocalized($item, $localeId = null)
+	public function getLocalized($item, $localeId = null, $file = 'general')
 	{
-		$value = $this->get($item);
+		$value = $this->get($item, $file);
 
 		if (is_array($value))
 		{
@@ -93,6 +93,7 @@ class ConfigService extends BaseApplicationComponent
 	}
 
 	/**
+	 * TODO: Deprecate
 	 * Get a DB config item
 	 *
 	 * @param      $item
@@ -101,12 +102,36 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function getDbItem($item, $default = null)
 	{
-		if (isset($this->dbConfig[$item]))
+		Craft::log('craft()->config->getDbItem(item) is deprecated. Use craft()->config->get(item, ConfigFile::Db) instead.', LogLevel::Warning);
+
+		if ($value = craft()->config->get($item, Config::Db))
 		{
-			return $this->dbConfig[$item];
+			return $value;
 		}
 
 		return $default;
+	}
+
+	/**
+	 * Checks if a key exists for a given config file.
+	 *
+	 * @param        $item
+	 * @param string $file
+	 * @return bool
+	 */
+	public function exists($item, $file = 'general')
+	{
+		if (!isset($this->_loadedConfigFiles[$file]))
+		{
+			$this->_loadConfigFile($file);
+		}
+
+		if (isset($this->_loadedConfigFiles[$file][$item]))
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -154,7 +179,7 @@ class ConfigService extends BaseApplicationComponent
 			else
 			{
 				// Check if it's cached
-				$cachedVal = craft()->fileCache->get('omitScriptNameInUrls');
+				$cachedVal = craft()->cache->get('omitScriptNameInUrls');
 
 				if ($cachedVal !== false)
 				{
@@ -171,7 +196,7 @@ class ConfigService extends BaseApplicationComponent
 					else
 					{
 						// Cache it early so the testScriptNameRedirect request isn't checking for it too
-						craft()->fileCache->set('omitScriptNameInUrls', 'n');
+						craft()->cache->set('omitScriptNameInUrls', 'n');
 
 						// Test the server for it
 						try
@@ -194,7 +219,7 @@ class ConfigService extends BaseApplicationComponent
 					}
 
 					// Cache it
-					craft()->fileCache->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls);
+					craft()->cache->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls);
 				}
 			}
 		}
@@ -223,7 +248,7 @@ class ConfigService extends BaseApplicationComponent
 			else
 			{
 				// Check if it's cached
-				$cachedVal = craft()->fileCache->get('usePathInfo');
+				$cachedVal = craft()->cache->get('usePathInfo');
 
 				if ($cachedVal !== false)
 				{
@@ -246,7 +271,7 @@ class ConfigService extends BaseApplicationComponent
 					else
 					{
 						// Cache it early so the testPathInfo request isn't checking for it too
-						craft()->fileCache->set('usePathInfo', 'n');
+						craft()->cache->set('usePathInfo', 'n');
 
 						// Test the server for it
 						try
@@ -267,7 +292,7 @@ class ConfigService extends BaseApplicationComponent
 					}
 
 					// Cache it
-					craft()->fileCache->set('usePathInfo', $this->_usePathInfo);
+					craft()->cache->set('usePathInfo', $this->_usePathInfo);
 				}
 			}
 		}
@@ -480,6 +505,91 @@ class ConfigService extends BaseApplicationComponent
 		else
 		{
 			return $this->get('resourceTrigger');
+		}
+	}
+
+	/**
+	 * @param $name
+	 */
+	private function _loadConfigFile($name)
+	{
+		// Is this a valid Craft config file?
+		if (ConfigFile::isValidName($name))
+		{
+			$defaultsPath = CRAFT_APP_PATH.'etc/config/defaults/'.$name.'.php';
+		}
+		else
+		{
+			$defaultsPath = CRAFT_PLUGINS_PATH.$name.'config.php';
+		}
+
+		if (IOHelper::fileExists($defaultsPath))
+		{
+			$defaultsConfig = @require_once($defaultsPath);
+		}
+
+		// Little extra logic for the general config file.
+		if ($name == ConfigFile::General)
+		{
+			// Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
+			if (file_exists(CRAFT_CONFIG_PATH.'general.php'))
+			{
+				if (is_array($customConfig = @include(CRAFT_CONFIG_PATH.'general.php')))
+				{
+					$this->_mergeConfigs($defaultsConfig, $customConfig);
+				}
+			}
+			else if (file_exists(CRAFT_CONFIG_PATH.'blocks.php'))
+			{
+				// Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
+				if (is_array($customConfig = require_once(CRAFT_CONFIG_PATH.'blocks.php')))
+				{
+					$this->_mergeConfigs($defaultsConfig, $customConfig);
+				}
+				else if (isset($blocksConfig))
+				{
+					$defaultsConfig = array_merge($defaultsConfig, $blocksConfig);
+					unset($blocksConfig);
+				}
+			}
+		}
+		else
+		{
+			$customConfigPath = CRAFT_CONFIG_PATH.$name.'.php';
+			if (IOHelper::fileExists($customConfigPath))
+			{
+				if (is_array($customConfig = @include($customConfigPath)))
+				{
+					$this->_mergeConfigs($defaultsConfig, $customConfig);
+				}
+			}
+		}
+
+		$this->_loadedConfigFiles[$name] = $defaultsConfig;
+	}
+
+	/**
+	 * Merges a base config array with a custom config array, taking environment-specific configs into account.
+	 *
+	 * @param array &$baseConfig
+	 * @param array $customConfig
+	 */
+	private function _mergeConfigs(&$baseConfig, $customConfig)
+	{
+		// Is this a multi-environment config?
+		if (array_key_exists('*', $customConfig))
+		{
+			foreach ($customConfig as $env => $envConfig)
+			{
+				if ($env == '*' || strpos(CRAFT_ENVIRONMENT, $env) !== false)
+				{
+					$baseConfig = array_merge($baseConfig, $envConfig);
+				}
+			}
+		}
+		else
+		{
+			$baseConfig = array_merge($baseConfig, $customConfig);
 		}
 	}
 }

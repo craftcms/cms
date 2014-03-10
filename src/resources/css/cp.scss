@@ -106,12 +106,6 @@ html { overflow-y: scroll; }
 .pane > .tabs li a:not(.sel):hover { color: $linkcolor; }
 .pane > .tabs li .tab.sel { @include pane; }
 
-/* content */
-#content { position: relative; }
-#content.has-help { padding-bottom: 60px; }
-#content.has-help #help { position: absolute; bottom: 17px; right: 17px; font-size: 26px; }
-#content:after { @include clearafter; }
-
 /* grids */
 .grid { position: relative; margin: 23px -7px; }
 .grid:after { @include clearafter; }
