@@ -1,6 +1,11 @@
 <?php
 namespace Craft;
 
+/**
+ * Class TemplateCacheService
+ *
+ * @package Craft
+ */
 class TemplateCacheService extends BaseApplicationComponent
 {
 	private static $_templateCachesTable = 'templatecaches';
@@ -73,6 +78,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	 * @param string|null $duration
 	 * @param mixed|null  $expiration
 	 * @param string      $body
+	 * @throws \Exception
 	 */
 	public function endTemplateCache($key, $global, $duration, $expiration, $body)
 	{
