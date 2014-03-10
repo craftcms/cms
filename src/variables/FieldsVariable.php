@@ -46,6 +46,17 @@ class FieldsVariable
 	}
 
 	/**
+	 * Returns a field by its handle.
+	 *
+	 * @param string $handle
+	 * @return FieldModel|null
+	 */
+	public function getFieldByHandle($handle)
+	{
+		return craft()->fields->getFieldByHandle($handle);
+	}
+
+	/**
 	 * Returns all fields.
 	 *
 	 * @param string|null $indexBy
