@@ -34,7 +34,7 @@ class ClearCachesTool extends BaseTool
 	public function getOptionsHtml()
 	{
 		$caches = $this->_getFolders();
-		$caches['templateCaches'] = Craft::t('Template Caches');
+		$caches['templateCaches'] = Craft::t('Template caches');
 
 		return craft()->templates->render('_includes/forms/checkboxSelect', array(
 			'name'    => 'caches',
@@ -123,8 +123,8 @@ class ClearCachesTool extends BaseTool
 		$runtimePath = craft()->path->getRuntimePath();
 
 		$folders = array(
-			$obfuscate ? md5('dataCache') : 'dataCache'                                             => Craft::t('Data cache'),
-			$obfuscate ? md5($runtimePath.'cache') : $runtimePath.'cache'                           => Craft::t('RSS cache'),
+			$obfuscate ? md5('dataCache') : 'dataCache'                                             => Craft::t('Data caches'),
+			$obfuscate ? md5($runtimePath.'cache') : $runtimePath.'cache'                           => Craft::t('RSS caches'),
 			$obfuscate ? md5($runtimePath.'assets') : $runtimePath.'assets'                         => Craft::t('Asset thumbs'),
 			$obfuscate ? md5($runtimePath.'compiled_templates') : $runtimePath.'compiled_templates' => Craft::t('Compiled templates'),
 			$obfuscate ? md5($runtimePath.'temp') : $runtimePath.'temp'                             => Craft::t('Temp files'),
