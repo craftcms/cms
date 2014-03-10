@@ -18,7 +18,7 @@ class ConfigService extends BaseApplicationComponent
 	 * @param string $file
 	 * @return mixed
 	 */
-	public function get($item, $file = 'general')
+	public function get($item, $file = ConfigFile::General)
 	{
 		if (!isset($this->_loadedConfigFiles[$file]))
 		{
@@ -46,7 +46,7 @@ class ConfigService extends BaseApplicationComponent
 	 * @param mixed  $value
 	 * @param string $file
 	 */
-	public function set($item, $value, $file = 'general')
+	public function set($item, $value, $file = ConfigFile::General)
 	{
 		if (!isset($this->_loadedConfigFiles[$file]))
 		{
@@ -64,7 +64,7 @@ class ConfigService extends BaseApplicationComponent
 	 * @param string      $file
 	 * @return mixed
 	 */
-	public function getLocalized($item, $localeId = null, $file = 'general')
+	public function getLocalized($item, $localeId = null, $file = ConfigFile::General)
 	{
 		$value = $this->get($item, $file);
 
@@ -120,7 +120,7 @@ class ConfigService extends BaseApplicationComponent
 	 * @param string $file
 	 * @return bool
 	 */
-	public function exists($item, $file = 'general')
+	public function exists($item, $file = ConfigFile::General)
 	{
 		if (!isset($this->_loadedConfigFiles[$file]))
 		{
