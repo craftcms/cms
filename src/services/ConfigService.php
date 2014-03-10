@@ -99,6 +99,7 @@ class ConfigService extends BaseApplicationComponent
 	 * @param      $item
 	 * @param null $default
 	 * @return null
+	 * @deprecated Deprecated since 1.4
 	 */
 	public function getDbItem($item, $default = null)
 	{
