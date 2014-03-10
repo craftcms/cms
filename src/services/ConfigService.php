@@ -563,6 +563,15 @@ class ConfigService extends BaseApplicationComponent
 				{
 					$this->_mergeConfigs($defaultsConfig, $customConfig);
 				}
+				else if ($name == ConfigFile::Db)
+				{
+					// Originally db.php defined a $dbConfig variable.
+					if (@require_once(CRAFT_CONFIG_PATH.'db.php'))
+					{
+						$this->_mergeConfigs($defaultsConfig, $dbConfig);
+						unset($dbConfig);
+					}
+				}
 			}
 		}
 
