@@ -552,4 +552,17 @@ class DateTimeHelper
 
 		return $date;
 	}
+
+	/**
+	 * Takes a PHP time format string and converts it to seconds.
+	 * http://www.php.net/manual/en/datetime.formats.time.php
+	 *
+	 * @param $timeFormatString
+	 * @return string
+	 */
+	public static function timeFormatToSeconds($timeFormatString)
+	{
+		$interval = new DateInterval($timeFormatString);
+		return $interval->toSeconds();
+	}
 }
