@@ -254,7 +254,7 @@ Craft.Pane = Garnish.Base.extend(
 			// The sidebar should be at least 100px tall if possible
 			if (this.updateSidebarStyles._styles.top != 0 && this.updateSidebarStyles._styles.maxHeight < 100)
 			{
-				this.updateSidebarStyles.newTop = Math.max(0, this.updateSidebarStyles._styles.top - (100 - this.updateSidebarStyles._styles.maxHeight));
+				this.updateSidebarStyles.newTop = Math.max(-24, this.updateSidebarStyles._styles.top - (100 - this.updateSidebarStyles._styles.maxHeight));
 				this.updateSidebarStyles._styles.maxHeight += this.updateSidebarStyles._styles.top - this.updateSidebarStyles.newTop;
 				this.updateSidebarStyles._styles.top = this.updateSidebarStyles.newTop;
 			}
