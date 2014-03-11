@@ -90,10 +90,11 @@ class AssetsFieldType extends BaseElementFieldType
 		}
 
 		return craft()->templates->render('_components/fieldtypes/Assets/settings', array(
-			'sourceOptions'   => $sourceOptions,
-			'settings'        => $this->getSettings(),
-			'type'            => $this->getName(),
-			'fileKindOptions' => $fileKindOptions,
+			'sourceOptions'     => $sourceOptions,
+			'targetLocaleField' => $this->getTargetLocaleFieldHtml(),
+			'settings'          => $this->getSettings(),
+			'type'              => $this->getName(),
+			'fileKindOptions'   => $fileKindOptions,
 		));
 	}
 

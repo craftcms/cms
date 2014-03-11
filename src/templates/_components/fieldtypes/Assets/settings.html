@@ -91,6 +91,8 @@
 	{% endfor %}
 </div>
 
+{{ targetLocaleField }}
+
 {{ forms.textField({
 	label: "Limit"|t,
 	instructions: "Limit the number of selectable {type}."|t({ type: type|lower }),
