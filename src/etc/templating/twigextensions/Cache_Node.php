@@ -24,60 +24,37 @@ class Cache_Node extends \Twig_Node
 
 		$compiler
 			->addDebugInfo($this)
-			->write("\$cacheService = \Craft\craft()->templateCache;\n");
+			->write("\$cacheService = \Craft\craft()->templateCache;\n")
+			->write("\$ignoreCache{$n} = (\Craft\craft()->request->isLivePreview()");
 
 		if ($ignoreConditions)
 		{
 			$compiler
-				->write("\$ignoreCache{$n} = (bool) ")
+				->raw(' || (')
 				->subcompile($ignoreConditions)
-				->raw(";\n")
-				->write("if (!\$ignoreCache{$n}) {\n")
-				->indent();
-		}
-
-		$compiler->write("\$cacheBody{$n} = \$cacheService->getTemplateCache('{$key}', {$global});\n");
-
-		if ($ignoreConditions)
-		{
-			$compiler
-				->outdent()
-				->write("}\n");
+				->raw(')');
 		}
 
 		$compiler
+			->raw(");\n")
+			->write("if (!\$ignoreCache{$n}) {\n")
+			->indent()
+				->write("\$cacheBody{$n} = \$cacheService->getTemplateCache('{$key}', {$global});\n")
+			->outdent()
+			->write("}\n")
 			->write("if (empty(\$cacheBody{$n})) {\n")
-			->indent();
-
-		if ($ignoreConditions)
-		{
-			$compiler
+			->indent()
 				->write("if (!\$ignoreCache{$n}) {\n")
-				->indent();
-		}
-
-		$compiler->write("\$cacheService->startTemplateCache('{$key}');\n");
-
-		if ($ignoreConditions)
-		{
-			$compiler
+				->indent()
+					->write("\$cacheService->startTemplateCache('{$key}');\n")
 				->outdent()
-				->write("}\n");
-		}
-
-		$compiler
-			->write("ob_start();\n")
-			->subcompile($this->getNode('body'))
-			->write("\$cacheBody{$n} = ob_get_clean();\n");
-
-		if ($ignoreConditions)
-		{
-			$compiler
+				->write("}\n")
+				->write("ob_start();\n")
+				->subcompile($this->getNode('body'))
+				->write("\$cacheBody{$n} = ob_get_clean();\n")
 				->write("if (!\$ignoreCache{$n}) {\n")
-				->indent();
-		}
-
-		$compiler->write("\$cacheService->endTemplateCache('{$key}', {$global}, ");
+				->indent()
+					->write("\$cacheService->endTemplateCache('{$key}', {$global}, ");
 
 		if ($durationNum)
 		{
@@ -115,16 +92,10 @@ class Cache_Node extends \Twig_Node
 			$compiler->raw('null');
 		}
 
-		$compiler->raw(", \$cacheBody{$n});\n");
-
-		if ($ignoreConditions)
-		{
-			$compiler
-				->outdent()
-				->write("}\n");
-		}
-
 		$compiler
+					->raw(", \$cacheBody{$n});\n")
+				->outdent()
+				->write("}\n")
 			->outdent()
 			->write("}\n")
 			->write("echo \$cacheBody{$n};\n");
