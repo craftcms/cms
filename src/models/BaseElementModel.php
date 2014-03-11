@@ -789,12 +789,12 @@ abstract class BaseElementModel extends BaseModel
 					// Do we have any post data for this field?
 					if (isset($content[$handle]))
 					{
-						$value = $this->_rawPostContent[$handle] = $content[$handle];
+						$this->_content->$handle = $this->_rawPostContent[$handle] = $content[$handle];
 					}
 					// Were any files uploaded for this field?
 					else if (!empty($this->_contentPostLocation) && UploadedFile::getInstancesByName($this->_contentPostLocation.'.'.$handle))
 					{
-						$value = null;
+						$this->_content->$handle = null;
 					}
 					else
 					{
@@ -808,10 +808,8 @@ abstract class BaseElementModel extends BaseModel
 					if ($fieldType)
 					{
 						$fieldType->element = $this;
-						$value = $fieldType->prepValueFromPost($value);
+						$this->_content->$handle = $fieldType->prepValueFromPost($this->_content->$handle);
 					}
-
-					$this->_content->$handle = $value;
 				}
 			}
 		}
