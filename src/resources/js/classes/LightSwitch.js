@@ -17,10 +17,10 @@ Craft.LightSwitch = Garnish.Base.extend(
 	{
 		this.$outerContainer = $(outerContainer);
 
-		// Is this already a switch?
+		// Is this already a lightswitch?
 		if (this.$outerContainer.data('lightswitch'))
 		{
-			Garnish.log('Double-instantiating a switch on an element');
+			Garnish.log('Double-instantiating a lightswitch on an element');
 			this.$outerContainer.data('lightswitch').destroy();
 		}
 
