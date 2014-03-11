@@ -478,6 +478,8 @@ class UsersController extends BaseController
 			{
 				craft()->userSession->setError(Craft::t('Registered user, but couldn’t send activation email. Check your email settings.'));
 
+				Craft::log('There was a problem sending the user registration email: '.$e->getMessage(), LogLevel::Error);
+
 				// Still assign the default group
 				if (($publicRegistration || $canRegisterUsers) && !craft()->request->isCpRequest())
 				{
