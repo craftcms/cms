@@ -18,6 +18,16 @@ Craft.Pane = Garnish.Base.extend(
 	init: function(pane)
 	{
 		this.$pane = $(pane);
+
+		// Is this already a pane?
+		if (this.$pane.data('pane'))
+		{
+			Garnish.log('Double-instantiating a pane on an element');
+			this.$pane.data('pane').destroy();
+		}
+
+		this.$pane.data('pane', this);
+
 		this.$content = this.$pane.find('.content:not(.hidden):first');
 
 		// Initialize the tabs
@@ -261,6 +271,12 @@ Craft.Pane = Garnish.Base.extend(
 
 			this.$sidebar.css(this.updateSidebarStyles._styles);
 		}
+	},
+
+	destroy: function()
+	{
+		this.base();
+		this.$pane.data('pane', null);
 	}
 },
 {
