@@ -31,13 +31,7 @@ class HttpRequestVariable
 	 */
 	public function isLivePreview()
 	{
-		$actionSegments = craft()->request->getActionSegments();
-
-		return (
-			count($actionSegments) == 2 &&
-			$actionSegments[0] == 'entries' &&
-			$actionSegments[1] == 'previewEntry'
-		);
+		return craft()->request->isLivePreview();
 	}
 
 	/**

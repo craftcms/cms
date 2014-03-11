@@ -178,6 +178,21 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Returns whether this is a Live Preview request.
+	 *
+	 * @return bool
+	 */
+	public function isLivePreview()
+	{
+		return ($this->isSiteRequest() &&
+			($actionSegments = $this->getActionSegments()) &&
+			count($actionSegments) == 2 &&
+			$actionSegments[0] == 'entries' &&
+			$actionSegments[1] == 'previewEntry'
+		);
+	}
+
+	/**
 	 * @return mixed
 	 */
 	public function getMimeType()
