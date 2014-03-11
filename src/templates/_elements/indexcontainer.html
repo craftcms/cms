@@ -16,10 +16,10 @@
 			<tr>
 				{% if showStatusMenu %}
 					<td class="thin">
-						<div class="btn menubtn statusmenubtn"><span class="status"></span>{{ "Any"|t }}</div>
+						<div class="btn menubtn statusmenubtn"><span class="status"></span>{{ "All"|t }}</div>
 						<div class="menu padded">
 							<ul>
-								<li><a data-status="" class="sel"><span class="status"></span>{{ "Any"|t }}</a></li>
+								<li><a data-status="" class="sel"><span class="status"></span>{{ "All"|t }}</a></li>
 								{% for status, label in elementType.getStatuses() %}
 									<li><a data-status="{{ status }}"><span class="status {{ status }}"></span> {{ label }}</a></li>
 								{% endfor %}
