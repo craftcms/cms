@@ -16,35 +16,75 @@ $errorcolor: #da5a47;
 $successcolor: #00b007;
 $noticecolor: #5286d9;
 
-@mixin linear-gradient($from, $to) {
-	background-image: -webkit-linear-gradient(top, $from, $to);
-	background-image:    -moz-linear-gradient(top, $from, $to);
-	background-image:     -ms-linear-gradient(top, $from, $to);
-	background-image:      -o-linear-gradient(top, $from, $to);
-	background-image:         linear-gradient(to bottom, $from, $to);
+@mixin animation-iteration-count($count) {
+	-webkit-animation-iteration-count: $count;
+	-moz-animation-iteration-count: $count;
+	animation-iteration-count: $count;
 }
 
-@mixin unselectable {
-	-webkit-user-select: none;
-	   -moz-user-select: none;
-	    -ms-user-select: none;
+@mixin animation-duration($time) {
+	-webkit-animation-duration: $time;
+	-moz-animation-duration: $time;
+	animation-duration: $time;
 }
 
-@mixin selectable {
-	-webkit-user-select: text;
-	   -moz-user-select: text;
-	    -ms-user-select: text;
+@mixin animation-name($name) {
+	-webkit-animation-name: $name;
+	-moz-animation-name: $name;
+	animation-name: $name;
+}
+
+@mixin animation-timing-function($func) {
+	-webkit-animation-timing-function: $func;
+	-moz-animation-timing-function: $func;
+	animation-timing-function: $func;
+}
+
+@mixin box-shadow($params...) {
+	-webkit-box-shadow: $params;
+	-moz-box-shadow: $params;
+	box-shadow: $params;
+}
+
+@mixin box-shadow-transition($time) {
+	-webkit-transition: -webkit-box-shadow linear $time;
+	-moz-transition: box-shadow linear $time;
+}
+
+@mixin box-sizing($value) {
+	-webkit-box-sizing: $value;
+	-moz-box-sizing: $value;
+	box-sizing: $value;
+}
+
+@mixin linear-gradient($params...) {
+	background-image: -webkit-linear-gradient($params);
+	background-image: -moz-linear-gradient($params);
+	background-image: -ms-linear-gradient($params);
+	background-image: -o-linear-gradient($params);
+	background-image: linear-gradient($params);
+}
+
+@mixin transition($params...) {
+	-webkit-transition: $params;
+	-moz-transition: $params;
+}
+
+@mixin user-select($value) {
+	-webkit-user-select: $value;
+	-moz-user-select: $value;
+	-ms-user-select: $value;
 }
 
 @mixin icon {
 	font-family: 'Craft';
 	speak: none;
 	-webkit-font-feature-settings: "liga", "dlig";
-	   -moz-font-feature-settings: "liga=1, dlig=1";
-	   -moz-font-feature-settings: "liga", "dlig";
-	    -ms-font-feature-settings: "liga", "dlig";
-	     -o-font-feature-settings: "liga", "dlig";
-	        font-feature-settings: "liga", "dlig";
+	-moz-font-feature-settings: "liga=1, dlig=1";
+	-moz-font-feature-settings: "liga", "dlig";
+	-ms-font-feature-settings: "liga", "dlig";
+	-o-font-feature-settings: "liga", "dlig";
+	font-feature-settings: "liga", "dlig";
 	text-rendering: optimizeLegibility;
 	font-weight: normal;
 	font-variant: normal;
@@ -57,7 +97,7 @@ $noticecolor: #5286d9;
 	font-style: normal;
 	vertical-align: middle;
 	word-wrap: normal !important;
-	@include unselectable;
+	@include user-select(none);
 }
 
 @mixin clearafter {
@@ -70,8 +110,7 @@ $noticecolor: #5286d9;
 
 @mixin pane {
 	background: #fff;
-	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 2px 8px -2px rgba(0,0,0,0.1);
-	        box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 2px 8px -2px rgba(0,0,0,0.1);
+	@include box-shadow(0 0 0 1px rgba(0,0,0,0.05), 0 2px 8px -2px rgba(0,0,0,0.1));
 }
 
 @mixin spinner {

@@ -175,7 +175,9 @@ td.right { float: none; text-align: right; }
 /* headers and footers */
 .clearafter:after { @include clearafter; }
 
-.header { border-bottom-width: 1px; @include linear-gradient(#fff, $bgcolor); }
+.header { border-bottom-width: 1px;
+	@include linear-gradient(#fff, $bgcolor);
+}
 .footer { border-top-width: 1px; padding-top: 9px; }
 
 .header .left,
@@ -195,11 +197,7 @@ td.right { float: none; text-align: right; }
 /*  Panes
 /* ----------------------------------------*/
 
-.pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: 3px; word-wrap: break-word; overflow: hidden;
-	-webkit-box-sizing: border-box;
-	   -moz-box-sizing: border-box;
-	        box-sizing: border-box;
-}
+.pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: 3px; word-wrap: break-word; overflow: hidden; @include box-sizing(border-box); }
 
 /* ----------------------------------------
 /*  Content
@@ -213,8 +211,7 @@ td.right { float: none; text-align: right; }
 .content.has-sidebar:not(.hiding-sidebar) .show-sidebar { display: none; }
 
 .content.has-sidebar .show-sidebar { position: absolute; top: -24px; left: -24px;  color: $lighttextcolor;
-	-webkit-transition: color linear 100ms;
-	   -moz-transition: color linear 100ms;
+	@include transition(color linear 100ms);
 }
 .content.has-sidebar .show-sidebar:hover { color: $linkcolor; }
 .content.has-sidebar .show-sidebar:before { @include icon; width: 41px; line-height: 24px; content: 'menu→'; }
@@ -228,7 +225,7 @@ td.right { float: none; text-align: right; }
 
 .content.has-sidebar .sidebar nav { margin-left: -24px; padding-left: 24px; width: 170px; overflow: auto; }
 .content.has-sidebar .sidebar nav li { position: relative; }
-.content.has-sidebar .sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; @include unselectable; outline: none; }
+.content.has-sidebar .sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; @include user-select(none); outline: none; }
 .content.has-sidebar .sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
 .content.has-sidebar .sidebar nav li a.sel { margin-left: -200px; padding-left: 200px; color: #fff; background: $headerBgColor; cursor: default; }
 
@@ -279,21 +276,16 @@ table.inputs td > .btngroup { float: none; }
 .buttons .btngroup .btn { float: none; }
 .buttons .btn + .btn { margin-left: 5px; }
 
-.btn { display: inline-block; border-radius: 3px; padding: 6px 12px; border: none; text-align: center; white-space: nowrap; @include unselectable; cursor: pointer; overflow: hidden;
-	-webkit-box-sizing: border-box;
-	   -moz-box-sizing: border-box;
-	        box-sizing: border-box;
+.btn { display: inline-block; border-radius: 3px; padding: 6px 12px; border: none; text-align: center; white-space: nowrap; @include user-select(none); cursor: pointer; overflow: hidden; @include box-sizing(border-box);
 	-webkit-appearance: none;
-	-webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.05);
-	        box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+	@include box-shadow(0 1px 0 rgba(0,0,0,0.05));
 }
 
 .btn[type='color'] { padding: 6px !important; }
 
 .btn:active,
 .btn.active {
-	-webkit-box-shadow: inset 0 1px 0 rgba(0,0,0,0.05);
-	        box-shadow: inset 0 1px 0 rgba(0,0,0,0.05);
+	@include box-shadow(inset 0 1px 0 rgba(0,0,0,0.05));
 }
 
 .btn.active { cursor: default; }
@@ -302,15 +294,12 @@ table.inputs td > .btngroup { float: none; }
 .disabled { opacity: 0.25; cursor: default; }
 
 .btn:not(.submit):not(.noborder) { color: $textcolor;
-	background: -webkit-linear-gradient(#fff, hsl($hue, 5%, 98%));
-	background:         linear-gradient(#fff, hsl($hue, 5%, 98%));
-	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
-	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+	@include linear-gradient(#fff, hsl($hue, 5%, 98%));
+	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1));
 }
 .btn:not(.submit):not(.noborder):active,
 .btn:not(.submit):not(.noborder).active {
-	background: -webkit-linear-gradient(hsl($hue, 5%, 90%), hsl($hue, 5%, 92%));
-	background:         linear-gradient(hsl($hue, 5%, 90%), hsl($hue, 5%, 92%));
+	@include linear-gradient(hsl($hue, 5%, 90%), hsl($hue, 5%, 92%));
 }
 
 .btngroup,
@@ -356,7 +345,7 @@ table.inputs td > .btngroup { float: none; }
 .btngroup.disabled .btn { cursor: default; }
 
 /* menu buttons */
-.menubtn { @include unselectable; }
+.menubtn { @include user-select(none); }
 .menubtn:after { margin-top: -2px; content: '▼'; font-size: 0.8em; }
 .menubtn:not(.submit):not(.noborder):after { margin-top: -1px; }
 
@@ -394,21 +383,18 @@ div.btn.submit input { position: absolute; left: 100%; }
 
 /* dashed buttons */
 .btn.dashed { border: 1px dashed rgba(0,0,0,0.2) !important; background: none !important;
-	-webkit-box-shadow: none !important;
-	        box-shadow: none !important;
+	@include box-shadow(none !important);
 }
 /* color buttons */
 .color { width: 30px; height: 30px; border-radius: 15px; padding: 0; background: url(../images/checkers.png); cursor: pointer; }
 .color .colorpreview { top: 0; left: 0; width: 30px; height: 30px; border-radius: 15px;
 	@include linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0));
-	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), 0 1px 0 rgba(0,0,0,0.05);
-	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), 0 1px 0 rgba(0,0,0,0.05);
+	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.15), 0 1px 0 rgba(0,0,0,0.05));
 }
 .color:not(.disabled):hover .colorpreview,
 .color:not(.disabled):active .colorpreview,
 .color:not(.disabled).active .colorpreview {
-	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25), 0 1px 0 rgba(0,0,0,0.05);
-	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25), 0 1px 0 rgba(0,0,0,0.05);
+	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.25), 0 1px 0 rgba(0,0,0,0.05));
 }
 .color:not(.disabled):active .colorpreview,
 .color:not(.disabled).active .colorpreview {
@@ -417,23 +403,19 @@ div.btn.submit input { position: absolute; left: 100%; }
 .colorpicker { z-index: 2; }
 
 /* switch */
-.lightswitch { position: relative; border: none !important; border-radius: 9px; width: 27px; height: 18px; overflow: hidden; cursor: pointer; @include unselectable; overflow: hidden;
-	-webkit-box-shadow: 0 0 0 1px hsla(205, 100%, 60%, 0), 0 0 2px hsla(205, 100%, 60%, 0);
-	        box-shadow: 0 0 0 1px hsla(205, 100%, 60%, 0), 0 0 2px hsla(205, 100%, 60%, 0);
-	-webkit-transition: -webkit-box-shadow linear 100ms;
-	   -moz-transition:         box-shadow linear 100ms;
+.lightswitch { position: relative; border: none !important; border-radius: 9px; width: 27px; height: 18px; overflow: hidden; cursor: pointer; @include user-select(none); overflow: hidden;
+	@include box-shadow(0 0 0 1px hsla(205, 100%, 60%, 0), 0 0 2px hsla(205, 100%, 60%, 0));
+	@include box-shadow-transition(100ms);
 }
 table .lightswitch { display: inline-block; margin-bottom: -5px; }
 .lightswitch:focus { outline: none;
-	-webkit-box-shadow: 0 0 0 1px hsla(205, 100%, 60%, 0.5), 0 0 2px hsl(205, 100%, 60%);
-	        box-shadow: 0 0 0 1px hsla(205, 100%, 60%, 0.5), 0 0 2px hsl(205, 100%, 60%);
+	@include box-shadow(0 0 0 1px hsla(205, 100%, 60%, 0.5), 0 0 2px hsl(205, 100%, 60%));
 }
 .lightswitch .lightswitch-container { margin-left: -9px; width: 36px; }
 .lightswitch.on .lightswitch-container { margin-left: 0; }
 
 .lightswitch .label { float: left; width: 18px; height: 18px;
-	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
-	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1));
 }
 .lightswitch .label.on { border-radius: 9px 0 0 9px; background: $successcolor; }
 .lightswitch .label.off { border-radius: 0 9px 9px 0; background: $bgcolor; }
@@ -441,9 +423,9 @@ table .lightswitch { display: inline-block; margin-bottom: -5px; }
 .lightswitch:not(.dragging).on .label.off,
 .lightswitch:not(.dragging):not(.on) .label.on { visibility: hidden; }
 
-.lightswitch .handle { position: relative; float: left; border-radius: 9px; margin: 0 -9px; width: 18px; height: 18px; @include linear-gradient(#fff, hsl($hue, 5%, 98%));
-	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.1);
-	        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.1);
+.lightswitch .handle { position: relative; float: left; border-radius: 9px; margin: 0 -9px; width: 18px; height: 18px;
+	@include linear-gradient(#fff, hsl($hue, 5%, 98%));
+	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.1));
 }
 
 /* action buttons */
@@ -459,8 +441,7 @@ h2 + .actions { margin-top: -54px; }
 
 table thead th { font-weight: bold; text-align: left; vertical-align: top; font-size: 11px; line-height: 1.2; color: rgba(0,0,0,0.5); }
 table thead th.ordered { padding-right: 26px; background: $bgcolor url(../images/listview_sort.png) no-repeat 100% -4px;
-	-webkit-box-shadow: inset 0 1px 5px rgba(0,0,0,0.1);
-	        box-shadow: inset 0 1px 5px rgba(0,0,0,0.1);
+	@include box-shadow(inset 0 1px 5px rgba(0,0,0,0.1));
 }
 table thead th.ordered.desc { background-position: 100% -35px; }
 table thead th.ordered:first-child { padding-left: 10px; }
@@ -512,8 +493,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 
 .datatablesorthelper,
 .editabletablesorthelper { background: #fff;
-	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px -1px rgba(0,0,0,0.1);
-	        box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px -1px rgba(0,0,0,0.1);
+	@include box-shadow(0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px -1px rgba(0,0,0,0.1));
 }
 
 .datatablesorthelper { margin: -2px -7px; padding: 2px 7px; }
@@ -524,7 +504,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 
 /* elements */
 .element { display: inline-block; position: relative; border: 1px solid transparent; padding: 5px 7px; cursor: default; outline: none !important; }
-.element.unselectable { @include unselectable; }
+.element.unselectable { @include user-select(none); }
 
 .element .label { display: inline-block; }
 
@@ -534,8 +514,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .element.hasicon .elementicon { position: absolute; top: -1px; left: -1px; width: 30px; height: 30px; background-repeat: no-repeat; background-position: 50% 50%; }
 .element.hasthumb .elementthumb { border-radius: 3px;
 	/* Firefox/Win has an issue with inset 0 0 0 1px box shadows on elements < ~50px */
-	-webkit-box-shadow: inset 0 0 1px 1px rgba(0,0,0,0.1);
-	        box-shadow: inset 0 0 1px 1px rgba(0,0,0,0.1);
+	@include box-shadow(inset 0 0 1px 1px rgba(0,0,0,0.1));
 }
 
 .element.sel,
@@ -544,8 +523,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .element.sel .elementthumb,
 .sel .element .elementthumb {
 	/* Firefox/Win has an issue with inset 0 0 0 1px box shadows on elements < ~50px */
-	-webkit-box-shadow: inset 0 0 1px 1px rgba(0,0,0,0.2);
-	        box-shadow: inset 0 0 1px 1px rgba(0,0,0,0.2);
+	@include box-shadow(inset 0 0 1px 1px rgba(0,0,0,0.2))
 }
 
 .element.removable .label,
@@ -582,7 +560,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .elementindex .structure li .toggle { background-color: #fff; }
 
 .structure li .element { float: left; }
-.structure li .icon { margin: 5px 5px 0 0; opacity: 0; -webkit-transition: opacity linear 100ms; }
+.structure li .icon { margin: 5px 5px 0 0; opacity: 0; @include transition(opacity linear 100ms); }
 .structure li .add { padding: 0 5px; }
 .structure li .add:before { content: '▼'; color: rgba(0,0,0,0.2); }
 .structure li .add:not(.disabled):hover:before,
@@ -597,11 +575,12 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .structure li.draginsertion { position: relative; margin: -1px 0 -1px 8px; padding-left: 0; height: 2px; background: $linkcolor; border-left: none; border-radius: 1px; }
 .structure ul li.draginsertion { margin-left: 38px; }
 .structure .row.draghover .element { z-index: 2; border-radius: 15px;
-	-webkit-box-shadow: inset 0 0 0 2px $linkcolor;
-	        box-shadow: inset 0 0 0 2px $linkcolor;
+	@include box-shadow(inset 0 0 0 2px $linkcolor);
 }
 
-.structure .row.droptarget { border-radius: 5px; -webkit-box-shadow: inset 0 0 0 2px $linkcolor; }
+.structure .row.droptarget { border-radius: 5px;
+	@include box-shadow(inset 0 0 0 2px $linkcolor);
+}
 
 /* element select fields */
 .elementselect { margin-bottom: -10px; }
@@ -624,8 +603,7 @@ table.editable tbody textarea { display: block; width: 100%; border: none; paddi
 table.editable tbody textarea:focus { border: 1px solid rgba(0,0,0,0.15); padding: 6px 9px; outline: none; }
 
 table.editable + .btn.add { display: block; border-radius: 0 0 3px 3px; border: 1px dashed rgba(0,0,0,0.2); border-top: none; background: none;
-	-webkit-box-shadow: none;
-	        box-shadow: none;
+	@include box-shadow(none);
 }
 
 .border-box + .buttons,
@@ -663,22 +641,13 @@ ul.tree,
 
 .progressbar-inner { border-radius: 2px; height: 4px; background: $textcolor; }
 .progressbar:not(.pending) .progressbar-inner {
-	-webkit-transition: width linear 50ms;
-	   -moz-transition: width linear 50ms;
+	@include transition(width linear 50ms);
 }
 .progressbar.pending .progressbar-inner { background: url(../images/progressbar_pending.png) repeat-x;
-	-webkit-animation-name: pendingprogress;
-	   -moz-animation-name: pendingprogress;
-	        animation-name: pendingprogress;
-	-webkit-animation-timing-function: linear;
-	   -moz-animation-timing-function: linear;
-	        animation-timing-function: linear;
-	-webkit-animation-duration: 250ms;
-	   -moz-animation-duration: 250ms;
-	        animation-duration: 250ms;
-	-webkit-animation-iteration-count: infinite;
-	   -moz-animation-iteration-count: infinite;
-	        animation-iteration-count: infinite;
+	@include animation-name(pendingprogress);
+	@include animation-timing-function(linear);
+	@include animation-duration(250ms);
+	@include animation-iteration-count(infinite);
 }
 
 @-webkit-keyframes pendingprogress {
@@ -706,8 +675,7 @@ ul.tree,
 
 .modal,
 .hud { border-radius: 3px; background: #fff;
-	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px rgba(0,0,0,0.25);
-	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px rgba(0,0,0,0.25);
+	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px rgba(0,0,0,0.25));
 }
 
 .modal { position: fixed; z-index: 9998; top: 50%; left: 50%; margin-left: -200px; width: 400px; overflow: hidden; }
@@ -722,12 +690,12 @@ ul.tree,
 
 .hud .body .hud-header { position: relative; z-index: 1; margin: -24px -24px 24px; padding: 24px; border-radius: 3px 3px 0 0;
 	@include linear-gradient(#fff, hsl($hue, 8%, 98%));
-	-webkit-box-shadow: 0 2px 1px -2px rgba(0,0,0,0.2);
+	@include box-shadow(0 2px 1px -2px rgba(0,0,0,0.2));
 }
 
 .hud .body .hud-footer { position: relative; z-index: 1; margin: 24px -24px -24px; padding: 24px; border-radius: 0 0 3px 3px;
 	@include linear-gradient(hsl($hue, 8%, 97%), hsl($hue, 8%, 96%));
-	-webkit-box-shadow: inset 0 2px 1px -2px rgba(0,0,0,0.2);
+	@include box-shadow(inset 0 2px 1px -2px rgba(0,0,0,0.2));
 }
 .hud .body .hud-footer:after { @include clearafter; }
 
@@ -736,13 +704,11 @@ ul.tree,
 .modal > .body { padding: 24px; }
 .modal > .body:after { @include clearafter; }
 .modal > .header {
-    -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.1);
-            box-shadow: 0 1px 0 rgba(0,0,0,0.1);
+    @include box-shadow(0 1px 0 rgba(0,0,0,0.1));
 }
 .modal > .header h1 { margin: 0; }
 .modal > .footer {
-    -webkit-box-shadow: 0 -1px 0 rgba(0,0,0,0.1);
-            box-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+    @include box-shadow(0 -1px 0 rgba(0,0,0,0.1));
 }
 .modal > .footer:after { @include clearafter; }
 
@@ -765,7 +731,7 @@ ul.tree,
 .image-chooser img { display: block; }
 
 /* element selector modals */
-.elementselectormodal { margin-left: -350px; width: 705px; @include unselectable; }
+.elementselectormodal { margin-left: -350px; width: 705px; @include user-select(none); }
 .elementselectormodal .body { position: relative; height: 350px; }
 .elementselectormodal .body .spinner.big { position: absolute; top: 205px; left: 350px; margin: -24px 0 0 -24px; }
 
@@ -804,9 +770,8 @@ ul.tree,
 
 .menu,
 .ui-datepicker,
-.ui-timepicker-list { z-index: 9999; border-radius: 3px; background: #fff; @include unselectable;
-	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5);
-	        box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5);
+.ui-timepicker-list { z-index: 9999; border-radius: 3px; background: #fff; @include user-select(none);
+	@include box-shadow(0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5));
 }
 
 .menu { display: none; position: absolute; padding: 4px 14px; }
@@ -842,36 +807,29 @@ ul.tree,
 /* ----------------------------------------*/
 
 .shadow-box { border-radius: 3px; border: 1px solid #ccc; overflow: hidden; width: 100%;
-	-webkit-box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1);
-	        box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1);
+	@include box-shadow(0 1px 5px -1px rgba(0, 0, 0, 0.1));
 }
 
 .text,
 div.redactor_box,
 .border-box,
 .matrix-configurator > .field > .input { border: none; border-radius: 2px;
-	-webkit-box-shadow: 0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0);
-	        box-shadow: 0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0);
-	-webkit-transition: -webkit-box-shadow linear 100ms;
-	   -moz-transition:         box-shadow linear 100ms;
+	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
+	@include box-shadow-transition(100ms);
 }
 
 .text.focus,
 .text:focus,
 .border-box:focus,
 .border-box.focus { border-color: $focusglowcolor; outline: none;
-	-webkit-box-shadow: 0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5);
-	        box-shadow: 0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5);
+	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
 }
 
 input.text,
 textarea.text,
 .text input,
 .text textarea,
-table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor; min-height: 30px;
-	-webkit-box-sizing: border-box;
-	   -moz-box-sizing: border-box;
-	        box-sizing: border-box;
+table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor; min-height: 30px; @include box-sizing(border-box);
 	-webkit-appearance: none;
 }
 
@@ -956,22 +914,19 @@ body .redactor_editor:focus { background: none !important; }
 	.select,
 	.select select { border-radius: 3px; }
 	.select { display: inline-block; position: relative;
-		background: -webkit-linear-gradient(#fff, hsl($hue, 5%, 98%));
-		background:         linear-gradient(#fff, hsl($hue, 5%, 98%));
-		-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px rgba(0,0,0,0.07);
-		        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px rgba(0,0,0,0.07);
+		@include linear-gradient(#fff, hsl($hue, 5%, 98%));
+		@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px rgba(0,0,0,0.07));
 	}
-	.select:after { @include icon; position: absolute; top: 10px; right: 9px; font-size: 10px; content: '▼'; @include unselectable; }
+	.select:after { @include icon; position: absolute; top: 10px; right: 9px; font-size: 10px; content: '▼'; @include user-select(none); }
 	.select select { position: relative; border: 0; padding: 7px 22px 7px 10px; font-size: 13px; color: $textcolor; background: none;
-		-webkit-box-shadow: 0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0);;
-		        box-shadow: 0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0);;
+		@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 		-webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
+		-moz-transition: border linear 100ms, box-shadow linear 100ms;
 		-webkit-appearance: none;
 	}
 	.select:hover select:not(:focus) { border-color: #ccc; }
 	.select select:focus { border-color: $focusglowcolor; outline: none;
-		-webkit-box-shadow: 0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5);
-		        box-shadow: 0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5);
+		@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
 	}
 
 	.select.small:after { top: 3px; }
@@ -990,8 +945,7 @@ body .redactor_editor:focus { background: none !important; }
 .ui-datepicker-calendar td a:hover { background: $linkcolor; color: #fff; text-decoration: none; }
 .ui-datepicker-calendar td a.ui-state-active { background: $headerBgColor; color: #fff; cursor: default; }
 .ui-datepicker-calendar td.ui-datepicker-today a { border-radius: 13px;
-	-webkit-box-shadow: inset 0 0 0 2px rgba(0,0,0,0.15);
-	        box-shadow: inset 0 0 0 2px rgba(0,0,0,0.15);
+	@include box-shadow(inset 0 0 0 2px rgba(0,0,0,0.15));
 }
 
 /* timepicker */
@@ -1018,13 +972,12 @@ ul.errors li { color: $errorcolor; }
 .matrix-configurator > .field { max-width: none; }
 .matrix-configurator > .field > .input { position: relative; padding-left: 400px; overflow: hidden; }
 .matrix-configurator .mc-sidebar { position: absolute; top: 0; margin: 0; border: none; width: 200px; height: 100%; background: hsla($hue, 8%, 0%, 0.03);
-	-webkit-box-shadow: inset -1px 0 0 rgba(0,0,0,0.06);
-	        box-shadow: inset -1px 0 0 rgba(0,0,0,0.06);
+	@include box-shadow(inset -1px 0 0 rgba(0,0,0,0.06));
 }
 .matrix-configurator .mc-sidebar.block-types { left: 0; }
 .matrix-configurator .mc-sidebar.fields { left: 200px; }
 .matrix-configurator .mc-sidebar .items { margin-top: -1px; padding-top: 1px; }
-.matrixconfigitem { position: relative; margin-top: -1px; padding: 11px 45px 10px 14px; border-bottom: 1px solid rgba(0,0,0,0.06); @include unselectable; cursor: default; }
+.matrixconfigitem { position: relative; margin-top: -1px; padding: 11px 45px 10px 14px; border-bottom: 1px solid rgba(0,0,0,0.06); @include user-select(none); cursor: default; }
 .matrixconfigitem.sel { background: rgba(0,0,0,0.05); }
 .matrixconfigitem.error { background: rgba(255,0,0,0.1); }
 .matrixconfigitem.sel.error { background: rgba(200,0,0,0.2); }
@@ -1042,12 +995,13 @@ ul.errors li { color: $errorcolor; }
 .matrix-configurator .field-settings .items { padding: 24px; }
 
 .matrix-configurator .mc-sidebar > .col-inner-container > .heading,
-.matrix-configurator .field-settings > .col-inner-container > .heading { margin: 0; padding: 7px 14px 6px; border-bottom: 1px solid rgba(0,0,0,0.06); @include linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.03)); }
+.matrix-configurator .field-settings > .col-inner-container > .heading { margin: 0; padding: 7px 14px 6px; border-bottom: 1px solid rgba(0,0,0,0.06);
+	@include linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.03));
+}
 
 /* blocks */
-.matrixblock { position: relative; margin: 14px 0; padding: 14px; border-radius: 2px; background: #fff; @include unselectable;
-	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
-	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+.matrixblock { position: relative; margin: 14px 0; padding: 14px; border-radius: 2px; background: #fff; @include user-select(none);
+	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1));
 }
 .matrixblock.disabled { opacity: 1; }
 .matrixblock > .actions > .status.off { display: none; }
@@ -1057,12 +1011,8 @@ ul.errors li { color: $errorcolor; }
 .matrixblock > .actions a:hover { width: 15px; height: 20px; text-align: center; color: $linkcolor; }
 .matrixblock > .actions a.settings:after { margin-left: 3px; }
 .matrixblock > .fields > .field { margin: 15px 0; }
-.matrixblock > .fields > .field > .input { @include selectable; }
-.matrixblock > .preview { position: absolute; bottom: 5px; left: 0; padding: 0 55px 0 10px; height: 18px; width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: $mediumtextcolor; cursor: default;
-	-webkit-box-sizing: border-box;
-	   -moz-box-sizing: border-box;
-	        box-sizing: border-box;
-}
+.matrixblock > .fields > .field > .input { @include user-select(text); }
+.matrixblock > .preview { position: absolute; bottom: 5px; left: 0; padding: 0 55px 0 10px; height: 18px; width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: $mediumtextcolor; cursor: default; @include box-sizing(border-box); }
 .matrixblock.disabled > .preview { padding-right: 75px; }
 .matrixblock > .preview span { opacity: 0.5; }
 .matrix > .buttons { margin-top: 0; height: 30px; overflow: hidden; }

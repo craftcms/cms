@@ -11,8 +11,7 @@ body { overflow: hidden; background: #fff; }
 #beginbtn { display: inline-block; border-radius: 4px; padding: 12px 15px; font-weight: bold; font-size: 19px; height: 42px; line-height: 18px; }
 
 .modal { display: none; position: absolute; top: 50%; left: 50%; margin: -255px 0 0 -385px; padding: 35px; width: 700px; height: 440px; background: #fff;
-	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px #000;
-	        box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px #000;
+	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px #000);
 }
 
 h1 { margin-bottom: 35px; text-align: center; }

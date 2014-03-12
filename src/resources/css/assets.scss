@@ -2,14 +2,12 @@
 
 @import "shared";
 
-#main .files .open-file{ -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;}
-#main .files .open-folder{ -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;}
+#main .files .open-file { -webkit-touch-callout: none; @include user-select(none); }
+#main .files .open-folder { -webkit-touch-callout: none; @include user-select(none); }
 
 /*-- manager --*/
 .assets-page-loading .folder-contents{ padding-bottom: 30px; background: url('../images/spinner.gif') no-repeat center bottom; }
-.thumb-wrapper { border: 5px solid #fff; background: url(../images/checkers.png) 0 0;
-                 -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);
-                         box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1);}
+.thumb-wrapper { border: 5px solid #fff; background: url(../images/checkers.png) 0 0; @include box-shadow(0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1)); }
 .icon-wrapper { border: 5px solid #fff;}
 
 .listview .thumb-wrapper { border-width: 2px;}
