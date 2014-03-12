@@ -14,6 +14,7 @@ class AppBehavior extends BaseBehavior
 	private $_siteUrl;
 	private $_isDbConfigValid = false;
 	private $_packageList = array('Users', 'PublishPro', 'Localize', 'Cloud', 'Rebrand');
+	private $_isDbConnectionValid = false;
 
 	/**
 	 * Determines if Craft is installed by checking if the info table exists.
@@ -462,6 +463,26 @@ class AppBehavior extends BaseBehavior
 		}
 
 		return $this->_isDbConfigValid;
+	}
+
+	/**
+	 * Don't even think of moving this check into DbConnection->init().
+	 *
+	 * @return bool
+	 */
+	public function getIsDbConnectionValid()
+	{
+		return $this->_isDbConnectionValid;
+	}
+
+	/**
+	 * Don't even think of moving this check into DbConnection->init().
+	 *
+	 * @param $value
+	 */
+	public function setIsDbConnectionValid($value)
+	{
+		$this->_isDbConnectionValid = $value;
 	}
 
 	/**
