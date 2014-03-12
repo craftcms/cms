@@ -461,7 +461,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		}
 
 		// If it's the same folder and the case is changing (if it's not, it's covered above), overwrite the file.
-		if ($file->folderId == $targetFolder->id && mb_strtolower($filename) == mb_strtolower($file->filename))
+		if ($file->folderId == $targetFolder->id && StringHelper::toLowerCase($filename) == StringHelper::toLowerCase($file->filename))
 		{
 			$overwrite = true;
 		}
@@ -803,7 +803,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		}
 
 		// Allow this for changing the case
-		if (!(mb_strtolower($newName) == mb_strtolower($folder->name)) && $this->_sourceFolderExists($parentFolder, $newName))
+		if (!(StringHelper::toLowerCase($newName) == StringHelper::toLowerCase($folder->name)) && $this->_sourceFolderExists($parentFolder, $newName))
 		{
 			throw new Exception(Craft::t("Folder “{folder}” already exists there.", array('folder' => $newName)));
 		}

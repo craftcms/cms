@@ -224,7 +224,7 @@ class SearchService extends BaseApplicationComponent
 	 */
 	private function _indexElementKeywords($elementId, $attribute, $fieldId, $localeId, $dirtyKeywords)
 	{
-		$attribute = mb_strtolower($attribute);
+		$attribute = StringHelper::toLowerCase($attribute);
 
 		if (!$localeId)
 		{

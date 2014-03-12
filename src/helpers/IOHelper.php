@@ -30,7 +30,7 @@ class IOHelper
 		{
 			$folder = static::getFolderName($path, true, $suppressErrors);
 			$files = static::getFolderContents($folder, false, null, false, $suppressErrors);
-			$lcaseFileName = mb_strtolower($path);
+			$lcaseFileName = StringHelper::toLowerCase($path);
 
 			if (is_array($files) && count($files) > 0)
 			{
@@ -40,7 +40,7 @@ class IOHelper
 
 					if ($suppressErrors ? @is_file($file) : is_file($file))
 					{
-						if (mb_strtolower($file) === $lcaseFileName)
+						if (StringHelper::toLowerCase($file) === $lcaseFileName)
 						{
 							return $file;
 						}
@@ -74,7 +74,7 @@ class IOHelper
 
 			if ($caseInsensitive)
 			{
-				return mb_strtolower(static::getFolderName($path, true, $suppressErrors)) === mb_strtolower($path);
+				return StringHelper::toLowerCase(static::getFolderName($path, true, $suppressErrors)) === StringHelper::toLowerCase($path);
 			}
 		}
 
@@ -307,7 +307,7 @@ class IOHelper
 	public static function getExtension($path, $default = null, $suppressErrors = false)
 	{
 		$path = static::normalizePathSeparators($path);
-		$extension = mb_strtolower($suppressErrors ? @pathinfo($path, PATHINFO_EXTENSION) : pathinfo($path, PATHINFO_EXTENSION));
+		$extension = StringHelper::toLowerCase($suppressErrors ? @pathinfo($path, PATHINFO_EXTENSION) : pathinfo($path, PATHINFO_EXTENSION));
 
 		if ($extension)
 		{
@@ -1349,7 +1349,7 @@ class IOHelper
 	 */
 	public static function getFileKind($extension)
 	{
-		$extension = mb_strtolower($extension);
+		$extension = StringHelper::toLowerCase($extension);
 		$fileKinds = static::getFileKinds();
 
 		foreach ($fileKinds as $kind => $info)

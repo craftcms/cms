@@ -580,12 +580,12 @@ class TemplatesService extends BaseApplicationComponent
 			$name = craft()->request->decodePathInfo($name);
 
 			$parts = array_filter(explode('/', $name));
-			$pluginHandle = mb_strtolower(array_shift($parts));
+			$pluginHandle = StringHelper::toLowerCase(array_shift($parts));
 
 			if ($pluginHandle && ($plugin = craft()->plugins->getPlugin($pluginHandle)) !== null)
 			{
 				// Get the template path for the plugin.
-				$basePath = craft()->path->getPluginsPath().mb_strtolower($plugin->getClassHandle()).'/templates/';
+				$basePath = craft()->path->getPluginsPath().StringHelper::toLowerCase($plugin->getClassHandle()).'/templates/';
 
 				// Chop off the plugin segment, since that's already covered by $basePath
 				$tempName = implode('/', $parts);

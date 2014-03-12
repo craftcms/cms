@@ -111,7 +111,7 @@ class PluginsService extends BaseApplicationComponent
 
 						$this->_enabledPluginInfo[$row['class']] = $row;
 
-						$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
+						$lcPluginHandle = StringHelper::toLowerCase($plugin->getClassHandle());
 						$this->_plugins[$lcPluginHandle] = $plugin;
 						$this->_enabledPlugins[$lcPluginHandle] = $plugin;
 						$names[] = $plugin->getName();
@@ -155,7 +155,7 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function getPlugin($handle, $enabledOnly = true)
 	{
-		$lcPluginHandle = mb_strtolower($handle);
+		$lcPluginHandle = StringHelper::toLowerCase($handle);
 
 		if ($enabledOnly)
 		{
@@ -224,7 +224,7 @@ class PluginsService extends BaseApplicationComponent
 						if (IOHelper::folderExists($pluginFolderContent))
 						{
 							$pluginFolderContent = IOHelper::normalizePathSeparators($pluginFolderContent);
-							$pluginFolderName = mb_strtolower(IOHelper::getFolderName($pluginFolderContent, false));
+							$pluginFolderName = StringHelper::toLowerCase(IOHelper::getFolderName($pluginFolderContent, false));
 							$pluginFilePath = IOHelper::getFolderContents($pluginFolderContent, false, ".*Plugin\.php");
 
 							if (is_array($pluginFilePath) && count($pluginFilePath) > 0)
@@ -234,13 +234,13 @@ class PluginsService extends BaseApplicationComponent
 								// Chop off the "Plugin" suffix
 								$handle = mb_substr($pluginFileName, 0, mb_strlen($pluginFileName) - 6);
 
-								if (mb_strtolower($handle) === mb_strtolower($pluginFolderName))
+								if (StringHelper::toLowerCase($handle) === StringHelper::toLowerCase($pluginFolderName))
 								{
 									$plugin = $this->getPlugin($handle, false);
 
 									if ($plugin)
 									{
-										$this->_allPlugins[mb_strtolower($handle)] = $plugin;
+										$this->_allPlugins[StringHelper::toLowerCase($handle)] = $plugin;
 										$names[] = $plugin->getName();
 									}
 								}
@@ -270,7 +270,7 @@ class PluginsService extends BaseApplicationComponent
 	public function enablePlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle, false);
-		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
+		$lcPluginHandle = StringHelper::toLowerCase($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -303,7 +303,7 @@ class PluginsService extends BaseApplicationComponent
 	public function disablePlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle);
-		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
+		$lcPluginHandle = StringHelper::toLowerCase($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -337,7 +337,7 @@ class PluginsService extends BaseApplicationComponent
 	public function installPlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle, false);
-		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
+		$lcPluginHandle = StringHelper::toLowerCase($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -400,7 +400,7 @@ class PluginsService extends BaseApplicationComponent
 	public function uninstallPlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle, false);
-		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
+		$lcPluginHandle = StringHelper::toLowerCase($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -670,7 +670,7 @@ class PluginsService extends BaseApplicationComponent
 	private function _importPluginComponents(BasePlugin $plugin)
 	{
 		$pluginHandle = $plugin->getClassHandle();
-		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
+		$lcPluginHandle = StringHelper::toLowerCase($plugin->getClassHandle());
 		$pluginFolder = craft()->path->getPluginsPath().$lcPluginHandle.'/';
 
 		foreach ($this->componentTypes as $type => $typeInfo)
@@ -710,7 +710,7 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	private function _savePluginMigrations($pluginId, $pluginHandle)
 	{
-		$migrationsFolder = craft()->path->getPluginsPath().strtolower($pluginHandle).'/migrations/';
+		$migrationsFolder = craft()->path->getPluginsPath().StringHelper::toLowerCase($pluginHandle).'/migrations/';
 
 		if (IOHelper::folderExists($migrationsFolder))
 		{
@@ -799,7 +799,7 @@ class PluginsService extends BaseApplicationComponent
 		// Skip the autoloader
 		if (!class_exists($nsClass, false))
 		{
-			$path = craft()->path->getPluginsPath().mb_strtolower($handle).'/'.$class.'.php';
+			$path = craft()->path->getPluginsPath().StringHelper::toLowerCase($handle).'/'.$class.'.php';
 
 			if (($path = IOHelper::fileExists($path, false)) !== false)
 			{
@@ -836,7 +836,7 @@ class PluginsService extends BaseApplicationComponent
 	private function _getPluginHandleFromFileSystem($iHandle)
 	{
 		$pluginsPath = craft()->path->getPluginsPath();
-		$fullPath = $pluginsPath.mb_strtolower($iHandle).'/'.$iHandle.'Plugin.php';
+		$fullPath = $pluginsPath.StringHelper::toLowerCase($iHandle).'/'.$iHandle.'Plugin.php';
 
 		if (($file = IOHelper::fileExists($fullPath, true)) !== false)
 		{

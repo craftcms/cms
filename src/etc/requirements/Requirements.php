@@ -180,7 +180,7 @@ class Requirements
 
 		foreach ($results as $result)
 		{
-			if (mb_strtolower($result['Engine']) == 'innodb' && mb_strtolower($result['Support']) != 'no')
+			if (StringHelper::toLowerCase($result['Engine']) == 'innodb' && StringHelper::toLowerCase($result['Support']) != 'no')
 			{
 				return true;
 			}

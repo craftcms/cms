@@ -257,7 +257,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	protected function getAddButtonLabel()
 	{
 		return Craft::t('Add {type}', array(
-			'type' => mb_strtolower($this->getElementType()->getClassHandle())
+			'type' => StringHelper::toLowerCase($this->getElementType()->getClassHandle())
 		));
 	}
 
@@ -398,7 +398,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			return craft()->templates->renderMacro('_includes/forms', 'selectField', array(
 				array(
 					'label' => Craft::t('Target Locale'),
-					'instructions' => Craft::t('Which locale do you want to select {type} in?', array('type' => strtolower($this->getName()))),
+					'instructions' => Craft::t('Which locale do you want to select {type} in?', array('type' => StringHelper::toLowerCase($this->getName()))),
 					'id' => 'targetLocale',
 					'name' => 'targetLocale',
 					'options' => $localeOptions,

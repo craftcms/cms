@@ -24,7 +24,7 @@ class CraftVariable
 			// Variables should already be imported by the plugin service, but let's double check.
 			if (!class_exists($className))
 			{
-				Craft::import('plugins.'.mb_strtolower($pluginName).'.variables.'.$pluginName.'Variable');
+				Craft::import('plugins.'.StringHelper::toLowerCase($pluginName).'.variables.'.$pluginName.'Variable');
 			}
 
 			return new $className;

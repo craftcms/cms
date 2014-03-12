@@ -50,7 +50,7 @@ class ConsoleApp extends \CConsoleApplication
 
 		foreach (craft()->plugins->getPlugins() as $plugin)
 		{
-			$commandsPath = craft()->path->getPluginsPath().mb_strtolower($plugin->getClassHandle()).'/consolecommands/';
+			$commandsPath = craft()->path->getPluginsPath().StringHelper::toLowerCase($plugin->getClassHandle()).'/consolecommands/';
 			if (IOHelper::folderExists($commandsPath))
 			{
 				craft()->commandRunner->addCommands(rtrim($commandsPath, '/'));

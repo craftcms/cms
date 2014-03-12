@@ -127,7 +127,7 @@ class MigrateCommand extends \MigrateCommand
 				return 1;
 			}
 
-			$fullName = 'm'.gmdate('ymd_His').'_'.strtolower($pluginHandle).'_'.$name;
+			$fullName = 'm'.gmdate('ymd_His').'_'.StringHelper::toLowerCase($pluginHandle).'_'.$name;
 			$migrationNameDesc = 'mYYMMDD_HHMMSS_pluginHandle_migrationName';
 
 			// The plugin path should always be the plugin's migration directory.

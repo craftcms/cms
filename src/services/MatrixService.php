@@ -547,7 +547,7 @@ class MatrixService extends BaseApplicationComponent
 				$handle = $matrixField->handle;
 			}
 
-			$name = '_'.strtolower($handle).$name;
+			$name = '_'.StringHelper::toLowerCase($handle).$name;
 		}
 		while ($matrixField = $this->getParentMatrixField($matrixField));
 

@@ -57,24 +57,24 @@ class Logger extends \CLogger
 	 */
 	public function getLogs($levels = '', $categories = array(), $except = array())
 	{
-		$this->_levels = preg_split('/[\s,]+/', mb_strtolower($levels), -1, PREG_SPLIT_NO_EMPTY);
+		$this->_levels = preg_split('/[\s,]+/', StringHelper::toLowerCase($levels), -1, PREG_SPLIT_NO_EMPTY);
 
 		if (is_string($categories))
 		{
-			$this->_categories = preg_split('/[\s,]+/', mb_strtolower($categories), -1, PREG_SPLIT_NO_EMPTY);
+			$this->_categories = preg_split('/[\s,]+/', StringHelper::toLowerCase($categories), -1, PREG_SPLIT_NO_EMPTY);
 		}
 		else
 		{
-			$this->_categories = array_filter(array_map('mb_strtolower', $categories));
+			$this->_categories = array_filter(array_map(array('Craft\StringHelper', 'toLowerCase'), $categories));
 		}
 
 		if (is_string($except))
 		{
-			$this->_except = preg_split('/[\s,]+/', mb_strtolower($except), -1, PREG_SPLIT_NO_EMPTY);
+			$this->_except = preg_split('/[\s,]+/', StringHelper::toLowerCase($except), -1, PREG_SPLIT_NO_EMPTY);
 		}
 		else
 		{
-			$this->_except = array_filter(array_map('mb_strtolower', $except));
+			$this->_except = array_filter(array_map(array('Craft\StringHelper', 'toLowerCase'), $except));
 		}
 
 		$ret = $this->_logs;
@@ -112,7 +112,7 @@ class Logger extends \CLogger
 	 */
 	protected function filterAllCategories($value, $index)
 	{
-		$cat = mb_strtolower($value[$index]);
+		$cat = StringHelper::toLowerCase($value[$index]);
 		$ret = empty($this->_categories);
 
 		foreach($this->_categories as $category)
@@ -155,6 +155,6 @@ class Logger extends \CLogger
 			}
 		}
 
-		return in_array(mb_strtolower($value[1]), $this->_levels);
+		return in_array(StringHelper::toLowerCase($value[1]), $this->_levels);
 	}
 }

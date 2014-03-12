@@ -376,7 +376,7 @@ class ElementsService extends BaseApplicationComponent
 
 				foreach ($statuses as $status)
 				{
-					$status = mb_strtolower($status);
+					$status = StringHelper::toLowerCase($status);
 
 					// Is this a supported status?
 					if (in_array($status, array_keys($elementType->getStatuses())))

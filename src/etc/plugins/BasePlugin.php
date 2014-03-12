@@ -158,6 +158,6 @@ abstract class BasePlugin extends BaseSavableComponentType
 		// Remove the trailing 'Plugin'.
 		$plugin = str_replace('Plugin', '', $plugin);
 
-		Craft::log($msg, $level, $force, 'plugin', strtolower($plugin));
+		Craft::log($msg, $level, $force, 'plugin', StringHelper::toLowerCase($plugin));
 	}
 }

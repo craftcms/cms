@@ -198,7 +198,7 @@ class PathService extends BaseApplicationComponent
 	{
 		if ($pluginHandle)
 		{
-			return $this->getPluginsPath().mb_strtolower($pluginHandle).'/migrations/';
+			return $this->getPluginsPath().StringHelper::toLowerCase($pluginHandle).'/migrations/';
 		}
 
 		return $this->getAppPath().'migrations/';

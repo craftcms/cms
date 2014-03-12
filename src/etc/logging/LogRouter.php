@@ -28,7 +28,7 @@ class LogRouter extends \CLogRouter
 
 		for ($counter = 0; $counter < sizeof($this->_routes); $counter++)
 		{
-			if (mb_strtolower(get_class($this->_routes[$counter])) == mb_strtolower(__NAMESPACE__.'\\'.$class))
+			if (StringHelper::toLowerCase(get_class($this->_routes[$counter])) == StringHelper::toLowerCase(__NAMESPACE__.'\\'.$class))
 			{
 				$match = $counter;
 				break;

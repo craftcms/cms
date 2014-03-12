@@ -290,7 +290,7 @@ class StringHelper
 		$str = strtr($str, static::_getCharMap());
 
 		// Normalize to lowercase
-		$str = mb_strtolower($str);
+		$str = StringHelper::toLowerCase($str);
 
 		// Remove ignore-words?
 		if (is_array($ignore) && ! empty($ignore))
@@ -421,7 +421,30 @@ class StringHelper
 	 */
 	public static function getEncoding($string)
 	{
-		return mb_strtolower(mb_detect_encoding($string, mb_detect_order(), true));
+		return StringHelper::toLowerCase(mb_detect_encoding($string, mb_detect_order(), true));
+	}
+
+	/**
+	 * Returns a multibyte aware upper-case version of a string.
+	 * Note: Not using mb_strtoupper because of https://bugs.php.net/bug.php?id=47742
+	 *
+	 * @param $string
+	 * @return string
+	 */
+	public static function toUpperCase($string)
+	{
+		return mb_convert_case($string, MB_CASE_UPPER, "UTF-8");
+	}
+	/**
+	 * Returns a multibyte aware lower-case version of a string.
+	 * Note: Not using mb_strtoupper because of https://bugs.php.net/bug.php?id=47742
+	 *
+	 * @param $string
+	 * @return string
+	 */
+	public static function toLowerCase($string)
+	{
+		return mb_convert_case($string, MB_CASE_LOWER, "UTF-8");
 	}
 
 	/**

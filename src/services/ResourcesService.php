@@ -185,7 +185,7 @@ class ResourcesService extends BaseApplicationComponent
 						return false;
 					}
 
-					$ext = mb_strtolower($segs[1]);
+					$ext = StringHelper::toLowerCase($segs[1]);
 					$size = $segs[2];
 
 					$iconPath = $this->_getIconPath($ext, $size);
@@ -418,7 +418,7 @@ class ResourcesService extends BaseApplicationComponent
 			if ($ext)
 			{
 				$color = imagecolorallocate($image, 153, 153, 153);
-				$text = mb_strtoupper($ext);
+				$text = StringHelper::toUpperCase($ext);
 				$font = craft()->path->getAppPath().'etc/assets/helveticaneue-webfont.ttf';
 
 				// Get the bounding box so we can calculate the position

@@ -697,7 +697,7 @@ class DbCommand extends \CDbCommand
 			if ($conditions)
 			{
 				// Is this already an AND conditional?
-				if (mb_strtolower($conditions[0]) == 'and')
+				if (StringHelper::toLowerCase($conditions[0]) == 'and')
 				{
 					// Just merge our normalized conditions into the $conditions
 					$conditions = array_merge($conditions, $normalizedConditions);

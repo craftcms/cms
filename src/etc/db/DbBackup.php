@@ -19,7 +19,7 @@ class DbBackup
 	{
 		$this->_currentVersion = 'v'.craft()->getVersion().'.'.craft()->getBuild();
 		$fileName = IOHelper::cleanFilename(craft()->getSiteName()).'_'.gmdate('ymd_His').'_'.$this->_currentVersion.'.sql';
-		$this->_filePath = craft()->path->getDbBackupPath().mb_strtolower($fileName);
+		$this->_filePath = craft()->path->getDbBackupPath().StringHelper::toLowerCase($fileName);
 
 		$this->_processHeader();
 

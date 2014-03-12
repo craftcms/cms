@@ -35,7 +35,7 @@ class FileLogRoute extends \CFileLogRoute
 			$category = $log[2];
 			$time = $log[3];
 			$force = (isset($log[4]) && $log[4] == true) ? true : false;
-			$plugin = isset($log[5]) ? mb_strtolower($log[5]) : 'craft';
+			$plugin = isset($log[5]) ? StringHelper::toLowerCase($log[5]) : 'craft';
 
 			if (isset($types[$plugin]))
 			{

@@ -24,8 +24,8 @@ class HandleValidator extends \CValidator
 		if ($handle)
 		{
 			$reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);
-			$reservedWords = array_map('mb_strtolower', $reservedWords);
-			$lcHandle = mb_strtolower($handle);
+			$reservedWords = array_map(array('Craft\StringHelper', 'toLowerCase'), $reservedWords);
+			$lcHandle = StringHelper::toLowerCase($handle);
 
 			if (in_array($lcHandle, $reservedWords))
 			{

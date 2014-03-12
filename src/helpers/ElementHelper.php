@@ -40,7 +40,7 @@ class ElementHelper
 		$slug = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $slug);
 
 		// Make it lowercase
-		$slug = mb_strtolower($slug, 'UTF-8');
+		$slug = StringHelper::toLowerCase($slug, 'UTF-8');
 
 		// Get the "words".  Split on anything that is not a unicode letter or number.
 		// Periods, underscores and hyphens get a pass.

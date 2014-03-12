@@ -12,7 +12,7 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 	 */
 	public function createCommand($name)
 	{
-		$name = strtolower($name);
+		$name = StringHelper::toLowerCase($name);
 
 		$command = null;
 

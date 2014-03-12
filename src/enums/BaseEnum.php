@@ -25,8 +25,8 @@ abstract class BaseEnum
 			return array_key_exists($name, $constants);
 		}
 
-		$keys = array_map('strtolower', array_keys($constants));
-		return in_array(strtolower($name), $keys);
+		$keys = array_map(array('Craft\StringHelper', 'toLowerCase'), array_keys($constants));
+		return in_array(StringHelper::toLowerCase($name), $keys);
 	}
 
 	/**

@@ -379,7 +379,7 @@ class DbHelper
 			return '';
 		}
 
-		$firstVal = strtolower($values[0]);
+		$firstVal = StringHelper::toLowerCase($values[0]);
 
 		if ($firstVal == 'and' || $firstVal == 'or')
 		{
@@ -396,14 +396,14 @@ class DbHelper
 			{
 				$value = ':empty:';
 			}
-			else if (strtolower($value) == ':notempty:')
+			else if (StringHelper::toLowerCase($value) == ':notempty:')
 			{
 				$value = 'not :empty:';
 			}
 
 			$operator = static::_parseParamOperator($value);
 
-			if (strtolower($value) == ':empty:')
+			if (StringHelper::toLowerCase($value) == ':empty:')
 			{
 				if ($operator == '=')
 				{
@@ -508,7 +508,7 @@ class DbHelper
 			// Does the value start with this operator?
 			$operatorLength = mb_strlen($testOperator);
 
-			if (strncmp(mb_strtolower($value), $testOperator, $operatorLength) == 0)
+			if (strncmp(StringHelper::toLowerCase($value), $testOperator, $operatorLength) == 0)
 			{
 				$value = mb_substr($value, $operatorLength);
 

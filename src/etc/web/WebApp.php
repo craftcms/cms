@@ -732,7 +732,7 @@ class WebApp extends \CWebApplication
 				}
 				else
 				{
-					$locale = strtolower(CRAFT_LOCALE);
+					$locale = StringHelper::toLowerCase(CRAFT_LOCALE);
 				}
 
 				// Get the list of actual site locale IDs
