@@ -27,9 +27,11 @@ Craft.EntryTypeSwitcher = Garnish.Base.extend(
 
 			if (textStatus == 'success')
 			{
-				Craft.cp.deselectContentTab();
+				var fieldsPane = this.$fields.data('pane');
+				fieldsPane.deselectTab();
 				this.$fields.html(response.paneHtml);
-				Craft.cp.initContentTabs();
+				fieldsPane.destroy();
+				this.$fields.pane();
 				Craft.initUiElements(this.$fields);
 
 				var html = '';

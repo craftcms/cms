@@ -26,6 +26,8 @@
 	}, '<p class="error">' ~ "No sources exist yet."|t ~ '</p>') }}
 {% endif %}
 
+{{ targetLocaleField }}
+
 {% if allowLimit %}
 	{{ forms.textField({
 		label: "Limit"|t,

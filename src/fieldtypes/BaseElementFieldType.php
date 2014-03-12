@@ -79,6 +79,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 			$settings['source'] = AttributeType::String;
 		}
 
+		$settings['targetLocale'] = AttributeType::String;
+
 		if ($this->allowLimit)
 		{
 			$settings['limit'] = array(AttributeType::Number, 'min' => 0);
@@ -108,6 +110,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			'allowMultipleSources' => $this->allowMultipleSources,
 			'allowLimit'           => $this->allowLimit,
 			'sources'              => $sources,
+			'targetLocaleField'    => $this->getTargetLocaleFieldHtml(),
 			'settings'             => $this->getSettings(),
 			'type'                 => $this->getName()
 		));
@@ -156,12 +159,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	public function prepValue($value)
 	{
 		$criteria = craft()->elements->getCriteria($this->elementType);
-
-		if ($this->element)
-		{
-			// Grab elements in the same locale as this one
-			$criteria->locale = $this->element->locale;
-		}
+		$criteria->locale = $this->getTargetLocale();
 
 		// $value will be an array of element IDs if there was a validation error
 		// or we're loading a draft/version.
@@ -292,6 +290,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	protected function getInputTemplateVariables($name, $criteria)
 	{
+		$settings = $this->getSettings();
+
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
 			$criteria = craft()->elements->getCriteria($this->elementType);
@@ -303,11 +303,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 		$selectionCriteria = $this->getInputSelectionCriteria();
 		$selectionCriteria['localeEnabled'] = null;
-
-		if (isset($this->element))
-		{
-			$selectionCriteria['locale'] = $this->element->locale;
-		}
+		$selectionCriteria['locale'] = $this->getTargetLocale();
 
 		return array(
 			'jsClass'            => $this->inputJsClass,
@@ -320,7 +316,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			'sources'            => $this->getInputSources(),
 			'criteria'           => $selectionCriteria,
 			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
-			'limit'              => ($this->allowLimit ? $this->getSettings()->limit : null),
+			'limit'              => ($this->allowLimit ? $settings->limit : null),
 			'addButtonLabel'     => $this->getAddButtonLabel(),
 		);
 	}
@@ -354,5 +350,61 @@ abstract class BaseElementFieldType extends BaseFieldType
 	protected function getInputSelectionCriteria()
 	{
 		return array();
+	}
+
+	/**
+	 * Returns the locale that target elements should have.
+	 *
+	 * @access protected
+	 * @return string
+	 */
+	protected function getTargetLocale()
+	{
+		$targetLocale = $this->getSettings()->targetLocale;
+
+		if ($targetLocale)
+		{
+			return $targetLocale;
+		}
+		else if (isset($this->element))
+		{
+			return $this->element->locale;
+		}
+		else
+		{
+			return craft()->language;
+		}
+	}
+
+	/**
+	 * Returns the HTML for the Target Locale setting.
+	 *
+	 * @access protected
+	 * @return string|null
+	 */
+	protected function getTargetLocaleFieldHtml()
+	{
+		if (craft()->hasPackage(CraftPackage::Localize) && $this->getElementType()->isLocalized())
+		{
+			$localeOptions = array(
+				array('label' => Craft::t('Same as source'), 'value' => null)
+			);
+
+			foreach (craft()->i18n->getSiteLocales() as $locale)
+			{
+				$localeOptions[] = array('label' => $locale->getName(), 'value' => $locale->getId());
+			}
+
+			return craft()->templates->renderMacro('_includes/forms', 'selectField', array(
+				array(
+					'label' => Craft::t('Target Locale'),
+					'instructions' => Craft::t('Which locale do you want to select {type} in?', array('type' => strtolower($this->getName()))),
+					'id' => 'targetLocale',
+					'name' => 'targetLocale',
+					'options' => $localeOptions,
+					'value' => $this->getSettings()->targetLocale
+				)
+			));
+		}
 	}
 }
