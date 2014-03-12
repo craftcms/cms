@@ -300,11 +300,6 @@ class SectionsController extends BaseController
 			array('label' => Craft::t('Entry Types'), 'url' => UrlHelper::getUrl('settings/sections/'.$variables['sectionId'].'/entrytypes')),
 		);
 
-		$variables['tabs'] = array(
-			'settings'    => array('label' => Craft::t('Settings'),     'url' => '#entrytype-settings'),
-			'fieldlayout' => array('label' => Craft::t('Field Layout'), 'url' => '#entrytype-fieldlayout'),
-		);
-
 		$this->renderTemplate('settings/sections/_entrytypes/edit', $variables);
 	}
 
