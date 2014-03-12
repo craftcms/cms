@@ -43,4 +43,14 @@ class EntryTypeModel extends BaseModel
 			'fieldLayout' => new FieldLayoutBehavior(ElementType::Entry),
 		);
 	}
+
+	/**
+	 * Returns the entry type's CP edit URL.
+	 *
+	 * @return string
+	 */
+	public function getCpEditUrl()
+	{
+		return UrlHelper::getCpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
+	}
 }

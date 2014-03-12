@@ -39,9 +39,17 @@
 						<td data-title="{{ 'Entry Types'|t }}">
 							{% if section.type == 'single' and section.getEntryTypes()|length == 1 %}
 								{% set entryType = section.getEntryTypes()[0] %}
-								<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id) }}">{{ "Edit entry type"|t }}</a>
+								<a href="{{ entryType.getCpEditUrl() }}">{{ "Edit entry type"|t }}</a>
 							{% else %}
 								<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes') }}">{{ "Edit entry types ({count})"|t({ count: section.getEntryTypes()|length }) }}</a>
+								<a class="menubtn" title="{{ 'Entry Types'|t }}"></a>
+								<div class="menu">
+									<ul>
+										{% for entryType in section.getEntryTypes() %}
+											<li><a href="{{ entryType.getCpEditUrl() }}">{{ entryType.name }}</a></li>
+										{% endfor %}
+									</ul>
+								</div>
 							{% endif %}
 						</td>
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
