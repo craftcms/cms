@@ -60,7 +60,6 @@ class UserRecord extends BaseRecord
 		}
 
 		$relations['sessions']              = array(static::HAS_MANY, 'SessionRecord', 'userId');
-		$relations['defaultSectionsAuthor'] = array(static::HAS_MANY, 'SectionRecord', 'userId');
 
 		return $relations;
 	}

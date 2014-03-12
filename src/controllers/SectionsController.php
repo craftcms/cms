@@ -113,32 +113,6 @@ class SectionsController extends BaseController
 			array('label' => Craft::t('Sections'), 'url' => UrlHelper::getUrl('settings/sections')),
 		);
 
-		if (craft()->hasPackage(CraftPackage::Users))
-		{
-			$defaultAuthorOptionCriteria = craft()->elements->getCriteria(ElementType::User);
-			$defaultAuthorOptionCriteria->can = 'createEntries:'.$variables['section']->id;
-			$authorOptions = $defaultAuthorOptionCriteria->find();
-		}
-		else
-		{
-			$authorOptions = array(craft()->userSession->getUser());
-		}
-
-		$variables['authorOptions'] = array();
-
-		foreach ($authorOptions as $authorOption)
-		{
-			$authorLabel = $authorOption->username;
-			$authorFullName = $authorOption->getFullName();
-
-			if ($authorFullName)
-			{
-				$authorLabel .= ' ('.$authorFullName.')';
-			}
-
-			$variables['authorOptions'][] = array('label' => $authorLabel, 'value' => $authorOption->id);
-		}
-
 		$this->renderTemplate('settings/sections/_edit', $variables);
 	}
 
@@ -161,27 +135,6 @@ class SectionsController extends BaseController
 		$section->hasUrls    = (bool) craft()->request->getPost('types.'.$section->type.'.hasUrls', true);
 		$section->template   = craft()->request->getPost('types.'.$section->type.'.template');
 		$section->maxLevels  = craft()->request->getPost('types.'.$section->type.'.maxLevels');
-
-		// Are we allowing anonymous front-end submissions?
-		if (craft()->request->getPost('types.'.$section->type.'.allowAnonymousSubmissions'))
-		{
-			// Was a default author specified for this section?
-			$defaultAuthorId = craft()->request->getPost('types.'.$section->type.'.defaultAuthor');
-
-			if ($defaultAuthorId)
-			{
-				$defaultAuthor = craft()->users->getUserById($defaultAuthorId);
-
-				if ($defaultAuthor->can('createEntries:'.$section->id));
-				{
-					$section->defaultAuthorId = $defaultAuthor->id;
-				}
-			}
-		}
-		else
-		{
-			$section->defaultAuthorId = null;
-		}
 
 		// Locale-specific attributes
 		$locales = array();
