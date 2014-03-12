@@ -30,7 +30,6 @@ class SectionModel extends BaseModel
 		return array(
 			'id'                        => AttributeType::Number,
 			'structureId'               => AttributeType::Number,
-			'defaultAuthorId'           => AttributeType::Number,
 			'name'                      => AttributeType::String,
 			'handle'                    => AttributeType::String,
 			'type'                      => array(AttributeType::Enum, 'values' => array(SectionType::Single, SectionType::Channel, SectionType::Structure)),

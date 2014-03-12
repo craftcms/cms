@@ -63,8 +63,6 @@ class WebApp extends \CWebApplication
 	private $_templatePath;
 	private $_packageComponents;
 	private $_pendingEvents;
-	private $_isDbConnectionValid = false;
-
 
 	/**
 	 * Processes resource requests before anything else has a chance to initialize.
@@ -245,26 +243,6 @@ class WebApp extends \CWebApplication
 				$this->runController('templates/offline');
 			}
 		}
-	}
-
-	/**
-	 * Don't even think of moving this check into DbConnection->init().
-	 *
-	 * @return bool
-	 */
-	public function getIsDbConnectionValid()
-	{
-		return $this->_isDbConnectionValid;
-	}
-
-	/**
-	 * Don't even think of moving this check into DbConnection->init().
-	 *
-	 * @param $value
-	 */
-	public function setIsDbConnectionValid($value)
-	{
-		$this->_isDbConnectionValid = $value;
 	}
 
 	/**

@@ -37,7 +37,6 @@ class SectionRecord extends BaseRecord
 		return array(
 			'locales'       => array(static::HAS_MANY, 'SectionLocaleRecord', 'sectionId'),
 			'structure'     => array(static::BELONGS_TO, 'StructureRecord', 'onDelete' => static::SET_NULL),
-			'defaultAuthor' => array(static::BELONGS_TO, 'UserRecord', 'onDelete' => static::SET_NULL),
 		);
 	}
 

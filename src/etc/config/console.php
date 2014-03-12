@@ -32,12 +32,7 @@ return CMap::mergeArray($common, array(
 
 	'components' => array(
 		'db' => array(
-			'connectionString'  => processConnectionString($dbConfig),
 			'emulatePrepare'    => true,
-			'username'          => $dbConfig['user'],
-			'password'          => $dbConfig['password'],
-			'charset'           => $dbConfig['charset'],
-			'tablePrefix'       => $tablePrefix,
 			'driverMap'         => array('mysql' => 'Craft\MysqlSchema'),
 			'class'             => 'Craft\DbConnection',
 		),

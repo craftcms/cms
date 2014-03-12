@@ -352,12 +352,8 @@ class EntriesController extends BaseController
 
 		if (!$entry->id)
 		{
-			// If there is a logged in user, make sure they have create entry permissions.
-			if (craft()->userSession->isLoggedIn())
-			{
-				// Make sure the user is allowed to create entries in this section
-				craft()->userSession->requirePermission('createEntries:'.$entry->sectionId);
-			}
+			// Make sure the user is allowed to create entries in this section
+			craft()->userSession->requirePermission('createEntries:'.$entry->sectionId);
 
 			// Make sure the user is allowed to publish entries in this section, or that this is disabled
 			if ($entry->enabled && !craft()->userSession->checkPermission('publishEntries:'.$entry->sectionId))
@@ -622,6 +618,7 @@ class EntriesController extends BaseController
 	 * Populates an EntryModel with post data.
 	 *
 	 * @access private
+	 * @throws HttpException
 	 * @throws Exception
 	 * @return EntryModel
 	 */
@@ -652,6 +649,8 @@ class EntriesController extends BaseController
 		// Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
 		$entry->sectionId     = craft()->request->getPost('sectionId', $entry->sectionId);
 		$entry->typeId        = craft()->request->getPost('typeId',    $entry->typeId);
+		$entry->authorId      = craft()->request->getPost('author',    ($entry->authorId ? $entry->authorId : craft()->userSession->getUser()->id));
+		$entry->slug          = craft()->request->getPost('slug',      $entry->slug);
 
 		// Check for the author in POST first.
 		$authorId = craft()->request->getPost('author');
