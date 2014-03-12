@@ -1074,7 +1074,7 @@ class SectionsService extends BaseApplicationComponent
 	private function _createSectionQuery()
 	{
 		return craft()->db->createCommand()
-			->select('sections.id, sections.structureId, sections.defaultAuthorId, sections.name, sections.handle, sections.type, sections.hasUrls, sections.template, structures.maxLevels')
+			->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.hasUrls, sections.template, structures.maxLevels')
 			->leftJoin('structures structures', 'structures.id = sections.structureId')
 			->from('sections sections')
 			->order('name');
