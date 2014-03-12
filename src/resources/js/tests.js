@@ -11,7 +11,7 @@ test( 'Craft.getUrl()', function()
 	Craft.resourceTrigger = 'resources';
 	Craft.actionTrigger = 'actions';
 	Craft.path = '';
-	Craft.language = 'en_us';
+	Craft.locale = 'en_us';
 	Craft.packages = [];
 	Craft.translations = [];
 	Craft.maxUploadSize = 33554432;

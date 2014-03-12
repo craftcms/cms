@@ -34,7 +34,7 @@
 			resourceTrigger:      "{{ craft.config.resourceTrigger()|e('js') }}",
 			actionTrigger:        "{{ craft.config.actionTrigger|e('js') }}",
 			path:                 "{{ craft.request.getPath()|e('js') }}",
-			language:             "{{ craft.locale|e('js') }}",
+			locale:               "{{ craft.locale|e('js') }}",
 			packages:             {{ craft.getPackages|json_encode|raw }},
 			translations:         {{ getTranslations()|raw }},
 			maxUploadSize:        {{ craft.app.getMaxUploadSize() }},

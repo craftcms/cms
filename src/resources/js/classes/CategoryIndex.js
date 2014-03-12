@@ -135,7 +135,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
 				var $element = $('<div class="element" data-editable="1"' +
 					'data-id="'+response.id+'" ' +
-					'data-locale="'+Craft.language+'" ' +
+					'data-locale="'+Craft.locale+'" ' +
 					'data-status="'+response.status+'" ' +
 					'data-label="'+response.title+'" ' +
 					'data-url="'+response.url+'">' +
