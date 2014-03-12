@@ -32,7 +32,7 @@ class DateTimeHelper
 	{
 		// Eventually this will return the time in the appropriate database format for MySQL, Postgre, etc.
 		// For now, it's MySQL only.
-		$date = DateTimeHelper::currentUTCDateTime();
+		$date = static::currentUTCDateTime();
 		return $date->format(DateTime::MYSQL_DATETIME, DateTime::UTC);
 	}
 
