@@ -490,9 +490,16 @@ class EntryElementType extends BaseElementType
 	 */
 	public function getEditorHtml(BaseElementModel $element)
 	{
-		$html = craft()->templates->render('entries/_titlefield', array(
-			'entry' => $element
-		));
+		if ($element->getType()->hasTitleField)
+		{
+			$html = craft()->templates->render('entries/_titlefield', array(
+				'entry' => $element
+			));
+		}
+		else
+		{
+			$html = '';
+		}
 
 		$html .= parent::getEditorHtml($element);
 

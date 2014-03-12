@@ -28,7 +28,9 @@ class EntryTypeModel extends BaseModel
 			'fieldLayoutId' => AttributeType::Number,
 			'name'          => AttributeType::String,
 			'handle'        => AttributeType::String,
+			'hasTitleField' => array(AttributeType::Bool, 'default' => true),
 			'titleLabel'    => array(AttributeType::String, 'default' => Craft::t('Title')),
+			'titleFormat'   => AttributeType::String,
 		);
 	}
 

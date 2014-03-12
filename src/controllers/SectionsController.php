@@ -365,11 +365,13 @@ class SectionsController extends BaseController
 		$entryType = new EntryTypeModel();
 
 		// Set the simple stuff
-		$entryType->id         = craft()->request->getPost('entryTypeId');
-		$entryType->sectionId  = craft()->request->getRequiredPost('sectionId');
-		$entryType->name       = craft()->request->getPost('name');
-		$entryType->handle     = craft()->request->getPost('handle');
-		$entryType->titleLabel = craft()->request->getPost('titleLabel');
+		$entryType->id            = craft()->request->getPost('entryTypeId');
+		$entryType->sectionId     = craft()->request->getRequiredPost('sectionId');
+		$entryType->name          = craft()->request->getPost('name');
+		$entryType->handle        = craft()->request->getPost('handle');
+		$entryType->hasTitleField = (bool) craft()->request->getPost('hasTitleField', true);
+		$entryType->titleLabel    = craft()->request->getPost('titleLabel');
+		$entryType->titleFormat   = craft()->request->getPost('titleFormat');
 
 		// Set the field layout
 		$fieldLayout = craft()->fields->assembleLayoutFromPost();

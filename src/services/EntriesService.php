@@ -82,6 +82,8 @@ class EntriesService extends BaseApplicationComponent
 		}
 
 		// Set the entry data
+		$entryType = $entry->getType();
+
 		$entryRecord->sectionId  = $entry->sectionId;
 
 		if ($section->type == SectionType::Single)
@@ -95,7 +97,7 @@ class EntriesService extends BaseApplicationComponent
 			$entryRecord->authorId   = $entry->authorId;
 			$entryRecord->postDate   = $entry->postDate;
 			$entryRecord->expiryDate = $entry->expiryDate;
-			$entryRecord->typeId     = $entry->getType()->id;
+			$entryRecord->typeId     = $entryType->id;
 		}
 
 		if ($entry->enabled && !$entryRecord->postDate)
@@ -109,6 +111,11 @@ class EntriesService extends BaseApplicationComponent
 
 		if (!$entry->hasErrors())
 		{
+			if (!$entryType->hasTitleField)
+			{
+				$entry->getContent()->title = craft()->templates->renderObjectTemplate($entryType->titleFormat, $entry);
+			}
+
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{

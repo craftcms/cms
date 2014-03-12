@@ -21,10 +21,12 @@ class EntryTypeRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
-			'name'       => array(AttributeType::Name, 'required' => true),
-			'handle'     => array(AttributeType::Handle, 'required' => true),
-			'titleLabel' => array(AttributeType::String, 'default' => 'Title'),
-			'sortOrder'  => AttributeType::SortOrder,
+			'name'          => array(AttributeType::Name, 'required' => true),
+			'handle'        => array(AttributeType::Handle, 'required' => true),
+			'hasTitleField' => array(AttributeType::Bool, 'required' => true, 'default' => true),
+			'titleLabel'    => array(AttributeType::String, 'default' => 'Title'),
+			'titleFormat'   => AttributeType::String,
+			'sortOrder'     => AttributeType::SortOrder,
 		);
 	}
 
@@ -48,5 +50,22 @@ class EntryTypeRecord extends BaseRecord
 			array('columns' => array('name', 'sectionId'), 'unique' => true),
 			array('columns' => array('handle', 'sectionId'), 'unique' => true),
 		);
+	}
+
+	/**
+	 * Returns this model's validation rules.
+	 *
+	 * @return array
+	 */
+	public function rules()
+	{
+		$rules = parent::rules();
+
+		if (!$this->hasTitleField)
+		{
+			$rules[] = array('titleFormat', 'required');
+		}
+
+		return $rules;
 	}
 }

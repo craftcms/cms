@@ -830,10 +830,12 @@ class SectionsService extends BaseApplicationComponent
 			$isNewEntryType = true;
 		}
 
-		$entryTypeRecord->sectionId  = $entryType->sectionId;
-		$entryTypeRecord->name       = $entryType->name;
-		$entryTypeRecord->handle     = $entryType->handle;
-		$entryTypeRecord->titleLabel = $entryType->titleLabel;
+		$entryTypeRecord->sectionId     = $entryType->sectionId;
+		$entryTypeRecord->name          = $entryType->name;
+		$entryTypeRecord->handle        = $entryType->handle;
+		$entryTypeRecord->hasTitleField = $entryType->hasTitleField;
+		$entryTypeRecord->titleLabel    = ($entryType->hasTitleField ? $entryType->titleLabel : null);
+		$entryTypeRecord->titleFormat   = (!$entryType->hasTitleField ? $entryType->titleFormat : null);
 
 		$entryTypeRecord->validate();
 		$entryType->addErrors($entryTypeRecord->getErrors());

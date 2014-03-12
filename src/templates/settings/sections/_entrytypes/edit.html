@@ -20,8 +20,7 @@
 				value: entryType.name,
 				errors: entryType.getErrors('name'),
 				autofocus: true,
-				required: true,
-				translatable: true
+				required: true
 			}) }}
 
 			{{ forms.textField({
@@ -35,16 +34,41 @@
 				required: true
 			}) }}
 
-			{{ forms.textField({
-				label: "“Title” Label"|t,
-				instructions: "What do you want the entries’ “Title” fields to be labeled?"|t,
-				id: 'titleLabel',
-				name: 'titleLabel',
-				value: entryType.titleLabel,
-				errors: entryType.getErrors('titleLabel'),
-				required: true,
-				translatable: true
-			}) }}
+			{% if section.type != 'single' %}
+				<hr>
+
+				{{ forms.checkboxField({
+					label: "Show title fields"|t,
+					name: 'hasTitleField',
+					toggle: 'titleLabel-container',
+					reverseToggle: 'titleFormat-container',
+					checked: entryType.hasTitleField
+				}) }}
+
+				<div id="titleLabel-container"{% if not entryType.hasTitleField %} class="hidden"{% endif %}>
+					{{ forms.textField({
+						label: "Title Field Label"|t,
+						instructions: "What do you want the entries’ “Title” fields to be labeled?"|t,
+						id: 'titleLabel',
+						name: 'titleLabel',
+						value: entryType.titleLabel,
+						errors: entryType.getErrors('titleLabel'),
+						required: true
+					}) }}
+				</div>
+
+				<div id="titleFormat-container"{% if entryType.hasTitleField %} class="hidden"{% endif %}>
+					{{ forms.textField({
+						label: "Title Format"|t,
+						instructions: "What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}."|t({ ex: '<code>{myCustomField}</code>' }),
+						id: 'titleFormat',
+						name: 'titleFormat',
+						value: entryType.titleFormat,
+						errors: entryType.getErrors('titleFormat'),
+						required: true
+					}) }}
+				</div>
+			{% endif %}
 		</div>
 
 		<div id="entrytype-fieldlayout" class="hidden">
