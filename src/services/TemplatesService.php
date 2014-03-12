@@ -157,7 +157,9 @@ class TemplatesService extends BaseApplicationComponent
 		// Have we already parsed this template?
 		if (!isset($this->_objectTemplates[$template]))
 		{
-			$formattedTemplate = str_replace(array('{', '}'), array('{{object.', '}}'), $template);
+			// Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
+			$formattedTemplate = preg_replace('/(?<![\{\%])\{(?![\{\%])/', '{{object.', $template);
+			$formattedTemplate = preg_replace('/(?<![\}\%])\}(?![\}\%])/', '}}', $formattedTemplate);
 			$this->_objectTemplates[$template] = $twig->loadTemplate($formattedTemplate);
 		}
 
