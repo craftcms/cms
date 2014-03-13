@@ -13,7 +13,7 @@ class DateFieldType extends BaseFieldType
 	 */
 	public function getName()
 	{
-		return Craft::t('Date');
+		return Craft::t('Date/Time');
 	}
 
 	/**
@@ -66,15 +66,15 @@ class DateFieldType extends BaseFieldType
 			'name' => 'dateTime',
 			'options' => array(
 				array(
-					'label' => Craft::t('Show date?'),
+					'label' => Craft::t('Show date'),
 					'value' => 'showDate',
 				),
 				array(
-					'label' => Craft::t('Show time?'),
+					'label' => Craft::t('Show time'),
 					'value' => 'showTime',
 				),
 				array(
-					'label' => Craft::t('Show both?'),
+					'label' => Craft::t('Show date and time'),
 					'value' => 'showBoth',
 				)
 			),
