@@ -13,6 +13,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 		this.id = id;
 
 		redactorConfig.lang = redactorLang;
+		redactorConfig.direction = Craft.orientation;
 
 		// Replace the image and link menu with slight modifications.
 		if (typeof redactorConfig.buttonsCustom == 'undefined')

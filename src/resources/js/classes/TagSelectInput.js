@@ -181,10 +181,11 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 		$('<span class="label">'+name+'</span>').appendTo($element);
 
 		var margin = -($element.outerWidth()+10);
-		this.$addTagInput.css('margin-left', margin+'px');
-		this.$addTagInput.animate({
-			marginLeft: 0
-		}, 'fast');
+		this.$addTagInput.css('margin-'+Craft.left, margin+'px');
+
+		var animateCss = {};
+		animateCss['margin-'+Craft.left] = 0;
+		this.$addTagInput.animate(animateCss, 'fast');
 
 		this.$elements = this.$elements.add($element);
 		this.totalElements++;

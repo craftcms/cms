@@ -12,7 +12,7 @@ Craft.EntryTypeSwitcher = Garnish.Base.extend(
 	{
 		this.$form = $('#entry-form');
 		this.$typeSelect = $('#entryType');
-		this.$spinner = $('<div class="spinner hidden" style="position: absolute; margin-left: 2px;"/>').insertAfter(this.$typeSelect.parent());
+		this.$spinner = $('<div class="spinner hidden" style="position: absolute; margin-'+Craft.left+': 2px;"/>').insertAfter(this.$typeSelect.parent());
 		this.$fields = $('#fields');
 
 		this.addListener(this.$typeSelect, 'change', 'onTypeChange');

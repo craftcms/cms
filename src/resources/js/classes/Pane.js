@@ -144,7 +144,7 @@ Craft.Pane = Garnish.Base.extend(
 
 	updateResponsiveSidebar: function()
 	{
-		if (this.$content.width() + parseInt(this.$content.css('margin-left')) < Craft.Pane.minContentWidthForSidebar)
+		if (this.$content.width() + parseInt(this.$content.css('margin-'+Craft.left)) < Craft.Pane.minContentWidthForSidebar)
 		{
 			if (this.showingSidebar)
 			{
@@ -200,7 +200,7 @@ Craft.Pane = Garnish.Base.extend(
 
 	startPeeking: function()
 	{
-		this.$content.animate({ left: 194 }, 'fast');
+		this.$content.animateLeft(194, 'fast');
 		this.$sidebarBtn.addClass('showing').attr('title', Craft.t('Hide sidebar'));
 		this.peekingSidebar = true;
 
@@ -215,7 +215,7 @@ Craft.Pane = Garnish.Base.extend(
 
 	stopPeeking: function()
 	{
-		this.$content.animate({ left: 0 }, 'fast');
+		this.$content.animateLeft(0, 'fast');
 		this.$sidebarBtn.removeClass('showing').attr('title', Craft.t('Show sidebar'));
 		this.peekingSidebar = false;
 

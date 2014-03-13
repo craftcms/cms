@@ -166,10 +166,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 		$element.css('z-index', 0);
 
-		$element.animate({
-			marginLeft: -($element.outerWidth() + parseInt($element.css('margin-right'))),
-			opacity: -1 // double speed!
-		}, 'fast', function() {
+		var animateCss = {
+			opacity: -1
+		};
+		animateCss['margin-'+Craft.left] = -($element.outerWidth() + parseInt($element.css('margin-'+Craft.right)));
+
+		$element.animate(animateCss, 'fast', function() {
 			$element.remove();
 		});
 	},
@@ -249,16 +251,20 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			var origOffset = element.$element.offset(),
 				destOffset = $element.offset();
 
-			$element.css({
-				left:   origOffset.left - destOffset.left,
+			var css = {
 				top:    origOffset.top - destOffset.top,
 				zIndex: 10000
-			});
+			};
+			css[Craft.left] = origOffset.left - destOffset.left;
 
-			$element.animate({
-				left: 0,
-				top: 0
-			}, function() {
+			$element.css(css);
+
+			var animateCss = {
+				left: 0
+			};
+			animateCss[Craft.left] = 0;
+
+			$element.animate(animateCss, function() {
 				$(this).css('z-index', 1);
 			});
 

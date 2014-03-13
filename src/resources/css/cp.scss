@@ -11,7 +11,7 @@ html { overflow-y: scroll; }
 #alerts li { padding: 2px 30px; }
 #alerts li:first-child { padding-top: 4px; }
 #alerts li:last-child { padding-bottom: 4px; }
-#alerts li:before { @include icon; margin: -1px 3px 0 0; content: 'alert'; font-size: 16px; }
+#alerts li:before { @include icon; @include margin(-1px, 3px, 0, 0); content: 'alert'; font-size: 16px; }
 #alerts li a { color: $errorcolor; text-decoration: underline; white-space: nowrap; }
 
 .container { margin: 0 auto; padding: 0 14px; max-width: 1294px; @include box-sizing(border-box); }
@@ -25,23 +25,23 @@ html { overflow-y: scroll; }
 #header a:hover,
 #header a.active { color: #fff; text-decoration: none; }
 
-#header .right { float: right; margin-right: -7px; height: 38px; }
-#header .right > li { float: left; }
+#header .right { @include margin-right(-7px); height: 38px; }
+#header .right > li { @include floatleft; }
 #header .right a { display: block; padding: 0 7px; line-height: 36px; }
-#header .right a.menubtn:after { margin-left: 4px; }
+#header .right a.menubtn:after { @include margin-left(4px); }
 #header .right .updates a { position: relative; color: $noticecolor; }
 #header .right .updates.critical a { color: $submitcolor; }
 #header .right .updates a:hover { color: #fff !important; }
 #header .right .updates a:before { font-size: 20px; width: 20px; }
-#header .right .updates a span { display: block; position: absolute; left: 7px; top: 1px; width: 20px; text-align: center; color: $headerBgColor; font-weight: bold; font-size: 11px; }
+#header .right .updates a span { display: block; position: absolute; @include left(7px); top: 1px; width: 20px; text-align: center; color: $headerBgColor; font-weight: bold; font-size: 11px; }
 #header .right .settings:before,
 #header .right .myaccount:before { font-size: 16px; }
 
-#header h2 { float: left; margin: 0 25px 0 0; }
+#header h2 { @include floatleft; @include margin(0, 25px, 0, 0); }
 #header h2 a { display: block; padding: 10px 0; }
 
-#nav { float: left; margin-left: -5px; }
-#nav li { float: left; height: 38px; }
+#nav { @include floatleft; @include margin-left(-5px); }
+#nav li { @include floatleft; height: 38px; }
 #nav li a { display: block; margin-top: 2px; padding: 4px 10px; line-height: 28px; }
 #nav li a.active { color: #fff; }
 #nav li a.sel { position: relative; z-index: 1; border-radius: 3px 3px 0 0; color: $textcolor; background: $bgcolor; }
@@ -58,12 +58,12 @@ html { overflow-y: scroll; }
 #overflow-nav li a:hover .badge { color: $headerBgColor; }
 
 /* HIDE */
-#overflow-nav li a { padding-left: 30px; }
-#overflow-nav li#customize-nav-btn a:before { float: left; margin-left: -21px; }
+#overflow-nav li a { @include padding-left(30px); }
+#overflow-nav li#customize-nav-btn a:before { @include floatleft; @include margin-left(-21px); }
 /* end HIDE */
 
 /* notifications */
-#notifications-wrapper { position: absolute; z-index: 9999; left: 0; width: 100%; }
+#notifications-wrapper { position: absolute; z-index: 9999; @include left(0); width: 100%; }
 #notifications-wrapper.fixed { position: fixed; top: 0; }
 #notifications { text-align: center; }
 #notifications .notification { display: inline-block; padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important;
@@ -78,7 +78,7 @@ html { overflow-y: scroll; }
 #page-header #extra-headers { display: inline-block; position: relative; top: 5px; }
 #page-header #extra-headers > .select,
 #page-header #extra-headers > .menubtn,
-#page-header #extra-headers > .btn { display: block; margin-left: 5px; float: left; }
+#page-header #extra-headers > .btn { display: block; @include margin-left(5px); @include floatleft; }
 
 #crumbs { margin: -35px 0 10px; font-size: 0; }
 #crumbs:after { @include clearafter; }
@@ -123,31 +123,34 @@ $fldGuideColor: #f4f3fb;
 .fld-tab,
 .fld-field { color: $fldChalkColor; font-family: 'Coming Soon', sans-serif; font-style: italic; text-transform: uppercase; }
 
-.fieldlayoutform { padding: 24px; background: url(../images/fieldlayoutform-bg.png) 25px 24px; }
+.fieldlayoutform { padding: 24px; background-image: url(../images/fieldlayoutform-bg.png);
+	body.ltr & { background-position: 25px 24px; }
+	body.rtl & { background-position: calc(100% - 24px) 24px; }
+}
 .fieldlayoutform:after { @include clearafter; }
 .fieldlayoutform h2 { margin: 3px 0 27px !important; font-size: 20px; line-height: 30px; font-weight: normal; text-decoration: underline; color: $fldChalkColor; margin-bottom: 30px; }
 
-.fieldlayoutform .fld-tabs { margin: 0 0 29px -30px; }
-.fieldlayoutform .unusedfields { margin: 30px 0 -30px -30px; }
+.fieldlayoutform .fld-tabs { @include margin(0, 0, 29px, -30px); }
+.fieldlayoutform .unusedfields { @include margin(30px, 0, -30px, -30px); }
 
 .fieldlayoutform .fld-tabs:after,
 .fieldlayoutform .unusedfields:after { @include clearafter; }
 
-.fieldlayoutform .buttons { margin: 0 0 58px; }
-.fieldlayoutform .buttons .btn.add { margin-right: 15px; border: 1px solid $fldChalkColor; padding: 2px 10px 0; line-height: 27px; color: $fldChalkColor; background: transparent;
+.fieldlayoutform .buttons { @include margin(0, 0, 58px, 0); }
+.fieldlayoutform .buttons .btn.add { @include margin-right(15px); border: 1px solid $fldChalkColor; padding: 2px 10px 0; line-height: 27px; color: $fldChalkColor; background: transparent;
 	@include box-shadow(none);
 }
 .fieldlayoutform .buttons .btn.add:before { margin-top: -2px; }
 .fieldlayoutform .buttons h3 { margin: 0; display: inline-block; padding: 9px 6px; line-height: 15px; }
 
-.fld-tab { float: left; margin: 0 -1px 30px 30px; width: 211px; }
+.fld-tab { @include floatleft; @include margin(0, -1px, 30px, 30px); width: 211px; }
 
 .fld-tab .tabs .tab,
 .fld-tab .fld-tabcontent,
 .fld-field { border: 1px solid $fldChalkColor; }
 
 .fld-tab .icon,
-.fld-field .icon { margin-left: 5px; }
+.fld-field .icon { @include margin-left(5px); }
 .fld-tab .icon:before,
 .fld-field .icon:before { margin-top: -2px; font-size: 16px; color: $fldChalkColor; opacity: 0.5; }
 .fld-tab .icon:hover:before,
@@ -161,15 +164,15 @@ $fldGuideColor: #f4f3fb;
 .fld-field .menubtn:after { display: none; }
 
 .fld-tab .tabs { position: relative; z-index: 1; padding: 0 10px; }
-.fld-tab .tabs .tab { float: left; margin: -1px; border-radius: 3px 3px 0 0; padding: 8px 10px 3px; border-bottom-color: $fldGuideColor; color: $fldChalkColor; }
+.fld-tab .tabs .tab { @include floatleft; margin: -1px; border-radius: 3px 3px 0 0; padding: 8px 10px 3px; border-bottom-color: $fldGuideColor; color: $fldChalkColor; }
 .fld-tab .tabs .tab.draggable { cursor: move; }
 .fld-tab .fld-tabcontent { padding: 13px; }
 .fld-tab-caboose { min-height: 31px; }
 
 .fld-field { padding: 8px 8px 3px; cursor: move; }
 .fld-field + .fld-field { margin-top: 7px; }
-.fld-field.fld-required span:after { @include icon; margin: -2px 0 0 5px; color: $fldChalkColor; content: '*'; font-size: 8px; }
-.fld-field .icon { float: right; }
+.fld-field.fld-required span:after { @include icon; @include margin(-2px, 0, 0, 5px); color: $fldChalkColor; content: '*'; font-size: 8px; }
+.fld-field .icon { @include floatright; }
 
 .fld-tab.unused .tabs .tab,
 .fld-tab.unused .fld-tabcontent,
@@ -200,6 +203,6 @@ $fldGuideColor: #f4f3fb;
 }
 
 @media only screen and (max-width: 320px) {
-	.container { padding-left: 10px; padding-right: 10px; }
-	#nav { margin-left: -10px; }
+	.container { @include padding-left(10px); @include padding-right(10px); }
+	#nav { @include margin-left(-10px); }
 }

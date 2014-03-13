@@ -2225,13 +2225,27 @@
 
 				// fix right placement
 				var dropdownWidth = $dropdown.width();
+
 				/* BEGIN HACK! */
-				//if ((keyPosition.left + dropdownWidth) > $(document).width())
-				if ((keyPosition.left + dropdownWidth) > this.$box.outerWidth())
+
+				if (
+					(Craft.orientation == 'rtl' && keyPosition.left >= dropdownWidth) ||
+					(keyPosition.left + dropdownWidth) > this.$box.outerWidth()
+				)
+				{
+					keyPosition.left -= (dropdownWidth - 7);
+				}
+
 				/* END HACK! */
+
+				/*
+
+				if ((keyPosition.left + dropdownWidth) > $(document).width())
 				{
 					keyPosition.left -= dropdownWidth;
 				}
+
+				*/
 
 				var left = keyPosition.left + 'px';
 				var btnHeight = 29;

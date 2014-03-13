@@ -938,6 +938,30 @@ $.extend(Craft,
 
 $.extend($.fn,
 {
+	animateLeft: function(pos, duration, easing, complete)
+	{
+		if (Craft.orientation == 'ltr')
+		{
+			return this.animate({ left: pos }, duration, easing, complete);
+		}
+		else
+		{
+			return this.animate({ right: pos }, duration, easing, complete);
+		}
+	},
+
+	animateRight: function(pos, duration, easing, complete)
+	{
+		if (Craft.orientation == 'ltr')
+		{
+			return this.animate({ right: pos }, duration, easing, complete);
+		}
+		else
+		{
+			return this.animate({ left: pos }, duration, easing, complete);
+		}
+	},
+
 	/**
 	 * Disables elements by adding a .disabled class and preventing them from receiving focus.
 	 */

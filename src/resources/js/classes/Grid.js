@@ -380,11 +380,13 @@ Craft.Grid = Garnish.Base.extend(
 
 			var top = Math.max.apply(null, affectedColHeights);
 
-			this.items[i].css({
-				left: this.leftPadding + this.getItemWidth(this.layout.positions[i]) + this.sizeUnit,
+			var css = {
 				top: top,
 				width: this.getItemWidth(this.layout.colspans[i]) + this.sizeUnit
-			});
+			};
+			css[Craft.left] = this.leftPadding + this.getItemWidth(this.layout.positions[i]) + this.sizeUnit;
+
+			this.items[i].css(css);
 
 			// Now add the new heights to those columns
 			for (var col = this.layout.positions[i]; col <= endingCol; col++)

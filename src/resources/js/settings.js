@@ -78,13 +78,9 @@ Craft.Tool = Garnish.Base.extend(
 		})
 			.removeClass('hidden');
 
-		this.$form.stop().animate({
-			left: -200
-		}, 'fast');
+		this.$form.stop().animateLeft(-200, 'fast');
 
-		this.progressBar.$progressBar.stop().animate({
-			left: 30
-		}, 'fast', $.proxy(function()
+		this.progressBar.$progressBar.stop().animateLeft(30, 'fast', $.proxy(function()
 		{
 			var postData = Garnish.getPostData(this.$form),
 				params = Craft.expandPostArray(postData);
@@ -229,13 +225,9 @@ Craft.Tool = Garnish.Base.extend(
 			top: Math.round(this.hud.$body.outerHeight() / 2) - 30
 		});
 
-		this.progressBar.$progressBar.animate({
-			left: -170
-		}, 'fast');
+		this.progressBar.$progressBar.animateLeft(-170, 'fast');
 
-		this.$allDone.animate({
-			left: 30
-		}, 'fast');
+		this.$allDone.animateLeft(30, 'fast');
 	}
 
 },

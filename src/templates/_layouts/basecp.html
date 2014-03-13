@@ -11,6 +11,8 @@
 
 {%- includeTranslations "Show", "Hide" %}
 
+{% set orientation = craft.i18n.getLocaleData().getOrientation() %}
+
 {% block foot %}
 	<noscript>
 		<div class="message-container no-access">
@@ -35,6 +37,9 @@
 			actionTrigger:        "{{ craft.config.actionTrigger|e('js') }}",
 			path:                 "{{ craft.request.getPath()|e('js') }}",
 			locale:               "{{ craft.locale|e('js') }}",
+			orientation:          "{{ orientation|e('js') }}",
+			left:                 "{{ orientation == 'ltr' ? 'left' : 'right' }}",
+			right:                "{{ orientation == 'ltr' ? 'right' : 'left' }}",
 			packages:             {{ craft.getPackages|json_encode|raw }},
 			translations:         {{ getTranslations()|raw }},
 			maxUploadSize:        {{ craft.app.getMaxUploadSize() }},

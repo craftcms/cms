@@ -129,7 +129,7 @@ Craft.Structure = Garnish.Base.extend(
 	addElement: function($element)
 	{
 		var $li = $('<li data-level="1"/>').appendTo(this.$container),
-			$row = $('<div class="row" style="margin-left: -'+Craft.Structure.baseIndent+'px; padding-left: '+Craft.Structure.baseIndent+'px;">').appendTo($li);
+			$row = $('<div class="row" style="margin-'+Craft.left+': -'+Craft.Structure.baseIndent+'px; padding-'+Craft.left+': '+Craft.Structure.baseIndent+'px;">').appendTo($li);
 
 		$row.append($element);
 

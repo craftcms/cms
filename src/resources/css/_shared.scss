@@ -65,6 +65,13 @@ $noticecolor: #5286d9;
 	background-image: linear-gradient($params);
 }
 
+@mixin transform($params...) {
+	-webkit-transform: $params;
+	-moz-transform: $params;
+	-o-transform: $params;
+	transform: $params;
+}
+
 @mixin transition($params...) {
 	-webkit-transition: $params;
 	-moz-transition: $params;
@@ -98,6 +105,8 @@ $noticecolor: #5286d9;
 	vertical-align: middle;
 	word-wrap: normal !important;
 	@include user-select(none);
+
+	@include rtlflip;
 }
 
 @mixin clearafter {
@@ -116,4 +125,84 @@ $noticecolor: #5286d9;
 @mixin spinner {
 	width: 20px;
 	background: url(../images/spinner.gif) no-repeat 50% 50%;
+}
+
+/* RTL stuff */
+
+@mixin rtlflip {
+	body.rtl & {
+		@include transform(scaleX(-1));
+	    -ms-filter: fliph; // IE
+	    filter: fliph; // IE
+	}
+}
+
+@mixin left($left) {
+	body.ltr & { left: $left; }
+	body.rtl & { right: $left; }
+}
+
+@mixin right($right) {
+	body.ltr & { right: $right; }
+	body.rtl & { left: $right; }
+}
+
+@mixin alignleft {
+	body.ltr & { text-align: left; }
+	body.rtl & { text-align: right; }
+}
+
+@mixin alignright {
+	body.ltr & { text-align: right; }
+	body.rtl & { text-align: left; }
+}
+
+@mixin border-left($params...) {
+	body.ltr & { border-left: $params; }
+	body.rtl & { border-right: $params; }
+}
+
+@mixin border-right($params...) {
+	body.ltr & { border-right: $params; }
+	body.rtl & { border-left: $params; }
+}
+
+@mixin floatleft {
+	body.ltr & { float: left; }
+	body.rtl & { float: right; }
+}
+
+@mixin floatright {
+	body.ltr & { float: right; }
+	body.rtl & { float: left; }
+}
+
+@mixin margin($t, $r, $b, $l) {
+	body.ltr & { margin: $t $r $b $l; }
+	body.rtl & { margin: $t $l $b $r; }
+}
+
+@mixin margin-left($margin...) {
+	body.ltr & { margin-left: $margin; }
+	body.rtl & { margin-right: $margin; }
+}
+
+@mixin margin-right($margin...) {
+	body.ltr & { margin-right: $margin; }
+	body.rtl & { margin-left: $margin; }
+}
+
+@mixin padding($t, $r, $b, $l) {
+	body.ltr & { padding: $t $r $b $l; }
+	body.rtl & { padding: $t $l $b $r; }
+}
+
+@mixin padding-left($padding...) {
+	body.ltr & { padding-left: $padding; }
+	body.rtl & { padding-right: $padding; }
+}
+
+@mixin padding-right($padding...) {
+	body.ltr & { padding-right: $padding; }
+	body.rtl & { padding-left: $padding; }
 }

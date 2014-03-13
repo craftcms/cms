@@ -10,13 +10,13 @@
 
 
 
-#main h2.heading { float: left; margin: 0; padding: 6px 0; }
-#main .buttons { float: right; margin: 0; }
+#main h2.heading { @include floatleft; margin: 0; padding: 6px 0; }
+#main .buttons { @include floatright; margin: 0; }
 #main hr { clear: both; margin: 30px -30px; }
-#main .critical { margin-left: 5px; border-radius: 2px; padding: 2px 5px; font-weight: normal; color: #fff; background: #d6301a; }
+#main .critical { @include margin-left(5px); border-radius: 2px; padding: 2px 5px; font-weight: normal; color: #fff; background: #d6301a; }
 
-#main ul li { padding: 3px 0 3px 25px; }
-#main ul li:before { @include icon; float: left; margin: 1px 0 1px -23px; font-size: 16px; }
+#main ul li { @include padding(3px, 0, 3px, 25px); }
+#main ul li:before { @include icon; @include floatleft; @include margin(1px, 0, 1px, -23px); font-size: 16px; }
 #main ul li.added:before { content: 'wand'; color: $noticecolor; }
 #main ul li.improved:before { content: 'brush'; }
 #main ul li.fixed:before { content: 'screwdriver'; color: $submitcolor; }

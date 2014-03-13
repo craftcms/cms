@@ -1,36 +1,36 @@
 @import "shared";
 
-#packages .package .badge { float: right; margin: -16px -16px 0 10px; border-radius: 0 2px 0 2px; padding: 3px 6px; color: #fff; text-shadow: 0 -1px rgba(0,0,0,0.5); font-size: 11px; line-height: 14px; font-weight: bold; text-transform: uppercase;
+#packages .package .badge { @include floatright; @include margin(-16px, -16px, 0, 10px); border-radius: 0 2px 0 2px; padding: 3px 6px; color: #fff; text-shadow: 0 -1px rgba(0,0,0,0.5); font-size: 11px; line-height: 14px; font-weight: bold; text-transform: uppercase;
 	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1));
 }
 #packages .package .badge.installed { background: $successcolor; }
 #packages .package .badge.trial { background: $noticecolor; }
 #packages .package .badge.uninstalled { background: $mediumtextcolor; }
 #packages .package .badge.unlicensed { background: $errorcolor; }
-#packages .package h2 { margin-top: 0; float: left; }
+#packages .package h2 { margin-top: 0; @include floatleft; }
 
 
 #packages ul { clear: left; }
-#packages ul li { margin-left: 18px; }
-#packages ul li:before { @include icon; content: 'check'; float: left; margin: 3px 0 0 -17px; font-size: 10px; }
+#packages ul li { @include margin-left(18px); }
+#packages ul li:before { @include icon; content: 'check'; @include floatleft; @include margin(3px, 0, 0, -17px); font-size: 10px; }
 
 #packages .package .buttons { margin: 24px -24px -24px !important; border-radius: 0 0 3px 3px; padding: 11px 15px 15px; border-top: 1px solid $hrcolor; min-height: 31px; background: #fcfcfc; }
 #packages .package .buttons .btn { margin-top: 4px; font-weight: bold; }
-#packages .package .buttons .btn.buy { float: left; color: $successcolor; }
+#packages .package .buttons .btn.buy { @include floatleft; color: $successcolor; }
 #packages .package .buttons .btn.buy del { color: $textcolor; font-weight: bold; }
-#packages .package .buttons .btn.buy span { display: inline-block; margin: 0 0 2px 8px; border-left: 1px solid rgba(0,0,0,0.1); padding-left: 8px; line-height: 19px; }
-#packages .package .buttons .btn.settings { float: right; }
+#packages .package .buttons .btn.buy span { display: inline-block; @include margin(0, 0, 2px, 8px); @include border-left(1px solid rgba(0,0,0,0.1)); @include padding-left(8px); line-height: 19px; }
+#packages .package .buttons .btn.settings { @include floatright; }
 
-p.light sup { margin-right: 2px; }
+p.light sup { @include margin-right(2px); }
 
 #ccmodal .field { margin: 15px 0; }
 
 #ccmodal .cc-year,
-#ccmodal .cc-cvc { margin-left: 15px; }
+#ccmodal .cc-cvc { @include margin-left(15px); }
 #ccmodal .cc-month select { width: 177px; }
 #ccmodal .cc-year select { width: 62px; }
 #ccmodal .cc-cvc input { width: 71px; }
 
 #ccmodal p.secure { margin-bottom: -15px !important; }
-#ccmodal p.secure:before { margin-right: 5px; color: $textcolor; }
-#ccmodal .spinner { position: absolute; bottom: 0; right: -25px; }
+#ccmodal p.secure:before { @include margin-right(5px); color: $textcolor; }
+#ccmodal .spinner { position: absolute; bottom: 0; @include right(-25px); }

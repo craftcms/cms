@@ -159,7 +159,17 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 				this.$addCategoryInput.val('');
 
 				// Animate the new category into place
-				$element.css({ top: 24, left: -5 }).animate({ top: 0, left: 0 }, 'fast');
+				var css = {
+					top: 24
+				};
+				css[Craft.left] = -5;
+
+				var animateCss = {
+					top: 0
+				};
+				animateCss[Craft.left] = 0;
+
+				$element.css(css).animate(animateCss, 'fast');
 			}
 
 		}, this));

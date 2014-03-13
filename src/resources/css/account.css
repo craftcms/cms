@@ -1,2 +1,2 @@
 #verifypasswordmodal .buttons { margin-top: 1em; }
-#verifypasswordmodal .buttons .spinner { position: absolute; top: 0; right: -24px; }
+#verifypasswordmodal .buttons .spinner { position: absolute; top: 0; @include right(-24px); }

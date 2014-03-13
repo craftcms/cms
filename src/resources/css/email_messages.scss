@@ -1,8 +1,8 @@
 @import "shared";
 
 .message { position: relative; cursor: pointer; }
-.message:hover { padding-right: 26px; }
-.message:hover:after { position: absolute; top: 18px; right: 15px; @include icon; content: 'edit'; color: $linkcolor; }
+.message:hover { @include padding-right(26px); }
+.message:hover:after { position: absolute; top: 18px; @include right(15px); @include icon; content: 'edit'; color: $linkcolor; }
 
 .message .subject { padding-bottom: 15px; border-bottom: 1px solid #dbdbdb; margin-bottom: 15px; }
 .message .body { font-size: 12px; line-height: 16px; font-family: Courier, monospace; color: $mediumtextcolor; }

@@ -80,7 +80,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 			onOptionSelect: $.proxy(this, 'onSelectTransform')
 		});
 
-		this.$transformSpinner = $('<div class="spinner hidden" style="margin-right: -24px;"/>').insertAfter($btnGroup);
+		this.$transformSpinner = $('<div class="spinner hidden" style="margin-'+Craft.right+': -24px;"/>').insertAfter($btnGroup);
 	},
 
 	onSelectionChange: function(ev)

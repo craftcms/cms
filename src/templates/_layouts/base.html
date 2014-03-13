@@ -15,7 +15,7 @@
 	</script>
 	{% endblock %}
 </head>
-<body>
+<body class="{{ craft.i18n.getLocaleData().getOrientation() }}">
 	{% block body %}{% endblock %}
 	{% block foot %}{% endblock %}
 </body>

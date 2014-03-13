@@ -1,2 +1,2 @@
-#addlocale .text { padding-right: 30px; }
-#addlocale .spinner { position: absolute; top: 0; right: 5px; }
+#addlocale .text { @include padding-right(30px); }
+#addlocale .spinner { position: absolute; top: 0; @include right(5px); }

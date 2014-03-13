@@ -154,7 +154,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend(
 		$('html').addClass('noscroll');
 		this.$spinner.addClass('hidden');
 
-		this.$iframeContainer.css('left', Garnish.$win.width());
+		this.$iframeContainer.css(Craft.left, Garnish.$win.width());
 		this.$iframeContainer.show();
 
 		this.addListener(Garnish.$win, 'resize', 'setIframeWidth');
@@ -162,13 +162,10 @@ Craft.EntryPreviewMode = Garnish.Base.extend(
 
 		this.$shade.fadeIn();
 
-		this.$editor.show().stop().animate({
-			left: 0
-		}, 'slow');
+		this.$editor.show().stop().animateLeft(0, 'slow');
 
-		this.$iframeContainer.stop().animate({
-			left: Craft.EntryPreviewMode.formWidth
-		}, 'slow', $.proxy(function() {
+		this.$iframeContainer.stop().animateLeft(Craft.EntryPreviewMode.formWidth, 'slow', $.proxy(function()
+		{
 			this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
 
 			this.addListener(Garnish.$bod, 'keyup', function(ev)
@@ -206,9 +203,8 @@ Craft.EntryPreviewMode = Garnish.Base.extend(
 
 		this.$shade.delay(200).fadeOut();
 
-		this.$editor.stop().animate({
-			left: -Craft.EntryPreviewMode.formWidth
-		}, 'slow', $.proxy(function() {
+		this.$editor.stop().animateLeft(-Craft.EntryPreviewMode.formWidth, 'slow', $.proxy(function()
+		{
 			for (var i = 0; i < this.fields.length; i++)
 			{
 				this.fields[i].$newClone.remove();
@@ -216,9 +212,8 @@ Craft.EntryPreviewMode = Garnish.Base.extend(
 			this.$editor.hide();
 		}, this));
 
-		this.$iframeContainer.stop().animate({
-			left: windowWidth
-		}, 'slow', $.proxy(function() {
+		this.$iframeContainer.stop().animateLeft(windowWidth, 'slow', $.proxy(function()
+		{
 			this.$iframeContainer.hide();
 		}, this));
 

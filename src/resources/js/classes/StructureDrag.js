@@ -30,7 +30,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
 	{
 		this.$helperLi = $helper;
 		var $ul = $('<ul class="structure draghelper"/>').append($helper);
-		$helper.css('padding-left', this.$draggee.css('padding-left'));
+		$helper.css('padding-'+Craft.left, this.$draggee.css('padding-'+Craft.left));
 		$helper.find('.move').removeAttr('title');
 		return $ul;
 	},
@@ -219,6 +219,12 @@ Craft.StructureDrag = Garnish.Drag.extend(
 				{
 					// Determine which <li> to position the insertion after
 					this._.draggeeX = this.mouseX - this.targetItemMouseDiffX;
+
+					if (Craft.orientation == 'rtl')
+					{
+						this._.draggeeX += this.$helperLi.width();
+					}
+
 					this._.$parentLis = this._.$closestTarget.parentsUntil(this.structure.$container, 'li');
 					this._.$closestParentLi = null;
 					this._.closestParentLiXDiff = null;
@@ -227,7 +233,14 @@ Craft.StructureDrag = Garnish.Drag.extend(
 					for (this._.i = 0; this._.i < this._.$parentLis.length; this._.i++)
 					{
 						this._.$parentLi = $(this._.$parentLis[this._.i]);
-						this._.parentLiXDiff = Math.abs(this._.$parentLi.offset().left - this._.draggeeX);
+						this._.parentLiX = this._.$parentLi.offset().left;
+
+						if (Craft.orientation == 'rtl')
+						{
+							this._.parentLiX += this._.$parentLi.width();
+						}
+
+						this._.parentLiXDiff = Math.abs(this._.parentLiX - this._.draggeeX);
 						this._.parentLevel = this._.$parentLi.data('level');
 
 						if ((!this.maxLevels || this.maxLevels >= (this._.parentLevel + this.draggeeLevel - 1)) && (
@@ -349,15 +362,15 @@ Craft.StructureDrag = Garnish.Drag.extend(
 					// Correct the helper's padding if moving to/from level 1
 					if (this.$draggee.data('level') == 1)
 					{
-						this.$helperLi.animate({
-							'padding-left': 38
-						}, 'fast');
+						var animateCss = {};
+						animateCss['padding-'+Craft.left] = 38;
+						this.$helperLi.animate(animateCss, 'fast');
 					}
 					else if (newLevel == 1)
 					{
-						this.$helperLi.animate({
-							'padding-left': Craft.Structure.baseIndent
-						}, 'fast');
+						var animateCss = {};
+						animateCss['padding-'+Craft.left] = Craft.Structure.baseIndent;
+						this.$helperLi.animate(animateCss, 'fast');
 					}
 
 					this.setLevel(this.$draggee, newLevel);
@@ -400,10 +413,10 @@ Craft.StructureDrag = Garnish.Drag.extend(
 
 		var indent = this.structure.getIndent(level);
 
-		this.$draggee.children('.row').css({
-			'margin-left':  '-'+indent+'px',
-			'padding-left': indent+'px'
-		});
+		var css = {};
+		css['margin-'+Craft.left] = '-'+indent+'px';
+		css['padding-'+Craft.left] = indent+'px';
+		this.$draggee.children('.row').css(css);
 
 		var $childLis = $li.children('ul').children();
 

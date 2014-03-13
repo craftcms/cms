@@ -113,9 +113,7 @@ Craft.Installer = Garnish.Base.extend(
 		}
 
 		// Slide the BG
-		this.$bg.animate({
-			left: '-'+(i*5)+'%'
-		}, bgDuration);
+		this.$bg.animateLeft('-'+(i*5)+'%', bgDuration);
 
 		// Slide out the old screen
 		var windowWidth = Garnish.$win.width(),
@@ -124,21 +122,19 @@ Craft.Installer = Garnish.Base.extend(
 		if (this.$currentScreen)
 		{
 			this.$currentScreen
-				.css('left', centeredLeftPos)
-				.animate({
-					left: -400
-				}, Craft.Installer.duration);
+				.css(Craft.left, centeredLeftPos)
+				.animateLeft(-400, Craft.Installer.duration);
 		}
 
 		// Slide in the new screen
+		var css = { display: 'block' };
+		css[Craft.left] = windowWidth + 400;
 		this.$currentScreen = $(this.$screens[i-1])
-			.css({
-				display: 'block',
-				left: windowWidth + 400
-			})
-			.animate({left: centeredLeftPos}, Craft.Installer.duration, $.proxy(function() {
+			.css(css)
+			.animateLeft(centeredLeftPos, Craft.Installer.duration, $.proxy(function()
+			{
 				// Relax the screen
-				this.$currentScreen.css('left', '50%');
+				this.$currentScreen.css(Craft.left, '50%');
 
 				// Give focus to the first input
 				this.focusFirstInput();

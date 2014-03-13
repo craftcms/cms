@@ -69,10 +69,11 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 
 		var margin = -($newElement.outerWidth()+10);
 
-		this.$addElementBtn.css('margin-left', margin+'px');
-		this.$addElementBtn.animate({
-			marginLeft: 0
-		}, 'fast');
+		this.$addElementBtn.css('margin-'+Craft.left, margin+'px');
+
+		var animateCss = {};
+		animateCss['margin-'+Craft.left] = 0;
+		this.$addElementBtn.animate(animateCss, 'fast');
 
 		this.$elements = this.$elements.add($newElement);
 		this.initElements($newElement);
