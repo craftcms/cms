@@ -31,7 +31,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
 	getHelper: function($helper)
 	{
 		this.$helperLi = $helper;
-		var $ul = $('<ul class="structureview draghelper"/>').append($helper);
+		var $ul = $('<ul class="structure draghelper"/>').append($helper);
 		$helper.css('padding-left', this.$draggee.css('padding-left'));
 		$helper.find('.move').removeAttr('title');
 		return $ul;
