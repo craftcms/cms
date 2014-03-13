@@ -36,6 +36,8 @@ html { overflow-y: scroll; }
 #header .right .updates a span { display: block; position: absolute; @include left(7px); top: 1px; width: 20px; text-align: center; color: $headerBgColor; font-weight: bold; font-size: 11px; }
 #header .right .settings:before,
 #header .right .myaccount:before { font-size: 16px; }
+#header .right .settings { @include padding-right(0); }
+#header .right .settingsmenu { @include padding-left(0); }
 
 #header h2 { @include floatleft; @include margin(0, 25px, 0, 0); }
 #header h2 a { display: block; padding: 10px 0; }

@@ -5,38 +5,18 @@
 {% includeJsResource 'js/settings.js' %}
 
 {% set content %}
-	<h2>{{ "System"|t }}</h2>
 
-	<ul class="icons">
-		<li><a href="{{ url('settings/general') }}" data-icon="general">{{ "General"|t }}</a></li>
-		<li><a href="{{ url('settings/packages') }}" data-icon="package">{{ "Packages"|t }}</a></li>
-		{% if craft.config.siteRoutesSource != 'file' %}
-			<li><a href="{{ url('settings/routes') }}" data-icon="routes">{{ "Routes"|t }}</a></li>
-		{% endif %}
-		{% if craft.hasPackage('Users') %}
-			<li><a href="{{ url('settings/users') }}" data-icon="users">{{ "Users"|t }}</a></li>
-		{% endif %}
-		<li><a href="{{ url('settings/email') }}" data-icon="mail">{{ "Email"|t }}</a></li>
-		<li><a href="{{ url('settings/plugins') }}" data-icon="plugin">{{ "Plugins"|t }}</a></li>
-	</ul>
+	{% for category, items in craft.cp.settings() %}
+		<h2>{{ category }}</h2>
 
-	<hr>
+		<ul class="icons">
+			{% for handle, item in items %}
+				<li><a href="{{ url('settings/'~handle) }}" data-icon="{{ item.icon }}">{{ item.label }}</a></li>
+			{% endfor %}
+		</ul>
 
-	<h2>{{ "Content"|t }}</h2>
-
-	<ul class="icons">
-		<li><a href="{{ url('settings/fields') }}" data-icon="field">{{ "Fields"|t }}</a></li>
-		<li><a href="{{ url('settings/sections') }}" data-icon="section">{{ "Sections"|t }}</a></li>
-		<li><a href="{{ url('settings/assets') }}" data-icon="assets">{{ "Assets"|t }}</a></li>
-		<li><a href="{{ url('settings/globals') }}" data-icon="globe">{{ "Globals"|t }}</a></li>
-		<li><a href="{{ url('settings/categories') }}" data-icon="categories">{{ "Categories"|t }}</a></li>
-		<li><a href="{{ url('settings/tags') }}" data-icon="tags">{{ "Tags"|t }}</a></li>
-		{% if craft.hasPackage('Localize') %}
-			<li><a href="{{ url('settings/locales') }}" data-icon="language">{{ "Locales"|t }}</a></li>
-		{% endif %}
-	</ul>
-
-	<hr>
+		<hr>
+	{% endfor %}
 
 	<h2>{{ "Tools"|t }}</h2>
 
