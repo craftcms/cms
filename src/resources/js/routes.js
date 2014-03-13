@@ -141,7 +141,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 		for (var name in Craft.routes.tokens)
 		{
 			var pattern = Craft.routes.tokens[name];
-			tokenHtml += '<div class="token" data-name="'+name+'" data-value="'+pattern+'">'+name+'</div>';
+			tokenHtml += '<div class="token" data-name="'+name+'" data-value="'+pattern+'"><span>'+name+'</span></div>';
 		}
 
 		var $container = $('<form class="modal route-settings" accept-charset="UTF-8">' +
