@@ -9,7 +9,6 @@ Craft.StructureDrag = Garnish.Drag.extend(
 
 	$helperLi: null,
 	$targets: null,
-	_: null,
 	draggeeHeight: null,
 
 	init: function(structure, maxLevels)
@@ -18,7 +17,6 @@ Craft.StructureDrag = Garnish.Drag.extend(
 		this.maxLevels = maxLevels;
 
 		this.$insertion = $('<li class="draginsertion"/>');
-		this._ = {};
 
 		var $items = this.structure.$container.find('li');
 
