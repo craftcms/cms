@@ -2847,7 +2847,26 @@ Garnish.Menu = Garnish.Base.extend({
 			css.top = triggerOffsetTop - menuHeight;
 		}
 
-		switch (this.$container.data('align'))
+		var align = this.$container.data('align');
+
+		if (!align)
+		{
+			align = 'left';
+		}
+
+		if (Garnish.$bod.hasClass('rtl'))
+		{
+			if (align == 'left')
+			{
+				align = 'right';
+			}
+			else if (align == 'right')
+			{
+				align = 'left';
+			}
+		}
+
+		switch (align)
 		{
 			case 'right':
 			{
@@ -2859,7 +2878,7 @@ Garnish.Menu = Garnish.Base.extend({
 				css.left = Math.round((triggerOffset.left + triggerWidth / 2) - (this.$container.outerWidth() / 2));
 				break;
 			}
-			default:
+			case 'left':
 			{
 				css.left = triggerOffset.left;
 			}
