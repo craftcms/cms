@@ -35,6 +35,7 @@ class DateFieldType extends BaseFieldType
 	protected function defineSettings()
 	{
 		return array(
+			'showDate' => array(AttributeType::Bool, 'default' => true),
 			'showTime' => AttributeType::Bool,
 		);
 	}
@@ -46,14 +47,39 @@ class DateFieldType extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		return craft()->templates->renderMacro('_includes/forms.html', 'checkboxField', array(
-			array(
-				'label' => Craft::t('Show time?'),
-				'id' => 'showTime',
-				'name' => 'showTime',
-				'checked' => $this->getSettings()->showTime,
-			)
-		));
+		// If they are both selected or nothing is selected, the select showBoth.
+		if (($this->getSettings()->showDate && $this->getSettings()->showTime))
+		{
+			$value = 'showBoth';
+		}
+		else if ($this->getSettings()->showDate)
+		{
+			$value = 'showDate';
+		}
+		else if ($this->getSettings()->showTime)
+		{
+			$value = 'showTime';
+		}
+
+		return craft()->templates->renderMacro('_includes/forms.html', 'radioGroupField', array(array(
+			'id' => 'dateTime',
+			'name' => 'dateTime',
+			'options' => array(
+				array(
+					'label' => Craft::t('Show date?'),
+					'value' => 'showDate',
+				),
+				array(
+					'label' => Craft::t('Show time?'),
+					'value' => 'showTime',
+				),
+				array(
+					'label' => Craft::t('Show both?'),
+					'value' => 'showBoth',
+				)
+			),
+			'value' => $value,
+		)));
 	}
 
 	/**
@@ -71,7 +97,18 @@ class DateFieldType extends BaseFieldType
 			'value'    => $value
 		);
 
-		$input = craft()->templates->render('_includes/forms/date', $variables);
+		$input = '';
+
+		// In case nothing is selected, default to the date.
+		if (!$this->getSettings()->showDate && !$this->getSettings()->showTime)
+		{
+			$this->getSettings()->showDate = true;
+		}
+
+		if ($this->getSettings()->showDate)
+		{
+			$input .= craft()->templates->render('_includes/forms/date', $variables);
+		}
 
 		if ($this->getSettings()->showTime)
 		{
@@ -125,5 +162,45 @@ class DateFieldType extends BaseFieldType
 			$handle = $this->model->handle;
 			$query->andWhere(DbHelper::parseDateParam('content.'.craft()->content->fieldColumnPrefix.$handle, $value, $query->params));
 		}
+	}
+
+	/**
+	 * @param array $settings
+	 * @return array
+	 */
+	public function prepSettings($settings)
+	{
+		if (isset($settings['dateTime']))
+		{
+			switch ($settings['dateTime'])
+			{
+				case 'showBoth':
+				{
+					unset($settings['dateTime']);
+					$settings['showTime'] = true;
+					$settings['showDate'] = true;
+
+					break;
+				}
+				case 'showDate':
+				{
+					unset($settings['dateTime']);
+					$settings['showDate'] = true;
+					$settings['showTime'] = false;
+
+					break;
+				}
+				case 'showTime':
+				{
+					unset($settings['dateTime']);
+					$settings['showTime'] = true;
+					$settings['showDate'] = false;
+
+					break;
+				}
+			}
+		}
+
+		return $settings;
 	}
 }
