@@ -35,7 +35,7 @@ class DateFieldType extends BaseFieldType
 	protected function defineSettings()
 	{
 		return array(
-			'showDate' => AttributeType::Bool,
+			'showDate' => array(AttributeType::Bool, 'default' => true),
 			'showTime' => AttributeType::Bool,
 		);
 	}
@@ -48,7 +48,7 @@ class DateFieldType extends BaseFieldType
 	public function getSettingsHtml()
 	{
 		// If they are both selected or nothing is selected, the select showBoth.
-		if (($this->getSettings()->showDate && $this->getSettings()->showTime) || (!$this->getSettings()->showDate && !$this->getSettings()->showTime))
+		if (($this->getSettings()->showDate && $this->getSettings()->showTime))
 		{
 			$value = 'showBoth';
 		}
@@ -98,6 +98,12 @@ class DateFieldType extends BaseFieldType
 		);
 
 		$input = '';
+
+		// In case nothing is selected, default to the date.
+		if (!$this->getSettings()->showDate && !$this->getSettings()->showTime)
+		{
+			$this->getSettings()->showDate = true;
+		}
 
 		if ($this->getSettings()->showDate)
 		{
@@ -169,15 +175,15 @@ class DateFieldType extends BaseFieldType
 				case 'showBoth':
 				{
 					unset($settings['dateTime']);
-					$settings['showTime'] = 1;
-					$settings['showDate'] = 1;
+					$settings['showTime'] = true;
+					$settings['showDate'] = true;
 
 					break;
 				}
 				case 'showDate':
 				{
 					unset($settings['dateTime']);
-					$settings['showDate'] = 1;
+					$settings['showDate'] = true;
 					$settings['showTime'] = false;
 
 					break;
@@ -185,7 +191,7 @@ class DateFieldType extends BaseFieldType
 				case 'showTime':
 				{
 					unset($settings['dateTime']);
-					$settings['showTime'] = 1;
+					$settings['showTime'] = true;
 					$settings['showDate'] = false;
 
 					break;
