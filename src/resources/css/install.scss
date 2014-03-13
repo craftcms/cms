@@ -5,12 +5,12 @@
 html, body { height: 100%; }
 body { overflow: hidden; background: #fff; }
 
-#bg { position: fixed; top: 0; @include left(0); width: 150%; height: 100%; background: url(../images/install_bg.jpg) no-repeat 0 50%; background-size: 100%; }
+#bg { position: fixed; top: 0; left: 0; width: 150%; height: 100%; background: url(../images/install_bg.jpg) no-repeat 0 50%; background-size: 100%; }
 
 .beginbtncontainer { position: absolute; top: 50%; margin-top: -15px; width: 100%; text-align: center; }
 #beginbtn { display: inline-block; border-radius: 4px; padding: 12px 15px; font-weight: bold; font-size: 19px; height: 42px; line-height: 18px; }
 
-.modal { display: none; position: absolute; top: 50%; left: 50%; @include margin(-255px, 0, 0, -385px); padding: 35px; width: 700px; height: 440px; background: #fff;
+.modal { display: none; position: absolute; top: 50%; left: 50%; margin: -255px 0 0 -385px; padding: 35px; width: 700px; height: 440px; background: #fff;
 	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px #000);
 }
 
@@ -24,7 +24,7 @@ h1 { margin-bottom: 35px; text-align: center; }
 .buttons .btn:after { @include icon; @include margin(-4px, 0, 0, 4px); font-size: 20px; width: 20px; content: '→'; }
 .buttons .btn.loading:after { height: 24px; content: ''; background: url(../images/spinner_submit.gif) no-repeat 0 0; }
 
-.dots { position: absolute; bottom: 10px; left: 50%; @include margin-left(-17px); }
+.dots { position: absolute; bottom: 10px; left: 50%; margin-left: -17px; }
 .dots div { @include floatleft; border-radius: 4px; border: 1px solid rgba(0,0,0,0.15); width: 6px; height: 6px; }
 .dots div + div { @include margin-left(5px); }
 .dots div.sel { border-color: $submitcolor; background: $submitcolor; }
@@ -36,10 +36,13 @@ input.hidden { position: absolute; top: 100px; }
 #welcome .buttons { position: static; margin-top: 0; text-align: center; }
 
 #accountform,
-#siteform { width: 50%; @include floatright; }
+#siteform { width: 50%; float: right; }
 
-#account { background: #fff url(../images/setup-screen-bgs/account.gif) no-repeat 0 100%; }
-#site { background: #fff url(../images/setup-screen-bgs/site.gif) no-repeat 0 100%; }
+#account,
+#site { background: #fff no-repeat 0 100%; }
+
+#account { background-image: url(../images/setup-screen-bgs/account.gif); }
+#site { background-image: url(../images/setup-screen-bgs/site.gif); }
 
 #welcome h1,
 #installing h1 { margin-top: 140px; }
