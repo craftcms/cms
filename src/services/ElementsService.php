@@ -725,21 +725,47 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Saves an element.
 	 *
-	 * @param BaseElementModel $element
-	 * @param bool             $validateContent
+	 * @param BaseElementModel $element         The element that is being saved
+	 * @param bool|null        $validateContent Whether the element's content should be validated. If left 'null', it will depend on whether the element is enabled or not.
 	 * @throws Exception
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function saveElement(BaseElementModel $element, $validateContent = true)
+	public function saveElement(BaseElementModel $element, $validateContent = null)
 	{
 		$elementType = $this->getElementType($element->getElementType());
 
 		// Validate the content first
-		if ($validateContent && $elementType->hasContent() && !craft()->content->validateContent($element))
+		if ($validateContent === null)
 		{
-			$element->addErrors($element->getContent()->getErrors());
-			return false;
+			$validateContent = (bool) $element->enabled;
+		}
+
+		if ($elementType->hasContent())
+		{
+			$validates = true;
+
+			if ($validateContent)
+			{
+				$validates = craft()->content->validateContent($element);
+			}
+			else
+			{
+				// At the very least we should validate that there's a title
+				if ($elementType->hasTitles())
+				{
+					$fields = array('title');
+					$content = $element->getContent();
+					$content->setRequiredFields($fields);
+					$validates = $content->validate($fields);
+				}
+			}
+
+			if (!$validates)
+			{
+				$element->addErrors($element->getContent()->getErrors());
+				return false;
+			}
 		}
 
 		// Get the element record

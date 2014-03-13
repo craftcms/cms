@@ -2,12 +2,12 @@
 {% import "_includes/forms" as forms %}
 
 {% set extraPageHeaderHtml %}
-
-
 	{% if entry.id and craft.hasPackage('PublishPro') %}
 		{% include "entries/_revisions" %}
 	{% endif %}
 {% endset %}
+
+{% set sectionHandle = section.handle %}
 
 
 {% block main %}
@@ -45,7 +45,7 @@
 										on:   entry.localeEnabled
 									}) }}
 								{%- else -%}
-									<a href="{{ url('entries/'~section.handle~'/'~craft.request.getSegment(3))~'/'~localeId }}">{{ localeName }}</a>
+									<a href="{{ url('entries/'~sectionHandle~'/'~craft.request.getSegment(3))~'/'~localeId }}">{{ localeName }}</a>
 									<div class="status {{ localeId in enabledLocales ? 'enabled' : 'disabled' }}"></div>
 								{%- endif -%}
 							</li>
@@ -154,7 +154,7 @@
 
 							{% if not entry.id or not entry.enabled or currentUser.can('publishEntries'~permissionSuffix) %}
 								<input type="hidden" name="action" value="entries/saveEntry">
-								<input type="hidden" name="redirect" value="entries">
+								<input type="hidden" name="redirect" value="entries/{{ sectionHandle }}">
 
 								<div class="btngroup first">
 									<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
@@ -173,7 +173,7 @@
 											{% endif %}
 
 											{% if section.type != 'single' %}
-												<li><a class="formsubmit" data-redirect="entries/{{ section.handle }}/new{% if nextEntryParams %}?{{ nextEntryParams|join('&') }}{% endif %}">{{ "Save and add another"|t }}</a></li>
+												<li><a class="formsubmit" data-redirect="entries/{{ sectionHandle }}/new{% if nextEntryParams %}?{{ nextEntryParams|join('&') }}{% endif %}">{{ "Save and add another"|t }}</a></li>
 											{% endif %}
 										</ul>
 									</div>
