@@ -473,6 +473,11 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function activateUser(UserModel $user)
 	{
+		// Fire an 'onBeforeActivateUser' event
+		$this->onBeforeActivateUser(new Event($this, array(
+			'user' => $user
+		)));
+
 		$userRecord = $this->_getUserRecordById($user->id);
 
 		$userRecord->status = $user->status = UserStatus::Active;
@@ -487,7 +492,19 @@ class UsersService extends BaseApplicationComponent
 			$userRecord->unverifiedEmail = null;
 		}
 
-		return $userRecord->save();
+		if ($userRecord->save())
+		{
+			// Fire an 'onActivateUser' event
+			$this->onActivateUser(new Event($this, array(
+				'user' => $user
+			)));
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -498,13 +515,30 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function unlockUser(UserModel $user)
 	{
+		// Fire an 'onBeforeUnlockUser' event
+		$this->onBeforeUnlockUser(new Event($this, array(
+			'user' => $user
+		)));
+
 		$userRecord = $this->_getUserRecordById($user->id);
 
 		$userRecord->status = $user->status = UserStatus::Active;
 		$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
 		$userRecord->invalidLoginWindowStart = null;
 
-		return $userRecord->save();
+		if ($userRecord->save())
+		{
+			// Fire an 'onUnlockUser' event
+			$this->onUnlockUser(new Event($this, array(
+				'user' => $user
+			)));
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -515,11 +549,60 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function suspendUser(UserModel $user)
 	{
+		// Fire an 'onBeforeSuspendUser' event
+		$this->onBeforeSuspendUser(new Event($this, array(
+			'user' => $user
+		)));
+
 		$userRecord = $this->_getUserRecordById($user->id);
 
 		$userRecord->status = $user->status = UserStatus::Suspended;
 
-		return $userRecord->save();
+		if ($userRecord->save())
+		{
+			// Fire an 'onSuspendUser' event
+			$this->onSuspendUser(new Event($this, array(
+				'user' => $user
+			)));
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Unsuspends a user.
+	 *
+	 * @param UserModel $user
+	 * @return bool
+	 */
+	public function unsuspendUser(UserModel $user)
+	{
+		// Fire an 'onBeforeUnsuspendUser' event
+		$this->onBeforeUnsuspendUser(new Event($this, array(
+			'user' => $user
+		)));
+
+		$userRecord = $this->_getUserRecordById($user->id);
+
+		$userRecord->status = $user->status = UserStatus::Active;
+
+		if ($userRecord->save())
+		{
+			// Fire an 'onUnsuspendUser' event
+			$this->onUnsuspendUser(new Event($this, array(
+				'user' => $user
+			)));
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -586,21 +669,6 @@ class UsersService extends BaseApplicationComponent
 		{
 			return false;
 		}
-	}
-
-	/**
-	 * Unsuspends a user.
-	 *
-	 * @param UserModel $user
-	 * @return bool
-	 */
-	public function unsuspendUser(UserModel $user)
-	{
-		$userRecord = $this->_getUserRecordById($user->id);
-
-		$userRecord->status = $user->status = UserStatus::Active;
-
-		return $userRecord->save();
 	}
 
 	/**
@@ -737,6 +805,86 @@ class UsersService extends BaseApplicationComponent
 	public function onBeforeVerifyUser(Event $event)
 	{
 		$this->raiseEvent('onBeforeVerifyUser', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeActivateUser' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeActivateUser(Event $event)
+	{
+		$this->raiseEvent('onBeforeActivateUser', $event);
+	}
+
+	/**
+	 * Fires an 'onActivateUser' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onActivateUser(Event $event)
+	{
+		$this->raiseEvent('onActivateUser', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeUnlockUser' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeUnlockUser(Event $event)
+	{
+		$this->raiseEvent('onBeforeUnlockUser', $event);
+	}
+
+	/**
+	 * Fires an 'onUnlockUser' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onUnlockUser(Event $event)
+	{
+		$this->raiseEvent('onUnlockUser', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeSuspendUser' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeSuspendUser(Event $event)
+	{
+		$this->raiseEvent('onBeforeSuspendUser', $event);
+	}
+
+	/**
+	 * Fires an 'onSuspendUser' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onSuspendUser(Event $event)
+	{
+		$this->raiseEvent('onSuspendUser', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeUnsuspendUser' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeUnsuspendUser(Event $event)
+	{
+		$this->raiseEvent('onBeforeUnsuspendUser', $event);
+	}
+
+	/**
+	 * Fires an 'onUnsuspendUser' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onUnsuspendUser(Event $event)
+	{
+		$this->raiseEvent('onUnsuspendUser', $event);
 	}
 
 	/**
