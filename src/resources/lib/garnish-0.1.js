@@ -165,7 +165,14 @@ Garnish = {
 	// jQuery objects for common elements
 	$win: $(window),
 	$doc: $(document),
-	$bod: $(document.body),
+	$bod: $(document.body)
+
+};
+
+Garnish.rtl = Garnish.$bod.hasClass('rtl');
+Garnish.ltr = !Garnish.rtl;
+
+Garnish = $.extend(Garnish, {
 
 	// Key code constants
 	DELETE_KEY:  8,
@@ -175,9 +182,9 @@ Garnish = {
 	RETURN_KEY: 13,
 	ESC_KEY:    27,
 	SPACE_KEY:  32,
-	LEFT_KEY:   37,
+	LEFT_KEY:   (Garnish.ltr ? 37 : 39),
 	UP_KEY:     38,
-	RIGHT_KEY:  39,
+	RIGHT_KEY:  (Garnish.ltr ? 39 : 37),
 	DOWN_KEY:   40,
 	A_KEY:      65,
 	S_KEY:      83,
@@ -603,7 +610,7 @@ Garnish = {
 
 		return postData;
 	}
-};
+});
 
 
 /**
@@ -2854,7 +2861,7 @@ Garnish.Menu = Garnish.Base.extend({
 			align = 'left';
 		}
 
-		if (Garnish.$bod.hasClass('rtl'))
+		if (Garnish.rtl)
 		{
 			if (align == 'left')
 			{
@@ -3305,7 +3312,7 @@ var TextElement = Garnish.Base.extend({
 		this.parentInput = parentInput;
 
 		this.$input = $('<input type="text"/>').appendTo(this.parentInput.$container);
-		this.$input.css('margin-right', (2-TextElement.padding)+'px');
+		this.$input.css('margin-'+(Garnish.ltr ? 'right' : 'left'), (2-TextElement.padding)+'px');
 
 		this.setWidth();
 
