@@ -182,10 +182,13 @@ class TemplateCacheService extends BaseApplicationComponent
 
 	/**
 	 * Deletes all the template caches.
+	 *
+	 * @return bool
 	 */
 	public function deleteAllCaches()
 	{
-		craft()->db->createCommand()->delete(static::$_templateCachesTable);
+		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable);
+		return (bool) $affectedRows;
 	}
 
 	/**
