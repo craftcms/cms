@@ -775,6 +775,9 @@ $.extend(Craft,
 		$('.nicetext', $container).nicetext();
 		$('.pill', $container).pill();
 		$('.menubtn', $container).menubtn();
+
+		// Make placeholders work for IE9, too.
+		$('input[type!=password], textarea', $container).placeholder();
 	},
 
 	_elementIndexClasses: {},
