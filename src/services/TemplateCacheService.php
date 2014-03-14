@@ -142,21 +142,41 @@ class TemplateCacheService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Deletes caches that involve a given element ID.
+	 * Deletes caches that include an a given element ID(s).
 	 *
-	 * @param int $elementId
+	 * @param int|array $elementId
+	 * @return bool
 	 */
-	public function deleteCachesWithElement($elementId)
+	public function deleteCachesByElementId($elementId)
 	{
-		$cacheIds = craft()->db->createCommand()
+		if (!$elementId)
+		{
+			return false;
+		}
+
+		$query = craft()->db->createCommand()
 			->selectDistinct('cacheId')
-			->from(static::$_templateCacheElementsTable)
-			->where('elementId = :elementId', array(':elementId' => $elementId))
-			->queryColumn();
+			->from(static::$_templateCacheElementsTable);
+
+		if (is_array($elementId))
+		{
+			$query->where(array('in', 'elementId', $elementId));
+		}
+		else
+		{
+			$query->where('elementId = :elementId', array(':elementId' => $elementId));
+		}
+
+		$cacheIds = $query->queryColumn();
 
 		if ($cacheIds)
 		{
-			craft()->db->createCommand()->delete(static::$_templateCachesTable, array('in', 'id', $cacheIds));
+			$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, array('in', 'id', $cacheIds));
+			return (bool) $affectedRows;
+		}
+		else
+		{
+			return false;
 		}
 	}
 
