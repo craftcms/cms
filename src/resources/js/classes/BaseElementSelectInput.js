@@ -260,7 +260,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			$element.css(css);
 
 			var animateCss = {
-				left: 0
+				top: 0
 			};
 			animateCss[Craft.left] = 0;
 
