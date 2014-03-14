@@ -798,7 +798,7 @@ ul.tree,
 .menu,
 .ui-datepicker,
 .ui-timepicker-list { z-index: 9999; border-radius: 3px; background: #fff; @include user-select(none);
-	@include box-shadow(0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5));
+	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 5px 25px -5px rgba(0,0,0,0.25));
 }
 
 .menu { display: none; position: absolute; padding: 4px 14px; }
@@ -807,8 +807,8 @@ ul.tree,
 .menu ul li a:not(.sel):hover,
 .menu ul li a:not(.sel):hover .light,
 .menu:not(:hover) ul li a:not(.sel).hover,
-.menu:not(:hover) ul li a:not(.sel).hover .light { color: #fff; background: $headerBgColor; }
-.menu ul li a.sel { color: $mediumtextcolor; cursor: default; }
+.menu:not(:hover) ul li a:not(.sel).hover .light { color: #fff; background: $menuhovercolor; }
+.menu ul li a.sel { color: #fff; background: $menuselcolor; cursor: default; }
 .menu hr { margin: 5px -14px; }
 
 .menu.padded { @include padding-left(24px); }
@@ -819,6 +819,8 @@ ul.tree,
 .menu.padded ul li a[data-icon]:before,
 .menu.padded ul li a.icon:before,
 .menu.padded ul li a.sel:before { @include floatleft; @include margin(3px, 0, 0, -17px); font-size: 11px; color: $mediumtextcolor !important; }
+.menu.padded ul li a:hover:before,
+.menu.padded ul li a.sel:before { color: #fff !important; }
 .menu.padded ul li a.sel:before { content: 'check'; }
 
 /* tag select fields */
@@ -968,9 +970,9 @@ body .redactor_editor:focus { background: none !important; }
 .ui-datepicker-title { text-align: center; }
 .ui-datepicker-calendar thead { display: none; }
 .ui-datepicker-calendar td { padding: 2px; }
-.ui-datepicker-calendar td a { display: block; width: 26px; line-height: 26px; text-align: center; color: #808080; }
-.ui-datepicker-calendar td a:hover { background: $linkcolor; color: #fff; text-decoration: none; }
-.ui-datepicker-calendar td a.ui-state-active { background: $headerBgColor; color: #fff; cursor: default; }
+.ui-datepicker-calendar td a { display: block; border-radius: 2px; width: 26px; line-height: 26px; text-align: center; color: #808080; }
+.ui-datepicker-calendar td a:hover { background: $menuhovercolor; color: #fff; text-decoration: none; }
+.ui-datepicker-calendar td a.ui-state-active { background: $menuselcolor; color: #fff; cursor: default; }
 .ui-datepicker-calendar td.ui-datepicker-today a { border-radius: 13px;
 	@include box-shadow(inset 0 0 0 2px rgba(0,0,0,0.15));
 }
@@ -979,8 +981,8 @@ body .redactor_editor:focus { background: none !important; }
 .ui-timepicker-wrapper { z-index: 1; }
 .ui-timepicker-list { @include margin-left(1px); overflow-y: auto; width: 8em; height: 210px; z-index: 10001; }
 .ui-timepicker-list li { @include padding(2px, 0, 2px, 25px); white-space: nowrap; cursor: pointer; }
-.ui-timepicker-list li:hover { background: $linkcolor; color: #fff; }
-.ui-timepicker-list li.ui-timepicker-selected { background: $headerBgColor; color: #fff; cursor: default; }
+.ui-timepicker-list li:hover { background: $menuhovercolor; color: #fff; }
+.ui-timepicker-list li.ui-timepicker-selected { background: $menuselcolor; color: #fff; cursor: default; }
 
 /* errors */
 ul.errors { margin-top: 5px; list-style-type: square; @include padding-left(20px); }

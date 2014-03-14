@@ -42,6 +42,10 @@ html { overflow-y: scroll; }
 #header h2 { @include floatleft; @include margin(0, 25px, 0, 0); }
 #header h2 a { display: block; padding: 10px 0; }
 
+#settingsmenu { @include padding-left(32px); @include padding-right(18px); }
+#settingsmenu ul li a { @include margin(0, -18px, 0, -32px); @include padding-left(32px); @include padding-right(18px); }
+#settingsmenu ul li a:before { @include margin(1px, 0, 0, -22px); font-size: 15px; }
+
 #nav { @include floatleft; @include margin-left(-5px); }
 #nav li { @include floatleft; height: 38px; }
 #nav li a { display: block; margin-top: 2px; padding: 4px 10px; line-height: 28px; }
