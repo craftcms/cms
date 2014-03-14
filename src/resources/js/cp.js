@@ -127,9 +127,6 @@ var CP = Garnish.Base.extend(
 			this.initAlerts();
 		}
 
-		// Make placeholders work for IE9, too.
-		$('input[type!=password], textarea').placeholder();
-
 		// Listen for save shortcuts in primary forms
 		var $primaryForm = $('form[data-saveshortcut="1"]:first');
 
