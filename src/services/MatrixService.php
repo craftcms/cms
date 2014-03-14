@@ -686,6 +686,7 @@ class MatrixService extends BaseApplicationComponent
 			$this->_applyFieldTranslationSetting($owner, $field, $blocks);
 
 			$blockIds = array();
+			$collapsedBlockIds = array();
 
 			foreach ($blocks as $block)
 			{
@@ -695,6 +696,12 @@ class MatrixService extends BaseApplicationComponent
 				$this->saveBlock($block, false);
 
 				$blockIds[] = $block->id;
+
+				// Tell the browser to collapse this block?
+				if ($block->collapsed)
+				{
+					$collapsedBlockIds[] = $block->id;
+				}
 			}
 
 			// Get the IDs of blocks that are row deleted
@@ -736,6 +743,17 @@ class MatrixService extends BaseApplicationComponent
 			}
 
 			throw $e;
+		}
+
+		// Tell the browser to collapse any new block IDs
+		if ($collapsedBlockIds)
+		{
+			craft()->userSession->addJsResourceFlash('js/MatrixInput.js');
+
+			foreach ($collapsedBlockIds as $blockId)
+			{
+				craft()->userSession->addJsFlash('Craft.MatrixInput.rememberCollapsedBlockId('.$blockId.');');
+			}
 		}
 
 		return true;

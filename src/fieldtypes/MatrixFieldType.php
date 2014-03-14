@@ -303,6 +303,9 @@ class MatrixFieldType extends BaseFieldType
 				$block->typeId  = $blockType->id;
 				$block->ownerId = $ownerId;
 				$block->locale  = $this->element->locale;
+
+				// Preserve the collapsed state, which the browser can't remember on its own for neww blocks
+				$block->collapsed = !empty($blockData['collapsed']);
 			}
 			else
 			{

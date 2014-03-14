@@ -20,7 +20,9 @@ class MatrixBlockModel extends BaseElementModel
 			'ownerId'     => AttributeType::Number,
 			'ownerLocale' => AttributeType::Locale,
 			'typeId'      => AttributeType::Number,
-			'sortOrder'   => AttributeType::Number
+			'sortOrder'   => AttributeType::Number,
+
+			'collapsed'   => AttributeType::Bool,
 		));
 	}
 

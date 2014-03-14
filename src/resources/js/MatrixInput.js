@@ -253,6 +253,35 @@ Craft.MatrixInput = Garnish.Base.extend(
 	setCollapsedBlockIds: function(ids)
 	{
 		localStorage[Craft.MatrixInput.collapsedBlockStorageKey] = ids.join(',');
+	},
+
+	rememberCollapsedBlockId: function(id)
+	{
+		if (typeof Storage !== 'undefined')
+		{
+			var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds();
+
+			if ($.inArray(''+id, collapsedBlocks) == -1)
+			{
+				collapsedBlocks.push(id);
+				Craft.MatrixInput.setCollapsedBlockIds(collapsedBlocks);
+			}
+		}
+	},
+
+	forgetCollapsedBlockId: function(id)
+	{
+		if (typeof Storage !== 'undefined')
+		{
+			var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds(),
+				collapsedBlocksIndex = $.inArray(''+id, collapsedBlocks);
+
+			if (collapsedBlocksIndex != -1)
+			{
+				collapsedBlocks.splice(collapsedBlocksIndex, 1);
+				Craft.MatrixInput.setCollapsedBlockIds(collapsedBlocks);
+			}
+		}
 	}
 });
 
@@ -264,7 +293,9 @@ var MatrixBlock = Garnish.Base.extend(
 	$fieldsContainer: null,
 	$previewContainer: null,
 	$actionMenu: null,
+	$collapsedInput: null,
 
+	isNew: null,
 	id: null,
 
 	collapsed: false,
@@ -275,10 +306,8 @@ var MatrixBlock = Garnish.Base.extend(
 		this.$container = $container;
 		this.$fieldsContainer = $container.children('.fields');
 
-		if (parseInt(this.$container.data('id')) == this.$container.data('id'))
-		{
-			this.id = this.$container.data('id');
-		}
+		this.id    = this.$container.data('id');
+		this.isNew = (!this.id || (typeof this.id == 'string' && this.id.substr(0, 3) == 'new'));
 
 		var $menuBtn = this.$container.find('> .actions > .settings'),
 			menuBtn = new Garnish.MenuBtn($menuBtn);
@@ -286,6 +315,12 @@ var MatrixBlock = Garnish.Base.extend(
 		this.$actionMenu = menuBtn.menu.$container;
 
 		menuBtn.menu.settings.onOptionSelect = $.proxy(this, 'onMenuOptionSelect');
+
+		// Was this block already collapsed?
+		if (this.$container.data('collapsed'))
+		{
+			this.collapse();
+		}
 
 		this.addListener(this.$container, 'dblclick', function(ev)
 		{
@@ -411,14 +446,19 @@ var MatrixBlock = Garnish.Base.extend(
 		}, this), 200);
 
 		// Remember that?
-		if (this.id && typeof Storage !== 'undefined')
+		if (!this.isNew)
 		{
-			var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds();
-
-			if ($.inArray(''+this.id, collapsedBlocks) == -1)
+			Craft.MatrixInput.rememberCollapsedBlockId(this.id);
+		}
+		else
+		{
+			if (!this.$collapsedInput)
 			{
-				collapsedBlocks.push(this.id);
-				Craft.MatrixInput.setCollapsedBlockIds(collapsedBlocks);
+				this.$collapsedInput = $('<input type="hidden" name="'+this.matrix.inputNamePrefix+'['+this.id+'][collapsed]" value="1"/>').appendTo(this.$container);
+			}
+			else
+			{
+				this.$collapsedInput.val('1');
 			}
 		}
 
@@ -453,7 +493,7 @@ var MatrixBlock = Garnish.Base.extend(
 		}, this), 200);
 
 		// Remember that?
-		if (this.id && typeof Storage !== 'undefined')
+		if (!this.isNew && typeof Storage !== 'undefined')
 		{
 			var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds(),
 				collapsedBlocksIndex = $.inArray(''+this.id, collapsedBlocks);
@@ -463,6 +503,15 @@ var MatrixBlock = Garnish.Base.extend(
 				collapsedBlocks.splice(collapsedBlocksIndex, 1);
 				Craft.MatrixInput.setCollapsedBlockIds(collapsedBlocks);
 			}
+		}
+
+		if (!this.isNew)
+		{
+			Craft.MatrixInput.forgetCollapsedBlockId(this.id);
+		}
+		else if (this.$collapsedInput)
+		{
+			this.$collapsedInput.val('');
 		}
 
 		this.collapsed = false;
