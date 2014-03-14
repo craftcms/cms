@@ -317,7 +317,7 @@ class MatrixService extends BaseApplicationComponent
 				->where(array('typeId' => $blockType->id))
 				->queryColumn();
 
-			craft()->elements->deleteElementById($blockIds);
+			$this->deleteBlockById($blockIds);
 
 			// Now delete the block type fields
 			$originalFieldColumnPrefix = craft()->content->fieldColumnPrefix;
@@ -657,6 +657,36 @@ class MatrixService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Deletes a block(s) by its ID.
+	 *
+	 * @param int|array $blockIds
+	 * @return bool
+	 */
+	public function deleteBlockById($blockIds)
+	{
+		if (!$blockIds)
+		{
+			return false;
+		}
+
+		if (!is_array($blockIds))
+		{
+			$blockIds = array($blockIds);
+		}
+
+		// Tell the browser to forget about these
+		craft()->userSession->addJsResourceFlash('js/MatrixInput.js');
+
+		foreach ($blockIds as $blockId)
+		{
+			craft()->userSession->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$blockId.');');
+		}
+
+		// Pass this along to ElementsService for the heavy lifting
+		return craft()->elements->deleteElementById($blockIds);
+	}
+
+	/**
 	 * Saves a Matrix field.
 	 *
 	 * @param MatrixFieldType $fieldType
@@ -686,6 +716,7 @@ class MatrixService extends BaseApplicationComponent
 			$this->_applyFieldTranslationSetting($owner, $field, $blocks);
 
 			$blockIds = array();
+			$collapsedBlockIds = array();
 
 			foreach ($blocks as $block)
 			{
@@ -695,6 +726,12 @@ class MatrixService extends BaseApplicationComponent
 				$this->saveBlock($block, false);
 
 				$blockIds[] = $block->id;
+
+				// Tell the browser to collapse this block?
+				if ($block->collapsed)
+				{
+					$collapsedBlockIds[] = $block->id;
+				}
 			}
 
 			// Get the IDs of blocks that are row deleted
@@ -721,7 +758,7 @@ class MatrixService extends BaseApplicationComponent
 				->where($deletedBlockConditions, $deletedBlockParams)
 				->queryColumn();
 
-			craft()->elements->deleteElementById($deletedBlockIds);
+			$this->deleteBlockById($deletedBlockIds);
 
 			if ($transaction !== null)
 			{
@@ -736,6 +773,17 @@ class MatrixService extends BaseApplicationComponent
 			}
 
 			throw $e;
+		}
+
+		// Tell the browser to collapse any new block IDs
+		if ($collapsedBlockIds)
+		{
+			craft()->userSession->addJsResourceFlash('js/MatrixInput.js');
+
+			foreach ($collapsedBlockIds as $blockId)
+			{
+				craft()->userSession->addJsFlash('Craft.MatrixInput.rememberCollapsedBlockId('.$blockId.');');
+			}
 		}
 
 		return true;
@@ -1000,7 +1048,7 @@ class MatrixService extends BaseApplicationComponent
 						}
 					}
 
-					craft()->elements->deleteElementById($blockIdsToDelete);
+					$this->deleteBlockById($blockIdsToDelete);
 				}
 			}
 		}

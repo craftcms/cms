@@ -5,9 +5,11 @@ class TemplateCacheService extends BaseApplicationComponent
 {
 	private static $_templateCachesTable = 'templatecaches';
 	private static $_templateCacheElementsTable = 'templatecacheelements';
+	private static $_lastCleanupDateCacheDuration = 86400;
 
 	private $_path;
 	private $_cacheElementIds;
+	private $_deletedExpiredCaches = false;
 
 	/**
 	 * Returns a cached template by its key.
@@ -18,6 +20,9 @@ class TemplateCacheService extends BaseApplicationComponent
 	 */
 	public function getTemplateCache($key, $global)
 	{
+		// Take the opportunity to delete any expired caches
+		$this->deleteExpiredCachesIfOverdue();
+
 		$conditions = array('and', 'expiryDate > :now', 'cacheKey = :key', 'locale = :locale');
 
 		$params = array(
@@ -142,30 +147,117 @@ class TemplateCacheService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Deletes caches that involve a given element ID.
+	 * Deletes caches that include an a given element ID(s).
 	 *
-	 * @param int $elementId
+	 * @param int|array $elementId
+	 * @return bool
 	 */
-	public function deleteCachesWithElement($elementId)
+	public function deleteCachesByElementId($elementId)
 	{
-		$cacheIds = craft()->db->createCommand()
+		if (!$elementId)
+		{
+			return false;
+		}
+
+		$query = craft()->db->createCommand()
 			->selectDistinct('cacheId')
-			->from(static::$_templateCacheElementsTable)
-			->where('elementId = :elementId', array(':elementId' => $elementId))
-			->queryColumn();
+			->from(static::$_templateCacheElementsTable);
+
+		if (is_array($elementId))
+		{
+			$query->where(array('in', 'elementId', $elementId));
+		}
+		else
+		{
+			$query->where('elementId = :elementId', array(':elementId' => $elementId));
+		}
+
+		$cacheIds = $query->queryColumn();
 
 		if ($cacheIds)
 		{
-			craft()->db->createCommand()->delete(static::$_templateCachesTable, array('in', 'id', $cacheIds));
+			$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, array('in', 'id', $cacheIds));
+			return (bool) $affectedRows;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Deletes caches that include elements that match a given criteria.
+	 *
+	 * @param ElementCriteriaModel $criteria
+	 * @return bool
+	 */
+	public function deleteCachesByCriteria(ElementCriteriaModel $criteria)
+	{
+		$criteria->limit = null;
+		$elementIds = $criteria->ids();
+		return $this->deleteCachesByElementId($elementIds);
+	}
+
+	/**
+	 * Deletes any expired caches.
+	 *
+	 * @return bool
+	 */
+	public function deleteExpiredCaches()
+	{
+		// Ignore if we've already done this once during the request
+		if ($this->_deletedExpiredCaches)
+		{
+			return false;
+		}
+
+		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable,
+			array('expiryDate <= :now'),
+			array('now' => DateTimeHelper::currentTimeForDb())
+		);
+
+		// Make like an elephant...
+		craft()->cache->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), static::$_lastCleanupDateCacheDuration);
+		$this->_deletedExpiredCaches = true;
+
+		return $affectedRows;
+	}
+
+	/**
+	 * Deletes any expired caches if we haven't already done that within the past 24 hours.
+	 *
+	 * @return bool
+	 */
+	public function deleteExpiredCachesIfOverdue()
+	{
+		// Ignore if we've already done this once during the request
+		if ($this->_deletedExpiredCaches)
+		{
+			return false;
+		}
+
+		$lastCleanupDate = craft()->cache->get('lastTemplateCacheCleanupDate');
+
+		if ($lastCleanupDate === false || DateTimeHelper::currentTimeStamp() - $lastCleanupDate > static::$_lastCleanupDateCacheDuration)
+		{
+			return $this->deleteExpiredCaches();
+		}
+		else
+		{
+			$this->_deletedExpiredCaches = true;
+			return false;
 		}
 	}
 
 	/**
 	 * Deletes all the template caches.
+	 *
+	 * @return bool
 	 */
 	public function deleteAllCaches()
 	{
-		craft()->db->createCommand()->delete(static::$_templateCachesTable);
+		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable);
+		return (bool) $affectedRows;
 	}
 
 	/**

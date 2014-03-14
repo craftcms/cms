@@ -102,7 +102,7 @@
 					</li>
 					<li>
 						<a class="settingsmenu menubtn" title="{{ 'Settings'|t }}"></a>
-						<div class="menu padded" data-align="right">
+						<div id="settingsmenu" class="menu padded" data-align="right">
 							<ul>
 								{% for category, items in craft.cp.settings() %}
 									{% for handle, item in items %}
@@ -150,8 +150,11 @@
 	<div class="container">
 		<div id="notifications-wrapper">
 			<div id="notifications">
-				{% for type, message in craft.session.flashes %}
-					<div class="notification {{ type }}">{{ message }}</div>
+				{% for type in ['notice', 'error'] %}
+					{% set message = craft.session.getFlash(type) %}
+					{% if message %}
+						<div class="notification {{ type }}">{{ message }}</div>
+					{% endif %}
 				{% endfor %}
 			</div>
 		</div>

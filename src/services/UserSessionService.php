@@ -114,6 +114,56 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
+	 * Adds a JS resource flash.
+	 *
+	 * @param string $resource
+	 */
+	public function addJsResourceFlash($resource)
+	{
+		$resources = $this->getJsResourceFlashes(false);
+
+		if (!in_array($resource, $resources))
+		{
+			$resources[] = $resource;
+			$this->setFlash('jsResources', $resources);
+		}
+	}
+
+	/**
+	 * Returns the queued-up JS flashes.
+	 *
+	 * @param bool $delete
+	 * @return array
+	 */
+	public function getJsResourceFlashes($delete = true)
+	{
+		return $this->getFlash('jsResources', array(), $delete);
+	}
+
+	/**
+	 * Adds a JS flash.
+	 *
+	 * @param string $js
+	 */
+	public function addJsFlash($js)
+	{
+		$scripts = $this->getJsFlashes();
+		$scripts[] = $js;
+		$this->setFlash('js', $scripts);
+	}
+
+	/**
+	 * Returns the queued-up JS flashes.
+	 *
+	 * @param bool $delete
+	 * @return array
+	 */
+	public function getJsFlashes($delete = true)
+	{
+		return $this->getFlash('js', array(), $delete);
+	}
+
+	/**
 	 *
 	 * Check to see if the current web user is a guest.
 	 *

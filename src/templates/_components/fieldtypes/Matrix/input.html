@@ -10,7 +10,7 @@
 				{% set blockId = 'new'~totalNewBlocks %}
 			{% endif %}
 
-			<div class="matrixblock{% if not block.enabled %} disabled{% endif %}" data-id="{{ blockId }}">
+			<div class="matrixblock{% if not block.enabled %} disabled{% endif %}" data-id="{{ blockId }}"{% if block.collapsed %} data-collapsed="1"{% endif %}>
 				<input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
 				<input type="hidden" name="{{ name }}[{{ blockId }}][enabled]" value="{% if block.enabled %}1{% endif %}">
 				<div class="actions">
@@ -53,7 +53,7 @@
 			{% endfor %}
 		</div>
 
-		<div class="btn add icon menubtn hidden">{{ "Add a block"|t }}</div>
+		<div class="btn add icon menubtn first hidden">{{ "Add a block"|t }}</div>
 		<div class="menu">
 			<ul>
 				{% for blockType in blockTypes %}

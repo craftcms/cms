@@ -111,33 +111,31 @@ class TemplatesController extends BaseController
 	public function actionRenderError()
 	{
 		$error = craft()->errorHandler->getError();
-		$template = (string) $error['code'];
+		$code = (string) $error['code'];
 
 		if (craft()->request->isSiteRequest())
 		{
-			if (!craft()->templates->doesTemplateExist($template))
-			{
-				// How bout a generic error template?
-				if (craft()->templates->doesTemplateExist('error'))
-				{
-					$template = 'error';
-				}
-				else
-				{
-					// Fall back on the CP error template
-					craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+			$prefix = craft()->config->get('errorTemplatePrefix');
 
-					// Look for the template again
-					if (!craft()->templates->doesTemplateExist($template))
-					{
-						$template = 'error';
-					}
-				}
+			if (craft()->templates->doesTemplateExist($prefix.$code))
+			{
+				$template = $prefix.$code;
+			}
+			else if (craft()->templates->doesTemplateExist($prefix.'error'))
+			{
+				$template = $prefix.'error';
 			}
 		}
-		else
+
+		if (!isset($template))
 		{
-			if (!craft()->templates->doesTemplateExist($template))
+			craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+
+			if (craft()->templates->doesTemplateExist($code))
+			{
+				$template = $code;
+			}
+			else
 			{
 				$template = 'error';
 			}
