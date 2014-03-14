@@ -100,7 +100,7 @@ Craft.MatrixInput = Garnish.Base.extend(
 
 	setNewBlockBtn: function()
 	{
-		if (this.$addBlockBtnGroup.removeClass('hidden').width() > this.$container.width())
+		if (this.$addBlockBtnGroup.removeClass('hidden').height() > 30)
 		{
 			this.$addBlockBtnGroup.addClass('hidden');
 			this.$addBlockMenuBtn.removeClass('hidden');
