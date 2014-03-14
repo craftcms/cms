@@ -181,6 +181,19 @@ class TemplateCacheService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Deletes caches that include elements that match a given criteria.
+	 *
+	 * @param ElementCriteriaModel $criteria
+	 * @return bool
+	 */
+	public function deleteCachesByCriteria(ElementCriteriaModel $criteria)
+	{
+		$criteria->limit = null;
+		$elementIds = $criteria->ids();
+		return $this->deleteCachesByElementId($elementIds);
+	}
+
+	/**
 	 * Deletes all the template caches.
 	 *
 	 * @return bool
