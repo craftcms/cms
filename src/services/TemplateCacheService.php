@@ -5,9 +5,11 @@ class TemplateCacheService extends BaseApplicationComponent
 {
 	private static $_templateCachesTable = 'templatecaches';
 	private static $_templateCacheElementsTable = 'templatecacheelements';
+	private static $_lastCleanupDateCacheDuration = 86400;
 
 	private $_path;
 	private $_cacheElementIds;
+	private $_deletedExpiredCaches = false;
 
 	/**
 	 * Returns a cached template by its key.
@@ -18,6 +20,9 @@ class TemplateCacheService extends BaseApplicationComponent
 	 */
 	public function getTemplateCache($key, $global)
 	{
+		// Take the opportunity to delete any expired caches
+		$this->deleteExpiredCachesIfOverdue();
+
 		$conditions = array('and', 'expiryDate > :now', 'cacheKey = :key', 'locale = :locale');
 
 		$params = array(
@@ -191,6 +196,57 @@ class TemplateCacheService extends BaseApplicationComponent
 		$criteria->limit = null;
 		$elementIds = $criteria->ids();
 		return $this->deleteCachesByElementId($elementIds);
+	}
+
+	/**
+	 * Deletes any expired caches.
+	 *
+	 * @return bool
+	 */
+	public function deleteExpiredCaches()
+	{
+		// Ignore if we've already done this once during the request
+		if ($this->_deletedExpiredCaches)
+		{
+			return false;
+		}
+
+		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable,
+			array('expiryDate <= :now'),
+			array('now' => DateTimeHelper::currentTimeForDb())
+		);
+
+		// Make like an elephant...
+		craft()->cache->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), static::$_lastCleanupDateCacheDuration);
+		$this->_deletedExpiredCaches = true;
+
+		return $affectedRows;
+	}
+
+	/**
+	 * Deletes any expired caches if we haven't already done that within the past 24 hours.
+	 *
+	 * @return bool
+	 */
+	public function deleteExpiredCachesIfOverdue()
+	{
+		// Ignore if we've already done this once during the request
+		if ($this->_deletedExpiredCaches)
+		{
+			return false;
+		}
+
+		$lastCleanupDate = craft()->cache->get('lastTemplateCacheCleanupDate');
+
+		if ($lastCleanupDate === false || DateTimeHelper::currentTimeStamp() - $lastCleanupDate > static::$_lastCleanupDateCacheDuration)
+		{
+			return $this->deleteExpiredCaches();
+		}
+		else
+		{
+			$this->_deletedExpiredCaches = true;
+			return false;
+		}
 	}
 
 	/**
