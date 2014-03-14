@@ -436,6 +436,20 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function getFootHtml()
 	{
+		if (craft()->request->isCpRequest())
+		{
+			// Include any JS/resource flashes
+			foreach (craft()->userSession->getJsResourceFlashes() as $path)
+			{
+				$this->includeJsResource($path);
+			}
+
+			foreach (craft()->userSession->getJsFlashes() as $js)
+			{
+				$this->includeJs($js, true);
+			}
+		}
+
 		// Are there any JS files to include?
 		if (!empty($this->_jsFiles))
 		{

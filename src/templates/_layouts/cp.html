@@ -150,8 +150,11 @@
 	<div class="container">
 		<div id="notifications-wrapper">
 			<div id="notifications">
-				{% for type, message in craft.session.flashes %}
-					<div class="notification {{ type }}">{{ message }}</div>
+				{% for type in ['notice', 'error'] %}
+					{% set message = craft.session.getFlash(type) %}
+					{% if message %}
+						<div class="notification {{ type }}">{{ message }}</div>
+					{% endif %}
 				{% endfor %}
 			</div>
 		</div>
