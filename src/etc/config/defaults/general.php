@@ -132,6 +132,13 @@ return array(
 	'environmentVariables' => array(),
 
 	/**
+	 * The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
+	 *
+	 * If set to '_', then your site’s 404 template would live at craft/templates/_404.html, for example.
+	 */
+	'errorTemplatePrefix' => '',
+
+	/**
 	 *The template filenames Craft will look for within a directory to represent the directory’s “index” template when matching a template path to a file on the front end.
 	 */
 	'indexTemplateFilenames' => array('index'),
