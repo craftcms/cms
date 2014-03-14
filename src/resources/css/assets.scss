@@ -9,20 +9,20 @@
 .assets-page-loading .folder-contents{ padding-bottom: 30px; background: url('../images/spinner.gif') no-repeat center bottom; }
 .thumb-wrapper { border: 5px solid #fff; background: url(../images/checkers.png) 0 0; @include box-shadow(0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1)); }
 .icon-wrapper { border: 5px solid #fff;}
- 
+
 .listview .thumb-wrapper { border-width: 2px;}
-.listview .assets-fileicon { float: left; height: 28px; width: 22px; background: url('../images/file_small.png') no-repeat 50% 50%; margin: 0 0 0 -31px; padding: 0;}
+.listview .assets-fileicon { @include floatleft; height: 28px; width: 22px; background: url('../images/file_small.png') no-repeat 50% 50%; @include margin(0, 0, 0, -31px); padding: 0; }
 
 .assets-modal { max-height: 400px; overflow: scroll;}
 
 .assets-contextmenu { padding: 0;}
-.assets-contextmenu ul { padding: 5px 15px;}
+.assets-contextmenu ul { padding: 5px 15px; }
 .assets-contextmenu ul + ul { border-top: 1px solid rgba(0,0,0,0.1);}
 
 /*-- thumbs --*/
-#main .files.thumbs ul { margin: -9px 0 0 -9px; }
+#main .files.thumbs ul { @include margin(-9px, 0, 0, -9px); }
 #main .files.thumbs ul:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
-#main .files.thumbs ul li { float: left; margin: 1px 0 0 1px; width: 110px; height: 128px; text-align: center; padding: 9px; }
+#main .files.thumbs ul li { @include floatleft; @include margin(1px, 0, 0, 1px); width: 110px; height: 128px; text-align: center; padding: 9px; }
 #main .files.thumbs ul li .thumb { background-repeat: no-repeat; background-position: 50% 50%; }
 #main .files.thumbs ul li .filename, ul.assets-tv-drag li .filename {  margin-top: 7px; font-size: 11px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; }
 
@@ -45,7 +45,7 @@
 /*-- Folder drag --*/
 
 .assets-fm-folderdrag ul { display: none }
-.assets-fm-folderdrag li { background: $headerBgColor; padding: 4px 0 0 10px; height: 18px !important;}
+.assets-fm-folderdrag li { background: $headerBgColor; @include padding(4px, 0, 0, 10px); height: 18px !important;}
 .assets-fm-folderdrag li a { color: #fff !important;}
 
 /*-- Retina -- */
