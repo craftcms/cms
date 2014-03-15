@@ -203,6 +203,11 @@ Craft.UpdateInfo = Garnish.Base.extend(
 	downloadThat: function()
 	{
 		var src = this.appUpdateInfo.manualDownloadEndpoint;
+
+		if (window.location.protocol == 'https:') {
+			src = src.replace('http:', 'https:');
+		}
+
 		$('<iframe/>', { src: src }).appendTo(Garnish.$bod).hide();
 	},
 
