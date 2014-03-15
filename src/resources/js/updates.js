@@ -77,6 +77,11 @@ Craft.postActionRequest('update/getAvailableUpdates', function(response, textSta
 		{
 			var downloadThat = function() {
 				var src = response.app.manualDownloadEndpoint;
+
+				if (window.location.protocol == 'https:') {
+					src = src.replace('http:', 'https:');
+				}
+
 				$('<iframe/>', { src: src }).appendTo(Garnish.$bod).hide();
 			};
 
