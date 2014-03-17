@@ -6,7 +6,11 @@
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
 		<input type="hidden" name="action" value="sections/saveEntryType">
-		<input type="hidden" name="redirect" value="settings/sections/{{ section.id }}/entrytypes">
+		{% if section.type == 'single' %}
+			<input type="hidden" name="redirect" value="settings/sections">
+		{% else %}
+			<input type="hidden" name="redirect" value="settings/sections/{{ section.id }}/entrytypes">
+		{% endif %}
 		<input type="hidden" name="sectionId" value="{{ section.id }}">
 		{% if entryType.id %}<input type="hidden" name="entryTypeId" value="{{ entryType.id }}">{% endif %}
 
