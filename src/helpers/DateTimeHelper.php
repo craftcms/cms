@@ -65,8 +65,7 @@ class DateTimeHelper
 			$dt = new DateTime();
 		}
 
-		$dt->setTimezone(new \DateTimeZone(DateTime::UTC));
-		return $dt->format(DateTime::MYSQL_DATETIME);
+		return $dt->format(DateTime::MYSQL_DATETIME, new \DateTimeZone(DateTime::UTC));
 	}
 
 	/**
