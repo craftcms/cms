@@ -329,9 +329,8 @@ class AssetTransformsService extends BaseApplicationComponent
 				'height'     => ($matches['height'] != 'AUTO' ? $matches['height'] : null),
 				'mode'       => $matches['mode'],
 				'position'   => $matches['position'],
-				'quality'    => $matches['quality']
-
 			);
+			$data['quality'] = isset($matches['quality']) ? $matches['quality'] : null;
 
 			$parameters = $this->normalizeTransform($data);
 		}
