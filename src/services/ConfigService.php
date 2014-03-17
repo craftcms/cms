@@ -520,7 +520,7 @@ class ConfigService extends BaseApplicationComponent
 		}
 		else
 		{
-			$defaultsPath = CRAFT_PLUGINS_PATH.$name.'config.php';
+			$defaultsPath = CRAFT_PLUGINS_PATH.$name.'/config.php';
 		}
 
 		if (IOHelper::fileExists($defaultsPath))
