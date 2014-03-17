@@ -32,10 +32,29 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	{
 		this.base(elementType, $container, settings);
 
-		if (this.settings.context == 'index')
+		var context = this.settings.context;
+		if (context == 'index')
 		{
 			this.initIndexMode();
 		}
+
+		var assetIndex = this;
+		this.$sources.each(function() {
+
+			// Index mode gets all the fancy options
+			if (context == 'index')
+			{
+				assetIndex._createFolderContextMenu.apply(assetIndex, [$(this), true]);
+				if ($(this).parents('ul').length > 1)
+				{
+					assetIndex._folderDrag.addItems($(this).parent());
+				}
+			}
+			else
+			{
+				assetIndex._createFolderContextMenu.apply(assetIndex, [$(this), false]);
+			}
+		});
 	},
 
 	/**
@@ -153,13 +172,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			onDragStop: $.proxy(this, '_onFolderDragStop')
 		});
 
-		this.$sources.each(function() {
-			assetIndex._createFolderContextMenu.apply(assetIndex, $(this));
-			if ($(this).parents('ul').length > 1)
-			{
-				assetIndex._folderDrag.addItems($(this).parent());
-			}
-		});
 	},
 
 	_onFileDragStop: function()
@@ -1265,19 +1277,18 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		}
 	},
 
-	_createFolderContextMenu: function(element)
+	_createFolderContextMenu: function(element, addAllOptions)
 	{
 		element = $(element);
 		var menuOptions = [{ label: Craft.t('New subfolder'), onClick: $.proxy(this, '_createSubfolder', element) }];
 
 		// For all folders that are not top folders
-		if (element.parents('ul').length > 1)
+		if (element.parents('ul').length > 1 && addAllOptions)
 		{
 			menuOptions.push({ label: Craft.t('Rename folder'), onClick: $.proxy(this, '_renameFolder', element) });
 			menuOptions.push({ label: Craft.t('Delete folder'), onClick: $.proxy(this, '_deleteFolder', element) });
 		}
 		new Garnish.ContextMenu(element, menuOptions, {menuClass: 'menu assets-contextmenu'});
-
 	},
 
 	_createSubfolder: function(parentFolder)
@@ -1307,7 +1318,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					this._addSubfolder(parentFolder, subFolder);
 					this._createFolderContextMenu($a);
 					this.sourceSelect.addItems($a);
-					this._folderDrag.addItems($a.parent());
+
+					// For Assets Modals the folder drag manager won't be available
+					if (this._folderDrag)
+					{
+						this._folderDrag.addItems($a.parent());
+					}
+
 					this.$sources = this.$sources.add($a);
 				}
 
