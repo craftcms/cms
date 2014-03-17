@@ -8,6 +8,7 @@ class Image
 	private $_extension;
 	private $_instance;
 	private $_isAnimatedGif = false;
+	private $_quality = 0;
 
 	function __construct()
 	{
@@ -19,6 +20,8 @@ class Image
 		{
 			$this->_instance = new \Imagine\Imagick\Imagine();
 		}
+
+		$this->_quality = craft()->config->get('defaultImageQuality');
 	}
 
 	/**
@@ -257,6 +260,18 @@ class Image
 	}
 
 	/**
+	 * Set image quality.
+	 *
+	 * @param $quality
+	 * @return Image
+	 */
+	public function setQuality($quality)
+	{
+		$this->_quality = $quality;
+		return $this;
+	}
+
+	/**
 	 * Saves the image to the target path.
 	 *
 	 * @param      $targetPath
@@ -360,12 +375,14 @@ class Image
 	}
 
 	/**
+	 * Get save options.
+	 *
 	 * @param null       $quality
 	 * @return array
 	 */
 	private function _getSaveOptions($quality = null)
 	{
-		$quality = (!$quality ? craft()->config->get('defaultImageQuality') : $quality);
+		$quality = (!$quality ? $this->_quality : $quality);
 
 		switch ($this->getExtension())
 		{

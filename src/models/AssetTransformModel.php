@@ -30,6 +30,7 @@ class AssetTransformModel extends BaseModel
 			'dimensionChangeTime' => AttributeType::DateTime,
 			'mode'                => array(AttributeType::String, 'default' => 'crop'),
 			'position'            => array(AttributeType::String, 'default' => 'center-center'),
+			'quality'             => array(AttributeType::Number),
 		);
 	}
 

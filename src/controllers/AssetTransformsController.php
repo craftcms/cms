@@ -63,12 +63,21 @@ class AssetTransformsController extends BaseController
 		$transform->height = craft()->request->getPost('height');
 		$transform->mode = craft()->request->getPost('mode');
 		$transform->position = craft()->request->getPost('position');
+		$transform->quality = craft()->request->getPost('quality');
 
+		$errors = false;
 		if (empty($transform->width) && empty($transform->height))
 		{
 			craft()->userSession->setError(Craft::t('You must set at least one of the dimensions.'));
+			$errors = true;
 		}
-		else
+		if (!empty($transform->quality) && (!is_numeric($transform->quality) || $transform->quality > 100 || $transform->quality < 1))
+		{
+			craft()->userSession->setError(Craft::t('Quality must be a number between 1 and 100 (included).'));
+			$errors = true;
+		}
+
+		if (!$errors)
 		{
 			// Did it save?
 			if (craft()->assetTransforms->saveTransform($transform))

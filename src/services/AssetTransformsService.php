@@ -117,8 +117,9 @@ class AssetTransformsService extends BaseApplicationComponent
 
 		$heightChanged = $transformRecord->width != $transform->width || $transformRecord->height != $transform->height;
 		$modeChanged = $transformRecord->mode != $transform->mode || $transformRecord->position != $transform->position;
+		$qualityChanged = $transformRecord->quality != $transform->quality;
 
-		if ($heightChanged || $modeChanged)
+		if ($heightChanged || $modeChanged || $qualityChanged)
 		{
 			$transformRecord->dimensionChangeTime = new DateTime('@'.time());
 		}
@@ -127,6 +128,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		$transformRecord->position = $transform->position;
 		$transformRecord->width = $transform->width;
 		$transformRecord->height = $transform->height;
+		$transformRecord->quality = $transform->quality;
 
 		$recordValidates = $transformRecord->validate();
 
@@ -193,7 +195,7 @@ class AssetTransformsService extends BaseApplicationComponent
 			// Resize if constrained by maxCachedImageSizes setting
 			if (is_numeric($maxCachedImageSize) && $maxCachedImageSize > 0)
 			{
-				craft()->images->loadImage($localCopy)->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->saveAs($imageSource);
+				craft()->images->loadImage($localCopy)->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->setQuality(100)->saveAs($imageSource);
 			}
 			// Mark for deletion, since the maxCachedImageSizes setting is either invalid or set to 0.
 			else
@@ -211,6 +213,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		foreach ($transformsToUpdate as $transform)
 		{
 			$transform = $this->normalizeTransform($transform);
+			$quality = $transform->quality ? $transform->quality : craft()->config->get('defaultImageQuality');
 			$transformLocation = $this->_getTransformLocation($transform);
 
 			$timeModified = $sourceType->getTimeTransformModified($fileModel, $transformLocation);
@@ -224,19 +227,19 @@ class AssetTransformsService extends BaseApplicationComponent
 				{
 					case 'fit':
 					{
-						craft()->images->loadImage($imageSource)->scaleToFit($transform->width, $transform->height)->saveAs($targetFile);
+						craft()->images->loadImage($imageSource)->scaleToFit($transform->width, $transform->height)->setQuality($quality)->saveAs($targetFile);
 						break;
 					}
 
 					case 'stretch':
 					{
-						craft()->images->loadImage($imageSource)->resize($transform->width, $transform->height)->saveAs($targetFile);
+						craft()->images->loadImage($imageSource)->resize($transform->width, $transform->height)->setQuality($quality)->saveAs($targetFile);
 						break;
 					}
 
 					default:
 					{
-						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height, true, $transform->position)->saveAs($targetFile);
+						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height, true, $transform->position)->setQuality($quality)->saveAs($targetFile);
 						break;
 					}
 				}
@@ -319,13 +322,14 @@ class AssetTransformsService extends BaseApplicationComponent
 	public function generateTransform(AssetTransformIndexModel $transformIndexData)
 	{
 		// For _widthxheight_mode
-		if (preg_match('/_(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)/i', $transformIndexData->location, $matches))
+		if (preg_match('/_(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>[0-9]+))?/i', $transformIndexData->location, $matches))
 		{
 			$data = array(
 				'width'      => ($matches['width']  != 'AUTO' ? $matches['width']  : null),
 				'height'     => ($matches['height'] != 'AUTO' ? $matches['height'] : null),
 				'mode'       => $matches['mode'],
-				'position'   => $matches['position']
+				'position'   => $matches['position'],
+				'quality'    => $matches['quality']
 
 			);
 
@@ -356,7 +360,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		if ($parameters->isNamedTransform())
 		{
 			$alternateLocation = '_'.($parameters->width ? $parameters->width : 'AUTO').'x'.($parameters->height ? $parameters->height : '
-				').'_'.$parameters->mode;
+				').'_'.$parameters->mode.($parameters->quality ? '_'.$parameters->quality : '');
 
 			// Look for a physical file first
 			$existingFileTimeModified = $sourceType->getTimeTransformModified($file, $alternateLocation);
@@ -646,7 +650,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	private function _createTransformQuery()
 	{
 		return craft()->db->createCommand()
-			->select('id, name, handle, mode, position, height, width, dimensionChangeTime')
+			->select('id, name, handle, mode, position, height, width, quality, dimensionChangeTime')
 			->from('assettransforms')
 			->order('name');
 	}
@@ -659,6 +663,10 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	private function _getTransformLocation(AssetTransformModel $transform)
 	{
-		return $transform->isNamedTransform() ? '_'.$transform->handle : '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').'_'.$transform->mode.'_'.$transform->position;
+		return $transform->isNamedTransform() ? '_'.$transform->handle :
+					'_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').
+					'_'.($transform->mode).
+					'_'.($transform->position).
+					($transform->quality ? '_' . $transform->quality : '');
 	}
 }
