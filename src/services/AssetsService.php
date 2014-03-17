@@ -265,7 +265,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @return AssetFolderModel|null
 	 * @throws Exception
 	 */
-	public function getUserFolder(UserModel $userModel)
+	public function getUserFolder(UserModel $userModel = null)
 	{
 		$sourceTopFolder = craft()->assets->findFolder(array('sourceId' => ':empty:', 'parentId' => ':empty:'));
 
@@ -277,7 +277,15 @@ class AssetsService extends BaseApplicationComponent
 			$sourceTopFolder->id = $this->storeFolder($sourceTopFolder);
 		}
 
-		$folderName = 'user_' . $userModel->id;
+		if ($userModel)
+		{
+			$folderName = 'user_' . $userModel->id;
+		}
+		else
+		{
+			// A little obfuscation never hurt anyone
+			$folderName = 'user_' . sha1(craft()->httpSession->getSessionID());
+		}
 		$folderCriteria = new FolderCriteriaModel(array(
 			'name' => $folderName,
 			'parentId' => $sourceTopFolder->id

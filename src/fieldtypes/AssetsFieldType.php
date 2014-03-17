@@ -516,11 +516,6 @@ class AssetsFieldType extends BaseElementFieldType
 			// New element, so we default to User's upload folder for this field
 			$userModel = craft()->userSession->getUser();
 
-			if (!$userModel)
-			{
-				throw new Exception(Craft::t("To use this Field, user must be logged in!"));
-			}
-
 			$userFolder = craft()->assets->getUserFolder($userModel);
 
 			$folderName = 'field_' . $this->model->id;
