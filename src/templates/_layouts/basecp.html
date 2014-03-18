@@ -1,9 +1,11 @@
 {% extends "_layouts/base" %}
 
+{# Load scripts in reverse order #}
 {%- includeJsResource "js/cp.js" first -%}
-
 {%- includeJsResource "js/craft.js" first -%}
 {%- includeJsResource 'lib/garnish-0.1'~(craft.config.useCompressedJs ? '.min' : '')~'.js' first %}
+{%- includeJsResource 'lib/fileupload/jquery.fileupload.js' first %}
+{%- includeJsResource 'lib/fileupload/jquery.ui.widget.js' first %}
 {%- includeJsResource 'lib/jquery.placeholder'~(craft.config.useCompressedJs ? '.min' : '')~'.js' first %}
 {%- includeJsResource 'lib/jquery-ui-1.10.3.custom'~(craft.config.useCompressedJs ? '.min' : '')~'.js' %}
 {%- includeJsResource 'lib/jquery-2.0.3'~(craft.config.useCompressedJs ? '.min' : '')~'.js' first %}
