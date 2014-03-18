@@ -165,6 +165,7 @@ Craft.Pane = Garnish.Base.extend(
 		this.$content.removeClass('hiding-sidebar');
 		this.$sidebarBtn.remove();
 		this.showingSidebar = true;
+		this.updateSidebarStyles();
 		this.setMinContentSizeForSidebar();
 
 		if (this.peekingSidebar)
@@ -203,6 +204,7 @@ Craft.Pane = Garnish.Base.extend(
 		this.$content.animateLeft(194, 'fast');
 		this.$sidebarBtn.addClass('showing').attr('title', Craft.t('Hide sidebar'));
 		this.peekingSidebar = true;
+		this.updateSidebarStyles();
 
 		this.addListener(this.$sidebar, 'click', $.proxy(function(ev)
 		{
