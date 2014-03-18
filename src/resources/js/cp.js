@@ -736,7 +736,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 		{
 			this._animateArc(0, 1, $.proxy(function()
 			{
-				$(this._bgCanvas).fadeOut();
+				this._$bgCanvas.fadeOut();
 
 				this._animateArc(1, 1, $.proxy(function()
 				{
