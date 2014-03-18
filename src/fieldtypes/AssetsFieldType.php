@@ -99,21 +99,6 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Returns the field's input HTML.
-	 *
-	 * @param string $name
-	 * @param mixed  $criteria
-	 * @return string
-	 */
-	public function getInputHtml($name, $criteria)
-	{
-		craft()->templates->includeJsResource('lib/fileupload/jquery.ui.widget.js');
-		craft()->templates->includeJsResource('lib/fileupload/jquery.fileupload.js');
-
-		return parent::getInputHtml($name, $criteria);
-	}
-
-	/**
 	 * Returns the input value as it should be saved to the database.
 	 *
 	 * @param mixed $value

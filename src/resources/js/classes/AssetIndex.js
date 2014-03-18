@@ -661,6 +661,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			if (textStatus == 'success')
 			{
 				this.responseArray.push(data);
+
+				// If assets were just merged we should get the referece tags updated right away
+				Craft.cp.runPendingTasks();
 			}
 
 			parameterIndex++;
@@ -1069,6 +1072,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					if (data.success)
 					{
 						this.updateElements();
+
+						// If assets were just merged we should get the referece tags updated right away
+						Craft.cp.runPendingTasks();
 					}
 
 					if (data.error)

@@ -369,6 +369,20 @@ class DbCommand extends \CDbCommand
 
 	/**
 	 * @param string $table
+	 * @param string $column
+	 * @param string $find
+	 * @param string $replace
+	 * @return int
+	 */
+	public function replace($table, $column, $find, $replace)
+	{
+		$table = DbHelper::addTablePrefix($table);
+		$queryParams = $this->getConnection()->getSchema()->replace($table, $column, $find, $replace);
+		return $this->setText($queryParams['query'])->execute($queryParams['params']);
+	}
+
+	/**
+	 * @param string $table
 	 * @param mixed  $conditions
 	 * @param array  $params
 	 * @return int

@@ -228,6 +228,9 @@ Craft.Tool = Garnish.Base.extend(
 		this.progressBar.$progressBar.animateLeft(-170, 'fast');
 
 		this.$allDone.animateLeft(30, 'fast');
+
+		// Just in case the tool created a new task...
+		Craft.cp.runPendingTasks();
 	}
 
 },

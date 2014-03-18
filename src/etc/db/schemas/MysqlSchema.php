@@ -211,6 +211,22 @@ class MysqlSchema extends \CMysqlSchema
 	}
 
 	/**
+	 * Returns the SQL for finding/replacing text.
+	 *
+	 * @param string $table
+	 * @param string $column
+	 * @param string $find
+	 * @param string $replace
+	 * @return array
+	 */
+	public function replace($table, $column, $find, $replace)
+	{
+		$sql = 'UPDATE '.$this->quoteTableName($table).' SET '.$this->quoteColumnName($column).' = REPLACE('.$this->quoteColumnName($column).',  :find, :replace)';
+		$params = array(':find' => $find, ':replace' => $replace);
+		return array('query' => $sql, 'params' => $params);
+	}
+
+	/**
 	 * Returns all table names in the database which start with the tablePrefix.
 	 *
 	 * @access protected

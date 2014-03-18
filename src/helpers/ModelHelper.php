@@ -15,7 +15,7 @@ class ModelHelper
 	public static $attributeTypeDefaults = array(
 		AttributeType::Mixed      => array('model' => null, 'column' => ColumnType::Text),
 		AttributeType::Bool       => array('maxLength' => 1, 'default' => false, 'required' => true, 'column' => ColumnType::TinyInt, 'unsigned' => true),
-		AttributeType::ClassName  => array('maxLength' => 150, 'column' => ColumnType::Char),
+		AttributeType::ClassName  => array('maxLength' => 150, 'column' => ColumnType::Varchar),
 		AttributeType::DateTime   => array('column' => ColumnType::DateTime),
 		AttributeType::Email      => array('minLength' => 5, 'column' => ColumnType::Varchar),
 		AttributeType::Enum       => array('values' => array(), 'column' => ColumnType::Enum),

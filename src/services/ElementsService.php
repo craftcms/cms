@@ -1201,6 +1201,24 @@ class ElementsService extends BaseApplicationComponent
 				}
 			}
 
+			// Update any reference tags
+			$elementType = $this->getElementTypeById($prevailingElementId);
+
+			if ($elementType)
+			{
+				$refTagPrefix = '{'.lcfirst($elementType).':';
+
+				craft()->tasks->createTask('FindAndReplace', Craft::t('Updating element references'), array(
+					'find'    => $refTagPrefix.$mergedElementId.':',
+					'replace' => $refTagPrefix.$prevailingElementId.':',
+				));
+
+				craft()->tasks->createTask('FindAndReplace', Craft::t('Updating element references'), array(
+					'find'    => $refTagPrefix.$mergedElementId.'}',
+					'replace' => $refTagPrefix.$prevailingElementId.'}',
+				));
+			}
+
 			// Fire an 'onMergeElements' event
 			$this->onMergeElements(new Event($this, array(
 				'mergedElementId'     => $mergedElementId,
