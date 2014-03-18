@@ -6,7 +6,7 @@ namespace Craft;
  */
 class ResaveElementsTask extends BaseTask
 {
-	private $_elementIds = array();
+	private $_elementIds;
 
 	/**
 	 * Returns the default description for this task.
