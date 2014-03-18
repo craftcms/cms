@@ -1201,6 +1201,12 @@ class ElementsService extends BaseApplicationComponent
 				}
 			}
 
+			// Fire an 'onMergeElements' event
+			$this->onMergeElements(new Event($this, array(
+				'mergedElementId'     => $mergedElementId,
+				'prevailingElementId' => $prevailingElementId
+			)));
+
 			// Now delete the merged element
 			$success = $this->deleteElementById($mergedElementId);
 
@@ -1454,6 +1460,16 @@ class ElementsService extends BaseApplicationComponent
 	public function onPopulateElement(Event $event)
 	{
 		$this->raiseEvent('onPopulateElement', $event);
+	}
+
+	/**
+	 * Fires an 'onMergeElements' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onMergeElements(Event $event)
+	{
+		$this->raiseEvent('onMergeElements', $event);
 	}
 
 	// Private functions
