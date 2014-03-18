@@ -9,16 +9,6 @@ class ResaveAllElementsTask extends BaseTask
 	private $_elementTypes;
 
 	/**
-	 * Returns the default description for this task.
-	 *
-	 * @return string
-	 */
-	public function getDescription()
-	{
-		return Craft::t('Resaving all elements');
-	}
-
-	/**
 	 * Defines the settings.
 	 *
 	 * @access protected
@@ -27,8 +17,26 @@ class ResaveAllElementsTask extends BaseTask
 	protected function defineSettings()
 	{
 		return array(
-			'locale' => array(AttributeType::Locale, 'default' => craft()->language),
+			'locale'          => array(AttributeType::Locale, 'default' => craft()->language),
+			'localizableOnly' => AttributeType::Bool
 		);
+	}
+
+	/**
+	 * Returns the default description for this task.
+	 *
+	 * @return string
+	 */
+	public function getDescription()
+	{
+		if ($this->getSettings()->localizableOnly)
+		{
+			return Craft::t('Resaving all localizable elements');
+		}
+		else
+		{
+			return Craft::t('Resaving all elements');
+		}
 	}
 
 	/**
@@ -39,10 +47,14 @@ class ResaveAllElementsTask extends BaseTask
 	public function getTotalSteps()
 	{
 		$this->_elementTypes = array();
+		$localizableOnly = $this->getSettings()->localizableOnly;
 
 		foreach (craft()->elements->getAllElementTypes() as $elementType)
 		{
-			$this->_elementTypes[] = $elementType->getClassHandle();
+			if (!$localizableOnly || $elementType->isLocalized())
+			{
+				$this->_elementTypes[] = $elementType->getClassHandle();
+			}
 		}
 
 		return count($this->_elementTypes);
