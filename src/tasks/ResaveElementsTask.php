@@ -46,7 +46,9 @@ class ResaveElementsTask extends BaseTask
 		$settings = $this->getSettings();
 
 		$criteria = craft()->elements->getCriteria($settings->elementType, $settings->criteria);
+		$criteria->offset = null;
 		$criteria->limit = null;
+		$criteria->order = null;
 		$this->_elementIds = $criteria->ids();
 		return count($this->_elementIds);
 	}
