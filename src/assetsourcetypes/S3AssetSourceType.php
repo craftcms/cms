@@ -48,6 +48,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 			'location'   => array(AttributeType::String, 'required' => true),
 			'urlPrefix'  => array(AttributeType::String, 'required' => true),
 			'subfolder'  => array(AttributeType::String, 'default' => ''),
+			'expires'    => array(AttributeType::String, 'default' => ''),
 		);
 	}
 
@@ -58,8 +59,13 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	public function getSettingsHtml()
 	{
+		$settings = $this->getSettings();
+
+		$settings->expires = $this->_extractExpiryInformation($settings->expires);
+
 		return craft()->templates->render('_components/assetsourcetypes/S3/settings', array(
-			'settings' => $this->getSettings()
+			'settings' => $this->getSettings(),
+			'periods' => array_merge(array('' => ''), $this->getPeriodList())
 		));
 	}
 
@@ -319,7 +325,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		clearstatcache();
 		$this->_prepareForRequests();
 
-		if (!$this->_s3->putObject(array('file' => $filePath), $this->getSettings()->bucket, $uriPath, \S3::ACL_PUBLIC_READ))
+		if (!$this->_putObject($filePath, $this->getSettings()->bucket, $uriPath, \S3::ACL_PUBLIC_READ))
 		{
 			throw new Exception(Craft::t('Could not copy file to target destination'));
 		}
@@ -374,7 +380,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$this->_prepareForRequests();
 		$targetFile = $this->_getPathPrefix().$fileModel->getFolder()->path.'_'.ltrim($handle, '_').'/'.$fileModel->filename;
 
-		return $this->_s3->putObject(array('file' => $sourceImage), $this->getSettings()->bucket, $targetFile, \S3::ACL_PUBLIC_READ);
+		return $this->_putObject($sourceImage, $this->getSettings()->bucket, $targetFile, \S3::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -578,7 +584,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
-		return $this->_s3->putObject('', $this->getSettings()->bucket, $this->_getPathPrefix().rtrim($parentFolder->path.$folderName, '/') . '/', \S3::ACL_PUBLIC_READ);
+		return $this->_putObject('', $this->getSettings()->bucket, $this->_getPathPrefix().rtrim($parentFolder->path.$folderName, '/') . '/', \S3::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -719,4 +725,45 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 		return true;
 	}
+
+	/**
+	 * Put an object into an S3 bucket.
+	 *
+	 * @param $filePath
+	 * @param $bucket
+	 * @param $uriPath
+	 * @param $permissions
+	 * @return bool
+	 */
+	protected function _putObject($filePath, $bucket, $uriPath, $permissions)
+	{
+		$object = empty($filePath) ? '' : array('file' => $filePath);
+		$headers = array();
+
+		if (!empty($object) && !empty($this->getSettings()->expires))
+		{
+			try {
+				// Set the cache headers only if valid time interval and longer than 0 seconds
+				$interval = new \DateInterval($this->getSettings()->expires);
+				if ($interval->s != 0)
+				{
+					$expires = new DateTime();
+					$now = new DateTime();
+					$expires->modify('+' . $this->getSettings()->expires);
+					$diff = $expires->format('U') - $now->format('U');
+
+					$headers['Expires'] = $expires->format(\DateTime::RFC822, DateTime::UTC);
+					$headers['Cache-Control'] = 'max-age=' . $diff . ', must-revalidate';
+				}
+			}
+			catch (\Exception $exception)
+			{
+				; // no-op.
+			}
+
+		}
+
+		return $this->_s3->putObject($object, $bucket, $uriPath, $permissions, array(), $headers);
+	}
+
 }

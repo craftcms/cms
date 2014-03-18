@@ -1028,4 +1028,39 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 		return false;
 	}
+
+	/**
+	 * Ger period list.
+	 *
+	 * @return array
+	 */
+	public function getPeriodList()
+	{
+		return array(
+			PeriodType::Seconds => Craft::t('Seconds'),
+			PeriodType::Minutes => Craft::t('Minutes'),
+			PeriodType::Hours   => Craft::t('Hours'),
+			PeriodType::Days    => Craft::t('Days'),
+			PeriodType::Months  => Craft::t('Months'),
+			PeriodType::Years   => Craft::t('Years'),
+		);
+	}
+
+	/**
+	 * Extract period amount and type from a saved Expires value.
+	 *
+	 * @param $value
+	 * @return array
+	 */
+	protected function _extractExpiryInformation($value)
+	{
+		if (preg_match('/([0-9]+)([a-z]+)/i', $value, $matches))
+		{
+			return array('amount' => $matches[1], 'period' => $matches[2]);
+		}
+		else
+		{
+			return array('amount' => '', 'period' => '');
+		}
+	}
 }

@@ -72,4 +72,37 @@
 	class: 's3-url-prefix'
 }) }}
 
+{% set cacheInput %}
+	<table class="inputs">
+		<tr>
+			<td>
+				{{ forms.textField({
+					id: 'expiresAmount',
+					value: settings.expires.amount,
+					size: 2,
+					class: 'expires-amount'
+				}) }}
+			</td>
+			<td>
+				{{ forms.select({
+					id: 'expiresPeriod',
+					options: periods,
+					value: settings.expires.period,
+					class: 'expires-period'
+				}) }}
+			</td>
+		</tr>
+	</table>
+	{{ forms.hidden({
+		name: "expires",
+		value: settings.expires.amount ~ settings.expires.period,
+		class: "expires-combined"
+	}) }}
+{% endset %}
+
+{{ forms.field({
+	label: "Cache period "|t,
+	instructions: "You can set up the cache duration for uploaded Assets here."|t,
+	id: 'cachePeriod',
+}, cacheInput) }}
 <input type="hidden" name="location" class="s3-bucket-location" value="{{ settings.location }}">

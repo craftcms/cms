@@ -252,4 +252,18 @@ $googleBucketSelect.change(function()
     $googleUrlPrefixInput.val($selectedOption.data('url-prefix'));
 });
 
+var changeExpiryValue = function ()
+{
+	var parent = $(this).parents('.field'),
+		amount = parent.find('.expires-amount').val(),
+		period = parent.find('.expires-period select').val();
+
+	var combinedValue = (parseInt(amount, 10) == 0 || period.length == 0) ? '' : amount + period;
+
+	parent.find('[type=hidden]').val(combinedValue);
+};
+
+$('.expires-amount').keyup(changeExpiryValue).change(changeExpiryValue);
+$('.expires-period select').change(changeExpiryValue);
+
 })(jQuery);
