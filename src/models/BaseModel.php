@@ -378,6 +378,23 @@ abstract class BaseModel extends \CModel
 	}
 
 	/**
+	 * Returns all errors in a single list.
+	 *
+	 * @return array
+	 */
+	public function getAllErrors()
+	{
+		$errors = array();
+
+		foreach ($this->getErrors() as $attributeErrors)
+		{
+			$errors = array_merge($errors, $attributeErrors);
+		}
+
+		return $errors;
+	}
+
+	/**
 	 * Returns a copy of this model.
 	 *
 	 * @return BaseModel
