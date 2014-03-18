@@ -751,8 +751,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 					$now = new DateTime();
 					$expires->modify('+' . $this->getSettings()->expires);
 					$diff = $expires->format('U') - $now->format('U');
-
-					$headers['Expires'] = $expires->format(\DateTime::RFC822, DateTime::UTC);
 					$headers['Cache-Control'] = 'max-age=' . $diff . ', must-revalidate';
 				}
 			}
