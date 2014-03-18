@@ -325,6 +325,7 @@ $.extend(Craft,
 	 * @param object|null data
 	 * @param function|null callback
 	 * @param object|null options
+	 * @return jqXHR
 	 */
 	postActionRequest: function(action, data, callback, options)
 	{
@@ -341,10 +342,15 @@ $.extend(Craft,
 			type:     'POST',
 			data:     data,
 			success:  callback,
-			error:    function(jqXHR, textStatus, errorThrown) {
-				callback(null, textStatus, jqXHR);
+			error:    function(jqXHR, textStatus, errorThrown)
+			{
+				if (callback)
+				{
+					callback(null, textStatus, jqXHR);
+				}
 			},
-			complete: function(jqXHR, textStatus) {
+			complete: function(jqXHR, textStatus)
+			{
 				if (textStatus != 'success')
 				{
 					if (typeof Craft.cp != 'undefined')
