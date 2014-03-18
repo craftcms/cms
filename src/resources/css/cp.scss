@@ -25,6 +25,9 @@ html { overflow-y: scroll; }
 #header a:hover,
 #header a.active { color: #fff; text-decoration: none; }
 
+#header h2 { @include floatleft; @include margin(0, 25px, 0, 0); }
+#header h2 a { display: block; padding: 10px 0; }
+
 #header .right { @include margin-right(-7px); height: 38px; }
 #header .right > li { @include floatleft; }
 #header .right a { display: block; padding: 0 7px; line-height: 36px; }
@@ -39,8 +42,6 @@ html { overflow-y: scroll; }
 #header .right .settings { @include padding-right(0); }
 #header .right .settingsmenu { @include padding-left(0); }
 
-#header h2 { @include floatleft; @include margin(0, 25px, 0, 0); }
-#header h2 a { display: block; padding: 10px 0; }
 
 #settingsmenu { @include padding-left(32px); @include padding-right(18px); }
 #settingsmenu ul li a { @include margin(0, -18px, 0, -32px); @include padding-left(32px); @include padding-right(18px); }
