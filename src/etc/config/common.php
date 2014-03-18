@@ -204,6 +204,7 @@ $components['systemSettings'] = array(
 	)
 );
 $components['tags']['class']                 = 'Craft\TagsService';
+$components['tasks']['class']                = 'Craft\TasksService';
 $components['templateCache']['class']        = 'Craft\TemplateCacheService';
 $components['templates']['class']            = 'Craft\TemplatesService';
 $components['updates']['class']              = 'Craft\UpdatesService';
@@ -214,6 +215,7 @@ $components['components'] = array(
 		'element'     => array('subfolder' => 'elementtypes',     'suffix' => 'ElementType',     'instanceof' => 'IElementType'),
 		'field'       => array('subfolder' => 'fieldtypes',       'suffix' => 'FieldType',       'instanceof' => 'IFieldType'),
 		'tool'        => array('subfolder' => 'tools',            'suffix' => 'Tool',            'instanceof' => 'ITool'),
+		'task'        => array('subfolder' => 'tasks',            'suffix' => 'Task',            'instanceof' => 'ITask'),
 		'widget'      => array('subfolder' => 'widgets',          'suffix' => 'Widget',          'instanceof' => 'IWidget'),
 	)
 );

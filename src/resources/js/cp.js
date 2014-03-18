@@ -1,6 +1,9 @@
 (function($) {
 
 
+/**
+ * CP class
+ */
 var CP = Garnish.Base.extend(
 {
 	$alerts: null,
@@ -28,6 +31,10 @@ var CP = Garnish.Base.extend(
 	showingOverflowNavMenu: false,
 
 	fixedNotifications: false,
+
+	runningTaskInfo: null,
+	trackTaskProgressTimeout: null,
+	taskProgressIcon: null,
 
 	init: function()
 	{
@@ -383,7 +390,7 @@ var CP = Garnish.Base.extend(
 
 		var args = this.ajaxQueue.shift();
 
-		Craft.postActionRequest(args.action, args.data, $.proxy(function(data, textStatus, jqXHR)
+		var xhr = Craft.postActionRequest(args.action, args.data, $.proxy(function(data, textStatus, jqXHR)
 		{
 			args.callback(data, textStatus, jqXHR);
 
@@ -443,7 +450,7 @@ var CP = Garnish.Base.extend(
 
 				if (confirm(Craft.t('Are you sure you want to transfer your license to this domain?')))
 				{
-					Craft.postActionRequest('app/transferLicenseToCurrentDomain', $.proxy(function(response, textStatus)
+					this.postActionRequest('app/transferLicenseToCurrentDomain', {}, $.proxy(function(response, textStatus)
 					{
 						if (textStatus == 'success')
 						{
@@ -478,7 +485,7 @@ var CP = Garnish.Base.extend(
 					message: $link.prop('className').substr(5)
 				};
 
-				Craft.postActionRequest('app/shunCpAlert', data, $.proxy(function(response, textStatus)
+				this.postActionRequest('app/shunCpAlert', data, $.proxy(function(response, textStatus)
 				{
 					if (textStatus == 'success')
 					{
@@ -536,6 +543,78 @@ var CP = Garnish.Base.extend(
 			// Footer link
 			$('#footer-updates').text(updateText);
 		}
+	},
+
+	runPendingTasks: function()
+	{
+		this.postActionRequest('tasks/runPendingTasks', {}, $.proxy(function(taskInfo, textStatus)
+		{
+			if (taskInfo)
+			{
+				this.setRunningTaskInfo(taskInfo);
+				this.trackTaskProgress();
+			}
+		}, this));
+	},
+
+	trackTaskProgress: function()
+	{
+		this.trackTaskProgressTimeout = setTimeout($.proxy(function()
+		{
+			this.postActionRequest('tasks/getRunningTaskInfo', {}, $.proxy(function(taskInfo, textStatus)
+			{
+				if (textStatus == 'success')
+				{
+					this.setRunningTaskInfo(taskInfo, true);
+
+					if (taskInfo.status == 'running')
+					{
+						// Keep checking
+						this.trackTaskProgress();
+					}
+				}
+			}, this));
+		}, this), 1000);
+	},
+
+	stopTrackingTaskProgress: function()
+	{
+		if (this.trackTaskProgressTimeout)
+		{
+			clearTimeout(this.trackTaskProgressTimeout);
+		}
+	},
+
+	setRunningTaskInfo: function(taskInfo, animateIcon)
+	{
+		this.runningTaskInfo = taskInfo;
+
+		if (taskInfo)
+		{
+			if (!this.taskProgressIcon)
+			{
+				this.taskProgressIcon = new TaskProgressIcon();
+			}
+
+			if (taskInfo.status == 'running')
+			{
+				this.taskProgressIcon.hideFailMode();
+				this.taskProgressIcon.setDescription(taskInfo.description);
+				this.taskProgressIcon.setProgress(taskInfo.progress, animateIcon);
+			}
+			else if (taskInfo.status == 'error')
+			{
+				this.taskProgressIcon.showFailMode();
+			}
+		}
+		else
+		{
+			if (this.taskProgressIcon)
+			{
+				this.taskProgressIcon.hideFailMode();
+				this.taskProgressIcon.complete();
+			}
+		}
 	}
 },
 {
@@ -545,8 +624,579 @@ var CP = Garnish.Base.extend(
 	notificationDuration: 2000
 });
 
-
 Craft.cp = new CP();
+
+
+/**
+ * Task progress icon class
+ */
+var TaskProgressIcon = Garnish.Base.extend(
+{
+	$li: null,
+	$a: null,
+	hud: null,
+	completed: false,
+	failMode: false,
+
+	_canvasSupported: null,
+
+	_$bgCanvas: null,
+	_$staticCanvas: null,
+	_$hoverCanvas: null,
+	_$failCanvas: null,
+
+	_staticCtx: null,
+	_hoverCtx: null,
+	_canvasSize: null,
+	_arcPos: null,
+	_arcRadius: null,
+	_lineWidth: null,
+
+	_arcStartPos: 0,
+	_arcEndPos: 0,
+	_arcStartStepSize: null,
+	_arcEndStepSize: null,
+	_arcStep: null,
+	_arcStepTimeout: null,
+	_arcAnimateCallback: null,
+
+	_progressBar: null,
+
+	init: function()
+	{
+		this.$li = $('<li/>').prependTo($('#header-actions'));
+		this.$a = $('<a id="taskicon"/>').appendTo(this.$li);
+
+		this._canvasSupported = !!(document.createElement('canvas').getContext);
+
+		if (this._canvasSupported)
+		{
+			var m = (window.devicePixelRatio > 1 ? 2 : 1);
+			this._canvasSize = 30 * m;
+			this._arcPos = this._canvasSize / 2;
+			this._arcRadius = 7 * m;
+			this._lineWidth = 3 * m;
+
+			this._$bgCanvas     = this._createCanvas('bg', '#61666b');
+			this._$staticCanvas = this._createCanvas('static', '#d7d9db');
+			this._$hoverCanvas  = this._createCanvas('hover', '#fff');
+			this._$failCanvas   = this._createCanvas('fail', '#da5a47').hide();
+
+			this._staticCtx = this._$staticCanvas[0].getContext('2d');
+			this._hoverCtx = this._$hoverCanvas[0].getContext('2d');
+
+			this._drawArc(this._$bgCanvas[0].getContext('2d'), 0, 1);
+			this._drawArc(this._$failCanvas[0].getContext('2d'), 0, 1);
+		}
+		else
+		{
+			this._progressBar = new Craft.ProgressBar(this.$a);
+			this._progressBar.showProgressBar();
+		}
+
+		this.addListener(this.$a, 'click', 'toggleHud');
+	},
+
+	setDescription: function(description)
+	{
+		this.$a.attr('title', description);
+	},
+
+	setProgress: function(progress, animate)
+	{
+		if (this._canvasSupported)
+		{
+			if (animate)
+			{
+				this._animateArc(0, progress);
+			}
+			else
+			{
+				this._setArc(0, progress);
+			}
+		}
+		else
+		{
+			this._progressBar.setProgressPercentage(progress * 100);
+		}
+	},
+
+	complete: function()
+	{
+		this.completed = true;
+
+		if (this._canvasSupported)
+		{
+			this._animateArc(0, 1, $.proxy(function()
+			{
+				$(this._bgCanvas).fadeOut();
+
+				this._animateArc(1, 1, $.proxy(function()
+				{
+					this.$li.remove();
+					this.destroy();
+				}, this));
+			}, this));
+		}
+		else
+		{
+			this._progressBar.setProgressPercentage(100);
+			this.$a.fadeOut();
+		}
+	},
+
+	showFailMode: function()
+	{
+		if (this.failMode)
+		{
+			return;
+		}
+
+		this.failMode = true;
+
+		if (this._canvasSupported)
+		{
+			this._$bgCanvas.hide();
+			this._$staticCanvas.hide();
+			this._$hoverCanvas.hide();
+			this._$failCanvas.show();
+		}
+		else
+		{
+			this._progressBar.$progressBar.css('border-color', '#da5a47');
+			this._progressBar.$innerProgressBar.css('background-color', '#da5a47');
+			this._progressBar.setProgressPercentage(50);
+		}
+
+		this.setDescription(Craft.t('Failed task'));
+	},
+
+	hideFailMode: function()
+	{
+		if (!this.failMode)
+		{
+			return;
+		}
+
+		this.failMode = false;
+
+		if (this._canvasSupported)
+		{
+			this._$bgCanvas.show();
+			this._$staticCanvas.show();
+			this._$hoverCanvas.show();
+			this._$failCanvas.hide();
+		}
+		else
+		{
+			this._progressBar.$progressBar.css('border-color', '');
+			this._progressBar.$innerProgressBar.css('background-color', '');
+			this._progressBar.setProgressPercentage(50);
+		}
+	},
+
+	toggleHud: function()
+	{
+		if (!this.hud)
+		{
+			this.hud = new TaskProgressHUD();
+		}
+		else
+		{
+			this.hud.toggle();
+		}
+	},
+
+	_createCanvas: function(id, color)
+	{
+		var $canvas = $('<canvas id="taskicon-'+id+'" width="'+this._canvasSize+'" height="'+this._canvasSize+'"/>').appendTo(this.$a),
+			ctx = $canvas[0].getContext('2d');
+
+		ctx.strokeStyle = color;
+		ctx.lineWidth = this._lineWidth;
+		ctx.lineCap = 'round';
+		return $canvas;
+	},
+
+	_setArc: function(startPos, endPos)
+	{
+		this._arcStartPos = startPos;
+		this._arcEndPos = endPos;
+
+		this._drawArc(this._staticCtx, startPos, endPos);
+		this._drawArc(this._hoverCtx, startPos, endPos);
+	},
+
+	_drawArc: function(ctx, startPos, endPos)
+	{
+		ctx.clearRect(0, 0, this._canvasSize, this._canvasSize);
+		ctx.beginPath();
+		ctx.arc(this._arcPos, this._arcPos, this._arcRadius, (1.5+(startPos*2))*Math.PI, (1.5+(endPos*2))*Math.PI);
+		ctx.stroke();
+		ctx.closePath();
+	},
+
+	_animateArc: function(targetStartPos, targetEndPos, callback)
+	{
+		if (this._arcStepTimeout)
+		{
+			clearTimeout(this._arcStepTimeout);
+		}
+
+		this._arcStep = 0;
+		this._arcStartStepSize = (targetStartPos - this._arcStartPos) / 10;
+		this._arcEndStepSize = (targetEndPos - this._arcEndPos) / 10;
+		this._arcAnimateCallback = callback;
+		this._takeNextArcStep();
+	},
+
+	_takeNextArcStep: function()
+	{
+		this._setArc(this._arcStartPos+this._arcStartStepSize, this._arcEndPos+this._arcEndStepSize);
+
+		this._arcStep++;
+
+		if (this._arcStep < 10)
+		{
+			this._arcStepTimeout = setTimeout($.proxy(this, '_takeNextArcStep'), 50);
+		}
+		else if (this._arcAnimateCallback)
+		{
+			this._arcAnimateCallback();
+		}
+	}
+});
+
+var TaskProgressHUD = Garnish.HUD.extend(
+{
+	icon: null,
+
+	tasksById: null,
+	completedTasks: null,
+	updateTasksTimeout: null,
+
+	completed: false,
+
+	init: function()
+	{
+		this.icon = Craft.cp.taskProgressIcon;
+		this.tasksById = {};
+		this.completedTasks = [];
+
+		this.base(this.icon.$a);
+		this.$body.attr('id', 'tasks-hud');
+
+		// Use the known task as a starting point
+		if (Craft.cp.runningTaskInfo && Craft.cp.runningTaskInfo.status != 'error')
+		{
+			this.showTaskInfo([Craft.cp.runningTaskInfo]);
+		}
+
+		this.$hud.trigger('resize');
+	},
+
+	onShow: function()
+	{
+		Craft.cp.stopTrackingTaskProgress();
+
+		this.updateTasks();
+		this.base();
+	},
+
+	onHide: function()
+	{
+		if (this.updateTasksTimeout)
+		{
+			clearTimeout(this.updateTasksTimeout);
+		}
+
+		if (!this.completed)
+		{
+			Craft.cp.trackTaskProgress();
+		}
+
+		// Clear out any completed tasks
+		if (this.completedTasks.length)
+		{
+			for (var i = 0; i < this.completedTasks.length; i++)
+			{
+				this.completedTasks[i].destroy();
+			}
+
+			this.completedTasks = [];
+		}
+
+		this.base();
+	},
+
+	updateTasks: function()
+	{
+		this.completed = false;
+
+		Craft.postActionRequest('tasks/getTaskInfo', $.proxy(function(taskInfo, textStatus)
+		{
+			if (textStatus == 'success')
+			{
+				this.showTaskInfo(taskInfo);
+			}
+		}, this))
+	},
+
+	showTaskInfo: function(taskInfo)
+	{
+		// First remove any tasks that have completed
+		var newTaskIds = [];
+
+		if (taskInfo)
+		{
+			for (var i = 0; i < taskInfo.length; i++)
+			{
+				newTaskIds.push(taskInfo[i].id);
+			}
+		}
+
+		for (var id in this.tasksById)
+		{
+			if (!Craft.inArray(id, newTaskIds))
+			{
+				this.tasksById[id].complete();
+				this.completedTasks.push(this.tasksById[id]);
+				delete this.tasksById[id];
+			}
+		}
+
+		// Now display the tasks that are still around
+		if (taskInfo && taskInfo.length)
+		{
+			var anyTasksRunning = false,
+				anyTasksFailed = false;
+
+			for (var i = 0; i < taskInfo.length; i++)
+			{
+				var info = taskInfo[i];
+
+				if (!anyTasksRunning && info.status == 'running')
+				{
+					anyTasksRunning = true;
+				}
+				else if (!anyTasksFailed && info.status == 'error')
+				{
+					anyTasksFailed = true;
+				}
+
+				if (this.tasksById[info.id])
+				{
+					this.tasksById[info.id].updateStatus(info);
+				}
+				else
+				{
+					this.tasksById[info.id] = new TaskProgressHUD.Task(this, info);
+
+					// Place it before the next already known task
+					for (var j = i + 1; j < taskInfo.length; j++)
+					{
+						if (this.tasksById[taskInfo[j].id])
+						{
+							this.tasksById[info.id].$container.insertBefore(this.tasksById[taskInfo[j].id].$container);
+							break;
+						}
+					}
+				}
+			}
+
+			if (anyTasksRunning)
+			{
+				this.updateTasksTimeout = setTimeout($.proxy(this, 'updateTasks'), 500);
+			}
+			else
+			{
+				this.completed = true;
+
+				if (anyTasksFailed)
+				{
+					Craft.cp.setRunningTaskInfo({ status: 'error' });
+				}
+			}
+		}
+		else
+		{
+			this.completed = true;
+			Craft.cp.setRunningTaskInfo(null);
+			this.hide();
+		}
+	}
+});
+
+TaskProgressHUD.Task = Garnish.Base.extend(
+{
+	hud: null,
+	id: null,
+	level: null,
+	description: null,
+
+	status: null,
+	progress: null,
+
+	$container: null,
+	$statusContainer: null,
+	$descriptionContainer: null,
+
+	_progressBar: null,
+
+	init: function(hud, info)
+	{
+		this.hud = hud;
+
+		this.id = info.id;
+		this.level = info.level;
+		this.description = info.description;
+
+		this.$container = $('<div class="task"/>').appendTo(this.hud.$body);
+		this.$statusContainer = $('<div class="task-status"/>').appendTo(this.$container);
+		this.$descriptionContainer = $('<div class="task-description"/>').appendTo(this.$container).text(info.description);
+
+		this.$container.data('task', this);
+
+		if (this.level != 0)
+		{
+			this.$container.css('padding-'+Craft.left, 24+(this.level*24));
+			$('<div class="indent" data-icon="→"/>').appendTo(this.$descriptionContainer);;
+		}
+
+		this.updateStatus(info);
+	},
+
+	updateStatus: function(info)
+	{
+		if (this.status != info.status)
+		{
+			this.$statusContainer.empty();
+			this.status = info.status;
+
+			switch (this.status)
+			{
+				case 'pending':
+				{
+					this.$statusContainer.text(Craft.t('Pending'));
+					break;
+				}
+				case 'running':
+				{
+					this._progressBar = new Craft.ProgressBar(this.$statusContainer);
+					this._progressBar.showProgressBar();
+					break;
+				}
+				case 'error':
+				{
+					$('<span class="error">'+Craft.t('Failed')+'</span>').appendTo(this.$statusContainer);
+
+					if (this.level == 0)
+					{
+						var $actionBtn = $('<a class="menubtn error" title="'+Craft.t('Options')+'"/>').appendTo(this.$statusContainer);
+						$(
+							'<div class="menu">' +
+								'<ul>' +
+									'<li><a data-action="rerun">'+Craft.t('Try again')+'</a></li>' +
+									'<li><a data-action="cancel">'+Craft.t('Cancel')+'</a></li>' +
+								'</ul>' +
+							'</div>'
+						).appendTo(this.$statusContainer);
+
+						new Garnish.MenuBtn($actionBtn, {
+							onOptionSelect: $.proxy(this, 'performErrorAction')
+						});
+					}
+
+					break;
+				}
+			}
+		}
+
+		if (this.status == 'running')
+		{
+			this._progressBar.setProgressPercentage(info.progress*100);
+
+			if (this.level == 0)
+			{
+				// Update the task icon
+				Craft.cp.setRunningTaskInfo(info, true);
+			}
+		}
+	},
+
+	performErrorAction: function(option)
+	{
+		// Whatever happens, let's remove any following subtasks
+		var $nextTaskContainers = this.$container.nextAll();
+
+		for (var i = 0; i < $nextTaskContainers.length; i++)
+		{
+			var nextTask = $($nextTaskContainers[i]).data('task');
+
+			if (nextTask && nextTask.level != 0)
+			{
+				nextTask.destroy();
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		// What option did they choose?
+		switch ($(option).data('action'))
+		{
+			case 'rerun':
+			{
+				Craft.postActionRequest('tasks/rerunTask', { taskId: this.id }, $.proxy(function(taskInfo, textStatus)
+				{
+					if (textStatus == 'success')
+					{
+						this.updateStatus(taskInfo);
+
+						if (this.hud.completed)
+						{
+							this.hud.updateTasks();
+						}
+					}
+				}, this));
+				break;
+			}
+			case 'cancel':
+			{
+				Craft.postActionRequest('tasks/deleteTask', { taskId: this.id }, $.proxy(function(taskInfo, textStatus)
+				{
+					if (textStatus == 'success')
+					{
+						this.destroy();
+
+						if (this.hud.completed)
+						{
+							this.hud.updateTasks();
+						}
+					}
+				}, this))
+			}
+		}
+	},
+
+	complete: function()
+	{
+		this.$statusContainer.empty();
+		$('<div data-icon="check"/>').appendTo(this.$statusContainer);
+	},
+
+	destroy: function()
+	{
+		if (this.hud.tasksById[this.id])
+		{
+			delete this.hud.tasksById[this.id];
+		}
+
+		this.$container.remove();
+		this.base();
+	}
+});
 
 
 })(jQuery);

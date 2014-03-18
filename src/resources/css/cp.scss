@@ -42,6 +42,25 @@ html { overflow-y: scroll; }
 #header .right .settings { @include padding-right(0); }
 #header .right .settingsmenu { @include padding-left(0); }
 
+#header .right #taskicon { position: relative; padding: 5px 0 1px; width: 30px; height: 30px; }
+#header .right #taskicon canvas { display: block; position: absolute; width: 30px; height: 30px; }
+#header .right #taskicon canvas#taskicon-hover { opacity: 0; @include transition(opacity linear 100ms); }
+#header .right #taskicon:hover canvas#taskicon-hover { opacity: 1; }
+
+#header .right #taskicon .progressbar { position: static; margin: 8px 2px; width: auto; border-color: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
+#header .right #taskicon .progressbar-inner { background: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
+#header .right #taskicon:hover .progressbar { border-color: #fff; }
+#header .right #taskicon:hover .progressbar-inner { background: #fff; }
+
+#tasks-hud { padding: 0; max-height: 300px; overflow: auto; }
+#tasks-hud .task { @include padding(14px, 138px, 14px, 24px); overflow: hidden; }
+#tasks-hud .task:after { @include clearafter; }
+#tasks-hud .task + .task { border-top: 1px solid $hrcolor; }
+#tasks-hud .task .task-description { position: relative; }
+#tasks-hud .task .task-description .indent { position: absolute; top: -1px; @include left(-24px); @include margin-left(0); }
+#tasks-hud .task .task-status { @include floatright; @include margin-right(-114px); width: 100px; color: $lighttextcolor; text-align: center; }
+#tasks-hud .task .task-status .progressbar { position: static; margin-top: 4px; width: auto; }
+#tasks-hud .task .task-status .menubtn { @include margin-right(-22px); }
 
 #settingsmenu { @include padding-left(32px); @include padding-right(18px); }
 #settingsmenu ul li a { @include margin(0, -18px, 0, -32px); @include padding-left(32px); @include padding-right(18px); }

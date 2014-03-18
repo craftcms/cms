@@ -2,6 +2,11 @@
 
 {% includeCssResource "css/cp.css" first %}
 {%- includeTranslations
+	"Pending",
+	"Failed",
+	"Failed task",
+	"Options",
+	"Try again",
 	"Show sidebar",
 	"Hide sidebar",
 	"1 update available",
@@ -76,6 +81,16 @@
 	<header id="header">
 		<div class="container">
 			<ul id="header-actions" class="right">
+				{% set task = craft.tasks.getRunningTask() %}
+				{% if task %}
+					{% includeJs 'Craft.cp.setRunningTaskInfo('~task.getInfo()|json_encode|raw~');' %}
+					{% includeJs 'Craft.cp.trackTaskProgress();' %}
+				{% elseif craft.tasks.areTasksPending() %}
+					{% includeJs 'Craft.cp.runPendingTasks();' %}
+				{% elseif craft.tasks.haveTasksFailed() %}
+					{% includeJs 'Craft.cp.setRunningTaskInfo({ status: "error" });' %}
+				{% endif %}
+
 				{% if currentUser.can('performUpdates') %}
 					{% if craft.app.isUpdateInfoCached() %}
 						{% set totalUpdates = craft.app.getTotalAvailableUpdates() %}

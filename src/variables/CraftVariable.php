@@ -279,6 +279,14 @@ class CraftVariable
 	}
 
 	/**
+	 * @return TasksVariable
+	 */
+	public function tasks()
+	{
+		return new TasksVariable();
+	}
+
+	/**
 	 * @return UpdatesVariable
 	 */
 	public function updates()
