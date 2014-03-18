@@ -1316,7 +1316,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 					var $a = subFolder.find('a');
 					this._addSubfolder(parentFolder, subFolder);
-					this._createFolderContextMenu($a);
+					this._createFolderContextMenu($a, this.settings.context == "index");
 					this.sourceSelect.addItems($a);
 
 					// For Assets Modals the folder drag manager won't be available
