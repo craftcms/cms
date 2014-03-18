@@ -17,6 +17,7 @@ class GetHelpModel extends BaseModel
 			'message'          => array(AttributeType::String, 'required' => true),
 			'attachLogs'       => AttributeType::Bool,
 			'attachDbBackup'   => AttributeType::Bool,
+			'attachTemplates'  => AttributeType::Bool,
 			'attachment'       => AttributeType::Mixed,
 		);
 	}

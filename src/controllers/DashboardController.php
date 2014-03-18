@@ -110,6 +110,7 @@ class DashboardController extends BaseController
 		$getHelpModel->message = trim(craft()->request->getPost('message'));
 		$getHelpModel->attachLogs = (bool) craft()->request->getPost('attachLogs');
 		$getHelpModel->attachDbBackup = (bool) craft()->request->getPost('attachDbBackup');
+		$getHelpModel->attachTemplates = (bool)craft()->request->getPost('attachTemplates');
 		$getHelpModel->attachment = UploadedFile::getInstanceByName('attachAdditionalFile');
 
 		if ($getHelpModel->validate())
@@ -153,8 +154,10 @@ class DashboardController extends BaseController
 			{
 				if ($getHelpModel->attachLogs || $getHelpModel->attachDbBackup)
 				{
-					$zipFile = craft()->path->getTempPath().StringHelper::UUID().'.zip';
-					IOHelper::createFile($zipFile);
+					if (!$zipFile)
+					{
+						$zipFile = $this->_createZip();
+					}
 
 					if ($getHelpModel->attachLogs && IOHelper::folderExists(craft()->path->getLogPath()))
 					{
@@ -195,8 +198,7 @@ class DashboardController extends BaseController
 					// If we don't have a zip file yet, create one now.
 					if (!$zipFile)
 					{
-						$zipFile = craft()->path->getTempPath().StringHelper::UUID().'.zip';
-						IOHelper::createFile($zipFile);
+						$zipFile = $this->_createZip();
 					}
 
 					$tempFolder = craft()->path->getTempPath().StringHelper::UUID().'/';
@@ -213,6 +215,33 @@ class DashboardController extends BaseController
 					if (IOHelper::fileExists($tempFile))
 					{
 						Zip::add($zipFile, $tempFile, $tempFolder);
+					}
+				}
+
+				if ($getHelpModel->attachTemplates)
+				{
+					// If we don't have a zip file yet, create one now.
+					if (!$zipFile)
+					{
+						$zipFile = $this->_createZip();
+					}
+
+					if (IOHelper::folderExists(craft()->path->getLogPath()))
+					{
+						// Grab it all.
+						$templateFolderContents = IOHelper::getFolderContents(craft()->path->getSiteTemplatesPath());
+
+						foreach ($templateFolderContents as $file)
+						{
+							// Make sure it's a file.
+							if (IOHelper::fileExists($file))
+							{
+								$templateFolderName = IOHelper::getFolderName(craft()->path->getSiteTemplatesPath(), false);
+								$siteTemplatePath = craft()->path->getSiteTemplatesPath();
+								$tempPath = substr($siteTemplatePath, 0, (strlen($siteTemplatePath) - strlen($templateFolderName)) - 1);
+								Zip::add($zipFile, $file, $tempPath);
+							}
+						}
 					}
 				}
 
@@ -275,5 +304,16 @@ class DashboardController extends BaseController
 				'widgetId' => $widgetId
 			)
 		);
+	}
+
+	/**
+	 * @return string
+	 */
+	private function _createZip()
+	{
+		$zipFile = craft()->path->getTempPath().StringHelper::UUID().'.zip';
+		IOHelper::createFile($zipFile);
+
+		return $zipFile;
 	}
 }

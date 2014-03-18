@@ -39,6 +39,13 @@
 			checked: craft.config.backupDbOnUpdate,
 		}) }}
 
+		{{ forms.checkboxField({
+			name: 'attachTemplates',
+			checked: true,
+			class: 'attachTemplates',
+			label: "Include your template files?"|t,
+		}) }}
+
 		{{ forms.fileField({
 			label: "Attach an additional file?"|t,
 			class: 'attachAdditionalFile',
