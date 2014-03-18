@@ -229,7 +229,7 @@ td.right { float: none; @include alignright; }
 .content.has-sidebar .sidebar nav li { position: relative; }
 .content.has-sidebar .sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; @include user-select(none); outline: none; }
 .content.has-sidebar .sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
-.content.has-sidebar .sidebar nav li a.sel { @include margin-left(-200px); @include padding-left(200px); color: #fff; background: $headerBgColor; cursor: default; }
+.content.has-sidebar .sidebar nav li a.sel { @include margin-left(-200px); @include padding-left(200px); @include border-radius(0, 2px, 2px, 0); color: #fff; background: $menuselcolor; cursor: default; }
 
 .content.has-sidebar .sidebar nav li .toggle { position: absolute; top: 3px; @include left(-20px); }
 .content.has-sidebar .sidebar nav li.expanded > .toggle { background-position: 50% -40px; }

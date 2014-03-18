@@ -169,6 +169,11 @@ $noticecolor: #5286d9;
 	body.rtl & { border-left: $params; }
 }
 
+@mixin border-radius($tl, $tr, $br, $bl) {
+	body.ltr & { border-radius: $tl $tr $br $bl; }
+	body.rtl & { border-radius: $tr $tl $bl $br; }
+}
+
 @mixin floatleft {
 	body.ltr & { float: left; }
 	body.rtl & { float: right; }
