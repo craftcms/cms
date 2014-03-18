@@ -243,14 +243,9 @@ class LocalizationService extends BaseApplicationComponent
 			}
 
 			// Resave all of the localizable elements
-			foreach (craft()->elements->getAllElementTypes() as $elementType)
-			{
-				if ($elementType->isLocalized())
-				{
-					$criteria = craft()->elements->getCriteria($elementType->getClassHandle());
-					craft()->elements->resaveElements($criteria);
-				}
-			}
+			craft()->tasks->createTask('ResaveAllElements', null, array(
+				'localizableOnly' => true,
+			));
 		}
 
 		return $success;

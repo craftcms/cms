@@ -273,6 +273,9 @@ Craft.Locales = Garnish.Base.extend(
 					this.checkInputVal();
 
 					Craft.cp.displayNotice(Craft.t('New locale added.'));
+
+					// Now trigger the resave elements task
+					Craft.cp.runPendingTasks();
 				}
 				else
 				{

@@ -47,14 +47,8 @@ class m140401_100000_resave_elements extends BaseMigration
 			Craft::log('Done inserting into elements_i18n.', LogLevel::Info, true);
 		}
 
-		Craft::log('Resaving all localizable elements', LogLevel::Info, true);
-
-		$elementTypes = craft()->elements->getAllElementTypes();
-		foreach ($elementTypes as $elementType)
-		{
-			$criteria = craft()->elements->getCriteria($elementType->getClassHandle());
-			craft()->elements->resaveElements($criteria);
-		}
+		// Queue up a Resave All Elements task
+		craft()->tasks->createTask('ResaveAllElements');
 
 		return true;
 	}

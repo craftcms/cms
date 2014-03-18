@@ -1132,42 +1132,6 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Resaves all of the elements matching the given criteria.
-	 * Useful for patching missing locale rows, etc.
-	 *
-	 * @param ElementCriteriaModel $criteria
-	 */
-	public function resaveElements(ElementCriteriaModel $criteria)
-	{
-		// This might take a while
-		craft()->config->maxPowerCaptain();
-		ignore_user_abort(true);
-
-		// Just to be safe...
-		$criteria->locale = craft()->i18n->getPrimarySiteLocaleId();
-		$criteria->status = null;
-		$criteria->localeEnabled = null;
-		$criteria->order = 'dateCreated asc';
-
-		// Do this in batches so we don't hit the memory limit
-		$criteria->offset = 0;
-		$criteria->limit = 25;
-
-		do
-		{
-			$batchElements = $criteria->find();
-
-			foreach ($batchElements as $element)
-			{
-				$this->saveElement($element, false);
-			}
-
-			$criteria->offset += 25;
-		}
-		while ($batchElements);
-	}
-
-	/**
 	 * Merges two elements together.
 	 *
 	 * @param int $mergedElementId

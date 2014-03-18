@@ -657,8 +657,11 @@ class SectionsService extends BaseApplicationComponent
 						craft()->db->createCommand()->delete('content', array('and', array('in', 'elementId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
 					}
 
-					// Save all of the entries
-					craft()->elements->resaveElements($criteria);
+					// Resave all of the entries in this section
+					craft()->tasks->createTask('ResaveElements', Craft::t('Resaving {section} entries', array('section' => $section->name)), array(
+						'elementType' => ElementType::Entry,
+						'criteria'    => $criteria->getAttributes()
+					));
 				}
 
 				if ($transaction !== null)
