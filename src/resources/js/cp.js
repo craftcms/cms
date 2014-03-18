@@ -559,6 +559,12 @@ var CP = Garnish.Base.extend(
 
 	trackTaskProgress: function()
 	{
+		// Ignore if we're already tracking tasks
+		if (this.trackTaskProgressTimeout)
+		{
+			return;
+		}
+
 		this.trackTaskProgressTimeout = setTimeout($.proxy(function()
 		{
 			this.postActionRequest('tasks/getRunningTaskInfo', {}, $.proxy(function(taskInfo, textStatus)
@@ -582,6 +588,7 @@ var CP = Garnish.Base.extend(
 		if (this.trackTaskProgressTimeout)
 		{
 			clearTimeout(this.trackTaskProgressTimeout);
+			this.trackTaskProgressTimeout = null;
 		}
 	},
 
