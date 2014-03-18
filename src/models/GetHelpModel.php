@@ -16,6 +16,7 @@ class GetHelpModel extends BaseModel
 			'fromEmail'        => array(AttributeType::Email, 'required' => true),
 			'message'          => array(AttributeType::String, 'required' => true),
 			'attachDebugFiles' => array(AttributeType::Bool),
+			'attachTemplates'  => array(AttributeType::Bool),
 			'attachment'       => array(AttributeType::Mixed),
 		);
 	}

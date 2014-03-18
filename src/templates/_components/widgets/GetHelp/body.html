@@ -31,6 +31,15 @@
 	}) }}
 
 	<p>
+		{{ forms.checkbox({
+			name: 'attachTemplates',
+			checked: true,
+			class: 'attachTemplates',
+			label: "Include your template files?"|t,
+		}) }}
+	</p>
+
+	<p>
 		{{ "Attach an additional file?"|t }}:
 
 		{{ forms.file({
