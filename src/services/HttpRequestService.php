@@ -727,6 +727,38 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Ends the current HTTP request, without ending script execution.
+	 *
+	 * @param string|null $content
+	 * @see http://stackoverflow.com/a/141026
+	 */
+	public function close($content = '')
+	{
+		// Prevent the script from ending when the browser closes the connection
+		ignore_user_abort(true);
+
+		// Discard any current OB content
+		if (ob_get_length() !== false)
+		{
+			ob_end_clean();
+		}
+
+		// Send the content
+		ob_start();
+		echo $content;
+		$size = ob_get_length();
+
+		// Tell the browser to close the connection
+		header('Connection: close');
+		header('Content-Length: '.$size);
+
+		// Output the content, flush it to the browser, and close out the session
+		ob_end_flush();
+		flush();
+		session_write_close();
+	}
+
+	/**
 	 * Returns the query string path.
 	 *
 	 * @access private
