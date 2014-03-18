@@ -6,8 +6,6 @@ namespace Craft;
  */
 class EntriesController extends BaseController
 {
-	protected $allowAnonymous = array('actionSaveEntry');
-
 	/**
 	 * Edit an entry.
 	 *
