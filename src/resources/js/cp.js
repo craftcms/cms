@@ -12,10 +12,6 @@ var CP = Garnish.Base.extend(
 	$overflowNavMenu: null,
 	$overflowNavMenuList: null,
 
-	/* HIDE */
-	$customizeNavBtn: null,
-	/* end HIDE */
-
 	$notificationWrapper: null,
 	$notificationContainer: null,
 	$main: null,
@@ -39,9 +35,6 @@ var CP = Garnish.Base.extend(
 		this.$alerts = $('#alerts');
 		this.$header = $('#header');
 		this.$nav = $('#nav');
-		/* HIDE */
-		this.$customizeNavBtn = $('#customize-nav');
-		/* end HIDE */
 		this.$notificationWrapper = $('#notifications-wrapper');
 		this.$notificationContainer = $('#notifications');
 		this.$main = $('#main');
@@ -79,11 +72,6 @@ var CP = Garnish.Base.extend(
 
 		$errorNotifications.delay(CP.notificationDuration * 2).fadeOut();
 		$otherNotifications.delay(CP.notificationDuration).fadeOut();
-
-		/* HIDE */
-		// Customize Nav button
-		this.addListener(this.$customizeNavBtn, 'click', 'showCustomizeNavModal');
-		/* end HIDE */
 
 		// Secondary form submit buttons
 		this.addListener($('.formsubmit'), 'activate', function(ev)
@@ -303,33 +291,6 @@ var CP = Garnish.Base.extend(
 		this.navItems[this.visibleNavItems].insertBefore(this.$overflowNavMenuItem);
 		this.visibleNavItems++;
 	},
-
-	/* HIDE */
-	/**
-	 * Shows the "Customize your nav" modal.
-	 */
-	showCustomizeNavModal: function()
-	{
-		if (!this.customizeNavModal)
-		{
-			var $modal = $('<div id="customize-nav-modal" class="modal"/>').appendTo(document.body),
-				$header = $('<header class="header"><h1>'+Craft.t('Customize your nav')+'</h1></header>').appendTo($modal),
-				$body = $('<div class="body"/>').appendTo($modal),
-				$ul = $('<ul/>').appendTo($body);
-
-			for (var i = 0; i < this.totalNavItems; i++)
-			{
-				var $navItem = this.navItems[i];
-			}
-
-			this.customizeNavModal = new Garnish.Modal($modal);
-		}
-		else
-		{
-			this.customizeNavModal.show();
-		}
-	},
-	/* end HIDE */
 
 	updateFixedNotifications: function()
 	{
