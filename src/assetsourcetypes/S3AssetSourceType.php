@@ -740,28 +740,15 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$object = empty($filePath) ? '' : array('file' => $filePath);
 		$headers = array();
 
-		if (!empty($object) && !empty($this->getSettings()->expires))
+		if (!empty($object) && !empty($this->getSettings()->expires) && DateTimeHelper::isValidIntervalString($this->getSettings()->expires))
 		{
-			try {
-				// Set the cache headers only if valid time interval and longer than 0 seconds
-				$interval = new \DateInterval($this->getSettings()->expires);
-				if ($interval->s != 0)
-				{
-					$expires = new DateTime();
-					$now = new DateTime();
-					$expires->modify('+' . $this->getSettings()->expires);
-					$diff = $expires->format('U') - $now->format('U');
-					$headers['Cache-Control'] = 'max-age=' . $diff . ', must-revalidate';
-				}
-			}
-			catch (\Exception $exception)
-			{
-				; // no-op.
-			}
-
+			$expires = new DateTime();
+			$now = new DateTime();
+			$expires->modify('+' . $this->getSettings()->expires);
+			$diff = $expires->format('U') - $now->format('U');
+			$headers['Cache-Control'] = 'max-age=' . $diff . ', must-revalidate';
 		}
 
 		return $this->_s3->putObject($object, $bucket, $uriPath, $permissions, array(), $headers);
 	}
-
 }

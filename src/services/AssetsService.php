@@ -797,8 +797,7 @@ class AssetsService extends BaseApplicationComponent
 		if (!$transform || !ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename)))
 		{
 			$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
-			$base = $sourceType->getBaseUrl();
-			return $base.$file->getFolder()->path.$file->filename;
+			return AssetsHelper::generateUrl($sourceType, $file);
 		}
 
 		// Get the transform index model

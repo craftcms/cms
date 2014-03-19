@@ -271,6 +271,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 *
 	 * @param AssetSourceModel $source
 	 * @return bool
+	 * @throws \Exception
 	 */
 	public function saveSource(AssetSourceModel $source)
 	{

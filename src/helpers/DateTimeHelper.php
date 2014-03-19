@@ -564,4 +564,20 @@ class DateTimeHelper
 		$interval = new DateInterval($timeFormatString);
 		return $interval->toSeconds();
 	}
+
+	/**
+	 * Returns true if interval string is a valid interval.
+	 *
+	 * @param $intervalString
+	 * @return bool
+	 */
+	public static function isValidIntervalString($intervalString)
+	{
+		$interval = DateInterval::createFromDateString($intervalString);
+		if ($interval->s != 0 || $interval->i != 0 || $interval->h != 0 || $interval->d != 0 || $interval->m != 0 || $interval->y != 0)
+		{
+			return true;
+		}
+		return false;
+	}
 }
