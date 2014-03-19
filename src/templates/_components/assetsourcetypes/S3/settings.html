@@ -101,8 +101,7 @@
 {% endset %}
 
 {{ forms.field({
-	label: "Cache period "|t,
-	instructions: "You can set up the cache duration for uploaded Assets here."|t,
-	id: 'cachePeriod',
+	label: "Cache Duration "|t,
+	id: 'cacheDuration',
 }, cacheInput) }}
 <input type="hidden" name="location" class="s3-bucket-location" value="{{ settings.location }}">
