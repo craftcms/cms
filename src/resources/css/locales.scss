@@ -1,2 +1,6 @@
+@charset "UTF-8";
+
+@import "shared";
+
 #addlocale .text { @include padding-right(30px); }
 #addlocale .spinner { position: absolute; top: 0; @include right(5px); }
