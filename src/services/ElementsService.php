@@ -63,18 +63,29 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the element type used by the element of a given ID.
+	 * Returns the element type(s) used by the element of a given ID(s).
 	 *
-	 * @param int $elementId
-	 * @return string|null
+	 * @param int|array $elementId
+	 * @return string|array|null
 	 */
 	public function getElementTypeById($elementId)
 	{
-		return craft()->db->createCommand()
-			->select('type')
-			->from('elements')
-			->where(array('id' => $elementId))
-			->queryScalar();
+		if (is_array($elementId))
+		{
+			return craft()->db->createCommand()
+				->selectDistinct('type')
+				->from('elements')
+				->where(array('in', 'id', $elementId))
+				->queryColumn();
+		}
+		else
+		{
+			return craft()->db->createCommand()
+				->select('type')
+				->from('elements')
+				->where(array('id' => $elementId))
+				->queryScalar();
+		}
 	}
 
 	/**
@@ -1013,10 +1024,8 @@ class ElementsService extends BaseApplicationComponent
 				}
 
 				// Finally, delete any caches involving this element
-				if (!$isNewElement)
-				{
-					craft()->templateCache->deleteCachesByElementId($element->id);
-				}
+				// (Even do this for new elements, since they might pop up in a cached criteria.)
+				craft()->templateCache->deleteCachesByElementId($element->id);
 			}
 
 			if ($transaction !== null)
