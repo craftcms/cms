@@ -104,7 +104,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 				{
 
 					var $source = $($selected[i]).parent();
-					if ($source.parents('ul').length > 1)
+					if ($source.parents('ul').length > 1 && $source.hasClass('sel'))
 					{
 						draggees.push($source[0]);
 					}
