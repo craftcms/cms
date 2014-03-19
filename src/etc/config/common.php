@@ -221,21 +221,8 @@ $components['components'] = array(
 );
 $components['plugins'] = array(
 	'class' => 'Craft\PluginsService',
-	'componentTypes' => array(
-		'controller'  => array('subfolder' => 'controllers',      'suffix' => 'Controller',      'instanceof' => 'BaseController'),
-		'field'       => array('subfolder' => 'fieldtypes',       'suffix' => 'FieldType',       'instanceof' => 'IFieldType'),
-		'helper'      => array('subfolder' => 'helpers',          'suffix' => 'Helper'),
-		'model'       => array('subfolder' => 'models',           'suffix' => 'Model',           'instanceof' => 'BaseModel'),
-		'record'      => array('subfolder' => 'records',          'suffix' => 'Record',          'instanceof' => 'BaseRecord'),
-		'service'     => array('subfolder' => 'services',         'suffix' => 'Service',         'instanceof' => 'BaseApplicationComponent'),
-		'variable'    => array('subfolder' => 'variables',        'suffix' => 'Variable'),
-		'validator'   => array('subfolder' => 'validators',       'suffix' => 'Validator'),
-		'widget'      => array('subfolder' => 'widgets',          'suffix' => 'Widget',          'instanceof' => 'IWidget'),
-	)
+	'autoloadClasses' => array('Controller','Helper','Model','Record','Service','Variable','Validator'),
 );
-
-// Enable element types
-$components['plugins']['componentTypes']['element'] = array('subfolder' => 'elementtypes', 'suffix' => 'ElementType', 'instanceof' => 'IElementType');
 
 // Publish Pro package components
 $components['pkgComponents']['PublishPro']['entryRevisions']['class'] = 'Craft\EntryRevisionsService';

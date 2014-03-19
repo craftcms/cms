@@ -123,7 +123,7 @@ abstract class BasePlugin extends BaseSavableComponentType
 	public function getRecords($scenario = null)
 	{
 		$records = array();
-		$classes = craft()->plugins->getPluginComponentClassesByType($this->getClassHandle(), 'record');
+		$classes = craft()->plugins->getPluginClasses($this, 'records', 'Record', false);
 
 		foreach ($classes as $class)
 		{

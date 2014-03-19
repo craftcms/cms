@@ -9,7 +9,7 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * @var array The type of components plugins can have. Defined in app/etc/config/common.php.
 	 */
-	public $componentTypes;
+	public $autoloadClasses;
 
 	/**
 	 * Stores whether plugins have been loaded yet for this request.
@@ -50,15 +50,6 @@ class PluginsService extends BaseApplicationComponent
 	 * @var array
 	 */
 	private $_allPlugins;
-
-	/**
-	 * List of the known component classes for each plugin,
-	 * indexed by the component type, then the plugin handle.
-	 *
-	 * @access private
-	 * @var array
-	 */
-	private $_pluginComponentClasses = array();
 
 	/**
 	 * Holds a list of all of the enabled plugin info indexed by the plugin class name.
@@ -111,7 +102,7 @@ class PluginsService extends BaseApplicationComponent
 
 						$this->_enabledPluginInfo[$row['class']] = $row;
 
-						$lcPluginHandle = StringHelper::toLowerCase($plugin->getClassHandle());
+						$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 						$this->_plugins[$lcPluginHandle] = $plugin;
 						$this->_enabledPlugins[$lcPluginHandle] = $plugin;
 						$names[] = $plugin->getName();
@@ -121,8 +112,7 @@ class PluginsService extends BaseApplicationComponent
 						$plugin->isInstalled = true;
 						$plugin->isEnabled = true;
 
-						$this->_importPluginComponents($plugin);
-						$this->_registerPluginServices($plugin->getClassHandle());
+						$this->_autoloadPluginClasses($plugin);
 					}
 				}
 
@@ -155,7 +145,7 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function getPlugin($handle, $enabledOnly = true)
 	{
-		$lcPluginHandle = StringHelper::toLowerCase($handle);
+		$lcPluginHandle = mb_strtolower($handle);
 
 		if ($enabledOnly)
 		{
@@ -224,7 +214,7 @@ class PluginsService extends BaseApplicationComponent
 						if (IOHelper::folderExists($pluginFolderContent))
 						{
 							$pluginFolderContent = IOHelper::normalizePathSeparators($pluginFolderContent);
-							$pluginFolderName = StringHelper::toLowerCase(IOHelper::getFolderName($pluginFolderContent, false));
+							$pluginFolderName = mb_strtolower(IOHelper::getFolderName($pluginFolderContent, false));
 							$pluginFilePath = IOHelper::getFolderContents($pluginFolderContent, false, ".*Plugin\.php");
 
 							if (is_array($pluginFilePath) && count($pluginFilePath) > 0)
@@ -234,13 +224,13 @@ class PluginsService extends BaseApplicationComponent
 								// Chop off the "Plugin" suffix
 								$handle = mb_substr($pluginFileName, 0, mb_strlen($pluginFileName) - 6);
 
-								if (StringHelper::toLowerCase($handle) === StringHelper::toLowerCase($pluginFolderName))
+								if (mb_strtolower($handle) === mb_strtolower($pluginFolderName))
 								{
 									$plugin = $this->getPlugin($handle, false);
 
 									if ($plugin)
 									{
-										$this->_allPlugins[StringHelper::toLowerCase($handle)] = $plugin;
+										$this->_allPlugins[mb_strtolower($handle)] = $plugin;
 										$names[] = $plugin->getName();
 									}
 								}
@@ -270,7 +260,7 @@ class PluginsService extends BaseApplicationComponent
 	public function enablePlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle, false);
-		$lcPluginHandle = StringHelper::toLowerCase($plugin->getClassHandle());
+		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -303,7 +293,7 @@ class PluginsService extends BaseApplicationComponent
 	public function disablePlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle);
-		$lcPluginHandle = StringHelper::toLowerCase($plugin->getClassHandle());
+		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -337,7 +327,7 @@ class PluginsService extends BaseApplicationComponent
 	public function installPlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle, false);
-		$lcPluginHandle = StringHelper::toLowerCase($plugin->getClassHandle());
+		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -365,8 +355,7 @@ class PluginsService extends BaseApplicationComponent
 			$this->_enabledPlugins[$lcPluginHandle] = $plugin;
 
 			$this->_savePluginMigrations(craft()->db->getLastInsertID(), $plugin->getClassHandle());
-			$this->_importPluginComponents($plugin);
-			$this->_registerPluginServices($plugin->getClassHandle());
+			$this->_autoloadPluginClasses($plugin);
 			$plugin->createTables();
 
 			if ($transaction !== null)
@@ -400,7 +389,7 @@ class PluginsService extends BaseApplicationComponent
 	public function uninstallPlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle, false);
-		$lcPluginHandle = StringHelper::toLowerCase($plugin->getClassHandle());
+		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -417,8 +406,7 @@ class PluginsService extends BaseApplicationComponent
 			// Pretend that the plugin is enabled just for this request
 			$plugin->isEnabled = true;
 			$this->_enabledPlugins[$lcPluginHandle] = $plugin;
-			$this->_importPluginComponents($plugin);
-			$this->_registerPluginServices($plugin->getClassHandle());
+			$this->_autoloadPluginClasses($plugin);
 
 			$pluginRow = craft()->db->createCommand()
 				->select('id')
@@ -538,69 +526,6 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns all components of a certain type, across all plugins.
-	 *
-	 * @param $type
-	 * @return array
-	 */
-	public function getAllComponentsByType($type)
-	{
-		$components = array();
-
-		if (isset($this->componentTypes[$type]['instanceof']))
-		{
-			$instanceOf = $this->componentTypes[$type]['instanceof'];
-		}
-		else
-		{
-			$instanceOf = null;
-		}
-
-		foreach ($this->getPlugins() as $plugin)
-		{
-			$pluginHandle = $plugin->getClassHandle();
-			$classes = $this->getPluginComponentClassesByType($pluginHandle, $type);
-
-			foreach ($classes as $class)
-			{
-				$component = craft()->components->initializeComponent($class, $instanceOf);
-
-				if ($component)
-				{
-					$components[] = $component;
-				}
-			}
-		}
-
-		return $components;
-	}
-
-	/**
-	 * Returns all of a plugin's component class names of a certain type.
-	 *
-	 * @param string $pluginHandle
-	 * @param string $type
-	 * @return array
-	 */
-	public function getPluginComponentClassesByType($pluginHandle, $type)
-	{
-		// Make sure plugins can actually have this type of component
-		if (!isset($this->componentTypes[$type]))
-		{
-			return array();
-		}
-
-		if (isset($this->_pluginComponentClasses[$type][$pluginHandle]))
-		{
-			return $this->_pluginComponentClasses[$type][$pluginHandle];
-		}
-		else
-		{
-			return array();
-		}
-	}
-
-	/**
 	 * Returns whether the given plugin's local version number is greater than the record we have in the database.
 	 *
 	 * @param BasePlugin $plugin
@@ -647,6 +572,78 @@ class PluginsService extends BaseApplicationComponent
 		$this->raiseEvent('onLoadPlugins', $event);
 	}
 
+	/**
+	 * Returns an array of class names found in a given plugin folder.
+	 *
+	 * @param BasePlugin $plugin
+	 * @param string     $classSubfolder
+	 * @param string     $classSuffix
+	 * @param bool       $autoload
+	 * @return array
+	 */
+	public function getPluginClasses(BasePlugin $plugin, $classSubfolder, $classSuffix, $autoload = true)
+	{
+		$classes = array();
+
+		$pluginHandle = $plugin->getClassHandle();
+		$pluginFolder = mb_strtolower($plugin->getClassHandle());
+		$pluginFolderPath = craft()->path->getPluginsPath().$pluginFolder.'/';
+		$classSubfolderPath = $pluginFolderPath.$classSubfolder.'/';
+
+		if (IOHelper::folderExists($classSubfolderPath))
+		{
+			// See if it has any files in ClassName*Suffix.php format.
+			$filter = $pluginHandle.'(_.+)?'.$classSuffix.'\.php$';
+			$files = IOHelper::getFolderContents($classSubfolderPath, false, $filter);
+
+			if ($files)
+			{
+				foreach ($files as $file)
+				{
+					$class = IOHelper::getFileName($file, false);
+					$classes[] = $class;
+
+					if ($autoload)
+					{
+						Craft::import("plugins.{$pluginFolder}.{$classSubfolder}.{$class}");
+					}
+				}
+			}
+		}
+
+		return $classes;
+	}
+
+	/**
+	 * Returns whether a plugin class exists.
+	 *
+	 * @param BasePlugin $plugin
+	 * @param string     $classSubfolder
+	 * @param string     $class
+	 * @param bool       $autoload
+	 * @return bool
+	 */
+	public function doesPluginClassExist(BasePlugin $plugin, $classSubfolder, $class, $autoload = true)
+	{
+		$pluginHandle = $plugin->getClassHandle();
+		$pluginFolder = mb_strtolower($plugin->getClassHandle());
+		$classPath = craft()->path->getPluginsPath().$pluginFolder.'/'.$classSubfolder.'/'.$class.'.php';
+
+		if (IOHelper::fileExists($classPath))
+		{
+			if ($autoload)
+			{
+				Craft::import("plugins.{$pluginFolder}.{$classSubfolder}.{$class}");
+			}
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 	// Private Methods
 
 	/**
@@ -662,41 +659,22 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Finds and imports all of the supported component classes for a given plugin.
+	 * Finds and imports all of the autoloadable classes for a given plugin.
 	 *
 	 * @access private
 	 * @param BasePlugin $plugin
 	 */
-	private function _importPluginComponents(BasePlugin $plugin)
+	private function _autoloadPluginClasses(BasePlugin $plugin)
 	{
-		$pluginHandle = $plugin->getClassHandle();
-		$lcPluginHandle = StringHelper::toLowerCase($plugin->getClassHandle());
-		$pluginFolder = craft()->path->getPluginsPath().$lcPluginHandle.'/';
-
-		foreach ($this->componentTypes as $type => $typeInfo)
+		foreach ($this->autoloadClasses as $classSuffix)
 		{
-			$folder = $pluginFolder.$typeInfo['subfolder'];
+			// *Controller's live in controllers/, etc.
+			$classSubfolder = mb_strtolower($classSuffix).'s';
+			$classes = $this->getPluginClasses($plugin, $classSubfolder, $classSuffix, true);
 
-			if (IOHelper::folderExists($folder))
+			if ($classSuffix == 'Service')
 			{
-				// See if it has any files in ClassName*Suffix.php format.
-				$filter = $pluginHandle.'(_.+)?'.$typeInfo['suffix'].'\.php$';
-				$files = IOHelper::getFolderContents($folder, false, $filter);
-
-				if ($files)
-				{
-					foreach ($files as $file)
-					{
-						// Get the class name
-						$class = IOHelper::getFileName($file, false);
-
-						// Import the class.
-						Craft::import('plugins.'.$lcPluginHandle.'.'.$typeInfo['subfolder'].'.'.$class);
-
-						// Remember it
-						$this->_pluginComponentClasses[$type][$pluginHandle][] = $class;
-					}
-				}
+				$this->_registerPluginServices($classes);
 			}
 		}
 	}
@@ -710,7 +688,7 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	private function _savePluginMigrations($pluginId, $pluginHandle)
 	{
-		$migrationsFolder = craft()->path->getPluginsPath().StringHelper::toLowerCase($pluginHandle).'/migrations/';
+		$migrationsFolder = craft()->path->getPluginsPath().mb_strtolower($pluginHandle).'/migrations/';
 
 		if (IOHelper::folderExists($migrationsFolder))
 		{
@@ -747,14 +725,12 @@ class PluginsService extends BaseApplicationComponent
 	 * Registers any services provided by a plugin.
 	 *
 	 * @access private
-	 * @param string $handle
+	 * @param array $classes
 	 * @throws Exception
 	 * @return void
 	 */
-	private function _registerPluginServices($handle)
+	private function _registerPluginServices($classes)
 	{
-		$classes = $this->getPluginComponentClassesByType($handle, 'service');
-
 		$services = array();
 
 		foreach ($classes as $class)
@@ -799,7 +775,7 @@ class PluginsService extends BaseApplicationComponent
 		// Skip the autoloader
 		if (!class_exists($nsClass, false))
 		{
-			$path = craft()->path->getPluginsPath().StringHelper::toLowerCase($handle).'/'.$class.'.php';
+			$path = craft()->path->getPluginsPath().mb_strtolower($handle).'/'.$class.'.php';
 
 			if (($path = IOHelper::fileExists($path, false)) !== false)
 			{
@@ -836,7 +812,7 @@ class PluginsService extends BaseApplicationComponent
 	private function _getPluginHandleFromFileSystem($iHandle)
 	{
 		$pluginsPath = craft()->path->getPluginsPath();
-		$fullPath = $pluginsPath.StringHelper::toLowerCase($iHandle).'/'.$iHandle.'Plugin.php';
+		$fullPath = $pluginsPath.mb_strtolower($iHandle).'/'.$iHandle.'Plugin.php';
 
 		if (($file = IOHelper::fileExists($fullPath, true)) !== false)
 		{

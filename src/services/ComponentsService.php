@@ -49,9 +49,30 @@ class ComponentsService extends BaseApplicationComponent
 		}
 
 		// Add the class suffix, initialize, and return
-		$class = $class.$this->types[$type]['suffix'];
-		$instanceOf = $this->types[$type]['instanceof'];
-		return $this->initializeComponent($class, $instanceOf);
+		$fullClass = $class.$this->types[$type]['suffix'];
+		$nsClass = __NAMESPACE__.'\\'.$fullClass;
+
+		if (!class_exists($nsClass))
+		{
+			// Maybe it's a plugin component?
+			if (($pos = strpos($class, '_')) !== false)
+			{
+				$pluginHandle = substr($class, 0, $pos);
+			}
+			else
+			{
+				$pluginHandle = $class;
+			}
+
+			$plugin = craft()->plugins->getPlugin($pluginHandle);
+
+			if (!$plugin || !craft()->plugins->doesPluginClassExist($plugin, $this->types[$type]['subfolder'], $fullClass))
+			{
+				return null;
+			}
+		}
+
+		return $this->initializeComponent($fullClass, $this->types[$type]['instanceof']);
 	}
 
 	/**
@@ -160,8 +181,7 @@ class ComponentsService extends BaseApplicationComponent
 			$this->_noComponentTypeExists($type);
 		}
 
-		$components = array();
-		$names = array();
+		$componentClasses = array();
 
 		// Find all of the built-in components
 		$filter = $this->types[$type]['suffix'].'\.php$';
@@ -171,27 +191,32 @@ class ComponentsService extends BaseApplicationComponent
 		{
 			foreach ($files as $file)
 			{
-				// Get the class name and initialize it
-				$class = IOHelper::getFileName($file, false);
-				$component = $this->initializeComponent($class, $this->types[$type]['instanceof']);
-
-				if ($component && $component->isSelectable())
-				{
-					// Save it
-					$classHandle = $component->getClassHandle();
-					$components[$classHandle] = $component;
-					$names[] = $component->getName();
-				}
+				$componentClasses[] = IOHelper::getFileName($file, false);
 			}
 		}
 
 		// Now load any plugin-supplied components
-		$pluginComponents = craft()->plugins->getAllComponentsByType($type);
-
-		foreach ($pluginComponents as $component)
+		foreach (craft()->plugins->getPlugins() as $plugin)
 		{
-			$components[$component->getClassHandle()] = $component;
-			$names[] = $component->getName();
+			$pluginClasses = craft()->plugins->getPluginClasses($plugin, $this->types[$type]['subfolder'], $this->types[$type]['suffix']);
+			$componentClasses = array_merge($componentClasses, $pluginClasses);
+		}
+
+		// Initialize, verify, and save them
+		$components = array();
+		$names = array();
+
+		foreach ($componentClasses as $class)
+		{
+			$component = $this->initializeComponent($class, $this->types[$type]['instanceof']);
+
+			if ($component && $component->isSelectable())
+			{
+				// Save it
+				$classHandle = $component->getClassHandle();
+				$components[$classHandle] = $component;
+				$names[] = $component->getName();
+			}
 		}
 
 		// Now sort all the components by their name
