@@ -1032,8 +1032,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	{
 		var $target = $(event.currentTarget);
 		var fileId = Craft.getElementInfo($target).id,
-			oldName = Craft.getElementInfo($target).url.split('/').pop(),
-			newName = prompt(Craft.t("Rename file"), oldName);
+			oldName = Craft.getElementInfo($target).url.split('/').pop();
+		if (oldName.indexOf('?') !== -1)
+		{
+			oldName = oldName.split('?').shift();
+		}
+
+		var newName = prompt(Craft.t("Rename file"), oldName);
 
 		if (newName && newName != oldName)
 		{

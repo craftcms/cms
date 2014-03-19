@@ -24,5 +24,30 @@ class AssetsHelper
 
 		return IOHelper::createFile(craft()->path->getTempPath() . $fileName)->getRealPath();
 	}
+
+	/**
+	 * Generate a URL for a given Assets file in a Source Type.
+	 *
+	 * @param BaseAssetSourceType $sourceType
+	 * @param AssetFileModel $file
+	 * @param string $transformPath
+	 * @return string
+	 */
+	public static function generateUrl(BaseAssetSourceType $sourceType, AssetFileModel $file, $transformPath = '')
+	{
+		$baseUrl = $sourceType->getBaseUrl();
+		$folderPath = $file->getFolder()->path;
+		$fileName = $file->filename;
+		$appendix = '';
+
+		$source = craft()->assetSources->getSourceTypeById($file->sourceId);
+		if (!empty($source->getSettings()->expires) && DateTimeHelper::isValidIntervalString($source->getSettings()->expires))
+		{
+			$appendix = '?mtime='.$file->dateModified;
+		}
+
+		return $baseUrl.$folderPath.$transformPath.$fileName.$appendix;
+
+	}
 }
 

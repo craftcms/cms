@@ -524,11 +524,8 @@ class AssetTransformsService extends BaseApplicationComponent
 	{
 		// Create URL to the image
 		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
-		$baseUrl = $sourceType->getBaseUrl();
-		$folderPath = $baseUrl.$file->getFolder()->path;
 		$transformPath = $this->getTransformSubpath($transform);
-
-		return $folderPath.$transformPath.$file->filename;
+		return AssetsHelper::generateUrl($sourceType, $file, $transformPath);
 	}
 
 	/**
