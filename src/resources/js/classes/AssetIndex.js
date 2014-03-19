@@ -1448,7 +1448,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_addSubfolder: function(parentFolder, subFolder)
 	{
-		var existingChildren = parentFolder.siblings('ul').find('li');
+		var existingChildren = parentFolder.siblings('ul').find('>li');
 		var folderInserted = false;
 		existingChildren.each(function()
 		{
