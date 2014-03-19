@@ -254,6 +254,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	{
 		$this->setAttributes($attributes);
 
+		$this->_includeInTemplateCaches();
+
 		if (!isset($this->_cachedElements))
 		{
 			$this->_cachedElements = craft()->elements->findElements($this);
@@ -339,6 +341,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	{
 		$this->setAttributes($attributes);
 
+		$this->_includeInTemplateCaches();
+
 		if (!isset($this->_cachedIds))
 		{
 			$this->_cachedIds = craft()->elements->findElements($this, true);
@@ -357,6 +361,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	{
 		$this->setAttributes($attributes);
 
+		$this->_includeInTemplateCaches();
+
 		if (!isset($this->_cachedTotal))
 		{
 			$this->_cachedTotal = craft()->elements->getTotalElements($this);
@@ -374,5 +380,20 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	{
 		$class = get_class($this);
 		return new $class($this->getAttributes(), $this->_elementType);
+	}
+
+	/**
+	 * Includes
+	 *
+	 * @access private
+	 */
+	private function _includeInTemplateCaches()
+	{
+		$cacheService = craft()->getComponent('templateCache', false);
+
+		if ($cacheService)
+		{
+			$cacheService->includeCriteriaInTemplateCaches($this);
+		}
 	}
 }

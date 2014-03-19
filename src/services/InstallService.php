@@ -267,7 +267,7 @@ class InstallService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Creates the templatecaches and templatecacheelements tables.
+	 * Creates the template cache tables.
 	 *
 	 * @access private
 	 */
@@ -298,6 +298,17 @@ class InstallService extends BaseApplicationComponent
 		craft()->db->createCommand()->addForeignKey('templatecacheelements', 'elementId', 'elements', 'id', 'CASCADE', null);
 
 		Craft::log('Finished creating the templatecacheelements table.');
+		Craft::log('Creating the templatecachecriteria table.');
+
+		craft()->db->createCommand()->createTable('templatecachecriteria', array(
+			'cacheId'  => array('column' => ColumnType::Int, 'null' => false),
+			'type'     => array('column' => ColumnType::Varchar, 'maxLength' => 150, 'null' => false),
+			'criteria' => array('column' => ColumnType::Text, 'null' => false),
+		), null, false, false);
+
+		craft()->db->createCommand()->addForeignKey('templatecachecriteria', 'cacheId', 'templatecaches', 'id', 'CASCADE', null);
+
+		Craft::log('Finished creating the templatecachecriteria table.');
 	}
 
 	/**

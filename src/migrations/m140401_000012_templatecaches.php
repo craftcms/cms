@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m140401_000012_template_caches extends BaseMigration
+class m140401_000012_templatecaches extends BaseMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
@@ -40,6 +40,19 @@ class m140401_000012_template_caches extends BaseMigration
 
 			$this->addForeignKey('templatecacheelements', 'cacheId', 'templatecaches', 'id', 'CASCADE', null);
 			$this->addForeignKey('templatecacheelements', 'elementId', 'elements', 'id', 'CASCADE', null);
+		}
+
+		if (!craft()->db->tableExists('templatecachecriteria'))
+		{
+			Craft::log('Creating the templatecachecriteria table.', LogLevel::Info, true);
+
+			$this->createTable('templatecachecriteria', array(
+				'cacheId'  => array('column' => ColumnType::Int, 'null' => false),
+				'type'     => array('column' => ColumnType::Varchar, 'maxLength' => 150, 'null' => false),
+				'criteria' => array('column' => ColumnType::Text, 'null' => false),
+			), null, false, false);
+
+			$this->addForeignKey('templatecachecriteria', 'cacheId', 'templatecaches', 'id', 'CASCADE', null);
 		}
 
 		return true;
