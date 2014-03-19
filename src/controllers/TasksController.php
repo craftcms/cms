@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * Handles tool actions.
+ * Handles task actions.
  */
 class TasksController extends BaseController
 {
