@@ -247,7 +247,7 @@ class TemplateCacheService extends BaseApplicationComponent
 
 		if ($cacheIds)
 		{
-			$this->deleteCacheById($cacheIds);
+			return $this->deleteCacheById($cacheIds);
 		}
 		else
 		{
