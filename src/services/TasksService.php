@@ -325,7 +325,7 @@ class TasksService extends BaseApplicationComponent
 	{
 		return (bool) craft()->db->createCommand()
 			->from('tasks')
-			->where(array('and', 'level = 1', 'status = :status'), array(':status' => TaskStatus::Error))
+			->where(array('and', 'level = 0', 'status = :status'), array(':status' => TaskStatus::Error))
 			->count('id');
 	}
 
