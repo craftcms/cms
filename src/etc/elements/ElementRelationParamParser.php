@@ -125,12 +125,6 @@ class ElementRelationParamParser
 		{
 			if (isset($relCriteria[$elementParam]))
 			{
-				if (is_array($relCriteria[$elementParam]) && isset($relCriteria[$elementParam]['__criteria__']))
-				{
-					$elementType = $relCriteria[$elementParam]['__criteria__'];
-					$relCriteria[$elementParam] = craft()->elements->getCriteria($elementType, $relCriteria[$elementParam]);
-				}
-
 				$elements = ArrayHelper::stringToArray($relCriteria[$elementParam]);
 
 				foreach ($elements as $element)

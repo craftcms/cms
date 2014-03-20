@@ -141,21 +141,18 @@ class TemplateCacheService extends BaseApplicationComponent
 			// Tag it with any element criteria that were output within the cache
 			if (!empty($this->_cacheCriteria[$key]))
 			{
-				// Stop capturing those before we do anything else
-				$allCriteria = $this->_cacheCriteria[$key];
-				unset($this->_cacheCriteria[$key]);
-
 				$values = array();
 
-				foreach ($allCriteria as $criteria)
+				foreach ($this->_cacheCriteria[$key] as $criteria)
 				{
-					// Do some normalization so we can save this to the DB safely
-					$preppedCriteria = $this->_prepCriteria($criteria, $key);
+					$flattenedCriteria = $criteria->getAttributes(null, true);
 
-					$values[] = array($cacheId, $criteria->getElementType()->getClassHandle(), JsonHelper::encode($preppedCriteria));
+					$values[] = array($cacheId, $criteria->getElementType()->getClassHandle(), JsonHelper::encode($flattenedCriteria));
 				}
 
 				craft()->db->createCommand()->insertAll(static::$_templateCacheCriteriaTable, array('cacheId', 'type', 'criteria'), $values, false);
+
+				unset($this->_cacheCriteria[$key]);
 			}
 
 			// Tag it with any element IDs that were output within the cache
@@ -369,82 +366,5 @@ class TemplateCacheService extends BaseApplicationComponent
 		}
 
 		return $this->_path;
-	}
-
-	/**
-	 * Flattens an ElementCriteriaModel into an array to be JSON-encoded.
-	 *
-	 * @access private
-	 * @param ElementCriteriaModel
-	 * @param string key
-	 * @return array
-	 */
-	private function _prepCriteria(ElementCriteriaModel $criteria, $key)
-	{
-		// Add any IDs to the current cache's list of element IDs, just to be safe
-		$elementIds = $criteria->ids();
-		$this->_cacheElementIds[$key] = array_merge($this->_cacheElementIds[$key], $elementIds);
-
-		$attributes = $criteria->getAttributes();
-		$attributes['__criteria__'] = $criteria->getElementType()->getClassHandle();
-
-		foreach (array('ancestorOf', 'descendantOf', 'siblingOf', 'prevSiblingOf', 'nextSiblingOf') as $param)
-		{
-			if ($attributes[$param] instanceof BaseElementModel)
-			{
-				$attributes[$param] = $attributes[$param]->id;
-			}
-		}
-
-		if (!empty($attributes['relatedTo']))
-		{
-			// Ensure the criteria is an array
-			$attributes['relatedTo'] = ArrayHelper::stringToArray($attributes['relatedTo']);
-
-			if (isset($attributes['relatedTo']['element']) || isset($attributes['relatedTo']['sourceElement']) || isset($attributes['relatedTo']['targetElement']))
-			{
-				$attributes['relatedTo'] = array($attributes['relatedTo']);
-			}
-
-			foreach ($attributes['relatedTo'] as $relatedToKey => $relCriteria)
-			{
-				if (!is_array($relCriteria))
-				{
-					$relCriteria = array('element' => $relCriteria);
-				}
-
-				foreach (array('element', 'sourceElement', 'targetElement') as $elementParam)
-				{
-					if (isset($relCriteria[$elementParam]))
-					{
-						$normalizedElements = array();
-						$elements = ArrayHelper::stringToArray($relCriteria[$elementParam]);
-
-						foreach ($elements as $element)
-						{
-							if (is_numeric($element))
-							{
-								$normalizedElements[] = $element;
-							}
-							else if ($element instanceof BaseElementModel)
-							{
-								$normalizedElements[] = $element->id;
-							}
-							else if ($element instanceof ElementCriteriaModel)
-							{
-								$normalizedElements = array_merge($normalizedElements, $this->_prepCriteria($element, $key));
-							}
-						}
-
-						$relCriteria[$elementParam] = $normalizedElements;
-						break;
-					}
-				}
-
-				$attributes['relatedTo'][$relatedToKey] = $relCriteria;
-			}
-		}
-
-		return $attributes;
 	}
 }
