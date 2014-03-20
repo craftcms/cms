@@ -443,16 +443,6 @@ class EntriesController extends BaseController
 			craft()->userSession->requirePermission('deletePeerEntries:'.$entry->sectionId);
 		}
 
-<<<<<<< HEAD
-		if (craft()->entries->deleteEntryById($entryId))
-		{
-			craft()->userSession->setNotice(Craft::t('Entry deleted.'));
-		}
-		else
-		{
-			craft()->userSession->setError(Craft::t('Couldn’t delete entry.'));
-		}
-=======
 		if (craft()->entries->deleteEntry($entry))
 		{
 			if (craft()->request->isAjaxRequest())
@@ -474,7 +464,6 @@ class EntriesController extends BaseController
 			else
 			{
 				craft()->userSession->setError(Craft::t('Couldn’t delete entry.'));
->>>>>>> origin/1.3
 
 				// Send the entry back to the template
 				craft()->urlManager->setRouteVariables(array(
