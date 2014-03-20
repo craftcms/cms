@@ -436,14 +436,22 @@ class EntryElementType extends BaseElementType
 			}
 		}
 
+		if ($criteria->section)
+		{
+			if ($criteria->section instanceof SectionModel)
+			{
+				$criteria->sectionId = $criteria->section->id;
+				$criteria->section = null;
+			}
+			else
+			{
+				$query->andWhere(DbHelper::parseParam('sections.handle', $criteria->section, $query->params));
+			}
+		}
+
 		if ($criteria->sectionId)
 		{
 			$query->andWhere(DbHelper::parseParam('entries.sectionId', $criteria->sectionId, $query->params));
-		}
-
-		if ($criteria->section)
-		{
-			$query->andWhere(DbHelper::parseParam('sections.handle', $criteria->section, $query->params));
 		}
 
 		if (craft()->hasPackage(CraftPackage::Users))
