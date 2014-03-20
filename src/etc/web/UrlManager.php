@@ -324,9 +324,16 @@ class UrlManager extends \CUrlManager
 		else
 		{
 			// Check the user-defined routes
-			$siteRoutes = craft()->routes->getAllRoutes();
+			$configFileRoutes = craft()->routes->getConfigFileRoutes();
 
-			if (($route = $this->_matchUrlRoutes($path, $siteRoutes)) !== false)
+			if (($route = $this->_matchUrlRoutes($path, $configFileRoutes)) !== false)
+			{
+				return $route;
+			}
+
+			$dbRoutes = craft()->routes->getDbRoutes();
+
+			if (($route = $this->_matchUrlRoutes($path, $dbRoutes)) !== false)
 			{
 				return $route;
 			}

@@ -92,11 +92,7 @@ class CpVariable
 
 		$settings[$system]['general'] = array('icon' => 'general', 'label' => Craft::t('General'));
 		$settings[$system]['packages'] = array('icon' => 'package', 'label' => Craft::t('Packages'));
-
-		if (craft()->config->get('siteRoutesSource') != 'file')
-		{
-			$settings[$system]['routes'] = array('icon' => 'routes', 'label' => Craft::t('Routes'));
-		}
+		$settings[$system]['routes'] = array('icon' => 'routes', 'label' => Craft::t('Routes'));
 
 		if (craft()->hasPackage(CraftPackage::Users))
 		{

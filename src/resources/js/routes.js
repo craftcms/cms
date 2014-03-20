@@ -16,6 +16,7 @@ var Routes = Garnish.Base.extend(
 		this.$container = $('#routes');
 
 		var $routes = this.getRoutes();
+
 		for (var i = 0; i < $routes.length; i++)
 		{
 			var route = new Route($routes[i]);
@@ -76,6 +77,8 @@ var Route = Garnish.Base.extend(
 {
 	$container: null,
 	id: null,
+	locale: null,
+	$locale: null,
 	$url: null,
 	$template: null,
 	modal: null,
@@ -83,9 +86,11 @@ var Route = Garnish.Base.extend(
 	init: function(container)
 	{
 		this.$container = $(container);
-		this.id = this.$container.attr('data-id');
-		this.$url = this.$container.find('.url:first');
-		this.$template = this.$container.find('.template:first');
+		this.id         = this.$container.data('id');
+		this.locale     = this.$container.data('locale');
+		this.$locale    = this.$container.find('.locale:first');
+		this.$url       = this.$container.find('.url:first');
+		this.$template  = this.$container.find('.template:first');
 
 		this.addListener(this.$container, 'click', 'edit');
 	},
@@ -93,13 +98,29 @@ var Route = Garnish.Base.extend(
 	edit: function()
 	{
 		if (!this.modal)
+		{
 			this.modal = new RouteSettingsModal(this);
+		}
 		else
+		{
 			this.modal.show();
+		}
 	},
 
 	updateHtmlFromModal: function()
 	{
+		if (Craft.routes.locales)
+		{
+			if (this.locale)
+			{
+				this.$locale.text(this.locale);
+			}
+			else
+			{
+				this.$locale.text(Craft.t('Global'));
+			}
+		}
+
 		var urlHtml = '';
 
 		for (var i = 0; i < this.modal.urlInput.elements.length; i++)
@@ -107,9 +128,13 @@ var Route = Garnish.Base.extend(
 			var $elem = this.modal.urlInput.elements[i];
 
 			if (this.modal.urlInput.isText($elem))
+			{
 				urlHtml += $elem.val();
+			}
 			else
+			{
 				urlHtml += $elem.prop('outerHTML');
+			}
 		}
 
 		this.$url.html(urlHtml);
@@ -144,16 +169,51 @@ var RouteSettingsModal = Garnish.Modal.extend(
 			tokenHtml += '<div class="token" data-name="'+name+'" data-value="'+pattern+'"><span>'+name+'</span></div>';
 		}
 
-		var $container = $('<form class="modal route-settings" accept-charset="UTF-8">' +
-			'<div class="header">' +
-				'<h1></h1>' +
-			'</div>' +
-			'<div class="body">' +
-				'<div class="field">' +
-					'<div class="heading">' +
-						'<label for="url">'+Craft.t("If the URI looks like this")+':</label>' +
+		var containerHtml =
+			'<form class="modal route-settings" accept-charset="UTF-8">' +
+				'<div class="body">' +
+					'<div class="header">' +
+						'<h1></h1>' +
 					'</div>' +
-					'<div id="url" class="text url"></div>' +
+					'<div class="field">' +
+						'<div class="heading">' +
+							'<label for="url">'+Craft.t("If the URI looks like this")+':</label>' +
+						'</div>';
+
+		if (Craft.routes.locales)
+		{
+			containerHtml +=
+						'<table class="inputs fullwidth">' +
+							'<tr>' +
+								'<td>';
+		}
+
+		containerHtml += '<div id="url" class="text url"></div>';
+
+		if (Craft.routes.locales)
+		{
+			containerHtml +=
+								'</td>' +
+								'<td class="thin">' +
+									'<div class="select">' +
+										'<select class="locale">' +
+											'<option value="">'+Craft.t('Global')+'</option>';
+
+			for (var i = 0; i < Craft.routes.locales.length; i++)
+			{
+				var locale = Craft.routes.locales[i];
+				containerHtml += '<option value="'+locale+'">'+locale+'</option>';
+			}
+
+			containerHtml +=
+										'</select>' +
+									'</div>' +
+								'</td>' +
+							'</tr>' +
+						'</table>';
+		}
+
+		containerHtml +=
 					'<div class="url-tokens">' +
 						tokenHtml +
 					'</div>' +
@@ -164,48 +224,60 @@ var RouteSettingsModal = Garnish.Modal.extend(
 					'</div>' +
 					'<input id="template" type="text" class="text fullwidth template">' +
 				'</div>' +
-			'</div>' +
-			'<div class="footer">' +
-				'<div class="buttons">' +
-					'<input type="submit" class="btn submit" value="'+Craft.t("Save")+'"> ' +
-					'<input type="button" class="btn cancel" value="'+Craft.t("Cancel")+'">' +
-					'<div class="spinner" style="display: none;"></div>' +
+				'<div class="footer">' +
+					'<div class="buttons right last">' +
+						'<input type="button" class="btn cancel" value="'+Craft.t("Cancel")+'">' +
+						'<input type="submit" class="btn submit" value="'+Craft.t("Save")+'"> ' +
+						'<div class="spinner" style="display: none;"></div>' +
+					'</div>' +
 					'<a class="delete">'+Craft.t("Delete")+'</a>' +
 				'</div>' +
 			'</div>' +
-		'</form>');
+		'</form>';
 
-		$container.appendTo(Garnish.$bod);
+		var $container = $(containerHtml).appendTo(Garnish.$bod);
 
 		// Find the other elements
-		this.$heading = $container.find('h1:first');
-		this.$urlInput = $container.find('.url:first');
+		this.$heading       = $container.find('h1:first');
+		this.$localeInput   = $container.find('.locale:first');
+		this.$urlInput      = $container.find('.url:first');
 		this.$templateInput = $container.find('.template:first');
-		this.$saveBtn = $container.find('.submit:first');
-		this.$cancelBtn = $container.find('.cancel:first');
-		this.$spinner = $container.find('.spinner:first');
-		this.$deleteBtn = $container.find('.delete:first');
+		this.$saveBtn       = $container.find('.submit:first');
+		this.$cancelBtn     = $container.find('.cancel:first');
+		this.$spinner       = $container.find('.spinner:first');
+		this.$deleteBtn     = $container.find('.delete:first');
 
 		// Hide the Delete button for new routes
 		if (!this.route)
+		{
 			this.$deleteBtn.hide();
+		}
 
 		// Initialize the URL input
 		this.urlInput = new Garnish.MixedInput(this.$urlInput);
 
 		// Set the heading
 		if (this.route)
+		{
 			this.$heading.html(Craft.t('Edit Route'));
+		}
 		else
+		{
 			this.$heading.html(Craft.t('Create a new route'));
+		}
 
 		if (this.route)
 		{
+			// Set the locale
+			this.$localeInput.val(this.route.locale);
+
 			// Set the initial URL value
 			var urlNodes = this.route.$url.prop('childNodes');
+
 			for (var i = 0; i < urlNodes.length; i++)
 			{
 				var node = urlNodes[i];
+
 				if (Garnish.isTextNode(node))
 				{
 					var text = this.urlInput.addTextElement();
@@ -218,7 +290,8 @@ var RouteSettingsModal = Garnish.Modal.extend(
 			}
 
 			// Focus on the first element
-			setTimeout($.proxy(function() {
+			setTimeout($.proxy(function()
+			{
 				var $firstElem = this.urlInput.elements[0];
 				this.urlInput.setFocus($firstElem);
 				this.urlInput.setCarotPos($firstElem, 0);
@@ -230,7 +303,8 @@ var RouteSettingsModal = Garnish.Modal.extend(
 		}
 		else
 		{
-			setTimeout($.proxy(function() {
+			setTimeout($.proxy(function()
+			{
 				this.$urlInput.focus();
 			}, this), 100);
 		}
@@ -240,6 +314,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 		// We must add vars on mousedown, so that text elements don't have a chance
 		// to lose focus, thus losing the carot position.
 		var $urlVars = this.$container.find('.url-tokens').children('div');
+
 		this.addListener($urlVars, 'mousedown', function(event) {
 			this.addUrlVar(event.currentTarget);
 		});
@@ -255,13 +330,15 @@ var RouteSettingsModal = Garnish.Modal.extend(
 		var $urlVar = $(elem).clone().attr('tabindex', '0');
 		this.urlInput.addElement($urlVar);
 
-		this.addListener($urlVar, 'keydown', function(event) {
+		this.addListener($urlVar, 'keydown', function(event)
+		{
 			switch (event.keyCode)
 			{
 				case Garnish.LEFT_KEY:
 				{
 					// Select the previous element
-					setTimeout($.proxy(function() {
+					setTimeout($.proxy(function()
+					{
 						this.urlInput.focusPreviousElement($urlVar);
 					}, this), 1);
 
@@ -270,7 +347,8 @@ var RouteSettingsModal = Garnish.Modal.extend(
 				case Garnish.RIGHT_KEY:
 				{
 					// Select the next element
-					setTimeout($.proxy(function() {
+					setTimeout($.proxy(function()
+					{
 						this.urlInput.focusNextElement($urlVar);
 					}, this), 1);
 
@@ -279,7 +357,8 @@ var RouteSettingsModal = Garnish.Modal.extend(
 				case Garnish.DELETE_KEY:
 				{
 					// Delete this element
-					setTimeout($.proxy(function() {
+					setTimeout($.proxy(function()
+					{
 						this.urlInput.removeElement($urlVar);
 					}, this), 1);
 
@@ -305,12 +384,18 @@ var RouteSettingsModal = Garnish.Modal.extend(
 		event.preventDefault();
 
 		if (this.loading)
+		{
 			return;
+		}
 
-		var data = {};
+		var data = {
+			locale: this.$localeInput.val()
+		};
 
 		if (this.route)
+		{
 			data.routeId = this.route.id;
+		}
 
 		for (var i = 0; i < this.urlInput.elements.length; i++)
 		{
@@ -346,10 +431,22 @@ var RouteSettingsModal = Garnish.Modal.extend(
 					// Is this a new route?
 					if (!this.route)
 					{
-						var $route = $('<div class="pane route" data-id="'+response.routeId+'">' +
-							'<div class="url"></div>' +
-							'<div class="template"></div>' +
-						'</div>');
+						var routeHtml =
+							'<div class="pane route" data-id="'+response.routeId+'"'+(response.locale ? ' data-locale="'+response.locale+'"' : '')+'>' +
+								'<div class="url-container">';
+
+						if (Craft.routes.locales)
+						{
+							routeHtml += '<span class="locale"></span>';
+						}
+
+						routeHtml +=
+									'<span class="url"></span>' +
+								'</div>' +
+								'<div class="template"></div>' +
+							'</div>';
+
+						var $route = $(routeHtml);
 
 						$route.appendTo('#routes');
 
@@ -365,6 +462,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 						}
 					}
 
+					this.route.locale = response.locale;
 					this.route.updateHtmlFromModal();
 					this.hide();
 
@@ -384,14 +482,17 @@ var RouteSettingsModal = Garnish.Modal.extend(
 		this.hide();
 
 		if (this.route)
+		{
 			this.route.modal = null;
+		}
 	},
 
 	deleteRoute: function()
 	{
 		if (confirm(Craft.t(('Are you sure you want to delete this route?'))))
 		{
-			Craft.postActionRequest('routes/deleteRoute', { routeId: this.route.id }, function(response, textStatus) {
+			Craft.postActionRequest('routes/deleteRoute', { routeId: this.route.id }, function(response, textStatus)
+			{
 				if (textStatus == 'success')
 				{
 					Craft.cp.displayNotice(Craft.t('Route deleted.'))

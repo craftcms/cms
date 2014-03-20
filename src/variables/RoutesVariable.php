@@ -7,18 +7,26 @@ namespace Craft;
 class RoutesVariable
 {
 	/**
-	 * Returns all routes.
+	 * Returns the routes defined in the CP.
+	 *
+	 * @return array
 	 */
-	public function getAllRoutes()
+	public function getDbRoutes()
 	{
-		$return = array();
+		$routes = array();
 
-		$routes = RouteRecord::model()->ordered()->findAll();
+		$results = craft()->db->createCommand()
+			->select('id, locale, urlParts, template')
+			->from('routes')
+			->order('sortOrder')
+			->queryAll();
 
-		foreach ($routes as $route)
+		$results = RouteRecord::model()->ordered()->findAll();
+
+		foreach ($results as $result)
 		{
 			$urlDisplayHtml = '';
-			$urlParts = JsonHelper::decode($route->urlParts);
+			$urlParts = JsonHelper::decode($result['urlParts']);
 
 			foreach ($urlParts as $part)
 			{
@@ -28,17 +36,18 @@ class RoutesVariable
 				}
 				else
 				{
-					$urlDisplayHtml .= '<span class="token" data-name="'.$part[0].'" data-value="'.$part[1].'">'.$part[0].'</span>';
+					$urlDisplayHtml .= '<span class="token" data-name="'.$part[0].'" data-value="'.$part[1].'"><span>'.$part[0].'</span></span>';
 				}
 			}
 
-			$return[] = array(
-				'id' => $route->id,
+			$routes[] = array(
+				'id'             => $result['id'],
+				'locale'         => $result['locale'],
 				'urlDisplayHtml' => $urlDisplayHtml,
-				'template' => $route->template
+				'template'       => $result['template']
 			);
 		}
 
-		return $return;
+		return $routes;
 	}
 }

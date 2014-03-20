@@ -16,19 +16,26 @@ class RoutesController extends BaseController
 
 		$urlParts = craft()->request->getRequiredPost('url');
 		$template = craft()->request->getRequiredPost('template');
-		$routeId = craft()->request->getPost('routeId');
+		$routeId  = craft()->request->getPost('routeId');
+		$locale   = craft()->request->getPost('locale');
 
-		$route = craft()->routes->saveRoute($urlParts, $template, $routeId);
-
-		if ($route->hasErrors())
+		if ($locale === '')
 		{
-			$this->returnJson(array('errors' => $route->getErrors()));
+			$locale = null;
+		}
+
+		$routeRecord = craft()->routes->saveRoute($urlParts, $template, $routeId, $locale);
+
+		if ($routeRecord->hasErrors())
+		{
+			$this->returnJson(array('errors' => $routeRecord->getErrors()));
 		}
 		else
 		{
 			$this->returnJson(array(
 				'success' => true,
-				'routeId' => $route->id
+				'routeId' => $routeRecord->id,
+				'locale'  => $routeRecord->locale
 			));
 		}
 	}

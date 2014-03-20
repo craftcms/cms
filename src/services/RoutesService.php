@@ -6,69 +6,92 @@ namespace Craft;
  */
 class RoutesService extends BaseApplicationComponent
 {
-	private $_routes;
-
 	/**
-	 * Returns all of the routes.
+	 * Returns the routes defined in craft/config/routes.php
 	 *
-	 * @return array
+	 * @return array|null
 	 */
-	public function getAllRoutes()
+	public function getConfigFileRoutes()
 	{
-		if (!isset($this->_routes))
+		$path = craft()->path->getConfigPath().'routes.php';
+
+		if (IOHelper::fileExists($path))
 		{
-			$this->_routes = array();
+			$routes = require_once($path);
 
-			// Where should we look for routes?
-			if (craft()->config->get('siteRoutesSource') == 'file')
+			if (is_array($routes))
 			{
-				$path = craft()->path->getConfigPath().'routes.php';
+				// Check for any locale-specific routes
+				$locale = craft()->language;
 
-				if (IOHelper::fileExists($path))
+				if (isset($routes[$locale]) && is_array($routes[$locale]))
 				{
-					$this->_routes = require_once $path;
-				}
-			}
-			else
-			{
-				$records = RouteRecord::model()->ordered()->findAll();
+					$localizedRoutes = $routes[$locale];
+					unset($routes[$locale]);
 
-				foreach ($records as $record)
-				{
-					$this->_routes[$record->urlPattern] = $record->template;
+					// Merge them so that the localized routes come first
+					$routes = array_merge($localizedRoutes, $routes);
 				}
+
+				return $routes;
 			}
 		}
+	}
 
-		return $this->_routes;
+	/**
+	 * Returns the routes defined in the CP.
+	 *
+	 * @return array|null
+	 */
+	public function getDbRoutes()
+	{
+		$results = craft()->db->createCommand()
+			->select('urlPattern, template')
+			->from('routes')
+			->where(array('or', 'locale is null', 'locale = :locale'), array(':locale' => craft()->language))
+			->order('sortOrder')
+			->queryAll();
+
+		if ($results)
+		{
+			$routes = array();
+
+			foreach ($results as $result)
+			{
+				$routes[$result['urlPattern']] = $result['template'];
+			}
+
+			return $routes;
+		}
 	}
 
 	/**
 	 * Saves a new or existing route.
 	 *
-	 * @param array  $urlParts The URL as defined by the user.
+	 * @param array       $urlParts The URL as defined by the user.
 	 * This is an array where each element is either a string
 	 * or an array containing the name of a subpattern and the subpattern.
-	 * @param string $template The template to route matching URLs to.
-	 * @param int    $routeId The route ID, if editing an existing route.
+	 * @param string      $template The template to route matching URLs to.
+	 * @param int|null    $routeId The route ID, if editing an existing route.
+	 * @param string|null $locale
 	 *
 	 * @throws Exception
 	 * @return RouteRecord
 	 */
-	public function saveRoute($urlParts, $template, $routeId = null)
+	public function saveRoute($urlParts, $template, $routeId = null, $locale = null)
 	{
 		if ($routeId !== null)
 		{
-			$route = $this->_getRecordRouteById($routeId);
+			$routeRecord = RouteRecord::model()->findById($routeId);
 
-			if (!$route)
+			if (!$routeRecord)
 			{
 				throw new Exception(Craft::t('No route exists with the ID “{id}”', array('id' => $routeId)));
 			}
 		}
 		else
 		{
-			$route = new RouteRecord();
+			$routeRecord = new RouteRecord();
 
 			// Get the next biggest sort order
 			$maxSortOrder = craft()->db->createCommand()
@@ -76,7 +99,7 @@ class RoutesService extends BaseApplicationComponent
 				->from('routes')
 				->queryScalar();
 
-			$route->sortOrder = $maxSortOrder + 1;
+			$routeRecord->sortOrder = $maxSortOrder + 1;
 		}
 
 		// Compile the URL parts into a regex pattern
@@ -106,12 +129,13 @@ class RoutesService extends BaseApplicationComponent
 			}
 		}
 
-		$route->urlParts = JsonHelper::encode($urlParts);
-		$route->urlPattern = $urlPattern;
-		$route->template = $template;
-		$route->save();
+		$routeRecord->locale     = $locale;
+		$routeRecord->urlParts   = JsonHelper::encode($urlParts);
+		$routeRecord->urlPattern = $urlPattern;
+		$routeRecord->template   = $template;
+		$routeRecord->save();
 
-		return $route;
+		return $routeRecord;
 	}
 
 	/**
@@ -139,16 +163,5 @@ class RoutesService extends BaseApplicationComponent
 			$condition = array('id' => $routeId);
 			craft()->db->createCommand()->update('routes', $data, $condition);
 		}
-	}
-
-	/**
-	 * Returns a route by its ID.
-	 *
-	 * @param int $routeId The route ID
-	 * @return RouteRecord|null
-	 */
-	private function _getRecordRouteById($routeId)
-	{
-		return RouteRecord::model()->findById($routeId);
 	}
 }

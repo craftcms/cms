@@ -274,11 +274,6 @@ return array(
 	'setPasswordSuccessPath' => '',
 
 	/**
-	 * Tells Craft whether to use the CP-managed site routes ('db'), or load them from craft/config/routes.php ('file').
-	 */
-	'siteRoutesSource' => 'db',
-
-	/**
 	 * The base URL to the site. If this is set, Craft will use it instead of the site URL defined in Settings > General.
 	 *
 	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale basis.
