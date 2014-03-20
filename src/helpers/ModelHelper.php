@@ -491,6 +491,7 @@ class ModelHelper
 	/**
 	 * Takes an attribute's config and value and "normalizes" them either for saving to db or sending across a web service.
 	 *
+	 * @static
 	 * @param      $value
 	 * @param bool $jsonEncodeArrays
 	 * @internal param $storedValue
@@ -503,9 +504,20 @@ class ModelHelper
 			return DateTimeHelper::formatTimeForDb($value->getTimestamp());
 		}
 
-		if ($value instanceof \CModel)
+		if ($value instanceof BaseModel)
 		{
-			$value = $value->getAttributes();
+			$attributes = $value->getAttributes(null, true);
+
+			if ($value instanceof ElementCriteriaModel)
+			{
+				$attributes['__criteria__'] = $value->getElementType()->getClassHandle();
+			}
+			else
+			{
+				$attributes['__model__'] = get_class($value);
+			}
+
+			$value = $attributes;
 		}
 
 		if (is_array($value))
@@ -532,6 +544,39 @@ class ModelHelper
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Searches an array for any flattened models, and expands them back to models.
+	 *
+	 * @static
+	 * @param array $arr
+	 * @return array|BaseModel
+	 */
+	public static function expandModelsInArray($arr)
+	{
+		foreach ($arr as $key => $val)
+		{
+			if (is_array($val))
+			{
+				$arr[$key] = static::expandModelsInArray($val);
+			}
+		}
+
+		if (isset($arr['__criteria__']))
+		{
+			return craft()->elements->getCriteria($arr['__criteria__'], $arr);
+		}
+
+		if (isset($arr['__model__']))
+		{
+			$class = $arr['__model__'];
+			$model = new $class();
+			$model->setAttributes($arr);
+			return $model;
+		}
+
+		return $arr;
 	}
 
 	/**

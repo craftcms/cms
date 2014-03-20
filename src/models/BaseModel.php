@@ -293,10 +293,17 @@ abstract class BaseModel extends \CModel
 						$value = JsonHelper::decode($value);
 					}
 
-					if ($config['model'])
+					if (is_array($value))
 					{
-						$class = __NAMESPACE__.'\\'.$config['model'];
-						$value = $class::populateModel($value);
+						if ($config['model'])
+						{
+							$class = __NAMESPACE__.'\\'.$config['model'];
+							$value = $class::populateModel($value);
+						}
+						else
+						{
+							$value = ModelHelper::expandModelsInArray($value);
+						}
 					}
 
 					break;
