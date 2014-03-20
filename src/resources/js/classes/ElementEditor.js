@@ -44,7 +44,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 			if (response.locales)
 			{
-				var $localesContainer = $('<div class="hud-header"/>'),
+				var $localesContainer = $('<div class="header"/>'),
 					$localeSelectContainer = $('<div class="select"/>').appendTo($localesContainer);
 
 				this.$localeSelect = $('<select/>').appendTo($localeSelectContainer);
@@ -66,7 +66,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 			this.updateForm(response);
 
-			var $buttonsOuterContainer = $('<div class="hud-footer"/>').appendTo(this.$form);
+			var $buttonsOuterContainer = $('<div class="footer"/>').appendTo(this.$form);
 
 			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsOuterContainer);
 

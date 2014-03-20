@@ -174,26 +174,7 @@ td.right { float: none; @include alignright; }
 
 .hidden { display: none !important; }
 
-/* headers and footers */
 .clearafter:after { @include clearafter; }
-
-.header { border-bottom-width: 1px;
-	@include linear-gradient(#fff, $bgcolor);
-}
-.footer { border-top-width: 1px; padding-top: 9px; }
-
-.header .left,
-.header .right { position: absolute; top: 9px; float: none; }
-.header .left { @include left(25px); }
-.header .right { @include right(25px); }
-.header .left li,
-.header .right li,
-.footer .left li,
-.footer .right li { @include floatleft; }
-.header .left li + li,
-.header .right li + li { @include margin-left(10px); }
-.footer .left li + li,
-.footer .right li + li { @include margin-left(10px); }
 
 /* ----------------------------------------
 /*  Panes
@@ -697,7 +678,7 @@ ul.tree,
 .elementselect.uploading .progress-shade{ display: block; z-index: 2;}
 
 /* ----------------------------------------
-/*  Modals
+/*  Modals and HUDs
 /* ----------------------------------------*/
 
 .modal,
@@ -705,9 +686,45 @@ ul.tree,
 	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px rgba(0,0,0,0.25));
 }
 
+.modal .header,
+.modal .footer,
+.hud .header,
+.hud .footer { position: relative; z-index: 1; padding: 24px; }
+
+.modal .header,
+.hud .header { border-radius: 3px 3px 0 0;
+	@include linear-gradient(#fff, hsl($hue, 8%, 98%));
+	@include box-shadow(0 2px 1px -2px rgba(0,0,0,0.2));
+}
+.modal .body .header,
+.hud .body .header { margin: -24px -24px 24px; }
+.modal .header h1,
+.hud .hedaer h1 { margin: 0; }
+
+.modal .footer,
+.hud .footer { border-radius: 0 0 3px 3px;
+	@include linear-gradient(hsl($hue, 8%, 97%), hsl($hue, 8%, 96%));
+	@include box-shadow(inset 0 2px 1px -2px rgba(0,0,0,0.2));
+}
+.modal .footer:after,
+.hud .footer:after { @include clearafter; }
+.modal .body .footer,
+.hud .body .footer { margin: 24px -24px -24px; }
+
+.modal > .body,
+.hud > .body { position: relative; padding: 24px; overflow: hidden; }
+.modal > .body:after,
+.hud > .body:after { @include clearafter; }
+
+.modal-shade,
+.hud-shade { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
+.modal-shade { z-index: 9998; background: rgba(255,255,255,0.75); }
+.modal-shade.dark { background: rgba(0,0,0,0.75); }
+.hud-shade { z-index: 9997; background: none; }
+
 .modal { position: fixed; z-index: 9998; top: 50%; left: 50%; margin-left: -200px; width: 400px; overflow: hidden; }
+
 .hud { position: absolute; z-index: 9997; display: none; top: 0; }
-.hud .body { position: relative; padding: 24px; overflow: hidden; }
 .hud .tip { position: absolute; background: no-repeat 0 0; }
 .hud .tip-left { @include left(-15px); width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
 .hud .tip-top { top: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_top.png); }
@@ -715,44 +732,16 @@ ul.tree,
 .hud .tip-bottom { bottom: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_bottom.png); }
 .hud.has-footer .tip-bottom { background-image: url(../images/hudtip_bottom_gray.png); }
 
-.hud .body .hud-header { position: relative; z-index: 1; margin: -24px -24px 24px; padding: 24px; border-radius: 3px 3px 0 0;
-	@include linear-gradient(#fff, hsl($hue, 8%, 98%));
-	@include box-shadow(0 2px 1px -2px rgba(0,0,0,0.2));
-}
-
-.hud .body .hud-footer { position: relative; z-index: 1; margin: 24px -24px -24px; padding: 24px; border-radius: 0 0 3px 3px;
-	@include linear-gradient(hsl($hue, 8%, 97%), hsl($hue, 8%, 96%));
-	@include box-shadow(inset 0 2px 1px -2px rgba(0,0,0,0.2));
-}
-.hud .body .hud-footer:after { @include clearafter; }
-
-.modal > .header,
-.modal > .footer { position: relative; padding: 14px 24px; }
-.modal > .body { padding: 24px; }
-.modal > .body:after { @include clearafter; }
-.modal > .header {
-    @include box-shadow(0 1px 0 rgba(0,0,0,0.1));
-}
-.modal > .header h1 { margin: 0; }
-.modal > .footer {
-    @include box-shadow(0 -1px 0 rgba(0,0,0,0.1));
-}
-.modal > .footer:after { @include clearafter; }
-
-.modal-shade { display: none; position: fixed; top: 0; @include left(0); z-index: 9998; width: 100%; height: 100%; background: rgba(255,255,255,0.75); }
-.modal-shade.dark { background: rgba(0,0,0,0.75); }
-.hud-shade { display: none; position: fixed; top: 0; @include left(0); z-index: 9997; width: 100%; height: 100%; background: none; }
-
 /* element editor HUDs */
 .hud .elementeditor { padding: 0; }
-.hud .elementeditor .hud-header,
-.hud .elementeditor .hud-footer { margin: 0; padding: 7px 24px; }
-.hud .elementeditor .hud-header { text-align: center; }
-.hud .elementeditor .hud-header .spinner { @include margin(-1px, -25px, -1px, 5px); }
+.hud .elementeditor .header,
+.hud .elementeditor .footer { margin: 0; padding: 7px 24px; }
+.hud .elementeditor .header { text-align: center; }
+.hud .elementeditor .header .spinner { @include margin(-1px, -25px, -1px, 5px); }
 .hud .elementeditor > form > .fields { max-width: 400px; max-height: 300px; padding: 24px; overflow: auto; }
-.hud .elementeditor .hud-footer .spinner { position: absolute; @include right(2px); margin: 0; }
-.hud .elementeditor .hud-footer .buttons { margin: 0; }
-.hud .elementeditor .hud-footer .buttons .btn { position: relative; }
+.hud .elementeditor .footer .spinner { position: absolute; @include right(2px); margin: 0; }
+.hud .elementeditor .footer .buttons { margin: 0; }
+.hud .elementeditor .footer .buttons .btn { position: relative; }
 
 /* crop image modals */
 .image-chooser img { display: block; }
