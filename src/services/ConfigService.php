@@ -588,17 +588,19 @@ class ConfigService extends BaseApplicationComponent
 		// Is this a multi-environment config?
 		if (array_key_exists('*', $customConfig))
 		{
+			$mergedCustomConfig = array();
+
 			foreach ($customConfig as $env => $envConfig)
 			{
 				if ($env == '*' || strpos(CRAFT_ENVIRONMENT, $env) !== false)
 				{
-					$baseConfig = array_merge($baseConfig, $envConfig);
+					$mergedCustomConfig = array_merge_recursive($mergedCustomConfig, $envConfig);
 				}
 			}
+
+			$customConfig = $mergedCustomConfig;
 		}
-		else
-		{
-			$baseConfig = array_merge($baseConfig, $customConfig);
-		}
+
+		$baseConfig = array_merge($baseConfig, $customConfig);
 	}
 }
