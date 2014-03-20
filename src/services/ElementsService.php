@@ -1025,7 +1025,7 @@ class ElementsService extends BaseApplicationComponent
 
 				// Finally, delete any caches involving this element
 				// (Even do this for new elements, since they might pop up in a cached criteria.)
-				craft()->templateCache->deleteCachesByElementId($element->id);
+				craft()->templateCache->deleteCachesByElement($element);
 			}
 
 			if ($transaction !== null)
@@ -1084,7 +1084,7 @@ class ElementsService extends BaseApplicationComponent
 		));
 
 		// Delete any caches involving this element
-		craft()->templateCache->deleteCachesByElementId($element->id);
+		craft()->templateCache->deleteCachesByElement($element);
 
 		if ($updateOtherLocales)
 		{

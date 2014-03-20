@@ -12,6 +12,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	private $_cacheCriteria;
 	private $_cacheElementIds;
 	private $_deletedExpiredCaches = false;
+	private $_deletedCachesByElementType;
 
 	/**
 	 * Returns a cached template by its key.
@@ -207,6 +208,53 @@ class TemplateCacheService extends BaseApplicationComponent
 
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, $condition, $params);
 		return (bool) $affectedRows;
+	}
+
+	/**
+	 * Deletes caches by a given element type.
+	 *
+	 * @param string $elementType
+	 * @return bool
+	 */
+	public function deleteCachesByElementType($elementType)
+	{
+		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, array('type = :type'), array(':type' => $elementType));
+
+		$this->_deletedCachesByElementType[$elementType] = true;
+
+		return (bool) $affectedRows;
+	}
+
+	/**
+	 * Deletes caches that include a given element(s).
+	 *
+	 * @param BaseElementModel|array $elements
+	 * @return bool
+	 */
+	public function deleteCachesByElement($elements)
+	{
+		if (!$elements)
+		{
+			return false;
+		}
+
+		if (!is_array($elements))
+		{
+			$elements = array($elements);
+		}
+
+		$elementIds = array();
+
+		foreach ($elements as $element)
+		{
+			// Make sure we haven't just deleted all of the caches for this element type.
+			if (empty($this->_deletedCachesByElementType[$element->getElementType()]))
+			{
+				$elementIds[] = $element->id;
+			}
+		}
+
+		return $this->deleteCachesByElementId($elementIds);
 	}
 
 	/**
