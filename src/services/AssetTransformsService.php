@@ -95,6 +95,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 *
 	 * @param AssetTransformModel $transform
 	 * @return bool
+	 * @throws Exception
 	 */
 	public function saveTransform(AssetTransformModel $transform)
 	{
@@ -179,31 +180,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		}
 
 		$sourceType = craft()->assetSources->getSourceTypeById($fileModel->sourceId);
-		$imageSource = $sourceType->getImageSourcePath($fileModel);
-
-		$deleteSource = false;
-		if (!IOHelper::fileExists($imageSource))
-		{
-			if (!$sourceType->isRemote())
-			{
-				return false;
-			}
-
-			$maxCachedImageSize = craft()->config->get("maxCachedCloudImageSize");
-			$localCopy = $sourceType->getLocalCopy($fileModel);
-
-			// Resize if constrained by maxCachedImageSizes setting
-			if (is_numeric($maxCachedImageSize) && $maxCachedImageSize > 0)
-			{
-				craft()->images->loadImage($localCopy)->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->setQuality(100)->saveAs($imageSource);
-			}
-			// Mark for deletion, since the maxCachedImageSizes setting is either invalid or set to 0.
-			else
-			{
-				IOHelper::move($localCopy, $imageSource);
-				$deleteSource = true;
-			}
-		}
+		$imageSource = $this->getLocalImageSource($fileModel);
 
 		if (!is_array($transformsToUpdate))
 		{
@@ -250,11 +227,7 @@ class AssetTransformsService extends BaseApplicationComponent
 			}
 		}
 
-		if ($deleteSource)
-		{
-			IOHelper::deleteFile($imageSource);
-		}
-
+		$this->deleteSourceIfNecessary($imageSource);
 
 		return true;
 	}
@@ -588,8 +561,6 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	public function getThumbServerPath($fileModel, $size)
 	{
-		$sourceType = craft()->assetSources->getSourceTypeById($fileModel->sourceId);
-
 		$thumbFolder = craft()->path->getAssetsThumbsPath().$size.'/';
 		IOHelper::ensureFolderExists($thumbFolder);
 
@@ -597,40 +568,13 @@ class AssetTransformsService extends BaseApplicationComponent
 
 		if (!IOHelper::fileExists($thumbPath))
 		{
-			$imageSource = $sourceType->getImageSourcePath($fileModel);
-			$deleteSource = false;
-
-			if (!IOHelper::fileExists($imageSource) && !$sourceType->isRemote())
-			{
-				return false;
-			}
-			elseif ($sourceType->isRemote())
-			{
-				$localCopy = $sourceType->getLocalCopy($fileModel);
-				$maxCachedImageSize = craft()->config->get("maxCachedCloudImageSize");
-
-
-				// Resize if constrained by maxCachedImageSizes setting
-				if (is_numeric($maxCachedImageSize) && $maxCachedImageSize > 0)
-				{
-					craft()->images->loadImage($localCopy)->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->saveAs($imageSource);
-				}
-				// Mark for deletion, since the maxCachedImageSizes setting is either invalid or set to 0.
-				else
-				{
-					IOHelper::move($localCopy, $imageSource);
-					$deleteSource = true;
-				}
-			}
+			$imageSource = $this->getLocalImageSource($fileModel);
 
 			craft()->images->loadImage($imageSource)
 				->scaleAndCrop($size, $size)
 				->saveAs($thumbPath);
 
-			if ($deleteSource)
-			{
-				IOHelper::deleteFile($imageSource);
-			}
+			$this->deleteSourceIfNecessary($imageSource);
 		}
 
 		return $thumbPath;
@@ -664,5 +608,83 @@ class AssetTransformsService extends BaseApplicationComponent
 					'_'.($transform->mode).
 					'_'.($transform->position).
 					($transform->quality ? '_' . $transform->quality : '');
+	}
+
+	/**
+	 * Get a local image source to use for transforms.
+	 *
+	 * @param $fileModel
+	 * @return mixed
+	 * @throws Exception
+	 */
+	public function getLocalImageSource($fileModel)
+	{
+		$sourceType = craft()->assetSources->getSourceTypeById($fileModel->sourceId);
+		$imageSourcePath = $sourceType->getImageSourcePath($fileModel);
+
+		if (!IOHelper::fileExists($imageSourcePath))
+		{
+			if (!$sourceType->isRemote())
+			{
+				throw new Exception(Craft::t("Image «{file}» cannot be found.", array('file' => $fileModel->filename)));
+			}
+
+			$localCopy = $sourceType->getLocalCopy($fileModel);
+			$this->storeLocalSource($localCopy, $imageSourcePath);
+		}
+
+		return $imageSourcePath;
+	}
+
+	/**
+	 * Get the size of max cached cloud images.
+	 *
+	 * @return int
+	 */
+	public function getCachedCloudImageSize()
+	{
+		static $maxCachedCloudImageSize = null;
+
+		if (is_null($maxCachedCloudImageSize))
+		{
+			$maxCachedCloudImageSize = (int) craft()->config->get("maxCachedCloudImageSize");
+		}
+
+		return $maxCachedCloudImageSize;
+	}
+
+	/**
+	 * Deletes an image local source if required by config.
+	 *
+	 * @param $imageSource
+	 */
+	public function deleteSourceIfNecessary($imageSource)
+	{
+		if (! ($this->getCachedCloudImageSize() > 0))
+		{
+			IOHelper::deleteFile($imageSource);
+		}
+	}
+
+	/**
+	 * Store a local image copy to a destination path.
+	 *
+	 * @param $localCopy
+	 * @param $destination
+	 */
+	public function storeLocalSource($localCopy, $destination)
+	{
+		$maxCachedImageSize = $this->getCachedCloudImageSize();
+
+		// Resize if constrained by maxCachedImageSizes setting
+		if ($maxCachedImageSize > 0)
+		{
+			craft()->images->loadImage($localCopy)->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->setQuality(100)->saveAs($destination);
+			IOHelper::deleteFile($localCopy);
+		}
+		else
+		{
+			IOHelper::move($localCopy, $destination);
+		}
 	}
 }
