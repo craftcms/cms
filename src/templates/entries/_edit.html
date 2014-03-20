@@ -120,7 +120,7 @@
 						{% endif %}
 					</div><!--/pane-->
 
-					{% if currentUser.can('deleteEntries'~permissionSuffix) and entry.id %}
+					{% if canDeleteEntry %}
 						<div class="pane">
 							<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="entries/deleteEntry"
 								data-confirm="{{ 'Are you sure you want to delete this entry?'|t }}"
