@@ -622,7 +622,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			}
 		}
 
-		$this->_moveSourceFile($replaceWith, craft()->assets->getFolderById($oldFile->folderId), $oldFile->filename);
+		$this->_moveSourceFile($replaceWith, craft()->assets->getFolderById($oldFile->folderId), $oldFile->filename, true);
 
 		// Update file info
 		$oldFile->width = $replaceWith->width;
