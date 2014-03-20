@@ -248,6 +248,12 @@ class EntriesController extends BaseController
 			}
 		}
 
+		// Can the user delete the entry?
+		$variables['canDeleteEntry'] = $variables['entry']->id && (
+			($variables['entry']->authorId == $currentUser->id && $currentUser->can('deleteEntries:'.$variables['entry']->sectionId)) ||
+			($variables['entry']->authorId != $currentUser->id && $currentUser->can('deletePeerEntries:'.$variables['entry']->sectionId))
+		);
+
 		// Render the template!
 		craft()->templates->includeCssResource('css/entry.css');
 		$this->renderTemplate('entries/_edit', $variables);
@@ -450,15 +456,47 @@ class EntriesController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$entry = $this->_populateEntryModel();
-		$section = $entry->getSection();
-		craft()->userSession->requirePermission('deleteEntries:'.$section->id);
+		$entryId = craft()->request->getRequiredPost('entryId');
+		$entry = craft()->entries->getEntryById($entryId);
+		$currentUser = craft()->userSession->getUser();
 
-		$entryId = $entry->id;
+		if ($entry->authorId == $currentUser->id)
+		{
+			craft()->userSession->requirePermission('deleteEntries:'.$entry->sectionId);
+		}
+		else
+		{
+			craft()->userSession->requirePermission('deletePeerEntries:'.$entry->sectionId);
+		}
 
-		craft()->entries->deleteEntryById($entryId);
+		if (craft()->entries->deleteEntry($entry))
+		{
+			if (craft()->request->isAjaxRequest())
+			{
+				$this->returnJson(array('success' => true));
+			}
+			else
+			{
+				craft()->userSession->setNotice(Craft::t('Entry deleted.'));
+				$this->redirectToPostedUrl($entry);
+			}
+		}
+		else
+		{
+			if (craft()->request->isAjaxRequest())
+			{
+				$this->returnJson(array('success' => false));
+			}
+			else
+			{
+				craft()->userSession->setError(Craft::t('Couldn’t delete entry.'));
 
-		$this->redirectToPostedUrl();
+				// Send the entry back to the template
+				craft()->urlManager->setRouteVariables(array(
+					'entry' => $entry
+				));
+			}
+		}
 	}
 
 	/**
