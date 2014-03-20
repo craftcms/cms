@@ -265,8 +265,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		$response = $this->insertFileByPath($filePath, $folder, $fileName);
 
-		IOHelper::deleteFile($filePath);
-
 		// Prevent sensitive information leak. Just in case.
 		$response->deleteDataItem('filePath');
 
@@ -331,8 +329,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			if (!$this->isSourceLocal() && $fileModel->kind == 'image')
 			{
-				// Store copy locally for all sorts of operations.
-				IOHelper::copyFile($localFilePath, craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename));
+				craft()->assetTransforms->storeLocalSource($localFilePath, craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename));
 			}
 
 			// Check if we stored a conflict response originally - send that back then.
@@ -398,7 +395,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			if (!$this->isSourceLocal() && $file->kind == "image")
 			{
 				// Store copy locally for all sorts of operations.
-				IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file));
+				craft()->assetTransforms->storeLocalSource($localCopy, craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename));
 			}
 		}
 
@@ -644,7 +641,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				$localCopy = $this->getLocalCopy($replaceWith);
 				if ($oldFile->kind == "image")
 				{
-					IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$oldFile->id.'.'.IOHelper::getExtension($oldFile));
+					IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$oldFile->id.'.'.IOHelper::getExtension($oldFile->filename));
 				}
 				IOHelper::deleteFile($localCopy);
 			}
