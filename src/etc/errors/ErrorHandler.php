@@ -120,6 +120,22 @@ class ErrorHandler extends \CErrorHandler
 		}
 		else
 		{
+			// Check to see if this happened while running a task
+			foreach ($trace as $step)
+			{
+				if (isset($step['class']) && $step['class'] == __NAMESPACE__.'\\TasksService' && $step['function'] == 'runTask')
+				{
+					$task = craft()->tasks->getRunningTask();
+
+					if ($task)
+					{
+						craft()->tasks->fail($task, $event->message.' on line '.$event->line.' of '.$event->file);
+					}
+
+					break;
+				}
+			}
+
 			parent::handleError($event);
 		}
 	}

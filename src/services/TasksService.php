@@ -8,6 +8,7 @@ class TasksService extends BaseApplicationComponent
 {
 	private $_taskRecordsById;
 	private $_nextPendingTask;
+	private $_runningTask;
 
 	/**
 	 * Creates a task to run later in the system.
@@ -134,8 +135,11 @@ class TasksService extends BaseApplicationComponent
 
 		while ($task = $this->getNextPendingTask())
 		{
+			$this->_runningTask = $task;
 			$this->runTask($task);
 		}
+
+		$this->_runningTask = null;
 	}
 
 	/**
@@ -143,11 +147,10 @@ class TasksService extends BaseApplicationComponent
 	 *
 	 * @param TaskModel $task
 	 * @return bool
-	 * @throws \Exception
 	 */
 	public function runTask(TaskModel $task)
 	{
-		$success = true;
+		$error = null;
 
 		try
 		{
@@ -173,34 +176,28 @@ class TasksService extends BaseApplicationComponent
 					// Run it.
 					if (($result = $taskType->runStep($step)) !== true)
 					{
-						$message = 'Encountered an error running step '.($step+1).' of '.$task->totalSteps.' on '.$taskRecord->type.' with the ID "'.$task->id.'"';
-
 						// Did they give us an error to report?
 						if (is_string($result))
 						{
-							$message .= ': '.$result;
+							$error = $result;
 						}
 						else
 						{
-							$message .= '.';
+							$error = true;
 						}
 
-						Craft::log($message, LogLevel::Error);
-						$success = false;
 						break;
 					}
 				}
 			}
 			else
 			{
-				Craft::log('Could not find the task component type for task '.$taskRecord->type, LogLevel::Error);
-				$success = false;
+				$error = 'Could not find the task component type.';
 			}
 		}
 		catch (\Exception $e)
 		{
-			Craft::log('Something went wrong when processing the tasks:'.$e->getMessage(), LogLevel::Error);
-			$success = false;
+			$error = 'An exception was thrown: '.$e->getMessage();
 		}
 
 		if ($task == $this->_nextPendingTask)
@@ -209,9 +206,9 @@ class TasksService extends BaseApplicationComponent
 			$this->_nextPendingTask = null;
 		}
 
-		if ($success)
+		if ($error === null)
 		{
-			Craft::log('Finished task '.$taskRecord->type.'.', LogLevel::Info, true);
+			Craft::log('Finished task '.$task->id.' ('.$task->type.').', LogLevel::Info, true);
 
 			// We're done with this task, nuke it.
 			$taskRecord->deleteNode();
@@ -220,11 +217,45 @@ class TasksService extends BaseApplicationComponent
 		}
 		else
 		{
-			$task->status = TaskStatus::Error;
-			$this->saveTask($task);
-
+			$this->fail($task, $error);
 			return false;
 		}
+	}
+
+	/**
+	 * Sets a task's status to "error" and logs it.
+	 *
+	 * @param TaskModel $task
+	 * @param mixed     $error
+	 */
+	public function fail(TaskModel $task, $error = null)
+	{
+		$task->status = TaskStatus::Error;
+		$this->saveTask($task);
+
+		// Log it
+		$logMessage = 'Encountered an error running task '.$task->id.' ('.$task->type.')';
+
+		if ($task->currentStep)
+		{
+			$logMessage .= ', step '.$task->currentStep;
+
+			if ($task->totalSteps)
+			{
+				$logMessage .= ' of '.$task->totalSteps;
+			}
+		}
+
+		if ($error && is_string($error))
+		{
+			$logMessage .= ': '.$error;
+		}
+		else
+		{
+			$logMessage .= '.';
+		}
+
+		Craft::log($logMessage, LogLevel::Error);
 	}
 
 	/**
@@ -268,18 +299,30 @@ class TasksService extends BaseApplicationComponent
 	 */
 	public function getRunningTask()
 	{
-		$result = craft()->db->createCommand()
-			->select('*')
-			->from('tasks')
-			->where(
-				array('and', 'lft = 1', 'status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/),
-				array(':status' => TaskStatus::Running/*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/)
-			)
-			->queryRow();
-
-		if ($result)
+		if (!isset($this->_runningTask))
 		{
-			return TaskModel::populateModel($result);
+			$result = craft()->db->createCommand()
+				->select('*')
+				->from('tasks')
+				->where(
+					array('and', 'lft = 1', 'status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/),
+					array(':status' => TaskStatus::Running/*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/)
+				)
+				->queryRow();
+
+			if ($result)
+			{
+				$this->_runningTask = TaskModel::populateModel($result);
+			}
+			else
+			{
+				$this->_runningTask = false;
+			}
+		}
+
+		if ($this->_runningTask)
+		{
+			return $this->_runningTask;
 		}
 	}
 
