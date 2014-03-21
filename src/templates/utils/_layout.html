@@ -6,6 +6,7 @@
 {% endif %}
 
 {% set tabs = {
+	serverinfo:   { label: "Server Info"|t,  url: url('utils/serverinfo') },
 	phpinfo:      { label: "PHP Info"|t,     url: url('utils/phpinfo') },
 	logviewer:    { label: "Log Viewer"|t,   url: url('utils/logviewer') }
 } %}

@@ -1,0 +1,27 @@
+{% extends "utils/_layout" %}
+
+{% block content %}
+	<h2>Requirement Report</h2>
+	<table class="data fullwidth">
+		<thead>
+			<tr>
+				<th>Requirement</th>
+				<th class="thin">Result</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for requirement in requirements %}
+				<tr>
+					<th>{{ requirement.getName() }}</th>
+					<td class="thin centeralign">
+						{% if requirement.getResult() == 'success' %}
+							<span class="success" title="{{ 'Passed'|t }}" data-icon="check"></span>
+						{% else %}
+							<span class="error" title="{{ 'Failed'|t }}" data-icon="x"></span>
+						{% endif %}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

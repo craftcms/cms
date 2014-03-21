@@ -130,7 +130,7 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 
 /* text styles */
 .rightalign { @include alignright; }
-.centeralign { text-align: center; }
+.centeralign { text-align: center !important; }
 .nowrap { white-space: nowrap; }
 .light { color: $mediumtextcolor; font-weight: normal; }
 
@@ -161,6 +161,7 @@ td.right { float: none; @include alignright; }
 .settings-btn { display: block; width: 16px; height: 16px; background: url(../images/settings-btn.png); cursor: pointer; }
 .settings-btn.active { background-position: 0 100%; }
 
+.success { color: $successcolor !important; }
 .error { color: $errorcolor !important; }
 
 .icon.move { display: inline-block; cursor: move; }

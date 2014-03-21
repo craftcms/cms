@@ -16,6 +16,20 @@ class UtilsController extends BaseController
 	}
 
 	/**
+	 * Server info
+	 */
+	public function actionServerInfo()
+	{
+		// Run the requirements checker
+		$reqCheck = new RequirementsChecker();
+		$reqCheck->run();
+
+		$this->renderTemplate('utils/serverinfo', array(
+			'requirements' => $reqCheck->getRequirements(),
+		));
+	}
+
+	/**
 	 * PHP info
 	 */
 	public function actionPhpInfo()
