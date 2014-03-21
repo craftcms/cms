@@ -177,6 +177,10 @@ td.right { float: none; @include alignright; }
 
 .clearafter:after { @include clearafter; }
 
+.info { font-size: 0; display: inline-block; cursor: pointer; }
+.info:before { @include icon; content: 'info'; color: $lighttextcolor; font-size: 13px;}
+.info:hover:before { color: $linkcolor; }
+
 /* ----------------------------------------
 /*  Panes
 /* ----------------------------------------*/

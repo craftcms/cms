@@ -775,6 +775,7 @@ $.extend(Craft,
 	{
 		$('.grid', $container).grid();
 		$('.pane', $container).pane();
+		$('.info', $container).infoicon();
 		$('.checkbox-select', $container).checkboxselect();
 		$('.fieldtoggle', $container).fieldtoggle();
 		$('.lightswitch', $container).lightswitch();
@@ -1024,6 +1025,14 @@ $.extend($.fn,
 			if ($container.data('snap-to-grid'))  settings.snapToGrid = !!$container.data('snap-to-grid');
 
 			new Craft.Grid(this, settings);
+		});
+	},
+
+	infoicon: function()
+	{
+		return this.each(function()
+		{
+			new Craft.InfoIcon(this);
 		});
 	},
 
