@@ -15,12 +15,11 @@ class EntriesController extends BaseController
 	public function actionEditEntry(array $variables = array())
 	{
 		$this->_prepEditEntryVariables($variables);
+		$currentUser = craft()->userSession->getUser();
 
 		if (craft()->hasPackage(CraftPackage::Users) && $variables['section']->type != SectionType::Single)
 		{
 			// Get all the possible authors
-			$currentUser = craft()->userSession->getUser();
-
 			if ($variables['entry']->authorId)
 			{
 				if ($variables['entry']->authorId == $currentUser->id)
