@@ -13,16 +13,15 @@ class UtilsController extends BaseController
 	{
 		// Only admins.
 		craft()->userSession->requireAdmin();
-
-		// Give 'er all we've got.
-		craft()->config->maxPowerCaptain();
 	}
 
 	/**
-	 * @return array|mixed|string
+	 * PHP info
 	 */
-	public function actionGetPHPInfo()
+	public function actionPhpInfo()
 	{
+		craft()->config->maxPowerCaptain();
+
 		ob_start();
 		phpinfo(-1);
 		$phpInfo = ob_get_clean();
@@ -103,14 +102,18 @@ class UtilsController extends BaseController
 			}
 		}
 
-		$this->renderTemplate('utils/phpinfo', array('phpInfo' => $phpInfo));
+		$this->renderTemplate('utils/phpinfo', array(
+			'phpInfo' => $phpInfo
+		));
 	}
 
 	/**
-	 * @param array $variables
+	 * Logs
 	 */
-	public function actionGetLogs(array $variables = array())
+	public function actionLogs(array $variables = array())
 	{
+		craft()->config->maxPowerCaptain();
+
 		if (IOHelper::folderExists(craft()->path->getLogPath()))
 		{
 			$dateTimePattern = '/^[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/';
@@ -303,7 +306,11 @@ class UtilsController extends BaseController
 			// Because ascending order is stupid.
 			$logEntries = array_reverse($logEntries);
 
-			$this->renderTemplate('utils/logviewer', array('logEntries' => $logEntries, 'logFileNames' => $logFileNames, 'currentLogFileName' => $currentLogFileName));
+			$this->renderTemplate('utils/logviewer', array(
+				'logEntries'         => $logEntries,
+				'logFileNames'       => $logFileNames,
+				'currentLogFileName' => $currentLogFileName
+			));
 		}
 	}
 

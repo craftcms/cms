@@ -18,7 +18,7 @@
 
 {% from _self import table %}
 
-{% set content %}
+{% block content %}
 
 	<div class="field">
 		<select onchange="Craft.redirectTo('utils/logviewer/'+this.value);">
@@ -76,4 +76,4 @@
 
 	{% endfor %}
 
-{% endset %}
+{% endblock %}
