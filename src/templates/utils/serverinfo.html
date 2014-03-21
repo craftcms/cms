@@ -3,22 +3,19 @@
 {% block content %}
 	<h2>Requirement Report</h2>
 	<table class="data fullwidth">
-		<thead>
-			<tr>
-				<th>{{ "Requirement"|t }}</th>
-				<th class="thin">{{ "Passed"|t }}</th>
-			</tr>
-		</thead>
 		<tbody>
 			{% for requirement in requirements %}
 				<tr>
-					<th>{{ requirement.getName() }}{% if requirement.getNotes() %} <span class="info">{{ requirement.getNotes()|raw }}</span>{% endif %}</th>
-					<td class="thin centeralign">
-						{% if requirement.getResult() == 'success' %}
-							<span class="success" title="{{ 'Passed'|t }}" data-icon="check"></span>
-						{% else %}
-							<span class="error" title="{{ 'Failed'|t }}" data-icon="x"></span>
-						{% endif %}
+					<td>{{ requirement.getName() }}{% if requirement.getNotes() %} <span class="info">{{ requirement.getNotes()|raw }}</span>{% endif %}</td>
+					<td class="centeralign">
+						{% switch requirement.getResult() %}
+							{% case 'success' %}
+								<span class="success" title="{{ 'Passed'|t }}" data-icon="check"></span>
+							{% case 'warning' %}
+								<span class="warning" title="{{ 'Passed with warning'|t }}" data-icon="alert"></span>
+							{% case 'failed' %}
+								<span class="error" title="{{ 'Failed'|t }}" data-icon="error"></span>
+						{% endswitch %}
 					</td>
 				</tr>
 			{% endfor %}

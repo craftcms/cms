@@ -11,41 +11,45 @@ class Requirement extends \CComponent
 	private $_requiredBy;
 	private $_notes;
 	private $_required;
-	private $_result = RequirementResult::Success;
+	private $_result;
 
 	/**
-	 * @param      $name
-	 * @param      $condition
-	 * @param bool $required
-	 * @param null $requiredBy
-	 * @param null $notes
+	 * Constructor
+	 *
+	 * @param string|null $name
+	 * @param bool|null   $condition
+	 * @param bool|null   $required
+	 * @param string|null $requiredBy
+	 * @param string|null $notes
 	 */
-	function __construct($name, $condition, $required = true, $requiredBy = null, $notes = null)
+	function __construct($name = null, $condition = null, $required = true, $requiredBy = null, $notes = null)
 	{
 		$this->_name = $name;
 		$this->_condition = $condition;
 		$this->_required = $required;
 		$this->_requiredBy = $requiredBy;
 		$this->_notes = $notes;
-
-		$this->_calculateResult();
 	}
 
 	/**
-	 * @access private
+	 * Calculates the result of this requirement.
+	 *
+	 * @access protected
+	 * @return string
 	 */
-	private function _calculateResult()
+	protected function calculateResult()
 	{
-		if ($this->_required && !$this->_condition)
+		if ($this->_condition)
 		{
-			$this->_result = RequirementResult::Failed;
+			return RequirementResult::Success;
+		}
+		else if ($this->_required)
+		{
+			return RequirementResult::Failed;
 		}
 		else
 		{
-			if (!$this->_required && !$this->_condition)
-			{
-				$this->_result = RequirementResult::Warning;
-			}
+			return RequirementResult::Warning;
 		}
 	}
 
@@ -62,6 +66,11 @@ class Requirement extends \CComponent
 	 */
 	public function getResult()
 	{
+		if (!isset($this->_result))
+		{
+			$this->_result = $this->calculateResult();
+		}
+
 		return $this->_result;
 	}
 

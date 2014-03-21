@@ -7,17 +7,10 @@ class Requirements
 {
 	public static function getRequirements()
 	{
-		$requiredPhpVersion = '@@@requiredPHPVersion@@@';
 		$requiredMysqlVersion = '@@@requiredMySQLVersion@@@';
 
 		return array(
-			new Requirement(
-				Craft::t('PHP Version'),
-				version_compare(PHP_VERSION, $requiredPhpVersion, ">="),
-				true,
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
-				Craft::t('PHP {version} or higher is required.', array('version' => $requiredPhpVersion))
-			),
+			new PhpVersionRequirement(),
 			new Requirement(
 				Craft::t('$_SERVER Variable'),
 				($message = static::_checkServerVar()) === '',

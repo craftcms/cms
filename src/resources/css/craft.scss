@@ -162,6 +162,7 @@ td.right { float: none; @include alignright; }
 .settings-btn.active { background-position: 0 100%; }
 
 .success { color: $successcolor !important; }
+.warning { color: $warningcolor !important; }
 .error { color: $errorcolor !important; }
 
 .icon.move { display: inline-block; cursor: move; }
@@ -180,6 +181,7 @@ td.right { float: none; @include alignright; }
 .info { font-size: 0; display: inline-block; cursor: pointer; }
 .info:before { @include icon; content: 'info'; color: $lighttextcolor; font-size: 13px;}
 .info:hover:before { color: $linkcolor; }
+.info-hud { max-width: 250px; }
 
 /* ----------------------------------------
 /*  Panes
