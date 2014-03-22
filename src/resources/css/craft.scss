@@ -711,11 +711,14 @@ ul.tree,
 
 .header h1 { margin: 0; }
 
-.body { position: relative; padding: 24px; overflow: hidden; }
+.modal .body,
+.hud .body { position: relative; padding: 24px; overflow: hidden; }
 .pane .header,
-.body .header { margin: -24px -24px 24px; }
+.modal .body .header,
+.hud .body .header { margin: -24px -24px 24px; }
 .pane .footer,
-.body .footer { margin: 24px -24px -24px; }
+.modal .body .footer,
+.hud .body .footer { margin: 24px -24px -24px; }
 
 .modal-shade,
 .hud-shade { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
