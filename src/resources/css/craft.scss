@@ -79,7 +79,8 @@ h3 { margin: 14px 0; font-weight: bold; line-height: 1.2; }
 h4 { margin: 14px 0; font-weight: bold; line-height: 1.2; color: $mediumtextcolor; }
 h5 { margin: 14px 0 3px; line-height: 1.2; color: $mediumtextcolor; }
 
-h2[data-icon]:before { margin: -4px 6px 0 0; font-size: 19px; }
+h1[data-icon]:before { @include margin(-8px, 10px, 0, 0) }
+h2[data-icon]:before { @include margin(-4px, 6px, 0, 0); font-size: 19px; }
 
 /* horizontal rule */
 hr { margin: 24px -24px; border: none; border-top: 1px solid $hrcolor; height: 0; color: transparent; }
@@ -184,12 +185,6 @@ td.right { float: none; @include alignright; }
 .info-hud { max-width: 250px; }
 
 /* ----------------------------------------
-/*  Panes
-/* ----------------------------------------*/
-
-.pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: 3px; word-wrap: break-word; overflow: hidden; @include box-sizing(border-box); }
-
-/* ----------------------------------------
 /*  Content
 /* ----------------------------------------*/
 
@@ -285,7 +280,9 @@ table.inputs td > .btngroup { float: none; }
 
 .btn:not(.submit):not(.noborder) { color: $textcolor;
 	@include linear-gradient(#fff, hsl($hue, 5%, 98%));
-	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1));
+}
+.btn:not(.noborder) {
+	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1));
 }
 .btn:not(.submit):not(.noborder):active,
 .btn:not(.submit):not(.noborder).active {
@@ -685,43 +682,40 @@ ul.tree,
 .elementselect.uploading .progress-shade{ display: block; z-index: 2;}
 
 /* ----------------------------------------
-/*  Modals and HUDs
+/*  Panes, Modals and HUDs
 /* ----------------------------------------*/
+
+.pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: 3px; word-wrap: break-word; overflow: hidden; @include box-sizing(border-box); }
 
 .modal,
 .hud { border-radius: 3px; background: #fff;
 	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px rgba(0,0,0,0.25));
 }
 
-.modal .header,
-.modal .footer,
-.hud .header,
-.hud .footer { position: relative; z-index: 1; padding: 24px; }
+.header:after,
+.footer:after,
+.body:after { @include clearafter; }
 
-.modal .header,
-.hud .header { border-radius: 3px 3px 0 0;
+.header,
+.footer { position: relative; z-index: 1; padding: 24px; }
+
+.header { border-radius: 3px 3px 0 0;
 	@include linear-gradient(#fff, hsl($hue, 8%, 98%));
 	@include box-shadow(0 2px 1px -2px rgba(0,0,0,0.2));
 }
-.modal .body .header,
-.hud .body .header { margin: -24px -24px 24px; }
-.modal .header h1,
-.hud .hedaer h1 { margin: 0; }
 
-.modal .footer,
-.hud .footer { border-radius: 0 0 3px 3px;
-	@include linear-gradient(hsl($hue, 8%, 97%), hsl($hue, 8%, 96%));
+.footer { border-radius: 0 0 3px 3px;
+	@include linear-gradient(hsl($hue, 8%, 93%), hsl($hue, 8%, 92%));
 	@include box-shadow(inset 0 2px 1px -2px rgba(0,0,0,0.2));
 }
-.modal .footer:after,
-.hud .footer:after { @include clearafter; }
-.modal .body .footer,
-.hud .body .footer { margin: 24px -24px -24px; }
 
-.modal > .body,
-.hud > .body { position: relative; padding: 24px; overflow: hidden; }
-.modal > .body:after,
-.hud > .body:after { @include clearafter; }
+.header h1 { margin: 0; }
+
+.body { position: relative; padding: 24px; overflow: hidden; }
+.pane .header,
+.body .header { margin: -24px -24px 24px; }
+.pane .footer,
+.body .footer { margin: 24px -24px -24px; }
 
 .modal-shade,
 .hud-shade { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
