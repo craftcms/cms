@@ -21,7 +21,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function getAllSourceTypes()
 	{
-		if (craft()->hasPackage(CraftPackage::Cloud))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			return craft()->components->getComponentsByType(ComponentType::AssetSource);
 		}

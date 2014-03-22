@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-craft()->requirePackage(CraftPackage::PublishPro);
+craft()->requireEdition(Craft::Pro);
 
 /**
  *
@@ -132,7 +132,6 @@ class EntryRevisionsController extends BaseController
 		}
 	}
 
-
 	/**
 	 * Sets the draft model's values from the post data.
 	 *
@@ -145,19 +144,11 @@ class EntryRevisionsController extends BaseController
 		$draft->postDate   = craft()->request->getPost('postDate');
 		$draft->expiryDate = craft()->request->getPost('expiryDate');
 		$draft->enabled    = (bool)craft()->request->getPost('enabled');
+		$draft->authorId   = craft()->request->getPost('author');
 
 		$draft->getContent()->title = craft()->request->getPost('title');
 
 		$fieldsLocation = craft()->request->getParam('fieldsLocation', 'fields');
 		$draft->setContentFromPost($fieldsLocation);
-
-		if (craft()->hasPackage(CraftPackage::Users))
-		{
-			$draft->authorId = craft()->request->getPost('author');
-		}
-		else
-		{
-			$draft->authorId = craft()->userSession->getUser()->id;
-		}
 	}
 }

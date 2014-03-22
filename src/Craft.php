@@ -6,6 +6,11 @@ namespace Craft;
  */
 class Craft extends \Yii
 {
+	// Edition constants
+	const Personal = 0;
+	const Client   = 1;
+	const Pro      = 2;
+
 	/**
 	 * Determines if Craft is installed by checking if the info table exists.
 	 *
@@ -84,74 +89,17 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Returns the packages in this Craft install, as defined in the craft_info table.
-	 *
-	 * @Deprecated
-	 * @static
-	 * @return array|null
-	 */
-	public static function getPackages()
-	{
-		Craft::log('Craft::getPackages() has been deprecated.  Use craft()->getPackages() instead.', LogLevel::Warning);
-		return craft()->getPackages();
-	}
-
-	/**
 	 * Returns whether a package is included in this Craft build.
 	 *
-	 * @Deprecated
 	 * @static
 	 * @param $packageName
 	 * @return bool
+	 * @Deprecated Deprecated in 1.3
 	 */
 	public static function hasPackage($packageName)
 	{
 		Craft::log('Craft::hasPackage() has been deprecated.  Use craft()->hasPackage() instead.', LogLevel::Warning);
 		return craft()->hasPackage($packageName);
-	}
-
-	/**
-	 * Requires that a given package is installed.
-	 *
-	 * @Deprecated
-	 * @static
-	 * @param string $packageName
-	 * @throws Exception
-	 */
-	public static function requirePackage($packageName)
-	{
-		Craft::log('Craft::requirePackage() has been deprecated.  Use craft()->requirePackage() instead.', LogLevel::Warning);
-		return craft()->requirePackage($packageName);
-	}
-
-	/**
-	 * Installs a package.
-	 *
-	 * @Deprecated
-	 * @static
-	 * @param string $packageName
-	 * @throws Exception
-	 * @return bool
-	 */
-	public static function installPackage($packageName)
-	{
-		Craft::log('Craft::installPackage() has been deprecated.  Use craft()->installPackage() instead.', LogLevel::Warning);
-		return craft()->installPackage($packageName);
-	}
-
-	/**
-	 * Uninstalls a package.
-	 *
-	 * @Deprecated
-	 * @static
-	 * @param string $packageName
-	 * @throws Exception
-	 * @return bool
-	 */
-	public static function uninstallPackage($packageName)
-	{
-		Craft::log('Craft::uninstallPackage() has been deprecated.  Use craft()->uninstallPackage() instead.', LogLevel::Warning);
-		return craft()->uninstallPackage($packageName);
 	}
 
 	/**

@@ -54,7 +54,7 @@ class UserRecord extends BaseRecord
 			'preferredLocale' => array(static::BELONGS_TO, 'LocaleRecord', 'preferredLocale', 'onDelete' => static::SET_NULL, 'onUpdate' => static::CASCADE),
 		);
 
-		if (craft()->hasPackage(CraftPackage::Users))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			$relations['groups']  = array(static::MANY_MANY, 'UserGroupRecord', 'usergroups_users(userId, groupId)');
 		}

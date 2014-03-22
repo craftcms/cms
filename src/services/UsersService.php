@@ -140,7 +140,7 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->validate();
 		$user->addErrors($userRecord->getErrors());
 
-		if (craft()->hasPackage(CraftPackage::Users))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			// Validate any content.
 			if (!craft()->content->validateContent($user))

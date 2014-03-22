@@ -67,7 +67,7 @@ class UserElementType extends BaseElementType
 			)
 		);
 
-		if (craft()->hasPackage(CraftPackage::Users))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			foreach (craft()->userGroups->getAllGroups() as $group)
 			{

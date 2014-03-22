@@ -60,24 +60,25 @@ class CraftVariable
 	}
 
 	/**
-	 * Returns the packages in this Craft install, as defined by the craft_info table.
-	 *
-	 * @return array
-	 */
-	public function getPackages()
-	{
-		return craft()->getPackages();
-	}
-
-	/**
 	 * Returns whether a package is included in the Craft build.
 	 *
 	 * @param $packageName;
 	 * @return bool
+	 * @Deprecated Deprecated in 2.0
 	 */
 	public function hasPackage($packageName)
 	{
 		return craft()->hasPackage($packageName);
+	}
+
+	/**
+	 * Returns the Craft edition.
+	 *
+	 * @return string
+	 */
+	public function getEdition()
+	{
+		return craft()->getEdition();
 	}
 
 	// -------------------------------------------
@@ -155,7 +156,7 @@ class CraftVariable
 	 */
 	public function emailMessages()
 	{
-		if (craft()->hasPackage(CraftPackage::Rebrand))
+		if (craft()->getEdition() >= Craft::Client)
 		{
 			return new EmailMessagesVariable();
 		}
@@ -183,7 +184,7 @@ class CraftVariable
 	 */
 	public function entryRevisions()
 	{
-		if (craft()->hasPackage(CraftPackage::PublishPro))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			return new EntryRevisionsVariable();
 		}
@@ -226,7 +227,7 @@ class CraftVariable
 	 */
 	public function rebrand()
 	{
-		if (craft()->hasPackage(CraftPackage::Rebrand))
+		if (craft()->getEdition() >= Craft::Client)
 		{
 			if (!isset($this->_rebrandVariable))
 			{
@@ -300,7 +301,7 @@ class CraftVariable
 	 */
 	public function users($criteria = null)
 	{
-		if (craft()->hasPackage(CraftPackage::Users))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			return craft()->elements->getCriteria(ElementType::User, $criteria);
 		}
@@ -311,7 +312,7 @@ class CraftVariable
 	 */
 	public function userGroups()
 	{
-		if (craft()->hasPackage(CraftPackage::Users))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			return new UserGroupsVariable();
 		}
@@ -322,7 +323,7 @@ class CraftVariable
 	 */
 	public function userPermissions()
 	{
-		if (craft()->hasPackage(CraftPackage::Users))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			return new UserPermissionsVariable();
 		}

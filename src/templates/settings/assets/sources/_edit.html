@@ -24,7 +24,7 @@
 				translatable: true
 			}) }}
 
-			{% if craft.hasPackage('Cloud') %}
+			{% if craft.getEdition() == CraftPro %}
 				<hr>
 
 				{% includeJsResource "js/asseteditsourcesettings.js" %}

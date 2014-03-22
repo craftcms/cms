@@ -13,7 +13,6 @@ class AppBehavior extends BaseBehavior
 	private $_siteName;
 	private $_siteUrl;
 	private $_isDbConfigValid = false;
-	private $_packageList = array('Users', 'PublishPro', 'Localize', 'Cloud', 'Rebrand');
 	private $_isDbConnectionValid = false;
 
 	/**
@@ -112,93 +111,66 @@ class AppBehavior extends BaseBehavior
 	}
 
 	/**
-	 * Returns the packages in this Craft install, as defined in the craft_info table.
+	 * Returns the Craft edition.
 	 *
-	 * @return array|null
+	 * @return string
 	 */
-	public function getPackages()
+	public function getEdition()
 	{
-		return $this->getInfo('packages');
+		return $this->getInfo('edition');
 	}
 
 	/**
-	 * Returns whether a package is included in this Craft build.
+	 * Returns the name of the Craft edition.
 	 *
-	 * @param $packageName
-	 * @return bool
+	 * @return string
 	 */
-	public function hasPackage($packageName)
+	public function getEditionName()
 	{
-		return in_array($packageName, $this->getPackages());
-	}
-
-	/**
-	 * Requires that a given package is installed.
-	 *
-	 * @param string $packageName
-	 * @throws Exception
-	 */
-	public function requirePackage($packageName)
-	{
-		if ($this->isInstalled() && !$this->hasPackage($packageName))
+		switch ($this->getEdition())
 		{
-			throw new Exception(Craft::t('The {package} package is required to perform this action.', array(
-				'package' => Craft::t($packageName)
-			)));
+			case Craft::Client:
+			{
+				return 'Client';
+			}
+			case Craft::Pro:
+			{
+				return 'Pro';
+			}
+			default:
+			{
+				return 'Personal';
+			}
 		}
 	}
 
 	/**
-	 * Installs a package.
+	 * Sets the Craft edition.
 	 *
-	 * @param string $packageName
-	 * @throws Exception
+	 * @param string $edition
 	 * @return bool
 	 */
-	public function installPackage($packageName)
+	public function setEdition($edition)
 	{
-		$this->_validatePackageName($packageName);
-
-		if ($this->hasPackage($packageName))
-		{
-			throw new Exception(Craft::t('The {package} package is already installed.', array(
-				'package' => Craft::t($packageName)
-			)));
-		}
-
-		$installedPackages = $this->getPackages();
-		$installedPackages[] = $packageName;
-
 		$info = $this->getInfo();
-		$info->packages = $installedPackages;
+		$info->edition = $edition;
 		return $this->saveInfo($info);
 	}
 
 	/**
-	 * Uninstalls a package.
+	 * Requires that Craft is running an equal or better edition than what's passed in
 	 *
-	 * @param string $packageName
+	 * @param string $edition
 	 * @throws Exception
-	 * @return bool
 	 */
-	public function uninstallPackage($packageName)
+	public function requireEdition($edition)
 	{
-		$this->_validatePackageName($packageName);
-
-		if (!$this->hasPackage($packageName))
+		if ($this->isInstalled() && $this->getEdition() < $edition)
 		{
-			throw new Exception(Craft::t('The {package} package isn’t installed.', array(
-				'package' => Craft::t($packageName)
+			throw new Exception(Craft::t('Craft {edition} is required to perform this action.', array(
+				'edition' => $edition
 			)));
 		}
-
-		$installedPackages = $this->getPackages();
-		$index = array_search($packageName, $installedPackages);
-		array_splice($installedPackages, $index, 1);
-
-		$info = $this->getInfo();
-		$info->packages = $installedPackages;
-		return $this->saveInfo($info);
 	}
 
 	/**
@@ -485,6 +457,22 @@ class AppBehavior extends BaseBehavior
 		$this->_isDbConnectionValid = $value;
 	}
 
+	// Deprecated methods
+
+	/**
+	 * Returns whether a package is included in this Craft build.
+	 *
+	 * @param $packageName
+	 * @return bool
+	 * @deprecated Deprecated in 2.0
+	 */
+	public function hasPackage($packageName)
+	{
+		return $this->getEdition() == Craft::Pro;
+	}
+
+	// Private methods
+
 	/**
 	 * Enables or disables Maintenance Mode
 	 *
@@ -497,21 +485,5 @@ class AppBehavior extends BaseBehavior
 		$info = $this->getInfo();
 		$info->maintenance = $value;
 		return $this->saveInfo($info);
-	}
-
-	/**
-	 * Validates a package name.
-	 *
-	 * @access private
-	 * @throws Exception
-	 */
-	private function _validatePackageName($packageName)
-	{
-		if (!in_array($packageName, $this->_packageList))
-		{
-			throw new Exception(Craft::t('Craft doesn’t have a package named “{package}”', array(
-				'package' => Craft::t($packageName)
-			)));
-		}
 	}
 }

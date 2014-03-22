@@ -1,4 +1,4 @@
-{% if not craft.hasPackage('Users') %}
+{% if craft.getEdition() != CraftPro %}
 	{% exit 404 %}
 {% endif %}
 

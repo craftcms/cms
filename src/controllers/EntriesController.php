@@ -17,7 +17,7 @@ class EntriesController extends BaseController
 		$this->_prepEditEntryVariables($variables);
 		$currentUser = craft()->userSession->getUser();
 
-		if (craft()->hasPackage(CraftPackage::Users) && $variables['section']->type != SectionType::Single)
+		if (craft()->getEdition() >= Craft::Client && $variables['section']->type != SectionType::Single)
 		{
 			// Get all the possible authors
 			if ($variables['entry']->authorId)
@@ -71,7 +71,7 @@ class EntriesController extends BaseController
 			}
 		}
 
-		if (craft()->hasPackage(CraftPackage::PublishPro) && $variables['section']->type == SectionType::Structure)
+		if (craft()->getEdition() >= Craft::Client && $variables['section']->type == SectionType::Structure)
 		{
 			// Get all the possible parent options
 			$parentOptionCriteria = craft()->elements->getCriteria(ElementType::Entry);
@@ -143,7 +143,7 @@ class EntriesController extends BaseController
 		}
 
 		// Get the enabled locales
-		if (craft()->hasPackage(CraftPackage::Localize))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			if ($variables['entry']->id)
 			{
@@ -164,7 +164,7 @@ class EntriesController extends BaseController
 		}
 
 		// Page title w/ revision label
-		if (craft()->hasPackage(CraftPackage::PublishPro))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			switch ($variables['entry']->getClassHandle())
 			{
@@ -195,7 +195,7 @@ class EntriesController extends BaseController
 		{
 			$variables['title'] = $variables['entry']->title;
 
-			if (craft()->hasPackage(CraftPackage::PublishPro) && $variables['entry']->getClassHandle() != 'Entry')
+			if (craft()->getEdition() == Craft::Pro && $variables['entry']->getClassHandle() != 'Entry')
 			{
 				$variables['title'] .= ' <span class="hidden">('.$variables['revisionLabel'].')</span>';
 			}
@@ -274,7 +274,7 @@ class EntriesController extends BaseController
 		// Set the "Continue Editing" URL
 		$variables['continueEditingUrl'] = 'entries/'.$variables['section']->handle.'/{id}' .
 			(isset($variables['draftId']) ? '/drafts/'.$variables['draftId'] : '') .
-			(craft()->hasPackage(CraftPackage::Localize) && craft()->getLanguage() != $variables['localeId'] ? '/'.$variables['localeId'] : '');
+			(craft()->getEdition() == Craft::Pro && craft()->getLanguage() != $variables['localeId'] ? '/'.$variables['localeId'] : '');
 
 		// Can the user delete the entry?
 		$variables['canDeleteEntry'] = $variables['entry']->id && (
@@ -501,7 +501,7 @@ class EntriesController extends BaseController
 		// Make sure the user is allowed to edit entries in this section
 		craft()->userSession->requirePermission('editEntries'.$variables['permissionSuffix']);
 
-		if (craft()->hasPackage(CraftPackage::Localize))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			// Only use the locales that the user has access to
 			$sectionLocaleIds = array_keys($variables['section']->getLocales());

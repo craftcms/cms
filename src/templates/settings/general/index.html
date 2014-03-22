@@ -54,7 +54,7 @@
 		</div>
 	</form>
 
-	{% if craft.hasPackage('Rebrand') %}
+	{% if craft.getEdition() >= CraftClient %}
 		<hr>
 
 		{% includeTranslations

@@ -20,7 +20,7 @@
 			document.cookie = cookieTest + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 
 			document.write(
-				'<form id="login-form" method="post" action="" accept-charset="UTF-8" {% if craft.hasPackage("Rebrand") and craft.rebrand.isLogoUploaded -%}
+				'<form id="login-form" method="post" action="" accept-charset="UTF-8" {% if craft.getEdition() >= CraftClient and craft.rebrand.isLogoUploaded -%}
 						{%- set logo = craft.rebrand.logo -%}
 						{%- set padding = logo.height + 30 %}
 						style="background-image: url({{ logo.url }}); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ round((156+padding)/2) }}px"

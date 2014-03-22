@@ -32,8 +32,8 @@ class CraftTwigExtension extends \Twig_Extension
 			new Nav_TokenParser(),
 			new Paginate_TokenParser(),
 			new Redirect_TokenParser(),
+			new RequireEdition_TokenParser(),
 			new RequireLogin_TokenParser(),
-			new RequirePackage_TokenParser(),
 			new RequirePermission_TokenParser(),
 			new Switch_TokenParser(),
 		);
@@ -298,6 +298,9 @@ class CraftTwigExtension extends \Twig_Extension
 		$globals['now'] = DateTimeHelper::currentUTCDateTime();
 		$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->getLoginPath());
 		$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->getLogoutPath());
+		$globals['CraftPersonal'] = Craft::Personal;
+		$globals['CraftClient']   = Craft::Client;
+		$globals['CraftPro']      = Craft::Pro;
 
 		if (craft()->isInstalled() && !craft()->updates->isCraftDbMigrationNeeded())
 		{

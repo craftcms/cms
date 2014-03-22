@@ -234,7 +234,7 @@
 		</main>
 
 		<ul id="footer">
-			<li>@@@appName@@@ {{ craft.app.version }}.{{ craft.app.build }}</li>
+			<li>@@@appName@@@ {{ craft.app.getEditionName()}} {{ craft.app.getVersion() }}.{{ craft.app.getBuild() }}</li>
 			<li>{{ "Released on"|t }} {{ craft.app.releaseDate.localeDate }}</li>
 			{% if currentUser.can('performUpdates') %}
 				<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.isUpdateInfoCached() and totalUpdates ? updateText : "Check for updates"|t }}</a></li>

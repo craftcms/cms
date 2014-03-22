@@ -7,6 +7,26 @@ namespace Craft;
 class AppVariable
 {
 	/**
+	 * Returns the Craft edition.
+	 *
+	 * @return string
+	 */
+	public function getEdition()
+	{
+		return craft()->getEdition();
+	}
+
+	/**
+	 * Returns the name of the Craft edition.
+	 *
+	 * @return string
+	 */
+	public function getEditionName()
+	{
+		return craft()->getEditionName();
+	}
+
+	/**
 	 * Returns the installed Craft version.
 	 *
 	 * @return string

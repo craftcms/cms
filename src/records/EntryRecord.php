@@ -38,7 +38,7 @@ class EntryRecord extends BaseRecord
 			'author'  => array(static::BELONGS_TO, 'UserRecord', 'onDelete' => static::CASCADE),
 		);
 
-		if (craft()->hasPackage(CraftPackage::PublishPro))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			$relations['versions'] = array(static::HAS_MANY, 'EntryVersionRecord', 'elementId');
 		}

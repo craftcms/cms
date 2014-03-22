@@ -44,7 +44,7 @@ class EmailService extends BaseApplicationComponent
 	{
 		$emailModel = new EmailModel();
 
-		if (craft()->hasPackage(CraftPackage::Rebrand))
+		if (craft()->getEdition() >= Craft::Client)
 		{
 			$message = craft()->emailMessages->getMessage($key, $user->preferredLocale);
 
@@ -59,7 +59,7 @@ class EmailService extends BaseApplicationComponent
 
 		$tempTemplatesPath = '';
 
-		if (craft()->hasPackage(CraftPackage::Rebrand))
+		if (craft()->getEdition() >= Craft::Client)
 		{
 			// Is there a custom HTML template set?
 			$settings = $this->getSettings();

@@ -6,7 +6,7 @@
 
 {% import "_includes/forms" as forms %}
 
-{% if craft.hasPackage('Users') %}
+{% if craft.getEdition() == CraftPro %}
 	{% includeTranslations
 		"Are you sure you want to delete this photo?"
 	%}
@@ -26,7 +26,7 @@
 
 {% set saveUserButtons %}
 
-	{% if not currentUser.can('registerUsers') or not craft.hasPackage('Users') %}
+	{% if not currentUser.can('registerUsers') or craft.getEdition() != CraftPro %}
 		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 	{% else %}
 		<div class="btngroup">
@@ -46,10 +46,8 @@
 {% set requireEmailVerification = craft.systemSettings.users.requireEmailVerification %}
 
 {% set hiddenInputs %}
-	{% if craft.hasPackage('Users') -%}
+	{% if craft.getEdition() == CraftPro -%}
 		<input type="hidden" name="redirect" value="users">
-	{%- else -%}
-		<input type="hidden" name="redirect" value="myaccount">
 	{%- endif %}
 
 	{% if not isNewAccount -%}
@@ -184,7 +182,7 @@
 
 					{% endif %}
 
-					{% if craft.hasPackage('Localize') %}
+					{% if craft.getEdition() == CraftPro %}
 						{% set localeInput %}
 							<div class="select">
 								<select id="preferredLocale" name="preferredLocale">
@@ -207,7 +205,7 @@
 					{{ saveUserButtons }}
 				</div>
 
-				{% if craft.hasPackage('Users') %}
+				{% if craft.getEdition() == CraftPro %}
 					<div id="profile" class="hidden">
 						{% if not isNewAccount %}
 							{{ forms.field({
@@ -226,7 +224,7 @@
 					</div>
 				{% endif %}
 
-				{% if craft.hasPackage('Users') and currentUser.can('assignUserPermissions') %}
+				{% if craft.getEdition() == CraftPro and currentUser.can('assignUserPermissions') %}
 					<div id="perms" class="hidden">
 						<h2>{{ "User Groups"|t }}</h2>
 
@@ -282,7 +280,7 @@
 			</form>
 		</div><!--/item-->
 
-		{% if craft.hasPackage('Users') and not isNewAccount %}
+		{% if craft.getEdition() == CraftPro and not isNewAccount %}
 			<div class="item" data-position="right" data-colspan="1">
 				<form class="pane" method="post" action="" accept-charset="UTF-8">
 					{{ hiddenInputs }}

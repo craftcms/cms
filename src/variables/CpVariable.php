@@ -37,7 +37,7 @@ class CpVariable
 			$nav['assets'] = array('name' => Craft::t('Assets'));
 		}
 
-		if (craft()->hasPackage(CraftPackage::Users) && craft()->userSession->checkPermission('editUsers'))
+		if (craft()->getEdition() == Craft::Pro && craft()->userSession->checkPermission('editUsers'))
 		{
 			$nav['users'] = array('name' => Craft::t('Users'));
 		}
@@ -91,10 +91,9 @@ class CpVariable
 		$system = Craft::t('System');
 
 		$settings[$system]['general'] = array('icon' => 'general', 'label' => Craft::t('General'));
-		$settings[$system]['packages'] = array('icon' => 'package', 'label' => Craft::t('Packages'));
 		$settings[$system]['routes'] = array('icon' => 'routes', 'label' => Craft::t('Routes'));
 
-		if (craft()->hasPackage(CraftPackage::Users))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			$settings[$system]['users'] = array('icon' => 'users', 'label' => Craft::t('Users'));
 		}
@@ -111,7 +110,7 @@ class CpVariable
 		$settings[$content]['categories'] = array('icon' => 'categories', 'label' => Craft::t('Categories'));
 		$settings[$content]['tags'] = array('icon' => 'tags', 'label' => Craft::t('Tags'));
 
-		if (craft()->hasPackage(CraftPackage::Localize))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			$settings[$content]['locales'] = array('icon' => 'language', 'label' => Craft::t('Locales'));
 		}

@@ -183,7 +183,7 @@ class ElementHelper
 	{
 		if ($element->isEditable())
 		{
-			if (craft()->hasPackage(CraftPackage::Localize))
+			if (craft()->getEdition() == Craft::Pro)
 			{
 				foreach ($element->getLocales() as $localeId => $localeInfo)
 				{
@@ -219,7 +219,7 @@ class ElementHelper
 
 		if ($element->isEditable())
 		{
-			if (craft()->hasPackage(CraftPackage::Localize))
+			if (craft()->getEdition() == Craft::Pro)
 			{
 				foreach ($element->getLocales() as $localeId => $localeInfo)
 				{

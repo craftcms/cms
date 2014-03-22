@@ -62,7 +62,7 @@ class WebApp extends \CWebApplication
 
 	private $_language;
 	private $_templatePath;
-	private $_packageComponents;
+	private $_editionComponents;
 	private $_pendingEvents;
 
 	/**
@@ -149,8 +149,8 @@ class WebApp extends \CWebApplication
 			}
 		}
 
-		// Set the package components
-		$this->_setPackageComponents();
+		// Set the edition components
+		$this->_setEditionComponents();
 
 		// isCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
@@ -499,10 +499,10 @@ class WebApp extends \CWebApplication
 	 */
 	public function setComponents($components, $merge = true)
 	{
-		if (isset($components['pkgComponents']))
+		if (isset($components['editionComponents']))
 		{
-			$this->_packageComponents = $components['pkgComponents'];
-			unset($components['pkgComponents']);
+			$this->_editionComponents = $components['editionComponents'];
+			unset($components['editionComponents']);
 		}
 
 		parent::setComponents($components, $merge);
@@ -652,22 +652,22 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Sets the package components.
+	 * Sets the edition components.
 	 */
-	private function _setPackageComponents()
+	private function _setEditionComponents()
 	{
-		// Set the appropriate package components
-		if (isset($this->_packageComponents))
+		// Set the appropriate edition components
+		if (isset($this->_editionComponents))
 		{
-			foreach ($this->_packageComponents as $packageName => $packageComponents)
+			foreach ($this->_editionComponents as $edition => $editionComponents)
 			{
-				if (craft()->hasPackage($packageName))
+				if (craft()->getEdition() >= $edition)
 				{
-					$this->setComponents($packageComponents);
+					$this->setComponents($editionComponents);
 				}
 			}
 
-			unset($this->_packageComponents);
+			unset($this->_editionComponents);
 		}
 	}
 

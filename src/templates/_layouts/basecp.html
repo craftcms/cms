@@ -42,7 +42,10 @@
 			orientation:          "{{ orientation|e('js') }}",
 			left:                 "{{ orientation == 'ltr' ? 'left' : 'right' }}",
 			right:                "{{ orientation == 'ltr' ? 'right' : 'left' }}",
-			packages:             {{ craft.getPackages|json_encode|raw }},
+			Personal:             {{ CraftPersonal }},
+			Client:               {{ CraftClient }},
+			Pro:                  {{ CraftPro }},
+			edition:              {{ craft.getEdition() }},
 			translations:         {{ getTranslations()|raw }},
 			maxUploadSize:        {{ craft.app.getMaxUploadSize() }},
 			slugWordSeparator:    "{{ craft.config.slugWordSeparator|e('js') }}"

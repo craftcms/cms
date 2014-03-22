@@ -93,14 +93,6 @@ $cpRoutes['utils/serverinfo']                                                   
 $cpRoutes['utils/phpinfo']                                                        = array('action' => 'utils/phpInfo');
 $cpRoutes['utils/logviewer(/(?P<currentLogFileName>[A-Za-z0-9\.]+))?']            = array('action' => 'utils/logs');
 
-$cpRoutes['settings/packages'] = array(
-	'params' => array(
-		'variables' => array(
-			'stripeApiKey' => '@@@stripePublishableKey@@@'
-		)
-	)
-);
-
 $cpRoutes['settings/routes'] = array(
 	'params' => array(
 		'variables' => array(
@@ -119,23 +111,17 @@ $cpRoutes['settings/routes'] = array(
 
 $cpRoutes['myaccount'] = array('action' => 'users/editUser');
 
-// Lanugage package routes
-$cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/(?P<localeId>\w+)'] = array('action' => 'entries/editEntry');
-$cpRoutes['pkgRoutes']['Localize']['entries/(?P<sectionHandle>{handle})/new/(?P<localeId>\w+)']              = array('action' => 'entries/editEntry');
-$cpRoutes['pkgRoutes']['Localize']['globals/(?P<localeId>\w+)/(?P<globalSetHandle>{handle})']                = array('action' => 'globals/editContent');
-
-// Publish Pro package routes
-$cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/drafts/(?P<draftId>\d+)']     = array('action' => 'entries/editEntry');
-$cpRoutes['pkgRoutes']['PublishPro']['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/versions/(?P<versionId>\d+)'] = array('action' => 'entries/editEntry');
-
-// Users package routes
-$cpRoutes['pkgRoutes']['Users']['myaccount']             = array('action' => 'users/editUser');
-$cpRoutes['pkgRoutes']['Users']['users/new']             = array('action' => 'users/editUser');
-$cpRoutes['pkgRoutes']['Users']['users/(?P<userId>\d+)'] = array('action' => 'users/editUser');
-
-$cpRoutes['pkgRoutes']['Users']['settings/users']                         = 'settings/users/groups';
-$cpRoutes['pkgRoutes']['Users']['settings/users/groups/new']              = 'settings/users/groups/_settings';
-$cpRoutes['pkgRoutes']['Users']['settings/users/groups/(?P<groupId>\d+)'] = 'settings/users/groups/_settings';
+// Client routes
+$cpRoutes['editionRoutes'][2]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/(?P<localeId>\w+)']           = array('action' => 'entries/editEntry');
+$cpRoutes['editionRoutes'][2]['entries/(?P<sectionHandle>{handle})/new/(?P<localeId>\w+)']                        = array('action' => 'entries/editEntry');
+$cpRoutes['editionRoutes'][2]['globals/(?P<localeId>\w+)/(?P<globalSetHandle>{handle})']                          = array('action' => 'globals/editContent');
+$cpRoutes['editionRoutes'][2]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/drafts/(?P<draftId>\d+)']     = array('action' => 'entries/editEntry');
+$cpRoutes['editionRoutes'][2]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/versions/(?P<versionId>\d+)'] = array('action' => 'entries/editEntry');
+$cpRoutes['editionRoutes'][2]['users/new']                                                                        = array('action' => 'users/editUser');
+$cpRoutes['editionRoutes'][2]['users/(?P<userId>\d+)']                                                            = array('action' => 'users/editUser');
+$cpRoutes['editionRoutes'][2]['settings/users']                                                                   = 'settings/users/groups';
+$cpRoutes['editionRoutes'][2]['settings/users/groups/new']                                                        = 'settings/users/groups/_settings';
+$cpRoutes['editionRoutes'][2]['settings/users/groups/(?P<groupId>\d+)']                                           = 'settings/users/groups/_settings';
 
 // -------------------------------------------
 //  Component config
@@ -225,16 +211,13 @@ $components['plugins'] = array(
 	'autoloadClasses' => array('Controller','Helper','Model','Record','Service','Variable','Validator'),
 );
 
-// Publish Pro package components
-$components['pkgComponents']['PublishPro']['entryRevisions']['class'] = 'Craft\EntryRevisionsService';
+// Craft Client components
+$components['editionComponents'][1]['emailMessages']['class']   = 'Craft\EmailMessagesService';
 
-
-// Users package components
-$components['pkgComponents']['Users']['userGroups']['class']      = 'Craft\UserGroupsService';
-$components['pkgComponents']['Users']['userPermissions']['class'] = 'Craft\UserPermissionsService';
-
-// Rebrand package components
-$components['pkgComponents']['Rebrand']['emailMessages']['class'] = 'Craft\EmailMessagesService';
+// Craft Pro components
+$components['editionComponents'][2]['entryRevisions']['class']  = 'Craft\EntryRevisionsService';
+$components['editionComponents'][2]['userGroups']['class']      = 'Craft\UserGroupsService';
+$components['editionComponents'][2]['userPermissions']['class'] = 'Craft\UserPermissionsService';
 
 $components['file']['class'] = 'Craft\File';
 $components['messages']['class'] = 'Craft\PhpMessageSource';

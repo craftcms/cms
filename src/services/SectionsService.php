@@ -84,7 +84,7 @@ class SectionsService extends BaseApplicationComponent
 			{
 				$type = $result['type'];
 
-				if (craft()->hasPackage(CraftPackage::PublishPro) || $typeCounts[$type] < $this->typeLimits[$type])
+				if (craft()->getEdition() >= Craft::Client || $typeCounts[$type] < $this->typeLimits[$type])
 				{
 					$section = new SectionModel($result);
 					$this->_sectionsById[$section->id] = $section;
@@ -1045,7 +1045,7 @@ class SectionsService extends BaseApplicationComponent
 	 */
 	public function canHaveMore($type)
 	{
-		if (craft()->hasPackage(CraftPackage::PublishPro))
+		if (craft()->getEdition() >= Craft::Client)
 		{
 			return true;
 		}

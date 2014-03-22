@@ -105,17 +105,6 @@ $.extend(Craft,
 	},
 
 	/**
-	 * Returns whether a package is included in this Craft build.
-	 *
-	 * @return bool
-	 * @param pkg
-	 */
-	hasPackage: function(pkg)
-	{
-		return ($.inArray(pkg, Craft.packages) != -1);
-	},
-
-	/**
 	 * @return string
 	 * @param path
 	 * @param params

@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-craft()->requirePackage(CraftPackage::Rebrand);
+craft()->requireEdition(Craft::Client);
 
 /**
  * Email message model class

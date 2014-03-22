@@ -92,7 +92,7 @@ class Et
 			'requestIp'         => craft()->request->getIpAddress(),
 			'requestTime'       => DateTimeHelper::currentTimeStamp(),
 			'requestPort'       => craft()->request->getPort(),
-			'installedPackages' => craft()->getPackages(),
+			'edition'           => craft()->getEdition(),
 			'localBuild'        => CRAFT_BUILD,
 			'localVersion'      => CRAFT_VERSION,
 			'userEmail'         => craft()->userSession->getUser()->email,
@@ -184,33 +184,9 @@ class Et
 							$this->_setLicenseKey($etModel->licenseKey);
 						}
 
-						// Do some packageTrial timestamp to datetime conversions.
-						if (!empty($etModel->packageTrials))
-						{
-							$packageTrials = $etModel->packageTrials;
-							foreach ($etModel->packageTrials as $packageHandle => $expiryTimestamp)
-							{
-								$expiryDate = DateTime::createFromFormat('U', $expiryTimestamp);
-								$currentDate = DateTimeHelper::currentUTCDateTime();
-
-								if ($currentDate > $expiryDate)
-								{
-									unset($packageTrials[$packageHandle]);
-								}
-							}
-
-							$etModel->packageTrials = $packageTrials;
-						}
-
-						// Cache the license key status and which packages are associated with it
+						// Cache the license key status and which edition it has
 						craft()->cache->set('licenseKeyStatus', $etModel->licenseKeyStatus);
-						craft()->cache->set('licensedPackages', $etModel->licensedPackages);
-						craft()->cache->set('packageTrials', $etModel->packageTrials);
-
-						if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
-						{
-							craft()->cache->set('licensedDomain', $etModel->licensedDomain);
-						}
+						craft()->cache->set('licensedEdition', $etModel->licensedEdition);
 
 						if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
 						{

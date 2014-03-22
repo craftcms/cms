@@ -64,7 +64,7 @@ class UserModel extends BaseElementModel
 	 */
 	public function getGroups($indexBy = null)
 	{
-		if (craft()->hasPackage(CraftPackage::Users))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			return craft()->userGroups->getGroupsByUserId($this->id, $indexBy);
 		}
@@ -82,7 +82,7 @@ class UserModel extends BaseElementModel
 	 */
 	public function isInGroup($group)
 	{
-		if (craft()->hasPackage(CraftPackage::Users))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			if (is_object($group) && $group instanceof UserGroupModel)
 			{
@@ -225,7 +225,7 @@ class UserModel extends BaseElementModel
 	 */
 	public function can($permission)
 	{
-		if (craft()->hasPackage(CraftPackage::Users))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			if ($this->admin)
 			{
@@ -306,7 +306,7 @@ class UserModel extends BaseElementModel
 	 */
 	public function getCpEditUrl()
 	{
-		if (craft()->hasPackage(CraftPackage::Users))
+		if (craft()->getEdition() >= Craft::Client)
 		{
 			return UrlHelper::getCpUrl('users/'.$this->id);
 		}

@@ -454,7 +454,7 @@ class EntryElementType extends BaseElementType
 			$query->andWhere(DbHelper::parseParam('entries.sectionId', $criteria->sectionId, $query->params));
 		}
 
-		if (craft()->hasPackage(CraftPackage::Users))
+		if (craft()->getEdition() >= Craft::Client)
 		{
 			if ($criteria->authorId)
 			{

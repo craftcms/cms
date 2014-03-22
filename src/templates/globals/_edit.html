@@ -2,7 +2,7 @@
 {% set title = "Globals"|t %}
 
 
-{% if craft.hasPackage('Localize') %}
+{% if craft.getEdition() == CraftPro %}
 	{% set extraPageHeaderHtml %}
 		<div class="select">
 			<select onchange="document.location.href='{{ url('globals/{locale}/'~globalSetHandle) }}'.replace('{locale}', this.value);">

@@ -371,7 +371,7 @@ class UsersController extends BaseController
 	 */
 	public function actionEditUser(array $variables = array())
 	{
-		if (craft()->hasPackage(CraftPackage::Users))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			$variables['selectedTab'] = 'account';
 		}
@@ -400,7 +400,7 @@ class UsersController extends BaseController
 					throw new HttpException(404);
 				}
 			}
-			else if (craft()->hasPackage(CraftPackage::Users))
+			else if (craft()->getEdition() == Craft::Pro)
 			{
 				// Registering a new user
 				$variables['account'] = new UserModel();
@@ -436,8 +436,8 @@ class UsersController extends BaseController
 			$variables['title'] = Craft::t("Register a new user");
 		}
 
-		// Show tabs if they have the Users package installed.
-		if (craft()->hasPackage(CraftPackage::Users))
+		// Show tabs if they have Craft Pro
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			$variables['tabs'] = array(
 				'account' => array(
@@ -525,8 +525,8 @@ class UsersController extends BaseController
 		}
 		else
 		{
-			// Make sure the Users package is installed, since that's required for having multiple user accounts
-			craft()->requirePackage(CraftPackage::Users);
+			// Make sure the Client edition is installed, since that's required for having multiple user accounts
+			craft()->requireEdition(Craft::Client);
 
 			// Is someone logged in?
 			if ($currentUser)
@@ -636,8 +636,8 @@ class UsersController extends BaseController
 			$user->admin = (bool) craft()->request->getPost('admin', $user->admin);
 		}
 
-		// If the Users package is installed, grab any profile content from post
-		if (craft()->hasPackage(CraftPackage::Users))
+		// If this is Craft Pro, grab any profile content from post
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			$user->setContentFromPost('fields');
 		}
@@ -1137,7 +1137,7 @@ class UsersController extends BaseController
 	public function _processUserGroupsPermissions($user, $currentUser)
 	{
 		// Save any user groups
-		if (craft()->hasPackage(CraftPackage::Users) && $currentUser->can('assignUserPermissions'))
+		if (craft()->getEdition() == Craft::Pro && $currentUser->can('assignUserPermissions'))
 		{
 			// Save any user groups
 			$groupIds = craft()->request->getPost('groups');

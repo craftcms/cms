@@ -1,4 +1,4 @@
-{% requirePackage 'Rebrand' %}
+{% requireEdition CraftClient %}
 
 {% import "_includes/forms" as forms %}
 {% set key = craft.request.getPost('key') %}
@@ -9,7 +9,7 @@
 <header class="header">
 	<h1>{{ "Edit Message"|t }}</h1>
 
-	{% if craft.hasPackage('Localize') %}
+	{% if craft.getEdition() == CraftPro %}
 		<ul class="right">
 			<li class="select locale">
 				<select>

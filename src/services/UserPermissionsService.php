@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-craft()->requirePackage(CraftPackage::Users);
+craft()->requireEdition(Craft::Pro);
 
 /**
  *
@@ -73,7 +73,7 @@ class UserPermissionsService extends BaseApplicationComponent
 
 		// Locales
 
-		if (craft()->hasPackage(CraftPackage::Localize))
+		if (craft()->getEdition() == Craft::Pro)
 		{
 			$label = Craft::t('Locales');
 			$locales = craft()->i18n->getSiteLocales();
@@ -325,32 +325,26 @@ class UserPermissionsService extends BaseApplicationComponent
 			),
 		);
 
-		if (craft()->hasPackage(CraftPackage::Users))
-		{
-			$permissions["editEntries{$suffix}"]['nested']["editPeerEntries{$suffix}"] = array(
-				'label' => Craft::t('Edit other authors’ entries'),
-				'nested' => array(
-					"deletePeerEntries{$suffix}" => array(
-						'label' => Craft::t('Delete other authors’ entries')
-					),
-				)
-			);
+		$permissions["editEntries{$suffix}"]['nested']["editPeerEntries{$suffix}"] = array(
+			'label' => Craft::t('Edit other authors’ entries'),
+			'nested' => array(
+				"deletePeerEntries{$suffix}" => array(
+					'label' => Craft::t('Delete other authors’ entries')
+				),
+			)
+		);
 
-			if (craft()->hasPackage(CraftPackage::PublishPro))
-			{
-				$permissions["editEntries{$suffix}"]['nested']["editPeerEntries{$suffix}"]['nested']["editPeerEntryDrafts{$suffix}"] = array(
-					'label' => Craft::t('Edit other authors’ drafts'),
-					'nested' => array(
-						"publishPeerEntryDrafts{$suffix}" => array(
-							'label' => Craft::t('Publish other authors’ drafts')
-						),
-						"deletePeerEntryDrafts{$suffix}" => array(
-							'label' => Craft::t('Delete other authors’ drafts')
-						),
-					)
-				);
-			}
-		}
+		$permissions["editEntries{$suffix}"]['nested']["editPeerEntries{$suffix}"]['nested']["editPeerEntryDrafts{$suffix}"] = array(
+			'label' => Craft::t('Edit other authors’ drafts'),
+			'nested' => array(
+				"publishPeerEntryDrafts{$suffix}" => array(
+					'label' => Craft::t('Publish other authors’ drafts')
+				),
+				"deletePeerEntryDrafts{$suffix}" => array(
+					'label' => Craft::t('Delete other authors’ drafts')
+				),
+			)
+		);
 
 		return $permissions;
 	}

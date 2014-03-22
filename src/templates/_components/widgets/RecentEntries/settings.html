@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 
-{% if craft.hasPackage('PublishPro') %}
+{% if craft.getEdition() >= CraftClient %}
 	{% set sectionInput %}
 		<div class="select">
 			<select id="section" name="section">

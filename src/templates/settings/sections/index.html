@@ -59,7 +59,7 @@
 		</table>
 	{% endif %}
 
-	<div id="newsectioncontainer" class="buttons{% if not craft.hasPackage('PublishPro') and sections|length >= maxSections %} hidden{% endif %}">
+	<div id="newsectioncontainer" class="buttons{% if craft.getEdition() == CraftPersonal and sections|length >= maxSections %} hidden{% endif %}">
 		<a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New Section"|t }}</a>
 	</div>
 {% endset %}
@@ -72,7 +72,7 @@
 		newObjectBtnSelector: '#newsectioncontainer',
 		deleteAction: 'sections/deleteSection',
 		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its entries?"|t }}',
-		{% if not craft.hasPackage('PublishPro') %}maxObjects: {{ maxSections }},{% endif %}
+		{% if craft.getEdition() == CraftPersonal %}maxObjects: {{ maxSections }},{% endif %}
 		onDeleteObject: function()
 		{
 			// Hide the Entries tab if that was the last one

@@ -92,7 +92,7 @@ class QuickPostWidget extends BaseWidget
 	 */
 	public function getTitle()
 	{
-		if (craft()->hasPackage(CraftPackage::PublishPro))
+		if (craft()->getEdition() >= Craft::Client)
 		{
 			$section = $this->_getSection();
 

@@ -2,7 +2,7 @@
 {% import "_includes/forms" as forms %}
 
 {% set extraPageHeaderHtml %}
-	{% if entry.id and craft.hasPackage('PublishPro') %}
+	{% if entry.id and craft.getEdition() == CraftPro %}
 		{% include "entries/_revisions" %}
 	{% endif %}
 {% endset %}
@@ -14,7 +14,7 @@
 	<form id="entry-form" method="post" action="" accept-charset="UTF-8" data-saveshortcut="1" data-saveshortcut-redirect="{{ continueEditingUrl }}">
 		<input type="hidden" name="sectionId" value="{{ section.id }}">
 		{% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}
-		{% if craft.hasPackage('Localize') %}<input type="hidden" name="locale" value="{{ entry.locale }}">{% endif %}
+		{% if craft.getEdition() == CraftPro %}<input type="hidden" name="locale" value="{{ entry.locale }}">{% endif %}
 
 		<div class="grid first">
 			<div class="item" data-position="left" data-min-colspan="2" data-max-colspan="3">
@@ -33,7 +33,7 @@
 					</div>
 				{% endif %}
 
-				{% if craft.hasPackage('Localize') and section.getLocales() | length > 1 %}
+				{% if craft.getEdition() == CraftPro and section.getLocales() | length > 1 %}
 					<ul id="locales" class="pane">
 						{% for localeId in localeIds %}
 							{% set localeName = craft.i18n.getLocaleById(localeId).name %}
@@ -85,7 +85,7 @@
 							}) }}
 						{% endif %}
 
-						{% if craft.hasPackage('Users') %}
+						{% if craft.getEdition() >= CraftClient %}
 							{{ forms.selectField({
 								label: "Author"|t,
 								id: 'author',
@@ -179,11 +179,11 @@
 									</div>
 								</div>
 
-								{% if entry.id and craft.hasPackage('PublishPro') %}
+								{% if entry.id and craft.getEdition() == CraftPro %}
 									<input type="button" class="btn formsubmit" value="{{ 'Save as a draft'|t }}" data-action="entryRevisions/saveDraft" data-redirect="{{ entry.cpEditUrl }}/drafts/{draftId}">
 								{% endif %}
 							{% else %}
-								{% if craft.hasPackage('PublishPro') %}
+								{% if craft.getEdition() == CraftPro %}
 									<input type="hidden" name="action" value="entryRevisions/saveDraft">
 									<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{draftId}">
 									<input type="submit" class="btn submit first" value="{{ 'Save as a draft'|t }}">

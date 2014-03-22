@@ -384,7 +384,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	protected function getTargetLocaleFieldHtml()
 	{
-		if (craft()->hasPackage(CraftPackage::Localize) && $this->getElementType()->isLocalized())
+		if (craft()->getEdition() == Craft::Pro && $this->getElementType()->isLocalized())
 		{
 			$localeOptions = array(
 				array('label' => Craft::t('Same as source'), 'value' => null)

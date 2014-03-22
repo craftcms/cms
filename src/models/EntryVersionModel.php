@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-craft()->requirePackage(CraftPackage::PublishPro);
+craft()->requireEdition(Craft::Pro);
 
 /**
  *

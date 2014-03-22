@@ -9,9 +9,7 @@ class EtService extends BaseApplicationComponent
 	const Ping              = '@@@elliottEndpointUrl@@@actions/elliott/app/ping';
 	const CheckForUpdates   = '@@@elliottEndpointUrl@@@actions/elliott/app/checkForUpdates';
 	const TransferLicense   = '@@@elliottEndpointUrl@@@actions/elliott/app/transferLicenseToCurrentDomain';
-	const GetPackageInfo    = '@@@elliottEndpointUrl@@@actions/elliott/app/getPackageInfo';
-	const PurchasePackage   = '@@@elliottEndpointUrl@@@actions/elliott/app/purchasePackage';
-	const StartPackageTrial = '@@@elliottEndpointUrl@@@actions/elliott/app/startPackageTrial';
+	const PurchaseEdition   = '@@@elliottEndpointUrl@@@actions/elliott/app/purchaseEdition';
 	const GetUpdateFileInfo = '@@@elliottEndpointUrl@@@actions/elliott/app/getUpdateFileInfo';
 
 	/**
@@ -129,129 +127,6 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Fetches info about the available packages from Elliott.
-	 *
-	 * @return EtModel|null
-	 */
-	public function fetchPackageInfo()
-	{
-		$et = new Et(static::GetPackageInfo);
-		$etResponse = $et->phoneHome();
-		return $etResponse;
-	}
-
-	/**
-	 * Attempts to purchase a package.
-	 *
-	 * @param PackagePurchaseOrderModel $model
-	 * @return bool
-	 */
-	public function purchasePackage(PackagePurchaseOrderModel $model)
-	{
-		if ($model->validate())
-		{
-			$et = new Et(static::PurchasePackage);
-			$et->setData($model);
-			$etResponse = $et->phoneHome();
-
-			if (!empty($etResponse->data['success']))
-			{
-				// Success! Let's get this sucker installed.
-				if (!craft()->hasPackage($model->package))
-				{
-					craft()->installPackage($model->package);
-				}
-
-				return true;
-			}
-			else
-			{
-				// Did they at least say why?
-				if (!empty($etResponse->errors))
-				{
-					switch ($etResponse->errors[0])
-					{
-						// Validation errors
-						case 'package_doesnt_exist': $error = Craft::t('The selected package doesn’t exist anymore.'); break;
-						case 'invalid_license_key':  $error = Craft::t('Your license key is invalid.'); break;
-						case 'license_has_package':  $error = Craft::t('Your Craft license already has this package.'); break;
-						case 'price_mismatch':       $error = Craft::t('The cost of this package just changed.'); break;
-						case 'unknown_error':        $error = Craft::t('An unknown error occurred.'); break;
-
-						// Stripe errors
-						case 'incorrect_number':     $error = Craft::t('The card number is incorrect.'); break;
-						case 'invalid_number':       $error = Craft::t('The card number is invalid.'); break;
-						case 'invalid_expiry_month': $error = Craft::t('The expiration month is invalid.'); break;
-						case 'invalid_expiry_year':  $error = Craft::t('The expiration year is invalid.'); break;
-						case 'invalid_cvc':          $error = Craft::t('The security code is invalid.'); break;
-						case 'incorrect_cvc':        $error = Craft::t('The security code is incorrect.'); break;
-						case 'expired_card':         $error = Craft::t('Your card has expired.'); break;
-						case 'card_declined':        $error = Craft::t('Your card was declined.'); break;
-						case 'processing_error':     $error = Craft::t('An error occurred while processing your card.'); break;
-
-						default:                     $error = $etResponse->errors[0];
-					}
-				}
-				else
-				{
-					// Something terrible must have happened!
-					$error = Craft::t('Craft is unable to purchase packages at this time.');
-				}
-
-				$model->addError('response', $error);
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * @param TryPackageModel $model
-	 * @return bool
-	 */
-	public function tryPackage(TryPackageModel $model)
-	{
-		$et = new Et(static::StartPackageTrial);
-		$et->setData($model);
-		$etResponse = $et->phoneHome();
-
-		if (!empty($etResponse->data['success']))
-		{
-			// Install the package.
-			if (!craft()->hasPackage($model->packageHandle))
-			{
-				craft()->installPackage($model->packageHandle);
-			}
-
-			return true;
-		}
-		else
-		{
-			// Did they at least say why?
-			if (!empty($etResponse->errors))
-			{
-				switch ($etResponse->errors[0])
-				{
-					// Validation errors
-					case 'package_doesnt_exist': $error = Craft::t('The selected package doesn’t exist anymore.'); break;
-					case 'cannot_trial_package': $error = Craft::t('Your license key is invalid.'); break;
-
-					default:                     $error = $etResponse->errors[0];
-				}
-			}
-			else
-			{
-				// Something terrible must have happened!
-				$error = Craft::t('Craft is unable to trial packages at this time.');
-			}
-
-			$model->addError('response', $error);
-		}
-
-		return false;
-	}
-
-	/**
 	 * Returns the license key status, or false if it's unknown.
 	 *
 	 * @return string|false
@@ -262,16 +137,6 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the packages that are in trial status indexed by package handle.
-	 *
-	 * @return mixed
-	 */
-	public function getPackageTrials()
-	{
-		return craft()->cache->get('packageTrials');
-	}
-
-	/**
 	 * Returns the domain that the installed license key is licensed for, null if it's not set yet, or false if it's unknown.
 	 *
 	 * @return string|null|false
@@ -279,16 +144,6 @@ class EtService extends BaseApplicationComponent
 	public function getLicensedDomain()
 	{
 		return craft()->cache->get('licensedDomain');
-	}
-
-	/**
-	 * Returns an array of the packages that this license is tied to, or false if it's unknown.
-	 *
-	 * @return array|false
-	 */
-	public function getLicensedPackages()
-	{
-		return craft()->cache->get('licensedPackages');
 	}
 
 	/**

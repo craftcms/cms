@@ -157,7 +157,7 @@ class EntriesService extends BaseApplicationComponent
 					}
 
 					// Save a new version
-					if (craft()->hasPackage(CraftPackage::PublishPro))
+					if (craft()->getEdition() == Craft::Pro)
 					{
 						craft()->entryRevisions->saveVersion($entry);
 					}
