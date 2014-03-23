@@ -36,6 +36,11 @@ return array(
 	'activateAccountSuccessPath' => '',
 
 	/**
+	 * Determines whether auto-generated URLs should have trailing slashes.
+	 */
+	'addTrailingSlashesToUrls' => false,
+
+	/**
 	 * Whether or not to allow auto-updating in Craft. Does not affect manual updates.
 	 */
 	'allowAutoUpdates' => true,

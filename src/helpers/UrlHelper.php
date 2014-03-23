@@ -235,7 +235,12 @@ class UrlHelper
 		{
 			if ($path)
 			{
-				$url = rtrim($baseUrl, '/').'/'.$path;
+				$url = rtrim($baseUrl, '/').'/'.trim($path, '/');
+
+				if (craft()->request->isSiteRequest() && craft()->config->get('addTrailingSlashesToUrls'))
+				{
+					$url .= '/';
+				}
 			}
 			else
 			{
