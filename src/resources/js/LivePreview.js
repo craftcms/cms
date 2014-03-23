@@ -1,13 +1,14 @@
 (function($) {
 
 
-Craft.EntryPreviewMode = Garnish.Base.extend(
+Craft.LivePreview = Garnish.Base.extend(
 {
 	$form: null,
 	$btn: null,
 	$spinner: null,
 	$shade: null,
 	$editor: null,
+	$dragHandle: null,
 	$iframeContainer: null,
 	$iframe: null,
 	$fieldPlaceholder: null,
@@ -21,6 +22,10 @@ Craft.EntryPreviewMode = Garnish.Base.extend(
 	updateIframeInterval: null,
 	loading: false,
 	checkAgain: false,
+
+	editorWidth: null,
+	dragger: null,
+	dragStartEditorWidth: null,
 
 	init: function(entryUrl, locale)
 	{
@@ -42,8 +47,8 @@ Craft.EntryPreviewMode = Garnish.Base.extend(
 		}
 
 		this.$form = $('#entry-form');
-		this.$btn = $('#previewmode-btn');
-		this.$spinner = $('#previewmode-spinner');
+		this.$btn = $('#livepreview-btn');
+		this.$spinner = $('#livepreview-spinner');
 		this.$fieldPlaceholder = $('<div/>');
 
 		this.basePostData = {
@@ -58,6 +63,9 @@ Craft.EntryPreviewMode = Garnish.Base.extend(
 			this.basePostData[$input.attr('name')] = $input.val();
 		}
 
+		this.editorWidth = Craft.getLocalStorage('LivePreview.editorWidth', Craft.LivePreview.defaultEditorWidth);
+		this.containEditorWidth();
+
 		this.addListener(this.$btn, 'activate', 'togglePreviewMode');
 
 		Craft.cp.on('beforeSaveShortcut', $.proxy(function()
@@ -67,6 +75,23 @@ Craft.EntryPreviewMode = Garnish.Base.extend(
 				this.moveFieldsBack();
 			}
 		}, this));
+	},
+
+	containEditorWidth: function()
+	{
+		if (this.editorWidth < 200)
+		{
+			this.editorWidth = 200;
+			return true;
+		}
+
+		if (this.editorWidth > Garnish.$win.width() - 200)
+		{
+			this.editorWidth = Garnish.$win.width() - 200;
+			return true;
+		}
+
+		return false;
 	},
 
 	togglePreviewMode: function()
@@ -95,16 +120,33 @@ Craft.EntryPreviewMode = Garnish.Base.extend(
 		if (!this.$editor)
 		{
 			this.$shade = $('<div class="modal-shade dark"></div>').appendTo(Garnish.$bod).css('z-index', 2);
-			this.$editor = $('<div id="previewmode-editor"></div>').appendTo(Garnish.$bod);
-			this.$iframeContainer = $('<div id="previewmode-iframe-container" />').appendTo(Garnish.$bod);
-			this.$iframe = $('<iframe id="previewmode-iframe" frameborder="0" />').appendTo(this.$iframeContainer);
+			this.$editor = $('<div id="livepreview-editor"></div>').appendTo(Garnish.$bod)
+			this.$dragHandle = $('<div id="livepreview-draghandle"></div>').appendTo(this.$editor);
+			this.$iframeContainer = $('<div id="livepreview-iframe-container" />').appendTo(Garnish.$bod);
+			this.$iframe = $('<iframe id="livepreview-iframe" frameborder="0" />').appendTo(this.$iframeContainer);
 
 			var $header = $('<header class="header"></header>').appendTo(this.$editor),
 				$closeBtn = $('<div class="btn">'+Craft.t('Done')+'</div>').appendTo($header),
 				$heading = $('<h1>'+Craft.t('Live Preview')+'</h1>').appendTo($header);
 
+			this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
+				axis:          Garnish.X_AXIS,
+				ignoreButtons: false,
+				onDragStart:   $.proxy(this, '_onDragStart'),
+				onDrag:        $.proxy(this, '_onDrag'),
+				onDragStop:    $.proxy(this, '_onDragStop')
+			});
+
 			this.addListener($closeBtn, 'click', 'hidePreviewMode');
 		}
+
+		this.$editor.css(Craft.left, -this.editorWidth+'px');
+		this.$editor.css('width', this.editorWidth+'px');
+
+		var iframeWidth = this.getIframeWidth();
+		this.$iframeContainer.css(Craft.right, -iframeWidth);
+		this.$iframeContainer.css('width', iframeWidth);
+		this.addListener(Garnish.$win, 'resize', 'updateWidths');
 
 		// Move all the fields into the editor rather than copying them
 		// so any JS that's referencing the elements won't break.
@@ -154,17 +196,10 @@ Craft.EntryPreviewMode = Garnish.Base.extend(
 		$('html').addClass('noscroll');
 		this.$spinner.addClass('hidden');
 
-		this.$iframeContainer.css(Craft.left, Garnish.$win.width());
-		this.$iframeContainer.show();
-
-		this.addListener(Garnish.$win, 'resize', 'setIframeWidth');
-		this.setIframeWidth();
-
 		this.$shade.fadeIn();
 
 		this.$editor.show().stop().animateLeft(0, 'slow');
-
-		this.$iframeContainer.stop().animateLeft(Craft.EntryPreviewMode.formWidth, 'slow', $.proxy(function()
+		this.$iframeContainer.show().stop().animateRight(0, 'slow', $.proxy(function()
 		{
 			this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
 
@@ -203,7 +238,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend(
 
 		this.$shade.delay(200).fadeOut();
 
-		this.$editor.stop().animateLeft(-Craft.EntryPreviewMode.formWidth, 'slow', $.proxy(function()
+		this.$editor.stop().animateLeft(-this.editorWidth, 'slow', $.proxy(function()
 		{
 			for (var i = 0; i < this.fields.length; i++)
 			{
@@ -212,7 +247,7 @@ Craft.EntryPreviewMode = Garnish.Base.extend(
 			this.$editor.hide();
 		}, this));
 
-		this.$iframeContainer.stop().animateLeft(windowWidth, 'slow', $.proxy(function()
+		this.$iframeContainer.stop().animateRight(-this.getIframeWidth(), 'slow', $.proxy(function()
 		{
 			this.$iframeContainer.hide();
 		}, this));
@@ -239,9 +274,19 @@ Craft.EntryPreviewMode = Garnish.Base.extend(
 		Garnish.$win.trigger('resize');
 	},
 
-	setIframeWidth: function()
+	getIframeWidth: function()
 	{
-		this.$iframeContainer.width(Garnish.$win.width()-Craft.EntryPreviewMode.formWidth);
+		return Garnish.$win.width()-this.editorWidth;
+	},
+
+	updateWidths: function()
+	{
+		if (this.containEditorWidth())
+		{
+			this.$editor.css('width', this.editorWidth+'px');
+		}
+
+		this.$iframeContainer.width(this.getIframeWidth());
 	},
 
 	updateIframe: function(force)
@@ -302,10 +347,35 @@ Craft.EntryPreviewMode = Garnish.Base.extend(
 		{
 			return false;
 		}
+	},
+
+	_onDragStart: function()
+	{
+		this.dragStartEditorWidth = this.editorWidth;
+	},
+
+	_onDrag: function()
+	{
+		if (Craft.orientation == 'ltr')
+		{
+			this.editorWidth = this.dragStartEditorWidth + this.dragger.mouseDistX;
+		}
+		else
+		{
+			this.editorWidth = this.dragStartEditorWidth - this.dragger.mouseDistX;
+		}
+
+		this.$editor.css('width', this.editorWidth+'px');
+		this.updateWidths();
+	},
+
+	_onDragStop: function()
+	{
+		Craft.setLocalStorage('LivePreview.editorWidth', this.editorWidth);
 	}
 },
 {
-	formWidth: 400
+	defaultEditorWidth: 400
 });
 
 

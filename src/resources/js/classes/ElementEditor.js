@@ -154,9 +154,9 @@ Craft.ElementEditor = Garnish.Base.extend(
 					}
 
 					// Update Live Preview
-					if (typeof Craft.entryPreviewMode != 'undefined')
+					if (typeof Craft.livePreview != 'undefined')
 					{
-						Craft.entryPreviewMode.updateIframe(true);
+						Craft.livePreview.updateIframe(true);
 					}
 
 					this.closeHud();

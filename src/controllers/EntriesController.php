@@ -265,8 +265,8 @@ class EntriesController extends BaseController
 
 			if ($templateExists)
 			{
-				craft()->templates->includeJsResource('js/EntryPreviewMode.js');
-				craft()->templates->includeJs('Craft.entryPreviewMode = new Craft.EntryPreviewMode('.JsonHelper::encode($variables['entry']->getUrl()).', "'.$variables['entry']->locale.'");');
+				craft()->templates->includeJsResource('js/LivePreview.js');
+				craft()->templates->includeJs('Craft.livePreview = new Craft.LivePreview('.JsonHelper::encode($variables['entry']->getUrl()).', "'.$variables['entry']->locale.'");');
 				$variables['showPreviewBtn'] = true;
 			}
 		}
