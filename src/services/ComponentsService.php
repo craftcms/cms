@@ -55,7 +55,7 @@ class ComponentsService extends BaseApplicationComponent
 		if (!class_exists($nsClass))
 		{
 			// Maybe it's a plugin component?
-			if (($pos = strpos($class, '_')) !== false)
+			if (($pos = strrpos($class, '_')) !== false)
 			{
 				$pluginHandle = substr($class, 0, $pos);
 			}
