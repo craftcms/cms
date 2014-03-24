@@ -692,6 +692,7 @@ ul.tree,
 
 .modal,
 .hud { border-radius: 3px; background: #fff;
+	@include box-sizing(border-box);
 	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px rgba(0,0,0,0.25));
 }
 
@@ -754,7 +755,7 @@ ul.tree,
 .image-chooser img { display: block; }
 
 /* element selector modals */
-.elementselectormodal { margin-left: -350px; width: 705px; @include user-select(none); }
+.elementselectormodal { width: 705px; @include user-select(none); }
 .elementselectormodal .body { position: relative; height: 350px; }
 .elementselectormodal .body .spinner.big { position: absolute; top: 205px; @include left(350px); @include margin(-24px, 0, 0, -24px); }
 
