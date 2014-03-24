@@ -244,14 +244,7 @@
 			</ul>
 
 			{% if currentUser.admin and craft.getEdition() != CraftPro %}
-				<p id="editionpromo"><a>
-					{% if craft.getEdition() == CraftPersonal %}
-						{{ "Get more out of Craft with Client or Pro Edition."|t }}
-					{% else %}
-						{{ "Get more out of Craft with Pro Edition."|t }}
-					{% endif %}
-					<span class="go">{{ "Find out more"|t }}</span>
-				</a></p>
+				<p id="editionpromo"><a>{{ "Take your site to the next level by upgrading Craft."|t }} <span class="go">{{ "Show me"|t }}</span></a></p>
 			{% endif %}
 		</div>
 	</div>
