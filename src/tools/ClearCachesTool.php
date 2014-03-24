@@ -34,6 +34,8 @@ class ClearCachesTool extends BaseTool
 	public function getOptionsHtml()
 	{
 		$caches = $this->_getFolders();
+		$caches['assetTransformIndex'] = Craft::t('Asset transform index');
+		$caches['assetIndexingData'] = Craft::t('Asset indexing data');
 		$caches['templateCaches'] = Craft::t('Template caches');
 
 		return craft()->templates->render('_includes/forms/checkboxSelect', array(
@@ -108,6 +110,15 @@ class ClearCachesTool extends BaseTool
 		if ($params['caches'] == '*' || in_array('templateCaches', $params['caches']))
 		{
 			craft()->templateCache->deleteAllCaches();
+		}
+
+		if ($params['caches'] == '*' || in_array('assetTransformIndex', $params['caches']))
+		{
+			craft()->db->createCommand()->truncateTable('assettransformindex');
+		}
+		if ($params['caches'] == '*' || in_array('assetIndexingData', $params['caches']))
+		{
+			craft()->db->createCommand()->truncateTable('assetindexdata');
 		}
 	}
 
