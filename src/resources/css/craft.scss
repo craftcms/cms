@@ -40,7 +40,7 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 #help:before,
 .secure:before,
 .insecure:before,
-a.go:after,
+.go:after,
 .menubtn:after,
 .required:after,
 [data-icon]:before,
@@ -111,9 +111,9 @@ a:hover { text-decoration: underline; }
 a.sel,
 li.sel a { cursor: default !important; text-decoration: none; }
 
-a.go { white-space: nowrap; }
-a.go:after { content: 'go'; font-size: 11px; margin-top: -1px; padding-left: 4px; color: $lighttextcolor; }
-a.go:hover:after { color: $linkcolor; }
+.go { white-space: nowrap; }
+.go:after { content: 'go'; font-size: 11px; margin-top: -1px; @include padding-left(4px); color: $lighttextcolor; }
+.go:hover:after { color: $linkcolor; }
 
 /* toggles */
 .toggle,
