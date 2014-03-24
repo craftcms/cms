@@ -236,7 +236,7 @@ var MessageSentModal = Garnish.Modal.extend(
 {
 	init: function()
 	{
-		var $container = $('<div class="modal email-sent"><div class="body">'+Craft.t('Check your email for instructions to reset your password.')+'</div></div>')
+		var $container = $('<div class="modal fitted email-sent"><div class="body">'+Craft.t('Check your email for instructions to reset your password.')+'</div></div>')
 			.appendTo(Garnish.$bod);
 
 		this.base($container);

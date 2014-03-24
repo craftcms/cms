@@ -124,7 +124,7 @@ Craft.ImageHandler = Garnish.Base.extend(
 
 					if (Craft.ImageUpload.$modalContainerDiv == null)
 					{
-						Craft.ImageUpload.$modalContainerDiv = $('<div class="modal"></div>').addClass(settings.modalClass).appendTo(Garnish.$bod);
+						Craft.ImageUpload.$modalContainerDiv = $('<div class="modal fitted"></div>').addClass(settings.modalClass).appendTo(Garnish.$bod);
 					}
 
 					if (response.html)

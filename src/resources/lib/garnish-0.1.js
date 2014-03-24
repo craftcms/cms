@@ -637,7 +637,7 @@ Garnish.Base = Base.extend({
 	setSettings: function(settings, defaults)
 	{
 		var baseSettings = (typeof this.settings == 'undefined' ? {} : this.settings);
-		this.settings = $.extend(baseSettings, defaults, settings);
+		this.settings = $.extend({}, baseSettings, defaults, settings);
 	},
 
 	on: function(events, data, handler)
@@ -1057,10 +1057,11 @@ Garnish.BaseDrag = Garnish.Base.extend({
 		if (this.$targetItem) return;
 
 		// Make sure the target isn't a button (unless the button is the handle)
-		if (this.settings.ignoreButtons && ev.currentTarget != ev.target)
+		if (ev.currentTarget != ev.target && this.settings.ignoreHandleSelector)
 		{
 			var $target = $(ev.target);
-			if ($target.hasClass('btn') || $target.closest('.btn').length)
+
+			if ($target.is(this.settings.ignoreHandleSelector) || $target.closest(this.settings.ignoreHandleSelector).length)
 			{
 				return;
 			}
@@ -1396,7 +1397,7 @@ Garnish.BaseDrag = Garnish.Base.extend({
 		handle: null,
 		filter: null,
 		axis: null,
-		ignoreButtons: true,
+		ignoreHandleSelector: 'input, textarea, button, select, .btn',
 
 		onDragStart: $.noop,
 		onDrag:      $.noop,
@@ -2651,11 +2652,11 @@ Garnish.LightSwitch = Garnish.Base.extend({
 		this.addListener(this.$outerContainer, 'keydown', '_onKeyDown');
 
 		this.dragger = new Garnish.BaseDrag(this.$outerContainer, {
-			axis: Garnish.X_AXIS,
-			ignoreButtons: false,
-			onDragStart: $.proxy(this, '_onDragStart'),
-			onDrag:      $.proxy(this, '_onDrag'),
-			onDragStop:  $.proxy(this, '_onDragStop')
+			axis:                 Garnish.X_AXIS,
+			ignoreHandleSelector: null,
+			onDragStart:          $.proxy(this, '_onDragStart'),
+			onDrag:               $.proxy(this, '_onDrag'),
+			onDragStop:           $.proxy(this, '_onDragStop')
 		});
 	},
 
@@ -3474,20 +3475,17 @@ var TextElement = Garnish.Base.extend({
 Garnish.Modal = Garnish.Base.extend({
 
 	$container: null,
-	$header: null,
-	$body: null,
-	$scrollpane: null,
-	$footer: null,
-	$footerBtns: null,
-	$submitBtn: null,
 	$shade: null,
-
-	_headerHeight: null,
-	_footerHeight: null,
 
 	visible: false,
 
 	dragger: null,
+
+	desiredWidth: null,
+	desiredHeight: null,
+	resizeDragger: null,
+	resizeStartWidth: null,
+	resizeStartHeight: null,
 
 	init: function(container, settings)
 	{
@@ -3511,7 +3509,6 @@ Garnish.Modal = Garnish.Base.extend({
             this.$shade = $('<div class="modal-shade"/>').appendTo(Garnish.$bod);
         }
 
-
         if (container)
 		{
 			this.setContainer(container);
@@ -3534,31 +3531,26 @@ Garnish.Modal = Garnish.Base.extend({
 
 		this.$container.data('modal', this);
 
-		this.$header = this.$container.find('.pane-head:first');
-		this.$body = this.$container.find('.pane-body:first');
-		this.$scrollpane = this.$body.children('.scrollpane:first');
-		this.$footer = this.$container.find('.pane-foot:first');
-		this.$footerBtns = this.$footer.find('.btn');
-		this.$submitBtn = this.$footerBtns.filter('.submit:first');
-		this.$closeBtn = this.$footerBtns.filter('.close:first');
-
 		if (this.settings.draggable)
 		{
-			var $dragHandles = this.$header.add(this.$footer);
-			if ($dragHandles.length)
-			{
-				this.dragger = new Garnish.DragMove(this.$container, {
-					handle: this.$container
-				});
-			}
+			this.dragger = new Garnish.DragMove(this.$container, {
+				handle: (this.settings.dragHandleSelector ? this.$container.find(this.settings.dragHandleSelector) : this.$container)
+			});
+		}
+
+		if (this.settings.resizable)
+		{
+			var $resizeDragHandle = $('<div class="resizehandle"/>').appendTo(this.$container);
+
+			this.resizeDragger = new Garnish.BaseDrag($resizeDragHandle, {
+				onDragStart:   $.proxy(this, '_onResizeStart'),
+				onDrag:        $.proxy(this, '_onResize')
+			});
 		}
 
 		this.addListener(this.$container, 'click', function(ev) {
 			ev.stopPropagation();
 		});
-
-		this.addListener(this.$container, 'keydown', 'onKeyDown');
-		this.addListener(this.$closeBtn, 'click', 'hide');
 	},
 
 	show: function()
@@ -3619,18 +3611,30 @@ Garnish.Modal = Garnish.Base.extend({
 		}
 
 		this.$container.css({
-			width: '',
-			height: ''
+			'width':      (this.desiredWidth ? Math.max(this.desiredWidth, 200) : ''),
+			'height':     (this.desiredHeight ? Math.max(this.desiredHeight, 200) : ''),
+			'min-width':  '',
+			'min-height': ''
 		});
 
-		this.updateSizeAndPosition._width = Math.min(this.getWidth(), Garnish.$win.width()-20);
-		this.updateSizeAndPosition._height = Math.min(this.getHeight(), Garnish.$win.height()-20);
+		// Set the width first so that the height can adjust for the width
+		this.updateSizeAndPosition._windowWidth = Garnish.$win.width();
+		this.updateSizeAndPosition._width = Math.min(this.getWidth(), this.updateSizeAndPosition._windowWidth - 20);
 
 		this.$container.css({
-			'width':       this.updateSizeAndPosition._width,
-			'height':      this.updateSizeAndPosition._height,
-			'margin-left': -Math.round(this.updateSizeAndPosition._width/2),
-			'margin-top':  -Math.round(this.updateSizeAndPosition._height/2)
+			'width':      this.updateSizeAndPosition._width,
+			'min-width':  this.updateSizeAndPosition._width,
+			'left':       Math.round((this.updateSizeAndPosition._windowWidth - this.updateSizeAndPosition._width) / 2)
+		});
+
+		// Now set the height
+		this.updateSizeAndPosition._windowHeight = Garnish.$win.height();
+		this.updateSizeAndPosition._height = Math.min(this.getHeight(), this.updateSizeAndPosition._windowHeight - 20);
+
+		this.$container.css({
+			'height':     this.updateSizeAndPosition._height,
+			'min-height': this.updateSizeAndPosition._height,
+			'top':        Math.round((this.updateSizeAndPosition._windowHeight - this.updateSizeAndPosition._height) / 2)
 		});
 	},
 
@@ -3688,12 +3692,26 @@ Garnish.Modal = Garnish.Base.extend({
 		return this.getWidth._width;
 	},
 
-	onKeyDown: function(ev)
+	_onResizeStart: function()
 	{
-		if (ev.target.nodeName != 'TEXTAREA' && ev.keyCode == Garnish.RETURN_KEY)
+		this.resizeStartWidth = this.getWidth();
+		this.resizeStartHeight = this.getHeight();
+	},
+
+	_onResize: function()
+	{
+		if (Garnish.ltr)
 		{
-			this.$submitBtn.click();
+			this.desiredWidth = this.resizeStartWidth + (this.resizeDragger.mouseDistX * 2);
+			this.desiredHeight = this.resizeStartHeight + (this.resizeDragger.mouseDistY * 2);
 		}
+		else
+		{
+			this.desiredWidth = this.resizeStartWidth - (this.resizeDragger.mouseDistX * 2);
+			this.desiredHeight = this.resizeStartHeight - (this.resizeDragger.mouseDistY * 2);
+		}
+
+		this.updateSizeAndPosition();
 	},
 
 	destroy: function()
@@ -3703,6 +3721,11 @@ Garnish.Modal = Garnish.Base.extend({
 		if (this.dragger)
 		{
 			this.dragger.destroy();
+		}
+
+		if (this.resizeDragger)
+		{
+			this.resizeDragger.destroy();
 		}
 	},
 
@@ -3715,7 +3738,9 @@ Garnish.Modal = Garnish.Base.extend({
 {
 	relativeElemPadding: 8,
 	defaults: {
-		draggable: true,
+		draggable: false,
+		dragHandleSelector: null,
+		resizable: false,
 		onShow: $.noop,
 		onHide: $.noop,
 		onFadeIn: $.noop,

@@ -131,7 +131,6 @@ Craft.LivePreview = Garnish.Base.extend(
 
 			this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
 				axis:          Garnish.X_AXIS,
-				ignoreButtons: false,
 				onDragStart:   $.proxy(this, '_onDragStart'),
 				onDrag:        $.proxy(this, '_onDrag'),
 				onDragStop:    $.proxy(this, '_onDragStop')

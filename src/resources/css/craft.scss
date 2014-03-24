@@ -730,7 +730,12 @@ ul.tree,
 .modal-shade.dark { background: rgba(0,0,0,0.75); }
 .hud-shade { z-index: 9997; background: none; }
 
-.modal { position: fixed; z-index: 9998; top: 50%; left: 50%; margin-left: -200px; width: 400px; overflow: hidden; }
+.modal { position: fixed; z-index: 9998; width: 66%; height: 66%; min-width: 600px; min-height: 400px; overflow: hidden; }
+.modal.fitted { width: auto; height: auto; min-width: 0; min-height: 0; }
+.modal .resizehandle { position: absolute; z-index: 9999; bottom: 0; @include right(0); width: 24px; height: 24px; background: no-repeat 50% 50%; cursor: move;
+	body.ltr & { background-image: url(../images/resizehandle.png); }
+	body.rtl & { background-image: url(../images/resizehandle_rtl.png); }
+}
 
 .hud { position: absolute; z-index: 9997; display: none; top: 0; }
 .hud .tip { position: absolute; background: no-repeat 0 0; }
@@ -755,7 +760,7 @@ ul.tree,
 .image-chooser img { display: block; }
 
 /* element selector modals */
-.elementselectormodal { width: 1026px; height: 500px; padding-bottom: 58px; @include user-select(none); }
+.elementselectormodal { padding-bottom: 58px; @include user-select(none); }
 .elementselectormodal .body { position: relative; height: 100%; }
 .elementselectormodal .body .spinner.big { position: absolute; top: 50%; left: 50%; margin: -24px 0 0 -24px; }
 
@@ -1091,6 +1096,11 @@ ul.errors li { color: $errorcolor; }
 	.toggle { background-image: url(../images/toggle_2x.png); background-size: 12px; }
 
 	.progressbar.pending .progressbar-inner { background-image: url(../images/progressbar_pending_2x.png); background-size: 50px; }
+
+	.modal .resizehandle { background-size: 13px;
+		body.ltr & { background-image: url(../images/resizehandle_2x.png); }
+		body.rtl & { background-image: url(../images/resizehandle_rtl_2x.png); }
+	}
 
 	.hud .tip-left { background-image: url(../images/hudtip_left_2x.png); background-size: 15px 30px; }
 	.hud .tip-top { background-image: url(../images/hudtip_top_2x.png); background-size: 30px 15px; }

@@ -170,11 +170,11 @@ var RouteSettingsModal = Garnish.Modal.extend(
 		}
 
 		var containerHtml =
-			'<form class="modal route-settings" accept-charset="UTF-8">' +
+			'<form class="modal fitted route-settings" accept-charset="UTF-8">' +
+				'<div class="header">' +
+					'<h1></h1>' +
+				'</div>' +
 				'<div class="body">' +
-					'<div class="header">' +
-						'<h1></h1>' +
-					'</div>' +
 					'<div class="field">' +
 						'<div class="heading">' +
 							'<label for="url">'+Craft.t("If the URI looks like this")+':</label>' +
@@ -224,14 +224,14 @@ var RouteSettingsModal = Garnish.Modal.extend(
 					'</div>' +
 					'<input id="template" type="text" class="text fullwidth template">' +
 				'</div>' +
-				'<div class="footer">' +
-					'<div class="buttons right last">' +
-						'<input type="button" class="btn cancel" value="'+Craft.t("Cancel")+'">' +
-						'<input type="submit" class="btn submit" value="'+Craft.t("Save")+'"> ' +
-						'<div class="spinner" style="display: none;"></div>' +
-					'</div>' +
-					'<a class="delete">'+Craft.t("Delete")+'</a>' +
+			'</div>' +
+			'<div class="footer">' +
+				'<div class="buttons right last">' +
+					'<input type="button" class="btn cancel" value="'+Craft.t("Cancel")+'">' +
+					'<input type="submit" class="btn submit" value="'+Craft.t("Save")+'"> ' +
+					'<div class="spinner" style="display: none;"></div>' +
 				'</div>' +
+				'<a class="delete">'+Craft.t("Delete")+'</a>' +
 			'</div>' +
 		'</form>';
 

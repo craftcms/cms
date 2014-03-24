@@ -165,7 +165,7 @@ var BlockTypeSettingsModal = Garnish.Modal.extend(
 	{
 		this.base();
 
-		this.$form = $('<form class="modal"/>').appendTo(Garnish.$bod);
+		this.$form = $('<form class="modal fitted"/>').appendTo(Garnish.$bod);
 		this.setContainer(this.$form);
 
 		this.$body = $('<div class="body"/>').appendTo(this.$form);

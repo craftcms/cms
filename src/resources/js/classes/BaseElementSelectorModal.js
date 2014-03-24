@@ -30,7 +30,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 			$body = $('<div class="body"><div class="spinner big"></div></div>').appendTo($container),
 			$footer = $('<div class="footer"/>').appendTo($container);
 
-		this.base($container, settings);
+		this.base($container, this.settings);
 
 		this.$buttons = $('<div class="buttons rightalign"/>').appendTo($footer);
 		this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$buttons);
@@ -189,6 +189,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 },
 {
 	defaults: {
+		resizable: true,
 		storageKey: null,
 		sources: null,
 		criteria: null,
