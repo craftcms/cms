@@ -445,9 +445,9 @@ table.data td:not(:first-child) { @include padding-left(14px); }
 table.data thead th,
 table.data thead td { padding-top: 4px; padding-bottom: 4px; cursor: default; }
 table.data tbody th,
-table.data tbody td { padding-top: 7px; padding-bottom: 7px; border-top: 1px dotted $hrcolor; }
-table.data tbody tr:last-child th,
-table.data tbody tr:last-child td { border-bottom: 1px dotted $hrcolor; }
+table.data tbody td { padding-top: 7px; padding-bottom: 7px; border-bottom: 1px dotted $hrcolor; }
+table.data tbody tr:first-child th,
+table.data tbody tr:first-child td { border-top: 1px dotted $hrcolor; }
 table.data thead + tbody tr:first-child th,
 table.data thead + tbody tr:first-child td { border-top-style: solid; }
 table.data th { font-weight: bold; }
@@ -478,7 +478,7 @@ table.data.collapsed tbody th:not(.thin),
 table.data.collapsed tbody td:not(.thin) { clear: left; }
 table.data.collapsed tbody td form { display: inline-block; }
 table.data.collapsed thead + tbody tr:first-child th,
-table.data.collapsed thead + tbody tr:first-child td { border-top-style: none; }
+table.data.collapsed thead + tbody tr:first-child td { border-top: none; }
 table.data.collapsed tbody tr:last-child th:not(:last-child),
 table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 
