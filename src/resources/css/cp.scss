@@ -148,7 +148,7 @@ html { overflow-y: scroll; }
 #footer #editionpromo a:hover .go:after { color: $linkcolor; }
 
 /* edition modal */
-#editionmodal { width: 676px; height: 500px; overflow: auto; }
+#editionmodal { width: 900px; height: 600px; overflow: auto; }
 #editionmodal.loading { background: url(../images/spinner_big.gif) no-repeat 50% 50%; }
 #editionmodal table thead th { text-align: center; }
 #editionmodal table thead th h1 { margin: 0 auto 14px; max-width: 160px; height: 40px; font-size: 0; background: no-repeat 50% 50%; background-size: 100%; }
@@ -156,7 +156,7 @@ html { overflow-y: scroll; }
 #editionmodal table thead th h1.craftpro { background-image: url(../images/editions/craftpro.png); }
 #editionmodal table thead th .btn { font-size: 13px; line-height: 18px; font-weight: normal; }
 #editionmodal table tbody th,
-#editionmodal table tbody td { width: 200px; }
+#editionmodal table tbody td { width: 33.33%; }
 #editionmodal table tbody tr:first-child th,
 #editionmodal table tbody tr:first-child td { border-top: none; }
 #editionmodal table tbody th.group { padding-top: 30px; border-bottom-style: solid; color: $mediumtextcolor; }
