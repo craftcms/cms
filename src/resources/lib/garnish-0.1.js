@@ -3486,8 +3486,6 @@ Garnish.Modal = Garnish.Base.extend({
 	_footerHeight: null,
 
 	visible: false,
-	width: null,
-	height: null,
 
 	dragger: null,
 
@@ -3658,7 +3656,7 @@ Garnish.Modal = Garnish.Base.extend({
 			this.$container.show();
 		}
 
-		this.getHeight._height = this.$container.height();
+		this.getHeight._height = this.$container.outerHeight();
 
 		if (!this.visible)
 		{
@@ -3680,7 +3678,7 @@ Garnish.Modal = Garnish.Base.extend({
 			this.$container.show();
 		}
 
-		this.getWidth._width = this.$container.width();
+		this.getWidth._width = this.$container.outerWidth();
 
 		if (!this.visible)
 		{
