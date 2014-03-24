@@ -85,4 +85,15 @@ class AppController extends BaseController
 			$this->returnErrorJson($response);
 		}
 	}
+
+	/**
+	 * Returns the editon upgrade modal.
+	 */
+	public function actionGetEditionModal()
+	{
+		$this->requireAjaxRequest();
+		craft()->userSession->requireAdmin();
+
+		$this->renderTemplate('_editions');
+	}
 }

@@ -36,6 +36,9 @@ var CP = Garnish.Base.extend(
 	trackTaskProgressTimeout: null,
 	taskProgressIcon: null,
 
+	$editionPromo: null,
+	editionModal: null,
+
 	init: function()
 	{
 		// Find all the key elements
@@ -47,6 +50,7 @@ var CP = Garnish.Base.extend(
 		this.$main = $('#main');
 		this.$content = $('#content');
 		this.$collapsibleTables = this.$content.find('table.collapsible');
+		this.$editionPromo = $('#editionpromo');
 
 		this.ajaxQueue = [];
 
@@ -146,6 +150,8 @@ var CP = Garnish.Base.extend(
 				return true;
 			});
 		}
+
+		this.addListener(this.$editionPromo, 'click', 'showEditionModal');
 	},
 
 	/**
@@ -621,6 +627,29 @@ var CP = Garnish.Base.extend(
 				this.taskProgressIcon.hideFailMode();
 				this.taskProgressIcon.complete();
 			}
+		}
+	},
+
+	showEditionModal: function()
+	{
+		if (!this.editionModal)
+		{
+			var $container = $('<div id="editionmodal" class="modal loading"/>').appendTo(Garnish.$bod);
+			this.editionModal = new Garnish.Modal($container);
+
+			Craft.postActionRequest('app/getEditionModal', $.proxy(function(response, textStatus)
+			{
+				this.editionModal.$container.removeClass('loading');
+
+				if (textStatus == 'success')
+				{
+					this.editionModal.$container.html(response);
+				}
+			}, this));
+		}
+		else
+		{
+			this.editionModal.show();
 		}
 	}
 },
