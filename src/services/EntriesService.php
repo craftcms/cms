@@ -181,6 +181,26 @@ class EntriesService extends BaseApplicationComponent
 					{
 						$transaction->rollback();
 					}
+
+					// If "title" has an error, check if they've defined a custom title label.
+					if ($entry->getError('title'))
+					{
+						// Grab all of the original errors.
+						$errors = $entry->getErrors();
+
+						// Grab just the title error message.
+						$originalTitleError = $errors['title'];
+
+						// Clear the old.
+						$entry->clearErrors();
+
+						// Create the new "title" error message.
+						$errors['title'] = str_replace('Title', $entryType->titleLabel, $originalTitleError);
+
+						// Add all of the errors back on the model.
+						$entry->addErrors($errors);
+
+					}
 				}
 			}
 			catch (\Exception $e)
