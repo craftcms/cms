@@ -3486,6 +3486,8 @@ Garnish.Modal = Garnish.Base.extend({
 	_footerHeight: null,
 
 	visible: false,
+	width: null,
+	height: null,
 
 	dragger: null,
 
@@ -3572,21 +3574,7 @@ Garnish.Modal = Garnish.Base.extend({
 		if (this.$container)
 		{
 			this.$container.show();
-
-			// Center it vertically
-			var modalHeight = this.getHeight();
-			this.$container.css('margin-top', -Math.round(modalHeight/2));
-
-			// Make sure it's not too wide
-			var windowWidth = Garnish.$win.width();
-			if (this.$container.width() > windowWidth)
-			{
-				this.$container.css({
-					width: windowWidth,
-					marginLeft: -Math.round(windowWidth/2)
-				});
-			}
-
+			this.updateSizeAndPosition();
 			this.$container.delay(50).fadeIn($.proxy(this, 'onFadeIn'));
 		}
 
@@ -3595,6 +3583,7 @@ Garnish.Modal = Garnish.Base.extend({
 		this.$shade.fadeIn(50);
 
 		this.addListener(this.$shade, 'click', 'hide');
+		this.addListener(Garnish.$win, 'resize', 'updateSizeAndPosition');
 
 		Garnish.escManager.register(this, 'hide');
 
@@ -3624,6 +3613,29 @@ Garnish.Modal = Garnish.Base.extend({
 		this.settings.onHide();
 	},
 
+	updateSizeAndPosition: function()
+	{
+		if (!this.$container)
+		{
+			return;
+		}
+
+		this.$container.css({
+			width: '',
+			height: ''
+		});
+
+		this.updateSizeAndPosition._width = Math.min(this.getWidth(), Garnish.$win.width()-20);
+		this.updateSizeAndPosition._height = Math.min(this.getHeight(), Garnish.$win.height()-20);
+
+		this.$container.css({
+			'width':       this.updateSizeAndPosition._width,
+			'height':      this.updateSizeAndPosition._height,
+			'margin-left': -Math.round(this.updateSizeAndPosition._width/2),
+			'margin-top':  -Math.round(this.updateSizeAndPosition._height/2)
+		});
+	},
+
 	onFadeIn: function()
 	{
 		this.settings.onFadeIn();
@@ -3646,14 +3658,14 @@ Garnish.Modal = Garnish.Base.extend({
 			this.$container.show();
 		}
 
-		var height = this.$container.outerHeight();
+		this.getHeight._height = this.$container.height();
 
 		if (!this.visible)
 		{
 			this.$container.hide();
 		}
 
-		return height;
+		return this.getHeight._height;
 	},
 
 	getWidth: function()
@@ -3668,42 +3680,14 @@ Garnish.Modal = Garnish.Base.extend({
 			this.$container.show();
 		}
 
-		var width = this.$container.outerWidth();
+		this.getWidth._width = this.$container.width();
 
 		if (!this.visible)
 		{
 			this.$container.hide();
 		}
 
-		return width;
-	},
-
-	positionRelativeTo: function(elem)
-	{
-		if (!this.$container)
-		{
-			throw 'Attempted to position a modal whose container has not been set.';
-		}
-
-		var $elem = $(elem),
-			elemOffset = $elem.offset(),
-			bodyScrollTop = Garnish.$bod.scrollTop(),
-			topClearance = elemOffset.top - bodyScrollTop,
-			modalHeight = this.getHeight();
-
-		if (modalHeight < topClearance + Garnish.navHeight + Garnish.Modal.relativeElemPadding*2)
-		{
-			var top = elemOffset.top - modalHeight - Garnish.Modal.relativeElemPadding;
-		}
-		else
-		{
-			var top = elemOffset.top + $elem.height() + Garnish.Modal.relativeElemPadding;
-		}
-
-		this.$container.css({
-			top: top,
-			left: elemOffset.left
-		});
+		return this.getWidth._width;
 	},
 
 	onKeyDown: function(ev)

@@ -21,7 +21,7 @@
 .route .template { color: $mediumtextcolor; }
 .route .template:before { @include icon; @include margin(0, 5px, 0, 0); content: 'template'; }
 
-.route-settings { width: 500px; @include margin-left(-250px); }
+.route-settings { width: 500px; }
 .route-settings .url { width: auto; padding-top: 0; padding-bottom: 0; cursor: text; }
 .route-settings .url .token { position: relative; top: -1px; cursor: default; }
 

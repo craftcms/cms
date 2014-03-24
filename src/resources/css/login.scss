@@ -17,8 +17,9 @@ html, body { height: 100%; }
 
 p.error { margin-top: -15px; }
 
-.email-sent { position: absolute; z-index: 9999; top: 50%; left: 50%; @include margin(-33px, 0, 0, -142px); @include padding-left(50px); width: 220px; background: #fff; }
-.email-sent:before { @include icon; display: block; position: absolute; top: 17px; @include left(10px); content: 'mail'; font-size: 30px; color: $linkcolor; }
+.email-sent { width: 300px; }
+.email-sent .body { @include padding-left(68px); width: 220px; background: #fff; }
+.email-sent .body:before { @include icon; display: block; position: absolute; top: 17px; top: 24px; @include left(24px); content: 'mail'; font-size: 30px; color: $linkcolor; }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
        only screen and (   -moz-min-device-pixel-ratio: 1.5),
