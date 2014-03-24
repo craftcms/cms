@@ -634,16 +634,20 @@ var CP = Garnish.Base.extend(
 	{
 		if (!this.editionModal)
 		{
-			var $container = $('<div id="editionmodal" class="modal loading"/>').appendTo(Garnish.$bod);
-			this.editionModal = new Garnish.Modal($container);
+			var $container = $('<div id="editionmodal" class="modal loading"/>').appendTo(Garnish.$bod),
+				$body = $('<div class="body"/>').appendTo($container);
+
+			this.editionModal = new Garnish.Modal($container, {
+				resizable: true
+			});
 
 			Craft.postActionRequest('app/getEditionModal', $.proxy(function(response, textStatus)
 			{
-				this.editionModal.$container.removeClass('loading');
+				$container.removeClass('loading');
 
 				if (textStatus == 'success')
 				{
-					this.editionModal.$container.html(response);
+					$body.html(response);
 				}
 			}, this));
 		}
