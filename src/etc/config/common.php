@@ -112,11 +112,13 @@ $cpRoutes['settings/routes'] = array(
 $cpRoutes['myaccount'] = array('action' => 'users/editUser');
 
 // Client routes
+$cpRoutes['editionRoutes'][1]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/drafts/(?P<draftId>\d+)']     = array('action' => 'entries/editEntry');
+$cpRoutes['editionRoutes'][1]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/versions/(?P<versionId>\d+)'] = array('action' => 'entries/editEntry');
+
+// Pro routes
 $cpRoutes['editionRoutes'][2]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/(?P<localeId>\w+)']           = array('action' => 'entries/editEntry');
 $cpRoutes['editionRoutes'][2]['entries/(?P<sectionHandle>{handle})/new/(?P<localeId>\w+)']                        = array('action' => 'entries/editEntry');
 $cpRoutes['editionRoutes'][2]['globals/(?P<localeId>\w+)/(?P<globalSetHandle>{handle})']                          = array('action' => 'globals/editContent');
-$cpRoutes['editionRoutes'][2]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/drafts/(?P<draftId>\d+)']     = array('action' => 'entries/editEntry');
-$cpRoutes['editionRoutes'][2]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/versions/(?P<versionId>\d+)'] = array('action' => 'entries/editEntry');
 $cpRoutes['editionRoutes'][2]['users/new']                                                                        = array('action' => 'users/editUser');
 $cpRoutes['editionRoutes'][2]['users/(?P<userId>\d+)']                                                            = array('action' => 'users/editUser');
 $cpRoutes['editionRoutes'][2]['settings/users']                                                                   = 'settings/users/groups';
@@ -213,9 +215,9 @@ $components['plugins'] = array(
 
 // Craft Client components
 $components['editionComponents'][1]['emailMessages']['class']   = 'Craft\EmailMessagesService';
+$components['editionComponents'][1]['entryRevisions']['class']  = 'Craft\EntryRevisionsService';
 
 // Craft Pro components
-$components['editionComponents'][2]['entryRevisions']['class']  = 'Craft\EntryRevisionsService';
 $components['editionComponents'][2]['userGroups']['class']      = 'Craft\UserGroupsService';
 $components['editionComponents'][2]['userPermissions']['class'] = 'Craft\UserPermissionsService';
 

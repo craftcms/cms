@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-craft()->requireEdition(Craft::Pro);
+craft()->requireEdition(Craft::Client);
 
 /**
  * Stores entry versions

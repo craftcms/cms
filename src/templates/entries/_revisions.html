@@ -1,4 +1,4 @@
-{% requireEdition CraftPro %}
+{% requireEdition CraftClient %}
 
 {% set drafts = craft.entryRevisions.getEditableDraftsByEntryId(entry.id, entry.locale) %}
 {% set versions = craft.entryRevisions.getVersionsByEntryId(entry.id, entry.locale) %}

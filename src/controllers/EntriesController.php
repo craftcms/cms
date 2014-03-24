@@ -164,7 +164,7 @@ class EntriesController extends BaseController
 		}
 
 		// Page title w/ revision label
-		if (craft()->getEdition() == Craft::Pro)
+		if (craft()->getEdition() >= Craft::Client)
 		{
 			switch ($variables['entry']->getClassHandle())
 			{
@@ -195,7 +195,7 @@ class EntriesController extends BaseController
 		{
 			$variables['title'] = $variables['entry']->title;
 
-			if (craft()->getEdition() == Craft::Pro && $variables['entry']->getClassHandle() != 'Entry')
+			if (craft()->getEdition() >= Craft::Client && $variables['entry']->getClassHandle() != 'Entry')
 			{
 				$variables['title'] .= ' <span class="hidden">('.$variables['revisionLabel'].')</span>';
 			}

@@ -2,7 +2,7 @@
 {% import "_includes/forms" as forms %}
 
 {% set extraPageHeaderHtml %}
-	{% if entry.id and craft.getEdition() == CraftPro %}
+	{% if entry.id and craft.getEdition() >= CraftClient %}
 		{% include "entries/_revisions" %}
 	{% endif %}
 {% endset %}
@@ -179,11 +179,11 @@
 									</div>
 								</div>
 
-								{% if entry.id and craft.getEdition() == CraftPro %}
+								{% if entry.id and craft.getEdition() >= CraftClient %}
 									<input type="button" class="btn formsubmit" value="{{ 'Save as a draft'|t }}" data-action="entryRevisions/saveDraft" data-redirect="{{ entry.cpEditUrl }}/drafts/{draftId}">
 								{% endif %}
 							{% else %}
-								{% if craft.getEdition() == CraftPro %}
+								{% if craft.getEdition() >= CraftClient %}
 									<input type="hidden" name="action" value="entryRevisions/saveDraft">
 									<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{draftId}">
 									<input type="submit" class="btn submit first" value="{{ 'Save as a draft'|t }}">
