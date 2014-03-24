@@ -1040,7 +1040,7 @@ ul.errors li { color: $errorcolor; }
 .matrixblock > .preview { position: absolute; bottom: 5px; @include left(0); @include padding(0, 55px, 0, 10px); height: 18px; width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: $mediumtextcolor; cursor: default; @include box-sizing(border-box); }
 .matrixblock.disabled > .preview { @include padding-right(75px); }
 .matrixblock > .preview span { opacity: 0.5; }
-.matrix > .buttons { margin-top: 0; height: 30px; overflow: hidden; }
+.matrix > .buttons { margin-top: 0; height: 30px; }
 
 /* categories */
 .add-category-form { margin-top: 24px; }
