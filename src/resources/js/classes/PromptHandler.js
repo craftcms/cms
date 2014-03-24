@@ -116,7 +116,7 @@ Craft.PromptHandler = Garnish.Base.extend({
         }
 
         if (this.$modalContainerDiv == null) {
-            this.$modalContainerDiv = $('<div class="modal prompt-modal"></div>').addClass().appendTo(Garnish.$bod);
+            this.$modalContainerDiv = $('<div class="modal fitted prompt-modal"></div>').addClass().appendTo(Garnish.$bod);
         }
 
         this.$prompt = $('<div class="body"></div>').appendTo(this.$modalContainerDiv.empty());

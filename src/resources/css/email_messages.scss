@@ -7,5 +7,6 @@
 .message .subject { padding-bottom: 15px; border-bottom: 1px solid #dbdbdb; margin-bottom: 15px; }
 .message .body { font-size: 12px; line-height: 16px; font-family: Courier, monospace; color: $mediumtextcolor; }
 
-.message-settings { width: 500px; }
-.message-settings .header .right { top: 12px; }
+.modal.message-settings { width: 500px; }
+.modal.message-settings .header .right { top: 12px; }
+.modal.message-settings .body { height: calc(100% - 136px); overflow: auto; }

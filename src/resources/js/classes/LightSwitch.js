@@ -38,11 +38,11 @@ Craft.LightSwitch = Garnish.Base.extend(
 		this.addListener(this.$outerContainer, 'keydown', '_onKeyDown');
 
 		this.dragger = new Garnish.BaseDrag(this.$outerContainer, {
-			axis:          Garnish.X_AXIS,
-			ignoreButtons: false,
-			onDragStart:   $.proxy(this, '_onDragStart'),
-			onDrag:        $.proxy(this, '_onDrag'),
-			onDragStop:    $.proxy(this, '_onDragStop')
+			axis:                 Garnish.X_AXIS,
+			ignoreHandleSelector: null,
+			onDragStart:          $.proxy(this, '_onDragStart'),
+			onDrag:               $.proxy(this, '_onDrag'),
+			onDragStop:           $.proxy(this, '_onDragStop')
 		});
 	},
 

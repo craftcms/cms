@@ -86,6 +86,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			{
 				$path = mb_substr($value, mb_strlen($localPath));
 				$segments = explode('/', $path);
+				// Ignore the file
+				array_pop($segments);
 
 				foreach ($segments as $segment)
 				{

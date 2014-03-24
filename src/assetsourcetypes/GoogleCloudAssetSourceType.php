@@ -134,6 +134,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 			$path = $value['name'];
 
 			$segments = explode('/', $path);
+			// Ignore the file
+			array_pop($segments);
 
 			foreach ($segments as $segment)
 			{

@@ -25,6 +25,11 @@ Craft.Uploader = Garnish.Base.extend(
 
 		if ( settings.allowedKinds && settings.allowedKinds.length)
 		{
+			if (typeof settings.allowedKinds == "string")
+			{
+				settings.allowedKinds = [settings.allowedKinds];
+			}
+
 			this.allowedKinds = settings.allowedKinds;
 			delete settings.allowedKinds;
 			settings.autoUpload = false;

@@ -115,7 +115,7 @@ Craft.Tool = Garnish.Base.extend(
 
 	showConfirmDialog: function(data)
 	{
-		var $modal = $('<form class="modal confirmmodal"/>').appendTo(Garnish.$bod),
+		var $modal = $('<form class="modal fitted confirmmodal"/>').appendTo(Garnish.$bod),
 			$body = $('<div class="body"/>').appendTo($modal).html(data.confirm),
 			$footer = $('<footer class="footer"/>').appendTo($modal),
 			$buttons = $('<div class="buttons right"/>').appendTo($footer),
