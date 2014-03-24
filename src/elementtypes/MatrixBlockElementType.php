@@ -45,7 +45,7 @@ class MatrixBlockElementType extends BaseElementType
 	{
 		return array(
 			'fieldId'     => AttributeType::Number,
-			'order'       => array(AttributeType::String, 'default' => 'sortOrder'),
+			'order'       => array(AttributeType::String, 'default' => 'matrixblocks.sortOrder'),
 			'ownerId'     => AttributeType::Number,
 			'ownerLocale' => AttributeType::Locale,
 			'type'        => AttributeType::Mixed,
