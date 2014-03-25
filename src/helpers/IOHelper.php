@@ -1296,7 +1296,15 @@ class IOHelper
 	 */
 	public static function getAllowedFileExtensions()
 	{
-		return  ArrayHelper::stringToArray(craft()->config->get('allowedFileExtensions'));
+		$allowedFileExtensions = ArrayHelper::stringToArray(craft()->config->get('allowedFileExtensions'));
+
+		if (($extraExtensions = craft()->config->get('extraAllowedFileExtensions')) !== '')
+		{
+			$extraExtensions = ArrayHelper::stringToArray($extraExtensions);
+			$allowedFileExtensions = array_merge($allowedFileExtensions, $extraExtensions);
+		}
+
+		return  $allowedFileExtensions;
 	}
 
 	/**
