@@ -61,7 +61,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 			'uri'            => AttributeType::String,
 			'kind'           => AttributeType::Mixed,
 
-			// Deprecated
+			// TODO: Deprecated
 			'childField'     => AttributeType::String,
 			'childOf'        => AttributeType::Mixed,
 			'depth'          => AttributeType::Number,

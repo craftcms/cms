@@ -329,6 +329,62 @@ class UtilsController extends BaseController
 	}
 
 	/**
+	 *
+	 */
+	public function actionDeprecator()
+	{
+		$deprecatorLogs = craft()->deprecator->getAllLogs();
+		$logsByKey = array();
+
+		foreach ($deprecatorLogs as $log)
+		{
+			$log->origin = '<strong>File:</strong> '.$log->file.'<br /><strong>Line:</strong> '.$log->line.'<br /><strong>Method:</strong> '.$log->method.'<br /><strong>Class:</strong> '.$log->class;
+
+			if (!isset($logsByKey[$log->key]))
+			{
+				$logsByKey[$log->key] = array($log);
+			}
+			else
+			{
+				$logsByKey[$log->key][] = $log;
+			}
+		}
+
+		$this->renderTemplate('utils/deprecator', array(
+			'logs' => $logsByKey,
+		));
+	}
+
+	/**
+	 * View stack trace for a deprecator log entry.
+	 *
+	 * @return mixed
+	 */
+	public function actionViewDeprecatorTrace()
+	{
+		$logId = craft()->request->getRequiredQuery('logId');
+		$log = craft()->deprecator->getLogById($logId);
+		$log->stackTrace = $this->_formatStackTrace(JsonHelper::decode($log->stackTrace));
+
+		return $this->renderTemplate('utils/deprecator/_trace',
+			array('log' => $log)
+		);
+	}
+
+	/**
+	 *
+	 */
+	public function actionDeleteDeprecatorLog()
+	{
+		$this->requirePostRequest();
+		$logId = craft()->request->getRequiredPost('logId');
+
+		craft()->deprecator->deleteLogById($logId);
+
+		$this->redirectToPostedUrl();
+	}
+
+	/**
 	 * @param $arrayToClean
 	 * @return array
 	 */
@@ -344,5 +400,96 @@ class UtilsController extends BaseController
 		}
 
 		return $arrayToClean;
+	}
+
+	/**
+	 * @param  $backTrace
+	 * @return string
+	 */
+	private function _formatStackTrace($backTrace)
+	{
+		$return = array();
+
+		foreach ($backTrace as $step => $call)
+		{
+			$object = '';
+
+			if (isset($call['class']))
+			{
+				$object = $call['class'];
+
+				if (is_array($call['args']))
+				{
+					if (count($call['args']) > 0)
+					{
+						foreach ($call['args'] as &$arg)
+						{
+							$this->_getArg($arg);
+						}
+					}
+					else
+					{
+						$call['args'] = array('array()');
+					}
+				}
+			}
+
+			$str = '<b>#'.str_pad($step, 3, ' ').'</b>';
+			$str .= ($object !== '' ? $object.'->' : '');
+			$str .= $call['method'].'('.implode(', ', $call['args']).') called at “'.$call['file'].'” line '.$call['line'];
+
+			$return[] = $str;
+		}
+
+		return implode('<br /><br />', $return);
+	}
+
+	/**
+	 * @param $arg
+	 */
+	private function _getArg(&$arg)
+	{
+		if (is_object($arg) || is_array($arg))
+		{
+			$arr = (array)$arg;
+			$args = array();
+
+			foreach ($arr as $key => $value)
+			{
+				if (strpos($key, chr(0)) !== false)
+				{
+					// Private variable found.
+					$key = '';
+				}
+
+				if (is_array($value))
+				{
+					$args[] = '['.$key.'] => '.$this->_getArg($value);
+				}
+				else
+				{
+					$args[] = '['.$key.'] => '.(string)$value;
+				}
+
+
+			}
+
+			if (is_object($arg))
+			{
+				$arg = get_class($arg) . ' Object ('.implode(',', $args).')';
+			}
+			else if (is_array($arg) && count($arg) == 0)
+			{
+				$arg = 'array()';
+			}
+			else if (is_array($arg) && count($arg) > 0)
+			{
+				$arg = 'array('.implode(',', $args).')';
+			}
+		}
+		else if (is_array($arg) && count($arg) == 0)
+		{
+			$arg = '';
+		}
 	}
 }

@@ -17,11 +17,6 @@ return array(
 	'actionTrigger' => 'actions',
 
 	/**
-	 * Deprecated.  Use 'activateAccountFailurePath' instead.
-	 */
-	'activateFailurePath' => '',
-
-	/**
 	 * The URI Craft should redirect to when user account activation fails.  Note that this only affects front-end site requests.
 	 *
 	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale basis.

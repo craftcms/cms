@@ -690,7 +690,7 @@ class ElementsService extends BaseApplicationComponent
 
 			if ($criteria->level || $criteria->depth)
 			{
-				// 'depth' is deprecated; use 'level' instead.
+				// TODO: 'depth' is deprecated; use 'level' instead.
 				$level = ($criteria->level ? $criteria->level : $criteria->depth);
 				$query->andWhere(DbHelper::parseParam('structureelements.level', $level, $query->params));
 			}

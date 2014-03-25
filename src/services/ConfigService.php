@@ -93,17 +93,16 @@ class ConfigService extends BaseApplicationComponent
 	}
 
 	/**
-	 * TODO: Deprecate
 	 * Get a DB config item
 	 *
 	 * @param      $item
 	 * @param null $default
 	 * @return null
-	 * @deprecated Deprecated since 1.4
+	 * @deprecated
 	 */
 	public function getDbItem($item, $default = null)
 	{
-		Craft::log('craft()->config->getDbItem(item) is deprecated. Use craft()->config->get(item, ConfigFile::Db) instead.', LogLevel::Warning);
+		craft()->deprecator->deprecate('craft_configservice_getdbitem', 'craft()->config->getDbItem(item) is deprecated. Use craft()->config->get(item, ConfigFile::Db) instead.', '1.4');
 
 		if ($value = craft()->config->get($item, Config::Db))
 		{
@@ -459,20 +458,6 @@ class ConfigService extends BaseApplicationComponent
 	public function getCpLogoutPath()
 	{
 		return 'logout';
-	}
-
-	/**
-	 * TODO: Deprecate when we remove the 'activateFailurePath' config var.
-	 */
-	public function getActivateAccountFailurePath()
-	{
-		if (($path = $this->getLocalized('activateAccountFailurePath')) !== '')
-		{
-			return $path;
-		}
-
-		// Check the deprecated one.
-		return craft()->config->get('activateFailurePath');
 	}
 
 	/**
