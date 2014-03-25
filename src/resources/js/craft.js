@@ -355,7 +355,7 @@ $.extend(Craft,
 		}, options));
 
 		// Call the 'send' callback
-		if (options.send)
+		if (options && typeof options.send == 'function')
 		{
 			options.send(jqXHR);
 		}
