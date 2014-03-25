@@ -956,6 +956,7 @@ body .redactor_editor:focus { background: none !important; }
 		-moz-transition: border linear 100ms, box-shadow linear 100ms;
 		-webkit-appearance: none;
 	}
+	.select.fullwidth select { min-width: 100%; }
 	.select:hover select:not(:focus) { border-color: #ccc; }
 	.select select:focus { border-color: $focusglowcolor; outline: none;
 		@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
