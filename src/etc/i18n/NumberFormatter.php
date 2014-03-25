@@ -24,4 +24,25 @@ class NumberFormatter extends \CNumberFormatter
 
 		return $result;
 	}
+
+	/**
+	 * Formats a number using the currency format defined in the locale.
+	 *
+	 * @param mixed   $value
+	 * @param string $currency
+	 * @param bool   $stripZeroCents
+	 * @return string the formatting result.
+	 */
+	public function formatCurrency($value, $currency, $stripZeroCents = false)
+	{
+		$result = parent::formatCurrency($value, $currency);
+
+		if ($stripZeroCents)
+		{
+			$decimal = $this->_locale->getNumberSymbol('decimal');
+			$result = preg_replace("/{$decimal}0*$/", '', $result);
+		}
+
+		return $result;
+	}
 }
