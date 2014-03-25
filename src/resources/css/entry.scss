@@ -33,7 +33,6 @@ h1 span.draft span { display: none; }
 #livepreview-editor > .field:last-child { margin-bottom: 24px !important; }
 
 #livepreview-iframe-container { z-index: 2; }
-#livepreview-iframe-container:after { position: absolute; top: 0; left: 0; width: 100%; height: 100%; content: ''; font-size: 0; }
 #livepreview-iframe { width: 100%; height: 100%; }
 
 #livepreview-draghandle { position: absolute; z-index: 3; top: 0; margin-left: -3px; width: 6px; height: 100%; cursor: move; }
