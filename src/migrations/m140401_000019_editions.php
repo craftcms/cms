@@ -30,7 +30,9 @@ class m140401_000019_editions extends BaseMigration
 			// If they had any packages, set this to Pro edition
 			if ($hadPackages)
 			{
-				$this->update('info', array('edition' => 2));
+				$info = craft()->getInfo();
+				$info->edition = 2;
+				craft()->saveInfo($info);
 			}
 		}
 
