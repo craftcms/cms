@@ -75,7 +75,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 */
 	public function prepValueFromPost($value)
 	{
-		// TODO: Remove redundant prepPostData() in Craft 2.0
+		// TODO: Remove deprecated prepPostData() in Craft 2.0
 		return $this->prepPostData($value);
 	}
 
@@ -151,10 +151,11 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 * @access protected
 	 * @param mixed $value
 	 * @return mixed
-	 * @deprecated Deprecated since 1.1
+	 * @deprecated
 	 */
 	protected function prepPostData($value)
 	{
+		craft()->deprecator->deprecate('craft_basefieldtype_preppostdata', 'BaseFieldType->prepPostData has been deprecated.  Use BaseFieldType->prepValueFromPost instead.', '1.1');
 		return $value;
 	}
 

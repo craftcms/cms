@@ -424,12 +424,14 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function getChildren($field = null)
 	{
+		// TODO: deprecated
 		// Maintain support for the deprecated relationship-focussed getChildren() function for the element types that were around before Craft 1.3
 		if (
 			($this->elementType == ElementType::Entry && $this->getSection()->type == SectionType::Channel) ||
 			in_array($this->elementType, array(ElementType::Asset, ElementType::GlobalSet, ElementType::Tag, ElementType::User))
 		)
 		{
+			craft()->deprecator->deprecate('craft_baseelementmodel_getchildren', 'BaseElementModel->_getRelChildren, when called in the context of an element that is not an entry in a Structure section, is deprecated.', '1.4');
 			return $this->_getRelChildren($field);
 		}
 		else
@@ -689,6 +691,8 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function getRawContent($fieldHandle = null)
 	{
+		craft()->deprecator->deprecate('craft_baseelementmodel_getrawcontent', 'BaseElementModel->getRawContent has been deprecated.  Use the public getContent() instead', '1.3');
+
 		$content = $this->getContent();
 
 		if ($fieldHandle)
@@ -890,10 +894,11 @@ abstract class BaseElementModel extends BaseModel
 	 * @access private (Use the public getChildren() instead.)
 	 * @param mixed $field
 	 * @return ElementCriteriaModel
-	 * @deprecated Deprecated since 1.3
+	 * @deprecated
 	 */
 	private function _getRelChildren($field = null)
 	{
+		craft()->deprecator->deprecate('craft_baseelementmodel_getrelchildren', 'BaseElementModel->_getRelChildren has been deprecated.  Use the public getChildren() instead.', '1.3');
 		$criteria = craft()->elements->getCriteria($this->elementType);
 		$criteria->childOf    = $this;
 		$criteria->childField = $field;
@@ -905,10 +910,12 @@ abstract class BaseElementModel extends BaseModel
 	 *
 	 * @param mixed $field
 	 * @return ElementCriteriaModel
-	 * @deprecated Deprecated since 1.3
+	 * @deprecated
 	 */
 	public function getParents($field = null)
 	{
+		craft()->deprecator->deprecate('craft_baseelementmodel_getparents', 'BaseElementModel->getParents has been deprecated.', '1.3');
+
 		$criteria = craft()->elements->getCriteria($this->elementType);
 		$criteria->parentOf    = $this;
 		$criteria->parentField = $field;

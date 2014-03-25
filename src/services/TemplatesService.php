@@ -212,11 +212,11 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string    $node
 	 * @param bool|null $first
-	 * @deprecated Deprecated since 1.1
+	 * @deprecated
 	 */
 	public function includeHeadNode($node, $first = false)
 	{
-		Craft::log('The craft()->templates->includeHeadNode() method has been deprecated. Use craft()->templates->includeHeadHtml() instead.', LogLevel::Warning);
+		craft()->deprecator->deprecate('craft_templatsservice_includeheadnode', 'craft()->templates->includeHeadNode() has been deprecated. Use craft()->templates->includeHeadHtml() instead.', '1.1');
 		$this->includeHeadHtml($node, $first);
 	}
 
@@ -225,11 +225,11 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string    $node
 	 * @param bool|null $first
-	 * @deprecated Deprecated since 1.1
+	 * @deprecated
 	 */
 	public function includeFootNode($node, $first = false)
 	{
-		Craft::log('The craft()->templates->includeFootNode() method has been deprecated. Use craft()->templates->includeFootHtml() instead.', LogLevel::Warning);
+		craft()->deprecator->deprecate('craft_templatsservice_includefootnode', 'craft()->templates->includeFootNode() has been deprecated. Use craft()->templates->includeFootNode() instead.', '1.1');
 		$this->includeFootHtml($node, $first);
 	}
 

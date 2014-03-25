@@ -660,10 +660,9 @@ class UsersController extends BaseController
 
 			craft()->userSession->setNotice(Craft::t('User saved.'));
 
-			// TODO: Remove for 2.0
 			if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{userId}') !== false)
 			{
-				Craft::log('The {userId} token within the ‘redirect’ param on users/saveUser requests has been deprecated. Use {id} instead.', LogLevel::Warning);
+				craft()->deprecator->deprecate('craft_userscontroller_saveuser_userid_redirect', 'The {userId} token within the ‘redirect’ param on users/saveUser requests has been deprecated. Use {id} instead.', '1.2');
 				$_POST['redirect'] = str_replace('{userId}', '{id}', $_POST['redirect']);
 			}
 
@@ -682,12 +681,13 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * TODO: Deprecated.
 	 * Saves a user's profile.
+	 *
+	 * @deprecated
 	 */
 	public function actionSaveProfile()
 	{
-		Craft::log('UsersController->actionSaveProfile() has been deprecated. Use UsersController->actionSaveUser() instead.');
+		craft()->deprecator->deprecate('craft_userscontroller_saveprofile', 'UsersController->actionSaveProfile() has been deprecated. Use UsersController->actionSaveUser() instead.', '1.3');
 		$this->actionSaveUser();
 	}
 

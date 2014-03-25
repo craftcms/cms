@@ -360,6 +360,7 @@ class TagsService extends BaseApplicationComponent
 						'isNewTag' => $isNewTag
 					)));
 
+					// TODO: Deprecated
 					// Fire an 'onSaveTagContent' event (deprecated)
 					$this->onSaveTagContent(new Event($this, array(
 						'tag' => $tag
@@ -413,10 +414,11 @@ class TagsService extends BaseApplicationComponent
 	 * Fires an 'onSaveTagContent' event.
 	 *
 	 * @param Event $event
-	 * @deprecated Deprecated since 1.4
+	 * @deprecated
 	 */
 	public function onSaveTagContent(Event $event)
 	{
+		craft()->deprecator->deprecate('craft_tagsservice_onsagetagcontent', 'The TagsService->onSaveTagContent even has been deprecated.', '1.4');
 		$this->raiseEvent('onSaveTagContent', $event);
 	}
 }

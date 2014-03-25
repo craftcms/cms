@@ -95,7 +95,7 @@ class TagElementType extends BaseElementType
 			'groupId' => AttributeType::Mixed,
 			'order'   => array(AttributeType::String, 'default' => 'name asc'),
 
-			// Deprecated
+			// TODO: Deprecated
 			'set'     => AttributeType::Mixed,
 			'setId'   => AttributeType::Mixed,
 		);
@@ -119,14 +119,19 @@ class TagElementType extends BaseElementType
 			$query->andWhere(DbHelper::parseParam('tags.name', $criteria->name, $query->params));
 		}
 
+
+		// TODO: Deprecated
 		// Still support the deprecated params
 		if ($criteria->setId && !$criteria->groupId)
 		{
+			craft()->deprecator->deprecate('craft_tagelementtype_modifyelementsquery_setid', 'TagElementType->setId has been deprecated. Use TagElementType->groupId instead.', '1.3');
 			$criteria->groupId = $criteria->setId;
 		}
 
+		// TODO: Deprecated
 		if ($criteria->set && !$criteria->group)
 		{
+			craft()->deprecator->deprecate('craft_tagelementtype_modifyelementsquery_set', 'TagElementType->set has been deprecated. Use TagElementType->set instead.', '1.3');
 			$criteria->group = $criteria->set;
 		}
 

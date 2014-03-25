@@ -49,6 +49,7 @@ class InstallService extends BaseApplicationComponent
 
 			$this->_createAssetTransformIndexTable();
 			$this->_createRackspaceAccessTable();
+			$this->_createDeprecatorTable();
 
 			$this->_populateMigrationTable();
 
@@ -380,6 +381,26 @@ class InstallService extends BaseApplicationComponent
 
 		craft()->db->createCommand()->createIndex('rackspaceaccess', 'connectionKey', true);
 		Craft::log('Finished creating the Rackspace access table.');
+	}
+
+	/**
+	 * Creates the Deprecation table for The Deprecator (tm).
+	 */
+	private function _createDeprecatorTable()
+	{
+		Craft::log('Creating the deprecation table.');
+
+		craft()->db->createCommand()->createTable('deprecatorlogs', array(
+			'key'               => array('column' => ColumnType::Varchar, 'required' => true),
+			'fingerprint'       => array('column' => ColumnType::Varchar, 'required' => true),
+			'message'           => array('column' => ColumnType::Varchar, 'required' => true),
+			'deprecatedSince'   => array('column' => ColumnType::Varchar, 'maxLength' => 25, 'required' => true),
+			'stackTrace'        => array('column' => ColumnType::Text,    'required' => true),
+			'file'              => array('column' => ColumnType::Varchar, 'required' => true),
+			'line'              => array('column' => ColumnType::Int,     'required' => true),
+			'method'            => array('column' => ColumnType::Char,    'maxLength' => 150),
+			'class'             => array('column' => ColumnType::Char,    'maxLength' => 150),
+		));
 	}
 
 	/**

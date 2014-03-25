@@ -74,10 +74,11 @@ class TagModel extends BaseElementModel
 	 * Returns the tag group's ID.
 	 *
 	 * @return int|null
-	 * @deprecated Deprecated since 1.4
+	 * @deprecated
 	 */
 	public function setId()
 	{
+		craft()->deprecator->deprecate('craft_tagmodel_setid', 'TagModel->setId has been deprecated. Use TagModel->groupId instead.', '1.4');
 		return $this->groupId;
 	}
 
@@ -85,10 +86,11 @@ class TagModel extends BaseElementModel
 	 * Returns the tag's group.
 	 *
 	 * @return TagGroupModel|null
-	 * @deprecated Deprecated since 1.4
+	 * @deprecated
 	 */
 	public function getSet()
 	{
+		craft()->deprecator->deprecate('craft_tagmodel_getset', 'TagModel->getSet has been deprecated. Use TagModel->getGroup instead.', '1.4');
 		return $this->getGroup();
 	}
 }
