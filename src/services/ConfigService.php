@@ -594,7 +594,7 @@ class ConfigService extends BaseApplicationComponent
 			{
 				if ($env == '*' || strpos(CRAFT_ENVIRONMENT, $env) !== false)
 				{
-					$mergedCustomConfig = array_merge_recursive($mergedCustomConfig, $envConfig);
+					$mergedCustomConfig = \CMap::mergeArray($mergedCustomConfig, $envConfig);
 				}
 			}
 
