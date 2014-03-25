@@ -408,6 +408,12 @@ class FieldsService extends BaseApplicationComponent
 				$fieldRecord->settings = $field->settings = $preppedSettings;
 				$fieldType->setSettings($preppedSettings);
 
+				if ($fieldRecord->settings instanceof BaseModel)
+				{
+					// Call getAttributes() without passing 'true' so the __model__ isn't saved
+					$fieldRecord->settings = $fieldRecord->settings->getAttributes();
+				}
+
 				$fieldType->onBeforeSave();
 				$fieldRecord->save(false);
 

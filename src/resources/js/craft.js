@@ -337,7 +337,7 @@ $.extend(Craft,
 			data = undefined;
 		}
 
-		return $.ajax($.extend({
+		var jqXHR = $.ajax($.extend({
 			url:      Craft.getActionUrl(action),
 			type:     'POST',
 			data:     data,
@@ -364,6 +364,62 @@ $.extend(Craft,
 				}
 			}
 		}, options));
+
+		// Call the 'send' callback
+		if (options && typeof options.send == 'function')
+		{
+			options.send(jqXHR);
+		}
+
+		return jqXHR;
+	},
+
+	_waitingOnAjax: false,
+	_ajaxQueue: [],
+
+	/**
+	 * Queues up an action request to be posted to the server.
+	 */
+	queueActionRequest: function(action, data, callback, options)
+	{
+		// Make 'data' optional
+		if (typeof data == 'function')
+		{
+			options = callback;
+			callback = data;
+			data = undefined;
+		}
+
+		Craft._ajaxQueue.push([action, data, callback, options]);
+
+		if (!Craft._waitingOnAjax)
+		{
+			Craft._postNextActionRequestInQueue();
+		}
+	},
+
+	_postNextActionRequestInQueue: function()
+	{
+		Craft._waitingOnAjax = true;
+
+		var args = Craft._ajaxQueue.shift();
+
+		Craft.postActionRequest(args[0], args[1], function(data, textStatus, jqXHR)
+		{
+			if (args[2] && typeof args[2] == 'function')
+			{
+				args[2](data, textStatus, jqXHR);
+			}
+
+			if (Craft._ajaxQueue.length)
+			{
+				Craft._postNextActionRequestInQueue();
+			}
+			else
+			{
+				Craft._waitingOnAjax = false;
+			}
+		}, args[3]);
 	},
 
 	/**

@@ -9,7 +9,7 @@ class RoutesService extends BaseApplicationComponent
 	/**
 	 * Returns the routes defined in craft/config/routes.php
 	 *
-	 * @return array|null
+	 * @return array
 	 */
 	public function getConfigFileRoutes()
 	{
@@ -36,12 +36,14 @@ class RoutesService extends BaseApplicationComponent
 				return $routes;
 			}
 		}
+
+		return array();
 	}
 
 	/**
 	 * Returns the routes defined in the CP.
 	 *
-	 * @return array|null
+	 * @return array
 	 */
 	public function getDbRoutes()
 	{
@@ -63,6 +65,8 @@ class RoutesService extends BaseApplicationComponent
 
 			return $routes;
 		}
+
+		return array();
 	}
 
 	/**
