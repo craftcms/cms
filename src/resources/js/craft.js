@@ -337,7 +337,7 @@ $.extend(Craft,
 			data = undefined;
 		}
 
-		return $.ajax($.extend({
+		var jqXHR = $.ajax($.extend({
 			url:      Craft.getActionUrl(action),
 			type:     'POST',
 			data:     data,
@@ -364,6 +364,14 @@ $.extend(Craft,
 				}
 			}
 		}, options));
+
+		// Call the 'send' callback
+		if (options.send)
+		{
+			options.send(jqXHR);
+		}
+
+		return jqXHR;
 	},
 
 	/**
