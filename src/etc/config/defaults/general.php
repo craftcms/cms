@@ -144,6 +144,11 @@ return array(
 	'errorTemplatePrefix' => '',
 
 	/**
+	 * A comma separated list of file extensions that will be merged into the 'allowedFileExtensions' config setting.
+	 */
+	'extraAllowedFileExtensions' => '',
+
+	/**
 	 *The template filenames Craft will look for within a directory to represent the directory’s “index” template when matching a template path to a file on the front end.
 	 */
 	'indexTemplateFilenames' => array('index'),

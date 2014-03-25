@@ -21,9 +21,6 @@ var CP = Garnish.Base.extend(
 	$content: null,
 	$collapsibleTables: null,
 
-	waitingOnAjax: false,
-	ajaxQueue: null,
-
 	navItems: null,
 	totalNavItems: null,
 	visibleNavItems: null,
@@ -51,8 +48,6 @@ var CP = Garnish.Base.extend(
 		this.$content = $('#content');
 		this.$collapsibleTables = this.$content.find('table.collapsible');
 		this.$editionPromo = $('#editionpromo');
-
-		this.ajaxQueue = [];
 
 		// Find all the nav items
 		this.navItems = [];
@@ -375,50 +370,13 @@ var CP = Garnish.Base.extend(
 		this.displayNotification('error', message);
 	},
 
-	postActionRequest: function(action, data, callback, options)
-	{
-		this.ajaxQueue.push({
-			action: action,
-			data: data,
-			callback: callback,
-			options: options
-		});
-
-		if (!this.waitingOnAjax)
-		{
-			this.postNextActionRequest();
-		}
-	},
-
-	postNextActionRequest: function()
-	{
-		this.waitingOnAjax = true;
-
-		var args = this.ajaxQueue.shift();
-
-		var xhr = Craft.postActionRequest(args.action, args.data, $.proxy(function(data, textStatus, jqXHR)
-		{
-			args.callback(data, textStatus, jqXHR);
-
-			if (this.ajaxQueue.length)
-			{
-				this.postNextActionRequest();
-			}
-			else
-			{
-				this.waitingOnAjax = false;
-			}
-
-		}, this), args.options);
-	},
-
 	fetchAlerts: function()
 	{
 		var data = {
 			path: Craft.path
 		};
 
-		this.postActionRequest('app/getCpAlerts', data, $.proxy(this, 'displayAlerts'));
+		Craft.queueActionRequest('app/getCpAlerts', data, $.proxy(this, 'displayAlerts'));
 	},
 
 	displayAlerts: function(alerts)
@@ -456,7 +414,7 @@ var CP = Garnish.Base.extend(
 
 				if (confirm(Craft.t('Are you sure you want to transfer your license to this domain?')))
 				{
-					this.postActionRequest('app/transferLicenseToCurrentDomain', {}, $.proxy(function(response, textStatus)
+					Craft.queueActionRequest('app/transferLicenseToCurrentDomain', $.proxy(function(response, textStatus)
 					{
 						if (textStatus == 'success')
 						{
@@ -491,7 +449,7 @@ var CP = Garnish.Base.extend(
 					message: $link.prop('className').substr(5)
 				};
 
-				this.postActionRequest('app/shunCpAlert', data, $.proxy(function(response, textStatus)
+				Craft.queueActionRequest('app/shunCpAlert', data, $.proxy(function(response, textStatus)
 				{
 					if (textStatus == 'success')
 					{
@@ -513,7 +471,7 @@ var CP = Garnish.Base.extend(
 
 	checkForUpdates: function()
 	{
-		this.postActionRequest('app/checkForUpdates', {}, $.proxy(function(info)
+		Craft.queueActionRequest('app/checkForUpdates', $.proxy(function(info)
 		{
 			this.displayUpdateInfo(info);
 
@@ -553,7 +511,7 @@ var CP = Garnish.Base.extend(
 
 	runPendingTasks: function()
 	{
-		this.postActionRequest('tasks/runPendingTasks', {}, $.proxy(function(taskInfo, textStatus)
+		Craft.queueActionRequest('tasks/runPendingTasks', $.proxy(function(taskInfo, textStatus)
 		{
 			if (taskInfo)
 			{
@@ -573,7 +531,7 @@ var CP = Garnish.Base.extend(
 
 		this.trackTaskProgressTimeout = setTimeout($.proxy(function()
 		{
-			this.postActionRequest('tasks/getRunningTaskInfo', {}, $.proxy(function(taskInfo, textStatus)
+			Craft.queueActionRequest('tasks/getRunningTaskInfo', $.proxy(function(taskInfo, textStatus)
 			{
 				if (textStatus == 'success')
 				{
