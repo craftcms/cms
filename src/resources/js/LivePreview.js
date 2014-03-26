@@ -121,9 +121,9 @@ Craft.LivePreview = Garnish.Base.extend(
 		{
 			this.$shade = $('<div class="modal-shade dark"></div>').appendTo(Garnish.$bod).css('z-index', 2);
 			this.$editor = $('<div id="livepreview-editor"></div>').appendTo(Garnish.$bod)
-			this.$dragHandle = $('<div id="livepreview-draghandle"></div>').appendTo(this.$editor);
 			this.$iframeContainer = $('<div id="livepreview-iframe-container" />').appendTo(Garnish.$bod);
 			this.$iframe = $('<iframe id="livepreview-iframe" frameborder="0" />').appendTo(this.$iframeContainer);
+			this.$dragHandle = $('<div id="livepreview-draghandle"></div>').appendTo(Garnish.$bod);
 
 			var $header = $('<header class="header"></header>').appendTo(this.$editor),
 				$closeBtn = $('<div class="btn">'+Craft.t('Done')+'</div>').appendTo($header),
@@ -146,6 +146,7 @@ Craft.LivePreview = Garnish.Base.extend(
 		this.$iframeContainer.css(Craft.right, -iframeWidth);
 		this.$iframeContainer.css('width', iframeWidth);
 		this.addListener(Garnish.$win, 'resize', 'updateWidths');
+		this.updateWidths();
 
 		// Move all the fields into the editor rather than copying them
 		// so any JS that's referencing the elements won't break.
@@ -280,11 +281,9 @@ Craft.LivePreview = Garnish.Base.extend(
 
 	updateWidths: function()
 	{
-		if (this.containEditorWidth())
-		{
-			this.$editor.css('width', this.editorWidth+'px');
-		}
-
+		this.containEditorWidth();
+		this.$editor.css('width', this.editorWidth+'px');
+		this.$dragHandle.css(Craft.left, this.editorWidth+'px');
 		this.$iframeContainer.width(this.getIframeWidth());
 	},
 
@@ -364,7 +363,6 @@ Craft.LivePreview = Garnish.Base.extend(
 			this.editorWidth = this.dragStartEditorWidth - this.dragger.mouseDistX;
 		}
 
-		this.$editor.css('width', this.editorWidth+'px');
 		this.updateWidths();
 	},
 
