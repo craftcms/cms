@@ -150,10 +150,13 @@ class AssetsService extends BaseApplicationComponent
 						'asset' => $file
 					)));
 
-					// Fire an 'onSaveFileContent' event (deprecated)
-					$this->onSaveFileContent(new Event($this, array(
-						'file' => $file
-					)));
+					if ($this->hasEventHandler('onSaveFileContent'))
+					{
+						// Fire an 'onSaveFileContent' event (deprecated)
+						$this->onSaveFileContent(new Event($this, array(
+							'file' => $file
+						)));
+					}
 
 					if ($transaction !== null)
 					{

@@ -360,11 +360,13 @@ class TagsService extends BaseApplicationComponent
 						'isNewTag' => $isNewTag
 					)));
 
-					// TODO: Deprecated
-					// Fire an 'onSaveTagContent' event (deprecated)
-					$this->onSaveTagContent(new Event($this, array(
-						'tag' => $tag
-					)));
+					if ($this->hasEventHandler('onSaveTagContent'))
+					{
+						// Fire an 'onSaveTagContent' event (deprecated)
+						$this->onSaveTagContent(new Event($this, array(
+							'tag' => $tag
+						)));
+					}
 
 					if ($transaction !== null)
 					{
