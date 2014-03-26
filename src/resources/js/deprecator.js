@@ -70,10 +70,11 @@ var Deprecator = Garnish.Base.extend(
 
 		Craft.postActionRequest('utils/deleteDeprecationError', data);
 
-		$tr.remove();
-
-		// Was that the last one?
-		if (!this.$table.find('tr:first').length)
+		if ($tr.siblings().length)
+		{
+			$tr.remove();
+		}
+		else
 		{
 			this.onClearAll();
 		}
