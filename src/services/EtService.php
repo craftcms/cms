@@ -9,7 +9,8 @@ class EtService extends BaseApplicationComponent
 	const Ping              = '@@@elliottEndpointUrl@@@actions/elliott/app/ping';
 	const CheckForUpdates   = '@@@elliottEndpointUrl@@@actions/elliott/app/checkForUpdates';
 	const TransferLicense   = '@@@elliottEndpointUrl@@@actions/elliott/app/transferLicenseToCurrentDomain';
-	const PurchaseEdition   = '@@@elliottEndpointUrl@@@actions/elliott/app/purchaseEdition';
+	const GetEditionInfo    = '@@@elliottEndpointUrl@@@actions/elliott/app/getEditionInfo';
+	const PurchaseUpgrade   = '@@@elliottEndpointUrl@@@actions/elliott/app/purchaseUpgrade';
 	const GetUpdateFileInfo = '@@@elliottEndpointUrl@@@actions/elliott/app/getUpdateFileInfo';
 
 	/**
@@ -124,6 +125,94 @@ class EtService extends BaseApplicationComponent
 
 			return $error;
 		}
+	}
+
+	/**
+	 * Fetches info about the available Craft editions from Elliott.
+	 *
+	 * @return EtModel|null
+	 */
+	public function fetchEditionInfo()
+	{
+		$etModel = new EtModel();
+		$etModel->data = array(
+			1 => array(
+				'price' => 199
+			),
+			2 => array(
+				'price' => 299,
+				'salePrice' => (craft()->getEdition() == Craft::Client ? 129 : null)
+			)
+		);
+		return $etModel;
+
+
+
+		$et = new Et(static::GetEditionInfo);
+		$etResponse = $et->phoneHome();
+		return $etResponse;
+	}
+
+	/**
+	 * Attempts to purchase an edition upgrade.
+	 *
+	 * @param UpgradePurchaseModel $model
+	 * @return bool
+	 */
+	public function purchaseUpgrade(UpgradePurchaseModel $model)
+	{
+		if ($model->validate())
+		{
+			$et = new Et(static::PurchaseUpgrade);
+			$et->setData($model);
+			$etResponse = $et->phoneHome();
+
+			if (!empty($etResponse->data['success']))
+			{
+				// Success! Let's get this sucker installed.
+				craft()->setEdition($model->edition);
+
+				return true;
+			}
+			else
+			{
+				// Did they at least say why?
+				if (!empty($etResponse->errors))
+				{
+					switch ($etResponse->errors[0])
+					{
+						// Validation errors
+						case 'edition_doesnt_exist': $error = Craft::t('The selected edition doesn’t exist anymore.'); break;
+						case 'invalid_license_key':  $error = Craft::t('Your license key is invalid.'); break;
+						case 'license_has_edition':  $error = Craft::t('Your Craft license already has this edition.'); break;
+						case 'price_mismatch':       $error = Craft::t('The cost of this edition just changed.'); break;
+						case 'unknown_error':        $error = Craft::t('An unknown error occurred.'); break;
+
+						// Stripe errors
+						case 'incorrect_number':     $error = Craft::t('The card number is incorrect.'); break;
+						case 'invalid_number':       $error = Craft::t('The card number is invalid.'); break;
+						case 'invalid_expiry_month': $error = Craft::t('The expiration month is invalid.'); break;
+						case 'invalid_expiry_year':  $error = Craft::t('The expiration year is invalid.'); break;
+						case 'invalid_cvc':          $error = Craft::t('The security code is invalid.'); break;
+						case 'incorrect_cvc':        $error = Craft::t('The security code is incorrect.'); break;
+						case 'expired_card':         $error = Craft::t('Your card has expired.'); break;
+						case 'card_declined':        $error = Craft::t('Your card was declined.'); break;
+						case 'processing_error':     $error = Craft::t('An error occurred while processing your card.'); break;
+
+						default:                     $error = $etResponse->errors[0];
+					}
+				}
+				else
+				{
+					// Something terrible must have happened!
+					$error = Craft::t('Craft is unable to purchase an edition upgrade at this time.');
+				}
+
+				$model->addError('response', $error);
+			}
+		}
+
+		return false;
 	}
 
 	/**

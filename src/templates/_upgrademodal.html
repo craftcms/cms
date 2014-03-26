@@ -1,0 +1,243 @@
+{% macro buybtn(edition, info) %}
+	{%- spaceless %}
+		{% if edition == craft.getEdition() %}
+			<div class="installed">{{ "Installed"|t }}</div>
+		{% else %}
+			<div class="btn buybtn" data-edition="{{ edition }}">
+				{% if info.salePrice %}
+					<span class="listedprice">{{ info.formattedPrice }}</span> {{ info.formattedSalePrice }}
+				{% else %}
+					{{ info.formattedPrice }}
+				{% endif %}
+			</div>
+		{% endif %}
+	{% endspaceless -%}
+{% endmacro %}
+
+{% from _self import buybtn %}
+{% import "_includes/forms" as forms %}
+
+
+<div id="upgrademodal-compare" class="body">
+	<table class="data fullwidth">
+		<thead>
+			<tr>
+				<td></td>
+				<th scope="col">
+					<h1 class="logo craftclient">Craft Client</h1>
+					{{ buybtn(CraftClient, editions[CraftClient]) }}
+				</th>
+				<th scope="col">
+					<h1 class="logo craftpro">Craft Pro</h1>
+					{{ buybtn(CraftPro, editions[CraftPro]) }}
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<th class="group" colspan="3" data-icon="section">{{ "Content Publishing"|t }}</th>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Unlimited Singles and Channels"|t }}</th>
+				<td><span data-icon="check"></span></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Structure sections"|t }}</th>
+				<td><span data-icon="check"></span></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Entry versioning"|t }}</th>
+				<td><span data-icon="check"></span></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Entry drafts"|t }}</th>
+				<td><span data-icon="check"></span></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+
+			<tr>
+				<th class="group" colspan="3" data-icon="users">{{ "User Accounts"|t }}</th>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Additional user accounts"|t }}</th>
+				<td>One “Client” account</td>
+				<td>Unlimited</td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "User groups"|t }}</th>
+				<td></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "User permissions"|t }}</th>
+				<td></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Public user registration"|t }}</th>
+				<td></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+
+			<tr>
+				<th class="group" colspan="3" data-icon="brush">{{ "System Branding"|t }}</th>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Custom login screen logo"|t }}</th>
+				<td><span data-icon="check"></span></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Custom HTML email template"|t }}</th>
+				<td><span data-icon="check"></span></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Custom email message wording"|t }}</th>
+				<td><span data-icon="check"></span></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+
+			<tr>
+				<th class="group" colspan="3" data-icon="assets">{{ "Assets"|t }}</th>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Amazon S3 support"|t }}</th>
+				<td></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Rackspace Cloud Files support"|t }}</th>
+				<td></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Google Cloud Storage support"|t }}</th>
+				<td></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+
+			<tr>
+				<th class="group" colspan="3" data-icon="language">{{ "Localization and Translation"|t }}</th>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Section and entry locale targetting"|t }}</th>
+				<td></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Content translations"|t }}</th>
+				<td></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Locale-specific user permissions"|t }}</th>
+				<td></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr class="buybtns">
+				<td></td>
+				<td>
+					{{ buybtn(CraftClient, editions[CraftClient]) }}
+				</td>
+				<td>
+					{{ buybtn(CraftPro, editions[CraftPro]) }}
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+
+<div id="upgrademodal-checkout" class="body hidden">
+	<h1 class="logo"></h1>
+
+	<form class="pane">
+		<div class="header">
+			<p class="price"></p>
+		</div>
+
+		{{ forms.textField({
+			label: "Name on the card"|t,
+			id: 'cc-name'
+		}) }}
+
+		{{ forms.textField({
+			label: "Credit card number"|t,
+			id: 'cc-num',
+			autocomplete: false
+		}) }}
+
+		<table class="inputs fullwidth">
+			<tbody>
+				<tr>
+					<td class="cc-month">
+						{% set monthInput %}
+							<div class="select fullwidth">
+								<select id="cc-month">
+									{% set localeData = craft.i18n.getLocaleData() %}
+									{% for month in 1..12 %}
+										{% set month2 = "%02d"|format(month) %}
+										<option value="{{ month2 }}">{{ month2 }} - {{ localeData.getMonthName(month) }}</option>
+									{% endfor %}
+								</select>
+							</div>
+						{% endset %}
+
+						{{ forms.field({
+							label: "Expiration month"|t,
+							id: 'cc-month'
+						}, monthInput) }}
+					</td>
+
+					<td class="thin cc-year">
+						{% set yearInput %}
+							<div class="select fullwidth">
+								<select id="cc-year">
+									{% for year in now.year .. now.year+10 %}
+										<option value="{{ year }}">{{ year }}</option>
+									{% endfor %}
+								</select>
+							</div>
+						{% endset %}
+
+						{{ forms.field({
+							label: "Exp. year"|t,
+							id: 'cc-year'
+						}, yearInput) }}
+					</td>
+
+					<td class="thin cc-cvc">
+						{{ forms.textField({
+							label: "CVC"|t,
+							id: 'cc-cvc',
+							size: 5,
+							autocomplete: false
+						}) }}
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<div class="footer">
+			<div class="buttons right">
+				<div id="upgrademodal-cancelcheckout" class="btn">{{ "Cancel"|t }}</div>
+				<input type="submit" class="btn submit" value="{{ 'Purchase'|t }}">
+				<div class="spinner hidden"></div>
+			</div>
+		</div>
+	</form>
+
+	<p class="secure icon light centeralign">{{ "Your payment is safe and secure with {stripe}."|t({ stripe: '<a href="https://stripe.com/" target="_blank">Stripe</a>' })|raw }}
+</div>
+
+
+<div id="upgrademodal-success" class="body hidden">
+	<div class="message">
+		<p>{{ "Craft has been upgraded successfully!" }}</p>
+		<div class="btn">{{ "Reload"|t }}</div>
+	</div>
+</div>

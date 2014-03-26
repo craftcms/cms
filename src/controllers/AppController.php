@@ -89,11 +89,84 @@ class AppController extends BaseController
 	/**
 	 * Returns the editon upgrade modal.
 	 */
-	public function actionGetEditionModal()
+	public function actionGetUpgradeModal()
 	{
 		$this->requireAjaxRequest();
 		craft()->userSession->requireAdmin();
 
-		$this->renderTemplate('_editions');
+		$etResponse = craft()->et->fetchEditionInfo();
+
+		if ($etResponse)
+		{
+			// Make sure we've got a valid license key (mismatched domain is OK for these purposes)
+			if ($etResponse->licenseKeyStatus != LicenseKeyStatus::Invalid)
+			{
+				$editions = array();
+
+				foreach ($etResponse->data as $edition => $info)
+				{
+					$editions[$edition]['price']          = $info['price'];
+					$editions[$edition]['formattedPrice'] = craft()->numberFormatter->formatCurrency($info['price'], 'USD', true);
+
+					if (isset($info['salePrice']) && $info['salePrice'] < $info['price'])
+					{
+						$editions[$edition]['salePrice']          = $info['salePrice'];
+						$editions[$edition]['formattedSalePrice'] = craft()->numberFormatter->formatCurrency($info['salePrice'], 'USD', true);
+					}
+					else
+					{
+						$editions[$edition]['salePrice'] = null;
+					}
+				}
+
+				$modalHtml = craft()->templates->render('_upgrademodal', array(
+					'editions' => $editions
+				));
+
+				$this->returnJson(array(
+					'success'   => true,
+					'editions'  => $editions,
+					'modalHtml' => $modalHtml
+				));
+			}
+			else
+			{
+				$this->returnErrorJson(Craft::t('Your license key is invalid.'));
+			}
+		}
+		else
+		{
+			$this->returnErrorJson(Craft::t('Craft is unable to fetch edition info at this time.'));
+		}
+	}
+
+	/**
+	 * Passes along a given CC token to Elliott to purchase a Craft edition.
+	 */
+	public function actionPurchaseUpgrade()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+		craft()->userSession->requireAdmin();
+
+		$model = new UpgradePurchaseModel(array(
+			'ccTokenId'     => craft()->request->getRequiredPost('ccTokenId'),
+			'edition'       => craft()->request->getRequiredPost('edition'),
+			'expectedPrice' => craft()->request->getRequiredPost('expectedPrice'),
+		));
+
+		if (craft()->et->purchaseUpgrade($model))
+		{
+			$this->returnJson(array(
+				'success' => true,
+				'package' => $model->package
+			));
+		}
+		else
+		{
+			$this->returnJson(array(
+				'errors' => $model->getErrors()
+			));
+		}
 	}
 }

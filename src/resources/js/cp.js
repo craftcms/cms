@@ -33,8 +33,8 @@ var CP = Garnish.Base.extend(
 	trackTaskProgressTimeout: null,
 	taskProgressIcon: null,
 
-	$editionPromo: null,
-	editionModal: null,
+	$upgradePromo: null,
+	upgradeModal: null,
 
 	init: function()
 	{
@@ -47,7 +47,7 @@ var CP = Garnish.Base.extend(
 		this.$main = $('#main');
 		this.$content = $('#content');
 		this.$collapsibleTables = this.$content.find('table.collapsible');
-		this.$editionPromo = $('#editionpromo');
+		this.$upgradePromo = $('#upgradepromo');
 
 		// Find all the nav items
 		this.navItems = [];
@@ -146,7 +146,7 @@ var CP = Garnish.Base.extend(
 			});
 		}
 
-		this.addListener(this.$editionPromo, 'click', 'showEditionModal');
+		this.addListener(this.$upgradePromo, 'click', 'showEditionModal');
 	},
 
 	/**
@@ -590,28 +590,13 @@ var CP = Garnish.Base.extend(
 
 	showEditionModal: function()
 	{
-		if (!this.editionModal)
+		if (!this.upgradeModal)
 		{
-			var $container = $('<div id="editionmodal" class="modal loading"/>').appendTo(Garnish.$bod),
-				$body = $('<div class="body"/>').appendTo($container);
-
-			this.editionModal = new Garnish.Modal($container, {
-				resizable: true
-			});
-
-			Craft.postActionRequest('app/getEditionModal', $.proxy(function(response, textStatus)
-			{
-				$container.removeClass('loading');
-
-				if (textStatus == 'success')
-				{
-					$body.html(response);
-				}
-			}, this));
+			this.upgradeModal = new Craft.UpgradeModal();
 		}
 		else
 		{
-			this.editionModal.show();
+			this.upgradeModal.show();
 		}
 	}
 },
