@@ -747,7 +747,8 @@ class UsersController extends BaseController
 							'imageUrl' => UrlHelper::getResourceUrl('userphotos/temp/'.$user->username.'/'.$fileName),
 							'width' => round($width * $factor),
 							'height' => round($height * $factor),
-							'factor' => $factor
+							'factor' => $factor,
+							'constraint' => $constraint
 						)
 					);
 

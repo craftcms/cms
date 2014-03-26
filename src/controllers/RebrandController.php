@@ -55,7 +55,8 @@ class RebrandController extends BaseController
 							'imageUrl' => UrlHelper::getResourceUrl('tempuploads/'.$fileName),
 							'width' => round($width * $factor),
 							'height' => round($height * $factor),
-							'factor' => $factor
+							'factor' => $factor,
+							'constraint' => $constraint
 						)
 					);
 
