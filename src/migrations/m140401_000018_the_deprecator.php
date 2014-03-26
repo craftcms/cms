@@ -15,8 +15,8 @@ class m140401_000018_the_deprecator extends BaseMigration
 	{
 		if (!craft()->db->tableExists('deprecatorlogs'))
 		{
-			// Create the new deprecationlog table
-			$this->createTable('deprecationlog', array(
+			// Create the new deprecatorlogs table
+			$this->createTable('deprecatorlogs', array(
 				'key'               => array('column' => ColumnType::Varchar, 'required' => true),
 				'fingerprint'       => array('column' => ColumnType::Varchar, 'required' => true),
 				'message'           => array('column' => ColumnType::Varchar, 'required' => true),
@@ -28,12 +28,12 @@ class m140401_000018_the_deprecator extends BaseMigration
 				'class'             => array('column' => ColumnType::Char,    'maxLength' => 150),
 			));
 
-			$this->createIndex('deprecationlog', 'key,fingerprint', true);
+			$this->createIndex('deprecatorlogs', 'key,fingerprint', true);
 
 		}
 		else
 		{
-			Craft::log('Tried to add the `deprecationlog` table, but it already exists.', LogLevel::Warning, true);
+			Craft::log('Tried to add the `deprecatorlogs` table, but it already exists.', LogLevel::Warning, true);
 		}
 
 		return true;
