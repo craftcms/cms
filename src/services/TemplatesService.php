@@ -26,8 +26,8 @@ class TemplatesService extends BaseApplicationComponent
 	private $_translations = array();
 
 	private $_hooks;
-
 	private $_textareaMarkers;
+	private $_renderingTemplate;
 
 	/**
 	 * Init
@@ -96,6 +96,43 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns whether a template is currently being rendered.
+	 *
+	 * @return bool
+	 */
+	public function isRendering()
+	{
+		return isset($this->_renderingTemplate);
+	}
+
+	/**
+	 * Returns the template path that is currently being rendered, or the full template if renderString() or renderObjectTemplate() was called.
+	 *
+	 * @return string|null
+	 */
+	public function getRenderingTemplate()
+	{
+		if ($this->isRendering())
+		{
+			if (strncmp($this->_renderingTemplate, 'string:', 7) === 0)
+			{
+				return $this->_renderingTemplate;
+			}
+			else
+			{
+				try
+				{
+					return $this->findTemplate($this->_renderingTemplate);
+				}
+				catch (TemplateLoaderException $e)
+				{
+					return craft()->path->getTemplatesPath().$this->_renderingTemplate;
+				}
+			}
+		}
+	}
+
+	/**
 	 * Renders a template.
 	 *
 	 * @param  string $template The name of the template to load, or a StringTemplate object
@@ -105,7 +142,12 @@ class TemplatesService extends BaseApplicationComponent
 	public function render($template, $variables = array())
 	{
 		$twig = $this->getTwig();
-		return $twig->render($template, $variables);
+
+		$lastRenedringTemplate = $this->_renderingTemplate;
+		$this->_renderingTemplate = $template;
+		$result = $twig->render($template, $variables);
+		$this->_renderingTemplate = $lastRenedringTemplate;
+		return $result;
 	}
 
 	/**
@@ -120,7 +162,12 @@ class TemplatesService extends BaseApplicationComponent
 	{
 		$twig = $this->getTwig();
 		$twigTemplate = $twig->loadTemplate($template);
-		return call_user_func_array(array($twigTemplate, 'get'.$macro), $args);
+
+		$lastRenedringTemplate = $this->_renderingTemplate;
+		$this->_renderingTemplate = $template;
+		$result = call_user_func_array(array($twigTemplate, 'get'.$macro), $args);
+		$this->_renderingTemplate = $lastRenedringTemplate;
+		return $result;
 	}
 
 	/**
@@ -133,7 +180,12 @@ class TemplatesService extends BaseApplicationComponent
 	public function renderString($template, $variables = array())
 	{
 		$stringTemplate = new StringTemplate(md5($template), $template);
-		return $this->render($stringTemplate, $variables);
+
+		$lastRenedringTemplate = $this->_renderingTemplate;
+		$this->_renderingTemplate = 'string:'.$template;
+		$result = $this->render($stringTemplate, $variables);
+		$this->_renderingTemplate = $lastRenedringTemplate;
+		return $result;
 	}
 
 	/**
@@ -171,9 +223,12 @@ class TemplatesService extends BaseApplicationComponent
 		}
 
 		// Render it!
-		$return = $this->_objectTemplates[$template]->render(array(
+		$lastRenedringTemplate = $this->_renderingTemplate;
+		$this->_renderingTemplate = 'string:'.$template;
+		$result = $this->_objectTemplates[$template]->render(array(
 			'object' => $object
 		));
+		$this->_renderingTemplate = $lastRenedringTemplate;
 
 		// Re-enable strict variables
 		if ($strictVariables)
@@ -181,7 +236,7 @@ class TemplatesService extends BaseApplicationComponent
 			$twig->enableStrictVariables();
 		}
 
-		return $return;
+		return $result;
 	}
 
 
@@ -212,11 +267,11 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string    $node
 	 * @param bool|null $first
-	 * @deprecated
+	 * @deprecated Deprecated in 1.1.
 	 */
 	public function includeHeadNode($node, $first = false)
 	{
-		craft()->deprecator->deprecate('craft_templatsservice_includeheadnode', 'craft()->templates->includeHeadNode() has been deprecated. Use craft()->templates->includeHeadHtml() instead.', '1.1');
+		craft()->deprecator->log('TemplatesService::includeHeadNode()', 'TemplatesService::includeHeadNode() has been deprecated. includeHeadHtml() instead.');
 		$this->includeHeadHtml($node, $first);
 	}
 
@@ -225,11 +280,11 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string    $node
 	 * @param bool|null $first
-	 * @deprecated
+	 * @deprecated Deprecated in 1.1.
 	 */
 	public function includeFootNode($node, $first = false)
 	{
-		craft()->deprecator->deprecate('craft_templatsservice_includefootnode', 'craft()->templates->includeFootNode() has been deprecated. Use craft()->templates->includeFootNode() instead.', '1.1');
+		craft()->deprecator->log('TemplatesService::includeFootNode()', 'TemplatesService::includeFootNode() has been deprecated. Use includeFootNode() instead.');
 		$this->includeFootHtml($node, $first);
 	}
 

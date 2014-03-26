@@ -94,7 +94,7 @@ class FieldsController extends BaseController
 
 			if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{fieldId}') !== false)
 			{
-				craft()->deprecator->deprecate('craft_fieldscontroller_savefield_fieldid_redirect', 'The {fieldId} token within the ‘redirect’ param on fields/saveField requests has been deprecated. Use {id} instead.', '1.2');
+				craft()->deprecator->log('FieldsController::saveField():fieldId_redirect', 'The {fieldId} token within the ‘redirect’ param on fields/saveField requests has been deprecated. Use {id} instead.');
 				$_POST['redirect'] = str_replace('{fieldId}', '{id}', $_POST['redirect']);
 			}
 

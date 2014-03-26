@@ -270,11 +270,11 @@ class UsersService extends BaseApplicationComponent
 	 *
 	 * @param UserModel $user
 	 * @return bool
-	 * @deprecated
+	 * @deprecated Deprecated in 2.0.
 	 */
 	public function saveProfile(UserModel $user)
 	{
-		craft()->deprecator->deprecate('craft_usersservice_saveprofile', 'UsersService->saveProfile() has been deprecated. Use UsersService->saveUser() instead.', '1.4');
+		craft()->deprecator->log('UsersService::saveProfile()', 'UsersService::saveProfile() has been deprecated. Use saveUser() instead.');
 		return $this->saveUser($user);
 	}
 
@@ -282,11 +282,11 @@ class UsersService extends BaseApplicationComponent
 	 * Fires an 'onSaveProfile' event.
 	 *
 	 * @param Event $event
-	 * @deprecated
+	 * @deprecated Deprecated in 2.0.
 	 */
 	public function onSaveProfile(Event $event)
 	{
-		craft()->deprecator->deprecate('craft_usersservice_onsaveprofile', 'The UsersService->onSaveProfile event has been deprecated and will be removed. saveUser handles saving profile fields, now.', '1.4');
+		craft()->deprecator->log('UsersService::onSaveProfile()', 'The users.onSaveProfile event has been deprecated. Use users.onSaveUser instead.');
 		$this->raiseEvent('onSaveProfile', $event);
 	}
 

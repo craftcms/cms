@@ -151,11 +151,11 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 * @access protected
 	 * @param mixed $value
 	 * @return mixed
-	 * @deprecated
+	 * @deprecated Deprecated in 1.1.
 	 */
 	protected function prepPostData($value)
 	{
-		craft()->deprecator->deprecate('craft_basefieldtype_preppostdata', 'BaseFieldType->prepPostData has been deprecated.  Use BaseFieldType->prepValueFromPost instead.', '1.1');
+		craft()->deprecator->log('BaseFieldType::prepPostData()', 'BaseFieldType::prepPostData() has been deprecated.  Use prepValueFromPost() instead.');
 		return $value;
 	}
 

@@ -21,7 +21,7 @@
 {% block content %}
 
 	<div class="field">
-		<select onchange="Craft.redirectTo('utils/logviewer/'+this.value);">
+		<select onchange="Craft.redirectTo('utils/logs/'+this.value);">
 			{% for fileName in logFileNames %}
 				<option{% if fileName == currentLogFileName %} selected{% endif %}>{{ fileName }}</option>
 			{% endfor %}

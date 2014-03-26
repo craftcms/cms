@@ -219,11 +219,11 @@ class EntryModel extends BaseElementModel
 	 * Returns the entry's level (formerly "depth").
 	 *
 	 * @return int|null
-	 * @deprecated
+	 * @deprecated Deprecated in 2.0.
 	 */
 	public function depth()
 	{
-		craft()->deprecator->deprecate('craft_entrymodel_depth', 'EntryModel->depth has been deprecated.', '1.4');
+		craft()->deprecator->log('EntryModel::depth', 'Entries’ ‘depth’ property has been deprecated. Use ‘level’ instead.');
 		return $this->level;
 	}
 }

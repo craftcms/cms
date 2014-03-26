@@ -416,11 +416,11 @@ class TagsService extends BaseApplicationComponent
 	 * Fires an 'onSaveTagContent' event.
 	 *
 	 * @param Event $event
-	 * @deprecated
+	 * @deprecated Deprecated in 2.0.
 	 */
 	public function onSaveTagContent(Event $event)
 	{
-		craft()->deprecator->deprecate('craft_tagsservice_onsagetagcontent', 'The TagsService->onSaveTagContent even has been deprecated.', '1.4');
+		craft()->deprecator->log('TagsService::onSaveTagContent()', 'The tags.onSaveTagContent event has been deprecated. Use tags.onSaveTag instead.');
 		$this->raiseEvent('onSaveTagContent', $event);
 	}
 }

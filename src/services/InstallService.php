@@ -49,7 +49,7 @@ class InstallService extends BaseApplicationComponent
 
 			$this->_createAssetTransformIndexTable();
 			$this->_createRackspaceAccessTable();
-			$this->_createDeprecatorTable();
+			$this->_createDeprecationErrorsTable();
 
 			$this->_populateMigrationTable();
 
@@ -384,23 +384,28 @@ class InstallService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Creates the Deprecation table for The Deprecator (tm).
+	 * Creates the deprecationerrors table for The Deprecator (tm).
 	 */
-	private function _createDeprecatorTable()
+	private function _createDeprecationErrorsTable()
 	{
-		Craft::log('Creating the deprecation table.');
+		Craft::log('Creating the deprecationerrors table.');
 
-		craft()->db->createCommand()->createTable('deprecatorlogs', array(
-			'key'               => array('column' => ColumnType::Varchar, 'required' => true),
-			'fingerprint'       => array('column' => ColumnType::Varchar, 'required' => true),
-			'message'           => array('column' => ColumnType::Varchar, 'required' => true),
-			'deprecatedSince'   => array('column' => ColumnType::Varchar, 'maxLength' => 25, 'required' => true),
-			'stackTrace'        => array('column' => ColumnType::Text,    'required' => true),
-			'file'              => array('column' => ColumnType::Varchar, 'required' => true),
-			'line'              => array('column' => ColumnType::Int,     'required' => true),
-			'method'            => array('column' => ColumnType::Char,    'maxLength' => 150),
-			'class'             => array('column' => ColumnType::Char,    'maxLength' => 150),
+		craft()->db->createCommand()->createTable('deprecationerrors', array(
+			'key'               => array('column' => ColumnType::Varchar, 'null' => false),
+			'fingerprint'       => array('column' => ColumnType::Varchar, 'null' => false),
+			'lastOccurrence'    => array('column' => ColumnType::DateTime, 'null' => false),
+			'file'              => array('column' => ColumnType::Varchar, 'null' => false),
+			'line'              => array('column' => ColumnType::SmallInt, 'unsigned' => true, 'null' => false),
+			'class'             => array('column' => ColumnType::Varchar),
+			'method'            => array('column' => ColumnType::Varchar),
+			'template'          => array('column' => ColumnType::Varchar),
+			'templateLine'      => array('column' => ColumnType::SmallInt, 'unsigned' => true),
+			'message'           => array('column' => ColumnType::Varchar),
+			'traces'            => array('column' => ColumnType::Text),
 		));
+
+		craft()->db->createCommand()->createIndex('deprecationerrors', 'key,fingerprint', true);
+		Craft::log('Finished creating the deprecationerrors table.');
 	}
 
 	/**

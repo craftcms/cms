@@ -1,46 +1,66 @@
 (function($) {
 
+/**
+ * Deprecator class
+ */
 var Deprecator = Garnish.Base.extend(
 {
-	_modal: null,
-	$modalContainerDiv: null,
+	$table: null,
+	tracesModal: null,
+	$tracesModalBody: null,
 
 	init: function()
 	{
-		this._modal = null;
-		this.$modalContainerDiv = null;
-		var _this = this;
+		this.$table = $('#deprecationerrors');
 
-		$('.deprecatorModal').each(function ()
-		{
-			$(this).click(function ()
-			{
-				_this._showModal($(this).attr('href'));
-				return false;
-			})
-		});
+		this.addListener(this.$table.find('.viewtraces'), 'click', 'viewLogTraces');
+		this.addListener(this.$table.find('.delete'), 'click', 'deleteLog');
 	},
 
-	_showModal: function (url)
+	viewLogTraces: function(ev)
 	{
-		if (!this._modal)
+		if (!this.tracesModal)
 		{
-			this._modal = new Garnish.Modal();
+			var $container = $('<div id="traces" class="modal loading"/>').appendTo(Garnish.$bod);
+			this.$tracesModalBody = $('<div class="body"/>').appendTo($container);
+
+			this.tracesModal = new Garnish.Modal($container, {
+				resizable: true
+			});
+		}
+		else
+		{
+			this.tracesModal.$container.addClass('loading');
+			this.$tracesModalBody.empty();
+			this.tracesModal.show();
 		}
 
-		if (this.$modalContainerDiv == null) {
-			this.$modalContainerDiv = $('<div class="modal trace-modal"></div>').addClass().appendTo(Garnish.$bod);
-		}
+		var data = {
+			logId: $(ev.currentTarget).closest('tr').data('id')
+		};
 
-		var _this = this;
-		$.get(url, $.proxy(function (data)
+		Craft.postActionRequest('utils/getDeprecationErrorTracesModal', data, $.proxy(function(response, textStatus)
+		{
+			this.tracesModal.$container.removeClass('loading');
+
+			if (textStatus == 'success')
 			{
-				this.$modalContainerDiv.html(data);
-				this.$modalContainerDiv.find('.cancel').click(function () {_this._modal.hide();});
-				this._modal.setContainer(this.$modalContainerDiv);
-				this._modal.show();
-			}, this)
-		);
+				this.$tracesModalBody.html(response);
+			}
+		}, this));
+	},
+
+	deleteLog: function(ev)
+	{
+		var $tr = $(ev.currentTarget).closest('tr');
+
+		var data = {
+			logId: $tr.data('id')
+		};
+
+		Craft.postActionRequest('utils/deleteDeprecationError', data);
+
+		$tr.remove();
 	}
 });
 

@@ -1,0 +1,21 @@
+<table class="data fullwidth">
+	<tbody>
+		{% for trace in traces %}
+			<tr>
+				<td class="thin light">{{ loop.revindex }}</td>
+				<td>
+					{% if trace.template is defined and trace.template %}
+						<strong>Template:</strong> {{ trace.template }}{% if trace.templateLine is defined and trace.templateLine %} ({{ trace.templateLine }}){% endif %}<br>
+					{% else %}
+						{% if trace.file %}
+							<strong>File:</strong> {{ trace.file }}{% if trace.line %} ({{ trace.line }}){% endif %}<br>
+						{% endif %}
+						{% if trace.class or trace.method %}
+							<strong>Method:</strong> {{ trace.class }}{% if trace.class and trace.method %}::{% endif %}{% if trace.method %}{{ trace.method }}({{ trace.args }}){% endif %}
+						{% endif %}
+					{% endif %}
+				</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>

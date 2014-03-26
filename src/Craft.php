@@ -14,237 +14,237 @@ class Craft extends \Yii
 	/**
 	 * Determines if Craft is installed by checking if the info table exists.
 	 *
-	 * @deprecated
 	 * @static
 	 * @return bool
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function isInstalled()
 	{
-		craft()->deprecator->deprecate('craft_isinstalled', 'Craft::isInstalled() has been deprecated.  Use craft()->isInstalled() instead.', '1.3');
+		craft()->deprecator->log('Craft::isInstalled()', 'Craft::isInstalled() has been deprecated. Use craft()->isInstalled() instead.');
 		return craft()->isInstalled();
 	}
 
 	/**
 	 * Tells Craft that it's installed now.
 	 *
-	 * @deprecated
 	 * @static
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function setIsInstalled()
 	{
-		craft()->deprecator->deprecate('craft_setisinstalled', 'Craft::setIsInstalled() has been deprecated.  Use craft()->setIsInstalled() instead.', '1.3');
+		craft()->deprecator->log('Craft::setIsInstalled()', 'Craft::setIsInstalled() has been deprecated. Use craft()->setIsInstalled() instead.');
 		craft()->setIsInstalled();
 	}
 
 	/**
 	 * Returns the installed Craft version.
 	 *
-	 * @deprecated
 	 * @static
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getVersion()
 	{
-		craft()->deprecator->deprecate('craft_getversion', 'Craft::getVersion() has been deprecated.  Use craft()->getVersion() instead.', '1.3');
+		craft()->deprecator->log('Craft::getVersion()', 'Craft::getVersion() has been deprecated. Use craft()->getVersion() instead.');
 		return craft()->getVersion();
 	}
 
 	/**
 	 * Returns the installed Craft build.
 	 *
-	 * @deprecated
 	 * @static
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getBuild()
 	{
-		craft()->deprecator->deprecate('craft_getbuild', 'Craft::getVersion() has been deprecated.  Use craft()->getbuild() instead.', '1.3');
+		craft()->deprecator->log('Craft::getBuild()', 'Craft::getVersion() has been deprecated. Use craft()->getbuild() instead.');
 		return craft()->getBuild();
 	}
 
 	/**
 	 * Returns the installed Craft release date.
 	 *
-	 * @deprecated
 	 * @static
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getReleaseDate()
 	{
-		craft()->deprecator->deprecate('craft_getreleasedate', 'Craft::getReleaseDate() has been deprecated.  Use craft()->getReleaseDate() instead.', '1.3');
+		craft()->deprecator->log('Craft::getReleaseDate()', 'Craft::getReleaseDate() has been deprecated. Use craft()->getReleaseDate() instead.');
 		return craft()->getReleaseDate();
 	}
 
 	/**
 	 * Returns the Craft track.
 	 *
-	 * @deprecated
 	 * @static
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getTrack()
 	{
-		craft()->deprecator->deprecate('craft_gettrack', 'Craft::getTrack() has been deprecated.  Use craft()->getTrack() instead.', '1.3');
+		craft()->deprecator->log('Craft::getTrack()', 'Craft::getTrack() has been deprecated. Use craft()->getTrack() instead.');
 		return craft()->getTrack();
 	}
 
 	/**
 	 * Returns whether a package is included in this Craft build.
 	 *
-	 * @deprecated
 	 * @static
 	 * @param $packageName
 	 * @return bool
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function hasPackage($packageName)
 	{
-		craft()->deprecator->deprecate('craft_haspackage', 'Craft::hasPackage() has been deprecated.  Use craft()->hasPackage() instead.', '1.3');
+		craft()->deprecator->log('Craft::hasPackages()', 'Craft::hasPackage() has been deprecated. Use craft()->hasPackage() instead.');
 		return craft()->hasPackage($packageName);
 	}
 
 	/**
 	 * Returns the site name.
 	 *
-	 * @deprecated
 	 * @static
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getSiteName()
 	{
-		craft()->deprecator->deprecate('craft_getsitename', 'Craft::getSiteName() has been deprecated.  Use craft()->getSiteName() instead.', '1.3');
+		craft()->deprecator->log('Craft::getSiteName()', 'Craft::getSiteName() has been deprecated. Use craft()->getSiteName() instead.');
 		return craft()->getSiteName();
 	}
 
 	/**
 	 * Returns the site URL.
 	 *
-	 * @deprecated
 	 * @static
 	 * @param string|null $protocol The protocol to use (http or https). If none is specified, it will default to whatever's in the Site URL setting.
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getSiteUrl($protocol = null)
 	{
-		craft()->deprecator->deprecate('craft_getsiteurl', 'Craft::getSiteUrl() has been deprecated.  Use craft()->getSiteUrl() instead.', '1.3');
+		craft()->deprecator->log('Craft::getSiteUrl()', 'Craft::getSiteUrl() has been deprecated. Use craft()->getSiteUrl() instead.');
 		return craft()->getSiteUrl($protocol);
 	}
 
 	/**
 	 * Returns the site UID.
 	 *
-	 * @deprecated
 	 * @static
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getSiteUid()
 	{
-		craft()->deprecator->deprecate('craft_getsiteuid', 'Craft::getSiteUid() has been deprecated.  Use craft()->getSiteUid() instead.', '1.3');
+		craft()->deprecator->log('Craft::getSiteUid()', 'Craft::getSiteUid() has been deprecated. Use craft()->getSiteUid() instead.');
 		return craft()->getSiteUid();
 	}
 
 	/**
 	 * Returns the system time zone.
 	 *
-	 * @deprecated
 	 * @static
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getTimeZone()
 	{
-		craft()->deprecator->deprecate('craft_gettimezone', 'Craft::getTimeZone() has been deprecated.  Use craft()->getTimeZone() instead.', '1.3');
+		craft()->deprecator->log('Craft::getTimeZone()', 'Craft::getTimeZone() has been deprecated. Use craft()->getTimeZone() instead.');
 		return craft()->getTimeZone();
 	}
 
 	/**
 	 * Returns whether the system is on.
 	 *
-	 * @deprecated
 	 * @static
 	 * @return bool
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function isSystemOn()
 	{
-		craft()->deprecator->deprecate('craft_issystemon', 'Craft::isSystemOn() has been deprecated.  Use craft()->isSystemOn() instead.', '1.3');
+		craft()->deprecator->log('Craft::isSystemOn()', 'Craft::isSystemOn() has been deprecated. Use craft()->isSystemOn() instead.');
 		return craft()->isSystemOn();
 	}
 
 	/**
 	 * Returns whether the system is in maintenance mode.
 	 *
-	 * @deprecated
 	 * @static
 	 * @return bool
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function isInMaintenanceMode()
 	{
-		craft()->deprecator->deprecate('craft_isinmaintenancemode', 'Craft::isInMaintenanceMode() has been deprecated.  Use craft()->isInMaintenanceMode() instead.', '1.3');
+		craft()->deprecator->log('Craft::isInMaintenanceMode()', 'Craft::isInMaintenanceMode() has been deprecated. Use craft()->isInMaintenanceMode() instead.');
 		return craft()->isInMaintenanceMode();
 	}
 
 	/**
 	 * Enables Maintenance Mode.
 	 *
-	 * @deprecated
 	 * @static
 	 * @return bool
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function enableMaintenanceMode()
 	{
-		craft()->deprecator->deprecate('craft_enablemaintenancemode', 'Craft::enableMaintenanceMode() has been deprecated.  Use craft()->enableMaintenanceMode() instead.', '1.3');
+		craft()->deprecator->log('Craft::enableMaintenanceMode()', 'Craft::enableMaintenanceMode() has been deprecated. Use craft()->enableMaintenanceMode() instead.');
 		return craft()->enableMaintenanceMode();
 	}
 
 	/**
 	 * Disables Maintenance Mode.
 	 *
-	 * @deprecated
 	 * @static
 	 * @return bool
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function disableMaintenanceMode()
 	{
-		craft()->deprecator->deprecate('craft_disablemaintenancemode', 'Craft::disableMaintenanceMode() has been deprecated.  Use craft()->disableMaintenanceMode() instead.', '1.3');
+		craft()->deprecator->log('Craft::disableMaintenanceMode()', 'Craft::disableMaintenanceMode() has been deprecated. Use craft()->disableMaintenanceMode() instead.');
 		return craft()->disableMaintenanceMode();
 	}
 
 	/**
 	 * Returns the info model, or just a particular attribute.
 	 *
-	 * @deprecated
 	 * @static
 	 * @param string|null $attribute
 	 * @throws Exception
 	 * @return mixed
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getInfo($attribute = null)
 	{
-		craft()->deprecator->deprecate('craft_getinfo', 'Craft::getInfo() has been deprecated.  Use craft()->getInfo() instead.', '1.3');
+		craft()->deprecator->log('Craft::getInfo()', 'Craft::getInfo() has been deprecated. Use craft()->getInfo() instead.');
 		return craft()->getInfo($attribute);
 	}
 
 	/**
 	 * Updates the info row.
 	 *
-	 * @deprecated
 	 * @param InfoModel $info
 	 * @return bool
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function saveInfo(InfoModel $info)
 	{
-		craft()->deprecator->deprecate('craft_saveinfo', 'Craft::saveInfo() has been deprecated.  Use craft()->saveInfo() instead.', '1.3');
+		craft()->deprecator->log('Craft::saveInfo()', 'Craft::saveInfo() has been deprecated. Use craft()->saveInfo() instead.');
 		return craft()->saveInfo($info);
 	}
 
 	/**
 	 * Returns the Yii framework version.
 	 *
-	 * @deprecated
 	 * @static
 	 * @return mixed
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getYiiVersion()
 	{
-		craft()->deprecator->deprecate('craft_getyiiversion', 'Craft::getYiiVersion() has been deprecated.  Use craft()->getYiiVersion() instead.', '1.3');
+		craft()->deprecator->log('Craft::getYiiVersion()', 'Craft::getYiiVersion() has been deprecated. Use craft()->getYiiVersion() instead.');
 		return craft()->getYiiVersion();
 	}
 
@@ -369,7 +369,7 @@ class Craft extends \Yii
 	 * @param string $level    level of the message (e.g. 'trace', 'warning', 'error'). It is case-insensitive.
 	 * @param bool   $force    Whether to force the message to be logged regardless of the level or category.
 	 * @param string $category category of the message (e.g. 'system.web'). It is case-insensitive.
-	 * @param string $plugin   The plugin handle that made the log call.  If null, will be set to 'craft'. Use for determining which log file to write to.
+	 * @param string $plugin   The plugin handle that made the log call. If null, will be set to 'craft'. Use for determining which log file to write to.
 	 */
 	public static function log($msg, $level = LogLevel::Info, $force = false, $category = 'application', $plugin = null)
 	{
@@ -423,7 +423,7 @@ class Craft extends \Yii
 }
 
 /**
- * Returns the current craft() instance.  This is a wrapper function for the Craft::app() instance.
+ * Returns the current craft() instance. This is a wrapper function for the Craft::app() instance.
  *
  * @return WebApp|ConsoleApp
  */

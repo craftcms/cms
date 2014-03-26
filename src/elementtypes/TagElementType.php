@@ -120,19 +120,19 @@ class TagElementType extends BaseElementType
 		}
 
 
-		// TODO: Deprecated
 		// Still support the deprecated params
 		if ($criteria->setId && !$criteria->groupId)
 		{
-			craft()->deprecator->deprecate('craft_tagelementtype_modifyelementsquery_setid', 'TagElementType->setId has been deprecated. Use TagElementType->groupId instead.', '1.3');
+			craft()->deprecator->log('TagElementType::modifyElementsQuery():setId_param', 'The ‘setId’ tag param has been deprecated. Use ‘groupId’ instead.');
 			$criteria->groupId = $criteria->setId;
+			$criteria->setId = null;
 		}
 
-		// TODO: Deprecated
 		if ($criteria->set && !$criteria->group)
 		{
-			craft()->deprecator->deprecate('craft_tagelementtype_modifyelementsquery_set', 'TagElementType->set has been deprecated. Use TagElementType->set instead.', '1.3');
+			craft()->deprecator->log('TagElementType::modifyElementsQuery():set_param', 'The ‘set’ tag param has been deprecated. Use ‘group’ instead.');
 			$criteria->group = $criteria->set;
+			$criteria->set = null;
 		}
 
 		if ($criteria->groupId)

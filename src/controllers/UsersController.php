@@ -662,7 +662,7 @@ class UsersController extends BaseController
 
 			if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{userId}') !== false)
 			{
-				craft()->deprecator->deprecate('craft_userscontroller_saveuser_userid_redirect', 'The {userId} token within the ‘redirect’ param on users/saveUser requests has been deprecated. Use {id} instead.', '1.2');
+				craft()->deprecator->log('UsersController::saveUser():userId_redirect', 'The {userId} token within the ‘redirect’ param on users/saveUser requests has been deprecated. Use {id} instead.');
 				$_POST['redirect'] = str_replace('{userId}', '{id}', $_POST['redirect']);
 			}
 
@@ -683,11 +683,11 @@ class UsersController extends BaseController
 	/**
 	 * Saves a user's profile.
 	 *
-	 * @deprecated
+	 * @deprecated Deprecated in 2.0.
 	 */
 	public function actionSaveProfile()
 	{
-		craft()->deprecator->deprecate('craft_userscontroller_saveprofile', 'UsersController->actionSaveProfile() has been deprecated. Use UsersController->actionSaveUser() instead.', '1.3');
+		craft()->deprecator->log('UsersController::saveProfile()', 'The users/saveProfile action has been deprecated. Use users/saveUser instead.');
 		$this->actionSaveUser();
 	}
 

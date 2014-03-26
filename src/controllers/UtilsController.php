@@ -320,7 +320,7 @@ class UtilsController extends BaseController
 			// Because ascending order is stupid.
 			$logEntries = array_reverse($logEntries);
 
-			$this->renderTemplate('utils/logviewer', array(
+			$this->renderTemplate('utils/logs', array(
 				'logEntries'         => $logEntries,
 				'logFileNames'       => $logFileNames,
 				'currentLogFileName' => $currentLogFileName
@@ -329,59 +329,45 @@ class UtilsController extends BaseController
 	}
 
 	/**
-	 *
+	 * Deprecation Errors
 	 */
-	public function actionDeprecator()
+	public function actionDeprecationErrors()
 	{
-		$deprecatorLogs = craft()->deprecator->getAllLogs();
-		$logsByKey = array();
+		craft()->templates->includeCssResource('css/deprecator.css');
+		craft()->templates->includeJsResource('js/deprecator.js');
 
-		foreach ($deprecatorLogs as $log)
-		{
-			$log->origin = '<strong>File:</strong> '.$log->file.'<br /><strong>Line:</strong> '.$log->line.'<br /><strong>Method:</strong> '.$log->method.'<br /><strong>Class:</strong> '.$log->class;
-
-			if (!isset($logsByKey[$log->key]))
-			{
-				$logsByKey[$log->key] = array($log);
-			}
-			else
-			{
-				$logsByKey[$log->key][] = $log;
-			}
-		}
-
-		$this->renderTemplate('utils/deprecator', array(
-			'logs' => $logsByKey,
+		$this->renderTemplate('utils/deprecationerrors', array(
+			'logs' => craft()->deprecator->getLogs()
 		));
 	}
 
 	/**
 	 * View stack trace for a deprecator log entry.
-	 *
-	 * @return mixed
 	 */
-	public function actionViewDeprecatorTrace()
+	public function actionGetDeprecationErrorTracesModal()
 	{
-		$logId = craft()->request->getRequiredQuery('logId');
-		$log = craft()->deprecator->getLogById($logId);
-		$log->stackTrace = $this->_formatStackTrace(JsonHelper::decode($log->stackTrace));
+		$this->requireAjaxRequest();
 
-		return $this->renderTemplate('utils/deprecator/_trace',
-			array('log' => $log)
+		$logId = craft()->request->getRequiredParam('logId');
+		$log = craft()->deprecator->getLogById($logId);
+
+		return $this->renderTemplate('utils/deprecationerrors/_tracesmodal',
+			array('traces' => $log->traces)
 		);
 	}
 
 	/**
-	 *
+	 * Deletes a deprecation error.
 	 */
-	public function actionDeleteDeprecatorLog()
+	public function actionDeleteDeprecationError()
 	{
 		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
 		$logId = craft()->request->getRequiredPost('logId');
 
 		craft()->deprecator->deleteLogById($logId);
-
-		$this->redirectToPostedUrl();
+		craft()->end();
 	}
 
 	/**

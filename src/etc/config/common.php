@@ -89,10 +89,10 @@ $cpRoutes['settings/tags']                                                      
 $cpRoutes['settings/tags/new']                                                    = array('action' => 'tags/editTagGroup');
 $cpRoutes['settings/tags/(?P<tagGroupId>\d+)']                                    = array('action' => 'tags/editTagGroup');
 
-$cpRoutes['utils/deprecator']                                                     = array('action' => 'utils/deprecator');
 $cpRoutes['utils/serverinfo']                                                     = array('action' => 'utils/serverInfo');
 $cpRoutes['utils/phpinfo']                                                        = array('action' => 'utils/phpInfo');
-$cpRoutes['utils/logviewer(/(?P<currentLogFileName>[A-Za-z0-9\.]+))?']            = array('action' => 'utils/logs');
+$cpRoutes['utils/logs(/(?P<currentLogFileName>[A-Za-z0-9\.]+))?']                 = array('action' => 'utils/logs');
+$cpRoutes['utils/deprecationerrors']                                              = array('action' => 'utils/deprecationErrors');
 
 $cpRoutes['settings/routes'] = array(
 	'params' => array(

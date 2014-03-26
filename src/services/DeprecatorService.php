@@ -7,174 +7,230 @@ namespace Craft;
 class DeprecatorService extends BaseApplicationComponent
 {
 	private $_fingerprints = array();
-	private $_deprecatorLogs = false;
+	private $_allLogs;
 
-	public function init()
-	{
-		parent::init();
-
-		$deprecatorLogs = $this->getAllLogs();
-
-		foreach ($deprecatorLogs as $log)
-		{
-			$this->_fingerprints[$log->fingerprint] = $log->fingerprint;
-		}
-	}
+	private static $_tableName = 'deprecationerrors';
 
 	/**
+	 * Logs a new deprecation error.
+	 *
 	 * @param $key
 	 * @param $message
-	 * @param $deprecatedSince
+	 * @return bool
 	 */
-	public function deprecate($key, $message, $deprecatedSince)
+	public function log($key, $message)
 	{
-		$stackTrace = debug_backtrace();
+		$log = new DeprecationErrorModel();
 
-		// $stackTrace[0] is (hopefully) guaranteed to be there.
-		$caller = $stackTrace[0];
+		$log->key            = $key;
+		$log->message        = $message;
+		$log->lastOccurrence = DateTimeHelper::currentTimeForDb();
+		$log->template       = craft()->templates->getRenderingTemplate();
 
-		// The file and line of the caller.
-		$file = $caller['file'];
-		$line = $caller['line'];
+		// Everything else requires the stack trace
+		$this->_populateLogWithStackTraceData($log);
 
-		// For some stupid reason, the method and class of the caller is in the next step of the backtrace.
-		$method = isset($stackTrace[1]) && isset($stackTrace[1]['function']) ? $stackTrace[1]['function'] : '';
-		$class = isset($stackTrace[1]) && isset($stackTrace[1]['class']) ? $stackTrace[1]['class'] : '';
-
-		$stackInfo = $this->_processStackTrace($stackTrace);
-
-		// If we've already got this fingerprint logged, let's not duplicate it.
-		if (!isset($this->_fingerprints[$stackInfo['fingerprint']]))
+		// Don't log the same key/fingerprint twice in the same request
+		if (!isset($this->_fingerprints[$log->key]) || !in_array($log->fingerprint, $this->_fingerprints[$log->key]))
 		{
-			$stackTrace = JsonHelper::encode($stackInfo['stackTrack']);
-
-			craft()->db->createCommand()->insert('deprecatorlogs', array(
-				'key' => $key,
-				'fingerprint' => $stackInfo['fingerprint'],
-				'message' => $message,
-				'deprecatedSince' => $deprecatedSince,
-				'file' => $file,
-				'line' => $line,
-				'method' => $method,
-				'line' => $line,
-				'class' => $class,
-				'stackTrace' => $stackTrace,
+			craft()->db->createCommand()->insertOrUpdate(static::$_tableName, array(
+				'key'            => $log->key,
+				'fingerprint'    => $log->fingerprint
+			), array(
+				'lastOccurrence' => $log->lastOccurrence,
+				'file'           => $log->file,
+				'line'           => $log->line,
+				'class'          => $log->class,
+				'method'         => $log->method,
+				'template'       => $log->template,
+				'templateLine'   => $log->templateLine,
+				'message'        => $log->message,
+				'traces'         => JsonHelper::encode($log->traces),
 			));
 
-			$this->_fingerprints[$stackInfo['fingerprint']] = $stackInfo['fingerprint'];
+			$this->_fingerprints[$key][] = $log->fingerprint;
 		}
+
+		return true;
 	}
 
 	/**
 	 * Get 'em all.
 	 *
+	 * @param int $limit
 	 * @return array
 	 */
-	public function getAllLogs()
+	public function getLogs($limit = 100)
 	{
-		if ($this->_deprecatorLogs === false)
+		if (!isset($this->_allLogs))
 		{
-			$this->_deprecatorLogs = craft()->db->createCommand()
+			$result = craft()->db->createCommand()
 				->select('*')
-				->from('deprecatorlogs')
+				->from(static::$_tableName)
+				->limit($limit)
+				->order('lastOccurrence desc')
 				->queryAll();
+
+			$this->_allLogs = DeprecationErrorModel::populateModels($result);
 		}
 
-		return DeprecatorLogModel::populateModels($this->_deprecatorLogs);
+		return $this->_allLogs;
 	}
 
 	/**
-	 * Get one log
+	 * Returns a log by its ID.
 	 *
 	 * @param $logId
-	 * @return array
+	 * @return DeprecationErrorModel|null
 	 */
 	public function getLogById($logId)
 	{
 		$log = craft()->db->createCommand()
 			->select('*')
-			->from('deprecatorlogs')
+			->from(static::$_tableName)
 			->where('id = :logId', array(':logId' => $logId))
 			->queryRow();
 
-		return new DeprecatorLogModel($log);
+		if ($log)
+		{
+			return new DeprecationErrorModel($log);
+		}
 	}
 
 	/**
+	 * Deletes a log by its ID.
+	 *
 	 * @param $id
+	 * @return bool
 	 */
 	public function deleteLogById($id)
 	{
-		craft()->db->createCommand()->delete('deprecatorlogs', array('id' => $id));
+		$affectedRows = craft()->db->createCommand()->delete(static::$_tableName, array('id' => $id));
+		return (bool) $affectedRows;
 	}
 
 	/**
-	 * @param $stackTrace
-	 * @return array
+	 * Populates a DeprecationErrorModel with data pulled from the PHP stack trace.
+	 *
+	 * @access private
+	 * @param DeprecationErrorModel $log
 	 */
-	private function _processStackTrace($stackTrace)
+	private function _populateLogWithStackTraceData(DeprecationErrorModel $log)
 	{
-		$newStackTrace = array();
-		$foundClass = false;
-		$foundTemplate = false;
+		$traces = debug_backtrace();
 
-		$fingerprint = isset($stackTrace[1]) && isset($stackTrace[1]['class']) ? $stackTrace[1]['class'] : '';
+		// Set the basic stuff
+		$log->file   = $traces[0]['file'];
+		$log->line   = $traces[0]['line'];
+		$log->class  = !empty($traces[1]['class'])    ? $traces[1]['class']    : null;
+		$log->method = !empty($traces[1]['function']) ? $traces[1]['function'] : null;
 
-		foreach ($stackTrace as $data)
+		/* HIDE */
+		$foundPlugin = false;
+		$pluginsPath = realpath(craft()->path->getPluginsPath()).'/';
+		$pluginsPathLength = strlen($pluginsPath);
+		/* end HIDE */
+
+		$isTemplateRendering = craft()->templates->isRendering();
+
+		if ($isTemplateRendering)
 		{
-			$newData = array();
-			$newData['method'] = isset($data['function']) ? $data['function'] : '';
-			$newData['class'] = isset($data['class']) ? $data['class'] : '';
-			$newData['args'] = isset($data['args']) ? $data['args'] : '';
+			// We'll figure out the line number later
+			$log->fingerprint = $log->template;
 
-			// Start to build a fingerprint.  If there is a class, use it as the start.
-			if (!$foundClass && $fingerprint)
-			{
-				$foundClass = true;
-			}
+			$foundTemplate = false;
+		}
+		else
+		{
+			$log->fingerprint = $log->class.($log->class && $log->line ? ':'.$log->line : '');
+		}
 
-			if (isset($data['object']) && $data['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($data['object']) && strpos($data['file'], 'compiled_templates') !== false)
+		$logTraces = array();
+
+		// Skip the first two, since they're just DeprecatorService stuff
+		array_shift($traces);
+		array_shift($traces);
+
+		foreach ($traces as $trace)
+		{
+			$logTrace = array(
+				'file'   => (!empty($trace['file'])     ? $trace['file'] : null),
+				'line'   => (!empty($trace['line'])     ? $trace['line'] : null),
+				'class'  => (!empty($trace['class'])    ? $trace['class'] : null),
+				'method' => (!empty($trace['function']) ? $trace['function'] : null),
+				'args'   => (!empty($trace['args'])     ? craft()->errorHandler->argumentsToString($trace['args']) : null),
+			);
+
+			// Is this a template?
+			if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && strpos($trace['file'], 'compiled_templates') !== false)
 			{
-				$newData['template'] = true;
-				$template = $data['object'];
+				$template = $trace['object'];
 
 				// Get the original (uncompiled) template name.
-				$newData['file'] = $template->getTemplateName();
+				$logTrace['template'] = $template->getTemplateName();
 
+				// Guess the line number
 				foreach ($template->getDebugInfo() as $codeLine => $templateLine)
 				{
-					if ($codeLine <= $data['line'])
+					if ($codeLine <= $trace['line'])
 					{
-						// Grab the original source line.
-						$newData['line'] = $templateLine;
+						$logTrace['templateLine'] = $templateLine;
+
+						// Save that to the main log info too?
+						if ($isTemplateRendering && !$foundTemplate)
+						{
+							$log->templateLine = $templateLine;
+							$log->fingerprint .= ':'.$templateLine;
+							$foundTemplate = true;
+						}
+
 						break;
 					}
 				}
 
-				// Overwrite the class fingerprint with the template one.
-				if (!$foundTemplate)
+				/* HIDE */
+				if ($isTemplateRendering && !$foundTemplate)
 				{
-					$fingerprint = 'template:'.$newData['file'].':'.$newData['line'];
+					// Is this a plugin's template?
+					if (!$foundPlugin && craft()->request->isCpRequest() && $logTrace['template'])
+					{
+						$firstSeg = array_shift(explode('/', $logTrace['template']));
+
+						if (craft()->plugins->getPlugin($firstSeg))
+						{
+							$log->plugin = $firstSeg;
+							$foundPlugin = true;
+						}
+					}
+
 					$foundTemplate = true;
-					$foundClass = false;
 				}
+				/* end HIDE */
 			}
-			else
+
+			/* HIDE */
+			// Is this a plugin's file?
+			else if (!$foundPlugin && $logTrace['file'])
 			{
-				$newData['file'] = isset($data['file']) ? $data['file'] : '';
-				$newData['line'] = isset($data['line']) ? $data['line'] : '';
-				$newData['template'] = false;
+				$filePath = realpath($logTrace['file']).'/';
 
-				// Append the line number to our class fingerprint.
-				if ($foundClass && $newData['line'] && isset($newData['class']) && $fingerprint == $newData['class'])
+				if (strncmp($pluginsPath, $logTrace['file'], $pluginsPathLength) === 0)
 				{
-					$fingerprint .= ':'.$newData['line'];
+					$remainingFilePath = substr($filePath, $pluginsPathLength);
+					$firstSeg = array_shift(explode('/', $remainingFilePath));
+
+					if (craft()->plugins->getPlugin($firstSeg))
+					{
+						$log->plugin = $firstSeg;
+						$foundPlugin = true;
+					}
 				}
 			}
+			/* end HIDE */
 
-			$newStackTrace[] = $newData;
+			$logTraces[] = $logTrace;
 		}
 
-		return array('fingerprint' => $fingerprint, 'stackTrack' => $newStackTrace);
+		$log->traces = $logTraces;
 	}
 }

@@ -6,10 +6,10 @@
 {% endif %}
 
 {% set tabs = {
-	serverinfo:   { label: "Server Info"|t,      url: url('utils/serverinfo') },
-	phpinfo:      { label: "PHP Info"|t,         url: url('utils/phpinfo') },
-	logviewer:    { label: "Log Viewer"|t,       url: url('utils/logviewer') },
-	deprecator:   { label: "The Deprecator"|t,   url: url('utils/deprecator') }
+	serverinfo:        { label: "Server Info"|t,        url: url('utils/serverinfo') },
+	phpinfo:           { label: "PHP Info"|t,           url: url('utils/phpinfo') },
+	logs:              { label: "Logs"|t,               url: url('utils/logs') },
+	deprecationerrors: { label: "Deprecation Errors"|t, url: url('utils/deprecationerrors') }
 } %}
 
 {% set selectedTab = craft.request.getSegment(2) %}
