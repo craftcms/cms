@@ -5,16 +5,26 @@
  */
 var Deprecator = Garnish.Base.extend(
 {
+	$clearAllBtn: null,
 	$table: null,
 	tracesModal: null,
 	$tracesModalBody: null,
 
 	init: function()
 	{
+		this.$clearAllBtn = $('#clearall');
 		this.$table = $('#deprecationerrors');
+		this.$noLogsMessage = $('#nologs');
 
+		this.addListener(this.$clearAllBtn, 'click', 'clearAllLogs');
 		this.addListener(this.$table.find('.viewtraces'), 'click', 'viewLogTraces');
 		this.addListener(this.$table.find('.delete'), 'click', 'deleteLog');
+	},
+
+	clearAllLogs: function()
+	{
+		Craft.postActionRequest('utils/deleteAllDeprecationErrors');
+		this.onClearAll();
 	},
 
 	viewLogTraces: function(ev)
@@ -61,6 +71,19 @@ var Deprecator = Garnish.Base.extend(
 		Craft.postActionRequest('utils/deleteDeprecationError', data);
 
 		$tr.remove();
+
+		// Was that the last one?
+		if (!this.$table.find('tr:first').length)
+		{
+			this.onClearAll();
+		}
+	},
+
+	onClearAll: function()
+	{
+		this.$clearAllBtn.parent().remove();
+		this.$table.remove();
+		this.$noLogsMessage.removeClass('hidden');
 	}
 });
 

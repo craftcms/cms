@@ -3,7 +3,13 @@
 {% import "_includes/forms" as forms %}
 
 {% block content %}
+	<p id="nologs"{% if logs %} class="hidden"{% endif %}>{{ "No deprecation errors to report!"|t }}</p>
+
 	{% if logs %}
+		<div class="buttons">
+			<div id="clearall" class="btn submit">{{ "Clear All"|t }}</div>
+		</div>
+
 		<table id="deprecationerrors" class="data fullwidth">
 			<thead>
 				<th>{{ "Message"|t }}</th>
@@ -24,7 +30,5 @@
 				{% endfor %}
 			</tbody>
 		</table>
-	{% else %}
-		{{ "No deprecation errors to report!"|t }}
 	{% endif %}
 {% endblock %}

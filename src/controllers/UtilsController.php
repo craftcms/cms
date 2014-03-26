@@ -357,6 +357,18 @@ class UtilsController extends BaseController
 	}
 
 	/**
+	 * Deletes all deprecation errors.
+	 */
+	public function actionDeleteAllDeprecationErrors()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		craft()->deprecator->deleteAllLogs();
+		craft()->end();
+	}
+
+	/**
 	 * Deletes a deprecation error.
 	 */
 	public function actionDeleteDeprecationError()

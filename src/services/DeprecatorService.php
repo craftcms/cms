@@ -122,6 +122,17 @@ class DeprecatorService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Deletes all logs.
+	 *
+	 * @return bool
+	 */
+	public function deleteAllLogs()
+	{
+		$affectedRows = craft()->db->createCommand()->delete(static::$_tableName);
+		return (bool) $affectedRows;
+	}
+
+	/**
 	 * Populates a DeprecationErrorModel with data pulled from the PHP stack trace.
 	 *
 	 * @access private
