@@ -215,6 +215,9 @@ Craft.ImageModal = Garnish.Modal.extend(
 	_postParameters: null,
 	_cropAction: "",
 	imageHandler: null,
+	originalWidth: 0,
+	originalHeight: 0,
+	constraint: 0,
 
 
 	init: function($container, settings)
@@ -222,6 +225,32 @@ Craft.ImageModal = Garnish.Modal.extend(
 		this.base($container, settings);
 		this._postParameters = settings.postParameters;
 		this._cropAction = settings.cropAction;
+		this.addListener(this.$container, 'resize', $.proxy(this, '_onResize'));
+		this.addListener(Garnish.$bod, 'resize', $.proxy(this, '_onResize'));
+	},
+
+	_onResize: function ()
+	{
+		var img = this.$container.find('img'),
+			leftDistance = parseInt(this.$container.css('left'), 10);
+
+		// If the modal has moved further than 10px from the left side, we have space to expand
+		if (leftDistance > 10)
+		{
+			this.$container.width(Math.min(leftDistance - 10 + this.$container.width(), this.constraint));
+		}
+
+		var newWidth = this.$container.width(),
+			factor = newWidth / this.originalWidth,
+			newHeight = this.originalHeight * factor;
+
+		img.height(newHeight).width(newWidth);
+		this.factor = factor;
+		var instance = img.imgAreaSelect({instance: true});
+		if (instance)
+		{
+			instance.update();
+		}
 	},
 
 	bindButtons: function()
@@ -344,7 +373,11 @@ Craft.ImageAreaTool = Garnish.Base.extend(
 		areaSelect.update();
 
 		referenceObject.areaSelect = areaSelect;
-		referenceObject.factor = $target.attr('data-factor');
+		referenceObject.factor = $target.data('factor');
+		referenceObject.originalHeight = $target.attr('height') / referenceObject.factor;
+		referenceObject.originalWidth = $target.attr('width') / referenceObject.factor;
+		referenceObject.constraint = $target.data('constraint');
 		referenceObject.source = $target.attr('src').split('/').pop();
+		referenceObject._onResize();
 	}
 });
