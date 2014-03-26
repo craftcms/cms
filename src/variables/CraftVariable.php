@@ -152,6 +152,14 @@ class CraftVariable
 	}
 
 	/**
+	 * @return DeprecatorVariable
+	 */
+	public function deprecator()
+	{
+		return new DeprecatorVariable();
+	}
+
+	/**
 	 * @return EmailMessagesVariable
 	 */
 	public function emailMessages()

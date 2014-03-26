@@ -2,6 +2,9 @@
 
 @import "shared";
 
+#deprecationnotice { text-align: center; }
+#deprecationnotice:before { color: $mediumtextcolor; @include margin-right(5px); }
+
 .widget.quickpost { overflow: visible; }
 
 .widget .spinner.body-loading { display: none; }

@@ -55,6 +55,18 @@ class DeprecatorService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns the total number of deprecation errors that have been logged.
+	 *
+	 * @return int
+	 */
+	public function getTotalLogs()
+	{
+		return craft()->db->createCommand()
+			->from(static::$_tableName)
+			->count('id');
+	}
+
+	/**
 	 * Get 'em all.
 	 *
 	 * @param int $limit
