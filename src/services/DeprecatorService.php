@@ -37,7 +37,7 @@ class DeprecatorService extends BaseApplicationComponent
 				'key'            => $log->key,
 				'fingerprint'    => $log->fingerprint
 			), array(
-				'lastOccurrence' => $log->lastOccurrence,
+				'lastOccurrence' => DateTimeHelper::formatTimeForDb($log->lastOccurrence),
 				'file'           => $log->file,
 				'line'           => $log->line,
 				'class'          => $log->class,
