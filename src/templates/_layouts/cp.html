@@ -248,4 +248,21 @@
 			{% endif %}
 		</div>
 	</div>
+
+	{% if craft.app.hasWrongEdition() %}
+		<div id="wrongedition-modal" class="modal fitted hidden">
+			<div class="body">
+				<p>{{ "You’re running Craft {edition} with a Craft {licensedEdition} license."|t({ edition: craft.app.getEditionName(), licensedEdition: craft.app.getLicensedEditionName() }) }}</p>
+				<p>{{ "What would you like to do?"|t }}</p>
+				<div class="buttons">
+					<div class="btngroup">
+						<div id="wrongedition-switchbtn" class="btn">{{ "Switch to Craft {edition}"|t({ edition: craft.app.getLicensedEditionName() }) }}</div>
+						{% if craft.app.getEdition() > craft.app.getLicensedEdition() %}
+							<div id="wrongedition-upgradebtn" class="btn">{{ "Upgrade your license"|t }}</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+	{% endif %}
 {% endblock %}

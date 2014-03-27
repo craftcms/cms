@@ -113,7 +113,7 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Returns the Craft edition.
 	 *
-	 * @return string
+	 * @return int
 	 */
 	public function getEdition()
 	{
@@ -131,9 +131,50 @@ class AppBehavior extends BaseBehavior
 	}
 
 	/**
+	 * Returns the edition Craft is actually licensed to run in.
+	 *
+	 * @return int|null
+	 */
+	public function getLicensedEdition()
+	{
+		$licensedEdition = craft()->cache->get('licensedEdition');
+
+		if ($licensedEdition !== false)
+		{
+			return $licensedEdition;
+		}
+	}
+
+	/**
+	 * Returns the name of the edition Craft is actually licensed to run in.
+	 *
+	 * @return string|null
+	 */
+	public function getLicensedEditionName()
+	{
+		$licensedEdition = $this->getLicensedEdition();
+
+		if ($licensedEdition !== null)
+		{
+			return $this->_getEditionName($licensedEdition);
+		}
+	}
+
+	/**
+	 * Returns whether Craft is running with the wrong edition.
+	 *
+	 * @return bool
+	 */
+	public function hasWrongEdition()
+	{
+		$licensedEdition = $this->getLicensedEdition();
+		return ($licensedEdition !== null && $licensedEdition != $this->getEdition() && !$this->canTestEditions());
+	}
+
+	/**
 	 * Sets the Craft edition.
 	 *
-	 * @param string $edition
+	 * @param int $edition
 	 * @return bool
 	 */
 	public function setEdition($edition)
@@ -146,7 +187,7 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Requires that Craft is running an equal or better edition than what's passed in
 	 *
-	 * @param string $edition
+	 * @param int $edition
 	 * @throws Exception
 	 */
 	public function requireEdition($edition)

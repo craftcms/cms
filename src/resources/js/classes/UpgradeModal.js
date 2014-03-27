@@ -26,13 +26,13 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 	editions: null,
 	edition: null,
 
-	init: function()
+	init: function(settings)
 	{
 		this.$container = $('<div id="upgrademodal" class="modal loading"/>').appendTo(Garnish.$bod),
 
-		this.base(this.$container, {
+		this.base(this.$container, $.extend({
 			resizable: true
-		});
+		}, settings));
 
 		Craft.postActionRequest('app/getUpgradeModal', $.proxy(function(response, textStatus)
 		{
@@ -160,7 +160,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 					this.$compareScreen.addClass('hidden');
 				}, this));
 
-				this.slideInSuccess();
+				this.onUpgrade();
 			}
 		}, this));
 	},
@@ -276,7 +276,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 					this.$checkoutScreen.addClass('hidden');
 				}, this));
 
-				this.slideInSuccess();
+				this.onUpgrade();
 			}
 			else
 			{
@@ -302,7 +302,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 		}
 	},
 
-	slideInSuccess: function()
+	onUpgrade: function()
 	{
 		this.$successScreen.css(Craft.left, this.getWidth()).removeClass('hidden').animateLeft(0, 'fast');
 
@@ -311,6 +311,8 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 		{
 			location.reload();
 		});
+
+		this.trigger('upgrade');
 	},
 
 	cleanupCheckoutForm: function()

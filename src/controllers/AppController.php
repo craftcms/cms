@@ -195,4 +195,26 @@ class AppController extends BaseController
 			'success' => true
 		));
 	}
+
+	/**
+	 * Switches Craft to the edition it's licensed for.
+	 */
+	public function actionSwitchToLicensedEdition()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		if (craft()->hasWrongEdition())
+		{
+			$licensedEdition = craft()->getLicensedEdition();
+			$success = craft()->setEdition($licensedEdition);
+		}
+		else
+		{
+			// Just fake it
+			$success = true;
+		}
+
+		$this->returnJson(array('success' => $success));
+	}
 }

@@ -146,7 +146,14 @@ var CP = Garnish.Base.extend(
 			});
 		}
 
-		this.addListener(this.$upgradePromo, 'click', 'showEditionModal');
+		this.addListener(this.$upgradePromo, 'click', 'showUpgradeModal');
+
+		var $wrongEditionModalContainer = $('#wrongedition-modal');
+
+		if ($wrongEditionModalContainer.length)
+		{
+			new Craft.WrongEditionModal($wrongEditionModalContainer);
+		}
 	},
 
 	/**
@@ -588,7 +595,7 @@ var CP = Garnish.Base.extend(
 		}
 	},
 
-	showEditionModal: function()
+	showUpgradeModal: function()
 	{
 		if (!this.upgradeModal)
 		{

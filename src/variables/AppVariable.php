@@ -27,6 +27,36 @@ class AppVariable
 	}
 
 	/**
+	 * Returns the edition Craft is actually licensed to run in.
+	 *
+	 * @return int|null
+	 */
+	public function getLicensedEdition()
+	{
+		return craft()->getLicensedEdition();
+	}
+
+	/**
+	 * Returns the name of the edition Craft is actually licensed to run in.
+	 *
+	 * @return string|null
+	 */
+	public function getLicensedEditionName()
+	{
+		return craft()->getLicensedEditionName();
+	}
+
+	/**
+	 * Returns whether Craft is running with the wrong edition.
+	 *
+	 * @return bool
+	 */
+	public function hasWrongEdition()
+	{
+		return craft()->hasWrongEdition();
+	}
+
+	/**
 	 * Returns whether Craft is running on a domain that is elligible to test out the editions.
 	 *
 	 * @return bool

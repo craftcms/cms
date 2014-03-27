@@ -182,6 +182,9 @@ html { overflow-y: scroll; }
 #upgrademodal-success .message { display: block; position: absolute; top: 50%; left: 0; width: 100%; margin-top: -71px; padding-top: 62px; text-align: center; background: url(../images/success.png) no-repeat 50% 0; }
 #upgrademodal-success .message p { margin-bottom: 24px; font-size: 15px; line-height: 1.4; }
 
+#wrongedition-modal { text-align: center; }
+#wrongedition-modal .btngroup { float: none; }
+
 /* field layout forms */
 
 $fldBgColor: #fff;
