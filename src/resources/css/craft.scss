@@ -264,7 +264,7 @@ table.inputs td > .btngroup { float: none; }
 .btn,
 .btngroup { border-radius: 3px; }
 
-.btn { display: inline-block; padding: 6px 12px; border: none; text-align: center; white-space: nowrap; @include user-select(none); cursor: pointer; overflow: hidden; @include box-sizing(border-box);
+.btn { display: inline-block; padding: 6px 12px; border: none; text-align: center; white-space: nowrap; @include user-select(none); cursor: pointer; @include box-sizing(border-box);
 	-webkit-appearance: none;
 }
 
@@ -329,9 +329,8 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 
 .btngroup .btn.active { cursor: default; }
 
-.btngroup .btn:not(:first-child) { @include margin-left(-1px); }
-.btngroup .btn.submit:not(:first-child) { @include border-left(1px solid rgba(0,0,0,0.1)); }
-.btngroup .btn.submit:not(:last-child) { @include border-right(1px solid rgba(0,0,0,0.1)); }
+.btngroup .btn:not(:first-child) { @include margin-left(-1px); @include border-left(1px solid rgba(0,0,0,0.1)); }
+.btngroup .btn:not(:last-child) { @include border-right(1px solid rgba(0,0,0,0.1)); }
 
 .btngroup.disabled .btn { cursor: default; }
 
