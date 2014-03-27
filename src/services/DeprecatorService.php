@@ -25,7 +25,7 @@ class DeprecatorService extends BaseApplicationComponent
 		$log->key            = $key;
 		$log->message        = $message;
 		$log->lastOccurrence = DateTimeHelper::currentTimeForDb();
-		$log->template       = craft()->templates->getRenderingTemplate();
+		$log->template       = (craft()->request->isSiteRequest() ? craft()->templates->getRenderingTemplate() : null);
 
 		// Everything else requires the stack trace
 		$this->_populateLogWithStackTraceData($log);
@@ -154,7 +154,7 @@ class DeprecatorService extends BaseApplicationComponent
 		$pluginsPathLength = strlen($pluginsPath);
 		/* end HIDE */
 
-		$isTemplateRendering = craft()->templates->isRendering();
+		$isTemplateRendering = (craft()->request->isSiteRequest() && craft()->templates->isRendering());
 
 		if ($isTemplateRendering)
 		{
