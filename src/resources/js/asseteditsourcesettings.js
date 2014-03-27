@@ -88,15 +88,74 @@ $s3BucketSelect.change(function()
 
 var $rackspaceUsernameInput = $('.rackspace-username'),
     $rackspaceApiKeyInput = $('.racskspace-api-key'),
-    $rackspaceLocationSelect = $('.rackspace-location-select > select'),
+    $rackspaceRegionSelect = $('.rackspace-region-select > select'),
+	$rackspaceRefreshRegionBtn = $('.rackspace-refresh-regions'),
+	$rackspaceRefreshRegionSpinner = $rackspaceRefreshRegionBtn.parent().next().children(),
     $rackspaceContainerSelect = $('.rackspace-container-select > select'),
     $rackspaceRefreshContainersBtn = $('.rackspace-refresh-containers'),
     $rackspaceRefreshContainersSpinner = $rackspaceRefreshContainersBtn.parent().next().children(),
     $rackspaceUrlPrefixInput = $('.rackspace-url-prefix'),
     refreshingRackspaceContainers = false;
 
+$rackspaceRefreshRegionBtn.click(function()
+{
+	if ($rackspaceRefreshRegionBtn.hasClass('disabled'))
+	{
+		return;
+	}
+
+	$rackspaceRefreshRegionBtn.addClass('disabled');
+	$rackspaceRefreshRegionSpinner.removeClass('hidden');
+
+	var data = {
+		username: $rackspaceUsernameInput.val(),
+		apiKey:   $rackspaceApiKeyInput.val()
+	};
+
+	Craft.postActionRequest('assetSources/getRackspaceRegions', data, function(response, textStatus)
+	{
+		$rackspaceRefreshRegionBtn.removeClass('disabled');
+		$rackspaceRefreshRegionSpinner.addClass('hidden');
+
+		if (textStatus == 'success')
+		{
+			if (response.error)
+			{
+				alert(response.error);
+			}
+			else if (response.length > 0)
+			{
+				var currentRegion = $rackspaceRegionSelect.val(),
+					currentRegionStillExists = false;
+
+				$rackspaceRegionSelect.prop('disabled', false).empty();
+
+				for (var i = 0; i < response.length; i++)
+				{
+					if (response[i] == currentRegion)
+					{
+						currentRegionStillExists = true;
+					}
+
+					$rackspaceRegionSelect.append('<option value="'+response[i]+'">'+response[i]+'</option>');
+				}
+
+				if (currentRegionStillExists)
+				{
+					$rackspaceRegionSelect.val(currentRegion);
+				}
+			}
+		}
+	});
+});
+
 $rackspaceRefreshContainersBtn.click(function()
 {
+	if ($rackspaceRegionSelect.val() == '-')
+	{
+		alert(Craft.t("Select a region first!"));
+		return;
+	}
     if ($rackspaceRefreshContainersBtn.hasClass('disabled'))
     {
         return;
@@ -108,7 +167,7 @@ $rackspaceRefreshContainersBtn.click(function()
     var data = {
         username: $rackspaceUsernameInput.val(),
         apiKey:   $rackspaceApiKeyInput.val(),
-        location: $rackspaceLocationSelect.val()
+        region: $rackspaceRegionSelect.val()
     };
 
     Craft.postActionRequest('assetSources/getRackspaceContainers', data, function(response, textStatus)
@@ -133,12 +192,12 @@ $rackspaceRefreshContainersBtn.click(function()
 
                 for (var i = 0; i < response.length; i++)
                 {
-                    if (response[i].bucket == currentContainer)
+                    if (response[i].container == currentContainer)
                     {
                         currentContainerStillExists = true;
                     }
 
-                    $rackspaceContainerSelect.append('<option value="'+response[i].container+'" data-urlPrefix="'+response[i].urlPrefix+'">'+response[i].container+'</option>');
+                    $rackspaceContainerSelect.append('<option value="'+response[i].container+'" data-urlprefix="'+response[i].urlPrefix+'">'+response[i].container+'</option>');
                 }
 
                 if (currentContainerStillExists)
@@ -166,7 +225,7 @@ $rackspaceContainerSelect.change(function()
 
     var $selectedOption = $rackspaceContainerSelect.children('option:selected');
 
-    $rackspaceUrlPrefixInput.val($selectedOption.data('url-prefix'));
+    $rackspaceUrlPrefixInput.val($selectedOption.data('urlprefix'));
 });
 
 

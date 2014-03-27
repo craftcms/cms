@@ -22,16 +22,33 @@
 	required: true
 }) }}
 
-{{ forms.selectField({
-    label: "Location",
-    instructions: "Choose the account location"|t,
-    id: 'location',
-    name: 'location',
-    options: rackspaceLocations,
-    value: settings.location,
-    class: 'rackspace-location-select',
-    required: true
-}) }}
+{% set regionInput %}
+<table class="inputs">
+	<tr>
+		<td>
+			{{ forms.select({
+			id: 'region',
+			name: 'region',
+			options: { (settings.region): settings.region },
+			value: settings.region,
+			disabled: true,
+			class: 'rackspace-region-select'
+			}) }}
+		</td>
+		<td>
+			<div class="btn rackspace-refresh-regions">{{ "Refresh"|t }}</div>
+		</td>
+		<td>
+			<div class="spinner hidden"></div>
+		</td>
+	</tr>
+</table>
+{% endset %}
+
+{{ forms.field({
+	label: "Region"|t,
+	id: 'region'
+}, regionInput) }}
 
 {% set containerInput %}
     <table class="inputs">
@@ -80,5 +97,5 @@
     value: settings.urlPrefix,
     errors: settings.getErrors('url_prefix'),
     required: true,
-    class: '.rackspace-url-prefix'
+    class: 'rackspace-url-prefix'
 }) }}
