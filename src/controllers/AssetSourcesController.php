@@ -193,6 +193,33 @@ class AssetSourcesController extends BaseController
 	}
 
 	/**
+	 * Get Rackspace regions.
+	 */
+	public function actionGetRackspaceRegions()
+	{
+		craft()->userSession->requireAdmin();
+		craft()->requirePackage(CraftPackage::Cloud);
+
+		$username = craft()->request->getRequiredPost('username');
+		$apiKey = craft()->request->getRequiredPost('apiKey');
+
+		try
+		{
+			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll
+			// have to mock up a SourceType object here.
+			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey)));
+
+			/** @var RackspaceAssetSourceType $source */
+			$source = craft()->assetSources->populateSourceType($model);
+			$this->returnJson($source->getRegionList());
+		}
+		catch (Exception $exception)
+		{
+			$this->returnErrorJson($exception->getMessage());
+		}
+	}
+
+	/**
 	 * Get Rackspace containers.
 	 */
 	public function actionGetRackspaceContainers()
@@ -202,13 +229,13 @@ class AssetSourcesController extends BaseController
 
 		$username = craft()->request->getRequiredPost('username');
 		$apiKey = craft()->request->getRequiredPost('apiKey');
-		$location = craft()->request->getRequiredPost('location');
+		$region = craft()->request->getRequiredPost('region');
 
 		try
 		{
 			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll
 			// have to mock up a SourceType object here.
-			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey, 'location' => $location)));
+			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey, 'region' => $region)));
 
 			/** @var RackspaceAssetSourceType $source */
 			$source = craft()->assetSources->populateSourceType($model);
