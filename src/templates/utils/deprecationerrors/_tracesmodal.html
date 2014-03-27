@@ -1,21 +1,18 @@
+<div class="header">
+	<p>Steps leading up to the deprecation error, “{{ log.message }}”:</p>
+</div>
+
 <table class="data fullwidth">
 	<tbody>
-		{% for trace in traces %}
+		{% for trace in log.traces %}
 			<tr>
-				<td class="thin light">{{ loop.revindex }}</td>
+				<th class="thin light centeralign">{{ loop.revindex }}</th>
 				<td>
 					{% if trace.template is defined and trace.template %}
-						<strong>Template:</strong> {{ trace.template }}{% if trace.templateLine is defined and trace.templateLine %} ({{ trace.templateLine }}){% endif %}<br>
+						Template: {{ trace.template }}{% if trace.templateLine is defined and trace.templateLine %} ({{ trace.templateLine }}){% endif %}
 					{% else %}
-						{% if trace.objectClass %}
-							<strong>Class:</strong> {{ trace.objectClass }}<br>
-						{% endif %}
-						{% if trace.class or trace.method %}
-							<strong>Method:</strong> {{ trace.class }}{% if trace.class and trace.method %}::{% endif %}{% if trace.method %}{{ trace.method }}({{ trace.args }}){% endif %}
-						{% endif %}
-						{% if trace.file %}
-							<strong>File:</strong> {{ trace.file }}{% if trace.line %} ({{ trace.line }}){% endif %}<br>
-						{% endif %}
+						{{ trace.objectClass ? trace.objectClass~'::' }}{{ trace.method }}({{ trace.args }})
+						{% if trace.file %}<br><span class="light">Called from {{ trace.file }} ({{ trace.line }})</span>{% endif %}
 					{% endif %}
 				</td>
 			</tr>

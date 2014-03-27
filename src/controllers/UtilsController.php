@@ -352,7 +352,7 @@ class UtilsController extends BaseController
 		$log = craft()->deprecator->getLogById($logId);
 
 		return $this->renderTemplate('utils/deprecationerrors/_tracesmodal',
-			array('traces' => $log->traces)
+			array('log' => $log)
 		);
 	}
 
