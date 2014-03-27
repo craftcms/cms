@@ -140,7 +140,9 @@ class DeprecatorService extends BaseApplicationComponent
 	 */
 	private function _populateLogWithStackTraceData(DeprecationErrorModel $log)
 	{
+		// Get the stack trace, but skip the first one, since it's just the call to this private function
 		$traces = debug_backtrace();
+		array_shift($traces);
 
 		// Set the basic stuff
 		$log->file   = $traces[0]['file'];
@@ -169,9 +171,6 @@ class DeprecatorService extends BaseApplicationComponent
 		}
 
 		$logTraces = array();
-
-		// Skip the first one, since it's just the call to this private function
-		array_shift($traces);
 
 		foreach ($traces as $trace)
 		{
