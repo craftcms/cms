@@ -37,7 +37,7 @@ class UsersService extends BaseApplicationComponent
 	 * Gets a user by their username or email.
 	 *
 	 * @param string $usernameOrEmail
-	 * @return UserModel
+	 * @return UserModel|null
 	 */
 	public function getUserByUsernameOrEmail($usernameOrEmail)
 	{
