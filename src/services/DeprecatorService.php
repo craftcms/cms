@@ -180,7 +180,7 @@ class DeprecatorService extends BaseApplicationComponent
 				'line'        => (!empty($trace['line'])     ? $trace['line'] : null),
 				'class'       => (!empty($trace['class'])    ? $trace['class'] : null),
 				'method'      => (!empty($trace['function']) ? $trace['function'] : null),
-				'args'        => (!empty($trace['args'])     ? craft()->errorHandler->argumentsToString($trace['args']) : null),
+				'args'        => (!empty($trace['args'])     ? $this->_argsToString($trace['args']) : null),
 			);
 
 			// Is this a template?
@@ -254,5 +254,90 @@ class DeprecatorService extends BaseApplicationComponent
 		}
 
 		$log->traces = $logTraces;
+	}
+
+	/**
+	 * Converts an array of method arguments to a string.
+	 *
+	 * Adapted from CErrorHandler::argumentsToString(), but this one's less destructive
+	 *
+	 * @access private
+	 * @param $args array
+	 * @return string
+	 */
+	private function _argsToString($args)
+	{
+		$strArgs = array();
+		$isAssoc = ($args !== array_values($args));
+
+		$count = 0;
+
+		foreach($args as $key => $value)
+		{
+			// Cap it off at 5
+			$count++;
+
+			if ($count == 5)
+			{
+				$strValue = '...';
+				break;
+			}
+
+			if (is_object($value))
+			{
+				$strValue = get_class($value);
+			}
+			else if (is_bool($value))
+			{
+				$strValue = $value ? 'true' : 'false';
+			}
+			else if (is_string($value))
+			{
+				if (strlen($value) > 64)
+				{
+					$strValue = '"'.substr($value, 0, 64).'..."';
+				}
+				else
+				{
+					$strValue = '"'.$value.'"';
+				}
+			}
+			else if (is_array($value))
+			{
+				$strValue = 'array('.$this->_argsToString($value).')';
+			}
+			else if ($value === null)
+			{
+				$strValue = 'null';
+			}
+			else if (is_resource($value))
+			{
+				$strValue = 'resource';
+			}
+			else
+			{
+				$strValue = $value;
+			}
+
+			if (is_string($key))
+			{
+				$strArgs[] = '"'.$key.'" => '.$strValue;
+			}
+			else if ($isAssoc)
+			{
+				$strArgs[] = $key.' => '.$strValue;
+			}
+			else
+			{
+				$strArgs[] = $strValue;
+			}
+
+			if ($count == 5)
+			{
+				break;
+			}
+		}
+
+		return implode(', ', $strArgs);
 	}
 }
