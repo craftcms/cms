@@ -1,5 +1,5 @@
 <div class="header">
-	<p>Steps leading up to the deprecation error, “{{ log.message }}”:</p>
+	<p>Steps leading up to the deprecation error:</p>
 </div>
 
 <table class="data fullwidth">
@@ -8,11 +8,16 @@
 			<tr>
 				<th class="thin light centeralign">{{ loop.revindex }}</th>
 				<td>
-					{% if trace.template is defined and trace.template %}
-						Template: {{ trace.template }}{% if trace.templateLine is defined and trace.templateLine %} ({{ trace.templateLine }}){% endif %}
+					{% if loop.first %}
+						<strong>Deprecation error:</strong> {{ log.message }}
+					{% elseif trace.template is defined and trace.template %}
+						<strong>Template:</strong> {{ trace.template }}{% if trace.templateLine is defined and trace.templateLine %} ({{ trace.templateLine }}){% endif %}
 					{% else %}
-						{{ trace.objectClass or trace.class ? (trace.objectClass ?: trace.class)~'::' }}{{ trace.method }}({{ trace.args }})
-						{% if trace.file %}<br><span class="light">Called from {{ trace.file }} ({{ trace.line }})</span>{% endif %}
+						{{ trace.objectClass or trace.class ? ((trace.objectClass ?: trace.class)|replace('\\', '\\<wbr>')~'::<wbr>')|raw }}{{ trace.method }}({{ trace.args }})
+					{% endif %}
+
+					{% if trace.file %}
+						<br><span class="light">Called from {{ trace.file|replace('/', '/<wbr>')|raw }} ({{ trace.line }})</span>
 					{% endif %}
 				</td>
 			</tr>
