@@ -27,6 +27,16 @@ class AppVariable
 	}
 
 	/**
+	 * Returns whether Craft is running on a domain that is elligible to test out the editions.
+	 *
+	 * @return bool
+	 */
+	public function canTestEditions()
+	{
+		return craft()->canTestEditions();
+	}
+
+	/**
 	 * Returns the installed Craft version.
 	 *
 	 * @return string

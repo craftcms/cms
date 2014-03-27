@@ -119,14 +119,18 @@ class AppController extends BaseController
 					}
 				}
 
+				$canTestEditions = craft()->canTestEditions();
+
 				$modalHtml = craft()->templates->render('_upgrademodal', array(
-					'editions' => $editions
+					'editions'        => $editions,
+					'canTestEditions' => $canTestEditions
 				));
 
 				$this->returnJson(array(
-					'success'   => true,
-					'editions'  => $editions,
-					'modalHtml' => $modalHtml
+					'success'         => true,
+					'editions'        => $editions,
+					'canTestEditions' => $canTestEditions,
+					'modalHtml'       => $modalHtml
 				));
 			}
 			else
@@ -168,5 +172,27 @@ class AppController extends BaseController
 				'errors' => $model->getErrors()
 			));
 		}
+	}
+
+	/**
+	 * Tries a Craft edition on for size.
+	 */
+	public function actionTestUpgrade()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+		craft()->userSession->requireAdmin();
+
+		if (!craft()->canTestEditions())
+		{
+			throw new Exception('Tried to test an edition, but Craft isn\'t allowed to do that.');
+		}
+
+		$edition = craft()->request->getRequiredPost('edition');
+		craft()->setEdition($edition);
+
+		$this->returnJson(array(
+			'success' => true
+		));
 	}
 }

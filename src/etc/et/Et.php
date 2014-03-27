@@ -187,6 +187,7 @@ class Et
 						// Cache the license key status and which edition it has
 						craft()->cache->set('licenseKeyStatus', $etModel->licenseKeyStatus);
 						craft()->cache->set('licensedEdition', $etModel->licensedEdition);
+						craft()->cache->set('editionTestableDomain@'.craft()->request->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
 
 						if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
 						{

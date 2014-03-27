@@ -160,6 +160,16 @@ class AppBehavior extends BaseBehavior
 	}
 
 	/**
+	 * Returns whether Craft is running on a domain that is elligible to test out the editions.
+	 *
+	 * @return bool
+	 */
+	public function canTestEditions()
+	{
+		return (craft()->cache->get('editionTestableDomain@'.craft()->request->getHostName()) == 1);
+	}
+
+	/**
 	 * Returns the site name.
 	 *
 	 * @return string

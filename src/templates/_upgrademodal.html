@@ -1,8 +1,14 @@
-{% macro buybtn(edition, info) %}
+{% macro buybtn(edition, info, canTestEditions) %}
 	{%- spaceless %}
 		{% if edition == craft.getEdition() %}
 			<div class="installed">{{ "Installed"|t }}</div>
+			{% if canTestEditions %}
+				<div class="btn test" data-edition="0">{{ "Uninstall"|t }}</div>
+			{% endif %}
 		{% else %}
+			{% if canTestEditions %}
+				<div class="btngroup">
+			{% endif %}
 			<div class="btn buybtn" data-edition="{{ edition }}">
 				{% if info.salePrice %}
 					<span class="listedprice">{{ info.formattedPrice }}</span> {{ info.formattedSalePrice }}
@@ -10,6 +16,10 @@
 					{{ info.formattedPrice }}
 				{% endif %}
 			</div>
+			{% if canTestEditions %}
+					<div class="btn test" data-edition="{{ edition }}">{{ "Test"|t }}</div>
+				</div>
+			{% endif %}
 		{% endif %}
 	{% endspaceless -%}
 {% endmacro %}
@@ -25,11 +35,11 @@
 				<td></td>
 				<th scope="col">
 					<h1 class="logo craftclient">Craft Client</h1>
-					{{ buybtn(CraftClient, editions[CraftClient]) }}
+					{{ buybtn(CraftClient, editions[CraftClient], canTestEditions) }}
 				</th>
 				<th scope="col">
 					<h1 class="logo craftpro">Craft Pro</h1>
-					{{ buybtn(CraftPro, editions[CraftPro]) }}
+					{{ buybtn(CraftPro, editions[CraftPro], canTestEditions) }}
 				</th>
 			</tr>
 		</thead>

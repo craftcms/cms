@@ -65,6 +65,9 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 					var $buyBtns = this.$compareScreen.find('.buybtn');
 					this.addListener($buyBtns, 'click', 'onBuyBtnClick');
 
+					var $testBtns = this.$compareScreen.find('.btn.test');
+					this.addListener($testBtns, 'click', 'onTestBtnClick');
+
 					this.addListener(this.$checkoutForm, 'submit', 'submitPurchase');
 
 					var $cancelCheckoutBtn = this.$checkoutScreen.find('#upgrademodal-cancelcheckout');
@@ -138,6 +141,28 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 		}, this));
 
 		this.$checkoutScreen.stop().css(Craft.left, width).removeClass('hidden').animateLeft(0, 'fast');
+	},
+
+	onTestBtnClick: function(ev)
+	{
+		var data = {
+			edition: $(ev.currentTarget).data('edition')
+		};
+
+		Craft.postActionRequest('app/testUpgrade', data, $.proxy(function(response, textStatus)
+		{
+			if (textStatus == 'success')
+			{
+				var width = this.getWidth();
+
+				this.$compareScreen.stop().animateLeft(-width, 'fast', $.proxy(function()
+				{
+					this.$compareScreen.addClass('hidden');
+				}, this));
+
+				this.slideInSuccess();
+			}
+		}, this));
 	},
 
 	cancelCheckout: function()
@@ -251,13 +276,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 					this.$checkoutScreen.addClass('hidden');
 				}, this));
 
-				this.$successScreen.css(Craft.left, width).removeClass('hidden').animateLeft(0, 'fast');
-
-				var $refreshBtn = this.$successScreen.find('.btn:first');
-				this.addListener($refreshBtn, 'click', function()
-				{
-					location.reload();
-				});
+				this.slideInSuccess();
 			}
 			else
 			{
@@ -281,6 +300,17 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 				Garnish.shake(this.$checkoutForm);
 			}
 		}
+	},
+
+	slideInSuccess: function()
+	{
+		this.$successScreen.css(Craft.left, this.getWidth()).removeClass('hidden').animateLeft(0, 'fast');
+
+		var $refreshBtn = this.$successScreen.find('.btn:first');
+		this.addListener($refreshBtn, 'click', function()
+		{
+			location.reload();
+		});
 	},
 
 	cleanupCheckoutForm: function()
