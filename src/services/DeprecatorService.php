@@ -170,8 +170,7 @@ class DeprecatorService extends BaseApplicationComponent
 
 		$logTraces = array();
 
-		// Skip the first two, since they're just DeprecatorService stuff
-		array_shift($traces);
+		// Skip the first one, since it's just the call to this private function
 		array_shift($traces);
 
 		foreach ($traces as $trace)
