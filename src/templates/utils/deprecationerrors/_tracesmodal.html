@@ -11,7 +11,7 @@
 					{% if trace.template is defined and trace.template %}
 						Template: {{ trace.template }}{% if trace.templateLine is defined and trace.templateLine %} ({{ trace.templateLine }}){% endif %}
 					{% else %}
-						{{ trace.objectClass ? trace.objectClass~'::' }}{{ trace.method }}({{ trace.args }})
+						{{ trace.objectClass or trace.class ? (trace.objectClass ?: trace.class)~'::' }}{{ trace.method }}({{ trace.args }})
 						{% if trace.file %}<br><span class="light">Called from {{ trace.file }} ({{ trace.line }})</span>{% endif %}
 					{% endif %}
 				</td>
