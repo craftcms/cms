@@ -7,6 +7,9 @@
 					{% if trace.template is defined and trace.template %}
 						<strong>Template:</strong> {{ trace.template }}{% if trace.templateLine is defined and trace.templateLine %} ({{ trace.templateLine }}){% endif %}<br>
 					{% else %}
+						{% if trace.objectClass %}
+							<strong>Class:</strong> {{ trace.objectClass }}<br>
+						{% endif %}
 						{% if trace.file %}
 							<strong>File:</strong> {{ trace.file }}{% if trace.line %} ({{ trace.line }}){% endif %}<br>
 						{% endif %}
