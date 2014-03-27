@@ -385,6 +385,22 @@ class HttpRequestService extends \CHttpRequest
 		return $this->_browserLanguages;
 	}
 
+	/**
+	 * Returns the host name, without http(s)://
+	 *
+	 * @return string
+	 */
+	public function getHostName()
+	{
+		if (isset($_SERVER['HTTP_HOST']))
+		{
+			return $_SERVER['HTTP_HOST'];
+		}
+		else
+		{
+			return $_SERVER['SERVER_NAME'];
+		}
+	}
 
 	/**
 	 * Sends a file to the user.
