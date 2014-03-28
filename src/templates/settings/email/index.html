@@ -1,10 +1,10 @@
-{% extends (craft.getEdition() >= CraftClient ? "settings/email/_layout" : "_layouts/cp") %}
+{% extends (CraftEdition >= CraftClient ? "settings/email/_layout" : "_layouts/cp") %}
 
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
 ] %}
 
-{% if craft.getEdition() >= CraftClient %}
+{% if CraftEdition >= CraftClient %}
 	{% set selectedTab = 'settings' %}
 {% else %}
 	{% set title = "Email Settings"|t %}
@@ -53,7 +53,7 @@
 			errors: (freshSettings ? null : settings.getErrors('senderName'))
 		}) }}
 
-		{% if craft.getEdition() >= CraftClient %}
+		{% if CraftEdition >= CraftClient %}
 			{{ forms.textField({
 				label: "HTML Email Template"|t,
 				instructions: "The template @@@appName@@@ will use for HTML emails"|t,

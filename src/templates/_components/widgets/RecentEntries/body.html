@@ -9,7 +9,7 @@
 							{% if entry.postDate %}
 								{{ entry.postDate.localeDate() }}
 							{% endif %}
-							{% if craft.getEdition() >= CraftClient %}
+							{% if CraftEdition >= CraftClient %}
 								{{ "by {author}"|t({ author: entry.author.username }) }}
 							{% endif %}
 						</span>

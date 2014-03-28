@@ -22,11 +22,11 @@
 {% endmacro %}
 
 {% macro urlFormatInput(sectionType, brandNewSection, section) %}
-	{% if craft.getEdition() == CraftPro or sectionType == 'structure' %}
+	{% if CraftEdition == CraftPro or sectionType == 'structure' %}
 		<table class="data fullwidth">
 			{% if sectionType == 'structure' %}
 				<thead>
-					{% if craft.getEdition() == CraftPro %}
+					{% if CraftEdition == CraftPro %}
 						<th></th>
 					{% endif %}
 					<th scope="col">{{ "Top-Level Entries"|t }}</th>
@@ -35,8 +35,8 @@
 			{% endif %}
 			<tbody>
 				{% for locale in craft.i18n.getSiteLocales() %}
-					<tr class="for-locale-{{ locale.id }}{% if craft.getEdition() == CraftPro and not brandNewSection and section.locales[locale.id] is not defined %} hidden{% endif %}">
-						{% if craft.getEdition() == CraftPro %}
+					<tr class="for-locale-{{ locale.id }}{% if CraftEdition == CraftPro and not brandNewSection and section.locales[locale.id] is not defined %} hidden{% endif %}">
+						{% if CraftEdition == CraftPro %}
 							<th class="thin nowrap">{{ locale.id }}</th>
 						{% endif %}
 						<td>
@@ -117,7 +117,7 @@
 			required: true
 		}) }}
 
-		{% if craft.getEdition() == CraftPro %}
+		{% if CraftEdition == CraftPro %}
 			{% set localesInput %}
 				<table class="data" style="width: auto;">
 					<thead>

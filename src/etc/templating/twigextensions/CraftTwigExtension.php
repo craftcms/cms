@@ -298,9 +298,6 @@ class CraftTwigExtension extends \Twig_Extension
 		$globals['now'] = DateTimeHelper::currentUTCDateTime();
 		$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->getLoginPath());
 		$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->getLogoutPath());
-		$globals['CraftPersonal'] = Craft::Personal;
-		$globals['CraftClient']   = Craft::Client;
-		$globals['CraftPro']      = Craft::Pro;
 
 		if (craft()->isInstalled() && !craft()->updates->isCraftDbMigrationNeeded())
 		{
@@ -319,6 +316,13 @@ class CraftTwigExtension extends \Twig_Extension
 				{
 					$globals[$globalSet->handle] = $globalSet;
 				}
+			}
+			else
+			{
+				$globals['CraftEdition']  = craft()->getEdition();
+				$globals['CraftPersonal'] = Craft::Personal;
+				$globals['CraftClient']   = Craft::Client;
+				$globals['CraftPro']      = Craft::Pro;
 			}
 		}
 		else

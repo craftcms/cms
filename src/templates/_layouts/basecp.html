@@ -45,7 +45,7 @@
 			Personal:             {{ CraftPersonal }},
 			Client:               {{ CraftClient }},
 			Pro:                  {{ CraftPro }},
-			edition:              {{ craft.getEdition() }},
+			edition:              {{ CraftEdition }},
 			translations:         {{ getTranslations()|raw }},
 			maxUploadSize:        {{ craft.app.getMaxUploadSize() }},
 			slugWordSeparator:    "{{ craft.config.slugWordSeparator|e('js') }}"
