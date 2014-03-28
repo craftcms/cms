@@ -15,6 +15,7 @@ var CP = Garnish.Base.extend(
 	$overflowNavMenu: null,
 	$overflowNavMenuList: null,
 
+	$messageModalContainer: null,
 	$notificationWrapper: null,
 	$notificationContainer: null,
 	$main: null,
@@ -26,12 +27,14 @@ var CP = Garnish.Base.extend(
 	visibleNavItems: null,
 	totalNavWidth: null,
 	showingOverflowNavMenu: false,
+	messageModal: null,
 
 	fixedNotifications: false,
 
 	runningTaskInfo: null,
 	trackTaskProgressTimeout: null,
 	taskProgressIcon: null,
+
 
 	init: function()
 	{
@@ -580,6 +583,27 @@ var CP = Garnish.Base.extend(
 				this.taskProgressIcon.complete();
 			}
 		}
+	},
+
+	displayMessageModal: function (message)
+	{
+		if (!this.messageModal)
+		{
+			this.messageModal = new Garnish.Modal();
+		}
+
+		if (this.$messageModalContainer == null) {
+			this.$messageModalContainer = $('<div class="modal fitted message-modal"></div>').appendTo(Garnish.$bod);
+		}
+
+		var modalContent = '<div class="stackTrace">' + message + '</div>';
+		modalContent += '<div class="footer"><div class="right buttons"><div class="right buttons"><div class="btn cancel">' + Craft.t("Ok") + '</div></div></div>';
+
+		this.$messageModalContainer.html(modalContent);
+		this.$messageModalContainer.find('.cancel').click($.proxy(function () {this.messageModal.hide();}, this));
+		this.messageModal.setContainer(this.$messageModalContainer);
+		this.messageModal.show();
+		this.messageModal.removeListener(this.messageModal.$shade, 'click');
 	}
 },
 {
