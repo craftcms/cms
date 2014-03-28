@@ -37,7 +37,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 				this.redactor.destroy();
 			}, this));
 
-			Craft.livePreview.on('showPreviewMode hidePreviewMode', $.proxy(function()
+			Craft.livePreview.on('showPreviewMode slideOut', $.proxy(function()
 			{
 				this.initRedactor();
 			}, this));
