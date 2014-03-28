@@ -24,7 +24,7 @@ class EtModel extends BaseModel
 		// The domain that the license is associated with
 		$attributes['licensedDomain'] = AttributeType::String;
 
-		// Whether Craft is running for a domain that's elligible to be used in Edition Test Mode
+		// Whether Craft is running for a domain that's eligible to be used in Edition Test Mode
 		$attributes['editionTestableDomain'] = AttributeType::Bool;
 
 		// Extra arbitrary data to send to the server.
