@@ -15,15 +15,12 @@ class m140401_000019_rackspace_auth_api extends BaseMigration
 	{
 
 		$sources = craft()->assetSources->getAllSources();
-		// Check if Racksspace sources exist. If they, update their settings and display the warning.
 
-		$displayMessage = false;
+		// Check if Racksspace sources exist. If they do, update their settings.
 		foreach ($sources as $source)
 		{
 			if ($source->type == "Rackspace")
 			{
-				$displayMessage = true;
-
 				$settings = $source->settings;
 				$settings['region'] = "-";
 				unset($settings['location']);
@@ -32,12 +29,7 @@ class m140401_000019_rackspace_auth_api extends BaseMigration
 				craft()->assetSources->saveSource($source);
 			}
 		}
-		if ($displayMessage)
-		{
-			craft()->db->createCommand()->truncateTable('rackspaceaccess');
-			$message = "Rackspace Authorization API has been update to v2. For your Rackspace based sources to work correctly, please, review and update their settings.";
-			craft()->userSession->addJsFlash('Craft.cp.displayMessageModal("'.Craft::t($message).'");');
-		}
+		craft()->db->createCommand()->truncateTable('rackspaceaccess');
 
 		return true;
 	}
