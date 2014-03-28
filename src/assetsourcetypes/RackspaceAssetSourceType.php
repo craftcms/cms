@@ -8,13 +8,10 @@ craft()->requireEdition(Craft::Pro);
  */
 class RackspaceAssetSourceType extends BaseAssetSourceType
 {
-	const RackspaceUSAuthHost = 'https://identity.api.rackspacecloud.com/v1.0';
-	const RackspaceUKAuthHost = 'https://lon.identity.api.rackspacecloud.com/v1.0';
+	const RackspaceAuthHost = 'https://identity.api.rackspacecloud.com/v2.0/tokens';
 
 	const RackspaceStorageOperation = 'storage';
 	const RackspaceCDNOperation = 'cdn';
-
-	static private $_rackspaceAuthLocations = array('us' => 'US', 'uk' => 'UK');
 
 	/**
 	 * Stores access information.
@@ -44,7 +41,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		return array(
 			'username'   => array(AttributeType::String, 'required' => true),
 			'apiKey'     => array(AttributeType::String, 'required' => true),
-			'location'   => array(AttributeType::String, 'required' => true),
+			'region'     => array(AttributeType::String, 'required' => true),
 			'container'	 => array(AttributeType::String, 'required' => true),
 			'urlPrefix'  => array(AttributeType::String, 'required' => true),
 			'subfolder'  => array(AttributeType::String, 'default' => ''),
@@ -59,8 +56,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	public function getSettingsHtml()
 	{
 		return craft()->templates->render('_components/assetsourcetypes/Rackspace/settings', array(
-			'settings' => $this->getSettings(),
-			'rackspaceLocations' => static::$_rackspaceAuthLocations,
+			'settings' => $this->getSettings()
 		));
 	}
 
@@ -92,6 +88,23 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		}
 
 		return $returnData;
+	}
+
+	/**
+	 * Get region list.
+	 *
+	 * @return array
+	 */
+	public function getRegionList()
+	{
+		$this->_refreshConnectionInformation();
+		$regions = array();
+		foreach (self::$_accessStore as $key => $information)
+		{
+			$parts = explode('#', $key);
+			$regions[] = end($parts);
+		}
+		return $regions;
 	}
 
 	/**
@@ -711,52 +724,86 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$settings = $this->getSettings();
 		$username = $settings->username;
 		$apiKey = $settings->apiKey;
-		$location = $settings->location;
 
 		$headers = array(
-			'X-Auth-User: '.$username,
-			'X-Auth-Key: '.$apiKey
+			'Content-Type: application/json',
+			'Accept: application/json',
+
 		);
 
-		$targetUrl = static::_makeAuthorizationRequestUrl($location);
-		$response = static::_doRequest($targetUrl, 'GET', $headers);
+		$payload = json_encode(array(
+			'auth' => array(
+				'RAX-KSKEY:apiKeyCredentials' => array(
+					'username' => $username,
+					'apiKey' => $apiKey
+				)
+			)
+		));
 
-		// Extract the values
-		$token = static::_extractHeader($response, 'X-Auth-Token');
-		$storageUrl = rtrim(static::_extractHeader($response, 'X-Storage-Url'), '/').'/';
-		$cdnUrl = rtrim(static::_extractHeader($response, 'X-CDN-Management-Url'), '/').'/';
+		$targetUrl = static::_makeAuthorizationRequestUrl();
+		$response = static::_doRequest($targetUrl, 'POST', $headers, array(), $payload);
+		$body = json_decode(substr($response, strpos($response, '{')));
 
-		if (!($token && $storageUrl && $cdnUrl))
+		if (!$body)
 		{
 			throw new Exception(Craft::t("Wrong credentials supplied for Rackspace access!"));
 		}
 
-		$connectionKey = $username.$apiKey;
+		$token = $body->access->token->id;
+		$services = $body->access->serviceCatalog;
 
-		$data = array('token' => $token, 'storageUrl' => $storageUrl, 'cdnUrl' => $cdnUrl);
+		if (!$token || !$services)
+		{
+			throw new Exception(Craft::t("Wrong credentials supplied for Rackspace access!"));
+		}
 
-		// Store this in the access store
-		static::$_accessStore[$connectionKey] = $data;
+		$regions = array();
 
-		// And update DB information.
-		static::_updateAccessData($connectionKey, $data);
+		// Fetch region information
+		foreach ($services as $service)
+		{
+			if ($service->name == 'cloudFilesCDN' || $service->name == 'cloudFiles')
+			{
+				foreach ($service->endpoints as $endpoint)
+				{
+					if (empty($regions[$endpoint->region]))
+					{
+						$regions[$endpoint->region] = array();
+					}
+					if ($service->name == 'cloudFilesCDN')
+					{
+						$regions[$endpoint->region]['cdnUrl'] = $endpoint->publicURL;
+					}
+					else
+					{
+						$regions[$endpoint->region]['storageUrl'] = $endpoint->publicURL;
+					}
+				}
+			}
+		}
+
+		// Each region gets separate connection information
+		foreach ($regions as $region => $data)
+		{
+			$connection_key = $this->_getConnectionKey($username, $apiKey, $region);
+			$data = array('token' => $token, 'storageUrl' => $data['storageUrl'], 'cdnUrl' => $data['cdnUrl']);
+
+			// Store this in the access store
+			self::$_accessStore[$connection_key] = $data;
+			$this->_updateAccessData($connection_key, $data);
+
+		}
 	}
 
 
 	/**
-	 * Create the authorization request URL by location
+	 * Create the authorization request URL
 	 *
-	 * @param string $location
 	 * @return string
 	 */
-	private static function _makeAuthorizationRequestUrl($location = '')
+	private static function _makeAuthorizationRequestUrl()
 	{
-		if ($location == 'uk')
-		{
-			return static::RackspaceUKAuthHost;
-		}
-
-		return static::RackspaceUSAuthHost;
+		return static::RackspaceAuthHost;
 	}
 
 	/**
@@ -765,9 +812,11 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * @param $url
 	 * @param $method
 	 * @param $headers
+	 * @param $curlOptions
+	 * @param $payload
 	 * @return string
 	 */
-	private static function _doRequest($url, $method = 'GET', $headers = array(), $curlOptions = array())
+	private static function _doRequest($url, $method = 'GET', $headers = array(), $curlOptions = array(), $payload = "")
 	{
 		$ch = curl_init($url);
 		if ($method == 'HEAD')
@@ -790,6 +839,12 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		{
 			curl_setopt($ch, $option, $value);
 		}
+
+		if ($method == "POST")
+		{
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+		}
+
 
 		$response = curl_exec($ch);
 		curl_close($ch);
@@ -835,8 +890,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		$username = $settings->username;
 		$apiKey = $settings->apiKey;
+		$region = $settings->region;
 
-		$connectionKey = $username.$apiKey;
+		$connectionKey = $this->_getConnectionKey($username, $apiKey, $region);
 
 		// If we don't have the access information, load it from DB
 		if (empty(static::$_accessStore[$connectionKey]))
@@ -864,13 +920,13 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		{
 			case static::RackspaceStorageOperation:
 			{
-				$url = $connectionInformation['storageUrl'].$target;
+				$url = rtrim($connectionInformation['storageUrl'], '/').'/'.$target;
 				break;
 			}
 
 			case static::RackspaceCDNOperation:
 			{
-				$url = $connectionInformation['cdnUrl'].$target;
+				$url = rtrim($connectionInformation['cdnUrl'], '/').'/'.$target;
 				break;
 			}
 
@@ -1132,6 +1188,19 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	public function isRemote()
 	{
 		return true;
+	}
+
+	/**
+	 * Get a connection key by parameters.
+	 *
+	 * @param $username
+	 * @param $apiKey
+	 * @param $region
+	 * @return string
+	 */
+	private function _getConnectionKey($username, $apiKey, $region)
+	{
+		return implode('#', array($username, $apiKey, $region));
 	}
 
 }

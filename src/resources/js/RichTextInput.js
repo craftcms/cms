@@ -7,19 +7,47 @@
 Craft.RichTextInput = Garnish.Base.extend(
 {
 	id: null,
+	sectionSources: null,
+	elementLocale: null,
+	redactorConfig: null,
+
+	$textarea: null,
 	redactor: null,
 
 	init: function(id, sectionSources, elementLocale, redactorConfig, redactorLang)
 	{
 		this.id = id;
+		this.sectionSources = sectionSources;
+		this.elementLocale = elementLocale;
+		this.redactorConfig = redactorConfig;
 
-		redactorConfig.lang = redactorLang;
-		redactorConfig.direction = Craft.orientation;
+		this.redactorConfig.lang = redactorLang;
+		this.redactorConfig.direction = Craft.orientation;
 
 		// Initialize Redactor
-		var $textarea = $('#'+this.id);
-		$textarea.redactor(redactorConfig);
-		this.redactor = $textarea.data('redactor');
+		this.$textarea = $('#'+this.id);
+
+		this.initRedactor();
+
+		if (typeof Craft.livePreview != 'undefined')
+		{
+			// There's a UI glitch if Redactor is in Code view when Live Preview is shown/hidden
+			Craft.livePreview.on('beforeShowPreviewMode beforeHidePreviewMode', $.proxy(function()
+			{
+				this.redactor.destroy();
+			}, this));
+
+			Craft.livePreview.on('showPreviewMode hidePreviewMode', $.proxy(function()
+			{
+				this.initRedactor();
+			}, this));
+		}
+	},
+
+	initRedactor: function()
+	{
+		this.$textarea.redactor(this.redactorConfig);
+		this.redactor = this.$textarea.data('redactor');
 
 		this.replaceRedactorButton('image', Craft.t('Insert image'), null,
 		{
@@ -40,7 +68,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 						this.assetSelectionModal = Craft.createElementSelectorModal('Asset', {
 							storageKey: 'RichTextFieldType.ChooseImage',
 							multiSelect: true,
-							criteria: { locale: elementLocale, kind: 'image' },
+							criteria: { locale: this.elementLocale, kind: 'image' },
 							onSelect: $.proxy(function(assets, transform)
 							{
 								if (assets.length)
@@ -90,8 +118,8 @@ Craft.RichTextInput = Garnish.Base.extend(
 					{
 						this.entrySelectionModal = Craft.createElementSelectorModal('Entry', {
 							storageKey: 'RichTextFieldType.LinkToEntry',
-							sources: sectionSources,
-							criteria: { locale: elementLocale },
+							sources: this.sectionSources,
+							criteria: { locale: this.elementLocale },
 							onSelect: function(entries)
 							{
 								if (entries.length)
@@ -128,7 +156,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 					{
 						this.assetLinkSelectionModal = Craft.createElementSelectorModal('Asset', {
 							storageKey: 'RichTextFieldType.LinkToAsset',
-							criteria: { locale: elementLocale },
+							criteria: { locale: this.elementLocale },
 							onSelect: function(assets)
 							{
 								if (assets.length)
@@ -175,18 +203,6 @@ Craft.RichTextInput = Garnish.Base.extend(
 					this.redactor.toggleFullscreen();
 				}
 			});
-		}
-
-		if (typeof Craft.livePreview != 'undefined')
-		{
-			// There's a UI glitch if Redactor is in Code view when Live Preview is shown/hidden
-			Craft.livePreview.on('beforeShowPreviewMode beforeHidePreviewMode', function()
-			{
-				if (!this.redactor.opts.visual)
-				{
-					this.redactor.toggleVisual();
-				}
-			})
 		}
 	},
 
