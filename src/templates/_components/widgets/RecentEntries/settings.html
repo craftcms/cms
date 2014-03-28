@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 
-{% if craft.getEdition() >= CraftClient %}
+{% if CraftEdition >= CraftClient %}
 	{% set sectionInput %}
 		<div class="select">
 			<select id="section" name="section">

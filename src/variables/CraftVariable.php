@@ -71,16 +71,6 @@ class CraftVariable
 		return craft()->hasPackage($packageName);
 	}
 
-	/**
-	 * Returns the Craft edition.
-	 *
-	 * @return string
-	 */
-	public function getEdition()
-	{
-		return craft()->getEdition();
-	}
-
 	// -------------------------------------------
 	//  Template variable classes
 	// -------------------------------------------

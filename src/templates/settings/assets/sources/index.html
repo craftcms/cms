@@ -15,7 +15,7 @@
 		<table id="sources" class="data fullwidth collapsible">
 			<thead>
 				<th scope="col">{{ "Name"|t }}</th>
-				{% if craft.getEdition() == CraftPro %}<th scope="col">{{ "Type"|t }}</th>{% endif %}
+				{% if CraftEdition == CraftPro %}<th scope="col">{{ "Type"|t }}</th>{% endif %}
 				{% if sortable %}<td class="thin"></td>{% endif %}
 				<td class="thin"></td>
 			</thead>
@@ -23,7 +23,7 @@
 				{% for source in sources %}
 					<tr data-id="{{ source.id }}" data-name="{{ source.name|t }}">
 						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/assets/sources/' ~ source.id) }}">{{ source.name|t }}</a></th>
-						{% if craft.getEdition() == CraftPro %}<td data-title="{{ 'Type'|t }}">{{ source.getSourceType().getName() }}</td>{% endif %}
+						{% if CraftEdition == CraftPro %}<td data-title="{{ 'Type'|t }}">{{ source.getSourceType().getName() }}</td>{% endif %}
 						{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a></td>{% endif %}
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 					</tr>

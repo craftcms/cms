@@ -86,7 +86,7 @@
 									checked: field.required
 								}) }}
 
-								{% if craft.getEdition() == CraftPro %}
+								{% if CraftEdition == CraftPro %}
 									{{ forms.checkboxField({
 										label: "This field is translatable"|t,
 										name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][translatable]',

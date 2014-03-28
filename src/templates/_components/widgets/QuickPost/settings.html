@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 {% if sections %}
-	{% if craft.getEdition() >= CraftClient %}
+	{% if CraftEdition >= CraftClient %}
 		{% set sectionOptions = [] %}
 		{% for section in sections %}
 			{% set sectionOptions = sectionOptions|merge([{ label: section.name|t, value: section.id }]) %}
