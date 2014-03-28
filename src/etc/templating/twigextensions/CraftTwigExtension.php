@@ -317,19 +317,20 @@ class CraftTwigExtension extends \Twig_Extension
 					$globals[$globalSet->handle] = $globalSet;
 				}
 			}
-			else
-			{
-				$globals['CraftEdition']  = craft()->getEdition();
-				$globals['CraftPersonal'] = Craft::Personal;
-				$globals['CraftClient']   = Craft::Client;
-				$globals['CraftPro']      = Craft::Pro;
-			}
 		}
 		else
 		{
 			$globals['siteName'] = null;
 			$globals['siteUrl'] = null;
 			$globals['user'] = null;
+		}
+
+		if (craft()->request->isCpRequest())
+		{
+			$globals['CraftEdition']  = craft()->getEdition();
+			$globals['CraftPersonal'] = Craft::Personal;
+			$globals['CraftClient']   = Craft::Client;
+			$globals['CraftPro']      = Craft::Pro;
 		}
 
 		return $globals;
