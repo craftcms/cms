@@ -365,7 +365,8 @@ class DbHelper
 	 */
 	public static function parseParam($key, $values, &$params)
 	{
-		if ($values == 'not ')
+		// Need to do a strict check here in case $values = true
+		if ($values === 'not ')
 		{
 			return '';
 		}
