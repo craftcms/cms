@@ -176,6 +176,10 @@ Craft.Tool = Garnish.Base.extend(
 				}
 			}
 		}
+		if (response.error)
+		{
+			alert(response.error);
+		}
 
 		this.updateProgressBar();
 

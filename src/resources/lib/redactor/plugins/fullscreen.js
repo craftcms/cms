@@ -6,7 +6,6 @@ RedactorPlugins.fullscreen = {
 		this.fullscreen = false;
 
 		this.buttonAdd('fullscreen', 'Fullscreen', $.proxy(this.toggleFullscreen, this));
-		this.buttonSetRight('fullscreen');
 
 		if (this.opts.fullscreen) this.toggleFullscreen();
 	},

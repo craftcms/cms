@@ -66,7 +66,7 @@ Craft.LivePreview = Garnish.Base.extend(
 		this.editorWidth = Craft.getLocalStorage('LivePreview.editorWidth', Craft.LivePreview.defaultEditorWidth);
 		this.containEditorWidth();
 
-		this.addListener(this.$btn, 'activate', 'togglePreviewMode');
+		this.addListener(this.$btn, 'activate', 'toggle');
 
 		Craft.cp.on('beforeSaveShortcut', $.proxy(function()
 		{
@@ -94,26 +94,26 @@ Craft.LivePreview = Garnish.Base.extend(
 		return false;
 	},
 
-	togglePreviewMode: function()
+	toggle: function()
 	{
 		if (this.inPreviewMode)
 		{
-			this.hidePreviewMode();
+			this.exit();
 		}
 		else
 		{
-			this.showPreviewMode();
+			this.enter();
 		}
 	},
 
-	showPreviewMode: function()
+	enter: function()
 	{
 		if (this.inPreviewMode)
 		{
 			return;
 		}
 
-		this.trigger('beforeShowPreviewMode');
+		this.trigger('beforeEnter');
 
 		$(document.activeElement).blur();
 
@@ -136,7 +136,7 @@ Craft.LivePreview = Garnish.Base.extend(
 				onDragStop:    $.proxy(this, '_onDragStop')
 			});
 
-			this.addListener($closeBtn, 'click', 'hidePreviewMode');
+			this.addListener($closeBtn, 'click', 'exit');
 		}
 
 		this.$editor.css(Craft.left, -this.editorWidth+'px');
@@ -188,7 +188,7 @@ Craft.LivePreview = Garnish.Base.extend(
 		}
 
 		this.inPreviewMode = true;
-		this.trigger('showPreviewMode');
+		this.trigger('enter');
 	},
 
 	slideIn: function()
@@ -198,7 +198,10 @@ Craft.LivePreview = Garnish.Base.extend(
 
 		this.$shade.fadeIn();
 
-		this.$editor.show().stop().animateLeft(0, 'slow');
+		this.$editor.show().stop().animateLeft(0, 'slow', $.proxy(function()
+		{
+			this.trigger('slideIn');
+		}, this));
 		this.$iframeContainer.show().stop().animateRight(0, 'slow', $.proxy(function()
 		{
 			this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
@@ -207,20 +210,20 @@ Craft.LivePreview = Garnish.Base.extend(
 			{
 				if (ev.keyCode == Garnish.ESC_KEY)
 				{
-					this.hidePreviewMode();
+					this.exit();
 				}
 			});
 		}, this));
 	},
 
-	hidePreviewMode: function()
+	exit: function()
 	{
 		if (!this.inPreviewMode)
 		{
 			return;
 		}
 
-		this.trigger('beforeHidePreviewMode');
+		this.trigger('beforeExit');
 
 		$('html').removeClass('noscroll');
 
@@ -245,6 +248,7 @@ Craft.LivePreview = Garnish.Base.extend(
 				this.fields[i].$newClone.remove();
 			}
 			this.$editor.hide();
+			this.trigger('slideOut');
 		}, this));
 
 		this.$iframeContainer.stop().animateRight(-this.getIframeWidth(), 'slow', $.proxy(function()
@@ -253,7 +257,7 @@ Craft.LivePreview = Garnish.Base.extend(
 		}, this));
 
 		this.inPreviewMode = false;
-		this.trigger('hidePreviewMode');
+		this.trigger('exit');
 	},
 
 	moveFieldsBack: function()
