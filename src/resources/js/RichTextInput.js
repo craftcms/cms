@@ -32,12 +32,12 @@ Craft.RichTextInput = Garnish.Base.extend(
 		if (typeof Craft.livePreview != 'undefined')
 		{
 			// There's a UI glitch if Redactor is in Code view when Live Preview is shown/hidden
-			Craft.livePreview.on('beforeShowPreviewMode beforeHidePreviewMode', $.proxy(function()
+			Craft.livePreview.on('beforeEnter beforeExit', $.proxy(function()
 			{
 				this.redactor.destroy();
 			}, this));
 
-			Craft.livePreview.on('showPreviewMode slideOut', $.proxy(function()
+			Craft.livePreview.on('enter slideOut', $.proxy(function()
 			{
 				this.initRedactor();
 			}, this));
