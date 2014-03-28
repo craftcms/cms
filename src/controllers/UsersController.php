@@ -366,34 +366,53 @@ class UsersController extends BaseController
 	}
 
 	/**
+	 * Edit a user account.
+	 *
 	 * @param array $variables
+	 * @param string|null $account
 	 * @throws HttpException
 	 */
-	public function actionEditUser(array $variables = array())
+	public function actionEditUser(array $variables = array(), $account = null)
 	{
-		if (craft()->getEdition() == Craft::Pro)
-		{
-			$variables['selectedTab'] = 'account';
-		}
-		else
-		{
-			$variables['title'] = Craft::t('My Account');
-		}
-
-		$userId = (isset($variables['userId']) ? $variables['userId'] : null);
+		$isClientAccount = false;
 
 		// This will be set if there was a validation error.
-		if (!isset($variables['account']))
+		if (empty($variables['account']))
 		{
-			// Looking at myaccount.
-			if (!$userId && craft()->request->getSegment(1) == 'myaccount')
+			// Are we editing a specific user account?
+			if ($account !== null)
 			{
-				$variables['account'] = craft()->userSession->getUser();
+				switch ($account)
+				{
+					case 'current':
+					{
+						$variables['account'] = craft()->userSession->getUser();
+
+						break;
+					}
+					case 'client':
+					{
+						$isClientAccount = true;
+						$variables['account'] = craft()->users->getClient();
+
+						if (!$variables['account'])
+						{
+							// Registering the Client
+							$variables['account'] = new UserModel();
+							$variables['account']->client = true;
+						}
+
+						break;
+					}
+					default:
+					{
+						throw new HttpException(404);
+					}
+				}
 			}
-			else if ($userId)
+			else if (!empty($variables['userId']))
 			{
-				// Get the requested user.
-				$variables['account'] = craft()->users->getUserById($userId);
+				$variables['account'] = craft()->users->getUserById($variables['userId']);
 
 				if (!$variables['account'])
 				{
@@ -428,6 +447,10 @@ class UsersController extends BaseController
 				$variables['title'] = Craft::t("{user}’s Account", array('user' => $variables['account']->name));
 			}
 		}
+		else if ($isClientAccount)
+		{
+			$variables['title'] = Craft::t('Register the client’s account');
+		}
 		else
 		{
 			// New user, make sure we can register.
@@ -439,6 +462,8 @@ class UsersController extends BaseController
 		// Show tabs if they have Craft Pro
 		if (craft()->getEdition() == Craft::Pro)
 		{
+			$variables['selectedTab'] = 'account';
+
 			$variables['tabs'] = array(
 				'account' => array(
 					'label' => Craft::t('Account'),
@@ -523,10 +548,24 @@ class UsersController extends BaseController
 				craft()->userSession->requirePermission('editUsers');
 			}
 		}
+		else if (craft()->getEdition() == Craft::Client)
+		{
+			// Make sure they're logged in
+			craft()->userSession->requireAdmin();
+
+			// Make sure there's no Client user yet
+			if (craft()->users->getClient())
+			{
+				throw new Exception(Craft::t('A client account already exists.'));
+			}
+
+			$user = new UserModel();
+			$user->client = true;
+		}
 		else
 		{
-			// Make sure the Client edition is installed, since that's required for having multiple user accounts
-			craft()->requireEdition(Craft::Client);
+			// Make sure this is Craft Pro, since that's required for having multiple user accounts
+			craft()->requireEdition(Craft::Pro);
 
 			// Is someone logged in?
 			if ($currentUser)

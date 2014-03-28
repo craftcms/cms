@@ -188,15 +188,21 @@ class AppBehavior extends BaseBehavior
 	 * Requires that Craft is running an equal or better edition than what's passed in
 	 *
 	 * @param int $edition
+	 * @param bool $orBetter
 	 * @throws Exception
 	 */
-	public function requireEdition($edition)
+	public function requireEdition($edition, $orBetter = true)
 	{
-		if ($this->isInstalled() && $this->getEdition() < $edition)
+		if ($this->isInstalled())
 		{
-			throw new Exception(Craft::t('Craft {edition} is required to perform this action.', array(
-				'edition' => $this->_getEditionName($edition)
-			)));
+			$installedEdition = $this->getEdition();
+
+			if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition != $edition))
+			{
+				throw new Exception(Craft::t('Craft {edition} is required to perform this action.', array(
+					'edition' => $this->_getEditionName($edition)
+				)));
+			}
 		}
 	}
 

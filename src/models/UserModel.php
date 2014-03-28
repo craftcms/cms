@@ -33,6 +33,7 @@ class UserModel extends BaseElementModel
 			'password'               => AttributeType::String,
 			'preferredLocale'        => AttributeType::Locale,
 			'admin'                  => AttributeType::Bool,
+			'client'                 => AttributeType::Bool,
 			'status'                 => array(AttributeType::Enum, 'values' => array(UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived), 'default' => UserStatus::Pending),
 			'lastLoginDate'          => AttributeType::DateTime,
 			'invalidLoginCount'      => AttributeType::Number,
@@ -227,7 +228,7 @@ class UserModel extends BaseElementModel
 	{
 		if (craft()->getEdition() == Craft::Pro)
 		{
-			if ($this->admin)
+			if ($this->admin || $this->client)
 			{
 				return true;
 			}
@@ -306,7 +307,15 @@ class UserModel extends BaseElementModel
 	 */
 	public function getCpEditUrl()
 	{
-		if (craft()->getEdition() >= Craft::Client)
+		if ($this->isCurrent())
+		{
+			return UrlHelper::getCpUrl('myaccount');
+		}
+		else if (craft()->getEdition() == Craft::Client && $this->client)
+		{
+			return UrlHelper::getCpUrl('clientaccount');
+		}
+		else if (craft()->getEdition() == Craft::Pro)
 		{
 			return UrlHelper::getCpUrl('users/'.$this->id);
 		}

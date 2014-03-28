@@ -167,6 +167,7 @@ class UserElementType extends BaseElementType
 	{
 		return array(
 			'admin'          => AttributeType::Bool,
+			'client'         => AttributeType::Bool,
 			'can'            => AttributeType::String,
 			'email'          => AttributeType::Email,
 			'firstName'      => AttributeType::String,
@@ -203,12 +204,17 @@ class UserElementType extends BaseElementType
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('users.username, users.photo, users.firstName, users.lastName, users.email, users.admin, users.status, users.lastLoginDate, users.lockoutDate, users.preferredLocale')
+			->addSelect('users.username, users.photo, users.firstName, users.lastName, users.email, users.admin, users.client, users.status, users.lastLoginDate, users.lockoutDate, users.preferredLocale')
 			->join('users users', 'users.id = elements.id');
 
 		if ($criteria->admin)
 		{
 			$query->andWhere(DbHelper::parseParam('users.admin', $criteria->admin, $query->params));
+		}
+
+		if ($criteria->client && craft()->getEdition() == Craft::Client)
+		{
+			$query->andWhere(DbHelper::parseParam('users.client', $criteria->client, $query->params));
 		}
 
 		if ($criteria->can)
@@ -222,6 +228,7 @@ class UserElementType extends BaseElementType
 
 			$query->andWhere(array('or',
 				'users.admin = 1',
+				'users.client = 1',
 				'opt1_userpermissions.name = :permission',
 				'opt2_userpermissions.name = :permission',
 			), array(

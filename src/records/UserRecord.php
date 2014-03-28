@@ -29,6 +29,7 @@ class UserRecord extends BaseRecord
 			'password'                   => array(AttributeType::String, 'maxLength' => 255, 'column' => ColumnType::Char),
 			'preferredLocale'            => array(AttributeType::Locale),
 			'admin'                      => array(AttributeType::Bool),
+			'client'                     => array(AttributeType::Bool),
 			'status'                     => array(AttributeType::Enum, 'values' => array(UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived), 'default' => UserStatus::Pending),
 			'lastLoginDate'              => array(AttributeType::DateTime),
 			'lastLoginAttemptIPAddress'  => array(AttributeType::String, 'maxLength' => 45),

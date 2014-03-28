@@ -99,6 +99,21 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns the "Client" account if they're running Craft Client.
+	 *
+	 * @return UserModel|null
+	 */
+	public function getClient()
+	{
+		craft()->requireEdition(Craft::Client, false);
+
+		$criteria = craft()->elements->getCriteria(ElementType::User);
+		$criteria->client = true;
+		$criteria->status = null;
+		return $criteria->first();
+	}
+
+	/**
 	 * Saves a user, or registers a new one.
 	 *
 	 * @param  UserModel $user
@@ -132,6 +147,7 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->photo                 = $user->photo;
 		$userRecord->email                 = $user->email;
 		$userRecord->admin                 = $user->admin;
+		$userRecord->client                = $user->client;
 		$userRecord->passwordResetRequired = $user->passwordResetRequired;
 		$userRecord->preferredLocale       = $user->preferredLocale;
 		$userRecord->status                = $user->status;

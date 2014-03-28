@@ -134,6 +134,9 @@
 					<div class="menu" data-align="right">
 						<ul>
 							<li><a href="{{ url('myaccount') }}">{{ "My Account"|t }}</a></li>
+							{% if craft.getEdition() == CraftClient and currentUser.admin %}
+								<li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t }}</a></li>
+							{% endif %}
 							<li><a href="{{ logoutUrl }}">{{ "Sign out"|t }}</a></li>
 						</ul>
 					</div>
