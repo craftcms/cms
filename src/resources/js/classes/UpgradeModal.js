@@ -267,7 +267,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 
 		if (textStatus == 'success')
 		{
-			if (true || response.success)
+			if (response.success)
 			{
 				var width = this.getWidth();
 

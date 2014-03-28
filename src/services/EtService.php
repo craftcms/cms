@@ -134,20 +134,6 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function fetchEditionInfo()
 	{
-		$etModel = new EtModel();
-		$etModel->data = array(
-			1 => array(
-				'price' => 199
-			),
-			2 => array(
-				'price' => 299,
-				'salePrice' => (craft()->getEdition() == Craft::Client ? 129 : null)
-			)
-		);
-		return $etModel;
-
-
-
 		$et = new Et(static::GetEditionInfo);
 		$etResponse = $et->phoneHome();
 		return $etResponse;
