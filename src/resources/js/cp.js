@@ -581,7 +581,7 @@ var CP = Garnish.Base.extend(
 				this.taskProgressIcon.complete();
 			}
 		}
-	},
+	}
 },
 {
 	maxWidth: 1051, //1024,
