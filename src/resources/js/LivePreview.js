@@ -198,7 +198,10 @@ Craft.LivePreview = Garnish.Base.extend(
 
 		this.$shade.fadeIn();
 
-		this.$editor.show().stop().animateLeft(0, 'slow');
+		this.$editor.show().stop().animateLeft(0, 'slow', $.proxy(function()
+		{
+			this.trigger('slideIn');
+		}, this));
 		this.$iframeContainer.show().stop().animateRight(0, 'slow', $.proxy(function()
 		{
 			this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
@@ -245,6 +248,7 @@ Craft.LivePreview = Garnish.Base.extend(
 				this.fields[i].$newClone.remove();
 			}
 			this.$editor.hide();
+			this.trigger('slideOut');
 		}, this));
 
 		this.$iframeContainer.stop().animateRight(-this.getIframeWidth(), 'slow', $.proxy(function()
