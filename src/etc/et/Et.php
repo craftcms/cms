@@ -92,12 +92,13 @@ class Et
 			'requestIp'         => craft()->request->getIpAddress(),
 			'requestTime'       => DateTimeHelper::currentTimeStamp(),
 			'requestPort'       => craft()->request->getPort(),
-			'edition'           => craft()->getEdition(),
 			'localBuild'        => CRAFT_BUILD,
 			'localVersion'      => CRAFT_VERSION,
+			'localEdition'      => craft()->getEdition(),
 			'userEmail'         => craft()->userSession->getUser()->email,
 			'track'             => CRAFT_TRACK,
 		));
+
 		$this->_userAgent = 'Craft/'.craft()->getVersion().'.'.craft()->getBuild();
 	}
 

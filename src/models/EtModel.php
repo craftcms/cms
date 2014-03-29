@@ -48,6 +48,9 @@ class EtModel extends BaseModel
 		// The local build number.
 		$attributes['localBuild'] = array(AttributeType::Number, 'required' => true);
 
+		// The local edition.
+		$attributes['localEdition'] = array(AttributeType::String, 'required' => true);
+
 		// The currently logged in user's email address.
 		$attributes['userEmail'] = AttributeType::String;
 
