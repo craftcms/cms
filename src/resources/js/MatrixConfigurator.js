@@ -709,7 +709,7 @@ Field = Garnish.Base.extend(
 					'</label>' +
 				'</div>';
 
-		if (Craft.edition == Craft.Pro)
+		if (Craft.isLocalized)
 		{
 			html +=
 				'<div class="field checkbox">' +

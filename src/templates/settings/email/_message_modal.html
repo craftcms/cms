@@ -7,9 +7,9 @@
 
 
 <header class="header">
-	<h1>{{ "Edit Message"|t }}</h1>
+	<h1 class="left">{{ "Edit Message"|t }}</h1>
 
-	{% if CraftEdition == CraftPro %}
+	{% if craft.isLocalized() %}
 		<ul class="right">
 			<li class="select locale">
 				<select>

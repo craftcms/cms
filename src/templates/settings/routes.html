@@ -38,7 +38,7 @@
 			<div class="route" data-id="{{ route.id }}"{% if route.locale %} data-locale="{{ route.locale }}"{% endif %}>
 				<div class="url-container">
 					{%- spaceless %}
-						{% if CraftEdition == CraftPro %}
+						{% if craft.isLocalized() %}
 							<span class="locale">{{ route.locale ?: "Global"|t }}</span>
 						{% endif %}
 						<span class="url">{{ route.urlDisplayHtml|raw }}</span>
@@ -63,7 +63,7 @@
 		{% endfor %}
 	};
 
-	{% if CraftEdition == CraftPro %}
+	{% if craft.isLocalized() %}
 		Craft.routes.locales = {{ craft.i18n.getSiteLocaleIds()|json_encode|raw }};
 	{% endif %}
 {% endset %}

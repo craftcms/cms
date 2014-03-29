@@ -67,7 +67,7 @@
 				{% set urlFormatInput %}
 					<table class="data fullwidth">
 						<thead>
-							{% if CraftEdition == CraftPro %}
+							{% if craft.isLocalized() %}
 								<th></th>
 							{% endif %}
 							<th scope="col">{{ "Top-Level Categories"|t }}</th>
@@ -76,7 +76,7 @@
 						<tbody>
 							{% for locale in craft.i18n.getSiteLocales() %}
 								<tr>
-									{% if CraftEdition == CraftPro %}
+									{% if craft.isLocalized() %}
 										<th class="thin nowrap">{{ locale.id }}</th>
 									{% endif %}
 									<td>

@@ -73,7 +73,7 @@ class UserPermissionsService extends BaseApplicationComponent
 
 		// Locales
 
-		if (craft()->getEdition() == Craft::Pro)
+		if (craft()->isLocalized())
 		{
 			$label = Craft::t('Locales');
 			$locales = craft()->i18n->getSiteLocales();

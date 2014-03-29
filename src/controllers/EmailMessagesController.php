@@ -21,7 +21,7 @@ class EmailMessagesController extends BaseController
 		$message->subject = craft()->request->getRequiredPost('subject');
 		$message->body = craft()->request->getRequiredPost('body');
 
-		if (craft()->getEdition() == Craft::Pro)
+		if (craft()->isLocalized())
 		{
 			$message->locale = craft()->request->getPost('locale');
 		}

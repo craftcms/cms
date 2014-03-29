@@ -360,20 +360,21 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	protected function getTargetLocale()
 	{
-		$targetLocale = $this->getSettings()->targetLocale;
+		if (craft()->isLocalized())
+		{
+			$targetLocale = $this->getSettings()->targetLocale;
 
-		if ($targetLocale)
-		{
-			return $targetLocale;
+			if ($targetLocale)
+			{
+				return $targetLocale;
+			}
+			else if (isset($this->element))
+			{
+				return $this->element->locale;
+			}
 		}
-		else if (isset($this->element))
-		{
-			return $this->element->locale;
-		}
-		else
-		{
-			return craft()->language;
-		}
+
+		return craft()->getLanguage();
 	}
 
 	/**
@@ -384,7 +385,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	protected function getTargetLocaleFieldHtml()
 	{
-		if (craft()->getEdition() == Craft::Pro && $this->getElementType()->isLocalized())
+		if (craft()->isLocalized() && $this->getElementType()->isLocalized())
 		{
 			$localeOptions = array(
 				array('label' => Craft::t('Same as source'), 'value' => null)

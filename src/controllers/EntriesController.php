@@ -143,7 +143,7 @@ class EntriesController extends BaseController
 		}
 
 		// Get the enabled locales
-		if (craft()->getEdition() == Craft::Pro)
+		if (craft()->isLocalized())
 		{
 			if ($variables['entry']->id)
 			{
@@ -274,7 +274,7 @@ class EntriesController extends BaseController
 		// Set the "Continue Editing" URL
 		$variables['continueEditingUrl'] = 'entries/'.$variables['section']->handle.'/{id}' .
 			(isset($variables['draftId']) ? '/drafts/'.$variables['draftId'] : '') .
-			(craft()->getEdition() == Craft::Pro && craft()->getLanguage() != $variables['localeId'] ? '/'.$variables['localeId'] : '');
+			(craft()->isLocalized() && craft()->getLanguage() != $variables['localeId'] ? '/'.$variables['localeId'] : '');
 
 		// Can the user delete the entry?
 		$variables['canDeleteEntry'] = $variables['entry']->id && (
@@ -500,7 +500,7 @@ class EntriesController extends BaseController
 		// Make sure the user is allowed to edit entries in this section
 		craft()->userSession->requirePermission('editEntries'.$variables['permissionSuffix']);
 
-		if (craft()->getEdition() == Craft::Pro)
+		if (craft()->isLocalized())
 		{
 			// Only use the locales that the user has access to
 			$sectionLocaleIds = array_keys($variables['section']->getLocales());
