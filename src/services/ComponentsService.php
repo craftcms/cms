@@ -55,18 +55,25 @@ class ComponentsService extends BaseApplicationComponent
 		if (!class_exists($nsClass))
 		{
 			// Maybe it's a plugin component?
-			if (($pos = strrpos($class, '_')) !== false)
+			if ($this->types[$type]['enableForPlugins'])
 			{
-				$pluginHandle = substr($class, 0, $pos);
+				if (($pos = strrpos($class, '_')) !== false)
+				{
+					$pluginHandle = substr($class, 0, $pos);
+				}
+				else
+				{
+					$pluginHandle = $class;
+				}
+
+				$plugin = craft()->plugins->getPlugin($pluginHandle);
+
+				if (!$plugin || !craft()->plugins->doesPluginClassExist($plugin, $this->types[$type]['subfolder'], $fullClass))
+				{
+					return null;
+				}
 			}
 			else
-			{
-				$pluginHandle = $class;
-			}
-
-			$plugin = craft()->plugins->getPlugin($pluginHandle);
-
-			if (!$plugin || !craft()->plugins->doesPluginClassExist($plugin, $this->types[$type]['subfolder'], $fullClass))
 			{
 				return null;
 			}
@@ -196,10 +203,13 @@ class ComponentsService extends BaseApplicationComponent
 		}
 
 		// Now load any plugin-supplied components
-		foreach (craft()->plugins->getPlugins() as $plugin)
+		if ($this->types[$type]['enableForPlugins'])
 		{
-			$pluginClasses = craft()->plugins->getPluginClasses($plugin, $this->types[$type]['subfolder'], $this->types[$type]['suffix']);
-			$componentClasses = array_merge($componentClasses, $pluginClasses);
+			foreach (craft()->plugins->getPlugins() as $plugin)
+			{
+				$pluginClasses = craft()->plugins->getPluginClasses($plugin, $this->types[$type]['subfolder'], $this->types[$type]['suffix']);
+				$componentClasses = array_merge($componentClasses, $pluginClasses);
+			}
 		}
 
 		// Initialize, verify, and save them
