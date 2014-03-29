@@ -1,6 +1,7 @@
 {% macro buybtn(edition, info, canTestEditions) %}
 	{%- spaceless %}
-		{% if edition == CraftEdition %}
+		{% set currentEdition = craft.app.getLicensedEdition() is not sameas(null) ? craft.app.getLicensedEdition() : CraftEdition %}
+		{% if edition == currentEdition)  %}
 			<div class="installed">{{ "Installed"|t }}</div>
 			{% if canTestEditions %}
 				<div class="btn test" data-edition="0">{{ "Uninstall"|t }}</div>
