@@ -157,7 +157,7 @@ class LocalizationService extends BaseApplicationComponent
 	 */
 	public function getEditableLocales()
 	{
-		if (craft()->getEdition() == Craft::Pro)
+		if (craft()->isLocalized())
 		{
 			$locales = $this->getSiteLocales();
 			$editableLocales = array();

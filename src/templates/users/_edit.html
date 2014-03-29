@@ -179,7 +179,7 @@
 
 					{% endif %}
 
-					{% if CraftEdition == CraftPro %}
+					{% if craft.isLocalized() %}
 						{% set localeInput %}
 							<div class="select">
 								<select id="preferredLocale" name="preferredLocale">

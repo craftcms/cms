@@ -139,7 +139,7 @@ class SectionsController extends BaseController
 		// Locale-specific attributes
 		$locales = array();
 
-		if (craft()->getEdition() == Craft::Pro)
+		if (craft()->isLocalized())
 		{
 			$localeIds = craft()->request->getPost('locales');
 		}

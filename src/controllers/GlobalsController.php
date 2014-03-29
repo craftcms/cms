@@ -147,7 +147,7 @@ class GlobalsController extends BaseController
 		// Make sure the user is allowed to edit this global set and locale
 		craft()->userSession->requirePermission('editGlobalSet:'.$globalSetId);
 
-		if (craft()->getEdition() == Craft::Pro)
+		if (craft()->isLocalized())
 		{
 			craft()->userSession->requirePermission('editLocale:'.$localeId);
 		}

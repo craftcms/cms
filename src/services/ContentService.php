@@ -117,7 +117,7 @@ class ContentService extends BaseApplicationComponent
 
 			if ($fieldLayout)
 			{
-				if ($updateOtherLocales && craft()->getEdition() == Craft::Pro)
+				if ($updateOtherLocales && craft()->isLocalized())
 				{
 					$this->_duplicateNonTranslatableFieldValues($element, $content, $fieldLayout, $nonTranslatableFields, $otherContentModels);
 				}

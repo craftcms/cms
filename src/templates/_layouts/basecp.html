@@ -46,6 +46,7 @@
 			Client:               {{ CraftClient }},
 			Pro:                  {{ CraftPro }},
 			edition:              {{ CraftEdition }},
+			isLocalized:          {{ craft.isLocalized() ? 'true' : 'false' }},
 			translations:         {{ getTranslations()|raw }},
 			maxUploadSize:        {{ craft.app.getMaxUploadSize() }},
 			slugWordSeparator:    "{{ craft.config.slugWordSeparator|e('js') }}"

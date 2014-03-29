@@ -116,7 +116,7 @@
 			translatable: true
 		}) }}
 
-		{% if CraftEdition == CraftPro %}
+		{% if craft.isLocalized() %}
 			{{ forms.checkboxField({
 				label: "This field is translatable"|t,
 				name: 'translatable',

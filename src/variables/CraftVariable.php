@@ -60,6 +60,16 @@ class CraftVariable
 	}
 
 	/**
+	 * Returns whether this site has multiple locales.
+	 *
+	 * @return bool
+	 */
+	public function isLocalized()
+	{
+		return craft()->isLocalized();
+	}
+
+	/**
 	 * Returns whether a package is included in the Craft build.
 	 *
 	 * @param $packageName;

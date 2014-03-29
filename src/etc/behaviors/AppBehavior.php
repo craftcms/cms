@@ -9,6 +9,7 @@ namespace Craft;
 class AppBehavior extends BaseBehavior
 {
 	private $_isInstalled;
+	private $_isLocalized;
 	private $_info;
 	private $_siteName;
 	private $_siteUrl;
@@ -58,6 +59,21 @@ class AppBehavior extends BaseBehavior
 	{
 		// If you say so!
 		$this->_isInstalled = true;
+	}
+
+	/**
+	 * Returns whether this site has multiple locales.
+	 *
+	 * @return bool
+	 */
+	public function isLocalized()
+	{
+		if (!isset($this->_isLocalized))
+		{
+			$this->_isLocalized = ($this->getEdition() == Craft::Pro && count(craft()->i18n->getSiteLocales()) > 1);
+		}
+
+		return $this->_isLocalized;
 	}
 
 	/**
