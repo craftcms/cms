@@ -196,13 +196,13 @@ Craft.RichTextInput = Garnish.Base.extend(
 
 		if (typeof this.redactor.fullscreen != 'undefined' && typeof this.redactor.toggleFullscreen == 'function')
 		{
-			Craft.cp.on('beforeSaveShortcut', function()
+			Craft.cp.on('beforeSaveShortcut', $.proxy(function()
 			{
 				if (this.redactor.fullscreen)
 				{
 					this.redactor.toggleFullscreen();
 				}
-			});
+			}, this));
 		}
 	},
 
