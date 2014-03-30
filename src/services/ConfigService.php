@@ -485,7 +485,7 @@ class ConfigService extends BaseApplicationComponent
 	{
 		if (craft()->request->isCpRequest())
 		{
-			return 'resources';
+			return 'cpresources';
 		}
 		else
 		{

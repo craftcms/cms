@@ -65,15 +65,8 @@ class ConfigVariable
 	 *
 	 * @return string
 	 */
-	public function resourceTrigger()
+	public function getResourceTrigger()
 	{
-		if (craft()->request->isCpRequest())
-		{
-			return 'resources';
-		}
-		else
-		{
-			return craft()->config->get('resourceTrigger', ConfigFile::General);
-		}
+		return craft()->config->getResourceTrigger();
 	}
 }
