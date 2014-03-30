@@ -687,7 +687,7 @@ ul.tree,
 /*  Panes, Modals and HUDs
 /* ----------------------------------------*/
 
-.pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: 3px; word-wrap: break-word; @include box-sizing(border-box); }
+.pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: 3px; word-wrap: break-word; @include box-sizing(border-box); overflow-x: hidden; }
 
 .modal,
 .hud,
