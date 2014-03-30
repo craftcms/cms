@@ -203,6 +203,22 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 					{
 						$value = '<span data-icon="home" title="'.Craft::t('Homepage').'"></span>';
 					}
+					else
+					{
+						// Add some <wbr> tags in there so it doesn't all have to be on one line
+						$find = array('/');
+						$replace = array('/<wbr>');
+
+						$wordSeparator = craft()->config->get('slugWordSeparator');
+
+						if ($wordSeparator)
+						{
+							$find[] = $wordSeparator;
+							$replace[] = $wordSeparator.'<wbr>';
+						}
+
+						$value = str_replace($find, $replace, $value);
+					}
 
 					return '<a href="'.$url.'" target="_blank" class="go">'.$value.'</a>';
 				}
