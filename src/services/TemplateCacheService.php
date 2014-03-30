@@ -67,12 +67,11 @@ class TemplateCacheService extends BaseApplicationComponent
 	{
 		if (!empty($this->_cacheCriteria))
 		{
-			foreach (array_keys($this->_cacheCriteria) as $key)
+			$criteriaHash = spl_object_hash($criteria);
+
+			foreach (array_keys($this->_cacheCriteria) as $cacheKey)
 			{
-				if (array_search($criteria, $this->_cacheCriteria[$key]) === false)
-				{
-					$this->_cacheCriteria[$key][] = $criteria;
-				}
+				$this->_cacheCriteria[$cacheKey][$criteriaHash] = $criteria;
 			}
 		}
 	}
@@ -86,11 +85,11 @@ class TemplateCacheService extends BaseApplicationComponent
 	{
 		if (!empty($this->_cacheElementIds))
 		{
-			foreach (array_keys($this->_cacheElementIds) as $key)
+			foreach (array_keys($this->_cacheElementIds) as $cacheKey)
 			{
-				if (array_search($elementId, $this->_cacheElementIds[$key]) === false)
+				if (array_search($elementId, $this->_cacheElementIds[$cacheKey]) === false)
 				{
-					$this->_cacheElementIds[$key][] = $elementId;
+					$this->_cacheElementIds[$cacheKey][] = $elementId;
 				}
 			}
 		}
