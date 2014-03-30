@@ -159,7 +159,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			this.modal.elementIndex.enableElementsById($element.data('id'));
 		}
 
-		if (this.$addElementBtn.length)
+		if (this.$addElementBtn && this.$addElementBtn.length)
 		{
 			this.updateAddElementsBtn();
 		}
