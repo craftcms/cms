@@ -20,6 +20,21 @@ class CategoryModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns the field layout used by this element.
+	 *
+	 * @return FieldLayoutModel|null
+	 */
+	public function getFieldLayout()
+	{
+		$group = $this->getGroup();
+
+		if ($group)
+		{
+			return $group->getFieldLayout();
+		}
+	}
+
+	/**
 	 * Returns the URL format used to generate this element's URL.
 	 *
 	 * @return string|null
