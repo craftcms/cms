@@ -163,7 +163,7 @@ class AppController extends BaseController
 		{
 			$this->returnJson(array(
 				'success' => true,
-				'package' => $model->package
+				'edition' => $model->edition
 			));
 		}
 		else

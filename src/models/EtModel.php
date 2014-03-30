@@ -19,7 +19,7 @@ class EtModel extends BaseModel
 		$attributes['licenseKeyStatus']  = AttributeType::String;
 
 		// The edition that Craft is licensed to use
-		$attributes['licensedEdition'] = array(AttributeType::Enum, 'values' => Craft::Personal, Craft::Client, Craft::Pro);
+		$attributes['licensedEdition'] = array(AttributeType::Enum, 'values' => array(Craft::Personal, Craft::Client, Craft::Pro));
 
 		// The domain that the license is associated with
 		$attributes['licensedDomain'] = AttributeType::String;
