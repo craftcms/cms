@@ -252,7 +252,7 @@ return array(
 	/**
 	 * The URI segment Craft should use for resource URLs on the front end.
 	 */
-	'resourceTrigger' => 'resources',
+	'resourceTrigger' => 'cpresources',
 
 	/**
 	 * Whether Craft should attempt to restore the just-created DB backup in the event that there was an error making the database schema changes mandated by the update.
