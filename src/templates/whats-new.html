@@ -2,30 +2,24 @@
 {% set title = "What’s new in Craft 1.3" %}
 {% includeCssResource "css/whats-new.css" %}
 
+{% block pageHeader %}{% endblock %}
+
 {% set content %}
-	<h1>Welcome to Craft 1.3.</h1>
+	<h1>Categorically awesome.</h1>
+	<p>Craft 2 packs <a href="http://buildwithcraft.com/updates"><strong>250</strong> new features and improvements</a>. Whether you’re a content author, web designer, or plugin developer, there’s a lot you’re going to love.</p>
 
-	<div class="feature matrix">
-		<h2>Introducing Matrix.</h2>
-		<p>Matrix is a powerful field type that enables a new level of content flexibility in Craft. It’s great for times when you need to store repeating content, or string multiple types of content together.</p>
+	<img src="{{ resourceUrl('images/whats-new/categories.png') }}" alt="Categories index">
+	<h1>Categories</h1>
+	<p>You can now manage taxonomies in Craft with <a href="http://buildwithcraft.com/docs/categories">categories</a>, and set up <a href="http://buildwithcraft.com/docs/categories-fields">Categories fields</a> to relate your entries and other elements to them.</p>
 
-		<ul>
-			<li><a class="go" href="http://buildwithcraft.com/features/matrix" target="_blank">Find out more about Matrix</a></li>
-			<li><a class="go" href="http://pixelandtonic.com/blog/craft-1.3" target="_blank">Read more about what’s new in Craft 1.3</a></li>
-		</ul>
-	</div>
+	<img src="{{ resourceUrl('images/whats-new/upgrade-modal.png') }}" alt="Craft’s edition upgrade modal">
+	<h1>New Pricing</h1>
+	<p>We’ve split Craft into <a href="http://buildwithcraft.com/pricing">three editions</a> – Personal, Client, and Pro – and we’re selling them at price points that make Craft more affordable than ever. Best of all, any sites that have ever purchased a package in Craft 1.x have been upgraded to Pro for free!</p>
+
+	<img src="{{ resourceUrl('images/whats-new/cp-arabic.png') }}" alt="Craft’s Control Panel translated into Arabic">
+	<h1>Redesigned Control Panel with RTL Support</h1>
+	<p>We’ve redesigned the Control Panel, giving it a wider max width, a new layout system that offers more modularity and responsiveness, full RTL language support, and countless subtle improvements</p>
+
+	<h1>So Much More!</h1>
+	<p>Craft 2 packs support for eight new caching methods, partial template caching, background tasks, and tons of improvements to literally every corner of the system. To read the full list, check out the <a href="http://buildwithcraft.com/updates">release notes</a>.</p>
 {% endset %}
-
-{% set js %}
-	if (typeof Storage !== 'undefined')
-	{
-		for (var key in localStorage)
-		{
-			if (key.substr(0, 5) == 'Craft' && key.substr(5, 1) != '-')
-			{
-				delete localStorage[key];
-			}
-		}
-	}
-{% endset %}
-{% includeJs js %}

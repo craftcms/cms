@@ -178,28 +178,29 @@
 		</div>
 
 		<header id="page-header">
+			{% block pageHeader %}
+				{% if crumbs is defined and crumbs %}
+					<nav id="crumbs">
+						<ul>
+							{% for crumb in crumbs %}
+								<li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+							{% endfor %}
+						</ul>
+					</nav>
+				{% endif %}
 
-			{% if crumbs is defined and crumbs %}
-				<nav id="crumbs">
-					<ul>
-						{% for crumb in crumbs %}
-							<li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
-						{% endfor %}
-					</ul>
-				</nav>
-			{% endif %}
+				{% if title is defined and title %}
+					<h1>{{ title|raw }}</h1>
+				{% endif %}
 
-			{% if title is defined and title %}
-				<h1>{{ title|raw }}</h1>
-			{% endif %}
+				{% if extraPageHeaderHtml is defined %}
+					<div id="extra-headers">
+						{{ extraPageHeaderHtml }}
+					</div>
+				{% endif %}
 
-			{% if extraPageHeaderHtml is defined %}
-				<div id="extra-headers">
-					{{ extraPageHeaderHtml }}
-				</div>
-			{% endif %}
-
-			<div class="clear"></div>
+				<div class="clear"></div>
+			{% endblock %}
 		</header>
 
 		<main id="main" role="main">

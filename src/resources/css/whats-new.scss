@@ -2,33 +2,13 @@
 
 @import "shared";
 
-#page-header { display: none; }
-#main { margin-top: 30px; padding-bottom: 0; }
+#page-header { padding: 12px 0; }
 
-#content { font-size: 14px; }
-#content h1 { font-size: 40px; text-align: center; }
-#content h2 { font-size: 20px; }
+#content h1,
+#content p { margin: 45px auto !important; max-width: 700px; text-align: center; }
 
-#content .feature { position: relative; margin: 0 -30px; @include padding(100px, 575px, 50px, 30px); min-height: 287px; overflow: hidden;
-	@include linear-gradient(hsl(212, 8%, 100%), hsl(212, 8%, 97%));
-}
+#content h1 + p { margin-top: -25px !important; }
 
-#content .feature:after { display: block; content: '.'; font-size: 0; border-top-left-radius: 3px; position: absolute; @include right(0); bottom: 0; width: 525px; height: 435px; background: hsl(212, 8%, 92%) no-repeat 100% 100%; background-size: 525px;
-	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.15));
-}
+#content p { font-size: 17px; line-height: 1.4; }
 
-#content .feature.matrix:after { background-image: url(../images/whats-new/matrix.png); }
-
-@media screen and (max-width: 900px) {
-	#content .feature { padding: 10px 10px 355px; min-height: 0; }
-	#content .feature:after { width: 400px; height: 331px; background-size: 400px; }
-}
-
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-	   only screen and (   -moz-min-device-pixel-ratio: 1.5),
-	   only screen and (     -o-min-device-pixel-ratio: 3/2),
-	   only screen and (        min-device-pixel-ratio: 1.5),
-	   only screen and (        min-resolution: 1.5dppx)
-{
-	#content .feature.matrix:after { background-image: url(../images/whats-new/matrix_2x.png); }
-}
+#content img { display: block; margin: 45px auto; border-radius: 4px 0 0 4px; max-width: 870px; @include box-shadow(0 0 50px rgba(0,0,0,0.25)); }
