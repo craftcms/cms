@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * Craft by Pixel & Tonic
+ *
+ * @package   Craft
+ * @author    Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ */
+
 return array (
 	'account_activation_heading' => 'When someone creates an account:',
 	'account_activation_subject' => 'Activate your account',
@@ -22,9 +32,9 @@ return array (
 		"{{link}}\n\n" .
 		"If you weren't expecting this email, just ignore it.",
 
-	'test_email_subject' => 'This is a test email from @@@appName@@@',
+	'test_email_subject' => 'This is a test email from Craft',
 	'test_email_body' => "Hey {{user.friendlyName}},\n\n".
-		"Congratulations! @@@appName@@@ was successfully able to send an email.\n\n".
+		"Congratulations! Craft was successfully able to send an email.\n\n".
 		"Here are the settings you used:\n\n".
 		"{% for key, setting in settings %}".
 		"{{ key }}:  {{ setting }}\n".
