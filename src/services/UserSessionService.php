@@ -299,7 +299,7 @@ class UserSessionService extends \CWebUser
 		$passwordModel->password = $password;
 
 		// Require a userAgent string and an IP address to help prevent direct socket connections from trying to login.
-		if (!craft()->request->userAgent || !craft()->request->getIpAddress())
+		if (!craft()->request->userAgent || !$_SERVER['REMOTE_ADDR'])
 		{
 			Craft::log('Someone tried to login with loginName: '.$username.', without presenting an IP address or userAgent string.', LogLevel::Warning);
 			$this->logout();
