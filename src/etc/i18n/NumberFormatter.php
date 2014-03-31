@@ -15,7 +15,41 @@ class NumberFormatter extends \CNumberFormatter
 	 */
 	public function formatDecimal($value, $withGroupSymbol = true)
 	{
-		$result = parent::formatDecimal($value);
+		// Let's make sure the decimal format matches the number of decimal places specified in the value.
+		$decimalFormat = $this->_locale->getDecimalFormat();
+
+		// Find the starting decimal position in the format.
+		for ($formatCounter = strlen($decimalFormat) - 1; $formatCounter >= 0; $formatCounter--)
+		{
+			if ($decimalFormat[$formatCounter] !== '#')
+			{
+				break;
+			}
+		}
+
+		$formatCounter += 1;
+
+		// Find the starting decimal position in the value.
+		for ($valueCounter = strlen($value) - 1; $valueCounter >= 0; $valueCounter--)
+		{
+			if (!is_numeric($value[$valueCounter]))
+			{
+				break;
+			}
+		}
+
+		$valueCounter += 1;
+
+		// Calculate how many decimals we're using.
+		$decimalLength = strlen($value) - $valueCounter;
+
+		// Adjust the format for the number of decimals.
+		for ($finalCounter = $formatCounter; $finalCounter <= $decimalLength + $formatCounter; $finalCounter++)
+		{
+			$decimalFormat[$finalCounter] = '#';
+		}
+
+		$result = $this->format($decimalFormat, $value);
 
 		if (!$withGroupSymbol)
 		{
