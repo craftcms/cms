@@ -5,10 +5,10 @@ test( 'Craft.getUrl()', function()
 	Craft.baseCpUrl = 'http://craft.dev/admin';
 	Craft.baseSiteUrl = 'http://craft.dev/';
 	Craft.actionUrl = 'http://craft.dev/index.php/admin/actions';
-	Craft.resourceUrl = 'http://craft.dev/admin/cpresources';
+	Craft.resourceUrl = 'http://craft.dev/admin/resources';
 	Craft.omitScriptNameInUrls = true;
 	Craft.usePathInfo = true;
-	Craft.resourceTrigger = 'cpresources';
+	Craft.resourceTrigger = 'resources';
 	Craft.actionTrigger = 'actions';
 	Craft.path = '';
 	Craft.locale = 'en_us';
@@ -43,16 +43,16 @@ test( 'Craft.getUrl()', function()
 	equal(Craft.getSiteUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/about?foo=1&bar=1');
 	equal(Craft.getSiteUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/about?foo=1#bar');
 
-	equal(Craft.getResourceUrl('', {'foo': 1, 'bar': 1}), 'http://craft.dev/admin/cpresources?foo=1&bar=1');
-	equal(Craft.getResourceUrl('', 'foo=1&bar=1'), 'http://craft.dev/admin/cpresources?foo=1&bar=1');
-	equal(Craft.getResourceUrl('', '?foo=1&bar=1&'), 'http://craft.dev/admin/cpresources?foo=1&bar=1');
-	equal(Craft.getResourceUrl('', {'foo': 1, '#': 'bar'}), 'http://craft.dev/admin/cpresources?foo=1#bar');
-	equal(Craft.getResourceUrl('about', {'foo': 1, 'bar': 1}), 'http://craft.dev/admin/cpresources/about?foo=1&bar=1');
-	equal(Craft.getResourceUrl('about', 'foo=1&bar=1'), 'http://craft.dev/admin/cpresources/about?foo=1&bar=1');
-	equal(Craft.getResourceUrl('about', '?foo=1&bar=1&'), 'http://craft.dev/admin/cpresources/about?foo=1&bar=1');
-	equal(Craft.getResourceUrl('about?foo=1', 'bar=1'), 'http://craft.dev/admin/cpresources/about?foo=1&bar=1');
-	equal(Craft.getResourceUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/admin/cpresources/about?foo=1&bar=1');
-	equal(Craft.getResourceUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/admin/cpresources/about?foo=1#bar');
+	equal(Craft.getResourceUrl('', {'foo': 1, 'bar': 1}), 'http://craft.dev/admin/resources?foo=1&bar=1');
+	equal(Craft.getResourceUrl('', 'foo=1&bar=1'), 'http://craft.dev/admin/resources?foo=1&bar=1');
+	equal(Craft.getResourceUrl('', '?foo=1&bar=1&'), 'http://craft.dev/admin/resources?foo=1&bar=1');
+	equal(Craft.getResourceUrl('', {'foo': 1, '#': 'bar'}), 'http://craft.dev/admin/resources?foo=1#bar');
+	equal(Craft.getResourceUrl('about', {'foo': 1, 'bar': 1}), 'http://craft.dev/admin/resources/about?foo=1&bar=1');
+	equal(Craft.getResourceUrl('about', 'foo=1&bar=1'), 'http://craft.dev/admin/resources/about?foo=1&bar=1');
+	equal(Craft.getResourceUrl('about', '?foo=1&bar=1&'), 'http://craft.dev/admin/resources/about?foo=1&bar=1');
+	equal(Craft.getResourceUrl('about?foo=1', 'bar=1'), 'http://craft.dev/admin/resources/about?foo=1&bar=1');
+	equal(Craft.getResourceUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/admin/resources/about?foo=1&bar=1');
+	equal(Craft.getResourceUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/admin/resources/about?foo=1#bar');
 
 	equal(Craft.getActionUrl('', {'foo': 1, 'bar': 1}), 'http://craft.dev/index.php/admin/actions?foo=1&bar=1');
 	equal(Craft.getActionUrl('', 'foo=1&bar=1'), 'http://craft.dev/index.php/admin/actions?foo=1&bar=1');
@@ -71,7 +71,7 @@ test( 'Craft.getUrl()', function()
 	Craft.baseCpUrl = 'http://craft.dev/index.php/admin';
 	Craft.baseSiteUrl = 'http://craft.dev/';
 	Craft.actionUrl = 'http://craft.dev/index.php/admin/actions';
-	Craft.resourceUrl = 'http://craft.dev/index.php/admin/cpresources';
+	Craft.resourceUrl = 'http://craft.dev/index.php/admin/resources';
 	Craft.omitScriptNameInUrls = false;
 
 	equal(Craft.getUrl(), 'http://craft.dev/index.php/admin');
@@ -99,16 +99,16 @@ test( 'Craft.getUrl()', function()
 	equal(Craft.getSiteUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/index.php/about?foo=1&bar=1');
 	equal(Craft.getSiteUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/index.php/about?foo=1#bar');
 
-	equal(Craft.getResourceUrl('', {'foo': 1, 'bar': 1}), 'http://craft.dev/index.php/admin/cpresources?foo=1&bar=1');
-	equal(Craft.getResourceUrl('', 'foo=1&bar=1'), 'http://craft.dev/index.php/admin/cpresources?foo=1&bar=1');
-	equal(Craft.getResourceUrl('', '?foo=1&bar=1&'), 'http://craft.dev/index.php/admin/cpresources?foo=1&bar=1');
-	equal(Craft.getResourceUrl('', {'foo': 1, '#': 'bar'}), 'http://craft.dev/index.php/admin/cpresources?foo=1#bar');
-	equal(Craft.getResourceUrl('about', {'foo': 1, 'bar': 1}), 'http://craft.dev/index.php/admin/cpresources/about?foo=1&bar=1');
-	equal(Craft.getResourceUrl('about', 'foo=1&bar=1'), 'http://craft.dev/index.php/admin/cpresources/about?foo=1&bar=1');
-	equal(Craft.getResourceUrl('about', '?foo=1&bar=1&'), 'http://craft.dev/index.php/admin/cpresources/about?foo=1&bar=1');
-	equal(Craft.getResourceUrl('about?foo=1', 'bar=1'), 'http://craft.dev/index.php/admin/cpresources/about?foo=1&bar=1');
-	equal(Craft.getResourceUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/index.php/admin/cpresources/about?foo=1&bar=1');
-	equal(Craft.getResourceUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/index.php/admin/cpresources/about?foo=1#bar');
+	equal(Craft.getResourceUrl('', {'foo': 1, 'bar': 1}), 'http://craft.dev/index.php/admin/resources?foo=1&bar=1');
+	equal(Craft.getResourceUrl('', 'foo=1&bar=1'), 'http://craft.dev/index.php/admin/resources?foo=1&bar=1');
+	equal(Craft.getResourceUrl('', '?foo=1&bar=1&'), 'http://craft.dev/index.php/admin/resources?foo=1&bar=1');
+	equal(Craft.getResourceUrl('', {'foo': 1, '#': 'bar'}), 'http://craft.dev/index.php/admin/resources?foo=1#bar');
+	equal(Craft.getResourceUrl('about', {'foo': 1, 'bar': 1}), 'http://craft.dev/index.php/admin/resources/about?foo=1&bar=1');
+	equal(Craft.getResourceUrl('about', 'foo=1&bar=1'), 'http://craft.dev/index.php/admin/resources/about?foo=1&bar=1');
+	equal(Craft.getResourceUrl('about', '?foo=1&bar=1&'), 'http://craft.dev/index.php/admin/resources/about?foo=1&bar=1');
+	equal(Craft.getResourceUrl('about?foo=1', 'bar=1'), 'http://craft.dev/index.php/admin/resources/about?foo=1&bar=1');
+	equal(Craft.getResourceUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/index.php/admin/resources/about?foo=1&bar=1');
+	equal(Craft.getResourceUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/index.php/admin/resources/about?foo=1#bar');
 
 	equal(Craft.getActionUrl('', {'foo': 1, 'bar': 1}), 'http://craft.dev/index.php/admin/actions?foo=1&bar=1');
 	equal(Craft.getActionUrl('', 'foo=1&bar=1'), 'http://craft.dev/index.php/admin/actions?foo=1&bar=1');
@@ -127,7 +127,7 @@ test( 'Craft.getUrl()', function()
 	Craft.baseCpUrl = 'http://craft.dev/?p=admin';
 	Craft.baseSiteUrl = 'http://craft.dev/';
 	Craft.actionUrl = 'http://craft.dev/?p=admin/actions';
-	Craft.resourceUrl = 'http://craft.dev/?p=admin/cpresources';
+	Craft.resourceUrl = 'http://craft.dev/?p=admin/resources';
 	Craft.usePathInfo = false;
 
 	equal(Craft.getUrl(), 'http://craft.dev/?p=admin');
@@ -155,16 +155,16 @@ test( 'Craft.getUrl()', function()
 	equal(Craft.getSiteUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/?p=about&foo=1&bar=1');
 	equal(Craft.getSiteUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/?p=about&foo=1#bar');
 
-	equal(Craft.getResourceUrl('', {'foo': 1, 'bar': 1}), 'http://craft.dev/?p=admin/cpresources&foo=1&bar=1');
-	equal(Craft.getResourceUrl('', 'foo=1&bar=1'), 'http://craft.dev/?p=admin/cpresources&foo=1&bar=1');
-	equal(Craft.getResourceUrl('', '?foo=1&bar=1&'), 'http://craft.dev/?p=admin/cpresources&foo=1&bar=1');
-	equal(Craft.getResourceUrl('', {'foo': 1, '#': 'bar'}), 'http://craft.dev/?p=admin/cpresources&foo=1#bar');
-	equal(Craft.getResourceUrl('about', {'foo': 1, 'bar': 1}), 'http://craft.dev/?p=admin/cpresources/about&foo=1&bar=1');
-	equal(Craft.getResourceUrl('about', 'foo=1&bar=1'), 'http://craft.dev/?p=admin/cpresources/about&foo=1&bar=1');
-	equal(Craft.getResourceUrl('about', '?foo=1&bar=1&'), 'http://craft.dev/?p=admin/cpresources/about&foo=1&bar=1');
-	equal(Craft.getResourceUrl('about?foo=1', 'bar=1'), 'http://craft.dev/?p=admin/cpresources/about&foo=1&bar=1');
-	equal(Craft.getResourceUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/?p=admin/cpresources/about&foo=1&bar=1');
-	equal(Craft.getResourceUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/?p=admin/cpresources/about&foo=1#bar');
+	equal(Craft.getResourceUrl('', {'foo': 1, 'bar': 1}), 'http://craft.dev/?p=admin/resources&foo=1&bar=1');
+	equal(Craft.getResourceUrl('', 'foo=1&bar=1'), 'http://craft.dev/?p=admin/resources&foo=1&bar=1');
+	equal(Craft.getResourceUrl('', '?foo=1&bar=1&'), 'http://craft.dev/?p=admin/resources&foo=1&bar=1');
+	equal(Craft.getResourceUrl('', {'foo': 1, '#': 'bar'}), 'http://craft.dev/?p=admin/resources&foo=1#bar');
+	equal(Craft.getResourceUrl('about', {'foo': 1, 'bar': 1}), 'http://craft.dev/?p=admin/resources/about&foo=1&bar=1');
+	equal(Craft.getResourceUrl('about', 'foo=1&bar=1'), 'http://craft.dev/?p=admin/resources/about&foo=1&bar=1');
+	equal(Craft.getResourceUrl('about', '?foo=1&bar=1&'), 'http://craft.dev/?p=admin/resources/about&foo=1&bar=1');
+	equal(Craft.getResourceUrl('about?foo=1', 'bar=1'), 'http://craft.dev/?p=admin/resources/about&foo=1&bar=1');
+	equal(Craft.getResourceUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/?p=admin/resources/about&foo=1&bar=1');
+	equal(Craft.getResourceUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/?p=admin/resources/about&foo=1#bar');
 
 	equal(Craft.getActionUrl('', {'foo': 1, 'bar': 1}), 'http://craft.dev/?p=admin/actions&foo=1&bar=1');
 	equal(Craft.getActionUrl('', 'foo=1&bar=1'), 'http://craft.dev/?p=admin/actions&foo=1&bar=1');
@@ -181,7 +181,7 @@ test( 'Craft.getUrl()', function()
 	Craft.baseCpUrl = "http://craft.dev/admin";
 	Craft.baseSiteUrl = "http://craft.dev/";
 	Craft.actionUrl = "http://craft.dev/index.php?p=admin/actions";
-	Craft.resourceUrl = "http://craft.dev/admin/cpresources";
+	Craft.resourceUrl = "http://craft.dev/admin/resources";
 	Craft.omitScriptNameInUrls = true;
 	Craft.usePathInfo = false;
 
