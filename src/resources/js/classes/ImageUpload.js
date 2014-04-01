@@ -231,22 +231,35 @@ Craft.ImageModal = Garnish.Modal.extend(
 
 	_onResize: function ()
 	{
-		var img = this.$container.find('img'),
-			leftDistance = parseInt(this.$container.css('left'), 10);
+		var $img = this.$container.find('img'),
+			leftDistance = parseInt(this.$container.css('left'), 10),
+			topDistance = parseInt(this.$container.css('top'), 10);
 
-		// If the modal has moved further than 10px from the left side, we have space to expand
-		if (leftDistance > 10)
+		var quotient = this.originalWidth / this.originalHeight,
+			leftAvailable = leftDistance - 10,
+			topAvailable = topDistance - 10;
+
+		if (leftAvailable / quotient > topAvailable)
 		{
-			this.$container.width(Math.min(leftDistance - 10 + this.$container.width(), this.constraint));
+			newWidth = this.$container.width() + (topAvailable * quotient);
 		}
+		else
+		{
+			newWidth = this.$container.width() + leftAvailable;
+		}
+		// Set the size so that the image always fits into a constraint x constraint box
+		newWidth = Math.min(newWidth, this.constraint, this.constraint * quotient);
+		console.log(newWidth, this.$container.width());
+		this.$container.width(newWidth);
+		console.log(this.$container.width());
 
 		var newWidth = this.$container.width(),
 			factor = newWidth / this.originalWidth,
 			newHeight = this.originalHeight * factor;
 
-		img.height(newHeight).width(newWidth);
+		$img.height(newHeight).width(newWidth);
 		this.factor = factor;
-		var instance = img.imgAreaSelect({instance: true});
+		var instance = $img.imgAreaSelect({instance: true});
 		if (instance)
 		{
 			instance.update();

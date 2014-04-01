@@ -974,7 +974,11 @@ class ElementsService extends BaseApplicationComponent
 				$element->locale = $mainLocaleId;
 				$element->slug   = $mainSlug;
 				$element->uri    = $mainUri;
-				$element->setContent($mainContent);
+
+				if ($elementType->hasContent())
+				{
+					$element->setContent($mainContent);
+				}
 
 				if ($success)
 				{

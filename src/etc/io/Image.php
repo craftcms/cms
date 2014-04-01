@@ -4,11 +4,18 @@ namespace Craft;
 class Image
 {
 	private $_imageSourcePath;
-	private $_image;
 	private $_extension;
-	private $_instance;
 	private $_isAnimatedGif = false;
 	private $_quality = 0;
+
+	/**
+	 * @var \Imagine\Image\ImageInterface
+	 */
+	private $_image;
+	/**
+	 * @var \Imagine\Image\ImagineInterface
+	 */
+	private $_instance;
 
 	function __construct()
 	{
@@ -105,11 +112,16 @@ class Image
 
 		if ($this->_isAnimatedGif)
 		{
-			foreach ($this->_image->layers() as $offset => $layer)
+			$newSize = new \Imagine\Image\Box($width, $height);
+			$startingPoint = new \Imagine\Image\Point($x1, $y1);
+			$gif = $this->_instance->create($newSize);
+			foreach ($this->_image->layers() as $layer)
 			{
-				$croppedLayer = $layer->crop(new \Imagine\Image\Point($x1, $y1), new \Imagine\Image\Box($width, $height));
-				$this->_image->layers()->set($offset, $croppedLayer);
+				$croppedLayer = $layer->crop($startingPoint, $newSize);
+				$gif->layers()->add($croppedLayer);
 			}
+
+			$this->_image = $gif;
 		}
 		else
 		{
@@ -245,11 +257,17 @@ class Image
 
 		if ($this->_isAnimatedGif)
 		{
-			foreach ($this->_image->layers() as $offset => $layer)
+
+			$newSize = new \Imagine\Image\Box($targetWidth, $targetHeight);
+			$gif = $this->_instance->create($newSize);
+
+			foreach ($this->_image->layers() as $layer)
 			{
-				$resizedLayer = $layer->resize(new \Imagine\Image\Box($targetWidth, $targetHeight), $this->_getResizeFilter());
-				$this->_image->layers()->set($offset, $resizedLayer);
+				$resizedLayer = $layer->resize($newSize, $this->_getResizeFilter());
+				$gif->layers()->add($resizedLayer);
 			}
+
+			$this->_image = $gif;
 		}
 		else
 		{
@@ -394,7 +412,14 @@ class Image
 
 			case 'gif':
 			{
-				return array('animated' => $this->_isAnimatedGif);
+				$options = array('animated' => $this->_isAnimatedGif);
+				if ($this->_isAnimatedGif)
+				{
+					// Imagine library does not provide this value anda arbitrarily divides it by 10, when assigning
+					// So we have to improvise a little
+					$options['animated.delay'] = $this->_image->getImagick()->getImageDelay() * 10;
+				}
+				return $options;
 			}
 
 			case 'png':
