@@ -174,6 +174,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		$element.animate(animateCss, 'fast', function() {
 			$element.remove();
 		});
+
+		this.forceModalRefresh();
 	},
 
 	showModal: function()
@@ -293,5 +295,13 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	onSelectElements: function()
 	{
 		this.trigger('selectElements');
+	},
+
+	forceModalRefresh: function ()
+	{
+		if (this.modal)
+		{
+			this.modal.elementIndex = null;
+		}
 	}
 });
