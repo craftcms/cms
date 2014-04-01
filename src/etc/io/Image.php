@@ -394,7 +394,14 @@ class Image
 
 			case 'gif':
 			{
-				return array('animated' => $this->_isAnimatedGif);
+				$options = array('animated' => $this->_isAnimatedGif);
+				if ($this->_isAnimatedGif)
+				{
+					// Imagine library does not provide this value anda arbitrarily divides it by 10, when assigning
+					// So we have to improvise a little
+					$options['animated.delay'] = $this->_image->getImagick()->getImageDelay() * 10;
+				}
+				return $options;
 			}
 
 			case 'png':
