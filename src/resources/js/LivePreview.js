@@ -354,6 +354,7 @@ Craft.LivePreview = Garnish.Base.extend(
 	_onDragStart: function()
 	{
 		this.dragStartEditorWidth = this.editorWidth;
+		this.$iframeContainer.addClass('dragging');
 	},
 
 	_onDrag: function()
@@ -372,6 +373,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
 	_onDragStop: function()
 	{
+		this.$iframeContainer.removeClass('dragging');
 		Craft.setLocalStorage('LivePreview.editorWidth', this.editorWidth);
 	}
 },

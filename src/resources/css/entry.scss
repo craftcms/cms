@@ -23,6 +23,7 @@ h1 span.draft span { display: none; }
 
 #livepreview-editor,
 #livepreview-iframe-container { position: fixed; top: 0; height: 100%; background: #fff; background-clip: padding-box; }
+#livepreview-iframe-container.dragging:after { position: absolute; top: 0; left: 0; width: 100%; height: 100%; content: ''; font-size: 0; }
 
 #livepreview-editor { z-index: 3; padding: 0 24px; overflow: auto; @include box-shadow(0 0 0 1px rgba(0,0,0,0.1));
 	@include box-sizing(border-box);
