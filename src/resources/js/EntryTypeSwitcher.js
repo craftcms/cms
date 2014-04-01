@@ -53,6 +53,9 @@ Craft.EntryTypeSwitcher = Garnish.Base.extend(
 
 				// Update the slug generator with the new title input
 				slugGenerator.setNewSource('#title');
+
+				// Trigger a resize event to force a grid update
+				Garnish.$win.trigger('resize');
 			}
 		}, this));
 	}
