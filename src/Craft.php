@@ -58,7 +58,7 @@ class Craft extends \Yii
 	 */
 	public static function getBuild()
 	{
-		craft()->deprecator->log('Craft::getBuild()', 'Craft::getVersion() has been deprecated. Use craft()->getbuild() instead.');
+		craft()->deprecator->log('Craft::getBuild()', 'Craft::getBuild() has been deprecated. Use craft()->getBuild() instead.');
 		return craft()->getBuild();
 	}
 
