@@ -112,9 +112,13 @@ class Image
 
 		if ($this->_isAnimatedGif)
 		{
+
+			// Create a new image instance to avoid object references messing up our dimensions.
 			$newSize = new \Imagine\Image\Box($width, $height);
 			$startingPoint = new \Imagine\Image\Point($x1, $y1);
 			$gif = $this->_instance->create($newSize);
+			$gif->layers()->remove(0);
+
 			foreach ($this->_image->layers() as $layer)
 			{
 				$croppedLayer = $layer->crop($startingPoint, $newSize);
@@ -258,8 +262,10 @@ class Image
 		if ($this->_isAnimatedGif)
 		{
 
+			// Create a new image instance to avoid object references messing up our dimensions.
 			$newSize = new \Imagine\Image\Box($targetWidth, $targetHeight);
 			$gif = $this->_instance->create($newSize);
+			$gif->layers()->remove(0);
 
 			foreach ($this->_image->layers() as $layer)
 			{

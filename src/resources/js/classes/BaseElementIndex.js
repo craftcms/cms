@@ -655,7 +655,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	enableElements: function($elements)
 	{
-		$elements.removeClass('disabled');
+		$elements.removeClass('disabled').parents('.disabled').removeClass('disabled');
 
 		for (var i = 0; i < $elements.length; i++)
 		{
