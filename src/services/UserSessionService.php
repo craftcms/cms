@@ -932,7 +932,7 @@ class UserSessionService extends \CWebUser
 			{
 				$userRow = craft()->db->createCommand()
 				    ->select('*')
-				    ->from('{{users}}')
+				    ->from('users')
 				    ->where('id=:id', array(':id' => $id))
 				    ->queryRow();
 
