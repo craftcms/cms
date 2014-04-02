@@ -223,6 +223,32 @@ class AppBehavior extends BaseBehavior
 	}
 
 	/**
+	 * Returns whether Craft is elligible to be upgraded to a different edition.
+	 *
+	 * @return bool
+	 */
+	public function canUpgradeEdition()
+	{
+		// Only admins can upgrade Craft
+		if (craft()->userSession->isAdmin())
+		{
+			// If they're running on a testable domain, go for it
+			if ($this->canTestEditions())
+			{
+				return true;
+			}
+
+			// Base this off of what they're actually licensed to use, not what's currently running
+			$licensedEdition = $this->getLicensedEdition();
+			return ($licensedEdition !== null && $licensedEdition < Craft::Pro);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * Returns whether Craft is running on a domain that is elligible to test out the editions.
 	 *
 	 * @return bool
