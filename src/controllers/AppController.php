@@ -135,12 +135,14 @@ class AppController extends BaseController
 
 		$modalHtml = craft()->templates->render('_upgrademodal', array(
 			'editions'        => $editions,
+			'licensedEdition' => $etResponse->licensedEdition,
 			'canTestEditions' => $canTestEditions
 		));
 
 		$this->returnJson(array(
 			'success'         => true,
 			'editions'        => $editions,
+			'licensedEdition' => $etResponse->licensedEdition,
 			'canTestEditions' => $canTestEditions,
 			'modalHtml'       => $modalHtml
 		));

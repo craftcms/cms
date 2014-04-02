@@ -1,7 +1,6 @@
-{% macro buybtn(edition, info, canTestEditions) %}
+{% macro buybtn(edition, info, licensedEdition, canTestEditions) %}
 	{%- spaceless %}
-		{% set currentEdition = craft.app.getLicensedEdition() is not sameas(null) ? craft.app.getLicensedEdition() : CraftEdition %}
-		{% if edition == currentEdition  %}
+		{% if edition == licensedEdition  %}
 			<div class="installed">{{ "Installed"|t }}</div>
 			{% if canTestEditions %}
 				<div class="btn test" data-edition="0">{{ "Uninstall"|t }}</div>
@@ -36,11 +35,11 @@
 				<td></td>
 				<th scope="col">
 					<h1 class="logo craftclient">Craft Client</h1>
-					{{ buybtn(CraftClient, editions[CraftClient], canTestEditions) }}
+					{{ buybtn(CraftClient, editions[CraftClient], licensedEdition, canTestEditions) }}
 				</th>
 				<th scope="col">
 					<h1 class="logo craftpro">Craft Pro</h1>
-					{{ buybtn(CraftPro, editions[CraftPro], canTestEditions) }}
+					{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}
 				</th>
 			</tr>
 		</thead>
@@ -152,10 +151,10 @@
 			<tr class="buybtns">
 				<td></td>
 				<td>
-					{{ buybtn(CraftClient, editions[CraftClient]) }}
+					{{ buybtn(CraftClient, editions[CraftClient], licensedEdition, canTestEditions) }}
 				</td>
 				<td>
-					{{ buybtn(CraftPro, editions[CraftPro]) }}
+					{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}
 				</td>
 			</tr>
 		</tbody>
