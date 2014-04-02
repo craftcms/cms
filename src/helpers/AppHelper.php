@@ -23,4 +23,29 @@ class AppHelper
 
 		return static::$_isPhpDevServer;
 	}
+
+	/**
+	 * Returns the name of the given Craft edition.
+	 *
+	 * @param int $edition
+	 * @return string
+	 */
+	public static function getEditionName($edition)
+	{
+		switch ($edition)
+		{
+			case Craft::Client:
+			{
+				return 'Client';
+			}
+			case Craft::Pro:
+			{
+				return 'Pro';
+			}
+			default:
+			{
+				return 'Personal';
+			}
+		}
+	}
 }

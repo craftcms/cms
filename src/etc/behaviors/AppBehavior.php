@@ -143,7 +143,7 @@ class AppBehavior extends BaseBehavior
 	 */
 	public function getEditionName()
 	{
-		return $this->_getEditionName($this->getEdition());
+		return AppHelper::getEditionName($this->getEdition());
 	}
 
 	/**
@@ -172,7 +172,7 @@ class AppBehavior extends BaseBehavior
 
 		if ($licensedEdition !== null)
 		{
-			return $this->_getEditionName($licensedEdition);
+			return AppHelper::getEditionName($licensedEdition);
 		}
 	}
 
@@ -216,7 +216,7 @@ class AppBehavior extends BaseBehavior
 			if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition != $edition))
 			{
 				throw new Exception(Craft::t('Craft {edition} is required to perform this action.', array(
-					'edition' => $this->_getEditionName($edition)
+					'edition' => AppHelper::getEditionName($edition)
 				)));
 			}
 		}
@@ -557,31 +557,6 @@ class AppBehavior extends BaseBehavior
 	}
 
 	// Private methods
-
-	/**
-	 * Returns the name of the given Craft edition.
-	 *
-	 * @param int $edition
-	 * @return string
-	 */
-	private function _getEditionName($edition)
-	{
-		switch ($edition)
-		{
-			case Craft::Client:
-			{
-				return 'Client';
-			}
-			case Craft::Pro:
-			{
-				return 'Pro';
-			}
-			default:
-			{
-				return 'Personal';
-			}
-		}
-	}
 
 	/**
 	 * Enables or disables Maintenance Mode
