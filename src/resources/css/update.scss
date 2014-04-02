@@ -2,7 +2,7 @@
 
 @import "shared";
 
-#graphic { display: block; position: absolute; top: 50%; left: 50%; @include margin(-48px, 0, 0, -24px); background: no-repeat 50% 50%; }
+#graphic { display: block; position: absolute; top: 50%; left: 50%; @include margin(-48px, 0, 0, -24px); background-repeat: no-repeat; background-position: 50% 50%; }
 #graphic.error { background-image: url(../images/error.png); }
 #graphic.success { background-image: url(../images/success.png); }
 

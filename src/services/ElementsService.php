@@ -746,42 +746,47 @@ class ElementsService extends BaseApplicationComponent
 	{
 		$elementType = $this->getElementType($element->getElementType());
 
-		// Validate the content first
-		if ($validateContent === null)
-		{
-			$validateContent = (bool) $element->enabled;
-		}
+		$isNewElement = !$element->id;
 
+		// Validate the content first
 		if ($elementType->hasContent())
 		{
-			$validates = true;
-
-			if ($validateContent)
+			if ($validateContent === null)
 			{
-				$validates = craft()->content->validateContent($element);
+				$validateContent = (bool) $element->enabled;
+			}
+
+			if ($validateContent && !craft()->content->validateContent($element))
+			{
+				$element->addErrors($element->getContent()->getErrors());
+				return false;
 			}
 			else
 			{
-				// At the very least we should validate that there's a title
+				// Make sure there's a title
 				if ($elementType->hasTitles())
 				{
 					$fields = array('title');
 					$content = $element->getContent();
 					$content->setRequiredFields($fields);
-					$validates = $content->validate($fields);
-				}
-			}
 
-			if (!$validates)
-			{
-				$element->addErrors($element->getContent()->getErrors());
-				return false;
+					if (!$content->validate($fields) && $content->hasErrors('title'))
+					{
+						// Just set *something* on it
+						if ($isNewElement)
+						{
+							$content->title = 'New '.$element->getClassHandle();
+						}
+						else
+						{
+							$content->title = $element->getClassHandle().' '.$element->id;
+						}
+					}
+				}
 			}
 		}
 
 		// Get the element record
-		$isNewElement = !$element->id;
-
 		if (!$isNewElement)
 		{
 			$elementRecord = ElementRecord::model()->findByAttributes(array(
