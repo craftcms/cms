@@ -78,6 +78,9 @@ class MigrationsService extends BaseApplicationComponent
 					Craft::log('Migration failed for Craft. All later Craft migrations are canceled.', LogLevel::Error);
 				}
 
+				// Refresh the DB cache
+				craft()->db->getSchema()->refresh();
+
 				return false;
 			}
 		}
@@ -90,6 +93,9 @@ class MigrationsService extends BaseApplicationComponent
 		{
 			Craft::log('Craft migrated up successfully.', LogLevel::Info, true);
 		}
+
+		// Refresh the DB cache
+		craft()->db->getSchema()->refresh();
 
 		return true;
 	}
