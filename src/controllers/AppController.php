@@ -107,6 +107,12 @@ class AppController extends BaseController
 			$this->returnErrorJson(Craft::t('Your license key is invalid.'));
 		}
 
+		// Make sure they've got a valid licensed edition, just to be safe
+		if (!AppHelper::isValidEdition($etResponse->licensedEdition))
+		{
+			$this->returnErrorJson(Craft::t('Your license has an invalid Craft edition associated with it.'));
+		}
+
 		$editions = array();
 
 		foreach ($etResponse->data as $edition => $info)

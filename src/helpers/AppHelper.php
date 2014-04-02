@@ -25,6 +25,16 @@ class AppHelper
 	}
 
 	/**
+	 * Returns an array of all known Craft editions.
+	 *
+	 * @return array
+	 */
+	public static function getEditions()
+	{
+		return array(Craft::Personal, Craft::Client, Craft::Pro);
+	}
+
+	/**
 	 * Returns the name of the given Craft edition.
 	 *
 	 * @param int $edition
@@ -47,5 +57,16 @@ class AppHelper
 				return 'Personal';
 			}
 		}
+	}
+
+	/**
+	 * Returns whether an edition is valid.
+	 *
+	 * @param mixed $edition
+	 * @return bool
+	 */
+	public static function isValidEdition($edition)
+	{
+		return (is_numeric($edition) && in_array($edition, static::getEditions()));
 	}
 }
