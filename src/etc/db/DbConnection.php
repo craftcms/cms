@@ -172,9 +172,14 @@ class DbConnection extends \CDbConnection
 			}
 
 			$tablePrefix .= '_';
-
-			return $tablePrefix;
 		}
+		else
+		{
+			$tablePrefix = '';
+		}
+
+		return $tablePrefix;
+
 	}
 
 	/**
