@@ -57,6 +57,16 @@ class AppVariable
 	}
 
 	/**
+	 * Returns whether Craft is elligible to be upgraded to a different edition.
+	 *
+	 * @return bool
+	 */
+	public function canUpgradeEdition()
+	{
+		return craft()->canUpgradeEdition();
+	}
+
+	/**
 	 * Returns whether Craft is running on a domain that is elligible to test out the editions.
 	 *
 	 * @return bool

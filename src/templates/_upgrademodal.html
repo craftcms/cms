@@ -1,27 +1,31 @@
-{% macro buybtn(edition, info, canTestEditions) %}
+{% macro buybtn(edition, info, licensedEdition, canTestEditions) %}
 	{%- spaceless %}
-		{% set currentEdition = craft.app.getLicensedEdition() is not sameas(null) ? craft.app.getLicensedEdition() : CraftEdition %}
-		{% if edition == currentEdition  %}
-			<div class="installed">{{ "Installed"|t }}</div>
-			{% if canTestEditions %}
-				<div class="btn test" data-edition="0">{{ "Uninstall"|t }}</div>
-			{% endif %}
-		{% else %}
-			{% if canTestEditions %}
-				<div class="btngroup">
-			{% endif %}
-			<div class="btn buybtn" data-edition="{{ edition }}">
-				{% if info.salePrice %}
-					<span class="listedprice">{{ info.formattedPrice }}</span> {{ info.formattedSalePrice }}
-				{% else %}
-					{{ info.formattedPrice }}
-				{% endif %}
-			</div>
-			{% if canTestEditions %}
-					<div class="btn test" data-edition="{{ edition }}">{{ "Test"|t }}</div>
+		{# is it already installed? #}
+		{% if edition == CraftEdition  %}
+			<div class="installed">{{ "Installed"|t }}</div><br>
+		{% endif %}
+
+		<div class="btngroup">
+			{# is it elligible to be purchased? #}
+			{% if edition > licensedEdition %}
+				<div class="btn buybtn" data-edition="{{ edition }}">
+					{% if info.salePrice %}
+						<span class="listedprice">{{ info.formattedPrice }}</span> {{ info.formattedSalePrice }}
+					{% else %}
+						{{ info.formattedPrice }}
+					{% endif %}
 				</div>
 			{% endif %}
-		{% endif %}
+
+			{# if the domain is allowed to test editions, show an uninstall/test button #}
+			{% if canTestEditions %}
+				{% if edition == CraftEdition %}
+					<div class="btn test" data-edition="0">{{ "Uninstall"|t }}</div>
+				{% else %}
+					<div class="btn test" data-edition="{{ edition }}">{{ "Test"|t }}</div>
+				{% endif %}
+			{% endif %}
+		</div>
 	{% endspaceless -%}
 {% endmacro %}
 
@@ -34,14 +38,13 @@
 		<thead>
 			<tr>
 				<td></td>
-				<th scope="col">
-					<h1 class="logo craftclient">Craft Client</h1>
-					{{ buybtn(CraftClient, editions[CraftClient], canTestEditions) }}
-				</th>
-				<th scope="col">
-					<h1 class="logo craftpro">Craft Pro</h1>
-					{{ buybtn(CraftPro, editions[CraftPro], canTestEditions) }}
-				</th>
+				<th scope="col"><h1 class="logo craftclient">Craft Client</h1></th>
+				<th scope="col"><h1 class="logo craftpro">Craft Pro</h1></th>
+			</tr>
+			<tr class="buybtns">
+				<td></td>
+				<td>{{ buybtn(CraftClient, editions[CraftClient], licensedEdition, canTestEditions) }}</td>
+				<td>{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}</td>
 			</tr>
 		</thead>
 		<tbody>
@@ -151,12 +154,8 @@
 			</tr>
 			<tr class="buybtns">
 				<td></td>
-				<td>
-					{{ buybtn(CraftClient, editions[CraftClient]) }}
-				</td>
-				<td>
-					{{ buybtn(CraftPro, editions[CraftPro]) }}
-				</td>
+				<td>{{ buybtn(CraftClient, editions[CraftClient], licensedEdition, canTestEditions) }}</td>
+				<td>{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}</td>
 			</tr>
 		</tbody>
 	</table>

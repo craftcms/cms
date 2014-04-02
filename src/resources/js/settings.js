@@ -176,7 +176,8 @@ Craft.Tool = Garnish.Base.extend(
 				}
 			}
 		}
-		if (response.error)
+
+		if (response && response.error)
 		{
 			alert(response.error);
 		}

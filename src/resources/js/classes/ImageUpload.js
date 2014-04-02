@@ -248,10 +248,8 @@ Craft.ImageModal = Garnish.Modal.extend(
 			newWidth = this.$container.width() + leftAvailable;
 		}
 		// Set the size so that the image always fits into a constraint x constraint box
-		newWidth = Math.min(newWidth, this.constraint, this.constraint * quotient);
-		console.log(newWidth, this.$container.width());
+		newWidth = Math.min(newWidth, this.constraint, this.constraint * quotient, this.originalWidth);
 		this.$container.width(newWidth);
-		console.log(this.$container.width());
 
 		var newWidth = this.$container.width(),
 			factor = newWidth / this.originalWidth,
@@ -391,6 +389,6 @@ Craft.ImageAreaTool = Garnish.Base.extend(
 		referenceObject.originalWidth = $target.attr('width') / referenceObject.factor;
 		referenceObject.constraint = $target.data('constraint');
 		referenceObject.source = $target.attr('src').split('/').pop();
-		referenceObject._onResize();
+		referenceObject.updateSizeAndPosition();
 	}
 });

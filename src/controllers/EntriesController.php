@@ -35,7 +35,12 @@ class EntriesController extends BaseController
 
 			$authorOptionCriteria = craft()->elements->getCriteria(ElementType::User);
 			$authorOptionCriteria->can = 'createEntries:'.$variables['section']->id;
-			$authorOptionCriteria->id = $excludeAuthorIds;
+
+			if ($variables['entry']->authorId)
+			{
+				$authorOptionCriteria->id = $excludeAuthorIds;
+			}
+
 			$authorOptions = $authorOptionCriteria->find();
 
 			// List the current author first

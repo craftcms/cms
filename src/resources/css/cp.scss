@@ -156,9 +156,13 @@ html { overflow-y: scroll; }
 #upgrademodal .logo.craftclient { background-image: url(../images/editions/craftclient.png); }
 #upgrademodal .logo.craftpro { background-image: url(../images/editions/craftpro.png); }
 
-#upgrademodal .body .installed { display: inline-block; border: 1px solid hsl(122, 50%, 60%); border-radius: 4px; padding: 5px 11px; color: $successcolor; }
-#upgrademodal .body .installed + .btn { margin-left: 5px; }
-#upgrademodal .body .listedprice { margin-right: 4px; text-decoration: line-through; color: $lighttextcolor; }
+#upgrademodal .body tr.buybtns td { vertical-align: bottom; text-align: center; }
+#upgrademodal .body tr.buybtns .installed { display: inline-block; border-radius: 3px; padding: 6px 12px; color: $successcolor;
+	@include box-shadow(0 0 0 1px $successcolor);
+}
+#upgrademodal .body tr.buybtns td .btngroup { display: inline-block; }
+#upgrademodal .body tr.buybtns .installed + br + .btngroup { margin-top: 10px; }
+#upgrademodal .body tr.buybtns .listedprice { margin-right: 10px; text-decoration: line-through; color: $lighttextcolor; }
 
 #upgrademodal-compare table thead th { text-align: center; }
 #upgrademodal-compare table thead th { font-size: 13px; line-height: 18px; font-weight: normal; }

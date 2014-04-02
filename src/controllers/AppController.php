@@ -96,52 +96,56 @@ class AppController extends BaseController
 
 		$etResponse = craft()->et->fetchEditionInfo();
 
-		if ($etResponse)
-		{
-			// Make sure we've got a valid license key (mismatched domain is OK for these purposes)
-			if ($etResponse->licenseKeyStatus != LicenseKeyStatus::Invalid)
-			{
-				$editions = array();
-
-				foreach ($etResponse->data as $edition => $info)
-				{
-					$editions[$edition]['price']          = $info['price'];
-					$editions[$edition]['formattedPrice'] = craft()->numberFormatter->formatCurrency($info['price'], 'USD', true);
-
-					if (isset($info['salePrice']) && $info['salePrice'] < $info['price'])
-					{
-						$editions[$edition]['salePrice']          = $info['salePrice'];
-						$editions[$edition]['formattedSalePrice'] = craft()->numberFormatter->formatCurrency($info['salePrice'], 'USD', true);
-					}
-					else
-					{
-						$editions[$edition]['salePrice'] = null;
-					}
-				}
-
-				$canTestEditions = craft()->canTestEditions();
-
-				$modalHtml = craft()->templates->render('_upgrademodal', array(
-					'editions'        => $editions,
-					'canTestEditions' => $canTestEditions
-				));
-
-				$this->returnJson(array(
-					'success'         => true,
-					'editions'        => $editions,
-					'canTestEditions' => $canTestEditions,
-					'modalHtml'       => $modalHtml
-				));
-			}
-			else
-			{
-				$this->returnErrorJson(Craft::t('Your license key is invalid.'));
-			}
-		}
-		else
+		if (!$etResponse)
 		{
 			$this->returnErrorJson(Craft::t('Craft is unable to fetch edition info at this time.'));
 		}
+
+		// Make sure we've got a valid license key (mismatched domain is OK for these purposes)
+		if ($etResponse->licenseKeyStatus == LicenseKeyStatus::Invalid)
+		{
+			$this->returnErrorJson(Craft::t('Your license key is invalid.'));
+		}
+
+		// Make sure they've got a valid licensed edition, just to be safe
+		if (!AppHelper::isValidEdition($etResponse->licensedEdition))
+		{
+			$this->returnErrorJson(Craft::t('Your license has an invalid Craft edition associated with it.'));
+		}
+
+		$editions = array();
+
+		foreach ($etResponse->data as $edition => $info)
+		{
+			$editions[$edition]['price']          = $info['price'];
+			$editions[$edition]['formattedPrice'] = craft()->numberFormatter->formatCurrency($info['price'], 'USD', true);
+
+			if (isset($info['salePrice']) && $info['salePrice'] < $info['price'])
+			{
+				$editions[$edition]['salePrice']          = $info['salePrice'];
+				$editions[$edition]['formattedSalePrice'] = craft()->numberFormatter->formatCurrency($info['salePrice'], 'USD', true);
+			}
+			else
+			{
+				$editions[$edition]['salePrice'] = null;
+			}
+		}
+
+		$canTestEditions = craft()->canTestEditions();
+
+		$modalHtml = craft()->templates->render('_upgrademodal', array(
+			'editions'        => $editions,
+			'licensedEdition' => $etResponse->licensedEdition,
+			'canTestEditions' => $canTestEditions
+		));
+
+		$this->returnJson(array(
+			'success'         => true,
+			'editions'        => $editions,
+			'licensedEdition' => $etResponse->licensedEdition,
+			'canTestEditions' => $canTestEditions,
+			'modalHtml'       => $modalHtml
+		));
 	}
 
 	/**

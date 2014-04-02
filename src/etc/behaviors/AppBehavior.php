@@ -143,7 +143,7 @@ class AppBehavior extends BaseBehavior
 	 */
 	public function getEditionName()
 	{
-		return $this->_getEditionName($this->getEdition());
+		return AppHelper::getEditionName($this->getEdition());
 	}
 
 	/**
@@ -172,7 +172,7 @@ class AppBehavior extends BaseBehavior
 
 		if ($licensedEdition !== null)
 		{
-			return $this->_getEditionName($licensedEdition);
+			return AppHelper::getEditionName($licensedEdition);
 		}
 	}
 
@@ -216,9 +216,35 @@ class AppBehavior extends BaseBehavior
 			if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition != $edition))
 			{
 				throw new Exception(Craft::t('Craft {edition} is required to perform this action.', array(
-					'edition' => $this->_getEditionName($edition)
+					'edition' => AppHelper::getEditionName($edition)
 				)));
 			}
+		}
+	}
+
+	/**
+	 * Returns whether Craft is elligible to be upgraded to a different edition.
+	 *
+	 * @return bool
+	 */
+	public function canUpgradeEdition()
+	{
+		// Only admins can upgrade Craft
+		if (craft()->userSession->isAdmin())
+		{
+			// If they're running on a testable domain, go for it
+			if ($this->canTestEditions())
+			{
+				return true;
+			}
+
+			// Base this off of what they're actually licensed to use, not what's currently running
+			$licensedEdition = $this->getLicensedEdition();
+			return ($licensedEdition !== null && $licensedEdition < Craft::Pro);
+		}
+		else
+		{
+			return false;
 		}
 	}
 
@@ -531,31 +557,6 @@ class AppBehavior extends BaseBehavior
 	}
 
 	// Private methods
-
-	/**
-	 * Returns the name of the given Craft edition.
-	 *
-	 * @param int $edition
-	 * @return string
-	 */
-	private function _getEditionName($edition)
-	{
-		switch ($edition)
-		{
-			case Craft::Client:
-			{
-				return 'Client';
-			}
-			case Craft::Pro:
-			{
-				return 'Pro';
-			}
-			default:
-			{
-				return 'Personal';
-			}
-		}
-	}
 
 	/**
 	 * Enables or disables Maintenance Mode
