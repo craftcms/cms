@@ -17,6 +17,17 @@ class m140401_000003_tag_groups extends BaseMigration
 
 		if (craft()->db->tableExists('tagsets'))
 		{
+			// A couple people have had failed updates that resulted in tagsets *and* taggroups tables lying around
+			// causing a MySQL error if trying to rename the tagsets table
+			// so let's make sure it's gone first.
+			if (craft()->db->tableExists('taggroups'))
+			{
+				$this->dropTable('taggroups');
+
+				// ...and refresh the schema cache
+				craft()->db->getSchema()->refresh();
+			}
+
 			Craft::log('Renaming the tagsets table to taggroups.', LogLevel::Info, true);
 			MigrationHelper::renameTable('tagsets', 'taggroups');
 		}
