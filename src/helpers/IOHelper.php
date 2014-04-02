@@ -413,7 +413,15 @@ class IOHelper
 	 */
 	public static function normalizePathSeparators($path)
 	{
-		$path = str_replace('\\', '/', $path);
+		// Don't normalize if it looks like the path starts on a network share.
+		if (isset($path[0]) && isset($path[1]))
+		{
+			if ($path[0] !== '\\' && $path[1] !== '\\')
+			{
+				$path = str_replace('\\', '/', $path);
+			}
+		}
+
 		$path = str_replace('//', '/', $path);
 
 		// Check if the path is just a slash.  If the server has openbase_dir restrictions in place calling is_dir on it will complain.
