@@ -28,7 +28,17 @@ if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testPathInfo')
  */
 
 // We're already in the app/ folder, so let's use that as the starting point.
-defined('CRAFT_APP_PATH') || define('CRAFT_APP_PATH', str_replace('\\', '/', realpath(dirname(__FILE__)).'/'));
+// Make sure it doesn't look like we're on a network share that starts with \\
+$appPath = realpath(dirname(__FILE__));
+if (isset($appPath[0]) && isset($appPath[1]))
+{
+	if ($appPath[0] !== '\\' && $appPath[1] !== '\\')
+	{
+		$appPath = str_replace('\\', '/', $appPath);
+	}
+}
+
+defined('CRAFT_APP_PATH') || define('CRAFT_APP_PATH', $appPath.'/');
 
 // The app/ folder goes inside craft/ by default, so work backwards from app/
 defined('CRAFT_BASE_PATH') || define('CRAFT_BASE_PATH', realpath(CRAFT_APP_PATH.'..').'/');
