@@ -2422,8 +2422,15 @@
 				return false;
 			}
 
+			/* BEGIN HACK
 			var $dropdown = this.$toolbar.find('.redactor_dropdown_box_' + key);
+			END HACK */
+
 			var $button = this.buttonGet(key);
+
+			/* BEGIN HACK */
+			var $dropdown  = $button.data('dropdown');
+			/* END HACK */
 
 			if ($button.hasClass('dropact')) this.dropdownHideAll();
 			else
@@ -2434,11 +2441,16 @@
 				this.buttonActive(key);
 				$button.addClass('dropact');
 
+				/* BEGIN HACK */
+				var keyPosition = $button.offset();
+
+				/*
 				var keyPosition = $button.position();
 				if (this.toolbarFixed)
 				{
 					keyPosition = $button.offset();
 				}
+				END HACK */
 
 				// fix right placement
 				var dropdownWidth = $dropdown.width();
@@ -2453,8 +2465,6 @@
 					keyPosition.left -= (dropdownWidth - 7);
 				}
 
-				/* END HACK! */
-
 				/*
 
 				if ((keyPosition.left + dropdownWidth) > $(document).width())
@@ -2462,7 +2472,7 @@
 					keyPosition.left -= dropdownWidth;
 				}
 
-				*/
+				END HACK */
 
 				var left = keyPosition.left + 'px';
 				var btnHeight = $button.innerHeight();
@@ -2560,7 +2570,15 @@
 			if (btnObject.dropdown)
 			{
 				var $dropdown = $('<div class="redactor_dropdown redactor_dropdown_box_' + btnName + '" style="display: none;">');
+
+				/* BEGIN HACK */
+				$dropdown.appendTo(document.body);
+				$button.data('dropdown', $dropdown);
+
+				/*
 				$dropdown.appendTo(this.$toolbar);
+				END HACK */
+
 				this.dropdownBuild($dropdown, btnObject.dropdown);
 			}
 
