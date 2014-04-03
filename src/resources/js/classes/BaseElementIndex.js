@@ -141,6 +141,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.addListener(this.$sourceToggles, 'click', function(ev)
 		{
 			$(ev.currentTarget).parent().toggleClass('expanded');
+			this.$sidebar.trigger('resize');
 			ev.stopPropagation();
 		});
 
