@@ -940,6 +940,7 @@ body .redactor_box textarea { padding: 6px 7px; }
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
 
 /* redactor */
+body .redactor_box { z-index: 0 !important; }
 body .redactor_toolbar { background: none; @include box-shadow(none); }
 body .redactor_editor { background: none; border: none; border-top: 1px solid rgba(0,0,0,0.05); }
 body .redactor_toolbar li a { color: $textcolor; }
