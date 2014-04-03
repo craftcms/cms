@@ -497,7 +497,7 @@ class UsersController extends BaseController
 		// Ugly.  But Users don't have a real fieldlayout/tabs.
 		$accountFields = array('username', 'firstName', 'lastName', 'email', 'password', 'newPassword', 'currentPassword', 'passwordResetRequired', 'preferredLocale');
 
-		if ($variables['account']->hasErrors())
+		if (craft()->getEdition() == Craft::Pro && $variables['account']->hasErrors())
 		{
 			$errors = $variables['account']->getErrors();
 
@@ -507,7 +507,7 @@ class UsersController extends BaseController
 				{
 					$variables['tabs']['account']['class'] = 'error';
 				}
-				else
+				else if (isset($variables['tabs']['profile']))
 				{
 					$variables['tabs']['profile']['class'] = 'error';
 				}
