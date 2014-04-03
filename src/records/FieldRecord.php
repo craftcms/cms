@@ -25,6 +25,7 @@ class FieldRecord extends BaseRecord
 		'name',
 		'parents',
 		'postDate',
+		'section',
 		'siblings',
 		'type',
 		'uid',
