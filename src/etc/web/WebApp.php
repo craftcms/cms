@@ -177,12 +177,15 @@ class WebApp extends \CWebApplication
 			($this->request->isCpRequest() && (
 				// ...and the user has permission to access the CP when the site is off
 				$this->userSession->checkPermission('accessCpWhenSystemIsOff') ||
+				// ...or this is a manual update request
+				$this->request->getSegment(1) == 'manualupdate' ||
 				// ...or they're accessing the Login, Forgot Password, Set Password, or Validation pages
 				(($actionSegs = $this->request->getActionSegments()) && (
 					$actionSegs == array('users', 'login') ||
 					$actionSegs == array('users', 'forgotpassword') ||
 					$actionSegs == array('users', 'setpassword') ||
-					$actionSegs == array('users', 'validate')
+					$actionSegs == array('users', 'validate') ||
+					$actionSegs[0] == 'update'
 				))
 			)) ||
 			// ...or it's a site request...

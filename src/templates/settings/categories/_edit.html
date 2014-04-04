@@ -108,17 +108,17 @@
 					value: categoryGroup.template,
 					errors: categoryGroup.getErrors('template')
 				}) }}
-
-				{{ forms.textField({
-					label: "Max Levels"|t,
-					instructions: "The maximum number of levels this category group can have. Leave blank if you don’t care."|t,
-					id: 'maxLevels',
-					name: 'maxLevels',
-					value: categoryGroup.maxLevels,
-					size: 5,
-					errors: categoryGroup.getErrors('maxLevels')
-				}) }}
 			</div>
+
+			{{ forms.textField({
+				label: "Max Levels"|t,
+				instructions: "The maximum number of levels this category group can have. Leave blank if you don’t care."|t,
+				id: 'maxLevels',
+				name: 'maxLevels',
+				value: categoryGroup.maxLevels,
+				size: 5,
+				errors: categoryGroup.getErrors('maxLevels')
+			}) }}
 		</div>
 
 		<div id="categorygroup-fieldlayout" class="hidden">

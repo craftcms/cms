@@ -64,10 +64,9 @@ class SearchService extends BaseApplicationComponent
 	 * Indexes the attributes of a given element defined by its element type.
 	 *
 	 * @param BaseElementModel $element
-	 * @param string|null      $localeId
 	 * @return bool Whether the indexing was a success.
 	 */
-	public function indexElementAttributes(BaseElementModel $element, $localeId = null)
+	public function indexElementAttributes(BaseElementModel $element)
 	{
 		// Get the element type
 		$elementTypeClass = $element->getElementType();
@@ -87,7 +86,7 @@ class SearchService extends BaseApplicationComponent
 		{
 			$value = $element->$attribute;
 			$value = StringHelper::arrayToString($value);
-			$this->_indexElementKeywords($element->id, $attribute, '0', $localeId, $value);
+			$this->_indexElementKeywords($element->id, $attribute, '0', $element->locale, $value);
 		}
 
 		return true;
