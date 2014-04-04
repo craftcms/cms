@@ -49,6 +49,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 		var $li = $('#'+this.id+'-category-'+elementInfo.id),
 			$parentLis = $li.parentsUntil(this.$elementsContainer, 'li'),
 			$allLis = $li.add($parentLis),
+			$parentElements = $parentLis.children('.row').find('.element'),
 			$checkboxes = $allLis.children('.row').find('.checkbox')
 			$element = $li.children('.row').find('.element');
 
@@ -57,6 +58,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 		$checkboxes.prop('checked', true);
 
 		this.initCheckboxes($checkboxes);
+		this.$elements = this.$elements.add($parentElements);
 
 		return $element;
 	},
