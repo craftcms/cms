@@ -98,6 +98,7 @@ class CategoriesFieldType extends BaseElementFieldType
 			if ($source)
 			{
 				$criteria = craft()->elements->getCriteria(ElementType::Category);
+				$criteria->locale = $this->getTargetLocale();
 				$criteria->groupId = $source['criteria']['groupId'];
 				$criteria->status = null;
 				$criteria->localeEnabled = false;
