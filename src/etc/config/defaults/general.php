@@ -144,6 +144,11 @@ return array(
 	'extraAllowedFileExtensions' => '',
 
 	/**
+	 * Whether Craft should include the base URI leading up to index.php in CP URLs, where the base URL is determined dynamically rather than configured.
+	 */
+	'includeBaseUriInCpUrls' => true,
+
+	/**
 	 *The template filenames Craft will look for within a directory to represent the directory’s “index” template when matching a template path to a file on the front end.
 	 */
 	'indexTemplateFilenames' => array('index'),

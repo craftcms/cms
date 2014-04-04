@@ -214,7 +214,7 @@ class UrlHelper
 			{
 				$baseUrl .= craft()->request->getScriptUrl();
 			}
-			else
+			else if (craft()->config->get('includeBaseUriInCpUrls'))
 			{
 				$baseUrl .= craft()->request->getBaseUrl();
 			}
