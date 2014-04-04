@@ -55,7 +55,7 @@
 {% block main %}
 	<div class="grid">
 		<div class="item" data-position="left">
-			<form id="userform" class="pane" method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
+			<form id="userform" class="pane" method="post" accept-charset="UTF-8" data-saveshortcut="1">
 				<input type="hidden" name="action" value="users/saveUser">
 				<input type="hidden" name="redirect" value="{{ CraftEdition == CraftPro ? 'users' : 'dashboard' }}">
 				{{ hiddenInputs }}
@@ -279,7 +279,7 @@
 
 		{% if CraftEdition >= CraftClient and not isNewAccount %}
 			<div class="item" data-position="right" data-colspan="1">
-				<form class="pane" method="post" action="" accept-charset="UTF-8">
+				<form class="pane" method="post" accept-charset="UTF-8">
 					{{ hiddenInputs }}
 
 					<h5 class="first">{{ "Account Status"|t }}</h5>
@@ -323,7 +323,7 @@
 				</form>
 
 				{% if not account.isCurrent and (currentUser.can('deleteUsers') or currentUser.can('administrateUsers')) %}
-					<form class="pane" method="post" action="" accept-charset="UTF-8">
+					<form class="pane" method="post" accept-charset="UTF-8">
 						{{ hiddenInputs }}
 
 						{% if currentUser.can('administrateUsers') and account.status != 'suspended' %}

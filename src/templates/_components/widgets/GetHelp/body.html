@@ -1,6 +1,6 @@
 {% import "_includes/forms" as forms %}
 
-<form method="post" action="" accept-charset="UTF-8" enctype="multipart/form-data">
+<form method="post" accept-charset="UTF-8" enctype="multipart/form-data">
 	{% set fromEmail = getHelp is defined ? getHelp.fromEmail : currentUser.email %}
 	{% if fromEmail == "support@pixelandtonic.com" or fromEmail == "support@buildwithcraft.com" %}
 		{% set fromEmail = "" %}

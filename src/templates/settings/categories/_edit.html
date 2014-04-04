@@ -23,7 +23,7 @@
 {% from _self import urlFormatText %}
 
 {% set content %}
-	<form method="post" action="" accept-charset="UTF-8" data-saveshortcut="1">
+	<form method="post" accept-charset="UTF-8" data-saveshortcut="1">
 		<input type="hidden" name="action" value="categories/saveGroup">
 		<input type="hidden" name="redirect" value="settings/categories">
 		{% if categoryGroup.id %}<input type="hidden" name="groupId" value="{{ categoryGroup.id }}">{% endif %}

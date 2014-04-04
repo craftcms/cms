@@ -33,7 +33,7 @@
 						</th>
 						<td data-title="{{ 'Developer'|t }}"><a{% if plugin.developerUrl %} href="{{ plugin.developerUrl }}" target="_blank"{% endif %}>{{ plugin.developer }}</a></td>
 						<td data-title="{{ 'Status'|t }}">
-							<form action="" method="post" accept-charset="UTF-8">
+							<form method="post" accept-charset="UTF-8">
 								<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
 								{% if plugin.isEnabled %}
 									<span class="status on"></span> {{ "Enabled"|t }} 
@@ -47,7 +47,7 @@
 							</form>
 						</td>
 						<td class="thin rightalign nowrap">
-							<form action="" method="post" accept-charset="UTF-8">
+							<form method="post" accept-charset="UTF-8">
 								<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
 								{% if plugin.isInstalled %}
 									<input type="button" value="{{ 'Uninstall'|t }}" class="btn small formsubmit" data-action="plugins/uninstallPlugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t({ plugin: plugin.name }) }}">
