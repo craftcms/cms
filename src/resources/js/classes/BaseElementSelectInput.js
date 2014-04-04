@@ -202,7 +202,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			sources:            this.sources,
 			criteria:           this.criteria,
 			multiSelect:        (this.limit != 1),
-			disableOnSelect:    true,
 			disabledElementIds: this.getSelectedElementIds(),
 			onSelect:           $.proxy(this, 'onModalSelect')
 		});
@@ -239,6 +238,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		}
 
 		this.selectElements(elements);
+
+		if (this.modal.elementIndex)
+		{
+			this.modal.elementIndex.disableElementsById(this.getSelectedElementIds());
+		}
 	},
 
 	selectElements: function(elements)
