@@ -948,18 +948,17 @@ body .redactor_box,
 body .redactor_toolbar,
 body .redactor_box textarea { z-index: auto !important; }
 body .redactor_box_fullscreen { z-index: 100 !important; }
-body .redactor_dropdown { z-index: 100; }
 body .redactor_toolbar { background: none; @include box-shadow(none); }
 body .redactor_toolbar.toolbar_fixed_box { @include pane; }
-body .redactor_editor { background: none; border: none; border-top: 1px solid rgba(0,0,0,0.05); }
 body .redactor_toolbar li a { color: $textcolor; }
 body .redactor_toolbar li a:hover { background-color: $menuhovercolor; color: $textcolor; }
 body .redactor_toolbar li a:active,
 body .redactor_toolbar li a.redactor_act { background-color: $menuselcolor; color: #fff; }
-
 body .redactor_toolbar li:first-child a { border-top-left-radius: 2px; }
+body .redactor_dropdown { z-index: 100; }
+body .redactor_editor { background: none; border: none; border-top: 1px solid rgba(0,0,0,0.05); }
+body .redactor_editor ul { list-style-type: disc; }
 body .redactor_box textarea { border-top-left-radius: 0; border-top-right-radius: 0; }
-
 body #redactor_modal footer button:first-child { border-bottom-left-radius: 3px; }
 body #redactor_modal footer button:last-child { border-bottom-right-radius: 3px; }
 
