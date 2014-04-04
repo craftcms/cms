@@ -291,10 +291,14 @@ class UrlManager extends \CUrlManager
 		if (craft()->request->isCpRequest())
 		{
 			// Merge in any edition-specific routes
-			if (isset($this->cpRoutes['editionRoutes'][craft()->getEdition()]))
+			for ($i = 1; $i <= craft()->getEdition(); $i++)
 			{
-				$this->cpRoutes = array_merge($this->cpRoutes, $this->cpRoutes['editionRoutes'][craft()->getEdition()]);
+				if (isset($this->cpRoutes['editionRoutes'][$i]))
+				{
+					$this->cpRoutes = array_merge($this->cpRoutes, $this->cpRoutes['editionRoutes'][$i]);
+				}
 			}
+
 			unset($this->cpRoutes['editionRoutes']);
 
 			if (($route = $this->_matchUrlRoutes($path, $this->cpRoutes)) !== false)
