@@ -30,6 +30,7 @@ class StructuresService extends BaseApplicationComponent
 	 * Saves a structure
 	 *
 	 * @param StructureModel $structure
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function saveStructure(StructureModel $structure)
@@ -230,12 +231,13 @@ class StructuresService extends BaseApplicationComponent
 	 * Updates a BaseElementModel with the new structure attributes from a StructureElementRecord.
 	 *
 	 * @access private
-	 * @param int                    $structureId
-	 * @param BaseElementModel       $element
-	 * @param StructureElementRecord $targetElementRecord
-	 * @param string                 $insertAction
-	 * @param string                 $updateAction
-	 * @param string                 $mode
+	 * @param  int                    $structureId
+	 * @param  BaseElementModel       $element
+	 * @param  StructureElementRecord $targetElementRecord
+	 * @param  string                 $insertAction
+	 * @param  string                 $updateAction
+	 * @param  string                 $mode
+	 * @throws \Exception
 	 * @return bool
 	 */
 	private function _doIt($structureId, BaseElementModel $element, StructureElementRecord $targetElementRecord, $insertAction, $updateAction, $mode)
