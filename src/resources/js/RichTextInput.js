@@ -97,7 +97,6 @@ Craft.RichTextInput = Garnish.Base.extend(
 					}
 					else
 					{
-	                    this.assetSelectionModal.shiftModalToEnd();
 						this.assetSelectionModal.show();
 					}
 				}
@@ -139,7 +138,6 @@ Craft.RichTextInput = Garnish.Base.extend(
 					}
 					else
 					{
-	                    this.entrySelectionModal.shiftModalToEnd();
 						this.entrySelectionModal.show();
 					}
 				}
@@ -177,7 +175,6 @@ Craft.RichTextInput = Garnish.Base.extend(
 					}
 					else
 					{
-						this.assetLinkSelectionModal.shiftModalToEnd();
 						this.assetLinkSelectionModal.show();
 					}
 				}

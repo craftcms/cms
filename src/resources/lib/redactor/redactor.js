@@ -2429,7 +2429,8 @@
 			var $button = this.buttonGet(key);
 
 			/* BEGIN HACK */
-			var $dropdown  = $button.data('dropdown');
+			// Always re-append it to the end of <body> so it always has the highest sub-z-index.
+			var $dropdown  = $button.data('dropdown').appendTo(document.body);
 			/* END HACK */
 
 			if ($button.hasClass('dropact')) this.dropdownHideAll();
@@ -2572,7 +2573,6 @@
 				var $dropdown = $('<div class="redactor_dropdown redactor_dropdown_box_' + btnName + '" style="display: none;">');
 
 				/* BEGIN HACK */
-				$dropdown.appendTo(document.body);
 				$button.data('dropdown', $dropdown);
 
 				/*

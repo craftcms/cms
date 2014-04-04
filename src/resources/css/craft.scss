@@ -395,7 +395,7 @@ div.btn.submit input { position: absolute; left: 100%; }
 .color:not(.disabled).active .colorpreview {
 	@include linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.1));
 }
-.colorpicker { z-index: 2; }
+.colorpicker { z-index: 100; }
 
 /* switch */
 .lightswitch { position: relative; border: none !important; border-radius: 9px; width: 27px; height: 18px; overflow: hidden; cursor: pointer; @include user-select(none); overflow: hidden;
@@ -696,7 +696,7 @@ ul.tree,
 
 .modal,
 .hud,
-body #redactor_modal { border-radius: 3px; background: #fff;
+body #redactor_modal { z-index: 100; border-radius: 3px; background: #fff;
 	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px rgba(0,0,0,0.25));
 }
 
@@ -732,23 +732,22 @@ body #redactor_modal { border-radius: 3px; background: #fff;
 .hud .body .footer { margin: 24px -24px -24px; }
 
 .modal-shade,
-.hud-shade { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
+.hud-shade,
+body #redactor_modal_overlay { z-index: 100; position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; }
 
 .modal-shade,
 body #redactor_modal_overlay { background: rgba(255,255,255,0.75); }
 
-.modal-shade { z-index: 9998; }
 .modal-shade.dark { background: rgba(0,0,0,0.75); }
-.hud-shade { z-index: 9997; background: none; }
 
-.modal { position: fixed; z-index: 9998; width: 66%; height: 66%; min-width: 600px; min-height: 400px; overflow: hidden; }
+.modal { position: fixed; width: 66%; height: 66%; min-width: 600px; min-height: 400px; overflow: hidden; }
 .modal.fitted { width: auto; height: auto; min-width: 0; min-height: 0; }
-.modal .resizehandle { position: absolute; z-index: 9999; bottom: 0; @include right(0); width: 24px; height: 24px; background: no-repeat 50% 50%; cursor: move;
+.modal .resizehandle { position: absolute; z-index: 1; bottom: 0; @include right(0); width: 24px; height: 24px; background: no-repeat 50% 50%; cursor: move;
 	body.ltr & { background-image: url(../images/resizehandle.png); }
 	body.rtl & { background-image: url(../images/resizehandle_rtl.png); }
 }
 
-.hud { position: absolute; z-index: 9997; display: none; top: 0; }
+.hud { position: absolute; display: none; top: 0; }
 .hud .tip { position: absolute; background: no-repeat 0 0; }
 .hud .tip-left { @include left(-15px); width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
 .hud .tip-top { top: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_top.png); }
@@ -813,7 +812,7 @@ body #redactor_modal_overlay { background: rgba(255,255,255,0.75); }
 .menu,
 .ui-datepicker,
 .ui-timepicker-list,
-body .redactor_dropdown { z-index: 9999; margin-bottom: 10px; border-radius: 3px; background: #fff; @include user-select(none);
+body .redactor_dropdown { z-index: 100; margin-bottom: 10px; border-radius: 3px; background: #fff; @include user-select(none);
 	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 5px 25px -5px rgba(0,0,0,0.25));
 }
 
@@ -945,7 +944,11 @@ body .redactor_box textarea { padding: 6px 7px; }
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
 
 /* redactor */
-body .redactor_box { z-index: 0 !important; }
+body .redactor_box,
+body .redactor_toolbar,
+body .redactor_box textarea { z-index: auto !important; }
+body .redactor_box_fullscreen { z-index: 100 !important; }
+body .redactor_dropdown { z-index: 100; }
 body .redactor_toolbar { background: none; @include box-shadow(none); }
 body .redactor_toolbar.toolbar_fixed_box { @include pane; }
 body .redactor_editor { background: none; border: none; border-top: 1px solid rgba(0,0,0,0.05); }
@@ -1008,7 +1011,7 @@ body #redactor_modal footer button:last-child { border-bottom-right-radius: 3px;
 
 /* timepicker */
 .ui-timepicker-wrapper { z-index: 1; }
-.ui-timepicker-list { @include margin-left(1px); overflow-y: auto; width: 8em; height: 210px; z-index: 10001; }
+.ui-timepicker-list { @include margin-left(1px); overflow-y: auto; width: 8em; height: 210px; z-index: 100; }
 .ui-timepicker-list li { @include padding(2px, 0, 2px, 25px); white-space: nowrap; cursor: pointer; }
 .ui-timepicker-list li:hover { background: $menuhovercolor; }
 .ui-timepicker-list li.ui-timepicker-selected { background: $menuselcolor; color: #fff; cursor: default; }
@@ -1018,7 +1021,7 @@ ul.errors { margin-top: 5px; list-style-type: square; @include padding-left(20px
 ul.errors li { color: $errorcolor; }
 
 /* message pages */
-.message-container { position: absolute; z-index: 9999; top: 0; @include left(0); width: 100%; height: 100%; }
+.message-container { position: absolute; z-index: 100; top: 0; @include left(0); width: 100%; height: 100%; }
 .message-container.no-access { background: rgba(50,50,50,0.9); }
 .message-container .pane { top: 50%; margin-top: -33px !important; margin-left: auto; margin-right: auto; width: 320px; }
 

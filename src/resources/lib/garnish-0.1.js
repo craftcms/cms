@@ -2358,7 +2358,8 @@ Garnish.HUD = Garnish.Base.extend({
 			Garnish.HUD.activeHUDs = {};
 		}
 
-		this.$hud = $('<div class="'+this.settings.hudClass+'" />').appendTo(Garnish.$bod);
+		this.$shade = $('<div class="hud-shade"/>');
+		this.$hud = $('<div class="'+this.settings.hudClass+'" />');
 		this.$tip = $('<div class="'+this.settings.tipClass+'" />').appendTo(this.$hud);
 		this.$body = $('<div class="'+this.settings.bodyClass+'" />').appendTo(this.$hud).append(bodyContents);
 
@@ -2366,8 +2367,6 @@ Garnish.HUD = Garnish.Base.extend({
 		{
 			this.$hud.addClass('has-footer');
 		}
-
-		this.$shade = $('<div class="hud-shade"/>').insertBefore(this.$hud);
 
 		this.show();
 	},
@@ -2389,13 +2388,18 @@ Garnish.HUD = Garnish.Base.extend({
 
 		if (this.settings.closeOtherHUDs)
 		{
-			for (var hudID in Garnish.HUD.activeHUDs) {
+			for (var hudID in Garnish.HUD.activeHUDs)
+			{
 				Garnish.HUD.activeHUDs[hudID].hide();
 			}
 		}
 
 		// Prevent the browser from jumping
 		this.$hud.css('top', Garnish.$win.scrollTop());
+
+		// Move it to the end of <body> so it gets the highest sub-z-index
+		this.$shade.appendTo(Garnish.$bod);
+		this.$hud.appendTo(Garnish.$bod);
 
 		this.$hud.show();
 		this.determineBestPosition();
@@ -3551,33 +3555,47 @@ Garnish.Modal = Garnish.Base.extend({
 		this.addListener(this.$container, 'click', function(ev) {
 			ev.stopPropagation();
 		});
+
+		// Show it if we're late to the party
+		if (this.visible)
+		{
+			this.show();
+		}
 	},
 
 	show: function()
 	{
         // Close other modals as needed
-		if (Garnish.Modal.visibleModal && this.settings.closeOtherModals)
+		if (this.settings.closeOtherModals && Garnish.Modal.visibleModal && Garnish.Modal.visibleModal != this)
 		{
 			Garnish.Modal.visibleModal.hide();
 		}
 
 		if (this.$container)
 		{
+			// Move it to the end of <body> so it gets the highest sub-z-index
+			this.$shade.appendTo(Garnish.$bod);
+			this.$container.appendTo(Garnish.$bod);
+
 			this.$container.show();
 			this.updateSizeAndPosition();
+
+			this.$shade.fadeIn(50);
 			this.$container.delay(50).fadeIn($.proxy(this, 'onFadeIn'));
+
+			this.addListener(this.$shade, 'click', 'hide');
+			this.addListener(Garnish.$win, 'resize', 'updateSizeAndPosition');
 		}
-
-		this.visible = true;
-		Garnish.Modal.visibleModal = this;
-		this.$shade.fadeIn(50);
-
-		this.addListener(this.$shade, 'click', 'hide');
-		this.addListener(Garnish.$win, 'resize', 'updateSizeAndPosition');
 
 		Garnish.escManager.register(this, 'hide');
 
-		this.settings.onShow();
+		if (!this.visible)
+		{
+			this.visible = true;
+			Garnish.Modal.visibleModal = this;
+
+			this.settings.onShow();
+		}
 	},
 
 	hide: function(ev)
@@ -3590,15 +3608,14 @@ Garnish.Modal = Garnish.Base.extend({
 		if (this.$container)
 		{
 			this.$container.fadeOut('fast');
+			this.$shade.fadeOut('fast', $.proxy(this, 'onFadeOut'));
+
+			this.removeListener(this.$shade, 'click');
 			this.removeListener(Garnish.$win, 'resize');
 		}
 
 		this.visible = false;
 		Garnish.Modal.visibleModal = null;
-		this.$shade.fadeOut('fast', $.proxy(this, 'onFadeOut'));
-		this.removeListener(this.$shade, 'click');
-		this.removeListener(Garnish.$bod, 'keyup');
-
 		Garnish.escManager.unregister(this);
 		this.settings.onHide();
 	},
@@ -3727,13 +3744,7 @@ Garnish.Modal = Garnish.Base.extend({
 		{
 			this.resizeDragger.destroy();
 		}
-	},
-
-    shiftModalToEnd: function ()
-    {
-        this.$shade.appendTo(Garnish.$bod);
-        this.$container.appendTo(Garnish.$bod);
-    }
+	}
 },
 {
 	relativeElemPadding: 8,

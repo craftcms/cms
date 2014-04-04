@@ -34,6 +34,16 @@ RedactorPlugins.fullscreen = {
 			if (this.opts.maxHeight) this.$editor.css('max-height', '');
 			if (this.opts.iframe) html = this.get();
 
+			/* BEGIN HACK */
+			if (!this.$fullscreenPlaceholder)
+			{
+				this.$fullscreenPlaceholder = $('<div/>');
+			}
+			this.$fullscreenPlaceholder.insertAfter(this.$box);
+
+			this.$box.appendTo(document.body);
+			/* END HACK */
+
 			this.$box.addClass('redactor_box_fullscreen');
 			$('body, html').css('overflow', 'hidden');
 
@@ -55,6 +65,11 @@ RedactorPlugins.fullscreen = {
 
 			$(window).off('resize', $.proxy(this.fullScreenResize, this));
 			$('body, html').css('overflow', '');
+
+			/* BEGIN HACK */
+			this.$box.insertBefore(this.$fullscreenPlaceholder);
+			this.$fullscreenPlaceholder.remove();
+			/* END HACK */
 
 			this.$box.removeClass('redactor_box_fullscreen').css({ width: 'auto', height: 'auto' });
 
