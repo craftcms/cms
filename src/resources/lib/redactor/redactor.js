@@ -6958,8 +6958,15 @@
 			if (!$redactorModal.length)
 			{
 				this.$modal = $redactorModal = $('<div id="redactor_modal" style="display: none;"><div id="redactor_modal_close">&times;</div><header id="redactor_modal_header"></header><div id="redactor_modal_inner"></div></div>');
+
+				/* BEGIN HACK
 				$('body').append(this.$modal);
+				END HACK */
 			}
+
+			/* BEGIN HACK */
+			$redactorModal.appendTo(document.body);
+			/* END HACK */
 
 			$('#redactor_modal_close').on('click', $.proxy(this.modalClose, this));
 
