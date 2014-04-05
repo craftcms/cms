@@ -162,7 +162,7 @@ html { overflow-y: scroll; }
 }
 #upgrademodal .body tr.buybtns td .btngroup { display: inline-block; }
 #upgrademodal .body tr.buybtns .installed + br + .btngroup { margin-top: 10px; }
-#upgrademodal .body tr.buybtns .listedprice { margin-right: 10px; text-decoration: line-through; color: $lighttextcolor; }
+#upgrademodal .body .listedprice { margin-right: 10px; text-decoration: line-through; color: $lighttextcolor; }
 
 #upgrademodal-compare table thead th { text-align: center; }
 #upgrademodal-compare table thead th { font-size: 13px; line-height: 18px; font-weight: normal; }
