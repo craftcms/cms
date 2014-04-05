@@ -746,27 +746,32 @@ class WebApp extends \CWebApplication
 				// Is it set to "auto"?
 				if ($locale == 'auto')
 				{
-					if (($userSession = $this->getComponent('userSession', false)) != false)
+					// Place this within a try/catch in case userSession is being fussy.
+					try
 					{
 						// If the user is logged in *and* has a primary language set, use that
-						$user = $userSession->getUser();
+						$user = $this->userSession->getUser();
 
 						if ($user && $user->preferredLocale)
 						{
 							return $user->preferredLocale;
 						}
+					}
+					catch (\Exception $e)
+					{
+						Craft::log("Tried to determine the user's preferred locale, but got this exception: ".$e->getMessage(), LogLevel::Error);
+					}
 
-						// Otherwise check if the browser's preferred language matches any of the site locales
-						$browserLanguages = $this->request->getBrowserLanguages();
+					// Otherwise check if the browser's preferred language matches any of the site locales
+					$browserLanguages = $this->request->getBrowserLanguages();
 
-						if ($browserLanguages)
+					if ($browserLanguages)
+					{
+						foreach ($browserLanguages as $language)
 						{
-							foreach ($browserLanguages as $language)
+							if (in_array($language, $siteLocaleIds))
 							{
-								if (in_array($language, $siteLocaleIds))
-								{
-									return $language;
-								}
+								return $language;
 							}
 						}
 					}
