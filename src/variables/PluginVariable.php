@@ -47,9 +47,6 @@ class PluginVariable extends BaseComponentTypeVariable
 	}
 
 	/**
-	 * Returns
-
-	/**
 	 * Returns whether the plugin is installed.
 	 *
 	 * @return bool
