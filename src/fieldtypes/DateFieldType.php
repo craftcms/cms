@@ -119,22 +119,6 @@ class DateFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the input value as it should be saved to the database.
-	 *
-	 * @param mixed $value
-	 * @return mixed
-	 */
-	public function prepValueFromPost($value)
-	{
-		if ($value)
-		{
-			// Ugly? Yes. Yes it is.
-			$timeString = $value->format(DateTime::MYSQL_DATETIME, DateTime::UTC);
-			return DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $timeString, craft()->getTimeZone());
-		}
-	}
-
-	/**
 	 * Convert back to the server's timezone.
 	 *
 	 * @param mixed $value
