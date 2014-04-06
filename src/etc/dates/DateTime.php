@@ -70,6 +70,11 @@ class DateTime extends \DateTime
 		{
 			$dt = $date;
 
+			if (!$timezone)
+			{
+				$timezone = craft()->getTimeZone();
+			}
+
 			if (empty($dt['date']) && empty($dt['time']))
 			{
 				return null;
@@ -94,11 +99,6 @@ class DateTime extends \DateTime
 			{
 				$date = '';
 				$format = '';
-
-				if (!$timezone)
-				{
-					$timezone = craft()->getTimeZone();
-				}
 
 				// Default to the current date, because that makes more sense than Jan 1, 1970
 				$current = new DateTime('now', new \DateTimeZone($timezone));
