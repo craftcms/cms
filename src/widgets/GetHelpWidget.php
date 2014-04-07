@@ -39,6 +39,12 @@ class GetHelpWidget extends BaseWidget
 	 */
 	public function getBodyHtml()
 	{
+		// Only admins get the Get Help widget.
+		if (!craft()->userSession->isAdmin())
+		{
+			return false;
+		}
+
 		$id = $this->model->id;
 		$js = "new Craft.GetHelpWidget({$id});";
 		craft()->templates->includeJs($js);
