@@ -93,7 +93,7 @@ class TagElementType extends BaseElementType
 			'name'    => AttributeType::String,
 			'group'   => AttributeType::Mixed,
 			'groupId' => AttributeType::Mixed,
-			'order'   => array(AttributeType::String, 'default' => 'name asc'),
+			'order'   => array(AttributeType::String, 'default' => 'tags.name asc'),
 
 			// TODO: Deprecated
 			'set'     => AttributeType::Mixed,
