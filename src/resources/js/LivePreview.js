@@ -201,6 +201,7 @@ Craft.LivePreview = Garnish.Base.extend(
 		this.$editor.show().stop().animateLeft(0, 'slow', $.proxy(function()
 		{
 			this.trigger('slideIn');
+			Garnish.$win.trigger('resize');
 		}, this));
 		this.$iframeContainer.show().stop().animateRight(0, 'slow', $.proxy(function()
 		{
