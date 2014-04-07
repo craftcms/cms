@@ -949,7 +949,7 @@ body .redactor_toolbar,
 body .redactor_box textarea { z-index: auto !important; }
 body .redactor_box_fullscreen { z-index: 100 !important; }
 body .redactor_toolbar { background: none; @include box-shadow(none); }
-body .redactor_toolbar.toolbar_fixed_box { @include pane; }
+body .redactor_toolbar.toolbar_fixed_box { @include pane; z-index: 1 !important; }
 body .redactor_toolbar li a { color: $textcolor; }
 body .redactor_toolbar li a:hover { background-color: $menuhovercolor; color: $textcolor; }
 body .redactor_toolbar li a:active,
