@@ -1038,6 +1038,14 @@ return array(
 	'You’re all up-to-date!' => '全て最新の状態に更新されています！',
 	'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'あなたはクラフト{licensedEdition} ライセンスでクラフト {edition} を実行しています。',
 	'You’ve got updates!' => 'すでに最新版に更新されています!',
+	'account_activation_body' => 'こんにちわ {{user.friendlyName}} さん、
+
+ {{siteName}}のアカウントを作成してくださり有難うございます！アカウントをアクティベートするには、以下のリンクをクリックしてください：
+
+{{link}}
+
+このメールに心当たりがない場合は無視してください。
+',
 	'account_activation_heading' => '誰かがアカウントを作成する時：',
 	'account_activation_subject' => 'アカウントをアクティベートする',
 	'build {build}' => 'ビルド {build}',
@@ -1051,6 +1059,14 @@ return array(
 	'five' => '５',
 	'folders' => 'フォルダ',
 	'folders and files' => 'フォルダとファイル',
+	'forgot_password_body' => 'こんにちわ、{{user.friendlyName}} さん、
+
+{{siteName}}を再設定するには、このリンクをクリックしてください：
+
+{{link}}
+
+このメールに心当たりがない場合は無視してください。
+',
 	'forgot_password_heading' => '誰かがパスワードを忘れた場合：',
 	'forgot_password_subject' => 'パスワードを再設定する',
 	'four' => '４',
@@ -1069,9 +1085,25 @@ return array(
 	'seconds' => '秒',
 	'seven' => '７',
 	'six' => '６',
+	'test_email_body' => 'こんにちわ　{{user.friendlyName}} さん、
+
+おめでとうございます！ Craft はメールの送信に成功しました。
+
+あなたが使用した設定は以下の通りです：
+
+{% for key, setting in settings %}{{ key }}: {{ setting }}
+{% endfor %}',
 	'test_email_subject' => 'これはCraftからのテストメールです。',
 	'three' => '３',
 	'two' => '２',
+	'verify_new_email_body' => 'こんにちわ、{{user.friendlyName}} さん、
+
+このリンクをクリックして新しいメールアドレスを確認してください：
+
+{{link}}
+
+このメールに心当たりがない場合は無視してください。
+',
 	'verify_new_email_heading' => '誰かがメールアドレスを変更する時：',
 	'verify_new_email_subject' => '新しいメールアドレスを確認する',
 	'week' => '週',

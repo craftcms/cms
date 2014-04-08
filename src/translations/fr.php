@@ -1038,6 +1038,13 @@ return array(
 	'You’re all up-to-date!' => 'Vous êtes totalement à jour !',
 	'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Vous exécutez Craft {edition} avec une licence Craft {licensedEdition}.',
 	'You’ve got updates!' => 'Mises à jour disponibles !',
+	'account_activation_body' => 'Bonjour {{user.friendlyName}},
+
+Merci d\'avoir créé un compte sur {{siteName}} ! Afin d\'activer ce compte, merci de cliquer sur le lien suivant :
+
+{{link}}
+
+Si vous n\'attendiez aucun email de ce type, ignorez-le, tout simplement.',
 	'account_activation_heading' => 'Quand quelqu\'un créé un compte :',
 	'account_activation_subject' => 'Activez votre compte',
 	'build {build}' => 'moûture {build}',
@@ -1051,6 +1058,13 @@ return array(
 	'five' => 'cinq',
 	'folders' => 'dossiers',
 	'folders and files' => 'dossiers et fichiers',
+	'forgot_password_body' => 'Bonjour {{user.friendlyName}},
+
+Pour réinitialiser votre mot de passe pour {{siteName}}, merci de cliquer sur le lien suivant :
+
+{{link}}
+
+Si vous n\'attendiez aucun email de ce type, ignorez-le, tout simplement.',
 	'forgot_password_heading' => 'Quand quelqu\'un a oublié son mot de passe :',
 	'forgot_password_subject' => 'Réinitialiser votre mot de passe',
 	'four' => 'quatre',
@@ -1069,9 +1083,24 @@ return array(
 	'seconds' => 'secondes',
 	'seven' => 'sept',
 	'six' => 'six',
+	'test_email_body' => 'Bonjour {{user.friendlyName}},
+
+Félicitations ! Craft a réussi à envoyer un email.
+
+Voici les paramètres que vous avez utilisés :
+
+{% for key, setting in settings %}{{ key }}: {{ setting }} 
+{% endfor %}',
 	'test_email_subject' => 'Ceci est un email de test de la part de Craft',
 	'three' => 'trois',
 	'two' => 'deux',
+	'verify_new_email_body' => 'Bonjour {{user.friendlyName}},
+
+Merci de vérifier votre nouvelle adresse email en cliquant sur le lien suivant :
+
+{{link}}
+
+Si vous n\'attendiez aucun email de ce type, ignorez-le, tout simplement.',
 	'verify_new_email_heading' => 'Quand quelqu\'un modifie son adresse email :',
 	'verify_new_email_subject' => 'Vérifiez votre nouvelle adresse email',
 	'week' => 'semaine',

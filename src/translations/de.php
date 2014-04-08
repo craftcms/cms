@@ -727,6 +727,7 @@ return array(
 	'Section' => 'Sektion',
 	'Section - {section}' => 'Sektion - {section}',
 	'Section Type' => 'Sektionstyp',
+	'Section and entry locale targetting' => 'الاستهداف اللغوي للقسم والإدخال',
 	'Section saved.' => 'Sektion gespeichert.',
 	'Sections' => 'Sektionen',
 	'See how' => 'Sehen Sie hier, wie',
@@ -771,6 +772,7 @@ return array(
 	'Source saved.' => 'Quelle gespeichert.',
 	'Sources' => 'Quellen',
 	'Spaces are not allowed in the username.' => 'Der Benutzername darf keine Leerzeichen enthalten.',
+	'Stack Trace' => 'التتبع التراكمي',
 	'Status' => 'Status',
 	'Stretch' => 'Strecken',
 	'Stretch to fit' => 'Größe an den Behälter anpassen',
@@ -782,6 +784,7 @@ return array(
 	'Suspended' => 'Gesperrt',
 	'Switch to Craft {edition}' => 'Zu Craft {edition} wechseln',
 	'System' => 'System',
+	'System Branding' => 'التمييز التجاري للنظام',
 	'System Email Address' => 'System-E-Mail-Adresse',
 	'System Status' => 'Systemstatus',
 	'TLS' => 'TLS',
@@ -919,6 +922,7 @@ return array(
 	'Unauthorized' => 'Unautorisiert',
 	'Uninstall' => 'Deinstallieren',
 	'Unknown' => 'Unbekannt',
+	'Unlimited Singles and Channels' => 'فرديات وقنوات غير محدودة',
 	'Unlink' => 'Link entfernen',
 	'Unlock' => 'Entsperren',
 	'Unrecognized operation type!' => 'Operations-Typ nicht erkannt!',
@@ -1034,6 +1038,13 @@ return array(
 	'You’re all up-to-date!' => 'Sie sind auf dem neuesten Stand!',
 	'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Sie haben Craft {edition} mit einer Craft {licensedEdition}-Lizenz. ',
 	'You’ve got updates!' => 'Updates sind verfügbar!',
+	'account_activation_body' => 'Hallo {{user.friendlyName}},
+
+Danke für das Einrichten eines Benutzerkontos auf {{siteName}}. Um Ihr Konto zu aktivieren, klicken Sie bitte auf den folgenden Link:
+
+{{link}}
+
+Wenn Sie dies Email nicht erwartet haben, bitte einfach ignorieren.',
 	'account_activation_heading' => 'Wenn jemand ein Benutzerkonto anlegt:',
 	'account_activation_subject' => 'Aktivieren Sie Ihr Benutzerkonto',
 	'build {build}' => 'Build {build}',
@@ -1047,6 +1058,13 @@ return array(
 	'five' => 'fünf',
 	'folders' => 'Ordner',
 	'folders and files' => 'Ordner und Dateien',
+	'forgot_password_body' => 'Hallo {{user.friendlyName}},
+
+um Ihr Passwort für {{siteName}} zurückzusetzen, klicken Sie bitte auf den folgenden Link:
+
+{{link}}
+
+Wenn Sie dies Email nicht erwartet haben, bitte einfach ignorieren.',
 	'forgot_password_heading' => 'Wenn jemand sein Passwort vergisst:',
 	'forgot_password_subject' => 'Ihr Passwort zurücksetzen',
 	'four' => 'vier',
@@ -1065,9 +1083,24 @@ return array(
 	'seconds' => 'Sekunden',
 	'seven' => 'sieben',
 	'six' => 'sechs',
+	'test_email_body' => 'Hallo {{user.friendlyName}},
+
+Glückwunsch! Craft konnte eine Email erfolgreich versenden.
+
+Hier sind die von Ihnen verwendeten Einstellungen:
+
+{% for key, setting in settings %}{{ key }}: {{ setting }} 
+{% endfor %}',
 	'test_email_subject' => 'Dies ist eine Test-Email von Craft.',
 	'three' => 'drei',
 	'two' => 'zwei',
+	'verify_new_email_body' => 'Hallo {{user.friendlyName}},
+
+bitte bestätigen Sie Ihre neue Emailadresse, indem Sie auf folgenden Link klicken:
+
+{{link}}
+
+Wenn Sie dies Email nicht erwartet haben, bitte einfach ignorieren.',
 	'verify_new_email_heading' => 'Wenn jemand seine Emailadresse ändert:',
 	'verify_new_email_subject' => 'Bestätigen Sie Ihre neue Emailadresse',
 	'week' => 'Woche',

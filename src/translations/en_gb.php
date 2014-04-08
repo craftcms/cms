@@ -1038,6 +1038,13 @@ return array(
 	'You’re all up-to-date!' => 'You’re all up-to-date!',
 	'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'You’re running Craft {edition} with a Craft {licensedEdition} license.',
 	'You’ve got updates!' => 'You’ve got updates!',
+	'account_activation_body' => 'Hey {{user.friendlyName}},
+
+Thanks for creating an account with {{siteName}}! To activate your account, click the following link:
+
+{{link}}
+
+If you weren\'t expecting this email, just ignore it.',
 	'account_activation_heading' => 'When someone creates an account:',
 	'account_activation_subject' => 'Activate your account',
 	'build {build}' => 'build {build}',
@@ -1051,6 +1058,13 @@ return array(
 	'five' => 'five',
 	'folders' => 'folders',
 	'folders and files' => 'folders and files',
+	'forgot_password_body' => 'Hey {{user.friendlyName}},
+
+To reset your {{siteName}} password, click on this link:
+
+{{link}}
+
+If you weren\'t expecting this email, just ignore it.',
 	'forgot_password_heading' => 'When someone forgets their password:',
 	'forgot_password_subject' => 'Reset your password',
 	'four' => 'four',
@@ -1069,9 +1083,24 @@ return array(
 	'seconds' => 'seconds',
 	'seven' => 'seven',
 	'six' => 'six',
+	'test_email_body' => 'Hey {{user.friendlyName}},
+
+Congratulations! Craft was successfully able to send an email.
+
+Here are the settings you used:
+
+{% for key, setting in settings %}{{ key }}:  {{ setting }}
+{% endfor %}',
 	'test_email_subject' => 'This is a test email from Craft',
 	'three' => 'three',
 	'two' => 'two',
+	'verify_new_email_body' => 'Hey {{user.friendlyName}},
+
+Please verify your new email address by clicking on this link:
+
+{{link}}
+
+If you weren\'t expecting this email, just ignore it.',
 	'verify_new_email_heading' => 'When someone changes their email address:',
 	'verify_new_email_subject' => 'Verify your new email address',
 	'week' => 'week',

@@ -1038,6 +1038,13 @@ return array(
 	'You’re all up-to-date!' => 'Alt er oppdatert!',
 	'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Du kjører Craft {edition} med en Craft {licensedEdition}-lisens. ',
 	'You’ve got updates!' => 'Oppdateringer er tilgjengelig!',
+	'account_activation_body' => 'Hei {{user.friendlyName}},
+
+Takk for at du opprettet en konto hos {{siteName}}! For å aktivere kontoen din, må du trykke på følgende link:
+
+{{link}}
+
+Har du ikke bedt om denne e-posten, vennligst se bort fra den.',
 	'account_activation_heading' => 'Når noen oppretter en konto:',
 	'account_activation_subject' => 'Aktivér kontoen din',
 	'build {build}' => 'build {build}',
@@ -1051,6 +1058,13 @@ return array(
 	'five' => 'fem',
 	'folders' => 'mapper',
 	'folders and files' => 'mapper og filer',
+	'forgot_password_body' => 'Hei {{user.friendlyName}},
+
+For å nullstille ditt {{siteName}} passord, vennligst trykk på denne linken:
+
+{{link}}
+
+Om du ikke har bedt om denne e-posten, vennligst se bort fra den.',
 	'forgot_password_heading' => 'Når noen glemmer passordet sitt:',
 	'forgot_password_subject' => 'Nullstill passordet ditt',
 	'four' => 'fire',
@@ -1069,9 +1083,24 @@ return array(
 	'seconds' => 'sekunder',
 	'seven' => 'syv',
 	'six' => 'seks',
+	'test_email_body' => 'Hei {{user.friendlyName}},
+
+Gratulerer! Craft var i stand til å sende e-post vellykket.
+
+Her er innstillingene du benyttet:
+
+{% for key, setting in settings %}{{ key }}: {{ setting }}
+{% endfor %}',
 	'test_email_subject' => 'Dette er en test-epost fra Craft',
 	'three' => 'tre',
 	'two' => 'to',
+	'verify_new_email_body' => 'Hei {{user.friendlyName}},
+
+Vennligst bekreft din nye e-postadresse ved å trykke på denne linken:
+
+{{link}}
+
+Om du ikke har bedt om denne e-posten, vennligst se bort fra den.',
 	'verify_new_email_heading' => 'Når noen endrer e-postadressen sin:',
 	'verify_new_email_subject' => 'Bekreft din nye e-postadresse',
 	'week' => 'uke',
