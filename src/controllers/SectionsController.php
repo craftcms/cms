@@ -88,7 +88,7 @@ class SectionsController extends BaseController
 
 		if (!$variables['typeOptions'])
 		{
-			throw new Exception(Craft::t('Publish Pro is required to create any additional sections.'));
+			throw new Exception(Craft::t('Craft Client or Pro Edition is required to create any additional sections.'));
 		}
 
 		if (!$variables['section']->type)
