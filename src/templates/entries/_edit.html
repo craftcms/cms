@@ -71,7 +71,7 @@
 							id: 'slug',
 							name: 'slug',
 							value: entry.slug,
-							errors: entry.getErrors('slug'),
+							errors: entry.getErrors('slug')|merge(entry.getErrors('uri')),
 							required: true
 						}) }}
 
