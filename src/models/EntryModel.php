@@ -202,9 +202,11 @@ class EntryModel extends BaseElementModel
 	 */
 	public function getCpEditUrl()
 	{
-		if ($this->getSection())
+		$section = $this->getSection();
+
+		if ($section)
 		{
-			$url = UrlHelper::getCpUrl('entries/'.$this->getSection()->handle.'/'.$this->id);
+			$url = UrlHelper::getCpUrl('entries/'.$section->handle.'/'.$this->id);
 
 			if (craft()->isLocalized() && $this->locale != craft()->language)
 			{
