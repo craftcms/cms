@@ -7,6 +7,17 @@ namespace Craft;
 class FeedsService extends BaseApplicationComponent
 {
 	/**
+	 *
+	 */
+	public function init()
+	{
+		parent::init();
+
+		// Import this here to ensure that libs like SimplePie are using our version of the class and not any servers's random version.
+		require_once(Craft::getPathOfAlias('app.vendor.simplepie.simplepie.idn.').DIRECTORY_SEPARATOR.'idna_convert.class.php');
+	}
+
+	/**
 	 * Returns the items for the Feed widget.
 	 *
 	 * @param string|array $url
