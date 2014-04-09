@@ -412,8 +412,8 @@ table .lightswitch { display: inline-block; margin-bottom: -5px; }
 .lightswitch .label { @include floatleft; width: 18px; height: 18px;
 	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1));
 }
-.lightswitch .label.on { border-radius: 9px 0 0 9px; background: $successcolor; }
-.lightswitch .label.off { border-radius: 0 9px 9px 0; background: $bgcolor; }
+.lightswitch .label.on { @include border-radius(9px, 0, 0, 9px); background: $successcolor; }
+.lightswitch .label.off { @include border-radius(0, 9px, 9px, 0); background: $bgcolor; }
 
 .lightswitch:not(.dragging).on .label.off,
 .lightswitch:not(.dragging):not(.on) .label.on { visibility: hidden; }
