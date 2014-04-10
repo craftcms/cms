@@ -280,7 +280,7 @@ table.inputs td > .btngroup { float: none; }
 }
 .btn:not(.noborder):not(.submit),
 .btngroup:not(.noborder):not(.submit) {
-	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1));
+	@include box-shadow(0 0 0 1px rgba(0,0,0,0.15), 0 1px 2px -1px rgba(0,0,0,0.1));
 }
 .btn.submit,
 .btngroup.submit {
@@ -295,6 +295,10 @@ table.inputs td > .btngroup { float: none; }
 .btn:not(.submit):not(.noborder):active,
 .btn:not(.submit):not(.noborder).active {
 	@include linear-gradient(hsl($hue, 5%, 90%), hsl($hue, 5%, 92%));
+}
+
+.btngroup .btn {
+	@include box-shadow(none !important);
 }
 
 .btn,
