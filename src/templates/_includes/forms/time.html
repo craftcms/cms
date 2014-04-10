@@ -18,12 +18,21 @@
 	{%- include "_includes/forms/text" with { autocomplete: false, size: 10, value: (value ? value.localeTime() : '') } -%}
 </div>
 
+{%-	set localeData = craft.i18n.getLocaleData() %}
+
 {%- set js %}
 
 	var $timePicker = $('#{{ id|namespaceInputId|e('js') }}');
 	$timePicker.timepicker({
 		timeFormat: '{{ craft.i18n.timepickerJsFormat }}',
-		closeOnWindowScroll: false
+		closeOnWindowScroll: false,
+		orientation: '{{ localeData.getOrientation() }}',
+		lang: {
+			am: '{{ localeData.getAMName() }}',
+			AM: '{{ localeData.getAMName() }}',
+			pm: '{{ localeData.getPMName() }}',
+			PM: '{{ localeData.getPMName() }}'
+		}
 	});
 
 {%- endset %}
