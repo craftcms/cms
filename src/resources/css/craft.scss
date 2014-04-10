@@ -548,8 +548,8 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .structure li { @include padding-left(8px); }
 .structure ul { @include margin-left(-3px); }
 .structure ul li { @include padding-left(38px); background-repeat: no-repeat;
-	body.ltr & { background-position: 0 0; background-image: url(../images/branch.png); }
-	body.rtl & { background-position: 100% 0; background-image: url(../images/branch_rtl.png); }
+	body.ltr & { background-image: url(../images/branch.png); background-position: 0 0; }
+	body.rtl & { background-image: url(../images/branch_rtl.png); background-position: 100% 0; }
 }
 .structure ul li:not(:last-child):not(.last) { @include padding-left(37px); @include border-left(1px solid $hrcolor);
 	body.ltr & { background-position: -1px 0; }
@@ -1114,8 +1114,7 @@ ul.errors li { color: $errorcolor; }
 	.sel .element.loading:after,
 	.element.loading.sel:after { background-image: url(../images/spinner_element_2x.gif); background-size: 20px; }
 
-	.structure ul li {
-		background-size: 40px;
+	.structure ul li { background-size: 40px;
 		body.ltr & { background-image: url(../images/branch_2x.png); }
 		body.rtl & { background-image: url(../images/branch_rtl_2x.png); }
 	}
