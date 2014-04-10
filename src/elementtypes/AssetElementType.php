@@ -82,7 +82,7 @@ class AssetElementType extends BaseElementType
 
 			if ($folder)
 			{
-				return $this->_assembleSourceInfoForFolder($folder, false);
+				return $this->_assembleSourceInfoForFolder($folder, true);
 			}
 		}
 
