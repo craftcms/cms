@@ -122,7 +122,7 @@ class DateFormatter extends \CDateFormatter
 			$this->_datepickerCLocaleFormat = $this->_locale->getDateFormat('short');
 
 			// Swap 2-digit years with 4.
-			$this->_datepickerCLocaleFormat = str_replace('yy', 'y', $this->_datepickerCLocaleFormat);
+			$this->_datepickerCLocaleFormat = preg_replace('/y+/', 'y', $this->_datepickerCLocaleFormat);
 		}
 
 		return $this->_datepickerCLocaleFormat;
