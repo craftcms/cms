@@ -47,7 +47,7 @@ var CP = Garnish.Base.extend(
 		this.$main = $('#main');
 		this.$content = $('#content');
 		this.$collapsibleTables = this.$content.find('table.collapsible');
-		this.$upgradePromo = $('#upgradepromo');
+		this.$upgradePromo = $('#upgradepromo > a');
 
 		// Find all the nav items
 		this.navItems = [];
