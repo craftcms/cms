@@ -1,6 +1,24 @@
 {% extends "_layouts/base" %}
 
+{# Figure out which Datepicker i18n script to load #}
+{%- switch craft.locale %}
+	{%- case 'en_gb' %}
+		{%- set datepickerLocale = 'en-GB' %}
+	{%- case 'fr_ca' %}
+		{%- set datepickerLocale = 'fr-CA' %}
+	{%- default %}
+		{%- set language = craft.i18n.getLocaleData().getLanguageID(craft.locale) %}
+		{%- if language in ['ar', 'de', 'fr', 'it', 'ja', 'nb', 'nl'] %}
+			{%- set datepickerLocale = language %}
+		{%- endif %}
+{%- endswitch %}
+
 {# Load scripts in reverse order #}
+
+{%- if datepickerLocale is defined %}
+	{%- includeJsResource 'lib/datepicker-i18n/datepicker-'~datepickerLocale~'.js' first %}
+{%- endif %}
+
 {%- includeJsResource "js/cp.js" first -%}
 {%- includeJsResource "js/craft.js" first -%}
 {%- includeJsResource 'lib/garnish-0.1'~(craft.config.useCompressedJs ? '.min' : '')~'.js' first %}
