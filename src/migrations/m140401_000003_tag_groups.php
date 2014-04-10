@@ -14,6 +14,7 @@ class m140401_000003_tag_groups extends BaseMigration
 	public function safeUp()
 	{
 		MigrationHelper::refresh();
+		$addFkBack = false;
 
 		if (craft()->db->tableExists('tagsets'))
 		{
@@ -22,6 +23,15 @@ class m140401_000003_tag_groups extends BaseMigration
 			// so let's make sure it's gone first.
 			if (craft()->db->tableExists('taggroups'))
 			{
+				MigrationHelper::dropForeignKeyIfExists('taggroups', array('fieldLayoutId'));
+
+				if (craft()->db->columnExists('tags', 'groupId'))
+				{
+					MigrationHelper::dropForeignKeyIfExists('tags', array('groupId'));
+					MigrationHelper::renameColumn('tags', 'groupId', 'setId');
+					$addFkBack = true;
+				}
+
 				$this->dropTable('taggroups');
 
 				// ...and refresh the schema cache
@@ -36,6 +46,11 @@ class m140401_000003_tag_groups extends BaseMigration
 		{
 			Craft::log('Renaming the tags.setId column to groupId.', LogLevel::Info, true);
 			MigrationHelper::renameColumn('tags', 'setId', 'groupId');
+		}
+
+		if ($addFkBack)
+		{
+			$this->addForeignKey('tags', 'groupId', 'taggroups', 'id', null, 'CASCADE');
 		}
 
 		Craft::log('Updating the Tags fields\' settings.', LogLevel::Info, true);
