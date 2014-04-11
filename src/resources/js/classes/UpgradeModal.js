@@ -22,6 +22,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 	$ccMonthInput: null,
 	$ccYearInput: null,
 	$ccCvcInput: null,
+	submittingPurchase: false,
 
 	editions: null,
 	edition: null,
@@ -181,6 +182,12 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 	submitPurchase: function(ev)
 	{
 		ev.preventDefault();
+
+		if (this.submittingPurchase)
+		{
+			return;
+		}
+
 		this.cleanupCheckoutForm();
 
 		var pkg = ev.data.pkg;
@@ -224,6 +231,8 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 
 		if (validates)
 		{
+			this.submittingPurchase = true;
+
 			// Get a CC token from Stripe.js
 			this.$checkoutSubmitBtn.addClass('active');
 			this.$checkoutSpinner.removeClass('hidden');
@@ -257,6 +266,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 
 	onPurchaseResponse: function()
 	{
+		this.submittingPurchase = false;
 		this.$checkoutSubmitBtn.removeClass('active');
 		this.$checkoutSpinner.addClass('hidden');
 	},
