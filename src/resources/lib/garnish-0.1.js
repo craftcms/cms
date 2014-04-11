@@ -892,12 +892,16 @@ Garnish.Base = Base.extend({
 							elem.style.position = 'relative';
 						}
 
+						var $resizeTriggers = $(
+							'<div class="resize-triggers">' +
+								'<div class="expand-trigger"><div></div></div>' +
+								'<div class="contract-trigger"></div>' +
+							'</div>'
+						).prependTo(elem);
+
 						elem.__resizeLast__ = {};
-						elem.__resizeTriggers__ = document.createElement('div')
-						elem.__resizeTriggers__.className = 'resize-triggers';
-						elem.__resizeTriggers__.innerHTML = '<div class="expand-trigger"><div></div></div>' +
-						                                       '<div class="contract-trigger"></div>';
-						$(elem.__resizeTriggers__).prependTo(elem);
+						elem.__resizeTriggers__ = $resizeTriggers[0];
+
 						resetTriggers(elem);
 						elem.addEventListener('scroll', scrollListener, true);
 
@@ -906,6 +910,9 @@ Garnish.Base = Base.extend({
 						{
 							scrollListener.apply(elem);
 						});
+
+						// Avoid a top margin on the next element
+						$resizeTriggers.next().addClass('first');
 					}
 				})($elem[i]);
 			}
