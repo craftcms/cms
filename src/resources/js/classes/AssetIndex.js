@@ -1483,7 +1483,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_positionProgressBar: function()
 	{
-		var $container = $();
+		var $container = $(),
+			offset = 0;
+
 		if (this.settings.context == 'index')
 		{
 			$container = this.progressBar.$progressBar.parents('#content');
@@ -1498,8 +1500,16 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		var diff = scrollTop - containerTop;
 		var windowHeight = Garnish.$win.height();
 
+		if ($container.height() > windowHeight)
+		{
+			offset = (windowHeight / 2) - 6 + diff;
+		}
+		else
+		{
+			offset = ($container.height() / 2) - 6;
+		}
 		this.progressBar.$progressBar.css({
-			top: (windowHeight / 2) - 6 + diff
+			top: offset
 		});
 
 	}
