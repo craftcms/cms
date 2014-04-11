@@ -21,8 +21,11 @@ h1 { margin-bottom: 35px; text-align: center; }
 #beginbtn,
 .buttons .btn { @include padding-right(10px); }
 #beginbtn:after,
-.buttons .btn:after { @include icon; @include margin(-4px, 0, 0, 4px); font-size: 20px; width: 20px; content: '→'; }
-.buttons .btn.loading:after { height: 24px; content: ''; background: url(../images/spinner_submit.gif) no-repeat 0 0; }
+.buttons .btn:after { @include icon; @include margin(-2px, 0, 0, 4px); font-size: 20px; width: 20px; height: 20px; line-height: 18px;
+	body.ltr & { content: 'rarr'; }
+	body.rtl & { content: 'larr'; }
+}
+.buttons .btn.loading:after { content: '' !important; background: url(../images/spinner_submit.gif) no-repeat 0 0; }
 
 .dots { position: absolute; bottom: 10px; left: 50%; margin-left: -17px; }
 .dots div { @include floatleft; border-radius: 4px; border: 1px solid rgba(0,0,0,0.15); width: 6px; height: 6px; }
@@ -59,5 +62,5 @@ input.hidden { position: absolute; top: 100px; }
 	   only screen and (        min-device-pixel-ratio: 1.5),
 	   only screen and (        min-resolution: 1.5dppx)
 {
-	.buttons .btn.loading:after { background-image: url(../images/spinner_submit_2x.gif); background-size: 20px 2px; }
+	.buttons .btn.loading:after { background-image: url(../images/spinner_submit_2x.gif); background-size: 20px; }
 }

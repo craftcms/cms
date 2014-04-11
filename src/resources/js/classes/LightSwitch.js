@@ -115,17 +115,39 @@ Craft.LightSwitch = Garnish.Base.extend(
 		switch (event.keyCode)
 		{
 			case Garnish.SPACE_KEY:
+			{
 				this.toggle();
 				event.preventDefault();
 				break;
+			}
 			case Garnish.RIGHT_KEY:
-				this.turnOn();
+			{
+				if (Craft.orientation == 'ltr')
+				{
+					this.turnOn();
+				}
+				else
+				{
+					this.turnOff();
+				}
+
 				event.preventDefault();
 				break;
+			}
 			case Garnish.LEFT_KEY:
-				this.turnOff();
+			{
+				if (Craft.orientation == 'ltr')
+				{
+					this.turnOff();
+				}
+				else
+				{
+					this.turnOn();
+				}
+
 				event.preventDefault();
 				break;
+			}
 		}
 	},
 

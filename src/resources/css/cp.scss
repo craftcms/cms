@@ -109,7 +109,10 @@ html { overflow-y: scroll; }
 #crumbs { margin: -35px 0 10px; font-size: 0; }
 #crumbs:after { @include clearafter; }
 #crumbs li { display: inline-block; font-size: 13px; }
-#crumbs li:after { @include icon; margin: -1px 5px 0; content: '>'; font-size: 11px; color: $mediumtextcolor; }
+#crumbs li:after { @include icon; margin: -1px 5px 0; font-size: 11px; color: $mediumtextcolor;
+	body.ltr & { content: 'rightangle'; }
+	body.rtl & { content: 'leftangle'; }
+}
 #crumbs li a { display: inline-block; padding: 10px 0; color: $mediumtextcolor; }
 #crumbs li a:hover { color: $linkcolor; text-decoration: none; }
 
@@ -162,7 +165,7 @@ html { overflow-y: scroll; }
 }
 #upgrademodal .body tr.buybtns td .btngroup { display: inline-block; }
 #upgrademodal .body tr.buybtns .installed + br + .btngroup { margin-top: 10px; }
-#upgrademodal .body .listedprice { margin-right: 10px; text-decoration: line-through; color: $lighttextcolor; }
+#upgrademodal .body .listedprice { @include margin-right(10px); text-decoration: line-through; color: $lighttextcolor; }
 
 #upgrademodal-compare table thead th { text-align: center; }
 #upgrademodal-compare table thead th { font-size: 13px; line-height: 18px; font-weight: normal; }
@@ -172,7 +175,7 @@ html { overflow-y: scroll; }
 #upgrademodal-compare table tbody tr:first-child th,
 #upgrademodal-compare table tbody tr:first-child td { border-top: none; }
 #upgrademodal-compare table tbody th.group { padding-top: 30px; border-bottom-style: solid; color: $mediumtextcolor; }
-#upgrademodal-compare table tbody th.group:before { margin-top: -2px; width: 24px; text-align: left; font-size: 17px; }
+#upgrademodal-compare table tbody th.group:before { margin-top: -2px; width: 24px; @include alignleft; font-size: 17px; }
 #upgrademodal-compare table tbody th.feature { font-weight: normal; color: $mediumtextcolor; }
 #upgrademodal-compare table tbody td { text-align: center; }
 #upgrademodal-compare table tbody tr.buybtns td { padding-top: 30px; border-bottom: none; }
@@ -181,7 +184,7 @@ html { overflow-y: scroll; }
 #upgrademodal-checkout .pane { max-width: 350px; margin: 0 auto !important; }
 #upgrademodal-checkout .pane .header .price { text-align: center; font-size: 15px; }
 #upgrademodal-checkout .pane .footer .buttons .spinner { position: absolute; top: 0; @include right(-24px); margin: 0; }
-#upgrademodal-checkout .icon.secure:before { margin-right: 5px; }
+#upgrademodal-checkout .icon.secure:before { @include margin-right(5px); }
 
 #upgrademodal-success .message { display: block; position: absolute; top: 50%; left: 0; width: 100%; margin-top: -71px; padding-top: 62px; text-align: center; background: url(../images/success.png) no-repeat 50% 0; }
 #upgrademodal-success .message p { margin-bottom: 24px; font-size: 15px; line-height: 1.4; }

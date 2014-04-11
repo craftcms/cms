@@ -1050,7 +1050,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 		if (this.level != 0)
 		{
 			this.$container.css('padding-'+Craft.left, 24+(this.level*24));
-			$('<div class="indent" data-icon="→"/>').appendTo(this.$descriptionContainer);;
+			$('<div class="indent" data-icon="'+(Craft.orientation == 'ltr' ? 'rarr' : 'larr')+'"/>').appendTo(this.$descriptionContainer);;
 		}
 
 		this.updateStatus(info);

@@ -220,7 +220,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 						$value = str_replace($find, $replace, $value);
 					}
 
-					return '<a href="'.$url.'" target="_blank" class="go">'.$value.'</a>';
+					return '<a href="'.$url.'" target="_blank" class="go"><span dir="ltr">'.$value.'</span></a>';
 				}
 				else
 				{

@@ -182,9 +182,9 @@ Garnish = $.extend(Garnish, {
 	RETURN_KEY: 13,
 	ESC_KEY:    27,
 	SPACE_KEY:  32,
-	LEFT_KEY:   (Garnish.ltr ? 37 : 39),
+	LEFT_KEY:   37,
 	UP_KEY:     38,
-	RIGHT_KEY:  (Garnish.ltr ? 39 : 37),
+	RIGHT_KEY:  39,
 	DOWN_KEY:   40,
 	A_KEY:      65,
 	S_KEY:      83,
@@ -2729,14 +2729,30 @@ Garnish.LightSwitch = Garnish.Base.extend({
 
 			case Garnish.RIGHT_KEY:
 			{
-				this.turnOn();
+				if (Garnish.ltr)
+				{
+					this.turnOn();
+				}
+				else
+				{
+					this.turnOff();
+				}
+
 				ev.preventDefault();
 				break;
 			}
 
 			case Garnish.LEFT_KEY:
 			{
-				this.turnOff();
+				if (Garnish.ltr)
+				{
+					this.turnOff();
+				}
+				else
+				{
+					this.turnOn();
+				}
+
 				ev.preventDefault();
 				break;
 			}
@@ -3046,7 +3062,11 @@ Garnish.MenuBtn = Garnish.Base.extend({
 });
 
 
-
+/**
+ * Mixed input
+ *
+ * @todo RTL support, in the event that the input doesn't have dir="ltr".
+ */
 Garnish.MixedInput = Garnish.Base.extend({
 
 	$container: null,
@@ -3323,7 +3343,7 @@ var TextElement = Garnish.Base.extend({
 		this.parentInput = parentInput;
 
 		this.$input = $('<input type="text"/>').appendTo(this.parentInput.$container);
-		this.$input.css('margin-'+(Garnish.ltr ? 'right' : 'left'), (2-TextElement.padding)+'px');
+		this.$input.css('margin-right', (2-TextElement.padding)+'px');
 
 		this.setWidth();
 
@@ -3720,13 +3740,13 @@ Garnish.Modal = Garnish.Base.extend({
 		if (Garnish.ltr)
 		{
 			this.desiredWidth = this.resizeStartWidth + (this.resizeDragger.mouseDistX * 2);
-			this.desiredHeight = this.resizeStartHeight + (this.resizeDragger.mouseDistY * 2);
 		}
 		else
 		{
 			this.desiredWidth = this.resizeStartWidth - (this.resizeDragger.mouseDistX * 2);
-			this.desiredHeight = this.resizeStartHeight - (this.resizeDragger.mouseDistY * 2);
 		}
+
+		this.desiredHeight = this.resizeStartHeight + (this.resizeDragger.mouseDistY * 2);
 
 		this.updateSizeAndPosition();
 	},
@@ -4085,6 +4105,40 @@ Garnish.Pill = Garnish.Base.extend({
 		this.$selectedBtn = $btn;
 	},
 
+	selectNext: function()
+	{
+		if (!this.$selectedBtn.length)
+		{
+			this.select(this.$btns[this.$btns.length-1]);
+		}
+		else
+		{
+			var nextIndex = this._getSelectedBtnIndex() + 1;
+
+			if (typeof this.$btns[nextIndex] != 'undefined')
+			{
+				this.select(this.$btns[nextIndex]);
+			}
+		}
+	},
+
+	selectPrev: function()
+	{
+		if (!this.$selectedBtn.length)
+		{
+			this.select(this.$btns[0]);
+		}
+		else
+		{
+			var prevIndex = this._getSelectedBtnIndex() - 1;
+
+			if (typeof this.$btns[prevIndex] != 'undefined')
+			{
+				this.select(this.$btns[prevIndex]);
+			}
+		}
+	},
+
 	onMouseDown: function(ev)
 	{
 		this.select(ev.currentTarget);
@@ -4108,28 +4162,30 @@ Garnish.Pill = Garnish.Base.extend({
 		{
 			case Garnish.RIGHT_KEY:
 			{
-				if (!this.$selectedBtn.length)
-					this.select(this.$btns[this.$btns.length-1]);
+				if (Garnish.ltr)
+				{
+					this.selectNext();
+				}
 				else
 				{
-					var nextIndex = this._getSelectedBtnIndex() + 1;
-					if (typeof this.$btns[nextIndex] != 'undefined')
-						this.select(this.$btns[nextIndex]);
+					this.selectPrev();
 				}
+
 				ev.preventDefault();
 				break;
 			}
 
 			case Garnish.LEFT_KEY:
 			{
-				if (!this.$selectedBtn.length)
-					this.select(this.$btns[0]);
+				if (Garnish.ltr)
+				{
+					this.selectPrev();
+				}
 				else
 				{
-					var prevIndex = this._getSelectedBtnIndex() - 1;
-					if (typeof this.$btns[prevIndex] != 'undefined')
-						this.select(this.$btns[prevIndex]);
+					this.selectNext();
 				}
+
 				ev.preventDefault();
 				break;
 			}
@@ -4468,7 +4524,14 @@ Garnish.Select = Garnish.Base.extend({
 				// Select the last item if none are selected
 				if (this.first === null)
 				{
-					var $item = this.getLastItem();
+					if (Garnish.ltr)
+					{
+						var $item = this.getLastItem();
+					}
+					else
+					{
+						var $item = this.getFirstItem();
+					}
 				}
 				else
 				{
@@ -4492,7 +4555,14 @@ Garnish.Select = Garnish.Base.extend({
 				// Select the first item if none are selected
 				if (this.first === null)
 				{
-					var $item = this.getFirstItem();
+					if (Garnish.ltr)
+					{
+						var $item = this.getFirstItem();
+					}
+					else
+					{
+						var $item = this.getLastItem();
+					}
 				}
 				else
 				{
@@ -4667,11 +4737,13 @@ Garnish.Select = Garnish.Base.extend({
 
 	getItemToTheLeft: function(index)
 	{
-		if (this.isPreviousItem(index))
+		var func = (Garnish.ltr ? 'Previous' : 'Next');
+
+		if (this['is'+func+'Item'](index))
 		{
 			if (this.settings.horizontal)
 			{
-				return this.getPreviousItem(index);
+				return this['get'+func+'Item'](index);
 			}
 			if (!this.settings.vertical)
 			{
@@ -4682,11 +4754,13 @@ Garnish.Select = Garnish.Base.extend({
 
 	getItemToTheRight: function(index)
 	{
-		if (this.isNextItem(index))
+		var func = (Garnish.ltr ? 'Next' : 'Previous');
+
+		if (this['is'+func+'Item'](index))
 		{
 			if (this.settings.horizontal)
 			{
-				return this.getNextItem(index);
+				return this['get'+func+'Item'](index);
 			}
 			else if (!this.settings.vertical)
 			{
@@ -4737,7 +4811,17 @@ Garnish.Select = Garnish.Base.extend({
 			smallestMidpointDiff = null,
 			$closestItem = null;
 
-		for (var i = index + dirProps.step; (typeof this.$items[i] != 'undefined'); i += dirProps.step)
+		// Go the other way if this is the X axis and a RTL page
+		if (Garnish.rtl && axis == Garnish.X_AXIS)
+		{
+			var step = dirProps.step * -1;
+		}
+		else
+		{
+			var step = dirProps.step;
+		}
+
+		for (var i = index + step; (typeof this.$items[i] != 'undefined'); i += step)
 		{
 			var $otherItem = $(this.$items[i]),
 				otherOffset = $otherItem.offset();

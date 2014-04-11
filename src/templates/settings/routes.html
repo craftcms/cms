@@ -41,10 +41,10 @@
 						{% if craft.isLocalized() %}
 							<span class="locale">{{ route.locale ?: "Global"|t }}</span>
 						{% endif %}
-						<span class="url">{{ route.urlDisplayHtml|raw }}</span>
+						<span class="url" dir="ltr">{{ route.urlDisplayHtml|raw }}</span>
 					{% endspaceless -%}
 				</div>
-				<div class="template">{{ route.template }}</div>
+				<div class="template" dir="ltr">{{ route.template }}</div>
 			</div>
 		{% endfor %}
 	</div>

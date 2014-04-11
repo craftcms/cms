@@ -30,6 +30,8 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 .first, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, hr:first-child, .pane:first-child, .grid:first-child, .field:first-child, .toolbar:first-child, .buttons:first-child { margin-top: 0 !important; }
 .last,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,                  .pane:last-child,  .grid:last-child,  .field:last-child,  .toolbar:last-child,  .buttons:last-child  { margin-bottom: 0 !important; }
 
+body.rtl .ltr { text-align: right; direction: ltr; }
+
 /* icons */
 .icon:before,
 .menu.padded ul li a.sel:before,
@@ -51,6 +53,12 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 
 [data-icon]:before { content: attr(data-icon); }
 [data-icon-after]:after { content: attr(data-icon-after); }
+
+body.rtl [data-icon=list]:before,
+body.rtl [data-icon-after=list]:after { content: attr('listrtl'); }
+
+body.rtl [data-icon=structure]:before,
+body.rtl [data-icon-after=structure]:after { content: attr('structurertl'); }
 
 .icon.secure:before { content: 'secure'; }
 .icon.insecure:before { content: 'insecure'; }
@@ -112,12 +120,18 @@ a.sel,
 li.sel a { cursor: default !important; text-decoration: none; }
 
 .go { white-space: nowrap; }
-.go:after { content: 'go'; font-size: 11px; margin-top: -1px; @include padding-left(4px); color: $lighttextcolor; }
+.go:after { font-size: 11px; margin-top: -1px; @include padding-left(4px); color: $lighttextcolor;
+	body.ltr & { content: 'circlerarr'; }
+	body.rtl & { content: 'circlelarr'; }
+}
 .go:hover:after { color: $linkcolor; }
 
 /* toggles */
 .toggle,
-a.fieldtoggle:before { width: 20px; height: 20px; background: url(../images/toggle.png) no-repeat 50% 0; @include rtlflip; }
+a.fieldtoggle:before { width: 20px; height: 20px; background: no-repeat 50% 0;
+	body.ltr & { background-image: url(../images/toggle.png); }
+	body.rtl & { background-image: url(../images/toggle_rtl.png); }
+}
 
 .toggle.expanded,
 a.fieldtoggle.expanded:before { background-position: 50% -40px; }
@@ -199,8 +213,14 @@ td.right { float: none; @include alignright; }
 	@include transition(color linear 100ms);
 }
 .content.has-sidebar .show-sidebar:hover { color: $linkcolor; }
-.content.has-sidebar .show-sidebar:before { @include icon; width: 41px; line-height: 24px; content: 'menu→'; }
-.content.has-sidebar .show-sidebar.showing:before { content: 'menu←'; }
+.content.has-sidebar .show-sidebar:before { @include icon; width: 41px; line-height: 24px;
+	body.ltr & { content: 'menurarr'; }
+	body.rtl & { content: 'menularr'; }
+}
+.content.has-sidebar .show-sidebar.showing:before {
+	body.ltr & { content: 'menularr'; }
+	body.rtl & { content: 'menurarr'; }
+}
 
 .content.has-sidebar .sidebar { position: absolute; top: -24px; @include left(-218px); padding: 24px; width: 170px; overflow: auto; }
 
@@ -216,8 +236,8 @@ td.right { float: none; @include alignright; }
 
 .content.has-sidebar .sidebar nav li .toggle { position: absolute; top: 3px; @include left(-20px); }
 .content.has-sidebar .sidebar nav li.expanded > .toggle { background-position: 50% -40px; }
-.content.has-sidebar .sidebar nav li a.sel + .toggle { background-position: 0 -20px; }
-.content.has-sidebar .sidebar nav li.expanded > a.sel + .toggle { background-position: 0 -60px; }
+.content.has-sidebar .sidebar nav li a.sel + .toggle { background-position: 50% -20px; }
+.content.has-sidebar .sidebar nav li.expanded > a.sel + .toggle { background-position: 50% -60px; }
 .content.has-sidebar .sidebar nav li ul { @include margin-left(20px); display: none; }
 .content.has-sidebar .sidebar nav li.expanded > ul { display: block; }
 
@@ -232,7 +252,7 @@ td.right { float: none; @include alignright; }
 ul.icons { margin-top: 20px; }
 ul.icons:after { @include clearafter; }
 ul.icons li { @include floatleft; margin: 0 5px 20px; }
-ul.icons li.break { clear: left; }
+ul.icons li.break { clear: both; }
 ul.icons li a { display: block; position: relative; padding-top: 60px; width: 100px; text-align: center; color: $textcolor; }
 ul.icons li a:before { display: block; position: absolute; top: 0; @include left(0); width: 100%; font-size: 40px; line-height: 60px; }
 ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
@@ -439,10 +459,15 @@ h2 + .actions { margin-top: -54px; }
 /* ----------------------------------------*/
 
 table thead th { font-weight: bold; @include alignleft; vertical-align: top; font-size: 11px; line-height: 1.2; color: rgba(0,0,0,0.5); }
-table thead th.ordered { @include padding-right(26px); background: $bgcolor url(../images/listview_sort.png) no-repeat 100% -4px;
+table thead th.ordered { @include padding-right(26px); background: $bgcolor url(../images/listview_sort.png) no-repeat;
+	body.ltr & { background-position: 100% -4px; }
+	body.rtl & { background-position: 0 -4px; }
 	@include box-shadow(inset 0 1px 5px rgba(0,0,0,0.1));
 }
-table thead th.ordered.desc { background-position: 100% -35px; }
+table thead th.ordered.desc {
+	body.ltr & { background-position: 100% -35px; }
+	body.rtl & { background-position: 0 -35px; }
+}
 table thead th.ordered:first-child { @include padding-left(10px); }
 
 td.thin { width: 0.01% !important; vertical-align: middle; }
@@ -483,7 +508,7 @@ table.data.collapsed tbody td[data-title]:before { content: attr(data-title) ":\
 table.data.collapsed tbody td:empty { display: none; }
 table.data.collapsed tbody tr:after { @include clearafter; }
 table.data.collapsed tbody th:not(.thin),
-table.data.collapsed tbody td:not(.thin) { clear: left; }
+table.data.collapsed tbody td:not(.thin) { clear: both; }
 table.data.collapsed tbody td form { display: inline-block; }
 table.data.collapsed thead + tbody tr:first-child th,
 table.data.collapsed thead + tbody tr:first-child td { border-top: none; }
@@ -922,7 +947,7 @@ body .redactor_box textarea { padding: 6px 7px; }
 
 .passwordwrapper { position: relative; }
 .passwordwrapper .password { width: 100%; }
-.passwordwrapper .password-toggle { display: block; position: absolute; top: 7px; @include right(7px); text-right: right; }
+.passwordwrapper .password-toggle { display: block; position: absolute; top: 7px; @include right(7px); @include alignright; }
 .password { @include padding-right(5em); }
 .password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
@@ -1015,7 +1040,7 @@ body #redactor_modal footer button:last-child { border-bottom-right-radius: 3px;
 /* timepicker */
 .ui-timepicker-wrapper { z-index: 1; }
 .ui-timepicker-list { @include margin-left(1px); overflow-y: auto; width: 8em; height: 210px; z-index: 100; }
-.ui-timepicker-list li { @include padding(2px, 0, 2px, 25px); white-space: nowrap; cursor: pointer; }
+.ui-timepicker-list li { @include padding(2px, 0, 2px, 21px); white-space: nowrap; cursor: pointer; }
 .ui-timepicker-list li:hover { background: $menuhovercolor; }
 .ui-timepicker-list li.ui-timepicker-selected { background: $menuselcolor; color: #fff; cursor: default; }
 
@@ -1124,7 +1149,10 @@ ul.errors li { color: $errorcolor; }
 	}
 
 	a.fieldtoggle:before,
-	.toggle { background-image: url(../images/toggle_2x.png); background-size: 12px; }
+	.toggle { background-size: 12px;
+		body.ltr & { background-image: url(../images/toggle_2x.png); }
+		body.rtl & { background-image: url(../images/toggle_rtl_2x.png); }
+	}
 
 	.progressbar.pending .progressbar-inner { background-image: url(../images/progressbar_pending_2x.png); background-size: 50px; }
 

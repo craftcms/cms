@@ -29,7 +29,7 @@
 						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
 						<td data-title="{{ 'Handle'|t }}"><code>{{ section.handle }}</code></td>
 						<td data-title="{{ 'Type'|t }}">{{ section.type|title|t }}</td>
-						<td data-title="{{ 'URL Format'|t }}">
+						<td data-title="{{ 'URL Format'|t }}" dir="ltr">
 							{%- if section.isHomepage() -%}
 								<div data-icon="home" title="{{ 'Homepage'|t }}"></div>
 							{%- else -%}

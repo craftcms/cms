@@ -108,8 +108,6 @@ $noticecolor: #5286d9;
 	vertical-align: middle;
 	word-wrap: normal !important;
 	@include user-select(none);
-
-	@include rtlflip;
 }
 
 @mixin clearafter {
@@ -131,14 +129,6 @@ $noticecolor: #5286d9;
 }
 
 /* RTL stuff */
-
-@mixin rtlflip {
-	body.rtl & {
-		@include transform(scaleX(-1));
-	    -ms-filter: fliph; // IE
-	    filter: fliph; // IE
-	}
-}
 
 @mixin left($left) {
 	body.ltr & { left: $left; }

@@ -9,7 +9,7 @@
 	<div class="input{% if errors %} errors{% endif %}">
 		{{ text({
 			id: name~'-'~locale.id,
-			class: 'code',
+			class: 'code ltr',
 			name: name~'['~locale.id~']',
 			value: (value != '__home__' ? value : null),
 			errors: errors
@@ -104,6 +104,7 @@
 					label: "Category Template"|t,
 					instructions: "The template to use when a category’s URL is requested."|t,
 					id: 'template',
+					class: 'ltr',
 					name: 'template',
 					value: categoryGroup.template,
 					errors: categoryGroup.getErrors('template')

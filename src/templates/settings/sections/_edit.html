@@ -11,7 +11,7 @@
 	<div class="input{% if errors %} errors{% endif %}">
 		{{ text({
 			id: sectionType~'-'~name~'-'~locale.id,
-			class: 'code',
+			class: 'code ltr',
 			name: 'types['~sectionType~']['~name~']['~locale.id~']',
 			value: (value != '__home__' ? value : null),
 			errors: errors
@@ -79,6 +79,7 @@
 		label: "Entry Template"|t,
 		instructions: (sectionType == 'single' ? "The template to use when the entry’s URL is requested."|t : "The template to use when an entry’s URL is requested."|t),
 		id: sectionType~'-template',
+		class: 'ltr',
 		name: 'types['~sectionType~'][template]',
 		value: section.template,
 		errors: section.getErrors('template')
