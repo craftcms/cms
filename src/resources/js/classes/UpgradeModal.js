@@ -254,13 +254,14 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 				else
 				{
 					this.onPurchaseResponse();
-					Garnish.shake(this.$checkoutForm);
+					this.showError(response.error.message);
+					Garnish.shake(this.$checkoutForm, 'left');
 				}
 			}, this));
 		}
 		else
 		{
-			Garnish.shake(this.$checkoutForm);
+			Garnish.shake(this.$checkoutForm, 'left');
 		}
 	},
 
@@ -304,12 +305,21 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 						errorText += response.errors[i];
 					}
 
-					this.$checkoutFormError = $('<p class="error centeralign">'+errorText+'</p>').insertBefore(this.$checkoutSecure);
+					this.showError(errorText);
+				}
+				else
+				{
+					var errorText = Craft.t('An unknown error occurred.');
 				}
 
-				Garnish.shake(this.$checkoutForm);
+				Garnish.shake(this.$checkoutForm, 'left');
 			}
 		}
+	},
+
+	showError: function(error)
+	{
+		this.$checkoutFormError = $('<p class="error centeralign">'+error+'</p>').insertBefore(this.$checkoutSecure);
 	},
 
 	onUpgrade: function()
