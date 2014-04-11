@@ -900,6 +900,12 @@ Garnish.Base = Base.extend({
 						$(elem.__resizeTriggers__).prependTo(elem);
 						resetTriggers(elem);
 						elem.addEventListener('scroll', scrollListener, true);
+
+						// Listen for window resizes too
+						Garnish.$win.on('resize', function()
+						{
+							scrollListener.apply(elem);
+						});
 					}
 				})($elem[i]);
 			}
@@ -971,7 +977,7 @@ if (!document.attachEvent)
 			   elem.offsetHeight != elem.__resizeLast__.height;
 	}
 
-	var scrollListener = function(e)
+	var scrollListener = function(ev)
 	{
 		var elem = this;
 		resetTriggers(elem);
