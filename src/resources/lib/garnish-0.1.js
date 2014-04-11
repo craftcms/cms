@@ -881,10 +881,10 @@ Garnish.Base = Base.extend({
 						return;
 					}
 
-					var _$elem = $(elem)
-					var resize = 'onresize' in elem;
+					// IE < 11 had a proprietary 'resize' event and 'attachEvent' method.
+					// Conveniently both dropped in 11.
 
-					if (!resize && !_$elem.data('garnish-resizable'))
+					if (!document.attachEvent && !elem.__resizeTriggers__)
 					{
 						// The element must be relative, absolute, or fixed
 						if (getComputedStyle(elem).position == 'static')
@@ -892,62 +892,14 @@ Garnish.Base = Base.extend({
 							elem.style.position = 'relative';
 						}
 
-						// Create the sensor div
-						var $sensor = $('<div class="resize-sensor">' +
-							'<div class="resize-overflow"><div></div></div>' +
-							'<div class="resize-underflow"><div></div></div>' +
-						'</div>').prependTo(_$elem);
-
-						$sensor.add($sensor.children()).css({
-							position: 'absolute',
-							top: 0,
-							left: 0,
-							width: '100%',
-							height: '100%',
-							overflow: 'hidden',
-							'z-index': -1
-						});
-
-						$sensor.next().addClass('first');
-
-						_$elem.data('garnish-resizable', true);
-
-						var width = elem.offsetWidth,
-							height = elem.offsetHeight,
-							first = $sensor[0].firstElementChild.firstChild,
-							last = $sensor[0].lastElementChild.firstChild,
-
-							testSizeChange = function(ev)
-							{
-								if (width != elem.offsetWidth || height != elem.offsetHeight)
-								{
-									width = elem.offsetWidth;
-									height = elem.offsetHeight;
-
-									updateSensor();
-
-									if (!ev || ev.currentTarget != _$elem[0] || ev.type != 'resize')
-									{
-										_$elem.trigger('resize');
-									}
-								}
-							},
-							updateSensor = function()
-							{
-								first.style.width = width - 1 + 'px';
-								first.style.height = height - 1 + 'px';
-								last.style.width = width + 1 + 'px';
-								last.style.height = height + 1 + 'px';
-							};
-
-						updateSensor();
-						_$elem.on('resize', testSizeChange);
-						Garnish.$win.on('resize', testSizeChange);
-
-						addFlowListener($sensor[0], 'over', testSizeChange);
-						addFlowListener($sensor[0], 'under', testSizeChange);
-						addFlowListener($sensor[0].firstElementChild, 'over', testSizeChange);
-						addFlowListener($sensor[0].lastElementChild, 'under', testSizeChange);
+						elem.__resizeLast__ = {};
+						elem.__resizeTriggers__ = document.createElement('div')
+						elem.__resizeTriggers__.className = 'resize-triggers';
+						elem.__resizeTriggers__.innerHTML = '<div class="expand-trigger"><div></div></div>' +
+						                                       '<div class="contract-trigger"></div>';
+						$(elem.__resizeTriggers__).prependTo(elem);
+						resetTriggers(elem);
+						elem.addEventListener('scroll', scrollListener, true);
 					}
 				})($elem[i]);
 			}
@@ -974,22 +926,73 @@ Garnish.Base = Base.extend({
 /**
  * Used by our resize detection script
  */
-function addFlowListener(elem, type, func)
+if (!document.attachEvent)
 {
-	var flow = type == 'over';
-
-	elem.addEventListener('OverflowEvent' in window ? 'overflowchanged' : type + 'flow', function(ev)
+	var requestFrame = (function()
 	{
-		if (ev.type == (type + 'flow') ||
-		((ev.orient == 0 && ev.horizontalOverflow == flow) ||
-		(ev.orient == 1 && ev.verticalOverflow == flow) ||
-		(ev.orient == 2 && ev.horizontalOverflow == flow && ev.verticalOverflow == flow)))
+		var raf = window.requestAnimationFrame ||
+				  window.mozRequestAnimationFrame ||
+				  window.webkitRequestAnimationFrame ||
+				  function(fn){ return window.setTimeout(fn, 20); };
+
+		  return function(fn){ return raf(fn); };
+	})();
+
+	var cancelFrame = (function()
+	{
+		var cancel = window.cancelAnimationFrame ||
+					 window.mozCancelAnimationFrame ||
+					 window.webkitCancelAnimationFrame ||
+					 window.clearTimeout;
+
+		return function(id){ return cancel(id); };
+	})();
+
+	var resetTriggers = function(elem)
+	{
+		var triggers    = elem.__resizeTriggers__,
+			expand      = triggers.firstElementChild,
+			contract    = triggers.lastElementChild,
+			expandChild = expand.firstElementChild;
+
+		contract.scrollLeft = contract.scrollWidth;
+		contract.scrollTop  = contract.scrollHeight;
+
+		expandChild.style.width  = expand.offsetWidth + 1 + 'px';
+		expandChild.style.height = expand.offsetHeight + 1 + 'px';
+
+		expand.scrollLeft = expand.scrollWidth;
+		expand.scrollTop  = expand.scrollHeight;
+	}
+
+	var checkTriggers = function(elem)
+	{
+		return elem.offsetWidth  != elem.__resizeLast__.width ||
+			   elem.offsetHeight != elem.__resizeLast__.height;
+	}
+
+	var scrollListener = function(e)
+	{
+		var elem = this;
+		resetTriggers(elem);
+
+		if (elem.__resizeRAF__)
 		{
-			ev.flow = type;
-			return func.call(this, ev);
+			cancelFrame(elem.__resizeRAF__);
 		}
-	}, false);
-};
+
+		elem.__resizeRAF__ = requestFrame(function()
+		{
+			if (checkTriggers(elem))
+			{
+				elem.__resizeLast__.width  = elem.offsetWidth;
+				elem.__resizeLast__.height = elem.offsetHeight;
+
+				$(elem).trigger('resize');
+			}
+		});
+	}
+}
 
 
 /**
