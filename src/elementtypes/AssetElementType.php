@@ -308,7 +308,7 @@ class AssetElementType extends BaseElementType
 	private function _assembleSourceInfoForFolder(AssetFolderModel $folder, $includeNestedFolders = true)
 	{
 		$source = array(
-			'label'     => $folder->name,
+			'label'     => ($folder->parentId ? $folder->name : Craft::t($folder->name)),
 			'hasThumbs' => true,
 			'criteria'  => array('folderId' => $folder->id),
 		);

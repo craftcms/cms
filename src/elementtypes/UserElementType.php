@@ -74,7 +74,7 @@ class UserElementType extends BaseElementType
 				$key = 'group:'.$group->id;
 
 				$sources[$key] = array(
-					'label'     => $group->name,
+					'label'     => Craft::t($group->name),
 					'criteria'  => array('groupId' => $group->id),
 					'hasThumbs' => true
 				);

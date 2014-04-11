@@ -137,7 +137,7 @@ class EntryElementType extends BaseElementType
 					$key = 'section:'.$section->id;
 
 					$sources[$key] = array(
-						'label'    => $section->name,
+						'label'    => Craft::t($section->name),
 						'data'     => array('type' => $type, 'handle' => $section->handle),
 						'criteria' => array('sectionId' => $section->id)
 					);
