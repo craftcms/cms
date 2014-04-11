@@ -1,8 +1,10 @@
 {% extends "_layouts/cp" %}
 
-{% set crumbs = [
-	{ label: "Users"|t, url: url('users') }
-] %}
+{% if CraftEdition == CraftPro %}
+	{% set crumbs = [
+		{ label: "Users"|t, url: url('users') }
+	] %}
+{% endif %}
 
 {% import "_includes/forms" as forms %}
 
