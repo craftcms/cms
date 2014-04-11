@@ -59,7 +59,7 @@
 	Craft.routes.tokens = {
 		{% for name, pattern in tokens %}
 			{% if not loop.first %},{% endif %}
-			"{{ name|t(null, null, craft.app.locale)|e('js') }}": "{{ pattern|e('js') }}"
+			"{{ name|e('js') }}": "{{ pattern|e('js') }}"
 		{% endfor %}
 	};
 
