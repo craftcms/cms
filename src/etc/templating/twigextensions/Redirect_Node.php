@@ -13,8 +13,8 @@ class Redirect_Node extends \Twig_Node
 	{
 		$compiler
 		    ->addDebugInfo($this)
-		    ->write('\Craft\HeaderHelper::setHeader(array(\'Location\' => \Craft\UrlHelper::getUrl(')
+		    ->write('\Craft\craft()->request->redirect(\Craft\UrlHelper::getUrl(')
 		    ->subcompile($this->getNode('path'))
-		    ->raw(")));\n");
+		    ->raw("));\n");
 	}
 }
