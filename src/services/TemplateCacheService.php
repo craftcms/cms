@@ -270,10 +270,40 @@ class TemplateCacheService extends BaseApplicationComponent
 			return false;
 		}
 
-		// Queue up a task to search through the cached criteria
-		craft()->tasks->createTask('DeleteStaleTemplateCaches', null, array(
-			'elementId' => $elementId
-		));
+		// If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
+		$task = craft()->tasks->getNextPendingTask('DeleteStaleTemplateCaches');
+
+		if ($task && is_array($task->settings))
+		{
+			$settings = $task->settings;
+
+			if (!is_array($settings['elementId']))
+			{
+				$settings['elementId'] = array($settings['elementId']);
+			}
+
+			if (is_array($elementId))
+			{
+				$settings['elementId'] = array_merge($settings['elementId'], $elementId);
+			}
+			else
+			{
+				$settings['elementId'][] = $elementId;
+			}
+
+			// Make sure there aren't any duplicate element IDs
+			$settings['elementId'] = array_unique($settings['elementId']);
+
+			// Set the new settings and save the task
+			$task->settings = $settings;
+			craft()->tasks->saveTask($task, false);
+		}
+		else
+		{
+			craft()->tasks->createTask('DeleteStaleTemplateCaches', null, array(
+				'elementId' => $elementId
+			));
+		}
 
 		$query = craft()->db->createCommand()
 			->selectDistinct('cacheId')
