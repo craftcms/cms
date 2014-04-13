@@ -243,9 +243,12 @@ class LocalizationService extends BaseApplicationComponent
 			}
 
 			// Resave all of the localizable elements
-			craft()->tasks->createTask('ResaveAllElements', null, array(
-				'localizableOnly' => true,
-			));
+			if (!craft()->tasks->areTasksPending('ResaveAllElements'))
+			{
+				craft()->tasks->createTask('ResaveAllElements', null, array(
+					'localizableOnly' => true,
+				));
+			}
 		}
 
 		return $success;
