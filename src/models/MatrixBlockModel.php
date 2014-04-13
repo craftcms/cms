@@ -65,7 +65,7 @@ class MatrixBlockModel extends BaseElementModel
 			}
 			else
 			{
-				return array();
+				return array(craft()->i18n->getPrimarySiteLocaleId());
 			}
 		}
 	}
