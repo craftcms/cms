@@ -344,19 +344,57 @@ class TasksService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns whether there are any pending tasks.
+	 * Returns whether there are any pending tasks, optionally by a given type.
 	 *
+	 * @param string|null $type
 	 * @return bool
 	 */
-	public function areTasksPending()
+	public function areTasksPending($type = null)
 	{
+		$conditions = array('and', 'lft = 1', 'status = :status');
+		$params = array(':status' => TaskStatus::Pending);
+
+		if ($type)
+		{
+			$conditions[] = 'type = :type';
+			$params[':type'] = $type;
+		}
+
 		return (bool) craft()->db->createCommand()
 			->from('tasks')
-			->where(
-				array('and', 'lft = 1', 'status = :status'),
-				array(':status' => TaskStatus::Pending)
-			)
+			->where($conditions, $params)
 			->count('id');
+	}
+
+	/**
+	 * Returns any pending tasks, optionally by a given type.
+	 *
+	 * @param string|null $type
+	 * @param int|null $limit
+	 * @return array
+	 */
+	public function getPendingTasks($type = null, $limit = null)
+	{
+		$conditions = array('and', 'lft = 1', 'status = :status');
+		$params = array(':status' => TaskStatus::Pending);
+
+		if ($type)
+		{
+			$conditions[] = 'type = :type';
+			$params[':type'] = $type;
+		}
+
+		$query = craft()->db->createCommand()
+			->from('tasks')
+			->where($conditions, $params);
+
+		if ($limit)
+		{
+			$query->limit($limit);
+		}
+
+		$results = $query->queryAll();
+		return TaskModel::populateModels($results);
 	}
 
 	/**
@@ -391,30 +429,45 @@ class TasksService extends BaseApplicationComponent
 	/**
 	 * Returns the next pending task.
 	 *
+	 * @param string|null $type
 	 * @return TaskModel|null
 	 */
-	public function getNextPendingTask()
+	public function getNextPendingTask($type = null)
 	{
-		if (!isset($this->_nextPendingTask))
+		// If a type was passed, we don't need to actually save it,
+		// as it's probably not an actual task-running request
+		if ($type)
 		{
-			$taskRecord = TaskRecord::model()->roots()->ordered()->findByAttributes(array(
-				'status' => TaskStatus::Pending
-			));
+			$pendingTasks = $this->getPendingTasks($type, 1);
 
-			if ($taskRecord)
+			if ($pendingTasks)
 			{
-				$this->_taskRecordsById[$taskRecord->id] = $taskRecord;
-				$this->_nextPendingTask = TaskModel::populateModel($taskRecord);
-			}
-			else
-			{
-				$this->_nextPendingTask = false;
+				return $pendingTasks[0];
 			}
 		}
-
-		if ($this->_nextPendingTask)
+		else
 		{
-			return $this->_nextPendingTask;
+			if (!isset($this->_nextPendingTask))
+			{
+				$taskRecord = TaskRecord::model()->roots()->ordered()->findByAttributes(array(
+					'status' => TaskStatus::Pending
+				));
+
+				if ($taskRecord)
+				{
+					$this->_taskRecordsById[$taskRecord->id] = $taskRecord;
+					$this->_nextPendingTask = TaskModel::populateModel($taskRecord);
+				}
+				else
+				{
+					$this->_nextPendingTask = false;
+				}
+			}
+
+			if ($this->_nextPendingTask)
+			{
+				return $this->_nextPendingTask;
+			}
 		}
 	}
 
