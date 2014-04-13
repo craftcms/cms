@@ -88,8 +88,11 @@ Craft.MatrixConfigurator = Garnish.Base.extend(
 
 	setContainerHeight: function()
 	{
-		var maxColHeight = Math.max(this.$blockTypesColumnContainer.height(), this.$fieldsColumnContainer.height(), this.$fieldSettingsColumnContainer.height(), 400);
-		this.$container.height(maxColHeight);
+		setTimeout($.proxy(function()
+		{
+			var maxColHeight = Math.max(this.$blockTypesColumnContainer.height(), this.$fieldsColumnContainer.height(), this.$fieldSettingsColumnContainer.height(), 400);
+			this.$container.height(maxColHeight);
+		}, this), 1);
 	},
 
 	getFieldTypeInfo: function(type)
