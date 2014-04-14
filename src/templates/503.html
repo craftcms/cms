@@ -3,5 +3,11 @@
 
 {% block message %}
 	<h2>{{ title }}</h2>
-	<p>{{ "Our system is currently under maintenance. Please try again later."|t }}</p>
+	<p>
+		{% if message %}
+			{{ message }}
+		{% else %}
+			{{ "Our system is currently under maintenance. Please try again later."|t }}
+		{% endif %}
+	</p>
 {% endblock %}
