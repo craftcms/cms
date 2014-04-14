@@ -41,7 +41,7 @@ var FieldsAdmin = Garnish.Base.extend(
 
 	addNewGroup: function()
 	{
-		var name = this.promptForGroupName();
+		var name = this.promptForGroupName('');
 
 		if (name)
 		{
