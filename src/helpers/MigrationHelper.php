@@ -196,10 +196,14 @@ class MigrationHelper
 	 * and updates the names of any FK's in other tables.
 	 *
 	 * @static
-	 * @param string $table
-	 * @param string $elementType
+	 * @param string     $table       The existing table name used to store records of this element.
+	 * @param string     $elementType The element type handle (e.g. "Entry", "Asset", etc.).
+	 * @param bool       $hasContent  Whether this element type has content.
+	 * @param bool       $isLocalized Whether this element type stores data in multiple locales.
+	 * @param array|null $locales     Which locales the elements should store content in.
+	 *                                Defaults to the primary site locale if the element type is not localized, otherwise all locales.
 	 */
-	public static function makeElemental($table, $elementType)
+	public static function makeElemental($table, $elementType, $hasContent = false, $isLocalized = false, $locales = null)
 	{
 		$fks = static::_findForeignKeysToTable($table);
 
@@ -224,6 +228,22 @@ class MigrationHelper
 			->from($table)
 			->queryAll();
 
+		// Figure out which locales we're going to be storing elements_i18n and content rows in.
+		if (!$locales || !is_array($locales))
+		{
+			if ($isLocalized)
+			{
+				$locales = craft()->i18n->getSiteLocaleIds();
+			}
+			else
+			{
+				$locales = array(craft()->i18n->getPrimarySiteLocaleId());
+			}
+		}
+
+		$i18nValues = array();
+		$contentValues = array();
+
 		foreach ($oldRows as $row)
 		{
 			// Create a new row in elements
@@ -244,6 +264,28 @@ class MigrationHelper
 			{
 				craft()->db->createCommand()->update($fk->table->name, array($fk->column => $elementId), array($fk->column.'_old' => $row['id_old']));
 			}
+
+			// Queue up the elements_i18n and content values
+			foreach ($locales as $locale)
+			{
+				$i18nValues[] = array($elementId, $locale, 1);
+			}
+
+			if ($hasContent)
+			{
+				foreach ($locales as $locale)
+				{
+					$contentValues[] = array($elementId, $locale);
+				}
+			}
+		}
+
+		// Save the new elements_i18n and content rows
+		craft()->db->createCommand()->insertAll('elements_i18n', array('elementId', 'locale', 'enabled'), $i18nValues);
+
+		if ($hasContent)
+		{
+			craft()->db->createCommand()->insertAll('content', array('elementId', 'locale'), $contentValues);
 		}
 
 		// Drop the old id column
