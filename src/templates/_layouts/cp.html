@@ -247,7 +247,7 @@
 				<li>{{ "Copyright"|t }} {{ now.year}} Pixel &amp; Tonic, Inc. {{ "All rights reserved."|t }}</li>
 			</ul>
 
-			{% if craft.app.canUpgradeEdition() %}
+			{% if (CraftEdition == CraftPersonal or craft.request.getPath == 'settings') and craft.app.canUpgradeEdition() %}
 				<p id="upgradepromo"><a>{{ "Upgrade Craft to take your site to the next level."|t }} <span class="go">{{ "Show me"|t }}</span></a></p>
 			{% endif %}
 		</div>
