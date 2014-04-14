@@ -1335,6 +1335,30 @@ class ElementsService extends BaseApplicationComponent
 		}
 	}
 
+	/**
+	 * Deletes elements by a given type.
+	 *
+	 * @param string $type
+	 * @return bool
+	 */
+	public function deleteElementsByType($type)
+	{
+		// Get the IDs and let deleteElementById() take care of the actual deletion
+		$elementIds = craft()->db->createCommand()
+			->select('id')
+			->from('elements')
+			->where('type = :type', array(':type' => $type))
+			->queryColumn();
+
+		if ($elementIds)
+		{
+			$this->deleteElementById($elementIds);
+
+			// Delete the template caches
+			craft()->templateCache->deleteCachesByElementType($type);
+		}
+	}
+
 	// Element types
 	// =============
 
