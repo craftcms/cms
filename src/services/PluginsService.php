@@ -426,6 +426,21 @@ class PluginsService extends BaseApplicationComponent
 		{
 			$plugin->onBeforeUninstall();
 
+			// If the plugin has any element types, delete their elements
+			$elementTypeInfo = craft()->components->types['element'];
+			$elementTypeClasses = $this->getPluginClasses($plugin, $elementTypeInfo['subfolder'], $elementTypeInfo['suffix']);
+
+			foreach ($elementTypeClasses as $class)
+			{
+				$elementType = craft()->components->initializeComponent($class, $elementTypeInfo['instanceof']);
+
+				if ($elementType)
+				{
+					craft()->elements->deleteElementsByType($elementType->getClassHandle());
+				}
+			}
+
+			// Drop any tables created by the plugin's records
 			$plugin->dropTables();
 
 			// Remove the row from the database.
