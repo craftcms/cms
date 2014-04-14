@@ -252,6 +252,7 @@ class AssetsController extends BaseController
 	public function actionGenerateTransform()
 	{
 		$transformId = craft()->request->getQuery('transformId');
+		$returnUrl = (bool) craft()->request->getPost('returnUrl', false);
 
 		// If transform Id was not passed in, see if file id and handle were.
 		if (empty($transformId))
@@ -320,8 +321,6 @@ class AssetsController extends BaseController
 				$transformIndexModel->inProgress = 0;
 				$transformIndexModel->fileExists = 1;
 				craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
-				$this->redirect(craft()->assetTransforms->getUrlforTransformByIndexId($transformId), true, 302);
-				craft()->end();
 			}
 			else
 			{
@@ -333,7 +332,14 @@ class AssetsController extends BaseController
 
 		}
 
-		$this->redirect(craft()->assetTransforms->getUrlforTransformByIndexId($transformId), true, 302);
+		$url = craft()->assetTransforms->getUrlforTransformByIndexId($transformId);
+		if ($returnUrl)
+		{
+			$this->returnJson(array('url' => $url));
+		}
+
+		$this->redirect($url, true, 302);
+		craft()->end();
 	}
 
 	/**
