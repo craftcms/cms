@@ -87,7 +87,7 @@ Craft.UpdateInfo = Garnish.Base.extend(
 		{
 			if (this.allowAutoUpdates)
 			{
-				var $btnGroup = $('<div class="btngroup"/>').appendTo($buttonContainer),
+				var $btnGroup = $('<div class="btngroup submit"/>').appendTo($buttonContainer),
 					$updateBtn = $('<div class="btn submit">'+Craft.t('Update')+'</div>').appendTo($btnGroup),
 					$menuBtn = $('<div class="btn submit menubtn"/>').appendTo($btnGroup),
 					$menu = $('<div class="menu" data-align="right"/>').appendTo($btnGroup),
