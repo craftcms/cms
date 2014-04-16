@@ -637,20 +637,13 @@ class AssetTransformsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Get the size of max cached cloud images.
+	 * Get the size of max cached cloud images dimension.
 	 *
 	 * @return int
 	 */
 	public function getCachedCloudImageSize()
 	{
-		static $maxCachedCloudImageSize = null;
-
-		if (is_null($maxCachedCloudImageSize))
-		{
-			$maxCachedCloudImageSize = (int) craft()->config->get("maxCachedCloudImageSize");
-		}
-
-		return $maxCachedCloudImageSize;
+		return (int) craft()->config->get('maxCachedCloudImageSize');
 	}
 
 	/**
