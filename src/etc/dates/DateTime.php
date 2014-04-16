@@ -100,7 +100,7 @@ class DateTime extends \DateTime
 				$date = '';
 				$format = '';
 
-				// Default to the current date, because that makes more sense than Jan 1, 1970
+				// Default to the current date
 				$current = new DateTime('now', new \DateTimeZone($timezone));
 				$date .= $current->month().'/'.$current->day().'/'.$current->year();
 				$format .= 'n/j/Y';
@@ -171,8 +171,8 @@ class DateTime extends \DateTime
 
 		if ($timezone)
 		{
-			$format .= 'e';
-			$date   .= $timezone;
+			$format .= ' e';
+			$date   .= ' '.$timezone;
 		}
 
 		return static::createFromFormat('!'.$format, $date);
