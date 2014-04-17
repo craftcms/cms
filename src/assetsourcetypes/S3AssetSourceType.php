@@ -64,7 +64,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$settings->expires = $this->_extractExpiryInformation($settings->expires);
 
 		return craft()->templates->render('_components/assetsourcetypes/S3/settings', array(
-			'settings' => $this->getSettings(),
+			'settings' => $settings,
 			'periods' => array_merge(array('' => ''), $this->getPeriodList())
 		));
 	}
