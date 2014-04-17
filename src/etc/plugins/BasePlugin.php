@@ -107,6 +107,13 @@ abstract class BasePlugin extends BaseSavableComponentType
 	}
 
 	/**
+	 * Perform any actions before the plugin has been installed.
+	 */
+	public function onBeforeInstall()
+	{
+	}
+
+	/**
 	 * Perform any actions before the plugin gets uninstalled.
 	 */
 	public function onBeforeUninstall()

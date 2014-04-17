@@ -339,6 +339,8 @@ class PluginsService extends BaseApplicationComponent
 			throw new Exception(Craft::t('“{plugin}” is already installed.', array('plugin' => $plugin->getName())));
 		}
 
+		$plugin->onBeforeInstall();
+
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
