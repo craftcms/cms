@@ -43,7 +43,7 @@ class AssetsHelper
 		$source = craft()->assetSources->getSourceTypeById($file->sourceId);
 		if (!empty($source->getSettings()->expires) && DateTimeHelper::isValidIntervalString($source->getSettings()->expires))
 		{
-			$appendix = '?mtime='.$file->dateModified;
+			$appendix = '?mtime='.$file->dateModified->format("YmdHis");
 		}
 
 		return $baseUrl.$folderPath.$transformPath.$fileName.$appendix;
