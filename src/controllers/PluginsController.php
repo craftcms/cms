@@ -101,22 +101,27 @@ class PluginsController extends BaseController
 			throw new Exception(Craft::t('No plugin exists with the class “{class}”', array('class' => $pluginClass)));
 		}
 
-		if (craft()->plugins->savePluginSettings($plugin, $settings))
+		// Give the plugin a chance to modify the settings
+		$settings = $plugin->prepSettings($settings);
+
+		// Set the settings on the plugin.
+		$plugin->setSettings($settings);
+
+		if ($plugin->getSettings()->validate())
 		{
-			craft()->userSession->setNotice(Craft::t('Plugin settings saved.'));
+			if (craft()->plugins->savePluginSettings($plugin, $settings))
+			{
+				craft()->userSession->setNotice(Craft::t('Plugin settings saved.'));
 
-			$this->redirectToPostedUrl();
+				$this->redirectToPostedUrl();
+			}
 		}
-		else
-		{
-			$plugin->setSettings($settings);
 
-			craft()->userSession->setError(Craft::t('Couldn’t save plugin settings.'));
+		craft()->userSession->setError(Craft::t('Couldn’t save plugin settings.'));
 
-			// Send the plugin back to the template
-			craft()->urlManager->setRouteVariables(array(
-				'plugin' => $plugin
-			));
-		}
+		// Send the plugin back to the template
+		craft()->urlManager->setRouteVariables(array(
+			'plugin' => $plugin
+		));
 	}
 }
