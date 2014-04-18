@@ -328,7 +328,14 @@ class IOHelper
 	 */
 	public static function getMimeType($path)
 	{
-		return \CFileHelper::getMimeType($path);
+		if (@file_exists($path))
+		{
+			return \CFileHelper::getMimeType($path);
+		}
+		else
+		{
+			return \CFileHelper::getMimeTypeByExtension($path);
+		}
 	}
 
 	/**
