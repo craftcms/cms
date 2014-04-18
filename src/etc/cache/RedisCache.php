@@ -16,5 +16,18 @@ namespace Craft;
  */
 class RedisCache extends \CRedisCache
 {
+	/**
+	 * We override this because the parent is explicitly checking for null in the password.
+	 *
+	 * @throws \CException
+	 */
+	protected function connect()
+	{
+		if ($this->password === '')
+		{
+			$this->password = null;
+		}
 
+		parent::connect();
+	}
 }
