@@ -59,7 +59,7 @@
 		<div class="item" data-position="left">
 			<form id="userform" class="pane" method="post" accept-charset="UTF-8" data-saveshortcut="1">
 				<input type="hidden" name="action" value="users/saveUser">
-				<input type="hidden" name="redirect" value="{{ CraftEdition == CraftPro ? 'users' : 'dashboard' }}">
+				<input type="hidden" name="redirect" value="{{ CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard' }}">
 				{{ hiddenInputs }}
 
 				{% include "_includes/tabs" %}
