@@ -485,8 +485,6 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function savePluginSettings(BasePlugin $plugin, $settings)
 	{
-		// Give the plugin a chance to modify the settings
-		$settings = $plugin->prepSettings($settings);
 		$settings = JsonHelper::encode($settings);
 
 		$affectedRows = craft()->db->createCommand()->update('plugins', array(
