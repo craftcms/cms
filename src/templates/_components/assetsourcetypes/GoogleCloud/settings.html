@@ -73,3 +73,36 @@
     required: true,
     class: 'google-url-prefix'
 }) }}
+
+{% set cacheInput %}
+	<table class="inputs">
+		<tr>
+			<td>
+				{{ forms.textField({
+				id: 'expiresAmount',
+				value: settings.expires.amount,
+				size: 2,
+				class: 'expires-amount'
+				}) }}
+			</td>
+			<td>
+				{{ forms.select({
+				id: 'expiresPeriod',
+				options: periods,
+				value: settings.expires.period,
+				class: 'expires-period'
+				}) }}
+			</td>
+		</tr>
+	</table>
+	{{ forms.hidden({
+		name: "expires",
+		value: settings.expires.amount ~ settings.expires.period,
+		class: "expires-combined"
+	}) }}
+{% endset %}
+
+{{ forms.field({
+	label: "Cache Duration "|t,
+	id: 'cacheDuration',
+}, cacheInput) }}

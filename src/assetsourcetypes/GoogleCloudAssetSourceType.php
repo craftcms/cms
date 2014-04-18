@@ -42,6 +42,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 			'bucket'     => array(AttributeType::String, 'required' => true),
 			'urlPrefix'  => array(AttributeType::String, 'required' => true),
 			'subfolder'  => array(AttributeType::String, 'default' => ''),
+			'expires'    => array(AttributeType::String, 'default' => ''),
 		);
 	}
 
@@ -52,8 +53,12 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 */
 	public function getSettingsHtml()
 	{
+		$settings = $this->getSettings();
+		$settings->expires = $this->_extractExpiryInformation($settings->expires);
+
 		return craft()->templates->render('_components/assetsourcetypes/GoogleCloud/settings', array(
-			'settings' => $this->getSettings()
+			'settings' => $settings,
+			'periods' => array_merge(array('' => ''), $this->getPeriodList())
 		));
 	}
 
@@ -298,7 +303,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		clearstatcache();
 		$this->_prepareForRequests();
 
-		if (!$this->_googleCloud->putObject(array('file' => $filePath), $this->getSettings()->bucket, $uriPath, \GC::ACL_PUBLIC_READ))
+		if (!$this->_putObject($filePath, $this->getSettings()->bucket, $uriPath, \GC::ACL_PUBLIC_READ))
 		{
 			throw new Exception(Craft::t('Could not copy file to target destination'));
 		}
@@ -353,7 +358,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		$this->_prepareForRequests();
 		$targetFile = $this->_getPathPrefix().$fileModel->getFolder()->path.'_'.ltrim($handle, '_').'/'.$fileModel->filename;
 
-		return $this->_googleCloud->putObject(array('file' => $sourceImage), $this->getSettings()->bucket, $targetFile, \GC::ACL_PUBLIC_READ);
+		return $this->_putObject($sourceImage, $this->getSettings()->bucket, $targetFile, \GC::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -557,7 +562,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
-		return $this->_googleCloud->putObject('', $this->getSettings()->bucket, $this->_getPathPrefix().rtrim($parentFolder->path.$folderName, '/') . '/', \GC::ACL_PUBLIC_READ);
+		return $this->_putObject('', $this->getSettings()->bucket, $this->_getPathPrefix().rtrim($parentFolder->path.$folderName, '/') . '/', \GC::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -697,5 +702,31 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	public function isRemote()
 	{
 		return true;
+	}
+
+	/**
+	 * Put an object into an S3 bucket.
+	 *
+	 * @param $filePath
+	 * @param $bucket
+	 * @param $uriPath
+	 * @param $permissions
+	 * @return bool
+	 */
+	protected function _putObject($filePath, $bucket, $uriPath, $permissions)
+	{
+		$object = empty($filePath) ? '' : array('file' => $filePath);
+		$headers = array();
+
+		if (!empty($object) && !empty($this->getSettings()->expires) && DateTimeHelper::isValidIntervalString($this->getSettings()->expires))
+		{
+			$expires = new DateTime();
+			$now = new DateTime();
+			$expires->modify('+' . $this->getSettings()->expires);
+			$diff = $expires->format('U') - $now->format('U');
+			$headers['Cache-Control'] = 'max-age=' . $diff . ', must-revalidate';
+		}
+
+		return $this->_googleCloud->putObject($object, $bucket, $uriPath, $permissions, array(), $headers);
 	}
 }
