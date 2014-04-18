@@ -2,6 +2,8 @@
 	{% exit 404 %}
 {% endif %}
 
+{% requirePermission 'editUsers' %}
+
 {% extends "_layouts/elementindex" %}
 {% set title = "Users"|t %}
 {% set elementType = 'User' %}
