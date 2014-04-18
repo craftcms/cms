@@ -18,7 +18,7 @@ return array(
 	/**
 	 * The port to use for connecting to the redis server. Default port is 6379.
 	 */
-	'port' => 6397,
+	'port' => 6379,
 
 	/**
 	 * The password to use to authenticate with the redis server. If not set, no AUTH command will be sent.
