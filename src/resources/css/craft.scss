@@ -213,13 +213,13 @@ td.right { float: none; @include alignright; }
 	@include transition(color linear 100ms);
 }
 .content.has-sidebar .show-sidebar:hover { color: $linkcolor; }
-.content.has-sidebar .show-sidebar:before { @include icon; width: 41px; line-height: 24px;
-	body.ltr & { content: 'menurarr'; }
-	body.rtl & { content: 'menularr'; }
+.content.has-sidebar .show-sidebar:before { @include icon; width: 43px; line-height: 24px;
+	body.ltr & { content: 'menu rarr'; }
+	body.rtl & { content: 'menu larr'; }
 }
 .content.has-sidebar .show-sidebar.showing:before {
-	body.ltr & { content: 'menularr'; }
-	body.rtl & { content: 'menurarr'; }
+	body.ltr & { content: 'menu larr'; }
+	body.rtl & { content: 'menu rarr'; }
 }
 
 .content.has-sidebar .sidebar { position: absolute; top: -24px; @include left(-218px); padding: 24px; width: 170px; overflow: auto; }
