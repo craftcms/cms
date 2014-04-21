@@ -52,21 +52,24 @@ class ElementRelationParamParser
 			$glue = 'or';
 		}
 
-		// Group all of the unspecified elements, so we avoid adding massive JOINs to the query
-		$unspecifiedElements = array();
-
-		foreach ($relatedTo as $i => $relCriteria)
+		if ($glue == 'or')
 		{
-			if (!is_array($relCriteria))
+			// Group all of the unspecified elements, so we avoid adding massive JOINs to the query
+			$unspecifiedElements = array();
+
+			foreach ($relatedTo as $i => $relCriteria)
 			{
-				$unspecifiedElements[] = $relCriteria;
-				unset($relatedTo[$i]);
+				if (!is_array($relCriteria))
+				{
+					$unspecifiedElements[] = $relCriteria;
+					unset($relatedTo[$i]);
+				}
 			}
-		}
 
-		if ($unspecifiedElements)
-		{
-			$relatedTo[] = array('element' => $unspecifiedElements);
+			if ($unspecifiedElements)
+			{
+				$relatedTo[] = array('element' => $unspecifiedElements);
+			}
 		}
 
 		foreach ($relatedTo as $relCriteria)
@@ -130,6 +133,11 @@ class ElementRelationParamParser
 	 */
 	private function _subparseRelationParam($relCriteria, DbCommand $query)
 	{
+		if (!is_array($relCriteria))
+		{
+			$relCriteria = array('element' => $relCriteria);
+		}
+
 		// Get the element IDs, wherever they are
 		$relElementIds = array();
 
