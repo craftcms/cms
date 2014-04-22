@@ -8,6 +8,8 @@ Source/.idea/*
 *Thumbs.db
 *aspnet_client/*
 Build/*
+Source/craft/app/resources/css/*.css
+*.sass-cache
 
 Source/craft/app/vendor/guzzle/guzzle/.git
 Source/craft/app/vendor/guzzle/guzzle/.gitignore
