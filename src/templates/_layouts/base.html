@@ -1,12 +1,15 @@
 {%- includeCssResource "css/craft.css" first -%}
 
+{% set siteName = craft.app.getSiteName() -%}
+{% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
+
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
 <head>
 	{% block head %}
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta charset="utf-8">
-	<title>{{ title|striptags }}{% if title and craft.app.siteName %} - {%endif %}{{ craft.app.siteName }}</title>
+	<title>{{ docTitle ~ (docTitle and siteName ? ' - ') ~ siteName }}</title>
 	{{ getHeadHtml() }}
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<script type="text/javascript">
