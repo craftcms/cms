@@ -88,31 +88,31 @@ class CpVariable
 	 */
 	public function settings()
 	{
-		$system = Craft::t('System');
+		$label = Craft::t('System');
 
-		$settings[$system]['general'] = array('icon' => 'general', 'label' => Craft::t('General'));
-		$settings[$system]['routes'] = array('icon' => 'routes', 'label' => Craft::t('Routes'));
+		$settings[$label]['general'] = array('icon' => 'general', 'label' => Craft::t('General'));
+		$settings[$label]['routes'] = array('icon' => 'routes', 'label' => Craft::t('Routes'));
 
 		if (craft()->getEdition() == Craft::Pro)
 		{
-			$settings[$system]['users'] = array('icon' => 'users', 'label' => Craft::t('Users'));
+			$settings[$label]['users'] = array('icon' => 'users', 'label' => Craft::t('Users'));
 		}
 
-		$settings[$system]['email'] = array('icon' => 'mail', 'label' => Craft::t('Email'));
-		$settings[$system]['plugins'] = array('icon' => 'plugin', 'label' => Craft::t('Plugins'));
+		$settings[$label]['email'] = array('icon' => 'mail', 'label' => Craft::t('Email'));
+		$settings[$label]['plugins'] = array('icon' => 'plugin', 'label' => Craft::t('Plugins'));
 
-		$content = Craft::t('Content');
+		$label = Craft::t('Content');
 
-		$settings[$content]['fields'] = array('icon' => 'field', 'label' => Craft::t('Fields'));
-		$settings[$content]['sections'] = array('icon' => 'section', 'label' => Craft::t('Sections'));
-		$settings[$content]['assets'] = array('icon' => 'assets', 'label' => Craft::t('Assets'));
-		$settings[$content]['globals'] = array('icon' => 'globe', 'label' => Craft::t('Globals'));
-		$settings[$content]['categories'] = array('icon' => 'categories', 'label' => Craft::t('Categories'));
-		$settings[$content]['tags'] = array('icon' => 'tags', 'label' => Craft::t('Tags'));
+		$settings[$label]['fields'] = array('icon' => 'field', 'label' => Craft::t('Fields'));
+		$settings[$label]['sections'] = array('icon' => 'section', 'label' => Craft::t('Sections'));
+		$settings[$label]['assets'] = array('icon' => 'assets', 'label' => Craft::t('Assets'));
+		$settings[$label]['globals'] = array('icon' => 'globe', 'label' => Craft::t('Globals'));
+		$settings[$label]['categories'] = array('icon' => 'categories', 'label' => Craft::t('Categories'));
+		$settings[$label]['tags'] = array('icon' => 'tags', 'label' => Craft::t('Tags'));
 
 		if (craft()->getEdition() == Craft::Pro)
 		{
-			$settings[$content]['locales'] = array('icon' => 'language', 'label' => Craft::t('Locales'));
+			$settings[$label]['locales'] = array('icon' => 'language', 'label' => Craft::t('Locales'));
 		}
 
 		return $settings;
