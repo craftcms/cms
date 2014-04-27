@@ -119,13 +119,16 @@
 					<li>
 						<a class="settingsmenu menubtn" title="{{ 'Settings'|t }}"></a>
 						<div id="settingsmenu" class="menu padded" data-align="right">
-							<ul>
-								{% for category, items in craft.cp.settings() %}
+							{% for category, items in craft.cp.settings() %}
+								{% if not loop.first %}
+									<hr>
+								{% endif %}
+								<ul>
 									{% for handle, item in items %}
 										<li><a href="{{ url('settings/'~handle) }}" data-icon="{{ item.icon }}">{{ item.label }}</a></li>
 									{% endfor %}
-								{% endfor %}
-							</ul>
+								</ul>
+							{% endfor %}
 						</div>
 					</li>
 				{% endif %}
