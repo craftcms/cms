@@ -11,9 +11,10 @@
 
 {% extends "_layouts/cp" %}
 {% set title = plugin.name %}
+{% set docTitle = title ~ ' - ' ~ "Plugins"|t %}
 
 
-{% set content %}
+{% block content %}
 	<form method="post" accept-charset="UTF-8" data-saveshortcut="1">
 		<input type="hidden" name="action" value="plugins/savePluginSettings">
 		<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
@@ -27,4 +28,4 @@
 			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
 		</div>
 	</form>
-{% endset %}
+{% endblock %}
