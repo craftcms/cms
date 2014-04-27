@@ -21,8 +21,6 @@ class RoutesVariable
 			->order('sortOrder')
 			->queryAll();
 
-		$results = RouteRecord::model()->ordered()->findAll();
-
 		foreach ($results as $result)
 		{
 			$urlDisplayHtml = '';
