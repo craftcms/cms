@@ -2848,7 +2848,7 @@ Garnish.Menu = Garnish.Base.extend({
 	{
 		this.setSettings(settings, Garnish.Menu.defaults);
 
-		this.$container = $(container).appendTo(Garnish.$bod);
+		this.$container = $(container);
 		this.$options = this.$container.find('a');
 		this.$options.data('menu', this);
 
@@ -2939,6 +2939,9 @@ Garnish.Menu = Garnish.Base.extend({
 
 	show: function()
 	{
+		// Move the menu to the end of the DOM
+		this.$container.appendTo(Garnish.$bod)
+
 		if (this.$trigger)
 		{
 			this.setPositionRelativeToTrigger();

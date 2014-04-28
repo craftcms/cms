@@ -344,7 +344,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			return false;
 		}
 
-		return new DateTime($fileInfo->last_modified, new \DateTimeZone('UTC'));
+		return new DateTime($fileInfo->lastModified, new \DateTimeZone('UTC'));
 	}
 
 	/**
