@@ -63,6 +63,58 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns an element by its URI.
+	 *
+	 * @param string $uri
+	 * @param string|null $localeId
+	 * @return BaseElementModel|null
+	 */
+	public function getElementByUri($uri, $localeId = null, $enabledOnly = false)
+	{
+		if ($uri === '')
+		{
+			$uri = '__home__';
+		}
+
+		if (!$localeId)
+		{
+			$localeId = craft()->language;
+		}
+
+		// First get the element ID and type
+
+		$conditions = array('and',
+			'elements_i18n.uri = :uri',
+			'elements_i18n.locale = :locale'
+		);
+
+		$params = array(
+			':uri'    => $uri,
+			':locale' => $localeId
+		);
+
+		if ($enabledOnly)
+		{
+			$conditions[] = 'elements_i18n.enabled = 1';
+			$conditions[] = 'elements.enabled = 1';
+			$conditions[] = 'elements.archived = 0';
+		}
+
+		$result = craft()->db->createCommand()
+			->select('elements.id, elements.type')
+			->from('elements elements')
+			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
+			->where($conditions, $params)
+			->queryRow();
+
+		if ($result)
+		{
+			// Return the actual element
+			return $this->getElementById($result['id'], $result['type'], $localeId);
+		}
+	}
+
+	/**
 	 * Returns the element type(s) used by the element of a given ID(s).
 	 *
 	 * @param int|array $elementId
