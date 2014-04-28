@@ -47,6 +47,31 @@ class PluginVariable extends BaseComponentTypeVariable
 	}
 
 	/**
+	 * Returns the URL to the plugin's settings in the CP.
+	 *
+	 * @return string|null
+	 */
+	public function getSettingsUrl()
+	{
+		// Is this plugin managing its own settings?
+		$url = $this->component->getSettingsUrl();
+
+		if (!$url)
+		{
+			// Check to see if they're using getSettingsHtml(), etc.
+			if ($this->component->getSettingsHtml())
+			{
+				$url = 'settings/plugins/'.mb_strtolower($this->component->getClassHandle());
+			}
+		}
+
+		if ($url)
+		{
+			return UrlHelper::getCpUrl($url);
+		}
+	}
+
+	/**
 	 * Returns whether the plugin is installed.
 	 *
 	 * @return bool

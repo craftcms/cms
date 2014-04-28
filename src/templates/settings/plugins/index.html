@@ -22,23 +22,30 @@
 			</thead>
 			<tbody>
 				{% for plugin in plugins %}
-					<tr data-name="{{ plugin.name }}">
+					{% set name = plugin.getName() -%}
+					{% set classHandle = plugin.getClassHandle() -%}
+					{% set isInstalled = plugin.isInstalled() -%}
+					{% set isEnabled = plugin.isEnabled() -%}
+					{% set settingsUrl = isEnabled ? plugin.getSettingsUrl() -%}
+					{% set developerUrl = plugin.getDeveloperUrl() -%}
+
+					<tr data-name="{{ name }}">
 						<th data-title="{{ 'Name'|t }}">
-							{% if plugin.isEnabled and plugin.settingsHtml %}
-								<a href="{{ url('settings/plugins/' ~ plugin.classHandle|lower) }}">{{ plugin.name }}</a>
+							{% if settingsUrl %}
+								<a href="{{ settingsUrl }}">{{ name }}</a>
 							{% else %}
-								{{ plugin.name }}
+								{{ name }}
 							{% endif %}
-							<span class="light">{{ plugin.version }}</span>
+							<span class="light">{{ plugin.getVersion() }}</span>
 						</th>
-						<td data-title="{{ 'Developer'|t }}"><a{% if plugin.developerUrl %} href="{{ plugin.developerUrl }}" target="_blank"{% endif %}>{{ plugin.developer }}</a></td>
+						<td data-title="{{ 'Developer'|t }}"><a{% if developerUrl %} href="{{ developerUrl }}" target="_blank"{% endif %}>{{ plugin.getDeveloper() }}</a></td>
 						<td data-title="{{ 'Status'|t }}">
 							<form method="post" accept-charset="UTF-8">
-								<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
-								{% if plugin.isEnabled %}
+								<input type="hidden" name="pluginClass" value="{{ classHandle }}">
+								{% if isEnabled %}
 									<span class="status on"></span> {{ "Enabled"|t }} 
 									<input type="button" value="{{ 'Disable'|t }}" class="btn small formsubmit" data-action="plugins/disablePlugin">
-								{% elseif plugin.isInstalled %}
+								{% elseif isInstalled %}
 									<span class="status off"></span> {{ "Disabled"|t }} 
 									<input type="button" value="{{ 'Enable'|t }}" class="btn small formsubmit" data-action="plugins/enablePlugin">
 								{% else %}
@@ -48,9 +55,9 @@
 						</td>
 						<td class="thin rightalign nowrap">
 							<form method="post" accept-charset="UTF-8">
-								<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
-								{% if plugin.isInstalled %}
-									<input type="button" value="{{ 'Uninstall'|t }}" class="btn small formsubmit" data-action="plugins/uninstallPlugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t({ plugin: plugin.name }) }}">
+								<input type="hidden" name="pluginClass" value="{{ classHandle }}">
+								{% if isInstalled %}
+									<input type="button" value="{{ 'Uninstall'|t }}" class="btn small formsubmit" data-action="plugins/uninstallPlugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t({ plugin: name }) }}">
 								{% else %}
 									<input type="button" value="{{ 'Install'|t }}" class="btn small formsubmit" data-action="plugins/installPlugin">
 								{% endif %}

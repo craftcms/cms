@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * Plugin base class
  */
-abstract class BasePlugin extends BaseSavableComponentType
+abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 {
 	public $isInstalled = false;
 	public $isEnabled = false;
@@ -48,6 +48,20 @@ abstract class BasePlugin extends BaseSavableComponentType
 	 * @return string
 	 */
 	abstract public function getDeveloperUrl();
+
+	/**
+	 * Returns the URL to the plugin's settings in the CP.
+	 *
+	 * A full URL is not required -- you can simply return "pluginname/settings".
+	 *
+	 * If this is left blank, a simple settings page will be provided,
+	 * filled with whatever getSettingsHtml() returns.
+	 *
+	 * @return string|null
+	 */
+	public function getSettingsUrl()
+	{
+	}
 
 	/**
 	 * Returns whether this plugin has its own section in the CP.
