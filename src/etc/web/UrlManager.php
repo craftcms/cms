@@ -207,70 +207,17 @@ class UrlManager extends \CUrlManager
 
 			if (craft()->isInstalled() && craft()->request->isSiteRequest())
 			{
-				$query = craft()->db->createCommand()
-					->select('elements.id, elements.type')
-					->from('elements elements')
-					->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id');
+				$element = craft()->elements->getElementByUri($path, craft()->language, true);
 
-				$conditions = array('and', 'elements_i18n.uri = :path', 'elements.enabled = 1', 'elements.archived = 0');
-				$params = array();
-
-				if (!$path)
+				if ($element)
 				{
-					$params[':path'] = '__home__';
-				}
-				else
-				{
-					$params[':path'] = $path;
-				}
+					$elementType = craft()->elements->getElementType($element->getElementType());
+					$route = $elementType->routeRequestForMatchedElement($element);
 
-				$localeIds = array_unique(array_merge(
-					array(craft()->language),
-					craft()->i18n->getSiteLocaleIds()
-				));
-
-				if (count($localeIds) == 1)
-				{
-					$conditions[] = 'elements_i18n.locale = :locale';
-					$params[':locale'] = $localeIds[0];
-				}
-				else
-				{
-					$quotedLocales = array();
-					$localeOrder = array();
-
-					foreach ($localeIds as $localeId)
+					if ($route)
 					{
-						$quotedLocale = craft()->db->quoteValue($localeId);
-						$quotedLocales[] = $quotedLocale;
-						$localeOrder[] = "(elements_i18n.locale = {$quotedLocale}) DESC";
-					}
-
-					$conditions[] = "elements_i18n.locale IN (".implode(', ', $quotedLocales).')';
-					$query->order($localeOrder);
-				}
-
-				$query->where($conditions, $params);
-
-				$row = $query->queryRow();
-
-				if ($row)
-				{
-					$elementCriteria = craft()->elements->getCriteria($row['type']);
-					$elementCriteria->id = $row['id'];
-
-					$element = $elementCriteria->first();
-
-					if ($element)
-					{
-						$elementType = $elementCriteria->getElementType();
-						$route = $elementType->routeRequestForMatchedElement($element);
-
-						if ($route)
-						{
-							$this->_matchedElement = $element;
-							$this->_matchedElementRoute = $route;
-						}
+						$this->_matchedElement = $element;
+						$this->_matchedElementRoute = $route;
 					}
 				}
 			}
