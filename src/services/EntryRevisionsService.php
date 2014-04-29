@@ -150,6 +150,12 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 */
 	public function publishDraft(EntryDraftModel $draft)
 	{
+		// If this is a single, we'll have to set the title manually
+		if ($draft->getSection()->type == SectionType::Single)
+		{
+			$draft->getContent()->title = $draft->getSection()->name;
+		}
+
 		if (craft()->entries->saveEntry($draft))
 		{
 			// Fire an 'onPublishDraft' event
