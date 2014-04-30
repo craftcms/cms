@@ -136,7 +136,7 @@
 						{% if entry.id and entry.classHandle == 'EntryDraft' %}
 
 							<input type="hidden" name="action" value="entryRevisions/saveDraft">
-							<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{{ entry.draftId }}">
+							<input type="hidden" name="redirect" value="{{ baseCpEditUrl }}/drafts/{{ entry.draftId }}">
 							<input type="hidden" name="draftId" value="{{ entry.draftId }}">
 							<input type="submit" class="btn submit first" value="{{ 'Save draft'|t }}">
 
@@ -180,12 +180,12 @@
 								</div>
 
 								{% if entry.id and CraftEdition >= CraftClient %}
-									<input type="button" class="btn formsubmit" value="{{ 'Save as a draft'|t }}" data-action="entryRevisions/saveDraft" data-redirect="{{ entry.cpEditUrl }}/drafts/{draftId}">
+									<input type="button" class="btn formsubmit" value="{{ 'Save as a draft'|t }}" data-action="entryRevisions/saveDraft" data-redirect="{{ baseCpEditUrl }}/drafts/{draftId}">
 								{% endif %}
 							{% else %}
 								{% if CraftEdition >= CraftClient %}
 									<input type="hidden" name="action" value="entryRevisions/saveDraft">
-									<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{draftId}">
+									<input type="hidden" name="redirect" value="{{ baseCpEditUrl }}/drafts/{draftId}">
 									<input type="submit" class="btn submit first" value="{{ 'Save as a draft'|t }}">
 								{% endif %}
 							{% endif %}
