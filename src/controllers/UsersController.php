@@ -199,12 +199,13 @@ class UsersController extends BaseController
 		$code = craft()->request->getRequiredParam('code');
 		$id = craft()->request->getRequiredParam('id');
 		$user = craft()->users->getUserByVerificationCodeAndUid($code, $id);
-		$url = craft()->config->getSetPasswordPath($code, $id, $user);
 
 		if (!$user)
 		{
 			throw new HttpException('200', Craft::t('Invalid verification code.'));
 		}
+
+		$url = craft()->config->getSetPasswordPath($code, $id, $user);
 
 		if (craft()->request->isPostRequest())
 		{

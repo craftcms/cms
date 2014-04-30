@@ -1004,7 +1004,11 @@ class UsersService extends BaseApplicationComponent
 			$hash = craft()->security->hashPassword($user->newPassword);
 
 			$userRecord->password = $user->password = $hash;
-			$userRecord->status = $user->status = UserStatus::Active;
+
+			if (!$user->unverifiedEmail)
+			{
+				$userRecord->status = $user->status = UserStatus::Active;
+			}
 
 			$userRecord->invalidLoginWindowStart = null;
 			$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
