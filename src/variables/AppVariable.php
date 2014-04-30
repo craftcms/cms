@@ -197,9 +197,15 @@ class AppVariable
 		$maxPost = (int)(ini_get('post_max_size'));
 		$memoryLimit = (int)(ini_get('memory_limit'));
 		$uploadMb = min($maxUpload, $maxPost, $memoryLimit);
+		$uploadInBytes = $uploadMb * 1048576;
 
-		// Convert MB to B and return
-		return $uploadMb * 1048576; // 1024 x 1024 = 1048576
+		$configLimit = (int) craft()->config->get('maxUploadFileSize');
+		if ($configLimit)
+		{
+			$uploadInBytes = min($uploadInBytes, $configLimit);
+		}
+
+		return $uploadInBytes;
 	}
 
 	/**
