@@ -35,6 +35,12 @@ class ColorFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
+		// Default to black, so the JS-based color picker is consistent with Chrome
+		if (!$value)
+		{
+			$value = '#000000';
+		}
+
 		return craft()->templates->render('_includes/forms/color', array(
 			'id'    => craft()->templates->formatInputId($name),
 			'name'  => $name,
