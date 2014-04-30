@@ -1,6 +1,6 @@
 {% if customizableTabs is not defined %}{% set customizableTabs = true %}{% endif %}
 {% if not customizableTabs and pretendTabName is not defined %}
-	{% set pretendTabName = 'Content' %}
+	{% set pretendTabName = "Content"|t %}
 {% endif %}
 
 {% set groups = craft.fields.getAllGroups('id') %}

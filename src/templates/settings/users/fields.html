@@ -14,7 +14,7 @@
 		{% include "_includes/fieldlayoutdesigner" with {
 			fieldLayout: craft.fields.getLayoutByType('User'),
 			customizableTabs: false,
-			pretendTabName: 'Profile'
+			pretendTabName: "Profile"|t
 		} only %}
 
 		<div class="buttons">
