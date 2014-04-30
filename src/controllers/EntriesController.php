@@ -573,6 +573,11 @@ class EntriesController extends BaseController
 				$variables['entry']->sectionId = $variables['section']->id;
 				$variables['entry']->authorId = craft()->userSession->getUser()->id;
 				$variables['entry']->enabled = true;
+
+				if (!empty($variables['localeId']))
+				{
+					$variables['entry']->locale = $variables['localeId'];
+				}
 			}
 		}
 
