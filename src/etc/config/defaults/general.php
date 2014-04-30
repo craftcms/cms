@@ -180,6 +180,11 @@ return array(
 	'maxInvalidLogins' => 5,
 
 	/**
+	 * The maximum upload file size allowed in bytes.
+	 */
+	'maxUploadFileSize' => 16777216,
+
+	/**
 	 * Whether generated URLs should omit 'index.php', e.g. http://domain.com/path
 	 * as opposed to showing it, e.g. http://domain.com/index.php/path
 	 *
