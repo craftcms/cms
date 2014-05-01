@@ -14,6 +14,7 @@ var LoginForm = Garnish.Base.extend(
 	$spinner: null,
 	$error: null,
 
+	passwordInputInterval: null,
 	forgotPassword: false,
 	loading: false,
 
@@ -34,12 +35,12 @@ var LoginForm = Garnish.Base.extend(
 			onToggleInput: $.proxy(function($newPasswordInput) {
 				this.removeListener(this.$passwordInput, 'textchange');
 				this.$passwordInput = $newPasswordInput;
-				this.addListener(this.$passwordInput, 'textchange', 'onInputChange');
+				this.addListener(this.$passwordInput, 'textchange', 'validate');
 			}, this)
 		});
 
-		this.addListener(this.$loginNameInput, 'textchange', 'onInputChange');
-		this.addListener(this.$passwordInput, 'textchange', 'onInputChange');
+		this.addListener(this.$loginNameInput, 'textchange', 'validate');
+		this.addListener(this.$passwordInput, 'textchange', 'validate');
 		this.addListener(this.$forgotPasswordLink, 'click', 'onForgetPassword');
 		this.addListener(this.$form, 'submit', 'onSubmit');
 
@@ -73,6 +74,11 @@ var LoginForm = Garnish.Base.extend(
 				this.removeListener(Garnish.$doc, 'mouseup');
 			});
 		});
+
+		// Manually validate the inputs every 250ms since some browsers don't fire events when autofill is used
+		// http://stackoverflow.com/questions/11708092/detecting-browser-autofill
+		this.passwordInputInterval = setInterval($.proxy(this, 'validate'), 250);
+
 		this.addListener(this.$sslIcon, 'click', function() {
 			this.$submitBtn.click();
 		});
@@ -92,11 +98,6 @@ var LoginForm = Garnish.Base.extend(
 			this.$submitBtn.disable();
 			return false;
 		}
-	},
-
-	onInputChange: function()
-	{
-		this.validate();
 	},
 
 	onSubmit: function(event)
