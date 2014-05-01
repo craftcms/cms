@@ -112,7 +112,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		foreach ($nonSingles as $section)
 		{
 			$label = Craft::t('Section - {section}', array('section' => Craft::t($section->name)));
-			$permissions[$label] = $this->_getEntryPermissions($section);
+			$permissions[$label] = $this->_getEntryPermissions($section->id);
 		}
 
 		// Global sets
