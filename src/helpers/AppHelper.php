@@ -6,7 +6,7 @@ namespace Craft;
  */
 class AppHelper
 {
-	private static $_isPhpDevServer = false;
+	private static $_isPhpDevServer = null;
 
 	/**
 	 * Returns whether Craft is running on the dev server bundled with PHP 5.4+
@@ -21,6 +21,10 @@ class AppHelper
 			if (isset($_SERVER['SERVER_SOFTWARE']))
 			{
 				static::$_isPhpDevServer = (strncmp($_SERVER['SERVER_SOFTWARE'], 'PHP', 3) == 0);
+			}
+			else
+			{
+				static::$_isPhpDevServer = false;
 			}
 		}
 
