@@ -1175,21 +1175,28 @@ class IOHelper
 		{
 			$folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
 
-			foreach ($folderContents as $item)
+			if ($folderContents)
 			{
-				$item = static::normalizePathSeparators($item);
+				foreach ($folderContents as $item)
+				{
+					$item = static::normalizePathSeparators($item);
 
-				if (static::fileExists($item, $suppressErrors))
-				{
-					static::deleteFile($item, $suppressErrors);
+					if (static::fileExists($item, $suppressErrors))
+					{
+						static::deleteFile($item, $suppressErrors);
+					}
+					elseif (static::folderExists($item, $suppressErrors))
+					{
+						static::deleteFolder($item, $suppressErrors);
+					}
 				}
-				elseif (static::folderExists($item, $suppressErrors))
-				{
-					static::deleteFolder($item, $suppressErrors);
-				}
+
+				return true;
 			}
-
-			return true;
+			else
+			{
+				Craft::log('Tried to read the folder contents of '.$path.', but could not.', LogLevel::Error);
+			}
 		}
 		else
 		{
