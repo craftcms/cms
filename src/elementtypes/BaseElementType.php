@@ -419,7 +419,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 		else
 		{
 			// Look through any nested sources
-			foreach ($sources as $key => $source)
+			foreach ($sources as $source)
 			{
 				if (!empty($source['nested']) && ($nestedSource = $this->_findSource($key, $source['nested'])))
 				{
