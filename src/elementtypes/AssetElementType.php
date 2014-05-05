@@ -261,13 +261,23 @@ class AssetElementType extends BaseElementType
 	{
 		$html = craft()->templates->renderMacro('_includes/forms', 'textField', array(
 			array(
+				'label'     => Craft::t('Filename'),
+				'id'        => 'filename',
+				'name'      => 'filename',
+				'value'     => $element->filename,
+				'errors'    => $element->getErrors('filename'),
+				'first'     => true,
+				'required'  => true
+			)
+		));
+
+		$html .= craft()->templates->renderMacro('_includes/forms', 'textField', array(
+			array(
 				'label'     => Craft::t('Title'),
 				'id'        => 'title',
 				'name'      => 'title',
 				'value'     => $element->title,
 				'errors'    => $element->getErrors('title'),
-				'first'     => true,
-				'autofocus' => true,
 				'required'  => true
 			)
 		));
@@ -319,5 +329,48 @@ class AssetElementType extends BaseElementType
 		}
 
 		return $source;
+	}
+
+	/**
+	 * Save the filename.
+	 *
+	 * @param BaseElementModel $element
+	 * @param array $params
+	 * @return bool
+	 */
+	public function saveElement(BaseElementModel $element, $params)
+	{
+		// No filename - no problem
+		if (empty($params['filename']))
+		{
+			return parent::saveElement($element, $params);
+		}
+
+		// Changing the filename requires the correct kind of Model
+		if (!($element instanceof AssetFileModel))
+		{
+			return false;
+		}
+
+		// Let's go ahead and validate the content before we do something
+		if (!craft()->content->validateContent($element))
+		{
+			return false;
+		}
+
+		$response = craft()->assets->renameFile($element, $params['filename']);
+		if ($response->isConflict())
+		{
+			$element->addError('filename', $response->getDataItem('prompt')->message);
+			return false;
+		}
+
+		if ($response->isError())
+		{
+			$element->addError('filename', $response->errorMessage);
+			return false;
+		}
+
+		return true;
 	}
 }

@@ -778,6 +778,18 @@ class AssetsService extends BaseApplicationComponent
 		return $response;
 	}
 
+
+	/**
+	 * @param AssetFileModel $file
+	 * @param $filename
+	 * @param string $action action to take in case of a conflict.
+	 * @return bool|AssetOperationResponseModel
+	 */
+	public function renameFile(AssetFileModel $file, $filename, $action = "")
+	{
+		return $this->moveFiles(array($file->id), $file->folderId, $filename, $action);
+	}
+
 	/**
 	* Delete a folder record by id.
 	*
