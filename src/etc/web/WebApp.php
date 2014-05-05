@@ -6,6 +6,8 @@ namespace Craft;
  * @property AssetSourcesService         $assetSources         The assets sources service
  * @property AssetsService               $assets               The assets service
  * @property AssetTransformsService      $assetTransforms      The assets sizes service
+ * @property CacheService                $cache                The cache service
+ * @property CategoriesService           $categories           The categories service
  * @property ComponentsService           $components           The components service
  * @property ConfigService               $config               The config service
  * @property ContentService              $content              The content service
@@ -27,18 +29,22 @@ namespace Craft;
  * @property ImagesService               $images               The images service
  * @property InstallService              $install              The images service
  * @property LocalizationService         $localization         The localization service
+ * @property MatrixService               $matrix               The matrix service
  * @property MigrationsService           $migrations           The migrations service
  * @property PathService                 $path                 The path service
  * @property PluginsService              $plugins              The plugins service
  * @property RelationsService            $relations            The relations service
  * @property ResourcesService            $resources            The resources service
  * @property RoutesService               $routes               The routes service
+ * @property SearchService               $search               The search service
  * @property SectionsService             $sections             The sections service
  * @property SecurityService             $security             The security service
+ * @property StructuresService           $structures           The structures service
  * @property SystemSettingsService       $systemSettings       The system settings service
- * @property TasksService                $tasks                The tasks service
- * @property TemplatesService            $templates            The template service
  * @property TagsService                 $tags                 The tags service
+ * @property TasksService                $tasks                The tasks service
+ * @property TemplateCacheService        $templateCache        The template cache service
+ * @property TemplatesService            $templates            The template service
  * @property UpdatesService              $updates              The updates service
  * @property UserGroupsService           $userGroups           The user groups service
  * @property UserPermissionsService      $userPermissions      The user permission service
