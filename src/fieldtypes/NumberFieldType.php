@@ -64,6 +64,11 @@ class NumberFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
+		if ($this->isFresh() && ($value < $this->settings->min || $value > $this->settings->max))
+		{
+			$value = $this->settings->min;
+		}
+
 		return craft()->templates->render('_includes/forms/text', array(
 			'name'  => $name,
 			'value' => craft()->numberFormatter->formatDecimal($value, false),
