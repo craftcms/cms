@@ -121,8 +121,16 @@ class TemplateCacheService extends BaseApplicationComponent
 
 		if (!$expiration)
 		{
-			$timestamp = time() + craft()->config->getCacheDuration();
-			$expiration = new DateTime('@'.$timestamp);
+			$duration = craft()->config->getCacheDuration();
+
+			if($duration <= 0)
+			{
+				$duration = 31536000; // 1 year
+			}
+
+			$duration += time();
+
+			$expiration = new DateTime('@'.$duration);
 		}
 
 		// Save it

@@ -214,7 +214,8 @@ class ElementsController extends BaseController
 	 *
 	 * @access private
 	 * @param BaseElementModel $element
-	 * @param bool             $includeLocales
+	 * @param bool $includeLocales
+	 * @throws HttpException
 	 */
 	private function _returnEditorHtml(BaseElementModel $element, $includeLocales)
 	{
