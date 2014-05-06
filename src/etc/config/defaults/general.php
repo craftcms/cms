@@ -144,6 +144,11 @@ return array(
 	'extraAllowedFileExtensions' => '',
 
 	/**
+	 * Should transforms be generated before loading the page.
+	 */
+	'generateTransformsBeforePageLoad' => false,
+
+	/**
 	 * Whether Craft should include the base URI leading up to index.php in CP URLs, where the base URL is determined dynamically rather than configured.
 	 */
 	'includeBaseUriInCpUrls' => true,

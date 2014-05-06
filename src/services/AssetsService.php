@@ -826,7 +826,22 @@ class AssetsService extends BaseApplicationComponent
 		}
 		else
 		{
-			return UrlHelper::getActionUrl('assets/generateTransform', array('transformId' => $existingTransformData->id));
+			if (craft()->config->get('generateTransformsBeforePageLoad'))
+			{
+				$existingTransformData->inProgress = true;
+				craft()->assetTransforms->storeTransformIndexData($existingTransformData);
+
+				craft()->assetTransforms->generateTransform($existingTransformData);
+
+				$existingTransformData->fileExists = true;
+				craft()->assetTransforms->storeTransformIndexData($existingTransformData);
+
+				return craft()->assetTransforms->getUrlforTransformByFile($file, $transform);
+			}
+			else
+			{
+				return UrlHelper::getActionUrl('assets/generateTransform', array('transformId' => $existingTransformData->id));
+			}
 		}
 	}
 
