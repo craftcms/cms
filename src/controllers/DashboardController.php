@@ -246,7 +246,7 @@ class DashboardController extends BaseController
 
 				if ($zipFile)
 				{
-					$requestParams['File1_sFilename'] = 'SupportAttachment.zip';
+					$requestParams['File1_sFilename'] = 'SupportAttachment-'.IOHelper::cleanFilename(craft()->getSiteName()).'.zip';
 					$requestParams['File1_sFileMimeType'] = 'application/zip';
 					$requestParams['File1_bFileBody'] = base64_encode(IOHelper::getFileContents($zipFile));
 
