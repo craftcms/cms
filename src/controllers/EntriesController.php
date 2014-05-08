@@ -588,7 +588,10 @@ class EntriesController extends BaseController
 		}
 		else if ($variables['entry']->authorId != craft()->userSession->getUser()->id)
 		{
-			craft()->userSession->requirePermission('editPeerEntries'.$variables['permissionSuffix']);
+			if ($variables['entry']->getSection()->type !== SectionType::Single)
+			{
+				craft()->userSession->requirePermission('editPeerEntries'.$variables['permissionSuffix']);
+			}
 		}
 
 		if ($variables['entry']->id && $variables['entry']->getClassHandle() == 'EntryDraft')
