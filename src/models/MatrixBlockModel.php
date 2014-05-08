@@ -61,7 +61,22 @@ class MatrixBlockModel extends BaseElementModel
 
 			if ($owner)
 			{
-				return $owner->getLocales();
+				// Just send back an array of locale IDs -- don't pass along enabledByDefault configs
+				$localeIds = array();
+
+				foreach ($owner->getLocales() as $localeId => $localeInfo)
+				{
+					if (is_numeric($localeId) && is_string($localeInfo))
+					{
+						$localeIds[] = $localeInfo;
+					}
+					else
+					{
+						$localeIds[] = $localeId;
+					}
+				}
+
+				return $localeIds;
 			}
 			else
 			{
