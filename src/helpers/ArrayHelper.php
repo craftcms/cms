@@ -107,7 +107,7 @@ class ArrayHelper
 		}
 		else if (is_string($str))
 		{
-			return array_merge(array_filter(array_map('trim', explode(',', $str))));
+			return array_merge(array_filter(array_map('trim', preg_split('/(?<!\\\),/', $str))));
 		}
 		else
 		{
