@@ -71,6 +71,7 @@ class WebApp extends \CWebApplication
 	private $_templatePath;
 	private $_editionComponents;
 	private $_pendingEvents;
+	private $_gettingLanguage = false;
 
 	/**
 	 * Processes resource requests before anything else has a chance to initialize.
@@ -263,9 +264,19 @@ class WebApp extends \CWebApplication
 	 */
 	public function getLanguage()
 	{
-		if (!isset($this->_language))
+		if (!$this->_gettingLanguage)
 		{
-			$this->setLanguage($this->_getTargetLanguage());
+			if (!isset($this->_language))
+			{
+				$this->_gettingLanguage = true;
+				$this->setLanguage($this->_getTargetLanguage());
+			}
+		}
+		else
+		{
+			// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
+			$this->setLanguage($this->_getFallbackLanguage());
+			$this->_gettingLanguage = false;
 		}
 
 		return $this->_language;
@@ -795,17 +806,27 @@ class WebApp extends \CWebApplication
 		}
 		else
 		{
-			// See if we have the CP translated in one of the user's browsers preferred language(s)
-			$language = $this->getTranslatedBrowserLanguage();
-
-			// Default to the source language.
-			if (!$language)
-			{
-				$language = $this->sourceLanguage;
-			}
-
-			return $language;
+			return $this->_getFallbackLanguage();
 		}
+	}
+
+	/**
+	 * Tries to find a language match with the user's browser's preferred language(s).  If not uses the app's sourceLanguage.
+	 *
+	 * @return string
+	 */
+	private function _getFallbackLanguage()
+	{
+		// See if we have the CP translated in one of the user's browsers preferred language(s)
+		$language = $this->getTranslatedBrowserLanguage();
+
+		// Default to the source language.
+		if (!$language)
+		{
+			$language = $this->sourceLanguage;
+		}
+
+		return $language;
 	}
 
 	/**
@@ -930,13 +951,5 @@ class WebApp extends \CWebApplication
 
 		// YOU SHALL NOT PASS
 		$this->end();
-	}
-
-	/**
-	 * Sets the correct caching drivers on craft()->cache based on what's in craft()->config->get('cacheMethod')
-	 */
-	private function _processCacheComponent()
-	{
-
 	}
 }
