@@ -157,6 +157,7 @@ Craft.ImageHandler = Garnish.Base.extend(
 							{
 								var profileTool = new Craft.ImageAreaTool(settings.areaToolOptions);
 								profileTool.showArea(this.modal);
+								this.modal.cropAreaTool = profileTool;
 							}, this));
 						}, this), 1);
 					}
@@ -218,10 +219,12 @@ Craft.ImageModal = Garnish.Modal.extend(
 	originalWidth: 0,
 	originalHeight: 0,
 	constraint: 0,
+	cropAreaTool: null,
 
 
 	init: function($container, settings)
 	{
+		this.cropAreaTool = null;
 		this.base($container, settings);
 		this._postParameters = settings.postParameters;
 		this._cropAction = settings.cropAction;
@@ -257,10 +260,9 @@ Craft.ImageModal = Garnish.Modal.extend(
 
 		$img.height(newHeight).width(newWidth);
 		this.factor = factor;
-		var instance = $img.imgAreaSelect({instance: true});
-		if (instance)
+		if (this.cropAreaTool)
 		{
-			instance.update();
+			$img.imgAreaSelect({instance: true}).update();
 		}
 	},
 
@@ -345,7 +347,8 @@ Craft.ImageAreaTool = Garnish.Base.extend(
 			show: true,
 			persistent: true,
 			handles: true,
-			parent: $target.parent()
+			parent: $target.parent(),
+			classPrefix: 'imgareaselect'
 		};
 
 		var areaSelect = $target.imgAreaSelect(areaOptions);
