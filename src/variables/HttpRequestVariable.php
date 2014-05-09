@@ -89,7 +89,7 @@ class HttpRequestVariable
 	/**
 	 * Returns the first URI segment.
 	 *
-	 * @return string
+	 * @return string|null
 	 */
 	public function getFirstSegment()
 	{
@@ -99,16 +99,11 @@ class HttpRequestVariable
 	/**
 	 * Returns the last URL segment.
 	 *
-	 * @return string
+	 * @return string|null
 	 */
 	public function getLastSegment()
 	{
-		$segments = craft()->request->getSegments();
-
-		if ($segments)
-		{
-			return $segments[count($segments)-1];
-		}
+		return craft()->request->getSegment(-1);
 	}
 
 	/**
