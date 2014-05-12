@@ -86,8 +86,14 @@ class ResourcesService extends BaseApplicationComponent
 							return false;
 						}
 
+						$size = IOHelper::cleanFilename($segs[2]);
+						// Looking for either a numeric size or "original" keyword
+						if (!is_numeric($size) && $size != "original")
+						{
+							return false;
+						}
+
 						$username = IOHelper::cleanFilename($segs[1]);
-						$size     = IOHelper::cleanFilename($segs[2]);
 						$filename = IOHelper::cleanFilename($segs[3]);
 
 						$userPhotosPath = craft()->path->getUserPhotosPath().$username.'/';
