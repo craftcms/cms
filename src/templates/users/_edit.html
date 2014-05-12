@@ -102,7 +102,7 @@
 
 						{{ forms.textField({
 							label: "Email"|t,
-							instructions: (requireEmailVerification and not currentUser.admin ? 'A verification email will be sent automatically.'),
+							instructions: (requireEmailVerification and not currentUser.admin ? 'A verification email will be sent automatically.'|t),
 							id: 'email',
 							name: 'email',
 							value: (account is defined ? account.email : null),
