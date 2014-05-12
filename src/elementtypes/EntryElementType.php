@@ -199,7 +199,7 @@ class EntryElementType extends BaseElementType
 		{
 			case 'sectionId':
 			{
-				return $element->getSection()->name;
+				return Craft::t($element->getSection()->name);
 			}
 
 			case 'postDate':
