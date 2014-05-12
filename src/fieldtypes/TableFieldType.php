@@ -145,7 +145,7 @@ class TableFieldType extends BaseFieldType
 
 		if ($columns)
 		{
-			if ($value === null && $this->isFresh())
+			if ($this->isFresh())
 			{
 				$defaults = $this->getSettings()->defaults;
 

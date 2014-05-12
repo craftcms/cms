@@ -41,7 +41,7 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 		$options = $this->getTranslatedOptions();
 
 		// If this is a new entry, look for any default options
-		if ($values === null && $this->isFresh())
+		if ($this->isFresh())
 		{
 			$values = array();
 

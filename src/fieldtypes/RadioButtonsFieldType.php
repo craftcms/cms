@@ -39,7 +39,7 @@ class RadioButtonsFieldType extends BaseOptionsFieldType
 		$options = $this->getTranslatedOptions();
 
 		// If this is a new entry, look for a default option
-		if ($value === null && $this->isFresh())
+		if ($this->isFresh())
 		{
 			foreach ($options as $option)
 			{
