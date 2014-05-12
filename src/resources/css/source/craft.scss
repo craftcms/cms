@@ -1020,7 +1020,7 @@ body #redactor_modal footer button:last-child { border-bottom-right-radius: 3px;
 		@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
 	}
 
-	.select.small:after { top: 3px; }
+	.select.small:after { top: 9px; }
 	.select.small select { padding-top: 4px; padding-bottom: 4px; font-size: 11px; }
 }
 
