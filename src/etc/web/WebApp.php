@@ -264,19 +264,20 @@ class WebApp extends \CWebApplication
 	 */
 	public function getLanguage()
 	{
-		if (!$this->_gettingLanguage)
+		if (!isset($this->_language))
 		{
-			if (!isset($this->_language))
+			// Defend against an infinite getLanguage() loop
+			if (!$this->_gettingLanguage)
 			{
 				$this->_gettingLanguage = true;
 				$this->setLanguage($this->_getTargetLanguage());
 			}
-		}
-		else
-		{
-			// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
-			$this->setLanguage($this->_getFallbackLanguage());
-			$this->_gettingLanguage = false;
+			else
+			{
+				// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
+				$this->setLanguage($this->_getFallbackLanguage());
+				$this->_gettingLanguage = false;
+			}
 		}
 
 		return $this->_language;
