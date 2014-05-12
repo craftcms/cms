@@ -256,7 +256,7 @@
 
 						{% if currentUser.admin %}
 							{{ forms.checkboxField({
-								label: '<strong> ' ~ "Admin"|t ~ '</strong>',
+								label: '<strong>' ~ "Admin"|t ~ '</strong>',
 								name: 'admin',
 								checked: account.admin,
 								reverseToggle: 'permissions'

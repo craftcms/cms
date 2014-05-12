@@ -21,6 +21,6 @@
 		{%- if disabled is defined and disabled %} disabled{% endif %}
 		{%- if toggle is defined %} data-target="{{ toggle }}"{% endif %}
 		{%- if reverseToggle is defined %} data-reverse-target="{{ reverseToggle }}"{% endif %}>
-	{% if label is defined %}{{ label|raw }}{% endif %}
+	{%- if label is defined %}&nbsp;{{ label|raw }}{% endif %}
 </label>
 {% endspaceless -%}
