@@ -3004,7 +3004,7 @@ Garnish.MenuBtn = Garnish.Base.extend({
 
 		this.setSettings(settings, Garnish.MenuBtn.defaults);
 
-		var $menu = this.$btn.next('.menu');
+		var $menu = this.$btn.next('.menu').detach();
 		this.menu = new Garnish.Menu($menu, {
 			attachToElement: this.$btn,
 			onOptionSelect: $.proxy(this, 'onOptionSelect')
