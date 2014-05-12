@@ -143,7 +143,7 @@
 
 						{{ forms.field({
 							label: "Email"|t,
-							instructions: (requireEmailVerification and not currentUser.admin ? 'New email addresses must be verified before taking effect.'),
+							instructions: (requireEmailVerification and not currentUser.admin ? 'New email addresses must be verified before taking effect.'|t),
 							id: 'email',
 						}, emailInput) }}
 
