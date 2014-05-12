@@ -198,7 +198,7 @@ class EntriesController extends BaseController
 		}
 		else
 		{
-			$variables['title'] = $variables['entry']->title;
+			$variables['title'] = Craft::t($variables['entry']->title);
 
 			if (craft()->getEdition() >= Craft::Client && $variables['entry']->getClassHandle() != 'Entry')
 			{
@@ -644,7 +644,7 @@ class EntriesController extends BaseController
 			}
 
 			$variables['tabs'][] = array(
-				'label' => $tab->name,
+				'label' => Craft::t($tab->name),
 				'url'   => '#tab'.($index+1),
 				'class' => ($hasErrors ? 'error' : null)
 			);
