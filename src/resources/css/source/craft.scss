@@ -986,6 +986,8 @@ body .redactor_toolbar li a.redactor_act { background-color: $menuselcolor; colo
 body .redactor_toolbar li:first-child a { border-top-left-radius: 2px; }
 body .redactor_dropdown { z-index: 100; }
 body .redactor_editor { background: none; border: none; border-top: 1px solid rgba(0,0,0,0.05); }
+.redactor_editor ul,
+.redactor_editor ol { @include padding-left(2em !important); @include padding-right(0 !important); }
 body .redactor_editor ul { list-style-type: disc; }
 body .redactor_box textarea { border-top-left-radius: 0; border-top-right-radius: 0; }
 body #redactor_modal footer button:first-child { border-bottom-left-radius: 3px; }
