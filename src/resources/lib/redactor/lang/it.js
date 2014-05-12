@@ -71,6 +71,7 @@ $.Redactor.opts.langs['it'] = {
 	underline: 'Sottolineato',
 	alignment: 'Allineamento',
 	filename: 'Nome (opzionale)',
-	edit: 'Modifica'
+	edit: 'Modifica',
+	center: 'Center'
 };
 })( jQuery );

@@ -69,6 +69,7 @@ $.Redactor.opts.langs['ja'] = {
 	underline: 'アンダーライン',
 	alignment: '行揃え',
 	filename: '名前（オプション）',
-	edit: '編集'
+	edit: '編集',
+	center: 'Center'
 };
 })( jQuery );

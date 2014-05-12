@@ -72,7 +72,8 @@ $.Redactor.opts.langs['nl'] = {
 	underline: 'Onderstrepen',
 	alignment: 'Uitlijning',
 	filename: 'Naam (optioneel)',
-	edit: 'Bewerk'
+	edit: 'Bewerk',
+	center: 'Center'
 };
 })( jQuery );
 
