@@ -100,6 +100,32 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			return;
 		}
 
+		// Is there a locale menu?
+		if (this.$localeMenuBtn.length)
+		{
+			this.localeMenu = this.$localeMenuBtn.menubtn().data('menubtn').menu;
+
+			// Figure out the initial locale
+			var $option = this.localeMenu.$options.filter('.sel:first');
+
+			if (!$option.length)
+			{
+				$option = this.localeMenu.$options.first();
+			}
+
+			if ($option.length)
+			{
+				this.locale = $option.data('locale');
+			}
+			else
+			{
+				// No locale options -- they must not have any locale permissions
+				this.settings.criteria = { id: '0' };
+			}
+
+			this.localeMenu.on('optionselect', $.proxy(this, 'onLocaleChange'));
+		}
+
 		this.onAfterHtmlInit();
 
 		if (this.settings.context == 'index')
@@ -158,13 +184,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			this.statusMenu = this.$statusMenuBtn.menubtn().data('menubtn').menu;
 			this.statusMenu.on('optionselect', $.proxy(this, 'onStatusChange'));
-		}
-
-		// Locale changes
-		if (this.$localeMenuBtn.length)
-		{
-			this.localeMenu = this.$localeMenuBtn.menubtn().data('menubtn').menu;
-			this.localeMenu.on('optionselect', $.proxy(this, 'onLocaleChange'));
 		}
 
 		this.addListener(this.$search, 'textchange', $.proxy(function()

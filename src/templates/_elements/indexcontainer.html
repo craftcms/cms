@@ -28,13 +28,20 @@
 					</td>
 				{% endif %}
 				{% if showLocaleMenu %}
-					{% set currentLocale = craft.i18n.getCurrentLocale() %}
+					{% set editableLocaleIds = craft.i18n.getEditableLocaleIds() %}
+					{% if craft.locale in editableLocaleIds %}
+						{% set initialLocale = craft.i18n.getCurrentLocale() %}
+					{% elseif editableLocaleIds|length %}
+						{% set initialLocale = craft.i18n.getLocaleById(editableLocaleIds|first) %}
+					{% else %}
+						{% set initialLocale = null %}
+					{% endif %}
 					<td class="thin">
-						<div class="btn menubtn localemenubtn">{{ currentLocale.getName() }}</div>
+						<div class="btn menubtn localemenubtn">{{ initialLocale ? initialLocale.getName() }}</div>
 						<div class="menu padded">
 							<ul>
-								{% for locale in craft.i18n.getSiteLocales() if user.can('editLocale:'~locale.getId()) %}
-									<li><a{% if locale.getId() == currentLocale.getId() %} class="sel"{% endif %} data-locale="{{ locale.getId() }}">{{ locale.getName() }}</a></li>
+								{% for locale in craft.i18n.getEditableLocales() %}
+									<li><a{% if initialLocale and locale.getId() == initialLocale.getId() %} class="sel"{% endif %} data-locale="{{ locale.getId() }}">{{ locale.getName() }}</a></li>
 								{% endfor %}
 							</ul>
 						</div>
