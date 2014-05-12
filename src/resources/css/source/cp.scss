@@ -137,7 +137,7 @@ html { overflow-y: scroll; }
 
 /* footer */
 #footer { margin: 24px 0; text-align: center; font-size: 0; }
-#footer li { display: inline-block; font-size: 11px; color: $lighttextcolor; }
+#footer li { display: inline-block; font-size: 11px; color: $lighttextcolor; white-space: nowrap; }
 #footer li:not(:last-child):after { display: inline-block; margin: 0 7px; content: '•'; }
 #footer li a { color: $lighttextcolor; text-decoration: underline; }
 #footer li a:hover { color: $mediumtextcolor; }
