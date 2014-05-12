@@ -2858,7 +2858,7 @@ Garnish.Menu = Garnish.Base.extend({
 			if (option == '-')
 			{
 				// Create a new <ul>
-				$ul = $('<ul/>').appendTo(this.$menu);
+				$ul = $('<ul/>').appendTo(this.$container);
 			}
 			else
 			{
