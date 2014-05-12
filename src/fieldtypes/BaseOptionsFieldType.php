@@ -194,6 +194,24 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	}
 
 	/**
+	 * Returns the field options, with labels run through Craft::t().
+	 *
+	 * @access protected
+	 * @return array
+	 */
+	protected function getTranslatedOptions()
+	{
+		$options = $this->getOptions();
+
+		foreach ($options as &$option)
+		{
+			$option['label'] = Craft::t($option['label']);
+		}
+
+		return $options;
+	}
+
+	/**
 	 * Returns an option's label by its value.
 	 *
 	 * @access protected
