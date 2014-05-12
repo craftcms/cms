@@ -414,7 +414,7 @@ class ElementsService extends BaseApplicationComponent
 
 		// Basic element params
 
-		if ($criteria->id === false)
+		if ($criteria->id === false || $criteria->id === 0 || $criteria->id === '0')
 		{
 			return false;
 		}
