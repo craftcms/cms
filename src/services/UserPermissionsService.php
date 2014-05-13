@@ -330,7 +330,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		foreach ($singles as $single)
 		{
 			$permissions['editEntries:'.$single->id] = array(
-				'label' => Craft::t('Edit “{title}”', array('title' => $single->name))
+				'label' => Craft::t('Edit “{title}”', array('title' => Craft::t($single->name)))
 			);
 		}
 
@@ -401,7 +401,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		foreach ($globalSets as $globalSet)
 		{
 			$permissions['editGlobalSet:'.$globalSet->id] = array(
-				'label' => Craft::t('Edit “{title}”', array('title' => $globalSet->name))
+				'label' => Craft::t('Edit “{title}”', array('title' => Craft::t($globalSet->name)))
 			);
 		}
 
@@ -422,7 +422,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		foreach ($groups as $group)
 		{
 			$permissions['editCategories:'.$group->id] = array(
-				'label' => Craft::t('Edit “{title}”', array('title' => $group->name))
+				'label' => Craft::t('Edit “{title}”', array('title' => Craft::t($group->name)))
 			);
 		}
 

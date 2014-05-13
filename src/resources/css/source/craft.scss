@@ -1002,7 +1002,7 @@ body #redactor_modal footer button:last-child { border-bottom-right-radius: 3px;
 @media screen and (-webkit-min-device-pixel-ratio: 0)
 {
 	.select,
-	.select select { border-radius: 3px; }
+	.select select { border-radius: 3px; white-space: nowrap; }
 	.select { display: inline-block; position: relative;
 		@include linear-gradient(#fff, hsl($hue, 5%, 98%));
 		@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px rgba(0,0,0,0.07));
