@@ -341,12 +341,16 @@ Garnish = $.extend(Garnish, {
 			$target = $(target);
 
 		$target.css({
-			lineHeight:    $source.css('lineHeight'),
-			fontSize:      $source.css('fontSize'),
 			fontFamily:    $source.css('fontFamily'),
+			fontSize:      $source.css('fontSize'),
 			fontWeight:    $source.css('fontWeight'),
 			letterSpacing: $source.css('letterSpacing'),
-			textAlign:     $source.css('textAlign')
+			lineHeight:    $source.css('lineHeight'),
+			textAlign:     $source.css('textAlign'),
+			textIndent:    $source.css('textIndent'),
+			whiteSpace:    $source.css('whiteSpace'),
+			wordSpacing:   $source.css('wordSpacing'),
+			wordWrap:      $source.css('wordWrap')
 		});
 	},
 
@@ -3932,8 +3936,7 @@ Garnish.NiceText = Garnish.Base.extend({
 			display: 'block',
 			position: 'absolute',
 			top: -9999,
-			left: -9999,
-			wordWrap: 'break-word'
+			left: -9999
 		});
 
 		this.inputBoxSizing = this.$input.css('box-sizing');
