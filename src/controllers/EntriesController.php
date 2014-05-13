@@ -441,7 +441,8 @@ class EntriesController extends BaseController
 		$this->requirePostRequest();
 
 		$entryId = craft()->request->getRequiredPost('entryId');
-		$entry = craft()->entries->getEntryById($entryId);
+		$localeId = craft()->request->getPost('locale');
+		$entry = craft()->entries->getEntryById($entryId, $localeId);
 		$currentUser = craft()->userSession->getUser();
 
 		if ($entry->authorId == $currentUser->id)
