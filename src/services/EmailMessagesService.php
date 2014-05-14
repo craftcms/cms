@@ -158,6 +158,7 @@ class EmailMessagesService extends BaseApplicationComponent
 				'account_activation' => $craftSourceLocale,
 				'verify_new_email'   => $craftSourceLocale,
 				'forgot_password'    => $craftSourceLocale,
+				'test_email'         => $craftSourceLocale,
 			);
 
 			// Give plugins a chance to add additional messages
