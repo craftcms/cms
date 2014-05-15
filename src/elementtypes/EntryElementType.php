@@ -82,10 +82,12 @@ class EntryElementType extends BaseElementType
 		if ($context == 'index')
 		{
 			$sections = craft()->sections->getEditableSections();
+			$editable = true;
 		}
 		else
 		{
 			$sections = craft()->sections->getAllSections();
+			$editable = false;
 		}
 
 		$sectionIds = array();
@@ -109,7 +111,7 @@ class EntryElementType extends BaseElementType
 		$sources = array(
 			'*' => array(
 				'label'    => Craft::t('All entries'),
-				'criteria' => array('sectionId' => $sectionIds)
+				'criteria' => array('sectionId' => $sectionIds, 'editable' => $editable)
 			)
 		);
 
@@ -117,7 +119,7 @@ class EntryElementType extends BaseElementType
 		{
 			$sources['singles'] = array(
 				'label'    => Craft::t('Singles'),
-				'criteria' => array('sectionId' => $singleSectionIds)
+				'criteria' => array('sectionId' => $singleSectionIds, 'editable' => $editable)
 			);
 		}
 
@@ -139,7 +141,7 @@ class EntryElementType extends BaseElementType
 					$sources[$key] = array(
 						'label'    => Craft::t($section->name),
 						'data'     => array('type' => $type, 'handle' => $section->handle),
-						'criteria' => array('sectionId' => $section->id)
+						'criteria' => array('sectionId' => $section->id, 'editable' => $editable)
 					);
 
 					if ($type == SectionType::Structure)

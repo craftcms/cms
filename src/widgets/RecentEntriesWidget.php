@@ -143,6 +143,7 @@ class RecentEntriesWidget extends BaseWidget
 		$criteria->localeEnabled = null;
 		$criteria->locale = $targetLocale;
 		$criteria->sectionId = $targetSectionId;
+		$criteria->editable = true;
 		$criteria->limit = $this->getSettings()->limit;
 		$criteria->order = 'dateCreated desc';
 
