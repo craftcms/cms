@@ -1,5 +1,5 @@
 {% for element in elements %}
-	<tr{% if element.id in disabledElementIds %} class="disabled"{% endif %}">
+	<tr{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
 		{% for attribute, label in attributes %}
 			{% if loop.index == 1 %}
 				<td scope="row" data-title="{{ label }}">
