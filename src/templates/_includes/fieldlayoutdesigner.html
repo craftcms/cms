@@ -46,6 +46,10 @@
 
 	<h2>{{ "Design your field layout"|t }}</h2>
 
+	{% if instructions is defined %}
+		<div class="instructions">{{ instructions|md }}</div>
+	{% endif %}
+
 	<div class="fld-tabs">
 		{% if fieldLayout %}
 			{% import _self as macros %}

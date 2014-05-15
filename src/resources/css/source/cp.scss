@@ -208,6 +208,7 @@ $fldGuideColor: #f4f3fb;
 }
 .fieldlayoutform:after { @include clearafter; }
 .fieldlayoutform h2 { margin: 3px 0 27px !important; font-size: 20px; line-height: 30px; font-weight: normal; text-decoration: underline; color: $fldChalkColor; margin-bottom: 30px; }
+.fieldlayoutform .instructions { margin: -30px 0 30px; line-height: 30px; }
 
 .fieldlayoutform .fld-tabs { @include margin(0, 0, 29px, -30px); }
 .fieldlayoutform .unusedfields { @include margin(30px, 0, -30px, -30px); }
