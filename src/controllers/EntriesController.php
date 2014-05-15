@@ -362,6 +362,9 @@ class EntriesController extends BaseController
 
 		$entry = $this->_populateEntryModel();
 
+		// Make sure the user is allowed to edit entries in this section
+		craft()->userSession->requirePermission('editEntries:'.$entry->sectionId);
+
 		if (!$entry->id)
 		{
 			// Make sure the user is allowed to create entries in this section
@@ -369,22 +372,36 @@ class EntriesController extends BaseController
 
 			if ($entry->enabled)
 			{
-				// Make sure the user is allowed to edit live entries in this section
-				if ($entry->getSection()->type !== SectionType::Single)
+				// Make sure the user is allowed to make live changes in this section
+				if (!craft()->userSession->checkPermission('publishEntries:'.$entry->sectionId))
 				{
-					craft()->userSession->requirePermission('publishEntries:'.$entry->sectionId);
+					// Let them save it, but as a disabled entry.
+					$entry->enabled = false;
 				}
 			}
 		}
 		else
 		{
-			// Make sure the user is allowed to edit entries in this section
-			craft()->userSession->requirePermission('editEntries:'.$entry->sectionId);
-
 			if ($entry->enabled)
 			{
-				// Make sure the user is allowed to edit live entries in this section
+				// Make sure the user is allowed to make live changes in this section
 				craft()->userSession->requirePermission('publishEntries:'.$entry->sectionId);
+			}
+
+			// Is this another user's entry (and it's not a Single)?
+			if (
+				$entry->authorId != craft()->userSession->getUser()->id &&
+				$entry->getSection()->type != SectionType::Single
+			)
+			{
+				// Make sure they have permission to edit those
+				craft()->userSession->requirePermission('editPeerEntries:'.$entry->sectionId);
+
+				if ($entry->enabled)
+				{
+					// Make sure they have permission to make live changes to those
+					craft()->userSession->requirePermission('publishPeerEntries:'.$entry->sectionId);
+				}
 			}
 		}
 
@@ -585,22 +602,28 @@ class EntriesController extends BaseController
 			}
 		}
 
-		// More permission enforcement
+		// Is it a new entry?
 		if (!$variables['entry']->id)
 		{
+			// Make sure they have permission to create new entries in this section
 			craft()->userSession->requirePermission('createEntries'.$variables['permissionSuffix']);
 		}
-		else if ($variables['entry']->authorId != craft()->userSession->getUser()->id)
+		else
 		{
-			if ($variables['entry']->getSection()->type !== SectionType::Single)
+			// If it's another user's entry (and it's not a Single), make sure they have permission to edit those
+			if (
+				$variables['entry']->authorId != craft()->userSession->getUser()->id &&
+				$variables['entry']->getSection()->type != SectionType::Single
+			)
 			{
 				craft()->userSession->requirePermission('editPeerEntries'.$variables['permissionSuffix']);
 			}
-		}
 
-		if ($variables['entry']->id && $variables['entry']->getClassHandle() == 'EntryDraft')
-		{
-			if ($variables['entry']->creatorId != craft()->userSession->getUser()->id)
+			// If it's another user's draft, make sure they have permission to edit those
+			if (
+				$variables['entry']->getClassHandle() == 'EntryDraft' &&
+				$variables['entry']->creatorId != craft()->userSession->getUser()->id
+			)
 			{
 				craft()->userSession->requirePermission('editPeerEntryDrafts'.$variables['permissionSuffix']);
 			}
