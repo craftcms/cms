@@ -416,16 +416,21 @@ class EntryElementType extends BaseElementType
 				return false;
 			}
 
+			// Limit the query to only the sections the user has permission to edit
 			$editableSectionIds = craft()->sections->getEditableSectionIds();
 			$query->andWhere(array('in', 'entries.sectionId', $editableSectionIds));
 
+			// Enforce the editPeerEntries permissions for non-Single sections
 			$noPeerConditions = array();
 
-			foreach ($editableSectionIds as $sectionId)
+			foreach (craft()->sections->getEditableSections() as $section)
 			{
-				if (!$user->can('editPeerEntries:'.$sectionId))
+				if (
+					$section->type != SectionType::Single &&
+					!$user->can('editPeerEntries:'.$section->id)
+				)
 				{
-					$noPeerConditions[] = array('or', 'entries.sectionId != '.$sectionId, 'entries.authorId = '.$user->id);
+					$noPeerConditions[] = array('or', 'entries.sectionId != '.$section->id, 'entries.authorId = '.$user->id);
 				}
 			}
 

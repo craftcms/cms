@@ -335,7 +335,7 @@ class LocalizationService extends BaseApplicationComponent
 	 * Returns the localization data for a given locale.
 	 *
 	 * @param $localeId
-	 * @return \CLocale|null
+	 * @return LocaleData|null
 	 */
 	public function getLocaleData($localeId = null)
 	{

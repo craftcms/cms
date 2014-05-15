@@ -141,11 +141,17 @@
 							<input type="hidden" name="draftId" value="{{ entry.draftId }}">
 							<input type="submit" class="btn submit first" value="{{ 'Save draft'|t }}">
 
-							{% if currentUser.can('publishEntries'~permissionSuffix) and (entry.creatorId == currentUser.id or currentUser.can('publishPeerEntryDrafts'~permissionSuffix)) or (section.type == 'single' and currentUser.can('editEntries'~permissionSuffix)) %}
+							{# Are they allowed to publish this draft? #}
+							{% if
+								currentUser.can('publishEntries'~permissionSuffix) and
+								(section.type == 'single' or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix)) and
+								(entry.creatorId == currentUser.id or currentUser.can('publishPeerEntryDrafts'~permissionSuffix))
+							%}
 								<input type="button" class="btn formsubmit" value="{{ 'Publish draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.cpEditUrl }}">
 							{% endif %}
 
-							{% if currentUser.can('publishEntries'~permissionSuffix) and (entry.creatorId == currentUser.id or currentUser.can('deletePeerEntryDrafts'~permissionSuffix)) or (section.type == 'single' and currentUser.can('editEntries'~permissionSuffix)) %}
+							{# Are they allowed to delete this draft? #}
+							{% if entry.creatorId == currentUser.id or currentUser.can('deletePeerEntryDrafts'~permissionSuffix) %}
 								<input type="button" class="btn formsubmit" value="{{ 'Delete draft'|t }}" data-action="entryRevisions/deleteDraft"
 								   data-confirm="{{ 'Are you sure you want to delete this draft?'|t }}"
 								   data-redirect="{{ entry.cpEditUrl }}"/>
@@ -153,7 +159,12 @@
 
 						{% else %}
 
-							{% if not entry.id or not entry.enabled or currentUser.can('publishEntries'~permissionSuffix) or (section.type == 'single' and currentUser.can('editEntries'~permissionSuffix)) %}
+							{# Are they allowed to save this entry? #}
+							{% if
+								(entry.id or currentUser.can('createEntries'~permissionSuffix)) and
+								(not entry.id or not entry.enabled or currentUser.can('publishEntries'~permissionSuffix)) and
+								(section.type == 'single' or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
+							%}
 								<input type="hidden" name="action" value="entries/saveEntry">
 								<input type="hidden" name="redirect" value="entries/{{ sectionHandle }}">
 
