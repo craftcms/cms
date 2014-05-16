@@ -209,7 +209,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		// Ensure folders are in the DB
 		foreach ($bucketFolders as $fullPath => $nothing)
 		{
-			$folderId = $this->_ensureFolderByFulPath($fullPath);
+			$folderId = $this->_ensureFolderByFullPath($fullPath);
 			$indexedFolderIds[$folderId] = true;
 		}
 
