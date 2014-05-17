@@ -486,7 +486,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param $fullPath
 	 * @return int
 	 */
-	protected function _ensureFolderByFulPath($fullPath)
+	protected function _ensureFolderByFullPath($fullPath)
 	{
 		$parameters = new FolderCriteriaModel(array(
 			'path' => $fullPath,

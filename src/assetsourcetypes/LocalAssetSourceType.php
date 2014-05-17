@@ -111,7 +111,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 				if (is_dir($file))
 				{
 					$fullPath = rtrim(str_replace($this->_getSourceFileSystemPath(), '', $file), '/') . '/';
-					$folderId = $this->_ensureFolderByFulPath($fullPath);
+					$folderId = $this->_ensureFolderByFullPath($fullPath);
 					$indexedFolderIds[$folderId] = true;
 				}
 				else

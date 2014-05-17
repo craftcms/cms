@@ -928,7 +928,22 @@ class AssetsService extends BaseApplicationComponent
 
 		if (!is_null($criteria->path))
 		{
-			$whereConditions[] = DbHelper::parseParam('f.path', $criteria->path, $whereParams);
+			// This folder has a comma in it.
+			if (strpos($criteria->path, ',') !== false)
+			{
+				// Escape the comma.
+				$condition = DbHelper::parseParam('f.path', str_replace(',', '\,', $criteria->path), $whereParams);
+				$lastKey = key(array_slice($whereParams, -1, 1, true));
+
+				// Now unescape it.
+				$whereParams[$lastKey] = str_replace('\,', ',', $whereParams[$lastKey]);
+			}
+			else
+			{
+				$condition = DbHelper::parseParam('f.path', $criteria->path, $whereParams);
+			}
+
+			$whereConditions[] = $condition;
 		}
 
 		if (count($whereConditions) == 1)
