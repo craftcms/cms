@@ -94,15 +94,21 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 			$params = JsonHelper::decode($row['criteria']);
 			$criteria = craft()->elements->getCriteria($row['type'], $params);
 			$criteriaElementIds = $criteria->ids();
+			$cacheIdsToDelete = array();
 
 			foreach ($this->_elementIds as $elementId)
 			{
 				if (in_array($elementId, $criteriaElementIds))
 				{
-					craft()->templateCache->deleteCacheById($row['cacheId']);
-					$this->_deletedCacheIds[] = $row['cacheId'];
+					$cacheIdsToDelete[] = $row['cacheId'];
 					break;
 				}
+			}
+
+			if ($cacheIdsToDelete)
+			{
+				craft()->templateCache->deleteCacheById($cacheIdsToDelete);
+				$this->_deletedCacheIds = array_merge($this->_deletedCacheIds, $cacheIdsToDelete);
 			}
 		}
 
