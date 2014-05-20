@@ -148,6 +148,28 @@ class ArrayHelper
 	}
 
 	/**
+	 * Returns the first value in a given array.
+	 *
+	 * @static
+	 * @param array $arr
+	 * @return mixed|null
+	 */
+	public function getFirstValue($arr)
+	{
+		if (count($arr))
+		{
+			if (isset($arr[0]))
+			{
+				return $arr[0];
+			}
+			else
+			{
+				return $arr[array_shift(array_keys($arr))];
+			}
+		}
+	}
+
+	/**
 	 * The array_filter() callback function for filterEmptyStringsFromArray().
 	 *
 	 * @static
