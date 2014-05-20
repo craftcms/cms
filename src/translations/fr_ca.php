@@ -1100,15 +1100,16 @@ félicitations! Craft est parvenu à envoyer un courriel.
 Voici les paramètres que vous avez utilisés :
 
 {% for key, setting in settings %}{{ key }}: {{ setting }}
+
 {% endfor %}',
 	'test_email_subject' => 'Ceci est un courriel de test de Craft',
 	'three' => 'trois',
 	'two' => 'deux',
-	'verify_new_email_body' => 'Hé {{user.friendlyName}}, 
+	'verify_new_email_body' => 'Hé {{user.friendlyName}},
 
-veuillez vérifier votre nouvelle adresse de courriel en cliquant sur ce lien : 
+veuillez vérifier votre nouvelle adresse de courriel en cliquant sur ce lien :
 
-{{link}} 
+{{link}}
 
 Si vous n\'attendiez pas ce courriel, veuillez l\'ignorer.
 ',

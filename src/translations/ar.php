@@ -1098,8 +1098,8 @@ return array(
 
 فيما يلي الإعدادات التي استخدمتها:
 
-{% for key, setting in settings %}
-{{ key }}:  {{ setting }}
+{% for key, setting in settings %}{{ key }}: {{ setting }}
+
 {% endfor %}',
 	'test_email_subject' => 'هذه رسالة اختبار من Craft',
 	'three' => 'ثلاثة',

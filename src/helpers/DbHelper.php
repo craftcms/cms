@@ -380,7 +380,7 @@ class DbHelper
 			return '';
 		}
 
-		$firstVal = StringHelper::toLowerCase($values[0]);
+		$firstVal = StringHelper::toLowerCase(ArrayHelper::getFirstValue($values));
 
 		if ($firstVal == 'and' || $firstVal == 'or')
 		{

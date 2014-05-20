@@ -1098,7 +1098,8 @@ Félicitations ! Craft a réussi à envoyer un email.
 
 Voici les paramètres que vous avez utilisés :
 
-{% for key, setting in settings %}{{ key }}: {{ setting }} 
+{% for key, setting in settings %}{{ key }}: {{ setting }}
+
 {% endfor %}',
 	'test_email_subject' => 'Ceci est un email de test de la part de Craft',
 	'three' => 'trois',

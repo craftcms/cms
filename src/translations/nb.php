@@ -1099,6 +1099,7 @@ Gratulerer! Craft var i stand til å sende e-post vellykket.
 Her er innstillingene du benyttet:
 
 {% for key, setting in settings %}{{ key }}: {{ setting }}
+
 {% endfor %}',
 	'test_email_subject' => 'Dette er en test-epost fra Craft',
 	'three' => 'tre',

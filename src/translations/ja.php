@@ -1101,6 +1101,7 @@ return array(
 あなたが使用した設定は以下の通りです：
 
 {% for key, setting in settings %}{{ key }}: {{ setting }}
+
 {% endfor %}',
 	'test_email_subject' => 'これはCraftからのテストメールです。',
 	'three' => '３',

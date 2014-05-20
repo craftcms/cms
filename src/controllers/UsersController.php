@@ -615,7 +615,7 @@ class UsersController extends BaseController
 				}
 			}
 
-			if ($newPassword)
+			if ($thisIsPublicRegistration || $newPassword)
 			{
 				// Make sure it's valid
 				$passwordModel = new PasswordModel();
@@ -717,7 +717,6 @@ class UsersController extends BaseController
 		craft()->urlManager->setRouteVariables(array(
 			'account' => $user
 		));
-
 	}
 
 	/**
