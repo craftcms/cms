@@ -150,5 +150,7 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 		{
 			$query->where('type = :type', array(':type' => $this->_elementType));
 		}
+
+		return $query;
 	}
 }
