@@ -67,6 +67,7 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 		$totalRows = $this->_getQuery()->count('id');
 		$this->_batch = 0;
 		$this->_noMoreRows = false;
+		$this->_deletedCacheIds = array();
 
 		return $totalRows;
 	}
