@@ -37,6 +37,6 @@ return array (
 		"Congratulations! Craft was successfully able to send an email.\n\n".
 		"Here are the settings you used:\n\n".
 		"{% for key, setting in settings %}".
-		"{{ key }}:  {{ setting }}\n".
+		"{{ key }}:  {{ setting }}\n\n".
 		"{% endfor %}",
 );

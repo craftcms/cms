@@ -1099,7 +1099,8 @@ Se non aspettavi questa email, ignorala semplicemente. ',
  Ecco le impostazioni da te usate:
 
  {% for key, setting in settings %}{{ key }}: {{ setting }}
- {% endfor %} ',
+
+{% endfor %}',
 	'test_email_subject' => 'Questa è una email di prova da Craft',
 	'three' => 'tre',
 	'two' => 'due',

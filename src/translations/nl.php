@@ -1099,6 +1099,7 @@ Gefeliciteerd! Craft heeft succesvol een email verstuurd.
 Hier zijn de gebruikte instellingen:
 
 {% for key, setting in settings %}{{ key }}: {{ setting }}
+
 {% endfor %}',
 	'test_email_subject' => 'Dit is een test-email van Craft',
 	'three' => 'drie',

@@ -1098,7 +1098,8 @@ Glückwunsch! Craft konnte eine Email erfolgreich versenden.
 
 Hier sind die von Ihnen verwendeten Einstellungen:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }} 
+{% for key, setting in settings %}{{ key }}: {{ setting }}
+
 {% endfor %}',
 	'test_email_subject' => 'Dies ist eine Test-Email von Craft.',
 	'three' => 'drei',
