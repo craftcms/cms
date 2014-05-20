@@ -6,8 +6,12 @@ namespace Craft;
  */
 class DeleteStaleTemplateCachesTask extends BaseTask
 {
-	private $_criteria;
 	private $_elementIds;
+	private $_elementType;
+
+	private $_batch;
+	private $_batchRows;
+	private $_noMoreRows;
 	private $_deletedCacheIds;
 
 	/**
@@ -40,43 +44,31 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	 */
 	public function getTotalSteps()
 	{
-		$this->_deletedCacheIds = array();
-
 		$elementId = $this->getSettings()->elementId;
 
 		// What type of element(s) are we dealing with?
-		$elementType = craft()->elements->getElementTypeById($elementId);
+		$this->_elementType = craft()->elements->getElementTypeById($elementId);
 
-		if (!$elementType)
+		if (!$this->_elementType)
 		{
 			return 0;
 		}
 
-		$query = craft()->db->createCommand()
-			->select('*')
-			->from('templatecachecriteria');
-
-		if (is_array($elementType))
-		{
-			$query->where(array('in', 'type', $elementType));
-		}
-		else
-		{
-			$query->where('type = :type', array(':type' => $elementType));
-		}
-
-		if (is_array($elementId))
+		if (is_array($this->_elementIds))
 		{
 			$this->_elementIds = $elementId;
 		}
 		else
 		{
-			$this->_elementIds = array($elementId);
+			$this->_elementIds = array($this->_elementIds);
 		}
 
-		$this->_criteria = $query->queryAll();
+		// Figure out how many rows we're dealing with
+		$totalRows = $this->_getQuery()->count('id');
+		$this->_batch = 0;
+		$this->_noMoreRows = false;
 
-		return count($this->_criteria);
+		return $totalRows;
 	}
 
 	/**
@@ -87,7 +79,31 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	 */
 	public function runStep($step)
 	{
-		$row = $this->_criteria[$step];
+		// Do we need to grab a fresh batch?
+		if (empty($this->_batchRows))
+		{
+			if (!$this->_noMoreRows)
+			{
+				$this->_batch++;
+				$this->_batchRows = $this->_getQuery()
+					->offset(100*($this->_batch-1))
+					->limit(100*$this->_batch)
+					->queryAll();
+
+				// Still no more rows?
+				if (!$this->_batchRows)
+				{
+					$this->_noMoreRows = true;
+				}
+			}
+
+			if ($this->_noMoreRows)
+			{
+				return true;
+			}
+		}
+
+		$row = array_shift($this->_batchRows);
 
 		if (!in_array($row['cacheId'], $this->_deletedCacheIds))
 		{
@@ -113,5 +129,26 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 		}
 
 		return true;
+	}
+
+	/**
+	 * Returns a DbCommand object for selecing criteria that could be dropped by this task.
+	 *
+	 * @access private
+	 * @return DbCommand
+	 */
+	private function _getQuery()
+	{
+		$query = craft()->db->createCommand()
+			->from('templatecachecriteria');
+
+		if (is_array($this->_elementType))
+		{
+			$query->where(array('in', 'type', $this->_elementType));
+		}
+		else
+		{
+			$query->where('type = :type', array(':type' => $this->_elementType));
+		}
 	}
 }
