@@ -380,9 +380,7 @@ class DbHelper
 			return '';
 		}
 
-		// $values could be an associative array, or $values[0] could have been unset
-		// so jsut clone the array with array_merge() and grab the first value of the clone with array_shift().
-		$firstVal = StringHelper::toLowerCase(array_shift(array_merge($values)));
+		$firstVal = StringHelper::toLowerCase(ArrayHelper::getFirstValue($values));
 
 		if ($firstVal == 'and' || $firstVal == 'or')
 		{
