@@ -305,9 +305,10 @@ class InstallService extends BaseApplicationComponent
 			'cacheId'  => array('column' => ColumnType::Int, 'null' => false),
 			'type'     => array('column' => ColumnType::Varchar, 'maxLength' => 150, 'null' => false),
 			'criteria' => array('column' => ColumnType::Text, 'null' => false),
-		), null, false, false);
+		), null, true, false);
 
 		craft()->db->createCommand()->addForeignKey('templatecachecriteria', 'cacheId', 'templatecaches', 'id', 'CASCADE', null);
+		craft()->db->createCommand()->createIndex('templatecachecriteria', 'type');
 
 		Craft::log('Finished creating the templatecachecriteria table.');
 	}
