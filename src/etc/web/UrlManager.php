@@ -253,16 +253,7 @@ class UrlManager extends \CUrlManager
 				return $route;
 			}
 
-			// As a last ditch to match routes, check to see if any plugins have routes registered that will match.
-			$pluginCpRoutes = craft()->plugins->call('registerCpRoutes');
-
-			foreach ($pluginCpRoutes as $pluginRoutes)
-			{
-				if (($route = $this->_matchUrlRoutes($path, $pluginRoutes)) !== false)
-				{
-					return $route;
-				}
-			}
+			$pluginHook = 'registerCpRoutes';
 		}
 		else
 		{
@@ -277,6 +268,19 @@ class UrlManager extends \CUrlManager
 			$dbRoutes = craft()->routes->getDbRoutes();
 
 			if (($route = $this->_matchUrlRoutes($path, $dbRoutes)) !== false)
+			{
+				return $route;
+			}
+
+			$pluginHook = 'registerSiteRoutes';
+		}
+
+		// Maybe a plugin has a registered route that matches?
+		$allPluginRoutes = craft()->plugins->call($pluginHook);
+
+		foreach ($allPluginRoutes as $pluginRoutes)
+		{
+			if (($route = $this->_matchUrlRoutes($path, $pluginRoutes)) !== false)
 			{
 				return $route;
 			}
