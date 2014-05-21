@@ -814,7 +814,7 @@ class AssetsService extends BaseApplicationComponent
 		}
 		else
 		{
-			return UrlHelper::getActionUrl('assets/generateTransform', array('transformId' => $existingTransformData->id));
+			return UrlHelper::getResourceUrl('transforms/'.$existingTransformData->id);
 		}
 	}
 

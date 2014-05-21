@@ -261,78 +261,21 @@ class AssetsController extends BaseController
 			$handle = craft()->request->getPost('handle');
 			$fileModel = craft()->assets->getFileById($fileId);
 			$transformIndexModel = craft()->assetTransforms->getTransformIndex($fileModel, $handle);
-			$transformId = $transformIndexModel->id;
 		}
 		else
 		{
 			$transformIndexModel = craft()->assetTransforms->getTransformIndexModelById($transformId);
 		}
 
-		if (!$transformIndexModel)
+		try
 		{
-			throw new Exception(Craft::t('No asset image transform exists with the ID “{id}”', array('id' => $transformId)));
+			$url = craft()->assetTransforms->ensureTransformUrlByIndexModel($transformIndexModel);
+		}
+		catch (Exception $exception)
+		{
+			throw new HttpException(404, $exception->getMessage());
 		}
 
-		// Make sure we're not in the middle of working on this transform from a separete request
-		if ($transformIndexModel->inProgress)
-		{
-			for ($safety = 0; $safety < 100; $safety++)
-			{
-				// Wait a second!
-				sleep(1);
-				ini_set('max_execution_time', 120);
-
-				$transformIndexModel = craft()->assetTransforms->getTransformIndexModelById($transformId);
-
-				// Is it being worked on right now?
-				if ($transformIndexModel->inProgress)
-				{
-					// Make sure it hasn't been working for more than 30 seconds. Otherwise give up on the other request.
-					$time = new DateTime();
-
-					if ($time->getTimestamp() - $transformIndexModel->dateUpdated->getTimestamp() < 30)
-					{
-						continue;
-					}
-					else
-					{
-						$transformIndexModel->dateUpdated = new DateTime();
-						craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
-						break;
-					}
-				}
-				else
-				{
-					// Must be done now!
-					break;
-				}
-			}
-		}
-
-		if (!$transformIndexModel->fileExists)
-		{
-			$transformIndexModel->inProgress = 1;
-			craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
-
-			$result = craft()->assetTransforms->generateTransform($transformIndexModel);
-
-			if ($result)
-			{
-				$transformIndexModel->inProgress = 0;
-				$transformIndexModel->fileExists = 1;
-				craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
-			}
-			else
-			{
-				// No source file. Throw a 404.
-				$transformIndexModel->inProgress = 0;
-				craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
-				throw new HttpException(404, Craft::t("The requested image could not be found!"));
-			}
-
-		}
-
-		$url = craft()->assetTransforms->getUrlforTransformByIndexId($transformId);
 		if ($returnUrl)
 		{
 			$this->returnJson(array('url' => $url));
