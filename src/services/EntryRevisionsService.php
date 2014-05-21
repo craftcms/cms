@@ -285,6 +285,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 			->select('*')
 			->from('entryversions')
 			->where(array('and', 'entryId = :entryId', 'locale = :locale'), array(':entryId' => $entryId, ':locale' => $localeId))
+			->order('dateCreated desc')
 			->limit($limit)
 			->queryAll();
 
