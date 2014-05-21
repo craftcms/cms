@@ -57,7 +57,7 @@ Craft.LightSwitch = Garnish.Base.extend(
 		this.$input.val('1');
 		this.$outerContainer.addClass('on');
 		this.on = true;
-		this.settings.onChange();
+		this.onChange();
 
 		this.$toggleTarget.show();
 		this.$toggleTarget.height('auto');
@@ -79,7 +79,7 @@ Craft.LightSwitch = Garnish.Base.extend(
 		this.$input.val('');
 		this.$outerContainer.removeClass('on');
 		this.on = false;
-		this.settings.onChange();
+		this.onChange();
 
 		this.$toggleTarget.stop().animate({height: 0}, Craft.LightSwitch.animationDuration);
 	},
@@ -94,6 +94,13 @@ Craft.LightSwitch = Garnish.Base.extend(
 		{
 			this.turnOff();
 		}
+	},
+
+	onChange: function()
+	{
+		this.trigger('change');
+		this.settings.onChange();
+		this.$outerContainer.trigger('change');
 	},
 
 	_onMouseDown: function()
