@@ -162,16 +162,16 @@ class EntriesService extends BaseApplicationComponent
 						craft()->entryRevisions->saveVersion($entry);
 					}
 
+					if ($transaction !== null)
+					{
+						$transaction->commit();
+					}
+
 					// Fire an 'onSaveEntry' event
 					$this->onSaveEntry(new Event($this, array(
 						'entry'      => $entry,
 						'isNewEntry' => $isNewEntry
 					)));
-
-					if ($transaction !== null)
-					{
-						$transaction->commit();
-					}
 
 					return true;
 				}

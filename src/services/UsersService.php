@@ -245,6 +245,11 @@ class UsersService extends BaseApplicationComponent
 						}
 					}
 
+					if ($transaction !== null)
+					{
+						$transaction->commit();
+					}
+
 					// Fire an 'onSaveUser' event
 					$this->onSaveUser(new Event($this, array(
 						'user'      => $user,
@@ -257,11 +262,6 @@ class UsersService extends BaseApplicationComponent
 						$this->onSaveProfile(new Event($this, array(
 							'user' => $user
 						)));
-					}
-
-					if ($transaction !== null)
-					{
-						$transaction->commit();
 					}
 
 					return true;

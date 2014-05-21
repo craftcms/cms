@@ -145,6 +145,11 @@ class AssetsService extends BaseApplicationComponent
 					// Save the file row
 					$fileRecord->save(false);
 
+					if ($transaction !== null)
+					{
+						$transaction->commit();
+					}
+
 					// Fire an 'onSaveAsset' event
 					$this->onSaveAsset(new Event($this, array(
 						'asset' => $file
@@ -156,11 +161,6 @@ class AssetsService extends BaseApplicationComponent
 						$this->onSaveFileContent(new Event($this, array(
 							'file' => $file
 						)));
-					}
-
-					if ($transaction !== null)
-					{
-						$transaction->commit();
 					}
 
 					return true;

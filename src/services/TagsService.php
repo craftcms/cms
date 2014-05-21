@@ -354,6 +354,11 @@ class TagsService extends BaseApplicationComponent
 
 					$tagRecord->save(false);
 
+					if ($transaction !== null)
+					{
+						$transaction->commit();
+					}
+
 					// Fire an 'onSaveTag' event
 					$this->onSaveTag(new Event($this, array(
 						'tag'      => $tag,
@@ -366,11 +371,6 @@ class TagsService extends BaseApplicationComponent
 						$this->onSaveTagContent(new Event($this, array(
 							'tag' => $tag
 						)));
-					}
-
-					if ($transaction !== null)
-					{
-						$transaction->commit();
 					}
 
 					return true;

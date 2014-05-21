@@ -599,16 +599,16 @@ class CategoriesService extends BaseApplicationComponent
 						craft()->structures->appendToRoot($category->getGroup()->structureId, $category);
 					}
 
+					if ($transaction !== null)
+					{
+						$transaction->commit();
+					}
+
 					// Fire an 'onSaveCategory' event
 					$this->onSaveCategory(new Event($this, array(
 						'category'      => $category,
 						'isNewCategory' => $isNewCategory
 					)));
-
-					if ($transaction !== null)
-					{
-						$transaction->commit();
-					}
 
 					return true;
 				}
