@@ -35,7 +35,7 @@ class EntryRevisionsController extends BaseController
 			$draft->locale    = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocaleId());
 		}
 
-		$this->_setDraftValuesFromPost($draft);
+		$this->_setRevisionAttributesFromPost($draft);
 
 		if (craft()->entryRevisions->saveDraft($draft))
 		{
@@ -94,18 +94,39 @@ class EntryRevisionsController extends BaseController
 
 		$draftId = craft()->request->getPost('draftId');
 		$draft = craft()->entryRevisions->getDraftById($draftId);
+		$userId = craft()->userSession->getUser()->id;
 
 		if (!$draft)
 		{
 			throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draftId)));
 		}
 
-		if ($draft->creatorId != craft()->userSession->getUser()->id)
+		$entry = craft()->entries->getEntryById($draft->id);
+
+		if (!$entry)
 		{
-			craft()->userSession->requirePermission('publishPeerEntryDrafts:'.$draft->sectionId);
+			throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
 		}
 
-		$this->_setDraftValuesFromPost($draft);
+		// Make sure they are allowed to publish entries in this section
+		craft()->userSession->requirePermission('publishEntries:'.$entry->sectionId);
+
+		// Is this another user's entry (and it's not a Single)?
+		if (
+			$entry->authorId != $userId &&
+			$entry->getSection()->type != SectionType::Single
+		)
+		{
+			craft()->userSession->requirePermission('publishPeerEntries:'.$entry->sectionId);
+		}
+
+		// Is this another user's draft?
+		if ($draft->creatorId != $userId)
+		{
+			craft()->userSession->requirePermission('publishPeerEntryDrafts:'.$entry->sectionId);
+		}
+
+		$this->_setRevisionAttributesFromPost($draft);
 
 		if (craft()->entryRevisions->publishDraft($draft))
 		{
@@ -131,22 +152,75 @@ class EntryRevisionsController extends BaseController
 	}
 
 	/**
-	 * Sets the draft model's values from the post data.
+	 * Reverts an entry to a version.
+	 */
+	public function actionRevertEntryToVersion()
+	{
+		$this->requirePostRequest();
+
+		$versionId = craft()->request->getPost('versionId');
+		$version = craft()->entryRevisions->getVersionById($versionId);
+		$userId = craft()->userSession->getUser()->id;
+
+		if (!$version)
+		{
+			throw new Exception(Craft::t('No version exists with the ID “{id}”', array('id' => $versionId)));
+		}
+
+		$entry = craft()->entries->getEntryById($version->id);
+
+		if (!$entry)
+		{
+			throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
+		}
+
+		// Make sure they are allowed to publish entries in this section
+		craft()->userSession->requirePermission('publishEntries:'.$entry->sectionId);
+
+		// Is this another user's entry (and it's not a Single)?
+		if (
+			$entry->authorId != $userId &&
+			$entry->getSection()->type != SectionType::Single
+		)
+		{
+			craft()->userSession->requirePermission('publishPeerEntries:'.$entry->sectionId);
+		}
+
+		$this->_setRevisionAttributesFromPost($version);
+
+		if (craft()->entryRevisions->revertEntryToVersion($version))
+		{
+			craft()->userSession->setNotice(Craft::t('Entry reverted to prior version.'));
+			$this->redirectToPostedUrl($version);
+		}
+		else
+		{
+			craft()->userSession->setError(Craft::t('Couldn’t revert entry to prior version.'));
+
+			// Send the version back to the template
+			craft()->urlManager->setRouteVariables(array(
+				'entry' => $version
+			));
+		}
+	}
+
+	/**
+	 * Sets the revision model's attributes from the post data.
 	 *
 	 * @access private
-	 * @param EntryDraftModel $draft
+	 * @param BaseEntryRevisionModel $revision
 	 */
-	private function _setDraftValuesFromPost(EntryDraftModel $draft)
+	private function _setRevisionAttributesFromPost(BaseEntryRevisionModel $revision)
 	{
-		$draft->slug       = craft()->request->getPost('slug');
-		$draft->postDate   = craft()->request->getPost('postDate');
-		$draft->expiryDate = craft()->request->getPost('expiryDate');
-		$draft->enabled    = (bool)craft()->request->getPost('enabled');
-		$draft->authorId   = craft()->request->getPost('author');
+		$revision->slug       = craft()->request->getPost('slug');
+		$revision->postDate   = craft()->request->getPost('postDate');
+		$revision->expiryDate = craft()->request->getPost('expiryDate');
+		$revision->enabled    = (bool) craft()->request->getPost('enabled');
+		$revision->authorId   = craft()->request->getPost('author');
 
-		$draft->getContent()->title = craft()->request->getPost('title');
+		$revision->getContent()->title = craft()->request->getPost('title');
 
 		$fieldsLocation = craft()->request->getParam('fieldsLocation', 'fields');
-		$draft->setContentFromPost($fieldsLocation);
+		$revision->setContentFromPost($fieldsLocation);
 	}
 }

@@ -321,6 +321,39 @@ class EntryRevisionsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Reverts an entry to a version.
+	 *
+	 * @param EntryVersionModel $version
+	 * @return bool
+	 */
+	public function revertEntryToVersion(EntryVersionModel $version)
+	{
+		// If this is a single, we'll have to set the title manually
+		if ($version->getSection()->type == SectionType::Single)
+		{
+			$version->getContent()->title = $version->getSection()->name;
+		}
+
+		if (craft()->entries->saveEntry($version))
+		{
+			// Fire an 'onRevertEntryToVersion' event
+			$this->onRevertEntryToVersion(new Event($this, array(
+				'version' => $version,
+			)));
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	// -------------------------------------------
+	//  Events
+	// -------------------------------------------
+
+	/**
 	 * Fires an 'onSaveDraft' event.
 	 *
 	 * @param Event $event
@@ -358,6 +391,16 @@ class EntryRevisionsService extends BaseApplicationComponent
 	public function onAfterDeleteDraft(Event $event)
 	{
 		$this->raiseEvent('onAfterDeleteDraft', $event);
+	}
+
+	/**
+	 * Fires an 'onRevertEntryToVersion' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onRevertEntryToVersion(Event $event)
+	{
+		$this->raiseEvent('onRevertEntryToVersion', $event);
 	}
 
 	/**
