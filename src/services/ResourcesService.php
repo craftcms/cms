@@ -203,21 +203,6 @@ class ResourcesService extends BaseApplicationComponent
 				{
 					return craft()->path->getStoragePath().implode('/', $segs);
 				}
-
-				case 'transforms':
-				{
-					try
-					{
-						$transformIndexModel = craft()->assetTransforms->getTransformIndexModelById((int) $segs[1]);
-						$url = craft()->assetTransforms->ensureTransformUrlByIndexModel($transformIndexModel);
-					}
-					catch (Exception $exception)
-					{
-						throw new HttpException(404, $exception->getMessage());
-					}
-					craft()->request->redirect($url, true, 302);
-					craft()->end();
-				}
 			}
 		}
 
