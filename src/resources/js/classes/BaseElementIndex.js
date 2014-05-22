@@ -383,8 +383,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 						containerHeight = this.$scroller.outerHeight();
 
 					var loadMore = (containerScrollHeight - containerScrollTop <= containerHeight + 15);
-					console.log(containerScrollHeight, containerScrollTop, containerHeight, loadMore);
-
 				}
 
 				if (loadMore)
