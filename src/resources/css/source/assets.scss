@@ -5,11 +5,6 @@
 #main .files .open-folder { -webkit-touch-callout: none; @include user-select(none); }
 
 /*-- manager --*/
-.content.has-sidebar .sidebar nav.assets-nav li a { padding-right: 20px; position: relative;
-	span.settings { position: absolute; right: 5px; top: 2px; display: none; cursor: pointer; }
-}
-.content.has-sidebar .sidebar nav.assets-nav a:hover span.settings { display: block; }
-
 .assets-page-loading .folder-contents{ padding-bottom: 30px; background: url('../images/spinner.gif') no-repeat center bottom; }
 .thumb-wrapper { border: 5px solid #fff; background: url(../images/checkers.png) 0 0; @include box-shadow(0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.1)); }
 .icon-wrapper { border: 5px solid #fff;}

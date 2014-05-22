@@ -1059,6 +1059,26 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Return true if user has permission to perform the action on the folder.
+	 *
+	 * @param $folderId
+	 * @param $action
+	 * @return bool
+	 */
+	public function canUserPerformAction($folderId, $action)
+	{
+		try
+		{
+			$this->checkPermissionByFolderIds($folderId, $action);
+			return true;
+		}
+		catch (Exception $exception)
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * Check for a permission on a source by a folder id or an array of folder ids.
 	 *
 	 * @param $folderIds
