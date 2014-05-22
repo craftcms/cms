@@ -26,7 +26,8 @@ class EntryModel extends BaseElementModel
 			'expiryDate' => AttributeType::DateTime,
 
 			// Just used for saving entries
-			'parentId'   => AttributeType::Number,
+			'parentId'     => AttributeType::Number,
+			'versionNotes' => AttributeType::String,
 		));
 	}
 

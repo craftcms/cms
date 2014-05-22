@@ -47,4 +47,19 @@ class ColorFieldType extends BaseFieldType
 			'value' => $value,
 		));
 	}
+
+	/**
+	 * Returns static HTML for the field's value.
+	 *
+	 * @param mixed $value
+	 * @return string
+	 */
+	public function getStaticHtml($value)
+	{
+		if ($value)
+		{
+			return '<div class="color" style="cursor: default;"><div class="colorpreview" style="background-color: '.$value.';"></div></div>' .
+				'<div class="colorhex">'.$value.'</div>';
+		}
+	}
 }

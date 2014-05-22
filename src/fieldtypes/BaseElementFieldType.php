@@ -262,6 +262,34 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
+	 * Returns static HTML for the field's value.
+	 *
+	 * @param mixed $value
+	 * @return string
+	 */
+	public function getStaticHtml($value)
+	{
+		if (count($value))
+		{
+			$html = '<div class="elementselect"><div class="elements">';
+
+			foreach ($value as $element)
+			{
+				$html .= craft()->templates->render('_elements/element', array(
+					'element' => $element
+				));
+			}
+
+			$html .= '</div></div>';
+			return $html;
+		}
+		else
+		{
+			return '<p class="light">'.Craft::t('Nothing selected.').'</p>';
+		}
+	}
+
+	/**
 	 * Returns the element type.
 	 *
 	 * @access protected

@@ -399,7 +399,7 @@ div.btn.submit input { position: absolute; left: 100%; }
 	@include box-shadow(none !important);
 }
 /* color buttons */
-.color { width: 30px; height: 30px; border-radius: 15px; padding: 0; background: url(../images/checkers.png); cursor: pointer; }
+.color { display: inline-block; vertical-align: middle; width: 30px; height: 30px; border-radius: 15px; padding: 0; background: url(../images/checkers.png); cursor: pointer; }
 .color .colorpreview { top: 0; @include left(0); width: 30px; height: 30px; border-radius: 15px;
 	@include linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0));
 	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.15), 0 1px 0 rgba(0,0,0,0.05));
@@ -414,6 +414,7 @@ div.btn.submit input { position: absolute; left: 100%; }
 	@include linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.1));
 }
 .colorpicker { z-index: 100; }
+.colorhex { display: inline-block; margin-left: 5px; vertical-align: middle; color: $mediumtextcolor; }
 
 /* switch */
 .lightswitch { position: relative; border: none !important; border-radius: 9px; width: 27px; height: 18px; overflow: hidden; cursor: pointer; @include user-select(none); overflow: hidden;
@@ -622,6 +623,7 @@ table.editable thead tr th,
 table.editable tbody tr td:not(.textual) { padding: 4px 10px; }
 table.editable thead tr th { border-bottom: 1px solid rgba(0,0,0,0.15); }
 table.editable tbody tr td { vertical-align: middle; text-align: center; background: #fff; }
+table.editable tbody tr td.textual { vertical-align: top; }
 table.editable tbody tr td:not(:first-child) { @include border-left(1px solid rgba(0,0,0,0.07)); }
 table.editable tbody tr td.action { padding: 4px 7px; background: $bgcolor; }
 table.editable tbody tr td.action + td.action { @include border-left(none); @include padding-left(0); }
@@ -899,6 +901,7 @@ input.text,
 textarea.text,
 .text input,
 .text textarea,
+.textline,
 table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor; min-height: 30px; @include box-sizing(border-box);
 	-webkit-appearance: none;
 }
@@ -916,6 +919,7 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 .field.checkbox + .field.checkbox { margin-top: -22px; }
 
 .text,
+.textline,
 body .redactor_editor,
 body .redactor_box textarea { padding: 6px 7px; }
 
@@ -958,6 +962,9 @@ body .redactor_box textarea { padding: 6px 7px; }
 :-moz-placeholder { color: $lighttextcolor; }
 ::-moz-placeholder { color: $lighttextcolor; }
 :-ms-input-placeholder { color: $lighttextcolor; }
+
+.textline { border: none; border-bottom: 1px dashed hsl($hue, 11%, 85%); padding-left: 0; padding-right: 0; color: hsl($hue, 11%, 50%); background: none; }
+.textline:focus { outline: none; border-bottom-color: hsl($hue, 11%, 70%) }
 
 /* Assets related */
 .hud.assetshud .body { max-height: 500px; overflow: auto; }

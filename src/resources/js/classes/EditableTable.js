@@ -235,6 +235,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
 	onTextareaFocus: function(ev)
 	{
+		this.onTextareaHeightChange();
+
 		var $textarea = $(ev.currentTarget);
 
 		if ($textarea.data('ignoreNextFocus'))
@@ -294,6 +296,14 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 		}
 
 		this.$textareas.css('min-height', tallestTextareaHeight);
+
+		// If the <td> is still taller, go with that insted
+		var tdHeight = this.$textareas.first().parent().height();
+
+		if (tdHeight > tallestTextareaHeight)
+		{
+			this.$textareas.css('min-height', tdHeight);
+		}
 	},
 
 	deleteRow: function()

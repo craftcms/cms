@@ -68,6 +68,22 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
+	 * Returns static HTML for the field's value.
+	 *
+	 * @param mixed $value
+	 * @return string
+	 */
+	public function getStaticHtml($value)
+	{
+		// Just return the input HTML with disabled inputs by default
+		craft()->templates->startJsBuffer();
+		$inputHtml = $this->getInputHtml(StringHelper::randomString(), $value);
+		$inputHtml = preg_replace('/<(?:input|textarea|select)\s[^>]*/i', '$0 disabled', $inputHtml);
+		craft()->templates->clearJsBuffer();
+		return $inputHtml;
+	}
+
+	/**
 	 * Returns the input value as it should be saved to the database.
 	 *
 	 * @param mixed $value

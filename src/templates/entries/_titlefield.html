@@ -5,8 +5,9 @@
 	id: 'title',
 	name: 'title',
 	value: entry.title,
-	errors: entry.getErrors('title'),
+	errors: (not static ? entry.getErrors('title')),
 	first: true,
 	autofocus: true,
-	required: true
+	required: (not static),
+	disabled: static
 }) }}

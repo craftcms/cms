@@ -141,37 +141,11 @@ class TableFieldType extends BaseFieldType
 	{
 		$input = '<input type="hidden" name="'.$name.'" value="">';
 
-		$columns = $this->getSettings()->columns;
+		$tableHtml = $this->_getInputHtml($name, $value, false);
 
-		if ($columns)
+		if ($tableHtml)
 		{
-			// Translate the column headings
-			foreach ($columns as &$column)
-			{
-				if (!empty($column['heading']))
-				{
-					$column['heading'] = Craft::t($column['heading']);
-				}
-			}
-
-			if ($this->isFresh())
-			{
-				$defaults = $this->getSettings()->defaults;
-
-				if (is_array($defaults))
-				{
-					$value = array_values($defaults);
-				}
-			}
-
-			$id = craft()->templates->formatInputId($name);
-
-			$input .= craft()->templates->render('_includes/forms/editableTable', array(
-				'id'   => $id,
-				'name' => $name,
-				'cols' => $columns,
-				'rows' => $value
-			));
+			$input .= $tableHtml;
 		}
 
 		return $input;
@@ -215,6 +189,62 @@ class TableFieldType extends BaseFieldType
 			}
 
 			return $value;
+		}
+	}
+
+	/**
+	 * Returns static HTML for the field's value.
+	 *
+	 * @param mixed $value
+	 * @return string
+	 */
+	public function getStaticHtml($value)
+	{
+		return $this->_getInputHtml(StringHelper::randomString(), $value, true);
+	}
+
+	/**
+	 * Returns the field's input HTML.
+	 *
+	 * @param string $name
+	 * @param mixed  $value
+	 * @param bool $static
+	 * @return string
+	 */
+	private function _getInputHtml($name, $value, $static)
+	{
+		$columns = $this->getSettings()->columns;
+
+		if ($columns)
+		{
+			// Translate the column headings
+			foreach ($columns as &$column)
+			{
+				if (!empty($column['heading']))
+				{
+					$column['heading'] = Craft::t($column['heading']);
+				}
+			}
+
+			if ($this->isFresh())
+			{
+				$defaults = $this->getSettings()->defaults;
+
+				if (is_array($defaults))
+				{
+					$value = array_values($defaults);
+				}
+			}
+
+			$id = craft()->templates->formatInputId($name);
+
+			return craft()->templates->render('_includes/forms/editableTable', array(
+				'id'     => $id,
+				'name'   => $name,
+				'cols'   => $columns,
+				'rows'   => $value,
+				'static' => $static
+			));
 		}
 	}
 }
