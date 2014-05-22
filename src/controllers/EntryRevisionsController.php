@@ -35,7 +35,7 @@ class EntryRevisionsController extends BaseController
 			$draft->locale    = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocaleId());
 		}
 
-		$this->_setRevisionAttributesFromPost($draft);
+		$this->_setDraftAttributesFromPost($draft);
 
 		if (craft()->entryRevisions->saveDraft($draft))
 		{
@@ -162,7 +162,7 @@ class EntryRevisionsController extends BaseController
 			craft()->userSession->requirePermission('publishPeerEntryDrafts:'.$entry->sectionId);
 		}
 
-		$this->_setRevisionAttributesFromPost($draft);
+		$this->_setDraftAttributesFromPost($draft);
 
 		if (craft()->entryRevisions->publishDraft($draft))
 		{
@@ -222,8 +222,6 @@ class EntryRevisionsController extends BaseController
 			craft()->userSession->requirePermission('publishPeerEntries:'.$entry->sectionId);
 		}
 
-		$this->_setRevisionAttributesFromPost($version);
-
 		if (craft()->entryRevisions->revertEntryToVersion($version))
 		{
 			craft()->userSession->setNotice(Craft::t('Entry reverted to past version.'));
@@ -241,22 +239,22 @@ class EntryRevisionsController extends BaseController
 	}
 
 	/**
-	 * Sets the revision model's attributes from the post data.
+	 * Sets a draft's attributes from the post data.
 	 *
 	 * @access private
-	 * @param BaseEntryRevisionModel $revision
+	 * @param EntryDraftModel $draft
 	 */
-	private function _setRevisionAttributesFromPost(BaseEntryRevisionModel $revision)
+	private function _setDraftAttributesFromPost(EntryDraftModel $draft)
 	{
-		$revision->slug       = craft()->request->getPost('slug');
-		$revision->postDate   = craft()->request->getPost('postDate');
-		$revision->expiryDate = craft()->request->getPost('expiryDate');
-		$revision->enabled    = (bool) craft()->request->getPost('enabled');
-		$revision->authorId   = craft()->request->getPost('author');
+		$draft->slug       = craft()->request->getPost('slug');
+		$draft->postDate   = craft()->request->getPost('postDate');
+		$draft->expiryDate = craft()->request->getPost('expiryDate');
+		$draft->enabled    = (bool) craft()->request->getPost('enabled');
+		$draft->authorId   = craft()->request->getPost('author');
 
-		$revision->getContent()->title = craft()->request->getPost('title');
+		$draft->getContent()->title = craft()->request->getPost('title');
 
 		$fieldsLocation = craft()->request->getParam('fieldsLocation', 'fields');
-		$revision->setContentFromPost($fieldsLocation);
+		$draft->setContentFromPost($fieldsLocation);
 	}
 }
