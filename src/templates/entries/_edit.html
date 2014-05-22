@@ -131,10 +131,11 @@
 				{% endif %}
 			</div><!--/item-->
 
-			{% if entry.classHandle != 'EntryVersion' %}
-				<div class="item" data-position="left" data-colspan="1">
-					<div class="buttons">
-						{% if entry.id and entry.classHandle == 'EntryDraft' %}
+			<div class="item" data-position="left" data-colspan="1">
+				<div class="buttons">
+					{% switch entry.getClassHandle() %}
+
+						{% case 'EntryDraft' %}
 
 							<input type="hidden" name="action" value="entryRevisions/saveDraft">
 							<input type="hidden" name="redirect" value="{{ baseCpEditUrl }}/drafts/{{ entry.draftId }}">
@@ -157,7 +158,20 @@
 								   data-redirect="{{ entry.cpEditUrl }}"/>
 							{% endif %}
 
-						{% else %}
+						{% case 'EntryVersion' %}
+
+							{# Are they allowed to publish changes? #}
+							{% if
+								currentUser.can('publishEntries'~permissionSuffix) and
+								(section.type == 'single' or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
+							%}
+								<input type="hidden" name="action" value="entryRevisions/revertEntryToVersion">
+								<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}">
+								<input type="hidden" name="versionId" value="{{ entry.versionId }}">
+								<input type="button" class="btn formsubmit first" value="{{ 'Revert entry to this version'|t }}">
+							{% endif %}
+
+						{% default %}
 
 							{# Are they allowed to save this entry? #}
 							{% if
@@ -201,10 +215,10 @@
 									<input type="submit" class="btn submit first" value="{{ 'Save as a draft'|t }}">
 								{% endif %}
 							{% endif %}
-						{% endif %}
-					</div>
-				</div><!--/item-->
-			{% endif %}
+
+					{% endswitch %}
+				</div><!--/buttons-->
+			</div><!--/item-->
 		</div><!--/grid-->
 	</form>
 {% endblock %}

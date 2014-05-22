@@ -121,7 +121,21 @@ class EntryRevisionsService extends BaseApplicationComponent
 	public function saveDraft(EntryDraftModel $draft)
 	{
 		$draftRecord = $this->_getDraftRecord($draft);
+
+		if (!$draft->name && $draft->id)
+		{
+			// Get the total number of exsiting drafts for this entry
+			$totalDrafts = craft()->db->createCommand()
+				->from('entrydrafts')
+				->where('entryId = :entryId', array(':entryId' => $draft->id))
+				->count('id');
+
+			$draft->name = Craft::t('Draft {num}', array('num' => $totalDrafts + 1));
+		}
+
+		$draftRecord->name = $draft->name;
 		$draftRecord->data = $this->_getRevisionData($draft);
+
 		$isNewDraft = !$draft->draftId;
 
 		if ($draftRecord->save())
@@ -321,6 +335,39 @@ class EntryRevisionsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Reverts an entry to a version.
+	 *
+	 * @param EntryVersionModel $version
+	 * @return bool
+	 */
+	public function revertEntryToVersion(EntryVersionModel $version)
+	{
+		// If this is a single, we'll have to set the title manually
+		if ($version->getSection()->type == SectionType::Single)
+		{
+			$version->getContent()->title = $version->getSection()->name;
+		}
+
+		if (craft()->entries->saveEntry($version))
+		{
+			// Fire an 'onRevertEntryToVersion' event
+			$this->onRevertEntryToVersion(new Event($this, array(
+				'version' => $version,
+			)));
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	// -------------------------------------------
+	//  Events
+	// -------------------------------------------
+
+	/**
 	 * Fires an 'onSaveDraft' event.
 	 *
 	 * @param Event $event
@@ -358,6 +405,16 @@ class EntryRevisionsService extends BaseApplicationComponent
 	public function onAfterDeleteDraft(Event $event)
 	{
 		$this->raiseEvent('onAfterDeleteDraft', $event);
+	}
+
+	/**
+	 * Fires an 'onRevertEntryToVersion' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onRevertEntryToVersion(Event $event)
+	{
+		$this->raiseEvent('onRevertEntryToVersion', $event);
 	}
 
 	/**
