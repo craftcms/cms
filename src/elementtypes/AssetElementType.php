@@ -54,7 +54,7 @@ class AssetElementType extends BaseElementType
 	 */
 	public function getSources($context = null)
 	{
-		if (in_array($context, array('modal', 'index')))
+		if ($context == 'index')
 		{
 			$sourceIds = craft()->assetSources->getViewableSourceIds();
 		}
@@ -322,6 +322,7 @@ class AssetElementType extends BaseElementType
 			'label'     => ($folder->parentId ? $folder->name : Craft::t($folder->name)),
 			'hasThumbs' => true,
 			'criteria'  => array('folderId' => $folder->id),
+			'data'      => array('upload' => (int) craft()->assets->canUserPerformAction($folder->id, 'uploadToAssetSource'))
 		);
 
 		if ($includeNestedFolders)

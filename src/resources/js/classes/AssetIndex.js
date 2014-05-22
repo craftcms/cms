@@ -738,6 +738,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this.uploader = new Craft.Uploader (this.$uploadButton, options);
 		this.$uploadButton.on('click', $.proxy(function()
 		{
+			if (this.$uploadButton.hasClass('disabled'))
+			{
+				return;
+			}
 			if (!this.isIndexBusy)
 			{
 				this.$uploadButton.parent().find('input[name=assets-upload]').click();
@@ -750,7 +754,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	onSelectSource: function()
 	{
 		this.uploader.setParams({folderId: this._getFolderIdFromSourceKey(this.sourceKey)});
-
+		if (!this.$source.data('upload'))
+		{
+			this.$uploadButton.addClass('disabled');
+		}
+		else
+		{
+			this.$uploadButton.removeClass('disabled');
+		}
 		this.base();
 	},
 
