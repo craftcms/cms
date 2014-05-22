@@ -33,8 +33,8 @@ class InstallController extends BaseController
 		$server = craft()->request->getServerName();
 		$words = preg_split('/[\-_\.]+/', $server);
 		array_pop($words);
-		$vars['siteName'] = implode(' ', array_map('ucfirst', $words));
-		$vars['siteUrl'] = 'http://'.$server;
+		$vars['defaultSiteName'] = implode(' ', array_map('ucfirst', $words));
+		$vars['defaultSiteUrl'] = 'http://'.$server;
 
 		$this->renderTemplate('_special/install', $vars);
 	}
