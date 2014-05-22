@@ -127,10 +127,13 @@ class EntryRevisionsService extends BaseApplicationComponent
 
 		if (!$draft->name && $draft->id)
 		{
-			// Get the total number of exsiting drafts for this entry
+			// Get the total number of exsiting drafts for this entry/locale
 			$totalDrafts = craft()->db->createCommand()
 				->from('entrydrafts')
-				->where('entryId = :entryId', array(':entryId' => $draft->id))
+				->where(
+					array('and', 'entryId = :entryId', 'locale = :locale'),
+					array(':entryId' => $draft->id, ':locale' => $draft->locale)
+				)
 				->count('id');
 
 			$draft->name = Craft::t('Draft {num}', array('num' => $totalDrafts + 1));

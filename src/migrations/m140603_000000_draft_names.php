@@ -15,27 +15,30 @@ class m140603_000000_draft_names extends BaseMigration
 	{
 		// Find all of the drafts that don't have a name yet, and give them names
 		$drafts = craft()->db->createCommand()
-			->select('id, entryId')
+			->select('id, entryId, locale')
 			->from('entrydrafts')
 			->where(array('or', 'name is null', 'name = ""'))
 			->order('dateCreated asc')
 			->queryAll();
 
-		$draftCountsByEntryId = array();
+		$draftCountsByEntryIdAndLocale = array();
 
 		foreach ($drafts as $draft)
 		{
-			if (!isset($draftCountsByEntryId[$draft['entryId']]))
+			$entryId = $draft['entryId'];
+			$locale  = $draft['locale'];
+
+			if (!isset($draftCountsByEntryIdAndLocale[$entryId][$locale]))
 			{
-				$draftCountsByEntryId[$draft['entryId']] = 1;
+				$draftCountsByEntryIdAndLocale[$entryId][$locale] = 1;
 			}
 			else
 			{
-				$draftCountsByEntryId[$draft['entryId']]++;
+				$draftCountsByEntryIdAndLocale[$entryId][$locale]++;
 			}
 
 			$this->update('entrydrafts', array(
-				'name' => 'Draft '.$draftCountsByEntryId[$draft['entryId']]
+				'name' => 'Draft '.$draftCountsByEntryIdAndLocale[$entryId][$locale]
 			), array(
 				'id' => $draft['id'])
 			);
