@@ -6,15 +6,14 @@
 
 <div id="revision-btn" class="btn menubtn">{{ revisionLabel }}</div>
 
-<div class="menu padded">
-	<ul>
+<div class="menu">
+	<ul class="padded">
 		<li><a{% if entry.getClassHandle() == 'Entry' %} class="sel"{% endif %} href="{{ entry.cpEditUrl }}">{{ "Current"|t }}</a></li>
 	</ul>
 
 	{% if drafts %}
-		<hr>
 		<h6>{{ "Drafts"|t }}</h6>
-		<ul>
+		<ul class="padded">
 			{% for draft in drafts %}
 				<li><a{% if entry.getClassHandle() == 'EntryDraft' and draft.draftId == draftId %} class="sel"{% endif %} href="{{ url(baseUrl~'drafts/'~draft.draftId) }}">
 					{{ draft.name }}
@@ -25,9 +24,8 @@
 	{% endif %}
 
 	{% if versions %}
-		<hr>
 		<h6>{{ "Past Versions"|t }}</h6>
-		<ul>
+		<ul class="padded">
 			{% for version in versions %}
 				<li><a{% if entry.getClassHandle() == 'EntryVersion' and version.versionId == versionId %} class="sel"{% endif %} href="{{ url(baseUrl~'versions/'~version.versionId) }}">
 					{{ "Version {id}"|t({ id: version.versionId }) }}

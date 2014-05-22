@@ -149,15 +149,15 @@ Craft.MatrixInput = Garnish.Base.extend(
 				'<div class="actions">' +
 					'<div class="status off" title="'+Craft.t('Disabled')+'"></div>' +
 					'<a class="settings icon menubtn" title="'+Craft.t('Actions')+'" role="button"></a> ' +
-					'<div class="menu padded" data-align="right">' +
-						'<ul>' +
+					'<div class="menu" data-align="right">' +
+						'<ul class="padded">' +
 							'<li><a data-icon="collapse" data-action="collapse">'+Craft.t('Collapse')+'</a></li>' +
 							'<li class="hidden"><a data-icon="expand" data-action="expand">'+Craft.t('Expand')+'</a></li>' +
 							'<li><a data-icon="disabled" data-action="disable">'+Craft.t('Disable')+'</a></li>' +
 							'<li class="hidden"><a data-icon="enabled" data-action="enable">'+Craft.t('Enable')+'</a></li>' +
 						'</ul>' +
-						'<hr/>' +
-						'<ul>';
+						'<hr class="padded"/>' +
+						'<ul class="padded">';
 
 		for (var i = 0; i < this.blockTypes.length; i++)
 		{
@@ -167,8 +167,8 @@ Craft.MatrixInput = Garnish.Base.extend(
 
 		html +=
 						'</ul>' +
-						'<hr/>' +
-						'<ul>' +
+						'<hr class="padded"/>' +
+						'<ul class="padded">' +
 							'<li><a data-icon="remove" data-action="delete">'+Craft.t('Delete')+'</a></li>' +
 						'</ul>' +
 					'</div>' +

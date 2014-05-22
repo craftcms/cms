@@ -34,7 +34,7 @@ body.rtl .ltr { text-align: right; direction: ltr; }
 
 /* icons */
 .icon:before,
-.menu.padded ul li a.sel:before,
+.menu ul.padded li a.sel:before,
 .texticon:before,
 .datewrapper:before,
 .timewrapper:before,
@@ -86,7 +86,7 @@ h2 { margin: 14px 0; font-size: 15px; font-weight: bold; line-height: 1.2; }
 h3 { margin: 14px 0; font-weight: bold; line-height: 1.2; }
 h4 { margin: 14px 0; font-weight: bold; line-height: 1.2; color: $mediumtextcolor; }
 h5 { margin: 14px 0 3px; line-height: 1.2; color: $mediumtextcolor; }
-h6 { margin: 3px 0; font-size: 10px; line-height: 1.2; color: $lighttextcolor; text-transform: uppercase; font-weight: bold; }
+h6 { margin: 14px 0 3px; font-size: 10px; line-height: 1.2; color: $lighttextcolor; text-transform: uppercase; font-weight: bold; }
 
 h1[data-icon]:before { @include margin(-8px, 10px, 0, 0) }
 h2[data-icon]:before { @include margin(-4px, 6px, 0, 0); font-size: 19px; }
@@ -846,7 +846,6 @@ body .redactor_dropdown { padding: 4px 14px; }
 body .redactor_dropdown a { margin: 0 -14px; padding: 3px 14px; color: $textcolor; text-decoration: none; }
 
 .menu { display: none; position: absolute; }
-.menu ul li + li { margin-top: 3px; }
 .menu ul li a { display: block !important; font-size: 12px; }
 .menu ul li a:not(.sel):hover,
 .menu ul li a:not(.sel):hover .light,
@@ -856,16 +855,13 @@ body .redactor_dropdown a:hover { color: $textcolor; background-color: $menuhove
 .menu ul li a.sel { color: #fff; background: $menuselcolor; cursor: default; }
 .menu hr { margin: 5px -14px; }
 
-.menu.padded { @include padding-left(24px); }
-.menu.padded h2 { margin: 10px 0 3px; }
-.menu.padded hr { @include margin-left(0); }
-.menu.padded ul li + li { margin-top: 0; }
-.menu.padded ul li a { @include margin-left(-24px); @include padding-left(24px); }
-.menu.padded ul li a[data-icon]:before,
-.menu.padded ul li a.icon:before,
-.menu.padded ul li a.sel:before { @include floatleft; @include margin(3px, 0, 0, -17px); font-size: 11px; color: $mediumtextcolor !important; }
-.menu.padded ul li a.sel:before { color: #fff !important; }
-.menu.padded ul li a.sel:not([data-icon]):before { content: 'check'; }
+.menu ul.padded li a { @include padding-left(24px); }
+.menu ul.padded li a[data-icon]:before,
+.menu ul.padded li a.icon:before,
+.menu ul.padded li a.sel:before { @include floatleft; @include margin(3px, 0, 0, -17px); font-size: 11px; color: $mediumtextcolor !important; }
+.menu ul.padded li a.sel:before { color: #fff !important; }
+.menu ul.padded li a.sel:not([data-icon]):before { content: 'check'; }
+.menu hr.padded { @include margin-left(10px); }
 
 /* tag select fields */
 .tagselect .add { position: relative; z-index: 1; display: inline-block; width: 12em; }
