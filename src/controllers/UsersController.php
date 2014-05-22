@@ -220,6 +220,12 @@ class UsersController extends BaseController
 
 				if (craft()->users->changePassword($user))
 				{
+					// Do we need to auto-login?
+					if (craft()->config->get('autoLoginAfterAccountActivation') === true)
+					{
+						craft()->userSession->impersonate($user->id);
+					}
+
 					// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
 					if (!$user->can('accessCp'))
 					{
@@ -315,6 +321,12 @@ class UsersController extends BaseController
 			}
 			else
 			{
+				// Do we need to auto-login?
+				if ( craft()->config->get('autoLoginAfterAccountActivation') === true)
+				{
+					craft()->userSession->impersonate($userToValidate->id);
+				}
+
 				// If the user can't access the CP, then send them to the front-end activateAccountSuccessPath.
 				if (!$userToValidate->can('accessCp'))
 				{
@@ -532,6 +544,7 @@ class UsersController extends BaseController
 		$thisIsPublicRegistration = false;
 
 		$userId = craft()->request->getPost('userId');
+		$isNewUser = $userId === null ? true : false;
 
 		// Are we editing an existing user?
 		if ($userId)
@@ -589,7 +602,7 @@ class UsersController extends BaseController
 		}
 
 		// Should we check for a new email and password?
-		if (!$user->id || $user->isCurrent() || craft()->userSession->isAdmin())
+		if ($isNewUser || $user->isCurrent() || craft()->userSession->isAdmin())
 		{
 			$newEmail    = craft()->request->getPost('email');
 			$newPassword = craft()->request->getPost($user->id ? 'newPassword' : 'password');
@@ -600,7 +613,7 @@ class UsersController extends BaseController
 			}
 
 			// You must pass your current password to change these fields for an existing user
-			if ($user->id && ($newEmail || $newPassword))
+			if (!$isNewUser && ($newEmail || $newPassword))
 			{
 				// Make sure the correct current password has been submitted
 				$currentPassword = craft()->request->getPost('password');
@@ -638,7 +651,7 @@ class UsersController extends BaseController
 				{
 					$user->unverifiedEmail = $newEmail;
 
-					if (!$user->id)
+					if ($isNewUser)
 					{
 						// Set it as the main email too
 						$user->email = $newEmail;
@@ -657,7 +670,7 @@ class UsersController extends BaseController
 		$user->lastName        = craft()->request->getPost('lastName', $user->lastName);
 		$user->preferredLocale = craft()->request->getPost('preferredLocale', $user->preferredLocale);
 
-		if (!$user->id)
+		if ($isNewUser)
 		{
 			if ($user->unverifiedEmail)
 			{
@@ -704,6 +717,16 @@ class UsersController extends BaseController
 			{
 				craft()->deprecator->log('UsersController::saveUser():userId_redirect', 'The {userId} token within the ‘redirect’ param on users/saveUser requests has been deprecated. Use {id} instead.');
 				$_POST['redirect'] = str_replace('{userId}', '{id}', $_POST['redirect']);
+			}
+
+			// If this is a new user and you're currently not logged in.
+			if ($isNewUser && !$currentUser && $thisIsPublicRegistration && !$user->unverifiedEmail)
+			{
+				// Do we need to auto-login?
+				if ( craft()->config->get('autoLoginAfterAccountActivation') === true)
+				{
+					craft()->userSession->impersonate($user->id);
+				}
 			}
 
 			$this->redirectToPostedUrl($user);
