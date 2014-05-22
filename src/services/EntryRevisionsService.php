@@ -177,6 +177,9 @@ class EntryRevisionsService extends BaseApplicationComponent
 			$draft->getContent()->title = $draft->getSection()->name;
 		}
 
+		// Set the version notes
+		$draft->versionNotes = Craft::t('Published draft “{name}”.', array('name' => $draft->name));
+
 		if (craft()->entries->saveEntry($draft))
 		{
 			// Fire an 'onPublishDraft' event
@@ -348,6 +351,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 		$versionRecord->locale = $entry->locale;
 		$versionRecord->num = $totalVersions + 1;
 		$versionRecord->data = $this->_getRevisionData($entry);
+		$versionRecord->notes = $entry->versionNotes;
 		return $versionRecord->save();
 	}
 
@@ -364,6 +368,9 @@ class EntryRevisionsService extends BaseApplicationComponent
 		{
 			$version->getContent()->title = $version->getSection()->name;
 		}
+
+		// Set the version notes
+		$version->versionNotes = Craft::t('Reverted version {num}.', array('num' => $version->num));
 
 		if (craft()->entries->saveEntry($version))
 		{

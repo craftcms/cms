@@ -901,6 +901,7 @@ input.text,
 textarea.text,
 .text input,
 .text textarea,
+.textline,
 table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor; min-height: 30px; @include box-sizing(border-box);
 	-webkit-appearance: none;
 }
@@ -918,6 +919,7 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 .field.checkbox + .field.checkbox { margin-top: -22px; }
 
 .text,
+.textline,
 body .redactor_editor,
 body .redactor_box textarea { padding: 6px 7px; }
 
@@ -960,6 +962,9 @@ body .redactor_box textarea { padding: 6px 7px; }
 :-moz-placeholder { color: $lighttextcolor; }
 ::-moz-placeholder { color: $lighttextcolor; }
 :-ms-input-placeholder { color: $lighttextcolor; }
+
+.textline { border: none; border-bottom: 1px dashed hsl($hue, 11%, 85%); padding-left: 0; padding-right: 0; color: hsl($hue, 11%, 50%); background: none; }
+.textline:focus { outline: none; border-bottom-color: hsl($hue, 11%, 70%) }
 
 /* Assets related */
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
