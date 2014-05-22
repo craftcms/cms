@@ -18,7 +18,6 @@ class EntryVersionModel extends BaseEntryRevisionModel
 			'versionId'   => AttributeType::Number,
 			'num'         => AttributeType::Number,
 			'notes'       => AttributeType::String,
-			'dateCreated' => AttributeType::DateTime,
 		));
 	}
 

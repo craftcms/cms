@@ -30,6 +30,13 @@ Craft.LightSwitch = Garnish.Base.extend(
 
 		this.$innerContainer = this.$outerContainer.find('.lightswitch-container:first');
 		this.$input = this.$outerContainer.find('input:first');
+
+		// If the input is disabled, go no further
+		if (this.$input.prop('disabled'))
+		{
+			return;
+		}
+
 		this.$toggleTarget = $(this.$outerContainer.attr('data-toggle'));
 
 		this.on = this.$outerContainer.hasClass('on');

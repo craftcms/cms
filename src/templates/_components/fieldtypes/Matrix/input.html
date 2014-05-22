@@ -11,55 +11,60 @@
 			{% endif %}
 
 			<div class="matrixblock{% if not block.enabled %} disabled{% endif %}" data-id="{{ blockId }}"{% if block.collapsed %} data-collapsed="1"{% endif %}>
-				<input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
-				<input type="hidden" name="{{ name }}[{{ blockId }}][enabled]" value="{% if block.enabled %}1{% endif %}">
-				<div class="actions">
-					<div class="status off" title="{{ 'Disabled'|t }}"></div>
-					<a class="settings icon menubtn" title="{{ 'Actions'|t }}" role="button"></a>
-					<div class="menu" data-align="right">
-						<ul class="padded">
-							<li><a data-icon="collapse" data-action="collapse">{{ "Collapse"|t }}</a></li>
-							<li class="hidden"><a data-icon="expand" data-action="expand">{{ "Expand"|t }}</a></li>
-							<li{% if not block.enabled %} class="hidden"{% endif %}><a data-icon="disabled" data-action="disable">{{ "Disable"|t }}</a></li>
-							<li{% if block.enabled %} class="hidden"{% endif %}><a data-icon="enabled" data-action="enable">{{ "Enable"|t }}</a></li>
-						</ul>
-						<hr class="padded">
-						<ul class="padded">
-							{% for blockType in blockTypes %}
-								<li><a data-icon="+" data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t({ type: blockType.name|t }) }}</a></li>
-							{% endfor %}
-						</ul>
-						<hr class="padded">
-						<ul class="padded">
-							<li><a data-icon="remove" data-action="delete">{{ "Delete"|t }}</a></li>
-						</ul>
+				{% if not static %}
+					<input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
+					<input type="hidden" name="{{ name }}[{{ blockId }}][enabled]" value="{% if block.enabled %}1{% endif %}">
+					<div class="actions">
+						<div class="status off" title="{{ 'Disabled'|t }}"></div>
+						<a class="settings icon menubtn" title="{{ 'Actions'|t }}" role="button"></a>
+						<div class="menu" data-align="right">
+							<ul class="padded">
+								<li><a data-icon="collapse" data-action="collapse">{{ "Collapse"|t }}</a></li>
+								<li class="hidden"><a data-icon="expand" data-action="expand">{{ "Expand"|t }}</a></li>
+								<li{% if not block.enabled %} class="hidden"{% endif %}><a data-icon="disabled" data-action="disable">{{ "Disable"|t }}</a></li>
+								<li{% if block.enabled %} class="hidden"{% endif %}><a data-icon="enabled" data-action="enable">{{ "Enable"|t }}</a></li>
+							</ul>
+							<hr class="padded">
+							<ul class="padded">
+								{% for blockType in blockTypes %}
+									<li><a data-icon="+" data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t({ type: blockType.name|t }) }}</a></li>
+								{% endfor %}
+							</ul>
+							<hr class="padded">
+							<ul class="padded">
+								<li><a data-icon="remove" data-action="delete">{{ "Delete"|t }}</a></li>
+							</ul>
+						</div>
+						<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>
 					</div>
-					<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>
-				</div>
+				{% endif %}
 				<div class="fields">
 					{% include "_includes/fields" with {
 						namespace: name~'['~blockId~'][fields]',
 						element: block,
-						fields: block.getType().getFieldLayout().getFields()
+						fields: block.getType().getFieldLayout().getFields(),
+						static: static
 					} %}
 				</div>
 			</div>
 		{% endfor %}
 	</div>
-	<div class="buttons">
-		<div class="btngroup">
-			{% for blockType in blockTypes %}
-				<div class="btn{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}">{{ blockType.name|t }}</div>
-			{% endfor %}
-		</div>
-
-		<div class="btn add icon menubtn first hidden">{{ "Add a block"|t }}</div>
-		<div class="menu">
-			<ul>
+	{% if not static %}
+		<div class="buttons">
+			<div class="btngroup">
 				{% for blockType in blockTypes %}
-					<li><a data-type="{{ blockType.handle }}">{{ blockType.name|t }}</a></li>
+					<div class="btn{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}">{{ blockType.name|t }}</div>
 				{% endfor %}
-			</ul>
+			</div>
+
+			<div class="btn add icon menubtn first hidden">{{ "Add a block"|t }}</div>
+			<div class="menu">
+				<ul>
+					{% for blockType in blockTypes %}
+						<li><a data-type="{{ blockType.handle }}">{{ blockType.name|t }}</a></li>
+					{% endfor %}
+				</ul>
+			</div>
 		</div>
-	</div>
+	{% endif %}
 </div>

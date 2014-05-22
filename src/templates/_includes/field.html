@@ -1,22 +1,26 @@
 {% import "_includes/forms" as forms %}
 
-{% if element is not defined %}{% set element = null %}{% endif %}
+{% set static = static is defined ? static : false %}
+{% set element = element is defined ? element : null %}
 
 {% set value = (element ? attribute(element, field.handle) : null) %}
-{% set errors = (element ? element.getErrors(field.handle) : null) %}
+{% set errors = (element and not static ? element.getErrors(field.handle) : null) %}
 {% set fieldtype = craft.fields.populateFieldType(field, element) %}
 
 {% if fieldtype %}
-	{% set input = fieldtype.getInputHtml(field.handle, value) %}
+	{% if not static %}
+		{% set input = fieldtype.getInputHtml(field.handle, value) %}
+	{% else %}
+		{% set input = fieldtype.getStaticHtml(value) %}
+	{% endif %}
 {% else %}
 	{% set input = '<p class="error">' ~ "The fieldtype class “{class}” could not be found."|t({ class: field.type }) ~ '</p>' %}
 {% endif %}
 
 {{ forms.field({
 	label: field.name|t|e,
-	required: required,
-	translatable: field.translatable,
-	instructions: field.instructions|t,
+	required: (not static ? required : false),
+	instructions: (not static ? field.instructions|t : null),
 	id: field.handle,
 	errors: errors
 }, input)|raw }}

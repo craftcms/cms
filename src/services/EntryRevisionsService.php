@@ -72,6 +72,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 			->select('*')
 			->from('entrydrafts')
 			->where(array('and', 'entryId = :entryId', 'locale = :locale'), array(':entryId' => $entryId, ':locale' => $localeId))
+			->order('name asc')
 			->queryAll();
 
 		foreach ($results as $result)

@@ -8,19 +8,24 @@
 {% endset %}
 
 {% set sectionHandle = section.handle %}
+{% set isVersion = entry.getClassHandle == 'EntryVersion' %}
 
 
 {% block main %}
 	<form id="entry-form" method="post" accept-charset="UTF-8" data-saveshortcut="1" data-saveshortcut-redirect="{{ continueEditingUrl }}">
-		<input type="hidden" name="sectionId" value="{{ section.id }}">
-		{% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}
-		{% if craft.isLocalized() %}<input type="hidden" name="locale" value="{{ entry.locale }}">{% endif %}
+		{% if not isVersion %}
+			<input type="hidden" name="sectionId" value="{{ section.id }}">
+			{% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}
+			{% if craft.isLocalized() %}<input type="hidden" name="locale" value="{{ entry.locale }}">{% endif %}
+		{% endif %}
 
 		<div class="grid first">
 			<div class="item" data-position="left" data-min-colspan="2" data-max-colspan="3">
 				<div id="fields" class="pane">
 					{% include "_includes/tabs" %}
-					{% include "entries/_fields" %}
+					{% include "entries/_fields" with {
+						static: isVersion
+					} %}
 				</div>
 			</div><!--/item-->
 
@@ -71,8 +76,8 @@
 							id: 'slug',
 							name: 'slug',
 							value: entry.slug,
-							errors: entry.getErrors('slug')|merge(entry.getErrors('uri')),
-							required: true
+							errors: (not isVersion ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),
+							disabled: isVersion
 						}) }}
 
 						{% if section.type == 'structure' and parentOptions|length > 1 %}
@@ -81,7 +86,8 @@
 								id: 'parentId',
 								name: 'parentId',
 								options: parentOptions,
-								value: parentId
+								value: parentId,
+								disabled: isVersion
 							}) }}
 						{% endif %}
 
@@ -91,7 +97,8 @@
 								id: 'author',
 								name: 'author',
 								options: authorOptions,
-								value: entry.authorId
+								value: entry.authorId,
+								disabled: isVersion
 							}) }}
 						{% endif %}
 
@@ -100,7 +107,8 @@
 							id: 'postDate',
 							name: 'postDate',
 							value: (entry.postDate ? entry.postDate : null),
-							errors: entry.getErrors('postDate')
+							errors: entry.getErrors('postDate'),
+							disabled: isVersion
 						}) }}
 
 						{{ forms.dateTimeField({
@@ -108,19 +116,21 @@
 							id: 'expiryDate',
 							name: 'expiryDate',
 							value: (entry.expiryDate ? entry.expiryDate : null),
-							errors: entry.getErrors('expiryDate')
+							errors: entry.getErrors('expiryDate'),
+							disabled: isVersion
 						}) }}
 
 						{% if currentUser.can('publishEntries'~permissionSuffix) %}
 							{{ forms.lightswitchField({
 								label: "Status"|t,
 								name: 'enabled',
-								on: entry.enabled
+								on: entry.enabled,
+								disabled: isVersion
 							}) }}
 						{% endif %}
 					</div><!--/pane-->
 
-					{% if canDeleteEntry %}
+					{% if not isVersion and canDeleteEntry %}
 						<div class="pane">
 							<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="entries/deleteEntry"
 								data-confirm="{{ 'Are you sure you want to delete this entry?'|t }}"

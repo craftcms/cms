@@ -7,6 +7,6 @@
 		<div class="label off"></div>
 	</div>
 	{% if name is defined -%}
-		<input type="hidden" name="{{ name }}" value="{{ on ? '1' }}">
+		<input type="hidden" name="{{ name }}" value="{{ on ? '1' }}"{% if disabled is defined and disabled %} disabled{% endif %}>
 	{%- endif %}
 </div>

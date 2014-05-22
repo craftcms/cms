@@ -1,3 +1,4 @@
+{%- set static = (static is defined ? static : false) %}
 {%- set cols = (cols is defined ? cols : []) %}
 {%- set rows = (rows is defined ? rows : []) -%}
 
@@ -7,7 +8,9 @@
 			{% for col in cols %}
 				<th scope="col" class="header">{{ col.heading ? col.heading : ' ' }}</th>
 			{% endfor %}
-			<th class="header" colspan="2"></th>
+			{% if not static %}
+				<th class="header" colspan="2"></th>
+			{% endif %}
 		</tr>
 	</thead>
 	<tbody>
@@ -20,28 +23,33 @@
 					<td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
 						{%- if col.type == 'select' -%}
 							{% include "_includes/forms/select" with {
-								class:   'small',
-								name:    cellName,
-								options: col.options,
-								value:   value
+								class:    'small',
+								name:     cellName,
+								options:  col.options,
+								value:    value,
+								disabled: static
 							} only %}
 						{%- elseif col.type == 'checkbox' -%}
 							<input type="hidden" name="{{ cellName }}">
-							<input type="checkbox" name="{{ cellName }}" value="1"{% if value %} checked{% endif %}>
+							<input type="checkbox" name="{{ cellName }}" value="1"{% if value %} checked{% endif %}{% if static %} disabled{% endif %}>
 						{%- else -%}
-							<textarea name="{{ cellName }}" rows="1">{{ value }}</textarea>
+							<textarea name="{{ cellName }}" rows="1"{% if static %} disabled{% endif %}>{{ value }}</textarea>
 						{%- endif -%}
 					</td>
 				{% endfor %}
-				<td class="thin action"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
-				<td class="thin action"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+				{% if not static %}
+					<td class="thin action"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
+					<td class="thin action"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+				{% endif %}
 			</tr>
 		{% endfor %}
 	</tbody>
 </table>
-<div class="btn add icon">{{ addRowLabel is defined ? addRowLabel : "Add a row"|t }}</div>
+{% if not static %}
+	<div class="btn add icon">{{ addRowLabel is defined ? addRowLabel : "Add a row"|t }}</div>
+{% endif %}
 
-{% if initJs is not defined or initJs %}
+{% if not static and (initJs is not defined or initJs) %}
 	{% set js %}
 		new Craft.EditableTable(
 			"{{ id   | namespaceInputId   | e('js') }}",

@@ -17,4 +17,15 @@ class FieldTypeVariable extends BaseComponentTypeVariable
 	{
 		return $this->component->getInputHtml($handle, $value);
 	}
+
+	/**
+	 * Returns static HTML for the field's value.
+	 *
+	 * @param string $value
+	 * @return string
+	 */
+	public function getStaticHtml($value)
+	{
+		return $this->component->getStaticHtml($value);
+	}
 }

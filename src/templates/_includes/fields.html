@@ -4,9 +4,10 @@
 {% namespace namespace %}
 	{% for field in fields %}
 		{% include "_includes/field" with {
-			field: field.getField(),
+			field:    field.getField(),
 			required: field.required,
-			element: element
+			element:  element,
+			static:   (static is defined ? static : null)
 		} only %}
 	{% endfor %}
 {% endnamespace %}

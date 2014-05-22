@@ -175,6 +175,17 @@ class RichTextFieldType extends BaseFieldType
 	}
 
 	/**
+	 * Returns static HTML for the field's value.
+	 *
+	 * @param mixed $value
+	 * @return string
+	 */
+	public function getStaticHtml($value)
+	{
+		return '<div class="text">'.($value ? $value : '&nbsp;').'</div>';
+	}
+
+	/**
 	 * Get available section sources.
 	 *
 	 * @return array

@@ -15,7 +15,9 @@ class BaseEntryRevisionModel extends EntryModel
 	protected function defineAttributes()
 	{
 		return array_merge(parent::defineAttributes(), array(
-			'creatorId' => AttributeType::Number,
+			'creatorId'   => AttributeType::Number,
+			'dateUpdated' => AttributeType::DateTime,
+			'dateCreated' => AttributeType::DateTime,
 		));
 	}
 
