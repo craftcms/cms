@@ -269,17 +269,10 @@ table.inputs td > .btn { display: block; }
 table.inputs td > .btngroup { float: none; }
 
 .buttons { position: relative; margin: 24px 0; min-height: 30px; }
-.buttons:after { @include clearafter; }
+.buttons:after { @include clearafter; margin-bottom: -5px; }
 .buttons.rightalign { @include floatright; }
-.buttons .btn,
-.buttons .btngroup { @include floatleft; @include margin-left(5px); }
-.buttons .btn + .btn { @include margin-left(5px); }
-.buttons .btn:first-child,
-.buttons .btngroup:first-child,
-.buttons .btn.first,
-.buttons .btngroup.first,
-.buttons .btngroup .btn { @include margin-left(0); }
-.buttons .btngroup .btn { float: none; }
+.buttons > .btn,
+.buttons > .btngroup { @include floatleft; @include margin(0, 5px, 5px, 0); }
 
 .btn,
 .btngroup { border-radius: 3px; }
