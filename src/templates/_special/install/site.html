@@ -5,8 +5,8 @@
 	<h1>{{ "Setup your site"|t }}</h1>
 
 	<form id="siteform" accept-charset="UTF-8">
-		{{ forms.textField({ label: "Site Name"|t, id: 'siteName', value: siteName, maxlength: 255 }) }}
-		{{ forms.textField({ label: "Site URL"|t, id: 'siteUrl', value: siteUrl, maxlength: 255 }) }}
+		{{ forms.textField({ label: "Site Name"|t, id: 'siteName', value: defaultSiteName, maxlength: 255 }) }}
+		{{ forms.textField({ label: "Site URL"|t, id: 'siteUrl', value: defaultSiteUrl, maxlength: 255 }) }}
 
 		{% set localeInput %}
 			<div class="select">
