@@ -16,6 +16,7 @@ class EntryVersionModel extends BaseEntryRevisionModel
 	{
 		return array_merge(parent::defineAttributes(), array(
 			'versionId'   => AttributeType::Number,
+			'num'         => AttributeType::Number,
 			'notes'       => AttributeType::String,
 			'dateCreated' => AttributeType::DateTime,
 		));

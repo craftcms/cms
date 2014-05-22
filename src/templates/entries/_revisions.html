@@ -24,11 +24,11 @@
 	{% endif %}
 
 	{% if versions %}
-		<h6>{{ "Past Versions"|t }}</h6>
+		<h6>{{ "Recent Versions"|t }}</h6>
 		<ul class="padded">
 			{% for version in versions %}
 				<li><a{% if entry.getClassHandle() == 'EntryVersion' and version.versionId == versionId %} class="sel"{% endif %} href="{{ url(baseUrl~'versions/'~version.versionId) }}">
-					{{ "Version {id}"|t({ id: version.versionId }) }}
+					{{ "Version {num}"|t({ num: version.num }) }}
 					<span class="light">{{ version.creator }}</span>
 				</a></li>
 			{% endfor %}

@@ -181,7 +181,7 @@ class EntriesController extends BaseController
 
 				case 'EntryVersion':
 				{
-					$variables['revisionLabel'] = Craft::t('Version {id}', array('id' => $variables['versionId']));
+					$variables['revisionLabel'] = Craft::t('Version {num}', array('num' => $variables['entry']->num));
 					break;
 				}
 

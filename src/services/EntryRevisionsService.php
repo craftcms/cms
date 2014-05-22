@@ -331,11 +331,21 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 */
 	public function saveVersion(EntryModel $entry)
 	{
+		// Get the total number of exsiting versions for this entry/locale
+		$totalVersions = craft()->db->createCommand()
+			->from('entryversions')
+			->where(
+				array('and', 'entryId = :entryId', 'locale = :locale'),
+				array(':entryId' => $entry->id, ':locale' => $entry->locale)
+			)
+			->count('id');
+
 		$versionRecord = new EntryVersionRecord();
 		$versionRecord->entryId = $entry->id;
 		$versionRecord->sectionId = $entry->sectionId;
 		$versionRecord->creatorId = craft()->userSession->getUser() ? craft()->userSession->getUser()->id : $entry->authorId;
 		$versionRecord->locale = $entry->locale;
+		$versionRecord->num = $totalVersions + 1;
 		$versionRecord->data = $this->_getRevisionData($entry);
 		return $versionRecord->save();
 	}

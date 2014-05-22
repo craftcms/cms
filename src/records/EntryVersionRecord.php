@@ -24,6 +24,7 @@ class EntryVersionRecord extends BaseRecord
 	{
 		return array(
 			'locale' => array(AttributeType::Locale, 'required' => true),
+			'num'    => array(AttributeType::Number, 'column' => ColumnType::SmallInt, 'unsigned' => true, 'required' => true),
 			'notes'  => array(AttributeType::String, 'column' => ColumnType::TinyText),
 			'data'   => array(AttributeType::Mixed, 'required' => true, 'column' => ColumnType::MediumText),
 		);
