@@ -478,7 +478,7 @@ class AssetsFieldType extends BaseElementFieldType
 			$allKinds = IOHelper::getFileKinds();
 			foreach ($allowedKinds as $allowedKind)
 			{
-				static::$_allowedExtensions[$key] += $allKinds[$allowedKind]['extensions'];
+				static::$_allowedExtensions[$key] = array_merge(static::$_allowedExtensions[$key], $allKinds[$allowedKind]['extensions']);
 			}
 
 		}
