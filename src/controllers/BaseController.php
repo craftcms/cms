@@ -76,6 +76,9 @@ abstract class BaseController extends \CController
 			else
 			{
 				// Get the template file's MIME type
+
+				// Safe to assume that findTemplate() will return an actual template path here, and not `false`.
+				// If the template didn't exist, a TemplateLoaderException would have been thrown when calling craft()->templates->render().
 				$templateFile = craft()->templates->findTemplate($template);
 				$extension = IOHelper::getExtension($templateFile, 'html');
 

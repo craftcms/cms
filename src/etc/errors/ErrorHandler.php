@@ -149,12 +149,9 @@ class ErrorHandler extends \CErrorHandler
 	protected function handleTwigError(\Twig_Error $exception)
 	{
 		$templateFile = $exception->getTemplateFile();
+		$file = craft()->templates->findTemplate($templateFile);
 
-		try
-		{
-			$file = craft()->templates->findTemplate($templateFile);
-		}
-		catch (TemplateLoaderException $e)
+		if (!$file)
 		{
 			$file = $templateFile;
 		}

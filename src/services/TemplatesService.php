@@ -116,19 +116,19 @@ class TemplatesService extends BaseApplicationComponent
 		{
 			if (strncmp($this->_renderingTemplate, 'string:', 7) === 0)
 			{
-				return $this->_renderingTemplate;
+				$template = $this->_renderingTemplate;
 			}
 			else
 			{
-				try
+				$template = $this->findTemplate($this->_renderingTemplate);
+
+				if (!$template)
 				{
-					return $this->findTemplate($this->_renderingTemplate);
-				}
-				catch (TemplateLoaderException $e)
-				{
-					return craft()->path->getTemplatesPath().$this->_renderingTemplate;
+					$template = craft()->path->getTemplatesPath().$this->_renderingTemplate;
 				}
 			}
+
+			return $template;
 		}
 	}
 
@@ -584,23 +584,14 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function doesTemplateExist($name)
 	{
-		try
-		{
-			$this->findTemplate($name);
-			return true;
-		}
-		catch (TemplateLoaderException $e)
-		{
-			return false;
-		}
+		return (bool) $this->findTemplate($name);
 	}
 
 	/**
 	 * Finds a template on the file system and returns its path.
 	 *
 	 * @param string $name
-	 * @throws TemplateLoaderException
-	 * @return string
+	 * @return string|false
 	 */
 	public function findTemplate($name)
 	{
@@ -666,7 +657,7 @@ class TemplatesService extends BaseApplicationComponent
 			}
 		}
 
-		throw new TemplateLoaderException($name);
+		return false;
 	}
 
 	/**

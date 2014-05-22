@@ -256,16 +256,7 @@ class EntriesController extends BaseController
 			// Make sure the section's template actually exists
 			$templatesPath = craft()->path->getTemplatesPath();
 			craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
-
-			try
-			{
-				$templateExists = (bool) craft()->templates->findTemplate($variables['section']->template);
-			}
-			catch (TemplateLoaderException $e)
-			{
-				$templateExists = false;
-			}
-
+			$templateExists = craft()->templates->doesTemplateExist($variables['section']->template);
 			craft()->path->setTemplatesPath($templatesPath);
 
 			if ($templateExists)
