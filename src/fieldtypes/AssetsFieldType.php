@@ -32,13 +32,6 @@ class AssetsFieldType extends BaseElementFieldType
 	private $_failedFiles = array();
 
 	/**
-	 * Allowed extension list.
-	 *
-	 * @var null
-	 */
-	static $_allowedExtensions = array();
-
-	/**
 	 * Returns the label for the "Add" button.
 	 *
 	 * @access protected
@@ -470,20 +463,15 @@ class AssetsFieldType extends BaseElementFieldType
 			return array();
 		}
 
-		// Cache in case several fields use the same settings.
-		$key = implode("|", $allowedKinds);
-		if (empty(static::$_allowedExtensions[$key]))
-		{
-			static::$_allowedExtensions[$key] = array();
-			$allKinds = IOHelper::getFileKinds();
-			foreach ($allowedKinds as $allowedKind)
-			{
-				static::$_allowedExtensions[$key] = array_merge(static::$_allowedExtensions[$key], $allKinds[$allowedKind]['extensions']);
-			}
+		$extensions = array();
+		$allKinds = IOHelper::getFileKinds();
 
+		foreach ($allowedKinds as $allowedKind)
+		{
+			$extensions = array_merge($extensions, $allKinds[$allowedKind]['extensions']);
 		}
 
-		return static::$_allowedExtensions[$key];
+		return $extensions;
 	}
 
 	/**
