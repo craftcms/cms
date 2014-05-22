@@ -61,6 +61,42 @@ class EntryRevisionsController extends BaseController
 	}
 
 	/**
+	 * Renames a draft.
+	 */
+	public function actionRenameDraft()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$draftId = craft()->request->getRequiredPost('draftId');
+		$name = craft()->request->getRequiredPost('name');
+
+		$draft = craft()->entryRevisions->getDraftById($draftId);
+
+		if (!$draft)
+		{
+			throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draftId)));
+		}
+
+		if ($draft->creatorId != craft()->userSession->getUser()->id)
+		{
+			// Make sure they have permission to be doing this
+			craft()->userSession->requirePermission('editPeerEntryDrafts:'.$draft->sectionId);
+		}
+
+		$draft->name = $name;
+
+		if (craft()->entryRevisions->saveDraft($draft, false))
+		{
+			$this->returnJson(array('success' => true));
+		}
+		else
+		{
+			$this->returnErrorJson($draft->getError('name'));
+		}
+	}
+
+	/**
 	 * Deletes a draft.
 	 */
 	public function actionDeleteDraft()
@@ -190,12 +226,12 @@ class EntryRevisionsController extends BaseController
 
 		if (craft()->entryRevisions->revertEntryToVersion($version))
 		{
-			craft()->userSession->setNotice(Craft::t('Entry reverted to prior version.'));
+			craft()->userSession->setNotice(Craft::t('Entry reverted to past version.'));
 			$this->redirectToPostedUrl($version);
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t revert entry to prior version.'));
+			craft()->userSession->setError(Craft::t('Couldn’t revert entry to past version.'));
 
 			// Send the version back to the template
 			craft()->urlManager->setRouteVariables(array(

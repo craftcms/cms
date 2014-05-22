@@ -121,7 +121,21 @@ class EntryRevisionsService extends BaseApplicationComponent
 	public function saveDraft(EntryDraftModel $draft)
 	{
 		$draftRecord = $this->_getDraftRecord($draft);
+
+		if (!$draft->name && $draft->id)
+		{
+			// Get the total number of exsiting drafts for this entry
+			$totalDrafts = craft()->db->createCommand()
+				->from('entrydrafts')
+				->where('entryId = :entryId', array(':entryId' => $draft->id))
+				->count('id');
+
+			$draft->name = Craft::t('Draft {num}', array('num' => $totalDrafts + 1));
+		}
+
+		$draftRecord->name = $draft->name;
 		$draftRecord->data = $this->_getRevisionData($draft);
+
 		$isNewDraft = !$draft->draftId;
 
 		if ($draftRecord->save())

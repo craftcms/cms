@@ -175,7 +175,7 @@ class EntriesController extends BaseController
 			{
 				case 'EntryDraft':
 				{
-					$variables['revisionLabel'] = Craft::t('Draft {id}', array('id' => $variables['draftId']));
+					$variables['revisionLabel'] = $variables['entry']->name;
 					break;
 				}
 
