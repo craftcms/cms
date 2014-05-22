@@ -623,6 +623,7 @@ table.editable thead tr th,
 table.editable tbody tr td:not(.textual) { padding: 4px 10px; }
 table.editable thead tr th { border-bottom: 1px solid rgba(0,0,0,0.15); }
 table.editable tbody tr td { vertical-align: middle; text-align: center; background: #fff; }
+table.editable tbody tr td.textual { vertical-align: top; }
 table.editable tbody tr td:not(:first-child) { @include border-left(1px solid rgba(0,0,0,0.07)); }
 table.editable tbody tr td.action { padding: 4px 7px; background: $bgcolor; }
 table.editable tbody tr td.action + td.action { @include border-left(none); @include padding-left(0); }
