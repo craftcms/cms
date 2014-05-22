@@ -34,9 +34,12 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 * @param int $entryId
 	 * @param int $offset
 	 * @return EntryDraftModel|null
+	 * @deprecated Deprecated in 2.1
 	 */
 	public function getDraftByOffset($entryId, $offset = 0)
 	{
+		craft()->deprecator->log('EntryRevisionsService::getDraftByOffset()', 'EntryRevisionsService::getDraftByOffset() has been deprecated.');
+
 		$draftRecord = EntryDraftRecord::model()->find(array(
 			'condition' => 'entryId = :entryId AND locale = :locale',
 			'params' => array(':entryId' => $entryId, ':locale' => craft()->i18n->getPrimarySiteLocale()),
