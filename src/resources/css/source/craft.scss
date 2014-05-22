@@ -148,7 +148,7 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .rightalign { @include alignright; }
 .centeralign { text-align: center !important; }
 .nowrap { white-space: nowrap; }
-.light { color: $mediumtextcolor; font-weight: normal; }
+.light { color: $mediumtextcolor !important; font-weight: normal; }
 
 .required:after { content: '*'; @include margin(-2px, 0, 0, 2px); font-size: 7px; color: $errorcolor; }
 
