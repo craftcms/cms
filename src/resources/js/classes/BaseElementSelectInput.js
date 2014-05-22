@@ -61,6 +61,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 				filter: (this.selectable ? $.proxy(function() {
 					return this.elementSelect.getSelectedItems();
 				}, this) : null),
+				ignoreHandleSelector: '.delete',
 				caboose: $('<div class="caboose"/>'),
 				onSortChange: (this.selectable ? $.proxy(function() {
 					this.elementSelect.resetItemOrder();

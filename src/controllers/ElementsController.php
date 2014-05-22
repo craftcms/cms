@@ -95,11 +95,13 @@ class ElementsController extends BaseController
 
 		$html = $elementType->getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context);
 
-		$totalVisible = $criteria->offset + count($criteria);
+		$totalElementsInBatch = count($criteria);
+		$totalVisible = $criteria->offset + $totalElementsInBatch;
 
 		if ($criteria->limit)
 		{
-			$more = ($criteria->total() > $totalVisible);
+			// We'll risk a pointless additional Ajax request in the unlikely event that there are exactly a factor of 50 elements, rather than running two separate element queries
+			$more = ($totalElementsInBatch == $criteria->limit);
 		}
 		else
 		{
