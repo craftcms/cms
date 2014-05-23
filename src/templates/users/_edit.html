@@ -290,6 +290,9 @@
 						{% if account.status == 'pending' %}
 							{{ "Unverified"|t }} 
 							<input type="button" class="btn small formsubmit" value="{{ 'Resend verification email'|t }}" data-action="users/sendActivationEmail">
+							{% if currentUser.admin %}
+								<input type="button" class="btn small formsubmit" value="{{ 'Activate user'|t }}" data-action="users/activateUser">
+							{% endif %}
 						{% elseif account.status == 'locked' %}
 							{{ "Locked"|t }} 
 							{% if currentUser.can('administrateUsers') %}<input type="button" class="btn small formsubmit" value="{{ 'Unlock'|t }}" data-action="users/unlockUser">{% endif %}

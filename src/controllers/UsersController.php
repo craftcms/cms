@@ -379,6 +379,34 @@ class UsersController extends BaseController
 	}
 
 	/**
+	 * Manually activates a user account.  Only admins have access.
+	 */
+	public function actionActivateUser()
+	{
+		$this->requireAdmin();
+		$this->requirePostRequest();
+
+		$userId = craft()->request->getRequiredPost('userId');
+		$user = craft()->users->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		if (craft()->users->activateUser($user))
+		{
+			craft()->userSession->setNotice(Craft::t('Successfully activated the user.'));
+		}
+		else
+		{
+			craft()->userSession->setError(Craft::t('There was a problem activating the user.'));
+		}
+
+		$this->redirectToPostedUrl();
+	}
+
+	/**
 	 * Edit a user account.
 	 *
 	 * @param array $variables
