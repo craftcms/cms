@@ -173,6 +173,41 @@ class GlobalsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns a global set by its handle.
+	 *
+	 * @param int $globalSetHandle
+	 * @param string|null $localeId
+	 * @return GlobalSetModel|null
+	 */
+	public function getSetByHandle($globalSetHandle, $localeId = null)
+	{
+		if (!$localeId)
+		{
+			$localeId = craft()->language;
+		}
+
+		if ($localeId == craft()->language)
+		{
+			$globalSets = $this->getAllSets();
+
+			foreach ($globalSets as $globalSet)
+			{
+				if ($globalSet->handle == $globalSetHandle)
+				{
+					return $globalSet;
+				}
+			}
+		}
+		else
+		{
+			$criteria = craft()->elements->getCriteria(ElementType::GlobalSet);
+			$criteria->locale = $localeId;
+			$criteria->handle = $globalSetHandle;
+			return $criteria->first();
+		}
+	}
+
+	/**
 	 * Saves a global set.
 	 *
 	 * @param GlobalSetModel $globalSet

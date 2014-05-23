@@ -59,4 +59,16 @@ class GlobalsVariable
 	{
 		return craft()->globals->getSetById($globalSetId, $localeId);
 	}
+
+	/**
+	 * Returns a global set by its handle.
+	 *
+	 * @param int $globalSetHandle
+	 * @param string|null $localeId
+	 * @return GlobalSetModel|null
+	 */
+	public function getSetByHandle($globalSetHandle, $localeId = null)
+	{
+		return craft()->globals->getSetByHandle($globalSetHandle, $localeId);
+	}
 }
