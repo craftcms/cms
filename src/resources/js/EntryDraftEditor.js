@@ -6,20 +6,21 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 	$revisionBtn: null,
 	$editBtn: null,
 	$form: null,
-	$nameInputContainer: null,
 	$nameInput: null,
 	$saveBtn: null,
 	$spinner: null,
 
 	draftId: null,
 	draftName: null,
+	draftNotes: null,
 	hud: null,
 	loading: false,
 
-	init: function(draftId, draftName)
+	init: function(draftId, draftName, draftNotes)
 	{
 		this.draftId = draftId;
 		this.draftName = draftName;
+		this.draftNotes = draftNotes;
 
 		this.$revisionBtn = $('#revision-btn');
 		this.$editBtn = $('#editdraft-btn');
@@ -32,16 +33,30 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 		if (!this.hud)
 		{
 			this.$form = $('<form method="post" accept-charset="UTF-8"/>');
-			var $field = $('<div class="field"><div class="heading"><label for="draft-name">'+Craft.t('Draft Name')+'</label></div></div>').appendTo(this.$form);
-			this.$nameInputContainer = $('<div class="input"/>').appendTo($field);
-			this.$nameInput = $('<input type="text" class="text" id="draft-name"/>').appendTo(this.$nameInputContainer).val(this.draftName);
+
+			// Add the Name field
+			var $field = $('<div class="field"><div class="heading"><label for="draft-name">'+Craft.t('Draft Name')+'</label></div></div>').appendTo(this.$form),
+				$inputContainer = $('<div class="input"/>').appendTo($field);
+			this.$nameInput = $('<input type="text" class="text fullwidth" id="draft-name"/>').appendTo($inputContainer).val(this.draftName);
+
+			// Add the Notes field
+			var $field = $('<div class="field"><div class="heading"><label for="draft-notes">'+Craft.t('Notes')+'</label></div></div>').appendTo(this.$form),
+				$inputContainer = $('<div class="input"/>').appendTo($field);
+			this.$notesInput = $('<textarea class="text fullwidth" id="draft-notes" rows="1"/>').appendTo($inputContainer).val(this.draftNotes);
+
+			// Add the button
 			var $buttonsContainer = $('<div class="buttons"/>').appendTo(this.$form);
 			this.$saveBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('Save')+'"/>').appendTo($buttonsContainer);
 			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsContainer);
 
 			this.hud = new Garnish.HUD(this.$editBtn, this.$form);
 
-			this.addListener(this.$nameInput, 'textchange', 'checkName');
+			new Garnish.NiceText(this.$notesInput);
+
+			this.addListener(this.$notesInput, 'keydown', 'onNotesKeydown');
+
+			this.addListener(this.$nameInput, 'textchange', 'checkValues');
+			this.addListener(this.$notesInput, 'textchange', 'checkValues');
 			this.addListener(this.$form, 'submit', 'save');
 
 			this.hud.on('show', $.proxy(this, 'onHudShow'));
@@ -76,14 +91,26 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 		this.$nameInput.val(this.draftName);
 	},
 
-	checkName: function()
+	onNotesKeydown: function(ev)
 	{
-		this.checkName._name = this.$nameInput.val();
+		if (ev.keyCode == Garnish.RETURN_KEY)
+		{
+			ev.preventDefault();
+			this.$form.submit();
+		}
+	},
 
-		if (this.checkName._name && this.checkName._name != this.draftName)
+	hasAnythingChanged: function()
+	{
+		return (this.$nameInput.val() != this.draftName || this.$notesInput.val() != this.draftNotes);
+	},
+
+	checkValues: function()
+	{
+		if (this.$nameInput.val() && this.hasAnythingChanged())
 		{
 			this.$saveBtn.removeClass('disabled');
-			return this.checkName._name;
+			return true;
 		}
 		else
 		{
@@ -101,9 +128,7 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 			return;
 		}
 
-		var name = this.checkName();
-
-		if (!name)
+		if (!this.checkValues())
 		{
 			this.shakeHud();
 			return;
@@ -115,10 +140,11 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 
 		var data = {
 			draftId: this.draftId,
-			name:    name
+			name:    this.$nameInput.val(),
+			notes:   this.$notesInput.val()
 		};
 
-		Craft.postActionRequest('entryRevisions/renameDraft', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('entryRevisions/updateDraftMeta', data, $.proxy(function(response, textStatus)
 		{
 			this.loading = false;
 			this.$saveBtn.removeClass('active');
@@ -130,8 +156,9 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 				{
 					this.$revisionBtn.text(name);
 					this.$revisionBtn.data('menubtn').menu.$options.filter('.sel').text(name);
-					this.draftName = name;
-					this.checkName();
+					this.draftName = data.name;
+					this.draftNotes = data.notes;
+					this.checkValues();
 					this.hud.hide();
 				}
 				else

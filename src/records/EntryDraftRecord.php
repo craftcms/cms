@@ -25,6 +25,7 @@ class EntryDraftRecord extends BaseRecord
 		return array(
 			'locale' => array(AttributeType::Locale, 'required' => true),
 			'name'   => array(AttributeType::String, 'required' => true),
+			'notes'  => array(AttributeType::String, 'column' => ColumnType::TinyText),
 			'data'   => array(AttributeType::Mixed, 'required' => true, 'column' => ColumnType::MediumText),
 		);
 	}

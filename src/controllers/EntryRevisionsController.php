@@ -63,7 +63,7 @@ class EntryRevisionsController extends BaseController
 	/**
 	 * Renames a draft.
 	 */
-	public function actionRenameDraft()
+	public function actionUpdateDraftMeta()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -85,6 +85,7 @@ class EntryRevisionsController extends BaseController
 		}
 
 		$draft->name = $name;
+		$draft->revisionNotes = craft()->request->getPost('notes');
 
 		if (craft()->entryRevisions->saveDraft($draft, false))
 		{

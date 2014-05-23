@@ -141,6 +141,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 		}
 
 		$draftRecord->name = $draft->name;
+		$draftRecord->notes = $draft->revisionNotes;
 		$draftRecord->data = $this->_getRevisionData($draft);
 
 		$isNewDraft = !$draft->draftId;
@@ -178,7 +179,10 @@ class EntryRevisionsService extends BaseApplicationComponent
 		}
 
 		// Set the version notes
-		$draft->versionNotes = Craft::t('Published draft “{name}”.', array('name' => $draft->name));
+		if (!$draft->revisionNotes)
+		{
+			$draft->revisionNotes = Craft::t('Published draft “{name}”.', array('name' => $draft->name));
+		}
 
 		if (craft()->entries->saveEntry($draft))
 		{
@@ -351,7 +355,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 		$versionRecord->locale = $entry->locale;
 		$versionRecord->num = $totalVersions + 1;
 		$versionRecord->data = $this->_getRevisionData($entry);
-		$versionRecord->notes = $entry->versionNotes;
+		$versionRecord->notes = $entry->revisionNotes;
 		return $versionRecord->save();
 	}
 
@@ -370,7 +374,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 		}
 
 		// Set the version notes
-		$version->versionNotes = Craft::t('Reverted version {num}.', array('num' => $version->num));
+		$version->revisionNotes = Craft::t('Reverted version {num}.', array('num' => $version->num));
 
 		if (craft()->entries->saveEntry($version))
 		{
