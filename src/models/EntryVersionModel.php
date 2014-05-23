@@ -39,7 +39,7 @@ class EntryVersionModel extends BaseEntryRevisionModel
 		$fieldContent = isset($entryData['fields']) ? $entryData['fields'] : null;
 		$attributes['versionId'] = $attributes['id'];
 		$attributes['id'] = $attributes['entryId'];
-		$attributes['versionNotes'] = $attributes['notes'];
+		$attributes['revisionNotes'] = $attributes['notes'];
 		$title = $entryData['title'];
 		unset($attributes['data'], $entryData['fields'], $attributes['entryId'], $attributes['notes'], $entryData['title']);
 

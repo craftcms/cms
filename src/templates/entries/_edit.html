@@ -137,10 +137,10 @@
 								data-redirect="entries">
 							<input type="hidden" name="localeId" value="{{ entry.locale }}" />
 						</div>
-					{% elseif isVersion and entry.versionNotes %}
+					{% elseif isVersion and entry.revisionNotes %}
 						<div class="pane">
 							<h6>{{ "Version Notes"|t }}</h6>
-							<p class="light">{{ entry.versionNotes }}</p>
+							<p class="light">{{ entry.revisionNotes }}</p>
 						</div>
 					{% endif %}
 				{% endif %}
@@ -230,7 +230,7 @@
 									</td>
 									{% if CraftEdition >= CraftClient %}
 										<td>
-											<input type="text" name="versionNotes" class="fullwidth textline" placeholder="{{ 'Notes about your changes'|t }}" autocomplete="off">
+											<input type="text" name="revisionNotes" class="fullwidth textline" placeholder="{{ 'Notes about your changes'|t }}" autocomplete="off">
 										</td>
 									{% endif %}
 								</tr>

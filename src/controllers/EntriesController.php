@@ -723,8 +723,8 @@ class EntriesController extends BaseController
 		$fieldsLocation = craft()->request->getParam('fieldsLocation', 'fields');
 		$entry->setContentFromPost($fieldsLocation);
 
-		$entry->parentId     = craft()->request->getPost('parentId');
-		$entry->versionNotes = craft()->request->getPost('versionNotes');
+		$entry->parentId      = craft()->request->getPost('parentId');
+		$entry->revisionNotes = craft()->request->getPost('revisionNotes');
 
 		return $entry;
 	}
