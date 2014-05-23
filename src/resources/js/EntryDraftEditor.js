@@ -154,8 +154,8 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 			{
 				if (response.success)
 				{
-					this.$revisionBtn.text(name);
-					this.$revisionBtn.data('menubtn').menu.$options.filter('.sel').text(name);
+					this.$revisionBtn.text(data.name);
+					this.$revisionBtn.data('menubtn').menu.$options.filter('.sel').text(data.name);
 					this.draftName = data.name;
 					this.draftNotes = data.notes;
 					this.checkValues();
