@@ -149,7 +149,12 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	public function getSetById($globalSetId, $localeId = null)
 	{
-		if (!$localeId || $localeId == craft()->language)
+		if (!$localeId)
+		{
+			$localeId = craft()->language;
+		}
+
+		if ($localeId == craft()->language)
 		{
 			if (!isset($this->_allGlobalSets))
 			{

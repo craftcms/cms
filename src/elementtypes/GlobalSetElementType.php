@@ -45,7 +45,6 @@ class GlobalSetElementType extends BaseElementType
 	{
 		return array(
 			'order' => array(AttributeType::String, 'default' => 'name'),
-			'setId' => AttributeType::Number,
 		);
 	}
 
