@@ -59,10 +59,10 @@ Craft.RichTextInput = Garnish.Base.extend(
 			from_assets:
 			{
 				title: Craft.t('Choose image'),
-				callback: function()
+				callback: $.proxy(function()
 				{
-					this.selectionSave();
-	                var editor = this;
+					this.redactor.selectionSave();
+					var editor = this.redactor;
 					if (typeof this.assetSelectionModal == 'undefined')
 					{
 						this.assetSelectionModal = Craft.createElementSelectorModal('Asset', {
@@ -73,7 +73,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 							{
 								if (assets.length)
 								{
-	                                editor.selectionRestore();
+									editor.selectionRestore();
 									for (var i = 0; i < assets.length; i++)
 									{
 										var asset = assets[i],
@@ -99,7 +99,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 					{
 						this.assetSelectionModal.show();
 					}
-				}
+				}, this)
 			}
 		});
 
@@ -108,11 +108,11 @@ Craft.RichTextInput = Garnish.Base.extend(
 			link_entry:
 			{
 				title: Craft.t('Link to an entry'),
-				callback: function()
+				callback: $.proxy(function()
 				{
-					this.selectionSave();
+					this.redactor.selectionSave();
 
-	                var editor = this;
+					var editor = this.redactor;
 					if (typeof this.entrySelectionModal == 'undefined')
 					{
 						this.entrySelectionModal = Craft.createElementSelectorModal('Entry', {
@@ -123,33 +123,33 @@ Craft.RichTextInput = Garnish.Base.extend(
 							{
 								if (entries.length)
 								{
-	                                editor.selectionRestore();
-	                                var entry     = entries[0],
-	                                	url       = entry.url+'#entry:'+entry.id,
-	                                	selection = editor.getSelectionText(),
-	                                	title = selection.length > 0 ? selection : entry.label;
-	                                editor.insertNode($('<a href="'+url+'">'+title+'</a>')[0]);
-	                                editor.sync();
-	                            }
-	                            editor.dropdownHideAll();
+									editor.selectionRestore();
+									var entry     = entries[0],
+										url       = entry.url+'#entry:'+entry.id,
+										selection = editor.getSelectionText(),
+										title = selection.length > 0 ? selection : entry.label;
+									editor.insertNode($('<a href="'+url+'">'+title+'</a>')[0]);
+									editor.sync();
+								}
+								editor.dropdownHideAll();
 							},
-	                        closeOtherModals: false
+							closeOtherModals: false
 						});
 					}
 					else
 					{
 						this.entrySelectionModal.show();
 					}
-				}
+				}, this)
 			},
 			link_asset:
 			{
 				title: Craft.t('Link to an asset'),
-				callback: function()
+				callback: $.proxy(function()
 				{
-					this.selectionSave();
+					this.redactor.selectionSave();
 
-					var editor = this;
+					var editor = this.redactor;
 					if (typeof this.assetLinkSelectionModal == 'undefined')
 					{
 						this.assetLinkSelectionModal = Craft.createElementSelectorModal('Asset', {
@@ -177,7 +177,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 					{
 						this.assetLinkSelectionModal.show();
 					}
-				}
+				}, this)
 			},
 			link:
 			{
