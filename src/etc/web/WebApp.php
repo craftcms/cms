@@ -149,7 +149,13 @@ class WebApp extends \CWebApplication
 		{
 			if ($this->request->isCpRequest())
 			{
-				throw new HttpException(200, Craft::t('Craft does not support backtracking to this version.'));
+				$version = craft()->getVersion();
+				$build = craft()->getBuild();
+				$url = "http://download.buildwithcraft.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
+
+				throw new HttpException(200, Craft::t('@@@appName@@@ does not support backtracking to this version. Plesase upload @@@appName@@@ {url} or later.', array(
+					'url' => '<a href="'.$url.'">build '.$build.'</a>',
+				)));
 			}
 			else
 			{
