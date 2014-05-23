@@ -159,6 +159,13 @@ class ElementsService extends BaseApplicationComponent
 				$elementIds = $this->_getElementIdsFromQuery($query);
 				$scoredSearchResults = ($criteria->order == 'score');
 				$filteredElementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, $scoredSearchResults);
+
+				// No results?
+				if (!$filteredElementIds)
+				{
+					return array();
+				}
+
 				$query->andWhere(array('in', 'elements.id', $filteredElementIds));
 			}
 
