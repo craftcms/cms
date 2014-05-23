@@ -129,10 +129,11 @@ class SectionsController extends BaseController
 		$section = new SectionModel();
 
 		// Shared attributes
-		$section->id         = craft()->request->getPost('sectionId');
-		$section->name       = craft()->request->getPost('name');
-		$section->handle     = craft()->request->getPost('handle');
-		$section->type       = craft()->request->getPost('type');
+		$section->id               = craft()->request->getPost('sectionId');
+		$section->name             = craft()->request->getPost('name');
+		$section->handle           = craft()->request->getPost('handle');
+		$section->type             = craft()->request->getPost('type');
+		$section->enableVersioning = craft()->request->getPost('enableVersioning', true);
 
 		// Type-specific attributes
 		$section->hasUrls    = (bool) craft()->request->getPost('types.'.$section->type.'.hasUrls', true);

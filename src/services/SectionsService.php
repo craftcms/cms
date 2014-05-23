@@ -268,9 +268,10 @@ class SectionsService extends BaseApplicationComponent
 		}
 
 		// Shared attributes
-		$sectionRecord->name    = $section->name;
-		$sectionRecord->handle  = $section->handle;
-		$sectionRecord->type    = $section->type;
+		$sectionRecord->name             = $section->name;
+		$sectionRecord->handle           = $section->handle;
+		$sectionRecord->type             = $section->type;
+		$sectionRecord->enableVersioning = $section->enableVersioning;
 
 		if (($isNewSection || $section->type != $oldSection->type) && !$this->canHaveMore($section->type))
 		{
@@ -1074,7 +1075,7 @@ class SectionsService extends BaseApplicationComponent
 	private function _createSectionQuery()
 	{
 		return craft()->db->createCommand()
-			->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.hasUrls, sections.template, structures.maxLevels')
+			->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.hasUrls, sections.template, sections.enableVersioning, structures.maxLevels')
 			->leftJoin('structures structures', 'structures.id = sections.structureId')
 			->from('sections sections')
 			->order('name');

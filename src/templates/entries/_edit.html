@@ -228,7 +228,7 @@
 											</div>
 										</div>
 									</td>
-									{% if CraftEdition >= CraftClient %}
+									{% if CraftEdition >= CraftClient and section.enableVersioning %}
 										<td>
 											<input type="text" name="revisionNotes" class="fullwidth textline" placeholder="{{ 'Notes about your changes'|t }}" autocomplete="off">
 										</td>

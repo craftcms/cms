@@ -21,11 +21,12 @@ class SectionRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
-			'name'      => array(AttributeType::Name, 'required' => true),
-			'handle'    => array(AttributeType::Handle, 'required' => true),
-			'type'      => array(AttributeType::Enum, 'values' => array(SectionType::Single, SectionType::Channel, SectionType::Structure), 'default' => SectionType::Channel, 'required' => true),
-			'hasUrls'   => array(AttributeType::Bool, 'default' => true),
-			'template'  => AttributeType::Template,
+			'name'             => array(AttributeType::Name, 'required' => true),
+			'handle'           => array(AttributeType::Handle, 'required' => true),
+			'type'             => array(AttributeType::Enum, 'values' => array(SectionType::Single, SectionType::Channel, SectionType::Structure), 'default' => SectionType::Channel, 'required' => true),
+			'hasUrls'          => array(AttributeType::Bool, 'default' => true),
+			'template'         => AttributeType::Template,
+			'enableVersioning' => AttributeType::Bool,
 		);
 	}
 

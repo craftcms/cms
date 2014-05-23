@@ -36,6 +36,7 @@ class SectionModel extends BaseModel
 			'hasUrls'                   => array(AttributeType::Bool, 'default' => true),
 			'template'                  => AttributeType::String,
 			'maxLevels'                 => AttributeType::Number,
+			'enableVersioning'          => array(AttributeType::Bool, 'default' => true),
 		);
 	}
 

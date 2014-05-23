@@ -157,7 +157,7 @@ class EntriesService extends BaseApplicationComponent
 					}
 
 					// Save a new version
-					if (craft()->getEdition() >= Craft::Client)
+					if (craft()->getEdition() >= Craft::Client && $section->enableVersioning)
 					{
 						craft()->entryRevisions->saveVersion($entry);
 					}
