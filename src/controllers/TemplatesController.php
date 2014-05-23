@@ -54,19 +54,6 @@ class TemplatesController extends BaseController
 		));
 	}
 
-	/**
-	 * Renders the Breakpoint Update notification template.
-	 */
-	public function actionBreakpointUpdateNotification()
-	{
-		$this->_render('_special/breakpointupdate', array(
-			'minBuild'      => CRAFT_MIN_BUILD_REQUIRED,
-			'minBuildURL'   => CRAFT_MIN_BUILD_URL,
-			'targetVersion' => CRAFT_VERSION,
-			'targetBuild'   => CRAFT_BUILD
-		));
-	}
-
 	public function actionRequirementsCheck()
 	{
 		// Run the requirements checker
