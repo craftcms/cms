@@ -159,7 +159,7 @@ return array(
 	'includeBaseUriInCpUrls' => true,
 
 	/**
-	 *The template filenames Craft will look for within a directory to represent the directory’s “index” template when matching a template path to a file on the front end.
+	 * The template filenames Craft will look for within a directory to represent the directory’s “index” template when matching a template path to a file on the front end.
 	 */
 	'indexTemplateFilenames' => array('index'),
 
@@ -169,6 +169,11 @@ return array(
 	 * @see http://www.php.net/manual/en/dateinterval.construct.php
 	 */
 	'invalidLoginWindowDuration' => 'PT1H',
+
+	/**
+	 * Whether the site is currently online or not. If set to false or true, will take precedence over what is set in Settings->General->System Status in the CP.
+	 */
+	'isSystemOn' => '',
 
 	/**
 	 * The URI Craft should use for user login.  Note that this only affects front-end site requests.

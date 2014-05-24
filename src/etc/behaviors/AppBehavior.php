@@ -343,6 +343,11 @@ class AppBehavior extends BaseBehavior
 	 */
 	public function isSystemOn()
 	{
+		if (is_bool($on = craft()->config->get('isSystemOn')))
+		{
+			return $on;
+		}
+
 		return (bool) $this->getInfo('on');
 	}
 
