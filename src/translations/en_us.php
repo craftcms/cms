@@ -32,6 +32,7 @@ return array (
 		"{{link}}\n\n" .
 		"If you weren't expecting this email, just ignore it.",
 
+	'test_email_heading' => 'When you are testing your email settings:',
 	'test_email_subject' => 'This is a test email from Craft',
 	'test_email_body' => "Hey {{user.friendlyName}},\n\n".
 		"Congratulations! Craft was successfully able to send an email.\n\n".
