@@ -154,6 +154,11 @@ return array(
 	'generateTransformsBeforePageLoad' => false,
 
 	/**
+	 * By default Craft will auto-detect if Imagick is installed and fallback to GD if not. You can explicitly set either 'imagick' or 'gd' here to override that behavior..
+	 */
+	'imageExtension' => 'auto',
+
+	/**
 	 * Whether Craft should include the base URI leading up to index.php in CP URLs, where the base URL is determined dynamically rather than configured.
 	 */
 	'includeBaseUriInCpUrls' => true,
