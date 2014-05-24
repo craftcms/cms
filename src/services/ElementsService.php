@@ -159,7 +159,20 @@ class ElementsService extends BaseApplicationComponent
 				$elementIds = $this->_getElementIdsFromQuery($query);
 				$scoredSearchResults = ($criteria->order == 'score');
 				$filteredElementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, $scoredSearchResults);
+
+				// No results?
+				if (!$filteredElementIds)
+				{
+					return array();
+				}
+
 				$query->andWhere(array('in', 'elements.id', $filteredElementIds));
+
+				if ($scoredSearchResults)
+				{
+					// Order the elements in the exact order that SearchService returned them in
+					$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $filteredElementIds));
+				}
 			}
 
 			if ($justIds)
@@ -216,18 +229,6 @@ class ElementsService extends BaseApplicationComponent
 
 			if ($results)
 			{
-				if ($criteria->search && $scoredSearchResults)
-				{
-					$searchPositions = array();
-
-					foreach ($results as $result)
-					{
-						$searchPositions[] = array_search($result['id'], $filteredElementIds);
-					}
-
-					array_multisort($searchPositions, $results);
-				}
-
 				if ($justIds)
 				{
 					foreach ($results as $result)
