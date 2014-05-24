@@ -46,6 +46,11 @@ return array(
 	'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,mid,mov,mp3,mp4,m4a,m4v,mpc,mpeg,mpg,ods,odt,ogg,ogv,pdf,png,ppt,pptx,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,svg,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vsd,wav,webm,wma,wmv,xls,xlsx,zip',
 
 	/**
+	 * Whether or not to allow uppercase letters in the slug. Defaults to false.
+	 */
+	'allowUppercaseInSlug' => false,
+
+	/**
 	 * If set to true, will automatically log the user in after successfull account activation.
 	 */
 	'autoLoginAfterAccountActivation' => false,
@@ -154,12 +159,17 @@ return array(
 	'generateTransformsBeforePageLoad' => false,
 
 	/**
+	 * By default Craft will auto-detect if Imagick is installed and fallback to GD if not. You can explicitly set either 'imagick' or 'gd' here to override that behavior..
+	 */
+	'imageDriver' => 'auto',
+
+	/**
 	 * Whether Craft should include the base URI leading up to index.php in CP URLs, where the base URL is determined dynamically rather than configured.
 	 */
 	'includeBaseUriInCpUrls' => true,
 
 	/**
-	 *The template filenames Craft will look for within a directory to represent the directory’s “index” template when matching a template path to a file on the front end.
+	 * The template filenames Craft will look for within a directory to represent the directory’s “index” template when matching a template path to a file on the front end.
 	 */
 	'indexTemplateFilenames' => array('index'),
 
@@ -169,6 +179,11 @@ return array(
 	 * @see http://www.php.net/manual/en/dateinterval.construct.php
 	 */
 	'invalidLoginWindowDuration' => 'PT1H',
+
+	/**
+	 * Whether the site is currently online or not. If set to false or true, will take precedence over what is set in Settings->General->System Status in the CP.
+	 */
+	'isSystemOn' => '',
 
 	/**
 	 * The URI Craft should use for user login.  Note that this only affects front-end site requests.
