@@ -373,7 +373,7 @@ class TemplateCacheService extends BaseApplicationComponent
 		craft()->cache->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), static::$_lastCleanupDateCacheDuration);
 		$this->_deletedExpiredCaches = true;
 
-		return $affectedRows;
+		return (bool) $affectedRows;
 	}
 
 	/**
