@@ -39,8 +39,11 @@ class ElementHelper
 		// Remove inner-word punctuation.
 		$slug = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $slug);
 
-		// Make it lowercase
-		$slug = StringHelper::toLowerCase($slug, 'UTF-8');
+		if (craft()->config->get('allowUppercaseInSlug') === false)
+		{
+			// Make it lowercase
+			$slug = StringHelper::toLowerCase($slug, 'UTF-8');
+		}
 
 		// Get the "words".  Split on anything that is not a unicode letter or number.
 		// Periods, underscores and hyphens get a pass.

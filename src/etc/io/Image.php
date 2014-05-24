@@ -19,7 +19,7 @@ class Image
 
 	function __construct()
 	{
-		$extension = mb_strtolower(craft()->config->get('imageExtension'));
+		$extension = mb_strtolower(craft()->config->get('imageDriver'));
 
 		// If it's explicitly set, take their word for it.
 		if ($extension === 'gd')

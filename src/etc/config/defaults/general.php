@@ -46,6 +46,11 @@ return array(
 	'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,mid,mov,mp3,mp4,m4a,m4v,mpc,mpeg,mpg,ods,odt,ogg,ogv,pdf,png,ppt,pptx,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,svg,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vsd,wav,webm,wma,wmv,xls,xlsx,zip',
 
 	/**
+	 * Whether or not to allow uppercase letters in the slug. Defaults to false.
+	 */
+	'allowUppercaseInSlug' => false,
+
+	/**
 	 * If set to true, will automatically log the user in after successfull account activation.
 	 */
 	'autoLoginAfterAccountActivation' => false,
@@ -156,7 +161,7 @@ return array(
 	/**
 	 * By default Craft will auto-detect if Imagick is installed and fallback to GD if not. You can explicitly set either 'imagick' or 'gd' here to override that behavior..
 	 */
-	'imageExtension' => 'auto',
+	'imageDriver' => 'auto',
 
 	/**
 	 * Whether Craft should include the base URI leading up to index.php in CP URLs, where the base URL is determined dynamically rather than configured.
