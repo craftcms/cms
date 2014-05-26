@@ -744,6 +744,35 @@ class SectionsService extends BaseApplicationComponent
 		}
 	}
 
+	/**
+	 * Returns whether a section's entries have URLs, and if the section's template path is valid.
+	 *
+	 * @param SectionModel $section
+	 * @return bool
+	 */
+	public function isSectionTemplateValid(SectionModel $section)
+	{
+		if ($section->hasUrls)
+		{
+			// Set Craft to the site template path
+			$oldTemplatesPath = craft()->path->getTemplatesPath();
+			craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
+
+			// Does the template exist?
+			$templateExists = craft()->templates->doesTemplateExist($section->template);
+
+			// Restore the original template path
+			craft()->path->setTemplatesPath($oldTemplatesPath);
+
+			if ($templateExists)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	// Entry types
 
 	/**
