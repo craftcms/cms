@@ -8,6 +8,8 @@ var CP = Garnish.Base.extend(
 {
 	$alerts: null,
 	$header: null,
+	$headerActionsList: null,
+	$siteName: null,
 	$nav: null,
 
 	$overflowNavMenuItem: null,
@@ -41,6 +43,8 @@ var CP = Garnish.Base.extend(
 		// Find all the key elements
 		this.$alerts = $('#alerts');
 		this.$header = $('#header');
+		this.$headerActionsList = this.$header.find('#header-actions');
+		this.$siteName = this.$header.find('h2');
 		this.$nav = $('#nav');
 		this.$notificationWrapper = $('#notifications-wrapper');
 		this.$notificationContainer = $('#notifications');
@@ -48,6 +52,10 @@ var CP = Garnish.Base.extend(
 		this.$content = $('#content');
 		this.$collapsibleTables = this.$content.find('table.collapsible');
 		this.$upgradePromo = $('#upgradepromo > a');
+
+		// Keep the site name contained
+		this.onActionItemListResize();
+		this.addListener(this.$headerActionsList, 'resize', 'onActionItemListResize');
 
 		// Find all the nav items
 		this.navItems = [];
@@ -169,6 +177,11 @@ var CP = Garnish.Base.extend(
 
 		// Update any responsive tables
 		this.updateResponsiveTables();
+	},
+
+	onActionItemListResize: function()
+	{
+		this.$siteName.css('width', 'calc(100% - '+this.$headerActionsList.width()+'px)');
 	},
 
 	updateResponsiveNav: function()
@@ -491,7 +504,7 @@ var CP = Garnish.Base.extend(
 	displayUpdateInfo: function(info)
 	{
 		// Remove the existing header badge, if any
-		$('#header-actions > li.updates').remove();
+		this.$headerActionsList.children('li.updates').remove();
 
 		if (info.total)
 		{
@@ -509,7 +522,7 @@ var CP = Garnish.Base.extend(
 				'<a data-icon="newstamp" href="'+Craft.getUrl('updates')+'" title="'+updateText+'">' +
 					'<span>'+info.total+'</span>' +
 				'</a>' +
-			'</li>').prependTo($('#header-actions'));
+			'</li>').prependTo(this.$headerActionsList);
 
 			// Footer link
 			$('#footer-updates').text(updateText);
@@ -654,7 +667,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 
 	init: function()
 	{
-		this.$li = $('<li/>').prependTo($('#header-actions'));
+		this.$li = $('<li/>').prependTo(Craft.cp.$headerActionsList);
 		this.$a = $('<a id="taskicon"/>').appendTo(this.$li);
 
 		this._canvasSupported = !!(document.createElement('canvas').getContext);
