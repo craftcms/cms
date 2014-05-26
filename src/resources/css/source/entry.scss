@@ -17,8 +17,11 @@ h1 span.draft span { display: none; }
 #settings .select,
 #settings .select select { width: 100%; }
 
+#view-btns { display: block; position: relative; }
 #livepreview-btn { display: block; position: relative; }
+.btngroup #livepreview-btn { @include margin-right(40px); }
 #livepreview-spinner { position: absolute; top: 3px; @include right(7px); }
+#share-btn { position: absolute; top: 0; @include right(0); width: 41px; }
 
 #livepreview-editor,
 #livepreview-iframe-container { position: fixed; top: 0; height: 100%; background: #fff; background-clip: padding-box; }

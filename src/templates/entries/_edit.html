@@ -32,10 +32,17 @@
 			<div class="item" data-position="right" data-colspan="1">
 
 				{% if showPreviewBtn %}
-					<div id="livepreview-btn" class="btn big" data-icon="view">
-						{{ "Live Preview"|t }}
-						<div id="livepreview-spinner" class="spinner hidden"></div>
-					</div>
+					{% if shareUrl is defined %}
+						<div id="view-btns" class="btngroup">
+					{% endif %}
+							<div id="livepreview-btn" class="btn big" data-icon="view">
+								{{ "Live Preview"|t }}
+								<div id="livepreview-spinner" class="spinner hidden"></div>
+							</div>
+					{% if shareUrl is defined %}
+							<a href="{{ shareUrl }}" id="share-btn" class="btn big" data-icon="share" title="{{ 'View this entry on your website'|t }}" target="_blank"></a>
+						</div>
+					{% endif %}
 				{% endif %}
 
 				{% if craft.isLocalized() and section.getLocales() | length > 1 %}

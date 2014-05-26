@@ -6,6 +6,8 @@ namespace Craft;
  */
 class EntriesController extends BaseController
 {
+	protected $allowAnonymous = array('actionViewSharedEntry');
+
 	/**
 	 * Edit an entry.
 	 *
@@ -502,6 +504,104 @@ class EntriesController extends BaseController
 				));
 			}
 		}
+	}
+
+	/**
+	 * Redirects the client to a URL for viewing an entry/draft/version on the front end.
+	 *
+	 * @throws HttpException
+	 * @param mixed $entryId
+	 * @param mixed $locale
+	 * @param mixed $draftId
+	 * @param mixed $versionId
+	 */
+	public function actionShareEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
+	{
+		if ($entryId)
+		{
+			$entry = craft()->entries->getEntryById($entryId, $locale);
+
+			if (!$entry)
+			{
+				throw new HttpException(404);
+			}
+
+			$params = array('entryId' => $entryId, 'locale' => $entry->locale);
+		}
+		else if ($draftId)
+		{
+			$entry = craft()->entryRevisions->getDraftById($draftId);
+
+			if (!$entry)
+			{
+				throw new HttpException(404);
+			}
+
+			$params = array('draftId' => $draftId);
+		}
+		else if ($versionId)
+		{
+			$entry = craft()->entryRevisions->getVersionById($versionId);
+
+			if (!$entry)
+			{
+				throw new HttpException(404);
+			}
+
+			$params = array('versionId' => $versionId);
+		}
+		else
+		{
+			throw new HttpException(404);
+		}
+
+		// Make sure they have permission to be viewing this entry
+		$this->_enforceEditEntryPermissions($entry);
+
+		// Make sure the entry actually can be viewed
+		if (!craft()->sections->isSectionTemplateValid($entry->getSection()))
+		{
+			throw new HttpException(404);
+		}
+
+		// Create the token and redirect to the entry URL with the token in place
+		$token = craft()->tokens->createToken(array('action' => 'entries/viewSharedEntry', 'params' => $params));
+		$url = UrlHelper::getUrlWithToken($entry->getUrl(), $token);
+		craft()->request->redirect($url);
+	}
+
+	/**
+	 * Shows an entry/draft/version based on a token.
+	 *
+	 * @throws HttpException
+	 * @param mixed $entryId
+	 * @param mixed $locale
+	 * @param mixed $draftId
+	 * @param mixed $versionId
+	 */
+	public function actionViewSharedEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
+	{
+		$this->requireToken();
+
+		if ($entryId)
+		{
+			$entry = craft()->entries->getEntryById($entryId, $locale);
+		}
+		else if ($draftId)
+		{
+			$entry = craft()->entryRevisions->getDraftById($draftId);
+		}
+		else if ($versionId)
+		{
+			$entry = craft()->entryRevisions->getVersionById($versionId);
+		}
+
+		if (!$entry)
+		{
+			throw new HttpException(404);
+		}
+
+		$this->_showEntry($entry);
 	}
 
 	/**
