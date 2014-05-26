@@ -332,6 +332,11 @@ class UserElementType extends BaseElementType
 		{
 			$query->andWhere(DbHelper::parseParam('users.preferredLocale', $criteria->preferredLocale, $query->params));
 		}
+
+		if ($criteria->lastLoginDate)
+		{
+			$query->andWhere(DbHelper::parseDateParam('users.lastLoginDate', $criteria->lastLoginDate, $query->params));
+		}
 	}
 
 	/**
