@@ -7,8 +7,91 @@ namespace Craft;
 class UrlHelper
 {
 	/**
+	 * Returns whether a given string appears to be an absolute URL.
+	 *
+	 * @static
+	 * @param string $url
+	 * @return bool
+	 */
+	public static function isAbsoluteUrl($url)
+	{
+		return (strncmp('http://', $url, 7) === 0 || strncmp('https://', $url, 8) === 0);
+	}
+
+	/**
+	 * Returns whether a given string appears to be a protocol-relative URL.
+	 *
+	 * @static
+	 * @param string $url
+	 * @return bool
+	 */
+	public static function isProtocolRelativeUrl($url)
+	{
+		return (strncmp('//', $url, 2) === 0);
+	}
+
+	/**
+	 * Returns whether a given string appears to be a root-relative URL.
+	 *
+	 * @static
+	 * @param string $url
+	 * @return bool
+	 */
+	public static function isRootRelativeUrl($url)
+	{
+		return (strncmp('/', $url, 1) === 0 && !static::isProtocolRelativeUrl($url));
+	}
+
+	/**
+	 * Returns whether a given string appears to be a "full" URL (absolute or root-relative).
+	 *
+	 * @static
+	 * @param string $url
+	 * @return bool
+	 */
+	public static function isFullUrl($url)
+	{
+		return (static::isAbsoluteUrl($url) || static::isRootRelativeUrl($url));
+	}
+
+	/**
+	 * Returns a URL with additional query string parameters.
+	 *
+	 * @static
+	 * @param string $url
+	 * @param array|string $params
+	 * @return string
+	 */
+	public static function getUrlWithParams($url, $params)
+	{
+		$params = static::_normalizeParams($params, $anchor);
+
+		if ($params)
+		{
+			if (mb_strpos($url, '?') !== false)
+			{
+				$url .= '&';
+			}
+			else
+			{
+				$url .= '?';
+			}
+
+			$url .= $params;
+		}
+
+		if ($anchor)
+		{
+			$url .= $anchor;
+		}
+
+		return $url;
+	}
+
+	/**
 	 * Returns a URL with a specific protocol.
 	 *
+	 * @static
 	 * @param string $url
 	 * @param string $protocol
 	 * @return string
@@ -20,19 +103,18 @@ class UrlHelper
 			return $url;
 		}
 
-		// Is the site URL protocol relative?
-		if (strncmp('//', $url, 2) === 0)
+		if (static::isProtocolRelativeUrl($url))
 		{
 			return $protocol.':'.$url;
 		}
-
-		// Is it root relative?
-		if (strncmp('/', $url, 1) === 0)
+		else if (static::isRootRelativeUrl($url))
 		{
 			return craft()->request->getHostInfo($protocol).$url;
 		}
-
-		return preg_replace('/^https?:/', $protocol.':', $url);
+		else
+		{
+			return preg_replace('/^https?:/', $protocol.':', $url);
+		}
 	}
 
 	/**
@@ -48,8 +130,18 @@ class UrlHelper
 	public static function getUrl($path = '', $params = null, $protocol = '', $mustShowScriptName = false)
 	{
 		// Return $path if it appears to be an absolute URL.
-		if (mb_strpos($path, '://') !== false || strncmp($path, '//', 2) == 0)
+		if (static::isFullUrl($path))
 		{
+			if ($params)
+			{
+				$path = static::getUrlWithParams($path, $params);
+			}
+
+			if ($protocol)
+			{
+				$path = static::getUrlWithProtocol($path, $protocol);
+			}
+
 			return $path;
 		}
 
@@ -168,34 +260,8 @@ class UrlHelper
 	 */
 	private static function _getUrl($path, $params, $protocol, $dynamicBaseUrl, $mustShowScriptName)
 	{
-		$anchor = '';
-
 		// Normalize the params
-		if (is_array($params))
-		{
-			foreach ($params as $name => $value)
-			{
-				if (!is_numeric($name))
-				{
-					if ($name == '#')
-					{
-						$anchor = '#'.$value;
-					}
-					else if ($value !== null && $value !== '')
-					{
-						$params[] = $name.'='.$value;
-					}
-
-					unset($params[$name]);
-				}
-			}
-
-			$params = implode('&', array_filter($params));
-		}
-		else
-		{
-			$params = trim($params, '&?');
-		}
+		$params = static::_normalizeParams($params, $anchor);
 
 		// Were there already any query string params in the path?
 		if (($qpos = strpos($path, '?')) !== false)
@@ -268,5 +334,45 @@ class UrlHelper
 		}
 
 		return $url;
+	}
+
+	/**
+	 * Normalizes query string params.
+	 *
+	 * @static
+	 * @access private
+	 * @param string|array|null $params
+	 * @param string|null       &$anchor
+	 * @return string
+	 */
+	private static function _normalizeParams($params, &$anchor = '')
+	{
+		if (is_array($params))
+		{
+			foreach ($params as $name => $value)
+			{
+				if (!is_numeric($name))
+				{
+					if ($name == '#')
+					{
+						$anchor = '#'.$value;
+					}
+					else if ($value !== null && $value !== '')
+					{
+						$params[] = $name.'='.$value;
+					}
+
+					unset($params[$name]);
+				}
+			}
+
+			$params = implode('&', array_filter($params));
+		}
+		else
+		{
+			$params = trim($params, '&?');
+		}
+
+		return $params;
 	}
 }
