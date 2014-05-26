@@ -180,13 +180,9 @@ abstract class BaseRecord extends \CActiveRecord
 				}
 				case AttributeType::Mixed:
 				{
-					if (!empty($value) && is_string($value))
+					if (is_string($value) && mb_strlen($value) && ($value[0] == '[' || $value[0] == '{'))
 					{
 						$this->setAttribute($name, JsonHelper::decode($value));
-					}
-					else
-					{
-						$this->setAttribute($name, array());
 					}
 
 					break;
