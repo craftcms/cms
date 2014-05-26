@@ -343,7 +343,6 @@ body.ltr .btngroup .btn:not(:first-child) { border-top-left-radius: 0; border-bo
 body.rtl .btngroup .btn:not(:first-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
 body.ltr .btngroup .btn:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
 body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
-.btngroup .btn[data-icon]:before { @include margin-right(-2px); }
 
 .btngroup .btn:hover,
 .btngroup .btn.hover,
