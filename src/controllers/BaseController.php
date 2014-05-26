@@ -169,6 +169,7 @@ abstract class BaseController extends \CController
 
 	/**
 	 * Returns a 400 if this isn't a POST request
+	 *
 	 * @throws HttpException
 	 */
 	public function requirePostRequest()
@@ -181,11 +182,25 @@ abstract class BaseController extends \CController
 
 	/**
 	 * Returns a 400 if this isn't an Ajax request
+	 *
 	 * @throws HttpException
 	 */
 	public function requireAjaxRequest()
 	{
 		if (!craft()->request->isAjaxRequest())
+		{
+			throw new HttpException(400);
+		}
+	}
+
+	/**
+	 * Requires the current request to include a token.
+	 *
+	 * @throws HttpException
+	 */
+	public function requireToken()
+	{
+		if (!craft()->request->getQuery(craft()->config->get('tokenParam')))
 		{
 			throw new HttpException(400);
 		}

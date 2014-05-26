@@ -201,6 +201,7 @@ $components['tags']['class']                 = 'Craft\TagsService';
 $components['tasks']['class']                = 'Craft\TasksService';
 $components['templateCache']['class']        = 'Craft\TemplateCacheService';
 $components['templates']['class']            = 'Craft\TemplatesService';
+$components['tokens']['class']               = 'Craft\TokensService';
 $components['updates']['class']              = 'Craft\UpdatesService';
 $components['components'] = array(
 	'class' => 'Craft\ComponentsService',

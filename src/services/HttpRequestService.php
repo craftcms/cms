@@ -867,43 +867,47 @@ class HttpRequestService extends \CHttpRequest
 
 		$firstSegment = $this->getSegment(1);
 
-		// If the first path segment is the resource trigger word, it's a resource request.
-		if ($firstSegment === $resourceTrigger)
+		// If there's a token in the query string, then that should take precedence over everything else
+		if (!$this->getQuery(craft()->config->get('tokenParam')))
 		{
-			$this->_isResourceRequest = true;
-		}
-
-		// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request
-		else if ($firstSegment === $actionTrigger || (in_array($this->_path, array($frontEndLoginPath, $cpLoginPath, $frontEndSetPasswordPath, $cpSetPasswordPath, $frontEndLogoutPath, $cpLogoutPath)) && !$this->getParam('action')))
-		{
-			$this->_isActionRequest = true;
-
-			if (in_array($this->_path, array($cpLoginPath, $frontEndLoginPath)))
+			// If the first path segment is the resource trigger word, it's a resource request.
+			if ($firstSegment === $resourceTrigger)
 			{
-				$this->_actionSegments = array('users', 'login');
+				$this->_isResourceRequest = true;
 			}
-			else if (in_array($this->_path, array($frontEndSetPasswordPath, $cpSetPasswordPath)))
-			{
-				$this->_actionSegments = array('users', 'setpassword');
-			}
-			else if (in_array($this->_path, array($frontEndLogoutPath, $cpLogoutPath)))
-			{
-				$this->_actionSegments = array('users', 'logout');
-			}
-			else
-			{
-				$this->_actionSegments = array_slice($this->_segments, 1);
-			}
-		}
 
-		// If there's a non-empty 'action' param (either in the query string or post data), it's an action request
-		else if (($action = $this->getParam('action')) !== null)
-		{
-			$this->_isActionRequest = true;
+			// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request
+			else if ($firstSegment === $actionTrigger || (in_array($this->_path, array($frontEndLoginPath, $cpLoginPath, $frontEndSetPasswordPath, $cpSetPasswordPath, $frontEndLogoutPath, $cpLogoutPath)) && !$this->getParam('action')))
+			{
+				$this->_isActionRequest = true;
 
-			// Sanitize
-			$action = $this->decodePathInfo($action);
-			$this->_actionSegments = array_filter(explode('/', $action));
+				if (in_array($this->_path, array($cpLoginPath, $frontEndLoginPath)))
+				{
+					$this->_actionSegments = array('users', 'login');
+				}
+				else if (in_array($this->_path, array($frontEndSetPasswordPath, $cpSetPasswordPath)))
+				{
+					$this->_actionSegments = array('users', 'setpassword');
+				}
+				else if (in_array($this->_path, array($frontEndLogoutPath, $cpLogoutPath)))
+				{
+					$this->_actionSegments = array('users', 'logout');
+				}
+				else
+				{
+					$this->_actionSegments = array_slice($this->_segments, 1);
+				}
+			}
+
+			// If there's a non-empty 'action' param (either in the query string or post data), it's an action request
+			else if (($action = $this->getParam('action')) !== null)
+			{
+				$this->_isActionRequest = true;
+
+				// Sanitize
+				$action = $this->decodePathInfo($action);
+				$this->_actionSegments = array_filter(explode('/', $action));
+			}
 		}
 
 		$this->_checkedRequestType = true;

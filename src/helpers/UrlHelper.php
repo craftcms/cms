@@ -89,6 +89,21 @@ class UrlHelper
 	}
 
 	/**
+	 * Returns a URL with a 'token' query string param set to a given token.
+	 *
+	 * @static
+	 * @param string $url
+	 * @param string $token
+	 * @return string
+	 */
+	public static function getUrlWithToken($url, $token)
+	{
+		return static::getUrlWithParams($url, array(
+			craft()->config->get('tokenParam') => $token
+		));
+	}
+
+	/**
 	 * Returns a URL with a specific protocol.
 	 *
 	 * @static

@@ -68,26 +68,41 @@ class UrlManager extends \CUrlManager
 			'variables' => array()
 		);
 
-		$path = $request->getPath();
+		// Is there a token in the URL?
+		$token = craft()->request->getQuery(craft()->config->get('tokenParam'));
 
-		// Is this an element request?
-		$matchedElementRoute = $this->_getMatchedElementRoute($path);
-
-		if ($matchedElementRoute)
+		if ($token)
 		{
-			$this->_setRoute($matchedElementRoute);
+			$tokenRoute = craft()->tokens->getTokenRoute($token);
+
+			if ($tokenRoute)
+			{
+				$this->_setRoute($tokenRoute);
+			}
 		}
 		else
 		{
-			// Does it look like they're trying to access a public template path?
-			if ($this->_isPublicTemplatePath())
-			{
-				// Default to that, then
-				$this->_setRoute($path);
-			}
+			$path = $request->getPath();
 
-			// Finally see if there's a URL route that matches
-			$this->_setRoute($this->_getMatchedUrlRoute($path));
+			// Is this an element request?
+			$matchedElementRoute = $this->_getMatchedElementRoute($path);
+
+			if ($matchedElementRoute)
+			{
+				$this->_setRoute($matchedElementRoute);
+			}
+			else
+			{
+				// Does it look like they're trying to access a public template path?
+				if ($this->_isPublicTemplatePath())
+				{
+					// Default to that, then
+					$this->_setRoute($path);
+				}
+
+				// Finally see if there's a URL route that matches
+				$this->_setRoute($this->_getMatchedUrlRoute($path));
+			}
 		}
 
 		// Did we come up with something?

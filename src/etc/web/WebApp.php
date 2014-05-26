@@ -45,6 +45,7 @@ namespace Craft;
  * @property TasksService                $tasks                The tasks service
  * @property TemplateCacheService        $templateCache        The template cache service
  * @property TemplatesService            $templates            The template service
+ * @property TokensService               $tokens               The tokens service
  * @property UpdatesService              $updates              The updates service
  * @property UserGroupsService           $userGroups           The user groups service
  * @property UserPermissionsService      $userPermissions      The user permission service

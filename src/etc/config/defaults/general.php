@@ -124,6 +124,13 @@ return array(
 	'defaultTemplateExtensions' => array('html', 'twig'),
 
 	/**
+	 * The default amount of time tokens can be used before expiring.
+	 *
+	 * @see http://www.php.net/manual/en/dateinterval.construct.php
+	 */
+	'defaultTokenDuration' => 'P1D',
+
+	/**
 	 * Determines whether the system is in Dev Mode or not.
 	 */
 	'devMode' => false,
@@ -334,6 +341,11 @@ return array(
 	 * Tells Craft whether to surround all translatable strings with “@” symbols, to help find any strings that are not being run through Craft::t() or the |translate filter.
 	 */
 	'translationDebugOutput' => false,
+
+	/**
+	 * The name of the 'token' query string parameter.
+	 */
+	'tokenParam' => 'token',
 
 	/**
 	 * Tells Craft whether to use compressed Javascript files whenever possible, to cut down on page load times.
