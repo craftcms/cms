@@ -191,7 +191,7 @@ class UserElementType extends BaseElementType
 			'group'          => AttributeType::Mixed,
 			'groupId'        => AttributeType::Number,
 			'lastName'       => AttributeType::String,
-			'lastLoginDate'  => AttributeType::DateTime,
+			'lastLoginDate'  => AttributeType::Mixed,
 			'order'          => array(AttributeType::String, 'default' => 'username asc'),
 			'preferredLocale'=> AttributeType::String,
 			'status'         => array(AttributeType::Enum, 'values' => array(UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived), 'default' => UserStatus::Active),

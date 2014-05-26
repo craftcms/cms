@@ -278,9 +278,12 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 * @param int $entryId
 	 * @param int $offset
 	 * @return EntryVersionModel|null
+	 * @deprecated Deprecated in 2.1
 	 */
 	public function getVersionByOffset($entryId, $offset = 0)
 	{
+		craft()->deprecator->log('EntryRevisionsService::getVersionByOffset()', 'EntryRevisionsService::getVersionByOffset() has been deprecated.');
+
 		$versionRecord = EntryVersionRecord::model()->findByAttributes(array(
 			'entryId' => $entryId,
 			'locale'  => craft()->i18n->getPrimarySiteLocale(),
