@@ -54,4 +54,19 @@ class BaseEntryRevisionModel extends EntryModel
 	{
 		return craft()->users->getUserById($this->creatorId);
 	}
+
+	/**
+	 * Returns the element's full URL.
+	 *
+	 * @return string
+	 */
+	public function getUrl()
+	{
+		if ($this->uri === null)
+		{
+			ElementHelper::setUniqueUri($this);
+		}
+
+		return parent::getUrl();
+	}
 }
