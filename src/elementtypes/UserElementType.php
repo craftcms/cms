@@ -102,14 +102,31 @@ class UserElementType extends BaseElementType
 	 */
 	public function defineTableAttributes($source = null)
 	{
-		return array(
-			'username'      => Craft::t('Username'),
-			'firstName'     => Craft::t('First Name'),
-			'lastName'      => Craft::t('Last Name'),
-			'email'         => Craft::t('Email'),
-			'dateCreated'   => Craft::t('Join Date'),
-			'lastLoginDate' => Craft::t('Last Login'),
-		);
+		if (craft()->config->get('useEmailAsUsername'))
+		{
+			$attributes = array(
+				'email'         => Craft::t('Email'),
+				'firstName'     => Craft::t('First Name'),
+				'lastName'      => Craft::t('Last Name'),
+				'dateCreated'   => Craft::t('Join Date'),
+				'lastLoginDate' => Craft::t('Last Login'),
+			);
+		}
+		else
+		{
+			$attributes = array(
+				'username'      => Craft::t('Username'),
+				'firstName'     => Craft::t('First Name'),
+				'lastName'      => Craft::t('Last Name'),
+				'email'         => Craft::t('Email'),
+				'dateCreated'   => Craft::t('Join Date'),
+				'lastLoginDate' => Craft::t('Last Login'),
+			);
+		}
+
+		return $attributes;
+
+		return $attributes;
 	}
 
 	/**

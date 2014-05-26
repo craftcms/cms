@@ -353,6 +353,11 @@ return array(
 	'useCompressedJs' => true,
 
 	/**
+	 * If set to true, Craft will use a user's email address in place of their username and remove username UI from the CP.
+	 */
+	'useEmailAsUsername' => false,
+
+	/**
 	 * Whether Craft should specify the path using PATH_INFO or as a query string parameter when generating URLs.
 	 *
 	 * Note that this setting only takes effect if omitScriptNameInUrls is set to false or 'auto' with a failed “index.php redirect” test.

@@ -508,6 +508,12 @@ class UsersService extends BaseApplicationComponent
 		if ($user->unverifiedEmail)
 		{
 			$userRecord->email = $user->unverifiedEmail;
+
+			if (craft()->config->get('useEmailAsUsername'))
+			{
+				$userRecord->username = $user->unverifiedEmail;
+			}
+
 			$userRecord->unverifiedEmail = null;
 		}
 

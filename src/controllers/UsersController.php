@@ -692,8 +692,15 @@ class UsersController extends BaseController
 			}
 		}
 
-		// Set the normal attributes
-		$user->username        = craft()->request->getPost('username', ($user->username ? $user->username : $user->email));
+		if (craft()->config->get('useEmailAsUsername'))
+		{
+			$user->username    =  $user->email;
+		}
+		else
+		{
+			$user->username    = craft()->request->getPost('username', ($user->username ? $user->username : $user->email));
+		}
+
 		$user->firstName       = craft()->request->getPost('firstName', $user->firstName);
 		$user->lastName        = craft()->request->getPost('lastName', $user->lastName);
 		$user->preferredLocale = craft()->request->getPost('preferredLocale', $user->preferredLocale);

@@ -24,12 +24,14 @@ class UserModel extends BaseElementModel
 	 */
 	protected function defineAttributes()
 	{
+		$requireUsername = !craft()->config->get('useEmailAsUsername');
+
 		return array_merge(parent::defineAttributes(), array(
-			'username'               => array(AttributeType::String, 'maxLength' => 100, 'required' => true),
+			'username'               => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),
 			'photo'                  => AttributeType::String,
 			'firstName'              => AttributeType::String,
 			'lastName'               => AttributeType::String,
-			'email'                  => AttributeType::Email,
+			'email'                  => array(AttributeType::Email, 'required' => !$requireUsername),
 			'password'               => AttributeType::String,
 			'preferredLocale'        => AttributeType::Locale,
 			'admin'                  => AttributeType::Bool,
