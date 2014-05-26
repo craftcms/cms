@@ -81,7 +81,7 @@
 
 	<header id="header">
 		<div class="container">
-			<ul id="header-actions" class="right">
+			<ul id="header-actions">
 				{% set task = craft.tasks.getRunningTask() %}
 				{% if task %}
 					{% includeJs 'Craft.cp.setRunningTaskInfo('~task.getInfo()|json_encode|raw~');' %}

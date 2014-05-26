@@ -18,38 +18,40 @@ html { overflow-y: scroll; }
 /* header */
 #header { position: relative; padding-top: 7px; max-height: 76px; overflow: hidden; background: $headerBgColor; }
 #header:after { @include clearafter; }
+#header .container { position: relative; }
 #header a { color: hsl($hue, 5%, 85%);
 	@include transition(color linear 100ms);
 }
 #header a:hover,
 #header a.active { color: #fff; text-decoration: none; }
 
-#header h2 { @include floatleft; @include margin(0, 25px, 0, 0); }
-#header h2 a { display: block; padding: 10px 0; }
+#header h2 { margin: 0; }
+#header h2 a { display: block; padding: 10px 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
-#header .right { @include margin-right(-7px); height: 38px; }
-#header .right > li { @include floatleft; }
-#header .right a { display: block; padding: 0 7px; line-height: 36px; }
-#header .right a.menubtn:after { @include margin-left(4px); }
-#header .right .updates a { position: relative; color: $noticecolor; }
-#header .right .updates.critical a { color: $submitcolor; }
-#header .right .updates a:hover { color: #fff !important; }
-#header .right .updates a:before { font-size: 20px; width: 20px; }
-#header .right .updates a span { display: block; position: absolute; @include left(7px); top: 1px; width: 20px; text-align: center; color: $headerBgColor; font-weight: bold; font-size: 11px; }
-#header .right .settings:before,
-#header .right .myaccount:before { font-size: 16px; }
-#header .right .settings { @include padding-right(0); }
-#header .right .settingsmenu { @include padding-left(0); }
+#header-actions { position: absolute; top: 0; @include right(14px); height: 38px; }
+#header-actions > li { @include floatleft; }
+#header-actions a { display: block; padding: 0 7px; line-height: 36px; }
+#header-actions a.menubtn:after { @include margin-left(4px); }
+#header-actions .updates a { position: relative; color: $noticecolor; }
+#header-actions .updates.critical a { color: $submitcolor; }
+#header-actions .updates a:hover { color: #fff !important; }
+#header-actions .updates a:before { font-size: 20px; width: 20px; }
+#header-actions .updates a span { display: block; position: absolute; @include left(7px); top: 1px; width: 20px; text-align: center; color: $headerBgColor; font-weight: bold; font-size: 11px; }
+#header-actions .settings:before,
+#header-actions .myaccount:before { font-size: 16px; }
+#header-actions .myaccount { @include margin-right(-7px); }
+#header-actions .settings { @include padding-right(0); }
+#header-actions .settingsmenu { @include padding-left(0); }
 
-#header .right #taskicon { position: relative; padding: 5px 0 1px; width: 30px; height: 30px; }
-#header .right #taskicon canvas { display: block; position: absolute; width: 30px; height: 30px; }
-#header .right #taskicon canvas#taskicon-hover { opacity: 0; @include transition(opacity linear 100ms); }
-#header .right #taskicon:hover canvas#taskicon-hover { opacity: 1; }
+#header-actions #taskicon { position: relative; padding: 5px 0 1px; width: 30px; height: 30px; }
+#header-actions #taskicon canvas { display: block; position: absolute; width: 30px; height: 30px; }
+#header-actions #taskicon canvas#taskicon-hover { opacity: 0; @include transition(opacity linear 100ms); }
+#header-actions #taskicon:hover canvas#taskicon-hover { opacity: 1; }
 
-#header .right #taskicon .progressbar { position: static; margin: 8px 2px; width: auto; border-color: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
-#header .right #taskicon .progressbar-inner { background: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
-#header .right #taskicon:hover .progressbar { border-color: #fff; }
-#header .right #taskicon:hover .progressbar-inner { background: #fff; }
+#header-actions #taskicon .progressbar { position: static; margin: 8px 2px; width: auto; border-color: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
+#header-actions #taskicon .progressbar-inner { background: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
+#header-actions #taskicon:hover .progressbar { border-color: #fff; }
+#header-actions #taskicon:hover .progressbar-inner { background: #fff; }
 
 #tasks-hud { padding: 0; max-height: 300px; overflow: auto; }
 #tasks-hud .task { @include padding(14px, 138px, 14px, 24px); overflow: hidden; }
@@ -295,5 +297,6 @@ $fldGuideColor: #f4f3fb;
 
 @media only screen and (max-width: 320px) {
 	.container { @include padding-left(10px); @include padding-right(10px); }
+	#header-actions { @include right(10px); }
 	#nav { @include margin-left(-10px); }
 }
