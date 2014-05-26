@@ -25,10 +25,11 @@
 						{%- set padding = logo.height + 30 %}
 						style="background-image: url({{ logo.url }}); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ round((156+padding)/2) }}px"
 					{%- endif %}>' +
+					'{% set placeHolderText = (craft.config.useEmailAsUsername ? "Email"|t : "Username or Email"|t) %}' +
 					'{{ forms.textField({ id: "loginName", name: "username", placeholder: "Username or Email"|t, value: username })|e("js") }}' +
 
 					'<div id="login-fields" class="nested-fields">' +
-						'{{ forms.passwordField({ id: "password", name: "password", placeholder: "Password"|t })|e("js") }}' +
+						'{{ forms.passwordField({ id: "password", name: "password", placeholder: placeHolderText })|e("js") }}' +
 						'<a id="forgot-password">{{ "Forget your password?"|t }}</a>' +
 						{% if craft.config.rememberedUserSessionDuration %}
 							'{{ forms.checkboxField({ id: "rememberMe", label: "Keep me logged in"|t })|e("js") }}' +

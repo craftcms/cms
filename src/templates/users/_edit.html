@@ -64,18 +64,21 @@
 
 				{% include "_includes/tabs" %}
 
-				<div id="account">
-					{{ forms.textField({
-						first: true,
-						label: "Username"|t,
-						id: 'username',
-						name: 'username',
-						value: (account is defined ? account.username : null),
-						autofocus: true,
-						required: (isNewAccount or (currentUser.admin or account.isCurrent) ? true : false),
-						disabled: (isNewAccount or (currentUser.admin or account.isCurrent) ? false : true),
-						errors: (account is defined ? account.getErrors('username') : null)
-					}) }}
+				{% if not craft.config.useEmailAsUsername %}
+					<div id="account">
+						{{ forms.textField({
+							first: true,
+							label: "Username"|t,
+							id: 'username',
+							name: 'username',
+							value: (account is defined ? account.username : null),
+							autofocus: true,
+							required: (isNewAccount or (currentUser.admin or account.isCurrent) ? true : false),
+							disabled: (isNewAccount or (currentUser.admin or account.isCurrent) ? false : true),
+							errors: (account is defined ? account.getErrors('username') : null)
+						}) }}
+					</div>
+				{% endif %}
 
 					<div class="grid" data-cols="2" data-mode="pct">
 						<div class="item" data-colspan="1">

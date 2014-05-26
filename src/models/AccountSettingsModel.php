@@ -12,8 +12,10 @@ class AccountSettingsModel extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
+		$requireUsername = !craft()->config->get('useEmailAsUsername');
+
 		return array(
-			'username' => array(AttributeType::String, 'maxLength' => 100, 'required' => true),
+			'username' => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),
 			'email'    => array(AttributeType::Email, 'required' => true),
 			'password' => array(AttributeType::String, 'minLength' => 6, 'required' => true)
 		);
