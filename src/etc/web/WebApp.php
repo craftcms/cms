@@ -218,7 +218,7 @@ class WebApp extends \CWebApplication
 			}
 
 			// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
-			if ($this->request->isCpRequest() && !($this->request->isActionRequest() && $this->_isValidActionRequest()))
+			if ($this->request->isCpRequest() && !($this->request->isActionRequest() && $this->_isSpecialCaseActionRequest()))
 			{
 				// Make sure the user has access to the CP
 				$this->userSession->requireLogin();
@@ -855,7 +855,7 @@ class WebApp extends \CWebApplication
 	/**
 	 * @return bool
 	 */
-	private function _isValidActionRequest()
+	private function _isSpecialCaseActionRequest()
 	{
 		if (
 			$this->request->getActionSegments() == array('users', 'login') ||
