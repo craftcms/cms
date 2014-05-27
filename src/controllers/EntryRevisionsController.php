@@ -6,7 +6,7 @@ craft()->requireEdition(Craft::Client);
 /**
  *
  */
-class EntryRevisionsController extends BaseController
+class EntryRevisionsController extends BaseEntriesController
 {
 	/**
 	 * Saves a draft, or creates a new one.
@@ -29,15 +29,45 @@ class EntryRevisionsController extends BaseController
 		else
 		{
 			$draft = new EntryDraftModel();
-			$draft->id        = craft()->request->getRequiredPost('entryId');
+			$draft->id        = craft()->request->getPost('entryId');
 			$draft->sectionId = craft()->request->getRequiredPost('sectionId');
 			$draft->creatorId = craft()->userSession->getUser()->id;
 			$draft->locale    = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocaleId());
 		}
 
+		// Make sure they have permission to be editing this
+		$this->enforceEditEntryPermissions($draft);
+
 		$this->_setDraftAttributesFromPost($draft);
 
-		if (craft()->entryRevisions->saveDraft($draft))
+		if (!$draft->id)
+		{
+			// Attempt to create a new entry
+
+			// Manually validate 'title' since ElementsService will just give it a title automatically
+			$fields = array('title');
+			$content = $draft->getContent();
+			$content->setRequiredFields($fields);
+
+			if ($content->validate($fields))
+			{
+				$draftEnabled = $draft->enabled;
+				$draft->enabled = false;
+
+				craft()->entries->saveEntry($draft);
+
+				$draft->enabled = $draftEnabled;
+			}
+			else
+			{
+				$draft->addErrors($content->getErrors());
+			}
+		}
+
+		$fieldsLocation = craft()->request->getParam('fieldsLocation', 'fields');
+		$draft->setContentFromPost($fieldsLocation);
+
+		if ($draft->id && craft()->entryRevisions->saveDraft($draft))
 		{
 			craft()->userSession->setNotice(Craft::t('Draft saved.'));
 
@@ -138,6 +168,7 @@ class EntryRevisionsController extends BaseController
 			throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draftId)));
 		}
 
+		// Permission enforcement
 		$entry = craft()->entries->getEntryById($draft->id);
 
 		if (!$entry)
@@ -145,16 +176,20 @@ class EntryRevisionsController extends BaseController
 			throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
 		}
 
-		// Make sure they are allowed to publish entries in this section
-		craft()->userSession->requirePermission('publishEntries:'.$entry->sectionId);
+		$this->enforceEditEntryPermissions($entry);
+		$userSessionService = craft()->userSession;
 
 		// Is this another user's entry (and it's not a Single)?
 		if (
-			$entry->authorId != $userId &&
+			$entry->authorId != $userSessionService->getUser()->id &&
 			$entry->getSection()->type != SectionType::Single
 		)
 		{
-			craft()->userSession->requirePermission('publishPeerEntries:'.$entry->sectionId);
+			if ($entry->enabled)
+			{
+				// Make sure they have permission to make live changes to those
+				$userSessionService->requirePermission('publishPeerEntries:'.$entry->sectionId);
+			}
 		}
 
 		// Is this another user's draft?
@@ -163,8 +198,20 @@ class EntryRevisionsController extends BaseController
 			craft()->userSession->requirePermission('publishPeerEntryDrafts:'.$entry->sectionId);
 		}
 
+		// Populate the main draft attributes
 		$this->_setDraftAttributesFromPost($draft);
 
+		// Even more permission enforcement
+		if ($draft->enabled)
+		{
+			$userSessionService->requirePermission('publishEntries:'.$entry->sectionId);
+		}
+
+		// Populate the field content
+		$fieldsLocation = craft()->request->getParam('fieldsLocation', 'fields');
+		$draft->setContentFromPost($fieldsLocation);
+
+		// Publish the draft (finally!)
 		if (craft()->entryRevisions->publishDraft($draft))
 		{
 			craft()->userSession->setNotice(Craft::t('Draft published.'));
@@ -204,6 +251,7 @@ class EntryRevisionsController extends BaseController
 			throw new Exception(Craft::t('No version exists with the ID “{id}”', array('id' => $versionId)));
 		}
 
+		// Permission enforcement
 		$entry = craft()->entries->getEntryById($version->id);
 
 		if (!$entry)
@@ -211,18 +259,28 @@ class EntryRevisionsController extends BaseController
 			throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
 		}
 
-		// Make sure they are allowed to publish entries in this section
-		craft()->userSession->requirePermission('publishEntries:'.$entry->sectionId);
+		$this->enforceEditEntryPermissions($entry);
+		$userSessionService = craft()->userSession;
 
 		// Is this another user's entry (and it's not a Single)?
 		if (
-			$entry->authorId != $userId &&
+			$entry->authorId != $userSessionService->getUser()->id &&
 			$entry->getSection()->type != SectionType::Single
 		)
 		{
-			craft()->userSession->requirePermission('publishPeerEntries:'.$entry->sectionId);
+			if ($entry->enabled)
+			{
+				// Make sure they have permission to make live changes to those
+				$userSessionService->requirePermission('publishPeerEntries:'.$entry->sectionId);
+			}
 		}
 
+		if ($entry->enabled)
+		{
+			$userSessionService->requirePermission('publishEntries:'.$entry->sectionId);
+		}
+
+		// Revent to the version
 		if (craft()->entryRevisions->revertEntryToVersion($version))
 		{
 			craft()->userSession->setNotice(Craft::t('Entry reverted to past version.'));
@@ -254,8 +312,5 @@ class EntryRevisionsController extends BaseController
 		$draft->authorId   = craft()->request->getPost('author');
 
 		$draft->getContent()->title = craft()->request->getPost('title');
-
-		$fieldsLocation = craft()->request->getParam('fieldsLocation', 'fields');
-		$draft->setContentFromPost($fieldsLocation);
 	}
 }
