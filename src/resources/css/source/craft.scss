@@ -934,6 +934,9 @@ body .redactor_box textarea { padding: 6px 7px; }
 .texticon { position: relative; cursor: text; }
 .texticon:before { position: absolute; top: 9px; @include left(9px); color: $lighttextcolor; }
 .texticon .text { @include padding-left(26px); }
+.texticon .clear { position: absolute; top: 6px; @include right(9px); color: $lighttextcolor; cursor: pointer; }
+.texticon .clear:hover { color: $mediumtextcolor; }
+.texticon .clear:before { @include icon; content: 'close'; }
 
 .texthint-container { position: relative; height: 0; }
 .texthint { position: absolute; top: -1px; width: 100%; color: $lighttextcolor; cursor: text; }

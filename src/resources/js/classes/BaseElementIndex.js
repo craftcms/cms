@@ -18,6 +18,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	$scroller: null,
 	$toolbar: null,
 	$search: null,
+	$clearSearchBtn: null,
 	$mainSpinner: null,
 
 	$statusMenuBtn: null,
@@ -76,6 +77,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$statusMenuBtn = this.$toolbar.find('.statusmenubtn:first');
 		this.$localeMenuBtn = this.$toolbar.find('.localemenubtn:first');
 		this.$search = this.$toolbar.find('.search:first input:first');
+		this.$clearSearchBtn = this.$toolbar.find('.search:first > .clear');
 		this.$mainSpinner = this.$toolbar.find('.spinner:first');
 		this.$loadingMoreSpinner = this.$container.find('.spinner.loadingmore')
 		this.$sidebar = this.$container.find('.sidebar:first');
@@ -188,6 +190,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		this.addListener(this.$search, 'textchange', $.proxy(function()
 		{
+			if (this.$search.val())
+			{
+				this.$clearSearchBtn.removeClass('hidden');
+			}
+			else
+			{
+				this.$clearSearchBtn.addClass('hidden');
+			}
+
 			if (this.searchTimeout)
 			{
 				clearTimeout(this.searchTimeout);
@@ -195,6 +206,25 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 			this.searchTimeout = setTimeout($.proxy(this, 'updateElements'), 500);
 		}, this));
+
+		this.addListener(this.$clearSearchBtn, 'click', $.proxy(function()
+		{
+			this.$search.val('');
+			this.$clearSearchBtn.addClass('hidden');
+
+			if (this.searchTimeout)
+			{
+				clearTimeout(this.searchTimeout);
+			}
+
+			if (!Garnish.isMobileBrowser(true))
+			{
+				this.$search.focus();
+			}
+
+			this.updateElements();
+
+		}, this))
 
 		// Auto-focus the Search box
 		if (!Garnish.isMobileBrowser(true))
