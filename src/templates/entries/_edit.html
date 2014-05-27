@@ -17,6 +17,8 @@
 			<input type="hidden" name="sectionId" value="{{ section.id }}">
 			{% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}
 			{% if craft.isLocalized() %}<input type="hidden" name="locale" value="{{ entry.locale }}">{% endif %}
+		{% else %}
+			<input type="hidden" name="versionId" value="{{ entry.versionId }}">
 		{% endif %}
 
 		<div class="grid first">

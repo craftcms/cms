@@ -361,9 +361,26 @@ class EntriesController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$entry = $this->_getEntryModel();
-		$this->_enforceEditEntryPermissions($entry);
-		$this->_populateEntryModel($entry);
+		// Are we previewing a version?
+		$versionId = craft()->request->getPost('versionId');
+
+		if ($versionId)
+		{
+			$entry = craft()->entryRevisions->getVersionById($versionId);
+
+			if (!$entry)
+			{
+				throw new HttpException(404);
+			}
+
+			$this->_enforceEditEntryPermissions($entry);
+		}
+		else
+		{
+			$entry = $this->_getEntryModel();
+			$this->_enforceEditEntryPermissions($entry);
+			$this->_populateEntryModel($entry);
+		}
 
 		$this->_showEntry($entry);
 	}
