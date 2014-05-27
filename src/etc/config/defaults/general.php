@@ -61,6 +61,11 @@ return array(
 	'backupDbOnUpdate' => true,
 
 	/**
+	 * Sets the base URL to the CP that Craft should use when generating CP-facing URLs. This will be determined automatically if left blank.
+	 */
+	'baseCpUrl' => null,
+
+	/**
 	 * The higher the cost value, the longer it takes to generate a password hash and to verify against it. Therefore, higher cost slows down a brute-force attack.
 	 *
 	 * For best protection against brute force attacks, set it to the highest value that is tolerable on production servers.
@@ -169,11 +174,6 @@ return array(
 	 * By default Craft will auto-detect if Imagick is installed and fallback to GD if not. You can explicitly set either 'imagick' or 'gd' here to override that behavior..
 	 */
 	'imageDriver' => 'auto',
-
-	/**
-	 * Whether Craft should include the base URI leading up to index.php in CP URLs, where the base URL is determined dynamically rather than configured.
-	 */
-	'includeBaseUriInCpUrls' => true,
 
 	/**
 	 * The template filenames Craft will look for within a directory to represent the directory’s “index” template when matching a template path to a file on the front end.

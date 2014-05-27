@@ -165,11 +165,11 @@ class UrlHelper
 		if (craft()->request->isCpRequest())
 		{
 			$path = craft()->config->get('cpTrigger').($path ? '/'.$path : '');
-			$dynamicBaseUrl = true;
+			$cpUrl = true;
 		}
 		else
 		{
-			$dynamicBaseUrl = false;
+			$cpUrl = false;
 		}
 
 		// Send all resources over SSL if this request is loaded over SSL.
@@ -178,7 +178,7 @@ class UrlHelper
 			$protocol = 'https';
 		}
 
-		return static::_getUrl($path, $params, $protocol, $dynamicBaseUrl, $mustShowScriptName);
+		return static::_getUrl($path, $params, $protocol, $cpUrl, $mustShowScriptName);
 	}
 
 	/**
@@ -269,11 +269,11 @@ class UrlHelper
 	 * @param string       $path
 	 * @param array|string $params
 	 * @param              $protocol
-	 * @param              $dynamicBaseUrl
+	 * @param              $cpUrl
 	 * @param              $mustShowScriptName
 	 * @return string
 	 */
-	private static function _getUrl($path, $params, $protocol, $dynamicBaseUrl, $mustShowScriptName)
+	private static function _getUrl($path, $params, $protocol, $cpUrl, $mustShowScriptName)
 	{
 		// Normalize the params
 		$params = static::_normalizeParams($params, $anchor);
@@ -287,17 +287,41 @@ class UrlHelper
 
 		$showScriptName = ($mustShowScriptName || !craft()->config->omitScriptNameInUrls());
 
-		if ($dynamicBaseUrl)
+		if ($cpUrl)
 		{
-			$baseUrl = craft()->request->getHostInfo($protocol);
+			// Did they set the base URL manually?
+			$baseUrl = craft()->config->get('baseCpUrl');
 
-			if ($showScriptName)
+			if ($baseUrl)
 			{
-				$baseUrl .= craft()->request->getScriptUrl();
+				// Make sure it ends in a slash
+				$baseUrl = rtrim($baseUrl, '/').'/';
+
+				if ($protocol)
+				{
+					// Make sure we're using the right protocol
+					$baseUrl = static::getUrlWithProtocol($baseUrl, $protocol);
+				}
+
+				// Should we be adding that script name in?
+				if ($showScriptName)
+				{
+					$baseUrl .= craft()->request->getScriptName();
+				}
 			}
-			else if (craft()->config->get('includeBaseUriInCpUrls'))
+			else
 			{
-				$baseUrl .= craft()->request->getBaseUrl();
+				// Figure it out for ourselves, then
+				$baseUrl = craft()->request->getHostInfo($protocol);
+
+				if ($showScriptName)
+				{
+					$baseUrl .= craft()->request->getScriptUrl();
+				}
+				else
+				{
+					$baseUrl .= craft()->request->getBaseUrl();
+				}
 			}
 		}
 		else
