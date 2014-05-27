@@ -146,7 +146,8 @@
 									<div class="for-locale-{{ locale.id }}{% if not localeSelected %} hidden{% endif %}">
 										{{ forms.lightswitch({
 											name: 'defaultLocaleStatuses['~locale.id~']',
-											on:   (brandNewSection or not section.locales[locale.id] is defined or section.locales[locale.id].enabledByDefault)
+											on:   (brandNewSection or not section.locales[locale.id] is defined or section.locales[locale.id].enabledByDefault),
+											small: true
 										}) }}
 									</div>
 								</td>

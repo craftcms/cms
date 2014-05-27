@@ -1,6 +1,7 @@
 {%- set on = (on is defined ? on : false) %}
+{%- set small = (small is defined ? small : false) -%}
 
-<div class="lightswitch{% if on %} on{% endif %}"{% if toggle is defined %} data-target="{{ toggle }}"{% endif %} tabindex="0">
+<div class="lightswitch{% if on %} on{% endif %}{% if small %} small{% endif %}"{% if toggle is defined %} data-target="{{ toggle }}"{% endif %} tabindex="0">
 	<div class="lightswitch-container">
 		<div class="label on"></div>
 		<div class="handle"></div>

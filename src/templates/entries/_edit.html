@@ -57,7 +57,8 @@
 									{{ localeName }}
 									{{ forms.lightswitch({
 										name: 'localeEnabled',
-										on:   entry.localeEnabled
+										on:   entry.localeEnabled,
+										small: true
 									}) }}
 								{%- else -%}
 									<a href="{{ url('entries/'~sectionHandle~'/'~craft.request.getSegment(3))~'/'~localeId }}">{{ localeName }}</a>
