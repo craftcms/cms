@@ -42,7 +42,7 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 			// Add the Notes field
 			var $field = $('<div class="field"><div class="heading"><label for="draft-notes">'+Craft.t('Notes')+'</label></div></div>').appendTo(this.$form),
 				$inputContainer = $('<div class="input"/>').appendTo($field);
-			this.$notesInput = $('<textarea class="text fullwidth" id="draft-notes" rows="1"/>').appendTo($inputContainer).val(this.draftNotes);
+			this.$notesInput = $('<textarea class="text fullwidth" id="draft-notes" rows="2"/>').appendTo($inputContainer).val(this.draftNotes);
 
 			// Add the button
 			var $buttonsContainer = $('<div class="buttons"/>').appendTo(this.$form);
