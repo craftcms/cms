@@ -263,7 +263,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 /* ----------------------------------------*/
 
 .toolbar { position: relative; margin: 24px 0; height: 30px; }
-.toolbar .spinner { position: absolute; top: 0; @include right(-22px); }
+.toolbar .spinner { position: absolute; top: 0; @include right(-24px); }
 
 table.inputs td:not(:first-child) { @include padding-left(14px); }
 table.inputs td > .btn { display: block; }
