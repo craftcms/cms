@@ -499,6 +499,16 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns whether the element has descendants.
+	 *
+	 * @return bool
+	 */
+	public function hasDescendants()
+	{
+		return ($this->lft && $this->rgt && $this->rgt > $this->lft + 1);
+	}
+
+	/**
 	 * Returns whether this element is an ancestor of another one.
 	 *
 	 * @param BaseElementModel $element
