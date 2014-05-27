@@ -131,35 +131,52 @@
 							disabled: isVersion
 						}) }}
 
-						{% if currentUser.can('publishEntries'~permissionSuffix) %}
-							{{ forms.lightswitchField({
-								label: "Status"|t,
-								name: 'enabled',
-								on: entry.enabled,
-								disabled: isVersion
-							}) }}
+						{% set canPublish = currentUser.can('publishEntries'~permissionSuffix) %}
+						{% if canPublish or (not isVersion and canDeleteEntry) %}
+
+							{% set statusInput %}
+								{% if canPublish %}
+									<div class="left">
+										{{ forms.lightswitch({
+											id: 'enabled',
+											name: 'enabled',
+											on: entry.enabled,
+											disabled: isVersion
+										}) }}
+									</div>
+								{% endif %}
+
+								{% if not isVersion and canDeleteEntry %}
+									<div class="right">
+										<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="entries/deleteEntry"
+											data-confirm="{{ 'Are you sure you want to delete this entry?'|t }}"
+											data-redirect="entries">
+									</div>
+								{% endif %}
+							{% endset %}
+
+							{{ forms.field({
+								label: (canPublish ? "Status"|t),
+								id: 'enabled'
+							}, statusInput) }}
 						{% endif %}
+
 					</div><!--/pane-->
 
-					{% if not isVersion and canDeleteEntry %}
-						<div class="pane">
-							<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="entries/deleteEntry"
-								data-confirm="{{ 'Are you sure you want to delete this entry?'|t }}"
-								data-redirect="entries">
-							<input type="hidden" name="localeId" value="{{ entry.locale }}" />
-						</div>
-					{% elseif isVersion and entry.revisionNotes %}
+					{% if isVersion and entry.revisionNotes %}
 						<div class="pane">
 							<h6>{{ "Version Notes"|t }}</h6>
 							<p class="light">{{ entry.revisionNotes }}</p>
 						</div>
 					{% endif %}
-				{% endif %}
-			</div><!--/item-->
 
-			<div class="item" data-position="left" data-max-colspan="3">
+				{% endif %}
+
+				{# Action buttons #}
 
 				{% if isDraft %}
+
+					<hr>
 
 					<input type="hidden" name="action" value="entryRevisions/saveDraft">
 					<input type="hidden" name="redirect" value="{{ baseCpEditUrl }}/drafts/{{ entry.draftId }}">
@@ -192,10 +209,16 @@
 						currentUser.can('publishEntries'~permissionSuffix) and
 						(section.type == 'single' or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
 					%}
+
+						<hr>
+
 						<input type="hidden" name="action" value="entryRevisions/revertEntryToVersion">
 						<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}">
 						<input type="hidden" name="versionId" value="{{ entry.versionId }}">
-						<input type="button" class="btn formsubmit first" value="{{ 'Revert entry to this version'|t }}">
+
+						<div class="buttons first">
+							<input type="button" class="btn formsubmit" value="{{ 'Revert entry to this version'|t }}">
+						</div>
 					{% endif %}
 
 				{% else %}
@@ -206,51 +229,61 @@
 						(not entry.id or not entry.enabled or currentUser.can('publishEntries'~permissionSuffix)) and
 						(section.type == 'single' or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
 					%}
+						<hr>
+
 						<input type="hidden" name="action" value="entries/saveEntry">
 						<input type="hidden" name="redirect" value="entries/{{ sectionHandle }}">
 
-						<table class="inputs fullwidth">
-							<tr>
-								<td class="thin">
-									<div class="btngroup submit first">
-										<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+						<div class="buttons first">
+							<table class="inputs fullwidth">
+								<tr>
+									<td class="thin">
+										<div class="btngroup submit first">
+											<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 
-										<div class="btn submit menubtn"></div>
-										<div class="menu">
-											<ul>
-												<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">{{ "Save and continue editing"|t }}</a></li>
+											<div class="btn submit menubtn"></div>
+											<div class="menu">
+												<ul>
+													<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">{{ "Save and continue editing"|t }}</a></li>
 
-												{% set nextEntryParams = [] %}
-												{% if showEntryTypes %}
-													{% set nextEntryParams = nextEntryParams|merge(['typeId={type.id}']) %}
-												{% endif %}
-												{% if section.type == 'structure' and parentOptions|length > 1 %}
-													{% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
-												{% endif %}
+													{% set nextEntryParams = [] %}
+													{% if showEntryTypes %}
+														{% set nextEntryParams = nextEntryParams|merge(['typeId={type.id}']) %}
+													{% endif %}
+													{% if section.type == 'structure' and parentOptions|length > 1 %}
+														{% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
+													{% endif %}
 
-												{% if section.type != 'single' %}
-													<li><a class="formsubmit" data-redirect="entries/{{ sectionHandle }}/new{% if nextEntryParams %}?{{ nextEntryParams|join('&') }}{% endif %}">{{ "Save and add another"|t }}</a></li>
-												{% endif %}
+													{% if section.type != 'single' %}
+														<li><a class="formsubmit" data-redirect="entries/{{ sectionHandle }}/new{% if nextEntryParams %}?{{ nextEntryParams|join('&') }}{% endif %}">{{ "Save and add another"|t }}</a></li>
+													{% endif %}
 
-												{% if CraftEdition >= CraftClient %}
-													<li><a class="formsubmit" data-action="entryRevisions/saveDraft" data-redirect="{{ baseCpEditUrl }}/drafts/{draftId}">{{ 'Save as a draft'|t }}</a></li>
-												{% endif %}
-											</ul>
+													{% if CraftEdition >= CraftClient %}
+														<li><a class="formsubmit" data-action="entryRevisions/saveDraft" data-redirect="{{ baseCpEditUrl }}/drafts/{draftId}">{{ 'Save as a draft'|t }}</a></li>
+													{% endif %}
+												</ul>
+											</div>
 										</div>
-									</div>
-								</td>
-								{% if CraftEdition >= CraftClient and section.enableVersioning %}
-									<td>
-										<input type="text" name="revisionNotes" class="fullwidth textline" placeholder="{{ 'Notes about your changes'|t }}" autocomplete="off">
 									</td>
-								{% endif %}
-							</tr>
-						</table>
+									{% if CraftEdition >= CraftClient and section.enableVersioning %}
+										<td>
+											<input type="text" name="revisionNotes" class="fullwidth textline" placeholder="{{ 'Notes about your changes'|t }}" autocomplete="off">
+										</td>
+									{% endif %}
+								</tr>
+							</table>
+						</div>
 					{% else %}
 						{% if CraftEdition >= CraftClient %}
+
+							<hr>
+
 							<input type="hidden" name="action" value="entryRevisions/saveDraft">
 							<input type="hidden" name="redirect" value="{{ baseCpEditUrl }}/drafts/{draftId}">
-							<input type="submit" class="btn submit first" value="{{ 'Save as a draft'|t }}">
+
+							<div class="buttons first">
+								<input type="submit" class="btn submit first" value="{{ 'Save as a draft'|t }}">
+							</div>
 						{% endif %}
 					{% endif %}
 
