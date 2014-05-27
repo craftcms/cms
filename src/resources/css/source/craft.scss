@@ -92,7 +92,8 @@ h1[data-icon]:before { @include margin(-8px, 10px, 0, 0) }
 h2[data-icon]:before { @include margin(-4px, 6px, 0, 0); font-size: 19px; }
 
 /* horizontal rule */
-hr { margin: 24px -24px; border: none; border-top: 1px solid $hrcolor; height: 0; color: transparent; }
+hr { margin: 14px 0; border: none; border-top: 1px solid $hrcolor; height: 0; color: transparent; }
+.pane hr { margin: 24px -24px; }
 
 /* paragraphs */
 p { margin: 1em 0; }
