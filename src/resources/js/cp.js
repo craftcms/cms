@@ -181,7 +181,7 @@ var CP = Garnish.Base.extend(
 
 	onActionItemListResize: function()
 	{
-		this.$siteName.css('width', 'calc(100% - '+this.$headerActionsList.width()+'px)');
+		this.$siteName.css('max-width', 'calc(100% - '+(this.$headerActionsList.width()+14)+'px)');
 	},
 
 	updateResponsiveNav: function()

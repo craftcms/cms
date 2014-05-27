@@ -25,10 +25,10 @@ html { overflow-y: scroll; }
 #header a:hover,
 #header a.active { color: #fff; text-decoration: none; }
 
-#header h2 { margin: 0; }
-#header h2 a { display: block; padding: 10px 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+#header h2 { @include margin(0, 14px, 0, 0); @include floatleft; }
+#header h2 a { display: block; padding: 10px 0; width: calc(100% + 14px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
-#header-actions { position: absolute; top: 0; @include right(14px); height: 38px; }
+#header-actions { @include floatright; height: 38px; }
 #header-actions > li { @include floatleft; }
 #header-actions a { display: block; padding: 0 7px; line-height: 36px; }
 #header-actions a.menubtn:after { @include margin-left(4px); }
