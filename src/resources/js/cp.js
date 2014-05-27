@@ -154,6 +154,35 @@ var CP = Garnish.Base.extend(
 			});
 		}
 
+		// Look for forms that we should watch for changes on
+		this.$confirmUnloadForms = $('form[data-confirm-unload="1"]');
+
+		if (this.$confirmUnloadForms.length)
+		{
+			this.initialFormValues = [];
+
+			for (var i = 0; i < this.$confirmUnloadForms.length; i++)
+			{
+				var $form = $(this.$confirmUnloadForms);
+				this.initialFormValues[i] = $form.serialize();
+				this.addListener($form, 'submit', function()
+				{
+					this.removeListener(Garnish.$win, 'beforeunload');
+				});
+			}
+
+			this.addListener(Garnish.$win, 'beforeunload', function()
+			{
+				for (var i = 0; i < this.$confirmUnloadForms.length; i++)
+				{
+					if (this.initialFormValues[i] != $(this.$confirmUnloadForms[i]).serialize())
+					{
+						return Craft.t('Any changes will be lost if you leave this page.');
+					}
+				}
+			});
+		}
+
 		this.addListener(this.$upgradePromo, 'click', 'showUpgradeModal');
 
 		var $wrongEditionModalContainer = $('#wrongedition-modal');
