@@ -64,8 +64,8 @@
 
 				{% include "_includes/tabs" %}
 
-				{% if not craft.config.useEmailAsUsername %}
-					<div id="account">
+				<div id="account">
+					{% if not craft.config.useEmailAsUsername %}
 						{{ forms.textField({
 							first: true,
 							label: "Username"|t,
@@ -77,8 +77,7 @@
 							disabled: (isNewAccount or (currentUser.admin or account.isCurrent) ? false : true),
 							errors: (account is defined ? account.getErrors('username') : null)
 						}) }}
-					</div>
-				{% endif %}
+					{% endif %}
 
 					<div class="grid" data-cols="2" data-mode="pct">
 						<div class="item" data-colspan="1">
