@@ -246,7 +246,7 @@ class MatrixService extends BaseApplicationComponent
 
 				foreach ($blockType->getFields() as $field)
 				{
-					if (!$fieldsService->saveField($field))
+					if (!$fieldsService->saveField($field, false))
 					{
 						throw new Exception(Craft::t('An error occurred while saving this Matrix block type.'));
 					}
