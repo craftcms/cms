@@ -80,36 +80,24 @@
 					{% endif %}
 
 					<div class="grid" data-cols="2" data-mode="pct">
-						{% if craft.config.showFullNameField %}
-							<div class="item" data-colspan="2">
-								{{ forms.textField({
-									label: "Full Name"|t,
-									id: 'fullName',
-									name: 'fullName',
-									value: (account is defined ? account.fullName : null),
-									errors: (account is defined ? account.getErrors('fullName') : null)
-								}) }}
-							</div>
-						{% else %}
-							<div class="item" data-colspan="1">
-								{{ forms.textField({
-									label: "First Name"|t,
-									id: 'firstName',
-									name: 'firstName',
-									value: (account is defined ? account.firstName : null),
-									errors: (account is defined ? account.getErrors('firstName') : null)
-								}) }}
-							</div>
-							<div class="item" data-colspan="1">
-								{{ forms.textField({
-									label: "Last Name"|t,
-									id: 'lastName',
-									name: 'lastName',
-									value: (account is defined ? account.lastName : null),
-									errors: (account is defined ? account.getErrors('lastName') : null)
-								}) }}
-							</div>
-						{% endif %}
+						<div class="item" data-colspan="1">
+							{{ forms.textField({
+								label: "First Name"|t,
+								id: 'firstName',
+								name: 'firstName',
+								value: (account is defined ? account.firstName : null),
+								errors: (account is defined ? account.getErrors('firstName') : null)
+							}) }}
+						</div>
+						<div class="item" data-colspan="1">
+							{{ forms.textField({
+								label: "Last Name"|t,
+								id: 'lastName',
+								name: 'lastName',
+								value: (account is defined ? account.lastName : null),
+								errors: (account is defined ? account.getErrors('lastName') : null)
+							}) }}
+						</div>
 					</div>
 
 					{% if isNewAccount %}
