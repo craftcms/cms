@@ -1,13 +1,13 @@
 {
     "require": {
-        "guzzle/guzzle": "v3.8.1",
+        "guzzle/guzzle": "v3.9.1",
         "twig/twig": "v1.15.1",
         "simplepie/simplepie": "1.3.1",
         "phpmailer/phpmailer": "v5.2.8",
         "imagine/imagine": "v0.5.0",
-        "phpunit/phpunit": "4.0.9",
-        "mockery/mockery": "0.9.0",
-        "phpunit/dbunit": "1.3.0",
+        "phpunit/phpunit": "4.1.1",
+        "mockery/mockery": "0.9.1",
+        "phpunit/dbunit": "1.3.1",
         "phpunit/phpunit-selenium": "1.3.3",
         "phpunit/phpunit-story": "1.0.2"
     }
