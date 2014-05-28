@@ -701,8 +701,23 @@ class UsersController extends BaseController
 			$user->username    = craft()->request->getPost('username', ($user->username ? $user->username : $user->email));
 		}
 
-		$user->firstName       = craft()->request->getPost('firstName', $user->firstName);
-		$user->lastName        = craft()->request->getPost('lastName', $user->lastName);
+		$firstName = craft()->request->getPost('firstName', $user->firstName);
+		$lastName = craft()->request->getPost('lastName', $user->lastName);
+
+		if (craft()->config->get('showFullNameField'))
+		{
+			$fullName = craft()->request->getPost('fullName', $user->fullName);
+
+			// Split on the last space.
+			$parts = preg_split("/\s+(?=\S*+$)/", $fullName);
+
+			// If Madonna happens to register, just go with it.
+			$firstName = $parts[0];
+			$lastName = isset($parts[1]) ? $parts[1] : null;
+		}
+
+		$user->firstName       = $firstName;
+		$user->lastName        = $lastName;
 		$user->preferredLocale = craft()->request->getPost('preferredLocale', $user->preferredLocale);
 
 		if ($isNewUser)

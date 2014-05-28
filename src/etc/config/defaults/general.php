@@ -321,6 +321,11 @@ return array(
 	'setPasswordSuccessPath' => '',
 
 	/**
+	 * Whether to display a First and Last name text box on the user account pages, or a separate Full Name text box.
+	 */
+	'showFullNameField' => false,
+
+	/**
 	 * The base URL to the site. If this is set, Craft will use it instead of the site URL defined in Settings > General.
 	 *
 	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale basis.
