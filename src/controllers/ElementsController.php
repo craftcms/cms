@@ -31,9 +31,13 @@ class ElementsController extends BaseController
 				}
 			}
 		}
-		else
+		elseif (!empty($sourceKeys))
 		{
 			$sources = $elementType->getSources($context);
+		}
+		else
+		{
+			$sources = array();
 		}
 
 		$this->renderTemplate('_elements/modalbody', array(
