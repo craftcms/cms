@@ -366,6 +366,7 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 .spinner { display: inline-block; vertical-align: bottom; @include spinner; }
 .spinner.big { width: 48px; height: 48px; background: url(../images/spinner_big.gif) no-repeat 50% 50%; }
 .btn + .spinner { @include margin-left(7px); }
+.buttons .btn + .spinner { @include margin-left(0); }
 
 /* small buttons */
 .btngroup.small .btn,
