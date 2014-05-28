@@ -33,7 +33,7 @@ return array(
 	'Add a category' => 'إضافة فئة',
 	'Add a column' => 'إضافة عمود',
 	'Add a new locale…' => 'إضافة لغة جديدة…',
-	'Add a new widget.' => 'إضافة عنصر واجهة جديد.',
+	'Add a new widget' => 'إضافة عنصر واجهة جديد.',
 	'Add a row' => 'إضافة صف',
 	'Add a tag' => 'إضافة علامة',
 	'Add a token' => 'إضافة رمز',

@@ -33,7 +33,7 @@ return array(
 	'Add a category' => 'カテゴリーを追加する',
 	'Add a column' => '欄を追加する',
 	'Add a new locale…' => '新ロケールを追加する…',
-	'Add a new widget.' => '新規ウィジェットを追加する',
+	'Add a new widget' => '新規ウィジェットを追加する',
 	'Add a row' => '行を追加する',
 	'Add a tag' => 'タグを追加する',
 	'Add a token' => 'トークンを追加する',

@@ -33,7 +33,7 @@ return array(
 	'Add a category' => 'Add a category',
 	'Add a column' => 'Add a column',
 	'Add a new locale…' => 'Add a new locale…',
-	'Add a new widget.' => 'Add a new widget.',
+	'Add a new widget' => 'Add a new widget',
 	'Add a row' => 'Add a row',
 	'Add a tag' => 'Add a tag',
 	'Add a token' => 'Add a token',

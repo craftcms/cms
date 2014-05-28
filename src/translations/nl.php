@@ -33,7 +33,7 @@ return array(
 	'Add a category' => 'Voeg een categorie toe',
 	'Add a column' => 'Voeg een kolom toe',
 	'Add a new locale…' => 'Voeg een nieuwe taalzone toe…',
-	'Add a new widget.' => 'Voeg een nieuwe widget toe.',
+	'Add a new widget' => 'Voeg een nieuwe widget toe.',
 	'Add a row' => 'Voeg een rij toe',
 	'Add a tag' => 'Voeg een tag toe',
 	'Add a token' => 'Voeg een coupon toe',

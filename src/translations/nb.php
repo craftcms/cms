@@ -33,7 +33,7 @@ return array(
 	'Add a category' => 'Ny kategori',
 	'Add a column' => 'Legg til flere kolonner',
 	'Add a new locale…' => 'Legg til et nytt språk...',
-	'Add a new widget.' => 'Legg til en ny widget.',
+	'Add a new widget' => 'Legg til en ny widget.',
 	'Add a row' => 'Legg til flere rader',
 	'Add a tag' => 'Legg til stikkord',
 	'Add a token' => 'Legg til en variabel',
