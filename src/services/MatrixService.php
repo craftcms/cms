@@ -111,8 +111,13 @@ class MatrixService extends BaseApplicationComponent
 
 		// Can't validate multiple new rows at once so we'll need to give these a temporary context
 		// to avioid false unique handle validation errors, and just validate those manually.
-		$originalFieldContext = craft()->content->fieldContext;
-		craft()->content->fieldContext = StringHelper::randomString(10);
+		// Also apply the future fieldColumnPrefix so that field handle validation takes its length into account.
+		$contentService = craft()->content;
+		$originalFieldContext      = $contentService->fieldContext;
+		$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+
+		$contentService->fieldContext      = StringHelper::randomString(10);
+		$contentService->fieldColumnPrefix = 'field_'.$blockType->handle.'_';
 
 		foreach ($blockType->getFields() as $field)
 		{
@@ -149,7 +154,8 @@ class MatrixService extends BaseApplicationComponent
 			}
 		}
 
-		craft()->content->fieldContext = $originalFieldContext;
+		$contentService->fieldContext      = $originalFieldContext;
+		$contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
 
 		return $validates;
 	}
