@@ -365,7 +365,7 @@ class TemplateCacheService extends BaseApplicationComponent
 		}
 
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable,
-			array('expiryDate <= :now'),
+			'expiryDate <= :now',
 			array('now' => DateTimeHelper::currentTimeForDb())
 		);
 
