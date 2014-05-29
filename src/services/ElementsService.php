@@ -496,6 +496,11 @@ class ElementsService extends BaseApplicationComponent
 			$query->andWhere(DbHelper::parseDateParam('elements.dateUpdated', $criteria->dateUpdated, $query->params));
 		}
 
+		if ($elementType->hasTitles() && $criteria->title)
+		{
+			$query->andWhere(DbHelper::parseParam('content.title', $criteria->title, $query->params));
+		}
+
 		// i18n params
 
 		if ($criteria->slug)

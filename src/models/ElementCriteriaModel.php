@@ -58,6 +58,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 			'siblingOf'      => AttributeType::Mixed,
 			'slug'           => AttributeType::String,
 			'status'         => array(AttributeType::String, 'default' => BaseElementModel::ENABLED),
+			'title'          => AttributeType::String,
 			'uri'            => AttributeType::String,
 			'kind'           => AttributeType::Mixed,
 
