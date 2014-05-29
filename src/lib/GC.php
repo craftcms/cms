@@ -215,7 +215,7 @@ class GC
 	 */
 	private static function __triggerError($message, $file, $line, $code = 0)
 	{
-		\Craft\Craft::log("GoogleCloud: Error: " . $message, \Craft\LogLevel::Info, true);
+		\Craft\Craft::log("GoogleCloud: Error: " . $message, \Craft\LogLevel::Error);
 
 		if (self::$useExceptions)
 			throw new GCException($message, $file, $line, $code);

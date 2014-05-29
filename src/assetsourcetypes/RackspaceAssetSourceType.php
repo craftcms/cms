@@ -1052,7 +1052,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	private static function _logUnexpectedResponse($response)
 	{
-		Craft::log("RACKSPACE: Received unexpected response: " . $response, LogLevel::Info, true);
+		Craft::log('RACKSPACE: Received unexpected response: '.$response, LogLevel::Error);
 	}
 
 	/**
