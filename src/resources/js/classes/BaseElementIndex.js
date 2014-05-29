@@ -3,6 +3,7 @@
  */
 Craft.BaseElementIndex = Garnish.Base.extend(
 {
+	initialized: false,
 	elementType: null,
 
 	instanceState: null,
@@ -126,6 +127,24 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 
 			this.localeMenu.on('optionselect', $.proxy(this, 'onLocaleChange'));
+
+			if (this.locale)
+			{
+				// Do we have a different locale stored in localStorage?
+				var storedLocale = Craft.getLocalStorage('BaseElementIndex.locale');
+
+				if (storedLocale && storedLocale != this.locale)
+				{
+					// Is that one available here?
+					var $storedLocaleOption = this.localeMenu.$options.filter('[data-locale="'+storedLocale+'"]:first');
+
+					if ($storedLocaleOption.length)
+					{
+						// Todo: switch this to localeMenu.selectOption($storedLocaleOption) once Menu is updated to support that
+						$storedLocaleOption.trigger('click');
+					}
+				}
+			}
 		}
 
 		this.onAfterHtmlInit();
@@ -163,6 +182,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.selectSource($source);
 
 		// Load up the elements!
+		this.initialized = true;
 		this.updateElements();
 
 		// Add some listeners
@@ -330,6 +350,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	updateElements: function()
 	{
+		// Ignore if we're not fully initialized yet
+		if (!this.initialized)
+		{
+			return;
+		}
+
 		this.$mainSpinner.removeClass('hidden');
 		this.removeListener(this.$scroller, 'scroll');
 
@@ -479,7 +505,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$localeMenuBtn.html($option.html());
 
 		this.locale = $option.data('locale');
-		this.updateElements();
+
+		if (this.initialized)
+		{
+			// Remember this locale for later
+			Craft.setLocalStorage('BaseElementIndex.locale', this.locale);
+
+			// Update the elements
+			this.updateElements();
+		}
 	},
 
 	onSortChange: function(ev)
