@@ -32,8 +32,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	{
 		this.base(elementType, $container, settings);
 
-		var context = this.settings.context;
-		if (context == 'index')
+		if (this.settings.context == 'index')
 		{
 			this.initIndexMode();
 		}
@@ -41,20 +40,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		for (var i = 0; i < this.$sources.length; i++)
 		{
 			var $source = $(this.$sources[i]);
+			this._createFolderContextMenu($source);
 
-			// Index mode gets all the fancy options
-			if (context == 'index')
+			if ($source.closest('ul').data('level') > 1)
 			{
-				this._createFolderContextMenu($source, true);
-
-				if ($source.parents('ul').length > 1)
-				{
-					this._folderDrag.addItems($source.parent());
-				}
-			}
-			else
-			{
-				this._createFolderContextMenu($source, false);
+				this._folderDrag.addItems($source.parent());
 			}
 		};
 	},
@@ -112,6 +102,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		// ---------------------------------------
 		// Folder dragging
 		// ---------------------------------------
+
 		this._folderDrag = new Garnish.DragDrop(
 		{
 			activeDropTargetClass: 'sel assets-fm-dragtarget',
@@ -127,7 +118,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				{
 					var $source = $($selected[i]).parent();
 
-					if ($source.parents('ul').length > 1 && $source.hasClass('sel'))
+					if ($source.hasClass('sel') && $source.closest('ul').data('level') > 1)
 					{
 						draggees.push($source[0]);
 					}
@@ -155,7 +146,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 				for (var i = 0; i < this.$sources.length; i++)
 				{
-					var $source = this.$sources[i];
+					var $source = $(this.$sources[i]);
 
 					if (!$source.is(this._folderDrag.$draggee))
 					{
@@ -637,12 +628,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 */
 	_getParentSource: function($source)
 	{
-		if ($source.parents('ul').length == 1)
+		if ($source.closest('ul').data('level') > 1)
 		{
-			return null;
+			return $source.parent().parent().siblings('a');
 		}
-
-		return $source.parent().parent().siblings('a');
 	},
 
 	/**
@@ -696,7 +685,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 		for (var i = 0; i < $parentSources.length; i++)
 		{
-			var $parentSource = $parentSources[i];
+			var $parentSource = $($parentSources[i]);
 
 			if (!$parentSource.hasClass('expanded'))
 			{
@@ -798,7 +787,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	/**
 	 * Update uploaded byte count.
 	 */
-	_onUploadProgress: function(event, data) {
+	_onUploadProgress: function(event, data)
+	{
 		var progress = parseInt(data.loaded / data.total * 100, 10);
 		this.progressBar.setProgressPercentage(progress);
 	},
@@ -806,7 +796,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	/**
 	 * On Upload Complete.
 	 */
-	_onUploadComplete: function(event, data) {
+	_onUploadComplete: function(event, data)
+	{
 		var response = data.result;
 		var fileName = data.files[0].name;
 
@@ -1318,26 +1309,26 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		}
 	},
 
-	_createFolderContextMenu: function(element, addAllOptions)
+	_createFolderContextMenu: function($source)
 	{
-		var $element = $(element);
-		var menuOptions = [{ label: Craft.t('New subfolder'), onClick: $.proxy(this, '_createSubfolder', $element) }];
+		var menuOptions = [{ label: Craft.t('New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
 
 		// For all folders that are not top folders
-		if ($element.parents('ul').length > 1 && addAllOptions)
+		if (this.settings.context == 'index' && $source.closest('ul').data('level') > 1)
 		{
-			menuOptions.push({ label: Craft.t('Rename folder'), onClick: $.proxy(this, '_renameFolder', $element) });
-			menuOptions.push({ label: Craft.t('Delete folder'), onClick: $.proxy(this, '_deleteFolder', $element) });
+			menuOptions.push({ label: Craft.t('Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
+			menuOptions.push({ label: Craft.t('Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
 		}
 
 		var menu = new Garnish.Menu(menuOptions, {
 			menuClass: 'menu assets-contextmenu',
-			contextMenuFor: $element}
+			contextMenuFor: $source}
 		);
 
-		if ($element.find('>span.settings').length == 0)
+		if ($source.find('>span.settings').length == 0)
 		{
-			var cog = $('<span class="settings" data-icon="settings"></span>').appendTo($element);
+			var cog = $('<span class="settings" data-icon="settings"></span>').appendTo($source);
+
 			cog.on('mousedown', function (ev)
 			{
 				// Simulate a right click.
@@ -1372,7 +1363,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 					var $a = $subFolder.find('a');
 					this._addSubfolder($parentFolder, $subFolder);
-					this._createFolderContextMenu($a, this.settings.context == "index");
+					this._createFolderContextMenu($a);
 					this.sourceSelect.addItems($a);
 
 					// For Assets Modals the folder drag manager won't be available
@@ -1494,7 +1485,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 		for (var i = 0; i < $existingChildren.length; i++)
 		{
-			var $existingChild = $existingChildren[i];
+			var $existingChild = $($existingChildren[i]);
 
 			if (!folderInserted && $.trim($existingChild.text()) > $.trim($subFolder.text()))
 			{
@@ -1526,11 +1517,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 		if (this.settings.context == 'index')
 		{
-			$container = this.progressBar.$progressBar.parents('#content');
+			$container = this.progressBar.$progressBar.closest('#content');
 		}
 		else
 		{
-			$container = this.progressBar.$progressBar.parents('.main');
+			$container = this.progressBar.$progressBar.closest('.main');
 		}
 
 		var containerTop = $container.offset().top;
