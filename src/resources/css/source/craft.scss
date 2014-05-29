@@ -232,16 +232,22 @@ td.right { float: none; @include alignright; }
 
 .content.has-sidebar .sidebar nav { @include margin-left(-24px); @include padding-left(24px); width: 170px; overflow: auto; }
 .content.has-sidebar .sidebar nav li { position: relative; }
-.content.has-sidebar .sidebar nav li a { display: block; padding: 4px 0; color: $textcolor; @include user-select(none); outline: none; }
+.content.has-sidebar .sidebar nav li a { display: block; @include margin-left(-24px); padding: 4px 0; color: $textcolor; @include user-select(none); outline: none; }
 .content.has-sidebar .sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
-.content.has-sidebar .sidebar nav li a.sel { @include margin-left(-200px); @include padding-left(200px); @include border-radius(0, 2px, 2px, 0); color: #fff; background: $menuselcolor; cursor: default; }
+.content.has-sidebar .sidebar nav li a.sel { @include border-radius(0, 2px, 2px, 0); color: #fff; background: $menuselcolor; cursor: default; }
 
 .content.has-sidebar .sidebar nav li .toggle { position: absolute; top: 3px; @include left(-20px); }
 .content.has-sidebar .sidebar nav li.expanded > .toggle { background-position: 50% -40px; }
 .content.has-sidebar .sidebar nav li a.sel + .toggle { background-position: 50% -20px; }
 .content.has-sidebar .sidebar nav li.expanded > a.sel + .toggle { background-position: 50% -60px; }
-.content.has-sidebar .sidebar nav li ul { @include margin-left(20px); display: none; }
+.content.has-sidebar .sidebar nav li ul { display: none; }
 .content.has-sidebar .sidebar nav li.expanded > ul { display: block; }
+
+.content.has-sidebar .sidebar nav > ul > li > a { padding-left: 24px; }
+.content.has-sidebar .sidebar nav > ul > li > ul > li > a { padding-left: 44px; }
+.content.has-sidebar .sidebar nav > ul > li > ul > li > > ul > li > a { padding-left: 64px; }
+.content.has-sidebar .sidebar nav > ul > li > ul > li > > ul > li > ul > li > a { padding-left: 84px; }
+.content.has-sidebar .sidebar nav > ul > li > ul > li > > ul > li > ul > li > ul > li > a { padding-left: 104px; }
 
 /* help */
 .content.has-help { padding-bottom: 60px; }
