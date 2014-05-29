@@ -272,17 +272,26 @@ class UpdateController extends BaseController
 			}
 		}
 
+		$handle = $this->_getFixedHandle($data);
+
 		if (craft()->config->get('backupDbOnUpdate'))
 		{
-			$return = craft()->updates->backupDatabase();
-			if (!$return['success'])
-			{
-				$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('An error was encountered. Rolling back…'), 'nextAction' => 'update/rollback'));
-			}
+			$plugin = craft()->plugins->getPlugin($handle);
 
-			if (isset($return['dbBackupPath']))
+			// If this a plugin, make sure it actually has new migrations before backing up the database.
+			if ($handle == 'craft' || ($plugin && craft()->migrations->getNewMigrations($plugin)))
 			{
-				$data['dbBackupPath'] = $return['dbBackupPath'];
+				$return = craft()->updates->backupDatabase();
+
+				if (!$return['success'])
+				{
+					$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('An error was encountered. Rolling back…'), 'nextAction' => 'update/rollback'));
+				}
+
+				if (isset($return['dbBackupPath']))
+				{
+					$data['dbBackupPath'] = $return['dbBackupPath'];
+				}
 			}
 		}
 
