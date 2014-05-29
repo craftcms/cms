@@ -52,8 +52,9 @@ class CraftTwigExtension extends \Twig_Extension
 
 		return array(
 			'currency'           => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatCurrency'),
+			'date'               => new \Twig_Filter_Method($this, 'dateFilter', array('needs_environment' => true)),
 			'datetime'           => new \Twig_Filter_Function('\Craft\craft()->dateFormatter->formatDateTime'),
-			'filesize'	         => new \Twig_Filter_Function('\Craft\craft()->formatter->formatSize'),
+			'filesize'           => new \Twig_Filter_Function('\Craft\craft()->formatter->formatSize'),
 			'filter'             => new \Twig_Filter_Function('array_filter'),
 			'group'              => new \Twig_Filter_Method($this, 'groupFilter'),
 			'indexOf'            => new \Twig_Filter_Method($this, 'indexOfFilter'),
@@ -136,6 +137,38 @@ class CraftTwigExtension extends \Twig_Extension
 			// Otherwise use str_replace
 			return str_replace($search, $replace, $str);
 		}
+	}
+
+	/**
+	 * Extending Twig's |date filter so we can run any translations on the output.
+	 *
+	 * @param \Twig_Environment $env
+	 * @param                   $date
+	 * @param null              $format
+	 * @param null              $timezone
+	 * @return mixed|string
+	 */
+	public function dateFilter(\Twig_Environment $env, $date, $format = null, $timezone = null)
+	{
+		// Let Twig do it's thing.
+		$value = \twig_date_format_filter($env, $date, $format, $timezone);
+
+		// Get the "words".  Split on anything that is not a unicode letter or number.
+		preg_match_all('/[\p{L}\p{N}]+/u', $value, $words);
+
+		if ($words && isset($words[0]) && count($words[0]) > 0)
+		{
+			foreach ($words[0] as $word)
+			{
+				// Translate and swap out.
+				$translatedWord = Craft::t($word);
+				$value = str_replace($word, $translatedWord, $value);
+			}
+		}
+
+		// Return the translated value.
+		return $value;
+
 	}
 
 	/**

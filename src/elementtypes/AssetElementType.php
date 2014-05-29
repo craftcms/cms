@@ -77,13 +77,13 @@ class AssetElementType extends BaseElementType
 	 */
 	public function getSource($key, $context = null)
 	{
-		if (preg_match('/folder:(\d+)/', $key, $matches))
+		if (preg_match('/folder:(\d+)(:single)?/', $key, $matches))
 		{
 			$folder = craft()->assets->getFolderById($matches[1]);
 
 			if ($folder)
 			{
-				return $this->_assembleSourceInfoForFolder($folder, true);
+				return $this->_assembleSourceInfoForFolder($folder, empty($matches[2]));
 			}
 		}
 

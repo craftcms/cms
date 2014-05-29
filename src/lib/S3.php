@@ -349,6 +349,7 @@ class S3
 	*/
 	private static function __triggerError($message, $file, $line, $code = 0)
 	{
+		\Craft\Craft::log("S3: Error: " . $message, \Craft\LogLevel::Info, true);
 		if (self::$useExceptions)
 			throw new S3Exception($message, $file, $line, $code);
 		else

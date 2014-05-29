@@ -46,6 +46,9 @@ class PhpMessageSource extends \CPhpMessageSource
 			// Craft's translations are up next
 			$paths[] = craft()->path->getCpTranslationsPath();
 
+			// Add in Yii's i18n data, which we're going to do some special parsing on
+			$paths[] = craft()->path->getFrameworkPath().'i18n/data/';
+
 			// Site translations take the highest precidence, so they get added last
 			$paths[] = craft()->path->getSiteTranslationsPath();
 
@@ -76,6 +79,12 @@ class PhpMessageSource extends \CPhpMessageSource
 
 							if (is_array($translations))
 							{
+								// If this is framework data and we're not on en_us, then do some special processing.
+								if (strpos($path, 'framework/i18n/data') !== false && $file !== 'en_us')
+								{
+									$translations = $this->_processFrameworkData($file);
+								}
+
 								$this->_translations[$language] = array_merge($this->_translations[$language], $translations);
 							}
 						}
@@ -85,5 +94,31 @@ class PhpMessageSource extends \CPhpMessageSource
 		}
 
 		return $this->_translations[$language];
+	}
+
+	/**
+	 * @param $localeId
+	 * @return array
+	 */
+	private function _processFrameworkData($localeId)
+	{
+		$wideMonthKeys = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
+		$abbreviatedMonthKeys = array('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
+		$wideWeekdayNameKeys = array('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday');
+		$abbreviatedWeekdayNameKeys = array('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat');
+		$amNameKey = 'AM';
+		$pmNameKey = 'PM';
+
+		$formattedFrameworkData = array();
+		$locale = \CLocale::getInstance($localeId);
+
+		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($wideMonthKeys, $locale->getMonthNames()));
+		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($abbreviatedMonthKeys, $locale->getMonthNames('abbreviated')));
+		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($wideWeekdayNameKeys, $locale->getWeekDayNames()));
+		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($abbreviatedWeekdayNameKeys, $locale->getWeekDayNames('abbreviated')));
+		$formattedFrameworkData[$amNameKey] = $locale->getAMName();
+		$formattedFrameworkData[$pmNameKey] = $locale->getPMName();
+
+		return $formattedFrameworkData;
 	}
 }
