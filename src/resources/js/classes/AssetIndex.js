@@ -42,9 +42,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			var $source = $(this.$sources[i]);
 			this._createFolderContextMenu($source);
 
-			if ($source.closest('ul').data('level') > 1)
+			if (this.settings.context == 'index')
 			{
-				this._folderDrag.addItems($source.parent());
+				if (this._folderDrag)
+				{
+					this._folderDrag.addItems($source.parent());
+				}
 			}
 		};
 	},
