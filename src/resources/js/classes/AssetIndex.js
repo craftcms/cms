@@ -54,8 +54,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 */
 	initIndexMode: function()
 	{
-		this.$sidebar.find('nav').addClass('assets-nav');
-
 		// ---------------------------------------
 		// File dragging
 		// ---------------------------------------
@@ -914,7 +912,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 		if (this.settings.context == 'index')
 		{
-			$elements = this.$elementContainer.children(':not(.disabled)');
+			var $elements = this.$elementContainer.children(':not(.disabled)');
 			this._initElementSelect($elements);
 			this._attachElementEvents($elements);
 			this._initElementDragger($elements);
@@ -994,7 +992,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_createElementContextMenus: function($elements)
 	{
-		var settings = {menuClass: 'menu assets-contextmenu', contextMenuFor: $elements};
+		var settings = {menuClass: 'menu assets-contextmenu'};
 
 		var menuOptions = [{ label: Craft.t('View file'), onClick: $.proxy(this, '_viewFile') }];
 		menuOptions.push({ label: Craft.t('Edit properties'), onClick: $.proxy(this, '_showProperties') });
@@ -1002,10 +1000,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		menuOptions.push({ label: Craft.t('Copy reference tag'), onClick: $.proxy(this, '_copyRefTag') });
 		menuOptions.push('-');
 		menuOptions.push({ label: Craft.t('Delete file'), onClick: $.proxy(this, '_deleteFile') });
-		this._singleFileMenu = new Garnish.Menu(menuOptions, settings);
+		this._singleFileMenu = new Garnish.ContextMenu($elements, menuOptions, settings);
 
 		menuOptions = [{ label: Craft.t('Delete'), onClick: $.proxy(this, '_deleteFiles') }];
-		this._multiFileMenu = new Garnish.Menu(menuOptions, settings);
+		this._multiFileMenu = new Garnish.ContextMenu($elements, menuOptions, settings);
 
 		this._enableElementContextMenu();
 	},
@@ -1320,22 +1318,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			menuOptions.push({ label: Craft.t('Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
 		}
 
-		var menu = new Garnish.Menu(menuOptions, {
-			menuClass: 'menu assets-contextmenu',
-			contextMenuFor: $source}
-		);
-
-		if ($source.find('>span.settings').length == 0)
-		{
-			var cog = $('<span class="settings" data-icon="settings"></span>').appendTo($source);
-
-			cog.on('mousedown', function (ev)
-			{
-				// Simulate a right click.
-				ev.which = Garnish.SECONDARY_CLICK;
-				menu.rightClick(ev);
-			});
-		}
+		new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu assets-contextmenu'});
 	},
 
 	_createSubfolder: function($parentFolder)

@@ -987,10 +987,6 @@ body .redactor_box textarea { padding: 6px 7px; }
 
 /* Assets related */
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
-.content.has-sidebar .sidebar nav li a { padding-right: 20px; position: relative;
-  span.settings { position: absolute; right: 5px; top: 2px; display: none; cursor: pointer; }
-}
-.content.has-sidebar .sidebar nav a:hover span.settings { display: block; }
 
 /* redactor */
 body .redactor_box,
