@@ -38,7 +38,7 @@
 		<ul id="groups">
 			<li><a href="{{ url('settings/fields') }}"{% if groupId is not defined %} class="sel"{% endif %}>{{ "All Fields"|t }}</a></li>
 			{% for group in groups %}
-				<li><a href="{{ url('settings/fields/'~group.id) }}"{% if groupId is defined and group.id == groupId %} class="sel"{% endif %} data-id="{{ group.id }}">{{ group.name|t }}</a></li>
+				<li><a href="{{ url('settings/fields/'~group.id) }}"{% if groupId is defined and group.id == groupId %} class="sel"{% endif %} data-id="{{ group.id }}">{{ group.name }}</a></li>
 			{% endfor %}
 		</ul>
 	</nav>
@@ -79,24 +79,24 @@
 				<td class="thin"></td>
 			</thead>
 			<tbody>
-			{% for field in fields %}
-				<tr data-id="{{ field.id }}" data-name="{{ field.name|t }}">
-					<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/fields/edit/' ~ field.id) }}">{{ field.name|t }}</a>
-						{%- if field.required %} <span class="required"></span>{% endif -%}
-					</th>
-					<td data-title="{{ 'Handle'|t }}"><code>{{ field.handle|t }}</code></td>
-					<td data-title="{{ 'Type'|t }}">
-						{% set fieldType = field.getFieldType() %}
-						{% if fieldType %}
-							{{ fieldType.name|t }}
-						{% else %}
-							<span class="error">{{ field.type|t }}</span>
-						{% endif %}
-					</td>
-					{% if groupId is not defined %}<td data-title="{{ 'Group'|t }}">{{ field.group.name|t }}</td>{% endif %}
-					<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
-				</tr>
-			{% endfor %}
+				{% for field in fields %}
+					<tr data-id="{{ field.id }}" data-name="{{ field.name|t }}">
+						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/fields/edit/' ~ field.id) }}">{{ field.name|t }}</a>
+							{%- if field.required %} <span class="required"></span>{% endif -%}
+						</th>
+						<td data-title="{{ 'Handle'|t }}"><code>{{ field.handle }}</code></td>
+						<td data-title="{{ 'Type'|t }}">
+							{% set fieldType = field.getFieldType() %}
+							{% if fieldType %}
+								{{ fieldType.name }}
+							{% else %}
+								<span class="error">{{ field.type }}</span>
+							{% endif %}
+						</td>
+						{% if groupId is not defined %}<td data-title="{{ 'Group'|t }}">{{ field.group.name }}</td>{% endif %}
+						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
+					</tr>
+				{% endfor %}
 			</tbody>
 		</table>
 	{% endif %}

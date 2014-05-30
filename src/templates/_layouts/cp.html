@@ -186,14 +186,14 @@
 					<nav id="crumbs">
 						<ul>
 							{% for crumb in crumbs %}
-								<li><a href="{{ crumb.url }}">{{ crumb.label|t }}</a></li>
+								<li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
 							{% endfor %}
 						</ul>
 					</nav>
 				{% endif %}
 
 				{% if title is defined and title %}
-					<h1>{{ title|raw|t }}</h1>
+					<h1>{{ title|raw }}</h1>
 				{% endif %}
 
 				{% if extraPageHeaderHtml is defined %}
