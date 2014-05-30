@@ -318,6 +318,10 @@ class AssetsFieldType extends BaseElementFieldType
 
 					$sources[] = 'folder:'.$folder->id;
 				}
+				else if (strncmp($source, 'folder:', 7) === 0)
+				{
+					$sources[] = $source;
+				}
 			}
 		}
 		else if ($settings->sources == '*')
