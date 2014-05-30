@@ -199,27 +199,32 @@ class AssetTransformsService extends BaseApplicationComponent
 			// or if the transform dimensions have changed since it was last created
 			if (!$timeModified || $timeModified < $fileModel->dateModified || $timeModified < $transform->dimensionChangeTime)
 			{
-				$targetFile = AssetsHelper::getTempFilePath(IOHelper::getExtension($fileModel->filename));
+				$image = craft()->images->loadImage($imageSource);
+				$image->setQuality($quality);
+
 				switch ($transform->mode)
 				{
 					case 'fit':
 					{
-						craft()->images->loadImage($imageSource)->scaleToFit($transform->width, $transform->height)->setQuality($quality)->saveAs($targetFile);
+						$imgae->scaleToFit($transform->width, $transform->height);
 						break;
 					}
 
 					case 'stretch':
 					{
-						craft()->images->loadImage($imageSource)->resize($transform->width, $transform->height)->setQuality($quality)->saveAs($targetFile);
+						$image->resize($transform->width, $transform->height);
 						break;
 					}
 
 					default:
 					{
-						craft()->images->loadImage($imageSource)->scaleAndCrop($transform->width, $transform->height, true, $transform->position)->setQuality($quality)->saveAs($targetFile);
+						$image->scaleAndCrop($transform->width, $transform->height, true, $transform->position);
 						break;
 					}
 				}
+
+				$targetFile = AssetsHelper::getTempFilePath(IOHelper::getExtension($fileModel->filename));
+				$image->saveAs($targetFile);
 
 				clearstatcache(true, $targetFile);
 				$sourceType->putImageTransform($fileModel, $transformLocation, $targetFile);
