@@ -320,6 +320,10 @@ class AssetsFieldType extends BaseElementFieldType
 				}
 			}
 		}
+		elseif($settings->sources == "*")
+		{
+			$sources = "*";
+		}
 
 		return $sources;
 	}
