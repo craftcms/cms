@@ -21,7 +21,7 @@
 	<div class="fld-tab">
 		<div class="tabs">
 			<div class="tab sel{% if customizableTabs %} draggable{% endif %}">
-				<span>{{ tabName }}</span>
+				<span>{{ tabName|t }}</span>
 				{% if customizableTabs %}
 					<a class="settings icon" title="{{ 'Edit'|t }}"></a>
 				{% endif %}
@@ -31,7 +31,7 @@
 			{% for field in tabFields %}
 				<div class="fld-field{% if field.required %} fld-required{% endif %}" data-id="{{ field.fieldId }}">
 					<a class="settings icon" title="{{ 'Edit'|t }}"></a>
-					<span>{{ field.getField().name }}</span>
+					<span>{{ field.getField().name|t }}</span>
 					<input class="id-input" type="hidden" name="fieldLayout[{{ tabName|e('url') }}][]" value="{{ field.fieldId }}">
 					{% if field.required %}<input class="required-input" type="hidden" name="requiredFields[]" value="{{ field.fieldId }}">{% endif %}
 				</div>
@@ -82,13 +82,13 @@
 
 			<div class="fld-tab unused{% if totalUnselected == 0 %} hidden{% endif %}">
 				<div class="tabs">
-					<div class="tab sel"><span>{{ group.name }}</span></div>
+					<div class="tab sel"><span>{{ group.name|t }}</span></div>
 				</div>
 				<div class="fld-tabcontent">
 					{% for field in group.fields %}
 						{% set selected = fieldLayout and field.id in fieldLayout.getFieldIds() %}
 						<div class="fld-field unused{% if selected %} hidden{% endif %}" data-id="{{ field.id }}">
-							<span>{{ field.name }}</span>
+							<span>{{ field.name|t }}</span>
 						</div>
 					{% endfor %}
 				</div>
