@@ -800,6 +800,31 @@ class UsersService extends BaseApplicationComponent
 		return false;
 	}
 
+	/**
+	 * If the purgePendingUsersDuration config setting has a valid duration, this method will delete any users in a pending
+	 * state that as past the duration.
+	 */
+	public function purgeExpiredPendingUsers()
+	{
+		if (($duration = craft()->config->get('purgePendingUsersDuration')) !== false)
+		{
+			$interval = new DateInterval($duration);
+			$expire = DateTimeHelper::currentUTCDateTime();
+			$pastTimeStamp = $expire->sub($interval)->getTimestamp();
+			$pastTime = DateTimeHelper::formatTimeForDb($pastTimeStamp);
+
+			$affectedRows = craft()->db->createCommand()->delete('users',
+				'status = :status AND dateCreated < :pastTime',
+				array('status' => 'pending', 'pastTime' => $pastTime)
+			);
+
+			if ($affectedRows > 0)
+			{
+				Craft::log('Just deleted '.$affectedRows.' pending users from the users table, because the were more than '.$duration.' old', LogLevel::Info, true);
+			}
+		}
+	}
+
 	// Events
 
 	/**

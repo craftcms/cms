@@ -263,6 +263,13 @@ return array(
 	'privateTemplateTrigger' => '_',
 
 	/**
+	 * The amount of time to wait before Craft purges pending users from the system that have not activated. Set to false to disable this feature.
+	 *
+	 * @see http://www.php.net/manual/en/dateinterval.construct.php
+	 */
+	'purgePendingUsersDuration' => 'P3M',
+
+	/**
 	 * The amount of time Craft will remember a username and pre-populate it on the CP login page.
 	 *
 	 * Set to '0' to disable this feature altogether.

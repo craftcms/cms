@@ -41,6 +41,9 @@ class UsersController extends BaseController
 
 		if (craft()->request->isPostRequest())
 		{
+			// A little house-cleaning for expired, pending users, first.
+			craft()->users->purgeExpiredPendingUsers();
+
 			$loginName = craft()->request->getPost('loginName');
 			$password = craft()->request->getPost('password');
 			$rememberMe = (bool) craft()->request->getPost('rememberMe');
