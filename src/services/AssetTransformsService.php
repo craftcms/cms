@@ -296,10 +296,10 @@ class AssetTransformsService extends BaseApplicationComponent
 	{
 		if (!$transformIndexModel)
 		{
-			throw new Exception(Craft::t('No asset image transform exists with the ID “{id}”', array('id' => $transformId)));
+			throw new Exception(Craft::t('No asset image transform exists with that ID.'));
 		}
 
-		// Make sure we're not in the middle of working on this transform from a separete request
+		// Make sure we're not in the middle of working on this transform from a separate request
 		if ($transformIndexModel->inProgress)
 		{
 			for ($safety = 0; $safety < 100; $safety++)
@@ -308,7 +308,7 @@ class AssetTransformsService extends BaseApplicationComponent
 				sleep(1);
 				ini_set('max_execution_time', 120);
 
-				$transformIndexModel = craft()->assetTransforms->getTransformIndexModelById($transformId);
+				$transformIndexModel = craft()->assetTransforms->getTransformIndexModelById($transformIndexModel->id);
 
 				// Is it being worked on right now?
 				if ($transformIndexModel->inProgress)
