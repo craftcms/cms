@@ -275,7 +275,7 @@ class AssetsFieldType extends BaseElementFieldType
 				else
 				{
 					$targetFolder = reset($sources);
-					list ($bogus, $targetFolderId) = explode(":", $targetFolder);
+					list ($bogus, $targetFolderId) = explode(':', $targetFolder);
 				}
 			}
 		}
@@ -320,9 +320,9 @@ class AssetsFieldType extends BaseElementFieldType
 				}
 			}
 		}
-		elseif($settings->sources == "*")
+		else if ($settings->sources == '*')
 		{
-			$sources = "*";
+			$sources = '*';
 		}
 
 		return $sources;
@@ -366,7 +366,7 @@ class AssetsFieldType extends BaseElementFieldType
 		// Do we have the folder?
 		if (empty($folder))
 		{
-			throw new Exception (Craft::t("Cannot find the target folder."));
+			throw new Exception (Craft::t('Cannot find the target folder.'));
 		}
 
 		// Prepare the path by parsing tokens and normalizing slashes.
