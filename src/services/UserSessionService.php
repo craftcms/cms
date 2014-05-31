@@ -68,7 +68,7 @@ class UserSessionService extends \CWebUser
 			{
 				$userRow = $this->_getUserRow($this->getId());
 
-				if ($userRow)
+				if ($userRow && $userRow['status'] == UserStatus::Active)
 				{
 					$this->_userModel = UserModel::populateModel($userRow);
 				}
