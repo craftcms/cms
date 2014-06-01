@@ -1107,9 +1107,10 @@ ul.errors li { color: $errorcolor; }
 }
 
 /* blocks */
-.matrixblock { position: relative; margin: 14px 0; padding: 14px; border-radius: 2px; background: #fff; @include user-select(none);
-	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1));
+.matrixblock { position: relative; margin: 10px 0; padding: 14px; border-radius: 3px; background: hsl(212, 10%, 94%); @include user-select(none);
+	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1));
 }
+.matrixblock:nth-child(even) { background: hsl(212, 10%, 98%); }
 .matrixblock.disabled { opacity: 1; }
 .matrixblock > .actions > .status.off { display: none; }
 .matrixblock.disabled > .actions > .status.off { display: inline-block; @include floatleft; @include margin(4px, 10px, 0, 0); }
