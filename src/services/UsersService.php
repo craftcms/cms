@@ -108,8 +108,8 @@ class UsersService extends BaseApplicationComponent
 		if (!$valid)
 		{
 			// Go ahead and remove it from the record so if they click the link again, it'll throw an Exception.
-			$userRecord = $this->getUserById($user->id);
-			$userRecord->verificationCodeIssedDate = null;
+			$userRecord = $this->_getUserRecordById($user->id);
+			$userRecord->verificationCodeIssuedDate = null;
 			$userRecord->verificationCode = null;
 			$userRecord->save();
 		}
