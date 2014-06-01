@@ -1,17 +1,17 @@
 $hue: 212;
 
 $headerBgColor: hsl($hue, 20%, 25%);
-$bgcolor: hsl($hue, 8%, 95%);
+$bgcolor: hsl($hue, 10%, 93%);
 
 $textcolor: hsl($hue, 20%, 20%);
-$mediumtextcolor: hsl($hue, 11%, 60%);
-$lighttextcolor: hsl($hue, 11%, 75%);
+$mediumtextcolor: hsl($hue, 10%, 60%);
+$lighttextcolor: hsl($hue, 10%, 75%);
 $linkcolor: hsl($hue, 90%, 50%);
-$hrcolor: hsl($hue, 10%, 90%);
+$hrcolor: hsla($hue, 10%, 50%, 0.15);
 $blurglowcolor: hsla($hue, 70%, 70%, 0);
 $focusglowcolor: hsl($hue, 70%, 70%);
-$menuhovercolor: hsl($hue, 11%, 85%);
-$menuselcolor: hsl($hue, 11%, 50%);
+$menuhovercolor: hsl($hue, 10%, 85%);
+$menuselcolor: hsl($hue, 10%, 50%);
 
 $submitcolor: #da5a47;
 $errorcolor: #da5a47;
