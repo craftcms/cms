@@ -14,7 +14,15 @@ class TemplatesController extends BaseController
 	 */
 	public function actionRender($template, array $variables = array())
 	{
-		$this->_render($template, $variables);
+		// Does that template exist?
+		if (craft()->templates->doesTemplateExist($template))
+		{
+			$this->renderTemplate($template, $variables);
+		}
+		else
+		{
+			throw new HttpException(404);
+		}
 	}
 
 	/**
@@ -30,7 +38,7 @@ class TemplatesController extends BaseController
 		}
 
 		// Output the offline template
-		$this->_render('offline');
+		$this->renderTemplate('offline');
 	}
 
 	/**
@@ -38,7 +46,7 @@ class TemplatesController extends BaseController
 	 */
 	public function actionManualUpdateNotification()
 	{
-		$this->_render('_special/dbupdate');
+		$this->renderTemplate('_special/dbupdate');
 	}
 
 	/**
@@ -46,7 +54,7 @@ class TemplatesController extends BaseController
 	 */
 	public function actionManualUpdate()
 	{
-		$this->_render('updates/_go', array(
+		$this->renderTemplate('updates/_go', array(
 			'handle' => craft()->request->getSegment(2)
 		));
 	}
@@ -56,7 +64,7 @@ class TemplatesController extends BaseController
 	 */
 	public function actionBreakpointUpdateNotification()
 	{
-		$this->_render('_special/breakpointupdate', array(
+		$this->renderTemplate('_special/breakpointupdate', array(
 			'minBuild'      => CRAFT_MIN_BUILD_REQUIRED,
 			'minBuildURL'   => CRAFT_MIN_BUILD_URL,
 			'targetVersion' => CRAFT_VERSION,
@@ -89,7 +97,7 @@ class TemplatesController extends BaseController
 			}
 			else
 			{
-				$this->_render('_special/cantrun', array('reqCheck' => $reqCheck));
+				$this->renderTemplate('_special/cantrun', array('reqCheck' => $reqCheck));
 				craft()->end();
 			}
 
@@ -152,34 +160,6 @@ class TemplatesController extends BaseController
 			{
 				// Just output the error message
 				echo $e->getMessage();
-			}
-		}
-	}
-
-	/**
-	 * Renders a template, sets the mime type header, etc..
-	 *
-	 * @access private
-	 * @param string     $template
-	 * @param array|null $variables
-	 * @throws HttpException
-	 * @throws TemplateLoaderException|\Exception
-	 */
-	private function _render($template, $variables = array())
-	{
-		try
-		{
-			$this->renderTemplate($template, $variables);
-		}
-		catch (TemplateLoaderException $e)
-		{
-			if ($e->template == $template)
-			{
-				throw new HttpException(404);
-			}
-			else
-			{
-				throw $e;
 			}
 		}
 	}
