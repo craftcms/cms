@@ -202,8 +202,9 @@ class UsersController extends BaseController
 		$code = craft()->request->getRequiredParam('code');
 		$id = craft()->request->getRequiredParam('id');
 		$user = craft()->users->getUserByVerificationCodeAndUid($code, $id);
+		$isCodeValid = craft()->users->isVerificationCodeValidForUser($user);
 
-		if (!$user)
+		if (!$user || !$isCodeValid)
 		{
 			throw new HttpException('200', Craft::t('Invalid verification code.'));
 		}
@@ -282,8 +283,9 @@ class UsersController extends BaseController
 		$code = craft()->request->getRequiredQuery('code');
 		$id = craft()->request->getRequiredQuery('id');
 		$userToValidate = craft()->users->getUserByVerificationCodeAndUid($code, $id);
+		$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToValidate);
 
-		if (!$userToValidate)
+		if (!$userToValidate || !$isCodeValid)
 		{
 			if (($url = craft()->config->getLocalized('activateAccountFailurePath')) != '')
 			{
@@ -291,7 +293,18 @@ class UsersController extends BaseController
 			}
 			else
 			{
-				throw new HttpException('200', Craft::t('Invalid verification code.'));
+				if (!$userToValidate)
+				{
+					throw new HttpException('200', Craft::t('Invalid verification code.'));
+				}
+
+				if (!$isCodeValid)
+				{
+					craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+
+					$this->renderTemplate('_special/expired', array('userId' => $userToValidate->id));
+					craft()->end();
+				}
 			}
 		}
 
@@ -963,7 +976,6 @@ class UsersController extends BaseController
 	public function actionSendActivationEmail()
 	{
 		$this->requirePostRequest();
-		craft()->userSession->requirePermission('editUsers');
 
 		$userId = craft()->request->getRequiredPost('userId');
 		$user = craft()->users->getUserById($userId);

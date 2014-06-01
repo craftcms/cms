@@ -1,0 +1,16 @@
+{% extends "_layouts/message" %}
+{% set title = "You waited too long!"|t %}
+
+{% block message %}
+	<h2>{{ title }}</h2>
+
+	<p>{{ "Looks like you waited a bit too long before clicking that link and it has expired."|t }}</p>
+
+	<form method="post" accept-charset="UTF-8">
+		<input type="hidden" name="userId" value="{{ userId }}" />
+		<input type="hidden" name="action" value="users/sendActivationEmail" />
+
+		<input type="button" class="btn small formsubmit" value="{{ 'Send new email?'|t }}" />
+	</form>
+
+{% endblock %}

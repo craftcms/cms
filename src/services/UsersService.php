@@ -74,20 +74,13 @@ class UsersService extends BaseApplicationComponent
 				'user' => $user
 			)));
 
-			$minCodeIssueDate = DateTimeHelper::currentUTCDateTime();
-			$duration = new DateInterval(craft()->config->get('verificationCodeDuration'));
-			$minCodeIssueDate->sub($duration);
-
-			if (
-				$userRecord->verificationCodeIssuedDate > $minCodeIssueDate &&
-				craft()->security->checkPassword($code, $userRecord->verificationCode)
-			)
+			if (craft()->security->checkPassword($code, $userRecord->verificationCode))
 			{
 				return $user;
 			}
 			else
 			{
-				Craft::log('Found a user with UID:'.$uid.', but the verification code given: '.$code.' has either expired or does not match the hash in the database.', LogLevel::Warning);
+				Craft::log('Found a user with UID:'.$uid.', but the verification code given: '.$code.' does not match the hash in the database.', LogLevel::Warning);
 			}
 		}
 		else
@@ -96,6 +89,32 @@ class UsersService extends BaseApplicationComponent
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns if a user's verification code has expired or is still valid.
+	 *
+	 * @param UserModel $user
+	 * @return bool
+	 */
+	public function isVerificationCodeValidForUser(UserModel $user)
+	{
+		$minCodeIssueDate = DateTimeHelper::currentUTCDateTime();
+		$duration = new DateInterval(craft()->config->get('verificationCodeDuration'));
+		$minCodeIssueDate->sub($duration);
+
+		$valid = $user->verificationCodeIssuedDate > $minCodeIssueDate;
+
+		if (!$valid)
+		{
+			// Go ahead and remove it from the record so if they click the link again, it'll throw an Exception.
+			$userRecord = $this->getUserById($user->id);
+			$userRecord->verificationCodeIssedDate = null;
+			$userRecord->verificationCode = null;
+			$userRecord->save();
+		}
+
+		return $valid;
 	}
 
 	/**
