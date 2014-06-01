@@ -202,7 +202,11 @@ class UsersController extends BaseController
 		$code = craft()->request->getRequiredParam('code');
 		$id = craft()->request->getRequiredParam('id');
 		$user = craft()->users->getUserByVerificationCodeAndUid($code, $id);
-		$isCodeValid = craft()->users->isVerificationCodeValidForUser($user);
+
+		if ($user)
+		{
+			$isCodeValid = craft()->users->isVerificationCodeValidForUser($user);
+		}
 
 		if (!$user || !$isCodeValid)
 		{
@@ -283,7 +287,11 @@ class UsersController extends BaseController
 		$code = craft()->request->getRequiredQuery('code');
 		$id = craft()->request->getRequiredQuery('id');
 		$userToValidate = craft()->users->getUserByVerificationCodeAndUid($code, $id);
-		$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToValidate);
+
+		if ($userToValidate)
+		{
+			$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToValidate);
+		}
 
 		if (!$userToValidate || !$isCodeValid)
 		{
@@ -303,95 +311,97 @@ class UsersController extends BaseController
 					craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
 
 					$this->renderTemplate('_special/expired', array('userId' => $userToValidate->id));
-					craft()->end();
-				}
-			}
-		}
 
-		// If the current user is logged in
-		if (($currentUser = craft()->userSession->getUser()) !== null)
-		{
-			// If they are validating an account that doesn't belong to them, log them out of their current account.
-			if ($currentUser->id !== $userToValidate->id)
-			{
-				craft()->userSession->logout();
-			}
-		}
-
-		if (craft()->users->activateUser($userToValidate))
-		{
-			// Successfully activated user, do they require a password reset or is their password empty? If so, send them through the password logic.
-			if ($userToValidate->passwordResetRequired || !$userToValidate->password)
-			{
-				// All users that go through account activation will need to set their password.
-				$code = craft()->users->setVerificationCodeOnUser($userToValidate);
-
-				if ($userToValidate->can('accessCp'))
-				{
-					$url = craft()->config->get('actionTrigger').'/users/'.craft()->config->getCpSetPasswordPath();
-				}
-				else
-				{
-					$url = craft()->config->getLocalized('setPasswordPath');
-				}
-			}
-			else
-			{
-				// Do we need to auto-login?
-				if ( craft()->config->get('autoLoginAfterAccountActivation') === true)
-				{
-					craft()->userSession->impersonate($userToValidate->id);
-				}
-
-				// If the user can't access the CP, then send them to the front-end activateAccountSuccessPath.
-				if (!$userToValidate->can('accessCp'))
-				{
-					$url = UrlHelper::getUrl(craft()->config->getLocalized('activateAccountSuccessPath'));
-					$this->redirect($url);
-				}
-				else
-				{
-					craft()->userSession->setNotice(Craft::t('Account activated.'));
-
-					if (craft()->request->getPost('redirect'))
-					{
-						$this->redirectToPostedUrl();
-					}
-					else
-					{
-						$this->redirect(UrlHelper::getCpUrl());
-					}
 				}
 			}
 		}
 		else
 		{
-			$url = craft()->config->getLocalized('activateAccountFailurePath');
-
-			if ($url === '')
+			// If the current user is logged in
+			if (($currentUser = craft()->userSession->getUser()) !== null)
 			{
-				// Failed to validate user and there is no custom validation failure path.  Throw an exception.
-				throw new HttpException('200', Craft::t('There was a problem activating this account.'));
+				// If they are validating an account that doesn't belong to them, log them out of their current account.
+				if ($currentUser->id !== $userToValidate->id)
+				{
+					craft()->userSession->logout();
+				}
+			}
+
+			if (craft()->users->activateUser($userToValidate))
+			{
+				// Successfully activated user, do they require a password reset or is their password empty? If so, send them through the password logic.
+				if ($userToValidate->passwordResetRequired || !$userToValidate->password)
+				{
+					// All users that go through account activation will need to set their password.
+					$code = craft()->users->setVerificationCodeOnUser($userToValidate);
+
+					if ($userToValidate->can('accessCp'))
+					{
+						$url = craft()->config->get('actionTrigger').'/users/'.craft()->config->getCpSetPasswordPath();
+					}
+					else
+					{
+						$url = craft()->config->getLocalized('setPasswordPath');
+					}
+				}
+				else
+				{
+					// Do we need to auto-login?
+					if ( craft()->config->get('autoLoginAfterAccountActivation') === true)
+					{
+						craft()->userSession->impersonate($userToValidate->id);
+					}
+
+					// If the user can't access the CP, then send them to the front-end activateAccountSuccessPath.
+					if (!$userToValidate->can('accessCp'))
+					{
+						$url = UrlHelper::getUrl(craft()->config->getLocalized('activateAccountSuccessPath'));
+						$this->redirect($url);
+					}
+					else
+					{
+						craft()->userSession->setNotice(Craft::t('Account activated.'));
+
+						if (craft()->request->getPost('redirect'))
+						{
+							$this->redirectToPostedUrl();
+						}
+						else
+						{
+							$this->redirect(UrlHelper::getCpUrl());
+						}
+					}
+				}
 			}
 			else
 			{
-				// Failed to activate user and there is a custom validate failure path set, so use it.
-				$url = UrlHelper::getSiteUrl($url);
-			}
-		}
+				$url = craft()->config->getLocalized('activateAccountFailurePath');
 
-		if (craft()->request->isSecureConnection())
-		{
+				if ($url === '')
+				{
+					// Failed to validate user and there is no custom validation failure path.  Throw an exception.
+					throw new HttpException('200', Craft::t('There was a problem activating this account.'));
+				}
+				else
+				{
+					// Failed to activate user and there is a custom validate failure path set, so use it.
+					$url = UrlHelper::getSiteUrl($url);
+				}
+			}
+
+			if (craft()->request->isSecureConnection())
+			{
+				$url = UrlHelper::getUrl($url, array(
+					'code' => $code, 'id' => $id
+				), 'https');
+			}
+
 			$url = UrlHelper::getUrl($url, array(
 				'code' => $code, 'id' => $id
-			), 'https');
+			));
+
+			$this->redirect($url);
 		}
-
-		$url = UrlHelper::getUrl($url, array(
-			'code' => $code, 'id' => $id
-		));
-
-		$this->redirect($url);
 	}
 
 	/**
