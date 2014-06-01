@@ -206,7 +206,7 @@ class AssetTransformsService extends BaseApplicationComponent
 				{
 					case 'fit':
 					{
-						$imgae->scaleToFit($transform->width, $transform->height);
+						$image->scaleToFit($transform->width, $transform->height);
 						break;
 					}
 
