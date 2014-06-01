@@ -201,11 +201,11 @@ class UsersController extends BaseController
 
 		$code = craft()->request->getRequiredParam('code');
 		$id = craft()->request->getRequiredParam('id');
-		$user = craft()->users->getUserByVerificationCodeAndUid($code, $id);
+		$user = craft()->users->getUserByUid($id);
 
 		if ($user)
 		{
-			$isCodeValid = craft()->users->isVerificationCodeValidForUser($user);
+			$isCodeValid = craft()->users->isVerificationCodeValidForUser($user, $code);
 		}
 
 		if (!$user || !$isCodeValid)
@@ -286,11 +286,12 @@ class UsersController extends BaseController
 	{
 		$code = craft()->request->getRequiredQuery('code');
 		$id = craft()->request->getRequiredQuery('id');
-		$userToValidate = craft()->users->getUserByVerificationCodeAndUid($code, $id);
+		$userToValidate = craft()->users->getUserByUid($id);
+		$isCodeValid = false;
 
 		if ($userToValidate)
 		{
-			$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToValidate);
+			$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToValidate, $code);
 		}
 
 		if (!$userToValidate || !$isCodeValid)
@@ -305,13 +306,11 @@ class UsersController extends BaseController
 				{
 					throw new HttpException('200', Craft::t('Invalid verification code.'));
 				}
-
-				if (!$isCodeValid)
+				else
 				{
 					craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
 
 					$this->renderTemplate('_special/expired', array('userId' => $userToValidate->id));
-
 				}
 			}
 		}
@@ -997,8 +996,15 @@ class UsersController extends BaseController
 
 		craft()->users->sendActivationEmail($user);
 
-		craft()->userSession->setNotice(Craft::t('Activation email sent.'));
-		$this->redirectToPostedUrl();
+		if (craft()->request->isAjaxRequest())
+		{
+			die('great!');
+		}
+		else
+		{
+			craft()->userSession->setNotice(Craft::t('Activation email sent.'));
+			$this->redirectToPostedUrl();
+		}
 	}
 
 	/**
