@@ -25,7 +25,19 @@ class TemplatesController extends BaseController
 		// If this is a site request, make sure the offline template exists
 		if (craft()->request->isSiteRequest())
 		{
-			if (!IOHelper::fileExists(craft()->path->getSiteTemplatesPath().'offline.html'))
+			$extensions = craft()->config->get('defaultTemplateExtensions');
+			$foundMatch = false;
+
+			foreach ($extensions as $extension)
+			{
+				if (IOHelper::fileExists(craft()->path->getSiteTemplatesPath().'offline.'.$extension))
+				{
+					$foundMatch = true;
+					break;
+				}
+			}
+
+			if (!$foundMatch)
 			{
 				// Set PathService to use the CP templates path instead
 				craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
