@@ -134,6 +134,16 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Returns the request's token, if there is one.
+	 *
+	 * @return string|null
+	 */
+	public function getToken()
+	{
+		return $this->getQuery(craft()->config->get('tokenParam'));
+	}
+
+	/**
 	 * Returns whether this is a CP request.
 	 *
 	 * @return bool

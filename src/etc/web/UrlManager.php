@@ -69,7 +69,7 @@ class UrlManager extends \CUrlManager
 		);
 
 		// Is there a token in the URL?
-		$token = craft()->request->getQuery(craft()->config->get('tokenParam'));
+		$token = craft()->request->getToken();
 
 		if ($token)
 		{
