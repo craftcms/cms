@@ -72,7 +72,7 @@ class AssetsFieldType extends BaseElementFieldType
 
 		foreach (craft()->assetSources->getAllSources() as $source)
 		{
-			$sourceOptions[] = array('label' => $source->name, 'value' => $source->id);
+			$sourceOptions[] = array('label' => $source->name, 'value' => 'folder:' . $source->id);
 		}
 
 		$fileKindOptions = array();
@@ -309,16 +309,7 @@ class AssetsFieldType extends BaseElementFieldType
 		{
 			foreach ($settings->sources as $source)
 			{
-				if (is_numeric($source))
-				{
-					$folder = craft()->assets->findFolder(array(
-						'sourceId' => $source,
-						'parentId' => ':empty:'
-					));
-
-					$sources[] = 'folder:'.$folder->id;
-				}
-				else if (strncmp($source, 'folder:', 7) === 0)
+				if (strncmp($source, 'folder:', 7) === 0)
 				{
 					$sources[] = $source;
 				}
