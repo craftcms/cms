@@ -92,26 +92,69 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns a user by their UID.
+	 *
+	 * @param $uid
+	 * @return \CActiveRecord
+	 */
+	public function getUserByUid($uid)
+	{
+		$userRecord = UserRecord::model()->findByAttributes(array(
+			'uid' => $uid
+		));
+
+		if ($userRecord)
+		{
+			return UserModel::populateModel($userRecord);
+		}
+
+		return null;
+	}
+
+	/**
 	 * Returns if a user's verification code has expired or is still valid.
 	 *
 	 * @param UserModel $user
+	 * @param           $code
 	 * @return bool
 	 */
-	public function isVerificationCodeValidForUser(UserModel $user)
+	public function isVerificationCodeValidForUser(UserModel $user, $code)
 	{
-		$minCodeIssueDate = DateTimeHelper::currentUTCDateTime();
-		$duration = new DateInterval(craft()->config->get('verificationCodeDuration'));
-		$minCodeIssueDate->sub($duration);
+		$valid = false;
+		$userRecord = $this->_getUserRecordById($user->id);
 
-		$valid = $user->verificationCodeIssuedDate > $minCodeIssueDate;
-
-		if (!$valid)
+		if ($userRecord)
 		{
-			// Go ahead and remove it from the record so if they click the link again, it'll throw an Exception.
-			$userRecord = $this->_getUserRecordById($user->id);
-			$userRecord->verificationCodeIssuedDate = null;
-			$userRecord->verificationCode = null;
-			$userRecord->save();
+			$minCodeIssueDate = DateTimeHelper::currentUTCDateTime();
+			$duration = new DateInterval(craft()->config->get('verificationCodeDuration'));
+			$minCodeIssueDate->sub($duration);
+
+			$valid = $userRecord->verificationCodeIssuedDate > $minCodeIssueDate;
+
+			if (!$valid)
+			{
+				// It's expired, go ahead and remove it from the record so if they click the link again, it'll throw an Exception.
+				$userRecord = $this->_getUserRecordById($user->id);
+				$userRecord->verificationCodeIssuedDate = null;
+				$userRecord->verificationCode = null;
+				$userRecord->save();
+			}
+			else
+			{
+				if (craft()->security->checkPassword($code, $userRecord->verificationCode))
+				{
+					$valid = true;
+				}
+				else
+				{
+					$valid = false;
+					Craft::log('The verification code ('.$code.') given for userId: '.$user->id.' does not match the hash in the database.', LogLevel::Warning);
+				}
+			}
+		}
+		else
+		{
+			Craft::log('Could not find a user with id:'.$user->id.'.', LogLevel::Warning);
 		}
 
 		return $valid;

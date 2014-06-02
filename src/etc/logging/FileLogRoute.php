@@ -55,7 +55,7 @@ class FileLogRoute extends \CFileLogRoute
 
 			$logFile = IOHelper::normalizePathSeparators($this->getLogPath().'/'.$this->getLogFile());
 
-			$lock = craft()->config->get('useLockWhenWritingToFile') === true;
+			$lock = craft()->cache->get('useWriteFileLock') === true ? true : false;
 
 			$fp = @fopen($logFile, 'a');
 
