@@ -14,33 +14,60 @@ class m140603_000005_asset_sources extends BaseMigration
 	public function safeUp()
 	{
 		// Grab all the Assets fields.
-		$rows = craft()->db->createCommand()
+		$fields = craft()->db->createCommand()
 			->select('id, settings')
 			->from('fields')
 			->where('type = :type', array(':type' => "Assets"))
 			->queryAll();
 
-		// For each existing Assets field
-		foreach ($rows as $row)
+		if ($fields)
 		{
-			// Convert the "sources" setting, if it's saved in the wrong format.
-			$settings = json_decode($row['settings']);
-			if (is_object($settings) && !empty($settings->sources) && is_array($settings->sources))
+			// Grab all of the top-level folder IDs
+			$folders = craft()->db->createCommand()
+				->select('id, sourceId')
+				->from('assetfolders')
+				->where('parentId is null')
+				->queryAll();
+
+			if ($folders)
 			{
-				foreach($settings->sources as &$source)
+				// Create an associative array of them by source ID
+				$folderIdsBySourceId = array();
+
+				foreach ($folders as $folder)
 				{
-					if (is_numeric($source))
+					$folderIdsBySourceId[$folder['sourceId']] = $folder['id'];
+				}
+
+				// Now update the fields
+				foreach ($fields as $field)
+				{
+					$settings = JsonHelper::decode($field['settings']);
+
+					if (is_array($settings['sources']))
 					{
-						$source = 'folder:'.$source;
+						// Are there any source IDs?
+						$anySourceIds = false;
+
+						foreach ($settings['sources'] as $key => $source)
+						{
+							if (isset($folderIdsBySourceId[$source]))
+							{
+								$settings['sources'][$key] = 'folder:'.$folderIdsBySourceId[$source];
+								$anySourceIds = true;
+							}
+						}
+
+						if ($anySourceIds)
+						{
+							$this->update('fields', array(
+								'settings' => JsonHelper::encode($settings)
+							), array(
+								'id' => $field['id']
+							));
+						}
 					}
 				}
-				$this->update('fields',
-					array('settings' => json_encode($settings)),
-					'id = :id',
-					array(
-						':id' => $row['id']
-					)
-				);
 			}
 		}
 

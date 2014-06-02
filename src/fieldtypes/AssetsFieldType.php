@@ -70,9 +70,12 @@ class AssetsFieldType extends BaseElementFieldType
 	{
 		$sourceOptions = array();
 
-		foreach (craft()->assetSources->getAllSources() as $source)
+		foreach ($this->getElementType()->getSources() as $key => $source)
 		{
-			$sourceOptions[] = array('label' => $source->name, 'value' => 'folder:' . $source->id);
+			if (!isset($source['heading']))
+			{
+				$sourceOptions[] = array('label' => $source['label'], 'value' => $key);
+			}
 		}
 
 		$fileKindOptions = array();
