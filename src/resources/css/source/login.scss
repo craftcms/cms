@@ -10,7 +10,7 @@ html, body { height: 100%; }
 #forgot-password:hover { color: $linkcolor; text-decoration: none; }
 
 #login-form .buttons { position: relative; }
-#login-form #ssl-icon { position: absolute; @include left(0); z-index: 1; line-height: 30px; width: 2.2em; color: #fff; text-align: center; cursor: pointer; }
+#login-form #ssl-icon { position: absolute; top: 0; @include left(0); z-index: 1; line-height: 30px; width: 2.2em; color: #fff; text-align: center; cursor: pointer; }
 #login-form #ssl-icon.disabled { opacity: 0.75; cursor: default; }
 #login-form #ssl-icon + #submit { @include padding-left(2em); }
 
