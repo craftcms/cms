@@ -44,7 +44,7 @@ class m140603_000005_asset_sources extends BaseMigration
 				{
 					$settings = JsonHelper::decode($field['settings']);
 
-					if (is_array($settings['sources']))
+					if (isset($settings['sources']) && is_array($settings['sources']))
 					{
 						// Are there any source IDs?
 						$anySourceIds = false;
