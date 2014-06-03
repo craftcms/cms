@@ -236,18 +236,24 @@ td.right { float: none; @include alignright; }
 .content.has-sidebar .sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
 .content.has-sidebar .sidebar nav li a.sel { @include border-radius(0, 2px, 2px, 0); color: #fff; background: $menuselcolor; cursor: default; }
 
-.content.has-sidebar .sidebar nav li .toggle { position: absolute; top: 3px; @include left(-20px); }
+.content.has-sidebar .sidebar nav li .toggle { position: absolute; top: 3px; }
 .content.has-sidebar .sidebar nav li.expanded > .toggle { background-position: 50% -40px; }
 .content.has-sidebar .sidebar nav li a.sel + .toggle { background-position: 50% -20px; }
 .content.has-sidebar .sidebar nav li.expanded > a.sel + .toggle { background-position: 50% -60px; }
 .content.has-sidebar .sidebar nav li ul { display: none; }
 .content.has-sidebar .sidebar nav li.expanded > ul { display: block; }
 
-.content.has-sidebar .sidebar nav > ul > li > a { padding-left: 24px; }
-.content.has-sidebar .sidebar nav > ul > li > ul > li > a { padding-left: 44px; }
-.content.has-sidebar .sidebar nav > ul > li > ul > li > > ul > li > a { padding-left: 64px; }
-.content.has-sidebar .sidebar nav > ul > li > ul > li > > ul > li > ul > li > a { padding-left: 84px; }
-.content.has-sidebar .sidebar nav > ul > li > ul > li > > ul > li > ul > li > ul > li > a { padding-left: 104px; }
+.content.has-sidebar .sidebar nav > ul > li > a { @include padding-left(24px); }
+.content.has-sidebar .sidebar nav > ul > li > ul > li > a { @include padding-left(44px); }
+.content.has-sidebar .sidebar nav > ul > li > ul > li > ul > li > a { @include padding-left(64px); }
+.content.has-sidebar .sidebar nav > ul > li > ul > li > ul > li > ul > li > a { @include padding-left(84px); }
+.content.has-sidebar .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { @include padding-left(104px); }
+
+.content.has-sidebar .sidebar nav > ul > li > .toggle { @include left(-20px); }
+.content.has-sidebar .sidebar nav > ul > li > ul > li > .toggle { @include left(0px); }
+.content.has-sidebar .sidebar nav > ul > li > ul > li > ul > li > .toggle { @include left(20px); }
+.content.has-sidebar .sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { @include left(40px); }
+.content.has-sidebar .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { @include left(60px); }
 
 /* help */
 .content.has-help { padding-bottom: 60px; }
