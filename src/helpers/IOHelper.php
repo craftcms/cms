@@ -1413,13 +1413,28 @@ class IOHelper
 	 * Clean a filename.
 	 *
 	 * @static
-	 * @param $fileName
+	 * @param      $fileName
+	 * @param bool $onlyAlphaNumeric
 	 * @return mixed
 	 */
-	public static function cleanFilename($fileName)
+	public static function cleanFilename($fileName, $onlyAlphaNumeric = false)
 	{
-		$fileName = StringHelper::asciiString(ltrim($fileName, '.'));
-		return preg_replace('/[^@a-z0-9\-_\.]/i', '_', str_replace(chr(0), '', $fileName));
+		$disallowedChars = array('â€”', 'â€“', '&#8216;', '&#8217;', '&#8220;', '&#8221;', '&#8211;', '&#8212;', '+', '%', '^', '@', '~', '?', '[', ']', '/', '\\', '=', '<', '>', ':', ';', ',', '\'', '"', '&', '$', '#', '*', '(', ')', '|', '~', '`', '!', '{', '}');
+
+		// Replace any control characters in the name with a space.
+		$fileName = preg_replace( "#\x{00a0}#siu", ' ', $fileName );
+
+		// Strip any characters not allowed.
+		$fileName = str_replace($disallowedChars, '', strip_tags($fileName));
+
+		$fileName = preg_replace('/[\s-]+/', '-', $fileName);
+
+		// Nuke any trailing or leading .-_
+		$fileName = trim($fileName, '.-_');
+
+		$fileName = ($onlyAlphaNumeric) ? preg_replace('/[^a-zA-Z0-9]/', '', $fileName) : $fileName;
+
+		return $fileName;
 	}
 
 	/**
