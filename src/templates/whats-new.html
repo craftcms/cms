@@ -1,25 +1,31 @@
 {% extends "_layouts/cp" %}
-{% set title = "What’s new in Craft 2" %}
+{% set title = "What’s new in Craft 2.1" %}
 {% includeCssResource "css/whats-new.css" %}
 
 {% block pageHeader %}{% endblock %}
 
+{% set url = 'http://buildwithcraft.com/updates#build2554' %}
+
 {% set content %}
-	<h1>Categorically awesome.</h1>
-	<p>Craft 2 packs <a href="http://buildwithcraft.com/updates#build2524"><strong>250</strong> new features and improvements</a>. Whether you’re a content author, web designer, or plugin developer, there’s a lot you’re going to love.</p>
+	<h1>Work wonders on your workflow.</h1>
+	<p>Craft 2.1 packs <a href="{{ url }}" target="_blank"><strong>90</strong> new features and improvements</a>, with an emphasis on improving the workflow surrounding entries and users.</p>
 
-	<img src="{{ resourceUrl('images/whats-new/categories.png') }}" alt="Categories index">
-	<h1>Categories</h1>
-	<p>You can now manage taxonomies in Craft with <a href="http://buildwithcraft.com/docs/categories">categories</a>, and set up <a href="http://buildwithcraft.com/docs/categories-fields">Categories fields</a> to relate your entries and other elements to them.</p>
+	<img src="{{ resourceUrl('images/whats-new/draft-notes.png') }}" alt="Draft name and notes modal">
+	<h1>Remember what you’re working on.</h1>
+	<p>It’s now possible to give your drafts custom names, and even save some notes about them.</p>
 
-	<img src="{{ resourceUrl('images/whats-new/upgrade-modal.png') }}" alt="Craft’s edition upgrade modal">
-	<h1>New Pricing</h1>
-	<p>We’ve split Craft into <a href="http://buildwithcraft.com/pricing">three editions</a> – Personal, Client, and Pro – and we’re selling them at price points that make Craft more affordable than ever. Best of all, any sites that have ever purchased a package in Craft 1.x have been upgraded to Pro for free!</p>
+	<img src="{{ resourceUrl('images/whats-new/share-button.png') }}" alt="Share Entry button">
+	<h1>Share what you’re working on.</h1>
+	<p>The new Share button lets you share unpublished drafts and prior versions of an entry with others, using a tokenized URL that bypasses user permissions.</p>
 
-	<img src="{{ resourceUrl('images/whats-new/cp-arabic.png') }}" alt="Craft’s Control Panel translated into Arabic">
-	<h1>Redesigned Control Panel with RTL Support</h1>
-	<p>We’ve redesigned the Control Panel, giving it a wider max width, a new layout system that offers more modularity and responsiveness, full RTL language support, and countless subtle improvements</p>
+	<img src="{{ resourceUrl('images/whats-new/version-notes.png') }}" alt="Entry version notes textbox">
+	<h1>Remember what you changed.</h1>
+	<p>You can now enter some notes about the changes you’ve made when saving an entry.</p>
 
-	<h1>So Much More!</h1>
-	<p>Craft 2 packs support for eight new caching methods, partial template caching, background tasks, and tons of improvements to literally every corner of the system. To read the full list, check out the <a href="http://buildwithcraft.com/updates#build2524">release notes</a>.</p>
+	<img src="{{ resourceUrl('images/whats-new/entry-revision.png') }}" alt="“Revert entry to this version” button">
+	<h1>Take back what you’ve changed.</h1>
+	<p>Make a change by mistake? No big deal with past versions’ new “Revert entry to this version” button.</p>
+
+	<h1>Lots more!</h1>
+	<p>Craft 2.1 also brings improvements to the user management workflow, adds some new templating features, and introduces new plugin APIs. See the <a href="{{ url }}">release notes</a> for the complete list.</p>
 {% endset %}
