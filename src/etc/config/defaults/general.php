@@ -51,7 +51,7 @@ return array(
 	'allowUppercaseInSlug' => false,
 
 	/**
-	 * If set to true, will automatically log the user in after successfull account activation.
+	 * If set to true, will automatically log the user in after successful account activation.
 	 */
 	'autoLoginAfterAccountActivation' => false,
 
