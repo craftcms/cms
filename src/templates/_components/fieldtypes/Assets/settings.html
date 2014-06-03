@@ -39,13 +39,13 @@
 }) }}
 
 <div id="multi-folder-settings"{% if settings.useSingleFolder %} class="hidden"{% endif %}>
-	{% if sourceOptions %}
+	{% if folderOptions %}
 		{{ forms.checkboxSelectField({
 			label: "Sources"|t,
 			instructions: "Which sources do you want to select {type} from?"|t({ type: type|lower }),
 			id: 'sources',
 			name: 'sources',
-			options: sourceOptions,
+			options: folderOptions,
 			values: settings.sources
 		})}}
 	{% else %}

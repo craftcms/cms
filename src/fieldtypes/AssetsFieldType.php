@@ -68,14 +68,21 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	public function getSettingsHtml()
 	{
+		// Create a list of folder options for the main Source setting, and source options for the upload location settings.
+		$folderOptions = array();
 		$sourceOptions = array();
 
 		foreach ($this->getElementType()->getSources() as $key => $source)
 		{
 			if (!isset($source['heading']))
 			{
-				$sourceOptions[] = array('label' => $source['label'], 'value' => $key);
+				$folderOptions[] = array('label' => $source['label'], 'value' => $key);
 			}
+		}
+
+		foreach (craft()->assetSources->getAllSources() as $source)
+		{
+			$sourceOptions[] = array('label' => $source->name, 'value' => $source->id);
 		}
 
 		$fileKindOptions = array();
@@ -86,6 +93,7 @@ class AssetsFieldType extends BaseElementFieldType
 		}
 
 		return craft()->templates->render('_components/fieldtypes/Assets/settings', array(
+			'folderOptions'     => $folderOptions,
 			'sourceOptions'     => $sourceOptions,
 			'targetLocaleField' => $this->getTargetLocaleFieldHtml(),
 			'settings'          => $this->getSettings(),
