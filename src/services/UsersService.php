@@ -875,10 +875,12 @@ class UsersService extends BaseApplicationComponent
 			$pastTimeStamp = $expire->sub($interval)->getTimestamp();
 			$pastTime = DateTimeHelper::formatTimeForDb($pastTimeStamp);
 
-			$affectedRows = craft()->db->createCommand()->delete('users',
-				'status = :status AND dateCreated < :pastTime',
-				array('status' => 'pending', 'pastTime' => $pastTime)
-			);
+			$ids = craft()->db->createCommand()->select('id')
+				->from('users')
+				->where('status = :status AND verificationCodeIssuedDate < :pastTime', array('status' => 'pending', 'pastTime' => $pastTime))
+				->queryColumn();
+
+			$affectedRows = craft()->db->createCommand()->delete('elements', array('in', 'id', $ids));
 
 			if ($affectedRows > 0)
 			{
