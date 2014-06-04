@@ -1,4 +1,5 @@
 {% from "_includes/forms" import textField %}
+{% set static = static is defined ? static : false %}
 
 {{ textField({
 	label: entry.getType().titleLabel|t,
