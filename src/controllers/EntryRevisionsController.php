@@ -169,7 +169,7 @@ class EntryRevisionsController extends BaseEntriesController
 		}
 
 		// Permission enforcement
-		$entry = craft()->entries->getEntryById($draft->id);
+		$entry = craft()->entries->getEntryById($draft->id, $draft->locale);
 
 		if (!$entry)
 		{
@@ -252,7 +252,7 @@ class EntryRevisionsController extends BaseEntriesController
 		}
 
 		// Permission enforcement
-		$entry = craft()->entries->getEntryById($version->id);
+		$entry = craft()->entries->getEntryById($version->id, $version->locale);
 
 		if (!$entry)
 		{
