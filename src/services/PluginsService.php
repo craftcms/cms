@@ -96,6 +96,8 @@ class PluginsService extends BaseApplicationComponent
 
 					if ($plugin)
 					{
+						$this->_autoloadPluginClasses($plugin);
+
 						// Clean it up a bit
 						$row['settings'] = JsonHelper::decode($row['settings']);
 						$row['installDate'] = DateTime::createFromString($row['installDate']);
@@ -111,8 +113,6 @@ class PluginsService extends BaseApplicationComponent
 
 						$plugin->isInstalled = true;
 						$plugin->isEnabled = true;
-
-						$this->_autoloadPluginClasses($plugin);
 					}
 				}
 
