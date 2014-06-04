@@ -485,15 +485,26 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function savePluginSettings(BasePlugin $plugin, $settings)
 	{
-		$settings = JsonHelper::encode($settings);
+		// Give the plugin a chance to prep the settings from post
+		$preppedSettings = $plugin->prepSettings($settings);
 
-		$affectedRows = craft()->db->createCommand()->update('plugins', array(
-			'settings' => $settings
-		), array(
-			'class' => $plugin->getClassHandle()
-		));
+		// Set the prepped settings on the plugin
+		$plugin->setSettings($preppedSettings);
 
-		return (bool) $affectedRows;
+		// Validate them, now that it's a model
+		if ($plugin->getSettings()->validate())
+		{
+			// JSON-encode them and save the plugin row
+			$settings = JsonHelper::encode($plugin->getSettings()->getAttributes());
+
+			$affectedRows = craft()->db->createCommand()->update('plugins', array(
+				'settings' => $settings
+			), array(
+				'class' => $plugin->getClassHandle()
+			));
+
+			return (bool) $affectedRows;
+		}
 	}
 
 	/**
