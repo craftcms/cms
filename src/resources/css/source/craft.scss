@@ -288,6 +288,10 @@ table.inputs td > .btngroup { float: none; }
 .buttons > .btn,
 .buttons > .btngroup { @include floatleft; @include margin(5px, 5px, 0, 0); }
 
+/* .first doesn't help in this situation anymore */
+.buttons > .btn:first,
+.buttons > .btngroup:first { margin-top: 5px !important; }
+
 .btn,
 .btngroup { border-radius: 3px; }
 
