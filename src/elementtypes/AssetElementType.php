@@ -289,6 +289,59 @@ class AssetElementType extends BaseElementType
 	}
 
 	/**
+	 * Save the filename.
+	 *
+	 * @param BaseElementModel $element
+	 * @param array $params
+	 * @return bool
+	 */
+	public function saveElement(BaseElementModel $element, $params)
+	{
+		// Is the filename changing?
+		if (!empty($params['filename']) && $params['filename'] != $element->filename)
+		{
+			// Validate the content before we do anything drastic
+			if (!craft()->content->validateContent($element))
+			{
+				return false;
+			}
+
+			$oldFilename = $element->filename;
+			$newFilename = $params['filename'];
+
+			// Rename the file
+			$response = craft()->assets->renameFile($element, $newFilename);
+
+			// Did it work?
+			if ($response->isConflict())
+			{
+				$element->addError('filename', $response->getDataItem('prompt')->message);
+				return false;
+			}
+
+			if ($response->isError())
+			{
+				$element->addError('filename', $response->errorMessage);
+				return false;
+			}
+		}
+		else
+		{
+			$newFilename = null;
+		}
+
+		$success = parent::saveElement($element, $params);
+
+		if (!$success && $newFilename)
+		{
+			// Better rename it back
+			craft()->assets->renameFile($element, $oldFilename);
+		}
+
+		return $success;
+	}
+
+	/**
 	 * Transforms an asset folder tree into a source list.
 	 *
 	 * @access private
@@ -331,48 +384,5 @@ class AssetElementType extends BaseElementType
 		}
 
 		return $source;
-	}
-
-	/**
-	 * Save the filename.
-	 *
-	 * @param BaseElementModel $element
-	 * @param array $params
-	 * @return bool
-	 */
-	public function saveElement(BaseElementModel $element, $params)
-	{
-		// No filename - no problem
-		if (empty($params['filename']))
-		{
-			return parent::saveElement($element, $params);
-		}
-
-		// Changing the filename requires the correct kind of Model
-		if (!($element instanceof AssetFileModel))
-		{
-			return false;
-		}
-
-		// Let's go ahead and validate the content before we do something
-		if (!craft()->content->validateContent($element))
-		{
-			return false;
-		}
-
-		$response = craft()->assets->renameFile($element, $params['filename']);
-		if ($response->isConflict())
-		{
-			$element->addError('filename', $response->getDataItem('prompt')->message);
-			return false;
-		}
-
-		if ($response->isError())
-		{
-			$element->addError('filename', $response->errorMessage);
-			return false;
-		}
-
-		return true;
 	}
 }
