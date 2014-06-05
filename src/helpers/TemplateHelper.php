@@ -23,6 +23,12 @@ class TemplateHelper
 
 		$offset = $limit * ($currentPage - 1);
 
+		// Is there already an offset set?
+		if ($criteria->offset)
+		{
+			$offset += $criteria->offset;
+		}
+
 		$last = $offset + $limit;
 
 		if ($last > $total)
