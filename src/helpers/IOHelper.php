@@ -183,7 +183,8 @@ class IOHelper
 			$path = $path.'/';
 		}
 
-		return $path;
+		// Normalize again, because realpath probably screwed things up again.
+		return static::normalizePathSeparators($path);
 	}
 
 	/**

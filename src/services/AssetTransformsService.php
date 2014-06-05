@@ -411,8 +411,8 @@ class AssetTransformsService extends BaseApplicationComponent
 		// For named transforms we can look for exact size matches
 		if ($parameters->isNamedTransform())
 		{
-			$alternateLocation = '_'.($parameters->width ? $parameters->width : 'AUTO').'x'.($parameters->height ? $parameters->height : '
-				').'_'.$parameters->mode.($parameters->quality ? '_'.$parameters->quality : '');
+			$alternateLocation = '_'.($parameters->width ? $parameters->width : 'AUTO').'x'.($parameters->height ? $parameters->height : '')
+				.'_'.$parameters->mode.($parameters->quality ? '_'.$parameters->quality : '');
 
 			// Look for a physical file first
 			$existingFileTimeModified = $sourceType->getTimeTransformModified($file, $alternateLocation);
