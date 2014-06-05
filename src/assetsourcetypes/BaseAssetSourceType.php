@@ -118,11 +118,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Return TRUE if a physical folder exists.
 	 *
-	 * @param AssetFolderModel $parentFolder
+	 * @param string $parentPath
 	 * @param $folderName
 	 * @return boolean
 	 */
-	abstract protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName);
+	abstract protected function _sourceFolderExists($parentPath, $folderName);
 
 	/**
 	 * Create a physical folder, return TRUE on success.
@@ -1059,5 +1059,27 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		{
 			return array('amount' => '', 'period' => '');
 		}
+	}
+
+	/**
+	 * Return true if a source folder exists.
+	 *
+	 * @param $folder
+	 * @return bool
+	 */
+	public function sourceFolderExists(AssetFolderModel $folder)
+	{
+		$parent = $folder->getParent();
+
+		if ($parent)
+		{
+			$parentPath = $parent->path;
+		}
+		else
+		{
+			$parentPath = "";
+		}
+
+		return $this->_sourceFolderExists($parentPath, $folder->name);
 	}
 }

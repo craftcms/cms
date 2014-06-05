@@ -438,10 +438,10 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
-		if (!IOHelper::move($this->_getFileSystemPath($file), $newServerPath))
+		if (!IOHelper::move($this->_getFileSystemPath($file), $newServerPath, true))
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setError(Craft::t("Could not save the file"));
+			return $response->setError(Craft::t("Could not move the file „{filename}”.", array('filename' => $fileName)));
 		}
 
 		if ($file->kind == 'image')
@@ -472,13 +472,14 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Return TRUE if a physical folder exists.
 	 *
-	 * @param AssetFolderModel $parentFolder
+	 * @param string $parentPath
 	 * @param $folderName
 	 * @return boolean
 	 */
-	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
+	protected function _sourceFolderExists($parentPath, $folderName)
+
 	{
-		return IOHelper::folderExists($this->_getSourceFileSystemPath() . $parentFolder->path . $folderName);
+		return IOHelper::folderExists($this->_getSourceFileSystemPath() . $parentPath . $folderName);
 	}
 
 	/**

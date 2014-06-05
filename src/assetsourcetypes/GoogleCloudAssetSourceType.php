@@ -541,14 +541,14 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Return TRUE if a physical folder exists.
 	 *
-	 * @param AssetFolderModel $parentFolder
+	 * @param string $parentPath
 	 * @param $folderName
 	 * @return boolean
 	 */
-	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
+	protected function _sourceFolderExists($parentPath, $folderName)
 	{
 		$this->_prepareForRequests();
-		return (bool) $this->_googleCloud->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$parentFolder->path.$folderName);
+		return (bool) $this->_googleCloud->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$parentPath.rtrim($folderName, '/') . '/');
 
 	}
 

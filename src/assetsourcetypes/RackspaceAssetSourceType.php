@@ -544,13 +544,13 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Return true if a folder exists on Rackspace.
 	 *
-	 * @param AssetFolderModel $parentFolder
+	 * @param string $parentPath
 	 * @param $folderName
 	 * @return boolean
 	 */
-	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
+	protected function _sourceFolderExists($parentPath, $folderName)
 	{
-		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$parentFolder->path.$folderName);
+		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$parentPath.rtrim($folderName, "/")."/");
 
 	}
 
