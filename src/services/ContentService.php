@@ -13,8 +13,8 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Returns the content model for a given element.
 	 *
-	 * @param BaseElementModel $elementId
-	 * @return ContentModel|null
+	 * @param BaseElementModel $element The element whose content we're looking for.
+	 * @return ContentModel|null        The element's content, or `null` if no content has been saved for the element.
 	 */
 	public function getContent(BaseElementModel $element)
 	{
@@ -57,10 +57,10 @@ class ContentService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Creates a new content model for a given element.
+	 * Instantiates a new content model for a given element.
 	 *
-	 * @param BaseElementModel $element
-	 * @return ContentModel
+	 * @param BaseElementModel $element The element for which we should create a new content model.
+	 * @return ContentModel             The new content model.
 	 */
 	public function createContent(BaseElementModel $element)
 	{
@@ -86,11 +86,11 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Saves an element's content.
 	 *
-	 * @param BaseElementModel $element
-	 * @param bool             $validate
-	 * @param bool             $updateOtherLocales
+	 * @param BaseElementModel $element            The element whose content we're saving.
+	 * @param bool             $validate           Whether the element's content should be validated first.
+	 * @param bool             $updateOtherLocales Whether any non-translatable fields' values should be copied to the element's other locales.
+	 * @return bool                                Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the element and its content model.
 	 * @throws Exception
-	 * @return bool
 	 */
 	public function saveContent(BaseElementModel $element, $validate = true, $updateOtherLocales = true)
 	{
@@ -143,8 +143,8 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Validates some content with a given field layout.
 	 *
-	 * @param BaseElementModel $element
-	 * @return bool
+	 * @param BaseElementModel $element The element whose content should be validated.
+	 * @return bool                     Whether the element's content validates.
 	 */
 	public function validateContent(BaseElementModel $element)
 	{
