@@ -207,22 +207,34 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
+		// Check if the set file system path exists
+		$basePath = $this->_getSourceFileSystemPath();
+
+		if (empty($basePath))
+		{
+			$basePath = $this->getBasePath();
+
+			if (!empty($basePath))
+			{
+				throw new Exception(Craft::t('The file system path “{folder}” set for this source does not exist.', array('folder' => $this->getBasePath())));
+			}
+		}
+
 		$targetFolder = $this->_getSourceFileSystemPath() . $folder->path;
 
 		// Make sure the folder exists.
 		if (!IOHelper::folderExists($targetFolder))
 		{
-			throw new Exception(Craft::t('The “File System Path” specified for this asset source does not appear to exist.'));
+			throw new Exception(Craft::t('The folder “{folder}” does not exist.', array('folder' => $targetFolder)));
 		}
 
 		// Make sure the folder is writable
 		if (!IOHelper::isWritable($targetFolder))
 		{
-			throw new Exception(Craft::t('Craft is not able to write to the “File System Path” specified for this asset source.'));
+			throw new Exception(Craft::t('The folder “{folder}” is not writable.', array('folder' => $targetFolder)));
 		}
 
 		$fileName = IOHelper::cleanFilename($fileName);
-
 		$targetPath = $targetFolder . $fileName;
 		$extension = IOHelper::getExtension($fileName);
 
