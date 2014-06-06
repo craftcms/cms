@@ -997,11 +997,11 @@ $.extend($.fn,
 	{
 		if (Craft.orientation == 'ltr')
 		{
-			return this.animate({ left: pos }, duration, easing, complete);
+			return this.velocity({ left: pos }, duration, easing, complete);
 		}
 		else
 		{
-			return this.animate({ right: pos }, duration, easing, complete);
+			return this.velocity({ right: pos }, duration, easing, complete);
 		}
 	},
 
@@ -1009,11 +1009,11 @@ $.extend($.fn,
 	{
 		if (Craft.orientation == 'ltr')
 		{
-			return this.animate({ right: pos }, duration, easing, complete);
+			return this.velocity({ right: pos }, duration, easing, complete);
 		}
 		else
 		{
-			return this.animate({ left: pos }, duration, easing, complete);
+			return this.velocity({ left: pos }, duration, easing, complete);
 		}
 	},
 

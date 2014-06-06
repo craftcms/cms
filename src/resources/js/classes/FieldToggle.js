@@ -149,7 +149,7 @@ Craft.FieldToggle = Garnish.Base.extend(
 				$target.height('auto');
 				var height = $target.height();
 				$target.height(0);
-				$target.stop().animate({height: height}, 'fast', function() {
+				$target.stop().velocity({height: height}, 'fast', function() {
 					$target.height('auto');
 				});
 			}
@@ -172,7 +172,7 @@ Craft.FieldToggle = Garnish.Base.extend(
 					this.$toggle.addClass('collapsed');
 				}
 
-				$target.stop().animate({height: 0}, 'fast', function() {
+				$target.stop().velocity({height: 0}, 'fast', function() {
 					$target.addClass('hidden');
 				});
 			}

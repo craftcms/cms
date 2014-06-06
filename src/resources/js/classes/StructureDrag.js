@@ -52,7 +52,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
 
 		// Collapse the draggee
 		this.draggeeHeight = this.$draggee.height();
-		this.$draggee.animate({
+		this.$draggee.velocity({
 			height: 0
 		}, 'fast', $.proxy(function() {
 			this.$draggee.addClass('hidden');
@@ -364,13 +364,13 @@ Craft.StructureDrag = Garnish.Drag.extend(
 					{
 						var animateCss = {};
 						animateCss['padding-'+Craft.left] = 38;
-						this.$helperLi.animate(animateCss, 'fast');
+						this.$helperLi.velocity(animateCss, 'fast');
 					}
 					else if (newLevel == 1)
 					{
 						var animateCss = {};
 						animateCss['padding-'+Craft.left] = Craft.Structure.baseIndent;
-						this.$helperLi.animate(animateCss, 'fast');
+						this.$helperLi.velocity(animateCss, 'fast');
 					}
 
 					this.setLevel(this.$draggee, newLevel);
@@ -396,7 +396,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
 		}
 
 		// Animate things back into place
-		this.$draggee.stop().removeClass('hidden').animate({
+		this.$draggee.stop().removeClass('hidden').velocity({
 			height: this.draggeeHeight
 		}, 'fast', $.proxy(function() {
 			this.$draggee.css('height', 'auto');

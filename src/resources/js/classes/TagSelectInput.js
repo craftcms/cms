@@ -185,7 +185,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
 		var animateCss = {};
 		animateCss['margin-'+Craft.left] = 0;
-		this.$addTagInput.animate(animateCss, 'fast');
+		this.$addTagInput.velocity(animateCss, 'fast');
 
 		this.$elements = this.$elements.add($element);
 		this.totalElements++;

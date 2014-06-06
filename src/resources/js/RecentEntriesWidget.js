@@ -61,7 +61,7 @@ Craft.RecentEntriesWidget = Garnish.Base.extend(
 			this.hasEntries = true;
 		}
 
-		this.$container.animate(props);
+		this.$container.velocity(props);
 	}
 }, {
 	instances: []
