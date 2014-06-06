@@ -795,7 +795,15 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function renameFile(AssetFileModel $file, $filename, $action = "")
 	{
-		return $this->moveFiles(array($file->id), $file->folderId, $filename, $action);
+		$response = $this->moveFiles(array($file->id), $file->folderId, $filename, $action);
+
+		// Set the new filename, if rename was successful
+		if ($response->isSuccess())
+		{
+			$file->filename = $response->getDataItem('newFileName');
+		}
+
+		return $response;
 	}
 
 	/**

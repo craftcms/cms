@@ -87,7 +87,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 										editor.insertNode($('<img src="'+url+'" />')[0]);
 										editor.sync();
 									}
-									this.observeImages();
+									editor.observeImages();
 									editor.dropdownHideAll();
 								}
 							}, this),
