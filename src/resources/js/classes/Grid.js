@@ -221,8 +221,33 @@ Craft.Grid = Garnish.Base.extend(
 			this.createLayouts(0, [], [], colHeights, 0);
 
 			// Now find the layout that looks the best.
-			// We'll determine that by first finding all of the layouts that have the lowest overall height,
-			// and of those, find the one with the least empty space
+
+			// First find the layouts with the highest number of used columns
+			var layoutTotalCols = [];
+
+			for (var i = 0; i < this.layouts.length; i++)
+			{
+				layoutTotalCols[i] = 0;
+
+				for (var j = 0; j < this.totalCols; j++)
+				{
+					if (this.layouts[i].colHeights[j])
+					{
+						layoutTotalCols[i]++;
+					}
+				}
+			}
+
+			var highestTotalCols = Math.max.apply(null, layoutTotalCols);
+
+			// Filter out the ones that aren't using as many columns as they could be
+			for (var i = this.layouts.length - 1; i >= 0; i--)
+			{
+				if (layoutTotalCols[i] != highestTotalCols)
+				{
+					this.layouts.splice(i, 1);
+				}
+			}
 
 			// Find the layout(s) with the least overall height
 			var layoutHeights = [];
