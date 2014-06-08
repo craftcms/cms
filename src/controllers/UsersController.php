@@ -836,8 +836,9 @@ class UsersController extends BaseController
 			if (!empty($file['name']) && !empty($file['size'])  )
 			{
 				$user = craft()->users->getUserById($userId);
+				$userName = IOHelper::cleanFilename($user->username);
 
-				$folderPath = craft()->path->getTempUploadsPath().'userphotos/'.$user->username.'/';
+				$folderPath = craft()->path->getTempUploadsPath().'userphotos/'.$userName.'/';
 
 				IOHelper::clearFolder($folderPath);
 
@@ -866,7 +867,7 @@ class UsersController extends BaseController
 
 					$html = craft()->templates->render('_components/tools/cropper_modal',
 						array(
-							'imageUrl' => UrlHelper::getResourceUrl('userphotos/temp/'.$user->username.'/'.$fileName),
+							'imageUrl' => UrlHelper::getResourceUrl('userphotos/temp/'.$userName.'/'.$fileName),
 							'width' => round($width * $factor),
 							'height' => round($height * $factor),
 							'factor' => $factor,
@@ -916,9 +917,10 @@ class UsersController extends BaseController
 			}
 
 			$user = craft()->users->getUserById($userId);
+			$userName = IOHelper::cleanFilename($user->username);
 
 			// make sure that this is this user's file
-			$imagePath = craft()->path->getTempUploadsPath().'userphotos/'.$user->username.'/'.$source;
+			$imagePath = craft()->path->getTempUploadsPath().'userphotos/'.$userName.'/'.$source;
 
 			if (IOHelper::fileExists($imagePath) && craft()->images->checkMemoryForImage($imagePath))
 			{
@@ -929,7 +931,7 @@ class UsersController extends BaseController
 
 				if (craft()->users->saveUserPhoto(IOHelper::getFileName($imagePath), $image, $user))
 				{
-					IOHelper::clearFolder(craft()->path->getTempUploadsPath().'userphotos/'.$user->username);
+					IOHelper::clearFolder(craft()->path->getTempUploadsPath().'userphotos/'.$userName);
 
 					$html = craft()->templates->render('users/_userphoto',
 						array(
@@ -940,7 +942,8 @@ class UsersController extends BaseController
 					$this->returnJson(array('html' => $html));
 				}
 			}
-			IOHelper::clearFolder(craft()->path->getTempUploadsPath().'userphotos/'.$user->username);
+
+			IOHelper::clearFolder(craft()->path->getTempUploadsPath().'userphotos/'.$userName);
 		}
 		catch (Exception $exception)
 		{

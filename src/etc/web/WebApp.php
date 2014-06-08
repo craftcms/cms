@@ -954,8 +954,11 @@ class WebApp extends \CWebApplication
 		}
 		else
 		{
-			// Use our own error template in case the custom 503 template comes with any SQL queries we're not ready for
-			craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+			if (!craft()->isInstalled())
+			{
+				// Use our own error template in case the custom 503 template comes with any SQL queries we're not ready for
+				craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+			}
 
 			throw new HttpException(503);
 		}

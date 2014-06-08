@@ -9,9 +9,9 @@ class UsersService extends BaseApplicationComponent
 	private $_usersById;
 
 	/**
-	 * Gets a user by their ID.
+	 * Gets a user by their ID in the database.  Returns null if one can’t be found.
 	 *
-	 * @param $userId
+	 * @param $userId The user’s ID in the database.
 	 * @return UserModel|null
 	 */
 	public function getUserById($userId)
@@ -34,9 +34,9 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets a user by their username or email.
+	 * Gets a user by their username or email.  Returns null if one can’t be found.
 	 *
-	 * @param string $usernameOrEmail
+	 * @param string $usernameOrEmail The username or email address to search for.
 	 * @return UserModel|null
 	 */
 	public function getUserByUsernameOrEmail($usernameOrEmail)
@@ -50,52 +50,15 @@ class UsersService extends BaseApplicationComponent
 		{
 			return UserModel::populateModel($userRecord);
 		}
-	}
-
-	/**
-	 * Gets a user by a verification code and their uid.
-	 *
-	 * @param        $code
-	 * @param        $uid
-	 * @return UserModel|null
-	 */
-	public function getUserByVerificationCodeAndUid($code, $uid)
-	{
-		$userRecord = UserRecord::model()->findByAttributes(array(
-			'uid' => $uid
-		));
-
-		if ($userRecord && $userRecord->verificationCodeIssuedDate)
-		{
-			$user = UserModel::populateModel($userRecord);
-
-			// Fire an 'onBeforeVerifyUser' event
-			$this->onBeforeVerifyUser(new Event($this, array(
-				'user' => $user
-			)));
-
-			if (craft()->security->checkPassword($code, $userRecord->verificationCode))
-			{
-				return $user;
-			}
-			else
-			{
-				Craft::log('Found a user with UID:'.$uid.', but the verification code given: '.$code.' does not match the hash in the database.', LogLevel::Warning);
-			}
-		}
-		else
-		{
-			Craft::log('Could not find a user with UID:'.$uid.'.', LogLevel::Warning);
-		}
 
 		return null;
 	}
 
 	/**
-	 * Returns a user by their UID.
+	 * Returns a user by their UID in the database.  Returns null if one can’t be found.
 	 *
-	 * @param $uid
-	 * @return \CActiveRecord
+	 * @param $uid The UID to search for.
+	 * @return UserModel|null
 	 */
 	public function getUserByUid($uid)
 	{
@@ -112,10 +75,12 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns if a user's verification code has expired or is still valid.
+	 * Checks to see if a verification code is valid for the given user.  First it checks if the code has expired
+	 * past the “verificationCodeDuration” config setting. If it is still valid then, the checks the validity of the
+	 * contents of the code. If both of those are true, it will return true, otherwise, false.
 	 *
-	 * @param UserModel $user
-	 * @param           $code
+	 * @param UserModel $user The user to check the code for.
+	 * @param           $code The verification code to check for.
 	 * @return bool
 	 */
 	public function isVerificationCodeValidForUser(UserModel $user, $code)
@@ -161,7 +126,7 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the "Client" account if they're running Craft Client.
+	 * Returns the "Client" account if they're running Craft Client. Returns null if one is not found.
 	 *
 	 * @return UserModel|null
 	 */
@@ -176,11 +141,11 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Saves a user, or registers a new one.
+	 * Saves an existing user, or registers a new one.
 	 *
-	 * @param  UserModel $user
+	 * @param  UserModel $user The user to save.
 	 * @throws \Exception
-	 * @return bool
+	 * @return bool true or false, depending on if the save was successful or not.
 	 */
 	public function saveUser(UserModel $user)
 	{
@@ -369,7 +334,11 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Sends an activation email
+	 * Sends a new account activation email for a user, regardless of their status.  A new verification code will
+	 * generated for the user overwriting any existing one.
+	 *
+	 * @param UserModel $user The user to send the activation email to.
+	 * @return bool
 	 */
 	public function sendActivationEmail(UserModel $user)
 	{
@@ -393,13 +362,14 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function saveUserPhoto($fileName, Image $image, UserModel $user)
 	{
-		$userPhotoFolder = craft()->path->getUserPhotosPath().$user->username.'/';
+		$userName = IOHelper::cleanFilename($user->username);
+		$userPhotoFolder = craft()->path->getUserPhotosPath().$userName.'/';
 		$targetFolder = $userPhotoFolder.'original/';
 
 		IOHelper::ensureFolderExists($userPhotoFolder);
 		IOHelper::ensureFolderExists($targetFolder);
 
-		$targetPath = $targetFolder . $fileName;
+		$targetPath = $targetFolder.$fileName;
 
 		$result = $image->saveAs($targetPath);
 
