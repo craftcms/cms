@@ -78,17 +78,25 @@ Craft.Grid = Garnish.Base.extend(
 
 		if (this.settings.cols)
 		{
-			this.totalCols = this.settings.cols;
+			this.refreshCols._totalCols = this.settings.cols;
 		}
 		else
 		{
-			this.totalCols = Math.floor(this.$container.width() / this.settings.minColWidth);
+			this.refreshCols._totalCols = Math.floor(this.$container.width() / this.settings.minColWidth);
 		}
 
-		if (this.totalCols == 0)
+		if (this.refreshCols._totalCols == 0)
 		{
-			this.totalCols = 1;
+			this.refreshCols._totalCols = 1;
 		}
+
+		// Same number of columns as before?
+		if (this.totalCols === this.refreshCols._totalCols)
+		{
+			return;
+		}
+
+		this.totalCols = this.refreshCols._totalCols;
 
 		if (this.settings.fillMode == 'grid')
 		{
