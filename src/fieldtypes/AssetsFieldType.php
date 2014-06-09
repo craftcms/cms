@@ -393,8 +393,16 @@ class AssetsFieldType extends BaseElementFieldType
 		}
 
 		// Let's see if the folder already exists.
-		$folderCriteria = array('sourceId' => $sourceId, 'path' => $folder->path . $subpath);
-		$existingFolder = craft()->assets->findFolder($folderCriteria);
+		if (empty($subpath))
+		{
+			$existingFolder = $folder;
+		}
+		else
+		{
+			$folderCriteria = array('sourceId' => $sourceId, 'path' => $folder->path . $subpath);
+			$existingFolder = craft()->assets->findFolder($folderCriteria);
+		}
+
 
 		// No dice, go over each folder in the path and create it if it's missing.
 		if (!$existingFolder)
@@ -493,10 +501,21 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	private function _determineUploadFolderId($settings)
 	{
-		// If there's no dynamic tags in the subpath, or if the element has already been saved, we con use the real folder
-		if (!empty($this->element->id) || strpos($settings->singleUploadLocationSubpath, '{') === false)
+		// If there's no dynamic tags in the set path, or if the element has already been saved, we con use the real folder
+		if (!empty($this->element->id)
+			|| (!empty($settings->useSingleFolder) && strpos($settings->singleUploadLocationSubpath, '{') === false)
+			|| (empty($settings->useSingleFolder) && strpos($settings->defaultUploadLocationSubpath, '{') === false)
+		)
 		{
-			$folderId = $this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
+			// Use the appropriate settings for folder determination
+			if (empty($settings->useSingleFolder))
+			{
+				$folderId = $this->_resolveSourcePathToFolderId($settings->defaultUploadLocationSource, $settings->defaultUploadLocationSubpath);
+			}
+			else
+			{
+				$folderId = $this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
+			}
 		}
 		else
 		{
