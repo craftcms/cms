@@ -513,6 +513,11 @@ class ConfigService extends BaseApplicationComponent
 			$defaultsConfig = @require_once($defaultsPath);
 		}
 
+		if (!isset($defaultsConfig) || !is_array($defaultsConfig))
+		{
+			$defaultsConfig = array();
+		}
+
 		// Little extra logic for the general config file.
 		if ($name == ConfigFile::General)
 		{
