@@ -8,23 +8,25 @@ Craft.Uploader = Garnish.Base.extend(
 	_rejectedFiles: {},
 	$element: null,
 	_extensionList: null,
-	_fileCounter: 0,
+	_totalFileCounter: 0,
+	_validFileCounter: 0,
 	settings: null,
 
     init: function($element, settings)
     {
-		this._rejectedFiles = {"size": [], "type": []};
+		this._rejectedFiles = {"size": [], "type": [], "limit": []};
 		this.$element = $element;
 		this.allowedKinds = null;
 		this._extensionList = null;
-		this._fileCounter = 0;
+		this._totalFileCounter = 0;
+		this._validFileCounter = 0;
 
         settings = $.extend({}, this.defaultSettings, settings);
 
 		var events = settings.events;
 		delete settings.events;
 
-		if ( settings.allowedKinds && settings.allowedKinds.length)
+		if (settings.allowedKinds && settings.allowedKinds.length)
 		{
 			if (typeof settings.allowedKinds == "string")
 			{
@@ -57,8 +59,7 @@ Craft.Uploader = Garnish.Base.extend(
 	},
 
     /**
-     * Set uploader parameters
-     * @param paramObject
+     * Set uploader parameters.
      */
     setParams: function(paramObject)
     {
@@ -66,8 +67,7 @@ Craft.Uploader = Garnish.Base.extend(
     },
 
     /**
-     * Get the number of uploads in progress
-     * @returns {*}
+     * Get the number of uploads in progress.
      */
     getInProgress: function()
     {
@@ -75,8 +75,7 @@ Craft.Uploader = Garnish.Base.extend(
     },
 
 	/**
-	 * Return true, if this is the last upload
-	 * @returns {boolean}
+	 * Return true, if this is the last upload.
 	 */
 	isLastUpload: function()
 	{
@@ -84,7 +83,7 @@ Craft.Uploader = Garnish.Base.extend(
 	},
 
 	/**
-	 * Called on file add
+	 * Called on file add.
 	 */
 	onFileAdd: function(e, data)
 	{
@@ -125,25 +124,34 @@ Craft.Uploader = Garnish.Base.extend(
 				if ($.inArray(fileExtension.toLowerCase(), this._extensionList) == -1)
 				{
 					pass = false;
-					this._rejectedFiles.type.push('"' + file.name + '"');
+					this._rejectedFiles.type.push('“' + file.name + '”');
 				}
 			}
 
 			if (file.size > this.settings.maxFileSize)
 			{
-				this._rejectedFiles.size.push('"' + file.name + '"')
+				this._rejectedFiles.size.push('“' + file.name + '”');
 				pass = false;
 			}
 
-			if (++this._fileCounter == data.originalFiles.length)
+			// If the validation has passed for this file up to now, check if we're not hitting any limits
+			if (pass && typeof this.settings.canAddMoreFiles == "function" && !this.settings.canAddMoreFiles(this._validFileCounter))
 			{
-				this._fileCounter = 0;
-				this.processErrorMessages();
+				this._rejectedFiles.limit.push('“' + file.name + '”');
+				pass = false;
 			}
 
 			if (pass)
 			{
+				this._validFileCounter++;
 				data.submit();
+			}
+
+			if (++this._totalFileCounter == data.originalFiles.length)
+			{
+				this._totalFileCounter = 0;
+				this._validFileCounter = 0;
+				this.processErrorMessages();
 			}
 
 		}, this));
@@ -151,6 +159,9 @@ Craft.Uploader = Garnish.Base.extend(
 		return true;
 	},
 
+	/**
+	 * Process error messages.
+	 */
 	processErrorMessages: function()
 	{
 		if (this._rejectedFiles.type.length)
@@ -173,7 +184,7 @@ Craft.Uploader = Garnish.Base.extend(
 		{
 			if (this._rejectedFiles.size.length == 1)
 			{
-				var str = "The file {files} could not be uploaded, because it exceededs the maximum upload size of {size}.";
+				var str = "The file {files} could not be uploaded, because it exceeds the maximum upload size of {size}.";
 			}
 			else
 			{
@@ -182,6 +193,22 @@ Craft.Uploader = Garnish.Base.extend(
 
 			str = Craft.t(str, {files: this._rejectedFiles.size.join(", "), size: Craft.maxUploadSize});
 			this._rejectedFiles.size = [];
+			alert(str);
+		}
+
+		if (this._rejectedFiles.limit.length)
+		{
+			if (this._rejectedFiles.limit.length == 1)
+			{
+				var str = "The file {files} could not be uploaded, because the field limit has been reached.";
+			}
+			else
+			{
+				var str = "The files {files} could not be uploaded, because the field limit has been reached.";
+			}
+
+			str = Craft.t(str, {files: this._rejectedFiles.limit.join(", "), size: Craft.maxUploadSize});
+			this._rejectedFiles.limit = [];
 			alert(str);
 		}
 	},
@@ -193,6 +220,7 @@ Craft.Uploader = Garnish.Base.extend(
 		sequentialUploads: true,
 		maxFileSize: Craft.maxUploadSize,
 		alloweKinds: null,
-		events: {}
+		events: {},
+		canAddMoreFiles: null
 	}
 });
