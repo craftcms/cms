@@ -111,6 +111,12 @@ class WebApp extends \CWebApplication
 			$this->log->removeRoute('ProfileLogRoute');
 		}
 
+		// If there is a custom appId set, apply it here.
+		if ($appId = $this->config->get('appId'))
+		{
+			$this->setId($appId);
+		}
+
 		parent::init();
 	}
 

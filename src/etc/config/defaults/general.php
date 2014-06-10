@@ -51,6 +51,17 @@ return array(
 	'allowUppercaseInSlug' => false,
 
 	/**
+	 * If this is set, Craft will call Yii’s CApplication->setId method (http://www.yiiframework.com/doc/api/1.1/CApplication#setId-detail) to explicitly
+	 * set an application ID for Craft instead of using it’s own method of generating an ID based on a hash of
+	 * CApplication->getBasePath(). Yii’s default method causes issues with deployment services like Capistrano
+	 * where deploying will destroy any active user sessions.
+	 *
+	 * The value is itself is not important as long as it is very hard to guess and is NOT based on the the absolute path
+	 * of the craft/app folder.
+	 */
+	'appId' => null,
+
+	/**
 	 * If set to true, will automatically log the user in after successful account activation.
 	 */
 	'autoLoginAfterAccountActivation' => false,
