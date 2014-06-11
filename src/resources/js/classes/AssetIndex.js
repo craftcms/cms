@@ -999,7 +999,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_createElementContextMenus: function($elements)
 	{
-		var settings = {menuClass: 'menu assets-contextmenu'};
+		var settings = {menuClass: 'menu'};
 
 		var menuOptions = [{ label: Craft.t('View file'), onClick: $.proxy(this, '_viewFile') }];
 		menuOptions.push({ label: Craft.t('Edit properties'), onClick: $.proxy(this, '_showProperties') });
@@ -1325,7 +1325,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			menuOptions.push({ label: Craft.t('Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
 		}
 
-		new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu assets-contextmenu'});
+		new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
 	},
 
 	_createSubfolder: function($parentFolder)

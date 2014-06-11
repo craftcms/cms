@@ -14,10 +14,6 @@
 
 .assets-modal { max-height: 400px; overflow: scroll;}
 
-.assets-contextmenu { padding: 0;}
-.assets-contextmenu ul { padding: 5px 15px; }
-.assets-contextmenu ul + ul { border-top: 1px solid rgba(0,0,0,0.1);}
-
 /*-- thumbs --*/
 #main .files.thumbs ul { @include margin(-9px, 0, 0, -9px); }
 #main .files.thumbs ul:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
