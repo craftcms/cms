@@ -131,17 +131,24 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				return $(draggees);
 			}, this),
 
-			helper: $.proxy(function($folder)
+			helper: $.proxy(function($draggeeHelper)
 			{
-				var $helper = $('<ul class="assets-fm-folderdrag" />').append($folder);
+				var $helperSidebar = $('<div class="sidebar" style="padding-top: 0; padding-bottom: 0;"/>'),
+					$helperNav = $('<nav/>').appendTo($helperSidebar),
+					$helperUl = $('<ul/>').appendTo($helperNav);
 
-				// collapse this folder
-				$folder.removeClass('expanded');
+				$draggeeHelper.appendTo($helperUl).removeClass('expanded');
+				$draggeeHelper.children('a').addClass('sel');
 
-				// set the helper width to the folders container width
-				$helper.width(this.$sidebar[0].scrollWidth);
+				// Match the style
+				$draggeeHelper.css({
+					'padding-top':    this._folderDrag.$draggee.css('padding-top'),
+					'padding-right':  this._folderDrag.$draggee.css('padding-right'),
+					'padding-bottom': this._folderDrag.$draggee.css('padding-bottom'),
+					'padding-left':   this._folderDrag.$draggee.css('padding-left')
+				});
 
-				return $helper;
+				return $helperSidebar;
 			}, this),
 
 			dropTargets: $.proxy(function()
@@ -164,9 +171,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			onDragStart: $.proxy(function()
 			{
 				this._tempExpandedFolders = [];
-
-				// hide the expanded draggees' subfolders
-				this._folderDrag.$draggee.filter('.expanded').removeClass('expanded').addClass('expanded-tmp')
 			}, this),
 
 			onDropTargetChange: $.proxy(this, '_onDropTargetChange'),
@@ -318,9 +322,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_onFolderDragStop: function()
 	{
-		// show the expanded draggees' subfolders
-		this._folderDrag.$draggee.filter('.expanded-tmp').removeClass('expanded-tmp').addClass('expanded');
-
 		// Only move if we have a valid target and we're not trying to move into our direct parent
 		if (
 			this._folderDrag.$activeDropTarget &&
