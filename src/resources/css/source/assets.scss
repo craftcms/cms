@@ -14,10 +14,6 @@
 
 .assets-modal { max-height: 400px; overflow: scroll;}
 
-.assets-contextmenu { padding: 0;}
-.assets-contextmenu ul { padding: 5px 15px; }
-.assets-contextmenu ul + ul { border-top: 1px solid rgba(0,0,0,0.1);}
-
 /*-- thumbs --*/
 #main .files.thumbs ul { @include margin(-9px, 0, 0, -9px); }
 #main .files.thumbs ul:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
@@ -40,12 +36,6 @@
 
 .assets-fileicon .assets-extension { position: absolute; bottom: 15px; width: 100%; text-align: center; font-size: 17px; color: #ddd; text-transform: uppercase}
 .assets-tv-file.assets-tv-bigthumb .assets-fileicon .assets-extension { bottom: 26px; font-size: 34px; }
-
-/*-- Folder drag --*/
-
-.assets-fm-folderdrag ul { display: none }
-.assets-fm-folderdrag li { background: $headerBgColor; @include padding(4px, 0, 0, 10px); height: 18px !important;}
-.assets-fm-folderdrag li a { color: #fff !important;}
 
 
 /*-- Retina -- */

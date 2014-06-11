@@ -1,6 +1,4 @@
-{% set sourceLevel = (sourceLevel is defined ? sourceLevel : 1) -%}
-
-<ul data-level="{{ sourceLevel }}">
+<ul>
 	{% for key, source in sources %}
 		{% if source.heading is defined %}
 			<li class="heading"><span>{{ source.heading }}</span></li>
@@ -16,8 +14,7 @@
 				{% if source.nested is defined and source.nested is not empty %}
 					<div class="toggle"></div>
 					{% include "_elements/sources" with {
-						sources: source.nested,
-						sourceLevel: sourceLevel + 1
+						sources: source.nested
 					} %}
 				{% endif %}
 			</li>

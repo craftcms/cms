@@ -46,13 +46,18 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			{
 				if (this._folderDrag)
 				{
-					if ($source.closest('ul').data('level') > 1)
+					if (this._getSourceLevel($source) > 1)
 					{
 						this._folderDrag.addItems($source.parent());
 					}
 				}
 			}
 		};
+	},
+
+	_getSourceLevel: function($source)
+	{
+		return $source.parentsUntil('nav', 'ul').length;
 	},
 
 	/**
@@ -122,7 +127,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				{
 					var $source = $($selected[i]).parent();
 
-					if ($source.hasClass('sel') && $source.closest('ul').data('level') > 1)
+					if ($source.hasClass('sel') && this._getSourceLevel($source) > 1)
 					{
 						draggees.push($source[0]);
 					}
@@ -131,17 +136,24 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				return $(draggees);
 			}, this),
 
-			helper: $.proxy(function($folder)
+			helper: $.proxy(function($draggeeHelper)
 			{
-				var $helper = $('<ul class="assets-fm-folderdrag" />').append($folder);
+				var $helperSidebar = $('<div class="sidebar" style="padding-top: 0; padding-bottom: 0;"/>'),
+					$helperNav = $('<nav/>').appendTo($helperSidebar),
+					$helperUl = $('<ul/>').appendTo($helperNav);
 
-				// collapse this folder
-				$folder.removeClass('expanded');
+				$draggeeHelper.appendTo($helperUl).removeClass('expanded');
+				$draggeeHelper.children('a').addClass('sel');
 
-				// set the helper width to the folders container width
-				$helper.width(this.$sidebar[0].scrollWidth);
+				// Match the style
+				$draggeeHelper.css({
+					'padding-top':    this._folderDrag.$draggee.css('padding-top'),
+					'padding-right':  this._folderDrag.$draggee.css('padding-right'),
+					'padding-bottom': this._folderDrag.$draggee.css('padding-bottom'),
+					'padding-left':   this._folderDrag.$draggee.css('padding-left')
+				});
 
-				return $helper;
+				return $helperSidebar;
 			}, this),
 
 			dropTargets: $.proxy(function()
@@ -164,9 +176,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			onDragStart: $.proxy(function()
 			{
 				this._tempExpandedFolders = [];
-
-				// hide the expanded draggees' subfolders
-				this._folderDrag.$draggee.filter('.expanded').removeClass('expanded').addClass('expanded-tmp')
 			}, this),
 
 			onDropTargetChange: $.proxy(this, '_onDropTargetChange'),
@@ -318,9 +327,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_onFolderDragStop: function()
 	{
-		// show the expanded draggees' subfolders
-		this._folderDrag.$draggee.filter('.expanded-tmp').removeClass('expanded-tmp').addClass('expanded');
-
 		// Only move if we have a valid target and we're not trying to move into our direct parent
 		if (
 			this._folderDrag.$activeDropTarget &&
@@ -632,7 +638,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 */
 	_getParentSource: function($source)
 	{
-		if ($source.closest('ul').data('level') > 1)
+		if (this._getSourceLevel($source) > 1)
 		{
 			return $source.parent().parent().siblings('a');
 		}
@@ -998,7 +1004,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_createElementContextMenus: function($elements)
 	{
-		var settings = {menuClass: 'menu assets-contextmenu'};
+		var settings = {menuClass: 'menu'};
 
 		var menuOptions = [{ label: Craft.t('View file'), onClick: $.proxy(this, '_viewFile') }];
 		menuOptions.push({ label: Craft.t('Edit properties'), onClick: $.proxy(this, '_showProperties') });
@@ -1318,13 +1324,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		var menuOptions = [{ label: Craft.t('New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
 
 		// For all folders that are not top folders
-		if (this.settings.context == 'index' && $source.closest('ul').data('level') > 1)
+		if (this.settings.context == 'index' && this._getSourceLevel($source) > 1)
 		{
 			menuOptions.push({ label: Craft.t('Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
 			menuOptions.push({ label: Craft.t('Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
 		}
 
-		new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu assets-contextmenu'});
+		new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
 	},
 
 	_createSubfolder: function($parentFolder)
