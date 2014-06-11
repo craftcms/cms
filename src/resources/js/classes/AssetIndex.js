@@ -46,13 +46,18 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			{
 				if (this._folderDrag)
 				{
-					if ($source.closest('ul').data('level') > 1)
+					if (this._getSourceLevel($source) > 1)
 					{
 						this._folderDrag.addItems($source.parent());
 					}
 				}
 			}
 		};
+	},
+
+	_getSourceLevel: function($source)
+	{
+		return $source.parentsUntil('nav', 'ul').length;
 	},
 
 	/**
@@ -122,7 +127,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				{
 					var $source = $($selected[i]).parent();
 
-					if ($source.hasClass('sel') && $source.closest('ul').data('level') > 1)
+					if ($source.hasClass('sel') && this._getSourceLevel($source) > 1)
 					{
 						draggees.push($source[0]);
 					}
@@ -633,7 +638,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 */
 	_getParentSource: function($source)
 	{
-		if ($source.closest('ul').data('level') > 1)
+		if (this._getSourceLevel($source) > 1)
 		{
 			return $source.parent().parent().siblings('a');
 		}
@@ -1319,7 +1324,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		var menuOptions = [{ label: Craft.t('New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
 
 		// For all folders that are not top folders
-		if (this.settings.context == 'index' && $source.closest('ul').data('level') > 1)
+		if (this.settings.context == 'index' && this._getSourceLevel($source) > 1)
 		{
 			menuOptions.push({ label: Craft.t('Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
 			menuOptions.push({ label: Craft.t('Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
