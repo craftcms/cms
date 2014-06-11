@@ -415,7 +415,8 @@ class ElementsService extends BaseApplicationComponent
 
 		// Basic element params
 
-		if ($criteria->id === false || $criteria->id === 0 || $criteria->id === '0')
+		// If the 'id' parameter is set to any empty value besides `null`, don't return anything
+		if ($criteria->id !== null && empty($criteria->id))
 		{
 			return false;
 		}

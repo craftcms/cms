@@ -154,34 +154,39 @@ var CP = Garnish.Base.extend(
 			});
 		}
 
-		// Look for forms that we should watch for changes on
-		this.$confirmUnloadForms = $('form[data-confirm-unload="1"]');
-
-		if (this.$confirmUnloadForms.length)
+		Garnish.$win.on('load', $.proxy(function()
 		{
-			this.initialFormValues = [];
+			// Look for forms that we should watch for changes on
+			this.$confirmUnloadForms = $('form[data-confirm-unload="1"]');
 
-			for (var i = 0; i < this.$confirmUnloadForms.length; i++)
+			if (this.$confirmUnloadForms.length)
 			{
-				var $form = $(this.$confirmUnloadForms);
-				this.initialFormValues[i] = $form.serialize();
-				this.addListener($form, 'submit', function()
-				{
-					this.removeListener(Garnish.$win, 'beforeunload');
-				});
-			}
+				this.initialFormValues = [];
 
-			this.addListener(Garnish.$win, 'beforeunload', function()
-			{
 				for (var i = 0; i < this.$confirmUnloadForms.length; i++)
 				{
-					if (this.initialFormValues[i] != $(this.$confirmUnloadForms[i]).serialize())
+					var $form = $(this.$confirmUnloadForms);
+					this.initialFormValues[i] = $form.serialize();
+					this.addListener($form, 'submit', function()
 					{
-						return Craft.t('Any changes will be lost if you leave this page.');
-					}
+						this.removeListener(Garnish.$win, 'beforeunload');
+					});
 				}
-			});
-		}
+
+				this.addListener(Garnish.$win, 'beforeunload', function()
+				{
+					for (var i = 0; i < this.$confirmUnloadForms.length; i++)
+					{
+						var newFormValue = $(this.$confirmUnloadForms[i]).serialize();
+
+						if (this.initialFormValues[i] != newFormValue)
+						{
+							return Craft.t('Any changes will be lost if you leave this page.');
+						}
+					}
+				});
+			}
+		}, this));
 
 		this.addListener(this.$upgradePromo, 'click', 'showUpgradeModal');
 

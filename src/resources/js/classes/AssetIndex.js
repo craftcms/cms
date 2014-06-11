@@ -46,7 +46,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			{
 				if (this._folderDrag)
 				{
-					this._folderDrag.addItems($source.parent());
+					if ($source.closest('ul').data('level') > 1)
+					{
+						this._folderDrag.addItems($source.parent());
+					}
 				}
 			}
 		};

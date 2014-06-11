@@ -13,10 +13,13 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 	{
 		this.base(id, name, elementType, sources, criteria, sourceElementId, limit, storageKey);
 		this.fieldId = fieldId;
-		this._attachDragEvents();
+		this._attachUploader();
 	},
 
-	_attachDragEvents: function()
+	/**
+	 * Attach the uploader with drag event handler
+	 */
+	_attachUploader: function()
 	{
 		this.progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').appendTo(this.$container));
 
@@ -34,6 +37,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 			options.allowedKinds = this.criteria.kind;
 		}
 
+		options.canAddMoreFiles = $.proxy(this, 'canAddMoreFiles');
+
 		options.events = {};
 		options.events.fileuploadstart = $.proxy(this, '_onUploadStart');
 		options.events.fileuploadprogressall = $.proxy(this, '_onUploadProgress');
@@ -44,18 +49,13 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 
 	/**
 	 * Add the freshly uploaded file to the input field.
-	 *
-	 * @param element
 	 */
 	selectUploadedFile: function(element)
 	{
 		// Check if we're able to add new elements
-		if (this.limit)
+		if (!this.canAddMoreElements())
 		{
-			if (this.totalElements + 1 == this.limit)
-			{
-				return;
-			}
+			return;
 		}
 
 		var $newElement = element.$element;
@@ -94,9 +94,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 
 	/**
 	 * On upload start.
-	 *
-	 * @param event
-	 * @private
 	 */
 	_onUploadStart: function(event)
 	{
@@ -111,10 +108,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 
 	/**
 	 * On upload progress.
-	 *
-	 * @param event
-	 * @param data
-	 * @private
 	 */
 	_onUploadProgress: function(event, data)
 	{
@@ -124,10 +117,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 
 	/**
 	 * On a file being uploaded.
-	 *
-	 * @param event
-	 * @param data
-	 * @private
 	 */
 	_onUploadComplete: function(event, data)
 	{
@@ -144,5 +133,14 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 		}
 
 		this.forceModalRefresh();
+	},
+
+	/**
+	 * We have to take into account files about to be added as well
+	 */
+	canAddMoreFiles: function (slotsTaken)
+	{
+		return (!this.limit || this.$elements.length  + slotsTaken < this.limit);
 	}
+
 });
