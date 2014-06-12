@@ -54,7 +54,11 @@ class TemplateCacheService extends BaseApplicationComponent
 	 */
 	public function startTemplateCache($key)
 	{
-		$this->_cacheCriteria[$key] = array();
+		if (craft()->config->get('cacheElementQueries'))
+		{
+			$this->_cacheCriteria[$key] = array();
+		}
+
 		$this->_cacheElementIds[$key] = array();
 	}
 
@@ -278,39 +282,42 @@ class TemplateCacheService extends BaseApplicationComponent
 			return false;
 		}
 
-		// If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
-		$task = craft()->tasks->getNextPendingTask('DeleteStaleTemplateCaches');
-
-		if ($task && is_array($task->settings))
+		if (craft()->config->get('cacheElementQueries'))
 		{
-			$settings = $task->settings;
+			// If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
+			$task = craft()->tasks->getNextPendingTask('DeleteStaleTemplateCaches');
 
-			if (!is_array($settings['elementId']))
+			if ($task && is_array($task->settings))
 			{
-				$settings['elementId'] = array($settings['elementId']);
-			}
+				$settings = $task->settings;
 
-			if (is_array($elementId))
-			{
-				$settings['elementId'] = array_merge($settings['elementId'], $elementId);
+				if (!is_array($settings['elementId']))
+				{
+					$settings['elementId'] = array($settings['elementId']);
+				}
+
+				if (is_array($elementId))
+				{
+					$settings['elementId'] = array_merge($settings['elementId'], $elementId);
+				}
+				else
+				{
+					$settings['elementId'][] = $elementId;
+				}
+
+				// Make sure there aren't any duplicate element IDs
+				$settings['elementId'] = array_unique($settings['elementId']);
+
+				// Set the new settings and save the task
+				$task->settings = $settings;
+				craft()->tasks->saveTask($task, false);
 			}
 			else
 			{
-				$settings['elementId'][] = $elementId;
+				craft()->tasks->createTask('DeleteStaleTemplateCaches', null, array(
+					'elementId' => $elementId
+				));
 			}
-
-			// Make sure there aren't any duplicate element IDs
-			$settings['elementId'] = array_unique($settings['elementId']);
-
-			// Set the new settings and save the task
-			$task->settings = $settings;
-			craft()->tasks->saveTask($task, false);
-		}
-		else
-		{
-			craft()->tasks->createTask('DeleteStaleTemplateCaches', null, array(
-				'elementId' => $elementId
-			));
 		}
 
 		$query = craft()->db->createCommand()

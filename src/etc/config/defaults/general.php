@@ -88,6 +88,11 @@ return array(
 	'blowfishHashCost' => 13,
 
 	/**
+	 * Whether Craft should cache element queries that fall inside {% cache %} tags.
+	 */
+	'cacheElementQueries' => true,
+
+	/**
 	 * The length of time Craft will keep things cached in craft/storage/runtime/.
 	 *
 	 * Set to '0' to cache things indefinitely.
