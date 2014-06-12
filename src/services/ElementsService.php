@@ -193,26 +193,18 @@ class ElementsService extends BaseApplicationComponent
 			}
 			else if ($criteria->order && $criteria->order != 'score')
 			{
-				$orderColumns = ArrayHelper::stringToArray($criteria->order);
+				$order = $criteria->order;
 
-				if ($fieldColumns)
+				if (is_array($fieldColumns))
 				{
-					foreach ($orderColumns as $i => $orderColumn)
+					// Add the field column prefixes
+					foreach ($fieldColumns as $column)
 					{
-						// Is this column for a custom field?
-						foreach ($fieldColumns as $column)
-						{
-							if (preg_match('/^'.$column['handle'].'\b(.*)$/', $orderColumn, $matches))
-							{
-								// Use the field column name instead
-								$orderColumns[$i] = $column['column'].$matches[1];
-								// Don't break from the loop though because there could be more than one column that uses this handle!
-							}
-						}
+						$order = preg_replace('/\b'.$column['handle'].'\b/', $column['column'].'$1', $order);
 					}
 				}
 
-				$query->order(implode(', ', $orderColumns));
+				$query->order($order);
 			}
 
 			if ($criteria->offset)
