@@ -76,6 +76,17 @@ Craft.Grid = Garnish.Base.extend(
 			return;
 		}
 
+		// Check to see if the grid is actually visible
+		this.refreshCols._oldHeight = this.$container[0].style.height;
+		this.$container[0].style.height = 1;
+		this.refreshCols._scrollHeight = this.$container[0].scrollHeight;
+		this.$container[0].style.height = this.refreshCols._oldHeight;
+
+		if (this.refreshCols._scrollHeight == 0)
+		{
+			return;
+		}
+
 		if (this.settings.cols)
 		{
 			this.refreshCols._totalCols = this.settings.cols;
