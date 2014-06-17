@@ -153,6 +153,9 @@ Craft.FieldToggle = Garnish.Base.extend(
 					$target.height('auto');
 				});
 			}
+
+			// Trigger a resize event in case there are any grids in the target that need to initialize
+			Garnish.$win.trigger('resize');
 		}
 	},
 
