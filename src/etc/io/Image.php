@@ -445,7 +445,10 @@ class Image
 
 			case 'png':
 			{
-				return array('quality' => $quality, 'flatten' => false);
+				// Valid PNG quality settings are 0-9, so normalize since we're calculating based on 0-200.
+				$percentage = ($quality * 100) / 200;
+				$normalizedQuality = round(($percentage / 100) * 9);
+				return array('quality' => $normalizedQuality, 'flatten' => false);
 			}
 
 			default:
