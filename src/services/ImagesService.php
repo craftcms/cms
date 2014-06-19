@@ -90,15 +90,13 @@ class ImagesService extends BaseApplicationComponent
 
 		// Find out how much memory this image is going to need.
 		$imageInfo = getimagesize($filePath);
-		$MB = 1048576;
 		$K64 = 65536;
 		$tweakFactor = 1.7;
 		$bits = isset($imageInfo['bits']) ? $imageInfo['bits'] : 8;
 		$channels = isset($imageInfo['channels']) ? $imageInfo['channels'] : 4;
 		$memoryNeeded = round(($imageInfo[0] * $imageInfo[1] * $bits  * $channels / 8 + $K64) * $tweakFactor);
 
-		$memoryLimitMB = (int)ini_get('memory_limit');
-		$memoryLimit = $memoryLimitMB * $MB;
+		$memoryLimit = AppHelper::getByteValueFromPhpSizeString(ini_get('memory_limit'));
 
 		if (memory_get_usage() + $memoryNeeded < $memoryLimit)
 		{

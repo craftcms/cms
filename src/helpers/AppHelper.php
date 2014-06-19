@@ -76,4 +76,36 @@ class AppHelper
 	{
 		return (is_numeric($edition) && in_array($edition, static::getEditions()));
 	}
+
+	/**
+	 * Return a byte value from a size string formatted the way PHP likes it (for example - 64M).
+	 *
+	 * @param $value
+	 * @return int
+	 */
+	public static function getByteValueFromPhpSizeString($value)
+	{
+		$matches = array();
+
+		// See if we can recognize that.
+		if (!preg_match('/[0-9]+(K|M|G|T)/i', $value, $matches))
+		{
+			return (int) $value;
+		}
+
+		// Multiply! Falling through here is intentional.
+		switch ($matches[1])
+		{
+			case 'T':
+				$value *= 1024;
+			case 'G':
+				$value *= 1024;
+			case 'M':
+				$value *= 1024;
+			case 'K':
+				$value *= 1024;
+		}
+
+		return $value;
+	}
 }
