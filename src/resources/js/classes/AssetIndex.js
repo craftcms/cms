@@ -1360,7 +1360,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				{
 					this._prepareParentForChildren($parentFolder);
 
-					var $subFolder = $('<li><a data-key="folder:' + data.folderId + '" data-has-thumbs="' + $parentFolder.data('has-thumbs') + '">' + data.folderName + '</a></li>');
+					var $subFolder = $('<li><a ' +
+							'data-key="folder:' + data.folderId + '" ' +
+							'data-has-thumbs="' + $parentFolder.data('has-thumbs') + '" ' +
+							'data-upload="' + $parentFolder.data('upload') + '">' +
+								data.folderName +
+						'</a></li>');
 
 					var $a = $subFolder.find('a');
 					this._addSubfolder($parentFolder, $subFolder);
