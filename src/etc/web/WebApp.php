@@ -88,12 +88,13 @@ class WebApp extends \CWebApplication
 			Craft::import($alias);
 		}
 
-		// Initialize HttpRequestService and LogRouter right away
-		$this->getComponent('request');
-		$this->getComponent('log');
-
 		// Attach our Craft app behavior.
 		$this->attachBehavior('AppBehavior', new AppBehavior());
+
+		// Initialize Cache, HttpRequestService and LogRouter right away (order is important)
+		$this->getComponent('cache');
+		$this->getComponent('request');
+		$this->getComponent('log');
 
 		// So we can try to translate Yii framework strings
 		craft()->coreMessages->attachEventHandler('onMissingTranslation', array('Craft\LocalizationHelper', 'findMissingTranslation'));

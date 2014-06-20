@@ -160,15 +160,21 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			{
 				var targets = [];
 
+				// Tag the dragged folder and it's subfolders
+				var draggedSourceIds = [];
+				this._folderDrag.$draggee.find('a[data-key]').each(function ()
+				{
+					draggedSourceIds.push($(this).data('key'));
+				});
+
 				for (var i = 0; i < this.$sources.length; i++)
 				{
 					var $source = $(this.$sources[i]);
-
-					if (!$source.is(this._folderDrag.$draggee))
+					if (!Craft.inArray($source.data('key'), draggedSourceIds))
 					{
 						targets.push($source);
 					}
-				};
+				}
 
 				return targets;
 			}, this),
@@ -1354,7 +1360,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				{
 					this._prepareParentForChildren($parentFolder);
 
-					var $subFolder = $('<li><a data-key="folder:' + data.folderId + '" data-has-thumbs="' + $parentFolder.data('has-thumbs') + '">' + data.folderName + '</a></li>');
+					var $subFolder = $('<li><a ' +
+							'data-key="folder:' + data.folderId + '" ' +
+							'data-has-thumbs="' + $parentFolder.data('has-thumbs') + '" ' +
+							'data-upload="' + $parentFolder.data('upload') + '">' +
+								data.folderName +
+						'</a></li>');
 
 					var $a = $subFolder.find('a');
 					this._addSubfolder($parentFolder, $subFolder);
