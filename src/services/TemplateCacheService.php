@@ -376,8 +376,6 @@ class TemplateCacheService extends BaseApplicationComponent
 			array('now' => DateTimeHelper::currentTimeForDb())
 		);
 
-		// Make like an elephant...
-		craft()->cache->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), static::$_lastCleanupDateCacheDuration);
 		$this->_deletedExpiredCaches = true;
 
 		return (bool) $affectedRows;
@@ -400,6 +398,9 @@ class TemplateCacheService extends BaseApplicationComponent
 
 		if ($lastCleanupDate === false || DateTimeHelper::currentTimeStamp() - $lastCleanupDate > static::$_lastCleanupDateCacheDuration)
 		{
+			// Don't do it again for a while
+			craft()->cache->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), static::$_lastCleanupDateCacheDuration);
+
 			return $this->deleteExpiredCaches();
 		}
 		else
