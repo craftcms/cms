@@ -76,11 +76,16 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 			$('<li><a data-transform="'+Craft.AssetSelectorModal.transforms[i].handle+'">'+Craft.AssetSelectorModal.transforms[i].name+'</a></li>').appendTo($menuList);
 		}
 
-		new Garnish.MenuBtn(this.$selectTransformBtn, {
+		var MenuButton = new Garnish.MenuBtn(this.$selectTransformBtn, {
 			onOptionSelect: $.proxy(this, 'onSelectTransform')
 		});
+		MenuButton.disable();
+
+		this.$selectTransformBtn.data('menuButton', MenuButton);
 
 		this.$transformSpinner = $('<div class="spinner hidden" style="margin-'+Craft.right+': -24px;"/>').insertAfter($btnGroup);
+
+
 	},
 
 	onSelectionChange: function(ev)
@@ -104,12 +109,22 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 			var allowTransforms = false;
 		}
 
+		var MenuBtn = this.$selectTransformBtn.data('menuButton');
+
 		if (allowTransforms)
 		{
+			if (MenuBtn)
+			{
+				MenuBtn.enable();
+			}
 			this.$selectTransformBtn.removeClass('disabled');
 		}
 		else if (this.$selectTransformBtn)
 		{
+			if (MenuBtn)
+			{
+				MenuBtn.disable();
+			}
 			this.$selectTransformBtn.addClass('disabled');
 		}
 
