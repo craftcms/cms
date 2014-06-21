@@ -3002,6 +3002,7 @@ Garnish.MenuBtn = Garnish.Base.extend({
 	$btn: null,
 	menu: null,
 	showingMenu: false,
+	disabled: true,
 
 	/**
 	 * Constructor
@@ -3036,6 +3037,7 @@ Garnish.MenuBtn = Garnish.Base.extend({
 		this.menu.on('hide', $.proxy(this, 'onMenuHide'));
 
 		this.addListener(this.$btn, 'mousedown', 'onMouseDown');
+		this.enable();
 	},
 
 	onMouseDown: function(ev)
@@ -3059,6 +3061,11 @@ Garnish.MenuBtn = Garnish.Base.extend({
 
 	showMenu: function()
 	{
+		if (this.disabled)
+		{
+			return;
+		}
+
 		this.menu.show();
 		this.$btn.addClass('active');
 		this.showingMenu = true;
@@ -3094,8 +3101,17 @@ Garnish.MenuBtn = Garnish.Base.extend({
 	onOptionSelect: function(option)
 	{
 		this.settings.onOptionSelect(option);
-	}
+	},
 
+	enable: function ()
+	{
+		this.disabled = false;
+	},
+
+	disable: function ()
+	{
+		this.disabled = true;
+	}
 },
 {
 	defaults: {
