@@ -16,6 +16,7 @@ class Cache_Node extends \Twig_Node
 		$n = self::$_cacheCount++;
 		$key = StringHelper::randomString();
 
+		$conditions = $this->getNode('conditions');
 		$ignoreConditions = $this->getNode('ignoreConditions');
 		$durationNum = $this->getAttribute('durationNum');
 		$durationUnit = $this->getAttribute('durationUnit');
@@ -27,7 +28,14 @@ class Cache_Node extends \Twig_Node
 			->write("\$cacheService = \Craft\craft()->templateCache;\n")
 			->write("\$ignoreCache{$n} = (\Craft\craft()->request->isLivePreview() || \Craft\craft()->request->getToken()");
 
-		if ($ignoreConditions)
+		if ($conditions)
+		{
+			$compiler
+				->raw(' || !(')
+				->subcompile($conditions)
+				->raw(')');
+		}
+		else if ($ignoreConditions)
 		{
 			$compiler
 				->raw(' || (')
