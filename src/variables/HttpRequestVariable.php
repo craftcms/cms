@@ -121,11 +121,11 @@ class HttpRequestVariable
 	/**
 	 * Returns a variable from the query string.
 	 *
-	 * @param string $name
-	 * @param string $default
+	 * @param string|null $name
+	 * @param string|null $default
 	 * @return mixed
 	 */
-	public function getQuery($name, $default = null)
+	public function getQuery($name = null, $default = null)
 	{
 		return craft()->request->getQuery($name, $default);
 	}
@@ -133,11 +133,11 @@ class HttpRequestVariable
 	/**
 	 * Returns a value from post data.
 	 *
-	 * @param string $name
-	 * @param string $default
+	 * @param string|null $name
+	 * @param string|null $default
 	 * @return mixed
 	 */
-	public function getPost($name, $default = null)
+	public function getPost($name = null, $default = null)
 	{
 		return craft()->request->getPost($name, $default);
 	}
