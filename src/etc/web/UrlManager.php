@@ -61,7 +61,7 @@ class UrlManager extends \CUrlManager
 	 * @return string The controller/action path.
 	 * @throws HttpException Throws a 404 in the event that we can't figure out where to route the request.
 	 */
-	public function parseUrl(HttpRequestService $request)
+	public function parseUrl($request)
 	{
 		$this->_routeAction = null;
 		$this->_routeParams = array(
