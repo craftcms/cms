@@ -27,6 +27,7 @@ class FieldRecord extends BaseRecord
 		'postDate',
 		'section',
 		'siblings',
+		'sortOrder',
 		'type',
 		'uid',
 		'uri',
