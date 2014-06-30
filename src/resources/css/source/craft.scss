@@ -998,6 +998,10 @@ body .redactor_box textarea { padding: 6px 7px; }
 .textline { border: none; border-bottom: 1px dashed hsl($hue, 11%, 85%); padding-left: 0; padding-right: 0; color: hsl($hue, 11%, 50%); background: none; }
 .textline:focus { outline: none; border-bottom-color: hsl($hue, 11%, 70%) }
 
+/* Kill IE's special text features */
+::-ms-reveal,
+::-ms-clear { display: none; }
+
 /* Assets related */
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
 
