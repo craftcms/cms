@@ -13,7 +13,7 @@ class TemplateHelper
 	{
 		$currentPage = craft()->request->getPageNum();
 		$limit = $criteria->limit;
-		$total = $criteria->total();
+		$total = $criteria->total() - $criteria->offset;
 		$totalPages = ceil($total / $limit);
 
 		if ($currentPage > $totalPages)
