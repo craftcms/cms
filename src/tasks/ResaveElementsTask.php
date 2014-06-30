@@ -6,6 +6,8 @@ namespace Craft;
  */
 class ResaveElementsTask extends BaseTask
 {
+	private $_elementType;
+	private $_localeId;
 	private $_elementIds;
 
 	/**
@@ -53,7 +55,11 @@ class ResaveElementsTask extends BaseTask
 		$criteria->offset = null;
 		$criteria->limit = null;
 		$criteria->order = null;
+
+		$this->_elementType = $criteria->getElementType()->getClassHandle();
+		$this->_localeId = $criteria->locale;
 		$this->_elementIds = $criteria->ids();
+
 		return count($this->_elementIds);
 	}
 
@@ -65,9 +71,9 @@ class ResaveElementsTask extends BaseTask
 	 */
 	public function runStep($step)
 	{
-		$element = craft()->elements->getElementById($this->_elementIds[$step]);
+		$element = craft()->elements->getElementById($this->_elementIds[$step], $this->_elementType, $this->_localeId);
 
-		if (craft()->elements->saveElement($element, false))
+		if (!$element || craft()->elements->saveElement($element, false))
 		{
 			return true;
 		}
