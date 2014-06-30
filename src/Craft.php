@@ -249,13 +249,15 @@ class Craft extends \Yii
 	}
 
 	/**
+	 * Outputs info about a given variable and ends the request.
+	 *
 	 * @static
-	 * @param $target
-	 * @return string
+	 * @param mixed $target
 	 */
 	public static function dump($target)
 	{
 		\CVarDumper::dump($target, 10, true);
+		craft()->end();
 	}
 
 	/**
