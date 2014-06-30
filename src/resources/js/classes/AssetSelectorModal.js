@@ -109,7 +109,14 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 			var allowTransforms = false;
 		}
 
-		var MenuBtn = this.$selectTransformBtn.data('menuButton');
+		if (this.$selectTransformBtn)
+		{
+			var MenuBtn = this.$selectTransformBtn.data('menuButton');
+		}
+		else
+		{
+			var MenuBtn = null;
+		}
 
 		if (allowTransforms)
 		{

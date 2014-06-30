@@ -200,7 +200,8 @@ class ElementsService extends BaseApplicationComponent
 					// Add the field column prefixes
 					foreach ($fieldColumns as $column)
 					{
-						$order = preg_replace('/\b'.$column['handle'].'\b/', $column['column'].'$1', $order);
+						// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or "column_name desc"
+						$order = preg_replace('/(?<!\s)\b'.$column['handle'].'\b/', $column['column'].'$1', $order);
 					}
 				}
 

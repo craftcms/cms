@@ -316,17 +316,17 @@ class MatrixFieldType extends BaseFieldType
 			$block->setOwner($this->element);
 			$block->enabled = (isset($blockData['enabled']) ? (bool) $blockData['enabled'] : true);
 
-			if (isset($blockData['fields']))
-			{
-				$block->setContentFromPost($blockData['fields']);
-			}
-
 			// Set the content post location on the block if we can
 			$ownerContentPostLocation = $this->element->getContentPostLocation();
 
 			if ($ownerContentPostLocation)
 			{
 				$block->setContentPostLocation("{$ownerContentPostLocation}.{$this->model->handle}.{$blockId}.fields");
+			}
+
+			if (isset($blockData['fields']))
+			{
+				$block->setContentFromPost($blockData['fields']);
 			}
 
 			$sortOrder++;
