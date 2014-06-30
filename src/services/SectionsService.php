@@ -640,22 +640,13 @@ class SectionsService extends BaseApplicationComponent
 
 				if (!$isNewSection)
 				{
-					// Get all of the entry IDs in this section
 					$criteria = craft()->elements->getCriteria(ElementType::Entry);
+					$criteria->locale = array_shift(array_keys($oldSectionLocales));
 					$criteria->sectionId = $section->id;
 					$criteria->status = null;
 					$criteria->localeEnabled = null;
 					$criteria->limit = null;
-					$entryIds = $criteria->ids();
 
-					// Drop the locale rows we no longer need
-					if ($entryIds && $droppedLocaleIds)
-					{
-						craft()->db->createCommand()->delete('elements_i18n', array('and', array('in', 'elementId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
-						craft()->db->createCommand()->delete('content', array('and', array('in', 'elementId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
-					}
-
-					// Resave all of the entries in this section
 					craft()->tasks->createTask('ResaveElements', Craft::t('Resaving {section} entries', array('section' => $section->name)), array(
 						'elementType' => ElementType::Entry,
 						'criteria'    => $criteria->getAttributes()
