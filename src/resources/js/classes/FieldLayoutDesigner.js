@@ -19,7 +19,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 
 		this.$tabContainer = this.$container.children('.fld-tabs');
 		this.$unusedFieldContainer = this.$container.children('.unusedfields');
-		this.$newTabBtn = $('#newtabbtn');
+		this.$newTabBtn = this.$container.find('> .newtabbtn-container > .btn');
 		this.$allFields = this.$unusedFieldContainer.find('.fld-field');
 
 		// Set up the layout grids
