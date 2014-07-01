@@ -36,7 +36,7 @@ Craft.Grid = Garnish.Base.extend(
 
 		this.$items = this.$container.children(this.settings.itemSelector);
 		this.setItems();
-		this.refreshCols();
+		this.refreshCols(true);
 
 		// Adjust them when the container is resized
 		this.addListener(this.$container, 'resize', 'refreshCols');
@@ -49,14 +49,14 @@ Craft.Grid = Garnish.Base.extend(
 	{
 		this.$items = $().add(this.$items.add(items));
 		this.setItems();
-		this.refreshCols();
+		this.refreshCols(true);
 	},
 
 	removeItems: function(items)
 	{
 		this.$items = $().add(this.$items.not(items));
 		this.setItems();
-		this.refreshCols();
+		this.refreshCols(true);
 	},
 
 	setItems: function()
@@ -69,7 +69,7 @@ Craft.Grid = Garnish.Base.extend(
 		}
 	},
 
-	refreshCols: function()
+	refreshCols: function(force)
 	{
 		if (!this.items.length)
 		{
@@ -102,7 +102,7 @@ Craft.Grid = Garnish.Base.extend(
 		}
 
 		// Same number of columns as before?
-		if (this.totalCols === this.refreshCols._totalCols)
+		if (!force && this.totalCols === this.refreshCols._totalCols)
 		{
 			return;
 		}
