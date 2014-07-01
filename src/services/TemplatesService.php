@@ -1037,7 +1037,9 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= ' hasicon';
 		}
 
-		$html .= '" data-id="'.$context['element']->id.'" data-locale="'.$context['element']->locale.'" data-status="'.$context['element']->getStatus().'" data-label="'.$context['element'].'" data-url="'.$context['element']->getUrl().'"';
+		$label = HtmlHelper::encode($context['element']);
+
+		$html .= '" data-id="'.$context['element']->id.'" data-locale="'.$context['element']->locale.'" data-status="'.$context['element']->getStatus().'" data-label="'.$label.'" data-url="'.$context['element']->getUrl().'"';
 
 		$isEditable = ElementHelper::isElementEditable($context['element']);
 
@@ -1083,11 +1085,11 @@ class TemplatesService extends BaseApplicationComponent
 
 		if ($context['context'] == 'index' && ($cpEditUrl = $context['element']->getCpEditUrl()))
 		{
-			$html .= '<a href="'.$cpEditUrl.'">'.HtmlHelper::encode($context['element']).'</a>';
+			$html .= '<a href="'.$cpEditUrl.'">'.$label.'</a>';
 		}
 		else
 		{
-			$html .= $context['element'];
+			$html .= $label;
 		}
 
 		$html .= '</span></div></div>';
