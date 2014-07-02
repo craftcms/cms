@@ -249,14 +249,29 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Outputs info about a given variable and ends the request.
+	 * Displays a variable.
 	 *
 	 * @static
-	 * @param mixed $target
+	 * @param mixed $target    The variable to be dumped.
+	 * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
+	 * @param bool  $highlight Whether the result should be syntax-highlighted. Defaults to true.
 	 */
-	public static function dump($target)
+	public static function dump($target, $depth = 10, $highlight = true)
 	{
-		\CVarDumper::dump($target, 10, true);
+		\CVarDumper::dump($target, $depth, $highlight);
+	}
+
+	/**
+	 * Displays a variable and ends the request. (“Dump and die”)
+	 *
+	 * @static
+	 * @param mixed $target    The variable to be dumped.
+	 * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
+	 * @param bool  $highlight Whether the result should be syntax-highlighted. Defaults to true.
+	 */
+	public static function dd($target, $depth = 10, $highlight = true)
+	{
+		static::dump($target, $depth, $highlight);
 		craft()->end();
 	}
 
