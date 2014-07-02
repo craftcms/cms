@@ -915,7 +915,7 @@ return array(
 	'This field is required' => 'هذا الحقل مطلوب',
 	'This field is translatable' => 'هذا الحقل قابل للترجمة',
 	'This file type is not allowed' => 'غير مسموح بنوع الملف هذا',
-	'This global set doesn’t have any fields assigned to it in it’s field layout.' => 'لا تحتوي هذه المجموعة العمومية على أي حقول مسندة إليها في مخطط الحقل الخاص بها.',
+	'This global set doesn’t have any fields assigned to it in its field layout.' => 'لا تحتوي هذه المجموعة العمومية على أي حقول مسندة إليها في مخطط الحقل الخاص بها.',
 	'This group doesn’t have any fields yet.' => 'لا تحتوي هذه المجموعة على حقول بعد.',
 	'This is even more captivating content, which you couldn’t see on the News index page because it was entered after a Page Break, and the News index template only likes to show the content on the first page.' => 'هذا الجزء هو محتوى إضافي رائع، ولكن لا يمكنك عرضه في الصفحة الرئيسية للأخبار نظراً لإدخاله بعد فاصل الصفحة، وقالب الصفحة الرئيسية الأخبار يفضل أن يتم عرض المحتوى في الصفحة الأولى.',
 	'This is for the homepage' => 'هذا للصفحة الرئيسية',

@@ -915,7 +915,7 @@ return array(
 	'This field is required' => 'Dit veld is vereist',
 	'This field is translatable' => 'Dit veld is vertaalbaar',
 	'This file type is not allowed' => 'Dit bestandstype is niet toegelaten',
-	'This global set doesn’t have any fields assigned to it in it’s field layout.' => 'Deze globale set heeft geen toegeschreven velden in de lay-out van zijn veld. ',
+	'This global set doesn’t have any fields assigned to it in its field layout.' => 'Deze globale set heeft geen toegeschreven velden in de lay-out van zijn veld. ',
 	'This group doesn’t have any fields yet.' => 'Deze groep heeft nog geen velden.',
 	'This is even more captivating content, which you couldn’t see on the News index page because it was entered after a Page Break, and the News index template only likes to show the content on the first page.' => 'Deze content is nog boeiender, en kon u niet zien op de Nieuws-indexpagina omdat het na een pagina-einde was ingevoerd. Het sjabloon van de Nieuws-index laat alleen de content van de eerste pagina graag zien.',
 	'This is for the homepage' => 'Dit is voor de homepage',

@@ -915,7 +915,7 @@ return array(
 	'This field is required' => 'Ce champ est obligatoire',
 	'This field is translatable' => 'Ce champ peut être traduit',
 	'This file type is not allowed' => 'Ce type de fichier n\'est pas permis',
-	'This global set doesn’t have any fields assigned to it in it’s field layout.' => 'Cet ensemble global n\'a pas de champ qui lui est assigné dans sa disposition des champs.',
+	'This global set doesn’t have any fields assigned to it in its field layout.' => 'Cet ensemble global n\'a pas de champ qui lui est assigné dans sa disposition des champs.',
 	'This group doesn’t have any fields yet.' => 'Ce groupe n\'a pas encore de champ.',
 	'This is even more captivating content, which you couldn’t see on the News index page because it was entered after a Page Break, and the News index template only likes to show the content on the first page.' => 'C\'est encore un contenu plus captivant, que vous ne pourriez pas voir sur la page d\'index de Nouvelles, car ça a été conclu après un saut de page, et le modèle de l\'indice de Nouvelles aime montrer uniquement  le contenu de la première page.',
 	'This is for the homepage' => 'Ceci est pour la page d\'accueil',
@@ -1132,11 +1132,11 @@ Voici les paramètres que vous avez utilisés :
 	'test_email_subject' => 'Ceci est un courriel de test de Craft',
 	'three' => 'trois',
 	'two' => 'deux',
-	'verify_new_email_body' => 'Hé {{user.friendlyName}}, 
+	'verify_new_email_body' => 'Hé {{user.friendlyName}},
 
-veuillez vérifier votre nouvelle adresse de courriel en cliquant sur ce lien : 
+veuillez vérifier votre nouvelle adresse de courriel en cliquant sur ce lien :
 
-{{link}} 
+{{link}}
 
 Si vous n\'attendiez pas ce courriel, veuillez l\'ignorer.
 ',
