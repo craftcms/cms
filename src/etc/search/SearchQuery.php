@@ -81,7 +81,7 @@ class SearchQuery
 			$term = new SearchQueryTerm();
 
 			// Is this an exclude term?
-			if ($term->exclude = ($token[0] == '-'))
+			if ($term->exclude = (StringHelper::getCharAt($token, 0) == '-'))
 			{
 				$token = mb_substr($token, 1);
 			}
@@ -95,21 +95,21 @@ class SearchQuery
 			}
 
 			// Does it start with a quote?
-			if ($token && mb_strpos('"\'', $token[0]) !== false)
+			if ($token && mb_strpos('"\'', StringHelper::getCharAt($token, 0)) !== false)
 			{
 				// Is the end quote at the end of this very token?
-				if ($token[mb_strlen($token)-1] == $token[0])
+				if (StringHelper::getCharAt($token, mb_strlen($token)-1) == StringHelper::getCharAt($token, 0))
 				{
 					$token = mb_substr($token, 1, -1);
 				}
 				else
 				{
-					$token = mb_substr($token, 1).' '.strtok($token[0]);
+					$token = mb_substr($token, 1).' '.strtok(StringHelper::getCharAt($token, 0));
 				}
 			}
 
 			// Include sub-word matches?
-			if ($term->subLeft = ($token && $token[0] == '*'))
+			if ($term->subLeft = ($token && StringHelper::getCharAt($token, 0) == '*'))
 			{
 				$token = mb_substr($token, 1);
 			}
