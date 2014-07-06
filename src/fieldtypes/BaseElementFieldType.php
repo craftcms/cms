@@ -219,12 +219,11 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 * Returns the search keywords that should be associated with this field,
 	 * based on the prepped post data.
 	 *
-	 * @param mixed $value
+	 * @param ElementCriteriaModel $criteria
 	 * @return string
 	 */
-	public function getSearchKeywords($value)
+	public function getSearchKeywords($criteria)
 	{
-		$criteria = $this->prepValue(null);
 		$titles = array();
 
 		foreach ($criteria->find() as $element)
