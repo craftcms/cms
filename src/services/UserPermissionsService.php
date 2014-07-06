@@ -285,7 +285,8 @@ class UserPermissionsService extends BaseApplicationComponent
 			->delete('userpermissions_users', array('userId' => $userId));
 
 		// Filter out any orphaned permissions
-		$permissions = $this->_filterOrphanedPermissions($permissions);
+		$groupPermissions = $this->getGroupPermissionsByUserId($userId);
+		$permissions = $this->_filterOrphanedPermissions($permissions, $groupPermissions);
 
 		if ($permissions)
 		{
@@ -465,10 +466,11 @@ class UserPermissionsService extends BaseApplicationComponent
 	 * Filters out any orphaned permissions.
 	 *
 	 * @access private
-	 * @param array $postedPermissions
-	 * @return array $filteredPermissions
+	 * @param array  $postedPermissions   The posted permissions.
+	 * @param array  $groupPermissions    Permissions the user is already assigned to via their group, if we're saving a user's permissions.
+	 * @return array $filteredPermissions The permissions we'll actually let them save.
 	 */
-	private function _filterOrphanedPermissions($postedPermissions)
+	private function _filterOrphanedPermissions($postedPermissions, $groupPermissions = array())
 	{
 		$filteredPermissions = array();
 
@@ -476,7 +478,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		{
 			foreach ($this->getAllPermissions() as $categoryPermissions)
 			{
-				$this->_findSelectedPermissions($categoryPermissions, $postedPermissions, $filteredPermissions);
+				$this->_findSelectedPermissions($categoryPermissions, $postedPermissions, $groupPermissions, $filteredPermissions);
 			}
 		}
 
@@ -489,19 +491,25 @@ class UserPermissionsService extends BaseApplicationComponent
 	 * @access private
 	 * @param array $permissionsGroup
 	 * @param array $postedPermissions
+	 * @param array $groupPermissions
 	 * @param array &$filteredPermissions
 	 */
-	private function _findSelectedPermissions($permissionsGroup, $postedPermissions, &$filteredPermissions)
+	private function _findSelectedPermissions($permissionsGroup, $postedPermissions, $groupPermissions, &$filteredPermissions)
 	{
 		foreach ($permissionsGroup as $name => $data)
 		{
-			if (in_array($name, $postedPermissions))
+			// Was this permission in the post data, or do they already have it via their group?
+			if (($inPostedPermissions = in_array($name, $postedPermissions)) || in_array(strtolower($name), $groupPermissions))
 			{
-				$filteredPermissions[] = $name;
+				// If it was in the post data, give it to them directly now
+				if ($inPostedPermissions)
+				{
+					$filteredPermissions[] = $name;
+				}
 
 				if (!empty($data['nested']))
 				{
-					$this->_findSelectedPermissions($data['nested'], $postedPermissions, $filteredPermissions);
+					$this->_findSelectedPermissions($data['nested'], $postedPermissions, $groupPermissions, $filteredPermissions);
 				}
 			}
 		}
