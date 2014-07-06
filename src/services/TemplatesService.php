@@ -143,10 +143,10 @@ class TemplatesService extends BaseApplicationComponent
 	{
 		$twig = $this->getTwig();
 
-		$lastRenedringTemplate = $this->_renderingTemplate;
+		$lastRenderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = $template;
 		$result = $twig->render($template, $variables);
-		$this->_renderingTemplate = $lastRenedringTemplate;
+		$this->_renderingTemplate = $lastRenderingTemplate;
 		return $result;
 	}
 
@@ -163,10 +163,10 @@ class TemplatesService extends BaseApplicationComponent
 		$twig = $this->getTwig();
 		$twigTemplate = $twig->loadTemplate($template);
 
-		$lastRenedringTemplate = $this->_renderingTemplate;
+		$lastRenderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = $template;
 		$result = call_user_func_array(array($twigTemplate, 'get'.$macro), $args);
-		$this->_renderingTemplate = $lastRenedringTemplate;
+		$this->_renderingTemplate = $lastRenderingTemplate;
 		return $result;
 	}
 
@@ -181,10 +181,10 @@ class TemplatesService extends BaseApplicationComponent
 	{
 		$stringTemplate = new StringTemplate(md5($template), $template);
 
-		$lastRenedringTemplate = $this->_renderingTemplate;
+		$lastRenderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = 'string:'.$template;
 		$result = $this->render($stringTemplate, $variables);
-		$this->_renderingTemplate = $lastRenedringTemplate;
+		$this->_renderingTemplate = $lastRenderingTemplate;
 		return $result;
 	}
 
@@ -223,12 +223,12 @@ class TemplatesService extends BaseApplicationComponent
 		}
 
 		// Render it!
-		$lastRenedringTemplate = $this->_renderingTemplate;
+		$lastRenderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = 'string:'.$template;
 		$result = $this->_objectTemplates[$template]->render(array(
 			'object' => $object
 		));
-		$this->_renderingTemplate = $lastRenedringTemplate;
+		$this->_renderingTemplate = $lastRenderingTemplate;
 
 		// Re-enable strict variables
 		if ($strictVariables)
