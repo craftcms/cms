@@ -1496,6 +1496,36 @@ class IOHelper
 	}
 
 	/**
+	 * Returns the last $number of modified files from a given folder ordered by the last modified date descending.
+	 *
+	 * @param      $folder The folder to get the files from.
+	 * @param null $number The number of files to return.  If null is given, all files will be returned.
+	 * @param bool $suppressErrors
+	 * @return array
+	 */
+	public static function getLastModifiedFiles($folder, $number = null, $suppressErrors = false)
+	{
+		$fileResults = array();
+
+		$files = static::getFiles($folder, $suppressErrors);
+
+		foreach ($files as $file)
+		{
+			$lastModifiedTime = IOHelper::getLastTimeModified($file, $suppressErrors);
+			$fileResults[$lastModifiedTime->getTimestamp()] = $file;
+		}
+
+		krsort($fileResults);
+
+		if ($number !== null)
+		{
+			$fileResults = array_slice($fileResults, 0, $number, true);
+		}
+
+		return $fileResults;
+	}
+
+	/**
 	 * @param        $errNo
 	 * @param        $errStr
 	 * @param        $errFile

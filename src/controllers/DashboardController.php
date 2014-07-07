@@ -120,7 +120,7 @@ class DashboardController extends BaseController
 			// Add some extra info about this install
 			$message = $getHelpModel->message . "\n\n" .
 				"------------------------------\n\n" .
-				'@@@appName@@@ '.craft()->getEditionName().' '.craft()->getVersion().'.'.craft()->getBuild();
+				'Craft '.craft()->getEditionName().' '.craft()->getVersion().'.'.craft()->getBuild();
 
 			$plugins = craft()->plugins->getPlugins();
 
@@ -178,15 +178,13 @@ class DashboardController extends BaseController
 						// Make a fresh database backup of the current schema/data.
 						craft()->db->backup();
 
-						$contents = IOHelper::getFolderContents(craft()->path->getDbBackupPath());
-						rsort($contents);
+						$backups = IOHelper::getLastModifiedFiles(craft()->path->getDbBackupPath(), 3);
 
-						// Only grab the most recent 3 sorted by timestamp.
-						for ($counter = 0; $counter <= 2; $counter++)
+						foreach ($backups as $backup)
 						{
-							if (isset($contents[$counter]))
+							if (IOHelper::getExtension($backup) == 'sql')
 							{
-								Zip::add($zipFile, $contents[$counter], craft()->path->getStoragePath());
+								Zip::add($zipFile, $backup, craft()->path->getStoragePath());
 							}
 						}
 					}

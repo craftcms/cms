@@ -70,24 +70,7 @@ class TemplatesService extends BaseApplicationComponent
 			$twig->getExtension('core')->setTimezone($timezone);
 
 			// Give plugins a chance to add their own Twig extensions
-
-			// All plugins may not have been loaded yet if an exception is being thrown
-			// or a plugin is loading a template as part of of its init() function.
-			if (craft()->plugins->arePluginsLoaded())
-			{
-				$pluginExtensions = craft()->plugins->call('addTwigExtension');
-
-				foreach ($pluginExtensions as $extension)
-				{
-					$twig->addExtension($extension);
-				}
-			}
-			else
-			{
-				// Wait around for plugins to actually be loaded,
-				// then do it for all Twig environments that have been created.
-				craft()->on('plugins.loadPlugins', array($this, '_onPluginsLoaded'));
-			}
+			$this->_addPluginTwigExtensions($twig);
 
 			$this->_twigs[$loaderClass] = $twig;
 		}
@@ -915,6 +898,39 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Adds any plugin-supplied Twig extensions to a given Twig instance.
+	 *
+	 * @access private
+	 * @param \Twig_Environment $twig
+	 */
+	private function _addPluginTwigExtensions(\Twig_Environment $twig)
+	{
+		if (craft()->plugins->arePluginsLoaded())
+		{
+			$pluginExtensions = craft()->plugins->call('addTwigExtension');
+
+			try
+			{
+				foreach ($pluginExtensions as $extension)
+				{
+					$twig->addExtension($extension);
+				}
+			}
+			catch (\LogicException $e)
+			{
+				Craft::log('Tried to register plugin-supplied Twig extensions, but Twig environment has already initialized its extensions.', LogLevel::Warning);
+				return;
+			}
+		}
+		else
+		{
+			// Wait around for plugins to actually be loaded,
+			// then do it for all Twig environments that have been created.
+			craft()->on('plugins.loadPlugins', array($this, '_onPluginsLoaded'));
+		}
+	}
+
+	/**
 	 * Loads plugin-supplied Twig extensions now that all plugins have been loaded.
 	 *
 	 * @access private
@@ -922,14 +938,9 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function _onPluginsLoaded(Event $event)
 	{
-		$pluginExtensions = craft()->plugins->call('addTwigExtension');
-
 		foreach ($this->_twigs as $twig)
 		{
-			foreach ($pluginExtensions as $extension)
-			{
-				$twig->addExtension($extension);
-			}
+			$this->_addPluginTwigExtensions($twig);
 		}
 	}
 
