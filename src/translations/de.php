@@ -915,7 +915,7 @@ return array(
 	'This field is required' => 'Dieses Feld ist erforderlich',
 	'This field is translatable' => 'Das Feld kann übersetzt werden',
 	'This file type is not allowed' => 'Dieser Dateityp ist nicht erlaubt',
-	'This global set doesn’t have any fields assigned to it in it’s field layout.' => 'Im Feldlayout sind diesem globalen Satz keine Felder zugewiesen.',
+	'This global set doesn’t have any fields assigned to it in its field layout.' => 'Im Feldlayout sind diesem globalen Satz keine Felder zugewiesen.',
 	'This group doesn’t have any fields yet.' => 'Diese Gruppe hat noch keine Felder.',
 	'This is even more captivating content, which you couldn’t see on the News index page because it was entered after a Page Break, and the News index template only likes to show the content on the first page.' => 'Dies ist ein noch besserer Inhalt,welchen Sie auf der Nachrichten-Anzeigeseite nicht sehen konnten, da er nach einem Seitenumbruch eingefügt worden ist. Das Template für die Nachrichten Anzeige zeigt normalerweise nur den Inhalt der ersten Seite an.',
 	'This is for the homepage' => 'Dies wird für die Homepage verwendet',

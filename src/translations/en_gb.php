@@ -915,7 +915,7 @@ return array(
 	'This field is required' => 'This field is required',
 	'This field is translatable' => 'This field is translatable',
 	'This file type is not allowed' => 'This file type is not allowed',
-	'This global set doesn’t have any fields assigned to it in it’s field layout.' => 'This global set doesn’t have any fields assigned to it in it’s field layout.',
+	'This global set doesn’t have any fields assigned to it in its field layout.' => 'This global set doesn’t have any fields assigned to it in its field layout.',
 	'This group doesn’t have any fields yet.' => 'This group doesn’t have any fields yet.',
 	'This is even more captivating content, which you couldn’t see on the News index page because it was entered after a Page Break, and the News index template only likes to show the content on the first page.' => 'This is even more captivating content, which you couldn’t see on the News index page because it was entered after a Page Break, and the News index template only likes to show the content on the first page.',
 	'This is for the homepage' => 'This is for the homepage',

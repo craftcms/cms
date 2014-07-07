@@ -915,7 +915,7 @@ return array(
 	'This field is required' => 'このフィールドは必須です',
 	'This field is translatable' => 'このフィールドお翻訳は可能です',
 	'This file type is not allowed' => 'このファイルタイプは使えません',
-	'This global set doesn’t have any fields assigned to it in it’s field layout.' => 'このグローバルセットはフィールドレイアウト内に割り当てるためのフィールドがありません。',
+	'This global set doesn’t have any fields assigned to it in its field layout.' => 'このグローバルセットはフィールドレイアウト内に割り当てるためのフィールドがありません。',
 	'This group doesn’t have any fields yet.' => 'このグループはまだフィールドがありません。',
 	'This is even more captivating content, which you couldn’t see on the News index page because it was entered after a Page Break, and the News index template only likes to show the content on the first page.' => 'ニュースのindexページよりもっとコンテンツが現れた。それはページの区切りの後に書いてあるコンテンツですから。しかも、ニュースのindexテンプレートは最初のページだけを表示することを優先しているからです。',
 	'This is for the homepage' => 'これはホームページ用です。',

@@ -915,7 +915,7 @@ return array(
 	'This field is required' => 'Dette feltet er påkrevd',
 	'This field is translatable' => 'Dette feltet skal kunne oversettes',
 	'This file type is not allowed' => 'Denne filtypen er ikke tillatt',
-	'This global set doesn’t have any fields assigned to it in it’s field layout.' => 'Dette globale settet er ikke blitt tildelt noen felter i dens felt-layout. ',
+	'This global set doesn’t have any fields assigned to it in its field layout.' => 'Dette globale settet er ikke blitt tildelt noen felter i dens felt-layout. ',
 	'This group doesn’t have any fields yet.' => 'Denne gruppen har ingen tilordnede felt enda.',
 	'This is even more captivating content, which you couldn’t see on the News index page because it was entered after a Page Break, and the News index template only likes to show the content on the first page.' => 'Dette er enda mer fengslende innhold, som ikke er synlig på nyhetsforsiden, fordi det står skrevet etter et sideskift. Nyhetsforsiden liker kun å vise innholdet på den første siden.',
 	'This is for the homepage' => 'Dette er til forsiden',

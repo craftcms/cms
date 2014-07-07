@@ -915,7 +915,7 @@ return array(
 	'This field is required' => 'Questo campo è obbligatorio',
 	'This field is translatable' => 'Questo campo è traducibile',
 	'This file type is not allowed' => 'Questo tipo di file non è consentito',
-	'This global set doesn’t have any fields assigned to it in it’s field layout.' => 'Questo set globale non ha alcun campo assegnato nella propria configurazione dei campi.',
+	'This global set doesn’t have any fields assigned to it in its field layout.' => 'Questo set globale non ha alcun campo assegnato nella propria configurazione dei campi.',
 	'This group doesn’t have any fields yet.' => 'Questo gruppo non ha ancora un campo.',
 	'This is even more captivating content, which you couldn’t see on the News index page because it was entered after a Page Break, and the News index template only likes to show the content on the first page.' => 'Questo è un contenuto persino più accattivante che non ti è stato possibile vedere sulla pagina con l\'indice delle Notizie perché è stato inserito dopo un\'Interruzione di Pagina, e il template con l\'indice delle Notizie ama mostrare il contenuto soltanto sulla prima pagina.',
 	'This is for the homepage' => 'Per la homepage',

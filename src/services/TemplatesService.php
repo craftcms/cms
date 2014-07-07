@@ -143,10 +143,10 @@ class TemplatesService extends BaseApplicationComponent
 	{
 		$twig = $this->getTwig();
 
-		$lastRenedringTemplate = $this->_renderingTemplate;
+		$lastRenderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = $template;
 		$result = $twig->render($template, $variables);
-		$this->_renderingTemplate = $lastRenedringTemplate;
+		$this->_renderingTemplate = $lastRenderingTemplate;
 		return $result;
 	}
 
@@ -163,10 +163,10 @@ class TemplatesService extends BaseApplicationComponent
 		$twig = $this->getTwig();
 		$twigTemplate = $twig->loadTemplate($template);
 
-		$lastRenedringTemplate = $this->_renderingTemplate;
+		$lastRenderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = $template;
 		$result = call_user_func_array(array($twigTemplate, 'get'.$macro), $args);
-		$this->_renderingTemplate = $lastRenedringTemplate;
+		$this->_renderingTemplate = $lastRenderingTemplate;
 		return $result;
 	}
 
@@ -181,10 +181,10 @@ class TemplatesService extends BaseApplicationComponent
 	{
 		$stringTemplate = new StringTemplate(md5($template), $template);
 
-		$lastRenedringTemplate = $this->_renderingTemplate;
+		$lastRenderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = 'string:'.$template;
 		$result = $this->render($stringTemplate, $variables);
-		$this->_renderingTemplate = $lastRenedringTemplate;
+		$this->_renderingTemplate = $lastRenderingTemplate;
 		return $result;
 	}
 
@@ -223,12 +223,12 @@ class TemplatesService extends BaseApplicationComponent
 		}
 
 		// Render it!
-		$lastRenedringTemplate = $this->_renderingTemplate;
+		$lastRenderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = 'string:'.$template;
 		$result = $this->_objectTemplates[$template]->render(array(
 			'object' => $object
 		));
-		$this->_renderingTemplate = $lastRenedringTemplate;
+		$this->_renderingTemplate = $lastRenderingTemplate;
 
 		// Re-enable strict variables
 		if ($strictVariables)
@@ -1037,7 +1037,9 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= ' hasicon';
 		}
 
-		$html .= '" data-id="'.$context['element']->id.'" data-locale="'.$context['element']->locale.'" data-status="'.$context['element']->getStatus().'" data-label="'.$context['element'].'" data-url="'.$context['element']->getUrl().'"';
+		$label = HtmlHelper::encode($context['element']);
+
+		$html .= '" data-id="'.$context['element']->id.'" data-locale="'.$context['element']->locale.'" data-status="'.$context['element']->getStatus().'" data-label="'.$label.'" data-url="'.$context['element']->getUrl().'"';
 
 		$isEditable = ElementHelper::isElementEditable($context['element']);
 
@@ -1083,11 +1085,11 @@ class TemplatesService extends BaseApplicationComponent
 
 		if ($context['context'] == 'index' && ($cpEditUrl = $context['element']->getCpEditUrl()))
 		{
-			$html .= '<a href="'.$cpEditUrl.'">'.HtmlHelper::encode($context['element']).'</a>';
+			$html .= '<a href="'.$cpEditUrl.'">'.$label.'</a>';
 		}
 		else
 		{
-			$html .= $context['element'];
+			$html .= $label;
 		}
 
 		$html .= '</span></div></div>';

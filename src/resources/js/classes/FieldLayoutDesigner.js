@@ -19,7 +19,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 
 		this.$tabContainer = this.$container.children('.fld-tabs');
 		this.$unusedFieldContainer = this.$container.children('.unusedfields');
-		this.$newTabBtn = $('#newtabbtn');
+		this.$newTabBtn = this.$container.find('> .newtabbtn-container > .btn');
 		this.$allFields = this.$unusedFieldContainer.find('.fld-field');
 
 		// Set up the layout grids
@@ -205,7 +205,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 		$field.remove();
 
 		this.removeFieldById(fieldId);
-		this.tabGrid.refreshCols();
+		this.tabGrid.refreshCols(true);
 	},
 
 	removeFieldById: function(fieldId)
@@ -227,7 +227,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 		}
 		else
 		{
-			this.unusedFieldGrid.refreshCols();
+			this.unusedFieldGrid.refreshCols(true);
 		}
 	},
 
@@ -398,7 +398,7 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend(
 				}
 				else
 				{
-					this.designer.tabGrid.refreshCols();
+					this.designer.tabGrid.refreshCols(true);
 				}
 
 				this.setMidpoints();
@@ -432,7 +432,7 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend(
 				}
 				else
 				{
-					this.designer.tabGrid.refreshCols();
+					this.designer.tabGrid.refreshCols(true);
 				}
 
 				this.setMidpoints();
@@ -505,8 +505,8 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend(
 			visibility: 'hidden'
 		});
 
-		this.designer.tabGrid.refreshCols();
-		this.designer.unusedFieldGrid.refreshCols();
+		this.designer.tabGrid.refreshCols(true);
+		this.designer.unusedFieldGrid.refreshCols(true);
 
 		// return the helpers to the draggees
 		this.returnHelpersToDraggees();

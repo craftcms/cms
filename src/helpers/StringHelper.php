@@ -11,6 +11,19 @@ class StringHelper
 	private static $_iconv;
 
 	/**
+	 * Returns the character at a specific point in a potentially multibyte string.
+	 *
+	 * @param  string $str
+	 * @param  int    $i
+	 * @return string
+	 * @see http://stackoverflow.com/questions/10360764/there-are-simple-way-to-get-a-character-from-multibyte-string-in-php
+	 */
+	public static function getCharAt($str, $i)
+	{
+		return mb_substr($str, $i, 1);
+	}
+
+	/**
 	 * Converts an array to a string.
 	 *
 	 * @static

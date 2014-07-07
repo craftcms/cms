@@ -27,7 +27,7 @@
 
 
 {% set content %}
-	<form method="post" accept-charset="UTF-8" data-saveshortcut="1">
+	<form method="post" accept-charset="UTF-8" data-saveshortcut="1" data-confirm-unload="1">
 		<input type="hidden" name="action" value="globals/saveContent">
 		<input type="hidden" name="setId" value="{{ globalSet.id }}">
 		<input type="hidden" name="locale" value="{{ localeId }}">
@@ -44,7 +44,7 @@
 				<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 			</div>
 		{% else %}
-			{{ "This global set doesn’t have any fields assigned to it in it’s field layout."|t }}
+			{{ "This global set doesn’t have any fields assigned to it in its field layout."|t }}
 		{% endif %}
 	</form>
 {% endset %}
