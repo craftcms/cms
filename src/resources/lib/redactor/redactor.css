@@ -13,12 +13,14 @@
 }
 /* =Selection
 -----------------------------------------------------------------------------*/
+/* BEGIN HACK
 .redactor_box ::selection {
   background: #ffff9e;
 }
 .redactor_box ::-moz-selection {
   background: #ffff9e;
 }
+END HACK */
 .redactor_box img::selection {
   background: transparent;
 }
