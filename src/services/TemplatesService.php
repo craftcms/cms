@@ -909,9 +909,17 @@ class TemplatesService extends BaseApplicationComponent
 		{
 			$pluginExtensions = craft()->plugins->call('addTwigExtension');
 
-			foreach ($pluginExtensions as $extension)
+			try
 			{
-				$twig->addExtension($extension);
+				foreach ($pluginExtensions as $extension)
+				{
+					$twig->addExtension($extension);
+				}
+			}
+			catch (\LogicException $e)
+			{
+				Craft::log('Tried to register plugin-supplied Twig extensions, but Twig environment has already initialized its extensions.', LogLevel::Warning);
+				return;
 			}
 		}
 		else
