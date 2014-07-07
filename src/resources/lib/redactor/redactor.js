@@ -2674,10 +2674,25 @@
 
 				// fix right placement
 				var dropdownWidth = $dropdown.width();
+
+				/* BEGIN HACK! */
+
+				if (
+					(Craft.orientation == 'rtl' && keyPosition.left >= dropdownWidth) ||
+					(keyPosition.left + dropdownWidth) > this.$box.outerWidth()
+				)
+				{
+					keyPosition.left -= (dropdownWidth - 7);
+				}
+
+				/*
+
 				if ((keyPosition.left + dropdownWidth) > $(document).width())
 				{
 					keyPosition.left -= dropdownWidth;
 				}
+
+				END HACK */
 
 				var left = keyPosition.left + 'px';
 				var btnHeight = $button.innerHeight();
@@ -7361,8 +7376,16 @@
 				this.$redactorModal.append($('<div id="redactor_modal_close">&times;</div>'));
 				this.$redactorModal.append($('<header id="redactor_modal_header" />'));
 				this.$redactorModal.append($('<div id="redactor_modal_inner" />'));
+
+				/* BEGIN HACK
 				this.$redactorModal.appendTo(document.body);
+				END HACK */
 			}
+
+			/* BEGIN HACK */
+			// make sure that the modal is at the end of the DOM
+			this.$redactorModal.appendTo(document.body);
+			/* END HACK */
 
 			$('#redactor_modal_close').on('click', $.proxy(this.modalClose, this));
 			$(document).keyup($.proxy(this.modalCloseHandler, this));
