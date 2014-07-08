@@ -26,22 +26,6 @@ class TemplatesController extends BaseController
 	}
 
 	/**
-	 * Shows the 'offline' template.
-	 */
-	public function actionOffline()
-	{
-		// If this is a site request, make sure the offline template exists
-		if (craft()->request->isSiteRequest() && !craft()->templates->doesTemplateExist('offline'))
-		{
-			// Set PathService to use the CP templates path instead
-			craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
-		}
-
-		// Output the offline template
-		$this->renderTemplate('offline');
-	}
-
-	/**
 	 * Renders the Manual Update notification template.
 	 */
 	public function actionManualUpdateNotification()
@@ -112,6 +96,10 @@ class TemplatesController extends BaseController
 			if (craft()->templates->doesTemplateExist($prefix.$code))
 			{
 				$template = $prefix.$code;
+			}
+			else if ($code == 503 && craft()->templates->doesTemplateExist($prefix.'offline'))
+			{
+				$template = $prefix.'offline';
 			}
 			else if (craft()->templates->doesTemplateExist($prefix.'error'))
 			{

@@ -265,8 +265,7 @@ class WebApp extends \CWebApplication
 			}
 			else
 			{
-				// Display the offline template
-				$this->runController('templates/offline');
+				throw new HttpException(503);
 			}
 		}
 	}
