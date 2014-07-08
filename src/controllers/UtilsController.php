@@ -140,7 +140,7 @@ class UtilsController extends BaseController
 			foreach ($logFolderContents as $logFolderContent)
 			{
 				// Make sure it's a file.`
-				if (IOHelper::fileExists($logFolderContent) && (strpos($logFolderContent, 'craft.log') !== false || strpos($logFolderContent, 'phperrors') !== false))
+				if (IOHelper::fileExists($logFolderContent))
 				{
 					$logFileNames[] = IOHelper::getFileName($logFolderContent);
 				}
