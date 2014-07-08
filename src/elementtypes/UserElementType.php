@@ -248,36 +248,37 @@ class UserElementType extends BaseElementType
 					->from('userpermissions')
 					->where('name = :name', array(':name' => strtolower($criteria->can)))
 					->queryScalar();
-
-				if (!$permissionId)
-				{
-					return false;
-				}
 			}
 
+			// Find the users that have that permission, either directly or thorugh a group
 			$permittedUserIds = array();
 
-			// Get the user groups that have that permission
-			$permittedGroupIds = craft()->db->createCommand()
-				->select('groupId')
-				->from('userpermissions_usergroups')
-				->where('permissionId = :permissionId', array(':permissionId' => $permissionId))
-				->queryColumn();
-
-			if ($permittedGroupIds)
+			// If the permission hasn't been assigned to any groups/users before, it won't have an ID.
+			// Don't bail though, since we still want to look for admins.
+			if ($permissionId)
 			{
-				$permittedUserIds = $this->_getUserIdsByGroupIds($permittedGroupIds);
-			}
-
-			// Get the users that have that permission directly
-			$permittedUserIds = array_merge(
-				$permittedUserIds,
-				craft()->db->createCommand()
-					->select('userId')
-					->from('userpermissions_users')
+				// Get the user groups that have that permission
+				$permittedGroupIds = craft()->db->createCommand()
+					->select('groupId')
+					->from('userpermissions_usergroups')
 					->where('permissionId = :permissionId', array(':permissionId' => $permissionId))
-					->queryColumn()
-			);
+					->queryColumn();
+
+				if ($permittedGroupIds)
+				{
+					$permittedUserIds = $this->_getUserIdsByGroupIds($permittedGroupIds);
+				}
+
+				// Get the users that have that permission directly
+				$permittedUserIds = array_merge(
+					$permittedUserIds,
+					craft()->db->createCommand()
+						->select('userId')
+						->from('userpermissions_users')
+						->where('permissionId = :permissionId', array(':permissionId' => $permissionId))
+						->queryColumn()
+				);
+			}
 
 			if ($permittedUserIds)
 			{
