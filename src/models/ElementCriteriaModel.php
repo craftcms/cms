@@ -114,7 +114,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	{
 		if (is_numeric($offset))
 		{
-			return ($this->findElementAtOffset($offset) !== null);
+			return ($this->nth($offset) !== null);
 		}
 		else
 		{
@@ -134,7 +134,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	{
 		if (is_numeric($offset))
 		{
-			return $this->findElementAtOffset($offset);
+			return $this->nth($offset);
 		}
 		else
 		{
@@ -274,12 +274,12 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	}
 
 	/**
-	 * Returns an element at a specific offset.
+	 * Returns the Nth element that matches the criteria.
 	 *
 	 * @param int $offset
 	 * @return BaseElementModel|null
 	 */
-	public function findElementAtOffset($offset)
+	public function nth($offset)
 	{
 		if (!isset($this->_cachedElementsAtOffsets) || !array_key_exists($offset, $this->_cachedElementsAtOffsets))
 		{
@@ -311,7 +311,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	{
 		$this->setAttributes($attributes);
 
-		return $this->findElementAtOffset(0);
+		return $this->nth(0);
 	}
 
 	/**
@@ -328,7 +328,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 
 		if ($total)
 		{
-			return $this->findElementAtOffset($total-1);
+			return $this->nth($total-1);
 		}
 	}
 
@@ -382,6 +382,25 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 		$class = get_class($this);
 		return new $class($this->getAttributes(), $this->_elementType);
 	}
+
+	// Deprecated methods
+	// ----------------------------------------------------------------------
+
+	/**
+	 * Returns an element at a specific offset.
+	 *
+	 * @param int $offset
+	 * @return BaseElementModel|null
+	 * @deprecated Deprecated in 2.2. Use nth() instead.
+	 */
+	public function findElementAtOffset($offset)
+	{
+		craft()->deprecator->log('ElementCriteriaModel::findElementAtOffset()', 'ElementCriteriaModel::findElementAtOffset() has been deprecated. Use nth() instead.');
+		return $this->nth($offset);
+	}
+
+	// Private methods
+	// ----------------------------------------------------------------------
 
 	/**
 	 * Includes
