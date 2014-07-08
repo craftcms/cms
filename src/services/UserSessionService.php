@@ -639,6 +639,9 @@ class UserSessionService extends \CWebUser
 		}
 	}
 
+	// Events
+	// ----------------------------------------------------------------------
+
 	/**
 	 * Fires an 'onBeforeLogin' event.
 	 *
@@ -658,6 +661,29 @@ class UserSessionService extends \CWebUser
 	{
 		$this->raiseEvent('onLogin', $event);
 	}
+
+	/**
+	 * Fires an 'onBeforeLogout' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeLogout(Event $event)
+	{
+		$this->raiseEvent('onBeforeLogout', $event);
+	}
+
+	/**
+	 * Fires an 'onLogout' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onLogout(Event $event)
+	{
+		$this->raiseEvent('onLogout', $event);
+	}
+
+	// Protected and private methods
+	// ----------------------------------------------------------------------
 
 	/**
 	 * Changes the current user with the specified identity information. This method is called by {@link login} and {@link restoreFromCookie}
@@ -809,6 +835,9 @@ class UserSessionService extends \CWebUser
 	 */
 	protected function beforeLogout()
 	{
+		// Fire an 'onBeforeLogout' event
+		$this->onBeforeLogout(new Event($this));
+
 		$cookie = craft()->request->getCookies()->itemAt($this->getStateKeyPrefix());
 
 		// Grab the identity cookie information and make sure the data hasn't been tampered with.
@@ -839,6 +868,15 @@ class UserSessionService extends \CWebUser
 		$this->_userRow = null;
 
 		return true;
+	}
+
+	/**
+	 * Fires an 'onLogout' event after a user has been logged out.
+	 */
+	protected function afterLogout()
+	{
+		// Fire an 'onLogout' event
+		$this->onLogout(new Event($this));
 	}
 
 	/**
