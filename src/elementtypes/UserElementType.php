@@ -125,8 +125,6 @@ class UserElementType extends BaseElementType
 		}
 
 		return $attributes;
-
-		return $attributes;
 	}
 
 	/**
