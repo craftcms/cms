@@ -2866,8 +2866,8 @@ Garnish.Menu = Garnish.Base.extend({
 		this.setSettings(settings, Garnish.Menu.defaults);
 
 		this.$container = $(container);
-		this.$options = this.$container.find('a');
-		this.$options.data('menu', this);
+		this.$options = $();
+		this.addOptions(this.$container.find('a'));
 
 		if (this.settings.attachToElement)
 		{
@@ -2879,9 +2879,13 @@ Garnish.Menu = Garnish.Base.extend({
 		{
 			ev.stopPropagation();
 		});
+	},
 
-		// Listen for option clicks
-		this.addListener(this.$options, 'click', 'selectOption');
+	addOptions: function($options)
+	{
+		this.$options = this.$options.add($options);
+		$options.data('menu', this);
+		this.addListener($options, 'click', 'selectOption');
 	},
 
 	setPositionRelativeToTrigger: function()
