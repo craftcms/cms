@@ -70,19 +70,6 @@ class TagElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the attributes that can be shown/sorted by in table views.
-	 *
-	 * @param string|null $source
-	 * @return array
-	 */
-	public function defineTableAttributes($source = null)
-	{
-		return array(
-			'name' => Craft::t('Name'),
-		);
-	}
-
-	/**
 	 * Defines any custom element criteria attributes for this element type.
 	 *
 	 * @return array
