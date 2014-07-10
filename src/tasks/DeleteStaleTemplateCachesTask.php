@@ -54,13 +54,13 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 			return 0;
 		}
 
-		if (is_array($this->_elementIds))
+		if (is_array($elementId))
 		{
 			$this->_elementIds = $elementId;
 		}
 		else
 		{
-			$this->_elementIds = array($this->_elementIds);
+			$this->_elementIds = array($elementId);
 		}
 
 		// Figure out how many rows we're dealing with
