@@ -21,9 +21,16 @@ class HeaderHelper
 			return false;
 		}
 
-		static::setHeader(array('Content-Type' => $mimeTypes[$extension].'; charset=utf-8'));
+		$mimeType = $mimeTypes[$extension];
 
-		return true;
+		if (static::setHeader(array('Content-Type' => $mimeType.'; charset=utf-8')))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -177,10 +184,10 @@ class HeaderHelper
 	}
 
 	/**
-	 * Called to output a header.
+	 * Sets one or more response headers
 	 *
-	 * @param array $header Use key => value
-	 * @return void
+	 * @param string|array $header Either a string in the "name: value" format, or an array of key/value pairs.
+	 * @return bool Whether setting the header(s) was successful.
 	 */
 	public static function setHeader($header)
 	{
@@ -206,5 +213,7 @@ class HeaderHelper
 				header("$key: $value");
 			}
 		}
+
+		return true;
 	}
 }
