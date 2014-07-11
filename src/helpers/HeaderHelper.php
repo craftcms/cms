@@ -149,38 +149,40 @@ class HeaderHelper
 	}
 
 	/**
-	 * Checks whether a header is currently set or not.
+	 * Checks whether a header is currently set.
 	 *
-	 * @param $key
-	 * @return bool
+	 * @param $name The name of the header.
+	 * @return bool Whether the header has been set
 	 */
-	public static function isHeaderSet($key)
+	public static function isHeaderSet($name)
 	{
-		// Grab existing headers.
-		$currentHeaders = headers_list();
-		$exists = false;
+		return (static::getHeader($name) !== null);
+	}
 
-		foreach ($currentHeaders as $currentHeader)
+	/**
+	 * Returns the value of a given header, if it has been set.
+	 *
+	 * @static
+	 * @param string $name The name of the header.
+	 * @return string|null The value of the header, or `null` if it hasn’t been set.
+	 */
+	public static function getHeader($name)
+	{
+		// Normalize to lowercase
+		$name = strtolower($name);
+
+		// Loop through each of the headers
+		foreach (headers_list() as $header)
 		{
-			// See if the existing header is in the "key: value" format.
-			if (strpos($currentHeader, ':') !== false)
-			{
-				$currentParts = explode(':', $currentHeader);
-				$currentKey = trim($currentParts[0]);
-			}
-			else
-			{
-				$currentKey = false;
-			}
+			// Split it into its trimmed key/value
+			$parts = array_map('trim', explode(':', $header, 2));
 
-			if ($key == $currentKey)
+			// Is this the header we're looking for?
+			if (isset($parts[1]) && $name == strtolower($parts[0]))
 			{
-				$exists = true;
-				break;
+				return $parts[1];
 			}
 		}
-
-		return $exists;
 	}
 
 	/**
