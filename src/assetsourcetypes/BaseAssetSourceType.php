@@ -7,27 +7,42 @@ namespace Craft;
 abstract class BaseAssetSourceType extends BaseSavableComponentType
 {
 	/**
+	 * Whether this is a local source or not. Defaults to false.
+	 *
+	 * @access protected
+	 *
 	 * @var bool
 	 */
 	protected $_isSourceLocal = false;
 
 	/**
+	 * The type of component this is.
+	 *
 	 * @access protected
-	 * @var string The type of component this is
+	 *
+	 * @var string
 	 */
 	protected $componentType = 'AssetSourceType';
 
 	/**
-	 * Starts an indexing session
-	 * @param $sessionId
+	 * Starts an indexing session.
+	 *
+	 * @abstract
+	 *
+	 * @param $sessionId The unique session id to keep track of this indexing operation.
+	 *
 	 * @return array
 	 */
 	abstract public function startIndex($sessionId);
 
 	/**
-	 * Process an indexing session
-	 * @param $sessionId
-	 * @param $offset
+	 * Process an indexing session.
+	 *
+	 * @abstract
+	 *
+	 * @param $sessionId The unique session id to keep track of this indexing operation.
+	 * @param $offset    The offset of this index.
+	 *
 	 * @return mixed
 	 */
 	abstract public function processIndex($sessionId, $offset);
@@ -35,19 +50,25 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Get the image source path with the optional handle name.
 	 *
-	 * @param AssetFileModel $fileModel
+	 * @abstract
+	 *
+	 * @param AssetFileModel $fileModel The assetFileModel for the image source path.
+	 *
 	 * @return mixed
 	 */
-	public abstract function getImageSourcePath(AssetFileModel $fileModel);
+	abstract public function getImageSourcePath(AssetFileModel $fileModel);
 
 	/**
 	 * Get the timestamp of when a file transform was last modified.
 	 *
-	 * @param AssetFileModel $fileModel
-	 * @param string $transformLocation
+	 * @abstract
+	 *
+	 * @param AssetFileModel $fileModel The assetFileModel for the timestamp of the last time the transform was modified.
+	 * @param string $transformLocation The location of the transform.
+	 *
 	 * @return mixed
 	 */
-	public abstract function getTimeTransformModified(AssetFileModel $fileModel, $transformLocation);
+	abstract public function getTimeTransformModified(AssetFileModel $fileModel, $transformLocation);
 
 	/**
 	 * Insert a file from path in folder.
@@ -99,10 +120,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Move a file in source.
 	 *
-	 * @param AssetFileModel $file
-	 * @param AssetFolderModel $targetFolder
-	 * @param string $fileName
-	 * @param bool $overwrite if True, will overwrite target destination
+	 * @abstract
+	 * @access protected
+	 *
+	 * @param AssetFileModel   $file         The assetFileModel of the file to move.
+	 * @param AssetFolderModel $targetFolder The assetFolderModel that is the target destination of the file.
+	 * @param string           $fileName     The name of the file to move.
+	 * @param bool             $overwrite    If true, will overwrite target destination, if necessary.
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	abstract protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false);
@@ -110,25 +135,37 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete generated image transforms for a File.
 	 *
-	 * @param AssetFileModel $file
+	 * @abstract
+	 * @access protected
+	 *
+	 * @param AssetFileModel $file The assetFileModel that has the images to delete the transforms for
+	 *
 	 * @return mixed
 	 */
 	abstract protected function _deleteGeneratedImageTransforms(AssetFileModel $file);
 
 	/**
-	 * Return TRUE if a physical folder exists.
+	 * Return true if a physical folder exists.
 	 *
-	 * @param string $parentPath
-	 * @param $folderName
+	 * @abstract
+	 * @access protected
+	 *
+	 * @param string $parentPath The path to check if the folder exists.
+	 * @param string $folderName The name of the folder to check if it exists.
+     *
 	 * @return boolean
 	 */
-	abstract protected function _sourceFolderExists($parentPath, $folderName);
+	abstract protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName);
 
 	/**
-	 * Create a physical folder, return TRUE on success.
+	 * Creates a physical folder, returns true on success.
 	 *
-	 * @param AssetFolderModel $parentFolder
-	 * @param $folderName
+	 * @abstract
+	 * @access protected
+	 *
+	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the parent folder of the folder to create.
+	 * @param string           $folderName   The name of the folder to create.
+	 *
 	 * @return boolean
 	 */
 	abstract protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName);
@@ -136,8 +173,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete the source folder.
 	 *
-	 * @param AssetFolderModel $parentFolder
-	 * @param $folderName
+	 * @abstract
+	 * @access protected
+	 *
+	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the parent of the folder to be deleted
+	 * @param string           $folderName   The name of the folder to be deleted.
+	 *
 	 * @return boolean
 	 */
 	abstract protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName);
@@ -145,8 +186,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Rename a source folder.
 	 *
-	 * @param AssetFolderModel $folder
-	 * @param $newName
+	 * @abstract
+	 * @access protected
+	 *
+	 * @param AssetFolderModel $folder  The assetFolderModel that has the folder to be renamed.
+	 * @param string           $newName The new name of the folder.
+	 *
 	 * @return boolean
 	 */
 	abstract protected function _renameSourceFolder(AssetFolderModel $folder, $newName);
@@ -154,10 +199,24 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Determines if a file can be moved internally from original source.
 	 *
-	 * @param BaseAssetSourceType $originalSource
+	 * @abstract
+	 * @access protected
+	 *
+	 * @param BaseAssetSourceType $originalSource The original source to check if a file can be moved from.
+	 *
 	 * @return mixed
 	 */
 	abstract protected function canMoveFileFrom(BaseAssetSourceType $originalSource);
+
+	/**
+	 * Returns true if this is a valid source. Used for type-specific validations.
+	 *
+	 * @return array
+	 */
+	public function getSourceErrors()
+	{
+		return array();
+	}
 
 	/**
 	 * Copy a transform for a file from source location to target location.
@@ -833,9 +892,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	}
 
 	/**
-	 * @param AssetFolderModel $folder
-	 * @param AssetFolderModel $newParentFolder
-	 * @param boolean $overwriteTarget if true will overwrite folder, if needed
+	 * Moves a folder.
+	 *
+	 * @param AssetFolderModel $folder          The assetFolderModel representing the existing folder.
+	 * @param AssetFolderModel $newParentFolder The assetFolderModel representing the new parent folder.
+	 * @param boolean          $overwriteTarget If true, will overwrite folder, if needed
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function moveFolder(AssetFolderModel $folder, AssetFolderModel $newParentFolder, $overwriteTarget = false)
@@ -1005,18 +1067,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	}
 
 	/**
-	 * Purge a file from the Source's cache. Sources that need this should override this method.
-	 *
-	 * @param AssetFolderModel $folder
-	 * @param $filename
-	 * @return void
-	 */
-	protected function _purgeCachedSourceFile(AssetFolderModel $folder, $filename)
-	{
-		return;
-	}
-
-	/**
 	 * Return true if the source is a remote source.
 	 *
 	 * @return bool
@@ -1027,7 +1077,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	}
 
 	/**
-	 * Ger period list.
+	 * Gets a period list.
 	 *
 	 * @return array
 	 */
@@ -1059,27 +1109,5 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		{
 			return array('amount' => '', 'period' => '');
 		}
-	}
-
-	/**
-	 * Return true if a source folder exists.
-	 *
-	 * @param $folder
-	 * @return bool
-	 */
-	public function sourceFolderExists(AssetFolderModel $folder)
-	{
-		$parent = $folder->getParent();
-
-		if ($parent)
-		{
-			$parentPath = $parent->path;
-		}
-		else
-		{
-			$parentPath = "";
-		}
-
-		return $this->_sourceFolderExists($parentPath, $folder->name);
 	}
 }

@@ -519,7 +519,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
 	{
-		$newFullPath = $this->_getParentFullPath($folder->path).$newName.'/';
+		$newFullPath = IOHelper::getParentFolderPath($folder->path).$newName.'/';
 
 		return IOHelper::rename($this->_getSourceFileSystemPath().$folder->path, $this->_getSourceFileSystemPath().$newFullPath);
 	}

@@ -598,7 +598,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
 	{
-		$newFullPath = $this->_getPathPrefix().$this->_getParentFullPath($folder->path).$newName.'/';
+		$newFullPath = $this->_getPathPrefix().IOHelper::getParentFolderPath($folder->path).$newName.'/';
 
 		$this->_prepareForRequests();
 		$bucket = $this->getSettings()->bucket;
