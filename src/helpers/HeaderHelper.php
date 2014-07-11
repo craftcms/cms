@@ -5,20 +5,25 @@ namespace Craft;
 class HeaderHelper
 {
 	/**
-	 * @param $extension
-	 * @throws Exception
+	 * Sets the Content-Type header based on a file extension.
+	 *
+	 * @param string $extension
+	 * @return bool Whether setting the header was successful.
 	 */
 	public static function setContentTypeByExtension($extension)
 	{
 		$extension = strtolower($extension);
 		$mimeTypes = require(Craft::getPathOfAlias('app.framework.utils.mimeTypes').'.php');
 
-		if (!array_key_exists($extension, $mimeTypes))
+		if (!isset($mimeTypes[$extension]))
 		{
 			Craft::log('Tried to set the header mime type for the extension '.$extension.', but could not find in the mimeTypes list.', LogLevel::Warning);
+			return false;
 		}
 
 		static::setHeader(array('Content-Type' => $mimeTypes[$extension].'; charset=utf-8'));
+
+		return true;
 	}
 
 	/**
