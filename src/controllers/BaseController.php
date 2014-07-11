@@ -75,27 +75,28 @@ abstract class BaseController extends \CController
 			}
 			else
 			{
-				// Get the template file's MIME type
-
-				// Safe to assume that findTemplate() will return an actual template path here, and not `false`.
-				// If the template didn't exist, a TemplateLoaderException would have been thrown when calling craft()->templates->render().
-				$templateFile = craft()->templates->findTemplate($template);
-				$extension = IOHelper::getExtension($templateFile, 'html');
-
-				if ($extension == 'twig')
-				{
-					$extension = 'html';
-				}
-
-				// If Content-Type is set already, presumably the template set it with the {% header %} tag.
+				// Set the MIME type for the request based on the matched template's file extension
+				// (unless the Content-Type header was already set, perhaps by the template via the {% header %} tag)
 				if (!HeaderHelper::isHeaderSet('Content-Type'))
 				{
+					// Safe to assume that findTemplate() will return an actual template path here, and not `false`.
+					// If the template didn't exist, a TemplateLoaderException would have been thrown when calling craft()->templates->render().
+					$templateFile = craft()->templates->findTemplate($template);
+					$extension = IOHelper::getExtension($templateFile, 'html');
+
+					if ($extension == 'twig')
+					{
+						$extension = 'html';
+					}
+
 					HeaderHelper::setContentTypeByExtension($extension);
 				}
 
+				// Set the charset header
 				HeaderHelper::setHeader(array('charset' => 'utf-8'));
 
-				if ($extension == 'html')
+				// Are we serving HTML or XHTML?
+				if (in_array(HeaderHelper::getMimeType(), array('text/html', 'application/xhtml+xml')))
 				{
 					// Are there any head/foot nodes left in the queue?
 					$headHtml = craft()->templates->getHeadHtml();
