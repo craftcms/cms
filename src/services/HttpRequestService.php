@@ -212,17 +212,15 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * @return mixed
+	 * Returns the MIME type that is going to be included in the response via the Content-Type header.
+	 *
+	 * @return string
+	 * @deprecated Deprecated in 2.2. Use HeaderHelper::getMimeType() instead.
 	 */
 	public function getMimeType()
 	{
-		if (!$this->_mimeType)
-		{
-			$extension = IOHelper::getExtension($this->getPath(), 'html');
-			$this->_mimeType = IOHelper::getMimeTypeByExtension('.'.$extension);
-		}
-
-		return $this->_mimeType;
+		// TODO: Call the deprecator here in Craft 3.0
+		return HeaderHelper::getMimeType();
 	}
 
 	/**
