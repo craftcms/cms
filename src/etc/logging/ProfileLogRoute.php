@@ -14,31 +14,15 @@ class ProfileLogRoute extends \CProfileLogRoute
 	 */
 	protected function render($view, $data)
 	{
-		$isAjax = craft()->request->isAjaxRequest();
-		$mimeType = craft()->request->getMimeType();
-
-		if (craft()->config->get('devMode') && !craft()->request->isResourceRequest())
+		if (
+			!craft()->isConsole() &&
+			!craft()->request->isResourceRequest() &&
+			!craft()->request->isAjaxRequest() &&
+			craft()->config->get('devMode') &&
+			in_array(HeaderHelper::getMimeType(), array('text/html', 'application/xhtml+xml'))
+		)
 		{
-			if ($this->showInFireBug)
-			{
-				if ($isAjax && $this->ignoreAjaxInFireBug)
-				{
-					return;
-				}
-
-				$view .= '-firebug';
-			}
-			else if(!(craft() instanceof \CWebApplication) || $isAjax)
-			{
-				return;
-			}
-
-			if ($mimeType !== 'text/html')
-			{
-				return;
-			}
-
-			$viewFile = craft()->path->getCpTemplatesPath().'logging/'.$view.'.php';
+			$viewFile = craft()->path->getCpTemplatesPath().'logging/'.$view.'-firebug.php';
 			include(craft()->findLocalizedFile($viewFile, 'en'));
 		}
 	}
