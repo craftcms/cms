@@ -126,12 +126,6 @@ abstract class BaseController extends \CController
 						}
 					}
 				}
-				else
-				{
-					// If this is a non-HTML, non-Twig request, remove the extra logging information.
-					craft()->log->removeRoute('WebLogRoute');
-					craft()->log->removeRoute('ProfileLogRoute');
-				}
 
 				// Output to the browser!
 				echo $output;
