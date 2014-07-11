@@ -1526,6 +1526,31 @@ class IOHelper
 	}
 
 	/**
+	 * Returns a parent folder's path for a given path.
+	 *
+	 * @param string $fullPath The path to get the parent folder path for.
+	 *
+	 * @return string
+	 */
+	public static function getParentFolderPath($fullPath)
+	{
+		$fullPath = static::normalizePathSeparators($fullPath);
+
+		// Drop the trailing slash and split it by slash
+		$parts = explode("/", rtrim($fullPath, "/"));
+
+		// Drop the last part and return the part leading up to it
+		array_pop($parts);
+
+		if (empty($parts))
+		{
+			return '';
+		}
+
+		return join("/", $parts) . '/';
+	}
+
+	/**
 	 * @param        $errNo
 	 * @param        $errStr
 	 * @param        $errFile
