@@ -4,6 +4,40 @@ namespace Craft;
 
 class HeaderHelper
 {
+	private static $_mimeType;
+
+	/**
+	 * Returns the MIME type that is going to be included in the response via the Content-Type header,
+	 * whether that has been set explicitely in the PHP code or if it's going to be based on the default_mimetype setting in php.ini.
+	 *
+	 * @static
+	 * @return string
+	 */
+	public static function getMimeType()
+	{
+		if (!isset(static::$_mimeType))
+		{
+			// Has it been explicitly set?
+			static::$_mimeType = static::getHeader('Content-Type');
+
+			if (static::$_mimeType !== null)
+			{
+				// Drop the charset, if it's there
+				if (($pos = strpos(static::$_mimeType, ';')) !== false)
+				{
+					static::$_mimeType = rtrim(substr(static::$_mimeType, 0, $pos));
+				}
+			}
+			else
+			{
+				// Then it's whatever's in php.ini
+				static::$_mimeType = ini_get('default_mimetype');
+			}
+		}
+
+		return static::$_mimeType;
+	}
+
 	/**
 	 * Sets the Content-Type header based on a file extension.
 	 *
@@ -25,6 +59,9 @@ class HeaderHelper
 
 		if (static::setHeader(array('Content-Type' => $mimeType.'; charset=utf-8')))
 		{
+			// Save the MIME type for getMimeType()
+			static::$_mimeType = $mimeType;
+
 			return true;
 		}
 		else
@@ -198,6 +235,9 @@ class HeaderHelper
 		{
 			return false;
 		}
+
+		// Clear out our stored MIME type in case its about to be overridden
+		static::$_mimeType = null;
 
 		if (is_string($header))
 		{
