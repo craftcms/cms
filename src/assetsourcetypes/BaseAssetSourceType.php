@@ -29,7 +29,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @abstract
 	 *
-	 * @param $sessionId The unique session id to keep track of this indexing operation.
+	 * @param string $sessionId The unique session id to keep track of this indexing operation.
 	 *
 	 * @return array
 	 */
@@ -40,8 +40,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @abstract
 	 *
-	 * @param $sessionId The unique session id to keep track of this indexing operation.
-	 * @param $offset    The offset of this index.
+	 * @param string $sessionId The unique session id to keep track of this indexing operation.
+	 * @param int $offset    The offset of this index.
 	 *
 	 * @return mixed
 	 */
@@ -656,7 +656,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * Rename a folder.
 	 *
 	 * @param AssetFolderModel $folder  The assetFolderModel representing the name of the folder to rename.
-	 * @param                  $newName The new name of the folder.
+	 * @param string           $newName The new name of the folder.
 	 *
 	 * @throws Exception
 	 * @return AssetOperationResponseModel
