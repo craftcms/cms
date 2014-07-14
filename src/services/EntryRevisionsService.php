@@ -457,6 +457,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	private function _getRevisionData($revision)
 	{
 		$revisionData = array(
+			'typeId'     => $revision->typeId,
 			'authorId'   => $revision->authorId,
 			'title'      => $revision->title,
 			'slug'       => $revision->slug,
