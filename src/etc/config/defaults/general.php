@@ -233,6 +233,11 @@ return array(
 	'maxInvalidLogins' => 5,
 
 	/**
+	 * The highest number Craft will tack onto a slug in order to make it unique before giving up and thrownig an error.
+	 */
+	'maxSlugIncrement' => 100,
+
+	/**
 	 * The maximum upload file size allowed in bytes.
 	 */
 	'maxUploadFileSize' => 16777216,
