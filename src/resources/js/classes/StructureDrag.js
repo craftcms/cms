@@ -377,9 +377,12 @@ Craft.StructureDrag = Garnish.Drag.extend(
 				}
 
 				// Make it real
+				var $element = this.$draggee.children('.row').children('.element');
+
 				var data = {
 					structureId: this.structure.id,
-					elementId:   this.$draggee.children('.row').children('.element').data('id'),
+					elementId:   $element.data('id'),
+					locale:      $element.data('locale'),
 					prevId:      this.$draggee.prev().children('.row').children('.element').data('id'),
 					parentId:    this.$draggee.parent('ul').parent('li').children('.row').children('.element').data('id')
 				};
