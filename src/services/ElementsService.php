@@ -1341,6 +1341,11 @@ class ElementsService extends BaseApplicationComponent
 				craft()->templateCache->deleteCachesByElementId($elementId);
 			}
 
+			// Fire an 'onBeforeDeleteElements' event
+			$this->onBeforeDeleteElements(new Event($this, array(
+				'elementIds' => $elementIds
+			)));
+
 			// Now delete the rows in the elements table
 			if (count($elementIds) == 1)
 			{
@@ -1569,6 +1574,16 @@ class ElementsService extends BaseApplicationComponent
 	public function onMergeElements(Event $event)
 	{
 		$this->raiseEvent('onMergeElements', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeDeleteElements' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeDeleteElements(Event $event)
+	{
+		$this->raiseEvent('onBeforeDeleteElements', $event);
 	}
 
 	// Private functions
