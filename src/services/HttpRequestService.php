@@ -538,7 +538,7 @@ class HttpRequestService extends \CHttpRequest
 			}
 			else
 			{
-				// Fixes a bug in IE 6.7 and 8 when trying to force download a file over SSL:
+				// Fixes a bug in IE 6, 7 and 8 when trying to force download a file over SSL:
 				// https://stackoverflow.com/questions/1218925/php-script-to-download-file-not-working-in-ie
 				HeaderHelper::setHeader(array(
 					'Pragma' => '',
