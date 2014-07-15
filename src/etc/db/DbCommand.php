@@ -58,11 +58,11 @@ class DbCommand extends \CDbCommand
 		{
 			if (preg_match('/^(.*?)(?i:\s+as\s+|\s+)(.*)$/', $column, $matches))
 			{
-				$column = craft()->db->quoteColumnName($matches[1]).' AS '.craft()->db->quoteColumnName($matches[2]);
+				$column = $this->_connection->quoteColumnName($matches[1]).' AS '.$this->_connection->quoteColumnName($matches[2]);
 			}
 			else
 			{
-				$column = craft()->db->quoteColumnName($column);
+				$column = $this->_connection->quoteColumnName($column);
 			}
 		}
 
@@ -316,7 +316,7 @@ class DbCommand extends \CDbCommand
 		$params = array();
 
 		$table = DbHelper::addTablePrefix($table);
-		$sql = 'INSERT INTO '.craft()->db->quoteTableName($table).' (';
+		$sql = 'INSERT INTO '.$this->_connection->quoteTableName($table).' (';
 
 		foreach (array_keys($allColumns) as $i => $column)
 		{
@@ -325,7 +325,7 @@ class DbCommand extends \CDbCommand
 				$sql .= ', ';
 			}
 
-			$sql .= craft()->db->quoteColumnName($column);
+			$sql .= $this->_connection->quoteColumnName($column);
 
 			$params[':'.$column] = $allColumns[$column];
 		}
@@ -340,7 +340,7 @@ class DbCommand extends \CDbCommand
 				$sql .= ', ';
 			}
 
-			$sql .= craft()->db->quoteColumnName($column).' = :'.$column;
+			$sql .= $this->_connection->quoteColumnName($column).' = :'.$column;
 		}
 
 		return $this->setText($sql)->execute($params);
@@ -695,7 +695,7 @@ class DbCommand extends \CDbCommand
 			if (!is_numeric($key))
 			{
 				$param = ':p'.StringHelper::randomString(9);
-				$normalizedConditions[] = craft()->db->quoteColumnName($key).'='.$param;
+				$normalizedConditions[] = $this->_connection->quoteColumnName($key).'='.$param;
 				$params[$param] = $value;
 				unset($conditions[$key]);
 			}
