@@ -26,12 +26,7 @@ class AssetsController extends BaseController
 		{
 			try
 			{
-				$folder = craft()->assets->getFolderById($folderId);
-				// if folder exists and the source ID is null, it's a temp source and we always allow uploads there.
-				if (!(is_object($folder) && is_null($folder->sourceId)))
-				{
-					craft()->assets->checkPermissionByFolderIds($folderId, 'uploadToAssetSource');
-				}
+				$this->_checkUploadPermissions($folderId);
 			}
 			catch (Exception $e)
 			{
@@ -83,7 +78,7 @@ class AssetsController extends BaseController
 
 		try
 		{
-			craft()->assets->checkPermissionByFolderIds($targetFolderId, 'uploadToAssetSource');
+			$this->_checkUploadPermissions($targetFolderId);
 		}
 		catch (Exception $e)
 		{
@@ -304,6 +299,21 @@ class AssetsController extends BaseController
 		}
 
 		$this->returnJson($output);
+	}
+
+	/**
+	 * Check upload permissions.
+	 *
+	 * @param $folderId
+	 */
+	private function _checkUploadPermissions($folderId)
+	{
+		$folder = craft()->assets->getFolderById($folderId);
+		// if folder exists and the source ID is null, it's a temp source and we always allow uploads there.
+		if (!(is_object($folder) && is_null($folder->sourceId)))
+		{
+			craft()->assets->checkPermissionByFolderIds($folderId, 'uploadToAssetSource');
+		}
 	}
 }
 
