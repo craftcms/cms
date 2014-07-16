@@ -61,7 +61,8 @@ class RecentEntriesWidget extends BaseWidget
 
 				if ($section)
 				{
-					return Craft::t('Recently in {section}', array('section' => $section->name));
+					$translatedSectionName = Craft::t($section->name);
+					return Craft::t('Recently in {section}', array('section' => $translatedSectionName));
 				}
 			}
 		}
