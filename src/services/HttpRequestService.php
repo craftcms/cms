@@ -445,7 +445,9 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// Default to disposition to 'download'
-		if (!isset($options['forceDownload']) || $options['forceDownload'])
+		$forceDownload = !isset($options['forceDownload']) || $options['forceDownload'];
+
+		if ($forceDownload)
 		{
 			HeaderHelper::setDownload($fileName);
 		}
@@ -530,7 +532,19 @@ class HttpRequestService extends \CHttpRequest
 		}
 		else
 		{
-			HeaderHelper::setNoCache();
+			if (!$forceDownload)
+			{
+				HeaderHelper::setNoCache();
+			}
+			else
+			{
+				// Fixes a bug in IE 6, 7 and 8 when trying to force download a file over SSL:
+				// https://stackoverflow.com/questions/1218925/php-script-to-download-file-not-working-in-ie
+				HeaderHelper::setHeader(array(
+					'Pragma' => '',
+					'Cache-Control' => ''
+				));
+			}
 		}
 
 		if (!ob_get_length())

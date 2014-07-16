@@ -16,6 +16,7 @@ class StructuresController extends BaseController
 
 		$structureId     = craft()->request->getRequiredPost('structureId');
 		$elementId       = craft()->request->getRequiredPost('elementId');
+		$localeId        = craft()->request->getRequiredPost('locale');
 		$parentElementId = craft()->request->getPost('parentId');
 		$prevElementId   = craft()->request->getPost('prevId');
 
@@ -27,16 +28,16 @@ class StructuresController extends BaseController
 			craft()->userSession->requirePermission($structure->movePermission);
 		}
 
-		$element = craft()->elements->getElementById($elementId);
+		$element = craft()->elements->getElementById($elementId, null, $localeId);
 
 		if ($prevElementId)
 		{
-			$prevElement = craft()->elements->getElementById($prevElementId);
+			$prevElement = craft()->elements->getElementById($prevElementId, null, $localeId);
 			$success = craft()->structures->moveAfter($structure->id, $element, $prevElement, 'auto', true);
 		}
 		else if ($parentElementId)
 		{
-			$parentElement = craft()->elements->getElementById($parentElementId);
+			$parentElement = craft()->elements->getElementById($parentElementId, null, $localeId);
 			$success = craft()->structures->prepend($structure->id, $element, $parentElement, 'auto', true);
 		}
 		else

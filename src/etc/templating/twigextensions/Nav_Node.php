@@ -23,6 +23,14 @@ class Nav_Node extends \Twig_Node_For
 	 */
 	public function compile(\Twig_Compiler $compiler)
 	{
+		// Remember what 'nav' was set to before
+		$compiler
+			->write("if (isset(\$context['nav'])) {\n")
+			->indent()
+				->write("\$_nav = \$context['nav'];\n")
+			->outdent()
+			->write("}\n");
+
 		parent::compile($compiler);
 
 		$compiler
@@ -56,6 +64,13 @@ class Nav_Node extends \Twig_Node_For
 				->write("\$context = \$_tmpContext;\n")
 				// Unset out variables
 				->write("unset(\$_thisItemLevel, \$_firstItemLevel, \$_i, \$_contextsByLevel, \$_tmpContext);\n")
+			->outdent()
+			->write("}\n")
+			// Bring back the 'nav' variable
+			->write("if (isset(\$_nav)) {\n")
+			->indent()
+				->write("\$context['nav'] = \$_nav;\n")
+				->write("unset(\$_nav);\n")
 			->outdent()
 			->write("}\n")
 		;

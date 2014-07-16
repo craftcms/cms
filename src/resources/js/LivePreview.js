@@ -4,6 +4,7 @@
 Craft.LivePreview = Garnish.Base.extend(
 {
 	$form: null,
+	$settingsContainer: null,
 	$btn: null,
 	$spinner: null,
 	$shade: null,
@@ -47,6 +48,7 @@ Craft.LivePreview = Garnish.Base.extend(
 		}
 
 		this.$form = $('#entry-form');
+		this.$settingsContainer = $('#settings');
 		this.$btn = $('#livepreview-btn');
 		this.$spinner = $('#livepreview-spinner');
 		this.$fieldPlaceholder = $('<div/>');
@@ -311,7 +313,7 @@ Craft.LivePreview = Garnish.Base.extend(
 		}
 
 		// Has the post data changed?
-		var postData = Garnish.getPostData(this.$editor);
+		var postData = $.extend(Garnish.getPostData(this.$editor), Garnish.getPostData(this.$settingsContainer));
 
 		if (!this.lastPostData || !Craft.compare(postData, this.lastPostData))
 		{

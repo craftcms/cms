@@ -24,7 +24,7 @@ class NavItem_Node extends \Twig_Node
 			->subcompile($this->getNode('value_target'))
 			->raw(", 'level', array(), Twig_TemplateInterface::ANY_CALL, false, true);\n")
 			// Was there a previous item?
-			->write("if (isset(\$context['nav'])) {\n")
+			->write("if (isset(\$_contextsByLevel)) {\n")
 			->indent()
 				// Temporarily set the context to the previous one
 				->write("\$_tmpContext = \$context;\n")
@@ -73,7 +73,7 @@ class NavItem_Node extends \Twig_Node
 			->outdent()
 			->write("}\n")
 			// Create the nav array for this item
-			->write("\$context['nav']['level'] = \$_thisItemLevel;\n")
+			->write("\$context['nav'] = array('level' => \$_thisItemLevel);\n")
 			->write("if (isset(\$_contextsByLevel[\$_thisItemLevel-1])) {\n")
 			->indent()
 				->write("\$context['nav']['parent'] = \$_contextsByLevel[\$_thisItemLevel-1];\n")
