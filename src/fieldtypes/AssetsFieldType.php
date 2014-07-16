@@ -250,48 +250,7 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	public function resolveSourcePath()
 	{
-		$targetFolderId = null;
-		$settings = $this->getSettings();
-
-		if ($settings->useSingleFolder)
-		{
-			$targetFolderId = $this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
-		}
-		else
-		{
-			// Make sure the field has been saved since this setting was added
-			if ($this->getSettings()->defaultUploadLocationSource)
-			{
-				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->defaultUploadLocationSource, $settings->defaultUploadLocationSubpath);
-			}
-			else
-			{
-				$sources = $settings->sources;
-
-				if (!is_array($sources))
-				{
-					$sourceIds = craft()->assetSources->getViewableSourceIds();
-
-					if ($sourceIds)
-					{
-						$sourceId = reset($sourceIds);
-						$targetFolder = craft()->assets->findFolder(array('sourceId' => $sourceId, 'parentId' => ':empty:'));
-
-						if ($targetFolder)
-						{
-							$targetFolderId = $targetFolder->id;
-						}
-					}
-				}
-				else
-				{
-					$targetFolder = reset($sources);
-					list ($bogus, $targetFolderId) = explode(':', $targetFolder);
-				}
-			}
-		}
-
-		return $targetFolderId;
+		return $this->_determineUploadFolderId($this->getSettings());
 	}
 
 	/**
