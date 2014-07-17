@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Used to hold edition upgrade purchase order data.
+ *
+ * @package craft.app.models
  */
 class UpgradePurchaseModel extends BaseModel
 {

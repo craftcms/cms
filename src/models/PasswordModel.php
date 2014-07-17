@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class PasswordModel
  *
+ * @package craft.app.models
  */
 class PasswordModel extends BaseModel
 {

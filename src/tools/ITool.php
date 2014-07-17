@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Tool interface
+ * Interface ITool
+ *
+ * @package craft.app.tools
  */
 interface ITool extends IComponentType
 {

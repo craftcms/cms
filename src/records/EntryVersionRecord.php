@@ -4,7 +4,9 @@ namespace Craft;
 craft()->requireEdition(Craft::Client);
 
 /**
- * Stores entry versions
+ * Class EntryVersionRecord
+ *
+ * @package craft.app.records
  */
 class EntryVersionRecord extends BaseRecord
 {

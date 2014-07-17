@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Plugin template variable
+ * Plugin template variable.
+ *
+ * @package craft.app.validators
  */
 class PluginVariable extends BaseComponentTypeVariable
 {

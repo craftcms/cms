@@ -2,7 +2,10 @@
 namespace Craft;
 
 /**
+ * Class EmailerType
  *
+ * @abstract
+ * @package craft.app.enums
  */
 abstract class EmailerType extends BaseEnum
 {

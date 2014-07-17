@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class RadioButtonsFieldType
  *
+ * @package craft.app.fieldtypes
  */
 class RadioButtonsFieldType extends BaseOptionsFieldType
 {

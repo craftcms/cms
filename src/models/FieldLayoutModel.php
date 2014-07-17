@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Field layout model class
+ * Field layout model class.
+ *
+ * @package craft.app.models
  */
 class FieldLayoutModel extends BaseModel
 {

@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * CP functions
+ *
+ * @package craft.app.validators
  */
 class CpVariable
 {

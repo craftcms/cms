@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Assets fieldtype
+ * Assets fieldtype.
+ *
+ * @package craft.app.fieldtypes
  */
 class AssetsFieldType extends BaseElementFieldType
 {

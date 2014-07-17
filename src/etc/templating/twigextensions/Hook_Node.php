@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class Hook_Node
  *
+ * @package craft.app.etc.templating.twigextensions
  */
 class Hook_Node extends \Twig_Node
 {

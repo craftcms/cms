@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Category group model
+ * Category group model.
+ *
+ * @package craft.app.models
  */
 class CategoryGroupModel extends BaseModel
 {

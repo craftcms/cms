@@ -4,7 +4,9 @@ namespace Craft;
 craft()->requireEdition(Craft::Client);
 
 /**
+ * Class EmailMessagesService
  *
+ * @package craft.app.services
  */
 class EmailMessagesService extends BaseApplicationComponent
 {

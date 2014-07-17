@@ -1,10 +1,12 @@
 <?php
 namespace Craft;
 
-/*
- * Parses {% switch %} tags.
+/**
+ * Class Switch_TokenParser that parses {% switch %} tags.
  *
  * Based on the rejected Twig pull request: https://github.com/fabpot/Twig/pull/185
+ *
+ * @package craft.app.etc.templating.twigextensions
  */
 class Switch_TokenParser extends \Twig_TokenParser
 {
@@ -12,6 +14,8 @@ class Switch_TokenParser extends \Twig_TokenParser
 	 * Gets the tag name associated with this token parser.
 	 *
 	 * @param string The tag name
+	 *
+	 * @return string
 	 */
 	public function getTag()
 	{
@@ -22,6 +26,8 @@ class Switch_TokenParser extends \Twig_TokenParser
 	 * Parses a token and returns a node.
 	 *
 	 * @param \Twig_Token $token
+	 *
+	 * @throws \Twig_Error_Syntax
 	 * @return Switch_Node
 	 */
 	public function parse(\Twig_Token $token)

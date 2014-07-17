@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class RequirePermission_Node
  *
+ * @package craft.app.etc.templating.twigextensions
  */
 class RequirePermission_Node extends \Twig_Node
 {

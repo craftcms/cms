@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class RequireLogin_TokenParser
  *
+ * @package craft.app.etc.templating.twigextensions
  */
 class RequireLogin_TokenParser extends \Twig_TokenParser
 {

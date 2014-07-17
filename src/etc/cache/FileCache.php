@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class FileCache
  *
+ * @package craft.app.etc.cache
  */
 class FileCache extends \CFileCache
 {

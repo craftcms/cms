@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Element locale data record class
+ * Element locale data record class.
+ *
+ * @package craft.app.records
  */
 class ElementLocaleRecord extends BaseRecord
 {

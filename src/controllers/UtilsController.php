@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Handles utility related tasks.
+ *
+ * @package craft.app.controllers
  */
 class UtilsController extends BaseController
 {

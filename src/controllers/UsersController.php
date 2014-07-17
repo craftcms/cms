@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Handles user account related tasks.
+ *
+ * @package craft.app.controllers
  */
 class UsersController extends BaseController
 {

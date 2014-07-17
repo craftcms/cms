@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * DateFormatter class with functions for date/time-pickers.
+ *
+ * @package craft.app.etc.dates
  */
 class DateFormatter extends \CDateFormatter
 {

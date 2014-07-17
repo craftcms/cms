@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class BaseController
  *
+ * @package craft.app.controllers
  */
 abstract class BaseController extends \CController
 {

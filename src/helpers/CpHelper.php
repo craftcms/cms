@@ -2,13 +2,18 @@
 namespace Craft;
 
 /**
+ * Class CpHelper
  *
+ * @package craft.app.helpers
  */
 class CpHelper
 {
 	/**
 	 * @static
+	 *
+	 * @param null $path
 	 * @param bool $fetch
+	 *
 	 * @return array
 	 */
 	public static function getAlerts($path = null, $fetch = false)

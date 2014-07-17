@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class RecentEntriesWidget
  *
+ * @package craft.app.widgets
  */
 class RecentEntriesWidget extends BaseWidget
 {

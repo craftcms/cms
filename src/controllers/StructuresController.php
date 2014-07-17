@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Handles structure management tasks
+ * Handles structure management tasks.
+ *
+ * @package craft.app.controllers
  */
 class StructuresController extends BaseController
 {

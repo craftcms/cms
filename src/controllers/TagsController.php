@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class TagsController
  *
+ * @package craft.app.controllers
  */
 class TagsController extends BaseController
 {

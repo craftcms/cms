@@ -1,7 +1,11 @@
 <?php
 namespace Craft;
 
-
+/**
+ * Class Logger
+ *
+ * @package craft.app.etc.logging
+ */
 class Logger extends \CLogger
 {
 	/**

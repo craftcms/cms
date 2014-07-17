@@ -5,6 +5,8 @@ namespace Craft;
  * Search Query Term class
  *
  * Represents a term in the search query.
+ *
+ * @package craft.app.etc.search
  */
 class SearchQueryTerm
 {

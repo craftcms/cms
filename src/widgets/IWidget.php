@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Widget interface
+ * Interface IWidget
+ *
+ * @package craft.app.widgets
  */
 interface IWidget extends ISavableComponentType
 {

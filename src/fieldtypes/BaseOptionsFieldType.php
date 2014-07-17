@@ -2,7 +2,10 @@
 namespace Craft;
 
 /**
+ * Class BaseOptionsFieldType
  *
+ * @abstract
+ * @package craft.app.fieldtypes
  */
 abstract class BaseOptionsFieldType extends BaseFieldType
 {

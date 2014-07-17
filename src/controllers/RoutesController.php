@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Handles route actions.
+ *
+ * @package craft.app.controllers
  */
 class RoutesController extends BaseController
 {

@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Handles plugin administration tasks
+ * Handles plugin administration tasks.
+ *
+ * @package craft.app.controllers
  */
 class PluginsController extends BaseController
 {

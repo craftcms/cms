@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class ConsoleApp
  *
+ * @package craft.app.etc.console
  */
 class ConsoleApp extends \CConsoleApplication
 {

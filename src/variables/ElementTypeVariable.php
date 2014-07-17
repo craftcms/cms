@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Element type template variable
+ * Element type template variable.
+ *
+ * @package craft.app.validators
  */
 class ElementTypeVariable extends BaseComponentTypeVariable
 {

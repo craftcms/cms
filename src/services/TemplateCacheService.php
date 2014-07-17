@@ -1,6 +1,11 @@
 <?php
 namespace Craft;
 
+/**
+ * Class TemplateCacheService
+ *
+ * @package craft.app.services
+ */
 class TemplateCacheService extends BaseApplicationComponent
 {
 	private static $_templateCachesTable = 'templatecaches';

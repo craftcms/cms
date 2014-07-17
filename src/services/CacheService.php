@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class CacheService
  *
+ * @package craft.app.services
  */
 class CacheService extends BaseApplicationComponent
 {

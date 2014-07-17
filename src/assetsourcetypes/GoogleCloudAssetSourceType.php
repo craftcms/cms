@@ -4,7 +4,9 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * Google Cloud source type class
+ * Google Cloud source type class.
+ *
+ * @package craft.app.assetsourcetypes
  */
 class GoogleCloudAssetSourceType extends BaseAssetSourceType
 {

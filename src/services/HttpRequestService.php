@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class HttpRequestService
  *
+ * @package craft.app.services
  */
 class HttpRequestService extends \CHttpRequest
 {

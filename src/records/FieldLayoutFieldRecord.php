@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Field record class
+ * Class FieldLayoutFieldRecord
+ *
+ * @package craft.app.records
  */
 class FieldLayoutFieldRecord extends BaseRecord
 {

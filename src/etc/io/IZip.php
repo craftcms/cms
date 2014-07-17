@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Interface IZip
  *
+ * @package craft.app.etc.io
  */
 interface IZip
 {

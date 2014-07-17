@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class DateTimeValidator
  *
+ * @package craft.app.validators
  */
 class DateTimeValidator extends \CValidator
 {

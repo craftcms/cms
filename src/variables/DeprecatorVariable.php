@@ -1,6 +1,11 @@
 <?php
 namespace Craft;
 
+/**
+ * Class DeprecatorVariable
+ *
+ * @package craft.app.validators
+ */
 class DeprecatorVariable
 {
 	/**

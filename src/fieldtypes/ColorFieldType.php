@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class ColorFieldType
  *
+ * @package craft.app.fieldtypes
  */
 class ColorFieldType extends BaseFieldType
 {

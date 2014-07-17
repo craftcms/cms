@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Represents a nav node.
+ *
+ * @package craft.app.etc.templating.twigextensions
  */
 class Nav_Node extends \Twig_Node_For
 {

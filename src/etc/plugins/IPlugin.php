@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Plugin interface
+ * Interface IPlugin
+ *
+ * @package craft.app.etc.plugins
  */
 interface IPlugin extends ISavableComponentType
 {

@@ -2,7 +2,10 @@
 namespace Craft;
 
 /**
- * Element criteria model class
+ * Element criteria model class.
+ *
+ * @implements \Countable
+ * @package craft.app.models
  */
 class ElementCriteriaModel extends BaseModel implements \Countable
 {

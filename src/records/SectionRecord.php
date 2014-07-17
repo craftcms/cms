@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class SectionRecord
  *
+ * @package craft.app.records
  */
 class SectionRecord extends BaseRecord
 {

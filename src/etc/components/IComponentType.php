@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Component type interface
+ * Component type interface.
+ *
+ * @package craft.app.etc.components
  */
 interface IComponentType
 {

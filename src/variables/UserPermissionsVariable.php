@@ -4,7 +4,9 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * User permission functions
+ * User permission functions.
+ *
+ * @package craft.app.validators
  */
 class UserPermissionsVariable
 {

@@ -2,7 +2,11 @@
 namespace Craft;
 
 /**
- * Tool base class
+ * Tool base class.
+ *
+ * @abstract
+ * @implements ITool
+ * @package craft.app.tools
  */
 abstract class BaseTool extends BaseComponentType implements ITool
 {

@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Backup Database tool
+ *
+ * @package craft.app.tools
  */
 class DbBackupTool extends BaseTool
 {

@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Handles task actions.
+ *
+ * @package craft.app.controllers
  */
 class TasksController extends BaseController
 {

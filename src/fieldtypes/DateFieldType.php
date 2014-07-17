@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class DateFieldType
  *
+ * @package craft.app.fieldtypes
  */
 class DateFieldType extends BaseFieldType
 {

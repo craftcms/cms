@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Deprecation log model
+ * Deprecation log model.
+ *
+ * @package craft.app.models
  */
 class DeprecationErrorModel extends BaseModel
 {

@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class RequireEdition_Node
  *
+ * @package craft.app.etc.templating.twigextensions
  */
 class RequireEdition_Node extends \Twig_Node
 {

@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Widget template variable
+ * Widget template variable.
+ *
+ * @package craft.app.validators
  */
 class WidgetTypeVariable extends BaseComponentTypeVariable
 {

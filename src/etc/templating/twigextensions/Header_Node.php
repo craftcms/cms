@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class Header_Node
  *
+ * @package craft.app.etc.templating.twigextensions
  */
 class Header_Node extends \Twig_Node
 {

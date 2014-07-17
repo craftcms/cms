@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class CategoryGroupLocaleRecord
  *
+ * @package craft.app.records
  */
 class CategoryGroupLocaleRecord extends BaseRecord
 {

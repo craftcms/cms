@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class TasksService
  *
+ * @package craft.app.services
  */
 class TasksService extends BaseApplicationComponent
 {

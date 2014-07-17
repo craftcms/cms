@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class UserRecord
  *
+ * @package craft.app.records
  */
 class UserRecord extends BaseRecord
 {

@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * Asset source model class
  *
- * Used for transporting asset source data throughout the system.
+ * @package craft.app.models
  */
 class AssetSourceModel extends BaseComponentModel
 {

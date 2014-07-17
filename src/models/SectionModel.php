@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * Section model class
  *
- * Used for transporting section data throughout the system.
+ * @package craft.app.models
  */
 class SectionModel extends BaseModel
 {

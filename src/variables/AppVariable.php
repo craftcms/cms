@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * App functions
+ * Class AppVariable
+ *
+ * @package craft.app.validators
  */
 class AppVariable
 {

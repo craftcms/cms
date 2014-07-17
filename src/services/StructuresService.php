@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class StructuresService
  *
+ * @package craft.app.services
  */
 class StructuresService extends BaseApplicationComponent
 {

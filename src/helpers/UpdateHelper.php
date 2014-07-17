@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class UpdateHelper
  *
+ * @package craft.app.helpers
  */
 class UpdateHelper
 {

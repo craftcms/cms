@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Paginates entities via a ElementCriteriaModel instance.
+ *
+ * @package craft.app.etc.templating.twigextensions
  */
 class Paginate_TokenParser extends \Twig_TokenParser
 {

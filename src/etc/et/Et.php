@@ -1,21 +1,11 @@
 <?php
 namespace Craft;
 
-	/**
-	 * The `$options` parameter takes an associative array with the following
-	 * options:
-	 *
-	 * - `timeout`: How long should we wait for a response? (integer, seconds, default: 10)
-	 * - `useragent`: Useragent to send to the server (string, default: php-requests/$version)
-	 * - `follow_redirects`: Should we follow 3xx redirects? (boolean, default: true)
-	 * - `redirects`: How many times should we redirect before erroring? (integer, default: 10)
-	 * - `blocking`: Should we block processing on this request? (boolean, default: true)
-	 * - `filename`: File to stream the body to instead. (string|boolean, default: false)
-	 * - `auth`: Authentication handler or array of user/password details to use for Basic authentication (RequestsAuth|array|boolean, default: false)
-	 * - `idn`: Enable IDN parsing (boolean, default: true)
-	 * - `transport`: Custom transport. Either a class name, or a transport object. Defaults to the first working transport from {@see getTransport()} (string|RequestsTransport, default: {@see getTransport()})
-	 *
-	 */
+/**
+ * Class Et
+ *
+ * @package craft.app.etc.et
+ */
 class Et
 {
 	private $_endpoint;
