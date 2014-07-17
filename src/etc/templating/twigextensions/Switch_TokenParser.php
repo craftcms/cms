@@ -33,14 +33,9 @@ class Switch_TokenParser extends \Twig_TokenParser
 		$stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
 		// There can be some whitespace between the {% switch %} and first {% case %} tag.
-		$token = $stream->getCurrent();
-
-		if ($token->getType() == \Twig_Token::TEXT_TYPE)
+		while ($stream->getCurrent()->getType() == \Twig_Token::TEXT_TYPE && trim($stream->getCurrent()->getValue()) == '')
 		{
-			if (trim($token->getValue()) === '')
-			{
-				$stream->next();
-			}
+			$stream->next();
 		}
 
 		$stream->expect(\Twig_Token::BLOCK_START_TYPE);
