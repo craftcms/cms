@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Category group locale model class
+ * Category group locale model class.
+ *
+ * @package craft.app.models
  */
 class CategoryGroupLocaleModel extends BaseModel
 {

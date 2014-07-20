@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class PathHelper
  *
+ * @package craft.app.helpers
  */
 class PathHelper
 {

@@ -4,7 +4,9 @@ namespace Craft;
 craft()->requireEdition(Craft::Client);
 
 /**
+ * Class EmailMessageRecord
  *
+ * @package craft.app.records
  */
 class EmailMessageRecord extends BaseRecord
 {

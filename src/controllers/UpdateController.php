@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class UpdateController
  *
+ * @package craft.app.controllers
  */
 class UpdateController extends BaseController
 {

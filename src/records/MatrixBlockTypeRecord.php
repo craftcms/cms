@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Stores Matrix block types
+ * Stores Matrix block types.
+ *
+ * @package craft.app.records
  */
 class MatrixBlockTypeRecord extends BaseRecord
 {

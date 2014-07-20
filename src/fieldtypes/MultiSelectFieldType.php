@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class MultiSelectFieldType
  *
+ * @package craft.app.fieldtypes
  */
 class MultiSelectFieldType extends BaseOptionsFieldType
 {

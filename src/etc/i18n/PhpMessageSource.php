@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class PhpMessageSource
  *
+ * @package craft.app.etc.i18n
  */
 class PhpMessageSource extends \CPhpMessageSource
 {

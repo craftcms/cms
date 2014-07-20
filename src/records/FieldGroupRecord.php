@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Field group record class
+ * Class FieldGroupRecord
+ *
+ * @package craft.app.records
  */
 class FieldGroupRecord extends BaseRecord
 {

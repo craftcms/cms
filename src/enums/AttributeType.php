@@ -2,7 +2,10 @@
 namespace Craft;
 
 /**
+ * Class AttributeType
  *
+ * @abstract
+ * @package craft.app.enums
  */
 abstract class AttributeType extends BaseEnum
 {

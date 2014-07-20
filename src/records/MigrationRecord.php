@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class MigrationRecord
  *
+ * @package craft.app.records
  */
 class MigrationRecord extends BaseRecord
 {

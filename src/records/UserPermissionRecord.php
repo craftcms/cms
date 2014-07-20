@@ -4,7 +4,9 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
+ * Class UserPermissionRecord
  *
+ * @package craft.app.records
  */
 class UserPermissionRecord extends BaseRecord
 {

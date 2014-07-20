@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Folders parameters
+ * Folders parameters.
+ *
+ * @package craft.app.models
  */
 class FolderCriteriaModel extends BaseModel
 {

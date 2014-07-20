@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class Folder
  *
+ * @package craft.app.etc.io
  */
 class Folder extends BaseIO
 {

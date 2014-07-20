@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Search Query class
+ * Search Query class.
+ *
+ * @package craft.app.etc.search
  */
 class SearchQuery
 {

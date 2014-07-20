@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class NumberHelper
  *
+ * @package craft.app.helpers
  */
 class NumberHelper
 {

@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Tokens service
+ * Tokens service.
+ *
+ * @package craft.app.services
  */
 class TokensService extends BaseApplicationComponent
 {
@@ -15,6 +17,7 @@ class TokensService extends BaseApplicationComponent
 	 *                                  action, pass `array('action' => "controller/action", 'params' => array('foo' => 'bar'))`.
 	 * @param int|null      $usageLimit The maximum number of times this token can be used. Defaults to no limit.
 	 * @param DateTime|null $expiryDate The date that the token expires. Defaults to the 'defaultTokenDuration' config setting.
+	 *
 	 * @return string|false             The generated token, or `false` if there was an error.
 	 */
 	public function createToken($route, $usageLimit = null, $expiryDate = null)

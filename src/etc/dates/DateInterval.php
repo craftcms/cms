@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class DateInterval
  *
+ * @package craft.app.etc.dates
  */
 class DateInterval extends \DateInterval
 {

@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Stores the info for a Craft release.
+ *
+ * @package craft.app.models
  */
 class AppNewReleaseModel extends BaseModel
 {

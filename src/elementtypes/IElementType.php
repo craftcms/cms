@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Element type interface
+ * Element type interface.
+ *
+ * @package craft.app.elementtypes
  */
 interface IElementType extends IComponentType
 {

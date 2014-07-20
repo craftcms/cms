@@ -2,7 +2,11 @@
 namespace Craft;
 
 /**
- * Widget base class
+ * Widget base class.
+ *
+ * @abstract
+ * @implements IWidget
+ * @package craft.app.widgets
  */
 abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 {

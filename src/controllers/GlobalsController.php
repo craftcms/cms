@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Handles global set management tasks
+ * Handles global set management tasks.
+ *
+ * @package craft.app.controllers
  */
 class GlobalsController extends BaseController
 {

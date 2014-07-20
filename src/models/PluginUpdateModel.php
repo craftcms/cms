@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Stores the available plugin update info.
+ *
+ * @package craft.app.models
  */
 class PluginUpdateModel extends BaseModel
 {

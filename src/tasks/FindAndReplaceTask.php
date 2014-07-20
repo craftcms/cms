@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Find and Replace task
+ * Find and Replace task.
+ *
+ * @package craft.app.tasks
  */
 class FindAndReplaceTask extends BaseTask
 {

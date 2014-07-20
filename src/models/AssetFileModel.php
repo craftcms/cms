@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class AssetFileModel
  *
+ * @package craft.app.models
  */
 class AssetFileModel extends BaseElementModel
 {

@@ -4,7 +4,9 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * Handles user group tasks
+ * Handles user group tasks.
+ *
+ * @package craft.app.controllers
  */
 class UserSettingsController extends BaseController
 {

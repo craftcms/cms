@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class ElementsVariable
  *
+ * @package craft.app.validators
  */
 class ElementsVariable
 {

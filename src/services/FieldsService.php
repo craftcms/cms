@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class FieldsService
  *
+ * @package craft.app.services
  */
 class FieldsService extends BaseApplicationComponent
 {

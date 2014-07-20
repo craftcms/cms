@@ -2,7 +2,10 @@
 namespace Craft;
 
 /**
+ * Class ComponentType
  *
+ * @abstract
+ * @package craft.app.enums
  */
 abstract class ComponentType extends BaseEnum
 {

@@ -3,7 +3,8 @@ namespace Craft;
 
 /**
  * EmailSettingsModel class.
- * It is used by the 'saveEmail' action of 'settingsController'.
+ *
+ * @package craft.app.models
  */
 class EmailSettingsModel extends BaseModel
 {

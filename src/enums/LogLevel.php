@@ -3,6 +3,9 @@ namespace Craft;
 
 /**
  * Just a duplicate of the consts in \CLogger for consistency!
+ *
+ * @abstract
+ * @package craft.app.enums
  */
 abstract class LogLevel extends BaseEnum
 {

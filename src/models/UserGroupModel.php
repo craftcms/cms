@@ -4,9 +4,9 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * User group model class
+ * User group model class.
  *
- * Used for transporting user group data throughout the system.
+ * @package craft.app.models
  */
 class UserGroupModel extends BaseModel
 {

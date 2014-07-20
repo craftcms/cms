@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Stores the locales
+ * Stores the locales.
+ *
+ * @package craft.app.records
  */
 class LocaleRecord extends BaseRecord
 {

@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class ConsoleCommandRunner
  *
+ * @package craft.app.etc.console
  */
 class ConsoleCommandRunner extends \CConsoleCommandRunner
 {

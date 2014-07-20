@@ -6,6 +6,8 @@ namespace Craft;
  *
  * To use this application component, the XCache PHP extension must be loaded.
  * Flush functionality will only work correctly if "xcache.admin.enable_auth" is set to "Off" in php.ini.
+ *
+ * @package craft.app.etc.cache
  */
 class XCache extends \CXCache
 {

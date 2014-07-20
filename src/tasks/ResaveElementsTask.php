@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Resave Elements Task
+ *
+ * @package craft.app.tasks
  */
 class ResaveElementsTask extends BaseTask
 {

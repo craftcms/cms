@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class DbBackup
  *
+ * @package craft.app.etc.db
  */
 class DbBackup
 {

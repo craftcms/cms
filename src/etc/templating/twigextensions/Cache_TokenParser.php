@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class Cache_TokenParser
  *
+ * @package craft.app.etc.templating.twigextensions
  */
 class Cache_TokenParser extends \Twig_TokenParser
 {

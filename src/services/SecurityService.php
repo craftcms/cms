@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class SecurityService
  *
+ * @package craft.app.services
  */
 class SecurityService extends \CSecurityManager
 {

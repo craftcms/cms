@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class RequirePermission_TokenParser
  *
+ * @package craft.app.etc.templating.twigextensions
  */
 class RequirePermission_TokenParser extends \Twig_TokenParser
 {

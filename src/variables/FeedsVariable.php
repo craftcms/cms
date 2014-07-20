@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class FeedsVariable
  *
+ * @package craft.app.validators
  */
 class FeedsVariable
 {

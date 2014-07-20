@@ -4,7 +4,9 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * S3 source type class
+ * S3 source type class.
+ *
+ * @package craft.app.assetsourcetypes
  */
 class S3AssetSourceType extends BaseAssetSourceType
 {

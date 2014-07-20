@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class UrlValidator
  *
+ * @package craft.app.validators
  */
 class UrlValidator extends \CUrlValidator
 {

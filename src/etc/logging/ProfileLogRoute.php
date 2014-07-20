@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class ProfileLogRoute
  *
+ * @package craft.app.etc.logging
  */
 class ProfileLogRoute extends \CProfileLogRoute
 {

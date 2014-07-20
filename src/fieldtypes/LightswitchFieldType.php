@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class LightswitchFieldType
  *
+ * @package craft.app.fieldtypes
  */
 class LightswitchFieldType extends BaseFieldType
 {

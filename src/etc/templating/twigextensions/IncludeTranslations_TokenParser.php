@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class IncludeTranslations_TokenParser
  *
+ * @package craft.app.etc.templating.twigextensions
  */
 class IncludeTranslations_TokenParser extends \Twig_TokenParser
 {

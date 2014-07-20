@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Handles search operations.
+ *
+ * @package craft.app.services
  */
 class SearchService extends BaseApplicationComponent
 {

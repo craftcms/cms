@@ -2,7 +2,10 @@
 namespace Craft;
 
 /**
+ * Class InstallStatus
  *
+ * @abstract
+ * @package craft.app.enums
  */
 abstract class InstallStatus extends BaseEnum
 {

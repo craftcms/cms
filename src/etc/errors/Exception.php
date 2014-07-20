@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class Exception
  *
+ * @package craft.app.etc.errors
  */
 class Exception extends \CException
 {

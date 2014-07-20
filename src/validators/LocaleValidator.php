@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Will validate that the given attribute is a valid site locale ID.
+ *
+ * @package craft.app.validators
  */
 class LocaleValidator extends \CValidator
 {

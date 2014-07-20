@@ -2,9 +2,10 @@
 namespace Craft;
 
 /**
- * Model base class
+ * Model base class.
  *
  * @abstract
+ * @package craft.app.models
  */
 abstract class BaseModel extends \CModel
 {

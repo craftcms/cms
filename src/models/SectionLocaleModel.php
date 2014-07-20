@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Section locale model class
+ * Section locale model class.
+ *
+ * @package craft.app.models
  */
 class SectionLocaleModel extends BaseModel
 {

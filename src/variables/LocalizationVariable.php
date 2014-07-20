@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Localization functions
+ * Localization functions.
+ *
+ * @package craft.app.validators
  */
 class LocalizationVariable
 {

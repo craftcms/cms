@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Will validate that the given attribute is a valid URI.
+ *
+ * @package craft.app.validators
  */
 class UriValidator extends \CValidator
 {

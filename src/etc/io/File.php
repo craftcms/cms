@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class File
  *
+ * @package craft.app.etc.io
  */
 class File extends BaseIO
 {

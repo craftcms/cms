@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class RichTextFieldType
  *
+ * @package craft.app.fieldtypes
  */
 class RichTextFieldType extends BaseFieldType
 {

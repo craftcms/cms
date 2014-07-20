@@ -2,7 +2,11 @@
 namespace Craft;
 
 /**
- * Base savable component class
+ * Base savable component class.
+ *
+ * @abstract
+ * @implements ISavableComponentType
+ * @package craft.app.etc.components
  */
 abstract class BaseSavableComponentType extends BaseComponentType implements ISavableComponentType
 {

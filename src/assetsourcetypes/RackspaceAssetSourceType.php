@@ -5,6 +5,8 @@ craft()->requireEdition(Craft::Pro);
 
 /**
  * Rackspace source type class
+ *
+ * @package craft.app.assetsourcetypes
  */
 class RackspaceAssetSourceType extends BaseAssetSourceType
 {

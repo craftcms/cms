@@ -2,11 +2,10 @@
 namespace Craft;
 
 /**
- * Base component model class
- *
- * Used for transporting component data throughout the system.
+ * Base component model class.
  *
  * @abstract
+ * @package craft.app.models
  */
 abstract class BaseComponentModel extends BaseModel
 {

@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Handles user account related tasks.
+ *
+ * @package craft.app.controllers
  */
 class UsersController extends BaseController
 {
@@ -683,18 +685,8 @@ class UsersController extends BaseController
 
 			if ($thisIsPublicRegistration || $newPassword)
 			{
-				// Make sure it's valid
-				$passwordModel = new PasswordModel();
-				$passwordModel->password = $newPassword;
-
-				if ($passwordModel->validate())
-				{
-					$user->newPassword = $newPassword;
-				}
-				else
-				{
-					$user->addError('password', $passwordModel->getError('password'));
-				}
+				// Don't worry about new password validation. That will be taken care of in the service.
+				$user->newPassword = $newPassword;
 			}
 
 			if ($newEmail)
@@ -756,7 +748,7 @@ class UsersController extends BaseController
 		}
 
 		// Validate and save!
-		if ($user->validate(null, false) && craft()->users->saveUser($user))
+		if (craft()->users->saveUser($user))
 		{
 			$this->_processUserPhoto($user);
 

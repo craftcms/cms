@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Request functions
+ * Request functions.
+ *
+ * @package craft.app.validators
  */
 class HttpRequestVariable
 {

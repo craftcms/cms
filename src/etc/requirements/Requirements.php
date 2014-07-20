@@ -1,9 +1,10 @@
 <?php
 namespace Craft;
 
-
 /**
- * Requirements class
+ * Class Requirements
+ *
+ * @package craft.app.etc.requirements
  */
 class Requirements
 {
@@ -186,7 +187,9 @@ class Requirements
 }
 
 /**
- * Requirement class
+ * Requirement class.
+ *
+ * @package craft.app.etc.requirements
  */
 class Requirement extends \CComponent
 {
@@ -284,18 +287,16 @@ class Requirement extends \CComponent
 }
 
 /**
- * PHP version requirement class
+ * PHP version requirement class.
+ *
+ * @package craft.app.etc.requirements
  */
 class PhpVersionRequirement extends Requirement
 {
 	const REQUIRED_PHP_VERSION = '@@@requiredPHPVersion@@@';
 
 	/**
-	 * @param      $name
-	 * @param      $condition
-	 * @param bool $required
-	 * @param null $requiredBy
-	 * @param null $notes
+	 *
 	 */
 	function __construct()
 	{

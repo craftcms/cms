@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class InstallService
  *
+ * @package craft.app.services
  */
 class InstallService extends BaseApplicationComponent
 {

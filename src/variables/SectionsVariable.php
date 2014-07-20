@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class SectionsVariable
  *
+ * @package craft.app.validators
  */
 class SectionsVariable
 {

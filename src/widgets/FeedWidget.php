@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class FeedWidget
  *
+ * @package craft.app.widgets
  */
 class FeedWidget extends BaseWidget
 {

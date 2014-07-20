@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Savable component type interface
+ * Savable component type interface.
+ *
+ * @package craft.app.etc.components
  */
 interface ISavableComponentType extends IComponentType
 {

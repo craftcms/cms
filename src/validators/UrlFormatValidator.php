@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Will validate that the given attribute is a valid URL format.
+ *
+ * @package craft.app.validators
  */
 class UrlFormatValidator extends \CValidator
 {

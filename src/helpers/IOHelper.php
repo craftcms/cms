@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class IOHelper
  *
+ * @package craft.app.helpers
  */
 class IOHelper
 {

@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Validates the required Site attributes for the installer.
+ *
+ * @package craft.app.models
  */
 class SiteSettingsModel extends BaseModel
 {

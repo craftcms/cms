@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class MigrateCommand
  *
+ * @package craft.app.consolecommands
  */
 class MigrateCommand extends \MigrateCommand
 {

@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Tool interface
+ * Interface ITask
+ *
+ * @package craft.app.tasks
  */
 interface ITask extends ISavableComponentType
 {

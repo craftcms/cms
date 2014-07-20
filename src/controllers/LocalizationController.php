@@ -5,6 +5,8 @@ craft()->requireEdition(Craft::Pro);
 
 /**
  * Handles localization actions.
+ *
+ * @package craft.app.controllers
  */
 class LocalizationController extends BaseController
 {

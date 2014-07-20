@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class RequireEdition_TokenParser
  *
+ * @package craft.app.etc.templating.twigextensions
  */
 class RequireEdition_TokenParser extends \Twig_TokenParser
 {

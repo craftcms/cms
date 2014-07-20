@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class EtException
  *
+ * @package craft.app.etc.errors
  */
 class EtException extends Exception
 {

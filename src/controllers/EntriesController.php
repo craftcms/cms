@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Handles entry tasks
+ * Handles entry tasks.
+ *
+ * @package craft.app.controllers
  */
 class EntriesController extends BaseEntriesController
 {

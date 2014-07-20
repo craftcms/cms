@@ -1,8 +1,10 @@
 <?php
 namespace Craft;
- 
+
 /**
+ * Class StringTemplate
  *
+ * @package craft.app.etc.templating
  */
 class StringTemplate
 {

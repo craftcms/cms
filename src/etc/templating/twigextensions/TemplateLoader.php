@@ -3,6 +3,9 @@ namespace Craft;
 
 /**
  * Loads Craft templates into Twig.
+ *
+ * @implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterface
+ * @package craft.app.etc.templating
  */
 class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterface
 {
