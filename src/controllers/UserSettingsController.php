@@ -9,6 +9,15 @@ craft()->requireEdition(Craft::Pro);
 class UserSettingsController extends BaseController
 {
 	/**
+	 * Init
+	 */
+	public function init()
+	{
+		// All System Settings actions require an admin
+		craft()->userSession->requireAdmin();
+	}
+
+	/**
 	 * Saves a user group.
 	 */
 	public function actionSaveGroup()
@@ -62,7 +71,6 @@ class UserSettingsController extends BaseController
 	public function actionSaveUserSettings()
 	{
 		$this->requirePostRequest();
-		$this->requireAdmin();
 
 		$settings['requireEmailVerification'] = (bool) craft()->request->getPost('requireEmailVerification');
 		$settings['allowPublicRegistration'] = (bool) craft()->request->getPost('allowPublicRegistration');
