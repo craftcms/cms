@@ -652,10 +652,13 @@ class AssetsService extends BaseApplicationComponent
 	public function insertFileByLocalPath($localPath, $fileName, $folderId)
 	{
 		$folder = $this->getFolderById($folderId);
+
 		if (!$folder)
 		{
 			return false;
 		}
+
+		$fileName = IOHelper::cleanFilename($fileName);
 		$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
 		$response = $source->insertFileByPath($localPath, $folder, $fileName, true);
 		return $response->getDataItem('fileId');

@@ -988,7 +988,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	_attachElementEvents: function($elements)
 	{
 		// Doubleclick opens the HUD for editing
-		this.removeListener($elements, 'dlbclick');
+		this.removeListener($elements, 'dblclick');
 		this.addListener($elements, 'dblclick', $.proxy(this, '_editProperties'));
 
 		// Context menus
