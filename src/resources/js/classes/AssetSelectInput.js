@@ -28,7 +28,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 			dropZone: this.$container,
 			formData: {
 				fieldId: this.fieldId,
-				entryId: $('input[name=entryId]').val()
+				elementId: this.sourceElementId
 			}
 		};
 
