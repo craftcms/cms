@@ -73,6 +73,10 @@ Craft.FieldToggle = Garnish.Base.extend(
 		{
 			return 'link';
 		}
+		else if (this.$toggle.prop('nodeName') == 'DIV' && this.$toggle.hasClass('lightswitch'))
+		{
+			return 'lightswitch';
+		}
 	},
 
 	findTargets: function()
@@ -97,7 +101,14 @@ Craft.FieldToggle = Garnish.Base.extend(
 
 	getToggleVal: function()
 	{
-		return Garnish.getInputPostVal(this.$toggle);
+		if (this.type == 'lightswitch')
+		{
+			return this.$toggle.children('input').val();
+		}
+		else
+		{
+			return Garnish.getInputPostVal(this.$toggle);
+		}
 	},
 
 	onToggleChange: function()
