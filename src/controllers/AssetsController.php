@@ -49,8 +49,8 @@ class AssetsController extends BaseController
 	public function actionExpressUpload()
 	{
 		$this->requireAjaxRequest();
-		$fieldId = craft()->request->getPost('fieldId', 0);
-		$entryId = craft()->request->getPost('entryId', 0);
+		$fieldId = craft()->request->getPost('fieldId');
+		$elementId = craft()->request->getPost('elementId');
 
 		if (empty($_FILES['files']) || !isset($_FILES['files']['error'][0]) || $_FILES['files']['error'][0] != 0)
 		{
@@ -67,13 +67,9 @@ class AssetsController extends BaseController
 			throw new Exception(Craft::t('That is not an Assets field.'));
 		}
 
-		if ($entryId)
+		if ($elementId)
 		{
-			$field->element = craft()->elements->getElementById($entryId);
-		}
-		else
-		{
-			$field->element = new EntryModel();
+			$field->element = craft()->elements->getElementById($elementId);
 		}
 
 		$targetFolderId = $field->resolveSourcePath();
