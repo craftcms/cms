@@ -57,7 +57,25 @@ class FileLogRoute extends \CFileLogRoute
 
 			$logFile = IOHelper::normalizePathSeparators($this->getLogPath().'/'.$this->getLogFile());
 
-			$lock = craft()->cache->get('useWriteFileLock') === true ? true : false;
+			// Check the config setting first.  Is it set to true?
+			if (craft()->config->get('useWriteFileLock') === true)
+			{
+				$lock = true;
+			}
+			// Is it set to false?
+			else if (craft()->config->get('useWriteFileLock') === false)
+			{
+				$lock = false;
+			}
+			// Config setting it set to 'auto', so check cache.
+			else if (craft()->cache->get('useWriteFileLock') === 'yes')
+			{
+				$lock = true;
+			}
+			else
+			{
+				$lock = false;
+			}
 
 			$fp = @fopen($logFile, 'a');
 

@@ -738,27 +738,46 @@ class IOHelper
 
 		if (static::isWritable($path, $suppressErrors))
 		{
-			// We haven't cached file lock information yet and this is not a noFileLock request.
-			if (($useFileLock = craft()->cache->get('useWriteFileLock')) === false && !$noFileLock)
+			// Let's try to use our auto-magic detection.
+			if (craft()->config->get('useWriteFileLock') === 'auto')
 			{
-				// For file systems that don't support file locking... LOOKING AT YOU NFS!!!
-				set_error_handler(array(new IOHelper(), 'handleError'));
-
-				try
+				// We haven't cached file lock information yet and this is not a noFileLock request.
+				if (($useFileLock = craft()->cache->get('useWriteFileLock')) === false && !$noFileLock)
 				{
-					Craft::log('Trying to write to file at '.$path.' using LOCK_EX.', LogLevel::Info, true);
-					if (static::_writeToFile($path, $contents, true, $append, $suppressErrors))
+					// For file systems that don't support file locking... LOOKING AT YOU NFS!!!
+					set_error_handler(array(new IOHelper(), 'handleError'));
+
+					try
 					{
-						// Restore quickly.
+						Craft::log('Trying to write to file at '.$path.' using LOCK_EX.', LogLevel::Info, true);
+						if (static::_writeToFile($path, $contents, true, $append, $suppressErrors))
+						{
+							// Restore quickly.
+							restore_error_handler();
+
+							// Cache the file lock info to use LOCK_EX for 2 months.
+							Craft::log('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.', LogLevel::Info, true);
+							craft()->cache->set('useWriteFileLock', 'yes', 5184000);
+							return true;
+						}
+						else
+						{
+							// Try again without the lock flag.
+							Craft::log('Trying to write to file at '.$path.' without LOCK_EX.', LogLevel::Info, true);
+							if (static::_writeToFile($path, $contents, false, $append, $suppressErrors))
+							{
+								// Cache the file lock info to not use LOCK_EX for 2 months.
+								Craft::log('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', LogLevel::Info, true);
+								craft()->cache->set('useWriteFileLock', 'no', 5184000);
+								return true;
+							}
+						}
+					}
+					catch (ErrorException $e)
+					{
+						// Restore here before we attempt to write again.
 						restore_error_handler();
 
-						// Cache the file lock info to use LOCK_EX for 2 months.
-						Craft::log('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.', LogLevel::Info, true);
-						craft()->cache->set('useWriteFileLock', 'yes', 5184000);
-						return true;
-					}
-					else
-					{
 						// Try again without the lock flag.
 						Craft::log('Trying to write to file at '.$path.' without LOCK_EX.', LogLevel::Info, true);
 						if (static::_writeToFile($path, $contents, false, $append, $suppressErrors))
@@ -769,53 +788,64 @@ class IOHelper
 							return true;
 						}
 					}
-				}
-				catch (ErrorException $e)
-				{
-					// Restore here before we attempt to write again.
+
+					// Make sure we're really restored
 					restore_error_handler();
-
-					// Try again without the lock flag.
-					Craft::log('Trying to write to file at '.$path.' without LOCK_EX.', LogLevel::Info, true);
-					if (static::_writeToFile($path, $contents, false, $append, $suppressErrors))
-					{
-						// Cache the file lock info to not use LOCK_EX for 2 months.
-						Craft::log('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', LogLevel::Info, true);
-						craft()->cache->set('useWriteFileLock', 'no', 5184000);
-						return true;
-					}
-				}
-
-				// Make sure we're really restored
-				restore_error_handler();
-			}
-			else
-			{
-				// If cache says use LOCK_X and this is not a noFileLock request.
-				if ($useFileLock == 'yes' && !$noFileLock)
-				{
-					Craft::log('Cache says use LOCK_EX. Writing to '.$path.'.', LogLevel::Info);
-					// Write with LOCK_EX
-					if (static::_writeToFile($path, $contents, true, $append, $suppressErrors))
-					{
-						return true;
-					}
 				}
 				else
 				{
-					Craft::log('Cache says not to use LOCK_EX. Writing to '.$path.'.', LogLevel::Info);
-					// Write without LOCK_EX
-					if (static::_writeToFile($path, $contents, false, $append, $suppressErrors))
+					// If cache says use LOCK_X and this is not a noFileLock request.
+					if ($useFileLock == 'yes' && !$noFileLock)
 					{
-						return true;
+						Craft::log('Cache says use LOCK_EX. Writing to '.$path.'.', LogLevel::Info);
+						// Write with LOCK_EX
+						if (static::_writeToFile($path, $contents, true, $append, $suppressErrors))
+						{
+							return true;
+						}
 					}
 					else
 					{
-						Craft::log('Tried to write to file at '.$path.' and could not.', LogLevel::Error);
-						return false;
+						Craft::log('Cache says not to use LOCK_EX. Writing to '.$path.'.', LogLevel::Info);
+						// Write without LOCK_EX
+						if (static::_writeToFile($path, $contents, false, $append, $suppressErrors))
+						{
+							return true;
+						}
+						else
+						{
+							Craft::log('Tried to write to file at '.$path.' and could not.', LogLevel::Error);
+							return false;
+						}
 					}
-				}
 
+				}
+			}
+			// We were explicitly told not to use LOCK_EX
+			else if (craft()->config->get('useWriteFileLock') === false)
+			{
+				if (static::_writeToFile($path, $contents, false, $append, $suppressErrors))
+				{
+					return true;
+				}
+				else
+				{
+					Craft::log('Tried to write to file at '.$path.' with no LOCK_EX and could not.', LogLevel::Error);
+					return false;
+				}
+			}
+			// Not 'auto', not false, so default to using LOCK_EX
+			else
+			{
+				if (static::_writeToFile($path, $contents, true, $append, $suppressErrors))
+				{
+					return true;
+				}
+				else
+				{
+					Craft::log('Tried to write to file at '.$path.' with LOCK_EX and could not.', LogLevel::Error);
+					return false;
+				}
 			}
 		}
 		else
