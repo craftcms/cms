@@ -722,7 +722,10 @@ class UserSessionService extends \CWebUser
 	 */
 	protected function restoreFromCookie()
 	{
-		$this->_checkVitals();
+		if (!$this->_checkVitals())
+		{
+			return false;
+		}
 
 		// See if they have an existing identity cookie.
 		$cookie = craft()->request->getCookies()->itemAt($this->getStateKeyPrefix());
@@ -973,9 +976,11 @@ class UserSessionService extends \CWebUser
 			{
 				Craft::log('Someone tried to restore a session from a cookie without presenting an IP address or userAgent string.', LogLevel::Warning);
 				$this->logout(true);
-				$this->requireLogin();
+				return false;
 			}
 		}
+
+		return true;
 	}
 
 	/**
