@@ -234,7 +234,10 @@ class AssetTransformsService extends BaseApplicationComponent
 			}
 		}
 
-		$this->deleteSourceIfNecessary($imageSource);
+		if (craft()->assetSources->populateSourceType($fileModel->getSource())->isRemote())
+		{
+			$this->deleteSourceIfNecessary($imageSource);
+		}
 
 		return true;
 	}
@@ -640,7 +643,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * @param $size
 	 * @return bool|string
 	 */
-	public function getThumbServerPath($fileModel, $size)
+	public function getThumbServerPath(AssetFileModel $fileModel, $size)
 	{
 		$thumbFolder = craft()->path->getAssetsThumbsPath().$size.'/';
 		IOHelper::ensureFolderExists($thumbFolder);
@@ -655,7 +658,10 @@ class AssetTransformsService extends BaseApplicationComponent
 				->scaleAndCrop($size, $size)
 				->saveAs($thumbPath);
 
-			$this->deleteSourceIfNecessary($imageSource);
+			if (craft()->assetSources->populateSourceType($fileModel->getSource())->isRemote())
+			{
+				$this->deleteSourceIfNecessary($imageSource);
+			}
 		}
 
 		return $thumbPath;
@@ -782,11 +788,18 @@ class AssetTransformsService extends BaseApplicationComponent
 		if ($maxCachedImageSize > 0)
 		{
 			craft()->images->loadImage($localCopy)->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->setQuality(100)->saveAs($destination);
-			IOHelper::deleteFile($localCopy);
+
+			if ($localCopy != $destination)
+			{
+				IOHelper::deleteFile($localCopy);
+			}
 		}
 		else
 		{
-			IOHelper::move($localCopy, $destination);
+			if ($localCopy != $destination)
+			{
+				IOHelper::move($localCopy, $destination);
+			}
 		}
 	}
 }

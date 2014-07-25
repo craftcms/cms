@@ -45,6 +45,7 @@ class EntriesController extends BaseEntriesController
 
 			$authorOptionCriteria = craft()->elements->getCriteria(ElementType::User);
 			$authorOptionCriteria->can = 'editEntries'.$variables['permissionSuffix'];
+			$authorOptionCriteria->limit = null;
 
 			if ($variables['entry']->authorId)
 			{
