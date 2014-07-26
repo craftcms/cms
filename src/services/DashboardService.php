@@ -219,8 +219,6 @@ class DashboardService extends BaseApplicationComponent
 
 	/**
 	 * Adds the default widgets to the logged-in user.
-	 *
-	 * @access private
 	 */
 	private function _addDefaultUserWidgets()
 	{
@@ -280,7 +278,6 @@ class DashboardService extends BaseApplicationComponent
 	/**
 	 * Gets a widget's record.
 	 *
-	 * @access private
 	 * @param int $widgetId
 	 * @return WidgetRecord
 	 */
@@ -312,7 +309,6 @@ class DashboardService extends BaseApplicationComponent
 	/**
 	 * Throws a "No widget exists" exception.
 	 *
-	 * @access private
 	 * @param int $widgetId
 	 * @throws Exception
 	 */
@@ -324,7 +320,6 @@ class DashboardService extends BaseApplicationComponent
 	/**
 	 * Returns the widget records for the current user.
 	 *
-	 * @access private
 	 * @return array
 	 */
 	private function _getUserWidgetRecords()

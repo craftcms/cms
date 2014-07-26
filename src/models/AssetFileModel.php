@@ -90,7 +90,6 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()
@@ -364,7 +363,6 @@ class AssetFileModel extends BaseElementModel
 	/**
 	 * Returns the actual width attribute, since $this->width gets routed to getWidth() now.
 	 *
-	 * @access private
 	 * @return mixed
 	 */
 	private function _getWidth()
@@ -375,7 +373,6 @@ class AssetFileModel extends BaseElementModel
 	/**
 	 * Returns the actual height attribute, since $this->height gets routed to getHeight() now.
 	 *
-	 * @access private
 	 * @return mixed
 	 */
 	private function _getHeight()

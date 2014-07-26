@@ -9,8 +9,6 @@ namespace Craft;
 class LoggingHelper
 {
 	/**
-	 * @static
-	 *
 	 * @param      $level
 	 * @param      $time
 	 * @param      $category

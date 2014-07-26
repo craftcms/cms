@@ -45,8 +45,6 @@ class SearchQuery
 
 	/**
 	 * Parses the query into an array of tokens.
-	 *
-	 * @access private
 	 */
 	private function _parse()
 	{

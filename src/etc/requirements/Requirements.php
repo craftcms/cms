@@ -130,7 +130,6 @@ class Requirements
 	}
 
 	/**
-	 * @access private
 	 * @return string
 	 */
 	private static function _checkServerVar()
@@ -167,7 +166,6 @@ class Requirements
 	/**
 	 * Checks to see if the MySQL InnoDB storage engine is installed and enabled.
 	 *
-	 * @access private
 	 * @return bool
 	 */
 	private function _isInnoDbEnabled()
@@ -221,7 +219,6 @@ class Requirement extends \CComponent
 	/**
 	 * Calculates the result of this requirement.
 	 *
-	 * @access protected
 	 * @return string
 	 */
 	protected function calculateResult()
@@ -331,7 +328,6 @@ class PhpVersionRequirement extends Requirement
 	/**
 	 * Calculates the result of this requirement.
 	 *
-	 * @access protected
 	 * @return string
 	 */
 	protected function calculateResult()
@@ -358,7 +354,6 @@ class PhpVersionRequirement extends Requirement
 	/**
 	 * Returns whether this is past the min PHP version.
 	 *
-	 * @access private
 	 * @return bool
 	 */
 	private function _doesMinVersionPass()
@@ -369,7 +364,6 @@ class PhpVersionRequirement extends Requirement
 	/**
 	 * Returns whether this is one of the bad PHP versions.
 	 *
-	 * @access private
 	 * @return bool
 	 */
 	private function _isBadPhpVersion()

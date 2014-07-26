@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Class CacheMethod
  *
- * @abstract
  * @package craft.app.enums
  */
 abstract class CacheMethod extends BaseEnum

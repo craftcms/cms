@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Loads Craft templates into Twig.
  *
- * @implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterface
  * @package craft.app.etc.templating
  */
 class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterface
@@ -95,7 +94,8 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
 	/**
 	 * Returns the path to a given template, or throws a TemplateLoaderException.
 	 *
-	 * @access private
+	 * @param $name
+	 *
 	 * @throws TemplateLoaderException
 	 * @return string $name
 	 */

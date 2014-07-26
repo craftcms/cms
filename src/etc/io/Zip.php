@@ -9,7 +9,6 @@ namespace Craft;
 class Zip
 {
 	/**
-	 * @static
 	 * @param $source
 	 * @param $destZip
 	 * @return bool 'true' if the zip was successfully create, 'false' if not.
@@ -39,7 +38,6 @@ class Zip
 	}
 
 	/**
-	 * @static
 	 * @param $srcZip
 	 * @param $destFolder
 	 * @return bool

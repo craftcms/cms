@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Class CraftPackage
  *
- * @abstract
  * @package craft.app.enums
  */
 abstract class CraftPackage extends BaseEnum

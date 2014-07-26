@@ -11,7 +11,6 @@ class DbHelper
 	/**
 	 * Default column configs
 	 *
-	 * @static
 	 * @var array
 	 */
 	public static $columnTypeDefaults = array(
@@ -29,8 +28,6 @@ class DbHelper
 	/**
 	 * Numeric column types
 	 *
-	 * @access private
-	 * @static
 	 * @var array
 	 */
 	private static $_numericColumnTypes = array(ColumnType::TinyInt, ColumnType::SmallInt, ColumnType::MediumInt, ColumnType::Int, ColumnType::BigInt, ColumnType::Decimal);
@@ -38,8 +35,6 @@ class DbHelper
 	/**
 	 * Textual column types
 	 *
-	 * @access private
-	 * @static
 	 * @var array
 	 */
 	private static $_textualColumnTypes = array(ColumnType::Char, ColumnType::Varchar, ColumnType::TinyText, ColumnType::Text, ColumnType::MediumText, ColumnType::LongText);
@@ -109,7 +104,6 @@ class DbHelper
 	 *
 	 * @param array $config
 	 * @return string
-	 * @static
 	 */
 	public static function generateColumnDefinition($config)
 	{
@@ -234,7 +228,6 @@ class DbHelper
 	/**
 	 * Prepares a table name for Yii to add its table prefix
 	 *
-	 * @static
 	 * @param mixed $table The table name or an array of table names
 	 * @return mixed The modified table name(s)
 	 */
@@ -302,7 +295,6 @@ class DbHelper
 	/**
 	 * Ensures that an object name is within the schema's limit.
 	 *
-	 * @static
 	 * @param string $name
 	 * @return string
 	 */
@@ -345,7 +337,6 @@ class DbHelper
 	}
 
 	/**
-	 * @static
 	 * @return array
 	 */
 	public static function getAuditColumnConfig()
@@ -492,15 +483,13 @@ class DbHelper
 	}
 
 	/**
-	 * @access private
-	 * @static
+	 * @var array
 	 */
 	private static $_operators = array('not ', '!=', '<=', '>=', '<', '>', '=');
 
 	/**
 	 * Extracts the operator from a DB param and returns it.
 	 *
-	 * @access private
 	 * @param string &$value
 	 * @return string
 	 */

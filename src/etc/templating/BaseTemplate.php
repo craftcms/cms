@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Base Twig template class.
  *
- * @abstract
  * @package craft.app.etc.templating
  */
 abstract class BaseTemplate extends \Twig_Template
@@ -36,7 +35,6 @@ abstract class BaseTemplate extends \Twig_Template
 	/**
 	 * Includes this element in any active template caches.
 	 *
-	 * @access private
 	 * @param BaseElementModel $element
 	 */
 	private function _includeElementInTemplateCaches(BaseElementModel $element)

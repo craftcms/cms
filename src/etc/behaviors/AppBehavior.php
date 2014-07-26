@@ -566,7 +566,6 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Enables or disables Maintenance Mode
 	 *
-	 * @access private
 	 * @param bool $value
 	 * @return bool
 	 */

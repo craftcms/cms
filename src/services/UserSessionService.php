@@ -14,7 +14,6 @@ class UserSessionService extends \CWebUser
 	/**
 	 * Stores the user identity.
 	 *
-	 * @access private
 	 * @var UserIdentity
 	 */
 	private $_identity;
@@ -22,7 +21,6 @@ class UserSessionService extends \CWebUser
 	/**
 	 * Stores the current user model.
 	 *
-	 * @access private
 	 * @var UserModel
 	 */
 	private $_userModel;

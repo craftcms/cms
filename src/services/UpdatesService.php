@@ -562,7 +562,6 @@ class UpdatesService extends BaseApplicationComponent
 	/**
 	 * Returns whether Craft needs to run any database migrations.
 	 *
-	 * @access private
 	 * @return bool
 	 */
 	public function isCraftDbMigrationNeeded()

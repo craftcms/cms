@@ -15,7 +15,6 @@ class LocalizationHelper
 	 *
 	 * Group symbols are removed (e.g. 1,000,000 => 1000000), and decimals are converted to a periods, if the current locale uses something else.
 	 *
-	 * @static
 	 * @param mixed  $number The number that should be normalized.
 	 * @return mixed         The normalized number.
 	 */

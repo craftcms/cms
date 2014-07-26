@@ -9,7 +9,7 @@ namespace Craft;
 class JsonHelper extends \CJSON
 {
 	/**
-	 * @static
+	 *
 	 */
 	public static function sendJsonHeaders()
 	{

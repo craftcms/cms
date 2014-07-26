@@ -4,8 +4,6 @@ namespace Craft;
 /**
  * Base savable component class.
  *
- * @abstract
- * @implements ISavableComponentType
  * @package craft.app.etc.components
  */
 abstract class BaseSavableComponentType extends BaseComponentType implements ISavableComponentType
@@ -16,7 +14,6 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	public $model;
 
 	/**
-	 * @access private
 	 * @var BaseModel The model representing the current component instance's settings.
 	 */
 	private $_settings;
@@ -80,7 +77,6 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	/**
 	 * Returns the settings model.
 	 *
-	 * @access protected
 	 * @return BaseModel
 	 */
 	protected function getSettingsModel()
@@ -91,7 +87,6 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	/**
 	 * Defines the settings.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineSettings()

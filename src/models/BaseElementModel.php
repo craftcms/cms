@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Base element model class.
  *
- * @abstract
  * @package craft.app.models
  */
 abstract class BaseElementModel extends BaseModel
@@ -32,7 +31,6 @@ abstract class BaseElementModel extends BaseModel
 	const ARCHIVED = 'archived';
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()
@@ -58,7 +56,6 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Populates a new model instance with a given set of attributes.
 	 *
-	 * @static
 	 * @param mixed $values
 	 * @return BaseModel
 	 */
@@ -904,10 +901,9 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.
 	 *
-	 * @access private (Use the public getChildren() instead.)
 	 * @param mixed $field
 	 * @return ElementCriteriaModel
-	 * @deprecated
+	 * @deprecated Use public {@link getChildren} instead.
 	 */
 	private function _getRelChildren($field = null)
 	{
@@ -939,7 +935,6 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the field with a given handle.
 	 *
-	 * @access protected
 	 * @param string $handle
 	 * @return FieldModel|null
 	 */
@@ -960,7 +955,6 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns an element right before/after this one, from a given set of criteria.
 	 *
-	 * @access private
 	 * @param mixed $criteria
 	 * @param int $dir
 	 * @return BaseElementModel|null

@@ -9,19 +9,16 @@ namespace Craft;
 class CategoriesFieldType extends BaseElementFieldType
 {
 	/**
-	 * @access protected
 	 * @var string $elementType The element type this field deals with.
 	 */
 	protected $elementType = 'Category';
 
 	/**
-	 * @access protected
 	 * @var bool $allowMultipleSources Whether to allow multiple source selection in the settings.
 	 */
 	protected $allowMultipleSources = false;
 
 	/**
-	 * @access protected
 	 * @var string|null $inputJsClass The JS class that should be initialized for the input.
 	 */
 	protected $inputJsClass = 'Craft.CategorySelectInput';
@@ -33,7 +30,6 @@ class CategoriesFieldType extends BaseElementFieldType
 	protected $inputTemplate = '_components/fieldtypes/Categories/input';
 
 	/**
-	 * @access protected
 	 * @var bool $sortable Whether the elements have a custom sort order.
 	 */
 	protected $sortable = false;
@@ -83,7 +79,6 @@ class CategoriesFieldType extends BaseElementFieldType
 	/**
 	 * Returns an array of variables that should be passed to the input template.
 	 *
-	 * @access protected
 	 * @param string $name
 	 * @param mixed  $criteria
 	 * @return array

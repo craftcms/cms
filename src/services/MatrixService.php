@@ -847,7 +847,6 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Returns a block type record by its ID or creates a new one.
 	 *
-	 * @access private
 	 * @param  MatrixBlockTypeModel $blockType
 	 * @throws Exception
 	 * @return MatrixBlockTypeRecord
@@ -879,7 +878,6 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Returns a block record by its ID or creates a new one.
 	 *
-	 * @access private
 	 * @param  MatrixBlockModel $block
 	 * @throws Exception
 	 * @return MatrixBlockRecord
@@ -911,7 +909,6 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Creates the content table for a Matrix field.
 	 *
-	 * @access private
 	 * @param string $name
 	 */
 	private function _createContentTable($name)
@@ -929,7 +926,6 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Applies the field's translation setting to a set of blocks.
 	 *
-	 * @access private
 	 * @param BaseElementModel $owner
 	 * @param FieldModel       $field
 	 * @param array            $blocks

@@ -137,7 +137,6 @@ class DeprecatorService extends BaseApplicationComponent
 	/**
 	 * Populates a DeprecationErrorModel with data pulled from the PHP stack trace.
 	 *
-	 * @access private
 	 * @param DeprecationErrorModel $log
 	 */
 	private function _populateLogWithStackTraceData(DeprecationErrorModel $log)
@@ -263,7 +262,6 @@ class DeprecatorService extends BaseApplicationComponent
 	 *
 	 * Adapted from CErrorHandler::argumentsToString(), but this one's less destructive
 	 *
-	 * @access private
 	 * @param $args array
 	 * @return string
 	 */

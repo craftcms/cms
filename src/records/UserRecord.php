@@ -17,7 +17,6 @@ class UserRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

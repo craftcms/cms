@@ -11,7 +11,6 @@ class ElementHelper
 	/**
 	 * Sets a valid slug on a given element.
 	 *
-	 * @static
 	 * @param BaseElementModel $element
 	 */
 	public static function setValidSlug(BaseElementModel $element)
@@ -29,7 +28,6 @@ class ElementHelper
 	/**
 	 * Creates a slug based on a given string.
 	 *
-	 * @static
 	 * @param string $str
 	 * @return string
 	 */
@@ -60,7 +58,6 @@ class ElementHelper
 	 * Sets the URI on an element using a given URL format,
 	 * tweaking its slug if necessary to ensure it's unique.
 	 *
-	 * @static
 	 * @param BaseElementModel $element
 	 * @throws Exception
 	 */
@@ -167,7 +164,6 @@ class ElementHelper
 	/**
 	 * Returns whether a given URL format has a proper {slug} tag.
 	 *
-	 * @static
 	 * @param string $urlFormat
 	 * @return bool
 	 */

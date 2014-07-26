@@ -11,7 +11,6 @@ class TaskModel extends BaseComponentModel
 	private $_taskType;
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

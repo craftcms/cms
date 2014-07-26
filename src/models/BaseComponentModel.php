@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Base component model class.
  *
- * @abstract
  * @package craft.app.models
  */
 abstract class BaseComponentModel extends BaseModel
@@ -12,7 +11,6 @@ abstract class BaseComponentModel extends BaseModel
 	private $_settingErrors = array();
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

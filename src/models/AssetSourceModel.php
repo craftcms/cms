@@ -21,7 +21,6 @@ class AssetSourceModel extends BaseComponentModel
 	}
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

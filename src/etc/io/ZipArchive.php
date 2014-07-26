@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Class ZipArchive
  *
- * @implements IZip
  * @package craft.app.etc.io
  */
 class ZipArchive implements IZip

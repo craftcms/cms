@@ -12,7 +12,6 @@ class FieldLayoutTabModel extends BaseModel
 	private $_fields;
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

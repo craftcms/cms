@@ -11,7 +11,6 @@ craft()->requireEdition(Craft::Client);
 class EntryVersionModel extends BaseEntryRevisionModel
 {
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()
@@ -25,7 +24,6 @@ class EntryVersionModel extends BaseEntryRevisionModel
 	/**
 	 * Populates a new model instance with a given set of attributes.
 	 *
-	 * @static
 	 * @param mixed $attributes
 	 * @return EntryVersionModel
 	 */

@@ -67,11 +67,8 @@ class UpdateHelper
 	}
 
 	/**
-	 * @static
-	 *
 	 * @param $manifestData
 	 * @param $sourceTempFolder
-	 * @return bool
 	 * @return bool
 	 */
 	public static function doFileUpdate($manifestData, $sourceTempFolder)
@@ -142,7 +139,6 @@ class UpdateHelper
 	}
 
 	/**
-	 * @static
 	 * @param $line
 	 * @return bool
 	 */
@@ -195,7 +191,6 @@ class UpdateHelper
 	}
 
 	/**
-	 * @static
 	 * @param $line
 	 * @return bool
 	 */
@@ -212,7 +207,6 @@ class UpdateHelper
 	/**
 	 * Returns the relevant lines from the update manifest file starting with the current local version/build.
 	 *
-	 * @static
 	 * @param $manifestDataPath
 	 * @throws Exception
 	 * @return array

@@ -4,14 +4,17 @@ namespace Craft;
 /**
  * Asset source base class.
  *
- * @package craft.app.assetsourcetypes
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.assetsourcetypes
+ * @since     1.0
  */
 abstract class BaseAssetSourceType extends BaseSavableComponentType
 {
 	/**
 	 * Whether this is a local source or not. Defaults to false.
-	 *
-	 * @access protected
 	 *
 	 * @var bool
 	 */
@@ -20,16 +23,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * The type of component this is.
 	 *
-	 * @access protected
-	 *
 	 * @var string
 	 */
 	protected $componentType = 'AssetSourceType';
 
 	/**
 	 * Starts an indexing session.
-	 *
-	 * @abstract
 	 *
 	 * @param string $sessionId The unique session id to keep track of this indexing operation.
 	 *
@@ -39,8 +38,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 	/**
 	 * Process an indexing session.
-	 *
-	 * @abstract
 	 *
 	 * @param string $sessionId The unique session id to keep track of this indexing operation.
 	 * @param int $offset    The offset of this index.
@@ -52,8 +49,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Get the image source path with the optional handle name.
 	 *
-	 * @abstract
-	 *
 	 * @param AssetFileModel $fileModel The assetFileModel for the image source path.
 	 *
 	 * @return mixed
@@ -62,8 +57,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 	/**
 	 * Get the timestamp of when a file transform was last modified.
-	 *
-	 * @abstract
 	 *
 	 * @param AssetFileModel $fileModel The assetFileModel for the timestamp of the last time the transform was modified.
 	 * @param string $transformLocation The location of the transform.
@@ -74,8 +67,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 	/**
 	 * Put an image transform for the File and handle using the provided path to the source image.
-	 *
-	 * @abstract
 	 *
 	 * @param AssetFileModel $fileModel   The assetFileModel to put the image transform in.
 	 * @param string         $handle      The handle of the transform.
@@ -88,8 +79,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Make a local copy of the file and return the path to it.
 	 *
-	 * @abstract
-	 *
 	 * @param AssetFileModel $file The assetFileModel that has the file to make a copy of.
 	 *
 	 * @return mixed
@@ -98,8 +87,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 	/**
 	 * Copy a transform for a file from source location to target location.
-	 *
-	 * @abstract
 	 *
 	 * @param AssetFileModel $file   The assetFileModel that has the transform to copy.
 	 * @param string         $source The source location of the transform.
@@ -112,8 +99,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Return true if a transform exists at the location for a file.
 	 *
-	 * @abstract
-	 *
 	 * @param AssetFileModel $file     The assetFileModel to check if a transform exists.
 	 * @param string         $location The location of the transform.
 	 *
@@ -124,17 +109,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Return the source's base URL.
 	 *
-	 * @abstract
-	 *
 	 * @return string
 	 */
 	abstract public function getBaseUrl();
 
 	/**
 	 * Insert a file from path in folder.
-	 *
-	 * @abstract
-	 * @access protected
 	 *
 	 * @param AssetFolderModel $folder   The assetFolderModel that the file will be inserted into.
 	 * @param string           $filePath The filePath of the file to insert.
@@ -148,9 +128,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Get a name replacement for a filename already taken in a folder.
 	 *
-	 * @abstract
-	 * @access protected
-	 *
 	 * @param AssetFolderModel $folder   The assetFolderModel that has the file to get a name replacement for.
 	 * @param string           $fileName The name of the file to get a replacement name for.
 	 *
@@ -161,9 +138,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete just the file inside of a source for an Assets File.
 	 *
-	 * @abstract
-	 * @access protected
-	 *
 	 * @param AssetFolderModel $folder   The assetFolderModel that contains the file to be deleted.
 	 * @param string           $filename The name of the file to be deleted.
 	 */
@@ -171,9 +145,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 	/**
 	 * Move a file in source.
-	 *
-	 * @abstract
-	 * @access protected
 	 *
 	 * @param AssetFileModel   $file         The assetFileModel of the file to move.
 	 * @param AssetFolderModel $targetFolder The assetFolderModel that is the target destination of the file.
@@ -187,9 +158,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete generated image transforms for a File.
 	 *
-	 * @abstract
-	 * @access protected
-	 *
 	 * @param AssetFileModel $file The assetFileModel that has the images to delete the transforms for
 	 *
 	 * @return mixed
@@ -198,9 +166,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 	/**
 	 * Return true if a physical folder exists.
-	 *
-	 * @abstract
-	 * @access protected
 	 *
 	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the folder to check if it exists.
 	 * @param string           $folderName   The name of the folder to check if it exists.
@@ -212,9 +177,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Creates a physical folder, returns true on success.
 	 *
-	 * @abstract
-	 * @access protected
-	 *
 	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the parent folder of the folder to create.
 	 * @param string           $folderName   The name of the folder to create.
 	 *
@@ -224,9 +186,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 	/**
 	 * Delete the source folder.
-	 *
-	 * @abstract
-	 * @access protected
 	 *
 	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the parent of the folder to be deleted
 	 * @param string           $folderName   The name of the folder to be deleted.
@@ -238,9 +197,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Rename a source folder.
 	 *
-	 * @abstract
-	 * @access protected
-	 *
 	 * @param AssetFolderModel $folder  The assetFolderModel that has the folder to be renamed.
 	 * @param string           $newName The new name of the folder.
 	 *
@@ -250,9 +206,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 	/**
 	 * Determines if a file can be moved internally from original source.
-	 *
-	 * @abstract
-	 * @access protected
 	 *
 	 * @param BaseAssetSourceType $originalSource The original source to check if a file can be moved from.
 	 *
@@ -856,8 +809,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Return a result object for prompting the user about filename conflicts.
 	 *
-	 * @access protected
-	 *
 	 * @param string $fileName The file that is the cause of all the trouble.
 	 *
 	 * @return object
@@ -876,8 +827,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 	/**
 	 * Return a result array for prompting the user about folder conflicts.
-	 *
-	 * @access protected
 	 *
 	 * @param string $folderName The file that caused of all trouble
 	 * @param int    $folderId   The folder where the conflict took place.
@@ -898,8 +847,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 	/**
 	 * Ensure a folder entry exists in the DB for the full path and return it's id.
-	 *
-	 * @access protected
 	 *
 	 * @param string $fullPath The path to ensure the folder exists at.
 	 *
@@ -959,8 +906,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Return a list of missing folders, when comparing the full folder list for this source against the provided list.
 	 *
-	 * @access protected
-	 *
 	 * @param array $folderList The full folder list to check if there are any missing from the source.
 	 *
 	 * @return array
@@ -987,8 +932,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 	/**
 	 * Indexes a file.
-	 *
-	 * @access protected
 	 *
 	 * @param string $uriPath The URI path fo the file to index.
 	 *
@@ -1051,8 +994,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete all the generated images for this file.
 	 *
-	 * @access protected
-	 *
 	 * @param AssetFileModel $file The assetFileModel representing the file to delete any generated thumbnails for.
 	 */
 	protected function _deleteGeneratedThumbnails(AssetFileModel $file)
@@ -1069,8 +1010,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 	/**
 	 * Delete transform-related data for file.
-	 *
-	 * @access protected
 	 *
 	 * @param AssetFileModel $file The assetFileModel that represents the file to delete any transformed data for.
 	 */
@@ -1090,8 +1029,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Purge a file from the Source's cache.  Sources that need this should override this method.
 	 *
-	 * @access protected
-	 *
 	 * @param AssetFolderModel $folder   The assetFolderModel representing the folder that has the file to purge.
 	 * @param string           $filename The file to purge.
 	 *
@@ -1104,8 +1041,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 	/**
 	 * Extract period amount and type from a saved Expires value.
-	 *
-	 * @access protected
 	 *
 	 * @param string $value The value to extract the expiry information from.
 	 *
@@ -1125,8 +1060,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 	/**
 	 * Mirrors a subset of folder tree from one location to other.
-	 *
-	 * @access protected
 	 *
 	 * @param AssetFolderModel $newLocation  The assetFolderModel representing the new location for the folder mirror.
 	 * @param AssetFolderModel $sourceFolder The assetFolderModel representing the source folder for the mirror operation.

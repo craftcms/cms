@@ -13,7 +13,6 @@ class ResaveAllElementsTask extends BaseTask
 	/**
 	 * Defines the settings.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineSettings()

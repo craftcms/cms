@@ -196,7 +196,6 @@ class ElementsController extends BaseController
 	/**
 	 * Returns the element type based on the posted element type class.
 	 *
-	 * @access private
 	 * @return BaseElementType
 	 * @throws Exception
 	 */
@@ -216,7 +215,6 @@ class ElementsController extends BaseController
 	/**
 	 * Returns the editor HTML for a given element.
 	 *
-	 * @access private
 	 * @param BaseElementModel $element
 	 * @param bool $includeLocales
 	 * @throws HttpException

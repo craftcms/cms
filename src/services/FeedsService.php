@@ -242,7 +242,6 @@ class FeedsService extends BaseApplicationComponent
 	/**
 	 * Returns an array of authors.
 	 *
-	 * @access private
 	 * @param array $objects
 	 * @return array
 	 */
@@ -268,7 +267,6 @@ class FeedsService extends BaseApplicationComponent
 	/**
 	 * Returns an array of categories.
 	 *
-	 * @access private
 	 * @param array $objects
 	 * @return array
 	 */

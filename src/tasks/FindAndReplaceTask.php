@@ -15,7 +15,6 @@ class FindAndReplaceTask extends BaseTask
 	/**
 	 * Defines the settings.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineSettings()
@@ -138,7 +137,6 @@ class FindAndReplaceTask extends BaseTask
 	/**
 	 * Checks whether the given field is saving data into a textual column, and saves it accordingly
 	 *
-	 * @access private
 	 * @param FieldModel $field
 	 * @param string     $fieldColumnPrefix
 	 * @return bool

@@ -23,7 +23,6 @@ class RecentEntriesWidget extends BaseWidget
 	/**
 	 * Defines the settings.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineSettings()
@@ -107,7 +106,6 @@ class RecentEntriesWidget extends BaseWidget
 	/**
 	 * Returns the recent entries, based on the widget settings and user permissions.
 	 *
-	 * @access private
 	 * @return array
 	 */
 	private function _getEntries()
@@ -156,7 +154,6 @@ class RecentEntriesWidget extends BaseWidget
 	/**
 	 * Returns the Channel and Structure section IDs that the user is allowed to edit.
 	 *
-	 * @access private
 	 * @return array
 	 */
 	private function _getEditableSectionIds()

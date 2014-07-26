@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Class TaskStatus
  *
- * @abstract
  * @package craft.app.enums
  */
 class TaskStatus

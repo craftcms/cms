@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Model base class.
  *
- * @abstract
  * @package craft.app.models
  */
 abstract class BaseModel extends \CModel
@@ -157,7 +156,6 @@ abstract class BaseModel extends \CModel
 	/**
 	 * Defines this model's attributes.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()
@@ -416,7 +414,6 @@ abstract class BaseModel extends \CModel
 	/**
 	 * Populates a new model instance with a given set of attributes.
 	 *
-	 * @static
 	 * @param mixed $values
 	 * @return BaseModel
 	 */

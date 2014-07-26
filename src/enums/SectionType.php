@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Class SectionType
  *
- * @abstract
  * @package craft.app.enums
  */
 abstract class SectionType extends BaseEnum

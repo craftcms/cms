@@ -19,7 +19,6 @@ class EntryDraftRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

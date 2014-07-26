@@ -11,7 +11,6 @@ class ArrayHelper
 	/**
 	 * Flattens a multi-dimensional array into a single-dimensional array
 	 *
-	 * @static
 	 * @param        $arr
 	 * @param string $prefix
 	 * @return array
@@ -43,7 +42,6 @@ class ArrayHelper
 	/**
 	 * Expands a flattened array back into its original form
 	 *
-	 * @static
 	 * @param $arr
 	 * @return array
 	 */
@@ -69,7 +67,6 @@ class ArrayHelper
 	}
 
 	/**
-	 * @static
 	 * @param $settings
 	 * @return array
 	 */
@@ -89,7 +86,6 @@ class ArrayHelper
 	 * Converts a comma-delimited string into a trimmed array
 	 * ex: ArrayHelper::stringToArray('one, two, three') => array('one', 'two', 'three')
 	 *
-	 * @static
 	 * @param mixed $str The string to convert to an array
 	 * @return array The trimmed array
 	 */
@@ -120,7 +116,6 @@ class ArrayHelper
 	/**
 	 * Prepends or appends a value to an array.
 	 *
-	 * @static
 	 * @param array &$arr
 	 * @param mixed $value
 	 * @param bool  $prepend
@@ -140,7 +135,6 @@ class ArrayHelper
 	/**
 	 * Filters empty strings from an array.
 	 *
-	 * @static
 	 * @param array $arr
 	 * @return array
 	 */
@@ -152,7 +146,6 @@ class ArrayHelper
 	/**
 	 * Returns the first value in a given array.
 	 *
-	 * @static
 	 * @param array $arr
 	 * @return mixed|null
 	 */
@@ -174,8 +167,6 @@ class ArrayHelper
 	/**
 	 * The array_filter() callback function for filterEmptyStringsFromArray().
 	 *
-	 * @static
-	 * @access private
 	 * @param $val
 	 * @return bool
 	 */

@@ -11,7 +11,6 @@ class FieldLayoutFieldModel extends BaseModel
 	private $_layout;
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

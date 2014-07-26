@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Class ElementType
  *
- * @abstract
  * @package craft.app.enums
  */
 abstract class ElementType extends BaseEnum

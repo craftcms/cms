@@ -4,14 +4,11 @@ namespace Craft;
 /**
  * Task base class.
  *
- * @abstract
- * @implements ITask
  * @package craft.app.tasks
  */
 abstract class BaseTask extends BaseSavableComponentType implements ITask
 {
 	/**
-	 * @access protected
 	 * @var string The type of component this is
 	 */
 	protected $componentType = 'Task';
@@ -50,7 +47,6 @@ abstract class BaseTask extends BaseSavableComponentType implements ITask
 	/**
 	 * Creates and runs a subtask.
 	 *
-	 * @access protected
 	 * @param             $taskClassName
 	 * @param string|null $taskDescription
 	 * @param array|null  $settings

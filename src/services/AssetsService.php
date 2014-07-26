@@ -910,7 +910,6 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Applies WHERE conditions to a DbCommand query for folders.
 	 *
-	 * @access private
 	 * @param DbCommand $query
 	 * @param FolderCriteriaModel $criteria
 	 */

@@ -380,7 +380,6 @@ class EntriesService extends BaseApplicationComponent
 	/**
 	 * Checks if an entry was submitted with a new parent entry selected.
 	 *
-	 * @access private
 	 * @param EntryModel $entry
 	 * @return bool
 	 */

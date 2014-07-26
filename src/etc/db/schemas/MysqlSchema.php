@@ -231,7 +231,6 @@ class MysqlSchema extends \CMysqlSchema
 	/**
 	 * Returns all table names in the database which start with the tablePrefix.
 	 *
-	 * @access protected
 	 * @param string $schema
 	 * @return string
 	 */

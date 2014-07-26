@@ -17,7 +17,6 @@ class SectionLocaleRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

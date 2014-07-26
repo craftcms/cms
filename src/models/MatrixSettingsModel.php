@@ -24,7 +24,6 @@ class MatrixSettingsModel extends BaseModel
 	/**
 	 * Defines this model's attributes.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

@@ -11,7 +11,6 @@ class UrlHelper
 	/**
 	 * Returns whether a given string appears to be an absolute URL.
 	 *
-	 * @static
 	 * @param string $url
 	 * @return bool
 	 */
@@ -23,7 +22,6 @@ class UrlHelper
 	/**
 	 * Returns whether a given string appears to be a protocol-relative URL.
 	 *
-	 * @static
 	 * @param string $url
 	 * @return bool
 	 */
@@ -35,7 +33,6 @@ class UrlHelper
 	/**
 	 * Returns whether a given string appears to be a root-relative URL.
 	 *
-	 * @static
 	 * @param string $url
 	 * @return bool
 	 */
@@ -47,7 +44,6 @@ class UrlHelper
 	/**
 	 * Returns whether a given string appears to be a "full" URL (absolute or root-relative).
 	 *
-	 * @static
 	 * @param string $url
 	 * @return bool
 	 */
@@ -59,7 +55,6 @@ class UrlHelper
 	/**
 	 * Returns a URL with additional query string parameters.
 	 *
-	 * @static
 	 * @param string $url
 	 * @param array|string $params
 	 * @return string
@@ -93,7 +88,6 @@ class UrlHelper
 	/**
 	 * Returns a URL with a 'token' query string param set to a given token.
 	 *
-	 * @static
 	 * @param string $url
 	 * @param string $token
 	 * @return string
@@ -108,7 +102,6 @@ class UrlHelper
 	/**
 	 * Returns a URL with a specific protocol.
 	 *
-	 * @static
 	 * @param string $url
 	 * @param string $protocol
 	 * @return string
@@ -137,7 +130,6 @@ class UrlHelper
 	/**
 	 * Returns either a CP or a site URL, depending on the request type.
 	 *
-	 * @static
 	 * @param string            $path
 	 * @param array|string|null $params
 	 * @param string|null       $protocol
@@ -186,7 +178,6 @@ class UrlHelper
 	/**
 	 * Returns a CP URL.
 	 *
-	 * @static
 	 * @param string $path
 	 * @param array|string|null $params
 	 * @param string|null $protocol
@@ -203,7 +194,6 @@ class UrlHelper
 	/**
 	 * Returns a site URL.
 	 *
-	 * @static
 	 * @param string $path
 	 * @param array|string|null $params
 	 * @param string|null $protocol
@@ -218,7 +208,6 @@ class UrlHelper
 	/**
 	 * Returns a resource URL.
 	 *
-	 * @static
 	 * @param string $path
 	 * @param array|string|null $params
 	 * @param string|null $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
@@ -252,7 +241,6 @@ class UrlHelper
 	}
 
 	/**
-	 * @static
 	 * @param string $path
 	 * @param null   $params
 	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
@@ -267,7 +255,6 @@ class UrlHelper
 	/**
 	 * Returns a URL.
 	 *
-	 * @access private
 	 * @param string       $path
 	 * @param array|string $params
 	 * @param              $protocol
@@ -380,8 +367,6 @@ class UrlHelper
 	/**
 	 * Normalizes query string params.
 	 *
-	 * @static
-	 * @access private
 	 * @param string|array|null $params
 	 * @param string|null       &$anchor
 	 * @return string

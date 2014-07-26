@@ -12,7 +12,6 @@ class SectionLocaleModel extends BaseModel
 	public $nestedUrlFormatIsRequired = false;
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

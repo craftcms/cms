@@ -625,7 +625,6 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Preps entry edit variables.
 	 *
-	 * @access private
 	 * @param array &$variables
 	 * @throws HttpException
 	 * @throws Exception
@@ -777,7 +776,6 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Fetches or creates an EntryModel.
 	 *
-	 * @access private
 	 * @throws Exception
 	 * @return EntryModel
 	 */
@@ -812,7 +810,6 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Populates an EntryModel with post data.
 	 *
-	 * @access private
 	 * @param EntryModel $entry
 	 */
 	private function _populateEntryModel(EntryModel $entry)
@@ -838,7 +835,6 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Displays an entry.
 	 *
-	 * @access private
 	 * @throws HttpException
 	 * @param EntryModel $entry
 	 */

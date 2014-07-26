@@ -22,8 +22,6 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Returns the FULLTEXT minimum word length.
 	 *
-	 * @static
-	 * @access private
 	 * @return int
 	 * @todo Get actual value from DB
 	 */
@@ -40,8 +38,6 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Returns the FULLTEXT stop words.
 	 *
-	 * @static
-	 * @access private
 	 * @return array
 	 * @todo Make this customizable from the config settings
 	 */
@@ -216,7 +212,6 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Indexes keywords for a specific element attribute/field.
 	 *
-	 * @access private
 	 * @param int         $elementId
 	 * @param string      $attribute
 	 * @param string      $fieldId
@@ -258,7 +253,6 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Calculate score for a result.
 	 *
-	 * @access private
 	 * @param array  $row  A single result from the search query.
 	 * @return float  The total score for this row.
 	 */
@@ -293,7 +287,6 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Calculate score for a row/term combination.
 	 *
-	 * @access private
 	 * @param  object    $term    The SearchQueryTerm to score.
 	 * @param  array     $row     The result row to score against.
 	 * @param  float|int $weight  Optional weight for this term.
@@ -346,7 +339,6 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Get the complete where clause for current tokens
 	 *
-	 * @access private
 	 * @return string|false
 	 */
 	private function _getWhereClause()
@@ -386,7 +378,6 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Generates partial WHERE clause for search from given tokens
 	 *
-	 * @access   private
 	 * @param array $tokens
 	 * @param bool  $inclusive
 	 * @return string|false
@@ -446,7 +437,6 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Generates a piece of WHERE clause for fallback (LIKE) search from search term
 	 *
-	 * @access private
 	 * @param  SearchQueryTerm $term
 	 * @return array
 	 */
@@ -566,7 +556,6 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Normalize term from tokens, keep a record for cache.
 	 *
-	 * @access private
 	 * @param string $term
 	 * @return string
 	 */
@@ -586,7 +575,6 @@ class SearchService extends BaseApplicationComponent
 	 * Remove padding from keywords.
 	 * Might seem silly now, but padding might change.
 	 *
-	 * @access private
 	 * @param string $keywords
 	 * @return string
 	 */
@@ -598,7 +586,6 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Determine if search term is eligable for full-text or not.
 	 *
-	 * @access private
 	 * @param string $term The search term to check
 	 * @return bool
 	 */
@@ -627,7 +614,6 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Get the fieldId for given attribute or 0 for unmatched.
 	 *
-	 * @access private
 	 * @param string $attribute
 	 * @return int
 	 */
@@ -643,7 +629,6 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Get SQL bit for simple WHERE clause
 	 *
-	 * @access private
 	 * @param string $key   Attribute
 	 * @param string $oper  Operator
 	 * @param string $val   Value
@@ -661,7 +646,6 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Get SQL but for MATCH AGAINST clause.
 	 *
-	 * @access private
 	 * @param mixed  $val   String or Array of keywords
 	 * @param bool   $bool  Use In Boolean Mode or not
 	 * @return string
@@ -678,7 +662,6 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Get SQL bit for sub-selects.
 	 *
-	 * @access private
 	 * @param string $where
 	 * @return string|false
 	 */

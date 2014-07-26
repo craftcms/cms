@@ -19,7 +19,6 @@ class EntryVersionRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

@@ -33,7 +33,6 @@ class MatrixBlockTypeModel extends BaseModel
 	}
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

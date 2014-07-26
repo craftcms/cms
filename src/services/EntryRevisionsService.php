@@ -226,7 +226,6 @@ class EntryRevisionsService extends BaseApplicationComponent
 	/**
 	 * Returns a draft record.
 	 *
-	 * @access private
 	 * @param EntryDraftModel $draft
 	 * @throws Exception
 	 * @return EntryDraftRecord

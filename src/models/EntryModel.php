@@ -15,7 +15,6 @@ class EntryModel extends BaseElementModel
 	const EXPIRED  = 'expired';
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

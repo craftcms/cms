@@ -866,7 +866,6 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * Returns the query string path.
 	 *
-	 * @access private
 	 * @return string
 	 */
 	private function _getQueryStringPath()
@@ -877,8 +876,6 @@ class HttpRequestService extends \CHttpRequest
 
 	/**
 	 * Checks to see if this is an action or resource request.
-	 *
-	 * @access private
 	 */
 	private function _checkRequestType()
 	{
@@ -947,7 +944,6 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * Returns a param value from GET or POST data.
 	 *
-	 * @access private
 	 * @param string|null $name
 	 * @param mixed       $defaultValue
 	 * @param array       $data

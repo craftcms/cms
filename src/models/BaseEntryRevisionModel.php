@@ -6,13 +6,11 @@ craft()->requireEdition(Craft::Client);
 /**
  * Class BaseEntryRevisionModel
  *
- * @abstract
  * @package craft.app.models
  */
 class BaseEntryRevisionModel extends EntryModel
 {
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

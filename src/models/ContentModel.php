@@ -12,7 +12,6 @@ class ContentModel extends BaseModel
 	private $_attributeConfigs;
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

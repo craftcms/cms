@@ -11,7 +11,6 @@ class CategoryModel extends BaseElementModel
 	protected $elementType = ElementType::Category;
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

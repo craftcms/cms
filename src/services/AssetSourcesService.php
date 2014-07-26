@@ -482,7 +482,6 @@ class AssetSourcesService extends BaseApplicationComponent
 	/**
 	 * Populates a source from its DB result.
 	 *
-	 * @access private
 	 * @param array $result
 	 * @return AssetSourceModel
 	 */
@@ -499,8 +498,9 @@ class AssetSourcesService extends BaseApplicationComponent
 	/**
 	 * Gets a source's record.
 	 *
-	 * @access private
 	 * @param int $sourceId
+	 *
+	 * @throws Exception
 	 * @return AssetSourceRecord
 	 */
 	private function _getSourceRecordById($sourceId = null)

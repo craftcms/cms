@@ -16,7 +16,6 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Stores whether plugins have been loaded yet for this request.
 	 *
-	 * @access private
 	 * @var bool
 	 */
 	private $_pluginsLoaded = false;
@@ -24,7 +23,6 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Stores whether plugins are in the middle of being loaded.
 	 *
-	 * @access private
 	 * @var bool
 	 */
 	private $_loadingPlugins = false;
@@ -32,7 +30,6 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Stores all plugins, whether installed or not.
 	 *
-	 * @access private
 	 * @var array
 	 */
 	private $_plugins = array();
@@ -40,7 +37,6 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Stores all enabled plugins.
 	 *
-	 * @access private
 	 * @var array
 	 */
 	private $_enabledPlugins = array();
@@ -48,7 +44,6 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Stores all plugins in the system, regardless of whether they're installed/enabled or not.
 	 *
-	 * @access private
 	 * @var array
 	 */
 	private $_allPlugins;
@@ -56,7 +51,6 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Holds a list of all of the enabled plugin info indexed by the plugin class name.
 	 *
-	 * @access private
 	 * @var array
 	 */
 	private $_enabledPluginInfo = array();
@@ -675,7 +669,6 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Throws a "no plugin exists" exception.
 	 *
-	 * @access private
 	 * @param string $handle
 	 * @throws Exception
 	 */
@@ -685,9 +678,8 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Finds and imports all of the autoloadable classes for a given plugin.
+	 * Finds and imports all of the auto-loadable classes for a given plugin.
 	 *
-	 * @access private
 	 * @param BasePlugin $plugin
 	 */
 	private function _autoloadPluginClasses(BasePlugin $plugin)
@@ -750,7 +742,6 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Registers any services provided by a plugin.
 	 *
-	 * @access private
 	 * @param array $classes
 	 * @throws Exception
 	 * @return void
@@ -852,7 +843,6 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Get a flattened list of model errors
 	 *
-	 * @access private
 	 * @param array $errors
 	 * @return string
 	 */

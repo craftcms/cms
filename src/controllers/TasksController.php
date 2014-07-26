@@ -117,8 +117,6 @@ class TasksController extends BaseController
 
 	/**
 	 * Returns info about the currently running task, if there is one.
-	 *
-	 * @access private
 	 */
 	private function _returnRunningTaskInfo()
 	{

@@ -4,15 +4,18 @@ namespace Craft;
 /**
  * Handles entry tasks.
  *
- * @abstract
- * @package craft.app.controllers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 abstract class BaseEntriesController extends BaseController
 {
 	/**
 	 * Enforces all Edit Entry permissions.
 	 *
-	 * @access protected
 	 * @param EntryModel $entry
 	 */
 	protected function enforceEditEntryPermissions(EntryModel $entry)

@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Class BaseOptionsFieldType
  *
- * @abstract
  * @package craft.app.fieldtypes
  */
 abstract class BaseOptionsFieldType extends BaseFieldType
@@ -15,7 +14,6 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	/**
 	 * Defines the settings.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineSettings()
@@ -156,8 +154,6 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	/**
 	 * Returns the label for the Options setting.
 	 *
-	 * @abstract
-	 * @access protected
 	 * @return string
 	 */
 	abstract protected function getOptionsSettingsLabel();
@@ -165,7 +161,6 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	/**
 	 * Returns the field options, accounting for the old school way of saving them.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function getOptions()
@@ -199,7 +194,6 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	/**
 	 * Returns the field options, with labels run through Craft::t().
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function getTranslatedOptions()
@@ -217,8 +211,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	/**
 	 * Returns an option's label by its value.
 	 *
-	 * @access protected
-	 * @param stirng $value
+	 * @param string $value
 	 * @return string
 	 */
 	protected function getOptionLabel($value)
