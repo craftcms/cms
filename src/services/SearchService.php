@@ -155,7 +155,7 @@ class SearchService extends BaseApplicationComponent
 
 		// Begin creating SQL
 		$sql = sprintf('SELECT * FROM %s WHERE %s',
-			craft()->db->quoteTableName(DbHelper::addTablePrefix('searchindex')),
+			craft()->db->quoteTableName(craft()->db->addTablePrefix('searchindex')),
 			$where
 		);
 

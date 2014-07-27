@@ -118,7 +118,7 @@ class DbConnection extends \CDbConnection
 			$this->getSchema()->refresh();
 		}
 
-		$table = DbHelper::addTablePrefix($table);
+		$table = $this->addTablePrefix($table);
 		return in_array($table, $this->getSchema()->getTableNames());
 	}
 
@@ -182,6 +182,121 @@ class DbConnection extends \CDbConnection
 
 		return $tablePrefix;
 
+	}
+
+	/**
+	 * Adds the table prefix to the passed-in table name(s).
+	 *
+	 * @param string|aray $table The table name or an array of table names
+	 * @return string|array The modified table name(s)
+	 */
+	public function addTablePrefix($table)
+	{
+		if (is_array($table))
+		{
+			foreach ($table as $key => $t)
+			{
+				$table[$key] = $this->addTablePrefix($t);
+			}
+		}
+		else
+		{
+			$table = preg_replace('/^\w+/', $this->tablePrefix.'\0', $table);
+		}
+
+		return $table;
+	}
+
+	/**
+	 * Returns a foreign key name based on the table and column names.
+	 *
+	 * @param string $table
+	 * @param string|array $columns
+	 * @return string
+	 */
+	public function getForeignKeyName($table, $columns)
+	{
+		$columns = ArrayHelper::stringToArray($columns);
+		$name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
+		return $this->trimObjectName($name);
+	}
+
+	/**
+	 * Returns an index name based on the table, column names, and whether it should be unique.
+	 *
+	 * @param string $table
+	 * @param string|array $columns
+	 * @param bool $unique
+	 * @return string
+	 */
+	public function getIndexName($table, $columns, $unique = false)
+	{
+		$columns = ArrayHelper::stringToArray($columns);
+		$name = $this->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
+		return $this->trimObjectName($name);
+	}
+
+	/**
+	 * Returns a primary key name based on the table and column names.
+	 *
+	 * @param string $table
+	 * @param string|array $columns
+	 * @param bool $unique
+	 * @return string
+	 */
+	public function getPrimaryKeyName($table, $columns)
+	{
+		$columns = ArrayHelper::stringToArray($columns);
+		$name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
+		return $this->trimObjectName($name);
+	}
+
+	/**
+	 * Ensures that an object name is within the schema's limit.
+	 *
+	 * @param string $name
+	 * @return string
+	 */
+	public function trimObjectName($name)
+	{
+		$schema = $this->getSchema();
+
+		// TODO: Remember to set this on any other supported databases in the future
+		if (!isset($schema->maxObjectNameLength))
+		{
+			return $name;
+		}
+
+		$name = trim($name, '_');
+		$nameLength = mb_strlen($name);
+
+		if ($nameLength > $schema->maxObjectNameLength)
+		{
+			$parts = array_filter(explode('_', $name));
+			$totalParts = count($parts);
+			$totalLetters = $nameLength - ($totalParts-1);
+			$maxLetters = $schema->maxObjectNameLength - ($totalParts-1);
+
+			// Consecutive underscores could have put this name over the top
+			if ($totalLetters > $maxLetters)
+			{
+				foreach ($parts as $i => $part)
+				{
+					$newLength = round($maxLetters * mb_strlen($part) / $totalLetters);
+					$parts[$i] = mb_substr($part, 0, $newLength);
+				}
+			}
+
+			$name = implode('_', $parts);
+
+			// Just to be safe
+			if (mb_strlen($name) > $schema->maxObjectNameLength)
+			{
+				$name = mb_substr($name, 0, $schema->maxObjectNameLength);
+			}
+		}
+
+		return $name;
 	}
 
 	/**

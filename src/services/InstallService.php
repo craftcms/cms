@@ -244,7 +244,7 @@ class InstallService extends BaseApplicationComponent
 		Craft::log('Creating the searchindex table.');
 
 		// Taking the scenic route here so we can get to MysqlSchema's $engine argument
-		$table = DbHelper::addTablePrefix('searchindex');
+		$table = craft()->db->addTablePrefix('searchindex');
 
 		$columns = array(
 			'elementId' => DbHelper::generateColumnDefinition(array('column' => ColumnType::Int, 'null' => false)),
@@ -261,7 +261,7 @@ class InstallService extends BaseApplicationComponent
 
 		// Add the FULLTEXT index on `keywords`
 		craft()->db->createCommand()->setText('CREATE FULLTEXT INDEX ' .
-			craft()->db->quoteTableName(DbHelper::getIndexName('searchindex', 'keywords')).' ON ' .
+			craft()->db->quoteTableName(craft()->db->getIndexName('searchindex', 'keywords')).' ON ' .
 			craft()->db->quoteTableName($table).' ' .
 			'('.craft()->db->quoteColumnName('keywords').')'
 		)->execute();

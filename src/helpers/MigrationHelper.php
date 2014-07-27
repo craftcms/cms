@@ -498,7 +498,7 @@ class MigrationHelper
 		craft()->db->createCommand()->createIndex($index->table->name, implode(',', $index->columns), $index->unique);
 
 		// Update our record of its name
-		$index->name = DbHelper::getIndexName($index->table->name, $index->columns, $index->unique);
+		$index->name = craft()->db->getIndexName($index->table->name, $index->columns, $index->unique);
 	}
 
 	/**
@@ -526,7 +526,7 @@ class MigrationHelper
 		craft()->db->createCommand()->addForeignKey($fk->table->name, implode(',', $fk->columns), $fk->refTable, implode(',', $fk->refColumns), $fk->onDelete, $fk->onUpdate);
 
 		// Update our record of its name
-		$fk->name = DbHelper::getForeignKeyName($fk->table->name, $fk->columns);
+		$fk->name = craft()->db->getForeignKeyName($fk->table->name, $fk->columns);
 	}
 
 	/**
