@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class IncludeTranslations_Node
  *
+ * @package craft.app.etc.templating.twigextensions
  */
 class IncludeTranslations_Node extends \Twig_Node
 {

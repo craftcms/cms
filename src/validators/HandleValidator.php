@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class HandleValidator
  *
+ * @package craft.app.validators
  */
 class HandleValidator extends \CValidator
 {

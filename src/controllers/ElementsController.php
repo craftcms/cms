@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Element actions
+ * Element actions.
+ *
+ * @package craft.app.controllers
  */
 class ElementsController extends BaseController
 {

@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class DashboardController
  *
+ * @package craft.app.controllers
  */
 class DashboardController extends BaseController
 {

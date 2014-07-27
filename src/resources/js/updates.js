@@ -179,7 +179,7 @@ Craft.UpdateInfo = Garnish.Base.extend(
 	{
 		for (var i = 0; i < releases.length; i++)
 		{
-			var $releasePane = $('<div class="pane"/>').appendTo(this.$container),
+			var $releasePane = $('<div class="pane release"/>').appendTo(this.$container),
 				release = releases[i],
 				heading = product+' '+release.version;
 

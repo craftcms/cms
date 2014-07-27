@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Field layout behavior
+ * Field layout behavior.
+ *
+ * @package craft.app.etc.behaviors
  */
 class FieldLayoutBehavior extends BaseBehavior
 {

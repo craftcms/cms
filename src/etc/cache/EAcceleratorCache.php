@@ -9,6 +9,8 @@ namespace Craft;
  * Please note that as of v0.9.6, eAccelerator no longer supports data caching.
  *
  * This means if you still want to use this component, your eAccelerator should be of 0.9.5.x or lower version.
+ *
+ * @package craft.app.etc.cache
  */
 class EAcceleratorCache extends \CEAcceleratorCache
 {

@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class CheckboxesFieldType
  *
+ * @package craft.app.fieldtypes
  */
 class CheckboxesFieldType extends BaseOptionsFieldType
 {

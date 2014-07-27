@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Tag model class
+ * Tag model class.
+ *
+ * @package craft.app.models
  */
 class TagModel extends BaseElementModel
 {

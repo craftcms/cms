@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Global Set element type
+ * Global Set element type.
+ *
+ * @package craft.app.elementtypes
  */
 class GlobalSetElementType extends BaseElementType
 {

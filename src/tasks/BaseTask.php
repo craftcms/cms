@@ -2,7 +2,11 @@
 namespace Craft;
 
 /**
- * Task base class
+ * Task base class.
+ *
+ * @abstract
+ * @implements ITask
+ * @package craft.app.tasks
  */
 abstract class BaseTask extends BaseSavableComponentType implements ITask
 {

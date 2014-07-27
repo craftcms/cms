@@ -1,6 +1,11 @@
 <?php
 namespace Craft;
 
+/**
+ * Class TemplateCacheService
+ *
+ * @package craft.app.services
+ */
 class TemplateCacheService extends BaseApplicationComponent
 {
 	private static $_templateCachesTable = 'templatecaches';
@@ -112,7 +117,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	public function endTemplateCache($key, $global, $duration, $expiration, $body)
 	{
 		// If there are any transform generation URLs in the body, don't cache it
-		if (strpos($body, 'assets/generateTransform'))
+		if (strpos($body, UrlHelper::getResourceUrl('transforms')))
 		{
 			return;
 		}
@@ -272,17 +277,18 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Deletes caches that include an a given element ID(s).
 	 *
-	 * @param int|array $elementId
+	 * @param int|array $elementId         The ID of the element whose caches should be cleared.
+	 * @param bool      $deleteQueryCaches Whether a DeleteStaleTemplateCaches task should be created, deleting any query caches that may now involve this element, but hadn't previously. (Defaults to `true`.)
 	 * @return bool
 	 */
-	public function deleteCachesByElementId($elementId)
+	public function deleteCachesByElementId($elementId, $deleteQueryCaches = true)
 	{
 		if (!$elementId)
 		{
 			return false;
 		}
 
-		if (craft()->config->get('cacheElementQueries'))
+		if ($deleteQueryCaches && craft()->config->get('cacheElementQueries'))
 		{
 			// If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
 			$task = craft()->tasks->getNextPendingTask('DeleteStaleTemplateCaches');

@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Dashboard functions
+ * Dashboard functions.
+ *
+ * @package craft.app.validators
  */
 class DashboardVariable
 {

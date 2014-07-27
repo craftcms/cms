@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Parses a relatedTo param on an ElementCriteriaModel.
+ *
+ * @package craft.app.etc.elements
  */
 class ElementRelationParamParser
 {

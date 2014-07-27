@@ -5,6 +5,7 @@ namespace Craft;
  * Component template variable class
  *
  * @abstract
+ * @package craft.app.validators
  */
 abstract class BaseComponentTypeVariable
 {

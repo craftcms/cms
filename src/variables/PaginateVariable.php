@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Paginate variable class
+ * Paginate variable class.
+ *
+ * @package craft.app.validators
  */
 class PaginateVariable
 {
@@ -14,6 +16,8 @@ class PaginateVariable
 
 	/**
 	 * Returns the URL to a specific page
+	 *
+	 * @param $page
 	 *
 	 * @return string|null
 	 */

@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class CompositeUniqueValidator
  *
+ * @package craft.app.validators
  */
 class CompositeUniqueValidator extends \CValidator
 {

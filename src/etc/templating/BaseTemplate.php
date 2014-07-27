@@ -2,7 +2,10 @@
 namespace Craft;
 
 /**
- * Base Twig template class
+ * Base Twig template class.
+ *
+ * @abstract
+ * @package craft.app.etc.templating
  */
 abstract class BaseTemplate extends \Twig_Template
 {

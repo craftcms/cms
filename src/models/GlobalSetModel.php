@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * GlobalSet model class
  *
- * Used for transporting page data throughout the system.
+ * @package craft.app.models
  */
 class GlobalSetModel extends BaseElementModel
 {

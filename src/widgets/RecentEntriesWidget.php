@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class RecentEntriesWidget
  *
+ * @package craft.app.widgets
  */
 class RecentEntriesWidget extends BaseWidget
 {
@@ -61,7 +63,8 @@ class RecentEntriesWidget extends BaseWidget
 
 				if ($section)
 				{
-					return Craft::t('Recently in {section}', array('section' => $section->name));
+					$translatedSectionName = Craft::t($section->name);
+					return Craft::t('Recently in {section}', array('section' => $translatedSectionName));
 				}
 			}
 		}

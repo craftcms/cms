@@ -2,7 +2,11 @@
 namespace Craft;
 
 /**
- * Field type base class
+ * Field type base class.
+ *
+ * @abstract
+ * @implements IFieldType
+ * @package craft.app.fieldtypes
  */
 abstract class BaseFieldType extends BaseSavableComponentType implements IFieldType
 {

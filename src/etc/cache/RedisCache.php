@@ -13,6 +13,8 @@ namespace Craft;
  * authenticate with the server after connect.
  *
  * The minimum required redis version is 2.0.0.
+ *
+ * @package craft.app.etc.cache
  */
 class RedisCache extends \CRedisCache
 {

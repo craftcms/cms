@@ -1,63 +1,66 @@
 <?php
 namespace Craft;
 
-/*
- * Switch node.
+/**
+ * Class Switch_Node
  *
  * Based on the rejected Twig pull request: https://github.com/fabpot/Twig/pull/185
+ *
+ * @package craft.app.etc.templating.twigextensions
  */
+
 class Switch_Node extends \Twig_Node
 {
-    private $_cases;
+	private $_cases;
 
-    public function __construct(\Twig_NodeInterface $value, \Twig_NodeInterface $cases, \Twig_NodeInterface $default = null, $lineno, $tag = null)
-    {
-        $this->_cases = $cases;
+	public function __construct(\Twig_NodeInterface $value, \Twig_NodeInterface $cases, \Twig_NodeInterface $default = null, $lineno, $tag = null)
+	{
+		$this->_cases = $cases;
 
-        parent::__construct(array('value' => $value, 'default' => $default), array(), $lineno, $tag);
-    }
+		parent::__construct(array('value' => $value, 'default' => $default), array(), $lineno, $tag);
+	}
 
-    /**
-     * Compiles the node to PHP.
-     *
-     * @param \Twig_Compiler $compiler
-     */
-    public function compile(\Twig_Compiler $compiler)
-    {
-        $compiler
-            ->addDebugInfo($this)
+	/**
+	 * Compiles the node to PHP.
+	 *
+	 * @param \Twig_Compiler $compiler
+	 */
+	public function compile(\Twig_Compiler $compiler)
+	{
+		$compiler
+			->addDebugInfo($this)
 			->write("switch (")
 			->subcompile($this->getNode('value'))
 			->raw(") {\n")
 			->indent();
 
-        foreach ($this->_cases as $case)
-        {
-            $compiler
+		foreach ($this->_cases as $case)
+		{
+			$compiler
 				->write('case ')
-                ->subcompile($case['expr'])
-                ->raw(":\n")
-                ->write("{\n")
-                ->indent()
-                ->subcompile($case['body'])
-                ->write("break;\n")
+				->subcompile($case['expr'])
+				->raw(":\n")
+				->write("{\n")
+				->indent()
+				->subcompile($case['body'])
+				->write("break;\n")
 				->outdent()
-                ->write("}\n");
-        }
+				->write("}\n");
+		}
 
-        if ($this->hasNode('default') && $this->getNode('default') !== null)
-        {
-            $compiler
-                ->write("default:\n")
-                ->write("{\n")
-                ->indent()
-                ->subcompile($this->getNode('default'))
+		if ($this->hasNode('default') && $this->getNode('default') !== null)
+		{
+			$compiler
+				->write("default:\n")
+				->write("{\n")
+				->indent()
+				->subcompile($this->getNode('default'))
 				->outdent()
-                ->write("}\n");
-        }
+				->write("}\n");
+		}
 
-        $compiler
-            ->outdent()
-            ->write("}\n");
-    }
+		$compiler
+			->outdent()
+			->write("}\n");
+	}
 }

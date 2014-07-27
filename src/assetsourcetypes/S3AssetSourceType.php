@@ -4,7 +4,9 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * S3 source type class
+ * S3 source type class.
+ *
+ * @package craft.app.assetsourcetypes
  */
 class S3AssetSourceType extends BaseAssetSourceType
 {
@@ -281,6 +283,10 @@ class S3AssetSourceType extends BaseAssetSourceType
 				$this->_s3->getObject($settings->bucket, $this->_getPathPrefix().$indexEntryModel->uri, $targetPath);
 				clearstatcache();
 				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
+
+				// Store the local source or delete - maxCacheCloudImageSize is king.
+				craft()->assetTransforms->storeLocalSource($targetPath, $targetPath);
+				craft()->assetTransforms->deleteSourceIfNecessary($targetPath);
 			}
 
 			$fileModel->dateModified = $timeModified;

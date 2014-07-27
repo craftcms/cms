@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Cache twig node.
+ *
+ * @package craft.app.etc.templating.twigextensions
  */
 class Cache_Node extends \Twig_Node
 {

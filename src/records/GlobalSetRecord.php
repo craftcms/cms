@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Field group record class
+ * Field group record class.
+ *
+ * @package craft.app.records
  */
 class GlobalSetRecord extends BaseRecord
 {

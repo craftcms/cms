@@ -39,6 +39,8 @@ namespace Craft;
  * {@link CApplication::getErrorHandler()}.
  *
  * @property array $error The error details. Null if there is no error.
+ *
+ * @package craft.app.etc.errors
  */
 class ErrorHandler extends \CErrorHandler
 {

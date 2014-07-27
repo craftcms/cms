@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class Exit_TokenParser
  *
+ * @package craft.app.etc.templating.twigextensions
  */
 class Exit_TokenParser extends \Twig_TokenParser
 {

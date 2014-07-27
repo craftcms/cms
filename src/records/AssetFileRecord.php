@@ -2,7 +2,11 @@
 namespace Craft;
 
 /**
- * TODO: create save function which calls parent::save and then updates the meta data table (keywords, author, etc)
+ * Class AssetFileRecord
+ *
+ * @todo Create save function which calls parent::save and then updates the meta data table (keywords, author, etc)
+ *
+ * @package craft.app.records
  */
 class AssetFileRecord extends BaseRecord
 {

@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class InstallService
  *
+ * @package craft.app.services
  */
 class InstallService extends BaseApplicationComponent
 {
@@ -419,7 +421,7 @@ class InstallService extends BaseApplicationComponent
 		craft()->db->createCommand()->createTable('assettransformindex', array(
 			'fileId'       => array('maxLength' => 11, 'column' => ColumnType::Int, 'required' => true),
 			'location'     => array('maxLength' => 255, 'column' => ColumnType::Varchar, 'required' => true),
-			'sourceId'     => array('maxLength' => 11, 'column' => ColumnType::Int, 'required' => true),
+			'sourceId'     => array('maxLength' => 11, 'column' => ColumnType::Int, 'required' => false),
 			'fileExists'   => array('column' => ColumnType::Bool),
 			'inProgress'   => array('column' => ColumnType::Bool),
 			'dateIndexed'  => array('column' => ColumnType::DateTime),

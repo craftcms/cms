@@ -15,7 +15,7 @@
 {% endif -%}
 
 <div class="timewrapper">
-	{%- include "_includes/forms/text" with { autocomplete: false, size: 10, value: (value ? value.localeTime() : '') } -%}
+	{%- include "_includes/forms/text" with { autocomplete: false, size: 10, value: (value and value.localeTime is defined ? value.localeTime() : value) } -%}
 </div>
 
 {%-	set localeData = craft.i18n.getLocaleData() %}

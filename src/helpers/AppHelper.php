@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class AppHelper
  *
+ * @package craft.app.helpers
  */
 class AppHelper
 {

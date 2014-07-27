@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Category record
+ * Category record.
+ *
+ * @package craft.app.records
  */
 class CategoryRecord extends BaseRecord
 {

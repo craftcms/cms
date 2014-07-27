@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Email message model class
+ * Email message model class.
+ *
+ * @package craft.app.models
  */
 class EmailModel extends BaseModel
 {

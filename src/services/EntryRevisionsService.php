@@ -4,7 +4,9 @@ namespace Craft;
 craft()->requireEdition(Craft::Client);
 
 /**
+ * Class EntryRevisionsService
  *
+ * @package craft.app.services
  */
 class EntryRevisionsService extends BaseApplicationComponent
 {
@@ -457,6 +459,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	private function _getRevisionData($revision)
 	{
 		$revisionData = array(
+			'typeId'     => $revision->typeId,
 			'authorId'   => $revision->authorId,
 			'title'      => $revision->title,
 			'slug'       => $revision->slug,

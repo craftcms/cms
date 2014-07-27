@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class RelationsService
  *
+ * @package craft.app.services
  */
 class RelationsService extends BaseApplicationComponent
 {

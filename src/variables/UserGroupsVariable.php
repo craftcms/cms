@@ -4,7 +4,9 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * User group functions
+ * User group functions.
+ *
+ * @package craft.app.validators
  */
 class UserGroupsVariable
 {

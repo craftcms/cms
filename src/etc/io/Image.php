@@ -1,6 +1,11 @@
 <?php
 namespace Craft;
 
+/**
+ * Class Image
+ *
+ * @package craft.app.etc.io
+ */
 class Image
 {
 	private $_imageSourcePath;

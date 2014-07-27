@@ -51,6 +51,8 @@ namespace Craft;
  * @property UserPermissionsService      $userPermissions      The user permission service
  * @property UserSessionService          $userSession          The user session service
  * @property UsersService                $users                The users service
+ *
+ * @package craft.app.etc.web
  */
 class WebApp extends \CWebApplication
 {

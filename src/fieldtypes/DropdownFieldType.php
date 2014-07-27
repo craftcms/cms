@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class DropdownFieldType
  *
+ * @package craft.app.fieldtypes
  */
 class DropdownFieldType extends BaseOptionsFieldType
 {

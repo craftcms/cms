@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Temp source type class
+ * Temp source type class.
+ *
+ * @package craft.app.assetsourcetypes
  */
 class TempAssetSourceType extends LocalAssetSourceType
 {

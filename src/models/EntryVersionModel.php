@@ -4,7 +4,9 @@ namespace Craft;
 craft()->requireEdition(Craft::Client);
 
 /**
+ * Class EntryVersionModel
  *
+ * @package craft.app.models
  */
 class EntryVersionModel extends BaseEntryRevisionModel
 {

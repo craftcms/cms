@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class DateTimeHelper
  *
+ * @package craft.app.helpers
  */
 class DateTimeHelper
 {

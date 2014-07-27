@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class InfoModel
  *
+ * @package craft.app.models
  */
 class InfoModel extends BaseModel
 {

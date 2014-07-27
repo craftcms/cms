@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class ElementsService
  *
+ * @package craft.app.services
  */
 class ElementsService extends BaseApplicationComponent
 {
@@ -1336,10 +1338,11 @@ class ElementsService extends BaseApplicationComponent
 				{
 					$record->deleteNode();
 				}
-
-				// Also delete any caches involving this element
-				craft()->templateCache->deleteCachesByElementId($elementId);
 			}
+
+			// Delete the caches before they drop their elementId relations
+			// (passing `false` because there's no chance this element is suddenly going to show up in a new query)
+			craft()->templateCache->deleteCachesByElementId($elementIds, false);
 
 			// Fire an 'onBeforeDeleteElements' event
 			$this->onBeforeDeleteElements(new Event($this, array(

@@ -2,7 +2,11 @@
 namespace Craft;
 
 /**
- * Plugin base class
+ * Plugin base class.
+ *
+ * @abstract
+ * @implements IPlugin
+ * @package craft.app.etc.plugins
  */
 abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 {

@@ -5,6 +5,8 @@ craft()->requireEdition(Craft::Pro);
 
 /**
  * Rackspace source type class
+ *
+ * @package craft.app.assetsourcetypes
  */
 class RackspaceAssetSourceType extends BaseAssetSourceType
 {
@@ -255,6 +257,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 				clearstatcache();
 				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
+
+				// Store the local source or delete - maxCacheCloudImageSize is king.
+				craft()->assetTransforms->storeLocalSource($targetPath, $targetPath);
+				craft()->assetTransforms->deleteSourceIfNecessary($targetPath);
 			}
 
 			$fileModel->dateModified = $timeModified;

@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * Widget model class
  *
- * Used for transporting widget data throughout the system.
+ * @package craft.app.models
  */
 class WidgetModel extends BaseComponentModel
 {

@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Handles tool actions.
+ *
+ * @package craft.app.controllers
  */
 class ToolsController extends BaseController
 {

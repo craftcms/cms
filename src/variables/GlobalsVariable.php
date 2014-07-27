@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Globals functions
+ * Globals functions.
+ *
+ * @package craft.app.validators
  */
 class GlobalsVariable
 {
@@ -21,6 +23,8 @@ class GlobalsVariable
 	 * Returns all global sets that are editable by the current user.
 	 *
 	 * @param string|null $indexBy
+	 * @param null        $localeId
+	 *
 	 * @return array
 	 */
 	public function getEditableSets($indexBy = null, $localeId = null)

@@ -3,6 +3,8 @@ namespace Craft;
 
 /**
  * Handles search operations.
+ *
+ * @package craft.app.services
  */
 class SearchService extends BaseApplicationComponent
 {
@@ -318,22 +320,25 @@ class SearchService extends BaseApplicationComponent
 		// Get number of matches
 		$score = mb_substr_count($haystack, $keywords);
 
-		// Exact match
-		if (trim($keywords) == trim($haystack))
+		if ($score)
 		{
-			$mod = 100;
-		}
-		// Don't scale up for substring matches
-		else if ($term->subLeft || $term->subRight)
-		{
-			$mod = 10;
-		}
-		else
-		{
-			$mod = 50;
-		}
+			// Exact match
+			if (trim($keywords) == trim($haystack))
+			{
+				$mod = 100;
+			}
+			// Don't scale up for substring matches
+			else if ($term->subLeft || $term->subRight)
+			{
+				$mod = 10;
+			}
+			else
+			{
+				$mod = 50;
+			}
 
-		$score = ($score / $wordCount) * $mod * $weight;
+			$score = ($score / $wordCount) * $mod * $weight;
+		}
 
 		return $score;
 	}

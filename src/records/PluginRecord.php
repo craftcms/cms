@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class PluginRecord
  *
+ * @package craft.app.records
  */
 class PluginRecord extends BaseRecord
 {

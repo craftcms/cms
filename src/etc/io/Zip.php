@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class Zip
  *
+ * @package craft.app.etc.io
  */
 class Zip
 {

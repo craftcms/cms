@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * User element type
+ * User element type.
+ *
+ * @package craft.app.elementtypes
  */
 class UserElementType extends BaseElementType
 {

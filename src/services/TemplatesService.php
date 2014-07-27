@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class TemplatesService
  *
+ * @package craft.app.services
  */
 class TemplatesService extends BaseApplicationComponent
 {
@@ -691,7 +693,7 @@ class TemplatesService extends BaseApplicationComponent
 			if ($otherAttributes)
 			{
 				$idNamespace = $this->formatInputId($namespace);
-				$html = preg_replace('/(?<![\w\-])((id|for|list|data\-target|data\-reverse\-target|data-target-prefix)=(\'|"))([^\'"]+)\3/i', '$1'.$idNamespace.'-$4$3', $html);
+				$html = preg_replace('/(?<![\w\-])((id|for|list|data\-target|data\-reverse\-target|data\-target\-prefix)=(\'|")#?)([^\.][^\'"]*)\3/i', '$1'.$idNamespace.'-$4$3', $html);
 			}
 
 			// Bring back the textarea content

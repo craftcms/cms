@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class Updater
  *
+ * @package craft.app.etc.updates
  */
 class Updater
 {

@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Override the default CStatePersister so we can set a custom path at runtime for our state file.
+ * Override the default \CStatePersister so we can set a custom path at runtime for our state file.
+ *
+ * @package craft.app.etc.state
  */
 class StatePersister extends \CStatePersister
 {

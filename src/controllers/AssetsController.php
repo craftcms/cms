@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Handles asset tasks
+ * Handles asset tasks.
+ *
+ * @package craft.app.controllers
  */
 class AssetsController extends BaseController
 {
@@ -26,12 +28,7 @@ class AssetsController extends BaseController
 		{
 			try
 			{
-				$folder = craft()->assets->getFolderById($folderId);
-				// if folder exists and the source ID is null, it's a temp source and we always allow uploads there.
-				if (!(is_object($folder) && is_null($folder->sourceId)))
-				{
-					craft()->assets->checkPermissionByFolderIds($folderId, 'uploadToAssetSource');
-				}
+				$this->_checkUploadPermissions($folderId);
 			}
 			catch (Exception $e)
 			{
@@ -52,8 +49,8 @@ class AssetsController extends BaseController
 	public function actionExpressUpload()
 	{
 		$this->requireAjaxRequest();
-		$fieldId = craft()->request->getPost('fieldId', 0);
-		$entryId = craft()->request->getPost('entryId', 0);
+		$fieldId = craft()->request->getPost('fieldId');
+		$elementId = craft()->request->getPost('elementId');
 
 		if (empty($_FILES['files']) || !isset($_FILES['files']['error'][0]) || $_FILES['files']['error'][0] != 0)
 		{
@@ -70,20 +67,16 @@ class AssetsController extends BaseController
 			throw new Exception(Craft::t('That is not an Assets field.'));
 		}
 
-		if ($entryId)
+		if ($elementId)
 		{
-			$field->element = craft()->elements->getElementById($entryId);
-		}
-		else
-		{
-			$field->element = new EntryModel();
+			$field->element = craft()->elements->getElementById($elementId);
 		}
 
 		$targetFolderId = $field->resolveSourcePath();
 
 		try
 		{
-			craft()->assets->checkPermissionByFolderIds($targetFolderId, 'uploadToAssetSource');
+			$this->_checkUploadPermissions($targetFolderId);
 		}
 		catch (Exception $e)
 		{
@@ -304,6 +297,21 @@ class AssetsController extends BaseController
 		}
 
 		$this->returnJson($output);
+	}
+
+	/**
+	 * Check upload permissions.
+	 *
+	 * @param $folderId
+	 */
+	private function _checkUploadPermissions($folderId)
+	{
+		$folder = craft()->assets->getFolderById($folderId);
+		// if folder exists and the source ID is null, it's a temp source and we always allow uploads there.
+		if (!(is_object($folder) && is_null($folder->sourceId)))
+		{
+			craft()->assets->checkPermissionByFolderIds($folderId, 'uploadToAssetSource');
+		}
 	}
 }
 

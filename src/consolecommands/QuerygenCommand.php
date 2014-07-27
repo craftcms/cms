@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Query generator console command
+ * Query generator console command.
+ *
+ * @package craft.app.consolecommands
  */
 class QuerygenCommand extends BaseCommand
 {

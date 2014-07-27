@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Event class
+ * Event class.
+ *
+ * @package craft.app.etc.events
  */
 class Event extends \CEvent
 {

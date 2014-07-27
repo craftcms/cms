@@ -2,13 +2,15 @@
 namespace Craft;
 
 /**
+ * Class ContentService
  *
+ * @package craft.app.services
  */
 class ContentService extends BaseApplicationComponent
 {
-	public $contentTable = 'content';
+	public $contentTable      = 'content';
 	public $fieldColumnPrefix = 'field_';
-	public $fieldContext = 'global';
+	public $fieldContext      = 'global';
 
 	/**
 	 * Returns the content model for a given element.

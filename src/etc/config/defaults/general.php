@@ -404,6 +404,19 @@ return array(
 	'userSessionDuration' => 'PT1H',
 
 	/**
+	 * Whether to grab an exclusive lock on a file when writing to it by using the LOCK_EX flag.
+	 *
+	 * Some file systems, such as NFS, do not support exclusive file locking.
+	 *
+	 * Possible values are 'auto', true and false.
+	 *
+	 * When set to 'auto', Craft will automatically try to detect if the underlying file system supports exclusive file locking and cache the results.
+	 *
+	 * @see http://php.net/manual/en/function.file-put-contents.php
+	 */
+	'useWriteFileLock' => 'auto',
+
+	/**
 	 * Whether Craft should use XSendFile to serve files when possible.
 	 */
 	'useXSendFile' => false,

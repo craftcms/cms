@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class LocalizationService
  *
+ * @package craft.app.services
  */
 class LocalizationService extends BaseApplicationComponent
 {

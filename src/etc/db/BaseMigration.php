@@ -2,7 +2,10 @@
 namespace Craft;
 
 /**
+ * Class BaseMigration
  *
+ * @abstract
+ * @package craft.app.etc.db
  */
 abstract class BaseMigration extends \CDbMigration
 {

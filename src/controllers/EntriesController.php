@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Handles entry tasks
+ * Handles entry tasks.
+ *
+ * @package craft.app.controllers
  */
 class EntriesController extends BaseEntriesController
 {
@@ -43,6 +45,7 @@ class EntriesController extends BaseEntriesController
 
 			$authorOptionCriteria = craft()->elements->getCriteria(ElementType::User);
 			$authorOptionCriteria->can = 'editEntries'.$variables['permissionSuffix'];
+			$authorOptionCriteria->limit = null;
 
 			if ($variables['entry']->authorId)
 			{
@@ -206,6 +209,7 @@ class EntriesController extends BaseEntriesController
 		}
 		else
 		{
+			$variables['docTitle'] = Craft::t($variables['entry']->title);
 			$variables['title'] = HtmlHelper::encode(Craft::t($variables['entry']->title));
 
 			if (craft()->getEdition() >= Craft::Client && $variables['entry']->getClassHandle() != 'Entry')

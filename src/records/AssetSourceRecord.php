@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class AssetSourceRecord
  *
+ * @package craft.app.records
  */
 class AssetSourceRecord extends BaseRecord
 {

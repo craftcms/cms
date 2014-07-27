@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class ArrayHelper
  *
+ * @package craft.app.helpers
  */
 class ArrayHelper
 {

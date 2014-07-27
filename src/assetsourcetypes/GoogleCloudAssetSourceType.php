@@ -4,7 +4,9 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * Google Cloud source type class
+ * Google Cloud source type class.
+ *
+ * @package craft.app.assetsourcetypes
  */
 class GoogleCloudAssetSourceType extends BaseAssetSourceType
 {
@@ -257,6 +259,10 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 				$this->_googleCloud->getObject($settings->bucket, $this->_getPathPrefix().$indexEntryModel->uri, $targetPath);
 				clearstatcache();
 				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
+
+				// Store the local source or delete - maxCacheCloudImageSize is king.
+				craft()->assetTransforms->storeLocalSource($targetPath, $targetPath);
+				craft()->assetTransforms->deleteSourceIfNecessary($targetPath);
 			}
 
 			$fileModel->dateModified = $timeModified;

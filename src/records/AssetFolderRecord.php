@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class AssetFolderRecord
  *
+ * @package craft.app.records
  */
 class AssetFolderRecord extends BaseRecord
 {

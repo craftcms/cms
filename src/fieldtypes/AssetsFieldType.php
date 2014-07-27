@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Assets fieldtype
+ * Assets fieldtype.
+ *
+ * @package craft.app.fieldtypes
  */
 class AssetsFieldType extends BaseElementFieldType
 {
@@ -174,18 +176,38 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	public function onAfterElementSave()
 	{
-		if ($this->getSettings()->useSingleFolder)
+		$handle = $this->model->handle;
+		$filesToMove = $this->element->getContent()->{$handle};
+
+		if (is_array($filesToMove) && count($filesToMove))
 		{
-			$handle = $this->model->handle;
 
-			// No uploaded files, just good old-fashioned Assets field
-			$filesToMove = $this->element->getContent()->{$handle};
-			if (is_array($filesToMove) && count($filesToMove))
+			$settings = $this->getSettings();
+			if ($this->getSettings()->useSingleFolder)
 			{
-				$settings = $this->getSettings();
-
 				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
+			}
+			else
+			{
+				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->defaultUploadLocationSource, $settings->defaultUploadLocationSubpath);
 
+				$criteria = array(
+					'id' => array_merge(array('in'), $filesToMove),
+					'sourceId' => ':empty:'
+				);
+				$criteria = craft()->elements->getCriteria(ElementType::Asset, $criteria);
+
+				$files = $criteria->find();
+				$filesToMove = array();
+
+				foreach ($files as $file)
+				{
+					$filesToMove[] = $file->id;
+				}
+			}
+
+			if (!empty($filesToMove))
+			{
 				// Resolve all conflicts by keeping both
 				$actions = array_fill(0, count($filesToMove), AssetsHelper::ActionKeepBoth);
 				craft()->assets->moveFiles($filesToMove, $targetFolderId, '', $actions);
@@ -250,48 +272,7 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	public function resolveSourcePath()
 	{
-		$targetFolderId = null;
-		$settings = $this->getSettings();
-
-		if ($settings->useSingleFolder)
-		{
-			$targetFolderId = $this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
-		}
-		else
-		{
-			// Make sure the field has been saved since this setting was added
-			if ($this->getSettings()->defaultUploadLocationSource)
-			{
-				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->defaultUploadLocationSource, $settings->defaultUploadLocationSubpath);
-			}
-			else
-			{
-				$sources = $settings->sources;
-
-				if (!is_array($sources))
-				{
-					$sourceIds = craft()->assetSources->getViewableSourceIds();
-
-					if ($sourceIds)
-					{
-						$sourceId = reset($sourceIds);
-						$targetFolder = craft()->assets->findFolder(array('sourceId' => $sourceId, 'parentId' => ':empty:'));
-
-						if ($targetFolder)
-						{
-							$targetFolderId = $targetFolder->id;
-						}
-					}
-				}
-				else
-				{
-					$targetFolder = reset($sources);
-					list ($bogus, $targetFolderId) = explode(':', $targetFolder);
-				}
-			}
-		}
-
-		return $targetFolderId;
+		return $this->_determineUploadFolderId($this->getSettings());
 	}
 
 	/**

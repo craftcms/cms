@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class Redirect_Node
  *
+ * @package craft.app.etc.templating.twigextensions
  */
 class Redirect_Node extends \Twig_Node
 {

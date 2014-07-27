@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Search Index tool
+ * Search Index tool.
+ *
+ * @package craft.app.tools
  */
 class SearchIndexTool extends BaseTool
 {

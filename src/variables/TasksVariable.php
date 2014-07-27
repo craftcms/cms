@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Task functions
+ * Task functions.
+ *
+ * @package craft.app.validators
  */
 class TasksVariable
 {

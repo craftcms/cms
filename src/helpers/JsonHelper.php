@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
+ * Class JsonHelper
  *
+ * @package craft.app.helpers
  */
 class JsonHelper extends \CJSON
 {
