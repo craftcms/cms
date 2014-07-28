@@ -1338,10 +1338,11 @@ class ElementsService extends BaseApplicationComponent
 				{
 					$record->deleteNode();
 				}
-
-				// Also delete any caches involving this element
-				craft()->templateCache->deleteCachesByElementId($elementId);
 			}
+
+			// Delete the caches before they drop their elementId relations
+			// (passing `false` because there's no chance this element is suddenly going to show up in a new query)
+			craft()->templateCache->deleteCachesByElementId($elementIds, false);
 
 			// Now delete the rows in the elements table
 			if (count($elementIds) == 1)
