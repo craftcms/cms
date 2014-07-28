@@ -660,7 +660,7 @@ class EntriesController extends BaseEntriesController
 
 		if (!$variables['localeIds'])
 		{
-			throw new HttpException(404);
+			throw new HttpException(403, Craft::t('Your account doesn’t have permission to edit any of this section’s locales.'));
 		}
 
 		if (empty($variables['localeId']))
