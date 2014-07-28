@@ -401,12 +401,13 @@ class EntriesController extends BaseEntriesController
 		// Permission enforcement
 		$this->enforceEditEntryPermissions($entry);
 		$userSessionService = craft()->userSession;
+		$currentUser = $userSessionService->getUser();
 
 		if ($entry->id)
 		{
 			// Is this another user's entry (and it's not a Single)?
 			if (
-				$entry->authorId != $userSessionService->getUser()->id &&
+				$entry->authorId != $currentUser->id &&
 				$entry->getSection()->type != SectionType::Single
 			)
 			{
@@ -424,7 +425,14 @@ class EntriesController extends BaseEntriesController
 		// Even more permission enforcement
 		if ($entry->enabled)
 		{
-			$userSessionService->requirePermission('publishEntries:'.$entry->sectionId);
+			if ($entry->id)
+			{
+				$userSessionService->requirePermission('publishEntries:'.$entry->sectionId);
+			}
+			else if (!$currentUser->can('publishEntries:'.$entry->sectionId))
+			{
+				$entry->enabled = false;
+			}
 		}
 
 		// Save the entry (finally!)
