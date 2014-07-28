@@ -356,7 +356,13 @@ class Craft extends \Yii
 		if (!craft()->getIsDbConnectionValid())
 		{
 			$source = 'en_us';
-			$language = craft()->getTranslatedBrowserLanguage();
+			$language = 'en_us';
+
+			// If it's a yiic/console app, just go with english.
+			if (!craft()->isConsole())
+			{
+				$language = craft()->getTranslatedBrowserLanguage();
+			}
 		}
 
 		$translation = parent::t($category, (string)$message, $normalizedVariables, $source, $language);
