@@ -31,8 +31,16 @@ class HttpRequestService extends \CHttpRequest
 	{
 		parent::init();
 
-		// Get the normalized path.
-		$path = $this->getNormalizedPath();
+		// There is no path.
+		if (craft()->isConsole())
+		{
+			$path = '';
+		}
+		else
+		{
+			// Get the normalized path.
+			$path = $this->getNormalizedPath();
+		}
 
 		// Get the path segments
 		$this->_segments = array_filter(explode('/', $path));
