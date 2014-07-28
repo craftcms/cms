@@ -301,11 +301,4 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		this.trigger('selectElements');
 	},
 
-	forceModalRefresh: function ()
-	{
-		if (this.modal)
-		{
-			this.modal.elementIndex = null;
-		}
-	}
 });

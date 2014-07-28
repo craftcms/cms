@@ -85,10 +85,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 			this.$addElementBtn.addClass('disabled');
 		}
 
-		if (this.modal)
-		{
-			this.modal.elementIndex.rememberDisabledElementId(element.id);
-		}
+		delete this.modal;
 
 	},
 
@@ -131,8 +128,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 			this.progressBar.hideProgressBar();
 			this.$container.removeClass('uploading');
 		}
-
-		this.forceModalRefresh();
 	},
 
 	/**
