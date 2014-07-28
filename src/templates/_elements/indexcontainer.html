@@ -29,23 +29,23 @@
 				{% endif %}
 				{% if showLocaleMenu %}
 					{% set editableLocaleIds = craft.i18n.getEditableLocaleIds() %}
-					{% if craft.locale in editableLocaleIds %}
-						{% set initialLocale = craft.i18n.getCurrentLocale() %}
-					{% elseif editableLocaleIds|length %}
-						{% set initialLocale = craft.i18n.getLocaleById(editableLocaleIds|first) %}
-					{% else %}
-						{% set initialLocale = null %}
+					{% if editableLocaleIds|length %}
+						{% if craft.locale in editableLocaleIds %}
+							{% set initialLocale = craft.i18n.getCurrentLocale() %}
+						{% else %}
+							{% set initialLocale = craft.i18n.getLocaleById(editableLocaleIds|first) %}
+						{% endif %}
+						<td class="thin">
+							<div class="btn menubtn localemenubtn">{{ initialLocale ? initialLocale.getName() }}</div>
+							<div class="menu">
+								<ul class="padded">
+									{% for locale in craft.i18n.getEditableLocales() %}
+										<li><a{% if initialLocale and locale.getId() == initialLocale.getId() %} class="sel"{% endif %} data-locale="{{ locale.getId() }}">{{ locale.getName() }}</a></li>
+									{% endfor %}
+								</ul>
+							</div>
+						</td>
 					{% endif %}
-					<td class="thin">
-						<div class="btn menubtn localemenubtn">{{ initialLocale ? initialLocale.getName() }}</div>
-						<div class="menu">
-							<ul class="padded">
-								{% for locale in craft.i18n.getEditableLocales() %}
-									<li><a{% if initialLocale and locale.getId() == initialLocale.getId() %} class="sel"{% endif %} data-locale="{{ locale.getId() }}">{{ locale.getName() }}</a></li>
-								{% endfor %}
-							</ul>
-						</div>
-					</td>
 				{% endif %}
 				<td>
 					<div class="texticon search icon">
