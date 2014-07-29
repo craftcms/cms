@@ -828,14 +828,14 @@ class UsersController extends BaseController
 			if (!empty($file['name']) && !empty($file['size'])  )
 			{
 				$user = craft()->users->getUserById($userId);
-				$userName = IOHelper::cleanFilename($user->username);
+				$userName = AssetsHelper::cleanAssetName($user->username);
 
 				$folderPath = craft()->path->getTempUploadsPath().'userphotos/'.$userName.'/';
 
 				IOHelper::clearFolder($folderPath);
 
 				IOHelper::ensureFolderExists($folderPath);
-				$fileName = IOHelper::cleanFilename($file['name']);
+				$fileName = AssetsHelper::cleanAssetName($file['name']);
 
 				move_uploaded_file($file['tmp_name'], $folderPath.$fileName);
 
@@ -909,7 +909,7 @@ class UsersController extends BaseController
 			}
 
 			$user = craft()->users->getUserById($userId);
-			$userName = IOHelper::cleanFilename($user->username);
+			$userName = AssetsHelper::cleanAssetName($user->username);
 
 			// make sure that this is this user's file
 			$imagePath = craft()->path->getTempUploadsPath().'userphotos/'.$userName.'/'.$source;

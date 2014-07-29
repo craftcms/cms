@@ -297,7 +297,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			throw new Exception(Craft::t('Uploaded file was empty'));
 		}
 
-		$fileName = IOHelper::cleanFilename($file['name']);
+		$fileName = AssetsHelper::cleanAssetName($file['name']);
 
 		// Save the file to a temp location and pass this on to the source type implementation
 		$filePath = AssetsHelper::getTempFilePath(IOHelper::getExtension($fileName));
@@ -399,7 +399,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function transferFileIntoSource($localCopy, AssetFolderModel $folder, AssetFileModel $file, $action)
 	{
-		$filename = IOHelper::cleanFilename($file->filename);
+		$filename = AssetsHelper::cleanAssetName($file->filename);
 
 		if (!empty($action))
 		{
@@ -625,7 +625,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function createFolder(AssetFolderModel $parentFolder, $folderName)
 	{
-		$folderName = IOHelper::cleanFilename($folderName);
+		$folderName = AssetsHelper::cleanAssetName($folderName);
 
 		// If folder exists in DB or physically, bail out
 		if (craft()->assets->findFolder(array('parentId' => $parentFolder->id, 'name' => $folderName))

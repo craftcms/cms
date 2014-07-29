@@ -376,7 +376,7 @@ class AssetsService extends BaseApplicationComponent
 			}
 
 			$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
-			$response = $source->renameFolder($folder, IOHelper::cleanFilename($newName));
+			$response = $source->renameFolder($folder, AssetsHelper::cleanAssetName($newName));
 
 		}
 		catch (Exception $exception)
@@ -658,7 +658,7 @@ class AssetsService extends BaseApplicationComponent
 			return false;
 		}
 
-		$fileName = IOHelper::cleanFilename($fileName);
+		$fileName = AssetsHelper::cleanAssetName($fileName);
 		$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
 		$response = $source->insertFileByPath($localPath, $folder, $fileName, true);
 		return $response->getDataItem('fileId');
@@ -763,7 +763,7 @@ class AssetsService extends BaseApplicationComponent
 					$filename .= '.'.$file->getExtension();
 				}
 
-				$filename = IOHelper::cleanFilename($filename);
+				$filename = AssetsHelper::cleanAssetName($filename);
 
 				if ($folderId == $file->folderId && ($filename == $file->filename))
 				{

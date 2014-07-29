@@ -51,5 +51,16 @@ class AssetsHelper
 		return $baseUrl.$folderPath.$transformPath.$fileName.$appendix;
 
 	}
+
+	/**
+	 * Clean an Asset's filename.
+	 *
+	 * @param $fileName
+	 * @return mixed
+	 */
+	public static function cleanAssetName($fileName)
+	{
+		return IOHelper::cleanFilename($fileName);
+	}
 }
 

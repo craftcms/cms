@@ -236,7 +236,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			throw new Exception(Craft::t('The folder “{folder}” is not writable.', array('folder' => $targetFolder)));
 		}
 
-		$fileName = IOHelper::cleanFilename($fileName);
+		$fileName = AssetsHelper::cleanAssetName($fileName);
 		$targetPath = $targetFolder . $fileName;
 		$extension = IOHelper::getExtension($fileName);
 

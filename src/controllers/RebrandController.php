@@ -30,7 +30,7 @@ class RebrandController extends BaseController
 				IOHelper::ensureFolderExists($folderPath);
 				IOHelper::clearFolder($folderPath, true);
 
-				$fileName = IOHelper::cleanFilename($file['name']);
+				$fileName = AssetsHelper::cleanAssetName($file['name']);
 
 				move_uploaded_file($file['tmp_name'], $folderPath.$fileName);
 
