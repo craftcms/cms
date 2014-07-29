@@ -320,11 +320,15 @@ class Image
 	 *
 	 * @param      $targetPath
 	 * @param bool $sanitizeAndAutoQuality
+	 * @param string $extension
 	 * @return bool
 	 */
-	public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
+	public function saveAs($targetPath, $sanitizeAndAutoQuality = false, $extension = null)
 	{
-		$extension = $this->getExtension();
+		if (empty($extension))
+		{
+			$extension = $this->getExtension();
+		}
 
 		$options = $this->_getSaveOptions(false);
 
