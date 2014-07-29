@@ -7,7 +7,7 @@
  * @author  Alexander Kochetov <creocoder@gmail.com>
  * @link    https://github.com/yiiext/nested-set-behavior
  * @package craft.app.extensions
- * @since   1.0
+ * @since   1.2
  */
 class NestedSetBehavior extends CActiveRecordBehavior
 {
