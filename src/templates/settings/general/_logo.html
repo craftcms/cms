@@ -4,7 +4,7 @@
 
 	<div class="current-logo"
 		{% if craft.rebrand.isLogoUploaded -%}
-			 style="background-image: url({{ craft.rebrand.logo.url }}); width: {{ craft.rebrand.logo.width }}px; height: {{ craft.rebrand.logo.height }}px;"
+			 style="background-image: url('{{ craft.rebrand.logo.url }}'); width: {{ craft.rebrand.logo.width }}px; height: {{ craft.rebrand.logo.height }}px;"
 		{%- endif %}>
 	</div>
 

@@ -23,7 +23,7 @@
 				'<form id="login-form" method="post" accept-charset="UTF-8" {% if CraftEdition >= CraftClient and craft.rebrand.isLogoUploaded -%}
 						{%- set logo = craft.rebrand.logo -%}
 						{%- set padding = logo.height + 30 %}
-						style="background-image: url({{ logo.url }}); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ round((156+padding)/2) }}px"
+						style="background-image: url(\'{{ logo.url }}\'); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ round((156+padding)/2) }}px"
 					{%- endif %}>' +
 					'{% set placeHolderText = (craft.config.useEmailAsUsername ? "Email"|t : "Username or Email"|t) %}' +
 					'{{ forms.textField({ id: "loginName", name: "username", placeholder: placeHolderText, value: username })|e("js") }}' +
