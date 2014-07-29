@@ -11,7 +11,7 @@ namespace Craft;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @link      http://buildwithcraft.com
  * @package   craft.app.etc.cache
- * @since     1.0
+ * @since     2.0
  */
 class WinCache extends \CWinCache
 {

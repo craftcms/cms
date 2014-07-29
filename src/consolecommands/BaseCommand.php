@@ -37,7 +37,7 @@ namespace Craft;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @link      http://buildwithcraft.com
  * @package   craft.app.consolecommands
- * @since     1.0
+ * @since     2.0
  */
 class BaseCommand extends \CConsoleCommand
 {

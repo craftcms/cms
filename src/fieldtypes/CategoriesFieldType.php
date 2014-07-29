@@ -9,7 +9,7 @@ namespace Craft;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @link      http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
- * @since     1.0
+ * @since     2.0
  */
 class CategoriesFieldType extends BaseElementFieldType
 {

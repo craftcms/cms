@@ -9,7 +9,7 @@ namespace Craft;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @link      http://buildwithcraft.com
  * @package   craft.app.services
- * @since     1.0
+ * @since     2.0
  */
 class CategoriesService extends BaseApplicationComponent
 {
