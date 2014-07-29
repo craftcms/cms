@@ -1008,8 +1008,8 @@ class TemplatesService extends BaseApplicationComponent
 
 		if ($thumbUrl)
 		{
-			$this->includeCss($thumbSelectorPrefix.'.'.$thumbClass.' { background-image: url('.$thumbUrl.'); }');
-			$this->includeHiResCss($thumbSelectorPrefix.'.'.$thumbClass.' { background-image: url('.$context['element']->getThumbUrl($thumbSize * 2).'); background-size: '.$thumbSize.'px; }');
+			$this->includeCss($thumbSelectorPrefix.'.'.$thumbClass." { background-image: url('".$thumbUrl."'); }");
+			$this->includeHiResCss($thumbSelectorPrefix.'.'.$thumbClass." { background-image: url('".$context['element']->getThumbUrl($thumbSize * 2)."'); background-size: ".$thumbSize.'px; }');
 		}
 		else
 		{
@@ -1017,8 +1017,8 @@ class TemplatesService extends BaseApplicationComponent
 
 			if ($iconUrl)
 			{
-				$this->includeCss($thumbSelectorPrefix.'.'.$iconClass.' { background-image: url('.$iconUrl.'); }');
-				$this->includeHiResCss($thumbSelectorPrefix.'.'.$iconClass.' { background-image: url('.$context['element']->getIconUrl($iconSize * 2).'); background-size: '.$iconSize.'px; }');
+				$this->includeCss($thumbSelectorPrefix.'.'.$iconClass." { background-image: url('".$iconUrl."'); }");
+				$this->includeHiResCss($thumbSelectorPrefix.'.'.$iconClass." { background-image: url('".$context['element']->getIconUrl($iconSize * 2)."); background-size: ".$iconSize.'px; }');
 			}
 		}
 
