@@ -10,7 +10,7 @@ namespace Craft;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @link      http://buildwithcraft.com
  * @package   craft.app.helpers
- * @since     1.0
+ * @since     1.3
  */
 class HeaderHelper
 {
