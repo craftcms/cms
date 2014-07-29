@@ -62,6 +62,11 @@ return array(
 	'appId' => null,
 
 	/**
+	 * The string to use to separate words when uploading Assets. If set to anything but a string, spaces will be left alone.
+	 */
+	'assetFilenameWordSeparator' => '-',
+
+	/**
 	 * If set to true, will automatically log the user in after successful account activation.
 	 */
 	'autoLoginAfterAccountActivation' => false,

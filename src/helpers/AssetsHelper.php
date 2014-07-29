@@ -60,7 +60,13 @@ class AssetsHelper
 	 */
 	public static function cleanAssetName($fileName)
 	{
-		return IOHelper::cleanFilename($fileName);
+		$separator = craft()->config->get('assetFilenameWordSeparator');
+		if (!is_string($separator))
+		{
+			$separator = null;
+		}
+
+		return IOHelper::cleanFilename($fileName, false, $separator);
 	}
 }
 

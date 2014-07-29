@@ -1403,11 +1403,12 @@ class IOHelper
 	/**
 	 * Clean a filename.
 	 *
-	 * @param      $fileName
-	 * @param bool $onlyAlphaNumeric
+	 * @param        $fileName
+	 * @param bool   $onlyAlphaNumeric
+	 * @param string $separator Separator to use to separate the words
 	 * @return mixed
 	 */
-	public static function cleanFilename($fileName, $onlyAlphaNumeric = false)
+	public static function cleanFilename($fileName, $onlyAlphaNumeric = false, $separator = "-")
 	{
 		$disallowedChars = array('â€”', 'â€“', '&#8216;', '&#8217;', '&#8220;', '&#8221;', '&#8211;', '&#8212;', '+', '%', '^', '~', '?', '[', ']', '/', '\\', '=', '<', '>', ':', ';', ',', '\'', '"', '&', '$', '#', '*', '(', ')', '|', '~', '`', '!', '{', '}');
 
@@ -1417,7 +1418,10 @@ class IOHelper
 		// Strip any characters not allowed.
 		$fileName = str_replace($disallowedChars, '', strip_tags($fileName));
 
-		$fileName = preg_replace('/[\s-]+/', '-', $fileName);
+		if (!is_null($separator))
+		{
+			$fileName = preg_replace('/(\s|'.preg_quote($separator).')+/', $separator, $fileName);
+		}
 
 		// Nuke any trailing or leading .-_
 		$fileName = trim($fileName, '.-_');
