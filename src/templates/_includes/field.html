@@ -1,7 +1,7 @@
 {% set static = static is defined ? static : false %}
 {% set element = element is defined ? element : null %}
 
-{% set value = (element ? attribute(element, field.handle) : null) %}
+{% set value = (element ? element.getFieldValue(field.handle) : null) %}
 {% set errors = (element and not static ? element.getErrors(field.handle) : null) %}
 {% set fieldtype = craft.fields.populateFieldType(field, element) %}
 {% set instructions = (not static ? field.instructions|t : null) %}

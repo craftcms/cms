@@ -667,11 +667,9 @@ abstract class BaseElementModel extends BaseModel
 		catch (\Exception $e)
 		{
 			// Is $name a field handle?
-			$field = $this->getFieldByHandle($name);
-
-			if ($field)
+			if ($this->getFieldByHandle($name))
 			{
-				return $this->_getPreppedContentForField($field);
+				return $this->getFieldValue($name);
 			}
 
 			// Fine, throw the exception
@@ -868,6 +866,49 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns the prepped content for a given field.
+	 *
+	 * @param string $fieldHandle
+	 * @return mixed
+	 */
+	public function getFieldValue($fieldHandle)
+	{
+		if (!isset($this->_preppedContent) || !array_key_exists($fieldHandle, $this->_preppedContent))
+		{
+			$field = $this->getFieldByHandle($fieldHandle);
+
+			if (!$field)
+			{
+				throw new Exception(Craft::t('No field exists with the handle “{handle}”', array('handle' => $fieldHandle)));
+			}
+
+			$content = $this->getContent();
+
+			if (isset($content->$fieldHandle))
+			{
+				$value = $content->$fieldHandle;
+			}
+			else
+			{
+				$value = null;
+			}
+
+			// Give the field type a chance to prep the value for use
+			$fieldType = $field->getFieldType();
+
+			if ($fieldType)
+			{
+				$fieldType->element = $this;
+				$value = $fieldType->prepValue($value);
+			}
+
+			$this->_preppedContent[$field->handle] = $value;
+		}
+
+		return $this->_preppedContent[$field->handle];
+	}
+
+	/**
 	 * Returns the name of the table this element's content is stored in.
 	 *
 	 * @return string
@@ -985,42 +1026,5 @@ abstract class BaseElementModel extends BaseModel
 				return $criteria->first();
 			}
 		}
-	}
-
-	/**
-	 * Returns the prepped content for a given field.
-	 *
-	 * @param FieldModel $field
-	 * @return mixed
-	 */
-	private function _getPreppedContentForField(FieldModel $field)
-	{
-		if (!isset($this->_preppedContent) || !array_key_exists($field->handle, $this->_preppedContent))
-		{
-			$content = $this->getContent();
-			$fieldHandle = $field->handle;
-
-			if (isset($content->$fieldHandle))
-			{
-				$value = $content->$fieldHandle;
-			}
-			else
-			{
-				$value = null;
-			}
-
-			// Give the field type a chance to prep the value for use
-			$fieldType = $field->getFieldType();
-
-			if ($fieldType)
-			{
-				$fieldType->element = $this;
-				$value = $fieldType->prepValue($value);
-			}
-
-			$this->_preppedContent[$field->handle] = $value;
-		}
-
-		return $this->_preppedContent[$field->handle];
 	}
 }
